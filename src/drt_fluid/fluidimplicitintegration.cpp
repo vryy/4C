@@ -361,7 +361,7 @@ void FluidImplicitTimeInt::TimeLoop()
     //                         output of solution
     // -------------------------------------------------------------------
     this->Output();
-    
+
     this->LIFTDRAG_all();
 
     // -------------------------------------------------------------------
@@ -597,8 +597,8 @@ void FluidImplicitTimeInt::NonlinearSolve(
 
   if (myrank_ == 0)
   {
-    printf("+------------+-------------------+--------------+--------------+ \n");
-    printf("|- step/max -|- tol      [norm] -|- vel-error --|- pre-error --| \n");
+    printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
+    printf("|- step/max -|- tol      [norm] -|- vel-error --|- pre-error --|- vel-error --|- pre-error --|\n");
   }
 
   while (stopnonliniter==false)
@@ -683,6 +683,12 @@ void FluidImplicitTimeInt::NonlinearSolve(
       residual_->Multiply(1.0,*invtoggle_,residual,0.0);
     }
 
+    double incvelnorm_L2;
+    double incprenorm_L2;
+
+    double velnorm_L2;
+    double prenorm_L2;
+
     double vresnorm;
     double presnorm;
 
@@ -690,29 +696,51 @@ void FluidImplicitTimeInt::NonlinearSolve(
       Epetra_Vector onlyvel(*velrowmap_);
       LINALG::Export(*residual_,onlyvel);
       onlyvel.Norm2(&vresnorm);
+
+      LINALG::Export(*incvel_,onlyvel);
+      onlyvel.Norm2(&incvelnorm_L2);
+
+      LINALG::Export(*velnp_,onlyvel);
+      onlyvel.Norm2(&velnorm_L2);
     }
 
     {
       Epetra_Vector onlypre(*prerowmap_);
       LINALG::Export(*residual_,onlypre);
       onlypre.Norm2(&presnorm);
+
+      LINALG::Export(*incvel_,onlypre);
+      onlypre.Norm2(&incprenorm_L2);
+
+      LINALG::Export(*velnp_,onlypre);
+      onlypre.Norm2(&prenorm_L2);
     }
 
+    if (velnorm_L2 < 1e-5)
+    {
+      velnorm_L2 = 1.0;
+    }
+    if (prenorm_L2 < 1e-5)
+    {
+      prenorm_L2 = 1.0;
+    }
 
     // this is the convergence check
     // We always require at least one solve. Otherwise the
     // perturbation at the FSI interface might get by unnoticed.
     if (itnum > 1)
     {
-      if (vresnorm <= ittol and presnorm <= ittol)
+      if (vresnorm <= ittol and presnorm <= ittol and
+          incvelnorm_L2/velnorm_L2 <= ittol and incprenorm_L2/prenorm_L2 <= ittol)
       {
         stopnonliniter=true;
         if (myrank_ == 0)
         {
-          printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |",
-                 itnum,itemax,ittol,vresnorm,presnorm);
+          printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
+                 itnum,itemax,ittol,vresnorm,presnorm,
+                 incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
           printf(" (te=%10.3E)\n",dtele);
-          printf("+------------+-------------------+--------------+--------------+\n");
+          printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
         }
         break;
       }
@@ -720,7 +748,9 @@ void FluidImplicitTimeInt::NonlinearSolve(
 
     // warn if itemax is reached without convergence, but proceed to
     // next timestep...
-    if (itnum == itemax and (vresnorm > ittol or presnorm > ittol))
+    if (itnum == itemax and (vresnorm > ittol or presnorm > ittol or
+                             incvelnorm_L2/velnorm_L2 > ittol or
+                             incprenorm_L2/prenorm_L2 > ittol))
     {
       stopnonliniter=true;
       if (myrank_ == 0)
@@ -764,8 +794,9 @@ void FluidImplicitTimeInt::NonlinearSolve(
     //-------------------------------------------------- output to screen
     if (myrank_ == 0)
     {
-      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |",
-             itnum,itemax,ittol,vresnorm,presnorm);
+      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
+             itnum,itemax,ittol,vresnorm,presnorm,
+             incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
       printf(" (te=%10.3E,ts=%10.3E)\n",dtele,dtsolve);
     }
 
@@ -1587,7 +1618,7 @@ void FluidImplicitTimeInt::LIFTDRAG_all()
 	map<int, vector<double> > surfValuesMap;
 	stringstream lineSolPrint;
 	stringstream surfSolPrint;
-	    
+
  	if (LIFTDRAGConds.size() == 0)
  	{
  		cout << "No LIFT and DRAG calculation" << endl;
@@ -1600,7 +1631,7 @@ void FluidImplicitTimeInt::LIFTDRAG_all()
 		    const unsigned int label = (*LABEL)[0];
 
 			const DRT::Condition::GeometryType gType = LIFTDRAGConds[i]->GType();
-			
+
 			if (gType==DRT::Condition::Line)
 			{
                 if (lineValuesMap.find(label) == lineValuesMap.end())
@@ -1612,7 +1643,7 @@ void FluidImplicitTimeInt::LIFTDRAG_all()
                     lineValuesMap[label][j] += values[j];
                 }
 			}
-	  	
+
 		  	else if (LIFTDRAGConds[i]->GType()==DRT::Condition::Surface)
 		  	{
                 if (surfValuesMap.find(label) == surfValuesMap.end())
@@ -1624,16 +1655,16 @@ void FluidImplicitTimeInt::LIFTDRAG_all()
                     surfValuesMap[label][j] += values[j];
                 }
 			}
-		  	
+
 		  	else dserror("unknown type of LIFTDRAG condition (need Line or Surface but got type %d)", LIFTDRAGConds[i]->GType());
  		}
- 		
- 		
+
+
  		std::map<int, vector<double> >::const_iterator actval;
  		for (actval = lineValuesMap.begin(); actval!=lineValuesMap.end(); ++actval)
  		{
  		    const int label = actval->first;
- 		    const vector<double> values = actval->second; 
+ 		    const vector<double> values = actval->second;
 			lineSolPrint << "Lift and drag calculation for line " << label << "  :"<< endl;
 			lineSolPrint << "F_x           F_y           M_z:" << endl;
             lineSolPrint << std::scientific << values[0] << "    ";
@@ -1644,7 +1675,7 @@ void FluidImplicitTimeInt::LIFTDRAG_all()
  		for (actval = surfValuesMap.begin(); actval!=surfValuesMap.end(); ++actval)
  		{
             const int label = actval->first;
-            const vector<double> values = actval->second; 
+            const vector<double> values = actval->second;
 			surfSolPrint << endl<<"Lift and drag calculation for surface " << label << "  :"<< endl;
 			surfSolPrint << "F_x           F_y           F_z           ";
 			surfSolPrint << "M_x           M_y           M_z :" << endl;
@@ -1669,7 +1700,7 @@ vector<double> FluidImplicitTimeInt::LIFTDRAG_one( const DRT::Condition cond)
   	const int myrank = discret_->Comm().MyPID();
   	const vector<int>* n = cond.Get<vector<int> >("Node Ids");
  	const vector<double>* centerCoord = cond.Get<vector<double> >   ("centerCoord");
- 		
+
   	// here are all nodes belonging to the LIFTDRAG line stored in 'nodes'
   	for (unsigned j=0; j<n->size(); ++j)
     {
@@ -1677,7 +1708,7 @@ vector<double> FluidImplicitTimeInt::LIFTDRAG_one( const DRT::Condition cond)
 		if (discret_->HaveGlobalNode(gid) and discret_->gNode(gid)->Owner()==myrank)
 			nodes.insert(discret_->gNode(gid));
 	}
-	
+
 	std::set<DRT::Node*>::iterator actnode;
 	for (actnode = nodes.begin(); actnode!=nodes.end(); ++actnode)
 	{
@@ -1690,11 +1721,11 @@ vector<double> FluidImplicitTimeInt::LIFTDRAG_one( const DRT::Condition cond)
 		values[0] += (*trueresidual_)[discret_->Dof(*actnode,0)];
 		values[1] += (*trueresidual_)[discret_->Dof(*actnode,1)];
 		values[2] += (*trueresidual_)[discret_->Dof(*actnode,2)];
-		
+
 		//Calculating nodal momenta
 		values[3] += distances[1]*values[2]-distances[2]*values[1];
 		values[4] += distances[2]*values[0]-distances[0]*values[2];
-		values[5] += distances[0]*values[1]-distances[1]*values[0];		
+		values[5] += distances[0]*values[1]-distances[1]*values[0];
 	}
 	return values;
 }
