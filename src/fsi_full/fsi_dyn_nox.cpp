@@ -493,7 +493,7 @@ bool FSI_InterfaceProblem::ComputeDispF(const Epetra_Vector& x,
   // backup from the outside.
   INT itnum = 1;
 
-#if 1
+#if 0
   if (par.nprocs==1)
   {
     static int in_counter;
@@ -621,7 +621,7 @@ bool FSI_InterfaceProblem::ComputeDispF(const Epetra_Vector& x,
     /*------------------------------------------------------ solve fluid ---*/
     fsi_fluid_sd(fluid_work_,fluidfield,f_disnum_calc,f_disnum_io);
 
-#if 1
+#if 0
   if (par.nprocs==1)
   {
     static int f_counter;
@@ -731,7 +731,7 @@ bool FSI_InterfaceProblem::ComputeDispF(const Epetra_Vector& x,
     debug_out_data(fluidfield, "fluid_vel", node_array_sol_increment, fluidfield->dis[0].ipos.velnp);
 #endif
 
-#if 1
+#if 0
   if (par.nprocs==1)
   {
     static int f_counter;

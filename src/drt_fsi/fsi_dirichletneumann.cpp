@@ -952,22 +952,6 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
     Teuchos::RefCountPtr<Epetra_Vector> idispnp = StructOp(iforce, fillFlag);
 
 #if 0
-    Teuchos::RefCountPtr<Epetra_Vector> iforce2 = FluidOp(idispn, fillFlag);
-    Teuchos::RefCountPtr<Epetra_Vector> idispnp2 = StructOp(iforce, fillFlag);
-
-    double norm;
-    iforce2->Update(-1., *iforce, 1.);
-    iforce2->Norm2(&norm);
-    if (norm > 1e-10)
-      dserror("fluid force norm %e > 1e-10", norm);
-
-    idispnp2->Update(-1., *idispnp, 1.);
-    idispnp2->Norm2(&norm);
-    if (norm > 1e-10)
-      dserror("structure disp norm %e > 1e-10", norm);
-#endif
-
-#if 1
   if (comm_.NumProc()==1)
   {
     static int in_counter;
@@ -987,7 +971,7 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
   }
 #endif
 
-#if 1
+#if 0
   if (comm_.NumProc()==1)
   {
     static int f_counter;
@@ -1009,7 +993,7 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
 
   F.Update(1.0, *idispnp, -1.0, *idispn, 0.0);
 
-#if 1
+#if 0
   if (comm_.NumProc()==1)
   {
     static int out_counter;
@@ -1029,25 +1013,6 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
   }
 #endif
 
-#if 0
-    //if ((fillFlag==MF_Jac) or (fillFlag==MF_Res))
-    if (fillFlag==Residual)
-    {
-      static int step;
-      ostringstream filename;
-      filename << allfiles.outputfile_kenner << "_" << step << ".res";
-      cout << YELLOW_LIGHT << filename.str() << END_COLOR << "\n";
-      step += 1;
-
-      F.Update(1.0, *idispnp, -1.0, *idispn, 0.0);
-
-      ofstream out(filename.str().c_str());
-      //iforce->Print(out);
-      idispn->Print(out);
-      //idispnp->Print(out);
-      F.Print(out);
-    }
-#endif
   }
   else
   {
@@ -1083,9 +1048,6 @@ FSI::DirichletNeumannCoupling::FluidOp(Teuchos::RefCountPtr<Epetra_Vector> idisp
     ale_->Solve();
     Teuchos::RefCountPtr<Epetra_Vector> fluiddisp = AleToFluid(ale_->ExtractDisplacement());
     fluiddisp->Scale(1./dt_);
-
-    // debug
-    //fluiddisp->PutScalar(0.);
 
     fluid_->ApplyMeshVelocity(fluiddisp);
 
