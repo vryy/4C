@@ -124,6 +124,17 @@ public:
   //! @name Construction methods
 
   /*!
+  \brief Add an integer to the container
+
+  \param name : Name of data to store data with
+  \param data : the integer to add
+
+  \note If record with name name already exists, it will be overwritten
+  */
+  void Add(const string& name, const int& data)
+  { Add(name,&data,1); return; }
+
+  /*!
   \brief Add vector of int to the container
 
   \param name : Name of data to store data with
@@ -144,6 +155,17 @@ public:
   */
   void Add(const string& name, const vector<int>& data)
   { Add(name,&data[0],data.size()); return;}
+
+  /*!
+  \brief Add a double to the container
+
+  \param name : Name of data to store data with
+  \param data : one double to be added to the container
+
+  \note If record with name name already exists, it will be overwritten
+  */
+  void Add(const string& name, const double& data)
+  { Add(name,&data,1); return; }
 
   /*!
   \brief Add vector of double to the container
@@ -236,7 +258,7 @@ public:
                           but will discover at link time that it is unable to generate
                           a definition other than one of the four specializations.
 
-  \return Ptr to data if data with that name if it exists, NULL otherwise
+  \return const Ptr to data if data with that name exists, NULL otherwise
   */
   template<typename T> const T* Get(const string& name) const;
 
@@ -274,7 +296,7 @@ public:
                           but will discover at link time that it is unable to generate
                           a definition other than one of the four specializations.
 
-  \return Ptr to data if data with that name if it exists, NULL otherwise
+  \return non-constant Ptr to data if data with that name exists, NULL otherwise
   */
   template<typename T> T* GetMutable(const string& name);
 
