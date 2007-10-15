@@ -24,6 +24,7 @@ Maintainer: Michael Gee
 #include "linalg_solver.H"
 #include "linalg_utils.H"
 #include "../io/io_drt.H"
+#include "../drt_contact/drt_contact_manager.H"
 
 #include "Epetra_Vector.h"
 #include "Epetra_Operator.h"
@@ -175,6 +176,9 @@ protected:
   int                           myrank_;
   int                           maxentriesperrow_;
   double                        norm_;
+
+  bool                          havecontact_;
+  RCP<CONTACT::Manager>         contactmanager_;
 
   RefCountPtr<Epetra_CrsMatrix> stiff_;
   RefCountPtr<Epetra_CrsMatrix> mass_;

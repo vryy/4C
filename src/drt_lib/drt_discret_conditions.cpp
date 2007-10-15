@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file discret_conditions.cpp
+\file drt_discret_conditions.cpp
 \brief
 
 <pre>
@@ -83,7 +83,7 @@ void DRT::Discretization::BoundaryConditionsGeometry()
   return;
 }
 
-#if 0 // DEBUG
+#if 0 // old version
 /*----------------------------------------------------------------------*
  |  Build line geometry in a condition (public)              mwgee 01/07|
  *----------------------------------------------------------------------*/
@@ -415,6 +415,7 @@ static void AssignGlobalIDs( const Epetra_Comm& comm,
   }
 } // AssignGlobalIDs
 
+#if 1 // new version
 /*----------------------------------------------------------------------*
  |  Build line geometry in a condition (public)              mwgee 01/07|
  *----------------------------------------------------------------------*/
@@ -522,7 +523,7 @@ void DRT::Discretization::BuildLinesinCondition( const string name,
   AssignGlobalIDs( Comm(), linemap, finallines );
   cond->AddGeometry( finallines );
 } // DRT::Discretization::BuildLinesinCondition
-
+#endif // new version of this method
 
 /*----------------------------------------------------------------------*
  |  Build surface geometry in a condition (public)           mwgee 01/07|

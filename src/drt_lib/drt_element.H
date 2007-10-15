@@ -116,6 +116,7 @@ public:
     element_sodispvolume,
     element_sodispsurface,
     element_sodispline,
+    element_contact,
   };
 
   /*!
@@ -454,7 +455,7 @@ public:
 
     \param matnum : material number from input file
    */
-  void SetMaterial(int matnum);
+  virtual void SetMaterial(int matnum);
 
   //@}
 

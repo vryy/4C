@@ -71,6 +71,9 @@ extern struct _FILES  allfiles;
 
 
 
+/*----------------------------------------------------------------------*
+ | Standard Neumann & Dirichlet                             gee 02/07   |
+ *----------------------------------------------------------------------*/
 static void input_point_dirich(multimap<int,RefCountPtr<DRT::Condition> >& pdmap, bool ale=false);
 static void input_line_dirich(multimap<int,RefCountPtr<DRT::Condition> >& ldmap, bool ale=false);
 static void input_surf_dirich(multimap<int,RefCountPtr<DRT::Condition> >& sdmap, bool ale=false);
@@ -80,6 +83,12 @@ static void input_point_neum(multimap<int,RefCountPtr<DRT::Condition> >& pnmap);
 static void input_line_neum(multimap<int,RefCountPtr<DRT::Condition> >& lnmap);
 static void input_surf_neum(multimap<int,RefCountPtr<DRT::Condition> >& snmap);
 static void input_vol_neum(multimap<int,RefCountPtr<DRT::Condition> >& vnmap);
+
+/*----------------------------------------------------------------------*
+ | Contact                                                  gee 10/07   |
+ *----------------------------------------------------------------------*/
+static void input_line_contact(multimap<int,RefCountPtr<DRT::Condition> >& ldmap);
+static void input_surf_contact(multimap<int,RefCountPtr<DRT::Condition> >& sdmap);
 
 /*----------------------------------------------------------------------*
  | periodic boundary conditions                           gammi 05/07   |
@@ -233,6 +242,15 @@ void input_conditions(const DRT::Problem& problem)
   input_vol_neum(volneum);
   setup_condition(volneum, dvol_fenode);
 
+  //-------------------------------------read line contact conditions
+  multimap<int,RefCountPtr<DRT::Condition> > linecontact;
+  input_line_contact(linecontact);
+  setup_condition(linecontact, dline_fenode);
+  //-------------------------------------read surface contact conditions
+  multimap<int,RefCountPtr<DRT::Condition> > surfcontact;
+  input_surf_contact(surfcontact);
+  setup_condition(surfcontact, dsurf_fenode);
+
   //-------------------------------------read point aledirichlet conditions
   multimap<int,RefCountPtr<DRT::Condition> > pointaledirich;
   input_point_dirich(pointaledirich,true);
@@ -331,6 +349,9 @@ void input_conditions(const DRT::Problem& problem)
       register_condition("LineNeumann", "Line Neumann", lineneum, actdis, noderowmap);
       register_condition("SurfaceNeumann", "Surface Neumann", surfneum, actdis, noderowmap);
       register_condition("VolumeNeumann", "Volume Neumann", volneum, actdis, noderowmap);
+
+      register_condition("Contact", "Line Contact", linecontact, actdis, noderowmap);
+      register_condition("Contact", "Surface Contact", surfcontact, actdis, noderowmap);
 
       register_condition("ALEDirichlet", "Point Dirichlet", pointaledirich, actdis, noderowmap);
       register_condition("ALEDirichlet", "Line Dirichlet", linealedirich, actdis, noderowmap);
@@ -1460,6 +1481,149 @@ void input_vol_dirich(multimap<int,RefCountPtr<DRT::Condition> >& vdmap)
   } // while(strncmp(allfiles.actplace,"------",6)!=0)
   return;
 } // input_vol_dirich
+
+
+/*----------------------------------------------------------------------*
+ | input of design line dirichlet conditions              m.gee 01/07   |
+ *----------------------------------------------------------------------*/
+void input_line_contact(multimap<int,RefCountPtr<DRT::Condition> >& ldmap)
+{
+  DSTraceHelper dst("input_line_contact");
+
+  /*-------------------- find the beginning of line contact conditions */
+  if (frfind("----CONTACT CONDITIONS 2D")==0) return;
+  frread();
+
+  /*----------------------- read number of design lines with condition */
+  int ierr=0;
+  int ndline=0;
+  frint("DLINE",&ndline,&ierr);
+  if(ierr!=1)
+    dserror("Cannot read design-line contact conditions");
+  frread();
+
+  /*-------------------------------------- start reading the design lines */
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    /*------------------------------------------ read the design line Id */
+    int dlineid = -1;
+    frint("E",&dlineid,&ierr);
+    if(ierr!=1) dserror("Cannot read design-line contact conditions");
+    dlineid--;
+    /*--------------------------------- move pointer behind the "-" sign */
+    char* colptr = strstr(allfiles.actplace,"-");
+    if(colptr==NULL) dserror("Cannot read design-line contact conditions");
+    colptr++;
+    //--------------------------------------- read unique contact pair id
+    int contactpairid = -1;
+    contactpairid = strtol(colptr,&colptr,10);
+    if (contactpairid==-1) dserror("Cannot read design-line contact conditions");
+
+    // read Master or Slave
+    char buffer[200];
+    string side;
+    ierr=sscanf(colptr," %s ",buffer);
+    if(ierr!=1) dserror("Cannot read design-line contact conditions");
+    if (strncmp(buffer,"Master",6)==0)
+    {
+      side = "Master";
+      colptr = strstr(colptr,"Master");
+      if(colptr==NULL) dserror("Cannot read design-line contact conditions");
+      colptr += 6;
+    }
+    else if (strncmp(buffer,"Slave",5)==0)
+    {
+      side = "Slave";
+      colptr = strstr(colptr,"Slave");
+      if(colptr==NULL) dserror("Cannot read design-line contact conditions");
+      colptr += 5;
+    }
+    else dserror("Cannot read design-line contact conditions");
+
+    // create boundary condition
+    RCP<DRT::Condition> c = rcp(new DRT::Condition(dlineid,DRT::Condition::Contact,true,
+                                                   DRT::Condition::Line));
+    c->Add("contact id",contactpairid);
+    c->Add("Side",side);
+    //---------------------- add the condition to the map of all conditions
+    ldmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dlineid,c));
+    //-------------------------------------------------- read the next line
+    frread();
+  } // while(strncmp(allfiles.actplace,"------",6)!=0)
+  return;
+} // input_line_contact
+
+/*----------------------------------------------------------------------*
+ | input of design surface dirichlet conditions           m.gee 10/07   |
+ *----------------------------------------------------------------------*/
+void input_surf_contact(multimap<int,RefCountPtr<DRT::Condition> >& sdmap)
+{
+  DSTraceHelper dst("input_surf_contact");
+
+  if (frfind("----CONTACT CONDITIONS 3D")==0) return;
+  frread();
+
+  /*------------------------ read number of design surfs with conditions */
+  int ierr=0;
+  int ndsurf=0;
+  frint("DSURF",&ndsurf,&ierr);
+  if(ierr!=1) dserror("Cannot read design-surface contact conditions");
+  frread();
+
+  /*------------------------------------- start reading the design surfs */
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    /*------------------------------------------ read the design surf Id */
+    int dsurfid = -1;
+    frint("E",&dsurfid,&ierr);
+    if(ierr!=1) dserror("Cannot read design-surface contact conditions");
+    dsurfid--;
+    /*--------------------------------- move pointer behind the "-" sign */
+    char* colptr = strstr(allfiles.actplace,"-");
+    if(colptr==NULL) dserror("Cannot read design-surface contact conditions");
+    colptr++;
+
+    //------------------------------- define some temporary reading vectors
+    int contactpairid = -1;
+    contactpairid = strtol(colptr,&colptr,10);
+    if (contactpairid==-1) dserror("Cannot read design-surface contact conditions");
+
+    // read Master or Slave
+    char buffer[200];
+    string side;
+    ierr=sscanf(colptr," %s ",buffer);
+    if(ierr!=1) dserror("Cannot read design-surface contact conditions");
+    if (strncmp(buffer,"Master",6)==0)
+    {
+      side = "Master";
+      colptr = strstr(colptr,"Master");
+      if(colptr==NULL) dserror("Cannot read design-surface contact conditions");
+      colptr += 6;
+    }
+    else if (strncmp(buffer,"Slave",5)==0)
+    {
+      side = "Slave";
+      colptr = strstr(colptr,"Slave");
+      if(colptr==NULL) dserror("Cannot read design-surface contact conditions");
+      colptr += 5;
+    }
+    else dserror("Cannot read design-surface contact conditions");
+
+    // create boundary condition
+    RefCountPtr<DRT::Condition> c = rcp(new DRT::Condition(dsurfid,DRT::Condition::Contact,true,
+                                                           DRT::Condition::Surface));
+
+    c->Add("contact id",contactpairid);
+    c->Add("Side",side);
+
+
+    //--------------------------------- add condition to map of conditions
+    sdmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dsurfid,c));
+    //-------------------------------------------------- read the next line
+    frread();
+  } // while(strncmp(allfiles.actplace,"------",6)!=0)
+  return;
+} // input_surf_contact
 
 
 /*----------------------------------------------------------------------*

@@ -55,6 +55,8 @@ extern "C"
 #include "../drt_mat/neohooke.H"
 #include "../drt_mat/hyperpolyconvex.H"
 #include "../drt_mat/convecdiffus.H"
+#include "../drt_contact/drt_cnode.H"
+#include "../drt_contact/drt_celement.H"
 #include "drt_dserror.H"
 
 
@@ -330,6 +332,23 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
       MAT::ConvecDiffus* condif = new MAT::ConvecDiffus();
       condif->Unpack(data);
       return condif;
+    }
+    case ParObject_CNode:
+    {
+      double x[3];
+      vector<int> dofs(0);
+      CONTACT::CNode* node = new CONTACT::CNode(0,x,0,0,dofs,false);
+      node->Unpack(data);
+      return node;
+    }
+    case ParObject_CElement:
+    {
+      CONTACT::CElement* ele = new CONTACT::CElement(0,
+                                                     DRT::Element::element_contact,
+                                                     0,DRT::Element::dis_none,
+                                                     0,NULL,false);
+      ele->Unpack(data);
+      return ele;
     }
     default:
       dserror("Unknown type of ParObject instance: %d",type);
@@ -729,9 +748,9 @@ void DRT::Utils::ExtractMyValues(const Epetra_Vector& global,
   return;
 }
 
-/*
- * Send and receive lists of ints.  (heiner 09/07)
- */
+/*----------------------------------------------------------------------*
+ |  Send and receive lists of ints.  (heiner 09/07)                     |
+ *----------------------------------------------------------------------*/
 void DRT::Utils::AllToAllCommunication( const Epetra_Comm& comm,
                                         const vector< vector<int> >& send,
                                         vector< vector<int> >& recv )

@@ -95,6 +95,7 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==LineNeumann)                 os << "Line Neumann boundary condition: ";
   else if (Type()==SurfaceNeumann)              os << "Surface Neumann boundary condition: ";
   else if (Type()==VolumeNeumann)               os << "Volume Neumann boundary condition: ";
+  else if (Type()==Contact)                     os << "Contact boundary condition: ";
   else if (Type()==LineIsothermalNoslip)        os << "Isothermal no-slip wall boundary condition";
   else if (Type()==LineSubsonicInflow)          os << "Subsonic inflow boundary condition:";
   else if (Type()==LineSubsonicOutflow)         os << "Subsonic outflow boundary condition:";

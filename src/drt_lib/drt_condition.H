@@ -95,6 +95,7 @@ public:
     LineNeumann,
     SurfaceNeumann,
     VolumeNeumann,
+    Contact,
     LinePeriodic,
     SurfacePeriodic,
     LineIsothermalNoslip,
@@ -139,6 +140,9 @@ public:
 
   \param id (in): a unique id for this condition
   \param type (in): type of the condition
+  \param buildgeometry (in): flag indicating whether explicit condition geometry 
+                             (elements) have to be build
+  \param gtype (in): ype of geometric entity this condition lives on
 
   */
   Condition(const int id, const ConditionType type, const bool buildgeometry,

@@ -190,6 +190,8 @@ using namespace std;
 #define ParObject_Soctet10Volume        (int)68
 #define ParObject_Soctet10Surface       (int)69
 #define ParObject_Soctet10Line          (int)70
+#define ParObject_CNode                 (int)71
+#define ParObject_CElement              (int)72
 
 /*!
 \brief DRT: namespace of the ccarat discretization module

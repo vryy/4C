@@ -27,7 +27,11 @@ StruGenAlpha::StruGenAlpha(ParameterList& params,
 params_(params),
 discret_(dis),
 solver_(solver),
-output_(output)
+output_(output),
+myrank_(discret_.Comm().MyPID()),
+maxentriesperrow_(81),
+norm_(1.0e+06),
+havecontact_(false)
 {
   // -------------------------------------------------------------------
   // get some parameters from parameter list
@@ -43,12 +47,23 @@ output_(output)
   if (!errfile) outerr = false;
 
   // -------------------------------------------------------------------
+  // see whether we have contact boundary conditions
+  // and create contact manager if so
+  // -------------------------------------------------------------------
+  {
+    vector<DRT::Condition*> contactconditions(0);
+    discret_.GetCondition("Contact",contactconditions);
+    if (contactconditions.size()) havecontact_ = true;
+    if (havecontact_) contactmanager_ = rcp(new CONTACT::Manager(discret_));
+    exit(0);
+  }
+
+  // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
   // -------------------------------------------------------------------
   if (!discret_.Filled()) discret_.FillComplete();
   const Epetra_Map* dofrowmap = discret_.DofRowMap();
-  myrank_ = discret_.Comm().MyPID();
 
   // -------------------------------------------------------------------
   // create empty matrices
@@ -1806,7 +1821,7 @@ void StruGenAlpha::SetDefaults(ParameterList& params)
   params.set<int>   ("write restart every"    ,0);
   // takes values "constant" consistent"
   params.set<string>("predictor"              ,"constant");
-  // takes values "full newton" , "modified newton" , "nonlinear cg" "ptc"
+  // takes values "full newton" , "modified newton" , "matrixfree newton", "nonlinear cg" "ptc"
   params.set<string>("equilibrium iteration"  ,"full newton");
   return;
 }
