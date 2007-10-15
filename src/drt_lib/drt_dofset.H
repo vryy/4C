@@ -4,10 +4,9 @@
 \brief A set of degrees of freedom
 
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+Maintainer: Ulrich Kuettler
+            kuettler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15239
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -121,7 +120,7 @@ public:
   virtual ~DofSet();
 
 
-  // @{ \name Access methods
+  //! @name Access methods
 
   /// Get number of dofs for given node
   virtual int NumDof(Node* node) const
@@ -198,7 +197,7 @@ public:
 
   //@}
 
-  // @{ \name Construction
+  //! @name Construction
 
   /// Assign dof numbers to all elements and nodes of the discretization.
   virtual int AssignDegreesOfFreedom(const Discretization& dis, const int start);

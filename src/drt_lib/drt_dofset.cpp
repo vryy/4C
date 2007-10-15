@@ -3,8 +3,8 @@
 \brief A set of degrees of freedom
 
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+Maintainer: Ulrrich Kuettler
+            kuettler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15239
 </pre>
@@ -24,7 +24,7 @@ Maintainer: Michael Gee
 #include "../headers/define_sizes.h"
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                            mwgee 11/06|
+ |  ctor (public)                                             ukue 04/07|
  *----------------------------------------------------------------------*/
 DRT::DofSet::DofSet()
 {
@@ -33,7 +33,7 @@ DRT::DofSet::DofSet()
 
 
 /*----------------------------------------------------------------------*
- |  dtor (public)                                            mwgee 11/06|
+ |  dtor (public)                                             ukue 04/07|
  *----------------------------------------------------------------------*/
 DRT::DofSet::~DofSet()
 {
@@ -42,7 +42,7 @@ DRT::DofSet::~DofSet()
 
 
 /*----------------------------------------------------------------------*
- |  << operator                                              mwgee 11/06|
+ |  << operator                                               ukue 04/07|
  *----------------------------------------------------------------------*/
 ostream& operator << (ostream& os, const DRT::DofSet& dofset)
 {
@@ -52,7 +52,7 @@ ostream& operator << (ostream& os, const DRT::DofSet& dofset)
 
 
 /*----------------------------------------------------------------------*
- |  print this  (public)                                     mwgee 11/06|
+ |  print this  (public)                                      ukue 04/07|
  *----------------------------------------------------------------------*/
 void DRT::DofSet::Print(ostream& os) const
 {
