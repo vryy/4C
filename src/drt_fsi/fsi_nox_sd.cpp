@@ -14,6 +14,8 @@
 #include <NOX_Utils.H>
 #include <NOX_GlobalData.H>
 
+#include "../drt_lib/drt_colors.H"
+
 
 NOX::FSI::SDRelaxation::SDRelaxation(const Teuchos::RefCountPtr<NOX::Utils>& utils,
                                      Teuchos::ParameterList& params)
@@ -60,7 +62,7 @@ bool NOX::FSI::SDRelaxation::compute(NOX::Abstract::Group& newgrp,
                        .innerProduct(dir);
 
   step = - numerator / denominator;
-  utils_->out() << "          RELAX = " << step << "\n";
+  utils_->out() << "          RELAX = " YELLOW_LIGHT << setw(5) << step << END_COLOR "\n";
 
   newgrp.computeX(oldgrp, dir, step);
   newgrp.computeF();
