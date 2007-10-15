@@ -160,7 +160,6 @@ void DRT::Elements::Wall1::Print(ostream& os) const
   os << "Wall1 ";
   Element::Print(os);
   os << " ngp_: " << ngp_[0] << " " << ngp_[1] << " ";
-  os << endl;
   return;
 }
 
