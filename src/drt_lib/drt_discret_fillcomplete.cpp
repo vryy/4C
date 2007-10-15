@@ -76,8 +76,7 @@ int DRT::Discretization::FillComplete(bool assigndegreesoffreedom,
   filled_ = true;
 
   // Assign degrees of freedom to elements and nodes
-  if (assigndegreesoffreedom)
-    AssignDegreesOfFreedom(0);
+  if (assigndegreesoffreedom) AssignDegreesOfFreedom(0);
 
   if (initelements)
   {
@@ -88,8 +87,7 @@ int DRT::Discretization::FillComplete(bool assigndegreesoffreedom,
   }
   
   // (Re)build the geometry of the boundary conditions
-  if (doboundaryconditions)
-    BoundaryConditionsGeometry();
+  if (doboundaryconditions) BoundaryConditionsGeometry();
 
   return 0;
 }
