@@ -11,7 +11,7 @@
 
 // ----------   Includes   ----------
 #include "linalg_mfoperator.H"
-#include "strugenalpha.H"
+#include "../drt_structure/strugenalpha.H"
 
 using namespace LINALG;
 
