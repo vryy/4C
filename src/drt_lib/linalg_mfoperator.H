@@ -9,6 +9,8 @@
  *
  */
 
+#ifdef CCADISCRET
+
 #ifndef MFOPERATOR_H
 #define MFOPERATOR_H
 
@@ -126,4 +128,5 @@ private:
 }; // class JFNK_Operator
 }  // namespace LINALG
 
+#endif
 #endif

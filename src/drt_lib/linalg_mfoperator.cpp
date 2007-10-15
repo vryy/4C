@@ -9,6 +9,8 @@
  *
  */
 
+#ifdef CCADISCRET
+
 // ----------   Includes   ----------
 #include "linalg_mfoperator.H"
 #include "../drt_structure/strugenalpha.H"
@@ -73,3 +75,5 @@ const Epetra_Map & MatrixFreeOperator::OperatorRangeMap() const
 {
   return *map_;
 }
+
+#endif
