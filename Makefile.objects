@@ -126,13 +126,15 @@ OBJS_DRT      = \
                 src/drt_lib/global_inp_control2.o \
                 src/drt_lib/global_inp_control3.o \
                 src/drt_lib/input_conditions.o \
-                src/drt_lib/stru_dyn_nln_drt.o \
-                src/drt_lib/strugenalpha.o \
                 src/drt_lib/linalg_solver.o \
                 src/drt_lib/linalg_solver_spooles.o \
-                src/drt_lib/stru_genalpha_drt.o \
-                src/drt_lib/stru_static_drt.o \
 		src/drt_lib/input_material_ccadiscret.o
+#-------------------------------------------------------structural drivers
+OBJS_DRT_STRUCTURE      = \
+                src/drt_structure/stru_dyn_nln_drt.o \
+                src/drt_structure/strugenalpha.o \
+                src/drt_structure/stru_genalpha_drt.o \
+                src/drt_structure/stru_static_drt.o
 #----------------------------------------------------- drt version contact
 OBJS_DRT_CONTACT = \
                 src/drt_contact/drt_contact_manager.o \
