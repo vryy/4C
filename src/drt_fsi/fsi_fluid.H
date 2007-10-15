@@ -35,6 +35,7 @@ public:
   void SetMeshMap(Teuchos::RefCountPtr<Epetra_Map> mm);
 
   void ApplyMeshDisplacement(Teuchos::RefCountPtr<Epetra_Vector> fluiddisp);
+  void ApplyMeshVelocity(Teuchos::RefCountPtr<Epetra_Vector> gridvel);
 
   const DRT::Discretization& Discretization() const { return *discret_; };
 
@@ -57,6 +58,7 @@ private:
   Teuchos::RefCountPtr<Epetra_Export> meshextractor_;
 
   Teuchos::RefCountPtr<Epetra_Vector> relax_;
+  Teuchos::RefCountPtr<Epetra_Vector> griddisp_;
 
   RefCountPtr<LINALG::Solver> solver_;
   RefCountPtr<ParameterList> params_;

@@ -1074,17 +1074,26 @@ FSI::DirichletNeumannCoupling::FluidOp(Teuchos::RefCountPtr<Epetra_Vector> idisp
   {
     // SD relaxation calculation
 
-    // Do we need to solve the ale here? Would the approximation
-    // suffer otherwise?
-    // Lets start with an unperturbed mesh
-    //ale_->ApplyInterfaceDisplacements(StructToAle(idisp));
-    //ale_->Solve();
+    // Here we have a mesh position independent of the
+    // given trial vector, but still the grid velocity depends on the
+    // trial vector only.
+
+    // grid velocity
+    ale_->ApplyInterfaceDisplacements(StructToAle(idisp));
+    ale_->Solve();
+    Teuchos::RefCountPtr<Epetra_Vector> fluiddisp = AleToFluid(ale_->ExtractDisplacement());
+    fluiddisp->Scale(1./dt_);
+
+    // debug
+    //fluiddisp->PutScalar(0.);
+
+    fluid_->ApplyMeshVelocity(fluiddisp);
+
+    // grid position is done inside RelaxationSolve
 
     // the displacement -> velocity conversion at the interface
     Teuchos::RefCountPtr<Epetra_Vector> ivel = rcp(new Epetra_Vector(*idisp));
     ivel->Scale(1./dt_);
-
-    //Teuchos::RefCountPtr<Epetra_Vector> fluiddisp = AleToFluid(ale_->ExtractDisplacement());
 
     return FluidToStruct(fluid_->RelaxationSolve(StructToFluid(ivel)));
   }

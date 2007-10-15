@@ -30,6 +30,7 @@ FSI::Fluid::Fluid(RefCountPtr<DRT::Discretization> dis,
 
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
   relax_ = LINALG::CreateVector(*dofrowmap,true);
+  griddisp_ = LINALG::CreateVector(*dofrowmap,true);
 }
 
 
@@ -103,14 +104,42 @@ void FSI::Fluid::ApplyMeshDisplacement(Teuchos::RefCountPtr<Epetra_Vector> fluid
 }
 
 
+void FSI::Fluid::ApplyMeshVelocity(Teuchos::RefCountPtr<Epetra_Vector> gridvel)
+{
+  //gridv_->PutScalar(0);
+  int err = gridv_->Import(*gridvel,*meshextractor_,Insert);
+  if (err)
+    dserror("Insert using extractor returned err=%d",err);
+}
+
+
 Teuchos::RefCountPtr<Epetra_Vector> FSI::Fluid::RelaxationSolve(Teuchos::RefCountPtr<Epetra_Vector> ivel)
 {
+  //
+  // This method is really stupid, but simple. We calculate the fluid
+  // elements twice here. First because we need the global matrix to
+  // do a linear solve. We do not have any RHS other than the one from
+  // the Dirichlet condition at the FSI interface.
+  //
+  // After that we recalculate the matrix so that we can get the
+  // reaction forces at the FSI interface easily.
+  //
+  // We do more work that required, but we do not need any special
+  // element code to perform the steepest descent calculation. This is
+  // quite a benefit as the special code in the old discretization was
+  // a real nightmare.
+  //
+
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   relax_->PutScalar(0.0);
   int err = relax_->Import(*ivel,*extractor_,Insert);
   if (err)
     dserror("Insert using extractor returned err=%d",err);
+
+  // set the grid displacement independent of the trial value at the
+  // interface
+  griddisp_->Update(1., *dispnp_, -1., *dispn_, 0.);
 
   // dirichtoggle_ has already been set up
 
@@ -131,8 +160,13 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Fluid::RelaxationSolve(Teuchos::RefCoun
   discret_->ClearState();
   discret_->SetState("velnp",velnp_);
   discret_->SetState("hist"  ,zeros_);
+#if 0
   discret_->SetState("dispnp", zeros_);
   discret_->SetState("gridv", zeros_);
+#else
+  discret_->SetState("dispnp", griddisp_);
+  discret_->SetState("gridv", gridv_);
+#endif
 
   // call loop over elements
   discret_->Evaluate(eleparams,sysmat_,residual_);
@@ -140,6 +174,9 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Fluid::RelaxationSolve(Teuchos::RefCoun
 
   // finalize the system matrix
   LINALG::Complete(*sysmat_);
+
+  // No, we do not want to have any rhs. There cannot be any.
+  residual_->PutScalar(0.0);
 
   //--------- Apply dirichlet boundary conditions to system of equations
   //          residual discplacements are supposed to be zero at
@@ -150,7 +187,7 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Fluid::RelaxationSolve(Teuchos::RefCoun
   //-------solve for residual displacements to correct incremental displacements
   solver_->Solve(sysmat_,incvel_,residual_,true,true);
 
-  // and now we need the residuum
+  // and now we need the reaction forces
 
   // zero out the stiffness matrix
   sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
@@ -167,8 +204,13 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Fluid::RelaxationSolve(Teuchos::RefCoun
   //discret_->SetState("velnp",incvel_);
   discret_->SetState("velnp",velnp_);
   discret_->SetState("hist"  ,zeros_);
+#if 0
   discret_->SetState("dispnp", zeros_);
   discret_->SetState("gridv", zeros_);
+#else
+  discret_->SetState("dispnp", griddisp_);
+  discret_->SetState("gridv", gridv_);
+#endif
 
   // call loop over elements
   discret_->Evaluate(eleparams,sysmat_,residual_);
@@ -176,9 +218,10 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Fluid::RelaxationSolve(Teuchos::RefCoun
 
   double density = eleparams.get("density", 0.0);
 
-#if 0
-  trueresidual_->Update(density/dta_/theta_,*residual_,0.0);
-#else
+//   double norm;
+//   trueresidual_->Norm2(&norm);
+//   if (trueresidual_->Map().Comm().MyPID()==0)
+//     cout << "==> residual norm = " << norm << " <==\n";
 
   // finalize the system matrix
   LINALG::Complete(*sysmat_);
@@ -186,7 +229,6 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Fluid::RelaxationSolve(Teuchos::RefCoun
   if (sysmat_->Apply(*incvel_, *trueresidual_)!=0)
     dserror("sysmat_->Apply() failed");
   trueresidual_->Scale(-density/dta_/theta_);
-#endif
 
   return ExtractInterfaceForces();
 }

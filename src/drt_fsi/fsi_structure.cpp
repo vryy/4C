@@ -269,6 +269,11 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Structure::RelaxationSolve(Teuchos::Ref
   if (err)
     dserror("Export using exporter returned err=%d",err);
 
+//   double norm;
+//   disi_->Norm2(&norm);
+//   if (disi_->Map().Comm().MyPID()==0)
+//     cout << "==> disi norm = " << norm << " <==\n";
+
   // just to make sure...
   disi_->PutScalar(0.0);
 
