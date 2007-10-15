@@ -388,7 +388,6 @@ if (nhyb>0)
    for (i=0; i<nhyb; i++) eashelp[i] += oldRtild[i];
    /*----------------- make multiplication alfa -= olDtildinv * eashelp */
    math_matvecdense(alfa,oldDtildinv,eashelp,nhyb,nhyb,1,-1.0);
-
 }
 /*------------------------------------ check calculation of mass matrix */
 if (emass_global)
