@@ -1580,13 +1580,13 @@ FluidImplicitTimeInt::~FluidImplicitTimeInt()
 void FluidImplicitTimeInt::LIFTDRAG_all()
 {
     const int numprint = 6;
-    
 	vector<DRT::Condition*> LIFTDRAGConds;
 	discret_->GetCondition("LIFTDRAG", LIFTDRAGConds);
 
 	map<int, vector<double> > lineValuesMap;
 	map<int, vector<double> > surfValuesMap;
-	//const vector<double>* centerCoord = cond->Get<vector<double> >   ("centerCoord");
+	stringstream lineSolPrint;
+	stringstream surfSolPrint;
 	    
  	if (LIFTDRAGConds.size() == 0)
  	{
@@ -1634,23 +1634,30 @@ void FluidImplicitTimeInt::LIFTDRAG_all()
  		{
  		    const int label = actval->first;
  		    const vector<double> values = actval->second; 
-			cout << "Lift and drag calculation for line " << label << "  :"<< endl;
-			cout << "  F_x           F_y :" << endl;
-            cout << std::scientific << values[0] << "    ";
-            cout << std::scientific << values[1];
-			cout << endl;
+			lineSolPrint << "Lift and drag calculation for line " << label << "  :"<< endl;
+			lineSolPrint << "F_x           F_y           M_z:" << endl;
+            lineSolPrint << std::scientific << values[0] << "    ";
+            lineSolPrint << std::scientific << values[1] << "    ";
+            lineSolPrint << std::scientific << values[5];
+			lineSolPrint << endl;
  		}
  		for (actval = surfValuesMap.begin(); actval!=surfValuesMap.end(); ++actval)
  		{
             const int label = actval->first;
             const vector<double> values = actval->second; 
-			cout << endl<<"Lift and drag calculation for surface " << label << "  :"<< endl;
-			cout << "F_x     F_y     F_z :" << endl;
-			cout << std::scientific << values[0] << "    ";
-			cout << std::scientific << values[1] << "    ";
-			cout << std::scientific << values[2];
-			cout << endl;
+			surfSolPrint << endl<<"Lift and drag calculation for surface " << label << "  :"<< endl;
+			surfSolPrint << "F_x           F_y           F_z           ";
+			surfSolPrint << "M_x           M_y           M_z :" << endl;
+			surfSolPrint << std::scientific << values[0] << "    ";
+			surfSolPrint << std::scientific << values[1] << "    ";
+			surfSolPrint << std::scientific << values[2] << "    ";
+			surfSolPrint << std::scientific << values[3] << "    ";
+			surfSolPrint << std::scientific << values[4] << "    ";
+			surfSolPrint << std::scientific << values[5];
+			surfSolPrint << endl;
  		}
+ 	cout<<lineSolPrint.str();
+ 	cout<<surfSolPrint.str();
  	}
 
 } //FluidImplicitTimeInt::LIFTDRAG_all()
@@ -1661,7 +1668,8 @@ vector<double> FluidImplicitTimeInt::LIFTDRAG_one( const DRT::Condition cond)
 	std::set<DRT::Node*> nodes;
   	const int myrank = discret_->Comm().MyPID();
   	const vector<int>* n = cond.Get<vector<int> >("Node Ids");
-  	
+ 	const vector<double>* centerCoord = cond.Get<vector<double> >   ("centerCoord");
+ 		
   	// here are all nodes belonging to the LIFTDRAG line stored in 'nodes'
   	for (unsigned j=0; j<n->size(); ++j)
     {
@@ -1673,9 +1681,20 @@ vector<double> FluidImplicitTimeInt::LIFTDRAG_one( const DRT::Condition cond)
 	std::set<DRT::Node*>::iterator actnode;
 	for (actnode = nodes.begin(); actnode!=nodes.end(); ++actnode)
 	{
+		const double* x_ = (*actnode)->X();
+		vector<double> distances (3);
+		for (unsigned j=0;j<3;++j){
+			distances[j]= x_[j]-(*centerCoord)[j];
+		}
+		//Getting nodal forces
 		values[0] += (*trueresidual_)[discret_->Dof(*actnode,0)];
 		values[1] += (*trueresidual_)[discret_->Dof(*actnode,1)];
 		values[2] += (*trueresidual_)[discret_->Dof(*actnode,2)];
+		
+		//Calculating nodal momenta
+		values[3] += distances[1]*values[2]-distances[2]*values[1];
+		values[4] += distances[2]*values[0]-distances[0]*values[2];
+		values[5] += distances[0]*values[1]-distances[1]*values[0];		
 	}
 	return values;
 }
