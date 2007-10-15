@@ -5,7 +5,7 @@
 #ifndef FSI_STRUCTURE_H
 #define FSI_STRUCTURE_H
 
-#include "../drt_lib/strugenalpha.H"
+#include "../drt_structure/strugenalpha.H"
 
 #include <Epetra_Map.h>
 #include <Teuchos_RefCountPtr.hpp>
