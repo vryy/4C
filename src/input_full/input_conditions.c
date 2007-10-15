@@ -3767,7 +3767,7 @@ dstrc_enter("inpdesign_line_contact");
 #endif
 /*----------------------------------------------------------------------*/
 /*----------------------- find the beginning of line contact conditions */
-frfind("----CONTACT CONDITIONS");
+frfind("----CONTACT CONDITIONS 2D");
 frread();
 /*------------------------- read number of design lines with conditions */
 frint("DLINE",&ndline,&ierr);
