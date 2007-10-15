@@ -36,6 +36,7 @@ Maintainer: Michael Gee
 #include "nlnml_preconditioner.H"
 #include "nlnml_linearsystem.H"
 #include "nlnml_finelevelnoxinterface.H"
+#include "linalg_mfoperator.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -97,6 +98,12 @@ public:
   void ConstantPredictor();
 
   /*!
+  \brief do matrix free constant predictor
+
+  */
+  void MatrixFreeConstantPredictor();
+
+  /*!
   \brief do consistent constant predictor step
 
   */
@@ -115,6 +122,12 @@ public:
   void ModifiedNewton();
 
   /*!
+  \brief do matrix free Newton iteration (only with Aztec)
+
+  */
+  void MatrixFreeNewton();
+
+  /*!
   \brief do nonlinear cg iteration using nox
 
   */
@@ -126,15 +139,15 @@ public:
   Pseudo transient continuation is a variant of full newton that has a
   larger convergence radius than newton and is therefore more stable and/or
   can do larger time steps
-  
+
   */
   void PTC();
 
   /*!
   \brief Compute the residual to a given state x
-  
+
   This method is used by the nox user interface class and by the linalg matrix free operator
-  
+
   \param x (in/out) : Current solution state (dirichlet dofs will be blanked)
   \param F (out): residual matching current solution state (dirichlet dofs will be blanked)
   */
@@ -145,12 +158,12 @@ public:
   \brief Compute the Jacobian to a given state x
 
   This method is used by the nox user interface
-  
+
   \param x (in/out) : Current solution state (dirichlet dofs will be blanked)
   */
   virtual void computeJacobian(const Epetra_Vector& x);
-  
-  
+
+
   /*!
   \brief update configuration and output to file/screen
 
@@ -162,6 +175,25 @@ public:
 
   */
   void ReadRestart(int step);
+
+  /*!
+  \brief return residual at midpoint
+
+  */
+  RCP<Epetra_Vector> GetF();
+
+  /*!
+  \brief return displacements at midpoint
+
+  */
+  RCP<Epetra_Vector> Getu();
+
+  /*!
+  \brief return rowmap
+
+  */
+  const Epetra_Map* GetMap();
+
 
 protected:
 

@@ -671,7 +671,7 @@ void DRT::Elements::So_hex8::soh8_shapederiv(
 void DRT::Elements::So_hex8::soh8_initvol(ParameterList& params)
 {
 
-  double V0 = 0.;
+  double dV = 0.;
 
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
@@ -719,9 +719,10 @@ void DRT::Elements::So_hex8::soh8_initvol(ParameterList& params)
     if (detJ == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
 
-    V0 += (*weights)(gp)*detJ;
+    dV += (*weights)(gp)*detJ;
   }
-  params.set("V0", V0);
+  double V = params.get<double>("V0", 0.0);
+  params.set("V0", V+dV);
 
   return;
 }

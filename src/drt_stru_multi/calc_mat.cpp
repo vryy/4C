@@ -75,43 +75,6 @@ void MicroStruGenAlpha::calc_cmat(const Epetra_MultiVector& K_M,
   }
 
 
-  // test if cmat_pf : F= F*stress ?!
-
-//   Epetra_SerialDenseMatrix P_cmat(3, 3);
-//   for (int i=0; i<3; ++i)
-//   {
-//     for (int j=0; j<3; ++j)
-//     {
-//       P_cmat(i, j) = 0.;
-
-//       for (int k=0; k<3; ++k)
-//       {
-//         for (int l=0; l<3; ++l)
-//         {
-//           P_cmat(i, j)+=cmat_pf[i][j][k][l]*(*F)[k][l];
-//           if (i==0 && j==0)
-//             printf("%d %d: cmat_pf: %lf, F: %lf\n", k, l, cmat_pf[i][j][k][l], (*F)[k][l]);
-//         }
-//       }
-//     }
-//   }
-//   Epetra_SerialDenseMatrix P_S(3, 3);
-//   P_S(0, 0) = (*F)(0, 0)*S[0] + (*F)(0, 1)*S[3] + (*F)(0, 2)*S[5];
-//   P_S(0, 1) = (*F)(0, 0)*S[3] + (*F)(0, 1)*S[1] + (*F)(0, 2)*S[4];
-//   P_S(0, 2) = (*F)(0, 0)*S[5] + (*F)(0, 1)*S[4] + (*F)(0, 2)*S[2];
-//   P_S(1, 0) = (*F)(1, 0)*S[0] + (*F)(1, 1)*S[3] + (*F)(1, 2)*S[5];
-//   P_S(1, 1) = (*F)(1, 0)*S[3] + (*F)(1, 1)*S[1] + (*F)(1, 2)*S[4];
-//   P_S(2, 0) = (*F)(1, 0)*S[5] + (*F)(1, 1)*S[4] + (*F)(1, 2)*S[2];
-//   P_S(2, 0) = (*F)(2, 0)*S[0] + (*F)(2, 1)*S[3] + (*F)(2, 2)*S[5];
-//   P_S(2, 1) = (*F)(2, 0)*S[3] + (*F)(2, 1)*S[1] + (*F)(2, 2)*S[4];
-//   P_S(2, 2) = (*F)(2, 0)*S[5] + (*F)(2, 1)*S[4] + (*F)(2, 2)*S[2];
-
-//   cout << "Zum Vergleich: P_cmat und P_S:\n";
-//   cout << "P_cmat:\n" << P_cmat << endl;
-//   cout << "P_S:\n" << P_S << endl;
-//   exit(0);
-
-
   // definition of Kronecker delta
 
   Epetra_SerialDenseMatrix delta(3,3);
@@ -126,7 +89,6 @@ void MicroStruGenAlpha::calc_cmat(const Epetra_MultiVector& K_M,
   delta(0,0) = 1.;
   delta(1,1) = 1.;
   delta(2,2) = 1.;
-
 
   for (int i=0;i<6;++i)
   {
@@ -190,10 +152,29 @@ void MicroStruGenAlpha::calc_cmat(const Epetra_MultiVector& K_M,
   (*cmat)(5,3) = (*cmat)(3,5);
   (*cmat)(5,4) = (*cmat)(4,5);
 
+//   double Emod = 100.;
+//   double nu = 0.2;
+//   double mfac = Emod/((1.0+nu)*(1.0-2.0*nu));  /* factor */
+//   /* write non-zero components */
+//   (*cmat)(0,0) = mfac*(1.0-nu);
+//   (*cmat)(0,1) = mfac*nu;
+//   (*cmat)(0,2) = mfac*nu;
+//   (*cmat)(1,0) = mfac*nu;
+//   (*cmat)(1,1) = mfac*(1.0-nu);
+//   (*cmat)(1,2) = mfac*nu;
+//   (*cmat)(2,0) = mfac*nu;
+//   (*cmat)(2,1) = mfac*nu;
+//   (*cmat)(2,2) = mfac*(1.0-nu);
+//   /* ~~~ */
+//   (*cmat)(3,3) = mfac*0.5*(1.0-2.0*nu);
+//   (*cmat)(4,4) = mfac*0.5*(1.0-2.0*nu);
+//   (*cmat)(5,5) = mfac*0.5*(1.0-2.0*nu);
+
 //   cout << "cmat:\n" << *cmat << endl;
+//   exit(0);
 
 //   FILE* output_fileptr;
-//   output_fileptr=fopen("cmat_rho1000.0.txt","a");
+//   output_fileptr=fopen("shear_cmat_rho1.0.txt","a");
 //   fprintf(output_fileptr, "stress:\n");
 //   for (int i=0;i<6;++i)
 //     fprintf(output_fileptr, "%lf\n", S[i]);

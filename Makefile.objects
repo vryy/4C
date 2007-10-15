@@ -112,6 +112,7 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/linalg_utils.o \
                 src/drt_lib/linalg_serialdensematrix.o \
                 src/drt_lib/linalg_serialdensevector.o \
+                src/drt_lib/linalg_mfoperator.o \
                 src/drt_lib/distribute_grids.o \
 		src/drt_lib/drt_nodematchingoctree.o \
 		src/drt_lib/drt_periodicbc.o \

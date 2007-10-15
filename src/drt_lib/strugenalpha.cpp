@@ -351,6 +351,140 @@ void StruGenAlpha::ConstantPredictor()
   return;
 } // StruGenAlpha::ConstantPredictor()
 
+/*----------------------------------------------------------------------*
+ |  do matrix free constant predictor step (public)             lw 10/07|
+ *----------------------------------------------------------------------*/
+void StruGenAlpha::MatrixFreeConstantPredictor()
+{
+
+  // -------------------------------------------------------------------
+  // get some parameters from parameter list
+  // -------------------------------------------------------------------
+  double time        = params_.get<double>("total time"     ,0.0);
+  double dt          = params_.get<double>("delta time"     ,0.01);
+  int    istep       = params_.get<int>   ("step"           ,0);
+  bool   damping     = params_.get<bool>  ("damping"        ,false);
+  double alphaf      = params_.get<double>("alpha f"        ,0.459);
+  bool   printscreen = params_.get<bool>  ("print to screen",false);
+  const Epetra_Map* dofrowmap = discret_.DofRowMap();
+
+  // increment time and step
+  double timen = time += dt;
+  istep++;
+  params_.set<double>("total time",timen);
+  params_.set<int>   ("step"      ,istep);
+
+  //--------------------------------------------------- predicting state
+  // constant predictor : displacement in domain
+  disn_->Update(1.0,*dis_,0.0);
+
+  // apply new displacements at DBCs
+  // and get new external force vector
+  {
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_eleload");
+    // choose what to assemble
+    p.set("assemble matrix 1",false);
+    p.set("assemble matrix 2",false);
+    p.set("assemble vector 1",true);
+    p.set("assemble vector 2",false);
+    p.set("assemble vector 3",false);
+    // other parameters needed by the elements
+    p.set("total time",timen);
+    p.set("delta time",dt);
+    // set vector values needed by elements
+    discret_.ClearState();
+    discret_.SetState("displacement",disn_);
+    // predicted dirichlet values
+    // disn then also holds prescribed new dirichlet displacements
+    discret_.EvaluateDirichlet(p,*disn_,*dirichtoggle_);
+    discret_.ClearState();
+    discret_.SetState("displacement",disn_);
+    fextn_->PutScalar(0.0);  // initialize external force vector (load vect)
+    discret_.EvaluateNeumann(p,*fextn_);
+    discret_.ClearState();
+  }
+
+  // constant predictor
+  veln_->Update(1.0,*vel_,0.0);
+  accn_->Update(1.0,*acc_,0.0);
+
+  //------------------------------ compute interpolated dis, vel and acc
+  // constant predictor
+  // mid-displacements D_{n+1-alpha_f} (dism)
+  //    D_{n+1-alpha_f} := (1.-alphaf) * D_{n+1} + alpha_f * D_{n}
+  dism_->Update(1.-alphaf,*disn_,alphaf,*dis_,0.0);
+  velm_->Update(1.0,*vel_,0.0);
+  accm_->Update(1.0,*acc_,0.0);
+
+  //------------------------------- compute interpolated external forces
+  // external mid-forces F_{ext;n+1-alpha_f} (fextm)
+  //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1}
+  //                         + alpha_f * F_{ext;n}
+  fextm_->Update(1.-alphaf,*fextn_,alphaf,*fext_,0.0);
+
+  //------------------------------------ eval fint at interpolated state
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_nlnstiff");
+    // choose what to assemble
+    p.set("assemble matrix 1",false);
+    p.set("assemble matrix 2",false);
+    p.set("assemble vector 1",true);
+    p.set("assemble vector 2",false);
+    p.set("assemble vector 3",false);
+    // other parameters that might be needed by the elements
+    p.set("total time",timen);
+    p.set("delta time",dt);
+    // set vector values needed by elements
+    discret_.ClearState();
+    discret_.SetState("residual displacement",disi_);
+    discret_.SetState("displacement",dism_);
+    //discret_.SetState("velocity",velm_); // not used at the moment
+    fint_->PutScalar(0.0);  // initialise internal force vector
+    discret_.Evaluate(p,null,null,fint_,null,null);
+    discret_.ClearState();
+  }
+
+  //-------------------------------------------- compute residual forces
+  // Res = M . A_{n+1-alpha_m}
+  //     + C . V_{n+1-alpha_f}
+  //     + F_int(D_{n+1-alpha_f})
+  //     - F_{ext;n+1-alpha_f}
+  // add mid-inertial force
+  mass_->Multiply(false,*accm_,*fresm_);
+  // add mid-viscous damping force
+  if (damping)
+  {
+      RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
+      damp_->Multiply(false,*velm_,*fviscm);
+      fresm_->Update(1.0,*fviscm,1.0);
+  }
+
+  // add static mid-balance
+  fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+
+  // blank residual at DOFs on Dirichlet BC
+  {
+    Epetra_Vector fresmcopy(*fresm_);
+    fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
+  }
+
+  //------------------------------------------------ build residual norm
+  if (printscreen)
+    fresm_->Norm2(&norm_);
+  if (!myrank_ && printscreen)
+  {
+    cout << "Predictor residual forces " << norm_ << endl;
+    fflush(stdout);
+  }
+
+  return;
+} // StruGenAlpha::MatrixFreeConstantPredictor()
+
 
 /*----------------------------------------------------------------------*
  |  do consistent predictor step (public)                    mwgee 07/07|
@@ -841,6 +975,162 @@ void StruGenAlpha::ModifiedNewton()
 
 
 /*----------------------------------------------------------------------*
+ |  do matrix free Newton iteration (public)                    lw 10/07|
+ *----------------------------------------------------------------------*/
+void StruGenAlpha::MatrixFreeNewton()
+{
+  // -------------------------------------------------------------------
+  // get some parameters from parameter list
+  // -------------------------------------------------------------------
+  double time      = params_.get<double>("total time"             ,0.0);
+  double dt        = params_.get<double>("delta time"             ,0.01);
+  int    maxiter   = params_.get<int>   ("max iterations"         ,10);
+  bool   damping   = params_.get<bool>  ("damping"                ,false);
+  double beta      = params_.get<double>("beta"                   ,0.292);
+  double gamma     = params_.get<double>("gamma"                  ,0.581);
+  double alpham    = params_.get<double>("alpha m"                ,0.378);
+  double alphaf    = params_.get<double>("alpha f"                ,0.459);
+  double toldisp   = params_.get<double>("tolerance displacements",1.0e-07);
+  bool printscreen = params_.get<bool>  ("print to screen",true);
+  bool printerr    = params_.get<bool>  ("print to err",false);
+  FILE* errfile    = params_.get<FILE*> ("err file",NULL);
+  if (!errfile) printerr = false;
+  const Epetra_Map* dofrowmap = discret_.DofRowMap();
+
+  int numiter=0;
+  //---------------------------------------------- build effective lhs
+  LINALG::ApplyDirichlettoSystem(disi_,fresm_,zeros_,dirichtoggle_);
+
+  //----------------------------------------- build MatrixFreeOperator
+  RCP<Epetra_Operator> mfop = rcp(new LINALG::MatrixFreeOperator(*this));
+
+  //=================================================== equilibrium loop
+  double fresmnorm;
+  fresm_->Norm2(&fresmnorm);
+  while (norm_>toldisp && fresmnorm>toldisp  && numiter<=maxiter)
+  {
+    //------------------------------------------- effective rhs is fresm
+    //----------------------- apply dirichlet BCs to system of equations
+    disi_->PutScalar(0.0);  // Useful? depends on solver and more
+
+    //--------------------------------------------------- solve for disi
+    // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
+    if (!numiter)
+      solver_.Solve(mfop,disi_,fresm_,true,true);
+    else
+      solver_.Solve(mfop,disi_,fresm_,false,false);
+
+    //---------------------------------- update mid configuration values
+    // displacements
+    // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
+    dism_->Update(1.-alphaf,*disi_,1.0);
+    // velocities
+    // iterative
+    // V_{n+1-alpha_f} := V_{n+1-alpha_f}
+    //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
+    //velm_->Update((1.-alphaf)*gamma/(beta*dt),*disi_,1.0);
+    // incremental (required for constant predictor)
+    velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+    velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
+                  (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
+                  gamma/(beta*dt));
+    // accelerations
+    // iterative
+    // A_{n+1-alpha_m} := A_{n+1-alpha_m}
+    //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
+    //accm_->Update((1.-alpham)/(beta*dt*dt),*disi_,1.0);
+    // incremental (required for constant predictor)
+    accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+    accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
+                  (2.*beta-1.+alpham)/(2.*beta),*acc_,
+                  (1.-alpham)/((1.-alphaf)*beta*dt*dt));
+
+    //----------------------------------------- compute internal forces
+    {
+      // create the parameters for the discretization
+      ParameterList p;
+      // action for elements
+      p.set("action","calc_struct_nlnstiff");
+      // choose what to assemble
+      p.set("assemble matrix 1",false);
+      p.set("assemble matrix 2",false);
+      p.set("assemble vector 1",true);
+      p.set("assemble vector 2",false);
+      p.set("assemble vector 3",false);
+      // other parameters that might be needed by the elements
+      p.set("total time",time);
+      p.set("delta time",dt);
+      // set vector values needed by elements
+      discret_.ClearState();
+      discret_.SetState("residual displacement",disi_);
+      discret_.SetState("displacement",dism_);
+      //discret_.SetState("velocity",velm_); // not used at the moment
+      fint_->PutScalar(0.0);  // initialise internal force vector
+      discret_.Evaluate(p,null,null,fint_,null,null);
+      discret_.ClearState();
+    }
+
+    //------------------------------------------ compute residual forces
+    // Res = M . A_{n+1-alpha_m}
+    //     + C . V_{n+1-alpha_f}
+    //     + F_int(D_{n+1-alpha_f})
+    //     - F_{ext;n+1-alpha_f}
+    // add inertia mid-forces
+    mass_->Multiply(false,*accm_,*fresm_);
+    // add viscous mid-forces
+    if (damping)
+    {
+      RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
+      damp_->Multiply(false,*velm_,*fviscm);
+      fresm_->Update(1.0,*fviscm,1.0);
+    }
+    // add static mid-balance
+    fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+    // blank residual DOFs with are on Dirichlet BC
+    {
+      Epetra_Vector fresmcopy(*fresm_);
+      fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
+    }
+
+    //---------------------------------------------- build residual norm
+    double disinorm;
+    disi_->Norm2(&disinorm);
+
+    fresm_->Norm2(&norm_);
+    // a short message
+    if (!myrank_)
+    {
+      if (printscreen)
+      {
+        printf("numiter %d res-norm %e dis-norm %e\n",numiter+1, norm_, disinorm);
+        fflush(stdout);
+      }
+      if (printerr)
+      {
+        fprintf(errfile,"numiter %d res-norm %e dis-norm %e\n",numiter+1, norm_, disinorm);
+        fflush(errfile);
+      }
+    }
+    // criteria to stop Newton iteration
+    norm_ = disinorm;
+
+    //--------------------------------- increment equilibrium loop index
+    ++numiter;
+  } // while (norm_>toldisp && fresmnorm>toldisp && numiter<=maxiter)
+  //============================================= end equilibrium loop
+
+  //-------------------------------- test whether max iterations was hit
+  if (numiter>=maxiter) dserror("Newton unconverged in %d iterations",numiter);
+  params_.set<int>("num iterations",numiter);
+
+  //-------------------------------------- don't need this at the moment
+  stiff_ = null;
+
+  return;
+} // StruGenAlpha::MatrixFreeNewton()
+
+
+/*----------------------------------------------------------------------*
  |  do nonlinear cg iteration (public)                       mwgee 03/07|
  *----------------------------------------------------------------------*/
 void StruGenAlpha::NonlinearCG()
@@ -1204,7 +1494,7 @@ void StruGenAlpha::PTC()
     if (damping)
       LINALG::Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),*stiff_,1.0);
     LINALG::Complete(*stiff_);
-    
+
     //------------------------------- do ptc modification to effective LHS
     {
       RCP<Epetra_Vector> tmp = LINALG::CreateVector(stiff_->RowMap(),false);
@@ -1331,17 +1621,17 @@ void StruGenAlpha::PTC()
     //--------------------------------- increment equilibrium loop index
     ++numiter;
 
-    //------------------------------------ PTC update of artificial time 
+    //------------------------------------ PTC update of artificial time
 #if 1
     // SER step size control
     dti *= (np/nc);
     dti = max(dti,0.0);
     nc = np;
-#endif    
+#endif
 
 #if 0
     {
-      double ttau=0.75;	
+      double ttau=0.75;
       RCP<Epetra_Vector> d1 = LINALG::CreateVector(stiff_->RowMap(),false);
       d1->Update(1.0,*disi_,-1.0,*x0,0.0);
       d1->Scale(dti0);
@@ -1360,7 +1650,7 @@ void StruGenAlpha::PTC()
       dti = sqrt(ett);
       nc = np;
     }
-#endif    
+#endif
   } // while (norm_>toldisp && fresmnorm>toldisp && numiter<=maxiter)
   //============================================= end equilibrium loop
 
@@ -1396,7 +1686,7 @@ void StruGenAlpha::computeF(const Epetra_Vector& x, Epetra_Vector& F)
     RefCountPtr<Epetra_Vector> disi = rcp(&dx);
     disi.release();
 
-    
+
     // blank increment on Dirichlet BC
     LINALG::ApplyDirichlettoSystem(disi,fresm_,zeros_,dirichtoggle_);
 
@@ -1490,7 +1780,7 @@ void StruGenAlpha::computeF(const Epetra_Vector& x, Epetra_Vector& F)
     // copy disi to time integrator
     disi_->Update(1.0,*disi,0.0);
     //========================================================================
-  
+
   return;
 } // void StruGenAlpha::computeF(const Epetra_Vector& x, Epetra_Vector& F)
 
@@ -1754,6 +2044,15 @@ void StruGenAlpha::Integrate()
       UpdateandOutput();
     }
   }
+  else if (equil=="matrixfree newton")
+  {
+    for (int i=istep; i<nstep; ++i)
+    {
+      MatrixFreeConstantPredictor();
+      MatrixFreeNewton();
+      UpdateandOutput();
+    }
+  }
   else if (equil=="nonlinear cg")
   {
     for (int i=istep; i<nstep; ++i)
@@ -1850,6 +2149,36 @@ void StruGenAlpha::ReadRestart(int step)
 
   return;
 }
+
+
+/*----------------------------------------------------------------------*
+ |  return residual at midpoint (public)                        lw 10/07|
+ *----------------------------------------------------------------------*/
+
+RCP<Epetra_Vector> StruGenAlpha::GetF()
+{
+  return fresm_;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  return displacements at midpoint (public)                   lw 10/07|
+ *----------------------------------------------------------------------*/
+
+RCP<Epetra_Vector> StruGenAlpha::Getu()
+{
+  return dism_;
+}
+
+/*----------------------------------------------------------------------*
+ |  return rowmap (public)                                      lw 10/07|
+ *----------------------------------------------------------------------*/
+
+const Epetra_Map* StruGenAlpha::GetMap()
+{
+  return discret_.DofRowMap();
+}
+
 
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 03/07|

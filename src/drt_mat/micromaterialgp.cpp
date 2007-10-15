@@ -221,6 +221,7 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
   microgenalpha_->ConstantPredictor(defgrd);
   microgenalpha_->FullNewton();
   microgenalpha_->Update();
+  microgenalpha_->Homogenization(stress, cmat, density, defgrd);
 
   // save calculated displacements, velocities and accelerations
   disp_ = microgenalpha_->ReturnNewDisp();
@@ -233,8 +234,6 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
 
   // clear displacements in MicroStruGenAlpha for next usage
   microgenalpha_->ClearState();
-
-  microgenalpha_->Homogenization(stress, cmat, density, defgrd);
 }
 
 #endif

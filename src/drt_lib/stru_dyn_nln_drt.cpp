@@ -195,7 +195,7 @@ void dyn_nlnstructural_drt()
     }
     break;
     //==================================================================
-    // Generalized Energy Momentum Method 
+    // Generalized Energy Momentum Method
     //==================================================================
     case STRUCT_DYNAMIC::Gen_EMM :
     {

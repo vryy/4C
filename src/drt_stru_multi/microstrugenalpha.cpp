@@ -214,32 +214,13 @@ solver_(solver)
   // cout << Xp_ << endl;
 
   // -------------------------- Calculate initial volume of microstructure
-  double V0 = 0.;
   ParameterList p;
   // action for elements
   p.set("action","calc_init_vol");
-  Epetra_SerialDenseMatrix elematrix1;
-  Epetra_SerialDenseMatrix elematrix2;
-  Epetra_SerialDenseVector elevector1;
-  Epetra_SerialDenseVector elevector2;
-  Epetra_SerialDenseVector elevector3;
+  discret_->Evaluate(p,null,null,null,null,null);
+  V0_ = p.get<double>("V0", -1.0);
 
-
-  const int numcolele = discret_->NumMyColElements();
-  for (int i=0; i<numcolele; ++i)
-  {
-    DRT::Element* actele = discret_->lColElement(i);
-    vector<int> lm;
-    vector<int> lmowner;
-    actele->LocationVector(*discret_, lm, lmowner);
-
-    actele->Evaluate(p, *discret_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
-    V0 += p.get<double>("V0", -1.0);
-  } // for (int i=0; i<numcolele; ++i)
-
-  V0_=V0;
-
-  //cout << "initial volume: " << V0_ << endl;
+  // cout << "initial volume: " << V0_ << endl;
 
   return;
 } // MicroStruGenAlpha::MicroStruGenAlpha
@@ -1129,6 +1110,24 @@ void MicroStruGenAlpha::Homogenization(Epetra_SerialDenseVector* stress,
   // the macroscopic density has to be computed -> we will do that
   // later, for now we just set it to 1.
   (*density)=1.0;
+
+
+//   // only for testing reasons
+//   // Right Cauchy-Green tensor = F^T * F
+//   Epetra_SerialDenseMatrix cauchygreen(3,3);
+//   cauchygreen.Multiply('T','N',1.0,(*defgrd),(*defgrd),0.0);
+
+//   // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
+//   // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+//   Epetra_SerialDenseVector glstrain(6);
+//   glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
+//   glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
+//   glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
+//   glstrain(3) = cauchygreen(0,1);
+//   glstrain(4) = cauchygreen(1,2);
+//   glstrain(5) = cauchygreen(2,0);
+//   (*cmat).Multiply('N',glstrain,(*stress));   // sigma = C . epsilon
+//   exit(0);
 }
 
 #endif
