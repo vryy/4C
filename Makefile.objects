@@ -132,6 +132,13 @@ OBJS_DRT      = \
                 src/drt_lib/stru_genalpha_drt.o \
                 src/drt_lib/stru_static_drt.o \
 		src/drt_lib/input_material_ccadiscret.o
+#----------------------------------------------------- drt version contact
+OBJS_DRT_CONTACT = \
+                src/drt_contact/drt_contact_manager.o \
+                src/drt_contact/drt_contact_interface.o \
+                src/drt_contact/drt_cnode.o \
+                src/drt_contact/drt_celement.o \
+                src/drt_contact/drt_cdofset.o
 # --------------------------------------------------- drt version of fluid
 OBJS_DRT_FLUID= src/drt_fluid/fluid_dyn_nln_drt.o \
                 src/drt_fluid/xfluid_dyn_nln_drt.o \
