@@ -55,7 +55,6 @@ havecontact_(false)
     discret_.GetCondition("Contact",contactconditions);
     if (contactconditions.size()) havecontact_ = true;
     if (havecontact_) contactmanager_ = rcp(new CONTACT::Manager(discret_));
-    exit(0);
   }
 
   // -------------------------------------------------------------------
