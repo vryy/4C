@@ -352,7 +352,7 @@ void LINALG::Solver::Solve_aztec(const bool reset)
     // create an aztec solver
     aztec_ = rcp(new AztecOO());
     aztec_->SetAztecDefaults();
-    aztec_->SetParameters(azlist,false); 
+    //aztec_->SetParameters(azlist,false); moved this further down gee
   }
 
   // decide whether we do what kind of scaling
@@ -403,7 +403,10 @@ void LINALG::Solver::Solve_aztec(const bool reset)
     lp_->RightScale(invdiag);
   }
   
+  // pass linear problem to aztec
   aztec_->SetProblem(*lp_);
+  // don't want linear problem to alter our atzec parameters (idiot feature!)
+  aztec_->SetParameters(azlist,false);
 
   // get type of preconditioner and build either Ifpack or ML
   // if we have an ifpack parameter list, we do ifpack
@@ -841,6 +844,8 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
     {
     case azprec_none:
       azlist.set("AZ_precond",AZ_none);
+      azlist.set("AZ_subdomain_solve",AZ_none);
+      azlist.set("preconditioner",AZ_none);
     break;
     case azprec_ILUT:
       // using ifpack
@@ -903,7 +908,7 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
     azlist.set("AZ_tol",azvar->aztol);
     azlist.set("AZ_drop",azvar->azdrop);
     azlist.set("AZ_scaling",AZ_none);              
-    azlist.set("AZ_keep_info",1);
+    azlist.set("AZ_keep_info",0);
     // set reuse parameters
     azlist.set("ncall",0);                         // counting number of solver calls
     azlist.set("reuse",azvar->azreuse);            // reuse info for n solver calls
