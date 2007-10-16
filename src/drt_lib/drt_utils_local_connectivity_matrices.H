@@ -338,6 +338,14 @@ namespace Utils
     const DRT::Element::DiscretizationType&     distype     ///< discretization type
     );
 
+  /*!
+  \brief    Returns the dimension of an element
+            
+  */   
+  int getDimension(
+    DRT::Element*   element     ///< element
+    );
+
 } // namespace Utils
 } // namespace DRT
 
