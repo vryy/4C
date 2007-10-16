@@ -119,3 +119,4 @@ Input/w1_mises.dat                                      x        x        x     
 Input/w1_neumann_ortho.dat                              x        x        x        x        -        -
 Input/w1_stalin_dirich.dat                              x        x        x        x        -        -
 Input/w1dyn.dat                                         x        -        x        -        -        -
+Input/contact1.dat                                      x        x        -        -        -        -
