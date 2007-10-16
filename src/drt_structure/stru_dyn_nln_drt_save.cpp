@@ -23,7 +23,7 @@ Maintainer: Michael Gee
 
 #include "stru_dyn_nln_drt.H"
 #include "../io/io_drt.H"
-#include "drt_globalproblem.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*
   |                                                       m.gee 06/01    |
