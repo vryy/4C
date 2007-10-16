@@ -62,6 +62,7 @@ public:
   \param shape (in): shape of this element
   \param numnode (in): Number of nodes to this element
   \param nodeids (in): ids of nodes adjacent to this element
+  \param isslave (in): flag indicating whether element is slave or master side
   */
   explicit CElement(int id, ElementType etype, int owner, 
                     const DRT::Element::DiscretizationType& shape, 
@@ -122,10 +123,7 @@ public:
 
   */
   virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const
-  {
-    RCP<DRT::ElementRegister> reg = rcp(new DRT::ElementRegister(Type()));
-    return reg;
-  }
+  { return rcp(new DRT::ElementRegister(Type())); }
 
   //@}
 
@@ -150,42 +148,21 @@ public:
 
   /*!
   \brief Get vector of ptrs to the lines of this element
-
-  This is a base class dummy routine that always returns NULL.
-  The derived element class is expected to allocate and store
-  a vector of elements that represent the edges of this element.
-  These edges are then used to create and evaluate boundary conditions.
-
-  \note A 1D type of element (e.g. a beam) may return
-       a vector of length one pointing to itself. It then does not need
-       to be able to spin of an explicit separate line element.
-       In this case, the element itself must be able to evaluate the
-       Neumann boundary conditions on a line itself.
-
   */
   virtual Element** Lines() { return NULL; }
 
   /*!
   \brief Get vector of ptrs to the surfaces of this element
-
-  This is a base class dummy routine that always returns NULL.
-  The derived element class is expected to allocate and store
-  a vector of elements that represent the surfaces of this element.
-  These surfaces are then used to create and evaluate boundary conditions.
-
-  \note A 2D type of element (e.g. a shell, wall, fluid2 etc) may return
-       a vector of length one pointing to itself. It then does not need
-       to be able to spin of an explicit separate surface element.
-       In this case, the element itself must be able to evaluate the
-       Neumann boundary conditions on a surface itself.
-
   */
   virtual Element** Surfaces() { return NULL; }
 
 
   /*!
   \brief Get number of degrees of freedom of a certain node
-
+  
+  This CElement is picky: It cooperates only with CNodes, not with
+  standard Node objects!
+  
   */
   virtual int NumDofPerNode(const DRT::Node& node) const
   {
@@ -197,6 +174,8 @@ public:
   /*!
   \brief Get number of degrees of freedom per element
 
+  For now contact elements do not have degrees of freedom independent of
+  the nodes
   */
   virtual int NumDofPerElement() const { return 0; }
 

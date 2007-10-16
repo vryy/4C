@@ -50,7 +50,7 @@ void CONTACT::Interface::Print(ostream& os) const
     os << "Contact Interface Id " << id_ << endl;
     os << "Contact Interface Discretization:" << endl;
   }
-  os << *idiscret_;
+  os << Discret();
   return;
 }
 
@@ -69,9 +69,11 @@ void CONTACT::Interface::FillComplete()
   // dofs stored in the nodes.
   {
     RCP<CONTACT::CDofSet> cdofset = rcp(new CONTACT::CDofSet());
-    idiscret_->ReplaceDofSet(cdofset);
-    idiscret_->FillComplete(true,false,false);
-  }
+    Discret().ReplaceDofSet(cdofset);
+    // do not assign dofs yet, we'll do this below after
+    // shuffling around of nodes and elements (saves time)
+    Discret().FillComplete(false,false,false);
+  } 
   
   // to ease our search algorithms we'll afford the luxury to ghost all nodes
   // on all processors. To do so, we'll take the nodal row map and export it
@@ -81,8 +83,8 @@ void CONTACT::Interface::FillComplete()
   // Note that we'll do ghosting only on procs that do own or ghost any of the
   // nodes in the natural distribution of idiscret_!
   {
-    const Epetra_Map* noderowmap = idiscret_->NodeRowMap();
-    const Epetra_Map* nodecolmap = idiscret_->NodeColMap();
+    const Epetra_Map* noderowmap = Discret().NodeRowMap();
+    const Epetra_Map* elerowmap  = Discret().ElementRowMap();
     
     // fill my own row node ids
     vector<int> sdata(noderowmap->NumMyElements());
@@ -92,40 +94,75 @@ void CONTACT::Interface::FillComplete()
     // build tprocs and numproc containing processors participating 
     // in this interface  
     vector<int> stproc(0);
-    if (nodecolmap->NumMyElements()) stproc.push_back(Comm().MyPID());
+    // a processor participates in the interface, if it owns any of
+    // the nodes or elements
+    if (noderowmap->NumMyElements() || elerowmap->NumMyElements()) 
+      stproc.push_back(Comm().MyPID());
     vector<int> rtproc(0);
     vector<int> allproc(Comm().NumProc());
     for (int i=0; i<Comm().NumProc(); ++i) allproc[i] = i;
     LINALG::Gather<int>(stproc,rtproc,Comm().NumProc(),&allproc[0],Comm());
     vector<int> rdata;
-    
+
     // gather all gids of nodes redundantly
     LINALG::Gather<int>(sdata,rdata,(int)rtproc.size(),&rtproc[0],Comm());
     
-    // build complete overlapping map (on participating processors)
+    // build completely overlapping map (on participating processors)
     RCP<Epetra_Map> newnodecolmap = rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,Comm()));
     sdata.clear();
     stproc.clear();
-    rtproc.clear();
     rdata.clear();  
-    // allproc will be reused below
+    allproc.clear();
+    // rtproc still in use
     
-    const Epetra_Map* elerowmap = idiscret_->ElementRowMap();
-    const Epetra_Map* elecolmap = idiscret_->ElementColMap();
+    // do the same business for elements
+    sdata.resize(elerowmap->NumMyElements());
+    rdata.resize(0);
+    for (int i=0; i<elerowmap->NumMyElements(); ++i)
+      sdata[i] = elerowmap->GID(i);
+    // gather of element gids redundantly on processors that have business on the interface
+    LINALG::Gather<int>(sdata,rdata,(int)rtproc.size(),&rtproc[0],Comm());
+    rtproc.clear();
+    
+    // build complete overlapping map of elements (on participating processors)
+    RCP<Epetra_Map> newelecolmap = rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,Comm()));
+    sdata.clear();
+    rdata.clear();
     
     // redistribute the discretization of the interface according to the
-    // new nodal layout (also redistributes elements accordingly)
-    idiscret_->ExportColumnNodes(*newnodecolmap);
-    //idiscret_->ExportColumnElements(*newelecolmap);
+    // new column layout
+    Discret().ExportColumnNodes(*newnodecolmap);
+    Discret().ExportColumnElements(*newelecolmap);
     
     // make sure discretization is complete
-    if (!idiscret_->Filled()) idiscret_->FillComplete(true,false,false);
+    Discret().FillComplete(true,false,false);
   }
-  
   
   // need row and column maps of slave and master nodes separately so we
   // can easily adress them
-  
+  {
+    const Epetra_Map* noderowmap = Discret().NodeRowMap();
+    const Epetra_Map* nodecolmap = Discret().NodeColMap();
+    vector<int> sc;
+    vector<int> sr;
+    vector<int> mc;
+    vector<int> mr;
+    for (int i=0; i<nodecolmap->NumMyElements(); ++i)
+    {
+      int gid      = nodecolmap->GID(i);
+      bool isslave = dynamic_cast<CONTACT::CNode*>(Discret().gNode(gid))->IsSlave();
+      if (isslave) sc.push_back(gid);
+      else         mc.push_back(gid);
+      if (!noderowmap->MyGID(gid)) continue;
+      if (isslave) sr.push_back(gid);
+      else         mr.push_back(gid);
+    }
+    snoderowmap_ = rcp(new Epetra_Map(-1,(int)sr.size(),&sr[0],0,Comm()));
+    snodecolmap_ = rcp(new Epetra_Map(-1,(int)sc.size(),&sc[0],0,Comm()));
+    mnoderowmap_ = rcp(new Epetra_Map(-1,(int)mr.size(),&mr[0],0,Comm()));
+    mnodecolmap_ = rcp(new Epetra_Map(-1,(int)mc.size(),&mc[0],0,Comm()));
+  }
+
   return;
 }
 

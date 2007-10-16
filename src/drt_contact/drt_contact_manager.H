@@ -50,11 +50,20 @@ public:
   //! @name Enums and Friends
   //@}
 
-  //! @name Constructors and destructors and related methods
-
   /*!
   \brief Standard Constructor
 
+  The constructor takes a discretization 
+  that is expected to have an even number of contact boundary conditions.
+  It extracts all contact boundary conditions and constructs one or multiple
+  contact interfaces from them and stores them.
+  
+  It calls CONTACT::Interface::FillComplete() on all contact interfaces which
+  makes the nodes and elements of a contact interfaces redundant on all
+  processors that either own a node or an element on the interfaces in the
+  input discretization.
+  
+  \param discret (in): A discretization containing contact boundary conditions
   */
   explicit Manager(DRT::Discretization& discret);
 
@@ -65,8 +74,6 @@ public:
   */
   virtual ~Manager() {};
 
-
-  //@}
 
   /*!
   \brief Print this Manager

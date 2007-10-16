@@ -51,11 +51,11 @@ public:
   //! @name Enums and Friends
   //@}
 
-  //! @name Constructors and destructors and related methods
-
   /*!
-  \brief Standard Constructor
+  \brief Standard constructor creating empty contact interface
 
+  \param id (in): Unique interface id
+  \param comm (in): A communicator object
   */
   explicit Interface(const int id, const Epetra_Comm& comm);
 
@@ -66,8 +66,6 @@ public:
   */
   virtual ~Interface() {}
 
-
-  //@}
 
   /*!
   \brief Print this Interface
@@ -82,21 +80,77 @@ public:
   virtual const Epetra_Comm& Comm() const { return comm_;}
 
   /*!
-  \brief check whether interface was called FillComplete
+  \brief Check whether interface was called FillComplete
 
   */
   virtual inline bool Filled() const { return idiscret_->Filled();}
 
   /*!
-  \brief Add a CONTACT::CNode to the interface
+  \brief Get discretization of this interface
 
+  */
+  virtual inline DRT::Discretization& Discret() const { return *idiscret_; }
+
+  /*!
+  \brief Get row map of slave nodes (Filled()==true is prerequisite)
+
+  */
+  virtual const Epetra_Map& SlaveRowNodes() const 
+  { 
+    if (Filled()) return *snoderowmap_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+
+  /*!
+  \brief Get row map of master nodes (Filled()==true is prerequisite)
+
+  */
+  virtual const Epetra_Map& MasterRowNodes() const 
+  { 
+    if (Filled()) return *mnoderowmap_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+
+  /*!
+  \brief Get column map of slave nodes (Filled()==true is prerequisite)
+
+  */
+  virtual const Epetra_Map& SlaveColNodes() const 
+  { 
+    if (Filled()) return *snodecolmap_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+
+  /*!
+  \brief Get column map of master nodes (Filled()==true is prerequisite)
+
+  */
+  virtual const Epetra_Map& MasterColNodes() const 
+  { 
+    if (Filled()) return *mnodecolmap_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+
+  /*!
+  \brief Add a CONTACT::CNode to the interface (Filled()==true NOT prerequisite)
+  
+  \param cnode (in): rcp to a contact node
+  
+  \return Filled()==false
   */
   inline virtual void AddCNode(RCP<CONTACT::CNode> cnode) 
   { idiscret_->AddNode(cnode); return; }
 
   /*!
-  \brief Add a CONTACT::CElement to the interface
+  \brief Add a CONTACT::CElement to the interface (Filled()==true is prerequisite)
 
+  \param cele (in): rcp to a contact element
+
+  \return Filled()==false
   */
   inline virtual void AddCElement(RCP<CONTACT::CElement> cele) 
   { idiscret_->AddElement(cele); return; }
@@ -104,6 +158,15 @@ public:
   /*!
   \brief Finalize construction of contact interface
 
+  The methods completes construction phase of a contact interface.
+  It creates complete overlap ghosting of all elements and nodes
+  on all processors that own at least one node or element on the interface.
+  On return, row maps of nodes and elements are the same as on input but column maps
+  are redundant on all participating processors.
+  also creates row and column maps of slave and master nodes separately such that
+  these can be easily accessed.
+  
+  \return Filled()==true
   */
   virtual void FillComplete();
 
@@ -114,9 +177,13 @@ protected:
   Interface(const Interface& old);
 
 
-  int                           id_;       // unique interface id
-  const Epetra_Comm&            comm_;     // communicator
-  RCP<DRT::Discretization>      idiscret_; // the discretization of the contact interface
+  int                           id_;           // unique interface id
+  const Epetra_Comm&            comm_;         // communicator
+  RCP<DRT::Discretization>      idiscret_;     // the discretization of the contact interface
+  RCP<Epetra_Map>               snoderowmap_;  // row map of all slave nodes
+  RCP<Epetra_Map>               snodecolmap_;  // column map of all slave nodes
+  RCP<Epetra_Map>               mnoderowmap_;  // row map of all master nodes
+  RCP<Epetra_Map>               mnodecolmap_;  // column map of all master nodes
 
 
 }; // class Interface

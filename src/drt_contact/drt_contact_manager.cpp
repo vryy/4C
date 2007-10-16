@@ -180,18 +180,11 @@ discret_(discret)
     } // for (fool=ele1.start(); fool != ele1.end(); ++fool)
     
     
-    //-------------------- finzalize the contact interface construction
+    //-------------------- finalize the contact interface construction
     interface->FillComplete();
 
-#if 1 // debugging
-    cout << *interface;
-#endif
-    
   } // for (int i=0; i<(int)contactconditions.size(); ++i)
-    
-    
-  
-  exit(0);
+
   return;
 }
 
@@ -211,7 +204,19 @@ ostream& operator << (ostream& os, const CONTACT::Manager& manager)
  *----------------------------------------------------------------------*/
 void CONTACT::Manager::Print(ostream& os) const
 {
-
+  if (Comm().MyPID()==0)
+  {
+    os << "---------------------------------------------CONTACT::Manager\n"
+       << "Contact interfaces: " << (int)interface_.size() << endl
+       << "-------------------------------------------------------------\n";
+  }
+  Comm().Barrier();
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    cout << *(interface_[i]);
+  }
+  Comm().Barrier();
+  
   return;
 }
 

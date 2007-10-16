@@ -99,6 +99,8 @@ void CONTACT::CNode::Pack(vector<char>& data) const
   vector<char> basedata(0);
   DRT::Node::Pack(basedata);
   AddtoPack(data,basedata);
+  // add isslave_
+  AddtoPack(data,isslave_);
   // add numdof_
   AddtoPack(data,numdof_);
   // add dofs_
@@ -123,6 +125,8 @@ void CONTACT::CNode::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   DRT::Node::Unpack(basedata);
+  // isslave_
+  ExtractfromPack(position,data,isslave_);
   // numdof_
   ExtractfromPack(position,data,numdof_);
   // dofs_

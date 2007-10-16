@@ -63,6 +63,9 @@ public:
   \param id     (in): A globally unique node id
   \param coords (in): vector of nodal coordinates, length 3
   \param owner  (in): Owner of this node.
+  \param numdof (in): Number of degrees of freedom to this node
+  \param dofs   (in): list of global degrees of freedom
+  \param isslave(in): flag indicating whether node is slave or master side
   */
   CNode(int id, const double* coords, const int owner, 
         const int numdof, const vector<int>& dofs, const bool isslave);
@@ -144,9 +147,10 @@ public:
 
 protected:
 
-  bool        isslave_;  // true of cnode is on slave side of contact problem
-  int         numdof_;   // number of degrees of freedom (length of dofs_)
-  vector<int> dofs_;     // degrees of freedom of this node 
+  bool            isslave_;      // true of cnode is on slave side of contact problem
+  int             numdof_;       // number of degrees of freedom (length of dofs_)
+  vector<int>     dofs_;         // degrees of freedom of this node 
+  
 
 
 }; // class CNode
