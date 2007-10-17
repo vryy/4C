@@ -61,7 +61,7 @@ public:
   /*!
    Derived from Epetra_Operator, returns ref to the Epetra_Comm of this class
    */
-  const Epetra_Comm & Comm() const {return(u_->Comm());}
+  const Epetra_Comm & Comm() const {return(du_.Comm());}
 
   //! Get OperatorDomainMap.
   /*!
@@ -122,8 +122,8 @@ private:
   string                                                    label_;
   StruGenAlpha&                                        integrator_;
   const Epetra_Map*                                           map_;
-  RCP<Epetra_Vector>                                            u_;
-  RCP<Epetra_Vector>                                            F_;
+  Epetra_Vector                                                du_;
+  Epetra_Vector                                                 F_;
 
 }; // class JFNK_Operator
 }  // namespace LINALG

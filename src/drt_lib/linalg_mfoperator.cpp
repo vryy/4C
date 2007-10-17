@@ -21,12 +21,12 @@ using namespace LINALG;
  |   ctor (public)                                            l.w. 10/07|
  *----------------------------------------------------------------------*/
 MatrixFreeOperator::MatrixFreeOperator(StruGenAlpha& integrator) :
-label_("MatrixFreeOperator"), integrator_(integrator)
+label_("MatrixFreeOperator"), integrator_(integrator),
+du_(*(integrator_.GetMap()), true), F_(*(integrator_.GetMap()), true)
 {
   map_ = integrator_.GetMap();
-  u_ = integrator_.Getu();
-  F_ = rcp(new Epetra_Vector(*map_, true));
-  integrator_.computeF(*u_,*F_);
+  du_ = integrator_.Getu();
+  integrator_.computeF(du_,F_);
 }
 
 
@@ -45,7 +45,7 @@ int MatrixFreeOperator::MatrixFreeOperator::Apply(const Epetra_MultiVector& X,
 
   double alpha = 1e-06;
   double unorm;
-  u_->Norm2(&unorm);
+  du_.Norm2(&unorm);
   double xnorm;
   X.Norm2(&xnorm);
 
@@ -59,14 +59,14 @@ int MatrixFreeOperator::MatrixFreeOperator::Apply(const Epetra_MultiVector& X,
 
   // determine residual in perturbed state
 
-  Epetra_Vector p(*u_);
+  Epetra_Vector p(du_);
   p.Update(delta,X,1.);
   Epetra_Vector Fp(p.Map(),true);
   integrator_.computeF(p,Fp);
 
   // approximate matrix-vector product
 
-  Y.Update(1., Fp, -1., (*F_), 0.);
+  Y.Update(1., Fp, -1., F_, 0.);
   Y.Scale(1./delta);
 
   return 0;
