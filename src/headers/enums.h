@@ -461,6 +461,7 @@ typedef enum _AZPRECTYP
                        azprec_ICC,               /* incomplete cholesky */
                        azprec_MLfluid,           /* ML for Fluids */
                        azprec_MLfluid2,          /* energy optimal unsymmetric ML for Fluids */
+                       azprec_MLAPI,             /* experimental mlapi preconditioner */
                        azprec_ML                 /* standard ML for structures */
 } AZPRECTYP;
 /*----------------------------------------------------------------------*
