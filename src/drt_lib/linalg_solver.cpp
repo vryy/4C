@@ -21,7 +21,7 @@ Maintainer: Michael Gee
 
 #include "linalg_solver.H"
 
-extern "C" 
+extern "C"
 {
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
@@ -30,7 +30,7 @@ extern "C"
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 02/07|
  *----------------------------------------------------------------------*/
-LINALG::Solver::Solver(RefCountPtr<ParameterList> params, 
+LINALG::Solver::Solver(RefCountPtr<ParameterList> params,
                        const Epetra_Comm& comm, FILE* outfile) :
 comm_(comm),
 params_(params),
@@ -54,7 +54,7 @@ ncall_(0)
   vtxmapIV_      =NULL;
   ownedColumnsIV_=NULL;
   solvemap_      =NULL;
-  symbfacIVL_    =NULL;  
+  symbfacIVL_    =NULL;
   graph_         =NULL;
   mtxY_          =NULL;
   mtxX_          =NULL;
@@ -136,7 +136,7 @@ void LINALG::Solver::Reset()
  *----------------------------------------------------------------------*/
 ostream& operator << (ostream& os, const LINALG::Solver& solver)
 {
-  solver.Print(os); 
+  solver.Print(os);
   return os;
 }
 
@@ -145,7 +145,7 @@ ostream& operator << (ostream& os, const LINALG::Solver& solver)
  *----------------------------------------------------------------------*/
 void LINALG::Solver::Print(ostream& os) const
 {
-  if (Comm().MyPID()==0) 
+  if (Comm().MyPID()==0)
   {
     os << "============================LINALG::Solver Parameter List\n";
     os << *params_;
@@ -164,51 +164,51 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
                            bool reset)
 {
   // reset data flags
-  if (reset) 
+  if (reset)
   {
     Reset();
     refactor = true;
   }
-  
+
   // set the data passed to the method
   if (refactor) A_ = matrix;
   x_ = x;
   b_ = b;
-  
+
   // set flag indicating that problem should be refactorized
   if (refactor) factored_ = false;
-  
+
   // fill the linear problem
   lp_->SetRHS(b_.get());
   lp_->SetLHS(x_.get());
   lp_->SetOperator(A_.get());
-  
+
   // decide what solver to use
   string solvertype = Params().get("solver","none");
-  if      ("lapack" ==solvertype) 
+  if      ("lapack" ==solvertype)
     Solve_lapack(reset);
-  else if ("klu"    ==solvertype) 
+  else if ("klu"    ==solvertype)
     Solve_klu(reset);
-  else if ("umfpack"==solvertype) 
+  else if ("umfpack"==solvertype)
     Solve_umfpack(reset);
 #ifdef PARALLEL
-  else if ("superlu"==solvertype) 
+  else if ("superlu"==solvertype)
     Solve_superlu(reset);
 #endif
 #ifdef PARALLEL
 #ifdef SPOOLES_PACKAGE
-  else if ("spooles"==solvertype) 
+  else if ("spooles"==solvertype)
     Solve_spooles(reset);
 #endif
 #endif
-  else if ("aztec"  ==solvertype) 
+  else if ("aztec"  ==solvertype)
     Solve_aztec(reset);
-  else if ("none"   ==solvertype) 
+  else if ("none"   ==solvertype)
     dserror("Unknown type of solver");
-  
+
   factored_ = true;
   ncall_++;
-  
+
   return;
 }
 
@@ -222,38 +222,38 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_Operator>  Operator,
                            bool reset)
 {
   // reset data flags
-  if (reset) 
+  if (reset)
   {
     Reset();
     refactor = true;
   }
-  
+
   // set the data passed to the method
   if (refactor) A_ = Operator;
   x_ = x;
   b_ = b;
-  
+
   // set flag indicating that problem should be refactorized
   if (refactor) factored_ = false;
-  
+
   // fill the linear problem
   lp_->SetRHS(b_.get());
   lp_->SetLHS(x_.get());
-  lp_->SetOperator(A_.get());
-  
+  lp_->SetOperator(Operator.get());
+
   // decide what solver to use
   string solvertype = Params().get("solver","none");
-  if      ("aztec" ==solvertype) 
+  if      ("aztec" ==solvertype)
     Solve_aztec(reset);
-  else if ("none"   ==solvertype) 
+  else if ("none"   ==solvertype)
     dserror("Unknown type of solver");
   else
     dserror("Unsupported type of solver");
-  
-  
+
+
   factored_ = true;
   ncall_++;
-  
+
   return;
 }
 
@@ -272,15 +272,15 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
   if (!tmp) dserror("vm3 only with Epetra_Operator being an Epetra_CrsMatrix!");
   RCP<Epetra_CrsMatrix> A = rcp(tmp);
   A.release();
-  
+
   // reset data flags
-  if (reset) 
+  if (reset)
   {
     Reset();
     refactor = true;
   }
 
-  
+
   // set the data passed to the method
   if (refactor)
   {
@@ -289,16 +289,16 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
   }
   x_ = x;
   b_ = b;
-  
+
   // set flag indicating that problem should be refactorized
   if (refactor) factored_ = false;
-  
+
   // fill the linear problem
   lp_->SetRHS(b_.get());
   lp_->SetLHS(x_.get());
   lp_->SetOperator(Aplus_.get());
   lp_->SetOperator(A_.get());
-  
+
   // decide what solver to use
   string solvertype = Params().get("solver","none");
   // if vm3 was not selected, return to usual solver
@@ -321,7 +321,7 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
   if (err) dserror("VM3_Solver::Solve returned an err");
 
   ncall_++;
-  
+
   return;
 }
 
@@ -331,7 +331,7 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
  *----------------------------------------------------------------------*/
 void LINALG::Solver::Solve_aztec(const bool reset)
 {
-  if (!Params().isSublist("Aztec Parameters")) 
+  if (!Params().isSublist("Aztec Parameters"))
     dserror("Do not have aztec parameter list");
   ParameterList& azlist = Params().sublist("Aztec Parameters");
 
@@ -370,7 +370,7 @@ void LINALG::Solver::Solve_aztec(const bool reset)
     scaling_infnorm = false;
     scaling_symdiag = true;
   }
-  else dserror("Unknown type of scaling found in parameter list");	
+  else dserror("Unknown type of scaling found in parameter list");
 
   if (!A)
   {
@@ -390,7 +390,7 @@ void LINALG::Solver::Solve_aztec(const bool reset)
     lp_->LeftScale(*rowsum);
     lp_->RightScale(*colsum);
   }
-  
+
   // do symmetric diagonal scaling
   RefCountPtr<Epetra_Vector> diag;
   if (scaling_symdiag)
@@ -402,10 +402,10 @@ void LINALG::Solver::Solve_aztec(const bool reset)
     lp_->LeftScale(invdiag);
     lp_->RightScale(invdiag);
   }
-  
+
   // pass linear problem to aztec
   aztec_->SetProblem(*lp_);
-  // don't want linear problem to alter our atzec parameters (idiot feature!)
+  // don't want linear problem to alter our aztec parameters (idiot feature!)
   aztec_->SetParameters(azlist,false);
 
   // get type of preconditioner and build either Ifpack or ML
@@ -437,7 +437,7 @@ void LINALG::Solver::Solve_aztec(const bool reset)
     prec->Compute();
     P_ = rcp(prec);
   }
-  
+
   // do ml if desired
   if (create && doml)
   {
@@ -447,7 +447,7 @@ void LINALG::Solver::Solve_aztec(const bool reset)
     Pmatrix_ = rcp(new Epetra_CrsMatrix(*A));
     P_ = rcp(new ML_Epetra::MultiLevelPreconditioner(*Pmatrix_,mllist,true));
   }
-  
+
   if (doifpack || doml)
     aztec_->SetPrecOperator(P_.get());
 
@@ -455,7 +455,7 @@ void LINALG::Solver::Solve_aztec(const bool reset)
   int iter = azlist.get("AZ_max_iter",500);
   double tol = azlist.get("AZ_tol",1.0e-6);
   aztec_->Iterate(iter,tol);
-  
+
   // check status of solution process
   const double* status = aztec_->GetAztecStatus();
   if (status[AZ_why] != AZ_normal)
@@ -499,9 +499,9 @@ void LINALG::Solver::Solve_aztec(const bool reset)
       err     = klusolver.NumericFactorization();
       if (err) dserror("Amesos_Klu.NumericFactorization() returned %d",err);
       err     = klusolver.Solve();
-      if (err) dserror("Amesos_Klu.Solve() returned %d",err);        
+      if (err) dserror("Amesos_Klu.Solve() returned %d",err);
 #endif
-#endif      
+#endif
     }
   } // if (status[AZ_why] != AZ_normal)
 
@@ -523,7 +523,7 @@ void LINALG::Solver::Solve_aztec(const bool reset)
     lp_->RightScale(*diag);
     diag = null;
   }
-  
+
 
 
   // print some output if desired
@@ -558,13 +558,13 @@ void LINALG::Solver::Solve_superlu(const bool reset)
     err = amesos_->NumericFactorization();
     if (err) dserror("Amesos::NumericFactorization returned an err");
   }
-  
+
   int err = amesos_->Solve();
   if (err) dserror("Amesos::Solve returned an err");
 #else
   dserror("Distributed SuperLU only in parallel");
 #endif    //! system of equations
-  RefCountPtr<Epetra_CrsMatrix>     A_;       
+  RefCountPtr<Epetra_CrsMatrix>     A_;
 
   return;
 }
@@ -589,10 +589,10 @@ void LINALG::Solver::Solve_umfpack(const bool reset)
     err = amesos_->NumericFactorization();
     if (err) dserror("Amesos::NumericFactorization returned an err");
   }
-  
+
   int err = amesos_->Solve();
   if (err) dserror("Amesos::Solve returned an err");
-  
+
   return;
 }
 
@@ -616,10 +616,10 @@ void LINALG::Solver::Solve_klu(const bool reset)
     err = amesos_->NumericFactorization();
     if (err) dserror("Amesos::NumericFactorization returned an err");
   }
-  
+
   int err = amesos_->Solve();
   if (err) dserror("Amesos::Solve returned an err");
-  
+
   return;
 }
 
@@ -641,17 +641,17 @@ void LINALG::Solver::Solve_lapack(const bool reset)
     err = amesos_->NumericFactorization();
     if (err) dserror("Amesos::NumericFactorization returned an err");
   }
-  
+
   int err = amesos_->Solve();
   if (err) dserror("Amesos::Solve returned an err");
-  
+
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  translate solver parameters (public)                     mwgee 02/07|
  *----------------------------------------------------------------------*/
-void LINALG::Solver::TranslateSolverParameters(ParameterList& params, 
+void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
                                           struct _SOLVAR* actsolv) const
 {
   // switch type of solver
@@ -907,7 +907,7 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
     azlist.set("AZ_conv",azvar->azconv);
     azlist.set("AZ_tol",azvar->aztol);
     azlist.set("AZ_drop",azvar->azdrop);
-    azlist.set("AZ_scaling",AZ_none);              
+    azlist.set("AZ_scaling",AZ_none);
     azlist.set("AZ_keep_info",0);
     // set reuse parameters
     azlist.set("ncall",0);                         // counting number of solver calls
@@ -943,7 +943,7 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
       case azprec_MLfluid2: // full Pretrov-Galerkin unsymmetric smoothed
         mllist.set("energy minimization: enable",true);
         mllist.set("energy minimization: type",3); // 1,2,3 cheap -> expensive
-        mllist.set("aggregation: block scaling",false); 
+        mllist.set("aggregation: block scaling",false);
       break;
       default: dserror("Unknown type of ml preconditioner");
       }
@@ -1071,7 +1071,7 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
       mllist.set("null space: add default vectors",false);
       mllist.set<double*>("null space: vectors",NULL);
     } // if ml preconditioner
-  }	
+  }
   break;
 #ifdef PARALLEL
   case SPOOLES_sym://================================== Spooles (parallel only)

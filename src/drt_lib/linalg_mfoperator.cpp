@@ -47,6 +47,12 @@ int MatrixFreeOperator::MatrixFreeOperator::Apply(const Epetra_MultiVector& X,
   u_->Norm2(&unorm);
   double xnorm;
   X.Norm2(&xnorm);
+
+  // Make sure the norm is not zero, otherwise we can get an inf
+  // perturbation -> see NOX_Epetra_MatrixFree.C:144
+  if (xnorm == 0.0)
+    xnorm = 1.0;
+
   double delta = alpha*(alpha+unorm/xnorm);
 
 
