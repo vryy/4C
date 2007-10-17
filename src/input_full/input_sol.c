@@ -347,6 +347,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          if (strncmp("ML",buffer,2)==0)               azvar->azprectyp = azprec_ML;
          if (strncmp("MLFLUID",buffer,7)==0)          azvar->azprectyp = azprec_MLfluid;
          if (strncmp("MLFLUID2",buffer,8)==0)         azvar->azprectyp = azprec_MLfluid2;
+         if (strncmp("MLAPI",buffer,5)==0)            azvar->azprectyp = azprec_MLAPI;
 #endif
       }
       /* the corresponding numbers are defined in az_aztec_defs.h ... */
