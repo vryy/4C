@@ -20,6 +20,7 @@ Maintainer: Michael Gee
 #endif
 
 #include "linalg_solver.H"
+#include "linalg_mlapi_operator.H"
 
 extern "C"
 {
@@ -443,9 +444,14 @@ void LINALG::Solver::Solve_aztec(const bool reset)
   {
     ParameterList&  mllist = Params().sublist("ML Parameters");
     // create a copy of the scaled matrix
-    // so we can reuse the precondition
+    // so we can reuse the preconditioner several times
     Pmatrix_ = rcp(new Epetra_CrsMatrix(*A));
-    P_ = rcp(new ML_Epetra::MultiLevelPreconditioner(*Pmatrix_,mllist,true));
+    // see whether we use standard ml or our own mlapi operator
+    bool domlapioperator = mllist.get<bool>("LINALG::AMG_Operator",false);
+    if (domlapioperator)
+      P_ = rcp(new LINALG::AMG_Operator(Pmatrix_,mllist,true));
+    else
+      P_ = rcp(new ML_Epetra::MultiLevelPreconditioner(*Pmatrix_,mllist,true));
   }
 
   if (doifpack || doml)
@@ -886,6 +892,7 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
     break;
     case azprec_ML:
     case azprec_MLfluid:
+    case azprec_MLAPI:
     case azprec_MLfluid2:
       azlist.set("AZ_precond",AZ_user_precond);
     break;
@@ -927,15 +934,19 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
       ifpacklist.set("amesos: solver type", "Amesos_Klu"); // can be "Amesos_Klu", "Amesos_Umfpack", "Amesos_Superlu"
     }
     //------------------------------------- set parameters for ML if used
-    if (azvar->azprectyp == azprec_ML      ||
-        azvar->azprectyp == azprec_MLfluid ||
-        azvar->azprectyp == azprec_MLfluid2 )
+    if (azvar->azprectyp == azprec_ML       ||
+        azvar->azprectyp == azprec_MLfluid  ||
+        azvar->azprectyp == azprec_MLfluid2 || 
+        azvar->azprectyp == azprec_MLAPI       )
     {
       ParameterList& mllist = params.sublist("ML Parameters");
       ML_Epetra::SetDefaults("SA",mllist);
       switch (azvar->azprectyp)
       {
       case azprec_ML: // do nothing, this is standard
+      break;
+      case azprec_MLAPI: // set flag to use mlapi operator
+        mllist.set<bool>("LINALG::AMG_Operator",true);
       break;
       case azprec_MLfluid: // unsymmetric, unsmoothed restruction
         mllist.set("aggregation: use tentative restriction",true);
