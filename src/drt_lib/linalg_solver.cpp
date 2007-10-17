@@ -406,6 +406,7 @@ void LINALG::Solver::Solve_aztec(const bool reset)
 
   // pass linear problem to aztec
   aztec_->SetProblem(*lp_);
+
   // don't want linear problem to alter our aztec parameters (idiot feature!)
   aztec_->SetParameters(azlist,false);
 
@@ -419,7 +420,6 @@ void LINALG::Solver::Solve_aztec(const bool reset)
     doifpack = false;
     doml     = false;
   }
-
 
   // do ifpack if desired
   if (create && doifpack)

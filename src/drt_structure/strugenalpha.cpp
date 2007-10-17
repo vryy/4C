@@ -1000,14 +1000,15 @@ void StruGenAlpha::MatrixFreeNewton()
   //---------------------------------------------- build effective lhs
   LINALG::ApplyDirichlettoSystem(disi_,fresm_,zeros_,dirichtoggle_);
 
-  //----------------------------------------- build MatrixFreeOperator
-  RCP<Epetra_Operator> mfop = rcp(new LINALG::MatrixFreeOperator(*this));
-
   //=================================================== equilibrium loop
   double fresmnorm;
   fresm_->Norm2(&fresmnorm);
   while (norm_>toldisp && fresmnorm>toldisp  && numiter<=maxiter)
   {
+
+    //----------------------------------------- build MatrixFreeOperator
+    RCP<Epetra_Operator> mfop = rcp(new LINALG::MatrixFreeOperator(*this));
+
     //------------------------------------------- effective rhs is fresm
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
@@ -2148,17 +2149,6 @@ void StruGenAlpha::ReadRestart(int step)
 
   return;
 }
-
-
-/*----------------------------------------------------------------------*
- |  return residual at midpoint (public)                        lw 10/07|
- *----------------------------------------------------------------------*/
-
-RCP<Epetra_Vector> StruGenAlpha::GetF()
-{
-  return fresm_;
-}
-
 
 /*----------------------------------------------------------------------*
  |  return displacements at midpoint (public)                   lw 10/07|

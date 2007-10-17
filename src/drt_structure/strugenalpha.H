@@ -177,12 +177,6 @@ public:
   void ReadRestart(int step);
 
   /*!
-  \brief return residual at midpoint
-
-  */
-  RCP<Epetra_Vector> GetF();
-
-  /*!
   \brief return displacements at midpoint
 
   */
