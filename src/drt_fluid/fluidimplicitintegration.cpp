@@ -1621,11 +1621,11 @@ void FluidImplicitTimeInt::LIFTDRAG_all()
 
  	if (LIFTDRAGConds.size() == 0)
  	{
- 		cout << "No LIFT and DRAG calculation" << endl;
+	  //		cout << "No LIFT and DRAG calculation" << endl;
  	}
  	else
  	{
- 	    dserror("Please don't use it. It doesn't work yet!");
+ 	    dserror("Please don't use Lift'n'Drag calculation. It doesn't work yet!");
  		for (unsigned i=0; i<LIFTDRAGConds.size(); ++i)
  		{
 		    const vector<int>* LABEL=LIFTDRAGConds[i]->Get<vector<int> >  ("LABEL");
