@@ -25,7 +25,7 @@ label_("MatrixFreeOperator"), integrator_(integrator),
 du_(*(integrator_.GetMap()), true), F_(*(integrator_.GetMap()), true)
 {
   map_ = integrator_.GetMap();
-  du_ = integrator_.Getu();
+  du_ = integrator_.Getdu();
   integrator_.computeF(du_,F_);
 }
 
@@ -35,7 +35,7 @@ du_(*(integrator_.GetMap()), true), F_(*(integrator_.GetMap()), true)
  *----------------------------------------------------------------------*/
 // First-Order Taylor series expansion approximation of matrix-vector product:
 //
-// Y = K*X = 1/delta*(F(u+delta*X)-F(u))
+// Y = K*X = 1/eta*(F(u+eta*X)-F(u))
 
 
 int MatrixFreeOperator::MatrixFreeOperator::Apply(const Epetra_MultiVector& X,
@@ -43,7 +43,7 @@ int MatrixFreeOperator::MatrixFreeOperator::Apply(const Epetra_MultiVector& X,
 {
   // determine perturbation parameter delta
 
-  double alpha = 1e-06;
+  double lambda = 1e-06;
   double unorm;
   du_.Norm2(&unorm);
   double xnorm;
@@ -54,20 +54,20 @@ int MatrixFreeOperator::MatrixFreeOperator::Apply(const Epetra_MultiVector& X,
   if (xnorm == 0.0)
     xnorm = 1.0;
 
-  double delta = alpha*(alpha+unorm/xnorm);
+  double eta = lambda*(lambda+unorm/xnorm);
 
 
   // determine residual in perturbed state
 
   Epetra_Vector p(du_);
-  p.Update(delta,X,1.);
+  p.Update(eta,X,1.);
   Epetra_Vector Fp(p.Map(),true);
   integrator_.computeF(p,Fp);
 
   // approximate matrix-vector product
 
   Y.Update(1., Fp, -1., F_, 0.);
-  Y.Scale(1./delta);
+  Y.Scale(1./eta);
 
   return 0;
 }

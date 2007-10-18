@@ -148,9 +148,9 @@ int DRT::Elements::So_hex8::Evaluate(ParameterList& params,
     }
     break;
 
-  case calc_init_vol: {
-    soh8_initvol(params);
-  }
+    case calc_init_vol: {
+      soh8_initvol(params);
+    }
     break;
 
     default:

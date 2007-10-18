@@ -180,7 +180,7 @@ public:
   \brief return displacements at midpoint
 
   */
-  Epetra_Vector Getu();
+  Epetra_Vector Getdu();
 
   /*!
   \brief return rowmap

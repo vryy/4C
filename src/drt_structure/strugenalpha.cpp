@@ -2154,7 +2154,7 @@ void StruGenAlpha::ReadRestart(int step)
  |  return displacements at midpoint (public)                   lw 10/07|
  *----------------------------------------------------------------------*/
 
-Epetra_Vector StruGenAlpha::Getu()
+Epetra_Vector StruGenAlpha::Getdu()
 {
   return *disi_;
 }
