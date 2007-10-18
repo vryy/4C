@@ -1342,15 +1342,6 @@ void StruGenAlpha::NonlinearCG()
                                                             iprec,
                                                             prec,
                                                             initialGuess));
-
-    //const RefCountPtr<NOX::Epetra::Interface::Required>       ireq  = fineinterface_;
-    //const RefCountPtr<NOX::Epetra::Interface::Preconditioner> iprec = prec_;
-    //const RefCountPtr<Epetra_Operator>                        prec  = prec_;
-    //rcpazlinsys_ = rcp(new NOX::Epetra::LinearSystemAztecOO(printParams,lsParams,
-    //                                                        ireq,
-    //                                                        iprec,
-    //                                                        prec,
-    //                                                        initialGuess));
   }
 
   // create a group if it does not exist
