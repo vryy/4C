@@ -972,7 +972,7 @@ void StruGenAlpha::ModifiedNewton()
   return;
 } // StruGenAlpha::ModifiedNewton()
 
-
+                                                                 \
 /*----------------------------------------------------------------------*
  |  do matrix free Newton iteration (public)                    lw 10/07|
  *----------------------------------------------------------------------*/
@@ -1006,12 +1006,12 @@ void StruGenAlpha::MatrixFreeNewton()
   while (norm_>toldisp && fresmnorm>toldisp  && numiter<=maxiter)
   {
 
-    //----------------------------------------- build MatrixFreeOperator
-    RCP<Epetra_Operator> mfop = rcp(new LINALG::MatrixFreeOperator(*this));
-
     //------------------------------------------- effective rhs is fresm
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
+
+    //----------------------------------------- build MatrixFreeOperator
+    RCP<Epetra_Operator> mfop = rcp(new LINALG::MatrixFreeOperator(*this));
 
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
@@ -1128,6 +1128,188 @@ void StruGenAlpha::MatrixFreeNewton()
 
   return;
 } // StruGenAlpha::MatrixFreeNewton()
+
+
+#if 0
+/*----------------------------------------------------------------------*
+ |  do matrix free Newton iteration (public)                    lw 10/07|
+ *----------------------------------------------------------------------*/
+void StruGenAlpha::MatrixFreeNewton()
+{
+  // -------------------------------------------------------------------
+  // get some parameters from parameter list
+  // -------------------------------------------------------------------
+  //double time      = params_.get<double>("total time"             ,0.0);
+  double dt        = params_.get<double>("delta time"             ,0.01);
+  int    maxiter   = params_.get<int>   ("max iterations"         ,10);
+  bool   damping   = params_.get<bool>  ("damping"                ,false);
+  double beta      = params_.get<double>("beta"                   ,0.292);
+  double gamma     = params_.get<double>("gamma"                  ,0.581);
+  double alpham    = params_.get<double>("alpha m"                ,0.378);
+  double alphaf    = params_.get<double>("alpha f"                ,0.459);
+  double toldisp   = params_.get<double>("tolerance displacements",1.0e-07);
+  //bool printscreen = params_.get<bool>  ("print to screen",true);
+  bool printerr    = params_.get<bool>  ("print to err",false);
+  FILE* errfile    = params_.get<FILE*> ("err file",NULL);
+  if (!errfile) printerr = false;
+
+  // check whether we have a stiffness matrix, that is not filled yet
+  // and mass and damping are present
+  if (!mass_->Filled()) dserror("mass matrix must be filled here");
+  if (damping)
+    if (!damp_->Filled()) dserror("damping matrix must be filled here");
+
+  //---------------------------------------------- set initial guess
+  disi_->PutScalar(0.0);
+
+  // create the nox parameter list if it does not exist
+  ParameterList& noxparams = params_.sublist("nox parameters");
+  RefCountPtr<Teuchos::ParameterList> rcpparams = rcp(&noxparams);
+  rcpparams.release();
+
+  ParameterList& printParams = noxparams.sublist("Printing");
+  printParams.set("MyPID",myrank_);
+  printParams.set("Output Precision", 9);
+  printParams.set("Output Processor", 0);
+  printParams.set("Output Information",
+                  NOX::Utils::OuterIteration +
+                  NOX::Utils::OuterIterationStatusTest +
+                  NOX::Utils::InnerIteration +
+                  NOX::Utils::Parameters +
+                  NOX::Utils::Details +
+                  NOX::Utils::Warning
+                 );
+//   else
+//     printParams.set("Output Information",0);
+
+  // Set the nonlinear solver method as line search
+  noxparams.set("Nonlinear Solver","Line Search Based");
+
+  // get sublist for type of linesearch
+  ParameterList& searchParams = noxparams.sublist("Line Search");
+  searchParams.set("Method","Full Step");
+
+  // Sublist for direction
+  ParameterList& dirParams = noxparams.sublist("Direction");
+  dirParams.set("Method", "Newton");
+
+  ParameterList& newtonParams = dirParams.sublist("Newton");
+  newtonParams.set("Forcing Term Method", "Constant");
+  newtonParams.set("Restart Frequency", 25);
+
+  ParameterList& lsParams = newtonParams.sublist("Linear Solver");
+  lsParams.set("Aztec Solver", "CG");
+  lsParams.set("Max Iterations", 100);
+  lsParams.set("Tolerance", 1e-11);
+  lsParams.set("Output Frequency", 10);
+  lsParams.set("Preconditioning", "None");
+  lsParams.set("Preconditioner","None");
+
+  // create the fine level interface if it does not exist
+  if (fineinterface_==null)
+  {
+    int printlevel = 1;
+    fineinterface_ = rcp(new NoxInterface(*this,printlevel));
+  }
+
+  // create a matrix free operator if it does not exist
+  if (matfreeoperator_==null)
+    matfreeoperator_ = rcp(new NOX::Epetra::MatrixFree(printParams,fineinterface_,*disi_,false));
+
+  // create a linear system if it does not exist
+  if (rcpazlinsys_==null)
+  {
+    NOX::Epetra::Vector initialGuess(*disi_);
+    const RefCountPtr<NOX::Epetra::Interface::Jacobian>       ijac  = matfreeoperator_;
+    const RefCountPtr<Epetra_Operator>                        jac   = matfreeoperator_;
+    const RefCountPtr<NOX::Epetra::Interface::Required>       ireq  = fineinterface_;
+    rcpazlinsys_ = rcp(new NOX::Epetra::LinearSystemAztecOO(printParams,lsParams,
+                                                            ireq,
+                                                            ijac,
+                                                            jac,
+                                                            initialGuess));
+  }
+
+  // create a group if it does not exist
+  NOX::Epetra::Vector initialGuess(*disi_);
+  RefCountPtr<NOX::Epetra::Group> rcpgrp = rcp(new NOX::Epetra::Group(printParams,
+                                                                      fineinterface_,
+                                                                      initialGuess,
+                                                                      rcpazlinsys_));
+
+  // create a convergence test if it does not exist
+  if (combo_==null)
+  {
+    RefCountPtr<NOX::StatusTest::NormF> absresid =
+      rcp( new NOX::StatusTest::NormF(toldisp));
+    RefCountPtr<NOX::StatusTest::NormUpdate> nupdate =
+      rcp(new NOX::StatusTest::NormUpdate(toldisp));
+    RefCountPtr<NOX::StatusTest::Combo> converged =
+      rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
+    converged->addStatusTest(absresid);
+    converged->addStatusTest(nupdate);
+    RefCountPtr<NOX::StatusTest::FiniteValue> fv =
+      rcp(new NOX::StatusTest::FiniteValue());
+    RefCountPtr<NOX::StatusTest::MaxIters> maxiters =
+      rcp(new NOX::StatusTest::MaxIters(maxiter));
+    combo_ = rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
+    combo_->addStatusTest(maxiters);
+    combo_->addStatusTest(converged);
+    combo_->addStatusTest(fv);
+  }
+
+  // create nox solver manager if it does not exist
+  RCP<NOX::Solver::Generic> noxsolver = NOX::Solver::buildSolver(rcpgrp,combo_,rcpparams);
+
+  // solve nonlinear problem
+  Epetra_Time timer(discret_.Comm());
+  double t0 = timer.ElapsedTime();
+  NOX::StatusTest::StatusType status = noxsolver->solve();
+  double t1 = timer.ElapsedTime();
+
+  bool converged = true;
+  if (status != NOX::StatusTest::Converged) converged = false;
+
+  // get status and print output message
+  if (myrank_==0)
+  {
+    printf("NOX/ML :============solve time incl. setup : %15.4f sec\n",t1-t0);
+    double appltime = fineinterface_->getsumtime();
+    printf("NOX/ML :===========of which time in ccarat : %15.4f sec\n",appltime);
+    cout << "NOX/ML :======number calls to computeF in this solve : "
+         << fineinterface_->getnumcallscomputeF() << "\n\n\n";
+    if (!converged)
+      cout << "***WRN***: NOX not converged!\n";
+    fflush(stdout);
+  }
+  fineinterface_->resetsumtime();
+  fineinterface_->setnumcallscomputeF(0);
+
+  //---------------------------------- update mid configuration values
+  // displacements
+  // incremental (disi is now D_{n+1}-D_{n})
+  dism_->Update((1.-alphaf),*disi_,1.0);
+
+  // velocities
+  // incremental (required for constant predictor)
+  velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+  velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
+                (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
+                gamma/(beta*dt));
+
+  // accelerations
+  // incremental (required for constant predictor)
+  accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+  accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
+                (2.*beta-1.+alpham)/(2.*beta),*acc_,
+                (1.-alpham)/((1.-alphaf)*beta*dt*dt));
+
+  //-------------------------------------- don't need this anymore
+  stiff_ = null;
+
+  return;
+} // StruGenAlpha::MatrixFreeNewton()
+#endif
 
 
 /*----------------------------------------------------------------------*
@@ -1425,7 +1607,6 @@ void StruGenAlpha::NonlinearCG()
 
   return;
 } // StruGenAlpha::NonlinearCG()
-
 
 
 /*----------------------------------------------------------------------*
@@ -2145,7 +2326,7 @@ void StruGenAlpha::ReadRestart(int step)
  |  return displacements at midpoint (public)                   lw 10/07|
  *----------------------------------------------------------------------*/
 
-Epetra_Vector StruGenAlpha::Getdu()
+const Epetra_Vector& StruGenAlpha::Getdu()
 {
   return *disi_;
 }

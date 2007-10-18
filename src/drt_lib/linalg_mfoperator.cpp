@@ -25,7 +25,7 @@ label_("MatrixFreeOperator"), integrator_(integrator),
 du_(*(integrator_.GetMap()), true), F_(*(integrator_.GetMap()), true)
 {
   map_ = integrator_.GetMap();
-  du_ = integrator_.Getdu();
+  du_.Update(1.0, integrator_.Getdu(), 0.0);
   integrator_.computeF(du_,F_);
 }
 
