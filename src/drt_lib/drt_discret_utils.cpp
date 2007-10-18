@@ -341,19 +341,16 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
           mode[0][lid] = 1.0;
           mode[1][lid] = 0.0;
           mode[2][lid] = 0.0;
-          mode[3][lid] = 0.0;
         break;
         case 1:
           mode[0][lid] = 0.0;
           mode[1][lid] = 1.0;
           mode[2][lid] = 0.0;
-          mode[3][lid] = 0.0;
         break;
         case 2:
           mode[0][lid] = 0.0;
           mode[1][lid] = 0.0;
           mode[2][lid] = 1.0;
-          mode[3][lid] = 0.0;
         break;
         default:
           dserror("Only dofs 0 - 2 supported");
