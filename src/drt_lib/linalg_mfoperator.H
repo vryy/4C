@@ -19,6 +19,7 @@
 #include "Epetra_Vector.h"
 #include "Epetra_Operator.h"
 #include "Epetra_Comm.h"
+#include "Epetra_CrsMatrix.h"   // for testing only!!!!
 
 // Teuchos
 #include "Teuchos_RefCountPtr.hpp"
@@ -43,7 +44,7 @@ class MatrixFreeOperator : public virtual Epetra_Operator
 {
 public:
 
-  explicit MatrixFreeOperator(StruGenAlpha& integrator);
+  explicit MatrixFreeOperator(StruGenAlpha& integrator, RCP<Epetra_CrsMatrix> stiff);
 
   //! Destroys the operator.
   /*!
@@ -121,9 +122,10 @@ private:
 
   string                                                    label_;
   StruGenAlpha&                                        integrator_;
-  const Epetra_Map*                                           map_;
   Epetra_Vector                                                du_;
   Epetra_Vector                                                 F_;
+  RCP<Epetra_CrsMatrix>                                     stiff_;
+  const Epetra_Map*                                           map_;
 
 }; // class JFNK_Operator
 }  // namespace LINALG

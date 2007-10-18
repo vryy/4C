@@ -425,12 +425,15 @@ void StruGenAlpha::MatrixFreeConstantPredictor()
 
   //------------------------------------ eval fint at interpolated state
   {
+    stiff_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);  // test only!
+
     // create the parameters for the discretization
     ParameterList p;
     // action for elements
     p.set("action","calc_struct_nlnstiff");
     // choose what to assemble
-    p.set("assemble matrix 1",false);
+//     p.set("assemble matrix 1",false);
+    p.set("assemble matrix 1",true);                           // test only!
     p.set("assemble matrix 2",false);
     p.set("assemble vector 1",true);
     p.set("assemble vector 2",false);
@@ -444,7 +447,8 @@ void StruGenAlpha::MatrixFreeConstantPredictor()
     discret_.SetState("displacement",dism_);
     //discret_.SetState("velocity",velm_); // not used at the moment
     fint_->PutScalar(0.0);  // initialise internal force vector
-    discret_.Evaluate(p,null,null,fint_,null,null);
+//     discret_.Evaluate(p,null,null,fint_,null,null);
+    discret_.Evaluate(p,stiff_,null,fint_,null,null);          // test only!
     discret_.ClearState();
   }
 
@@ -1006,12 +1010,19 @@ void StruGenAlpha::MatrixFreeNewton()
   while (norm_>toldisp && fresmnorm>toldisp  && numiter<=maxiter)
   {
 
+    LINALG::Add(*mass_,false,(1.-alpham)/(beta*dt*dt),*stiff_,1.-alphaf); // test
+    if (damping)                                                          // test
+      LINALG::Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),*stiff_,1.0);  // test
+    LINALG::Complete(*stiff_);                                            // test
+
     //------------------------------------------- effective rhs is fresm
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
 
+    LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);    // test
+
     //----------------------------------------- build MatrixFreeOperator
-    RCP<Epetra_Operator> mfop = rcp(new LINALG::MatrixFreeOperator(*this));
+    RCP<Epetra_Operator> mfop = rcp(new LINALG::MatrixFreeOperator(*this, stiff_));
 
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
@@ -1066,7 +1077,11 @@ void StruGenAlpha::MatrixFreeNewton()
       discret_.SetState("displacement",dism_);
       //discret_.SetState("velocity",velm_); // not used at the moment
       fint_->PutScalar(0.0);  // initialise internal force vector
-      discret_.Evaluate(p,null,null,fint_,null,null);
+//       discret_.Evaluate(p,null,null,fint_,null,null);
+
+      // for testing purposes only -> later on no stiffness matrix
+      // will be calculated!
+      discret_.Evaluate(p,stiff_,null,fint_,null,null);
       discret_.ClearState();
     }
 

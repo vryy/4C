@@ -20,9 +20,11 @@ using namespace LINALG;
 /*----------------------------------------------------------------------*
  |   ctor (public)                                            l.w. 10/07|
  *----------------------------------------------------------------------*/
-MatrixFreeOperator::MatrixFreeOperator(StruGenAlpha& integrator) :
+MatrixFreeOperator::MatrixFreeOperator(StruGenAlpha& integrator, RCP<Epetra_CrsMatrix> stiff) :
 label_("MatrixFreeOperator"), integrator_(integrator),
-du_(*(integrator_.GetMap()), true), F_(*(integrator_.GetMap()), true)
+du_(*(integrator_.GetMap()), true),
+F_(*(integrator_.GetMap()), true),
+stiff_(stiff)
 {
   map_ = integrator_.GetMap();
   du_.Update(1.0, integrator_.Getdu(), 0.0);
@@ -66,8 +68,15 @@ int MatrixFreeOperator::MatrixFreeOperator::Apply(const Epetra_MultiVector& X,
 
   // approximate matrix-vector product
 
-  Y.Update(1., Fp, -1., F_, 0.);
+//   Y.Update(1., Fp, -1., F_, 0.);
+  Y.Update(-1., Fp, 1., F_, 0.);
   Y.Scale(1./eta);
+
+  Epetra_Vector Yref(*map_, true);
+  stiff_->Multiply(false, X, Yref);
+
+  cout << "Y:\n" << Y << endl;
+  cout << "Yref:\n" << Yref << endl;
 
   return 0;
 }
