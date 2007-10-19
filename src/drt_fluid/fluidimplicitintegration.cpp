@@ -598,7 +598,7 @@ void FluidImplicitTimeInt::NonlinearSolve(
   if (myrank_ == 0)
   {
     printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
-    printf("|- step/max -|- tol      [norm] -|- vel-error --|- pre-error --|- vel-error --|- pre-error --|\n");
+    printf("|- step/max -|- tol      [norm] -|-- vel-res ---|-- pre-res ---|-- vel-inc ---|-- pre-inc ---|\n");
   }
 
   while (stopnonliniter==false)
