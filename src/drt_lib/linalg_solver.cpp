@@ -354,6 +354,10 @@ void LINALG::Solver::Solve_aztec(const bool reset)
     aztec_ = rcp(new AztecOO());
     aztec_->SetAztecDefaults();
     //aztec_->SetParameters(azlist,false); moved this further down gee
+
+    // tell aztec to which stream to write
+    aztec_->SetOutputStream(std::cout);
+    aztec_->SetErrorStream(std::cerr);
   }
 
   // decide whether we do what kind of scaling
@@ -936,7 +940,7 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
     //------------------------------------- set parameters for ML if used
     if (azvar->azprectyp == azprec_ML       ||
         azvar->azprectyp == azprec_MLfluid  ||
-        azvar->azprectyp == azprec_MLfluid2 || 
+        azvar->azprectyp == azprec_MLfluid2 ||
         azvar->azprectyp == azprec_MLAPI       )
     {
       ParameterList& mllist = params.sublist("ML Parameters");
