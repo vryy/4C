@@ -16,6 +16,25 @@
 
 #include "../drt_lib/drt_colors.H"
 
+// debug output
+#if 1
+
+#include <Epetra_Vector.h>
+#include <Epetra_Comm.h>
+#include <NOX_Epetra_Vector.H>
+
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
+
+extern "C" /* stuff which is c and is accessed from c++ */
+{
+#include "../headers/standardtypes.h"
+}
+
+extern struct _FILES  allfiles;
+#endif
+
 
 NOX::FSI::SDRelaxation::SDRelaxation(const Teuchos::RefCountPtr<NOX::Utils>& utils,
                                      Teuchos::ParameterList& params)
@@ -63,6 +82,28 @@ bool NOX::FSI::SDRelaxation::compute(NOX::Abstract::Group& newgrp,
 
   step = - numerator / denominator;
   utils_->out() << "          RELAX = " YELLOW_LIGHT << setw(5) << step << END_COLOR "\n";
+
+  // write omega
+#if 1
+  double fnorm = oldgrp.getF().norm();
+  if (dynamic_cast<const NOX::Epetra::Vector&>(oldgrp.getF()).getEpetraVector().Comm().MyPID()==0)
+  {
+    static int count;
+    static std::ofstream* out;
+    if (out==NULL)
+    {
+      std::string s = allfiles.outputfile_kenner;
+      s.append(".omega");
+      out = new std::ofstream(s.c_str());
+    }
+    (*out) << count << " "
+           << step << " "
+           << fnorm
+           << "\n";
+    count += 1;
+    out->flush();
+  }
+#endif
 
   newgrp.computeX(oldgrp, dir, step);
   newgrp.computeF();

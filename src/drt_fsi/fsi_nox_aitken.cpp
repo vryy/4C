@@ -11,6 +11,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <NOX_GlobalData.H>
 
+#include "../drt_lib/drt_colors.H"
+
 // debug output
 #if 1
 
@@ -122,13 +124,7 @@ bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
   step = 1.;
 #endif
 
-  // preliminary output
-  if (utils_->isPrintType(Utils::InnerIteration))
-  {
-    utils_->out() << "aitken step size = " << utils_->sciformat(step)
-                  << "\n"
-                  << endl;
-  }
+  utils_->out() << "          RELAX = " YELLOW_LIGHT << setw(5) << step << END_COLOR "\n";
 
   grp.computeX(oldGrp, dir, step);
 
