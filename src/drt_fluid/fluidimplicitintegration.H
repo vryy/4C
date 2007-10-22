@@ -132,7 +132,7 @@ public:
          Fixpoint iteration
 
   */
-  void NonlinearSolve(bool is_stat=false);
+  void NonlinearSolve();
 
   /*!
   \brief compute convergence check after a nonlinear iteration step
