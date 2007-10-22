@@ -67,6 +67,10 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
       numdf = 2;
       dimns = 3;
     break;
+    case DRT::Element::element_so_hex8:
+      numdf = 3;
+      dimns = 6;
+    break;
     case DRT::Element::element_fluid3:
       numdf = 4;
       dimns = 4;
@@ -78,6 +82,10 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     case DRT::Element::element_condif2:
       numdf = 1;
       dimns = 1;
+    break;
+    case DRT::Element::element_ale3:
+      numdf = 3;
+      dimns = 6;
     break;
     case DRT::Element::element_none:
     default:
