@@ -79,9 +79,9 @@ void DRT::Elements::So_hex8::soh8_stress(vector<double>& disp,
     xrefe(i,1) = Nodes()[i]->X()[1];
     xrefe(i,2) = Nodes()[i]->X()[2];
 
-    xcurr(i,0) = xrefe(i,0) + disp[i*NUMDOF_SOH8+0];
-    xcurr(i,1) = xrefe(i,1) + disp[i*NUMDOF_SOH8+1];
-    xcurr(i,2) = xrefe(i,2) + disp[i*NUMDOF_SOH8+2];
+    xcurr(i,0) = xrefe(i,0) + disp[i*NODDOF_SOH8+0];
+    xcurr(i,1) = xrefe(i,1) + disp[i*NODDOF_SOH8+1];
+    xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_SOH8+2];
   }
 
   // Epetra_SerialDenseMatrix stresses(NUMGPT_SOH8,NUMSTR_SOH8);
