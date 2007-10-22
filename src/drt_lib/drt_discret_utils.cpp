@@ -83,6 +83,10 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
       numdf = 1;
       dimns = 1;
     break;
+    case DRT::Element::element_ale2:
+      numdf = 2;
+      dimns = 3;
+    break;
     case DRT::Element::element_ale3:
       numdf = 3;
       dimns = 6;
