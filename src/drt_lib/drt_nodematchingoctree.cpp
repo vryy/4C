@@ -249,10 +249,10 @@ void DRT::Utils::NodeMatchingOctree::CreateGlobalNodeMatching(
 
       // allocate an "empty node". Fill it with info from
       // extracted node data
-      DRT::ParObject* o = DRT::Utils::Factory(data);
+      Teuchos::RCP<DRT::ParObject> o = Teuchos::rcp(DRT::Utils::Factory(data));
 
       // cast ParObject to Node
-      DRT::Node* actnode = dynamic_cast<DRT::Node*>(o);
+      DRT::Node* actnode = dynamic_cast<DRT::Node*>(o.get());
 
       //----------------------------------------------------------------
       // there is nothing to do if there are no master nodes on this
@@ -484,10 +484,10 @@ void DRT::Utils::NodeMatchingOctree::FindMatch(const DRT::Discretization& slaved
 
       // allocate an "empty node". Fill it with info from
       // extracted node data
-      DRT::ParObject* o = DRT::Utils::Factory(data);
+      Teuchos::RCP<DRT::ParObject> o = Teuchos::rcp(DRT::Utils::Factory(data));
 
       // cast ParObject to Node
-      DRT::Node* actnode = dynamic_cast<DRT::Node*>(o);
+      DRT::Node* actnode = dynamic_cast<DRT::Node*>(o.get());
       if (actnode==NULL)
         dserror("unpack of invalid data");
 
