@@ -107,7 +107,8 @@ public:
     XFEMCoupling,
     FluidStressCalc,
     LineLIFTDRAG,
-    SurfLIFTDRAG
+    SurfLIFTDRAG,
+    VolumeConstraint_3D
   };
 
   /*!

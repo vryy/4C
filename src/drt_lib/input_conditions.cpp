@@ -151,6 +151,11 @@ static void input_line_LIFTDRAG(multimap<int,RefCountPtr<DRT::Condition> >& lldm
 static void input_surf_LIFTDRAG(multimap<int,RefCountPtr<DRT::Condition> >& sldmap);
 
 /*----------------------------------------------------------------------*
+ | boundary surface for volume constraint                    tk 10/07   |
+ *----------------------------------------------------------------------*/
+static void input_surf_volconstr(multimap<int,RefCountPtr<DRT::Condition> >& vcbcmap);
+
+/*----------------------------------------------------------------------*
  | input of conditions                                    m.gee 11/06   |
  *----------------------------------------------------------------------*/
 void input_conditions(const DRT::Problem& problem)
@@ -329,6 +334,11 @@ void input_conditions(const DRT::Problem& problem)
   multimap<int,RefCountPtr<DRT::Condition> > surfLIFTDRAG;
   input_surf_LIFTDRAG(surfLIFTDRAG);
   setup_condition(surfLIFTDRAG, dsurf_fenode);
+  
+  //--------------------- read surf conditions for volume constraint
+  multimap<int,RefCountPtr<DRT::Condition> > surfvolconstr;
+  input_surf_volconstr(surfvolconstr);
+  setup_condition(surfvolconstr, dsurf_fenode);  
 
 
   // Iterate through all discretizations and sort the appropiate condition into
@@ -377,7 +387,9 @@ void input_conditions(const DRT::Problem& problem)
       register_condition("FluidStressCalc", "Surf Fluid Stress Calculation", surffluidstresscalc, actdis, noderowmap);
       
       register_condition("LIFTDRAG", "Line LIFTDRAG", lineLIFTDRAG, actdis, noderowmap);
-      register_condition("LIFTDRAG", "Surf LIFTDRAG", surfLIFTDRAG, actdis, noderowmap);    
+      register_condition("LIFTDRAG", "Surf LIFTDRAG", surfLIFTDRAG, actdis, noderowmap); 
+      
+      register_condition("VolumeConstraint_3D","Surface Volume Constraint",surfvolconstr,actdis, noderowmap);
     }
   }
 } /* end of input_conditions */
@@ -756,7 +768,7 @@ void input_surf_neum(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
       neum_funct[i] = 0;
     }
 
-    //---------------------------------- read the curve number of "none"
+    //---------------------------------- read the curve number or "none"
     int curve=0;
     char buffer[200];
     ierr=sscanf(colptr," %s ",buffer);
@@ -2617,6 +2629,88 @@ void input_surf_LIFTDRAG(multimap<int,RefCountPtr<DRT::Condition> >& sldmap)
   } // while(strncmp(allfiles.actplace,"------",6)!=0)
   return;
 };  //input_surf_LIFTDRAG
+
+/*----------------------------------------------------------------------------*
+ | input of volume constraint surfaces                               tk 10/07 |
+ *----------------------------------------------------------------------------*/
+void input_surf_volconstr(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
+{
+  DSTraceHelper dst("input_surf_volume_constraint");
+
+  /*-------------------- find the beginning of volume constraint surface */
+  if (frfind("---DESIGN SURFACE VOLUME CONSTRAINT 3D")==0) 
+	  {
+	    return;
+	  }
+	  
+  frread();
+  /*--------------------- read number of design surfaces with conditions */
+  int ierr=0;
+  int ndsurf=0;
+  frint("DSURF",&ndsurf,&ierr);
+  if(ierr!=1)
+    dserror("Cannot read design-surface for volume constraint 3D");
+  frread();
+
+  /*------------------------------------- start reading the design surfs */
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    /*------------------------------------------ read the design surf Id */
+    int dsurfid = -1;
+    frint("E",&dsurfid,&ierr);
+    if(ierr!=1)
+      dserror("Cannot read design-surface for volume constraint 3D");
+    dsurfid--;
+    
+    /*--------------------------------- move pointer behind the "-" sign */
+    char* colptr = strstr(allfiles.actplace,"-");
+    if(colptr==NULL)
+       dserror("Cannot read design-surface for volume constraint 3D");
+    colptr++;
+        
+    //------------------------------- define some temporary reading vectors
+    int    	VolConstrID=strtol(colptr,&colptr,10);
+    int  	VolConstrCurve=-1;       
+    
+    //---------------------------------- read the curve number or 'none'
+    char buffer[200];
+    ierr=sscanf(colptr," %s ",buffer);
+    if(ierr!=1)
+      dserror("Cannot read design-surface for volume constraint 3D");
+    if (strncmp(buffer,"none",4)==0)
+    {
+       colptr = strstr(allfiles.actplace,"none");
+       if(colptr==NULL)
+         dserror("Cannot read design-surface for volume constraint 3D");
+       colptr += 4;
+    }
+    else
+    {
+       ierr=sscanf(colptr," %d ",&VolConstrCurve);
+       VolConstrCurve--;
+       if(ierr!=1)
+         dserror("Cannot read design-surface for volume constraint 3D");
+       colptr = strpbrk(colptr,"1234567890");
+       colptr++;
+    }
+    
+
+    // create boundary condition
+    RefCountPtr<DRT::Condition> condition =
+           rcp(new DRT::Condition(dsurfid,DRT::Condition::VolumeConstraint_3D,true,
+                                  DRT::Condition::Surface));
+    
+    condition->Add("VolConstrID",&VolConstrID);
+    condition->Add("VolConsrtCurve",&VolConstrCurve);    
+    
+    //------------------------------- put condition in map of conditions
+    snmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dsurfid,condition));
+
+    //-------------------------------------------------- read the next line
+    frread();
+  } // while(strncmp(allfiles.actplace,"------",6)!=0)
+  return;
+};
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

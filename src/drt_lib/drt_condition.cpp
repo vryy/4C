@@ -102,7 +102,8 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==XFEMCoupling)                os << "XFEM Coupling condition:";
   else if (Type()==LineLIFTDRAG)                os << "Line LIFTDRAG condition:";
   else if (Type()==SurfLIFTDRAG)                os << "Surf LIFTDRAG condition:";
-  
+  else if (Type()==VolumeConstraint_3D)            os << "Volume constraint surface boundary condition:";
+ 
   else dserror("no output string for condition defined in DRT::Condition::Print");
   Container::Print(os);
   if ((int)geometry_.size())
