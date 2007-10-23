@@ -340,66 +340,90 @@ void tsi_st_genalp_init(PARTITION* actpart,
 
   /*--------------------------------------------------------------------*/
   /* allocate 1 dist vector for iterative displacements increments */
-  solserv_create_vec(dispi, dispi_num, *numeq_total, *numeq, "DV");
-  for (i=0; i<dispi_num; i++)
+  if (dispi_num == 1) 
   {
-    solserv_zero_vec(dispi[i]);
+    DIST_VECTOR* dispi_tmp;
+    solserv_create_vec(&(dispi_tmp), dispi_num, *numeq_total, *numeq, "DV");
+    solserv_zero_vec(&(dispi_tmp[0]));
+    *dispi = dispi_tmp;
+  }
+  else
+  {
+    dserror("More than 1 vector, please recode");
   }
 
   /*--------------------------------------------------------------------*/
   /* allocate 1 dist vector for velocities */
-  solserv_create_vec(vel, vel_num, *numeq_total, *numeq, "DV");
-  for (i=0; i<vel_num; i++)
+  if (vel_num == 1)
   {
-    solserv_zero_vec(vel[i]);
+    DIST_VECTOR* vel_tmp;
+    solserv_create_vec(&(vel_tmp), vel_num, *numeq_total, *numeq, "DV");
+    solserv_zero_vec(&(vel_tmp[0]));
+    *vel = vel_tmp;
+  }
+  else
+  {
+    dserror("More than 1 vector, please recode");
   }
 
   /*--------------------------------------------------------------------*/
   /* allocate 1 dist vector for accelerations */
-  solserv_create_vec(acc, acc_num, *numeq_total, *numeq, "DV");
-  for (i=0; i<acc_num; i++)
+  if (acc_num == 1)
   {
-    solserv_zero_vec(acc[i]);
+    DIST_VECTOR* acc_tmp;
+    solserv_create_vec(&(acc_tmp), acc_num, *numeq_total, *numeq, "DV");
+    solserv_zero_vec(&(acc_tmp[0]));
+    *acc = acc_tmp;
+  }
+  else
+  {
+    dserror("More than 1 vector, please recode");
   }
 
   /*--------------------------------------------------------------------*/
   /* create 1 redundant full-length vector for internal forces */
-  amdef("intforce_s", intforce_a, *numeq_total, 1, "DV");
+  amdef("intforce_t", intforce_a, *numeq_total, 1, "DV");
 
   /*--------------------------------------------------------------------*/
   /* create 1 vector of full length for Dirichlet part of RHS */
-  amdef("dirich_s", dirich_a, *numeq_total, 1, "DV");
+  amdef("dirich_t", dirich_a, *numeq_total, 1, "DV");
 
   /*--------------------------------------------------------------------*/
   /* allocate 3 dist. vectors for internal forces */
   /* internal force at t_{n+1}
    * internal force at t_{n}
    * mid-internal force at t_{n+1/2} */ /*fie_x, fie_y, fie_z;*/
-#if 1
-  solserv_create_vec(fie, fie_num, *numeq_total, *numeq, "DV");
-  for (i=0; i<fie_num; i++)
   {
-    solserv_zero_vec(fie[i]);
+    DIST_VECTOR* fie_tmp;
+    solserv_create_vec(&(fie_tmp), fie_num, *numeq_total, *numeq, "DV");
+    for (i=0; i<fie_num; i++)
+    {
+      solserv_zero_vec(&(fie_tmp[i]));
+    }
+    *fie =  fie_tmp;
   }
-#endif
 
   /*--------------------------------------------------------------------*/
   /* allocate 3 dist. working vectors */
-#if 1
-  solserv_create_vec(work, work_num, *numeq_total, *numeq, "DV");
-  for (i=0; i<work_num; i++)
   {
-    solserv_zero_vec(work[i]);
+    DIST_VECTOR* work_tmp;
+    solserv_create_vec(&(work_tmp), work_num, *numeq_total, *numeq, "DV");
+    for (i=0; i<work_num; i++)
+    {
+      solserv_zero_vec(&(work_tmp[i]));
+    }
+    *work = work_tmp;
   }
-#endif
 
   /*--------------------------------------------------------------------*/
-  /* b */
+  /* debub */
+#if 0
   solserv_create_vec(&distemp1, work_num, *numeq_total, *numeq, "DV");
   for (i=0; i<work_num; i++)
   {
     solserv_zero_vec(&(distemp1[i]));
   }
+#endif
 
   /*--------------------------------------------------------------------*/
   /* initialize solver on all matrices */
@@ -417,7 +441,6 @@ void tsi_st_genalp_init(PARTITION* actpart,
 		 &(actsolv->sysarray_typ[*stiff_array]),
                  &(actsolv->sysarray[*stiff_array]),
                  dispi[0], &(actsolv->rhs[0]), init);
-#if 1
   solver_control(actfield, disnum, actsolv, actintra,
                  &(actsolv->sysarray_typ[*mass_array]),
                  &(actsolv->sysarray[*mass_array]),
@@ -429,19 +452,6 @@ void tsi_st_genalp_init(PARTITION* actpart,
                    &(actsolv->sysarray[*damp_array]),
                    work[0], work[1], init);
   }
-#else
-  solver_control(actfield, disnum, actsolv, actintra,
-                 &(actsolv->sysarray_typ[*mass_array]),
-                 &(actsolv->sysarray[*mass_array]),
-                 &(distemp1[0]), &(distemp1[1]), init);
-  if (*damp_array > 0)
-  {
-    solver_control(actfield, disnum, actsolv, actintra,
-		   &(actsolv->sysarray_typ[*damp_array]),
-                   &(actsolv->sysarray[*damp_array]),
-                   &(distemp1[0]), &(distemp1[1]), init);
-  }
-#endif
 
   /*--------------------------------------------------------------------*/
   /* init the assembly for stiffness and for mass matrix */

@@ -56,6 +56,9 @@ This is the enumeration of all types for FUNCT
 *----------------------------------------------------------------------*/
 typedef enum _FUNCTTYP
 {
+  /* none/undefined */
+  funct_none,          /* no function */
+
   /* functions on a straight line */
   funct_line_lin,      /* linear function on a line */
   funct_line_quad,     /* quadratic parabola on a line */

@@ -395,22 +395,10 @@ void tsi_th_ost_st_genalp(INT disnum_s,
                      work_num, &(work),
                      &(intforce_a),
                      &(dirforce_a));
-#if 0
-  solserv_create_vec(&fie, fie_num, numeq_total_s, numeq_s, "DV");
-  for (i=0; i<fie_num; i++)
-  {
-    solserv_zero_vec(&(fie[i]));
-  }
-  solserv_create_vec(&work, work_num, numeq_total_s, numeq_s, "DV");
-  for (i=0; i<work_num; i++)
-  {
-    solserv_zero_vec(&(work[i]));
-  }
-#endif
 
   /*--------------------------------------------------------------------*/
   /* set initial step and time */
-/*   acttime = tsidyn->time;  /\* initial time *\/ */
+  /*   acttime = tsidyn->time;  /\* initial time *\/ */
   tsidyn->step = -1;
 
   /*====================================================================*/
@@ -482,6 +470,7 @@ void tsi_th_ost_st_genalp(INT disnum_s,
       printf("\nStep %d: Solve thermal field...\n", tdyn->step);
     }
 #if 0
+    /* debug */
     {
       INT i;
       for (i=0; i<2; i++)
@@ -508,6 +497,7 @@ void tsi_th_ost_st_genalp(INT disnum_s,
                     &(intheat_a),
                     &(dirheat_a));
 #if 0
+    /* debug */
     {
       INT i;
       for (i=0; i<2; i++)
@@ -547,6 +537,7 @@ void tsi_th_ost_st_genalp(INT disnum_s,
                        &(dirforce_a),
                        &(intforce_a));
 #if 0
+    /* debug */
     {
       INT i;
       for (i=0; i<numeq_t; i++)

@@ -661,6 +661,7 @@ void so3_mat_robinson_be_rbcksts(ELEMENT* ele,
   /* G = I_2/K_0^2 */
   if (fabs(kk0sq) <= EPS10)
   {
+    gg = 0.0;
     dserror("Division by zero: Shear threshold very close to zero");
   }
   else

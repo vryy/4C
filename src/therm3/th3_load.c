@@ -43,6 +43,15 @@ extern GENPROB genprob;
 */
 extern ALLDYNA* alldyn;
 
+/*----------------------------------------------------------------------*/
+/*!
+\brief Spatial distributions
+\author bborn
+\date 10/07
+*/
+extern INT numfunct;
+extern FUNCT* funct;
+
 
 /*======================================================================*/
 /*!
@@ -99,11 +108,11 @@ void th3_load_heat(CONTAINER* container,
   /* surface load */
   INT foundgsurfneum;  /* flag for identifying loaded surfaces */
   INT ngsurf;  /* number of geometry surfaces of volumetric element */
-  INT igsurf; /* surface index */
-  INT idimsid; /* surface dimension index */
-  GSURF* gsurf[MAXSID_THERM3];
+  INT igsurf;  /* surface index */
+  INT idimsid;  /* surface dimension index */
+  GSURF* gsurf[MAXSID_THERM3];  /* geometry surfaces of element */
   DOUBLE sidredm[DIMSID_THERM3][NDIM_THERM3];  /* dimens. reduct. matrix */
-  DOUBLE metr;
+  DOUBLE metr;  /* metric */
   DOUBLE gpcidim;  /* dummy Gauss point coordinate */
 
   /* line load */
@@ -131,7 +140,17 @@ void th3_load_heat(CONTAINER* container,
 
   /*--------------------------------------------------------------------*/
   /* initialize vectors */
-  memset(eload, 0, NUMDOF_THERM3*MAXNOD_THERM3*sizeof(DOUBLE));  /* set eload to zero */
+  {
+    INT idof;
+    for (idof=0; idof<NUMDOF_THERM3; idof++)
+    {
+      INT jnod;
+      for (jnod=0; jnod<MAXNOD_THERM3; jnod++)
+      {
+        eload[idof][jnod] = 0.0;  /* set eload to zero */
+      }
+    }
+  }
 
   /*====================================================================*/
   /* check if external heat is applied (load) */
@@ -171,6 +190,12 @@ void th3_load_heat(CONTAINER* container,
           foundgsurfneum = 1;
           break;
         case neum_heatconvection:
+          foundgsurfneum = 1;
+          break;
+        case neum_heatconv_fct1:
+          foundgsurfneum = 1;
+          break;
+        case neum_heatconv_fct2:
           foundgsurfneum = 1;
           break;
         default:
@@ -420,7 +445,7 @@ void th3_load_heat(CONTAINER* container,
                 /*------------------------------------------------------*/
                 /* add surface load contribution ==> eload modified */
                 th3_load_surf(container, ele, nelenod, gsurf[igsurf],
-                              shape, fac, cfac, eload);
+                              gpc, shape, fac, cfac, eload);
               }  /* end for */
             }  /* end for */
             /*----------------------------------------------------------*/
@@ -509,8 +534,8 @@ void th3_load_heat(CONTAINER* container,
               fac *= metr;
               /*--------------------------------------------------------*/
               /* add surface load contribution ==> eload modified */
-              th3_load_surf(container, ele, nelenod, gsurf[igsurf], shape,
-                            fac, cfac, eload);
+              th3_load_surf(container, ele, nelenod, gsurf[igsurf], 
+                            gpc, shape, fac, cfac, eload);
             }  /* end for */
           }  /* end for */
           /*------------------------------------------------------------*/
@@ -832,6 +857,7 @@ void th3_load_vol(ELEMENT *ele,
 \param   ele        ELEMENT*    (i)    actual element
 \param   nelenod    INT         (i)    number of element nodes
 \param   gsurf      GSURF*      (i)    current geometry surface
+\param   gpc        DOUBLE[]    (i)    r,s,t-coord current GP
 \param   shape      DOUBLE[]    (i)    shape function at Gauss point
 \param   fac        DOUBLE      (i)    integration factor at Gauss point
 \param   cfac       DOUBLE      (i)    load curve scale
@@ -842,9 +868,10 @@ void th3_load_vol(ELEMENT *ele,
 \date 09/06
 */
 void th3_load_surf(CONTAINER* container,
-                   ELEMENT *ele,
+                   ELEMENT* ele,
                    INT nelenod,
-                   GSURF *gsurf,
+                   GSURF* gsurf,
+                   DOUBLE gpc[NDIM_THERM3],
                    DOUBLE shape[MAXNOD_THERM3],
                    DOUBLE fac,
                    DOUBLE cfac,
@@ -889,12 +916,25 @@ void th3_load_surf(CONTAINER* container,
       break;
     /*------------------------------------------------------------------*/
     /* heat convection
-     * Strictly speacking this is an non-linear heat load type,
-     * do to its dependence on the current heat state (follower load-like).
+     * Strictly speaking this is a non-linear heat load type,
+     * due to its dependence on the current heat state (follower load-like).
      * Here, we will use the _last converged_ temperature to avoid
      * the effort of a linearisation. */
     case neum_heatconvection:
+    case neum_heatconv_fct1:
+    case neum_heatconv_fct2:
     {
+#if 1
+      const INT jdof = 0;
+      DOUBLE hflx;
+      th3_load_heatconv(container, ele, nelenod, gsurf,
+                        gpc, shape, fac, cfac, &hflx);
+      /* add load vector component to element load vector */
+      for (inode=0; inode<nelenod; inode++)
+      {
+        eload[jdof][inode] += shape[inode] * hflx * fac;
+      }
+#else
       const INT jdof = 0;
       INT have_val0 = gsurf->neum->neum_onoff.a.iv[0];
       INT have_val1 = gsurf->neum->neum_onoff.a.iv[1];
@@ -913,7 +953,7 @@ void th3_load_surf(CONTAINER* container,
         DOUBLE c1 = gsurf->neum->neum_val.a.dv[2];
         /* 2nd base temperature */
         DOUBLE t2 = gsurf->neum->neum_val.a.dv[3];
-        /* 1st convection coefficient */
+        /* 2nd convection coefficient */
         DOUBLE c2 = gsurf->neum->neum_val.a.dv[4];
         /* temperature of last converged state */
         DOUBLE tem;
@@ -974,6 +1014,7 @@ void th3_load_surf(CONTAINER* container,
         dserror("Not enough parameters for heat convection");
 #endif
       }
+#endif
       break;
     }
     /*------------------------------------------------------------------*/

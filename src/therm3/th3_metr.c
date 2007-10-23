@@ -28,6 +28,67 @@ Maintainer: Burkhard Bornemann
 
 /*======================================================================*/
 /*!
+\brief Physical xyz-coordinate of point given in parametric rst-coordinates
+
+\param ele      ELEMENT*    (i)   the element
+\param enod     INT         (i)   number of element nodes
+\param parc     DOUBLE[]    (i)   parametric point co-ordinates (in)
+\param phyc     DOUBLE[]    (o)   physical point co-ordinates (out)
+\return void
+
+\author bborn
+\date 10/07
+*/
+void th3_metr_refpos(ELEMENT* ele,
+                     INT enod,
+                     DOUBLE parc[NDIM_THERM3],
+                     DOUBLE phyc[NDIM_THERM3])
+{
+  DOUBLE ex[MAXNOD_THERM3][NDIM_THERM3];  /* ref. coord. of element nodes */
+  DOUBLE shape[MAXNOD_THERM3];  /* shape functions at point */
+  INT inod = 0;  /* node index */
+  INT idim = 0;  /* dimension index */
+  
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("th3_metr_refpos");
+#endif
+
+  /*----------------------------------------------------------------------*/
+  /* physical location of element nodes */
+  for (inod=0; inod<enod; inod++)
+  {
+    for (idim=0; idim<NDIM_THERM3; idim++)
+    {
+      ex[inod][idim] = ele->node[inod]->x[idim];
+    }
+  }
+
+  /* shape functions at point */
+  th3_shape_deriv(ele->distyp, parc[0], parc[1], parc[2], 0, shape, NULL);
+
+  /* physical xyz-coordinates of rst-defined point */
+  for (idim=0; idim<NDIM_THERM3; idim++)
+  {
+    phyc[idim] = 0.0;
+  }
+  for (inod=0; inod<enod; inod++)
+  {
+    for (idim=0; idim<NDIM_THERM3; idim++)
+    {
+      phyc[idim] += shape[inod] * ex[inod][idim];
+    }
+  }
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
+/*======================================================================*/
+/*!
 \brief Jacobian matrix at coordinate (r,s,t) (e.g. Gauss point) by
        applying isoparametric concept
 

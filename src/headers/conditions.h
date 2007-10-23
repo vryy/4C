@@ -41,7 +41,9 @@ typedef struct _NEUM_CONDITION
      neum_increhydro_z,
      neum_orthopressure,
      neum_LAS,
-     neum_heatconvection
+     neum_heatconvection,      /* heat convection BCs: assorted types */
+     neum_heatconv_fct1,       /* heat convection: spatial non-const FUNCT1 */
+     neum_heatconv_fct2        /* heat convection: spatial non-const FUNCT1 */
      }                         neum_type;
 
      enum

@@ -78,42 +78,42 @@ void inp_cond_funct()
   {
     frread();
     frchk("---",&ierr);
-    if (ierr==0) (numfunct)++;
+    if (ierr==0) numfunct = 1;
   }
 
   if (frfind("--FUNCT2")==1)
   {
     frread();
     frchk("---",&ierr);
-    if (ierr==0) (numfunct)++;
+    if (ierr==0) numfunct = 2;
   }
 
   if (frfind("--FUNCT3")==1)
   {
     frread();
     frchk("---",&ierr);
-    if (ierr==0) (numfunct)++;
+    if (ierr==0) numfunct = 3;
   }
 
   if (frfind("--FUNCT4")==1)
   {
     frread();
     frchk("---",&ierr);
-    if (ierr==0) (numfunct)++;
+    if (ierr==0) numfunct = 4;
   }
 
   if (frfind("--FUNCT5")==1)
   {
     frread();
     frchk("---",&ierr);
-    if (ierr==0) (numfunct)++;
+    if (ierr==0) numfunct = 5;
   }
 
   if (frfind("--FUNCT6")==1)
   {
     frread();
     frchk("---",&ierr);
-    if (ierr==0) (numfunct)++;
+    if (ierr==0) numfunct = 6;
   }
 
 
@@ -158,6 +158,14 @@ void inp_read_funct(char *string, INT id)
 #ifdef DEBUG
   dstrc_enter("inp_read_funct");
 #endif
+
+
+  /* quit if not enough functions allocated */
+  if (id >= numfunct) goto end;
+
+
+  /* set default function type */
+  funct[id].functtyp = funct_none;
 
 
   /* check whether there is info on this funct */

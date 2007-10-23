@@ -563,13 +563,13 @@ void so3_shape_gpshade(ELEMENT *ele,
                        SO3_GPSHAPEDERIV *so3_gpshade)
 {
   INT calc_gpshade;  /* operation flag */
-  INT gpnumr, gpnums, gpnumt;  /* auxiliar number of Gauss points */
-  INT gpintcr, gpintcs, gpintct;  /* auxiliar integration case */
+  INT gpnumr=0, gpnums=0, gpnumt=0;  /* auxiliar number of Gauss points */
+  INT gpintcr=0, gpintcs=0, gpintct=0;  /* auxiliar integration case */
   INT igpr, igps, igpt;  /* directional Gauss point index */
   INT igp;  /* total Gauss point index (in domain) */
   INT idim;  /* dimension index */
-  DOUBLE gpcr, gpcs, gpct;  /* Gauss point coordinate */
-  DOUBLE fac;  /* Gauss weight */
+  DOUBLE gpcr=1.0, gpcs=1.0, gpct=1.0;  /* Gauss point coordinate */
+  DOUBLE fac=1.0;  /* Gauss weight */
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG

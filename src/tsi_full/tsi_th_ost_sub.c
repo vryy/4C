@@ -279,8 +279,12 @@ void tsi_th_ost_init(PARTITION* actpart,
 
   /*--------------------------------------------------------------------*/
   /* global temperature vectors */
-  solserv_create_vec(tem, 1, *numeq_total, *numeq, "DV");
-  /* solserv_zero_vec(tem[0]); */
+  {
+    DIST_VECTOR* tem_tmp;
+    solserv_create_vec(&(tem_tmp), 1, *numeq_total, *numeq, "DV");
+    /* solserv_zero_vec(&(tem_tmp[0])); */    
+    *tem = tem_tmp;
+  }
   /* set initial temperature in field */
   {
     INT idof;
@@ -300,17 +304,29 @@ void tsi_th_ost_init(PARTITION* actpart,
 
   /*--------------------------------------------------------------------*/
   /* external heat loads */
-  solserv_create_vec(fext, 1, *numeq_total, *numeq, "DV");
-  solserv_zero_vec(fext[0]);
-  solserv_create_vec(fextn, 1, *numeq_total, *numeq, "DV");
-  solserv_zero_vec(fextn[0]);
+  {
+    DIST_VECTOR* fext_tmp;
+    solserv_create_vec(&(fext_tmp), 1, *numeq_total, *numeq, "DV");
+    solserv_zero_vec(&(fext_tmp[0]));
+    *fext = fext_tmp;
+  }
+  {
+    DIST_VECTOR* fextn_tmp;
+    solserv_create_vec(&(fextn_tmp), 1, *numeq_total, *numeq, "DV");
+    solserv_zero_vec(&(fextn_tmp[0]));
+    *fextn = fextn_tmp;
+  }
 
   /*--------------------------------------------------------------------*/
   /* internal heat force */
   amdef("intforce_t", intforce_a, *numeq_total, 1, "DV");
   amzero(intforce_a);
-  solserv_create_vec(fint, 1, *numeq_total, *numeq, "DV");
-  solserv_zero_vec(fint[0]);
+  {
+    DIST_VECTOR* fint_tmp;
+    solserv_create_vec(&(fint_tmp), 1, *numeq_total, *numeq, "DV");
+    solserv_zero_vec(&(fint_tmp[0]));
+    *fint = fint_tmp;
+  }
 
   /*-------------------------------------------------------------------*/
   /* initialize solver */

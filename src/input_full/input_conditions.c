@@ -1009,6 +1009,10 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    if (ierr) actdsurf->neum->neum_type = neum_LAS;
    frchk("HeatConvection",&ierr);
    if (ierr) actdsurf->neum->neum_type = neum_heatconvection;
+   frchk("HeatConvectionFunction1",&ierr);
+   if (ierr) actdsurf->neum->neum_type = neum_heatconv_fct1;
+   frchk("HeatConvectionFunction2",&ierr);
+   if (ierr) actdsurf->neum->neum_type = neum_heatconv_fct2;
    /*--------------------------------------------------- read next line */
    frread();
 }

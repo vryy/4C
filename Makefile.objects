@@ -885,6 +885,7 @@ OBJS_THERM3   = src/therm3/th3_bop.o \
                 src/therm3/th3_intg.o \
                 src/therm3/th3_lin.o \
                 src/therm3/th3_load.o \
+                src/therm3/th3_load_heatconv.o \
                 src/therm3/th3_main.o \
                 src/therm3/th3_mat.o \
                 src/therm3/th3_matlin.o \

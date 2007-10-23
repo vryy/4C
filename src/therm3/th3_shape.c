@@ -37,21 +37,21 @@ Maintainer: Burkhard Bornemann
 \param  option     INT       (i)    option
                                     ==0 : only shape functions
                                     ==1 : shape functions and derivatives
-\param  *shape     DOUBLE    (o)    shape function value at (r,s)
-\param  **deriv    DOUBLE    (o)    shape function derivative at (r,s)
+\param  *shape     DOUBLE    (o)    shape function value at (r,s,t)
+\param  **deriv    DOUBLE    (o)    shape function derivative at (r,s,t)
 
 \return void
 
 \author bborn
 \date 09/06
 */
-void th3_shape_deriv(DIS_TYP     typ,
-                     DOUBLE      r,
-                     DOUBLE      s,
-                     DOUBLE      t,
-                     INT         option,
-                     DOUBLE      shape[MAXNOD_THERM3],
-                     DOUBLE      deriv[MAXNOD_THERM3][NDIM_THERM3])
+void th3_shape_deriv(DIS_TYP typ,
+                     DOUBLE r,
+                     DOUBLE s,
+                     DOUBLE t,
+                     INT option,
+                     DOUBLE shape[MAXNOD_THERM3],
+                     DOUBLE deriv[MAXNOD_THERM3][NDIM_THERM3])
 {
   DOUBLE rp, sp, tp, rm, sm, tm;  /* auxiliary variables 1 */
   DOUBLE rrm, ssm, ttm, rrp, ssp, ttp;  /* auxiliary variables 2 */
@@ -87,7 +87,7 @@ void th3_shape_deriv(DIS_TYP     typ,
       shape[6] = 0.125*rp*sp*tp;
       shape[7] = 0.125*rm*sp*tp;
       /* optionally include derivatives */
-      if (option == 1)
+      if ( (option == 1) && (deriv != NULL) )
       {
         /* shape fct. assoc. to node 0 */
         deriv[0][0] = -0.125*sm*tm;  /* differentiated in r */
@@ -169,7 +169,7 @@ void th3_shape_deriv(DIS_TYP     typ,
       shape[14] = 0.25*rp*sp*ttm;
       shape[15] = 0.25*rm*sp*ttm;
       /* optionally include derivatives */
-      if (option == 1)
+      if ( (option == 1) && (deriv != NULL) )
       {
         /* corners */
         deriv[0][0] = -0.125*sm*tm*(2.0*rm+sm+tm-5.0);
@@ -284,7 +284,7 @@ void th3_shape_deriv(DIS_TYP     typ,
       /* volume centre node */
       shape[26] = rm*rp * sm*sp * tm*tp;
       /* optionally include derivatives */
-      if (option == 1)
+      if ( (option == 1) && (deriv != NULL) )
       {
         /* shape fct. assoc. to node 0 */
         deriv[0][0] = -0.125 * rrm * s*sm * t*tm;
@@ -405,7 +405,7 @@ void th3_shape_deriv(DIS_TYP     typ,
       shape[2] = t;
       shape[3] = 1.0 - r - s - t;
       /* optionally include derivatives */
-      if (option == 1)
+      if ( (option == 1) && (deriv != NULL) )
       {
         deriv[0][0] = 1.0;
         deriv[0][1] = 0.0;
@@ -444,7 +444,7 @@ void th3_shape_deriv(DIS_TYP     typ,
       shape[8] = s4*u;
       shape[9] = t4*u;
       /* optionally include derivatives */
-      if (option == 1)
+      if ( (option == 1) && (deriv != NULL) )
       {
         /* shape fct. assoc. to node 0 */
         deriv[0][0] = r4 - 1.0;  /* differentiated with respect to r */
