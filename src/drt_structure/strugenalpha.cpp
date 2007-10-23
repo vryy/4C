@@ -122,7 +122,7 @@ havecontact_(false)
   fextn_ = LINALG::CreateVector(*dofrowmap,true);
 
   // dynamic force residual at mid-time R_{n+1-alpha}
-  // also known at out-of-balance-force
+  // also known as out-of-balance-force
   fresm_ = LINALG::CreateVector(*dofrowmap,false);
 
   //-------------------------------------------- calculate external forces
