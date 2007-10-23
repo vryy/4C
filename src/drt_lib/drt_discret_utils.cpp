@@ -93,10 +93,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     break;
     case DRT::Element::element_none:
     default:
-      cout << "WARNING: Computation of nullspace not yet implemented for your discretization\n";
-      fflush(stdout);
-      numdf = 1;
-      dimns = 1;
+      dserror("Element type not supported by ML");
     break;
   }
   const int numproc = Comm().NumProc();
