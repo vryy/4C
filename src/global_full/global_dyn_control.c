@@ -60,7 +60,7 @@ void caldyn()
       break;
     /* Generalized Energy-Momentum time integration */
     case Gen_EMM:
-#ifdef GEMM
+#if defined(GEMM) && !defined(CCADISCRET)
       dyn_nln_gemm();
 #else
       dserror("GEMM not supported");
