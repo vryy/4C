@@ -80,7 +80,10 @@ bool DRT::Elements::SoDisp::ReadElement()
     }
     
     const bool allowed_element = (distype == hex27) || (distype == hex20) || (distype == tet10) || (distype == wedge15);
-    dsassert(allowed_element, "Only quadratic order for DISP (displacement based) element");
+    // The intention of this element is to help debugging the xfem intersection routines.
+    // The element is purely displacement based and has not been tested for correct compution
+    // It serves solely as higher order geometry input data to XFEm problems
+    dsassert(allowed_element, "Only quadratic order for DISP (displacement based) element.");
 
     // reduce node numbers by one
     for (int i=0; i<nnode; ++i) nodes[i]--;
