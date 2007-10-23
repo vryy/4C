@@ -74,7 +74,7 @@ public:
   \brief Destructor
 
   */
-  virtual ~StruGenAlpha();
+  virtual ~StruGenAlpha() {};
 
 
 
