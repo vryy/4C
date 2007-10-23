@@ -343,8 +343,6 @@ void LINALG::SymmetricEigen(Epetra_SerialDenseMatrix& A,
 | invert a dense nonsymmetric matrix (public)       g.bau 03/07|
 *----------------------------------------------------------------------*/
 #include <Epetra_SerialDenseSolver.h>
-
-
 void LINALG::NonSymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)
 {
   if (A.M() != A.N()) dserror("Matrix is not square");
@@ -385,7 +383,6 @@ void LINALG::ApplyDirichlettoSystem(RefCountPtr<Epetra_Vector>&      x,
 }
 
 #if 1
-
 // The old version that modifies the sparse mask.
 
 /*----------------------------------------------------------------------*
