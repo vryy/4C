@@ -15,7 +15,7 @@
 
 \subitempart{About}\\
 
-Input sequences are denoted by applying EBNF, see Sec.~\ref{brick1:sec:ebnf}.
+Input sequences are denoted by applying EBNF, see Sec.~\ref{inparams:sec:ebnf}.
 
 \subitempart{Text input} `\cnl' is for line continuation
 \begin{quote}
@@ -323,25 +323,3 @@ Stresses can only be displayed for these combinations
 \item Nodal interpolation of stresses is very inefficient, consider recoding
 \end{enumerate}
 
-%%
-%%::::::::::::::::::::::::::::EBNF
-\section{Extended Backus--Naur formalism}\label{brick1:sec:ebnf}
-An extended Backus--Naur Formalism (EBNF), Reiser and Wirth
-%%\cite{reiser94}
-, is used to describe the input lines.
-
-\begin{itemize}
-\item Several listed construct are regarded as concatenated:\\
-  \cod{C $=$ A B} means \cod{C} consists of \cod{A} followed by \cod{B}.
-\item Alternatives are separated by $|$:\\
-  \cod{C $=$ A $|$ B} means \cod{C $=$ A} or \cod{C $=$ B}, but not 
-  \cod{C $=$ A B} or \cod{C $=$ $\emptyset$}\@. 
-\item Brackets $[$ and $]$ denote optionality of the enclosed 
-  construct:\\
-  \cod{B $=$ $[$A$]$} results in \cod{B $=$ A} or \cod{B $=$ $\emptyset$}\@.
-\item Braces $\{$ and $\}$ denote a repetition of a construct, 
-  which includes zero repetitions:\\
-  \cod{B $=$ $\{$A$\}$} is equivalent to $\cod{B} = \emptyset, \cod{A}, \cod{AA}, \cod{AAA}, \ldots$
-\item Parentheses $($ and $)$ group expressions.
-\item An ellipsis $\ldots$ represents reasonable continuation.
-\end{itemize}

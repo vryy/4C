@@ -41,7 +41,7 @@ neglected.
 
 %%
 %%::::::::::::::::::::::::::::EBNF
-\section[EBNF]{Extended Backus--Naur formalism}\label{brick1:sec:ebnf}
+\section[EBNF]{Extended Backus--Naur formalism}\label{inparams:sec:ebnf}
 An extended Backus--Naur Formalism (EBNF), Reiser and Wirth
 %%\cite{reiser94}
 , is used to describe the input lines.
@@ -423,7 +423,7 @@ offset when results shall be written to .flavia.res when time adaptivity is on
 \kw{Nlin_Time_Int}                  &{\kor}\\
 \kw{Projection_Method or PM_discont}&{\kor}\\
 \kw{PM_cont}                        &{\kor}\\
-\kw{PM_laplace}			    &\kw{)}
+\kw{PM_laplace}                     &\kw{)}
 \end{tabular}
 
 Select Projection method (\kw{PM}) or classical time integration
@@ -503,7 +503,7 @@ Theta for starting algorithm
 \kw{No}             &{\kor}\\
 \kw{L_infinity_norm}&{\kor}\\
 \kw{L_1_norm}       &{\kor}\\
-\kw{L_2_norm}	    &\kw{)}
+\kw{L_2_norm}       &\kw{)}
 \end{tabular}
 
 Norm of time increment for steady state check. Remarks:
@@ -512,7 +512,7 @@ Norm of time increment for steady state check. Remarks:
 \kw{No}             & don't do anything\\\hline
 \kw{L_infinity_norm}& Max. norm\\\hline
 \kw{L_1_norm}       & Integral of absolute values\\\hline
-\kw{L_2_norm}	    & Integral of sqrt of values\^2
+\kw{L_2_norm}       & Integral of sqrt of values\^2
 \end{tabular}
 \end{center}
 
@@ -549,7 +549,7 @@ Interval for timestep size
 \noindent\kw{NONLINITER (}
 \begin{tabular}[t]{lc}
 \kw{fixed_point_like}&{\kor}\\
-\kw{Newton}	     &\kw{)}
+\kw{Newton}          &\kw{)}
 \end{tabular}
 
 Only for GLS stabilized elements --- for USFEM, Newton is the default!
@@ -570,7 +570,7 @@ achieved!
 \kw{No}             &{\kor}\\
 \kw{L_infinity_norm}&{\kor}\\
 \kw{L_1_norm}       &{\kor}\\
-\kw{L_2_norm}	    &\kw{)}
+\kw{L_2_norm}       &\kw{)}
 \end{tabular}
 
 Norm for convergence check of nonlinear iteration. Increments are 
@@ -580,7 +580,7 @@ checked, not the residual!!!
 \kw{No}             & don't do anything\\\hline
 \kw{L_infinity_norm}& Max. norm\\\hline
 \kw{L_1_norm}       & Integral of absolute values\\\hline
-\kw{L_2_norm}	    & Integral of sqrt of values\^2
+\kw{L_2_norm}       & Integral of sqrt of values\^2
 \end{tabular}
 \end{center}
 
@@ -664,7 +664,7 @@ restart from step \kw{RESSTEP} if \kw{RESSTEP}$\geq0$
 \kw{loclag_imp}      &{\kor}\\
 \kw{hf_vert_sep}     &{\kor}\\
 \kw{hf_vert_imp}     &{\kor}\\
-\kw{genfs}	     &\kw{)}
+\kw{genfs}           &\kw{)}
 \end{tabular}
 
 \noindent\kw{SURFTENSION (yes}\kor\kw{no)}
@@ -744,7 +744,7 @@ Activate lift and drag calculation. Remarks:
 \noindent\kw{VISCSTRESS (yes}\kor\kw{no)}
 
 Viscous stresses are included in stress calculation.
-	     
+             
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

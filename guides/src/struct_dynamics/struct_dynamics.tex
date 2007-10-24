@@ -148,3 +148,63 @@ Algorithm:
 \item Store inverted mass matrix once and for all; or even dummy solver for
   lumped mass matrix
 \end{enumerate}
+
+%%
+%%............................Inclined BCs for retro-discretisation
+\section{Inclined boundary conditions (BCs)}
+
+\subsection{About}
+Sometimes it is desirable to have boundary conditions
+which are not oriented in the global Cartesian $XYZ$-axes,
+but in other directions. This occurs for instance with
+rotatory symmetric problems.
+
+\subsection{Method}
+The implementation is an adaptation of Steffen Genkinger's
+local systems (locsys, for fluid) to structures.
+The idea is to rotate the DOFs on an inclined boundary in the
+direction of a local co-ordinate system. These locally oriented
+DOFs are solved on the global level. The generalised-alpha holds
+locally oriented DOFs for all DOFs at Dirichlet nodes
+(prescribed/supported \& free DOFs there). Therefore, all assembled
+quantities (stiffness, mass, internal force, velocity, etc) have
+at certain nodes rotated DOFs. On the other hand, the `\texttt{sol}', 
+`\texttt{sol\_increment}', etc arrays at the \texttt{NODE}s are always globally
+oriented (except for intermediate operations at solution algo level)
+
+\subsection{Gid input}
+\begin{enumerate}
+\item Define \& name (e.g. `\textit{mysys}') local axes\\
+       Data $\to$ Local axes $\to$ Define
+\item Assign local systems to design points, lines and surface to which
+       inclinded BCs are wanted. E.g.\\
+       \texttt{Data} $\to$ \texttt{Conditions} $\to$ \texttt{Single} $\to$ \texttt{Layer} $\to$ \texttt{Points} $\to$ \texttt{Locsys Point}\\
+       choose \texttt{LocsysId} (e.g. \textit{1})\\
+       You need to apply to the full hierarchy
+       of design element. It avoids conflicts on lines which belong
+       to different Dirichlet BCs coming from higher entities.
+\item Bind to \texttt{locsysId} the named  (e.g. `\textit{mysys}') local axes\\
+       Data $\to$ Problem Data $\to$ Locsys\\
+       \texttt{Locsys\_1} : \texttt{on}\\
+       \texttt{Locsys\_Typ\_1} : \texttt{BASEVEC}\\
+       \texttt{Ls1\_Basevec\_Input\_Type} : \texttt{LocalAxes\_Name}\\
+       \texttt{Ls1\_LocalAxes\_Name} : `\textit{mysys}'\\
+\end{enumerate}
+
+\subsection{Compilation}
+\texttt{LOCALSYSTEMS\_ST} preprocessor definition required (\texttt{defines} file)
+
+\subsection{Restrictions}
+\begin{itemize}
+\item Available in old discretisation
+\item Implemented for 
+   \begin{itemize}
+   \item \texttt{WALL1} (untested)
+   \item \texttt{BRICK1} (untested)
+   \item \texttt{SOLID3} (verified)
+   \end{itemize}
+\item Prescribed deflection of DOFs available
+\item Solution technique: Generalised-alpha (\texttt{stru\_dyn\_nln.c})
+\item fsiloads in \texttt{WALL1}???
+\item test file \texttt{so3\_dyn\_inclined\_bc.dat}
+\end{itemize}

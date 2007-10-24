@@ -11,7 +11,7 @@
 The WALL1 element is an element for linear and non-linear structural analysis
 of planar structures. 
 
-The here used EBNF is explained in Sec~\ref{wall1:sec:ebnf}.
+The here used EBNF is explained in Sec~\ref{inparams:sec:ebnf}.
 
 \subitempart{Text input}  `\cnl' is for line continuation
 \begin{quote}
@@ -315,25 +315,3 @@ Stresses can only be printed for these combinations and only in serial:
 \cod{w1\_stalin\_dirich.dat}
 \cod{w1dyn.dat}
 
-%%
-%%::::::::::::::::::::::::::::EBNF
-\section{Extended Backus--Naur formalism}\label{wall1:sec:ebnf}.
-An extended Backus--Naur Formalism (EBNF), Reiser and Wirth
-%%\cite{reiser94}
-, is used to describe the input lines.
-
-\begin{itemize}
-\item Several listed construct are regarded as concatenated:\\
-  \cod{C $=$ A B} means \cod{C} consists of \cod{A} followed by \cod{B}.
-\item Alternatives are separated by $|$:\\
-  \cod{C $=$ A $|$ B} means \cod{C $=$ A} or \cod{C $=$ B}, but not 
-  \cod{C $=$ A B} or \cod{C $=$ $\emptyset$}\@. 
-\item Brackets $[$ and $]$ denote optionality of the enclosed 
-  construct:\\
-  \cod{B $=$ $[$A$]$} results in \cod{B $=$ A} or \cod{B $=$ $\emptyset$}\@.
-\item Braces $\{$ and $\}$ denote a repetition of a construct, 
-  which includes zero repetitions:\\
-  \cod{B $=$ $\{$A$\}$} is equivalent to $\cod{B} = \emptyset, \cod{A}, \cod{AA}, \cod{AAA}, \ldots$
-\item Parentheses $($ and $)$ group expressions.
-\item An ellipsis $\ldots$ represents reasonable continuation.
-\end{itemize}
