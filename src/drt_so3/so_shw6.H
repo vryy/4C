@@ -119,38 +119,6 @@ public:
 
   //! @name Evaluation
 
-  /*!
-  \brief Evaluate an element
-
-  Evaluate so_hex8 element stiffness, mass, internal forces, etc.
-
-  \param params (in/out): ParameterList for communication between control routine
-                          and elements
-  \param elemat1 (out)  : (stiffness-)matrix to be filled by element. If NULL on input,
-                          the controling method does not expect the element to fill
-                          this matrix.
-  \param elemat2 (out)  : (mass-)matrix to be filled by element. If NULL on input,
-                          the controling method does not expect the element to fill
-                          this matrix.
-  \param elevec1 (out)  : (internal force-)vector to be filled by element. If NULL on input,
-                          the controlling method does not expect the element
-                          to fill this vector
-  \param elevec2 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not expect the element
-                          to fill this vector
-  \param elevec3 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not expect the element
-                          to fill this vector
-  \return 0 if successful, negative otherwise
-  */
-  int Evaluate(ParameterList& params,
-               DRT::Discretization&      discretization,
-               vector<int>&              lm,
-               Epetra_SerialDenseMatrix& elemat1,
-               Epetra_SerialDenseMatrix& elemat2,
-               Epetra_SerialDenseVector& elevec1,
-               Epetra_SerialDenseVector& elevec2,
-               Epetra_SerialDenseVector& elevec3);
 
 
 private:
@@ -158,7 +126,7 @@ private:
   // don't want = operator
   So_shw6& operator = (const So_shw6& old);
 
-  virtual void sow6_nlnstiffmass(vector<int>&              lm,
+  virtual void soshw6_nlnstiffmass(vector<int>&              lm,
                                  vector<double>&           disp,
                                  vector<double>&           residual,
                                  Epetra_SerialDenseMatrix* stiffmatrix,
@@ -251,16 +219,6 @@ public:
 
   //@}
 
-  //! @name Construction
-  /*!
-  \brief Call Element init routines
-
-  The method performs all steps needed to init the wedge elements,
-  e.g. defines shell-thickness direction
-  */
-  int Initialize(DRT::Discretization& dis);
-
-  //@}
 
 
 private:
