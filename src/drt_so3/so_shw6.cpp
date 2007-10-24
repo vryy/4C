@@ -27,7 +27,7 @@ using namespace DRT::Utils;
 DRT::Elements::So_shw6::So_shw6(int id, int owner) :
 DRT::Elements::So_weg6(id,owner)
 {
-  SetType(element_soshw6);
+  SetType(element_so_shw6);
   return;
 }
 
@@ -65,7 +65,7 @@ void DRT::Elements::So_shw6::Pack(vector<char>& data) const
   AddtoPack(data,type);
   // add base class So_weg6 Element
   vector<char> basedata(0);
-  DRT::Elements::So_weg6::Pack(basedata)
+  DRT::Elements::So_weg6::Pack(basedata);
 
   return;
 }
@@ -151,7 +151,7 @@ DRT::Elements::Sow6Register::Sow6Register(old)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Elements::Sow6Register* DRT::Elements::Soshw6Register::Clone() const
+DRT::Elements::Soshw6Register* DRT::Elements::Soshw6Register::Clone() const
 {
   return new DRT::Elements::Soshw6Register(*this);
 }
@@ -180,7 +180,7 @@ void DRT::Elements::Soshw6Register::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Sow6Register::Unpack(const vector<char>& data)
+void DRT::Elements::Soshw6Register::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type

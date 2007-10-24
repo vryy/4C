@@ -3,8 +3,7 @@
 #ifdef TRILINOS_PACKAGE
 
 using namespace std;
-using namespace Teuchos;
-#include "so_weg.H"
+#include "so_weg6.H"
 
 namespace DRT
 {
@@ -86,7 +85,7 @@ public:
   \brief Destructor
 
   */
-  virtual ~So_weg6();
+  virtual ~So_shw6();
 
   //@}
 
@@ -182,7 +181,7 @@ private:
 
 \author frenzel (frenzel@lnm.mw.tum.de)
 */
-class Soshw6Register : public DRT::ElementRegister
+class Soshw6Register : public Sow6Register
 {
 public:
 
