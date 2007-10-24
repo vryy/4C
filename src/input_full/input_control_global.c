@@ -992,6 +992,7 @@ sdyn->updevry_disp=1;
 sdyn->updevry_stress=1;
 sdyn->res_write_evry=1;
 sdyn->eigen=0;
+sdyn->timada.kind = timada_kind_none;  /* default time adaptivity is off */
 
 if (frfind("-STRUCTURAL DYNAMIC")==0) goto end;
 frread();
@@ -1075,12 +1076,16 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frdouble("K_DAMP"  ,&(sdyn->k_damp) ,&ierr);
    frdouble("TOLDISP" ,&(sdyn->toldisp),&ierr);
 
-/*------ read time adaption */
+/*------ read time adaptivity (old style) */
    frint("TIMEADAPT"  ,&(sdyn->timeadapt),&ierr);
    frint("ITWANT"     ,&(sdyn->itwant)   ,&ierr);
    frdouble("MAXDT"   ,&(sdyn->maxdt)    ,&ierr);
    frdouble("RESULTDT",&(sdyn->resultdt) ,&ierr);
 
+/*------ read time adaptivity (new style) */
+   inpctr_dyn_timada(&(sdyn->timada));
+
+/*------ finish */
    frread();
 }
 frrewind();
@@ -2204,3 +2209,48 @@ void inpctr_dyn_tsi(TSI_DYNAMIC *tsidyn)
   return;
 } /* end of inpctr_dyn_tsi */
 #endif  /* end of #ifdef D_TSI */
+
+
+/*----------------------------------------------------------------------*/
+/*!
+\brief Input of time step adaptivity data
+\author bborn
+\date 10/07
+*/
+void inpctr_dyn_timada(TIMADA_DYNAMIC* timada)
+{
+  INT ierr = 0;
+  char buffer[50];
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("inpctr_dyn_timada");
+#endif
+  
+  /*--------------------------------------------------------------------*/
+  /* input */
+  frchar("TA_KIND", buffer, &ierr);
+  if (ierr == 1)
+  {
+    if (frwordcmp(buffer,"None") == 0)
+    {
+      timada->kind = timada_kind_none;
+    }
+    else if (frwordcmp(buffer,"ZienkiewiczXie") == 0)
+    {
+      timada->kind = timada_kind_zienxie;
+    }
+    else
+    {
+      dserror("Type of time adaptivity (TA_KIND) is unknown");
+    }
+  }
+  frdouble("TA_MAXSTPSIZ", &(timada->dt_max), &ierr);
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+

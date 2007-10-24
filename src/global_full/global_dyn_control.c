@@ -16,6 +16,7 @@ Maintainer: Michael Gee
 #include "../fsi_full/fsi_prototypes.h"
 #ifdef CCADISCRET
 #include "../drt_structure/stru_dyn_nln_drt.H"
+#include "../drt_structure/stru_genalpha_zienxie_drt.H"
 #endif
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -54,8 +55,18 @@ void caldyn()
 #ifndef CCADISCRET
       dyn_nln_structural();
 #else
-      /* stru_genalpha_drt(); */
-      dyn_nlnstructural_drt();
+      switch (alldyn[0].sdyn->timada.kind)
+      {
+        case timada_kind_none:
+          /* stru_genalpha_drt(); */
+          dyn_nlnstructural_drt();
+          break;
+        case timada_kind_zienxie:
+          stru_genalpha_zienxie_drt();
+          break;
+        default:
+          dserror("Time adaptivity is not supported");
+      }
 #endif
       break;
     /* Generalized Energy-Momentum time integration */

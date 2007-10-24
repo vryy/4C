@@ -135,6 +135,7 @@ OBJS_DRT_STRUCTURE      = \
                 src/drt_structure/stru_dyn_nln_drt.o \
                 src/drt_structure/strugenalpha.o \
                 src/drt_structure/stru_genalpha_drt.o \
+		src/drt_structure/stru_genalpha_zienxie_drt.o \
                 src/drt_structure/stru_static_drt.o
 #----------------------------------------------------- drt version contact
 OBJS_DRT_CONTACT = \
@@ -1018,7 +1019,7 @@ OBJS_POST_ENSIGHT = src/post_ensight/post_ensight.o \
 #               post_cmp
 OBJS_POST_CMP = src/post_cmp/post_cmp.o
 
-#				test_intersection
+#               test_intersection
 OBJS_INTERSECTION = src/drt_xfem/predicates.o \
                     src/drt_xfem/tetgen.o \
                     src/drt_xfem/physics.o \
@@ -1029,6 +1030,9 @@ OBJS_INTERSECTION = src/drt_xfem/predicates.o \
                     src/drt_xfem/intersection.o \
                     src/drt_xfem/drt_xelement.o \
                     src/drt_xfem/gmsh.o
+#               time adaptivity
+OBJS_DRT_TIMADA = src/drt_timada/timeadaptivity.o
+
 			
 				
 			

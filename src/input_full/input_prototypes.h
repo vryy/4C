@@ -86,9 +86,13 @@ void inpctr_dyn_fluid(
 void inpctr_dyn_fsi(
     FSI_DYNAMIC    *fsidyn);
 
+#ifdef D_TSI
 void inpctr_dyn_tsi(
     TSI_DYNAMIC    *tsidyn);
+#endif
 
+void inpctr_dyn_timada(
+    TIMADA_DYNAMIC* timada);
 
 /*----------------------------------------------------------------------*
   |  input_ctr_head.c                                  m.gee 11/01       |

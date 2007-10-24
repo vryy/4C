@@ -202,6 +202,14 @@ void dyn_nlnstructural_drt()
       dserror("Not yet impl.");
     }
     break;
+    //==================================================================
+    // Everything else
+    //==================================================================
+    default :
+    {
+      dserror("Time integration scheme is not available");
+    }
+    break;
   } // end of switch(sdyn->Typ)
 
   return;

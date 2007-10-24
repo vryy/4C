@@ -456,5 +456,11 @@ $(OBJS_INTERSECTION):
 	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
 	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
 
+# time adaptivity
+$(OBJS_DRT_TIMADA):
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
+	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
+
 clean:
 	rm -f	src/*/*.o

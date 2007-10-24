@@ -27,6 +27,18 @@ typedef union _ALLDYNA
 } ALLDYNA;
 
 
+/*----------------------------------------------------------------------*
+ | time adaptivity only for read in                     bborn 10/07     |
+ *----------------------------------------------------------------------*/
+typedef struct _TIMADA_DYNAMIC
+{
+  enum {
+    timada_kind_none,           /* no time adaptivity */
+    timada_kind_zienxie         /* Zienkiewicz-Xie indicator */
+  } kind;                       /* type of adaptivity in time */
+  DOUBLE dt_max;                /* maximally permitted step size */
+} TIMADA_DYNAMIC;
+
 
 /*----------------------------------------------------------------------*
  | general structural dynamic-variables                   m.gee 4/01    |
@@ -61,20 +73,26 @@ DOUBLE             toldisp;    /* displacement tolerance */
 DOUBLE             dt;         /* stepsize */
 DOUBLE             maxtime;    /* maximum total time */
 DOUBLE             time;       /* actual time */
+/* Generalised-alpha parameters */
 DOUBLE             beta;       /* time integration coefficients */
 DOUBLE             gamma;
 DOUBLE             alpha_m;
 DOUBLE             alpha_f;
+/* Generalised energy-momentum parameter */
 #ifdef GEMM
 DOUBLE             xsi;        /*  Parameter used by GEMM */
 #endif
+/* Rayleigh damping parameters */
 DOUBLE             m_damp;     /* factors for Raleigh damping */
 DOUBLE             k_damp;
-
+/* time step size adaptivity --- depreciated??? */
 INT                timeadapt;  /* flag to switch adaptive time stepping on */
 INT                itwant;     /* requested number of newton iterations */
 DOUBLE             maxdt;      /* max allowed time step */
 DOUBLE             resultdt;   /* postprocessing time step */
+/* time step size adaptivity --- new style */
+TIMADA_DYNAMIC     timada;     /* time adaptivity data */
+/* output */
 INT                writecounter; /* counter for output steps */
 } STRUCT_DYNAMIC;
 /*----------------------------------------------------------------------*
