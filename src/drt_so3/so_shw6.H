@@ -134,6 +134,16 @@ private:
                                  Epetra_SerialDenseVector* force,
                                  const double              time);
 
+  void soshw6_anssetup(
+            const int numsp,              // number of sampling points
+            const int numans,             // number of ans strains
+            const Epetra_SerialDenseMatrix& xrefe, // material element coords
+            const Epetra_SerialDenseMatrix& xcurr, // current element coords
+            Epetra_SerialDenseMatrix** deriv_sp,   // derivs eval. at all sampling points
+            Epetra_SerialDenseMatrix& jac_sps,     // jac at all sampling points
+            Epetra_SerialDenseMatrix& jac_cur_sps, // current jac at all sampling points
+            Epetra_SerialDenseMatrix& B_ans_loc); // modified B
+
 }; // class So_shw6
 
 //=======================================================================

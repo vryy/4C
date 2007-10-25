@@ -630,6 +630,7 @@ void DRT::Elements::So_sh8::sosh8_anssetup(
    */
   /*====================================================================*/
     // (r,s,t) gp-locations of sampling points A,B,C,D,E,F,G,H
+    // numsp = 8 here set explicitly to allow direct initializing
     double r[8] = { 0.0, 1.0, 0.0,-1.0,-1.0, 1.0, 1.0,-1.0};
     double s[8] = {-1.0, 0.0, 1.0, 0.0,-1.0,-1.0, 1.0, 1.0};
     double t[8] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};

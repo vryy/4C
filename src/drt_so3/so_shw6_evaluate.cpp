@@ -81,6 +81,26 @@ void DRT::Elements::So_shw6::soshw6_nlnstiffmass(
     xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_WEG6+2];
   }
 
+  /*
+  ** ANS Element technology to remedy
+  *  - transverse-shear locking E_rt and E_st
+  *  - trapezoidal (curvature-thickness) locking E_tt
+  */
+  // modified B-operator in local(parameter) element space
+  const int num_sp = 5;       // number of ANS sampling points
+  const int num_ans = 3;      // number of modified ANS strains (E_rt,E_st,E_tt)
+  // ANS modified rows of bop in local(parameter) coords
+  Epetra_SerialDenseMatrix B_ans_loc(num_ans*num_sp,NUMDOF_WEG6);
+  // Jacobian evaluated at all ANS sampling points
+  Epetra_SerialDenseMatrix jac_sps(NUMDIM_WEG6*num_sp,NUMDIM_WEG6);
+  // CURRENT Jacobian evaluated at all ANS sampling points
+  Epetra_SerialDenseMatrix jac_cur_sps(NUMDIM_WEG6*num_sp,NUMDIM_WEG6);
+  // pointer to derivs evaluated at all sampling points
+  Epetra_SerialDenseMatrix* deriv_sp; //[NUMDIM_SOH8*numsp][NUMNOD_SOH8]
+  // evaluate all necessary variables for ANS
+  soshw6_anssetup(num_sp,num_ans,xrefe,xcurr,&deriv_sp,jac_sps,jac_cur_sps,B_ans_loc);
+
+  
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
@@ -246,6 +266,119 @@ void DRT::Elements::So_shw6::soshw6_nlnstiffmass(
 } // DRT::Elements::Shell8::s8_nlnstiffmass
 
 
+/*----------------------------------------------------------------------*
+ |  setup of constant ANS data (private)                       maf 05/07|
+ *----------------------------------------------------------------------*/
+void DRT::Elements::So_shw6::soshw6_anssetup(
+          const int numsp,              // number of sampling points
+          const int numans,             // number of ans strains
+          const Epetra_SerialDenseMatrix& xrefe, // material element coords
+          const Epetra_SerialDenseMatrix& xcurr, // current element coords
+          Epetra_SerialDenseMatrix** deriv_sp,   // derivs eval. at all sampling points
+          Epetra_SerialDenseMatrix& jac_sps,     // jac at all sampling points
+          Epetra_SerialDenseMatrix& jac_cur_sps, // current jac at all sampling points
+          Epetra_SerialDenseMatrix& B_ans_loc) // modified B
+{
+  // static matrix object of derivs at sampling points, kept in memory
+  static Epetra_SerialDenseMatrix df_sp(NUMDIM_WEG6*numsp,NUMNOD_WEG6);
+  static bool dfsp_eval;                      // flag for re-evaluate everything
+
+  if (dfsp_eval!=0){             // if true f,df already evaluated
+    *deriv_sp = &df_sp;         // return adress of static object to target of pointer
+  } else {
+  /*====================================================================*/
+  /* 6-node wedge Solid-Shell node topology
+   * and location of sampling points A to E                             */
+  /*--------------------------------------------------------------------*/
+  /*                    
+   *                             s
+   *                   6        /
+   *                 //||\\   /
+   *      t        //  ||   \\
+   *      ^      //    || /    \\
+   *      |    //      E          \\       
+   *      |  //        ||            \\    
+   *      |//       /  ||               \\ 
+   *      5===============================6       
+   *     ||      B      3                 ||
+   *     ||    /      // \\               ||
+   *     || /       //      \\            ||
+   *   - C -  -  -// -  A  -  -\\ -  -   -D  ----> r
+   *     ||     //                \\      || 
+   *  /  ||   //                     \\   ||
+   *     || //                          \\||
+   *      1================================2 
+   *
+   */
+  /*====================================================================*/
+    // (r,s,t) gp-locations of sampling points A,B,C,D,E
+    // numsp = 5 here set explicitly to allow direct initializing
+    double r[5] = { 0.5, 0.0, 0.0, 1.0, 0.0};
+    double s[5] = { 0.0, 0.5, 0.0, 0.0, 1.0};
+    double t[5] = { 0.0, 0.0, 0.0, 0.0, 0.0};
+
+    // fill up df_sp w.r.t. rst directions (NUMDIM) at each sp
+    for (int i=0; i<numsp; ++i) {
+        Epetra_SerialDenseMatrix deriv(NUMDIM_WEG6, NUMNOD_WEG6);
+        DRT::Utils::shape_function_3D_deriv1(deriv, r[i], s[i], t[i], wedge6);
+        for (int inode = 0; inode < NUMNOD_WEG6; ++inode) {
+          df_sp(i*NUMDIM_WEG6+0, inode) = deriv(0, inode);
+          df_sp(i*NUMDIM_WEG6+1, inode) = deriv(1, inode);
+          df_sp(i*NUMDIM_WEG6+2, inode) = deriv(2, inode);
+        }
+    }
+
+    // return adresses of just evaluated matrices
+    *deriv_sp = &df_sp;         // return adress of static object to target of pointer
+    dfsp_eval = 1;               // now all arrays are filled statically
+  }
+
+  // compute Jacobian matrix at all sampling points
+  jac_sps.Multiply('N','N',1.0,df_sp,xrefe,1.0);
+
+  // compute CURRENT Jacobian matrix at all sampling points
+  jac_cur_sps.Multiply('N','N',1.0,df_sp,xcurr,1.0);
+
+  /*
+  ** Compute modified B-operator in local(parametric) space,
+  ** evaluated at all sampling points
+  */
+  // loop over each sampling point
+  for (int sp = 0; sp < numsp; ++sp) {
+    // get submatrix of deriv_sp at actual sp
+    Epetra_SerialDenseMatrix deriv_asp(NUMDIM_WEG6,numsp);
+    for (int m=0; m<NUMDIM_WEG6; ++m) {
+      for (int n=0; n<numsp; ++n) {
+        deriv_asp(m,n)=df_sp(NUMDIM_WEG6*sp+m,n);
+      }
+    }
+    /* compute the CURRENT Jacobian matrix at the sampling point:
+    **         [ xcurr_,r  ycurr_,r  zcurr_,r ]
+    **  Jcur = [ xcurr_,s  ycurr_,s  zcurr_,s ]
+    **         [ xcurr_,t  ycurr_,t  zcurr_,t ]
+    ** Used to transform the global displacements into parametric space
+    */
+    Epetra_SerialDenseMatrix jac_cur(NUMDIM_WEG6,NUMDIM_WEG6);
+    jac_cur.Multiply('N','N',1.0,deriv_asp,xcurr,1.0);
+
+    // fill up B-operator
+    for (int inode = 0; inode < NUMNOD_WEG6; ++inode) {
+      for (int dim = 0; dim < NUMDIM_WEG6; ++dim) {
+        // modify B_loc_tt = N_t.X_t
+        B_ans_loc(sp*numans+0,inode*3+dim) = deriv_asp(2,inode)*jac_cur(2,dim);
+        // modify B_loc_st = N_s.X_t + N_t.X_s
+        B_ans_loc(sp*numans+1,inode*3+dim) = deriv_asp(1,inode)*jac_cur(2,dim)
+                                            +deriv_asp(2,inode)*jac_cur(1,dim);
+        // modify B_loc_rt = N_r.X_t + N_t.X_r
+        B_ans_loc(sp*numans+2,inode*3+dim) = deriv_asp(0,inode)*jac_cur(2,dim)
+                                            +deriv_asp(2,inode)*jac_cur(0,dim);
+      }
+    }
+  }
+
+
+  return;
+}
 
 
 

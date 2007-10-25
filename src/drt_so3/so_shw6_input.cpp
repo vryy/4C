@@ -46,7 +46,7 @@ bool DRT::Elements::So_shw6::ReadElement()
   int ierr=0;
   const int nnode=6;
   int nodes[6];
-  frchk("SOLIDW6",&ierr);
+  frchk("SOLIDSHW6",&ierr);
   if (ierr==1)
   {
     frint_n("WEDGE6",nodes,nnode,&ierr);
@@ -54,7 +54,7 @@ bool DRT::Elements::So_shw6::ReadElement()
   }
   else
   {
-    dserror ("Reading of SOLIDW6 failed");
+    dserror ("Reading of SOLIDSHW6 failed");
   }
   // reduce node numbers by one
   for (int i=0; i<nnode; ++i){
@@ -82,15 +82,15 @@ bool DRT::Elements::So_shw6::ReadElement()
    else if (strncmp(buffer,"Updlag",6)==0)
    {
        kintype_ = sow6_updlag;
-       dserror("Updated Lagrange for SO_WEG6 is not implemented!");
+       dserror("Updated Lagrange for SOLIDSHW6 is not implemented!");
    }
-   else dserror("Reading of SO_WEG6 element failed");
+   else dserror("Reading of SOLIDSHW6 element failed");
   }
 
-
+  
   // read stress evaluation/output type
   frchar("STRESS",buffer,&ierr);
-  if (ierr!=1) dserror("reading of SO_WEG6 stress failed");
+  if (ierr!=1) dserror("reading of SOLIDSHW6 stress failed");
   if (strncmp(buffer,"none",4)==0)  stresstype_= sow6_stress_none;
   if (strncmp(buffer,"Gpxyz",5)==0) stresstype_= sow6_stress_gpxyz;
   if (strncmp(buffer,"Gprst",5)==0) stresstype_= sow6_stress_gprst;
