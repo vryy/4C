@@ -26,6 +26,7 @@ Maintainer: Michael Gee
 
 #include "stru_genalpha_zienxie_drt.H"
 #include "../drt_timada/timeadaptivity.H"
+#include "../drt_timada/ta_zienkiewiczxie.H"
 #include "../io/io_drt.H"
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -89,33 +90,53 @@ void stru_genalpha_zienxie_drt()
   DSTraceHelper dst("stru_genalpha_zienxie_drt");
 
   // ---------------------------------------------------------------------
+  // set some pointers and variables
+  const INT disnum = 0;
+  SOLVAR* actsolv = &solv[disnum];
+  STRUCT_DYNAMIC* sdyn = alldyn[disnum].sdyn;
+  TIMADA_DYNAMIC* timada = &(sdyn->timada);
+
+  // ---------------------------------------------------------------------
+  // access the discretization
+  // ---------------------------------------------------------------------
+  RefCountPtr<DRT::Discretization> actdis = null;
+  actdis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
+  // set degrees of freedom in the discretization
+  if (!actdis->Filled()) actdis->FillComplete();
+  // processor ID
+  int myrank = (*actdis).Comm().MyPID();
+
+  // ---------------------------------------------------------------------
   // A word to the user
-  if (1) {
+  if (myrank == 0)
+  {
      printf("Adaptive Structural time integration with\n");
-     printf("  generalised-alpha (marching scheme)\n");
-     printf("  Zienkiewicz-Xie (auxiliar scheme)\n");
+     printf("   Generalised-alpha (marching scheme)\n");
+     printf("   Zienkiewicz-Xie (auxiliar scheme)\n");
   }
   
+  // ---------------------------------------------------------------------
+  // allocate adaptive time integrator
+  ZienkiewiczXie adatimint
+  (
+     (double) timada->dt_max,
+     (double) timada->dt_min,
+     (double) timada->dt_scl_min,
+     (double) timada->dt_scl_max,
+     (double) timada->dt_scl_saf,
+     (double) timada->err_tol,
+     2
+  );
 
-//   // -------------------------------------------------------------------
-//   // access the discretization
-//   // -------------------------------------------------------------------
-//   RefCountPtr<DRT::Discretization> actdis = null;
-//   actdis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
+  cout << adatimint << endl;
 
-//   // set degrees of freedom in the discretization
-//   if (!actdis->Filled()) actdis->FillComplete();
 
 //   // -------------------------------------------------------------------
 //   // context for output and restart
 //   // -------------------------------------------------------------------
 //   IO::DiscretizationWriter output(actdis);
 
-//   // -------------------------------------------------------------------
-//   // set some pointers and variables
-//   // -------------------------------------------------------------------
-//   SOLVAR*         actsolv  = &solv[0];
-//   STRUCT_DYNAMIC* sdyn     = alldyn[0].sdyn;
+
 
 //   // -------------------------------------------------------------------
 //   // create a solver

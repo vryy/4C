@@ -55,29 +55,48 @@ using namespace Teuchos;
 \author bborn
 \date 10/07
 */
-class TimeAdaptivity {
+class TimeAdaptivity 
+{
 
 public:
 
    /*!
-     \brief Standard Constructor
+     \brief Ordinary Constructor with default values
    */
-   explicit TimeAdaptivity(
-      ParameterList& params,
-      DRT::Discretization& dis,
-      LINALG::Solver& solver,
-      IO::DiscretizationWriter& output
+   explicit TimeAdaptivity();
+
+   /*\!
+     \brief Ordinary Constructor with parameters
+   */
+   explicit TimeAdaptivity
+   (
+      double maxstepsize,
+      double minstepsize,
+      double minsizeratio,
+      double maxsizeratio,
+      double secsizeratio,
+      double errtol,
+      int errpow
    );
 
    /*!
      \brief Destructor
    */
-   virtual ~TimeAdaptivity() {};
+   virtual ~TimeAdaptivity();
+
+   /*!
+     \brief Out stream
+   */
+   friend std::ostream& operator<<
+   (
+      ostream& str, 
+      const TimeAdaptivity& ta
+   );
 
   /*!
   \brief Create default parameter list
   */
-  static void SetDefaults(ParameterList& params);
+// static void SetDefaults(ParameterList& params);
 
   /*!
   \brief Do time integration
@@ -143,44 +162,20 @@ public:
 
 protected:
 
-    // not wanted: = operator
-    TimeAdaptivity operator = (const TimeAdaptivity& old);
-    // not wanted: copy constructor
-    TimeAdaptivity(const TimeAdaptivity& old);
+   // not wanted: = operator
+   TimeAdaptivity operator = (const TimeAdaptivity& old);
+   // not wanted: copy constructor
+   TimeAdaptivity(const TimeAdaptivity& old);
 
-  ParameterList&                params_;
-  DRT::Discretization&          discret_;
-  LINALG::Solver&               solver_;
-  IO::DiscretizationWriter&     output_;
-  int                           myrank_;
-  int                           maxentriesperrow_;
-  double                        norm_;
-
-  bool                          havecontact_;
-  RCP<CONTACT::Manager>         contactmanager_;
-
-  RefCountPtr<Epetra_CrsMatrix> stiff_;
-  RefCountPtr<Epetra_CrsMatrix> mass_;
-  RefCountPtr<Epetra_CrsMatrix> damp_;
-
-  RefCountPtr<Epetra_Vector>    dirichtoggle_;
-  RefCountPtr<Epetra_Vector>    invtoggle_;
-  RefCountPtr<Epetra_Vector>    zeros_;
-  RefCountPtr<Epetra_Vector>    dis_;
-  RefCountPtr<Epetra_Vector>    vel_;
-  RefCountPtr<Epetra_Vector>    acc_;
-  RefCountPtr<Epetra_Vector>    disn_;
-  RefCountPtr<Epetra_Vector>    veln_;
-  RefCountPtr<Epetra_Vector>    accn_;
-  RefCountPtr<Epetra_Vector>    dism_;
-  RefCountPtr<Epetra_Vector>    velm_;
-  RefCountPtr<Epetra_Vector>    accm_;
-  RefCountPtr<Epetra_Vector>    disi_;
-  RefCountPtr<Epetra_Vector>    fint_;
-  RefCountPtr<Epetra_Vector>    fext_;
-  RefCountPtr<Epetra_Vector>    fextm_;
-  RefCountPtr<Epetra_Vector>    fextn_;
-  RefCountPtr<Epetra_Vector>    fresm_;
+   // parameters
+   double maxstepsize_;
+   double minstepsize_;
+   double minsizeratio_;
+   double maxsizeratio_;
+   double saferatioscale_;
+   double errtol_;
+   int errpow_;
+   enum { l1_norm, l2_norm, rms_norm, max_norm } errnorm_;
 
 }; // class TimeAdaptivity
 

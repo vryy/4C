@@ -2245,7 +2245,13 @@ void inpctr_dyn_timada(TIMADA_DYNAMIC* timada)
       dserror("Type of time adaptivity (TA_KIND) is unknown");
     }
   }
-  frdouble("TA_MAXSTPSIZ", &(timada->dt_max), &ierr);
+  frdouble("TA_MAXSTEPSIZE", &(timada->dt_max), &ierr);
+  frdouble("TA_MINSTEPSIZE", &(timada->dt_min), &ierr);
+  frdouble("TA_MAXSIZERATIO", &(timada->dt_scl_max), &ierr);
+  frdouble("TA_MINSIZERATIO", &(timada->dt_scl_min), &ierr);
+  frdouble("TA_SAFERATIOSCALE", &(timada->dt_scl_saf), &ierr);
+  frdouble("TA_ERRTOL", &(timada->err_tol), &ierr);
+  
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG

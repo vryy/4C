@@ -1031,7 +1031,8 @@ OBJS_INTERSECTION = src/drt_xfem/predicates.o \
                     src/drt_xfem/drt_xelement.o \
                     src/drt_xfem/gmsh.o
 #               time adaptivity
-OBJS_DRT_TIMADA = src/drt_timada/timeadaptivity.o
+OBJS_DRT_TIMADA = src/drt_timada/timeadaptivity.o \
+                  src/drt_timada/ta_zienkiewiczxie.o
 
 			
 				

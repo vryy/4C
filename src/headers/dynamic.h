@@ -37,6 +37,12 @@ typedef struct _TIMADA_DYNAMIC
     timada_kind_zienxie         /* Zienkiewicz-Xie indicator */
   } kind;                       /* type of adaptivity in time */
   DOUBLE dt_max;                /* maximally permitted step size */
+  DOUBLE dt_min;                /* minimally permitted step size */
+  DOUBLE dt_scl_min;            /* minimally permitted ratio of new to last size */
+  DOUBLE dt_scl_max;            /* maximally permitted ratio of new to last size */
+  DOUBLE dt_scl_saf;            /* safety scale of optimally predicted new step size */
+  DOUBLE err_tol;               /* error tolerance (target) */
+  INT err_pow;                  /* order */
 } TIMADA_DYNAMIC;
 
 
