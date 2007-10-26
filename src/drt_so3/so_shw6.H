@@ -143,6 +143,8 @@ private:
             Epetra_SerialDenseMatrix& jac_sps,     // jac at all sampling points
             Epetra_SerialDenseMatrix& jac_cur_sps, // current jac at all sampling points
             Epetra_SerialDenseMatrix& B_ans_loc); // modified B
+  void soshw6_evaluateT(const Epetra_SerialDenseMatrix jac,
+                        Epetra_SerialDenseMatrix& TinvT);
 
 }; // class So_shw6
 
