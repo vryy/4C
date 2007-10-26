@@ -109,7 +109,8 @@ extern struct _CURVE *curve;
  *----------------------------------------------------------------------*/
 void xdyn_fluid_drt()
 {
-  cout << "Hallo, ich bin ein Fluid-XFEM Problem..." << endl;
+  cout << "Hallo, ich bin ein Fluid-XFEM Problem" << endl;
+  flush(cout);
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
@@ -117,7 +118,13 @@ void xdyn_fluid_drt()
   fluiddis = DRT::Problem::Instance()->Dis(genprob.numff,0);
   RefCountPtr<DRT::Discretization> soliddis = null;
   soliddis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
-  
+ 
+  const int fmyrank = fluiddis->Comm().MyPID();
+  cout << "FluidProc: " << fmyrank << endl;
+  flush(cout);
+  const int smyrank = soliddis->Comm().MyPID();
+  cout << "SolidProc: " << smyrank << endl;
+  flush(cout);
   //cout << *soliddis;
   
   // -------------------------------------------------------------------
@@ -139,21 +146,8 @@ void xdyn_fluid_drt()
   is.computeIntersection(fluiddis,soliddis,elementIntCellMap);
 
 
-  map<int, set <XFEM::EnrPhysVar> > nodalDofMap;
+  map<int, set <XFEM::EnrPhysVar> > nodalDofMap = XFEM::createNodalDofMap(fluiddis, elementIntCellMap);
   
-  // loop my row nodes and add standard degrees of freedom
-  const XFEM::Enrichment enr_std(0, XFEM::Enrichment::typeStandard);
-  for (int i=0; i<fluiddis->NumMyRowNodes(); ++i)
-  {
-    const DRT::Node* actnode = fluiddis->lRowNode(i);
-    nodalDofMap[actnode->Id()].insert(XFEM::EnrPhysVar(Physics::Velx, enr_std));
-    nodalDofMap[actnode->Id()].insert(XFEM::EnrPhysVar(Physics::Vely, enr_std));
-    nodalDofMap[actnode->Id()].insert(XFEM::EnrPhysVar(Physics::Velz, enr_std));
-    nodalDofMap[actnode->Id()].insert(XFEM::EnrPhysVar(Physics::Pres, enr_std));
-  }
-  
-  // for surface 1, loop my col elements and add void enrichments to each elements member nodes
-  const XFEM::Enrichment enr_void1(1, XFEM::Enrichment::typeVoid);
   
   ofstream gmshfilecontent;
   gmshfilecontent.open ("elements.pos");
@@ -163,17 +157,6 @@ void xdyn_fluid_drt()
     DRT::Element* actele = fluiddis->lColElement(i);
     if (elementIntCellMap.count(actele->Id()) /*and not printed*/)
     {
-        const int nen = actele->NumNode();
-        const int* nodeidptrs = actele->NodeIds();
-        for (int i = 0; i<nen; ++i)
-        {
-          const int node_gid = nodeidptrs[i];
-          nodalDofMap[node_gid].insert(XFEM::EnrPhysVar(Physics::Velx, enr_void1));
-          nodalDofMap[node_gid].insert(XFEM::EnrPhysVar(Physics::Vely, enr_void1));
-          nodalDofMap[node_gid].insert(XFEM::EnrPhysVar(Physics::Velz, enr_void1));
-          nodalDofMap[node_gid].insert(XFEM::EnrPhysVar(Physics::Pres, enr_void1));
-        };
-
         vector <XFEM::Integrationcell>::const_iterator cell;
         for(cell = elementIntCellMap[actele->Id()].begin(); cell != elementIntCellMap[actele->Id()].end(); ++cell )
         {
@@ -190,11 +173,10 @@ void xdyn_fluid_drt()
   
   for (int i=0; i<fluiddis->NumMyRowNodes(); ++i)
   {
-    const DRT::Node* actnode = fluiddis->lRowNode(i);
-    const int gid = actnode->Id();
+    const int gid = fluiddis->lRowNode(i)->Id();
     for ( set<XFEM::EnrPhysVar>::iterator var = nodalDofMap[gid].begin(); var != nodalDofMap[gid].end(); ++var )
     {
-      //cout << "Node: " << gid << ", " << var->toString() << endl;
+      cout << "Node: " << gid << ", " << var->toString() << endl;
     };
   };
 
@@ -207,9 +189,8 @@ void xdyn_fluid_drt()
 
   cout << "\n solvar done\n";
   exit(0);
-  
   FLUID_DYNAMIC *fdyn     = alldyn[genprob.numff].fdyn;
-  //STRUCT_DYNAMIC* sdyn    = alldyn[genprob.numsf].sdyn;
+  STRUCT_DYNAMIC *sdyn    = alldyn[genprob.numsf].sdyn;
   
   cout << "\n fdyn gemacht\n";
   

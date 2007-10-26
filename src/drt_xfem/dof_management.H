@@ -16,6 +16,8 @@ Maintainer: Axel Gerstenberger
 
 #include "physics.H"
 #include "enrichment.H"
+#include "integrationcell.H"
+#include "../drt_lib/drt_discret.H"
 
 using namespace Physics;
 
@@ -78,6 +80,12 @@ private:
     Enrichment enr_;
 
 }; // class EnrPhysVar
+
+//}; // namespace XFEM
+
+map<int, set<EnrPhysVar> > createNodalDofMap(
+        RefCountPtr<DRT::Discretization> xfemdis,
+        const map<int, vector<Integrationcell> >&  elementIntCellMap);
 
 }; // namespace XFEM
 

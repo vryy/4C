@@ -21,24 +21,25 @@ namespace Physics
 {
 
 // unique name of a physical field
+// the order they appear here determines the order in the unknown vectors!!!
 enum PhysVar
 {
-    Dispx,
+    Dispx,              // displacements
     Dispy,
     Dispz,
-    Velx,
+    Velx,               // velocities
     Vely,
     Velz,
-    Temp,
-    Pres,
-    ConcentrationH2O,
+    Temp,               // temerature
+    Pres,               // pressure
+    ConcentrationH2O,   // concentration of solvent
     ConcentrationNO2,
-    LagrMultLambdax,
-    LagrMultLambday,
-    LagrMultLambdaz,
-    LagrMultMux,
-    LagrMultMuy,
-    LagrMultMuz
+    LMPLambdax,         // Lagrange multiplier unknowns
+    LMPLambday,
+    LMPLambdaz,
+    LMPMux,
+    LMPMuy,
+    LMPMuz
 };
 
 std::string physVarToString(const PhysVar var);
