@@ -264,6 +264,11 @@ void DRT::Elements::SoDisp::sodisp_nlnstiffmass(
     glstrain(3) = cauchygreen(0,1);
     glstrain(4) = cauchygreen(1,2);
     glstrain(5) = cauchygreen(2,0);
+    
+    
+    for (int i = 0; i < 10; ++i) {
+    	cout << i;
+	}
 
 
     /* non-linear B-operator (may so be called, meaning
