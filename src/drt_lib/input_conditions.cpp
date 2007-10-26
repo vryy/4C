@@ -455,8 +455,6 @@ void register_condition(string name,
  *----------------------------------------------------------------------*/
 void input_point_neum(multimap<int,RefCountPtr<DRT::Condition> >& pnmap)
 {
-  DSTraceHelper dst("input_point_neum");
-
   // currently, we always have 6 values read from file
   // this might change at some point
   const int numread = 6;
@@ -579,8 +577,6 @@ void input_point_neum(multimap<int,RefCountPtr<DRT::Condition> >& pnmap)
  *----------------------------------------------------------------------*/
 void input_line_neum(multimap<int,RefCountPtr<DRT::Condition> >& lnmap)
 {
-  DSTraceHelper dst("input_line_neum");
-
   // currently, we always have 6 values read from file
   // this might change at some point
   const int numread = 6;
@@ -724,8 +720,6 @@ void input_line_neum(multimap<int,RefCountPtr<DRT::Condition> >& lnmap)
  *----------------------------------------------------------------------*/
 void input_surf_neum(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
 {
-  DSTraceHelper dst("input_surf_neum");
-
   // currently, we always have 6 values read from file
   // this might change at some point
   const int numread = 6;
@@ -870,8 +864,6 @@ void input_surf_neum(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
  *----------------------------------------------------------------------*/
 void input_vol_neum(multimap<int,RefCountPtr<DRT::Condition> >& vnmap)
 {
-  DSTraceHelper dst("input_vol_neum");
-
   // currently, we always have 6 values read from file
   // this might change at some point
   const int numread = 6;
@@ -995,8 +987,6 @@ void input_vol_neum(multimap<int,RefCountPtr<DRT::Condition> >& vnmap)
  *----------------------------------------------------------------------*/
 void input_point_dirich(multimap<int,RefCountPtr<DRT::Condition> >& pdmap, bool ale)
 {
-  DSTraceHelper dst("input_point_dirich");
-
   // currently, we always have 6 values read from file
   // this might change at some point
   const int numread = 6;
@@ -1125,8 +1115,6 @@ void input_point_dirich(multimap<int,RefCountPtr<DRT::Condition> >& pdmap, bool 
  *----------------------------------------------------------------------*/
 void input_line_dirich(multimap<int,RefCountPtr<DRT::Condition> >& ldmap, bool ale)
 {
-  DSTraceHelper dst("input_line_dirich");
-
   // currently, we always have 6 values read from file
   // this might change at some point
   const int numread = 6;
@@ -1252,8 +1240,6 @@ void input_line_dirich(multimap<int,RefCountPtr<DRT::Condition> >& ldmap, bool a
  *----------------------------------------------------------------------*/
 void input_surf_dirich(multimap<int,RefCountPtr<DRT::Condition> >& sdmap, bool ale)
 {
-  DSTraceHelper dst("input_surf_dirich");
-
   // currently, we always have 6 values read from file
   // this might change at some point
   const int numread = 6;
@@ -1379,8 +1365,6 @@ void input_surf_dirich(multimap<int,RefCountPtr<DRT::Condition> >& sdmap, bool a
  *----------------------------------------------------------------------*/
 void input_vol_dirich(multimap<int,RefCountPtr<DRT::Condition> >& vdmap)
 {
-  DSTraceHelper dst("input_vol_dirich");
-
   // currently, we always have 6 values read from file
   // this might change at some point
   const int numread = 6;
@@ -1500,8 +1484,6 @@ void input_vol_dirich(multimap<int,RefCountPtr<DRT::Condition> >& vdmap)
  *----------------------------------------------------------------------*/
 void input_line_contact(multimap<int,RefCountPtr<DRT::Condition> >& ldmap)
 {
-  DSTraceHelper dst("input_line_contact");
-
   /*-------------------- find the beginning of line contact conditions */
   if (frfind("----CONTACT CONDITIONS 2D")==0) return;
   frread();
@@ -1570,8 +1552,6 @@ void input_line_contact(multimap<int,RefCountPtr<DRT::Condition> >& ldmap)
  *----------------------------------------------------------------------*/
 void input_surf_contact(multimap<int,RefCountPtr<DRT::Condition> >& sdmap)
 {
-  DSTraceHelper dst("input_surf_contact");
-
   if (frfind("----CONTACT CONDITIONS 3D")==0) return;
   frread();
 
@@ -1645,8 +1625,6 @@ void input_surf_contact(multimap<int,RefCountPtr<DRT::Condition> >& sdmap)
 void input_line_periodic(
   multimap<int,RefCountPtr<DRT::Condition> >& lpbcmap)
 {
-  DSTraceHelper dst("input_line_periodic");
-
   /*--------- find the beginning of line periodic boundary conditions */
   if (frfind("--DESIGN LINE PERIODIC BOUNDARY CONDITIONS")==0) return;
   frread();
@@ -1769,8 +1747,6 @@ void input_line_periodic(
 void input_surf_periodic(
   multimap<int,RefCountPtr<DRT::Condition> >& spbcmap)
 {
-  DSTraceHelper dst("input_surf_periodic");
-
   /*--------- find the beginning of line periodic boundary conditions */
   if (frfind("--DESIGN SURF PERIODIC BOUNDARY CONDITIONS")==0) return;
   frread();
@@ -2105,8 +2081,6 @@ void input_surf_xfem_coupling(multimap<int,RefCountPtr<DRT::Condition> >& sxfemc
  *----------------------------------------------------------------------*/
 void input_line_isothermnoslipwall(multimap<int,RefCountPtr<DRT::Condition> >& bcmap)
 {
-  DSTraceHelper dst("input_line_isothermnoslipwall");
-
   /* Isothermal no-slip wall b.c. requires the following input variable(s):
      - wall u-vel
      - wall v-vel
@@ -2164,8 +2138,6 @@ void input_line_isothermnoslipwall(multimap<int,RefCountPtr<DRT::Condition> >& b
  *----------------------------------------------------------------------*/
 void input_line_subsonicinflow(multimap<int,RefCountPtr<DRT::Condition> >& bcmap)
 {
-  DSTraceHelper dst("input_line_subsonicinflow");
-
   /* The line subsonic inflow b.c. requires the following input variable(s):
      - far-field density
      - far-field u-velocity
@@ -2224,8 +2196,6 @@ void input_line_subsonicinflow(multimap<int,RefCountPtr<DRT::Condition> >& bcmap
  *----------------------------------------------------------------------*/
 void input_line_subsonicoutflow(multimap<int,RefCountPtr<DRT::Condition> >& bcmap)
 {
-  DSTraceHelper dst("input_line_subsonicoutflow");
-
   /* The line subsonic outflow b.c. requires the following input variable(s):
      - far-field pressure
   */
@@ -2279,8 +2249,6 @@ void input_line_subsonicoutflow(multimap<int,RefCountPtr<DRT::Condition> >& bcma
  *----------------------------------------------------------------------*/
 void input_surf_stress(multimap<int,RefCountPtr<DRT::Condition> >& ssmap)
 {
-  DSTraceHelper dst("input_surf_stress");
-
   /*-------------------- find the beginning of surface stress conditions */
   if (frfind("--SURFACE CONDITIONS")==0) return;
   frread();
@@ -2392,8 +2360,6 @@ void input_surf_stress(multimap<int,RefCountPtr<DRT::Condition> >& ssmap)
  *----------------------------------------------------------------------------*/
 void input_micro_bc(multimap<int,RefCountPtr<DRT::Condition> >& mbcmap)
 {
-  DSTraceHelper dst("input_micro_bc");
-
   /*--------------- find the beginning of microscale boundary conditions */
   if (frfind("--MICROSCALE CONDITIONS")==0) return;
   frread();
@@ -2436,8 +2402,6 @@ void input_micro_bc(multimap<int,RefCountPtr<DRT::Condition> >& mbcmap)
  *----------------------------------------------------------------------------*/
 void input_line_stress_calc(multimap<int,RefCountPtr<DRT::Condition> >& lnmap)
 {
-  DSTraceHelper dst("input_line_stress_calc");
-
   /*----------- find the beginning of line stress calculation conditions */
   if (frfind("---DESIGN LINE STRESS CALC CONDITIONS")==0) return;
   frread();
@@ -2480,8 +2444,6 @@ void input_line_stress_calc(multimap<int,RefCountPtr<DRT::Condition> >& lnmap)
  *----------------------------------------------------------------------------*/
 void input_surf_stress_calc(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
 {
-  DSTraceHelper dst("input_surf_stress_calc");
-
   /*-------- find the beginning of surface stress calculation conditions */
   if (frfind("---DESIGN SURF STRESS CALC CONDITIONS")==0) return;
   frread();
@@ -2561,7 +2523,7 @@ void input_line_LIFTDRAG(multimap<int,RefCountPtr<DRT::Condition> >& lldmap)
     
 	// create boundary condition
     RefCountPtr<DRT::Condition> condition =
-           rcp(new DRT::Condition(dlineid,DRT::Condition::LineLIFTDRAG,false,
+           rcp(new DRT::Condition(dlineid,DRT::Condition::LineLIFTDRAG,true,
                                   DRT::Condition::Line));
     condition->Add("LABEL",&LABEL,1);
     condition->Add("centerCoord",centerCoord);
@@ -2617,7 +2579,7 @@ void input_surf_LIFTDRAG(multimap<int,RefCountPtr<DRT::Condition> >& sldmap)
 	
 	// create boundary condition
     RefCountPtr<DRT::Condition> condition =
-           rcp(new DRT::Condition(dsurfid,DRT::Condition::SurfLIFTDRAG,false,
+           rcp(new DRT::Condition(dsurfid,DRT::Condition::SurfLIFTDRAG,true,
                                   DRT::Condition::Surface));
     condition->Add("LABEL",&LABEL,1);
     condition->Add("centerCoord",centerCoord);
@@ -2635,8 +2597,6 @@ void input_surf_LIFTDRAG(multimap<int,RefCountPtr<DRT::Condition> >& sldmap)
  *----------------------------------------------------------------------------*/
 void input_surf_volconstr(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
 {
-  DSTraceHelper dst("input_surf_volume_constraint");
-
   /*-------------------- find the beginning of volume constraint surface */
   if (frfind("---DESIGN SURFACE VOLUME CONSTRAINT 3D")==0) 
 	  {
