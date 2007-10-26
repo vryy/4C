@@ -106,5 +106,47 @@ string GMSH::intCellToGmshString(DRT::Element* ele, const Integrationcell cell)
     };
     pos_array_string << "};";
     return pos_array_string.str();
+};
+
+string GMSH::meshToGmshString(std::string s,
+        RefCountPtr<DRT::Discretization> dis)
+{
+    stringstream gmshfilecontent;
+    gmshfilecontent << "View \" " << s << " Elements \" {" << endl;
+    for (int i=0; i<dis->NumMyColElements(); ++i)
+    {
+        DRT::Element* actele = dis->lColElement(i);
+        gmshfilecontent << GMSH::elementToGmshString(actele) << endl;
+    };
+    gmshfilecontent << "};" << endl;
+    return gmshfilecontent.str();
 }
+
+string GMSH::meshToGmshString(std::string s,
+        RefCountPtr<DRT::Discretization> dis,
+        map<int, vector <Integrationcell> >& elementIntCellMap)
+{
+    stringstream gmshfilecontent;
+    gmshfilecontent << "View \" " << s << " Elements and Integration Cells \" {" << endl;
+    for (int i=0; i<dis->NumMyColElements(); ++i)
+    {
+        DRT::Element* actele = dis->lColElement(i);
+        const int id = actele->Id();
+        if (elementIntCellMap.count(id))
+        {
+            vector <XFEM::Integrationcell>::const_iterator cell;
+            for(cell = elementIntCellMap[id].begin(); cell != elementIntCellMap[id].end(); ++cell )
+            {
+                gmshfilecontent << GMSH::intCellToGmshString(actele, *cell) << endl;
+            }
+        }
+        else
+        {
+            gmshfilecontent << GMSH::elementToGmshString(actele) << endl;
+        };
+    };
+    gmshfilecontent << "};" << endl;
+    return gmshfilecontent.str();
+}
+
 #endif // #ifdef CCADISCRET

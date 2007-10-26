@@ -148,33 +148,16 @@ void xdyn_fluid_drt()
 
   map<int, set <XFEM::EnrPhysVar> > nodalDofMap = XFEM::createNodalDofMap(fluiddis, elementIntCellMap);
   
-  
-  ofstream gmshfilecontent;
-  gmshfilecontent.open ("elements.pos");
-  gmshfilecontent << "View \" Elements and Integration Cells \" {" << endl;
-  for (int i=0; i<fluiddis->NumMyColElements(); ++i)
-  {
-    DRT::Element* actele = fluiddis->lColElement(i);
-    if (elementIntCellMap.count(actele->Id()) /*and not printed*/)
-    {
-        vector <XFEM::Integrationcell>::const_iterator cell;
-        for(cell = elementIntCellMap[actele->Id()].begin(); cell != elementIntCellMap[actele->Id()].end(); ++cell )
-        {
-            gmshfilecontent << GMSH::intCellToGmshString(actele, *cell) << endl;
-        }
-    }
-    else
-    {
-        gmshfilecontent << GMSH::elementToGmshString(actele) << endl;
-    };
-  };
-  gmshfilecontent << "};" << endl;
-  gmshfilecontent.close();
+  ofstream f_system;
+  f_system.open ("elements_coupled_system.pos");
+  f_system << GMSH::meshToGmshString("Fluid", fluiddis, elementIntCellMap);
+  f_system << GMSH::meshToGmshString("Solid", soliddis);
+  f_system.close();
   
   for (int i=0; i<fluiddis->NumMyRowNodes(); ++i)
   {
     const int gid = fluiddis->lRowNode(i)->Id();
-    for ( set<XFEM::EnrPhysVar>::iterator var = nodalDofMap[gid].begin(); var != nodalDofMap[gid].end(); ++var )
+    for ( set<XFEM::EnrPhysVar>::const_iterator var = nodalDofMap[gid].begin(); var != nodalDofMap[gid].end(); ++var )
     {
       cout << "Node: " << gid << ", " << var->toString() << endl;
     };
