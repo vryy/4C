@@ -305,7 +305,7 @@ void PeriodicBoundaryConditions::CreateNodeCouplingForSinglePBC(
 
 
   // these are just parameter definitions for the octree search algorithm
-  double tol            = 1E-12;
+  double tol            = 1E-9;
   int    maxnodeperleaf = 25;
 
   //----------------------------------------------------------------------

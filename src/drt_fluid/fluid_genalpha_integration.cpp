@@ -1281,7 +1281,7 @@ void FluidGenAlphaIntegration::SetInitialFlowField(
         int err =0;
 
         // random noise is perc percent of the initial profile
-        double perc = 0.3;
+        double perc = 0.1;
 
         // loop all nodes on the processor
         for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();++lnodeid)
