@@ -5,6 +5,14 @@
 \brief Internal implementation of Fluid3 element with a generalised alpha
        time integration.
 
+       This element is designed for the solution of the Navier-Stokes
+       equations using a residual based stabilised method. The
+       stabilisation terms are derived in a variational multiscale sense.
+       
+       Subscales are either treated as quasi-static or time dependent.
+
+       There is no ALE-ability of the element up to now.
+
 <pre>
 Maintainer: Peter Gamnitzer
             gamnitzer@lnm.mw.tum.de
@@ -64,9 +72,6 @@ DRT::Elements::Fluid3GenalphaResVMM::Fluid3GenalphaResVMM(int iel)
 // element data
 //------------------------------------------------------------------------
     tau_          (3),
-#if 0    
-    invtauM_lin_  (3),
-#endif
     svelaf_       (3),
     convaf_old_   (3),
     convsubaf_old_(3),
@@ -183,243 +188,6 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
 
   if(tds == Fluid3::subscales_time_dependent)
   {
-#if 0
-    if(inertia == Fluid3::inertia_stab_keep)
-    {
-      // INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA, TIME DEPENDENT SUBSCALES
-      //
-      // tau_M: modification of
-      //
-      //    Franca, L.P. and Valentin, F.: On an Improved Unusual Stabilized
-      //    Finite Element Method for the Advective-Reactive-Diffusive
-      //    Equation. Computer Methods in Applied Mechanics and Enginnering,
-      //    Vol. 190, pp. 1785-1800, 2000.
-      //    http://www.lncc.br/~valentin/publication.htm                   */
-      //
-      // tau_Mp: modification of Barrenechea, G.R. and Valentin, F.
-      //
-      //    Barrenechea, G.R. and Valentin, F.: An unusual stabilized finite
-      //    element method for a generalized Stokes problem. Numerische
-      //    Mathematik, Vol. 92, pp. 652-677, 2002.
-      //    http://www.lncc.br/~valentin/publication.htm
-      //
-      //
-      // tau_C: kept Wall definition
-      //
-      // for the modifications see Codina, Principe, Guasch, Badia
-      //    "Time dependent subscales in the stabilized finite  element
-      //     approximation of incompressible flow problems"
-      //
-      //
-      // see also: Codina, R. and Soto, O.: Approximation of the incompressible
-      //    Navier-Stokes equations using orthogonal subscale stabilisation
-      //    and pressure segregation on anisotropic finite element meshes.
-      //    Computer methods in Applied Mechanics and Engineering,
-      //    Vol 193, pp. 1403-1419, 2004.
-      
-      // use one point gauss rule to calculate tau at element center
-      DRT::Utils::GaussRule3D integrationrule_stabili=DRT::Utils::intrule_hex_1point;
-      switch (distype)
-      {
-          case hex8: case hex20: case hex27:
-            integrationrule_stabili = DRT::Utils::intrule_hex_1point;
-            break;
-          case tet4: case tet10:
-            integrationrule_stabili = DRT::Utils::intrule_tet_1point;
-            break;
-          default:
-            dserror("invalid discretization type for fluid3");
-      }
-      
-      // gaussian points
-      const DRT::Utils::IntegrationPoints3D intpoints_onepoint(integrationrule_stabili);
-      
-      // shape functions and derivs at element center
-      const double e1    = intpoints_onepoint.qxg[0][0];
-      const double e2    = intpoints_onepoint.qxg[0][1];
-      const double e3    = intpoints_onepoint.qxg[0][2];
-      const double wquad = intpoints_onepoint.qwgt[0];
-      
-      DRT::Utils::shape_function_3D       (funct_,e1,e2,e3,distype);
-      DRT::Utils::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
-      
-      // get element type constant for tau
-      double mk=0.0;
-      switch (distype)
-      {
-          case tet4: case hex8:
-            mk = 0.333333333333333333333;
-            break;
-          case hex20: case hex27: case tet10:
-            mk = 0.083333333333333333333;
-            break;
-          default:
-            dserror("type unknown!\n");
-      }
-      
-      // get Jacobian matrix and determinant
-      xjm_ = blitz::sum(deriv_(i,k)*xyze_(j,k),k);
-      const double det = xjm_(0,0)*xjm_(1,1)*xjm_(2,2)+
-        xjm_(0,1)*xjm_(1,2)*xjm_(2,0)+
-        xjm_(0,2)*xjm_(1,0)*xjm_(2,1)-
-        xjm_(0,2)*xjm_(1,1)*xjm_(2,0)-
-        xjm_(0,0)*xjm_(1,2)*xjm_(2,1)-
-        xjm_(0,1)*xjm_(1,0)*xjm_(2,2);
-      const double vol = wquad*det;
-      
-      // get element length for tau_Mp/tau_C: volume-equival. diameter/sqrt(3)
-      hk = pow((6.*vol/PI),(1.0/3.0))/sqrt(3.0);
-      
-      // get velocities (n+alpha_F,i) at integration point
-      //               
-      //                 +-----
-      //       n+af       \                  n+af
-      //    vel    (x) =   +      N (x) * vel
-      //                  /        j         j
-      //                 +-----        
-      //                 node j
-      //
-      velintaf_ = blitz::sum(funct_(j)*evelaf(i,j),j);
-
-      // get velocities (n+1,i)  at integration point
-      //               
-      //                +-----
-      //       n+1       \                  n+1
-      //    vel   (x) =   +      N (x) * vel
-      //                 /        j         j
-      //                +-----        
-      //                node j
-      //
-      velintnp_    = blitz::sum(funct_(j)*evelnp(i,j),j);
-      
-      
-      // get velocity norms
-      const double vel_normaf = sqrt(blitz::sum(velintaf_*velintaf_));
-      const double vel_normnp = sqrt(blitz::sum(velintnp_*velintnp_));
-        
-      //---------------------------------------------- compute tau_Mu = tau_Mp
-      /* convective : viscous forces (element reynolds number)*/
-      const double re_convectaf = (vel_normaf * hk / visc ) * (mk/2.0);
-
-      double xi_convectaf;
-
-
-      /*
-        A smoothed version of
-               
-               xi_convect ^
-                          |      /
-                          |     /
-                          |    /
-                        1 +---+
-                          |
-                          |
-                          |
-                          +--------------> re_convect
-                              1
-        namely
-                             
-                          3  1  4
-                          - +- x
-                          4  4 
-                            |
-                            |
-                            |    
-                            |   x
-                            |   
-               xi_convect ^ |   |
-                          | |   |/
-                          | |   /
-                          | |  /
-                          | | +
-                     0.75 ++++
-                          |
-                          |
-                          +--------------> re_convect
-                              1
-      */
-      
-      if(re_convectaf >= 1.0)
-      {
-        // evaluation of (smoothed) xi function, here the classical one
-        xi_convectaf=re_convectaf;
-
-        // tauM similar to Codina's definition
-        tau_(0) = DSQR(hk) / (4.0 * visc / mk + ( 4.0 * visc/mk) * xi_convectaf);
-
-        /* linearisation of inverse tauM
-
-               /  1.0 \            
-            d |  ----  |          2.0 
-               \ tauM /                          n+af
-            ------------ =  ----------------  * u    
-            d   u           ||  n+af ||          dim 
-                 dim        || u     || * hk
-                            ||       ||
-         
-        */
-       
-        invtauM_lin_ = 2./(vel_normaf*hk)*velintaf_;
-      }
-      else
-      {
-        // evaluation of smoothed xi function
-        xi_convectaf=0.75+0.25*re_convectaf*re_convectaf*re_convectaf*re_convectaf;
-
-
-        // same definition of tauM using modified xi_convectaf 
-        tau_(0) = DSQR(hk) / (4.0 * visc / mk + ( 4.0 * visc/mk) * xi_convectaf);
-        
-        /* linearisation of inverse tauM
-
-               /  1.0 \            
-            d |  ----  |           3                     2
-               \ tauM /     1    mk       2   ||  n+af ||    n+af
-            ------------ =  - * ----- * hk  * || u     || * u
-            d   u           4       3         ||       ||    dim 
-                 dim            visc
-         
-        */
-        
-        invtauM_lin_ = (mk*mk*mk*hk*hk*vel_normaf*vel_normaf)/(4*visc*visc*visc)*velintaf_;
-      }
-
-
-      
-    /*------------------------------------------------------ compute tau_C ---*/
-
-    //-- stability parameter definition according to Wall Diss. 99
-    /*
-               xi_convect ^
-                          |
-                        1 |   +-----------
-                          |  /
-                          | /
-                          |/
-                          +--------------> Re_convect
-                              1
-    */
-    const double re_convectnp = (vel_normnp * hk / visc ) * (mk/2.0);
-
-    const double xi_tau_c = DMIN(re_convectnp,1.0);
-    
-    tau_(2) = vel_normnp * hk * 0.5 * xi_tau_c;
-
-    
-    /*-- stability parameter definition according to Codina (2002), CMAME 191
-     *
-     * Analysis of a stabilized finite element approximation of the transient
-     * convection-diffusion-reaction equation using orthogonal subscales.
-     * Ramon Codina, Jordi Blasco; Comput. Visual. Sci., 4 (3): 167-174, 2002.
-     *
-     * */
-    //tau_(2) = sqrt(DSQR(visc)+DSQR(0.5*vel_normnp*hk));
-    //tau_(2) = hk * hk /tau_(0);
-        
-    }
-    else
-#endif      
-    {
     // INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA, TIME DEPENDENT SUBSCALES
     //
     // tau_M: modification of
@@ -556,6 +324,9 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
                               1
     */
 
+    /* the 4.0 instead of the Franca's definition 2.0 results from the viscous
+     * term in the Navier-Stokes-equations, which is scaled by 2.0*nu         */
+
     tau_(0) = DSQR(hk) / (4.0 * visc / mk + ( 4.0 * visc/mk) * xi_convectaf);
 
     /*------------------------------------------------------ compute tau_C ---*/
@@ -576,7 +347,7 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
     const double xi_tau_c = DMIN(re_convectnp,1.0);
 
     tau_(2) = vel_normnp * hk * 0.5 * xi_tau_c;
-    //tau_(2) = hk * hk /tau_(0);
+
     /*-- stability parameter definition according to Codina (2002), CMAME 191
      *
      * Analysis of a stabilized finite element approximation of the transient
@@ -585,7 +356,6 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
      *
      * */
     //tau(2) = sqrt(DSQR(visc)+DSQR(0.5*vel_normnp*hk));
-    }
   }
   else
   {
@@ -1445,7 +1215,7 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
        with  N .. form function matrix                                   */
     conv_r_af_ = vderxyaf_(i, j)*funct_(k);
 
-    /*--- viscous term  - grad * epsilon(u): ----------------------------*/
+    /*--- viscous term  grad * epsilon(u): ------------------------------*/
     /*   /                                                \
          |  2 N_x,xx + N_x,yy + N_y,xy + N_x,zz + N_z,xz  |
        1 |                                                |
@@ -1480,177 +1250,6 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
 
     /* compute residual in gausspoint */
     resM_ = accintam_ + convaf_old_ - 2*visc*viscaf_old_ + pderxynp_ - bodyforceaf_;
-    
-#if 0
-    if(inertia == Fluid3::inertia_stab_keep)
-    {
-      // INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA, TIME DEPENDENT SUBSCALES
-      //
-      // tau_M: modification of
-      //
-      //    Franca, L.P. and Valentin, F.: On an Improved Unusual Stabilized
-      //    Finite Element Method for the Advective-Reactive-Diffusive
-      //    Equation. Computer Methods in Applied Mechanics and Enginnering,
-      //    Vol. 190, pp. 1785-1800, 2000.
-      //    http://www.lncc.br/~valentin/publication.htm                   */
-      //
-      // tau_Mp: modification of Barrenechea, G.R. and Valentin, F.
-      //
-      //    Barrenechea, G.R. and Valentin, F.: An unusual stabilized finite
-      //    element method for a generalized Stokes problem. Numerische
-      //    Mathematik, Vol. 92, pp. 652-677, 2002.
-      //    http://www.lncc.br/~valentin/publication.htm
-      //
-      //
-      // tau_C: kept Wall definition
-      //
-      // for the modifications see Codina, Principe, Guasch, Badia
-      //    "Time dependent subscales in the stabilized finite  element
-      //     approximation of incompressible flow problems"
-      //
-      //
-      // see also: Codina, R. and Soto, O.: Approximation of the incompressible
-      //    Navier-Stokes equations using orthogonal subscale stabilisation
-      //    and pressure segregation on anisotropic finite element meshes.
-      //    Computer methods in Applied Mechanics and Engineering,
-      //    Vol 193, pp. 1403-1419, 2004.
-
-      
-      // get element type constant for tau
-      double mk=0.0;
-      switch (distype)
-      {
-          case tet4: case hex8:
-            mk = 0.333333333333333333333;
-            break;
-          case hex20: case hex27: case tet10:
-            mk = 0.083333333333333333333;
-            break;
-          default:
-            dserror("type unknown!\n");
-      }
-
-      // get velocity norms
-      const double vel_normaf = sqrt(blitz::sum(velintaf_*velintaf_));
-      const double vel_normnp = sqrt(blitz::sum(velintnp_*velintnp_));
-
-      //---------------------------------------------- compute tau_Mu = tau_Mp
-      /* convective : viscous forces (element reynolds number)*/
-      const double re_convectaf = (vel_normaf * hk / visc ) * (mk/2.0);
-
-      double xi_convectaf;
-
-
-      /*
-        A smoothed version of
-               
-               xi_convect ^
-                          |      /
-                          |     /
-                          |    /
-                        1 +---+
-                          |
-                          |
-                          |
-                          +--------------> re_convect
-                              1
-        namely
-                             
-                          3  1  4
-                          - +- x
-                          4  4 
-                            |
-                            |
-                            |    
-                            |   x
-                            |   
-               xi_convect ^ |   |
-                          | |   |/
-                          | |   /
-                          | |  /
-                          | | +
-                     0.75 ++++
-                          |
-                          |
-                          +--------------> re_convect
-                              1
-      */
-      
-      if(re_convectaf >= 1.0)
-      {
-        // evaluation of (smoothed) xi function, here the classical one
-        xi_convectaf=re_convectaf;
-
-        // tauM similar to Codina's definition
-        tau_(0) = DSQR(hk) / (4.0 * visc / mk + ( 4.0 * visc/mk) * xi_convectaf);
-
-        /* linearisation of inverse tauM
-
-               /  1.0 \            
-            d |  ----  |          2.0 
-               \ tauM /                          n+af
-            ------------ =  ----------------  * u    
-            d   u           ||  n+af ||          dim 
-                 dim        || u     || * hk
-                            ||       ||               
-         
-        */
-        invtauM_lin_ = 2./(vel_normaf*hk)*velintaf_;
-      }
-      else
-      {
-        // evaluation of smoothed xi function
-        xi_convectaf=0.75+0.25*re_convectaf*re_convectaf*re_convectaf*re_convectaf;
-
-
-        // same definition of tauM using modified xi_convectaf 
-        tau_(0) = DSQR(hk) / (4.0 * visc / mk + ( 4.0 * visc/mk) * xi_convectaf);
-        
-        /* linearisation of inverse tauM
-
-               /  1.0 \            
-            d |  ----  |           3                     2
-               \ tauM /     1    mk       2   ||  n+af ||    n+af
-            ------------ =  - * ----- * hk  * || u     || * u
-            d   u           4       3         ||       ||    dim 
-                 dim            visc
-         
-        */
-        
-        invtauM_lin_ = (mk*mk*mk*hk*hk*vel_normaf*vel_normaf)/(4*visc*visc*visc)*velintaf_;
-      }
-
-      
-    /*------------------------------------------------------ compute tau_C ---*/
-
-    //-- stability parameter definition according to Wall Diss. 99
-    /*
-               xi_convect ^
-                          |
-                        1 |   +-----------
-                          |  /
-                          | /
-                          |/
-                          +--------------> Re_convect
-                              1
-    */
-    const double re_convectnp = (vel_normnp * hk / visc ) * (mk/2.0);
-
-    const double xi_tau_c = DMIN(re_convectnp,1.0);
-    
-    tau_(2) = vel_normnp * hk * 0.5 * xi_tau_c;
-
-    /*-- stability parameter definition according to Codina (2002), CMAME 191
-     *
-     * Analysis of a stabilized finite element approximation of the transient
-     * convection-diffusion-reaction equation using orthogonal subscales.
-     * Ramon Codina, Jordi Blasco; Comput. Visual. Sci., 4 (3): 167-174, 2002.
-     *
-     * */
-    //tau(2) = sqrt(DSQR(visc)+DSQR(0.5*vel_normnp*hk));
-    }
-#endif
-
     
 //--------------------------------------------------------------
 //--------------------------------------------------------------
@@ -1736,19 +1335,15 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
 
       */
       svelaf_(_) = alphaF*svelnp(_,iquad)+(1.0-alphaF)*sveln(_,iquad);
-#if 0
-      /* compute the intermediate value of subscale acceleration
+      
+      /* the intermediate value of subscale acceleration is not needed to be
+       * computed anymore --- we use the governing ODE to replace it ....
 
              ~ n+am    alphaM     / ~n+1   ~n \    gamma - alphaM    ~ n
             acc     = -------- * |  u    - u   | + -------------- * acc
                (i)    gamma*dt    \  (i)      /         gamma
 
       */
-      saccam_(_) = alphaM/(gamma*dt)*(svelnp(_,iquad)-sveln(_,iquad))
-                         +
-                         (gamma-alphaM)/gamma*saccn(_,iquad);
-#endif
-
 
       /*
         This is the operator
@@ -1882,45 +1477,7 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
             } // end loop rows (test functions for matrix)
           } // end loop rows (solution for matrix, test function for vector)
 
-#if 0
-          /* subscale acceleration: */
-          /*  factor:               
-                                                   
-                                    2.0            n+af 
-            alphaF*gamma*dt*  ----------------  * u     
-                              ||  n+af ||          dim  
-                              || u     || * hk          
-                              ||       ||
 
-
-
-
-                              
-                  /                                 \
-                 |  d    /   1  \         ~n+af      |
-                 | ---- |  ----  | Dacc * u      , v |
-                 | dacc  \ tauM /          (i)       |
-                  \                                 /
-                                       
-          */
-          
-          for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-          {
-            for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-            {
-              elemat(vi*4    , ui*4    ) -= fac*afgdt*invtauM_lin_(0)*funct_(ui)*svelaf_(0)*funct_(vi);
-              elemat(vi*4    , ui*4 + 1) -= fac*afgdt*invtauM_lin_(1)*funct_(ui)*svelaf_(0)*funct_(vi);
-              elemat(vi*4    , ui*4 + 2) -= fac*afgdt*invtauM_lin_(2)*funct_(ui)*svelaf_(0)*funct_(vi);
-              elemat(vi*4 + 1, ui*4    ) -= fac*afgdt*invtauM_lin_(0)*funct_(ui)*svelaf_(1)*funct_(vi);
-              elemat(vi*4 + 1, ui*4 + 1) -= fac*afgdt*invtauM_lin_(1)*funct_(ui)*svelaf_(1)*funct_(vi);
-              elemat(vi*4 + 1, ui*4 + 2) -= fac*afgdt*invtauM_lin_(2)*funct_(ui)*svelaf_(1)*funct_(vi);
-              elemat(vi*4 + 2, ui*4    ) -= fac*afgdt*invtauM_lin_(0)*funct_(ui)*svelaf_(2)*funct_(vi);
-              elemat(vi*4 + 2, ui*4 + 1) -= fac*afgdt*invtauM_lin_(1)*funct_(ui)*svelaf_(2)*funct_(vi);
-              elemat(vi*4 + 2, ui*4 + 2) -= fac*afgdt*invtauM_lin_(2)*funct_(ui)*svelaf_(2)*funct_(vi);
-            } // end loop rows (test functions for matrix)
-          } // end loop rows (solution for matrix, test function for vector)
-#endif
-          
           if (newton) // if inertia and newton
           {
             for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
@@ -4679,8 +4236,6 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
   return;
 }
 
-
-
 /*----------------------------------------------------------------------*
  |  get the body force in the nodes of the element (private) gammi 04/07|
  |  the Neumann condition associated with the nodes is stored in the    |
@@ -4760,13 +4315,6 @@ void DRT::Elements::Fluid3GenalphaResVMM::GetNodalBodyForce(Fluid3* ele, const d
   }
   return;
 }
-
-
-
-
-
-
-
 
 #endif
 #endif

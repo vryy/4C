@@ -755,6 +755,10 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
       output_.WriteVector("veln ", veln_ );
       output_.WriteVector("accnp", accnp_);
       output_.WriteVector("accn ", accn_ );
+
+      // write mesh in each restart step --- the elements are required since
+      // they contain history variables (the time dependent subscales)
+      output_.WriteMesh(step_,time_);
     }
 
 
@@ -776,6 +780,11 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
     output_.WriteVector("veln ", veln_ );
     output_.WriteVector("accnp", accnp_);
     output_.WriteVector("accn ", accn_ );
+
+    // write mesh in each restart step --- the elements are required since
+    // they contain history variables (the time dependent subscales)
+    output_.WriteMesh(step_,time_);
+    
   }
 
   return;
@@ -1228,6 +1237,11 @@ void FluidGenAlphaIntegration::ReadRestart(int step)
   reader.ReadVector(veln_ ,"veln" );
   reader.ReadVector(accnp_,"accnp");
   reader.ReadVector(accn_ ,"accn" );
+
+  // read the previously written elements including the history data
+  reader.ReadMesh(step_);
+
+  
 }
 
 
