@@ -946,12 +946,8 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
 
   if (displacementcoupling_)
   {
-    Teuchos::RefCountPtr<Epetra_Vector> idispn = rcp(new Epetra_Vector(x));
-
-    Teuchos::RefCountPtr<Epetra_Vector> iforce = FluidOp(idispn, fillFlag);
-    Teuchos::RefCountPtr<Epetra_Vector> idispnp = StructOp(iforce, fillFlag);
-
-#if 0
+#if 1
+    if (fillFlag!=User)
   if (comm_.NumProc()==1)
   {
     static int in_counter;
@@ -963,13 +959,21 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
 
     std::cout << "write '" YELLOW_LIGHT << filename.str() << END_COLOR "'\n";
     std::ofstream out(filename.str().c_str());
-    for (int i=0; i<x.MyLength()-1; i+=2)
+    for (int i=0; i<x.MyLength()-1; i+=genprob.ndim)
     {
-      out << i << " " << x[i] << " " << x[i+1] << "\n";
+      out << i;
+      for (int j=0; j<genprob.ndim; ++j)
+        out << " " << x[i+j];
+      out << "\n";
     }
     in_counter += 1;
   }
 #endif
+
+    Teuchos::RefCountPtr<Epetra_Vector> idispn = rcp(new Epetra_Vector(x));
+
+    Teuchos::RefCountPtr<Epetra_Vector> iforce = FluidOp(idispn, fillFlag);
+    Teuchos::RefCountPtr<Epetra_Vector> idispnp = StructOp(iforce, fillFlag);
 
 #if 0
   if (comm_.NumProc()==1)
@@ -986,6 +990,30 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
     for (int i=0; i<iforce->MyLength()-1; i+=2)
     {
       out << i << " " << (*iforce)[i] << " " << (*iforce)[i+1] << "\n";
+    }
+    f_counter += 1;
+  }
+#endif
+
+#if 1
+    if (fillFlag!=User)
+  if (comm_.NumProc()==1)
+  {
+    static int f_counter;
+    std::ostringstream filename;
+    filename << allfiles.outputfile_kenner
+             << ".d"
+             << "." << f_counter
+             << ".plot";
+
+    std::cout << "write '" YELLOW_LIGHT << filename.str() << END_COLOR "'\n";
+    std::ofstream out(filename.str().c_str());
+    for (int i=0; i<idispnp->MyLength()-1; i+=genprob.ndim)
+    {
+      out << i;
+      for (int j=0; j<genprob.ndim; ++j)
+        out << " " << (*idispnp)[i+j];
+      out << "\n";
     }
     f_counter += 1;
   }

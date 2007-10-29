@@ -662,6 +662,29 @@ bool FSI_InterfaceProblem::ComputeDispF(const Epetra_Vector& x,
   else
   {
 
+#if 1
+    if (par.nprocs==1)
+    {
+      static int in_counter;
+      std::ostringstream filename;
+      filename << allfiles.outputfile_kenner
+               << ".x"
+               << "." << in_counter
+               << ".plot";
+
+      std::cout << "write '" YELLOW_LIGHT << filename.str() << END_COLOR "'\n";
+      std::ofstream out(filename.str().c_str());
+      for (int i=0; i<x.MyLength()-1; i+=genprob.ndim)
+      {
+        out << i;
+        for (int j=0; j<genprob.ndim; ++j)
+          out << " " << x[i+j];
+        out << "\n";
+      }
+      in_counter += 1;
+    }
+#endif
+
     // restore structfield state
     solserv_sol_copy(structfield, s_disnum_calc, node_array_sol_mf, node_array_sol_mf, 8,ipos->mf_dispnp);
     solserv_sol_copy(structfield, s_disnum_calc, node_array_sol_mf, node_array_sol_mf, 9,ipos->mf_reldisp);
@@ -776,6 +799,30 @@ bool FSI_InterfaceProblem::ComputeDispF(const Epetra_Vector& x,
 
     GatherDisplacements gr(F,ipos->mf_dispnp);
     loop_interface(structfield,gr,F);
+
+#if 1
+    if (par.nprocs==1)
+    {
+      static int f_counter;
+      std::ostringstream filename;
+      filename << allfiles.outputfile_kenner
+               << ".d"
+               << "." << f_counter
+               << ".plot";
+
+      std::cout << "write '" YELLOW_LIGHT << filename.str() << END_COLOR "'\n";
+      std::ofstream out(filename.str().c_str());
+      for (int i=0; i<F.MyLength()-1; i+=genprob.ndim)
+      {
+        out << i;
+        for (int j=0; j<genprob.ndim; ++j)
+          out << " " << F[i+j];
+        out << "\n";
+      }
+      f_counter += 1;
+    }
+#endif
+
     //cout << "dispnp\n" << F;
     F.Update(-1.0,x,1.0);
 
@@ -783,7 +830,7 @@ bool FSI_InterfaceProblem::ComputeDispF(const Epetra_Vector& x,
     oldf_ = Teuchos::rcp(new Epetra_Vector(F));
   }
 
-#if 1
+#if 0
   if (par.nprocs==1)
   {
     static int out_counter;
