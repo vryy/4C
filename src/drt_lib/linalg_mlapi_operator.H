@@ -89,7 +89,7 @@ public:
   /*!
   \brief Returns the label of this class.
   */
-  const char* Label() const;// {return(&(label_[0]));}
+  const char* Label() const { return &label_[0]; }
 
   /*!
   \brief get Comm of this class
@@ -97,7 +97,19 @@ public:
   Derived from Epetra_Operator, returns ref to the Epetra_Comm of this class 
   
   */
-  const Epetra_Comm & Comm() const {return(A_->Comm());}
+  const Epetra_Comm & Comm() const {return(Ainput_->Comm());}
+
+  /*!
+  \brief get reference to parameter list
+  
+  */
+  ParameterList& Params() const {return params_;}
+
+  /*!
+  \brief get input matrix
+  
+  */
+  RCP<Epetra_CrsMatrix> A() {return Ainput_;}
 
   /*!
   \brief Get fine level OperatorDomainMap
@@ -105,7 +117,7 @@ public:
   Derived from Epetra_Operator, get fine level OperatorDomainMap
   
   */
-  const Epetra_Map & OperatorDomainMap() const {return A_->OperatorDomainMap();}
+  const Epetra_Map & OperatorDomainMap() const {return Ainput_->OperatorDomainMap();}
 
   /*!
   \brief Get fine level OperatorRangeMap
@@ -113,7 +125,7 @@ public:
   Derived from Epetra_Operator, get fine level OperatorRangeMap
   
   */
-  const Epetra_Map & OperatorRangeMap() const {return A_->OperatorRangeMap();}
+  const Epetra_Map & OperatorRangeMap() const {return Ainput_->OperatorRangeMap();}
   
   /*!
   \brief ApplyInverse the preconditioner
@@ -175,21 +187,70 @@ public:
 
 private:
 
-  /*!
-  \brief Compute the preconditioner
-  
-   Compute the mortar modified ml preconditioner
-  */
-  void Compute();  
-
   // don't want copy-ctor and = operator
   AMG_Operator(AMG_Operator& old);
   AMG_Operator operator = (const AMG_Operator& old);
-  
-  string                label_;  // name of this operator
-  ParameterList&        params_; // ml parameter list (intput)
-  RCP<Epetra_CrsMatrix> A_;      // input matrix  
 
+  /*!
+  \brief Compute the preconditioner
+  */
+  void SetupNonSymStab();
+  
+  /*!
+  \brief Compute row wise 1-norm of a matrix
+  */
+  MLAPI::MultiVector Row1Norm(Operator& A); 
+
+  /*!
+  \brief Get number of levels in hierarchy
+  */
+  inline int NLevel() const { return nlevel_; }
+  
+  /*!
+  \brief Multigrid vcycle
+  */
+  void Vcycle(const MultiVector& b_f, MultiVector& x_f, const int level) const;
+
+  /*!
+  \brief Get smoother on a certain level
+  */
+  inline const InverseOperator& S(const int level) const { return S_[level]; }
+
+  /*!
+  \brief Get prolongation on a certain level
+  */
+  inline const Operator& P(const int level) const { return P_[level]; }
+
+  /*!
+  \brief Get restruction on a certain level
+  */
+  inline const Operator& R(const int level) const { return R_[level]; }
+
+  /*!
+  \brief Get matrix on a certain level
+  */
+  inline const Operator& A(const int level) const { return A_[level]; }
+
+  /*!
+  \brief Get stabilization matrix on a certain level
+  */
+  inline const Operator& Astab(const int level) const { return Astab_[level]; }
+
+  /*!
+  \brief Get original nonstab matrix on a certain level
+  */
+  inline const Operator& Anonstab(const int level) const { return Anonstab_[level]; }
+
+  string                  label_;      // name of this operator
+  ParameterList&          params_;     // ml parameter list (intput)
+  RCP<Epetra_CrsMatrix>   Ainput_;     // input matrix  
+  int                     nlevel_;     // no. of grids in hierarchy
+  vector<Operator>        P_;          // the matrix hierarchy  
+  vector<Operator>        R_;          // the matrix hierarchy  
+  vector<Operator>        A_;          // the matrix hierarchy  
+  vector<Operator>        Astab_;      // the matrix hierarchy  
+  vector<Operator>        Anonstab_;   // the matrix hierarchy  
+  vector<InverseOperator> S_;          // the matrix hierarchy  
 
 
 }; // class  AMG_Operator : public virtual Epetra_Operator
