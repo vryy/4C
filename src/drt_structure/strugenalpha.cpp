@@ -2337,23 +2337,6 @@ void StruGenAlpha::ReadRestart(int step)
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  return displacements at midpoint (public)                   lw 10/07|
- *----------------------------------------------------------------------*/
-
-const Epetra_Vector& StruGenAlpha::Getdu()
-{
-  return *disi_;
-}
-
-/*----------------------------------------------------------------------*
- |  return rowmap (public)                                      lw 10/07|
- *----------------------------------------------------------------------*/
-
-const Epetra_Map* StruGenAlpha::GetMap()
-{
-  return discret_.DofRowMap();
-}
 
 
 

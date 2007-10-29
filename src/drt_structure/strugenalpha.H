@@ -180,13 +180,13 @@ public:
   \brief return displacements at midpoint
 
   */
-  const Epetra_Vector& Getdu();
+  const Epetra_Vector& Getdu() { return *disi_; }
 
   /*!
   \brief return rowmap
 
   */
-  const Epetra_Map* GetMap();
+  const Epetra_Map* GetMap() { return discret_.DofRowMap(); }
 
 
 protected:
