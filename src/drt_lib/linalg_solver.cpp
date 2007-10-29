@@ -759,7 +759,7 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
         mllist.set("smoother: MLS polynomial order "+(string)levelstr    ,azvar->mlsmotimes[i]);
       break;
       case 3:
-        mllist.set("smoother: type (level 0)"                            ,"MLS");
+        mllist.set("smoother: type "+(string)levelstr                    ,"MLS");
         mllist.set("smoother: MLS polynomial order "+(string)levelstr    ,-azvar->mlsmotimes[i]);
       break;
       case 4:
