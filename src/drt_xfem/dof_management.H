@@ -81,9 +81,7 @@ private:
 
 }; // class EnrPhysVar
 
-//}; // namespace XFEM
-
-map<int, set<EnrPhysVar> > createNodalDofMap(
+const map<int, const set<EnrPhysVar> > createNodalDofMap(
         RefCountPtr<DRT::Discretization> xfemdis,
         const map<int, vector<Integrationcell> >&  elementIntCellMap);
 

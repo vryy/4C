@@ -58,11 +58,12 @@ string XFEM::EnrPhysVar::toString() const
 
 
 
-map<int, set <XFEM::EnrPhysVar> > XFEM::createNodalDofMap(
+const map<int, const set <XFEM::EnrPhysVar> > XFEM::createNodalDofMap(
         RefCountPtr<DRT::Discretization>            xfemdis,
         const map<int, vector <XFEM::Integrationcell> >&  elementIntCellMap)
 {
     map<int, set <XFEM::EnrPhysVar> >  nodalDofMap;
+    map<int, const set <XFEM::EnrPhysVar> >  nodalDofMapFinal;
     
     // loop my row nodes and add standard degrees of freedom
     const XFEM::Enrichment enr_std(0, XFEM::Enrichment::typeStandard);
@@ -97,7 +98,14 @@ map<int, set <XFEM::EnrPhysVar> > XFEM::createNodalDofMap(
             };
         }
     };
-    return nodalDofMap;
+    
+    // create const sets from standard sets, so the sets cannot be changed by accident
+    // could be removed later, if this is aperformance bottleneck
+    for ( map<int, set <XFEM::EnrPhysVar> >::const_iterator oneset = nodalDofMap.begin(); oneset != nodalDofMap.end(); ++oneset )
+    {
+        nodalDofMapFinal.insert( make_pair(oneset->first, oneset->second));
+    };
+    return nodalDofMapFinal;
 }
 
 #endif  // #ifdef CCADISCRET

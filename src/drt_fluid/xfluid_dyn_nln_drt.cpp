@@ -145,19 +145,23 @@ void xdyn_fluid_drt()
   map<int, vector <XFEM::Integrationcell> > elementIntCellMap;
   is.computeIntersection(fluiddis,soliddis,elementIntCellMap);
 
-
-  map<int, set <XFEM::EnrPhysVar> > nodalDofMap = XFEM::createNodalDofMap(fluiddis, elementIntCellMap);
-  
+  // debug: write both meshes to file in Gmsh format
   ofstream f_system;
   f_system.open ("elements_coupled_system.pos");
   f_system << GMSH::meshToGmshString("Fluid", fluiddis, elementIntCellMap);
   f_system << GMSH::meshToGmshString("Solid", soliddis);
   f_system.close();
+
+  // apply enrichments
+  map<int, const set <XFEM::EnrPhysVar> > nodalDofMap = XFEM::createNodalDofMap(fluiddis, elementIntCellMap);
+  const XFEM::Enrichment enr_std(0, XFEM::Enrichment::typeStandard);
   
+  // debug: print enrichments to screen
   for (int i=0; i<fluiddis->NumMyRowNodes(); ++i)
   {
     const int gid = fluiddis->lRowNode(i)->Id();
-    for ( set<XFEM::EnrPhysVar>::const_iterator var = nodalDofMap[gid].begin(); var != nodalDofMap[gid].end(); ++var )
+    const set <XFEM::EnrPhysVar> actset = nodalDofMap[gid];
+    for ( set<XFEM::EnrPhysVar>::const_iterator var = actset.begin(); var != actset.end(); ++var )
     {
       cout << "Node: " << gid << ", " << var->toString() << endl;
     };
