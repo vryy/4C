@@ -22,9 +22,9 @@ namespace XFEM
 {
 
 /*
- * \brief An integrationcell is used for specialized element integration routines 
+ * \brief An integration cell is used for specialized element integration routines 
  */
-class Integrationcell
+class IntCell
 {
 
 public:
@@ -35,7 +35,7 @@ public:
      \param id               : A unique global id
      \param coordinates      : coordinates of the integrationcell
      */
-    Integrationcell(
+    IntCell(
         const int id,
         const std::vector< std::vector<double> > coordinates);
 
@@ -44,7 +44,7 @@ public:
 
      Makes a deep copy of a Element
      */
-    Integrationcell(const Integrationcell& old);
+    IntCell(const IntCell& old);
 
     /*!
      \brief returns the coordinates of the integration cell
@@ -65,7 +65,7 @@ private:
 
 };
 
-typedef std::vector<XFEM::Integrationcell > IntCells;
+typedef std::vector<XFEM::IntCell > IntCells;
 
 };
 

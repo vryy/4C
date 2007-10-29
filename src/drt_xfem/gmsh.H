@@ -30,12 +30,12 @@ namespace GMSH
 
 std::string elementToGmshString(DRT::Element* ele);
 
-std::string intCellToGmshString(DRT::Element* ele, const Integrationcell ele);
+std::string intCellToGmshString(DRT::Element* ele, const IntCell ele);
 
 std::string meshToGmshString(std::string s, RefCountPtr<DRT::Discretization> dis);
 
 std::string meshToGmshString(std::string s, RefCountPtr<DRT::Discretization> dis,
-        map<int, vector<Integrationcell> >&  elementIntCellMap);
+        map<int, vector<IntCell> >&  elementIntCellMap);
 
 };
 

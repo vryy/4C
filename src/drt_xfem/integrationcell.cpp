@@ -27,7 +27,7 @@ using namespace XFEM;
 //
 //  ctor
 //
-Integrationcell::Integrationcell(	const int id, 
+IntCell::IntCell(	const int id, 
 									const vector< vector<double> > coordinates) :
 id_(id), 
 coordinates_(coordinates)
@@ -38,7 +38,7 @@ coordinates_(coordinates)
 /*----------------------------------------------------------------------*
  |  copy-ctor                                                mwgee 11/06|
  *----------------------------------------------------------------------*/
-Integrationcell::Integrationcell(const Integrationcell& old) : 
+IntCell::IntCell(const IntCell& old) : 
 id_(old.id_), 
 coordinates_(old.coordinates_)
 {
@@ -48,12 +48,12 @@ coordinates_(old.coordinates_)
 //
 //  get coordinates
 //
-vector< vector<double> >  Integrationcell::GetCoord() const
+vector< vector<double> >  IntCell::GetCoord() const
 {
     return coordinates_;   
 }
 
-string Integrationcell::Print() const
+string IntCell::Print() const
 {
     stringstream s;
     s << "IntCell" << id_ << "\n";

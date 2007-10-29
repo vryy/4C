@@ -60,7 +60,7 @@ string XFEM::EnrPhysVar::toString() const
 
 const map<int, const set <XFEM::EnrPhysVar> > XFEM::createNodalDofMap(
         RefCountPtr<DRT::Discretization>            xfemdis,
-        const map<int, vector <XFEM::Integrationcell> >&  elementIntCellMap)
+        const map<int, vector <XFEM::IntCell> >&  elementIntCellMap)
 {
     map<int, set <XFEM::EnrPhysVar> >  nodalDofMap;
     map<int, const set <XFEM::EnrPhysVar> >  nodalDofMapFinal;

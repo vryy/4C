@@ -57,7 +57,7 @@ string GMSH::elementToGmshString(DRT::Element* ele)
     return pos_array_string.str();
 }
 
-string GMSH::intCellToGmshString(DRT::Element* ele, const Integrationcell cell)
+string GMSH::intCellToGmshString(DRT::Element* ele, const IntCell cell)
 {
     stringstream pos_array_string;
     pos_array_string << "SS(";
@@ -124,7 +124,7 @@ string GMSH::meshToGmshString(std::string s,
 
 string GMSH::meshToGmshString(std::string s,
         RefCountPtr<DRT::Discretization> dis,
-        map<int, vector <Integrationcell> >& elementIntCellMap)
+        map<int, vector <IntCell> >& elementIntCellMap)
 {
     stringstream gmshfilecontent;
     gmshfilecontent << "View \" " << s << " Elements and Integration Cells \" {" << endl;
@@ -134,7 +134,7 @@ string GMSH::meshToGmshString(std::string s,
         const int id = actele->Id();
         if (elementIntCellMap.count(id))
         {
-            vector <XFEM::Integrationcell>::const_iterator cell;
+            vector <XFEM::IntCell>::const_iterator cell;
             for(cell = elementIntCellMap[id].begin(); cell != elementIntCellMap[id].end(); ++cell )
             {
                 gmshfilecontent << GMSH::intCellToGmshString(actele, *cell) << endl;

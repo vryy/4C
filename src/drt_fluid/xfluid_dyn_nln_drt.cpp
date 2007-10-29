@@ -142,7 +142,7 @@ void xdyn_fluid_drt()
 
   // Intersection
   XFEM::Intersection is;
-  map<int, vector <XFEM::Integrationcell> > elementIntCellMap;
+  map<int, vector <XFEM::IntCell> > elementIntCellMap;
   is.computeIntersection(fluiddis,soliddis,elementIntCellMap);
 
   // debug: write both meshes to file in Gmsh format
