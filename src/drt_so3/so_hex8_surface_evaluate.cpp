@@ -214,6 +214,18 @@ void DRT::Elements::Soh8Surface::soh8_surface_integ(
   return;
 }
 
+int DRT::Elements::Soh8Surface::Evaluate(ParameterList& params,
+        DRT::Discretization&      discretization,
+        vector<int>&              lm,
+        Epetra_SerialDenseMatrix& elematrix1,
+        Epetra_SerialDenseMatrix& elematrix2,
+        Epetra_SerialDenseVector& elevector1,
+        Epetra_SerialDenseVector& elevector2,
+        Epetra_SerialDenseVector& elevector3)
+{
+	dserror("not implemented yet, but will be soon!");
+	return 0;
+}
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

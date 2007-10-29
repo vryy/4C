@@ -1578,7 +1578,7 @@ RefCountPtr<Epetra_Vector> FluidImplicitTimeInt::CalcStresses()
      // call loop over elements
      discret_->ClearState();
      const string condstring("FluidStressCalc");
-     discret_->EvaluateCondition(eleparams,*integratedshapefunc,condstring);
+     discret_->EvaluateCondition(eleparams,integratedshapefunc,condstring);
      discret_->ClearState();
 
      // compute traction values at specified nodes; otherwise do not touch the zero values

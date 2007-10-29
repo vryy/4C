@@ -925,16 +925,56 @@ public:
   Loop all conditions attached to the discretization and evaluate them.
   This method considers all conditions in condition_ with the names
   matching the user-provided string condstring.
-  Currently no time curves or spatial functions are used.
+  Calls more general EvaluateCondition method, see below.
  
   \param params (in):        List of parameters for use at element level
   \param systemvector (out): Vector to assemble BCs to.
                              The vector is NOT initialized to zero by this method.
   */								 
-  virtual void EvaluateCondition(ParameterList& params, 
-  				 Epetra_Vector& systemvector, 
-				 const string& condstring);				 
+  virtual void EvaluateCondition(ParameterList& params,
+		  RefCountPtr<Epetra_Vector> systemvector1,
+				 const string& condstring);
+ 
+  /*!
+  \brief Evaluate a specified condition
 
+  Loop all conditions attached to the discretization and evaluate them.
+  This method considers all conditions in condition_ with the names
+  matching the user-provided string condstring.
+  Calls more general EvaluateCondition method, see below.
+ 
+  \param params (in):        List of parameters for use at element level
+  */								 
+  virtual void EvaluateCondition(ParameterList& params,
+				 const string& condstring);
+  
+  /*
+  \brief Evaluate a specific condition
+
+  Loop all conditions attached to the discretization and evaluate them.  
+  This method considers all conditions in condition_ with the names
+  matching the user-provided string condstring.
+  It takes a current time from the parameter list params named "total time"
+  and evaluates the appropiate time curves at that time for each
+  Neumann condition separately. If "total time" is not included
+  in the parameters, no time curves are used.
+   
+    \param params (in):        List of parameters for use at element level
+    \param systemmatrix (out): Sparse matrix that may be changed by
+                               assembly of boundary element contributions.
+                               May not be Teuchos::null.
+                               Matrix must be systemmatrix->Filled()==false on input.
+    \param systemvector1 (out):Vector to assemble BCs to.
+                               The vector is NOT initialized to zero by this method.
+    \param systemvector2 (out):Vector to assemble BCs to.
+                               The vector is NOT initialized to zero by this method.          
+    */					
+  
+ virtual void EvaluateCondition(ParameterList& params,
+			RefCountPtr<Epetra_CrsMatrix> systemmatrix1,
+			RefCountPtr<Epetra_Vector> systemvector1,
+			RefCountPtr<Epetra_Vector> systemvector2,
+		    const string& condstring);
   /*!
   \brief Compute the nullspace of the discretization
 

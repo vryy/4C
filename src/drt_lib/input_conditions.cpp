@@ -2660,7 +2660,7 @@ void input_surf_volconstr(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
            rcp(new DRT::Condition(dsurfid,DRT::Condition::VolumeConstraint_3D,true,
                                   DRT::Condition::Surface));
     
-    condition->Add("VolConstrID",&VolConstrID);
+    condition->Add("VolConstrID",&VolConstrID,1);
     condition->Add("VolConsrtCurve",&VolConstrCurve);    
     
     //------------------------------- put condition in map of conditions

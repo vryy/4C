@@ -667,6 +667,26 @@ public:
                               vector<int>&              lm,
                               Epetra_SerialDenseVector& elevec1);
 
+  /*!
+    \brief Evaluate a boundary condition
+
+    \param params (in/out)    : ParameterList for communication between control routine
+                                and elements
+    \param discretization (in): A reference to the underlying discretization
+    \param condition (in)     : The condition to be evaluated
+    \param lm (in)            : location vector of this element
+    \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+
+    \return 0 if successful, negative otherwise
+    */  
+  	virtual int Evaluate(ParameterList& params,
+                         DRT::Discretization&      discretization,
+                         vector<int>&              lm,
+                         Epetra_SerialDenseMatrix& elematrix1,
+                               Epetra_SerialDenseMatrix& elematrix2,
+                               Epetra_SerialDenseVector& elevector1,
+                               Epetra_SerialDenseVector& elevector2,
+                               Epetra_SerialDenseVector& elevector3);
   //@}
 
 private:
