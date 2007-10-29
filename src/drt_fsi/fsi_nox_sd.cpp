@@ -83,6 +83,18 @@ bool NOX::FSI::SDRelaxation::compute(NOX::Abstract::Group& newgrp,
   step = - numerator / denominator;
   utils_->out() << "          RELAX = " YELLOW_LIGHT << setw(5) << step << END_COLOR "\n";
 
+  newgrp.computeX(oldgrp, dir, step);
+  newgrp.computeF();
+
+  double checkOrthogonality = fabs( newgrp.getF().innerProduct(dir) );
+
+  if (utils_->isPrintType(NOX::Utils::InnerIteration)) {
+    utils_->out() << setw(3) << "1" << ":";
+    utils_->out() << " step = " << utils_->sciformat(step);
+    utils_->out() << " orth = " << utils_->sciformat(checkOrthogonality);
+    utils_->out() << "\n" << NOX::Utils::fill(72) << "\n" << endl;
+  }
+
   // write omega
 #if 1
   double fnorm = oldgrp.getF().norm();
@@ -104,18 +116,6 @@ bool NOX::FSI::SDRelaxation::compute(NOX::Abstract::Group& newgrp,
     out->flush();
   }
 #endif
-
-  newgrp.computeX(oldgrp, dir, step);
-  newgrp.computeF();
-
-  double checkOrthogonality = fabs( newgrp.getF().innerProduct(dir) );
-
-  if (utils_->isPrintType(NOX::Utils::InnerIteration)) {
-    utils_->out() << setw(3) << "1" << ":";
-    utils_->out() << " step = " << utils_->sciformat(step);
-    utils_->out() << " orth = " << utils_->sciformat(checkOrthogonality);
-    utils_->out() << "\n" << NOX::Utils::fill(72) << "\n" << endl;
-  }
 
   return true;
 }
