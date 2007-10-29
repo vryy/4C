@@ -168,18 +168,18 @@ void FSI::AleLinear::EvaluateElements()
 void FSI::AleLinear::SetInterfaceMap(Teuchos::RefCountPtr<Epetra_Map> im)
 {
   imeshmap_ = im;
-  extractor_ = rcp(new Epetra_Export(*discret_->DofRowMap(), *imeshmap_));
+  extractor_ = rcp(new Epetra_Import(*imeshmap_, *discret_->DofRowMap()));
 }
 
 
 void FSI::AleLinear::ApplyInterfaceDisplacements(Teuchos::RefCountPtr<Epetra_Vector> idisp)
 {
-  int err = dispnp_->Import(*idisp,*extractor_,Insert);
+  int err = dispnp_->Export(*idisp,*extractor_,Insert);
   if (err)
     dserror("Insert using extractor returned err=%d",err);
 
   idisp->PutScalar(1.0);
-  err = dirichtoggle_->Import(*idisp,*extractor_,Insert);
+  err = dirichtoggle_->Export(*idisp,*extractor_,Insert);
   if (err)
     dserror("Insert using extractor returned err=%d",err);
 }

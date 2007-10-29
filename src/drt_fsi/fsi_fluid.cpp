@@ -49,14 +49,14 @@ void FSI::Fluid::SetItemax(int itemax)
 void FSI::Fluid::SetInterfaceMap(Teuchos::RefCountPtr<Epetra_Map> im)
 {
   ivelmap_ = im;
-  extractor_ = rcp(new Epetra_Export(residual_->Map(), *ivelmap_));
+  extractor_ = rcp(new Epetra_Import(*ivelmap_, residual_->Map()));
 }
 
 
 Teuchos::RefCountPtr<Epetra_Vector> FSI::Fluid::ExtractInterfaceForces()
 {
   Teuchos::RefCountPtr<Epetra_Vector> iforce = rcp(new Epetra_Vector(*ivelmap_));
-  int err = iforce->Export(*trueresidual_,*extractor_,Insert);
+  int err = iforce->Import(*trueresidual_,*extractor_,Insert);
   if (err)
     dserror("Export using exporter returned err=%d",err);
   return iforce;
@@ -65,7 +65,7 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Fluid::ExtractInterfaceForces()
 
 void FSI::Fluid::ApplyInterfaceVelocities(Teuchos::RefCountPtr<Epetra_Vector> ivel)
 {
-  int err = velnp_->Import(*ivel,*extractor_,Insert);
+  int err = velnp_->Export(*ivel,*extractor_,Insert);
   if (err)
     dserror("Insert using extractor returned err=%d",err);
 
@@ -74,7 +74,7 @@ void FSI::Fluid::ApplyInterfaceVelocities(Teuchos::RefCountPtr<Epetra_Vector> iv
   // - We change ivel here. It must not be used afterwards.
   // - The algorithm must support the sudden change of dirichtoggle_
   ivel->PutScalar(1.0);
-  err = dirichtoggle_->Import(*ivel,*extractor_,Insert);
+  err = dirichtoggle_->Export(*ivel,*extractor_,Insert);
   if (err)
     dserror("Insert using extractor returned err=%d",err);
 
@@ -87,13 +87,13 @@ void FSI::Fluid::ApplyInterfaceVelocities(Teuchos::RefCountPtr<Epetra_Vector> iv
 void FSI::Fluid::SetMeshMap(Teuchos::RefCountPtr<Epetra_Map> mm)
 {
   meshmap_ = mm;
-  meshextractor_ = rcp(new Epetra_Export(residual_->Map(), *meshmap_));
+  meshextractor_ = rcp(new Epetra_Import(*meshmap_, residual_->Map()));
 }
 
 
 void FSI::Fluid::ApplyMeshDisplacement(Teuchos::RefCountPtr<Epetra_Vector> fluiddisp)
 {
-  int err = dispnp_->Import(*fluiddisp,*meshextractor_,Insert);
+  int err = dispnp_->Export(*fluiddisp,*meshextractor_,Insert);
   if (err)
     dserror("Insert using extractor returned err=%d",err);
 
@@ -107,7 +107,7 @@ void FSI::Fluid::ApplyMeshDisplacement(Teuchos::RefCountPtr<Epetra_Vector> fluid
 void FSI::Fluid::ApplyMeshVelocity(Teuchos::RefCountPtr<Epetra_Vector> gridvel)
 {
   //gridv_->PutScalar(0);
-  int err = gridv_->Import(*gridvel,*meshextractor_,Insert);
+  int err = gridv_->Export(*gridvel,*meshextractor_,Insert);
   if (err)
     dserror("Insert using extractor returned err=%d",err);
 }
@@ -133,7 +133,7 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Fluid::RelaxationSolve(Teuchos::RefCoun
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   relax_->PutScalar(0.0);
-  int err = relax_->Import(*ivel,*extractor_,Insert);
+  int err = relax_->Export(*ivel,*extractor_,Insert);
   if (err)
     dserror("Insert using extractor returned err=%d",err);
 
@@ -255,7 +255,7 @@ RefCountPtr<Epetra_Vector> FSI::Fluid::IntegrateInterfaceShape()
   discret_->ClearState();
 
   Teuchos::RefCountPtr<Epetra_Vector> ishape = rcp(new Epetra_Vector(*ivelmap_));
-  int err = ishape->Export(*integratedshapefunc,*extractor_,Insert);
+  int err = ishape->Import(*integratedshapefunc,*extractor_,Insert);
   if (err)
     dserror("Export using exporter returned err=%d",err);
   return ishape;

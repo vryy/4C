@@ -47,8 +47,7 @@ private:
   void CalculateStiffness();
 
   Teuchos::RefCountPtr<Epetra_Map> idispmap_;
-  Teuchos::RefCountPtr<Epetra_Export> extractor_;
-  //Teuchos::RefCountPtr<Epetra_Import> inserter_;
+  Teuchos::RefCountPtr<Epetra_Import> extractor_;
 
   Teuchos::RefCountPtr<Epetra_Vector> fextncopy_;
 

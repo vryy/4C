@@ -52,7 +52,7 @@ void FSI::Structure::PrepareTimeStep()
 void FSI::Structure::SetInterfaceMap(Teuchos::RefCountPtr<Epetra_Map> im)
 {
   idispmap_ = im;
-  extractor_ = rcp(new Epetra_Export(dis_->Map(), *idispmap_));
+  extractor_ = rcp(new Epetra_Import(*idispmap_, dis_->Map()));
 }
 
 
@@ -61,11 +61,11 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Structure::ExtractInterfaceDisplacement
   Teuchos::RefCountPtr<Epetra_Vector> idism = rcp(new Epetra_Vector(*idispmap_));
   Teuchos::RefCountPtr<Epetra_Vector> idis  = rcp(new Epetra_Vector(*idispmap_));
 
-  int err = idis->Export(*dis_,*extractor_,Insert);
+  int err = idis->Import(*dis_,*extractor_,Insert);
   if (err)
     dserror("Export using exporter returned err=%d",err);
 
-  err = idism->Export(*dism_,*extractor_,Insert);
+  err = idism->Import(*dism_,*extractor_,Insert);
   if (err)
     dserror("Export using exporter returned err=%d",err);
 
@@ -81,11 +81,11 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Structure::ExtractInterfaceVel()
   Teuchos::RefCountPtr<Epetra_Vector> ivelm = rcp(new Epetra_Vector(*idispmap_));
   Teuchos::RefCountPtr<Epetra_Vector> ivel  = rcp(new Epetra_Vector(*idispmap_));
 
-  int err = ivel->Export(*vel_,*extractor_,Insert);
+  int err = ivel->Import(*vel_,*extractor_,Insert);
   if (err)
     dserror("Export using exporter returned err=%d",err);
 
-  err = ivelm->Export(*velm_,*extractor_,Insert);
+  err = ivelm->Import(*velm_,*extractor_,Insert);
   if (err)
     dserror("Export using exporter returned err=%d",err);
 
@@ -101,11 +101,11 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Structure::ExtractInterfaceAcc()
   Teuchos::RefCountPtr<Epetra_Vector> iaccm = rcp(new Epetra_Vector(*idispmap_));
   Teuchos::RefCountPtr<Epetra_Vector> iacc  = rcp(new Epetra_Vector(*idispmap_));
 
-  int err = iacc->Export(*acc_,*extractor_,Insert);
+  int err = iacc->Import(*acc_,*extractor_,Insert);
   if (err)
     dserror("Export using exporter returned err=%d",err);
 
-  err = iaccm->Export(*accm_,*extractor_,Insert);
+  err = iaccm->Import(*accm_,*extractor_,Insert);
   if (err)
     dserror("Export using exporter returned err=%d",err);
 
@@ -151,7 +151,7 @@ void FSI::Structure::ApplyInterfaceForces(Teuchos::RefCountPtr<Epetra_Vector> if
 
   // reset of external forces is needed
   fextn_->Update(1.0, *fextncopy_, 0.0);
-  int err = fextn_->Import(*iforce,*extractor_,Add);
+  int err = fextn_->Export(*iforce,*extractor_,Add);
   if (err)
     dserror("Insert using extractor returned err=%d",err);
 
@@ -235,7 +235,7 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Structure::RelaxationSolve(Teuchos::Ref
 
   // set external forces to just the forces at the interface
   fextn_->PutScalar(0.0);
-  int err = fextn_->Import(*iforce,*extractor_,Insert);
+  int err = fextn_->Export(*iforce,*extractor_,Insert);
   if (err)
     dserror("Insert using extractor returned err=%d",err);
 
@@ -265,7 +265,7 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Structure::RelaxationSolve(Teuchos::Ref
 
   // we are just interessted in the incremental interface displacements
   Teuchos::RefCountPtr<Epetra_Vector> idisi = rcp(new Epetra_Vector(*idispmap_));
-  err = idisi->Export(*disi_,*extractor_,Insert);
+  err = idisi->Import(*disi_,*extractor_,Insert);
   if (err)
     dserror("Export using exporter returned err=%d",err);
 

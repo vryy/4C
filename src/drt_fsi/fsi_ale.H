@@ -113,7 +113,7 @@ private:
   Teuchos::RefCountPtr<Epetra_Vector>    residual_;
 
   Teuchos::RefCountPtr<Epetra_Map> imeshmap_;
-  Teuchos::RefCountPtr<Epetra_Export> extractor_;
+  Teuchos::RefCountPtr<Epetra_Import> extractor_;
 
 private:
 

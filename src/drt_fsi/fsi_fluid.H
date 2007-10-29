@@ -52,10 +52,10 @@ public:
 private:
 
   Teuchos::RefCountPtr<Epetra_Map> ivelmap_;
-  Teuchos::RefCountPtr<Epetra_Export> extractor_;
+  Teuchos::RefCountPtr<Epetra_Import> extractor_;
 
   Teuchos::RefCountPtr<Epetra_Map> meshmap_;
-  Teuchos::RefCountPtr<Epetra_Export> meshextractor_;
+  Teuchos::RefCountPtr<Epetra_Import> meshextractor_;
 
   Teuchos::RefCountPtr<Epetra_Vector> relax_;
   Teuchos::RefCountPtr<Epetra_Vector> griddisp_;
