@@ -680,10 +680,6 @@ public:
                               Epetra_SerialDenseVector& elevec1);
 
   //@}
-
-  // to be removed soon or moved to the DRT::Element class
-  // please ask me before using it! a.gerstenberger
-  DRT::Elements::SoDisp* GetParent(){return parent_;}
   
 private:
 
