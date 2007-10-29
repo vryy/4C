@@ -235,14 +235,13 @@ void ntam(
     printf("\n");
   }
 
+#ifndef CCADISCRET
 #ifdef PERF
   perf_end(0);
   /* print out time counters */
   perf_out();
 #endif
 
-
-#ifndef CCADISCRET
   goto endcal;
   /*----------------------------------------------------------------------*/
 visualisation:
