@@ -1,3 +1,17 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file
+
+\brief Solve FSI problems using a Dirichlet-Neumann partitioning approach
+
+<pre>
+Maintainer: Ulrich Kuettler
+            kuettler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15238
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
@@ -13,6 +27,8 @@ extern struct _GENPROB     genprob;
 
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 FSI::Fluid::Fluid(RefCountPtr<DRT::Discretization> dis,
                   RefCountPtr<LINALG::Solver> solver,
                   RefCountPtr<ParameterList> params,
@@ -34,18 +50,24 @@ FSI::Fluid::Fluid(RefCountPtr<DRT::Discretization> dis,
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 int FSI::Fluid::Itemax() const
 {
   return params_->get<int>("max nonlin iter steps");
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void FSI::Fluid::SetItemax(int itemax)
 {
   params_->set<int>("max nonlin iter steps", itemax);
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void FSI::Fluid::SetInterfaceMap(Teuchos::RefCountPtr<Epetra_Map> im)
 {
   ivelmap_ = im;
@@ -53,6 +75,8 @@ void FSI::Fluid::SetInterfaceMap(Teuchos::RefCountPtr<Epetra_Map> im)
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 Teuchos::RefCountPtr<Epetra_Vector> FSI::Fluid::ExtractInterfaceForces()
 {
   Teuchos::RefCountPtr<Epetra_Vector> iforce = rcp(new Epetra_Vector(*ivelmap_));
@@ -63,6 +87,8 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Fluid::ExtractInterfaceForces()
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void FSI::Fluid::ApplyInterfaceVelocities(Teuchos::RefCountPtr<Epetra_Vector> ivel)
 {
   int err = velnp_->Export(*ivel,*extractor_,Insert);
@@ -84,6 +110,8 @@ void FSI::Fluid::ApplyInterfaceVelocities(Teuchos::RefCountPtr<Epetra_Vector> iv
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void FSI::Fluid::SetMeshMap(Teuchos::RefCountPtr<Epetra_Map> mm)
 {
   meshmap_ = mm;
@@ -91,6 +119,8 @@ void FSI::Fluid::SetMeshMap(Teuchos::RefCountPtr<Epetra_Map> mm)
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void FSI::Fluid::ApplyMeshDisplacement(Teuchos::RefCountPtr<Epetra_Vector> fluiddisp)
 {
   int err = dispnp_->Export(*fluiddisp,*meshextractor_,Insert);
@@ -104,6 +134,8 @@ void FSI::Fluid::ApplyMeshDisplacement(Teuchos::RefCountPtr<Epetra_Vector> fluid
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void FSI::Fluid::ApplyMeshVelocity(Teuchos::RefCountPtr<Epetra_Vector> gridvel)
 {
   //gridv_->PutScalar(0);
@@ -113,6 +145,8 @@ void FSI::Fluid::ApplyMeshVelocity(Teuchos::RefCountPtr<Epetra_Vector> gridvel)
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 Teuchos::RefCountPtr<Epetra_Vector> FSI::Fluid::RelaxationSolve(Teuchos::RefCountPtr<Epetra_Vector> ivel)
 {
   //
@@ -234,6 +268,8 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Fluid::RelaxationSolve(Teuchos::RefCoun
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 RefCountPtr<Epetra_Vector> FSI::Fluid::IntegrateInterfaceShape()
 {
   ParameterList eleparams;

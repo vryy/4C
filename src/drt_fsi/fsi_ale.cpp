@@ -1,3 +1,17 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file
+
+\brief Solve FSI problems using a Dirichlet-Neumann partitioning approach
+
+<pre>
+Maintainer: Ulrich Kuettler
+            kuettler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15238
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
@@ -17,6 +31,8 @@ extern struct _GENPROB     genprob;
 
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 FSI::AleLinear::AleLinear(RefCountPtr<DRT::Discretization> actdis,
                           Teuchos::RefCountPtr<LINALG::Solver> solver,
                           Teuchos::RefCountPtr<ParameterList> params,
@@ -49,6 +65,8 @@ FSI::AleLinear::AleLinear(RefCountPtr<DRT::Discretization> actdis,
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void FSI::AleLinear::PrepareTimeStep()
 {
   step_ += 1;
@@ -62,6 +80,8 @@ void FSI::AleLinear::PrepareTimeStep()
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void FSI::AleLinear::Solve()
 {
   EvaluateElements();
@@ -72,18 +92,28 @@ void FSI::AleLinear::Solve()
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void FSI::AleLinear::Update()
 {
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void FSI::AleLinear::Output()
 {
+#if 0
+  // currently we do not need any output -- the fluid writes its
+  // displacements itself.
   output_->NewStep    (step_,time_);
   output_->WriteVector("dispnp", dispnp_);
+#endif
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void FSI::AleLinear::Integrate()
 {
   while (step_ < nstep_-1 and time_ <= maxtime_)
@@ -96,6 +126,8 @@ void FSI::AleLinear::Integrate()
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 bool FSI::AleLinear::computeF(const Epetra_Vector &x,
                               Epetra_Vector &F,
                               const FillType fillFlag)
@@ -108,6 +140,8 @@ bool FSI::AleLinear::computeF(const Epetra_Vector &x,
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 bool FSI::AleLinear::computeJacobian(const Epetra_Vector &x, Epetra_Operator &Jac)
 {
   if (!haveJacobian_)
@@ -118,6 +152,8 @@ bool FSI::AleLinear::computeJacobian(const Epetra_Vector &x, Epetra_Operator &Ja
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void FSI::AleLinear::EvaluateElements()
 {
   haveF_ = true;
@@ -165,6 +201,8 @@ void FSI::AleLinear::EvaluateElements()
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void FSI::AleLinear::SetInterfaceMap(Teuchos::RefCountPtr<Epetra_Map> im)
 {
   imeshmap_ = im;
@@ -172,6 +210,8 @@ void FSI::AleLinear::SetInterfaceMap(Teuchos::RefCountPtr<Epetra_Map> im)
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void FSI::AleLinear::ApplyInterfaceDisplacements(Teuchos::RefCountPtr<Epetra_Vector> idisp)
 {
   int err = dispnp_->Export(*idisp,*extractor_,Insert);
@@ -185,6 +225,8 @@ void FSI::AleLinear::ApplyInterfaceDisplacements(Teuchos::RefCountPtr<Epetra_Vec
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 Teuchos::RefCountPtr<Epetra_Vector> FSI::AleLinear::ExtractDisplacement()
 {
   // We know that the ale dofs are coupled with their original map. So

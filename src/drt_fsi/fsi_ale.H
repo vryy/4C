@@ -1,3 +1,17 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file
+
+\brief Solve FSI problems using a Dirichlet-Neumann partitioning approach
+
+<pre>
+Maintainer: Ulrich Kuettler
+            kuettler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15238
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
@@ -28,30 +42,65 @@ namespace FSI {
 
 
 /// General ALE interface
+/*!
+  An abstract base class meant to be derived for each ALE
+  implementation we want to support.
+
+  \note The fluid and structure implementations do not use such a
+  class (yet). This is because we reuse the normal implementations
+  here and do not support the exchange for another field
+  implementation. Maybe we need this in the future, however.
+
+  The purpose of the ALE field is to take an interface isplacement and
+  to return the deformed interface. All in all pretty simple.
+ */
 class Ale
 {
 public:
   virtual ~Ale() {}
 
-  /// announce a new time step
-  //virtual void NewStep(int step, double time) {}
-
+  /// start a new time step
   virtual void PrepareTimeStep() = 0;
+
+  /// solve this time step with currently applied interface displacements
   virtual void Solve() = 0;
+
+  /// take the current solution to be the final one for this time step
   virtual void Update() = 0;
+
+  /// write output
   virtual void Output() = 0;
 
+  //! @name Interface Map
+
+  /// the map of all interface dofs will be set from the outside
   virtual void SetInterfaceMap(Teuchos::RefCountPtr<Epetra_Map> im) = 0;
 
+  //@}
+
+  //! @name Apply interface displacements
+
+  /// displacements at the interface are prescribed
   virtual void ApplyInterfaceDisplacements(Teuchos::RefCountPtr<Epetra_Vector> idisp) = 0;
 
-  virtual const DRT::Discretization& Discretization() const = 0;
+  //@}
 
+  //! @name Extract displacement
+
+  /// the whole displacement field is extracted here
   virtual Teuchos::RefCountPtr<Epetra_Vector> ExtractDisplacement() = 0;
+
+  //@}
+
+  /// discretization access
+  virtual const DRT::Discretization& Discretization() const = 0;
 };
 
 
 /// linear ALE algorithm
+/*!
+  The most basic, most simple implementation.
+ */
 class AleLinear : public Ale,
                   public NOX::Epetra::Interface::Required,
                   public NOX::Epetra::Interface::Jacobian
@@ -67,16 +116,20 @@ public:
             Teuchos::RefCountPtr<ParameterList> params,
             Teuchos::RefCountPtr<IO::DiscretizationWriter> output);
 
+  /// a very simple time loop to be used for standalone ALE problems
   void Integrate();
 
+  //! @name Algorithm core methods
   virtual void PrepareTimeStep();
   virtual void Solve();
   virtual void Update();
   virtual void Output();
+  //@}
 
+  //! @name Unused and nonworking
   virtual bool computeF(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag);
-
   virtual bool computeJacobian(const Epetra_Vector &x, Epetra_Operator &Jac);
+  //@}
 
   void SetInterfaceMap(Teuchos::RefCountPtr<Epetra_Map> im);
 
@@ -88,11 +141,14 @@ public:
 
 private:
 
+  //! @name local copies of input parameters
   Teuchos::RefCountPtr<DRT::Discretization> discret_;
   Teuchos::RefCountPtr<LINALG::Solver> solver_;
   Teuchos::RefCountPtr<ParameterList> params_;
   Teuchos::RefCountPtr<IO::DiscretizationWriter> output_;
+  //@}
 
+  //! @name Algorithm core variables
   int step_;
   int nstep_;
   double time_;
@@ -111,17 +167,23 @@ private:
   Teuchos::RefCountPtr<Epetra_Vector>    dispnm_;
 
   Teuchos::RefCountPtr<Epetra_Vector>    residual_;
+  //@}
 
+  /// interface dof map
   Teuchos::RefCountPtr<Epetra_Map> imeshmap_;
+
+  /// communicator between interface dof map and field dof map
   Teuchos::RefCountPtr<Epetra_Import> extractor_;
 
 private:
 
+  /// element call
   void EvaluateElements();
 
-  //Epetra_Vector &x_;
+  //! @name Unused and nonworking
   bool haveF_;
   bool haveJacobian_;
+  //@}
 };
 }
 

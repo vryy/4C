@@ -1,3 +1,17 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file
+
+\brief Solve FSI problems using a Dirichlet-Neumann partitioning approach
+
+<pre>
+Maintainer: Ulrich Kuettler
+            kuettler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15238
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
@@ -18,6 +32,8 @@ extern struct _GENPROB     genprob;
 
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 FSI::Structure::Structure(Teuchos::RefCountPtr<ParameterList> params,
                           Teuchos::RefCountPtr<DRT::Discretization> dis,
                           Teuchos::RefCountPtr<LINALG::Solver> solver,
@@ -31,6 +47,8 @@ FSI::Structure::Structure(Teuchos::RefCountPtr<ParameterList> params,
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void FSI::Structure::PrepareTimeStep()
 {
   string pred = params_->get<string>("predictor","constant");
@@ -49,6 +67,8 @@ void FSI::Structure::PrepareTimeStep()
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void FSI::Structure::SetInterfaceMap(Teuchos::RefCountPtr<Epetra_Map> im)
 {
   idispmap_ = im;
@@ -56,6 +76,8 @@ void FSI::Structure::SetInterfaceMap(Teuchos::RefCountPtr<Epetra_Map> im)
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 Teuchos::RefCountPtr<Epetra_Vector> FSI::Structure::ExtractInterfaceDisplacement()
 {
   Teuchos::RefCountPtr<Epetra_Vector> idism = rcp(new Epetra_Vector(*idispmap_));
@@ -76,6 +98,8 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Structure::ExtractInterfaceDisplacement
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 Teuchos::RefCountPtr<Epetra_Vector> FSI::Structure::ExtractInterfaceVel()
 {
   Teuchos::RefCountPtr<Epetra_Vector> ivelm = rcp(new Epetra_Vector(*idispmap_));
@@ -96,6 +120,8 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Structure::ExtractInterfaceVel()
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 Teuchos::RefCountPtr<Epetra_Vector> FSI::Structure::ExtractInterfaceAcc()
 {
   Teuchos::RefCountPtr<Epetra_Vector> iaccm = rcp(new Epetra_Vector(*idispmap_));
@@ -116,6 +142,8 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Structure::ExtractInterfaceAcc()
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void FSI::Structure::ApplyInterfaceForces(Teuchos::RefCountPtr<Epetra_Vector> iforce)
 {
   // Play it save. In the first iteration everything is already set up
@@ -221,6 +249,8 @@ void FSI::Structure::CalculateStiffness()
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 Teuchos::RefCountPtr<Epetra_Vector> FSI::Structure::RelaxationSolve(Teuchos::RefCountPtr<Epetra_Vector> iforce)
 {
   // -------------------------------------------------------------------
