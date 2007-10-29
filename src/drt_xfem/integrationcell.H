@@ -16,6 +16,7 @@ Maintainer: Axel Gerstenberger
 #define INTEGRATIONCELL_H
 
 #include <vector>
+#include <set>
 #include <string>
 
 namespace XFEM
@@ -66,6 +67,7 @@ private:
 };
 
 typedef std::vector<XFEM::IntCell > IntCells;
+typedef std::set<XFEM::IntCell > IntCellSet;
 
 };
 

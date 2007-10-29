@@ -2119,27 +2119,22 @@ void Intersection::computeCDT(
     
    
     // store integrationcells
-    vector<double> tetnodes(3);
-    vector< vector<double> > tetrahedronCoord;
     vector< IntCell > listperElement;
     
     for(int i=0; i<out.numberoftetrahedra; i++ )
     {   
+        vector< vector<double> > tetrahedronCoord;
         for(int j = 0; j < out.numberofcorners; j++)
         {
+            vector<double> tetnodes(3);
             for(int k = 0; k < 3; k++)
                 tetnodes[k] = out.pointlist[out.tetrahedronlist[i*out.numberofcorners+j]*3+k];
          
             tetrahedronCoord.push_back(tetnodes);    
         }
-        IntCell cell(i, tetrahedronCoord);
-        tetrahedronCoord.clear();
-        listperElement.push_back(cell);                 
+        listperElement.push_back(IntCell(i, tetrahedronCoord));                 
     }
     integrationcellList.insert(make_pair(element->Id(),listperElement));
-    
-    // clear vectors
-    listperElement.clear();
 }
 
 
