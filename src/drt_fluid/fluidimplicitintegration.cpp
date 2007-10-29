@@ -642,7 +642,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
       if (timealgo_==timeint_stationary)
           eleparams.set("using stationary formulation",true);
       else
-          eleparams.set("using stationary formulation",false);  
+          eleparams.set("using stationary formulation",false);
 
       // set vector values needed by elements
       discret_->ClearState();
@@ -695,25 +695,35 @@ void FluidImplicitTimeInt::NonlinearSolve()
 
     {
       Epetra_Vector onlyvel(*velrowmap_);
-      LINALG::Export(*residual_,onlyvel);
+      Epetra_Import importer(*velrowmap_,residual_->Map());
+
+      int err = onlyvel.Import(*residual_,importer,Insert);
+      if (err) dserror("Import using importer returned err=%d",err);
       onlyvel.Norm2(&vresnorm);
 
-      LINALG::Export(*incvel_,onlyvel);
+      err = onlyvel.Import(*incvel_,importer,Insert);
+      if (err) dserror("Import using importer returned err=%d",err);
       onlyvel.Norm2(&incvelnorm_L2);
 
-      LINALG::Export(*velnp_,onlyvel);
+      err = onlyvel.Import(*velnp_,importer,Insert);
+      if (err) dserror("Import using importer returned err=%d",err);
       onlyvel.Norm2(&velnorm_L2);
     }
 
     {
       Epetra_Vector onlypre(*prerowmap_);
-      LINALG::Export(*residual_,onlypre);
+      Epetra_Import importer(*prerowmap_,residual_->Map());
+
+      int err = onlypre.Import(*residual_,importer,Insert);
+      if (err) dserror("Import using importer returned err=%d",err);
       onlypre.Norm2(&presnorm);
 
-      LINALG::Export(*incvel_,onlypre);
+      err = onlypre.Import(*incvel_,importer,Insert);
+      if (err) dserror("Import using importer returned err=%d",err);
       onlypre.Norm2(&incprenorm_L2);
 
-      LINALG::Export(*velnp_,onlypre);
+      err = onlypre.Import(*velnp_,importer,Insert);
+      if (err) dserror("Import using importer returned err=%d",err);
       onlypre.Norm2(&prenorm_L2);
     }
 
@@ -1460,15 +1470,15 @@ void FluidImplicitTimeInt::SolveStationaryProblem()
     // -------------------------------------------------------------------
 	   step_ += 1;
 	   time_ += dta_;
-	  
+
 	// -------------------------------------------------------------------
 	//                         out to screen
 	// -------------------------------------------------------------------
 	   if (myrank_==0)
 	   {
 	       printf("Stationary Fluid Solver - STEP = %4d/%4d \n",step_,stepmax_);
-	   }	   
-	   	   
+	   }
+
 	// -------------------------------------------------------------------
 	//         evaluate dirichlet and neumann boundary conditions
 	// -------------------------------------------------------------------
@@ -1509,7 +1519,7 @@ void FluidImplicitTimeInt::SolveStationaryProblem()
 	   invtoggle_->PutScalar(1.0);
 	   invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
 
-	   
+
     // -------------------------------------------------------------------
     //                     solve nonlinear equation
     // -------------------------------------------------------------------
@@ -1532,7 +1542,7 @@ void FluidImplicitTimeInt::SolveStationaryProblem()
     //                       update time step sizes
     // -------------------------------------------------------------------
     dtp_ = dta_;
-  
+
   } // end of time loop
 
   // end time measurement for timeloop
