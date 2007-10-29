@@ -203,7 +203,7 @@ void input_ReadParameterList(Teuchos::ParameterList& list)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RefCountPtr<Teuchos::ParameterList> globalparameterlist;
+Teuchos::RCP<Teuchos::ParameterList> globalparameterlist;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
