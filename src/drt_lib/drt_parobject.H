@@ -192,6 +192,10 @@ using namespace std;
 #define ParObject_Soctet10Line          (int)70
 #define ParObject_CNode                 (int)71
 #define ParObject_CElement              (int)72
+#define ParObject_XFluid3               (int)73
+#define ParObject_XFluid3Register       (int)74
+#define ParObject_XFluid3Surface        (int)75
+#define ParObject_XFluid3Line           (int)76
 
 /*!
 \brief DRT: namespace of the ccarat discretization module

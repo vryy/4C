@@ -270,6 +270,7 @@ public:
   \param length (output): length of message upon receive
   */
   void ReceiveAny(int& source, int& tag, vector<char>& recvbuff, int& length);
+  void Receive(const int source,const int tag, vector<char>& recvbuff,int& length);
 
   /*!
   \brief Receive anything joker (blocking)
@@ -336,6 +337,19 @@ public:
   \param request (in): mpi request handle
 
   */
+  
+  
+  /*!
+  \brief performs an allreduce operation on all processors 
+  		 and sends the result to all processors
+
+  \param sendbuff (input): buffer containing data that has to be sent  
+  \param recvbuff (output): buffer containing received data
+  \param mpi_op   (input): MPI operation
+  */
+  void Allreduce(vector<int>& sendbuff, vector<int>& recvbuff, MPI_Op mpi_op);
+  
+  
   void Wait(MPI_Request& request) { MPI_Status status; MPI_Wait(&request,&status); return;}
 
 

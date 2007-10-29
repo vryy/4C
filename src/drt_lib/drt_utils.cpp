@@ -41,6 +41,7 @@ extern "C"
 #include "../drt_f2/fluid2.H"
 #include "../drt_f2/condif2.H"
 #include "../drt_f3/fluid3.H"
+#include "../drt_f3/xfluid3.H"
 #include "../drt_ale2/ale2.H"
 #include "../drt_ale3/ale3.H"
 #include "../drt_w1/wall1.H"
@@ -180,6 +181,21 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
       return object;
     }
     break;
+    case ParObject_XFluid3:
+    {
+      DRT::Elements::XFluid3* object = new DRT::Elements::XFluid3(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_XFluid3Register:
+    {
+      DRT::Elements::XFluid3Register* object =
+                      new DRT::Elements::XFluid3Register(DRT::Element::element_xfluid3);
+      object->Unpack(data);
+      return object;
+    }
+    break;
 #endif
 #ifdef D_ALE
     case ParObject_Ale3:
@@ -266,6 +282,13 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
                 new DRT::Elements::SoDisp(-1,-1);
       object->Unpack(data);
       return object;
+    }
+    case ParObject_SoDispSurface:
+    {
+      DRT::Elements::SoDispSurface* object =
+                new DRT::Elements::SoDispSurface(-1,-1);
+      object->Unpack(data);
+      return object; 
     }
     case ParObject_SoDispRegister:
     {
@@ -373,6 +396,7 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
     fluid2,
     condif2,
     fluid3,
+    xfluid3,
     ale2,
     ale3,
     so_hex8,
@@ -389,6 +413,7 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
   else if (eletype=="FLUID2") type = fluid2;
   else if (eletype=="CONDIF2") type = condif2;
   else if (eletype=="FLUID3") type = fluid3;
+  else if (eletype=="XFLUID3") type = xfluid3;
   else if (eletype=="ALE2") type = ale2;
   else if (eletype=="ALE3") type = ale3;
   else if (eletype=="SOLIDH8") type = so_hex8;
@@ -428,6 +453,12 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
     case fluid3:
     {
       RefCountPtr<DRT::Element> ele = rcp(new DRT::Elements::Fluid3(id,owner));
+      return ele;
+    }
+    break;
+    case xfluid3:
+    {
+      RefCountPtr<DRT::Element> ele = rcp(new DRT::Elements::XFluid3(id,owner));
       return ele;
     }
     break;

@@ -44,6 +44,7 @@ Maintainer: Michael Gee
 #endif
 #ifdef D_FLUID3
 #include "../drt_f3/fluid3.H"
+#include "../drt_f3/xfluid3.H"
 #endif
 
 extern "C" /* stuff which is c and is accessed from c++ */

@@ -205,6 +205,38 @@ class Intersection
             );
     
     
+    	void adjustCutterElementNumbering( 
+			const RefCountPtr<DRT::Discretization>& 	cutterdis,  
+			vector< DRT::Condition * >&   				xfemConditions,
+			vector<int>& 								conditionEleCount
+			);
+    
+        void packData(
+            const RefCountPtr<DRT::Discretization>      cutterdis,
+            vector<int>&                                conditionSend, 
+            vector<int>&                                lengthSend, 
+            int&                                        nodeSetSizeSend,  
+            vector<int>&                                nodeVectorSend,
+            vector<char>&                               cutterDataSend 
+            );
+        
+        void unpackNodes(
+            int                                     index, 
+            vector<char>&                           cutterDataRecv, 
+            vector<int>&                            nodeVectorRecv, 
+            map< int, RefCountPtr<DRT::Node> >&     nodeMap 
+            );
+    
+    	void getCutterElementsInParallel(	
+			vector< DRT::Condition * >&      		xfemConditions,
+			vector<int>&							conditionEleCount, 
+			map< int, vector< DRT::Element* > >&   	cutterElementMap,
+			map< int, RefCountPtr<DRT::Node> >&  	cutterNodeMap,
+			map< int, set<int> >& 					xfemCutterIdMap,
+			const RefCountPtr<DRT::Discretization>& xfemdis,
+		   	const RefCountPtr<DRT::Discretization>& cutterdis  
+		   	);
+    
          /*!
         \brief transforms a point in reference coordinates to a point
                in current coordinates with respect to a given plane

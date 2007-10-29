@@ -147,6 +147,26 @@ void DRT::Exporter::ReceiveAny(int& source, int&tag,
 
 #ifdef PARALLEL
 /*----------------------------------------------------------------------*
+ |  receive specific (public)                                mwgee 03/07|
+ *----------------------------------------------------------------------*/
+void DRT::Exporter::Receive(const int source,const int tag,
+                            vector<char>& recvbuff,int& length)
+{
+  const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
+  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
+  MPI_Status status;
+  // probe for any message to come
+  MPI_Probe(source,tag,comm->Comm(),&status);
+  MPI_Get_count(&status,MPI_INT,&length);
+  if (length>(int)recvbuff.size()) recvbuff.resize(length);
+  // receive the message
+  MPI_Recv(&recvbuff[0],length,MPI_CHAR,source,tag,comm->Comm(),&status);
+  return;
+}
+#endif
+
+#ifdef PARALLEL
+/*----------------------------------------------------------------------*
  |  receive anything (public)                                mwgee 11/06|
  *----------------------------------------------------------------------*/
 void DRT::Exporter::ReceiveAny(int& source, int& tag,
@@ -210,6 +230,27 @@ void DRT::Exporter::ReceiveAny(int& source, int&tag,
   return;
 }
 #endif
+
+
+#ifdef PARALLEL
+/*----------------------------------------------------------------------*
+ |  reduce all (public)                                		  umay 10/07|
+ *----------------------------------------------------------------------*/
+void DRT::Exporter::Allreduce(	vector<int>& sendbuff, vector<int>& recvbuff,
+								MPI_Op mpi_op)
+{
+  const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
+  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
+  
+  int length = (int) sendbuff.size();
+  if (length>(int)recvbuff.size()) recvbuff.resize(length);
+  
+  MPI_Allreduce( 	&(sendbuff[0]), &(recvbuff[0]), length, 
+  					MPI_INT, mpi_op, comm->Comm() );
+  return;
+}
+#endif
+
 
 /*----------------------------------------------------------------------*
  |  the actual exporter constructor (private)                mwgee 05/07|
