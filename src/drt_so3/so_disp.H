@@ -510,7 +510,20 @@ public:
   */
   SoDispSurface(int id, int owner, int nnode, const int* nodeids,
              DRT::Node** nodes, DRT::Elements::SoDisp* parent, const int lsurface);
+             
+  /*!
+  \brief Standard Constructor
+         
+         When sending surface elements around, we need a constructor without nodal
+         pointers. They will be added later, after all nodes have been send.
+         We (the XFEM users) send surfaces between processors around to perform
+         distributed intersection between elements and surfaces
 
+  \param id : A unique global id
+  \param owner: Processor owning this surface
+  */
+  SoDispSurface(int id, int owner);
+  
   /*!
   \brief Copy Constructor
 
@@ -697,8 +710,12 @@ private:
   
   //! The parent element of this surface
   DRT::Elements::SoDisp* parent_;
+  
   //! The local surface number of this surface w.r.t to the parent_ element
   int                    lsurface_;
+  
+  //! container containing all kind of solid3 thisandthat
+  DRT::Container                                  data_;
   
   //! vector of lines adjacent to this element
   vector<RefCountPtr<DRT::Elements::SoDispLine> > lines_;

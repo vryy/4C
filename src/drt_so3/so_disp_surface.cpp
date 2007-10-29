@@ -31,10 +31,26 @@ DRT::Elements::SoDispSurface::SoDispSurface(int id, int owner,
                               const int lsurface) :
 DRT::Element(id,element_sodispsurface,owner),
 parent_(parent),
-lsurface_(lsurface)
+lsurface_(lsurface),
+data_()
 {
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  ctor (public)  for sending SoDispSurfaces                 umay 10/07|
+ |  id             (in)  this element's global id                       |
+ *----------------------------------------------------------------------*/
+DRT::Elements::SoDispSurface::SoDispSurface(int id, int owner) :
+DRT::Element(id,element_sodispsurface,owner),
+parent_(),
+lsurface_(),
+data_()
+{
+
   return;
 }
 
@@ -44,7 +60,8 @@ lsurface_(lsurface)
 DRT::Elements::SoDispSurface::SoDispSurface(const DRT::Elements::SoDispSurface& old) :
 DRT::Element(old),
 parent_(old.parent_),
-lsurface_(old.lsurface_)
+lsurface_(old.lsurface_),
+data_(old.data_)
 {
   return;
 }
@@ -85,7 +102,18 @@ DRT::Element::DiscretizationType DRT::Elements::SoDispSurface::Shape() const
 void DRT::Elements::SoDispSurface::Pack(vector<char>& data) const
 {
   data.resize(0);
-  dserror("this SoDispSurface element does not support communication");
+  // pack type of this instance of ParObject
+  int type = UniqueParObjectId();
+  AddtoPack(data,type);
+  // add base class Element
+  vector<char> basedata(0);
+  Element::Pack(basedata);
+  AddtoPack(data,basedata);
+  
+  // data_
+  vector<char> tmp(0);
+  data_.Pack(tmp);
+  AddtoPack(data,tmp);
 
   return;
 }
@@ -96,7 +124,23 @@ void DRT::Elements::SoDispSurface::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void DRT::Elements::SoDispSurface::Unpack(const vector<char>& data)
 {
-  dserror("this SoDispSurface element does not support communication");
+  int position = 0;
+  // extract type
+  int type = 0;
+  ExtractfromPack(position,data,type);
+  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  // extract base class Element
+  vector<char> basedata(0);
+  ExtractfromPack(position,data,basedata);
+  Element::Unpack(basedata);
+  // data_
+  vector<char> tmp(0);
+  ExtractfromPack(position,data,tmp);
+  data_.Unpack(tmp);
+
+  if (position != (int)data.size())
+    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+
   return;
 }
 
