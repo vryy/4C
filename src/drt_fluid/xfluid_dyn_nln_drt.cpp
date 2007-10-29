@@ -142,18 +142,18 @@ void xdyn_fluid_drt()
 
   // Intersection
   XFEM::Intersection is;
-  map<int, vector <XFEM::IntCell> > elementIntCellMap;
-  is.computeIntersection(fluiddis,soliddis,elementIntCellMap);
+  map<int, XFEM::DomainIntCells > elementDomainIntCellsMap;
+  is.computeIntersection(fluiddis,soliddis,elementDomainIntCellsMap);
 
   // debug: write both meshes to file in Gmsh format
   ofstream f_system;
   f_system.open ("elements_coupled_system.pos");
-  f_system << GMSH::meshToGmshString("Fluid", fluiddis, elementIntCellMap);
+  f_system << GMSH::meshToGmshString("Fluid", fluiddis, elementDomainIntCellsMap);
   f_system << GMSH::meshToGmshString("Solid", soliddis);
   f_system.close();
 
   // apply enrichments
-  map<int, const set <XFEM::EnrPhysVar> > nodalDofMap = XFEM::createNodalDofMap(fluiddis, elementIntCellMap);
+  map<int, const set <XFEM::EnrPhysVar> > nodalDofMap = XFEM::createNodalDofMap(fluiddis, elementDomainIntCellsMap);
   const XFEM::Enrichment enr_std(0, XFEM::Enrichment::typeStandard);
   
   // debug: print enrichments to screen

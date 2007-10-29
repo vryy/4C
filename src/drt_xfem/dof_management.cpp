@@ -60,7 +60,7 @@ string XFEM::EnrPhysVar::toString() const
 
 const map<int, const set <XFEM::EnrPhysVar> > XFEM::createNodalDofMap(
         RefCountPtr<DRT::Discretization>            xfemdis,
-        const map<int, vector <XFEM::IntCell> >&  elementIntCellMap)
+        const map<int, XFEM::DomainIntCells >&  elementDomainIntCellMap)
 {
     map<int, set <XFEM::EnrPhysVar> >  nodalDofMap;
     map<int, const set <XFEM::EnrPhysVar> >  nodalDofMapFinal;
@@ -81,7 +81,7 @@ const map<int, const set <XFEM::EnrPhysVar> > XFEM::createNodalDofMap(
     for (int i=0; i<xfemdis->NumMyColElements(); ++i)
     {
         const DRT::Element* actele = xfemdis->lColElement(i);
-        if (elementIntCellMap.count(actele->Id()))
+        if (elementDomainIntCellMap.count(actele->Id()))
         {
             const int nen = actele->NumNode();
             const int* nodeidptrs = actele->NodeIds();

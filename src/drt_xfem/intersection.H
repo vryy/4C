@@ -83,7 +83,7 @@ class Intersection
         void computeIntersection(   
             const RefCountPtr<DRT::Discretization>        xfemdis, 
             const RefCountPtr<DRT::Discretization>        cutterdis, 
-            map< int, vector <IntCell> >&	integrationcellList
+            map< int, DomainIntCells >&	integrationcellList
             );
 		
         
@@ -655,7 +655,7 @@ class Intersection
         void computeCDT(    
             DRT::Element*                           element,
             DRT::Element*                           cutterElement,
-            map< int, vector <IntCell> >&   integrationcellList
+            map< int, DomainIntCells >&   integrationcellList
             );
     
     
@@ -1190,8 +1190,8 @@ class Intersection
     
         \param integrationcellList                (out)       : list of integration cells
         */                                  
-       	void debugIntCells(
-            map< int, vector <IntCell> >&	integrationcellList,
+       	void debugDomainIntCells(
+            map< int, DomainIntCells >&	integrationcellList,
             int id
             );  
             

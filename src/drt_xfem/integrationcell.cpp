@@ -27,9 +27,7 @@ using namespace XFEM;
 //
 //  ctor
 //
-IntCell::IntCell(	const int id, 
-									const vector< vector<double> > coordinates) :
-id_(id), 
+IntCell::IntCell(const vector< vector<double> > coordinates) :
 coordinates_(coordinates)
 {
     return;
@@ -39,8 +37,51 @@ coordinates_(coordinates)
  |  copy-ctor                                                mwgee 11/06|
  *----------------------------------------------------------------------*/
 IntCell::IntCell(const IntCell& old) : 
-id_(old.id_), 
 coordinates_(old.coordinates_)
+{
+    return;   
+}
+ 
+/*----------------------------------------------------------------------*
+ |  dtor (public)                                            mwgee 11/06|
+ *----------------------------------------------------------------------*/
+IntCell::~IntCell()
+{
+  return;
+}
+
+////
+////  get coordinates
+////
+//vector< vector<double> >  IntCell::GetCoord() const
+//{
+//    return coordinates_;   
+//}
+
+//
+// virtual Print method
+//
+std::string IntCell::Print() const
+{
+  return "";
+}
+
+
+
+//
+//  ctor
+//
+DomainIntCell::DomainIntCell(const vector< vector<double> > coordinates) :
+IntCell(coordinates)
+{
+    return;
+}
+
+/*----------------------------------------------------------------------*
+ |  copy-ctor                                                mwgee 11/06|
+ *----------------------------------------------------------------------*/
+DomainIntCell::DomainIntCell(const DomainIntCell& old) : 
+IntCell(old)
 {
     return;   
 }
@@ -48,15 +89,15 @@ coordinates_(old.coordinates_)
 //
 //  get coordinates
 //
-vector< vector<double> >  IntCell::GetCoord() const
+vector< vector<double> >  DomainIntCell::GetCoord() const
 {
     return coordinates_;   
 }
 
-string IntCell::Print() const
+string DomainIntCell::Print() const
 {
     stringstream s;
-    s << "IntCell" << id_ << "\n";
+    s << "DomainIntCell" << endl;
     MCONST_FOREACH(vector< vector<double> >, coordinate, coordinates_)
     {
         s << "[";
@@ -64,7 +105,50 @@ string IntCell::Print() const
         {
             s << *val << " ";
         };
-        s << "]\n";
+        s << "]" << endl;
+    };
+    return s.str();
+}
+
+
+//
+//  ctor
+//
+BoundaryIntCell::BoundaryIntCell(const vector< vector<double> > coordinates) :
+IntCell(coordinates)
+{
+    return;
+}
+
+/*----------------------------------------------------------------------*
+ |  copy-ctor                                                mwgee 11/06|
+ *----------------------------------------------------------------------*/
+BoundaryIntCell::BoundaryIntCell(const BoundaryIntCell& old) : 
+IntCell(old)
+{
+    return;   
+}
+     
+//
+//  get coordinates
+//
+vector< vector<double> >  BoundaryIntCell::GetCoord() const
+{
+    return coordinates_;   
+}
+
+string BoundaryIntCell::Print() const
+{
+    stringstream s;
+    s << "BoundaryIntCell" << endl;
+    MCONST_FOREACH(vector< vector<double> >, coordinate, coordinates_)
+    {
+        s << "[";
+        MPFOREACH(vector<double>, val, coordinate)
+        {
+            s << *val << " ";
+        };
+        s << "]" << endl;
     };
     return s.str();
 }

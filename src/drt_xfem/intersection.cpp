@@ -54,7 +54,7 @@ using namespace DRT::Utils;
  *----------------------------------------------------------------------*/  
 void Intersection::computeIntersection( const RefCountPtr<DRT::Discretization>  xfemdis,
                                         const RefCountPtr<DRT::Discretization>  cutterdis,  
-                                        map< int, vector <IntCell> >&   integrationcellList)
+                                        map< int, DomainIntCells >&   integrationcellList)
 {
     
     bool xfemIntersection; 
@@ -222,7 +222,7 @@ void Intersection::computeIntersection( const RefCountPtr<DRT::Discretization>  
         }
     }// for-loop over all  actdis->NumMyColElements()
     
-    //debugIntCells(integrationcellList,2);
+    //debugDomainIntCells(integrationcellList,2);
     cout << endl;
     cout << "Intersection computed sucessfully ";
 #ifdef PARALLEL
@@ -1944,7 +1944,7 @@ void Intersection::findNextSegment(
 void Intersection::computeCDT(  
     DRT::Element*               			element,
     DRT::Element*               			cutterElement,
-    map< int, vector <IntCell> >&	integrationcellList)
+    map< int, DomainIntCells >&	integrationcellList)
 {
     int dim = 3;
     int nsegments = 0; 
@@ -2119,7 +2119,7 @@ void Intersection::computeCDT(
     
    
     // store integrationcells
-    vector< IntCell > listperElement;
+    DomainIntCells listperElement;
     
     for(int i=0; i<out.numberoftetrahedra; i++ )
     {   
@@ -2132,7 +2132,7 @@ void Intersection::computeCDT(
          
             tetrahedronCoord.push_back(tetnodes);    
         }
-        listperElement.push_back(IntCell(i, tetrahedronCoord));                 
+        listperElement.push_back(DomainIntCell(tetrahedronCoord));                 
     }
     integrationcellList.insert(make_pair(element->Id(),listperElement));
 }
@@ -4143,7 +4143,7 @@ void Intersection::debugTetgenOutput( 	tetgenio& in,
 /*----------------------------------------------------------------------*
  |  DB:     Debug only                                       u.may 06/07|
  *----------------------------------------------------------------------*/  
-void Intersection::debugIntCells(	map< int, vector <IntCell> >&	integrationcellList,
+void Intersection::debugDomainIntCells(	map< int, DomainIntCells >&	integrationcellList,
 											int id)
 {    
     cout << endl;
@@ -4152,7 +4152,7 @@ void Intersection::debugIntCells(	map< int, vector <IntCell> >&	integrationcellL
     cout << "===============================================================" << endl;
     cout << endl;
     
-    map<int,vector <IntCell> >::iterator iter;
+    map<int, DomainIntCells >::iterator iter;
   	for( iter = integrationcellList.begin(); iter != integrationcellList.end(); ++iter ) 
     {
 		cout << "XFEM ELEMENT " << iter->first << " :" << endl;	

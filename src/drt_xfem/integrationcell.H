@@ -19,6 +19,7 @@ Maintainer: Axel Gerstenberger
 #include <set>
 #include <string>
 
+
 namespace XFEM
 {
 
@@ -33,11 +34,9 @@ public:
     /*!
      \brief Standard Constructor
 
-     \param id               : A unique global id
      \param coordinates      : coordinates of the integrationcell
      */
     IntCell(
-        const int id,
         const std::vector< std::vector<double> > coordinates);
 
     /*!
@@ -46,6 +45,56 @@ public:
      Makes a deep copy of a Element
      */
     IntCell(const IntCell& old);
+    
+    /*!
+    \brief Destructor
+
+    */
+    virtual ~IntCell();
+
+    /*!
+     \brief returns the coordinates of the integration cell
+
+     \return cells nodal coordinates  
+     */
+    std::vector< std::vector<double> > GetCoord() const;
+    
+    virtual std::string Print() const;
+
+protected:
+
+    //! coordinates of the nodes
+    std::vector< std::vector<double> > coordinates_;
+
+};
+
+typedef std::vector<XFEM::IntCell > IntCells;
+typedef std::set<XFEM::IntCell > IntCellSet;
+
+
+
+/*
+ * \brief An domain integration cell is used for integrating the XFEM elements domain 
+ */
+class DomainIntCell : IntCell
+{
+
+public:
+
+    /*!
+     \brief Standard Constructor
+
+     \param coordinates      : coordinates of the integrationcell
+     */
+    DomainIntCell(
+        const std::vector< std::vector<double> > coordinates);
+
+    /*!
+     \brief Copy Constructor
+
+     Makes a deep copy of a Element
+     */
+    DomainIntCell(const DomainIntCell& old);
 
     /*!
      \brief returns the coordinates of the integration cell
@@ -56,18 +105,48 @@ public:
     
     std::string Print() const;
 
-private:
+};
 
-    //! The global integration cell id
-    int id_;
+typedef std::vector<XFEM::DomainIntCell > DomainIntCells;
+typedef std::set<XFEM::DomainIntCell > DomainIntCellSet;
 
-    //! coordinates of the nodes
-    std::vector< std::vector<double> > coordinates_;
+
+/*
+ * \brief An domain integration cell is used for integrating the XFEM elements domain 
+ */
+class BoundaryIntCell : IntCell
+{
+
+public:
+
+    /*!
+     \brief Standard Constructor
+
+     \param coordinates      : coordinates of the integrationcell
+     */
+    BoundaryIntCell(
+        const std::vector< std::vector<double> > coordinates);
+
+    /*!
+     \brief Copy Constructor
+
+     Makes a deep copy of a Element
+     */
+    BoundaryIntCell(const BoundaryIntCell& old);
+
+    /*!
+     \brief returns the coordinates of the integration cell
+
+     \return cells nodal coordinates  
+     */
+    std::vector< std::vector<double> > GetCoord() const;
+    
+    std::string Print() const;
 
 };
 
-typedef std::vector<XFEM::IntCell > IntCells;
-typedef std::set<XFEM::IntCell > IntCellSet;
+typedef std::vector<XFEM::BoundaryIntCell > BoundaryIntCells;
+typedef std::set<XFEM::BoundaryIntCell > BoundaryIntCellSet;
 
 };
 

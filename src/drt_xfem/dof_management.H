@@ -83,7 +83,7 @@ private:
 
 const map<int, const set<EnrPhysVar> > createNodalDofMap(
         RefCountPtr<DRT::Discretization> xfemdis,
-        const map<int, vector<IntCell> >&  elementIntCellMap);
+        const map<int, DomainIntCells >&  elementDomainIntCellMap);
 
 }; // namespace XFEM
 
