@@ -28,14 +28,18 @@ using namespace XFEM;
 namespace GMSH
 {
 
-std::string elementToGmshString(DRT::Element* ele);
+std::string elementToString(const double scalar, DRT::Element* ele);
 
-std::string intCellToGmshString(DRT::Element* ele, const DomainIntCell ele);
+std::string cellToString(const double scalar, const DomainIntCell ele, DRT::Element* ele);
 
-std::string meshToGmshString(std::string s, RefCountPtr<DRT::Discretization> dis);
+std::string cellToString(const double scalar, const BoundaryIntCell ele, DRT::Element* ele);
 
-std::string meshToGmshString(std::string s, RefCountPtr<DRT::Discretization> dis,
+std::string disToString(const std::string s, const double scalar, RefCountPtr<DRT::Discretization> dis);
+
+std::string disToString(const std::string s, const double scalar, RefCountPtr<DRT::Discretization> dis,
         map<int, DomainIntCells >&  elementDomainIntCellsMap);
+
+std::string getConfigString(const int numview);
 
 };
 

@@ -148,8 +148,9 @@ void xdyn_fluid_drt()
   // debug: write both meshes to file in Gmsh format
   ofstream f_system;
   f_system.open ("elements_coupled_system.pos");
-  f_system << GMSH::meshToGmshString("Fluid", fluiddis, elementDomainIntCellsMap);
-  f_system << GMSH::meshToGmshString("Solid", soliddis);
+  f_system << GMSH::disToString("Fluid", 0.0, fluiddis, elementDomainIntCellsMap);
+  f_system << GMSH::disToString("Solid", 1.0, soliddis);
+  f_system << GMSH::getConfigString(2);
   f_system.close();
 
   // apply enrichments
