@@ -214,6 +214,9 @@ void DRT::Elements::Soh8Surface::soh8_surface_integ(
   return;
 }
 
+/*----------------------------------------------------------------------*
+ * Evaluate method for Soh8Surface-Elements                     tk 10/07*
+ * ---------------------------------------------------------------------*/
 int DRT::Elements::Soh8Surface::Evaluate(ParameterList& params,
         DRT::Discretization&      discretization,
         vector<int>&              lm,
@@ -223,8 +226,133 @@ int DRT::Elements::Soh8Surface::Evaluate(ParameterList& params,
         Epetra_SerialDenseVector& elevector2,
         Epetra_SerialDenseVector& elevector3)
 {
-	dserror("not implemented yet, but will be soon!");
+	const DiscretizationType distype = this->Shape();
+	if (distype!=quad4)
+		dserror("Volume Constraint online works for quad4 surfaces!");
+	
+	// start with "none"
+	DRT::Elements::Soh8Surface::ActionType act = Soh8Surface::none;
+
+	// get the required action
+	string action = params.get<string>("action","none");
+	if (action == "none") dserror("No action supplied");
+	else if (action=="calc_struct_constrvol")    act = Soh8Surface::calc_struct_constrvol;
+	else if (action=="calc_struct_volconstrstiff") act= Soh8Surface::calc_struct_volconstrstiff;
+	else dserror("Unknown type of action for Soh8Surface");
+	//create communicator
+	const Epetra_Comm& Comm = discretization.Comm();
+	// what the element has to do
+	switch(act)
+	{
+	  	//just compute the enclosed volume (e.g. for initialization)
+	  	case calc_struct_constrvol:
+	  	{
+	  		//We are not interested in volume of ghosted elements
+	  		if(Comm.MyPID()==this->Owner())
+	  		{	
+		  		// element geometry update
+		  		RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+		  		if (disp==null) dserror("Cannot get state vector 'displacement'");
+		  		vector<double> mydisp(lm.size());
+		  		DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
+		  		const int numnod = 4;
+		  		Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOH8);  // material coord. of element
+		  		Epetra_SerialDenseMatrix xscurr(numnod,NUMDIM_SOH8);  // material coord. of element
+		  		for (int i=0; i<numnod; ++i){
+		  			xsrefe(i,0) = Nodes()[i]->X()[0];
+		  			xsrefe(i,1) = Nodes()[i]->X()[1];
+		  			xsrefe(i,2) = Nodes()[i]->X()[2];
+	
+		  			xscurr(i,0) = xsrefe(i,0) + mydisp[i*NODDOF_SOH8+0];
+		  			xscurr(i,1) = xsrefe(i,1) + mydisp[i*NODDOF_SOH8+1];
+		  			xscurr(i,2) = xsrefe(i,2) + mydisp[i*NODDOF_SOH8+2];
+		  		}
+		  		//call submethod
+		  		double volumeele =	ComputeConstrVols(params,xscurr);
+		  		
+		  		// get RIGHT volume out of parameterlist and maximum ConditionID
+		  		char volname[30];		  		
+		  		const int ID =params.get("ConditionID",-1);
+		  		int maxID=params.get("MaxID",0);
+		  		if (ID<0)
+		  		{
+		  			dserror("Condition ID for volume constraint missing!");
+		  		}
+		  		if (maxID<ID)
+		  		{
+		  			params.set("MaxID",ID);
+		  		}
+		  		sprintf(volname,"computed volume %d",ID);
+		  		double volumecond = params.get(volname,0.0);
+		  		//update volume in parameter list
+		  		params.set(volname, volumecond+volumeele);
+	  		}
+  		
+	  	}
+	  	break;
+	  	case calc_struct_volconstrstiff:
+	  	{
+	  		dserror("Required action will follow soon");
+	  	}
+	  	break;
+	  	default:
+	  		dserror("Unimplemented type of action for Soh8Surface");
+	  	
+	}
 	return 0;
+}
+
+/*----------------------------------------------------------------------*
+ * Compute Volume between surface an xy-plane.                  tk 10/07*
+ * Yields to the enclosed volume when summed up over all elements       *
+ * ---------------------------------------------------------------------*/
+double DRT::Elements::Soh8Surface::ComputeConstrVols(ParameterList& params,
+		Epetra_SerialDenseMatrix xc)
+{
+	double volume =0;
+	//Formula for volume computation based on calculation of Ulrich done 
+	//within the old code
+	volume =(1.0/12.0)*(2*xc(0,0)*xc(1,1)*xc(0,2) -
+			2*xc(1,0)*xc(0,1)*xc(0,2) +
+			2*xc(0,0)*xc(1,1)*xc(1,2) -
+			2*xc(1,0)*xc(0,1)*xc(1,2) +
+			xc(0,0)*xc(1,1)*xc(2,2) -
+			2*xc(0,0)*xc(0,2)*xc(3,1) -
+			xc(0,0)*xc(2,1)*xc(1,2) -
+			xc(1,0)*xc(0,1)*xc(2,2) +
+			xc(1,0)*xc(0,2)*xc(2,1) +
+			xc(0,1)*xc(2,0)*xc(1,2) +
+			2*xc(0,1)*xc(0,2)*xc(3,0) -
+			xc(2,0)*xc(1,1)*xc(0,2) +
+			xc(0,0)*xc(1,1)*xc(3,2) -
+			xc(0,0)*xc(1,2)*xc(3,1) -
+			xc(1,0)*xc(0,1)*xc(3,2) +
+			xc(1,0)*xc(0,2)*xc(3,1) +
+			2*xc(1,0)*xc(2,1)*xc(1,2) +
+			xc(0,1)*xc(3,0)*xc(1,2) -
+			2*xc(2,0)*xc(1,1)*xc(1,2) -
+			xc(1,1)*xc(0,2)*xc(3,0) +
+			xc(0,0)*xc(2,1)*xc(3,2) -
+			xc(0,0)*xc(3,1)*xc(2,2) +
+			2*xc(1,0)*xc(2,1)*xc(2,2) -
+			xc(0,1)*xc(2,0)*xc(3,2) +
+			xc(0,1)*xc(3,0)*xc(2,2) -
+			2*xc(2,0)*xc(1,1)*xc(2,2) +
+			xc(2,0)*xc(0,2)*xc(3,1) -
+			xc(0,2)*xc(3,0)*xc(2,1) -
+			2*xc(0,0)*xc(3,1)*xc(3,2) +
+			xc(1,0)*xc(2,1)*xc(3,2) -
+			xc(1,0)*xc(3,1)*xc(2,2) +
+			2*xc(0,1)*xc(3,0)*xc(3,2) -
+			xc(2,0)*xc(1,1)*xc(3,2) +
+			xc(2,0)*xc(1,2)*xc(3,1) +
+			xc(1,1)*xc(3,0)*xc(2,2) -
+			xc(3,0)*xc(2,1)*xc(1,2) +
+			2*xc(2,0)*xc(3,1)*xc(2,2) -
+			2*xc(3,0)*xc(2,1)*xc(2,2) +
+			2*xc(2,0)*xc(3,1)*xc(3,2) -
+			2*xc(3,0)*xc(2,1)*xc(3,2));
+	return volume;
 }
 
 #endif  // #ifdef TRILINOS_PACKAGE

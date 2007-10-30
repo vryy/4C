@@ -683,12 +683,23 @@ public:
                          DRT::Discretization&      discretization,
                          vector<int>&              lm,
                          Epetra_SerialDenseMatrix& elematrix1,
-                               Epetra_SerialDenseMatrix& elematrix2,
-                               Epetra_SerialDenseVector& elevector1,
-                               Epetra_SerialDenseVector& elevector2,
-                               Epetra_SerialDenseVector& elevector3);
+                         Epetra_SerialDenseMatrix& elematrix2,
+                         Epetra_SerialDenseVector& elevector1,
+                         Epetra_SerialDenseVector& elevector2,
+                         Epetra_SerialDenseVector& elevector3);
   //@}
-
+  	
+  	
+protected:
+	  //! action parameters recognized by so_hex8_surface
+	  enum ActionType
+	  {
+	    none,
+	    calc_struct_constrvol,
+	    calc_struct_volconstrstiff
+	  };
+	  
+	  
 private:
 
   // don't want = operator
@@ -699,6 +710,12 @@ private:
   //! The local surface number of this surface w.r.t to the parent_ element
   int                    lsurface_;
 
+  
+  // Submethod to compute the enclosed volume for vlume constraint boundary condition
+  double ComputeConstrVols(ParameterList& params,
+			Epetra_SerialDenseMatrix xscurr);
+  
+  
   void soh8_surface_integ(
       vector<double>* funct,                 // (o) shape functions
       double* sqrtdetg,                      // (o) pointer to sqrt of det(g)

@@ -443,6 +443,7 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
       // to the condition geometry
       map<int,RefCountPtr<DRT::Element> >::iterator curr;
       
+      // Evaluate Loadcurve if defined. Put current load factor in parameterlist
       const vector<int>*    curve  = cond.Get<vector<int> >("curve");
       int curvenum = -1;
       if (curve) curvenum = (*curve)[0];
@@ -451,10 +452,11 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
           curvefac = Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
       params.set("LoadCurveFactor",curvefac);
       
+      // Get ConditionID of current condition if defined and write value in parameterlist
       const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
       if (CondIDVec)
       {
-      	params.set("ConditionID",(*CondIDVec)[0]);
+      		params.set("ConditionID",(*CondIDVec)[0]);
       }
       
       const bool assemblemat1 = params.get("assemble matrix 1",false);
@@ -472,10 +474,11 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
 
       for (curr=geom.begin(); curr!=geom.end(); ++curr)
       {
-        // get element location vector, dirichlet flags and ownerships
+        // get element location vector and ownerships
         vector<int> lm;
         vector<int> lmowner;
         curr->second->LocationVector(*this,lm,lmowner);
+        
         elevector1.Size((int)lm.size());
         
         // call the element specific evaluate method
@@ -486,8 +489,7 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
         // assembly
         if (assemblemat1) LINALG::Assemble(*systemmatrix1,elematrix1,lm,lmowner);
         if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
-        if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner);
-        
+        if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner); 
       }
     }
    } //for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
