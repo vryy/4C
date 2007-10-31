@@ -213,6 +213,8 @@ havecontact_(false)
 } // StruGenAlpha::StruGenAlpha
 
 
+
+
 /*----------------------------------------------------------------------*
  |  do constant predictor step (public)                      mwgee 03/07|
  *----------------------------------------------------------------------*/
@@ -2194,7 +2196,7 @@ void StruGenAlpha::UpdateandOutput()
 
 
 /*----------------------------------------------------------------------*
- |  set default parameter list (static/public)               mwgee 03/07|
+ |  integrate in time          (static/public)               mwgee 03/07|
  *----------------------------------------------------------------------*/
 void StruGenAlpha::Integrate()
 {
@@ -2276,6 +2278,69 @@ void StruGenAlpha::Integrate()
 } // void StruGenAlpha::Integrate()
 
 
+/*----------------------------------------------------------------------*
+ |  integrate one step in time (static/public)               bborn 10/07|
+ *----------------------------------------------------------------------*/
+void StruGenAlpha::IntegrateStep()
+{
+   //int    istep = params_.get<int>   ("step" ,0);
+
+  // can have values "full newton" , "modified newton" , "nonlinear cg"
+  string equil = params_.get<string>("equilibrium iteration","full newton");
+
+  // can have values takes values "constant" consistent"
+  string pred  = params_.get<string>("predictor","constant");
+  int predictor=-1;
+  if      (pred=="constant")   predictor = 1;
+  else if (pred=="consistent") predictor = 2;
+  else dserror("Unknown type of predictor");
+
+  if (equil=="full newton")
+  {
+    if      (predictor==1) ConstantPredictor();
+    else if (predictor==2) ConsistentPredictor();
+    FullNewton();
+    UpdateandOutput();
+  }
+  else if (equil=="modified newton")
+  {
+    if      (predictor==1) ConstantPredictor();
+    else if (predictor==2) ConsistentPredictor();
+    ModifiedNewton();
+    UpdateandOutput();
+  }
+  else if (equil=="matrixfree newton")
+  {
+    MatrixFreeConstantPredictor();
+    MatrixFreeNewton();
+    UpdateandOutput();
+  }
+  else if (equil=="nonlinear cg")
+  {
+    if      (predictor==1) ConstantPredictor();
+    else if (predictor==2) ConsistentPredictor();
+    NonlinearCG();
+    UpdateandOutput();
+  }
+  else if (equil=="ptc")
+  {
+    if      (predictor==1) ConstantPredictor();
+    else if (predictor==2) ConsistentPredictor();
+    PTC();
+    UpdateandOutput();
+  }
+  else if (equil=="matrixfree newton")
+  {
+    dserror("Matfree Newton not yet impl.");
+    // ConstantMatfreePredictor();
+    // MatfreeFullNewton
+    UpdateandOutput();
+  }
+  else dserror("Unknown type of equilibrium iteration");
+
+  return;
+} // void StruGenAlpha::IntegrateStep()
+
 
 /*----------------------------------------------------------------------*
  |  set default parameter list (static/public)               mwgee 03/07|
@@ -2337,10 +2402,29 @@ void StruGenAlpha::ReadRestart(int step)
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  get time integration scheme (TIS) parameters           bborn 10/07  |
+ *----------------------------------------------------------------------*/
+void StruGenAlpha::GetTISPara(double& beta,
+                              double& gamma,
+                              double& alpham,
+                              double& alphaf)
+{
+  beta = params_.get<double>("beta", 0.292);
+  gamma = params_.get<double>("gamma", 0.581);
+  alpham = params_.get<double>("alpha m", 0.378);
+  alphaf = params_.get<double>("alpha f", 0.459);
+  return;
+}
 
-
-
-
+/*----------------------------------------------------------------------*
+ |  set time step size                                     bborn 10/07  |
+ *----------------------------------------------------------------------*/
+void StruGenAlpha::SetTimeStepSize(const double& timstpsiz)
+{
+  params_.set<double>("delta time", timstpsiz);
+  return;
+}
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

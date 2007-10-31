@@ -23,6 +23,8 @@ Maintainer: Burkhard Bornemann
 
 #include "timeadaptivity.H"
 
+#include "../drt_structure/strugenalpha.H"
+
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include "../drt_lib/drt_discret.H"
@@ -62,29 +64,41 @@ class ZienkiewiczXie : public TimeAdaptivity
 
 public:
 
-   /*!
-     \brief Ordinary Constructor with default values
-   */
-   explicit ZienkiewiczXie();
-
    /*\!
      \brief Ordinary Constructor with parameters
    */
    explicit ZienkiewiczXie
    (
-      double maxstepsize,
-      double minstepsize,
-      double minsizeratio,
-      double maxsizeratio,
-      double saferatioscale,
+      double timeinitial,
+      double timefinal,
+      int timestepinitial,
+      int timestepfinal,
+      double stepsizeinitial,
+      //
+      double stepsizemax,
+      double stepsizemin,
+      double sizeratiomax,
+      double sizeratiomin,
+      double sizeratioscale,
+      TAErrNorm errnorm,
       double errtol,
-      int errpow
+      int errorder,
+      int adaptstepmax,
+      //
+      DRT::Discretization& dis,
+      LINALG::Solver& solver,
+      IO::DiscretizationWriter& output
    );
 
    /*!
      \brief Destructor
    */
    virtual ~ZienkiewiczXie();
+
+   /*!
+     \brief Integrate in time
+   */
+   void Integrate(StruGenAlpha::StruGenAlpha& timint);
 
 protected:
 

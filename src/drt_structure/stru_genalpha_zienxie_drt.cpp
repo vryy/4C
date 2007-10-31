@@ -25,22 +25,27 @@ Maintainer: Michael Gee
 #endif
 
 #include "stru_genalpha_zienxie_drt.H"
-#include "../drt_timada/timeadaptivity.H"
+/* #include "../drt_timada/timeadaptivity.H" */
 #include "../drt_timada/ta_zienkiewiczxie.H"
+#include "../drt_structure/strugenalpha.H"
 #include "../io/io_drt.H"
 #include "../drt_lib/drt_globalproblem.H"
 
-/*----------------------------------------------------------------------*
-  |                                                       m.gee 06/01    |
-  | vector of numfld FIELDs, defined in global_control.c                 |
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/*!
+\brief vector of numfld FIELDs, defined in global_control.c
+\author m.gee
+\date 06/01
+*/
 extern FIELD* field;
 
-/*----------------------------------------------------------------------*
-  |                                                       m.gee 06/01    |
-  | general problem data                                                 |
-  | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/*!
+\brief general problem data
+       global variable GENPROB genprob is defined in global_control.c
+\author m.gee
+\date 06/01
+*/
 extern GENPROB genprob;
 
 /*!----------------------------------------------------------------------
@@ -79,6 +84,82 @@ extern ALLDYNA* alldyn;
 
 /*======================================================================*/
 /*!
+\brief Set parameter list 
+       This is a work around due to the fact that the object
+       does not properly own its parameters. These are stored
+       in ParameterList& params_; thus is only has a reference
+       on an external ParameterList holding its parameters...
+\author bborn
+\date 10.07
+*/
+void genalpha_setparalist
+(
+   const bool damp,
+   const double damp_k,
+   const double damp_m,
+   const double beta,
+   const double gamma,
+   const double alpham,
+   const double alphaf,
+   const double timein,
+   const double stepsize,
+   const int step,
+   const int stepmax,
+   const int itermax,
+   const int iter,
+   const double toldisp,
+   const bool ioflags_struct_disp,
+   const int updevry_disp,
+   const bool ioflags_struct_stress,
+   const int updevry_stress,
+   const int restart,
+   const int res_write_evry,
+   const bool print_to_stdout,
+   const bool print_to_errfile,
+   FILE* errfilein,
+   const string equisoltech,
+   const string pred,
+   ParameterList& params
+)
+{
+   params.set<bool>("damping", damp);
+   params.set<double>("damping factor K", damp_k);
+   params.set<double>("damping factor M", damp_m);
+   
+   params.set<double>("beta", beta);
+   params.set<double>("gamma", gamma);
+   params.set<double>("alpha m", alpham);
+   params.set<double>("alpha f", alphaf);
+   
+   params.set<double>("total time", timein);
+   params.set<double>("delta time", stepsize);
+   params.set<int>("step", step);
+   params.set<int>("nstep", stepmax);
+   params.set<int>("max iterations", itermax);
+   params.set<int>("num iterations", iter);
+   params.set<double>("tolerance displacements", toldisp);
+   
+   params.set<bool>("io structural disp", ioflags_struct_disp);
+   params.set<int>("io disp every nstep", updevry_disp);
+   params.set<bool>("io structural stress", ioflags_struct_stress);
+   params.set<int>("io stress every nstep", updevry_stress);
+   
+   params.set<int>("restart", restart);
+   params.set<int>("write restart every", res_write_evry);
+   
+   params.set<bool>("print to screen", print_to_stdout);
+   params.set<bool>("print to err", print_to_errfile);
+   params.set<FILE*>("err file", errfilein);
+
+   params.set<string>("equilibrium iteration", equisoltech);
+
+   params.set<string>("predictor",  pred);
+
+   return;
+}
+
+/*======================================================================*/
+/*!
   \brief Structural nonlinear dynamics with generalised-alpha and
          time step size adapivity with Zienkiewicz-Xie error
          indicator (GA/ZX)
@@ -87,166 +168,163 @@ extern ALLDYNA* alldyn;
 */
 void stru_genalpha_zienxie_drt() 
 {
-  DSTraceHelper dst("stru_genalpha_zienxie_drt");
+   DSTraceHelper dst("stru_genalpha_zienxie_drt");
 
-  // ---------------------------------------------------------------------
-  // set some pointers and variables
-  const INT disnum = 0;
-  SOLVAR* actsolv = &solv[disnum];
-  STRUCT_DYNAMIC* sdyn = alldyn[disnum].sdyn;
-  TIMADA_DYNAMIC* timada = &(sdyn->timada);
+   // --------------------------------------------------------------------
+   // set some pointers and variables
+   const INT disnum = 0;
+   SOLVAR* actsolv = &solv[disnum];
+   STRUCT_DYNAMIC* sdyn = alldyn[disnum].sdyn;
+   TIMADA_DYNAMIC* timada = &(sdyn->timada);
 
-  // ---------------------------------------------------------------------
-  // access the discretization
-  // ---------------------------------------------------------------------
-  RefCountPtr<DRT::Discretization> actdis = null;
-  actdis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
-  // set degrees of freedom in the discretization
-  if (!actdis->Filled()) actdis->FillComplete();
-  // processor ID
-  int myrank = (*actdis).Comm().MyPID();
+   // --------------------------------------------------------------------
+   // access the discretization
+   RefCountPtr<DRT::Discretization> actdis = null;
+   actdis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
+   // set degrees of freedom in the discretization
+   if (!actdis->Filled()) actdis->FillComplete();
+   // processor ID
+   int myrank = (*actdis).Comm().MyPID();
 
-  // ---------------------------------------------------------------------
-  // A word to the user
-  if (myrank == 0)
-  {
-     printf("Adaptive Structural time integration with\n");
-     printf("   Generalised-alpha (marching scheme)\n");
-     printf("   Zienkiewicz-Xie (auxiliar scheme)\n");
-  }
+   // --------------------------------------------------------------------
+   // context for output and restart
+   IO::DiscretizationWriter output(actdis);
+
+   // --------------------------------------------------------------------
+   // create a solver
+   RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
+   LINALG::Solver solver(solveparams,actdis->Comm(),allfiles.out_err);
+   solver.TranslateSolverParameters(*solveparams,actsolv);
+   actdis->ComputeNullSpaceIfNecessary(*solveparams);
+   
+   // --------------------------------------------------------------------
+   // A word to the user
+   if (myrank == 0)
+   {
+      printf("Adaptive structural time integration with\n");
+      printf("   Generalised-alpha (marching scheme)\n");
+      printf("   Zienkiewicz-Xie (auxiliar scheme)\n");
+   }
   
-  // ---------------------------------------------------------------------
-  // allocate adaptive time integrator
-  ZienkiewiczXie adatimint
-  (
-     (double) timada->dt_max,
-     (double) timada->dt_min,
-     (double) timada->dt_scl_min,
-     (double) timada->dt_scl_max,
-     (double) timada->dt_scl_saf,
-     (double) timada->err_tol,
-     2
-  );
+   // --------------------------------------------------------------------
+   // allocate adaptive time integrator
+   ZienkiewiczXie::ZienkiewiczXie adatimint
+   (
+      0.0,
+      (double) sdyn->maxtime,
+      0,
+      (int) sdyn->nstep,
+      (double) sdyn->dt,
+      //
+      (double) timada->dt_max,
+      (double) timada->dt_min,
+      (double) timada->dt_scl_max,
+      (double) timada->dt_scl_min,
+      (double) timada->dt_scl_saf,
+      (TimeAdaptivity::TAErrNorm) timada->err_norm,
+      (double) timada->err_tol,
+      2,
+      (int) timada->adastpmax,
+      //
+      *actdis, 
+      solver, 
+      output
+   );
+   cout << adatimint << endl;
+   //exit(0);
 
-  cout << adatimint << endl;
+   // --------------------------------------------------------------------
+   // create a generalised-alpha time integrator
+   ParameterList genalphaparams;
+   StruGenAlpha::SetDefaults(genalphaparams);
 
+   // solution technique for non-linear dynamic equilibrium
+   string equisoltech = "";
+   switch(sdyn->nlnSolvTyp)
+   {
+   case STRUCT_DYNAMIC::fullnewton:
+      equisoltech = "full newton";
+      break;
+   case STRUCT_DYNAMIC::modnewton:
+      equisoltech = "modified newton";
+      break;
+   case STRUCT_DYNAMIC::matfreenewton:
+      equisoltech = "matrixfree newton";
+      break;
+   case STRUCT_DYNAMIC::nlncg:
+      equisoltech = "nonlinear cg";
+      break;
+   case STRUCT_DYNAMIC::ptc:
+      equisoltech = "ptc";
+      break;
+   default:
+      equisoltech = "full newton";
+      break;
+   }      
+      
+   // create the time integrator
+   genalpha_setparalist
+   (
+      sdyn->damp,
+      sdyn->k_damp,
+      sdyn->m_damp,
+      sdyn->beta,
+      sdyn->gamma,
+      sdyn->alpha_m,
+      sdyn->alpha_f,
+      0.0,
+      sdyn->dt,
+      0,
+      sdyn->nstep,
+      sdyn->maxiter,
+      -1,
+      sdyn->toldisp,
+      ioflags.struct_disp,
+      sdyn->updevry_disp,
+      ioflags.struct_stress,
+      sdyn->updevry_stress,
+      genprob.restart,
+      sdyn->res_write_evry,
+      true,
+      true,
+      allfiles.out_err,
+      equisoltech,
+      "constant",  // takes values "constant" "consistent"
+      genalphaparams
+   );
 
-//   // -------------------------------------------------------------------
-//   // context for output and restart
-//   // -------------------------------------------------------------------
-//   IO::DiscretizationWriter output(actdis);
+   // create the time integrator
+   StruGenAlpha timeintegrator(genalphaparams, 
+                               *actdis, 
+                               solver, 
+                               output);
 
+   // do restart if demanded from input file
+   // note that this changes time and step in genalphaparams
+   if (genprob.restart)
+   {
+      timeintegrator.ReadRestart(genprob.restart);
+   }
+   
+   // write mesh always at beginning of calc or restart
+   {
+      int step = genalphaparams.get<int>("step",0);
+      double time = genalphaparams.get<double>("total time",0.0);
+      output.WriteMesh(step,time);
+   }
+   
+   // associate parameter list
+   //adatimint.SetParaList(genalphaparams);
+   
+   // integrate adaptively in time
+   //adatimint.Integrate(timeintegrator);
 
+   // integrate in time and space
+   timeintegrator.Integrate();
 
-//   // -------------------------------------------------------------------
-//   // create a solver
-//   // -------------------------------------------------------------------
-//   RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
-//   LINALG::Solver solver(solveparams,actdis->Comm(),allfiles.out_err);
-//   solver.TranslateSolverParameters(*solveparams,actsolv);
-//   actdis->ComputeNullSpaceIfNecessary(*solveparams);
+   return;
 
-//   // -------------------------------------------------------------------
-//   // create a generalized alpha time integrator
-//   // -------------------------------------------------------------------
-//   switch(sdyn->Typ)
-//   {
-//     //==================================================================
-//     // Generalized alpha time integration
-//     //==================================================================
-//     case STRUCT_DYNAMIC::gen_alfa :
-//     {
-//       ParameterList genalphaparams;
-//       StruGenAlpha::SetDefaults(genalphaparams);
-
-//       genalphaparams.set<bool>  ("damping",sdyn->damp);
-//       genalphaparams.set<double>("damping factor K",sdyn->k_damp);
-//       genalphaparams.set<double>("damping factor M",sdyn->m_damp);
-
-//       genalphaparams.set<double>("beta",sdyn->beta);
-//       genalphaparams.set<double>("gamma",sdyn->gamma);
-//       genalphaparams.set<double>("alpha m",sdyn->alpha_m);
-//       genalphaparams.set<double>("alpha f",sdyn->alpha_f);
-
-//       genalphaparams.set<double>("total time",0.0);
-//       genalphaparams.set<double>("delta time",sdyn->dt);
-//       genalphaparams.set<int>   ("step",0);
-//       genalphaparams.set<int>   ("nstep",sdyn->nstep);
-//       genalphaparams.set<int>   ("max iterations",sdyn->maxiter);
-//       genalphaparams.set<int>   ("num iterations",-1);
-//       genalphaparams.set<double>("tolerance displacements",sdyn->toldisp);
-
-//       genalphaparams.set<bool>  ("io structural disp",ioflags.struct_disp);
-//       genalphaparams.set<int>   ("io disp every nstep",sdyn->updevry_disp);
-//       genalphaparams.set<bool>  ("io structural stress",ioflags.struct_stress);
-//       genalphaparams.set<int>   ("io stress every nstep",sdyn->updevry_stress);
-
-//       genalphaparams.set<int>   ("restart",genprob.restart);
-//       genalphaparams.set<int>   ("write restart every",sdyn->res_write_evry);
-
-//       genalphaparams.set<bool>  ("print to screen",true);
-//       genalphaparams.set<bool>  ("print to err",true);
-//       genalphaparams.set<FILE*> ("err file",allfiles.out_err);
-
-//       switch(sdyn->nlnSolvTyp)
-//       {
-//         case STRUCT_DYNAMIC::fullnewton:
-//           genalphaparams.set<string>("equilibrium iteration","full newton");
-//         break;
-//         case STRUCT_DYNAMIC::modnewton:
-//           genalphaparams.set<string>("equilibrium iteration","modified newton");
-//         break;
-//         case STRUCT_DYNAMIC::matfreenewton:
-//           genalphaparams.set<string>("equilibrium iteration","matrixfree newton");
-//         break;
-//         case STRUCT_DYNAMIC::nlncg:
-//           genalphaparams.set<string>("equilibrium iteration","nonlinear cg");
-//         break;
-//         case STRUCT_DYNAMIC::ptc:
-//           genalphaparams.set<string>("equilibrium iteration","ptc");
-//         break;
-//         default:
-//           genalphaparams.set<string>("equilibrium iteration","full newton");
-//         break;
-//       }
-
-//       // takes values "constant" "consistent"
-//       genalphaparams.set<string>("predictor","constant");
-
-//       // create the time integrator
-//       StruGenAlpha timeintegrator(genalphaparams,*actdis,solver,output);
-
-//       // do restart if demanded from input file
-//       // note that this changes time and step in genalphaparams
-//       if (genprob.restart)
-//         timeintegrator.ReadRestart(genprob.restart);
-
-//       // write mesh always at beginning of calc or restart
-//       {
-//         int    step = genalphaparams.get<int>("step",0);
-//         double time = genalphaparams.get<double>("total time",0.0);
-//         output.WriteMesh(step,time);
-//       }
-
-//       // integrate in time and space
-//       timeintegrator.Integrate();
-//     }
-//     break;
-//     //==================================================================
-//     // Generalized Energy Momentum Method
-//     //==================================================================
-//     case STRUCT_DYNAMIC::Gen_EMM :
-//     {
-//       dserror("Not yet impl.");
-//     }
-//     break;
-//   } // end of switch(sdyn->Typ)
-
-  return;
 } // end of dyn_nlnstructural_drt()
-
-
-
 
 
 #endif  // #ifdef TRILINOS_PACKAGE

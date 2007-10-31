@@ -69,15 +69,11 @@ public:
                         LINALG::Solver& solver,
                         IO::DiscretizationWriter& output);
 
-
   /*!
   \brief Destructor
 
   */
   virtual ~StruGenAlpha() {};
-
-
-
 
   /*!
   \brief Create default parameter list
@@ -85,11 +81,19 @@ public:
   */
   static void SetDefaults(ParameterList& params);
 
+
+
   /*!
   \brief Do time integration
 
   */
   void Integrate();
+
+  /*!
+  \brief Integrate single step in time
+
+  */
+  void IntegrateStep();
 
   /*!
   \brief do constant predictor step
@@ -188,6 +192,34 @@ public:
   */
   const Epetra_Map* GetMap() { return discret_.DofRowMap(); }
 
+  /*!
+  \brief Get time integration scheme (TIS) parameters
+  
+  */
+  void GetTISPara(double& beta, 
+                  double& gamma, 
+                  double& alpham, 
+                  double& alphaf);
+
+  /*
+  \brief set time step size
+
+  */
+  void SetTimeStepSize(const double& timstpsiz);
+
+  /*
+  \brief Get last converged accelerations
+
+  */
+  const RefCountPtr<Epetra_Vector>& GetAcc() 
+  { return acc_; }
+
+  /*
+  \brief Get last converged accelerations
+
+  */
+  const RefCountPtr<Epetra_Vector>& GetAccn() 
+  { return accn_; }
 
 protected:
 

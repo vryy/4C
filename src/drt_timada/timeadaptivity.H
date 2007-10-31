@@ -61,22 +61,41 @@ class TimeAdaptivity
 public:
 
    /*!
-     \brief Ordinary Constructor with default values
+     \brief Norm for error vector
    */
-   explicit TimeAdaptivity();
+   enum TAErrNorm
+   { 
+      norm_vague = 0,  // undetermined norm
+      norm_l1,  // L1/linear/average norm
+      norm_l2,   // L2/Euclidean norm
+      norm_rms,  // root mean square (RMS) norm
+      norm_inf   // Maximum/infinity norm
+   };
 
-   /*\!
+   /*!
      \brief Ordinary Constructor with parameters
    */
    explicit TimeAdaptivity
    (
-      double maxstepsize,
-      double minstepsize,
-      double minsizeratio,
-      double maxsizeratio,
-      double secsizeratio,
+      double timeinitial,
+      double timefinal,
+      int timestepinitial,
+      int timestepfinal,
+      double stepsizeinitial,
+      //
+      double stepsizemax,
+      double stepsizemin,
+      double sizeratiomax,
+      double sizeratiomin,
+      double sizeratioscale,
+      TAErrNorm errnorm,
       double errtol,
-      int errpow
+      int errorder,
+      int adaptstepmax,
+      //
+      DRT::Discretization& dis,
+      LINALG::Solver& solver,
+      IO::DiscretizationWriter& output
    );
 
    /*!
@@ -85,99 +104,122 @@ public:
    virtual ~TimeAdaptivity();
 
    /*!
-     \brief Out stream
+      \brief Set parameter list
+    */
+   //void SetParaList(ParameterList& params);
+
+   /*!
+     \brief Set-up integration in time
+
+     see Integrate() underneath
    */
-   friend std::ostream& operator<<
+   //virtual void SetUpIntegration
+   //(
+   //   DRT::Discretization& discret,
+   //   LINALG::Solver& solver,
+   //   IO::DiscretizationWriter& output
+   //) = 0;
+
+   /*!
+     \brief Integrate in time
+            
+     This is the key method here, i.e. the time integration
+     algorithm. It has to be implemented by derived classes.
+   */
+   // Here, a pure virtual method makes only sense, when we have a
+   // base class for all time integration schemes: TimeIntegrator.
+   // In this case StrGenAlpha is derived from this class.
+   // Now, we can demand of any object derived form TimeAdaptivity
+   // to offer an Integrate method for any TimeIntegrator.
+   //virtual void Integrate(TimeIntegrator::TimeIntegrator& timint) = 0;
+
+   /*
+     \brief Indicate error and determine new step size
+   */
+   void Indicate
    (
-      ostream& str, 
-      const TimeAdaptivity& ta
+      bool& accepted,
+      double& stpsiznew
    );
 
-  /*!
-  \brief Create default parameter list
-  */
-// static void SetDefaults(ParameterList& params);
+   /*!
+     \brief Print error norm string
+   */
+   string PrintErrNorm() const;
 
-  /*!
-  \brief Do time integration
-  */
-//  void Integrate();
+   /*!
+     \brief Print time adapting constants
+   */
+   void PrintConstants(std::ostream& str) const;
 
-  /*!
-  \brief do constant predictor step
-  */
-//  void ConstantPredictor();
+   /*!
+     \brief Print time adapting variables
+   */
+   void PrintVariables(std::ostream& str) const;
 
-  /*!
-  \brief do matrix free constant predictor
-  */
-//  void MatrixFreeConstantPredictor();
-
-  /*!
-  \brief do consistent constant predictor step
-  */
-//  void ConsistentPredictor();
-
-  /*!
-  \brief do full Newton iteration
-  */
-//  void FullNewton();
-
-  /*!
-  \brief do modified Newton iteration (makes sense with direct solvers only)
-  */
-//  void ModifiedNewton();
-
-  /*!
-  \brief do matrix free Newton iteration (only with Aztec)
-  */
-//  void MatrixFreeNewton();
-
-  /*!
-  \brief do nonlinear cg iteration using nox
-  */
-//  void NonlinearCG();
-
-  /*!
-  \brief Compute the residual to a given state x
-
-  This method is used by the nox user interface class and by the linalg matrix free operator
-
-  \param x (in/out) : Current solution state (dirichlet dofs will be blanked)
-  \param F (out): residual matching current solution state (dirichlet dofs will be blanked)
-  */
-//  virtual void computeF(const Epetra_Vector& x, Epetra_Vector& F);
-
-
-  /*!
-  \brief Compute the Jacobian to a given state x
-
-  This method is used by the nox user interface
-
-  \param x (in/out) : Current solution state (dirichlet dofs will be blanked)
-  */
-//  virtual void computeJacobian(const Epetra_Vector& x);
-
+   /*!
+     \brief Print time adapting parameters:TimeIntegrator
+   */
+   void Print(std::ostream& str) const;
 
 
 protected:
 
    // not wanted: = operator
-   TimeAdaptivity operator = (const TimeAdaptivity& old);
+   //TimeAdaptivity operator = (const TimeAdaptivity& old);
    // not wanted: copy constructor
    TimeAdaptivity(const TimeAdaptivity& old);
 
-   // parameters
-   double maxstepsize_;
-   double minstepsize_;
-   double minsizeratio_;
-   double maxsizeratio_;
-   double saferatioscale_;
+   // plain time integration constants
+   double timeinitial_;  // initial time: t_0
+   double timefinal_;  // final time
+   int timestepinitial_;  // initial time step index: 0 (often)
+   int timestepfinal_;  // maximum time step: n_max
+   double stepsizeinitial_;  // initial step size: dt_n
+
+   // adaptive time integration constants
+   double stepsizemax_;
+   double stepsizemin_;
+   double sizeratiomax_;
+   double sizeratiomin_;
+   double sizeratioscale_;
+   enum TAErrNorm errnorm_;
    double errtol_;
-   int errpow_;
-   enum { l1_norm, l2_norm, rms_norm, max_norm } errnorm_;
+   int errorder_;
+   int adaptstepmax_;
+
+   // link to discretisation
+   DRT::Discretization& discret_;
+   LINALG::Solver& solver_;
+   IO::DiscretizationWriter& output_;
+ 
+   // more parameters
+   //ParameterList* params_;
+
+   // plain time integration variables
+   double time_;
+   int timestep_;
+
+   // adaptive time integration variables
+   double stepsize_;
+   RefCountPtr<Epetra_Vector> locdiserrn_;
+   int adaptstep_;
+
 
 }; // class TimeAdaptivity
+
+
+/*======================================================================*/
+/*!
+\brief Out stream operator
+\author bborn
+\date 10/07
+*/
+std::ostream& operator<<
+(
+   ostream& str, 
+   const TimeAdaptivity& ta
+);
 
 
 

@@ -48,6 +48,36 @@ extern "C" /* stuff which is c and is accessed from c++ */
 using namespace std;
 using namespace Teuchos;
 
+   void genalpha_setparalist
+   (
+      const bool damp,
+      const double damp_k,
+      const double damp_m,
+      const double beta,
+      const double gamma,
+      const double alpham,
+      const double alphaf,
+      const double timein,
+      const double stepsize,
+      const int step,
+      const int stepmax,
+      const int itermax,
+      const int iter,
+      const double toldisp,
+      const bool ioflags_struct_disp,
+      const int updevry_disp,
+      const bool ioflags_struct_stress,
+      const int updevry_stress,
+      const int restart,
+      const int res_write_evry,
+      const bool print_to_stdout,
+      const bool print_to_errfile,
+      FILE* errfilein,
+      const string equisoltech,
+      const string pred,
+      ParameterList& params
+   );
+
 #endif /* end of #ifdef __cplusplus */
 
 

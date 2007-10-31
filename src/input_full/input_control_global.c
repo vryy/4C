@@ -993,6 +993,8 @@ sdyn->updevry_stress=1;
 sdyn->res_write_evry=1;
 sdyn->eigen=0;
 sdyn->timada.kind = timada_kind_none;  /* default time adaptivity is off */
+sdyn->timada.err_norm = timada_err_norm_vague; /* default error norm */
+
 
 if (frfind("-STRUCTURAL DYNAMIC")==0) goto end;
 frread();
@@ -2245,13 +2247,37 @@ void inpctr_dyn_timada(TIMADA_DYNAMIC* timada)
       dserror("Type of time adaptivity (TA_KIND) is unknown");
     }
   }
-  frdouble("TA_MAXSTEPSIZE", &(timada->dt_max), &ierr);
-  frdouble("TA_MINSTEPSIZE", &(timada->dt_min), &ierr);
-  frdouble("TA_MAXSIZERATIO", &(timada->dt_scl_max), &ierr);
-  frdouble("TA_MINSIZERATIO", &(timada->dt_scl_min), &ierr);
-  frdouble("TA_SAFERATIOSCALE", &(timada->dt_scl_saf), &ierr);
+  frdouble("TA_STEPSIZEMAX", &(timada->dt_max), &ierr);
+  frdouble("TA_STEPSIZEMIN", &(timada->dt_min), &ierr);
+  frdouble("TA_SIZERATIOMAX", &(timada->dt_scl_max), &ierr);
+  frdouble("TA_SIZERATIOMIN", &(timada->dt_scl_min), &ierr);
+  frdouble("TA_SIZERATIOSCALE", &(timada->dt_scl_saf), &ierr);
+  frchar("TA_ERRNORM", buffer, &ierr);
+  if (ierr == 1)
+  {
+    if (frwordcmp(buffer,"Vague") == 0)
+    {
+      timada->err_norm = timada_err_norm_vague;
+    }
+    else if (frwordcmp(buffer,"L1") == 0)
+    {
+      timada->err_norm = timada_err_norm_l1;
+    }
+    else if (frwordcmp(buffer,"L2") == 0)
+    {
+      timada->err_norm = timada_err_norm_l2;
+    }
+    else if (frwordcmp(buffer,"Rms") == 0)
+    {
+      timada->err_norm = timada_err_norm_rms;
+    }
+    else if (frwordcmp(buffer,"Inf") == 0)
+    {
+      timada->err_norm = timada_err_norm_inf;
+    }
+  }
   frdouble("TA_ERRTOL", &(timada->err_tol), &ierr);
-  
+  frint("TA_ADAPTSTEPMAX", &(timada->adastpmax), &ierr);
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG

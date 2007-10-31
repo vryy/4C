@@ -38,11 +38,23 @@ typedef struct _TIMADA_DYNAMIC
   } kind;                       /* type of adaptivity in time */
   DOUBLE dt_max;                /* maximally permitted step size */
   DOUBLE dt_min;                /* minimally permitted step size */
-  DOUBLE dt_scl_min;            /* minimally permitted ratio of new to last size */
-  DOUBLE dt_scl_max;            /* maximally permitted ratio of new to last size */
-  DOUBLE dt_scl_saf;            /* safety scale of optimally predicted new step size */
+  DOUBLE dt_scl_min;            /* minimally permitted ratio of
+                                 * new to last size */
+  DOUBLE dt_scl_max;            /* maximally permitted ratio of 
+                                 * new to last size */
+  DOUBLE dt_scl_saf;            /* safety scale of optimally predicted 
+                                 * new step size */
+  enum {
+    timada_err_norm_vague = 0,  /* undetermined norm */
+    timada_err_norm_l1,         /* L1/linear/average norm */
+    timada_err_norm_l2,         /* L2/Euclidean norm */
+    timada_err_norm_rms,        /* root mean square (RMS) norm */
+    timada_err_norm_inf         /* Maximum/infinity norm */
+  } err_norm;                   /* error norm */
   DOUBLE err_tol;               /* error tolerance (target) */
-  INT err_pow;                  /* order */
+  /* INT err_pow; */            /* order */
+  INT adastpmax;                /* maximally permitted adaptive
+                                 * step size iterations */
 } TIMADA_DYNAMIC;
 
 
