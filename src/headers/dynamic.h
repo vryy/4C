@@ -69,7 +69,7 @@ enum
     centr_diff,                  /* generalised alpha-time integrator */
     Gen_EMM                     /* generalised energy-momentum method */
    }               Typ;         /* type of time integration algorithm */
-enum
+enum _nlnSolvTyp
    {
     fullnewton,
     modnewton,

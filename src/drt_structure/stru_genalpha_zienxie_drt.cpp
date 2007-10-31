@@ -117,7 +117,7 @@ void genalpha_setparalist
    const bool print_to_stdout,
    const bool print_to_errfile,
    FILE* errfilein,
-   const string equisoltech,
+   const STRUCT_DYNAMIC::_nlnSolvTyp nst,
    const string pred,
    ParameterList& params
 )
@@ -151,6 +151,29 @@ void genalpha_setparalist
    params.set<bool>("print to err", print_to_errfile);
    params.set<FILE*>("err file", errfilein);
 
+   // solution technique for non-linear dynamic equilibrium
+   string equisoltech = "";
+   switch (nst)
+   {
+   case STRUCT_DYNAMIC::fullnewton:
+      equisoltech = "full newton";
+      break;
+   case STRUCT_DYNAMIC::modnewton:
+      equisoltech = "modified newton";
+      break;
+   case STRUCT_DYNAMIC::matfreenewton:
+      equisoltech = "matrixfree newton";
+      break;
+   case STRUCT_DYNAMIC::nlncg:
+      equisoltech = "nonlinear cg";
+      break;
+   case STRUCT_DYNAMIC::ptc:
+      equisoltech = "ptc";
+      break;
+   default:
+      equisoltech = "full newton";
+      break;
+   }      
    params.set<string>("equilibrium iteration", equisoltech);
 
    params.set<string>("predictor",  pred);
@@ -238,30 +261,6 @@ void stru_genalpha_zienxie_drt()
    ParameterList genalphaparams;
    StruGenAlpha::SetDefaults(genalphaparams);
 
-   // solution technique for non-linear dynamic equilibrium
-   string equisoltech = "";
-   switch(sdyn->nlnSolvTyp)
-   {
-   case STRUCT_DYNAMIC::fullnewton:
-      equisoltech = "full newton";
-      break;
-   case STRUCT_DYNAMIC::modnewton:
-      equisoltech = "modified newton";
-      break;
-   case STRUCT_DYNAMIC::matfreenewton:
-      equisoltech = "matrixfree newton";
-      break;
-   case STRUCT_DYNAMIC::nlncg:
-      equisoltech = "nonlinear cg";
-      break;
-   case STRUCT_DYNAMIC::ptc:
-      equisoltech = "ptc";
-      break;
-   default:
-      equisoltech = "full newton";
-      break;
-   }      
-      
    // create the time integrator
    genalpha_setparalist
    (
@@ -288,7 +287,7 @@ void stru_genalpha_zienxie_drt()
       true,
       true,
       allfiles.out_err,
-      equisoltech,
+      sdyn->nlnSolvTyp,
       "constant",  // takes values "constant" "consistent"
       genalphaparams
    );

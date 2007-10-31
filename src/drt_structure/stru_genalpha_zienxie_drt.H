@@ -73,7 +73,7 @@ using namespace Teuchos;
       const bool print_to_stdout,
       const bool print_to_errfile,
       FILE* errfilein,
-      const string equisoltech,
+      const STRUCT_DYNAMIC::_nlnSolvTyp nst,
       const string pred,
       ParameterList& params
    );
