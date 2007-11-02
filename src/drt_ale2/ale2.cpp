@@ -1,6 +1,5 @@
 #ifdef D_ALE
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "ale2.H"
 #include "../drt_lib/drt_discret.H"
@@ -281,6 +280,5 @@ void DRT::Elements::Ale2Register::Print(ostream& os) const
 }
 
 
-#endif
 #endif
 #endif

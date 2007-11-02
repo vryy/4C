@@ -1,6 +1,5 @@
 #ifdef D_ALE
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -544,6 +543,5 @@ int DRT::Elements::Ale3Register::Initialize(DRT::Discretization& dis)
   return 0;
 }
 
-#endif
 #endif
 #endif

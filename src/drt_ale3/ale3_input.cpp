@@ -1,6 +1,5 @@
 #ifdef D_ALE
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -194,6 +193,5 @@ bool DRT::Elements::Ale3::ReadElement()
 }
 
 
-#endif
 #endif
 #endif

@@ -8,7 +8,6 @@
 *----------------------------------------------------------------------*/
 #ifdef D_ALE
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "ale2.H"
 #include "../drt_lib/linalg_utils.H"
@@ -33,6 +32,5 @@ int DRT::Elements::Ale2Line::EvaluateNeumann(
 }
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif // #ifdef D_ALE2

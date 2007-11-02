@@ -1,7 +1,6 @@
 
 #ifdef D_ALE
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "ale3.H"
 #include "../drt_lib/linalg_utils.H"
@@ -20,6 +19,5 @@ int DRT::Elements::Ale3Surface::EvaluateNeumann(
   return 0;
 }
 
-#endif
 #endif
 #endif

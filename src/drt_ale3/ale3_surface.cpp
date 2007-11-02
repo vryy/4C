@@ -1,7 +1,6 @@
 
 #ifdef D_ALE
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "ale3.H"
 #include "../drt_lib/linalg_utils.H"
@@ -83,6 +82,5 @@ void DRT::Elements::Ale3Surface::Print(ostream& os) const
 }
 
 
-#endif
 #endif
 #endif
