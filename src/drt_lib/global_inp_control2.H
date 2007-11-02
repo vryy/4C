@@ -47,11 +47,6 @@ Maintainer: Michael Gee
 #include "../drt_f3/xfluid3.H"
 #endif
 
-extern "C" /* stuff which is c and is accessed from c++ */
-{
-#include "../headers/standardtypes.h"
-}
-#include "dstrc.H" /* needs standardtypes.h */
 
 using namespace std;
 using namespace Teuchos;

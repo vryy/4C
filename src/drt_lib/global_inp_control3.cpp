@@ -92,7 +92,6 @@ void input_design_dvol_fenode_read(vector<vector<int> >& dvol_fenode,
 INT    i,ierr;
 INT    counter;
 INT    dvol;
-DSTraceHelper dst("input_design_dvol_fenode_read");
 /*----------------------------------------------------------------------*/
 /*---------------------------------- count number of nodes on this vol */
 if (frfind("--DVOL-NODE TOPOLOGY")==0) goto end;
@@ -145,7 +144,6 @@ void input_design_dsurf_fenode_read(vector<vector<int> >& dsurf_fenode,
 INT    i,ierr;
 INT    counter;
 INT    dsurf;
-DSTraceHelper dst("input_design_dsurf_fenode_read");
 /*----------------------------------------------------------------------*/
 /*---------------------------------- count number of nodes on this surf */
 if (frfind("--DSURF-NODE TOPOLOGY")==0) goto end;
@@ -198,7 +196,6 @@ void input_design_dline_fenode_read(vector<vector<int> >& dline_fenode,
 INT    i,ierr;
 INT    counter;
 INT    dline;
-DSTraceHelper dst("input_design_dline_fenode_read");
 /*----------------------------------------------------------------------*/
 /*---------------------------------- count number of nodes on this line */
 if (frfind("--DLINE-NODE TOPOLOGY")==0) goto end;
@@ -247,7 +244,6 @@ return;
 void input_design_dpoint_fenode_read(vector<vector<int> >& dnode_fenode,
                                      vector<int>& ndnode_fenode)
 {
-  DSTraceHelper dst("input_design_dpoint_fenode_read");
 /*-------------------------------------------------------------- rewind */
 frrewind();
 /*------------------------------- find fe-nodes belonging to this dnode */

@@ -12,7 +12,6 @@ Maintainer: Moritz Frenzel
 *----------------------------------------------------------------------*/
 #ifdef D_SOH8
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 // This is just here to get the c++ mpi header, otherwise it would
 // use the c version included inside standardtypes.h
@@ -32,12 +31,6 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/drt_utils_fem_shapefunctions.H"
 #include "Epetra_SerialDenseSolver.h"
 
-extern "C"
-{
-#include "../headers/standardtypes.h"
-// see if we can avoid this #include "../shell8/shell8.h"
-}
-#include "../drt_lib/dstrc.H"
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
 
@@ -492,6 +485,5 @@ void DRT::Elements::So_shw6::soshw6_evaluateT(const Epetra_SerialDenseMatrix jac
 
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_WEG6

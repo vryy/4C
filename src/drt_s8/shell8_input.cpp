@@ -34,7 +34,6 @@ extern "C"
 extern struct _FILES  allfiles;
 }
 #include "shell8.H"
-#include "../drt_lib/dstrc.H"
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                              mwgee 11/06|
