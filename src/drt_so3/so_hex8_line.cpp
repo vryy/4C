@@ -12,21 +12,12 @@ Maintainer: Moritz Frenzel
 *----------------------------------------------------------------------*/
 #ifdef D_SOH8
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "so_hex8.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
-
-extern "C"
-{
-#include "../headers/standardtypes.h"
-}
-#include "../drt_lib/dstrc.H"
-
-
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 04/07|
@@ -41,7 +32,6 @@ DRT::Element(id,element_soh8line,owner),
 parent_(parent),
 lline_(lline)
 {
-  DSTraceHelper dst("Soh8Line::Soh8Line");
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
   return;
@@ -55,7 +45,6 @@ DRT::Element(old),
 parent_(old.parent_),
 lline_(old.lline_)
 {
-  DSTraceHelper dst("Soh8Line::Soh8Line");
   return;
 }
 
@@ -65,7 +54,6 @@ lline_(old.lline_)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::Elements::Soh8Line::Clone() const
 {
-  DSTraceHelper dst("Soh8Line::Clone");
   DRT::Elements::Soh8Line* newelement = new DRT::Elements::Soh8Line(*this);
   return newelement;
 }
@@ -92,7 +80,6 @@ DRT::Element::DiscretizationType DRT::Elements::Soh8Line::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::Elements::Soh8Line::Pack(vector<char>& data) const
 {
-  DSTraceHelper dst("Soh8Line::Pack");
   data.resize(0);
 
   dserror("this Soh8Line element does not support communication");
@@ -106,7 +93,6 @@ void DRT::Elements::Soh8Line::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void DRT::Elements::Soh8Line::Unpack(const vector<char>& data)
 {
-  DSTraceHelper dst("Soh8Line::Unpack");
   dserror("this line element does not support communication");
   return;
 }
@@ -116,7 +102,6 @@ void DRT::Elements::Soh8Line::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 DRT::Elements::Soh8Line::~Soh8Line()
 {
-  DSTraceHelper dst("Soh8Line::~Soh8Line");
   return;
 }
 
@@ -126,7 +111,6 @@ DRT::Elements::Soh8Line::~Soh8Line()
  *----------------------------------------------------------------------*/
 void DRT::Elements::Soh8Line::Print(ostream& os) const
 {
-  DSTraceHelper dst("Soh8Line::Print");
   os << "Soh8Line ";
   Element::Print(os);
   return;
@@ -148,6 +132,5 @@ int DRT::Elements::Soh8Line::EvaluateNeumann(ParameterList&         params,
 
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif // #ifdef D_SOH8

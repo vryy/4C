@@ -12,7 +12,6 @@ Maintainer: Axel Gerstenberger
 *----------------------------------------------------------------------*/
 #ifdef D_SOH8
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "so_disp.H"
 #include "../drt_lib/linalg_utils.H"
@@ -87,6 +86,5 @@ int DRT::Elements::SoDispLine::EvaluateNeumann(	ParameterList& params,
 
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif // #ifdef

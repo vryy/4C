@@ -12,20 +12,11 @@ Maintainer: Moritz Frenzel
 *----------------------------------------------------------------------*/
 #ifdef D_SOH8
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "so_weg6.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_discret.H"
-
-//extern "C"
-//{
-//#include "../headers/standardtypes.h"
-//}
-//#include "../drt_lib/dstrc.H"
- 
-
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 04/07|
@@ -126,6 +117,5 @@ void DRT::Elements::Sow6Surface::Print(ostream& os) const
 
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif // #ifdef D_SOH8

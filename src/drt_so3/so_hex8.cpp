@@ -12,15 +12,11 @@ Maintainer: Moritz Frenzel
 *----------------------------------------------------------------------*/
 #ifdef D_SOH8
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "so_hex8.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
-
-
-
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 04/07|
@@ -511,6 +507,5 @@ void DRT::Elements::Soh8Register::Print(ostream& os) const
   return;
 }
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOH8

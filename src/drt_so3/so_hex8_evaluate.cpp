@@ -12,7 +12,6 @@ Maintainer: Moritz Frenzel
 *----------------------------------------------------------------------*/
 #ifdef D_SOH8
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 // This is just here to get the c++ mpi header, otherwise it would
 // use the c version included inside standardtypes.h
@@ -30,12 +29,6 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
 
-extern "C"
-{
-#include "../headers/standardtypes.h"
-// see if we can avoid this #include "../shell8/shell8.h"
-}
-#include "../drt_lib/dstrc.H"
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
 
@@ -51,8 +44,6 @@ int DRT::Elements::So_hex8::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector& elevec2,
                                     Epetra_SerialDenseVector& elevec3)
 {
-  DSTraceHelper dst("So_hex8::Evaluate");
-
   // start with "none"
   DRT::Elements::So_hex8::ActionType act = So_hex8::none;
 
@@ -183,8 +174,6 @@ int DRT::Elements::So_hex8::EvaluateNeumann(ParameterList& params,
                                            vector<int>&              lm,
                                            Epetra_SerialDenseVector& elevec1)
 {
-  DSTraceHelper dst("So_hex8::EvaluateNeumann");
-
   // get values and switches from the condition
   const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
   const vector<double>* val   = condition.Get<vector<double> >("val"  );
@@ -278,8 +267,6 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
       Epetra_SerialDenseVector* force,          // element internal force vector
       const double              time)           // current absolute time
 {
-  DSTraceHelper dst("So_hex8::soh8_nlnstiffmass");
-
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
 ** ============================================================================*/
@@ -599,8 +586,6 @@ void DRT::Elements::So_hex8::soh8_shapederiv(
       Epetra_SerialDenseMatrix** deriv,     // pointer to pointer of derivs
       Epetra_SerialDenseVector** weights)   // pointer to pointer of weights
 {
-  DSTraceHelper dst("So_hex8::soh8_shapederiv");
-
   // static matrix objects, kept in memory
   static Epetra_SerialDenseMatrix  f(NUMNOD_SOH8,NUMGPT_SOH8);  // shape functions
   static Epetra_SerialDenseMatrix df(NUMDOF_SOH8,NUMNOD_SOH8);  // derivatives
@@ -1067,6 +1052,5 @@ int DRT::Elements::Soh8Register::Initialize(DRT::Discretization& dis)
 }
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOH8

@@ -12,7 +12,6 @@ Maintainer: Moritz Frenzel
 *----------------------------------------------------------------------*/
 #ifdef D_SOH8
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "so_weg6.H"
 #include "../drt_lib/linalg_utils.H"
@@ -20,12 +19,6 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
-
-extern "C"
-{
-#include "../headers/standardtypes.h"
-}
-#include "../drt_lib/dstrc.H"
 
 using namespace DRT::Utils;
 
@@ -185,6 +178,5 @@ void DRT::Elements::Sow6Surface::sow6_surface_integ(
 }
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif // #ifdef D_SOH8

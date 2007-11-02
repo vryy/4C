@@ -12,7 +12,6 @@ Maintainer: Moritz Frenzel
 *----------------------------------------------------------------------*/
 #ifdef D_SOH8
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 // This is just here to get the c++ mpi header, otherwise it would
 // use the c version included inside standardtypes.h
@@ -30,11 +29,6 @@ Maintainer: Moritz Frenzel
 #include "Epetra_SerialDenseSolver.h"
 
 
-extern "C"
-{
-#include "../headers/standardtypes.h"
-}
-#include "../drt_lib/dstrc.H"
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
 
@@ -43,8 +37,6 @@ using namespace LINALG; // our linear algebra
  *----------------------------------------------------------------------*/
 void DRT::Elements::So_hex8::soh8_easinit()
 {
-  DSTraceHelper dst("So_hex8::soh8_easinit");
-  
   // EAS enhanced strain parameters
   Epetra_SerialDenseMatrix alpha(neas_,1);
   // EAS portion of internal forces, also called enhacement vector s or Rtilde
@@ -72,8 +64,6 @@ void DRT::Elements::So_hex8::soh8_eassetup(
           Epetra_SerialDenseMatrix& T0invT,   // maps M(origin) local to global
           const Epetra_SerialDenseMatrix& xrefe)    // material element coords
 {
-  DSTraceHelper dst("So_hex8::soh8_eassetup");
-  
   // vector of df(origin)
   double df0_vector[NUMDOF_SOH8*NUMNOD_SOH8] =
                {-0.125,-0.125,-0.125,
@@ -244,6 +234,5 @@ void DRT::Elements::So_hex8::soh8_eassetup(
   
   
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOH8

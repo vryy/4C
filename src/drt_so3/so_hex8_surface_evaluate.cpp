@@ -12,7 +12,6 @@ Maintainer: Moritz Frenzel
 *----------------------------------------------------------------------*/
 #ifdef D_SOH8
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "so_hex8.H"
 #include "../drt_lib/linalg_utils.H"
@@ -20,12 +19,6 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
-
-extern "C"
-{
-#include "../headers/standardtypes.h"
-}
-#include "../drt_lib/dstrc.H"
 
 /*----------------------------------------------------------------------*
  * Integrate a Surface Neumann boundary condition (public)     maf 04/07*
@@ -36,8 +29,6 @@ int DRT::Elements::Soh8Surface::EvaluateNeumann(ParameterList&           params,
                                                 vector<int>&             lm,
                                                 Epetra_SerialDenseVector& elevec1)
 {
-  DSTraceHelper dst("Soh8Surface::EvaluateNeumann");
-
   // get type of condition
   enum LoadType
   {
@@ -169,8 +160,6 @@ void DRT::Elements::Soh8Surface::soh8_surface_integ(
       const double r,                        // (i) coord in r-direction
       const double s)                        // (i) coord in s-direction
 {
-  DSTraceHelper dst("Soh8Surface::soh8_surface_metric");
-
   // shape functions for 4 nodes
   (*funct)[0] = 0.25 * (1.0-r) * (1.0-s);
   (*funct)[1] = 0.25 * (1.0+r) * (1.0-s);
@@ -355,6 +344,5 @@ double DRT::Elements::Soh8Surface::ComputeConstrVols(ParameterList& params,
 	return volume;
 }
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif // #ifdef D_SOH8

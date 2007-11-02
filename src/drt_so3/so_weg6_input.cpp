@@ -12,7 +12,6 @@ Maintainer: Moritz Frenzel
 *----------------------------------------------------------------------*/
 #ifdef D_SOH8
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 // This is just here to get the c++ mpi header, otherwise it would
 // use the c version included inside standardtypes.h
@@ -22,7 +21,6 @@ Maintainer: Moritz Frenzel
 
 extern "C"
 {
-#include "../headers/standardtypes.h"
 /*!----------------------------------------------------------------------
   \brief file pointers
 
@@ -35,7 +33,6 @@ extern "C"
 extern struct _FILES  allfiles;
 }
 #include "so_weg6.H"
-#include "../drt_lib/dstrc.H"
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                                maf 04/07|
@@ -105,6 +102,5 @@ bool DRT::Elements::So_weg6::ReadElement()
 } // So_weg6::ReadElement()
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOH8

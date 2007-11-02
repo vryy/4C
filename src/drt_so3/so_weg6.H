@@ -1,6 +1,5 @@
 #ifdef D_SOH8
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef SO_WEG6_H_
 #define SO_WEG6_H_
 
@@ -806,6 +805,5 @@ private:
 
 
 #endif /*SO_WEG6_H_*/
-#endif
 #endif
 #endif

@@ -12,7 +12,6 @@ Maintainer: Moritz Frenzel
 *----------------------------------------------------------------------*/
 #ifdef D_SOH8
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef SO_DISP_H
 #define SO_DISP_H
 
@@ -966,6 +965,5 @@ private:
 
 
 #endif /*SO_DISP_H*/
-#endif
 #endif
 #endif

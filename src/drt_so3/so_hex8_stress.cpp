@@ -14,7 +14,6 @@ Maintainer: Moritz Frenzel
 *----------------------------------------------------------------------*/
 #ifdef D_SOH8
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 // This is just here to get the c++ mpi header, otherwise it would
 // use the c version included inside standardtypes.h
@@ -32,12 +31,6 @@ Maintainer: Moritz Frenzel
 #include "Epetra_SerialDenseSolver.h"
 
 
-extern "C"
-{
-#include "../headers/standardtypes.h"
-// see if we can avoid this #include "../shell8/shell8.h"
-}
-#include "../drt_lib/dstrc.H"
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
 
@@ -55,8 +48,6 @@ void DRT::Elements::So_hex8::soh8_stress(vector<double>& disp,
                                          Epetra_SerialDenseMatrix* stresses,
                                          const double time)
 {
-  DSTraceHelper dst("So_hex8::soh8_stress");
-
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
 ** ============================================================================*/
@@ -214,6 +205,5 @@ void DRT::Elements::So_hex8::soh8_stress(vector<double>& disp,
 }
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOH8
