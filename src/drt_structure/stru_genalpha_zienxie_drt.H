@@ -15,7 +15,6 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #ifndef STRU_GENALPHA_ZIENXIE_H
 #define STRU_GENALPHA_ZIENXIE_H
@@ -42,8 +41,6 @@ extern "C" /* stuff which is c and is accessed from c++ */
 {
 #include "../headers/standardtypes.h"
 }
-
-#include "../drt_lib/dstrc.H" /* needs standardtypes.h */
 
 using namespace std;
 using namespace Teuchos;
@@ -101,5 +98,4 @@ extern "C"
 
 
 #endif  /* #ifndef STRU_GENALPHA_ZIENXIE_H */
-#endif  /* #ifdef TRILINOS_PACKAGE */
 #endif  /* #ifdef CCADISCRET */

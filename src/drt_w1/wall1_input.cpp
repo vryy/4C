@@ -34,15 +34,12 @@ extern "C"
 extern struct _FILES  allfiles;
 }
 #include "wall1.H"
-#include "../drt_lib/dstrc.H"
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                              mwgit 03/07|
  *----------------------------------------------------------------------*/
 bool DRT::Elements::Wall1::ReadElement()
 {
-  DSTraceHelper dst("Wall1::ReadElement");
-  
   // read element's nodes
   int ierr=0;
   int nnode=0;

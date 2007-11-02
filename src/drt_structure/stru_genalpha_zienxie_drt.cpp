@@ -14,7 +14,6 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*/
 /* headers */
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include <ctime>
 #include <cstdlib>
@@ -191,8 +190,6 @@ void genalpha_setparalist
 */
 void stru_genalpha_zienxie_drt() 
 {
-   DSTraceHelper dst("stru_genalpha_zienxie_drt");
-
    // --------------------------------------------------------------------
    // set some pointers and variables
    const INT disnum = 0;
@@ -326,5 +323,4 @@ void stru_genalpha_zienxie_drt()
 } // end of dyn_nlnstructural_drt()
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

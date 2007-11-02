@@ -20,13 +20,6 @@ Maintainer: Markus Gitterle
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
 
-extern "C"
-{
-#include "../headers/standardtypes.h"
-#include "../wall1/wall1.h"
-}
-#include "../drt_lib/dstrc.H"
-
 
 /*----------------------------------------------------------------------*
  |  Integrate a Line Neumann boundary condition (public)     mgit 03/07|

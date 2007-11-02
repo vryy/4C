@@ -11,7 +11,6 @@ Maintainer: Moritz Frenzel
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include <ctime>
 #include <cstdlib>
@@ -80,8 +79,6 @@ extern struct _STATIC_VAR  *statvar;
  *----------------------------------------------------------------------*/
 void stru_static_drt()
 {
-  DSTraceHelper dst("stru_static_drt");
-
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
@@ -465,5 +462,4 @@ void stru_static_drt()
 
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

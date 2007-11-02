@@ -11,7 +11,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include <ctime>
 #include <cstdlib>
@@ -77,8 +76,6 @@ extern ALLDYNA      *alldyn;
  *----------------------------------------------------------------------*/
 void dyn_nlnstructural_drt()
 {
-  DSTraceHelper dst("dyn_nlnstructural_drt");
-
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
@@ -643,5 +640,4 @@ void dyn_nlnstructural_drt()
 
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

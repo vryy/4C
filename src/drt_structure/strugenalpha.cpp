@@ -11,7 +11,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "strugenalpha.H"
 #include "iostream"
@@ -2426,5 +2425,4 @@ void StruGenAlpha::SetTimeStepSize(const double& timstpsiz)
   return;
 }
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

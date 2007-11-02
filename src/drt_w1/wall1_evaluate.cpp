@@ -26,14 +26,6 @@ Maintainer: Markus Gitterle
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 
-extern "C"
-{
-#include "../headers/standardtypes.h"
-#include "../wall1/wall1.h"
-#include "../wall1/wall1_prototypes.h"
-}
-#include "../drt_lib/dstrc.H"
-
 /*----------------------------------------------------------------------*
  |                                                        mgit 03/07    |
  | vector of material laws                                              |
@@ -232,7 +224,6 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
                                             Epetra_SerialDenseVector* force,
                                             struct _MATERIAL*         material)
 {
-  DSTraceHelper dst("Wall1::w1_nlnstiffmass");
   const int numnode = NumNode();
   const int numdf   = 2;
   int       ngauss  = 0;
@@ -377,7 +368,6 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
                                     double** gpcr, double** gpcs,
                                     double** gpwr)
 {
-  DSTraceHelper dst("Wall1::w1_gpdom");
 
   static double gpcl[6][6] = {
     {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},

@@ -11,7 +11,6 @@ Maintainer: Moritz Frenzel
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #ifndef STRU_STA_NLN_DRT_H
 #define STRU_STA_NLN_DRT_H
@@ -30,16 +29,6 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_solver.H"
-
-
-
-
-extern "C" /* stuff which is c and is accessed from c++ */
-{
-#include "../headers/standardtypes.h"
-}
-
-#include "../drt_lib/dstrc.H" /* needs standardtypes.h */
 
 using namespace std;
 using namespace Teuchos;
@@ -70,5 +59,4 @@ void stru_static_drt();
 
 
 #endif  /* #ifndef STRU_STA_NLN_DRT_H */
-#endif  /* #ifdef TRILINOS_PACKAGE */
 #endif  /* #ifdef CCADISCRET */

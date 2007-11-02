@@ -19,15 +19,6 @@ Maintainer: Markus Gitterle
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 
-extern "C"
-{
-#include "../headers/standardtypes.h"
-#include "../wall1/wall1.h"
-}
-#include "../drt_lib/dstrc.H"
-
-
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mgit 03/07|
   *----------------------------------------------------------------------*/
@@ -40,7 +31,6 @@ DRT::Element(id,element_wall1line,owner),
 parent_(parent),
 lline_(lline)
 {
-  DSTraceHelper dst("Wall1Line::Wall1Line");
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
   return;
@@ -54,7 +44,6 @@ DRT::Element(old),
 parent_(old.parent_),
 lline_(old.lline_)
 {
-  DSTraceHelper dst("Wall1Line::Wall1Line");
   return;
 }
 
@@ -64,7 +53,6 @@ lline_(old.lline_)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::Elements::Wall1Line::Clone() const
 {
-  DSTraceHelper dst("Wall1Line::Clone");
   DRT::Elements::Wall1Line* newelement = new DRT::Elements::Wall1Line(*this);
   return newelement;
 }
@@ -91,7 +79,6 @@ DRT::Element::DiscretizationType DRT::Elements::Wall1Line::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::Elements::Wall1Line::Pack(vector<char>& data) const
 {
-  DSTraceHelper dst("Wall1Line::Pack");  
   data.resize(0);
   
   dserror("this Wall1Line element does not support communication");
@@ -105,7 +92,6 @@ void DRT::Elements::Wall1Line::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void DRT::Elements::Wall1Line::Unpack(const vector<char>& data)
 {
-  DSTraceHelper dst("Wall1Line::Unpack");  
   dserror("this line element does not support communication");
   return;
 } 
@@ -115,7 +101,6 @@ void DRT::Elements::Wall1Line::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 DRT::Elements::Wall1Line::~Wall1Line()
 {
-  DSTraceHelper dst("Wall1Line::~Wall1Line");
   return;
 }
 
@@ -125,7 +110,6 @@ DRT::Elements::Wall1Line::~Wall1Line()
  *----------------------------------------------------------------------*/
 void DRT::Elements::Wall1Line::Print(ostream& os) const
 {
-  DSTraceHelper dst("Wall1Line::Print");
   os << "Wall1Line ";
   Element::Print(os);
   return;

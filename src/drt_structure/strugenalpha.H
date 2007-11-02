@@ -14,7 +14,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef STRUGENALPHA_H
 #define STRUGENALPHA_H
 
@@ -457,5 +456,4 @@ private:
 
 
 #endif  // #ifndef STRUGENALPHA_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
