@@ -18,7 +18,6 @@ Maintainer: Lena Wiechert
 #define STRU_MICRO_H
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
@@ -207,6 +206,5 @@ protected:
   RefCountPtr<Epetra_Export> export_;
 };
 
-#endif
 #endif
 #endif

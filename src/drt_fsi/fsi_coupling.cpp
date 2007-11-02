@@ -1,6 +1,5 @@
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "fsi_coupling.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
@@ -297,5 +296,4 @@ void FSI::Coupling::FindCondNodes(const DRT::Discretization& dis, std::string co
 }
 
 
-#endif
 #endif

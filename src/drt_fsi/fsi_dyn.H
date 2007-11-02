@@ -1,5 +1,4 @@
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #ifndef FSI_DYN_H
 #define FSI_DYN_H
@@ -18,5 +17,4 @@ void fsi_ale_drt();
 
 #endif
 
-#endif
 #endif

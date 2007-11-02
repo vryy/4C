@@ -14,7 +14,6 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #ifndef FSI_DIRICHLETNEUMANN_H
 #define FSI_DIRICHLETNEUMANN_H
@@ -237,6 +236,5 @@ private:
 
 }
 
-#endif
 #endif
 #endif

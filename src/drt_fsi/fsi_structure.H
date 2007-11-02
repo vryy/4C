@@ -14,7 +14,6 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #ifndef FSI_STRUCTURE_H
 #define FSI_STRUCTURE_H
@@ -124,6 +123,5 @@ private:
 
 }
 
-#endif
 #endif
 #endif

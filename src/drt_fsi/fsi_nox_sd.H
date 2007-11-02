@@ -1,8 +1,6 @@
 #ifndef FSI_NOX_SD_H
 #define FSI_NOX_SD_H
 
-#ifdef TRILINOS_PACKAGE
-
 #include <NOX_LineSearch_Generic.H>
 #include <Teuchos_RefCountPtr.hpp>
 #include <NOX_LineSearch_UserDefinedFactory.H>
@@ -153,5 +151,4 @@ public:
   }
 }
 
-#endif
 #endif

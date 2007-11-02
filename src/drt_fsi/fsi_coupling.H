@@ -1,6 +1,5 @@
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #ifndef FSI_COUPLING_H
 #define FSI_COUPLING_H
@@ -183,6 +182,5 @@ namespace FSI
 
 }
 
-#endif
 #endif
 #endif

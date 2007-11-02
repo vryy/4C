@@ -15,7 +15,6 @@ Maintainer: Michael Gee
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL8
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef SHELL8_H
 #define SHELL8_H
 
@@ -860,6 +859,5 @@ private:
 
 
 #endif  // #ifndef SHELL8_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SHELL8

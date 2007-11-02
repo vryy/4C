@@ -1,6 +1,5 @@
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "fsi_coupling_mortar.H"
 
@@ -477,5 +476,4 @@ void FSI::CouplingMortar::FindInterfaceObjects(
 }
 
 
-#endif // TRILINOS_PACKAGE
 #endif // CCADISCRET

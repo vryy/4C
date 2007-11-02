@@ -14,7 +14,6 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #ifndef FSI_FLUID_H
 #define FSI_FLUID_H
@@ -137,6 +136,5 @@ private:
 
 }
 
-#endif
 #endif
 #endif

@@ -15,7 +15,6 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*/
 /* headers */
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "timeadaptivity.H"
 #include "iostream"
@@ -297,5 +296,4 @@ std::ostream& operator<<
 }
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

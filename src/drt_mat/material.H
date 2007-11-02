@@ -17,7 +17,6 @@ Maintainer: Lena Wiechert
 #define MATERIAL_H
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include <Teuchos_RefCountPtr.hpp>
 #include "../drt_lib/drt_parobject.H"
@@ -74,6 +73,5 @@ public:
 
 }
 
-#endif
 #endif
 #endif

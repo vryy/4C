@@ -1,5 +1,4 @@
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "material.H"
 #include "newtonianfluid.H"
@@ -84,5 +83,4 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
 }
 
 
-#endif
 #endif

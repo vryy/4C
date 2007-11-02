@@ -13,7 +13,6 @@ Maintainer: Lena Wiechert
 *----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include <Epetra_LinearProblem.h>
 #include <Amesos_Klu.h>
@@ -1227,5 +1226,4 @@ void MicroStruGenAlpha::StaticHomogenization(Epetra_SerialDenseVector* stress,
 }
 
 
-#endif
 #endif

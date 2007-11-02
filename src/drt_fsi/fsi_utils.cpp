@@ -1,6 +1,5 @@
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include <vector>
 #include <algorithm>
@@ -249,5 +248,4 @@ FSI::Utils::computeDirectionalDerivative(const NOX::Abstract::Vector& dir,
   return vecPtr;
 }
 
-#endif
 #endif

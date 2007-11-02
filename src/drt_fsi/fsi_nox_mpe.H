@@ -1,8 +1,6 @@
 #ifndef FSI_NOX_MPE_H
 #define FSI_NOX_MPE_H
 
-#ifdef TRILINOS_PACKAGE
-
 #include <NOX_Direction_Generic.H> // base class
 #include <NOX_Utils.H>
 #include <NOX_GlobalData.H>
@@ -112,5 +110,4 @@ private:
 }
 }
 
-#endif
 #endif

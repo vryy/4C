@@ -1,6 +1,5 @@
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include <string>
 #include <vector>
@@ -306,5 +305,4 @@ void fsi_ale_drt()
 #endif
 }
 
-#endif
 #endif

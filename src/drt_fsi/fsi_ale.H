@@ -14,7 +14,6 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #ifndef FSI_ALE_H
 #define FSI_ALE_H
@@ -187,6 +186,5 @@ private:
 };
 }
 
-#endif
 #endif
 #endif

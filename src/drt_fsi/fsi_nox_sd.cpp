@@ -1,6 +1,4 @@
 
-#ifdef TRILINOS_PACKAGE
-
 #include "fsi_nox_sd.H"
 
 #include <NOX_Epetra_Interface_Required.H>
@@ -141,5 +139,3 @@ NOX::FSI::SDRelaxation::computeDirectionalDerivative(const NOX::Abstract::Vector
 
   return *vecPtr_;
 }
-
-#endif

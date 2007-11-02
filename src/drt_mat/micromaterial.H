@@ -17,7 +17,6 @@ Maintainer: Lena Wiechert
 #define MICROMATERIAL_H
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include <fstream>
 #include <iostream>
@@ -117,7 +116,6 @@ private:
 
 }
 
-#endif
 #endif
 #endif
 

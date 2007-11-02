@@ -17,7 +17,6 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /* headers */
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef TIMEADAPTIVITY_H
 #define TIMEADAPTIVITY_H
 
@@ -224,5 +223,4 @@ std::ostream& operator<<
 
 
 #endif  // #ifndef TIMEADAPTIVITY_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

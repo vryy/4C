@@ -1,6 +1,5 @@
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "fsi_dirichletneumann.H"
 #include "fsi_utils.H"
@@ -1224,5 +1223,4 @@ void FSI::DirichletNeumannCoupling::Output()
 }
 
 
-#endif
 #endif

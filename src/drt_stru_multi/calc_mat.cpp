@@ -1,5 +1,4 @@
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "microstrugenalpha.H"
 
@@ -279,5 +278,4 @@ void MicroStruGenAlpha::calc_cmat(const Epetra_MultiVector& K_M,
 
 }
 
-#endif
 #endif

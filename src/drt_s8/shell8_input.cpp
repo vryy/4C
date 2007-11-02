@@ -12,7 +12,6 @@ Maintainer: Michael Gee
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL8
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 // This is just here to get the c++ mpi header, otherwise it would
 // use the c version included inside standardtypes.h
@@ -235,6 +234,5 @@ bool DRT::Elements::Shell8::ReadElement()
 
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SHELL8

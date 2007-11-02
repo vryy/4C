@@ -14,7 +14,6 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*/
 /* headers */
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "ta_zienkiewiczxie.H"
 #include "iostream"
@@ -164,5 +163,4 @@ void ZienkiewiczXie::Integrate(StruGenAlpha::StruGenAlpha& timint)
 }
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

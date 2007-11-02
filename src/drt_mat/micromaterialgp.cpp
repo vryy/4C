@@ -1,6 +1,5 @@
 #ifdef D_SOH8
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "micromaterialgp.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -230,6 +229,5 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
 
 }
 
-#endif
 #endif
 #endif

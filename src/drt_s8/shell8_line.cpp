@@ -12,7 +12,6 @@ Maintainer: Michael Gee
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL8
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "shell8.H"
 #include "../drt_lib/linalg_utils.H"
@@ -135,6 +134,5 @@ void DRT::Elements::Shell8Line::Print(ostream& os) const
 
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif // #ifdef D_SHELL8

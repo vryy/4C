@@ -1,5 +1,4 @@
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "micromaterial.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -115,5 +114,4 @@ void MAT::MicroMaterial::Unpack(const vector<char>& data)
 
 
 
-#endif
 #endif

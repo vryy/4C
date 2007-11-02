@@ -1,6 +1,5 @@
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #ifndef FSI_COUPLING_MORTAR_H
 #define FSI_COUPLING_MORTAR_H
@@ -94,5 +93,4 @@ namespace FSI
 }
 
 #endif // FSI_COUPLING_MORTAR_H
-#endif // TRILINOS_PACKAGE
 #endif // CCADISCRET

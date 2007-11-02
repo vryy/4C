@@ -1,5 +1,4 @@
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifdef RESULTTEST
 
 #include "fsi_ale_resulttest.H"
@@ -73,6 +72,5 @@ bool FSI::AleResultTest::Match(RESULTDESCR* res)
   return res->field==ale;
 }
 
-#endif
 #endif
 #endif

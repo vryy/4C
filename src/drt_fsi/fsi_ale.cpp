@@ -14,7 +14,6 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "fsi_ale.H"
 
@@ -235,5 +234,4 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::AleLinear::ExtractDisplacement()
 }
 
 
-#endif
 #endif

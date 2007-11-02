@@ -14,7 +14,6 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "fsi_fluid.H"
 
@@ -297,5 +296,4 @@ RefCountPtr<Epetra_Vector> FSI::Fluid::IntegrateInterfaceShape()
   return ishape;
 }
 
-#endif
 #endif

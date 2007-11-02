@@ -18,7 +18,6 @@ Maintainer: Lena Wiechert
 
 #ifdef D_SOH8
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "micromaterial.H"
 
@@ -92,7 +91,6 @@ private:
 };
 }
 
-#endif
 #endif
 #endif
 #endif

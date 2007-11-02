@@ -14,7 +14,6 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "fsi_structure.H"
 
@@ -311,5 +310,4 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Structure::RelaxationSolve(Teuchos::Ref
 }
 
 
-#endif
 #endif

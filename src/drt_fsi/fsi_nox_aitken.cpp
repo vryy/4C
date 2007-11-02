@@ -1,5 +1,4 @@
 
-#ifdef TRILINOS_PACKAGE
 
 #include "fsi_nox_aitken.H"
 #include "fsi_utils.H"
@@ -183,6 +182,3 @@ bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
 
   return true;
 }
-
-
-#endif

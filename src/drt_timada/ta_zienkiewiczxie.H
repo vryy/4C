@@ -17,7 +17,6 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /* headers */
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef ZIENKIEWICZXIE_H
 #define ZIENKIEWICZXIE_H
 
@@ -112,5 +111,4 @@ protected:
 
 
 #endif  // #ifndef ZIENKIEWICZXIE_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

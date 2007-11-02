@@ -1,5 +1,4 @@
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #ifndef ALE_DYN_H
 #define ALE_DYN_H
@@ -18,5 +17,4 @@ void dyn_ale_drt();
 
 #endif
 
-#endif
 #endif
