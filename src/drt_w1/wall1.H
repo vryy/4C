@@ -30,6 +30,10 @@ using namespace Teuchos;
 #include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_utils.H"
 
+// element constants
+#ifndef MAXNOD_WALL1
+#define MAXNOD_WALL1 (9)  /* maximum of element nodes : max quad9 */
+#endif
 
 // forward declarations
 struct _MATERIAL;
