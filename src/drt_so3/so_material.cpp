@@ -36,11 +36,6 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/hyperpolyconvex.H"
 #include "../drt_mat/neohooke.H"
 
-
-//extern "C"
-//{
-//#include "../headers/standardtypes.h"
-//}
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
 

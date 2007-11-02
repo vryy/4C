@@ -28,13 +28,6 @@ Maintainer: Peter Gamnitzer
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/newtonianfluid.H"
 
-extern "C"
-{
-#include "../headers/standardtypes.h"
-}
-
-
-
 using namespace DRT::Utils;
 
 /*----------------------------------------------------------------------*

@@ -27,11 +27,6 @@ Maintainer: Volker Gravemeier
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/convecdiffus.H"
 
-extern "C"
-{
-#include "../headers/standardtypes.h"
-}
-
 using namespace DRT::Utils;
 
 /*----------------------------------------------------------------------*
