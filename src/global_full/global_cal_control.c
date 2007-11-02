@@ -234,7 +234,6 @@ case prb_struct_multi:
 
   break;
 
-#ifdef D_FLUID
 case prb_fluid:
 case prb_fluid_pm:
 #ifndef CCADISCRET
@@ -255,7 +254,6 @@ case prb_fluid_xfem:
   xdyn_fluid_drt();
 #else
   dserror("prb_fluid_xfem without DRT not implemented");
-#endif
 #endif
   break;
 
