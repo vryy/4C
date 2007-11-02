@@ -14,21 +14,12 @@ writen by : Alexander Volf
 *----------------------------------------------------------------------*/
 #ifdef D_SOCTET10
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "so_tet10.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
-
-//extern "C"
-//{
-//#include "../headers/standardtypes.h"
-//}
-//#include "../drt_lib/dstrc.H"
- 
-
 
 /*----------------------------------------------------------------------***
  |  ctor (public)                                              maf 04/07|
@@ -58,7 +49,6 @@ DRT::Element(old),
 parent_(old.parent_),
 lsurface_(old.lsurface_)
 {
-  //DSTraceHelper dst("Sotet10Surface::Sotet10Surface");
   return;
 }
 
@@ -68,7 +58,6 @@ lsurface_(old.lsurface_)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::Elements::Sotet10Surface::Clone() const
 {
-  //DSTraceHelper dst("Sotet10Surface::Clone");
   DRT::Elements::Sotet10Surface* newelement = new DRT::Elements::Sotet10Surface(*this);
   return newelement;
 }
@@ -79,7 +68,6 @@ DRT::Element* DRT::Elements::Sotet10Surface::Clone() const
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::Elements::Sotet10Surface::Shape() const
 {
-
   return tri6;
 }
 
@@ -89,7 +77,6 @@ DRT::Element::DiscretizationType DRT::Elements::Sotet10Surface::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::Elements::Sotet10Surface::Pack(vector<char>& data) const
 {
-  //DSTraceHelper dst("Sotet10Surface::Pack");
   data.resize(0);
   dserror("this Sote10Surface element does not support communication");
 
@@ -102,8 +89,6 @@ void DRT::Elements::Sotet10Surface::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void DRT::Elements::Sotet10Surface::Unpack(const vector<char>& data)
 {
-  //DSTraceHelper dst("Sotet10Surface::Unpack");
- 
   dserror("this Sotet10Surface element does not support communication");
   return;
 }
@@ -113,7 +98,6 @@ void DRT::Elements::Sotet10Surface::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 DRT::Elements::Sotet10Surface::~Sotet10Surface()
 {
-  //DSTraceHelper dst("Sotet10Surface::~Sotet10Surface");
   return;
 }
 
@@ -123,12 +107,10 @@ DRT::Elements::Sotet10Surface::~Sotet10Surface()
  *----------------------------------------------------------------------*/
 void DRT::Elements::Sotet10Surface::Print(ostream& os) const
 {
-  //DSTraceHelper dst("Sotet10Surface::Print");
   os << "Sotet10Surface ";
   Element::Print(os);
   return;
 }
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif // #ifdef D_SOTET10

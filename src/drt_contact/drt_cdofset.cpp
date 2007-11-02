@@ -12,7 +12,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 //#include <iostream>
 //#include <algorithm>
@@ -91,5 +90,4 @@ int CONTACT::CDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, con
 }
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

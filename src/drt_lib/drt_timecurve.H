@@ -14,7 +14,6 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #ifndef DRT_TIMECURVE_H
 #define DRT_TIMECURVE_H
@@ -289,6 +288,5 @@ namespace Utils {
 }
 }
 
-#endif
 #endif
 #endif

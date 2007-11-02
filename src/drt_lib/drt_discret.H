@@ -12,7 +12,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef DISCRET_H
 #define DISCRET_H
 
@@ -1230,5 +1229,4 @@ ostream& operator << (ostream& os, const DRT::Discretization& dis);
 
 
 #endif  // #ifndef DISCRET_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

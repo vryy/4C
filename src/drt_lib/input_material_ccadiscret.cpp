@@ -11,7 +11,6 @@ Maintainer: Lena Wiechert
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "global_inp_control2.H"
 
@@ -583,5 +582,4 @@ dstrc_exit();
 return;
 } /* end of inp_material */
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

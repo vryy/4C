@@ -11,7 +11,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "drt_parobject.H"
 
@@ -170,5 +169,4 @@ void DRT::ParObject::ExtractfromPack(int& position, const vector<char>& data, st
 
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

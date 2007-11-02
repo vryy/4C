@@ -14,7 +14,6 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #ifndef DRT_INPUTREADER_H
 #define DRT_INPUTREADER_H
@@ -316,6 +315,5 @@ private:
 
 }
 
-#endif
 #endif
 #endif

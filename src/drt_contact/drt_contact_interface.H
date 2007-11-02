@@ -14,7 +14,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef DRT_CONTACT_INTERFACE_H
 #define DRT_CONTACT_INTERFACE_H
 
@@ -202,5 +201,4 @@ ostream& operator << (ostream& os, const CONTACT::Interface& interface);
 
 
 #endif  // #ifndef DRT_CONTACT_INTERFACE_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

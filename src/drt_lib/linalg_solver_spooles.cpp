@@ -11,7 +11,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #ifdef PARALLEL
 #include "Epetra_MpiComm.h"
@@ -376,5 +375,4 @@ void LINALG::Solver::Solve_spooles(const bool reset)
   return;
 }
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

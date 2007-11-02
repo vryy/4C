@@ -18,7 +18,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #include "linalg_mlapi_operator.H"
 #include "Epetra_Vector.h"
 
@@ -391,5 +390,4 @@ MLAPI::MultiVector LINALG::AMG_Operator::Row1Norm(Operator& A)
 } 
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

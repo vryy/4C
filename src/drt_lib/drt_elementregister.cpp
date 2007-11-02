@@ -11,7 +11,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "drt_elementregister.H"
 #include "drt_dserror.H"
@@ -135,5 +134,4 @@ int DRT::ElementRegister::Initialize(DRT::Discretization& dis)
   return 0;
 } 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

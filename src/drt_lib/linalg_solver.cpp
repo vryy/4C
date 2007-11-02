@@ -11,7 +11,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #ifdef PARALLEL
 #include "Epetra_MpiComm.h"
@@ -1105,5 +1104,4 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
 
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

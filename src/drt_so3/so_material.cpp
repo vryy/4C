@@ -12,7 +12,6 @@ Maintainer: Moritz Frenzel
 *----------------------------------------------------------------------*/
 #ifdef D_SOH8
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 // This is just here to get the c++ mpi header, otherwise it would
 // use the c version included inside standardtypes.h
@@ -256,6 +255,5 @@ void DRT::Elements::So_tet10::so_tet10_mat_sel(
 
 #endif //SO_TET10
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOH8

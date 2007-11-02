@@ -11,7 +11,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "linalg_utils.H"
 #include "drt_dserror.H"
@@ -517,5 +516,4 @@ void LINALG::ApplyDirichlettoSystem(RefCountPtr<Epetra_CrsMatrix>&   A,
 
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

@@ -11,7 +11,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "drt_contact_interface.H"
 #include "drt_cdofset.H"
@@ -170,5 +169,4 @@ void CONTACT::Interface::FillComplete()
 
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

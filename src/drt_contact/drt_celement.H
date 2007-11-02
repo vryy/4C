@@ -14,7 +14,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef DRT_CELEMENT_H
 #define DRT_CELEMENT_H
 
@@ -261,5 +260,4 @@ ostream& operator << (ostream& os, const CONTACT::CElement& ele);
 
 
 #endif  // #ifndef DRT_CELEMENT_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

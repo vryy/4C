@@ -12,7 +12,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef DRT_CDOFSET_H
 #define DRT_CDOFSET_H
 
@@ -71,5 +70,4 @@ protected:
 
 
 #endif  // #ifndef DRT_CDOFSET_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

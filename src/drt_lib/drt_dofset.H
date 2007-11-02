@@ -11,7 +11,6 @@ Maintainer: Ulrich Kuettler
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef DOFSET_H
 #define DOFSET_H
 
@@ -236,5 +235,4 @@ ostream& operator << (ostream& os, const DRT::DofSet& dofset);
 
 
 #endif  // #ifndef DOFSET_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

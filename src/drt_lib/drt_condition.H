@@ -24,7 +24,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef CONDITION_H
 #define CONDITION_H
 
@@ -326,5 +325,4 @@ ostream& operator << (ostream& os, const DRT::Condition& node);
 
 
 #endif  // #ifndef CONDITION_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

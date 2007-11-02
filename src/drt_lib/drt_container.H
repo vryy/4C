@@ -18,7 +18,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef CONTAINER_H
 #define CONTAINER_H
 
@@ -349,5 +348,4 @@ ostream& operator << (ostream& os, const DRT::Container& node);
 
 
 #endif  // #ifndef CONTAINER_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

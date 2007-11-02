@@ -12,7 +12,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "drt_condition.H"
 #include "drt_element.H"
@@ -177,5 +176,4 @@ void DRT::Condition::Unpack(const vector<char>& data)
 
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

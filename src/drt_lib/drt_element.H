@@ -19,7 +19,6 @@ Maintainer: Michael Gee
 </pre>
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef ELEMENT_H
 #define ELEMENT_H
 
@@ -707,5 +706,4 @@ ostream& operator << (ostream& os, const DRT::Element& ele);
 
 
 #endif  // #ifndef ELEMENT_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

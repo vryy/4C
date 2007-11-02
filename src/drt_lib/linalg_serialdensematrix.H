@@ -15,7 +15,6 @@ Maintainer: Moritz Frenzel
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef SERIALDENSEMATRIX_H
 #define SERIALDENSEMATRIX_H
 
@@ -123,5 +122,4 @@ protected:
 
 
 #endif  // #ifndef SERIALDENSEMATRIX_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

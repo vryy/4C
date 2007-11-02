@@ -11,7 +11,6 @@ Maintainer: Axel Gerstenberger
 </pre>
 */
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef UTILS_INTEGRATION_H
 #define UTILS_INTEGRATION_H
 
@@ -142,5 +141,4 @@ inline IntegrationPoints1D getIntegrationPoints1D(
 } // namespace DRT
 
 #endif // #ifndef UTILS_INTEGRATION_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

@@ -1,6 +1,5 @@
 #ifdef D_SOH8
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 using namespace std;
 #include "so_weg6.H"
@@ -243,5 +242,4 @@ private:
 
 
 #endif /*SO_WEG6_H_*/
-#endif
 #endif

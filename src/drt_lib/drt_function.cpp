@@ -14,7 +14,6 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include <string>
 #include <sstream>
@@ -416,5 +415,4 @@ std::ostream& DRT::Utils::operator<<(std::ostream& out, const DRT::Utils::Functi
   return out;
 }
 
-#endif
 #endif

@@ -12,7 +12,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include <algorithm>
 
@@ -594,5 +593,4 @@ void DRT::Discretization::UnPackMyNodes(RefCountPtr<vector<char> > e)
   Reset();
 }
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

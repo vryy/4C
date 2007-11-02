@@ -23,7 +23,6 @@
  089 - 289-15236
  */
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "drt_element.H"
 #include "drt_discret.H"
@@ -825,5 +824,4 @@ int DRT::Utils::getDimension(
 
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

@@ -12,21 +12,12 @@ Maintainer: Moritz Frenzel
 *----------------------------------------------------------------------*/
 #ifdef D_SOCTET10
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "so_tet10.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
-
-extern "C"
-{
-#include "../headers/standardtypes.h"
-}
-#include "../drt_lib/dstrc.H"
-
-
 
 /*----------------------------------------------------------------------***
  |  ctor (public)                                              maf 04/07|
@@ -41,7 +32,6 @@ DRT::Element(id,element_sotet10line,owner),
 parent_(parent),
 lline_(lline)
 {
-  DSTraceHelper dst("Sotet10Line::Sotet10Line");
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
   return;
@@ -55,7 +45,6 @@ DRT::Element(old),
 parent_(old.parent_),
 lline_(old.lline_)
 {
-  DSTraceHelper dst("Sotet10Line::Sotet10Line");
   return;
 }
 
@@ -65,7 +54,6 @@ lline_(old.lline_)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::Elements::Sotet10Line::Clone() const
 {
-  DSTraceHelper dst("Sotet10Line::Clone");
   DRT::Elements::Sotet10Line* newelement = new DRT::Elements::Sotet10Line(*this);
   return newelement;
 }
@@ -92,7 +80,6 @@ DRT::Element::DiscretizationType DRT::Elements::Sotet10Line::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::Elements::Sotet10Line::Pack(vector<char>& data) const
 {
-  DSTraceHelper dst("Sotet10Line::Pack");
   data.resize(0);
 
   dserror("this Sotet10Line element does not support communication");
@@ -106,7 +93,6 @@ void DRT::Elements::Sotet10Line::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void DRT::Elements::Sotet10Line::Unpack(const vector<char>& data)
 {
-  DSTraceHelper dst("Sotet10Line::Unpack");
   dserror("this line element does not support communication");
   return;
 }
@@ -116,7 +102,6 @@ void DRT::Elements::Sotet10Line::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 DRT::Elements::Sotet10Line::~Sotet10Line()
 {
-  DSTraceHelper dst("Sotet10Line::~Sotet10Line");
   return;
 }
 
@@ -126,7 +111,6 @@ DRT::Elements::Sotet10Line::~Sotet10Line()
  *----------------------------------------------------------------------*/
 void DRT::Elements::Sotet10Line::Print(ostream& os) const
 {
-  DSTraceHelper dst("Sotet10Line::Print");
   os << "Sote10Line ";
   Element::Print(os);
   return;
@@ -148,6 +132,5 @@ int DRT::Elements::Sotet10Line::EvaluateNeumann(ParameterList&         params,
 
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif // #ifdef D_SOTET10

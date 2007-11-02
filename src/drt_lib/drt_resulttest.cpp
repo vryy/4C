@@ -1,6 +1,5 @@
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifdef RESULTTEST
 
 #include "drt_resulttest.H"
@@ -186,5 +185,4 @@ void ResultTestManager::TestAll()
 
 
 #endif
-#endif /* TRILINOS_PACKAGE */
 #endif /* CCADISCRET       */

@@ -12,7 +12,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "linalg_serialdensematrix.H"
 
@@ -134,5 +133,4 @@ int LINALG::SerialDenseMatrix::LightReshape(int NumRows, int NumCols)
 
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

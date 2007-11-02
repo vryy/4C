@@ -17,7 +17,6 @@ written by: Alexander Volf
 *----------------------------------------------------------------------*/
 #ifdef D_SOTET10
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef SO_TET10_H_
 #define SO_TET10_H_
 
@@ -890,6 +889,5 @@ private:
 } // namespace Elements
 } // namespace DRT
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOTET10

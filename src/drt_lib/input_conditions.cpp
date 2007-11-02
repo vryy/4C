@@ -11,7 +11,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include <ctime>
 #include <cstdlib>
@@ -2672,5 +2671,4 @@ void input_surf_volconstr(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
   return;
 };
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

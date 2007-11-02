@@ -13,7 +13,6 @@ Maintainer: Peter Gamnitzer
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef PERIODICBC_H
 #define PERIODICBC_H
 
@@ -290,5 +289,4 @@ protected:
 };
 
 #endif  // #ifndef PERIODICBC_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

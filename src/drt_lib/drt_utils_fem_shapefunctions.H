@@ -25,7 +25,6 @@
  */
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef DRT_UTILS_FEM_SHAPEFUNCTION
 #define DRT_UTILS_FEM_SHAPEFUNCTION
 
@@ -226,7 +225,6 @@ namespace Utils
 } // namespace DRT
 
 #endif  // #ifdef DRT_UTILS_FEM_SHAPEFUNCTION
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 
 

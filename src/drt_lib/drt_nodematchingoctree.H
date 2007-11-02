@@ -12,7 +12,6 @@ Maintainer: Peter Gamnitzer
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef NODEMATCHINGOCTREE_H
 #define NODEMATCHINGOCTREE_H
 
@@ -386,5 +385,4 @@ private:
 
 #endif  // not NODEMATCHINGOCTREE_H
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

@@ -17,7 +17,6 @@ Maintainer: Ulrich Kuettler
 #define DRT_RESULTTEST_H
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifdef RESULTTEST
 
 #include <Epetra_Comm.h>
@@ -120,7 +119,6 @@ namespace DRT
 }
 
 #endif
-#endif /* TRILINOS_PACKAGE */
 #endif /* CCADISCRET       */
 
 #endif

@@ -23,7 +23,6 @@ Maintainer: Moritz Frenzel
 *----------------------------------------------------------------------*/
 #ifdef D_SOH8
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 
 #include "Teuchos_RefCountPtr.hpp"
@@ -352,6 +351,5 @@ private:
 
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOH8

@@ -2,7 +2,6 @@
 \file drt_exporter.cpp
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "vector"
 #include "drt_exporter.H"
@@ -371,5 +370,4 @@ void DRT::Exporter::ConstructExporter()
 }
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

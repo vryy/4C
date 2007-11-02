@@ -14,7 +14,6 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 
 #include "drt_inputreader.H"
@@ -784,5 +783,4 @@ void NodeReader::Read()
 
 }
 
-#endif
 #endif

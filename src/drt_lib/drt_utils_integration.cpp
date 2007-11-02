@@ -10,7 +10,6 @@ Maintainer: Axel Gerstenberger
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "drt_utils_integration.H"
 #include "drt_discret.H"
@@ -528,5 +527,4 @@ DRT::Utils::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
 }
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

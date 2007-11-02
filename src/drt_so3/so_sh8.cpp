@@ -12,7 +12,6 @@ Maintainer: Moritz Frenzel
 *----------------------------------------------------------------------*/
 #ifdef D_SOH8
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "so_sh8.H"
 #include "../drt_lib/drt_discret.H"
@@ -224,6 +223,5 @@ DRT::Elements::Sosh8Register::~Sosh8Register()
 }
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOH8

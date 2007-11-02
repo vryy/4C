@@ -25,7 +25,6 @@
  */
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef DRT_UTILS_LOCAL_CONNECTIVITY_MATRICES_H
 #define DRT_UTILS_LOCAL_CONNECTIVITY_MATRICES_H
 
@@ -350,5 +349,4 @@ namespace Utils
 } // namespace DRT
 
 #endif  // #ifdef DRT_UTILS_LOCAL_CONNECTIVITY_MATRICES_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

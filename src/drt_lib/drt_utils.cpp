@@ -11,7 +11,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #ifdef PARALLEL
 #ifdef LINUX_MUENCH
@@ -855,5 +854,4 @@ void DRT::Utils::AllToAllCommunication( const Epetra_Comm& comm,
 #endif // PARALLEL
 }
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

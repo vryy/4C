@@ -11,7 +11,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include <cstdlib>
 #include <ctime>
@@ -473,5 +472,4 @@ void inpfield_ccadiscret(DRT::Problem& problem, DRT::DatFileReader& reader)
   return;
 } // void inpfield_ccadiscret()
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

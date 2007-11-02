@@ -11,7 +11,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef LINALG_UTILS_H
 #define LINALG_UTILS_H
 
@@ -325,5 +324,4 @@ namespace LINALG
 
 
 #endif  // #ifndef LINALG_UTILS_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

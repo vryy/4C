@@ -11,7 +11,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "drt_cnode.H"
 #include "../drt_lib/drt_dserror.H"
@@ -138,5 +137,4 @@ void CONTACT::CNode::Unpack(const vector<char>& data)
 }
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

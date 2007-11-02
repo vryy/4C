@@ -23,7 +23,6 @@
  089 - 289-15236
  */
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "drt_element.H"
 #include "drt_discret.H"
@@ -2130,5 +2129,4 @@ void DRT::Utils::shape_function_1D_deriv2(
   shape_function_1D_deriv2(d,r,distype);
 }
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

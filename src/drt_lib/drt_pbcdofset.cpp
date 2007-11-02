@@ -13,7 +13,6 @@ Maintainer: Peter Gamnitzer
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "drt_pbcdofset.H"
 #include "drt_discret.H"
@@ -345,5 +344,4 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const Discretization& dis, const int 
 }
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

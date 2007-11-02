@@ -22,7 +22,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef EXPORTER_H
 #define EXPORTER_H
 
@@ -906,5 +905,4 @@ template<typename T> void DRT::Exporter::Export(map<int,vector<T> >& data)
 
 
 #endif  // #ifndef EXPORTER_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

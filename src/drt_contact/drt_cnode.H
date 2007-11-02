@@ -16,7 +16,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef CNODE_H
 #define CNODE_H
 
@@ -169,5 +168,4 @@ ostream& operator << (ostream& os, const CONTACT::CNode& cnode);
 
 
 #endif  // #ifndef CNODE_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

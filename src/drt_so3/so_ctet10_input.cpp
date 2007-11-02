@@ -14,7 +14,6 @@ writen by : Alexander Volf
 *----------------------------------------------------------------------*/
 #ifdef D_SOCTET10
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 // This is just here to get the c++ mpi header, otherwise it would
 // use the c version included inside standardtypes.h
@@ -111,6 +110,5 @@ bool DRT::Elements::So_tet10::ReadElement()
 } // So_tet10::ReadElement()
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOTET10

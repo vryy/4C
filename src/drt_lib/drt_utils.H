@@ -11,7 +11,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef UTILS_H
 #define UTILS_H
 
@@ -189,5 +188,4 @@ namespace Utils
 
 
 #endif  // #ifndef UTILS_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

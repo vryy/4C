@@ -15,7 +15,6 @@ Maintainer: Moritz Frenzel
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef SERIALDENSEVECTOR_H
 #define SERIALDENSEVECTOR_H
 
@@ -124,5 +123,4 @@ protected:
 
 
 #endif  // #ifndef SERIALDENSEVECTOR_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

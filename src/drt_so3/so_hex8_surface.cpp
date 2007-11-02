@@ -32,7 +32,6 @@ DRT::Element(id,element_soh8surface,owner),
 parent_(parent),
 lsurface_(lsurface)
 {
-  //DSTraceHelper dst("Soh8Surface::Soh8Surface");
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
   return;
@@ -46,7 +45,6 @@ DRT::Element(old),
 parent_(old.parent_),
 lsurface_(old.lsurface_)
 {
-  //DSTraceHelper dst("Soh8Surface::Soh8Surface");
   return;
 }
 
@@ -56,7 +54,6 @@ lsurface_(old.lsurface_)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::Elements::Soh8Surface::Clone() const
 {
-  //DSTraceHelper dst("Soh8Surface::Clone");
   DRT::Elements::Soh8Surface* newelement = new DRT::Elements::Soh8Surface(*this);
   return newelement;
 }
@@ -76,7 +73,6 @@ DRT::Element::DiscretizationType DRT::Elements::Soh8Surface::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::Elements::Soh8Surface::Pack(vector<char>& data) const
 {
-  //DSTraceHelper dst("Soh8Surface::Pack");
   data.resize(0);
   dserror("this Soh8Surface element does not support communication");
 
@@ -89,7 +85,6 @@ void DRT::Elements::Soh8Surface::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void DRT::Elements::Soh8Surface::Unpack(const vector<char>& data)
 {
-  //DSTraceHelper dst("Soh8Surface::Unpack");
   dserror("this Soh8Surface element does not support communication");
   return;
 }
@@ -99,7 +94,6 @@ void DRT::Elements::Soh8Surface::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 DRT::Elements::Soh8Surface::~Soh8Surface()
 {
-  //DSTraceHelper dst("Soh8Surface::~Soh8Surface");
   return;
 }
 
@@ -109,7 +103,6 @@ DRT::Elements::Soh8Surface::~Soh8Surface()
  *----------------------------------------------------------------------*/
 void DRT::Elements::Soh8Surface::Print(ostream& os) const
 {
-  //DSTraceHelper dst("Soh8Surface::Print");
   os << "Soh8Surface ";
   Element::Print(os);
   return;

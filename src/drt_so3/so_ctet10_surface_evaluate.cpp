@@ -14,7 +14,6 @@ written by : Alexander Volf
 *----------------------------------------------------------------------*/
 #ifdef D_SOCTET10
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "so_tet10.H"
 #include "../drt_lib/linalg_utils.H"
@@ -159,6 +158,5 @@ void DRT::Elements::Sotet10Surface::sotet10_surface_shapefunc(
 }
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif // #ifdef D_SOTET10

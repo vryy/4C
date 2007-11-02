@@ -18,7 +18,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef LINALG_MLAPI_OPERATOR_H
 #define LINALG_MLAPI_OPERATOR_H
 
@@ -258,5 +257,4 @@ private:
 
 
 #endif // LINALG_MLAPI_OPERATOR_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

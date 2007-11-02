@@ -19,7 +19,6 @@ Maintainer: Peter Gamnitzer
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 
 #include "drt_periodicbc.H"
@@ -892,5 +891,4 @@ PeriodicBoundaryConditions::~PeriodicBoundaryConditions()
   return;
 }// ~PeriodicBoundaryConditions()
 
-#endif /* TRILINOS_PACKAGE */
 #endif /* CCADISCRET       */

@@ -11,7 +11,6 @@ Maintainer: Ulrrich Kuettler
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include <iostream>
 #include <algorithm>
@@ -328,5 +327,4 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int sta
 }
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

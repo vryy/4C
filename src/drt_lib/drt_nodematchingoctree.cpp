@@ -13,7 +13,6 @@ Maintainer: Peter Gamnitzer
 *----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include"drt_nodematchingoctree.H"
 
@@ -993,5 +992,4 @@ DRT::Utils::OctreeElement::~OctreeElement()
 {
   return;
 }// ~OctreeElement()
-#endif /* TRILINOS_PACKAGE */
 #endif /* CCADISCRET       */

@@ -11,7 +11,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #ifndef GLOBAL_INP_CONTROL2_H
 #define GLOBAL_INP_CONTROL2_H
@@ -99,5 +98,4 @@ void drt_problem_done();
 
 #endif  /* #ifndef GLOBAL_INP_CONTROL2_H */
 
-#endif  /* #ifdef TRILINOS_PACKAGE */
 #endif  /* #ifdef CCADISCRET */

@@ -18,7 +18,6 @@ Maintainer: Peter Gamnitzer
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef PBCDOFSET_H
 #define PBCDOFSET_H
 
@@ -123,5 +122,4 @@ protected:
 
 
 #endif  // #ifndef PBCDOFSET_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

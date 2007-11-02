@@ -14,7 +14,6 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include <iostream>
 #include <vector>
@@ -132,5 +131,4 @@ namespace Utils {
 }
 }
 
-#endif
 #endif

@@ -106,7 +106,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef PAROBJECT_H
 #define PAROBJECT_H
 
@@ -482,5 +481,4 @@ public:
 
 
 #endif  // #ifndef PAROBJECT_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
