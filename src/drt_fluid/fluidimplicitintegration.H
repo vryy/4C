@@ -14,7 +14,6 @@ Maintainer: Peter Gamnitzer
 *----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef FLUIDIMPLICITINTEGRATION_H
 #define FLUIDIMPLICITINTEGRATION_H
 
@@ -307,5 +306,4 @@ protected:
 
 
 #endif  // #ifndef FLUIDIMPLICITINTEGRATION_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

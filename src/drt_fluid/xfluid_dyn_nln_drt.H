@@ -11,7 +11,6 @@ Maintainer: Axel Gerstenberger
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef D_FLUID
 
 #ifndef XFLUID_DYN_NLN_DRT_H
 #define XFLUID_DYN_NLN_DRT_H
@@ -74,5 +73,4 @@ void xdyn_fluid_drt();
 
 
 #endif  /* #ifndef XFLUID_DYN_NLN_DRT_H */
-#endif
 #endif  /* #ifdef CCADISCRET */

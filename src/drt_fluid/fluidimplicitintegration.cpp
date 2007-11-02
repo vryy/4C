@@ -18,7 +18,6 @@ Maintainer: Peter Gamnitzer
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "fluidimplicitintegration.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
@@ -1734,5 +1733,4 @@ vector<double> FluidImplicitTimeInt::LIFTDRAG_one( const DRT::Condition cond)
 	return values;
 }
 
-#endif /* TRILINOS_PACKAGE */
 #endif /* CCADISCRET       */

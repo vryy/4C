@@ -15,8 +15,6 @@ Maintainer: Peter Gamnitzer
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
-#ifdef D_FLUID
 
 #include "fluid_genalpha_integration.H"
 
@@ -1533,6 +1531,4 @@ void FluidGenAlphaIntegration::EvaluateErrorComparedToAnalyticalSol()
 
 
 
-#endif /* D_FLUID          */
-#endif /* TRILINOS_PACKAGE */
-#endif /* CCADISCRET       */
+#endif

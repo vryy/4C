@@ -11,8 +11,6 @@ Maintainer: Volker Gravemeier
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
-#ifdef D_FLUID
 
 #ifndef CONDIF_DRT_H
 #define CONDIF_DRT_H
@@ -75,6 +73,4 @@ void dyn_condif_drt();
 
 
 #endif  /* #ifndef CONDIF_DRT_H */
-#endif  /* #ifdef D_FLUID */
-#endif  /* #ifdef TRILINOS_PACKAGE */
 #endif  /* #ifdef CCADISCRET */

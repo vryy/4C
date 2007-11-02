@@ -14,7 +14,6 @@ Maintainer: Volker Gravemeier
 *----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef CONDIFIMPLICITINTEGRATION_H
 #define CONDIFIMPLICITINTEGRATION_H
 
@@ -219,5 +218,4 @@ protected:
 
 
 #endif  // #ifndef CONDIFIMPLICITINTEGRATION_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

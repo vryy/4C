@@ -11,8 +11,6 @@ Maintainer: Peter Gamnitzer
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
-#ifdef D_FLUID
 
 #ifndef FLUID_DYN_NLN_DRT_H
 #define FLUID_DYN_NLN_DRT_H
@@ -75,6 +73,4 @@ void dyn_fluid_drt();
 
 
 #endif  /* #ifndef FLUID_DYN_NLN_DRT_H */
-#endif  /* #ifdef D_FLUID */
-#endif  /* #ifdef TRILINOS_PACKAGE */
 #endif  /* #ifdef CCADISCRET */

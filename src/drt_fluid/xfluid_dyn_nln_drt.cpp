@@ -17,7 +17,6 @@ Maintainer: Axel Gerstenberger
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef D_FLUID
 
 #include <ctime>
 #include <cstdlib>
@@ -369,7 +368,7 @@ void xdyn_fluid_drt()
   }
 
   return;
+
 } // end of dyn_fluid_drt()
 
-#endif
 #endif  // #ifdef CCADISCRET

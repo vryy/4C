@@ -18,7 +18,6 @@ Maintainer: Volker Gravemeier
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "condifimplicitintegration.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
@@ -921,5 +920,4 @@ CondifImplicitTimeInt::~CondifImplicitTimeInt()
 }// CondifImplicitTimeInt::~CondifImplicitTimeInt::
 
 
-#endif /* TRILINOS_PACKAGE */
 #endif /* CCADISCRET       */

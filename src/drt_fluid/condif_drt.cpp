@@ -17,8 +17,6 @@ Maintainer: Volker Gravemeier
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
-#ifdef D_FLUID
 
 #include <ctime>
 #include <cstdlib>
@@ -197,6 +195,4 @@ void dyn_condif_drt()
 
 } // end of dyn_condif_drt()
 
-#endif  // #ifdef D_FLUID
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

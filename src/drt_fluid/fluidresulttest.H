@@ -17,7 +17,6 @@ Maintainer: Ulrich Kuettler
 #define FLUIDRESULTTEST_H
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifdef RESULTTEST
 
 #include "../drt_lib/drt_resulttest.H"
@@ -66,7 +65,6 @@ private:
 
 
 #endif
-#endif /* TRILINOS_PACKAGE */
 #endif /* CCADISCRET       */
 
 #endif

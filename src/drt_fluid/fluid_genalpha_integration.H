@@ -46,7 +46,6 @@ Maintainer: Peter Gamnitzer
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef FLUID_GENALPHA_INTEGRATION_H
 #define FLUID_GENALPHA_INTEGRATION_H
 
@@ -426,5 +425,4 @@ private:
 
 #endif  // not FLUID_GENALPHA_INTEGRATION_H
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

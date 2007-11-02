@@ -31,7 +31,6 @@ Maintainer: Peter Gamnitzer
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "turbulence_statistics.H"
 
@@ -690,5 +689,4 @@ void TurbulenceStatistics::ClearStatistics()
   
 
 
-#endif /* TRILINOS_PACKAGE */
 #endif /* CCADISCRET       */
