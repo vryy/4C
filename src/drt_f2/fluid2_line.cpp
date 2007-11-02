@@ -12,7 +12,6 @@ Maintainer: Peter Gamnitzer
 *----------------------------------------------------------------------*/
 #ifdef D_FLUID2
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "fluid2.H"
 #include "../drt_lib/linalg_utils.H"
@@ -121,6 +120,5 @@ void DRT::Elements::Fluid2Line::Print(ostream& os) const
 
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif // #ifdef D_FLUID2

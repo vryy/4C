@@ -14,7 +14,6 @@ Maintainer: Georg Bauer
 */
 #ifdef D_FLUID3
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef DRT_FLUID3_H
 #define DRT_FLUID3_H
 
@@ -1280,6 +1279,5 @@ private:
 
 
 #endif  // #ifndef FLUID3_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_FLUID3

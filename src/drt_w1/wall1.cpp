@@ -12,7 +12,6 @@ Maintainer: Markus Gitterle
 *----------------------------------------------------------------------*/
 #ifdef D_WALL1
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "wall1.H"
 #include "../drt_lib/drt_discret.H"
@@ -355,6 +354,5 @@ int DRT::Elements::Wall1Register::Initialize(DRT::Discretization& dis)
 }
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_WALL1

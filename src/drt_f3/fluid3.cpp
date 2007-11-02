@@ -12,7 +12,6 @@ Maintainer: Georg Bauer
 *----------------------------------------------------------------------*/
 #ifdef D_FLUID3
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "fluid3.H"
 #include "../drt_lib/drt_discret.H"
@@ -601,6 +600,5 @@ void DRT::Elements::Fluid3Register::Print(ostream& os) const
 
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_FLUID3

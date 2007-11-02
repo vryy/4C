@@ -12,7 +12,6 @@ Maintainer: Peter Gmanitzer
 *----------------------------------------------------------------------*/
 #ifdef D_FLUID2
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "fluid2.H"
 #include "../drt_lib/linalg_utils.H"
@@ -313,6 +312,5 @@ return;
 } // DRT::Elements::Fluid2Line::IntegrateShapeFunction
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif // #ifdef D_FLUID2

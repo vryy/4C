@@ -27,7 +27,6 @@ The new filters can be used in parallel.
 #define POST_DRT_COMMON_H
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include <vector>
 #include <string>
@@ -365,6 +364,5 @@ inline int PostProblem::num_discr()
 }
 
 
-#endif
 #endif
 #endif

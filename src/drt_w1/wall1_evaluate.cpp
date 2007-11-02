@@ -12,7 +12,6 @@ Maintainer: Markus Gitterle
 *----------------------------------------------------------------------*/
 #ifdef D_WALL1
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 // This is just here to get the c++ mpi header, otherwise it would
 // use the c version included inside standardtypes.h
@@ -963,6 +962,5 @@ DRT::Utils::GaussRule2D DRT::Elements::Wall1::getGaussrule()
 }
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_WALL1

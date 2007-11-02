@@ -12,7 +12,6 @@ Maintainer: Volker Gravemeier
 *----------------------------------------------------------------------*/
 #ifdef D_FLUID2
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "condif2.H"
 #include "../drt_lib/linalg_utils.H"
@@ -120,6 +119,5 @@ void DRT::Elements::Condif2Line::Print(ostream& os) const
 
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif // #ifdef D_FLUID2

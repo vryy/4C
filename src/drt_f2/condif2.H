@@ -15,7 +15,6 @@ Maintainer: Volker Gravemeier
 *----------------------------------------------------------------------*/
 #ifdef D_FLUID2
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef CONDIF2_H
 #define CONDIF2_H
 
@@ -730,6 +729,5 @@ private:
 
 
 #endif  // #ifndef FLUID2_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_FLUID2

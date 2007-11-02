@@ -15,7 +15,6 @@ Maintainer: Peter Gamnitzer
 *----------------------------------------------------------------------*/
 #ifdef D_FLUID3
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "fluid3.H"
 #include "../drt_lib/linalg_utils.H"
@@ -419,6 +418,5 @@ void DRT::Elements::Fluid3Surface::IntegrateShapeFunction(ParameterList& params,
 return;
 } // DRT::Elements::Fluid3Surface::IntegrateShapeFunction
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif // #ifdef D_FLUID3

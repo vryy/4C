@@ -15,7 +15,6 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include <string>
 #include <Teuchos_CommandLineProcessor.hpp>
@@ -397,5 +396,4 @@ int main(int argc, char** argv)
   return 0;
 }
 
-#endif
 #endif

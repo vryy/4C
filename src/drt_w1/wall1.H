@@ -15,7 +15,6 @@ Maintainer: Markus Gitterle
 *----------------------------------------------------------------------*/
 #ifdef D_WALL1
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef WALL1_H
 #define WALL1_H
 
@@ -715,6 +714,5 @@ private:
 } // namespace DRT
 
 #endif  // #ifndef WALL1_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_WALL1

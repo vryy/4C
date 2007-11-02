@@ -15,7 +15,6 @@ Maintainer: Peter Gamnitzer
 *----------------------------------------------------------------------*/
 #ifdef D_FLUID2
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef FLUID2_H
 #define FLUID2_H
 
@@ -750,6 +749,5 @@ private:
 
 
 #endif  // #ifndef FLUID2_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_FLUID2

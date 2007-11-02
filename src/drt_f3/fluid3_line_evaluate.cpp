@@ -12,7 +12,6 @@ Maintainer: Axel Gerstenberger
 *----------------------------------------------------------------------*/
 #ifdef D_FLUID3
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "fluid3.H"
 #include "../drt_lib/linalg_utils.H"
@@ -87,6 +86,5 @@ int DRT::Elements::Fluid3Line::EvaluateNeumann(	ParameterList& params,
 
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif // #ifdef D_FLUID3

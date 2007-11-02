@@ -19,7 +19,6 @@ filter. But to link the filter stubs of these functions are needed.
 /*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "post_drt_common.H"
 #include "../drt_s8/shell8.H"
@@ -140,5 +139,4 @@ void MAT::MicroMaterial::Evaluate(const Epetra_SerialDenseMatrix* defgrd,
   dserror("MAT::MicroMaterial::Evaluate not available");
 }
 
-#endif
 #endif

@@ -12,7 +12,6 @@ Maintainer: Michael Gee
 *----------------------------------------------------------------------*/
 #ifdef D_FLUID3
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 // This is just here to get the c++ mpi header, otherwise it would
 // use the c version included inside standardtypes.h
@@ -238,6 +237,5 @@ bool DRT::Elements::Fluid3::ReadElement()
 } // Fluid3::ReadElement()
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_FLUID3

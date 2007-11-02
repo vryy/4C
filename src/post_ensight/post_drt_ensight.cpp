@@ -13,7 +13,6 @@
  */
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include <iostream>
 #include <sstream>
@@ -956,5 +955,4 @@ int main(
     return 0;
 }
 
-#endif
 #endif
