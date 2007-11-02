@@ -14,7 +14,6 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include <iostream>
 #include <sstream>
@@ -90,5 +89,4 @@ IO::MicroDiscretizationWriter::~MicroDiscretizationWriter()
   fclose(cf_);
 }
 
-#endif
 #endif

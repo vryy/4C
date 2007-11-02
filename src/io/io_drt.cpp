@@ -14,7 +14,6 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include <iostream>
 #include <sstream>
@@ -838,5 +837,4 @@ void IO::DiscretizationWriter::WriteMesh(int step, double time)
 #endif
 }
 
-#endif
 #endif

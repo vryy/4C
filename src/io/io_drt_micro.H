@@ -17,7 +17,6 @@ Maintainer: Ulrich Kuettler
 #define IO_DRT_MICRO_H
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include <Teuchos_RefCountPtr.hpp>
 #include <Epetra_BlockMap.h>
@@ -39,8 +38,6 @@ extern "C" {
 #include "../headers/standardtypes.h"
 #include "../pss_full/pss_table.h"
 }
-
-#include "../drt_lib/dstrc.H" /* needs standardtypes.h */
 
 /// IO: input/output facility
 namespace IO
@@ -72,6 +69,5 @@ public:
 
 }
 
-#endif
 #endif
 #endif

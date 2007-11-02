@@ -1,5 +1,4 @@
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifdef BINIO
 
 #include <iostream>
@@ -339,6 +338,5 @@ void IO::HDFReader::CalculateRange(int new_proc_num, int my_id, int& start, int&
   }
 }
 
-#endif
 #endif
 #endif

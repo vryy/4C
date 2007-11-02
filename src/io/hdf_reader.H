@@ -17,7 +17,6 @@ Maintainer: Ulrich Kuettler
 #define HDF_READER_H
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifdef BINIO
 
 #include <H5LT.h>
@@ -36,7 +35,6 @@ Maintainer: Ulrich Kuettler
 extern "C" {
 #include "../headers/standardtypes.h"
 }
-#include "../drt_lib/dstrc.H"
 
 #ifdef PARALLEL
 #include <Epetra_MpiComm.h>
@@ -178,7 +176,6 @@ private:
 };
 }
 
-#endif
 #endif
 #endif
 #endif // HDF_READER_H
