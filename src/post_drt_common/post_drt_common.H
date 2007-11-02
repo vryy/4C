@@ -47,8 +47,6 @@ extern "C" {
 #include "../pss_full/pss_table_iter.h"
 }
 
-#include "../drt_lib/dstrc.H" /* needs standardtypes.h */
-
 #ifdef PARALLEL
 #include <Epetra_MpiComm.h>
 #endif

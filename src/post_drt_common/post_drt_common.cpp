@@ -364,7 +364,6 @@ void PostProblem::setup_filter(string control_file_name, string output_name)
  *----------------------------------------------------------------------*/
 void PostProblem::read_meshes()
 {
-  DSTraceHelper dst("PostProblem::read_mesh");
   SYMBOL* mesh = map_find_symbol(&control_table_,"field");
   if (mesh == NULL)
     dserror("No field found.");
@@ -606,7 +605,6 @@ PostResult::~PostResult()
  *----------------------------------------------------------------------*/
 int PostResult::next_result()
 {
-  DSTraceHelper("PostResult::next_result");
   PostProblem* problem = field_->problem();
   int ret = 0;
 
@@ -675,7 +673,6 @@ int PostResult::match_field_result(MAP* result_group)
  *----------------------------------------------------------------------*/
 void PostResult::close_result_files()
 {
-  DSTraceHelper("PostResult::close_result_files");
   file_.Close();
 }
 

@@ -8,7 +8,5 @@ extern "C" {
 #include "../headers/standardtypes.h"
 }
 
-#include "../drt_lib/dstrc.H" /* needs standardtypes.h */
-
 #endif
 #endif
