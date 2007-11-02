@@ -148,23 +148,6 @@ void DRT::Elements::So_hex8::soh8_stress(vector<double>& disp,
     glstrain(4) = cauchygreen(1,2);
     glstrain(5) = cauchygreen(2,0);
 
-    // EAS technology: "enhance the strains"  ----------------------------- EAS
-    if (eastype_ != soh8_easnone) {
-      // get EAS matrix M at current gausspoint gp
-      M.Shape(NUMSTR_SOH8,neas_);
-      for (int m=0; m<NUMSTR_SOH8; ++m) {
-        for (int n=0; n<neas_; ++n) {
-          M(m,n)=(*M_GP)(NUMSTR_SOH8*gp+m,n);
-        }
-      }
-      // map local M to global, also enhancement is refered to element origin
-      // M = detJ0/detJ T0^{-T} . M
-      Epetra_SerialDenseMatrix Mtemp(M); // temp M for Matrix-Matrix-Product
-      M.Multiply('N','N',detJ0/detJ,T0invT,Mtemp,0.0);
-      // add enhanced strains = M . alpha to GL strains to "unlock" element
-      glstrain.Multiply('N','N',1.0,M,(*alpha),1.0);
-    } // ------------------------------------------------------------------ EAS
-
     /* non-linear B-operator (may so be called, meaning
     ** of B-operator is not so sharp in the non-linear realm) *
     ** B = F . Bl *
