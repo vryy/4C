@@ -899,12 +899,8 @@ for (i=0; i<genprob.numfld; i++)
    switch(actfield->fieldtyp)
    {
        case fluid:
-#ifdef D_FLUID
          alldyn[i].fdyn = (FLUID_DYNAMIC*)CCACALLOC(1,sizeof(FLUID_DYNAMIC));
          inpctr_dyn_fluid(alldyn[i].fdyn);
-#else
-         dserror("General FLUID problem not defined in Makefile!!!");
-#endif
          break;
        case ale:
 #ifdef D_ALE
@@ -1099,8 +1095,6 @@ dstrc_exit();
 #endif
 return;
 } /* end of inpctr_dyn_struct */
-
-#ifdef D_FLUID
 
 /*!---------------------------------------------------------------------
 \brief input of the FLUID DYNAMIC block in the input-file
@@ -1681,8 +1675,6 @@ dstrc_exit();
 #endif
 return;
 } /* end of inpctr_dyn_fluid */
-
-#endif
 
 #ifdef D_FSI
 
