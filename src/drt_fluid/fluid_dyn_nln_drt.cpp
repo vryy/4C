@@ -129,7 +129,9 @@ void dyn_fluid_drt()
   // set some pointers and variables
   // -------------------------------------------------------------------
   SOLVAR        *actsolv  = &solv[0];
-
+  // this warning can be removed, if we can not fallinto the trap of choosing TIMETYP in awrong way
+  // a.ger 11/07
+  dsassert(genprob.timetyp==time_dynamic, "alldyn not allocated!!!\n For stationary computations, choose TIMETYP Dynamic and switch time integration for fluid to stationary instead");
   FLUID_DYNAMIC *fdyn     = alldyn[0].fdyn;
   fdyn->step              =   0;
   fdyn->acttime           = 0.0;

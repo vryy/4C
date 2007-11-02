@@ -175,17 +175,12 @@ void xdyn_fluid_drt()
   SOLVAR        *fluidsolv  = &solv[genprob.numff];
   SOLVAR        *solidsolv  = &solv[genprob.numsf];
 
-  cout << "\n solvar done\n";
-  exit(0);
+  dsassert(genprob.timetyp==time_dynamic, "alldyn not allocated!!!\n For stationary computations, choose TIMETYP Dynamic and switch time integration for fluid to stationary instead");
   FLUID_DYNAMIC *fdyn     = alldyn[genprob.numff].fdyn;
   STRUCT_DYNAMIC *sdyn    = alldyn[genprob.numsf].sdyn;
   
-  cout << "\n fdyn gemacht\n";
-  
   fdyn->step              =   0;
   fdyn->acttime           = 0.0;
-  
-  cout << "\n setup complete\n";
   
   // -------------------------------------------------------------------
   // create a solver
