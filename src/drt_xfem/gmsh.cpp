@@ -57,7 +57,7 @@ string GMSH::elementToString(const double scalar, DRT::Element* ele)
     return pos_array_string.str();
 }
 
-string GMSH::cellToString(const double scalar, const DomainIntCell cell, DRT::Element* ele)
+string GMSH::cellToString(const double scalar, const DomainIntCell& cell, DRT::Element* ele)
 {
     stringstream pos_array_string;
     pos_array_string << "SS(";
@@ -109,13 +109,14 @@ string GMSH::cellToString(const double scalar, const DomainIntCell cell, DRT::El
     return pos_array_string.str();
 };
 
-string GMSH::cellToString(const double scalar, const BoundaryIntCell cell, DRT::Element* ele)
+string GMSH::cellToString(const double scalar, const BoundaryIntCell& cell, DRT::Element* ele)
 {
     stringstream pos_array_string;
-    pos_array_string << "SS(";
+    pos_array_string << "SS2(";
+    //pos_array_string << "SS(";
     
     const int nsd = 3;
-    const int nen = 3;
+    const int nen = 10;
     const DRT::Element::DiscretizationType distype = ele->Shape();
     
     // coordinates

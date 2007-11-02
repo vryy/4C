@@ -30,9 +30,9 @@ namespace GMSH
 
 std::string elementToString(const double scalar, DRT::Element* ele);
 
-std::string cellToString(const double scalar, const DomainIntCell ele, DRT::Element* ele);
+std::string cellToString(const double scalar, const DomainIntCell& ele, DRT::Element* ele);
 
-std::string cellToString(const double scalar, const BoundaryIntCell ele, DRT::Element* ele);
+std::string cellToString(const double scalar, const BoundaryIntCell& ele, DRT::Element* ele);
 
 std::string disToString(const std::string s, const double scalar, RefCountPtr<DRT::Discretization> dis);
 
