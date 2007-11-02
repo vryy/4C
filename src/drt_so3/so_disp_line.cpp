@@ -12,7 +12,6 @@ Maintainer: Axel Gerstenberger
 *----------------------------------------------------------------------*/
 #ifdef D_SOH8
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "so_disp.H"
 #include "../drt_lib/linalg_utils.H"
@@ -131,6 +130,5 @@ void DRT::Elements::SoDispLine::Print(ostream& os) const
 
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif // #ifdef D_FLUID3
+#endif // #ifdef D_SOH8
