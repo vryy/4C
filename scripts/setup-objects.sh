@@ -48,6 +48,7 @@ fi
 if grep '^[[:blank:]]*D_FLUID2' "$definefile" 2>&1 > /dev/null ; then
     if [ "x$OBJ_FLUID" = "x0" ] ; then
         OBJECTS="$OBJECTS \$(OBJS_FLUID2) \$(OBJS_FLUID) \$(OBJS_DRT_F2) \$(OBJS_DRT_F2_LIB)"
+        DEFINES="$DEFINES -DD_FLUID"
         OBJ_FLUID=1
     else
         OBJECTS="$OBJECTS \$(OBJS_FLUID2) \$(OBJS_DRT_F2) \$(OBJS_DRT_F2_LIB)"
@@ -58,6 +59,7 @@ fi
 if grep '^[[:blank:]]*FLUID2_ML' "$definefile" 2>&1 > /dev/null ; then
     if [ "x$OBJ_FLUID" = "x0" ] ; then
         OBJECTS="$OBJECTS \$(OBJS_F2ML) \$(OBJS_FLUID)"
+        DEFINES="$DEFINES -DD_FLUID"
         OBJ_FLUID=1
     else
         OBJECTS="$OBJECTS \$(OBJS_F2ML)"
