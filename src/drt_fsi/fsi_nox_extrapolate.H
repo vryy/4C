@@ -1,6 +1,8 @@
 #ifndef FSI_NOX_EXTRAPOLATE_H
 #define FSI_NOX_EXTRAPOLATE_H
 
+#ifdef TRILINOS_PACKAGE
+
 #include <NOX_LineSearch_Generic.H> // base class
 #include <NOX_Utils.H>
 #include <Teuchos_RefCountPtr.hpp>
@@ -53,4 +55,5 @@ private:
   }
 }
 
+#endif
 #endif

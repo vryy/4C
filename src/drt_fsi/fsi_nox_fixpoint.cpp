@@ -1,4 +1,6 @@
 
+#ifdef TRILINOS_PACKAGE
+
 #include "fsi_nox_fixpoint.H"
 #include <NOX_GlobalData.H>
 #include <NOX_Abstract_Group.H>
@@ -57,3 +59,5 @@ void NOX::FSI::FixPoint::throwError(const string& functionName,
                     << " - " << errorMsg << endl;
     throw "NOX Error";
 }
+
+#endif

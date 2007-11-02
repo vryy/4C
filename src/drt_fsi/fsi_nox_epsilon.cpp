@@ -1,4 +1,6 @@
 
+#ifdef TRILINOS_PACKAGE
+
 #include "fsi_nox_epsilon.H"
 
 #include <NOX_GlobalData.H>
@@ -182,3 +184,5 @@ void NOX::FSI::EpsilonExtrapolation::throwError(const string& functionName,
                     << " - " << errorMsg << endl;
     throw "NOX Error";
 }
+
+#endif

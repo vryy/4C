@@ -1,4 +1,5 @@
 
+#ifdef TRILINOS_PACKAGE
 
 #include "fsi_nox_extrapolate.H"
 
@@ -120,3 +121,5 @@ bool NOX::FSI::Extrapolate::compute(Abstract::Group& grp, double& step,
   }
   return true;
 }
+
+#endif

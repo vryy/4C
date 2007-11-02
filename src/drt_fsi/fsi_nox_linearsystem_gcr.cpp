@@ -1,6 +1,5 @@
 #ifdef CCADISCRET
 
-#include <algorithm>
 #include <vector>
 
 #include <Epetra_CrsMatrix.h>
@@ -129,8 +128,7 @@ bool NOX::FSI::LinearSystemGCR::applyJacobianInverse(Teuchos::ParameterList &p,
     status = SolveGMRES(input, result, maxit, tol,
                         p.get("Size of Krylov Subspace", 300));
   else if (linearSolver == "GCR")
-    status = SolveGCR(input, result, maxit, tol,
-                      p.get("Keep Krylov Vectors", 15));
+    status = SolveGCR(input, result, maxit, tol);
   else
   {
     utils.out() << "ERROR: NOX::FSI::LinearSystemGCR::applyJacobianInverse" << endl
@@ -169,7 +167,7 @@ bool NOX::FSI::LinearSystemGCR::applyJacobianInverse(Teuchos::ParameterList &p,
 
 int NOX::FSI::LinearSystemGCR::SolveGCR(const NOX::Epetra::Vector &b,
                                         NOX::Epetra::Vector &x,
-                                        int& maxit, double& tol, unsigned keep)
+                                        int& maxit, double& tol)
 {
   NOX::Epetra::Vector r(x, NOX::ShapeCopy);
   NOX::Epetra::Vector tmp(x, NOX::ShapeCopy);
@@ -191,32 +189,11 @@ int NOX::FSI::LinearSystemGCR::SolveGCR(const NOX::Epetra::Vector &b,
   std::vector<Teuchos::RefCountPtr< NOX::Epetra::Vector > >& u = u_;
   std::vector<Teuchos::RefCountPtr< NOX::Epetra::Vector > >& c = c_;
 
+#if 1
   // reset krylov space
-  if (keep==0)
-  {
-    u.clear();
-    c.clear();
-  }
-
-  // remove some directions
-  else if (c.size() > keep)
-  {
-    std::vector<double> alpha(c.size());
-    for (unsigned i=0; i<c.size(); ++i)
-    {
-      alpha[i] = c[i]->innerProduct(r);
-    }
-
-    while (alpha.size() > keep)
-    {
-      std::vector<double>::iterator pos = std::min_element(alpha.begin(),alpha.end());
-      unsigned i = &(*pos) - &alpha[0];
-
-      alpha.erase(pos);
-      u.erase(u.begin()+i);
-      c.erase(c.begin()+i);
-    }
-  }
+  u.clear();
+  c.clear();
+#endif
 
   int k = static_cast<int>(u.size());
 

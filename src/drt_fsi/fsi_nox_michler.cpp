@@ -1,4 +1,6 @@
 
+#ifdef TRILINOS_PACKAGE
+
 #include "fsi_nox_michler.H"
 
 #include "NOX_Common.H"
@@ -272,3 +274,4 @@ bool NOX::FSI::Michler::compute(Abstract::Group& grp, double& step,
 
 #endif
 
+#endif
