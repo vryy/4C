@@ -22,10 +22,8 @@ Maintainer: Michael Gee
 
 extern "C"
 {
-#include "../headers/standardtypes.h"
 #include "../shell8/shell8.h"
 }
-#include "../drt_lib/dstrc.H"
 
 
 /*----------------------------------------------------------------------*
@@ -38,7 +36,6 @@ int DRT::Elements::Shell8Line::EvaluateNeumann(
                                            vector<int>&              lm,
                                            Epetra_SerialDenseVector& elevec1)
 {
-  DSTraceHelper dst("Shell8Line::EvaluateNeumann");
   RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==null) dserror("Cannot get state vector 'displacement'");
   vector<double> mydisp(lm.size());

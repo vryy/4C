@@ -19,15 +19,6 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 
-extern "C"
-{
-#include "../headers/standardtypes.h"
-#include "../shell8/shell8.h"
-}
-#include "../drt_lib/dstrc.H"
-
-
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 01/07|
  |  id             (in)  this element's global id                       |
@@ -41,7 +32,6 @@ DRT::Element(id,element_shell8line,owner),
 parent_(parent),
 lline_(lline)
 {
-  DSTraceHelper dst("Shell8Line::Shell8Line");
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
   return;
@@ -55,7 +45,6 @@ DRT::Element(old),
 parent_(old.parent_),
 lline_(old.lline_)
 {
-  DSTraceHelper dst("Shell8Line::Shell8Line");
   return;
 }
 
@@ -65,7 +54,6 @@ lline_(old.lline_)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::Elements::Shell8Line::Clone() const
 {
-  DSTraceHelper dst("Shell8Line::Clone");
   DRT::Elements::Shell8Line* newelement = new DRT::Elements::Shell8Line(*this);
   return newelement;
 }
@@ -92,7 +80,6 @@ DRT::Element::DiscretizationType DRT::Elements::Shell8Line::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::Elements::Shell8Line::Pack(vector<char>& data) const
 {
-  DSTraceHelper dst("Shell8Line::Pack");
   data.resize(0);
 
   dserror("this Shell8Line element does not support communication");
@@ -106,7 +93,6 @@ void DRT::Elements::Shell8Line::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void DRT::Elements::Shell8Line::Unpack(const vector<char>& data)
 {
-  DSTraceHelper dst("Shell8Line::Unpack");
   dserror("this line element does not support communication");
   return;
 }
@@ -116,7 +102,6 @@ void DRT::Elements::Shell8Line::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 DRT::Elements::Shell8Line::~Shell8Line()
 {
-  DSTraceHelper dst("Shell8Line::~Shell8Line");
   return;
 }
 
@@ -126,7 +111,6 @@ DRT::Elements::Shell8Line::~Shell8Line()
  *----------------------------------------------------------------------*/
 void DRT::Elements::Shell8Line::Print(ostream& os) const
 {
-  DSTraceHelper dst("Shell8Line::Print");
   os << "Shell8Line ";
   Element::Print(os);
   return;

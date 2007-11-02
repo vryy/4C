@@ -41,8 +41,6 @@ extern struct _FILES  allfiles;
  *----------------------------------------------------------------------*/
 bool DRT::Elements::Shell8::ReadElement()
 {
-  DSTraceHelper dst("Shell8::ReadElement");
-  
   // read element's nodes
   int ierr=0;
   int nnode=0;

@@ -28,10 +28,8 @@ Maintainer: Michael Gee
 
 extern "C"
 {
-#include "../headers/standardtypes.h"
 #include "../shell8/shell8.h"
 }
-#include "../drt_lib/dstrc.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -52,7 +50,6 @@ int DRT::Elements::Shell8::Evaluate(ParameterList&            params,
                                     Epetra_SerialDenseVector& elevec2,
                                     Epetra_SerialDenseVector& elevec3)
 {
-  DSTraceHelper dst("Shell8::Evaluate");
   DRT::Elements::Shell8::ActionType act = Shell8::none;
 
   // get the action required
@@ -707,7 +704,6 @@ void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
                                             Epetra_SerialDenseVector* force,
                                             struct _MATERIAL*         material)
 {
-  DSTraceHelper dst("Shell8::s8_nlnstiffmass");
   const int numnode = NumNode();
   const int numdf   = 6;
   int       ngauss  = 0;
@@ -1140,7 +1136,6 @@ void DRT::Elements::Shell8::s8tmas(
               Epetra_SerialDenseMatrix& emass, const int iel, const int numdf,
               const double facv, const double facw, const double facvw)
 {
-  DSTraceHelper dst("Shell8::s8tmas");
 /*----------------------------------------------------------------------*/
 /*---------------------------- half element thickness at gaussian point */
   double he=0.0;
@@ -1186,7 +1181,6 @@ void DRT::Elements::Shell8::s8intforce(Epetra_SerialDenseVector& intforce, const
                   const Epetra_SerialDenseMatrix& bop, const int iel,
                   const int numdf, const int nstress_r, const double weight)
 {
-  DSTraceHelper dst("Shell8::s8intforce");
 /*----------------------------------------------------------------------*/
   const int nd = iel*numdf;
   /*
@@ -1217,7 +1211,6 @@ void DRT::Elements::Shell8::s8anstvkg(
                  const Epetra_SerialDenseMatrix deriv1q[], const Epetra_SerialDenseMatrix deriv2q[],
                  const int ansq, const int nsansq)
 {
-  DSTraceHelper dst("Shell8::s8anstvkg");
 /*----------------------------------------------------------------------*/
   const double sn11 = stress_r[0];
   const double sn21 = stress_r[1];
@@ -1334,7 +1327,6 @@ void DRT::Elements::Shell8::s8tvkg(
               const int numdf, const int iel, const double weight,
               const double e1, const double e2)
 {
-  DSTraceHelper dst("Shell8::s8tvkg");
 /*----------------------------------------------------------------------*/
   const double sn11 = stress_r[0];
   const double sn21 = stress_r[1];
@@ -1420,7 +1412,6 @@ void DRT::Elements::Shell8::s8tvma(
               double D[][12], double** C, double stress[], double stress_r[],
               const double e3, const double fact, const double condfac)
 {
-  DSTraceHelper dst("Shell8::s8tvma");
 /*----------------------------------------------------------------------*/
   const double zeta = e3/condfac;
   for (int i=0; i<6; ++i)
@@ -1461,7 +1452,6 @@ void DRT::Elements::Shell8::s8BtDB(Epetra_SerialDenseMatrix& estif,
                                    const int numdf,
                                    const double weight)
 {
-  DSTraceHelper dst("Shell8::s8BtDB");
 /*----------------------------------------------------------------------*/
   const int dim = iel*numdf;
 /*------------------------------------ make multiplication work = D * B */
@@ -1500,7 +1490,6 @@ void DRT::Elements::Shell8::s8tmat(
               const double e3, const int option,
               const int ngauss)
 {
-  DSTraceHelper dst("Shell8::s8tmat");
 /*----------------------------------------------------------------------*/
   // make strains
   strain[0] = 0.5*(gmkovc[0][0] - gmkovr[0][0]);
@@ -1595,7 +1584,6 @@ void DRT::Elements::Shell8::s8vthv(double gmkovc[][3], double gmkonc[][3],
                                    const vector<double>& epsh,
                                    double* detc, const double e3, const double condfac)
 {
-  DSTraceHelper dst("Shell8::s8vthv");
 /*----------------------------------------------------------------------*/
   const double zeta = e3/condfac;
 /*----------------------------------------------------------------------*/
@@ -1638,8 +1626,6 @@ void DRT::Elements::Shell8::s8anstvheq(
                   double frq[], double fsq[], const double e3,
                   const int nansq, const int iel, const double condfac)
 {
-  DSTraceHelper dst("Shell8::s8anstvheq");
-
   double b11c=0.0;
   double b12c=0.0;
   double b21c=0.0;
@@ -1728,8 +1714,6 @@ void DRT::Elements::Shell8::s8tvhe(
               double a3kvpc[][2], double a3kvpr[][2],
               const double e3, const double condfac)
 {
-  DSTraceHelper dst("Shell8::s8tvhe");
-
   double b11c=0.0;
   double b12c=0.0;
   double b21c=0.0;
@@ -1800,8 +1784,6 @@ void DRT::Elements::Shell8::s8ansbbarq(
      const double a3kvpc1q[][3][2], const double a3kvpc2q[][3][2],
      const int& iel, const int& numdf, const int& nsansq)
 {
-  DSTraceHelper dst("Shell8::s8ansbbarq");
-
   for (int inode=0; inode<iel; ++inode)
   {
     int node_start = inode*numdf;
@@ -1886,7 +1868,6 @@ void DRT::Elements::Shell8::s8tvbo(const double e1, const double e2,
                                    const double a3kvp[][2],
                                    const int nsansq)
 {
-  DSTraceHelper dst("Shell8::s8tvbo");
   /*----------------------------------------------------------------------*/
   const double a1x=akov[0][0];
   const double a1y=akov[1][0];
@@ -2015,8 +1996,6 @@ void DRT::Elements::Shell8::s8transeas(
                   const double akonr0[][3], const double detr, const double detr0,
                   const int nhyb)
 {
-  DSTraceHelper dst("Shell8::s8transeas");
-
   const double two=2.0;
   double t11,t12,t13,t21,t22,t23,t31,t32,t33;
   const double factor = detr0/detr;;
@@ -2150,8 +2129,6 @@ void DRT::Elements::Shell8::s8eas(const int nhyb, const double e1, const double 
                                   const int iel, const int* eas,
                                   Epetra_SerialDenseMatrix& P)
 {
-  DSTraceHelper dst("Shell8::s8eas");
-
   int place_P=0;
 
   const int nrr=0;
@@ -2606,7 +2583,6 @@ void DRT::Elements::Shell8::s8_ansqshapefunctions(
                              double frq[], double fsq[], const double r,
                              const double s, const int iel, const int nsansq)
 {
-  DSTraceHelper dst("Shell8::s8_ansqshapefunctions");
   if (iel==4)
   {
    frq[0] = 0.5 * (1.0 - s);
@@ -2696,8 +2672,6 @@ void DRT::Elements::Shell8::s8_ans_colloquationpoints(
                                  double       a3kvpc2q[][3][2],
                                  double* detr, double* detc)
 {
-  DSTraceHelper dst("Shell8::s8_ans_colloquationpoints");
-
   /*------------------------------- get coordinates of collocation points */
   s8_ans_colloquationcoords(xr1,xs1,xr2,xs2,iel,ans);
 
@@ -2736,8 +2710,6 @@ void DRT::Elements::Shell8::s8tmtr(const double x[][MAXNOD_SHELL8],
                                    const double condfac,
                                    const int flag)
 {
-  DSTraceHelper dst("Shell8::s8tmtr");
-
   /*---------------------------------------------------- sdc-conditioning */
   const double zeta = e3/condfac;
   /*------------------------------------ interpolation of kovariant g1,g2 */
@@ -2794,7 +2766,6 @@ void DRT::Elements::Shell8::s8_jaco(const vector<double>& funct,
                                     double* det,
                                     double* deta)
 {
-  DSTraceHelper dst("Shell8::s8_jaco");
   double gkov[3][3];
   double gkon[3][3];
   double gmkov[3][3];
@@ -2840,8 +2811,6 @@ void DRT::Elements::Shell8::s8tvmr(const double x[][MAXNOD_SHELL8],
                                    double a3kvp[][2],
                                    const int flag)
 {
-  DSTraceHelper dst("Shell8::s8tvmr");
-
   /*------------------------------------ interpolation of kovariant a1,a2 */
   for (int ialpha=0; ialpha<2; ialpha++)
   {
@@ -2900,7 +2869,6 @@ void DRT::Elements::Shell8::s8_ans_colloquationcoords(double xqr1[], double xqs1
                                                       double xqr2[], double xqs2[],
                                                       const int iel, const int ans)
 {
-  DSTraceHelper dst("Shell8::s8_ans_colloquationcoords");
   if (ans==1) // ans fuer querschublocking
   {
     if (iel==4)
@@ -3216,8 +3184,6 @@ void DRT::Elements::Shell8::s8unvc(double* enorm, double vec[], const int n)
  *----------------------------------------------------------------------*/
 void DRT::Elements::Shell8::s8_integration_points(struct _S8_DATA& data)
 {
-  DSTraceHelper dst("Shell8::s8_integration_points");
-
   const int numnode = NumNode();
 
   const double invsqrtthree = 1./sqrt(3.);
@@ -3361,7 +3327,6 @@ void DRT::Elements::Shell8::s8_integration_points(struct _S8_DATA& data)
 const double DRT::Elements::Shell8::s8_localcoordsofnode(const int node, const int flag,
                                                          const int numnode) const
 {
-  DSTraceHelper dst("Shell8::s8_localcoordsofnode");
   const double node489[9][2] = {{1.0,1.0},{-1.0,1.0},{-1.0,-1.0},{1.0,-1.0},
                                 {0.0,1.0},{-1.0,0.0},{0.0,-1.0},{1.0,0.0},{0.0,0.0}};
 
@@ -3391,8 +3356,6 @@ void DRT::Elements::Shell8::s8_shapefunctions(
                              const double r, const double s, const int numnode,
                              const int doderiv) const
 {
-  DSTraceHelper dst("Shell8::s8_shapefunctions");
-
   const double q12 = 0.5;
   const double q14 = 0.25;
   const double rr = r*r;
@@ -3566,8 +3529,6 @@ void s8loadgaussianpoint(double eload[][MAXNOD_SHELL8], const double hhi,
                          const double curvefac,
                          const double time)
 {
-  DSTraceHelper dst("s8loadgaussianpoint");
-
 /*----------------------------------------------------------------------*/
 /*------------------------------ evaluate components of angle of normal */
 /*        xjm = J = (g1 g2 g3) siehe Dissertation Braun Kap. Grundlagen */
@@ -3653,7 +3614,6 @@ static void s8_averagedirector(Epetra_SerialDenseMatrix& dir_list,
  *----------------------------------------------------------------------*/
 int DRT::Elements::Shell8Register::Initialize(DRT::Discretization& dis)
 {
-  DSTraceHelper dst("Shell8Register::Initialize");
   //-------------------- loop all my column elements and init directors at nodes
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
@@ -3827,8 +3787,6 @@ int DRT::Elements::Shell8Register::Initialize(DRT::Discretization& dis)
 #define ABS(x)  ((x) <  0  ? (-x) : (x))
 void s8_averagedirector(Epetra_SerialDenseMatrix& dir_list, const int numa3, double a3[])
 {
-  DSTraceHelper dst("Shell8Register::s8_averagedirector");
-
   double davn[3];
   double averdir[3];
   averdir[0] = dir_list(0,0);
