@@ -25,7 +25,9 @@ using namespace IO;
 // function should be called, an error is invoked.
 //
 // -> see also Makefile.objects and setup-objects.sh
-
+//
+// In case of any changes of the function prototype make sure that the
+// corresponding prototype in post_drt_evaluation.cpp is adapted, too!!
 
 void MAT::MicroMaterial::Evaluate(const Epetra_SerialDenseMatrix* defgrd,
                                   Epetra_SerialDenseMatrix* cmat,
