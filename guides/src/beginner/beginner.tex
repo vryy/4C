@@ -720,6 +720,16 @@ generate ensight (paraview) input files:
 supported problem types: 2d and 3d fluid for new discretisation
 
 
+\subsubsection{post\_drt\_gid}
+
+generate post-process files for \emph{Gid} of new discretisation data: For
+instance, if you 
+called your output file base name \texttt{xxx}, you execute
+\begin{verbatim}
+./post_drt_gid --file="xxx"
+\end{verbatim}
+
+
 \subsubsection{post\_cmp}
 
 compare two binary fluid results, assuming the same mesh was used.
