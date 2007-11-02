@@ -125,12 +125,14 @@ void DRT::Elements::So_hex8::soh8_stress(vector<double>& disp,
     Epetra_SerialDenseSolver solve_for_inverseJac;  // solve A.X=B
     solve_for_inverseJac.SetMatrix(jac);            // set A=jac
     solve_for_inverseJac.SetVectors(N_XYZ,deriv_gp);// set X=N_XYZ, B=deriv_gp
+    solve_for_inverseJac.FactorWithEquilibration(true);
+    int err2 = solve_for_inverseJac.Factor();
     int err = solve_for_inverseJac.Solve();         // N_XYZ = J^-1.N_rst
-    if (err != 0) dserror("Inversion of Jacobian failed");
+    if ((err != 0) && (err2!=0)) dserror("Inversion of Jacobian failed");
 
-    // (material) deformation gradient F = d xxurr / d xrefe
+    // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
     Epetra_SerialDenseMatrix defgrd(NUMDIM_SOH8,NUMDIM_SOH8);
-    defgrd.Multiply('N','N',1.0,N_XYZ,xcurr,1.0);
+    defgrd.Multiply('T','T',1.0,xcurr,N_XYZ,1.0);
 
     // Right Cauchy-Green tensor = F^T * F
     Epetra_SerialDenseMatrix cauchygreen(NUMDIM_SOH8,NUMDIM_SOH8);
@@ -145,6 +147,23 @@ void DRT::Elements::So_hex8::soh8_stress(vector<double>& disp,
     glstrain(3) = cauchygreen(0,1);
     glstrain(4) = cauchygreen(1,2);
     glstrain(5) = cauchygreen(2,0);
+
+    // EAS technology: "enhance the strains"  ----------------------------- EAS
+    if (eastype_ != soh8_easnone) {
+      // get EAS matrix M at current gausspoint gp
+      M.Shape(NUMSTR_SOH8,neas_);
+      for (int m=0; m<NUMSTR_SOH8; ++m) {
+        for (int n=0; n<neas_; ++n) {
+          M(m,n)=(*M_GP)(NUMSTR_SOH8*gp+m,n);
+        }
+      }
+      // map local M to global, also enhancement is refered to element origin
+      // M = detJ0/detJ T0^{-T} . M
+      Epetra_SerialDenseMatrix Mtemp(M); // temp M for Matrix-Matrix-Product
+      M.Multiply('N','N',detJ0/detJ,T0invT,Mtemp,0.0);
+      // add enhanced strains = M . alpha to GL strains to "unlock" element
+      glstrain.Multiply('N','N',1.0,M,(*alpha),1.0);
+    } // ------------------------------------------------------------------ EAS
 
     /* non-linear B-operator (may so be called, meaning
     ** of B-operator is not so sharp in the non-linear realm) *
@@ -198,7 +217,7 @@ void DRT::Elements::So_hex8::soh8_stress(vector<double>& disp,
     Epetra_SerialDenseVector stress(NUMSTR_SOH8);
     double density;
     const int ele_ID = Id();
-    soh8_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp, ele_ID, time);
+    soh8_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp, ele_ID, time, "stress_calc");
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // safe gausspoint stresses
