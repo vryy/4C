@@ -16,7 +16,6 @@ Maintainer: Lena Wiechert
 #ifndef MICROMATERIALGP_H
 #define MICROMATERIALGP_H
 
-#ifdef D_SOH8
 #ifdef CCADISCRET
 
 #include "micromaterial.H"
@@ -91,6 +90,5 @@ private:
 };
 }
 
-#endif
 #endif
 #endif

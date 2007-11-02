@@ -1,4 +1,3 @@
-#ifdef D_SOH8
 #ifdef CCADISCRET
 
 #include "micromaterialgp.H"
@@ -229,5 +228,4 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
 
 }
 
-#endif
 #endif
