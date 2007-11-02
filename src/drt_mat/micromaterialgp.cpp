@@ -94,8 +94,6 @@ MAT::MicroMaterialGP::~MicroMaterialGP()
 
 void MAT::MicroMaterialGP::SetUpMicroGenAlpha()
 {
-  //cout << "SetUpMicroGenAlpha\n";
-
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
@@ -159,10 +157,9 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
                                                   Epetra_SerialDenseVector* stress,
                                                   Epetra_SerialDenseMatrix* cmat,
                                                   double* density,
-                                                  const double time)
+                                                  const double time,
+                                                  string action)
 {
-  //cout << "PerformMicroSimulation\n";
-
   // if MicroDiscretizationWriter is not yet initialized -> set up
   // and write mesh
 
@@ -190,7 +187,7 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
     MAT::MicroMaterialGP::SetUpMicroGenAlpha();
   }
 
-  // set displacements, velocities and accelerations from last time step
+  // set displacements, velocities and accelerations of last step
   microgenalpha_->SetOldState(disp_, vel_, acc_, disi_);
 
   // check if we have to update absolute time and step number
@@ -213,15 +210,14 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
     istep_++;
   }
 
-  // cout << "GP: " << gp_ << endl;
-
   // set current absolute time and step number
   microgenalpha_->SetTime(timen_, istep_);
 
   microgenalpha_->ConstantPredictor(defgrd);
   microgenalpha_->FullNewton();
   microgenalpha_->Update();
-  microgenalpha_->Homogenization(stress, cmat, density, defgrd);
+  microgenalpha_->Homogenization(stress, cmat, density, defgrd, action);
+  //microgenalpha_->StaticHomogenization(stress, cmat, density, defgrd);
 
   // save calculated displacements, velocities and accelerations
   disp_ = microgenalpha_->ReturnNewDisp();
@@ -229,11 +225,9 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
   acc_  = microgenalpha_->ReturnNewAcc();
   disi_ = microgenalpha_->ReturnNewResDisp();
 
-
-  // cout << "current displacements in microscale of gp " << gp_ << ":\n" << *disp_ << "\n";
-
   // clear displacements in MicroStruGenAlpha for next usage
   microgenalpha_->ClearState();
+
 }
 
 #endif

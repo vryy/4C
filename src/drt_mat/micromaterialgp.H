@@ -47,7 +47,8 @@ public:
                               Epetra_SerialDenseVector* stress,
                               Epetra_SerialDenseMatrix* cmat,
                               double* density,
-                              const double time);
+                              const double time,
+                              string action);
 
   /// Set up microscale generalized alpha
   void SetUpMicroGenAlpha();

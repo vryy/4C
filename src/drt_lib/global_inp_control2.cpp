@@ -412,7 +412,7 @@ void inpfield_ccadiscret(DRT::Problem& problem, DRT::DatFileReader& reader)
     if (!structdis_macro->Comm().MyPID())
         cout << "input for microscale is read from        " << micro_inputfile_name << "\n";
 
-        DRT::DatFileReader micro_reader(micro_inputfile_name, serialcomm, 1);
+    DRT::DatFileReader micro_reader(micro_inputfile_name, serialcomm, 1);
     micro_reader.Activate();
 
     structdis_micro = rcp(new DRT::Discretization("Micro Structure", micro_reader.Comm()));

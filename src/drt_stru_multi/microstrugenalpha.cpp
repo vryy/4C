@@ -211,16 +211,12 @@ solver_(solver)
   invtoggle_->PutScalar(1.0);
   invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
 
-  // cout << Xp_ << endl;
-
   // -------------------------- Calculate initial volume of microstructure
   ParameterList p;
   // action for elements
   p.set("action","calc_init_vol");
   discret_->Evaluate(p,null,null,null,null,null);
   V0_ = p.get<double>("V0", -1.0);
-
-  // cout << "initial volume: " << V0_ << endl;
 
   return;
 } // MicroStruGenAlpha::MicroStruGenAlpha
@@ -231,8 +227,6 @@ solver_(solver)
  *----------------------------------------------------------------------*/
 void MicroStruGenAlpha::ConstantPredictor(const Epetra_SerialDenseMatrix* defgrd)
 {
-  //cout << "ConstantPredictor\n";
-
   // -------------------------------------------------------------------
   // get some parameters from parameter list
   // -------------------------------------------------------------------
@@ -243,8 +237,6 @@ void MicroStruGenAlpha::ConstantPredictor(const Epetra_SerialDenseMatrix* defgrd
   double alphaf      = params_->get<double>("alpha f"        ,0.459);
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-  //cout << "total time: " << time << " step: " << istep << endl;
-
   // increment time and step
   double timen = time += dt;
   istep++;
@@ -254,14 +246,6 @@ void MicroStruGenAlpha::ConstantPredictor(const Epetra_SerialDenseMatrix* defgrd
   //--------------------------------------------------- predicting state
   // constant predictor : displacement in domain
   disn_->Update(1.0,*dis_,0.0);
-
-  // apply new displacements at DBCs
-  {
-    // disn then also holds prescribed new dirichlet displacements
-    EvaluateMicroBC(defgrd);
-    discret_->ClearState();
-    fextn_->PutScalar(0.0);  // initialize external force vector (load vect)
-  }
 
   // constant predictor
   veln_->Update(1.0,*vel_,0.0);
@@ -274,6 +258,16 @@ void MicroStruGenAlpha::ConstantPredictor(const Epetra_SerialDenseMatrix* defgrd
   dism_->Update(1.-alphaf,*disn_,alphaf,*dis_,0.0);
   velm_->Update(1.0,*vel_,0.0);
   accm_->Update(1.0,*acc_,0.0);
+
+  // apply new displacements at DBCs -> this has to be done with the
+  // mid-displacements since the given macroscopic deformation
+  // gradient is evaluated at the mid-point!
+  {
+    // dism then also holds prescribed new dirichlet displacements
+    EvaluateMicroBC(defgrd);
+    discret_->ClearState();
+    fextn_->PutScalar(0.0);  // initialize external force vector (load vect)
+  }
 
   //------------------------------- compute interpolated external forces
   // external mid-forces F_{ext;n+1-alpha_f} (fextm)
@@ -349,8 +343,6 @@ void MicroStruGenAlpha::ConstantPredictor(const Epetra_SerialDenseMatrix* defgrd
  *----------------------------------------------------------------------*/
 void MicroStruGenAlpha::FullNewton()
 {
-  //cout << "FullNewton\n";
-
   // -------------------------------------------------------------------
   // get some parameters from parameter list
   // -------------------------------------------------------------------
@@ -374,6 +366,7 @@ void MicroStruGenAlpha::FullNewton()
 
   //=================================================== equilibrium loop
   int numiter=0;
+
   while (norm_>toldisp && numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
@@ -492,7 +485,6 @@ void MicroStruGenAlpha::FullNewton()
   if (numiter>=maxiter) dserror("Newton unconverged in %d iterations",numiter);
   params_->set<int>("num iterations",numiter);
 
-  //-------------------------------------- don't need this at the moment
   //stiff_ = null;   -> microscale needs this for homogenization purposes
 
   return;
@@ -504,8 +496,6 @@ void MicroStruGenAlpha::FullNewton()
  *----------------------------------------------------------------------*/
 void MicroStruGenAlpha::Update()
 {
-  //cout << "Update\n";
-
   // -------------------------------------------------------------------
   // get some parameters from parameter list
   // -------------------------------------------------------------------
@@ -549,6 +539,7 @@ void MicroStruGenAlpha::Update()
     p.set("delta time",dt);
     discret_->Evaluate(p,null,null,null,null,null);
   }
+
   return;
 } // MicroStruGenAlpha::Update()
 
@@ -570,8 +561,6 @@ void MicroStruGenAlpha::Output(RefCountPtr<MicroDiscretizationWriter> output,
   //----------------------------------------------------- output results
   if (iodisp && updevrydisp && istep%updevrydisp==0)
   {
-    //cout << "Output for step: " << istep << " at time: " << time << endl;
-
     output->NewStep(istep, time);
     output->WriteVector("displacement",dis_);
     //output->WriteVector("velocity",vel_);
@@ -628,8 +617,6 @@ MicroStruGenAlpha::~MicroStruGenAlpha()
 
 void MicroStruGenAlpha::DetermineToggle()
 {
-  //cout << "DetermineToggle\n";
-
   int np = 0;   // number of prescribed (=boundary) dofs needed for the
                 // creation of vectors and matrices for homogenization
                 // procedure
@@ -667,21 +654,15 @@ void MicroStruGenAlpha::DetermineToggle()
           ++np;
 
         (*dirichtoggle_)[lid] = 1.0;
-
-        //if (lid == 4)
-        //  cout << "dirichtoggle of dof 4: 1 \n";
       }
     }
   }
 
   np_ = np;
-  //cout << "dirichtoggle: " << *dirichtoggle_ << "\n";
 }
 
 void MicroStruGenAlpha::EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd)
 {
-  // cout << "EvaluateMicroBC\n";
-
   RefCountPtr<DRT::Discretization> dis =
     DRT::Problem::Instance(1)->Dis(genprob.numsf,0);
 
@@ -705,7 +686,7 @@ void MicroStruGenAlpha::EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd)
 
       // boundary displacements are prescribed via the macroscopic
       // deformation gradient
-      double disn_prescribed[3];
+      double dism_prescribed[3];
       for (int i=0; i<3;i++)
       {
         double dis = 0.;
@@ -715,7 +696,7 @@ void MicroStruGenAlpha::EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd)
           dis += (*defgrd)(i, j) * x[j];
         }
 
-        disn_prescribed[i] = dis - x[i];
+        dism_prescribed[i] = dis - x[i];
       }
 
       vector<int> dofs = dis->Dof(actnode);
@@ -724,15 +705,9 @@ void MicroStruGenAlpha::EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd)
       {
         const int gid = dofs[k];
 
-        const int lid = disn_->Map().LID(gid);
+        const int lid = dism_->Map().LID(gid);
         if (lid<0) dserror("Global id %d not on this proc in system vector",gid);
-        (*disn_)[lid] = disn_prescribed[k];
-
-        //if (lid == 4)
-        //{
-        //cout << "deformation gradient: " << *defgrd << endl;
-        //cout << "prescribed dof " << lid << ": " << (*disn_)[lid] << endl;
-        //}
+        (*dism_)[lid] = dism_prescribed[k];
       }
     }
   }
@@ -744,8 +719,6 @@ void MicroStruGenAlpha::SetOldState(RefCountPtr<Epetra_Vector> disp,
                                     RefCountPtr<Epetra_Vector> acc,
                                     RefCountPtr<Epetra_Vector> disi)
 {
-  //cout << "SetOldState\n";
-
   dis_ = disp;
   vel_ = vel;
   acc_ = acc;
@@ -771,8 +744,6 @@ RefCountPtr<Epetra_Vector> MicroStruGenAlpha::ReturnNewResDisp() { return rcp(ne
 
 void MicroStruGenAlpha::ClearState()
 {
-  //cout << "ClearState\n";
-
   dis_ = null;
   vel_ = null;
   acc_ = null;
@@ -860,18 +831,156 @@ void MicroStruGenAlpha::SetUpHomogenization()
 
   Xp_ = LINALG::CreateVector(*pdof_,true);
   *Xp_ = Xp_temp;
-
-  //cout << "XP " << Xp_ << endl;
-  //cout << "pdof " << pdofID_ << endl;
 }
+
+
+// after having finished all the testing, remove cmat from the input
+// parameters, since no constitutive tensor is calculated here.
 
 void MicroStruGenAlpha::Homogenization(Epetra_SerialDenseVector* stress,
                                        Epetra_SerialDenseMatrix* cmat,
                                        double *density,
-                                       const Epetra_SerialDenseMatrix* defgrd)
+                                       const Epetra_SerialDenseMatrix* defgrd,
+                                       const string action)
 {
   // determine macroscopic parameters via averaging (homogenization) of
   // microscopic features
+  // this was implemented against the background of serial usage
+  // -> if a parallel version of microscale simulations is EVER wanted,
+  // carefully check if/what/where things have to change
+
+  // create the parameters for the discretization
+  ParameterList p;
+  // action for elements
+  p.set("action","calc_homog_stressdens");
+  // choose what to assemble
+  p.set("assemble matrix 1",false);
+  p.set("assemble matrix 2",false);
+  p.set("assemble vector 1",false);
+  p.set("assemble vector 2",false);
+  p.set("assemble vector 3",false);
+  // set stresses and densities to zero
+  p.set("homogdens", 0.0);
+
+  p.set("homogP11", 0.0);
+  p.set("homogP12", 0.0);
+  p.set("homogP13", 0.0);
+  p.set("homogP21", 0.0);
+  p.set("homogP22", 0.0);
+  p.set("homogP23", 0.0);
+  p.set("homogP31", 0.0);
+  p.set("homogP32", 0.0);
+  p.set("homogP33", 0.0);
+
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("residual displacement",zeros_);
+
+  // we have to distinguish here whether we are in a homogenization
+  // procedure during the nonlinear solution or in the post-processing
+  // (macroscopic stress calculation) phase -> in the former case, the
+  // displacement has to be chosen at the generalized mid-point, in
+  // the latter one we need to evaluate everything at the end of the
+  // time step
+  if (action == "stress_calc")
+    discret_->SetState("displacement",dis_);
+  else
+    discret_->SetState("displacement",dism_);
+  discret_->Evaluate(p,null,null,null,null,null);
+  discret_->ClearState();
+
+  *density = 1/V0_*p.get<double>("homogdens", 0.0);
+  if (*density == 0.0)
+    dserror("Density determined from homogenization procedure equals zero!");
+
+  Epetra_SerialDenseMatrix P(3, 3);
+  P(0, 0) = 1/V0_*p.get<double>("homogP11", 0.0);
+  P(0, 1) = 1/V0_*p.get<double>("homogP12", 0.0);
+  P(0, 2) = 1/V0_*p.get<double>("homogP13", 0.0);
+  P(1, 0) = 1/V0_*p.get<double>("homogP21", 0.0);
+  P(1, 1) = 1/V0_*p.get<double>("homogP22", 0.0);
+  P(1, 2) = 1/V0_*p.get<double>("homogP23", 0.0);
+  P(2, 0) = 1/V0_*p.get<double>("homogP31", 0.0);
+  P(2, 1) = 1/V0_*p.get<double>("homogP32", 0.0);
+  P(2, 2) = 1/V0_*p.get<double>("homogP33", 0.0);
+
+  // determine inverse of deformation gradient
+
+  Epetra_SerialDenseMatrix F_inv(3,3);
+
+  double detF= (*defgrd)(0,0) * (*defgrd)(1,1) * (*defgrd)(2,2)
+             + (*defgrd)(0,1) * (*defgrd)(1,2) * (*defgrd)(2,0)
+             + (*defgrd)(0,2) * (*defgrd)(1,0) * (*defgrd)(2,1)
+             - (*defgrd)(0,0) * (*defgrd)(1,2) * (*defgrd)(2,1)
+             - (*defgrd)(0,1) * (*defgrd)(1,0) * (*defgrd)(2,2)
+             - (*defgrd)(0,2) * (*defgrd)(1,1) * (*defgrd)(2,0);
+
+  F_inv(0,0) = ((*defgrd)(1,1)*(*defgrd)(2,2)-(*defgrd)(1,2)*(*defgrd)(2,1))/detF;
+  F_inv(0,1) = ((*defgrd)(0,2)*(*defgrd)(2,1)-(*defgrd)(2,2)*(*defgrd)(0,1))/detF;
+  F_inv(0,2) = ((*defgrd)(0,1)*(*defgrd)(1,2)-(*defgrd)(1,1)*(*defgrd)(0,2))/detF;
+  F_inv(1,0) = ((*defgrd)(1,2)*(*defgrd)(2,0)-(*defgrd)(2,2)*(*defgrd)(1,0))/detF;
+  F_inv(1,1) = ((*defgrd)(0,0)*(*defgrd)(2,2)-(*defgrd)(2,0)*(*defgrd)(0,2))/detF;
+  F_inv(1,2) = ((*defgrd)(0,2)*(*defgrd)(1,0)-(*defgrd)(1,2)*(*defgrd)(0,0))/detF;
+  F_inv(2,0) = ((*defgrd)(1,0)*(*defgrd)(2,1)-(*defgrd)(2,0)*(*defgrd)(1,1))/detF;
+  F_inv(2,1) = ((*defgrd)(0,1)*(*defgrd)(2,0)-(*defgrd)(2,1)*(*defgrd)(0,0))/detF;
+  F_inv(2,2) = ((*defgrd)(0,0)*(*defgrd)(1,1)-(*defgrd)(1,0)*(*defgrd)(0,1))/detF;
+
+  for (int i=0; i<3; ++i)
+  {
+    (*stress)[0] += F_inv(0, i)*P(i,0);                     // S11
+    (*stress)[1] += F_inv(1, i)*P(i,1);                     // S22
+    (*stress)[2] += F_inv(2, i)*P(i,2);                     // S33
+    (*stress)[3] += F_inv(0, i)*P(i,1);                     // S12
+    (*stress)[4] += F_inv(1, i)*P(i,2);                     // S23
+    (*stress)[5] += F_inv(0, i)*P(i,2);                     // S13
+  }
+
+  // for testing reasons only!!!!!!!!!! begin testing region
+  const double Emod  = 100.0;
+  const double nu  = 0.;
+
+  double mfac = Emod/((1.0+nu)*(1.0-2.0*nu));  /* factor */
+  /* write non-zero components */
+  (*cmat)(0,0) = mfac*(1.0-nu);
+  (*cmat)(0,1) = mfac*nu;
+  (*cmat)(0,2) = mfac*nu;
+  (*cmat)(1,0) = mfac*nu;
+  (*cmat)(1,1) = mfac*(1.0-nu);
+  (*cmat)(1,2) = mfac*nu;
+  (*cmat)(2,0) = mfac*nu;
+  (*cmat)(2,1) = mfac*nu;
+  (*cmat)(2,2) = mfac*(1.0-nu);
+  /* ~~~ */
+  (*cmat)(3,3) = mfac*0.5*(1.0-2.0*nu);
+  (*cmat)(4,4) = mfac*0.5*(1.0-2.0*nu);
+  (*cmat)(5,5) = mfac*0.5*(1.0-2.0*nu);
+
+  // Right Cauchy-Green tensor = F^T * F
+  Epetra_SerialDenseMatrix cauchygreen(3,3);
+  cauchygreen.Multiply('T','N',1.0,*defgrd,*defgrd,1.0);
+
+  // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
+  // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+  Epetra_SerialDenseVector glstrain(6);
+  glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
+  glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
+  glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
+  glstrain(3) = cauchygreen(0,1);
+  glstrain(4) = cauchygreen(1,2);
+  glstrain(5) = cauchygreen(2,0);
+
+  Epetra_SerialDenseVector ref_stress(6);
+  (*cmat).Multiply('N',glstrain,ref_stress);
+  /// end testing region!!!!!!!!!
+}
+
+void MicroStruGenAlpha::StaticHomogenization(Epetra_SerialDenseVector* stress,
+                                             Epetra_SerialDenseMatrix* cmat,
+                                             double *density,
+                                             const Epetra_SerialDenseMatrix* defgrd)
+{
+  // determine macroscopic parameters via averaging (homogenization) of
+  // microscopic features accoring to Kouznetsova, Miehe etc.
   // this was implemented against the background of serial usage
   // -> if a parallel version of microscale simulations is EVER wanted,
   // carefully check if/what/where things have to change
@@ -891,10 +1000,6 @@ void MicroStruGenAlpha::Homogenization(Epetra_SerialDenseVector* stress,
   int err = fp.Export(*fresm_dirich_, *export_, Insert);
   if (err)
     dserror("Exporting external forces of prescribed dofs using exporter returned err=%d",err);
-
-//   cout << "fresm_dirich:\n" << *fresm_dirich_ << endl;
-//   cout << "pdof:\n" <<*pdof_ << endl;
-//   cout << "fp:\n" << fp << endl;
 
   // Now we have all forces in the material description acting on the
   // boundary nodes together in one vector
@@ -957,9 +1062,6 @@ void MicroStruGenAlpha::Homogenization(Epetra_SerialDenseVector* stress,
 
   Epetra_SerialDenseVector S(6);
 
-//   for (int i=0;i<6;++i)
-//     S[i] = 0.;
-
   for (int i=0; i<3; ++i)
   {
     S[0] += F_inv(0, i)*P(i,0);                     // S11
@@ -974,15 +1076,6 @@ void MicroStruGenAlpha::Homogenization(Epetra_SerialDenseVector* stress,
   {
     (*stress)[i]=S[i];
   }
-
-  // cout << "deformation gradient:\n" << *defgrd << endl;
-  // cout << "fresm_dirich:\n" << *fresm_dirich_ << endl;
-  // cout << "pdof: " << *pdof_ << endl;
-  // cout << "fp: " << fp << endl;
-  // cout << "Xp: " << *Xp_ << endl;
-  // cout << "FPK homogenization:\n" << P << endl;
-  // cout << "Stresses derived from homogenization:\n" << S << endl;
-
 
   // split effective dynamic stiffness -> we want Kpp, Kpf, Kfp and Kff
   // Kpp and Kff are sparse matrices, whereas Kpf and Kfp are MultiVectors
@@ -1040,9 +1133,6 @@ void MicroStruGenAlpha::Homogenization(Epetra_SerialDenseVector* stress,
 
         if (fdof_->MyGID(colgid))          // -> Kff
         {
-          //int collid = fdof_->LID(colgid);
-          //err = Kff.InsertMyValues(fdof_->LID(rowgid), 1,
-          //&(Values[col]), &collid);
           err = Kff.InsertGlobalValues(rowgid, 1, &(Values[col]), &colgid);
           if (err)
             dserror("Insertion of values into Kff failed");
@@ -1100,35 +1190,42 @@ void MicroStruGenAlpha::Homogenization(Epetra_SerialDenseVector* stress,
 
   MicroStruGenAlpha::calc_cmat(Kpp, F_inv, S, cmat, defgrd);
 
-//   cout << "stress homogenization:\n" << *stress << endl;
-//   cout << "cmat homogenization:\n " << *cmat << endl;
-
   // after having all homogenization stuff done, we now really don't need stiff_ anymore
 
   stiff_ = null;
 
-  // the macroscopic density has to be computed -> we will do that
-  // later, for now we just set it to 1.
-  (*density)=1.0;
+  // the macroscopic density has to be averaged over the entire
+  // microstructural reference volume
 
+  // create the parameters for the discretization
+  ParameterList p;
+  // action for elements
+  p.set("action","calc_homog_stressdens");
+  // choose what to assemble
+  p.set("assemble matrix 1",false);
+  p.set("assemble matrix 2",false);
+  p.set("assemble vector 1",false);
+  p.set("assemble vector 2",false);
+  p.set("assemble vector 3",false);
+  // set density to zero
+  p.set("homogdens", 0.0);
+  // set flag that only density has to be calculated
+  p.set("onlydens", true);
 
-//   // only for testing reasons
-//   // Right Cauchy-Green tensor = F^T * F
-//   Epetra_SerialDenseMatrix cauchygreen(3,3);
-//   cauchygreen.Multiply('T','N',1.0,(*defgrd),(*defgrd),0.0);
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("residual displacement",zeros_);
 
-//   // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
-//   // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-//   Epetra_SerialDenseVector glstrain(6);
-//   glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
-//   glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
-//   glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
-//   glstrain(3) = cauchygreen(0,1);
-//   glstrain(4) = cauchygreen(1,2);
-//   glstrain(5) = cauchygreen(2,0);
-//   (*cmat).Multiply('N',glstrain,(*stress));   // sigma = C . epsilon
-//   exit(0);
+  discret_->SetState("displacement",dism_);
+
+  discret_->Evaluate(p,null,null,null,null,null);
+  discret_->ClearState();
+
+  *density = 1/V0_*p.get<double>("homogdens", 0.0);
+  if (*density == 0.0)
+    dserror("Density determined from homogenization procedure equals zero!");
 }
+
 
 #endif
 #endif

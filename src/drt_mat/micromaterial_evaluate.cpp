@@ -35,11 +35,9 @@ void MAT::MicroMaterial::Evaluate(const Epetra_SerialDenseMatrix* defgrd,
                                   double* density,
                                   const int gp,
                                   const int ele_ID,
-                                  const double time)
+                                  const double time,
+                                  const string action)
 {
-  //cout << "I am Gauss point number " << gp << " in element number " << ele_ID << " at total time "
-  //     << time << endl;
-
   // activate microscale material
 
   RefCountPtr<DRT::Problem> micro_problem = DRT::Problem::Instance(1);
@@ -55,7 +53,7 @@ void MAT::MicroMaterial::Evaluate(const Epetra_SerialDenseMatrix* defgrd,
   // perform microscale simulation and homogenization
 
   RefCountPtr<MicroMaterialGP> actmicromatgp = matgp_[gp];
-  actmicromatgp->PerformMicroSimulation(defgrd, stress, cmat, density, time);
+  actmicromatgp->PerformMicroSimulation(defgrd, stress, cmat, density, time, action);
 
   // reactivate macroscale material
 

@@ -144,7 +144,13 @@ public:
   void Homogenization(Epetra_SerialDenseVector* stress,
                       Epetra_SerialDenseMatrix* cmat,
                       double *density,
-                      const Epetra_SerialDenseMatrix* defgrd);
+                      const Epetra_SerialDenseMatrix* defgrd,
+                      const string action);
+
+  void StaticHomogenization(Epetra_SerialDenseVector* stress,
+                            Epetra_SerialDenseMatrix* cmat,
+                            double *density,
+                            const Epetra_SerialDenseMatrix* defgrd);
 
   void calc_cmat(const Epetra_MultiVector& K_M,
                  const Epetra_SerialDenseMatrix& inv_defgrd,

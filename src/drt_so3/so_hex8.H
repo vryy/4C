@@ -300,7 +300,8 @@ protected:
     calc_struct_eleload,
     calc_struct_fsiload,
     calc_struct_update_istep,
-    calc_init_vol
+    calc_init_vol,
+    calc_homog_stressdens
   };
 
   //! kinematic types of so_hex8
@@ -381,6 +382,9 @@ protected:
                        Epetra_SerialDenseMatrix** deriv,
                        Epetra_SerialDenseVector** weights);
 
+  // the deformation gradient, Gauss point number, element ID and the
+  // action parameter (default: empty string) is needed only for multi-scale
+  // materials
   void soh8_mat_sel(Epetra_SerialDenseVector* stress,
                     Epetra_SerialDenseMatrix* cmat,
                     double* density,
@@ -388,7 +392,8 @@ protected:
                     const Epetra_SerialDenseMatrix* defgrd,
                     const int gp,
                     const int ele_ID,
-                    const double time);
+                    const double time,
+                    const string action = string());
 
   // EAS technology section
   void soh8_easinit();
@@ -400,6 +405,11 @@ protected:
           const Epetra_SerialDenseMatrix& xrefe);     // material element coords
 
   void soh8_initvol(ParameterList& params);
+
+  void soh8_homog(ParameterList&  params,
+                  vector<double>& disp,
+                  const double    time,
+                  vector<double>& residual);
 
   bool soh8_checkRewinding();
 
@@ -678,7 +688,7 @@ public:
     \param elevec1 (out)      : vector to be filled by element. If NULL on input,
 
     \return 0 if successful, negative otherwise
-    */  
+    */
   	virtual int Evaluate(ParameterList& params,
                          DRT::Discretization&      discretization,
                          vector<int>&              lm,

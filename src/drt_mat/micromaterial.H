@@ -105,7 +105,8 @@ public:
                   double* density,
                   const int gp,
                   const int ele_ID,
-                  const double time);
+                  const double time,
+                  const string action);
 
 private:
 

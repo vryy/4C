@@ -56,7 +56,8 @@ void DRT::Elements::So_hex8::soh8_mat_sel(
       const Epetra_SerialDenseMatrix* defgrd,
       const int gp,
       const int ele_ID,
-      const double time)
+      const double time,
+      const string action)
 {
   RefCountPtr<MAT::Material> mat = Material();
   switch (mat->MaterialType())
@@ -74,11 +75,11 @@ void DRT::Elements::So_hex8::soh8_mat_sel(
     case m_hyper_polyconvex:
     {
       MAT::HyperPolyconvex* hypo = static_cast <MAT::HyperPolyconvex*>(mat.get());
-      
+
       hypo->Evaluate(glstrain,cmat,stress);
-      
+
       *density = hypo->Density();
-      
+
       break;
     }
     case m_struct_multiscale: /*------------------- multiscale approach */
@@ -87,7 +88,7 @@ void DRT::Elements::So_hex8::soh8_mat_sel(
 
       MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
 
-      micro->Evaluate(defgrd, cmat, stress, density, gp, ele_ID, time);
+      micro->Evaluate(defgrd, cmat, stress, density, gp, ele_ID, time, action);
 
       // test case
       //micromat->CalcStressStiffDens(stress, cmat, density, glstrain);
@@ -100,11 +101,11 @@ void DRT::Elements::So_hex8::soh8_mat_sel(
     }
     case m_neohooke: /*----------------- NeoHookean Material */
     {
-	MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
-	neo->Evaluate(glstrain,cmat,stress);
-	*density = neo->Density();
+      MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
+      neo->Evaluate(glstrain,cmat,stress);
+      *density = neo->Density();
 
-	break;
+      break;
     }
     default:
       dserror("Illegal type %d of material for element solid3 hex8", mat->MaterialType());
@@ -141,11 +142,11 @@ void DRT::Elements::So_weg6::sow6_mat_sel(
     case m_hyper_polyconvex:
     {
       MAT::HyperPolyconvex* hypo = static_cast <MAT::HyperPolyconvex*>(mat.get());
-      
+
       hypo->Evaluate(glstrain,cmat,stress);
-      
+
       *density = hypo->Density();
-      
+
       break;
     }
     case m_neohooke: /*----------------- NeoHookean Material */
@@ -191,11 +192,11 @@ void DRT::Elements::SoDisp::sodisp_mat_sel(
     case m_hyper_polyconvex:
     {
       MAT::HyperPolyconvex* hypo = static_cast <MAT::HyperPolyconvex*>(mat.get());
-      
+
       hypo->Evaluate(glstrain,cmat,stress);
-      
+
       *density = hypo->Density();
-      
+
       break;
     }
     case m_neohooke: /*----------------- NeoHookean Material */
@@ -237,11 +238,11 @@ void DRT::Elements::So_tet10::so_tet10_mat_sel(
     case m_stvenant: /*------------------ st.venant-kirchhoff-material */
     {
       MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
-      
+
       stvk->Evaluate(glstrain,cmat,stress);
-      
+
       *density = stvk->Density();
-      
+
       break;
     }
     default:
