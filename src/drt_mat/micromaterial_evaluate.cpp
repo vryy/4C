@@ -1,4 +1,3 @@
-#ifdef D_SOH8
 #ifdef CCADISCRET
 
 #include "micromaterial.H"
@@ -62,5 +61,4 @@ void MAT::MicroMaterial::Evaluate(const Epetra_SerialDenseMatrix* defgrd,
   //exit(0);
 }
 
-#endif
 #endif

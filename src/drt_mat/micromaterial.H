@@ -116,6 +116,6 @@ private:
 
 }
 
-#endif
+#endif // CCADISCRET
 #endif
 
