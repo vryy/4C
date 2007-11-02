@@ -1,11 +1,10 @@
-
 //
 // Maintainer: Axel Gerstenberger
 //             gerstenberger@lnm.mw.tum.de
 //             http://www.lnm.mw.tum.de
 //             089 - 289-15236
 //
-// necessary defines: D_FLUID D_FLUID3_XFEM AZTEC_PACKAGE RESULTTEST DEBUG CCADISCRET TRILINOS_PACKAGE SOLVE_DIRICH SOLVE_DIRICH2 UMFPACK BINIO
+// necessary defines: D_FLUID3 RESULTTEST DEBUG CCADISCRET BINIO
 //
 //
 // #define MAXNOD           (27)
@@ -18,17 +17,17 @@
                         General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-xf3_channel_with_hole
+f3_channel_with_hole
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS           9
 NODES            152
 DIM                3
-MATERIALS          1
+MATERIALS          2
 NUMDF        6
 -------------------------------------------------------PROBLEM TYP
-PROBLEMTYP   Fluid
-NUMFIELD     1
-TIMETYP      Dynamic
+PROBLEMTYP   Fluid_XFEM
+NUMFIELD     2
+TIMETYP      Static
 TRACE        secure
 ALGEBRA      Trilinos           // ccarat/Trilinos
 RESTART      0
@@ -77,12 +76,12 @@ UPOUT        1
 UPPSS        1
 UPRES        1
 RESTARTEVRY  20
-NUMSTEP      5  
+NUMSTEP      5
 NUMSTASTEPS  0
 MAXTIME      1000.0
-TIMESTEP     0.05  
-MAX_DT       0.5   
-MIN_DT       0.0001  
+TIMESTEP     0.05
+MAX_DT       0.5
+MIN_DT       0.0001
 THETA        0.66
 START_THETA  0.67
 ALPHA_F      1.00
@@ -133,7 +132,7 @@ ML_AGG_SIZE       27              // objective size of an aggregate with METIS/V
 ML_PROLONG_SMO    1.33            // damping factor for prolongator smoother (usually 1.33 or 0.0)
 ML_PROLONG_THRES  0.0             // threshold for prolongator smoother/aggregation
 ML_SMOOTHERFINE   SGS             // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED    ILU             // SGS Jacobi Chebychev MLS ILU KLU 
+ML_SMOOTHERMED    ILU             // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERCOARSE KLU             // SGS Jacobi Chebychev MLS KLU Superlu
 ML_SMOTIMES       1 0 1           // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ML_DAMPFINE       1.0             // damping fine grid
@@ -141,8 +140,7 @@ ML_DAMPMED        1.0             // damping med grids
 ML_DAMPCOARSE     1.0             // damping coarse grid
 PARTITION      Cut_Elements
 -----------------------------------------------------STRUCT SOLVER
-SOLVER         Aztec_MSR
-SOLVER         Aztec_MSR    // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER         UMFPACK    // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0            // output every so often, 0 no output
 AZSOLVE        CG           // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC         ILU          // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
@@ -167,40 +165,7 @@ ML_AGG_SIZE       27              // objective size of an aggregate with METIS/V
 ML_PROLONG_SMO    1.33      // damping factor for prolongator smoother (usually 0.0 or 1.33)
 ML_PROLONG_THRES  0.0       // threshold for prolongator smoother/aggregation
 ML_SMOOTHERFINE   Chebychev // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED    Chebychev // SGS Jacobi Chebychev MLS ILU KLU 
-ML_SMOOTHERCOARSE KLU       // SGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES       3 3 1     // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE       1.0       // damping fine grid
-ML_DAMPMED        1.0       // damping med grids
-ML_DAMPCOARSE     1.0       // damping coarse grid
-PARTITION      Cut_Elements
---------------------------------------------------------ALE SOLVER
-SOLVER         Aztec_MSR
-SOLVER         Aztec_MSR    // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT       0            // output every so often, 0 no output
-AZSOLVE        CG           // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC         ILU          // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
-AZREUSE        0            // how often to recompute some preconditioners
-AZDROP         0.0          // drop tolerance for ILUT
-AZFILL         1.0          // fill-in for ILUT
-AZGFILL        0            // graph fill for ILU
-AZTOL          1.0E-8       // tolerance in unscaled residual
-AZITER         1000         // max iterations
-AZSUB          40           // size of krylov space for gmres
-AZOMEGA        1.0          // unused
-AZGRAPH        1            // unused
-AZPOLY         5            // polynomial order for Neumann
-AZOVERLAP      0            // amount of ASM overlap for ILU, ILU, ICC, LU
-AZSCAL         infnorm      // none sym infnorm scaling of the system
-ML_PRINT          0         // ML print-out level (0-10)
-ML_MAXCOARSESIZE  1000      // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL       3         // ML max number of levels
-ML_COARSEN        UC        // UC MIS METIS VBMETIS
-ML_AGG_SIZE       27              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO    1.33      // damping factor for prolongator smoother (usually 0.0 or 1.33)
-ML_PROLONG_THRES  0.0       // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE   Chebychev // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED    Chebychev // SGS Jacobi Chebychev MLS ILU KLU 
+ML_SMOOTHERMED    Chebychev // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERCOARSE KLU       // SGS Jacobi Chebychev MLS KLU Superlu
 ML_SMOTIMES       3 3 1     // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ML_DAMPFINE       1.0       // damping fine grid
@@ -805,7 +770,7 @@ Surface: 6 Orientation: SAME1ST
 Center: 1.000000 0.500000 0.500000
 END VOLUME
 VOLUME
-Num: 2 HigherEntity: 0 conditions: 2 material: 1
+Num: 2 HigherEntity: 0 conditions: 2 material: 2
 LAYER: Structure
 Meshing Info: (num=6,NOE=1) Elemtype=5 IsStructured=1 size=0 Meshing=Default
 NumSurfaces: 6
@@ -817,7 +782,7 @@ Surface: 11 Orientation: SAME1ST
 Surface: 12 Orientation: SAME1ST
 Center: 0.950000 0.450000 0.500000
 END VOLUME
-------------------------------------DESIGN POINT DIRICH CONDITIONS 
+------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT 0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
@@ -912,7 +877,8 @@ DSURF 0
 DSURF 0
 ------------------------DESIGN FLUID VOLUME STABILISING CONDITIONS
 // DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
-DVOL 0
+DVOL 1
+E 1 - USFEM yes yes GLS- yes 35 L_2 -1 533 at_center at_center 1.0
 ------------------------------------DESIGN POINT LOCSYS CONDITIONS
 // DOBJECT Id
 DPOINT 0
@@ -1570,21 +1536,23 @@ NODE          151     COORD 0.000000000000000e+00     0.000000000000000e+00     
 NODE          152     COORD 0.000000000000000e+00     0.000000000000000e+00     1.000000000000000e+00   
 ----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
+      1 SOLID3 HEX27     43    91    85    29    60   105    99    51    70    88    59    33    52   100    90    40    81   102    74    58    64    75    92    69    44    80    73  MAT       2 GP 3 0 0 KINEM Totlag STRESS None TSI_COUPTYP None
 ----------------------------------------------------FLUID ELEMENTS
-      1 FLUID3 HEX27     63   136   131    49    95   149   143    83   110   134   103    55    78   141   137    67   123   146   118    86   108   116   139   111    71   120   113  MAT       1 NA Euler GP 3 3 3 
-      2 FLUID3 HEX27     14    63    49     5    48    95    83    30    22    55    13    10    24    78    67    16    61    86    45    35    18    38    71    23    20    53    27  MAT       1 NA Euler GP 3 3 3 
-      3 FLUID3 HEX27     96   148   136    63   115   152   149    95   124   142   110    79   107   150   141    78   132   151   123   106   117   126   147   116    89   125   122  MAT       1 NA Euler GP 3 3 3 
-      4 FLUID3 HEX27     46    96    63    14    82   115    95    48    62    79    22    25    65   107    78    24    94   106    61    66    39    77    89    38    41    76    57  MAT       1 NA Euler GP 3 3 3 
-      5 FLUID3 HEX27     50   133   127    32    63   136   131    49   104   129    93    37    56   135   128    36   110   134   103    55    98   109   130    97    42   108   101  MAT       1 NA Euler GP 3 3 3 
-      6 FLUID3 HEX27      7    50    32     1    14    63    49     5    15    37     6     3     9    56    36     2    22    55    13    10    11    19    42     8     4    18    12  MAT       1 NA Euler GP 3 3 3 
-      7 FLUID3 HEX27     84   144   133    50    96   148   136    63   119   138   104    68    87   145   135    56   124   142   110    79   112   121   140   109    72   117   114  MAT       1 NA Euler GP 3 3 3 
-      8 FLUID3 HEX27     31    84    50     7    46    96    63    14    47    68    15    17    34    87    56     9    62    79    22    25    26    54    72    19    21    39    28  MAT       1 NA Euler GP 3 3 3 
-      9 FLUID3 HEX27     43    91    85    29    60   105    99    51    70    88    59    33    52   100    90    40    81   102    74    58    64    75    92    69    44    80    73  MAT       1 NA Euler GP 3 3 3 
+      1 FLUID3 HEX27     63   136   131    49    95   149   143    83   110   134   103    55    78   141   137    67   123   146   118    86   108   116   139   111    71   120   113  MAT       1 NA Euler GP 3 3 3
+      2 FLUID3 HEX27     14    63    49     5    48    95    83    30    22    55    13    10    24    78    67    16    61    86    45    35    18    38    71    23    20    53    27  MAT       1 NA Euler GP 3 3 3
+      3 FLUID3 HEX27     96   148   136    63   115   152   149    95   124   142   110    79   107   150   141    78   132   151   123   106   117   126   147   116    89   125   122  MAT       1 NA Euler GP 3 3 3
+      4 FLUID3 HEX27     46    96    63    14    82   115    95    48    62    79    22    25    65   107    78    24    94   106    61    66    39    77    89    38    41    76    57  MAT       1 NA Euler GP 3 3 3
+      5 FLUID3 HEX27     50   133   127    32    63   136   131    49   104   129    93    37    56   135   128    36   110   134   103    55    98   109   130    97    42   108   101  MAT       1 NA Euler GP 3 3 3
+      6 FLUID3 HEX27      7    50    32     1    14    63    49     5    15    37     6     3     9    56    36     2    22    55    13    10    11    19    42     8     4    18    12  MAT       1 NA Euler GP 3 3 3
+      7 FLUID3 HEX27     84   144   133    50    96   148   136    63   119   138   104    68    87   145   135    56   124   142   110    79   112   121   140   109    72   117   114  MAT       1 NA Euler GP 3 3 3
+      8 FLUID3 HEX27     31    84    50     7    46    96    63    14    47    68    15    17    34    87    56     9    62    79    22    25    26    54    72    19    21    39    28  MAT       1 NA Euler GP 3 3 3
 ------------------------------------------------------ALE ELEMENTS
 --------------------------------------------------THERMAL ELEMENTS
 ---------------------------------------------------------MATERIALS
 // MAT_fluid
 MAT       1 MAT_fluid  VISCOSITY 1.1 DENSITY 1.0 GAMMA 1.0
+// MAT_Struct_StVenantKirchhoff
+MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 1.0 NUE 0.0 DENS 1.0 THEXPANS 0.0
 ----------------------------------------------MULTILAYER MATERIALS
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES
@@ -1609,8 +1577,8 @@ FLUID DIS 1 NODE 2155 POSITION pressure NAME pressure VALUE 2.735080697e-04 TOLE
 -----------------------------------------------------------LOCSYS5
 --------------------------------------------------------MONITORING
 // FIELD globalId FLAG FLAG FLAG FLAG FLAG FLAG
-// FLUID 1 - 0 0 0 0 0 0 
-// STRUCTURE 2 - 0 0 0 0 0 0 
-// ALE 3 - 0 0 0 0 0 0 
+// FLUID 1 - 0 0 0 0 0 0
+// STRUCTURE 2 - 0 0 0 0 0 0
+// ALE 3 - 0 0 0 0 0 0
 ---------------------------------------------------------------END
 // END

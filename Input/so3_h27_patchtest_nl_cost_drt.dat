@@ -4,7 +4,7 @@
 //             http://www.lnm.mw.tum.de/Members/bornemann
 //             089-289-15237
 //
-// necessary defines: D_SOH8 DCHECK_MAX AZTEC_PACKAGE RESULTTEST DEBUG CCADISCRET TRILINOS_PACKAGE SOLVE_DIRICH SOLVE_DIRICH2 UMFPACK BINIO
+// necessary defines: D_SOH8 RESULTTEST DEBUG CCADISCRET BINIO
 //
 // #define MAXNOD           (27)
 // #define MAXELE            (4)

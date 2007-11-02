@@ -4,7 +4,7 @@
 //             http://www.lnm.mw.tum.de
 //             089 - 289-15238
 // 
-// necessary defines: D_FSI D_FLUID2 AZTEC_PACKAGE RESULTTEST CCADISCRET TRILINOS_PACKAGE SOLVE_DIRICH SOLVE_DIRICH2 UMFPACK BINIO D_ALE D_WALL1
+// necessary defines: D_FLUID2 RESULTTEST CCADISCRET BINIO D_ALE D_WALL1
 //
 // #define MAXNOD           (4)
 // #define MAXELE           (4)

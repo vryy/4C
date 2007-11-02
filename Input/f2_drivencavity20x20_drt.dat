@@ -4,7 +4,7 @@
 //             http://www.uni-stuttgart.de/ibs/members/genkinger/
 //             0711 - 685-6127
 //
-// necessary defines: D_FLUID D_FLUID2 AZTEC_PACKAGE RESULTTEST DEBUG CCADISCRET TRILINOS_PACKAGE SOLVE_DIRICH SOLVE_DIRICH2 UMFPACK BINIO
+// necessary defines: D_FLUID2 RESULTTEST DEBUG CCADISCRET BINIO
 //
 //
 // #define MAXNOD           (4)
