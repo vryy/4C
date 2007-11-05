@@ -876,6 +876,7 @@ if (discap == 1)
 {
   // parameter for artificial diffusivity
   const double kartfac = kart*timefacfac;
+  const double taumfac = tau*timefacfac;
 
   #define edc_(i,j)    edc(i,j)
   #define derxy_(i,j)  derxy(i,j)
@@ -1011,6 +1012,7 @@ if (discap == 1)
 {
   // parameter for artificial diffusivity
   const double kartfac = kart*fac;
+  const double taumfac = tau*fac;
 
   #define edc_(i,j)    edc(i,j)
   #define derxy_(i,j)  derxy(i,j)

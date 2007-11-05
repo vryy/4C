@@ -7,7 +7,7 @@ for (int vi=0; vi<iel; ++vi)
     edc_(vi, ui) += kartfac*(derxy_(0, vi)*derxy_(0, ui) + derxy_(1, vi)*derxy_(1, ui)) ;
 
     /*subtract SUPG term */
-    edc_(vi, ui) -= taufac*conv_(vi)*conv_(ui) ;
+    edc_(vi, ui) -= taumfac*conv_(vi)*conv_(ui) ;
 
     }
 }
