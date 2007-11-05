@@ -44,6 +44,7 @@ class Fluid3Surface;
 class Fluid3Line;
 class Fluid3Impl;
 class Fluid3GenalphaResVMM;
+class Fluid3Stationary;
 class Fluid3Register;
 
 /*!
@@ -63,6 +64,7 @@ public:
   friend class Fluid3Line;
   friend class Fluid3Impl;
   friend class Fluid3GenalphaResVMM;
+  friend class Fluid3Stationary;  
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -300,6 +302,7 @@ private:
     calc_fluid_systemmat_and_residual,
     calc_fluid_genalpha_sysmat_and_residual,
     calc_fluid_genalpha_update_for_subscales,
+    calc_fluid_stationary_systemmat_and_residual,    
     calc_fluid_beltrami_error,
     calc_turbulence_statistics,
     calc_Shapefunction,
@@ -665,6 +668,9 @@ private:
 
   /// Residual based genalpha implementation class for fluid element
   Fluid3GenalphaResVMM* GenalphaResVMM();
+  
+  /// Internal implementation class for fluid element -- stationary formulation
+  Fluid3Stationary* StationaryImpl();  
 
 protected:
   /*!

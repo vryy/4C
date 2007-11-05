@@ -21,6 +21,7 @@ Maintainer: Georg Bauer
 #include "fluid3.H"
 #include "fluid3_impl.H"
 #include "fluid3_genalpha_resVMM.H"
+#include "fluid3_stationary.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
@@ -168,6 +169,74 @@ DRT::Elements::Fluid3GenalphaResVMM* DRT::Elements::Fluid3::GenalphaResVMM()
   return NULL;
 }
 
+
+DRT::Elements::Fluid3Stationary* DRT::Elements::Fluid3::StationaryImpl()
+{
+  switch (NumNode())
+  {
+  case 8:
+  {
+    static Fluid3Stationary* f;
+    if (f==NULL)
+      f = new Fluid3Stationary(8);
+    return f;
+  }
+  case 20:
+  {
+    static Fluid3Stationary* f;
+    if (f==NULL)
+      f = new Fluid3Stationary(20);
+    return f;
+  }
+  case 27:
+  {
+    static Fluid3Stationary* f;
+    if (f==NULL)
+      f = new Fluid3Stationary(27);
+    return f;
+  }
+  case 4:
+  {
+    static Fluid3Stationary* f;
+    if (f==NULL)
+      f = new Fluid3Stationary(4);
+    return f;
+  }
+  case 10:
+  {
+    static Fluid3Stationary* f;
+    if (f==NULL)
+      f = new Fluid3Stationary(10);
+    return f;
+  }
+  case 6:
+  {
+    static Fluid3Stationary* f;
+    if (f==NULL)
+      f = new Fluid3Stationary(6);
+    return f;
+  }
+  case 15:
+  {
+    static Fluid3Stationary* f;
+    if (f==NULL)
+      f = new Fluid3Stationary(15);
+    return f;
+  }
+  case 5:
+  {
+    static Fluid3Stationary* f;
+    if (f==NULL)
+      f = new Fluid3Stationary(5);
+    return f;
+  }
+
+  default:
+    dserror("node number %d not supported", NumNode());
+  }
+  return NULL;
+}
+
 // converts a string into an Action for this element
 DRT::Elements::Fluid3::ActionType DRT::Elements::Fluid3::convertStringToActionType(
               const string& action) const
@@ -181,6 +250,8 @@ DRT::Elements::Fluid3::ActionType DRT::Elements::Fluid3::convertStringToActionTy
     act = Fluid3::calc_fluid_genalpha_sysmat_and_residual;
   else if (action == "time update for subscales")
     act = Fluid3::calc_fluid_genalpha_update_for_subscales;
+  else if (action == "calc_fluid_stationary_systemmat_and_residual")
+    act = Fluid3::calc_fluid_stationary_systemmat_and_residual;  
   else if (action == "calc_fluid_beltrami_error")
     act = Fluid3::calc_fluid_beltrami_error;
   else if (action == "calc_turbulence_statistics")
@@ -316,7 +387,6 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
         }
 
         // get control parameter
-        const bool is_stationary = params.get<bool>("using stationary formulation",false);
         const double time = params.get<double>("total time",-1.0);
 
         bool newton              = params.get<bool>("include reactive terms for linearisation",false);
@@ -327,12 +397,9 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
 
         // One-step-Theta: timefac = theta*dt
         // BDF2:           timefac = 2/3 * dt
-        double timefac = 0;
-        if (not is_stationary)
-        {
-          timefac = params.get<double>("thsl",-1.0);
-          if (timefac < 0.0) dserror("No thsl supplied");
-        }
+        double timefac = 0.0;
+        timefac = params.get<double>("thsl",-1.0);
+        if (timefac < 0.0) dserror("No thsl supplied");
 
         // wrap epetra serial dense objects in blitz objects
         blitz::Array<double, 2> estif(elemat1.A(),
@@ -343,7 +410,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
                                        blitz::shape(elevec1.Length()),
                                        blitz::neverDeleteData);
 
-        // calculate element coefficient matrix and rhs
+        // calculate element coefficient matrix and rhs     
         Impl()->Sysmat(this,
                        evelnp,
                        eprenp,
@@ -360,7 +427,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
                        supg   ,
                        vstab  ,
                        cstab  ,
-                       is_stationary);
+                       false);
 
         // This is a very poor way to transport the density to the
         // outside world. Is there a better one?
@@ -606,6 +673,119 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
         //  u <- u
         //
         sub_vel_old_=sub_vel_;
+      break;
+      case calc_fluid_stationary_systemmat_and_residual:
+      {
+          // need current velocity and history vector
+          RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velnp");
+          RefCountPtr<const Epetra_Vector> hist  = discretization.GetState("hist");
+          if (velnp==null || hist==null)
+            dserror("Cannot get state vectors 'velnp' and/or 'hist'");
+
+          // extract local values from the global vectors
+          vector<double> myvelnp(lm.size());
+          DRT::Utils::ExtractMyValues(*velnp,myvelnp,lm);
+          vector<double> myhist(lm.size());
+          DRT::Utils::ExtractMyValues(*hist,myhist,lm);
+
+          RefCountPtr<const Epetra_Vector> dispnp;
+          vector<double> mydispnp;
+          RefCountPtr<const Epetra_Vector> gridv;
+          vector<double> mygridv;
+
+          if (is_ale_)
+          {
+            dispnp = discretization.GetState("dispnp");
+            if (dispnp==null) dserror("Cannot get state vectors 'dispnp'");
+            mydispnp.resize(lm.size());
+            DRT::Utils::ExtractMyValues(*dispnp,mydispnp,lm);
+
+            gridv = discretization.GetState("gridv");
+            if (gridv==null) dserror("Cannot get state vectors 'gridv'");
+            mygridv.resize(lm.size());
+            DRT::Utils::ExtractMyValues(*gridv,mygridv,lm);
+          }
+
+          // split velocity and pressure
+          // create blitz objects
+
+          const int numnode = NumNode();
+          blitz::Array<double, 1> eprenp(numnode);
+          blitz::Array<double, 2> evelnp(3,numnode,blitz::ColumnMajorArray<2>());
+          blitz::Array<double, 2> evhist(3,numnode,blitz::ColumnMajorArray<2>());
+          blitz::Array<double, 2> edispnp(3,numnode,blitz::ColumnMajorArray<2>());
+          blitz::Array<double, 2> egridv(3,numnode,blitz::ColumnMajorArray<2>());
+
+          for (int i=0;i<numnode;++i)
+          {
+            evelnp(0,i) = myvelnp[0+(i*4)];
+            evelnp(1,i) = myvelnp[1+(i*4)];
+            evelnp(2,i) = myvelnp[2+(i*4)];
+
+            eprenp(i) = myvelnp[3+(i*4)];
+
+            evhist(0,i) = myhist[0+(i*4)];
+            evhist(1,i) = myhist[1+(i*4)];
+            evhist(2,i) = myhist[2+(i*4)];
+          }
+
+          if (is_ale_)
+          {
+            for (int i=0;i<numnode;++i)
+            {
+              edispnp(0,i) = mydispnp[0+(i*4)];
+              edispnp(1,i) = mydispnp[1+(i*4)];
+              edispnp(2,i) = mydispnp[2+(i*4)];
+
+              egridv(0,i) = mygridv[0+(i*4)];
+              egridv(1,i) = mygridv[1+(i*4)];
+              egridv(2,i) = mygridv[2+(i*4)];
+            }
+          }
+
+          // get control parameter
+   // gjb       const bool is_stationary = params.get<bool>("using stationary formulation",false);
+          const double time = params.get<double>("total time",-1.0);
+
+          bool newton              = params.get<bool>("include reactive terms for linearisation",false);
+          bool pstab  =true;
+          bool supg   =true;
+          bool vstab  =true;
+          bool cstab  =true;
+        
+          double timefac = 0.0;
+
+          // wrap epetra serial dense objects in blitz objects
+          blitz::Array<double, 2> estif(elemat1.A(),
+                                        blitz::shape(elemat1.M(),elemat1.N()),
+                                        blitz::neverDeleteData,
+                                        blitz::ColumnMajorArray<2>());
+          blitz::Array<double, 1> eforce(elevec1.Values(),
+                                         blitz::shape(elevec1.Length()),
+                                         blitz::neverDeleteData);
+
+          // calculate element coefficient matrix and rhs         
+          StationaryImpl()->Sysmat(this,
+                         evelnp,
+                         eprenp,
+                         evhist,
+                         edispnp,
+                         egridv,
+                         estif,
+                         eforce,
+                         actmat,
+                         time,
+                         timefac,
+                         newton ,
+                         pstab  ,
+                         supg   ,
+                         vstab  ,
+                         cstab  );
+
+          // This is a very poor way to transport the density to the
+          // outside world. Is there a better one?
+          params.set("density", actmat->m.fluid->density);	  
+      }
       break;
       case calc_Shapefunction:
         shape_function_3D(elevec1,elevec2[0],elevec2[1],elevec2[2],this->Shape());
