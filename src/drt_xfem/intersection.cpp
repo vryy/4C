@@ -57,12 +57,15 @@ void Intersection::computeIntersection( const RefCountPtr<DRT::Discretization>  
                                         map< int, DomainIntCells >&   integrationcellList)
 {
     
+	
     bool xfemIntersection; 
     vector< DRT::Condition * >      		xfemConditions;
     map< int, vector< DRT::Element* > >     cutterElementMap;
     DRT::Element*                   		xfemElement;
     vector< DRT::Element* > 				cutterElements;
 
+    countMissedPoints_ = 0;
+    
 #ifdef PARALLEL
 	const int cmyrank = cutterdis->Comm().MyPID();
 	const int xnumproc = xfemdis->Comm().NumProc();
@@ -78,22 +81,10 @@ void Intersection::computeIntersection( const RefCountPtr<DRT::Discretization>  
 	
     // obtain vector of pointers to all xfem conditions of all cutter discretizations
     cutterdis->GetCondition ("XFEMCoupling", xfemConditions);
-    //cout << endl << "number of xfem conditions =" << xfemConditions.size() << endl; cout << endl;
         
     if(xfemConditions.size()==0)
         dserror("number of fsi xfem conditions = 0");
-        
-    /* for(unsigned int i=0; i<xfemConditions.size(); i++)  cout << *xfemConditions[i]; */   
-
-    /*cout << endl; 
-    xfemElement = xfemdis->gElement(xfemdis->NumMyRowElements()-1);
-    for(int jE = 0; jE < xfemElement->NumNode(); jE++)
-    {
-        xfemElement->Nodes()[jE]->Print(cout);
-        cout << endl;
-    }
-    cout << endl;
-    */
+      
        
 #ifdef PARALLEL
 		adjustCutterElementNumbering(cutterdis, xfemConditions, conditionEleCount);
@@ -114,7 +105,6 @@ void Intersection::computeIntersection( const RefCountPtr<DRT::Discretization>  
         //printf("size of xfem condition = %d\n", xfemConditions.size());
         for(unsigned int i=0; i<xfemConditions.size(); i++)
         {
-        	
             map< int, RefCountPtr<DRT::Element > >  geometryMap = xfemConditions[i]->Geometry();
             map<int, RefCountPtr<DRT::Element > >::iterator iterGeo;   
             //if(geometryMap.size()==0)   printf("geometry does not obtain elements\n");
@@ -133,7 +123,7 @@ void Intersection::computeIntersection( const RefCountPtr<DRT::Discretization>  
                 {
                 	if(cutterElementMap.find(xfemElement->LID()) != cutterElementMap.end())
                 	{
-                    	cutterElementMap.find(xfemElement->LID())->second.push_back(cutterElement);  
+                    	cutterElementMap.find(xfemElement->LID())->second.push_back(cutterElement); 
                 	}
                    	else
                    	{
@@ -175,13 +165,19 @@ void Intersection::computeIntersection( const RefCountPtr<DRT::Discretization>  
 
 #endif         
         
-        cutterElements = cutterElementMap.find(k)->second;
-        
+        if(cutterElementMap.find(xfemElement->LID()) != cutterElementMap.end())
+            cutterElements = cutterElementMap.find(k)->second;
+        else
+            cutterElements.resize(0);
+            
         for(unsigned int i = 0; i < cutterElements.size(); i++ )
         {
             numInternalPoints_= 0; 
             numBoundaryPoints_ = 0;
             vector< InterfacePoint >  interfacePoints; 
+            
+            if(cutterElements[i] == NULL) dserror("cutter element is null\n");
+           
             initializeCutter(cutterElements[i]); 
 
             // collect internal points
@@ -215,15 +211,20 @@ void Intersection::computeIntersection( const RefCountPtr<DRT::Discretization>  
             interfacePoints.clear();     
         }// for-loop over all cutter elements
         
+        
         if(xfemIntersection)
         {                                                                          
             //debugTetgenDataStructure(xfemElement);
             computeCDT(xfemElement, cutterElements[0], integrationcellList);
         }
+       
     }// for-loop over all  actdis->NumMyColElements()
     
     //debugDomainIntCells(integrationcellList,2);
     cout << endl;
+    if(countMissedPoints_ > 0)
+    	cout << "Number of missed points during the recovery copy = " << countMissedPoints_ << endl;
+    	
     cout << "Intersection computed sucessfully ";
 #ifdef PARALLEL
     flush(cout);
@@ -1951,7 +1952,7 @@ void Intersection::computeCDT(
     int nsurfPoints = 0;
     tetgenio in;
     tetgenio out;
-    char switches[] = "pnno2QY";    //o2
+    char switches[] = "pnno2Q";    //o2 Y
     tetgenio::facet *f;
     tetgenio::polygon *p;
     
@@ -2090,7 +2091,7 @@ void Intersection::computeCDT(
             
             // store volume constraint (switch a)   
             in.regionlist[fill++] = 0.0;
-		//}
+		//} 
 	}
 	   
     in.save_nodes("tetin");   
@@ -2403,6 +2404,28 @@ void Intersection::storeTriangles(
 
 
 /*----------------------------------------------------------------------*
+ |  RCI:    stores a pointer to each intersecting            u.may 08/07|
+ |          cutter element  used for the recovery of curved interface   |     
+ *----------------------------------------------------------------------*/  
+void Intersection::storeIntersectedCutterElement(
+    DRT::Element* surfaceElement)
+{
+    bool alreadyInList = false;
+  
+    for(unsigned int i = 0; i < intersectingCutterElements_.size(); i++)
+        if(intersectingCutterElements_[i] == surfaceElement)
+        {
+            alreadyInList = true;
+            break; 
+        }
+      
+    if(!alreadyInList)
+        intersectingCutterElements_.push_back(surfaceElement);  
+}   
+
+
+
+/*----------------------------------------------------------------------*
  |  RCI:    recovers the curved interface after the          u.may 08/07|
  |          Constrained Delaunay Tetrahedralization                     |
  *----------------------------------------------------------------------*/  
@@ -2414,7 +2437,6 @@ void Intersection::recoverCurvedInterface(
     vector<int>                                     order(3,0);
     vector<int>                                     tetraCornerIndices(4,0); 
     vector < Epetra_SerialDenseVector >             tetraCornerNodes(4, Epetra_SerialDenseVector(3));
-    vector < vector <Epetra_SerialDenseVector> >    surfaceNodes;
     
     
     // list of point markers , if already visited = 1 , if not = 0
@@ -2422,25 +2444,21 @@ void Intersection::recoverCurvedInterface(
     for(int i = 0; i<out.numberofpoints; i++)
         visitedPointIndexList[i] = 0;
         
-        
-    // transform surface elements into the ref system of the xfem element
-    transformSurfaceNodes(xfemElement, surfaceNodes);    
-        
     // lifts all corner points into the curved interface
-    liftAllCornerPoints(out, xfemElement, surfaceNodes);
-     
+    liftAllSteinerPoints(xfemElement, out);
+      
     for(int i=0; i<out.numberoftrifaces; i++)
     {
         // run over all faces not lying in on of the xfem element planes
-        int faceMarkerIndex = out.trifacemarkerlist[i] - facetMarkerOffset_;
+        int faceMarker = out.trifacemarkerlist[i] - facetMarkerOffset_;
         
-        if(faceMarkerIndex > -1)
+        if(faceMarker > -1)
         {        
             int tetIndex = out.adjtetlist[i*2];
             //printf("tetIndex = %d\n", tetIndex); 
 
-            getTetrahedronInformation(out, tetraCornerIndices, order, tetIndex, i);
-            getTetrahedronNodes(out, xfemElement, tetraCornerNodes, tetraCornerIndices);
+            getTetrahedronInformation(tetIndex, i, tetraCornerIndices, order, out );
+            getTetrahedronNodes(tetraCornerNodes, tetraCornerIndices, xfemElement, out);
             
             // run over each triface
             for(int index1 = 0; index1 < 3 ;index1++)
@@ -2456,74 +2474,11 @@ void Intersection::recoverCurvedInterface(
                 const int globalHigherOrderIndex = out.tetrahedronlist[tetIndex*out.numberofcorners+localHigherOrderIndex];
                 //printf("globalHOindex = %d\n", globalHigherOrderIndex);
                 if(visitedPointIndexList[globalHigherOrderIndex]== 0)
-                {      
-                    bool                                    currentDomain = true; 
-                    bool                                    intersected   = false;                   
-                    Epetra_SerialDenseVector                xsi(3);  
-                    vector < Epetra_SerialDenseVector >     plane(5, Epetra_SerialDenseVector(3)); 
-                                         
+                {     
                     visitedPointIndexList[globalHigherOrderIndex] = 1; 
-                         
-                    if(facetOnExternalBoundary(index1, index2, 3, tetIndex, out))       currentDomain = false;
-                    else                                                                currentDomain = true;
-                       
-                    computeIntersectionNormal(  xfemElement, index1, index2, globalHigherOrderIndex, out, 
-                                                tetraCornerIndices, order, tetraCornerNodes, plane, currentDomain);
-                
-                    intersected = computeRecoveryNormal(    surfaceNodes[faceMarkerIndex], 
-                                                            intersectingCutterElements_[faceMarkerIndex], 
-                                                            plane, xsi, currentDomain);
-              
-                    //intersected = true;
-                    if(intersected)
-                    {
-                        storeHigherOrderNode(   globalHigherOrderIndex, xsi, surfaceNodes[faceMarkerIndex], plane, -1,
-                                                intersectingCutterElements_[faceMarkerIndex], xfemElement, out, true, true);
-                        
-                    }
-                    else
-                    {
-                        int lineIndex           = -1;
-                        int surfaceIndex        = -1;
-                        int faceMarkerIndex2    = -1;
-                        // find other facemarker
-                        // determine common lineElement - the intersection line
-
-                        if(currentDomain)
-                        {
-                            //printf("CURRENT DOMAIN\n");
-                            faceMarkerIndex2 = findAdjacentFaceMarker(  tetraCornerIndices[index1], 
-                                                                        tetraCornerIndices[index2], 
-                                                                        faceMarkerIndex, out); 
-                            findCommonCutterLine(faceMarkerIndex, faceMarkerIndex2, surfaceIndex, lineIndex); 
-                        }
-                        else
-                        { 
-                            //printf("REFERNCE DOMAIN\n");
-                            surfaceIndex = faceMarkerIndex;
-                            lineIndex = findIntersectingSurfaceEdge(xfemElement, intersectingCutterElements_[surfaceIndex],
-                                                                    tetraCornerNodes[index1], 
-                                                                    tetraCornerNodes[index2]);
-                            //printf("lineIndex = %d\n", lineIndex);
-                        }
-                        
-                        intersected = computeRecoveryPlane( surfaceNodes[surfaceIndex], 
-                                                            intersectingCutterElements_[surfaceIndex], 
-                                                            lineIndex, plane, xsi, true);
-                       
-                        if(intersected)
-                        {   
-                            //printf("\n");
-                            //printf("INTERSECTED PLANE\n");
-                            //printf("\n");
-                            storeHigherOrderNode(   globalHigherOrderIndex, xsi, surfaceNodes[faceMarkerIndex], plane,
-                                                    lineIndex, intersectingCutterElements_[faceMarkerIndex], 
-                                                    xfemElement, out, true, false);
-                        
-                        }
-                        else dserror("NO INTERSECTION POINT FOUND\n");
-                                
-                    }       
+       
+                    computeHigherOrderPoint(    index1, index2, i, faceMarker, globalHigherOrderIndex, 
+                                                tetraCornerIndices, tetraCornerNodes, xfemElement, out);                     
                 }
             }
         }
@@ -2541,15 +2496,46 @@ void Intersection::recoverCurvedInterface(
  |          in a surface element                                        |   
  |          if not corner points is recovered on the surface element    | 
  *----------------------------------------------------------------------*/
-void Intersection::liftAllCornerPoints(
-    tetgenio&                                       out,
+void Intersection::liftAllSteinerPoints(
     DRT::Element*                                   xfemElement,
-    vector< vector<Epetra_SerialDenseVector> >&     surfaceNodes)
+    tetgenio&                                       out)
 {
+    int lineIndex, cutterIndex;
+    Epetra_SerialDenseVector edgePoint(3);
+    Epetra_SerialDenseVector oppositePoint(3);
     vector< vector <int> > adjacentFacesList;
     vector< vector <int> > adjacentFacemarkerList;
     
+    locateSteinerPoints(adjacentFacesList, adjacentFacemarkerList, out);
     
+    if(!adjacentFacesList.empty())
+    {
+        for(unsigned int i=0; i<adjacentFacesList.size(); i++)
+        {        
+            bool  normalSteiner = decideNormalOrPlane(  i, lineIndex, cutterIndex, adjacentFacesList, adjacentFacemarkerList,
+                                                        edgePoint, oppositePoint, xfemElement, out);
+              
+            if(normalSteiner)
+                liftSteinerPointOnSurface(i, adjacentFacesList, adjacentFacemarkerList, xfemElement, out);
+            else
+                liftSteinerPointOnEdge( i, lineIndex, cutterIndex, edgePoint, oppositePoint, 
+                                        adjacentFacesList, xfemElement, out);
+        }
+    }
+}
+            
+
+
+/*----------------------------------------------------------------------*
+ |  RCI:    stores for each Steiner point its adjacent       u.may 11/07|
+ |          faces and face markers                                      |   
+ *----------------------------------------------------------------------*/
+void Intersection::locateSteinerPoints(
+    vector< vector <int> >&     adjacentFacesList,
+    vector< vector <int> >&     adjacentFacemarkerList,
+    tetgenio&                   out)
+{
+
     for(int i = 0; i < out.numberoftrifaces; i++)
     {   
         if( (out.trifacemarkerlist[i]-facetMarkerOffset_) > -1)
@@ -2563,8 +2549,6 @@ void Intersection::liftAllCornerPoints(
                 {
                     bool alreadyInList = false;
                     vector<int> pointIndices = getPointIndices(out, i, j);
-                    //printf("pointIndex2 = %d\n", pointIndices[0]);
-                    //printf("pointIndex3 = %d\n", pointIndices[1]);
                     
                     for(unsigned int k = 0; k < adjacentFacesList.size(); k++)
                         if(adjacentFacesList[k][0] == pointIndex)
@@ -2590,192 +2574,387 @@ void Intersection::liftAllCornerPoints(
                         vector<int> adjacentFacemarkers(1);
                         adjacentFacemarkers[0] = out.trifacemarkerlist[i]-facetMarkerOffset_ ;
                         adjacentFacemarkerList.push_back(adjacentFacemarkers);
-                       
                     }
                 }
             }       
         }
     }
-    
-    
-    bool intersected = false;
-    int lineIndex, surfaceIndex;
-    Epetra_SerialDenseVector edgePoint(3);
-    Epetra_SerialDenseVector oppositePoint(3);
- 
- 
-    if(!adjacentFacesList.empty())
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  RCI:    checks if the Steiner points lies within         u.may 11/07|
+ |          the cutter element or on one of its edges                   |   
+ *----------------------------------------------------------------------*/
+bool Intersection::decideNormalOrPlane( 
+    int                         steinerIndex,
+    int&                        lineIndex, 
+    int&                        cutterIndex,  
+    vector< vector <int> >&     adjacentFacesList,
+    vector< vector <int> >&     adjacentFacemarkerList,
+    Epetra_SerialDenseVector&   edgePoint,
+    Epetra_SerialDenseVector&   oppositePoint,
+    DRT::Element*               xfemElement, 
+    tetgenio&                   out)
+{
+
+    bool                        normalSteiner = true;
+    int                         pointIndex = adjacentFacesList[steinerIndex][0];
+    Epetra_SerialDenseVector    x(3);
+    Epetra_SerialDenseVector    xsi(3);
+        
+    for(int k=0; k<3; k++)
     {
-        for(unsigned int i=0; i<adjacentFacesList.size(); i++)
+        x[k]   = out.pointlist[pointIndex*3 + k];
+        xsi[k] = 0.0;
+    }
+   
+    InterfacePoint emptyIp;
+    checkNodeWithinElement(xfemElement, x, xsi);
+    if(checkIfOnBoundary(xsi, emptyIp))     out.pointmarkerlist[pointIndex] = 3;    // on xfem boundary
+    else                                    out.pointmarkerlist[pointIndex] = 2;    // not on xfem boundary
+    
+   
+    for(unsigned int j = 0; j < adjacentFacemarkerList[steinerIndex].size(); j++ )
+    {
+        for(unsigned int k = 0; k < adjacentFacemarkerList[steinerIndex].size(); k++ )
         {
-            // check if steiner point is already on the surface element
-            bool                        normalSteiner = true;
-            int                         pointIndex = adjacentFacesList[i][0];
-            Epetra_SerialDenseVector    x(3);
-            Epetra_SerialDenseVector    xsi(3);
-            
-            for(int k=0; k<3; k++)
+            if(adjacentFacemarkerList[steinerIndex][j] != adjacentFacemarkerList[steinerIndex][k])
             {
-                x[k]   = out.pointlist[pointIndex*3 + k];
-                xsi[k] = 0.0;
-            }
-       
-            InterfacePoint emptyIp;
-            checkNodeWithinElement(xfemElement, x, xsi);
-            if(checkIfOnBoundary(xsi, emptyIp))     out.pointmarkerlist[pointIndex] = 3;    // on xfem boundary
-            else                                    out.pointmarkerlist[pointIndex] = 2;    // not on xfem boundary
-            
-           
-            for(unsigned int j = 0; j < adjacentFacemarkerList[i].size(); j++ )
-            {
-                for(unsigned int k = 0; k < adjacentFacemarkerList[i].size(); k++ )
+                //printf("a = %d and b = %d\n", adjacentFacemarkerList[steinerIndex][j], adjacentFacemarkerList[steinerIndex][k]);
+                if(findCommonFaceEdge(  j, k, adjacentFacesList[steinerIndex], edgePoint, oppositePoint, out))
                 {
-                    if(adjacentFacemarkerList[i][j] != adjacentFacemarkerList[i][k])
-                    {
-                        //printf("a = %d and b = %d\n", adjacentFacemarkerList[i][j], adjacentFacemarkerList[i][k]);
-                        if(findCommonFaceEdge(  j, k, adjacentFacesList[i], edgePoint, oppositePoint, out))
-                        {
-                            if(!findCommonCutterLine(  adjacentFacemarkerList[i][j], adjacentFacemarkerList[i][k],
-                                                        surfaceIndex,  lineIndex))
-                                                        dserror("no common line element found\n");
-                                                        
-                            normalSteiner = false;
-                        }
-                    }
-                    if(!normalSteiner)      break;
+                    if(!findCommonCutterLine(  adjacentFacemarkerList[steinerIndex][j], adjacentFacemarkerList[steinerIndex][k],
+                                               lineIndex, cutterIndex))
+                                               dserror("no common line element found\n");
+                                                
+                    normalSteiner = false;
                 }
-                if(!normalSteiner)      break;
             }
+            if(!normalSteiner)      break;
+        }
+        if(!normalSteiner)      break;
+    }
+    return normalSteiner;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  RCI:    lifts Steiner points lying                       u.may 11/07|
+ |          within a cutter element                                     |   
+ *----------------------------------------------------------------------*/
+void Intersection::liftSteinerPointOnSurface(
+    int                         steinerIndex,
+    vector< vector <int> >&     adjacentFacesList,
+    vector< vector <int> >&     adjacentFacemarkerList,
+    DRT::Element*               xfemElement, 
+    tetgenio&                   out)
+{
+   
+    Epetra_SerialDenseVector    Steinerpoint(3);
+    Epetra_SerialDenseVector    averageNormal(3);
+    vector<Epetra_SerialDenseVector> normals; 
+    
+     // get Steiner point coordinates 
+    for(int j=0; j<3; j++)
+    {
+        averageNormal[j] = 0.0;
+        Steinerpoint[j] = out.pointlist[adjacentFacesList[steinerIndex][0]*3 + j];
+    }
+    referenceToCurrentCoordinates(xfemElement, Steinerpoint);   
+   
+    double length = (int) ( ( (double) (adjacentFacesList[steinerIndex].size()-1))*0.5 );
+    
+    for(int j = 0; j < length; j++)
+    {
+        int pointIndex1 = adjacentFacesList[steinerIndex][1 + 2*j];
+        int pointIndex2 = adjacentFacesList[steinerIndex][1 + 2*j + 1];
+        Epetra_SerialDenseVector    p1(3);
+        Epetra_SerialDenseVector    p2(3);
+     
+        for(int k = 0; k < 3; k++)
+        {
+            p1[k] =  out.pointlist[pointIndex1*3 + k];
+            p2[k] =  out.pointlist[pointIndex2*3 + k];
+        }
+    
+        referenceToCurrentCoordinates(xfemElement, p1);   
+        referenceToCurrentCoordinates(xfemElement, p2);   
+        Epetra_SerialDenseVector n1 = subtractsTwoVectors(p1, Steinerpoint);
+        Epetra_SerialDenseVector n2 = subtractsTwoVectors(p2, Steinerpoint);
+    
+        Epetra_SerialDenseVector normal = computeCrossProduct( n1, n2);
+        normal = normalizeVector(normal);
+    
+        for(int k=0; k<3; k++)
+            averageNormal[k] += normal[k];
             
-            // get Steiner point coordinates 
-            double length = 0.0;
-            Epetra_SerialDenseVector    p1(3);
-            Epetra_SerialDenseVector    p2(3);
-            Epetra_SerialDenseVector    r1(3); 
-            Epetra_SerialDenseVector    r2(3);
-            Epetra_SerialDenseVector    n1(3); 
-            Epetra_SerialDenseVector    n2(3);
-            Epetra_SerialDenseVector    Steinerpoint(3);
-            Epetra_SerialDenseVector    averageNormal(3);
-            vector<Epetra_SerialDenseVector> normals; 
-            vector<Epetra_SerialDenseVector> plane(4); 
-            
-            for(int j=0; j<3; j++)
-            {
-                averageNormal[j] = 0.0;
-                Steinerpoint[j] = out.pointlist[adjacentFacesList[i][0]*3 + j];
-                //printf("face marker = %d\n", adjacentFacesList[i][0]);
-                //printf("Steinerpoint = %10.8f\t", Steinerpoint[j]);
-            }
-            //printf("\n");
-            
-            if(normalSteiner)
-            {
-                if(!normals.empty())    normals.clear();
-                // TODO check if on boundary if yes set marker list = 3
-                referenceToCurrentCoordinates(xfemElement, Steinerpoint);   
+         normals.push_back(normal);
+    }
+
+    // compute average normal
+    for(int j=0; j<3; j++)
+        averageNormal[j] = averageNormal[j]/( (double)length);
            
-                // printf("\n");
-                length = (int) ( ( (double) (adjacentFacesList[i].size()-1))*0.5 );
-                //printf("length = %d\n", length);
-            
-                for(int j = 0; j < length; j++)
-                {
-                    int pointIndex1 = adjacentFacesList[i][1 + 2*j];
-                    int pointIndex2 = adjacentFacesList[i][1 + 2*j + 1];
-                    Epetra_SerialDenseVector normal(3);
-                    
-                    for(int k = 0; k < 3; k++)
-                    {
-                        p1[k] =  out.pointlist[pointIndex1*3 + k];
-                        p2[k] =  out.pointlist[pointIndex2*3 + k];
-                    }
-                
-                    referenceToCurrentCoordinates(xfemElement, p1);   
-                    referenceToCurrentCoordinates(xfemElement, p2);   
-                    n1 = subtractsTwoVectors(p1, Steinerpoint);
-                    n2 = subtractsTwoVectors(p2, Steinerpoint);
-                
-                    normal = computeCrossProduct( n1, n2);
-                    normal = normalizeVector(normal);
-                
-                    for(int k=0; k<3; k++)
-                        averageNormal[k] += normal[k];
-                        
-                     normals.push_back(normal);
-                }
-            
-                // compute average normal
-                for(int j=0; j<3; j++)
-                    averageNormal[j] = averageNormal[j]/( (double)length);
-                   
-                
-                                  
-                plane[0] = addTwoVectors(Steinerpoint, averageNormal);               
-                plane[1] = subtractsTwoVectors(Steinerpoint, averageNormal);
+        
+    vector<Epetra_SerialDenseVector> plane(4);                      
+    plane[0] = addTwoVectors(Steinerpoint, averageNormal);               
+    plane[1] = subtractsTwoVectors(Steinerpoint, averageNormal);
+ 
+ 
+    int faceMarker = adjacentFacemarkerList[steinerIndex][0];
+    Epetra_SerialDenseVector xsi(3);
+    
+    bool intersected = computeRecoveryNormal( xsi, plane, intersectingCutterElements_[faceMarker],false);
+    if(intersected)
+    {
+        storeHigherOrderNode(   true, adjacentFacesList[steinerIndex][0], -1, xsi,
+                                intersectingCutterElements_[faceMarker], xfemElement, out);
+    }
+    else
+    {
+        // loop over all individual normals
+        for(unsigned int j = 0; j < normals.size(); j++ )
+        {
+            plane[0] = addTwoVectors(Steinerpoint, normals[j]);               
+            plane[1] = subtractsTwoVectors(Steinerpoint, normals[j]);
+            intersected = computeRecoveryNormal( xsi, plane, intersectingCutterElements_[faceMarker], false);
+            if(intersected)
+            {
+                storeHigherOrderNode( true, adjacentFacesList[steinerIndex][0], -1, xsi,
+                                      intersectingCutterElements_[faceMarker], xfemElement, out);
+                break;
+            }
+        }
+        if(!intersected)
+        {
+            countMissedPoints_++;
+            printf("STEINER POINT NOT LIFTED\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"); 
+        }  
+    }
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  RCI:    lifts Steiner points lying                       u.may 11/07|
+ |          on the edge of a  cutter element                            |   
+ *----------------------------------------------------------------------*/
+void Intersection::liftSteinerPointOnEdge(
+    int                         steinerIndex,
+    int                         lineIndex,
+    int                         cutterIndex,   
+    Epetra_SerialDenseVector&   edgePoint,
+    Epetra_SerialDenseVector&   oppositePoint,
+    vector< vector <int> >&     adjacentFacesList,
+    DRT::Element*               xfemElement, 
+    tetgenio&                   out)
+{
+
+    Epetra_SerialDenseVector    Steinerpoint(3);
+    
+     // get Steiner point coordinates 
+    for(int j=0; j<3; j++)
+        Steinerpoint[j] = out.pointlist[adjacentFacesList[steinerIndex][0]*3 + j];
+    
+    referenceToCurrentCoordinates(xfemElement, Steinerpoint);   
+    referenceToCurrentCoordinates(xfemElement, edgePoint);   
+    referenceToCurrentCoordinates(xfemElement, oppositePoint);  
+     
+    Epetra_SerialDenseVector r1 = subtractsTwoVectors( edgePoint, Steinerpoint);
+    Epetra_SerialDenseVector r2 = subtractsTwoVectors( oppositePoint, Steinerpoint);
+
+    Epetra_SerialDenseVector n1 = computeCrossProduct( r1, r2);
+    Epetra_SerialDenseVector n2 = computeCrossProduct( r1, n1);
+    
+    n1 = normalizeVector(n1);
+    n2 = normalizeVector(n2);
+
+    vector<Epetra_SerialDenseVector> plane(4);      
+    plane[0] = addTwoVectors(Steinerpoint, n1);               
+    plane[1] = subtractsTwoVectors(Steinerpoint, n1);
+    plane[2] = addTwoVectors(plane[1], n2);
+    plane[3] = addTwoVectors(plane[0], n2);
+     
+    Epetra_SerialDenseVector xsi(3);
+    bool intersected = computeRecoveryPlane( lineIndex, xsi, plane, intersectingCutterElements_[cutterIndex]);
+    
+    if(intersected)
+    {   
+        storeHigherOrderNode(   false, adjacentFacesList[steinerIndex][0], lineIndex, xsi,
+                                intersectingCutterElements_[cutterIndex], xfemElement, out);
+    }
+    else
+    {
+        countMissedPoints_++;
+        printf("STEINER POINT NOT LIFTED\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");   
+    }
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  RCI:    returns information of the tetrahedra            u.may 08/07|
+ *----------------------------------------------------------------------*/  
+void Intersection::getTetrahedronInformation( 
+    const int           tetIndex,
+    const int           faceIndex,  
+    vector<int>&        tetraCornerIndices,
+    vector<int>&        order,
+    const tetgenio&     out)
+{            
+    
+    // store boundary face node indices
+    for(int j=0; j<3; j++)
+        tetraCornerIndices[j] = out.trifacelist[faceIndex*3+j];
+   
+    // store node index opposite to the boundary face of the tetrahedron
+    for(int j=0; j<4; j++)
+    {
+        int nodeIndex = out.tetrahedronlist[tetIndex*out.numberofcorners+j];
+        if(nodeIndex != tetraCornerIndices[0] && nodeIndex != tetraCornerIndices[1] && nodeIndex != tetraCornerIndices[2])
+        {
+            tetraCornerIndices[3] = out.tetrahedronlist[tetIndex*out.numberofcorners+j];
+            break;
+        }
+    }
+    
+    for(int j=0; j<4; j++)
+    {
+        int nodeIndex = out.tetrahedronlist[tetIndex*out.numberofcorners+j];
+        for(int k=0; k<3; k++)
+            if(nodeIndex == tetraCornerIndices[k])
+            {
+                order[k] = j;
+                break;
+            }
+    }
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  RCI:    collects the tetrahedron corner nodes            u.may 09/07|
+ |          transforms them into current coordinates                    |
+ |          of the xfem-element                                         |
+ *----------------------------------------------------------------------*/  
+void Intersection::getTetrahedronNodes(
+    vector<Epetra_SerialDenseVector>&       tetraCornerNodes,
+    vector<int>&                            tetraCornerIndices,
+    DRT::Element*                           xfemElement,
+    const tetgenio&                         out)
+{
+
+    for(int i = 0; i < 4; i++)
+    {
+        for(int j = 0; j < 3; j++)
+            tetraCornerNodes[i][j] = out.pointlist[tetraCornerIndices[i]*3+j];
+        
+        referenceToCurrentCoordinates(xfemElement, tetraCornerNodes[i]);   
+    }
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  RCI:    lifts the higher-order point of an edge of the   u.may 09/07|
+ |          linearized interface onto the curved interface              |   
+ *----------------------------------------------------------------------*/
+void Intersection::computeHigherOrderPoint(    
+    int                                 index1, 
+    int                                 index2, 
+    int                                 faceIndex, 
+    int                                 faceMarker, 
+    int                                 globalHigherOrderIndex, 
+    vector<int>&                        tetraCornerIndices, 
+    vector<Epetra_SerialDenseVector>&   tetraCornerNodes, 
+    DRT::Element*                       xfemElement, 
+    tetgenio&                           out)
+{ 
+                            
+    bool                                    intersected             = false;   
+    bool                                    intersectionNormal      = true; 
+    int                                     lineIndex               = -1;
+    int                                     adjacentFaceMarker      = -1;
+    int                                     adjacentFaceIndex       = -1;  
+    Epetra_SerialDenseVector                xsi(3);                
+    vector < Epetra_SerialDenseVector >     plane(5, Epetra_SerialDenseVector(3)); 
+                         
          
-                int faceMarker = adjacentFacemarkerList[i][0];
-                intersected = computeRecoveryNormal(surfaceNodes[faceMarker], intersectingCutterElements_[faceMarker], 
-                                                    plane, xsi, true);
-                if(intersected)
-                {
-                    storeHigherOrderNode(   adjacentFacesList[i][0], xsi, surfaceNodes[faceMarker], plane,
-                                            -1, intersectingCutterElements_[faceMarker], xfemElement, out, true, true);
-                }
-                else
-                {
-                    for(unsigned int j = 0; j < normals.size(); j++ )
-                    {
-                        plane[0] = addTwoVectors(Steinerpoint, normals[j]);               
-                        plane[1] = subtractsTwoVectors(Steinerpoint, normals[j]);
-                        intersected = computeRecoveryNormal(    surfaceNodes[faceMarker], intersectingCutterElements_[faceMarker], 
-                                                                plane, xsi, true);
-                        if(intersected)
-                        {
-                            //printf("LIFT STEINER POINT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-                            storeHigherOrderNode(   adjacentFacesList[i][0], xsi, surfaceNodes[faceMarker], plane,
-                                                    -1, intersectingCutterElements_[faceMarker], xfemElement, out, true, true);
-                            break;
-                        }
-                    }
-                    if(!intersected) dserror("STEINER POINT NOT LIFTED");
-                }
-            }
-            else
+    findAdjacentFace(  tetraCornerIndices[index1], tetraCornerIndices[index2], 
+                       faceMarker, adjacentFaceMarker, faceIndex, adjacentFaceIndex, out); 
+                           
+    //printf("adjacentfaceMarker = %d\n",adjacentFaceMarker);
+    
+    // edge lies within the xfem element
+    if(adjacentFaceMarker  > -1)
+    {
+        computeIntersectionNormal(  tetraCornerIndices[index1], tetraCornerIndices[index2], faceIndex, 
+                                    adjacentFaceIndex, globalHigherOrderIndex, plane, xfemElement, out);   
+                                   
+        // higher order node lies within the cutter element
+        if(adjacentFaceMarker == faceMarker)
+        {                     
+            intersected = computeRecoveryNormal(xsi, plane,intersectingCutterElements_[faceMarker], false);   
+            intersectionNormal = true;
+        }
+        // higher-order point lies on one of the boundary lines of the cutter element
+        else if(adjacentFaceMarker != faceMarker)
+        {       
+            int cutterIndex        = -1;
+            findCommonCutterLine(faceMarker, adjacentFaceMarker, lineIndex, cutterIndex); 
+            
+            if(lineIndex != -1)
             {
-                referenceToCurrentCoordinates(xfemElement, Steinerpoint);   
-                referenceToCurrentCoordinates(xfemElement, edgePoint);   
-                referenceToCurrentCoordinates(xfemElement, oppositePoint);  
-                 
-                r1 = subtractsTwoVectors( edgePoint, Steinerpoint);
-                r2 = subtractsTwoVectors( oppositePoint, Steinerpoint);
-            
-                n1 = computeCrossProduct( r1, r2);
-                n2 = computeCrossProduct( r1, n1);
-                
-                n1 = normalizeVector(n1);
-                n2 = normalizeVector(n2);
-            
-                plane[0] = addTwoVectors(Steinerpoint, n1);               
-                plane[1] = subtractsTwoVectors(Steinerpoint, n1);
-                plane[2] = addTwoVectors(plane[1], n2);
-                plane[3] = addTwoVectors(plane[0], n2);
-                
-                intersected = computeRecoveryPlane( surfaceNodes[surfaceIndex], intersectingCutterElements_[surfaceIndex], 
-                                                    lineIndex, plane, xsi, true);
-                if(intersected)
-                {   
-                    storeHigherOrderNode(   adjacentFacesList[i][0], xsi, surfaceNodes[surfaceIndex], plane,
-                                            lineIndex, intersectingCutterElements_[surfaceIndex], xfemElement, out, true, false);
-                }
-                else
-                    dserror("STEINER POINT NOT LIFTED");   
-       
+                intersected = computeRecoveryPlane( lineIndex, xsi, plane, intersectingCutterElements_[cutterIndex]);
+                intersectionNormal = false;
             }
         }
     }
+    // edge lies on the surface of the xfem element
+    else if(adjacentFaceMarker  == -1)
+    {
+        int oppositeIndex = findEdgeOppositeIndex(  tetraCornerIndices[index1], tetraCornerIndices[index2], 
+                                                    adjacentFaceIndex, out);  
+                                                                                  
+        //printf("oppo = %d\n", oppositeIndex);
+        
+        computeIntersectionNormal(  true,  index1, index2, oppositeIndex, globalHigherOrderIndex,   
+                                    tetraCornerIndices, tetraCornerNodes, plane, xfemElement, out);
+                               
+        intersected = computeRecoveryNormal(    xsi, plane, intersectingCutterElements_[faceMarker], 
+                                                true);
+        intersectionNormal = true;
+                
+        if(!intersected)
+        {
+            printf("REFERNCE DOMAIN");
+            lineIndex = findIntersectingSurfaceEdge(    xfemElement, intersectingCutterElements_[faceMarker],
+                                                        tetraCornerNodes[index1], tetraCornerNodes[index2]);
+            if(lineIndex != -1)
+            {                 
+                intersected = computeRecoveryPlane( lineIndex, xsi, plane, intersectingCutterElements_[faceMarker]);
+                intersectionNormal = false;
+            }
+        }
+    }
+
+
+    if(intersected)
+    {   
+        storeHigherOrderNode(   intersectionNormal, globalHigherOrderIndex, lineIndex,
+                                xsi, intersectingCutterElements_[faceMarker], xfemElement, out);
+    }
+    else 
+    {
+        countMissedPoints_++;
+        printf("NO INTERSECTION POINT FOUND!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    }
+
 }
-            
+
 
 
 /*----------------------------------------------------------------------*
@@ -2805,46 +2984,40 @@ vector<int> Intersection::getPointIndices(
  |          line  and a surface                    RCI                  |           
  *----------------------------------------------------------------------*/
 bool Intersection::computeRecoveryNormal( 
-    vector <Epetra_SerialDenseVector>&          surfaceNodes,
-    DRT::Element*                               surfaceElement,
-    const vector<Epetra_SerialDenseVector>&     plane,
     Epetra_SerialDenseVector&                   xsi,
-    const bool                                  current)
+    const vector<Epetra_SerialDenseVector>&     normal,
+    DRT::Element*                               cutterElement,
+    const bool                                  onBoundary)
 {
-    int iter = 0;
-    int countSingular = 0;
-    const int maxiter = 50;
-    bool intersection = true;
-    double residual = 1.0;
-    Epetra_SerialDenseMatrix A(3,3);
-    Epetra_SerialDenseVector b(3);
-    Epetra_SerialDenseVector dx(3);
+    bool                        intersection = true;
+    int                         iter = 0;
+    int                         countSingular = 0;
+    const int                   maxiter = 50;
+    double                      residual = 1.0;
+    Epetra_SerialDenseMatrix    A(3,3);
+    Epetra_SerialDenseVector    b(3);
+    Epetra_SerialDenseVector    dx(3);
     
     for(int i = 0; i < 3; i++)
         xsi[i]= 0.0; 
         
-    
     dx = xsi;
     
-    
-    updateRHSForRCINormal( b, xsi, surfaceNodes, surfaceElement, plane, current);
+    updateRHSForRCINormal( b, xsi, normal, cutterElement, onBoundary);
                                 
     while(residual > TOL14_)
     {   
-        updateAForRCINormal( A, xsi, plane, surfaceNodes, surfaceElement, current);
+        updateAForRCINormal( A, xsi, normal, cutterElement, onBoundary);
          
-        if(!solveLinearSystemWithSVD(A, b, dx, 3))
-        {  
+        if(!solveLinearSystemWithSVD(A, b, dx, 3))  
             countSingular++;
-            //printf("MATRIX SINGULAR step %d\n", countSingular );
-        } 
-        
+    
         if(countSingular > 5)
         {
-            //printf("MATRIX SINGULAR\n");
             intersection = false;
             break;  
         }
+        
         xsi = addTwoVectors(xsi,dx);
         //printf("dx0 = %20.16f\t, dx1 = %20.16f\t, dx2 = %20.16f\n", dx[0], dx[1], dx[2]);
         if(iter >= maxiter)
@@ -2853,7 +3026,7 @@ bool Intersection::computeRecoveryNormal(
             break;
         }       
         
-        updateRHSForRCINormal( b, xsi, surfaceNodes, surfaceElement, plane, current); 
+        updateRHSForRCINormal( b, xsi, normal, cutterElement, onBoundary); 
         residual = b.Norm2(); 
         iter++;
         
@@ -2861,11 +3034,13 @@ bool Intersection::computeRecoveryNormal(
     } 
     
     if( (fabs(xsi[0])-1.0) > TOL7_  || (fabs(xsi[1])-1.0) > TOL7_ )    // line coordinate may be bigger than 1
+    {
+        printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0], xsi[1], xsi[2], residual, TOL14_);
         intersection = false;
+    }
         
     return intersection;
 }
-
 
 
 
@@ -2878,16 +3053,14 @@ bool Intersection::computeRecoveryNormal(
 void Intersection::updateAForRCINormal(   
     Epetra_SerialDenseMatrix&                   A,
     const Epetra_SerialDenseVector&             xsi,
-    const vector<Epetra_SerialDenseVector>&     plane,
-    const vector <Epetra_SerialDenseVector>&    surfaceNodes,
+    const vector<Epetra_SerialDenseVector>&     normal,
     DRT::Element*                               surfaceElement,
-    const bool                                  current)                                                 
+    const bool                                  onBoundary)                                                 
 {   
-    const int numNodesSurface = surfaceNodes.size();
+    const int numNodesSurface = surfaceElement->NumNode();
     const int numNodesLine = 3;
     vector<int> actParams(1,0);
     Epetra_SerialDenseMatrix surfaceDeriv1(2,numNodesSurface);
-    Epetra_SerialDenseMatrix lineDeriv1(1,numNodesLine);
     Epetra_SerialDenseMatrix emptyM;
     Epetra_SerialDenseVector emptyV;
     Epetra_SerialDenseVector xsiSurface(2);
@@ -2908,7 +3081,7 @@ void Intersection::updateAForRCINormal(
     surfaceElement->Evaluate(params, dummyDis, actParams, surfaceDeriv1, emptyM , emptyV, xsiSurface, emptyV);          
     //printf("num of nodes surfaces = %d\n", numOfNodesSurface);
         
-    if(current)
+    if(!onBoundary)
     {
         for(int dim=0; dim<3; dim++)
         {
@@ -2917,11 +3090,12 @@ void Intersection::updateAForRCINormal(
                 A[dim][0] += surfaceElement->Nodes()[i]->X()[dim] * surfaceDeriv1[i][0];
                 A[dim][1] += surfaceElement->Nodes()[i]->X()[dim] * surfaceDeriv1[i][1];
             }
-            A[dim][2] = (-1.0) * ( plane[0][dim] * (-0.5) + plane[1][dim] * 0.5 );  
+            A[dim][2] = (-1.0) * ( normal[0][dim] * (-0.5) + normal[1][dim] * 0.5 );  
         }
     }
     else
     {
+        Epetra_SerialDenseMatrix lineDeriv1(1,numNodesLine);
         shape_function_1D_deriv1(lineDeriv1, xsiLine[0], DRT::Element::line3);
      
         for(int dim=0; dim<3; dim++)
@@ -2936,28 +3110,11 @@ void Intersection::updateAForRCINormal(
             {
                 int index = i;
                 if(i > 1)   index = 4;
-                A[dim][2] += (-1.0) * plane[index][dim] * lineDeriv1[i][0]; 
+                A[dim][2] += (-1.0) * normal[index][dim] * lineDeriv1[i][0]; 
             } 
         }
     }
 }
-
-
-/*
- 
- 
- for(int dim=0; dim<3; dim++)
-        {
-            for(int i=0; i<numNodesSurface; i++)
-            {
-                A[dim][0] += surfaceNodes[i][dim] * surfaceDeriv1[i][0];
-                A[dim][1] += surfaceNodes[i][dim] * surfaceDeriv1[i][1];
-            }
-            A[dim][2] = (-1.0) * ( plane[0][dim] * (-0.5) + plane[1][dim] * 0.5 );  
-        }
- 
- 
- */
 
 
 
@@ -2970,16 +3127,14 @@ void Intersection::updateAForRCINormal(
 void Intersection::updateRHSForRCINormal( 
     Epetra_SerialDenseVector&                   b,
     Epetra_SerialDenseVector&                   xsi,    
-    const vector <Epetra_SerialDenseVector>&    surfaceNodes,
+    const vector<Epetra_SerialDenseVector>&     normal,
     DRT::Element*                               surfaceElement,
-    const vector<Epetra_SerialDenseVector>&     plane,
-    const bool                                  current)                                                    
+    const bool                                  onBoundary)                                                    
 {
-    const int numNodesSurface = surfaceNodes.size();
+    const int numNodesSurface = surfaceElement->NumNode();
     const int numNodesLine = 3;
     vector<int> actParams(1,0);
     Epetra_SerialDenseVector surfaceFunct(numNodesSurface);
-    Epetra_SerialDenseVector lineFunct(numNodesLine);
     Epetra_SerialDenseMatrix emptyM;
     Epetra_SerialDenseVector emptyV;
     Epetra_SerialDenseVector xsiSurface(2);
@@ -2999,7 +3154,7 @@ void Intersection::updateRHSForRCINormal(
     actParams[0] = numNodesSurface;            
     surfaceElement->Evaluate(params, dummyDis, actParams, emptyM, emptyM , surfaceFunct, xsiSurface, emptyV);           
   
-    if(current)
+    if(!onBoundary)
     {
         for(int dim=0; dim<3; dim++)
             for(int i=0; i<numNodesSurface; i++)
@@ -3008,10 +3163,11 @@ void Intersection::updateRHSForRCINormal(
             }
             
         for(int dim=0; dim<3; dim++)
-            b[dim] += plane[0][dim] * 0.5*(1.0 - xsi[2]) + plane[1][dim] * 0.5*(1.0 + xsi[2]);
+            b[dim] += normal[0][dim] * 0.5*(1.0 - xsi[2]) + normal[1][dim] * 0.5*(1.0 + xsi[2]);
     }
     else
     {
+        Epetra_SerialDenseVector lineFunct(numNodesLine);
         shape_function_1D( lineFunct, xsiLine[0], DRT::Element::line3);
        
         for(int dim=0; dim<3; dim++)
@@ -3020,341 +3176,15 @@ void Intersection::updateRHSForRCINormal(
                 b[dim] += (-1.0) * surfaceElement->Nodes()[i]->X()[dim] * surfaceFunct[i];
             }
         
-        
         for(int dim=0; dim<3; dim++)
             for(int i=0; i<numNodesLine; i++)
             {
                 int index = i;
                 if(i > 1)   index = 4;
                 
-                b[dim] += plane[index][dim] * lineFunct[i]; 
+                b[dim] += normal[index][dim] * lineFunct[i]; 
             } 
     }
-          
-    
-/*
-for(int dim=0; dim<3; dim++)
-            for(int i=0; i<numNodesSurface; i++)
-            {
-                b[dim] += (-1.0) * surfaceNodes[i][dim] * surfaceFunct[i];
-            }
-*/
-
-  
-}
-
-
-
-/*----------------------------------------------------------------------*
- |  RCI:    stores a pointer to each intersecting            u.may 08/07|
- |          cutter element  used for the recovery of curved interface   |     
- *----------------------------------------------------------------------*/  
-void Intersection::storeIntersectedCutterElement(
-    DRT::Element* surfaceElement)
-{
-    bool alreadyInList = false;
-  
-    for(unsigned int i = 0; i < intersectingCutterElements_.size(); i++)
-        if(intersectingCutterElements_[i] == surfaceElement)
-        {
-            alreadyInList = true;
-            break; 
-        }
-      
-    if(!alreadyInList)
-        intersectingCutterElements_.push_back(surfaceElement);  
-}   
-
-
-
-/*----------------------------------------------------------------------*
- |  RCI:    returns information of the tetrahedra            u.may 08/07|
- *----------------------------------------------------------------------*/  
-void Intersection::getTetrahedronInformation(   
-    const tetgenio&     out, 
-    vector<int>&        tetraCornerIndices,
-    vector<int>&        order,
-    const int           tetIndex,
-    const int           index)
-{            
-      
-    int nodeIndex = 0;         
-    
-    // store boundary face node indices
-    for(int j=0; j<3; j++)
-        tetraCornerIndices[j] = out.trifacelist[index*3+j];
-   
-    // store node index opposite to the boundary face of the tetrahedron
-    for(int j=0; j<4; j++)
-    {
-        nodeIndex = out.tetrahedronlist[tetIndex*out.numberofcorners+j];
-        if(nodeIndex != tetraCornerIndices[0] && nodeIndex != tetraCornerIndices[1] && nodeIndex != tetraCornerIndices[2])
-        {
-            tetraCornerIndices[3] = out.tetrahedronlist[tetIndex*out.numberofcorners+j];
-            break;
-        }
-    }
-    
-    for(int j=0; j<4; j++)
-    {
-        nodeIndex = out.tetrahedronlist[tetIndex*out.numberofcorners+j];
-        for(int k=0; k<3; k++)
-            if(nodeIndex == tetraCornerIndices[k])
-            {
-                order[k] = j;
-                break;
-            }
-    }
-}
-
-
-/*----------------------------------------------------------------------*
- |  RCI:    collects the tetrahedron corner nodes            u.may 09/07|
- |          transforms them into current coordinates                    |
- |          of the xfem-element                                         |
- *----------------------------------------------------------------------*/  
-void Intersection::getTetrahedronNodes(
-    const tetgenio&                         out, 
-    DRT::Element*                           xfemElement,
-    vector<Epetra_SerialDenseVector>&       tetraCornerNodes,
-    vector<int>&                            tetraCornerIndices)
-{
-
-    for(int i = 0; i < 4; i++)
-    {
-        for(int j = 0; j < 3; j++)
-            tetraCornerNodes[i][j] = out.pointlist[tetraCornerIndices[i]*3+j];
-        
-        referenceToCurrentCoordinates(xfemElement, tetraCornerNodes[i]);   
-    }
-}
-
-
-
-/*----------------------------------------------------------------------*
- |  RCI:    computes the normal to the interface edge of     u.may 08/07|
- |          the tetrahedron facet lying within this facet               |
- *----------------------------------------------------------------------*/  
-void Intersection::computeIntersectionNormal( 
-    DRT::Element*                           xfemElement,   
-    const int                               index1,
-    const int                               index2,
-    const int                               globalHigherOrderIndex, 
-    const tetgenio&                         out,
-    const vector<int>&                      tetraCornerIndices,
-    const vector<int>&                      order,
-    const vector<Epetra_SerialDenseVector>& tetraCornerNodes,
-    vector<Epetra_SerialDenseVector>&       plane,
-    const bool                              current)
-{            
-    
-    Epetra_SerialDenseVector  p1(3);
-    Epetra_SerialDenseVector  p2(3);
-    Epetra_SerialDenseVector  p3(3);        
-    Epetra_SerialDenseVector  m(3);
-    Epetra_SerialDenseVector  n(3);
-    Epetra_SerialDenseVector  r(3);
-    Epetra_SerialDenseVector  r1(3);
-    Epetra_SerialDenseVector  r2(3);
-    
-    
-    if(current)
-    {
-        for(int i=0; i<3; i++)
-        {    
-            p1[i] = tetraCornerNodes[3][i];
-            p2[i] = tetraCornerNodes[index1][i];
-            p3[i] = tetraCornerNodes[index2][i];             
-        }
-    }
-    else
-    {
-        for(int i=0; i<3; i++)
-        {
-            p1[i] = out.pointlist[tetraCornerIndices[3]*3       + i];
-            p2[i] = out.pointlist[tetraCornerIndices[index1]*3  + i];
-            p3[i] = out.pointlist[tetraCornerIndices[index2]*3  + i];                       
-        }
-    }
- 
-/*    
-    for(int i=0; i<3; i++)
-        printf("p1 = %f\t", p1[i]);
-        
-    printf("\n"); printf("\n");
-    
-    for(int i=0; i<3; i++)
-        printf("p2 = %f\t", p2[i]);
-        
-    printf("\n"); printf("\n");
-    
-    for(int i=0; i<3; i++)
-        printf("p3 = %f\t", p3[i]);
-        
-    printf("\n"); printf("\n");    
-
-*/
-                 
-    // compute direction vectors of the plane 
-    r1 = subtractsTwoVectors(p1, p2);
-/*
-    for(int i=0; i<3; i++)
-        printf("r1 = %f\t", r1[i]);
-        
-    printf("\n"); printf("\n");       
- */   
-    r2 = subtractsTwoVectors(p3, p2);
-   // r2 = normalizeVector(r2);
-/*    for(int i=0; i<3; i++)
-        printf("r2 = %f\t", r2[i]);
-        
-    printf("\n"); printf("\n");  
-*/    
-    // normal of the plane
-    n = computeCrossProduct(r1, r2);
-    n = normalizeVector(n);
- /*   for(int i=0; i<3; i++)
-        printf("n = %f\t", n[i]);
-        
-    printf("\n"); printf("\n");
-*/     
-    // direction vector of the intersection line
-    r = computeCrossProduct(n, r2);  
-    r = normalizeVector(r);
- 
- /*   for(int i=0; i<3; i++)
-        printf("r = %f\t", r[i]);
-        
-    printf("\n"); printf("\n");
-    */                 
-    // computes the start point of the line
-    m = computeLineMidpoint(p2, p3);
-    
-    if(current)
-        m = computeLineMidpoint(p2, p3);
-    else
-    {
-        for(int i = 0; i < 3; i++)
-            m[i] = out.pointlist[globalHigherOrderIndex*3+i];
-    }
-    
-    // compute nodes of the normal to the interface edge of the tetrahedron
-    plane[0] = addTwoVectors(m, r);               
-    plane[1] = subtractsTwoVectors(m, r);
-    plane[2] = addTwoVectors(plane[1], n);               
-    plane[3] = addTwoVectors(plane[0], n);
-    
-    
-    if(!current)
-    {
-        for(int i = 0; i < 4; i++)
-            referenceToCurrentCoordinates(xfemElement, plane[i]);
-        
-        referenceToCurrentCoordinates(xfemElement, m);
-          
-        plane[4] = m;
-      
-    }
-}
-
-
-
-/*----------------------------------------------------------------------*
- |  RCI:    computes the midpoint of a line                  u.may 08/07|
- *----------------------------------------------------------------------*/  
-Epetra_SerialDenseVector Intersection::computeLineMidpoint( 
-    const Epetra_SerialDenseVector& p1, 
-    const Epetra_SerialDenseVector& p2)
-{
-    Epetra_SerialDenseVector midpoint(3);
-    
-    for(int i=0; i<3; i++)
-        midpoint[i] = (p1[i] + p2[i])*0.5;
-        
-    return midpoint;
-}
-
-
-
-/*----------------------------------------------------------------------*
- |  RCI:    transforms the nodes of the intersecting         u.may 08/07|
- |          surface elements into the reference configuration           |
- |          of the xfem element                                         |
- *----------------------------------------------------------------------*/  
-void Intersection::transformSurfaceNodes(   
-    DRT::Element*                                   element,
-    vector < vector <Epetra_SerialDenseVector> >&   surfaceNodes)
-{
-
-    Epetra_SerialDenseVector coord(3);
-    vector <Epetra_SerialDenseVector> nodesPerElement;
-    
-    
-    surfaceNodes.clear();
-    
-    for(unsigned int i = 0; i < intersectingCutterElements_.size(); i++ )
-    {  
-        for(int j = 0; j < intersectingCutterElements_[i]->NumNode(); j++ )
-        {
-            for(int k = 0; k < 3; k++)
-                coord[k] = intersectingCutterElements_[i]->Nodes()[j]->X()[k];
-            
-            currentToReferenceCoordinates(element, coord);
-            nodesPerElement.push_back(coord);
-        }
-        surfaceNodes.push_back(nodesPerElement);
-        nodesPerElement.clear();
-    }
-}
-
-
-
-/*----------------------------------------------------------------------*
- |  RCI:    stores the higher-order node in the pointlist    u.may 08/07|
- |          at the place of the linear node                             |
- *----------------------------------------------------------------------*/  
-void Intersection::storeHigherOrderNode( 
-    const int                                   index,
-    Epetra_SerialDenseVector&                   xsi, 
-    const vector <Epetra_SerialDenseVector>&    surfaceNodes,
-    const vector <Epetra_SerialDenseVector>&    plane,
-    int                                         lineIndex, 
-    DRT::Element*                               surfaceElement, 
-    DRT::Element*                               xfemElement, 
-    tetgenio&                                   out,
-    const bool                                  current,
-    const bool                                  normal )
-{
-    
-    Epetra_SerialDenseVector xsiLine(3);
-    for(int i = 0; i < 3; i++)
-        xsiLine[i] = 0.0;
-        
-    if(current)
-    {
-        if(normal)     referenceToCurrentCoordinates(surfaceElement, xsi);
-        else           
-        {   
-            xsiLine[0] = xsi[2];
-            referenceToCurrentCoordinates(surfaceElement->Lines()[lineIndex], xsiLine);
-            for(int i=0; i<3; i++)
-                xsi[i] = xsiLine[i];
-        }       
-        currentToReferenceCoordinates(xfemElement, xsi);
-    }
-    else
-    {
-        if(normal)  referenceToCurrentCoordinates(surfaceElement, xsi, surfaceNodes);
-        else        referenceToCurrentCoordinates(xsi, plane); 
-    }
-    
-    //printf("xsiold0 = %20.16f\t, xsiold1 = %20.16f\t, xsiold2 = %20.16f\n", out.pointlist[index*3], out.pointlist[index*3+1], out.pointlist[index*3+2]);
-    
-    for(int i = 0; i < 3; i++)
-        out.pointlist[index*3+i]   = xsi[i];  
-   
-    //printf("xsi0    = %20.16f\t, xsi1    = %20.16f\t, xsi2    = %20.16f\n", xsi[0], xsi[1], xsi[2]);
-    //printf("\n");
 }
 
 
@@ -3364,34 +3194,15 @@ void Intersection::storeHigherOrderNode(
  |          curve and a plane                      RCI                  |           
  *----------------------------------------------------------------------*/
 bool Intersection::computeRecoveryPlane( 
-    vector <Epetra_SerialDenseVector>&          surfaceNodes,
-    DRT::Element*                               surfaceElement,
     int&                                        lineIndex,
-    const vector<Epetra_SerialDenseVector>&     plane,
     Epetra_SerialDenseVector&                   xsi,
-    const bool                                  current)
+    const vector<Epetra_SerialDenseVector>&     plane,
+    DRT::Element*                               surfaceElement)
 {
-    int                                 iter = 0;
-    int                                 begin, end;
-    const int                           maxiter = 50;
-    const int                           numLines = surfaceElement->NumLine();
-    const int                           numNodesLine = surfaceElement->Lines()[0]->NumNode();
-    bool                                intersection = true;
-    double                              residual = 1.0;
-    Epetra_SerialDenseMatrix            A(3,3);
-    Epetra_SerialDenseVector            b(3);
-    Epetra_SerialDenseVector            dx(3);
-    vector <Epetra_SerialDenseVector>   curve(numNodesLine, Epetra_SerialDenseVector(3));
-    vector <vector<int> >               nodeIndices(numLines, vector<int>(numNodesLine));
-    DRT::Element*                       lineElement = surfaceElement->Lines()[0];
+    bool    intersection = true;
+    int     begin, end;
+    int     numLines = surfaceElement->NumLine();
    
-    // get node indices for each line of the surface element discretization type 
-    if(!current)
-        for(int i = 0; i < numLines; i++)
-            for(int j = 0; j < numNodesLine; j++)
-                nodeIndices = getEleNodeNumberingLines( surfaceElement->Shape() );
-      
-            
     // run over all lines (curves)
     if(lineIndex == -1)
     {
@@ -3406,45 +3217,29 @@ bool Intersection::computeRecoveryPlane(
     
     for(int i = begin; i < end; i++)
     {
-        intersection = true;
-        residual = 1.0;
-        iter = 0;
+        int                         iter = 0;
+        const int                   maxiter = 50;
+        double                      residual = 1.0;
+        DRT::Element*               lineElement = surfaceElement->Lines()[i];
+        Epetra_SerialDenseMatrix    A(3,3);
+        Epetra_SerialDenseVector    b(3);
+        Epetra_SerialDenseVector    dx(3);
       
+        intersection = true;
         // starting value equals (0,0,0)
         for(int j = 0; j < 3; j++)
             xsi[j]= 0.0; 
         
         dx = xsi;
-        
-        if(current)
-        {
-            lineElement = surfaceElement->Lines()[i];
-            //lineElement->Print(cout);
-            //printf("\n");
-        }   
-        else
-        {
-            int index1 = nodeIndices[i][0];
-            int index2 = nodeIndices[i][1];
-                
-            for(int dim = 0; dim < 3; dim++)
-            {
-                curve[0][dim] =  surfaceNodes[index1][dim];
-                curve[1][dim] =  surfaceNodes[index2][dim];
-                if(numNodesLine > 2)
-                    curve[2][dim] =  surfaceNodes[ nodeIndices[i][2] ][dim];  
-                    //surfaceNodes[getHigherOrderIndex(index1, index2, surfaceElement->Shape())][dim];  
-            }    
-        } 
-        
-        updateRHSForRCIPlane( b, xsi, curve, lineElement, plane, current);                
+    
+        updateRHSForRCIPlane( b, xsi, plane, lineElement);
+                        
         while( residual > TOL14_ )
         {   
-            updateAForRCIPlane( A, xsi, plane, curve, surfaceElement, lineElement, current);
+            updateAForRCIPlane( A, xsi, plane, lineElement, surfaceElement);
             
             if(!gaussElimination(A, b, dx, true, 3, 1))
             {
-                //printf("MATRIX SINGULAR\n");
                 intersection = false;
                 break;  
             } 
@@ -3456,17 +3251,17 @@ bool Intersection::computeRecoveryPlane(
             }       
         
             xsi = addTwoVectors(xsi, dx);
-            //printf("dx0 = %20.16f\t, dx1 = %20.16f\t, dx2 = %20.16f\n", dx[0], dx[1], dx[2]);
-            updateRHSForRCIPlane( b, xsi, curve, lineElement, plane, current);
+  
+            updateRHSForRCIPlane( b, xsi, plane, lineElement);
             residual = b.Norm2(); 
             iter++;
-        
-            //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0], xsi[1], xsi[2], residual, TOL14_);
         } 
     
         if( (fabs(xsi[2])-1.0) > TOL7_ )     // planes coordinate may be bigger than 1
+        {   printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0], xsi[1], xsi[2], residual, TOL14_);
             intersection = false;
-            
+        }  
+        
         if(intersection)
         {   
             lineIndex = begin;
@@ -3489,12 +3284,10 @@ void Intersection::updateAForRCIPlane(
     Epetra_SerialDenseMatrix&                   A,
     const Epetra_SerialDenseVector&             xsi,
     const vector<Epetra_SerialDenseVector>&     plane,
-    const vector<Epetra_SerialDenseVector>&     curve,
-    DRT::Element*                               surfaceElement,
     DRT::Element*                               lineElement,
-    const bool                                  current)                                                 
+    DRT::Element*                               surfaceElement)
 {   
-    const int numNodesLine = curve.size();
+    const int numNodesLine = lineElement->NumNode();
     const int numNodesSurface = 4;
     vector<int> actParams(1,0);
     Epetra_SerialDenseMatrix surfaceDeriv(2, numNodesSurface);
@@ -3522,8 +3315,7 @@ void Intersection::updateAForRCIPlane(
        
     actParams[0] = numNodesLine;    
     lineElement->Evaluate(params, dummyDis, actParams, lineDeriv, emptyM , emptyV, xsiLine, emptyV);               
-    
-      
+   
     for(int dim=0; dim<3; dim++)
     {
         for(int i=0; i<numNodesSurface; i++)
@@ -3533,26 +3325,13 @@ void Intersection::updateAForRCIPlane(
         }
     }
         
-    if(current)
+    for(int dim=0; dim<3; dim++)
     {
-        for(int dim=0; dim<3; dim++)
+        for(int i=0; i<numNodesLine; i++)
         {
-            for(int i=0; i<numNodesLine; i++)
-            {
-                A[dim][2] += (-1.0) * lineElement->Nodes()[i]->X()[dim] * lineDeriv[i][0];   
-            }
-        }        
-    }
-    else
-    {
-        for(int dim=0; dim<3; dim++)
-        {
-            for(int i=0; i<numNodesLine; i++)
-            {
-                A[dim][2] += (-1.0) * curve[i][dim] * lineDeriv[i][0];   
-            }
-        }             
-    }
+            A[dim][2] += (-1.0) * lineElement->Nodes()[i]->X()[dim] * lineDeriv[i][0];   
+        }
+    }        
 }
 
 
@@ -3566,12 +3345,10 @@ void Intersection::updateAForRCIPlane(
 void Intersection::updateRHSForRCIPlane( 
     Epetra_SerialDenseVector&                   b,
     Epetra_SerialDenseVector&                   xsi,    
-    const vector <Epetra_SerialDenseVector>&    curve,
-    DRT::Element*                               lineElement,
-    const vector<Epetra_SerialDenseVector>&     plane,
-    const bool                                  current)                                                    
+    const vector <Epetra_SerialDenseVector>&    plane,
+    DRT::Element*                               lineElement)                                                    
 {
-    const int numNodesLine    = curve.size();
+    const int numNodesLine    = lineElement->NumNode();
     const int numNodesSurface = 4;
     vector<int> actParams(1,0);
     Epetra_SerialDenseVector surfaceFunct(numNodesSurface);
@@ -3603,59 +3380,280 @@ void Intersection::updateRHSForRCIPlane(
             b[dim] += (-1.0) * plane[i][dim] * surfaceFunct[i];
         }
         
-    if(current)
+    for(int dim=0; dim<3; dim++)
+        for(int i=0; i<numNodesLine; i++)
+        {
+            b[dim] +=  lineElement->Nodes()[i]->X()[dim]  * lineFunct[i];        
+        }
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  RCI:    computes the normal to the interface edge of     u.may 08/07|
+ |          the tetrahedron facet lying within this facet               |
+ *----------------------------------------------------------------------*/  
+void Intersection::computeIntersectionNormal( 
+    const bool                              onBoundary,
+    const int                               index1,
+    const int                               index2,
+    const int                               oppositePointIndex,
+    const int                               globalHigherOrderIndex, 
+    const vector<int>&                      tetraCornerIndices,
+    const vector<Epetra_SerialDenseVector>& tetraCornerNodes,
+    vector<Epetra_SerialDenseVector>&       plane,
+    DRT::Element*                           xfemElement,
+    const tetgenio&                         out)
+{            
+    
+    Epetra_SerialDenseVector  p1(3);
+    Epetra_SerialDenseVector  p2(3);
+    Epetra_SerialDenseVector  p3(3);        
+    Epetra_SerialDenseVector  m(3);
+    Epetra_SerialDenseVector  n(3);
+    Epetra_SerialDenseVector  r(3);
+    Epetra_SerialDenseVector  r1(3);
+    Epetra_SerialDenseVector  r2(3);
+    
+    
+    if(!onBoundary)
     {
-        for(int dim=0; dim<3; dim++)
-            for(int i=0; i<numNodesLine; i++)
-            {
-                b[dim] +=  lineElement->Nodes()[i]->X()[dim]  * lineFunct[i];        
-            }
+        for(int i=0; i<3; i++)
+        {    
+            p1[i] = tetraCornerNodes[3][i];
+            p2[i] = tetraCornerNodes[index1][i];
+            p3[i] = tetraCornerNodes[index2][i];             
+        }
     }
     else
     {
-        for(int dim=0; dim<3; dim++)
-            for(int i=0; i<numNodesLine; i++)
-            {
-                b[dim] += curve[i][dim] * lineFunct[i];        
-            }
+        for(int i=0; i<3; i++)
+        {
+            p1[i] = out.pointlist[oppositePointIndex*3          + i];
+            p2[i] = out.pointlist[tetraCornerIndices[index1]*3  + i];
+            p3[i] = out.pointlist[tetraCornerIndices[index2]*3  + i];                       
+        }
     }
+                 
+    // compute direction vectors of the plane 
+    r1 = subtractsTwoVectors(p1, p2);
+    r2 = subtractsTwoVectors(p3, p2);
+ 
+    // normal of the plane
+    n = computeCrossProduct(r1, r2);
+    n = normalizeVector(n);
+ 
+    // direction vector of the intersection line
+    r = computeCrossProduct(n, r2);  
+    r = normalizeVector(r);
+ 
+    // computes the start point of the line
+    m = computeLineMidpoint(p2, p3);
+    
+    if(!onBoundary)
+        m = computeLineMidpoint(p2, p3);
+    else
+    {
+        for(int i = 0; i < 3; i++)
+            m[i] = out.pointlist[globalHigherOrderIndex*3+i];
+    }
+    
+    // compute nodes of the normal to the interface edge of the tetrahedron
+    plane[0] = addTwoVectors(m, r);               
+    plane[1] = subtractsTwoVectors(m, r);
+    plane[2] = addTwoVectors(plane[1], n);               
+    plane[3] = addTwoVectors(plane[0], n);
+    
+    
+    if(onBoundary)
+    {
+        for(int i = 0; i < 4; i++)
+            referenceToCurrentCoordinates(xfemElement, plane[i]);
+        
+        referenceToCurrentCoordinates(xfemElement, m);
+          
+        plane[4] = m;
+      
+    }
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  RCI:    computes the normal to the interface edge of     u.may 11/07|
+ |          two adjacent triangular faces                               |
+ *----------------------------------------------------------------------*/  
+void Intersection::computeIntersectionNormal( 
+    int                                 index1,
+    int                                 index2, 
+    int                                 faceIndex,
+    int                                 adjacentFaceIndex,
+    int                                 globalHigherOrderIndex,
+    vector<Epetra_SerialDenseVector>&   plane,
+    DRT::Element*                       xfemElement,
+    tetgenio&                           out)
+{
+
+    int oppositePointIndex = -1;
+    int adjacentOppositePointIndex = -1;
+    
+    for(int i = 0; i < 3; i++)
+        if((out.trifacelist[faceIndex*3+i] != index1) && (out.trifacelist[faceIndex*3+i] != index2 ))
+        {
+            oppositePointIndex = out.trifacelist[faceIndex*3+i];
+            break;
+        }
+        
+    for(int i = 0; i < 3; i++)
+        if((out.trifacelist[adjacentFaceIndex*3+i] != index1) && (out.trifacelist[adjacentFaceIndex*3+i] != index2 ))
+        {
+            adjacentOppositePointIndex = out.trifacelist[adjacentFaceIndex*3+i];
+            break;
+        }
+         
+     // compute averageNormal of two faces
+     Epetra_SerialDenseVector p1(3);
+     Epetra_SerialDenseVector p2(3);
+     Epetra_SerialDenseVector p3(3);
+     Epetra_SerialDenseVector p4(3);
+     
+    for(int i=0; i<3; i++)
+    {
+        p1[i] = out.pointlist[index1*3 + i];
+        p2[i] = out.pointlist[index2*3 + i];
+        p3[i] = out.pointlist[oppositePointIndex*3 + i];              
+        p4[i] = out.pointlist[adjacentOppositePointIndex*3 + i];                       
+    }
+    
+    referenceToCurrentCoordinates(xfemElement, p1);  
+    referenceToCurrentCoordinates(xfemElement, p2);  
+    referenceToCurrentCoordinates(xfemElement, p3);  
+    referenceToCurrentCoordinates(xfemElement, p4);  
+    
+    Epetra_SerialDenseVector r1 = subtractsTwoVectors(p1,p2);
+    Epetra_SerialDenseVector r2 = subtractsTwoVectors(p3,p2);
+    Epetra_SerialDenseVector r3 = subtractsTwoVectors(p4,p2);
+    
+    Epetra_SerialDenseVector n1 = computeCrossProduct(r2, r1);
+    Epetra_SerialDenseVector n2 = computeCrossProduct(r1, r3);
+    
+    Epetra_SerialDenseVector averageNormal = addTwoVectors(n1, n2);
+    Epetra_SerialDenseVector rPlane = computeCrossProduct(n1, r1);
+    
+    for(int i = 0; i < 3; i++)
+        averageNormal[i] = 0.5*averageNormal[i];
+        
+    averageNormal  = normalizeVector(averageNormal);
+    rPlane  = normalizeVector(rPlane);
+ 
+    Epetra_SerialDenseVector m(3);
+    for(int i = 0; i < 3; i++)
+        m[i] = out.pointlist[globalHigherOrderIndex*3+i];
+
+    referenceToCurrentCoordinates(xfemElement, m);  
+    
+    // compute nodes of the normal to the interface edge of the tetrahedron
+    plane[0] = addTwoVectors(m, averageNormal);               
+    plane[1] = subtractsTwoVectors(m, averageNormal);
+    plane[2] = addTwoVectors(plane[1], rPlane);               
+    plane[3] = addTwoVectors(plane[0], rPlane);
+    
+   /* for(int i = 0; i < 4; i++)
+    {
+        for(int j = 0; j < 3 ; j++)
+            printf("plane = %f\t", plane[i][j]);
+    
+        printf("\n");
+    }
+    */
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  RCI:    computes the midpoint of a line                  u.may 08/07|
+ *----------------------------------------------------------------------*/  
+Epetra_SerialDenseVector Intersection::computeLineMidpoint( 
+    const Epetra_SerialDenseVector& p1, 
+    const Epetra_SerialDenseVector& p2)
+{
+    Epetra_SerialDenseVector midpoint(3);
+    
+    for(int i=0; i<3; i++)
+        midpoint[i] = (p1[i] + p2[i])*0.5;
+        
+    return midpoint;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  RCI:    searches for the face marker                     u.may 10/07|
+ |          of a facet adjacent to a given edge of                      |
+ |          of a given facet                                            |
+ *----------------------------------------------------------------------*/       
+void Intersection::findAdjacentFace(
+    const int         edgeIndex1, 
+    const int         edgeIndex2, 
+    const int         faceMarker,
+    int&              adjacentFaceMarker,
+    int               faceIndex,
+    int&              adjacentFaceIndex,
+    tetgenio&   out)
+{
+
+    bool    faceMarkerFound     = false;
+    
+    for(int i=0; i<out.numberoftrifaces; i++)
+    {
+        adjacentFaceMarker = out.trifacemarkerlist[i] - facetMarkerOffset_;
+        adjacentFaceIndex = i;
+        
+        if(adjacentFaceMarker >= -1)
+        {        
+            int countPoints = 0;
+            for(int j = 0; j < 3 ; j++)
+            {
+                int pointIndex = out.trifacelist[ i*3 + j ];
+                if(pointIndex == edgeIndex1 || pointIndex == edgeIndex2)
+                    countPoints++;
+            }
+            
+            if((countPoints == 2) && (faceIndex != adjacentFaceIndex))
+                faceMarkerFound = true;
+        }
+        if(faceMarkerFound)
+            break;
+        
+    }
+    
+    if(!faceMarkerFound)
+        adjacentFaceMarker = -2;
     
 }
 
 
 
 /*----------------------------------------------------------------------*
- |  RCI:    checks if the considered tetrahedron facet       u.may 09/07|
- |          lies on a xfem boundary                                     |
- |          (facetmarker = 3)                                           |     
- *----------------------------------------------------------------------*/
-bool Intersection::facetOnExternalBoundary(
-    const int         index1,
-    const int         index2,
-    const int         cornerIndex,
-    const int         tetIndex,
-    tetgenio&   out)
+ |  RCI:    finds the global index of the point opposite     u.may 08/07|
+ |          to an edge in the adjacent triangular face                  |
+ *----------------------------------------------------------------------*/  
+int Intersection::findEdgeOppositeIndex( 
+    int                                 edgeIndex1,
+    int                                 edgeIndex2, 
+    int                                 adjacentFaceIndex,
+    tetgenio&                           out)
 {
-    
-    bool onBoundary = true;
-    int  globalIndex;
-    vector<int> localIndex(3,0);
-    
-    localIndex[0] = index1; 
-    localIndex[1] = index2; 
-    localIndex[2] = cornerIndex; 
-       
+    int oppositePointIndex = -1;
+  
     for(int i = 0; i < 3; i++)
-    {
-        globalIndex = out.tetrahedronlist[tetIndex*out.numberofcorners + localIndex[i]];
-        if(out.pointmarkerlist[globalIndex] != 3)
+        if((out.trifacelist[adjacentFaceIndex*3+i] != edgeIndex1) && (out.trifacelist[adjacentFaceIndex*3+i] != edgeIndex2 ))
         {
-            onBoundary = false;
+            oppositePointIndex = out.trifacelist[adjacentFaceIndex*3+i];
             break;
         }
-    } 
- 
-    return onBoundary;
+
+    return oppositePointIndex;
 }
 
 
@@ -3694,8 +3692,6 @@ bool Intersection::findCommonFaceEdge(
         }
         if(edgeFound)
             break; 
-        //else
-        //    printf("edge not Found\n");      
     }
     
     return edgeFound;
@@ -3712,8 +3708,8 @@ bool Intersection::findCommonFaceEdge(
 bool Intersection::findCommonCutterLine(  
     const int                                       faceIndex1, 
     const int                                       faceIndex2,
-    int&                                            cutterIndex,
-    int&                                            lineIndex)
+    int&                                            lineIndex,
+    int&                                            cutterIndex)
 {
     bool comparison = false;
     DRT::Node* node1;
@@ -3776,51 +3772,6 @@ bool Intersection::findCommonCutterLine(
 
 
 /*----------------------------------------------------------------------*
- |  RCI:    searches for the face marker                     u.may 10/07|
- |          of a facet adjacent to a given edge of                      |
- |          of a given facet                                            |
- *----------------------------------------------------------------------*/       
-int Intersection::findAdjacentFaceMarker(
-    const int         edgeIndex1, 
-    const int         edgeIndex2, 
-    const int         faceMarkerIndex,
-    tetgenio&   out)
-{
-
-    bool    faceMarkerFound     = false;
-    int     faceMarkerIndex2    = 0;
-    
-    //printf("edgeIndex1 = %d\n", edgeIndex1 );
-    //printf("edgeIndex2 = %d\n", edgeIndex2 );
-    
-    for(int i=0; i<out.numberoftrifaces; i++)
-    {
-        faceMarkerIndex2 = out.trifacemarkerlist[i] - facetMarkerOffset_;
-        if(faceMarkerIndex2 > -1)
-        {        
-            int countPoints = 0;
-            for(int j = 0; j < 3 ; j++)
-            {
-                int pointIndex = out.trifacelist[ i*3 + j ];
-                if(pointIndex == edgeIndex1 || pointIndex == edgeIndex2)
-                    countPoints++;
-                    
-            }
-            
-            if((countPoints == 2) && (faceMarkerIndex != faceMarkerIndex2))
-                faceMarkerFound = true;
-            
-        }
-        if(faceMarkerFound)
-            break;
-    }
-    
-    return faceMarkerIndex2;
-}
-
-
-
-/*----------------------------------------------------------------------*
  |  RCI:    for the recovery of a higher-order node          u.may 10/07|
  |          by a plane - line element intersection                      |
  |          this method finds the line element of the given cutter      |
@@ -3878,6 +3829,46 @@ int Intersection::findIntersectingSurfaceEdge(
     */
     return lineIndex;
 }
+
+
+
+/*----------------------------------------------------------------------*
+ |  RCI:    stores the higher-order node in the pointlist    u.may 08/07|
+ |          at the place of the linear node                             |
+ *----------------------------------------------------------------------*/  
+void Intersection::storeHigherOrderNode( 
+    const bool                                  normal,
+    const int                                   globalHigherOrderIndex,
+    const int                                   lineIndex, 
+    Epetra_SerialDenseVector&                   xsi, 
+    DRT::Element*                               surfaceElement, 
+    DRT::Element*                               xfemElement, 
+    tetgenio&                                   out)
+{
+    
+    Epetra_SerialDenseVector xsiLine(3);
+    for(int i = 0; i < 3; i++)
+        xsiLine[i] = 0.0;
+        
+    if(normal)     referenceToCurrentCoordinates(surfaceElement, xsi);
+    else           
+    {   
+        xsiLine[0] = xsi[2];
+        referenceToCurrentCoordinates(surfaceElement->Lines()[lineIndex], xsiLine);
+        for(int i=0; i<3; i++)
+            xsi[i] = xsiLine[i];
+    }       
+    currentToReferenceCoordinates(xfemElement, xsi);
+    
+    //printf("xsiold0 = %20.16f\t, xsiold1 = %20.16f\t, xsiold2 = %20.16f\n", out.pointlist[index*3], out.pointlist[index*3+1], out.pointlist[index*3+2]);
+    
+    for(int i = 0; i < 3; i++)
+        out.pointlist[globalHigherOrderIndex*3+i]   = xsi[i];  
+   
+    //printf("xsi0    = %20.16f\t, xsi1    = %20.16f\t, xsi2    = %20.16f\n", xsi[0], xsi[1], xsi[2]);
+    //printf("\n");
+}
+
 
 
 /*----------------------------------------------------------------------*

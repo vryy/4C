@@ -90,6 +90,7 @@ class Intersection
         
         private:
         
+        int countMissedPoints_;
         
         bool higherorder_;
         
@@ -726,6 +727,17 @@ class Intersection
             const vector<int>               positions
             );
          
+
+        /*!
+        \brief  stores the cutter element intersecting 
+                with an xfem element in a list
+    
+        \param surfaceElement   (in)    :   surface element
+        */                  
+        void storeIntersectedCutterElement(
+            DRT::Element* surfaceElement
+            );  
+         
   
         /*!
         \brief  computes the recovery of the curved interface
@@ -742,26 +754,176 @@ class Intersection
            
             
         /*!
-        \brief  checks if Steiner points are inserted additionally. If the Steiner points
-                are not lying in a surface element already they are lifted up such they
-                are lying in a surface element.
+        \brief  checks if Steiner points are inserted additionally. They are lifted up such they
+                are lying in a cutter element.
     
+        \param xfemElement          (out)    :   xfem element
         \param out                  (out)    :   output data structure of TetGen
         */     
-        void liftAllCornerPoints(
-            tetgenio&                                       out,
+        void liftAllSteinerPoints(
             DRT::Element*                                   xfemElement,
-            vector< vector<Epetra_SerialDenseVector> >&     surfaceNodes
+            tetgenio&                                       out
+            
             );      
            
+           
+        /*!
+        \brief  collects for each Steiner point its adjacent triangular faces
+    
+        \param adjacentFacesList        (out)    :   list of adjacent faces
+        \param adjacentFacemarkerList   (out)    :   list of face marker of each adjacent face
+        \param out                      (in)     :   output data structure of TetGen
+        */     
+        void locateSteinerPoints(
+            vector< vector <int> >&     adjacentFacesList,
+            vector< vector <int> >&     adjacentFacemarkerList,
+            tetgenio&                   out
+            );
+         
+         
+        /*!
+        \brief  checks if the Steiner points will lie in a cutter element or on
+                one of the edges of the cutter element
+    
+        \param steinerIndex             (in)     :   index of the Steiner point
+        \param lineIndex                (out)    :   line index
+        \param cutterIndex              (out)    :   index of the cutter element
+        \param adjacentFacesList        (in)     :   list of adjacent faces
+        \param adjacentFacemarkerList   (in)     :   list of face marker of each adjacent face
+        \param edgePoint                (out)    :   point lying on the same edge as the Steiner point  
+        \param oppositePoint            (out)    :   point lying opposite on the edge of the Steiner point  
+        \param xfemElement              (in)     :   xfem element  
+        \param out                      (in)     :   output data structure of TetGen
+        \return true the point lies in the cutter element and false if on an edge
+        */     
+        bool decideNormalOrPlane(  
+            int                         steinerIndex,
+            int&                        lineIndex, 
+            int&                        cutterIndex,  
+            vector< vector <int> >&     adjacentFacesList,
+            vector< vector <int> >&     adjacentFacemarkerList,
+            Epetra_SerialDenseVector&   edgePoint,
+            Epetra_SerialDenseVector&   oppositePoint,
+            DRT::Element*               xfemElement, 
+            tetgenio&                   out
+            );   
+    
+    
+        /*!
+        \brief  lifts the Steiner point into the cutter element
+    
+        \param steinerIndex             (in)     :   index of the Steiner point
+        \param adjacentFacesList        (in)     :   list of adjacent faces
+        \param adjacentFacemarkerList   (in)     :   list of face marker of each adjacent face
+        \param xfemElement              (in)     :   xfem element  
+        \param out                      (in)     :   output data structure of TetGen
+        */     
+        void liftSteinerPointOnSurface(
+            int                         steinerIndex,
+            vector< vector <int> >&     adjacentFacesList,
+            vector< vector <int> >&     adjacentFacemarkerList,
+            DRT::Element*               xfemElement, 
+            tetgenio&                   out
+            ); 
+        
+        
+        /*!
+        \brief  lifts the Steiner point onto the edge of the cutter element
+                specified by the line index
+    
+        \param steinerIndex             (in)     :   index of the Steiner point
+        \param lineIndex                (in)     :   line index
+        \param cutterIndex              (in)     :   index of the cutter element
+        \param edgePoint                (in)     :   point lying on the same edge as the Steiner point  
+        \param oppositePoint            (in)     :   point lying opposite on the edge of the Steiner point 
+        \param adjacentFacesList        (in)     :   list of adjacent faces 
+        \param xfemElement              (in)     :   xfem element  
+        \param out                      (in)     :   output data structure of TetGen
+        \return true the point lies in the cutter element and false if on an edge
+        */     
+        void liftSteinerPointOnEdge(
+            int                         steinerIndex,
+            int                         lineIndex,
+            int                         cutterIndex,   
+            Epetra_SerialDenseVector&   edgePoint,
+            Epetra_SerialDenseVector&   oppositePoint,
+            vector< vector <int> >&     adjacentFacesList,
+            DRT::Element*               xfemElement, 
+            tetgenio&                   out
+            );
+          
+           
+        /*!
+        \brief  gathers information of a tetrahedron adjacent to an 
+                interface 
+                
+        \param tetIndex             (in)    : tetrahedron index of the tetrahedron list
+        \param faceIndex            (in)    : index of the face        
+        \param tetraCornerIndices   (out)   : index list of tetrahedron corners
+        \param order                (out)   : order the tetrahedron corner points appear
+        
+        \param out                  (in)    : output data structure of TetGen
+        */
+        void getTetrahedronInformation(   
+            const int           tetIndex,
+            const int           faceIndex,  
+            vector<int>&        tetraCornerIndices,
+            vector<int>&        order,
+            const tetgenio&     out
+            );          
+        
+        
+        /*!
+        \brief  gathers information of a tetrahedron adjacent to an 
+                interface 
+                
+        \param tetraCornerIndices   (in)    : index list of tetrahedron corners
+        \param tetraCornerIndices   (out)   : list of tetrahedron corners nodes in the current 
+                                              configuration of the xfem element
+        \param xfemElement          (in)    : xfem element
+        \param out                  (in)    : output data structure of TetGen
+        */
+        void getTetrahedronNodes(
+            vector<Epetra_SerialDenseVector>&       tetraCornerNodes,
+            vector<int>&                            tetraCornerIndices,
+            DRT::Element*                           xfemElement,
+            const tetgenio&                         out
+            ); 
+        
+                
+        /*!
+        \brief  lifts a higher order point of an edge of the linearized interface
+                onto the curved interface
+    
+        \param index1                   (in)    :   local index of edge point 1
+        \param index2                   (in)    :   local index of edge point 2
+        \param faceIndex                (in)    :   index of the face 
+        \param faceMarkerIndex          (in)    :   face marker
+        \param globalHigherOrderIndex   (in)    :   global index of the higher-order point
+        output xfemElement              (in)    :   xfem element
+        \param out                      (in)    :   output data structure of TetGen
+        */     
+        void computeHigherOrderPoint(    
+            int                                 index1, 
+            int                                 index2, 
+            int                                 faceIndex, 
+            int                                 faceMarker, 
+            int                                 globalHigherOrderIndex, 
+            vector<int>&                        tetraCornerIndices, 
+            vector<Epetra_SerialDenseVector>&   tetraCornerNodes, 
+            DRT::Element*                       xfemElement, 
+            tetgenio&                           out
+            );
+    
     
         /*!
         \brief  returns the other two point indices belonging to a triface 
                 with a Steiner point
     
-        \param out                  (out)    :   output data structure of TetGen
-        \param trifaceIndex         (out)    :   index of the triface
-        \param steinerPointIndex    (out)    :   index of the Steiner point
+        \param out                  (in)    :   output data structure of TetGen
+        \param trifaceIndex         (in)    :   index of the triface
+        \param steinerPointIndex    (in)    :   index of the Steiner point
+        \return vector of point indices
         */         
         vector<int> getPointIndices(
             tetgenio&   out, 
@@ -773,131 +935,180 @@ class Intersection
         /*!
         \brief  computes the recovery of the curved interface
                 for one xfem element after a Contrained Delaunay 
-                Tetrahedralization. The surface element is
-                transformed into the reference system of the
-                xfem element, since the intersection is carried
-                out in the reference configuration of the xfem element
+                Tetrahedralization. 
     
-        \param surfaceNodes             (in)    :   nodes of the surface element transformed 
-                                                    into the reference system of the xfem element
-        \param surfaceElement           (in)    :   surface element
-        \param plane                    (in)    :   plane nodes
         \param xsi                      (out)   :   intersection point
-        \return true if normal intersects with curved surface element or false otherwise
+        \param normal                   (in)    :   nodes of the intersection normal
+        \param cutterElement            (in)    :   cutter element
+        \param onBoundary               (in)    :   indicates whether the normal lies on the xfem element 
+                                                    boundary or not
+        \return true if normal intersects with cutter element or false otherwise
         */      
-        bool computeRecoveryNormal(  
-            vector <Epetra_SerialDenseVector>&          surfaceNodes,
-            DRT::Element*                               surfaceElement,
-            const vector<Epetra_SerialDenseVector>&     plane,
+        bool computeRecoveryNormal( 
             Epetra_SerialDenseVector&                   xsi,
-            const bool                                  current
-            );        
+            const vector<Epetra_SerialDenseVector>&     normal,
+            DRT::Element*                               cutterElement,
+            const bool                                  onBoundary
+            );
         
+        
+        /*!
+        \brief  updates the system matrix for the intersection computation
+                of an average normal and the corresponding cutter element
+                to lift a point of the linearized interface onto the curved interface 
+    
+        \param A                (out)       :   system matrix
+        \param xsi              (in)        :   intersection point
+        \param normal           (in)        :   nodes of the intersection normal
+        \param surfaceElement   (in)        :   surface element
+        \param onBoundary       (in)        :   true, if intersection normal lies on the
+                                                element boundary
+        */      
+        void updateAForRCINormal(   
+            Epetra_SerialDenseMatrix&                   A,
+            const Epetra_SerialDenseVector&             xsi,
+            const vector<Epetra_SerialDenseVector>&     normal,
+            DRT::Element*                               surfaceElement,
+            const bool                                  onBoundary
+            );         
+         
+        
+        /*!
+        \brief  updates the right-hand-side for the intersection computation
+                of an average normal and the corresponding cutter element
+                to lift a point of the linearized interface onto the curved interface 
+                
+        \param b                (out)       :   right-hand-side
+        \param xsi              (in)        :   intersection point
+        \param normal           (in)        :   nodes of the intersection normal
+        \param surfaceElement   (in)        :   surface element
+        \param onBoundary       (in)        :   true, if intersection normal lies on the
+                                                element boundary
+        */                         
+        void updateRHSForRCINormal( 
+            Epetra_SerialDenseVector&                   b,
+            Epetra_SerialDenseVector&                   xsi,    
+            const vector<Epetra_SerialDenseVector>&     normal,
+            DRT::Element*                               surfaceElement,
+            const bool                                  onBoundary
+            );           
+              
         
         /*!
         \brief  computes the recovery of the curved interface
                 for one xfem element after a Contrained Delaunay 
-                Tetrahedralization
-    
-        \param A                (in)    :   xfem element
-        \param xsi              (in)    :   intersection point
-        \param surfaceNodes     (in)    :   surface nodes transformed into the
-                                            reference system of the xfem element
-        \param surfaceElement   (in)    :   surface element
+                Tetrahedralization. 
+                
+        \param lineIndex                (in)    :   line index
+        \param xsi                      (out)   :   intersection point
+        \param plane                    (in)    :   nodes of the intersection normal
+        \param surfaceElement           (in)    :   surface element
+        
+        \return true if plane intersects with the line element or false otherwise
         */      
-        void updateAForRCINormal( 
+        bool computeRecoveryPlane( 
+            int&                                        lineIndex,
+            Epetra_SerialDenseVector&                   xsi,
+            const vector<Epetra_SerialDenseVector>&     plane,
+            DRT::Element*                               surfaceElement
+            );
+            
+         
+        /*!
+        \brief  updates the system matrix for the intersection computation
+                of an average normal and the corresponding cutter element
+                to lift a point of the linearized interface onto the curved interface 
+    
+        \param A                (out)       :   system matrix
+        \param xsi              (in)        :   intersection point
+        \param plane            (in)        :   nodes of the intersection normal
+        \param lineElement      (in)        :   line element
+        \param surfaceElement   (in)        :   surface element
+        */         
+        void updateAForRCIPlane(   
             Epetra_SerialDenseMatrix&                   A,
             const Epetra_SerialDenseVector&             xsi,
             const vector<Epetra_SerialDenseVector>&     plane,
-            const vector <Epetra_SerialDenseVector>&    surfaceNodes,
-            DRT::Element*                               surfaceElement,
-            const bool                                  current
+            DRT::Element*                               lineElement,
+            DRT::Element*                               surfaceElement
             );
-         
-        
+            
+            
         /*!
-        \brief  computes the recovery of the curved interface
-                for one xfem element after a Contrained Delaunay 
-                Tetrahedralization
-    
-        \param b                (in)    :   right-hand-side
-        \param xsi              (out)   :   intersection point
-        \param surfaceNodes     (in)    :   surface nodes transformed into the
-                                            reference system of the xfem element
-        \param surfaceElement   (in)    :   surface element
-        \param plane            (in)    :   plane nodes
-        */                         
-        void updateRHSForRCINormal(   
+        \brief  updates the right-hand-side for the intersection computation
+                of the cutter element edge with a plane through the midpoint 
+                of the face edge to lift a point of the linearized interface 
+                onto the curved interface 
+                
+        \param b                (out)       :   right-hand-side
+        \param xsi              (in)        :   intersection point
+        \param plane            (in)        :   nodes of the intersection normal
+        \param lineElement      (in)        :   line element
+        */                       
+        void updateRHSForRCIPlane( 
             Epetra_SerialDenseVector&                   b,
-            Epetra_SerialDenseVector&                   xsi,
-            const vector <Epetra_SerialDenseVector>&    surfaceNodes,
-            DRT::Element*                               surfaceElement,
-            const vector<Epetra_SerialDenseVector>&     plane,
-            const bool                                  current
-            );
-       
-    
-        /*!
-        \brief  stores the surface element actually intersecting 
-                with an xfem element in a list
-    
-        \param surfaceElement   (in)    :   surface element
-        */                  
-        void storeIntersectedCutterElement(
-            DRT::Element* surfaceElement
-            );  
-         
-         
-        /*!
-        \brief  transforms the intersecting surface elements into the reference
-                system of the xfem elements
-    
-        \param surfaceElement   (in)    :   element
-        \param surfaceNodes     (out)   :   surface nodes transformed into the
-                                            reference system of the xfem element
-        */        
-        void transformSurfaceNodes( 
-            DRT::Element*                                   element,
-            vector < vector <Epetra_SerialDenseVector> >&   surfaceNodes
+            Epetra_SerialDenseVector&                   xsi,    
+            const vector <Epetra_SerialDenseVector>&    plane,
+            DRT::Element*                               lineElement
             );
             
-            
+                           
         /*!
-        \brief  gathers information of a tetrahedron adjacent to an 
-                interface 
-                
-        \param out                  (in)    : output data structure of TetGen
-        \param tetraCornerIndices   (out)   : index list of tetrahedron corners
-        \param order                (out)   : order the tetrahedron corner points appear
-        \param index                (in)    : tetrahedron index of the tetrahedron list
-        */
-        void getTetrahedronInformation(   
-            const tetgenio&     out, 
-            vector<int>&        tetraCornerIndices,
-            vector<int>&        order,
-            const int           tetIndex,
-            const int           index
-            );          
-        
-        
-        /*!
-        \brief  gathers information of a tetrahedron adjacent to an 
-                interface 
-                
-        \param out                  (in)    : output data structure of TetGen
-        \param xfemElement          (in)    : xfem element
-        \param tetraCornerIndices   (in)    : index list of tetrahedron corners
-        \param tetraCornerIndices   (out)   : list of tetrahedron corners nodes in the current 
-                                              configuration of the xfem element
-        */
-        void getTetrahedronNodes(
-            const tetgenio&                         out, 
+        \brief  computes the normal to the interface edge of the
+                adjacent tetrahedon. In addition the normal lies within the plane
+                of the tetrahedron. 
+              
+        \param onBoundary               (in)    : true if edge lies on the surface of the xfem element, 
+                                                  false otherwise
+        \param index1                   (in)    : local index 1 of an interface edge
+        \param index2                   (in)    : local index 2 of an interface edge
+        \param oppositePointIndex       (in)    : gloabal index of the point oopoiste to the edge
+        \param globalHigherOrderIndex   (in)    : global higher order index
+        \param tetraCornerIndices       (in)    : indices of tetrahedron corners
+        \param tetraCornerNodes         (in)    : list of tetrahedron corner nodes in 
+                                                  current configuration of the xfem element
+        \param plane                    (out)   : nodes of the normal and plane 
+        \param xfemElement              (in)    : xfem element
+        \param out                      (in)    : output data structure of tetGen
+        */    
+        void computeIntersectionNormal( 
+            const bool                              onBoundary,
+            const int                               index1,
+            const int                               index2,
+            const int                               oppositePointIndex,
+            const int                               globalHigherOrderIndex, 
+            const vector<int>&                      tetraCornerIndices,
+            const vector<Epetra_SerialDenseVector>& tetraCornerNodes,
+            vector<Epetra_SerialDenseVector>&       plane,
             DRT::Element*                           xfemElement,
-            vector<Epetra_SerialDenseVector>&       tetraCornerNodes,
-            vector<int>&                            tetraCornerIndices
+            const tetgenio&                         out
             );
-    
-    
+            
+
+         /*!
+        \brief  computes the normal to the interface edge of two
+                adjacent triangular faces passing through the midpoint of that edge.             
+              
+        \param index1                   (in)    : global index 1 of an interface edge
+        \param index2                   (in)    : global index 2 of an interface edge
+        \param faceIndex                (in)    : index of the face
+        \param adjacentFaceIndex        (in)    : index of the adjacent face
+        \param plane                    (out)   : nodes of the normal and plane 
+        \param xfemElement              (in)    : xfem element
+        \param out                      (in)    : output data structure of tetGen
+        */    
+        void computeIntersectionNormal(  
+            int                                 index1,
+            int                                 index2, 
+            int                                 faceIndex,
+            int                                 adjacentFaceIndex,
+            int                                 globalHigherOrderIndex,
+            vector<Epetra_SerialDenseVector>&   plane,
+            DRT::Element*                       xfemElement,
+            tetgenio&                           out
+            );    
+   
+   
         /*!
         \brief  compute the midpoint of a line described by two points
                 
@@ -909,112 +1120,27 @@ class Intersection
             const Epetra_SerialDenseVector& p1,
             const Epetra_SerialDenseVector& p2
             );      
-
-        
+           
+           
         /*!
-        \brief  computes the normal to the interface edge of the
-                adjacent tetrahedon. In addition the normal lies within the plane
-                of the tetrahedron. 
+        \brief  finds the face marker of an adjacent facet for a given edge 
+                of another facet
                 
-        \param index1               (in)    : index 1 of an interface edge
-        \param index2               (in)    : index 2 of an interface edge
-        \param out                  (in)    : out
-        \param tetraCornerIndices   (in)    : indices of tetrahedron corners
-        \param tetraCornerNodes     (in)    : list of tetrahedron corner nodes in 
-                                              current configuration of the xfem element
-        \param plane                (out)   : plane nodes
-        \param current              (in)    : true if nodes are current configuration , false 
-                                              if they are in reference configuration
-        */    
-        void computeIntersectionNormal(    
-            DRT::Element*                           xfemElement,   
-            const int                               index1,
-            const int                               index2,
-            const int                               globalHigherOrderIndex, 
-            const tetgenio&                         out,
-            const vector<int>&                      tetraCornerIndices,
-            const vector<int>&                      order,
-            const vector<Epetra_SerialDenseVector>& tetraCornerNodes,
-            vector<Epetra_SerialDenseVector>&       plane,
-            const bool                              current
-            );
-            
-            
-        /*!
-        \brief  computes the normal to the interface edge of the
-                adjacent tetrahedon. In addition the normal lies within the plane
-                of the tetrahedron. 
-                
-        \param index                (in)    : index 1 of an interface edge
-        \param xsi                  (in)    : coordinates of the higher order node 
-        \param surface element      (in)    : surface element
-        \param out                  (in)    : output data structure of tetGen
-        */                              
-        void storeHigherOrderNode(   
-            const int                                   index,
-            Epetra_SerialDenseVector&                   xsi, 
-            const vector <Epetra_SerialDenseVector>&    surfaceNodes,
-            const vector <Epetra_SerialDenseVector>&    plane,
-            int                                         lineIndex, 
-            DRT::Element*                               surfaceElement, 
-            DRT::Element*                               xfemElement, 
-            tetgenio&                                   out,
-            const bool                                  current, 
-            const bool                                  normal 
-            );
-     
-     
-          
-        bool computeRecoveryPlane( 
-            vector <Epetra_SerialDenseVector>&          surfaceNodes,
-            DRT::Element*                               surfaceElement,
-            int&                                        lineIndex,
-            const vector<Epetra_SerialDenseVector>&     plane,
-            Epetra_SerialDenseVector&                   xsi,
-            const bool                                  current
-            );
-            
-            
-        void updateAForRCIPlane(   
-            Epetra_SerialDenseMatrix&                   A,
-            const Epetra_SerialDenseVector&             xsi,
-            const vector<Epetra_SerialDenseVector>&     plane,
-            const vector<Epetra_SerialDenseVector>&     curve,
-            DRT::Element*                               surfaceElement,
-            DRT::Element*                               lineElement,
-            const bool                                  current
-            ); 
-            
-      
-        void updateRHSForRCIPlane( 
-            Epetra_SerialDenseVector&                   b,
-            Epetra_SerialDenseVector&                   xsi,    
-            const vector <Epetra_SerialDenseVector>&    curve,
-            DRT::Element*                               lineElement,
-            const vector<Epetra_SerialDenseVector>&     plane,
-            const bool                                  current
-            ); 
-            
-            
-        /*!
-        \brief  checks if the considered tetrahedron facet lies on 
-                a xfem-element facet
-                
-        \param index1               (in)    : index 1 of an interface edge
-        \param index2               (in)    : index 2 of an interface edge
-        \param corner index         (in)    : index lying on the tetrahedron facet 
-                                              opposite to the interface edge
-        \param tetIndex             (in)    : tetrahedron index
-        \param out                  (in)    : output data structure of tetGen
-        \return true if it lies on a boundary, false otherwise
-        */           
-        bool facetOnExternalBoundary(
-            const int         index1,
-            const int         index2,
-            const int         cornerIndex,
-            const int         tetIndex,
-            tetgenio&   out
-            );
+        \param edgeIndex1               (in)   : index of edge 1
+        \param edgeIndex2               (in)   : index of edge 2
+        \param faceMarkerIndex          (in)   : index of the given facet
+        \param out                      (in)   : output data structure of tetGen
+        \return the index of the face marker of the adjacent facet
+        */         
+        void findAdjacentFace(
+            const int       edgeIndex1, 
+            const int       edgeIndex2, 
+            const int       faceMarker,
+            int&            adjacentFaceMarker,
+            int             faceIndex,
+            int&            adjacentFaceIndex,
+            tetgenio&       out
+            );   
             
             
         /*!
@@ -1044,36 +1170,35 @@ class Intersection
                 
         \param faceIndex1               (in)    : index of facet 1
         \param faceIndex2               (in)    : index of facet 2
-        \param surfaceIndex             (out)   : index of the cutter element
         \param lineIndex                (out)   : index of the common line element
+        \param surfaceIndex             (out)   : index of the cutter element
         \return true if common line element was found, false otherwise
         */          
         bool findCommonCutterLine(  
             const int                                       faceIndex1, 
             const int                                       faceIndex2,
-            int&                                            cutterIndex,
-            int&                                            lineIndex
+            int&                                            lineIndex,
+            int&                                            cutterIndex
             );
-          
-          
-        /*!
-        \brief  finds the face marker of an adjacent facet for a given edge 
-                of another facet
+        
+        
+       /*!
+        \brief  returns the index of a point lying opposite to a face edge
                 
-        \param edgeIndex1               (in)   : index of edge 1
-        \param edgeIndex2               (in)   : index of edge 2
-        \param faceMarkerIndex          (in)   : index of the given facet
+        \param edgeNode1                (in)   : edge node 1 of the facet edge
+        \param edgeNode2                (in)   : edge node 2 of the facet edge
+        \param adjacentFaceIndex        (in)   : list of adjacent face indices
         \param out                      (in)   : output data structure of tetGen
-        \return the index of the face marker of the adjacent facet
-        */         
-        int findAdjacentFaceMarker(
-            const int       edgeIndex1, 
-            const int       edgeIndex2, 
-            const int       faceMarkerIndex,
-            tetgenio&       out
-            );   
-            
-              
+        \return the line index of the intersection line element of the given cutter element
+        */              
+       int findEdgeOppositeIndex( 
+            int                                 edgeIndex1,
+            int                                 edgeIndex2, 
+            int                                 adjacentFaceIndex,
+            tetgenio&                           out
+            );
+    
+             
         /*!
         \brief  for the recovery computation of a higher-order node
                 by plane - line element intersection
@@ -1093,6 +1218,30 @@ class Intersection
             Epetra_SerialDenseVector&           edgeNode2
             );
     
+    
+        /*!
+        \brief  stores the higher order node in the pointlist of the output data
+                structure of tetGen out
+                
+        \param normal                   (in)    : true if itersection of a normal with a surface was computed
+                                                  false otherwise   
+        \param globalHigherOrderIndex   (in)    : lineIndex
+        \param lineIndex                (in)    : lineIndex
+        \param xsi                      (in)    : coordinates of the higher order node 
+        \param surface element          (in)    : surface element
+        \param xfem element             (in)    : xfem element
+        \param out                      (in)    : output data structure of tetGen
+        */                              
+        void storeHigherOrderNode( 
+            const bool                                  normal,
+            const int                                   globalHigherOrderIndex,
+            const int                                   lineIndex, 
+            Epetra_SerialDenseVector&                   xsi, 
+            DRT::Element*                               surfaceElement, 
+            DRT::Element*                               xfemElement, 
+            tetgenio&                                   out
+            );
+              
                   
         /*!
         \brief Debugging the intersection of XAABB's (DEBUG ONLY)
