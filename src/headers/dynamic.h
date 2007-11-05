@@ -65,18 +65,24 @@ typedef struct _STRUCT_DYNAMIC
 {
 enum
    {
-    gen_alfa,
-    centr_diff,                  /* generalised alpha-time integrator */
+    gen_alfa,                   /* generalised alpha-time integrator */
+    centr_diff,                 /* central differences (explicit) */
     Gen_EMM                     /* generalised energy-momentum method */
    }               Typ;         /* type of time integration algorithm */
 enum _nlnSolvTyp
    {
-    fullnewton,
-    modnewton,
-    matfreenewton,
-    nlncg,
-    ptc
+    fullnewton,                 /* full Newton-Raphson */
+    modnewton,                  /* modified Newton */
+    matfreenewton,              /* matrix-free Newton iteration */
+    nlncg,                      /* nonlinear CG iteration using Nox */
+    ptc                         /* pseudo transient continuation nonlinear iteration */
    }               nlnSolvTyp;  /* type of nonlinear solver to be used */
+enum _PredType
+   {
+     pred_vague,                /* undetermined */
+     pred_constdis,             /* constant displacements */
+     pred_constdisvelacc        /* constant displacements, velocities and accelerations */
+   }               predtype;    /* predictor type */
 INT                updevry_disp;/* write result very updevry step */
 INT                updevry_stress;/* write result very updevry step */
 INT                res_write_evry;/* write restart every res_write_evry step */

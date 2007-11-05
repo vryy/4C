@@ -181,16 +181,18 @@ havecontact_(false)
     discret_.Evaluate(p,stiff_,mass_,fint_,null,null);
     discret_.ClearState();
   }
-  // build damping matrix if desired
+  // close mass matrix
   LINALG::Complete(*mass_);
   maxentriesperrow_ = mass_->MaxNumEntries();
+
+  // build damping matrix if desired  
   if (damping)
   {
     LINALG::Complete(*stiff_);
     LINALG::Add(*stiff_,false,kdamp,*damp_,0.0);
-    stiff_ = null;
     LINALG::Add(*mass_,false,mdamp,*damp_,1.0);
     LINALG::Complete(*damp_);
+    stiff_ = null;
   }
 
   //--------------------------- calculate consistent initial accelerations
@@ -617,9 +619,9 @@ void StruGenAlpha::ConsistentPredictor()
   // add mid-viscous damping force
   if (damping)
   {
-      RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
-      damp_->Multiply(false,*velm_,*fviscm);
-      fresm_->Update(1.0,*fviscm,1.0);
+    RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
+    damp_->Multiply(false,*velm_,*fviscm);
+    fresm_->Update(1.0,*fviscm,1.0);
   }
 
   // add static mid-balance
@@ -685,7 +687,9 @@ void StruGenAlpha::FullNewton()
     // (using matrix stiff_ as effective matrix)
     LINALG::Add(*mass_,false,(1.-alpham)/(beta*dt*dt),*stiff_,1.-alphaf);
     if (damping)
+    {
       LINALG::Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),*stiff_,1.0);
+    }
     LINALG::Complete(*stiff_);
 
     //----------------------- apply dirichlet BCs to system of equations
@@ -708,22 +712,22 @@ void StruGenAlpha::FullNewton()
     // iterative
     // V_{n+1-alpha_f} := V_{n+1-alpha_f}
     //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
-    //velm_->Update((1.-alphaf)*gamma/(beta*dt),*disi_,1.0);
+    velm_->Update((1.-alphaf)*gamma/(beta*dt),*disi_,1.0);
     // incremental (required for constant predictor)
-    velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
-    velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
-                  (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
-                  gamma/(beta*dt));
+    //velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+    //velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
+    //              (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
+    //              gamma/(beta*dt));
     // accelerations
     // iterative
     // A_{n+1-alpha_m} := A_{n+1-alpha_m}
     //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
-    //accm_->Update((1.-alpham)/(beta*dt*dt),*disi_,1.0);
+    accm_->Update((1.-alpham)/(beta*dt*dt),*disi_,1.0);
     // incremental (required for constant predictor)
-    accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
-    accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
-                  (2.*beta-1.+alpham)/(2.*beta),*acc_,
-                  (1.-alpham)/((1.-alphaf)*beta*dt*dt));
+    //accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+    //accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
+    //              (2.*beta-1.+alpham)/(2.*beta),*acc_,
+    //              (1.-alpham)/((1.-alphaf)*beta*dt*dt));
 
     //---------------------------- compute internal forces and stiffness
     {
@@ -803,7 +807,19 @@ void StruGenAlpha::FullNewton()
   //=================================================================== end equilibrium loop
 
   //-------------------------------- test whether max iterations was hit
-  if (numiter>=maxiter) dserror("Newton unconverged in %d iterations",numiter);
+  if (numiter>=maxiter)
+  {
+     dserror("Newton unconverged in %d iterations",numiter);
+  }
+  else
+  {
+     if ( (myrank_ ==  0) && (printscreen) )
+     {
+        printf("Newton iteration converged: numiter %d res-norm %e dis-norm %e\n", 
+               numiter+1, fresmnorm, disinorm);
+        fflush(stdout);
+     }  
+  }
   params_.set<int>("num iterations",numiter);
 
   //-------------------------------------- don't need this at the moment

@@ -169,8 +169,22 @@ void dyn_nlnstructural_drt()
         break;
       }
 
-      // takes values "constant" "consistent"
-      genalphaparams.set<string>("predictor","constant");
+      // set predictor (takes values "constant" "consistent")
+      switch(sdyn->predtype)
+      {
+        case STRUCT_DYNAMIC::pred_vague:
+          dserror("You have to define the predictor");
+          break;
+        case STRUCT_DYNAMIC::pred_constdis:
+          genalphaparams.set<string>("predictor","consistent");        
+          break;
+        case STRUCT_DYNAMIC::pred_constdisvelacc:
+          genalphaparams.set<string>("predictor","constant");
+          break;
+        default:
+          dserror("Cannot cope with choice of predictor");
+          break;
+      }
 
       // create the time integrator
       StruGenAlpha timeintegrator(genalphaparams,*actdis,solver,output);

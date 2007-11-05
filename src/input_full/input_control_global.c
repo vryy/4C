@@ -990,6 +990,7 @@ sdyn->res_write_evry=1;
 sdyn->eigen=0;
 sdyn->timada.kind = timada_kind_none;  /* default time adaptivity is off */
 sdyn->timada.err_norm = timada_err_norm_vague; /* default error norm */
+sdyn->predtype = pred_constdis;  /* default predictor */
 
 
 if (frfind("-STRUCTURAL DYNAMIC")==0) goto end;
@@ -1038,6 +1039,17 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
         sdyn->nlnSolvTyp = nlncg;
       else if (frwordcmp(buffer,"ptc")==0)
         sdyn->nlnSolvTyp = ptc;
+   }
+   /* read predictor */
+   frchar("PREDICT",buffer,&ierr);
+   if (ierr==1)
+   {
+      if (frwordcmp(buffer,"Vague")==0)
+        sdyn->predtype = pred_vague;
+      else if (frwordcmp(buffer,"ConstDis")==0)
+        sdyn->predtype = pred_constdis;
+      else if (frwordcmp(buffer,"ConstDisVelAcc")==0)
+        sdyn->predtype = pred_constdisvelacc;
    }
 
 /*-----------------read INT */
