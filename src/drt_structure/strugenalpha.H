@@ -200,11 +200,23 @@ public:
                   double& alpham, 
                   double& alphaf);
 
-  /*
+  /*!
   \brief set time step size
 
   */
   void SetTimeStepSize(const double& timstpsiz);
+
+  /*!
+  \brief Set time
+
+  */
+  void SetTime(const double& tim);
+
+  /*!
+  \brief Set time step
+
+  */
+  void SetTimeStep(const int& stp);
 
   /*
   \brief Get last converged accelerations
