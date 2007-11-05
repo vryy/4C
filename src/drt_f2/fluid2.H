@@ -278,7 +278,8 @@ private:
   enum ActionType
   {
     none,
-    calc_fluid_systemmat_and_residual
+    calc_fluid_systemmat_and_residual,
+    calc_fluid_stationary_systemmat_and_residual
   };
 
   bool is_higher_order_element(const DRT::Element::DiscretizationType  distype) const;

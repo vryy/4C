@@ -632,17 +632,24 @@ void FluidImplicitTimeInt::NonlinearSolve()
       ParameterList eleparams;
 
       // action for elements
-      eleparams.set("action","calc_fluid_systemmat_and_residual");
+      if (timealgo_==timeint_stationary)
+          eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");    	  
+      else
+          eleparams.set("action","calc_fluid_systemmat_and_residual");
 
       // other parameters that might be needed by the elements
       eleparams.set("total time",time_);
       eleparams.set("thsl",theta_*dta_);
       eleparams.set("include reactive terms for linearisation",newton_);
+#if 0
+      // this parameter is obsolete due to the usage of different actions
+      // g.bau 11/07
       if (timealgo_==timeint_stationary)
           eleparams.set("using stationary formulation",true);
       else
           eleparams.set("using stationary formulation",false);
-
+#endif
+      
       // set vector values needed by elements
       discret_->ClearState();
       discret_->SetState("velnp",velnp_);

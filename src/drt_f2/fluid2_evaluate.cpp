@@ -44,11 +44,19 @@ int DRT::Elements::Fluid2::Evaluate(ParameterList& params,
 {
   DRT::Elements::Fluid2::ActionType act = Fluid2::none;
 
+  // set default value for (at the moment still necessary) control parameter
+ bool is_stationary = false;
+  
   // get the action required
   string action = params.get<string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action == "calc_fluid_systemmat_and_residual")
-  	act = Fluid2::calc_fluid_systemmat_and_residual;
+	act = Fluid2::calc_fluid_systemmat_and_residual;
+  else if (action == "calc_fluid_stationary_systemmat_and_residual")
+  {
+  	act = Fluid2::calc_fluid_stationary_systemmat_and_residual;
+  	is_stationary = true;
+  }
   else dserror("Unknown type of action for Fluid2");
 
   // get the material
@@ -60,6 +68,13 @@ int DRT::Elements::Fluid2::Evaluate(ParameterList& params,
 
   switch(act)
   {
+    case calc_fluid_stationary_systemmat_and_residual: 
+    	//no break here at the moment since we use the same code layout 
+    	//for both stationary and instationary problems controlled
+    	//by the value of is_stationary.
+    	//It is planned to create a separate implementation class for stationary formulation
+    	//as already done in fluid3 whithin a major cleanup of the fluid2 element.
+    	// g.bau  11/07
     case calc_fluid_systemmat_and_residual:
     {
       // need current velocity and history vector
@@ -110,7 +125,6 @@ int DRT::Elements::Fluid2::Evaluate(ParameterList& params,
        }
 
       // get control parameter
-      const bool is_stationary = params.get<bool>("using stationary formulation",false);
       const double time = params.get<double>("total time",-1.0);
 
       // One-step-Theta: timefac = theta*dt
