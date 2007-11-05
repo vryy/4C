@@ -442,6 +442,8 @@ void tsi_th_ost_equi(PARTITION* actpart,
    * free temperatures */
   /* HINT: time curve is called indirectly */
   solserv_putdirich_to_dof(actfield, disnum,
+                           node_array_sol, isol->temd, timcur-dt);
+  solserv_putdirich_to_dof(actfield, disnum,
                            node_array_sol, isol->temdn, timcur);
 
   /*------------------------------------------------------------------*/
@@ -459,10 +461,11 @@ void tsi_th_ost_equi(PARTITION* actpart,
   /* call element routines to calculate & assemble tangent matrices */
   *action = calc_therm_tang_instat;
   container->dvec = intforce;
-  container->dirich = dirich;  /* Dirichlet forces */
+  container->dirich = dirich;  /* Dirichlet forces at t_m */
   container->global_numeq = numeq_total;
   container->kstep = 0;  /* WORK */
   container->isdyn = 1;
+  container->isoltemd = isol->temd;
   container->isoltemdn = isol->temdn;
   dirichfacs[0] = 1.0/dt;  /* dtinv */
   dirichfacs[1] = gamma;  /* 'theta' in one-step-theta */
@@ -509,7 +512,7 @@ void tsi_th_ost_equi(PARTITION* actpart,
    *         - (1-gamma) * Fint_n
    *         + gamma * Fext_{n+1}
    *         + (1-gamma) * Fext_n
-   *         - Fdirichlet */
+   *         - Fdirichlet_{m} */
   solserv_zero_vec(&(actsolv->rhs[stiff_array]));
 #if 0
   printf("load %g %g\n",

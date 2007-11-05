@@ -1445,6 +1445,7 @@ INT                   nd=0;
 DOUBLE              **estif;
 DOUBLE              **emass;
 DOUBLE                dirich[MAXDOFPERELE];
+DOUBLE                dirichn[MAXDOFPERELE];
 DOUBLE                dforces[MAXDOFPERELE];
 INT                   dirich_onoff[MAXDOFPERELE];
 INT                   lm[MAXDOFPERELE];
@@ -1452,6 +1453,7 @@ GNODE                *actgnode;
 #if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
 NODE*                 actnode;
 #endif
+const INT isoltemd = container->isoltemd;
 const INT isoltemdn = container->isoltemdn;
 DOUBLE                dtinv = 0.0;
 DOUBLE                gamma = 0.0;
@@ -1481,7 +1483,7 @@ for (i=0; i<actele->numnp; i++) nd += actele->node[i]->numdf;
 /*---------------------------- init the vectors dirich and dirich_onoff */
 for (i=0; i<nd; i++)
 {
-   dirich[i] = 0.0;
+   dirichn[i] = 0.0;
    dforces[i] = 0.0;
    dirich_onoff[i] = 0;
 }
@@ -1495,7 +1497,8 @@ for (i=0; i<actele->numnp; i++)
       lm[i*numdf+j] = actele->node[i]->dof[j];
       if (actgnode->dirich==NULL) continue;
       dirich_onoff[i*numdf+j] = actgnode->dirich->dirich_onoff.a.iv[j];
-      dirich[i*numdf+j] = actgnode->node->sol.a.da[isoltemdn][j];
+      dirich[i*numdf+j] = actgnode->node->sol.a.da[isoltemd][j];
+      dirichn[i*numdf+j] = actgnode->node->sol.a.da[isoltemdn][j];
    }
 }
 /*----------------------------------------- loop rows of element matrix */
@@ -1510,7 +1513,7 @@ if (emass_global == NULL)
     {
       /*---------------------------- do nothing for unsupported columns */
       if (dirich_onoff[j]==0) continue;
-      dforces[i] += estif[i][j] * dirich[j];
+      dforces[i] += estif[i][j] * dirichn[j];
     }/* loop j over columns */
   }/* loop i over rows */
 }
@@ -1525,9 +1528,8 @@ else
     {
       /*---------------------------- do nothing for unsupported columns */
       if (dirich_onoff[j]==0) continue;
-      dforces[i] += ( gamma * estif[i][j]
-                      + dtinv * emass[i][j] ) * dirich[j];
-
+      dforces[i] += estif[i][j] * (gamma*dirichn[j] + (1.0-gamma)*dirich[j])
+                 +  emass[i][j] * (dtinv*dirichn[j] - dtinv*dirich[j]);
     }/* loop j over columns */
   }/* loop i over rows */
 }
