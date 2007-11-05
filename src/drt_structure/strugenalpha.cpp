@@ -40,7 +40,7 @@ havecontact_(false)
   bool damping   = params_.get<bool>  ("damping"         ,false);
   double kdamp   = params_.get<double>("damping factor K",0.0);
   double mdamp   = params_.get<double>("damping factor M",0.0);
-  int istep      = params_.get<int>   ("step"            ,0);
+  int step       = params_.get<int>   ("step"            ,0);
   bool outerr    = params_.get<bool>  ("print to err"    ,false);
   FILE* errfile  = params_.get<FILE*> ("err file"        ,NULL);
   if (!errfile) outerr = false;
@@ -206,8 +206,8 @@ havecontact_(false)
   }
 
   //------------------------------------------------------ time step index
-  istep = 0;
-  params_.set<int>("step",istep);
+  step = 0;
+  params_.set<int>("step",step);
 
 
   return;
@@ -227,7 +227,7 @@ void StruGenAlpha::ConstantPredictor()
   // -------------------------------------------------------------------
   double time        = params_.get<double>("total time"     ,0.0);
   double dt          = params_.get<double>("delta time"     ,0.01);
-  int    istep       = params_.get<int>   ("step"           ,0);
+  int    step        = params_.get<int>   ("step"           ,0);
   bool   damping     = params_.get<bool>  ("damping"        ,false);
   double alphaf      = params_.get<double>("alpha f"        ,0.459);
   bool   printscreen = params_.get<bool>  ("print to screen",false);
@@ -235,9 +235,7 @@ void StruGenAlpha::ConstantPredictor()
 
   // increment time and step
   double timen = time += dt;
-  istep++;
-  params_.set<double>("total time",timen);
-  params_.set<int>   ("step"      ,istep);
+  int istep = step + 1;
 
   //--------------------------------------------------- predicting state
   // constant predictor : displacement in domain
@@ -364,17 +362,15 @@ void StruGenAlpha::MatrixFreeConstantPredictor()
   // -------------------------------------------------------------------
   double time        = params_.get<double>("total time"     ,0.0);
   double dt          = params_.get<double>("delta time"     ,0.01);
-  int    istep       = params_.get<int>   ("step"           ,0);
+  int    step        = params_.get<int>   ("step"           ,0);
   bool   damping     = params_.get<bool>  ("damping"        ,false);
   double alphaf      = params_.get<double>("alpha f"        ,0.459);
   bool   printscreen = params_.get<bool>  ("print to screen",false);
   const Epetra_Map* dofrowmap = discret_.DofRowMap();
 
   // increment time and step
-  double timen = time += dt;
-  istep++;
-  params_.set<double>("total time",timen);
-  params_.set<int>   ("step"      ,istep);
+  double timen = time + dt;  // t_{n+1}
+  int istep = step + 1;  // n+1
 
   //--------------------------------------------------- predicting state
   // constant predictor : displacement in domain
@@ -502,7 +498,7 @@ void StruGenAlpha::ConsistentPredictor()
   // -------------------------------------------------------------------
   double time        = params_.get<double>("total time"     ,0.0);
   double dt          = params_.get<double>("delta time"     ,0.01);
-  int    istep       = params_.get<int>   ("step"           ,0);
+  int    step        = params_.get<int>   ("step"           ,0);
   bool   damping     = params_.get<bool>  ("damping"        ,false);
   double alphaf      = params_.get<double>("alpha f"        ,0.459);
   double alpham      = params_.get<double>("alpha m"        ,0.378);
@@ -512,10 +508,8 @@ void StruGenAlpha::ConsistentPredictor()
   const Epetra_Map* dofrowmap = discret_.DofRowMap();
 
   // increment time and step
-  double timen = time += dt;
-  istep++;
-  params_.set<double>("total time",timen);
-  params_.set<int>   ("step"      ,istep);
+  double timen = time + dt;  // t_{n+1}
+  int istep = step + 1;  // n+1
 
   //--------------------------------------------------- predicting state
   // constant predictor : displacement in domain
@@ -655,6 +649,7 @@ void StruGenAlpha::FullNewton()
   // -------------------------------------------------------------------
   double time      = params_.get<double>("total time"             ,0.0);
   double dt        = params_.get<double>("delta time"             ,0.01);
+  double timen     = time + dt;
   int    maxiter   = params_.get<int>   ("max iterations"         ,10);
   bool   damping   = params_.get<bool>  ("damping"                ,false);
   double beta      = params_.get<double>("beta"                   ,0.292);
@@ -744,7 +739,7 @@ void StruGenAlpha::FullNewton()
       p.set("assemble vector 2",false);
       p.set("assemble vector 3",false);
       // other parameters that might be needed by the elements
-      p.set("total time",time);
+      p.set("total time",timen);
       p.set("delta time",dt);
       // set vector values needed by elements
       discret_.ClearState();
@@ -839,6 +834,7 @@ void StruGenAlpha::ModifiedNewton()
   // -------------------------------------------------------------------
   double time      = params_.get<double>("total time"             ,0.0);
   double dt        = params_.get<double>("delta time"             ,0.01);
+  double timen     = time + dt;
   int    maxiter   = params_.get<int>   ("max iterations"         ,10);
   bool   damping   = params_.get<bool>  ("damping"                ,false);
   double beta      = params_.get<double>("beta"                   ,0.292);
@@ -922,7 +918,7 @@ void StruGenAlpha::ModifiedNewton()
       p.set("assemble vector 2",false);
       p.set("assemble vector 3",false);
       // other parameters that might be needed by the elements
-      p.set("total time",time);
+      p.set("total time",timen);
       p.set("delta time",dt);
       // set vector values needed by elements
       discret_.ClearState();
@@ -1004,6 +1000,7 @@ void StruGenAlpha::MatrixFreeNewton()
   // -------------------------------------------------------------------
   double time      = params_.get<double>("total time"             ,0.0);
   double dt        = params_.get<double>("delta time"             ,0.01);
+  double timen     = time + dt;
   int    maxiter   = params_.get<int>   ("max iterations"         ,10);
   bool   damping   = params_.get<bool>  ("damping"                ,false);
   double beta      = params_.get<double>("beta"                   ,0.292);
@@ -1086,7 +1083,7 @@ void StruGenAlpha::MatrixFreeNewton()
       p.set("assemble vector 2",false);
       p.set("assemble vector 3",false);
       // other parameters that might be needed by the elements
-      p.set("total time",time);
+      p.set("total time",timen);
       p.set("delta time",dt);
       // set vector values needed by elements
       discret_.ClearState();
@@ -1651,6 +1648,7 @@ void StruGenAlpha::PTC()
   // -------------------------------------------------------------------
   double time      = params_.get<double>("total time"             ,0.0);
   double dt        = params_.get<double>("delta time"             ,0.01);
+  double timen     = time + dt;
   int    maxiter   = params_.get<int>   ("max iterations"         ,10);
   bool   damping   = params_.get<bool>  ("damping"                ,false);
   double beta      = params_.get<double>("beta"                   ,0.292);
@@ -1761,7 +1759,7 @@ void StruGenAlpha::PTC()
       p.set("assemble vector 2",false);
       p.set("assemble vector 3",false);
       // other parameters that might be needed by the elements
-      p.set("total time",time);
+      p.set("total time",timen);
       p.set("delta time",dt);
       // set vector values needed by elements
       discret_.ClearState();
@@ -1877,6 +1875,7 @@ void StruGenAlpha::computeF(const Epetra_Vector& x, Epetra_Vector& F)
     //==================== compute residual for given displcaement increment x
     double time    = params_.get<double>("total time",0.0);
     double dt      = params_.get<double>("delta time",0.01);
+    double timen   = time + dt;
     double beta    = params_.get<double>("beta"      ,0.292);
     double gamma   = params_.get<double>("gamma"     ,0.581);
     double alpham  = params_.get<double>("alpha m"   ,0.378);
@@ -1945,7 +1944,7 @@ void StruGenAlpha::computeF(const Epetra_Vector& x, Epetra_Vector& F)
       p.set("assemble vector 2",false);
       p.set("assemble vector 3",false);
       // other parameters that might be needed by the elements
-      p.set("total time",time);
+      p.set("total time",timen);
       p.set("delta time",dt);
       // set vector values needed by elements
       discret_.ClearState();
@@ -1997,6 +1996,7 @@ void StruGenAlpha::computeJacobian(const Epetra_Vector& x)
 {
     double time    = params_.get<double>("total time",0.0);
     double dt      = params_.get<double>("delta time",0.01);
+    double timen   = time + dt;
     double beta    = params_.get<double>("beta"      ,0.292);
     double gamma   = params_.get<double>("gamma"     ,0.581);
     double alpham  = params_.get<double>("alpha m"   ,0.378);
@@ -2037,7 +2037,7 @@ void StruGenAlpha::computeJacobian(const Epetra_Vector& x)
       p.set("assemble vector 2",false);
       p.set("assemble vector 3",false);
       // other parameters that might be needed by the elements
-      p.set("total time",time);
+      p.set("total time",timen);
       p.set("delta time",dt);
       // set vector values needed by elements
       discret_.ClearState();
@@ -2073,7 +2073,9 @@ void StruGenAlpha::UpdateandOutput()
   // -------------------------------------------------------------------
   double time          = params_.get<double>("total time"             ,0.0);
   double dt            = params_.get<double>("delta time"             ,0.01);
-  int    istep         = params_.get<int>   ("step"                   ,0);
+  double timen         = time + dt;  // t_{n+1}
+  int    step          = params_.get<int>   ("step"                   ,0);
+  int    istep         = step + 1;  // n+1
   int    nstep         = params_.get<int>   ("nstep"                  ,5);
   int    numiter       = params_.get<int>   ("num iterations"         ,-1);
 
@@ -2091,6 +2093,10 @@ void StruGenAlpha::UpdateandOutput()
   bool   printerr      = params_.get<bool>  ("print to err"           ,true);
   FILE*  errfile       = params_.get<FILE*> ("err file"               ,NULL);
   if (!errfile) printerr = false;
+
+  //----------------------------------------------- update time and step
+  params_.set<double>("total time", timen);
+  params_.set<int>("step", istep);
 
   //---------------------------- determine new end-quantities and update
   // new displacements at t_{n+1} -> t_n
@@ -2122,7 +2128,7 @@ void StruGenAlpha::UpdateandOutput()
     p.set("assemble vector 2",false);
     p.set("assemble vector 3",false);
     // other parameters that might be needed by the elements
-    p.set("total time",time);
+    p.set("total time",timen);
     p.set("delta time",dt);
     discret_.Evaluate(p,null,null,null,null,null);
   }
@@ -2141,7 +2147,7 @@ void StruGenAlpha::UpdateandOutput()
     p.set("assemble vector 2",false);
     p.set("assemble vector 3",false);
     // other parameters that might be needed by the elements
-    p.set("total time",time);
+    p.set("total time",timen);
     p.set("delta time",dt);
     // set vector values needed by elements
     discret_.ClearState();
@@ -2155,12 +2161,12 @@ void StruGenAlpha::UpdateandOutput()
   bool isdatawritten = false;
   if (writeresevry && istep%writeresevry==0)
   {
-    output_.NewStep(istep, time);
+    output_.NewStep(istep, timen);
     output_.WriteVector("displacement",dis_);
     output_.WriteVector("velocity",vel_);
     output_.WriteVector("acceleration",acc_);
     output_.WriteVector("fexternal",fext_);
-    output_.WriteMesh(istep,time);
+    output_.WriteMesh(istep,timen);
     isdatawritten = true;
 
     if (discret_.Comm().MyPID()==0 && printscreen)
@@ -2178,7 +2184,7 @@ void StruGenAlpha::UpdateandOutput()
   //----------------------------------------------------- output results
   if (iodisp && updevrydisp && istep%updevrydisp==0 && !isdatawritten)
   {
-    output_.NewStep(istep, time);
+    output_.NewStep(istep, timen);
     output_.WriteVector("displacement",dis_);
     output_.WriteVector("velocity",vel_);
     output_.WriteVector("acceleration",acc_);
@@ -2191,14 +2197,14 @@ void StruGenAlpha::UpdateandOutput()
     if (printscreen)
     {
       printf("step %6d | nstep %6d | time %-14.8E | dt %-14.8E | numiter %3d\n",
-             istep,nstep,time,dt,numiter);
+             istep,nstep,timen,dt,numiter);
       printf("----------------------------------------------------------------------------------\n");
       fflush(stdout);
     }
     if (printerr)
     {
       fprintf(errfile,"step %6d | nstep %6d | time %-14.8E | dt %-14.8E | numiter %3d\n",
-              istep,nstep,time,dt,numiter);
+              istep,nstep,timen,dt,numiter);
       fprintf(errfile,"----------------------------------------------------------------------------------\n");
       fflush(errfile);
     }
@@ -2215,7 +2221,7 @@ void StruGenAlpha::UpdateandOutput()
  *----------------------------------------------------------------------*/
 void StruGenAlpha::Integrate()
 {
-  int    istep = params_.get<int>   ("step" ,0);
+  int    step  = params_.get<int>   ("step" ,0);
   int    nstep = params_.get<int>   ("nstep",5);
 
   // can have values "full newton" , "modified newton" , "nonlinear cg"
@@ -2230,7 +2236,7 @@ void StruGenAlpha::Integrate()
 
   if (equil=="full newton")
   {
-    for (int i=istep; i<nstep; ++i)
+    for (int i=step; i<nstep; ++i)
     {
       if      (predictor==1) ConstantPredictor();
       else if (predictor==2) ConsistentPredictor();
@@ -2240,7 +2246,7 @@ void StruGenAlpha::Integrate()
   }
   else if (equil=="modified newton")
   {
-    for (int i=istep; i<nstep; ++i)
+    for (int i=step; i<nstep; ++i)
     {
       if      (predictor==1) ConstantPredictor();
       else if (predictor==2) ConsistentPredictor();
@@ -2250,7 +2256,7 @@ void StruGenAlpha::Integrate()
   }
   else if (equil=="matrixfree newton")
   {
-    for (int i=istep; i<nstep; ++i)
+    for (int i=step; i<nstep; ++i)
     {
       MatrixFreeConstantPredictor();
       MatrixFreeNewton();
@@ -2259,7 +2265,7 @@ void StruGenAlpha::Integrate()
   }
   else if (equil=="nonlinear cg")
   {
-    for (int i=istep; i<nstep; ++i)
+    for (int i=step; i<nstep; ++i)
     {
       if      (predictor==1) ConstantPredictor();
       else if (predictor==2) ConsistentPredictor();
@@ -2269,7 +2275,7 @@ void StruGenAlpha::Integrate()
   }
   else if (equil=="ptc")
   {
-    for (int i=istep; i<nstep; ++i)
+    for (int i=step; i<nstep; ++i)
     {
       if      (predictor==1) ConstantPredictor();
       else if (predictor==2) ConsistentPredictor();
@@ -2279,7 +2285,7 @@ void StruGenAlpha::Integrate()
   }
   else if (equil=="matrixfree newton")
   {
-    for (int i=istep; i<nstep; ++i)
+    for (int i=step; i<nstep; ++i)
     {
       dserror("Matfree Newton not yet impl.");
       // ConstantMatfreePredictor();
@@ -2298,7 +2304,7 @@ void StruGenAlpha::Integrate()
  *----------------------------------------------------------------------*/
 void StruGenAlpha::IntegrateStep()
 {
-   //int    istep = params_.get<int>   ("step" ,0);
+   //int    step = params_.get<int>   ("step" ,0);
 
   // can have values "full newton" , "modified newton" , "nonlinear cg"
   string equil = params_.get<string>("equilibrium iteration","full newton");
@@ -2438,6 +2444,24 @@ void StruGenAlpha::GetTISPara(double& beta,
 void StruGenAlpha::SetTimeStepSize(const double& timstpsiz)
 {
   params_.set<double>("delta time", timstpsiz);
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  set time t_{n+1}                                       bborn 11/07  |
+ *----------------------------------------------------------------------*/
+void StruGenAlpha::SetTime(const double& tim)
+{
+  params_.set<double>("total time", tim);
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  set step n+1                                           bborn 11/07  |
+ *----------------------------------------------------------------------*/
+void StruGenAlpha::SetTimeStep(const int& stp)
+{
+  params_.set<int>("step", stp);
   return;
 }
 

@@ -196,6 +196,7 @@ void FSI::Structure::CalculateStiffness()
 {
   double time    = params_->get<double>("total time",0.0);
   double dt      = params_->get<double>("delta time",0.01);
+  double timen   = time + dt;  // t_{n+1}
   const Epetra_Map* dofrowmap = discret_.DofRowMap();
   bool   damping = params_->get<bool>  ("damping"   ,false);
 
@@ -208,7 +209,7 @@ void FSI::Structure::CalculateStiffness()
     // action for elements
     p.set("action","calc_struct_nlnstiff");
     // other parameters that might be needed by the elements
-    p.set("total time",time);
+    p.set("total time",timen);
     p.set("delta time",dt);
     // set vector values needed by elements
     discret_.ClearState();

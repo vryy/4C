@@ -244,29 +244,31 @@ void stru_genalpha_zienxie_drt()
   // --------------------------------------------------------------------
   // allocate adaptive time integrator
   ZienkiewiczXie::ZienkiewiczXie adatimint
-    (
-      0.0,
-      (double) sdyn->maxtime,
-      0,
-      (int) sdyn->nstep,
-      (double) sdyn->dt,
-      //
-      (double) timada->dt_max,
-      (double) timada->dt_min,
-      (double) timada->dt_scl_max,
-      (double) timada->dt_scl_min,
-      (double) timada->dt_scl_saf,
-      (TimeAdaptivity::TAErrNorm) timada->err_norm,
-      (double) timada->err_tol,
-      3,
-      (int) timada->adastpmax,
-      //
-      *actdis, 
-      solver, 
-      output
-      );
+  (
+    0.0,
+    (double) sdyn->maxtime,
+    0,
+    (int) sdyn->nstep,
+    (double) sdyn->dt,
+    //
+    (double) timada->dt_max,
+    (double) timada->dt_min,
+    (double) timada->dt_scl_max,
+    (double) timada->dt_scl_min,
+    (double) timada->dt_scl_saf,
+    (TimeAdaptivity::TAErrNorm) timada->err_norm,
+    (double) timada->err_tol,
+    3,
+    (int) timada->adastpmax,
+    //
+    *actdis, 
+    solver, 
+    output
+  );
+// debug begin
   cout << adatimint << endl;
   //exit(0);
+// debug end
 
   // --------------------------------------------------------------------
   // create a generalised-alpha time integrator
@@ -328,10 +330,10 @@ void stru_genalpha_zienxie_drt()
   //adatimint.SetParaList(genalphaparams);
    
   // integrate adaptively in time
-  //adatimint.Integrate(timint);
+  adatimint.Integrate(timint);
 
   // integrate in time and space
-  timint.Integrate();
+  //timint.Integrate();
 
   return;
 
