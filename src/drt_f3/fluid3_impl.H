@@ -62,7 +62,7 @@ namespace Elements
     Right now we do not read any stabilization parameters from the
     input file but have a fixed version with precompiled values.
 
-    \auther u.kue
+    \author u.kue
     \date 07/07
   */
   class Fluid3Impl
@@ -152,7 +152,7 @@ namespace Elements
     blitz::Array<double,1> gridvelint_;
     blitz::Array<double,1> gradp_;
     blitz::Array<double,1> tau_;
-    blitz::Array<double,3> viscs2_; /* viscous term incluiding 2nd derivatives */
+    blitz::Array<double,3> viscs2_; /* viscous term including 2nd derivatives */
     blitz::Array<double,1> conv_c_; /* linearisation of convect, convective part */
     blitz::Array<double,1> conv_g_; /* linearisation of convect, grid part */
     blitz::Array<double,3> conv_r_; /* linearisation of convect, reactive part */
