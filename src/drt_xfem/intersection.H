@@ -78,12 +78,14 @@ class Intersection
     
         \param xfemdis              (in)    : xfem discretization
         \param cutterdis            (in)    : cutter discretization
-        \param integrationcellList  (out)   : list of integrationcells for each intersected element
+        \param domainintcells      (out)    : list of domainintegrationcells for each intersected element
+        \param boundaryintcells    (out)    : list of boundaryintegrationcells for each intersected element
         */            
         void computeIntersection(   
             const RefCountPtr<DRT::Discretization>        xfemdis, 
             const RefCountPtr<DRT::Discretization>        cutterdis, 
-            map< int, DomainIntCells >&	integrationcellList
+            map< int, DomainIntCells >&	domainintcells,
+            map< int, BoundaryIntCells >& boundaryintcells
             );
 		
         
@@ -656,7 +658,7 @@ class Intersection
         void computeCDT(    
             DRT::Element*                           element,
             DRT::Element*                           cutterElement,
-            map< int, DomainIntCells >&   integrationcellList
+            map< int, DomainIntCells >&   domainintcells
             );
     
     
@@ -1337,10 +1339,10 @@ class Intersection
 		/*!
         \brief Debugging integration cells (DEBUG ONLY)
     
-        \param integrationcellList                (out)       : list of integration cells
+        \param domainintcells                (out)       : list of integration cells
         */                                  
        	void debugDomainIntCells(
-            map< int, DomainIntCells >&	integrationcellList,
+            map< int, DomainIntCells >&	domainintcells,
             int id
             );  
             

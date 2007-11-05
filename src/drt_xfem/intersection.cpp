@@ -54,7 +54,8 @@ using namespace DRT::Utils;
  *----------------------------------------------------------------------*/  
 void Intersection::computeIntersection( const RefCountPtr<DRT::Discretization>  xfemdis,
                                         const RefCountPtr<DRT::Discretization>  cutterdis,  
-                                        map< int, DomainIntCells >&   integrationcellList)
+                                        map< int, DomainIntCells >&   domainintcells,
+                                        map< int, BoundaryIntCells >&   boundaryintcells)
 {
     
 	
@@ -215,12 +216,12 @@ void Intersection::computeIntersection( const RefCountPtr<DRT::Discretization>  
         if(xfemIntersection)
         {                                                                          
             //debugTetgenDataStructure(xfemElement);
-            computeCDT(xfemElement, cutterElements[0], integrationcellList);
+            computeCDT(xfemElement, cutterElements[0], domainintcells);
         }
        
     }// for-loop over all  actdis->NumMyColElements()
     
-    //debugDomainIntCells(integrationcellList,2);
+    //debugDomainIntCells(domainintcells,2);
     cout << endl;
     if(countMissedPoints_ > 0)
     	cout << "Number of missed points during the recovery copy = " << countMissedPoints_ << endl;
@@ -1945,7 +1946,7 @@ void Intersection::findNextSegment(
 void Intersection::computeCDT(  
     DRT::Element*               			element,
     DRT::Element*               			cutterElement,
-    map< int, DomainIntCells >&	integrationcellList)
+    map< int, DomainIntCells >&	domainintcells)
 {
     int dim = 3;
     int nsegments = 0; 
@@ -2135,7 +2136,7 @@ void Intersection::computeCDT(
         }
         listperElement.push_back(DomainIntCell(tetrahedronCoord));                 
     }
-    integrationcellList.insert(make_pair(element->Id(),listperElement));
+    domainintcells.insert(make_pair(element->Id(),listperElement));
 }
 
 
@@ -4134,7 +4135,7 @@ void Intersection::debugTetgenOutput( 	tetgenio& in,
 /*----------------------------------------------------------------------*
  |  DB:     Debug only                                       u.may 06/07|
  *----------------------------------------------------------------------*/  
-void Intersection::debugDomainIntCells(	map< int, DomainIntCells >&	integrationcellList,
+void Intersection::debugDomainIntCells(	map< int, DomainIntCells >&	domainintcells,
 											int id)
 {    
     cout << endl;
@@ -4144,7 +4145,7 @@ void Intersection::debugDomainIntCells(	map< int, DomainIntCells >&	integrationc
     cout << endl;
     
     map<int, DomainIntCells >::iterator iter;
-  	for( iter = integrationcellList.begin(); iter != integrationcellList.end(); ++iter ) 
+  	for( iter = domainintcells.begin(); iter != domainintcells.end(); ++iter ) 
     {
 		cout << "XFEM ELEMENT " << iter->first << " :" << endl;	
 		cout << endl;
