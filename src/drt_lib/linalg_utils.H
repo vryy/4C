@@ -68,7 +68,14 @@ namespace LINALG
   \param target (out): target vector values will be inserted in
   */
   void Export(const Epetra_Vector& source, Epetra_Vector& target);
-
+  
+  /*!
+  \brief Make Epetra_SerialDenseMatrix symmetric by averaging upper and lower traingular indices
+  
+  \param A (in/out): Matrix to be symmetrised
+  */
+  void SymmetriseMatrix(Epetra_SerialDenseMatrix& A);
+  
   /*!
   \brief Compute all eigenvalues and, optionally, eigenvectors
    of a real symmetric matrix A

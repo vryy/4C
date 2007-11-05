@@ -323,12 +323,13 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     oldKda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
     if (!alpha || !oldKaainv || !oldKda || !oldfeas) dserror("Missing EAS history-data");
 
-    // we need the displacement at the previous step
-    Epetra_SerialDenseVector old_d(NUMDOF_SOH8);
-    for (int i=0; i<NUMDOF_SOH8; ++i) old_d(i) = disp[i] - residual[i];
-
-    // add Kda . old_d to feas
-    (*oldfeas).Multiply('N','N',1.0,(*oldKda),old_d,1.0);
+    // we need the (residual) displacement at the previous step
+     Epetra_SerialDenseVector res_d(NUMDOF_SOH8);
+     for (int i = 0; i < NUMDOF_SOH8; ++i) {
+       res_d(i) = residual[i];
+     }
+     // add Kda . res_d to feas
+     (*oldfeas).Multiply('N','N',1.0,(*oldKda),res_d,1.0);
     // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
     (*alpha).Multiply('N','N',-1.0,(*oldKaainv),(*oldfeas),1.0);
     /* end of EAS Update ******************/
@@ -417,6 +418,15 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     glstrain(4) = cauchygreen(1,2);
     glstrain(5) = cauchygreen(2,0);
 
+//    // debugging of EAS with hyperpoly
+//    Epetra_SerialDenseMatrix cmat_disp(NUMSTR_SOH8,NUMSTR_SOH8);
+//    Epetra_SerialDenseVector stress_disp(NUMSTR_SOH8);
+//    double density_disp;
+//    const int ele_ID_disp = Id();
+//    soh8_mat_sel(&stress_disp,&cmat_disp,&density_disp,&glstrain, &defgrd, gp, ele_ID_disp, time);
+//    Epetra_SerialDenseVector glstrain_disp(glstrain);
+//    // debugging of EAS with hyperpoly
+
     // EAS technology: "enhance the strains"  ----------------------------- EAS
     if (eastype_ != soh8_easnone) {
       // get EAS matrix M at current gausspoint gp
@@ -489,6 +499,16 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     const int ele_ID = Id();
     soh8_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp, ele_ID, time);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
+    
+//    // debugging of EAS with hyperpoly
+//    Epetra_SerialDenseVector DE(glstrain);
+//    DE.Scale(-1.0);
+//    DE += glstrain_disp;
+//    Epetra_SerialDenseVector DS(stress);
+//    DS.Scale(-1.0);
+//    DS += stress_disp;
+//    //cout << endl << "Delta E: " << DE;
+//    //cout << endl << "Delta S: " << DS;
 
     // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
     (*force).Multiply('T','N',detJ * (*weights)(gp),bop,stress,1.0);
@@ -573,6 +593,7 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
       (*oldfeas)(i,0) = feas(i);
     }
   } // -------------------------------------------------------------------- EAS
+  SymmetriseMatrix(*stiffmatrix);
   return;
 } // DRT::Elements::Shell8::s8_nlnstiffmass
 

@@ -226,12 +226,13 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
     oldKda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
     if (!alpha || !oldKaainv || !oldKda || !oldfeas) dserror("Missing EAS history-data");
 
-    // we need the displacement at the previous step
-    Epetra_SerialDenseVector old_d(NUMDOF_SOH8);
-    for (int i=0; i<NUMDOF_SOH8; ++i) old_d(i) = disp[i] - residual[i];
-
-    // add Kda . old_d to feas
-    (*oldfeas).Multiply('N','N',1.0,(*oldKda),old_d,1.0);
+    // we need the (residual) displacement at the previous step
+    Epetra_SerialDenseVector res_d(NUMDOF_SOH8);
+    for (int i = 0; i < NUMDOF_SOH8; ++i) {
+      res_d(i) = residual[i];
+    }
+    // add Kda . res_d to feas
+    (*oldfeas).Multiply('N','N',1.0,(*oldKda),res_d,1.0);
     // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
     (*alpha).Multiply('N','N',-1.0,(*oldKaainv),(*oldfeas),1.0);
     /* end of EAS Update ******************/
@@ -366,16 +367,16 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
     // evaluate glstrains in local(parameter) coords
     // Err = 0.5 * (dx/dr * dx/dr^T - dX/dr * dX/dr^T)
     lstrain(0)= 0.5 * (
-       +(jac_cur(0,0)*jac_cur(0,0) + jac_cur(0,1)*jac_cur(1,0) + jac_cur(0,2)*jac_cur(2,0))
-       -(jac(0,0)*jac(0,0)         + jac(0,1)*jac(1,0)         + jac(0,2)*jac(2,0)));
+       +(jac_cur(0,0)*jac_cur(0,0) + jac_cur(0,1)*jac_cur(0,1) + jac_cur(0,2)*jac_cur(0,2))
+       -(jac(0,0)*jac(0,0)         + jac(0,1)*jac(0,1)         + jac(0,2)*jac(0,2)));
     // Ess = 0.5 * (dy/ds * dy/ds^T - dY/ds * dY/ds^T)
     lstrain(1)= 0.5 * (
-       +(jac_cur(1,0)*jac_cur(0,1) + jac_cur(1,1)*jac_cur(1,1) + jac_cur(1,2)*jac_cur(2,1))
-       -(jac(1,0)*jac(0,1)         + jac(1,1)*jac(1,1)         + jac(1,2)*jac(2,1)));
+       +(jac_cur(1,0)*jac_cur(1,0) + jac_cur(1,1)*jac_cur(1,1) + jac_cur(1,2)*jac_cur(1,2))
+       -(jac(1,0)*jac(1,0)         + jac(1,1)*jac(1,1)         + jac(1,2)*jac(1,2)));
     // Ers = (dx/ds * dy/dr^T - dX/ds * dY/dr^T)
     lstrain(3)= (
-       +(jac_cur(0,0)*jac_cur(0,1) + jac_cur(0,1)*jac_cur(1,1) + jac_cur(0,2)*jac_cur(2,1))
-       -(jac(0,0)*jac(0,1)         + jac(0,1)*jac(1,1)         + jac(0,2)*jac(2,1)));
+       +(jac_cur(0,0)*jac_cur(1,0) + jac_cur(0,1)*jac_cur(1,1) + jac_cur(0,2)*jac_cur(1,2))
+       -(jac(0,0)*jac(1,0)         + jac(0,1)*jac(1,1)         + jac(0,2)*jac(1,2)));
 
     // ANS modification of strains ************************************** ANS
     double dydt_A = 0.0; double dYdt_A = 0.0;
@@ -387,25 +388,25 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
     double dzdt_G = 0.0; double dZdt_G = 0.0;
     double dzdt_H = 0.0; double dZdt_H = 0.0;
 
-    // vector product of rows of jacobians at corresponding sampling point
+    // vector product of rows of jacobians at corresponding sampling point    cout << jac_cur_sps;
     for (int dim = 0; dim < NUMDIM_SOH8; ++dim) {
-      dydt_A += jac_cur_sps(1+0*NUMDIM_SOH8,dim) * jac_cur_sps(dim+0*NUMDIM_SOH8,2);
-      dYdt_A += jac_sps(1+0*NUMDIM_SOH8,dim)     * jac_sps(dim+0*NUMDIM_SOH8,2);
-      dxdt_B += jac_cur_sps(0+1*NUMDIM_SOH8,dim) * jac_cur_sps(dim+1*NUMDIM_SOH8,2);
-      dXdt_B += jac_sps(0+1*NUMDIM_SOH8,dim)     * jac_sps(dim+1*NUMDIM_SOH8,2);
-      dydt_C += jac_cur_sps(1+2*NUMDIM_SOH8,dim) * jac_cur_sps(dim+2*NUMDIM_SOH8,2);
-      dYdt_C += jac_sps(1+2*NUMDIM_SOH8,dim)     * jac_sps(dim+2*NUMDIM_SOH8,2);
-      dxdt_D += jac_cur_sps(0+3*NUMDIM_SOH8,dim) * jac_cur_sps(dim+3*NUMDIM_SOH8,2);
-      dXdt_D += jac_sps(0+3*NUMDIM_SOH8,dim)     * jac_sps(dim+3*NUMDIM_SOH8,2);
+      dydt_A += jac_cur_sps(0+0*NUMDIM_SOH8,dim) * jac_cur_sps(2+0*NUMDIM_SOH8,dim);
+      dYdt_A += jac_sps(0+0*NUMDIM_SOH8,dim)     * jac_sps(2+0*NUMDIM_SOH8,dim);
+      dxdt_B += jac_cur_sps(1+1*NUMDIM_SOH8,dim) * jac_cur_sps(2+1*NUMDIM_SOH8,dim);
+      dXdt_B += jac_sps(1+1*NUMDIM_SOH8,dim)     * jac_sps(2+1*NUMDIM_SOH8,dim);
+      dydt_C += jac_cur_sps(0+2*NUMDIM_SOH8,dim) * jac_cur_sps(2+2*NUMDIM_SOH8,dim);
+      dYdt_C += jac_sps(0+2*NUMDIM_SOH8,dim)     * jac_sps(2+2*NUMDIM_SOH8,dim);
+      dxdt_D += jac_cur_sps(1+3*NUMDIM_SOH8,dim) * jac_cur_sps(2+3*NUMDIM_SOH8,dim);
+      dXdt_D += jac_sps(1+3*NUMDIM_SOH8,dim)     * jac_sps(2+3*NUMDIM_SOH8,dim);
 
-      dzdt_E += jac_cur_sps(2+4*NUMDIM_SOH8,dim) * jac_cur_sps(dim+4*NUMDIM_SOH8,2);
-      dZdt_E += jac_sps(2+4*NUMDIM_SOH8,dim)     * jac_sps(dim+4*NUMDIM_SOH8,2);
-      dzdt_F += jac_cur_sps(2+5*NUMDIM_SOH8,dim) * jac_cur_sps(dim+5*NUMDIM_SOH8,2);
-      dZdt_F += jac_sps(2+5*NUMDIM_SOH8,dim)     * jac_sps(dim+5*NUMDIM_SOH8,2);
-      dzdt_G += jac_cur_sps(2+6*NUMDIM_SOH8,dim) * jac_cur_sps(dim+6*NUMDIM_SOH8,2);
-      dZdt_G += jac_sps(2+6*NUMDIM_SOH8,dim)     * jac_sps(dim+6*NUMDIM_SOH8,2);
-      dzdt_H += jac_cur_sps(2+7*NUMDIM_SOH8,dim) * jac_cur_sps(dim+7*NUMDIM_SOH8,2);
-      dZdt_H += jac_sps(2+7*NUMDIM_SOH8,dim)     * jac_sps(dim+7*NUMDIM_SOH8,2);
+      dzdt_E += jac_cur_sps(2+4*NUMDIM_SOH8,dim) * jac_cur_sps(2+4*NUMDIM_SOH8,dim);
+      dZdt_E += jac_sps(2+4*NUMDIM_SOH8,dim)     * jac_sps(2+4*NUMDIM_SOH8,dim);
+      dzdt_F += jac_cur_sps(2+5*NUMDIM_SOH8,dim) * jac_cur_sps(2+5*NUMDIM_SOH8,dim);
+      dZdt_F += jac_sps(2+5*NUMDIM_SOH8,dim)     * jac_sps(2+5*NUMDIM_SOH8,dim);
+      dzdt_G += jac_cur_sps(2+6*NUMDIM_SOH8,dim) * jac_cur_sps(2+6*NUMDIM_SOH8,dim);
+      dZdt_G += jac_sps(2+6*NUMDIM_SOH8,dim)     * jac_sps(2+6*NUMDIM_SOH8,dim);
+      dzdt_H += jac_cur_sps(2+7*NUMDIM_SOH8,dim) * jac_cur_sps(2+7*NUMDIM_SOH8,dim);
+      dZdt_H += jac_sps(2+7*NUMDIM_SOH8,dim)     * jac_sps(2+7*NUMDIM_SOH8,dim);
     }
     // E33: remedy of curvature thickness locking
     // Ett = 0.5* ( (1-r)(1-s)/4 * Ett(SP E) + ... + (1-r)(1+s)/4 * Ett(SP H) )
@@ -416,7 +417,7 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
       +0.25*(1-r[gp])*(1+s[gp]) * (dzdt_H - dZdt_H));
     // E23: remedy of transverse shear locking
     // Est = (1+r)/2 * Est(SP B) + (1-r)/2 * Est(SP D)
-    lstrain(4) = 0.5*(1+r[gp]) * (dxdt_B - dXdt_B) + 0.5*(1-r[gp]) * (dxdt_D - dXdt_B);
+    lstrain(4) = 0.5*(1+r[gp]) * (dxdt_B - dXdt_B) + 0.5*(1-r[gp]) * (dxdt_D - dXdt_D);
     // E13: remedy of transverse shear locking
     // Ert = (1-s)/2 * Est(SP A) + (1+s)/2 * Est(SP C)
     lstrain(5) = 0.5*(1-s[gp]) * (dydt_A - dYdt_A) + 0.5*(1+s[gp]) * (dydt_C - dYdt_C);
@@ -550,18 +551,26 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
   // subtract EAS matrices from disp-based Kdd to "soften" element
   if (eastype_ != soh8_easnone) {
     // we need the inverse of Kaa
+    SymmetriseMatrix(Kaa);
     Epetra_SerialDenseSolver solve_for_inverseKaa;
     solve_for_inverseKaa.SetMatrix(Kaa);
     solve_for_inverseKaa.Invert();
 
-    Epetra_SerialDenseMatrix KdaKaa(NUMDOF_SOH8,neas_); // temporary Kda.Kaa^{-1}
-    KdaKaa.Multiply('T','N',1.0,Kda,Kaa,0.0);
+//    cout << "Kda" << Kda;
+    Epetra_SerialDenseMatrix KdaTKaa(NUMDOF_SOH8,neas_); // temporary Kda^T.Kaa^{-1}
+    KdaTKaa.Multiply('T','N',1.0,Kda,Kaa,1.0);
 
+    Epetra_SerialDenseVector L6(NUMDOF_SOH8);
+    //SymmetricEigen(KdaTKaaKda,L6,NUMDOF_SOH8,'N');
+    //cout << setprecision(16) << KdaTKaaKda;
+    //cout << "eigen(KEAS): " << L6;
+    
     // EAS-stiffness matrix is: Kdd - Kda^T . Kaa^-1 . Kda
-    (*stiffmatrix).Multiply('N','N',-1.0,KdaKaa,Kda,1.0);
-
+    (*stiffmatrix).Multiply('N','N',-1.0,KdaTKaa,Kda,1.0);
+    //cout << setprecision(16) << *stiffmatrix;
+    
     // EAS-internal force is: fint - Kda^T . Kaa^-1 . feas
-    (*force).Multiply('N','N',-1.0,KdaKaa,feas,1.0);
+    (*force).Multiply('N','N',-1.0,KdaTKaa,feas,1.0);
 
     // store current EAS data in history
     for (int i=0; i<neas_; ++i)
@@ -571,6 +580,30 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
       (*oldfeas)(i,0) = feas(i);
     }
   } // -------------------------------------------------------------------- EAS
+  /*------------------------------------- make estif absolute symmetric */
+  SymmetriseMatrix(*stiffmatrix);
+//  Epetra_SerialDenseVector L5(NUMDOF_SOH8);
+//  SymmetricEigen(*stiffmatrix,L5,NUMDOF_SOH8,'N');
+//  cout << "eigen(K): " << L5;
+  
+//  SymmetriseMatrix(KdaTKaaKda);
+//  Epetra_SerialDenseVector L16(NUMDOF_SOH8);
+//  Epetra_SerialDenseMatrix newstiff2(newstiff);
+//  cout << "newstiff2"<<setprecision(16) << newstiff2;
+// 
+//  SymmetricEigen(newstiff,L16,NUMDOF_SOH8,'N');
+//  cout << "eigen(newstiffpreEAS): " << L16;
+//  double normKeas = KdaTKaaKda.NormOne();
+//  cout << "KdaTKda"<<setprecision(16) << KdaTKaaKda;
+//  Epetra_SerialDenseMatrix KdaTKaaKda2(KdaTKaaKda);
+//  Epetra_SerialDenseVector L36(NUMDOF_SOH8);
+//  SymmetricEigen(KdaTKaaKda2,L36,NUMDOF_SOH8,'N');
+//  cout << "eigen(KEAS): " << L36;
+//  newstiff2 += KdaTKaaKda;
+//  Epetra_SerialDenseVector L26(NUMDOF_SOH8);
+//  SymmetricEigen(newstiff2,L26,NUMDOF_SOH8,'N');
+//  cout << "eigen(newstiff2): " << L26;
+  
   return;
 } // DRT::Elements::Shell8::s8_nlnstiffmass
 

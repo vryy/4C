@@ -105,6 +105,8 @@ Based on Holzapfel [1], Ogden [2] and Balzani, Schroeder, Neff [3].
 */
 
 void MAT::HyperPolyconvex::Evaluate(const Epetra_SerialDenseVector* glstrain,
+                                    const Epetra_SerialDenseMatrix* defgrd,
+                                    const int gp, const int ele_ID, const double time,
                                       Epetra_SerialDenseMatrix* cmat,
                                       Epetra_SerialDenseVector* stress)
 {
@@ -116,6 +118,7 @@ void MAT::HyperPolyconvex::Evaluate(const Epetra_SerialDenseVector* glstrain,
   double epsilon = matdata_->m.hyper_polyconvex->epsilon; //penalty parameter
   
   double kappa = 1.0/3.0;   //Dispersions Parameter
+  //double kappa = 1.0;   //Dispersions Parameter
   //double phi = 0.0;         //Angle for Anisotropic Fiber Orientation
   //double theta = 0.0;       //Angle for Anisotropic Fiber Orientation
   
@@ -149,6 +152,12 @@ void MAT::HyperPolyconvex::Evaluate(const Epetra_SerialDenseVector* glstrain,
   C.Scale(2.0);
   C += I;
   
+//  cout << "Enhanced Cauchy-Green: " << C;
+//  
+//  Epetra_SerialDenseMatrix C_lock(3,3);
+//  C_lock.Multiply('T','N',1.0,*defgrd,*defgrd,0.0);
+//  cout << "Disp-based Cauchy-Green: " << C_lock;
+  
   // compute eigenvalues of C
   Epetra_SerialDenseMatrix Ccopy(C);
   Epetra_SerialDenseVector lambda(3);
@@ -159,6 +168,8 @@ void MAT::HyperPolyconvex::Evaluate(const Epetra_SerialDenseVector* glstrain,
   Inv(0) = lambda(0) + lambda(1) + lambda(2);
   Inv(1) = lambda(0) * lambda(1) + lambda(0) * lambda(2) + lambda(1) * lambda(2);
   Inv(2) = lambda(0) * lambda(1) * lambda(2);
+  
+  if ((gp==0) && (ele_ID == 0)) cout << "I3: " << Inv(2) << endl;
   
   // compute C^-1
   Epetra_SerialDenseMatrix Cinv(C);

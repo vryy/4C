@@ -302,6 +302,16 @@ void LINALG::SymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)
 }
 
 
+void LINALG::SymmetriseMatrix(Epetra_SerialDenseMatrix& A)
+{
+  Epetra_SerialDenseMatrix AT(A);
+  AT.SetUseTranspose(true);
+  bool istranspose = AT.UseTranspose();
+  A += AT;
+  A.Scale(0.5);
+  return;
+}
+
 /*----------------------------------------------------------------------*
  |  compute all eigenvalues and, optionally,                            |
  |  eigenvectors of a real symmetric matrix A  (public)        maf 06/07|

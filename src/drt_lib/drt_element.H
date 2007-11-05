@@ -119,6 +119,7 @@ public:
     element_sodispsurface,
     element_sodispline,
     element_contact,
+    element_so_shw6,
   };
 
   /*!

@@ -64,6 +64,12 @@ namespace MAT
     
     void Evaluate(const Epetra_SerialDenseVector* glstrain,
                   Epetra_SerialDenseMatrix* cmat,
+                  Epetra_SerialDenseVector* stress) {return;}
+
+    void Evaluate(const Epetra_SerialDenseVector* glstrain,
+                  const Epetra_SerialDenseMatrix* defgrd,
+                  const int gp,  const int ele_ID, const double time,
+                  Epetra_SerialDenseMatrix* cmat,
                   Epetra_SerialDenseVector* stress);
                   
     double Density();                  

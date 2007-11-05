@@ -235,7 +235,7 @@ public:
                           to fill this vector
   \return 0 if successful, negative otherwise
   */
-  int Evaluate(ParameterList& params,
+  virtual int Evaluate(ParameterList& params,
                DRT::Discretization&      discretization,
                vector<int>&              lm,
                Epetra_SerialDenseMatrix& elemat1,
@@ -446,7 +446,7 @@ public:
   The method performs all steps needed to init the wedge elements,
   e.g. defines shell-thickness direction
   */
-  int Initialize(DRT::Discretization& dis);
+  virtual int Initialize(DRT::Discretization& dis);
 
   //@}
 
