@@ -166,6 +166,11 @@ public:
   */
   virtual void computeJacobian(const Epetra_Vector& x);
 
+  /*!
+  \brief determine new state at t_{n+1}
+
+  */
+  void ExtrapolateEndState();
 
   /*!
   \brief update configuration and output to file/screen

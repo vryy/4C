@@ -90,6 +90,20 @@ havecontact_(false)
   dis_ = LINALG::CreateVector(*dofrowmap,true);
   // velocities V_{n} at last time
   vel_ = LINALG::CreateVector(*dofrowmap,true);
+#ifdef VEL_INITIAL
+  {
+    const double velini[2] = { 0.0, 10.0 };  // initial velocity
+    const int vels = (*vel_).GlobalLength();
+    printf("Set initial velocity to: vel_0=(%g, %g)\n", velini[0], velini[1]);
+    for (int i=0; i<vels; i+=2)
+    {
+      for (int j=0; j<2; ++j)
+      {
+        (*vel_)[i+j] = velini[j];
+      }
+    }
+  }
+#endif
   // accelerations A_{n} at last time
   acc_ = LINALG::CreateVector(*dofrowmap,true);
 
@@ -227,7 +241,7 @@ void StruGenAlpha::ConstantPredictor()
   // -------------------------------------------------------------------
   double time        = params_.get<double>("total time"     ,0.0);
   double dt          = params_.get<double>("delta time"     ,0.01);
-  int    step        = params_.get<int>   ("step"           ,0);
+  //int    step        = params_.get<int>   ("step"           ,0);
   bool   damping     = params_.get<bool>  ("damping"        ,false);
   double alphaf      = params_.get<double>("alpha f"        ,0.459);
   bool   printscreen = params_.get<bool>  ("print to screen",false);
@@ -235,7 +249,7 @@ void StruGenAlpha::ConstantPredictor()
 
   // increment time and step
   double timen = time += dt;
-  int istep = step + 1;
+  //int istep = step + 1;
 
   //--------------------------------------------------- predicting state
   // constant predictor : displacement in domain
@@ -362,7 +376,7 @@ void StruGenAlpha::MatrixFreeConstantPredictor()
   // -------------------------------------------------------------------
   double time        = params_.get<double>("total time"     ,0.0);
   double dt          = params_.get<double>("delta time"     ,0.01);
-  int    step        = params_.get<int>   ("step"           ,0);
+  //int    step        = params_.get<int>   ("step"           ,0);
   bool   damping     = params_.get<bool>  ("damping"        ,false);
   double alphaf      = params_.get<double>("alpha f"        ,0.459);
   bool   printscreen = params_.get<bool>  ("print to screen",false);
@@ -370,7 +384,7 @@ void StruGenAlpha::MatrixFreeConstantPredictor()
 
   // increment time and step
   double timen = time + dt;  // t_{n+1}
-  int istep = step + 1;  // n+1
+  //int istep = step + 1;  // n+1
 
   //--------------------------------------------------- predicting state
   // constant predictor : displacement in domain
@@ -498,7 +512,7 @@ void StruGenAlpha::ConsistentPredictor()
   // -------------------------------------------------------------------
   double time        = params_.get<double>("total time"     ,0.0);
   double dt          = params_.get<double>("delta time"     ,0.01);
-  int    step        = params_.get<int>   ("step"           ,0);
+  //int    step        = params_.get<int>   ("step"           ,0);
   bool   damping     = params_.get<bool>  ("damping"        ,false);
   double alphaf      = params_.get<double>("alpha f"        ,0.459);
   double alpham      = params_.get<double>("alpha m"        ,0.378);
@@ -509,7 +523,7 @@ void StruGenAlpha::ConsistentPredictor()
 
   // increment time and step
   double timen = time + dt;  // t_{n+1}
-  int istep = step + 1;  // n+1
+  //int istep = step + 1;  // n+1
 
   //--------------------------------------------------- predicting state
   // constant predictor : displacement in domain
@@ -2214,6 +2228,36 @@ void StruGenAlpha::UpdateandOutput()
 } // StruGenAlpha::UpdateandOutput()
 
 
+/*----------------------------------------------------------------------*
+ |  determine new state at t_{n+1} (public)                bborn 11/07  |
+ *----------------------------------------------------------------------*/
+void StruGenAlpha::ExtrapolateEndState()
+{
+  // -------------------------------------------------------------------
+  // get some parameters from parameter list
+  // -------------------------------------------------------------------
+  double alpham        = params_.get<double>("alpha m"                ,0.378);
+  double alphaf        = params_.get<double>("alpha f"                ,0.459);
+
+  //---------------------------- determine new end-quantities and update
+  // new displacements at t_{n+1} -> t_n
+  //    D_{n} := D_{n+1} = 1./(1.-alphaf) * D_{n+1-alpha_f}
+  //                     - alphaf/(1.-alphaf) * D_n
+  disn_->Update(1./(1.-alphaf),*dism_,-alphaf/(1.-alphaf),*dis_,0.0);
+  // new velocities at t_{n+1} -> t_n
+  //    V_{n} := V_{n+1} = 1./(1.-alphaf) * V_{n+1-alpha_f}
+  //                     - alphaf/(1.-alphaf) * V_n
+  veln_->Update(1./(1.-alphaf),*velm_,-alphaf/(1.-alphaf),*vel_,0.0);
+  // new accelerations at t_{n+1} -> t_n
+  //    A_{n} := A_{n+1} = 1./(1.-alpham) * A_{n+1-alpha_m}
+  //                     - alpham/(1.-alpham) * A_n
+  accn_->Update(1./(1.-alpham),*accm_,-alpham/(1.-alpham),*acc_,0.0);
+  // update new external force
+  //    F_{ext;n} := F_{ext;n+1}
+  //fext_->Update(1.0,*fextn_,0.0);
+
+  return;
+} // StruGenAlpha::ExtrapolateEndState
 
 
 /*----------------------------------------------------------------------*
@@ -2321,41 +2365,35 @@ void StruGenAlpha::IntegrateStep()
     if      (predictor==1) ConstantPredictor();
     else if (predictor==2) ConsistentPredictor();
     FullNewton();
-    UpdateandOutput();
   }
   else if (equil=="modified newton")
   {
     if      (predictor==1) ConstantPredictor();
     else if (predictor==2) ConsistentPredictor();
     ModifiedNewton();
-    UpdateandOutput();
   }
   else if (equil=="matrixfree newton")
   {
     MatrixFreeConstantPredictor();
     MatrixFreeNewton();
-    UpdateandOutput();
   }
   else if (equil=="nonlinear cg")
   {
     if      (predictor==1) ConstantPredictor();
     else if (predictor==2) ConsistentPredictor();
     NonlinearCG();
-    UpdateandOutput();
   }
   else if (equil=="ptc")
   {
     if      (predictor==1) ConstantPredictor();
     else if (predictor==2) ConsistentPredictor();
     PTC();
-    UpdateandOutput();
   }
   else if (equil=="matrixfree newton")
   {
     dserror("Matfree Newton not yet impl.");
     // ConstantMatfreePredictor();
     // MatfreeFullNewton
-    UpdateandOutput();
   }
   else dserror("Unknown type of equilibrium iteration");
 

@@ -107,6 +107,7 @@ void ZienkiewiczXie::Integrate(StruGenAlpha::StruGenAlpha& timint)
   double time_ = timeinitial_;
   int timestep_ = timestepinitial_;
   stepsize_ = stepsizeinitial_;
+  stepsizepre_ = stepsize_;
 
   // ---------------------------------------------------------------------
   // time loop
@@ -116,13 +117,14 @@ void ZienkiewiczXie::Integrate(StruGenAlpha::StruGenAlpha& timint)
     // -------------------------------------------------------------------
     // time step size adapting loop
     adaptstep_ = 0;
-    double err = 2.0*errtol_;
+    //double err = 2.0*errtol_;
     bool accepted = false;
     double stpsiznew;
     while ( (!accepted) && (adaptstep_ < adaptstepmax_) )
     {
       timint.SetTimeStepSize(stepsize_);
       timint.IntegrateStep();
+      timint.ExtrapolateEndState();
       const RefCountPtr<Epetra_Vector>& acc = timint.GetAcc();
       const RefCountPtr<Epetra_Vector>& accn = timint.GetAccn();
       double factor = stepsize_*stepsize_*(1.0-6.0*beta)/6.0;
@@ -131,31 +133,34 @@ void ZienkiewiczXie::Integrate(StruGenAlpha::StruGenAlpha& timint)
       // modify step-size
       if (!accepted)
       {
+        printf("Repeating step with stepsize = %g\n", stpsiznew);
         stepsize_ = stpsiznew;
       }
       adaptstep_ += 1;
     }  // end adaptive loop
     // -------------------------------------------------------------------
     // update or break
-    if (accepted)
+    if ( (mypid_ == 0) && (accepted) )
     {
-      timestep_ += 1;
-      time_ += stepsize_;
-      stepsize_ = stpsiznew;
+      printf("Step size accepted\n");
     }
-    else if (adaptstep_ >= adaptstepmax_)
+    else if ( (mypid_ == 0) && (adaptstep_ >= adaptstepmax_) )
     {
-      printf("Could not find acceptable time step size ... continuing");
-      timestep_ += 1;
-      time_ += stepsize_;
-      stepsize_ = stpsiznew;
+      printf("Could not find acceptable time step size ... continuing\n");
     }
     else
     {
       dserror("Do not know what to do");
     }
-    // set total time & step index via parameter list ??????????
+    timint.SetTime(time_);
+    timint.SetTimeStep(timestep_);
+    timint.SetTimeStepSize(stepsize_);
     timint.UpdateandOutput();
+    timestep_ += 1;
+    time_ += stepsize_;
+    stepsizepre_ = stepsize_;
+    stepsize_ = stpsiznew;
+    cout << "Step " << timestep_ << ", Time " << time_ << ", Step size " << stepsize_ << endl;
   }  // end time loop
 
   // leave for good

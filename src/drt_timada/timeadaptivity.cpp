@@ -66,10 +66,12 @@ TimeAdaptivity::TimeAdaptivity
    //
    discret_(discret),
    solver_(solver),
-   output_(output)
+   output_(output),
+   mypid_(discret_.Comm().MyPID())
 {
    // initialise variables
    time_ = timeinitial_;
+   stepsizepre_ = stepsizeinitial_;
    stepsize_ = stepsizeinitial_;
    adaptstep_ = 0;
 
@@ -137,7 +139,7 @@ void TimeAdaptivity::Indicate
       break;
    case norm_rms:
       locdiserrn_->Norm2(&norm);
-      dserror("RMS-norm needs repairs");
+      norm /= sqrt((*locdiserrn_).GlobalLength());
       break;
    case norm_inf:
       locdiserrn_->NormInf(&norm);
@@ -156,22 +158,29 @@ void TimeAdaptivity::Indicate
       accepted = false;
    }
 
+// debug
+   cout << "ErrNorm " << norm << ", ErrTol " << errtol_ << ", Accept " << accepted << endl;
+
    // optimal size ration with respect to given tolerance
    double sizrat = pow(errtol_/norm, 1.0/(errorder_+1.0));
+//debug
+   printf("sizrat %g, stepsize %g, stepsizepre %g\n", sizrat, stepsize_, stepsizepre_);
    // scaled by safety parameter
    sizrat *= sizeratioscale_;
+   // optimal new step size
+   stpsiznew = sizrat * stepsize_;
+   // redefine sizrat to be dt*_{n}/dt_{n-1}, ie true optimal ratio
+   sizrat = stpsiznew/stepsizepre_;
    // limit sizrat by maximum and minimum
    if (sizrat > sizeratiomax_)
    {
-      sizrat = sizeratiomax_;
+     stpsiznew = sizeratiomax_ * stepsizepre_;
    }
    else if (sizrat < sizeratiomin_)
    {
-      sizrat = sizeratiomin_;
+     stpsiznew = sizeratiomin_ * stepsizepre_;
    }
-   
    // new step size subject to safety measurements 
-   stpsiznew = sizrat * stepsize_;
    if (stpsiznew > stepsizemax_)
    {
       stpsiznew = stepsizemax_;
@@ -230,22 +239,22 @@ string TimeAdaptivity::PrintErrNorm() const
 */
 void TimeAdaptivity::PrintConstants(std::ostream& str) const
 {
-   str << "TimeAdaptivity:  Constants" << endl
-       << "   Initial time = " << timeinitial_ << endl
-       << "   Final time = " << timefinal_ << endl
-       << "   Initial Step = " << timestepinitial_ << endl
-       << "   Final Step = " << timestepfinal_ << endl
-       << "   Initial step size = " << stepsizeinitial_ << endl
-       << "   Max step size = " << stepsizemax_ << endl
-       << "   Min step size = " << stepsizemin_ << endl
-       << "   Max size ratio = " << sizeratiomax_ << endl
-       << "   Min size ratio = " << sizeratiomin_ << endl
-       << "   Size ratio scale = " << sizeratioscale_ << endl
-       << "   Error norm = " << PrintErrNorm() << endl
-       << "   Error order = " << errorder_ << endl
-       << "   Error tolerance = " << errtol_ << endl
-       << "   Max adaptive step = " << adaptstepmax_ << endl;
-   return;
+  str << "TimeAdaptivity:  Constants" << endl
+      << "   Initial time = " << timeinitial_ << endl
+      << "   Final time = " << timefinal_ << endl
+      << "   Initial Step = " << timestepinitial_ << endl
+      << "   Final Step = " << timestepfinal_ << endl
+      << "   Initial step size = " << stepsizeinitial_ << endl
+      << "   Max step size = " << stepsizemax_ << endl
+      << "   Min step size = " << stepsizemin_ << endl
+      << "   Max size ratio = " << sizeratiomax_ << endl
+      << "   Min size ratio = " << sizeratiomin_ << endl
+      << "   Size ratio scale = " << sizeratioscale_ << endl
+      << "   Error norm = " << PrintErrNorm() << endl
+      << "   Error order = " << errorder_ << endl
+      << "   Error tolerance = " << errtol_ << endl
+      << "   Max adaptive step = " << adaptstepmax_ << endl;
+  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -256,11 +265,12 @@ void TimeAdaptivity::PrintConstants(std::ostream& str) const
 */
 void TimeAdaptivity::PrintVariables(std::ostream& str) const
 {
-   str << "TimeAdaptivity:  Variables" << endl
-       << "   Current time = " << time_ << endl
-       << "   Current step size = " << stepsize_ << endl
-       << "   Current adaptive step = " << adaptstep_ << endl;
-   return;
+  str << "TimeAdaptivity:  Variables" << endl
+      << "   Current time = " << time_ << endl
+      << "   Previous step size = " << stepsizepre_ << endl
+      << "   Current step size = " << stepsize_ << endl
+      << "   Current adaptive step = " << adaptstep_ << endl;
+  return;
 }
 
 
@@ -272,10 +282,10 @@ void TimeAdaptivity::PrintVariables(std::ostream& str) const
 */
 void TimeAdaptivity::Print(std::ostream& str) const
 {
-   str << "TimeAdaptivity" << endl;
-   PrintConstants(str);
-   PrintVariables(str);
-   return;
+  str << "TimeAdaptivity" << endl;
+  PrintConstants(str);
+  PrintVariables(str);
+  return;
 }
 
 
