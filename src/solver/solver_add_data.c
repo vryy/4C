@@ -1528,7 +1528,7 @@ else
     {
       /*---------------------------- do nothing for unsupported columns */
       if (dirich_onoff[j]==0) continue;
-      dforces[i] += estif[i][j] * (gamma*dirichn[j] + /*(1.0-gamma)*dirich[j]*/ )  /* already included */
+      dforces[i] += estif[i][j] * (gamma*dirichn[j] /*+ (1.0-gamma)*dirich[j]*/ )  /* already included */
                  +  emass[i][j] * (dtinv*dirichn[j] - dtinv*dirich[j]);
     }/* loop j over columns */
   }/* loop i over rows */
