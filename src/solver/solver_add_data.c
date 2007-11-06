@@ -1497,7 +1497,7 @@ for (i=0; i<actele->numnp; i++)
       lm[i*numdf+j] = actele->node[i]->dof[j];
       if (actgnode->dirich==NULL) continue;
       dirich_onoff[i*numdf+j] = actgnode->dirich->dirich_onoff.a.iv[j];
-      dirich[i*numdf+j] = actgnode->node->sol.a.da[isoltemd][j];
+      if (emass_global) dirich[i*numdf+j] = actgnode->node->sol.a.da[isoltemd][j];
       dirichn[i*numdf+j] = actgnode->node->sol.a.da[isoltemdn][j];
    }
 }
@@ -1528,7 +1528,7 @@ else
     {
       /*---------------------------- do nothing for unsupported columns */
       if (dirich_onoff[j]==0) continue;
-      dforces[i] += estif[i][j] * (gamma*dirichn[j] + (1.0-gamma)*dirich[j])
+      dforces[i] += estif[i][j] * (gamma*dirichn[j] + /*(1.0-gamma)*dirich[j]*/ )  /* already included */
                  +  emass[i][j] * (dtinv*dirichn[j] - dtinv*dirich[j]);
     }/* loop j over columns */
   }/* loop i over rows */

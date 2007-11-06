@@ -185,6 +185,8 @@ void tsi_th_ost_init(PARTITION* actpart,
                      ARRAY* dirich_a)
 {
   INT numtf = genprob.numtf;
+  DOUBLE timcur = actdyn->time;  /* initial time */
+  DOUBLE* intforce = NULL;
   DOUBLE* dirich;
   CALC_ACTION* action = &(calc_action[numtf]);  /* thermal cal_action */
   INT i;  /* index */
@@ -301,7 +303,22 @@ void tsi_th_ost_init(PARTITION* actpart,
                        isol->tem0,
                        &(actsolv->sysarray[*stiff_array]),
                        &(actsolv->sysarray_typ[*stiff_array]));
-
+  /* spawn initial temperature to free nodes */
+  solserv_result_total(actfield,
+                       disnum,
+                       actintra,
+                       tem[0],
+                       isol->temn,
+                       &(actsolv->sysarray[*stiff_array]),
+                       &(actsolv->sysarray_typ[*stiff_array]));
+  /* set initial temperature on Dirichlet nodes */
+  solserv_putdirich_to_dof(actfield, disnum,
+                           node_array_sol, isol->temn, timcur);
+  /* update temperatures at nodes */
+  solserv_sol_copy(actfield, disnum,
+                   node_array_sol, node_array_sol,
+                   isol->temn, isol->tem);
+  
   /*--------------------------------------------------------------------*/
   /* external heat loads */
   {
@@ -327,6 +344,7 @@ void tsi_th_ost_init(PARTITION* actpart,
     solserv_zero_vec(&(fint_tmp[0]));
     *fint = fint_tmp;
   }
+  intforce = intforce_a->a.dv;  /* set convience pointer */
 
   /*-------------------------------------------------------------------*/
   /* initialize solver */
@@ -368,6 +386,35 @@ void tsi_th_ost_init(PARTITION* actpart,
   calinit(actfield, actpart, action, container);
 
   /*--------------------------------------------------------------------*/
+  /* call element routines to calculate & assemble internal force */
+  *action = calc_therm_heatforce;
+  container->dvec = intforce;
+  container->dirich = NULL;  /* MUST BE NULL no Dirichlet forces needed */
+  container->global_numeq = *numeq_total;
+  container->isdyn = 1;
+  calelm(actfield, actsolv, actpart, actintra, *stiff_array,
+         *mass_array, container, action);
+
+  /*--------------------------------------------------------------------*/
+  /* store positive internal forces on fint[0]
+   * this is the internal heat flux force at t_{n} */
+  solserv_zero_vec(&((*fint)[0]));
+  assemble_vec(actintra,
+               &(actsolv->sysarray_typ[*stiff_array]),
+               &(actsolv->sysarray[*stiff_array]),
+               &((*fint)[0]), intforce, 1.0);
+
+  /*--------------------------------------------------------------------*/
+  /* call RHS-routines to assemble RHS */
+  solserv_zero_vec(&((*fext)[0]));
+  *action = calc_therm_heatload;  /* set action before call of calrhs */
+  container->kstep = 0;  /* ? */
+  container->inherit = 1;  /* ? */
+  container->point_neum = 1;  /* ? */
+  calrhs(actfield, actsolv, actpart, actintra, *stiff_array,
+         &((*fext)[0]), action, container);
+
+  /*--------------------------------------------------------------------*/
 #ifdef BINIO
   /* initialize binary output */
   if (ioflags.output_bin == 1)
@@ -386,7 +433,25 @@ void tsi_th_ost_init(PARTITION* actpart,
 
 /*======================================================================*/
 /*!
-\brief Equilibrium
+\brief Instationary thermal equilibrium
+
+We use the one-step-theta time integrator (OST) for solving the instationary
+heat conduction, i.e.
+
+    C . ( Th_{n+1} - Th_n ) / dt  
+    +  K . ( gamma*Th_{n+1} + (1-gamma)*Th_n )
+    -  ( gamma*H_{ext,n+1} + (1-gamma)*H_{ext,n} )
+    = 0
+
+in which Th_n is the global temperature vector at t_n, C the capacity matrix, 
+and K the conductivity matrix, H_ext the external heat flux (von Neumann BC), 
+and gamma the OST parameter (commonly theta, but this conflicts with the
+temperature symbol).
+
+The internal heat flux is linear here, thus
+    
+    H_{int,n} = K . Th_{n}
+
 \param   actpart      PARTITION*   (i)   partition
 \param   actintra     INTRA*       (i)   intra-communicator
 \param   actfield     FIELD        (i)   thermal field
@@ -410,14 +475,14 @@ void tsi_th_ost_equi(PARTITION* actpart,
                      SOLVAR* actsolv,
                      INT numeq,
                      INT numeq_total,
-                     INT stiff_array,
-                     INT mass_array,
+                     INT stiff_array,  /*!< conductivity matrix index */
+                     INT mass_array,  /*!< capacity matrix index */
                      THERM_DYNAMIC* actdyn,
                      CONTAINER* container,
-                     DIST_VECTOR* tem,
-                     DIST_VECTOR* fint,
-                     DIST_VECTOR* fext,
-                     DIST_VECTOR* fextn,
+                     DIST_VECTOR* tem,  /*!< global temperature */
+                     DIST_VECTOR* fint,  /*!< internal heat flux */
+                     DIST_VECTOR* fext,  /*!< external heat flux at t_n */
+                     DIST_VECTOR* fextn,  /*!< external heat flux at t_{n+1} */
                      ARRAY* intforce_a,
                      ARRAY* dirich_a)
 {
@@ -427,7 +492,7 @@ void tsi_th_ost_equi(PARTITION* actpart,
   INT init;  /* init flag for solver */
   DOUBLE* intforce = intforce_a->a.dv;
   DOUBLE dirichfacs[2];  /* factors needed for Dirichlet-part of RHS */
-  DOUBLE* dirich = dirich_a->a.dv;
+  DOUBLE* dirich = dirich_a->a.dv;  /* Dirichlet heat fluxes */
   DOUBLE gamma = actdyn->gamma;
   DOUBLE dt = actdyn->dt;
 
@@ -465,8 +530,8 @@ void tsi_th_ost_equi(PARTITION* actpart,
   container->global_numeq = numeq_total;
   container->kstep = 0;  /* WORK */
   container->isdyn = 1;
-  container->isoltemd = isol->temd;
-  container->isoltemdn = isol->temdn;
+  container->isoltemd = isol->temd;  /* position of Dirichlet temper. at t_n */
+  container->isoltemdn = isol->temdn;  /* position of Dir. temper. t_{n+1} */
   dirichfacs[0] = 1.0/dt;  /* dtinv */
   dirichfacs[1] = gamma;  /* 'theta' in one-step-theta */
   container->dirichfacs = dirichfacs;
@@ -475,8 +540,7 @@ void tsi_th_ost_equi(PARTITION* actpart,
 
   /*--------------------------------------------------------------------*/
   /* store positive internal forces on fint[0]
-   * this is the load at t_{n} 'coz temperature has not been updated
-   * at the very first call it is zero */
+   * this is the load at t_{n} 'coz temperature has not been updated */
   solserv_zero_vec(&(fint[0]));
   assemble_vec(actintra,
                &(actsolv->sysarray_typ[stiff_array]),
@@ -509,10 +573,13 @@ void tsi_th_ost_equi(PARTITION* actpart,
   /*--------------------------------------------------------------------*/
   /* build effective RHS
    *    Feff = 1/dt * M . Th_n
-   *         - (1-gamma) * Fint_n
+   *         - (1-gamma) * Fint_n    ... already contains effects of ThBC_n
    *         + gamma * Fext_{n+1}
    *         + (1-gamma) * Fext_n
-   *         - Fdirichlet_{m} */
+   *         - Fdirichlet_{m}
+   * with
+   *    Fdirichlet = 1/dt * M . ( ThBC_{n+1} - ThBC_n )
+   *               + K . ( gamma*thBC_{n+1} ) */
   solserv_zero_vec(&(actsolv->rhs[stiff_array]));
 #if 0
   printf("load %g %g\n",

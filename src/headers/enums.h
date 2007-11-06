@@ -370,6 +370,7 @@ typedef enum _CALC_ACTION
                        calc_therm_init,  /* initialise thermal calc. */
                        calc_therm_tang_stat,  /* stationary tangent */
                        calc_therm_tang_instat,  /* in-stationary tangent */
+                       calc_therm_heatforce,  /* internal heat force */
                        calc_therm_heatload,  /* external heat source + BC */
                        calc_therm_heatflux,  /* postproc. heat flux */
                        calc_therm_final  /* finalise thermal calc. */

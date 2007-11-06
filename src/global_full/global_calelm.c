@@ -555,6 +555,7 @@ void calelm(FIELD        *actfield,     /* active field */
 #ifdef D_TSI
    case calc_therm_tang_stat        : assemble_action = assemble_one_matrix; break;
    case calc_therm_tang_instat      : assemble_action = assemble_two_matrix; break;
+   case calc_therm_heatforce        : assemble_action = assemble_do_nothing; break;
    case calc_therm_heatload         : assemble_action = assemble_do_nothing; break;
    case calc_therm_heatflux         : assemble_action = assemble_do_nothing; break;
 #endif
@@ -749,6 +750,7 @@ case calc_fluid_f2pro_rhs_both   : assemble_action = assemble_two_exchange; brea
 #ifdef D_TSI
 case calc_therm_tang_stat        : assemble_action = assemble_one_exchange; break;
 case calc_therm_tang_instat      : assemble_action = assemble_two_exchange; break;
+case calc_therm_heatforce        : assemble_action = assemble_do_nothing;   break;
 case calc_therm_heatload         : assemble_action = assemble_do_nothing;   break;
 case calc_therm_heatflux         : assemble_action = assemble_do_nothing;   break;
 #endif
@@ -824,6 +826,7 @@ case calc_fluid_f2pro_rhs_both   : assemble_action = assemble_do_nothing;   brea
 #ifdef D_TSI
 case calc_therm_tang_stat        : assemble_action = assemble_close_1matrix; break;
 case calc_therm_tang_instat      : assemble_action = assemble_close_2matrix; break;
+case calc_therm_heatforce        : assemble_action = assemble_do_nothing;   break;
 case calc_therm_heatload         : assemble_action = assemble_do_nothing;   break;
 case calc_therm_heatflux         : assemble_action = assemble_do_nothing;   break;
 #endif

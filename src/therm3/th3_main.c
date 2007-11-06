@@ -109,6 +109,13 @@ void therm3(PARTITION *actpart,
 #endif
       break;
     /*------------------------------------------------------------------*/
+    /* internal element nodal heat flux vector */
+    case calc_therm_heatforce:
+      actmat = &(mat[ele->mat-1]);
+      th3_lin_tang(container, ele, &(th3_data), actmat,
+                   NULL, NULL, eforc_global);
+      break;    
+    /*------------------------------------------------------------------*/
     /* stationary tangent */
     case calc_therm_tang_stat:
       actmat = &(mat[ele->mat-1]);
