@@ -267,12 +267,6 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
                            bool refactor,
                            bool reset)
 {
-  // see whether Operator is a Epetra_CrsMatrix
-  Epetra_CrsMatrix* tmp = dynamic_cast<Epetra_CrsMatrix*>(A_.get());
-  if (!tmp) dserror("vm3 only with Epetra_Operator being an Epetra_CrsMatrix!");
-  RCP<Epetra_CrsMatrix> A = rcp(tmp);
-  A.release();
-
   // reset data flags
   if (reset)
   {
@@ -307,6 +301,12 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
     LINALG::Solver::Solve(matrix,x,b,refactor,reset);
     return;
   }
+
+  // see whether Operator is a Epetra_CrsMatrix
+  Epetra_CrsMatrix* tmp = dynamic_cast<Epetra_CrsMatrix*>(A_.get());
+  if (!tmp) dserror("vm3 only with Epetra_Operator being an Epetra_CrsMatrix!");
+  RCP<Epetra_CrsMatrix> A = rcp(tmp);
+  A.release();
 
   // extract the ML parameters and initialize the solver
   ParameterList&  mllist = Params().sublist("ML Parameters");

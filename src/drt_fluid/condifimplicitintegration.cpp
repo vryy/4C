@@ -447,7 +447,7 @@ void CondifImplicitTimeInt::PrepareTimeStep()
 
     // set vector values needed by elements
     discret_->ClearState();
-    discret_->SetState("phi at time n+1 (trial)",phinp_);
+    discret_->SetState("phinp",phinp_);
     // predicted dirichlet values
      // phinp then also holds prescribed new dirichlet values
      // dirichtoggle is 1 for dirichlet dofs, 0 elsewhere
@@ -497,13 +497,17 @@ void CondifImplicitTimeInt::Solve(
     // get cpu time
     tcpu=ds_cputime();
 
-    // Although it is faster to reuse the sparse mask and assemble into a 
-    // filled matrix after the first step, for LINALG::Add, it is necessary
-    // to have at least sysmat_dc unfilled at the time of the call.
-    if (sysmat_==null)
+#if 1
       sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
-    else
-      sysmat_->PutScalar(0.0);
+#else
+      // zero out the stiffness matrix
+      // We reuse the sparse mask and assemble into a filled matrix
+      // after the first step. This is way faster.
+      if (sysmat_==null)
+        sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+      else
+        sysmat_->PutScalar(0.0);
+#endif
     sysmat_dc_ = null;
     sysmat_dc_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_); 
 
@@ -526,7 +530,7 @@ void CondifImplicitTimeInt::Solve(
 
     // set vector values needed by elements
     discret_->ClearState();
-    discret_->SetState("phi at time n+1 (trial)",phinp_);
+    discret_->SetState("phinp",phinp_);
     discret_->SetState("hist"  ,hist_ );
 
     // call loop over elements
@@ -880,7 +884,7 @@ void CondifImplicitTimeInt::SolveStationaryProblem()
 
      // set vector values needed by elements
      discret_->ClearState();
-     discret_->SetState("phi at time n+1 (trial)",phinp_);
+     discret_->SetState("phinp",phinp_);
      // predicted dirichlet values
      // phinp then also holds prescribed new dirichlet values
      // dirichtoggle is 1 for dirichlet dofs, 0 elsewhere
@@ -891,6 +895,10 @@ void CondifImplicitTimeInt::SolveStationaryProblem()
      neumann_loads_->PutScalar(0.0);
      discret_->EvaluateNeumann(eleparams,*neumann_loads_);
      discret_->ClearState();
+
+     //----------------------- compute an inverse of the dirichtoggle vector
+     invtoggle_->PutScalar(1.0);
+     invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
   }
 
   // -------------------------------------------------------------------
