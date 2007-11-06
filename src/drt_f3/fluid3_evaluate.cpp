@@ -695,15 +695,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
 
           if (is_ale_)
           {
-            dispnp = discretization.GetState("dispnp");
-            if (dispnp==null) dserror("Cannot get state vectors 'dispnp'");
-            mydispnp.resize(lm.size());
-            DRT::Utils::ExtractMyValues(*dispnp,mydispnp,lm);
-
-            gridv = discretization.GetState("gridv");
-            if (gridv==null) dserror("Cannot get state vectors 'gridv'");
-            mygridv.resize(lm.size());
-            DRT::Utils::ExtractMyValues(*gridv,mygridv,lm);
+        	  dserror("No ALE support within stationary fluid solver.");
           }
 
           // split velocity and pressure
@@ -713,8 +705,6 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
           blitz::Array<double, 1> eprenp(numnode);
           blitz::Array<double, 2> evelnp(3,numnode,blitz::ColumnMajorArray<2>());
           blitz::Array<double, 2> evhist(3,numnode,blitz::ColumnMajorArray<2>());
-          blitz::Array<double, 2> edispnp(3,numnode,blitz::ColumnMajorArray<2>());
-          blitz::Array<double, 2> egridv(3,numnode,blitz::ColumnMajorArray<2>());
 
           for (int i=0;i<numnode;++i)
           {
@@ -729,31 +719,14 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
             evhist(2,i) = myhist[2+(i*4)];
           }
 
-          if (is_ale_)
-          {
-            for (int i=0;i<numnode;++i)
-            {
-              edispnp(0,i) = mydispnp[0+(i*4)];
-              edispnp(1,i) = mydispnp[1+(i*4)];
-              edispnp(2,i) = mydispnp[2+(i*4)];
-
-              egridv(0,i) = mygridv[0+(i*4)];
-              egridv(1,i) = mygridv[1+(i*4)];
-              egridv(2,i) = mygridv[2+(i*4)];
-            }
-          }
-
           // get control parameter
-   // gjb       const bool is_stationary = params.get<bool>("using stationary formulation",false);
-          const double time = params.get<double>("total time",-1.0);
+          const double pseudotime = params.get<double>("total time",-1.0);
 
-          bool newton              = params.get<bool>("include reactive terms for linearisation",false);
+          bool newton = params.get<bool>("include reactive terms for linearisation",false);
           bool pstab  =true;
           bool supg   =true;
-          bool vstab  =true;
-          bool cstab  =true;
-        
-          double timefac = 0.0;
+          bool vstab  =false;  // viscous stabilisation part switched off
+          bool cstab  =true;        
 
           // wrap epetra serial dense objects in blitz objects
           blitz::Array<double, 2> estif(elemat1.A(),
@@ -769,13 +742,10 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
                          evelnp,
                          eprenp,
                          evhist,
-                         edispnp,
-                         egridv,
                          estif,
                          eforce,
                          actmat,
-                         time,
-                         timefac,
+                         pseudotime,
                          newton ,
                          pstab  ,
                          supg   ,
