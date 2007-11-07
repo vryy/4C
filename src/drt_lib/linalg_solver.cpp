@@ -274,35 +274,10 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
     refactor = true;
   }
 
-
-  // set the data passed to the method
-  if (refactor)
-  {
-    Aplus_ = matrix;
-    A_     = matrix2;
-  }
-  x_ = x;
-  b_ = b;
-
-  // set flag indicating that problem should be refactorized
-  if (refactor) factored_ = false;
-
-  // do not use the linear problem
-  //lp_->SetRHS(b_.get());
-  //lp_->SetLHS(x_.get());
-  //lp_->SetOperator(Aplus_.get());
-  //lp_->SetOperator(A_.get());
-
-  // see whether Operator is a Epetra_CrsMatrix
-  Epetra_CrsMatrix* tmp = dynamic_cast<Epetra_CrsMatrix*>(A_.get());
-  if (!tmp) dserror("vm3 only with Epetra_Operator being an Epetra_CrsMatrix!");
-  RCP<Epetra_CrsMatrix> A = rcp(tmp);
-  A.release();
-
   // extract the ML parameters and build system of equations
   ParameterList&  mllist = Params().sublist("ML Parameters");
   // cout << "Parameter list:\n" << mllist;
-  RCP<VM3_Solver> vm3_solver = rcp(new VM3_Solver::VM3_Solver(Aplus_, A, mllist,true) );
+  RCP<VM3_Solver> vm3_solver = rcp(new VM3_Solver::VM3_Solver(matrix, matrix2, mllist,true) );
 
   // Apply the solver.
   vm3_solver->VM3_Solver::Solve(*b,*x, Params());
@@ -460,19 +435,19 @@ void LINALG::Solver::Solve_aztec(const bool reset)
     if (status[AZ_why] == AZ_breakdown)
     {
       if (Comm().MyPID()==0)
-        printf("Numerical breakdown in AztecOO, try again with KLU/SuperLU\n");
+        printf("Numerical breakdown in AztecOO\n");
       resolve = true;
     }
     else if (status[AZ_why] == AZ_ill_cond)
     {
       if (Comm().MyPID()==0)
-        printf("Problem is near singular in AztecOO, try again with KLU/SuperLU\n");
+        printf("Problem is near singular in AztecOO\n");
       resolve = true;
     }
     else if (status[AZ_why] == AZ_maxits)
     {
       if (Comm().MyPID()==0)
-        printf("Max iterations reached in AztecOO, try again with KLU/SuperLU\n");
+        printf("Max iterations reached in AztecOO\n");
       resolve = true;
     }
     if (resolve)
