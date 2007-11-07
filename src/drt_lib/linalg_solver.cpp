@@ -287,11 +287,11 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
   // set flag indicating that problem should be refactorized
   if (refactor) factored_ = false;
 
-  // fill the linear problem
-  lp_->SetRHS(b_.get());
-  lp_->SetLHS(x_.get());
-  lp_->SetOperator(Aplus_.get());
-  lp_->SetOperator(A_.get());
+  // do not use the linear problem
+  //lp_->SetRHS(b_.get());
+  //lp_->SetLHS(x_.get());
+  //lp_->SetOperator(Aplus_.get());
+  //lp_->SetOperator(A_.get());
 
   // see whether Operator is a Epetra_CrsMatrix
   Epetra_CrsMatrix* tmp = dynamic_cast<Epetra_CrsMatrix*>(A_.get());
@@ -299,15 +299,13 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
   RCP<Epetra_CrsMatrix> A = rcp(tmp);
   A.release();
 
-  // extract the ML parameters and initialize the solver
+  // extract the ML parameters and build system of equations
   ParameterList&  mllist = Params().sublist("ML Parameters");
   // cout << "Parameter list:\n" << mllist;
   RCP<VM3_Solver> vm3_solver = rcp(new VM3_Solver::VM3_Solver(Aplus_, A, mllist,true) );
 
-  // Apply the solver. Convergence check and iteration have to be
-  // performed from outside, since Solve is a nonlinear FAS scheme
-  int err = vm3_solver->VM3_Solver::Solve(*b,*x, Params());
-  if (err) dserror("VM3_Solver::Solve returned an err");
+  // Apply the solver.
+  vm3_solver->VM3_Solver::Solve(*b,*x, Params());
 
   ncall_++;
 
@@ -444,7 +442,7 @@ void LINALG::Solver::Solve_aztec(const bool reset)
       P_ = rcp(new LINALG::AMG_Operator(Pmatrix_,mllist,true));
     else
       P_ = rcp(new ML_Epetra::MultiLevelPreconditioner(*Pmatrix_,mllist,true));
-    //dynamic_cast<ML_Epetra::MultiLevelPreconditioner&>(*P_).PrintUnused(0);
+      //dynamic_cast<ML_Epetra::MultiLevelPreconditioner&>(*P_).PrintUnused(0);
   }
 
   if (doifpack || doml)
