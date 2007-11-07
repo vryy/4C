@@ -113,7 +113,7 @@ public:
   \param outfile (in): ptr to an error file on proc 0 only. If NULL on input, 
                        no output will be generated.
   */
-  Solver(RefCountPtr<ParameterList> params, const Epetra_Comm& comm, FILE* outfile);
+  Solver(RCP<ParameterList> params, const Epetra_Comm& comm, FILE* outfile);
 
 
   /*!
@@ -135,9 +135,9 @@ public:
   \param reset  (in)    : flag indicating whether all data from previous solves should
                            be recalculated including preconditioners
   */
-  void Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
-             RefCountPtr<Epetra_Vector>    x,
-             RefCountPtr<Epetra_Vector>    b,
+  void Solve(RCP<Epetra_CrsMatrix> matrix,
+             RCP<Epetra_Vector>    x,
+             RCP<Epetra_Vector>    b,
              bool refactor,
              bool reset = false);
 
@@ -156,9 +156,9 @@ public:
   \param reset  (in)    : flag indicating whether all data from previous solves should
                            be recalculated including preconditioners
   */
-  void Solve(RefCountPtr<Epetra_Operator> Operator,
-             RefCountPtr<Epetra_Vector>    x,
-             RefCountPtr<Epetra_Vector>    b,
+  void Solve(RCP<Epetra_Operator> Operator,
+             RCP<Epetra_Vector>    x,
+             RCP<Epetra_Vector>    b,
              bool refactor,
              bool reset = false);
 
@@ -173,10 +173,10 @@ public:
                            be recalculated including preconditioners
   \param matrix2 (in/out): mod. system of equations on finest grid level
   */
-  void Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
-             RefCountPtr<Epetra_CrsMatrix> matrix2,
-             RefCountPtr<Epetra_Vector>    x,
-             RefCountPtr<Epetra_Vector>    b,
+  void Solve(RCP<Epetra_CrsMatrix> matrix,
+             RCP<Epetra_CrsMatrix> matrix2,
+             RCP<Epetra_Vector>    x,
+             RCP<Epetra_Vector>    b,
              bool refactor,
              bool reset = false);
 
@@ -280,25 +280,25 @@ private:
   //! a communicator
   const Epetra_Comm&                comm_;    
   //! parameter list
-  RefCountPtr<ParameterList>        params_;  
+  RCP<ParameterList>        params_;  
   //! file to write output to (proc 0 only, can be NULL on input)
   FILE*                             outfile_; 
   //! system of equations
-  RefCountPtr<Epetra_Operator>      A_;       
+  RCP<Epetra_Operator>      A_;       
   //! modified system of equations
-  RefCountPtr<Epetra_CrsMatrix>     Aplus_;       
+  RCP<Epetra_CrsMatrix>     Aplus_;       
   //! Preconditioner (currently an ML or Ifpack operator)
-  RefCountPtr<Epetra_Operator>      P_;       
+  RCP<Epetra_Operator>      P_;       
   //! system of equations used for preconditioning used by P_ only
-  RefCountPtr<Epetra_CrsMatrix>     Pmatrix_; 
+  RCP<Epetra_CrsMatrix>     Pmatrix_; 
   //! initial guess and solution
-  RefCountPtr<Epetra_Vector>        x_;       
+  RCP<Epetra_Vector>        x_;       
   //! right hand side vector
-  RefCountPtr<Epetra_Vector>        b_;       
+  RCP<Epetra_Vector>        b_;       
   //int x_LDA_;
   //int b_LDA_;
   //! a linear problem wrapper class used by Trilinos and for scaling of the system
-  RefCountPtr<Epetra_LinearProblem> lp_;      
+  RCP<Epetra_LinearProblem> lp_;      
   //! Epetra multivector: initial guess and solution
   Epetra_MultiVector *              X_;
   //! Epetra multivector: right hand side
@@ -308,11 +308,11 @@ private:
   //! counting how many times matrix was solved between resets
   int                               ncall_;   
   //! an abstract amesos solver that can be any of the amesos concrete immplementations
-  RefCountPtr<Amesos_BaseSolver>    amesos_;  
+  RCP<Amesos_BaseSolver>    amesos_;  
   //! an aztec solver
-  RefCountPtr<AztecOO>              aztec_;  
+  RCP<AztecOO>              aztec_;  
   //! a vm3 solver
-  RefCountPtr<VM3_Solver>           vm3_solver_; 
+  RCP<VM3_Solver>           vm3_solver_; 
 
 #ifdef PARALLEL
 #ifdef SPOOLES_PACKAGE

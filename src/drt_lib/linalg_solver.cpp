@@ -293,15 +293,6 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
   lp_->SetOperator(Aplus_.get());
   lp_->SetOperator(A_.get());
 
-  // decide what solver to use
-  string solvertype = Params().get("solver","none");
-  // if vm3 was not selected, return to usual solver
-  if ("vm3"   !=solvertype)
-  {
-    LINALG::Solver::Solve(matrix,x,b,refactor,reset);
-    return;
-  }
-
   // see whether Operator is a Epetra_CrsMatrix
   Epetra_CrsMatrix* tmp = dynamic_cast<Epetra_CrsMatrix*>(A_.get());
   if (!tmp) dserror("vm3 only with Epetra_Operator being an Epetra_CrsMatrix!");
@@ -311,13 +302,11 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
   // extract the ML parameters and initialize the solver
   ParameterList&  mllist = Params().sublist("ML Parameters");
   // cout << "Parameter list:\n" << mllist;
-  vm3_solver_ = rcp(new VM3_Solver::VM3_Solver(Aplus_, A, mllist,true) );
+  RCP<VM3_Solver> vm3_solver = rcp(new VM3_Solver::VM3_Solver(Aplus_, A, mllist,true) );
 
   // Apply the solver. Convergence check and iteration have to be
   // performed from outside, since Solve is a nonlinear FAS scheme
-  B_ = b_.get();
-  X_ = x_.get();
-  int err = vm3_solver_->VM3_Solver::Solve(*B_,*X_);
+  int err = vm3_solver->VM3_Solver::Solve(*b,*x, Params());
   if (err) dserror("VM3_Solver::Solve returned an err");
 
   ncall_++;
@@ -455,11 +444,11 @@ void LINALG::Solver::Solve_aztec(const bool reset)
       P_ = rcp(new LINALG::AMG_Operator(Pmatrix_,mllist,true));
     else
       P_ = rcp(new ML_Epetra::MultiLevelPreconditioner(*Pmatrix_,mllist,true));
+    //dynamic_cast<ML_Epetra::MultiLevelPreconditioner&>(*P_).PrintUnused(0);
   }
 
   if (doifpack || doml)
     aztec_->SetPrecOperator(P_.get());
-
   // iterate on the solution
   int iter = azlist.get("AZ_max_iter",500);
   double tol = azlist.get("AZ_tol",1.0e-6);
@@ -1024,11 +1013,14 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
           mllist.set("smoother: MLS polynomial order "+(string)levelstr    ,-azvar->mlsmotimes[i]);
         break;
         case 4:
+        {
           mllist.set("smoother: type "+(string)levelstr                    ,"IFPACK");
           mllist.set("smoother: ifpack type "+(string)levelstr             ,"ILU");
           mllist.set("smoother: ifpack overlap "+(string)levelstr          ,0);
-          mllist.sublist("smoother: ifpack list").set("fact: level-of-fill",azvar->mlsmotimes[i]);
-          mllist.sublist("smoother: ifpack list").set("schwarz: reordering type","rcm");
+          ParameterList& ifpacklist = mllist.sublist("smoother: ifpack list");
+          ifpacklist.set<int>("fact: level-of-fill",azvar->mlsmotimes[i]);
+          ifpacklist.set("schwarz: reordering type","rcm");
+        }
         break;
         case 5:
           mllist.set("smoother: type "+(string)levelstr,"Amesos-KLU");
@@ -1064,11 +1056,14 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
           mllist.set("coarse: MLS polynomial order",-azvar->mlsmotimes[coarse]);
         break;
         case 4:
+        {
           mllist.set("coarse: type"          ,"IFPACK");
           mllist.set("coarse: ifpack type"   ,"ILU");
           mllist.set("coarse: ifpack overlap",0);
-          mllist.sublist("coarse: ifpack list").set("fact: level-of-fill",azvar->mlsmotimes[coarse]);
-          mllist.sublist("coarse: ifpack list").set("schwarz: reordering type","rcm");
+          ParameterList& ifpacklist = mllist.sublist("coarse: ifpack list");
+          ifpacklist.set<int>("fact: level-of-fill",azvar->mlsmotimes[coarse]);
+          ifpacklist.set("schwarz: reordering type","rcm");
+        }
         break;
         case 5:
           mllist.set("coarse: type","Amesos-KLU");
