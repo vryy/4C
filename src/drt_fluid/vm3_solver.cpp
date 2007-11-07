@@ -31,8 +31,8 @@ int VM3_Solver::Solve(const Epetra_Vector& B, Epetra_Vector& X, ParameterList& p
     // do setup if not already done
   if (!iscomputed_) Compute();
 
-  RCP<Epetra_Vector> x = LINALG::CreateVector(Acombined_->RowMatrixRowMap(),true);
-  RCP<Epetra_Vector> b = LINALG::CreateVector(Acombined_->RowMatrixRowMap(),true);
+  RCP<Epetra_Vector> x = LINALG::CreateVector(Acombined_->OperatorDomainMap(),true);
+  RCP<Epetra_Vector> b = LINALG::CreateVector(Acombined_->OperatorRangeMap(),true);
   LINALG::Export(X,*x);
   LINALG::Export(B,*b);
   
@@ -60,8 +60,12 @@ int VM3_Solver::Solve(const Epetra_Vector& B, Epetra_Vector& X, ParameterList& p
   LINALG::Export(*bcshifted,*b);
   
   RCP<ParameterList> rcpparams = rcp( new ParameterList(params));
-  LINALG::Solver solver(rcpparams,Acombined_->Comm(),NULL);
+  
+  LINALG::Solver solver(rcpparams,Acombined_->RowMatrixRowMap().Comm(),NULL);
   solver.Solve(Acombined_,x,b,true,true);
+  //cout << *Acombined_;
+  //AztecOO azsolver(Acombined_.get(),x.get(),b.get());
+  //azsolver.Iterate(5000,1.0e-08);
   
   LINALG::Export(*x,*xcshifted);
   LINALG::Export(*x,X);
