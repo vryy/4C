@@ -146,7 +146,7 @@ public:
                      solver
    \param Y (Out)  : Epetra_MultiVector containing the result on output
   */
-  int Solve(const Epetra_MultiVector& X, Epetra_MultiVector& Y);
+  int Solve(const Epetra_Vector& X, Epetra_Vector& Y, ParameterList& params);
 
 
   // @{ \name Not implemented methods derived from Epetra_Operator
@@ -207,13 +207,17 @@ private:
   inline const Operator& Aplus(const int i) const { return (mlapiAplus_[i]); }
   inline const InverseOperator& S(const int i) const { return (mlapiS_[i]); }
 
-  const char*                    label_;       // the label of this class
+  string                         label_;       // the label of this class
   bool                           iscomputed_;  // flag indicating whether preconditioner is ready for use
   ParameterList&                 mlparams_;    // ML parameter list
   int                            maxlevels_;   // number of levels
 
-  RefCountPtr<Epetra_CrsMatrix>  Aplus_;  // input matrix including fine-scale term
-  RefCountPtr<Epetra_CrsMatrix>  A_;      // input matrix without fine-scale term
+  RCP<Epetra_CrsMatrix>  Aplus_;     // input matrix including fine-scale term
+  RCP<Epetra_CrsMatrix>  A_;         // input matrix without fine-scale term
+  RCP<Epetra_CrsMatrix>  Acombined_; // input matrix without fine-scale term
+  Operator               Ptent_;
+  Operator               Rtent_;
+  RCP<Epetra_Map>        coarsermap_;
 
   vector<Operator>               mlapiRmod_;   // restriction
   vector<Operator>               mlapiPmod_;   // prolongation

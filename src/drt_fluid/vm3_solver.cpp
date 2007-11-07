@@ -1,9 +1,12 @@
 #ifdef CCADISCRET
 
 #include "vm3_solver.H"
+#include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/linalg_solver.H"
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                            m.gee 03/06|
+ |  ctor (public)                                               vg 06/07|
  *----------------------------------------------------------------------*/
 VM3_Solver::VM3_Solver(
                                     RefCountPtr<Epetra_CrsMatrix> Aplus,
@@ -16,127 +19,79 @@ Aplus_(Aplus),
 A_(A)
 {
   label_  = "VM3_Solver";
-
-
   if (compute) Compute();
-
   return;
 }
 
 /*----------------------------------------------------------------------*
- |  multigrid solver for VM3                                 m.gee 03/06|
+ |  multigrid solver for VM3                                    vg 06/07|
  *----------------------------------------------------------------------*/
-int VM3_Solver::Solve(
-                     const Epetra_MultiVector& B, Epetra_MultiVector& X)
+int VM3_Solver::Solve(const Epetra_Vector& B, Epetra_Vector& X, ParameterList& params)
 {
     // do setup if not already done
-  if (!iscomputed_)
-  {
-    VM3_Solver& tmp =
-                       const_cast<VM3_Solver&>(*this);
-    tmp.Compute();
-  }
+  if (!iscomputed_) Compute();
 
-  // maximum number of V-cycles
-  int     vcmax    = 100;
-
-  // ------ stop V-cycles when norm is within this tolerance
-  double  vctol    = 0.000001;
-  double  norm     = 1.0;
-
-  int     vcnum      = 0;
-  bool   stopvcycles = false;
-
-  // create a Space
-  const Epetra_BlockMap& bmap = B.Map();
+  RCP<Epetra_Vector> x = LINALG::CreateVector(Acombined_->RowMatrixRowMap(),true);
+  RCP<Epetra_Vector> b = LINALG::CreateVector(Acombined_->RowMatrixRowMap(),true);
+  LINALG::Export(X,*x);
+  LINALG::Export(B,*b);
+  
+  const Epetra_BlockMap& bmap = X.Map();
   Space space;
   space.Reshape(bmap.NumGlobalElements(),bmap.NumMyElements(),bmap.MyGlobalElements());
-
-  // create input/output mlapi multivectors
-  MultiVector b_f(space,1,false);
-  MultiVector x_f(space,1,false);
-  MultiVector diffsol(space,1,false);
-  const int nele = B.Map().NumMyElements();
-  for (int i=0; i<nele; ++i)
+  
+  MultiVector mvX(space,X.Pointers(),1);
+  MultiVector mvB(space,B.Pointers(),1);
+  
+  MultiVector bcoarse;
+  MultiVector xcoarse;
+  bcoarse = Rtent_ * mvB;
+  xcoarse = Rtent_ * mvX;
+  
+  RCP<Epetra_Vector> xcshifted = LINALG::CreateVector(*coarsermap_,true);
+  RCP<Epetra_Vector> bcshifted = LINALG::CreateVector(*coarsermap_,true);
+  const int mylength = xcshifted->MyLength();
+  for (int i=0; i<mylength; ++i)
   {
-    x_f(i) = X[0][i];
-    b_f(i) = B[0][i];
+    (*xcshifted)[i] = xcoarse(i,0);
+    (*bcshifted)[i] = bcoarse(i,0);
   }
-
-  // ---------------------------------------------- V-cycle loop
-  while (stopvcycles==false)
-  {
-    vcnum++;
-
-    // call AMG
-    MultiLevelVCycle(b_f,x_f);
-
-    {
-      double quaderr=0.0; 
-      double quadsol=0.0;
+  LINALG::Export(*xcshifted,*x);
+  LINALG::Export(*bcshifted,*b);
+  
+  RCP<ParameterList> rcpparams = rcp( new ParameterList(params));
+  LINALG::Solver solver(rcpparams,Acombined_->Comm(),NULL);
+  solver.Solve(Acombined_,x,b,true,true);
+  
+  LINALG::Export(*x,*xcshifted);
+  LINALG::Export(*x,X);
+  for (int i=0; i<mylength; ++i)
+    xcoarse(i,0) = (*xcshifted)[i];
  
-      for (int i=0; i<nele; ++i)
-      {
-        diffsol(i) = x_f(i) - X[0][i];
-        quaderr = quaderr + diffsol(i)*diffsol(i);
-        quadsol = quadsol + x_f(i)*x_f(i);
-      }
-
-      norm = sqrt(quaderr/quadsol);
-    }
-
-      //if (myrank_ == 0)
-     // {
-          printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   |",vcnum,vcmax,vctol,norm);
-          printf("\n");
-      //}
-
-    // convergence check
-    if (norm <= vctol)
-    {
-      stopvcycles=true;
-      break;
-    }
-
-    // warn if vcmax is reached without convergence
-    if (vcnum == vcmax and norm > vctol)
-    {
-      stopvcycles=true;
-      //if (myrank_ == 0)
-      //{
-        printf("+---------------------------------------------------------------+\n");
-        printf("|            >>>>>> not converged in vcmax steps!               |\n");
-        printf("+---------------------------------------------------------------+\n");
-      //}
-      break;
-    }
-
-    // copy solution back
-    for (int i=0; i<nele; ++i)
-      X[0][i] = x_f(i);
-
-  }
+  MultiVector x3h_h;
+  x3h_h = Ptent_ * xcoarse;
+  
+  const int longlength = X.MyLength();
+  for (int i=0; i<longlength; ++i)
+    X[i] += x3h_h(i,0);
 
   return 0;
 
 }
 
 /*----------------------------------------------------------------------*
- |  apply multigrid linear preconditioner (public)           m.gee 03/06|
+ |  apply multigrid linear preconditioner (public)            vg 06/07|
  *----------------------------------------------------------------------*/
-int VM3_Solver::ApplyInverse(
-                     const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
+int VM3_Solver::ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
   // apply the preconditioner to X and return result in Y
 
   // do setup if not already done
   if (!iscomputed_)
   {
-    VM3_Solver& tmp =
-                       const_cast<VM3_Solver&>(*this);
+    VM3_Solver& tmp = const_cast<VM3_Solver&>(*this);
     tmp.Compute();
   }
-
 
   // create a Space
   const Epetra_BlockMap& bmap = X.Map();
@@ -164,7 +119,7 @@ int VM3_Solver::ApplyInverse(
 }
 
 /*----------------------------------------------------------------------*
- |  apply multigrid linear preconditioner (private)          m.gee 03/06|
+ |  apply multigrid linear preconditioner (private)          vg 06/07|
  *----------------------------------------------------------------------*/
 int VM3_Solver::MultiLevelVCycle(MultiVector& b_f,
                                  MultiVector& x_f)
@@ -387,7 +342,7 @@ const
 }
 
 /*----------------------------------------------------------------------*
- |  restriction operation (private)                             vg 08/07|
+ |  restriction operation (private)                            vg 06/07|
  *----------------------------------------------------------------------*/
 int VM3_Solver::Restrict(const MultiVector& x_f,
                          MultiVector& x_r,
@@ -456,8 +411,9 @@ const
   return 0;
 }
 
+#if 0 // Volker's version
 /*----------------------------------------------------------------------*
- |  compute the preconditioner (public)                      m.gee 03/06|
+ |  compute the preconditioner (public)                         vg 06/07|
  *----------------------------------------------------------------------*/
 bool VM3_Solver::Compute()
 {
@@ -471,6 +427,7 @@ bool VM3_Solver::Compute()
   int     maxlevels     = mlparams_.get("max levels",10);
   int     maxcoarsesize = mlparams_.get("coarse: max size",10);
   double* nullspace     = mlparams_.get("null space: vectors",(double*)NULL);
+  if (!nullspace) dserror("No nullspace supplied in parameter list");
   int     nsdim         = mlparams_.get("null space: dimension",1);
   int     numpde        = mlparams_.get("PDE equations",1);
   double  damping       = mlparams_.get("aggregation: damping factor",1.33);
@@ -515,21 +472,10 @@ bool VM3_Solver::Compute()
   NS.Reshape(mlapiA.GetRangeSpace(),nsdim);
   if (nullspace)
   {
+    const int length = NS.GetMyLength();
     for (int i=0; i<nsdim; ++i)
-      for (int j=0; j<NS.GetMyLength(); ++j)
-        NS(j,i) = nullspace[i*NS.GetMyLength()+j];
-  }
-  else
-  {
-    if (numpde==1) NS = 1.0;
-    else
-    {
-      NS = 0.0;
-      for (int i=0; i<NS.GetMyLength(); ++i)
-        for (int j=0; j<numpde; ++j)
-          if ( i % numpde == j)
-            NS(i,j) = 1.0;
-    }
+      for (int j=0; j<length; ++j)
+        NS(j,i) = nullspace[i*length+j];
   }
 
   double lambdamax;
@@ -728,5 +674,177 @@ bool VM3_Solver::Compute()
   iscomputed_ = true;
   return true;
 }
+#endif
+
+
+
+
+#if 1 // Build monolythic system of equations
+/*----------------------------------------------------------------------*
+ |  compute the preconditioner (public)                         vg 06/07|
+ *----------------------------------------------------------------------*/
+bool VM3_Solver::Compute()
+{
+  // setup phase of multigrid
+  iscomputed_ = false;
+
+  // this is important to have!!!
+  MLAPI::Init();
+
+  // get parameters
+  //int     maxlevels     = mlparams_.get("max levels",10);
+  //int     maxcoarsesize = mlparams_.get("coarse: max size",10);
+  double* nullspace     = mlparams_.get("null space: vectors",(double*)NULL);
+  if (!nullspace) dserror("No nullspace supplied in parameter list");
+  int     nsdim         = mlparams_.get("null space: dimension",1);
+  //int     numpde        = mlparams_.get("PDE equations",1);
+  //double  damping       = mlparams_.get("aggregation: damping factor",1.33);
+  string  eigenanalysis = mlparams_.get("eigen-analysis: type", "Anorm");
+  string  ptype         = mlparams_.get("prolongator: type","mod_full");
+  string  coarsetype    = mlparams_.get("coarse: type","Amesos-KLU");
+  string  smoothertype  = mlparams_.get("smoother: type","symmetric Gauss-Seidel");
+  string  fsmoothertype = smoothertype;
+
+  Space space(A_->RowMatrixRowMap());
+  Operator mlapiA(space,space,A_.get(),false);
+  Operator mlapiAplus(space,space,Aplus_.get(),false);
+
+  // build nullspace;
+  MultiVector NS;
+  MultiVector NextNS;
+  NS.Reshape(mlapiA.GetRangeSpace(),nsdim);
+  if (nullspace)
+  {
+    const int length = NS.GetMyLength();
+    for (int i=0; i<nsdim; ++i)
+      for (int j=0; j<length; ++j)
+        NS(j,i) = nullspace[i*length+j];
+  }
+
+  // get plain aggregation P and R
+  Operator Ptent;
+  Operator Rtent;
+  GetPtent(mlapiA,mlparams_,NS,Ptent,NextNS);
+  Rtent = GetTranspose(Ptent);
+
+  // get coarse grid matrix K11 = R ( K+M ) P
+  Operator K11;
+  K11 = GetRAP(Rtent,mlapiA,Ptent);
+  
+  // get coarse grid matrix K12 = R ( K+M )
+  Operator K12;
+  K12 = Rtent * mlapiA;
+  
+  // get fine grid matrix K21 = (K+M) * P
+  Operator K21;
+  K21 = mlapiA * Ptent;
+  
+  // fine grid matrix is K22 = (K+M+M_fine);
+  Operator K22;
+  K22 = mlapiAplus;
+  
+  // get row map of K22
+  const Epetra_Map& k22rmap = K22.GetRowMatrix()->RowMatrixRowMap();
+  
+  // get row map of K11
+  const Epetra_Map& k11rmap = K11.GetRowMatrix()->RowMatrixRowMap();
+  
+  // build new map for row map of K11 that does not overlap with map of K22
+  const int maxgid22 = k22rmap.MaxAllGID();
+  const int mygidsnewsize = k11rmap.NumMyElements();
+  vector<int> mygidsnew(mygidsnewsize);
+  for (int i=0; i<mygidsnewsize; ++i)
+    mygidsnew[i] = k11rmap.GID(i) + maxgid22+1;
+  Epetra_Map k11rmapnew(-1,mygidsnewsize,&mygidsnew[0],0,k11rmap.Comm());
+
+  // get combined row map of K11 and K22
+  const int k22rmapsize = k22rmap.NumMyElements();
+  const int mytotallength = mygidsnewsize + k22rmapsize;
+  mygidsnew.resize(mytotallength);
+  int last = 0;
+  for (int i=0; i<k22rmapsize; ++i)
+  {
+    mygidsnew[i] = k22rmap.GID(i);
+    last = i;
+  }
+  last +=1;
+  const int k11rmapnewsize = k11rmapnew.NumMyElements();
+  for (int i=0; i<k11rmapnewsize; ++i)
+    mygidsnew[i+last] = k11rmapnew.GID(i);
+  Epetra_Map kcombinedrmap(-1,mytotallength,&mygidsnew[0],0,k11rmap.Comm());
+  
+  // copy matrices K11 and K12 from row map k11rmap to k11rmapnew
+  RCP<Epetra_CrsMatrix> K11new = LINALG::CreateMatrix(k11rmapnew,K11.GetRowMatrix()->MaxNumEntries()+100);
+  RCP<Epetra_CrsMatrix> K12new = LINALG::CreateMatrix(k11rmapnew,K11.GetRowMatrix()->MaxNumEntries()+100);
+  int length = K12.GetRowMatrix()->RowMatrixColMap().NumMyElements();
+  vector<int>    cindices(length);
+  vector<double> values(length);
+  const int k11rmapsize = k11rmap.NumMyElements();
+  for (int i=0; i<k11rmapsize; ++i)
+  {
+    int numindices = 0;
+    int err = K11.GetRowMatrix()->ExtractMyRowCopy(i,length,numindices,&values[0],&cindices[0]);
+    if (err<0) dserror("ExtractMyRowCopy returned %d",err);
+    // new global row id
+    int grid = k11rmapnew.GID(i);
+    // new global column id
+    for (int j=0; j<numindices; ++j) cindices[j] += (maxgid22+1);
+    err = K11new->InsertGlobalValues(grid,numindices,&values[0],&cindices[0]);
+    if (err<0) dserror("InsertGlobalValues returned %d",err);
+    
+    numindices = 0;
+    err = K12.GetRowMatrix()->ExtractMyRowCopy(i,length,numindices,&values[0],&cindices[0]);
+    err = K12new->InsertGlobalValues(grid,numindices,&values[0],&cindices[0]);
+    if (err<0) dserror("InsertGlobalValues returned %d",err);
+  }
+  K11new->FillComplete(k11rmapnew,k11rmapnew);
+  K12new->FillComplete(k22rmap,k11rmapnew);
+
+  // copy matrix K21 to new column map
+  RCP<Epetra_CrsMatrix> K21new = LINALG::CreateMatrix(k22rmap,K22.GetRowMatrix()->MaxNumEntries()+100);
+  length = K21.GetRowMatrix()->RowMatrixColMap().NumMyElements();
+  cindices.resize(length);
+  values.resize(length);
+  for (int i=0; i<k22rmapsize; ++i)
+  {
+    int numindices=0;
+    int err = K21.GetRowMatrix()->ExtractMyRowCopy(i,length,numindices,&values[0],&cindices[0]);
+    int grid = k22rmap.GID(i);
+    for (int j=0; j<numindices; ++j) cindices[j] += (maxgid22+1);
+    err = K21new->InsertGlobalValues(grid,numindices,&values[0],&cindices[0]);
+    if (err<0) dserror("InsertGlobalValues returned %d",err);
+  }
+  K21new->FillComplete(k11rmapnew,k22rmap);
+
+  // copy all matrices into one big matrix and store it
+  int clength = K22.GetRowMatrix()->MaxNumEntries() + K11new->MaxNumEntries() + 100;
+  RCP<Epetra_CrsMatrix> Kcombined = LINALG::CreateMatrix(kcombinedrmap,clength);
+  LINALG::Add(*Aplus_,false,1.0,*Kcombined,0.0);
+  LINALG::Add(*K21new,false,1.0,*Kcombined,1.0);
+  LINALG::Add(*K12new,false,1.0,*Kcombined,1.0);
+  LINALG::Add(*K11new,false,1.0,*Kcombined,1.0);
+  Kcombined->FillComplete(kcombinedrmap,kcombinedrmap);
+  Kcombined->OptimizeStorage();
+  Acombined_ = Kcombined;
+
+  // finally, we have to fix the nullspace in the parameter list to match the new matrix size
+  RCP<vector<double> > newnullsp = rcp(new vector<double>(nsdim*kcombinedrmap.NumMyElements()));
+  for (int i=0; i<(int)newnullsp->size(); ++i) (*newnullsp)[i] = 1.0;
+  mlparams_.set("null space: vectors",&(*newnullsp)[0]);
+  mlparams_.set<RCP<vector<double> > >("nullspace",newnullsp);
+
+  // store Ptent and Rtent
+  Ptent_ = Ptent;
+  Rtent_ = Rtent;
+  
+  // store new k11 row map
+  coarsermap_ = rcp(new Epetra_Map(k11rmapnew));
+
+  iscomputed_ = true;
+  return true;
+}
+#endif
+
+
 
 #endif
