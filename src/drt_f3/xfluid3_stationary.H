@@ -1,14 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfluid3_impl.H
+\file fluid3_stationary.H
 
-\brief Internal implementation of Fluid3 element
+\brief Internal implementation of Fluid3 element -- stationary formulation
 
 <pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
+Maintainer: Georg Bauer
+            bauer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15238
+            089 - 289-15252
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -16,8 +16,8 @@ Maintainer: Ulrich Kuettler
 #ifdef D_FLUID3
 #ifdef CCADISCRET
 
-#ifndef XFLUID3_IMPL_H
-#define XFLUID3_IMPL_H
+#ifndef XFLUID3_STATIONARY_H
+#define XFLUID3_STATIONARY_H
 
 #include "xfluid3.H"
 #include <blitz/array.h>
@@ -28,11 +28,12 @@ namespace DRT
 namespace Elements
 {
 
-  /// Internal Fluid3 implementation
+  /// Internal XFluid3 implementation -- stationary formulation
   /*!
     This internal class keeps all the working arrays needed to
-    calculate the Fluid3 element. Additionally the method Sysmat()
-    provides a clean and fast element implementation.
+    calculate the Fluid3 element in stationary formulation. 
+    Additionally the method Sysmat() provides a clean and fast 
+    element implementation.
 
     <h3>Purpose</h3>
 
@@ -62,20 +63,19 @@ namespace Elements
     Right now we do not read any stabilization parameters from the
     input file but have a fixed version with precompiled values.
 
-    \auther u.kue
-    \date 07/07
+    \author g.bau
+    \date 11/07
   */
-  class XFluid3Impl
+  class XFluid3Stationary
   {
   public:
     /// Constructor with number of nodes
-    explicit XFluid3Impl(int iel);
+    explicit XFluid3Stationary(int iel);
 
     /// calculating element matrix and rhs
     /*!
-      Calculate matrix and rhs. Here the whole thing is hidden.
-
-      \note Stationary calculations are not (yet) supported.
+      Calculate matrix and rhs for stationary fproblem formulation. 
+      Here the whole thing is hidden.
 
       \param ele     (i) the element those matrix is calculated
       \param evelnp  (i) nodal velocities at n+1
@@ -88,37 +88,31 @@ namespace Elements
       \param material (i) fluid material
       \param time     (i) current simulation time
       \param timefac  (i) time discretization factor
-      \param is_stationary (i) stationary flag
      */
     void Sysmat(XFluid3* ele,
                 const blitz::Array<double,2>&     evelnp,
                 const blitz::Array<double,1>&     eprenp,
                 const blitz::Array<double,2>&     evhist,
-                const blitz::Array<double,2>&     edispnp,
-                const blitz::Array<double,2>&     egridv,
                 blitz::Array<double,2>&           estif,
                 blitz::Array<double,1>&           eforce,
                 struct _MATERIAL*       material,
-                double                  time,
-                double                  timefac,
+                double                  pseudotime,
                 bool                    newton ,
                 bool                    pstab  ,
                 bool                    supg   ,
                 bool                    vstab  ,
-                bool                    cstab);
+                bool                    cstab  );
 
   private:
 
     /*!
-      \brief calculate stabilization parameter
+      \brief calculate stabilization parameter for stationary formulation
     */
-    void Caltau(
+    void CalTauStationary(
       XFluid3* ele,
       const blitz::Array<double,2>&           evelnp,
       const DRT::Element::DiscretizationType  distype,
-      const double                            visc,
-      const double                            timefac,
-      const bool                              stationary);
+      const double                            visc);
 
     /*!
      * \brief calculate the body force from the nodes condition
