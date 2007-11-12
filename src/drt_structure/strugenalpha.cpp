@@ -104,6 +104,33 @@ havecontact_(false)
     }
   }
 #endif
+#ifdef VEL_INITIAL_2
+  if ((*vel_).GlobalLength() == 8)
+  {
+    const int vels = 8;
+//    const double velini[8] = { 0.070710678118655, 9.929289321881345,
+//                               0.070710678118655, 10.07071067811866,
+//                               -0.070710678118655, 9.929289321881345,
+//                               -0.070710678118655, 10.07071067811866 };
+//    const double velini[8] = { 1.141421356237309, 9.858578643762691,
+//                               1.141421356237309, 10.14142135623731,
+//                               0.85857864376269, 9.858578643762691,
+//                               0.85857864376269, 10.14142135623731 };
+//    const double velini[8] = { 10.35355339059327 , 9.646446609406727 ,
+//                               10.35355339059327 , 10.35355339059327 ,
+//                               9.646446609406727 , 9.646446609406727 ,
+//                               9.646446609406727 , 10.35355339059327 };
+    const double velini[8] = { 20.60660171779821 , - 0.60660171779821 ,
+                               20.60660171779821 , 20.60660171779821 ,
+                               - 0.60660171779821 , - 0.60660171779821 ,
+                               - 0.60660171779821 , 20.60660171779821 };
+    printf("Set initial velocity to: vel_0=(%g, %g)\n", velini[0], velini[1]);
+    for (int i=0; i<vels; i+=1)
+    {
+      (*vel_)[i] = velini[i];
+    }
+  }
+#endif
   // accelerations A_{n} at last time
   acc_ = LINALG::CreateVector(*dofrowmap,true);
 
@@ -563,13 +590,15 @@ void StruGenAlpha::ConsistentPredictor()
   //          + (beta-gamma)/beta * V_n
   //          + (2.*beta-gamma)/(2.*beta) * A_n
   veln_->Update(1.0,*disn_,-1.0,*dis_,0.0);
-  veln_->Update((beta-gamma)/beta,*vel_,(2.*beta-gamma)*dt/(2.*beta),*acc_,gamma/(beta*dt));
+  veln_->Update((beta-gamma)/beta,*vel_,
+                (2.*beta-gamma)*dt/(2.*beta),*acc_,gamma/(beta*dt));
   // predicting accelerations A_{n+1} (accn)
   // A_{n+1} := 1./(beta*dt*dt) * (D_{n+1} - D_n)
   //          - 1./(beta*dt) * V_n
   //          + (2.*beta-1.)/(2.*beta) * A_n
   accn_->Update(1.0,*disn_,-1.0,*dis_,0.0);
-  accn_->Update(-1./(beta*dt),*vel_,(2.*beta-1.)/(2.*beta),*acc_,1./(beta*dt*dt));
+  accn_->Update(-1./(beta*dt),*vel_,
+                (2.*beta-1.)/(2.*beta),*acc_,1./(beta*dt*dt));
 
   //------------------------------ compute interpolated dis, vel and acc
   // consistent predictor
@@ -718,25 +747,31 @@ void StruGenAlpha::FullNewton()
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
     dism_->Update(1.-alphaf,*disi_,1.0);
     // velocities
+#ifndef STRUGENALPHA_INCRUPDT
     // iterative
     // V_{n+1-alpha_f} := V_{n+1-alpha_f}
     //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
     velm_->Update((1.-alphaf)*gamma/(beta*dt),*disi_,1.0);
+#else
     // incremental (required for constant predictor)
-    //velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
-    //velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
-    //              (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
-    //              gamma/(beta*dt));
+    velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+    velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
+                  (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
+                  gamma/(beta*dt));
+#endif
     // accelerations
+#ifndef STRUGENALPHA_INCRUPDT
     // iterative
     // A_{n+1-alpha_m} := A_{n+1-alpha_m}
     //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
     accm_->Update((1.-alpham)/(beta*dt*dt),*disi_,1.0);
+#else
     // incremental (required for constant predictor)
-    //accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
-    //accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
-    //              (2.*beta-1.+alpham)/(2.*beta),*acc_,
-    //              (1.-alpham)/((1.-alphaf)*beta*dt*dt));
+    accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+    accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
+                  (2.*beta-1.+alpham)/(2.*beta),*acc_,
+                  (1.-alpham)/((1.-alphaf)*beta*dt*dt));
+#endif
 
     //---------------------------- compute internal forces and stiffness
     {
@@ -899,25 +934,31 @@ void StruGenAlpha::ModifiedNewton()
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
     dism_->Update(1.-alphaf,*disi_,1.0);
     // velocities
+#ifndef STRUGENALPHA_INCRUPDT
     // iterative
     // V_{n+1-alpha_f} := V_{n+1-alpha_f}
     //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
-    //velm_->Update((1.-alphaf)*gamma/(beta*dt),*disi_,1.0);
+    velm_->Update((1.-alphaf)*gamma/(beta*dt),*disi_,1.0);
+#else
     // incremental (required for constant predictor)
     velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
     velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
                   (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
                   gamma/(beta*dt));
+#endif
     // accelerations
+#ifndef STRUGENALPHA_INCRUPDT
     // iterative
     // A_{n+1-alpha_m} := A_{n+1-alpha_m}
     //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
-    //accm_->Update((1.-alpham)/(beta*dt*dt),*disi_,1.0);
+    accm_->Update((1.-alpham)/(beta*dt*dt),*disi_,1.0);
+#else
     // incremental (required for constant predictor)
     accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
     accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
                   (2.*beta-1.+alpham)/(2.*beta),*acc_,
                   (1.-alpham)/((1.-alphaf)*beta*dt*dt));
+#endif
 
     //----------------------------------------- compute internal forces
     {
@@ -1064,25 +1105,31 @@ void StruGenAlpha::MatrixFreeNewton()
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
     dism_->Update(1.-alphaf,*disi_,1.0);
     // velocities
+#ifndef STRUGENALPHA_INCRUPDT
     // iterative
     // V_{n+1-alpha_f} := V_{n+1-alpha_f}
     //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
-    //velm_->Update((1.-alphaf)*gamma/(beta*dt),*disi_,1.0);
+    velm_->Update((1.-alphaf)*gamma/(beta*dt),*disi_,1.0);
+#else
     // incremental (required for constant predictor)
     velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
     velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
                   (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
                   gamma/(beta*dt));
+#endif
     // accelerations
+#ifndef STRUGENALPHA_INCRUPDT
     // iterative
     // A_{n+1-alpha_m} := A_{n+1-alpha_m}
     //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
-    //accm_->Update((1.-alpham)/(beta*dt*dt),*disi_,1.0);
+    accm_->Update((1.-alpham)/(beta*dt*dt),*disi_,1.0);
+#else
     // incremental (required for constant predictor)
     accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
     accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
                   (2.*beta-1.+alpham)/(2.*beta),*acc_,
                   (1.-alpham)/((1.-alphaf)*beta*dt*dt));
+#endif
 
     //----------------------------------------- compute internal forces
     {
@@ -1334,18 +1381,26 @@ void StruGenAlpha::MatrixFreeNewton()
   dism_->Update((1.-alphaf),*disi_,1.0);
 
   // velocities
+#ifdef STRUGENALPHA_INCRUPDT
   // incremental (required for constant predictor)
   velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
   velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
                 (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
                 gamma/(beta*dt));
+#else
+  dserror("Please verify that incremental update is not needed here!");
+#endif
 
   // accelerations
+#ifdef STRUGENALPHA_INCRUPDT
   // incremental (required for constant predictor)
   accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
   accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
                 (2.*beta-1.+alpham)/(2.*beta),*acc_,
                 (1.-alpham)/((1.-alphaf)*beta*dt*dt));
+#else
+  dserror("Please verify that incremental update is not needed here!");
+#endif
 
   //-------------------------------------- don't need this anymore
   stiff_ = null;
@@ -1530,18 +1585,26 @@ void StruGenAlpha::NonlinearCG()
   dism_->Update((1.-alphaf),*disi_,1.0);
 
   // velocities
+#ifdef STRUGENALPHA_INCRUPDT
   // incremental (required for constant predictor)
   velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
   velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
                 (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
                 gamma/(beta*dt));
+#else
+  dserror("Please verify that incremental update is not needed here!");
+#endif
 
   // accelerations
+#ifdef STRUGENALPHA_INCRUPDT
   // incremental (required for constant predictor)
   accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
   accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
                 (2.*beta-1.+alpham)/(2.*beta),*acc_,
                 (1.-alpham)/((1.-alphaf)*beta*dt*dt));
+#else
+  dserror("Please verify that incremental update is not needed here!");
+#endif
 
     stiff_ = null;
     return;
@@ -1632,18 +1695,27 @@ void StruGenAlpha::NonlinearCG()
   dism_->Update((1.-alphaf),*disi_,1.0);
 
   // velocities
+#ifdef STRUGENALPHA_INCRUPDT
   // incremental (required for constant predictor)
   velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
   velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
                 (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
                 gamma/(beta*dt));
+#else
+  dserror("Please verify that incremental update is not needed here!");
+#endif
 
   // accelerations
+
   // incremental (required for constant predictor)
+#ifdef STRUGENALPHA_INCRUPDT
   accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
   accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
                 (2.*beta-1.+alpham)/(2.*beta),*acc_,
                 (1.-alpham)/((1.-alphaf)*beta*dt*dt));
+#else
+  dserror("Please verify that incremental update is not needed here!");
+#endif
 
   //-------------------------------------- don't need this anymore
   stiff_ = null;
@@ -1738,25 +1810,31 @@ void StruGenAlpha::PTC()
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
     dism_->Update(1.-alphaf,*disi_,1.0);
     // velocities
+#ifndef STRUGENALPHA_INCRUPDT
     // iterative
     // V_{n+1-alpha_f} := V_{n+1-alpha_f}
     //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
-    //velm_->Update((1.-alphaf)*gamma/(beta*dt),*disi_,1.0);
+    velm_->Update((1.-alphaf)*gamma/(beta*dt),*disi_,1.0);
+#else
     // incremental (required for constant predictor)
     velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
     velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
                   (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
                   gamma/(beta*dt));
+#endif
     // accelerations
+#ifndef STRUGENALPHA_INCRUPDT
     // iterative
     // A_{n+1-alpha_m} := A_{n+1-alpha_m}
     //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
-    //accm_->Update((1.-alpham)/(beta*dt*dt),*disi_,1.0);
+    accm_->Update((1.-alpham)/(beta*dt*dt),*disi_,1.0);
+#else
     // incremental (required for constant predictor)
     accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
     accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
                   (2.*beta-1.+alpham)/(2.*beta),*acc_,
                   (1.-alpham)/((1.-alphaf)*beta*dt*dt));
+#endif
 
     //---------------------------- compute internal forces and stiffness
     {
@@ -1914,36 +1992,33 @@ void StruGenAlpha::computeF(const Epetra_Vector& x, Epetra_Vector& F)
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
     dism->Update(1.-alphaf,*disi,1.0,*dism_,0.0);
 
-
-    // V_{n+1-alpha_f} := V_{n+1-alpha_f}
-    //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
-    //velm->Update((1.-alphaf)*gamma/(beta*dt),*disi,1.0,*velm_,0.0);
-
     // velocities
+#ifndef STRUGENALPHA_INCRUPDT
     // iterative
     // V_{n+1-alpha_f} := V_{n+1-alpha_f}
     //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
+    velm->Update((1.-alphaf)*gamma/(beta*dt),*disi,1.0,*velm_,0.0);
+#else
     // incremental (required for constant predictor)
     velm->Update(1.0,*dism,-1.0,*dis_,0.0);
     velm->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
                   (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
                   gamma/(beta*dt));
-
-
-    // A_{n+1-alpha_m} := A_{n+1-alpha_m}
-    //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
-    //accm->Update((1.-alpham)/(beta*dt*dt),*disi,1.0,*accm_,0.0);
+#endif
 
     // accelerations
+#ifndef STRUGENALPHA_INCRUPDT
     // iterative
     // A_{n+1-alpha_m} := A_{n+1-alpha_m}
     //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
+    accm->Update((1.-alpham)/(beta*dt*dt),*disi,1.0,*accm_,0.0);
+#else
     // incremental (required for constant predictor)
     accm->Update(1.0,*dism,-1.0,*dis_,0.0);
     accm->Update(-(1.-alpham)/(beta*dt),*vel_,
                   (2.*beta-1.+alpham)/(2.*beta),*acc_,
                   (1.-alpham)/((1.-alphaf)*beta*dt*dt));
-
+#endif
 
     //----------------------------------------- compute internal forces
     {

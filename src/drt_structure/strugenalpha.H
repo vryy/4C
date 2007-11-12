@@ -37,6 +37,9 @@ Maintainer: Michael Gee
 #include "nlnml_linearsystem.H"
 #include "nlnml_finelevelnoxinterface.H"
 
+// definitions in algorithm
+#define STRUGENALPHA_INCRUPDT  /* incremental update of vel and acc */
+
 using namespace std;
 using namespace Teuchos;
 class NoxInterface;
