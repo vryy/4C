@@ -120,7 +120,7 @@ void xdyn_fluid_drt()
   
   fdyn->step              =   0;
   fdyn->acttime           = 0.0;
-  
+
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
@@ -142,13 +142,21 @@ void xdyn_fluid_drt()
     ParameterList fluidtimeparams;
     XFluidImplicitTimeInt::SetDefaults(fluidtimeparams);
 
+    // number of degrees of freedom
     fluidtimeparams.set<int>              ("number of velocity degrees of freedom" ,genprob.ndim);
+    // the default time step size
     fluidtimeparams.set<double>           ("time step size"           ,fdyn->dt);
+    // max. sim. time
     fluidtimeparams.set<double>           ("total time"               ,fdyn->maxtime);
+    // parameter for time-integration
     fluidtimeparams.set<double>           ("theta"                    ,fdyn->theta);
+    // which kind of time-integration
     fluidtimeparams.set<FLUID_TIMEINTTYPE>("time int algo"            ,fdyn->iop);
+    // bound for the number of timesteps
     fluidtimeparams.set<int>              ("max number timesteps"     ,fdyn->nstep);
+    // number of steps with start algorithm
     fluidtimeparams.set<int>              ("number of start steps"    ,fdyn->nums);
+    // parameter for start algo
     fluidtimeparams.set<double>           ("start theta"              ,fdyn->thetas);
 
 
@@ -162,16 +170,21 @@ void xdyn_fluid_drt()
     {
       fluidtimeparams.set<bool>("Use reaction terms for linearisation",false);
     }
+    // maximum number of nonlinear iteration steps
     fluidtimeparams.set<int>             ("max nonlin iter steps"     ,fdyn->itemax);
     // stop nonlinear iteration when both incr-norms are below this bound
     fluidtimeparams.set<double>          ("tolerance for nonlin iter" ,fdyn->ittol);
 
     // ----------------------------------------------- restart and output
+    // restart
     fluidtimeparams.set                  ("write restart every"       ,fdyn->uprestart);
+    // solution output
     fluidtimeparams.set                  ("write solution every"      ,fdyn->upres);
+    // flag for writing stresses
     fluidtimeparams.set                  ("write stresses"            ,ioflags.fluid_stress);
 
     //--------------------------------------------------
+    // evaluate error for test flows with analytical solutions
     fluidtimeparams.set                  ("eval err for analyt sol"   ,fdyn->init);
 
 
@@ -180,10 +193,13 @@ void xdyn_fluid_drt()
     // integration (call the constructor)
     // the only parameter from the list required here is the number of
     // velocity degrees of freedom
-    XFluidImplicitTimeInt fluidimplicit(fluiddis,
-                                       solver,
-                                       fluidtimeparams,
-                                       output);
+    XFluidImplicitTimeInt fluidimplicit(
+    		fluiddis,
+    		soliddis,
+    		solver,
+    		fluidtimeparams,
+    		output,
+    		false);
 
     //--------------------------------------------------
     if (genprob.restart)

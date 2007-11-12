@@ -28,13 +28,16 @@ Maintainer: Axel Gerstenberger
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     gammi 04/07|
  *----------------------------------------------------------------------*/
-XFluidImplicitTimeInt::XFluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actdis,
-                                           LINALG::Solver&       solver,
-                                           ParameterList&        params,
-                                           IO::DiscretizationWriter& output,
-                                           bool alefluid) :
+XFluidImplicitTimeInt::XFluidImplicitTimeInt(
+		RefCountPtr<DRT::Discretization> actdis,
+		RefCountPtr<DRT::Discretization> cutterdis,
+		LINALG::Solver&       solver,
+		ParameterList&        params,
+		IO::DiscretizationWriter& output,
+		const bool alefluid) :
   // call constructor for "nontrivial" objects
   discret_(actdis),
+  cutterdiscret_(cutterdis),
   solver_ (solver),
   params_ (params),
   output_ (output),
@@ -560,8 +563,8 @@ void XFluidImplicitTimeInt::NonlinearSolve()
 
   if (discret_->Comm().MyPID() == 0)
   {
-    printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
-    printf("|- step/max -|- tol      [norm] -|-- vel-res ---|-- pre-res ---|-- vel-inc ---|-- pre-inc ---|\n");
+    printf("+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+\n");
+    printf("|- step/max -|- tol      [norm] -|-- vel-res ---|-- pre-res ---|-- fullres ---|-- vel-inc ---|-- pre-inc ---|-- fullinc ---|\n");
   }
 
   
@@ -636,14 +639,8 @@ void XFluidImplicitTimeInt::NonlinearSolve()
     }
 
     double incvelnorm_L2;
-    double incprenorm_L2;
-
     double velnorm_L2;
-    double prenorm_L2;
-
     double vresnorm;
-    double presnorm;
-
     {
       Epetra_Vector onlyvel(*velrowmap_);
       Epetra_Import importer(*velrowmap_,residual_->Map());
@@ -661,6 +658,9 @@ void XFluidImplicitTimeInt::NonlinearSolve()
       onlyvel.Norm2(&velnorm_L2);
     }
 
+    double incprenorm_L2;
+    double prenorm_L2;
+    double presnorm;
     {
       Epetra_Vector onlypre(*prerowmap_);
       Epetra_Import importer(*prerowmap_,residual_->Map());
@@ -677,6 +677,26 @@ void XFluidImplicitTimeInt::NonlinearSolve()
       if (err) dserror("Import using importer returned err=%d",err);
       onlypre.Norm2(&prenorm_L2);
     }
+    
+    double incfullnorm_L2;
+    double fullnorm_L2;
+    double fullresnorm;
+    {
+      Epetra_Vector full(*dofrowmap);
+      Epetra_Import importer(*dofrowmap,residual_->Map());
+
+      int err = full.Import(*residual_,importer,Insert);
+      if (err) dserror("Import using importer returned err=%d",err);
+      full.Norm2(&fullresnorm);
+
+      err = full.Import(*incvel_,importer,Insert);
+      if (err) dserror("Import using importer returned err=%d",err);
+      full.Norm2(&incfullnorm_L2);
+
+      err = full.Import(*velnp_,importer,Insert);
+      if (err) dserror("Import using importer returned err=%d",err);
+      full.Norm2(&fullnorm_L2);
+    }
 
     if (velnorm_L2 < 1e-5)
     {
@@ -686,23 +706,32 @@ void XFluidImplicitTimeInt::NonlinearSolve()
     {
       prenorm_L2 = 1.0;
     }
-
+    if (fullnorm_L2 < 1e-5)
+    {
+      fullnorm_L2 = 1.0;
+    }
+    
     // this is the convergence check
     // We always require at least one solve. Otherwise the
     // perturbation at the FSI interface might get by unnoticed.
     if (itnum > 1)
     {
-      if (vresnorm <= ittol and presnorm <= ittol and
-          incvelnorm_L2/velnorm_L2 <= ittol and incprenorm_L2/prenorm_L2 <= ittol)
+      if (vresnorm <= ittol and 
+    		  presnorm <= ittol and
+    		  incvelnorm_L2/velnorm_L2 <= ittol and 
+    		  incprenorm_L2/prenorm_L2 <= ittol and
+    		  incfullnorm_L2/fullnorm_L2 <= ittol)
       {
         stopnonliniter=true;
         if (discret_->Comm().MyPID() == 0)
         {
-          printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
-                 itnum,itemax,ittol,vresnorm,presnorm,
-                 incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
+          printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
+                 itnum,itemax,ittol,vresnorm,presnorm,fullresnorm,
+                 incvelnorm_L2/velnorm_L2,
+                 incprenorm_L2/prenorm_L2,
+                 incfullnorm_L2/fullnorm_L2);
           printf(" (te=%10.3E)\n",dtele);
-          printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
+          printf("+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+\n");
         }
         break;
       }
@@ -710,9 +739,10 @@ void XFluidImplicitTimeInt::NonlinearSolve()
 
     // warn if itemax is reached without convergence, but proceed to
     // next timestep...
-    if ((itnum == itemax) and (vresnorm > ittol or presnorm > ittol or
+    if ((itnum == itemax) and (vresnorm > ittol or presnorm > ittol or fullresnorm > ittol or
                              incvelnorm_L2/velnorm_L2 > ittol or
-                             incprenorm_L2/prenorm_L2 > ittol))
+                             incprenorm_L2/prenorm_L2 > ittol or
+                             incfullnorm_L2/fullnorm_L2 > ittol))
     {
       stopnonliniter=true;
       if (discret_->Comm().MyPID() == 0)
@@ -750,9 +780,11 @@ void XFluidImplicitTimeInt::NonlinearSolve()
     //-------------------------------------------------- output to screen
     if (discret_->Comm().MyPID() == 0)
     {
-      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
-             itnum,itemax,ittol,vresnorm,presnorm,
-             incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
+      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
+             itnum,itemax,ittol,vresnorm,presnorm,fullresnorm,
+             incvelnorm_L2/velnorm_L2,
+             incprenorm_L2/prenorm_L2,
+             incfullnorm_L2/fullnorm_L2);
       printf(" (te=%10.3E,ts=%10.3E)\n",dtele,dtsolve);
     }
 

@@ -62,11 +62,13 @@ public:
   \brief Standard Constructor
 
   */
-  XFluidImplicitTimeInt(RefCountPtr<DRT::Discretization> dis,
-                       LINALG::Solver&       solver,
-                       ParameterList&        params,
-                       IO::DiscretizationWriter& output,
-                       bool alefluid=false);
+  XFluidImplicitTimeInt(
+		  RefCountPtr<DRT::Discretization> dis,
+		  RefCountPtr<DRT::Discretization> cutterdis,
+		  LINALG::Solver&       solver,
+		  ParameterList&        params,
+		  IO::DiscretizationWriter& output,
+		  bool alefluid);
 
   /*!
   \brief Destructor
@@ -180,6 +182,7 @@ protected:
   XFluidImplicitTimeInt (const XFluidImplicitTimeInt& old);
 
   RefCountPtr<DRT::Discretization> discret_;
+  RefCountPtr<DRT::Discretization> cutterdiscret_;
   LINALG::Solver&               solver_;
   ParameterList&                params_;
   IO::DiscretizationWriter&         output_;
@@ -230,7 +233,7 @@ protected:
   RefCountPtr<Epetra_Vector>    accn_;
   RefCountPtr<Epetra_Vector>    accnm_;
 
-  /// velocities and pressures at time n+1, n and n-1
+  /// solutions at time n+1, n and n-1
   RefCountPtr<Epetra_Vector>    velnp_;
   RefCountPtr<Epetra_Vector>    veln_;
   RefCountPtr<Epetra_Vector>    velnm_;
