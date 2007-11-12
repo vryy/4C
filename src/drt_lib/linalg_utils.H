@@ -89,6 +89,22 @@ namespace LINALG
                       Epetra_SerialDenseVector& L,const int dim, const char eigv='N');
 
   /*!
+  \brief Multiply two 2nd order tensors and add the result to a
+   4th order symmetric material tensor in matrix notation
+
+  \param C (in/out): Material tangent matrix to be modified
+  \param AB (in)   : Scalar to multiply with A x B
+  \param A (in)    : Dense matrix (9 by 9) as 2nd order tensor A
+  \param B (in)    : Dense matrix (9 by 9) as 2nd order tensor B
+  \param ScalarThis(in): Scalar to multiply with C before adding A x B
+  */
+  void SymMatTensorMultiply(Epetra_SerialDenseMatrix& C,
+                                   const double ScalarAB,
+                                   const Epetra_SerialDenseMatrix& A,
+                                   const Epetra_SerialDenseMatrix& B,
+                                   const double ScalarThis);
+
+  /*!
   \brief Invert a symmetric dim*dim square matrix
 
   \param A (in/out): Matrix to be inverted

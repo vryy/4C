@@ -306,7 +306,7 @@ void LINALG::SymmetriseMatrix(Epetra_SerialDenseMatrix& A)
 {
   Epetra_SerialDenseMatrix AT(A);
   AT.SetUseTranspose(true);
-  bool istranspose = AT.UseTranspose();
+  // bool istranspose = AT.UseTranspose();
   A += AT;
   A.Scale(0.5);
   return;
@@ -347,6 +347,69 @@ void LINALG::SymmetricEigen(Epetra_SerialDenseMatrix& A,
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ |  compute the "material tensor product" of two 2nd order tensors      |
+ | (in matrix notation) and add the result to a 4th order tensor        |
+ | (also in matrix notation) using the symmetry-conditions inherent to  |
+ | material tensors, or tangent matrices, respectively.                 |
+ | The implementation is based on the Epetra-Method Matrix.Multiply.    |
+ | (public)                                                    maf 11/07|
+ *----------------------------------------------------------------------*/
+void LINALG::SymMatTensorMultiply(Epetra_SerialDenseMatrix& C,
+                                 const double ScalarAB,
+                                 const Epetra_SerialDenseMatrix& A,
+                                 const Epetra_SerialDenseMatrix& B,
+                                 const double ScalarThis)
+{
+  // check sizes
+  if (A.M() != A.N() != B.M() != B.N() != 3) dserror("2nd order tensors must be 3 by 3");
+  if (C.M() != C.N() != 6) dserror("4th order tensor must be 6 by 6");
+
+  C(0,0)= ScalarThis*C(0,0) + ScalarAB * A(0,0)*B(0,0);
+  C(0,1)= ScalarThis*C(0,1) + ScalarAB * A(0,0)*B(1,1);
+  C(0,2)= ScalarThis*C(0,2) + ScalarAB * A(0,0)*B(2,2);
+  C(0,3)= ScalarThis*C(0,3) + ScalarAB * A(0,0)*B(1,0);
+  C(0,4)= ScalarThis*C(0,4) + ScalarAB * A(0,0)*B(2,1);
+  C(0,5)= ScalarThis*C(0,5) + ScalarAB * A(0,0)*B(2,0);
+  
+  C(1,0)= ScalarThis*C(1,0) + ScalarAB * A(1,1)*B(0,0);
+  C(1,1)= ScalarThis*C(1,1) + ScalarAB * A(1,1)*B(1,1);
+  C(1,2)= ScalarThis*C(1,2) + ScalarAB * A(1,1)*B(2,2);
+  C(1,3)= ScalarThis*C(1,3) + ScalarAB * A(1,1)*B(1,0);
+  C(1,4)= ScalarThis*C(1,4) + ScalarAB * A(1,1)*B(2,1);
+  C(1,5)= ScalarThis*C(1,5) + ScalarAB * A(1,1)*B(2,0);
+               
+  C(2,0)= ScalarThis*C(2,0) + ScalarAB * A(2,2)*B(0,0);
+  C(2,1)= ScalarThis*C(2,1) + ScalarAB * A(2,2)*B(1,1);
+  C(2,2)= ScalarThis*C(2,2) + ScalarAB * A(2,2)*B(2,2);
+  C(2,3)= ScalarThis*C(2,3) + ScalarAB * A(2,2)*B(1,0);
+  C(2,4)= ScalarThis*C(2,4) + ScalarAB * A(2,2)*B(2,1);
+  C(2,5)= ScalarThis*C(2,5) + ScalarAB * A(2,2)*B(2,0);
+
+  C(3,0)= ScalarThis*C(3,0) + ScalarAB * A(1,0)*B(0,0);
+  C(3,1)= ScalarThis*C(3,1) + ScalarAB * A(1,0)*B(1,1);
+  C(3,2)= ScalarThis*C(3,2) + ScalarAB * A(1,0)*B(2,2);
+  C(3,3)= ScalarThis*C(3,3) + ScalarAB * A(1,0)*B(1,0);
+  C(3,4)= ScalarThis*C(3,4) + ScalarAB * A(1,0)*B(2,1);
+  C(3,5)= ScalarThis*C(3,5) + ScalarAB * A(1,0)*B(2,0);
+  
+  C(4,0)= ScalarThis*C(4,0) + ScalarAB * A(2,1)*B(0,0);
+  C(4,1)= ScalarThis*C(4,1) + ScalarAB * A(2,1)*B(1,1);
+  C(4,2)= ScalarThis*C(4,2) + ScalarAB * A(2,1)*B(2,2);
+  C(4,3)= ScalarThis*C(4,3) + ScalarAB * A(2,1)*B(1,0);
+  C(4,4)= ScalarThis*C(4,4) + ScalarAB * A(2,1)*B(2,1);
+  C(4,5)= ScalarThis*C(4,5) + ScalarAB * A(2,1)*B(2,0);
+  
+  C(5,0)= ScalarThis*C(5,0) + ScalarAB * A(2,0)*B(0,0);
+  C(5,1)= ScalarThis*C(5,1) + ScalarAB * A(2,0)*B(1,1);
+  C(5,2)= ScalarThis*C(5,2) + ScalarAB * A(2,0)*B(2,2);
+  C(5,3)= ScalarThis*C(5,3) + ScalarAB * A(2,0)*B(1,0);
+  C(5,4)= ScalarThis*C(5,4) + ScalarAB * A(2,0)*B(2,1);
+  C(5,5)= ScalarThis*C(5,5) + ScalarAB * A(2,0)*B(2,0);
+
+}
+
 
 /*----------------------------------------------------------------------*
 | invert a dense nonsymmetric matrix (public)       g.bau 03/07|
