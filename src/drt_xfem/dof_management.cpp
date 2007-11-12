@@ -57,13 +57,56 @@ string XFEM::EnrPhysVar::toString() const
 }
 
 
-
-const map<int, const set <XFEM::EnrPhysVar> > XFEM::createNodalDofMap(
-        RefCountPtr<DRT::Discretization>            xfemdis,
-        const map<int, XFEM::DomainIntCells >&  elementDomainIntCellMap)
+//
+// ctor 
+// ag 08/07
+//
+XFEM::DofManager::DofManager(
+		RefCountPtr<DRT::Discretization> xfemdis,
+        const map<int, DomainIntCells >&  elementalDomainIntCells) :
+        	xfemdis_(xfemdis)
 {
+	nodalDofMap_ = XFEM::DofManager::createNodalDofMap(xfemdis, elementalDomainIntCells);
+}
+		
+//
+// dtor
+// ag 08/07
+//
+XFEM::DofManager::~DofManager()
+{
+    return;
+}
+
+
+
+
+// debug: print enrichments to screen
+string XFEM::DofManager::toString() const
+{
+	stringstream s;
+	for (int i=0; i<xfemdis_->NumMyRowNodes(); ++i)
+	{
+		const int gid = xfemdis_->lRowNode(i)->Id();
+		const set <XFEM::EnrPhysVar> actset = nodalDofMap_.find(gid)->second;
+		for ( set<XFEM::EnrPhysVar>::const_iterator var = actset.begin(); var != actset.end(); ++var )
+		{
+			s << "Node: " << gid << ", " << var->toString() << endl;
+		};
+	};
+	return s.str();
+}
+
+
+map<int, const set <XFEM::EnrPhysVar> > XFEM::DofManager::createNodalDofMap(
+        const RefCountPtr<DRT::Discretization>        xfemdis,
+        const map<int, XFEM::DomainIntCells >&  elementDomainIntCellMap) const
+{
+	// the final map
+	map<int, const set <XFEM::EnrPhysVar> >  nodalDofMapFinal;
+
+	// temporary assembly
     map<int, set <XFEM::EnrPhysVar> >  nodalDofMap;
-    map<int, const set <XFEM::EnrPhysVar> >  nodalDofMapFinal;
     
     // loop my row nodes and add standard degrees of freedom
     const XFEM::Enrichment enr_std(0, XFEM::Enrichment::typeStandard);

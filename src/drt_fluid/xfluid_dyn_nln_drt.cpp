@@ -29,75 +29,22 @@ Maintainer: Axel Gerstenberger
 #endif
 
 #include "xfluid_dyn_nln_drt.H"
-#include "fluidimplicitintegration.H"
-#include "fluid_genalpha_integration.H"
+#include "xfluidimplicitintegration.H"
 #include "../drt_lib/drt_resulttest.H"
-#include "fluidresulttest.H"
+#include "xfluidresulttest.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_xfem/intersection.H"
 #include "../drt_xfem/integrationcell.H"
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/gmsh.H"
 
-/*----------------------------------------------------------------------*
-  |                                                       m.gee 06/01    |
-  | vector of numfld FIELDs, defined in global_control.c                 |
- *----------------------------------------------------------------------*/
-extern struct _FIELD      *field;
-
-/*----------------------------------------------------------------------*
-  |                                                       m.gee 06/01    |
-  | general problem data                                                 |
-  | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
-
-/*!----------------------------------------------------------------------
-\brief file pointers
-
-<pre>                                                         m.gee 8/00
-This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h
-It holds all file pointers and some variables needed for the FRSYSTEM
-</pre>
-*----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;
-
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | structure of flags to control output                                 |
- | defined in out_global.c                                              |
- *----------------------------------------------------------------------*/
-extern struct _IO_FLAGS     ioflags;
-
-/*----------------------------------------------------------------------*
- | global variable *solv, vector of lenght numfld of structures SOLVAR  |
- | defined in solver_control.c                                          |
- |                                                                      |
- |                                                       m.gee 11/00    |
- *----------------------------------------------------------------------*/
-extern struct _SOLVAR  *solv;
-
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | pointer to allocate dynamic variables if needed                      |
- | dedfined in global_control.c                                         |
- | ALLDYNA               *alldyn;                                       |
- *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;
-
-/*----------------------------------------------------------------------*
- |                                                       m.gee 02/02    |
- | number of load curves numcurve                                       |
- | vector of structures of curves                                       |
- | defined in input_curves.c                                            |
- | INT                   numcurve;                                      |
- | struct _CURVE      *curve;                                           |
- *----------------------------------------------------------------------*/
-extern INT            numcurve;
-extern struct _CURVE *curve;
-
-
+extern struct _FIELD    *field;
+extern struct _GENPROB  genprob;
+extern struct _FILES  	allfiles;
+extern struct _IO_FLAGS ioflags;
+extern struct _SOLVAR   *solv;
+extern         ALLDYNA  *alldyn;
+extern struct _CURVE  	*curve;
 
 
 /*----------------------------------------------------------------------*
@@ -155,19 +102,10 @@ void xdyn_fluid_drt()
   f_system.close();
 
   // apply enrichments
-  map<int, const set <XFEM::EnrPhysVar> > nodalDofMap = XFEM::createNodalDofMap(fluiddis, elementalDomainIntCells);
-  const XFEM::Enrichment enr_std(0, XFEM::Enrichment::typeStandard);
+  DofManager dofmanager(fluiddis, elementalDomainIntCells);
   
   // debug: print enrichments to screen
-  for (int i=0; i<fluiddis->NumMyRowNodes(); ++i)
-  {
-    const int gid = fluiddis->lRowNode(i)->Id();
-    const set <XFEM::EnrPhysVar> actset = nodalDofMap[gid];
-    for ( set<XFEM::EnrPhysVar>::const_iterator var = actset.begin(); var != actset.end(); ++var )
-    {
-      cout << "Node: " << gid << ", " << var->toString() << endl;
-    };
-  };
+  cout << dofmanager.toString() << endl;
 
   
   // -------------------------------------------------------------------
@@ -202,7 +140,7 @@ void xdyn_fluid_drt()
     // create a fluid nonlinear time integrator
     // -------------------------------------------------------------------
     ParameterList fluidtimeparams;
-    FluidImplicitTimeInt::SetDefaults(fluidtimeparams);
+    XFluidImplicitTimeInt::SetDefaults(fluidtimeparams);
 
     fluidtimeparams.set<int>              ("number of velocity degrees of freedom" ,genprob.ndim);
     fluidtimeparams.set<double>           ("time step size"           ,fdyn->dt);
@@ -242,7 +180,7 @@ void xdyn_fluid_drt()
     // integration (call the constructor)
     // the only parameter from the list required here is the number of
     // velocity degrees of freedom
-    FluidImplicitTimeInt fluidimplicit(fluiddis,
+    XFluidImplicitTimeInt fluidimplicit(fluiddis,
                                        solver,
                                        fluidtimeparams,
                                        output);
@@ -272,104 +210,17 @@ void xdyn_fluid_drt()
     // do the result test
 #ifdef RESULTTEST
     DRT::ResultTestManager testmanager(fluiddis->Comm());
-    testmanager.AddFieldTest(rcp(new FluidResultTest(fluidimplicit)));
+    testmanager.AddFieldTest(rcp(new XFluidResultTest(fluidimplicit)));
     testmanager.TestAll();
 #endif
-  }
-  else if (fdyn->iop == timeint_gen_alpha)
-  {
-    // -------------------------------------------------------------------
-    // create a generalised alpha time integrator for fluid problems
-    // -------------------------------------------------------------------
-    // ------------------ set the parameter list
-    ParameterList fluidtimeparams;
-
-    fluidtimeparams.set<int>              ("number of velocity degrees of freedom" ,genprob.ndim);
-    fluidtimeparams.set<double>           ("time step size"           ,fdyn->dt);
-    fluidtimeparams.set<double>           ("total time"               ,fdyn->maxtime);
-    fluidtimeparams.set<double>           ("alpha_M"                  ,fdyn->alpha_m);
-    fluidtimeparams.set<double>           ("alpha_F"                  ,fdyn->alpha_f);
-    fluidtimeparams.set<int>              ("max number timesteps"     ,fdyn->nstep);
-
-    // ---------------------------------------------- nonlinear iteration
-    //     // set linearisation scheme
-    if(fdyn->ite==2)
-    {
-      fluidtimeparams.set<bool>("Use reaction terms for linearisation",true);
-    }
-    else
-    {
-      fluidtimeparams.set<bool>("Use reaction terms for linearisation",false);
-    }
-    fluidtimeparams.set<int>             ("max nonlin iter steps"     ,fdyn->itemax);
-    // stop nonlinear iteration when both incr-norms are below this bound
-    fluidtimeparams.set<double>          ("tolerance for nonlin iter" ,fdyn->ittol);
-
-    // ----------------------------------------------- restart and output
-    fluidtimeparams.set                  ("write restart every"       ,fdyn->uprestart);
-    fluidtimeparams.set                  ("write solution every"      ,fdyn->upres);
-    fluidtimeparams.set                  ("write stresses"            ,ioflags.fluid_stress);    
-
-    //------------evaluate error for test flows with analytical solutions
-    fluidtimeparams.set                  ("eval err for analyt sol"   ,fdyn->init);
-
-    //------------compute statistical data for turbulent channel LES
-    if(fdyn->turbu==4)
-    {
-      fluidtimeparams.set("normal to hom. planes in channel",fdyn->planenormal);
-      fluidtimeparams.set("evaluate turbulence statistic",true);
-      fluidtimeparams.set("statistics outfile",allfiles.outputfile_kenner);
-    }
-    else
-    {
-      fluidtimeparams.set("evaluate turbulence statistic",false);
-    }
-
-    //--------------------------------------------------
-    // create all vectors and variables associated with the time
-    // integration (call the constructor)
-    // the only parameter from the list required here is the number of
-    // velocity degrees of freedom
-    FluidGenAlphaIntegration genalphaint(fluiddis,
-                                         solver,
-                                         fluidtimeparams,
-                                         output);
-
-
-    //------------- initialise the field from input or restart
-    if (genprob.restart)
-    {
-      // read the restart information, set vectors and variables
-      genalphaint.ReadRestart(genprob.restart);
-    }
-    else
-    {
-      // set initial field for analytical test problems etc
-      if(fdyn->init>0)
-      {
-        genalphaint.SetInitialFlowField(fdyn->init,fdyn->startfuncno);
-      }
-    }
-
-    //------------------------- do timeintegration till maxtime
-    genalphaint.GenAlphaIntegrateTo(fdyn->nstep,fdyn->maxtime);
-
-    //--------------------------------------------------
-    // do the result test
-#ifdef RESULTTEST
-    DRT::ResultTestManager testmanager(fluiddis->Comm());
-    testmanager.AddFieldTest(rcp(new FluidResultTest(genalphaint)));
-    testmanager.TestAll();
-#endif
-
   }
   else
   {
-    dserror("Unknown time type for drt fluid");
+    dserror("Unknown time type for drt xfluid");
   }
 
   return;
 
-} // end of dyn_fluid_drt()
+} // end of xdyn_fluid_drt()
 
 #endif  // #ifdef CCADISCRET

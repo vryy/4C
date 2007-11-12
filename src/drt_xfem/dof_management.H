@@ -19,12 +19,12 @@ Maintainer: Axel Gerstenberger
 #include "integrationcell.H"
 #include "../drt_lib/drt_discret.H"
 
-using namespace Physics;
 
 // namespace for all xfem related stuff
 namespace XFEM
 {
 
+using namespace Physics;
 
 /*!
  \class EnrPhysVar
@@ -81,9 +81,45 @@ private:
 
 }; // class EnrPhysVar
 
-const map<int, const set<EnrPhysVar> > createNodalDofMap(
-        RefCountPtr<DRT::Discretization> xfemdis,
-        const map<int, DomainIntCells >&  elementDomainIntCellMap);
+
+
+/*!
+ \class DofManager
+
+ \brief He knows everything about the XFEM enrichments for one particular interface setup
+
+ */
+class DofManager
+{
+public:
+
+	DofManager(
+			RefCountPtr<DRT::Discretization> xfemdis,
+	        const map<int, DomainIntCells >&  elementalDomainIntCells);
+	DofManager(
+            const EnrPhysVar& other);
+    ~DofManager();
+
+    string toString() const;
+
+    inline const std::set<XFEM::EnrPhysVar> getDofs(const int gid) const
+    {
+        return nodalDofMap_.find(gid)->second;
+    };
+
+private:
+	// pointer to the xfem discretization of which we hold the unknowns
+	RefCountPtr<DRT::Discretization> xfemdis_;
+	
+	// unknowns for each global node id on this processor
+	map<int, const set <XFEM::EnrPhysVar> > nodalDofMap_;
+	
+	map<int, const set<EnrPhysVar> > createNodalDofMap(
+			const RefCountPtr<DRT::Discretization> xfemdis,
+	        const map<int, DomainIntCells >&  elementDomainIntCellMap) const;
+};
+
+
 
 }; // namespace XFEM
 

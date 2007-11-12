@@ -16,7 +16,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_dserror.H"
 
 
-std::string Physics::physVarToString(const Physics::PhysVar var)
+std::string XFEM::Physics::physVarToString(const Physics::PhysVar var)
 {
     std::string text;
     switch (var){

@@ -17,6 +17,8 @@ Maintainer: Axel Gerstenberger
 #include <string>
 #include <sstream>
 
+namespace XFEM
+{
 namespace Physics
 {
 
@@ -44,6 +46,7 @@ enum PhysVar
 
 std::string physVarToString(const PhysVar var);
 
+};
 };
 
 
