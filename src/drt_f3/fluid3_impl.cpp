@@ -26,7 +26,7 @@ Maintainer: Ulrich Kuettler
 DRT::Elements::Fluid3Impl::Fluid3Impl(int iel)
   : iel_(iel),
     xyze_(3,iel_,blitz::ColumnMajorArray<2>()),
-    bodyforce_(3,iel_,blitz::ColumnMajorArray<2>()),
+    edeadng_(3,iel_,blitz::ColumnMajorArray<2>()),
     funct_(iel_),
     deriv_(3,iel_,blitz::ColumnMajorArray<2>()),
     deriv2_(6,iel_,blitz::ColumnMajorArray<2>()),
@@ -37,7 +37,7 @@ DRT::Elements::Fluid3Impl::Fluid3Impl(int iel)
     vderxy2_(3,6,blitz::ColumnMajorArray<2>()),
     derxy_(3,iel_,blitz::ColumnMajorArray<2>()),
     derxy2_(6,iel_,blitz::ColumnMajorArray<2>()),
-    edeadng_(3),
+    bodyforce_(3),
     histvec_(3),
     velino_(3),
     velint_(3),
@@ -75,8 +75,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
                                        bool                    pstab  ,
                                        bool                    supg   ,
                                        bool                    vstab  ,
-                                       bool                    cstab  ,
-                                       bool                    is_stationary
+                                       bool                    cstab
   )
 {
 
@@ -230,7 +229,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
     double press = blitz::sum(funct_*eprenp);
 
     // get bodyforce in gausspoint
-    edeadng_ = blitz::sum(bodyforce_(i,j)*funct_(j),j);
+    bodyforce_ = blitz::sum(edeadng_(i,j)*funct_(j),j);
 
     // perform integration for entire matrix and rhs
 
@@ -249,7 +248,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
 
     /*------------------------- evaluate rhs vector at integration point ---*/
     // no switch here at the moment w.r.t. is_ale
-    rhsint_ = histvec_(i) + edeadng_(i)*timefac;
+    rhsint_ = histvec_(i) + bodyforce_(i)*timefac;
 
     /*----------------- get numerical representation of single operators ---*/
 
@@ -1980,14 +1979,14 @@ void DRT::Elements::Fluid3Impl::BodyForce(Fluid3* ele, const double time)
 
       for(int isd=0;isd<3;isd++)
       {
-        bodyforce_(isd,jnode) = (*onoff)[isd]*(*val)[isd]*curvefac;
+        edeadng_(isd,jnode) = (*onoff)[isd]*(*val)[isd]*curvefac;
       }
     }
   }
   else
   {
     // we have no dead load
-    bodyforce_ = 0.;
+    edeadng_ = 0.;
   }
 }
 

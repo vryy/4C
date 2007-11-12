@@ -127,7 +127,7 @@ namespace Elements
   private:
     int iel_;
     blitz::Array<double,2> xyze_;
-    blitz::Array<double,2> bodyforce_;
+    blitz::Array<double,2> edeadng_;
     blitz::Array<double,1> funct_;
     blitz::Array<double,2> deriv_;
     blitz::Array<double,2> deriv2_;
@@ -138,7 +138,7 @@ namespace Elements
     blitz::Array<double,2> vderxy2_;
     blitz::Array<double,2> derxy_;
     blitz::Array<double,2> derxy2_;
-    blitz::Array<double,1> edeadng_;
+    blitz::Array<double,1> bodyforce_;
     blitz::Array<double,1> histvec_;
     blitz::Array<double,1> velino_;
     blitz::Array<double,1> velint_;

@@ -263,33 +263,74 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
 
   if (myrank_==0)
   {
-    cout << "Generalized Alpha parameter: alpha_F = " << alphaF_ << &endl;
-    cout << "                             alpha_M = " << alphaM_ << &endl;
-    cout << "                             gamma   = " << gamma_  << &endl <<&endl;
-
-    if(newton_ == true)
+    /* output of time integration related data */
     {
-      cout << "Linearisation              : " << "Including reactive terms (Newton-like)" <<&endl;
+      cout << "Generalized Alpha parameter: alpha_F = " << alphaF_ << &endl;
+      cout << "                             alpha_M = " << alphaM_ << &endl;
+      cout << "                             gamma   = " << gamma_  << &endl <<&endl;
+      
+      if(newton_ == true)
+      {
+        cout << "Linearisation              : " << "Including reactive terms (Newton-like)" <<&endl;
+      }
+      else
+      {
+        cout << "Linearisation              : " << "Without reactive terms (fixed-point-like)" <<&endl;
+      }
+      cout << &endl;
     }
-    else
+    
+    /* output of stabilisation details */
     {
-      cout << "Linearisation              : " << "Without reactive terms (fixed-point-like)" <<&endl;
+      ParameterList *  stabparams=&((*globalparameterlist).sublist("FluidStabilisation"));
+    
+      cout << "Stabilisation type         : " << stabparams->get<string>("STABTYPE") << &endl;
+      cout << "                             " << stabparams->get<string>("TDS")<< &endl;
+      cout << &endl;
+      if(stabparams->get<string>("TDS") == "time dependent subscales")
+      {
+        cout <<  "                             " << "INERTIA         = " << stabparams->get<string>("INERTIA")        <<&endl;
+      }
+      cout <<  "                             " << "SUPG            = " << stabparams->get<string>("SUPG")           <<&endl;
+      cout <<  "                             " << "PSPG            = " << stabparams->get<string>("PSPG")           <<&endl;
+      cout <<  "                             " << "CSTAB           = " << stabparams->get<string>("CSTAB")          <<&endl;
+      cout <<  "                             " << "VSTAB           = " << stabparams->get<string>("VSTAB")          <<&endl;
+      cout <<  "                             " << "CROSS-STRESS    = " << stabparams->get<string>("CROSS-STRESS")   <<&endl;
+      cout <<  "                             " << "REYNOLDS-STRESS = " << stabparams->get<string>("REYNOLDS-STRESS")<<&endl;
+      cout << &endl;
     }
-    cout << &endl;
 
-    cout << "Stabilisation type         : " << ((*globalparameterlist).sublist("FluidStabilisation")).get<string>("STABTYPE") << &endl;
-    cout << "                             " << ((*globalparameterlist).sublist("FluidStabilisation")).get<string>("TDS")<< &endl;
-    cout << &endl;
+    /* output of turbulence model if any */
+    {
+      ParameterList *  modelparams =&((*globalparameterlist).sublist("TurbulenceModel"));
 
-    cout <<  "                             " << "INERTIA         = " << ((*globalparameterlist).sublist("FluidStabilisation")).get<string>("INERTIA")        <<&endl;
-    cout <<  "                             " << "SUPG            = " << ((*globalparameterlist).sublist("FluidStabilisation")).get<string>("SUPG")           <<&endl;
-    cout <<  "                             " << "PSPG            = " << ((*globalparameterlist).sublist("FluidStabilisation")).get<string>("PSPG")           <<&endl;
-    cout <<  "                             " << "CSTAB           = " << ((*globalparameterlist).sublist("FluidStabilisation")).get<string>("CSTAB")          <<&endl;
-    cout <<  "                             " << "VSTAB           = " << ((*globalparameterlist).sublist("FluidStabilisation")).get<string>("VSTAB")          <<&endl;
-    cout <<  "                             " << "CROSS-STRESS    = " << ((*globalparameterlist).sublist("FluidStabilisation")).get<string>("CROSS-STRESS")   <<&endl;
-    cout <<  "                             " << "REYNOLDS-STRESS = " << ((*globalparameterlist).sublist("FluidStabilisation")).get<string>("REYNOLDS-STRESS")<<&endl;
-    cout << &endl;
-
+      if (modelparams->get<string>("TURBULENCE_APPROACH", "none") != "none")
+      {
+      
+        cout << "Turbulence approach        : " << modelparams->get<string>("TURBULENCE_APPROACH") << &endl;
+        if(modelparams->get<string>("TURBULENCE_APPROACH") == "RANS")
+        {
+          dserror("RANS approaches not implemented yet\n");
+        }
+        
+        cout << "                           : " << modelparams->get<string>("PHYSICAL_MODEL") ;
+        if(modelparams->get<string>("PHYSICAL_MODEL") == "Smagorinsky with van Driest damping")
+        {
+          cout << ", channel flow with"<< &endl;
+          cout << "                             " << "Re_tau=" << modelparams->get<double>("RE_TAU");
+          cout << ", l_tau=" <<  modelparams->get<double>("L_TAU") << " and" ;
+        }
+        if (modelparams->get<string>("PHYSICAL_MODEL") == "Smagorinsky with van Driest damping"
+            ||
+            modelparams->get<string>("PHYSICAL_MODEL") == "Smagorinsky")
+        {
+          cout << " Smagorinsky constant Cs= " <<  modelparams->get<double>("C_SMAGORINSKY") ;
+        }
+        cout << &endl;
+        
+        cout << &endl;
+      }
+    }
   }
 
   // start time measurement for timeloop
@@ -871,12 +912,16 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
   // parameters for nonlinear treatment (linearisation)
   eleparams.set("include reactive terms for linearisation"    ,newton_);
 
-
   // parameters for stabilisation
   {
-    eleparams.sublist("stabilisation") = (*globalparameterlist).sublist("FluidStabilisation");
+    eleparams.sublist("stabilisation")    = (*globalparameterlist).sublist("FluidStabilisation");
   }
 
+  // parameters for a turbulence model
+  {
+    eleparams.sublist("turbulence model") = (*globalparameterlist).sublist("TurbulenceModel");
+  }
+  
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("u and p (n+1      ,trial)",velnp_);

@@ -1,3 +1,11 @@
+// This file is currently not used by any of the fluid implementations
+// Fluid3Impl, Fluid3GenalphaResVMM or Fluid3Stationary. They use
+// rearranged versions of this code (slightly adopted to the different
+// approaches) --- they are expected to be faster and more readable.
+// 
+// Axel is still referencing these loops in his xfem routines, so they
+// should not be deleted until he declares them obsolete...
+
 for (int vi=0; vi<iel; ++vi)
 {
   /* Konvektionsterm */

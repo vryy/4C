@@ -907,6 +907,136 @@ Viscous stresses are included in stress calculation.
 % *if(GenData(Commented_Inputfile,int)==1)
 % *endif
 
+\subsection{List/FluidStabilisation}
+\begin{verbatim}
+-------------------------------------------List/FluidStabilisation
+\end{verbatim}
+All these input parameters only make sense for the 3d Genalpha
+implementation. This part of the input file is directly read into a global
+parameterlist and passed on to the genalpha algorithm as a sublist.
+
+
+\noindent\kw{STABTYPE = residual based VMM}
+
+Since we do not have inf-sup stable elements or other approaches, this is the
+only option up to now. 
+
+\noindent\kw{TDS (}
+\begin{tabular}[t]{lc}
+\kw{= time dependent subscales}  &{\kor}\\
+\kw{= quasistatic subscales}     &\kw{)}
+\end{tabular}
+
+Select whether quasistatic or time dependent subscales (including history
+variables) are selected for the residual based stabilisation.
+
+\noindent\kw{INERTIA (}
+\begin{tabular}[t]{lc}
+\kw{= keep inertia stabilisation}  &{\kor}\\
+\kw{= drop inertia stabilisation}  &\kw{)}
+\end{tabular}
+
+If you really want to use time dependent subscales, you should not drop this term.
+
+\noindent\kw{SUPG (}
+\begin{tabular}[t]{lc}
+\kw{= (svel,(u o nabla)v)}  &{\kor}\\
+\kw{= off}                  &\kw{)}
+\end{tabular}
+
+Use streamline upwinding or not.
+
+\noindent\kw{PSPG (}
+\begin{tabular}[t]{lc}
+\kw{= (svel,nabla q)}                 &{\kor}\\
+\kw{= inf-sup-stable (off)}           &\kw{)}
+\end{tabular}
+
+Pressure stabilisation --- PSPG = off will crash for equal order interpolation!
+
+\noindent\kw{CSTAB (}
+\begin{tabular}[t]{lc}
+\kw{= (spres,nabla o v)}  &{\kor}\\
+\kw{= off}                &\kw{)}
+\end{tabular}
+
+Least squares stabilisation of the continuity equation.
+
+\noindent\kw{VSTAB (}
+\begin{tabular}[t]{lc}
+\kw{= (svel,-2 visc nabla o eps(v))}        &{\kor}\\
+\kw{= (svel,+2 visc nabla o eps(v))}        &{\kor}\\
+\kw{= (svel,-2 visc nabla o eps(v)) [RHS]}  &{\kor}\\
+\kw{= (svel,+2 visc nabla o eps(v)) [RHS]}  &{\kor}\\
+\kw{= off}                                  &\kw{)}
+\end{tabular}
+
+Viscous stabilisation of GLS+/- type.
+
+\noindent\kw{CROSS-STRESS (}
+\begin{tabular}[t]{lc}
+\kw{= ((svel o nabla)u,v)}        &{\kor}\\
+\kw{= ((svel o nabla)u,v) [RHS]}  &{\kor}\\
+\kw{= off}                        &\kw{)}
+\end{tabular}
+
+Additional cross-stress expression arising from VMM framework, eventually
+useful for turbulence modeling.
+
+\noindent\kw{REYNOLDS-STRESS (}
+\begin{tabular}[t]{lc}
+\kw{= (svel,(svel o nabla)v) [RHS]}  &{\kor}\\
+\kw{= off}                           &\kw{)}
+\end{tabular}
+
+Additional reynolds-stress expression arising from VMM framework, eventually
+useful for turbulence modeling.
+\subsection{List/TurbulenceModel}
+All these input parameters only make sense for the 3d Genalpha
+implementation. This part of the input file is directly read into a global
+parameterlist and passed on to the genalpha algorithm as a sublist.
+
+\begin{verbatim}
+----------------------------------------------List/TurbulenceModel
+\end{verbatim}
+
+\noindent\kw{TURBULENCE_APPROACH (}
+{
+\begin{tabular}[t]{lc}
+\kw{= none}            &{\kor}\\
+\kw{= LES}             &\kw{)}
+\end{tabular}
+}
+
+The only options available here up to now are LES or none. Open for RANS etc.
+
+
+\noindent\kw{PHYSICAL_MODEL (}
+\begin{tabular}[t]{lc}
+\kw{= none}  &{\kor}\\
+\kw{= Smagorinsky}                  &{\kor}\\
+\kw{= Smagorinsky with van Driest damping}           &\kw{)}
+\end{tabular}
+
+Implemented up to now are just LES models like the constant coefficient
+Smagorinsky model the Smagorinsky model with Van Driest damping for the
+turbulent channel flow. 
+
+\noindent\kw{RE_TAU} = $real$
+
+Reynolds number based on friction velocity and channel half width.
+
+\noindent\kw{L_TAU} = $real$
+
+Viscous lengthscale for application of Van Driest damping (makes sense only
+for the turbulent channel flow).
+
+\noindent\kw{C_SMAGORINSKY} = $real$
+
+Smagorinsky constant between 0.1 and 0.24
+
+
+
 \subsection{FSI DYNAMIC}
 \begin{verbatim}
 -------------------------------------------------------FSI DYNAMIC

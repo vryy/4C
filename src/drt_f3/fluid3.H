@@ -5,6 +5,14 @@
 
 \brief A C++ wrapper for the fluid3 element
 
+This file contains the element specific service routines like
+Pack, Unpack, NumDofPerNode etc.
+
+In addition to that, it contains the interface between element call
+and gausspoint loop (depending on the fluid implementation)
+as well as some additional service routines (for the evaluation
+of errors, turbulence statistics etc.).
+
 <pre>
 Maintainer: Georg Bauer
             bauer@lnm.mw.tum.de
@@ -230,9 +238,32 @@ public:
   //! @name Evaluation
 
   /*!
-  \brief Evaluate an element
+  \brief Evaluate an element, i.e. call the implementation to evaluate fluid3
+  element stiffness, mass, internal forces or evaluate errors, statistics or updates
+  etc. directly.
 
-  Evaluate fluid3 element stiffness, mass, internal forces etc
+  Following implementations of the element are allowed:
+  <pre>
+    o Evaluation of fluid system matrix and residual for the One-Step-Theta or BDF2
+      method
+
+    o Evaluation of fluid system matrix and residual for the stationary fluid solver
+
+    o Evaluation of fluid system matrix and residual for the Generalised alpha method
+      ---
+      the element matrix computation could be skipped, this is useful for a
+      speedup if itemax is reached in the nonlinear iteration and the matrix is not
+      used in further steps
+  </pre>
+
+  Up to now, forther evaluation of element integrals is done to
+  <pre>
+    o evaluate the L2 error for beltrami flows
+
+    o compute integrals over homogeneous planes for turbulent channel flow simulations
+  </pre>
+
+  
 
   \param params (in/out): ParameterList for communication between control routine
                           and elements
@@ -310,7 +341,7 @@ private:
     calc_ShapeDeriv2
   };
 
-  //! stabilisation actions recognized by fluid3
+  //! stabilisation actions recognized by fluid3 (genalpha implementation)
   enum StabilisationAction
   {
     stabaction_unspecified,
@@ -336,6 +367,14 @@ private:
     reynolds_stress_stab_only_rhs
   };
 
+  //! physical turbulence models recognized by fluid3_genalpha implementation
+  enum TurbModelAction
+  {
+    no_model,
+    smagorinsky,
+    smagorinsky_with_wall_damping
+  };
+  
   //! map that converts strings to actions (stabilisation)
   static map<string,StabilisationAction>          stabstrtoact_;
 
@@ -370,99 +409,20 @@ private:
   //! matrices of subscale acceleration values in gausspoints of this element
   blitz::Array<double,2>                        sub_acc_old_;
 
+  //! matrices of subscale velocity values, current iteration value, in gausspoints of this element
   blitz::Array<double,2>                        sub_vel_;
+  //! matrices of subscale velocity values, last timestep, in gausspoints of this element
   blitz::Array<double,2>                        sub_vel_old_;
 
+  //! vector of subscale pressure values, current iteration value, in gausspoints
   blitz::Array<double,1>                        sub_pre_;
+  //! vector of subscale pressure values (history values) in gausspoints
   blitz::Array<double,1>                        sub_pre_old_;
 
   // internal calculation methods
 
   // don't want = operator
   Fluid3& operator = (const Fluid3& old);
-
-  // calculating system matrix
-  void f3_sys_mat(const vector<int>&        lm,
-                  const vector<double>&     evelnp,
-                  const vector<double>&     eprenp,
-                  const vector<double>&     ehist,
-                  const vector<double>&     edispnp,
-                  const vector<double>&     egridv,
-                  Epetra_SerialDenseMatrix* sys_mat,
-                  Epetra_SerialDenseVector* residual,
-                  struct _MATERIAL*         material,
-                  ParameterList&            params
-                  );
-
-
-  /*!
-  \brief calculate stabilization parameter
-  \return vector with 3 stabilization parameters
-   */
-  vector<double> f3_caltau(
-    const Epetra_SerialDenseMatrix&         xyze,
-    const vector<double>&                   evelnp,
-    const DRT::Element::DiscretizationType  distype,
-    const double                            visc,
-    const int                               numnode,
-    const double                            timefac,
-    const bool                              is_stationary
-    );
-
-  /// create array with element corner positions
-  Epetra_SerialDenseMatrix f3_getPositionArray(
-          const vector<double>&   edispnp);
-
-  /*!
-    \brief calculate Jacobian matrix
-    \return 3x3 Jacobi matrix
-   */
-  Epetra_SerialDenseMatrix getJacobiMatrix(
-    const Epetra_SerialDenseMatrix& xyze,   ///< positions of element nodes as array
-    const Epetra_SerialDenseMatrix& deriv,  ///< shape function derivatives with respect to element coordinates
-    const int                       iel     ///< number of nodes in element
-    ) const;
-
-  /*!
-   \brief calculate determinant of a given Jacobimatrix
-
-   \return determinante of a 3x3 matrix
-   */
-  double getDeterminante(
-    const Epetra_SerialDenseMatrix&  xjm  ///< a 3x3 matrix
-    ) const;
-
-  /*!
-   * \brief get the body force from the nodes condition
-   * \return ???
-   */
-  Epetra_SerialDenseMatrix f3_getbodyforce (
-    const double          time,   ///< ???
-    const ParameterList&  params  ///< ???
-    );
-
-  /*!
-   * \brief calculate global derivatives w.r.t. x,y,z at point r,s,t are
-   */
-  void f3_gder(
-    Epetra_SerialDenseMatrix&        derxy,  ///< first derivative with respect to global coordinates x,y,z
-    const Epetra_SerialDenseMatrix&  deriv,  ///< first derivative with respect to local coordinates r,s,t
-    const Epetra_SerialDenseMatrix&  xjm,    ///< 3x3 Jacobi matrix dx/dxi
-    const double&                    det,    ///< determinante of Jacobi matrix
-    const int                        iel     ///< number of nodes for this element
-    );
-
-  /*!
-   * \brief calculate second global derivatives w.r.t x/y/z at point r,s,t
-   */
-  void f3_gder2(
-    const Epetra_SerialDenseMatrix&  xyze,    ///< nodal position array
-    const Epetra_SerialDenseMatrix&  xjm,     ///< 3x3 Jacobi matrix dx/dxi
-    const Epetra_SerialDenseMatrix&  derxy,   ///< first derivative with respect to global coordinates x,y,z
-    Epetra_SerialDenseMatrix&        derxy2,  ///< second derivative with respect to global coordinates x,y,z
-    const Epetra_SerialDenseMatrix&  deriv2,  ///< secand derivative with respect to element coordinates r,s,t
-    const int                        iel      ///< number of nodes for this element
-    );
 
   /*!
    * \brief evaluate error for beltrami test problem
@@ -575,54 +535,6 @@ private:
   void f3_calc_means(
     vector<double>&           vel  ,
     ParameterList& 	      params
-    );
-
-  /*!
-   * \brief evaluate fluid coefficient matrix (instationary case)
-   */
-  void f3_calmat(
-    Epetra_SerialDenseMatrix&        estif,
-    Epetra_SerialDenseVector&        eforce,
-    const vector<double>&            velint,
-    const vector<double>&            histvec,
-    const vector<double>&            gridvint,
-    const double&                    press,
-    const Epetra_SerialDenseMatrix&  vderxy,
-    const Epetra_SerialDenseMatrix&  vderxy2,
-    const vector<double>&            gradp,
-    const Epetra_SerialDenseVector&  funct,
-    const vector<double>&            tau,
-    const Epetra_SerialDenseMatrix&  derxy,
-    const Epetra_SerialDenseMatrix&  derxy2,
-    const vector<double>&            edeadng,
-    const double&                    fac,
-    const double&                    visc,
-    const int&                       iel,
-    ParameterList&                   params
-    );
-
-  /*!
-   * \brief evaluate fluid coefficient matrix (stationary case)
-   */
-  void f3_calmat_stationary(
-    Epetra_SerialDenseMatrix&        estif,
-    Epetra_SerialDenseVector&        eforce,
-    const vector<double>&            velint,
-    const vector<double>&            histvec,
-    const vector<double>&            gridvint,
-    const double&                    press,
-    const Epetra_SerialDenseMatrix&  vderxy,
-    const Epetra_SerialDenseMatrix&  vderxy2,
-    const vector<double>&            gradp,
-    const Epetra_SerialDenseVector&  funct,
-    const vector<double>&            tau,
-    const Epetra_SerialDenseMatrix&  derxy,
-    const Epetra_SerialDenseMatrix&  derxy2,
-    const vector<double>&            edeadng,
-    const double&                    fac,
-    const double&                    visc,
-    const int&                       iel,
-    ParameterList&                   params
     );
 
   void CreateLinesTet(const int& nline,
