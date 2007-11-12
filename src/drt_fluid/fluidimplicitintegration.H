@@ -184,17 +184,7 @@ public:
 
   */
   void ReadRestart(int step);
-  
-  /*!//###############################################
-  \brief  Evaluate and print the lift and drag forces for each line and
- 		  surface defined in the design 
-  */
-  void LIFTDRAG_all();
-  
-  /*!//###############################################
-  \brief  calculate the lift and drag for one LIFTDRAG condition and return its values (x,y,z) 
-  */
-  vector<double> LIFTDRAG_one(const DRT::Condition cond);
+
 
 protected:
 
@@ -299,6 +289,15 @@ protected:
   RefCountPtr<TimeMonitor> tm4_ref_ ;
   RefCountPtr<TimeMonitor> tm5_ref_ ;
   RefCountPtr<TimeMonitor> tm6_ref_ ;
+
+private:
+
+/*!
+\brief calculate lift&drag forces and angular momenta
+
+*/
+  void LiftDrag();
+
 
 }; // class FluidImplicitTimeInt
 
