@@ -416,5 +416,16 @@ namespace DRT
 } // end of namespace DRT
 
 
+/*----------------------------------------------------------------------*
+ |  just get an int back                                       (public) |
+ |                                                          chfoe 11/07 |
+ *----------------------------------------------------------------------*/
+int DRT::Container::Getint(const string& name) const
+{
+  const vector<int>* vecptr = Get<vector<int> >(name);
+  if(vecptr==NULL) dserror("An integer cannot be read from the container.");
+  if( vecptr->size()!=1 ) dserror("Trying to read integer from vector of wrong length.");
+  return (*vecptr)[0];
+}
 
 #endif  // #ifdef CCADISCRET
