@@ -1,14 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluidresulttest.cpp
+\file xfluidresulttest.cpp
 
 \brief tesing of fluid calculation results
 
 <pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/kuettler
-            089 - 289-15238
+Maintainer: Axel Gerstenberger
+            gerstenberger@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236
 </pre>
 */
 /*----------------------------------------------------------------------*/

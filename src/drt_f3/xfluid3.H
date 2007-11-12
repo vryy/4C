@@ -14,10 +14,10 @@ as well as some additional service routines (for the evaluation
 of errors, turbulence statistics etc.).
 
 <pre>
-Maintainer: Georg Bauer
-            bauer@lnm.mw.tum.de
+Maintainer: Axel Gerstenberger
+            gerstenberger@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15252
+            089 - 289-15236
 </pre>
 */
 #ifdef D_FLUID3

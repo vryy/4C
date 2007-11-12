@@ -68,10 +68,6 @@ protected:
 
 };
 
-typedef std::vector<XFEM::IntCell > IntCells;
-typedef std::set<XFEM::IntCell > IntCellSet;
-
-
 
 /*
  * \brief An domain integration cell is used for integrating the XFEM elements domain 

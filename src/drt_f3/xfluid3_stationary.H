@@ -1,14 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid3_stationary.H
+\file xfluid3_stationary.H
 
 \brief Internal implementation of Fluid3 element -- stationary formulation
 
 <pre>
-Maintainer: Georg Bauer
-            bauer@lnm.mw.tum.de
+Maintainer: Axel Gerstenberger
+            gerstenberger@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15252
+            089 - 289-15236
 </pre>
 */
 /*----------------------------------------------------------------------*/

@@ -3,10 +3,10 @@
 \brief
 
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+Maintainer: Axel Gerstenberger
+            gerstenberger@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15236
 </pre>
 
 *----------------------------------------------------------------------*/
