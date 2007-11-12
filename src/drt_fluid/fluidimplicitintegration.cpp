@@ -361,7 +361,10 @@ void FluidImplicitTimeInt::TimeLoop()
     // -------------------------------------------------------------------
     this->Output();
 
-    this->LIFTDRAG_all();
+    // -------------------------------------------------------------------
+    //                    calculate lift'n'drag forces
+    // -------------------------------------------------------------------
+    this->LiftDrag();
 
     // -------------------------------------------------------------------
     //                       update time step sizes
@@ -626,6 +629,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
 #endif
       // zero out residual
       residual_->PutScalar(0.0);
+      // add Neumann loads
       residual_->Update(1.0,*neumann_loads_,0.0);
 
       // create the parameters for the discretization
@@ -715,7 +719,6 @@ void FluidImplicitTimeInt::NonlinearSolve()
       if (err) dserror("Import using importer returned err=%d",err);
       onlyvel.Norm2(&velnorm_L2);
     }
-
     {
       Epetra_Vector onlypre(*prerowmap_);
       Epetra_Import importer(*prerowmap_,residual_->Map());
@@ -733,6 +736,8 @@ void FluidImplicitTimeInt::NonlinearSolve()
       onlypre.Norm2(&prenorm_L2);
     }
 
+    // care for the case that nothing really happens in the velocity 
+    // or pressure field
     if (velnorm_L2 < 1e-5)
     {
       velnorm_L2 = 1.0;
@@ -742,11 +747,27 @@ void FluidImplicitTimeInt::NonlinearSolve()
       prenorm_L2 = 1.0;
     }
 
+    //-------------------------------------------------- output to screen
+    /* special case of very first iteration step:
+        - solution increment is not yet available 
+        - convergence check is not required (we solve at least once!)    */
+    if (itnum == 1)
+    {
+      if (myrank_ == 0)
+      {
+        printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |      --      |      --      |",
+               itnum,itemax,ittol,vresnorm,presnorm);
+        printf(" (      --     ,te=%10.3E)\n",dtele);
+      }
+    }
+    /* ordinary case later iteration steps: 
+        - solution increment can be printed
+        - convergence check should be done*/
+    else
+    {
     // this is the convergence check
     // We always require at least one solve. Otherwise the
     // perturbation at the FSI interface might get by unnoticed.
-    if (itnum > 1)
-    {
       if (vresnorm <= ittol and presnorm <= ittol and
           incvelnorm_L2/velnorm_L2 <= ittol and incprenorm_L2/prenorm_L2 <= ittol)
       {
@@ -756,12 +777,20 @@ void FluidImplicitTimeInt::NonlinearSolve()
           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
                  itnum,itemax,ittol,vresnorm,presnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-          printf(" (te=%10.3E)\n",dtele);
+          printf(" (ts=%10.3E,te=%10.3E)\n",dtsolve,dtele);
           printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
         }
         break;
       }
-    }
+      else // if not yet converged
+        if (myrank_ == 0)
+        {
+          printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
+                 itnum,itemax,ittol,vresnorm,presnorm,
+                 incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
+          printf(" (ts=%10.3E,te=%10.3E)\n",dtsolve,dtele);
+        }
+    } 
 
     // warn if itemax is reached without convergence, but proceed to
     // next timestep...
@@ -808,15 +837,6 @@ void FluidImplicitTimeInt::NonlinearSolve()
       dtsolve=ds_cputime()-tcpu;
     }
 
-    //-------------------------------------------------- output to screen
-    if (myrank_ == 0)
-    {
-      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
-             itnum,itemax,ittol,vresnorm,presnorm,
-             incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-      printf(" (te=%10.3E,ts=%10.3E)\n",dtele,dtsolve);
-    }
-
     //------------------------------------------------ update (u,p) trial
     velnp_->Update(1.0,*incvel_,1.0);
 
@@ -829,6 +849,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
 
   return;
 } // FluidImplicitTimeInt::NonlinearSolve
+
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1616,128 +1637,169 @@ FluidImplicitTimeInt::~FluidImplicitTimeInt()
   return;
 }// FluidImplicitTimeInt::~FluidImplicitTimeInt::
 
-//#################################################
-void FluidImplicitTimeInt::LIFTDRAG_all()
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | LiftDrag                                                  chfoe 11/07|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*!
+\brief calculate lift&drag forces and angular momenta
+
+Lift and drag forces are based upon the right hand side true-residual entities
+of the corresponding nodes. The contribution of the end node of a line is entirely
+added to a present L&D force.
+
+Idea of this routine:
+
+create 
+
+map< label, set<DRT::Node*> > 
+
+which is a set of nodes to each L&D Id
+nodal forces of all the nodes within one set are added to one L&D force
+
+Notice: Angular moments obtained from lift&drag forces currently refere to the 
+        initial configuration, i.e. are built with the coordinates X of a particular
+        node irrespective of its current position.
+*/
+void FluidImplicitTimeInt::LiftDrag()
 {
-    const int numprint = 6;
-	vector<DRT::Condition*> LIFTDRAGConds;
-	discret_->GetCondition("LIFTDRAG", LIFTDRAGConds);
+  std::map< const int, std::set<DRT::Node* > > ldnodemap;
+  std::map< const int, const std::vector<double>* > ldcoordmap;
 
-	map<int, vector<double> > lineValuesMap;
-	map<int, vector<double> > surfValuesMap;
-	stringstream lineSolPrint;
-	stringstream surfSolPrint;
+  // allocate and initialise LiftDrag conditions
+  std::vector<DRT::Condition*> ldconds;
+  discret_->GetCondition("LIFTDRAG",ldconds);
 
- 	if (LIFTDRAGConds.size() == 0)
- 	{
-	  //		cout << "No LIFT and DRAG calculation" << endl;
- 	}
- 	else
- 	{
- 	    dserror("Please don't use Lift'n'Drag calculation. It doesn't work yet!");
- 		for (unsigned i=0; i<LIFTDRAGConds.size(); ++i)
- 		{
-		    const vector<int>* LABEL=LIFTDRAGConds[i]->Get<vector<int> >  ("LABEL");
-		    const unsigned int label = (*LABEL)[0];
+  // space dimension of the problem
+  int ndim = params_.get<int>("number of velocity degrees of freedom");
 
-			const DRT::Condition::GeometryType gType = LIFTDRAGConds[i]->GType();
+  // there is an L&D condition if it has a size
+  if( ldconds.size() )
+  {
 
-			if (gType==DRT::Condition::Line)
-			{
-                if (lineValuesMap.find(label) == lineValuesMap.end())
-                {
-                    lineValuesMap[label] = vector<double>(numprint,0.0);
-                }
-                const vector<double> values = this->LIFTDRAG_one(*(LIFTDRAGConds[i]));
-                for (int j=0;j<numprint;j++){
-                    lineValuesMap[label][j] += values[j];
-                }
-			}
-
-		  	else if (LIFTDRAGConds[i]->GType()==DRT::Condition::Surface)
-		  	{
-                if (surfValuesMap.find(label) == surfValuesMap.end())
-                {
-                    surfValuesMap[label] = vector<double>(numprint,0.0);
-                }
-				const vector<double> values = this->LIFTDRAG_one(*(LIFTDRAGConds[i]));
-                for (int j=0;j<numprint;j++){
-                    surfValuesMap[label][j] += values[j];
-                }
-			}
-
-		  	else dserror("unknown type of LIFTDRAG condition (need Line or Surface but got type %d)", LIFTDRAGConds[i]->GType());
- 		}
-
-
- 		std::map<int, vector<double> >::const_iterator actval;
- 		for (actval = lineValuesMap.begin(); actval!=lineValuesMap.end(); ++actval)
- 		{
- 		    const int label = actval->first;
- 		    const vector<double> values = actval->second;
-			lineSolPrint << "Lift and drag calculation for line " << label << "  :"<< endl;
-			lineSolPrint << "F_x           F_y           M_z:" << endl;
-            lineSolPrint << std::scientific << values[0] << "    ";
-            lineSolPrint << std::scientific << values[1] << "    ";
-            lineSolPrint << std::scientific << values[5];
-			lineSolPrint << endl;
- 		}
- 		for (actval = surfValuesMap.begin(); actval!=surfValuesMap.end(); ++actval)
- 		{
-            const int label = actval->first;
-            const vector<double> values = actval->second;
-			surfSolPrint << endl<<"Lift and drag calculation for surface " << label << "  :"<< endl;
-			surfSolPrint << "F_x           F_y           F_z           ";
-			surfSolPrint << "M_x           M_y           M_z :" << endl;
-			surfSolPrint << std::scientific << values[0] << "    ";
-			surfSolPrint << std::scientific << values[1] << "    ";
-			surfSolPrint << std::scientific << values[2] << "    ";
-			surfSolPrint << std::scientific << values[3] << "    ";
-			surfSolPrint << std::scientific << values[4] << "    ";
-			surfSolPrint << std::scientific << values[5];
-			surfSolPrint << endl;
- 		}
- 	cout<<lineSolPrint.str();
- 	cout<<surfSolPrint.str();
- 	}
-
-} //FluidImplicitTimeInt::LIFTDRAG_all()
-
-vector<double> FluidImplicitTimeInt::LIFTDRAG_one( const DRT::Condition cond)
-{
-    vector<double> values(6,0.0);
-	std::set<DRT::Node*> nodes;
-  	const int myrank = discret_->Comm().MyPID();
-  	const vector<int>* n = cond.Get<vector<int> >("Node Ids");
- 	const vector<double>* centerCoord = cond.Get<vector<double> >   ("centerCoord");
-
-  	// here are all nodes belonging to the LIFTDRAG line stored in 'nodes'
-  	for (unsigned j=0; j<n->size(); ++j)
+    // prepare output
+    if (myrank_==0) 
     {
-    	const int gid = (*n)[j];
-		if (discret_->HaveGlobalNode(gid) and discret_->gNode(gid)->Owner()==myrank)
-			nodes.insert(discret_->gNode(gid));
-	}
+      cout << "Lift and drag calculation:" << "\n";
+      if (ndim == 2)
+      {
+        cout << "lift'n'drag Id      F_x             F_y             M_z :" << "\n";
+      }
+      if (ndim == 3)
+      {
+        cout << "lift'n'drag Id      F_x             F_y             F_z           ";
+        cout << "M_x             M_y             M_z :" << "\n";
+      }
+    }
 
-	std::set<DRT::Node*>::iterator actnode;
-	for (actnode = nodes.begin(); actnode!=nodes.end(); ++actnode)
+    // sort data
+    for( unsigned i=0; i<ldconds.size(); ++i) // loop L&D conditions (i.e. lines in .dat file)
+    {
+      /* get label of present LiftDrag condition  */
+      const unsigned int label = ldconds[i]->Getint("label");
+      /* get new nodeset for new label OR:
+         return pointer to nodeset for known label ... */
+      std::set<DRT::Node*>& nodes = ldnodemap[label];
+
+      // centre coordinates to present label
+      ldcoordmap[label] = ldconds[i]->Get<vector<double> >("centerCoord");
+
+      /* get pointer to its nodal Ids*/
+      const vector<int>* ids = ldconds[i]->Get<vector<int> >("Node Ids");
+
+      /* put all nodes belonging to the L&D line or surface into 'nodes' which are
+         associated with the present label */
+      for (unsigned j=0; j<ids->size(); ++j)
+      {
+        // give me present node Id
+        const int node_id = (*ids)[j];
+        // put it into nodeset of actual label if node is new and mine
+        if( discret_->HaveGlobalNode(node_id) && discret_->gNode(node_id)->Owner()==myrank_ )
+	  nodes.insert(discret_->gNode(node_id));
+      }
+    } // end loop over conditions
+
+
+    // now step the label map
+    for( std::map< const int, std::set<DRT::Node*> >::iterator labelit = ldnodemap.begin();
+         labelit != ldnodemap.end(); ++labelit )
+    {
+      std::set<DRT::Node*>& nodes = labelit->second; // pointer to nodeset of present label
+      int label = labelit->first;                    // the present label
+      std::vector<double> values(6,0.0);             // vector with lift&drag forces
+      std::vector<double> resultvec(6,0.0);          // vector with lift&drag forces after communication
+
+      // get also pointer to centre coordinates
+      const std::vector<double>* centerCoord = ldcoordmap[label];
+
+      // loop all nodes within my set
+      for( std::set<DRT::Node*>::iterator actnode = nodes.begin(); actnode != nodes.end(); ++actnode)
+      {
+        const double* x = (*actnode)->X(); // pointer to nodal coordinates
+	std::vector<double> distances (3);
+        const Epetra_BlockMap& rowdofmap = trueresidual_->Map();
+	std::vector<int> dof = discret_->Dof(*actnode);
+        double fx,fy,fz;
+
+        for (unsigned j=0; j<3; ++j)
+        {
+          distances[j]= x[j]-(*centerCoord)[j];
+        }
+        // get nodal forces
+        fx = (*trueresidual_)[rowdofmap.LID(dof[0])];
+        fy = (*trueresidual_)[rowdofmap.LID(dof[1])];
+        fz = (*trueresidual_)[rowdofmap.LID(dof[2])];
+        values[0] += fx;
+        values[1] += fy;
+        values[2] += fz;
+
+        // calculate nodal angular momenta
+        values[3] += distances[1]*fz-distances[2]*fy;
+        values[4] += distances[2]*fx-distances[0]*fz;
+        values[5] += distances[0]*fy-distances[1]*fx;
+      } // end: loop over nodes
+
+      // care for the fact that we are (most likely) parallel
+      trueresidual_->Comm().SumAll (&(values[0]), &(resultvec[0]), 6);
+
+      // do the output
+      if (myrank_==0)
+      {
+        if (ndim == 2)
 	{
-		const double* x_ = (*actnode)->X();
-		vector<double> distances (3);
-		for (unsigned j=0;j<3;++j){
-			distances[j]= x_[j]-(*centerCoord)[j];
-		}
-		//Getting nodal forces
-		values[0] += (*trueresidual_)[discret_->Dof(*actnode,0)];
-		values[1] += (*trueresidual_)[discret_->Dof(*actnode,1)];
-		values[2] += (*trueresidual_)[discret_->Dof(*actnode,2)];
-
-		//Calculating nodal momenta
-		values[3] += distances[1]*values[2]-distances[2]*values[1];
-		values[4] += distances[2]*values[0]-distances[0]*values[2];
-		values[5] += distances[0]*values[1]-distances[1]*values[0];
+	  cout << "     " << label << "         ";
+          cout << std::scientific << resultvec[0] << "    ";
+	  cout << std::scientific << resultvec[1] << "    ";
+	  cout << std::scientific << resultvec[5];
+	  cout << "\n";
+        }
+        if (ndim == 3)
+	{
+	  cout << "     " << label << "         ";
+          cout << std::scientific << resultvec[0] << "    ";
+	  cout << std::scientific << resultvec[1] << "    ";
+	  cout << std::scientific << resultvec[2] << "    ";
+	  cout << std::scientific << resultvec[3] << "    ";
+	  cout << std::scientific << resultvec[4] << "    ";
+	  cout << std::scientific << resultvec[5];
+	  cout << "\n";
 	}
-	return values;
-}
+      }
+    } // end: loop over L&D labels
+    if (myrank_== 0)
+    {
+      cout << "\n";
+    }
+  }
+}//FluidImplicitTimeInt::LiftDrag
+
+
 
 #endif /* CCADISCRET       */
