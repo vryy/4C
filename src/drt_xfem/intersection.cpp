@@ -4158,12 +4158,12 @@ void Intersection::debugDomainIntCells(	map< int, DomainIntCells >&	domainintcel
 			{
 				cout << "IC " << j << ":  " << endl;
 				cout << endl;	
-				for(unsigned int k = 0; k < iter->second[j].GetCoord().size(); k++)
+				for(unsigned int k = 0; k < iter->second[j].GetDomainCoord().size(); k++)
 				{
 					//cout << k << "\t";
-					for(unsigned int m = 0; m < iter->second[j].GetCoord()[k].size(); m++)
+					for(unsigned int m = 0; m < iter->second[j].GetDomainCoord()[k].size(); m++)
 					{
-						cout << iter->second[j].GetCoord()[k][m] << "\t";	
+						cout << iter->second[j].GetDomainCoord()[k][m] << "\t";	
 					}
 					cout << endl;  
 				}

@@ -1,7 +1,7 @@
 /*!
  \file integrationcell.H
 
- \brief integration cell
+ \brief integration cell classes for domain and boundary integration
 
 <pre>
 Maintainer: Axel Gerstenberger
@@ -37,7 +37,7 @@ public:
      \param coordinates      : coordinates of the integrationcell
      */
     IntCell(
-        const std::vector< std::vector<double> > coordinates);
+        const std::vector< std::vector<double> > domainCoordinates);
 
     /*!
      \brief Copy Constructor
@@ -57,14 +57,14 @@ public:
 
      \return cells nodal coordinates  
      */
-    std::vector< std::vector<double> > GetCoord() const;
+    std::vector< std::vector<double> > GetDomainCoord() const;
     
     virtual std::string Print() const;
 
 protected:
 
     //! coordinates of the nodes
-    std::vector< std::vector<double> > coordinates_;
+    std::vector< std::vector<double> > domainCoordinates_;
 
 };
 
@@ -101,7 +101,7 @@ public:
 
      \return cells nodal coordinates  
      */
-    std::vector< std::vector<double> > GetCoord() const;
+    std::vector< std::vector<double> > GetDomainCoord() const;
     
     std::string Print() const;
 
@@ -135,14 +135,26 @@ public:
     BoundaryIntCell(const BoundaryIntCell& old);
 
     /*!
-     \brief returns the coordinates of the integration cell
+     \brief returns the coordinates of the integration cell in domain element coordinates
 
      \return cells nodal coordinates  
      */
-    std::vector< std::vector<double> > GetCoord() const;
+    std::vector< std::vector<double> > GetDomainCoord() const;
+    
+    /*!
+     \brief returns the coordinates of the integration cell in surface element coordinates
+
+     \return cells nodal coordinates  
+     */
+    std::vector< std::vector<double> > GetBoundaryCoord() const;
     
     std::string Print() const;
 
+private:
+    
+    //! boundary coordinates of the nodes
+    std::vector< std::vector<double> > boundaryCoordinates_;
+    
 };
 
 typedef std::vector<XFEM::BoundaryIntCell > BoundaryIntCells;

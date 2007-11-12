@@ -27,8 +27,8 @@ using namespace XFEM;
 //
 //  ctor
 //
-IntCell::IntCell(const vector< vector<double> > coordinates) :
-coordinates_(coordinates)
+IntCell::IntCell(const vector< vector<double> > domainCoordinates) :
+	domainCoordinates_(domainCoordinates)
 {
     return;
 }
@@ -37,7 +37,7 @@ coordinates_(coordinates)
  |  copy-ctor                                                mwgee 11/06|
  *----------------------------------------------------------------------*/
 IntCell::IntCell(const IntCell& old) : 
-coordinates_(old.coordinates_)
+	domainCoordinates_(old.domainCoordinates_)
 {
     return;   
 }
@@ -53,9 +53,9 @@ IntCell::~IntCell()
 ////
 ////  get coordinates
 ////
-//vector< vector<double> >  IntCell::GetCoord() const
+//vector< vector<double> >  IntCell::GetDomainCoord() const
 //{
-//    return coordinates_;   
+//    return domainCoordinates_;   
 //}
 
 //
@@ -89,16 +89,16 @@ IntCell(old)
 //
 //  get coordinates
 //
-vector< vector<double> >  DomainIntCell::GetCoord() const
+vector< vector<double> >  DomainIntCell::GetDomainCoord() const
 {
-    return coordinates_;   
+    return domainCoordinates_;   
 }
 
 string DomainIntCell::Print() const
 {
     stringstream s;
     s << "DomainIntCell" << endl;
-    MCONST_FOREACH(vector< vector<double> >, coordinate, coordinates_)
+    MCONST_FOREACH(vector< vector<double> >, coordinate, domainCoordinates_)
     {
         s << "[";
         MPFOREACH(vector<double>, val, coordinate)
@@ -132,16 +132,25 @@ IntCell(old)
 //
 //  get coordinates
 //
-vector< vector<double> >  BoundaryIntCell::GetCoord() const
+vector< vector<double> >  BoundaryIntCell::GetDomainCoord() const
 {
-    return coordinates_;   
+    return domainCoordinates_;   
 }
+
+//
+//  get coordinates
+//
+vector< vector<double> >  BoundaryIntCell::GetBoundaryCoord() const
+{
+    return boundaryCoordinates_;   
+}
+
 
 string BoundaryIntCell::Print() const
 {
     stringstream s;
     s << "BoundaryIntCell" << endl;
-    MCONST_FOREACH(vector< vector<double> >, coordinate, coordinates_)
+    MCONST_FOREACH(vector< vector<double> >, coordinate, domainCoordinates_)
     {
         s << "[";
         MPFOREACH(vector<double>, val, coordinate)

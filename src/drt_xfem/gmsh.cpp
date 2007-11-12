@@ -71,9 +71,9 @@ string GMSH::cellToString(const double scalar, const DomainIntCell& cell, DRT::E
     {
         // shape functions
         Epetra_SerialDenseVector funct(27);
-        DRT::Utils::shape_function_3D(funct,cell.GetCoord()[inen][0],
-                                            cell.GetCoord()[inen][1],
-                                            cell.GetCoord()[inen][2],
+        DRT::Utils::shape_function_3D(funct,cell.GetDomainCoord()[inen][0],
+                                            cell.GetDomainCoord()[inen][1],
+                                            cell.GetDomainCoord()[inen][2],
                                             distype);
         
         //interpolate position to x-space
@@ -124,9 +124,9 @@ string GMSH::cellToString(const double scalar, const BoundaryIntCell& cell, DRT:
     {
         // shape functions
         Epetra_SerialDenseVector funct(27);
-        DRT::Utils::shape_function_3D(funct,cell.GetCoord()[inen][0],
-                                            cell.GetCoord()[inen][1],
-                                            cell.GetCoord()[inen][2],
+        DRT::Utils::shape_function_3D(funct,cell.GetDomainCoord()[inen][0],
+                                            cell.GetDomainCoord()[inen][1],
+                                            cell.GetDomainCoord()[inen][2],
                                             distype);
         
         //interpolate position to x-space
