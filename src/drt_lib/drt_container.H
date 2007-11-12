@@ -261,6 +261,21 @@ public:
   */
   template<typename T> const T* Get(const string& name) const;
 
+
+  /*!
+  \brief Get a single integer back without all that hassle
+
+  Receive <int>
+
+  \param name (in): Name of data to receive
+
+  Usage is<br>
+  \code
+  int mynumber = Container::Getint("name_of_my_number")
+  \endcode
+  */
+  int Getint(const string& name) const;
+
   /*!
   \brief Get data of type int, double, string or Epetra_SerialDenseMatrix
 
