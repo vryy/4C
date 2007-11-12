@@ -2511,30 +2511,31 @@ void input_line_LIFTDRAG(multimap<int,RefCountPtr<DRT::Condition> >& lldmap)
       dserror("Cannot read design-line LIFTDRAG conditions");
     colptr++;
     
-    //-------------------------------read values
-    int LABEL = strtol(colptr,&colptr,10);
+    /*------------------------------------------------------ read values */
+    int label = strtol(colptr,&colptr,10);
     vector<double> centerCoord(3,0.0);
     centerCoord[0] = strtod(colptr,&colptr);
     centerCoord[1] = strtod(colptr,&colptr);
-	
-	if (LABEL <= 0)
-		dserror("LiftDrag Label must be greater than 0!");
+
+    if (label <= 0)
+      dserror("LiftDrag Label must be greater than 0!");
     
-	// create boundary condition
-    RefCountPtr<DRT::Condition> condition =
+    /*----------------------------------------- create boundary condition */
+    RefCountPtr<DRT::Condition> myldcond =
            rcp(new DRT::Condition(dlineid,DRT::Condition::LineLIFTDRAG,true,
                                   DRT::Condition::Line));
-    condition->Add("LABEL",&LABEL,1);
-    condition->Add("centerCoord",centerCoord);
+    myldcond->Add("label",label);
+    myldcond->Add("centerCoord",centerCoord);
 
-    //---------------------- add the condition to the map of all conditions
-    lldmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dlineid,condition));
+    /*------------------- add the condition to the map of all conditions */
+    lldmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dlineid,myldcond));
     
     //-------------------------------------------------- read the next line
     frread();
   } // while(strncmp(allfiles.actplace,"------",6)!=0)
   return;
 };   //input_line_LIFTDRAG
+
 
 /*----------------------------------------------------------------------*
  | input of design surf LIFTDRAG conditions              m.levy 09/07   |
