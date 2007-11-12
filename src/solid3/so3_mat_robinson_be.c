@@ -1211,7 +1211,8 @@ void so3_mat_robinson_be_stress(const CONTAINER* container,
   DOUBLE thrstn[NUMSTR_SOLID3];  /* thermal strain */
   DOUBLE vscstn[NUMSTR_SOLID3];  /* viscous strain */
 
-  DOUBLE tem;  /* temperature */
+  DOUBLE tempr0;  /* temperature at t_0*/
+  DOUBLE tempr;  /* temperature at t_n */
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -1238,16 +1239,20 @@ void so3_mat_robinson_be_stress(const CONTAINER* container,
   /*--------------------------------------------------------------------*/
   /* temperature and thermal strain */
   {
+    /* current temperature at Gauss point */
+    so3_tsi_temper0(container, ele,
+                    gds->gpc[0], gds->gpc[1], gds->gpc[2],
+                    &tempr0);
     /* temperature at Gauss point */
     so3_tsi_temper(container, ele,
                    gds->gpc[0], gds->gpc[1], gds->gpc[2],
-                   &tem);
+                   &tempr);
     /* coefficient of linear thermal expansion */
     DOUBLE thermexpans = mat_robin->thermexpans;
     /* thermal strain vector */
-    thrstn[0] = thermexpans * tem;  /* E_xx */
-    thrstn[1] = thermexpans * tem;  /* E_yy */
-    thrstn[2] = thermexpans * tem;  /* E_zz */
+    thrstn[0] = thermexpans * (tempr - tempr0);  /* E_xx */
+    thrstn[1] = thermexpans * (tempr - tempr0);  /* E_yy */
+    thrstn[2] = thermexpans * (tempr - tempr0);  /* E_zz */
     thrstn[3] = 0.0;  /* E_xy */
     thrstn[4] = 0.0;  /* E_yz */
     thrstn[5] = 0.0;  /* E_zx */
@@ -1269,7 +1274,7 @@ void so3_mat_robinson_be_stress(const CONTAINER* container,
 
   /*--------------------------------------------------------------------*/
   /* elasticity tensor */
-  so3_mat_robinson_elmat(mat_robin, tem, cmat);
+  so3_mat_robinson_elmat(mat_robin, tempr, cmat);
 
   /*--------------------------------------------------------------------*/
   /* stress at t_{n} */
