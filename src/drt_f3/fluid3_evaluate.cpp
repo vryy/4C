@@ -735,22 +735,15 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
       break;
       case calc_fluid_stationary_systemmat_and_residual:
       {
-          // need current velocity and history vector
+          // need current velocity/pressure 
           RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velnp");
-          RefCountPtr<const Epetra_Vector> hist  = discretization.GetState("hist");
-          if (velnp==null || hist==null)
-            dserror("Cannot get state vectors 'velnp' and/or 'hist'");
+          if (velnp==null)
+            dserror("Cannot get state vector 'velnp'");
 
-          // extract local values from the global vectors
+          // extract local values from the global vector
           vector<double> myvelnp(lm.size());
           DRT::Utils::ExtractMyValues(*velnp,myvelnp,lm);
-          vector<double> myhist(lm.size());
-          DRT::Utils::ExtractMyValues(*hist,myhist,lm);
 
-          RefCountPtr<const Epetra_Vector> dispnp;
-          vector<double> mydispnp;
-          RefCountPtr<const Epetra_Vector> gridv;
-          vector<double> mygridv;
 
           if (is_ale_)
           {
@@ -763,7 +756,6 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
           const int numnode = NumNode();
           blitz::Array<double, 1> eprenp(numnode);
           blitz::Array<double, 2> evelnp(3,numnode,blitz::ColumnMajorArray<2>());
-          blitz::Array<double, 2> evhist(3,numnode,blitz::ColumnMajorArray<2>());
 
           for (int i=0;i<numnode;++i)
           {
@@ -772,19 +764,17 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
             evelnp(2,i) = myvelnp[2+(i*4)];
 
             eprenp(i) = myvelnp[3+(i*4)];
-
-            evhist(0,i) = myhist[0+(i*4)];
-            evhist(1,i) = myhist[1+(i*4)];
-            evhist(2,i) = myhist[2+(i*4)];
           }
 
           // get control parameter
           const double pseudotime = params.get<double>("total time",-1.0);
+          if (pseudotime < 0.0)
+        	  dserror("no value for total (pseudo-)time in the parameter list");
 
           bool newton = params.get<bool>("include reactive terms for linearisation",false);
           bool pstab  =true;
           bool supg   =true;
-          bool vstab  =false;  // viscous stabilisation part switched off
+          bool vstab  =false;  // viscous stabilisation part switched off !!
           bool cstab  =true;        
 
           // wrap epetra serial dense objects in blitz objects
@@ -800,7 +790,6 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
           StationaryImpl()->Sysmat(this,
                          evelnp,
                          eprenp,
-                         evhist,
                          estif,
                          eforce,
                          actmat,

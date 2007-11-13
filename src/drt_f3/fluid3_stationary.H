@@ -55,15 +55,10 @@ namespace Elements
     For matrix calculation the blitz library is used.
 
     <h3>History</h3>
-
-    The implementation here is based on the work by Christiane
-    Foerster. The core element code has been linearized using MuPAD.
-    The reaction terms have been removed from the lhs.
-
     Right now we do not read any stabilization parameters from the
     input file but have a fixed version with precompiled values.
 
-    \author g.bau
+    \author gjb
     \date 11/07
   */
   class Fluid3Stationary
@@ -74,25 +69,25 @@ namespace Elements
 
     /// calculating element matrix and rhs
     /*!
-      Calculate matrix and rhs for stationary fproblem formulation. 
+      Calculate matrix and rhs for stationary problem formulation
       Here the whole thing is hidden.
 
-      \param ele     (i) the element those matrix is calculated
-      \param evelnp  (i) nodal velocities at n+1
-      \param eprenp  (i) nodal pressure
-      \param evhist  (i) rhs from beginning of time step
-      \param edispnp (i) nodal displacements (on moving mesh)
-      \param egridv  (i) grid velocity (on moving mesh)
-      \param estif   (o) element matrix to calculate
-      \param eforce  (o) element rhs to calculate
-      \param material (i) fluid material
-      \param time     (i) current simulation time
-      \param timefac  (i) time discretization factor
+      \param ele     		(i) the element those matrix is calculated
+      \param evelnp  		(i) nodal velocities at n+1
+      \param eprenp  		(i) nodal pressure
+      \param estif   		(o) element matrix to calculate
+      \param eforce  		(o) element rhs to calculate
+      \param material 		(i) fluid material
+      \param pseudotime     (i) current simulation pseudotime
+      \param newton     	(i) full Newton or fixed-point-like
+      \param pstab     		(i) boolean flag for stabilisation 
+      \param supg     		(i) boolean flag for stabilisation
+      \param vstab     		(i) boolean flag for stabilisation
+      \param cstab     		(i) boolean flag for stabilisation                               
      */
     void Sysmat(Fluid3* ele,
                 const blitz::Array<double,2>&     evelnp,
                 const blitz::Array<double,1>&     eprenp,
-                const blitz::Array<double,2>&     evhist,
                 blitz::Array<double,2>&           estif,
                 blitz::Array<double,1>&           eforce,
                 struct _MATERIAL*       material,
@@ -117,7 +112,7 @@ namespace Elements
     /*!
      * \brief calculate the body force from the nodes condition
      */
-    void BodyForce(Fluid3* ele, const double time);
+    void BodyForce(Fluid3* ele, const double pseudotime);
 
     /*!
      * \brief calculate second global derivatives w.r.t x/y/z at point r,s,t
@@ -139,10 +134,8 @@ namespace Elements
     blitz::Array<double,2> derxy_;
     blitz::Array<double,2> derxy2_;
     blitz::Array<double,1> bodyforce_;
-    blitz::Array<double,1> histvec_;
     blitz::Array<double,1> velino_;
     blitz::Array<double,1> velint_;
-    blitz::Array<double,1> gridvelint_;
     blitz::Array<double,1> gradp_;
     blitz::Array<double,1> tau_;
     blitz::Array<double,3> viscs2_; /* viscous term including 2nd derivatives */

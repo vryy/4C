@@ -38,10 +38,8 @@ DRT::Elements::Fluid3Stationary::Fluid3Stationary(int iel)
     derxy_(3,iel_,blitz::ColumnMajorArray<2>()),
     derxy2_(6,iel_,blitz::ColumnMajorArray<2>()),
     bodyforce_(3),
-    histvec_(3),
     velino_(3),
     velint_(3),
-    gridvelint_(3),
     gradp_(3),
     tau_(3),
     viscs2_(3,3,iel_,blitz::ColumnMajorArray<3>()),
@@ -58,12 +56,11 @@ DRT::Elements::Fluid3Stationary::Fluid3Stationary(int iel)
 
 
 /*----------------------------------------------------------------------*
- |  calculate system matrix and rhs (private)                g.bau 11/07|
+ |  calculate system matrix and rhs (private)                  gjb 11/07|
  *----------------------------------------------------------------------*/
 void DRT::Elements::Fluid3Stationary::Sysmat(Fluid3* ele,
                                        const blitz::Array<double,2>&     evelnp,
                                        const blitz::Array<double,1>&     eprenp,
-                                       const blitz::Array<double,2>&     evhist,
                                        blitz::Array<double,2>&           estif,
                                        blitz::Array<double,1>&           eforce,
                                        struct _MATERIAL*       material,
@@ -198,14 +195,8 @@ void DRT::Elements::Fluid3Stationary::Sysmat(Fluid3* ele,
     // get velocities (n+g,i) at integration point
     velint_ = blitz::sum(funct_(j)*evelnp(i,j),j);
 
-    // get history data (n,i) at integration point
-    histvec_ = blitz::sum(funct_(j)*evhist(i,j),j);
-
     // get velocity (np,i) derivatives at integration point
     vderxy_ = blitz::sum(derxy_(j,k)*evelnp(i,k),k);
-
-    // get grid velocity at integration point
-      gridvelint_ = 0.;
 
     // get pressure gradients
     gradp_ = blitz::sum(derxy_(i,j)*eprenp(j),j);
@@ -223,8 +214,8 @@ void DRT::Elements::Fluid3Stationary::Sysmat(Fluid3* ele,
     const double tau_C  = tau_(2)*fac;
 
     /*------------------------- evaluate rhs vector at integration point ---*/
- //   rhsint_ = histvec_(i) + bodyforce_(i);
-    // because histvec is always zero in stationary case:
+    //   rhsint_ = histvec_(i) + bodyforce_(i);
+    // histvec is always zero in stationary case (!):
     rhsint_ = bodyforce_(i);    
 
     /*----------------- get numerical representation of single operators ---*/
@@ -1206,7 +1197,7 @@ void DRT::Elements::Fluid3Stationary::CalTauStationary(
  |  the Neumann condition associated with the nodes is stored in the    |
  |  array edeadng only if all nodes have a VolumeNeumann condition      |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Fluid3Stationary::BodyForce(Fluid3* ele, const double time)
+void DRT::Elements::Fluid3Stationary::BodyForce(Fluid3* ele, const double pseudotime)
 { 
   vector<DRT::Condition*> myneumcond;
   DRT::Node** nodes = ele->Nodes();
@@ -1229,7 +1220,7 @@ void DRT::Elements::Fluid3Stationary::BodyForce(Fluid3* ele, const double time)
 
   if (nodecount == iel_)
   {
-    // find out whether we will use a time curve
+    // find out whether we will use a (pseudo-)time curve
     const vector<int>* curve  = myneumcond[0]->Get<vector<int> >("curve");
     int curvenum = -1;
 
@@ -1238,22 +1229,22 @@ void DRT::Elements::Fluid3Stationary::BodyForce(Fluid3* ele, const double time)
     // initialisation
     double curvefac    = 0.0;
 
-    if (curvenum >= 0) // yes, we have a timecurve
+    if (curvenum >= 0) // yes, we have a (pseudo-)timecurve
     {
-      // time factor for the intermediate step
-      if(time >= 0.0)
+      // factor for the intermediate step
+      if(pseudotime >= 0.0)
       {
-        curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
+        curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(pseudotime);
       }
       else
       {
-	// do not compute an "alternative" curvefac here since a negative time value
+	// do not compute an "alternative" curvefac here since a negative pseudotime value
 	// indicates an error.
-        dserror("Negative time value in body force calculation: time = %f",time);
+        dserror("Negative pseudotime value in body force calculation: time = %f",pseudotime);
         //curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(0.0);
       }
     }
-    else // we do not have a timecurve --- timefactors are constant equal 1
+    else // we do not have a (pseudo-)timecurve --- timefactors are constant equal 1
     {
       curvefac = 1.0;
     }

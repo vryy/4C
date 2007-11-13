@@ -1483,17 +1483,23 @@ void FluidImplicitTimeInt::SolveStationaryProblem()
   // start time measurement for timeloop
   tm2_ref_ = rcp(new TimeMonitor(*timedynloop_));
 
-  // set theta to one
+  // set theta to one in order to avoid misuse
   theta_ = 1.0;
+  
 
+  // -------------------------------------------------------------------
   // pseudo time loop (continuation loop)
-  // slightly increasing b.c. values by given timecurves to reach convergence
-  // also for higher Reynolds number flows
+  // ------------------------------------------------------------------- 
+  // slightly increasing b.c. values by given (pseudo-)timecurves to reach 
+  // convergence also for higher Reynolds number flows
+  // as a side effect, you can do parameter studies for different Reynolds 
+  // numbers within only ONE simulation when you apply a proper 
+  // (pseudo-)timecurve
 
-  while ((step_< stepmax_) and (time_< maxtime_))
+  while (step_< stepmax_)
   {
     // -------------------------------------------------------------------
-    //              set time dependent parameters
+    //              set (pseudo-)time dependent parameters
     // -------------------------------------------------------------------
 	   step_ += 1;
 	   time_ += dta_;
@@ -1522,7 +1528,7 @@ void FluidImplicitTimeInt::SolveStationaryProblem()
 	     // other parameters needed by the elements
 	     eleparams.set("total time",time_);
 	     eleparams.set("delta time",dta_);
-	     eleparams.set("thsl",theta_*dta_);
+	     eleparams.set("thsl",1.0); // no timefac in stationary case
 
 	     // set vector values needed by elements
 	     discret_->ClearState();
@@ -1531,44 +1537,29 @@ void FluidImplicitTimeInt::SolveStationaryProblem()
 	     // velnp then also holds prescribed new dirichlet values
 	     // dirichtoggle is 1 for dirichlet dofs, 0 elsewhere
 	     discret_->EvaluateDirichlet(eleparams,*velnp_,*dirichtoggle_);
-	     discret_->ClearState();
-
-	     // evaluate Neumann conditions
-	     eleparams.set("total time",time_);
-	     eleparams.set("thsl",theta_*dta_);
-
+	     discret_->ClearState();	     
+	     
+	     // evaluate Neumann b.c.
 	     neumann_loads_->PutScalar(0.0);
 	     discret_->EvaluateNeumann(eleparams,*neumann_loads_);
 	     discret_->ClearState();
 	   }
 
-	   //----------------------- compute an inverse of the dirichtoggle vector
+	   // compute an inverse of the dirichtoggle vector
 	   invtoggle_->PutScalar(1.0);
 	   invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
 
 
     // -------------------------------------------------------------------
-    //                     solve nonlinear equation
+    //                     solve nonlinear equation system
     // -------------------------------------------------------------------
     this->NonlinearSolve();
 
-
-    // -------------------------------------------------------------------
-    // evaluate error for test flows with analytical solutions
-    // -------------------------------------------------------------------
-    //this->EvaluateErrorComparedToAnalyticalSol(time);
-
-
+    
     // -------------------------------------------------------------------
     //                         output of solution
     // -------------------------------------------------------------------
     this->Output();
-
-
-    // -------------------------------------------------------------------
-    //                       update time step sizes
-    // -------------------------------------------------------------------
-    dtp_ = dta_;
 
   } // end of time loop
 
@@ -1583,7 +1574,7 @@ void FluidImplicitTimeInt::SolveStationaryProblem()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- |  calculate (wall) stresses (public)                       g.bau 07/07|
+ |  calculate (wall) stresses (public)                         gjb 07/07|
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1602,7 +1593,7 @@ RefCountPtr<Epetra_Vector> FluidImplicitTimeInt::CalcStresses()
      // create vector (+ initialization with zeros)
      RefCountPtr<Epetra_Vector> integratedshapefunc = LINALG::CreateVector(*dofrowmap,true);
 
-     // call loop over elements
+     // call loop over elements to evaluate the condition
      discret_->ClearState();
      const string condstring("FluidStressCalc");
      discret_->EvaluateCondition(eleparams,integratedshapefunc,condstring);
