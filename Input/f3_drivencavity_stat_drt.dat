@@ -6,11 +6,11 @@
 //
 // necessary defines: D_FLUID3 RESULTTEST DEBUG CCADISCRET BINIO
 //
-// #define MAXNOD           (4)
-// #define MAXELE           (4)
-// #define MAXDOFPERNODE    (3)
+// #define MAXNOD           (8)
+// #define MAXELE           (8)
+// #define MAXDOFPERNODE    (4)
 // #define MAXGAUSS         (4)
-// #define MAXNOD_F2        (4)
+// #define MAXNOD_F3        (8)
 //
 // helpful reference for validation of driven cavity flows: 
 // U. Ghia, K.N. Ghia, C.T.Shin, Journal of Computational Physics 48, 387-411 (1982)
