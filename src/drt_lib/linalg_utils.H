@@ -89,13 +89,13 @@ namespace LINALG
                       Epetra_SerialDenseVector& L,const int dim, const char eigv='N');
 
   /*!
-  \brief Multiply two 2nd order tensors and add the result to a
+  \brief Multiply two 2nd order tensors A x B and add the result to a
    4th order symmetric material tensor in matrix notation
 
   \param C (in/out): Material tangent matrix to be modified
   \param AB (in)   : Scalar to multiply with A x B
-  \param A (in)    : Dense matrix (9 by 9) as 2nd order tensor A
-  \param B (in)    : Dense matrix (9 by 9) as 2nd order tensor B
+  \param A (in)    : Dense matrix (3 by 3) as 2nd order tensor A
+  \param B (in)    : Dense matrix (3 by 3) as 2nd order tensor B
   \param ScalarThis(in): Scalar to multiply with C before adding A x B
   */
   void ElastSymTensorMultiply(Epetra_SerialDenseMatrix& C,
@@ -105,15 +105,14 @@ namespace LINALG
                                    const double ScalarThis);
 
   /*!
-  \brief Multiply two 2nd order tensors and add the result to a
+  \brief Multiply two 2nd order tensors (A x B + B x A) and add the result to a
    4th order symmetric material tensor in matrix notation
 
   \param C (in/out): Material tangent matrix to be modified
-  \param AB (in)   : Scalar to multiply with A x B
-  \param A (in)    : Dense matrix (9 by 9) as 2nd order tensor A
-  \param B (in)    : Dense matrix (9 by 9) as 2nd order tensor B
-  \param ScalarThis(in): Scalar to multiply with C before adding A x B
-  \flag            : even more symmetry, namely ScalarAB * (A x B + B X A)
+  \param AB (in)   : Scalar to multiply with (A x B + B x A)
+  \param A (in)    : Dense matrix (3 by 3) as 2nd order tensor A
+  \param B (in)    : Dense matrix (3 by 3) as 2nd order tensor B
+  \param ScalarThis(in): Scalar to multiply with C before adding (A x B + B x A)
   */
   void ElastSymTensorMultiplyAddSym(Epetra_SerialDenseMatrix& C,
                                    const double ScalarAB,
@@ -121,6 +120,21 @@ namespace LINALG
                                    const Epetra_SerialDenseMatrix& B,
                                    const double ScalarThis);
 
+  /*!
+  \brief Multiply two 2nd order tensors A o B and add the result to a
+   4th order symmetric material tensor in matrix notation
+
+  \param C (in/out): Material tangent matrix to be modified
+  \param AB (in)   : Scalar to multiply with A o B
+  \param A (in)    : Dense matrix (3 by 3) as 2nd order tensor A
+  \param B (in)    : Dense matrix (3 by 3) as 2nd order tensor B
+  \param ScalarThis(in): Scalar to multiply with C before adding A o B
+  */
+  void ElastSymTensor_o_Multiply(Epetra_SerialDenseMatrix& C,
+                                   const double ScalarAB,
+                                   const Epetra_SerialDenseMatrix& A,
+                                   const Epetra_SerialDenseMatrix& B,
+                                   const double ScalarThis);
   /*!
   \brief Invert a symmetric dim*dim square matrix
 
