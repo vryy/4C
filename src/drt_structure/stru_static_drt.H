@@ -49,6 +49,16 @@ extern "C"
 
 void stru_static_drt();
 
+void synchronize_VolConstraint(const Epetra_Comm& Comm, 
+								ParameterList& params,
+								vector<double>& vect,
+								int& mi, int& ma, int & numID);
+
+void setupVolDofrowmaps(RefCountPtr<DRT::Discretization> actdis,
+		  map<int, RCP<Epetra_Map> >& voldofrowmaps,
+		  const int numconstID,
+		  const string& condstring);
+
 #ifdef __cplusplus
 }
 #endif
