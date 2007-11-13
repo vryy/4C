@@ -721,9 +721,13 @@ private:
 
   
   // Submethod to compute the enclosed volume for vlume constraint boundary condition
-  double ComputeConstrVols(ParameterList& params,
-			Epetra_SerialDenseMatrix xscurr);
+  double ComputeConstrVols(Epetra_SerialDenseMatrix xscurr);
   
+  void ComputeVolconstrStiff(Epetra_SerialDenseMatrix xscurr,
+		  Epetra_SerialDenseMatrix& elematrix);
+  
+  void ComputeVolconstrVolDeriv(Epetra_SerialDenseMatrix xscurr,
+		  Epetra_SerialDenseVector& elevector1);
   
   void soh8_surface_integ(
       vector<double>* funct,                 // (o) shape functions

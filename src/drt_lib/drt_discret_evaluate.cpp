@@ -478,7 +478,14 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
         vector<int> lmowner;
         curr->second->LocationVector(*this,lm,lmowner);
         
-        elevector1.Size((int)lm.size());
+        // get dimension of element matrices and vectors
+        // Reshape element matrices and vectors and init to zero
+        const int eledim = (int)lm.size();
+        elematrix1.Shape(eledim,eledim);
+        elematrix2.Shape(eledim,eledim);
+        elevector1.Size(eledim);
+        elevector2.Size(eledim);
+        elevector3.Size(eledim);
         
         // call the element specific evaluate method
         int err = curr->second->Evaluate(params,*this,lm,elematrix1,elematrix2,
@@ -488,7 +495,7 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
         // assembly
         if (assemblemat1) LINALG::Assemble(*systemmatrix1,elematrix1,lm,lmowner);
         if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
-        if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner); 
+        if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner);     
       }
     }
    } //for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
