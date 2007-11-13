@@ -1197,7 +1197,7 @@ void DRT::Elements::XFluid3Stationary::CalTauStationary(
  |  the Neumann condition associated with the nodes is stored in the    |
  |  array edeadng only if all nodes have a VolumeNeumann condition      |
  *----------------------------------------------------------------------*/
-void DRT::Elements::XFluid3Stationary::BodyForce(XFluid3* ele, const double time)
+void DRT::Elements::XFluid3Stationary::BodyForce(XFluid3* ele, const double pseudotime)
 { 
   vector<DRT::Condition*> myneumcond;
   DRT::Node** nodes = ele->Nodes();
