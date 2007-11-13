@@ -244,9 +244,10 @@ void stru_static_drt()
     		cout<<"Reference Volume: "<<startvolumes[0]<<endl;
     	lagrMultVec=rcp(new Epetra_SerialDenseVector(numConstrID));
     	lagrMultInc=rcp(new Epetra_SerialDenseVector(numConstrID));
+    	lagrMultVec->Scale(0.0);
+    	lagrMultInc->Scale(0.0);
     }
-    lagrMultVec->Scale(0.0);
-    lagrMultInc->Scale(0.0);
+    
     setupVolDofrowmaps(actdis,voldofrowmaps,numConstrID,"VolumeConstraint_3D");
     actdis->ClearState();
   }
