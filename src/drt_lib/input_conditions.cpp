@@ -2513,9 +2513,9 @@ void input_line_LIFTDRAG(multimap<int,RefCountPtr<DRT::Condition> >& lldmap)
     
     /*------------------------------------------------------ read values */
     int label = strtol(colptr,&colptr,10);
-    vector<double> centerCoord(3,0.0);
-    centerCoord[0] = strtod(colptr,&colptr);
-    centerCoord[1] = strtod(colptr,&colptr);
+    vector<double> centercoord(3,0.0);
+    centercoord[0] = strtod(colptr,&colptr);
+    centercoord[1] = strtod(colptr,&colptr);
 
     if (label <= 0)
       dserror("LiftDrag Label must be greater than 0!");
@@ -2525,7 +2525,7 @@ void input_line_LIFTDRAG(multimap<int,RefCountPtr<DRT::Condition> >& lldmap)
            rcp(new DRT::Condition(dlineid,DRT::Condition::LineLIFTDRAG,true,
                                   DRT::Condition::Line));
     myldcond->Add("label",label);
-    myldcond->Add("centerCoord",centerCoord);
+    myldcond->Add("centerCoord",centercoord);
 
     /*------------------- add the condition to the map of all conditions */
     lldmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dlineid,myldcond));
@@ -2571,18 +2571,22 @@ void input_surf_LIFTDRAG(multimap<int,RefCountPtr<DRT::Condition> >& sldmap)
     colptr++;
 	
     //-------------------------------read values
-    int LABEL = strtol(colptr,&colptr,10);
-    vector<double> centerCoord(3,0.0);
-    centerCoord[0] = strtod(colptr,&colptr);
-    centerCoord[1] = strtod(colptr,&colptr);
-    centerCoord[2] = strtod(colptr,&colptr);
+    int label = strtol(colptr,&colptr,10);
+    vector<double> centercoord(3,0.0);
+    centercoord[0] = strtod(colptr,&colptr);
+    centercoord[1] = strtod(colptr,&colptr);
+    centercoord[2] = strtod(colptr,&colptr);
 	
+    if (label <= 0)
+      dserror("LiftDrag Label must be greater than 0!");
+    
+    /*----------------------------------------- create boundary condition */
 	// create boundary condition
     RefCountPtr<DRT::Condition> condition =
            rcp(new DRT::Condition(dsurfid,DRT::Condition::SurfLIFTDRAG,true,
                                   DRT::Condition::Surface));
-    condition->Add("LABEL",&LABEL,1);
-    condition->Add("centerCoord",centerCoord);
+    condition->Add("label",label);
+    condition->Add("centerCoord",centercoord);
 		
     //---------------------- add the condition to the map of all conditions
     sldmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dsurfid,condition));
