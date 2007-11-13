@@ -2665,7 +2665,7 @@ void input_surf_volconstr(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
                                   DRT::Condition::Surface));
     
     condition->Add("ConditionID",&VolConstrID,1);
-    condition->Add("VolConsrtCurve",&VolConstrCurve);    
+    condition->Add("curve",&VolConstrCurve,1);    
     
     //------------------------------- put condition in map of conditions
     snmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dsurfid,condition));

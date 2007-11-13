@@ -183,13 +183,18 @@ void stru_static_drt()
   
   //-------------------------------------- parameters for volume constraint
   // required volumes (can change over time with a given loadcurve
-  vector<double> referencevolumes;
-  vector<double> actvol;
+  //vector<double> referencevolumes;
+  Epetra_SerialDenseVector referencevolumes;
+  Epetra_SerialDenseVector startvolumes;
+  Epetra_SerialDenseVector actvol;
+  //vector<double> actvol;
   Epetra_SerialDenseVector volerr;
   //min, max Condition IDs, and total number if volconstrID
   int minConstrID;
   int maxConstrID;
   int numConstrID;
+  //"Loadfactor" for restricted volume
+  double fact;
   //lagrange multiplier and increments (-> Uzawa)
   RefCountPtr<Epetra_SerialDenseVector> lagrMultVec;
   RefCountPtr<Epetra_SerialDenseVector> lagrMultInc;
@@ -230,12 +235,13 @@ void stru_static_drt()
     actdis->EvaluateNeumann(params,*fext); // *fext holds external force vector
     params.set("action","calc_struct_constrvol");
     actdis->EvaluateCondition(params,"VolumeConstraint_3D");
-    synchronize_VolConstraint(Comm, params,referencevolumes,minConstrID,maxConstrID,numConstrID);
-    //inititalize lambda vector and
+    synchronize_VolConstraint(Comm, params,startvolumes,minConstrID,maxConstrID,numConstrID);
+    //inititalize lambda vector and increments
     
     if (numConstrID!=0)
     {
-    	if (!myrank) cout<<"Reference Volume: "<<referencevolumes[0]<<endl;
+    	if (!myrank) 
+    		cout<<"Reference Volume: "<<startvolumes[0]<<endl;
     	lagrMultVec=rcp(new Epetra_SerialDenseVector(numConstrID));
     	lagrMultInc=rcp(new Epetra_SerialDenseVector(numConstrID));
     }
@@ -304,11 +310,20 @@ void stru_static_drt()
       actdis->EvaluateCondition(params,stiff_mat,fint,constrVec,"VolumeConstraint_3D");
       synchronize_VolConstraint(Comm, params,actvol,minConstrID,maxConstrID,numConstrID);
       volerr.Size(numConstrID);
+      fact=params.get("LoadCurveFactor",1.0);
+      referencevolumes=startvolumes;
+      if (numConstrID!=0)
+      {
+    	  	referencevolumes.Scale(fact);
+       		if (!myrank) 
+       		{
+       			cout<<"New Reference Volume: "<<referencevolumes[0]<<endl;
+       		}
+      }
       for (int iter = 0; iter < numConstrID; ++iter) 
       {
     	  volerr[iter]=referencevolumes[iter]-actvol[iter];
-      }
-      
+      }   
       actdis->ClearState();     
       }
     // complete stiffness matrix
@@ -413,7 +428,8 @@ void stru_static_drt()
 	        
 	        //Solve one iteration step with augmented lagrange
 	      	//Since we calculate displacement norm as well, at least one step has to be taken
-	        while (((norm_uzawa > statvar->toldisp||norm_vol_uzawa>statvar->toldisp) && numiter_uzawa < statvar->maxiter)||numiter_uzawa<1)
+	        while (((norm_uzawa > statvar->toldisp||norm_vol_uzawa>statvar->toldisp) 
+	        		&& numiter_uzawa < statvar->maxiter)||numiter_uzawa<1)
 	        {
 	      	  	  
 	      	  LINALG::ApplyDirichlettoSystem(stiff_mat,disi,fresmcopy,zeros,dirichtoggle);
@@ -671,7 +687,7 @@ void stru_static_drt()
  *----------------------------------------------------------------------*/
 void synchronize_VolConstraint(const Epetra_Comm& Comm, 
 								ParameterList& params,
-								vector<double>& vect,
+								Epetra_SerialDenseVector& vect,
 								int& minID,
 								int& maxID,
 								int& numID)
@@ -686,7 +702,7 @@ void synchronize_VolConstraint(const Epetra_Comm& Comm,
 	else
 	{
 		numID=1+maxID-minID;
-		vect.resize(1+maxID-minID);
+		vect.Size(1+maxID-minID);
 		for (int i = 0; i <= maxID-minID; ++i) 
 		{
 			char volname[30];	

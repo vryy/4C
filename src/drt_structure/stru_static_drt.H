@@ -51,7 +51,7 @@ void stru_static_drt();
 
 void synchronize_VolConstraint(const Epetra_Comm& Comm, 
 								ParameterList& params,
-								vector<double>& vect,
+								Epetra_SerialDenseVector& vect,
 								int& mi, int& ma, int & numID);
 
 void setupVolDofrowmaps(RefCountPtr<DRT::Discretization> actdis,

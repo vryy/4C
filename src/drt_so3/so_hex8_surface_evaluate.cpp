@@ -343,7 +343,7 @@ int DRT::Elements::Soh8Surface::Evaluate(ParameterList& params,
 }
 
 /*----------------------------------------------------------------------*
- * Compute Volume between surface an xy-plane.                  tk 10/07*
+ * Compute Volume between surface and xy-plane.                 tk 10/07*
  * Yields to the enclosed volume when summed up over all elements       *
  * ---------------------------------------------------------------------*/
 double DRT::Elements::Soh8Surface::ComputeConstrVols(Epetra_SerialDenseMatrix xc)
