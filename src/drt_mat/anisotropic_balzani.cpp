@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file hyperpolyconvex.cpp
+\file anisotropic_balzani.cpp
 \brief
 
 <pre>
@@ -17,7 +17,7 @@ Maintainer: Moritz Frenzel
 #include <Epetra_SerialDenseVector.h>
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_lib/linalg_utils.H"
-#include "hyperpolyconvex.H"
+#include "anisotropic_balzani.H"
 
 extern struct _MATERIAL *mat;
 
@@ -26,7 +26,7 @@ using namespace LINALG; // our linear algebra
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)     maf 07/07|
  *----------------------------------------------------------------------*/
-MAT::HyperPolyconvex::HyperPolyconvex()
+MAT::AnisotropicBalzani::AnisotropicBalzani()
   : matdata_(NULL)
 {
 }
@@ -35,7 +35,7 @@ MAT::HyperPolyconvex::HyperPolyconvex()
 /*----------------------------------------------------------------------*
  |  Copy-Constructor                             (public)      maf 07/07|
  *----------------------------------------------------------------------*/
-MAT::HyperPolyconvex::HyperPolyconvex(MATERIAL* matdata)
+MAT::AnisotropicBalzani::AnisotropicBalzani(MATERIAL* matdata)
   : matdata_(matdata)
 {
 }
@@ -44,7 +44,7 @@ MAT::HyperPolyconvex::HyperPolyconvex(MATERIAL* matdata)
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)     maf 07/07|
  *----------------------------------------------------------------------*/
-void MAT::HyperPolyconvex::Pack(vector<char>& data) const
+void MAT::AnisotropicBalzani::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -60,7 +60,7 @@ void MAT::HyperPolyconvex::Pack(vector<char>& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                        (public)     maf 07/07|
  *----------------------------------------------------------------------*/
-void MAT::HyperPolyconvex::Unpack(const vector<char>& data)
+void MAT::AnisotropicBalzani::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -81,7 +81,7 @@ void MAT::HyperPolyconvex::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Return density                                (public)     maf 04/07|
  *----------------------------------------------------------------------*/
-double MAT::HyperPolyconvex::Density()
+double MAT::AnisotropicBalzani::Density()
 {
   return matdata_->m.hyper_polyconvex->density;  // density, returned to evaluate mass matrix
 }
@@ -106,7 +106,7 @@ Based on Holzapfel [1], Ogden [2] and Balzani, Schroeder, Neff [3].
   Adjustment to Experimental Data, Report-Preprint No. 22, 2005.
 */
 
-void MAT::HyperPolyconvex::Evaluate(const Epetra_SerialDenseVector* glstrain,
+void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
                                     const Epetra_SerialDenseMatrix* defgrd,
                                     const int gp, const int ele_ID, const double time,
                                       Epetra_SerialDenseMatrix* cmat,
@@ -163,7 +163,7 @@ void MAT::HyperPolyconvex::Evaluate(const Epetra_SerialDenseVector* glstrain,
   // compute eigenvalues of C
   Epetra_SerialDenseMatrix Ccopy(C);
   Epetra_SerialDenseVector lambda(3);
-  LINALG::SymmetricEigen(Ccopy,lambda,3,'N');
+  SymmetricEigen(Ccopy,lambda,3,'N');
   
   // evaluate principle Invariants of C
   Epetra_SerialDenseVector Inv(3);
@@ -244,116 +244,9 @@ void MAT::HyperPolyconvex::Evaluate(const Epetra_SerialDenseVector* glstrain,
   ElastSymTensorMultiply((*cmat),(deltafib*kappa*kappa),I,I,1.0);
   
   
-//  // ************* evaluate C-matrix ***************************
-//  Epetra_SerialDenseMatrix I9     = tensorproduct(I,I,1.0,1.0);
-//  Epetra_SerialDenseMatrix IC     = tensorproduct(I,C,1.0,1.0);
-//  Epetra_SerialDenseMatrix CI     = tensorproduct(C,I,1.0,1.0);
-//  Epetra_SerialDenseMatrix ICinv  = tensorproduct(I,Cinv,1.0,1.0);
-//  Epetra_SerialDenseMatrix CinvI  = tensorproduct(Cinv,I,1.0,1.0);
-//  Epetra_SerialDenseMatrix CC     = tensorproduct(C,C,1.0,1.0);
-//  Epetra_SerialDenseMatrix CCinv  = tensorproduct(C,Cinv,1.0,1.0);
-//  Epetra_SerialDenseMatrix CinvC  = tensorproduct(Cinv,C,1.0,1.0);
-//  Epetra_SerialDenseMatrix CiCi   = tensorproduct(Cinv,Cinv,1.0,1.0);
-//  Epetra_SerialDenseMatrix HH     = tensorproduct(I,I,kappa,kappa);
-//  Epetra_SerialDenseMatrix HC     = tensorproduct(I,C,kappa,1.0);
-//  Epetra_SerialDenseMatrix CH     = tensorproduct(C,I,1.0,kappa);
-//  Epetra_SerialDenseMatrix HCinv  = tensorproduct(I,Cinv,kappa,1.0);
-//  Epetra_SerialDenseMatrix CinvH  = tensorproduct(Cinv,I,1.0,kappa);
-//  
-//  Epetra_SerialDenseMatrix CinvoCinv(9,9);
-//  for (int k = 0; k < 3; ++k) {
-//    for (int l = 0; l < 3; ++l) {
-//      for (int i = 0; i < 3; ++i) {
-//        for (int j = 0; j < 3; ++j) {
-//          CinvoCinv(i+3*k,j+3*l) = 0.5 * (Cinv(k,i)*Cinv(l,j) + Cinv(k,j)*Cinv(l,i));
-//        }
-//      }
-//    }
-//  }
-//  
-//  Epetra_SerialDenseMatrix Celast(9,9);
-//  for (int k = 0; k < 3; ++k) {
-//    for (int l = 0; l < 3; ++l) {
-//      for (int i = 0; i < 3; ++i) {
-//        for (int j = 0; j < 3; ++j) {
-//          Celast(i+3*k,j+3*l) += delta(0) * I9(i+3*k,j+3*l) + deltafib * HH(i+3*k,j+3*l);
-//          Celast(i+3*k,j+3*l) += delta(1) * (IC(i+3*k,j+3*l) + CI(i+3*k,j+3*l));
-//          Celast(i+3*k,j+3*l) += delta(2) * (ICinv(i+3*k,j+3*l) + CinvI(i+3*k,j+3*l));
-//          Celast(i+3*k,j+3*l) += delta(3) * CC(i+3*k,j+3*l);
-//          Celast(i+3*k,j+3*l) += delta(4) * (CCinv(i+3*k,j+3*l) + CinvC(i+3*k,j+3*l));
-//          Celast(i+3*k,j+3*l) += delta(5) * CiCi(i+3*k,j+3*l);
-//          Celast(i+3*k,j+3*l) += delta(6) * CinvoCinv(i+3*k,j+3*l);
-//          Celast(i+3*k,j+3*l) += delta(7);
-//        }
-//      }
-//    }
-//  }
-//  (*cmat)(0,0)=Celast(0,0);
-//  (*cmat)(0,1)=Celast(1,1);
-//  (*cmat)(0,2)=Celast(2,2);
-//  (*cmat)(0,3)=Celast(1,0);
-//  (*cmat)(0,4)=Celast(2,1);
-//  (*cmat)(0,5)=Celast(2,0);
-//  
-//  (*cmat)(1,0)=Celast(3,3);
-//  (*cmat)(1,1)=Celast(4,4);
-//  (*cmat)(1,2)=Celast(5,5);
-//  (*cmat)(1,3)=Celast(4,3);
-//  (*cmat)(1,4)=Celast(5,4);
-//  (*cmat)(1,5)=Celast(5,3);
-//  
-//  (*cmat)(2,0)=Celast(6,6);
-//  (*cmat)(2,1)=Celast(7,7);
-//  (*cmat)(2,2)=Celast(8,8);
-//  (*cmat)(2,3)=Celast(7,6);
-//  (*cmat)(2,4)=Celast(8,7);
-//  (*cmat)(2,5)=Celast(8,6);
-//
-//  (*cmat)(3,0)=Celast(3,0);
-//  (*cmat)(3,1)=Celast(4,1);
-//  (*cmat)(3,2)=Celast(5,2);
-//  (*cmat)(3,3)=Celast(4,0);
-//  (*cmat)(3,4)=Celast(5,1);
-//  (*cmat)(3,5)=Celast(5,0);
-//  
-//  (*cmat)(4,0)=Celast(6,3);
-//  (*cmat)(4,1)=Celast(7,4);
-//  (*cmat)(4,2)=Celast(8,5);
-//  (*cmat)(4,3)=Celast(7,3);
-//  (*cmat)(4,4)=Celast(8,4);
-//  (*cmat)(4,5)=Celast(8,3);
-//  
-//  (*cmat)(5,0)=Celast(6,0);
-//  (*cmat)(5,1)=Celast(7,1);
-//  (*cmat)(5,2)=Celast(8,2);
-//  (*cmat)(5,3)=Celast(7,0);
-//  (*cmat)(5,4)=Celast(8,1);
-//  (*cmat)(5,5)=Celast(8,0);
   
   return;
 }
-
-///*----------------------------------------------------------------------*
-// |  Calculate tensor product of two tensors of 2nd order       maf 04/07|
-// *----------------------------------------------------------------------*/
-//Epetra_SerialDenseMatrix MAT::HyperPolyconvex::tensorproduct(
-//                                             const Epetra_SerialDenseMatrix A,
-//                                             const Epetra_SerialDenseMatrix B,
-//                                             const double scalarA,
-//                                             const double scalarB)
-//{
-//  Epetra_SerialDenseMatrix AB(9,9);
-//  for (int k = 0; k < 3; ++k) {
-//    for (int l = 0; l < 3; ++l) {
-//      for (int i = 0; i < 3; ++i) {
-//        for (int j = 0; j < 3; ++j) {
-//          AB(i+3*k,j+3*l) = scalarA * A(k,l) * scalarB * B(i,j); 
-//        }
-//      }
-//    }
-//  }
-//  return AB;
-//}
 
 
 #endif

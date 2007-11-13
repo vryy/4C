@@ -795,6 +795,7 @@ OBJS_DRT_MAT_LIB = src/drt_mat/micromaterial.o \
 		src/drt_mat/stvenantkirchhoff.o \
 		src/drt_mat/hyperpolyconvex.o \
 		src/drt_mat/neohooke.o \
+		src/drt_mat/anisotropic_balzani.o \
 		src/drt_mat/convecdiffus.o \
 		src/drt_mat/material.o
 #

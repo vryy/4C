@@ -460,6 +460,19 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("GAMMA"   ,&(localmat.m.hyper_polyconvex->gamma)    ,&ierr);
       frdouble("DENS"    ,&(localmat.m.hyper_polyconvex->density)     ,&ierr);
    }
+   // Anisotropic Polyconvex Material Law based on Balzani et. al.
+   frchk("MAT_ANISOTROPIC_BALZANI",&ierr);
+   if (ierr==1)
+   {
+      localmat.mattyp      = m_anisotropic_balzani;
+      localmat.m.anisotropic_balzani = new ANISOTROPIC_BALZANI();
+      frdouble("C1"     ,&(localmat.m.anisotropic_balzani->c1)       ,&ierr);
+      frdouble("EPS1"   ,&(localmat.m.anisotropic_balzani->eps1)     ,&ierr);
+      frdouble("EPS2"   ,&(localmat.m.anisotropic_balzani->eps2)     ,&ierr);
+      frdouble("ALPHA1" ,&(localmat.m.anisotropic_balzani->alpha1)   ,&ierr);
+      frdouble("ALPHA2" ,&(localmat.m.anisotropic_balzani->alpha2)   ,&ierr);
+      frdouble("DENS"   ,&(localmat.m.anisotropic_balzani->density)  ,&ierr);
+   }
    /* Fourier's law of isotropic heat conduction --> heat cond. coeff. */
    frchk("MAT_Therm_Fourier_iso",&ierr);
    if (ierr==1)

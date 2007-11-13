@@ -7,6 +7,7 @@
 #include "hyperpolyconvex.H"
 #include "neohooke.H"
 #include "convecdiffus.H"
+#include "anisotropic_balzani.H"
 
 extern struct _MATERIAL *mat;
 
@@ -45,6 +46,8 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     return Teuchos::rcp(new MicroMaterial(actmat));
   case m_hyper_polyconvex:
     return Teuchos::rcp(new HyperPolyconvex(actmat));
+  case m_anisotropic_balzani:
+    return Teuchos::rcp(new AnisotropicBalzani(actmat));
   case m_neohooke:
     return Teuchos::rcp(new NeoHooke(actmat));
   case m_condif:

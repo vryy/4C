@@ -36,6 +36,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_mat/hyperpolyconvex.H"
 #include "../drt_mat/neohooke.H"
+#include "../drt_mat/anisotropic_balzani.H"
 
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
@@ -74,6 +75,16 @@ void DRT::Elements::So_hex8::soh8_mat_sel(
       hypo->Evaluate(glstrain,defgrd,gp,ele_ID,time,cmat,stress);
 
       *density = hypo->Density();
+
+      break;
+    }
+    case m_anisotropic_balzani:
+    {
+      MAT::AnisotropicBalzani* anba = static_cast <MAT::AnisotropicBalzani*>(mat.get());
+
+      anba->Evaluate(glstrain,defgrd,gp,ele_ID,time,cmat,stress);
+
+      *density = anba->Density();
 
       break;
     }

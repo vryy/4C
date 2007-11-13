@@ -197,6 +197,7 @@ using namespace std;
 #define ParObject_XFluid3Line           (int)76
 #define ParObject_So_shw6               (int)77
 #define ParObject_Soshw6Register        (int)78
+#define ParObject_AnisotropicBalzani    (int)79
 
 /*!
 \brief DRT: namespace of the ccarat discretization module
