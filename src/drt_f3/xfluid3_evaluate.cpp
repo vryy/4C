@@ -29,11 +29,13 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_xfem/dof_management.H"
 
 #include <blitz/array.h>
 #include <Epetra_SerialDenseSolver.h>
 
 using namespace DRT::Utils;
+//using namespace XFEM;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of material laws                                              |
@@ -216,6 +218,8 @@ DRT::Elements::XFluid3::ActionType DRT::Elements::XFluid3::convertStringToAction
     act = XFluid3::calc_ShapeDeriv1;
   else if (action == "calc_ShapeDeriv2")
     act = XFluid3::calc_ShapeDeriv2;
+  else if (action == "store_dof_info")
+    act = XFluid3::store_dof_info;
   else
     dserror("Unknown type of action for XFluid3");
   return act;
@@ -569,6 +573,29 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
       case calc_ShapeDeriv2:
         shape_function_3D_deriv2(elemat2,elevec2[0],elevec2[1],elevec2[2],this->Shape());
         break;
+      case store_dof_info:
+      {
+    	// get access to global dofman
+    	const RCP<XFEM::DofManager> dofman = params.get< RCP< XFEM::DofManager > >("dofmanager",null);
+    	
+    	// create a list with number of dofs per local node 
+    	// TODO: create function for dofmanager that gives list with number of unknowns for given list of global node ids
+    	const int numnode = this->NumNode();
+    	const int* nodegids = this->NodeIds();
+    	map<int, const set <XFEM::EnrPhysVar> > nodaldofset; 
+    	for (int inode = 0; inode < numnode; ++inode) {
+    		int gid = nodegids[inode];
+    		nodaldofset.insert(dofman->getDofsAsPair(gid));
+		}
+
+    	// create a local dofmanager: ask DofManager to do that!?
+    	eleDofManager_ = XFEM::ElementDofManager(nodaldofset);
+    	
+    	cout << "storing refcountpointers at element: " << this->Id() << endl;
+    	cout << eleDofManager_.toString() << endl;
+    	
+      }
+    	break;
       default:
         dserror("Unknown type of action for XFluid3");
   } // end of switch(act)

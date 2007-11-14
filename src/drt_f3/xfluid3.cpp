@@ -32,7 +32,8 @@ map<string,DRT::Elements::XFluid3::StabilisationAction> DRT::Elements::XFluid3::
 DRT::Elements::XFluid3::XFluid3(int id, int owner) :
 DRT::Element(id,element_xfluid3,owner),
 is_ale_(false),
-data_()
+data_(),
+eleDofManager_()
 {
     gaussrule_ = intrule_hex_27point;
     surfaces_.resize(0);
@@ -61,9 +62,9 @@ data_(old.data_),
 surfaces_(old.surfaces_),
 surfaceptrs_(old.surfaceptrs_),
 lines_(old.lines_),
-lineptrs_(old.lineptrs_)
+lineptrs_(old.lineptrs_),
+eleDofManager_(old.eleDofManager_)
 {
-    gaussrule_ = old.gaussrule_;
     return;
 }
 

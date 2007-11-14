@@ -35,6 +35,7 @@ using namespace Teuchos;
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_xfem/dof_management.H"
 
 
 // forward declarations
@@ -193,7 +194,7 @@ public:
   number of degrees of freedom per node along the way for each of it's nodes
   separately.
   */
-  virtual int NumDofPerNode(const DRT::Node& node) const {return 4;}
+  virtual int NumDofPerNode(const DRT::Node& node) const {this->eleDofManager_.getNumDof(node.Id());}
 
   /*!
   \brief Get number of degrees of freedom per element
@@ -336,7 +337,8 @@ private:
     calc_turbulence_statistics,
     calc_Shapefunction,
     calc_ShapeDeriv1,
-    calc_ShapeDeriv2
+    calc_ShapeDeriv2,
+    store_dof_info
   };
 
   //! stabilisation actions recognized by fluid3 (genalpha implementation)
@@ -417,6 +419,9 @@ private:
   //! vector of subscale pressure values (history values) in gausspoints
   blitz::Array<double,1>                        sub_pre_old_;
 
+  //! store information about the nodal-unknowns of this element
+  XFEM::ElementDofManager                         eleDofManager_;
+  
   // internal calculation methods
 
   // don't want = operator
@@ -817,7 +822,7 @@ public:
   separately.
   */
   virtual int NumDofPerNode(const DRT::Node& node) const
-  {return 4;}
+  {return parent_->NumDofPerNode(node);}
 
   /*!
   \brief Get number of degrees of freedom per element
@@ -1064,7 +1069,7 @@ public:
   separately.
   */
   virtual int NumDofPerNode(const DRT::Node& node) const
-  {return 4;}
+  {return parent_->NumDofPerNode(node);}
 
   /*!
   \brief Get number of degrees of freedom per element

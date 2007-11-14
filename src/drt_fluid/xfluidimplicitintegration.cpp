@@ -23,20 +23,24 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/drt_periodicbc.H"
 #include "../drt_lib/drt_function.H"
+#include "../drt_xfem/intersection.H"
+#include "../drt_xfem/integrationcell.H"
+#include "../drt_xfem/dof_management.H"
+#include "../drt_xfem/gmsh.H"
 
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     gammi 04/07|
  *----------------------------------------------------------------------*/
 XFluidImplicitTimeInt::XFluidImplicitTimeInt(
-		RefCountPtr<DRT::Discretization> actdis,
+		RefCountPtr<DRT::Discretization> fluiddis,
 		RefCountPtr<DRT::Discretization> cutterdis,
 		LINALG::Solver&       solver,
 		ParameterList&        params,
 		IO::DiscretizationWriter& output,
 		const bool alefluid) :
   // call constructor for "nontrivial" objects
-  discret_(actdis),
+  discret_(fluiddis),
   cutterdiscret_(cutterdis),
   solver_ (solver),
   params_ (params),
@@ -51,7 +55,6 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   writestresses_(params.get<int>("write stresses", 0))
 {
   cout << "Ich bin der Xfluid time integrator" << endl;
-  const int numdim = params_.get<int>("number of velocity degrees of freedom");
 
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
@@ -62,68 +65,49 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled()) discret_->FillComplete();
 
+  // initial Intersection
+  map<int, XFEM::DomainIntCells > elementalDomainIntCells;
+  map<int, XFEM::BoundaryIntCells > elementalBoundaryIntCells;
+  XFEM::Intersection is;
+  is.computeIntersection(fluiddis,cutterdis,elementalDomainIntCells,elementalBoundaryIntCells);
+
+  // debug: write both meshes to file in Gmsh format
+  ofstream f_system("elements_coupled_system.pos");
+  f_system << GMSH::disToString("Fluid", 0.0, fluiddis, elementalDomainIntCells);
+  f_system << GMSH::disToString("Solid", 1.0, cutterdis);
+  f_system << GMSH::getConfigString(2);
+  f_system.close();
+
+  // apply enrichments
+  RCP<DofManager> initialdofmanager = rcp(new DofManager(fluiddis, elementalDomainIntCells));
+  
+  // debug: print enrichments to screen
+  cout << initialdofmanager->toString() << endl;
+  
+  // tell elements about the dofs
+  {
+	  ParameterList eleparams;
+	  eleparams.set("action","store_dof_info");
+	  eleparams.set("dofmanager",initialdofmanager);
+	  eleparams.set("assemble matrix 1",false);
+	  eleparams.set("assemble matrix 2",false);
+	  eleparams.set("assemble vector 1",false);
+	  eleparams.set("assemble vector 2",false);
+	  eleparams.set("assemble vector 3",false);
+	  discret_->Evaluate(eleparams,null,null,null,null,null);
+  }
+  
+  // ensure that degrees of freedom in the discretization have been set
+  discret_->FillComplete();
+  
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
   //                 local <-> global dof numbering
   // -------------------------------------------------------------------
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-  // -------------------------------------------------------------------
-  // get a vector layout from the discretization for a vector which only
-  // contains the velocity dofs and for one vector which only contains
-  // pressure degrees of freedom.
-  //
-  // The maps are designed assuming that every node has pressure and
-  // velocity degrees of freedom --- this won't work for inf-sup stable
-  // elements at the moment!
-  // -------------------------------------------------------------------
-  {
-    // Allocate integer vectors which will hold the dof number of the
-    // velocity or pressure dofs
-    vector<int> velmapdata;
-    vector<int> premapdata;
-
-    velmapdata.reserve(discret_->NumMyRowNodes()*numdim);
-    premapdata.reserve(discret_->NumMyRowNodes());
-
-    int countveldofs = 0;
-    int countpredofs = 0;
-
-    for (int i=0; i<discret_->NumMyRowNodes(); ++i)
-    {
-      DRT::Node* node = discret_->lRowNode(i);
-      vector<int> dof = discret_->Dof(node);
-
-      const int numdofs = dof.size();
-      if (numdofs==numdim+1)
-      {
-        for (int j=0; j<numdofs-1; ++j)
-        {
-        	// add this velocity dof to the velmapdata vector
-        	velmapdata.push_back(dof[j]);
-        	countveldofs+=1;
-        }
-
-        // add this pressure dof to the premapdata vector
-        premapdata.push_back(dof[numdofs-1]);
-        countpredofs += 1;
-      }
-      else
-      {
-        dserror("up to now fluid expects numdim vel + one pre dofs");
-      }
-    }
-
-    // the rowmaps are generated according to the pattern provided by
-    // the data vectors
-    velrowmap_ = rcp(new Epetra_Map(-1,
-                                    velmapdata.size(),&velmapdata[0],0,
-                                    discret_->Comm()));
-    prerowmap_ = rcp(new Epetra_Map(-1,
-                                    premapdata.size(),&premapdata[0],0,
-                                    discret_->Comm()));
-  }
+  
+  ComputeSingleFieldRowMaps(initialdofmanager);
 
   // -------------------------------------------------------------------
   // create empty system matrix --- stiffness and mass are assembled in
@@ -201,6 +185,69 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 } // XFluidImplicitTimeInt::XFluidImplicitTimeInt
 
 
+// -------------------------------------------------------------------
+// get a vector layout from the discretization to construct matching
+// vectors and matrices
+//                 local <-> global dof numbering
+// -------------------------------------------------------------------
+void XFluidImplicitTimeInt::ComputeSingleFieldRowMaps(RCP<XFEM::DofManager> dofman)
+{
+	// -------------------------------------------------------------------
+	// get a vector layout from the discretization for a vector which only
+	// contains the velocity dofs and for one vector which only contains
+	// pressure degrees of freedom.
+	//
+	// The maps are designed assuming that every node has pressure and
+	// velocity degrees of freedom --- this won't work for inf-sup stable
+	// elements at the moment!
+	// -------------------------------------------------------------------
+	
+	// Allocate integer vectors which will hold the dof number of the
+	// velocity or pressure dofs
+	vector<int> velmapdata;
+	vector<int> premapdata;
+
+	int countveldofs = 0;
+	int countpredofs = 0;
+
+	// collect global dofids for velocity and pressure in vectors
+	for (int i=0; i<discret_->NumMyRowNodes(); ++i) {
+		const DRT::Node* node = discret_->lRowNode(i);
+		const std::set<EnrPhysVar> enrvarset = dofman->getDofs(node->Id());
+		const vector<int> dof = discret_->Dof(node);
+		
+		std::set<EnrPhysVar>::const_iterator enrvar;
+		unsigned int countdof = 0;
+		for (enrvar = enrvarset.begin(); enrvar != enrvarset.end(); ++enrvar) {
+			switch (enrvar->getPhysVar()) {
+				case XFEM::Physics::Velx:
+				case XFEM::Physics::Vely: 
+				case XFEM::Physics::Velz:
+					velmapdata.push_back(dof[countdof]);
+					countveldofs++;
+					break;
+				case XFEM::Physics::Pres:
+					premapdata.push_back(dof[countdof]);
+					countpredofs++;
+					break;
+				default:
+					break;
+			}
+			countdof++;
+		}
+	}
+
+	// the rowmaps are generated according to the pattern provided by
+	// the data vectors
+	velrowmap_ = rcp(new Epetra_Map(-1,
+			velmapdata.size(),&velmapdata[0],0,
+			discret_->Comm()));
+	prerowmap_ = rcp(new Epetra_Map(-1,
+			premapdata.size(),&premapdata[0],0,
+			discret_->Comm()));
+}
+		
+		
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -339,6 +386,11 @@ void XFluidImplicitTimeInt::TimeLoop()
     //                         output of solution
     // -------------------------------------------------------------------
     this->Output();
+
+    // -------------------------------------------------------------------
+    //                    calculate lift'n'drag forces
+    // -------------------------------------------------------------------
+    this->LiftDrag();
 
     // -------------------------------------------------------------------
     //                       update time step sizes
@@ -698,6 +750,8 @@ void XFluidImplicitTimeInt::NonlinearSolve()
       full.Norm2(&fullnorm_L2);
     }
 
+    // care for the case that nothing really happens in the velocity 
+    // or pressure field
     if (velnorm_L2 < 1e-5)
     {
       velnorm_L2 = 1.0;
@@ -763,7 +817,7 @@ void XFluidImplicitTimeInt::NonlinearSolve()
 
       LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,
 				     zeros_,dirichtoggle_);
-
+      // end time measurement for application of dirichlet conditions
       tm_applydirich_=null;
     }
 
@@ -810,6 +864,7 @@ void XFluidImplicitTimeInt::NonlinearSolve()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+// TODO: still needed?
 void XFluidImplicitTimeInt::NonlinearConvCheck(
   bool&  stopnonliniter,
   int    itnum         ,
@@ -818,8 +873,8 @@ void XFluidImplicitTimeInt::NonlinearConvCheck(
   )
 {
 
-  RefCountPtr<Epetra_Vector> onlyvel_ = LINALG::CreateVector(*velrowmap_,true);
-  RefCountPtr<Epetra_Vector> onlypre_ = LINALG::CreateVector(*prerowmap_,true);
+  RefCountPtr<Epetra_Vector> onlyvel = LINALG::CreateVector(*velrowmap_,true);
+  RefCountPtr<Epetra_Vector> onlypre = LINALG::CreateVector(*prerowmap_,true);
 
   // ---------------------------------------------- nonlinear iteration
   // maximum number of nonlinear iteration steps
@@ -831,22 +886,22 @@ void XFluidImplicitTimeInt::NonlinearConvCheck(
 
 
   // extract velocity and pressure increments from increment vector
-  LINALG::Export(*incvel_,*onlyvel_);
-  LINALG::Export(*incvel_,*onlypre_);
+  LINALG::Export(*incvel_,*onlyvel);
+  LINALG::Export(*incvel_,*onlypre);
   // calculate L2_Norm of increments
   double incvelnorm_L2;
   double incprenorm_L2;
-  onlyvel_->Norm2(&incvelnorm_L2);
-  onlypre_->Norm2(&incprenorm_L2);
+  onlyvel->Norm2(&incvelnorm_L2);
+  onlypre->Norm2(&incprenorm_L2);
 
   // extract velocity and pressure solutions from solution vector
-  LINALG::Export(*velnp_,*onlyvel_);
-  LINALG::Export(*velnp_,*onlypre_);
+  LINALG::Export(*velnp_,*onlyvel);
+  LINALG::Export(*velnp_,*onlypre);
   // calculate L2_Norm of solution
   double velnorm_L2;
   double prenorm_L2;
-  onlyvel_->Norm2(&velnorm_L2);
-  onlypre_->Norm2(&prenorm_L2);
+  onlyvel->Norm2(&velnorm_L2);
+  onlypre->Norm2(&prenorm_L2);
 
   if (velnorm_L2<EPS5)
   {
@@ -1375,11 +1430,15 @@ void XFluidImplicitTimeInt::SetDefaults(ParameterList& params)
   params.set<int>("eval err for analyt sol",0);
 
   // -------------------------------------------------- time integration
+  // timestepsize
   params.set<double>           ("time step size"           ,0.01);
+  // max. sim. time
   params.set<double>           ("total time"               ,0.0);
   // parameter for time-integration
   params.set<double>           ("theta"                    ,0.6667);
+  // which kind of time-integration
   params.set<FLUID_TIMEINTTYPE>("time int algo"            ,timeint_one_step_theta);
+  // bound for the number of timesteps
   params.set<int>              ("max number timesteps"     ,0);
   // number of steps with start algorithm
   params.set<int>              ("number of start steps"    ,0);
@@ -1410,17 +1469,23 @@ void XFluidImplicitTimeInt::SolveStationaryProblem()
   // start time measurement for timeloop
   tm2_ref_ = rcp(new TimeMonitor(*timedynloop_));
 
-  // set theta to one
+  // set theta to one in order to avoid misuse
   theta_ = 1.0;
+  
 
+  // -------------------------------------------------------------------
   // pseudo time loop (continuation loop)
-  // slightly increasing b.c. values by given timecurves to reach convergence
-  // also for higher Reynolds number flows
+  // ------------------------------------------------------------------- 
+  // slightly increasing b.c. values by given (pseudo-)timecurves to reach 
+  // convergence also for higher Reynolds number flows
+  // as a side effect, you can do parameter studies for different Reynolds 
+  // numbers within only ONE simulation when you apply a proper 
+  // (pseudo-)timecurve
 
-  while ((step_< stepmax_) and (time_< maxtime_))
+  while (step_< stepmax_)
   {
     // -------------------------------------------------------------------
-    //              set time dependent parameters
+    //              set (pseudo-)time dependent parameters
     // -------------------------------------------------------------------
 	   step_ += 1;
 	   time_ += dta_;
@@ -1449,7 +1514,7 @@ void XFluidImplicitTimeInt::SolveStationaryProblem()
 	     // other parameters needed by the elements
 	     eleparams.set("total time",time_);
 	     eleparams.set("delta time",dta_);
-	     eleparams.set("thsl",theta_*dta_);
+	     eleparams.set("thsl",1.0); // no timefac in stationary case
 
 	     // set vector values needed by elements
 	     discret_->ClearState();
@@ -1458,44 +1523,29 @@ void XFluidImplicitTimeInt::SolveStationaryProblem()
 	     // velnp then also holds prescribed new dirichlet values
 	     // dirichtoggle is 1 for dirichlet dofs, 0 elsewhere
 	     discret_->EvaluateDirichlet(eleparams,*velnp_,*dirichtoggle_);
-	     discret_->ClearState();
-
-	     // evaluate Neumann conditions
-	     eleparams.set("total time",time_);
-	     eleparams.set("thsl",theta_*dta_);
-
+	     discret_->ClearState();	     
+	     
+	     // evaluate Neumann b.c.
 	     neumann_loads_->PutScalar(0.0);
 	     discret_->EvaluateNeumann(eleparams,*neumann_loads_);
 	     discret_->ClearState();
 	   }
 
-	   //----------------------- compute an inverse of the dirichtoggle vector
+	   // compute an inverse of the dirichtoggle vector
 	   invtoggle_->PutScalar(1.0);
 	   invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
 
 
     // -------------------------------------------------------------------
-    //                     solve nonlinear equation
+    //                     solve nonlinear equation system
     // -------------------------------------------------------------------
     this->NonlinearSolve();
 
-
-    // -------------------------------------------------------------------
-    // evaluate error for test flows with analytical solutions
-    // -------------------------------------------------------------------
-    //this->EvaluateErrorComparedToAnalyticalSol(time);
-
-
+    
     // -------------------------------------------------------------------
     //                         output of solution
     // -------------------------------------------------------------------
     this->Output();
-
-
-    // -------------------------------------------------------------------
-    //                       update time step sizes
-    // -------------------------------------------------------------------
-    dtp_ = dta_;
 
   } // end of time loop
 
@@ -1523,7 +1573,7 @@ RefCountPtr<Epetra_Vector> XFluidImplicitTimeInt::CalcStresses()
      // create vector (+ initialization with zeros)
      RefCountPtr<Epetra_Vector> integratedshapefunc = LINALG::CreateVector(*dofrowmap,true);
 
-     // call loop over elements
+     // call loop over elements to evaluate the condition
      discret_->ClearState();
      const string condstring("FluidStressCalc");
      discret_->EvaluateCondition(eleparams,integratedshapefunc,condstring);
@@ -1544,6 +1594,7 @@ RefCountPtr<Epetra_Vector> XFluidImplicitTimeInt::CalcStresses()
      // int err = traction->ReciprocalMultiply(1.0,*integratedshapefunc,*trueresidual_,0.0);
      // if (err > 0) dserror("error in traction->ReciprocalMultiply");
 
+
      return integratedshapefunc;
 
 } // XFluidImplicitTimeInt::CalcStresses()
@@ -1556,5 +1607,164 @@ XFluidImplicitTimeInt::~XFluidImplicitTimeInt()
 {
   return;
 }
+
+
+
+/*----------------------------------------------------------------------*
+ | LiftDrag                                                  chfoe 11/07|
+ *----------------------------------------------------------------------*/
+/*!
+\brief calculate lift&drag forces and angular momenta
+
+Lift and drag forces are based upon the right hand side true-residual entities
+of the corresponding nodes. The contribution of the end node of a line is entirely
+added to a present L&D force.
+
+Idea of this routine:
+
+create 
+
+map< label, set<DRT::Node*> > 
+
+which is a set of nodes to each L&D Id
+nodal forces of all the nodes within one set are added to one L&D force
+
+Notice: Angular moments obtained from lift&drag forces currently refere to the 
+        initial configuration, i.e. are built with the coordinates X of a particular
+        node irrespective of its current position.
+*/
+void XFluidImplicitTimeInt::LiftDrag()
+{
+  std::map< const int, std::set<DRT::Node* > > ldnodemap;
+  std::map< const int, const std::vector<double>* > ldcoordmap;
+
+  // allocate and initialise LiftDrag conditions
+  std::vector<DRT::Condition*> ldconds;
+  discret_->GetCondition("LIFTDRAG",ldconds);
+
+  // space dimension of the problem
+  int ndim = params_.get<int>("number of velocity degrees of freedom");
+
+  // there is an L&D condition if it has a size
+  if( ldconds.size() )
+  {
+
+    // prepare output
+    if (discret_->Comm().MyPID()==0) 
+    {
+      cout << "Lift and drag calculation:" << "\n";
+      if (ndim == 2)
+      {
+        cout << "lift'n'drag Id      F_x             F_y             M_z :" << "\n";
+      }
+      if (ndim == 3)
+      {
+        cout << "lift'n'drag Id      F_x             F_y             F_z           ";
+        cout << "M_x             M_y             M_z :" << "\n";
+      }
+    }
+
+    // sort data
+    for( unsigned i=0; i<ldconds.size(); ++i) // loop L&D conditions (i.e. lines in .dat file)
+    {
+      /* get label of present LiftDrag condition  */
+      const unsigned int label = ldconds[i]->Getint("label");
+      /* get new nodeset for new label OR:
+         return pointer to nodeset for known label ... */
+      std::set<DRT::Node*>& nodes = ldnodemap[label];
+
+      // centre coordinates to present label
+      ldcoordmap[label] = ldconds[i]->Get<vector<double> >("centerCoord");
+
+      /* get pointer to its nodal Ids*/
+      const vector<int>* ids = ldconds[i]->Get<vector<int> >("Node Ids");
+
+      /* put all nodes belonging to the L&D line or surface into 'nodes' which are
+         associated with the present label */
+      for (unsigned j=0; j<ids->size(); ++j)
+      {
+        // give me present node Id
+        const int node_id = (*ids)[j];
+        // put it into nodeset of actual label if node is new and mine
+        if( discret_->HaveGlobalNode(node_id) && discret_->gNode(node_id)->Owner()==discret_->Comm().MyPID() )
+	  nodes.insert(discret_->gNode(node_id));
+      }
+    } // end loop over conditions
+
+
+    // now step the label map
+    for( std::map< const int, std::set<DRT::Node*> >::iterator labelit = ldnodemap.begin();
+         labelit != ldnodemap.end(); ++labelit )
+    {
+      std::set<DRT::Node*>& nodes = labelit->second; // pointer to nodeset of present label
+      const int label = labelit->first;                    // the present label
+      std::vector<double> values(6,0.0);             // vector with lift&drag forces
+      std::vector<double> resultvec(6,0.0);          // vector with lift&drag forces after communication
+
+      // get also pointer to centre coordinates
+      const std::vector<double>* centerCoord = ldcoordmap[label];
+
+      // loop all nodes within my set
+      for( std::set<DRT::Node*>::iterator actnode = nodes.begin(); actnode != nodes.end(); ++actnode)
+      {
+        const double* x = (*actnode)->X(); // pointer to nodal coordinates
+        std::vector<double> distances (3);
+        const Epetra_BlockMap& rowdofmap = trueresidual_->Map();
+        std::vector<int> dof = discret_->Dof(*actnode);
+        double fx,fy,fz;
+
+        for (unsigned j=0; j<3; ++j)
+        {
+          distances[j]= x[j]-(*centerCoord)[j];
+        }
+        // get nodal forces
+        fx = (*trueresidual_)[rowdofmap.LID(dof[0])];
+        fy = (*trueresidual_)[rowdofmap.LID(dof[1])];
+        fz = (*trueresidual_)[rowdofmap.LID(dof[2])];
+        values[0] += fx;
+        values[1] += fy;
+        values[2] += fz;
+
+        // calculate nodal angular momenta
+        values[3] += distances[1]*fz-distances[2]*fy;
+        values[4] += distances[2]*fx-distances[0]*fz;
+        values[5] += distances[0]*fy-distances[1]*fx;
+      } // end: loop over nodes
+
+      // care for the fact that we are (most likely) parallel
+      trueresidual_->Comm().SumAll (&(values[0]), &(resultvec[0]), 6);
+
+      // do the output
+      if (discret_->Comm().MyPID()==0)
+      {
+        if (ndim == 2)
+	{
+	  cout << "     " << label << "         ";
+	  cout << std::scientific << resultvec[0] << "    ";
+	  cout << std::scientific << resultvec[1] << "    ";
+	  cout << std::scientific << resultvec[5];
+	  cout << "\n";
+        }
+        if (ndim == 3)
+	{
+	  cout << "     " << label << "         ";
+	  cout << std::scientific << resultvec[0] << "    ";
+	  cout << std::scientific << resultvec[1] << "    ";
+	  cout << std::scientific << resultvec[2] << "    ";
+	  cout << std::scientific << resultvec[3] << "    ";
+	  cout << std::scientific << resultvec[4] << "    ";
+	  cout << std::scientific << resultvec[5];
+	  cout << "\n";
+	}
+      }
+    } // end: loop over L&D labels
+    if (discret_->Comm().MyPID()==0)
+    {
+      cout << "\n";
+    }
+  }
+}//FluidImplicitTimeInt::LiftDrag
+
+
 
 #endif /* CCADISCRET       */

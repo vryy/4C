@@ -29,6 +29,8 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../io/io_drt.H"
+#include "../drt_xfem/dof_management.H"
+#include "../drt_xfem/dof_management.H"
 
 #include "Epetra_Vector.h"
 #include "Epetra_Operator.h"
@@ -70,11 +72,13 @@ public:
 		  IO::DiscretizationWriter& output,
 		  bool alefluid);
 
+
   /*!
   \brief Destructor
 
   */
   virtual ~XFluidImplicitTimeInt();
+
 
   /*!
   \brief Create default parameter list
@@ -82,6 +86,12 @@ public:
   */
   static void SetDefaults(ParameterList& params);
 
+  /*!
+  \brief Create single field rowmaps used for error control of iteration 
+
+  */
+  void ComputeSingleFieldRowMaps(RCP<XFEM::DofManager> dofman);
+  
   /*!
   \brief do explicit predictor step to start nonlinear iteration from
          a better initial value
@@ -174,7 +184,8 @@ public:
 
   */
   void ReadRestart(int step);
-  
+
+
 protected:
 
   // don't want = operator and cctor
@@ -253,10 +264,7 @@ protected:
   RefCountPtr<Epetra_Map>       velrowmap_;
   RefCountPtr<Epetra_Map>       prerowmap_;
 
-  RefCountPtr<Epetra_Vector>    onlyvel;
-  RefCountPtr<Epetra_Vector>    onlypre;
-
-
+  
   // time measurement
   // ----------------
   RefCountPtr<Time> timedyntot_     ;
@@ -266,7 +274,7 @@ protected:
   RefCountPtr<Time> timeeleloop_    ;
   RefCountPtr<Time> timeapplydirich_;
   RefCountPtr<Time> timesolver_     ;
-
+  // ToDo: fix names
   RefCountPtr<TimeMonitor> tm0_ref_ ;
   RefCountPtr<TimeMonitor> tm1_ref_ ;
   RefCountPtr<TimeMonitor> tm2_ref_ ;
@@ -275,10 +283,19 @@ protected:
   RefCountPtr<TimeMonitor> tm_solver_ ;
   RefCountPtr<TimeMonitor> tm_nlniteration_ ;
 
-}; // class XFluidImplicitTimeInt
+private:
+
+/*!
+\brief calculate lift&drag forces and angular momenta
+
+*/
+  void LiftDrag();
+
+
+}; // class FluidImplicitTimeInt
 
 
 
 
-#endif  // #ifndef XFLUIDIMPLICITINTEGRATION_H
+#endif  // #ifndef FLUIDIMPLICITINTEGRATION_H
 #endif  // #ifdef CCADISCRET

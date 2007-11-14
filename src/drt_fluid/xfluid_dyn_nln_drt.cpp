@@ -33,10 +33,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_resulttest.H"
 #include "xfluidresulttest.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_xfem/intersection.H"
-#include "../drt_xfem/integrationcell.H"
-#include "../drt_xfem/dof_management.H"
-#include "../drt_xfem/gmsh.H"
 
 extern struct _FIELD    *field;
 extern struct _GENPROB  genprob;
@@ -61,9 +57,9 @@ void xdyn_fluid_drt()
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  RefCountPtr<DRT::Discretization> fluiddis = null;
+  RCP<DRT::Discretization> fluiddis = null;
   fluiddis = DRT::Problem::Instance()->Dis(genprob.numff,0);
-  RefCountPtr<DRT::Discretization> soliddis = null;
+  RCP<DRT::Discretization> soliddis = null;
   soliddis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
  
   const int fmyrank = fluiddis->Comm().MyPID();
@@ -87,27 +83,6 @@ void xdyn_fluid_drt()
   IO::DiscretizationWriter output(fluiddis);
   output.WriteMesh(0,0.0);
 
-  // Intersection
-  XFEM::Intersection is;
-  map<int, XFEM::DomainIntCells > elementalDomainIntCells;
-  map<int, XFEM::BoundaryIntCells > elementalBoundaryIntCells;
-  is.computeIntersection(fluiddis,soliddis,elementalDomainIntCells,elementalBoundaryIntCells);
-
-  // debug: write both meshes to file in Gmsh format
-  ofstream f_system;
-  f_system.open ("elements_coupled_system.pos");
-  f_system << GMSH::disToString("Fluid", 0.0, fluiddis, elementalDomainIntCells);
-  f_system << GMSH::disToString("Solid", 1.0, soliddis);
-  f_system << GMSH::getConfigString(2);
-  f_system.close();
-
-  // apply enrichments
-  DofManager dofmanager(fluiddis, elementalDomainIntCells);
-  
-  // debug: print enrichments to screen
-  cout << dofmanager.toString() << endl;
-
-  
   // -------------------------------------------------------------------
   // set some pointers and variables
   // -------------------------------------------------------------------
@@ -124,7 +99,7 @@ void xdyn_fluid_drt()
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
-  RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
+  RCP<ParameterList> solveparams = rcp(new ParameterList());
   LINALG::Solver solver(solveparams,fluiddis->Comm(),allfiles.out_err);
   solver.TranslateSolverParameters(*solveparams,fluidsolv);
   fluiddis->ComputeNullSpaceIfNecessary(*solveparams);
