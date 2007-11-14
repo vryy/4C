@@ -8,9 +8,7 @@
 #include <vector>
 
 // Trilinos includes
-#include <Epetra_Operator.h>
 #include <Epetra_CrsMatrix.h>
-#include <Epetra_RowMatrix.h>
 #ifdef EPETRA_MPI
 #include <Epetra_MpiComm.h>
 #else
@@ -57,7 +55,7 @@ using namespace MLAPI;
 
 */
 
-class  VM3_Solver : public virtual Epetra_Operator
+class  VM3_Solver
 {
 public:
 
@@ -97,21 +95,6 @@ public:
   */
   const Epetra_Comm & Comm() const {return(A_->Comm());}
 
-  /*!
-  \brief Get fine level OperatorDomainMap
-
-  Derived from Epetra_Operator, get fine level OperatorDomainMap
-
-  */
-  const Epetra_Map & OperatorDomainMap() const {return A_->OperatorDomainMap();}
-
-  /*!
-  \brief Get fine level OperatorRangeMap
-
-  Derived from Epetra_Operator, get fine level OperatorRangeMap
-
-  */
-  const Epetra_Map & OperatorRangeMap() const {return A_->OperatorRangeMap();}
 
   //@}
   // @{ \name Apply methods
@@ -123,18 +106,6 @@ public:
    Compute the vm3 solver
   */
   bool Compute();
-
-  /*!
-  \brief ApplyInverse the preconditioner
-
-   ApplyInverse the preconditioner. Method is derived from Epetra_Operator.
-
-
-   \param X   (In) : Epetra_MultiVector matching the fine level map of this
-                     preconditioner
-   \param Y (Out)  : Epetra_MultiVector containing the result on output
-  */
-  int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const ;
 
   /*!
   \brief Apply the VM3 solver
@@ -149,63 +120,12 @@ public:
   int Solve(const Epetra_Vector& X, Epetra_Vector& Y, ParameterList& params);
 
 
-  // @{ \name Not implemented methods derived from Epetra_Operator
-
-  /*!
-  \brief not implemented
-  */
-  int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
-  { cout << "VM3_Solver::Apply does not make sense for an ML-Multilevel Operator\n"
-         << "Use ApplyInverse\n";throw -1;return(-1);}
-
-  /*!
-  \brief not implemented
-  */
-  int SetUseTranspose(bool UseTranspose) { cout << "VM3_Solver::SetUseTranspose not impl.\n";return -1;}
-
-  /*!
-  \brief not implemented
-  */
-  double NormInf() const {cout << "VM3_Solver::NormInf not impl.\n";
-                          return(-1.0);}
-
-
-  /*!
-  \brief not implemented
-  */
-  bool UseTranspose() const {cout << "VM3_Solver::UseTranspose not impl.\n"; return false;}
-
-  /*!
-  \brief not implemented
-  */
-  bool HasNormInf() const {cout << "VM3_Solver::HasNormInf not impl.\n"; return false;}
-
-  //@}
 
 private:
 
   // don't want copy-ctor and = operator
   VM3_Solver(VM3_Solver& old);
   VM3_Solver operator = (const VM3_Solver& old);
-
-  // the v-cycle
-  int MultiLevelVCycle(MultiVector& b_f, MultiVector& x_f) const;
-
-  // restriction operation (from level 0 to level)
-  int Restrict(const MultiVector& x_f, MultiVector& x_r, int level) const;
-
-  // prolongation operation (from level to level 0)
-  int Prolong(const MultiVector& x_l, MultiVector& x_0, int level) const;
-
-  // some helpers
-  inline const Operator& P(const int i) const { return (mlapiPmod_[i]); }
-  inline const Operator& R(const int i) const { return (mlapiRmod_[i]); }
-//  inline const Operator& RP(const int i) const { return (mlapiRP_[i]); }
-//  inline const Operator& PR(const int i) const { return (mlapiPR_[i]); }
-//  inline const Operator& RA(const int i) const { return (mlapiRA_[i]); }
-  inline const Operator& A(const int i) const { return (mlapiA_[i]); }
-  inline const Operator& Aplus(const int i) const { return (mlapiAplus_[i]); }
-  inline const InverseOperator& S(const int i) const { return (mlapiS_[i]); }
 
   string                         label_;       // the label of this class
   bool                           iscomputed_;  // flag indicating whether preconditioner is ready for use
@@ -218,15 +138,6 @@ private:
   Operator               Ptent_;
   Operator               Rtent_;
   RCP<Epetra_Map>        coarsermap_;
-
-  vector<Operator>               mlapiRmod_;   // restriction
-  vector<Operator>               mlapiPmod_;   // prolongation
-//  vector<Operator>               mlapiRP_;     // restriction * prolongatoin
-//  vector<Operator>               mlapiPR_;     // prolongation * restriction
-//  vector<Operator>               mlapiRA_;     // restriction * A
-  vector<Operator>               mlapiAplus_;  // operator Aplus on each grid (actually needed only on finest grid)
-  vector<Operator>               mlapiA_;      // operator A on each grid
-  vector<InverseOperator>        mlapiS_;      // smoother on each grid
 
 }; // VM3_Solver
 
