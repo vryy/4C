@@ -172,6 +172,9 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
   
   Epetra_SerialDenseMatrix CM(3,3);
   CM.Multiply('N','N',1.0,C,M,0.0);
+  // compute CM + MC
+  Epetra_SerialDenseMatrix CMMC(CM);  // CMMC = CM
+  CMMC.Multiply('N','N',1.0,M,C,1.0); // CMMC = CM + MC
   // anisotropic Invariant J4 = tr[CM]
   double J4 = CM(0,0) + CM(1,1) + CM(2,2);
 
@@ -212,10 +215,9 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
     Mscale.Scale(fiberscalar*I1);
     S += Mscale;
     // compute CM + MC
-    Epetra_SerialDenseMatrix CMMC(CM); // CMMC = CM
-    CMMC.Multiply('N','N',1.0,M,C,1.0); // CMMC = CM + MC
-    CMMC.Scale(-fiberscalar);
-    S += CMMC;
+    Epetra_SerialDenseMatrix CMMCscale(CMMC);
+    CMMCscale.Scale(-fiberscalar);
+    S += CMMCscale;
     
     Iscale = I;
     Iscale.Scale(fiberscalar*J4);
@@ -232,6 +234,53 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
   (*stress)(4) = S(1,2);
   (*stress)(5) = S(0,2);
   // end of ******* evaluate 2nd PK stress ********************
+  
+  // ********** evaluate C-Matrix *****************************
+  // isotropic part
+  double d2W_dI3dI3 = 4.0/9.0 * c1 * I1 * pow(I3,-7.0/3.0)
+                    + eps1 * ( pow(I3,eps2) * eps2*eps2 / (I3*I3)
+                             - pow(I3,eps2) * eps2 / (I3*I3)
+                             + eps2*eps2 / (pow(I3,eps2) * I3*I3)
+                             + eps2 / (pow(I3,eps2) * I3*I3) );
+  double d2W_dI3dI1 = -1.0/3.0 * c1 * pow(I3,-4.0/3.0);
+  double dW_dI3     = -1.0/3.0 * c1 * I1 * pow(I3,-4.0/3.0)
+                      + eps1 * (pow(I3,eps2)*eps2/I3 - eps2/(pow(I3,eps2)*I3));
+  
+  ElastSymTensorMultiply((*cmat),d2W_dI3dI3,CofC,CofC,1.0);     // CofC x CofC
+  ElastSymTensorMultiplyAddSym((*cmat),d2W_dI3dI1,I,Cinv,1.0);  // I x Cinv + Cinv x I
+  ElastSymTensorMultiply((*cmat),I3 * dW_dI3,Cinv,Cinv,1.0);    // Cinv x Cinv
+  ElastSymTensor_o_Multiply((*cmat),-I3 * dW_dI3,Cinv,Cinv,1.0);// - Cinv o Cinv
+  
+  // fiber part
+  if (K3 >= 2.0){
+    // compute derivatives of W_ti w.r.t. Invariants
+    double K3m2sq = (K3 - 2.0) * (K3 - 2.0);
+    double K3m2p = pow((K3 - 2.0),alpha2);
+    double d2W_dJ4dJ4 = ( alpha1 * K3m2p * alpha2*alpha2 * I1*I1 
+                         -alpha1 * K3m2p * alpha2 * I1*I1 ) / K3m2sq;
+    double d2W_dJ5dJ5 = ( alpha1 * K3m2p * alpha2*alpha2  
+                         -alpha1 * K3m2p * alpha2 ) / K3m2sq;
+    double d2W_dI1dJ4 = ( alpha1 * K3m2p * alpha2*alpha2 * J4 * I1  
+                         -alpha1 * K3m2p * alpha2 * J4 * I1 ) / K3m2sq
+                         +alpha1 * K3m2p * alpha2 / (K3 - 2.0);
+    double d2W_dI1dJ5 = (-alpha1 * K3m2p * alpha2*alpha2 * J4
+                         +alpha1 * K3m2p * alpha2 * J4 ) / K3m2sq;
+    double d2W_dJ4dJ5 = (-alpha1 * K3m2p * alpha2*alpha2 * I1
+                         +alpha1 * K3m2p * alpha2 * I1 ) / K3m2sq;
+    double dW_dJ5     = - alpha1 * K3m2p * alpha2 / (K3 - 2.0);
+    // multiply these with corresponding tensor products
+    ElastSymTensorMultiply((*cmat),d2W_dJ4dJ4,M,M,1.0);         // M x M
+    ElastSymTensorMultiply((*cmat),d2W_dJ5dJ5,CMMC,CMMC,1.0);   // CM+MC x CM+MC
+    ElastSymTensorMultiplyAddSym((*cmat),d2W_dI1dJ4,I,M,1.0);   // I x M + M x I
+    ElastSymTensorMultiplyAddSym((*cmat),d2W_dI1dJ5,CMMC,I,1.0);// (CM+MC) x I + I x (CM+MC)
+    ElastSymTensorMultiplyAddSym((*cmat),d2W_dJ4dJ5,CMMC,M,1.0);// (CM+MC) x M + M x (CM+MC)
+    ElastSymTensor_o_Multiply((*cmat),dW_dJ5,I,M,1.0);          // I o M
+    ElastSymTensor_o_Multiply((*cmat),dW_dJ5,M,I,1.0);          // M o I
+  }
+  
+  // the factor 4!
+  (*cmat).Scale(4.0);
+  // end of ********** evaluate C-Matrix *****************************
   
   return;
 }
