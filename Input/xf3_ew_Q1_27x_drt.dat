@@ -26,13 +26,13 @@ DIM                3
 MATERIALS          1
 NUMDF        4
 -------------------------------------------------------PROBLEM TYP
-PROBLEMTYP   Fluid
-NUMFIELD     1
+PROBLEMTYP   Fluid_XFEM
+NUMFIELD     2
 TIMETYP      Dynamic
 RESTART      0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  1
-NUMSTRUCDIS  0
+NUMSTRUCDIS  1
 NUMALEDIS    0
 ----------------------------------------------------------------IO
 FLUID_SOL         Yes
@@ -772,6 +772,7 @@ NODE 64  COORD 0.500000  0.500000  -0.500000
 ------------------------------------------------------ALE ELEMENTS
 ---------------------------------------------------------MATERIALS
 MAT       1 MAT_fluid  VISCOSITY 1.0 DENSITY 1.0
+MAT 2 MAT_Struct_StVenantKirchhoff  YOUNG 10000 NUE 0.3 DENS 0.0 THEXPANS 0.0
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1

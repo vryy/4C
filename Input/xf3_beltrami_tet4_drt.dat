@@ -24,15 +24,15 @@ DIM                3
 MATERIALS          1
 NUMDF        	   4
 -------------------------------------------------------PROBLEM TYP
-PROBLEMTYP   Fluid
-NUMFIELD     1
+PROBLEMTYP   Fluid_XFEM
+NUMFIELD     2
 TIMETYP      Dynamic
 TRACE        secure
 ALGEBRA      Trilinos
 RESTART      0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  1
-NUMSTRUCDIS  0
+NUMSTRUCDIS  1
 NUMALEDIS    0
 NUMTHERMDIS  0
 ----------------------------------------------------------------IO
@@ -32648,6 +32648,7 @@ NODE          125     COORD 1.000000000000000e+00     1.000000000000000e+00     
 --------------------------------------------------THERMAL ELEMENTS
 ---------------------------------------------------------MATERIALS
 MAT       1 MAT_fluid  VISCOSITY 0.001 DENSITY 1.0 GAMMA 1.0
+MAT 2 MAT_Struct_StVenantKirchhoff  YOUNG 10000 NUE 0.3 DENS 0.0 THEXPANS 0.0
 ----------------------------------------------MULTILAYER MATERIALS
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES
