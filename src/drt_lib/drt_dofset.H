@@ -122,7 +122,7 @@ public:
   //! @name Access methods
 
   /// Get number of dofs for given node
-  virtual int NumDof(Node* node) const
+  virtual int NumDof(const Node* node) const
     {
       int lid = node->LID();
       if (lid==-1)
@@ -131,7 +131,7 @@ public:
     }
 
   /// Get number of dofs for given element
-  virtual int NumDof(Element* element) const
+  virtual int NumDof(const Element* element) const
     {
       int lid = element->LID();
       if (lid==-1)
@@ -140,7 +140,7 @@ public:
     }
 
   /// Get the gid of a dof for given node
-  virtual int Dof(Node* node, int dof) const
+  virtual int Dof(const Node* node, int dof) const
     {
       int lid = node->LID();
       if (lid==-1)
@@ -149,7 +149,7 @@ public:
     }
 
   /// Get the gid of a dof for given element
-  virtual int Dof(Element* element, int dof) const
+  virtual int Dof(const Element* element, int dof) const
     {
       int lid = element->LID();
       if (lid==-1)
@@ -158,7 +158,7 @@ public:
     }
 
   /// Get the gid of all dofs of a node
-  virtual vector<int> Dof(Node* node) const
+  virtual vector<int> Dof(const Node* node) const
     {
       int lid = node->LID();
       if (lid==-1)
@@ -171,7 +171,7 @@ public:
     }
 
   /// Get the gid of all dofs of a element
-  virtual vector<int> Dof(Element* element) const
+  virtual vector<int> Dof(const Element* element) const
     {
       int lid = element->LID();
       if (lid==-1)

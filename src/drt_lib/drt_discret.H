@@ -96,7 +96,7 @@ public:
   - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
   \param node (in)      : the node those number of dofs are requested
   */
-  virtual int NumDof(Node* node) const
+  virtual int NumDof(const Node* node) const
     { dsassert(havedof_,"no dofs assigned"); return dofsets_[currentdofset_]->NumDof(node); }
 
   /*!
@@ -107,7 +107,7 @@ public:
   - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
   \param element (in)      : the element those number of dofs are requested
   */
-  virtual int NumDof(Element* element) const
+  virtual int NumDof(const Element* element) const
     { dsassert(havedof_,"no dofs assigned"); return dofsets_[currentdofset_]->NumDof(element); }
 
   /*!
@@ -119,7 +119,7 @@ public:
   \param node (in)      : the node
   \param dof (in)       : the node local dof number
   */
-  virtual int Dof(Node* node, int dof) const
+  virtual int Dof(const Node* node, const int dof) const
     { dsassert(havedof_,"no dofs assigned"); return dofsets_[currentdofset_]->Dof(node,dof); }
 
   /*!
@@ -131,7 +131,7 @@ public:
   \param element (in)      : the element
   \param dof (in)          : the element local dof number
   */
-  virtual int Dof(Element* element, int dof) const
+  virtual int Dof(const Element* element, const int dof) const
     { dsassert(havedof_,"no dofs assigned"); return dofsets_[currentdofset_]->Dof(element,dof); }
 
   /*!
@@ -143,7 +143,7 @@ public:
   - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
   \param node (in)      : the node
   */
-  virtual vector<int> Dof(Node* node) const
+  virtual vector<int> Dof(const Node* node) const
     { dsassert(havedof_,"no dofs assigned"); return dofsets_[currentdofset_]->Dof(node); }
 
   /*!
@@ -155,7 +155,7 @@ public:
   - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
   \param element (in)      : the element
   */
-  virtual vector<int> Dof(Element* element) const
+  virtual vector<int> Dof(const Element* element) const
     { dsassert(havedof_,"no dofs assigned"); return dofsets_[currentdofset_]->Dof(element); }
 
   /*!
