@@ -66,6 +66,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
       numdf = 2;
       dimns = 3;
     break;
+    case DRT::Element::element_sosh8:
     case DRT::Element::element_so_hex8:
       numdf = 3;
       dimns = 6;
@@ -173,7 +174,8 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   // works straight for bricks as well
   if (ele->Type() == DRT::Element::element_shell8 ||
       ele->Type() == DRT::Element::element_ale3 ||
-      ele->Type() == DRT::Element::element_so_hex8)
+      ele->Type() == DRT::Element::element_so_hex8 || 
+      ele->Type() == DRT::Element::element_sosh8)
   {
     for (int i=0; i<NumMyRowNodes(); ++i)
     {
