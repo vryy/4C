@@ -189,6 +189,13 @@ void MAT::HyperPolyconvex::Evaluate(const Epetra_SerialDenseVector* glstrain,
   // Anisotropic Invariant K
   double K = HxC(0,0) + HxC(1,1) + HxC(2,2);
   
+  /* Underlying strain-energy function
+   * W1 = (c*((Inv[0]/pow(Inv[2],drittel))-3.0)); ground substance SEF
+   * W2=(k1/(2.0*k2))*(exp(k2*pow((K-1.0),2)-1.0)); fiber SEF
+   * W3 = (epsilon*(pow(Inv[2],gamma)+pow(Inv[2],(-gamma))-2)); penalty function
+   * W = W1 + W2 + W3
+   */
+  
   // ******* evaluate 2nd PK stress ********************
   Epetra_SerialDenseMatrix S(Cinv);   // S = C^{-T}
   
