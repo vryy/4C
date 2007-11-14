@@ -276,7 +276,6 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
 
   // extract the ML parameters and build system of equations
   ParameterList&  mllist = Params().sublist("ML Parameters");
-  // cout << "Parameter list:\n" << mllist;
   RCP<VM3_Solver> vm3_solver = rcp(new VM3_Solver::VM3_Solver(matrix, matrix2, mllist,true) );
 
   // Apply the solver.
