@@ -302,13 +302,29 @@ void LINALG::SymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)
 }
 
 
+/*----------------------------------------------------------------------*
+ |                                             (public)        maf 06/07|
+ *----------------------------------------------------------------------*/
 void LINALG::SymmetriseMatrix(Epetra_SerialDenseMatrix& A)
 {
+#if 1
+  const int n = A.N();
+  if (n != A.M()) dserror("Cannot symmetrize non-square matrix");
+  // do not make deep copy of A, matrix addition and full scaling just to sym it
+  // gee
+  for (int i=0; i<n; ++i)
+    for (int j=i+1; j<n; ++j)
+    {
+      const double aver = 0.5*(A(i,j)+A(j,i));
+      A(i,j) = A(j,i) = aver;
+    }
+#else
   Epetra_SerialDenseMatrix AT(A);
   AT.SetUseTranspose(true);
   // bool istranspose = AT.UseTranspose();
   A += AT;
   A.Scale(0.5);
+#endif
   return;
 }
 
