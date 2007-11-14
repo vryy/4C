@@ -640,7 +640,7 @@ void ElementReader::Complete()
 
   int err = dis_->FillComplete();
   if (err)
-    dserror("aledis->FillComplete() returned %d",err);
+    dserror("dis_->FillComplete() returned %d",err);
 
   if (!myrank && !reader_.MyOutputFlag())
   {
