@@ -483,7 +483,6 @@ void CondifImplicitTimeInt::Solve(
   )
 {
   const Epetra_Map* dofrowmap       = discret_->DofRowMap();
-
   double            dtsolve = 0;
   double            dtele   = 0;
   double            tcpu   ;
@@ -497,22 +496,11 @@ void CondifImplicitTimeInt::Solve(
     // get cpu time
     tcpu=ds_cputime();
 
-#if 1
-      sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
-#else
-      // zero out the stiffness matrix
-      // We reuse the sparse mask and assemble into a filled matrix
-      // after the first step. This is way faster.
-      if (sysmat_==null)
-        sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
-      else
-        sysmat_->PutScalar(0.0);
-#endif
-    sysmat_dc_ = null;
+    sysmat_    = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
     sysmat_dc_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_); 
 
     // zero out residual
-    residual_->PutScalar(0.0);
+    //residual_->PutScalar(0.0); don't need this, see next line
     residual_->Update(1.0,*neumann_loads_,0.0);
 
     // create the parameters for the discretization
@@ -578,7 +566,7 @@ void CondifImplicitTimeInt::Solve(
     // get cpu time
     tcpu=ds_cputime();
 
-    solver_.Solve(sysmat_dc_,sysmat_,phinp_,residual_,true,1);
+    solver_.Solve(sysmat_dc_,sysmat_,phinp_,residual_,true,true);
 
     // end time measurement for solver call
     tm5_ref_=null;
@@ -862,7 +850,7 @@ void CondifImplicitTimeInt::SolveStationaryProblem()
   // -------------------------------------------------------------------
   //                         out to screen
   // -------------------------------------------------------------------
-  if (myrank_==0) printf("Stationary Solver");
+  if (myrank_==0) printf("Stationary Solver\n");
 
   // -------------------------------------------------------------------
   //         evaluate dirichlet and neumann boundary conditions
