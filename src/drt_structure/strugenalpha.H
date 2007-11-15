@@ -69,7 +69,8 @@ public:
   explicit StruGenAlpha(ParameterList& params,
                         DRT::Discretization& dis,
                         LINALG::Solver& solver,
-                        IO::DiscretizationWriter& output);
+                        IO::DiscretizationWriter& output,
+                        bool init = true);
 
   /*!
   \brief Destructor

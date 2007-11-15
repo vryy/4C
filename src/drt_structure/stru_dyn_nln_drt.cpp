@@ -22,6 +22,7 @@ Maintainer: Michael Gee
 
 #include "stru_dyn_nln_drt.H"
 #include "strugenalpha.H"
+#include "../drt_contact/contactstrugenalpha.H"
 #include "../io/io_drt.H"
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -134,6 +135,7 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<int>   ("max iterations",sdyn->maxiter);
       genalphaparams.set<int>   ("num iterations",-1);
       genalphaparams.set<double>("tolerance displacements",sdyn->toldisp);
+      genalphaparams.set<bool>  ("contact",(bool)sdyn->contact);
 
       genalphaparams.set<bool>  ("io structural disp",ioflags.struct_disp);
       genalphaparams.set<int>   ("io disp every nstep",sdyn->updevry_disp);
@@ -187,12 +189,15 @@ void dyn_nlnstructural_drt()
       }
 
       // create the time integrator
-      StruGenAlpha timeintegrator(genalphaparams,*actdis,solver,output);
+      bool contact = genalphaparams.get("contact",false);
+      RCP<StruGenAlpha> tintegrator = null;
+      if (!contact) tintegrator = rcp(new StruGenAlpha(genalphaparams,*actdis,solver,output));
+      else          tintegrator = rcp(new ContactStruGenAlpha(genalphaparams,*actdis,solver,output));
 
       // do restart if demanded from input file
       // note that this changes time and step in genalphaparams
       if (genprob.restart)
-        timeintegrator.ReadRestart(genprob.restart);
+        tintegrator->ReadRestart(genprob.restart);
 
       // write mesh always at beginning of calc or restart
       {
@@ -202,7 +207,7 @@ void dyn_nlnstructural_drt()
       }
 
       // integrate in time and space
-      timeintegrator.Integrate();
+      tintegrator->Integrate();
     }
     break;
     //==================================================================
