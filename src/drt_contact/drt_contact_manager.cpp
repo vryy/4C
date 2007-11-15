@@ -30,7 +30,7 @@ discret_(discret)
   vector<DRT::Condition*> contactconditions(0);
   Discret().GetCondition("Contact",contactconditions);
   if ((int)contactconditions.size()<=1)  dserror("Not enough contact conditions in discretization");
-  if ((int)contactconditions.size() % 2) dserror("Odd number of contact conditions is impossible");
+  if ((int)contactconditions.size() %2) dserror("Odd number of contact conditions is impossible");
   
   // find all pairs of matching contact conditions
   // there are num conditions / 2 pairs
