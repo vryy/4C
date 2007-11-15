@@ -89,55 +89,55 @@ public:
   \brief Do time integration
 
   */
-  void Integrate();
+  virtual void Integrate();
 
   /*!
   \brief Integrate single step in time
 
   */
-  void IntegrateStep();
+  virtual void IntegrateStep();
 
   /*!
   \brief do constant predictor step
 
   */
-  void ConstantPredictor();
+  virtual void ConstantPredictor();
 
   /*!
   \brief do matrix free constant predictor
 
   */
-  void MatrixFreeConstantPredictor();
+  virtual void MatrixFreeConstantPredictor();
 
   /*!
   \brief do consistent constant predictor step
 
   */
-  void ConsistentPredictor();
+  virtual void ConsistentPredictor();
 
   /*!
   \brief do full Newton iteration
 
   */
-  void FullNewton();
+  virtual void FullNewton();
 
   /*!
   \brief do modified Newton iteration (makes sense with direct solvers only)
 
   */
-  void ModifiedNewton();
+  virtual void ModifiedNewton();
 
   /*!
   \brief do matrix free Newton iteration (only with Aztec)
 
   */
-  void MatrixFreeNewton();
+  virtual void MatrixFreeNewton();
 
   /*!
   \brief do nonlinear cg iteration using nox
 
   */
-  void NonlinearCG();
+  virtual void NonlinearCG();
 
   /*!
   \brief do pseudo transient continuation nonlinear iteration
@@ -147,7 +147,7 @@ public:
   can do larger time steps
 
   */
-  void PTC();
+  virtual void PTC();
 
   /*!
   \brief Compute the residual to a given state x
@@ -173,71 +173,68 @@ public:
   \brief determine new state at t_{n+1}
 
   */
-  void ExtrapolateEndState();
+  virtual void ExtrapolateEndState();
 
   /*!
   \brief update configuration and output to file/screen
 
   */
-  void UpdateandOutput();
+  virtual void UpdateandOutput();
 
   /*!
   \brief restart calculation from a given step
 
   */
-  void ReadRestart(int step);
+  virtual void ReadRestart(int step);
 
   /*!
   \brief return displacements at midpoint
 
   */
-  const Epetra_Vector& Getdu() { return *disi_; }
+  virtual const Epetra_Vector& Getdu() { return *disi_; }
 
   /*!
   \brief return rowmap
 
   */
-  const Epetra_Map* GetMap() { return discret_.DofRowMap(); }
+  virtual const Epetra_Map* GetMap() { return discret_.DofRowMap(); }
 
   /*!
   \brief Get time integration scheme (TIS) parameters
   
   */
-  void GetTISPara(double& beta, 
-                  double& gamma, 
-                  double& alpham, 
-                  double& alphaf);
+  virtual void GetTISPara(double& beta,double& gamma,double& alpham,double& alphaf);
 
   /*!
   \brief set time step size
 
   */
-  void SetTimeStepSize(const double& timstpsiz);
+  virtual void SetTimeStepSize(const double& timstpsiz);
 
   /*!
   \brief Set time
 
   */
-  void SetTime(const double& tim);
+  virtual void SetTime(const double& tim);
 
   /*!
   \brief Set time step
 
   */
-  void SetTimeStep(const int& stp);
+  virtual void SetTimeStep(const int& stp);
 
-  /*
+  /*!
   \brief Get last converged accelerations
 
   */
-  const RefCountPtr<Epetra_Vector>& GetAcc() 
+  virtual const RCP<Epetra_Vector>& GetAcc() 
   { return acc_; }
 
-  /*
+  /*!
   \brief Get last converged accelerations
 
   */
-  const RefCountPtr<Epetra_Vector>& GetAccn() 
+  virtual const RCP<Epetra_Vector>& GetAccn() 
   { return accn_; }
 
 protected:
