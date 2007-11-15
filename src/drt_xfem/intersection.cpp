@@ -2690,7 +2690,7 @@ void Intersection::liftSteinerPointOnSurface(
         Epetra_SerialDenseVector n2 = subtractsTwoVectors(p2, Steinerpoint);
     
         Epetra_SerialDenseVector normal = computeCrossProduct( n1, n2);
-        normal = normalizeVector(normal);
+        normalizeVector(normal);
     
         for(int k=0; k<3; k++)
             averageNormal[k] += normal[k];
@@ -2773,8 +2773,8 @@ void Intersection::liftSteinerPointOnEdge(
     Epetra_SerialDenseVector n1 = computeCrossProduct( r1, r2);
     Epetra_SerialDenseVector n2 = computeCrossProduct( r1, n1);
     
-    n1 = normalizeVector(n1);
-    n2 = normalizeVector(n2);
+    normalizeVector(n1);
+    normalizeVector(n2);
 
     vector<Epetra_SerialDenseVector> plane(4);      
     plane[0] = addTwoVectors(Steinerpoint, n1);               
@@ -3445,11 +3445,11 @@ void Intersection::computeIntersectionNormal(
  
     // normal of the plane
     n = computeCrossProduct(r1, r2);
-    n = normalizeVector(n);
+    normalizeVector(n);
  
     // direction vector of the intersection line
     r = computeCrossProduct(n, r2);  
-    r = normalizeVector(r);
+    normalizeVector(r);
  
     // computes the start point of the line
     m = computeLineMidpoint(p2, p3);
@@ -3547,8 +3547,8 @@ void Intersection::computeIntersectionNormal(
     for(int i = 0; i < 3; i++)
         averageNormal[i] = 0.5*averageNormal[i];
         
-    averageNormal  = normalizeVector(averageNormal);
-    rPlane  = normalizeVector(rPlane);
+    normalizeVector(averageNormal);
+    normalizeVector(rPlane);
  
     Epetra_SerialDenseVector m(3);
     for(int i = 0; i < 3; i++)

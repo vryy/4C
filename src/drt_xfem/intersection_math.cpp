@@ -44,28 +44,6 @@ static int              iminarg1,iminarg2;
 static const double     TOL14_ = 1e-14;
                
 static const double     TOL7_ = 1e-7;
-        
-        
-        
-/*----------------------------------------------------------------------*
- |    Error handling                                        u.may 09/07 |
- |    ERROR(s) writes an error message and terminates the program       |
- |    Example of usage:                                                 |
- |    ERROR("File not found");                                          |
- *----------------------------------------------------------------------*/  
-void errhandler( 
-    int            nLine, 
-    const char *   szFile, 
-    const char *   szString )
-{
-    fprintf( stdout, "%s:%d Error : %s", szFile, nLine, szString );
-    fprintf( stdout, "\n" );
-    exit(1);
-}
-
-#define ERROR(s)    errhandler( __LINE__, __FILE__, s)
-
-
 
 
 /*----------------------------------------------------------------------*
@@ -172,59 +150,14 @@ Epetra_SerialDenseVector XFEM::computeCrossProduct(
 
 
 /*----------------------------------------------------------------------*
- |  ML:     computes the absolute value (L2-norm)            u.may 08/07|
- |          of an Epetra_SerialDenseVector                              |
- *----------------------------------------------------------------------*/  
-double XFEM::computeAbsoluteValue(   
-    const Epetra_SerialDenseVector& a)
-{
-    double absoluteValue = 0.0;
-   
-    for(int i = 0; i < a.Length(); i++)
-         absoluteValue += a[i]*a[i];
-        
-    absoluteValue = sqrt(absoluteValue);
-    
-    return absoluteValue;
-}
-
-
-
-/*----------------------------------------------------------------------*
- |  ML:     multiplies a scalar with a vector                u.may 08/07|
- *----------------------------------------------------------------------*/  
-Epetra_SerialDenseVector XFEM::computeScalarVectorMultiplication(   
-    const double                        s, 
-    const Epetra_SerialDenseVector&     v)
-{
-    Epetra_SerialDenseVector  vResult(v.Length());
-    
-    for(int i = 0; i < v.Length(); i++)
-        vResult[i] = s*v[i];
-    
-    return vResult;
-}
-
-
-
-/*----------------------------------------------------------------------*
  |  ML:     normalizes a Epetra_SerialDenseVector            u.may 08/07|
  *----------------------------------------------------------------------*/  
-Epetra_SerialDenseVector XFEM::normalizeVector(   
-    const Epetra_SerialDenseVector&     v)
+void XFEM::normalizeVector(   
+    Epetra_SerialDenseVector&     v)
 {
-    double absValue = 0.0;
-    Epetra_SerialDenseVector  vResult(v.Length());
-    
-    for(int i = 0; i < v.Length(); i++)
-       absValue += v[i]*v[i];
-    
-    absValue = sqrt(absValue);
-    
-    for(int i = 0; i < v.Length(); i++)
-        vResult[i] = v[i]/absValue;
-    
-    return vResult;
+    const double norm = v.Norm2();
+    v.Scale(1.0/norm);
+    return;
 }
 
 
@@ -235,12 +168,11 @@ Epetra_SerialDenseVector XFEM::normalizeVector(
  |    (modified from NUMERICAL RECIPES)                                 |
  *----------------------------------------------------------------------*/  
 double XFEM::pythagoras(
-    double  a, 
-    double  b)
+    const double  a, 
+    const double  b)
 {
-    double absa,absb;
-    absa=fabs(a);
-    absb=fabs(b);
+    const double absa=fabs(a);
+    const double absb=fabs(b);
     if (absa > absb) return absa*sqrt(1.0+SQR(absb/absa));
     else return (absb == 0.0 ? 0.0 : absb*sqrt(1.0+SQR(absa/absb)));
 }
@@ -255,8 +187,8 @@ void XFEM::svdcmp(
     Epetra_SerialDenseMatrix&  A, 
     Epetra_SerialDenseVector&  W, 
     Epetra_SerialDenseMatrix&  V,
-    int n,
-    int m)
+    const int n,
+    const int m)
 {
     int flag,i,its,j,jj,k,l,nm;
     double anorm,c,f,g,h,s,scale,x,y,z;
@@ -393,7 +325,7 @@ void XFEM::svdcmp(
                     }
                     break;
                 }
-                if (its == 30) ERROR("no convergence in 30 svdcmp iterations");
+                if (its == 30) dserror("no convergence in 30 svdcmp iterations");
                 //Shift from bottom 2-by-2 minor.
                 x=W[l];
                 nm=k-1;
@@ -455,9 +387,9 @@ void XFEM::svdcmp(
 
 bool XFEM::solveLinearSystemWithSVD(
     Epetra_SerialDenseMatrix&   U,
-    Epetra_SerialDenseVector&   b,
+    const Epetra_SerialDenseVector&   b,
     Epetra_SerialDenseVector&   x,
-    int dim)
+    const int dim)
 {
     bool nonsingular = true;
     double svdtemp = 0.0;;

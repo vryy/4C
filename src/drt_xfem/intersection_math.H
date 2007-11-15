@@ -95,36 +95,14 @@ namespace XFEM
         const Epetra_SerialDenseVector& b
         );   
     
-                                                                                           
-    /*!
-    \brief compute absolute value (L2-norm) of a Epetra_SerialDenseVector
-    \param a    (in) : arbitrary Epetra_SerialDenseVector  
-    \return absolute value
-    */                                            
-    double computeAbsoluteValue( 
-        const Epetra_SerialDenseVector&   a
-        );
-    
-                   
-    /*!
-    \brief compute a scalar vector multiplication
-    \param s (in) : scalar  
-    \param v (in) : Epetra_SerialDenseVector
-    \return Epetra_SerialDenseVector resulting from scalar vector multiplication
-    */       
-    Epetra_SerialDenseVector computeScalarVectorMultiplication( 
-        const double                        s, 
-        const Epetra_SerialDenseVector&     v
-        ); 
-    
      
     /*!
     \brief normalizes a Epetra_SerialDenseVector
     \param v (in) : Epetra_SerialDenseVector
     \return normalized Epetra_SerialDenseVector 
     */   
-    Epetra_SerialDenseVector normalizeVector(   
-        const Epetra_SerialDenseVector&     v
+    void normalizeVector(   
+        Epetra_SerialDenseVector&     v
         );
 
 
@@ -138,8 +116,8 @@ namespace XFEM
     \return result of the Theorem of Pythagoras
     */    
     double pythagoras(
-        double  a, 
-        double  b
+        const double  a, 
+        const double  b
         );
         
        
@@ -159,8 +137,8 @@ namespace XFEM
         Epetra_SerialDenseMatrix&  A, 
         Epetra_SerialDenseVector&  W, 
         Epetra_SerialDenseMatrix&  V,
-        int n,
-        int m
+        const int n,
+        const int m
         );
         
      
@@ -176,9 +154,9 @@ namespace XFEM
     */          
     bool solveLinearSystemWithSVD(
         Epetra_SerialDenseMatrix&   U,
-        Epetra_SerialDenseVector&   b,
+        const Epetra_SerialDenseVector&   b,
         Epetra_SerialDenseVector&   x,
-        int dim
+        const int dim
         );
      
       
