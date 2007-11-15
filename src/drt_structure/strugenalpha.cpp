@@ -46,17 +46,6 @@ havecontact_(false)
   if (!errfile) outerr = false;
 
   // -------------------------------------------------------------------
-  // see whether we have contact boundary conditions
-  // and create contact manager if so
-  // -------------------------------------------------------------------
-  {
-    vector<DRT::Condition*> contactconditions(0);
-    discret_.GetCondition("Contact",contactconditions);
-    if (contactconditions.size()) havecontact_ = true;
-    if (havecontact_) contactmanager_ = rcp(new CONTACT::Manager(discret_));
-  }
-
-  // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
   // -------------------------------------------------------------------
@@ -90,47 +79,6 @@ havecontact_(false)
   dis_ = LINALG::CreateVector(*dofrowmap,true);
   // velocities V_{n} at last time
   vel_ = LINALG::CreateVector(*dofrowmap,true);
-#ifdef VEL_INITIAL
-  {
-    const double velini[2] = { 0.0, 10.0 };  // initial velocity
-    const int vels = (*vel_).GlobalLength();
-    printf("Set initial velocity to: vel_0=(%g, %g)\n", velini[0], velini[1]);
-    for (int i=0; i<vels; i+=2)
-    {
-      for (int j=0; j<2; ++j)
-      {
-        (*vel_)[i+j] = velini[j];
-      }
-    }
-  }
-#endif
-#ifdef VEL_INITIAL_2
-  if ((*vel_).GlobalLength() == 8)
-  {
-    const int vels = 8;
-//    const double velini[8] = { 0.070710678118655, 9.929289321881345,
-//                               0.070710678118655, 10.07071067811866,
-//                               -0.070710678118655, 9.929289321881345,
-//                               -0.070710678118655, 10.07071067811866 };
-//    const double velini[8] = { 1.141421356237309, 9.858578643762691,
-//                               1.141421356237309, 10.14142135623731,
-//                               0.85857864376269, 9.858578643762691,
-//                               0.85857864376269, 10.14142135623731 };
-//    const double velini[8] = { 10.35355339059327 , 9.646446609406727 ,
-//                               10.35355339059327 , 10.35355339059327 ,
-//                               9.646446609406727 , 9.646446609406727 ,
-//                               9.646446609406727 , 10.35355339059327 };
-    const double velini[8] = { 20.60660171779821 , - 0.60660171779821 ,
-                               20.60660171779821 , 20.60660171779821 ,
-                               - 0.60660171779821 , - 0.60660171779821 ,
-                               - 0.60660171779821 , 20.60660171779821 };
-    printf("Set initial velocity to: vel_0=(%g, %g)\n", velini[0], velini[1]);
-    for (int i=0; i<vels; i+=1)
-    {
-      (*vel_)[i] = velini[i];
-    }
-  }
-#endif
   // accelerations A_{n} at last time
   acc_ = LINALG::CreateVector(*dofrowmap,true);
 
@@ -2504,6 +2452,7 @@ void StruGenAlpha::SetDefaults(ParameterList& params)
   params.set<int>   ("io disp every nstep"    ,10);
   params.set<int>   ("restart"                ,0);
   params.set<int>   ("write restart every"    ,0);
+  params.set<bool>  ("contact"                ,false);
   // takes values "constant" consistent"
   params.set<string>("predictor"              ,"constant");
   // takes values "full newton" , "modified newton" , "matrixfree newton", "nonlinear cg" "ptc"
