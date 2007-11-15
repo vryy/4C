@@ -16,7 +16,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_dserror.H"
 
 
-std::string XFEM::Physics::physVarToString(const XFEM::Physics::PhysVar var)
+std::string XFEM::Physics::physVarToString(const XFEM::Physics::Field var)
 {
     std::string text;
     switch (var){
@@ -31,7 +31,7 @@ std::string XFEM::Physics::physVarToString(const XFEM::Physics::PhysVar var)
         case LMPLambdax:       text = "LMPLambdax"; break;
         case LMPLambday:       text = "LMPLambday"; break;
         case LMPLambdaz:       text = "LMPLambdaz"; break;
-        default: dserror("no string defined for PhysVar");
+        default: dserror("no string defined for Field");
     };
     return text;
 };

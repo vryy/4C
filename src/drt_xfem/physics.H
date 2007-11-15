@@ -22,9 +22,9 @@ namespace XFEM
 namespace Physics
 {
 
-// unique name of a physical field
+// unique name of a physical field / primary unknown
 // the order they appear here determines the order in the unknown vectors!!!
-enum PhysVar
+enum Field
 {
     Dispx,              // displacements
     Dispy,
@@ -44,7 +44,7 @@ enum PhysVar
     LMPMuz
 };
 
-std::string physVarToString(const PhysVar var);
+std::string physVarToString(const Field var);
 
 };
 };

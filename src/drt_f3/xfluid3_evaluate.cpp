@@ -512,19 +512,31 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
           // split velocity and pressure
           // create blitz objects
 
-          const int numnode = NumNode();
-          blitz::Array<double, 1> eprenp(numnode);
-          blitz::Array<double, 2> evelnp(3,numnode,blitz::ColumnMajorArray<2>());
+          const int numpresparam = eleDofManager_.NumDof(XFEM::Physics::Pres);
+          blitz::Array<double, 1> eprenp(numpresparam);
+          const int numvelxparam = eleDofManager_.NumDof(XFEM::Physics::Velx);
+          const int numvelyparam = eleDofManager_.NumDof(XFEM::Physics::Vely);
+          const int numvelzparam = eleDofManager_.NumDof(XFEM::Physics::Velz);
+          dsassert((numvelxparam == numvelyparam and numvelxparam == numvelzparam and numvelxparam == numpresparam),
+        		  "for now, we enrich velocity and pressure together");
+          blitz::Array<double, 2> evelnp(3,numvelxparam,blitz::ColumnMajorArray<2>());
 
-          for (int i=0;i<numnode;++i)
-          {
-            evelnp(0,i) = myvelnp[0+(i*4)];
-            evelnp(1,i) = myvelnp[1+(i*4)];
-            evelnp(2,i) = myvelnp[2+(i*4)];
+          const vector<int> velxdof = eleDofManager_.Dof(XFEM::Physics::Velx);
+          for (int iparam=0; iparam<numvelxparam; ++iparam)
+        	  evelnp(0,iparam) = myvelnp[velxdof[iparam]];
 
-            eprenp(i) = myvelnp[3+(i*4)];
-          }
+          const vector<int> velydof = eleDofManager_.Dof(XFEM::Physics::Vely);
+          for (int iparam=0; iparam<numvelyparam; ++iparam)
+        	  evelnp(1,iparam) = myvelnp[velydof[iparam]];
 
+          const vector<int> velzdof = eleDofManager_.Dof(XFEM::Physics::Velz);
+          for (int iparam=0; iparam<numvelzparam; ++iparam)
+        	  evelnp(2,iparam) = myvelnp[velzdof[iparam]];
+
+          const vector<int> presdof = eleDofManager_.Dof(XFEM::Physics::Pres);
+          for (int iparam=0; iparam<numpresparam; ++iparam)
+        	  eprenp(iparam) = myvelnp[presdof[iparam]];
+          
           // get control parameter
           const double pseudotime = params.get<double>("total time",-1.0);
           if (pseudotime < 0.0)
@@ -579,10 +591,9 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
     	const RCP<XFEM::DofManager> dofman = params.get< RCP< XFEM::DofManager > >("dofmanager",null);
     	
     	// create a list with number of dofs per local node 
-    	// TODO: create function for dofmanager that gives list with number of unknowns for given list of global node ids
     	const int numnode = this->NumNode();
     	const int* nodegids = this->NodeIds();
-    	map<int, const set <XFEM::EnrPhysVar> > nodaldofset; 
+    	map<int, const set <XFEM::EnrField> > nodaldofset; 
     	for (int inode = 0; inode < numnode; ++inode) {
     		int gid = nodegids[inode];
     		nodaldofset.insert(dofman->getDofsAsPair(gid));
@@ -590,9 +601,9 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
 
     	// create a local dofmanager: ask DofManager to do that!?
     	eleDofManager_ = XFEM::ElementDofManager(nodaldofset);
-    	
-    	cout << "storing refcountpointers at element: " << this->Id() << endl;
-    	cout << eleDofManager_.toString() << endl;
+
+//    	cout << "storing refcountpointers at element: " << this->Id() << endl;
+//    	cout << eleDofManager_.toString() << endl;
     	
       }
     	break;
