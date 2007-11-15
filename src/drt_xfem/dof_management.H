@@ -38,7 +38,7 @@ class EnrPhysVar
 {
 public:
 
-    EnrPhysVar(
+    explicit EnrPhysVar(
             const PhysVar physvar,
             const Enrichment enr);
     EnrPhysVar(
@@ -92,9 +92,9 @@ class ElementDofManager
 {
 public:
 
-	ElementDofManager();
+	explicit ElementDofManager();
 	
-	ElementDofManager(
+	explicit ElementDofManager(
 			map<int, const set <XFEM::EnrPhysVar> >&  nodalDofMap);
 	ElementDofManager(
             const ElementDofManager& other);
@@ -145,7 +145,7 @@ class DofManager
 {
 public:
 
-	DofManager(
+	explicit DofManager(
 			RCP<DRT::Discretization> xfemdis,
 	        const map<int, DomainIntCells >&  elementalDomainIntCells);
 	DofManager(
@@ -173,8 +173,6 @@ public:
     	if (tmp == nodalDofMap_.end()){
     		//dserror("global node id not found!");
     		cout << "warning: global node id not found! Could be due to not properly initialized ElementDofManager";
-//    		std::set<EnrPhysVar> s;
-//    		std::pair<int, const set<XFEM::EnrPhysVar> > x(-1,s);
     		return std::pair<int, const set<XFEM::EnrPhysVar> >(tmp->first,tmp->second);
     	}
         return std::pair<int, const set<XFEM::EnrPhysVar> >(tmp->first,tmp->second);

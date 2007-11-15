@@ -58,6 +58,8 @@ string XFEM::EnrPhysVar::toString() const
 
 
 
+
+
 /*----------------------------------------------------------------------*
  |  ctor                                                        ag 11/07|
  *----------------------------------------------------------------------*/
@@ -73,7 +75,7 @@ XFEM::ElementDofManager::ElementDofManager(
 		map<int, const set <XFEM::EnrPhysVar> >& nodalDofMap) :
 			nodalDofMap_(nodalDofMap)
 {
-	map<int, const set <XFEM::EnrPhysVar> >::iterator tmp;
+	map<int, const set <XFEM::EnrPhysVar> >::const_iterator tmp;
 	for (tmp = nodalDofMap_.begin(); tmp != nodalDofMap_.end(); ++tmp) {
 		const int gid = tmp->first;
 		const int numdof = tmp->second.size();
@@ -93,8 +95,7 @@ XFEM::ElementDofManager::ElementDofManager(
     assert(&other != this);
     return;
 }
-		
-		
+
 /*----------------------------------------------------------------------*
  |  dtor                                                        ag 11/07|
  *----------------------------------------------------------------------*/
@@ -127,10 +128,9 @@ std::string XFEM::ElementDofManager::toString() const
 
 
 
-//
-// ctor 
-// ag 08/07
-//
+/*----------------------------------------------------------------------*
+ |  ctor                                                        ag 11/07|
+ *----------------------------------------------------------------------*/
 XFEM::DofManager::DofManager(
 		RefCountPtr<DRT::Discretization> xfemdis,
         const map<int, DomainIntCells >&  elementalDomainIntCells) :
@@ -139,19 +139,17 @@ XFEM::DofManager::DofManager(
 	nodalDofMap_ = XFEM::DofManager::createNodalDofMap(xfemdis, elementalDomainIntCells);
 }
 		
-//
-// dtor
-// ag 08/07
-//
+/*----------------------------------------------------------------------*
+ |  dtor                                                        ag 11/07|
+ *----------------------------------------------------------------------*/
 XFEM::DofManager::~DofManager()
 {
     return;
 }
 
-
-
-
-// debug: print enrichments to screen
+/*----------------------------------------------------------------------*
+ |  transform  to a string                                      ag 11/07|
+ *----------------------------------------------------------------------*/
 string XFEM::DofManager::toString() const
 {
 	stringstream s;
@@ -167,7 +165,9 @@ string XFEM::DofManager::toString() const
 	return s.str();
 }
 
-
+/*----------------------------------------------------------------------*
+ |  construct dofmap                                            ag 11/07|
+ *----------------------------------------------------------------------*/
 map<int, const set <XFEM::EnrPhysVar> > XFEM::DofManager::createNodalDofMap(
         const RefCountPtr<DRT::Discretization>        xfemdis,
         const map<int, XFEM::DomainIntCells >&  elementDomainIntCellMap) const
