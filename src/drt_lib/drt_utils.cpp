@@ -54,6 +54,7 @@ extern "C"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mat/neohooke.H"
 #include "../drt_mat/hyperpolyconvex.H"
+#include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/convecdiffus.H"
 #include "../drt_contact/drt_cnode.H"
 #include "../drt_contact/drt_celement.H"
@@ -336,6 +337,12 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
       MAT::HyperPolyconvex* hyperpoly = new MAT::HyperPolyconvex();
       hyperpoly->Unpack(data);
       return hyperpoly;
+    }
+    case ParObject_AnisotropicBalzani:
+    {
+      MAT::AnisotropicBalzani* anba = new MAT::AnisotropicBalzani();
+      anba->Unpack(data);
+      return anba;
     }
     case ParObject_MicroMaterial:
     {

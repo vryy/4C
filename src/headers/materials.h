@@ -567,7 +567,8 @@ typedef struct _ANISOTROPIC_BALZANI
      DOUBLE                    eps2;
      DOUBLE                    alpha1;
      DOUBLE                    alpha2;
-     DOUBLE            density;
+     DOUBLE                    density;
+     DOUBLE                    a1[3];
 } ANISOTROPIC_BALZANI;
 
 /*----------------------------------------------------------------------*

@@ -118,7 +118,7 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
   double eps2 = matdata_->m.anisotropic_balzani->eps2;      //parameter for fiber potential
   double alpha1 = matdata_->m.anisotropic_balzani->alpha1;  //parameter for fiber potential
   double alpha2 = matdata_->m.anisotropic_balzani->alpha2;  //parameter for fiber potential
-  
+    
   // Identity Matrix
   Epetra_SerialDenseMatrix I(3,3);
   for (int i = 0; i < 3; ++i) I(i,i) = 1.0;
@@ -166,7 +166,9 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
   
   // Structural Tensor M, defined by a x a
   Epetra_SerialDenseVector a(3);
-  a(2) = 1.0;
+  a(0) = matdata_->m.anisotropic_balzani->a1[0];  // first fiber vector from input
+  a(1) = matdata_->m.anisotropic_balzani->a1[1];
+  a(2) = matdata_->m.anisotropic_balzani->a1[2];
   Epetra_SerialDenseMatrix M(3,3);
   M.Multiply('N','T',1.0,a,a,0.0);
   

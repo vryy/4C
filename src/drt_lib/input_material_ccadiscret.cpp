@@ -472,6 +472,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("ALPHA1" ,&(localmat.m.anisotropic_balzani->alpha1)   ,&ierr);
       frdouble("ALPHA2" ,&(localmat.m.anisotropic_balzani->alpha2)   ,&ierr);
       frdouble("DENS"   ,&(localmat.m.anisotropic_balzani->density)  ,&ierr);
+      frdouble("A1X"    ,&(localmat.m.anisotropic_balzani->a1[0])    ,&ierr);
+      frdouble("A1Y"    ,&(localmat.m.anisotropic_balzani->a1[1])    ,&ierr);
+      frdouble("A1Z"    ,&(localmat.m.anisotropic_balzani->a1[2])    ,&ierr);
    }
    /* Fourier's law of isotropic heat conduction --> heat cond. coeff. */
    frchk("MAT_Therm_Fourier_iso",&ierr);
