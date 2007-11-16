@@ -431,11 +431,6 @@ protected:
   
   
   double ctet10_midpoint(int coord);
-  // became obsolete
-  void so_ctet10_shapederiv(
-  	  Epetra_SerialDenseVector** shapefct_ptr,  
-      Epetra_SerialDenseMatrix** deriv_gp_ptr,
-      Epetra_SerialDenseVector** weights);       
 
   // #### hier deklariert, in implementierung soll einfach soh8_mat_sel gerufen werden
   void so_ctet10_mat_sel(Epetra_SerialDenseVector* stress,

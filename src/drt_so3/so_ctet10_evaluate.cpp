@@ -497,10 +497,10 @@ void DRT::Elements::So_ctet10::so_ctet10_nlnstiffmass(
    getchar();
   */
 
-/* =============================================================================*
-** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_10 with 14 GAUSS POINTS*
-** =============================================================================*/
-#if 0
+  /*
+   * Lumped Mass Matrix, due to Composite formulation
+   */
+#if 0 // find density from material
   Epetra_SerialDenseMatrix jac_coord(NUMCOORD_SUBTET4,NUMCOORD_SUBTET4);
   for (int i=0; i<4; i++)  jac_coord(0,i)=1;
   for (int row=0;row<3;row++)

@@ -51,15 +51,6 @@ using namespace LINALG; // our linear algebra
 extern struct _MATERIAL  *mat;
 
 
-//forward declarations
-void cut_volf( 
-     Epetra_SerialDenseMatrix& in_matrix,
-	 int A_row,int A_col,
-	 int B_row,int B_col,
-	 Epetra_SerialDenseMatrix& out_matrix);
-
-
-
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              vlf 06/07|
  *----------------------------------------------------------------------*/
@@ -616,26 +607,6 @@ void DRT::Elements::So_tet10::so_tet10_nlnstiffmass(
   return;
 } // DRT::Elements::So_tet10::so_tet10_nlnstiffmass
 
-
-/*----------------------------------------------------------------------*
- |                                                         vlf 06/07    |
- | cuts a block out of in_matrix                                        |
- |                              										|
- *----------------------------------------------------------------------*/
-void cut_volf( 
-     Epetra_SerialDenseMatrix& in_matrix,
-	 int A_row,int A_col,
-	 int B_row,int B_col,
-	 Epetra_SerialDenseMatrix& out_matrix)
-{
-	out_matrix.Reshape(B_row-A_row,B_col-A_col);
-	
-	for (int i_row=0;i_row < out_matrix.M();i_row++)
-	for (int i_col=0; i_col < out_matrix.N();i_col++)
-	{
-		out_matrix(i_row,i_col)= in_matrix(i_row+A_row,i_col+A_col);			
-	}	
-}
 
 int DRT::Elements::Sotet10Register::Initialize(DRT::Discretization& dis)
 {
