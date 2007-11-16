@@ -214,6 +214,9 @@ private:
   //! shell-thickness direction
   ThicknessDirection                             thickdir_;
 
+  //! vector in thickness direction
+  vector<double>                                 thickvec_;
+
   //! original (input) NodeIds, stored for eventual change to define thickness dir.
   int inp_nodeIds_[NUMNOD_SOH8];
 
@@ -239,6 +242,8 @@ private:
                        Epetra_SerialDenseMatrix& TinvT);    // corr. T^{-T}
 
   ThicknessDirection sosh8_findthickdir() ;
+
+  vector<double> getthicknessvector() const{ return thickvec_; }  
 
 }; // class So_sh8
 

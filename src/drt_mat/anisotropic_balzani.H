@@ -70,7 +70,8 @@ namespace MAT
                   const Epetra_SerialDenseMatrix* defgrd,
                   const int gp,  const int ele_ID, const double time,
                   Epetra_SerialDenseMatrix* cmat,
-                  Epetra_SerialDenseVector* stress);
+                  Epetra_SerialDenseVector* stress,
+                  double avec[3]);
                   
     double Density();                  
 

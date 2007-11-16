@@ -854,18 +854,21 @@ DRT::Elements::So_sh8::ThicknessDirection DRT::Elements::So_sh8::sosh8_findthick
       dserror("Solid-Shell element geometry has not a shell aspect ratio");
     }
     thickdir = autox;
+    thickvec_[0] = jac0(0,0); thickvec_[1] = jac0(0,1); thickvec_[2] = jac0(0,2);
   }
   else if (min_ar == dX_ds) {
     if ((min_ar / dX_dr >= 0.5) || (min_ar / dX_dt >=0.5)) {
       dserror("Solid-Shell element geometry has not a shell aspect ratio");
     }
     thickdir = autoy;
+    thickvec_[0] = jac0(1,0); thickvec_[1] = jac0(1,1); thickvec_[2] = jac0(1,2);
   }
   else if (min_ar == dX_dt) {
     if ((min_ar / dX_dr >= 0.5) || (min_ar / dX_ds >=0.5)) {
       dserror("Solid-Shell element geometry has not a shell aspect ratio");
     }
     thickdir = autoz;
+    thickvec_[0] = jac0(2,0); thickvec_[1] = jac0(2,1); thickvec_[2] = jac0(2,2);
   }
   return thickdir;
 }

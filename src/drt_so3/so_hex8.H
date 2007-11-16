@@ -411,6 +411,8 @@ protected:
                   vector<double>& residual);
 
   bool soh8_checkRewinding();
+  
+  vector<double> getthicknessvector() const {dserror("not implemented"); return vector<double>(3);};  
 
 
 }; // class So_hex8

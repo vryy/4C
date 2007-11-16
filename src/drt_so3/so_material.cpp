@@ -81,8 +81,15 @@ void DRT::Elements::So_hex8::soh8_mat_sel(
     case m_anisotropic_balzani:
     {
       MAT::AnisotropicBalzani* anba = static_cast <MAT::AnisotropicBalzani*>(mat.get());
+      
+      double avec[3]= {0.0};
+      if (this->Type() != DRT::Element::element_sosh8){
+        avec[0] = getthicknessvector()[1];
+        avec[1] = -1.0 * getthicknessvector()[0];
+        avec[2] = sqrt(avec[0]*avec[0] + avec[1]*avec[1]);
+      }
 
-      anba->Evaluate(glstrain,defgrd,gp,ele_ID,time,cmat,stress);
+      anba->Evaluate(glstrain,defgrd,gp,ele_ID,time,cmat,stress,avec);
 
       *density = anba->Density();
 

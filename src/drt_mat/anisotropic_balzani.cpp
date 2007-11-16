@@ -110,7 +110,8 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
                                     const Epetra_SerialDenseMatrix* defgrd,
                                     const int gp, const int ele_ID, const double time,
                                       Epetra_SerialDenseMatrix* cmat,
-                                      Epetra_SerialDenseVector* stress)
+                                      Epetra_SerialDenseVector* stress,
+                                      double avec[3])
 {
   // get material parameters
   double c1 = matdata_->m.anisotropic_balzani->c1;          //parameter for ground substance
@@ -166,9 +167,15 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
   
   // Structural Tensor M, defined by a x a
   Epetra_SerialDenseVector a(3);
-  a(0) = matdata_->m.anisotropic_balzani->a1[0];  // first fiber vector from input
-  a(1) = matdata_->m.anisotropic_balzani->a1[1];
-  a(2) = matdata_->m.anisotropic_balzani->a1[2];
+  if (matdata_->m.anisotropic_balzani->aloc != 1){
+    a(0) = matdata_->m.anisotropic_balzani->a1[0];  // first fiber vector from input
+    a(1) = matdata_->m.anisotropic_balzani->a1[1];
+    a(2) = matdata_->m.anisotropic_balzani->a1[2];
+  }
+  else {a(0) = avec[0]; a(1) = avec[1]; a(2) = avec[2];}
+  // normalize a
+  double norma = a.Norm2();
+  a.Scale(1.0/norma);
   Epetra_SerialDenseMatrix M(3,3);
   M.Multiply('N','T',1.0,a,a,0.0);
   
@@ -189,7 +196,6 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
   
   // anisotropic associated reducible Invariant K3 = I1*J4 - J5
   double K3 = I1 * J4 - J5;
-  double fiberscalar = alpha1*pow(K3-2.0,alpha2)*alpha2 / (K3-2.0);
   
   // cofC = det(C)*C^-T
   Epetra_SerialDenseMatrix CofC(Cinv);
@@ -212,7 +218,8 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
   S += Iscale;
   
   // ***** fiber part *******
-  if (K3 >= 2.0){
+  if ( (K3 - 2.0) > 1.0E-16){
+    double fiberscalar = alpha1*pow( (K3-2.0),(alpha2-1) )*alpha2;
     Epetra_SerialDenseMatrix Mscale(M);
     Mscale.Scale(fiberscalar*I1);
     S += Mscale;
@@ -228,6 +235,8 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
   
   // the wellknown factor 2!
   S.Scale(2.0);
+  
+  //cout << S;
   
   (*stress)(0) = S(0,0);
   (*stress)(1) = S(1,1);
@@ -254,21 +263,21 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
   ElastSymTensor_o_Multiply((*cmat),-I3 * dW_dI3,Cinv,Cinv,1.0);// - Cinv o Cinv
   
   // fiber part
-  if (K3 >= 2.0){
+  if ( (K3 - 2.0) > 1.0E-16){
     // compute derivatives of W_ti w.r.t. Invariants
-    double K3m2sq = (K3 - 2.0) * (K3 - 2.0);
+    double K3m2sq = 1.0 / (K3 - 2.0) * (K3 - 2.0);
     double K3m2p = pow((K3 - 2.0),alpha2);
     double d2W_dJ4dJ4 = ( alpha1 * K3m2p * alpha2*alpha2 * I1*I1 
-                         -alpha1 * K3m2p * alpha2 * I1*I1 ) / K3m2sq;
+                         -alpha1 * K3m2p * alpha2 * I1*I1 ) * K3m2sq;
     double d2W_dJ5dJ5 = ( alpha1 * K3m2p * alpha2*alpha2  
-                         -alpha1 * K3m2p * alpha2 ) / K3m2sq;
+                         -alpha1 * K3m2p * alpha2 ) * K3m2sq;
     double d2W_dI1dJ4 = ( alpha1 * K3m2p * alpha2*alpha2 * J4 * I1  
-                         -alpha1 * K3m2p * alpha2 * J4 * I1 ) / K3m2sq
+                         -alpha1 * K3m2p * alpha2 * J4 * I1 ) * K3m2sq
                          +alpha1 * K3m2p * alpha2 / (K3 - 2.0);
     double d2W_dI1dJ5 = (-alpha1 * K3m2p * alpha2*alpha2 * J4
-                         +alpha1 * K3m2p * alpha2 * J4 ) / K3m2sq;
+                         +alpha1 * K3m2p * alpha2 * J4 ) * K3m2sq;
     double d2W_dJ4dJ5 = (-alpha1 * K3m2p * alpha2*alpha2 * I1
-                         +alpha1 * K3m2p * alpha2 * I1 ) / K3m2sq;
+                         +alpha1 * K3m2p * alpha2 * I1 ) * K3m2sq;
     double dW_dJ5     = - alpha1 * K3m2p * alpha2 / (K3 - 2.0);
     // multiply these with corresponding tensor products
     ElastSymTensorMultiply((*cmat),d2W_dJ4dJ4,M,M,1.0);         // M x M
@@ -282,6 +291,8 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
   
   // the factor 4!
   (*cmat).Scale(4.0);
+  
+  //cout << (*cmat);
   // end of ********** evaluate C-Matrix *****************************
   
   return;
