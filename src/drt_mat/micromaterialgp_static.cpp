@@ -1,15 +1,16 @@
-#if 0
-
 #ifdef CCADISCRET
 
-#include "micromaterialgp.H"
+//#include "micromaterialgp.H"
+#include "micromaterialgp_static.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/linalg_utils.H"
 
-#include "../drt_stru_multi/microstrugenalpha.H"
+//#include "../drt_stru_multi/microstrugenalpha.H"
+#include "../drt_stru_multi/microstatic.H"
+
 #include "../io/io_drt_micro.H"
 
 using namespace std;
@@ -66,7 +67,7 @@ extern struct _FILES  allfiles;
 extern struct _MATERIAL    *mat;
 
 
-RefCountPtr<MicroStruGenAlpha> MAT::MicroMaterialGP::microgenalpha_;
+RefCountPtr<MicroStatic> MAT::MicroMaterialGP::microstatic_;
 
 
 /// construct an instance of MicroMaterial for a given Gauss point and
@@ -79,8 +80,6 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID)
   RefCountPtr<DRT::Problem> microproblem = DRT::Problem::Instance(1);
   RefCountPtr<DRT::Discretization> microdis = microproblem->Dis(0, 0);
   disp_ = LINALG::CreateVector(*microdis->DofRowMap(),true);
-  vel_ = LINALG::CreateVector(*microdis->DofRowMap(),true);
-  acc_ = LINALG::CreateVector(*microdis->DofRowMap(),true);
   disi_ = LINALG::CreateVector(*microdis->DofRowMap(),true);
 }
 
@@ -92,7 +91,7 @@ MAT::MicroMaterialGP::~MicroMaterialGP()
 
 /// Set up microscale generalized alpha
 
-void MAT::MicroMaterialGP::SetUpMicroGenAlpha()
+void MAT::MicroMaterialGP::SetUpMicroStatic()
 {
   // -------------------------------------------------------------------
   // access the discretization
@@ -124,35 +123,31 @@ void MAT::MicroMaterialGP::SetUpMicroGenAlpha()
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
 
   // -------------------------------------------------------------------
-  // create a generalized alpha time integrator
+  // create a static "time integrator"
   // -------------------------------------------------------------------
-  RefCountPtr<ParameterList> genalphaparams = rcp(new ParameterList());
-  MicroStruGenAlpha::SetDefaults(*genalphaparams);
+  RefCountPtr<ParameterList> params = rcp(new ParameterList());
+  MicroStatic::SetDefaults(*params);
 
-  genalphaparams->set<bool>  ("damping",sdyn->damp);
-  genalphaparams->set<double>("damping factor K",sdyn->k_damp);
-  genalphaparams->set<double>("damping factor M",sdyn->m_damp);
+  params->set<double>("beta",sdyn->beta);
+  params->set<double>("gamma",sdyn->gamma);
+  params->set<double>("alpha m",sdyn->alpha_m);
+  params->set<double>("alpha f",sdyn->alpha_f);
 
-  genalphaparams->set<double>("beta",sdyn->beta);
-  genalphaparams->set<double>("gamma",sdyn->gamma);
-  genalphaparams->set<double>("alpha m",sdyn->alpha_m);
-  genalphaparams->set<double>("alpha f",sdyn->alpha_f);
-
-  genalphaparams->set<double>("total time",0.0);
-  genalphaparams->set<double>("delta time",sdyn->dt);
-  genalphaparams->set<int>   ("step",0);
-  genalphaparams->set<int>   ("nstep",sdyn->nstep);
-  genalphaparams->set<int>   ("max iterations",sdyn->maxiter);
-  genalphaparams->set<int>   ("num iterations",-1);
-  genalphaparams->set<double>("tolerance displacements",sdyn->toldisp);
+  params->set<double>("total time",0.0);
+  params->set<double>("delta time",sdyn->dt);
+  params->set<int>   ("step",0);
+  params->set<int>   ("nstep",sdyn->nstep);
+  params->set<int>   ("max iterations",sdyn->maxiter);
+  params->set<int>   ("num iterations",-1);
+  params->set<double>("tolerance displacements",sdyn->toldisp);
 
   // takes values "full newton" , "modified newton" , "nonlinear cg"
-  genalphaparams->set<string>("equilibrium iteration","full newton");
+  params->set<string>("equilibrium iteration","full newton");
 
   // takes values "constant" "consistent"
-  genalphaparams->set<string>("predictor","constant");
+  params->set<string>("predictor","constant");
 
-  microgenalpha_ = rcp(new MicroStruGenAlpha(genalphaparams,actdis,solver));
+  microstatic_ = rcp(new MicroStatic(params,actdis,solver));
 }
 
 
@@ -187,13 +182,13 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
   // if derived generalized alpha class for microscale simulations is
   // not yet initialized -> set up
 
-  if (microgenalpha_ == null)
+  if (microstatic_ == null)
   {
-    MAT::MicroMaterialGP::SetUpMicroGenAlpha();
+    MAT::MicroMaterialGP::SetUpMicroStatic();
   }
 
   // set displacements, velocities and accelerations of last step
-  microgenalpha_->SetOldState(disp_, vel_, acc_, disi_);
+  microstatic_->SetOldState(disp_, disi_);
 
   // check if we have to update absolute time and step number
   if (time != timen_)
@@ -210,32 +205,32 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
     // (in the calculation phase, total time is instantly set to the first
     // time step)
     if (timen_ != 0.)
-      microgenalpha_->Output(micro_output_, timen_, istep_);
+      microstatic_->Output(micro_output_, timen_, istep_);
     timen_ = time;
     istep_++;
+//     istep_=0;
   }
+//   else
+//   {
+//     istep_++;
+//   }
 
   // set current absolute time and step number
-  microgenalpha_->SetTime(timen_, istep_);
+  microstatic_->SetTime(timen_, istep_);
 
-  //microgenalpha_->ConstantPredictor(defgrd);
-  microgenalpha_->ConsistentPredictor(defgrd);
-  microgenalpha_->FullNewton(defgrd);
-  microgenalpha_->Update();
-  //microgenalpha_->Homogenization(stress, cmat, density, defgrd, action);
-  microgenalpha_->StaticHomogenization(stress, cmat, density, defgrd);
+  microstatic_->ConstantPredictor(defgrd);
+  microstatic_->FullNewton(defgrd);
+  microstatic_->Update();
+  //microstatic_->Homogenization(stress, cmat, density, defgrd, action);
+  microstatic_->StaticHomogenization(stress, cmat, density, defgrd);
 
   // save calculated displacements, velocities and accelerations
-  disp_ = microgenalpha_->ReturnNewDisp();
-  vel_  = microgenalpha_->ReturnNewVel();
-  acc_  = microgenalpha_->ReturnNewAcc();
-  disi_ = microgenalpha_->ReturnNewResDisp();
+  disp_ = microstatic_->ReturnNewDisp();
+  disi_ = microstatic_->ReturnNewResDisp();
 
   // clear displacements in MicroStruGenAlpha for next usage
-  microgenalpha_->ClearState();
+  microstatic_->ClearState();
 
 }
-
-#endif
 
 #endif

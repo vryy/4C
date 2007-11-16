@@ -1,9 +1,9 @@
 /*!----------------------------------------------------------------------
-\file microstrugenalpha.H
+\file microstatic.H
 
-\class MicroStruGenAlpha
+\class MicroStatic
 
-\brief Generalized Alpha time integration for microstructural problems
+\brief Static control for microstructural problems
 
 <pre>
 Maintainer: Lena Wiechert
@@ -14,8 +14,8 @@ Maintainer: Lena Wiechert
 
 *----------------------------------------------------------------------*/
 
-#ifndef STRU_MICRO_H
-#define STRU_MICRO_H
+#ifndef STRU_MICRO_STAT_H
+#define STRU_MICRO_STAT_H
 
 #ifdef CCADISCRET
 
@@ -43,15 +43,15 @@ using namespace std;
 using namespace IO;
 
 /*!
-\class MicroStruGenAlpha
+\class MicroStatic
 
-\brief Generalized Alpha time integration for microstructural problems
+\brief Static control for microstructural problems
 in case of microscale analyses
 
-\author gee (gee@lnm.mw.tum.de)
+\author wiechert (wiechert@lnm.mw.tum.de)
 */
 
-class MicroStruGenAlpha
+class MicroStatic
 {
 public:
 
@@ -59,15 +59,15 @@ public:
   \brief Standard Constructor -> currently no output for microscale possible
 
   */
-  MicroStruGenAlpha(RefCountPtr<ParameterList> params,
-                    RefCountPtr<DRT::Discretization> dis,
-                    RefCountPtr<LINALG::Solver> solver);
+  MicroStatic(RefCountPtr<ParameterList> params,
+              RefCountPtr<DRT::Discretization> dis,
+              RefCountPtr<LINALG::Solver> solver);
 
   /*!
   \brief Destructor
 
   */
-  virtual ~MicroStruGenAlpha();
+  virtual ~MicroStatic();
 
   /*!
   \brief Create default parameter list
@@ -76,28 +76,10 @@ public:
   static void SetDefaults(ParameterList& params);
 
   /*!
-  \brief Do time integration
-
-  */
-  void Integrate();
-
-  /*!
   \brief do constant predictor step
 
   */
   void ConstantPredictor(const Epetra_SerialDenseMatrix* defgrd);
-
-  /*!
-  \brief do consistent predictor step
-
-  */
-  void ConsistentPredictor(const Epetra_SerialDenseMatrix* defgrd);
-
-  /*!
-  \brief do consistent constant predictor step
-
-  */
-  // void ConsistentPredictor();
 
   /*!
   \brief do full Newton iteration
@@ -129,17 +111,11 @@ public:
                        const double alphaf);
 
   void SetOldState(RefCountPtr<Epetra_Vector> disp,
-                   RefCountPtr<Epetra_Vector> vel,
-                   RefCountPtr<Epetra_Vector> acc,
                    RefCountPtr<Epetra_Vector> disi);
 
   void SetTime(double timen, int istep);
 
   RefCountPtr<Epetra_Vector> ReturnNewDisp();
-
-  RefCountPtr<Epetra_Vector> ReturnNewVel();
-
-  RefCountPtr<Epetra_Vector> ReturnNewAcc();
 
   RefCountPtr<Epetra_Vector> ReturnNewResDisp();
 
@@ -168,8 +144,8 @@ public:
 protected:
 
   // don't want = operator and cctor
-  MicroStruGenAlpha operator = (const MicroStruGenAlpha& old);
-  MicroStruGenAlpha(const MicroStruGenAlpha& old);
+  MicroStatic operator = (const MicroStatic& old);
+  MicroStatic(const MicroStatic& old);
 
   RefCountPtr<ParameterList>                 params_;
   RefCountPtr<DRT::Discretization>           discret_;
@@ -179,21 +155,13 @@ protected:
   double                        norm_;
 
   RefCountPtr<Epetra_CrsMatrix> stiff_;
-  RefCountPtr<Epetra_CrsMatrix> mass_;
-  RefCountPtr<Epetra_CrsMatrix> damp_;
 
   RefCountPtr<Epetra_Vector>    dirichtoggle_;
   RefCountPtr<Epetra_Vector>    invtoggle_;
   RefCountPtr<Epetra_Vector>    zeros_;
   RefCountPtr<Epetra_Vector>    dis_;
-  RefCountPtr<Epetra_Vector>    vel_;
-  RefCountPtr<Epetra_Vector>    acc_;
   RefCountPtr<Epetra_Vector>    disn_;
-  RefCountPtr<Epetra_Vector>    veln_;
-  RefCountPtr<Epetra_Vector>    accn_;
   RefCountPtr<Epetra_Vector>    dism_;
-  RefCountPtr<Epetra_Vector>    velm_;
-  RefCountPtr<Epetra_Vector>    accm_;
   RefCountPtr<Epetra_Vector>    disi_;
   RefCountPtr<Epetra_Vector>    fint_;
   RefCountPtr<Epetra_Vector>    fext_;
@@ -210,6 +178,7 @@ protected:
                                        // coordinates of boundary nodes
   RefCountPtr<Epetra_Map>      pdof_;  // prescribed dofs
   RefCountPtr<Epetra_Map>      fdof_;  // free dofs
+  RefCountPtr<Epetra_Export> export_;
   RefCountPtr<Epetra_Import> import_;
 };
 

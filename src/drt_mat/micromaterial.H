@@ -35,7 +35,8 @@ Maintainer: Lena Wiechert
 #include "../drt_lib/drt_discret.H"
 #include "material.H"
 
-#include "../drt_stru_multi/microstrugenalpha.H"
+//#include "../drt_stru_multi/microstrugenalpha.H"
+#include "../drt_stru_multi/microstatic.H"
 
 using namespace std;
 using namespace Teuchos;

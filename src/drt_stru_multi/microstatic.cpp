@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
-\file microstrugenalpha.cpp
-\brief Generalized Alpha time integration for microstructural problems
-in case of multiscale analyses
+\file microstatic.cpp
+\brief Static control for  microstructural problems in case of multiscale
+analyses
 
 <pre>
 Maintainer: Lena Wiechert
@@ -17,7 +17,7 @@ Maintainer: Lena Wiechert
 #include <Epetra_LinearProblem.h>
 #include <Amesos_Klu.h>
 
-#include "microstrugenalpha.H"
+#include "microstatic.H"
 
 #include <vector>
 
@@ -37,9 +37,9 @@ extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 03/07|
  *----------------------------------------------------------------------*/
-MicroStruGenAlpha::MicroStruGenAlpha(RefCountPtr<ParameterList> params,
-                                     RefCountPtr<DRT::Discretization> dis,
-                                     RefCountPtr<LINALG::Solver> solver) :
+MicroStatic::MicroStatic(RefCountPtr<ParameterList> params,
+                         RefCountPtr<DRT::Discretization> dis,
+                         RefCountPtr<LINALG::Solver> solver) :
 params_(params),
 discret_(dis),
 solver_(solver)
@@ -49,9 +49,6 @@ solver_(solver)
   // -------------------------------------------------------------------
   double time    = params_->get<double>("total time"      ,0.0);
   double dt      = params_->get<double>("delta time"      ,0.01);
-  bool damping   = params_->get<bool>  ("damping"         ,false);
-  double kdamp   = params_->get<double>("damping factor K",0.0);
-  double mdamp   = params_->get<double>("damping factor M",0.0);
   int istep      = params_->get<int>   ("step"            ,0);
 
   // -------------------------------------------------------------------
@@ -66,8 +63,6 @@ solver_(solver)
   // create empty matrices
   // -------------------------------------------------------------------
   stiff_ = LINALG::CreateMatrix(*dofrowmap,81);
-  mass_  = LINALG::CreateMatrix(*dofrowmap,81);
-  if (damping) damp_ = LINALG::CreateMatrix(*dofrowmap,81);
 
   // -------------------------------------------------------------------
   // create empty vectors
@@ -87,24 +82,12 @@ solver_(solver)
 
   // displacements D_{n} at last time
   dis_ = LINALG::CreateVector(*dofrowmap,true);
-  // velocities V_{n} at last time
-  vel_ = LINALG::CreateVector(*dofrowmap,true);
-  // accelerations A_{n} at last time
-  acc_ = LINALG::CreateVector(*dofrowmap,true);
 
   // displacements D_{n+1} at new time
   disn_ = LINALG::CreateVector(*dofrowmap,true);
-  // velocities V_{n+1} at new time
-  veln_ = LINALG::CreateVector(*dofrowmap,true);
-  // accelerations A_{n+1} at new time
-  accn_ = LINALG::CreateVector(*dofrowmap,true);
 
   // mid-displacements D_{n+1-alpha_f}
   dism_ = LINALG::CreateVector(*dofrowmap,true);
-  // mid-velocities V_{n+1-alpha_f}
-  velm_ = LINALG::CreateVector(*dofrowmap,true);
-  // mid-accelerations A_{n+1-alpha_m}
-  accm_ = LINALG::CreateVector(*dofrowmap,true);
 
   // iterative displacement increments IncD_{n+1}
   // also known as residual displacements
@@ -128,26 +111,6 @@ solver_(solver)
   // conditions
   fresm_dirich_ = LINALG::CreateVector(*dofrowmap,false);
 
-  //-------------------------------------------- calculate external forces
-  {
-    ParameterList p;
-    // action for elements
-    p.set("action","calc_struct_eleload");
-    // choose what to assemble
-    p.set("assemble matrix 1",false);
-    p.set("assemble matrix 2",false);
-    p.set("assemble vector 1",true);
-    p.set("assemble vector 2",false);
-    p.set("assemble vector 3",false);
-    // other parameters needed by the elements
-    p.set("total time",time);
-    p.set("delta time",dt);
-    // set vector values needed by elements
-    discret_->ClearState();
-    discret_->SetState("displacement",dis_);
-    fext_->PutScalar(0.);
-  }
-
   // -------------------------------------------------------------------
   // call elements to calculate stiffness and mass
   // -------------------------------------------------------------------
@@ -155,10 +118,10 @@ solver_(solver)
     // create the parameters for the discretization
     ParameterList p;
     // action for elements
-    p.set("action","calc_struct_nlnstiffmass");
+    p.set("action","calc_struct_nlnstiff");
     // choose what to assemble
     p.set("assemble matrix 1",true);
-    p.set("assemble matrix 2",true);
+    p.set("assemble matrix 2",false);
     p.set("assemble vector 1",true);
     p.set("assemble vector 2",false);
     p.set("assemble vector 3",false);
@@ -169,21 +132,10 @@ solver_(solver)
     discret_->ClearState();
     discret_->SetState("residual displacement",zeros_);
     discret_->SetState("displacement",dis_);
-    //discret_.SetState("velocity",vel_); // not used at the moment
-    discret_->Evaluate(p,stiff_,mass_,fint_,null,null);
+    discret_->Evaluate(p,stiff_,null,fint_,null,null);
     discret_->ClearState();
   }
-  // build damping matrix if desired
-  LINALG::Complete(*mass_);
-  maxentriesperrow_ = mass_->MaxNumEntries();
-  if (damping)
-  {
-    LINALG::Complete(*stiff_);
-    LINALG::Add(*stiff_,false,kdamp,*damp_,0.0);
-    stiff_ = null;
-    LINALG::Add(*mass_,false,mdamp,*damp_,1.0);
-    LINALG::Complete(*damp_);
-  }
+  maxentriesperrow_ = stiff_->MaxNumEntries();
 
   //------------------------------------------------------ time step index
   istep = 0;
@@ -193,8 +145,8 @@ solver_(solver)
   // microscale simulations are due to the MicroBoundary condition
   // (and not Dirichlet BC)
 
-  MicroStruGenAlpha::DetermineToggle();
-  MicroStruGenAlpha::SetUpHomogenization();
+  MicroStatic::DetermineToggle();
+  MicroStatic::SetUpHomogenization();
 
   //----------------------- compute an inverse of the dirichtoggle vector
   invtoggle_->PutScalar(1.0);
@@ -207,25 +159,14 @@ solver_(solver)
   discret_->Evaluate(p,null,null,null,null,null);
   V0_ = p.get<double>("V0", -1.0);
 
-
-  //--------------------------- calculate consistent initial accelerations
-  {
-    RefCountPtr<Epetra_Vector> rhs = LINALG::CreateVector(*dofrowmap,true);
-    if (damping) damp_->Multiply(false,*vel_,*rhs);
-    rhs->Update(-1.0,*fint_,1.0,*fext_,-1.0);
-    Epetra_Vector rhscopy(*rhs);
-    rhs->Multiply(1.0,*invtoggle_,rhscopy,0.0);
-    solver->Solve(mass_,acc_,rhs,true,true);
-  }
-
   return;
-} // MicroStruGenAlpha::MicroStruGenAlpha
+} // MicroStatic::MicroStatic
 
 
 /*----------------------------------------------------------------------*
  |  do constant predictor step (public)                      mwgee 03/07|
  *----------------------------------------------------------------------*/
-void MicroStruGenAlpha::ConstantPredictor(const Epetra_SerialDenseMatrix* defgrd)
+void MicroStatic::ConstantPredictor(const Epetra_SerialDenseMatrix* defgrd)
 {
   // -------------------------------------------------------------------
   // get some parameters from parameter list
@@ -233,25 +174,20 @@ void MicroStruGenAlpha::ConstantPredictor(const Epetra_SerialDenseMatrix* defgrd
   double time        = params_->get<double>("total time"     ,0.0);
   double dt          = params_->get<double>("delta time"     ,0.01);
   int    istep       = params_->get<int>   ("step"           ,0);
-  bool   damping     = params_->get<bool>  ("damping"        ,false);
   double alphaf      = params_->get<double>("alpha f"        ,0.459);
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+  // cout << "time: " << time << " step: " << istep << "\n";
 
   //--------------------------------------------------- predicting state
   // constant predictor : displacement in domain
   disn_->Update(1.0,*dis_,0.0);
-
-  // constant predictor
-  veln_->Update(1.0,*vel_,0.0);
-  accn_->Update(1.0,*acc_,0.0);
 
   //------------------------------ compute interpolated dis, vel and acc
   // constant predictor
   // mid-displacements D_{n+1-alpha_f} (dism)
   //    D_{n+1-alpha_f} := (1.-alphaf) * D_{n+1} + alpha_f * D_{n}
   dism_->Update(1.-alphaf,*disn_,alphaf,*dis_,0.0);
-  velm_->Update(1.0,*vel_,0.0);
-  accm_->Update(1.0,*acc_,0.0);
 
   // apply new displacements at DBCs -> this has to be done with the
   // mid-displacements since the given macroscopic deformation
@@ -290,31 +226,20 @@ void MicroStruGenAlpha::ConstantPredictor(const Epetra_SerialDenseMatrix* defgrd
     discret_->ClearState();
     discret_->SetState("residual displacement",disi_);
     discret_->SetState("displacement",dism_);
-    //discret_.SetState("velocity",velm_); // not used at the moment
     fint_->PutScalar(0.0);  // initialise internal force vector
     discret_->Evaluate(p,stiff_,null,fint_,null,null);
     discret_->ClearState();
-    // do NOT finalize the stiffness matrix, add mass and damping to it later
+    // complete stiffness matrix
+    LINALG::Complete(*stiff_);
+    //const int maxentriesperrow = stiff_mat->MaxNumEntries();
+//     double stiffnorm;
+//     stiffnorm = stiff_->NormFrobenius();
   }
 
   //-------------------------------------------- compute residual forces
-  // Res = M . A_{n+1-alpha_m}
-  //     + C . V_{n+1-alpha_f}
-  //     + F_int(D_{n+1-alpha_f})
-  //     - F_{ext;n+1-alpha_f}
-  // add mid-inertial force
-  mass_->Multiply(false,*accm_,*fresm_);
-  // add mid-viscous damping force
-  if (damping)
-  {
-      RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
-      damp_->Multiply(false,*velm_,*fviscm);
-      fresm_->Update(1.0,*fviscm,1.0);
-  }
-
   // add static mid-balance
-  fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
-  //fresm_->Update(1.0,*fint_,-1.0,*fextm_,1.0);
+  //fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+  fresm_->Update(-1.0,*fint_,1.0,*fextm_,0.0);
 
   // blank residual at DOFs on Dirichlet BC
   {
@@ -330,139 +255,13 @@ void MicroStruGenAlpha::ConstantPredictor(const Epetra_SerialDenseMatrix* defgrd
   fresm_->Norm2(&norm_);
 
   return;
-} // MicroStruGenAlpha::ConstantPredictor()
-
-
-/*----------------------------------------------------------------------*
- |  do consistent predictor step (public)                    mwgee 07/07|
- *----------------------------------------------------------------------*/
-void MicroStruGenAlpha::ConsistentPredictor(const Epetra_SerialDenseMatrix* defgrd)
-{
-  // -------------------------------------------------------------------
-  // get some parameters from parameter list
-  // -------------------------------------------------------------------
-  double time        = params_->get<double>("total time"     ,0.0);
-  double dt          = params_->get<double>("delta time"     ,0.01);
-  int    istep       = params_->get<int>   ("step"           ,0);
-  bool   damping     = params_->get<bool>  ("damping"        ,false);
-  double alphaf      = params_->get<double>("alpha f"        ,0.459);
-  double alpham      = params_->get<double>("alpha m"        ,0.378);
-  double beta        = params_->get<double>("beta"           ,0.292);
-  double gamma       = params_->get<double>("gamma"          ,0.581);
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-  //--------------------------------------------------- predicting state
-  // constant predictor : displacement in domain
-  disn_->Update(1.0,*dis_,0.0);
-
-  // apply new displacements at DBCs
-  // and get new external force vector
-  {
-    EvaluateMicroBC(defgrd, alphaf);
-    discret_->ClearState();
-    fextn_->PutScalar(0.0);  // initialize external force vector (load vect)
-  }
-
-  // consistent predictor
-  // predicting velocity V_{n+1} (veln)
-  // V_{n+1} := gamma/(beta*dt) * (D_{n+1} - D_n)
-  //          + (beta-gamma)/beta * V_n
-  //          + (2.*beta-gamma)/(2.*beta) * A_n
-  veln_->Update(1.0,*disn_,-1.0,*dis_,0.0);
-  veln_->Update((beta-gamma)/beta,*vel_,(2.*beta-gamma)*dt/(2.*beta),*acc_,gamma/(beta*dt));
-  // predicting accelerations A_{n+1} (accn)
-  // A_{n+1} := 1./(beta*dt*dt) * (D_{n+1} - D_n)
-  //          - 1./(beta*dt) * V_n
-  //          + (2.*beta-1.)/(2.*beta) * A_n
-  accn_->Update(1.0,*disn_,-1.0,*dis_,0.0);
-  accn_->Update(-1./(beta*dt),*vel_,(2.*beta-1.)/(2.*beta),*acc_,1./(beta*dt*dt));
-
-  //------------------------------ compute interpolated dis, vel and acc
-  // consistent predictor
-  // mid-displacements D_{n+1-alpha_f} (dism)
-  //    D_{n+1-alpha_f} := (1.-alphaf) * D_{n+1} + alpha_f * D_{n}
-  dism_->Update(1.-alphaf,*disn_,alphaf,*dis_,0.0);
-  // mid-velocities V_{n+1-alpha_f} (velm)
-  //    V_{n+1-alpha_f} := (1.-alphaf) * V_{n+1} + alpha_f * V_{n}
-  velm_->Update(1.-alphaf,*veln_,alphaf,*vel_,0.0);
-  // mid-accelerations A_{n+1-alpha_m} (accm)
-  //    A_{n+1-alpha_m} := (1.-alpha_m) * A_{n+1} + alpha_m * A_{n}
-  accm_->Update(1.-alpham,*accn_,alpham,*acc_,0.0);
-
-  //------------------------------- compute interpolated external forces
-  // external mid-forces F_{ext;n+1-alpha_f} (fextm)
-  //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1}
-  //                         + alpha_f * F_{ext;n}
-  fextm_->Update(1.-alphaf,*fextn_,alphaf,*fext_,0.0);
-
-  //------------- eval fint at interpolated state, eval stiffness matrix
-  {
-    // zero out stiffness
-    stiff_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
-    // create the parameters for the discretization
-    ParameterList p;
-    // action for elements
-    p.set("action","calc_struct_nlnstiff");
-    // choose what to assemble
-    p.set("assemble matrix 1",true);
-    p.set("assemble matrix 2",false);
-    p.set("assemble vector 1",true);
-    p.set("assemble vector 2",false);
-    p.set("assemble vector 3",false);
-    // other parameters that might be needed by the elements
-    p.set("total time",time);
-    p.set("delta time",dt);
-    // set vector values needed by elements
-    discret_->ClearState();
-    discret_->SetState("residual displacement",disi_);
-    discret_->SetState("displacement",dism_);
-
-    //discret_.SetState("velocity",velm_); // not used at the moment
-    fint_->PutScalar(0.0);  // initialise internal force vector
-    discret_->Evaluate(p,stiff_,null,fint_,null,null);
-    discret_->ClearState();
-    // do NOT finalize the stiffness matrix, add mass and damping to it later
-  }
-
-  //-------------------------------------------- compute residual forces
-  // Res = M . A_{n+1-alpha_m}
-  //     + C . V_{n+1-alpha_f}
-  //     + F_int(D_{n+1-alpha_f})
-  //     - F_{ext;n+1-alpha_f}
-  // add mid-inertial force
-  mass_->Multiply(false,*accm_,*fresm_);
-  // add mid-viscous damping force
-  if (damping)
-  {
-    RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
-    damp_->Multiply(false,*velm_,*fviscm);
-    fresm_->Update(1.0,*fviscm,1.0);
-  }
-
-  // add static mid-balance
-  fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
-
-  // blank residual at DOFs on Dirichlet BC
-  {
-    Epetra_Vector fresmcopy(*fresm_);
-
-    // save this vector for homogenization
-    fresm_dirich_->Update(1.0, fresmcopy, 0.0);
-
-    fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
-  }
-
-  //------------------------------------------------ build residual norm
-  fresm_->Norm2(&norm_);
-
-  return;
-} // MicroStruGenAlpha::ConsistentPredictor()
+} // MicroStatic::ConstantPredictor()
 
 
 /*----------------------------------------------------------------------*
  |  do Newton iteration (public)                             mwgee 03/07|
  *----------------------------------------------------------------------*/
-void MicroStruGenAlpha::FullNewton(const Epetra_SerialDenseMatrix* defgrd)
+void MicroStatic::FullNewton(const Epetra_SerialDenseMatrix* defgrd)
 {
   // -------------------------------------------------------------------
   // get some parameters from parameter list
@@ -471,20 +270,9 @@ void MicroStruGenAlpha::FullNewton(const Epetra_SerialDenseMatrix* defgrd)
   double dt        = params_->get<double>("delta time"             ,0.01);
   int    istep     = params_->get<int>   ("step"                   ,0);
   int    maxiter   = params_->get<int>   ("max iterations"         ,10);
-  bool   damping   = params_->get<bool>  ("damping"                ,false);
-  double beta      = params_->get<double>("beta"                   ,0.292);
-  double gamma     = params_->get<double>("gamma"                  ,0.581);
-  double alpham    = params_->get<double>("alpha m"                ,0.378);
   double alphaf    = params_->get<double>("alpha f"                ,0.459);
   double toldisp   = params_->get<double>("tolerance displacements",1.0e-07);
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-  // check whether we have a stiffness matrix, that is not filled yet
-  // and mass and damping are present
-  if (stiff_->Filled()) dserror("stiffness matrix may not be filled here");
-  if (!mass_->Filled()) dserror("mass matrix must be filled here");
-  if (damping)
-    if (!damp_->Filled()) dserror("damping matrix must be filled here");
 
   //=================================================== equilibrium loop
   int numiter=0;
@@ -493,13 +281,6 @@ void MicroStruGenAlpha::FullNewton(const Epetra_SerialDenseMatrix* defgrd)
   fresm_->Norm2(&fresmnorm);
   while (norm_>toldisp && fresmnorm>toldisp && numiter<=maxiter)
   {
-    //------------------------------------------- effective rhs is fresm
-    //---------------------------------------------- build effective lhs
-    // (using matrix stiff_ as effective matrix)
-    LINALG::Add(*mass_,false,(1.-alpham)/(beta*dt*dt),*stiff_,1.-alphaf);
-    if (damping)
-      LINALG::Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),*stiff_,1.0);
-    LINALG::Complete(*stiff_);
 
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
@@ -518,29 +299,6 @@ void MicroStruGenAlpha::FullNewton(const Epetra_SerialDenseMatrix* defgrd)
     // displacements
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
     dism_->Update(1.-alphaf,*disi_,1.0);
-
-    // velocities
-    // iterative
-    // V_{n+1-alpha_f} := V_{n+1-alpha_f}
-    //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
-    velm_->Update((1.-alphaf)*gamma/(beta*dt),*disi_,1.0);
-    // incremental (required for constant predictor)
-    //velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
-    //velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
-    //              (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
-    //              gamma/(beta*dt));
-    // accelerations
-    // iterative
-    // A_{n+1-alpha_m} := A_{n+1-alpha_m}
-    //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
-    //accm_->Update((1.-alpham)/(beta*dt*dt),*disi_,1.0);
-    // incremental (required for constant predictor)
-    accm_->Update((1.-alpham)/(beta*dt*dt),*disi_,1.0);
-    // incremental (required for constant predictor)
-    //accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
-    //accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
-    //              (2.*beta-1.+alpham)/(2.*beta),*acc_,
-    //              (1.-alpham)/((1.-alphaf)*beta*dt*dt));
 
     //---------------------------- compute internal forces and stiffness
     {
@@ -563,29 +321,17 @@ void MicroStruGenAlpha::FullNewton(const Epetra_SerialDenseMatrix* defgrd)
       discret_->ClearState();
       discret_->SetState("residual displacement",disi_);
       discret_->SetState("displacement",dism_);
-      //discret_.SetState("velocity",velm_); // not used at the moment
       fint_->PutScalar(0.0);  // initialise internal force vector
       discret_->Evaluate(p,stiff_,null,fint_,null,null);
       discret_->ClearState();
-      // do NOT finalize the stiffness matrix to add masses to it later
     }
+    // complete stiffness matrix
+    LINALG::Complete(*stiff_);
 
     //------------------------------------------ compute residual forces
-    // Res = M . A_{n+1-alpha_m}
-    //     + C . V_{n+1-alpha_f}
-    //     + F_int(D_{n+1-alpha_f})
-    //     - F_{ext;n+1-alpha_f}
-    // add inertia mid-forces
-    mass_->Multiply(false,*accm_,*fresm_);
-    // add viscous mid-forces
-    if (damping)
-    {
-      RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
-      damp_->Multiply(false,*velm_,*fviscm);
-      fresm_->Update(1.0,*fviscm,1.0);
-    }
     // add static mid-balance
-    fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+    //fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+    fresm_->Update(-1.0,*fint_,1.0,*fextm_,0.);
     // blank residual DOFs which are on Dirichlet BC
     {
       Epetra_Vector fresmcopy(*fresm_);
@@ -603,6 +349,8 @@ void MicroStruGenAlpha::FullNewton(const Epetra_SerialDenseMatrix* defgrd)
 
     norm_ = disinorm;
 
+//     cout << "disinorm: " << disinorm << " fresmnorm: " << fresmnorm << "\n";
+
     //--------------------------------- increment equilibrium loop index
     ++numiter;
 
@@ -616,18 +364,17 @@ void MicroStruGenAlpha::FullNewton(const Epetra_SerialDenseMatrix* defgrd)
   //stiff_ = null;   -> microscale needs this for homogenization purposes
 
   return;
-} // MicroStruGenAlpha::FullNewton()
+} // MicroStatic::FullNewton()
 
 
 /*----------------------------------------------------------------------*
  |  do Update (public)                                       mwgee 03/07|
  *----------------------------------------------------------------------*/
-void MicroStruGenAlpha::Update()
+void MicroStatic::Update()
 {
   // -------------------------------------------------------------------
   // get some parameters from parameter list
   // -------------------------------------------------------------------
-  double alpham        = params_->get<double>("alpha m"                ,0.378);
   double alphaf        = params_->get<double>("alpha f"                ,0.459);
 
   //---------------------------- determine new end-quantities and update
@@ -638,29 +385,20 @@ void MicroStruGenAlpha::Update()
   // new velocities at t_{n+1} -> t_n
   //    V_{n} := V_{n+1} = 1./(1.-alphaf) * V_{n+1-alpha_f}
   //                     - alphaf/(1.-alphaf) * V_n
-  vel_->Update(1./(1.-alphaf),*velm_,-alphaf/(1.-alphaf));
-  // new accelerations at t_{n+1} -> t_n
-  //    A_{n} := A_{n+1} = 1./(1.-alpham) * A_{n+1-alpha_m}
-  //                     - alpham/(1.-alpham) * A_n
-  acc_->Update(1./(1.-alpham),*accm_,-alpham/(1.-alpham));
   // update new external force
   //    F_{ext;n} := F_{ext;n+1}
   fext_->Update(1.0,*fextn_,0.0);
 
-  //----- update anything that needs to be updated at the element level
-  // I removed this because currently nothing is done on the element
-  // level -> cf. SolidHex8
-
   return;
-} // MicroStruGenAlpha::Update()
+} // MicroStatic::Update()
 
 
 /*----------------------------------------------------------------------*
  |  write output (public)                                    mwgee 03/07|
  *----------------------------------------------------------------------*/
-void MicroStruGenAlpha::Output(RefCountPtr<MicroDiscretizationWriter> output,
-                               const double time,
-                               const int istep)
+void MicroStatic::Output(RefCountPtr<MicroDiscretizationWriter> output,
+                         const double time,
+                         const int istep)
 {
   // -------------------------------------------------------------------
   // get some parameters from parameter list
@@ -674,16 +412,19 @@ void MicroStruGenAlpha::Output(RefCountPtr<MicroDiscretizationWriter> output,
   {
     output->NewStep(istep, time);
     output->WriteVector("displacement",dis_);
+//     output->WriteVector("invtoggle", invtoggle_);
+//     output->WriteVector("velocity",vel_);
+//     output->WriteVector("acceleration",acc_);
   }
 
   return;
-} // MicroStruGenAlpha::Output()
+} // MicroStatic::Output()
 
 
 /*----------------------------------------------------------------------*
  |  set default parameter list (static/public)               mwgee 03/07|
  *----------------------------------------------------------------------*/
-void MicroStruGenAlpha::SetDefaults(ParameterList& params)
+void MicroStatic::SetDefaults(ParameterList& params)
 {
   params.set<bool>  ("print to screen"        ,false);
   params.set<bool>  ("print to err"           ,false);
@@ -718,13 +459,13 @@ void MicroStruGenAlpha::SetDefaults(ParameterList& params)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 03/07|
  *----------------------------------------------------------------------*/
-MicroStruGenAlpha::~MicroStruGenAlpha()
+MicroStatic::~MicroStatic()
 {
   return;
 }
 
 
-void MicroStruGenAlpha::DetermineToggle()
+void MicroStatic::DetermineToggle()
 {
   int np = 0;   // number of prescribed (=boundary) dofs needed for the
                 // creation of vectors and matrices for homogenization
@@ -770,8 +511,8 @@ void MicroStruGenAlpha::DetermineToggle()
   np_ = np;
 }
 
-void MicroStruGenAlpha::EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd,
-                                        const double alphaf)
+void MicroStatic::EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd,
+                                  const double alphaf)
 {
   RefCountPtr<DRT::Discretization> dis =
     DRT::Problem::Instance(1)->Dis(genprob.numsf,0);
@@ -825,50 +566,40 @@ void MicroStruGenAlpha::EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd,
         const int lid = dism_->Map().LID(gid);
         if (lid<0) dserror("Global id %d not on this proc in system vector",gid);
         (*dism_)[lid] = dism_prescribed[k];
-        (*disn_)[lid] = 1/(1-alphaf)*(dism_prescribed[k]-alphaf*(*dis_)[lid]);
+        //(*disn_)[lid] = 1/(1-alphaf)*(dism_prescribed[k]-alphaf*(*dis_)[lid]);
       }
     }
   }
 
 }
 
-void MicroStruGenAlpha::SetOldState(RefCountPtr<Epetra_Vector> disp,
-                                    RefCountPtr<Epetra_Vector> vel,
-                                    RefCountPtr<Epetra_Vector> acc,
-                                    RefCountPtr<Epetra_Vector> disi)
+void MicroStatic::SetOldState(RefCountPtr<Epetra_Vector> disp,
+                              RefCountPtr<Epetra_Vector> disi)
 {
   dis_ = disp;
-  vel_ = vel;
-  acc_ = acc;
   disi_ = disi;
   fext_->PutScalar(0.);     // we do not have any external loads on
                             // the microscale, so assign all components
                             // to zero
 }
 
-void MicroStruGenAlpha::SetTime(double timen, int istep)
+void MicroStatic::SetTime(double timen, int istep)
 {
   params_->set<double>("total time", timen);
   params_->set<int>   ("step", istep);
 }
 
-RefCountPtr<Epetra_Vector> MicroStruGenAlpha::ReturnNewDisp() { return rcp(new Epetra_Vector(*dis_)); }
+RefCountPtr<Epetra_Vector> MicroStatic::ReturnNewDisp() { return rcp(new Epetra_Vector(*dis_)); }
 
-RefCountPtr<Epetra_Vector> MicroStruGenAlpha::ReturnNewVel() { return rcp(new Epetra_Vector(*vel_)); }
+RefCountPtr<Epetra_Vector> MicroStatic::ReturnNewResDisp() { return rcp(new Epetra_Vector(*disi_)); }
 
-RefCountPtr<Epetra_Vector> MicroStruGenAlpha::ReturnNewAcc() { return rcp(new Epetra_Vector(*acc_)); }
-
-RefCountPtr<Epetra_Vector> MicroStruGenAlpha::ReturnNewResDisp() { return rcp(new Epetra_Vector(*disi_)); }
-
-void MicroStruGenAlpha::ClearState()
+void MicroStatic::ClearState()
 {
   dis_ = null;
-  vel_ = null;
-  acc_ = null;
   disi_ = null;
 }
 
-void MicroStruGenAlpha::SetUpHomogenization()
+void MicroStatic::SetUpHomogenization()
 {
   int indp = 0;
   int indf = 0;
@@ -905,7 +636,10 @@ void MicroStruGenAlpha::SetUpHomogenization()
   pdof_ = rcp(new Epetra_Map(-1, np_, &pdof[0], 0, dis->Comm()));
   fdof_ = rcp(new Epetra_Map(-1, ndof_-np_, &fdof[0], 0, dis->Comm()));
 
-  // create an importer
+  // create an exporter
+  //export_ = rcp(new Epetra_Export(*(dis->DofRowMap()), *pdof_));
+
+  // create an exporter
   import_ = rcp(new Epetra_Import(*pdof_, *(dis->DofRowMap())));
 
   // create vector containing material coordinates of prescribed nodes
@@ -956,7 +690,7 @@ void MicroStruGenAlpha::SetUpHomogenization()
 // after having finished all the testing, remove cmat from the input
 // parameters, since no constitutive tensor is calculated here.
 
-void MicroStruGenAlpha::Homogenization(Epetra_SerialDenseVector* stress,
+void MicroStatic::Homogenization(Epetra_SerialDenseVector* stress,
                                        Epetra_SerialDenseMatrix* cmat,
                                        double *density,
                                        const Epetra_SerialDenseMatrix* defgrd,
@@ -1056,7 +790,7 @@ void MicroStruGenAlpha::Homogenization(Epetra_SerialDenseVector* stress,
 
   // for testing reasons only!!!!!!!!!! begin testing region
   const double Emod  = 100.0;
-  const double nu  = 0.;
+  const double nu  = 0.2;
 
   double mfac = Emod/((1.0+nu)*(1.0-2.0*nu));  /* factor */
   /* write non-zero components */
@@ -1093,7 +827,7 @@ void MicroStruGenAlpha::Homogenization(Epetra_SerialDenseVector* stress,
   /// end testing region!!!!!!!!!
 }
 
-void MicroStruGenAlpha::StaticHomogenization(Epetra_SerialDenseVector* stress,
+void MicroStatic::StaticHomogenization(Epetra_SerialDenseVector* stress,
                                              Epetra_SerialDenseMatrix* cmat,
                                              double *density,
                                              const Epetra_SerialDenseMatrix* defgrd)
@@ -1116,11 +850,17 @@ void MicroStruGenAlpha::StaticHomogenization(Epetra_SerialDenseVector* stress,
 
   Epetra_Vector fp(*pdof_);
 
+//   int err = fp.Export(*fresm_dirich_, *export_, Insert);
+//   if (err)
+//     dserror("Exporting external forces of prescribed dofs using exporter returned err=%d",err);
+
+
   int err = fp.Import(*fresm_dirich_, *import_, Insert);
   if (err)
-    dserror("Importing external forces of prescribed dofs using importer returned err=%d",err);
+    dserror("Importing external forces of prescribed dofs using exporter returned err=%d",err);
 
-  fp.Scale(-1.0);
+//   cout << "pdof:\n" << *pdof_ << endl;
+//   cout << "fp:\n" << fp << endl;
 
   // Now we have all forces in the material description acting on the
   // boundary nodes together in one vector
@@ -1142,6 +882,8 @@ void MicroStruGenAlpha::StaticHomogenization(Epetra_SerialDenseVector* stress,
   // this approach does not work. This was also confirmed by
   // Kouznetsova in a discussion during USNCCM 9.
 
+  fp.Scale(-1.0);
+
   Epetra_SerialDenseMatrix P(3,3);
 
   for (int i=0; i<3; ++i)
@@ -1155,6 +897,38 @@ void MicroStruGenAlpha::StaticHomogenization(Epetra_SerialDenseVector* stress,
       P(i,j) /= V0_;
     }
   }
+
+//   Epetra_Map Dmap(9, 0, Epetra_SerialComm());
+//   Epetra_MultiVector D(Dmap, np_);
+//   for (int n=0;n<np_/3;++n)
+//   {
+//     Epetra_Vector* temp1 = D(3*n);
+//     (*temp1)[0] = (*Xp_)[3*n];
+//     (*temp1)[3] = (*Xp_)[3*n+1];
+//     (*temp1)[6] = (*Xp_)[3*n+2];
+//     Epetra_Vector* temp2 = D(3*n+1);
+//     (*temp2)[1] = (*Xp_)[3*n+1];
+//     (*temp2)[4] = (*Xp_)[3*n+2];
+//     (*temp2)[7] = (*Xp_)[3*n];
+//     Epetra_Vector* temp3 = D(3*n+2);
+//     (*temp3)[2] = (*Xp_)[3*n+2];
+//     (*temp3)[5] = (*Xp_)[3*n];
+//     (*temp3)[8] = (*Xp_)[3*n+1];
+//   }
+
+//   Epetra_MultiVector Pvec(Dmap, 1);
+//   Pvec.Multiply('N', 'N', 1.0, D, fp, 0.0);
+
+//   Epetra_SerialDenseMatrix P(3,3);
+//   P(0,0)=(*Pvec(0))[0];
+//   P(0,1)=(*Pvec(0))[3];
+//   P(0,2)=(*Pvec(0))[6];
+//   P(1,0)=(*Pvec(0))[7];
+//   P(1,1)=(*Pvec(0))[1];
+//   P(1,2)=(*Pvec(0))[4];
+//   P(2,0)=(*Pvec(0))[5];
+//   P(2,1)=(*Pvec(0))[8];
+//   P(2,2)=(*Pvec(0))[2];
 
   // determine inverse of deformation gradient
 
@@ -1197,6 +971,9 @@ void MicroStruGenAlpha::StaticHomogenization(Epetra_SerialDenseVector* stress,
   {
     (*stress)[i]=S[i];
   }
+
+//   cout << "F:\n" << *defgrd << endl;
+//   cout << "S:\n" << S << endl;
 
   // split effective dynamic stiffness -> we want Kpp, Kpf, Kfp and Kff
   // Kpp and Kff are sparse matrices, whereas Kpf and Kfp are MultiVectors
@@ -1309,7 +1086,7 @@ void MicroStruGenAlpha::StaticHomogenization(Epetra_SerialDenseVector* stress,
   // strains has to be determined (this is what Solid3 Hex8 wants to
   // be returned by the material routine)
 
-  MicroStruGenAlpha::calc_cmat(Kpp, F_inv, S, cmat, defgrd);
+  MicroStatic::calc_cmat(Kpp, F_inv, S, cmat, defgrd);
 
   // after having all homogenization stuff done, we now really don't need stiff_ anymore
 
@@ -1345,6 +1122,8 @@ void MicroStruGenAlpha::StaticHomogenization(Epetra_SerialDenseVector* stress,
   *density = 1/V0_*p.get<double>("homogdens", 0.0);
   if (*density == 0.0)
     dserror("Density determined from homogenization procedure equals zero!");
+
+//   cout << "density: " << *density << "\n";
 }
 
 

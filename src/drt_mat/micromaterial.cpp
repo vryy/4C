@@ -7,7 +7,6 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/linalg_utils.H"
 
-#include "../drt_stru_multi/microstrugenalpha.H"
 #include "../io/io_drt_micro.H"
 
 using namespace std;

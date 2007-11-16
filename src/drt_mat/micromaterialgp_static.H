@@ -1,8 +1,3 @@
-#if 0
-
-
-
-
 /*----------------------------------------------------------------------*/
 /*!
 \file micromaterial.H
@@ -18,8 +13,8 @@ Maintainer: Lena Wiechert
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef MICROMATERIALGP_H
-#define MICROMATERIALGP_H
+#ifndef MICROMATERIALGP_STAT_H
+#define MICROMATERIALGP_STAT_H
 
 #ifdef CCADISCRET
 
@@ -53,8 +48,8 @@ public:
                               const double time,
                               string action);
 
-  /// Set up microscale generalized alpha
-  void SetUpMicroGenAlpha();
+  /// Set up microscale static "time integrator"
+  void SetUpMicroStatic();
 
 
 private:
@@ -66,19 +61,13 @@ private:
   const int ele_ID_;
 
   /// microstructure generalized alpha class
-  static RefCountPtr<MicroStruGenAlpha> microgenalpha_;
+  static RefCountPtr<MicroStatic> microstatic_;
 
   /// microstructure discretization writer
   RefCountPtr<MicroDiscretizationWriter> micro_output_;
 
   /// my vector of displacements
   RefCountPtr<Epetra_Vector> disp_;
-
-  /// my vector of velocities
-  RefCountPtr<Epetra_Vector> vel_;
-
-  /// my vector of accelerations
-  RefCountPtr<Epetra_Vector> acc_;
 
   /// my vector of residual displacements
   RefCountPtr<Epetra_Vector> disi_;
@@ -96,7 +85,4 @@ private:
 }
 
 #endif
-#endif
-
-
 #endif

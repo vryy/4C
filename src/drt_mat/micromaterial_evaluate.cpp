@@ -1,14 +1,16 @@
 #ifdef CCADISCRET
 
 #include "micromaterial.H"
-#include "micromaterialgp.H"
+//#include "micromaterialgp.H"
+#include "micromaterialgp_static.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/linalg_utils.H"
 
-#include "../drt_stru_multi/microstrugenalpha.H"
+//#include "../drt_stru_multi/microstrugenalpha.H"
+#include "../drt_stru_multi/microstatic.H"
 #include "../io/io_drt_micro.H"
 
 using namespace std;
@@ -60,7 +62,6 @@ void MAT::MicroMaterial::Evaluate(const Epetra_SerialDenseMatrix* defgrd,
   RefCountPtr<DRT::Problem> macro_problem = DRT::Problem::Instance(0);
   macro_problem->ActivateMaterial();
 
-  //exit(0);
 }
 
 #endif
