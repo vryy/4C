@@ -23,10 +23,15 @@ Maintainer: Axel Gerstenberger
 #include <Epetra_SerialDenseSolver.h>
 
 
-DRT::Elements::XFluid3Stationary::XFluid3Stationary(int iel)
+DRT::Elements::XFluid3Stationary::XFluid3Stationary(
+		const int iel,
+		const int numparamvelx,
+		const int numparamvely,
+		const int numparamvelz,
+		const int numparampres)
   : iel_(iel),
     xyze_(3,iel_,blitz::ColumnMajorArray<2>()),
-    edeadng_(3,iel_,blitz::ColumnMajorArray<2>()),
+    edeadng_(3,numparamvelx,blitz::ColumnMajorArray<2>()),
     funct_(iel_),
     deriv_(3,iel_,blitz::ColumnMajorArray<2>()),
     deriv2_(6,iel_,blitz::ColumnMajorArray<2>()),
@@ -42,10 +47,10 @@ DRT::Elements::XFluid3Stationary::XFluid3Stationary(int iel)
     velint_(3),
     gradp_(3),
     tau_(3),
-    viscs2_(3,3,iel_,blitz::ColumnMajorArray<3>()),
-    conv_c_(iel_),
-    conv_g_(iel_),
-    conv_r_(3,3,iel_,blitz::ColumnMajorArray<3>()),
+    viscs2_(3,3,numparamvelx,blitz::ColumnMajorArray<3>()),
+    conv_c_(numparamvelx),
+    conv_g_(numparamvelx),
+    conv_r_(3,3,numparamvelx,blitz::ColumnMajorArray<3>()),
     rhsint_(3),
     conv_old_(3),
     visc_old_(3),

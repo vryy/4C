@@ -338,7 +338,7 @@ private:
     calc_Shapefunction,
     calc_ShapeDeriv1,
     calc_ShapeDeriv2,
-    store_dof_info
+    store_xfem_info
   };
 
   //! stabilisation actions recognized by fluid3 (genalpha implementation)
@@ -421,6 +421,12 @@ private:
 
   //! store information about the nodal-unknowns of this element
   XFEM::ElementDofManager                         eleDofManager_;
+
+  //! store information about domain integration cells
+  XFEM::DomainIntCells                            domainIntCells_;
+  
+  //! store information about boundary integration cells
+  XFEM::BoundaryIntCells                          boundaryIntCells_;
   
   // internal calculation methods
 
@@ -579,10 +585,15 @@ private:
   StabilisationAction ConvertStringToStabAction (const string& action) const;
 
   /// Internal implementation class for specific fluid element
-  XFluid3Impl* Impl();
+  XFluid3Impl* Impl(const int numnode);
 
   /// Internal implementation class for fluid element -- stationary formulation
-  XFluid3Stationary* StationaryImpl();  
+  XFluid3Stationary* StationaryImpl(
+		  const int numnode,
+		  const int numparamvelx,
+		  const int numparamvely,
+		  const int numparamvelz,
+		  const int numparampres);  
 
 protected:
   /*!

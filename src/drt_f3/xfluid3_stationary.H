@@ -65,7 +65,12 @@ namespace Elements
   {
   public:
     /// Constructor with number of nodes
-    explicit XFluid3Stationary(int iel);
+    explicit XFluid3Stationary(
+    		int iel,
+    		int numparamvelx,
+    		int numparamvely,
+    		int numparamvelz,
+    		int numparampres);
 
     /// calculating element matrix and rhs
     /*!

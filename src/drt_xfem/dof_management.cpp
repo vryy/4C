@@ -19,7 +19,7 @@ Maintainer: Axel Gerstenberger
  |  ctor                                                        ag 11/07|
  *----------------------------------------------------------------------*/
 XFEM::EnrField::EnrField(
-        const Field field,
+        const Physics::Field field,
         const Enrichment enr) :
         	field_(field), enr_(enr)
 {
@@ -158,12 +158,10 @@ std::string XFEM::ElementDofManager::toString() const
 /*----------------------------------------------------------------------*
  |  ctor                                                        ag 11/07|
  *----------------------------------------------------------------------*/
-XFEM::DofManager::DofManager(
-		RefCountPtr<DRT::Discretization> xfemdis,
-        const map<int, DomainIntCells >&  elementalDomainIntCells) :
-        	xfemdis_(xfemdis)
+XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih) :
+        	xfemdis_(ih->xfemdis())
 {
-	nodalDofMap_ = XFEM::DofManager::createNodalDofMap(xfemdis, elementalDomainIntCells);
+	nodalDofMap_ = XFEM::DofManager::createNodalDofMap(ih->xfemdis(), ih->elementalDomainIntCells());
 }
 		
 /*----------------------------------------------------------------------*
@@ -195,8 +193,8 @@ string XFEM::DofManager::toString() const
 /*----------------------------------------------------------------------*
  |  construct dofmap                                            ag 11/07|
  *----------------------------------------------------------------------*/
-map<int, const set <XFEM::EnrField> > XFEM::DofManager::createNodalDofMap(
-        const RefCountPtr<DRT::Discretization>        xfemdis,
+const map<int, const set <XFEM::EnrField> > XFEM::DofManager::createNodalDofMap(
+        const RCP<DRT::Discretization>        xfemdis,
         const map<int, XFEM::DomainIntCells >&  elementDomainIntCellMap) const
 {
 	// the final map

@@ -17,6 +17,7 @@ Maintainer: Axel Gerstenberger
 #include "physics.H"
 #include "enrichment.H"
 #include "integrationcell.H"
+#include "interface.H"
 #include "../drt_lib/drt_discret.H"
 
 
@@ -171,11 +172,7 @@ class DofManager
 {
 public:
 
-	explicit DofManager(
-			RCP<DRT::Discretization> xfemdis,
-	        const map<int, DomainIntCells >&  elementalDomainIntCells);
-	DofManager(
-            const DofManager& other);
+	explicit DofManager(const RCP<XFEM::InterfaceHandle> ih);
     ~DofManager();
 
     string toString() const;
@@ -212,7 +209,7 @@ private:
 	map<int, const set <XFEM::EnrField> > nodalDofMap_;
 	
 	// create a map that for each node (gid) on this processor has its unknowns
-	map<int, const set<EnrField> > createNodalDofMap(
+	const map<int, const set<EnrField> > createNodalDofMap(
 			const RefCountPtr<DRT::Discretization> xfemdis,
 	        const map<int, DomainIntCells >&  elementDomainIntCellMap) const;
 };

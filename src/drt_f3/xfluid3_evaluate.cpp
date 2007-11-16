@@ -58,9 +58,9 @@ extern struct _MATERIAL  *mat;
   
   */
 
-DRT::Elements::XFluid3Impl* DRT::Elements::XFluid3::Impl()
+DRT::Elements::XFluid3Impl* DRT::Elements::XFluid3::Impl(const int numnode)
 {
-  switch (NumNode())
+  switch (numnode)
   {
   case 8:
   {
@@ -118,77 +118,96 @@ DRT::Elements::XFluid3Impl* DRT::Elements::XFluid3::Impl()
       f5 = new XFluid3Impl(5);
     return f5;
   }
-
   default:
-    dserror("node number %d not supported", NumNode());
+  {
+	static XFluid3Impl* fx;
+    if (fx==NULL)
+      fx = new XFluid3Impl(numnode);
+    else
+    {
+    	delete fx;
+    	fx = new XFluid3Impl(numnode);
+    }
+    return fx;
+  }
   }
   return NULL;
 }
 
 
-DRT::Elements::XFluid3Stationary* DRT::Elements::XFluid3::StationaryImpl()
+DRT::Elements::XFluid3Stationary* DRT::Elements::XFluid3::StationaryImpl(
+		const int numnode,
+		const int numparamvelx,
+		const int numparamvely,
+		const int numparamvelz,
+		const int numparampres)
 {
-  switch (NumNode())
+  switch (numnode)
   {
   case 8:
   {
     static XFluid3Stationary* f8;
     if (f8==NULL)
-      f8 = new XFluid3Stationary(8);
+      f8 = new XFluid3Stationary(numnode,numnode,numnode,numnode,numnode);
     return f8;
   }
   case 20:
   {
     static XFluid3Stationary* f20;
     if (f20==NULL)
-      f20 = new XFluid3Stationary(20);
+      f20 = new XFluid3Stationary(numnode,numnode,numnode,numnode,numnode);
     return f20;
   }
   case 27:
   {
     static XFluid3Stationary* f27;
     if (f27==NULL)
-      f27 = new XFluid3Stationary(27);
+      f27 = new XFluid3Stationary(numnode,numnode,numnode,numnode,numnode);
     return f27;
   }
   case 4:
   {
     static XFluid3Stationary* f4;
     if (f4==NULL)
-      f4 = new XFluid3Stationary(4);
+      f4 = new XFluid3Stationary(numnode,numnode,numnode,numnode,numnode);
     return f4;
   }
   case 10:
   {
     static XFluid3Stationary* f10;
     if (f10==NULL)
-      f10 = new XFluid3Stationary(10);
+      f10 = new XFluid3Stationary(numnode,numnode,numnode,numnode,numnode);
     return f10;
   }
   case 6:
   {
     static XFluid3Stationary* f6;
     if (f6==NULL)
-      f6 = new XFluid3Stationary(6);
+      f6 = new XFluid3Stationary(numnode,numnode,numnode,numnode,numnode);
     return f6;
   }
   case 15:
   {
     static XFluid3Stationary* f15;
     if (f15==NULL)
-      f15 = new XFluid3Stationary(15);
+      f15 = new XFluid3Stationary(numnode,numnode,numnode,numnode,numnode);
     return f15;
   }
   case 5:
   {
     static XFluid3Stationary* f5;
     if (f5==NULL)
-      f5 = new XFluid3Stationary(5);
+      f5 = new XFluid3Stationary(numnode,numnode,numnode,numnode,numnode);
     return f5;
   }
-
   default:
-    dserror("node number %d not supported", NumNode());
+  {
+	static XFluid3Stationary* fx;
+    if (fx!=NULL)
+    	delete fx;
+    fx = new XFluid3Stationary(numnode,numparamvelx,numparamvely,numparamvelz,numparampres);
+    return fx;
+  }
   }
   return NULL;
 }
@@ -218,8 +237,8 @@ DRT::Elements::XFluid3::ActionType DRT::Elements::XFluid3::convertStringToAction
     act = XFluid3::calc_ShapeDeriv1;
   else if (action == "calc_ShapeDeriv2")
     act = XFluid3::calc_ShapeDeriv2;
-  else if (action == "store_dof_info")
-    act = XFluid3::store_dof_info;
+  else if (action == "store_xfem_info")
+    act = XFluid3::store_xfem_info;
   else
     dserror("Unknown type of action for XFluid3");
   return act;
@@ -348,7 +367,7 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
         // get control parameter
         const double time = params.get<double>("total time",-1.0);
 
-        bool newton = params.get<bool>("include reactive terms for linearisation",false);
+        const bool newton = params.get<bool>("include reactive terms for linearisation",false);
 
         // the stabilisation scheme is hardcoded up to now --- maybe it's worth taking
         // this into the input or to choose a standard implementation and drop all ifs
@@ -361,8 +380,7 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
 
         // One-step-Theta: timefac = theta*dt
         // BDF2:           timefac = 2/3 * dt
-        double timefac = 0.0;
-        timefac = params.get<double>("thsl",-1.0);
+        const double timefac = params.get<double>("thsl",-1.0);
         if (timefac < 0.0) dserror("No thsl supplied");
 
         // wrap epetra serial dense objects in blitz objects
@@ -375,7 +393,7 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
                                        blitz::neverDeleteData);
 
         // calculate element coefficient matrix and rhs     
-        Impl()->Sysmat(this,
+        Impl(NumNode())->Sysmat(this,
                        evelnp,
                        eprenp,
                        evhist,
@@ -512,29 +530,29 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
           // split velocity and pressure
           // create blitz objects
 
-          const int numpresparam = eleDofManager_.NumDof(XFEM::Physics::Pres);
-          blitz::Array<double, 1> eprenp(numpresparam);
-          const int numvelxparam = eleDofManager_.NumDof(XFEM::Physics::Velx);
-          const int numvelyparam = eleDofManager_.NumDof(XFEM::Physics::Vely);
-          const int numvelzparam = eleDofManager_.NumDof(XFEM::Physics::Velz);
-          dsassert((numvelxparam == numvelyparam and numvelxparam == numvelzparam and numvelxparam == numpresparam),
+          const int numparampres = eleDofManager_.NumDof(XFEM::Physics::Pres);
+          blitz::Array<double, 1> eprenp(numparampres);
+          const int numparamvelx = eleDofManager_.NumDof(XFEM::Physics::Velx);
+          const int numparamvely = eleDofManager_.NumDof(XFEM::Physics::Vely);
+          const int numparamvelz = eleDofManager_.NumDof(XFEM::Physics::Velz);
+          dsassert((numparamvelx == numparamvely and numparamvelx == numparamvelz and numparamvelx == numparampres),
         		  "for now, we enrich velocity and pressure together");
-          blitz::Array<double, 2> evelnp(3,numvelxparam,blitz::ColumnMajorArray<2>());
+          blitz::Array<double, 2> evelnp(3,numparamvelx,blitz::ColumnMajorArray<2>());
 
           const vector<int> velxdof = eleDofManager_.Dof(XFEM::Physics::Velx);
-          for (int iparam=0; iparam<numvelxparam; ++iparam)
+          for (int iparam=0; iparam<numparamvelx; ++iparam)
         	  evelnp(0,iparam) = myvelnp[velxdof[iparam]];
 
           const vector<int> velydof = eleDofManager_.Dof(XFEM::Physics::Vely);
-          for (int iparam=0; iparam<numvelyparam; ++iparam)
+          for (int iparam=0; iparam<numparamvely; ++iparam)
         	  evelnp(1,iparam) = myvelnp[velydof[iparam]];
 
           const vector<int> velzdof = eleDofManager_.Dof(XFEM::Physics::Velz);
-          for (int iparam=0; iparam<numvelzparam; ++iparam)
+          for (int iparam=0; iparam<numparamvelz; ++iparam)
         	  evelnp(2,iparam) = myvelnp[velzdof[iparam]];
 
           const vector<int> presdof = eleDofManager_.Dof(XFEM::Physics::Pres);
-          for (int iparam=0; iparam<numpresparam; ++iparam)
+          for (int iparam=0; iparam<numparampres; ++iparam)
         	  eprenp(iparam) = myvelnp[presdof[iparam]];
           
           // get control parameter
@@ -558,7 +576,12 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
                                          blitz::neverDeleteData);
 
           // calculate element coefficient matrix and rhs         
-          StationaryImpl()->Sysmat(this,
+          StationaryImpl(
+        		  NumNode(),
+        		  numparamvelx, 
+        		  numparamvely, 
+        		  numparamvelz, 
+        		  numparampres)->Sysmat(this,
                          evelnp,
                          eprenp,
                          estif,
@@ -585,7 +608,7 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
       case calc_ShapeDeriv2:
         shape_function_3D_deriv2(elemat2,elevec2[0],elevec2[1],elevec2[2],this->Shape());
         break;
-      case store_dof_info:
+      case store_xfem_info:
       {
     	// get access to global dofman
     	const RCP<XFEM::DofManager> dofman = params.get< RCP< XFEM::DofManager > >("dofmanager",null);
@@ -604,6 +627,14 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
 
 //    	cout << "storing refcountpointers at element: " << this->Id() << endl;
 //    	cout << eleDofManager_.toString() << endl;
+    	
+    	const RCP<XFEM::InterfaceHandle> ih = params.get< RCP< XFEM::InterfaceHandle > >("interfacehandle",null);
+    	
+    	domainIntCells_   = ih->domainIntCells(this->Id());
+    	boundaryIntCells_ = ih->boundaryIntCells(this->Id());
+    	
+//      cout << "Element " << this->Id() << " has " << domainIntCells_.size() <<   " domain integration cells." << endl;
+//    	cout << "Element " << this->Id() << " has " << boundaryIntCells_.size() << " boundary integration cells." << endl;
     	
       }
     	break;

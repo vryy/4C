@@ -24,6 +24,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_periodicbc.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_xfem/intersection.H"
+#include "../drt_xfem/interface.H"
 #include "../drt_xfem/integrationcell.H"
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/gmsh.H"
@@ -66,29 +67,20 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   if (!discret_->Filled()) discret_->FillComplete();
 
   // initial Intersection
-  map<int, XFEM::DomainIntCells > elementalDomainIntCells;
-  map<int, XFEM::BoundaryIntCells > elementalBoundaryIntCells;
-  XFEM::Intersection is;
-  is.computeIntersection(fluiddis,cutterdis,elementalDomainIntCells,elementalBoundaryIntCells);
-
-  // debug: write both meshes to file in Gmsh format
-  ofstream f_system("elements_coupled_system.pos");
-  f_system << GMSH::disToString("Fluid", 0.0, fluiddis, elementalDomainIntCells);
-  f_system << GMSH::disToString("Solid", 1.0, cutterdis);
-  f_system << GMSH::getConfigString(2);
-  f_system.close();
+  RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(fluiddis,cutterdis));
 
   // apply enrichments
-  RCP<DofManager> initialdofmanager = rcp(new DofManager(fluiddis, elementalDomainIntCells));
+  RCP<XFEM::DofManager> initialdofmanager = rcp(new XFEM::DofManager(ih));
   
   // debug: print enrichments to screen
   cout << initialdofmanager->toString() << endl;
   
-  // tell elements about the dofs
+  // tell elements about the dofs and the integration
   {
 	  ParameterList eleparams;
-	  eleparams.set("action","store_dof_info");
+	  eleparams.set("action","store_xfem_info");
 	  eleparams.set("dofmanager",initialdofmanager);
+	  eleparams.set("interfacehandle",ih);
 	  eleparams.set("assemble matrix 1",false);
 	  eleparams.set("assemble matrix 2",false);
 	  eleparams.set("assemble vector 1",false);
