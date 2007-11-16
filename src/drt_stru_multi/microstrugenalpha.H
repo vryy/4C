@@ -125,8 +125,7 @@ public:
 
   void DetermineToggle();
 
-  void EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd,
-                       const double alphaf);
+  void EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd);
 
   void SetOldState(RefCountPtr<Epetra_Vector> disp,
                    RefCountPtr<Epetra_Vector> vel,
