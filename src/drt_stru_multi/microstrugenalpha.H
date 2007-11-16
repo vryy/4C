@@ -103,7 +103,7 @@ public:
   \brief do full Newton iteration
 
   */
-  void FullNewton(const Epetra_SerialDenseMatrix* defgrd);
+  void FullNewton();
 
   /*!
   \brief update configuration

@@ -220,7 +220,7 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
 
   //microgenalpha_->ConstantPredictor(defgrd);
   microgenalpha_->ConsistentPredictor(defgrd);
-  microgenalpha_->FullNewton(defgrd);
+  microgenalpha_->FullNewton();
   microgenalpha_->Update();
   //microgenalpha_->Homogenization(stress, cmat, density, defgrd, action);
   microgenalpha_->StaticHomogenization(stress, cmat, density, defgrd);

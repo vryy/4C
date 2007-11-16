@@ -258,7 +258,7 @@ void MicroStruGenAlpha::ConstantPredictor(const Epetra_SerialDenseMatrix* defgrd
   // gradient is evaluated at the mid-point!
   {
     // dism then also holds prescribed new dirichlet displacements
-    EvaluateMicroBC(defgrd, alphaf);
+    EvaluateMicroBC(defgrd);
     discret_->ClearState();
     fextn_->PutScalar(0.0);  // initialize external force vector (load vect)
   }
@@ -358,7 +358,7 @@ void MicroStruGenAlpha::ConsistentPredictor(const Epetra_SerialDenseMatrix* defg
   // apply new displacements at DBCs
   // and get new external force vector
   {
-    EvaluateMicroBC(defgrd, alphaf);
+    EvaluateMicroBC(defgrd);
     discret_->ClearState();
     fextn_->PutScalar(0.0);  // initialize external force vector (load vect)
   }
@@ -462,7 +462,7 @@ void MicroStruGenAlpha::ConsistentPredictor(const Epetra_SerialDenseMatrix* defg
 /*----------------------------------------------------------------------*
  |  do Newton iteration (public)                             mwgee 03/07|
  *----------------------------------------------------------------------*/
-void MicroStruGenAlpha::FullNewton(const Epetra_SerialDenseMatrix* defgrd)
+void MicroStruGenAlpha::FullNewton()
 {
   // -------------------------------------------------------------------
   // get some parameters from parameter list
@@ -770,8 +770,7 @@ void MicroStruGenAlpha::DetermineToggle()
   np_ = np;
 }
 
-void MicroStruGenAlpha::EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd,
-                                        const double alphaf)
+void MicroStruGenAlpha::EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd)
 {
   RefCountPtr<DRT::Discretization> dis =
     DRT::Problem::Instance(1)->Dis(genprob.numsf,0);
@@ -825,7 +824,6 @@ void MicroStruGenAlpha::EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd,
         const int lid = dism_->Map().LID(gid);
         if (lid<0) dserror("Global id %d not on this proc in system vector",gid);
         (*dism_)[lid] = dism_prescribed[k];
-        (*disn_)[lid] = 1/(1-alphaf)*(dism_prescribed[k]-alphaf*(*dis_)[lid]);
       }
     }
   }
