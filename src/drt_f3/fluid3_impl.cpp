@@ -370,7 +370,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
           estif(vi*4 + 2, ui*4 + 2) += ttimetauM*funct_(ui)*gradp_(2)*derxy_(2, vi) ;
           estif(vi*4 + 2, ui*4 + 3) += ttimetauM*(conv_c_(vi) + conv_g_(vi))*derxy_(2, ui) ;
 
-          /* Viskositätsterm */
+          /* Viskositï¿½tsterm */
           estif(vi*4, ui*4)         += visc*timefacfac*(2.0*derxy_(0, ui)*derxy_(0, vi) + derxy_(1, ui)*derxy_(1, vi) + derxy_(2, ui)*derxy_(2, vi)) ;
           estif(vi*4, ui*4 + 1)     += visc*timefacfac*derxy_(0, ui)*derxy_(1, vi) ;
           estif(vi*4, ui*4 + 2)     += visc*timefacfac*derxy_(0, ui)*derxy_(2, vi) ;
@@ -381,7 +381,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
           estif(vi*4 + 2, ui*4 + 1) += visc*timefacfac*derxy_(1, vi)*derxy_(2, ui) ;
           estif(vi*4 + 2, ui*4 + 2) += visc*timefacfac*(derxy_(0, ui)*derxy_(0, vi) + derxy_(1, ui)*derxy_(1, vi) + 2.0*derxy_(2, ui)*derxy_(2, vi)) ;
 
-          /* Stabilisierung der Viskosität ( L_conv_u) */
+          /* Stabilisierung der Viskositï¿½t ( L_conv_u) */
           estif(vi*4, ui*4)         += 2.0*visc*ttimetauMp*(conv_c_(ui)*viscs2_(0, 0, vi) + conv_g_(ui)*viscs2_(0, 0, vi) + viscs2_(0, 0, vi)*conv_r_(0, 0, ui) + viscs2_(0, 1, vi)*conv_r_(1, 0, ui) + viscs2_(0, 2, vi)*conv_r_(2, 0, ui)) ;
           estif(vi*4, ui*4 + 1)     += 2.0*visc*ttimetauMp*(conv_c_(ui)*viscs2_(0, 1, vi) + conv_g_(ui)*viscs2_(0, 1, vi) + viscs2_(0, 0, vi)*conv_r_(0, 1, ui) + viscs2_(0, 1, vi)*conv_r_(1, 1, ui) + viscs2_(0, 2, vi)*conv_r_(2, 1, ui)) ;
           estif(vi*4, ui*4 + 2)     += 2.0*visc*ttimetauMp*(conv_c_(ui)*viscs2_(0, 2, vi) + conv_g_(ui)*viscs2_(0, 2, vi) + viscs2_(0, 0, vi)*conv_r_(0, 2, ui) + viscs2_(0, 1, vi)*conv_r_(1, 2, ui) + viscs2_(0, 2, vi)*conv_r_(2, 2, ui)) ;
@@ -392,7 +392,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
           estif(vi*4 + 2, ui*4 + 1) += 2.0*visc*ttimetauMp*(conv_c_(ui)*viscs2_(1, 2, vi) + conv_g_(ui)*viscs2_(1, 2, vi) + viscs2_(0, 2, vi)*conv_r_(0, 1, ui) + viscs2_(1, 2, vi)*conv_r_(1, 1, ui) + viscs2_(2, 2, vi)*conv_r_(2, 1, ui)) ;
           estif(vi*4 + 2, ui*4 + 2) += 2.0*visc*ttimetauMp*(conv_c_(ui)*viscs2_(2, 2, vi) + conv_g_(ui)*viscs2_(2, 2, vi) + viscs2_(0, 2, vi)*conv_r_(0, 2, ui) + viscs2_(1, 2, vi)*conv_r_(1, 2, ui) + viscs2_(2, 2, vi)*conv_r_(2, 2, ui)) ;
 
-          /* Stabilisierung der Viskosität (-L_visc_u) */
+          /* Stabilisierung der Viskositï¿½t (-L_visc_u) */
           estif(vi*4, ui*4)         += 4.0*(visc*visc)*ttimetauMp*(viscs2_(0, 0, ui)*viscs2_(0, 0, vi) + viscs2_(0, 1, ui)*viscs2_(0, 1, vi) + viscs2_(0, 2, ui)*viscs2_(0, 2, vi)) ;
           estif(vi*4, ui*4 + 1)     += 4.0*(visc*visc)*ttimetauMp*(viscs2_(0, 0, vi)*viscs2_(0, 1, ui) + viscs2_(0, 1, vi)*viscs2_(1, 1, ui) + viscs2_(0, 2, vi)*viscs2_(1, 2, ui)) ;
           estif(vi*4, ui*4 + 2)     += 4.0*(visc*visc)*ttimetauMp*(viscs2_(0, 0, vi)*viscs2_(0, 2, ui) + viscs2_(0, 1, vi)*viscs2_(1, 2, ui) + viscs2_(0, 2, vi)*viscs2_(2, 2, ui)) ;
@@ -403,7 +403,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
           estif(vi*4 + 2, ui*4 + 1) += 4.0*(visc*visc)*ttimetauMp*(viscs2_(0, 1, ui)*viscs2_(0, 2, vi) + viscs2_(1, 1, ui)*viscs2_(1, 2, vi) + viscs2_(1, 2, ui)*viscs2_(2, 2, vi)) ;
           estif(vi*4 + 2, ui*4 + 2) += 4.0*(visc*visc)*ttimetauMp*(viscs2_(0, 2, ui)*viscs2_(0, 2, vi) + viscs2_(1, 2, ui)*viscs2_(1, 2, vi) + viscs2_(2, 2, ui)*viscs2_(2, 2, vi)) ;
 
-          /* Stabilisierung der Viskosität ( L_pres_p) */
+          /* Stabilisierung der Viskositï¿½t ( L_pres_p) */
           estif(vi*4, ui*4 + 3)     += 2.0*visc*ttimetauMp*(derxy_(0, ui)*viscs2_(0, 0, vi) + derxy_(1, ui)*viscs2_(0, 1, vi) + derxy_(2, ui)*viscs2_(0, 2, vi)) ;
           estif(vi*4 + 1, ui*4 + 3) += 2.0*visc*ttimetauMp*(derxy_(0, ui)*viscs2_(0, 1, vi) + derxy_(1, ui)*viscs2_(1, 1, vi) + derxy_(2, ui)*viscs2_(1, 2, vi)) ;
           estif(vi*4 + 2, ui*4 + 3) += 2.0*visc*ttimetauMp*(derxy_(0, ui)*viscs2_(0, 2, vi) + derxy_(1, ui)*viscs2_(1, 2, vi) + derxy_(2, ui)*viscs2_(2, 2, vi)) ;
@@ -431,7 +431,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
           estif(vi*4 + 3, ui*4 + 1) += timefacfac*funct_(vi)*derxy_(1, ui) ;
           estif(vi*4 + 3, ui*4 + 2) += timefacfac*funct_(vi)*derxy_(2, ui) ;
 
-          /* Kontinuitätsstabilisierung */
+          /* Kontinuitï¿½tsstabilisierung */
           estif(vi*4, ui*4)         += (timefac*timefac)*tau_C*derxy_(0, ui)*derxy_(0, vi) ;
           estif(vi*4, ui*4 + 1)     += (timefac*timefac)*tau_C*derxy_(0, vi)*derxy_(1, ui) ;
           estif(vi*4, ui*4 + 2)     += (timefac*timefac)*tau_C*derxy_(0, vi)*derxy_(2, ui) ;
@@ -458,7 +458,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
           estif(vi*4 + 2, ui*4 + 1) += timetauM*funct_(ui)*velint_(2)*derxy_(1, vi) ;
           estif(vi*4 + 2, ui*4 + 2) += timetauM*funct_(ui)*(conv_g_(vi) + velint_(0)*derxy_(0, vi) + velint_(1)*derxy_(1, vi) + 2.0*velint_(2)*derxy_(2, vi)) ;
 
-          /* Viskositätsstabilisierung */
+          /* Viskositï¿½tsstabilisierung */
           estif(vi*4, ui*4)         += 2.0*visc*timetauMp*funct_(ui)*viscs2_(0, 0, vi) ;
           estif(vi*4, ui*4 + 1)     += 2.0*visc*timetauMp*funct_(ui)*viscs2_(0, 1, vi) ;
           estif(vi*4, ui*4 + 2)     += 2.0*visc*timetauMp*funct_(ui)*viscs2_(0, 2, vi) ;
@@ -487,7 +487,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
           estif(vi*4 + 2, ui*4 + 1) += -(timetauM*funct_(ui)*rhsint_(2)*derxy_(1, vi)) ;
           estif(vi*4 + 2, ui*4 + 2) += -(timetauM*funct_(ui)*rhsint_(2)*derxy_(2, vi)) ;
 
-          /* Viskositätsstabilisierung */
+          /* Viskositï¿½tsstabilisierung */
 
           /* Stabilisierung der Druckgleichung */
 
@@ -515,22 +515,22 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
         eforce(vi*4 + 1) += -(ttimetauM*(conv_c_(vi) + conv_g_(vi))*gradp_(1)) ;
         eforce(vi*4 + 2) += -(ttimetauM*(conv_c_(vi) + conv_g_(vi))*gradp_(2)) ;
 
-        /* Viskositätsterm */
+        /* Viskositï¿½tsterm */
         eforce(vi*4)     += -(visc*timefacfac*(2.0*derxy_(0, vi)*vderxy_(0, 0) + derxy_(1, vi)*vderxy_(0, 1) + derxy_(1, vi)*vderxy_(1, 0) + derxy_(2, vi)*vderxy_(0, 2) + derxy_(2, vi)*vderxy_(2, 0))) ;
         eforce(vi*4 + 1) += -(visc*timefacfac*(derxy_(0, vi)*vderxy_(0, 1) + derxy_(0, vi)*vderxy_(1, 0) + 2.0*derxy_(1, vi)*vderxy_(1, 1) + derxy_(2, vi)*vderxy_(1, 2) + derxy_(2, vi)*vderxy_(2, 1))) ;
         eforce(vi*4 + 2) += -(visc*timefacfac*(derxy_(0, vi)*vderxy_(0, 2) + derxy_(0, vi)*vderxy_(2, 0) + derxy_(1, vi)*vderxy_(1, 2) + derxy_(1, vi)*vderxy_(2, 1) + 2.0*derxy_(2, vi)*vderxy_(2, 2))) ;
 
-        /* Stabilisierung der Viskosität ( L_conv_u) */
+        /* Stabilisierung der Viskositï¿½t ( L_conv_u) */
         eforce(vi*4)     += -2.0*visc*ttimetauMp*(conv_old_(0)*viscs2_(0, 0, vi) + conv_old_(1)*viscs2_(0, 1, vi) + conv_old_(2)*viscs2_(0, 2, vi) - gridvelint_(0)*vderxy_(0, 0)*viscs2_(0, 0, vi) - gridvelint_(0)*vderxy_(1, 0)*viscs2_(0, 1, vi) - gridvelint_(1)*vderxy_(0, 1)*viscs2_(0, 0, vi) - gridvelint_(0)*vderxy_(2, 0)*viscs2_(0, 2, vi) - gridvelint_(2)*vderxy_(0, 2)*viscs2_(0, 0, vi) - gridvelint_(1)*vderxy_(1, 1)*viscs2_(0, 1, vi) - gridvelint_(1)*vderxy_(2, 1)*viscs2_(0, 2, vi) - gridvelint_(2)*vderxy_(1, 2)*viscs2_(0, 1, vi) - gridvelint_(2)*vderxy_(2, 2)*viscs2_(0, 2, vi)) ;
         eforce(vi*4 + 1) += 2.0*visc*ttimetauMp*(-(conv_old_(0)*viscs2_(0, 1, vi)) - conv_old_(1)*viscs2_(1, 1, vi) - conv_old_(2)*viscs2_(1, 2, vi) + gridvelint_(0)*vderxy_(0, 0)*viscs2_(0, 1, vi) + gridvelint_(0)*vderxy_(1, 0)*viscs2_(1, 1, vi) + gridvelint_(1)*vderxy_(0, 1)*viscs2_(0, 1, vi) + gridvelint_(0)*vderxy_(2, 0)*viscs2_(1, 2, vi) + gridvelint_(2)*vderxy_(0, 2)*viscs2_(0, 1, vi) + gridvelint_(1)*vderxy_(1, 1)*viscs2_(1, 1, vi) + gridvelint_(1)*vderxy_(2, 1)*viscs2_(1, 2, vi) + gridvelint_(2)*vderxy_(1, 2)*viscs2_(1, 1, vi) + gridvelint_(2)*vderxy_(2, 2)*viscs2_(1, 2, vi)) ;
         eforce(vi*4 + 2) += 2.0*visc*ttimetauMp*(-(conv_old_(0)*viscs2_(0, 2, vi)) - conv_old_(1)*viscs2_(1, 2, vi) - conv_old_(2)*viscs2_(2, 2, vi) + gridvelint_(0)*vderxy_(0, 0)*viscs2_(0, 2, vi) + gridvelint_(0)*vderxy_(1, 0)*viscs2_(1, 2, vi) + gridvelint_(1)*vderxy_(0, 1)*viscs2_(0, 2, vi) + gridvelint_(0)*vderxy_(2, 0)*viscs2_(2, 2, vi) + gridvelint_(2)*vderxy_(0, 2)*viscs2_(0, 2, vi) + gridvelint_(1)*vderxy_(1, 1)*viscs2_(1, 2, vi) + gridvelint_(1)*vderxy_(2, 1)*viscs2_(2, 2, vi) + gridvelint_(2)*vderxy_(1, 2)*viscs2_(1, 2, vi) + gridvelint_(2)*vderxy_(2, 2)*viscs2_(2, 2, vi)) ;
 
-        /* Stabilisierung der Viskosität (-L_visc_u) */
+        /* Stabilisierung der Viskositï¿½t (-L_visc_u) */
         eforce(vi*4)     += 4.0*(visc*visc)*ttimetauMp*(visc_old_(0)*viscs2_(0, 0, vi) + visc_old_(1)*viscs2_(0, 1, vi) + visc_old_(2)*viscs2_(0, 2, vi)) ;
         eforce(vi*4 + 1) += 4.0*(visc*visc)*ttimetauMp*(visc_old_(0)*viscs2_(0, 1, vi) + visc_old_(1)*viscs2_(1, 1, vi) + visc_old_(2)*viscs2_(1, 2, vi)) ;
         eforce(vi*4 + 2) += 4.0*(visc*visc)*ttimetauMp*(visc_old_(0)*viscs2_(0, 2, vi) + visc_old_(1)*viscs2_(1, 2, vi) + visc_old_(2)*viscs2_(2, 2, vi)) ;
 
-        /* Stabilisierung der Viskosität ( L_pres_p) */
+        /* Stabilisierung der Viskositï¿½t ( L_pres_p) */
         eforce(vi*4)     += -2.0*visc*ttimetauMp*(gradp_(0)*viscs2_(0, 0, vi) + gradp_(1)*viscs2_(0, 1, vi) + gradp_(2)*viscs2_(0, 2, vi)) ;
         eforce(vi*4 + 1) += -2.0*visc*ttimetauMp*(gradp_(0)*viscs2_(0, 1, vi) + gradp_(1)*viscs2_(1, 1, vi) + gradp_(2)*viscs2_(1, 2, vi)) ;
         eforce(vi*4 + 2) += -2.0*visc*ttimetauMp*(gradp_(0)*viscs2_(0, 2, vi) + gradp_(1)*viscs2_(1, 2, vi) + gradp_(2)*viscs2_(2, 2, vi)) ;
@@ -563,7 +563,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
         /* Divergenzfreiheit */
         eforce(vi*4 + 3) += -(timefacfac*(conv_r_(0, 0, vi) + conv_r_(1, 1, vi) + conv_r_(2, 2, vi))) ;
 
-        /* Kontinuitätsstabilisierung */
+        /* Kontinuitï¿½tsstabilisierung */
         eforce(vi*4)     += -((timefac*timefac)*tau_C*derxy_(0, vi)*(vderxy_(0, 0) + vderxy_(1, 1) + vderxy_(2, 2))) ;
         eforce(vi*4 + 1) += -((timefac*timefac)*tau_C*derxy_(1, vi)*(vderxy_(0, 0) + vderxy_(1, 1) + vderxy_(2, 2))) ;
         eforce(vi*4 + 2) += -((timefac*timefac)*tau_C*derxy_(2, vi)*(vderxy_(0, 0) + vderxy_(1, 1) + vderxy_(2, 2))) ;
@@ -578,7 +578,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
         eforce(vi*4 + 1) += -(timetauM*(conv_c_(vi) + conv_g_(vi))*velint_(1)) ;
         eforce(vi*4 + 2) += -(timetauM*(conv_c_(vi) + conv_g_(vi))*velint_(2)) ;
 
-        /* Viskositätsstabilisierung */
+        /* Viskositï¿½tsstabilisierung */
         eforce(vi*4)     += -2.0*visc*timetauMp*(velint_(0)*viscs2_(0, 0, vi) + velint_(1)*viscs2_(0, 1, vi) + velint_(2)*viscs2_(0, 2, vi)) ;
         eforce(vi*4 + 1) += -2.0*visc*timetauMp*(velint_(0)*viscs2_(0, 1, vi) + velint_(1)*viscs2_(1, 1, vi) + velint_(2)*viscs2_(1, 2, vi)) ;
         eforce(vi*4 + 2) += -2.0*visc*timetauMp*(velint_(0)*viscs2_(0, 2, vi) + velint_(1)*viscs2_(1, 2, vi) + velint_(2)*viscs2_(2, 2, vi)) ;
@@ -596,7 +596,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
         eforce(vi*4 + 1) += timetauM*(conv_c_(vi) + conv_g_(vi))*rhsint_(1) ;
         eforce(vi*4 + 2) += timetauM*(conv_c_(vi) + conv_g_(vi))*rhsint_(2) ;
 
-        /* Viskositätsstabilisierung */
+        /* Viskositï¿½tsstabilisierung */
         eforce(vi*4)     += 2.0*visc*timetauMp*(rhsint_(0)*viscs2_(0, 0, vi) + rhsint_(1)*viscs2_(0, 1, vi) + rhsint_(2)*viscs2_(0, 2, vi)) ;
         eforce(vi*4 + 1) += 2.0*visc*timetauMp*(rhsint_(0)*viscs2_(0, 1, vi) + rhsint_(1)*viscs2_(1, 1, vi) + rhsint_(2)*viscs2_(1, 2, vi)) ;
         eforce(vi*4 + 2) += 2.0*visc*timetauMp*(rhsint_(0)*viscs2_(0, 2, vi) + rhsint_(1)*viscs2_(1, 2, vi) + rhsint_(2)*viscs2_(2, 2, vi)) ;
@@ -653,7 +653,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
           estif(vi*4 + 1, ui*4 + 1) += timefacfac*funct_(vi)*conv_c_(ui) ;
           estif(vi*4 + 2, ui*4 + 2) += timefacfac*funct_(vi)*conv_c_(ui) ;
 
-          /* Viskositätsterm */
+          /* Viskositï¿½tsterm */
           /*
                         /                        \
                        |       /  \         / \   |
@@ -1681,7 +1681,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
 
         for (int vi=0; vi<iel_; ++vi)
         {
-          /* Kontinuitätsstabilisierung */
+          /* Kontinuitï¿½tsstabilisierung */
           eforce(vi*4)     += -timefac_timefac_tau_C_divunp*derxy_(0, vi) ;
           eforce(vi*4 + 1) += -timefac_timefac_tau_C_divunp*derxy_(1, vi) ;
           eforce(vi*4 + 2) += -timefac_timefac_tau_C_divunp*derxy_(2, vi) ;
@@ -1753,12 +1753,12 @@ void DRT::Elements::Fluid3Impl::Caltau(
   case DRT::Element::tet4:
   case DRT::Element::pyramid5:
   case DRT::Element::hex8:
+  case DRT::Element::wedge6:
     mk = 0.333333333333333333333;
     break;
   case DRT::Element::hex20:
   case DRT::Element::hex27:
   case DRT::Element::tet10:
-  case DRT::Element::wedge6:
   case DRT::Element::wedge15:
     mk = 0.083333333333333333333;
     break;

@@ -1753,12 +1753,12 @@ void DRT::Elements::XFluid3Impl::Caltau(
   case DRT::Element::tet4:
   case DRT::Element::pyramid5:
   case DRT::Element::hex8:
+  case DRT::Element::wedge6:
     mk = 0.333333333333333333333;
     break;
   case DRT::Element::hex20:
   case DRT::Element::hex27:
   case DRT::Element::tet10:
-  case DRT::Element::wedge6:
   case DRT::Element::wedge15:
     mk = 0.083333333333333333333;
     break;
