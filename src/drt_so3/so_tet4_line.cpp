@@ -10,7 +10,7 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOTET4
+#ifdef D_SOTET
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
@@ -41,7 +41,6 @@ DRT::Element(id,element_sotet4line,owner),
 parent_(parent),
 lline_(lline)
 {
-  DSTraceHelper dst("Sotet4Line::Sotet4Line");
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
   return;
@@ -55,7 +54,6 @@ DRT::Element(old),
 parent_(old.parent_),
 lline_(old.lline_)
 {
-  DSTraceHelper dst("Sotet4Line::Sotet4Line");
   return;
 }
 
@@ -65,7 +63,6 @@ lline_(old.lline_)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::Elements::Sotet4Line::Clone() const
 {
-  DSTraceHelper dst("Sotet4Line::Clone");
   DRT::Elements::Sotet4Line* newelement = new DRT::Elements::Sotet4Line(*this);
   return newelement;
 }
@@ -92,7 +89,6 @@ DRT::Element::DiscretizationType DRT::Elements::Sotet4Line::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::Elements::Sotet4Line::Pack(vector<char>& data) const
 {
-  DSTraceHelper dst("Sotet4Line::Pack");
   data.resize(0);
 
   dserror("this Sotet4Line element does not support communication");
@@ -106,7 +102,6 @@ void DRT::Elements::Sotet4Line::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void DRT::Elements::Sotet4Line::Unpack(const vector<char>& data)
 {
-  DSTraceHelper dst("Sotet4Line::Unpack");
   dserror("this line element does not support communication");
   return;
 }
@@ -116,7 +111,6 @@ void DRT::Elements::Sotet4Line::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 DRT::Elements::Sotet4Line::~Sotet4Line()
 {
-  DSTraceHelper dst("Sotet4Line::~Sotet4Line");
   return;
 }
 
@@ -126,8 +120,7 @@ DRT::Elements::Sotet4Line::~Sotet4Line()
  *----------------------------------------------------------------------*/
 void DRT::Elements::Sotet4Line::Print(ostream& os) const
 {
-  DSTraceHelper dst("Sotet4Line::Print");
-  os << "Sote10Line ";
+  os << "Sotet10Line ";
   Element::Print(os);
   return;
 }
@@ -149,4 +142,4 @@ int DRT::Elements::Sotet4Line::EvaluateNeumann(ParameterList&         params,
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif // #ifdef D_SOTET4
+#endif // #ifdef D_SOTET

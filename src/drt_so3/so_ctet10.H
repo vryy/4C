@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
-\file so_tet10.H
+\file so_ctet10.H
 
-\class DRT::Elements::So_tet10
+\class DRT::Elements::So_ctet10
 
 \brief A C++ version of the 10-node tet solid element
 
@@ -15,14 +15,12 @@ written by: Alexander Volf
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOTET10
+#ifdef D_SOTET
 #ifdef CCADISCRET
-#ifndef SO_TET10_H_
-#define SO_TET10_H_
+#ifndef SO_CTET10_H_
+#define SO_CTET10_H_
 
-#endif /*SO_TET10_H_*/
-
-
+#include "so_integrator.H"
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_Vector.h"
 #include "Epetra_SerialDenseVector.h"
@@ -36,15 +34,20 @@ using namespace Teuchos;
 
 #include "../drt_mat/material.H"
 
-#define NUMNOD_SOTET10      10      // number of nodes
-#define NODDOF_SOTET10       3      // number of dofs per node
-#define NUMDOF_SOTET10      30      // total dofs per element
-#define NUMSTR_SOTET10       6      // number of strains/stresses 	/****/
-#define NUMGPT_SOTET10       4      // total gauss points per element	/****/
-#define NUMDIM_SOTET10       3      // number of dimensions 			/****/
-#define NUMCOORD_SOTET10	 4 		// number of shape function cooordinates (ksi1-ksi4) 
-#define NUMNOD_SOTET10_FACE  6		// number of nodes on a TET10 face (which is a TRI6) 
-#define NUMGPT_SOTET10_FACE	 3		// number of GP    on a TET10 face (which is a TRI6) 
+#define NUMNOD_SOCTET10      10     // number of nodes
+#define NODDOF_SOCTET10       3     // number of dofs per node
+#define NUMDOF_SOCTET10      30     // total dofs per element
+#define NUMSTR_SOCTET10       6     // number of strains/stresses 	/****/
+#define NUMGPT_SOCTET10       5     // total gauss points per element	/****/
+#define NUMDIM_SOCTET10       3     // number of dimensions 			/****/
+#define NUMCOORD_SOCTET10     4     // number of shape function cooordinates (ksi1-ksi4) 
+#define NUMNOD_SOCTET10_FACE  6	    // number of nodes on a TET10 face (which is a TRI6) 
+#define NUMGPT_SOCTET10_FACE  3	    // number of GP    on a TET10 face (which is a TRI6) 
+
+#define NUMGPT_SUBTET4        1
+#define NUMNOD_SUBTET4        4
+#define NUMCOORD_SUBTET4      4
+#define NUMDIM_SUBTET4        3
 
 // forward declarations
 struct _MATERIAL;
@@ -61,27 +64,26 @@ class Discretization;
 namespace Elements
 {
 // forward declarations
-class Sotet10Volume;
-class Sotet10Surface;
-class Sotet10Line;
-class Sotet10Register;
+class Soctet10Volume;
+class Soctet10Surface;
+class Soctet10Line;
+class Soctet10Register;
 
 /*!
-\class So_tet10
+\class So_ctet10
 
 \brief A C++ version of the 10-node tet solid element
 
 \author Alexander Volf (alexander.volf@mytum.de)
 */
-
-class So_tet10 : public DRT::Element
+class So_ctet10 : public DRT::Element
 {
 public:
 
   //! @name Friends
-  friend class Sotet10Register;
-  friend class Sotet10Surface;
-  friend class Sotet10Line;
+  friend class Soctet10Register;
+  friend class Soctet10Surface;
+  friend class Soctet10Line;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -91,7 +93,7 @@ public:
 
   \param id : A unique global id
   */
-  So_tet10(int id, int owner);
+  So_ctet10(int id, int owner);
   
   /*!
   \brief Copy Constructor
@@ -99,7 +101,7 @@ public:
   Makes a deep copy of a Element
 
   */
-  So_tet10(const So_tet10& old);
+  So_ctet10(const So_ctet10& old);
   
   /*!
   \brief Deep copy this instance of Solid3 and return pointer to the copy
@@ -176,7 +178,7 @@ public:
   \brief Destructor
 
   */
-  virtual ~So_tet10();
+  virtual ~So_ctet10();
   //@}
 
   //! @name Acess methods
@@ -236,7 +238,7 @@ public:
   /*!
   \brief Evaluate an element
 
-  Evaluate so_tet10 element stiffness, mass, internal forces, etc.
+  Evaluate so_ctet10 element stiffness, mass, internal forces, etc.
 
   \param params (in/out): ParameterList for communication between control routine
                           and elements
@@ -292,7 +294,7 @@ public:
 
 protected:
 
-  //! action parameters recognized by so_tet10
+  //! action parameters recognized by so_ctet10
   enum ActionType
   {
     none,
@@ -307,22 +309,22 @@ protected:
     calc_struct_update_istep
   };
 
-  //! kinematic types of so_tet10
+  //! kinematic types of so_ctet10
   enum KinematicType
   {
-    so_tet10_geolin,
-    so_tet10_totlag,
-    so_tet10_updlag,
+    so_ctet10_geolin,
+    so_ctet10_totlag,
+    so_ctet10_updlag,
   };
   enum StressType//###################
   {
-    so_tet10_stress_none,
-    so_tet10_stress_gpxyz,
-    so_tet10_stress_gprst,
-    so_tet10_stress_gp123,
-    so_tet10_stress_ndxyz,
-    so_tet10_stress_ndrst,
-    so_tet10_stress_nd123,
+    so_ctet10_stress_none,
+    so_ctet10_stress_gpxyz,
+    so_ctet10_stress_gprst,
+    so_ctet10_stress_gp123,
+    so_ctet10_stress_ndxyz,
+    so_ctet10_stress_ndrst,
+    so_ctet10_stress_nd123,
   };
 
   //! kinematic type
@@ -336,15 +338,15 @@ protected:
 
   DRT::Container                                  data_;
   //! vector of volume (length 1) of this element
-  vector<RefCountPtr<DRT::Elements::Sotet10Volume> > volume_;
+  vector<RefCountPtr<DRT::Elements::Soctet10Volume> > volume_;
   //! vector of surfaces of this element
-    vector<RefCountPtr<DRT::Elements::Sotet10Surface> > surfaces_;
+    vector<RefCountPtr<DRT::Elements::Soctet10Surface> > surfaces_;
   //! vector of surfaces of this element
-  vector<DRT::Elements::Sotet10Surface*>           surfaceptrs_;
+  vector<DRT::Elements::Soctet10Surface*>           surfaceptrs_;
   //! vector of lines adjacent to this element
-  vector<RefCountPtr<DRT::Elements::Sotet10Line> > lines_;
+  vector<RefCountPtr<DRT::Elements::Soctet10Line> > lines_;
   //! vector of lines adjacent to this element
-  vector<DRT::Elements::Sotet10Line*>              lineptrs_;
+  vector<DRT::Elements::Soctet10Line*>              lineptrs_;
   //! vector of history variables for each Gauss point
   vector<RefCountPtr<MAT::Material> >                mat_;
 
@@ -352,8 +354,8 @@ protected:
   // internal calculation methods
 
   // don't want = operator
-  So_tet10& operator = (const So_tet10& old);
-  virtual void so_tet10_nlnstiffmass(vector<int>&              lm,
+  So_ctet10& operator = (const So_ctet10& old);
+  virtual void so_ctet10_nlnstiffmass(vector<int>&              lm,
                                  vector<double>&           disp,
                                  vector<double>&           residual,
                                  Epetra_SerialDenseMatrix* stiffmatrix,
@@ -361,93 +363,99 @@ protected:
                                  Epetra_SerialDenseVector* force,
                                  struct _MATERIAL*         material);
 
-  void so_tet10_stress(struct _MATERIAL* material,
+  void so_ctet10_stress(struct _MATERIAL* material,
                    vector<double>& mydisp,
                    Epetra_SerialDenseMatrix* stresses);
-
-
- /*---------------------------------------------------------------------------------*
-  | class Discrete_integrator											vlf 09/07   |
-  |																					|
-  | a general class agregating all necessery data for discrete integration			|
-  |																					|
-  |  pointer to (static) array of shape function stored in Epetra_Vectors			|
-  |  evaluated at each gp , for each node  it looks like this:				 		|
-  |  shapefct[gp] = [N_1(gp)  N_2(gp)  -- N_X(gp)]      						   	|
-  | 																			    |
-  |  pointer to (static) array of shape function derivatives stored in			    |
-  |	 Epetra_Matrices evaluated at each gp, for xsi1-4							    |
-  |  it looks like this:														    |
-  |                 [  N1_,xsi1   N1_,xsi2    N1_,xsi3   N1_,xsi4 ]				    |
-  |  deriv_gp[gp] = [  N2_,xsi1   N2_,xsi2    N2_,xsi3   N2_,xsi4 ] (at a given gp)	|
-  | 		        [     |		     |           |         |	  ]					|
-  | 		        [ NX_,xsi1    NX_,xsi2    NX_,xsi3   NX_,xsi4 ]   				|
-  |  where X stands for the number of NODES (and shape functions) in a element		|
-  | 																				|
-  *---------------------------------------------------------------------------------*/ 
-  class Discrete_integrator
-  {
-	public: 
-		Epetra_SerialDenseVector* shapefct_gp;  
-      	Epetra_SerialDenseMatrix* deriv_gp;  
-      	Epetra_SerialDenseVector weights;
-      	int num_gp;
-      	int num_nodes;
-      	int num_coords;
-      	~Discrete_integrator();
+  class SUB_NODE
+  {	
+  	public:
+      int local_id;
+  	  int global_id;
+  	  double my_x[3];
+  	  
+  	  SUB_NODE();
+  	  void init(const int local_id,const int global_id,const Epetra_SerialDenseMatrix& xrefe);
+  	  ~SUB_NODE();   				
   };
- /*---------------------------------------------------------------------------------*
-  | class Tet_integrator_4point											vlf 09/07   |
-  |																					|
-  | a special class for quadratic 10-node tetrahedra using a 4 point quadrature   	|
-  |	it is exaxt for linear and quadratic polynomials								|
-  |																					|
-  *---------------------------------------------------------------------------------*/
-  class Tet_integrator_4point : public Discrete_integrator
+
+  class TET4_SUB
+  {
+    public: 
+  	  // RefCountPtr<DRT::Elements::So_ctet10::SUB_NODE> my_nodes;
+  	  SUB_NODE my_nodes[4];
+  	  double global_baricentre_xi[4];
+  	  
+  	  TET4_SUB();
+  	  void init(const int&, const int&, const int&, const int&,const Epetra_SerialDenseMatrix& xrefe,
+  	    const double& xi_babicentre1, const double& xi_babicentre2,
+  	    const double& xi_babicentre3, const double& xi_babicentre4);
+  	  			
+	  //const Epetra_SerialDenseMatrix& integrate(Epetra_SerialDenseVector& xi_c);
+	  void integrate(Epetra_SerialDenseVector& xi_c,  Epetra_SerialDenseMatrix& in_Naj);
+	  double my_volume();
+  	  ~TET4_SUB(); 				
+  };
+
+  class SUB_STRUCTURE
   {
   	public:
-  		Tet_integrator_4point(void);
+  	TET4_SUB my_elements[12];
+
+  	SUB_STRUCTURE(const Epetra_SerialDenseMatrix& xrefe);
+  	~SUB_STRUCTURE();
   };
- 
-  /*---------------------------------------------------------------------------------*
-  | class Tet_integrator_14point										vlf 09/07   |
-  |																					|
-  | a special class for quadratic 10-node tetrahedra using a 14 point quadrature   	|
-  |	it is exaxt for 0-4th order polynomials											|
-  |																					|
-  *---------------------------------------------------------------------------------*/
   
-  class Tet_integrator_14point : public Discrete_integrator
+
+/*!
+\class DRT::Elements::So_ctet10::Tet_integrator_14point	
+
+\brief A spezialisation of the DRT::Elements::Discrete_integrator class for the quadratic
+10-node tetrahedra using a  14 point quadrature, it is exaxt for 0-4th order polynomials.
+\author a.vlf
+*/
+
+  class Tet10c_integrator_5point : public DRT::Elements::So_integrator
   {
   	public:
-  		Tet_integrator_14point(void);
+  		Tet10c_integrator_5point(SUB_STRUCTURE& );
+  		//~Tet10c_integrator_5point();
   };
   
+
+  class L_AJ_integrator : public DRT::Elements::So_integrator
+  {
+  	public:
+  		L_AJ_integrator(SUB_STRUCTURE&);
+  		//~L_AJ_integrator();
+  };
+  
+  
+  double ctet10_midpoint(int coord);
   // became obsolete
-  void so_tet10_shapederiv(
+  void so_ctet10_shapederiv(
   	  Epetra_SerialDenseVector** shapefct_ptr,  
-      Epetra_SerialDenseMatrix** deriv_gp_ptr,  
+      Epetra_SerialDenseMatrix** deriv_gp_ptr,
       Epetra_SerialDenseVector** weights);       
 
   // #### hier deklariert, in implementierung soll einfach soh8_mat_sel gerufen werden
-  void so_tet10_mat_sel(Epetra_SerialDenseVector* stress,
+  void so_ctet10_mat_sel(Epetra_SerialDenseVector* stress,
                     Epetra_SerialDenseMatrix* cmat,
                     double* density,
                     const Epetra_SerialDenseVector* glstrain,
                     const Epetra_SerialDenseMatrix* defgrd,
                     int gp);       
 
-}; // class So_tet10
+}; // class So_ctet10
 
 /*!
-\class Sotet10Register
+\class Soctet10Register
 
 \brief A register for tet10 element
 
 \author gee (gee@lnm.mw.tum.de)
 */
 
-class Sotet10Register : public DRT::ElementRegister
+class Soctet10Register : public DRT::ElementRegister
 {
 public:
 
@@ -457,24 +465,24 @@ public:
   \brief Standard Constructor
 
   */
-  Sotet10Register(DRT::Element::ElementType etype);
+  Soctet10Register(DRT::Element::ElementType etype);
 
   /*!
   \brief Copy Constructor
 
-  Makes a deep copy of an Sotet10Register
+  Makes a deep copy of an Soctet10Register
 
   */
-  Sotet10Register(const DRT::Elements::Sotet10Register& old);
+  Soctet10Register(const DRT::Elements::Soctet10Register& old);
 
   /*!
-  \brief Deep copy this instance of Sotet10Register and return pointer to the copy
+  \brief Deep copy this instance of Soctet10Register and return pointer to the copy
 
   The Clone() method is used from the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
 
   */
-  DRT::Elements::Sotet10Register* Clone() const;
+  DRT::Elements::Soctet10Register* Clone() const;
 
   /*!
   \brief Return unique ParObject id
@@ -482,7 +490,7 @@ public:
   every class imploementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Sotet10Register;}
+  virtual int UniqueParObjectId() const { return ParObject_Soctet10Register;}
 
   /*!
   \brief Pack this class so it can be communicated
@@ -504,7 +512,7 @@ public:
   \brief Destructor
 
   */
-  virtual ~Sotet10Register();
+  virtual ~Soctet10Register();
 
   //@}
 
@@ -532,7 +540,7 @@ public:
 private:
 
 
-}; // class Sotet10Register
+}; // class Soctet10Register
 
 
 //=======================================================================
@@ -542,9 +550,9 @@ private:
 
 
 /*!
-\class Sotet10Surface
+\class Soctet10Surface
 
-\brief An element representing a surface of a So_tet10 element
+\brief An element representing a surface of a So_ctet10 element
 
 \note This is a pure Neumann boundary condition element. It's only
       purpose is to evaluate surface Neumann boundary conditions that might be
@@ -554,7 +562,7 @@ private:
 \author maf (frenzel@lnm.mw.tum.de)
 */
 
-class Sotet10Surface : public DRT::Element
+class Soctet10Surface : public DRT::Element
 {
 public:
 
@@ -571,8 +579,8 @@ public:
   \param parent: The parent fluid element of this surface
   \param lsurface: the local surface number of this surface w.r.t. the parent element
   */
-  Sotet10Surface(int id, int owner, int nnode, const int* nodeids,
-             DRT::Node** nodes, DRT::Elements::So_tet10* parent, const int lsurface);
+  Soctet10Surface(int id, int owner, int nnode, const int* nodeids,
+             DRT::Node** nodes, DRT::Elements::So_ctet10* parent, const int lsurface);
 
 
   /*!
@@ -581,7 +589,7 @@ public:
   Makes a deep copy of a Element
 
   */
-  Sotet10Surface(const Sotet10Surface& old);
+  Soctet10Surface(const Soctet10Surface& old);
   
   /*!
   \brief Deep copy this instance of an element and return pointer to the copy
@@ -603,7 +611,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of the drt_parobject.H file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Sotet10Surface;}
+  virtual int UniqueParObjectId() const { return ParObject_Soctet10Surface;}
 
   /*!
   \brief Pack this class so it can be communicated
@@ -625,7 +633,7 @@ public:
   \brief Destructor
 
   */
-  virtual ~Sotet10Surface();
+  virtual ~Soctet10Surface();
 
   //@}
 
@@ -700,39 +708,68 @@ public:
 private:
 
   // don't want = operator
-  Sotet10Surface& operator = (const Sotet10Surface& old);
+  Soctet10Surface& operator = (const Soctet10Surface& old);
 
   //! The parent element of this surface
-  DRT::Elements::So_tet10* parent_;
+  DRT::Elements::So_ctet10* parent_;
   //! The local surface number of this surface w.r.t to the parent_ element
   int                    lsurface_;
 
-  void sotet10_surface_shapefunc(
+  class SUB_NODE
+  {	
+  	public:
+      int local_id;
+  	  int global_id;
+  	  double my_x[3];
+  	  
+  	  SUB_NODE();
+  	  void init(const int local_id,const int global_id,const Epetra_SerialDenseMatrix& xrefe);
+  	  ~SUB_NODE();   				
+  };
+
+  class TRI3_SUB
+  {
+    public: 
+  	  // RefCountPtr<DRT::Elements::So_ctet10::SUB_NODE> my_nodes;
+  	  SUB_NODE my_nodes[3];
+  	  
+  	  TRI3_SUB();
+  	  void init(const int&, const int&, const int&,const Epetra_SerialDenseMatrix& xrefe);
+  	  			
+	  double my_area();
+  	  ~TRI3_SUB(); 				
+  };
+
+  class SUB_STRUCTURE_SURF
+  {
+  	public:
+  	TRI3_SUB my_surface[4];
+
+  	SUB_STRUCTURE_SURF(const Epetra_SerialDenseMatrix& xrefe);
+  	~SUB_STRUCTURE_SURF();
+  };
+
+  void sotet4_surface_shapefunc(
       Epetra_SerialDenseMatrix** shapefct,  // pointer to pointer of shapefct
       Epetra_SerialDenseVector** weights);
   
-  /*void sotet10_surface_integ(	//became obsolete !!!!!!!!!!!!!!!!
-      vector<double>* funct,                 // (o) shape functions
-      double* sqrtdetg,                      // (o) pointer to sqrt of det(g)
-      const Epetra_SerialDenseMatrix* xsrefe,// (i) material element coords
-      const double r,                        // (i) coord in r-direction
-      const double s);                       // (i) coord in s-direction*/
-}; // class Sotet10Surface
+
+}; // class Soctet10Surface
 
 /*!
-\class Sotet10Line
+\class Soctet10Line
 
-\brief An element representing a line edge of a So_tet10 element
+\brief An element representing a line edge of a So_ctet10 element
 
 \note This is a pure Neumann boundary condition element. It's only
       purpose is to evaluate line Neumann boundary conditions that might be
-      adjacent to a parent So_tet10 element. It therefore does not implement
+      adjacent to a parent So_ctet10 element. It therefore does not implement
       the DRT::Element::Evaluate method and does not have its own ElementRegister class.
 
 \author gee (gee@lnm.mw.tum.de)
 */
 
-class Sotet10Line : public DRT::Element
+class Soctet10Line : public DRT::Element
 {
 public:
 
@@ -749,8 +786,8 @@ public:
   \param parent: The parent shell element of this line
   \param lline: the local line number of this line w.r.t. the parent element
   */
-  Sotet10Line(int id, int owner, int nnode, const int* nodeids,
-               DRT::Node** nodes, DRT::Elements::So_tet10* parent, const int lline);
+  Soctet10Line(int id, int owner, int nnode, const int* nodeids,
+               DRT::Node** nodes, DRT::Elements::So_ctet10* parent, const int lline);
 
   /*!
   \brief Copy Constructor
@@ -758,7 +795,7 @@ public:
   Makes a deep copy of a Element
 
   */
-  Sotet10Line(const Sotet10Line& old);
+  Soctet10Line(const Soctet10Line& old);
 
   /*!
   \brief Deep copy this instance of an element and return pointer to the copy
@@ -775,7 +812,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of the drt_parobject.H file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Sotet10Line;}
+  virtual int UniqueParObjectId() const { return ParObject_Soctet10Line;}
   /*!
   \brief Pack this class so it can be communicated
 
@@ -796,7 +833,7 @@ public:
   \brief Destructor
 
   */
-  virtual ~Sotet10Line();
+  virtual ~Soctet10Line();
 
   //@}
 
@@ -875,13 +912,13 @@ public:
 private:
 
   // don't want = operator
-  Sotet10Line& operator = (const Sotet10Line& old);
+  Soctet10Line& operator = (const Soctet10Line& old);
   //! The parent element of this line
-  DRT::Elements::So_tet10* parent_;
+  DRT::Elements::So_ctet10* parent_;
   //! The local line number of this line w.r.t to the parent_ element
   int                    lline_;
 
-}; // class Sotet10Line
+}; // class Soctet10Line
 
 
 
@@ -889,5 +926,6 @@ private:
 } // namespace Elements
 } // namespace DRT
 
+#endif  // #ifndef SO_CTET10_H_
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOTET10
+#endif  // #ifdef D_SOTET

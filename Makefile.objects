@@ -384,13 +384,6 @@ OBJS_SOH8_LIB = src/drt_so3/so_hex8_surface.o \
                 src/drt_so3/so_hex8_input.o \
                 src/drt_so3/so_sh8_input.o \
                 src/drt_so3/so_sh8_evaluate.o \
-                src/drt_so3/so_tet4.o \
-                src/drt_so3/so_tet4_evaluate.o \
-                src/drt_so3/so_tet4_input.o \
-                src/drt_so3/so_tet4_stress.o \
-                src/drt_so3/so_tet4_surface.o \
-                src/drt_so3/so_tet4_surface_evaluate.o \
-                src/drt_so3/so_tet4_line.o \
                 src/drt_so3/so_tet10.o \
                 src/drt_so3/so_tet10_evaluate.o \
                 src/drt_so3/so_tet10_input.o \
@@ -417,6 +410,7 @@ OBJS_SOH8_LIB = src/drt_so3/so_hex8_surface.o \
                 src/drt_so3/so_disp_line_evaluate.o \
                 src/drt_so3/so_disp_surface_evaluate.o \
                 src/drt_so3/so_disp_evaluate.o \
+				src/drt_so3/so_integrator.o\
                 src/drt_so3/so_shw6.o \
                 src/drt_so3/so_shw6_evaluate.o \
                 src/drt_so3/so_shw6_input.o \

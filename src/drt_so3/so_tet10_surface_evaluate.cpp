@@ -12,7 +12,7 @@ written by : Alexander Volf
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOTET10
+#ifdef D_SOTET
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
@@ -38,8 +38,9 @@ int DRT::Elements::Sotet10Surface::EvaluateNeumann(ParameterList&           para
                                                 vector<int>&             lm,
                                                 Epetra_SerialDenseVector& elevec1)
 {
-  DSTraceHelper dst("Sotet10Surface::EvaluateNeumann");
-
+  //cout << "DRT::Elements::Sotet10Surface::EvaluateNeumann" << endl;
+  //getchar();
+ 
   // get values and switches from the condition
   Epetra_SerialDenseMatrix* shapefct;
   Epetra_SerialDenseVector* weights;  //[NUMGPT_SOTET10_FACE]
@@ -65,7 +66,7 @@ int DRT::Elements::Sotet10Surface::EvaluateNeumann(ParameterList&           para
 
   // element geometry
   const int numnod = 6;
-  Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOTET10);  // material coord. of element
+  Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOTET10+1);  // material coord. of element
   for (int i=0; i<numnod; i++){
     xsrefe(i,0) = Nodes()[i]->X()[0];
     xsrefe(i,1) = Nodes()[i]->X()[1];
@@ -161,4 +162,4 @@ void DRT::Elements::Sotet10Surface::sotet10_surface_shapefunc(
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif // #ifdef D_SOTET10
+#endif // #ifdef D_SOTET

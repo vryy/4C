@@ -12,7 +12,7 @@ writen by : Alexander Volf
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOTET4
+#ifdef D_SOTET
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
@@ -131,4 +131,4 @@ void DRT::Elements::Sotet4Surface::Print(ostream& os) const
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif // #ifdef D_SOTET4
+#endif // #ifdef D_SOTET

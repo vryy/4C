@@ -80,6 +80,52 @@ LINALG::SerialDenseMatrix::~SerialDenseMatrix()
 }
 
 /*----------------------------------------------------------------------*
+ |                                                         vlf 06/07    |
+ | recursive computation of determinant of a  matrix using Sarrus rule  |
+ | (uses long double to boost accuracy                                  |
+ *----------------------------------------------------------------------*/
+long double LINALG::SerialDenseMatrix::Det_long(void )
+{
+ if (N()==1)
+	{
+		return (*this)(0,0);	
+	}	
+	else if (N()==2)
+	{
+		long double out_det;
+		out_det = ((long double)((*this)(0,0)) * (long double)((*this)(1,1))) -\
+					((long double)((*this)(0,1)) * (long double)((*this)(1,0)));
+		return out_det;
+	}
+	else if (N()>2)
+	{
+		long double out_det=0;
+		int sign=1;
+		for (int i_col=0;i_col < N();i_col++)
+		{
+			
+			SerialDenseMatrix temp_matrix(N()-1,N()-1);
+			for (int c_col=0;c_col < i_col;c_col++)
+			{				
+				for(int row=1;row<N();row++)
+				   temp_matrix(row-1,c_col)=(*this)(row,c_col);							
+			}
+			for (int c_col=i_col+1;c_col < N();c_col++)
+			{
+			   for(int row=1;row<N();row++)
+			     temp_matrix(row-1,c_col-1)=(*this)(row,c_col);	
+			} 
+			out_det = out_det + ((long double )( sign)* (long double) ((*this)(0,i_col))\
+					* (long double) (temp_matrix.Det_long()));
+			sign*=-1;
+		}
+		return out_det;
+	}	
+	else return 0;
+}
+
+
+/*----------------------------------------------------------------------*
  |  shape the matrix but do not init to zero  (public)       mwgee 05/07|
  *----------------------------------------------------------------------*/
 int LINALG::SerialDenseMatrix::LightShape(int NumRows, int NumCols) 

@@ -12,7 +12,7 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOTET10
+#ifdef D_SOTET
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
@@ -21,6 +21,7 @@ Maintainer: Moritz Frenzel
 #ifdef PARALLEL
 #include "mpi.h"
 #endif
+#include "so_integrator.H"
 #include "so_tet10.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
@@ -60,7 +61,7 @@ void DRT::Elements::So_tet10::so_tet10_stress(struct _MATERIAL* material,
 /* =============================================================================*
  * CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_10 with 4 GAUSS POINTS*
  * =============================================================================*/
-  const static Tet_integrator_4point tet10_dis;
+  const static DRT::Elements::Integrator_tet10_4point tet10_dis;
 /* ============================================================================*/
 
   // update element geometry
@@ -290,4 +291,4 @@ void DRT::Elements::So_tet10::so_tet10_stress(struct _MATERIAL* material,
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOTET10
+#endif  // #ifdef D_SOTET

@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------**###
-\file so_tet10_input.cpp
+\file so_ctet10_input.cpp
 \brief
 
 <pre>
@@ -12,7 +12,7 @@ writen by : Alexander Volf
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOCTET10
+#ifdef D_SOTET
 #ifdef CCADISCRET
 
 // This is just here to get the c++ mpi header, otherwise it would
@@ -35,29 +35,29 @@ extern "C"
  *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
 }
-#include "so_tet10.H" //**
+#include "so_ctet10.H" //**
 #include "../drt_lib/dstrc.H"
 
 /*----------------------------------------------------------------------**########
  |  read element input (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
-bool DRT::Elements::So_tet10::ReadElement()
+bool DRT::Elements::So_ctet10::ReadElement()
 {
-  DSTraceHelper dst("So_tet10::ReadElement");
+  DSTraceHelper dst("So_ctet10::ReadElement");
 
 
   int ierr=0;
   const int nnode=10;
   int nodes[10];
-  frchk("SOLIDTET10",&ierr);
+  frchk("SOLIDCTET10",&ierr);
   if (ierr==1)
   {
-    frint_n("TET10",nodes,nnode,&ierr);
+    frint_n("CTET10",nodes,nnode,&ierr);
     if (ierr != 1) dserror("Reading of ELEMENT Topology failed");
   }
   else
   {
-    dserror ("Reading of SOLIDTET10 failed");
+    dserror ("Reading of SOLIDCTET10 failed");
   }
   // reduce node numbers by one
   for (int i=0; i<nnode; ++i) nodes[i]--;
@@ -67,12 +67,12 @@ bool DRT::Elements::So_tet10::ReadElement()
   // read number of material model
   int material = 0;
   frint("MAT",&material,&ierr);
-  if (ierr!=1) dserror("Reading of SO_TET10 element material failed");
+  if (ierr!=1) dserror("Reading of SO_CTET10 element material failed");
   SetMaterial(material);
 
   // read gaussian points
   frint_n("GP",ngp_,3,&ierr);
-  /*if (ierr!=1) dserror("Reading of So_TET10 element gp failed");
+  /*if (ierr!=1) dserror("Reading of SO_CTET10 element gp failed");
   for (int i=0; i<3; ++i) if (ngp_[i]!=4) dserror("Only 2 GP for TET10");
 */
   // read kinematic type
@@ -81,34 +81,34 @@ bool DRT::Elements::So_tet10::ReadElement()
   if (ierr)
   {
    // geometrically linear
-   if      (strncmp(buffer,"Geolin",6)==0)    kintype_ = so_tet10_geolin;
+   if      (strncmp(buffer,"Geolin",6)==0)    kintype_ = so_ctet10_geolin;
    // geometrically non-linear with Total Lagrangean approach
-   else if (strncmp(buffer,"Totlag",6)==0)    kintype_ = so_tet10_totlag;
+   else if (strncmp(buffer,"Totlag",6)==0)    kintype_ = so_ctet10_totlag;
    // geometrically non-linear with Updated Lagrangean approach
    else if (strncmp(buffer,"Updlag",6)==0)
    {
-       kintype_ = so_tet10_updlag;
-       dserror("Updated Lagrange for SO_TET10 is not implemented!");
+       kintype_ = so_ctet10_updlag;
+       dserror("Updated Lagrange for SO_CTET10 is not implemented!");
    }
-   else dserror("Reading of SO_TET10 element failed");
+   else dserror("Reading of SO_CTET10 element failed");
   }
 
   // read stress evaluation/output type
   frchar("STRESS",buffer,&ierr);
-  if (ierr!=1) dserror("reading of SO_TET10 stress failed");
-  if (strncmp(buffer,"none",4)==0)  stresstype_= so_tet10_stress_none;
-  if (strncmp(buffer,"Gpxyz",5)==0) stresstype_= so_tet10_stress_gpxyz;
-  if (strncmp(buffer,"Gprst",5)==0) stresstype_= so_tet10_stress_gprst;
-  if (strncmp(buffer,"Gp123",5)==0) stresstype_= so_tet10_stress_gp123;
-  if (strncmp(buffer,"Ndxyz",5)==0) stresstype_= so_tet10_stress_ndxyz;
-  if (strncmp(buffer,"Ndrst",5)==0) stresstype_= so_tet10_stress_ndrst;
-  if (strncmp(buffer,"Nd123",5)==0) stresstype_= so_tet10_stress_nd123;
+  if (ierr!=1) dserror("reading of SO_CTET10 stress failed");
+  if (strncmp(buffer,"none",4)==0)  stresstype_= so_ctet10_stress_none;
+  if (strncmp(buffer,"Gpxyz",5)==0) stresstype_= so_ctet10_stress_gpxyz;
+  if (strncmp(buffer,"Gprst",5)==0) stresstype_= so_ctet10_stress_gprst;
+  if (strncmp(buffer,"Gp123",5)==0) stresstype_= so_ctet10_stress_gp123;
+  if (strncmp(buffer,"Ndxyz",5)==0) stresstype_= so_ctet10_stress_ndxyz;
+  if (strncmp(buffer,"Ndrst",5)==0) stresstype_= so_ctet10_stress_ndrst;
+  if (strncmp(buffer,"Nd123",5)==0) stresstype_= so_ctet10_stress_nd123;
   // set default: no stresses
-  else stresstype_= so_tet10_stress_none;
+  else stresstype_= so_ctet10_stress_none;
 
   return true;
-} // So_tet10::ReadElement()
+} // So_ctet10::ReadElement()
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOTET10
+#endif  // #ifdef D_SOTET

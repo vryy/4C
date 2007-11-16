@@ -15,13 +15,10 @@ written by: Alexander Volf
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOTET10
+#ifdef D_SOTET
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef SO_TET10_H_
 #define SO_TET10_H_
-
-#endif /*SO_TET10_H_*/
 
 
 #include "Teuchos_RefCountPtr.hpp"
@@ -366,26 +363,38 @@ protected:
                    vector<double>& mydisp,
                    Epetra_SerialDenseMatrix* stresses);
 
+/*!
+\class DRT::Elements::So_tet10::Discrete_integrator
 
- /*---------------------------------------------------------------------------------*
-  | class Discrete_integrator											vlf 09/07   |
-  |																					|
-  | a general class agregating all necessery data for discrete integration			|
-  |																					|
-  |  pointer to (static) array of shape function stored in Epetra_Vectors			|
-  |  evaluated at each gp , for each node  it looks like this:				 		|
-  |  shapefct[gp] = [N_1(gp)  N_2(gp)  -- N_X(gp)]      						   	|
-  | 																			    |
-  |  pointer to (static) array of shape function derivatives stored in			    |
-  |	 Epetra_Matrices evaluated at each gp, for xsi1-4							    |
-  |  it looks like this:														    |
-  |                 [  N1_,xsi1   N1_,xsi2    N1_,xsi3   N1_,xsi4 ]				    |
-  |  deriv_gp[gp] = [  N2_,xsi1   N2_,xsi2    N2_,xsi3   N2_,xsi4 ] (at a given gp)	|
-  | 		        [     |		     |           |         |	  ]					|
-  | 		        [ NX_,xsi1    NX_,xsi2    NX_,xsi3   NX_,xsi4 ]   				|
-  |  where X stands for the number of NODES (and shape functions) in a element		|
-  | 																				|
-  *---------------------------------------------------------------------------------*/ 
+\brief A general class agregating all necessery data for discrete integration
+
+<h3>Purpose</h3>
+The class offers a standard interface for discrete integration, mainly the agregated
+shape functions and shape function derivatives, it is a purely general class and 
+does NOT own cnstructor. For use constructors of derived classes. It has however  
+a destructor (not virtual!(to save on vtable* pointers)), that should be the same 
+for all derived classes. Derived classes are not supposed to add extra attriutes,
+ they may however add extra methods.
+
+pointer to (static) array of shape function stored in Epetra_Vectors			
+evaluated at each gp , for each node it may look like this:
+
+shapefct[gp] = [N_1(gp)  N_2(gp)  -- N_X(gp)]
+
+pointer to (static) array of shape function derivatives stored in
+Epetra_Matrices evaluated at each gp, for xsi1-4(or 1-3) it may look like this:	
+													    |
+               [  N1_,xsi1   N1_,xsi2    N1_,xsi3   N1_,xsi4 ]
+deriv_gp[gp] = [  N2_,xsi1   N2_,xsi2    N2_,xsi3   N2_,xsi4 ] (at a given gp)
+               [    |           |           |          |     ]
+               [  NX_,xsi1   NX_,xsi2    NX_,xsi3   NX_,xsi4 ]
+               
+NOTE: X stands for the number of NODES (and shape functions) in a element
+
+
+\author a.vlf
+*/
+
   class Discrete_integrator
   {
 	public: 
@@ -890,6 +899,7 @@ private:
 } // namespace Elements
 } // namespace DRT
 
-#endif  // #ifdef TRILINOS_PACKAGE
-#endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOTET10
+
+#endif  // #ifndef SO_TET10_H_
+#endif  // #ifdef  CCADISCRET
+#endif  // #ifdef  D_SOTET

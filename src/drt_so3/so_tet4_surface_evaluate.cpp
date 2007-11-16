@@ -12,7 +12,7 @@ written by : Alexander Volf
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOTET4
+#ifdef D_SOTET
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
@@ -64,7 +64,7 @@ int DRT::Elements::Sotet4Surface::EvaluateNeumann(ParameterList&           param
     curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
 
   // element geometry
-  const int numnod = 6;
+  const int numnod = 3;
   Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOTET4);  // material coord. of element
   for (int i=0; i<numnod; i++){
     xsrefe(i,0) = Nodes()[i]->X()[0];
@@ -133,7 +133,7 @@ void DRT::Elements::Sotet4Surface::sotet4_surface_shapefunc(
   static Epetra_SerialDenseVector weightfactors(NUMGPT_SOTET4_FACE);   // weights for each gp
 
  //Quadrature rule from Carlos A. Felippa: Adv. FEM  §17 
-  const double gploc_alpha    = (double)0.5;    // gp sampling point value for quadr. fct
+  const double gploc_alpha    = (double)1/3;    // gp sampling point value for liner. fct
   const double w			  = (double)1;
 
   const double ksi1[NUMGPT_SOTET4_FACE] = {gploc_alpha };
@@ -157,4 +157,4 @@ void DRT::Elements::Sotet4Surface::sotet4_surface_shapefunc(
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif // #ifdef D_SOTET4
+#endif // #ifdef D_SOTET

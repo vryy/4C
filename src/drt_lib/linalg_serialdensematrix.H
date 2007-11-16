@@ -81,9 +81,18 @@ public:
   SerialDenseMatrix(const SerialDenseMatrix& Source);
   
   /*!
+  \brief Determinant Computation using the Sarrus rule.
+  Internal computation is based on the long double data type (80/128 bit depending on platform)
+  this allows for higher precision when used on a bigger matrix. Long double is also used for output,
+  therefore it has to be expicitly casted to a double if used in a "double only" context.
+  
+  \author volf (alexander.volf@mytum.de)
+  */
+  long double Det_long();
+  
+  /*!
   \brief Shape dimensions of this matrix but do NOT initialize to zero
          (as opposed to Epetra_SerialDenseMatrix::Shape(...))
-
   */
   int LightShape(int NumRows, int NumCols);
 

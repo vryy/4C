@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------**
-\file so_tet10_surface.cpp
+\file so_ctet10_surface.cpp
 \brief
 
 <pre>
@@ -12,10 +12,10 @@ writen by : Alexander Volf
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOCTET10
+#ifdef D_SOTET
 #ifdef CCADISCRET
 
-#include "so_tet10.H"
+#include "so_ctet10.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_discret.H"
@@ -26,12 +26,12 @@ writen by : Alexander Volf
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 
-DRT::Elements::Sotet10Surface::Sotet10Surface(int id, int owner,
+DRT::Elements::Soctet10Surface::Soctet10Surface(int id, int owner,
                               int nnode, const int* nodeids,
                               DRT::Node** nodes,
-                              DRT::Elements::So_tet10* parent,
+                              DRT::Elements::So_ctet10* parent,
                               const int lsurface) :
-DRT::Element(id,element_sotet10surface,owner),
+DRT::Element(id,element_soctet10surface,owner),
 parent_(parent),
 lsurface_(lsurface)
 {
@@ -44,11 +44,12 @@ lsurface_(lsurface)
 /*----------------------------------------------------------------------***
  |  copy-ctor (public)                                         maf 01/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Sotet10Surface::Sotet10Surface(const DRT::Elements::Sotet10Surface& old) :
+DRT::Elements::Soctet10Surface::Soctet10Surface(const DRT::Elements::Soctet10Surface& old) :
 DRT::Element(old),
 parent_(old.parent_),
 lsurface_(old.lsurface_)
 {
+
   return;
 }
 
@@ -56,9 +57,11 @@ lsurface_(old.lsurface_)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            maf 01/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::Elements::Sotet10Surface::Clone() const
+DRT::Element* DRT::Elements::Soctet10Surface::Clone() const
 {
-  DRT::Elements::Sotet10Surface* newelement = new DRT::Elements::Sotet10Surface(*this);
+
+  DRT::Elements::Soctet10Surface* newelement = new DRT::Elements::Soctet10Surface(*this);
+
   return newelement;
 }
 
@@ -66,7 +69,7 @@ DRT::Element* DRT::Elements::Sotet10Surface::Clone() const
  |                                                             (public) |
  |                                                          u.kue 03/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::Elements::Sotet10Surface::Shape() const
+DRT::Element::DiscretizationType DRT::Elements::Soctet10Surface::Shape() const
 {
   return tri6;
 }
@@ -75,7 +78,7 @@ DRT::Element::DiscretizationType DRT::Elements::Sotet10Surface::Shape() const
  |  Pack data                                                  (public) |
  |                                                            maf 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Sotet10Surface::Pack(vector<char>& data) const
+void DRT::Elements::Soctet10Surface::Pack(vector<char>& data) const
 {
   data.resize(0);
   dserror("this Sote10Surface element does not support communication");
@@ -87,16 +90,16 @@ void DRT::Elements::Sotet10Surface::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Sotet10Surface::Unpack(const vector<char>& data)
+void DRT::Elements::Soctet10Surface::Unpack(const vector<char>& data)
 {
-  dserror("this Sotet10Surface element does not support communication");
+  dserror("this Soctet10Surface element does not support communication");
   return;
 }
 
 /*----------------------------------------------------------------------***
  |  dtor (public)                                              maf 01/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Sotet10Surface::~Sotet10Surface()
+DRT::Elements::Soctet10Surface::~Soctet10Surface()
 {
   return;
 }
@@ -105,12 +108,13 @@ DRT::Elements::Sotet10Surface::~Sotet10Surface()
 /*----------------------------------------------------------------------*
  |  print this element (public)                                maf 01/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Sotet10Surface::Print(ostream& os) const
+void DRT::Elements::Soctet10Surface::Print(ostream& os) const
 {
-  os << "Sotet10Surface ";
+  os << "Soctet10Surface ";
+
   Element::Print(os);
   return;
 }
 
 #endif  // #ifdef CCADISCRET
-#endif // #ifdef D_SOTET10
+#endif // #ifdef D_SOTET

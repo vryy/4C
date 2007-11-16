@@ -15,13 +15,13 @@ written by: Alexander Volf
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOTET4
+#if 0
+#ifdef D_SOTET
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef SO_TET4_H_
 #define SO_TET4_H_
 
-#endif /*SO_TET4_H_*/
+
 
 
 #include "Teuchos_RefCountPtr.hpp"
@@ -37,15 +37,15 @@ using namespace Teuchos;
 
 #include "../drt_mat/material.H"
 
-#define NUMNOD_SOTET10       4      // number of nodes
-#define NODDOF_SOTET10       3      // number of dofs per node
-#define NUMDOF_SOTET10      12      // total dofs per element
-#define NUMSTR_SOTET10       6      // number of strains/stresses 	/****/
-#define NUMGPT_SOTET10       1      // total gauss points per element	/****/
-#define NUMDIM_SOTET10       3      // number of dimensions 			/****/
-#define NUMCOORD_SOTET10	 4 		// number of shape function cooordinates (ksi1-ksi4) 
-#define NUMNOD_SOTET10_FACE  4		// number of nodes on a TET10 face (which is a TRI6) 
-#define NUMGPT_SOTET10_FACE	 1		// number of GP    on a TET10 face (which is a TRI6) 
+#define NUMNOD_SOTET4       4      // number of nodes
+#define NODDOF_SOTET4       3      // number of dofs per node
+#define NUMDOF_SOTET4      12      // total dofs per element
+#define NUMSTR_SOTET4       6      // number of strains/stresses 	/****/
+#define NUMGPT_SOTET4       1      // total gauss points per element	/****/
+#define NUMDIM_SOTET4       3      // number of dimensions 			/****/
+#define NUMCOORD_SOTET4	 4 		// number of shape function cooordinates (ksi1-ksi4) 
+#define NUMNOD_SOTET4_FACE  4		// number of nodes on a TET10 face (which is a TRI6) 
+#define NUMGPT_SOTET4_FACE	 1		// number of GP    on a TET10 face (which is a TRI6) 
 
 // forward declarations
 struct _MATERIAL;
@@ -532,7 +532,7 @@ public:
 private:
 
 
-}; // class Sotet10Register
+}; // class Sotet4Register
 
 
 //=======================================================================
@@ -889,6 +889,7 @@ private:
 } // namespace Elements
 } // namespace DRT
 
-#endif  // #ifdef TRILINOS_PACKAGE
-#endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOTET4
+#endif  // #ifndef SO_TET4_H_
+#endif  // #ifdef  CCADISCRET
+#endif  // #ifdef  D_SOTET
+#endif

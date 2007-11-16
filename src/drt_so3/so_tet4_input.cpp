@@ -12,7 +12,7 @@ writen by : Alexander Volf
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOTET4
+#ifdef D_SOTET
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
@@ -113,4 +113,4 @@ bool DRT::Elements::So_tet4::ReadElement()
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOTET4
+#endif  // #ifdef D_SOTET

@@ -230,7 +230,7 @@ void DRT::Elements::SoDisp::sodisp_mat_sel(
   return;
 }  // of sow6_mat_sel
 
-#ifdef D_SOTET10
+#ifdef D_SOTET
 /*----------------------------------------------------------------------* !!!!
  | material laws for So_tet10                                  vlf 04/07|
  | added as a fast solution by cloning soh8_mat_sel (which is inside a  |
@@ -268,9 +268,6 @@ void DRT::Elements::So_tet10::so_tet10_mat_sel(
   return;
 }  // of so_tet10_mat_sel
 
-#endif //SO_TET10
-
-#if 0
 /*----------------------------------------------------------------------* !!!!
  | material laws for So_ctet10                                  vlf 04/07|
  | added as a fast solution by cloning soh8_mat_sel (which is inside a  |
@@ -308,7 +305,7 @@ void DRT::Elements::So_ctet10::so_ctet10_mat_sel(
   return;
 }  // of so_ctet10_mat_sel
 
-#endif //SO_CTET10
+#endif //SO_TET
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOH8

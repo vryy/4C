@@ -12,7 +12,7 @@ written by : Alexander Volf
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOTET4
+#ifdef D_SOTET
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
@@ -127,7 +127,6 @@ int DRT::Elements::So_tet4::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector& elevec2,
                                     Epetra_SerialDenseVector& elevec3)
 {
-  DSTraceHelper dst("So_tet4::Evaluate");
   // start with "none"
   DRT::Elements::So_tet4::ActionType act = So_tet4::none;
 
@@ -244,7 +243,6 @@ int DRT::Elements::So_tet4::EvaluateNeumann(ParameterList& params,
                                            vector<int>&              lm,
                                            Epetra_SerialDenseVector& elevec1)
 {
-  DSTraceHelper dst("So_tet4::EvaluateNeumann");
   dserror("DRT::Elements::So_tet4::EvaluateNeumann not implemented");
   // get values and switches from the condition
   const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
@@ -343,8 +341,6 @@ void DRT::Elements::So_tet4::so_tet4_nlnstiffmass(
       Epetra_SerialDenseVector* force,          // element internal force vector
       struct _MATERIAL*         material)       // element material data
 {
-  DSTraceHelper dst("So_tet4::so_tet4_nlnstiffmass");
-
 /* =============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_4  with 1 GAUSS POINTS*
 ** =============================================================================*/
@@ -725,109 +721,6 @@ DRT::Elements::So_tet4::Tet_integrator_4point::Tet_integrator_4point(void)
   }
 }
  
-#if 0 
-/*----------------------------------------------------------------------*
- | shape functions and derivatives for So_tet4                volf 06/07|
- | shape functions of a linear tetrahedra using so-called               |
- | "natural coordinates" as described by Carlos A. Felippa in Adv. FEM  |
- | Aerospace Engineering Sciences - University of Colorado at Boulder   |
- *----------------------------------------------------------------------*/
-void DRT::Elements::So_tet4::so_tet4_shapederiv(
-      Epetra_SerialDenseVector** shapefct_ptr,  // pointer to pointer of shapefct matrix filed
-      Epetra_SerialDenseMatrix** deriv_gp_ptr,  // pointer to pointer of deriv_gp matrix field
-      Epetra_SerialDenseVector** weights)       // pointer to pointer of weights       			
-{
-
-  // static matrix objects, kept in memory
-  static Epetra_SerialDenseVector weightfactors(NUMGPT_SOTET4);   // weights for each gp
-  static Epetra_SerialDenseMatrix deriv_gp[NUMGPT_SOTET4];
-  static Epetra_SerialDenseVector shape_gp[NUMGPT_SOTET4];
-  static bool fdf_eval;                      // flag for re-evaluate everything
-
-  Epetra_SerialDenseMatrix df(NUMNOD_SOTET4*NUMCOORD_SOTET4,NUMGPT_SOTET4);  // derivatives
-
-  //Quadrature rule from Carlos A. Felippa: Adv. FEM  §16.4 
-  const double gploc_alpha    =  0.5;    // gp sampling point value for linear. fct
-
-  if (fdf_eval==true){          // if true f,df already evaluated
-    *weights  = &weightfactors; // return adress of static object to target of pointer
-    *deriv_gp_ptr = deriv_gp;   // return adress of static object to target of pointer
-    *shapefct_ptr = shape_gp;
-    return;
-  } else {
-    // (xsi1, xsi2, xsi3 ,xsi4) gp-locations of fully integrated linear 10-node Tet
-    const double xsi1[NUMGPT_SOTET4] = {gploc_alpha};
-    const double xsi2[NUMGPT_SOTET4] = {gploc_alpha};
-    const double xsi3[NUMGPT_SOTET4] = {gploc_alpha};
-    const double xsi4[NUMGPT_SOTET4] = {gploc_alpha};
-    const double w[NUMGPT_SOTET4]    = {gpw};
-
-    // fill up nodal f at each gp 
-    for (int i=0; i<NUMGPT_SOTET4; i++) {
-      (shape_gp[i]).Size(NUMNOD_SOTET4);
-      (shape_gp[i])[0] = xsi1[i];
-      (shape_gp[i])[1] = xsi2[i];
-      (shape_gp[i])[2] = xsi3[i];
-      (shape_gp[i])[3] = xsi4[i];
-       weightfactors[i] = w[i]; // just for clarity how to get weight factors
-    }
-
-    // fill up df xsi1, xsi2, xsi3, xsi4 directions (NUMDIM) at each gp
-    for (int i=0; i<NUMGPT_SOTET4; i++) {
-        // df wrt to xsi1 "+0" for each node(0..3) at each gp [i]
-        df(NUMNOD_SOTET4*0+0,i) = 1;
-   		df(NUMNOD_SOTET4*0+1,i) = 0;
-      	df(NUMNOD_SOTET4*0+2,i) = 0;
-     	df(NUMNOD_SOTET4*0+3,i) = 0;
- 
-        // df wrt to xsi2 "+1" for each node(0..3) at each gp [i]
-        df(NUMNOD_SOTET4*1+0,i) = 0;
-      	df(NUMNOD_SOTET4*1+1,i) = 1;
-      	df(NUMNOD_SOTET4*1+2,i) = 0;
-      	df(NUMNOD_SOTET4*1+3,i) = 0;
-      	
-        // df wrt to xsi3 "+2" for each node(0..3) at each gp [i]
-        df(NUMNOD_SOTET4*2+0,i) = 0;
-      	df(NUMNOD_SOTET4*2+1,i) = 0;
-      	df(NUMNOD_SOTET4*2+2,i) = 1;
-      	df(NUMNOD_SOTET4*2+3,i) = 0;
-         
-        // df wrt to xsi4 "+2" for each node(0..3) at each gp [i]
-        df(NUMNOD_SOTET4*3+0,i) = 0;
-      	df(NUMNOD_SOTET4*3+1,i) = 0;
-      	df(NUMNOD_SOTET4*3+2,i) = 0;
-      	df(NUMNOD_SOTET4*3+3,i) = 1;
-      
-    }
-    
-    for (int gp=0; gp<NUMGPT_SOTET4; gp++) {
-       // get submatrix of deriv at actual gp
-    
-       /* compute the deriv_gp which looks like this:
-       **             [  N1_,xsi1   N1_,xsi2    N1_,xsi3   N1_,xsi4 ]
-       **  deriv_gp = [  N2_,xsi1   N2_,xsi2    N2_,xsi3   N2_,xsi4 ]
-       **		      [     |		   |           |          |	    ]
-       **		      [  N4_,xsi1   N4_,xsi2    N4_,xsi3   N4_,xsi4 ]
-       */    	
-    	(deriv_gp[gp]).Shape(NUMNOD_SOTET4,NUMCOORD_SOTET4);
-    	for (int shape_func=0; shape_func<NUMNOD_SOTET4; shape_func++) {
-      		for (int xsi_num=0;xsi_num<NUMCOORD_SOTET4; xsi_num++) {
-        		(deriv_gp[gp])(shape_func,xsi_num)= df(NUMNOD_SOTET4*xsi_num+shape_func,gp);
-      		}
-    	}
-    }
-
-    // return adresses of just evaluated matrices
-    *weights  = &weightfactors; // return adress of static object to target of pointer
-    *deriv_gp_ptr = deriv_gp;	// return adress of static object array 
-    *shapefct_ptr = shape_gp;   // return adress of static object array 
-    fdf_eval = true;            // now all arrays are filled statically
-  }
-  return;
-}  // So_tet4::so:_tet4_shapederiv
-
-#endif
-
 int DRT::Elements::Sotet4Register::Initialize(DRT::Discretization& dis)
 {
   return 0;
@@ -835,4 +728,4 @@ int DRT::Elements::Sotet4Register::Initialize(DRT::Discretization& dis)
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOTET4
+#endif  // #ifdef D_SOTET

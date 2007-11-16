@@ -137,7 +137,8 @@ public:
     hex20,                      // 20 noded hexahedra
     hex27,                      // 27 noded hexahedra
     tet4,                       // 4 noded tetrahedra
-    tet10,                      // 4 noded tetrahedra
+    tet10,                      // 10 noded tetrahedra
+    ctet10,                     // 10 noded tetrahedra
     wedge6,                     // 6 noded wedge
     wedge15,                    // 15 noded wedge
     pyramid5,                   // 5 noded pyramid

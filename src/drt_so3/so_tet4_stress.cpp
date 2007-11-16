@@ -12,7 +12,7 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOTET4
+#ifdef D_SOTET
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
@@ -290,4 +290,4 @@ void DRT::Elements::So_tet4::so_tet4_stress(struct _MATERIAL* material,
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOTET4
+#endif  // #ifdef D_SOTET

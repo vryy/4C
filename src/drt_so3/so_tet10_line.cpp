@@ -10,7 +10,7 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOTET10
+#ifdef D_SOTET
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
@@ -127,7 +127,7 @@ DRT::Elements::Sotet10Line::~Sotet10Line()
 void DRT::Elements::Sotet10Line::Print(ostream& os) const
 {
   DSTraceHelper dst("Sotet10Line::Print");
-  os << "Sote10Line ";
+  os << "Sotet10Line ";
   Element::Print(os);
   return;
 }
@@ -150,4 +150,4 @@ int DRT::Elements::Sotet10Line::EvaluateNeumann(ParameterList&         params,
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif // #ifdef D_SOTET10
+#endif // #ifdef D_SOTET
