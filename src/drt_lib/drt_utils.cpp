@@ -289,7 +289,7 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
       DRT::Elements::SoDispSurface* object =
                 new DRT::Elements::SoDispSurface(-1,-1);
       object->Unpack(data);
-      return object; 
+      return object;
     }
     case ParObject_SoDispRegister:
     {
@@ -825,6 +825,17 @@ void DRT::Utils::AllToAllCommunication( const Epetra_Comm& comm,
   recv.push_back(send[0]);
 
 #else
+
+  if (comm.NumProc()==1)
+  {
+    dsassert(send.size()==1, "there has to be just one entry for sending");
+
+    // make a copy
+    recv.clear();
+    recv.push_back(send[0]);
+  }
+  else
+  {
     const Epetra_MpiComm& mpicomm = dynamic_cast<const Epetra_MpiComm&>(comm);
 
     vector<int> sendbuf;
@@ -882,6 +893,8 @@ void DRT::Utils::AllToAllCommunication( const Epetra_Comm& comm,
     {
         recv.push_back( vector<int>( &recvbuf[rdispls[proc]], &recvbuf[rdispls[proc+1]] ) );
     }
+  }
+
 #endif // PARALLEL
 }
 
