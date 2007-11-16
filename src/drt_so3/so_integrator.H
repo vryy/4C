@@ -15,6 +15,7 @@ written by: Alexander Volf
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifdef SO_TET
 #define SO3
 #ifdef SO3
 #ifdef CCADISCRET
@@ -189,3 +190,4 @@ long double det_volf(Epetra_SerialDenseMatrix& in_matrix);
 #endif  // #ifndef SO_TET10_H_
 #endif  // #ifdef  CCADISCRET
 #endif  // #ifdef  SO3
+#endif  // #if SO_TET

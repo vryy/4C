@@ -15,6 +15,7 @@ written by: Alexander Volf
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifdef SO_TET
 #define SO3
 #ifdef SO3
 
@@ -491,3 +492,4 @@ long double LINALG::SerialDenseMatrix::Det_long()
 }*/
 
 #endif // #ifdef SO3
+#endif // #ifdef SO_TET
