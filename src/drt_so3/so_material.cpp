@@ -84,6 +84,7 @@ void DRT::Elements::So_hex8::soh8_mat_sel(
       
       double avec[3]= {0.0};
       if (this->Type() != DRT::Element::element_sosh8){
+        // fiber direction for z-cylinder, calculated via cross-product and beta=45°
         avec[0] = getthicknessvector()[1];
         avec[1] = -1.0 * getthicknessvector()[0];
         avec[2] = sqrt(avec[0]*avec[0] + avec[1]*avec[1]);
