@@ -20,36 +20,38 @@ Maintainer: Axel Gerstenberger
 #include "integrationcell.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_element.H"
 
 using namespace std;
 using namespace XFEM;
 
 string GMSH::elementToString(const double scalar, DRT::Element* ele)
 {
-    //const int nen = ele->NumNode();
     DRT::Node** nodes = ele->Nodes();
     
+    const DRT::Element::DiscretizationType distype = ele->Shape();
+    const int numnode = distypeToGmshNumNode(distype);
+    
     stringstream pos_array_string;
-    pos_array_string << "SH(";
-    int nendebug = 8;
-    for (int i = 0; i<nendebug;++i)
+    pos_array_string << "S" << distypeToGmshElementHeader(distype) << "(";
+    for (int i = 0; i<numnode;++i)
     {
         const DRT::Node* node = nodes[i];
         const double* x = node->X();
         pos_array_string << scientific << x[0] << ",";
         pos_array_string << scientific << x[1] << ",";
         pos_array_string << scientific << x[2];
-        if (i < nendebug-1){
+        if (i < numnode-1){
             pos_array_string << ",";
         }
     };
     pos_array_string << ")";
     // values
     pos_array_string << "{";
-    for (int i = 0; i<nendebug;++i)
+    for (int i = 0; i<numnode;++i)
     {
         pos_array_string << scientific << scalar;
-        if (i < nendebug-1){
+        if (i < numnode-1){
             pos_array_string << ",";
         }
     };
@@ -212,6 +214,40 @@ std::string GMSH::getConfigString(const int numview)
         gmshfilecontent << "View["<<iview<<"].CustomMin = 0.0; // User-defined minimum value to be displayed" << endl;  
     }
     return gmshfilecontent.str();
+}
+
+std::string GMSH::distypeToGmshElementHeader(const DRT::Element::DiscretizationType distype)
+{
+	switch (distype){
+	case DRT::Element::quad4:  return "Q";   break;
+	case DRT::Element::quad9:  return "Q2";  break;
+	case DRT::Element::tri3:   return "T";   break;
+	case DRT::Element::tri6:   return "T2";  break;
+	case DRT::Element::hex8:   return "H";   break;
+	case DRT::Element::hex27:  return "H2";  break;
+	case DRT::Element::tet4:   return "S";   break;
+	case DRT::Element::tet10:  return "S2";  break;
+	default:
+		dserror("distype not supported for printout!");
+	}
+	return "xxx";
+}
+
+int GMSH::distypeToGmshNumNode(const DRT::Element::DiscretizationType distype)
+{
+	switch (distype){
+	case DRT::Element::quad4:  return 4;   break;
+	case DRT::Element::quad9:  return 4;   break;
+	case DRT::Element::tri3:   return 3;   break;
+	case DRT::Element::tri6:   return 3;   break;
+	case DRT::Element::hex8:   return 8;   break;
+	case DRT::Element::hex27:  return 8;   break;
+	case DRT::Element::tet4:   return 4;   break;
+	case DRT::Element::tet10:  return 4;   break;
+	default:
+		dserror("distype not supported for printout!");
+	}
+	return -1;
 }
 
 #endif // #ifdef CCADISCRET

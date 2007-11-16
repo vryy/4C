@@ -41,6 +41,10 @@ std::string disToString(const std::string s, const double scalar, RefCountPtr<DR
 
 std::string getConfigString(const int numview);
 
+std::string distypeToGmshElementHeader(const DRT::Element::DiscretizationType distype);
+
+int distypeToGmshNumNode(const DRT::Element::DiscretizationType distype);
+
 };
 
 #endif // #ifdef CCADISCRET
