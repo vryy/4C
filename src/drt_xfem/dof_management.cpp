@@ -205,13 +205,14 @@ const map<int, const set <XFEM::EnrField> > XFEM::DofManager::createNodalDofMap(
     
     // loop my row nodes and add standard degrees of freedom
     const XFEM::Enrichment enr_std(0, XFEM::Enrichment::typeStandard);
-    for (int i=0; i<xfemdis->NumMyRowNodes(); ++i)
+    for (int i=0; i<xfemdis->NumMyColNodes(); ++i)
     {
-        const DRT::Node* actnode = xfemdis->lRowNode(i);
-        nodalDofMap[actnode->Id()].insert(XFEM::EnrField(Physics::Velx, enr_std));
-        nodalDofMap[actnode->Id()].insert(XFEM::EnrField(Physics::Vely, enr_std));
-        nodalDofMap[actnode->Id()].insert(XFEM::EnrField(Physics::Velz, enr_std));
-        nodalDofMap[actnode->Id()].insert(XFEM::EnrField(Physics::Pres, enr_std));
+        const DRT::Node* actnode = xfemdis->lColNode(i);
+        const int gid = actnode->Id();
+        nodalDofMap[gid].insert(XFEM::EnrField(Physics::Velx, enr_std));
+        nodalDofMap[gid].insert(XFEM::EnrField(Physics::Vely, enr_std));
+        nodalDofMap[gid].insert(XFEM::EnrField(Physics::Velz, enr_std));
+        nodalDofMap[gid].insert(XFEM::EnrField(Physics::Pres, enr_std));
     }
 
     // for surface 1, loop my col elements and add void enrichments to each elements member nodes
