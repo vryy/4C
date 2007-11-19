@@ -54,6 +54,13 @@ public:
     virtual ~IntCell();
 
     /*!
+     \brief returns the shape of the integration cell
+
+     \return distype_
+     */
+    DRT::Element::DiscretizationType Shape() const {return distype_;};
+    
+    /*!
      \brief returns the coordinates of the integration cell
 
      \return cells nodal coordinates  
@@ -109,6 +116,13 @@ public:
     DomainIntCell(
             const DomainIntCell& old);
 
+    /*!
+     \brief returns the shape of the integration cell
+
+     \return distype_
+     */
+    DRT::Element::DiscretizationType Shape() const {return distype_;};
+    
     /*!
      \brief returns the coordinates of the integration cell
 
@@ -171,6 +185,13 @@ public:
     BoundaryIntCell(
             const BoundaryIntCell& old);
 
+    /*!
+     \brief returns the shape of the integration cell
+
+     \return distype_
+     */
+    DRT::Element::DiscretizationType Shape() const {return distype_;};
+    
     /*!
      \brief returns the coordinates of the integration cell in domain element coordinates
 
