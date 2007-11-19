@@ -555,6 +555,17 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
           for (int iparam=0; iparam<numparampres; ++iparam)
         	  eprenp(iparam) = myvelnp[presdof[iparam]];
           
+          const RCP<XFEM::InterfaceHandle> ih = params.get< RCP< XFEM::InterfaceHandle > >("interfacehandle",null);
+          dsassert(ih!=null, "you did not give the InterfaceHandle");
+          
+          //! information about domain integration cells
+          const XFEM::DomainIntCells   domainIntCells   = ih->domainIntCells(this->Id(),this->Shape());
+          //! information about boundary integration cells
+          const XFEM::BoundaryIntCells boundaryIntCells = ih->boundaryIntCells(this->Id());
+          
+          cout << "Element " << this->Id() << " has " << domainIntCells.size() <<   " domain integration cells." << endl;
+          cout << "Element " << this->Id() << " has " << boundaryIntCells.size() << " boundary integration cells." << endl;
+          
           // get control parameter
           const double pseudotime = params.get<double>("total time",-1.0);
           if (pseudotime < 0.0)
@@ -582,6 +593,8 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
         		  numparamvely, 
         		  numparamvelz, 
         		  numparampres)->Sysmat(this,
+        				 domainIntCells,
+        				 boundaryIntCells,
                          evelnp,
                          eprenp,
                          estif,
@@ -627,14 +640,6 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
 
 //    	cout << "storing refcountpointers at element: " << this->Id() << endl;
 //    	cout << eleDofManager_.toString() << endl;
-    	
-    	const RCP<XFEM::InterfaceHandle> ih = params.get< RCP< XFEM::InterfaceHandle > >("interfacehandle",null);
-    	
-    	domainIntCells_   = ih->domainIntCells(this->Id());
-    	boundaryIntCells_ = ih->boundaryIntCells(this->Id());
-    	
-//      cout << "Element " << this->Id() << " has " << domainIntCells_.size() <<   " domain integration cells." << endl;
-//    	cout << "Element " << this->Id() << " has " << boundaryIntCells_.size() << " boundary integration cells." << endl;
     	
       }
     	break;

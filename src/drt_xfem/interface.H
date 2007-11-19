@@ -50,12 +50,14 @@ public:
     const map<int,BoundaryIntCells> elementalBoundaryIntCells() const {return elementalBoundaryIntCells_;};
 
     // return set of integrationcells, however the set can be empty -> always terminates
-    inline const DomainIntCells domainIntCells(const int gid) const
+    inline const DomainIntCells domainIntCells(const int gid, const DRT::Element::DiscretizationType distype) const
     {
     	map<int,DomainIntCells>::const_iterator tmp = elementalDomainIntCells_.find(gid);
     	if (tmp == elementalDomainIntCells_.end())
     	{	
-    		const DomainIntCells x;
+    	    // create default set with one dummy DomainIntCell
+    		DomainIntCells x;
+    		x.push_back(DomainIntCell(distype));
     		return x;
     	}
         return tmp->second;

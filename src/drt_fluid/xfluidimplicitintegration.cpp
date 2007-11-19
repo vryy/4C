@@ -80,7 +80,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 	  ParameterList eleparams;
 	  eleparams.set("action","store_xfem_info");
 	  eleparams.set("dofmanager",initialdofmanager);
-	  eleparams.set("interfacehandle",ih);
+	  //eleparams.set("interfacehandle",ih);
 	  eleparams.set("assemble matrix 1",false);
 	  eleparams.set("assemble matrix 2",false);
 	  eleparams.set("assemble vector 1",false);
@@ -619,6 +619,29 @@ void XFluidImplicitTimeInt::NonlinearSolve()
   {
     itnum++;
 
+    // compute Intersection
+    RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(discret_,cutterdiscret_));
+
+    // apply enrichments
+    RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih));
+    
+    // debug: print enrichments to screen
+    //cout << dofmanager->toString() << endl;
+    
+    // tell elements about the dofs and the integration
+    {
+        ParameterList eleparams;
+        eleparams.set("action","store_xfem_info");
+        eleparams.set("dofmanager",dofmanager);
+        //eleparams.set("interfacehandle",ih);
+        eleparams.set("assemble matrix 1",false);
+        eleparams.set("assemble matrix 2",false);
+        eleparams.set("assemble vector 1",false);
+        eleparams.set("assemble vector 2",false);
+        eleparams.set("assemble vector 3",false);
+        discret_->Evaluate(eleparams,null,null,null,null,null);
+    }
+    
     // -------------------------------------------------------------------
     // call elements to calculate system matrix
     // -------------------------------------------------------------------
@@ -654,6 +677,9 @@ void XFluidImplicitTimeInt::NonlinearSolve()
         discret_->SetState("gridv", gridv_);
       }
 
+      // give elements access to the interfacehande
+      eleparams.set("interfacehandle",ih);
+      
       // call loop over elements
       discret_->Evaluate(eleparams,sysmat_,residual_);
 

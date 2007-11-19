@@ -2137,7 +2137,7 @@ void Intersection::computeCDT(
          
             tetrahedronCoord.push_back(tetnodes);    
         }
-        listperElement.push_back(DomainIntCell(tetrahedronCoord));                 
+        listperElement.push_back(DomainIntCell(DRT::Element::tet10, tetrahedronCoord));                 
     }
     domainintcells.insert(make_pair(element->Id(),listperElement));
 }

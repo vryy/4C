@@ -19,6 +19,7 @@ Maintainer: Axel Gerstenberger
 #include "xfluid3_stationary.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_lib/drt_timecurve.H"
+#include "../drt_xfem/integrationcell.H"
 
 #include <Epetra_SerialDenseSolver.h>
 
@@ -64,6 +65,8 @@ DRT::Elements::XFluid3Stationary::XFluid3Stationary(
  |  calculate system matrix and rhs (private)                  gjb 11/07|
  *----------------------------------------------------------------------*/
 void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
+									   const XFEM::DomainIntCells&   domainIntCells,
+									   const XFEM::BoundaryIntCells& boundaryIntCells,
                                        const blitz::Array<double,2>&     evelnp,
                                        const blitz::Array<double,1>&     eprenp,
                                        blitz::Array<double,2>&           estif,
@@ -122,6 +125,19 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
   // flag for higher order elements
   const bool higher_order_ele = ele->isHigherOrderElement(distype);
 
+  // integrate of integration cell
+  dsassert(domainIntCells.empty() == false, "this is a bug!");
+      
+  //double volume = 0.0;
+  double volumeRatio = 0.0;
+  for (XFEM::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell < domainIntCells.end(); ++cell) {
+      //volume += cell->Volume();
+      volumeRatio += cell->VolumeRatio(distype);
+  }
+  dsassert(abs(volumeRatio - 1.0) <= 1.0e-12, "volumeRatio for integrationcells does not sum up to 1.0");
+  //cout << "Volume via domainIntCells:      " << std::scientific << volume << endl;
+  //cout << "VolumeRatio via domainIntCells: " << std::scientific << volumeRatio << endl;
+  
   // gaussian points
   const DRT::Utils::IntegrationPoints3D intpoints(ele->gaussrule_);
 

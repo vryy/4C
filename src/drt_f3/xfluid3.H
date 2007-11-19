@@ -422,12 +422,6 @@ private:
   //! store information about the nodal-unknowns of this element
   XFEM::ElementDofManager                         eleDofManager_;
 
-  //! store information about domain integration cells
-  XFEM::DomainIntCells                            domainIntCells_;
-  
-  //! store information about boundary integration cells
-  XFEM::BoundaryIntCells                          boundaryIntCells_;
-  
   // internal calculation methods
 
   // don't want = operator

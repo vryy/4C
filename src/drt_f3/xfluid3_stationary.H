@@ -72,36 +72,22 @@ namespace Elements
     		int numparamvelz,
     		int numparampres);
 
-    /// calculating element matrix and rhs
-    /*!
-      Calculate matrix and rhs for stationary problem formulation
-      Here the whole thing is hidden.
-
-      \param ele     		(i) the element those matrix is calculated
-      \param evelnp  		(i) nodal velocities at n+1
-      \param eprenp  		(i) nodal pressure
-      \param estif   		(o) element matrix to calculate
-      \param eforce  		(o) element rhs to calculate
-      \param material 		(i) fluid material
-      \param pseudotime     (i) current simulation pseudotime
-      \param newton     	(i) full Newton or fixed-point-like
-      \param pstab     		(i) boolean flag for stabilisation 
-      \param supg     		(i) boolean flag for stabilisation
-      \param vstab     		(i) boolean flag for stabilisation
-      \param cstab     		(i) boolean flag for stabilisation                               
-     */
-    void Sysmat(XFluid3* ele,
-                const blitz::Array<double,2>&     evelnp,
-                const blitz::Array<double,1>&     eprenp,
-                blitz::Array<double,2>&           estif,
-                blitz::Array<double,1>&           eforce,
-                struct _MATERIAL*       material,
-                double                  pseudotime,
-                bool                    newton ,
-                bool                    pstab  ,
-                bool                    supg   ,
-                bool                    vstab  ,
-                bool                    cstab  );
+    /// Calculate matrix and rhs for stationary problem formulation
+    void Sysmat(
+            XFluid3* ele,                                       /// the element those matrix is calculated
+            const XFEM::DomainIntCells&       domainIntCells,   /// integration cells used for exact integration of discontinuities
+            const XFEM::BoundaryIntCells&     boundaryIntCells, /// facets used for integrating the surface forces
+            const blitz::Array<double,2>&     evelnp,           /// nodal velocities at n+1
+            const blitz::Array<double,1>&     eprenp,           /// nodal pressure
+            blitz::Array<double,2>&           estif,            /// element matrix to calculate
+            blitz::Array<double,1>&           eforce,           /// element rhs to calculate
+            struct _MATERIAL*                 material,         /// fluid material
+            double                            pseudotime,       /// current simulation pseudotime
+            bool                              newton,           /// full Newton or fixed-point-like
+            bool                              pstab,            /// boolean flag for stabilisation
+            bool                              supg,             /// boolean flag for stabilisation
+            bool                              vstab,            /// boolean flag for stabilisation
+            bool                              cstab);           /// boolean flag for stabilisation
 
   private:
 
