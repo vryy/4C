@@ -276,7 +276,13 @@ void MicroStatic::calc_cmat(const Epetra_MultiVector& K_M,
   (*cmat)(5,3) = (*cmat)(3,5);
   (*cmat)(5,4) = (*cmat)(4,5);
 
-//   cout << "homogenized cmat:\n" << *cmat << endl;
+  for (int i=0;i<6;++i)
+  {
+    for (int j=0;j<6;++j)
+    {
+      (*cmat)(i,j) /= V0_;
+    }
+  }
 }
 
 #endif
