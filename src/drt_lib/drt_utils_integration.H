@@ -14,6 +14,7 @@ Maintainer: Axel Gerstenberger
 #ifndef UTILS_INTEGRATION_H
 #define UTILS_INTEGRATION_H
 
+#include "drt_element.H"
 
 #include "Epetra_Vector.h"
 using namespace std;
@@ -136,6 +137,13 @@ inline IntegrationPoints1D getIntegrationPoints1D(
 {
   return IntegrationPoints1D(gaussrule);
 }
+
+/*----------------------------------------------------------------------*
+ |  returns the elementsize in local coordinates             a.ger 11/07|
+ *----------------------------------------------------------------------*/    
+double getSizeInLocalCoordinates( 
+    const DRT::Element::DiscretizationType     distype);
+
 
 } // namespace Utils
 } // namespace DRT

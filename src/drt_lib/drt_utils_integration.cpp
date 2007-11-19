@@ -527,4 +527,42 @@ DRT::Utils::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
 }
 
 
+/*----------------------------------------------------------------------*
+ |  returns the elementsize in local coordinates             a.ger 11/07|
+ *----------------------------------------------------------------------*/    
+double DRT::Utils::getSizeInLocalCoordinates( 
+    const DRT::Element::DiscretizationType     distype)
+{
+    double size = 0.0;
+    switch(distype)
+    {
+        case DRT::Element::hex8:
+        case DRT::Element::hex20:
+        case DRT::Element::hex27:
+            size = 8.0;
+            break;
+        case DRT::Element::tet4:
+        case DRT::Element::tet10:
+            size = 1.0/6.0;
+            break;
+        case DRT::Element::quad4:
+        case DRT::Element::quad8:
+        case DRT::Element::quad9:
+            size = 4.0;
+            break;
+        case DRT::Element::tri3:
+        case DRT::Element::tri6:
+            size = 0.5;
+            break;
+        case DRT::Element::line2:
+        case DRT::Element::line3:
+            size = 2.0;
+            break;
+        default:
+            dserror("discretization type not yet implemented");
+    };
+    
+    return size;
+}
+
 #endif  // #ifdef CCADISCRET
