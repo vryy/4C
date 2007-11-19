@@ -218,6 +218,16 @@ namespace Utils
                                                                     { 0.5,   0.0,   0.5},
                                                                     { 0.0,   0.5,   0.5}};
 
+  /*!
+ \brief Returns the number of nodes
+        for each discretization type
+        
+ \return number of corner nodes of the discretization type
+ */ 
+ int getNumberOfElementNodes( 
+   const DRT::Element::DiscretizationType&     distype
+   );
+  
    /*!
   \brief Returns the number of corner nodes
          for each discretization type

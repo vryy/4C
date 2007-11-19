@@ -30,6 +30,41 @@
 #include "drt_dserror.H"
 
 /*----------------------------------------------------------------------*
+ |  returns the number of nodes                              a.ger 11/07|
+ |  for each discretization type                                        |
+ *----------------------------------------------------------------------*/    
+int DRT::Utils::getNumberOfElementNodes( 
+    const DRT::Element::DiscretizationType&     distype)
+{
+    
+    int numCornerNodes = 0;
+    
+    switch(distype)
+    {
+        case DRT::Element::hex8:
+            numCornerNodes = 8;
+            break;
+        case DRT::Element::hex20:
+            numCornerNodes = 20;
+            break;
+        case DRT::Element::hex27:
+            numCornerNodes = 27;
+            break;
+        case DRT::Element::tet4:
+            numCornerNodes = 4;
+            break;
+        case DRT::Element::tet10:
+            numCornerNodes = 10;
+            break;   
+        default:
+            dserror("discretization type not yet implemented");     
+    }
+    
+    return numCornerNodes;     
+}   
+
+
+/*----------------------------------------------------------------------*
  |  returns the number of corner nodes                       u.may 08/07|
  |  for each discretization type                                        |
  *----------------------------------------------------------------------*/    
