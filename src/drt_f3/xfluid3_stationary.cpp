@@ -19,7 +19,6 @@ Maintainer: Axel Gerstenberger
 #include "xfluid3_stationary.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_lib/drt_timecurve.H"
-#include "../drt_xfem/integrationcell.H"
 
 #include <Epetra_SerialDenseSolver.h>
 
