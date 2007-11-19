@@ -138,8 +138,18 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
   //cout << "Volume via domainIntCells:      " << std::scientific << volume << endl;
   //cout << "VolumeRatio via domainIntCells: " << std::scientific << volumeRatio << endl;
   
+  for (XFEM::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell < domainIntCells.end(); ++cell)
+  {
+    DRT::Utils::GaussRule3D gaussrule;
+    if (domainIntCells.size() == 1){
+        gaussrule = ele->gaussrule_;
+    }
+    else {
+        gaussrule = DRT::Utils::intrule_tet_10point;
+    }
+  
   // gaussian points
-  const DRT::Utils::IntegrationPoints3D intpoints(ele->gaussrule_);
+  const DRT::Utils::IntegrationPoints3D intpoints(gaussrule);
 
   // integration loop
   for (int iquad=0; iquad<intpoints.nquad; ++iquad)
@@ -177,7 +187,7 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
                        xjm_(0,2)*xjm_(1,1)*xjm_(2,0)-
                        xjm_(0,0)*xjm_(1,2)*xjm_(2,1)-
                        xjm_(0,1)*xjm_(1,0)*xjm_(2,2);
-    const double fac = intpoints.qwgt[iquad]*det;
+    const double fac = intpoints.qwgt[iquad] * det * cell->VolumeRatio(distype);
 
     if (det < 0.0)
     {
@@ -1069,6 +1079,8 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
       }
     }
   }
+  } // end loop over integration cells
+  return;
 }
 
 

@@ -563,9 +563,6 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
           //! information about boundary integration cells
           const XFEM::BoundaryIntCells boundaryIntCells = ih->boundaryIntCells(this->Id());
           
-          cout << "Element " << this->Id() << " has " << domainIntCells.size() <<   " domain integration cells." << endl;
-          cout << "Element " << this->Id() << " has " << boundaryIntCells.size() << " boundary integration cells." << endl;
-          
           // get control parameter
           const double pseudotime = params.get<double>("total time",-1.0);
           if (pseudotime < 0.0)
