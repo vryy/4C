@@ -112,7 +112,7 @@ public:
   void SetOldState(RefCountPtr<Epetra_Vector> disp,
                    RefCountPtr<Epetra_Vector> disi);
 
-  void SetTime(double timen, int istep);
+  void SetTime(double timen, int istep, double alphaf);
 
   RefCountPtr<Epetra_Vector> ReturnNewDisp();
 

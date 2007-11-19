@@ -173,7 +173,7 @@ void MicroStatic::ConstantPredictor(const Epetra_SerialDenseMatrix* defgrd)
   // -------------------------------------------------------------------
   double time        = params_->get<double>("total time"     ,0.0);
   double dt          = params_->get<double>("delta time"     ,0.01);
-  int    istep       = params_->get<int>   ("step"           ,0);
+//   int    istep       = params_->get<int>   ("step"           ,0);
   double alphaf      = params_->get<double>("alpha f"        ,0.459);
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
@@ -268,7 +268,7 @@ void MicroStatic::FullNewton()
   // -------------------------------------------------------------------
   double time      = params_->get<double>("total time"             ,0.0);
   double dt        = params_->get<double>("delta time"             ,0.01);
-  int    istep     = params_->get<int>   ("step"                   ,0);
+//   int    istep     = params_->get<int>   ("step"                   ,0);
   int    maxiter   = params_->get<int>   ("max iterations"         ,10);
   double alphaf    = params_->get<double>("alpha f"                ,0.459);
   double toldisp   = params_->get<double>("tolerance displacements",1.0e-07);
@@ -578,10 +578,11 @@ void MicroStatic::SetOldState(RefCountPtr<Epetra_Vector> disp,
                             // to zero
 }
 
-void MicroStatic::SetTime(double timen, int istep)
+void MicroStatic::SetTime(double timen, int istep, double alphaf)
 {
   params_->set<double>("total time", timen);
   params_->set<int>   ("step", istep);
+  params_->set<double>("alphaf", alphaf);
 }
 
 RefCountPtr<Epetra_Vector> MicroStatic::ReturnNewDisp() { return rcp(new Epetra_Vector(*dis_)); }
@@ -783,6 +784,8 @@ void MicroStatic::Homogenization(Epetra_SerialDenseVector* stress,
     (*stress)[5] += F_inv(0, i)*P(i,2);                     // S13
   }
 
+//   cout << "stress:\n" << *stress << "\n";
+
   // for testing reasons only!!!!!!!!!! begin testing region
   const double Emod  = 100.0;
   const double nu  = 0.2;
@@ -967,8 +970,11 @@ void MicroStatic::StaticHomogenization(Epetra_SerialDenseVector* stress,
     (*stress)[i]=S[i];
   }
 
-//   cout << "F:\n" << *defgrd << endl;
+//  cout << "F:\n" << *defgrd << endl;
 //   cout << "S:\n" << S << endl;
+//   cout << "stiff:\n" << *stiff_ << "\n";
+//   cout << "np: " << np_ << endl;
+//   cout << "F_inv:\n" << F_inv << endl;
 
   // split effective dynamic stiffness -> we want Kpp, Kpf, Kfp and Kff
   // Kpp and Kff are sparse matrices, whereas Kpf and Kfp are MultiVectors
@@ -1081,7 +1087,10 @@ void MicroStatic::StaticHomogenization(Epetra_SerialDenseVector* stress,
   // strains has to be determined (this is what Solid3 Hex8 wants to
   // be returned by the material routine)
 
-  MicroStatic::calc_cmat(Kpp, F_inv, S, cmat, defgrd);
+  MicroStatic::calc_cmat(Kpp, F_inv, *stress, cmat, defgrd);
+
+//   cout << "Kpp:\n" << Kpp << endl;
+//   cout << "F:\n" << *defgrd << "cmat homogenized:\n" << *cmat << "\nstresses homogenized:\n" << *stress << "\n";
 
   // after having all homogenization stuff done, we now really don't need stiff_ anymore
 
@@ -1118,6 +1127,7 @@ void MicroStatic::StaticHomogenization(Epetra_SerialDenseVector* stress,
   if (*density == 0.0)
     dserror("Density determined from homogenization procedure equals zero!");
 
+  cout << "cmat:\n" << *cmat << "\nstress:\n" << *stress << "\n";
 //   cout << "density: " << *density << "\n";
 }
 

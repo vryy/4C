@@ -81,6 +81,10 @@ private:
   /// timestep size
   double dt_;
 
+  /// alphaf (parameter of macroscopic generalized alpha time
+  /// integration)
+  double alphaf_;
+
 };
 }
 

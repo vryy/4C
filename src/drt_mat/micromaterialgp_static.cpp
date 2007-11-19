@@ -177,6 +177,7 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
     timen_ = 0.;
     istep_ = 0;
     dt_    = sdyn->dt;
+    alphaf_ = sdyn->alpha_f;
   }
 
   // if derived generalized alpha class for microscale simulations is
@@ -215,8 +216,8 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
 //     istep_++;
 //   }
 
-  // set current absolute time and step number
-  microstatic_->SetTime(timen_, istep_);
+  // set current absolute time, step number and alphaf
+  microstatic_->SetTime(timen_, istep_, alphaf_);
 
   microstatic_->ConstantPredictor(defgrd);
   microstatic_->FullNewton();
