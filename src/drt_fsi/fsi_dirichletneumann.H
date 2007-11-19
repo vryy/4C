@@ -223,6 +223,12 @@ private:
   //! we couple based on displacements
   bool displacementcoupling_;
 
+  /// print parameters and stuff
+  /*!
+    \warning This variable is only valid during when the time loop runs.
+   */
+  Teuchos::RefCountPtr<NOX::Utils> utils_;
+
   int step_;
   int nstep_;
   double time_;

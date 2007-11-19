@@ -356,7 +356,7 @@ void FSI::DirichletNeumannCoupling::SetupAle()
   // -------------------------------------------------------------------
   RefCountPtr<IO::DiscretizationWriter> output =
     rcp(new IO::DiscretizationWriter(actdis));
-  output->WriteMesh(0,0.0);
+  //output->WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------
   // set some pointers and variables
@@ -403,8 +403,12 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
   printParams.set("MyPID", comm_.MyPID());
 
+  // set default output flag to no output
+  // The field solver will output a lot, anyway.
+  printParams.get("Output Information",0);
+
   // Create printing utilities
-  Teuchos::RefCountPtr<NOX::Utils> utils = Teuchos::rcp(new NOX::Utils(printParams));
+  utils_ = Teuchos::rcp(new NOX::Utils(printParams));
 
   // Set user defined aitken line search object.
   if (nlParams.sublist("Line Search").get("Method","Aitken")=="Aitken")
@@ -446,7 +450,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
   {
     // insert user defined extrapolate relaxation
     Teuchos::ParameterList& linesearch = nlParams.sublist("Line Search");
-    Teuchos::RefCountPtr<NOX::LineSearch::Generic> extrapolate = Teuchos::rcp(new NOX::FSI::Extrapolate(utils,linesearch));
+    Teuchos::RefCountPtr<NOX::LineSearch::Generic> extrapolate = Teuchos::rcp(new NOX::FSI::Extrapolate(utils_,linesearch));
 
     // We change the method here.
     linesearch.set("Method","User Defined");
@@ -532,7 +536,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
 
     // Create the linear system
     Teuchos::RefCountPtr<NOX::Epetra::LinearSystem> linSys =
-      CreateLinearSystem(nlParams, interface, noxSoln, utils);
+      CreateLinearSystem(nlParams, interface, noxSoln, utils_);
 
     // Create the Group
     Teuchos::RefCountPtr<NOX::Epetra::Group> grp =
@@ -564,7 +568,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
     if (status != NOX::StatusTest::Converged and secondsolver)
     {
       if (comm_.MyPID()==0)
-        utils->out() << YELLOW "second solver" END_COLOR << endl;
+        utils_->out() << YELLOW "second solver" END_COLOR << endl;
 
       // Get the Epetra_Vector with the final solution from the solver
       const NOX::Epetra::Group& finalGroup = dynamic_cast<const NOX::Epetra::Group&>(solver->getSolutionGroup());
@@ -575,7 +579,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
       *soln = finalSolution;
 
       // Create the linear system
-      linSys = CreateLinearSystem(nlParams.sublist("Second"), interface, noxSoln, utils);
+      linSys = CreateLinearSystem(nlParams.sublist("Second"), interface, noxSoln, utils_);
 
       // Create the Group
       grp = Teuchos::rcp(new NOX::Epetra::Group(printParams, interface, noxSoln, linSys));
@@ -592,7 +596,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
 
     if (status != NOX::StatusTest::Converged)
       if (comm_.MyPID()==0)
-        utils->out() << RED "Nonlinear solver failed to converge!" END_COLOR << endl;
+        utils_->out() << RED "Nonlinear solver failed to converge!" END_COLOR << endl;
 
     // Get the Epetra_Vector with the final solution from the solver
     const NOX::Epetra::Group& finalGroup = dynamic_cast<const NOX::Epetra::Group&>(solver->getSolutionGroup());
@@ -621,14 +625,14 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
     // End Nonlinear Solver **************************************
 
     // Output the parameter list
-    if (utils->isPrintType(NOX::Utils::Parameters))
-      if (comm_.MyPID()==0)
+    if (utils_->isPrintType(NOX::Utils::Parameters))
+      if (step_==1 and comm_.MyPID()==0)
       {
-        utils->out() << endl
-                     << "Final Parameters" << endl
-                     << "****************" << endl;
-        solver->getList().print(utils->out());
-        utils->out() << endl;
+        utils_->out() << endl
+                      << "Final Parameters" << endl
+                      << "****************" << endl;
+        solver->getList().print(utils_->out());
+        utils_->out() << endl;
       }
 
     // ==================================================================
@@ -934,8 +938,9 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
   double startTime = timer.WallTime();
 
   if (comm_.MyPID()==0)
-    cout << "\n==================================================================================================\n"
-         << "FSI::DirichletNeumannCoupling::computeF: fillFlag = " RED << flags[fillFlag] << END_COLOR "\n\n";
+    utils_->out() << "\n "
+                  << YELLOW_LIGHT << "FSI residual calculation" << END_COLOR
+                  << ".\n fillFlag = " RED << flags[fillFlag] << END_COLOR "\n";
 
   // we count the number of times the residuum is build
   counter_[fillFlag] += 1;
@@ -945,7 +950,7 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
 
   if (displacementcoupling_)
   {
-#if 1
+#if 0
     if (fillFlag!=User)
   if (comm_.NumProc()==1)
   {
@@ -994,7 +999,7 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
   }
 #endif
 
-#if 1
+#if 0
     if (fillFlag!=User)
   if (comm_.NumProc()==1)
   {
@@ -1053,7 +1058,7 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
 
   double endTime = timer.WallTime();
   if (comm_.MyPID()==0)
-    cout << "Time for residual calculation: " << endTime-startTime << "\n";
+    utils_->out() << "\nTime for residual calculation: " << endTime-startTime << "\n\n";
   return true;
 }
 
@@ -1062,6 +1067,9 @@ Teuchos::RefCountPtr<Epetra_Vector>
 FSI::DirichletNeumannCoupling::FluidOp(Teuchos::RefCountPtr<Epetra_Vector> idisp,
                                        const FillType fillFlag)
 {
+  if (comm_.MyPID()==0 and utils_->isPrintType(NOX::Utils::OuterIteration))
+    utils_->out() << "\nFluid operator\n";
+
   if (fillFlag==User)
   {
     // SD relaxation calculation
@@ -1116,6 +1124,9 @@ Teuchos::RefCountPtr<Epetra_Vector>
 FSI::DirichletNeumannCoupling::StructOp(Teuchos::RefCountPtr<Epetra_Vector> iforce,
                                         const FillType fillFlag)
 {
+  if (comm_.MyPID()==0 and utils_->isPrintType(NOX::Utils::OuterIteration))
+    utils_->out() << "\nStructural operator\n";
+
   if (fillFlag==User)
   {
     // SD relaxation calculation
@@ -1219,7 +1230,7 @@ void FSI::DirichletNeumannCoupling::Update()
 void FSI::DirichletNeumannCoupling::Output()
 {
   fluid_->Output();
-  ale_  ->Output();
+  //ale_  ->Output();
 }
 
 
