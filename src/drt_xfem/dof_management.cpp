@@ -203,8 +203,9 @@ const map<int, const set <XFEM::EnrField> > XFEM::DofManager::createNodalDofMap(
 	// temporary assembly
     map<int, set <XFEM::EnrField> >  nodalDofMap;
     
-    // loop my row nodes and add standard degrees of freedom
+    // standard enrichment used for all nodes (for now -> we can remove them from holes in the fluid)
     const XFEM::Enrichment enr_std(0, XFEM::Enrichment::typeStandard);
+    // loop my row nodes and add standard degrees of freedom
     for (int i=0; i<xfemdis->NumMyColNodes(); ++i)
     {
         const DRT::Node* actnode = xfemdis->lColNode(i);
