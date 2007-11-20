@@ -58,7 +58,12 @@ extern struct _MATERIAL  *mat;
   
   */
 
-DRT::Elements::XFluid3Impl* DRT::Elements::XFluid3::Impl(const int numnode)
+DRT::Elements::XFluid3Impl* DRT::Elements::XFluid3::Impl(
+        const int numnode,
+        const int numparamvelx,
+        const int numparamvely,
+        const int numparamvelz,
+        const int numparampres)
 {
   switch (numnode)
   {
@@ -66,68 +71,64 @@ DRT::Elements::XFluid3Impl* DRT::Elements::XFluid3::Impl(const int numnode)
   {
     static XFluid3Impl* f8;
     if (f8==NULL)
-      f8 = new XFluid3Impl(8);
+      f8 = new XFluid3Impl(numnode,numnode,numnode,numnode,numnode);
     return f8;
   }
   case 20:
   {
     static XFluid3Impl* f20;
     if (f20==NULL)
-      f20 = new XFluid3Impl(20);
+      f20 = new XFluid3Impl(numnode,numnode,numnode,numnode,numnode);
     return f20;
   }
   case 27:
   {
     static XFluid3Impl* f27;
     if (f27==NULL)
-      f27 = new XFluid3Impl(27);
+      f27 = new XFluid3Impl(numnode,numnode,numnode,numnode,numnode);
     return f27;
   }
   case 4:
   {
     static XFluid3Impl* f4;
     if (f4==NULL)
-      f4 = new XFluid3Impl(4);
+      f4 = new XFluid3Impl(numnode,numnode,numnode,numnode,numnode);
     return f4;
   }
   case 10:
   {
     static XFluid3Impl* f10;
     if (f10==NULL)
-      f10 = new XFluid3Impl(10);
+      f10 = new XFluid3Impl(numnode,numnode,numnode,numnode,numnode);
     return f10;
   }
   case 6:
   {
     static XFluid3Impl* f6;
     if (f6==NULL)
-      f6 = new XFluid3Impl(6);
+      f6 = new XFluid3Impl(numnode,numnode,numnode,numnode,numnode);
     return f6;
   }
   case 15:
   {
     static XFluid3Impl* f15;
     if (f15==NULL)
-      f15 = new XFluid3Impl(15);
+      f15 = new XFluid3Impl(numnode,numnode,numnode,numnode,numnode);
     return f15;
   }
   case 5:
   {
     static XFluid3Impl* f5;
     if (f5==NULL)
-      f5 = new XFluid3Impl(5);
+      f5 = new XFluid3Impl(numnode,numnode,numnode,numnode,numnode);
     return f5;
   }
   default:
   {
-	static XFluid3Impl* fx;
-    if (fx==NULL)
-      fx = new XFluid3Impl(numnode);
-    else
-    {
-    	delete fx;
-    	fx = new XFluid3Impl(numnode);
-    }
+    static XFluid3Impl* fx;
+    if (fx!=NULL)
+        delete fx;
+    fx = new XFluid3Impl(numnode,numparamvelx,numparamvely,numparamvelz,numparampres);
     return fx;
   }
   }
@@ -326,44 +327,56 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
           DRT::Utils::ExtractMyValues(*gridv,mygridv,lm);
         }
 
+        const int numparampres = eleDofManager_.NumDof(XFEM::Physics::Pres);
+        const int numparamvelx = eleDofManager_.NumDof(XFEM::Physics::Velx);
+        const int numparamvely = eleDofManager_.NumDof(XFEM::Physics::Vely);
+        const int numparamvelz = eleDofManager_.NumDof(XFEM::Physics::Velz);
+        dsassert((numparamvelx == numparamvely and numparamvelx == numparamvelz and numparamvelx == numparampres),
+                "for now, we enrich velocity and pressure together");
+        
         // create blitz objects for element arrays
-        const int numnode = NumNode();
-        blitz::Array<double, 1> eprenp(numnode);
-        blitz::Array<double, 2> evelnp(3,numnode,blitz::ColumnMajorArray<2>());
-        blitz::Array<double, 2> evhist(3,numnode,blitz::ColumnMajorArray<2>());
-        blitz::Array<double, 2> edispnp(3,numnode,blitz::ColumnMajorArray<2>());
-        blitz::Array<double, 2> egridv(3,numnode,blitz::ColumnMajorArray<2>());
+        blitz::Array<double, 1> eprenp(numparampres);
+        blitz::Array<double, 2> evelnp(3,numparamvelx,blitz::ColumnMajorArray<2>());
+        blitz::Array<double, 2> evhist(3,numparamvelx,blitz::ColumnMajorArray<2>());
+        blitz::Array<double, 2> edispnp(3,numparamvelx,blitz::ColumnMajorArray<2>());
+        blitz::Array<double, 2> egridv(3,numparamvelx,blitz::ColumnMajorArray<2>());
 
+        const vector<int> velxdof = eleDofManager_.Dof(XFEM::Physics::Velx);
+        const vector<int> velydof = eleDofManager_.Dof(XFEM::Physics::Vely);
+        const vector<int> velzdof = eleDofManager_.Dof(XFEM::Physics::Velz);
+        const vector<int> presdof = eleDofManager_.Dof(XFEM::Physics::Pres);
+        
         // split velocity and pressure, insert into element arrays
-        for (int i=0;i<numnode;++i)
-        {
-          evelnp(0,i) = myvelnp[0+(i*4)];
-          evelnp(1,i) = myvelnp[1+(i*4)];
-          evelnp(2,i) = myvelnp[2+(i*4)];
-
-          eprenp(i) = myvelnp[3+(i*4)];
-
-          // the history vector contains the information of time step t_n (mass rhs!)
-          evhist(0,i) = myhist[0+(i*4)];
-          evhist(1,i) = myhist[1+(i*4)];
-          evhist(2,i) = myhist[2+(i*4)];
-        }
+        for (int iparam=0; iparam<numparamvelx; ++iparam)   evelnp(0,iparam) = myvelnp[velxdof[iparam]];
+        for (int iparam=0; iparam<numparamvely; ++iparam)   evelnp(1,iparam) = myvelnp[velydof[iparam]];
+        for (int iparam=0; iparam<numparamvelz; ++iparam)   evelnp(2,iparam) = myvelnp[velzdof[iparam]];
+        for (int iparam=0; iparam<numparampres; ++iparam)   eprenp(iparam) = myvelnp[presdof[iparam]];
+        
+        // the history vector contains the information of time step t_n (mass rhs!)
+        for (int iparam=0; iparam<numparamvelx; ++iparam)   evhist(0,iparam) = myhist[velxdof[iparam]];
+        for (int iparam=0; iparam<numparamvely; ++iparam)   evhist(1,iparam) = myhist[velydof[iparam]];
+        for (int iparam=0; iparam<numparamvelz; ++iparam)   evhist(2,iparam) = myhist[velzdof[iparam]];
 
         if (is_ale_)
         {
           // assign grid velocity and grid displacement to element arrays
-          for (int i=0;i<numnode;++i)
-          {
-            edispnp(0,i) = mydispnp[0+(i*4)];
-            edispnp(1,i) = mydispnp[1+(i*4)];
-            edispnp(2,i) = mydispnp[2+(i*4)];
-
-            egridv(0,i) = mygridv[0+(i*4)];
-            egridv(1,i) = mygridv[1+(i*4)];
-            egridv(2,i) = mygridv[2+(i*4)];
-          }
+          for (int iparam=0; iparam<numparamvelx; ++iparam)   edispnp(0,iparam) = mydispnp[velxdof[iparam]];
+          for (int iparam=0; iparam<numparamvely; ++iparam)   edispnp(1,iparam) = mydispnp[velydof[iparam]];
+          for (int iparam=0; iparam<numparamvelz; ++iparam)   edispnp(2,iparam) = mydispnp[velzdof[iparam]];
+          
+          for (int iparam=0; iparam<numparamvelx; ++iparam)   egridv(0,iparam) = mygridv[velxdof[iparam]];
+          for (int iparam=0; iparam<numparamvely; ++iparam)   egridv(1,iparam) = mygridv[velydof[iparam]];
+          for (int iparam=0; iparam<numparamvelz; ++iparam)   egridv(2,iparam) = mygridv[velzdof[iparam]];
         }
 
+        const RCP<XFEM::InterfaceHandle> ih = params.get< RCP< XFEM::InterfaceHandle > >("interfacehandle",null);
+        dsassert(ih!=null, "you did not give the InterfaceHandle");
+        
+        //! information about domain integration cells
+        const XFEM::DomainIntCells   domainIntCells   = ih->domainIntCells(this->Id(),this->Shape());
+        //! information about boundary integration cells
+        const XFEM::BoundaryIntCells boundaryIntCells = ih->boundaryIntCells(this->Id());
+        
         // get control parameter
         const double time = params.get<double>("total time",-1.0);
 
@@ -393,7 +406,14 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
                                        blitz::neverDeleteData);
 
         // calculate element coefficient matrix and rhs     
-        Impl(NumNode())->Sysmat(this,
+        Impl(
+                NumNode(),
+                numparamvelx, 
+                numparamvely, 
+                numparamvelz, 
+                numparampres)->Sysmat(this,
+                       domainIntCells,
+                       boundaryIntCells,
                        evelnp,
                        eprenp,
                        evhist,
@@ -531,29 +551,25 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
           // create blitz objects
 
           const int numparampres = eleDofManager_.NumDof(XFEM::Physics::Pres);
-          blitz::Array<double, 1> eprenp(numparampres);
           const int numparamvelx = eleDofManager_.NumDof(XFEM::Physics::Velx);
           const int numparamvely = eleDofManager_.NumDof(XFEM::Physics::Vely);
           const int numparamvelz = eleDofManager_.NumDof(XFEM::Physics::Velz);
           dsassert((numparamvelx == numparamvely and numparamvelx == numparamvelz and numparamvelx == numparampres),
         		  "for now, we enrich velocity and pressure together");
-          blitz::Array<double, 2> evelnp(3,numparamvelx,blitz::ColumnMajorArray<2>());
-
+          
           const vector<int> velxdof = eleDofManager_.Dof(XFEM::Physics::Velx);
-          for (int iparam=0; iparam<numparamvelx; ++iparam)
-        	  evelnp(0,iparam) = myvelnp[velxdof[iparam]];
-
           const vector<int> velydof = eleDofManager_.Dof(XFEM::Physics::Vely);
-          for (int iparam=0; iparam<numparamvely; ++iparam)
-        	  evelnp(1,iparam) = myvelnp[velydof[iparam]];
-
           const vector<int> velzdof = eleDofManager_.Dof(XFEM::Physics::Velz);
-          for (int iparam=0; iparam<numparamvelz; ++iparam)
-        	  evelnp(2,iparam) = myvelnp[velzdof[iparam]];
-
           const vector<int> presdof = eleDofManager_.Dof(XFEM::Physics::Pres);
-          for (int iparam=0; iparam<numparampres; ++iparam)
-        	  eprenp(iparam) = myvelnp[presdof[iparam]];
+
+          blitz::Array<double, 1> eprenp(numparampres);
+          blitz::Array<double, 2> evelnp(3,numparamvelx,blitz::ColumnMajorArray<2>());
+          
+          for (int iparam=0; iparam<numparamvelx; ++iparam)   evelnp(0,iparam) = myvelnp[velxdof[iparam]];
+          for (int iparam=0; iparam<numparamvely; ++iparam)   evelnp(1,iparam) = myvelnp[velydof[iparam]];
+          for (int iparam=0; iparam<numparamvelz; ++iparam)   evelnp(2,iparam) = myvelnp[velzdof[iparam]];
+          for (int iparam=0; iparam<numparampres; ++iparam)   eprenp(iparam) = myvelnp[presdof[iparam]];
+          
           
           const RCP<XFEM::InterfaceHandle> ih = params.get< RCP< XFEM::InterfaceHandle > >("interfacehandle",null);
           dsassert(ih!=null, "you did not give the InterfaceHandle");

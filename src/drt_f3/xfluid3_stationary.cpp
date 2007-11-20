@@ -186,7 +186,7 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
                        xjm_(0,2)*xjm_(1,1)*xjm_(2,0)-
                        xjm_(0,0)*xjm_(1,2)*xjm_(2,1)-
                        xjm_(0,1)*xjm_(1,0)*xjm_(2,2);
-    const double fac = intpoints.qwgt[iquad] * det * cell->VolumeRatio(distype);
+    const double fac = intpoints.qwgt[iquad]*det * cell->VolumeRatio(distype);
 
     if (det < 0.0)
     {

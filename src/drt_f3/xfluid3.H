@@ -579,7 +579,12 @@ private:
   StabilisationAction ConvertStringToStabAction (const string& action) const;
 
   /// Internal implementation class for specific fluid element
-  XFluid3Impl* Impl(const int numnode);
+  XFluid3Impl* Impl(
+          const int numnode,
+          const int numparamvelx,
+          const int numparamvely,
+          const int numparamvelz,
+          const int numparampres);
 
   /// Internal implementation class for fluid element -- stationary formulation
   XFluid3Stationary* StationaryImpl(

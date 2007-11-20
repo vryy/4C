@@ -80,7 +80,6 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 	  ParameterList eleparams;
 	  eleparams.set("action","store_xfem_info");
 	  eleparams.set("dofmanager",initialdofmanager);
-	  //eleparams.set("interfacehandle",ih);
 	  eleparams.set("assemble matrix 1",false);
 	  eleparams.set("assemble matrix 2",false);
 	  eleparams.set("assemble vector 1",false);
@@ -271,6 +270,13 @@ void XFluidImplicitTimeInt::Integrate()
   theta_                     =params_.get<double>("theta");
   // which kind of time-integration
   timealgo_                  =params_.get<FLUID_TIMEINTTYPE>("time int algo");
+
+  // parameter for linearisation scheme (fixed point like or newton like)
+  newton_ = params_.get<bool>("Use reaction terms for linearisation",false);
+
+  // parameter for start algorithm
+  //double starttheta          =params_.get<double>("start theta");
+  //FLUID_TIMEINTTYPE startalgo=timeint_one_step_theta;
 
   dtp_ = dta_ = params_.get<double>("time step size");
 
@@ -596,17 +602,41 @@ void XFluidImplicitTimeInt::NonlinearSolve()
   // start time measurement for nonlinear iteration
   tm_nlniteration_ = rcp(new TimeMonitor(*timenlnloop_));
 
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* dofrowmap       = discret_->DofRowMap();
 
   // ---------------------------------------------- nonlinear iteration
+  // maximum number of nonlinear iteration steps
   const int     itemax    =params_.get<int>   ("max nonlin iter steps");
 
   // ------------------------------- stop nonlinear iteration when both
   //                                 increment-norms are below this bound
   const double  ittol     =params_.get<double>("tolerance for nonlin iter");
 
+  // compute Intersection
+  RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(discret_,cutterdiscret_));
+  
+  // apply enrichments
+  RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih));
+  
+  // tell elements about the dofs and the integration
+  {
+      ParameterList eleparams;
+      eleparams.set("action","store_xfem_info");
+      eleparams.set("dofmanager",dofmanager);
+      eleparams.set("assemble matrix 1",false);
+      eleparams.set("assemble matrix 2",false);
+      eleparams.set("assemble vector 1",false);
+      eleparams.set("assemble vector 2",false);
+      eleparams.set("assemble vector 3",false);
+      discret_->Evaluate(eleparams,null,null,null,null,null);
+  }
+  
+  
   if (discret_->Comm().MyPID() == 0)
   {
+    // debug: print enrichments to screen
+    //cout << dofmanager->toString() << endl;
+    
     printf("+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+\n");
     printf("|- step/max -|- tol      [norm] -|-- vel-res ---|-- pre-res ---|-- fullres ---|-- vel-inc ---|-- pre-inc ---|-- fullinc ---|\n");
   }
@@ -619,29 +649,6 @@ void XFluidImplicitTimeInt::NonlinearSolve()
   {
     itnum++;
 
-    // compute Intersection
-    RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(discret_,cutterdiscret_));
-
-    // apply enrichments
-    RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih));
-    
-    // debug: print enrichments to screen
-    //cout << dofmanager->toString() << endl;
-    
-    // tell elements about the dofs and the integration
-    {
-        ParameterList eleparams;
-        eleparams.set("action","store_xfem_info");
-        eleparams.set("dofmanager",dofmanager);
-        //eleparams.set("interfacehandle",ih);
-        eleparams.set("assemble matrix 1",false);
-        eleparams.set("assemble matrix 2",false);
-        eleparams.set("assemble vector 1",false);
-        eleparams.set("assemble vector 2",false);
-        eleparams.set("assemble vector 3",false);
-        discret_->Evaluate(eleparams,null,null,null,null,null);
-    }
-    
     // -------------------------------------------------------------------
     // call elements to calculate system matrix
     // -------------------------------------------------------------------
@@ -1326,6 +1333,7 @@ void XFluidImplicitTimeInt::SetInitialFlowField(
   {
     const int numdim = params_.get<int>("number of velocity degrees of freedom");
 
+
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
     {
@@ -1434,10 +1442,15 @@ void XFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
   return;
 } // end EvaluateErrorComparedToAnalyticalSol
 
-
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  |  set default parameter list (static/public)               gammi 04/07|
  *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void XFluidImplicitTimeInt::SetDefaults(ParameterList& params)
 {
   // number of degrees of freedom
@@ -1574,9 +1587,15 @@ void XFluidImplicitTimeInt::SolveStationaryProblem()
 } // XFluidImplicitTimeInt::SolveStationaryProblem
 
 
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- |  calculate (wall) stresses (public)                       g.bau 07/07|
+ |  calculate (wall) stresses (public)                         gjb 07/07|
  *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 RefCountPtr<Epetra_Vector> XFluidImplicitTimeInt::CalcStresses()
 {
      ParameterList eleparams;
@@ -1628,9 +1647,15 @@ XFluidImplicitTimeInt::~XFluidImplicitTimeInt()
 
 
 
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  | LiftDrag                                                  chfoe 11/07|
  *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*!
 \brief calculate lift&drag forces and angular momenta
 
@@ -1758,7 +1783,7 @@ void XFluidImplicitTimeInt::LiftDrag()
         if (ndim == 2)
 	{
 	  cout << "     " << label << "         ";
-	  cout << std::scientific << resultvec[0] << "    ";
+      cout << std::scientific << resultvec[0] << "    ";
 	  cout << std::scientific << resultvec[1] << "    ";
 	  cout << std::scientific << resultvec[5];
 	  cout << "\n";
@@ -1766,7 +1791,7 @@ void XFluidImplicitTimeInt::LiftDrag()
         if (ndim == 3)
 	{
 	  cout << "     " << label << "         ";
-	  cout << std::scientific << resultvec[0] << "    ";
+      cout << std::scientific << resultvec[0] << "    ";
 	  cout << std::scientific << resultvec[1] << "    ";
 	  cout << std::scientific << resultvec[2] << "    ";
 	  cout << std::scientific << resultvec[3] << "    ";

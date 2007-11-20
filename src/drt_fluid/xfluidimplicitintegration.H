@@ -41,6 +41,7 @@ Maintainer: Axel Gerstenberger
 #include <iostream>
 #include <Teuchos_TimeMonitor.hpp>
 
+
 using namespace std;
 using namespace Teuchos;
 
@@ -206,6 +207,9 @@ protected:
 
   FLUID_TIMEINTTYPE timealgo_;
 
+  //! use (or not) linearisation of reactive terms on the element
+  bool newton_;
+
   int restartstep_;
   int uprestart_;
   int writestep_;
@@ -274,7 +278,7 @@ protected:
   RefCountPtr<Time> timeeleloop_    ;
   RefCountPtr<Time> timeapplydirich_;
   RefCountPtr<Time> timesolver_     ;
-  // ToDo: fix names
+
   RefCountPtr<TimeMonitor> tm0_ref_ ;
   RefCountPtr<TimeMonitor> tm1_ref_ ;
   RefCountPtr<TimeMonitor> tm2_ref_ ;

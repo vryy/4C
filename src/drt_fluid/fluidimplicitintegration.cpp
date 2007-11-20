@@ -1626,7 +1626,7 @@ RefCountPtr<Epetra_Vector> FluidImplicitTimeInt::CalcStresses()
 FluidImplicitTimeInt::~FluidImplicitTimeInt()
 {
   return;
-}// FluidImplicitTimeInt::~FluidImplicitTimeInt::
+}
 
 
 
@@ -1734,9 +1734,9 @@ void FluidImplicitTimeInt::LiftDrag()
       for( std::set<DRT::Node*>::iterator actnode = nodes.begin(); actnode != nodes.end(); ++actnode)
       {
         const double* x = (*actnode)->X(); // pointer to nodal coordinates
-	std::vector<double> distances (3);
+        std::vector<double> distances (3);
         const Epetra_BlockMap& rowdofmap = trueresidual_->Map();
-	std::vector<int> dof = discret_->Dof(*actnode);
+        std::vector<int> dof = discret_->Dof(*actnode);
         double fx,fy,fz;
 
         for (unsigned j=0; j<3; ++j)
@@ -1766,7 +1766,7 @@ void FluidImplicitTimeInt::LiftDrag()
         if (ndim == 2)
 	{
 	  cout << "     " << label << "         ";
-          cout << std::scientific << resultvec[0] << "    ";
+      cout << std::scientific << resultvec[0] << "    ";
 	  cout << std::scientific << resultvec[1] << "    ";
 	  cout << std::scientific << resultvec[5];
 	  cout << "\n";
@@ -1774,7 +1774,7 @@ void FluidImplicitTimeInt::LiftDrag()
         if (ndim == 3)
 	{
 	  cout << "     " << label << "         ";
-          cout << std::scientific << resultvec[0] << "    ";
+      cout << std::scientific << resultvec[0] << "    ";
 	  cout << std::scientific << resultvec[1] << "    ";
 	  cout << std::scientific << resultvec[2] << "    ";
 	  cout << std::scientific << resultvec[3] << "    ";

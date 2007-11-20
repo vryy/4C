@@ -69,7 +69,12 @@ namespace Elements
   {
   public:
     /// Constructor with number of nodes
-    explicit XFluid3Impl(int iel);
+    explicit XFluid3Impl(
+    		int iel,
+    		int numparamvelx,
+    		int numparamvely,
+    		int numparamvelz,
+    		int numparampres);
 
     /// calculating element matrix and rhs
     /*!
@@ -90,22 +95,25 @@ namespace Elements
       \param timefac  (i) time discretization factor
       \param is_stationary (i) stationary flag
      */
-    void Sysmat(XFluid3* ele,
-                const blitz::Array<double,2>&     evelnp,
-                const blitz::Array<double,1>&     eprenp,
-                const blitz::Array<double,2>&     evhist,
-                const blitz::Array<double,2>&     edispnp,
-                const blitz::Array<double,2>&     egridv,
-                blitz::Array<double,2>&           estif,
-                blitz::Array<double,1>&           eforce,
-                struct _MATERIAL*       material,
-                double                  time,
-                double                  timefac,
-                bool                    newton ,
-                bool                    pstab  ,
-                bool                    supg   ,
-                bool                    vstab  ,
-                bool                    cstab);
+    void Sysmat(
+    		XFluid3* ele,
+    		const XFEM::DomainIntCells&       domainIntCells,   /// integration cells used for exact integration of discontinuities
+            const XFEM::BoundaryIntCells&     boundaryIntCells, /// facets used for integrating the surface forces
+            const blitz::Array<double,2>&     evelnp,
+			const blitz::Array<double,1>&     eprenp,
+			const blitz::Array<double,2>&     evhist,
+			const blitz::Array<double,2>&     edispnp,
+            const blitz::Array<double,2>&     egridv,
+            blitz::Array<double,2>&           estif,
+            blitz::Array<double,1>&           eforce,
+            struct _MATERIAL*       material,
+            double                  time,
+            double                  timefac,
+            bool                    newton ,
+            bool                    pstab  ,
+            bool                    supg   ,
+            bool                    vstab  ,
+            bool                    cstab);
 
   private:
 
