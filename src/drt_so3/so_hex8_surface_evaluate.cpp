@@ -145,6 +145,7 @@ int DRT::Elements::Soh8Surface::EvaluateNeumann(ParameterList&           params,
     }
 
   }
+
 //    cout << elevec1 << endl;
   return 0;
 }
@@ -227,6 +228,7 @@ int DRT::Elements::Soh8Surface::Evaluate(ParameterList& params,
 	if (action == "none") dserror("No action supplied");
 	else if (action=="calc_struct_constrvol")    act = Soh8Surface::calc_struct_constrvol;
 	else if (action=="calc_struct_volconstrstiff") act= Soh8Surface::calc_struct_volconstrstiff;
+        else if (action=="calc_init_vol") act= Soh8Surface::calc_init_vol;
 	else dserror("Unknown type of action for Soh8Surface");
 	//create communicator
 	const Epetra_Comm& Comm = discretization.Comm();
@@ -335,6 +337,69 @@ int DRT::Elements::Soh8Surface::Evaluate(ParameterList& params,
 	  	}
 
 	  	break;
+                case calc_init_vol:
+                {
+                  // the reference volume of the RVE (including inner
+                  // holes) is calculated by evaluating the following
+                  // surface integral:
+                  // V = 1/3*int(div(X))dV = 1/3*int(N*X)dA
+                  // with X being the reference coordinates and N the
+                  // normal vector of the surface element (exploiting the
+                  // fact that div(X)=1.0)
+
+                  double V = params.get<double>("V0", 0.0);
+                  double dV = 0.0;
+                  const int numnod = 4;
+                  Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOH8);  // material coord. of element
+                  Epetra_SerialDenseMatrix xscurr(numnod,NUMDIM_SOH8);  // material coord. of element
+                  for (int i=0; i<numnod; ++i){
+                    xsrefe(i,0) = Nodes()[i]->X()[0];
+                    xsrefe(i,1) = Nodes()[i]->X()[1];
+                    xsrefe(i,2) = Nodes()[i]->X()[2];
+                  }
+                  const int ngp = 4;
+
+                  // gauss parameters
+                  const double gpweight = 1.0;
+                  const double gploc    = 1.0/sqrt(3.0);
+                  Epetra_SerialDenseMatrix gpcoord (ngp,2);
+                  gpcoord(0,0) = - gploc;
+                  gpcoord(0,1) = - gploc;
+                  gpcoord(1,0) =   gploc;
+                  gpcoord(1,1) = - gploc;
+                  gpcoord(2,0) = - gploc;
+                  gpcoord(2,1) =   gploc;
+                  gpcoord(3,0) =   gploc;
+                  gpcoord(3,1) =   gploc;
+
+                  for (int gpid = 0; gpid < 4; ++gpid) {    // loop over intergration points
+                    vector<double> funct(ngp);              // 4 shape function values
+                    double drs;                             // surface area factor
+                    vector<double> normal(NUMDIM_SOH8);
+                    double temp = 0.0;
+                    vector<double> X(NUMDIM_SOH8);
+
+                    soh8_surface_integ(&funct,&drs,&normal,&xsrefe,gpcoord(gpid,0),gpcoord(gpid,1));
+
+                    X[0] = funct[0]*xsrefe(0,0) + funct[1]*xsrefe(1,0) + funct[2]*xsrefe(2,0) + funct[3]*xsrefe(3,0);
+                    X[1] = funct[0]*xsrefe(0,1) + funct[1]*xsrefe(1,1) + funct[2]*xsrefe(2,1) + funct[3]*xsrefe(3,1);
+                    X[2] = funct[0]*xsrefe(0,2) + funct[1]*xsrefe(1,2) + funct[2]*xsrefe(2,2) + funct[3]*xsrefe(3,2);
+
+                    for (int i=0;i<3;++i){
+                      temp += normal[i]*normal[i];
+                    }
+                    double absnorm = sqrt(temp);
+                    for (int i=0;i<3;++i){
+                      normal[i] /= absnorm;
+                    }
+                    double fac = gpweight * drs;
+                    for (int i=0;i<3;++i){
+                      dV += 1/3.0*fac*normal[i]*X[i];
+                    }
+                  }
+                  params.set("V0", V+dV);
+                }
+                break;
 	  	default:
 	  		dserror("Unimplemented type of action for Soh8Surface");
 

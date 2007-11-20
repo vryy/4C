@@ -156,8 +156,44 @@ solver_(solver)
   ParameterList p;
   // action for elements
   p.set("action","calc_init_vol");
-  discret_->Evaluate(p,null,null,null,null,null);
+  p.set("V0", 0.0);
+//   discret_->Evaluate(p,null,null,null,null,null);
+  discret_->EvaluateCondition(p, null, null, null, "MicroBoundary");
   V0_ = p.get<double>("V0", -1.0);
+  if (V0_ == -1.0)
+    dserror("Calculation of initial volume failed");
+
+  // ------------------------- Calculate initial density of microstructure
+  // the macroscopic density has to be averaged over the entire
+  // microstructural reference volume
+
+  // create the parameters for the discretization
+  ParameterList par;
+  // action for elements
+  par.set("action","calc_homog_stressdens");
+  // choose what to assemble
+  par.set("assemble matrix 1",false);
+  par.set("assemble matrix 2",false);
+  par.set("assemble vector 1",false);
+  par.set("assemble vector 2",false);
+  par.set("assemble vector 3",false);
+  // set density to zero
+  par.set("homogdens", 0.0);
+  // set flag that only density has to be calculated
+  par.set("onlydens", true);
+
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("residual displacement",zeros_);
+
+  discret_->SetState("displacement",dism_);
+
+  discret_->Evaluate(par,null,null,null,null,null);
+  discret_->ClearState();
+
+  density_ = 1/V0_*par.get<double>("homogdens", 0.0);
+  if (density_ == 0.0)
+    dserror("Density determined from homogenization procedure equals zero!");
 
   return;
 } // MicroStatic::MicroStatic
@@ -578,11 +614,10 @@ void MicroStatic::SetOldState(RefCountPtr<Epetra_Vector> disp,
                             // to zero
 }
 
-void MicroStatic::SetTime(double timen, int istep, double alphaf)
+void MicroStatic::SetTime(double timen, int istep)
 {
   params_->set<double>("total time", timen);
   params_->set<int>   ("step", istep);
-  params_->set<double>("alphaf", alphaf);
 }
 
 RefCountPtr<Epetra_Vector> MicroStatic::ReturnNewDisp() { return rcp(new Epetra_Vector(*dis_)); }
@@ -709,7 +744,7 @@ void MicroStatic::Homogenization(Epetra_SerialDenseVector* stress,
   p.set("assemble vector 2",false);
   p.set("assemble vector 3",false);
   // set stresses and densities to zero
-  p.set("homogdens", 0.0);
+//   p.set("homogdens", 0.0);
 
   p.set("homogP11", 0.0);
   p.set("homogP12", 0.0);
@@ -738,9 +773,13 @@ void MicroStatic::Homogenization(Epetra_SerialDenseVector* stress,
   discret_->Evaluate(p,null,null,null,null,null);
   discret_->ClearState();
 
-  *density = 1/V0_*p.get<double>("homogdens", 0.0);
-  if (*density == 0.0)
-    dserror("Density determined from homogenization procedure equals zero!");
+//   *density = 1/V0_*p.get<double>("homogdens", 0.0);
+//   if (*density == 0.0)
+//     dserror("Density determined from homogenization procedure
+//     equals zero!");
+
+  // homogenized density was already determined in the constructor
+  *density = density_;
 
   Epetra_SerialDenseMatrix P(3, 3);
   P(0, 0) = 1/V0_*p.get<double>("homogP11", 0.0);
@@ -1089,46 +1128,14 @@ void MicroStatic::StaticHomogenization(Epetra_SerialDenseVector* stress,
 
   MicroStatic::calc_cmat(Kpp, F_inv, *stress, cmat, defgrd);
 
-//   cout << "Kpp:\n" << Kpp << endl;
-//   cout << "F:\n" << *defgrd << "cmat homogenized:\n" << *cmat << "\nstresses homogenized:\n" << *stress << "\n";
-
   // after having all homogenization stuff done, we now really don't need stiff_ anymore
 
   stiff_ = null;
 
-  // the macroscopic density has to be averaged over the entire
-  // microstructural reference volume
-
-  // create the parameters for the discretization
-  ParameterList p;
-  // action for elements
-  p.set("action","calc_homog_stressdens");
-  // choose what to assemble
-  p.set("assemble matrix 1",false);
-  p.set("assemble matrix 2",false);
-  p.set("assemble vector 1",false);
-  p.set("assemble vector 2",false);
-  p.set("assemble vector 3",false);
-  // set density to zero
-  p.set("homogdens", 0.0);
-  // set flag that only density has to be calculated
-  p.set("onlydens", true);
-
-  // set vector values needed by elements
-  discret_->ClearState();
-  discret_->SetState("residual displacement",zeros_);
-
-  discret_->SetState("displacement",dism_);
-
-  discret_->Evaluate(p,null,null,null,null,null);
-  discret_->ClearState();
-
-  *density = 1/V0_*p.get<double>("homogdens", 0.0);
-  if (*density == 0.0)
-    dserror("Density determined from homogenization procedure equals zero!");
+  // homogenized density was already determined in the constructor
+  *density = density_;
 
   cout << "cmat:\n" << *cmat << "\nstress:\n" << *stress << "\n";
-//   cout << "density: " << *density << "\n";
 }
 
 

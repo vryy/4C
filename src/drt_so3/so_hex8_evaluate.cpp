@@ -499,7 +499,7 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     const int ele_ID = Id();
     soh8_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp, ele_ID, time);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
-    
+
 //    // debugging of EAS with hyperpoly
 //    Epetra_SerialDenseVector DE(glstrain);
 //    DE.Scale(-1.0);
@@ -509,6 +509,8 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
 //    DS += stress_disp;
 //    //cout << endl << "Delta E: " << DE;
 //    //cout << endl << "Delta S: " << DS;
+
+//     cout << "F:\n" << defgrd << "S:\n" << stress << "\n";
 
     // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
     (*force).Multiply('T','N',detJ * (*weights)(gp),bop,stress,1.0);
@@ -690,6 +692,8 @@ void DRT::Elements::So_hex8::soh8_shapederiv(
 void DRT::Elements::So_hex8::soh8_initvol(ParameterList& params)
 {
 
+// this first approach only works for REV without any holes!
+
   double dV = 0.;
 
 /* ============================================================================*
@@ -763,11 +767,11 @@ void DRT::Elements::So_hex8::soh8_homog(ParameterList&  params,
                                         const double    time,
                                         vector<double>& residual)
 {
-
-//   Epetra_SerialDenseVector homogstr(NUMSTR_SOH8);   // all values are automatically
-                                                    // initialized to 0
+  // check whether we only have to calculate the initial density
+  bool onlydens = params.get<bool>("onlydens", false);
 
   double homogdens = 0.;
+
   double P11 = 0.;
   double P12 = 0.;
   double P13 = 0.;
@@ -867,49 +871,6 @@ void DRT::Elements::So_hex8::soh8_homog(ParameterList&  params,
     glstrain(4) = cauchygreen(1,2);
     glstrain(5) = cauchygreen(2,0);
 
-    /* non-linear B-operator (may so be called, meaning
-    ** of B-operator is not so sharp in the non-linear realm) *
-    ** B = F . Bl *
-    **
-    **      [ ... | F_11*N_{,1}^k  F_21*N_{,1}^k  F_31*N_{,1}^k | ... ]
-    **      [ ... | F_12*N_{,2}^k  F_22*N_{,2}^k  F_32*N_{,2}^k | ... ]
-    **      [ ... | F_13*N_{,3}^k  F_23*N_{,3}^k  F_33*N_{,3}^k | ... ]
-    ** B =  [ ~~~   ~~~~~~~~~~~~~  ~~~~~~~~~~~~~  ~~~~~~~~~~~~~   ~~~ ]
-    **      [       F_11*N_{,2}^k+F_12*N_{,1}^k                       ]
-    **      [ ... |          F_21*N_{,2}^k+F_22*N_{,1}^k        | ... ]
-    **      [                       F_31*N_{,2}^k+F_32*N_{,1}^k       ]
-    **      [                                                         ]
-    **      [       F_12*N_{,3}^k+F_13*N_{,2}^k                       ]
-    **      [ ... |          F_22*N_{,3}^k+F_23*N_{,2}^k        | ... ]
-    **      [                       F_32*N_{,3}^k+F_33*N_{,2}^k       ]
-    **      [                                                         ]
-    **      [       F_13*N_{,1}^k+F_11*N_{,3}^k                       ]
-    **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
-    **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
-    */
-    Epetra_SerialDenseMatrix bop(NUMSTR_SOH8,NUMDOF_SOH8);
-    for (int i=0; i<NUMNOD_SOH8; ++i) {
-      bop(0,NODDOF_SOH8*i+0) = defgrd(0,0)*N_XYZ(0,i);
-      bop(0,NODDOF_SOH8*i+1) = defgrd(1,0)*N_XYZ(0,i);
-      bop(0,NODDOF_SOH8*i+2) = defgrd(2,0)*N_XYZ(0,i);
-      bop(1,NODDOF_SOH8*i+0) = defgrd(0,1)*N_XYZ(1,i);
-      bop(1,NODDOF_SOH8*i+1) = defgrd(1,1)*N_XYZ(1,i);
-      bop(1,NODDOF_SOH8*i+2) = defgrd(2,1)*N_XYZ(1,i);
-      bop(2,NODDOF_SOH8*i+0) = defgrd(0,2)*N_XYZ(2,i);
-      bop(2,NODDOF_SOH8*i+1) = defgrd(1,2)*N_XYZ(2,i);
-      bop(2,NODDOF_SOH8*i+2) = defgrd(2,2)*N_XYZ(2,i);
-      /* ~~~ */
-      bop(3,NODDOF_SOH8*i+0) = defgrd(0,0)*N_XYZ(1,i) + defgrd(0,1)*N_XYZ(0,i);
-      bop(3,NODDOF_SOH8*i+1) = defgrd(1,0)*N_XYZ(1,i) + defgrd(1,1)*N_XYZ(0,i);
-      bop(3,NODDOF_SOH8*i+2) = defgrd(2,0)*N_XYZ(1,i) + defgrd(2,1)*N_XYZ(0,i);
-      bop(4,NODDOF_SOH8*i+0) = defgrd(0,1)*N_XYZ(2,i) + defgrd(0,2)*N_XYZ(1,i);
-      bop(4,NODDOF_SOH8*i+1) = defgrd(1,1)*N_XYZ(2,i) + defgrd(1,2)*N_XYZ(1,i);
-      bop(4,NODDOF_SOH8*i+2) = defgrd(2,1)*N_XYZ(2,i) + defgrd(2,2)*N_XYZ(1,i);
-      bop(5,NODDOF_SOH8*i+0) = defgrd(0,2)*N_XYZ(0,i) + defgrd(0,0)*N_XYZ(2,i);
-      bop(5,NODDOF_SOH8*i+1) = defgrd(1,2)*N_XYZ(0,i) + defgrd(1,0)*N_XYZ(2,i);
-      bop(5,NODDOF_SOH8*i+2) = defgrd(2,2)*N_XYZ(0,i) + defgrd(2,0)*N_XYZ(2,i);
-    }
-
     /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     ** Here all possible material laws need to be incorporated,
     ** the stress vector, a C-matrix, and a density must be retrieved,
@@ -935,30 +896,32 @@ void DRT::Elements::So_hex8::soh8_homog(ParameterList&  params,
     // their microstructural counterparts -> a corresponding choice
     // has to be made)
 
-    Epetra_SerialDenseMatrix S(3,3);
-    S(0,0) = stress(0);
-    S(0,1) = stress(3);
-    S(0,2) = stress(5);
-    S(1,0) = S(0,1);
-    S(1,1) = stress(1);
-    S(1,2) = stress(4);
-    S(2,0) = S(0,2);
-    S(2,1) = S(1,2);
-    S(2,2) = stress(2);
+    if (!onlydens) {
+      Epetra_SerialDenseMatrix S(3,3);
+      S(0,0) = stress(0);
+      S(0,1) = stress(3);
+      S(0,2) = stress(5);
+      S(1,0) = S(0,1);
+      S(1,1) = stress(1);
+      S(1,2) = stress(4);
+      S(2,0) = S(0,2);
+      S(2,1) = S(1,2);
+      S(2,2) = stress(2);
 
-    Epetra_SerialDenseMatrix P(3,3);
-    P.Multiply('N', 'N', 1.0, defgrd, S, 0.);
+      Epetra_SerialDenseMatrix P(3,3);
+      P.Multiply('N', 'N', 1.0, defgrd, S, 0.);
 
-    P.Scale(integrationfactor);
-    P11 += P(0,0);
-    P12 += P(0,1);
-    P13 += P(0,2);
-    P21 += P(1,0);
-    P22 += P(1,1);
-    P23 += P(1,2);
-    P31 += P(2,0);
-    P32 += P(2,1);
-    P33 += P(2,2);
+      P.Scale(integrationfactor);
+      P11 += P(0,0);
+      P12 += P(0,1);
+      P13 += P(0,2);
+      P21 += P(1,0);
+      P22 += P(1,1);
+      P23 += P(1,2);
+      P31 += P(2,0);
+      P32 += P(2,1);
+      P33 += P(2,2);
+    }
 
    /* =========================================================================*/
   }/* ==================================================== end of Loop over GP */
@@ -967,24 +930,26 @@ void DRT::Elements::So_hex8::soh8_homog(ParameterList&  params,
   double homogdensity = params.get<double>("homogdens", 0.0);
   params.set("homogdens", homogdensity+homogdens);
 
-  double homogP11 = params.get<double>("homogP11", 0.0);
-  params.set("homogP11", P11+homogP11);
-  double homogP12 = params.get<double>("homogP12", 0.0);
-  params.set("homogP12", P12+homogP12);
-  double homogP13 = params.get<double>("homogP13", 0.0);
-  params.set("homogP13", P13+homogP13);
-  double homogP21 = params.get<double>("homogP21", 0.0);
-  params.set("homogP21", P21+homogP21);
-  double homogP22 = params.get<double>("homogP22", 0.0);
-  params.set("homogP22", P22+homogP22);
-  double homogP23 = params.get<double>("homogP23", 0.0);
-  params.set("homogP23", P23+homogP23);
-  double homogP31 = params.get<double>("homogP31", 0.0);
-  params.set("homogP31", P31+homogP31);
-  double homogP32 = params.get<double>("homogP32", 0.0);
-  params.set("homogP32", P32+homogP32);
-  double homogP33 = params.get<double>("homogP33", 0.0);
-  params.set("homogP33", P33+homogP33);
+  if (!onlydens) {
+    double homogP11 = params.get<double>("homogP11", 0.0);
+    params.set("homogP11", P11+homogP11);
+    double homogP12 = params.get<double>("homogP12", 0.0);
+    params.set("homogP12", P12+homogP12);
+    double homogP13 = params.get<double>("homogP13", 0.0);
+    params.set("homogP13", P13+homogP13);
+    double homogP21 = params.get<double>("homogP21", 0.0);
+    params.set("homogP21", P21+homogP21);
+    double homogP22 = params.get<double>("homogP22", 0.0);
+    params.set("homogP22", P22+homogP22);
+    double homogP23 = params.get<double>("homogP23", 0.0);
+    params.set("homogP23", P23+homogP23);
+    double homogP31 = params.get<double>("homogP31", 0.0);
+    params.set("homogP31", P31+homogP31);
+    double homogP32 = params.get<double>("homogP32", 0.0);
+    params.set("homogP32", P32+homogP32);
+    double homogP33 = params.get<double>("homogP33", 0.0);
+    params.set("homogP33", P33+homogP33);
+  }
 
   return;
 }

@@ -411,8 +411,8 @@ protected:
                   vector<double>& residual);
 
   bool soh8_checkRewinding();
-  
-  vector<double> getthicknessvector() const {dserror("not implemented"); return vector<double>(3);};  
+
+  vector<double> getthicknessvector() const {dserror("not implemented"); return vector<double>(3);};
 
 
 }; // class So_hex8
@@ -699,18 +699,19 @@ public:
                          Epetra_SerialDenseVector& elevector2,
                          Epetra_SerialDenseVector& elevector3);
   //@}
-  	
-  	
+
+
 protected:
 	  //! action parameters recognized by so_hex8_surface
 	  enum ActionType
 	  {
 	    none,
 	    calc_struct_constrvol,
-	    calc_struct_volconstrstiff
+	    calc_struct_volconstrstiff,
+            calc_init_vol
 	  };
-	  
-	  
+
+
 private:
 
   // don't want = operator
@@ -721,16 +722,16 @@ private:
   //! The local surface number of this surface w.r.t to the parent_ element
   int                    lsurface_;
 
-  
+
   // Submethod to compute the enclosed volume for vlume constraint boundary condition
   double ComputeConstrVols(Epetra_SerialDenseMatrix xscurr);
-  
+
   void ComputeVolconstrStiff(Epetra_SerialDenseMatrix xscurr,
 		  Epetra_SerialDenseMatrix& elematrix);
-  
+
   void ComputeVolconstrVolDeriv(Epetra_SerialDenseMatrix xscurr,
 		  Epetra_SerialDenseVector& elevector1);
-  
+
   void soh8_surface_integ(
       vector<double>* funct,                 // (o) shape functions
       double* sqrtdetg,                      // (o) pointer to sqrt of det(g)

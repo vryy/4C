@@ -112,7 +112,7 @@ public:
   void SetOldState(RefCountPtr<Epetra_Vector> disp,
                    RefCountPtr<Epetra_Vector> disi);
 
-  void SetTime(double timen, int istep, double alphaf);
+  void SetTime(double timen, int istep);
 
   RefCountPtr<Epetra_Vector> ReturnNewDisp();
 
@@ -170,6 +170,7 @@ protected:
   RefCountPtr<Epetra_Vector>    fresm_dirich_;
 
   double                         V0_;  // initial volume of RVE
+  double                    density_;  // initial density of RVE
 
   int                          ndof_;  // number of dofs overall
   int                            np_;  // number of boundary dofs
