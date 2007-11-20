@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file
+\file fluidimplicitintegration.H
 \brief Control routine for fluid time integration. Associated with
        fluidimplicitintegration.cpp
 
@@ -40,13 +40,6 @@ Maintainer: Peter Gamnitzer
 #include <Teuchos_TimeMonitor.hpp>
 
 
-extern "C" /* stuff which is c and is accessed from c++ */
-{
-#include "../headers/standardtypes.h"
-#include "../fluid_full/fluid_prototypes.h"
-}
-
-
 using namespace std;
 using namespace Teuchos;
 
@@ -82,8 +75,6 @@ public:
 
   */
   virtual ~FluidImplicitTimeInt();
-
-
 
 
   /*!
