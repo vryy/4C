@@ -139,8 +139,10 @@ OBJS_DRT_STRUCTURE      = \
                 src/drt_structure/stru_static_drt.o
 #----------------------------------------------------- drt version contact
 OBJS_DRT_CONTACT = \
-                src/drt_contact/contactstrugenalpha.o \
-                src/drt_contact/drt_contact_manager.o \
+                src/drt_contact/contactstrugenalpha.o
+#----------------------------------------------------- drt version contact
+OBJS_DRT_CONTACT_LIB = \
+		src/drt_contact/drt_contact_manager.o \
                 src/drt_contact/drt_contact_interface.o \
                 src/drt_contact/drt_cnode.o \
                 src/drt_contact/drt_celement.o \
