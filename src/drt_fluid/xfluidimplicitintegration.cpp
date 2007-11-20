@@ -1686,7 +1686,7 @@ void XFluidImplicitTimeInt::LiftDrag()
   discret_->GetCondition("LIFTDRAG",ldconds);
 
   // space dimension of the problem
-  int ndim = params_.get<int>("number of velocity degrees of freedom");
+  const int ndim = params_.get<int>("number of velocity degrees of freedom");
 
   // there is an L&D condition if it has a size
   if( ldconds.size() )
@@ -1739,7 +1739,7 @@ void XFluidImplicitTimeInt::LiftDrag()
     for( std::map< const int, std::set<DRT::Node*> >::iterator labelit = ldnodemap.begin();
          labelit != ldnodemap.end(); ++labelit )
     {
-      std::set<DRT::Node*>& nodes = labelit->second; // pointer to nodeset of present label
+      const std::set<DRT::Node*>& nodes = labelit->second; // pointer to nodeset of present label
       const int label = labelit->first;                    // the present label
       std::vector<double> values(6,0.0);             // vector with lift&drag forces
       std::vector<double> resultvec(6,0.0);          // vector with lift&drag forces after communication
@@ -1748,22 +1748,21 @@ void XFluidImplicitTimeInt::LiftDrag()
       const std::vector<double>* centerCoord = ldcoordmap[label];
 
       // loop all nodes within my set
-      for( std::set<DRT::Node*>::iterator actnode = nodes.begin(); actnode != nodes.end(); ++actnode)
+      for( std::set<DRT::Node*>::const_iterator actnode = nodes.begin(); actnode != nodes.end(); ++actnode)
       {
         const double* x = (*actnode)->X(); // pointer to nodal coordinates
         std::vector<double> distances (3);
         const Epetra_BlockMap& rowdofmap = trueresidual_->Map();
-        std::vector<int> dof = discret_->Dof(*actnode);
-        double fx,fy,fz;
+        const std::vector<int> dof = discret_->Dof(*actnode);
 
         for (unsigned j=0; j<3; ++j)
         {
           distances[j]= x[j]-(*centerCoord)[j];
         }
         // get nodal forces
-        fx = (*trueresidual_)[rowdofmap.LID(dof[0])];
-        fy = (*trueresidual_)[rowdofmap.LID(dof[1])];
-        fz = (*trueresidual_)[rowdofmap.LID(dof[2])];
+        const double fx = (*trueresidual_)[rowdofmap.LID(dof[0])];
+        const double fy = (*trueresidual_)[rowdofmap.LID(dof[1])];
+        const double fz = (*trueresidual_)[rowdofmap.LID(dof[2])];
         values[0] += fx;
         values[1] += fy;
         values[2] += fz;
