@@ -299,7 +299,6 @@ protected:
     calc_struct_eleload,
     calc_struct_fsiload,
     calc_struct_update_istep,
-    calc_init_vol,
     calc_homog_stressdens
   };
 
