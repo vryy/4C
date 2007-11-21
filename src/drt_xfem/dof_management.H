@@ -105,6 +105,7 @@ public:
 
     inline const std::set<EnrField> getDofs(const int gid) const
     {
+        //TODO: return proper default set given as second argument
     	map<int, const std::set<EnrField> >::const_iterator tmp = nodalDofMap_.find(gid);
     	if (tmp == nodalDofMap_.end()){
     	    //dserror("global node id not found!");
@@ -115,13 +116,18 @@ public:
         return tmp->second;
     };
     
-    inline int getNumDof(const int gid) const
+    /// function that returns node specific number of dofs or the given default number
+    inline int getNumDof(
+            const int gid,            /// global node id
+            const int defaultnumdof   /// default number of degrees of freedom to be returned
+            ) const
     {
     	map<int,int>::const_iterator tmp = nodalNumDofMap_.find(gid);
     	if (tmp == nodalNumDofMap_.end()){
     		//dserror("global node id not found!");
-    		cout << "warning: global node id not found! Could be due to not properly initialized ElementDofManager";
-    		return 0;
+    		// "warning: global node id not found! Could be due to not properly initialized ElementDofManager"
+    	    cout << "EleDM warning! ";
+    		return defaultnumdof;
     	}
         return tmp->second;
     };
