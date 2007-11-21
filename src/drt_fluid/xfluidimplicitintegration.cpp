@@ -30,15 +30,22 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/gmsh.H"
 
 
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     gammi 04/07|
  *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 		RefCountPtr<DRT::Discretization> fluiddis,
 		RefCountPtr<DRT::Discretization> cutterdis,
 		LINALG::Solver&       solver,
 		ParameterList&        params,
 		IO::DiscretizationWriter& output,
+		IO::DiscretizationWriter& solidoutput,
 		const bool alefluid) :
   // call constructor for "nontrivial" objects
   discret_(fluiddis),
@@ -46,6 +53,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   solver_ (solver),
   params_ (params),
   output_ (output),
+  solidoutput_ (solidoutput),
   alefluid_(alefluid),
   time_(0.0),
   step_(0),
@@ -55,7 +63,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   upres_(params.get("write solution every", -1)),
   writestresses_(params.get<int>("write stresses", 0))
 {
-  cout << "Ich bin der Xfluid time integrator" << endl;
+  cout << endl << "Ich bin der Xfluid time integrator" << endl;
 
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
@@ -73,7 +81,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   RCP<XFEM::DofManager> initialdofmanager = rcp(new XFEM::DofManager(ih));
   
   // debug: print enrichments to screen
-  cout << initialdofmanager->toString() << endl;
+  //cout << initialdofmanager->toString() << endl;
   
   // tell elements about the dofs and the integration
   {
@@ -97,6 +105,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   //                 local <-> global dof numbering
   // -------------------------------------------------------------------
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* soliddofrowmap = cutterdiscret_->DofRowMap();
   
   ComputeSingleFieldRowMaps(initialdofmanager);
 
@@ -104,6 +113,13 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // create empty system matrix --- stiffness and mass are assembled in
   // one system matrix!
   // -------------------------------------------------------------------
+
+  // This is a first estimate for the number of non zeros in a row of
+  // the matrix. Assuming a structured 3d-fluid mesh we have 27 adjacent
+  // nodes with 4 dofs each. (27*4=108)
+  // We do not need the exact number here, just for performance reasons
+  // a 'good' estimate
+  maxentriesperrow_ = 108;
 
   sysmat_ = null;
 
@@ -159,7 +175,9 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // Nonlinear iteration increment vector
   incvel_       = LINALG::CreateVector(*dofrowmap,true);
 
-
+  // solid displacement
+  soliddispnp_       = LINALG::CreateVector(*soliddofrowmap,true);
+  
   // -------------------------------------------------------------------
   // create timers and time monitor
   // -------------------------------------------------------------------
@@ -173,7 +191,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 
   return;
 
-} // XFluidImplicitTimeInt::XFluidImplicitTimeInt
+} // FluidImplicitTimeInt::FluidImplicitTimeInt
 
 
 // -------------------------------------------------------------------
@@ -312,7 +330,7 @@ void XFluidImplicitTimeInt::Integrate()
   TimeMonitor::summarize();
 
   return;
-} // XFluidImplicitTimeInt::Integrate
+} // FluidImplicitTimeInt::Integrate
 
 
 
@@ -404,7 +422,7 @@ void XFluidImplicitTimeInt::TimeLoop()
   tm2_ref_ = null;
 
   return;
-} // XFluidImplicitTimeInt::TimeIntegrateFromTo
+} // FluidImplicitTimeInt::TimeIntegrateFromTo
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -468,7 +486,7 @@ void XFluidImplicitTimeInt::ExplicitPredictor()
   velnp_->Update( fact2,*velnm_,1.0);
 
   return;
-} // XFluidImplicitTimeInt::ExplicitPredictor
+} // FluidImplicitTimeInt::ExplicitPredictor
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -600,7 +618,7 @@ void XFluidImplicitTimeInt::PrepareTimeStep()
 void XFluidImplicitTimeInt::NonlinearSolve()
 {
   // start time measurement for nonlinear iteration
-  tm_nlniteration_ = rcp(new TimeMonitor(*timenlnloop_));
+  tm6_ref_ = rcp(new TimeMonitor(*timenlnloop_));
 
   const Epetra_Map* dofrowmap       = discret_->DofRowMap();
 
@@ -611,6 +629,13 @@ void XFluidImplicitTimeInt::NonlinearSolve()
   // ------------------------------- stop nonlinear iteration when both
   //                                 increment-norms are below this bound
   const double  ittol     =params_.get<double>("tolerance for nonlin iter");
+
+  int               itnum         = 0;
+  bool              stopnonliniter = false;
+
+  double            dtsolve = 0;
+  double            dtele   = 0;
+  double            tcpu   ;
 
   // compute Intersection
   RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(discret_,cutterdiscret_));
@@ -634,31 +659,39 @@ void XFluidImplicitTimeInt::NonlinearSolve()
   
   if (discret_->Comm().MyPID() == 0)
   {
-    // debug: print enrichments to screen
-    //cout << dofmanager->toString() << endl;
-    
     printf("+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+\n");
     printf("|- step/max -|- tol      [norm] -|-- vel-res ---|-- pre-res ---|-- fullres ---|-- vel-inc ---|-- pre-inc ---|-- fullinc ---|\n");
   }
 
-  
-  int               itnum         = 0;
-  bool              stopnonliniter = false;
-  
   while (stopnonliniter==false)
   {
     itnum++;
 
+    double density = 1;
+
     // -------------------------------------------------------------------
     // call elements to calculate system matrix
     // -------------------------------------------------------------------
-      tm_elementcall_ = rcp(new TimeMonitor(*timeeleloop_));
-      const double tcpu_ele = ds_cputime();
+    {
+      // start time measurement for element call
+      tm3_ref_ = rcp(new TimeMonitor(*timeeleloop_));
+      // get cpu time
+      tcpu=ds_cputime();
 
-      sysmat_ = LINALG::CreateMatrix(*dofrowmap,108);
-
+#if 1
+      sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+#else
+      // zero out the stiffness matrix
+      // We reuse the sparse mask and assemble into a filled matrix
+      // after the first step. This is way faster.
+      if (sysmat_==null)
+        sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+      else
+        sysmat_->PutScalar(0.0);
+#endif
       // zero out residual
       residual_->PutScalar(0.0);
+      // add Neumann loads
       residual_->Update(1.0,*neumann_loads_,0.0);
 
       // create the parameters for the discretization
@@ -673,6 +706,15 @@ void XFluidImplicitTimeInt::NonlinearSolve()
       // other parameters that might be needed by the elements
       eleparams.set("total time",time_);
       eleparams.set("thsl",theta_*dta_);
+      eleparams.set("include reactive terms for linearisation",newton_);
+#if 0
+      // this parameter is obsolete due to the usage of different actions
+      // g.bau 11/07
+      if (timealgo_==timeint_stationary)
+          eleparams.set("using stationary formulation",true);
+      else
+          eleparams.set("using stationary formulation",false);
+#endif
       
       // set vector values needed by elements
       discret_->ClearState();
@@ -692,14 +734,16 @@ void XFluidImplicitTimeInt::NonlinearSolve()
 
       discret_->ClearState();
 
-      const double density = eleparams.get("density", 0.0);
+      density = eleparams.get("density", 0.0);
 
       // finalize the system matrix
       LINALG::Complete(*sysmat_);
+      maxentriesperrow_ = sysmat_->MaxNumEntries();
 
-    // end time measurement for element call
-    tm_elementcall_=null;
-    const double dtele=ds_cputime() - tcpu_ele;
+      // end time measurement for element call
+      tm3_ref_=null;
+      dtele=ds_cputime() - tcpu;
+    }
 
     // How to extract the density from the fluid material?
     trueresidual_->Update(density/dta_/theta_,*residual_,0.0);
@@ -789,36 +833,56 @@ void XFluidImplicitTimeInt::NonlinearSolve()
     {
       fullnorm_L2 = 1.0;
     }
-    
+
+    //-------------------------------------------------- output to screen
+    /* special case of very first iteration step:
+        - solution increment is not yet available 
+        - convergence check is not required (we solve at least once!)    */
+    if (itnum == 1)
+    {
+      if (discret_->Comm().MyPID() == 0)
+      {
+        printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   |      --      |      --      |",
+               itnum,itemax,ittol,vresnorm,presnorm,fullresnorm);
+        printf(" (      --     ,te=%10.3E)\n",dtele);
+      }
+    }
+    /* ordinary case later iteration steps: 
+        - solution increment can be printed
+        - convergence check should be done*/
+    else
+    {
     // this is the convergence check
     // We always require at least one solve. Otherwise the
     // perturbation at the FSI interface might get by unnoticed.
-    if (itnum > 1)
-    {
-      if (vresnorm <= ittol and 
-    		  presnorm <= ittol and
-    		  incvelnorm_L2/velnorm_L2 <= ittol and 
-    		  incprenorm_L2/prenorm_L2 <= ittol and
-    		  incfullnorm_L2/fullnorm_L2 <= ittol)
+      if (vresnorm <= ittol and presnorm <= ittol and
+          incvelnorm_L2/velnorm_L2 <= ittol and incprenorm_L2/prenorm_L2 <= ittol)
       {
         stopnonliniter=true;
         if (discret_->Comm().MyPID() == 0)
         {
           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
                  itnum,itemax,ittol,vresnorm,presnorm,fullresnorm,
-                 incvelnorm_L2/velnorm_L2,
-                 incprenorm_L2/prenorm_L2,
-                 incfullnorm_L2/fullnorm_L2);
-          printf(" (te=%10.3E)\n",dtele);
+                 incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2,incfullnorm_L2/fullnorm_L2);
+          printf(" (ts=%10.3E,te=%10.3E)\n",dtsolve,dtele);
           printf("+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+\n");
         }
         break;
       }
-    }
+      else // if not yet converged
+        if (discret_->Comm().MyPID() == 0)
+        {
+          printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
+                 itnum,itemax,ittol,vresnorm,presnorm,fullresnorm,
+                 incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2,incfullnorm_L2/fullnorm_L2);
+          printf(" (ts=%10.3E,te=%10.3E)\n",dtsolve,dtele);
+        }
+    } 
 
     // warn if itemax is reached without convergence, but proceed to
     // next timestep...
-    if ((itnum == itemax) and (vresnorm > ittol or presnorm > ittol or fullresnorm > ittol or
+    if ((itnum == itemax) and (vresnorm > ittol or presnorm > ittol or
+                             fullresnorm > ittol or
                              incvelnorm_L2/velnorm_L2 > ittol or
                              incprenorm_L2/prenorm_L2 > ittol or
                              incfullnorm_L2/fullnorm_L2 > ittol))
@@ -838,33 +902,28 @@ void XFluidImplicitTimeInt::NonlinearSolve()
     //          boundary conditions
     incvel_->PutScalar(0.0);
     {
-      tm_applydirich_ = rcp(new TimeMonitor(*timeapplydirich_));
+      // start time measurement for application of dirichlet conditions
+      tm4_ref_ = rcp(new TimeMonitor(*timeapplydirich_));
 
       LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,
 				     zeros_,dirichtoggle_);
+
       // end time measurement for application of dirichlet conditions
-      tm_applydirich_=null;
+      tm4_ref_=null;
     }
 
     //-------solve for residual displacements to correct incremental displacements
-    tm_solver_ = rcp(new TimeMonitor(*timesolver_));
-    const double tcpu_solve = ds_cputime();
-
-    solver_.Solve(sysmat_,incvel_,residual_,true,itnum==1);
-
-    tm_solver_=null;
-    const double dtsolve=ds_cputime() - tcpu_solve;
-
-    
-    //-------------------------------------------------- output to screen
-    if (discret_->Comm().MyPID() == 0)
     {
-      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
-             itnum,itemax,ittol,vresnorm,presnorm,fullresnorm,
-             incvelnorm_L2/velnorm_L2,
-             incprenorm_L2/prenorm_L2,
-             incfullnorm_L2/fullnorm_L2);
-      printf(" (te=%10.3E,ts=%10.3E)\n",dtele,dtsolve);
+      // start time measurement for solver call
+      tm5_ref_ = rcp(new TimeMonitor(*timesolver_));
+      // get cpu time
+      tcpu=ds_cputime();
+
+      solver_.Solve(sysmat_,incvel_,residual_,true,itnum==1);
+
+      // end time measurement for application of dirichlet conditions
+      tm5_ref_=null;
+      dtsolve=ds_cputime()-tcpu;
     }
 
     //------------------------------------------------ update (u,p) trial
@@ -875,10 +934,11 @@ void XFluidImplicitTimeInt::NonlinearSolve()
   }
 
   // end time measurement for nonlinear iteration
-  tm_nlniteration_ = null;
+  tm6_ref_ = null;
 
   return;
-} // XFluidImplicitTimeInt::NonlinearSolve
+} // FluidImplicitTimeInt::NonlinearSolve
+
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -889,7 +949,6 @@ void XFluidImplicitTimeInt::NonlinearSolve()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-// TODO: still needed?
 void XFluidImplicitTimeInt::NonlinearConvCheck(
   bool&  stopnonliniter,
   int    itnum         ,
@@ -898,8 +957,8 @@ void XFluidImplicitTimeInt::NonlinearConvCheck(
   )
 {
 
-  RefCountPtr<Epetra_Vector> onlyvel = LINALG::CreateVector(*velrowmap_,true);
-  RefCountPtr<Epetra_Vector> onlypre = LINALG::CreateVector(*prerowmap_,true);
+  RefCountPtr<Epetra_Vector> onlyvel_ = LINALG::CreateVector(*velrowmap_,true);
+  RefCountPtr<Epetra_Vector> onlypre_ = LINALG::CreateVector(*prerowmap_,true);
 
   // ---------------------------------------------- nonlinear iteration
   // maximum number of nonlinear iteration steps
@@ -911,22 +970,22 @@ void XFluidImplicitTimeInt::NonlinearConvCheck(
 
 
   // extract velocity and pressure increments from increment vector
-  LINALG::Export(*incvel_,*onlyvel);
-  LINALG::Export(*incvel_,*onlypre);
+  LINALG::Export(*incvel_,*onlyvel_);
+  LINALG::Export(*incvel_,*onlypre_);
   // calculate L2_Norm of increments
   double incvelnorm_L2;
   double incprenorm_L2;
-  onlyvel->Norm2(&incvelnorm_L2);
-  onlypre->Norm2(&incprenorm_L2);
+  onlyvel_->Norm2(&incvelnorm_L2);
+  onlypre_->Norm2(&incprenorm_L2);
 
   // extract velocity and pressure solutions from solution vector
-  LINALG::Export(*velnp_,*onlyvel);
-  LINALG::Export(*velnp_,*onlypre);
+  LINALG::Export(*velnp_,*onlyvel_);
+  LINALG::Export(*velnp_,*onlypre_);
   // calculate L2_Norm of solution
   double velnorm_L2;
   double prenorm_L2;
-  onlyvel->Norm2(&velnorm_L2);
-  onlypre->Norm2(&prenorm_L2);
+  onlyvel_->Norm2(&velnorm_L2);
+  onlypre_->Norm2(&prenorm_L2);
 
   if (velnorm_L2<EPS5)
   {
@@ -972,7 +1031,7 @@ void XFluidImplicitTimeInt::NonlinearConvCheck(
     }
   }
 
-}// XFluidImplicitTimeInt::NonlinearConvCheck
+}// FluidImplicitTimeInt::NonlinearConvCheck
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1062,13 +1121,17 @@ void XFluidImplicitTimeInt::TimeUpdate()
     dispn_->Update(1.0,*dispnp_,0.0);
 
   return;
-}// XFluidImplicitTimeInt::TimeUpdate
+}// FluidImplicitTimeInt::TimeUpdate
 
-
-
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  | output of solution vector to binio                        gammi 04/07|
  *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void XFluidImplicitTimeInt::Output()
 {
 
@@ -1103,6 +1166,11 @@ void XFluidImplicitTimeInt::Output()
     	output_.WriteVector("veln", veln_);
     	output_.WriteVector("velnm", velnm_);
       }
+      
+      // solid
+      solidoutput_.NewStep    (step_,time_);
+      soliddispnp_->PutScalar(0.0);
+      solidoutput_.WriteVector("soliddispnp", soliddispnp_);
     }
 
   // write restart also when uprestart_ is not a integer multiple of upres_
@@ -1126,6 +1194,10 @@ void XFluidImplicitTimeInt::Output()
     output_.WriteVector("accn", accn_);
     output_.WriteVector("veln", veln_);
     output_.WriteVector("velnm", velnm_);
+    
+    solidoutput_.NewStep    (step_,time_);
+    soliddispnp_->PutScalar(0.0);
+    solidoutput_.WriteVector("soliddispnp", soliddispnp_);
   }
 
 
@@ -1217,12 +1289,18 @@ void XFluidImplicitTimeInt::Output()
      #endif
 
   return;
-} // XFluidImplicitTimeInt::Output
+} // FluidImplicitTimeInt::Output
 
 
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  |                                                             kue 04/07|
  -----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void XFluidImplicitTimeInt::ReadRestart(int step)
 {
   IO::DiscretizationReader reader(discret_,step);
@@ -1584,7 +1662,7 @@ void XFluidImplicitTimeInt::SolveStationaryProblem()
   tm2_ref_ = null;
 
   return;
-} // XFluidImplicitTimeInt::SolveStationaryProblem
+} // FluidImplicitTimeInt::SolveStationaryProblem
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1634,7 +1712,7 @@ RefCountPtr<Epetra_Vector> XFluidImplicitTimeInt::CalcStresses()
 
      return integratedshapefunc;
 
-} // XFluidImplicitTimeInt::CalcStresses()
+} // FluidImplicitTimeInt::CalcStresses()
 
 
 /*----------------------------------------------------------------------*
@@ -1751,10 +1829,10 @@ void XFluidImplicitTimeInt::LiftDrag()
       for( std::set<DRT::Node*>::const_iterator actnode = nodes.begin(); actnode != nodes.end(); ++actnode)
       {
         const double* x = (*actnode)->X(); // pointer to nodal coordinates
-        std::vector<double> distances (3);
         const Epetra_BlockMap& rowdofmap = trueresidual_->Map();
         const std::vector<int> dof = discret_->Dof(*actnode);
 
+        std::vector<double> distances (3);
         for (unsigned j=0; j<3; ++j)
         {
           distances[j]= x[j]-(*centerCoord)[j];

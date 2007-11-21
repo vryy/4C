@@ -53,7 +53,7 @@ extern struct _CURVE  	*curve;
 void xdyn_fluid_drt()
 {
   cout << "Hallo, ich bin ein Fluid-XFEM Problem" << endl;
-  flush(cout);
+
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
@@ -80,9 +80,11 @@ void xdyn_fluid_drt()
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  IO::DiscretizationWriter output(fluiddis);
-  output.WriteMesh(0,0.0);
-
+  IO::DiscretizationWriter fluidoutput(fluiddis);
+  fluidoutput.WriteMesh(0,0.0);
+  IO::DiscretizationWriter solidoutput(soliddis);
+  solidoutput.WriteMesh(0,0.0);
+  
   // -------------------------------------------------------------------
   // set some pointers and variables
   // -------------------------------------------------------------------
@@ -173,7 +175,8 @@ void xdyn_fluid_drt()
     		soliddis,
     		solver,
     		fluidtimeparams,
-    		output,
+    		fluidoutput,
+    		solidoutput,
     		false);
 
     //--------------------------------------------------

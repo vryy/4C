@@ -70,7 +70,8 @@ public:
 		  RefCountPtr<DRT::Discretization> cutterdis,
 		  LINALG::Solver&       solver,
 		  ParameterList&        params,
-		  IO::DiscretizationWriter& output,
+		  IO::DiscretizationWriter& fluidoutput,
+		  IO::DiscretizationWriter& solidoutput,
 		  bool alefluid);
 
 
@@ -198,6 +199,8 @@ protected:
   LINALG::Solver&               solver_;
   ParameterList&                params_;
   IO::DiscretizationWriter&         output_;
+  IO::DiscretizationWriter&         solidoutput_;
+  int                           maxentriesperrow_;
   bool                          alefluid_;
 
   double time_;
@@ -248,7 +251,7 @@ protected:
   RefCountPtr<Epetra_Vector>    accn_;
   RefCountPtr<Epetra_Vector>    accnm_;
 
-  /// solutions at time n+1, n and n-1
+  /// velocities and pressures at time n+1, n and n-1
   RefCountPtr<Epetra_Vector>    velnp_;
   RefCountPtr<Epetra_Vector>    veln_;
   RefCountPtr<Epetra_Vector>    velnm_;
@@ -262,13 +265,18 @@ protected:
   //                or veln, accn (One-Step-Theta)
   RefCountPtr<Epetra_Vector>    hist_;
 
+  // solid displacement (might be moved somewhere else later)
+  RefCountPtr<Epetra_Vector>    soliddispnp_;
 
   // Vectors used for convergence check
   // ----------------------------------
   RefCountPtr<Epetra_Map>       velrowmap_;
   RefCountPtr<Epetra_Map>       prerowmap_;
 
-  
+  RefCountPtr<Epetra_Vector>    onlyvel;
+  RefCountPtr<Epetra_Vector>    onlypre;
+
+
   // time measurement
   // ----------------
   RefCountPtr<Time> timedyntot_     ;
@@ -282,10 +290,10 @@ protected:
   RefCountPtr<TimeMonitor> tm0_ref_ ;
   RefCountPtr<TimeMonitor> tm1_ref_ ;
   RefCountPtr<TimeMonitor> tm2_ref_ ;
-  RefCountPtr<TimeMonitor> tm_elementcall_ ;
-  RefCountPtr<TimeMonitor> tm_applydirich_ ;
-  RefCountPtr<TimeMonitor> tm_solver_ ;
-  RefCountPtr<TimeMonitor> tm_nlniteration_ ;
+  RefCountPtr<TimeMonitor> tm3_ref_ ;
+  RefCountPtr<TimeMonitor> tm4_ref_ ;
+  RefCountPtr<TimeMonitor> tm5_ref_ ;
+  RefCountPtr<TimeMonitor> tm6_ref_ ;
 
 private:
 

@@ -948,6 +948,18 @@ int main(
         writer.WriteFiles();
         break;
     }
+    case prb_fluid_xfem:
+    {
+        string basename = problem.outname();
+        PostField* structfield = problem.get_discretization(0);
+        StructureEnsightWriter structwriter(structfield, basename);
+        structwriter.WriteFiles();
+
+        PostField* fluidfield = problem.get_discretization(1);
+        FluidEnsightWriter fluidwriter(fluidfield, basename);
+        fluidwriter.WriteFiles();
+        break;
+    }
     default:
         dserror("problem type %d not yet supported", problem.Problemtype());
     }
