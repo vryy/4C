@@ -67,7 +67,7 @@ namespace LINALG
   \param source (in) : source vector values are taken from
   \param target (out): target vector values will be inserted in
   */
-  void Export(const Epetra_Vector& source, Epetra_Vector& target);
+  void Export(const Epetra_MultiVector& source, Epetra_MultiVector& target);
   
   /*!
   \brief Make Epetra_SerialDenseMatrix symmetric by averaging upper and lower traingular indices

@@ -36,7 +36,7 @@ RefCountPtr<Epetra_Vector> LINALG::CreateVector(const Epetra_Map& rowmap, const 
 /*----------------------------------------------------------------------*
  |  export a Epetra_Vector  (public)                         mwgee 12/06|
  *----------------------------------------------------------------------*/
-void LINALG::Export(const Epetra_Vector& source, Epetra_Vector& target)
+void LINALG::Export(const Epetra_MultiVector& source, Epetra_MultiVector& target)
 {
   bool sourceunique = false;
   bool targetunique = false;
