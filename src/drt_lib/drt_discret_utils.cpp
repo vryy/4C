@@ -72,6 +72,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
       dimns = 6;
     break;
     case DRT::Element::element_fluid3:
+    case DRT::Element::element_xfluid3:
       numdf = 4;
       dimns = 4;
     break;
@@ -292,7 +293,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   p   |    0       0       0       1
   */
 
-  else if (ele->Type() == DRT::Element::element_fluid3)
+  else if (ele->Type() == DRT::Element::element_fluid3 or ele->Type() == DRT::Element::element_xfluid3)
   {
     for (int i=0; i<NumMyRowNodes(); ++i)
     {
@@ -335,7 +336,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
         } // switch (j)
       } // for (int j=0; j<actnode->Dof().NumDof(); ++j)
     } // for (int i=0; i<NumMyRowNodes(); ++i)
-  } // else if (ele->Type() == DRT::Element::element_fluid3)
+  } // else if (ele->Type() == DRT::Element::element_fluid3 or ele->Type() == DRT::Element::element_xfluid3)
 
   else if (ele->Type() == DRT::Element::element_fluid2)
   {
