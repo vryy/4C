@@ -950,13 +950,12 @@ int main(
     }
     case prb_fluid_xfem:
     {
-        string basename = problem.outname();
         PostField* structfield = problem.get_discretization(0);
-        StructureEnsightWriter structwriter(structfield, basename);
+        StructureEnsightWriter structwriter(structfield, problem.outname());
         structwriter.WriteFiles();
 
         PostField* fluidfield = problem.get_discretization(1);
-        FluidEnsightWriter fluidwriter(fluidfield, basename);
+        FluidEnsightWriter fluidwriter(fluidfield, problem.outname());
         fluidwriter.WriteFiles();
         break;
     }

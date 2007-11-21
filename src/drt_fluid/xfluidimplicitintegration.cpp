@@ -224,7 +224,7 @@ void XFluidImplicitTimeInt::ComputeSingleFieldRowMaps(RCP<XFEM::DofManager> dofm
 		const DRT::Node* node = discret_->lRowNode(i);
 		const std::set<EnrField> enrvarset = dofman->getDofs(node->Id());
 		const vector<int> dof = discret_->Dof(node);
-		
+		dsassert(dof.size() == enrvarset.size(), "mismatch in length!");
 		std::set<EnrField>::const_iterator enrvar;
 		unsigned int countdof = 0;
 		for (enrvar = enrvarset.begin(); enrvar != enrvarset.end(); ++enrvar) {
@@ -842,7 +842,7 @@ void XFluidImplicitTimeInt::NonlinearSolve()
     {
       if (discret_->Comm().MyPID() == 0)
       {
-        printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   |      --      |      --      |",
+        printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   |      --      |      --      |      --      |",
                itnum,itemax,ittol,vresnorm,presnorm,fullresnorm);
         printf(" (      --     ,te=%10.3E)\n",dtele);
       }
