@@ -132,5 +132,17 @@ fi
 # define the length of the loops for fast elements
 DEFINES="$DEFINES $LOOPL"
 
+
+# set proper name extension for the  
+# postprocessing filter executable 
+if [ x$PARALLEL = "xyes" ] ; then
+POSTFILTERSUFFIX=_par
+else
+# keep the familiar filter name in the serial case (for now)
+#POSTFILTERSUFFIX_ser
+POSTFILTERSUFFIX=""
+fi
+
+
 #echo ">>>" $DEFINES "<<<"
 #exit
