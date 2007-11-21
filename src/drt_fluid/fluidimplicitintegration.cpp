@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file
+\file fluidimplicitintegration.cpp
 \brief Control routine for fluid time integration. Includes
 
      o Single step one-step-theta time integration
@@ -54,8 +54,6 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   writestresses_(params.get<int>("write stresses", 0))
 {
 
-  int numdim = params_.get<int>("number of velocity degrees of freedom");
-
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
@@ -82,6 +80,8 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   // elements at the moment!
   // -------------------------------------------------------------------
   {
+    const int numdim = params_.get<int>("number of velocity degrees of freedom");
+      
     // Allocate integer vectors which will hold the dof number of the
     // velocity or pressure dofs
     vector<int> velmapdata;
@@ -436,8 +436,8 @@ void FluidImplicitTimeInt::SetOldPartOfRighthandside()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FluidImplicitTimeInt::ExplicitPredictor()
 {
-  double fact1 = dta_*(1.0+dta_/dtp_);
-  double fact2 = DSQR(dta_/dtp_);
+  const double fact1 = dta_*(1.0+dta_/dtp_);
+  const double fact2 = DSQR(dta_/dtp_);
 
   velnp_->Update( fact1,*accn_ ,1.0);
   velnp_->Update(-fact2,*veln_ ,1.0);
@@ -582,11 +582,11 @@ void FluidImplicitTimeInt::NonlinearSolve()
 
   // ---------------------------------------------- nonlinear iteration
   // maximum number of nonlinear iteration steps
-  int     itemax    =params_.get<int>   ("max nonlin iter steps");
+  const int     itemax    =params_.get<int>   ("max nonlin iter steps");
 
   // ------------------------------- stop nonlinear iteration when both
   //                                 increment-norms are below this bound
-  double  ittol     =params_.get<double>("tolerance for nonlin iter");
+  const double  ittol     =params_.get<double>("tolerance for nonlin iter");
 
   int               itnum         = 0;
   bool              stopnonliniter = false;
@@ -873,11 +873,11 @@ void FluidImplicitTimeInt::NonlinearConvCheck(
 
   // ---------------------------------------------- nonlinear iteration
   // maximum number of nonlinear iteration steps
-  int     itemax    =params_.get<int>   ("max nonlin iter steps");
+  const int     itemax    =params_.get<int>   ("max nonlin iter steps");
 
   // ------------------------------- stop nonlinear iteration when both
   //                                 increment-norms are below this bound
-  double  ittol     =params_.get<double>("tolerance for nonlin iter");
+  const double  ittol     =params_.get<double>("tolerance for nonlin iter");
 
 
   // extract velocity and pressure increments from increment vector
@@ -999,8 +999,8 @@ void FluidImplicitTimeInt::TimeUpdate()
       {
           case timeint_one_step_theta: /* One step Theta time integration */
           {
-            double fact1 = 1.0/(theta_*dta_);
-            double fact2 =-1.0/theta_ +1.0;	/* = -1/Theta + 1		*/
+            const double fact1 = 1.0/(theta_*dta_);
+            const double fact2 =-1.0/theta_ +1.0;	/* = -1/Theta + 1		*/
 
             accn_->Update( fact1,*velnp_,0.0);
             accn_->Update(-fact1,*veln_ ,1.0);
@@ -1012,7 +1012,7 @@ void FluidImplicitTimeInt::TimeUpdate()
           {
             if (dta_*dtp_ < EPS15)
               dserror("Zero time step size!!!!!");
-            double sum = dta_ + dtp_;
+            const double sum = dta_ + dtp_;
 
             accn_->Update((2.0*dta_+dtp_)/(dta_*sum),*velnp_,
                           - sum /(dta_*dtp_),*veln_ ,0.0);
@@ -1232,16 +1232,13 @@ void FluidImplicitTimeInt::SetInitialFlowField(
   //------------------------------------------------------- beltrami flow
   if(whichinitialfield == 8)
   {
-    int gid;
-    int lid;
-
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
 
     int err =0;
 
-    int numdim  = params_.get<int>("number of velocity degrees of freedom");
-    int npredof = numdim;
+    const int numdim  = params_.get<int>("number of velocity degrees of freedom");
+    const int npredof = numdim;
 
     double         p;
     vector<double> u  (numdim);
@@ -1254,8 +1251,8 @@ void FluidImplicitTimeInt::SetInitialFlowField(
     }
 
     // set constants for analytical solution
-    double a      = PI/4.0;
-    double d      = PI/2.0;
+    const double a      = PI/4.0;
+    const double d      = PI/2.0;
 
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
@@ -1292,16 +1289,16 @@ void FluidImplicitTimeInt::SetInitialFlowField(
       // initial velocities
       for(int nveldof=0;nveldof<numdim;nveldof++)
       {
-        gid = nodedofset[nveldof];
-        lid = dofrowmap->LID(gid);
+        const int gid = nodedofset[nveldof];
+        int lid = dofrowmap->LID(gid);
         err += velnp_->ReplaceMyValues(1,&(u[nveldof]),&lid);
         err += veln_ ->ReplaceMyValues(1,&(u[nveldof]),&lid);
         err += velnm_->ReplaceMyValues(1,&(u[nveldof]),&lid);
      }
 
       // initial pressure
-      gid = nodedofset[npredof];
-      lid = dofrowmap->LID(gid);
+      const int gid = nodedofset[npredof];
+      int lid = dofrowmap->LID(gid);
       err += velnp_->ReplaceMyValues(1,&p,&lid);
       err += veln_ ->ReplaceMyValues(1,&p,&lid);
       err += velnm_->ReplaceMyValues(1,&p,&lid);
@@ -1314,7 +1311,7 @@ void FluidImplicitTimeInt::SetInitialFlowField(
   }
   else if(whichinitialfield==2 ||whichinitialfield==3)
   {
-    int numdim = params_.get<int>("number of velocity degrees of freedom");
+    const int numdim = params_.get<int>("number of velocity degrees of freedom");
 
 
     // loop all nodes on the processor
@@ -1323,7 +1320,7 @@ void FluidImplicitTimeInt::SetInitialFlowField(
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
       // the set of degrees of freedom associated with the node
-      vector<int> nodedofset = discret_->Dof(lnode);
+      const vector<int> nodedofset = discret_->Dof(lnode);
 
       for(int index=0;index<numdim+1;++index)
       {
@@ -1669,7 +1666,7 @@ void FluidImplicitTimeInt::LiftDrag()
   discret_->GetCondition("LIFTDRAG",ldconds);
 
   // space dimension of the problem
-  int ndim = params_.get<int>("number of velocity degrees of freedom");
+  const int ndim = params_.get<int>("number of velocity degrees of freedom");
 
   // there is an L&D condition if it has a size
   if( ldconds.size() )
@@ -1722,8 +1719,8 @@ void FluidImplicitTimeInt::LiftDrag()
     for( std::map< const int, std::set<DRT::Node*> >::iterator labelit = ldnodemap.begin();
          labelit != ldnodemap.end(); ++labelit )
     {
-      std::set<DRT::Node*>& nodes = labelit->second; // pointer to nodeset of present label
-      int label = labelit->first;                    // the present label
+      const std::set<DRT::Node*>& nodes = labelit->second; // pointer to nodeset of present label
+      const int label = labelit->first;                    // the present label
       std::vector<double> values(6,0.0);             // vector with lift&drag forces
       std::vector<double> resultvec(6,0.0);          // vector with lift&drag forces after communication
 
@@ -1731,22 +1728,21 @@ void FluidImplicitTimeInt::LiftDrag()
       const std::vector<double>* centerCoord = ldcoordmap[label];
 
       // loop all nodes within my set
-      for( std::set<DRT::Node*>::iterator actnode = nodes.begin(); actnode != nodes.end(); ++actnode)
+      for( std::set<DRT::Node*>::const_iterator actnode = nodes.begin(); actnode != nodes.end(); ++actnode)
       {
         const double* x = (*actnode)->X(); // pointer to nodal coordinates
-        std::vector<double> distances (3);
         const Epetra_BlockMap& rowdofmap = trueresidual_->Map();
-        std::vector<int> dof = discret_->Dof(*actnode);
-        double fx,fy,fz;
+        const std::vector<int> dof = discret_->Dof(*actnode);
 
+        std::vector<double> distances (3);
         for (unsigned j=0; j<3; ++j)
         {
           distances[j]= x[j]-(*centerCoord)[j];
         }
         // get nodal forces
-        fx = (*trueresidual_)[rowdofmap.LID(dof[0])];
-        fy = (*trueresidual_)[rowdofmap.LID(dof[1])];
-        fz = (*trueresidual_)[rowdofmap.LID(dof[2])];
+        const double fx = (*trueresidual_)[rowdofmap.LID(dof[0])];
+        const double fy = (*trueresidual_)[rowdofmap.LID(dof[1])];
+        const double fz = (*trueresidual_)[rowdofmap.LID(dof[2])];
         values[0] += fx;
         values[1] += fy;
         values[2] += fz;
