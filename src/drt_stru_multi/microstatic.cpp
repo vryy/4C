@@ -163,6 +163,8 @@ solver_(solver)
   if (V0_ == -1.0)
     dserror("Calculation of initial volume failed");
 
+  cout << "V0: " << V0_ << endl;
+
   // ------------------------- Calculate initial density of microstructure
   // the macroscopic density has to be averaged over the entire
   // microstructural reference volume
@@ -635,49 +637,51 @@ void MicroStatic::SetUpHomogenization()
   int indp = 0;
   int indf = 0;
 
-  RefCountPtr<DRT::Discretization> dis =
-    DRT::Problem::Instance(1)->Dis(genprob.numsf,0);
+  //RefCountPtr<DRT::Discretization> dis =
+  //  DRT::Problem::Instance(1)->Dis(genprob.numsf,0);
 
-  int toggle_len = dis->NodeRowMap()->NumMyElements();
-  toggle_len*=3; // three dofs per node
+  //int toggle_len = dis->NodeRowMap()->NumMyElements();
+  //toggle_len*=3; // three dofs per node
 
-  ndof_ = toggle_len;
+  //ndof_ = toggle_len;
+  ndof_ = discret_->DofRowMap()->NumMyElements();
 
   std::vector <int>   pdof(np_);
   std::vector <int>   fdof(ndof_-np_);        // changed this, previously this
                                               // has been just fdof(np_),
                                               // but how should that
                                               // work for ndof_-np_>np_???
-
-  for (int it=0; it<toggle_len; ++it)
+  cout << "ndof, np, nf: " << ndof_ << " " << np_ << " " << ndof_-np_ << "\n";
+  for (int it=0; it<ndof_; ++it)
   {
     if ((*dirichtoggle_)[it] == 1.0)
     {
-      pdof[indp]=it;
+      pdof[indp]=discret_->DofRowMap()->GID(it);
       ++indp;
     }
     else
     {
-      fdof[indf]=it;
+      fdof[indf]=discret_->DofRowMap()->GID(it);
       ++indf;
     }
   }
+  cout << "indp, indf: " << indp << " " << indf << "\n";
 
   // create map based on the determined dofs of prescribed and free nodes
-  pdof_ = rcp(new Epetra_Map(-1, np_, &pdof[0], 0, dis->Comm()));
-  fdof_ = rcp(new Epetra_Map(-1, ndof_-np_, &fdof[0], 0, dis->Comm()));
+  pdof_ = rcp(new Epetra_Map(-1, np_, &pdof[0], 0, discret_->Comm()));
+  fdof_ = rcp(new Epetra_Map(-1, ndof_-np_, &fdof[0], 0, discret_->Comm()));
 
   // create an exporter
   //export_ = rcp(new Epetra_Export(*(dis->DofRowMap()), *pdof_));
 
   // create an exporter
-  import_ = rcp(new Epetra_Import(*pdof_, *(dis->DofRowMap())));
+  import_ = rcp(new Epetra_Import(*pdof_, *(discret_->DofRowMap())));
 
   // create vector containing material coordinates of prescribed nodes
   Epetra_Vector Xp_temp(*pdof_);
 
   vector<DRT::Condition*> conds;
-  dis->GetCondition("MicroBoundary", conds);
+  discret_->GetCondition("MicroBoundary", conds);
   for (unsigned i=0; i<conds.size(); ++i)
   {
     const vector<int>* nodeids = conds[i]->Get<vector<int> >("Node Ids");
@@ -687,14 +691,14 @@ void MicroStatic::SetUpHomogenization()
     for (int i=0; i<nnode; ++i)
     {
       // do only nodes in my row map
-      if (!dis->NodeRowMap()->MyGID((*nodeids)[i])) continue;
-      DRT::Node* actnode = dis->gNode((*nodeids)[i]);
+      if (!discret_->NodeRowMap()->MyGID((*nodeids)[i])) continue;
+      DRT::Node* actnode = discret_->gNode((*nodeids)[i]);
       if (!actnode) dserror("Cannot find global node %d",(*nodeids)[i]);
 
       // nodal coordinates
       const double* x = actnode->X();
 
-      vector<int> dofs = dis->Dof(actnode);
+      vector<int> dofs = discret_->Dof(actnode);
 
       for (int k=0; k<3; ++k)
       {
@@ -1023,18 +1027,18 @@ void MicroStatic::StaticHomogenization(Epetra_SerialDenseVector* stress,
   int *Indices;
   double *Values;
 
-  Epetra_MultiVector Kpp(*pdof_, np_);
-  Epetra_CrsMatrix   Kff(Copy, *fdof_, 81);
-  Epetra_MultiVector Kpf(*pdof_,  ndof_-np_);
-  Epetra_MultiVector Kfp(*fdof_, np_);
-  Epetra_MultiVector x(*fdof_, np_);
-
   stiff_->FillComplete();                   // needed for ExtractCrsDataPointers
   stiff_->OptimizeStorage();                // needed for ExtractCrsDataPointers
 
   err = stiff_->ExtractCrsDataPointers(IndexOffset, Indices, Values);
   if (err)
     dserror("Extraction of internal data pointers associated with Crs matrix failed");
+
+  Epetra_MultiVector Kpp(*pdof_, np_);
+  Epetra_CrsMatrix   Kff(Copy, *fdof_, stiff_->MaxNumEntries());
+  Epetra_MultiVector Kpf(*pdof_,  ndof_-np_);
+  Epetra_MultiVector Kfp(*fdof_, np_);
+  Epetra_MultiVector x(*fdof_, np_);
 
   const Epetra_Map* dofrowmap = dis->DofRowMap();
 
@@ -1047,11 +1051,14 @@ void MicroStatic::StaticHomogenization(Epetra_SerialDenseVector* stress,
     {
       for (int col=IndexOffset[row]; col<IndexOffset[row+1]; ++col)
       {
-        int colgid = Indices[col];
+        //int colgid = Indices[col];
+        int colgid = dofrowmap->GID(Indices[col]);
 
         if (pdof_->MyGID(colgid))          // -> Kpp
         {
-          Kpp.ReplaceMyValue(pdof_->LID(rowgid), pdof_->LID(colgid), Values[col]);
+          err = Kpp.ReplaceMyValue(pdof_->LID(rowgid), pdof_->LID(colgid), Values[col]);
+          if (err)
+            dserror("Insertion of values into Kpp failed");
         }
         // we don't need to compute Kpf here since in the SYMMETRIC case
         // Kpf is the transpose pf Kfp
@@ -1067,17 +1074,20 @@ void MicroStatic::StaticHomogenization(Epetra_SerialDenseVector* stress,
     {
       for (int col=IndexOffset[row]; col<IndexOffset[row+1]; ++col)
       {
-        int colgid = Indices[col];
+        //int colgid = Indices[col];
+        int colgid = dofrowmap->GID(Indices[col]);
 
         if (fdof_->MyGID(colgid))          // -> Kff
         {
           err = Kff.InsertGlobalValues(rowgid, 1, &(Values[col]), &colgid);
           if (err)
-            dserror("Insertion of values into Kff failed");
+            dserror("Insertion of value %g into Kff(%d,%d) failed with err=%d", Values[col], rowgid, colgid, err);
         }
         else
         {
-          Kfp.ReplaceMyValue(fdof_->LID(rowgid), pdof_->LID(colgid), Values[col]);
+          err = Kfp.ReplaceMyValue(fdof_->LID(rowgid), pdof_->LID(colgid), Values[col]);
+          if (err)
+            dserror("Insertion of values into Kfp failed");
         }
       }
     }
