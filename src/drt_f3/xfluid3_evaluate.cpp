@@ -696,7 +696,7 @@ GaussRule3D DRT::Elements::XFluid3::getOptimalGaussrule(const DiscretizationType
         rule = intrule_tet_4point;
         break;
     case tet10:
-        rule = intrule_tet_10point;
+        rule = intrule_tet_5point;
         break;
     default:
         dserror("unknown number of nodes for gaussrule initialization");

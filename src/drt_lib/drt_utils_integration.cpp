@@ -176,7 +176,7 @@ DRT::Utils::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
     qwgt[3]   = Q124;
     break;
   }
-  case intrule_tet_10point:
+  case intrule_tet_5point:
   {
     // GAUSS INTEGRATION        5 SAMPLING POINTS, DEG.OF PRECISION 3
     nquad = 10;

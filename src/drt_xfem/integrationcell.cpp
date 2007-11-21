@@ -171,7 +171,7 @@ double DomainIntCell::GetVolume() const
         xyze_local(2,inode) = domainCoordinates_[inode][2];
     }    
     
-    const DRT::Utils::GaussRule3D gaussrule = DRT::Utils::intrule_tet_10point;
+    const DRT::Utils::GaussRule3D gaussrule = DRT::Utils::intrule_tet_5point;
     
     // gaussian points
     const DRT::Utils::IntegrationPoints3D intpoints(gaussrule);

@@ -139,7 +139,7 @@ bool DRT::Elements::Ale3::ReadElement()
             break;
         case 10:
             if (strncmp(buffer,"standard",8)==0)
-                gaussrule_ = intrule_tet_10point;
+                gaussrule_ = intrule_tet_5point;
             else
                 dserror("Reading of FLUID3 element failed: GP_ALT: gauss-radau not possible!\n");
             break;

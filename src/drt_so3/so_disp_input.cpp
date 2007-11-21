@@ -81,7 +81,7 @@ bool DRT::Elements::SoDisp::ReadElement()
     // The intention of this element is to help debugging the xfem intersection routines.
     // The element is purely displacement based and has not been tested for correct compution
     // It serves solely as higher order geometry input data to XFEm problems
-    dsassert(allowed_element, "Only quadratic order for DISP (displacement based) element.");
+    //dsassert(allowed_element, "Only quadratic order for DISP (displacement based) element.");
 
     // reduce node numbers by one
     for (int i=0; i<nnode; ++i) nodes[i]--;
@@ -147,7 +147,7 @@ bool DRT::Elements::SoDisp::ReadElement()
             break;
         case 10:
             if (strncmp(buffer,"standard",8)==0)
-                gaussrule_ = DRT::Utils::intrule_tet_10point;
+                gaussrule_ = DRT::Utils::intrule_tet_5point;
             else
                 dserror("Reading of SOLID3 element failed: GP_ALT: gauss-radau not possible!\n");
             break;

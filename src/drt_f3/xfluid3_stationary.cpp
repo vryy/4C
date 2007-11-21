@@ -84,7 +84,7 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
   const DRT::Element::DiscretizationType distype = ele->Shape();
 
   // get node coordinates
-  DRT::Node** nodes = ele->Nodes();
+  DRT::Node** const nodes = ele->Nodes();
   for (int inode=0; inode<iel_; inode++)
   {
     const double* x = nodes[inode]->X();
@@ -133,8 +133,14 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
       //volume += cell->Volume();
       volumeRatio += cell->VolumeRatio(distype);
   }
+  
+  if (domainIntCells.size() > 1){
+      cout << "Element " << ele->Id() << "  " << domainIntCells.size() << " Volume ratio: " << std::scientific << volumeRatio << endl;
+  }
+  
   //cout << domainIntCells.size() << endl;
   //cout << std::scientific << volumeRatio << endl;
+  // FIXME: for recovered surfaces, the volume is not exactly preserved 
   if (abs(volumeRatio - 1.0) > 1.0e-3) {
       cout << domainIntCells.size() << endl;
       cout << std::scientific << volumeRatio << endl;
@@ -151,7 +157,7 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
         gaussrule = ele->gaussrule_;
     }
     else {
-        gaussrule = DRT::Utils::intrule_tet_10point;
+        gaussrule = DRT::Utils::intrule_tet_5point;
     }
   
   // gaussian points

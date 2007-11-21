@@ -156,7 +156,7 @@ void DRT::Elements::XFluid3Impl::Sysmat(XFluid3* ele,
         gaussrule = ele->gaussrule_;
     }
     else {
-        gaussrule = DRT::Utils::intrule_tet_10point;
+        gaussrule = DRT::Utils::intrule_tet_5point;
     }
   
   // gaussian points
