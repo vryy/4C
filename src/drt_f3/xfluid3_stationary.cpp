@@ -133,7 +133,14 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
       //volume += cell->Volume();
       volumeRatio += cell->VolumeRatio(distype);
   }
-  dsassert(abs(volumeRatio - 1.0) <= 1.0e-12, "volumeRatio for integrationcells does not sum up to 1.0");
+  //cout << domainIntCells.size() << endl;
+  //cout << std::scientific << volumeRatio << endl;
+  if (abs(volumeRatio - 1.0) > 1.0e-3) {
+      cout << domainIntCells.size() << endl;
+      cout << std::scientific << volumeRatio << endl;
+      dserror("volumeRatio for integrationcells does not sum up to 1.0");
+  }
+  
   //cout << "Volume via domainIntCells:      " << std::scientific << volume << endl;
   //cout << "VolumeRatio via domainIntCells: " << std::scientific << volumeRatio << endl;
   
