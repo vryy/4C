@@ -130,12 +130,12 @@ public:
      */
     std::vector< std::vector<double> > GetDomainCoord() const;
     
+    const vector<double> modifyGaussRule3D(
+            const double cell_e0,
+            const double cell_e1,
+            const double cell_e2) const;
+    
     std::string Print() const;
-    
-    double VolumeRatio(
-            const DRT::Element::DiscretizationType  parentdistype) const;
-    
-    double Volume() const {return volume_;};
 
 protected:
     
@@ -144,14 +144,8 @@ protected:
     
 private:
     
-    // volume with respect to the parent element coordinates
-    double  volume_;
-    
     void SetDefaultCoordinates(
             const DRT::Element::DiscretizationType distype);
-    
-    double GetVolume() const;
-    
 };
 
 typedef std::vector<XFEM::DomainIntCell > DomainIntCells;

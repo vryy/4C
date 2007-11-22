@@ -126,7 +126,7 @@ public:
     	if (tmp == nodalNumDofMap_.end()){
     		//dserror("global node id not found!");
     		// "warning: global node id not found! Could be due to not properly initialized ElementDofManager"
-    	    cout << "EleDM warning! ";
+    	    //cout << "EleDM warning! ";
     		return defaultnumdof;
     	}
         return tmp->second;

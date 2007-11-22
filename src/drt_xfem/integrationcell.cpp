@@ -80,10 +80,9 @@ std::string IntCell::Print() const
 DomainIntCell::DomainIntCell(
         const DRT::Element::DiscretizationType distype,
         const vector< vector<double> > domainCoordinates) :
-            IntCell(distype),
+            IntCell(DRT::Element::tet4),
             domainCoordinates_(domainCoordinates)
 {
-    volume_ = GetVolume();
     return;
 }
 
@@ -96,7 +95,6 @@ DomainIntCell::DomainIntCell(
             IntCell(distype)
 {
     SetDefaultCoordinates(distype);
-    volume_ = DRT::Utils::getSizeInLocalCoordinates(distype);
     return;
 }
         
@@ -106,8 +104,7 @@ DomainIntCell::DomainIntCell(
 DomainIntCell::DomainIntCell(
         const DomainIntCell& old) :
             IntCell(old),
-            domainCoordinates_(old.domainCoordinates_),
-            volume_(old.volume_)
+            domainCoordinates_(old.domainCoordinates_)
 {
     return;   
 }
@@ -136,87 +133,77 @@ string DomainIntCell::Print() const
     return s.str();
 }
 
-// get ratio between my parent element and myself 
-// based on the "multiplication of determinants" rule
-double DomainIntCell::VolumeRatio(
-        const DRT::Element::DiscretizationType  parentdistype) const
-{
-    const double parentsize = DRT::Utils::getSizeInLocalCoordinates(parentdistype);
-    return volume_/parentsize;
-}
-
 // get volume in parameter space using Gauss integration
-double DomainIntCell::GetVolume() const
-{    
-    // worst case assumption: I am a tet10 element
-    const DRT::Element::DiscretizationType distype = DRT::Element::tet10;
-    const int numnode = 10;
+const vector<double> DomainIntCell::modifyGaussRule3D(
+        const double cell_e0,
+        const double cell_e1,
+        const double cell_e2) const
+{   
+    // return value
+    vector<double> element_e(4);
+    
+    const DRT::Element::DiscretizationType celldistype = this->Shape();
+    const int numnode = DRT::Utils::getNumberOfElementNodes(celldistype);
     const int nsd = 3;
+    
+    // get node coordinates
+    blitz::Array<double,2> xyze_cell(nsd,numnode,blitz::ColumnMajorArray<2>());
+    for (int inode=0; inode<numnode; inode++)
+    {
+        xyze_cell(0,inode) = domainCoordinates_[inode][0];
+        xyze_cell(1,inode) = domainCoordinates_[inode][1];
+        xyze_cell(2,inode) = domainCoordinates_[inode][2];
+    }    
+
+    // init blitz indices
+    blitz::firstIndex i;    // Placeholder for the first index
+    blitz::secondIndex j;   // Placeholder for the second index
+    blitz::thirdIndex k;    // Placeholder for the third index
     
     // create shape function vectors 
     blitz::Array<double,1> funct(numnode);
     blitz::Array<double,2> deriv(nsd,numnode,blitz::ColumnMajorArray<2>());
+    DRT::Utils::shape_function_3D(funct,cell_e0,cell_e1,cell_e2,celldistype);
+    DRT::Utils::shape_function_3D_deriv1(deriv,cell_e0,cell_e1,cell_e2,celldistype);
+
+    // translate position into from cell coordinates to element coordinates
+    const blitz::Array<double,1> e(blitz::sum(funct(j)*xyze_cell(i,j),j));
+
+
+    // get Jacobian matrix and determinant
+    // actually compute its transpose....
+    /*
+      +-            -+ T      +-            -+
+      | dx   dx   dx |        | dx   dy   dz |
+      | --   --   -- |        | --   --   -- |
+      | dr   ds   dt |        | dr   dr   dr |
+      |              |        |              |
+      | dy   dy   dy |        | dx   dy   dz |
+      | --   --   -- |   =    | --   --   -- |
+      | dr   ds   dt |        | ds   ds   ds |
+      |              |        |              |
+      | dz   dz   dz |        | dx   dy   dz |
+      | --   --   -- |        | --   --   -- |
+      | dr   ds   dt |        | dt   dt   dt |
+      +-            -+        +-            -+
+    */
     blitz::Array<double,2> xjm(nsd,nsd,blitz::ColumnMajorArray<2>());
-    blitz::firstIndex i;    // Placeholder for the first index
-    blitz::secondIndex j;   // Placeholder for the second index
-    blitz::thirdIndex k;    // Placeholder for the third index
-    blitz::Range _  = blitz::Range::all();
+    xjm = blitz::sum(deriv(i,k)*xyze_cell(j,k),k);
+    const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
+                       xjm(0,1)*xjm(1,2)*xjm(2,0)+
+                       xjm(0,2)*xjm(1,0)*xjm(2,1)-
+                       xjm(0,2)*xjm(1,1)*xjm(2,0)-
+                       xjm(0,0)*xjm(1,2)*xjm(2,1)-
+                       xjm(0,1)*xjm(1,0)*xjm(2,2);
     
-    // get node coordinates
-    blitz::Array<double,2> xyze_local(nsd,numnode,blitz::ColumnMajorArray<2>());
-    for (int inode=0; inode<numnode; inode++)
-    {
-        xyze_local(0,inode) = domainCoordinates_[inode][0];
-        xyze_local(1,inode) = domainCoordinates_[inode][1];
-        xyze_local(2,inode) = domainCoordinates_[inode][2];
-    }    
+  
+    // gauss coordinates of cell in element coordinates
+    element_e[0] = e(0);
+    element_e[1] = e(1);
+    element_e[2] = e(2);
+    element_e[3] = det;
     
-    const DRT::Utils::GaussRule3D gaussrule = DRT::Utils::intrule_tet_5point;
-    
-    // gaussian points
-    const DRT::Utils::IntegrationPoints3D intpoints(gaussrule);
-
-    double volume = 0.0;
-    
-    // integration loop
-    for (int iquad=0; iquad<intpoints.nquad; ++iquad)
-    {
-        // coordiantes of the current integration point
-        const double e1 = intpoints.qxg[iquad][0];
-        const double e2 = intpoints.qxg[iquad][1];
-        const double e3 = intpoints.qxg[iquad][2];
-
-        // shape functions and their derivatives
-        DRT::Utils::shape_function_3D(funct,e1,e2,e3,distype);
-        DRT::Utils::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
-
-        // get Jacobian matrix and determinant
-        // actually compute its transpose....
-        /*
-          +-            -+ T      +-            -+
-          | dx   dx   dx |        | dx   dy   dz |
-          | --   --   -- |        | --   --   -- |
-          | dr   ds   dt |        | dr   dr   dr |
-          |              |        |              |
-          | dy   dy   dy |        | dx   dy   dz |
-          | --   --   -- |   =    | --   --   -- |
-          | dr   ds   dt |        | ds   ds   ds |
-          |              |        |              |
-          | dz   dz   dz |        | dx   dy   dz |
-          | --   --   -- |        | --   --   -- |
-          | dr   ds   dt |        | dt   dt   dt |
-          +-            -+        +-            -+
-        */
-        xjm = blitz::sum(deriv(i,k)*xyze_local(j,k),k);
-        const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
-                           xjm(0,1)*xjm(1,2)*xjm(2,0)+
-                           xjm(0,2)*xjm(1,0)*xjm(2,1)-
-                           xjm(0,2)*xjm(1,1)*xjm(2,0)-
-                           xjm(0,0)*xjm(1,2)*xjm(2,1)-
-                           xjm(0,1)*xjm(1,0)*xjm(2,2);
-        volume += intpoints.qwgt[iquad]*det;
-    };
-    return volume;
+    return element_e;
 }
 
 // set element nodal coordinates according to given distype
