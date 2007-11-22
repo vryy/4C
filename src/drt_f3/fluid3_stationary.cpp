@@ -77,7 +77,7 @@ void DRT::Elements::Fluid3Stationary::Sysmat(Fluid3* ele,
   const DRT::Element::DiscretizationType distype = ele->Shape();
 
   // get node coordinates
-  DRT::Node** nodes = ele->Nodes();
+  DRT::Node** const nodes = ele->Nodes();
   for (int inode=0; inode<iel_; inode++)
   {
     const double* x = nodes[inode]->X();
@@ -1048,6 +1048,7 @@ void DRT::Elements::Fluid3Stationary::Sysmat(Fluid3* ele,
       }
     }
   }
+  return;
 }
 
 

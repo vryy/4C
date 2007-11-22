@@ -126,29 +126,6 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
 
   // integrate of integration cell
   dsassert(domainIntCells.empty() == false, "this is a bug!");
-      
-  //double volume = 0.0;
-  double volumeRatio = 0.0;
-  for (XFEM::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell < domainIntCells.end(); ++cell) {
-      //volume += cell->Volume();
-      volumeRatio += cell->VolumeRatio(distype);
-  }
-  
-  if (domainIntCells.size() > 1){
-      cout << "Element " << ele->Id() << "  " << domainIntCells.size() << " Volume ratio: " << std::scientific << volumeRatio << endl;
-  }
-  
-  //cout << domainIntCells.size() << endl;
-  //cout << std::scientific << volumeRatio << endl;
-  // FIXME: for recovered surfaces, the volume is not exactly preserved 
-  if (abs(volumeRatio - 1.0) > 1.0e-3) {
-      cout << domainIntCells.size() << endl;
-      cout << std::scientific << volumeRatio << endl;
-      dserror("volumeRatio for integrationcells does not sum up to 1.0");
-  }
-  
-  //cout << "Volume via domainIntCells:      " << std::scientific << volume << endl;
-  //cout << "VolumeRatio via domainIntCells: " << std::scientific << volumeRatio << endl;
   
   for (XFEM::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell < domainIntCells.end(); ++cell)
   {
@@ -157,7 +134,7 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
         gaussrule = ele->gaussrule_;
     }
     else {
-        gaussrule = DRT::Utils::intrule_tet_5point;
+        gaussrule = DRT::Utils::intrule_tet_4point;
     }
   
   // gaussian points
@@ -166,11 +143,19 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
   // integration loop
   for (int iquad=0; iquad<intpoints.nquad; ++iquad)
   {
-    // coordiantes of the current integration point
-    const double e1 = intpoints.qxg[iquad][0];
-    const double e2 = intpoints.qxg[iquad][1];
-    const double e3 = intpoints.qxg[iquad][2];
+    // coordinates of the current integration point in cell coordinates \eta
+    const double cell_e0 = intpoints.qxg[iquad][0];
+    const double cell_e1 = intpoints.qxg[iquad][1];
+    const double cell_e2 = intpoints.qxg[iquad][2];
+      
+    const vector<double> e = cell->modifyGaussRule3D(cell_e0,cell_e1,cell_e2);
 
+    // coordinates of the current integration point in element coordinates \xi
+    const double e1 = e[0];
+    const double e2 = e[1];
+    const double e3 = e[2];
+    const double detcell = e[3];
+    
     // shape functions and their derivatives
     DRT::Utils::shape_function_3D(funct_,e1,e2,e3,distype);
     DRT::Utils::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
@@ -199,7 +184,7 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
                        xjm_(0,2)*xjm_(1,1)*xjm_(2,0)-
                        xjm_(0,0)*xjm_(1,2)*xjm_(2,1)-
                        xjm_(0,1)*xjm_(1,0)*xjm_(2,2);
-    const double fac = intpoints.qwgt[iquad]*det * cell->VolumeRatio(distype);
+    const double fac = intpoints.qwgt[iquad]*det*detcell;
 
     if (det < 0.0)
     {
