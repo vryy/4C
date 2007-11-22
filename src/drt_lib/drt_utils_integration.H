@@ -34,6 +34,9 @@ enum GaussRule3D
     intrule_tet_4point,
     intrule_tet_4point_alternative,
     intrule_tet_5point,
+    intrule_tet_10point,
+    intrule_tet_11point,
+    intrule_tet_24point,
     intrule_wedge_1point,
     intrule_wedge_6point,
     intrule_wedge_9point,
@@ -72,8 +75,8 @@ struct IntegrationPoints3D
 {
   IntegrationPoints3D(const GaussRule3D gaussrule);
   int           nquad;         ///< number of gausspoints
-  double        qxg[27][3];    ///< coordinates
-  double        qwgt[27];      ///< weights
+  double        qxg[84][3];    ///< coordinates
+  double        qwgt[84];      ///< weights
 };
 
 /*!
@@ -85,7 +88,7 @@ In this structure the coordinates and weights used by gauss integration are stor
 struct IntegrationPoints2D
 {
   IntegrationPoints2D(const GaussRule2D gaussrule);
-  int           nquad;               ///< number of gausspoints
+  int           nquad;        ///< number of gausspoints
   double        qxg[9][2];    ///< coordinates
   double        qwgt[9];      ///< weights
 };
@@ -103,7 +106,7 @@ are stored.
 struct IntegrationPoints1D
 {
   IntegrationPoints1D(const GaussRule1D gaussrule);
-  int           nquad;               ///< number of gausspoints
+  int           nquad;        ///< number of gausspoints
   double        qxg[3];       ///< coordinates */
   double        qwgt[3];      ///< weights */
 };
