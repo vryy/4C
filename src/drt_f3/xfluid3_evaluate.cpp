@@ -644,7 +644,7 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
     	const int* nodegids = this->NodeIds();
     	map<int, const set <XFEM::EnrField> > nodaldofset; 
     	for (int inode = 0; inode < numnode; ++inode) {
-    		int gid = nodegids[inode];
+    		const int gid = nodegids[inode];
     		nodaldofset.insert(dofman->getDofsAsPair(gid));
 		}
 

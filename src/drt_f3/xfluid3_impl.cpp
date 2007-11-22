@@ -139,15 +139,19 @@ void DRT::Elements::XFluid3Impl::Sysmat(XFluid3* ele,
   // integrate of integration cell
   dsassert(domainIntCells.empty() == false, "this is a bug!");
   
+  DRT::Utils::GaussRule3D gaussrule;
+  bool standard_integration = true;
+  if (domainIntCells.size() == 1){
+      gaussrule = ele->gaussrule_;
+      standard_integration = true;
+  }
+  else {
+      gaussrule = DRT::Utils::intrule_tet_10point;
+      standard_integration = false;
+  }
+  
   for (XFEM::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell < domainIntCells.end(); ++cell)
   {
-    DRT::Utils::GaussRule3D gaussrule;
-    if (domainIntCells.size() == 1){
-        gaussrule = ele->gaussrule_;
-    }
-    else {
-        gaussrule = DRT::Utils::intrule_tet_5point;
-    }
   
   // gaussian points
   const DRT::Utils::IntegrationPoints3D intpoints(gaussrule);
@@ -160,7 +164,7 @@ void DRT::Elements::XFluid3Impl::Sysmat(XFluid3* ele,
     const double cell_e1 = intpoints.qxg[iquad][1];
     const double cell_e2 = intpoints.qxg[iquad][2];
     
-    const vector<double> e = cell->modifyGaussRule3D(cell_e0,cell_e1,cell_e2);
+    const vector<double> e = cell->modifyGaussRule3D(standard_integration,cell_e0,cell_e1,cell_e2);
 
     // coordinates of the current integration point in element coordinates \xi
     const double e1 = e[0];

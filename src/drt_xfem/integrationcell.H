@@ -93,7 +93,7 @@ public:
      */
     DomainIntCell(
             const DRT::Element::DiscretizationType distype,
-            const std::vector< std::vector<double> > domainCoordinates);
+            const std::vector< std::vector<double> >& domainCoordinates);
 
     /*!
      \brief Standard Constructor for dummy integration cell
@@ -131,9 +131,10 @@ public:
     std::vector< std::vector<double> > GetDomainCoord() const;
     
     const vector<double> modifyGaussRule3D(
-            const double cell_e0,
-            const double cell_e1,
-            const double cell_e2) const;
+            const bool standard_integration,
+            const double& cell_e0,
+            const double& cell_e1,
+            const double& cell_e2) const;
     
     std::string Print() const;
 
