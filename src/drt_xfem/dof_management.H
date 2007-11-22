@@ -97,8 +97,6 @@ public:
 	
 	explicit ElementDofManager(
 			map<int, const set <XFEM::EnrField> >&  nodalDofMap);
-	ElementDofManager(
-            const ElementDofManager& other);
     ~ElementDofManager();
 
     std::string toString() const;

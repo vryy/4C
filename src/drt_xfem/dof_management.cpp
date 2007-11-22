@@ -112,18 +112,6 @@ XFEM::ElementDofManager::ElementDofManager(
 }
 
 /*----------------------------------------------------------------------*
- |  copy-ctor                                                   ag 11/07|
- *----------------------------------------------------------------------*/
-XFEM::ElementDofManager::ElementDofManager(
-        const ElementDofManager& other) :
-        	nodalDofMap_(other.nodalDofMap_), 
-        	nodalNumDofMap_(other.nodalNumDofMap_)
-{
-    assert(&other != this);
-    return;
-}
-
-/*----------------------------------------------------------------------*
  |  dtor                                                        ag 11/07|
  *----------------------------------------------------------------------*/
 XFEM::ElementDofManager::~ElementDofManager()
