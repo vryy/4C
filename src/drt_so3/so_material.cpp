@@ -83,11 +83,19 @@ void DRT::Elements::So_hex8::soh8_mat_sel(
       MAT::AnisotropicBalzani* anba = static_cast <MAT::AnisotropicBalzani*>(mat.get());
       
       double avec[3]= {0.0};
-      if (this->Type() != DRT::Element::element_sosh8){
+      if (this->Type() == DRT::Element::element_sosh8){
         // fiber direction for z-cylinder, calculated via cross-product and beta=45°
-        avec[0] = getthicknessvector()[1];
-        avec[1] = -1.0 * getthicknessvector()[0];
-        avec[2] = sqrt(avec[0]*avec[0] + avec[1]*avec[1]);
+        //Epetra_SerialDenseVector thickvec = getthicknessvector();
+        //cout << thickvec_;
+//        avec[0] = thickvec_[1];
+//        avec[1] = -1.0 * thickvec_[0];
+//        avec[2] = sqrt(avec[0]*avec[0] + avec[1]*avec[1]);
+        avec[0] = fiberdirection_[0];
+        avec[1] = fiberdirection_[1];
+        avec[2] = fiberdirection_[2];
+//        avec[0] = getthicknessvector()[1];
+//        avec[1] = -1.0 * getthicknessvector()[0];
+//        avec[2] = sqrt(avec[0]*avec[0] + avec[1]*avec[1]);
       }
 
       anba->Evaluate(glstrain,defgrd,gp,ele_ID,time,cmat,stress,avec);

@@ -835,41 +835,59 @@ DRT::Elements::So_sh8::ThicknessDirection DRT::Elements::So_sh8::sosh8_findthick
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
   Epetra_SerialDenseMatrix jac0(NUMDIM_SOH8,NUMDIM_SOH8);
   jac0.Multiply('N', 'N', 1.0, df0, xrefe, 0.0);
-
-  // compute norm of dX_i/dr and dX_i/ds and dX_i/dt
-  double dX_dr = 0.0;
-  double dX_ds = 0.0;
-  double dX_dt = 0.0;
-  for (int col = 0; col < NUMDIM_SOH8; ++col) {
-    dX_dr += jac0(0, col) * jac0(0, col);
-    dX_ds += jac0(1, col) * jac0(1, col);
-    dX_dt += jac0(2, col) * jac0(2, col);
-  }
-  double min_ar = min(dX_dt, min(dX_dr, dX_ds)); // minimum aspect ratio
+  // compute inverse of Jacobian at element origin
+  Epetra_SerialDenseSolver solve_for_inverseJ0;
+  Epetra_SerialDenseMatrix iJ0(jac0);
+  solve_for_inverseJ0.SetMatrix(iJ0);
+  int err = solve_for_inverseJ0.Invert();
+  if (err != 0) dserror("Inversion of Jacobian0 failed");
+  
+  // separate "stretch"-part of J-mapping between parameter and global space
+  Epetra_SerialDenseMatrix jac0stretch(3,3); 
+  jac0stretch.Multiply('T','N',1.0,iJ0,iJ0,0.0); // jac0stretch = J^{-T}J
+  double r_stretch = sqrt(jac0stretch(0,0));
+  double s_stretch = sqrt(jac0stretch(1,1));
+  double t_stretch = sqrt(jac0stretch(2,2));
+  
+  double max_stretch = max(r_stretch, max(s_stretch, t_stretch));
   
   ThicknessDirection thickdir; // of actual element
+  int thick_index;
   
-  if (min_ar == dX_dr) {
-    if ((min_ar / dX_ds >= 0.5) || (min_ar / dX_dt >=0.5)) {
+  if (max_stretch == r_stretch) {
+    if ((max_stretch / s_stretch <= 0.5) || (max_stretch / t_stretch <=0.5)) {
       dserror("Solid-Shell element geometry has not a shell aspect ratio");
     }
-    thickdir = autox;
-    thickvec_[0] = jac0(0,0); thickvec_[1] = jac0(0,1); thickvec_[2] = jac0(0,2);
+    thickdir = autor;
+    thick_index = 0;
   }
-  else if (min_ar == dX_ds) {
-    if ((min_ar / dX_dr >= 0.5) || (min_ar / dX_dt >=0.5)) {
+  else if (max_stretch == s_stretch) {
+    if ((max_stretch / r_stretch <= 0.5) || (max_stretch / t_stretch <=0.5)) {
       dserror("Solid-Shell element geometry has not a shell aspect ratio");
     }
-    thickdir = autoy;
-    thickvec_[0] = jac0(1,0); thickvec_[1] = jac0(1,1); thickvec_[2] = jac0(1,2);
+    thickdir = autos;
+    thick_index = 1;
   }
-  else if (min_ar == dX_dt) {
-    if ((min_ar / dX_dr >= 0.5) || (min_ar / dX_ds >=0.5)) {
+  else if (max_stretch == t_stretch) {
+    if ((max_stretch / r_stretch <= 0.5) || (max_stretch / s_stretch <=0.5)) {
       dserror("Solid-Shell element geometry has not a shell aspect ratio");
     }
-    thickdir = autoz;
-    thickvec_[0] = jac0(2,0); thickvec_[1] = jac0(2,1); thickvec_[2] = jac0(2,2);
+    thickdir = autot;
+    thick_index = 2;
   }
+
+  // thickness-vector in parameter-space, has 1.0 in thickness-coord
+  Epetra_SerialDenseVector loc_thickvec(3);
+  Epetra_SerialDenseVector glo_thickvec(3);
+  loc_thickvec(thick_index) = 1.0;
+  // thickness-vector in global coord is J times local thickness-vector
+  glo_thickvec.Multiply('N','N',1.0,jac0,loc_thickvec,0.0);
+  // return doubles of thickness-vector 
+  thickvec_[0] = glo_thickvec(0); thickvec_[1] = glo_thickvec(1); thickvec_[2] = glo_thickvec(2);
+
+  // set fiber direction for anisotropic material law
+  sosh8_setcylinderfiberdirection(xrefe);
+  //cout << thickdir;
   return thickdir;
 }
 
@@ -898,7 +916,7 @@ int DRT::Elements::Sosh8Register::Initialize(DRT::Discretization& dis)
     int new_nodeids[NUMNOD_SOH8];
 
     switch (actele->thickdir_) {
-      case DRT::Elements::So_sh8::autox:
+      case DRT::Elements::So_sh8::autor:
       case DRT::Elements::So_sh8::globx:{
 //        cout << endl << "thickness direction is X" << endl;
 //        for (int node = 0; node < NUMNOD_SOH8; ++node) {
@@ -916,7 +934,7 @@ int DRT::Elements::Sosh8Register::Initialize(DRT::Discretization& dis)
         new_nodeids[7] = actele->inp_nodeIds_[2];
         break;
       }
-      case DRT::Elements::So_sh8::autoy:
+      case DRT::Elements::So_sh8::autos:
       case DRT::Elements::So_sh8::globy:{
 //        for (int node = 0; node < NUMNOD_SOH8; ++node) {
 //          orig_nodeids[node] = actele->NodeIds()[node];
@@ -933,7 +951,7 @@ int DRT::Elements::Sosh8Register::Initialize(DRT::Discretization& dis)
         new_nodeids[7] = actele->inp_nodeIds_[3];
         break;
       }
-      case DRT::Elements::So_sh8::autoz:
+      case DRT::Elements::So_sh8::autot:
       case DRT::Elements::So_sh8::globz:{ 
         // no resorting necessary
         for (int node = 0; node < 8; ++node) {
@@ -957,6 +975,31 @@ int DRT::Elements::Sosh8Register::Initialize(DRT::Discretization& dis)
   return 0;
 }
 
+void DRT::Elements::So_sh8::sosh8_setcylinderfiberdirection(Epetra_SerialDenseMatrix xrefe)
+{
+  // calculate hex8 midpoint
+  Epetra_SerialDenseVector midpoint(3);
+  Epetra_SerialDenseVector diagonal(3);
+  for (int i = 0; i < 3; ++i){
+    diagonal(i) = xrefe(0,i) - xrefe(4,i);
+    midpoint(i) = xrefe(0,i);
+  }
+  diagonal.Scale(0.5);
+  midpoint += diagonal;
+  // cylinder coordinates
+  //double radius = sqrt(midpoint(0)*midpoint(0) + midpoint(1)*midpoint(1));
+  double theta = atan(midpoint(1)/midpoint(0));
+  // tangent circumferential direction = - r_unit
+  Epetra_SerialDenseVector circ(3);
+  circ(0) = - cos(theta); circ(1) = - sin(theta);
+  // rotate by 45°
+  fiberdirection_[0] = circ(0);
+  fiberdirection_[1] = circ(1);
+  fiberdirection_[2] = sqrt(circ(0)*circ(0) + circ(1)*circ(1));
+  
+  return;
+  
+}
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOH8

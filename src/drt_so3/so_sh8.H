@@ -198,9 +198,9 @@ public:
     globy,    // global y
     globz,    // global z
     autoj,    // find automatically by Jacobian
-    autox,    // automatically set to x
-    autoy,    // automatically set to y
-    autoz,    // automatically set to z
+    autor,    // automatically set to x
+    autos,    // automatically set to y
+    autot,    // automatically set to z
     none,     // no rearrangement
   };
 
@@ -213,9 +213,6 @@ private:
 
   //! shell-thickness direction
   ThicknessDirection                             thickdir_;
-
-  //! vector in thickness direction
-  vector<double>                                 thickvec_;
 
   //! original (input) NodeIds, stored for eventual change to define thickness dir.
   int inp_nodeIds_[NUMNOD_SOH8];
@@ -242,9 +239,10 @@ private:
                        Epetra_SerialDenseMatrix& TinvT);    // corr. T^{-T}
 
   ThicknessDirection sosh8_findthickdir() ;
+  
+  void sosh8_setcylinderfiberdirection(Epetra_SerialDenseMatrix xrefe);
 
-  vector<double> getthicknessvector() const{ return thickvec_; }  
-
+ 
 }; // class So_sh8
 
 

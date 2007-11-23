@@ -359,6 +359,10 @@ protected:
   //! flag whether process of rewinding is done
   bool                                            donerewinding_;
 
+  //! vector in thickness direction for compatibility with sosh8
+  double                                         thickvec_[3];
+  double                                      fiberdirection_[3];
+
   // internal calculation methods
 
   // don't want = operator
@@ -410,9 +414,6 @@ protected:
                   vector<double>& residual);
 
   bool soh8_checkRewinding();
-
-  vector<double> getthicknessvector() const {dserror("not implemented"); return vector<double>(3);};
-
 
 }; // class So_hex8
 
