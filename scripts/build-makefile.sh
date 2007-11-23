@@ -82,7 +82,7 @@ ccarat: \$(PROGRAM)
 # and thus not included here. This rule is supposed to work everywhere.
 all: \$(PROGRAM) post_gid_txt post_out post_monitor post_file_manager post_cmp post_ensight
 
-drt: \$(PROGRAM) post_drt_gid post_drt_ensight
+drt: \$(PROGRAM) post_drt_gid post_drt_ensight post_drt_monitor
 
 \$(PROGRAM): \$(OBJECTS)
 	@echo "Linking \$(LD) \$(LDFLAGS) \$(LIBS) \$(INCLUDES) -o \$(PROGRAM)"
