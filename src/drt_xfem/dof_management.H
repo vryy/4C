@@ -83,6 +83,14 @@ private:
 }; // class EnrField
 
 
+// general function that returns the enrichment value for a given enrichment and position
+double enrValue(
+        const XFEM::Enrichment enr,
+        const blitz::Array<double,1>& actpos,
+        const blitz::Array<double,1>& nodalpos
+        );
+
+
 /*!
  \class ElementDofManager
 
@@ -101,13 +109,13 @@ public:
 
     std::string toString() const;
 
-    inline const std::set<EnrField> getDofs(const int gid) const
+    inline const std::set<EnrField> EnrFieldSetPerNode(const int gid) const
     {
         //TODO: return proper default set given as second argument
     	map<int, const std::set<EnrField> >::const_iterator tmp = nodalDofMap_.find(gid);
     	if (tmp == nodalDofMap_.end()){
-    	    //dserror("global node id not found!");
-    	    cout << "warning: global node id not found! Could be due to not properly initialized ElementDofManager";
+    	    cout << gid << endl;
+    	    dserror("EnrFieldSetPerNode: global node id not found!");
     	    std::set<EnrField> x;
     	    return x;
     	}
@@ -115,22 +123,19 @@ public:
     };
     
     /// function that returns node specific number of dofs or the given default number
-    inline int getNumDof(
+    inline int NumDofPerNode(
             const int gid,            /// global node id
             const int defaultnumdof   /// default number of degrees of freedom to be returned
             ) const
     {
     	map<int,int>::const_iterator tmp = nodalNumDofMap_.find(gid);
     	if (tmp == nodalNumDofMap_.end()){
-    		//dserror("global node id not found!");
-    		// "warning: global node id not found! Could be due to not properly initialized ElementDofManager"
-    	    //cout << "EleDM warning! ";
     		return defaultnumdof;
     	}
         return tmp->second;
     };
     
-    inline int NumDof(const XFEM::Physics::Field field) const
+    inline int NumDofPerField(const XFEM::Physics::Field field) const
     {
     	map<XFEM::Physics::Field, int>::const_iterator tmp = numParamsPerFieldMap_.find(field);
     	if (tmp == numParamsPerFieldMap_.end()){
@@ -138,8 +143,9 @@ public:
     		dserror("field not found!");
     	}
         return tmp->second;
-    }
+    };
     
+    /// return a list of local positions in a array of dofs
     inline vector<int> Dof(const XFEM::Physics::Field field) const
     {
     	map<XFEM::Physics::Field, vector<int> >::const_iterator tmp = paramsLocalEntries_.find(field);
@@ -148,8 +154,16 @@ public:
     		dserror("field not found!");
     	}
         return tmp->second;
-    }
+    };
+    
+    /// return 
 
+    double enrValue(
+            const XFEM::Enrichment enr,
+            const blitz::Array<double,1>& actpos,
+            const blitz::Array<double,1>& nodalpos
+            ) const {return XFEM::enrValue(enr,actpos,nodalpos);};
+    
 private:
 	//! unknowns for each global node id (gid)
 	map<int, const set <XFEM::EnrField> > nodalDofMap_;
@@ -199,7 +213,7 @@ public:
     	map<int, const std::set<EnrField> >::const_iterator tmp = nodalDofMap_.find(gid);
     	if (tmp == nodalDofMap_.end()){
     		//dserror("global node id not found!");
-    		cout << "warning: global node id not found! Could be due to not properly initialized ElementDofManager";
+    		cout << "getDofsAsPair: warning: global node id not found! Could be due to not properly initialized ElementDofManager";
     		return std::pair<int, const set<XFEM::EnrField> >(tmp->first,tmp->second);
     	}
         return std::pair<int, const set<XFEM::EnrField> >(tmp->first,tmp->second);

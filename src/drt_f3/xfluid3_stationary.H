@@ -75,8 +75,7 @@ namespace Elements
     /// Calculate matrix and rhs for stationary problem formulation
     void Sysmat(
             XFluid3* ele,                                       /// the element those matrix is calculated
-            const XFEM::DomainIntCells&       domainIntCells,   /// integration cells used for exact integration of discontinuities
-            const XFEM::BoundaryIntCells&     boundaryIntCells, /// facets used for integrating the surface forces
+            const RCP<XFEM::InterfaceHandle>  ih,               /// interface handle
             const blitz::Array<double,2>&     evelnp,           /// nodal velocities at n+1
             const blitz::Array<double,1>&     eprenp,           /// nodal pressure
             blitz::Array<double,2>&           estif,            /// element matrix to calculate
@@ -138,6 +137,9 @@ namespace Elements
     blitz::Array<double,1> visc_old_;
     blitz::Array<double,1> res_old_;
     blitz::Array<double,2> xder2_;
+    blitz::Array<double,1> enr_funct_; /// enriched shape functions
+    blitz::Array<double,2> enr_derxy_; /// enriched shape derivative with respect to x
+    blitz::Array<double,2> enr_derxy2_;/// enriched second shape derivative with respect to x
   };
 
 }

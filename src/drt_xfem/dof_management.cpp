@@ -12,6 +12,7 @@ Maintainer: Axel Gerstenberger
 */
 #ifdef CCADISCRET
 
+#include <blitz/array.h>
 #include "integrationcell.H"
 #include "dof_management.H"
 
@@ -75,17 +76,18 @@ XFEM::ElementDofManager::ElementDofManager(
 		map<int, const set <XFEM::EnrField> >& nodalDofMap) :
 			nodalDofMap_(nodalDofMap)
 {
-	set<XFEM::EnrField>::const_iterator enrfield;
+	// count number of dos for each node
 	map<int, const set<XFEM::EnrField> >::const_iterator tmp;
-	
 	for (tmp = nodalDofMap.begin(); tmp != nodalDofMap.end(); ++tmp) {
 		const int gid = tmp->first;
 		const set<XFEM::EnrField> enrfieldset = tmp->second;
 		const int numdof = enrfieldset.size();
+		dsassert(numdof > 0, "sollte jetzt noch nicht sein");
 		nodalNumDofMap_[gid] = numdof;
 	}
 	
 	// set number of parameters per field to zero
+	set<XFEM::EnrField>::const_iterator enrfield;
 	for (tmp = nodalDofMap.begin(); tmp != nodalDofMap.end(); ++tmp) {
 		const set<XFEM::EnrField> enrfieldset = tmp->second;
 		for (enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield) {
@@ -205,27 +207,27 @@ const map<int, const set <XFEM::EnrField> > XFEM::DofManager::createNodalDofMap(
     }
 
     // for surface 1, loop my col elements and add void enrichments to each elements member nodes
-//    const XFEM::Enrichment enr_void1(1, XFEM::Enrichment::typeVoid);
-//    for (int i=0; i<xfemdis->NumMyColElements(); ++i)
-//    {
-//        const DRT::Element* actele = xfemdis->lColElement(i);
-//        if (elementDomainIntCellMap.count(actele->Id()))
-//        {
-//            const int nen = actele->NumNode();
-//            const int* nodeidptrs = actele->NodeIds();
-//            for (int inen = 0; inen<nen; ++inen)
-//            {
-//                const int node_gid = nodeidptrs[inen];
-//                nodalDofMap[node_gid].insert(XFEM::EnrField(Physics::Velx, enr_void1));
-//                nodalDofMap[node_gid].insert(XFEM::EnrField(Physics::Vely, enr_void1));
-//                nodalDofMap[node_gid].insert(XFEM::EnrField(Physics::Velz, enr_void1));
-//                nodalDofMap[node_gid].insert(XFEM::EnrField(Physics::Pres, enr_void1));
-//                //              nodalDofMap[node_gid].insert(XFEM::EnrField(Physics::LMPLambdax, enr_void1));
-//                //              nodalDofMap[node_gid].insert(XFEM::EnrField(Physics::LMPLambday, enr_void1));
-//                //              nodalDofMap[node_gid].insert(XFEM::EnrField(Physics::LMPLambdaz, enr_void1));              
-//            };
-//        }
-//    };
+    const XFEM::Enrichment enr_void1(1, XFEM::Enrichment::typeVoid);
+    for (int i=0; i<xfemdis->NumMyColElements(); ++i)
+    {
+        const DRT::Element* actele = xfemdis->lColElement(i);
+        if (elementDomainIntCellMap.count(actele->Id()))
+        {
+            const int nen = actele->NumNode();
+            const int* nodeidptrs = actele->NodeIds();
+            for (int inen = 0; inen<nen; ++inen)
+            {
+                const int node_gid = nodeidptrs[inen];
+                //nodalDofMap[node_gid].insert(XFEM::EnrField(Physics::Velx, enr_void1));
+                //nodalDofMap[node_gid].insert(XFEM::EnrField(Physics::Vely, enr_void1));
+                //nodalDofMap[node_gid].insert(XFEM::EnrField(Physics::Velz, enr_void1));
+                //nodalDofMap[node_gid].insert(XFEM::EnrField(Physics::Pres, enr_void1));
+                //              nodalDofMap[node_gid].insert(XFEM::EnrField(Physics::LMPLambdax, enr_void1));
+                //              nodalDofMap[node_gid].insert(XFEM::EnrField(Physics::LMPLambday, enr_void1));
+                //              nodalDofMap[node_gid].insert(XFEM::EnrField(Physics::LMPLambdaz, enr_void1));              
+            };
+        }
+    };
     
     // create const sets from standard sets, so the sets cannot be changed by accident
     // could be removed later, if this is aperformance bottleneck
@@ -235,5 +237,78 @@ const map<int, const set <XFEM::EnrField> > XFEM::DofManager::createNodalDofMap(
     };
     return nodalDofMapFinal;
 }
+
+
+
+bool inCircleCylinder(
+        const blitz::Array<double,1>& pos,
+        const blitz::Array<double,1>& center,
+        const double cylinder_radius
+        )
+{
+    blitz::Range _  = blitz::Range::all();
+    const blitz::Array<double,1> origincircle(pos(_) - center(_));
+    
+    const double circle_radius = sqrt(origincircle(0)*origincircle(0) + origincircle(1)*origincircle(1));
+    
+    bool in_circle = false;
+    if (circle_radius <= cylinder_radius){
+        in_circle = true;
+    } else {
+        in_circle = false;
+    }
+    return in_circle;
+}
+
+/*----------------------------------------------------------------------*
+ |  get enrichment value                                        ag 11/07|
+ *----------------------------------------------------------------------*/
+double XFEM::enrValue(
+        const XFEM::Enrichment enr,
+        const blitz::Array<double,1>& actpos,
+        const blitz::Array<double,1>& nodalpos
+        )
+{
+    // return value
+    double enrval = 1.0;
+    
+    switch (enr.Type()){
+    case XFEM::Enrichment::typeStandard:
+    {
+        enrval = 1.0;
+        break;
+    }
+    case XFEM::Enrichment::typeVoid:
+    {
+        // TODO: generalize
+        blitz::Array<double,1> center(3);
+        center(0) = 0.6; center(1) = 0.5; center(2) = 0.0;
+        const double cylinder_radius = 0.2;
+       
+        double actpos_enr_val = 0.0;
+        if (inCircleCylinder(actpos, center, cylinder_radius)) {
+            actpos_enr_val = 0.0;
+        } else {
+            actpos_enr_val = 1.0;
+        }
+        
+        double nodepos_enr_val = 0.0;
+        if (inCircleCylinder(actpos, center, cylinder_radius)) {
+            nodepos_enr_val = 0.0;
+        } else {
+            nodepos_enr_val = 1.0;
+        }
+        
+        enrval = actpos_enr_val - nodepos_enr_val;
+        
+        break;
+    }
+    default:
+        dserror("unsupported enrichment!");
+    }
+    return enrval;
+}
+
+
 
 #endif  // #ifdef CCADISCRET

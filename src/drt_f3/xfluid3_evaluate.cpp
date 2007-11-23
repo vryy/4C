@@ -327,10 +327,10 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
           DRT::Utils::ExtractMyValues(*gridv,mygridv,lm);
         }
 
-        const int numparampres = eleDofManager_.NumDof(XFEM::Physics::Pres);
-        const int numparamvelx = eleDofManager_.NumDof(XFEM::Physics::Velx);
-        const int numparamvely = eleDofManager_.NumDof(XFEM::Physics::Vely);
-        const int numparamvelz = eleDofManager_.NumDof(XFEM::Physics::Velz);
+        const int numparampres = eleDofManager_.NumDofPerField(XFEM::Physics::Pres);
+        const int numparamvelx = eleDofManager_.NumDofPerField(XFEM::Physics::Velx);
+        const int numparamvely = eleDofManager_.NumDofPerField(XFEM::Physics::Vely);
+        const int numparamvelz = eleDofManager_.NumDofPerField(XFEM::Physics::Velz);
         dsassert((numparamvelx == numparamvely and numparamvelx == numparamvelz and numparamvelx == numparampres),
                 "for now, we enrich velocity and pressure together");
         
@@ -550,12 +550,19 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
           // split velocity and pressure
           // create blitz objects
 
-          const int numparampres = eleDofManager_.NumDof(XFEM::Physics::Pres);
-          const int numparamvelx = eleDofManager_.NumDof(XFEM::Physics::Velx);
-          const int numparamvely = eleDofManager_.NumDof(XFEM::Physics::Vely);
-          const int numparamvelz = eleDofManager_.NumDof(XFEM::Physics::Velz);
+          const int numparampres = eleDofManager_.NumDofPerField(XFEM::Physics::Pres);
+          const int numparamvelx = eleDofManager_.NumDofPerField(XFEM::Physics::Velx);
+          const int numparamvely = eleDofManager_.NumDofPerField(XFEM::Physics::Vely);
+          const int numparamvelz = eleDofManager_.NumDofPerField(XFEM::Physics::Velz);
           dsassert((numparamvelx == numparamvely and numparamvelx == numparamvelz and numparamvelx == numparampres),
         		  "for now, we enrich velocity and pressure together");
+          
+          if (numparamvelx > 8)
+          {
+              cout << this->NumNode() << endl;
+              cout << "numparam: " << numparamvelx << endl;
+              cout << "huhuhuh" << endl;
+          }
           
           const vector<int> velxdof = eleDofManager_.Dof(XFEM::Physics::Velx);
           const vector<int> velydof = eleDofManager_.Dof(XFEM::Physics::Vely);
@@ -574,10 +581,7 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
           const RCP<XFEM::InterfaceHandle> ih = params.get< RCP< XFEM::InterfaceHandle > >("interfacehandle",null);
           dsassert(ih!=null, "you did not give the InterfaceHandle");
           
-          //! information about domain integration cells
-          const XFEM::DomainIntCells   domainIntCells   = ih->domainIntCells(this->Id(),this->Shape());
-          //! information about boundary integration cells
-          const XFEM::BoundaryIntCells boundaryIntCells = ih->boundaryIntCells(this->Id());
+
           
           // get control parameter
           const double pseudotime = params.get<double>("total time",-1.0);
@@ -606,8 +610,7 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
         		  numparamvely, 
         		  numparamvelz, 
         		  numparampres)->Sysmat(this,
-        				 domainIntCells,
-        				 boundaryIntCells,
+        		         ih,
                          evelnp,
                          eprenp,
                          estif,
@@ -650,9 +653,10 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
 
     	// create a local dofmanager: ask DofManager to do that!?
     	eleDofManager_ = XFEM::ElementDofManager(nodaldofset);
-
-//    	cout << "storing refcountpointers at element: " << this->Id() << endl;
-//    	cout << eleDofManager_.toString() << endl;
+//        if ((this->Id()) < 10){
+//            cout << "storing refcountpointers at element: " << this->Id() << endl;
+//            cout << eleDofManager_.toString() << endl;
+//        }
     	
       }
     	break;

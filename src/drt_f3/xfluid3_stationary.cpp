@@ -55,7 +55,10 @@ DRT::Elements::XFluid3Stationary::XFluid3Stationary(
     conv_old_(3),
     visc_old_(3),
     res_old_(3),
-    xder2_(6,3,blitz::ColumnMajorArray<2>())
+    xder2_(6,3,blitz::ColumnMajorArray<2>()),
+    enr_funct_(numparamvelx),
+    enr_derxy_(3,numparamvelx,blitz::ColumnMajorArray<2>()),
+    enr_derxy2_(6,numparamvelx,blitz::ColumnMajorArray<2>())
 {
 }
 
@@ -64,8 +67,7 @@ DRT::Elements::XFluid3Stationary::XFluid3Stationary(
  |  calculate system matrix and rhs (private)                  gjb 11/07|
  *----------------------------------------------------------------------*/
 void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
-									   const XFEM::DomainIntCells&   domainIntCells,
-									   const XFEM::BoundaryIntCells& boundaryIntCells,
+                                       const RCP<XFEM::InterfaceHandle>  ih,
                                        const blitz::Array<double,2>&     evelnp,
                                        const blitz::Array<double,1>&     eprenp,
                                        blitz::Array<double,2>&           estif,
@@ -82,6 +84,12 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
 
   // set element data
   const DRT::Element::DiscretizationType distype = ele->Shape();
+  const int elegid = ele->Id();
+    
+  //! information about domain integration cells
+  const XFEM::DomainIntCells   domainIntCells   = ih->domainIntCells(elegid,distype);
+  //! information about boundary integration cells
+  const XFEM::BoundaryIntCells boundaryIntCells = ih->boundaryIntCells(elegid);
 
   // get node coordinates
   DRT::Node** const nodes = ele->Nodes();
@@ -116,6 +124,43 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
 //   blitz::Range uz = blitz::Range(2, 4*iel_-2, 4);
 //   blitz::Range p  = blitz::Range(3, 4*iel_-1, 4);
 
+  
+  const XFEM::ElementDofManager& dofman = ele->eleDofManager_;
+  
+  
+  // get enrichment value for each node at its nodal position
+  
+  // cout << "EleID " << ele->Id() << endl;
+  
+  bool output = false;
+  for (int inode=0; inode<iel_; inode++)
+  {
+    const int gid = nodes[inode]->Id();
+    //cout << (*nodes[inode]) << endl;
+    vector<double> x(3);
+    x[0] = xyze_(0,inode);
+    x[1] = xyze_(1,inode);
+    x[2] = xyze_(2,inode);
+    
+    //cout << "numdofpernode: " << ele->eleDofManager_.NumDofPerNode(gid, 19) << endl;
+    const std::set<XFEM::EnrField>  enrfieldset = dofman.EnrFieldSetPerNode(gid);
+    for (std::set<XFEM::EnrField>::const_iterator enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield) {
+        
+        const XFEM::Enrichment enr = enrfield->getEnrichment();
+        if (enr.Type() == XFEM::Enrichment::typeVoid)
+        {
+            //cin.get();
+            //output = true;
+        }
+        //cout << counter << "  " << enrfield->toString() << " enrval = " << enrval <<  " " << endl;
+    }
+  }
+  
+//  if (domainIntCells.size() != 1){
+//      cin.get();
+//  }
+  
+  
   // stabilization parameter
   // This has to be done before anything else is calculated because
   // we use the same arrays internally.
@@ -134,7 +179,7 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
       standard_integration = true;
   }
   else {
-      gaussrule = DRT::Utils::intrule_tet_10point;
+      gaussrule = DRT::Utils::intrule_tet_11point;
       standard_integration = false;
   }
   
@@ -159,6 +204,9 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
     const double e2 = e[1];
     const double e3 = e[2];
     const double detcell = e[3];
+    
+    // position of the gausspoint in physical coordinates
+    const blitz::Array<double,1> gauss_pos(blitz::sum(funct_(j)*xyze_(i,j),j));
     
     // shape functions and their derivatives
     DRT::Utils::shape_function_3D(funct_,e1,e2,e3,distype);
@@ -214,22 +262,63 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
     {
       DRT::Utils::shape_function_3D_deriv2(deriv2_,e1,e2,e3,distype);
       gder2(ele);
-
-      // calculate 2nd velocity derivatives at integration point
-      vderxy2_ = blitz::sum(derxy2_(j,k)*evelnp(i,k),k);
     }
     else
     {
       derxy2_  = 0.;
-      vderxy2_ = 0.;
     }
 
+    
+    // enrich shape functions and derivatives
+    // simplest case: jump or void enrichment
+    // -> no chain rule, since enrichment function derivative is zero
+    
+    int dofcounter = 0;
+    for (int inode=0; inode<iel_; inode++)
+    {
+      const int gid = nodes[inode]->Id();
+      const blitz::Array<double,1> nodalpos(xyze_(_,inode));
+      
+      const std::set<XFEM::EnrField>  enrfieldset = dofman.EnrFieldSetPerNode(gid);
+      for (std::set<XFEM::EnrField>::const_iterator enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
+      {
+          if (enrfield->getField() == XFEM::Physics::Velx)
+          {
+              const XFEM::Enrichment enr = enrfield->getEnrichment();
+              const double enrval = dofman.enrValue(enr,gauss_pos,nodalpos);
+              enr_funct_(dofcounter) = funct_(inode) * enrval;
+              enr_derxy_(_,dofcounter) = derxy_(_,inode) * enrval;
+              // compute second global derivative
+              if (higher_order_ele)
+              {
+                enr_derxy2_(_,dofcounter) = derxy2_(_,inode) * enrval;
+              }
+              else
+              {
+                enr_derxy2_(_,dofcounter) = 0.;
+              }
+              dofcounter += 1;
+          }
+      }
+    }
+    
+    
     // get velocities (n+g,i) at integration point
     velint_ = blitz::sum(funct_(j)*evelnp(i,j),j);
 
     // get velocity (np,i) derivatives at integration point
     vderxy_ = blitz::sum(derxy_(j,k)*evelnp(i,k),k);
 
+    // calculate 2nd velocity derivatives at integration point
+    if (higher_order_ele)
+    {
+      vderxy2_ = blitz::sum(derxy2_(j,k)*evelnp(i,k),k);
+    }
+    else
+    {
+      vderxy2_ = 0.;
+    }
+    
     // get pressure gradients
     gradp_ = blitz::sum(derxy_(i,j)*eprenp(j),j);
 

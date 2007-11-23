@@ -63,7 +63,6 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   upres_(params.get("write solution every", -1)),
   writestresses_(params.get<int>("write stresses", 0))
 {
-  cout << endl << "Ich bin der Xfluid time integrator" << endl;
 
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
