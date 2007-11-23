@@ -901,7 +901,7 @@ int main(
     Teuchos::CommandLineProcessor My_CLP;
     My_CLP.setDocString("Post DRT ensight Filter\n");
 
-    PostProblem problem = PostProblem(My_CLP, argc, argv);
+    PostProblem problem(My_CLP, argc, argv);
 
 #if 0
     for (int i = 0; i<problem.num_discr(); ++i)
