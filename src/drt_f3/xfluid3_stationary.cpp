@@ -102,7 +102,7 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
   }
 
   // dead load in element nodes
-  BodyForce(ele,pseudotime);
+  ////////////////////////////////////////////////////BodyForce(ele,pseudotime);
 
   // get viscosity
   // check here, if we really have a fluid !!
@@ -276,15 +276,15 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
     
     
     // get velocities (n+g,i) at integration point
-    velint_ = blitz::sum(funct_(j)*evelnp(i,j),j);
+    velint_ = blitz::sum(enr_funct_(j)*evelnp(i,j),j);
 
     // get velocity (np,i) derivatives at integration point
-    vderxy_ = blitz::sum(derxy_(j,k)*evelnp(i,k),k);
+    vderxy_ = blitz::sum(enr_derxy_(j,k)*evelnp(i,k),k);
 
     // calculate 2nd velocity derivatives at integration point
     if (higher_order_ele)
     {
-      vderxy2_ = blitz::sum(derxy2_(j,k)*evelnp(i,k),k);
+      vderxy2_ = blitz::sum(enr_derxy2_(j,k)*evelnp(i,k),k);
     }
     else
     {
@@ -292,12 +292,13 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
     }
     
     // get pressure gradients
-    gradp_ = blitz::sum(derxy_(i,j)*eprenp(j),j);
+    gradp_ = blitz::sum(enr_derxy_(i,j)*eprenp(j),j);
 
-    double press = blitz::sum(funct_*eprenp);
+    double press = blitz::sum(enr_funct_*eprenp);
 
     // get bodyforce in gausspoint
-    bodyforce_ = blitz::sum(edeadng_(i,j)*funct_(j),j);
+    bodyforce_ = 0.0;
+    //////////////////////////////////////////bodyforce_ = blitz::sum(enr_edeadng_(i,j)*enr_funct_(j),j);
 
     // perform integration for entire matrix and rhs
 
@@ -327,11 +328,11 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
     /*--- convective part u_old * grad (funct) --------------------------*/
     /* u_old_x * N,x  +  u_old_y * N,y + u_old_z * N,z
        with  N .. form function matrix                                   */
-    conv_c_ = blitz::sum(derxy_(j,i)*velint_(j), j);
+    conv_c_ = blitz::sum(enr_derxy_(j,i)*velint_(j), j);
 
     /*--- convective grid part u_G * grad (funct) -----------------------*/
     /* u_old_x * N,x  +  u_old_y * N,y   with  N .. form function matrix */
-      conv_g_ = 0.0;
+    conv_g_ = 0.0;
 
 
     /*--- reactive part funct * grad (u_old) ----------------------------*/
@@ -343,7 +344,7 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
        |  u_old_z,x   u_old_z,y   u_old_z,z  |
        \                                     /
        with  N .. form function matrix                                   */
-    conv_r_ = vderxy_(i, j)*funct_(k);
+    conv_r_ = vderxy_(i, j)*enr_funct_(k);
 
     /*--- viscous term  - grad * epsilon(u): ----------------------------*/
     /*   /                                                \
@@ -357,15 +358,15 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
          with N_x .. x-line of N
          N_y .. y-line of N                                             */
 
-    viscs2_(0,0,_) = - 0.5 * (2.0 * derxy2_(0,_) + derxy2_(1,_) + derxy2_(2,_));
-    viscs2_(0,1,_) = - 0.5 *  derxy2_(3,_);
-    viscs2_(0,2,_) = - 0.5 *  derxy2_(4,_);
-    viscs2_(1,0,_) = - 0.5 *  derxy2_(3,_);
-    viscs2_(1,1,_) = - 0.5 * (derxy2_(0,_) + 2.0 * derxy2_(1,_) + derxy2_(2,_));
-    viscs2_(1,2,_) = - 0.5 *  derxy2_(5,_);
-    viscs2_(2,0,_) = - 0.5 *  derxy2_(4,_);
-    viscs2_(2,1,_) = - 0.5 *  derxy2_(5,_);
-    viscs2_(2,2,_) = - 0.5 * (derxy2_(0,_) + derxy2_(1,_) + 2.0 * derxy2_(2,_));
+    viscs2_(0,0,_) = - 0.5 * (2.0 * enr_derxy2_(0,_) + enr_derxy2_(1,_) + enr_derxy2_(2,_));
+    viscs2_(0,1,_) = - 0.5 *  enr_derxy2_(3,_);
+    viscs2_(0,2,_) = - 0.5 *  enr_derxy2_(4,_);
+    viscs2_(1,0,_) = - 0.5 *  enr_derxy2_(3,_);
+    viscs2_(1,1,_) = - 0.5 * (enr_derxy2_(0,_) + 2.0 * enr_derxy2_(1,_) + enr_derxy2_(2,_));
+    viscs2_(1,2,_) = - 0.5 *  enr_derxy2_(5,_);
+    viscs2_(2,0,_) = - 0.5 *  enr_derxy2_(4,_);
+    viscs2_(2,1,_) = - 0.5 *  enr_derxy2_(5,_);
+    viscs2_(2,2,_) = - 0.5 * (enr_derxy2_(0,_) + enr_derxy2_(1,_) + 2.0 * enr_derxy2_(2,_));
 
     /* pressure gradient term derxy, funct without or with integration   *
      * by parts, respectively                                            */
@@ -380,8 +381,18 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
 
       for (int ui=0; ui<iel_; ++ui)
       {
+        const int UDF = ui*4;
+        const int VDF = ui*4+1;
+        const int WDF = ui*4+2;
+        const int PDF = ui*4+3;
+          
         for (int vi=0; vi<iel_; ++vi)
         {
+          const int dUDF = vi*4;
+          const int dVDF = vi*4+1;
+          const int dWDF = vi*4+2;
+          const int dPDF = vi*4+3;
+
           /* convection, convective part */
           /*
 
@@ -392,11 +403,11 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
                        \                       /
 
           */
-          estif(vi*4, ui*4)         += fac*funct_(vi)*conv_c_(ui) ;
-          estif(vi*4 + 1, ui*4 + 1) += fac*funct_(vi)*conv_c_(ui) ;
-          estif(vi*4 + 2, ui*4 + 2) += fac*funct_(vi)*conv_c_(ui) ;
+          estif(dUDF, UDF) += fac*funct_(vi)*conv_c_(ui) ;
+          estif(dVDF, VDF) += fac*funct_(vi)*conv_c_(ui) ;
+          estif(dWDF, WDF) += fac*funct_(vi)*conv_c_(ui) ;
 
-          /* Viskosit�tsterm */
+          /* Viskositaetsterm */
           /*
                         /                        \
                        |       /  \         / \   |
@@ -404,27 +415,27 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
                        |       \  /         \ /   |
                         \                        /
           */
-          estif(vi*4, ui*4)         += visc* fac*(2.0*derxy_(0, ui)*derxy_(0, vi)
+          estif(dUDF, UDF) += visc* fac*(2.0*derxy_(0, ui)*derxy_(0, vi)
                                                         +
-                                                        derxy_(1, ui)*derxy_(1, vi)
+                                             derxy_(1, ui)*derxy_(1, vi)
                                                         +
-                                                        derxy_(2, ui)*derxy_(2, vi)) ;
-          estif(vi*4, ui*4 + 1)     += visc*fac*derxy_(0, ui)*derxy_(1, vi) ;
-          estif(vi*4, ui*4 + 2)     += visc*fac*derxy_(0, ui)*derxy_(2, vi) ;
-          estif(vi*4 + 1, ui*4)     += visc*fac*derxy_(0, vi)*derxy_(1, ui) ;
-          estif(vi*4 + 1, ui*4 + 1) += visc*fac*(derxy_(0, ui)*derxy_(0, vi)
+                                             derxy_(2, ui)*derxy_(2, vi)) ;
+          estif(dUDF, VDF) += visc*fac*derxy_(0, ui)*derxy_(1, vi) ;
+          estif(dUDF, WDF) += visc*fac*derxy_(0, ui)*derxy_(2, vi) ;
+          estif(dVDF, UDF) += visc*fac*derxy_(0, vi)*derxy_(1, ui) ;
+          estif(dVDF, VDF) += visc*fac*(derxy_(0, ui)*derxy_(0, vi)
                                                         +
-                                                        2.0*derxy_(1, ui)*derxy_(1, vi)
+                                    2.0*derxy_(1, ui)*derxy_(1, vi)
                                                         +
-                                                        derxy_(2, ui)*derxy_(2, vi)) ;
-          estif(vi*4 + 1, ui*4 + 2) += visc*fac*derxy_(1, ui)*derxy_(2, vi) ;
-          estif(vi*4 + 2, ui*4)     += visc*fac*derxy_(0, vi)*derxy_(2, ui) ;
-          estif(vi*4 + 2, ui*4 + 1) += visc*fac*derxy_(1, vi)*derxy_(2, ui) ;
-          estif(vi*4 + 2, ui*4 + 2) += visc*fac*(derxy_(0, ui)*derxy_(0, vi)
+                                        derxy_(2, ui)*derxy_(2, vi)) ;
+          estif(dVDF, WDF) += visc*fac*derxy_(1, ui)*derxy_(2, vi) ;
+          estif(dWDF, UDF) += visc*fac*derxy_(0, vi)*derxy_(2, ui) ;
+          estif(dWDF, VDF) += visc*fac*derxy_(1, vi)*derxy_(2, ui) ;
+          estif(dWDF, WDF) += visc*fac*(derxy_(0, ui)*derxy_(0, vi)
                                                         +
-                                                        derxy_(1, ui)*derxy_(1, vi)
+                                        derxy_(1, ui)*derxy_(1, vi)
                                                         +
-                                                        2.0*derxy_(2, ui)*derxy_(2, vi)) ;
+                                    2.0*derxy_(2, ui)*derxy_(2, vi)) ;
 
           /* Druckterm */
           /*
@@ -436,9 +447,9 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
                           \                /
           */
 
-          estif(vi*4, ui*4 + 3)     += -(fac*funct_(ui)*derxy_(0, vi)) ;
-          estif(vi*4 + 1, ui*4 + 3) += -(fac*funct_(ui)*derxy_(1, vi)) ;
-          estif(vi*4 + 2, ui*4 + 3) += -(fac*funct_(ui)*derxy_(2, vi)) ;
+          estif(dUDF, PDF) += -(fac*funct_(ui)*derxy_(0, vi)) ;
+          estif(dVDF, PDF) += -(fac*funct_(ui)*derxy_(1, vi)) ;
+          estif(dWDF, PDF) += -(fac*funct_(ui)*derxy_(2, vi)) ;
 
 
           /* Divergenzfreiheit */
@@ -449,9 +460,9 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
                         |                  |
                          \                /
           */
-          estif(vi*4 + 3, ui*4)     += fac*funct_(vi)*derxy_(0, ui) ;
-          estif(vi*4 + 3, ui*4 + 1) += fac*funct_(vi)*derxy_(1, ui) ;
-          estif(vi*4 + 3, ui*4 + 2) += fac*funct_(vi)*derxy_(2, ui) ;
+          estif(dPDF, UDF) += fac*funct_(vi)*derxy_(0, ui) ;
+          estif(dPDF, VDF) += fac*funct_(vi)*derxy_(1, ui) ;
+          estif(dPDF, WDF) += fac*funct_(vi)*derxy_(2, ui) ;
 
         }
       }
@@ -460,9 +471,14 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
       {
         for (int ui=0; ui<iel_; ++ui)
         {
+          const int UDF = ui*4;
+          const int VDF = ui*4+1;
+          const int WDF = ui*4+2;
           for (int vi=0; vi<iel_; ++vi)
           {
-
+            const int dUDF = vi*4;
+            const int dVDF = vi*4+1;
+            const int dWDF = vi*4+2;
             /*  convection, reactive part
 
                    /                         \
@@ -471,45 +487,49 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
                   |  \          /   (i)       |
                    \                         /
             */
-            estif(vi*4, ui*4)         += fac*funct_(vi)*conv_r_(0, 0, ui) ;
-            estif(vi*4, ui*4 + 1)     += fac*funct_(vi)*conv_r_(0, 1, ui) ;
-            estif(vi*4, ui*4 + 2)     += fac*funct_(vi)*conv_r_(0, 2, ui) ;
-            estif(vi*4 + 1, ui*4)     += fac*funct_(vi)*conv_r_(1, 0, ui) ;
-            estif(vi*4 + 1, ui*4 + 1) += fac*funct_(vi)*conv_r_(1, 1, ui) ;
-            estif(vi*4 + 1, ui*4 + 2) += fac*funct_(vi)*conv_r_(1, 2, ui) ;
-            estif(vi*4 + 2, ui*4)     += fac*funct_(vi)*conv_r_(2, 0, ui) ;
-            estif(vi*4 + 2, ui*4 + 1) += fac*funct_(vi)*conv_r_(2, 1, ui) ;
-            estif(vi*4 + 2, ui*4 + 2) += fac*funct_(vi)*conv_r_(2, 2, ui) ;
+            estif(dUDF, UDF) += fac*enr_funct_(vi)*conv_r_(0, 0, ui) ;
+            estif(dUDF, VDF) += fac*enr_funct_(vi)*conv_r_(0, 1, ui) ;
+            estif(dUDF, WDF) += fac*enr_funct_(vi)*conv_r_(0, 2, ui) ;
+            estif(dVDF, UDF) += fac*enr_funct_(vi)*conv_r_(1, 0, ui) ;
+            estif(dVDF, VDF) += fac*enr_funct_(vi)*conv_r_(1, 1, ui) ;
+            estif(dVDF, WDF) += fac*enr_funct_(vi)*conv_r_(1, 2, ui) ;
+            estif(dWDF, UDF) += fac*enr_funct_(vi)*conv_r_(2, 0, ui) ;
+            estif(dWDF, VDF) += fac*enr_funct_(vi)*conv_r_(2, 1, ui) ;
+            estif(dWDF, WDF) += fac*enr_funct_(vi)*conv_r_(2, 2, ui) ;
           }
         }
       }
 
       for (int vi=0; vi<iel_; ++vi)
       {
+        const int dUDF = vi*4;
+        const int dVDF = vi*4+1;
+        const int dWDF = vi*4+2;
+        const int dPDF = vi*4+3;
         /* convection */
-        eforce(vi*4)     += -(fac*(velint_(0)*conv_r_(0, 0, vi)
+        eforce(dUDF) += -(fac*(velint_(0)*conv_r_(0, 0, vi)
                                           +
                                           velint_(1)*conv_r_(0, 1, vi)
                                           +
                                           velint_(2)*conv_r_(0, 2, vi))) ;
-        eforce(vi*4 + 1) += -(fac*(velint_(0)*conv_r_(1, 0, vi)
+        eforce(dVDF) += -(fac*(velint_(0)*conv_r_(1, 0, vi)
                                           +
                                           velint_(1)*conv_r_(1, 1, vi)
                                           +
                                           velint_(2)*conv_r_(1, 2, vi))) ;
-        eforce(vi*4 + 2) += -(fac*(velint_(0)*conv_r_(2, 0, vi)
+        eforce(dWDF) += -(fac*(velint_(0)*conv_r_(2, 0, vi)
                                           +
                                           velint_(1)*conv_r_(2, 1, vi)
                                           +
                                           velint_(2)*conv_r_(2, 2, vi))) ;
 
         /* pressure */
-        eforce(vi*4)     += press*fac*derxy_(0, vi) ;
-        eforce(vi*4 + 1) += press*fac*derxy_(1, vi) ;
-        eforce(vi*4 + 2) += press*fac*derxy_(2, vi) ;
+        eforce(dUDF) += press*fac*derxy_(0, vi) ;
+        eforce(dVDF) += press*fac*derxy_(1, vi) ;
+        eforce(dWDF) += press*fac*derxy_(2, vi) ;
 
         /* viscosity */
-        eforce(vi*4)     += -(visc*fac*(2.0*derxy_(0, vi)*vderxy_(0, 0)
+        eforce(dUDF)     += -(visc*fac*(2.0*derxy_(0, vi)*vderxy_(0, 0)
                                                +
                                                derxy_(1, vi)*vderxy_(0, 1)
                                                +
@@ -518,7 +538,7 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
                                                derxy_(2, vi)*vderxy_(0, 2)
                                                +
                                                derxy_(2, vi)*vderxy_(2, 0))) ;
-        eforce(vi*4 + 1) += -(visc*fac*(derxy_(0, vi)*vderxy_(0, 1)
+        eforce(dVDF) += -(visc*fac*(derxy_(0, vi)*vderxy_(0, 1)
                                                +
                                                derxy_(0, vi)*vderxy_(1, 0)
                                                +
@@ -527,7 +547,7 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
                                                derxy_(2, vi)*vderxy_(1, 2)
                                                +
                                                derxy_(2, vi)*vderxy_(2, 1))) ;
-        eforce(vi*4 + 2) += -(visc*fac*(derxy_(0, vi)*vderxy_(0, 2)
+        eforce(dWDF) += -(visc*fac*(derxy_(0, vi)*vderxy_(0, 2)
                                                +
                                                derxy_(0, vi)*vderxy_(2, 0)
                                                +
@@ -538,16 +558,14 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
                                                2.0*derxy_(2, vi)*vderxy_(2, 2))) ;
 
         // source term of the right hand side
-        eforce(vi*4)     += fac*funct_(vi)*rhsint_(0) ;
-        eforce(vi*4 + 1) += fac*funct_(vi)*rhsint_(1) ;
-        eforce(vi*4 + 2) += fac*funct_(vi)*rhsint_(2) ;
+        eforce(dUDF) += fac*funct_(vi)*rhsint_(0) ;
+        eforce(dVDF) += fac*funct_(vi)*rhsint_(1) ;
+        eforce(dWDF) += fac*funct_(vi)*rhsint_(2) ;
 
         // continuity equation
-        eforce(vi*4 + 3) += -(fac*(conv_r_(0, 0, vi)
-                                          +
-                                          conv_r_(1, 1, vi)
-                                          +
-                                          conv_r_(2, 2, vi))) ;
+        eforce(dPDF) += -(fac*(conv_r_(0, 0, vi) +
+                               conv_r_(1, 1, vi) +
+                               conv_r_(2, 2, vi))) ;
       } // vi
 
       
@@ -558,8 +576,13 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
       {
         for (int ui=0; ui<iel_; ++ui)
         {
+          const int UDF = ui*4;
+          const int VDF = ui*4+1;
+          const int WDF = ui*4+2;
+          const int PDF = ui*4+3;
           for (int vi=0; vi<iel_; ++vi)
           {
+            const int dPDF = vi*4+3;
             /* pressure stabilisation: convection, convective part */
             /*
 
@@ -570,9 +593,9 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
                       \                            /
 
             */
-            estif(vi*4 + 3, ui*4)     += tau_Mp*conv_c_(ui)*derxy_(0, vi) ;
-            estif(vi*4 + 3, ui*4 + 1) += tau_Mp*conv_c_(ui)*derxy_(1, vi) ;
-            estif(vi*4 + 3, ui*4 + 2) += tau_Mp*conv_c_(ui)*derxy_(2, vi) ;
+            estif(dPDF, UDF) += tau_Mp*conv_c_(ui)*derxy_(0, vi) ;
+            estif(dPDF, VDF) += tau_Mp*conv_c_(ui)*derxy_(1, vi) ;
+            estif(dPDF, WDF) += tau_Mp*conv_c_(ui)*derxy_(2, vi) ;
 
 
             /* pressure stabilisation: viscosity (-L_visc_u) */
@@ -583,21 +606,15 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
                     |               \  /             |
                      \                              /
             */
-            estif(vi*4 + 3, ui*4)     += 2.0*visc*tau_Mp*(derxy_(0, vi)*viscs2_(0, 0, ui)
-                                                              +
-                                                              derxy_(1, vi)*viscs2_(0, 1, ui)
-                                                              +
-                                                              derxy_(2, vi)*viscs2_(0, 2, ui)) ;
-            estif(vi*4 + 3, ui*4 + 1) += 2.0*visc*tau_Mp*(derxy_(0, vi)*viscs2_(0, 1, ui)
-                                                              +
-                                                              derxy_(1, vi)*viscs2_(1, 1, ui)
-                                                              +
-                                                              derxy_(2, vi)*viscs2_(1, 2, ui)) ;
-            estif(vi*4 + 3, ui*4 + 2) += 2.0*visc*tau_Mp*(derxy_(0, vi)*viscs2_(0, 2, ui)
-                                                              +
-                                                              derxy_(1, vi)*viscs2_(1, 2, ui)
-                                                              +
-                                                              derxy_(2, vi)*viscs2_(2, 2, ui)) ;
+            estif(dPDF, UDF) += 2.0*visc*tau_Mp*(derxy_(0, vi)*viscs2_(0, 0, ui) +
+                                                 derxy_(1, vi)*viscs2_(0, 1, ui) +
+                                                 derxy_(2, vi)*viscs2_(0, 2, ui)) ;
+            estif(dPDF, VDF) += 2.0*visc*tau_Mp*(derxy_(0, vi)*viscs2_(0, 1, ui) +
+                                                 derxy_(1, vi)*viscs2_(1, 1, ui) +
+                                                 derxy_(2, vi)*viscs2_(1, 2, ui)) ;
+            estif(dPDF, WDF) += 2.0*visc*tau_Mp*(derxy_(0, vi)*viscs2_(0, 2, ui) +
+                                                 derxy_(1, vi)*viscs2_(1, 2, ui) +
+                                                 derxy_(2, vi)*viscs2_(2, 2, ui)) ;
 
             /* pressure stabilisation: pressure( L_pres_p) */
             /*
@@ -607,11 +624,9 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
                        |                      |
                         \                    /
             */
-            estif(vi*4 + 3, ui*4 + 3) += tau_Mp*(derxy_(0, ui)*derxy_(0, vi)
-                                                     +
-                                                     derxy_(1, ui)*derxy_(1, vi)
-                                                     +
-                                                     derxy_(2, ui)*derxy_(2, vi)) ;
+            estif(dPDF, PDF) += tau_Mp*(derxy_(0, ui)*derxy_(0, vi) +
+                                        derxy_(1, ui)*derxy_(1, vi) +
+                                        derxy_(2, ui)*derxy_(2, vi)) ;
 
 
           } // vi
@@ -621,8 +636,12 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
         {
           for (int ui=0; ui<iel_; ++ui)
           {
+            const int UDF = ui*4;
+            const int VDF = ui*4+1;
+            const int WDF = ui*4+2;
             for (int vi=0; vi<iel_; ++vi)
             {
+              const int dPDF = vi*4+3;
               /*  pressure stabilisation: convection, reactive part
 
                   /                             \
@@ -632,17 +651,17 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
                   \                             /
 
               */
-              estif(vi*4 + 3, ui*4)     += tau_Mp*(derxy_(0, vi)*conv_r_(0, 0, ui)
+              estif(dPDF, UDF) += tau_Mp*(derxy_(0, vi)*conv_r_(0, 0, ui)
                                                        +
                                                        derxy_(1, vi)*conv_r_(1, 0, ui)
                                                        +
                                                        derxy_(2, vi)*conv_r_(2, 0, ui)) ;
-              estif(vi*4 + 3, ui*4 + 1) += tau_Mp*(derxy_(0, vi)*conv_r_(0, 1, ui)
+              estif(dPDF, VDF) += tau_Mp*(derxy_(0, vi)*conv_r_(0, 1, ui)
                                                        +
                                                        derxy_(1, vi)*conv_r_(1, 1, ui)
                                                        +
                                                        derxy_(2, vi)*conv_r_(2, 1, ui)) ;
-              estif(vi*4 + 3, ui*4 + 2) += tau_Mp*(derxy_(0, vi)*conv_r_(0, 2, ui)
+              estif(dPDF, WDF) += tau_Mp*(derxy_(0, vi)*conv_r_(0, 2, ui)
                                                        +
                                                        derxy_(1, vi)*conv_r_(1, 2, ui)
                                                        +
@@ -655,12 +674,11 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
 
         for (int vi=0; vi<iel_; ++vi)
         {
+          const int dPDF = vi*4+3;
           // pressure stabilisation
-          eforce(vi*4 + 3) -= tau_Mp*(res_old_(0)*derxy_(0, vi)
-                                         +
-                                         res_old_(1)*derxy_(1, vi)
-                                         +
-                                         res_old_(2)*derxy_(2, vi)) ;
+          eforce(dPDF) -= tau_Mp*(res_old_(0)*enr_derxy_(0, vi) +
+                                  res_old_(1)*enr_derxy_(1, vi) +
+                                  res_old_(2)*enr_derxy_(2, vi)) ;
         }
 
       }
@@ -672,8 +690,15 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
       {
         for (int ui=0; ui<iel_; ++ui)
         {
+          const int UDF = ui*4;
+          const int VDF = ui*4+1;
+          const int WDF = ui*4+2;
+          const int PDF = ui*4+3;
           for (int vi=0; vi<iel_; ++vi)
           {
+            const int dUDF = vi*4;
+            const int dVDF = vi*4+1;
+            const int dWDF = vi*4+2;
             /* supg stabilisation: convective part ( L_conv_u) */
 
             /*
@@ -686,9 +711,9 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
 
             */
 
-            estif(vi*4, ui*4)         += tau_M*conv_c_(ui)*conv_c_(vi) ;
-            estif(vi*4 + 1, ui*4 + 1) += tau_M*conv_c_(ui)*conv_c_(vi) ;
-            estif(vi*4 + 2, ui*4 + 2) += tau_M*conv_c_(ui)*conv_c_(vi) ;
+            estif(dUDF, UDF) += tau_M*conv_c_(ui)*conv_c_(vi) ;
+            estif(dVDF, VDF) += tau_M*conv_c_(ui)*conv_c_(vi) ;
+            estif(dWDF, WDF) += tau_M*conv_c_(ui)*conv_c_(vi) ;
 
             /* supg stabilisation: pressure part  ( L_pres_p) */
             /*
@@ -698,9 +723,9 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
                      |              \ (i)       /     |
                       \                              /
             */
-            estif(vi*4, ui*4 + 3)     += tau_M*conv_c_(vi)*derxy_(0, ui) ;
-            estif(vi*4 + 1, ui*4 + 3) += tau_M*conv_c_(vi)*derxy_(1, ui) ;
-            estif(vi*4 + 2, ui*4 + 3) += tau_M*conv_c_(vi)*derxy_(2, ui) ;
+            estif(dUDF, PDF) += tau_M*conv_c_(vi)*derxy_(0, ui) ;
+            estif(dVDF, PDF) += tau_M*conv_c_(vi)*derxy_(1, ui) ;
+            estif(dWDF, PDF) += tau_M*conv_c_(vi)*derxy_(2, ui) ;
 
             /* supg stabilisation: viscous part  (-L_visc_u) */
             /*
@@ -710,15 +735,15 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
                  |               \  /    \ (i)        /     |
                   \                                        /
             */
-            estif(vi*4, ui*4)         += 2.0*visc*tau_M*conv_c_(vi)*viscs2_(0, 0, ui) ;
-            estif(vi*4, ui*4 + 1)     += 2.0*visc*tau_M*conv_c_(vi)*viscs2_(0, 1, ui) ;
-            estif(vi*4, ui*4 + 2)     += 2.0*visc*tau_M*conv_c_(vi)*viscs2_(0, 2, ui) ;
-            estif(vi*4 + 1, ui*4)     += 2.0*visc*tau_M*conv_c_(vi)*viscs2_(0, 1, ui) ;
-            estif(vi*4 + 1, ui*4 + 1) += 2.0*visc*tau_M*conv_c_(vi)*viscs2_(1, 1, ui) ;
-            estif(vi*4 + 1, ui*4 + 2) += 2.0*visc*tau_M*conv_c_(vi)*viscs2_(1, 2, ui) ;
-            estif(vi*4 + 2, ui*4)     += 2.0*visc*tau_M*conv_c_(vi)*viscs2_(0, 2, ui) ;
-            estif(vi*4 + 2, ui*4 + 1) += 2.0*visc*tau_M*conv_c_(vi)*viscs2_(1, 2, ui) ;
-            estif(vi*4 + 2, ui*4 + 2) += 2.0*visc*tau_M*conv_c_(vi)*viscs2_(2, 2, ui) ;
+            estif(dUDF, UDF) += 2.0*visc*tau_M*conv_c_(vi)*viscs2_(0, 0, ui) ;
+            estif(dUDF, VDF) += 2.0*visc*tau_M*conv_c_(vi)*viscs2_(0, 1, ui) ;
+            estif(dUDF, WDF) += 2.0*visc*tau_M*conv_c_(vi)*viscs2_(0, 2, ui) ;
+            estif(dVDF, UDF) += 2.0*visc*tau_M*conv_c_(vi)*viscs2_(0, 1, ui) ;
+            estif(dVDF, VDF) += 2.0*visc*tau_M*conv_c_(vi)*viscs2_(1, 1, ui) ;
+            estif(dVDF, WDF) += 2.0*visc*tau_M*conv_c_(vi)*viscs2_(1, 2, ui) ;
+            estif(dWDF, UDF) += 2.0*visc*tau_M*conv_c_(vi)*viscs2_(0, 2, ui) ;
+            estif(dWDF, VDF) += 2.0*visc*tau_M*conv_c_(vi)*viscs2_(1, 2, ui) ;
+            estif(dWDF, WDF) += 2.0*visc*tau_M*conv_c_(vi)*viscs2_(2, 2, ui) ;
 
 
           } // vi
@@ -729,8 +754,14 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
         {
           for (int ui=0; ui<iel_; ++ui)
           {
+            const int UDF = ui*4;
+            const int VDF = ui*4+1;
+            const int WDF = ui*4+2;
             for (int vi=0; vi<iel_; ++vi)
             {
+              const int dUDF = vi*4;
+              const int dVDF = vi*4+1;
+              const int dWDF = vi*4+2;
               /* supg stabilisation: reactive part of convection and linearisation of testfunction ( L_conv_u) */
               /*
                        /                                           \
@@ -745,63 +776,63 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
                       |    \          /   (i)    \ (i)        /     |
                        \                                           /
               */
-              estif(vi*4, ui*4)         += tau_M*(conv_c_(vi)*conv_r_(0, 0, ui)
+              estif(dUDF, UDF) += tau_M*(conv_c_(vi)*conv_r_(0, 0, ui)
                                                       +
                                                       velint_(0)*derxy_(0, vi)*conv_r_(0, 0, ui)
                                                       +
                                                       velint_(1)*derxy_(0, vi)*conv_r_(0, 1, ui)
                                                       +
                                                       velint_(2)*derxy_(0, vi)*conv_r_(0, 2, ui)) ;
-              estif(vi*4, ui*4 + 1)     += tau_M*(conv_c_(vi)*conv_r_(0, 1, ui)
+              estif(dUDF, VDF) += tau_M*(conv_c_(vi)*conv_r_(0, 1, ui)
                                                       +
                                                       velint_(0)*derxy_(1, vi)*conv_r_(0, 0, ui)
                                                       +
                                                       velint_(1)*derxy_(1, vi)*conv_r_(0, 1, ui)
                                                       +
                                                       velint_(2)*derxy_(1, vi)*conv_r_(0, 2, ui)) ;
-              estif(vi*4, ui*4 + 2)     += tau_M*(conv_c_(vi)*conv_r_(0, 2, ui)
+              estif(dUDF, WDF) += tau_M*(conv_c_(vi)*conv_r_(0, 2, ui)
                                                       +
                                                       velint_(0)*derxy_(2, vi)*conv_r_(0, 0, ui)
                                                       +
                                                       velint_(1)*derxy_(2, vi)*conv_r_(0, 1, ui)
                                                       +
                                                       velint_(2)*derxy_(2, vi)*conv_r_(0, 2, ui)) ;
-              estif(vi*4 + 1, ui*4)     += tau_M*(conv_c_(vi)*conv_r_(1, 0, ui)
+              estif(dVDF, UDF) += tau_M*(conv_c_(vi)*conv_r_(1, 0, ui)
                                                       +
                                                       velint_(0)*derxy_(0, vi)*conv_r_(1, 0, ui)
                                                       +
                                                       velint_(1)*derxy_(0, vi)*conv_r_(1, 1, ui)
                                                       +
                                                       velint_(2)*derxy_(0, vi)*conv_r_(1, 2, ui)) ;
-              estif(vi*4 + 1, ui*4 + 1) += tau_M*(conv_c_(vi)*conv_r_(1, 1, ui)
+              estif(dVDF, VDF) += tau_M*(conv_c_(vi)*conv_r_(1, 1, ui)
                                                       +
                                                       velint_(0)*derxy_(1, vi)*conv_r_(1, 0, ui)
                                                       +
                                                       velint_(1)*derxy_(1, vi)*conv_r_(1, 1, ui)
                                                       +
                                                       velint_(2)*derxy_(1, vi)*conv_r_(1, 2, ui)) ;
-              estif(vi*4 + 1, ui*4 + 2) += tau_M*(conv_c_(vi)*conv_r_(1, 2, ui)
+              estif(dVDF, WDF) += tau_M*(conv_c_(vi)*conv_r_(1, 2, ui)
                                                       +
                                                       velint_(0)*derxy_(2, vi)*conv_r_(1, 0, ui)
                                                       +
                                                       velint_(1)*derxy_(2, vi)*conv_r_(1, 1, ui)
                                                       +
                                                       velint_(2)*derxy_(2, vi)*conv_r_(1, 2, ui)) ;
-              estif(vi*4 + 2, ui*4)     += tau_M*(conv_c_(vi)*conv_r_(2, 0, ui)
+              estif(dWDF, UDF) += tau_M*(conv_c_(vi)*conv_r_(2, 0, ui)
                                                       +
                                                       velint_(0)*derxy_(0, vi)*conv_r_(2, 0, ui)
                                                       +
                                                       velint_(1)*derxy_(0, vi)*conv_r_(2, 1, ui)
                                                       +
                                                       velint_(2)*derxy_(0, vi)*conv_r_(2, 2, ui)) ;
-              estif(vi*4 + 2, ui*4 + 1) += tau_M*(conv_c_(vi)*conv_r_(2, 1, ui)
+              estif(dWDF, VDF) += tau_M*(conv_c_(vi)*conv_r_(2, 1, ui)
                                                       +
                                                       velint_(0)*derxy_(1, vi)*conv_r_(2, 0, ui)
                                                       +
                                                       velint_(1)*derxy_(1, vi)*conv_r_(2, 1, ui)
                                                       +
                                                       velint_(2)*derxy_(1, vi)*conv_r_(2, 2, ui)) ;
-              estif(vi*4 + 2, ui*4 + 2) += tau_M*(conv_c_(vi)*conv_r_(2, 2, ui)
+              estif(dWDF, WDF) += tau_M*(conv_c_(vi)*conv_r_(2, 2, ui)
                                                       +
                                                       velint_(0)*derxy_(2, vi)*conv_r_(2, 0, ui)
                                                       +
@@ -818,15 +849,15 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
                            |         (i)    \          /     |
                             \                               /
               */
-              estif(vi*4, ui*4)         += tau_M*funct_(ui)*gradp_(0)*derxy_(0, vi) ;
-              estif(vi*4, ui*4 + 1)     += tau_M*funct_(ui)*gradp_(0)*derxy_(1, vi) ;
-              estif(vi*4, ui*4 + 2)     += tau_M*funct_(ui)*gradp_(0)*derxy_(2, vi) ;
-              estif(vi*4 + 1, ui*4)     += tau_M*funct_(ui)*gradp_(1)*derxy_(0, vi) ;
-              estif(vi*4 + 1, ui*4 + 1) += tau_M*funct_(ui)*gradp_(1)*derxy_(1, vi) ;
-              estif(vi*4 + 1, ui*4 + 2) += tau_M*funct_(ui)*gradp_(1)*derxy_(2, vi) ;
-              estif(vi*4 + 2, ui*4)     += tau_M*funct_(ui)*gradp_(2)*derxy_(0, vi) ;
-              estif(vi*4 + 2, ui*4 + 1) += tau_M*funct_(ui)*gradp_(2)*derxy_(1, vi) ;
-              estif(vi*4 + 2, ui*4 + 2) += tau_M*funct_(ui)*gradp_(2)*derxy_(2, vi) ;
+              estif(dUDF, UDF) += tau_M*funct_(ui)*gradp_(0)*derxy_(0, vi) ;
+              estif(dUDF, VDF) += tau_M*funct_(ui)*gradp_(0)*derxy_(1, vi) ;
+              estif(dUDF, WDF) += tau_M*funct_(ui)*gradp_(0)*derxy_(2, vi) ;
+              estif(dVDF, UDF) += tau_M*funct_(ui)*gradp_(1)*derxy_(0, vi) ;
+              estif(dVDF, VDF) += tau_M*funct_(ui)*gradp_(1)*derxy_(1, vi) ;
+              estif(dVDF, WDF) += tau_M*funct_(ui)*gradp_(1)*derxy_(2, vi) ;
+              estif(dWDF, UDF) += tau_M*funct_(ui)*gradp_(2)*derxy_(0, vi) ;
+              estif(dWDF, VDF) += tau_M*funct_(ui)*gradp_(2)*derxy_(1, vi) ;
+              estif(dWDF, WDF) += tau_M*funct_(ui)*gradp_(2)*derxy_(2, vi) ;
 
 
               /* supg stabilisation: viscous part, linearisation of test function  (-L_visc_u) */
@@ -837,15 +868,15 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
                      |               \ (i) /    \          /     |
                       \                                         /
               */
-              estif(vi*4, ui*4)         += -2.0*visc*tau_M*funct_(ui)*visc_old_(0)*derxy_(0, vi) ;
-              estif(vi*4, ui*4 + 1)     += -2.0*visc*tau_M*funct_(ui)*visc_old_(0)*derxy_(1, vi) ;
-              estif(vi*4, ui*4 + 2)     += -2.0*visc*tau_M*funct_(ui)*visc_old_(0)*derxy_(2, vi) ;
-              estif(vi*4 + 1, ui*4)     += -2.0*visc*tau_M*funct_(ui)*visc_old_(1)*derxy_(0, vi) ;
-              estif(vi*4 + 1, ui*4 + 1) += -2.0*visc*tau_M*funct_(ui)*visc_old_(1)*derxy_(1, vi) ;
-              estif(vi*4 + 1, ui*4 + 2) += -2.0*visc*tau_M*funct_(ui)*visc_old_(1)*derxy_(2, vi) ;
-              estif(vi*4 + 2, ui*4)     += -2.0*visc*tau_M*funct_(ui)*visc_old_(2)*derxy_(0, vi) ;
-              estif(vi*4 + 2, ui*4 + 1) += -2.0*visc*tau_M*funct_(ui)*visc_old_(2)*derxy_(1, vi) ;
-              estif(vi*4 + 2, ui*4 + 2) += -2.0*visc*tau_M*funct_(ui)*visc_old_(2)*derxy_(2, vi) ;
+              estif(dUDF, UDF) += -2.0*visc*tau_M*funct_(ui)*visc_old_(0)*derxy_(0, vi) ;
+              estif(dUDF, VDF) += -2.0*visc*tau_M*funct_(ui)*visc_old_(0)*derxy_(1, vi) ;
+              estif(dUDF, WDF) += -2.0*visc*tau_M*funct_(ui)*visc_old_(0)*derxy_(2, vi) ;
+              estif(dVDF, UDF) += -2.0*visc*tau_M*funct_(ui)*visc_old_(1)*derxy_(0, vi) ;
+              estif(dVDF, VDF) += -2.0*visc*tau_M*funct_(ui)*visc_old_(1)*derxy_(1, vi) ;
+              estif(dVDF, WDF) += -2.0*visc*tau_M*funct_(ui)*visc_old_(1)*derxy_(2, vi) ;
+              estif(dWDF, UDF) += -2.0*visc*tau_M*funct_(ui)*visc_old_(2)*derxy_(0, vi) ;
+              estif(dWDF, VDF) += -2.0*visc*tau_M*funct_(ui)*visc_old_(2)*derxy_(1, vi) ;
+              estif(dWDF, WDF) += -2.0*visc*tau_M*funct_(ui)*visc_old_(2)*derxy_(2, vi) ;
 
 
               /* supg stabilisation: bodyforce part, linearisation of test function */
@@ -858,15 +889,15 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
                           \                             /
 
               */
-              estif(vi*4    , ui*4)     += -(tau_M*funct_(ui)*derxy_(0, vi)*rhsint_(0)) ;
-              estif(vi*4    , ui*4 + 1) += -(tau_M*funct_(ui)*derxy_(1, vi)*rhsint_(0)) ;
-              estif(vi*4    , ui*4 + 2) += -(tau_M*funct_(ui)*derxy_(2, vi)*rhsint_(0)) ;
-              estif(vi*4 + 1, ui*4)     += -(tau_M*funct_(ui)*derxy_(0, vi)*rhsint_(1)) ;
-              estif(vi*4 + 1, ui*4 + 1) += -(tau_M*funct_(ui)*derxy_(1, vi)*rhsint_(1)) ;
-              estif(vi*4 + 1, ui*4 + 2) += -(tau_M*funct_(ui)*derxy_(2, vi)*rhsint_(1)) ;
-              estif(vi*4 + 2, ui*4)     += -(tau_M*funct_(ui)*derxy_(0, vi)*rhsint_(2)) ;
-              estif(vi*4 + 2, ui*4 + 1) += -(tau_M*funct_(ui)*derxy_(1, vi)*rhsint_(2)) ;
-              estif(vi*4 + 2, ui*4 + 2) += -(tau_M*funct_(ui)*derxy_(2, vi)*rhsint_(2)) ;
+              estif(dUDF, UDF) += -(tau_M*funct_(ui)*derxy_(0, vi)*rhsint_(0)) ;
+              estif(dUDF, VDF) += -(tau_M*funct_(ui)*derxy_(1, vi)*rhsint_(0)) ;
+              estif(dUDF, WDF) += -(tau_M*funct_(ui)*derxy_(2, vi)*rhsint_(0)) ;
+              estif(dVDF, UDF) += -(tau_M*funct_(ui)*derxy_(0, vi)*rhsint_(1)) ;
+              estif(dVDF, VDF) += -(tau_M*funct_(ui)*derxy_(1, vi)*rhsint_(1)) ;
+              estif(dVDF, WDF) += -(tau_M*funct_(ui)*derxy_(2, vi)*rhsint_(1)) ;
+              estif(dWDF, UDF) += -(tau_M*funct_(ui)*derxy_(0, vi)*rhsint_(2)) ;
+              estif(dWDF, VDF) += -(tau_M*funct_(ui)*derxy_(1, vi)*rhsint_(2)) ;
+              estif(dWDF, WDF) += -(tau_M*funct_(ui)*derxy_(2, vi)*rhsint_(2)) ;
 
             } // vi
           } // ui
@@ -874,10 +905,13 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
 
         for (int vi=0; vi<iel_; ++vi)
         {
+          const int dUDF = vi*4;
+          const int dVDF = vi*4+1;
+          const int dWDF = vi*4+2;
           // supg stabilisation
-          eforce(vi*4)     += -(tau_M*conv_c_(vi)*res_old_(0)) ;
-          eforce(vi*4 + 1) += -(tau_M*conv_c_(vi)*res_old_(1)) ;
-          eforce(vi*4 + 2) += -(tau_M*conv_c_(vi)*res_old_(2)) ;
+          eforce(dUDF) += -(tau_M*conv_c_(vi)*res_old_(0)) ;
+          eforce(dVDF) += -(tau_M*conv_c_(vi)*res_old_(1)) ;
+          eforce(dWDF) += -(tau_M*conv_c_(vi)*res_old_(2)) ;
         }
       }
 
@@ -895,8 +929,15 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
       {
         for (int ui=0; ui<iel_; ++ui)
         {
+          const int UDF = ui*4;
+          const int VDF = ui*4+1;
+          const int WDF = ui*4+2;
+          const int PDF = ui*4+3;
           for (int vi=0; vi<iel_; ++vi)
           {
+            const int dUDF = vi*4;
+            const int dVDF = vi*4+1;
+            const int dWDF = vi*4+2;
             /* viscous stabilisation, inertia part */
             /*
                         /                  \
@@ -905,15 +946,15 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
                        |                    |
                         \                  /
             */
-            estif(vi*4, ui*4)         += 2.0*visc*tau_Mp*funct_(ui)*viscs2_(0, 0, vi) ;
-            estif(vi*4, ui*4 + 1)     += 2.0*visc*tau_Mp*funct_(ui)*viscs2_(0, 1, vi) ;
-            estif(vi*4, ui*4 + 2)     += 2.0*visc*tau_Mp*funct_(ui)*viscs2_(0, 2, vi) ;
-            estif(vi*4 + 1, ui*4)     += 2.0*visc*tau_Mp*funct_(ui)*viscs2_(0, 1, vi) ;
-            estif(vi*4 + 1, ui*4 + 1) += 2.0*visc*tau_Mp*funct_(ui)*viscs2_(1, 1, vi) ;
-            estif(vi*4 + 1, ui*4 + 2) += 2.0*visc*tau_Mp*funct_(ui)*viscs2_(1, 2, vi) ;
-            estif(vi*4 + 2, ui*4)     += 2.0*visc*tau_Mp*funct_(ui)*viscs2_(0, 2, vi) ;
-            estif(vi*4 + 2, ui*4 + 1) += 2.0*visc*tau_Mp*funct_(ui)*viscs2_(1, 2, vi) ;
-            estif(vi*4 + 2, ui*4 + 2) += 2.0*visc*tau_Mp*funct_(ui)*viscs2_(2, 2, vi) ;
+            estif(dUDF, UDF) += 2.0*visc*tau_Mp*funct_(ui)*viscs2_(0, 0, vi) ;
+            estif(dUDF, VDF) += 2.0*visc*tau_Mp*funct_(ui)*viscs2_(0, 1, vi) ;
+            estif(dUDF, WDF) += 2.0*visc*tau_Mp*funct_(ui)*viscs2_(0, 2, vi) ;
+            estif(dVDF, UDF) += 2.0*visc*tau_Mp*funct_(ui)*viscs2_(0, 1, vi) ;
+            estif(dVDF, VDF) += 2.0*visc*tau_Mp*funct_(ui)*viscs2_(1, 1, vi) ;
+            estif(dVDF, WDF) += 2.0*visc*tau_Mp*funct_(ui)*viscs2_(1, 2, vi) ;
+            estif(dWDF, UDF) += 2.0*visc*tau_Mp*funct_(ui)*viscs2_(0, 2, vi) ;
+            estif(dWDF, VDF) += 2.0*visc*tau_Mp*funct_(ui)*viscs2_(1, 2, vi) ;
+            estif(dWDF, WDF) += 2.0*visc*tau_Mp*funct_(ui)*viscs2_(2, 2, vi) ;
 
             /* viscous stabilisation, convective part */
             /*
@@ -923,15 +964,15 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
                 |  \ (i)       /                   |
                  \                                /
             */
-            estif(vi*4, ui*4)         += 2.0*visc*tau_Mp*conv_c_(ui)*viscs2_(0, 0, vi) ;
-            estif(vi*4, ui*4 + 1)     += 2.0*visc*tau_Mp*conv_c_(ui)*viscs2_(0, 1, vi) ;
-            estif(vi*4, ui*4 + 2)     += 2.0*visc*tau_Mp*conv_c_(ui)*viscs2_(0, 2, vi) ;
-            estif(vi*4 + 1, ui*4)     += 2.0*visc*tau_Mp*conv_c_(ui)*viscs2_(0, 1, vi) ;
-            estif(vi*4 + 1, ui*4 + 1) += 2.0*visc*tau_Mp*conv_c_(ui)*viscs2_(1, 1, vi) ;
-            estif(vi*4 + 1, ui*4 + 2) += 2.0*visc*tau_Mp*conv_c_(ui)*viscs2_(1, 2, vi) ;
-            estif(vi*4 + 2, ui*4)     += 2.0*visc*tau_Mp*conv_c_(ui)*viscs2_(0, 2, vi) ;
-            estif(vi*4 + 2, ui*4 + 1) += 2.0*visc*tau_Mp*conv_c_(ui)*viscs2_(1, 2, vi) ;
-            estif(vi*4 + 2, ui*4 + 2) += 2.0*visc*tau_Mp*conv_c_(ui)*viscs2_(2, 2, vi) ;
+            estif(dUDF, UDF) += 2.0*visc*tau_Mp*conv_c_(ui)*viscs2_(0, 0, vi) ;
+            estif(dUDF, VDF) += 2.0*visc*tau_Mp*conv_c_(ui)*viscs2_(0, 1, vi) ;
+            estif(dUDF, WDF) += 2.0*visc*tau_Mp*conv_c_(ui)*viscs2_(0, 2, vi) ;
+            estif(dVDF, UDF) += 2.0*visc*tau_Mp*conv_c_(ui)*viscs2_(0, 1, vi) ;
+            estif(dVDF, VDF) += 2.0*visc*tau_Mp*conv_c_(ui)*viscs2_(1, 1, vi) ;
+            estif(dVDF, WDF) += 2.0*visc*tau_Mp*conv_c_(ui)*viscs2_(1, 2, vi) ;
+            estif(dWDF, UDF) += 2.0*visc*tau_Mp*conv_c_(ui)*viscs2_(0, 2, vi) ;
+            estif(dWDF, VDF) += 2.0*visc*tau_Mp*conv_c_(ui)*viscs2_(1, 2, vi) ;
+            estif(dWDF, WDF) += 2.0*visc*tau_Mp*conv_c_(ui)*viscs2_(2, 2, vi) ;
 
 
             /* viscous stabilisation, pressure part ( L_pres_p) */
@@ -942,17 +983,17 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
                     |                          |
                      \                        /
             */
-            estif(vi*4, ui*4 + 3)     += 2.0*visc*tau_Mp*(derxy_(0, ui)*viscs2_(0, 0, vi)
+            estif(dUDF, PDF) += 2.0*visc*tau_Mp*(derxy_(0, ui)*viscs2_(0, 0, vi)
                                                               +
                                                               derxy_(1, ui)*viscs2_(0, 1, vi)
                                                               +
                                                               derxy_(2, ui)*viscs2_(0, 2, vi)) ;
-            estif(vi*4 + 1, ui*4 + 3) += 2.0*visc*tau_Mp*(derxy_(0, ui)*viscs2_(0, 1, vi)
+            estif(dVDF, PDF) += 2.0*visc*tau_Mp*(derxy_(0, ui)*viscs2_(0, 1, vi)
                                                               +
                                                               derxy_(1, ui)*viscs2_(1, 1, vi)
                                                               +
                                                               derxy_(2, ui)*viscs2_(1, 2, vi)) ;
-            estif(vi*4 + 2, ui*4 + 3) += 2.0*visc*tau_Mp*(derxy_(0, ui)*viscs2_(0, 2, vi)
+            estif(dWDF, PDF) += 2.0*visc*tau_Mp*(derxy_(0, ui)*viscs2_(0, 2, vi)
                                                               +
                                                               derxy_(1, ui)*viscs2_(1, 2, vi)
                                                               +
@@ -966,47 +1007,47 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
               |               \  /                |
                \                                 /
             */
-            estif(vi*4, ui*4)         += 4.0*(visc*visc)*tau_Mp*(viscs2_(0, 0, ui)*viscs2_(0, 0, vi)
+            estif(dUDF, UDF) += 4.0*(visc*visc)*tau_Mp*(viscs2_(0, 0, ui)*viscs2_(0, 0, vi)
                                                                      +
                                                                      viscs2_(0, 1, ui)*viscs2_(0, 1, vi)
                                                                      +
                                                                      viscs2_(0, 2, ui)*viscs2_(0, 2, vi)) ;
-            estif(vi*4, ui*4 + 1)     += 4.0*(visc*visc)*tau_Mp*(viscs2_(0, 0, vi)*viscs2_(0, 1, ui)
+            estif(dUDF, VDF) += 4.0*(visc*visc)*tau_Mp*(viscs2_(0, 0, vi)*viscs2_(0, 1, ui)
                                                                      +
                                                                      viscs2_(0, 1, vi)*viscs2_(1, 1, ui)
                                                                      +
                                                                      viscs2_(0, 2, vi)*viscs2_(1, 2, ui)) ;
-            estif(vi*4, ui*4 + 2)     += 4.0*(visc*visc)*tau_Mp*(viscs2_(0, 0, vi)*viscs2_(0, 2, ui)
+            estif(dUDF, WDF) += 4.0*(visc*visc)*tau_Mp*(viscs2_(0, 0, vi)*viscs2_(0, 2, ui)
                                                                      +
                                                                      viscs2_(0, 1, vi)*viscs2_(1, 2, ui)
                                                                      +
                                                                      viscs2_(0, 2, vi)*viscs2_(2, 2, ui)) ;
-            estif(vi*4 + 1, ui*4)     += 4.0*(visc*visc)*tau_Mp*(viscs2_(0, 0, ui)*viscs2_(0, 1, vi)
+            estif(dVDF, UDF) += 4.0*(visc*visc)*tau_Mp*(viscs2_(0, 0, ui)*viscs2_(0, 1, vi)
                                                                      +
                                                                      viscs2_(0, 1, ui)*viscs2_(1, 1, vi)
                                                                      +
                                                                      viscs2_(0, 2, ui)*viscs2_(1, 2, vi)) ;
-            estif(vi*4 + 1, ui*4 + 1) += 4.0*(visc*visc)*tau_Mp*(viscs2_(0, 1, ui)*viscs2_(0, 1, vi)
+            estif(dVDF, VDF) += 4.0*(visc*visc)*tau_Mp*(viscs2_(0, 1, ui)*viscs2_(0, 1, vi)
                                                                      +
                                                                      viscs2_(1, 1, ui)*viscs2_(1, 1, vi)
                                                                      +
                                                                      viscs2_(1, 2, ui)*viscs2_(1, 2, vi)) ;
-            estif(vi*4 + 1, ui*4 + 2) += 4.0*(visc*visc)*tau_Mp*(viscs2_(0, 1, vi)*viscs2_(0, 2, ui)
+            estif(dVDF, WDF) += 4.0*(visc*visc)*tau_Mp*(viscs2_(0, 1, vi)*viscs2_(0, 2, ui)
                                                                      +
                                                                      viscs2_(1, 1, vi)*viscs2_(1, 2, ui)
                                                                      +
                                                                      viscs2_(1, 2, vi)*viscs2_(2, 2, ui)) ;
-            estif(vi*4 + 2, ui*4)     += 4.0*(visc*visc)*tau_Mp*(viscs2_(0, 0, ui)*viscs2_(0, 2, vi)
+            estif(dWDF, UDF) += 4.0*(visc*visc)*tau_Mp*(viscs2_(0, 0, ui)*viscs2_(0, 2, vi)
                                                                      +
                                                                      viscs2_(0, 1, ui)*viscs2_(1, 2, vi)
                                                                      +
                                                                      viscs2_(0, 2, ui)*viscs2_(2, 2, vi)) ;
-            estif(vi*4 + 2, ui*4 + 1) += 4.0*(visc*visc)*tau_Mp*(viscs2_(0, 1, ui)*viscs2_(0, 2, vi)
+            estif(dWDF, VDF) += 4.0*(visc*visc)*tau_Mp*(viscs2_(0, 1, ui)*viscs2_(0, 2, vi)
                                                                      +
                                                                      viscs2_(1, 1, ui)*viscs2_(1, 2, vi)
                                                                      +
                                                                      viscs2_(1, 2, ui)*viscs2_(2, 2, vi)) ;
-            estif(vi*4 + 2, ui*4 + 2) += 4.0*(visc*visc)*tau_Mp*(viscs2_(0, 2, ui)*viscs2_(0, 2, vi)
+            estif(dWDF, WDF) += 4.0*(visc*visc)*tau_Mp*(viscs2_(0, 2, ui)*viscs2_(0, 2, vi)
                                                                      +
                                                                      viscs2_(1, 2, ui)*viscs2_(1, 2, vi)
                                                                      +
@@ -1018,8 +1059,14 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
         {
           for (int ui=0; ui<iel_; ++ui)
           {
+            const int UDF = ui*4;
+            const int VDF = ui*4+1;
+            const int WDF = ui*4+2;
             for (int vi=0; vi<iel_; ++vi)
             {
+              const int dUDF = vi*4;
+              const int dVDF = vi*4+1;
+              const int dWDF = vi*4+2;
               /* viscous stabilisation, reactive part of convection */
               /*
                    /                                 \
@@ -1028,47 +1075,47 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
                   |  \          /   (i)               |
                    \                                 /
               */
-              estif(vi*4, ui*4)         += 2.0*visc*tau_Mp*(viscs2_(0, 0, vi)*conv_r_(0, 0, ui)
+              estif(dUDF, UDF) += 2.0*visc*tau_Mp*(viscs2_(0, 0, vi)*conv_r_(0, 0, ui)
                                                                 +
                                                                 viscs2_(0, 1, vi)*conv_r_(1, 0, ui)
                                                                 +
                                                                 viscs2_(0, 2, vi)*conv_r_(2, 0, ui)) ;
-              estif(vi*4, ui*4 + 1)     += 2.0*visc*tau_Mp*(viscs2_(0, 0, vi)*conv_r_(0, 1, ui)
+              estif(dUDF, VDF) += 2.0*visc*tau_Mp*(viscs2_(0, 0, vi)*conv_r_(0, 1, ui)
                                                                 +
                                                                 viscs2_(0, 1, vi)*conv_r_(1, 1, ui)
                                                                 +
                                                                 viscs2_(0, 2, vi)*conv_r_(2, 1, ui)) ;
-              estif(vi*4, ui*4 + 2)     += 2.0*visc*tau_Mp*(viscs2_(0, 0, vi)*conv_r_(0, 2, ui)
+              estif(dUDF, WDF) += 2.0*visc*tau_Mp*(viscs2_(0, 0, vi)*conv_r_(0, 2, ui)
                                                                 +
                                                                 viscs2_(0, 1, vi)*conv_r_(1, 2, ui)
                                                                 +
                                                                 viscs2_(0, 2, vi)*conv_r_(2, 2, ui)) ;
-              estif(vi*4 + 1, ui*4)     += 2.0*visc*tau_Mp*(viscs2_(0, 1, vi)*conv_r_(0, 0, ui)
+              estif(dVDF, UDF) += 2.0*visc*tau_Mp*(viscs2_(0, 1, vi)*conv_r_(0, 0, ui)
                                                                 +
                                                                 viscs2_(1, 1, vi)*conv_r_(1, 0, ui)
                                                                 +
                                                                 viscs2_(1, 2, vi)*conv_r_(2, 0, ui)) ;
-              estif(vi*4 + 1, ui*4 + 1) += 2.0*visc*tau_Mp*(viscs2_(0, 1, vi)*conv_r_(0, 1, ui)
+              estif(dVDF, VDF) += 2.0*visc*tau_Mp*(viscs2_(0, 1, vi)*conv_r_(0, 1, ui)
                                                                 +
                                                                 viscs2_(1, 1, vi)*conv_r_(1, 1, ui)
                                                                 +
                                                                 viscs2_(1, 2, vi)*conv_r_(2, 1, ui)) ;
-              estif(vi*4 + 1, ui*4 + 2) += 2.0*visc*tau_Mp*(viscs2_(0, 1, vi)*conv_r_(0, 2, ui)
+              estif(dVDF, WDF) += 2.0*visc*tau_Mp*(viscs2_(0, 1, vi)*conv_r_(0, 2, ui)
                                                                 +
                                                                 viscs2_(1, 1, vi)*conv_r_(1, 2, ui)
                                                                 +
                                                                 viscs2_(1, 2, vi)*conv_r_(2, 2, ui)) ;
-              estif(vi*4 + 2, ui*4)     += 2.0*visc*tau_Mp*(viscs2_(0, 2, vi)*conv_r_(0, 0, ui)
+              estif(dWDF, UDF) += 2.0*visc*tau_Mp*(viscs2_(0, 2, vi)*conv_r_(0, 0, ui)
                                                                 +
                                                                 viscs2_(1, 2, vi)*conv_r_(1, 0, ui)
                                                                 +
                                                                 viscs2_(2, 2, vi)*conv_r_(2, 0, ui)) ;
-              estif(vi*4 + 2, ui*4 + 1) += 2.0*visc*tau_Mp*(viscs2_(0, 2, vi)*conv_r_(0, 1, ui)
+              estif(dWDF, VDF) += 2.0*visc*tau_Mp*(viscs2_(0, 2, vi)*conv_r_(0, 1, ui)
                                                                 +
                                                                 viscs2_(1, 2, vi)*conv_r_(1, 1, ui)
                                                                 +
                                                                 viscs2_(2, 2, vi)*conv_r_(2, 1, ui)) ;
-              estif(vi*4 + 2, ui*4 + 2) += 2.0*visc*tau_Mp*(viscs2_(0, 2, vi)*conv_r_(0, 2, ui)
+              estif(dWDF, WDF) += 2.0*visc*tau_Mp*(viscs2_(0, 2, vi)*conv_r_(0, 2, ui)
                                                                 +
                                                                 viscs2_(1, 2, vi)*conv_r_(1, 2, ui)
                                                                 +
@@ -1080,18 +1127,21 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
         for (int vi=0; vi<iel_; ++vi)
         {
 
+          const int dUDF = vi*4;
+          const int dVDF = vi*4+1;
+          const int dWDF = vi*4+2;
           /* viscous stabilisation */
-          eforce(vi*4)     += -2.0*visc*tau_Mp*(res_old_(0)*viscs2_(0, 0, vi)
+          eforce(dUDF) += -2.0*visc*tau_Mp*(res_old_(0)*viscs2_(0, 0, vi)
                                                    +
                                                    res_old_(1)*viscs2_(0, 1, vi)
                                                    +
                                                    res_old_(2)*viscs2_(0, 2, vi)) ;
-          eforce(vi*4 + 1) += -2.0*visc*tau_Mp*(res_old_(0)*viscs2_(0, 1, vi)
+          eforce(dVDF) += -2.0*visc*tau_Mp*(res_old_(0)*viscs2_(0, 1, vi)
                                                    +
                                                    res_old_(1)*viscs2_(1, 1, vi)
                                                    +
                                                    res_old_(2)*viscs2_(1, 2, vi)) ;
-          eforce(vi*4 + 2) += -2.0*visc*tau_Mp*(res_old_(0)*viscs2_(0, 2, vi)
+          eforce(dWDF) += -2.0*visc*tau_Mp*(res_old_(0)*viscs2_(0, 2, vi)
                                                    +
                                                    res_old_(1)*viscs2_(1, 2, vi)
                                                    +
@@ -1108,8 +1158,14 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
 
         for (int ui=0; ui<iel_; ++ui)
         {
+          const int UDF = ui*4;
+          const int VDF = ui*4+1;
+          const int WDF = ui*4+2;
           for (int vi=0; vi<iel_; ++vi)
           {
+            const int dUDF = vi*4;
+            const int dVDF = vi*4+1;
+            const int dWDF = vi*4+2;
             /* continuity stabilisation */
             /*
                        /                        \
@@ -1118,24 +1174,27 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
                       |                          |
                        \                        /
             */
-            estif(vi*4, ui*4)         += tau_C*derxy_(0, ui)*derxy_(0, vi) ;
-            estif(vi*4, ui*4 + 1)     += tau_C*derxy_(0, vi)*derxy_(1, ui) ;
-            estif(vi*4, ui*4 + 2)     += tau_C*derxy_(0, vi)*derxy_(2, ui) ;
-            estif(vi*4 + 1, ui*4)     += tau_C*derxy_(0, ui)*derxy_(1, vi) ;
-            estif(vi*4 + 1, ui*4 + 1) += tau_C*derxy_(1, ui)*derxy_(1, vi) ;
-            estif(vi*4 + 1, ui*4 + 2) += tau_C*derxy_(1, vi)*derxy_(2, ui) ;
-            estif(vi*4 + 2, ui*4)     += tau_C*derxy_(0, ui)*derxy_(2, vi) ;
-            estif(vi*4 + 2, ui*4 + 1) += tau_C*derxy_(1, ui)*derxy_(2, vi) ;
-            estif(vi*4 + 2, ui*4 + 2) += tau_C*derxy_(2, ui)*derxy_(2, vi) ;
+            estif(dUDF, UDF)         += tau_C*derxy_(0, ui)*derxy_(0, vi) ;
+            estif(dUDF, VDF)     += tau_C*derxy_(0, vi)*derxy_(1, ui) ;
+            estif(dUDF, WDF)     += tau_C*derxy_(0, vi)*derxy_(2, ui) ;
+            estif(dVDF, UDF)     += tau_C*derxy_(0, ui)*derxy_(1, vi) ;
+            estif(dVDF, VDF) += tau_C*derxy_(1, ui)*derxy_(1, vi) ;
+            estif(dVDF, WDF) += tau_C*derxy_(1, vi)*derxy_(2, ui) ;
+            estif(dWDF, UDF)     += tau_C*derxy_(0, ui)*derxy_(2, vi) ;
+            estif(dWDF, VDF) += tau_C*derxy_(1, ui)*derxy_(2, vi) ;
+            estif(dWDF, WDF) += tau_C*derxy_(2, ui)*derxy_(2, vi) ;
           }
         }
 
         for (int vi=0; vi<iel_; ++vi)
         {
-          /* Kontinuit�tsstabilisierung */
-          eforce(vi*4)     += -tau_C_divunp*derxy_(0, vi) ;
-          eforce(vi*4 + 1) += -tau_C_divunp*derxy_(1, vi) ;
-          eforce(vi*4 + 2) += -tau_C_divunp*derxy_(2, vi) ;
+          const int dUDF = vi*4;
+          const int dVDF = vi*4+1;
+          const int dWDF = vi*4+2;
+          /* Kontinuitaetsstabilisierung */
+          eforce(dUDF) += -tau_C_divunp*enr_derxy_(0, vi) ;
+          eforce(dVDF) += -tau_C_divunp*enr_derxy_(1, vi) ;
+          eforce(dWDF) += -tau_C_divunp*enr_derxy_(2, vi) ;
         }
 
       }
@@ -1296,7 +1355,7 @@ void DRT::Elements::XFluid3Stationary::BodyForce(XFluid3* ele, const double pseu
 { 
   vector<DRT::Condition*> myneumcond;
   DRT::Node** nodes = ele->Nodes();
-
+  dserror("not adapted to xfem (, yet)!!!");
   // check whether all nodes have a unique VolumeNeumann condition
   int nodecount = 0;
   for (int inode=0;inode<iel_;inode++)
