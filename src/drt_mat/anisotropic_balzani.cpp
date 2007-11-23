@@ -144,17 +144,27 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
 //  C_lock.Multiply('T','N',1.0,*defgrd,*defgrd,0.0);
 //  cout << "Disp-based Cauchy-Green: " << C_lock;
   
-  // compute eigenvalues of C
-  Epetra_SerialDenseMatrix Ccopy(C);
-  Epetra_SerialDenseVector lambda(3);
-  SymmetricEigen(Ccopy,lambda,3,'N');
+//  // compute eigenvalues of C
+//  Epetra_SerialDenseMatrix Ccopy(C);
+//  Epetra_SerialDenseVector lambda(3);
+//  SymmetricEigen(Ccopy,lambda,3,'N');
+//  
+//  // evaluate principle Invariants of C
+//  //Epetra_SerialDenseVector Inv(3);
+//  double I1 = lambda(0) + lambda(1) + lambda(2);
+//  //double I2 = lambda(0) * lambda(1) + lambda(0) * lambda(2) + lambda(1) * lambda(2);
+//  double I3 = lambda(0) * lambda(1) * lambda(2);  // = det(C)
+
   
-  // evaluate principle Invariants of C
-  //Epetra_SerialDenseVector Inv(3);
-  double I1 = lambda(0) + lambda(1) + lambda(2);
-  //double I2 = lambda(0) * lambda(1) + lambda(0) * lambda(2) + lambda(1) * lambda(2);
-  double I3 = lambda(0) * lambda(1) * lambda(2);  // = det(C)
-  
+  double I1 = C(0,0) + C(1,1) + C(2,2);  // I1 = trace(C)
+  // compute determinant of C by Sarrus' rule
+  double I3  = C(0,0) * C(1,1) * C(2,2)    // I3 = det(C)
+             + C(0,1) * C(1,2) * C(2,0)
+             + C(0,2) * C(1,0) * C(2,1)
+             - C(0,0) * C(1,2) * C(2,1)
+             - C(0,1) * C(1,0) * C(2,2)
+             - C(0,2) * C(1,1) * C(2,0);
+
   // compute C^-1
   Epetra_SerialDenseMatrix Cinv(C);
   Epetra_SerialDenseSolver solve_for_inverseC;
@@ -208,9 +218,9 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
    */
     
   // ******* evaluate 2nd PK stress ********************
-  Epetra_SerialDenseMatrix S(CofC);   // S = C^{-T}
+  Epetra_SerialDenseMatrix S(CofC);   // S = CofC
   double scalar1 = -1.0/3.0 * c1*I1 * pow(I3,-4.0/3.0)
-                 + eps1 * ( (pow(I3,eps2)*eps2)/I3 - eps2/( pow(I3,eps2)*I3));
+                 + eps1 * eps2 * ( pow(I3,eps2-1.0) - pow(I3,(-eps2-1.0)));
   S.Scale(scalar1);
   double scalar2 = c1*pow(I3,-1.0/3.0);
   Epetra_SerialDenseMatrix Iscale(I);
@@ -218,8 +228,8 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
   S += Iscale;
   
   // ***** fiber part *******
-  if ( (K3 - 2.0) > 1.0E-16){
-    double fiberscalar = alpha1*pow( (K3-2.0),(alpha2-1) )*alpha2;
+  if ( (K3 - 2.0) > 1.0E-15){
+    double fiberscalar = alpha1*pow( (K3-2.0),(alpha2-1.0) )*alpha2;
     Epetra_SerialDenseMatrix Mscale(M);
     Mscale.Scale(fiberscalar*I1);
     S += Mscale;
@@ -236,7 +246,7 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
   // the wellknown factor 2!
   S.Scale(2.0);
   
-  //cout << S;
+//  cout << setprecision(10) << S;
   
   (*stress)(0) = S(0,0);
   (*stress)(1) = S(1,1);
@@ -249,39 +259,53 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
   // ********** evaluate C-Matrix *****************************
   // isotropic part
   double d2W_dI3dI3 = 4.0/9.0 * c1 * I1 * pow(I3,-7.0/3.0)
-                    + eps1 * ( pow(I3,eps2) * eps2*eps2 / (I3*I3)
-                             - pow(I3,eps2) * eps2 / (I3*I3)
-                             + eps2*eps2 / (pow(I3,eps2) * I3*I3)
-                             + eps2 / (pow(I3,eps2) * I3*I3) );
+                    + eps1 * ( pow(I3,eps2-2.0) * eps2*eps2
+                             - pow(I3,eps2-2.0) * eps2
+                             + eps2*eps2 * pow(I3,-eps2-2.0)
+                             + eps2 * pow(I3,-eps2-2.0) );
   double d2W_dI3dI1 = -1.0/3.0 * c1 * pow(I3,-4.0/3.0);
   double dW_dI3     = -1.0/3.0 * c1 * I1 * pow(I3,-4.0/3.0)
-                      + eps1 * (pow(I3,eps2)*eps2/I3 - eps2/(pow(I3,eps2)*I3));
+                      + eps1 * (pow(I3,eps2-1.0)*eps2 - eps2 * pow(I3,-eps2-1.0));
   
   ElastSymTensorMultiply((*cmat),d2W_dI3dI3,CofC,CofC,1.0);     // CofC x CofC
-  ElastSymTensorMultiplyAddSym((*cmat),d2W_dI3dI1,I,Cinv,1.0);  // I x Cinv + Cinv x I
+  ElastSymTensorMultiplyAddSym((*cmat),d2W_dI3dI1,I,CofC,1.0);  // I x CofC + CofC x I
   ElastSymTensorMultiply((*cmat),I3 * dW_dI3,Cinv,Cinv,1.0);    // Cinv x Cinv
   ElastSymTensor_o_Multiply((*cmat),-I3 * dW_dI3,Cinv,Cinv,1.0);// - Cinv o Cinv
   
   // fiber part
-  if ( (K3 - 2.0) > 1.0E-16){
+  if ( (K3 - 2.0) > 1.0E-15){
     // compute derivatives of W_ti w.r.t. Invariants
-    double K3m2sq = 1.0 / (K3 - 2.0) * (K3 - 2.0);
-    double K3m2p = pow((K3 - 2.0),alpha2);
-    double d2W_dJ4dJ4 = ( alpha1 * K3m2p * alpha2*alpha2 * I1*I1 
-                         -alpha1 * K3m2p * alpha2 * I1*I1 ) * K3m2sq;
-    double d2W_dJ5dJ5 = ( alpha1 * K3m2p * alpha2*alpha2  
-                         -alpha1 * K3m2p * alpha2 ) * K3m2sq;
-    double d2W_dI1dJ4 = ( alpha1 * K3m2p * alpha2*alpha2 * J4 * I1  
-                         -alpha1 * K3m2p * alpha2 * J4 * I1 ) * K3m2sq
-                         +alpha1 * K3m2p * alpha2 / (K3 - 2.0);
-    double d2W_dI1dJ5 = (-alpha1 * K3m2p * alpha2*alpha2 * J4
-                         +alpha1 * K3m2p * alpha2 * J4 ) * K3m2sq;
-    double d2W_dJ4dJ5 = (-alpha1 * K3m2p * alpha2*alpha2 * I1
-                         +alpha1 * K3m2p * alpha2 * I1 ) * K3m2sq;
-    double dW_dJ5     = - alpha1 * K3m2p * alpha2 / (K3 - 2.0);
+    double K3fac = pow( K3-2.0 , alpha2-2.0);
+    double d2W_dJ4dJ4 = alpha1 * alpha2 * I1*I1 * (alpha2-1.0) * K3fac;
+    double d2W_dJ5dJ5 = alpha1 * alpha2 * (alpha2-1.0) * K3fac;
+    double d2W_dI1dJ4 = alpha1 * alpha2 * J4 * I1 * (alpha2-1.0) * K3fac
+                      + alpha1 * alpha2 * (K3-2.0) * K3fac;
+    double d2W_dI1dJ5 = alpha1 * alpha2 * J4 * (1.0-alpha2) * K3fac;
+    double d2W_dJ4dJ5 = alpha1 * alpha2 * I1 * (1.0-alpha2) * K3fac;
+    double dW_dJ5     = - alpha1 * alpha2 * (K3-2.0) * K3fac;
+    double d2W_dI1dI1 = alpha1 * alpha2 * (alpha2-1.0) * J4*J4 * K3fac; 
+    
+//    double K3m2sq = 1.0 / (K3 - 2.0) * (K3 - 2.0);
+//    double K3m2p = pow((K3 - 2.0),alpha2);
+//    double d2W_dJ4dJ4 = ( alpha1 * K3m2p * alpha2*alpha2 * I1*I1 
+//                         -alpha1 * K3m2p * alpha2 * I1*I1 ) * K3m2sq;
+//    double d2W_dJ5dJ5 = ( alpha1 * K3m2p * alpha2*alpha2  
+//                         -alpha1 * K3m2p * alpha2 ) * K3m2sq;
+//    double d2W_dI1dJ4 = ( alpha1 * K3m2p * alpha2*alpha2 * J4 * I1  
+//                         -alpha1 * K3m2p * alpha2 * J4 * I1 ) * K3m2sq
+//                         +alpha1 * K3m2p * alpha2 / (K3 - 2.0);
+//    double d2W_dI1dJ5 = (-alpha1 * K3m2p * alpha2*alpha2 * J4
+//                         +alpha1 * K3m2p * alpha2 * J4 ) * K3m2sq;
+//    double d2W_dJ4dJ5 = (-alpha1 * K3m2p * alpha2*alpha2 * I1
+//                         +alpha1 * K3m2p * alpha2 * I1 ) * K3m2sq;
+//    double dW_dJ5     = - alpha1 * K3m2p * alpha2 / (K3 - 2.0);
+//    
+//    double dW_dI1dI1 = alpha1*alpha2*(alpha2-1) * pow(K3-2.0,alpha2-2.0) * J4*J4;
+    
     // multiply these with corresponding tensor products
+    ElastSymTensorMultiply((*cmat),d2W_dI1dI1,I,I,1.0);         // I x I
     ElastSymTensorMultiply((*cmat),d2W_dJ4dJ4,M,M,1.0);         // M x M
-    ElastSymTensorMultiply((*cmat),d2W_dJ5dJ5,CMMC,CMMC,1.0);   // CM+MC x CM+MC
+    ElastSymTensorMultiply((*cmat),d2W_dJ5dJ5,CMMC,CMMC,1.0);   // (CM+MC) x (CM+MC)
     ElastSymTensorMultiplyAddSym((*cmat),d2W_dI1dJ4,I,M,1.0);   // I x M + M x I
     ElastSymTensorMultiplyAddSym((*cmat),d2W_dI1dJ5,CMMC,I,1.0);// (CM+MC) x I + I x (CM+MC)
     ElastSymTensorMultiplyAddSym((*cmat),d2W_dJ4dJ5,CMMC,M,1.0);// (CM+MC) x M + M x (CM+MC)
@@ -289,10 +313,16 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
     ElastSymTensor_o_Multiply((*cmat),dW_dJ5,M,I,1.0);          // M o I
   }
   
-  // the factor 4!
-  (*cmat).Scale(4.0);
+  // the factor 4! multiplied with factor 1/2 due to Voigts factor 2 used in tensor products
+  (*cmat).Scale(2.0);
+  // repair upper-left matrix part due to Voigts factor 2 used in tensor products
+  for (int i = 0; i < 3; ++i) {
+    for (int j = 0; j < 3; ++j) {
+      (*cmat)(i,j) = 2.0 * (*cmat)(i,j);
+    }
+  }
   
-  //cout << (*cmat);
+//  cout << (*cmat);
   // end of ********** evaluate C-Matrix *****************************
   
   return;

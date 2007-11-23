@@ -388,9 +388,11 @@ void LINALG::ElastSymTensorMultiply(Epetra_SerialDenseMatrix& C,
   Epetra_SerialDenseMatrix AVoigt(6,1);
   Epetra_SerialDenseMatrix BVoigt(6,1);
   AVoigt(0,0) = A(0,0); AVoigt(1,0) = A(1,1); AVoigt(2,0) = A(2,2);
-  AVoigt(3,0) = A(1,0); AVoigt(4,0) = A(2,1); AVoigt(5,0) = A(2,0);
+  // Voigts vector notation implies 2 times ()12 ()23 ()13 !
+  AVoigt(3,0) = 2.0*A(1,0); AVoigt(4,0) = 2.0*A(2,1); AVoigt(5,0) = 2.0*A(2,0);
   BVoigt(0,0) = B(0,0); BVoigt(1,0) = B(1,1); BVoigt(2,0) = B(2,2);
-  BVoigt(3,0) = B(1,0); BVoigt(4,0) = B(2,1); BVoigt(5,0) = B(2,0);
+  // Voigts vector notation implies 2 times ()12 ()23 ()13 !
+  BVoigt(3,0) = 2.0*B(1,0); BVoigt(4,0) = 2.0*B(2,1); BVoigt(5,0) = 2.0*B(2,0);
   C.Multiply('N','T',ScalarAB,AVoigt,BVoigt,ScalarThis);
 
   // this is explicitly what the former .Multiply does:
@@ -464,9 +466,11 @@ void LINALG::ElastSymTensorMultiplyAddSym(Epetra_SerialDenseMatrix& C,
   Epetra_SerialDenseMatrix AVoigt(6,1);
   Epetra_SerialDenseMatrix BVoigt(6,1);
   AVoigt(0,0) = A(0,0); AVoigt(1,0) = A(1,1); AVoigt(2,0) = A(2,2);
-  AVoigt(3,0) = A(1,0); AVoigt(4,0) = A(2,1); AVoigt(5,0) = A(2,0);
+  // Voigts vector notation implies 2 times ()12 ()23 ()13 !
+  AVoigt(3,0) = 2.0*A(1,0); AVoigt(4,0) = 2.0*A(2,1); AVoigt(5,0) = 2.0*A(2,0);
   BVoigt(0,0) = B(0,0); BVoigt(1,0) = B(1,1); BVoigt(2,0) = B(2,2);
-  BVoigt(3,0) = B(1,0); BVoigt(4,0) = B(2,1); BVoigt(5,0) = B(2,0);
+  // Voigts vector notation implies 2 times ()12 ()23 ()13 !
+  BVoigt(3,0) = 2.0*B(1,0); BVoigt(4,0) = 2.0*B(2,1); BVoigt(5,0) = 2.0*B(2,0);
   C.Multiply('N','T',ScalarAB,AVoigt,BVoigt,ScalarThis);
   C.Multiply('N','T',ScalarAB,BVoigt,AVoigt,1.0);
   
@@ -518,10 +522,12 @@ void LINALG::ElastSymTensorMultiplyAddSym(Epetra_SerialDenseMatrix& C,
 
 
 /*----------------------------------------------------------------------*
- |  compute the "material tensor product" A o B of two 2nd order tensors|
+ | compute the "material tensor product" A o B (also known as           |
+ | kronecker-tensor-product) of two 2nd order tensors                   |
  | (in matrix notation) and add the result to a 4th order tensor        |
  | (also in matrix notation) using the symmetry-conditions inherent to  |
- | material tensors, or tangent matrices, respectively.                 |
+ | material tensors, or tangent matrices, respectively                  |
+ | AND the Voigt notation of E,S, and C with the famous factor 2!       |
  | The implementation is based on the Epetra-Method Matrix.Multiply.    |
  | (public)                                                    maf 11/07|
  *----------------------------------------------------------------------*/
@@ -537,47 +543,111 @@ void LINALG::ElastSymTensor_o_Multiply(Epetra_SerialDenseMatrix& C,
   }
   if (C.M() != C.N() || C.M() != 6) dserror("4th order tensor must be 6 by 6");
   
-  C(0,0)= ScalarThis*C(0,0) + ScalarAB * 0.5 * (A(0,0)*B(0,0) + A(0,0)*B(0,0));
-  C(0,1)= ScalarThis*C(0,1) + ScalarAB * 0.5 * (A(0,1)*B(0,1) + A(0,1)*B(0,1));
-  C(0,2)= ScalarThis*C(0,2) + ScalarAB * 0.5 * (A(0,2)*B(0,2) + A(0,2)*B(0,2));
-  C(0,3)= ScalarThis*C(0,3) + ScalarAB * 0.5 * (A(0,1)*B(0,0) + A(0,0)*B(0,1));
-  C(0,4)= ScalarThis*C(0,4) + ScalarAB * 0.5 * (A(0,2)*B(0,1) + A(0,1)*B(0,2));
-  C(0,5)= ScalarThis*C(0,5) + ScalarAB * 0.5 * (A(0,2)*B(0,0) + A(0,0)*B(0,2));
+  /* the kronecker-product in matrix notation is:
+   * A11*B11 A11*B12 A11*B13   A12*B11 A12*B12 A12*B13   A13*B11 A13*B12 A13*B13
+   * A11*B21 ...
+   * A11*B31 ...
+   * 
+   * A21*B11
+   * A21*B21
+   * A21*B31
+   * ...                                                 A33*B11 A33*B12 A33*B13
+   *                                                     A33*B21 A33*B22 A33*B23
+   *                                                     A33*B31 A33*B32 A33*B33
+   */
+  /* to reduce the resulting 9by9 matrix to 6by6 we refer to the 
+   * Diss. from Balzani, Anhang D, BUT
+   * we consider a factor 2 for colums/rows 4-6 :
+   *  C(1)               2* 1/2*(C(2)+C(3))
+   *  2* 1/2*(C(2)+C(3)  2* 1/4*(C(4)+2*C(5)+C(6))
+   * which is repaired later due to the "voigt-matrix":
+   *    1                 1/2
+   *   1/2                1/2
+   */
   
-  C(1,0)= ScalarThis*C(1,0) + ScalarAB * 0.5 * (A(1,0)*B(1,0) + A(1,0)*B(1,0));
-  C(1,1)= ScalarThis*C(1,1) + ScalarAB * 0.5 * (A(1,1)*B(1,1) + A(1,1)*B(1,1));
-  C(1,2)= ScalarThis*C(1,2) + ScalarAB * 0.5 * (A(1,2)*B(1,2) + A(1,2)*B(1,2));
-  C(1,3)= ScalarThis*C(1,3) + ScalarAB * 0.5 * (A(1,1)*B(1,0) + A(1,0)*B(1,1));
-  C(1,4)= ScalarThis*C(1,4) + ScalarAB * 0.5 * (A(1,2)*B(1,1) + A(1,1)*B(1,2));
-  C(1,5)= ScalarThis*C(1,5) + ScalarAB * 0.5 * (A(1,2)*B(1,0) + A(1,0)*B(1,2));
-               
-  C(2,0)= ScalarThis*C(2,0) + ScalarAB * 0.5 * (A(2,0)*B(2,0) + A(2,0)*B(2,0));
-  C(2,1)= ScalarThis*C(2,1) + ScalarAB * 0.5 * (A(2,1)*B(2,1) + A(2,1)*B(2,1));
-  C(2,2)= ScalarThis*C(2,2) + ScalarAB * 0.5 * (A(2,2)*B(2,2) + A(2,2)*B(2,2));
-  C(2,3)= ScalarThis*C(2,3) + ScalarAB * 0.5 * (A(2,1)*B(2,0) + A(2,0)*B(2,1));
-  C(2,4)= ScalarThis*C(2,4) + ScalarAB * 0.5 * (A(2,2)*B(2,1) + A(2,1)*B(2,2));
-  C(2,5)= ScalarThis*C(2,5) + ScalarAB * 0.5 * (A(2,2)*B(2,0) + A(2,0)*B(2,2));
+  C(0,0)= ScalarThis*C(0,0) + ScalarAB * A(0,0)*B(0,0);
+  C(0,1)= ScalarThis*C(0,1) + ScalarAB * A(0,0)*B(0,1);
+  C(0,2)= ScalarThis*C(0,2) + ScalarAB * A(0,0)*B(0,2);
+  C(0,3)= ScalarThis*C(0,3) + ScalarAB * (A(0,1)*B(0,0) + A(0,2)*B(0,0));
+  C(0,4)= ScalarThis*C(0,4) + ScalarAB * (A(0,1)*B(0,1) + A(0,2)*B(0,1));
+  C(0,5)= ScalarThis*C(0,5) + ScalarAB * (A(0,1)*B(0,2) + A(0,2)*B(0,2));
+  
+  C(1,0)= ScalarThis*C(1,0) + ScalarAB * A(0,0)*B(1,0);
+  C(1,1)= ScalarThis*C(1,1) + ScalarAB * A(0,0)*B(1,1);
+  C(1,2)= ScalarThis*C(1,2) + ScalarAB * A(0,0)*B(1,2);
+  C(1,3)= ScalarThis*C(1,3) + ScalarAB * (A(0,1)*B(1,0) + A(0,2)*B(1,0));
+  C(1,4)= ScalarThis*C(1,4) + ScalarAB * (A(0,1)*B(1,1) + A(0,2)*B(1,1));
+  C(1,5)= ScalarThis*C(1,5) + ScalarAB * (A(0,1)*B(1,2) + A(0,2)*B(1,2));
+  
+  C(2,0)= ScalarThis*C(2,0) + ScalarAB * A(0,0)*B(2,0);
+  C(2,1)= ScalarThis*C(2,1) + ScalarAB * A(0,0)*B(2,1);
+  C(2,2)= ScalarThis*C(2,2) + ScalarAB * A(0,0)*B(2,2);
+  C(2,3)= ScalarThis*C(2,3) + ScalarAB * (A(0,1)*B(2,0) + A(0,2)*B(2,0));
+  C(2,4)= ScalarThis*C(2,4) + ScalarAB * (A(0,1)*B(2,1) + A(0,2)*B(2,1));
+  C(2,5)= ScalarThis*C(2,5) + ScalarAB * (A(0,1)*B(2,2) + A(0,2)*B(2,2));
 
-  C(3,0)= ScalarThis*C(3,0) + ScalarAB * 0.5 * (A(1,0)*B(0,0) + A(1,0)*B(0,0));
-  C(3,1)= ScalarThis*C(3,1) + ScalarAB * 0.5 * (A(1,1)*B(0,1) + A(1,1)*B(0,1));
-  C(3,2)= ScalarThis*C(3,2) + ScalarAB * 0.5 * (A(1,2)*B(0,2) + A(1,2)*B(0,2));
-  C(3,3)= ScalarThis*C(3,3) + ScalarAB * 0.5 * (A(1,1)*B(0,0) + A(1,0)*B(0,1));
-  C(3,4)= ScalarThis*C(3,4) + ScalarAB * 0.5 * (A(1,2)*B(0,1) + A(1,1)*B(0,2));
-  C(3,5)= ScalarThis*C(3,5) + ScalarAB * 0.5 * (A(1,2)*B(0,0) + A(1,0)*B(0,2));
+  C(3,0)= ScalarThis*C(3,0) + ScalarAB * (A(1,0)*B(0,0) + A(2,0)*B(0,0));
+  C(3,1)= ScalarThis*C(3,1) + ScalarAB * (A(1,0)*B(0,1) + A(2,0)*B(0,1));
+  C(3,2)= ScalarThis*C(3,2) + ScalarAB * (A(1,0)*B(0,2) + A(2,0)*B(0,2));
+  C(3,3)= ScalarThis*C(3,3) + ScalarAB * 0.5*(A(1,1)*B(0,0) + 2.0*A(1,2)*B(0,0) + A(2,2)*B(0,0));
+  C(3,4)= ScalarThis*C(3,4) + ScalarAB * 0.5*(A(1,1)*B(0,1) + 2.0*A(1,2)*B(0,1) + A(2,2)*B(0,1));
+  C(3,5)= ScalarThis*C(3,5) + ScalarAB * 0.5*(A(1,1)*B(0,2) + 2.0*A(1,2)*B(0,2) + A(2,2)*B(0,2));
   
-  C(4,0)= ScalarThis*C(4,0) + ScalarAB * 0.5 * (A(2,0)*B(1,0) + A(2,0)*B(1,0));
-  C(4,1)= ScalarThis*C(4,1) + ScalarAB * 0.5 * (A(2,1)*B(1,1) + A(2,1)*B(1,1));
-  C(4,2)= ScalarThis*C(4,2) + ScalarAB * 0.5 * (A(2,2)*B(1,2) + A(2,2)*B(1,2));
-  C(4,3)= ScalarThis*C(4,3) + ScalarAB * 0.5 * (A(2,1)*B(1,0) + A(2,0)*B(1,1));
-  C(4,4)= ScalarThis*C(4,4) + ScalarAB * 0.5 * (A(2,2)*B(1,1) + A(2,1)*B(1,2));
-  C(4,5)= ScalarThis*C(4,5) + ScalarAB * 0.5 * (A(2,2)*B(1,0) + A(2,0)*B(1,2));
+  C(4,0)= ScalarThis*C(4,0) + ScalarAB * (A(1,0)*B(1,0) + A(2,0)*B(1,0));
+  C(4,1)= ScalarThis*C(4,1) + ScalarAB * (A(1,0)*B(1,1) + A(2,0)*B(1,1));
+  C(4,2)= ScalarThis*C(4,2) + ScalarAB * (A(1,0)*B(1,2) + A(2,0)*B(1,2));
+  C(4,3)= ScalarThis*C(4,3) + ScalarAB * 0.5*(A(1,1)*B(1,0) + 2.0*A(1,2)*B(1,0) + A(2,2)*B(1,0));
+  C(4,4)= ScalarThis*C(4,4) + ScalarAB * 0.5*(A(1,1)*B(1,1) + 2.0*A(1,2)*B(1,1) + A(2,2)*B(1,1));
+  C(4,5)= ScalarThis*C(4,5) + ScalarAB * 0.5*(A(1,1)*B(1,2) + 2.0*A(1,2)*B(1,2) + A(2,2)*B(1,2));
+
+  C(5,0)= ScalarThis*C(5,0) + ScalarAB * (A(1,0)*B(2,0) + A(2,0)*B(2,0));
+  C(5,1)= ScalarThis*C(5,1) + ScalarAB * (A(1,0)*B(2,1) + A(2,0)*B(2,1));
+  C(5,2)= ScalarThis*C(5,2) + ScalarAB * (A(1,0)*B(2,2) + A(2,0)*B(2,2));
+  C(5,3)= ScalarThis*C(5,3) + ScalarAB * 0.5*(A(1,1)*B(2,0) + 2.0*A(1,2)*B(2,0) + A(2,2)*B(2,0));
+  C(5,4)= ScalarThis*C(5,4) + ScalarAB * 0.5*(A(1,1)*B(2,1) + 2.0*A(1,2)*B(2,1) + A(2,2)*B(2,1));
+  C(5,5)= ScalarThis*C(5,5) + ScalarAB * 0.5*(A(1,1)*B(2,2) + 2.0*A(1,2)*B(2,2) + A(2,2)*B(2,2));
   
-  C(5,0)= ScalarThis*C(5,0) + ScalarAB * 0.5 * (A(2,0)*B(0,0) + A(2,0)*B(0,0));
-  C(5,1)= ScalarThis*C(5,1) + ScalarAB * 0.5 * (A(2,1)*B(0,1) + A(2,1)*B(0,1));
-  C(5,2)= ScalarThis*C(5,2) + ScalarAB * 0.5 * (A(2,2)*B(0,2) + A(2,2)*B(0,2));
-  C(5,3)= ScalarThis*C(5,3) + ScalarAB * 0.5 * (A(2,1)*B(0,0) + A(2,0)*B(0,1));
-  C(5,4)= ScalarThis*C(5,4) + ScalarAB * 0.5 * (A(2,2)*B(0,1) + A(2,1)*B(0,2));
-  C(5,5)= ScalarThis*C(5,5) + ScalarAB * 0.5 * (A(2,2)*B(0,0) + A(2,0)*B(0,2));
+//  C(0,0)= ScalarThis*C(0,0) + ScalarAB * 0.5 * (A(0,0)*B(0,0) + A(0,0)*B(0,0));
+//  C(0,1)= ScalarThis*C(0,1) + ScalarAB * 0.5 * (A(0,1)*B(0,1) + A(0,1)*B(0,1));
+//  C(0,2)= ScalarThis*C(0,2) + ScalarAB * 0.5 * (A(0,2)*B(0,2) + A(0,2)*B(0,2));
+//  C(0,3)= ScalarThis*C(0,3) + ScalarAB * 0.5 * (A(0,1)*B(0,0) + A(0,0)*B(0,1));
+//  C(0,4)= ScalarThis*C(0,4) + ScalarAB * 0.5 * (A(0,2)*B(0,1) + A(0,1)*B(0,2));
+//  C(0,5)= ScalarThis*C(0,5) + ScalarAB * 0.5 * (A(0,2)*B(0,0) + A(0,0)*B(0,2));
+//  
+//  C(1,0)= ScalarThis*C(1,0) + ScalarAB * 0.5 * (A(1,0)*B(1,0) + A(1,0)*B(1,0));
+//  C(1,1)= ScalarThis*C(1,1) + ScalarAB * 0.5 * (A(1,1)*B(1,1) + A(1,1)*B(1,1));
+//  C(1,2)= ScalarThis*C(1,2) + ScalarAB * 0.5 * (A(1,2)*B(1,2) + A(1,2)*B(1,2));
+//  C(1,3)= ScalarThis*C(1,3) + ScalarAB * 0.5 * (A(1,1)*B(1,0) + A(1,0)*B(1,1));
+//  C(1,4)= ScalarThis*C(1,4) + ScalarAB * 0.5 * (A(1,2)*B(1,1) + A(1,1)*B(1,2));
+//  C(1,5)= ScalarThis*C(1,5) + ScalarAB * 0.5 * (A(1,2)*B(1,0) + A(1,0)*B(1,2));
+//               
+//  C(2,0)= ScalarThis*C(2,0) + ScalarAB * 0.5 * (A(2,0)*B(2,0) + A(2,0)*B(2,0));
+//  C(2,1)= ScalarThis*C(2,1) + ScalarAB * 0.5 * (A(2,1)*B(2,1) + A(2,1)*B(2,1));
+//  C(2,2)= ScalarThis*C(2,2) + ScalarAB * 0.5 * (A(2,2)*B(2,2) + A(2,2)*B(2,2));
+//  C(2,3)= ScalarThis*C(2,3) + ScalarAB * 0.5 * (A(2,1)*B(2,0) + A(2,0)*B(2,1));
+//  C(2,4)= ScalarThis*C(2,4) + ScalarAB * 0.5 * (A(2,2)*B(2,1) + A(2,1)*B(2,2));
+//  C(2,5)= ScalarThis*C(2,5) + ScalarAB * 0.5 * (A(2,2)*B(2,0) + A(2,0)*B(2,2));
+//
+//  C(3,0)= ScalarThis*C(3,0) + ScalarAB * 0.5 * (A(1,0)*B(0,0) + A(1,0)*B(0,0));
+//  C(3,1)= ScalarThis*C(3,1) + ScalarAB * 0.5 * (A(1,1)*B(0,1) + A(1,1)*B(0,1));
+//  C(3,2)= ScalarThis*C(3,2) + ScalarAB * 0.5 * (A(1,2)*B(0,2) + A(1,2)*B(0,2));
+//  C(3,3)= ScalarThis*C(3,3) + ScalarAB * 0.5 * (A(1,1)*B(0,0) + A(1,0)*B(0,1));
+//  C(3,4)= ScalarThis*C(3,4) + ScalarAB * 0.5 * (A(1,2)*B(0,1) + A(1,1)*B(0,2));
+//  C(3,5)= ScalarThis*C(3,5) + ScalarAB * 0.5 * (A(1,2)*B(0,0) + A(1,0)*B(0,2));
+//  
+//  C(4,0)= ScalarThis*C(4,0) + ScalarAB * 0.5 * (A(2,0)*B(1,0) + A(2,0)*B(1,0));
+//  C(4,1)= ScalarThis*C(4,1) + ScalarAB * 0.5 * (A(2,1)*B(1,1) + A(2,1)*B(1,1));
+//  C(4,2)= ScalarThis*C(4,2) + ScalarAB * 0.5 * (A(2,2)*B(1,2) + A(2,2)*B(1,2));
+//  C(4,3)= ScalarThis*C(4,3) + ScalarAB * 0.5 * (A(2,1)*B(1,0) + A(2,0)*B(1,1));
+//  C(4,4)= ScalarThis*C(4,4) + ScalarAB * 0.5 * (A(2,2)*B(1,1) + A(2,1)*B(1,2));
+//  C(4,5)= ScalarThis*C(4,5) + ScalarAB * 0.5 * (A(2,2)*B(1,0) + A(2,0)*B(1,2));
+//  
+//  C(5,0)= ScalarThis*C(5,0) + ScalarAB * 0.5 * (A(2,0)*B(0,0) + A(2,0)*B(0,0));
+//  C(5,1)= ScalarThis*C(5,1) + ScalarAB * 0.5 * (A(2,1)*B(0,1) + A(2,1)*B(0,1));
+//  C(5,2)= ScalarThis*C(5,2) + ScalarAB * 0.5 * (A(2,2)*B(0,2) + A(2,2)*B(0,2));
+//  C(5,3)= ScalarThis*C(5,3) + ScalarAB * 0.5 * (A(2,1)*B(0,0) + A(2,0)*B(0,1));
+//  C(5,4)= ScalarThis*C(5,4) + ScalarAB * 0.5 * (A(2,2)*B(0,1) + A(2,1)*B(0,2));
+//  C(5,5)= ScalarThis*C(5,5) + ScalarAB * 0.5 * (A(2,2)*B(0,0) + A(2,0)*B(0,2));
   
   return;
 

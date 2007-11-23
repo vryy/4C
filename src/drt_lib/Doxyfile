@@ -1056,8 +1056,7 @@ PREDEFINED             = CCADISCRET \
                          D_FSI \
                          D_SOH8 \
                          D_SOSH8 \
-                         D_SOTET10 \
-                         D_SOCTET10
+                         D_SOTET
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then 
 # this tag can be used to specify a list of macro names that should be expanded. 

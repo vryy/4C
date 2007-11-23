@@ -378,23 +378,23 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
       condif->Unpack(data);
       return condif;
     }
-    case ParObject_CNode:
-    {
-      double x[3];
-      vector<int> dofs(0);
-      CONTACT::CNode* node = new CONTACT::CNode(0,x,0,0,dofs,false);
-      node->Unpack(data);
-      return node;
-    }
-    case ParObject_CElement:
-    {
-      CONTACT::CElement* ele = new CONTACT::CElement(0,
-                                                     DRT::Element::element_contact,
-                                                     0,DRT::Element::dis_none,
-                                                     0,NULL,false);
-      ele->Unpack(data);
-      return ele;
-    }
+//    case ParObject_CNode:
+//    {
+//      double x[3];
+//      vector<int> dofs(0);
+//      CONTACT::CNode* node = new CONTACT::CNode(0,x,0,0,dofs,false);
+//      node->Unpack(data);
+//      return node;
+//    }
+//    case ParObject_CElement:
+//    {
+//      CONTACT::CElement* ele = new CONTACT::CElement(0,
+//                                                     DRT::Element::element_contact,
+//                                                     0,DRT::Element::dis_none,
+//                                                     0,NULL,false);
+//      ele->Unpack(data);
+//      return ele;
+//    }
     default:
       dserror("Unknown type of ParObject instance: %d",type);
     break;
