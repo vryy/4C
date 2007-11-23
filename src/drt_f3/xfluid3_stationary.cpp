@@ -126,36 +126,8 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
 
   
   const XFEM::ElementDofManager& dofman = ele->eleDofManager_;
-  
-  
-  // get enrichment value for each node at its nodal position
-  
   // cout << "EleID " << ele->Id() << endl;
-  
-  bool output = false;
-  for (int inode=0; inode<iel_; inode++)
-  {
-    const int gid = nodes[inode]->Id();
-    //cout << (*nodes[inode]) << endl;
-    vector<double> x(3);
-    x[0] = xyze_(0,inode);
-    x[1] = xyze_(1,inode);
-    x[2] = xyze_(2,inode);
     
-    //cout << "numdofpernode: " << ele->eleDofManager_.NumDofPerNode(gid, 19) << endl;
-    const std::set<XFEM::EnrField>  enrfieldset = dofman.EnrFieldSetPerNode(gid);
-    for (std::set<XFEM::EnrField>::const_iterator enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield) {
-        
-        const XFEM::Enrichment enr = enrfield->getEnrichment();
-        if (enr.Type() == XFEM::Enrichment::typeVoid)
-        {
-            //cin.get();
-            //output = true;
-        }
-        //cout << counter << "  " << enrfield->toString() << " enrval = " << enrval <<  " " << endl;
-    }
-  }
-  
 //  if (domainIntCells.size() != 1){
 //      cin.get();
 //  }

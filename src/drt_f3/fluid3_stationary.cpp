@@ -123,7 +123,7 @@ void DRT::Elements::Fluid3Stationary::Sysmat(Fluid3* ele,
   // integration loop
   for (int iquad=0; iquad<intpoints.nquad; ++iquad)
   {
-    // coordiantes of the current integration point
+    // coordinates of the current integration point
     const double e1 = intpoints.qxg[iquad][0];
     const double e2 = intpoints.qxg[iquad][1];
     const double e3 = intpoints.qxg[iquad][2];
