@@ -116,18 +116,6 @@ void DRT::Elements::Soh8Line::Print(ostream& os) const
   return;
 }
 
-/*-----------------------------------------------------------------------*
- * Integrate a Line Neumann boundary condition (public)         maf 04/07*
- * ----------------------------------------------------------------------*/
-int DRT::Elements::Soh8Line::EvaluateNeumann(ParameterList&         params,
-                                             DRT::Discretization&   discretization,
-                                             DRT::Condition&        condition,
-                                             vector<int>&           lm,
-                                             Epetra_SerialDenseVector& elevec1)
-{
-  dserror("Neumann condition on line not implemented");
-    return 0;
-}
 
 
 

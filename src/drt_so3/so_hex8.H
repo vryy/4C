@@ -904,6 +904,13 @@ private:
   //! The local line number of this line w.r.t to the parent_ element
   int                    lline_;
 
+  void soh8_line_integ(
+      vector<double>* funct,                 // (o) shape functions
+      double* sqrtdetg,                      // (o) pointer to sqrt of det(g)
+      vector<double>* unrm,                  // (o) unit normal
+      const Epetra_SerialDenseMatrix* xs,    // (i) material element coords
+      const double r);                       // (i) coord in r-direction
+
 }; // class Soh8Line
 
 

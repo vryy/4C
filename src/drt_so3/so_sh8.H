@@ -70,7 +70,7 @@ public:
   //! @name Friends
   friend class Sosh8Register;
   friend class Soh8Surface;
-  friend class Soh83Line;
+  friend class Soh8Line;
 
   //@}
   //! @name Constructors and destructors and related methods
