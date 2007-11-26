@@ -238,7 +238,7 @@ void FSI::Structure::CalculateStiffness()
   }
 
   // add static mid-balance
-  fresm_->Update(1.0,*fint_,-1.0,*fextm_,1.0);
+  fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
 
   // blank residual at DOFs on Dirichlet BC
   Epetra_Vector fresmcopy(*fresm_);
