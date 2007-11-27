@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_dirichletneumann.H
+\file fsi_dirichletneumann.H
 
 \brief Solve FSI problems using a Dirichlet-Neumann partitioning approach
 

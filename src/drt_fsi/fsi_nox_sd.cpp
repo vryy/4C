@@ -36,7 +36,7 @@ extern struct _FILES  allfiles;
 #endif
 
 
-NOX::FSI::SDRelaxation::SDRelaxation(const Teuchos::RefCountPtr<NOX::Utils>& utils,
+NOX::FSI::SDRelaxation::SDRelaxation(const Teuchos::RCP<NOX::Utils>& utils,
                                      Teuchos::ParameterList& params)
   : utils_(utils)
 {
@@ -48,7 +48,7 @@ NOX::FSI::SDRelaxation::~SDRelaxation()
 }
 
 
-bool NOX::FSI::SDRelaxation::reset(const Teuchos::RefCountPtr<NOX::GlobalData>& gd,
+bool NOX::FSI::SDRelaxation::reset(const Teuchos::RCP<NOX::GlobalData>& gd,
                                    Teuchos::ParameterList& params)
 {
   utils_ = gd->getUtils();

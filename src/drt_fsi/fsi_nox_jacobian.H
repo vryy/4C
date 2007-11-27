@@ -4,30 +4,21 @@
 #ifdef TRILINOS_PACKAGE
 
 #include <Epetra_Comm.h>
+#include <Epetra_Operator.h>
+#include <Epetra_Import.h>
 
-#include <Epetra_Operator.h>	           // base class
-#include <NOX_Epetra_Interface_Jacobian.H> // base class
+#include <NOX_Abstract_Group.H>
+#include <NOX_Common.H>
+#include <NOX_Epetra_Interface_Jacobian.H>
+#include <NOX_Epetra_Interface_Required.H>
+#include <NOX_Epetra_Vector.H>
 #include <NOX_Utils.H>
 
-#include <NOX_Common.H>
-#include <Epetra_Import.h>
-#include <NOX_Epetra_Vector.H>
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 
 // Forward Declarations
 class Epetra_Comm;
 class Epetra_Map;
-
-namespace NOX {
-  namespace Abstract {
-    class Group;
-  }
-  namespace Epetra {
-    namespace Interface {
-      class Required;
-    }
-  }
-}
 
 namespace NOX {
   namespace FSI {
@@ -43,7 +34,7 @@ public:
     The vector \c x is used to clone the solution vector.
   */
   FSIMatrixFree(Teuchos::ParameterList& printParams,
-                const Teuchos::RefCountPtr<NOX::Epetra::Interface::Required>& i,
+                const Teuchos::RCP<NOX::Epetra::Interface::Required>& i,
                 const NOX::Epetra::Vector& cloneVector);
 
   //! Pure virtual destructor
@@ -117,7 +108,7 @@ protected:
   string label;
 
   //! User provided interface function
-  Teuchos::RefCountPtr<NOX::Epetra::Interface::Required> interface;
+  Teuchos::RCP<NOX::Epetra::Interface::Required> interface;
 
   //! The current solution vector
   NOX::Epetra::Vector currentX;
@@ -131,13 +122,13 @@ protected:
   //! Epetra_Map object used in the returns of the Epetra_Operator derived methods.
   /*! If the user is using Epetra_BlockMaps, then NOX::Epetra::MatrixFree must create an equivalent Epetra_Map from the Epetra_BlockMap that can be used as the return object of the OperatorDomainMap() and OperatorRangeMap() methods.
    */
-  Teuchos::RefCountPtr<const Epetra_Map> epetraMap;
+  Teuchos::RCP<const Epetra_Map> epetraMap;
 
   //! Flag to enables the use of a group instead of the interface for the computeF() calls in the directional difference calculation.
   bool useGroupForComputeF;
 
   //! Pointer to the group for possible use in computeF() calls.
-  Teuchos::RefCountPtr<NOX::Abstract::Group> groupPtr;
+  Teuchos::RCP<NOX::Abstract::Group> groupPtr;
 
   //! Printing utilities.
   NOX::Utils utils;

@@ -22,7 +22,7 @@ TRILINOS_HOME=/lnm/lib/$LINUX_DIST/$MPI_VERSION/trilinos
 TRILINOS_INCDIR=$TRILINOS_HOME/include
 TRILINOS_LIBDIR=$TRILINOS_HOME/lib
 TRILINOS_DEFINES="-DHAVE_CONFIG_H -DTRILINOS_HAVE_FORTRAN_UNDERSCORE"
-TRILINOS_LIB="-lmoertel -ltrilinoscouplings -lnoxepetra  -lnox  -lml -laztecoo -lifpack -lamesos -lteuchos -lepetraext -lepetra"
+TRILINOS_LIB="-lmoertel -lstratimikosamesos -lstratimikosaztecoo -lthyraepetraext -lthyraepetra -ltrilinoscouplings -lnoxthyra -lnoxepetra -lnox -lml -laztecoo -lifpack -lamesos -lteuchos -lepetraext -lepetra -lthyra -lstratimikos -lrtop"
 TRILINOS_FILTER_LIB="-laztecoo -lteuchos -lepetraext -lepetra"
 
 # aztec

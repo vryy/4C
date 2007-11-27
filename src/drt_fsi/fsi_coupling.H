@@ -8,9 +8,10 @@
 #include <vector>
 #include <set>
 
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Epetra_Export.h>
 #include <Epetra_Map.h>
+#include <Epetra_CrsMatrix.h>
 
 #include "../drt_lib/drt_discret.H"
 
@@ -116,16 +117,16 @@ namespace FSI
                        const Epetra_Map& slavenodes);
 
     /// transfer a dof vector from master to slave
-    Teuchos::RefCountPtr<Epetra_Vector> MasterToSlave(Teuchos::RefCountPtr<Epetra_Vector> mv);
+    Teuchos::RCP<Epetra_Vector> MasterToSlave(Teuchos::RCP<Epetra_Vector> mv) const;
 
     /// transfer a dof vector from slave to master
-    Teuchos::RefCountPtr<Epetra_Vector> SlaveToMaster(Teuchos::RefCountPtr<Epetra_Vector> sv);
+    Teuchos::RCP<Epetra_Vector> SlaveToMaster(Teuchos::RCP<Epetra_Vector> sv) const;
 
     /// the interface dof map of the master side
-    RefCountPtr<Epetra_Map> MasterDofMap() const { return masterdofmap_; }
+    Teuchos::RCP<Epetra_Map> MasterDofMap() const { return masterdofmap_; }
 
     /// the interface dof map of the slave side
-    RefCountPtr<Epetra_Map> SlaveDofMap()  const { return slavedofmap_; }
+    Teuchos::RCP<Epetra_Map> SlaveDofMap()  const { return slavedofmap_; }
 
   private:
 
@@ -149,9 +150,9 @@ namespace FSI
     /// build slave to master permutation and dof all maps
     void FinishCoupling(const DRT::Discretization& masterdis,
                         const DRT::Discretization& slavedis,
-                        Teuchos::RefCountPtr<Epetra_Map> masternodemap,
-                        Teuchos::RefCountPtr<Epetra_Map> slavenodemap,
-                        Teuchos::RefCountPtr<Epetra_Map> permslavenodemap);
+                        Teuchos::RCP<Epetra_Map> masternodemap,
+                        Teuchos::RCP<Epetra_Map> slavenodemap,
+                        Teuchos::RCP<Epetra_Map> permslavenodemap);
 
     /// build dof maps from node maps
     /*!
@@ -159,25 +160,24 @@ namespace FSI
       node are of interest.
      */
     void BuildDofMaps(const DRT::Discretization& dis,
-                      RefCountPtr<Epetra_Map> nodemap,
-                      RefCountPtr<Epetra_Map> permnodemap,
-                      RefCountPtr<Epetra_Map>& dofmap,
-                      RefCountPtr<Epetra_Map>& permdofmap,
-                      RefCountPtr<Epetra_Export>& exporter);
+                      RCP<Epetra_Map> nodemap,
+                      RCP<Epetra_Map> permnodemap,
+                      RCP<Epetra_Map>& dofmap,
+                      RCP<Epetra_Map>& permdofmap,
+                      RCP<Epetra_Export>& exporter);
 
     /// find all local nodes from discretization marked with condition
     void FindCondNodes(const DRT::Discretization& dis,
                        std::string condname,
                        std::set<int>& nodes);
 
-    RefCountPtr<Epetra_Map> masterdofmap_;
-    RefCountPtr<Epetra_Map> permmasterdofmap_;
-    RefCountPtr<Epetra_Map> slavedofmap_;
-    RefCountPtr<Epetra_Map> permslavedofmap_;
+    Teuchos::RCP<Epetra_Map> masterdofmap_;
+    Teuchos::RCP<Epetra_Map> permmasterdofmap_;
+    Teuchos::RCP<Epetra_Map> slavedofmap_;
+    Teuchos::RCP<Epetra_Map> permslavedofmap_;
 
-    RefCountPtr<Epetra_Export> masterexport_;
-    RefCountPtr<Epetra_Export> slaveexport_;
-
+    Teuchos::RCP<Epetra_Export> masterexport_;
+    Teuchos::RCP<Epetra_Export> slaveexport_;
   };
 
 }

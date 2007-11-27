@@ -127,9 +127,7 @@ void FSI::Fluid::ApplyMeshDisplacement(Teuchos::RefCountPtr<Epetra_Vector> fluid
     dserror("Insert using extractor returned err=%d",err);
 
   // new grid velocity
-  // There are other choices how to approximate that. Which one to
-  // chose?
-  gridv_->Update(1/dta_, *dispnp_, -1/dta_, *dispn_, 0.0);
+  UpdateGridv();
 }
 
 

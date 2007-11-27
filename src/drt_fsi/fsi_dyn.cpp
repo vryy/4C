@@ -10,6 +10,8 @@
 #include "fsi_dirichletneumann.H"
 #include "fsi_utils.H"
 
+#include "../drt_mfsi/mfsi_algorithm.H"
+
 #include "../drt_lib/drt_resulttest.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -294,15 +296,22 @@ void fsi_ale_drt()
   if (aledis->NumGlobalNodes()==0)
     CreateAleDiscretization();
 
-  Teuchos::RefCountPtr<FSI::DirichletNeumannCoupling> fsi = rcp(new FSI::DirichletNeumannCoupling(comm));
-
-  fsi->Timeloop(fsi);
+  if (true)
+  {
+    Teuchos::RefCountPtr<FSI::DirichletNeumannCoupling> fsi = rcp(new FSI::DirichletNeumannCoupling(comm));
+    fsi->Timeloop(fsi);
 
 #ifdef RESULTTEST
-  DRT::ResultTestManager testmanager(comm);
-  testmanager.AddFieldTest(rcp(new FluidResultTest(fsi->FluidField())));
-  testmanager.TestAll();
+    DRT::ResultTestManager testmanager(comm);
+    testmanager.AddFieldTest(rcp(new FluidResultTest(fsi->FluidField())));
+    testmanager.TestAll();
 #endif
+  }
+  else
+  {
+    Teuchos::RCP<MFSI::Algorithm> mfsi = rcp(new MFSI::Algorithm(comm));
+    mfsi->Timeloop();
+  }
 }
 
 #endif

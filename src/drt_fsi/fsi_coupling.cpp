@@ -16,11 +16,15 @@ extern struct _GENPROB     genprob;
 using namespace std;
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 FSI::Coupling::Coupling()
 {
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FSI::Coupling::SetupConditionCoupling(const DRT::Discretization& masterdis,
                                            const DRT::Discretization& slavedis,
                                            std::string coupname)
@@ -44,6 +48,8 @@ void FSI::Coupling::SetupConditionCoupling(const DRT::Discretization& masterdis,
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FSI::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
                                   const DRT::Discretization& slavedis,
                                   const std::vector<int>& masternodes,
@@ -55,19 +61,21 @@ void FSI::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
 
   // Epetra maps in original distribution
 
-  Teuchos::RefCountPtr<Epetra_Map> masternodemap =
+  Teuchos::RCP<Epetra_Map> masternodemap =
     rcp(new Epetra_Map(-1, patchedmasternodes.size(), &patchedmasternodes[0], 0, masterdis.Comm()));
 
-  Teuchos::RefCountPtr<Epetra_Map> slavenodemap =
+  Teuchos::RCP<Epetra_Map> slavenodemap =
     rcp(new Epetra_Map(-1, slavenodes.size(), &slavenodes[0], 0, slavedis.Comm()));
 
-  Teuchos::RefCountPtr<Epetra_Map> permslavenodemap =
+  Teuchos::RCP<Epetra_Map> permslavenodemap =
     rcp(new Epetra_Map(-1, permslavenodes.size(), &permslavenodes[0], 0, slavedis.Comm()));
 
   FinishCoupling(masterdis, slavedis, masternodemap, slavenodemap, permslavenodemap);
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FSI::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
                                   const DRT::Discretization& slavedis,
                                   const Epetra_Map& masternodes,
@@ -83,19 +91,21 @@ void FSI::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
 
   // Epetra maps in original distribution
 
-  Teuchos::RefCountPtr<Epetra_Map> masternodemap =
+  Teuchos::RCP<Epetra_Map> masternodemap =
     rcp(new Epetra_Map(-1, mastervect.size(), &mastervect[0], 0, masterdis.Comm()));
 
-  Teuchos::RefCountPtr<Epetra_Map> slavenodemap =
+  Teuchos::RCP<Epetra_Map> slavenodemap =
     rcp(new Epetra_Map(slavenodes));
 
-  Teuchos::RefCountPtr<Epetra_Map> permslavenodemap =
+  Teuchos::RCP<Epetra_Map> permslavenodemap =
     rcp(new Epetra_Map(-1, permslavenodes.size(), &permslavenodes[0], 0, slavedis.Comm()));
 
   FinishCoupling(masterdis, slavedis, masternodemap, slavenodemap, permslavenodemap);
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FSI::Coupling::MatchNodes(const DRT::Discretization& masterdis,
                                const DRT::Discretization& slavedis,
                                std::vector<int>& masternodes,
@@ -141,12 +151,13 @@ void FSI::Coupling::MatchNodes(const DRT::Discretization& masterdis,
 }
 
 
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FSI::Coupling::FinishCoupling(const DRT::Discretization& masterdis,
                                    const DRT::Discretization& slavedis,
-                                   Teuchos::RefCountPtr<Epetra_Map> masternodemap,
-                                   Teuchos::RefCountPtr<Epetra_Map> slavenodemap,
-                                   Teuchos::RefCountPtr<Epetra_Map> permslavenodemap)
+                                   Teuchos::RCP<Epetra_Map> masternodemap,
+                                   Teuchos::RCP<Epetra_Map> slavenodemap,
+                                   Teuchos::RCP<Epetra_Map> permslavenodemap)
 {
   // we expect to get maps of exactly the same shape
   if (not masternodemap->PointSameAs(*permslavenodemap))
@@ -157,10 +168,10 @@ void FSI::Coupling::FinishCoupling(const DRT::Discretization& masterdis,
   // To do so we create vectors that contain the values of the master
   // maps, assigned to the slave maps. On the master side we actually
   // create just a view on the map! This vector must not be changed!
-  Teuchos::RefCountPtr<Epetra_IntVector> masternodevec =
+  Teuchos::RCP<Epetra_IntVector> masternodevec =
     rcp(new Epetra_IntVector(View, *permslavenodemap, masternodemap->MyGlobalElements()));
 
-  Teuchos::RefCountPtr<Epetra_IntVector> permmasternodevec =
+  Teuchos::RCP<Epetra_IntVector> permmasternodevec =
     rcp(new Epetra_IntVector(*slavenodemap));
 
   Epetra_Export masternodeexport(*permslavenodemap, *slavenodemap);
@@ -168,7 +179,7 @@ void FSI::Coupling::FinishCoupling(const DRT::Discretization& masterdis,
   if (err)
     dserror("failed to export master nodes");
 
-  Teuchos::RefCountPtr<Epetra_Map> permmasternodemap =
+  Teuchos::RCP<Epetra_Map> permmasternodemap =
     rcp(new Epetra_Map(-1, permmasternodevec->MyLength(), permmasternodevec->Values(), 0, masterdis.Comm()));
 
   if (not slavenodemap->PointSameAs(*permmasternodemap))
@@ -182,12 +193,14 @@ void FSI::Coupling::FinishCoupling(const DRT::Discretization& masterdis,
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FSI::Coupling::BuildDofMaps(const DRT::Discretization& dis,
-                                 RefCountPtr<Epetra_Map> nodemap,
-                                 RefCountPtr<Epetra_Map> permnodemap,
-                                 RefCountPtr<Epetra_Map>& dofmap,
-                                 RefCountPtr<Epetra_Map>& permdofmap,
-                                 RefCountPtr<Epetra_Export>& exporter)
+                                 RCP<Epetra_Map> nodemap,
+                                 RCP<Epetra_Map> permnodemap,
+                                 RCP<Epetra_Map>& dofmap,
+                                 RCP<Epetra_Map>& permdofmap,
+                                 RCP<Epetra_Export>& exporter)
 {
   // communicate dofs
 
@@ -233,7 +246,9 @@ void FSI::Coupling::BuildDofMaps(const DRT::Discretization& dis,
 }
 
 
-Teuchos::RefCountPtr<Epetra_Vector> FSI::Coupling::MasterToSlave(Teuchos::RefCountPtr<Epetra_Vector> mv)
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::Coupling::MasterToSlave(Teuchos::RCP<Epetra_Vector> mv) const
 {
 #ifdef DEBUG
   if (not mv->Map().SameAs(*masterdofmap_))
@@ -243,7 +258,7 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Coupling::MasterToSlave(Teuchos::RefCou
   Epetra_Vector perm(*permslavedofmap_);
   copy(mv->Values(), mv->Values()+mv->MyLength(), perm.Values());
 
-  Teuchos::RefCountPtr<Epetra_Vector> sv =
+  Teuchos::RCP<Epetra_Vector> sv =
     rcp(new Epetra_Vector(*slavedofmap_));
 
   int err = sv->Export(perm,*slaveexport_,Insert);
@@ -254,7 +269,9 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Coupling::MasterToSlave(Teuchos::RefCou
 }
 
 
-Teuchos::RefCountPtr<Epetra_Vector> FSI::Coupling::SlaveToMaster(Teuchos::RefCountPtr<Epetra_Vector> sv)
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::Coupling::SlaveToMaster(Teuchos::RCP<Epetra_Vector> sv) const
 {
 #ifdef DEBUG
   if (not sv->Map().SameAs(*slavedofmap_))
@@ -264,7 +281,7 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Coupling::SlaveToMaster(Teuchos::RefCou
   Epetra_Vector perm(*permmasterdofmap_);
   copy(sv->Values(), sv->Values()+sv->MyLength(), perm.Values());
 
-  Teuchos::RefCountPtr<Epetra_Vector> mv =
+  Teuchos::RCP<Epetra_Vector> mv =
     rcp(new Epetra_Vector(*masterdofmap_));
 
   int err = mv->Export(perm,*masterexport_,Insert);
@@ -275,6 +292,8 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Coupling::SlaveToMaster(Teuchos::RefCou
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FSI::Coupling::FindCondNodes(const DRT::Discretization& dis, std::string condname, std::set<int>& nodes)
 {
   int myrank = dis.Comm().MyPID();

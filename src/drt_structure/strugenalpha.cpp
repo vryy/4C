@@ -185,7 +185,7 @@ havecontact_(false)
     LINALG::Complete(*mass_);
     maxentriesperrow_ = mass_->MaxNumEntries();
 
-    // build damping matrix if desired  
+    // build damping matrix if desired
     if (damping)
     {
       LINALG::Complete(*stiff_);
@@ -642,6 +642,130 @@ void StruGenAlpha::ConsistentPredictor()
 } // StruGenAlpha::ConsistentPredictor()
 
 /*----------------------------------------------------------------------*
+ |  build linear system matrix and rhs (public)              u.kue 03/07|
+ *----------------------------------------------------------------------*/
+void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
+{
+  // -------------------------------------------------------------------
+  // get some parameters from parameter list
+  // -------------------------------------------------------------------
+  double time      = params_.get<double>("total time"             ,0.0);
+  double dt        = params_.get<double>("delta time"             ,0.01);
+  double timen     = time + dt;
+  bool   damping   = params_.get<bool>  ("damping"                ,false);
+  double beta      = params_.get<double>("beta"                   ,0.292);
+  double gamma     = params_.get<double>("gamma"                  ,0.581);
+  double alpham    = params_.get<double>("alpha m"                ,0.378);
+  double alphaf    = params_.get<double>("alpha f"                ,0.459);
+
+  const Epetra_Map* dofrowmap = discret_.DofRowMap();
+
+  // On the first call in a time step we have to have
+  // disp==Teuchos::null. Then we just finished one of our predictors,
+  // than contains the element loop, so we can fast forward and finish
+  // up the linear system.
+
+  if (disp!=Teuchos::null)
+  {
+    // set the new solution we just got
+    disi_->Update(1.0,*disp,0.0);
+
+    //---------------------------------- update mid configuration values
+    // displacements
+    // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
+    dism_->Update(1.-alphaf,*disi_,1.0);
+    // velocities
+#ifndef STRUGENALPHA_INCRUPDT
+    // iterative
+    // V_{n+1-alpha_f} := V_{n+1-alpha_f}
+    //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
+    velm_->Update((1.-alphaf)*gamma/(beta*dt),*disi_,1.0);
+#else
+    // incremental (required for constant predictor)
+    velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+    velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
+                  (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
+                  gamma/(beta*dt));
+#endif
+    // accelerations
+#ifndef STRUGENALPHA_INCRUPDT
+    // iterative
+    // A_{n+1-alpha_m} := A_{n+1-alpha_m}
+    //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
+    accm_->Update((1.-alpham)/(beta*dt*dt),*disi_,1.0);
+#else
+    // incremental (required for constant predictor)
+    accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+    accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
+                  (2.*beta-1.+alpham)/(2.*beta),*acc_,
+                  (1.-alpham)/((1.-alphaf)*beta*dt*dt));
+#endif
+
+    //---------------------------- compute internal forces and stiffness
+    {
+      // zero out stiffness
+      stiff_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+      // create the parameters for the discretization
+      ParameterList p;
+      // action for elements
+      p.set("action","calc_struct_nlnstiff");
+
+      // other parameters that might be needed by the elements
+      p.set("total time",timen);
+      p.set("delta time",dt);
+
+      // set vector values needed by elements
+      discret_.ClearState();
+      discret_.SetState("residual displacement",disi_);
+      discret_.SetState("displacement",dism_);
+
+      //discret_.SetState("velocity",velm_); // not used at the moment
+      fint_->PutScalar(0.0);  // initialise internal force vector
+      discret_.Evaluate(p,stiff_,fint_);
+      discret_.ClearState();
+      // do NOT finalize the stiffness matrix to add masses to it later
+    }
+
+    //------------------------------------------ compute residual forces
+    // Res = M . A_{n+1-alpha_m}
+    //     + C . V_{n+1-alpha_f}
+    //     + F_int(D_{n+1-alpha_f})
+    //     - F_{ext;n+1-alpha_f}
+    // add inertia mid-forces
+    mass_->Multiply(false,*accm_,*fresm_);
+    // add viscous mid-forces
+    if (damping)
+    {
+      RCP<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
+      damp_->Multiply(false,*velm_,*fviscm);
+      fresm_->Update(1.0,*fviscm,1.0);
+    }
+    // add static mid-balance
+    fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+    // blank residual DOFs that are on Dirichlet BC
+    {
+      Epetra_Vector fresmcopy(*fresm_);
+      fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
+    }
+  }
+
+  //------------------------------------------- effective rhs is fresm
+  //---------------------------------------------- build effective lhs
+  // (using matrix stiff_ as effective matrix)
+  LINALG::Add(*mass_,false,(1.-alpham)/(beta*dt*dt),*stiff_,1.-alphaf);
+  if (damping)
+  {
+    LINALG::Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),*stiff_,1.0);
+  }
+  LINALG::Complete(*stiff_);
+
+  //----------------------- apply dirichlet BCs to system of equations
+  disi_->PutScalar(0.0);  // Useful? depends on solver and more
+  LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
+
+} // StruGenAlpha::Evaluate()
+
+/*----------------------------------------------------------------------*
  |  do Newton iteration (public)                             mwgee 03/07|
  *----------------------------------------------------------------------*/
 void StruGenAlpha::FullNewton()
@@ -818,10 +942,10 @@ void StruGenAlpha::FullNewton()
   {
      if ( (myrank_ ==  0) && (printscreen) )
      {
-        printf("Newton iteration converged: numiter %d res-norm %e dis-norm %e\n", 
+        printf("Newton iteration converged: numiter %d res-norm %e dis-norm %e\n",
                numiter+1, fresmnorm, disinorm);
         fflush(stdout);
-     }  
+     }
   }
   params_.set<int>("num iterations",numiter);
 

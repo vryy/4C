@@ -32,10 +32,10 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-FSI::AleLinear::AleLinear(RefCountPtr<DRT::Discretization> actdis,
-                          Teuchos::RefCountPtr<LINALG::Solver> solver,
-                          Teuchos::RefCountPtr<ParameterList> params,
-                          Teuchos::RefCountPtr<IO::DiscretizationWriter> output)
+FSI::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
+                          Teuchos::RCP<LINALG::Solver> solver,
+                          Teuchos::RCP<ParameterList> params,
+                          Teuchos::RCP<IO::DiscretizationWriter> output)
   : discret_(actdis),
     solver_ (solver),
     params_ (params),
@@ -61,6 +61,8 @@ FSI::AleLinear::AleLinear(RefCountPtr<DRT::Discretization> actdis,
 
   dirichtoggle_ = LINALG::CreateVector(*dofrowmap,true);
   //zeros_        = LINALG::CreateVector(*dofrowmap,true);
+
+  sumdisi_        = LINALG::CreateVector(*dofrowmap,true);
 }
 
 
@@ -75,7 +77,30 @@ void FSI::AleLinear::PrepareTimeStep()
   eleparams.set("total time", time_);
   eleparams.set("delta time", dt_);
 
+  sumdisi_->PutScalar(0.);
+
   discret_->EvaluateDirichlet(eleparams,*dispnp_,*dirichtoggle_);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FSI::AleLinear::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
+{
+  // We save the current solution here. This will not change the
+  // result of our element call, but the next time somebody asks us we
+  // know the displacements.
+  //
+  // Note: What we get here is the sum of all increments in this time
+  // step, not just the latest increment. Be careful.
+  if (disp!=Teuchos::null)
+  {
+    dispnp_->Update(1.0,*disp,-1.0,*sumdisi_,1.0);
+    sumdisi_->Update(1.0,*disp,0.0);
+  }
+
+  EvaluateElements();
+  LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,dirichtoggle_);
 }
 
 
@@ -83,10 +108,7 @@ void FSI::AleLinear::PrepareTimeStep()
  *----------------------------------------------------------------------*/
 void FSI::AleLinear::Solve()
 {
-  EvaluateElements();
-
-  LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,dirichtoggle_);
-
+  Evaluate(Teuchos::null);
   solver_->Solve(sysmat_,dispnp_,residual_,true,true);
 }
 
@@ -102,7 +124,7 @@ void FSI::AleLinear::Update()
  *----------------------------------------------------------------------*/
 void FSI::AleLinear::Output()
 {
-#if 0
+#if 1
   // currently we do not need any output -- the fluid writes its
   // displacements itself.
   output_->NewStep    (step_,time_);
@@ -179,20 +201,13 @@ void FSI::AleLinear::EvaluateElements()
   // action for elements
   eleparams.set("action", "calc_ale_lin_stiff");
 
-  // choose what to assemble
-  eleparams.set("assemble matrix 1",true);
-  eleparams.set("assemble matrix 2",false);
-  eleparams.set("assemble vector 1",true);
-  eleparams.set("assemble vector 2",false);
-  eleparams.set("assemble vector 3",false);
-
   // other parameters that might be needed by the elements
 
   // set vector values needed by elements
   discret_->ClearState();
   //discret_->SetState("dispnp", dispnp_);
 
-  discret_->Evaluate(eleparams,sysmat_,null,residual_,null,null);
+  discret_->Evaluate(eleparams,sysmat_,residual_);
   discret_->ClearState();
 
   LINALG::Complete(*sysmat_);
@@ -202,7 +217,7 @@ void FSI::AleLinear::EvaluateElements()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::AleLinear::SetInterfaceMap(Teuchos::RefCountPtr<Epetra_Map> im)
+void FSI::AleLinear::SetInterfaceMap(Teuchos::RCP<Epetra_Map> im)
 {
   imeshmap_ = im;
   extractor_ = rcp(new Epetra_Import(*imeshmap_, *discret_->DofRowMap()));
@@ -211,7 +226,7 @@ void FSI::AleLinear::SetInterfaceMap(Teuchos::RefCountPtr<Epetra_Map> im)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::AleLinear::ApplyInterfaceDisplacements(Teuchos::RefCountPtr<Epetra_Vector> idisp)
+void FSI::AleLinear::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp)
 {
   int err = dispnp_->Export(*idisp,*extractor_,Insert);
   if (err)
@@ -226,11 +241,23 @@ void FSI::AleLinear::ApplyInterfaceDisplacements(Teuchos::RefCountPtr<Epetra_Vec
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RefCountPtr<Epetra_Vector> FSI::AleLinear::ExtractDisplacement()
+Teuchos::RCP<Epetra_Vector> FSI::AleLinear::ExtractDisplacement()
 {
   // We know that the ale dofs are coupled with their original map. So
   // we just return them here.
   return dispnp_;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::AleLinear::StructCondRHS()
+{
+  Teuchos::RCP<Epetra_Vector> idispnp = Teuchos::rcp(new Epetra_Vector(*imeshmap_));
+  int err = idispnp->Import(*dispnp_,*extractor_,Insert);
+  if (err)
+    dserror("Import using importer returned err=%d",err);
+  return idispnp;
 }
 
 

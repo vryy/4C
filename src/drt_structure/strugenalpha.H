@@ -117,6 +117,15 @@ public:
   virtual void ConsistentPredictor();
 
   /*!
+    \brief build linear system matrix and rhs
+
+    Monolithic FSI needs to access the linear fluid problem.
+
+    \param disp new guess at displacement
+  */
+  void Evaluate(Teuchos::RCP<const Epetra_Vector> disp);
+
+  /*!
   \brief do full Newton iteration
 
   */
@@ -216,7 +225,7 @@ public:
 
   /*!
   \brief Get time integration scheme (TIS) parameters
-  
+
   */
   virtual void GetTISPara(double& beta,double& gamma,double& alpham,double& alphaf);
 
@@ -242,15 +251,29 @@ public:
   \brief Get last converged accelerations
 
   */
-  virtual const RCP<Epetra_Vector>& GetAcc() 
+  virtual const RCP<Epetra_Vector>& GetAcc()
   { return acc_; }
 
   /*!
   \brief Get last converged accelerations
 
   */
-  virtual const RCP<Epetra_Vector>& GetAccn() 
+  virtual const RCP<Epetra_Vector>& GetAccn()
   { return accn_; }
+
+  //! @name access methods for composite algorithms
+  /// monolithic FSI needs to access the linear structure problem
+
+  Teuchos::RCP<Epetra_Vector> Residual() { return fresm_; }
+  Teuchos::RCP<Epetra_Vector> Dispm() { return dism_; }
+  Teuchos::RCP<Epetra_Vector> Disp() { return dis_; }
+  Teuchos::RCP<Epetra_Operator> SysMat() { return stiff_; }
+  Teuchos::RCP<Epetra_Vector> Dirichlet() { return dirichtoggle_; }
+  Teuchos::RCP<DRT::Discretization> Discretization() { return Teuchos::rcp(&discret_,false); }
+  double DispIncrFactor() { return 1./(1.-params_.get<double>("alpha f",0.459)); }
+  double AlphaF() { return params_.get<double>("alpha f",0.459); }
+
+  //@}
 
 protected:
 

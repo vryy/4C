@@ -3,22 +3,14 @@
 
 #ifdef TRILINOS_PACKAGE
 
+#include <NOX_Epetra_Interface_Required.H>
+#include <NOX_GlobalData.H>
 #include <NOX_LineSearch_Generic.H>
-#include <Teuchos_RefCountPtr.hpp>
 #include <NOX_LineSearch_UserDefinedFactory.H>
 #include <NOX_Utils.H>
-#include <NOX_GlobalData.H>
+#include <NOX_Utils.H>
 
-
-// Forward declarations
-namespace NOX {
-  class Utils;
-  namespace Epetra {
-    namespace Interface {
-      class Required;
-    };
-  }
-}
+#include <Teuchos_RCP.hpp>
 
 
 namespace NOX {
@@ -106,14 +98,14 @@ class SDRelaxation : public NOX::LineSearch::Generic {
 public:
 
   //! Constructor
-  SDRelaxation(const Teuchos::RefCountPtr<NOX::Utils>& utils,
+  SDRelaxation(const Teuchos::RCP<NOX::Utils>& utils,
                Teuchos::ParameterList& params);
 
   //! Destructor
   ~SDRelaxation();
 
   // derived
-  bool reset(const Teuchos::RefCountPtr<NOX::GlobalData>& gd,
+  bool reset(const Teuchos::RCP<NOX::GlobalData>& gd,
 	     Teuchos::ParameterList& params);
 
   // derived
@@ -129,10 +121,10 @@ private:
     NOX::Epetra::Interface::Required& interface);
 
   //! Printing utilities
-  Teuchos::RefCountPtr<NOX::Utils> utils_;
+  Teuchos::RCP<NOX::Utils> utils_;
 
   //! Temporary Vector pointer used to compute directional derivatives
-  Teuchos::RefCountPtr<NOX::Abstract::Vector> vecPtr_;
+  Teuchos::RCP<NOX::Abstract::Vector> vecPtr_;
 
 };
 
