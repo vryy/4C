@@ -23,10 +23,7 @@ Maintainer: Ulrich Kuettler
 #include <sstream>
 
 #include "../drt_lib/drt_globalproblem.H"
-
-#ifdef PARALLEL
 #include <EpetraExt_Transpose_CrsGraph.h>
-#endif
 
 #if 1
 #include "../drt_lib/drt_parobject.H"
@@ -575,9 +572,8 @@ void PostProblem::setup_ghosting(RefCountPtr<DRT::Discretization> dis)
     RefCountPtr<Epetra_CrsGraph> finalgraph = rcp(new Epetra_CrsGraph(Copy,*rownodes,81,false)); 
 
 #if 0        
-    //cout<<(currfield.discretization())->NumMyColNodes()<<endl;
+    //cout<<dis->NumMyColNodes()<<endl;
     //rownodes->Print(cout);   
-    //cout<<"NumGlobalRows: "<<graph->NumGlobalRows()<<"  NumMyBlokRows: "<<graph->NumMyBlockRows()<<endl;
     dis->Print(cout);
 #endif    
     
@@ -612,8 +608,7 @@ void PostProblem::setup_ghosting(RefCountPtr<DRT::Discretization> dis)
       }
 #endif
 #if 0
-      // refused row entries
-      list<vector<int> > refusedelementnodes; 
+      // storage set for refused row numbers
       set<int> refusedrowgid;
 #endif 
       
@@ -643,9 +638,7 @@ void PostProblem::setup_ghosting(RefCountPtr<DRT::Discretization> dis)
         	 // however, here we loose information, which has to be fetched from the transposed graph
 #if 0
               cout<<"Proc "<<par.myrank<<" refused InsertGlobelIndices with nodeids[i]="<<nodeids[i]<<endl;
-
-              // store refused entry to do communication later
-        	  refusedelementnodes.push_back(vector<int>(nodeids, nodeids+numelnodes));
+              // store refused row number for later use?
         	  refusedrowgid.insert(nodeids[i]);
 #endif
           }
@@ -654,49 +647,6 @@ void PostProblem::setup_ghosting(RefCountPtr<DRT::Discretization> dis)
     
     elementnodes.clear(); 
     
-#if 0
-
-      cout << "\n\nrefusedelementnodes: size=" << refusedelementnodes.size() << endl;
-      for (list<vector<int> >::iterator i=refusedelementnodes.begin();
-           i!=refusedelementnodes.end();
-           ++i)
-      {
-        copy(i->begin(), i->end(), ostream_iterator<int>(cout, " "));
-        cout << endl;
-      }
-#endif
-#if 0   
-    // now communicate the refused elementnodes
-      for (int proc=0; proc<dis->Comm().NumProc(); ++proc)
-      {
-      for (list<vector<int> >::iterator i=refusedelementnodes.begin();
-             i!=refusedelementnodes.end();
-             ++i)
-        { 
-          // get the node ids of this element
-          int  numelnodes = static_cast<int>(i->size());
-          int* nodeids = &(*i)[0];
-          for (int i=0; i<numelnodes; ++i)
-          {
-        	  if (!(rownodes->MyGID(nodeids[i])))
-    	  dis->Comm().Broadcast(&nodeids[i],numelnodes,proc);
-          }
-          }
-      if (proc==par.myrank) 
-    	  cout<<"Proc "<<par.myrank<<" do not like the package."<<endl;
-      else
-        {
-    	  cout<<"Proc "<<par.myrank<<endl;
-    	  vector<int> recievednodids(4);
-    	  int* refnids = &(recievednodids)[0];
-    	  int net=0;
-    	  int proc1;
-    	  dis->Comm().GatherAll(refnids,&net,proc1);
-    	  //cout<<"Proc "<<par.myrank<<" recieved the unwanted nodeids[i] "<<nodeids[i]<<endl;
-        }
-      }
-#endif
-      //   refusedelementnodes.clear();
 
       // finalize construction of initial graph 
       // FillComplete() is necessary for the following transposition)
@@ -713,7 +663,6 @@ void PostProblem::setup_ghosting(RefCountPtr<DRT::Discretization> dis)
   
  
 #if 0
-      
       if (!(refusedrowgid.empty()))
       {
     	  set<int>::iterator j;
@@ -724,27 +673,26 @@ void PostProblem::setup_ghosting(RefCountPtr<DRT::Discretization> dis)
       }
 #endif
      
-
-    for (int j = 0; j < tgraph->NumMyRows(); ++j)
+    // loop over my rows of transposed graph and insert dependencies to final graph
+    for (int lid = 0; lid < tgraph->NumMyRows(); ++lid)
     {
-     int gid = graph->GRID(j);
+     int gid = graph->GRID(lid); // get global id
      int maxrowlength=tgraph->NumGlobalIndices(gid);
      int numelnodes=0;
-     vector<int> aa(maxrowlength); 
-     int* nodeids = &(aa)[0];
+     vector<int> nodeentries(maxrowlength,0);
+     int* nodeids = &(nodeentries)[0];
      // what is the Global row index??
      //cout<<"Proc: "<<par.myrank<<"  Iterator = "<<j <<"  gid: "<<gid<<endl; 
-     if ((gid > (-1)))
+     if (gid > (-1)) 
           {
         	 // int err = tgraph->ExtractGlobalRowView(gid,numelnodes,nodeids);
         	  int err = tgraph->ExtractGlobalRowCopy(gid,maxrowlength,numelnodes,nodeids);
-              if (err<0) dserror("error while extracting global row copy from transposed graph: %d",err);
-              
+              if (err<0) dserror("error while extracting global row copy from transposed graph: %d",err);         
 #if 0
               for (int k=0;k<numelnodes;++k)
-          {
-        	 // cout<<"nodeids["<<k<<"] = "<<nodeids[k]<<endl;
-          }
+               {
+        	    cout<<"nodeids["<<k<<"] = "<<nodeids[k]<<endl;
+               }
 #endif 
           // insert node gids into final graph
           err = finalgraph->InsertGlobalIndices(gid,numelnodes,nodeids);
@@ -752,10 +700,9 @@ void PostProblem::setup_ghosting(RefCountPtr<DRT::Discretization> dis)
           }
     }
     	 
-  
     // finalize construction of final graph
-    int myerr = finalgraph->FillComplete(*rownodes,*rownodes);
-    if (myerr) dserror("graph->FillComplete returned %d",myerr);
+    err = finalgraph->FillComplete(*rownodes,*rownodes);
+    if (err) dserror("graph->FillComplete returned %d",err);
       
     // no partition of the graph using metis here, since we want to keep the currently 
     // existing parallel distribution of nodes and elements
@@ -811,11 +758,9 @@ void PostProblem::setup_ghosting(RefCountPtr<DRT::Discretization> dis)
 #if 0
     dis->Print(cout); 
 #endif
-    
-    
-return;	
-}
 
+    return;	
+}
 
 
 /*----------------------------------------------------------------------*
