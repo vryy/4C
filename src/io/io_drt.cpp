@@ -694,6 +694,41 @@ void IO::DiscretizationWriter::WriteVector(string name, RefCountPtr<Epetra_Vecto
 #endif
 }
 
+// write a specific condition
+void IO::DiscretizationWriter::WriteCondition(const string condname)
+{
+  //--------------------------------------------------
+  // pack boundary condition
+  RefCountPtr<vector<char> > block = rcp(new vector<char>);
+
+  // get boundary conditions
+  vector<DRT::Condition*> cond;
+  dis_->GetCondition(condname,cond);
+
+  for (vector<DRT::Condition*>::const_iterator i = cond.begin();
+       i!=cond.end();
+       ++i)
+  {
+    vector<char> conddata;
+    (*i)->Pack(conddata);
+    DRT::ParObject::AddtoPack(*block,conddata);
+  }
+
+  //--------------------------------------------------
+  // write block to file
+  if(!block->empty())
+  {
+    hsize_t dim[] = {static_cast<hsize_t>(block->size())};
+    const herr_t status = H5LTmake_dataset_char(
+            meshgroup_,
+            condname.c_str(),
+            1,
+            dim,
+            &((*block)[0]));
+    if (status < 0)
+      dserror("Failed to create dataset in HDF-meshfile");
+  }
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -701,7 +736,6 @@ void IO::DiscretizationWriter::WriteMesh(int step, double time)
 {
 #ifdef BINIO
 
-  herr_t status;
   bool write_file = false;
 
   if (step - meshfile_changed_ >= steps_per_file_
@@ -720,14 +754,14 @@ void IO::DiscretizationWriter::WriteMesh(int step, double time)
   if (elementdata->size()==0)
     dserror("no element data no proc %d. Too few elements?", dis_->Comm().MyPID());
   hsize_t dim[] = {static_cast<hsize_t>(elementdata->size())};
-  status = H5LTmake_dataset_char(meshgroup_,"elements",1,dim,&((*elementdata)[0]));
-  if (status < 0)
+  const herr_t element_status = H5LTmake_dataset_char(meshgroup_,"elements",1,dim,&((*elementdata)[0]));
+  if (element_status < 0)
     dserror("Failed to create dataset in HDF-meshfile");
 
   RefCountPtr<vector<char> > nodedata = dis_->PackMyNodes();
   dim[0] = static_cast<hsize_t>(nodedata->size());
-  status = H5LTmake_dataset_char(meshgroup_,"nodes",1,dim,&((*nodedata)[0]));
-  if (status < 0)
+  const herr_t node_status = H5LTmake_dataset_char(meshgroup_,"nodes",1,dim,&((*nodedata)[0]));
+  if (node_status < 0)
     dserror("Failed to create dataset in HDF-meshfile");
 
   // ... write other mesh informations
@@ -735,52 +769,55 @@ void IO::DiscretizationWriter::WriteMesh(int step, double time)
   if (dis_->Comm().MyPID() == 0)
   {
 #if 1
-    {
-      //--------------------------------------------------
-      // pack all periodic boundary conditions
-      RefCountPtr<vector<char> > pbcblock = rcp(new vector<char>);
-      // get all periodic boundary conditions
-      vector<DRT::Condition*> percond;
-
-      // first the surfaces
-      dis_->GetCondition("SurfacePeriodic",percond);
-
-      for (vector<DRT::Condition*>::iterator i=percond.begin();
-           i!=percond.end();
-           ++i)
-      {
-        vector<char> perconddata;
-        (*i)->Pack(perconddata);
-        DRT::ParObject::AddtoPack(*pbcblock,perconddata);
-      }
-
-      // then the lines
-      dis_->GetCondition("LinePeriodic",percond);
-
-      for (vector<DRT::Condition*>::iterator i=percond.begin();
-           i!=percond.end();
-           ++i)
-      {
-        vector<char> perconddata;
-        (*i)->Pack(perconddata);
-        DRT::ParObject::AddtoPack(*pbcblock,perconddata);
-      }
-
-
-      //--------------------------------------------------
-      // write pbcblock to file
-      if(!pbcblock->empty())
-      {
-        dim[0] = static_cast<hsize_t>(pbcblock->size());
-        status = H5LTmake_dataset_char(meshgroup_,
-                                       "periodicbc",
-                                       1,
-                                       dim,
-                                       &((*pbcblock)[0]));
-        if (status < 0)
-          dserror("Failed to create dataset in HDF-meshfile");
-      }
-    }
+    WriteCondition("SurfacePeriodic");
+    WriteCondition("LinePeriodic");
+      
+//    {
+//      //--------------------------------------------------
+//      // pack all periodic boundary conditions
+//      RefCountPtr<vector<char> > pbcblock = rcp(new vector<char>);
+//      // get all periodic boundary conditions
+//      vector<DRT::Condition*> percond;
+//
+//      // first the surfaces
+//      dis_->GetCondition("SurfacePeriodic",percond);
+//
+//      for (vector<DRT::Condition*>::iterator i=percond.begin();
+//           i!=percond.end();
+//           ++i)
+//      {
+//        vector<char> perconddata;
+//        (*i)->Pack(perconddata);
+//        DRT::ParObject::AddtoPack(*pbcblock,perconddata);
+//      }
+//
+//      // then the lines
+//      dis_->GetCondition("LinePeriodic",percond);
+//
+//      for (vector<DRT::Condition*>::iterator i=percond.begin();
+//           i!=percond.end();
+//           ++i)
+//      {
+//        vector<char> perconddata;
+//        (*i)->Pack(perconddata);
+//        DRT::ParObject::AddtoPack(*pbcblock,perconddata);
+//      }
+//
+//
+//      //--------------------------------------------------
+//      // write pbcblock to file
+//      if(!pbcblock->empty())
+//      {
+//        dim[0] = static_cast<hsize_t>(pbcblock->size());
+//        const herr_t bc_status = H5LTmake_dataset_char(meshgroup_,
+//                                       "periodicbc",
+//                                       1,
+//                                       dim,
+//                                       &((*pbcblock)[0]));
+//        if (bc_status < 0)
+//          dserror("Failed to create dataset in HDF-meshfile");
+//      }
+//    }
 #endif
     fprintf(cf_,
             "field:\n"
@@ -824,13 +861,13 @@ void IO::DiscretizationWriter::WriteMesh(int step, double time)
     }
     fflush(cf_);
   }
-  status = H5Fflush(meshgroup_,H5F_SCOPE_LOCAL);
-  if (status < 0)
+  const herr_t flush_status = H5Fflush(meshgroup_,H5F_SCOPE_LOCAL);
+  if (flush_status < 0)
   {
     dserror("Failed to flush HDF file %s", meshfilename_.c_str());
   }
-  status = H5Gclose(meshgroup_);
-  if (status < 0)
+  const herr_t close_status = H5Gclose(meshgroup_);
+  if (close_status < 0)
   {
     dserror("Failed to close HDF group in file %s", meshfilename_.c_str());
   }
