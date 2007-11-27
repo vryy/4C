@@ -453,7 +453,7 @@ void PostProblem::read_meshes()
 #ifdef PARALLEL
         setup_ghosting(currfield.discretization());
 #endif
-                    
+
         //distribute_drt_grids();
         currfield.discretization()->FillComplete();
 #if 1
@@ -544,7 +544,7 @@ void PostProblem::setup_ghosting(RefCountPtr<DRT::Discretization> dis)
     // this section is strongly oriented on what is done during the 
 	// usual BACI setup phase.
     // reference: src/drt_lib/drt_inputreader.cpp
-	// ToDo: This method is thought to become a method of the dicretization class itself
+	// ToDo: make PostProblem::setup_ghosting a method of the dicretization class itself
 	
 	int numnode=dis->NumMyColNodes();   
     vector<int> nids(numnode);         // vector for global node ids
@@ -654,13 +654,14 @@ void PostProblem::setup_ghosting(RefCountPtr<DRT::Discretization> dis)
       if (err) dserror("graph->FillComplete returned %d",err);
 
       // create transformation object
-      RefCountPtr<EpetraExt::CrsGraph_Transpose::CrsGraph_Transpose> transgraph = rcp(new EpetraExt::CrsGraph_Transpose());
+      RefCountPtr<EpetraExt::CrsGraph_Transpose::CrsGraph_Transpose> graphtransposer = rcp(new EpetraExt::CrsGraph_Transpose());
       // create graph object
       RefCountPtr<Epetra_CrsGraph> tgraph = rcp(new Epetra_CrsGraph(Copy,*rownodes,81,false));
       Epetra_CrsGraph& new_graph = ((*tgraph));      
       // finally do the transposition
-      new_graph=(*transgraph)(*graph);
-  
+      new_graph=(*graphtransposer)(*graph);
+      // free memory of the graph transposer object
+      graphtransposer=null;
  
 #if 0
       if (!(refusedrowgid.empty()))
@@ -753,7 +754,7 @@ void PostProblem::setup_ghosting(RefCountPtr<DRT::Discretization> dis)
     dis->ExportRowElements(*elerowmap);
 
     // export to the column map / create ghosting of elements
-    dis->ExportColumnElements(*elerowmap);
+    dis->ExportColumnElements(*elecolmap);
 
 #if 0
     dis->Print(cout); 
