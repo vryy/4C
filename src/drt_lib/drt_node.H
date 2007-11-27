@@ -31,7 +31,7 @@ using namespace Teuchos;
 
 /*!
 \brief DRT: namespace of the ccarat discretization module
-just playing
+
 */
 namespace DRT
 {
