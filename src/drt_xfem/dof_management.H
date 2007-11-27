@@ -223,6 +223,8 @@ public:
         return std::pair<int, const set<XFEM::EnrField> >(tmp->first,tmp->second);
     };
 
+    const XFEM::ElementDofManager constructElementDofManager(DRT::Element& ele) const;
+    
 private:
 	// pointer to the xfem discretization of which we hold the unknowns
 	RefCountPtr<DRT::Discretization> xfemdis_;

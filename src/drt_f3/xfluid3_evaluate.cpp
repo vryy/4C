@@ -594,13 +594,9 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
                                          blitz::shape(elevec1.Length()),
                                          blitz::neverDeleteData);
 
-          // calculate element coefficient matrix and rhs         
-          StationaryImpl(
-        		  NumNode(),
-        		  numparamvelx, 
-        		  numparamvely, 
-        		  numparamvelz, 
-        		  numparampres)->Sysmat(this,
+          // calculate element coefficient matrix and rhs        
+          RCP<DRT::Elements::XFluid3Stationary> integral = rcp(new XFluid3Stationary(this->NumNode(),numparamvelx,numparamvely,numparamvelz,numparampres));
+          integral->Sysmat(this,
         		         ih,
                          evelnp,
                          eprenp,
@@ -631,24 +627,9 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
       case store_xfem_info:
       {
     	// get access to global dofman
-    	const RCP<XFEM::DofManager> dofman = params.get< RCP< XFEM::DofManager > >("dofmanager",null);
-    	
-    	// create a list with number of dofs per local node 
-    	const int numnode = this->NumNode();
-    	const int* nodegids = this->NodeIds();
-    	map<int, const set <XFEM::EnrField> > nodaldofset; 
-    	for (int inode = 0; inode < numnode; ++inode) {
-    		const int gid = nodegids[inode];
-    		nodaldofset.insert(dofman->getDofsAsPair(gid));
-		}
-
-    	// create a local dofmanager: ask DofManager to do that!?
-    	eleDofManager_ = XFEM::ElementDofManager(nodaldofset);
-//        if ((this->Id()) < 10){
-//            cout << "storing refcountpointers at element: " << this->Id() << endl;
-//            cout << eleDofManager_.toString() << endl;
-//        }
-    	
+    	const RCP<XFEM::DofManager> globaldofman = params.get< RCP< XFEM::DofManager > >("dofmanager",null);
+    	// create local copy of information about dofs
+    	eleDofManager_ = globaldofman->constructElementDofManager((*this));
       }
     	break;
       default:

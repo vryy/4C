@@ -181,6 +181,26 @@ string XFEM::DofManager::toString() const
 }
 
 /*----------------------------------------------------------------------*
+ |  construct element dof manager                               ag 11/07|
+ *----------------------------------------------------------------------*/
+const XFEM::ElementDofManager XFEM::DofManager::constructElementDofManager(DRT::Element& ele) const
+{
+    // create a list with number of dofs per local node 
+    const int numnode = ele.NumNode();
+    const int* nodegids = ele.NodeIds();
+    
+    map<int, const set <XFEM::EnrField> > nodaldofset; 
+    for (int inode = 0; inode < numnode; ++inode) {
+        const int gid = nodegids[inode];
+        nodaldofset.insert(this->getDofsAsPair(gid));
+    }
+
+    // create a local dofmanager
+    XFEM::ElementDofManager eleDofManager = XFEM::ElementDofManager(nodaldofset);
+    return eleDofManager;
+}
+
+/*----------------------------------------------------------------------*
  |  construct dofmap                                            ag 11/07|
  *----------------------------------------------------------------------*/
 const map<int, const set <XFEM::EnrField> > XFEM::DofManager::createNodalDofMap(
@@ -278,22 +298,43 @@ double XFEM::enrValue(
         enrval = 1.0;
         break;
     }
+//    case XFEM::Enrichment::typeVoid:
+//    {
+//        // TODO: generalize
+//        blitz::Array<double,1> center(3);
+//        center(0) = 0.6; center(1) = 0.5; center(2) = 0.0;
+//        const double cylinder_radius = 0.2;
+//       
+//        double actpos_enr_val = 0.0;
+//        if (inCircleCylinder(actpos, center, cylinder_radius)) {
+//            actpos_enr_val = 0.0;
+//        } else {
+//            actpos_enr_val = 1.0;
+//        }
+//        
+//        double nodepos_enr_val = 0.0;
+//        if (inCircleCylinder(actpos, center, cylinder_radius)) {
+//            nodepos_enr_val = 0.0;
+//        } else {
+//            nodepos_enr_val = 1.0;
+//        }
+//        
+//        enrval = actpos_enr_val - nodepos_enr_val;
+//        
+//        break;
+//    }
     case XFEM::Enrichment::typeVoid:
     {
         // TODO: generalize
-        blitz::Array<double,1> center(3);
-        center(0) = 0.6; center(1) = 0.5; center(2) = 0.0;
-        const double cylinder_radius = 0.2;
-       
         double actpos_enr_val = 0.0;
-        if (inCircleCylinder(actpos, center, cylinder_radius)) {
+        if (actpos(0) > 1.525) {
             actpos_enr_val = 0.0;
         } else {
             actpos_enr_val = 1.0;
         }
         
         double nodepos_enr_val = 0.0;
-        if (inCircleCylinder(actpos, center, cylinder_radius)) {
+        if (nodalpos(0) > 1.525) {
             nodepos_enr_val = 0.0;
         } else {
             nodepos_enr_val = 1.0;
