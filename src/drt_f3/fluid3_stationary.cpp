@@ -238,7 +238,7 @@ void DRT::Elements::Fluid3Stationary::Sysmat(Fluid3* ele,
 
     /*--- convective grid part u_G * grad (funct) -----------------------*/
     /* u_old_x * N,x  +  u_old_y * N,y   with  N .. form function matrix */
-      conv_g_ = 0.0;
+    conv_g_ = 0.0;
 
 
     /*--- reactive part funct * grad (u_old) ----------------------------*/

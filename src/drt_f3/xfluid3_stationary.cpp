@@ -22,6 +22,7 @@ Maintainer: Axel Gerstenberger
 
 #include <Epetra_SerialDenseSolver.h>
 
+using namespace XFEM::Physics;
 
 DRT::Elements::XFluid3Stationary::XFluid3Stationary(
 		const int iel,
@@ -63,6 +64,58 @@ DRT::Elements::XFluid3Stationary::XFluid3Stationary(
 }
 
 
+inline void integrateMatrix(
+        const XFEM::ElementDofManager&    dofman,
+        blitz::Array<double,2>&           estif,
+        const XFEM::Physics::Field&       testfield,
+        const blitz::Array<double,1>&     testshape,
+        const double&                     fac,
+        const XFEM::Physics::Field&       trialfield,
+        const blitz::Array<double,1>&     trialshape
+        )
+{
+
+    const int numparamtest  = dofman.NumDofPerField(testfield);
+    const int numparamtrial = dofman.NumDofPerField(trialfield);
+
+    const vector<int> testdof  = dofman.LocalDofPosPerField(testfield);
+    const vector<int> trialdof = dofman.LocalDofPosPerField(trialfield);
+
+    for (int ui=0; ui<numparamtrial; ++ui)
+    {
+        const int trialpos = trialdof[ui];
+
+        for (int vi=0; vi<numparamtest; ++vi)
+        {
+            const int testpos = testdof[vi];
+
+            estif(testpos, trialpos) += fac*testshape(vi)*trialshape(ui) ;
+        }
+    }
+}
+
+inline void integrateVector(
+        const XFEM::ElementDofManager&    dofman,
+        blitz::Array<double,1>&           eforce,
+        const XFEM::Physics::Field&       testfield,
+        const blitz::Array<double,1>&     testshape,
+        const double&                     fac
+        )
+{
+
+    const int numparamtest  = dofman.NumDofPerField(testfield);
+
+    const vector<int> testdof  = dofman.LocalDofPosPerField(testfield);
+
+    for (int vi=0; vi<numparamtest; ++vi)
+    {
+        const int testpos = testdof[vi];
+
+        eforce(testpos) += fac*testshape(vi);
+    }
+}
+
+
 /*----------------------------------------------------------------------*
  |  calculate system matrix and rhs (private)                  gjb 11/07|
  *----------------------------------------------------------------------*/
@@ -85,7 +138,7 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
   // set element data
   const DRT::Element::DiscretizationType distype = ele->Shape();
   const int elegid = ele->Id();
-    
+
   //! information about domain integration cells
   const XFEM::DomainIntCells   domainIntCells   = ih->domainIntCells(elegid,distype);
   //! information about boundary integration cells
@@ -124,15 +177,14 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
 //   blitz::Range uz = blitz::Range(2, 4*iel_-2, 4);
 //   blitz::Range p  = blitz::Range(3, 4*iel_-1, 4);
 
-  
   const XFEM::ElementDofManager& dofman = ele->eleDofManager_;
   // cout << "EleID " << ele->Id() << endl;
-    
+
 //  if (domainIntCells.size() != 1){
 //      cin.get();
 //  }
-  
-  
+
+
   // stabilization parameter
   // This has to be done before anything else is calculated because
   // we use the same arrays internally.
@@ -143,7 +195,7 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
 
   // integrate of integration cell
   dsassert(domainIntCells.empty() == false, "this is a bug!");
-  
+
   DRT::Utils::GaussRule3D gaussrule;
   bool standard_integration = true;
   if (domainIntCells.size() == 1){
@@ -154,10 +206,10 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
       gaussrule = DRT::Utils::intrule_tet_11point;
       standard_integration = false;
   }
-  
+
   for (XFEM::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell < domainIntCells.end(); ++cell)
   {
-  
+
   // gaussian points
   const DRT::Utils::IntegrationPoints3D intpoints(gaussrule);
 
@@ -168,7 +220,7 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
     const double cell_e0 = intpoints.qxg[iquad][0];
     const double cell_e1 = intpoints.qxg[iquad][1];
     const double cell_e2 = intpoints.qxg[iquad][2];
-      
+
     const vector<double> e = cell->modifyGaussRule3D(standard_integration,cell_e0,cell_e1,cell_e2);
 
     // coordinates of the current integration point in element coordinates \xi
@@ -176,10 +228,10 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
     const double e2 = e[1];
     const double e3 = e[2];
     const double detcell = e[3];
-    
+
     // position of the gausspoint in physical coordinates
     const blitz::Array<double,1> gauss_pos(blitz::sum(funct_(j)*xyze_(i,j),j));
-    
+
     // shape functions and their derivatives
     DRT::Utils::shape_function_3D(funct_,e1,e2,e3,distype);
     DRT::Utils::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
@@ -240,17 +292,17 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
       derxy2_  = 0.;
     }
 
-    
+
     // enrich shape functions and derivatives
     // simplest case: jump or void enrichment
     // -> no chain rule, since enrichment function derivative is zero
-    
+
     int dofcounter = 0;
     for (int inode=0; inode<iel_; inode++)
     {
       const int gid = nodes[inode]->Id();
       const blitz::Array<double,1> nodalpos(xyze_(_,inode));
-      
+
       const std::set<XFEM::EnrField>  enrfieldset = dofman.EnrFieldSetPerNode(gid);
       for (std::set<XFEM::EnrField>::const_iterator enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
       {
@@ -273,8 +325,7 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
           }
       }
     }
-    
-    
+
     // get velocities (n+g,i) at integration point
     velint_ = blitz::sum(enr_funct_(j)*evelnp(i,j),j);
 
@@ -290,7 +341,7 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
     {
       vderxy2_ = 0.;
     }
-    
+
     // get pressure gradients
     gradp_ = blitz::sum(enr_derxy_(i,j)*eprenp(j),j);
 
@@ -379,258 +430,190 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
       //----------------------------------------------------------------------
       //                            GALERKIN PART
 
-      for (int ui=0; ui<iel_; ++ui)
-      {
-        const int UDF = ui*4;
-        const int VDF = ui*4+1;
-        const int WDF = ui*4+2;
-        const int PDF = ui*4+3;
-          
-        for (int vi=0; vi<iel_; ++vi)
-        {
-          const int dUDF = vi*4;
-          const int dVDF = vi*4+1;
-          const int dWDF = vi*4+2;
-          const int dPDF = vi*4+3;
+      /* convection, convective part */
+      /*
+                   /                       \
+                  |  / n+1       \          |
+                  | | u   o nabla | Du , v  |
+                  |  \ (i)       /          |
+                   \                       /
+      */
+      integrateMatrix(dofman, estif, Velx, enr_funct_(_), fac, Velx, conv_c_(_));
+      integrateMatrix(dofman, estif, Vely, enr_funct_(_), fac, Vely, conv_c_(_));
+      integrateMatrix(dofman, estif, Velz, enr_funct_(_), fac, Velz, conv_c_(_));
 
-          /* convection, convective part */
-          /*
+      /* Viskositaetsterm */
+      /*
+                    /                        \
+                   |       /  \         / \   |
+                   |  eps | Du | , eps | v |  |
+                   |       \  /         \ /   |
+                    \                        /
+      */
+      integrateMatrix(dofman, estif, Velx, derxy_(0,_), 2.0*visc*fac, Velx, derxy_(0,_));
+      integrateMatrix(dofman, estif, Velx, derxy_(1,_),     visc*fac, Velx, derxy_(1,_));
+      integrateMatrix(dofman, estif, Velx, derxy_(2,_),     visc*fac, Velx, derxy_(2,_));
 
-                       /                       \
-                      |  / n+1       \          |
-                      | | u   o nabla | Du , v  |
-                      |  \ (i)       /          |
-                       \                       /
+      integrateMatrix(dofman, estif, Velx, derxy_(1,_),     visc*fac, Vely, derxy_(0,_));
+      integrateMatrix(dofman, estif, Velx, derxy_(2,_),     visc*fac, Velz, derxy_(0,_));
+      integrateMatrix(dofman, estif, Vely, derxy_(0,_),     visc*fac, Velx, derxy_(1,_));
 
-          */
-          estif(dUDF, UDF) += fac*funct_(vi)*conv_c_(ui) ;
-          estif(dVDF, VDF) += fac*funct_(vi)*conv_c_(ui) ;
-          estif(dWDF, WDF) += fac*funct_(vi)*conv_c_(ui) ;
+      integrateMatrix(dofman, estif, Vely, derxy_(0,_),     visc*fac, Vely, derxy_(0,_));
+      integrateMatrix(dofman, estif, Vely, derxy_(1,_), 2.0*visc*fac, Vely, derxy_(1,_));
+      integrateMatrix(dofman, estif, Vely, derxy_(2,_),     visc*fac, Vely, derxy_(2,_));
 
-          /* Viskositaetsterm */
-          /*
-                        /                        \
-                       |       /  \         / \   |
-                       |  eps | Du | , eps | v |  |
-                       |       \  /         \ /   |
-                        \                        /
-          */
-          estif(dUDF, UDF) += visc* fac*(2.0*derxy_(0, ui)*derxy_(0, vi)
-                                                        +
-                                             derxy_(1, ui)*derxy_(1, vi)
-                                                        +
-                                             derxy_(2, ui)*derxy_(2, vi)) ;
-          estif(dUDF, VDF) += visc*fac*derxy_(0, ui)*derxy_(1, vi) ;
-          estif(dUDF, WDF) += visc*fac*derxy_(0, ui)*derxy_(2, vi) ;
-          estif(dVDF, UDF) += visc*fac*derxy_(0, vi)*derxy_(1, ui) ;
-          estif(dVDF, VDF) += visc*fac*(derxy_(0, ui)*derxy_(0, vi)
-                                                        +
-                                    2.0*derxy_(1, ui)*derxy_(1, vi)
-                                                        +
-                                        derxy_(2, ui)*derxy_(2, vi)) ;
-          estif(dVDF, WDF) += visc*fac*derxy_(1, ui)*derxy_(2, vi) ;
-          estif(dWDF, UDF) += visc*fac*derxy_(0, vi)*derxy_(2, ui) ;
-          estif(dWDF, VDF) += visc*fac*derxy_(1, vi)*derxy_(2, ui) ;
-          estif(dWDF, WDF) += visc*fac*(derxy_(0, ui)*derxy_(0, vi)
-                                                        +
-                                        derxy_(1, ui)*derxy_(1, vi)
-                                                        +
-                                    2.0*derxy_(2, ui)*derxy_(2, vi)) ;
+      integrateMatrix(dofman, estif, Vely, derxy_(2,_),     visc*fac, Velz, derxy_(1,_));
+      integrateMatrix(dofman, estif, Velz, derxy_(0,_),     visc*fac, Velx, derxy_(2,_));
+      integrateMatrix(dofman, estif, Velz, derxy_(1,_),     visc*fac, Vely, derxy_(2,_));
 
-          /* Druckterm */
-          /*
+      integrateMatrix(dofman, estif, Velz, derxy_(0,_),     visc*fac, Velz, derxy_(0,_));
+      integrateMatrix(dofman, estif, Velz, derxy_(1,_),     visc*fac, Velz, derxy_(1,_));
+      integrateMatrix(dofman, estif, Velz, derxy_(2,_), 2.0*visc*fac, Velz, derxy_(2,_));
 
-                          /                \
-                         |                  |
-                         |  Dp , nabla o v  |
-                         |                  |
-                          \                /
-          */
+      /* Druckterm */
+      /*
+                      /                \
+                     |                  |
+                     |  Dp , nabla o v  |
+                     |                  |
+                      \                /
+      */
+      integrateMatrix(dofman, estif, Velx, derxy_(0,_), -fac, Pres, funct_(_));
+      integrateMatrix(dofman, estif, Vely, derxy_(1,_), -fac, Pres, funct_(_));
+      integrateMatrix(dofman, estif, Velz, derxy_(2,_), -fac, Pres, funct_(_));
 
-          estif(dUDF, PDF) += -(fac*funct_(ui)*derxy_(0, vi)) ;
-          estif(dVDF, PDF) += -(fac*funct_(ui)*derxy_(1, vi)) ;
-          estif(dWDF, PDF) += -(fac*funct_(ui)*derxy_(2, vi)) ;
+      /* Divergenzfreiheit */
+      /*
+                     /                \
+                    |                  |
+                    | nabla o Du  , q  |
+                    |                  |
+                     \                /
+      */
+      integrateMatrix(dofman, estif, Pres, funct_(_), fac, Velx, derxy_(0,_));
+      integrateMatrix(dofman, estif, Pres, funct_(_), fac, Vely, derxy_(1,_));
+      integrateMatrix(dofman, estif, Pres, funct_(_), fac, Velz, derxy_(2,_));
 
-
-          /* Divergenzfreiheit */
-          /*
-                         /                \
-                        |                  |
-                        | nabla o Du  , q  |
-                        |                  |
-                         \                /
-          */
-          estif(dPDF, UDF) += fac*funct_(vi)*derxy_(0, ui) ;
-          estif(dPDF, VDF) += fac*funct_(vi)*derxy_(1, ui) ;
-          estif(dPDF, WDF) += fac*funct_(vi)*derxy_(2, ui) ;
-
-        }
-      }
 
       if (newton)
       {
-        for (int ui=0; ui<iel_; ++ui)
-        {
-          const int UDF = ui*4;
-          const int VDF = ui*4+1;
-          const int WDF = ui*4+2;
-          for (int vi=0; vi<iel_; ++vi)
-          {
-            const int dUDF = vi*4;
-            const int dVDF = vi*4+1;
-            const int dWDF = vi*4+2;
-            /*  convection, reactive part
+          /*  convection, reactive part
+                 /                         \
+                |  /          \   n+1       |
+                | | Du o nabla | u     , v  |
+                |  \          /   (i)       |
+                 \                         /
+          */
+          integrateMatrix(dofman, estif, Velx, funct_(_), fac, Velx, conv_r_(0, 0, _));
+          integrateMatrix(dofman, estif, Velx, funct_(_), fac, Vely, conv_r_(0, 1, _));
+          integrateMatrix(dofman, estif, Velx, funct_(_), fac, Velz, conv_r_(0, 2, _));
 
-                   /                         \
-                  |  /          \   n+1       |
-                  | | Du o nabla | u     , v  |
-                  |  \          /   (i)       |
-                   \                         /
-            */
-            estif(dUDF, UDF) += fac*enr_funct_(vi)*conv_r_(0, 0, ui) ;
-            estif(dUDF, VDF) += fac*enr_funct_(vi)*conv_r_(0, 1, ui) ;
-            estif(dUDF, WDF) += fac*enr_funct_(vi)*conv_r_(0, 2, ui) ;
-            estif(dVDF, UDF) += fac*enr_funct_(vi)*conv_r_(1, 0, ui) ;
-            estif(dVDF, VDF) += fac*enr_funct_(vi)*conv_r_(1, 1, ui) ;
-            estif(dVDF, WDF) += fac*enr_funct_(vi)*conv_r_(1, 2, ui) ;
-            estif(dWDF, UDF) += fac*enr_funct_(vi)*conv_r_(2, 0, ui) ;
-            estif(dWDF, VDF) += fac*enr_funct_(vi)*conv_r_(2, 1, ui) ;
-            estif(dWDF, WDF) += fac*enr_funct_(vi)*conv_r_(2, 2, ui) ;
-          }
-        }
+          integrateMatrix(dofman, estif, Vely, funct_(_), fac, Velx, conv_r_(1, 0, _));
+          integrateMatrix(dofman, estif, Vely, funct_(_), fac, Vely, conv_r_(1, 1, _));
+          integrateMatrix(dofman, estif, Vely, funct_(_), fac, Velz, conv_r_(1, 2, _));
+
+          integrateMatrix(dofman, estif, Velz, funct_(_), fac, Velx, conv_r_(2, 0, _));
+          integrateMatrix(dofman, estif, Velz, funct_(_), fac, Vely, conv_r_(2, 1, _));
+          integrateMatrix(dofman, estif, Velz, funct_(_), fac, Velz, conv_r_(2, 2, _));
       }
 
-      for (int vi=0; vi<iel_; ++vi)
-      {
-        const int dUDF = vi*4;
-        const int dVDF = vi*4+1;
-        const int dWDF = vi*4+2;
-        const int dPDF = vi*4+3;
-        /* convection */
-        eforce(dUDF) += -(fac*(velint_(0)*conv_r_(0, 0, vi)
-                                          +
-                                          velint_(1)*conv_r_(0, 1, vi)
-                                          +
-                                          velint_(2)*conv_r_(0, 2, vi))) ;
-        eforce(dVDF) += -(fac*(velint_(0)*conv_r_(1, 0, vi)
-                                          +
-                                          velint_(1)*conv_r_(1, 1, vi)
-                                          +
-                                          velint_(2)*conv_r_(1, 2, vi))) ;
-        eforce(dWDF) += -(fac*(velint_(0)*conv_r_(2, 0, vi)
-                                          +
-                                          velint_(1)*conv_r_(2, 1, vi)
-                                          +
-                                          velint_(2)*conv_r_(2, 2, vi))) ;
+      /* convection */
+      integrateVector(dofman, eforce, Velx, conv_r_(0, 0, _), -fac*velint_(0));
+      integrateVector(dofman, eforce, Velx, conv_r_(0, 1, _), -fac*velint_(1));
+      integrateVector(dofman, eforce, Velx, conv_r_(0, 2, _), -fac*velint_(2));
 
-        /* pressure */
-        eforce(dUDF) += press*fac*derxy_(0, vi) ;
-        eforce(dVDF) += press*fac*derxy_(1, vi) ;
-        eforce(dWDF) += press*fac*derxy_(2, vi) ;
+      integrateVector(dofman, eforce, Vely, conv_r_(1, 0, _), -fac*velint_(0));
+      integrateVector(dofman, eforce, Vely, conv_r_(1, 1, _), -fac*velint_(1));
+      integrateVector(dofman, eforce, Vely, conv_r_(1, 2, _), -fac*velint_(2));
 
-        /* viscosity */
-        eforce(dUDF)     += -(visc*fac*(2.0*derxy_(0, vi)*vderxy_(0, 0)
-                                               +
-                                               derxy_(1, vi)*vderxy_(0, 1)
-                                               +
-                                               derxy_(1, vi)*vderxy_(1, 0)
-                                               +
-                                               derxy_(2, vi)*vderxy_(0, 2)
-                                               +
-                                               derxy_(2, vi)*vderxy_(2, 0))) ;
-        eforce(dVDF) += -(visc*fac*(derxy_(0, vi)*vderxy_(0, 1)
-                                               +
-                                               derxy_(0, vi)*vderxy_(1, 0)
-                                               +
-                                               2.0*derxy_(1, vi)*vderxy_(1, 1)
-                                               +
-                                               derxy_(2, vi)*vderxy_(1, 2)
-                                               +
-                                               derxy_(2, vi)*vderxy_(2, 1))) ;
-        eforce(dWDF) += -(visc*fac*(derxy_(0, vi)*vderxy_(0, 2)
-                                               +
-                                               derxy_(0, vi)*vderxy_(2, 0)
-                                               +
-                                               derxy_(1, vi)*vderxy_(1, 2)
-                                               +
-                                               derxy_(1, vi)*vderxy_(2, 1)
-                                               +
-                                               2.0*derxy_(2, vi)*vderxy_(2, 2))) ;
+      integrateVector(dofman, eforce, Velz, conv_r_(2, 0, _), -fac*velint_(0));
+      integrateVector(dofman, eforce, Velz, conv_r_(2, 1, _), -fac*velint_(1));
+      integrateVector(dofman, eforce, Velz, conv_r_(2, 2, _), -fac*velint_(2));
 
-        // source term of the right hand side
-        eforce(dUDF) += fac*funct_(vi)*rhsint_(0) ;
-        eforce(dVDF) += fac*funct_(vi)*rhsint_(1) ;
-        eforce(dWDF) += fac*funct_(vi)*rhsint_(2) ;
+      /* pressure */
+      integrateVector(dofman, eforce, Velx, derxy_(0, _), press*fac);
+      integrateVector(dofman, eforce, Vely, derxy_(1, _), press*fac);
+      integrateVector(dofman, eforce, Velz, derxy_(2, _), press*fac);
 
-        // continuity equation
-        eforce(dPDF) += -(fac*(conv_r_(0, 0, vi) +
-                               conv_r_(1, 1, vi) +
-                               conv_r_(2, 2, vi))) ;
-      } // vi
+      /* viscosity */
+      integrateVector(dofman, eforce, Velx, derxy_(0, _), -2.0*visc*fac*vderxy_(0, 0));
+      integrateVector(dofman, eforce, Velx, derxy_(1, _),     -visc*fac*vderxy_(0, 1));
+      integrateVector(dofman, eforce, Velx, derxy_(1, _),     -visc*fac*vderxy_(1, 0));
+      integrateVector(dofman, eforce, Velx, derxy_(2, _),     -visc*fac*vderxy_(0, 2));
+      integrateVector(dofman, eforce, Velx, derxy_(2, _),     -visc*fac*vderxy_(2, 0));
 
-      
+      integrateVector(dofman, eforce, Vely, derxy_(0, _),     -visc*fac*vderxy_(0, 1));
+      integrateVector(dofman, eforce, Vely, derxy_(0, _),     -visc*fac*vderxy_(1, 0));
+      integrateVector(dofman, eforce, Vely, derxy_(1, _), -2.0*visc*fac*vderxy_(1, 1));
+      integrateVector(dofman, eforce, Vely, derxy_(2, _),     -visc*fac*vderxy_(1, 2));
+      integrateVector(dofman, eforce, Vely, derxy_(2, _),     -visc*fac*vderxy_(2, 1));
+
+      integrateVector(dofman, eforce, Velz, derxy_(0, _),     -visc*fac*vderxy_(0, 2));
+      integrateVector(dofman, eforce, Velz, derxy_(0, _),     -visc*fac*vderxy_(2, 0));
+      integrateVector(dofman, eforce, Velz, derxy_(1, _),     -visc*fac*vderxy_(1, 2));
+      integrateVector(dofman, eforce, Velz, derxy_(1, _),     -visc*fac*vderxy_(2, 1));
+      integrateVector(dofman, eforce, Velz, derxy_(2, _), -2.0*visc*fac*vderxy_(2, 2));
+
+      // source term of the right hand side
+      integrateVector(dofman, eforce, Velx, funct_(_), fac*rhsint_(0));
+      integrateVector(dofman, eforce, Vely, funct_(_), fac*rhsint_(1));
+      integrateVector(dofman, eforce, Velz, funct_(_), fac*rhsint_(2));
+
+      // continuity equation
+      integrateVector(dofman, eforce, Pres, conv_r_(0, 0, _), -fac);
+      integrateVector(dofman, eforce, Pres, conv_r_(1, 1, _), -fac);
+      integrateVector(dofman, eforce, Pres, conv_r_(2, 2, _), -fac);
+
       //----------------------------------------------------------------------
       //                 PRESSURE STABILISATION PART
 
       if(pstab)
       {
-        for (int ui=0; ui<iel_; ++ui)
-        {
-          const int UDF = ui*4;
-          const int VDF = ui*4+1;
-          const int WDF = ui*4+2;
-          const int PDF = ui*4+3;
-          for (int vi=0; vi<iel_; ++vi)
-          {
-            const int dPDF = vi*4+3;
-            /* pressure stabilisation: convection, convective part */
-            /*
-
-                      /                            \
-                     |  / n+1       \               |
-                     | | u   o nabla | Du , nabla q |
-                     |  \ (i)       /               |
-                      \                            /
-
-            */
-            estif(dPDF, UDF) += tau_Mp*conv_c_(ui)*derxy_(0, vi) ;
-            estif(dPDF, VDF) += tau_Mp*conv_c_(ui)*derxy_(1, vi) ;
-            estif(dPDF, WDF) += tau_Mp*conv_c_(ui)*derxy_(2, vi) ;
 
 
-            /* pressure stabilisation: viscosity (-L_visc_u) */
-            /*
-                     /                              \
-                    |               /  \             |
-                    |  nabla o eps | Du | , nabla q  |
-                    |               \  /             |
-                     \                              /
-            */
-            estif(dPDF, UDF) += 2.0*visc*tau_Mp*(derxy_(0, vi)*viscs2_(0, 0, ui) +
-                                                 derxy_(1, vi)*viscs2_(0, 1, ui) +
-                                                 derxy_(2, vi)*viscs2_(0, 2, ui)) ;
-            estif(dPDF, VDF) += 2.0*visc*tau_Mp*(derxy_(0, vi)*viscs2_(0, 1, ui) +
-                                                 derxy_(1, vi)*viscs2_(1, 1, ui) +
-                                                 derxy_(2, vi)*viscs2_(1, 2, ui)) ;
-            estif(dPDF, WDF) += 2.0*visc*tau_Mp*(derxy_(0, vi)*viscs2_(0, 2, ui) +
-                                                 derxy_(1, vi)*viscs2_(1, 2, ui) +
-                                                 derxy_(2, vi)*viscs2_(2, 2, ui)) ;
+        /* pressure stabilisation: convection, convective part */
+        /*
+                  /                            \
+                 |  / n+1       \               |
+                 | | u   o nabla | Du , nabla q |
+                 |  \ (i)       /               |
+                  \                            /
+        */
+        integrateMatrix(dofman, estif, Pres, derxy_(0,_), tau_Mp, Velx, conv_c_(_));
+        integrateMatrix(dofman, estif, Pres, derxy_(1,_), tau_Mp, Vely, conv_c_(_));
+        integrateMatrix(dofman, estif, Pres, derxy_(2,_), tau_Mp, Velz, conv_c_(_));
 
-            /* pressure stabilisation: pressure( L_pres_p) */
-            /*
-                        /                    \
-                       |                      |
-                       |  nabla Dp , nabla q  |
-                       |                      |
-                        \                    /
-            */
-            estif(dPDF, PDF) += tau_Mp*(derxy_(0, ui)*derxy_(0, vi) +
-                                        derxy_(1, ui)*derxy_(1, vi) +
-                                        derxy_(2, ui)*derxy_(2, vi)) ;
+        /* pressure stabilisation: viscosity (-L_visc_u) */
+        /*
+                 /                              \
+                |               /  \             |
+                |  nabla o eps | Du | , nabla q  |
+                |               \  /             |
+                 \                              /
+        */
+        integrateMatrix(dofman, estif, Pres, derxy_(0,_), 2.0*visc*tau_Mp, Velx, viscs2_(0, 0, _));
+        integrateMatrix(dofman, estif, Pres, derxy_(1,_), 2.0*visc*tau_Mp, Velx, viscs2_(0, 1, _));
+        integrateMatrix(dofman, estif, Pres, derxy_(2,_), 2.0*visc*tau_Mp, Velx, viscs2_(0, 2, _));
 
+        integrateMatrix(dofman, estif, Pres, derxy_(0,_), 2.0*visc*tau_Mp, Vely, viscs2_(0, 1, _));
+        integrateMatrix(dofman, estif, Pres, derxy_(1,_), 2.0*visc*tau_Mp, Vely, viscs2_(1, 1, _));
+        integrateMatrix(dofman, estif, Pres, derxy_(2,_), 2.0*visc*tau_Mp, Vely, viscs2_(1, 2, _));
 
-          } // vi
-        } // ui
+        integrateMatrix(dofman, estif, Pres, derxy_(0,_), 2.0*visc*tau_Mp, Velz, viscs2_(0, 2, _));
+        integrateMatrix(dofman, estif, Pres, derxy_(1,_), 2.0*visc*tau_Mp, Velz, viscs2_(1, 2, _));
+        integrateMatrix(dofman, estif, Pres, derxy_(2,_), 2.0*visc*tau_Mp, Velz, viscs2_(2, 2, _));
+
+        /* pressure stabilisation: pressure( L_pres_p) */
+        /*
+                    /                    \
+                   |                      |
+                   |  nabla Dp , nabla q  |
+                   |                      |
+                    \                    /
+        */
+        integrateMatrix(dofman, estif, Pres, derxy_(0,_), tau_Mp, Pres, derxy_(0, _));
+        integrateMatrix(dofman, estif, Pres, derxy_(1,_), tau_Mp, Pres, derxy_(1, _));
+        integrateMatrix(dofman, estif, Pres, derxy_(2,_), tau_Mp, Pres, derxy_(2, _));
 
         if (newton)
         {
@@ -652,35 +635,29 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
 
               */
               estif(dPDF, UDF) += tau_Mp*(derxy_(0, vi)*conv_r_(0, 0, ui)
-                                                       +
-                                                       derxy_(1, vi)*conv_r_(1, 0, ui)
-                                                       +
-                                                       derxy_(2, vi)*conv_r_(2, 0, ui)) ;
+                                          +
+                                          derxy_(1, vi)*conv_r_(1, 0, ui)
+                                          +
+                                          derxy_(2, vi)*conv_r_(2, 0, ui)) ;
               estif(dPDF, VDF) += tau_Mp*(derxy_(0, vi)*conv_r_(0, 1, ui)
-                                                       +
-                                                       derxy_(1, vi)*conv_r_(1, 1, ui)
-                                                       +
-                                                       derxy_(2, vi)*conv_r_(2, 1, ui)) ;
+                                          +
+                                          derxy_(1, vi)*conv_r_(1, 1, ui)
+                                          +
+                                          derxy_(2, vi)*conv_r_(2, 1, ui)) ;
               estif(dPDF, WDF) += tau_Mp*(derxy_(0, vi)*conv_r_(0, 2, ui)
-                                                       +
-                                                       derxy_(1, vi)*conv_r_(1, 2, ui)
-                                                       +
-                                                       derxy_(2, vi)*conv_r_(2, 2, ui)) ;
+                                          +
+                                          derxy_(1, vi)*conv_r_(1, 2, ui)
+                                          +
+                                          derxy_(2, vi)*conv_r_(2, 2, ui)) ;
 
             } // vi
           } // ui
         } // if newton
 
-
-        for (int vi=0; vi<iel_; ++vi)
-        {
-          const int dPDF = vi*4+3;
-          // pressure stabilisation
-          eforce(dPDF) -= tau_Mp*(res_old_(0)*enr_derxy_(0, vi) +
-                                  res_old_(1)*enr_derxy_(1, vi) +
-                                  res_old_(2)*enr_derxy_(2, vi)) ;
-        }
-
+        // pressure stabilisation
+        integrateVector(dofman, eforce, Pres, enr_derxy_(0, _), -tau_Mp*res_old_(0));
+        integrateVector(dofman, eforce, Pres, enr_derxy_(1, _), -tau_Mp*res_old_(1));
+        integrateVector(dofman, eforce, Pres, enr_derxy_(2, _), -tau_Mp*res_old_(2));
       }
 
       //----------------------------------------------------------------------
@@ -688,68 +665,50 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
 
       if(supg)
       {
-        for (int ui=0; ui<iel_; ++ui)
-        {
-          const int UDF = ui*4;
-          const int VDF = ui*4+1;
-          const int WDF = ui*4+2;
-          const int PDF = ui*4+3;
-          for (int vi=0; vi<iel_; ++vi)
-          {
-            const int dUDF = vi*4;
-            const int dVDF = vi*4+1;
-            const int dWDF = vi*4+2;
-            /* supg stabilisation: convective part ( L_conv_u) */
+          /* supg stabilisation: convective part ( L_conv_u) */
+          /*
+               /                                           \
+              |    / n+1        \        / n+1        \     |
+              |   | u    o nabla | Du , | u    o nabla | v  |
+              |    \ (i)        /        \ (i)        /     |
+               \                                           /
+          */
+          integrateMatrix(dofman, estif, Velx, conv_c_(_), tau_M, Velx, conv_c_(_));
+          integrateMatrix(dofman, estif, Vely, conv_c_(_), tau_M, Vely, conv_c_(_));
+          integrateMatrix(dofman, estif, Velz, conv_c_(_), tau_M, Velz, conv_c_(_));
+          
+          /* supg stabilisation: pressure part  ( L_pres_p) */
+          /*
+                    /                              \
+                   |              / n+1       \     |
+                   |  nabla Dp , | u   o nabla | v  |
+                   |              \ (i)       /     |
+                    \                              /
+          */
+          integrateMatrix(dofman, estif, Velx, conv_c_(_), tau_M, Pres, derxy_(0, _));
+          integrateMatrix(dofman, estif, Vely, conv_c_(_), tau_M, Pres, derxy_(1, _));
+          integrateMatrix(dofman, estif, Velz, conv_c_(_), tau_M, Pres, derxy_(2, _));
+          
+          /* supg stabilisation: viscous part  (-L_visc_u) */
+          /*
+                /                                        \
+               |               /  \    / n+1        \     |
+               |  nabla o eps | Du |, | u    o nabla | v  |
+               |               \  /    \ (i)        /     |
+                \                                        /
+          */
+          integrateMatrix(dofman, estif, Velx, conv_c_(_), 2.0*visc*tau_M, Velx, viscs2_(0, 0, _));
+          integrateMatrix(dofman, estif, Velx, conv_c_(_), 2.0*visc*tau_M, Vely, viscs2_(0, 1, _));
+          integrateMatrix(dofman, estif, Velx, conv_c_(_), 2.0*visc*tau_M, Velz, viscs2_(0, 2, _));
+          
+          integrateMatrix(dofman, estif, Vely, conv_c_(_), 2.0*visc*tau_M, Velx, viscs2_(0, 1, _));
+          integrateMatrix(dofman, estif, Vely, conv_c_(_), 2.0*visc*tau_M, Vely, viscs2_(1, 1, _));
+          integrateMatrix(dofman, estif, Vely, conv_c_(_), 2.0*visc*tau_M, Velz, viscs2_(1, 2, _));
+          
+          integrateMatrix(dofman, estif, Velz, conv_c_(_), 2.0*visc*tau_M, Velx, viscs2_(0, 2, _));
+          integrateMatrix(dofman, estif, Velz, conv_c_(_), 2.0*visc*tau_M, Vely, viscs2_(1, 2, _));
+          integrateMatrix(dofman, estif, Velz, conv_c_(_), 2.0*visc*tau_M, Velz, viscs2_(2, 2, _));
 
-            /*
-
-                 /                                           \
-                |    / n+1        \        / n+1        \     |
-                |   | u    o nabla | Du , | u    o nabla | v  |
-                |    \ (i)        /        \ (i)        /     |
-                 \                                           /
-
-            */
-
-            estif(dUDF, UDF) += tau_M*conv_c_(ui)*conv_c_(vi) ;
-            estif(dVDF, VDF) += tau_M*conv_c_(ui)*conv_c_(vi) ;
-            estif(dWDF, WDF) += tau_M*conv_c_(ui)*conv_c_(vi) ;
-
-            /* supg stabilisation: pressure part  ( L_pres_p) */
-            /*
-                      /                              \
-                     |              / n+1       \     |
-                     |  nabla Dp , | u   o nabla | v  |
-                     |              \ (i)       /     |
-                      \                              /
-            */
-            estif(dUDF, PDF) += tau_M*conv_c_(vi)*derxy_(0, ui) ;
-            estif(dVDF, PDF) += tau_M*conv_c_(vi)*derxy_(1, ui) ;
-            estif(dWDF, PDF) += tau_M*conv_c_(vi)*derxy_(2, ui) ;
-
-            /* supg stabilisation: viscous part  (-L_visc_u) */
-            /*
-                  /                                        \
-                 |               /  \    / n+1        \     |
-                 |  nabla o eps | Du |, | u    o nabla | v  |
-                 |               \  /    \ (i)        /     |
-                  \                                        /
-            */
-            estif(dUDF, UDF) += 2.0*visc*tau_M*conv_c_(vi)*viscs2_(0, 0, ui) ;
-            estif(dUDF, VDF) += 2.0*visc*tau_M*conv_c_(vi)*viscs2_(0, 1, ui) ;
-            estif(dUDF, WDF) += 2.0*visc*tau_M*conv_c_(vi)*viscs2_(0, 2, ui) ;
-            estif(dVDF, UDF) += 2.0*visc*tau_M*conv_c_(vi)*viscs2_(0, 1, ui) ;
-            estif(dVDF, VDF) += 2.0*visc*tau_M*conv_c_(vi)*viscs2_(1, 1, ui) ;
-            estif(dVDF, WDF) += 2.0*visc*tau_M*conv_c_(vi)*viscs2_(1, 2, ui) ;
-            estif(dWDF, UDF) += 2.0*visc*tau_M*conv_c_(vi)*viscs2_(0, 2, ui) ;
-            estif(dWDF, VDF) += 2.0*visc*tau_M*conv_c_(vi)*viscs2_(1, 2, ui) ;
-            estif(dWDF, WDF) += 2.0*visc*tau_M*conv_c_(vi)*viscs2_(2, 2, ui) ;
-
-
-          } // vi
-        } // ui
-
-        
         if (newton)
         {
           for (int ui=0; ui<iel_; ++ui)
@@ -777,68 +736,68 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
                        \                                           /
               */
               estif(dUDF, UDF) += tau_M*(conv_c_(vi)*conv_r_(0, 0, ui)
-                                                      +
-                                                      velint_(0)*derxy_(0, vi)*conv_r_(0, 0, ui)
-                                                      +
-                                                      velint_(1)*derxy_(0, vi)*conv_r_(0, 1, ui)
-                                                      +
-                                                      velint_(2)*derxy_(0, vi)*conv_r_(0, 2, ui)) ;
+                                         +
+                                         velint_(0)*derxy_(0, vi)*conv_r_(0, 0, ui)
+                                         +
+                                         velint_(1)*derxy_(0, vi)*conv_r_(0, 1, ui)
+                                         +
+                                         velint_(2)*derxy_(0, vi)*conv_r_(0, 2, ui)) ;
               estif(dUDF, VDF) += tau_M*(conv_c_(vi)*conv_r_(0, 1, ui)
-                                                      +
-                                                      velint_(0)*derxy_(1, vi)*conv_r_(0, 0, ui)
-                                                      +
-                                                      velint_(1)*derxy_(1, vi)*conv_r_(0, 1, ui)
-                                                      +
-                                                      velint_(2)*derxy_(1, vi)*conv_r_(0, 2, ui)) ;
+                                         +
+                                         velint_(0)*derxy_(1, vi)*conv_r_(0, 0, ui)
+                                         +
+                                         velint_(1)*derxy_(1, vi)*conv_r_(0, 1, ui)
+                                         +
+                                         velint_(2)*derxy_(1, vi)*conv_r_(0, 2, ui)) ;
               estif(dUDF, WDF) += tau_M*(conv_c_(vi)*conv_r_(0, 2, ui)
-                                                      +
-                                                      velint_(0)*derxy_(2, vi)*conv_r_(0, 0, ui)
-                                                      +
-                                                      velint_(1)*derxy_(2, vi)*conv_r_(0, 1, ui)
-                                                      +
-                                                      velint_(2)*derxy_(2, vi)*conv_r_(0, 2, ui)) ;
+                                         +
+                                         velint_(0)*derxy_(2, vi)*conv_r_(0, 0, ui)
+                                         +
+                                         velint_(1)*derxy_(2, vi)*conv_r_(0, 1, ui)
+                                         +
+                                         velint_(2)*derxy_(2, vi)*conv_r_(0, 2, ui)) ;
               estif(dVDF, UDF) += tau_M*(conv_c_(vi)*conv_r_(1, 0, ui)
-                                                      +
-                                                      velint_(0)*derxy_(0, vi)*conv_r_(1, 0, ui)
-                                                      +
-                                                      velint_(1)*derxy_(0, vi)*conv_r_(1, 1, ui)
-                                                      +
-                                                      velint_(2)*derxy_(0, vi)*conv_r_(1, 2, ui)) ;
+                                         +
+                                         velint_(0)*derxy_(0, vi)*conv_r_(1, 0, ui)
+                                         +
+                                         velint_(1)*derxy_(0, vi)*conv_r_(1, 1, ui)
+                                         +
+                                         velint_(2)*derxy_(0, vi)*conv_r_(1, 2, ui)) ;
               estif(dVDF, VDF) += tau_M*(conv_c_(vi)*conv_r_(1, 1, ui)
-                                                      +
-                                                      velint_(0)*derxy_(1, vi)*conv_r_(1, 0, ui)
-                                                      +
-                                                      velint_(1)*derxy_(1, vi)*conv_r_(1, 1, ui)
-                                                      +
-                                                      velint_(2)*derxy_(1, vi)*conv_r_(1, 2, ui)) ;
+                                         +
+                                         velint_(0)*derxy_(1, vi)*conv_r_(1, 0, ui)
+                                         +
+                                         velint_(1)*derxy_(1, vi)*conv_r_(1, 1, ui)
+                                         +
+                                         velint_(2)*derxy_(1, vi)*conv_r_(1, 2, ui)) ;
               estif(dVDF, WDF) += tau_M*(conv_c_(vi)*conv_r_(1, 2, ui)
-                                                      +
-                                                      velint_(0)*derxy_(2, vi)*conv_r_(1, 0, ui)
-                                                      +
-                                                      velint_(1)*derxy_(2, vi)*conv_r_(1, 1, ui)
-                                                      +
-                                                      velint_(2)*derxy_(2, vi)*conv_r_(1, 2, ui)) ;
+                                         +
+                                         velint_(0)*derxy_(2, vi)*conv_r_(1, 0, ui)
+                                         +
+                                         velint_(1)*derxy_(2, vi)*conv_r_(1, 1, ui)
+                                         +
+                                         velint_(2)*derxy_(2, vi)*conv_r_(1, 2, ui)) ;
               estif(dWDF, UDF) += tau_M*(conv_c_(vi)*conv_r_(2, 0, ui)
-                                                      +
-                                                      velint_(0)*derxy_(0, vi)*conv_r_(2, 0, ui)
-                                                      +
-                                                      velint_(1)*derxy_(0, vi)*conv_r_(2, 1, ui)
-                                                      +
-                                                      velint_(2)*derxy_(0, vi)*conv_r_(2, 2, ui)) ;
+                                         +
+                                         velint_(0)*derxy_(0, vi)*conv_r_(2, 0, ui)
+                                         +
+                                         velint_(1)*derxy_(0, vi)*conv_r_(2, 1, ui)
+                                         +
+                                         velint_(2)*derxy_(0, vi)*conv_r_(2, 2, ui)) ;
               estif(dWDF, VDF) += tau_M*(conv_c_(vi)*conv_r_(2, 1, ui)
-                                                      +
-                                                      velint_(0)*derxy_(1, vi)*conv_r_(2, 0, ui)
-                                                      +
-                                                      velint_(1)*derxy_(1, vi)*conv_r_(2, 1, ui)
-                                                      +
-                                                      velint_(2)*derxy_(1, vi)*conv_r_(2, 2, ui)) ;
+                                         +
+                                         velint_(0)*derxy_(1, vi)*conv_r_(2, 0, ui)
+                                         +
+                                         velint_(1)*derxy_(1, vi)*conv_r_(2, 1, ui)
+                                         +
+                                         velint_(2)*derxy_(1, vi)*conv_r_(2, 2, ui)) ;
               estif(dWDF, WDF) += tau_M*(conv_c_(vi)*conv_r_(2, 2, ui)
-                                                      +
-                                                      velint_(0)*derxy_(2, vi)*conv_r_(2, 0, ui)
-                                                      +
-                                                      velint_(1)*derxy_(2, vi)*conv_r_(2, 1, ui)
-                                                      +
-                                                      velint_(2)*derxy_(2, vi)*conv_r_(2, 2, ui)) ;
+                                         +
+                                         velint_(0)*derxy_(2, vi)*conv_r_(2, 0, ui)
+                                         +
+                                         velint_(1)*derxy_(2, vi)*conv_r_(2, 1, ui)
+                                         +
+                                         velint_(2)*derxy_(2, vi)*conv_r_(2, 2, ui)) ;
 
 
               /* supg stabilisation: pressure part, linearisation of test function  ( L_pres_p) */
@@ -903,28 +862,22 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
           } // ui
         } // if newton
 
-        for (int vi=0; vi<iel_; ++vi)
-        {
-          const int dUDF = vi*4;
-          const int dVDF = vi*4+1;
-          const int dWDF = vi*4+2;
-          // supg stabilisation
-          eforce(dUDF) += -(tau_M*conv_c_(vi)*res_old_(0)) ;
-          eforce(dVDF) += -(tau_M*conv_c_(vi)*res_old_(1)) ;
-          eforce(dWDF) += -(tau_M*conv_c_(vi)*res_old_(2)) ;
-        }
+        // supg stabilisation
+        integrateVector(dofman, eforce, Velx, conv_c_(_), -tau_M*res_old_(0));
+        integrateVector(dofman, eforce, Vely, conv_c_(_), -tau_M*res_old_(1));
+        integrateVector(dofman, eforce, Velz, conv_c_(_), -tau_M*res_old_(2));
       }
 
 
       //----------------------------------------------------------------------
       //                       STABILISATION, VISCOUS PART
-      
-      
-//  !!!!      
+
+
+//  !!!!
 //  viscous part of stabilisation is switched off!
 //  vstab is set to false within fluid3_evaluate.cpp
-//!!!! 
-      
+//!!!!
+
       if(vstab)
       {
         for (int ui=0; ui<iel_; ++ui)
@@ -984,20 +937,20 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
                      \                        /
             */
             estif(dUDF, PDF) += 2.0*visc*tau_Mp*(derxy_(0, ui)*viscs2_(0, 0, vi)
-                                                              +
-                                                              derxy_(1, ui)*viscs2_(0, 1, vi)
-                                                              +
-                                                              derxy_(2, ui)*viscs2_(0, 2, vi)) ;
+                                                 +
+                                                 derxy_(1, ui)*viscs2_(0, 1, vi)
+                                                 +
+                                                 derxy_(2, ui)*viscs2_(0, 2, vi)) ;
             estif(dVDF, PDF) += 2.0*visc*tau_Mp*(derxy_(0, ui)*viscs2_(0, 1, vi)
-                                                              +
-                                                              derxy_(1, ui)*viscs2_(1, 1, vi)
-                                                              +
-                                                              derxy_(2, ui)*viscs2_(1, 2, vi)) ;
+                                                 +
+                                                 derxy_(1, ui)*viscs2_(1, 1, vi)
+                                                 +
+                                                 derxy_(2, ui)*viscs2_(1, 2, vi)) ;
             estif(dWDF, PDF) += 2.0*visc*tau_Mp*(derxy_(0, ui)*viscs2_(0, 2, vi)
-                                                              +
-                                                              derxy_(1, ui)*viscs2_(1, 2, vi)
-                                                              +
-                                                              derxy_(2, ui)*viscs2_(2, 2, vi)) ;
+                                                 +
+                                                 derxy_(1, ui)*viscs2_(1, 2, vi)
+                                                 +
+                                                 derxy_(2, ui)*viscs2_(2, 2, vi)) ;
 
             /* viscous stabilisation, viscous part (-L_visc_u) */
             /*
@@ -1008,50 +961,50 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
                \                                 /
             */
             estif(dUDF, UDF) += 4.0*(visc*visc)*tau_Mp*(viscs2_(0, 0, ui)*viscs2_(0, 0, vi)
-                                                                     +
-                                                                     viscs2_(0, 1, ui)*viscs2_(0, 1, vi)
-                                                                     +
-                                                                     viscs2_(0, 2, ui)*viscs2_(0, 2, vi)) ;
+                                                        +
+                                                        viscs2_(0, 1, ui)*viscs2_(0, 1, vi)
+                                                        +
+                                                        viscs2_(0, 2, ui)*viscs2_(0, 2, vi)) ;
             estif(dUDF, VDF) += 4.0*(visc*visc)*tau_Mp*(viscs2_(0, 0, vi)*viscs2_(0, 1, ui)
-                                                                     +
-                                                                     viscs2_(0, 1, vi)*viscs2_(1, 1, ui)
-                                                                     +
-                                                                     viscs2_(0, 2, vi)*viscs2_(1, 2, ui)) ;
+                                                        +
+                                                        viscs2_(0, 1, vi)*viscs2_(1, 1, ui)
+                                                        +
+                                                        viscs2_(0, 2, vi)*viscs2_(1, 2, ui)) ;
             estif(dUDF, WDF) += 4.0*(visc*visc)*tau_Mp*(viscs2_(0, 0, vi)*viscs2_(0, 2, ui)
-                                                                     +
-                                                                     viscs2_(0, 1, vi)*viscs2_(1, 2, ui)
-                                                                     +
-                                                                     viscs2_(0, 2, vi)*viscs2_(2, 2, ui)) ;
+                                                        +
+                                                        viscs2_(0, 1, vi)*viscs2_(1, 2, ui)
+                                                        +
+                                                        viscs2_(0, 2, vi)*viscs2_(2, 2, ui)) ;
             estif(dVDF, UDF) += 4.0*(visc*visc)*tau_Mp*(viscs2_(0, 0, ui)*viscs2_(0, 1, vi)
-                                                                     +
-                                                                     viscs2_(0, 1, ui)*viscs2_(1, 1, vi)
-                                                                     +
-                                                                     viscs2_(0, 2, ui)*viscs2_(1, 2, vi)) ;
+                                                        +
+                                                        viscs2_(0, 1, ui)*viscs2_(1, 1, vi)
+                                                        +
+                                                        viscs2_(0, 2, ui)*viscs2_(1, 2, vi)) ;
             estif(dVDF, VDF) += 4.0*(visc*visc)*tau_Mp*(viscs2_(0, 1, ui)*viscs2_(0, 1, vi)
-                                                                     +
-                                                                     viscs2_(1, 1, ui)*viscs2_(1, 1, vi)
-                                                                     +
-                                                                     viscs2_(1, 2, ui)*viscs2_(1, 2, vi)) ;
+                                                        +
+                                                        viscs2_(1, 1, ui)*viscs2_(1, 1, vi)
+                                                        +
+                                                        viscs2_(1, 2, ui)*viscs2_(1, 2, vi)) ;
             estif(dVDF, WDF) += 4.0*(visc*visc)*tau_Mp*(viscs2_(0, 1, vi)*viscs2_(0, 2, ui)
-                                                                     +
-                                                                     viscs2_(1, 1, vi)*viscs2_(1, 2, ui)
-                                                                     +
-                                                                     viscs2_(1, 2, vi)*viscs2_(2, 2, ui)) ;
+                                                        +
+                                                        viscs2_(1, 1, vi)*viscs2_(1, 2, ui)
+                                                        +
+                                                        viscs2_(1, 2, vi)*viscs2_(2, 2, ui)) ;
             estif(dWDF, UDF) += 4.0*(visc*visc)*tau_Mp*(viscs2_(0, 0, ui)*viscs2_(0, 2, vi)
-                                                                     +
-                                                                     viscs2_(0, 1, ui)*viscs2_(1, 2, vi)
-                                                                     +
-                                                                     viscs2_(0, 2, ui)*viscs2_(2, 2, vi)) ;
+                                                        +
+                                                        viscs2_(0, 1, ui)*viscs2_(1, 2, vi)
+                                                        +
+                                                        viscs2_(0, 2, ui)*viscs2_(2, 2, vi)) ;
             estif(dWDF, VDF) += 4.0*(visc*visc)*tau_Mp*(viscs2_(0, 1, ui)*viscs2_(0, 2, vi)
-                                                                     +
-                                                                     viscs2_(1, 1, ui)*viscs2_(1, 2, vi)
-                                                                     +
-                                                                     viscs2_(1, 2, ui)*viscs2_(2, 2, vi)) ;
+                                                        +
+                                                        viscs2_(1, 1, ui)*viscs2_(1, 2, vi)
+                                                        +
+                                                        viscs2_(1, 2, ui)*viscs2_(2, 2, vi)) ;
             estif(dWDF, WDF) += 4.0*(visc*visc)*tau_Mp*(viscs2_(0, 2, ui)*viscs2_(0, 2, vi)
-                                                                     +
-                                                                     viscs2_(1, 2, ui)*viscs2_(1, 2, vi)
-                                                                     +
-                                                                     viscs2_(2, 2, ui)*viscs2_(2, 2, vi)) ;
+                                                        +
+                                                        viscs2_(1, 2, ui)*viscs2_(1, 2, vi)
+                                                        +
+                                                        viscs2_(2, 2, ui)*viscs2_(2, 2, vi)) ;
           } // vi
         } // ui
 
@@ -1076,128 +1029,101 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
                    \                                 /
               */
               estif(dUDF, UDF) += 2.0*visc*tau_Mp*(viscs2_(0, 0, vi)*conv_r_(0, 0, ui)
-                                                                +
-                                                                viscs2_(0, 1, vi)*conv_r_(1, 0, ui)
-                                                                +
-                                                                viscs2_(0, 2, vi)*conv_r_(2, 0, ui)) ;
+                                                   +
+                                                   viscs2_(0, 1, vi)*conv_r_(1, 0, ui)
+                                                   +
+                                                   viscs2_(0, 2, vi)*conv_r_(2, 0, ui)) ;
               estif(dUDF, VDF) += 2.0*visc*tau_Mp*(viscs2_(0, 0, vi)*conv_r_(0, 1, ui)
-                                                                +
-                                                                viscs2_(0, 1, vi)*conv_r_(1, 1, ui)
-                                                                +
-                                                                viscs2_(0, 2, vi)*conv_r_(2, 1, ui)) ;
+                                                   +
+                                                   viscs2_(0, 1, vi)*conv_r_(1, 1, ui)
+                                                   +
+                                                   viscs2_(0, 2, vi)*conv_r_(2, 1, ui)) ;
               estif(dUDF, WDF) += 2.0*visc*tau_Mp*(viscs2_(0, 0, vi)*conv_r_(0, 2, ui)
-                                                                +
-                                                                viscs2_(0, 1, vi)*conv_r_(1, 2, ui)
-                                                                +
-                                                                viscs2_(0, 2, vi)*conv_r_(2, 2, ui)) ;
+                                                   +
+                                                   viscs2_(0, 1, vi)*conv_r_(1, 2, ui)
+                                                   +
+                                                   viscs2_(0, 2, vi)*conv_r_(2, 2, ui)) ;
               estif(dVDF, UDF) += 2.0*visc*tau_Mp*(viscs2_(0, 1, vi)*conv_r_(0, 0, ui)
-                                                                +
-                                                                viscs2_(1, 1, vi)*conv_r_(1, 0, ui)
-                                                                +
-                                                                viscs2_(1, 2, vi)*conv_r_(2, 0, ui)) ;
+                                                   +
+                                                   viscs2_(1, 1, vi)*conv_r_(1, 0, ui)
+                                                   +
+                                                   viscs2_(1, 2, vi)*conv_r_(2, 0, ui)) ;
               estif(dVDF, VDF) += 2.0*visc*tau_Mp*(viscs2_(0, 1, vi)*conv_r_(0, 1, ui)
-                                                                +
-                                                                viscs2_(1, 1, vi)*conv_r_(1, 1, ui)
-                                                                +
-                                                                viscs2_(1, 2, vi)*conv_r_(2, 1, ui)) ;
+                                                   +
+                                                   viscs2_(1, 1, vi)*conv_r_(1, 1, ui)
+                                                   +
+                                                   viscs2_(1, 2, vi)*conv_r_(2, 1, ui)) ;
               estif(dVDF, WDF) += 2.0*visc*tau_Mp*(viscs2_(0, 1, vi)*conv_r_(0, 2, ui)
-                                                                +
-                                                                viscs2_(1, 1, vi)*conv_r_(1, 2, ui)
-                                                                +
-                                                                viscs2_(1, 2, vi)*conv_r_(2, 2, ui)) ;
+                                                   +
+                                                   viscs2_(1, 1, vi)*conv_r_(1, 2, ui)
+                                                   +
+                                                   viscs2_(1, 2, vi)*conv_r_(2, 2, ui)) ;
               estif(dWDF, UDF) += 2.0*visc*tau_Mp*(viscs2_(0, 2, vi)*conv_r_(0, 0, ui)
-                                                                +
-                                                                viscs2_(1, 2, vi)*conv_r_(1, 0, ui)
-                                                                +
-                                                                viscs2_(2, 2, vi)*conv_r_(2, 0, ui)) ;
+                                                   +
+                                                   viscs2_(1, 2, vi)*conv_r_(1, 0, ui)
+                                                   +
+                                                   viscs2_(2, 2, vi)*conv_r_(2, 0, ui)) ;
               estif(dWDF, VDF) += 2.0*visc*tau_Mp*(viscs2_(0, 2, vi)*conv_r_(0, 1, ui)
-                                                                +
-                                                                viscs2_(1, 2, vi)*conv_r_(1, 1, ui)
-                                                                +
-                                                                viscs2_(2, 2, vi)*conv_r_(2, 1, ui)) ;
+                                                   +
+                                                   viscs2_(1, 2, vi)*conv_r_(1, 1, ui)
+                                                   +
+                                                   viscs2_(2, 2, vi)*conv_r_(2, 1, ui)) ;
               estif(dWDF, WDF) += 2.0*visc*tau_Mp*(viscs2_(0, 2, vi)*conv_r_(0, 2, ui)
-                                                                +
-                                                                viscs2_(1, 2, vi)*conv_r_(1, 2, ui)
-                                                                +
-                                                                viscs2_(2, 2, vi)*conv_r_(2, 2, ui)) ;
+                                                   +
+                                                   viscs2_(1, 2, vi)*conv_r_(1, 2, ui)
+                                                   +
+                                                   viscs2_(2, 2, vi)*conv_r_(2, 2, ui)) ;
             } // vi
           } // ui
         } // if newton
 
-        for (int vi=0; vi<iel_; ++vi)
-        {
-
-          const int dUDF = vi*4;
-          const int dVDF = vi*4+1;
-          const int dWDF = vi*4+2;
-          /* viscous stabilisation */
-          eforce(dUDF) += -2.0*visc*tau_Mp*(res_old_(0)*viscs2_(0, 0, vi)
-                                                   +
-                                                   res_old_(1)*viscs2_(0, 1, vi)
-                                                   +
-                                                   res_old_(2)*viscs2_(0, 2, vi)) ;
-          eforce(dVDF) += -2.0*visc*tau_Mp*(res_old_(0)*viscs2_(0, 1, vi)
-                                                   +
-                                                   res_old_(1)*viscs2_(1, 1, vi)
-                                                   +
-                                                   res_old_(2)*viscs2_(1, 2, vi)) ;
-          eforce(dWDF) += -2.0*visc*tau_Mp*(res_old_(0)*viscs2_(0, 2, vi)
-                                                   +
-                                                   res_old_(1)*viscs2_(1, 2, vi)
-                                                   +
-                                                   res_old_(2)*viscs2_(2, 2, vi)) ;
-        }
-      }
+        /* viscous stabilisation */
+        integrateVector(dofman, eforce, Velx, viscs2_(0, 0, _), -2.0*visc*tau_Mp*res_old_(0));
+        integrateVector(dofman, eforce, Velx, viscs2_(0, 1, _), -2.0*visc*tau_Mp*res_old_(1));
+        integrateVector(dofman, eforce, Velx, viscs2_(0, 2, _), -2.0*visc*tau_Mp*res_old_(2));
+        
+        integrateVector(dofman, eforce, Vely, viscs2_(0, 1, _), -2.0*visc*tau_Mp*res_old_(0));
+        integrateVector(dofman, eforce, Vely, viscs2_(1, 1, _), -2.0*visc*tau_Mp*res_old_(1));
+        integrateVector(dofman, eforce, Vely, viscs2_(1, 2, _), -2.0*visc*tau_Mp*res_old_(2));
+                
+        integrateVector(dofman, eforce, Velz, viscs2_(0, 2, _), -2.0*visc*tau_Mp*res_old_(0));
+        integrateVector(dofman, eforce, Velz, viscs2_(1, 2, _), -2.0*visc*tau_Mp*res_old_(1));
+        integrateVector(dofman, eforce, Velz, viscs2_(2, 2, _), -2.0*visc*tau_Mp*res_old_(2));
+        
+      } // endif vstab
 
       //----------------------------------------------------------------------
       //                     STABILISATION, CONTINUITY PART
 
       if(cstab)
       {
+        /* continuity stabilisation */
+        /*
+                   /                        \
+                  |                          |
+                  | nabla o Du  , nabla o v  |
+                  |                          |
+                   \                        /
+        */
+        integrateMatrix(dofman, estif, Velx, derxy_(0, _), tau_C, Velx, derxy_(0, _));
+        integrateMatrix(dofman, estif, Velx, derxy_(0, _), tau_C, Vely, derxy_(1, _));
+        integrateMatrix(dofman, estif, Velx, derxy_(0, _), tau_C, Velz, derxy_(2, _));
+        
+        integrateMatrix(dofman, estif, Vely, derxy_(1, _), tau_C, Velx, derxy_(0, _));
+        integrateMatrix(dofman, estif, Vely, derxy_(1, _), tau_C, Vely, derxy_(1, _));
+        integrateMatrix(dofman, estif, Vely, derxy_(1, _), tau_C, Velz, derxy_(2, _));
+        
+        integrateMatrix(dofman, estif, Velz, derxy_(2, _), tau_C, Velx, derxy_(0, _));
+        integrateMatrix(dofman, estif, Velz, derxy_(2, _), tau_C, Vely, derxy_(1, _));
+        integrateMatrix(dofman, estif, Velz, derxy_(2, _), tau_C, Velz, derxy_(2, _));
+        
         const double tau_C_divunp=tau_C*(vderxy_(0, 0)+vderxy_(1, 1)+vderxy_(2, 2));
 
-        for (int ui=0; ui<iel_; ++ui)
-        {
-          const int UDF = ui*4;
-          const int VDF = ui*4+1;
-          const int WDF = ui*4+2;
-          for (int vi=0; vi<iel_; ++vi)
-          {
-            const int dUDF = vi*4;
-            const int dVDF = vi*4+1;
-            const int dWDF = vi*4+2;
-            /* continuity stabilisation */
-            /*
-                       /                        \
-                      |                          |
-                      | nabla o Du  , nabla o v  |
-                      |                          |
-                       \                        /
-            */
-            estif(dUDF, UDF)         += tau_C*derxy_(0, ui)*derxy_(0, vi) ;
-            estif(dUDF, VDF)     += tau_C*derxy_(0, vi)*derxy_(1, ui) ;
-            estif(dUDF, WDF)     += tau_C*derxy_(0, vi)*derxy_(2, ui) ;
-            estif(dVDF, UDF)     += tau_C*derxy_(0, ui)*derxy_(1, vi) ;
-            estif(dVDF, VDF) += tau_C*derxy_(1, ui)*derxy_(1, vi) ;
-            estif(dVDF, WDF) += tau_C*derxy_(1, vi)*derxy_(2, ui) ;
-            estif(dWDF, UDF)     += tau_C*derxy_(0, ui)*derxy_(2, vi) ;
-            estif(dWDF, VDF) += tau_C*derxy_(1, ui)*derxy_(2, vi) ;
-            estif(dWDF, WDF) += tau_C*derxy_(2, ui)*derxy_(2, vi) ;
-          }
-        }
+        integrateVector(dofman, eforce, Velx, enr_derxy_(0, _), -tau_C_divunp);
+        integrateVector(dofman, eforce, Vely, enr_derxy_(1, _), -tau_C_divunp);
+        integrateVector(dofman, eforce, Velz, enr_derxy_(2, _), -tau_C_divunp);
 
-        for (int vi=0; vi<iel_; ++vi)
-        {
-          const int dUDF = vi*4;
-          const int dVDF = vi*4+1;
-          const int dWDF = vi*4+2;
-          /* Kontinuitaetsstabilisierung */
-          eforce(dUDF) += -tau_C_divunp*enr_derxy_(0, vi) ;
-          eforce(dVDF) += -tau_C_divunp*enr_derxy_(1, vi) ;
-          eforce(dWDF) += -tau_C_divunp*enr_derxy_(2, vi) ;
-        }
-
-      }
+      } // endif cstab
     }
   }
   } // end loop over integration cells
@@ -1352,7 +1278,7 @@ void DRT::Elements::XFluid3Stationary::CalTauStationary(
  |  array edeadng only if all nodes have a VolumeNeumann condition      |
  *----------------------------------------------------------------------*/
 void DRT::Elements::XFluid3Stationary::BodyForce(XFluid3* ele, const double pseudotime)
-{ 
+{
   vector<DRT::Condition*> myneumcond;
   DRT::Node** nodes = ele->Nodes();
   dserror("not adapted to xfem (, yet)!!!");

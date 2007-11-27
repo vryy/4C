@@ -116,8 +116,7 @@ public:
     	if (tmp == nodalDofMap_.end()){
     	    cout << gid << endl;
     	    dserror("EnrFieldSetPerNode: global node id not found!");
-    	    std::set<EnrField> x;
-    	    return x;
+    	    return emptyset_;
     	}
         return tmp->second;
     };
@@ -135,6 +134,8 @@ public:
         return tmp->second;
     };
     
+    /// return number of dofs on this element for a given field. E.g., if we have 4 nodes with 
+    /// standard x displacements at each node and 2 enriched displacements, this function will return 6
     inline int NumDofPerField(const XFEM::Physics::Field field) const
     {
     	map<XFEM::Physics::Field, int>::const_iterator tmp = numParamsPerFieldMap_.find(field);
@@ -146,7 +147,7 @@ public:
     };
     
     /// return a list of local positions in a array of dofs
-    inline vector<int> Dof(const XFEM::Physics::Field field) const
+    const vector<int> LocalDofPosPerField(const XFEM::Physics::Field field) const
     {
     	map<XFEM::Physics::Field, vector<int> >::const_iterator tmp = paramsLocalEntries_.find(field);
     	if (tmp == paramsLocalEntries_.end()){
@@ -176,6 +177,9 @@ private:
 	
 	//! local (elemental) dofpos
 	map<XFEM::Physics::Field, vector<int> > paramsLocalEntries_;
+	
+	//! dummy empty set that we can return in EnrFieldSetPerNode
+	std::set<EnrField> emptyset_;
 };
 
 

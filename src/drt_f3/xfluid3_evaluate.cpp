@@ -341,10 +341,10 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
         blitz::Array<double, 2> edispnp(3,numparamvelx,blitz::ColumnMajorArray<2>());
         blitz::Array<double, 2> egridv(3,numparamvelx,blitz::ColumnMajorArray<2>());
 
-        const vector<int> velxdof = eleDofManager_.Dof(XFEM::Physics::Velx);
-        const vector<int> velydof = eleDofManager_.Dof(XFEM::Physics::Vely);
-        const vector<int> velzdof = eleDofManager_.Dof(XFEM::Physics::Velz);
-        const vector<int> presdof = eleDofManager_.Dof(XFEM::Physics::Pres);
+        const vector<int> velxdof = eleDofManager_.LocalDofPosPerField(XFEM::Physics::Velx);
+        const vector<int> velydof = eleDofManager_.LocalDofPosPerField(XFEM::Physics::Vely);
+        const vector<int> velzdof = eleDofManager_.LocalDofPosPerField(XFEM::Physics::Velz);
+        const vector<int> presdof = eleDofManager_.LocalDofPosPerField(XFEM::Physics::Pres);
         
         // split velocity and pressure, insert into element arrays
         for (int iparam=0; iparam<numparamvelx; ++iparam)   evelnp(0,iparam) = myvelnp[velxdof[iparam]];
@@ -557,17 +557,10 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
           dsassert((numparamvelx == numparamvely and numparamvelx == numparamvelz and numparamvelx == numparampres),
         		  "for now, we enrich velocity and pressure together");
           
-          if (numparamvelx > 8)
-          {
-              cout << this->NumNode() << endl;
-              cout << "numparam: " << numparamvelx << endl;
-              cout << "huhuhuh" << endl;
-          }
-          
-          const vector<int> velxdof = eleDofManager_.Dof(XFEM::Physics::Velx);
-          const vector<int> velydof = eleDofManager_.Dof(XFEM::Physics::Vely);
-          const vector<int> velzdof = eleDofManager_.Dof(XFEM::Physics::Velz);
-          const vector<int> presdof = eleDofManager_.Dof(XFEM::Physics::Pres);
+          const vector<int> velxdof = eleDofManager_.LocalDofPosPerField(XFEM::Physics::Velx);
+          const vector<int> velydof = eleDofManager_.LocalDofPosPerField(XFEM::Physics::Vely);
+          const vector<int> velzdof = eleDofManager_.LocalDofPosPerField(XFEM::Physics::Velz);
+          const vector<int> presdof = eleDofManager_.LocalDofPosPerField(XFEM::Physics::Pres);
 
           blitz::Array<double, 1> eprenp(numparampres);
           blitz::Array<double, 2> evelnp(3,numparamvelx,blitz::ColumnMajorArray<2>());
@@ -580,8 +573,6 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
           
           const RCP<XFEM::InterfaceHandle> ih = params.get< RCP< XFEM::InterfaceHandle > >("interfacehandle",null);
           dsassert(ih!=null, "you did not give the InterfaceHandle");
-          
-
           
           // get control parameter
           const double pseudotime = params.get<double>("total time",-1.0);
