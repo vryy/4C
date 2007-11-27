@@ -3,7 +3,7 @@
 
 #include "mfsi_algorithm.H"
 #include "mfsi_nox_thyra_group.H"
-#include "mfsi_preconditioner.H"
+#include "mfsi_preconditionerfactory.H"
 #include "mfsi_statustest.H"
 
 #include "../drt_lib/drt_globalproblem.H"
