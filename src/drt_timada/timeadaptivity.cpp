@@ -139,7 +139,7 @@ void TimeAdaptivity::Indicate
       break;
    case norm_rms:
       locdiserrn_->Norm2(&norm);
-      norm /= sqrt((*locdiserrn_).GlobalLength());
+      norm /= sqrt((double) (*locdiserrn_).GlobalLength());
       break;
    case norm_inf:
       locdiserrn_->NormInf(&norm);
