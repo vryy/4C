@@ -22,26 +22,28 @@ namespace XFEM
 namespace Physics
 {
 
-// unique name of a physical field / primary unknown
-// the order they appear here determines the order in the unknown vectors!!!
+///
+/// unique name of a physical field / primary unknown,
+///
+/// Note: the order they appear here determines the order in the unknown vectors!!!
 enum Field
 {
-    Dispx,              // displacements
-    Dispy,
-    Dispz,
-    Velx,               // velocities
-    Vely,
-    Velz,
-    Temp,               // temerature
-    Pres,               // pressure
-    ConcentrationH2O,   // concentration of solvent
-    ConcentrationNO2,
-    LMPLambdax,         // Lagrange multiplier unknowns
-    LMPLambday,
-    LMPLambdaz,
-    LMPMux,
-    LMPMuy,
-    LMPMuz
+     Dispx              /// x displacement
+    ,Dispy              /// y displacement
+    ,Dispz              /// z displacement
+    ,Velx               /// x velocity
+    ,Vely               /// y velocity
+    ,Velz               /// z velocity
+    ,Temp               /// temerature
+    ,Pres               /// pressure
+    ,ConcentrationH2O   /// concentration of H2O
+    ,ConcentrationNO2   /// concentration of NO2
+    ,LMPLambdax         /// Lagrange multiplier unknown in x-direction
+    ,LMPLambday         /// Lagrange multiplier unknown in y-direction
+    ,LMPLambdaz         /// Lagrange multiplier unknown in z-direction
+    ,LMPMux             /// another Lagrange multiplier unknown in x-direction
+    ,LMPMuy             /// another Lagrange multiplier unknown in y-direction
+    ,LMPMuz             /// another Lagrange multiplier unknown in z-direction
 };
 
 std::string physVarToString(const Field var);
@@ -50,5 +52,5 @@ std::string physVarToString(const Field var);
 };
 
 
-#endif /*PHYSICS_H_*/
+#endif  // PHYSICS_H
 #endif  // #ifdef CCADISCRET
