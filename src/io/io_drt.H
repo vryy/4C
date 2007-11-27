@@ -141,8 +141,8 @@ public:
   */
   void WriteVector(string name, RefCountPtr<Epetra_Vector> vec);
 
-  //! write a condition given by its name
-  void WriteCondition(const string condname);
+  //! write a condition identified by its name
+  void WriteCondition(const string condname) const;
   
   //! write new "field" group to control file including node and element chunks
   void WriteMesh(int step, double time);

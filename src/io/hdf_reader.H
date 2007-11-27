@@ -102,8 +102,11 @@ public:
   Note: this function should only be called when the HDFReader opened
   the mesh files
  *----------------------------------------------------------------------*/
-RefCountPtr<std::vector<char> > ReadPeriodicBoundaryConditions (
-  int step, int new_proc_num, int my_id);
+RefCountPtr<std::vector<char> > ReadCondition(
+        const int step,
+        const int new_proc_num,
+        const int my_id,
+        const string condname);
 #endif
 
 

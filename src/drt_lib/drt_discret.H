@@ -1002,7 +1002,7 @@ public:
 
     \note Filled()=true is a prerequisite
    */
-  RefCountPtr<vector<char> > PackMyElements();
+  RefCountPtr<vector<char> > PackMyElements() const;
 
   /*!
     \brief Pack local nodes (row map) into buffer.
@@ -1012,8 +1012,20 @@ public:
 
     \note Filled()=true is a prerequisite
    */
-  RefCountPtr<vector<char> > PackMyNodes();
+  RefCountPtr<vector<char> > PackMyNodes() const;
 
+    /*!
+    \brief Pack condition (this is done by one processor, since data is redundant).
+
+    Call Pack on the condition with the given name and put the results into
+    a common vector. This is used to output the allow working with conditions in the post filter.
+
+    \note Filled()=true is a prerequisite
+   */
+  RefCountPtr<vector<char> > PackCondition(
+          const string condname     ///< name of condition as it is used in GetCondition() or SetCondition()
+          ) const;
+  
   /*!
     \brief Unpack element buffer and create local elements.
 
@@ -1037,6 +1049,19 @@ public:
     \note Sets Filled()=false
    */
   void UnPackMyNodes(RefCountPtr<vector<char> > e);
+  
+  /*!
+    \brief Unpack one condition.
+
+    Interprets the argument as packed condition and unpacks them on the
+    local processor. At the moment, the conditions are redundant on all processors
+
+    \param e        (in): buffer of packed nodes
+    \param condname (in): name of the condition
+
+    \note Sets Filled()=false
+   */
+  void UnPackCondition(const RefCountPtr<vector<char> > e, const string condname);
 
   //@}
 

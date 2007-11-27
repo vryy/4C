@@ -695,27 +695,14 @@ void IO::DiscretizationWriter::WriteVector(string name, RefCountPtr<Epetra_Vecto
 }
 
 // write a specific condition
-void IO::DiscretizationWriter::WriteCondition(const string condname)
+void IO::DiscretizationWriter::WriteCondition(const string condname) const
 {
-  //--------------------------------------------------
-  // pack boundary condition
-  RefCountPtr<vector<char> > block = rcp(new vector<char>);
-
-  // get boundary conditions
-  vector<DRT::Condition*> cond;
-  dis_->GetCondition(condname,cond);
-
-  for (vector<DRT::Condition*>::const_iterator i = cond.begin();
-       i!=cond.end();
-       ++i)
-  {
-    vector<char> conddata;
-    (*i)->Pack(conddata);
-    DRT::ParObject::AddtoPack(*block,conddata);
-  }
+  // put condition into block
+  RefCountPtr<vector<char> > block = dis_->PackCondition(condname);
 
   //--------------------------------------------------
-  // write block to file
+  // write block to file. Note: Block can be empty, if the condition is not found, which means it is not used
+  // so no dserror() here, which exists e.g. in WriteElements
   if(!block->empty())
   {
     hsize_t dim[] = {static_cast<hsize_t>(block->size())};
@@ -765,59 +752,13 @@ void IO::DiscretizationWriter::WriteMesh(int step, double time)
     dserror("Failed to create dataset in HDF-meshfile");
 
   // ... write other mesh informations
-
   if (dis_->Comm().MyPID() == 0)
   {
 #if 1
     WriteCondition("SurfacePeriodic");
     WriteCondition("LinePeriodic");
-      
-//    {
-//      //--------------------------------------------------
-//      // pack all periodic boundary conditions
-//      RefCountPtr<vector<char> > pbcblock = rcp(new vector<char>);
-//      // get all periodic boundary conditions
-//      vector<DRT::Condition*> percond;
-//
-//      // first the surfaces
-//      dis_->GetCondition("SurfacePeriodic",percond);
-//
-//      for (vector<DRT::Condition*>::iterator i=percond.begin();
-//           i!=percond.end();
-//           ++i)
-//      {
-//        vector<char> perconddata;
-//        (*i)->Pack(perconddata);
-//        DRT::ParObject::AddtoPack(*pbcblock,perconddata);
-//      }
-//
-//      // then the lines
-//      dis_->GetCondition("LinePeriodic",percond);
-//
-//      for (vector<DRT::Condition*>::iterator i=percond.begin();
-//           i!=percond.end();
-//           ++i)
-//      {
-//        vector<char> perconddata;
-//        (*i)->Pack(perconddata);
-//        DRT::ParObject::AddtoPack(*pbcblock,perconddata);
-//      }
-//
-//
-//      //--------------------------------------------------
-//      // write pbcblock to file
-//      if(!pbcblock->empty())
-//      {
-//        dim[0] = static_cast<hsize_t>(pbcblock->size());
-//        const herr_t bc_status = H5LTmake_dataset_char(meshgroup_,
-//                                       "periodicbc",
-//                                       1,
-//                                       dim,
-//                                       &((*pbcblock)[0]));
-//        if (bc_status < 0)
-//          dserror("Failed to create dataset in HDF-meshfile");
-//      }
-//    }
+    
+    WriteCondition("XFEMCoupling");
 #endif
     fprintf(cf_,
             "field:\n"

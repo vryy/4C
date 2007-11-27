@@ -424,25 +424,17 @@ void PostProblem::read_meshes()
 
 #if 1
         // read periodic boundary conditions if available
-        RefCountPtr<vector<char> > pbcs =
-        reader.ReadPeriodicBoundaryConditions(step, comm_->NumProc(), comm_->MyPID());
-        {
-          int index = 0;
-          while (index < static_cast<int>(pbcs->size()))
-          {
-            vector<char> data;
-            DRT::ParObject::ExtractfromPack(index,*pbcs,data);
-
-            DRT::ParObject* o = DRT::Utils::Factory(data);
-
-            DRT::Condition* thispbc = dynamic_cast<DRT::Condition*>(o);
-            if (thispbc == NULL)
-            {
-              dserror("Failed to build a periodic boundary condition from the stored data");
-            }
-            currfield.discretization()->SetCondition("SurfacePeriodic",rcp(thispbc));
-          }
-        }
+        RefCountPtr<vector<char> > cond_pbcsline =
+        reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "LinePeriodic");
+        currfield.discretization()->UnPackCondition(cond_pbcsline, "LinePeriodic");
+        RefCountPtr<vector<char> > cond_pbcssurf =
+        reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "SurfacePeriodic");
+        currfield.discretization()->UnPackCondition(cond_pbcssurf, "SurfacePeriodic");
+        
+        // read XFEMCoupling boundary conditions if available
+        RefCountPtr<vector<char> > cond_xfem =
+        reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "XFEMCoupling");
+        currfield.discretization()->UnPackCondition(cond_xfem, "XFEMCoupling");
 #endif
         // before we can call discretization functions (in parallel) we
         // need field based communicators.
@@ -460,7 +452,7 @@ void PostProblem::read_meshes()
         // -------------------------------------------------------------------
         // connect degrees of freedom for periodic boundary conditions
         // -------------------------------------------------------------------
-        if(!pbcs->empty())
+        if(!cond_pbcssurf->empty())
         {
           PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(currfield.discretization());
           pbc.UpdateDofsForPeriodicBoundaryConditions();

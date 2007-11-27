@@ -510,11 +510,11 @@ DRT::Condition* DRT::Discretization::GetCondition(const string& name)
  |  Pack local elements (row map) into buffer                  (public) |
  |                                                          m.kue 02/07 |
  *----------------------------------------------------------------------*/
-RefCountPtr<vector<char> > DRT::Discretization::PackMyElements()
+RefCountPtr<vector<char> > DRT::Discretization::PackMyElements() const
 {
   if (!Filled()) dserror("FillComplete was not called on this discretization");
   RefCountPtr<vector<char> > block = rcp(new vector<char>);
-  for (vector<DRT::Element*>::iterator i=elerowptr_.begin();
+  for (vector<DRT::Element*>::const_iterator i=elerowptr_.begin();
        i!=elerowptr_.end();
        ++i)
   {
@@ -530,11 +530,11 @@ RefCountPtr<vector<char> > DRT::Discretization::PackMyElements()
  |  Pack local nodes (row map) into buffer                     (public) |
  |                                                          m.kue 02/07 |
  *----------------------------------------------------------------------*/
-RefCountPtr<vector<char> > DRT::Discretization::PackMyNodes()
+RefCountPtr<vector<char> > DRT::Discretization::PackMyNodes() const
 {
   if (!Filled()) dserror("FillComplete was not called on this discretization");
   RefCountPtr<vector<char> > block = rcp(new vector<char>);
-  for (vector<DRT::Node*>::iterator i=noderowptr_.begin();
+  for (vector<DRT::Node*>::const_iterator i=noderowptr_.begin();
        i!=noderowptr_.end();
        ++i)
   {
@@ -544,6 +544,32 @@ RefCountPtr<vector<char> > DRT::Discretization::PackMyNodes()
   }
   return block;
 }
+
+
+/*----------------------------------------------------------------------*
+ |  Pack condition into buffer                                 (public) |
+ |                                                          a.ger 11/07 |
+ *----------------------------------------------------------------------*/
+RefCountPtr<vector<char> > DRT::Discretization::PackCondition(const string condname) const
+{
+  if (!Filled()) dserror("FillComplete was not called on this discretization");
+
+  // get boundary conditions
+  vector<DRT::Condition*> cond;
+  GetCondition(condname,cond);
+  
+  RefCountPtr<vector<char> > block = rcp(new vector<char>);
+  for (vector<DRT::Condition*>::const_iterator i = cond.begin();
+       i!=cond.end();
+       ++i)
+  {
+    vector<char> data;
+    (*i)->Pack(data);
+    DRT::ParObject::AddtoPack(*block,data);
+  }
+  return block;
+}
+
 
 /*----------------------------------------------------------------------*
  |  Unpack element buffer and create local elements            (public) |
@@ -590,6 +616,30 @@ void DRT::Discretization::UnPackMyNodes(RefCountPtr<vector<char> > e)
     AddNode(rcp(n));
   }
   // in case AddNode forgets...
+  Reset();
+}
+
+/*----------------------------------------------------------------------*
+ |  Unpack buffer and create local condition                   (public) |
+ |                                                          a.ger 02/07 |
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::UnPackCondition(
+        const RefCountPtr<vector<char> > e,
+        const string condname)
+{
+  int index = 0;
+  while (index < static_cast<int>(e->size()))
+  {
+    vector<char> data;
+    DRT::ParObject::ExtractfromPack(index,*e,data);
+    DRT::ParObject* o = DRT::Utils::Factory(data);
+    DRT::Condition* cond = dynamic_cast<DRT::Condition*>(o);
+    if (cond == NULL)
+    {
+      dserror("Failed to build boundary condition from the stored data %s", condname.c_str());
+    }
+    SetCondition(condname,rcp(cond));
+  }
   Reset();
 }
 
