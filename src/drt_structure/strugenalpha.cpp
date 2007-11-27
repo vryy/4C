@@ -114,7 +114,7 @@ havecontact_(false)
 
     // dynamic force residual at mid-time R_{n+1-alpha}
     // also known as out-of-balance-force
-    fresm_ = LINALG::CreateVector(*dofrowmap,false);
+    fresm_ = LINALG::CreateVector(*dofrowmap,false);   
 
     //-------------------------------------------- calculate external forces
     {
@@ -171,6 +171,14 @@ havecontact_(false)
       discret_.SetState("displacement",dis_);
       //discret_.SetState("velocity",vel_); // not used at the moment
       discret_.Evaluate(p,stiff_,mass_,fint_,null,null);
+      
+      //Evaluate constraint volume.
+      //Lagrange Multiplier is supposed to be zero in the beginnig, hence no
+      //changes needed for stiffness matrix and rhs.
+      p.set("action","calc_struct_constrvol");
+      discret_.EvaluateCondition(p,"VolumeConstraint_3D");
+      this->SynchronizeVolConstraint(discret_.Comm(), p,startvolumes_,minConstrID_,maxConstrID_,numConstrID_);
+      this->SetupVolDofrowmaps(discret_,voldofrowmaps_,numConstrID_,"VolumeConstraint_3D");
       discret_.ClearState();
     }
     // close mass matrix
@@ -823,6 +831,406 @@ void StruGenAlpha::FullNewton()
   return;
 } // StruGenAlpha::FullNewton()
 
+
+/*----------------------------------------------------------------------*
+ |  							                            	tk 11/07|
+ |Compute volume changes for constraint volumes in predictor			|
+ *----------------------------------------------------------------------*/
+void StruGenAlpha::PredictorErrorVolConstr()
+{
+	// -------------------------------------------------------------------
+	// get some parameters from parameter list
+	// -------------------------------------------------------------------
+	double time        = params_.get<double>("total time"     ,0.0);
+	double dt          = params_.get<double>("delta time"     ,0.01);
+	const Epetra_Map* dofrowmap = discret_.DofRowMap();
+
+	// increment time and step
+	double timen = time + dt;  // t_{n+1}
+
+	//Evaluate volume at predicted ENDpoint D_{n+1} 
+	{
+	    // zero out stiffness
+	    stiff_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+	    // create the parameters for the discretization
+	    ParameterList p;
+	    // action for elements
+	    p.set("action","calc_struct_volconstrstiff");
+	    // choose what to assemble
+	    p.set("assemble matrix 1",true);
+	    p.set("assemble matrix 2",false);
+	    p.set("assemble vector 1",true);
+	    p.set("assemble vector 2",true);
+	    p.set("assemble vector 3",false);
+	    // other parameters that might be needed by the elements
+	    p.set("total time",timen);
+	    p.set("delta time",dt);
+	    p.set("MinID",minConstrID_);
+	    p.set("MaxID",maxConstrID_);
+	    p.set("NumberofID",numConstrID_);
+	    p.set("LagrMultVector",lagrMultVec_);
+	    // set vector values needed by elements
+	    discret_.ClearState();
+	    discret_.SetState("residual displacement",disi_);
+	    discret_.SetState("displacement",disn_);
+	    //discret_.SetState("velocity",velm_); // not used at the moment
+	    fint_->PutScalar(0.0);  // initialise internal force vector
+	    constrVec_=LINALG::CreateVector(*dofrowmap,true);
+	    discret_.EvaluateCondition(p,stiff_,fint_,constrVec_,"VolumeConstraint_3D");
+	    this->SynchronizeVolConstraint(discret_.Comm(), p,actvol_,minConstrID_,maxConstrID_,numConstrID_);
+	    volerr_=rcp(new Epetra_SerialDenseVector(numConstrID_));
+	    fact_=p.get("LoadCurveFactor",1.0);
+	    referencevolumes_=rcp(new Epetra_SerialDenseVector(numConstrID_)); 
+	    *referencevolumes_=*startvolumes_;
+	    referencevolumes_->Scale(fact_);
+       	if (!myrank_)  
+       	{
+       		cout<<"New Reference Volume: "<<(*referencevolumes_)[0]<<endl;
+       	}
+	    for (int iter = 0; iter < numConstrID_; ++iter) 
+	    {
+    	  (*volerr_)[iter]=(*referencevolumes_)[iter]-(*actvol_)[iter];
+	    } 
+	    discret_.ClearState();
+	    // do NOT finalize the stiffness matrix, add mass and damping to it later
+	}	
+	return;
+}
+
+/*----------------------------------------------------------------------*
+ |  							                            	tk 11/07|
+ | Newton iteration respecting volume constraint.						|
+ | Uzawa algorithm is used to deal with lagrange multipliers			|
+ *----------------------------------------------------------------------*/
+void StruGenAlpha::FullNewtonUzawa()
+{
+  // -------------------------------------------------------------------
+  // get some parameters from parameter list
+  // -------------------------------------------------------------------
+  double time      = params_.get<double>("total time"             ,0.0);
+  double dt        = params_.get<double>("delta time"             ,0.01);
+  double timen     = time + dt;
+  int    maxiter   = params_.get<int>   ("max iterations"         ,10);
+  bool   damping   = params_.get<bool>  ("damping"                ,false);
+  double beta      = params_.get<double>("beta"                   ,0.292);
+  double gamma     = params_.get<double>("gamma"                  ,0.581);
+  double alpham    = params_.get<double>("alpha m"                ,0.378);
+  double alphaf    = params_.get<double>("alpha f"                ,0.459);
+  double toldisp   = params_.get<double>("tolerance displacements",1.0e-07);
+  bool printscreen = params_.get<bool>  ("print to screen",true);
+  bool printerr    = params_.get<bool>  ("print to err",false);
+  FILE* errfile    = params_.get<FILE*> ("err file",NULL);
+  if (!errfile) printerr = false;
+  const Epetra_Map* dofrowmap = discret_.DofRowMap();
+
+  // check whether we have a stiffness matrix, that is not filled yet
+  // and mass and damping are present
+  if (stiff_->Filled()) dserror("stiffness matrix may not be filled here");
+  if (!mass_->Filled()) dserror("mass matrix must be filled here");
+  if (damping)
+    if (!damp_->Filled()) dserror("damping matrix must be filled here");
+
+  //=================================================== equilibrium loop
+  int numiter=0;
+  double fresmnorm;
+  double disinorm;
+  fresm_->Norm2(&fresmnorm);
+  
+  double volnorm;
+  volnorm=volerr_->Norm2();
+  
+  while (((norm_>toldisp && fresmnorm>toldisp) || volnorm > toldisp )&& numiter<=maxiter)
+  {
+    //------------------------------------------- effective rhs is fresm
+    //---------------------------------------------- build effective lhs
+    // (using matrix stiff_ as effective matrix)
+    LINALG::Add(*mass_,false,(1.-alpham)/(beta*dt*dt),*stiff_,1.-alphaf);
+    if (damping)
+    {
+      LINALG::Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),*stiff_,1.0);
+    }
+    LINALG::Complete(*stiff_);
+
+    //----------------------- apply dirichlet BCs to system of equations
+    disi_->PutScalar(0.0);  // Useful? depends on solver and more
+    LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
+    
+  	//===================================================uzawa loop
+    // For every iteration step an uzawa algorithm is used to solve the linear system. 
+    //Preparation of uzawa method to solve the linear system.  
+    double norm_uzawa;
+    double norm_vol_uzawa;
+    int numiter_uzawa=0;
+    lagrMultInc_->Scale(0.0);
+    Epetra_Vector constrVecWeight(*constrVec_);
+    Epetra_SerialDenseVector dotprod(numConstrID_);
+    
+    // Compute residual of the uzawa algorithm
+    for (int foo = 0; foo < numConstrID_; ++foo) 
+  	{
+    	Epetra_Vector onlyvol_foo(*(voldofrowmaps_[foo]));
+	  	Epetra_Vector onlydis_foo(*(voldofrowmaps_[foo]));
+	  	Epetra_Import importer1(*(voldofrowmaps_[foo]),constrVec_->Map());
+	  	Epetra_Import importer3(*(voldofrowmaps_[foo]),disi_->Map());
+	  	onlyvol_foo.Import(*constrVec_,importer1,Insert);
+	  	onlydis_foo.Import(*disi_,importer3,Insert);
+	  	onlydis_foo.Dot(onlyvol_foo,&(dotprod[foo]));
+	  	onlyvol_foo.Scale(-(*lagrMultInc_)[foo]);
+	  	Epetra_Import importer2(constrVec_->Map(),*(voldofrowmaps_[foo]));
+	  	constrVecWeight.Import(onlyvol_foo,importer2,Insert);    
+  	}
+    
+    RCP<Epetra_Vector> fresmcopy=rcp(new Epetra_Vector(*fresm_));
+  	fresmcopy->Update(1.0,constrVecWeight,1.0);
+  	Epetra_Vector uzawa_res(*fresmcopy);
+  	(*stiff_).Multiply(false,*disi_,uzawa_res);
+  	uzawa_res.Update(1.0,*fresmcopy,-1.0);
+  	// blank residual DOFs which are on Dirichlet BC
+  	{
+  	    Epetra_Vector rescopy(uzawa_res);  
+  	    uzawa_res.Multiply(1.0,*invtoggle_,rescopy,0.0);
+  	}
+  	uzawa_res.Norm2(&norm_uzawa);
+  	
+  	Epetra_SerialDenseVector vol_res(numConstrID_);
+  	for (int foo = 0; foo < numConstrID_; ++foo) 
+  	{
+  	  vol_res[foo]=dotprod[foo]+(*volerr_)[foo];
+  	}
+  	norm_vol_uzawa=vol_res.Norm2();
+    
+    //Solve one iteration step with augmented lagrange
+  	//Since we calculate displacement norm as well, at least one step has to be taken
+    while (((norm_uzawa > toldisp||norm_vol_uzawa>toldisp) 
+    		&& numiter_uzawa < 2*maxiter)||numiter_uzawa<1)
+    {
+  	  	  
+	  	  LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresmcopy,zeros_,dirichtoggle_);
+	  	  // solve for disi
+	  	  // Solve K . IncD = -R  ===>  IncD_{n+1}
+	  	  if (numiter_uzawa==0&&numiter==0)
+	  	  {
+	  		  solver_.Solve(stiff_,disi_,fresmcopy,true,true);
+	  	  }
+	  	  else
+	  	  {
+	  		  solver_.Solve(stiff_,disi_,fresmcopy,true,false);
+	  	  }
+	  	  
+	  	  //compute lagrange multiplier increments
+	  	  const double alpha=1;
+	  	  
+	  	  
+	  	  for (int foo = 0; foo < numConstrID_; ++foo) 
+	  	  {
+	  		  Epetra_Vector onlyvol_foo(*(voldofrowmaps_[foo]));
+	  		  Epetra_Vector onlydis_foo(*(voldofrowmaps_[foo]));
+	  		  Epetra_Import importer1(*(voldofrowmaps_[foo]),constrVec_->Map());
+	  		  onlyvol_foo.Import(*constrVec_,importer1,Insert);
+	  		  onlydis_foo.Import(*disi_,importer1,Insert);
+	  		  onlydis_foo.Dot(onlyvol_foo,&(dotprod[foo]));
+	  		  (*lagrMultInc_)[foo]+=alpha*(dotprod[foo]+(*volerr_)[foo]);
+	  	  }
+	  	  //Compute residual of the uzawa algorithm
+	  	  constrVecWeight.PutScalar(0.0);
+	  	  for (int foo = 0; foo < numConstrID_; ++foo) 
+	  	  {
+	  		  Epetra_Vector onlyvol_foo(*(voldofrowmaps_[foo]));
+	  		  Epetra_Vector onlydis_foo(*(voldofrowmaps_[foo]));
+		      Epetra_Import importer1(*(voldofrowmaps_[foo]),constrVec_->Map());
+		      Epetra_Import importer3(*(voldofrowmaps_[foo]),disi_->Map());
+		      onlyvol_foo.Import(*constrVec_,importer1,Insert);
+		      onlyvol_foo.Scale(-(*lagrMultInc_)[foo]);
+		      onlydis_foo.Import(*disi_,importer3,Insert);
+		      Epetra_Import importer2(constrVec_->Map(),*(voldofrowmaps_[foo]));
+		      constrVecWeight.Import(onlyvol_foo,importer2,Insert);    
+	  	  }
+	  	  fresmcopy->Update(1.0,constrVecWeight,1.0,*fresm_,0.0);
+	  	  Epetra_Vector uzawa_res(*fresmcopy);
+	  	  (*stiff_).Multiply(false,*disi_,uzawa_res);
+	  	  uzawa_res.Update(1.0,*fresmcopy,-1.0);
+	  	  // blank residual DOFs which are on Dirichlet BC
+	  	  {
+	  	      Epetra_Vector rescopy(uzawa_res);  
+	  		  uzawa_res.Multiply(1.0,*invtoggle_,rescopy,0.0);
+	  	  }
+	  	  uzawa_res.Norm2(&norm_uzawa);
+	  	  Epetra_SerialDenseVector vol_res(numConstrID_);
+	  	  for (int foo = 0; foo < numConstrID_; ++foo) 
+	  	  {
+	  		  vol_res[foo]=dotprod[foo]+(*volerr_)[foo];
+	  	  }
+	  	  norm_vol_uzawa=vol_res.Norm2();
+	  	  numiter_uzawa++;	      	  
+    } //Uzawa loop
+    
+    if (!myrank_)
+    {
+    	cout<<"Uzawa steps"<<numiter_uzawa<<endl;
+    	cout<<norm_uzawa<<" "<<norm_vol_uzawa<<endl;
+    }
+    if (numiter_uzawa==maxiter)
+    {
+          dserror("Uzawa unconverged in %d iterations",numiter_uzawa);
+    }
+    
+    //update lagrange multiplier
+    for (int foo = 0; foo < numConstrID_; ++foo) 
+    {
+    	  (*lagrMultVec_)[foo]=(*lagrMultVec_)[foo]+(*lagrMultInc_)[foo];
+    } 
+    
+
+    //---------------------------------- update mid configuration values
+    // displacements
+    // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
+    dism_->Update(1.-alphaf,*disi_,1.0);
+    disn_->Update(1.,*disi_,1.0);
+    // velocities
+#ifndef STRUGENALPHA_INCRUPDT
+    // iterative
+    // V_{n+1-alpha_f} := V_{n+1-alpha_f}
+    //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
+    velm_->Update((1.-alphaf)*gamma/(beta*dt),*disi_,1.0);
+#else
+    // incremental (required for constant predictor)
+    velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+    velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
+                  (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
+                  gamma/(beta*dt));
+#endif
+    // accelerations
+#ifndef STRUGENALPHA_INCRUPDT
+    // iterative
+    // A_{n+1-alpha_m} := A_{n+1-alpha_m}
+    //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
+    accm_->Update((1.-alpham)/(beta*dt*dt),*disi_,1.0);
+#else
+    // incremental (required for constant predictor)
+    accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+    accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
+                  (2.*beta-1.+alpham)/(2.*beta),*acc_,
+                  (1.-alpham)/((1.-alphaf)*beta*dt*dt));
+#endif
+
+    //---------------------------- compute internal forces and stiffness
+    {
+      // zero out stiffness
+      stiff_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+      // create the parameters for the discretization
+      ParameterList p;
+      // action for elements
+      p.set("action","calc_struct_nlnstiff");
+      // choose what to assemble
+      p.set("assemble matrix 1",true);
+      p.set("assemble matrix 2",false);
+      p.set("assemble vector 1",true);
+      p.set("assemble vector 2",false);
+      p.set("assemble vector 3",false);
+      // other parameters that might be needed by the elements
+      p.set("total time",timen);
+      p.set("delta time",dt);
+      // set vector values needed by elements
+      discret_.ClearState();
+      discret_.SetState("residual displacement",disi_);
+      discret_.SetState("displacement",dism_);
+      //discret_.SetState("velocity",velm_); // not used at the moment
+      fint_->PutScalar(0.0);  // initialise internal force vector
+      discret_.Evaluate(p,stiff_,null,fint_,null,null);
+      discret_.ClearState();
+      p.set("action","calc_struct_volconstrstiff");
+      p.set("assemble vector 2",true);
+      p.set("MinID",minConstrID_);
+      p.set("MaxID",maxConstrID_);
+      p.set("NumberofID",numConstrID_);
+      p.set("LagrMultVector",lagrMultVec_);
+	  discret_.SetState("residual displacement",disi_);
+	  discret_.SetState("displacement",disn_);
+	  //discret_.SetState("velocity",velm_); // not used at the moment
+	  constrVec_->PutScalar(0.0);
+	  discret_.EvaluateCondition(p,stiff_,fint_,constrVec_,"VolumeConstraint_3D");
+	  this->SynchronizeVolConstraint(discret_.Comm(), p,actvol_,minConstrID_,maxConstrID_,numConstrID_);
+      for (int iter = 0; iter < numConstrID_; ++iter) 
+	  {
+		  (*volerr_)[iter]=(*referencevolumes_)[iter]-(*actvol_)[iter];
+	  } 
+	  discret_.ClearState();
+      // do NOT finalize the stiffness matrix to add masses to it later
+    }
+
+    //------------------------------------------ compute residual forces
+    // Res = M . A_{n+1-alpha_m}
+    //     + C . V_{n+1-alpha_f}
+    //     + F_int(D_{n+1-alpha_f})
+    //     - F_{ext;n+1-alpha_f}
+    // add inertia mid-forces
+    mass_->Multiply(false,*accm_,*fresm_);
+    // add viscous mid-forces
+    if (damping)
+    {
+      RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
+      damp_->Multiply(false,*velm_,*fviscm);
+      fresm_->Update(1.0,*fviscm,1.0);
+    }
+    // add static mid-balance
+    fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+    // blank residual DOFs that are on Dirichlet BC
+    {
+      Epetra_Vector fresmcopy(*fresm_);
+      fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
+    }
+
+    //---------------------------------------------- build residual norm
+    disi_->Norm2(&disinorm);
+
+    fresm_->Norm2(&fresmnorm);
+    
+    volnorm=volerr_->Norm2();
+    
+    // a short message
+    if (!myrank_)
+    {
+      if (printscreen)
+      {
+        printf("numiter %d res-norm %e dis-norm %e vol_norm %e\n",numiter+1, fresmnorm, disinorm, volnorm);
+        fflush(stdout);
+      }
+      if (printerr)
+      {
+        fprintf(errfile,"numiter %d res-norm %e dis-norm %e volnorm %e\n",numiter+1, fresmnorm, disinorm, volnorm);
+        fflush(errfile);
+      }
+    }
+    // criteria to stop Newton iteration
+    norm_ = disinorm;
+
+    //--------------------------------- increment equilibrium loop index
+    ++numiter;
+
+  } // while (norm_>toldisp && fresmnorm>toldisp && numiter<=maxiter)
+  //=================================================================== end equilibrium loop
+
+  //-------------------------------- test whether max iterations was hit
+  if (numiter>=maxiter)
+  {
+     dserror("Newton unconverged in %d iterations",numiter);
+  }
+  else
+  {
+     if ( (myrank_ ==  0) && (printscreen) )
+     {
+        printf("Newton iteration converged: numiter %d res-norm %e dis-norm %e\n", 
+               numiter+1, fresmnorm, disinorm);
+        fflush(stdout);
+     }  
+  }
+  params_.set<int>("num iterations",numiter);
+
+  //-------------------------------------- don't need this at the moment
+  stiff_ = null;
+
+  return;
+} // StruGenAlpha::FullNewton()
 
 /*----------------------------------------------------------------------*
  |  do modified Newton iteration (public)                    mwgee 03/07|
@@ -2304,7 +2712,20 @@ void StruGenAlpha::Integrate()
   else if (pred=="consistent") predictor = 2;
   else dserror("Unknown type of predictor");
 
-  if (equil=="full newton")
+  //in case a volume is constrained, do full newton together with an Uzawa algorithm
+  if (numConstrID_>0)
+  {
+	  for (int i=step; i<nstep; ++i)
+      {
+        if      (predictor==1) ConstantPredictor();
+        else if (predictor==2) ConsistentPredictor();
+        //Does predicted displacement satisfy volume constraint?
+        PredictorErrorVolConstr();
+        FullNewtonUzawa();
+        UpdateandOutput();
+      }	  
+  }  
+  else if (equil=="full newton")
   {
     for (int i=step; i<nstep; ++i)
     {
@@ -2528,6 +2949,101 @@ void StruGenAlpha::SetTimeStep(const int& stp)
 {
   params_.set<int>("step", stp);
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |                                                          tk 11/07    |
+ |small subroutine to synchronize processors after evaluating the       |
+ |constraint volume                                              		|
+ *----------------------------------------------------------------------*/
+void StruGenAlpha::SynchronizeVolConstraint(const Epetra_Comm& Comm, 
+								ParameterList& params,
+								RCP<Epetra_SerialDenseVector>& vect,
+								int& minID,
+								int& maxID,
+								int& numID)
+{
+	Comm.MaxAll(&(params.get("MaxID",0)),&maxID,1);
+	Comm.MinAll(&(params.get("MinID",100000)),&minID,1);
+	if (minID==100000)
+	{
+		minID=1;
+		numID=0;
+	}
+	else
+	{
+		numID=1+maxID-minID;
+		vect=rcp(new Epetra_SerialDenseVector(1+maxID-minID));
+		//vect->Size(1+maxID-minID);
+		for (int i = 0; i <= maxID-minID; ++i) 
+		{
+			char volname[30];	
+			sprintf(volname,"computed volume %d",i+1);
+			double currvol;
+			Comm.SumAll(&(params.get(volname,0.0)),&(currvol),1);
+			(*vect)[i]=currvol;
+		}
+	}
+	return;
+}
+
+/*----------------------------------------------------------------------*
+ |                                                          tk 11/07    |
+ |subroutine to setup separate dofrowmaps for any boundary condition ID |
+ |and to initialize lagrange multipliers								| 
+ *----------------------------------------------------------------------*/
+void StruGenAlpha::SetupVolDofrowmaps(DRT::Discretization& actdis,
+		  map<int, RCP<Epetra_Map> >& voldofrowmaps,
+		  int numconstID,
+		  const string& condstring)
+{  
+    // Allocate integer vectors which will hold the dof number of volume constraint dof
+    map<int, vector<int> > dofdata;
+
+    for (int iter = 0; iter < numconstID; ++iter) 
+    {
+		(dofdata[iter]).reserve(actdis.NumMyRowNodes()*3);
+	}
+
+    //loop over all my nodes
+    for (int i=0; i<actdis.NumMyRowNodes(); ++i)
+    {
+      DRT::Node* node = actdis.lRowNode(i);
+      //loop through the conditions and build dofdata vectors
+      DRT::Condition* cond = node->GetCondition(condstring);
+      if (cond)
+      {
+    	  const vector<int>*    CondIDVec  = cond->Get<vector<int> >("ConditionID");
+  		  int CondID=(*CondIDVec)[0];
+  		  
+  		  vector<int> dof = actdis.Dof(node);
+  		  int numdofs = dof.size();
+  		  for (int j=0; j<numdofs; ++j)
+  		  {
+  			  // add this dof to the dofdata vector
+  		  	  (dofdata[CondID-1]).push_back(dof[j]);
+  		  }//dof loop    
+    	  
+      }
+             
+    }
+    for (int voliter = 0; voliter < numconstID; ++voliter) 
+    {
+    	voldofrowmaps[voliter]= rcp(new Epetra_Map(-1,
+                                    dofdata[voliter].size(),&dofdata[voliter][0],0,
+                                    actdis.Comm()));
+    }
+		
+	//initialize lagrange multiplier vectors
+	if (numconstID>0)
+	{
+		lagrMultVec_=rcp(new Epetra_SerialDenseVector(numconstID));
+		lagrMultInc_=rcp(new Epetra_SerialDenseVector(numconstID));
+		lagrMultVec_->Scale(0.0);
+		lagrMultInc_->Scale(0.0);
+	}
+	
+	return;
 }
 
 #endif  // #ifdef CCADISCRET
