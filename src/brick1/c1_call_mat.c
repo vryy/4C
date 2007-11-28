@@ -159,6 +159,13 @@ dstrc_enter("c1_call_mat");
     					stress,
     					d);
   break;
+  case m_itskov:/*-- istskov incompressible law for biological tissues */
+    c1_mat_itskov(
+    					mat->m.itskov,
+    					disd,
+    					stress,
+    					d);
+  break;
   case m_viscohyper:
     c1_mat_ogden_viscous(
 		    ele,

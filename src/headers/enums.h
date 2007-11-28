@@ -267,7 +267,8 @@ typedef enum _MATERIAL_TYP
                        m_interf_therm, /* themodyn. based interface elasto-damage surface material*/
                        m_dam_mp,       /* isotropic damage model -> mazars/pijadier-cabot*/
                        m_damage_ge,     /* isotropic gradient enhanced damage model */
-		       m_hyper_polyconvex, /* hyperelastic polyconvex energy strain function */
+		               m_hyper_polyconvex, /* hyperelastic polyconvex energy strain function following Holzapfel*/
+		               m_itskov, /* hyperelastic polyconvex energy strain function following Itskov */
 		                   m_anisotropic_balzani,  /* anisotropic polyconvex material*/
                        m_th_fourier_iso,  /* isotropic (linear) Fourier's law of heat conduction */
                        m_th_fourier_gen,  /* general (linear) Fourier's law of heat conduction */

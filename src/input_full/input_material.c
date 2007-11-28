@@ -460,6 +460,18 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("GAMMA"   ,&(mat[i].m.hyper_polyconvex->gamma)    ,&ierr);
       frdouble("DENS"    ,&(mat[i].m.hyper_polyconvex->density)     ,&ierr);
    }
+   frchk("MAT_ITSKOV",&ierr);
+   if (ierr==1)
+   {
+      mat[i].mattyp      = m_itskov;
+      mat[i].m.itskov = (ITSKOV*)CCACALLOC(1,sizeof(ITSKOV));
+      frdouble("M"       ,&(mat[i].m.itskov->m)       ,&ierr);
+      frdouble("ALPHA"      ,&(mat[i].m.itskov->alpha)     ,&ierr);
+      frdouble("BETA"      ,&(mat[i].m.itskov->beta)        ,&ierr);
+      frdouble("EPSILON" ,&(mat[i].m.itskov->epsilon)    ,&ierr);
+      frdouble("GAMMA"   ,&(mat[i].m.itskov->gamma)    ,&ierr);
+      frdouble("DENS"    ,&(mat[i].m.itskov->density)     ,&ierr);
+   }
    /* Fourier's law of isotropic heat conduction --> heat cond. coeff. */
    frchk("MAT_Therm_Fourier_iso",&ierr);
    if (ierr==1)
