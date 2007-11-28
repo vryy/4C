@@ -188,7 +188,6 @@ protected:
     PostField* field_;
     string filename_;
 
-    map<string, vector<ofstream::pos_type> > resultfilepos_;
     vector<vector<int> > filesets_;
 
     //! maps a distype to the corresponding Ensight cell type

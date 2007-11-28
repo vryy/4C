@@ -52,7 +52,7 @@ void EnsightWriter::WriteFiles()
     if (result.next_result())
         soltime_.push_back(result.time());
     else
-      dserror("no solution found in field '%s'", field_->name().c_str());
+        dserror("no solution found in field '%s'", field_->name().c_str());
 
     while (result.next_result())
         soltime_.push_back(result.time());
@@ -389,20 +389,21 @@ string EnsightWriter::WriteResult(
     string filename = filename_ + "_"+ field_->name() + "."+ name;
     ofstream file(filename.c_str());
 
-    WriteResultStep(file, result, resultfilepos_, groupname, name, numdf, from);
+    map<string, vector<ofstream::pos_type> > resultfilepos;
+    WriteResultStep(file, result, resultfilepos, groupname, name, numdf, from);
     while (result.next_result())
     {
         const int indexsize = 80+2*sizeof(int)+(file.tellp()/stepsize+2)*sizeof(long);
         if (static_cast<long unsigned int>(file.tellp())+stepsize+indexsize>= FILE_SIZE_LIMIT)
         {
-            FileSwitcher(file, fileset, filesets_, resultfilepos_, stepsize, name, filename);
+            FileSwitcher(file, fileset, filesets_, resultfilepos, stepsize, name, filename);
         }
-        WriteResultStep(file, result, resultfilepos_, groupname, name, numdf, from);
+        WriteResultStep(file, result, resultfilepos, groupname, name, numdf, from);
     }
 
     // append index table
-    WriteIndexTable(file, resultfilepos_[name]);
-    resultfilepos_[name].clear();
+    WriteIndexTable(file, resultfilepos[name]);
+    resultfilepos[name].clear();
 
     if (fileset != 1)
     {

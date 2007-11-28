@@ -4,11 +4,11 @@
  \brief main routine of the Ensight filter
 
  <pre>
- Maintainer: Ulrich Kuettler
- kuettler@lnm.mw.tum.de
- http://www.lnm.mw.tum.de/Members/kuettler
- 089 - 289-15238
- </pre>
+  Maintainer: Axel Gerstenberger
+ gerstenberger@lnm.mw.tum.de
+ http://www.lnm.mw.tum.de/Members/gerstenberger
+ 089 - 289-15236
+  </pre>
 
  */
 
@@ -58,11 +58,100 @@ string XFluidEnsightWriter::WriteAllResults(
         PostField* field)
 {
     stringstream str;
-    str << WriteResult("velnp", "velocity", field->problem()->num_dim());
-    str << WriteResult("velnp", "pressure", 1, field->problem()->num_dim());
-    str << WriteResult("residual", "residual", field->problem()->num_dim());
+    str << EnsightWriter::WriteResult("velnp", "velocity", field->problem()->num_dim());
+    str << EnsightWriter::WriteResult("velnp", "pressure", 1, field->problem()->num_dim());
+    str << EnsightWriter::WriteResult("residual", "residual", field->problem()->num_dim());
+    
+    str << XFluidEnsightWriter::WriteResult("velnp", "velocity(physical)", field->problem()->num_dim());
+    str << XFluidEnsightWriter::WriteResult("velnp", "pressure(physical)", 1, field->problem()->num_dim());
+    str << XFluidEnsightWriter::WriteResult("residual", "residual(physical)", field->problem()->num_dim());
     return str.str();
 }
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void XFluidEnsightWriter::WriteFiles()
+{
+    // loop all results to get number of result timesteps
+    PostResult result = PostResult(field_);
+    vector<double> soltime_; // timesteps when the solution is written
+    if (result.next_result())
+        soltime_.push_back(result.time());
+    else
+        dserror("no solution found in field '%s'", field_->name().c_str());
+
+    while (result.next_result())
+        soltime_.push_back(result.time());
+
+    //
+    // now do the case file
+    //
+    const string casefilename = filename_ + "_"+ field_->name() + ".case";
+    ofstream casefile;
+    casefile.open(casefilename.c_str());
+    casefile << "# created using post_drt_ensight\n"<< "FORMAT\n\n"<< "type:\tensight gold\n";
+
+    //
+    // GEOMETRY section
+    //
+    const string geofilename = filename_ + "_"+ field_->name() + ".geo";
+    casefile << "\nGEOMETRY\n\n"<< "model:\t2\t2\t"<< geofilename<< "\n";
+    WriteGeoFile(geofilename);
+
+    //
+    // VARIABLE section
+    //
+    // whatever result we need, inside the variable entries in the case file are generated
+    casefile << "\nVARIABLE\n\n";
+    casefile << WriteAllResults(field_);
+
+    //
+    // TIME section
+    //
+    casefile << "\nTIME\n";
+
+    // write time steps for result file (time set 1)
+    casefile << "time set:\t\t1\n"<< "number of steps:\t"<< soltime_.size() << "\ntime values: ";
+    for (unsigned i=0; i<soltime_.size(); ++i)
+    {
+        casefile << soltime_[i]<< " ";
+        if (i%8==0&& i!=0)
+            casefile << "\n";
+    }
+    casefile << "\n\n";
+
+    // write time steps for geometry file (time set 2)
+    // at the moment, we can only print out the first step -> to be changed
+    vector<double> geotime_; // timesteps when the geometry is written
+    geotime_.push_back(soltime_[0]);
+    casefile << "time set:\t\t2\n"<< "number of steps:\t"<< geotime_.size() << "\ntime values: ";
+    for (unsigned i=0; i<geotime_.size(); ++i)
+    {
+        casefile << geotime_[i]<< " ";
+        if (i%8==0&& i!=0)
+            casefile << "\n";
+    }
+    casefile << "\n\n";
+
+    //
+    // FILE section
+    //
+    casefile << "FILE\n";
+    casefile << "file set:\t\t1\n"<< "number of steps:\t"<< soltime_.size()
+            << "\n\nfile set:\t\t2\n"<< "number of steps:\t"<< geotime_.size() << "\n\n";
+    for (unsigned int i = 0; i < filesets_.size(); ++i)
+    {
+        casefile << "\nfile set:\t\t"<< 3+i << "\n";
+        for (unsigned int j = 0; j < filesets_[i].size(); ++j)
+        {
+            casefile << "filename index:\t"<< 1+j << "\n"<< "number of steps:\t"<< filesets_[i][j]
+                    << "\n";
+        }
+    }
+
+    casefile.close();
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -89,20 +178,21 @@ string XFluidEnsightWriter::WriteResult(
     string filename = filename_ + "_"+ field_->name() + "."+ name;
     ofstream file(filename.c_str());
 
-    WriteResultStep(file, result, resultfilepos_, groupname, name, numdf, from);
+    map<string, vector<ofstream::pos_type> > resultfilepos;
+    WriteResultStep(file, result, resultfilepos, groupname, name, numdf, from);
     while (result.next_result())
     {
         const int indexsize = 80+2*sizeof(int)+(file.tellp()/stepsize+2)*sizeof(long);
         if (static_cast<long unsigned int>(file.tellp())+stepsize+indexsize>= FILE_SIZE_LIMIT)
         {
-            FileSwitcher(file, fileset, filesets_, resultfilepos_, stepsize, name, filename);
+            FileSwitcher(file, fileset, filesets_, resultfilepos, stepsize, name, filename);
         }
-        WriteResultStep(file, result, resultfilepos_, groupname, name, numdf, from);
+        WriteResultStep(file, result, resultfilepos, groupname, name, numdf, from);
     }
 
     // append index table
-    WriteIndexTable(file, resultfilepos_[name]);
-    resultfilepos_[name].clear();
+    WriteIndexTable(file, resultfilepos[name]);
+    resultfilepos[name].clear();
 
     if (fileset != 1)
     {
