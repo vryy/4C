@@ -305,6 +305,11 @@ public:
 
   // @{ \name Reader methods
 
+  //! get result times for a given fieldname
+  //
+  // \returns vector with timesteps when the solution was written
+  vector<double> get_result_times(const string& fieldname);
+  
   //! goes to the next result block in the slice
   //
   // Automatically opens new result files.

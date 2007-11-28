@@ -72,16 +72,11 @@ string XFluidEnsightWriter::WriteAllResults(
 /*----------------------------------------------------------------------*/
 void XFluidEnsightWriter::WriteFiles()
 {
-    // loop all results to get number of result timesteps
+    
     PostResult result = PostResult(field_);
-    vector<double> soltime; // timesteps when the solution is written
-    if (result.next_result())
-        soltime.push_back(result.time());
-    else
-        dserror("no solution found in field '%s'", field_->name().c_str());
-
-    while (result.next_result())
-        soltime.push_back(result.time());
+    
+    // timesteps when the solution is written
+    const vector<double> soltime = result.get_result_times(field_->name());
 
     //
     // now do the case file
@@ -111,27 +106,13 @@ void XFluidEnsightWriter::WriteFiles()
     casefile << "\nTIME\n";
 
     // write time steps for result file (time set 1)
-    casefile << "time set:\t\t1\n"<< "number of steps:\t"<< soltime.size() << "\ntime values: ";
-    for (unsigned i=0; i<soltime.size(); ++i)
-    {
-        casefile << soltime[i]<< " ";
-        if (i%8==0&& i!=0)
-            casefile << "\n";
-    }
-    casefile << "\n\n";
+    casefile << GetTimeSectionString(1, soltime);
 
     // write time steps for geometry file (time set 2)
     // at the moment, we can only print out the first step -> to be changed
     vector<double> geotime; // timesteps when the geometry is written
     geotime.push_back(soltime[0]);
-    casefile << "time set:\t\t2\n"<< "number of steps:\t"<< geotime.size() << "\ntime values: ";
-    for (unsigned i=0; i<geotime.size(); ++i)
-    {
-        casefile << geotime[i]<< " ";
-        if (i%8==0&& i!=0)
-            casefile << "\n";
-    }
-    casefile << "\n\n";
+    casefile << GetTimeSectionString(2, geotime);
 
     //
     // FILE section

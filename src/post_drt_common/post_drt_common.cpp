@@ -822,6 +822,22 @@ PostResult::~PostResult()
   close_result_files();
 }
 
+/*----------------------------------------------------------------------*
+ * get timesteps when the solution is written
+ *----------------------------------------------------------------------*/
+vector<double> PostResult::get_result_times(const string& fieldname)
+{
+    vector<double> times; // timesteps when the solution is written
+
+    if (this->next_result())
+        times.push_back(this->time());
+    else
+        dserror("no solution found in field '%s'", fieldname.c_str());
+
+    while (this->next_result())
+        times.push_back(this->time());
+    return times;
+}
 
 /*----------------------------------------------------------------------*
  * loads the next result block and opens new result files if there are

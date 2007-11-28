@@ -184,7 +184,13 @@ protected:
     int GetNumEleOutput(
             const DRT::Element::DiscretizationType distype,
             const int numele) const;
-
+    
+    //! create string for one TIME section in the case file
+    string GetTimeSectionString(
+            const int timeset,            ///< number of timeset to be written
+            const vector<double>& times   ///< vector with time value for each time step
+            ) const;
+    
     PostField* field_;
     string filename_;
 
