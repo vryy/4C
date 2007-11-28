@@ -140,7 +140,7 @@ public:
 
   \param id (in): a unique id for this condition
   \param type (in): type of the condition
-  \param buildgeometry (in): flag indicating whether explicit condition geometry 
+  \param buildgeometry (in): flag indicating whether explicit condition geometry
                              (elements) have to be build
   \param gtype (in): ype of geometric entity this condition lives on
 
@@ -200,6 +200,11 @@ public:
   \brief Return condition id
   */
   inline virtual int Id() const { return id_; }
+
+  /*!
+  \brief Return vector of my global node ids
+  */
+  const vector<int>* Nodes() const { return Get<vector<int> >("Node Ids"); }
 
   /*!
   \brief Return flag indicating whether this condition needs to build a geometry
