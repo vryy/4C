@@ -691,10 +691,12 @@ void IO::DiscretizationWriter::WriteVector(const string name, RefCountPtr<Epetra
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *                                                          a.ger 11/07 *
+ *----------------------------------------------------------------------*/
 void IO::DiscretizationWriter::WriteCondition(const string condname) const
 {
+#ifdef BINIO
   // put condition into block
   RefCountPtr<vector<char> > block = dis_->PackCondition(condname);
 
@@ -712,6 +714,7 @@ void IO::DiscretizationWriter::WriteCondition(const string condname) const
     if (status < 0)
       dserror("Failed to create dataset in HDF-meshfile");
   }
+#endif
 }
 
 /*----------------------------------------------------------------------*/
@@ -751,12 +754,12 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
   // ... write other mesh informations
   if (dis_->Comm().MyPID() == 0)
   {
-#if 1
+
     WriteCondition("SurfacePeriodic");
     WriteCondition("LinePeriodic");
 
     WriteCondition("XFEMCoupling");
-#endif
+
     fprintf(cf_,
             "field:\n"
             "    field = \"%s\"\n"
