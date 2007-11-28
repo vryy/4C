@@ -74,6 +74,8 @@ extern struct _IO_FLAGS     ioflags;
 extern Teuchos::RefCountPtr<Teuchos::ParameterList> globalparameterlist;
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
   : comm_(comm),
     counter_(7)
@@ -175,6 +177,21 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::DirichletNeumannCoupling::ReadRestart(int step)
+{
+  structure_->ReadRestart(step);
+  fluid_->ReadRestart(step);
+  ale_->ReadRestart(step);
+
+  time_ = fluid_->time();
+  step_ = fluid_->step();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FSI::DirichletNeumannCoupling::SetupStructure()
 {
   // -------------------------------------------------------------------
@@ -236,17 +253,59 @@ void FSI::DirichletNeumannCoupling::SetupStructure()
   genalphaparams->set<int>   ("io disp every nstep",sdyn->updevry_disp);
   genalphaparams->set<bool>  ("io structural stress",ioflags.struct_stress);
   genalphaparams->set<int>   ("io stress every nstep",sdyn->updevry_stress);
+
+  genalphaparams->set<int>   ("restart",genprob.restart);
+  genalphaparams->set<int>   ("write restart every",fsidyn->uprestart);
+
   genalphaparams->set<bool>  ("print to screen",true);
   genalphaparams->set<bool>  ("print to err",true);
   genalphaparams->set<FILE*> ("err file",allfiles.out_err);
 
-  // takes values "full newton" , "modified newton" , "nonlinear cg"
-  genalphaparams->set<string>("equilibrium iteration","full newton");
+  switch (sdyn->nlnSolvTyp)
+  {
+  case STRUCT_DYNAMIC::fullnewton:
+    genalphaparams->set<string>("equilibrium iteration","full newton");
+    break;
+  case STRUCT_DYNAMIC::modnewton:
+    genalphaparams->set<string>("equilibrium iteration","modified newton");
+    break;
+  case STRUCT_DYNAMIC::matfreenewton:
+    genalphaparams->set<string>("equilibrium iteration","matrixfree newton");
+    break;
+  case STRUCT_DYNAMIC::nlncg:
+    genalphaparams->set<string>("equilibrium iteration","nonlinear cg");
+    break;
+  case STRUCT_DYNAMIC::ptc:
+    genalphaparams->set<string>("equilibrium iteration","ptc");
+    break;
+  default:
+    genalphaparams->set<string>("equilibrium iteration","full newton");
+    break;
+  }
+
+  // set predictor (takes values "constant" "consistent")
+  switch (sdyn->predtype)
+  {
+  case STRUCT_DYNAMIC::pred_vague:
+    dserror("You have to define the predictor");
+    break;
+  case STRUCT_DYNAMIC::pred_constdis:
+    genalphaparams->set<string>("predictor","consistent");
+    break;
+  case STRUCT_DYNAMIC::pred_constdisvelacc:
+    genalphaparams->set<string>("predictor","constant");
+    break;
+  default:
+    dserror("Cannot cope with choice of predictor");
+    break;
+  }
 
   structure_ = rcp(new Structure(genalphaparams,actdis,solver,output));
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FSI::DirichletNeumannCoupling::SetupFluid()
 {
   // -------------------------------------------------------------------
@@ -318,7 +377,7 @@ void FSI::DirichletNeumannCoupling::SetupFluid()
 
   // ----------------------------------------------- restart and output
   // restart
-  fluidtimeparams->set                 ("write restart every"       ,fdyn->uprestart);
+  fluidtimeparams->set                 ("write restart every"       ,fsidyn->uprestart);
   // solution output
   fluidtimeparams->set                 ("write solution every"      ,fdyn->upres);
   // flag for writing stresses
@@ -338,6 +397,8 @@ void FSI::DirichletNeumannCoupling::SetupFluid()
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FSI::DirichletNeumannCoupling::SetupAle()
 {
   // -------------------------------------------------------------------
@@ -356,14 +417,14 @@ void FSI::DirichletNeumannCoupling::SetupAle()
   // -------------------------------------------------------------------
   RefCountPtr<IO::DiscretizationWriter> output =
     rcp(new IO::DiscretizationWriter(actdis));
-  //output->WriteMesh(0,0.0);
+  output->WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------
   // set some pointers and variables
   // -------------------------------------------------------------------
   SOLVAR        *actsolv  = &solv[genprob.numaf];
 
-  FSI_DYNAMIC *fsidyn     = alldyn[3].fsidyn;
+  FSI_DYNAMIC *fsidyn   = alldyn[3].fsidyn;
   ALE_DYNAMIC *adyn     = alldyn[genprob.numaf].adyn;
   adyn->step            =   0;
   adyn->time            = 0.0;
@@ -382,10 +443,16 @@ void FSI::DirichletNeumannCoupling::SetupAle()
   params->set<double>("maxtime", fsidyn->maxtime);
   params->set<double>("dt", fsidyn->dt);
 
+  // ----------------------------------------------- restart and output
+  // restart
+  params->set<int>("write restart every", fsidyn->uprestart);
+
   ale_ = rcp(new AleLinear(actdis, solver, params, output));
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Interface::Required>& interface)
 {
   bool secondsolver = false;
@@ -666,6 +733,8 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RefCountPtr<NOX::Epetra::LinearSystem>
 FSI::DirichletNeumannCoupling::CreateLinearSystem(ParameterList& nlParams,
                                                   const Teuchos::RefCountPtr<NOX::Epetra::Interface::Required>& interface,
@@ -876,6 +945,8 @@ FSI::DirichletNeumannCoupling::CreateLinearSystem(ParameterList& nlParams,
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RefCountPtr<NOX::StatusTest::Combo>
 FSI::DirichletNeumannCoupling::CreateStatusTest(ParameterList& nlParams,
                                                 Teuchos::RefCountPtr<NOX::Epetra::Group> grp)
@@ -916,6 +987,8 @@ FSI::DirichletNeumannCoupling::CreateStatusTest(ParameterList& nlParams,
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::InterfaceDisp()
 {
   // extract displacements
@@ -923,6 +996,8 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::InterfaceDisp
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::InterfaceForce()
 {
   // extract forces
@@ -930,6 +1005,8 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::InterfaceForc
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag)
 {
   char* flags[] = { "Residual", "Jac", "Prec", "FD_Res", "MF_Res", "MF_Jac", "User", NULL };
@@ -1063,6 +1140,8 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RefCountPtr<Epetra_Vector>
 FSI::DirichletNeumannCoupling::FluidOp(Teuchos::RefCountPtr<Epetra_Vector> idisp,
                                        const FillType fillFlag)
@@ -1120,6 +1199,8 @@ FSI::DirichletNeumannCoupling::FluidOp(Teuchos::RefCountPtr<Epetra_Vector> idisp
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RefCountPtr<Epetra_Vector>
 FSI::DirichletNeumannCoupling::StructOp(Teuchos::RefCountPtr<Epetra_Vector> iforce,
                                         const FillType fillFlag)
@@ -1142,6 +1223,8 @@ FSI::DirichletNeumannCoupling::StructOp(Teuchos::RefCountPtr<Epetra_Vector> ifor
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::InterfaceVelocity(Teuchos::RefCountPtr<Epetra_Vector> idispnp)
 {
   Teuchos::RefCountPtr<Epetra_Vector> ivel = rcp(new Epetra_Vector(*idispn_));
@@ -1150,6 +1233,9 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::InterfaceVelo
   return ivel;
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::StructToAle(Teuchos::RefCountPtr<Epetra_Vector> iv)
 {
   if (matchingnodes_)
@@ -1165,6 +1251,8 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::StructToAle(T
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::StructToFluid(Teuchos::RefCountPtr<Epetra_Vector> iv)
 {
   if (matchingnodes_)
@@ -1178,6 +1266,8 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::StructToFluid
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::FluidToStruct(Teuchos::RefCountPtr<Epetra_Vector> iv)
 {
   if (matchingnodes_)
@@ -1198,12 +1288,16 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::FluidToStruct
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::AleToFluid(Teuchos::RefCountPtr<Epetra_Vector> iv)
 {
   return coupfa_.SlaveToMaster(iv);
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FSI::DirichletNeumannCoupling::PrepareTimeStep()
 {
   step_ += 1;
@@ -1219,6 +1313,9 @@ void FSI::DirichletNeumannCoupling::PrepareTimeStep()
   ale_->      PrepareTimeStep();
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FSI::DirichletNeumannCoupling::Update()
 {
   structure_->UpdateandOutput();
@@ -1227,10 +1324,12 @@ void FSI::DirichletNeumannCoupling::Update()
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FSI::DirichletNeumannCoupling::Output()
 {
   fluid_->Output();
-  //ale_  ->Output();
+  ale_  ->Output();
 }
 
 

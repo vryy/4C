@@ -107,6 +107,13 @@ public:
 
   //@}
 
+  //! @name Access to current time step for restart
+
+  double time() const { return time_; }
+  int step() const { return step_; }
+
+  //@}
+
 private:
 
   /// interface dof map

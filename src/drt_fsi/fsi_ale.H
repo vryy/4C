@@ -105,6 +105,10 @@ public:
   virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() = 0;
 
   //@}
+
+  /// read restart for given step
+  virtual void ReadRestart(int step) = 0;
+
 };
 
 
@@ -167,6 +171,9 @@ public:
 
   //@}
 
+  /// read restart for given step
+  virtual void ReadRestart(int step);
+
 private:
 
   //! @name local copies of input parameters
@@ -191,8 +198,8 @@ private:
   //Teuchos::RCP<Epetra_Vector>    zeros_;
 
   Teuchos::RCP<Epetra_Vector>    dispnp_;
-  Teuchos::RCP<Epetra_Vector>    dispn_;
-  Teuchos::RCP<Epetra_Vector>    dispnm_;
+  //Teuchos::RCP<Epetra_Vector>    dispn_;
+  //Teuchos::RCP<Epetra_Vector>    dispnm_;
 
   Teuchos::RCP<Epetra_Vector>    residual_;
   //@}
@@ -203,7 +210,7 @@ private:
   /// communicator between interface dof map and field dof map
   Teuchos::RCP<Epetra_Import> extractor_;
 
-  /// what a hack
+  /// what a hack (monolithic FSI only)
   Teuchos::RCP<Epetra_Vector> sumdisi_;
 
 private:
@@ -215,6 +222,12 @@ private:
   bool haveF_;
   bool haveJacobian_;
   //@}
+
+  //! @name restart
+  int restartstep_;
+  int uprestart_;
+  //@}
+
 };
 }
 

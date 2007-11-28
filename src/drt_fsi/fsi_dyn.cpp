@@ -254,6 +254,20 @@ void CreateAleDiscretization()
   }
 
   // now care about the parallel distribution
+  //
+
+  // Right now all fluid elements must be ale enabled, otherwise we
+  // get a very nasty parallel bug!
+
+#if 0
+  // At first make sure we have the same starting point on all
+  // processors! This is cruical as the ALE field might be smaller
+  // than the fluid field and there might be processors that do not
+  // have ALE nodes and elements. These are not reset yet!
+
+  aledis->Reset();
+#endif
+
   // redistribute nodes to column (ghost) map
 
   aledis->ExportColumnNodes(*alenodecolmap);
@@ -299,6 +313,13 @@ void fsi_ale_drt()
   if (true)
   {
     Teuchos::RefCountPtr<FSI::DirichletNeumannCoupling> fsi = rcp(new FSI::DirichletNeumannCoupling(comm));
+
+    if (genprob.restart)
+    {
+      // read the restart information, set vectors and variables
+      fsi->ReadRestart(genprob.restart);
+    }
+
     fsi->Timeloop(fsi);
 
 #ifdef RESULTTEST

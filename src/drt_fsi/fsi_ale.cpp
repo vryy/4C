@@ -45,7 +45,9 @@ FSI::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
     maxentriesperrow_(81),
     sysmat_(null),
     haveF_(false),
-    haveJacobian_(false)
+    haveJacobian_(false),
+    restartstep_(0),
+    uprestart_(params->get("write restart every", -1))
 {
   nstep_   = params_->get<int>("nstep");
   maxtime_ = params_->get<double>("maxtime");
@@ -54,8 +56,8 @@ FSI::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   dispnp_         = LINALG::CreateVector(*dofrowmap,true);
-  dispn_          = LINALG::CreateVector(*dofrowmap,true);
-  dispnm_         = LINALG::CreateVector(*dofrowmap,true);
+  //dispn_          = LINALG::CreateVector(*dofrowmap,true);
+  //dispnm_         = LINALG::CreateVector(*dofrowmap,true);
 
   residual_       = LINALG::CreateVector(*dofrowmap,true);
 
@@ -124,12 +126,24 @@ void FSI::AleLinear::Update()
  *----------------------------------------------------------------------*/
 void FSI::AleLinear::Output()
 {
-#if 1
-  // currently we do not need any output -- the fluid writes its
-  // displacements itself.
+  // We do not need any output -- the fluid writes its
+  // displacements itself. But we need restart.
+
+  restartstep_ += 1;
+
   output_->NewStep    (step_,time_);
-  output_->WriteVector("dispnp", dispnp_);
-#endif
+
+  if (restartstep_ == uprestart_)
+  {
+    restartstep_ = 0;
+
+    // add restart data
+    // do we need any variables at all?
+
+    output_->WriteVector("dispnp", dispnp_);
+    //output_->WriteVector("dispn",  dispn_);
+    //output_->WriteVector("dispnm", dispnm_);
+  }
 }
 
 
@@ -258,6 +272,22 @@ Teuchos::RCP<Epetra_Vector> FSI::AleLinear::StructCondRHS()
   if (err)
     dserror("Import using importer returned err=%d",err);
   return idispnp;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FSI::AleLinear::ReadRestart(int step)
+{
+  IO::DiscretizationReader reader(discret_,step);
+  time_ = reader.ReadDouble("time");
+  step_ = reader.ReadInt("step");
+
+  // What variables do we need?
+
+  reader.ReadVector(dispnp_, "dispnp");
+  //reader.ReadVector(dispn_,  "dispn");
+  //reader.ReadVector(dispnm_, "dispnm");
 }
 
 

@@ -110,6 +110,9 @@ public:
   /// setup FSI algorithm
   DirichletNeumannCoupling(Epetra_Comm& comm);
 
+  /// read restart data
+  void ReadRestart(int step);
+
   /// outer level FSI time loop
   void Timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Interface::Required>& interface);
 
