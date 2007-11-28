@@ -761,7 +761,7 @@ void PostProblem::setup_ghosting(RefCountPtr<DRT::Discretization> dis)
  *----------------------------------------------------------------------*/
 PostField::PostField(string name, RefCountPtr<Epetra_Comm> comm,
                      PostProblem* problem, int field_pos, string field_name,
-                     FIELDTYP type, int disnum, int numnd, int numele):
+                     FIELDTYP type, int disnum, const int numnd, const int numele):
   dis_(rcp(new DRT::Discretization(name,comm))),
   problem_(problem),
   field_pos_(field_pos),
@@ -779,7 +779,7 @@ PostField::PostField(string name, RefCountPtr<Epetra_Comm> comm,
  *----------------------------------------------------------------------*/
 PostField::PostField(RefCountPtr<DRT::Discretization> dis, PostProblem* problem,
                      int field_pos, string field_name, FIELDTYP type,
-                     int disnum, int numnd, int numele)
+                     int disnum, const int numnd, const int numele)
   : dis_(dis),
     problem_(problem),
     field_pos_(field_pos),
@@ -885,7 +885,7 @@ int PostResult::next_result()
   \date 10/04
 */
 /*----------------------------------------------------------------------*/
-int PostResult::match_field_result(MAP* result_group)
+int PostResult::match_field_result(MAP* result_group) const
 {
   return (strcmp(map_read_string(result_group, "field"),
                  fieldnames[field_->type()]) == 0) &&
@@ -921,7 +921,7 @@ void PostResult::open_result_files(MAP* field_info)
  * reads the data of the result vector 'name' from the current result
  * block and returns it as an Epetra Vector.
  *----------------------------------------------------------------------*/
-RefCountPtr<Epetra_Vector> PostResult::read_result(string name)
+RefCountPtr<Epetra_Vector> PostResult::read_result(const string name)
 {
   RefCountPtr<Epetra_Comm> comm = field_->problem()->comm();
   MAP* result = map_read_map(group_, const_cast<char*>(name.c_str()));

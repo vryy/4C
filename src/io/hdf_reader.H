@@ -96,19 +96,16 @@ public:
   */
   RefCountPtr<std::vector<char> > ReadNodeData(int step, int new_proc_num=0, int my_id=0);
 
-#if 1
-/*!reads the packed periodic boundary condition data from the mesh files
- *!
-  Note: this function should only be called when the HDFReader opened
-  the mesh files
- *----------------------------------------------------------------------*/
-RefCountPtr<std::vector<char> > ReadCondition(
+  /*!reads the packed periodic boundary condition data from the mesh files
+   *!
+    Note: this function should only be called when the HDFReader opened
+    the mesh files
+   *----------------------------------------------------------------------*/
+  RefCountPtr<std::vector<char> > ReadCondition(
         const int step,
         const int new_proc_num,
         const int my_id,
         const string condname);
-#endif
-
 
   //! read an Epetra_Vector from the result files
   /*!
@@ -129,7 +126,7 @@ private:
     returns all the data in one vector. The data is assumed to by of type char.
    */
   RefCountPtr<std::vector<char> > ReadCharData(std::string path,
-                                               int start=0, int end=-1);
+                                               int start=0, int end=-1) const;
 
   //! reads the dataset 'path' in all the files in the range [start,end)
   /*!
@@ -137,7 +134,7 @@ private:
     returns all the data in one vector<int>
   */
   RefCountPtr<std::vector<int> > ReadIntData(std::string path,
-                                             int start=0, int end=-1);
+                                             int start=0, int end=-1) const;
 
   //! reads the dataset 'path' in all the files in the range [start,end)
   /*!
@@ -145,7 +142,7 @@ private:
     read.
   */
   RefCountPtr<std::vector<double> > ReadDoubleData(std::string path,
-                                                   int start=0, int end=-1);
+                                                   int start=0, int end=-1) const;
 
   //! Figure out which subset of files this process needs to read
   /*!

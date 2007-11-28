@@ -120,21 +120,21 @@ public:
   int num_discr();
 
   //! returns the number of dimensions the problem has
-  int num_dim() { return ndim_; }
+  int num_dim() const { return ndim_; }
 
   //! returns a pointer to the num-th discretization
   PostField* get_discretization(int num);
 
-  int num_output_procs();
+  int num_output_procs() const;
 
   //! returns the first step in the range, that the user specified
-  int start() { return start_; }
+  int start() const { return start_; }
 
   //! returns the last step in the range, that the user specified
-  int end() { return end_; }
+  int end() const { return end_; }
 
   //! returns the step parameter the user specified
-  int step() { return step_; }
+  int step() const { return step_; }
 
   RefCountPtr<Epetra_Comm> comm();
 
@@ -225,10 +225,10 @@ public:
 
   PostField(string name, RefCountPtr<Epetra_Comm> comm, PostProblem* problem,
             int field_pos, string field_name, FIELDTYP type, int disnum,
-            int numnd, int numele);
+            const int numnd, const int numele);
   PostField(RefCountPtr<DRT::Discretization> dis, PostProblem* problem,
             int field_pos, string field_name, FIELDTYP type, int disnum,
-            int numnd, int numele);
+            const int numnd, const int numele);
 
   ~PostField();
 
@@ -240,34 +240,34 @@ public:
   RefCountPtr<DRT::Discretization> discretization() { return dis_; }
 
   //! returns the number of output processors
-  int num_output_procs() { return num_output_procs_; }
+  int num_output_procs() const { return num_output_procs_; }
 
   //! set the number of output processors
-  void set_num_output_procs(int num) { num_output_procs_ = num; }
+  void set_num_output_procs(const int num) { num_output_procs_ = num; }
 
   //! returns the number of global Dof-Ids
-  int global_id_num() { return dis_->DofRowMap()->NumGlobalElements(); }
+  int global_id_num() const { return dis_->DofRowMap()->NumGlobalElements(); }
 
   //! returns the number of the discretization stored in this field
-  int disnum() { return disnum_; }
+  int disnum() const { return disnum_; }
 
   //! returns the PostProbem instance
   PostProblem* problem() { return problem_; }
 
   //! returns the index of this field
-  int field_pos() { return field_pos_; }
+  int field_pos() const { return field_pos_; }
 
   //! returns the name of the field
-  string name() { return field_name_; }
+  string name() const { return field_name_; }
 
   //! returns the type of this field
-  FIELDTYP type() { return type_; }
+  FIELDTYP type() const { return type_; }
 
   //! returns the number of nodes
-  int num_nodes() { return numnd_; }
+  int num_nodes() const { return numnd_; }
 
   //! returns the number of elements
-  int num_elements() { return numele_; }
+  int num_elements() const { return numele_; }
 
   //@}
 
@@ -317,7 +317,7 @@ public:
   // \param name (in): result vector name inside the control file
   //
   // \returns vector with results read
-  RefCountPtr<Epetra_Vector> read_result(string name);
+  RefCountPtr<Epetra_Vector> read_result(const string name);
 
   //@}
 
@@ -330,10 +330,10 @@ public:
   MAP* group() { return group_; }
 
   //! returns time of this result
-  double time() { return map_read_real(group_, "time"); }
+  double time() const { return map_read_real(group_, "time"); }
 
   //! returns step number of this result
-  int step() { return map_read_int(group_, "step"); }
+  int step() const { return map_read_int(group_, "step"); }
 
   //@}
 private:
@@ -350,7 +350,7 @@ private:
   void open_result_files(MAP* field_info);
 
   //! Tell whether a given result group belongs to this result.
-  int match_field_result(MAP* result_group);
+  int match_field_result(MAP* result_group) const;
 
   PostField* field_;
   int pos_;

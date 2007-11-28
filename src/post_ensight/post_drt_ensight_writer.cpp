@@ -48,14 +48,14 @@ void EnsightWriter::WriteFiles()
 {
     // loop all results to get number of result timesteps
     PostResult result = PostResult(field_);
-    vector<double> soltime_; // timesteps when the solution is written
+    vector<double> soltime; // timesteps when the solution is written
     if (result.next_result())
-        soltime_.push_back(result.time());
+        soltime.push_back(result.time());
     else
         dserror("no solution found in field '%s'", field_->name().c_str());
 
     while (result.next_result())
-        soltime_.push_back(result.time());
+        soltime.push_back(result.time());
 
     //
     // now do the case file
@@ -85,10 +85,10 @@ void EnsightWriter::WriteFiles()
     casefile << "\nTIME\n";
 
     // write time steps for result file (time set 1)
-    casefile << "time set:\t\t1\n"<< "number of steps:\t"<< soltime_.size() << "\ntime values: ";
-    for (unsigned i=0; i<soltime_.size(); ++i)
+    casefile << "time set:\t\t1\n"<< "number of steps:\t"<< soltime.size() << "\ntime values: ";
+    for (unsigned i=0; i<soltime.size(); ++i)
     {
-        casefile << soltime_[i]<< " ";
+        casefile << soltime[i]<< " ";
         if (i%8==0&& i!=0)
             casefile << "\n";
     }
@@ -96,12 +96,12 @@ void EnsightWriter::WriteFiles()
 
     // write time steps for geometry file (time set 2)
     // at the moment, we can only print out the first step -> to be changed
-    vector<double> geotime_; // timesteps when the geometry is written
-    geotime_.push_back(soltime_[0]);
-    casefile << "time set:\t\t2\n"<< "number of steps:\t"<< geotime_.size() << "\ntime values: ";
-    for (unsigned i=0; i<geotime_.size(); ++i)
+    vector<double> geotime; // timesteps when the geometry is written
+    geotime.push_back(soltime[0]);
+    casefile << "time set:\t\t2\n"<< "number of steps:\t"<< geotime.size() << "\ntime values: ";
+    for (unsigned i=0; i<geotime.size(); ++i)
     {
-        casefile << geotime_[i]<< " ";
+        casefile << geotime[i]<< " ";
         if (i%8==0&& i!=0)
             casefile << "\n";
     }
@@ -111,8 +111,8 @@ void EnsightWriter::WriteFiles()
     // FILE section
     //
     casefile << "FILE\n";
-    casefile << "file set:\t\t1\n"<< "number of steps:\t"<< soltime_.size()
-            << "\n\nfile set:\t\t2\n"<< "number of steps:\t"<< geotime_.size() << "\n\n";
+    casefile << "file set:\t\t1\n"<< "number of steps:\t"<< soltime.size()
+            << "\n\nfile set:\t\t2\n"<< "number of steps:\t"<< geotime.size() << "\n\n";
     for (unsigned int i = 0; i < filesets_.size(); ++i)
     {
         casefile << "\nfile set:\t\t"<< 3+i << "\n";

@@ -150,7 +150,7 @@ RefCountPtr<std::vector<char> > IO::HDFReader::ReadNodeData(int step, int new_pr
  * of type char (private)
  *----------------------------------------------------------------------*/
 RefCountPtr<std::vector<char> >
-IO::HDFReader::ReadCharData(string path, int start, int end)
+IO::HDFReader::ReadCharData(string path, int start, int end) const
 {
   if (end == -1)
     end = num_output_proc_;
@@ -195,7 +195,7 @@ IO::HDFReader::ReadCharData(string path, int start, int end)
  * and returns all the data in one vector<int> (private)
  *----------------------------------------------------------------------*/
 RefCountPtr<std::vector<int> >
-IO::HDFReader::ReadIntData(string path, int start, int end)
+IO::HDFReader::ReadIntData(string path, int start, int end) const
 {
   if (end == -1)
     end = num_output_proc_;
@@ -238,7 +238,7 @@ IO::HDFReader::ReadIntData(string path, int start, int end)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 RefCountPtr<std::vector<double> >
-IO::HDFReader::ReadDoubleData(string path, int start, int end)
+IO::HDFReader::ReadDoubleData(string path, int start, int end) const
 {
   if (end == -1)
     end = num_output_proc_;
