@@ -1167,9 +1167,12 @@ void XFluidImplicitTimeInt::Output()
       }
       
       // solid
-      solidoutput_.NewStep    (step_,time_);
-      soliddispnp_->PutScalar(0.0);
-      solidoutput_.WriteVector("soliddispnp", soliddispnp_);
+      if (cutterdiscret_->NumGlobalElements() > 0)
+      {
+          solidoutput_.NewStep    (step_,time_);
+          soliddispnp_->PutScalar(0.0);
+          solidoutput_.WriteVector("soliddispnp", soliddispnp_);
+      }
     }
 
   // write restart also when uprestart_ is not a integer multiple of upres_

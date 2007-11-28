@@ -83,7 +83,10 @@ void xdyn_fluid_drt()
   IO::DiscretizationWriter fluidoutput(fluiddis);
   fluidoutput.WriteMesh(0,0.0);
   IO::DiscretizationWriter solidoutput(soliddis);
-  solidoutput.WriteMesh(0,0.0);
+  if (soliddis->NumGlobalElements() > 0)
+  {
+      solidoutput.WriteMesh(0,0.0);
+  }
   
   // -------------------------------------------------------------------
   // set some pointers and variables
