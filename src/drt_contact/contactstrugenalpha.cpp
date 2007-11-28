@@ -25,8 +25,6 @@ ContactStruGenAlpha::ContactStruGenAlpha(ParameterList& params,
                                          IO::DiscretizationWriter& output) :
 StruGenAlpha(params,dis,solver,output,false)
 {
-  havecontact_ = true; // set base class variable
-
   // -------------------------------------------------------------------
   // get some parameters from parameter list
   // -------------------------------------------------------------------
@@ -47,8 +45,7 @@ StruGenAlpha(params,dis,solver,output,false)
   {
     vector<DRT::Condition*> contactconditions(0);
     discret_.GetCondition("Contact",contactconditions);
-    if (contactconditions.size()) havecontact_ = true;
-    else dserror("No contact boundary conditions present");
+    if (!contactconditions.size()) dserror("No contact boundary conditions present");
     contactmanager_ = rcp(new CONTACT::Manager(discret_));
   }
 

@@ -88,6 +88,8 @@ protected:
   ContactStruGenAlpha operator = (const ContactStruGenAlpha& old);
   ContactStruGenAlpha(const ContactStruGenAlpha& old);
 
+  RCP<CONTACT::Manager>         contactmanager_;
+
 }; // class ContactStruGenAlpha
 
 #endif  // #ifndef CONTACTSTRUGENALPHA_H
