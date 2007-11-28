@@ -30,8 +30,7 @@ solver_(solver),
 output_(output),
 myrank_(discret_.Comm().MyPID()),
 maxentriesperrow_(81),
-norm_(1.0e+06),
-havecontact_(false)
+norm_(1.0e+06)
 {
   if (init)
   {
@@ -78,12 +77,12 @@ havecontact_(false)
     //                \  1   i-th DOF is free
     invtoggle_ = LINALG::CreateVector(*dofrowmap,false);
 
-    // displacements D_{n} at last time
-    dis_ = LINALG::CreateVector(*dofrowmap,true);
-    // velocities V_{n} at last time
-    vel_ = LINALG::CreateVector(*dofrowmap,true);
-    // accelerations A_{n} at last time
-    acc_ = LINALG::CreateVector(*dofrowmap,true);
+  // displacements D_{n} at last time
+  dis_ = LINALG::CreateVector(*dofrowmap,true);
+  // velocities V_{n} at last time
+  vel_ = LINALG::CreateVector(*dofrowmap,true);
+  // accelerations A_{n} at last time
+  acc_ = LINALG::CreateVector(*dofrowmap,true);
 
     // displacements D_{n+1} at new time
     disn_ = LINALG::CreateVector(*dofrowmap,true);
@@ -801,7 +800,7 @@ void StruGenAlpha::FullNewton()
   double fresmnorm;
   double disinorm;
   fresm_->Norm2(&fresmnorm);
-  while (norm_>toldisp && fresmnorm>toldisp && numiter<=maxiter)
+  while ( norm_>toldisp && fresmnorm>toldisp && numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
@@ -910,17 +909,18 @@ void StruGenAlpha::FullNewton()
     disi_->Norm2(&disinorm);
 
     fresm_->Norm2(&fresmnorm);
+
     // a short message
     if (!myrank_)
     {
       if (printscreen)
       {
-        printf("numiter %d res-norm %e dis-norm %e\n",numiter+1, fresmnorm, disinorm);
+        printf("numiter %2d res-norm %10.5e dis-norm %20.15E\n",numiter+1, fresmnorm, disinorm);
         fflush(stdout);
       }
       if (printerr)
       {
-        fprintf(errfile,"numiter %d res-norm %e dis-norm %e\n",numiter+1, fresmnorm, disinorm);
+        fprintf(errfile,"numiter %2d res-norm %10.5e dis-norm %10.5e\n",numiter+1, fresmnorm, disinorm);
         fflush(errfile);
       }
     }
@@ -1344,7 +1344,7 @@ void StruGenAlpha::FullNewtonUzawa()
      if ( (myrank_ ==  0) && (printscreen) )
      {
         printf("Newton iteration converged: numiter %d res-norm %e dis-norm %e\n", 
-               numiter+1, fresmnorm, disinorm);
+               numiter, fresmnorm, disinorm);
         fflush(stdout);
      }  
   }
@@ -1398,6 +1398,7 @@ void StruGenAlpha::ModifiedNewton()
 
   //=================================================== equilibrium loop
   double fresmnorm;
+  double disinorm;
   fresm_->Norm2(&fresmnorm);
   while (norm_>toldisp && fresmnorm>toldisp  && numiter<=maxiter)
   {
@@ -1491,21 +1492,20 @@ void StruGenAlpha::ModifiedNewton()
     }
 
     //---------------------------------------------- build residual norm
-    double disinorm;
     disi_->Norm2(&disinorm);
 
-    fresm_->Norm2(&norm_);
+    fresm_->Norm2(&fresmnorm);
     // a short message
     if (!myrank_)
     {
       if (printscreen)
       {
-        printf("numiter %d res-norm %e dis-norm %e\n",numiter+1, norm_, disinorm);
+        printf("numiter %2d res-norm %10.5e dis-norm %20.15E\n",numiter+1, fresmnorm, disinorm);
         fflush(stdout);
       }
       if (printerr)
       {
-        fprintf(errfile,"numiter %d res-norm %e dis-norm %e\n",numiter+1, norm_, disinorm);
+        fprintf(errfile,"numiter %2d res-norm %10.5e dis-norm %20.15E\n",numiter+1, fresmnorm, disinorm);
         fflush(errfile);
       }
     }
@@ -1519,6 +1519,15 @@ void StruGenAlpha::ModifiedNewton()
 
   //-------------------------------- test whether max iterations was hit
   if (numiter>=maxiter) dserror("Newton unconverged in %d iterations",numiter);
+  else
+  {
+     if ( (myrank_ ==  0) && (printscreen) )
+     {
+        printf("Modified Newton iteration converged: numiter %d res-norm %e dis-norm %e\n", 
+               numiter, fresmnorm, disinorm);
+        fflush(stdout);
+     }  
+  }
   params_.set<int>("num iterations",numiter);
 
   //-------------------------------------- don't need this at the moment
@@ -2251,6 +2260,7 @@ void StruGenAlpha::PTC()
   //=================================================== equilibrium loop
   int numiter=0;
   double fresmnorm;
+  double disinorm;
   fresm_->Norm2(&fresmnorm);
   while (norm_>toldisp && fresmnorm>toldisp && numiter<=maxiter)
   {
@@ -2374,7 +2384,6 @@ void StruGenAlpha::PTC()
     fresm_->NormInf(&np);
 
     //---------------------------------------------- build residual norm
-    double disinorm;
     disi_->Norm2(&disinorm);
 
     fresm_->Norm2(&fresmnorm);
@@ -2383,20 +2392,17 @@ void StruGenAlpha::PTC()
     {
       if (printscreen)
       {
-        printf("numiter %d res-norm %e dis-norm %e dti %e\n",numiter+1, fresmnorm, disinorm,dti);
+        printf("numiter %2d res-norm %10.5e dis-norm %20.15E dti %20.15E\n",numiter+1, fresmnorm, disinorm,dti);
         fflush(stdout);
       }
       if (printerr)
       {
-        fprintf(errfile,"numiter %d res-norm %e dis-norm %e dti %e\n",numiter+1, fresmnorm, disinorm,dti);
+        fprintf(errfile,"numiter %2d res-norm %10.5e dis-norm %20.15E dti %20.15E\n",numiter+1, fresmnorm, disinorm,dti);
         fflush(errfile);
       }
     }
     // criteria to stop Newton iteration
     norm_ = disinorm;
-
-    //--------------------------------- increment equilibrium loop index
-    ++numiter;
 
     //------------------------------------ PTC update of artificial time
 #if 1
@@ -2408,6 +2414,7 @@ void StruGenAlpha::PTC()
 
 #if 0
     {
+      // TTI step size control
       double ttau=0.75;
       RCP<Epetra_Vector> d1 = LINALG::CreateVector(stiff_->RowMap(),false);
       d1->Update(1.0,*disi_,-1.0,*x0,0.0);
@@ -2428,11 +2435,24 @@ void StruGenAlpha::PTC()
       nc = np;
     }
 #endif
+
+    //--------------------------------- increment equilibrium loop index
+    ++numiter;
+
   } // while (norm_>toldisp && fresmnorm>toldisp && numiter<=maxiter)
   //============================================= end equilibrium loop
 
   //-------------------------------- test whether max iterations was hit
-  if (numiter==maxiter) dserror("Ptc unconverged in %d iterations",numiter);
+  if (numiter>=maxiter) dserror("Ptc unconverged in %d iterations",numiter);
+  else
+  {
+     if ( (myrank_ ==  0) && (printscreen) )
+     {
+        printf("Ptc converged: numiter %d res-norm %e dis-norm %e\n", 
+               numiter, fresmnorm, disinorm);
+        fflush(stdout);
+     }  
+  }
   params_.set<int>("num iterations",numiter);
 
   //-------------------------------------- don't need this at the moment
@@ -2633,7 +2653,7 @@ void StruGenAlpha::computeJacobian(const Epetra_Vector& x)
                                    zeros_,
                                    dirichtoggle_);
   return;
-}
+} // StruGenAlpha::computeJacobian
 
 /*----------------------------------------------------------------------*
  |  do update and output (public)                            mwgee 03/07|

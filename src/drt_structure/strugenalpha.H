@@ -289,9 +289,6 @@ protected:
   int                           maxentriesperrow_;
   double                        norm_;
 
-  bool                          havecontact_;
-  RCP<CONTACT::Manager>         contactmanager_;
-
   RefCountPtr<Epetra_CrsMatrix> stiff_;
   RefCountPtr<Epetra_CrsMatrix> mass_;
   RefCountPtr<Epetra_CrsMatrix> damp_;
