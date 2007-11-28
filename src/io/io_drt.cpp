@@ -702,12 +702,12 @@ void IO::DiscretizationWriter::WriteCondition(const string condname) const
   // which means it is not used -> so no dserror() here
   if(!block->empty())
   {
-    hsize_t dim[] = {static_cast<hsize_t>(block->size())};
+    hsize_t dim = static_cast<hsize_t>(block->size());
     const herr_t status = H5LTmake_dataset_char(
             meshgroup_,
             condname.c_str(),
             1,
-            dim,
+            &dim,
             &((*block)[0]));
     if (status < 0)
       dserror("Failed to create dataset in HDF-meshfile");
@@ -737,14 +737,14 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
   RefCountPtr<vector<char> > elementdata = dis_->PackMyElements();
   if (elementdata->size()==0)
     dserror("no element data no proc %d. Too few elements?", dis_->Comm().MyPID());
-  hsize_t dim[] = {static_cast<hsize_t>(elementdata->size())};
-  const herr_t element_status = H5LTmake_dataset_char(meshgroup_,"elements",1,dim,&((*elementdata)[0]));
+  hsize_t dim = static_cast<hsize_t>(elementdata->size());
+  const herr_t element_status = H5LTmake_dataset_char(meshgroup_,"elements",1,&dim,&((*elementdata)[0]));
   if (element_status < 0)
     dserror("Failed to create dataset in HDF-meshfile");
 
   RefCountPtr<vector<char> > nodedata = dis_->PackMyNodes();
-  dim[0] = static_cast<hsize_t>(nodedata->size());
-  const herr_t node_status = H5LTmake_dataset_char(meshgroup_,"nodes",1,dim,&((*nodedata)[0]));
+  dim = static_cast<hsize_t>(nodedata->size());
+  const herr_t node_status = H5LTmake_dataset_char(meshgroup_,"nodes",1,&dim,&((*nodedata)[0]));
   if (node_status < 0)
     dserror("Failed to create dataset in HDF-meshfile");
 
@@ -754,7 +754,7 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
 #if 1
     WriteCondition("SurfacePeriodic");
     WriteCondition("LinePeriodic");
-    
+
     WriteCondition("XFEMCoupling");
 #endif
     fprintf(cf_,
