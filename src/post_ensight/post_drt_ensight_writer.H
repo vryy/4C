@@ -1,7 +1,7 @@
 /*!
- \file post_drt_ensight_writer.cpp
+ \file post_drt_ensight_writer.H
 
- \brief Ensight filter basis class
+ \brief basis class for the Ensight filter 
 
  <pre>
  Maintainer: Ulrich Kuettler

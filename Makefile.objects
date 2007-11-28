@@ -1024,6 +1024,7 @@ OBJS_POST_GID_TXT = src/post_gid/gid_out_txt.o
 OBJS_POST_DRT_GID = src/post_gid/post_drt_gid.o
 
 OBJS_POST_DRT_ENSIGHT = src/post_ensight/post_drt_ensight_writer.o \
+                src/post_ensight/post_drt_ensight_single_field_writers.o \
                 src/post_ensight/post_drt_ensight.o
 
 OBJS_POST_DRT_MONITOR = src/post_monitor/post_drt_monitor.o
