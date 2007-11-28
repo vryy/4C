@@ -26,7 +26,7 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_element.H"
-#include "../drt_xfem/intersection.H"
+#include "../drt_xfem/dof_management.H"
 
 using namespace std;
 
@@ -104,8 +104,6 @@ protected:
             const int from=0 ///< start position of values in nodes
             );
 
-private:
-
     template<class T> void Write(
             ofstream& os,
             T i) const
@@ -126,27 +124,26 @@ private:
     }
 
     void WriteString(
-            ofstream& stream,
-            const string str ///< string to be written to file
+            ofstream& stream,  ///< filestream we are writing to
+            const string str   ///< string to be written to file
             ) const;
     void WriteGeoFile(
-            const string& geofilename);
+            const string& geofilename) const;
     void WriteCoordinates(
-            ofstream& geofile,
-            const RefCountPtr<DRT::Discretization> dis) const;
-    void WriteCoordinatesIntegrationCells(
-            ofstream& geofile,
-            const RefCountPtr<DRT::Discretization> dis) const;
+            ofstream& geofile,                         ///< filestream for the geometry
+            const RefCountPtr<DRT::Discretization> dis ///< discretization where the nodal positions are take from
+            ) const;
     void WriteCells(
             ofstream& geofile,
-            const RefCountPtr<DRT::Discretization> dis);
+            const RefCountPtr<DRT::Discretization> dis) const;
     void WriteResultStep(
             ofstream& file,
             PostResult& result,
+            map<string, vector<ofstream::pos_type> >& resultfilepos,
             const string groupname,
             const string name,
             const int numdf,
-            const int from);
+            const int from) const;
     void WriteIndexTable(
             ofstream& file,
             const vector<ofstream::pos_type>& filepos) const;
@@ -167,22 +164,27 @@ private:
             const RefCountPtr<DRT::Discretization> dis) const;
 
     string GetEnsightString(
-            const DRT::Element::DiscretizationType distype);
+            const DRT::Element::DiscretizationType distype) const;
 
     /*!
      * \brief if files become to big, this routine switches to a new file
      */
     void FileSwitcher(
-            ofstream& file,
-            unsigned int& fileset,
-            const int stepsize,
-            const string name,
-            const string filename);
+            ofstream& file,                                          ///< filestream that is switched
+            unsigned int& fileset,                                   ///< ???
+            vector<vector<int> >& filesets,                          ///< ???
+            map<string, vector<ofstream::pos_type> >& resultfilepos, ///< ???
+            const int stepsize,                                      ///< ???
+            const string name,                                       ///< ???
+            const string filename                                    ///< constant part of the filename
+            ) const;
 
     int GetNumEleOutput(
             const DRT::Element::DiscretizationType distype,
             const int numele) const;
 
+private:
+    
     PostField* field_;
     string filename_;
 
@@ -306,7 +308,7 @@ void EnsightWriter::WriteFiles()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteGeoFile(
-        const string& geofilename)
+        const string& geofilename) const
 {
     // open file
     ofstream geofile;
@@ -344,18 +346,6 @@ void EnsightWriter::WriteGeoFile(
         WriteCoordinates(geofile, field_->discretization());
         WriteCells(geofile, field_->discretization());
 
-#if 0
-        Write(geofile, "part");
-        Write(geofile, field_->field_pos()+2);
-        Write(geofile, "enriched " + field_->name() + " field");
-
-        Write(geofile, "coordinates");
-        Write(geofile, field_->num_nodes());
-
-        // write the grid information
-        WriteCoordinatesIntegrationCells(geofile, field_->discretization());
-        WriteCells(geofile, field_->discretization());
-#endif
         Write(geofile, "END TIME STEP");
     }
 
@@ -397,39 +387,9 @@ void EnsightWriter::WriteCoordinates(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EnsightWriter::WriteCoordinatesIntegrationCells(
-        ofstream& geofile,
-        const RefCountPtr<DRT::Discretization> dis) const
-{
-    const Epetra_Map* nodemap = dis->NodeRowMap();
-    dsassert(nodemap->NumMyElements() == nodemap->NumGlobalElements(),
-            "filter cannot be run in parallel");
-
-    const int numnp = nodemap->NumMyElements();
-    // write node ids
-    //  for (int inode=0; inode<numnp; ++inode)
-    //  {
-    //    Write(geofile,nodemap->GID(inode)+1);
-    //  }
-
-    const int NSD = 3; ///< number of space dimensions
-    // ensight format requires x_1 .. x_n, y_1 .. y_n, z_1 ... z_n
-    for (int isd=0; isd<NSD; ++isd)
-    {
-        for (int inode=0; inode<numnp; inode++)
-        {
-            const int gid = nodemap->GID(inode);
-            const DRT::Node* actnode = dis->gNode(gid);
-            Write(geofile, static_cast<float>(actnode->X()[isd]));
-        }
-    }
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void EnsightWriter::WriteCells(
         ofstream& geofile,
-        const RefCountPtr<DRT::Discretization> dis)
+        const RefCountPtr<DRT::Discretization> dis) const
 {
     const Epetra_Map* nodemap = dis->NodeRowMap();
     dsassert(nodemap->NumMyElements() == nodemap->NumGlobalElements(),
@@ -450,7 +410,12 @@ void EnsightWriter::WriteCells(
         const int ne = GetNumEleOutput(distypeiter, iter->second);
         const string ensightString = GetEnsightString(distypeiter);
 
-        cout << "writing "<< iter->second<< " "<< distype2ensightstring_[distypeiter]<< " elements"
+        map<DRT::Element::DiscretizationType, string>::const_iterator entry = distype2ensightstring_.find(distypeiter);
+        if (entry == distype2ensightstring_.end())
+            dserror("no entry in distype2ensightstring_ found");
+        const string realcellshape = entry->second;
+        
+        cout << "writing "<< iter->second<< " "<< realcellshape << " elements"
                 << " ("<< ne << " cells) per distype."<< " ensight output celltype: "
                 << ensightString<< endl;
 
@@ -460,10 +425,10 @@ void EnsightWriter::WriteCells(
         // loop all available elements
         for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
         {
-            DRT::Element* actele = dis->gElement(elementmap->GID(iele));
+            DRT::Element* const actele = dis->gElement(elementmap->GID(iele));
             if (actele->Shape() == distypeiter)
             {
-                DRT::Node** nodes = actele->Nodes();
+                DRT::Node** const nodes = actele->Nodes();
                 switch (actele->Shape())
                 {
                 case DRT::Element::hex20:
@@ -556,24 +521,26 @@ int EnsightWriter::GetNumEleOutput(
 }
 
 string EnsightWriter::GetEnsightString(
-        const DRT::Element::DiscretizationType distype)
+        const DRT::Element::DiscretizationType distype) const
 {
-    string str;
+    map<DRT::Element::DiscretizationType, string>::const_iterator entry;
     switch (distype)
     {
     case DRT::Element::hex27:
-        str = distype2ensightstring_[DRT::Element::hex8];
+        entry = distype2ensightstring_.find(DRT::Element::hex8);
         break;
     case DRT::Element::quad9:
-        str = distype2ensightstring_[DRT::Element::quad4];
+        entry = distype2ensightstring_.find(DRT::Element::quad4);
         break;
     case DRT::Element::tet10:
-        str = distype2ensightstring_[DRT::Element::tet4];
+        entry = distype2ensightstring_.find(DRT::Element::tet4);
         break;
     default:
-        str = distype2ensightstring_[distype];
+        entry = distype2ensightstring_.find(distype);
     }
-    return str;
+    if (entry == distype2ensightstring_.end())
+        dserror("no entry in distype2ensightstring_ found");
+    return entry->second;
 }
 
 /*----------------------------------------------------------------------*/
@@ -601,15 +568,15 @@ string EnsightWriter::WriteResult(
     string filename = filename_ + "_"+ field_->name() + "."+ name;
     ofstream file(filename.c_str());
 
-    WriteResultStep(file, result, groupname, name, numdf, from);
+    WriteResultStep(file, result, resultfilepos_, groupname, name, numdf, from);
     while (result.next_result())
     {
         const int indexsize = 80+2*sizeof(int)+(file.tellp()/stepsize+2)*sizeof(long);
         if (static_cast<long unsigned int>(file.tellp())+stepsize+indexsize>= FILE_SIZE_LIMIT)
         {
-            FileSwitcher(file, fileset, stepsize, name, filename);
+            FileSwitcher(file, fileset, filesets_, resultfilepos_, stepsize, name, filename);
         }
-        WriteResultStep(file, result, groupname, name, numdf, from);
+        WriteResultStep(file, result, resultfilepos_, groupname, name, numdf, from);
     }
 
     // append index table
@@ -630,34 +597,36 @@ string EnsightWriter::WriteResult(
 void EnsightWriter::FileSwitcher(
         ofstream& file,
         unsigned int& fileset,
+        vector<vector<int> >& filesets,
+        map<string, vector<ofstream::pos_type> >& resultfilepos,
         const int stepsize,
         const string name,
-        const string filename)
+        const string filename) const
 {
     if (fileset == 1)
     {
-        fileset = filesets_.size()+3;
+        fileset = filesets.size()+3;
         vector<int> numsteps;
         numsteps.push_back(file.tellp()/stepsize);
-        filesets_.push_back(numsteps);
+        filesets.push_back(numsteps);
         // append index table
-        WriteIndexTable(file, resultfilepos_[name]);
-        resultfilepos_[name].clear();
+        WriteIndexTable(file, resultfilepos[name]);
+        resultfilepos[name].clear();
         file.close();
         rename(filename.c_str(), (filename+"001").c_str());
         file.open((filename+"002").c_str());
     }
     else
     {
-        filesets_[fileset-3].push_back(file.tellp()/stepsize);
+        filesets[fileset-3].push_back(file.tellp()/stepsize);
         ostringstream newfilename;
         newfilename << filename;
         newfilename.width(3);
         newfilename.fill('0');
-        newfilename << filesets_[fileset-3].size()+1;
+        newfilename << filesets[fileset-3].size()+1;
         // append index table
-        WriteIndexTable(file, resultfilepos_[name]);
-        resultfilepos_[name].clear();
+        WriteIndexTable(file, resultfilepos[name]);
+        resultfilepos[name].clear();
         file.close();
         file.open(newfilename.str().c_str());
     }
@@ -699,12 +668,13 @@ string EnsightWriter::GetVariableEntryForCaseFile(
 void EnsightWriter::WriteResultStep(
         ofstream& file,
         PostResult& result,
+        map<string, vector<ofstream::pos_type> >& resultfilepos,
         const string groupname,
         const string name,
         const int numdf,
-        const int from)
+        const int from) const
 {
-    vector<ofstream::pos_type>& filepos = resultfilepos_[name];
+    vector<ofstream::pos_type>& filepos = resultfilepos[name];
     Write(file, "BEGIN TIME STEP");
     filepos.push_back(file.tellp());
 
@@ -883,6 +853,78 @@ string AleEnsightWriter::WriteAllResults(
     return str.str();
 }
 
+/*----------------------------------------------------------------------*/
+/*
+ \brief Writer for fluid problems including xfem interfaces
+ 
+ this might be handled more general in the near future, when integration cells
+ are saved along the data for each timestep
+ 
+ At the moment, we just intersect in the post filter again and conlude on the DOF 
+ distribution which then should fit to the unknown vector. 
+ hence, the xfem post filter is doing quite some work at this moment...
+ 
+ \author a.ger
+ \date 11/07
+ 
+ */
+/*----------------------------------------------------------------------*/
+class XFluidEnsightWriter : public EnsightWriter
+{
+public:
+    XFluidEnsightWriter(
+            PostField* field,           ///< Field to be plotted
+            PostField* cutterfield,     ///< intersecting field (for fsi)
+            string filename) :
+        EnsightWriter(field, filename),
+        cutterfield_(cutterfield)
+    {
+                //discretization()
+    }
+
+protected:
+
+    virtual string WriteAllResults(
+            PostField* field);
+    
+    /*!
+     \brief write all time steps of a result for xfem problems with varying number of unknowns per node
+
+     Write nodal results. The results are taken from a reconstructed
+     Epetra_Vector. We always assume a dofmanager that knows about the unknowns distribution
+     So we have to specify which XFEM::Physics::Field.
+
+     Finally, after writing to the result file, a string is returned that
+     describes the result for the case file VARIABLE section
+
+     \return string with entry for VARIABLE section in case file
+     \author a.ger
+     \date 11/07
+     */
+    string WriteResultX(
+            const string groupname,                   ///< name of the result group in the control file
+            const string name,                        ///< name of the result to be written
+            const vector<XFEM::Physics::Field> fields ///< Fieldnames to print, could be just one (pressure) or a list (Dispx,Dispy,Dispz)
+            );
+    
+    PostField* cutterfield_;
+};
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+string XFluidEnsightWriter::WriteAllResults(
+        PostField* field)
+{
+    stringstream str;
+    str << EnsightWriter::WriteResult("velnp", "velocity", field->problem()->num_dim());
+    str << EnsightWriter::WriteResult("velnp", "pressure", 1, field->problem()->num_dim());
+    str << EnsightWriter::WriteResult("residual", "residual", field->problem()->num_dim());
+    str << EnsightWriter::WriteResult("dispnp", "displacement", field->problem()->num_dim());
+    str << EnsightWriter::WriteResult("traction", "traction", field->problem()->num_dim());
+    return str.str();
+}
+
+
 /*!
  \brief filter main routine
 
@@ -954,12 +996,14 @@ int main(
     }
     case prb_fluid_xfem:
     {
+        cout << "Output XFEM Problem" << endl;
+        
         PostField* structfield = problem.get_discretization(0);
         StructureEnsightWriter structwriter(structfield, problem.outname());
         structwriter.WriteFiles();
 
         PostField* fluidfield = problem.get_discretization(1);
-        FluidEnsightWriter fluidwriter(fluidfield, problem.outname());
+        XFluidEnsightWriter fluidwriter(fluidfield, structfield, problem.outname());
         fluidwriter.WriteFiles();
         break;
     }

@@ -19,6 +19,7 @@ Maintainer: Axel Gerstenberger
 #include "integrationcell.H"
 #include "interface.H"
 #include "../drt_lib/drt_discret.H"
+#include <blitz/array.h>
 
 
 // namespace for all xfem related stuff
