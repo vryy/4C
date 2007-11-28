@@ -383,10 +383,10 @@ void IO::DiscretizationReader::OpenMeshFiles(MAP* result_step)
     numoutputproc = 1;
   }
 
-  string name = bin_out_main.name;
+  const string name = bin_out_main.name;
 
   string dirname;
-  string::size_type pos = name.find_last_of('/');
+  const string::size_type pos = name.find_last_of('/');
   if (pos==string::npos)
   {
     dirname = "";
@@ -396,8 +396,7 @@ void IO::DiscretizationReader::OpenMeshFiles(MAP* result_step)
     dirname = name.substr(0,pos+1);
   }
 
-  string filename;
-  filename = map_read_string(result_step, "mesh_file");
+  const string filename = map_read_string(result_step, "mesh_file");
 
   meshreader_ = rcp(new HDFReader(dirname));
   meshreader_->Open(filename,numoutputproc);
@@ -443,10 +442,9 @@ IO::DiscretizationWriter::DiscretizationWriter(RefCountPtr<DRT::Discretization> 
 IO::DiscretizationWriter::~DiscretizationWriter()
 {
 #ifdef BINIO
-  herr_t status;
   if (meshfile_ != -1)
   {
-    status = H5Fclose(meshfile_);
+    const herr_t status = H5Fclose(meshfile_);
     if (status < 0)
     {
       dserror("Failed to close HDF file %s", meshfilename_.c_str());
@@ -454,7 +452,7 @@ IO::DiscretizationWriter::~DiscretizationWriter()
   }
   if (resultfile_ != -1)
   {
-    status = H5Fclose(resultfile_);
+    const herr_t status = H5Fclose(resultfile_);
     if (status < 0)
     {
       dserror("Failed to close HDF file %s", resultfilename_.c_str());
@@ -466,7 +464,7 @@ IO::DiscretizationWriter::~DiscretizationWriter()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::CreateMeshFile(int step)
+void IO::DiscretizationWriter::CreateMeshFile(const int step)
 {
 #ifdef BINIO
 
@@ -487,7 +485,7 @@ void IO::DiscretizationWriter::CreateMeshFile(int step)
 
   if (meshfile_ != -1)
   {
-    herr_t status = H5Fclose(meshfile_);
+    const herr_t status = H5Fclose(meshfile_);
     if (status < 0)
     {
       dserror("Failed to close HDF file %s", meshfilename_.c_str());
@@ -505,7 +503,7 @@ void IO::DiscretizationWriter::CreateMeshFile(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::CreateResultFile(int step)
+void IO::DiscretizationWriter::CreateResultFile(const int step)
 {
 #ifdef BINIO
 
@@ -545,11 +543,10 @@ void IO::DiscretizationWriter::CreateResultFile(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::NewStep(int step, double time)
+void IO::DiscretizationWriter::NewStep(const int step, const double time)
 {
 #ifdef BINIO
 
-  herr_t status;
   bool write_file = false;
 
   step_ = step;
@@ -559,7 +556,7 @@ void IO::DiscretizationWriter::NewStep(int step, double time)
 
   if (resultgroup_ != -1)
   {
-    status = H5Gclose(resultgroup_);
+    const herr_t status = H5Gclose(resultgroup_);
     if (status < 0)
     {
       dserror("Failed to close HDF group in file %s",resultfilename_.c_str());
@@ -601,7 +598,7 @@ void IO::DiscretizationWriter::NewStep(int step, double time)
                 dis_->Comm().NumProc());
       }
       string filename;
-      string::size_type pos = resultfilename_.find_last_of('/');
+      const string::size_type pos = resultfilename_.find_last_of('/');
       if (pos==string::npos)
         filename = resultfilename_;
       else
@@ -613,7 +610,7 @@ void IO::DiscretizationWriter::NewStep(int step, double time)
     }
     fflush(cf_);
   }
-  status = H5Fflush(resultgroup_,H5F_SCOPE_LOCAL);
+  const herr_t status = H5Fflush(resultgroup_,H5F_SCOPE_LOCAL);
   if (status < 0)
   {
     dserror("Failed to flush HDF file %s", resultfilename_.c_str());
@@ -624,16 +621,15 @@ void IO::DiscretizationWriter::NewStep(int step, double time)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteVector(string name, RefCountPtr<Epetra_Vector> vec)
+void IO::DiscretizationWriter::WriteVector(const string name, RefCountPtr<Epetra_Vector> vec)
 {
 #ifdef BINIO
 
-  herr_t status;
   string valuename = name + ".values";
   double* data = vec->Values();
-  hsize_t size = vec->MyLength();
-  status = H5LTmake_dataset_double(resultgroup_,valuename.c_str(),1,&size,data);
-  if (status < 0)
+  const hsize_t size = vec->MyLength();
+  const herr_t make_status = H5LTmake_dataset_double(resultgroup_,valuename.c_str(),1,&size,data);
+  if (make_status < 0)
     dserror("Failed to create dataset in HDF-resultfile");
 
   string idname;
@@ -654,7 +650,7 @@ void IO::DiscretizationWriter::WriteVector(string name, RefCountPtr<Epetra_Vecto
   valuename = groupname.str()+valuename;
 
   const Epetra_BlockMapData* mapdata = vec->Map().DataPtr();
-  std::map<const Epetra_BlockMapData*, std::string>::iterator m = mapcache_.find(mapdata);
+  std::map<const Epetra_BlockMapData*, std::string>::const_iterator m = mapcache_.find(mapdata);
   if (m!=mapcache_.end())
   {
     // the map has been written already, just link to it again
@@ -664,8 +660,8 @@ void IO::DiscretizationWriter::WriteVector(string name, RefCountPtr<Epetra_Vecto
   {
     idname = name + ".ids";
     int* ids = vec->Map().MyGlobalElements();
-    status = H5LTmake_dataset_int(resultgroup_,idname.c_str(),1,&size,ids);
-    if (status < 0)
+    const herr_t make_status = H5LTmake_dataset_int(resultgroup_,idname.c_str(),1,&size,ids);
+    if (make_status < 0)
       dserror("Failed to create dataset in HDF-resultfile");
 
     idname = groupname.str()+idname;
@@ -686,23 +682,24 @@ void IO::DiscretizationWriter::WriteVector(string name, RefCountPtr<Epetra_Vecto
       );
     fflush(cf_);
   }
-  status = H5Fflush(resultgroup_,H5F_SCOPE_LOCAL);
-  if (status < 0)
+  const herr_t flush_status = H5Fflush(resultgroup_,H5F_SCOPE_LOCAL);
+  if (flush_status < 0)
   {
     dserror("Failed to flush HDF file %s", resultfilename_.c_str());
   }
 #endif
 }
 
-// write a specific condition
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void IO::DiscretizationWriter::WriteCondition(const string condname) const
 {
   // put condition into block
   RefCountPtr<vector<char> > block = dis_->PackCondition(condname);
 
-  //--------------------------------------------------
-  // write block to file. Note: Block can be empty, if the condition is not found, which means it is not used
-  // so no dserror() here, which exists e.g. in WriteElements
+  // write block to file. Note: Block can be empty, if the condition is not found,
+  // which means it is not used -> so no dserror() here
   if(!block->empty())
   {
     hsize_t dim[] = {static_cast<hsize_t>(block->size())};
@@ -719,7 +716,7 @@ void IO::DiscretizationWriter::WriteCondition(const string condname) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteMesh(int step, double time)
+void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
 {
 #ifdef BINIO
 

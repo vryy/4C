@@ -129,7 +129,7 @@ public:
     \param step : current time step
     \param time : current absolute time
   */
-  void NewStep(int step, double time);
+  void NewStep(const int step, const double time);
 
   //! write a result vector
   /*!
@@ -139,13 +139,13 @@ public:
     \param name : control file entry name
     \param vec  : the result data vector
   */
-  void WriteVector(string name, RefCountPtr<Epetra_Vector> vec);
+  void WriteVector(const string name, RefCountPtr<Epetra_Vector> vec);
 
   //! write a condition identified by its name
   void WriteCondition(const string condname) const;
   
   //! write new "field" group to control file including node and element chunks
-  void WriteMesh(int step, double time);
+  void WriteMesh(const int step, const double time);
 
   //@}
 
@@ -157,10 +157,10 @@ protected:
 private:
 
   //! open new mesh file
-  void CreateMeshFile(int step);
+  void CreateMeshFile(const int step);
 
   //! open new result file
-  void CreateResultFile(int step);
+  void CreateResultFile(const int step);
 
   //! my discretization
   RefCountPtr<DRT::Discretization> dis_;
