@@ -23,7 +23,7 @@ CONTACT::Manager::Manager(DRT::Discretization& discret) :
 discret_(discret)
 {
   if (!Discret().Filled()) dserror("Discretization is not fillcomplete");
-  
+
   // let's check for contact boundary conditions in discret
   // and detect pairs of matching conditions
   // for each pair, create a contact interface and store it
@@ -31,7 +31,7 @@ discret_(discret)
   Discret().GetCondition("Contact",contactconditions);
   if ((int)contactconditions.size()<=1)  dserror("Not enough contact conditions in discretization");
   if ((int)contactconditions.size() %2) dserror("Odd number of contact conditions is impossible");
-  
+
   // find all pairs of matching contact conditions
   // there are num conditions / 2 pairs
   vector<int> foundpairs(contactconditions.size()/2);
@@ -57,10 +57,10 @@ discret_(discret)
       foundit = true; // found a pair
       break;
     }
-    
+
     // now we should have found a pair cond1/cond2
     if (!foundit) dserror("Cannot find matching contact condition for id %d",pairid1);
-    
+
     // see whether we found this pair before
     bool foundbefore = false;
     for (int j=0; j<numpairsfound; ++j)
@@ -69,28 +69,28 @@ discret_(discret)
         foundbefore = true;
         break;
       }
-    
+
     // if we have processed this pair before, do nothing
     if (foundbefore) continue;
-    
+
     // we have not found this pair pairid1/pairid2 before, process it
     foundpairs[numpairsfound] = pairid1;
     ++numpairsfound;
-    
+
     // create an empty interface and store it in this Manager
     interface_.push_back(rcp(new CONTACT::Interface(pairid1,Comm())));
-    
+
     // get it again
     RCP<CONTACT::Interface> interface = interface_[(int)interface_.size()-1];
-    
+
     // find out which side is Master and Slave
     const string* side1 = cond1->Get<string>("Side");
     const string* side2 = cond2->Get<string>("Side");
     if (!side1 || !side2) dserror("Data for Master/Slave side missing in condition");
-    if (*side1 == *side2) dserror("2 Slave sides or 2 Master sides not allowed");      
+    if (*side1 == *side2) dserror("2 Slave sides or 2 Master sides not allowed");
     bool is1slave = false;
     if (*side1 == "Slave") is1slave = true;
-    
+
     // note that the nodal ids are unique because they come from
     // one global problem discretization conatining all nodes of the
     // contact interface
@@ -98,7 +98,7 @@ discret_(discret)
     // do contact between two distinct discretizations here
     //--------------------------------------------- process side 1 nodes
     // get all nodes and add them
-    const vector<int>* nodeids1 = cond1->Get<vector<int> >("Node Ids");
+    const vector<int>* nodeids1 = cond1->Nodes();
     if (!nodeids1) dserror("Condition does not have Node Ids");
     for (int j=0; j<(int)(*nodeids1).size(); ++j)
     {
@@ -113,11 +113,11 @@ discret_(discret)
                                                          Discret().Dof(node),is1slave));
       interface->AddCNode(cnode);
     } // for (int j=0; j<(int)(*nodeids1).size(); ++j)
-    
-    
+
+
     //----------------------------------------------- process side 2 nodes
     // get all nodes and add them
-    const vector<int>* nodeids2 = cond2->Get<vector<int> >("Node Ids");
+    const vector<int>* nodeids2 = cond2->Nodes();
     if (!nodeids2) dserror("Condition does not have Node Ids");
     for (int j=0; j<(int)(*nodeids2).size(); ++j)
     {
@@ -132,7 +132,7 @@ discret_(discret)
                                                          !is1slave));
       interface->AddCNode(cnode);
     } // for (int j=0; j<(int)(*nodeids2).size(); ++j)
-    
+
     //-------------------------------------------- process elements
     // get elements from condition cond1/cond2
     map<int,RCP<DRT::Element> >& ele1 = cond1->Geometry();
@@ -141,13 +141,13 @@ discret_(discret)
     // but ids are not unique among 2 distinct conditions
     // due to the way elements in conditions are build.
     // We therefore have to give the second set of elements different ids
-    // ids do not have to be continous, we just add a large enough number 
+    // ids do not have to be continous, we just add a large enough number
     // gsize to all elements of cond2 so they are different from those in cond1.
     // note that elements in ele1/ele2 already are in column (overlapping) map
     int lsize = (int)ele1.size();
     int gsize = 0;
     Comm().SumAll(&lsize,&gsize,1);
-    
+
     //---------------------------------------- process elements in ele1
     map<int,RCP<DRT::Element> >::iterator fool;
     for (fool=ele1.begin(); fool != ele1.end(); ++fool)
@@ -162,7 +162,7 @@ discret_(discret)
                                                               is1slave));
       interface->AddCElement(cele);
     } // for (fool=ele1.start(); fool != ele1.end(); ++fool)
-    
+
     //----------------------------------------- process element in ele2
     // note the change in the id of the elements
     for (fool=ele2.begin(); fool != ele2.end(); ++fool)
@@ -177,8 +177,8 @@ discret_(discret)
                                                               !is1slave));
       interface->AddCElement(cele);
     } // for (fool=ele1.start(); fool != ele1.end(); ++fool)
-    
-    
+
+
     //-------------------- finalize the contact interface construction
     interface->FillComplete();
 
@@ -193,7 +193,7 @@ discret_(discret)
  *----------------------------------------------------------------------*/
 ostream& operator << (ostream& os, const CONTACT::Manager& manager)
 {
-  manager.Print(os);  
+  manager.Print(os);
   return os;
 }
 
@@ -215,7 +215,7 @@ void CONTACT::Manager::Print(ostream& os) const
     cout << *(interface_[i]);
   }
   Comm().Barrier();
-  
+
   return;
 }
 
