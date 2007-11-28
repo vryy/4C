@@ -46,7 +46,7 @@ void DRT::Discretization::BoundaryConditionsGeometry()
   // for all conditions, we set a ptr in the nodes to the condition
   for (fool=condition_.begin(); fool != condition_.end(); ++fool)
   {
-    const vector<int>* nodes = fool->second->Get<vector<int> >("Node Ids");
+    const vector<int>* nodes = fool->second->Nodes();
     // There might be conditions that do not have a nodal cloud
     if (!nodes) continue;
     int nnode = nodes->size();
@@ -92,7 +92,7 @@ void DRT::Discretization::BuildLinesinCondition(
 {
 
   // get ptrs to all node ids that have this condition
-  const vector<int>* nodeids = cond->Get<vector<int> >("Node Ids");
+  const vector<int>* nodeids = cond->Nodes();
   if (!nodeids) dserror("Cannot find array 'Node Ids' in condition");
 
   // number of global nodes in this cloud
@@ -425,7 +425,7 @@ void DRT::Discretization::BuildLinesinCondition( const string name,
   /* First: Create the line objects that belong to the condition. */
 
   // get ptrs to all node ids that have this condition
-  const vector<int>* nodeids = cond->Get< vector<int> >("Node Ids");
+  const vector<int>* nodeids = cond->Nodes();
   if (!nodeids) dserror("Cannot find array 'Node Ids' in condition");
 
   // number of global nodes in this cloud
@@ -535,7 +535,7 @@ void DRT::Discretization::BuildSurfacesinCondition(
   /* First: Create the surface objects that belong to the condition. */
 
   // get ptrs to all node ids that have this condition
-  const vector<int>* nodeids = cond->Get<vector<int> >("Node Ids");
+  const vector<int>* nodeids = cond->Nodes();
   if (!nodeids) dserror("Cannot find array 'Node Ids' in condition");
 
   // number of global nodes in this cloud
@@ -640,7 +640,7 @@ void DRT::Discretization::BuildVolumesinCondition(
 {
 
   // get ptrs to all node ids that have this condition
-  const vector<int>* nodeids = cond->Get<vector<int> >("Node Ids");
+  const vector<int>* nodeids = cond->Nodes();
   if (!nodeids) dserror("Cannot find array 'Node Ids' in condition");
 
   // number of global nodes in this cloud

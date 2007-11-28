@@ -159,7 +159,7 @@ void DRT::Discretization::EvaluateNeumann(ParameterList& params, Epetra_Vector& 
   {
     if (fool->first != (string)"PointNeumann") continue;
     DRT::Condition& cond = *(fool->second);
-    const vector<int>* nodeids = cond.Get<vector<int> >("Node Ids");
+    const vector<int>* nodeids = cond.Nodes();
     if (!nodeids) dserror("PointNeumann condition does not have nodal cloud");
     const int nnode = (*nodeids).size();
     const vector<int>*    curve  = cond.Get<vector<int> >("curve");
@@ -314,7 +314,7 @@ void DoDirichletCondition(DRT::Condition&      cond,
                           Epetra_Vector&       systemvector,
                           Epetra_Vector&       toggle)
 {
-  const vector<int>* nodeids = cond.Get<vector<int> >("Node Ids");
+  const vector<int>* nodeids = cond.Nodes();
   if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
   const int nnode = (*nodeids).size();
   const vector<int>*    curve  = cond.Get<vector<int> >("curve");
@@ -381,12 +381,12 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
 	    				RefCountPtr<Epetra_Vector> systemvector,
 					    const string& condstring)
 {
-	
+
 	params.set("assemble matrix 1",false);
 	params.set("assemble matrix 2",false);
 	params.set("assemble vector 1",true);
 	params.set("assemble vector 2",false);
-	params.set("assemble vector 3",false);	
+	params.set("assemble vector 3",false);
 	EvaluateCondition(params,null,systemvector,null,condstring);
 	return;
 }
@@ -398,12 +398,12 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
 void DRT::Discretization::EvaluateCondition(ParameterList& params,
 					    const string& condstring)
 {
-	
+
 	params.set("assemble matrix 1",false);
 	params.set("assemble matrix 2",false);
 	params.set("assemble vector 1",false);
 	params.set("assemble vector 2",false);
-	params.set("assemble vector 3",false);	
+	params.set("assemble vector 3",false);
 	EvaluateCondition(params,null,null,null,condstring);
 	return;
 }
@@ -424,14 +424,14 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
   bool usetime = true;
   const double time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
-  
+
   multimap<string,RefCountPtr<Condition> >::iterator fool;
 
   //-----------------------------------------------------------------------
   // loop through conditions and evaluate them iff they match the criterion
   //-----------------------------------------------------------------------
   for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
-   {	
+   {
     if (fool->first == condstring)
     {
       DRT::Condition& cond = *(fool->second);
@@ -441,7 +441,7 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
       // can exist processors which do not own a portion of the elements belonging
       // to the condition geometry
       map<int,RefCountPtr<DRT::Element> >::iterator curr;
-      
+
       // Evaluate Loadcurve if defined. Put current load factor in parameterlist
       const vector<int>*    curve  = cond.Get<vector<int> >("curve");
       int curvenum = -1;
@@ -450,14 +450,14 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
       if (curvenum>=0 && usetime)
           curvefac = Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
       params.set("LoadCurveFactor",curvefac);
-      
+
       // Get ConditionID of current condition if defined and write value in parameterlist
       const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
       if (CondIDVec)
       {
       		params.set("ConditionID",(*CondIDVec)[0]);
       }
-      
+
       const bool assemblemat1 = params.get("assemble matrix 1",false);
       const bool assemblemat2 = params.get("assemble matrix 2",false);
       const bool assemblevec1 = params.get("assemble vector 1",false);
@@ -477,7 +477,7 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
         vector<int> lm;
         vector<int> lmowner;
         curr->second->LocationVector(*this,lm,lmowner);
-        
+
         // get dimension of element matrices and vectors
         // Reshape element matrices and vectors and init to zero
         const int eledim = (int)lm.size();
@@ -486,7 +486,7 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
         elevector1.Size(eledim);
         elevector2.Size(eledim);
         elevector3.Size(eledim);
-        
+
         // call the element specific evaluate method
         int err = curr->second->Evaluate(params,*this,lm,elematrix1,elematrix2,
                                elevector1,elevector2,elevector3);
@@ -495,7 +495,7 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
         // assembly
         if (assemblemat1) LINALG::Assemble(*systemmatrix1,elematrix1,lm,lmowner);
         if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
-        if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner);     
+        if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner);
       }
     }
    } //for (fool=condition_.begin(); fool!=condition_.end(); ++fool)

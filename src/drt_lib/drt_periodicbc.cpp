@@ -173,8 +173,8 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
 
       //--------------------------------------------------
       // get global master node Ids and global slave node Ids
-      masternodeids = mastercond->Get<vector<int> >("Node Ids");
-      slavenodeids  = slavecond ->Get<vector<int> >("Node Ids");
+      masternodeids = mastercond->Nodes();
+      slavenodeids  = slavecond ->Nodes();
 
 
       //----------------------------------------------------------------------

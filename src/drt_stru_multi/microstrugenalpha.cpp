@@ -737,7 +737,7 @@ void MicroStruGenAlpha::DetermineToggle()
   dis->GetCondition("MicroBoundary", conds);
   for (unsigned i=0; i<conds.size(); ++i)
   {
-    const vector<int>* nodeids = conds[i]->Get<vector<int> >("Node Ids");
+    const vector<int>* nodeids = conds[i]->Nodes();
     if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
     const int nnode = (*nodeids).size();
 
@@ -779,7 +779,7 @@ void MicroStruGenAlpha::EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd)
   dis->GetCondition("MicroBoundary", conds);
   for (unsigned i=0; i<conds.size(); ++i)
   {
-    const vector<int>* nodeids = conds[i]->Get<vector<int> >("Node Ids");
+    const vector<int>* nodeids = conds[i]->Nodes();
     if (!nodeids) dserror("MicroBoundary condition does not have nodal cloud");
     const int nnode = (*nodeids).size();
 
@@ -913,7 +913,7 @@ void MicroStruGenAlpha::SetUpHomogenization()
   dis->GetCondition("MicroBoundary", conds);
   for (unsigned i=0; i<conds.size(); ++i)
   {
-    const vector<int>* nodeids = conds[i]->Get<vector<int> >("Node Ids");
+    const vector<int>* nodeids = conds[i]->Nodes();
     if (!nodeids) dserror("MicroBoundary condition does not have nodal cloud");
     const int nnode = (*nodeids).size();
 

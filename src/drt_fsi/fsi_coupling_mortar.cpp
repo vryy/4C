@@ -451,7 +451,7 @@ void FSI::CouplingMortar::FindInterfaceObjects(
     for ( unsigned i = 0; i < conds.size(); ++i )
     {
         // get this condition's nodes
-        const vector<int>* n = conds[i]->Get< vector<int> >("Node Ids");
+        const vector<int>* n = conds[i]->Nodes();
         for ( unsigned j = 0; j < n->size(); ++j )
         {
             int gid = (*n)[j];
