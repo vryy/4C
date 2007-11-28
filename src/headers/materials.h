@@ -48,11 +48,8 @@ typedef struct _MATERIAL
      struct _DAM_MP           *dam_mp;       /* isotropic damage material (mazars-pijadier-cabot)*/
      struct _DAMAGE_GE        *damage_ge;    /* isotropic gradient enhanced damage material */
      struct _HYPER_POLYCONVEX *hyper_polyconvex; /* hyperelastic polyconvex energy strain function */
-<<<<<<< .mine
      struct _ITSKOV           *itskov;       /* Itskov material for isotropic case */
-=======
      struct _ANISOTROPIC_BALZANI *anisotropic_balzani; /* anisotropic hyperelastic polyconvex material */
->>>>>>> .r4291
      struct _TH_FOURIER_ISO   *th_fourier_iso;   /* isotropic Fourier's law of heat conduction */
      struct _TH_FOURIER_GEN   *th_fourier_gen;   /* general heat conduction matrix of Fourier's (linear) law of heat conduction */
      struct _VP_ROBINSON      *vp_robinson;  /* viscoplastic Robinson material */
@@ -560,7 +557,6 @@ typedef struct _HYPER_POLYCONVEX
      DOUBLE                    gamma;
      DOUBLE					   density;
 } HYPER_POLYCONVEX;
-<<<<<<< .mine
 /*----------------------------------------------------------------------*
  | hyperelastic polyconvex material based on                   ah 10/07 |
  | Itskov                                                               |
@@ -574,15 +570,14 @@ typedef struct _ITSKOV
      DOUBLE                    gamma;
      DOUBLE					   density;
 } ITSKOV;
-=======
 /*----------------------------------------------------------------------*
  | anisotropic hyperelastic polyconvex material based on      maf 11/07 |
  | Balzani et. al.                                                      |
  *----------------------------------------------------------------------*/
 typedef struct _ANISOTROPIC_BALZANI
 {
-     DOUBLE                    c1; 
-     DOUBLE                    eps1;  
+     DOUBLE                    c1;
+     DOUBLE                    eps1;
      DOUBLE                    eps2;
      DOUBLE                    alpha1;
      DOUBLE                    alpha2;
@@ -590,7 +585,6 @@ typedef struct _ANISOTROPIC_BALZANI
      INT                       aloc;
      DOUBLE                    a1[3];
 } ANISOTROPIC_BALZANI;
->>>>>>> .r4291
 
 /*----------------------------------------------------------------------*
  | Isotropic heat conduction coefficient                    bborn 03/06 |
