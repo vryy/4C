@@ -585,7 +585,6 @@ typedef struct _ANISOTROPIC_BALZANI
      INT                       aloc;
      DOUBLE                    a1[3];
 } ANISOTROPIC_BALZANI;
-
 /*----------------------------------------------------------------------*
  | Isotropic heat conduction coefficient                    bborn 03/06 |
  | of Fourier's law of heat conduction                                  |
