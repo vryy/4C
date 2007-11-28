@@ -725,8 +725,9 @@ void XFluidImplicitTimeInt::NonlinearSolve()
         discret_->SetState("gridv", gridv_);
       }
 
-      // give elements access to the interfacehande
+      // give elements (read-) access to the interfacehandle and dofmanager
       eleparams.set("interfacehandle",ih);
+      eleparams.set("dofmanager",dofmanager);
       
       // call loop over elements
       discret_->Evaluate(eleparams,sysmat_,residual_);

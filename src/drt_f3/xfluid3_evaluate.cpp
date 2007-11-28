@@ -297,6 +297,14 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
   {
       case calc_fluid_systemmat_and_residual:
       {
+        // first task is to compare that the dofs fit to the current state of the dofmanager
+        // get access to global dofman
+        const RCP<XFEM::DofManager> globaldofman = params.get< RCP< XFEM::DofManager > >("dofmanager",null);
+        if (globaldofman == null) dserror("hey, you did not give me a globaldofmanager (says xfluid3 evaluate)!!!");
+        
+        // check for outdated dof information
+        globaldofman->checkForConsistency((*this), eleDofManager_);
+          
         // need current velocity and history vector
         RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velnp");
         RefCountPtr<const Epetra_Vector> hist  = discretization.GetState("hist");
@@ -386,10 +394,10 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
         // this into the input or to choose a standard implementation and drop all ifs
         // on the element level -- if so, I would recommend to drop vstab...
         
-        bool pstab  = true;
-        bool supg   = true;
-        bool vstab  = true;
-        bool cstab  = true;
+        const bool pstab  = true;
+        const bool supg   = true;
+        const bool vstab  = true;
+        const bool cstab  = true;
 
         // One-step-Theta: timefac = theta*dt
         // BDF2:           timefac = 2/3 * dt
@@ -532,6 +540,14 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
       break;
       case calc_fluid_stationary_systemmat_and_residual:
       {
+          // first task is to compare that the dofs fit to the current state of the dofmanager
+          // get access to global dofman
+          const RCP<XFEM::DofManager> globaldofman = params.get< RCP< XFEM::DofManager > >("dofmanager",null);
+          if (globaldofman == null) dserror("hey, you did not give me a globaldofmanager (says xfluid3 evaluate)!!!");
+          
+          // check for outdated dof information
+          globaldofman->checkForConsistency((*this), eleDofManager_);
+          
           // need current velocity/pressure 
           RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velnp");
           if (velnp==null)
@@ -579,11 +595,11 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
           if (pseudotime < 0.0)
         	  dserror("no value for total (pseudo-)time in the parameter list");
 
-          bool newton = params.get<bool>("include reactive terms for linearisation",false);
-          bool pstab  =true;
-          bool supg   =true;
-          bool vstab  =false;  // viscous stabilisation part switched off !!
-          bool cstab  =true;        
+          const bool newton = params.get<bool>("include reactive terms for linearisation",false);
+          const bool pstab  =true;
+          const bool supg   =true;
+          const bool vstab  =false;  // viscous stabilisation part switched off !!
+          const bool cstab  =true;        
 
           // wrap epetra serial dense objects in blitz objects
           blitz::Array<double, 2> estif(elemat1.A(),

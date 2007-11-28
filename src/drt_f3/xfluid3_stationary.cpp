@@ -137,12 +137,11 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
 
   // set element data
   const DRT::Element::DiscretizationType distype = ele->Shape();
-  const int elegid = ele->Id();
 
   //! information about domain integration cells
-  const XFEM::DomainIntCells   domainIntCells   = ih->domainIntCells(elegid,distype);
+  const XFEM::DomainIntCells   domainIntCells   = ih->domainIntCells(ele->Id(),distype);
   //! information about boundary integration cells
-  const XFEM::BoundaryIntCells boundaryIntCells = ih->boundaryIntCells(elegid);
+  const XFEM::BoundaryIntCells boundaryIntCells = ih->boundaryIntCells(ele->Id());
 
   // get node coordinates
   DRT::Node** const nodes = ele->Nodes();
@@ -177,13 +176,9 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
 //   blitz::Range uz = blitz::Range(2, 4*iel_-2, 4);
 //   blitz::Range p  = blitz::Range(3, 4*iel_-1, 4);
 
+  // TODO: put in global dofmanager and check whether the global dofmanager gives the same results as the stored local one. only then we can be sure that we made no mistake
+  
   const XFEM::ElementDofManager& dofman = ele->eleDofManager_;
-  // cout << "EleID " << ele->Id() << endl;
-
-//  if (domainIntCells.size() != 1){
-//      cin.get();
-//  }
-
 
   // stabilization parameter
   // This has to be done before anything else is calculated because

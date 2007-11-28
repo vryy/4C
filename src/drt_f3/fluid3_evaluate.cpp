@@ -410,10 +410,10 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
         // this into the input or to choose a standard implementation and drop all ifs
         // on the element level -- if so, I would recommend to drop vstab...
         
-        bool pstab  = true;
-        bool supg   = true;
-        bool vstab  = true;
-        bool cstab  = true;
+        const bool pstab  = true;
+        const bool supg   = true;
+        const bool vstab  = true;
+        const bool cstab  = true;
 
         // One-step-Theta: timefac = theta*dt
         // BDF2:           timefac = 2/3 * dt
@@ -771,11 +771,11 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
           if (pseudotime < 0.0)
         	  dserror("no value for total (pseudo-)time in the parameter list");
 
-          bool newton = params.get<bool>("include reactive terms for linearisation",false);
-          bool pstab  =true;
-          bool supg   =true;
-          bool vstab  =false;  // viscous stabilisation part switched off !!
-          bool cstab  =true;        
+          const bool newton = params.get<bool>("include reactive terms for linearisation",false);
+          const bool pstab  =true;
+          const bool supg   =true;
+          const bool vstab  =false;  // viscous stabilisation part switched off !!
+          const bool cstab  =true;        
 
           // wrap epetra serial dense objects in blitz objects
           blitz::Array<double, 2> estif(elemat1.A(),

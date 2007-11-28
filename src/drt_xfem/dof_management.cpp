@@ -201,6 +201,24 @@ const XFEM::ElementDofManager XFEM::DofManager::constructElementDofManager(DRT::
 }
 
 /*----------------------------------------------------------------------*
+ |  sanity check                                                ag 11/07|
+ *----------------------------------------------------------------------*/
+void XFEM::DofManager::checkForConsistency(
+        DRT::Element& ele,
+        const XFEM::ElementDofManager& stored_eledofman) const
+{
+    // create local copy of current information about dofs
+    const XFEM::ElementDofManager current_eledofman = this->constructElementDofManager(ele);
+    
+    // compare with given and report error  
+    if (current_eledofman != stored_eledofman)
+    {
+        dserror("given elementdofmanager is not consistent with global dofmanger");
+    }
+    return;        
+}
+
+/*----------------------------------------------------------------------*
  |  construct dofmap                                            ag 11/07|
  *----------------------------------------------------------------------*/
 const map<int, const set <XFEM::EnrField> > XFEM::DofManager::createNodalDofMap(

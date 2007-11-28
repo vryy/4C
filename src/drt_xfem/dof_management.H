@@ -71,7 +71,20 @@ public:
             else
                 return false;
         }
-    } 
+    }
+    
+    inline bool operator ==(const EnrField& rhs) const
+    {
+        if (getField() == rhs.getField() and getEnrichment() == rhs.getEnrichment())
+            return true;
+        else
+            return false;
+    }
+    
+    inline bool operator !=(const EnrField& rhs) const
+    {
+        return (!(*this == rhs));
+    }
     
 
 private:
@@ -157,14 +170,29 @@ public:
         return tmp->second;
     };
     
-    /// return 
-
+    /// return enrichment value for a given position
     double enrValue(
             const XFEM::Enrichment enr,
             const blitz::Array<double,1>& actpos,
             const blitz::Array<double,1>& nodalpos
             ) const {return XFEM::enrValue(enr,actpos,nodalpos);};
-    
+
+    inline bool operator !=(const ElementDofManager& rhs) const
+    {
+        // in principle, they can be only not equal, of the nodalDofMap is not equal
+        // everything else is derived from that in the constructor
+        bool not_equal = false;
+        if (nodalDofMap_ != rhs.nodalDofMap_)
+        {
+            not_equal = true;
+        }
+        else
+        {
+            not_equal = false;
+        }
+        return not_equal;
+    };
+            
 private:
 	//! unknowns for each global node id (gid)
 	map<int, const set <XFEM::EnrField> > nodalDofMap_;
@@ -224,6 +252,10 @@ public:
     };
 
     const XFEM::ElementDofManager constructElementDofManager(DRT::Element& ele) const;
+    
+    void checkForConsistency(
+            DRT::Element& ele,
+            const XFEM::ElementDofManager& eledofman) const;
     
 private:
 	// pointer to the xfem discretization of which we hold the unknowns
