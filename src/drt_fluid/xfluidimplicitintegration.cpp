@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file xfluidimplicitintegration
+\file xfluidimplicitintegration.cpp
 \brief Control routine for fluid time integration. Includes
 
      o Single step one-step-theta time integration
@@ -221,10 +221,10 @@ void XFluidImplicitTimeInt::ComputeSingleFieldRowMaps(RCP<XFEM::DofManager> dofm
 	// collect global dofids for velocity and pressure in vectors
 	for (int i=0; i<discret_->NumMyRowNodes(); ++i) {
 		const DRT::Node* node = discret_->lRowNode(i);
-		const std::set<EnrField> enrvarset = dofman->getDofs(node->Id());
+		const std::set<XFEM::EnrField> enrvarset = dofman->getDofs(node->Id());
 		const vector<int> dof = discret_->Dof(node);
 		dsassert(dof.size() == enrvarset.size(), "mismatch in length!");
-		std::set<EnrField>::const_iterator enrvar;
+		std::set<XFEM::EnrField>::const_iterator enrvar;
 		unsigned int countdof = 0;
 		for (enrvar = enrvarset.begin(); enrvar != enrvarset.end(); ++enrvar) {
 			switch (enrvar->getField()) {

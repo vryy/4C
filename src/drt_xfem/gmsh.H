@@ -23,21 +23,21 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_discret.H"
 
-using namespace XFEM;
-
 namespace GMSH
 {
 
 std::string elementToString(const double scalar, DRT::Element* ele);
+std::string elementToString(const vector<double> scalarfield, DRT::Element* ele);
+std::string elementToString(const vector<vector<double> > vectorfield, DRT::Element* ele);
 
-std::string cellToString(const double scalar, const DomainIntCell& ele, DRT::Element* ele);
+std::string cellToString(const double scalar, const XFEM::DomainIntCell& ele, DRT::Element* ele);
 
-std::string cellToString(const double scalar, const BoundaryIntCell& ele, DRT::Element* ele);
+std::string cellToString(const double scalar, const XFEM::BoundaryIntCell& ele, DRT::Element* ele);
 
 std::string disToString(const std::string s, const double scalar, RefCountPtr<DRT::Discretization> dis);
 
 std::string disToString(const std::string s, const double scalar, RefCountPtr<DRT::Discretization> dis,
-        map<int, DomainIntCells >&  elementDomainIntCellsMap);
+        map<int, XFEM::DomainIntCells >&  elementDomainIntCellsMap);
 
 std::string getConfigString(const int numview);
 

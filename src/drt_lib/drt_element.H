@@ -144,6 +144,7 @@ public:
     pyramid5,                   // 5 noded pyramid
     line2,                      // 2 noded line
     line3,                      // 3 noded line
+    point1,                     // 1 noded point
     max_distype                 //  end marker. must be the last entry
   };
 

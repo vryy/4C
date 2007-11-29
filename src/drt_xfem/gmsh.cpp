@@ -219,6 +219,7 @@ std::string GMSH::getConfigString(const int numview)
 std::string GMSH::distypeToGmshElementHeader(const DRT::Element::DiscretizationType distype)
 {
 	switch (distype){
+	case DRT::Element::point1: return "P";   break;
 	case DRT::Element::quad4:  return "Q";   break;
 	case DRT::Element::quad9:  return "Q";  break;
 	case DRT::Element::tri3:   return "T";   break;
@@ -236,6 +237,7 @@ std::string GMSH::distypeToGmshElementHeader(const DRT::Element::DiscretizationT
 int GMSH::distypeToGmshNumNode(const DRT::Element::DiscretizationType distype)
 {
 	switch (distype){
+	case DRT::Element::point1: return 1;   break;
 	case DRT::Element::quad4:  return 4;   break;
 	case DRT::Element::quad9:  return 4;   break;
 	case DRT::Element::tri3:   return 3;   break;
