@@ -74,6 +74,9 @@ void CONTACT::Interface::FillComplete()
     Discret().FillComplete(false,false,false);
   } 
   
+  // get standard nodal column map
+  RCP<Epetra_Map> oldnodecolmap = rcp (new Epetra_Map(*(Discret().NodeColMap() )));
+      
   // to ease our search algorithms we'll afford the luxury to ghost all nodes
   // on all processors. To do so, we'll take the nodal row map and export it
   // to full overlap. Then we export the discretization to full overlap 
@@ -144,29 +147,44 @@ void CONTACT::Interface::FillComplete()
     const Epetra_Map* nodecolmap = Discret().NodeColMap();
     vector<int> sc;
     vector<int> sr;
+    vector<int> scfull;
     vector<int> mc;
     vector<int> mr;
+    vector<int> mcfull;
     for (int i=0; i<nodecolmap->NumMyElements(); ++i)
     {
-      int gid      = nodecolmap->GID(i);
+      int gid = nodecolmap->GID(i);
       bool isslave = dynamic_cast<CONTACT::CNode*>(Discret().gNode(gid))->IsSlave();
-      if (isslave) sc.push_back(gid);
-      else         mc.push_back(gid);
+      if (oldnodecolmap->MyGID(gid))
+      {
+    	  if (isslave) sc.push_back(gid);
+    	  else         mc.push_back(gid);
+      }  
+      if (isslave) scfull.push_back(gid);
+      else         mcfull.push_back(gid);
       if (!noderowmap->MyGID(gid)) continue;
       if (isslave) sr.push_back(gid);
       else         mr.push_back(gid);
     }
     snoderowmap_ = rcp(new Epetra_Map(-1,(int)sr.size(),&sr[0],0,Comm()));
+    snodefullmap_ = rcp(new Epetra_Map(-1,(int)scfull.size(),&scfull[0],0,Comm()));
     snodecolmap_ = rcp(new Epetra_Map(-1,(int)sc.size(),&sc[0],0,Comm()));
     mnoderowmap_ = rcp(new Epetra_Map(-1,(int)mr.size(),&mr[0],0,Comm()));
+    mnodefullmap_ = rcp(new Epetra_Map(-1,(int)mcfull.size(),&mcfull[0],0,Comm()));
     mnodecolmap_ = rcp(new Epetra_Map(-1,(int)mc.size(),&mc[0],0,Comm()));
   }
-
+  
   return;
 }
 
-
-
+/*----------------------------------------------------------------------*
+ |  evaluate contact (public)                                 popp 11/07|
+ *----------------------------------------------------------------------*/
+void CONTACT::Interface::Evaluate()
+{
+  // not yet implemented
+  return;
+}
 
 
 #endif  // #ifdef CCADISCRET

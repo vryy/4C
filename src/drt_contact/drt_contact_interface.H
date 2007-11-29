@@ -168,6 +168,19 @@ public:
   \return Filled()==true
   */
   virtual void FillComplete();
+  
+  /*!
+  \brief Set current deformation state
+    
+  */
+  inline virtual void SetState(const string& statename, const RCP<Epetra_Vector> vec)
+  { idiscret_->SetState(statename, vec); return; }
+
+  /*!
+  \brief Evaluate contact
+      
+  */
+  virtual void Evaluate();
 
 protected:
 
@@ -176,15 +189,16 @@ protected:
   Interface(const Interface& old);
 
 
-  int                           id_;           // unique interface id
-  const Epetra_Comm&            comm_;         // communicator
-  RCP<DRT::Discretization>      idiscret_;     // the discretization of the contact interface
-  RCP<Epetra_Map>               snoderowmap_;  // row map of all slave nodes
-  RCP<Epetra_Map>               snodecolmap_;  // column map of all slave nodes
-  RCP<Epetra_Map>               mnoderowmap_;  // row map of all master nodes
-  RCP<Epetra_Map>               mnodecolmap_;  // column map of all master nodes
-
-
+  int                           id_;            // unique interface id
+  const Epetra_Comm&            comm_;          // communicator
+  RCP<DRT::Discretization>      idiscret_;      // the discretization of the contact interface
+  RCP<Epetra_Map>               snoderowmap_;   // row map of all slave nodes
+  RCP<Epetra_Map>               snodecolmap_;   // column map of all slave nodes
+  RCP<Epetra_Map>               snodefullmap_;  // fully overlapping column map of all slave nodes
+  RCP<Epetra_Map>               mnoderowmap_;   // row map of all master nodes
+  RCP<Epetra_Map>               mnodecolmap_;   // column map of all master nodes
+  RCP<Epetra_Map>               mnodefullmap_;  // fully overlapping column map of all master nodes
+  
 }; // class Interface
 } // namespace CONTACT
 

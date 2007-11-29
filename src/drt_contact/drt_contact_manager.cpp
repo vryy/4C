@@ -219,9 +219,28 @@ void CONTACT::Manager::Print(ostream& os) const
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  set current deformation state (public)                    popp 11/07|
+ *----------------------------------------------------------------------*/
+void CONTACT::Manager::SetState(const string& statename, const RCP<Epetra_Vector> vec)
+{
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+	  interface_[i]->SetState(statename,vec);
+  }
+  return;
+}
 
-
-
-
+/*----------------------------------------------------------------------*
+ |  evaluate contact (public)                                 popp 11/07|
+ *----------------------------------------------------------------------*/
+void CONTACT::Manager::Evaluate()
+{
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+	  interface_[i]->Evaluate();
+  }
+  return;
+}
 
 #endif  // #ifdef CCADISCRET

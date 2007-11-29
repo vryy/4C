@@ -547,6 +547,14 @@ void ContactStruGenAlpha::FullNewton()
     }
     LINALG::Complete(*stiff_);
 
+    //-------------------------make contact modifications to lhs and rhs
+    {
+    	contactmanager_->SetState("displacement",dism_);
+    	// (almost) all contact stuff is done here!
+    	contactmanager_->Evaluate();
+    	
+    }
+    
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);

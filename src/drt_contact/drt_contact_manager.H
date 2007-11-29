@@ -91,6 +91,19 @@ public:
 
   */
   inline DRT::Discretization& Discret() const { return discret_;};
+  
+  /*!
+  \brief Set current deformation state
+  
+  */
+  void SetState(const string& statename, const RCP<Epetra_Vector> vec);
+  
+  /*!
+  \brief Evaluate contact
+    
+  */
+  void Evaluate();
+  
 
 protected:
 
