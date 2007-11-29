@@ -193,6 +193,7 @@ protected:
     
     PostField* field_;
     string filename_;
+    int myrank_;
 
     vector<vector<int> > filesets_;
 

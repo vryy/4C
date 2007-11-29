@@ -22,7 +22,9 @@
 EnsightWriter::EnsightWriter(
         PostField* field,
         const string filename) :
-    field_(field), filename_(filename)
+    field_(field),
+    filename_(filename),
+    myrank_(((field->problem())->comm())->MyPID())
 {
     // map between distype in BACI and Ensight string
     //  note: these would be the direct mappings
@@ -48,6 +50,10 @@ EnsightWriter::EnsightWriter(
 void EnsightWriter::WriteFiles()
 {
     PostResult result = PostResult(field_);
+    
+#ifndef PARALLEL
+    if (myrank_>0) dserror("have serial filter version, but myrank > 0");
+#endif
     
     // timesteps when the solution is written
     const vector<double> soltime = result.get_result_times(field_->name());
