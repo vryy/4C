@@ -129,6 +129,141 @@ void DatFileReader::Activate()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+bool DatFileReader::ReadSection(string name, Teuchos::ParameterList& list)
+{
+  if (name.length() < 3 or name[0]!='-' or name[1]!='-')
+    dserror("illegal section name '%s'", name.c_str());
+
+  Teuchos::ParameterList& sublist = list.sublist(name.substr(2));
+
+  if (positions_.find(name)==positions_.end())
+    return false;
+
+  for (unsigned pos = positions_[name]+1;
+       pos < lines_.size();
+       ++pos)
+  {
+    string line = lines_[pos];
+    if (line[0]=='-' and line[1]=='-')
+    {
+      break;
+    }
+
+    // we expect a line: key = value
+    // The first = in the line will be taken for the
+    // separator. Thus we cannot have a = in a key.
+    std::string::size_type delim = line.find('=');
+    if (delim==std::string::npos)
+      dserror("no key=value pair in line %d: %s", pos, line.c_str());
+
+    std::string key   = line.substr(0,delim-1);
+    std::string value = line.substr(delim+2);
+
+    // Now parse the value. Find integers and doubles if there are
+    // any.
+    AddEntry(key, value, sublist);
+  }
+  return true;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DatFileReader::ReadGidSection(string name, Teuchos::ParameterList& list)
+{
+  if (name.length() < 3 or name[0]!='-' or name[1]!='-')
+    dserror("illegal section name '%s'", name.c_str());
+
+  Teuchos::ParameterList& sublist = list.sublist(name.substr(2));
+
+  if (positions_.find(name)==positions_.end())
+    return false;
+
+  for (unsigned pos = positions_[name]+1;
+       pos < lines_.size();
+       ++pos)
+  {
+    string line = lines_[pos];
+    if (line[0]=='-' and line[1]=='-')
+    {
+      break;
+    }
+
+    string key;
+    string value;
+
+    string::size_type loc = line.find(" ");
+    if (loc==string::npos)
+    {
+      //dserror("line '%s' with just one word in GiD parameter section", line.c_str());
+      key = line;
+    }
+    else
+    {
+      //if (line.find(" ", loc+1)!=string::npos)
+      //  dserror("more that two words on line '%s' in GiD parameter section", line.c_str());
+      key = line.substr(0,loc);
+      value = line.substr(loc+1);
+    }
+
+    // Now parse the value. Find integers and doubles if there are
+    // any.
+    AddEntry(key, value, sublist);
+  }
+
+  return true;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DatFileReader::AddEntry(string key, string value, Teuchos::ParameterList& list)
+{
+  const char* v = value.c_str();
+  char* endptr = NULL;
+
+  // Try converging to int first. If the end pointer points to
+  // the trailing zero, we are done.
+  long int iv = strtol(v, &endptr, 10);
+  if (*endptr=='\0')
+  {
+    list.set(key,static_cast<int>(iv));
+  }
+  else
+  {
+    double dv = strtod(v, &endptr);
+    if (*endptr=='\0')
+    {
+      list.set(key,dv);
+    }
+    else
+    {
+#if 0
+      if (value=="True" or value=="true" or value=="TRUE")
+        list.set(key,true);
+      else if (value=="False" or value=="false" or value=="FALSE")
+        list.set(key,false);
+
+      else if (value=="Yes" or value=="yes" or value=="YES")
+        list.set(key,true);
+      else if (value=="No" or value=="no" or value=="NO")
+        list.set(key,false);
+
+      else if (value=="On" or value=="on" or value=="ON")
+        list.set(key,true);
+      else if (value=="Off" or value=="off" or value=="OFF")
+        list.set(key,false);
+
+      else
+#endif
+        list.set(key,value);
+    }
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DatFileReader::ReadDat()
 {
   vector<string> exclude;
@@ -178,15 +313,26 @@ void DatFileReader::ReadDat()
       // independent tests.
       if (!ignoreline)
       {
-        for (vector<int>::size_type i=0; i<exclude.size(); ++i)
+
+        // remember all section positions
+        if (line.find("--")==0)
         {
-          if (line.find(exclude[i]) != string::npos)
+          // take the last "--" and all that follows as section name
+          loc = line.rfind("--");
+          string sectionname = line.substr(loc);
+          positions_[sectionname] = content.size();
+
+          for (vector<int>::size_type i=0; i<exclude.size(); ++i)
           {
-            positions_[exclude[i]] = file.tellg();
-            ignoreline = true;
-            break;
+            if (line.find(exclude[i]) != string::npos)
+            {
+              excludepositions_[exclude[i]] = file.tellg();
+              ignoreline = true;
+              break;
+            }
           }
         }
+
       }
 
       // remember line
@@ -274,11 +420,12 @@ void DatFileReader::ReadDat()
 #ifdef PARALLEL
     // distribute excluded section positions
     for (vector<int>::size_type i=0; i<exclude.size(); ++i)
-      //comm_->Broadcast(&positions_[exclude[i]],1,0);
-      MPI_Bcast(&positions_[exclude[i]],1,MPI_INT,0,mpicomm.GetMpiComm());
+      //comm_->Broadcast(&excludepositions_[exclude[i]],1,0);
+      MPI_Bcast(&excludepositions_[exclude[i]],1,MPI_INT,0,mpicomm.GetMpiComm());
 #endif
   }
 }
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -394,7 +541,7 @@ void ElementReader::Partition()
   // approximate block size (just a guess!)
   int nblock = numproc;
   int bsize = static_cast<int>(eids.size())/nblock;
-  
+
   // create a simple (pseudo linear) map
   int mysize = bsize;
   if (myrank==numproc-1)
@@ -403,22 +550,22 @@ void ElementReader::Partition()
   roweles_ = rcp(new Epetra_Map(-1,mysize,&eids[myrank*bsize],0,*comm_));
 
   // for block sizes larger than about 250000 elements (empirical value !)
-  // the code sometimes hangs during ExportRowElements call for the 
-  // second block (block 1). 
+  // the code sometimes hangs during ExportRowElements call for the
+  // second block (block 1).
   // Therefore an upper limit of 200000 for bsize is ensured below.
-  
+
   int maxblocksize = 200000;
-  
+
   if (bsize > maxblocksize)
   {
-    // without an additional increase of nblock by 1 the last block size 
-    // could reach a maximum value of (2*maxblocksize)-1, potentially 
+    // without an additional increase of nblock by 1 the last block size
+    // could reach a maximum value of (2*maxblocksize)-1, potentially
     // violating the intended upper limit!
     nblock = 1+ static_cast<int>(eids.size()/maxblocksize);
     bsize = maxblocksize;
   }
-    
-   eids.clear(); 
+
+   eids.clear();
 
   // For simplicity we remember all node ids of all elements on
   // processor 0. This way we can create the graph on processor 0 and
@@ -441,7 +588,7 @@ void ElementReader::Partition()
 
   // note that the last block is special....
   for (int block=0; block<nblock; ++block)
-  {  
+  {
     if (not endofsection and 0==myrank)
     {
       int bcount=0;
@@ -500,7 +647,7 @@ void ElementReader::Partition()
     } // if (0==myrank)
     // export block of elements to other processors as reflected in the linear
     // map roweles
-    
+
     // export junk of elements to other processors
     dis_->ExportRowElements(*roweles_);
   }

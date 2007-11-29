@@ -576,7 +576,8 @@ typedef enum _FSI_COUPLING
   fsi_iter_stagg_steep_desc_force=9,
   fsi_iter_stagg_Newton_FD=10,
   fsi_iter_stagg_Newton_I=11,
-  fsi_iter_nox=12
+  fsi_iter_nox=12,
+  fsi_iter_monolithic=13
 } FSI_COUPLING;
 
 

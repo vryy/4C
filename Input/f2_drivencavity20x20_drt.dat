@@ -31,16 +31,6 @@ TIMETYP      Dynamic
 RESTART      0
 //!RESTART      5
 ----------------------------------------------------------------IO
-STRUCT_DISP_FILE   No
-STRUCT_STRESS_FILE No
-STRUCT_DISP_GID    No
-STRUCT_STRESS_GID  No
-FLUID_SOL_FILE     Yes
-FLUID_SOL_GID      Yes
-FLUID_VIS_FILE     No
-ALE_DISP_FILE      No
-ALE_DISP_GID       No
-MONITORING         No
 ------------------------------------------------------------STATIC
 GEOLINEAR
 -----------------------------------------------EIGENVALUE ANALYSIS
@@ -66,10 +56,8 @@ MAXITER      50
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP   Nlin_Time_Int
 TIMEINTEGR   One_Step_Theta
-NUMDF        3
 VISCSTRESS   no
 FREESURFACE  no
-IPRERHS      1
 UPPSS        1
 UPOUT        1
 UPRES        1
@@ -109,11 +97,9 @@ TOLENCHECK   1.0E-6
 RELAX        1.0
 ITEMAX       1
 CONVTOL      1.0E-6
-NESTEDITER   no
 ISDMAX       0
 ICHMAX       0
 ITECHAPP     20
-ICHOPT       no
 ------------------------------------------------------FLUID SOLVER
 //SOLVER         SPOOLES_nonsym
 SOLVER         UMFPACK

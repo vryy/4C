@@ -157,7 +157,7 @@ static void input_surf_volconstr(multimap<int,RefCountPtr<DRT::Condition> >& vcb
 /*----------------------------------------------------------------------*
  | input of conditions                                    m.gee 11/06   |
  *----------------------------------------------------------------------*/
-void input_conditions(const DRT::Problem& problem)
+void DRT::Problem::ReadConditions()
 {
   /*---------------------------------------------- input of time curves */
   DRT::Utils::TimeCurveManager::Instance().ReadInput();
@@ -324,7 +324,7 @@ void input_conditions(const DRT::Problem& problem)
   multimap<int,RefCountPtr<DRT::Condition> > surffluidstresscalc;
   input_surf_stress_calc(surffluidstresscalc);
   setup_condition(surffluidstresscalc, dsurf_fenode);
-  
+
   //-------------------------------- read line LIFTDRAG conditions
   multimap<int,RefCountPtr<DRT::Condition> > lineLIFTDRAG;
   input_line_LIFTDRAG(lineLIFTDRAG);
@@ -333,20 +333,20 @@ void input_conditions(const DRT::Problem& problem)
   multimap<int,RefCountPtr<DRT::Condition> > surfLIFTDRAG;
   input_surf_LIFTDRAG(surfLIFTDRAG);
   setup_condition(surfLIFTDRAG, dsurf_fenode);
-  
+
   //--------------------- read surf conditions for volume constraint
   multimap<int,RefCountPtr<DRT::Condition> > surfvolconstr;
   input_surf_volconstr(surfvolconstr);
-  setup_condition(surfvolconstr, dsurf_fenode);  
+  setup_condition(surfvolconstr, dsurf_fenode);
 
 
   // Iterate through all discretizations and sort the appropiate condition into
   // the correct discretization it applies to
-  for (unsigned i=0; i<problem.NumFields(); ++i)
+  for (unsigned i=0; i<NumFields(); ++i)
   {
-    for (unsigned j=0; j<problem.NumDis(i); ++j)
+    for (unsigned j=0; j<NumDis(i); ++j)
     {
-      RefCountPtr<DRT::Discretization> actdis = problem.Dis(i,j);
+      RefCountPtr<DRT::Discretization> actdis = Dis(i,j);
       const Epetra_Map* noderowmap = actdis->NodeRowMap();
 
       register_condition("Dirichlet", "Point Dirichlet", pointdirich, actdis, noderowmap);
@@ -384,14 +384,14 @@ void input_conditions(const DRT::Problem& problem)
 
       register_condition("FluidStressCalc", "Line Fluid Stress Calculation", linefluidstresscalc, actdis, noderowmap);
       register_condition("FluidStressCalc", "Surf Fluid Stress Calculation", surffluidstresscalc, actdis, noderowmap);
-      
+
       register_condition("LIFTDRAG", "Line LIFTDRAG", lineLIFTDRAG, actdis, noderowmap);
-      register_condition("LIFTDRAG", "Surf LIFTDRAG", surfLIFTDRAG, actdis, noderowmap); 
-      
+      register_condition("LIFTDRAG", "Surf LIFTDRAG", surfLIFTDRAG, actdis, noderowmap);
+
       register_condition("VolumeConstraint_3D","Surface Volume Constraint",surfvolconstr,actdis, noderowmap);
     }
   }
-} /* end of input_conditions */
+}
 
 
 /*----------------------------------------------------------------------*
@@ -2504,13 +2504,13 @@ void input_line_LIFTDRAG(multimap<int,RefCountPtr<DRT::Condition> >& lldmap)
     if(ierr!=1)
       dserror("Cannot read design-line LIFTDRAG conditions");
     dlineid--;
-    
+
     /*--------------------------------- move pointer behind the "-" sign */
     char* colptr = strstr(allfiles.actplace,"-");
     if(colptr==NULL)
       dserror("Cannot read design-line LIFTDRAG conditions");
     colptr++;
-    
+
     /*------------------------------------------------------ read values */
     int label = strtol(colptr,&colptr,10);
     vector<double> centercoord(3,0.0);
@@ -2519,7 +2519,7 @@ void input_line_LIFTDRAG(multimap<int,RefCountPtr<DRT::Condition> >& lldmap)
 
     if (label <= 0)
       dserror("LiftDrag Label must be greater than 0!");
-    
+
     /*----------------------------------------- create boundary condition */
     RefCountPtr<DRT::Condition> myldcond =
            rcp(new DRT::Condition(dlineid,DRT::Condition::LineLIFTDRAG,true,
@@ -2529,7 +2529,7 @@ void input_line_LIFTDRAG(multimap<int,RefCountPtr<DRT::Condition> >& lldmap)
 
     /*------------------- add the condition to the map of all conditions */
     lldmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dlineid,myldcond));
-    
+
     //-------------------------------------------------- read the next line
     frread();
   } // while(strncmp(allfiles.actplace,"------",6)!=0)
@@ -2545,7 +2545,7 @@ void input_surf_LIFTDRAG(multimap<int,RefCountPtr<DRT::Condition> >& sldmap)
   /*-------- find the beginning of surface stress calculation conditions */
   if (frfind("---DESIGN FLUID SURF LIFT&DRAG")==0) return;
   frread();
-  
+
   /*--------------------- read number of design surfaces with conditions */
   int ierr=0;
   int ndsurf=0;
@@ -2569,17 +2569,17 @@ void input_surf_LIFTDRAG(multimap<int,RefCountPtr<DRT::Condition> >& sldmap)
     if(colptr==NULL)
       dserror("Cannot read design-surface LIFTDRAG conditions");
     colptr++;
-	
+
     //-------------------------------read values
     int label = strtol(colptr,&colptr,10);
     vector<double> centercoord(3,0.0);
     centercoord[0] = strtod(colptr,&colptr);
     centercoord[1] = strtod(colptr,&colptr);
     centercoord[2] = strtod(colptr,&colptr);
-	
+
     if (label <= 0)
       dserror("LiftDrag Label must be greater than 0!");
-    
+
     /*----------------------------------------- create boundary condition */
 	// create boundary condition
     RefCountPtr<DRT::Condition> condition =
@@ -2587,7 +2587,7 @@ void input_surf_LIFTDRAG(multimap<int,RefCountPtr<DRT::Condition> >& sldmap)
                                   DRT::Condition::Surface));
     condition->Add("label",label);
     condition->Add("centerCoord",centercoord);
-		
+
     //---------------------- add the condition to the map of all conditions
     sldmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dsurfid,condition));
     //-------------------------------------------------- read the next line
@@ -2602,11 +2602,11 @@ void input_surf_LIFTDRAG(multimap<int,RefCountPtr<DRT::Condition> >& sldmap)
 void input_surf_volconstr(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
 {
   /*-------------------- find the beginning of volume constraint surface */
-  if (frfind("---DESIGN SURFACE VOLUME CONSTRAINT 3D")==0) 
+  if (frfind("---DESIGN SURFACE VOLUME CONSTRAINT 3D")==0)
 	  {
 	    return;
 	  }
-	  
+
   frread();
   /*--------------------- read number of design surfaces with conditions */
   int ierr=0;
@@ -2625,17 +2625,17 @@ void input_surf_volconstr(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
     if(ierr!=1)
       dserror("Cannot read design-surface for volume constraint 3D");
     dsurfid--;
-    
+
     /*--------------------------------- move pointer behind the "-" sign */
     char* colptr = strstr(allfiles.actplace,"-");
     if(colptr==NULL)
        dserror("Cannot read design-surface for volume constraint 3D");
     colptr++;
-        
+
     //------------------------------- define some temporary reading vectors
     int    	VolConstrID=strtol(colptr,&colptr,10);
-    int  	VolConstrCurve=-1;       
-    
+    int  	VolConstrCurve=-1;
+
     //---------------------------------- read the curve number or 'none'
     char buffer[200];
     ierr=sscanf(colptr," %s ",buffer);
@@ -2657,16 +2657,16 @@ void input_surf_volconstr(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
        colptr = strpbrk(colptr,"1234567890");
        colptr++;
     }
-    
+
 
     // create boundary condition
     RefCountPtr<DRT::Condition> condition =
            rcp(new DRT::Condition(dsurfid,DRT::Condition::VolumeConstraint_3D,true,
                                   DRT::Condition::Surface));
-    
+
     condition->Add("ConditionID",&VolConstrID,1);
-    condition->Add("curve",&VolConstrCurve,1);    
-    
+    condition->Add("curve",&VolConstrCurve,1);
+
     //------------------------------- put condition in map of conditions
     snmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dsurfid,condition));
 

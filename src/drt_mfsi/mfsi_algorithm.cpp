@@ -23,6 +23,7 @@
 #undef UMFPACK
 #endif
 
+#include <Thyra_DefaultRealLinearSolverBuilder.hpp>
 #include <Thyra_AmesosLinearOpWithSolveFactory.hpp>
 #include <Thyra_AztecOOLinearOpWithSolveFactory.hpp>
 
@@ -186,16 +187,45 @@ MFSI::Algorithm::Algorithm(Epetra_Comm& comm)
   vecSpaces[4] = sfmap_;
   dofrowmap_ = Teuchos::rcp(new Thyra::DefaultProductVectorSpace<double>(numBlocks, &vecSpaces[0]));
 
+#if 0
+  Teuchos::RCP<Teuchos::FancyOStream> out = Teuchos::VerboseObjectBase::getDefaultOStream();
+
+  // use a solver builder for the standard field solvers so we get all the default behaviour
+  Thyra::DefaultRealLinearSolverBuilder linearSolverBuilder;
+
+  if (comm_.MyPID()==0)
+  {
+    std::cout << *linearSolverBuilder.getValidParameters() << std::endl;
+
+    //linearSolverBuilder.getValidParameters()->print(std::cout,
+    //                                                Teuchos::ParameterList::PrintOptions().showDoc(true).indent(2).showTypes(true));
+  }
+
+  Teuchos::RCP< Teuchos::ParameterList > paramList = Teuchos::rcp(new ParameterList());
+  linearSolverBuilder.setParameterList(paramList);
+
+  if (comm_.MyPID()==0)
+  {
+    paramList->print(std::cout);
+  }
+
+  structsolverfactory_ = linearSolverBuilder.createLinearSolveStrategy("");
+  structsolverfactory_->setOStream(out);
+  structsolverfactory_->setVerbLevel(Teuchos::VERB_LOW);
+
+  fluidsolverfactory_ = linearSolverBuilder.createLinearSolveStrategy("");
+  fluidsolverfactory_->setOStream(out);
+  fluidsolverfactory_->setVerbLevel(Teuchos::VERB_LOW);
+
+  alesolverfactory_ = linearSolverBuilder.createLinearSolveStrategy("");
+  alesolverfactory_->setOStream(out);
+  alesolverfactory_->setVerbLevel(Teuchos::VERB_LOW);
+#else
   // field solvers used within the block preconditioner
   structsolverfactory_ = Teuchos::rcp(new Thyra::AmesosLinearOpWithSolveFactory(Thyra::Amesos::KLU));
   fluidsolverfactory_ = Teuchos::rcp(new Thyra::AmesosLinearOpWithSolveFactory(Thyra::Amesos::UMFPACK));
   alesolverfactory_ = Teuchos::rcp(new Thyra::AmesosLinearOpWithSolveFactory(Thyra::Amesos::KLU));
-
-  // es gibt builder fuer factories! Brauche ich die?
-  //
-  // const LinearSolverBuilderBase<Scalar> &linearSolverBuilder
-  //  .createLinearSolveStrategy
-  //  .createPreconditioningStrategy
+#endif
 
   sfidentity_ = Teuchos::rcp(new Thyra::DefaultIdentityLinearOp<double>(Thyra::create_VectorSpace(structure_->InterfaceMap())));
 

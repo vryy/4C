@@ -36,17 +36,6 @@ NUMSTRUCDIS  0
 NUMALEDIS    0
 NUMTHERMDIS  0
 ----------------------------------------------------------------IO
-STRUCT_DISP_FILE   	No
-STRUCT_STRESS_FILE 	No
-STRUCT_DISP_GID    	No
-STRUCT_STRESS_GID  	No
-STRUCT_STRESS_GID_SMO   No
-FLUID_SOL_FILE          Yes
-FLUID_SOL_GID           Yes
-FLUID_VIS_FILE          No
-ALE_DISP_FILE           No
-ALE_DISP_GID            No
-MONITORING              No
 ------------------------------------------------------------STATIC
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
@@ -56,8 +45,6 @@ TIME_RHS     mass
 TIMEINTEGR   BDF2 
 VISCSTRESS   no
 FREESURFACE  no
-IPRERHS      1
-NUMCONT      1
 UPPSS        1
 UPOUT        1
 UPRES        1

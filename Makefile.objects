@@ -117,7 +117,8 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
 		src/drt_lib/drt_periodicbc.o \
                 src/drt_lib/drt_timecurve.o \
                 src/drt_lib/drt_function.o \
-                src/drt_lib/drt_discret_evaluate.o
+                src/drt_lib/drt_discret_evaluate.o \
+		src/drt_lib/drt_validparameters.o
 OBJS_DRT      = \
                 src/drt_lib/drt_resulttest.o \
                 src/drt_lib/drt_inputreader.o \

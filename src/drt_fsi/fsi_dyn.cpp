@@ -44,6 +44,15 @@
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;
+
+
 
 /*----------------------------------------------------------------------*/
 // create ale discretization parallel to the fluid one
@@ -310,7 +319,9 @@ void fsi_ale_drt()
   if (aledis->NumGlobalNodes()==0)
     CreateAleDiscretization();
 
-  if (true)
+  FSI_DYNAMIC *fsidyn = alldyn[3].fsidyn;
+
+  if (fsidyn->ifsi != fsi_iter_monolithic)
   {
     Teuchos::RefCountPtr<FSI::DirichletNeumannCoupling> fsi = rcp(new FSI::DirichletNeumannCoupling(comm));
 

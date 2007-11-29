@@ -18,7 +18,9 @@ Maintainer: Ulrich Kuettler
 #define DRT_GLOBALPROBLEM_H
 
 #include <vector>
+
 #include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
 
 #include "drt_discret.H"
 #include "drt_inputreader.H"
@@ -37,6 +39,8 @@ using namespace Teuchos;
 
 namespace DRT
 {
+
+class DatFileReader;
 
 
 /// Global problem instance that keeps the discretizations
@@ -87,7 +91,7 @@ namespace DRT
   \author u.kue
   \date 06/07
  */
-class Problem
+class Problem : public Teuchos::ParameterListAcceptorDefaultBase
 {
 public:
 
@@ -105,6 +109,52 @@ public:
     require proper cleanup. Make sure we always do it.
    */
   static void Done();
+
+  //@}
+
+  /// @name Input
+
+  /// read global parameters
+  void ReadParameter(DRT::DatFileReader& reader);
+
+  /// input of not mesh or time based problem data
+  void InputControl();
+
+  /// input of dynamic problem data
+  void InputDynamicControl();
+
+  /// setup the discretizations
+  void ReadFields(DRT::DatFileReader& reader);
+
+  /// input of materials
+  void ReadMaterial();
+
+  /// input of conditions
+  void ReadConditions();
+
+  //@}
+
+  /// @name Parameters read from file
+
+  /// Set parameters from a parameter list and return with default values.
+  void setParameterList(Teuchos::RCP< Teuchos::ParameterList > const &paramList);
+
+  /// Return a const parameter list of all of the valid parameters that this->setParameterList(...) will accept.
+  Teuchos::RCP<const Teuchos::ParameterList> getValidParameters() const;
+
+  //@}
+
+  /// @name Input parameter sections
+  /// direct access to parameters from input file sections
+
+  const Teuchos::ParameterList& ProblemTypeParams() const { return getParameterList()->sublist("PROBLEM TYP"); }
+  const Teuchos::ParameterList& ProblemSizeParams() const { return getParameterList()->sublist("PROBLEM SIZE"); }
+  const Teuchos::ParameterList& IOParams() const { return getParameterList()->sublist("IO"); }
+  const Teuchos::ParameterList& DiscretisationParams() const { return getParameterList()->sublist("DISCRETISATION"); }
+  const Teuchos::ParameterList& StructuralDynamicParams() const { return getParameterList()->sublist("STRUCTURAL DYNAMIC"); }
+  const Teuchos::ParameterList& FluidDynamicParams() const { return getParameterList()->sublist("FLUID DYNAMIC"); }
+  const Teuchos::ParameterList& AleDynamicParams() const { return getParameterList()->sublist("ALE DYNAMIC"); }
+  const Teuchos::ParameterList& FSIDynamicParams() const { return getParameterList()->sublist("FSI DYNAMIC"); }
 
   //@}
 
@@ -166,11 +216,17 @@ private:
   /// the single instance
   static vector<RefCountPtr<Problem> > instances_;
 
+  /// setup solver structure
+  void InputSolverControl(std::string section, _SOLVAR* solv);
+
   /// discretizations of this problem
   vector<vector<RefCountPtr<Discretization> > > discretizations_;
 
   /// material vector
   vector<_MATERIAL> material_;
+
+  /// solver vector
+  vector<_SOLVAR> solver_;
 };
 
 }

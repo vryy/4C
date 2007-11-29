@@ -31,15 +31,6 @@ NUMFIELD     3
 TIMETYP      Dynamic
 RESTART      0
 ----------------------------------------------------------------IO
-STRUCT_DISP_FILE   Yes
-STRUCT_STRESS_FILE No
-STRUCT_DISP_GID    Yes
-STRUCT_STRESS_GID  No
-FLUID_SOL_FILE     Yes
-FLUID_SOL_GID      Yes
-FLUID_VIS_FILE     No
-ALE_DISP_FILE      Yes
-ALE_DISP_GID       Yes
 ------------------------------------------------------------STATIC
 GEOLINEAR
 -----------------------------------------------EIGENVALUE ANALYSIS
@@ -63,13 +54,9 @@ ITERATION    full
 TOLDISP      1.0E-10
 MAXITER      50
 -----------------------------------------------------FLUID DYNAMIC
-SOLVE_FLUID  No
 DYNAMICTYP   Nlin_Time_Int
 TIMEINTEGR   One_Step_Theta
-NUMDF        3
 VISCSTRESS   no
-IPRERHS      1
-NUMCONT      1
 UPPSS        1
 UPOUT        1
 UPRES        1
@@ -88,7 +75,6 @@ STEADYTOL    1.0E-6
 STARTINGALGO One_Step_Theta
 NUMSTASTEPS  0
 START_THETA  1.00
-FLUID_START1 1.00
 INITIALFIELD zero_field
 STARTFUNCNO  2
 TURBULENCE   No
@@ -120,11 +106,9 @@ TOLENCHECK   1.0
 RELAX        0.825
 ITEMAX       100
 CONVTOL      1.0E-8
-NESTEDITER   no
 ISDMAX       0
 ICHMAX       0
 ITECHAPP     20
-ICHOPT       no
 ------------------------------------------------------------------------List
 Nonlinear Solver = Line Search Based
 Max Iterations = 100

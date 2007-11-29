@@ -1765,6 +1765,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
         fsidyn->ifsi=fsi_iter_stagg_Newton_I;
       else if (frwordcmp(buffer,"iter_nox")==0)
         fsidyn->ifsi=fsi_iter_nox;
+      else if (frwordcmp(buffer,"iter_monolithic")==0)
+        fsidyn->ifsi=fsi_iter_monolithic;
       else
          dserror("Coupling Algorithm COUPALGO unknown");
    }
@@ -2232,7 +2234,7 @@ void inpctr_dyn_timada(TIMADA_DYNAMIC* timada)
 #ifdef DEBUG
   dstrc_enter("inpctr_dyn_timada");
 #endif
-  
+
   /*--------------------------------------------------------------------*/
   /* input */
   frchar("TA_KIND", buffer, &ierr);

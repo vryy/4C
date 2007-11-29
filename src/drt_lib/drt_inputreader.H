@@ -106,12 +106,21 @@ public:
     read so that we can read them in parallel. This is done using the
     NodeReader and the ElementReader.
    */
-  ifstream::pos_type ExcludedSectionPosition(string section) const { return positions_.find(section)->second; }
+  ifstream::pos_type ExcludedSectionPosition(string section) const { return excludepositions_.find(section)->second; }
 
   /// return my communicator
-  RefCountPtr<Epetra_Comm> Comm() const { return comm_; }
+  Teuchos::RCP<Epetra_Comm> Comm() const { return comm_; }
+
+  /// convert a parameter section in extended format in a parameter list
+  bool ReadSection(string name, Teuchos::ParameterList& list);
+
+  /// convert a parameter section in GiD format in a parameter list
+  bool ReadGidSection(string name, Teuchos::ParameterList& list);
 
 private:
+
+  /// parse the value and add the key,value pair to the list
+  void AddEntry(string key, string value, Teuchos::ParameterList& list);
 
   /// actual read dat file, store and broadcast general sections
   void ReadDat();
@@ -138,8 +147,10 @@ private:
   vector<char*> lines_;
 
   /// file positions of skipped sections
-  map<string,ifstream::pos_type> positions_;
+  map<string,ifstream::pos_type> excludepositions_;
 
+  /// section positions of all sections
+  map<string,unsigned> positions_;
 };
 
 

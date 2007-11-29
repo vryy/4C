@@ -12,6 +12,7 @@ Maintainer: Malte Neumann
 ---------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
 #include <../headers/compile_settings.h>
+#include "../drt_lib/drt_validparameters.H"
 
 #ifdef TRAP_FE
 
@@ -162,6 +163,17 @@ if ((argc == 2) && (strcmp(argv[1], "-v") == 0)) {
     print_define_dbl(A3FAC_SHELL9);
     print_define(MAXNODESTRESS_SHELL9);
     print_define(MAXNOD_WALL1);
+    printf("\n\n");
+  }
+}
+else if ((argc == 2) &&
+	 ((strcmp(argv[1], "-p") == 0) ||
+	   (strcmp(argv[1], "--parameters"))))
+{
+  if (par.myrank==0)
+  {
+    printf("\n\nValid parameters in input file\n\n");
+    PrintValidParameters();
     printf("\n\n");
   }
 }

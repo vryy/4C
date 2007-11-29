@@ -39,7 +39,6 @@ FLUID_SOL         Yes
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP   Nlin_Time_Int
 TIMEINTEGR   One_Step_Theta
-NUMDF        4
 UPPSS        1
 UPOUT        1
 UPRES        1
@@ -53,7 +52,6 @@ CONVCHECK    L_2_norm
 CONVTOL      1.0E-6
 STARTINGALGO One_Step_Theta
 NUMSTASTEPS  0
-FLUID_START1 0.67
 INITIALFIELD zero_field
 ------------------------------------------------------FLUID SOLVER
 //SOLVER         UMFPACK

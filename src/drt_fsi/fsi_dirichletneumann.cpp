@@ -87,6 +87,9 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
   nstep_ = fsidyn->nstep;
   maxtime_ = fsidyn->maxtime;
 
+  if (globalparameterlist==Teuchos::null)
+    globalparameterlist = Teuchos::rcp(new Teuchos::ParameterList);
+
   displacementcoupling_ = globalparameterlist->get("Displacement Coupling", true);
 
   SetupStructure();

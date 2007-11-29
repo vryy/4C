@@ -38,7 +38,7 @@ extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*
  | input of materials                                     m.gee 4/01    |
  *----------------------------------------------------------------------*/
-void input_material_ccadiscret(DRT::Problem& problem)
+void DRT::Problem::ReadMaterial()
 {
 _MATERIAL  localmat;
 INT  ierr, ierralloc, int_dummy;
@@ -47,10 +47,6 @@ struct    _KINLAY *actlay;           /*actual kinematic layer -> shell9 */
 DOUBLE    klay_sum;                  /*total hight or shell9*/
 DOUBLE    mlay_sum;                  /*hight of a kinematic layer*/
 
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_enter("inp_material");
-#endif
 /*----------------------------------------------------------------------*/
 if (frfind("--MATERIALS")==0) dserror("frfind: MATERIALS is not in input file");
 frread();
@@ -584,7 +580,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*----------------------------------------------------------------------*/
    /* add local material vector to problem instance                        */
    /*----------------------------------------------------------------------*/
-   problem.AddMaterial(localmat);
+   AddMaterial(localmat);
 
    /*----------------------------------------------------------------------*/
    frread();
@@ -592,10 +588,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 
 if (i==0)
   dserror("No material could be read from inputfile\n");
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
 return;
 } /* end of inp_material */
 
