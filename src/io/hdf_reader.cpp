@@ -53,7 +53,7 @@ void IO::HDFReader::Open(string basename,int num_output_procs)
  * Note: this function should only be called when the HDFReader opened
  * the mesh files
  *----------------------------------------------------------------------*/
-RefCountPtr<std::vector<char> > IO::HDFReader::ReadElementData(int step, int new_proc_num, int my_id)
+RefCountPtr<std::vector<char> > IO::HDFReader::ReadElementData(int step, int new_proc_num, int my_id) const
 {
   if (files_.size()==0 || files_[0] == -1)
     dserror("Tried to read data without opening any file");
@@ -82,7 +82,7 @@ RefCountPtr<std::vector<char> > IO::HDFReader::ReadCondition(
         const int step,
         const int new_proc_num,
         const int my_id,
-        const string condname)
+        const string condname) const
 {
   if (files_.size()==0 || files_[0] == -1)
     dserror("Tried to read data without opening any file");
@@ -123,8 +123,10 @@ RefCountPtr<std::vector<char> > IO::HDFReader::ReadCondition(
  * Note: this function should only be called when the HDFReader opened
  * the mesh files
  *----------------------------------------------------------------------*/
-RefCountPtr<std::vector<char> > IO::HDFReader::ReadNodeData(int step, int new_proc_num,
-                                                     int my_id)
+RefCountPtr<std::vector<char> > IO::HDFReader::ReadNodeData(
+        int step,
+        int new_proc_num,
+        int my_id) const
 {
   if (files_.size()==0 || files_[0] == -1)
     dserror("Tried to read data without opening any file");
@@ -281,7 +283,7 @@ IO::HDFReader::ReadDoubleData(string path, int start, int end) const
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 RefCountPtr<Epetra_Vector>
-IO::HDFReader::ReadResultData(string id_path, string value_path, const Epetra_Comm& Comm)
+IO::HDFReader::ReadResultData(string id_path, string value_path, const Epetra_Comm& Comm) const
 {
   int new_proc_num = Comm.NumProc();
   int my_id = Comm.MyPID();
@@ -320,9 +322,9 @@ void IO::HDFReader::Close()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::HDFReader::CalculateRange(int new_proc_num, int my_id, int& start, int& end)
+void IO::HDFReader::CalculateRange(int new_proc_num, int my_id, int& start, int& end) const
 {
-  int mod = num_output_proc_ % new_proc_num;
+  const int mod = num_output_proc_ % new_proc_num;
   if (my_id < mod)
   {
     start = (num_output_proc_ / new_proc_num + 1)*my_id;

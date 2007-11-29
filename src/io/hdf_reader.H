@@ -87,14 +87,14 @@ public:
     Note: this function should only be called while the HDFReader reads
     mesh files
   */
-  RefCountPtr<std::vector<char> > ReadElementData(int step, int new_proc_num=0, int my_id=0);
+  RefCountPtr<std::vector<char> > ReadElementData(int step, int new_proc_num, int my_id) const;
 
   //! read the packed nodal data from the mesh files
   /*!
     Note: this function should only be called while the HDFReader reads
     mesh files
   */
-  RefCountPtr<std::vector<char> > ReadNodeData(int step, int new_proc_num=0, int my_id=0);
+  RefCountPtr<std::vector<char> > ReadNodeData(int step, int new_proc_num, int my_id) const;
 
   /*!reads the packed periodic boundary condition data from the mesh files
    *!
@@ -105,7 +105,7 @@ public:
         const int step,
         const int new_proc_num,
         const int my_id,
-        const string condname);
+        const string condname) const;
 
   //! read an Epetra_Vector from the result files
   /*!
@@ -116,7 +116,7 @@ public:
     \param value_path   (in): hdf5 path to value array (from control file)
     \param Comm         (in): the communicator
    */
-  RefCountPtr<Epetra_Vector> ReadResultData(string id_path, string value_path, const Epetra_Comm& Comm);
+  RefCountPtr<Epetra_Vector> ReadResultData(string id_path, string value_path, const Epetra_Comm& Comm) const;
 
 private:
 
@@ -126,7 +126,7 @@ private:
     returns all the data in one vector. The data is assumed to by of type char.
    */
   RefCountPtr<std::vector<char> > ReadCharData(std::string path,
-                                               int start=0, int end=-1) const;
+                                               int start, int end) const;
 
   //! reads the dataset 'path' in all the files in the range [start,end)
   /*!
@@ -134,7 +134,7 @@ private:
     returns all the data in one vector<int>
   */
   RefCountPtr<std::vector<int> > ReadIntData(std::string path,
-                                             int start=0, int end=-1) const;
+                                             int start, int end) const;
 
   //! reads the dataset 'path' in all the files in the range [start,end)
   /*!
@@ -142,7 +142,7 @@ private:
     read.
   */
   RefCountPtr<std::vector<double> > ReadDoubleData(std::string path,
-                                                   int start=0, int end=-1) const;
+                                                   int start, int end) const;
 
   //! Figure out which subset of files this process needs to read
   /*!
@@ -160,7 +160,7 @@ private:
     \param start       (out): first file I have to read
     \param end         (out): first file I do not read
    */
-  void CalculateRange(int new_proc_num, int my_id, int& start, int& end);
+  void CalculateRange(int new_proc_num, int my_id, int& start, int& end) const;
 
   //! the names of the files opened here
   std::vector<std::string> filenames_;
