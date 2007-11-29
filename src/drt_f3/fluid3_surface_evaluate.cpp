@@ -73,12 +73,16 @@ int DRT::Elements::Fluid3Surface::Evaluate(     ParameterList&            params
       RefCountPtr<const Epetra_Vector> dispnp;
       vector<double> mydispnp;
 
-      dispnp = discretization.GetState("dispnp");
-      if (dispnp!=null)
+      if (parent_->IsAle())
       {
-        mydispnp.resize(lm.size());
-        DRT::Utils::ExtractMyValues(*dispnp,mydispnp,lm);
+        dispnp = discretization.GetState("dispnp");
+        if (dispnp!=null)
+        {
+          mydispnp.resize(lm.size());
+          DRT::Utils::ExtractMyValues(*dispnp,mydispnp,lm);
+        }
       }
+
       IntegrateShapeFunction(params,discretization,lm,elevec1,mydispnp);
       break;
     }
@@ -366,8 +370,10 @@ void DRT::Elements::Fluid3Surface::IntegrateShapeFunction(ParameterList& params,
     xyze(2,i)=this->Nodes()[i]->X()[2];
   }
 
-  if (edispnp.size()!=0)
+  if (parent_->IsAle())
   {
+    dsassert(edispnp.size()!=0,"paranoid");
+
     for (int i=0;i<iel;i++)
     {
       xyze(0,i) += edispnp[4*i];

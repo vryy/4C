@@ -50,12 +50,16 @@ int DRT::Elements::Fluid2Line::Evaluate(        ParameterList&            params
       RefCountPtr<const Epetra_Vector> dispnp;
       vector<double> mydispnp;
 
-      dispnp = discretization.GetState("dispnp");
-      if (dispnp!=null)
+      if (parent_->IsAle())
       {
-        mydispnp.resize(lm.size());
-        DRT::Utils::ExtractMyValues(*dispnp,mydispnp,lm);
+        dispnp = discretization.GetState("dispnp");
+        if (dispnp!=null)
+        {
+          mydispnp.resize(lm.size());
+          DRT::Utils::ExtractMyValues(*dispnp,mydispnp,lm);
+        }
       }
+
       IntegrateShapeFunction(params,discretization,lm,elevec1,mydispnp);
       break;
     }
@@ -261,8 +265,10 @@ void DRT::Elements::Fluid2Line::IntegrateShapeFunction(ParameterList& params,
     xye(1,i)=this->Nodes()[i]->X()[1];
   }
 
-  if (edispnp.size()!=0)
+  if (parent_->IsAle())
   {
+    dsassert(edispnp.size()!=0,"paranoid");
+
     for (int i=0;i<iel;i++)
     {
       xye(0,i) += edispnp[3*i];
