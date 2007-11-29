@@ -173,7 +173,7 @@ protected:
      */
     void FileSwitcher(
             ofstream& file,                                          ///< filestream that is switched
-            unsigned int& fileset,                                   ///< ???
+            bool& multiple_files,                                    ///< ???
             vector<vector<int> >& filesets,                          ///< ???
             map<string, vector<ofstream::pos_type> >& resultfilepos, ///< ???
             const int stepsize,                                      ///< ???
@@ -191,14 +191,31 @@ protected:
             const vector<double>& times   ///< vector with time value for each time step
             ) const;
     
+    //! create string for FILE section in the case file
+    string GetFileSectionStringFromFilesets(
+            const vector<vector<int> >& filesets  ///< filesets when using multiple huge binary files
+            ) const;
+    
     PostField* field_;
     string filename_;
     int myrank_;
 
-    vector<vector<int> > filesets_;
+    /// keep track, in how many files we split the result due to FILE_SIZE_LIMIT_
+    /// store filesets for the solution in the order they are written (velocity, pressure,...)
+    /// In there, we can store, how many resultsteps are in each of the splitted files
+    vector<vector<int> > solfilesets_;
 
     //! maps a distype to the corresponding Ensight cell type
     map<DRT::Element::DiscretizationType, string> distype2ensightstring_;
+    
+    // maximum file size
+    static const unsigned FILE_SIZE_LIMIT_ = 0x7fffffff; // 2GB
+    //static const unsigned FILE_SIZE_LIMIT_ = 1024*10; // 10kB ... usefull for debugging ;-)
+    
+    //! we write new file sets, if files are split, but let the old ones in the case file
+    //! we offset the new sets by this factor (look at the case file for illustration)
+    //! of set to 1, we overwrite the filel set for the geo file.
+    static const unsigned FILE_SET_OFFSET_ = 11;
 };
 
 
