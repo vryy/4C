@@ -166,6 +166,7 @@ if ((argc == 2) && (strcmp(argv[1], "-v") == 0)) {
     printf("\n\n");
   }
 }
+#ifdef CCADISCRET
 else if ((argc == 2) &&
 	 ((strcmp(argv[1], "-p") == 0) ||
 	   (strcmp(argv[1], "--parameters"))))
@@ -177,6 +178,7 @@ else if ((argc == 2) &&
     printf("\n\n");
   }
 }
+#endif
 else {
   /* Here we turn the NaN and inf numbers of. No need to calculate
    * those. If those appear the calculation needs much (!) more
