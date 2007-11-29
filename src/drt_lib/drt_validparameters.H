@@ -45,7 +45,7 @@ extern "C"
 {
 #endif
 
-  /// print list of valid parameters with documentation
+  /*! print list of valid parameters with documentation */
   void PrintValidParameters();
 
 #ifdef __cplusplus
