@@ -61,13 +61,6 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 extern struct _FILES  allfiles;
 
 /*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | structure of flags to control output                                 |
- | defined in out_global.c                                              |
- *----------------------------------------------------------------------*/
-extern struct _IO_FLAGS     ioflags;
-
-/*----------------------------------------------------------------------*
  | global variable *solv, vector of lenght numfld of structures SOLVAR  |
  | defined in solver_control.c                                          |
  |                                                                      |
@@ -133,7 +126,10 @@ void dyn_fluid_drt()
   // a.ger 11/07
   dsassert(genprob.timetyp==time_dynamic, "alldyn not allocated!!!\n For stationary computations, choose TIMETYP Dynamic and switch time integration for fluid to stationary instead");
 
-  const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
+  const Teuchos::ParameterList& probsize = DRT::Problem::Instance()->ProblemSizeParams();
+  const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
+  const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
 
   // -------------------------------------------------------------------
   // create a solver
@@ -156,7 +152,7 @@ void dyn_fluid_drt()
     FluidImplicitTimeInt::SetDefaults(fluidtimeparams);
 
     // number of degrees of freedom
-    fluidtimeparams.set<int>              ("number of velocity degrees of freedom" ,genprob.ndim);
+    fluidtimeparams.set<int>              ("number of velocity degrees of freedom" ,probsize.get<int>("DIM"));
     // the default time step size
     fluidtimeparams.set<double>           ("time step size"           ,fdyn.get<double>("TIMESTEP"));
     // max. sim. time
@@ -188,7 +184,7 @@ void dyn_fluid_drt()
     // solution output
     fluidtimeparams.set                  ("write solution every"      ,fdyn.get<int>("UPRES"));
     // flag for writing stresses
-    fluidtimeparams.set                  ("write stresses"            ,ioflags.fluid_stress);
+    fluidtimeparams.set                  ("write stresses"            ,Teuchos::getIntegralValue<int>(ioflags,"FLUID_STRESS"));
 
     //--------------------------------------------------
     // evaluate error for test flows with analytical solutions
@@ -207,10 +203,10 @@ void dyn_fluid_drt()
                                        output);
 
     //--------------------------------------------------
-    if (genprob.restart)
+    if (probtype.get<int>("RESTART"))
     {
       // read the restart information, set vectors and variables
-      fluidimplicit.ReadRestart(genprob.restart);
+      fluidimplicit.ReadRestart(probtype.get<int>("RESTART"));
     }
     else
     {
@@ -249,7 +245,7 @@ void dyn_fluid_drt()
     ParameterList fluidtimeparams;
 
     // number of degrees of freedom
-    fluidtimeparams.set<int>              ("number of velocity degrees of freedom" ,genprob.ndim);
+    fluidtimeparams.set<int>              ("number of velocity degrees of freedom" ,probsize.get<int>("DIM"));
     // the default time step size
     fluidtimeparams.set<double>           ("time step size"           ,fdyn.get<double>("TIMESTEP"));
     // max. sim. time
@@ -275,7 +271,7 @@ void dyn_fluid_drt()
     // solution output
     fluidtimeparams.set                  ("write solution every"      ,fdyn.get<int>("UPRES"));
     // flag for writing stresses
-    fluidtimeparams.set                  ("write stresses"            ,ioflags.fluid_stress);
+    fluidtimeparams.set                  ("write stresses"            ,Teuchos::getIntegralValue<int>(ioflags,"FLUID_STRESS"));
 
     //------------evaluate error for test flows with analytical solutions
     int init = Teuchos::getIntegralValue<int>(fdyn,"INITIALFIELD");
@@ -305,10 +301,10 @@ void dyn_fluid_drt()
 
 
     //------------- initialise the field from input or restart
-    if (genprob.restart)
+    if (probtype.get<int>("RESTART"))
     {
       // read the restart information, set vectors and variables
-      genalphaint.ReadRestart(genprob.restart);
+      genalphaint.ReadRestart(probtype.get<int>("RESTART"));
     }
     else
     {
