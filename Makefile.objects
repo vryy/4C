@@ -95,6 +95,7 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/drt_discret_partition.o \
                 src/drt_lib/drt_discret_utils.o \
                 src/drt_lib/drt_globalproblem.o \
+                src/drt_lib/drt_inputreader.o \
                 src/drt_lib/drt_element.o \
                 src/drt_lib/drt_elementregister.o \
                 src/drt_lib/drt_node.o \
@@ -121,7 +122,6 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
 		src/drt_lib/drt_validparameters.o
 OBJS_DRT      = \
                 src/drt_lib/drt_resulttest.o \
-                src/drt_lib/drt_inputreader.o \
                 src/drt_lib/drt_init_control.o \
                 src/drt_lib/global_inp_control2.o \
                 src/drt_lib/global_inp_control3.o \

@@ -52,6 +52,7 @@ struct _PAR     par;
 struct _FIELD  *field;
 struct _GENPROB genprob;
 struct _MATERIAL *mat;
+struct _IO_FLAGS ioflags;
 
 // not actually used, but referenced in par_assignmesh.c
 struct _PARTITION  *partition;
@@ -430,7 +431,7 @@ void PostProblem::read_meshes()
         RefCountPtr<vector<char> > cond_pbcssurf =
         reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "SurfacePeriodic");
         currfield.discretization()->UnPackCondition(cond_pbcssurf, "SurfacePeriodic");
-        
+
         // read XFEMCoupling boundary conditions if available
         RefCountPtr<vector<char> > cond_xfem =
         reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "XFEMCoupling");
@@ -440,7 +441,7 @@ void PostProblem::read_meshes()
         // need field based communicators.
         create_communicators();
 
- 
+
         // setup of parallel layout: create ghosting of already distributed nodes+elems
 #ifdef PARALLEL
         setup_ghosting(currfield.discretization());
@@ -532,18 +533,18 @@ PostField PostProblem::getfield(MAP* field_info)
  * set up the parallel discretization layout(ghosting!) (private) gjb 11/07
  *-----------------------------------------------------------------------*/
 void PostProblem::setup_ghosting(RefCountPtr<DRT::Discretization> dis)
-{ 
-    // this section is strongly oriented on what is done during the 
+{
+    // this section is strongly oriented on what is done during the
 	// usual BACI setup phase.
     // reference: src/drt_lib/drt_inputreader.cpp
 	// ToDo: make PostProblem::setup_ghosting a method of the dicretization class itself
-	
-	int numnode=dis->NumMyColNodes();   
+
+	int numnode=dis->NumMyColNodes();
     vector<int> nids(numnode);         // vector for global node ids
-    
+
     // we have to know about the global node ids on each processor.
     // since the current discretization is NOT(!!!) Filled() yet, the following was
-    // the only solution to create the ghosting for ALREADY DISTRIBUTED nodes/elements. 
+    // the only solution to create the ghosting for ALREADY DISTRIBUTED nodes/elements.
     int nodecount=0;
     int ngid=0;
     while(nodecount < numnode)
@@ -551,44 +552,44 @@ void PostProblem::setup_ghosting(RefCountPtr<DRT::Discretization> dis)
     	if (dis->HaveGlobalNode(ngid)) // do we have this global node id on this processor?
     	{ nids[nodecount]= ngid;
     	  nodecount+=1;
-    	}  
+    	}
   	    ngid+=1;
     }
 
     // now create a preliminary node row map
     RefCountPtr<Epetra_Map> rownodes = rcp(new Epetra_Map(-1,nids.size(),&nids[0],0,*comm_));
     nids.clear();
-  
+
     // construct graphs
     RefCountPtr<Epetra_CrsGraph> graph = rcp(new Epetra_CrsGraph(Copy,*rownodes,81,false));
-    RefCountPtr<Epetra_CrsGraph> finalgraph = rcp(new Epetra_CrsGraph(Copy,*rownodes,81,false)); 
+    RefCountPtr<Epetra_CrsGraph> finalgraph = rcp(new Epetra_CrsGraph(Copy,*rownodes,81,false));
 
-#if 0        
+#if 0
     //cout<<dis->NumMyColNodes()<<endl;
-    //rownodes->Print(cout);   
+    //rownodes->Print(cout);
     dis->Print(cout);
-#endif    
-    
+#endif
+
     // loop over all elements located on this processor (no ghosting existent)
     list<vector<int> > elementnodes;
-  
-    int numele = dis->NumMyColElements();  
+
+    int numele = dis->NumMyColElements();
     int elecount=0;
     int elegid=0;
     while(elecount < numele)
     {
 	  if (dis->HaveGlobalElement(elegid)) // do we have this global element id on this processor?
-	  { 
-	    elecount+=1;	  
+	  {
+	    elecount+=1;
 	    // get the node ids of this element...
 	    const int  numnode = dis->gElement(elegid)->NumNode();
 	    const int* nodeids1 = dis->gElement(elegid)->NodeIds();
 	    // ... and store them locally
 	    elementnodes.push_back(vector<int>(nodeids1, nodeids1+numnode));
-	  }  
+	  }
 	elegid+=1;
     } // while
- 
+
 #if 0
       cout << "\n\nelementnodes: size=" << elementnodes.size() << endl;
       for (list<vector<int> >::iterator i=elementnodes.begin();
@@ -602,9 +603,9 @@ void PostProblem::setup_ghosting(RefCountPtr<DRT::Discretization> dis)
 #if 0
       // storage set for refused row numbers
       set<int> refusedrowgid;
-#endif 
-      
-    // initial fill-up of the node dependency graph  
+#endif
+
+    // initial fill-up of the node dependency graph
     for (list<vector<int> >::iterator i=elementnodes.begin();
            i!=elementnodes.end();
            ++i)
@@ -612,7 +613,7 @@ void PostProblem::setup_ghosting(RefCountPtr<DRT::Discretization> dis)
         // get the node ids of this element
         int  numelnodes = static_cast<int>(i->size());
         int* nodeids = &(*i)[0];
-     
+
         // loop nodes and add this topology to the row in the graph of every node
         for (int i=0; i<numelnodes; ++i)
         {
@@ -634,13 +635,13 @@ void PostProblem::setup_ghosting(RefCountPtr<DRT::Discretization> dis)
         	  refusedrowgid.insert(nodeids[i]);
 #endif
           }
-        }         
+        }
       } // end for-loop over elementnodes
-    
-    elementnodes.clear(); 
-    
 
-      // finalize construction of initial graph 
+    elementnodes.clear();
+
+
+      // finalize construction of initial graph
       // FillComplete() is necessary for the following transposition)
       int err = graph->FillComplete(*rownodes,*rownodes);
       if (err) dserror("graph->FillComplete returned %d",err);
@@ -649,23 +650,23 @@ void PostProblem::setup_ghosting(RefCountPtr<DRT::Discretization> dis)
       RefCountPtr<EpetraExt::CrsGraph_Transpose::CrsGraph_Transpose> graphtransposer = rcp(new EpetraExt::CrsGraph_Transpose());
       // create graph object
       RefCountPtr<Epetra_CrsGraph> tgraph = rcp(new Epetra_CrsGraph(Copy,*rownodes,81,false));
-      Epetra_CrsGraph& new_graph = ((*tgraph));      
+      Epetra_CrsGraph& new_graph = ((*tgraph));
       // finally do the transposition
       new_graph=(*graphtransposer)(*graph);
       // free memory of the graph transposer object
       graphtransposer=null;
- 
+
 #if 0
       if (!(refusedrowgid.empty()))
       {
     	  set<int>::iterator j;
     	  for (j = refusedrowgid.begin(); j != refusedrowgid.end(); ++j)
     	  	{
-             cout<<"Proc: "<<par.myrank<<"  Iterator = "<<*j<<endl;          
+             cout<<"Proc: "<<par.myrank<<"  Iterator = "<<*j<<endl;
     	  	}
       }
 #endif
-     
+
     // loop over my rows of transposed graph and insert dependencies to final graph
     for (int lid = 0; lid < tgraph->NumMyRows(); ++lid)
     {
@@ -675,31 +676,31 @@ void PostProblem::setup_ghosting(RefCountPtr<DRT::Discretization> dis)
      vector<int> nodeentries(maxrowlength,0);
      int* nodeids = &(nodeentries)[0];
      // what is the Global row index??
-     //cout<<"Proc: "<<par.myrank<<"  Iterator = "<<j <<"  gid: "<<gid<<endl; 
-     if (gid > (-1)) 
+     //cout<<"Proc: "<<par.myrank<<"  Iterator = "<<j <<"  gid: "<<gid<<endl;
+     if (gid > (-1))
           {
         	 // int err = tgraph->ExtractGlobalRowView(gid,numelnodes,nodeids);
         	  int err = tgraph->ExtractGlobalRowCopy(gid,maxrowlength,numelnodes,nodeids);
-              if (err<0) dserror("error while extracting global row copy from transposed graph: %d",err);         
+              if (err<0) dserror("error while extracting global row copy from transposed graph: %d",err);
 #if 0
               for (int k=0;k<numelnodes;++k)
                {
         	    cout<<"nodeids["<<k<<"] = "<<nodeids[k]<<endl;
                }
-#endif 
+#endif
           // insert node gids into final graph
           err = finalgraph->InsertGlobalIndices(gid,numelnodes,nodeids);
           if (err<0) dserror("finalgraph->InsertGlobalIndices returned %d",err);
           }
     }
-    	 
+
     // finalize construction of final graph
     err = finalgraph->FillComplete(*rownodes,*rownodes);
     if (err) dserror("graph->FillComplete returned %d",err);
-      
-    // no partition of the graph using metis here, since we want to keep the currently 
+
+    // no partition of the graph using metis here, since we want to keep the currently
     // existing parallel distribution of nodes and elements
-    
+
     // replace rownodes, colnodes with row and column maps from the graph
     // do stupid conversion from Epetra_BlockMap to Epetra_Map
     const Epetra_BlockMap& brow = finalgraph->RowMap();
@@ -716,30 +717,30 @@ void PostProblem::setup_ghosting(RefCountPtr<DRT::Discretization> dis)
                                    0,
                                    *comm_));
 
-#if 0        
-    //rownodes->Print(cout);   
+#if 0
+    //rownodes->Print(cout);
     //colnodes->Print(cout);
-    //graph->Print(cout); 
+    //graph->Print(cout);
     //tgraph->Print(cout);
     finalgraph->Print(cout);
 #endif
-    
-    // clean up 
+
+    // clean up
     graph = null;
     finalgraph = null;
     tgraph = null;
-    
-    // distribute ghost nodes resolving the node dependencies given by the final graph 
+
+    // distribute ghost nodes resolving the node dependencies given by the final graph
     dis->ExportColumnNodes(*colnodes);
 
     // now we do the element stuff
     RefCountPtr<Epetra_Map> elerowmap;
     RefCountPtr<Epetra_Map> elecolmap;
-  
+
     // now we have all elements in a linear map roweles
     // build resonable maps for elements from the
     // already valid and final node maps
-    // note that nothing is actually redistributed in here   
+    // note that nothing is actually redistributed in here
     dis->BuildElementRowColumn(*rownodes,*colnodes,elerowmap,elecolmap);
 
     // we can now export elements to resonable row element distribution
@@ -749,10 +750,10 @@ void PostProblem::setup_ghosting(RefCountPtr<DRT::Discretization> dis)
     dis->ExportColumnElements(*elecolmap);
 
 #if 0
-    dis->Print(cout); 
+    dis->Print(cout);
 #endif
 
-    return;	
+    return;
 }
 
 

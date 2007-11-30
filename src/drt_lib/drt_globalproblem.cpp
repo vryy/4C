@@ -508,11 +508,13 @@ void DRT::Problem::ReadFields(DRT::DatFileReader& reader)
     if (genprob.numfld!=3) dserror("numfld != 3 for fsi problem");
     field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
     field[genprob.numsf].fieldtyp = structure;
-    inpdis(&(field[genprob.numsf]));
     field[genprob.numff].fieldtyp = fluid;
-    inpdis(&(field[genprob.numff]));
     field[genprob.numaf].fieldtyp = ale;
-    inpdis(&(field[genprob.numaf]));
+
+    // obsolete
+    field[genprob.numsf].ndis = DiscretisationParams().get<int>("NUMSTRUCDIS");
+    field[genprob.numff].ndis = DiscretisationParams().get<int>("NUMFLUIDDIS");
+    field[genprob.numaf].ndis = DiscretisationParams().get<int>("NUMALEDIS");
 
     structdis = rcp(new DRT::Discretization("Structure",reader.Comm()));
     fluiddis = rcp(new DRT::Discretization("Fluid",reader.Comm()));
@@ -537,7 +539,9 @@ void DRT::Problem::ReadFields(DRT::DatFileReader& reader)
     if (genprob.numfld!=1) dserror("numfld != 1 for ale problem");
     field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
     field[genprob.numaf].fieldtyp = ale;
-    inpdis(&(field[genprob.numaf]));
+
+    // obsolete
+    field[genprob.numaf].ndis = DiscretisationParams().get<int>("NUMALEDIS");
 
     aledis = rcp(new DRT::Discretization("Ale",reader.Comm()));
     AddDis(genprob.numaf, aledis);
@@ -553,7 +557,9 @@ void DRT::Problem::ReadFields(DRT::DatFileReader& reader)
     if (genprob.numfld!=1) dserror("numfld != 1 for fluid problem");
     field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
     field[genprob.numff].fieldtyp = fluid;
-    inpdis(&(field[genprob.numff]));
+
+    // obsolete
+    field[genprob.numff].ndis = DiscretisationParams().get<int>("NUMFLUIDDIS");
 
     fluiddis = rcp(new DRT::Discretization("Fluid",reader.Comm()));
     AddDis(genprob.numff, fluiddis);
@@ -569,9 +575,11 @@ void DRT::Problem::ReadFields(DRT::DatFileReader& reader)
     dsassert(genprob.numfld==2, "numfld != 2 for fluid problem with XFEM interfaces");
     field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
     field[genprob.numsf].fieldtyp = structure;
-    inpdis(&(field[genprob.numsf]));
     field[genprob.numff].fieldtyp = fluid;
-    inpdis(&(field[genprob.numff]));
+
+    // obsolete
+    field[genprob.numsf].ndis = DiscretisationParams().get<int>("NUMSTRUCDIS");
+    field[genprob.numff].ndis = DiscretisationParams().get<int>("NUMFLUIDDIS");
 
     structdis = rcp(new DRT::Discretization("Structure",reader.Comm()));
     fluiddis = rcp(new DRT::Discretization("Fluid",reader.Comm()));
@@ -603,7 +611,9 @@ void DRT::Problem::ReadFields(DRT::DatFileReader& reader)
     if (genprob.numfld!=1) dserror("numfld != 1 for structural problem");
     field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
     field[genprob.numsf].fieldtyp = structure;
-    inpdis(&(field[genprob.numsf]));
+
+    // obsolete
+    field[genprob.numsf].ndis = DiscretisationParams().get<int>("NUMSTRUCDIS");
 
     structdis = rcp(new DRT::Discretization("Structure",reader.Comm()));
     AddDis(genprob.numsf, structdis);
@@ -620,8 +630,9 @@ void DRT::Problem::ReadFields(DRT::DatFileReader& reader)
     if (genprob.numfld!=1) dserror("numfld != 1 for structural multi-scale problem");
     field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
     field[genprob.numsf].fieldtyp = structure;
-    inpdis(&(field[genprob.numsf]));
 
+    // obsolete
+    field[genprob.numsf].ndis = DiscretisationParams().get<int>("NUMSTRUCDIS");
 
     // read macroscale fields from main inputfile
 
@@ -631,7 +642,6 @@ void DRT::Problem::ReadFields(DRT::DatFileReader& reader)
     DRT::NodeReader nodereader(reader, "--NODE COORDS");
     nodereader.AddElementReader(rcp(new DRT::ElementReader(structdis_macro, reader, "--STRUCTURE ELEMENTS")));
     nodereader.Read();
-
 
     // read microscale fields from second inputfile
 

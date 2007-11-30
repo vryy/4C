@@ -23,6 +23,8 @@ filter. But to link the filter stubs of these functions are needed.
 #include "post_drt_common.H"
 #include "../drt_s8/shell8.H"
 
+#include "../drt_lib/drt_globalproblem.H"
+
 #include "../drt_mat/micromaterial.H"
 
 /*----------------------------------------------------------------------*
@@ -72,6 +74,22 @@ extern "C" void io_emergency_close_files()
 
 
 using namespace DRT;
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+
+// Some of the global problems input methods are not linked with the
+// filters. We need them.
+
+void DRT::Problem::ReadMaterial()
+{}
+
+void DRT::Problem::ReadConditions()
+{}
+
+// another anachronism
+extern "C" void input_ReadGlobalParameterList()
+{}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
