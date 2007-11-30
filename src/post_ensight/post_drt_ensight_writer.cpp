@@ -19,6 +19,7 @@
 
 using namespace std;
 
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 EnsightWriter::EnsightWriter(
@@ -47,6 +48,7 @@ EnsightWriter::EnsightWriter(
     distype2ensightstring_[DRT::Element::pyramid5]= "pyramid5";
 }
 
+        
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteFiles()
@@ -60,6 +62,7 @@ void EnsightWriter::WriteFiles()
     // timesteps when the solution is written
     const vector<double> soltime = result.get_result_times(field_->name());
 
+    
     //
     // write geometry file
     //
@@ -79,13 +82,10 @@ void EnsightWriter::WriteFiles()
     
     
     //
-    // solution fields files
+    // write solution fields files
     //
     const int soltimeset = 2;
     WriteAllResults(field_);
-    
-    
-    
     
     
     //
@@ -111,6 +111,7 @@ void EnsightWriter::WriteFiles()
 
     casefile.close();
 }
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -148,6 +149,8 @@ void EnsightWriter::WriteGeoFile(
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EnsightWriter::WriteGeoFileOneTimeStep(
         ofstream& file,
         map<string, vector<ofstream::pos_type> >& resultfilepos,
@@ -181,6 +184,7 @@ void EnsightWriter::WriteGeoFileOneTimeStep(
     Write(file, "END TIME STEP");
 }
 
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteCoordinates(
@@ -210,6 +214,7 @@ void EnsightWriter::WriteCoordinates(
         }
     }
 }
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -307,6 +312,7 @@ void EnsightWriter::WriteCells(
     };
 }
 
+
 /*!
  * \brief parse all elements and get the number of elements for each distype
  */
@@ -326,6 +332,9 @@ NumElePerDisType EnsightWriter::GetNumElePerDisType(
     return numElePerDisType;
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 int EnsightWriter::GetNumEleOutput(
         const DRT::Element::DiscretizationType distype,
         const int numele) const
@@ -346,6 +355,9 @@ int EnsightWriter::GetNumEleOutput(
     return numeleout;
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 string EnsightWriter::GetEnsightString(
         const DRT::Element::DiscretizationType distype) const
 {
@@ -368,6 +380,7 @@ string EnsightWriter::GetEnsightString(
         dserror("no entry in distype2ensightstring_ found");
     return entry->second;
 }
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -413,6 +426,7 @@ void EnsightWriter::WriteResult(
     variablefilenamemap_[name] = filename;
 }
 
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EnsightWriter::FileSwitcher(
@@ -457,78 +471,6 @@ void EnsightWriter::FileSwitcher(
         newfilename << filesetmap[name].size()+1;
     }
     file.open(newfilename.str().c_str());
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-string EnsightWriter::GetVariableEntryForCaseFile(
-        const int numdf,
-        const unsigned int fileset,
-        const string name,
-        const string filename) const
-{
-    stringstream str;
-    
-    const int timeset = 2;
-    
-    // create variable entry
-    switch (numdf)
-    {
-    case 6:
-        str << "tensor symm per node:\t"<< timeset <<"\t"<< fileset << "\t"<< name << "\t"<< filename << "\n";
-        break;
-    case 3:
-    case 2:
-        str << "vector per node:\t"<< timeset <<"\t"<< fileset << "\t"<< name << "\t"<< filename << "\n";
-        break;
-    case 1:
-        str << "scalar per node:\t"<< timeset <<"\t"<< fileset << "\t"<< name << "\t"<< filename << "\n";
-        break;
-    default:
-        dserror("unknown number of dof per node");
-    };
-    return str.str();
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-string EnsightWriter::GetVariableSection(
-        map<string,vector<int> >  filesetmap,
-        map<string,int>           variablenumdfmap,
-        map<string,string>        variablefilenamemap
-        ) const
-{
-    stringstream str;
-    
-    map<string,int>::const_iterator variable;
-    
-    int filesetcounter = 2; // we begin with 2, since 1 is for the geometry section
-    for (variable = variablenumdfmap.begin(); variable != variablenumdfmap.end(); ++variable)
-    {
-        const string name = variable->first;
-        const int numdf = variable->second;
-        const string filename = variablefilenamemap[name];
-        
-        map<string,vector<int> >::const_iterator entry = filesetmap.find(name);
-        if (entry == filesetmap.end()) 
-            dserror("filesetmap not defined for '%s'", name.c_str());
-        
-        const int numsubfilesteps = entry->second.size();
-        string filename_for_casefile;
-        if (numsubfilesteps > 1)
-        {
-            filename_for_casefile = filename + "***";
-        }
-        else
-        {
-            filename_for_casefile = filename;
-        }
-            
-        str << GetVariableEntryForCaseFile(numdf, filesetcounter, name, filename_for_casefile);
-        filesetcounter++;
-    }
-
-    return str.str();
 }
 
 
@@ -592,6 +534,7 @@ void EnsightWriter::WriteResultStep(
     Write(file, "END TIME STEP");
 }
 
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteIndexTable(
@@ -610,6 +553,7 @@ void EnsightWriter::WriteIndexTable(
     Write(file, "FILE_INDEX");
 }
 
+
 /*----------------------------------------------------------------------*/
 /*!
  \brief write strings of exactly 80 chars
@@ -627,6 +571,81 @@ void EnsightWriter::WriteString(
     }
     stream.write(&s[0], 80);
 }
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+string EnsightWriter::GetVariableSection(
+        map<string,vector<int> >  filesetmap,
+        map<string,int>           variablenumdfmap,
+        map<string,string>        variablefilenamemap
+        ) const
+{
+    stringstream str;
+    
+    map<string,int>::const_iterator variable;
+    
+    int filesetcounter = 2; // we begin with 2, since 1 is for the geometry section
+    for (variable = variablenumdfmap.begin(); variable != variablenumdfmap.end(); ++variable)
+    {
+        const string name = variable->first;
+        const int numdf = variable->second;
+        const string filename = variablefilenamemap[name];
+        
+        map<string,vector<int> >::const_iterator entry = filesetmap.find(name);
+        if (entry == filesetmap.end()) 
+            dserror("filesetmap not defined for '%s'", name.c_str());
+        
+        const int numsubfilesteps = entry->second.size();
+        string filename_for_casefile;
+        if (numsubfilesteps > 1)
+        {
+            filename_for_casefile = filename + "***";
+        }
+        else
+        {
+            filename_for_casefile = filename;
+        }
+            
+        str << GetVariableEntryForCaseFile(numdf, filesetcounter, name, filename_for_casefile);
+        filesetcounter++;
+    }
+
+    return str.str();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+string EnsightWriter::GetVariableEntryForCaseFile(
+        const int numdf,
+        const unsigned int fileset,
+        const string name,
+        const string filename) const
+{
+    stringstream str;
+    
+    const int timeset = 2;
+    
+    // create variable entry
+    switch (numdf)
+    {
+    case 6:
+        str << "tensor symm per node:\t"<< timeset <<"\t"<< fileset << "\t"<< name << "\t"<< filename << "\n";
+        break;
+    case 3:
+    case 2:
+        str << "vector per node:\t"<< timeset <<"\t"<< fileset << "\t"<< name << "\t"<< filename << "\n";
+        break;
+    case 1:
+        str << "scalar per node:\t"<< timeset <<"\t"<< fileset << "\t"<< name << "\t"<< filename << "\n";
+        break;
+    default:
+        dserror("unknown number of dof per node");
+    };
+    return str.str();
+}
+
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -650,7 +669,6 @@ string EnsightWriter::GetTimeSectionString(
     s << "\n";
     return s.str();
 }
-
 
 
 /*----------------------------------------------------------------------*/
