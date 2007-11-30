@@ -128,32 +128,14 @@ void EnsightWriter::WriteGeoFile(
 
     // print out one timestep
     // if more are needed, this has to go into a loop
+    map<string, vector<ofstream::pos_type> > resultfilepos;
+    
+    
     vector<ofstream::pos_type> fileposition;
     {
-        Write(geofile, "BEGIN TIME STEP");
-        fileposition.push_back(geofile.tellp());
-        Write(geofile, field_->name() + " geometry");
-        Write(geofile, "Comment");
-        Write(geofile,"node id given");
-        //Write(geofile, "node id assign");
-        Write(geofile, "element id off");
+        WriteGeoFileOneTimeStep(geofile, resultfilepos, "geo");
+        
 
-        // part + partnumber + comment
-        // careful! field_->field_pos() returns the position of the ccarat
-        // field, ignoring the discretizations. So if there are many
-        // discretizations in one field, we have to do something different...
-        Write(geofile, "part");
-        Write(geofile, field_->field_pos()+1);
-        Write(geofile, field_->name() + " field");
-
-        Write(geofile, "coordinates");
-        Write(geofile, field_->num_nodes());
-
-        // write the grid information
-        WriteCoordinates(geofile, field_->discretization());
-        WriteCells(geofile, field_->discretization());
-
-        Write(geofile, "END TIME STEP");
     }
 
     // append index table
@@ -168,11 +150,8 @@ void EnsightWriter::WriteGeoFile(
 
 void EnsightWriter::WriteGeoFileOneTimeStep(
         ofstream& file,
-        PostResult& result,
         map<string, vector<ofstream::pos_type> >& resultfilepos,
-        const string groupname,
-        const string name,
-        const int from) const
+        const string name) const
 {
     vector<ofstream::pos_type>& filepos = resultfilepos[name];
     Write(file, "BEGIN TIME STEP");
@@ -514,9 +493,9 @@ string EnsightWriter::GetVariableEntryForCaseFile(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 string EnsightWriter::GetVariableSection(
-        map<string,vector<int> > filesetmap,
-        map<string,int> variablenumdfmap,
-        map<string,string> variablefilenamemap
+        map<string,vector<int> >  filesetmap,
+        map<string,int>           variablenumdfmap,
+        map<string,string>        variablefilenamemap
         ) const
 {
     stringstream str;
@@ -659,7 +638,7 @@ string EnsightWriter::GetTimeSectionString(
         const vector<double>& times) const
 {
     stringstream s;
-    s << "\ntime set:\t\t" << timeset << "\n"<< "number of steps:\t"<< times.size() << "\ntime values: ";
+    s << "time set:\t\t" << timeset << "\n"<< "number of steps:\t"<< times.size() << "\ntime values: ";
     for (unsigned i=0; i<times.size(); ++i)
     {
         s << times[i]<< " ";

@@ -177,11 +177,8 @@ protected:
             const string& geofilename) const;
     void WriteGeoFileOneTimeStep(
             ofstream& file,
-            PostResult& result,
             map<string, vector<ofstream::pos_type> >& resultfilepos,
-            const string groupname,
-            const string name,
-            const int from) const;    
+            const string name) const;    
     void WriteCoordinates(
             ofstream& geofile,                         ///< filestream for the geometry
             const RefCountPtr<DRT::Discretization> dis ///< discretization where the nodal positions are take from
