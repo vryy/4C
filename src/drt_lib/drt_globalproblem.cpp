@@ -171,7 +171,7 @@ void DRT::Problem::InputControl()
   genprob.numdf = size.get<int>("NUMDF");
 
   if (genprob.nmat<=0)
-    dserror("No Material defined!");
+    dserror("No material defined!");
 
   const Teuchos::ParameterList& type = ProblemTypeParams();
 

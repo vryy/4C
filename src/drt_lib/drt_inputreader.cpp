@@ -317,11 +317,6 @@ void DatFileReader::ReadDat()
         // remember all section positions
         if (line.find("--")==0)
         {
-          // take the last "--" and all that follows as section name
-          loc = line.rfind("--");
-          string sectionname = line.substr(loc);
-          positions_[sectionname] = content.size();
-
           for (vector<int>::size_type i=0; i<exclude.size(); ++i)
           {
             if (line.find(exclude[i]) != string::npos)
@@ -423,6 +418,22 @@ void DatFileReader::ReadDat()
       //comm_->Broadcast(&excludepositions_[exclude[i]],1,0);
       MPI_Bcast(&excludepositions_[exclude[i]],1,MPI_INT,0,mpicomm.GetMpiComm());
 #endif
+  }
+
+  // Now finally find the section names. We have to do this on all
+  // processors, so it cannot be done while reading.
+  for (vector<char*>::size_type i=0; i<lines_.size(); ++i)
+  {
+    char* l = lines_[i];
+    if (l and l[0]=='-' and l[1]=='-')
+    {
+      std::string line(l);
+
+      // take the last "--" and all that follows as section name
+      std::string::size_type loc = line.rfind("--");
+      std::string sectionname = line.substr(loc);
+      positions_[sectionname] = i;
+    }
   }
 }
 

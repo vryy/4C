@@ -103,7 +103,6 @@ void ntainp_ccadiscret()
   problem->ReadParameter(reader);
 
   /* input of not mesh or time based problem data  */
-  //inpctr();
   problem->InputControl();
 
   /* input of materials */
