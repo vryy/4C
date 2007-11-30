@@ -9,6 +9,8 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_colors.H"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 #include <NOX.H>
 
 #include <Thyra_EpetraThyraWrappers.hpp>
@@ -353,10 +355,10 @@ void MFSI::Algorithm::SetupFluid()
   // -------------------------------------------------------------------
   SOLVAR        *actsolv  = &solv[genprob.numff];
 
-  FSI_DYNAMIC *fsidyn     = alldyn[3].fsidyn;
-  FLUID_DYNAMIC *fdyn     = alldyn[genprob.numff].fdyn;
-  fdyn->step              =   0;
-  fdyn->acttime           = 0.0;
+  const Teuchos::ParameterList& probsize = DRT::Problem::Instance()->ProblemSizeParams();
+  const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
+  const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
   // -------------------------------------------------------------------
   // create a solver
@@ -373,41 +375,47 @@ void MFSI::Algorithm::SetupFluid()
   RefCountPtr<ParameterList> fluidtimeparams = rcp(new ParameterList());
   FluidImplicitTimeInt::SetDefaults(*fluidtimeparams);
 
+  FLUID_TIMEINTTYPE iop = Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(fdyn,"TIMEINTEGR");
+
   // number of degrees of freedom
-  fluidtimeparams->set<int>              ("number of velocity degrees of freedom" ,genprob.ndim);
+  fluidtimeparams->set<int>              ("number of velocity degrees of freedom" ,probsize.get<int>("DIM"));
   // the default time step size
-  fluidtimeparams->set<double>           ("time step size"           ,fsidyn->dt);
+  fluidtimeparams->set<double>           ("time step size"           ,fsidyn.get<double>("TIMESTEP"));
   // max. sim. time
-  fluidtimeparams->set<double>           ("total time"               ,fsidyn->maxtime);
+  fluidtimeparams->set<double>           ("total time"               ,fsidyn.get<double>("MAXTIME"));
   // parameter for time-integration
-  fluidtimeparams->set<double>           ("theta"                    ,fdyn->theta);
+  fluidtimeparams->set<double>           ("theta"                    ,fdyn.get<double>("THETA"));
   // which kind of time-integration
-  fluidtimeparams->set<FLUID_TIMEINTTYPE>("time int algo"            ,fdyn->iop);
+  fluidtimeparams->set<FLUID_TIMEINTTYPE>("time int algo"            ,iop);
   // bound for the number of timesteps
-  fluidtimeparams->set<int>              ("max number timesteps"     ,fsidyn->nstep);
+  fluidtimeparams->set<int>              ("max number timesteps"     ,fsidyn.get<int>("NUMSTEP"));
   // number of steps with start algorithm
-  fluidtimeparams->set<int>              ("number of start steps"    ,fdyn->nums);
+  fluidtimeparams->set<int>              ("number of start steps"    ,fdyn.get<int>("NUMSTASTEPS"));
   // parameter for start algo
-  fluidtimeparams->set<double>           ("start theta"              ,fdyn->thetas);
+  fluidtimeparams->set<double>           ("start theta"              ,fdyn.get<double>("START_THETA"));
 
 
   // ---------------------------------------------- nonlinear iteration
+  // set linearisation scheme
+  fluidtimeparams->set<bool>("Use reaction terms for linearisation",
+                            Teuchos::getIntegralValue<int>(fdyn,"NONLINITER")==2);
   // maximum number of nonlinear iteration steps
-  fluidtimeparams->set<int>             ("max nonlin iter steps"     ,fdyn->itemax);
+  fluidtimeparams->set<int>             ("max nonlin iter steps"     ,fdyn.get<int>("ITEMAX"));
   // stop nonlinear iteration when both incr-norms are below this bound
-  fluidtimeparams->set<double>          ("tolerance for nonlin iter" ,fdyn->ittol);
+  fluidtimeparams->set<double>          ("tolerance for nonlin iter" ,fdyn.get<double>("CONVTOL"));
 
   // ----------------------------------------------- restart and output
   // restart
-  fluidtimeparams->set                 ("write restart every"       ,fdyn->uprestart);
+  fluidtimeparams->set                 ("write restart every"       ,fsidyn.get<int>("RESTARTEVRY"));
   // solution output
-  fluidtimeparams->set                 ("write solution every"      ,fdyn->upres);
+  fluidtimeparams->set                 ("write solution every"      ,fdyn.get<int>("UPRES"));
   // flag for writing stresses
-  fluidtimeparams->set                 ("write stresses"            ,ioflags.fluid_stress);
+  fluidtimeparams->set                 ("write stresses"            ,Teuchos::getIntegralValue<int>(ioflags,"FLUID_STRESS"));
 
   //--------------------------------------------------
   // evaluate error for test flows with analytical solutions
-  fluidtimeparams->set                  ("eval err for analyt sol"   ,fdyn->init);
+  int init = Teuchos::getIntegralValue<int>(fdyn,"INITIALFIELD");
+  fluidtimeparams->set                  ("eval err for analyt sol"   ,init);
 
 
   //--------------------------------------------------
