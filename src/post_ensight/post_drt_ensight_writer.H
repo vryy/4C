@@ -127,16 +127,14 @@ protected:
             ofstream& os,
             const string s) const
     {
-    	// first ensure, that the file is already open  
-    	if (os.is_open())
+    	// only processor 0 does the writing !! 
+    	if (myrank_==0)
     	  {
-    	    // only processor 0 does the writing !!
-    	    if (myrank_==0) 
+    		// first ensure, that the file is already open 
+    	    if (os.is_open()) 
     	      {os << s;}
-    	  }
-    	  else
-    	  {
-    	    dserror("File is not open");
+    	    else
+    	      dserror("File is not open");
     	  }
     }
 
@@ -145,18 +143,16 @@ protected:
      */  
     void WriteFormatedString(
             ofstream& os,
-            const int s) const
+            const int i) const
     {
-    	// first ensure, that the file is already open  
-    	if (os.is_open())
+    	// only processor 0 does the writing !! 
+    	if (myrank_==0)
     	  {
-    	    // only processor 0 does the writing !!
-    	    if (myrank_==0) 
-    	      {os << s;}
-    	  }
-    	  else
-    	  {
-    	    dserror("File is not open");
+    		// first ensure, that the file is already open 
+    	    if (os.is_open()) 
+    	      {os << i;}
+    	    else
+    	      dserror("File is not open");
     	  }
     }
     
