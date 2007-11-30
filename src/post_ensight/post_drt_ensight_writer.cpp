@@ -390,21 +390,11 @@ void EnsightWriter::WriteResult(
     // append index table
     WriteIndexTable(file, resultfilepos[name]);
     resultfilepos[name].clear();
-
-    filesetmap_[name].push_back(file.tellp()/stepsize);
     
-    string filename_for_casefile;
-    if (filesetmap_[name].size() > 1)
-    {
-        filename_for_casefile = filename + "***";
-    }
-    else
-    {
-        filename_for_casefile = filename;
-    }
-
+    // store information for later case file creation
+    filesetmap_[name].push_back(file.tellp()/stepsize);
     variablenumdfmap_[name] = numdf;
-    variablefilenamemap_[name] = filename_for_casefile;
+    variablefilenamemap_[name] = filename;
 }
 
 /*----------------------------------------------------------------------*/
@@ -487,9 +477,9 @@ string EnsightWriter::GetVariableEntryForCaseFile(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 string EnsightWriter::GetVariableSection(
-        map<string,vector<int> > filesetmap,
-        map<string,int> variablenumdfmap,
-        map<string,string> variablefilenamemap
+        const map<string,vector<int> >& filesetmap,
+        const map<string,int>& variablenumdfmap,
+        const map<string,string>& variablefilenamemap
         ) const
 {
     stringstream str;

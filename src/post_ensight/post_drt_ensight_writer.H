@@ -208,9 +208,9 @@ protected:
      *        for all fields in the variablemap
      */
     string GetVariableSection(
-            map<string,vector<int> > filesetmap,
-            map<string,int>          variablenumdfmap,
-            map<string,string>       variablefilenamemap
+            const map<string,vector<int> >& filesetmap,
+            const map<string,int>&          variablenumdfmap,
+            const map<string,string>&       variablefilenamemap
             ) const;
             
             
@@ -268,8 +268,8 @@ protected:
     map<DRT::Element::DiscretizationType, string> distype2ensightstring_;
     
     // maximum file size
-    //static const unsigned FILE_SIZE_LIMIT_ = 0x7fffffff; // 2GB
-    static const unsigned FILE_SIZE_LIMIT_ = 1024*10; // 10kB ... usefull for debugging ;-)
+    static const unsigned FILE_SIZE_LIMIT_ = 0x7fffffff; // 2GB
+    //static const unsigned FILE_SIZE_LIMIT_ = 1024*10; // 10kB ... usefull for debugging ;-)
     
 };
 
