@@ -27,7 +27,6 @@ NUMDF        	   4
 PROBLEMTYP   Fluid
 NUMFIELD     1
 TIMETYP      Dynamic
-TRACE        secure
 ALGEBRA      Trilinos
 RESTART      0
 ----------------------------------------------------DISCRETISATION
@@ -41,7 +40,6 @@ NUMTHERMDIS  0
 ------------------------------------------------STRUCTURAL DYNAMIC
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP   Nlin_Time_Int
-TIME_RHS     mass
 TIMEINTEGR   BDF2 
 VISCSTRESS   no
 FREESURFACE  no
@@ -72,7 +70,6 @@ ROUGHTNESS   1.0
 SC_COORD_X   0.0
 SC_COORD_Y   0.0
 DISC_CAPT    No
-ERRORCAL     yes
 -------------------------------------------------------FSI DYNAMIC
 -------------------------------------------------------ALE DYNAMIC
 ------------------------------------------------------OPTIMIZATION

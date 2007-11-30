@@ -65,9 +65,7 @@ RESTARTEVRY  1
 MAXTIME      1000.0
 NUMSTEP      10
 TIMESTEP     0.1
-ALPHA        1.00
 THETA        0.60
-GAMMA        1.00
 NONLINITER   fixed_point_like
 ITEMAX       10
 CONVCHECK    L_2_norm

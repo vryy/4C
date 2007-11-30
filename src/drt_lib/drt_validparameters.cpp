@@ -73,6 +73,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
   /*----------------------------------------------------------------------*/
   ParameterList& discret = list->sublist("DISCRETISATION",false,"");
 
+  setIntParameter("NUMFLUIDDIS",0,"",&discret);
+  setIntParameter("NUMSTRUCDIS",0,"",&discret);
+  setIntParameter("NUMALEDIS",0,"",&discret);
+  setIntParameter("NUMTHERMDIS",0,"",&discret);
+
   /*----------------------------------------------------------------------*/
   ParameterList& size = list->sublist("PROBLEM SIZE",false,"");
 
@@ -321,13 +326,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
                                "Treatment of free surface",
                                tuple<std::string>(
                                  "No",
+                                 "no",
                                  "loclag_exp",
                                  "loclag_imp",
                                  "hf_vert_sep",
                                  "hf_vert_imp",
                                  "genfs"
                                  ),
-                               tuple<int>(0,1,2,3,5,6),
+                               tuple<int>(0,0,1,2,3,5,6),
                                &fdyn);
 
   setStringToIntegralParameter("SURFTENSION","Yes",
@@ -342,7 +348,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
                                "Calculate lift and drag forces along specified lines",
                                tuple<std::string>(
                                  "No",
+                                 "no",
                                  "Yes",
+                                 "yes",
                                  "Stress",
                                  "STRESS",
                                  "stress",
@@ -352,6 +360,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
                                  ),
                                tuple<int>(
                                  FLUID_DYNAMIC::ld_none,
+                                 FLUID_DYNAMIC::ld_none,
+                                 FLUID_DYNAMIC::ld_stress,
                                  FLUID_DYNAMIC::ld_stress,
                                  FLUID_DYNAMIC::ld_stress,
                                  FLUID_DYNAMIC::ld_stress,

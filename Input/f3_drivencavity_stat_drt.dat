@@ -30,7 +30,6 @@ NUMDF              4
 PROBLEMTYP   Fluid
 NUMFIELD     1
 TIMETYP      Dynamic
-TRACE        secure
 ALGEBRA      Trilinos
 RESTART      0
 ----------------------------------------------------DISCRETISATION
@@ -51,9 +50,6 @@ FLUID_SOL         Yes
 FLUID_STRESS      No
 FLUID_VIS         No
 ALE_DISP          Yes
-THERM_TEMPERATURE No
-THERM_HEATFLUX    No
-RELATIVE_DISP_NUM 0
 FILESTEPS         1000
 ------------------------------------------------------------STATIC
 LINEAR
@@ -94,7 +90,6 @@ SURFTENSION  no
 CHECKAREA    no
 LIFTDRAG     no
 ADAPT_TIME   no
-TIME_RHS     classic
 TURBULENCE   No
 INT_LENGHT   1.0
 ROUGHTNESS   1.0

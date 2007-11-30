@@ -21,7 +21,6 @@ NUMDF        6
 PROBLEMTYP   Structure
 NUMFIELD     1
 TIMETYP      Dynamic
-TRACE        fast
 ALGEBRA      Trilinos           // ccarat/Trilinos
 RESTART      0
 ----------------------------------------------------DISCRETISATION
@@ -42,11 +41,7 @@ FLUID_SOL         No
 FLUID_STRESS      No
 FLUID_VIS         No
 ALE_DISP          No
-THERM_TEMPERATURE No
-THERM_HEATFLUX    No
-RELATIVE_DISP_NUM 0
 FILESTEPS         1000
-PROCESSOR_LOCAL   No
 ------------------------------------------------------------STATIC
 LINEAR
 -----------------------------------------------EIGENVALUE ANALYSIS
@@ -64,144 +59,16 @@ BETA         0.25
 GAMMA        0.5 
 ALPHA_M      0.5 
 ALPHA_F      0.5
-XSI          0.0
 DAMPING      Yes 
 M_DAMP       0.00001 
 K_DAMP       0.00001
 TOLDISP      1.0E-06
 MAXITER      50
 CONTACT      1
-CET_flag      0
-FR_flag      0
-NPP          1.0E+06
-TPP          1.0E+06
-FR_COEF          0.4
 -----------------------------------------------------FLUID DYNAMIC
-DYNAMICTYP   Nlin_Time_Int
-INITIALFIELD zero_field
-RESSTEP      -1
-STARTFUNCNO  2
-TIMEINTEGR   One_Step_Theta
-STARTINGALGO One_Step_Theta
-NONLINITER   fixed_point_like
-ITEMAX       5
-CONVCHECK    L_2_norm
-CONVTOL      1.0E-6
-STEADYCHECK  L_2_norm
-STEADYSTEP   -1
-STEADYTOL    1.0E-6
-UPOUT        1
-UPPSS        1
-UPRES        1
-RESTARTEVRY  20
-NUMSTEP      200  
-NUMSTASTEPS  0
-MAXTIME      1000.0
-TIMESTEP     0.05  
-MAX_DT       0.5   
-MIN_DT       0.0001  
-THETA        0.66
-START_THETA  0.67
-ALPHA_F      1.00
-ALPHA_M      1.00
-LOC_TRUN_ERR 0.001
-VISCSTRESS   no
-FREESURFACE  no
-SURFTENSION  no
-CHECKAREA  no
-LIFTDRAG     no
-ADAPT_TIME   no
-TIME_RHS     classic
-TURBULENCE   No
-INT_LENGHT   1.0
-ROUGHTNESS   1.0
-SC_COORD_X   0.0
-SC_COORD_Y   0.0
-DISC_CAPT    No
-CD_VELOCITY  Navier_Stokes
 -------------------------------------------------------FSI DYNAMIC
-MAXTIME      1000.0
-TIMESTEP     0.05
-NUMSTEP      200
-UPPSS        1
-UPRES        1
-RESTARTEVRY  20
-IALE         Pseudo_Structure
-COUPALGO     iter_stagg_AITKEN_rel_param
-PREDICTOR    d(n)
-CONVCRIT     ||g(i)||:sqrt(neq)
-ENERGYCHECK  no
-TOLENCHECK   1.0E-6
-RELAX        1.0
-ITEMAX       100
-CONVTOL      1.0E-6
-ISDMAX       0
-COUPMETHOD   conforming
-COUPFORCE    nodeforce
--------------------------------------------------------SSI DYNAMIC
-MAXTIME      1000.0
-TIMESTEP     0.05
-NUMSTEP      200
-UPPSS        1
-IALE         Pseudo_Structure
-COUPALGO     basic_sequ_stagg
-CONVCRIT     ||g(i)||:sqrt(neq)
-ENERGYCHECK  yes
-TOLENCHECK   1.0E-6
-RELAX        1.0
-ITEMAX       1
-CONVTOL      1.0E-6
-ISDMAX       0
-COUPMETHOD   conforming
 -------------------------------------------------------ALE DYNAMIC
-TIMESTEP     0.1
-NUMSTEP      200
-MAXTIME      5.0
-NUM_INITSTEP 0
-ALE_TYPE     springs
-RESEVRYDISP  1
-QUALITY      none
 -------------------------------------------------------TSI DYNAMIC
-KIND         thermal_static_structure_genalpha
-NUMSTEP      200
-MAXTIME      5.0
-TIMESTEP     0.1
-RESEVRY      1
-STDEVRY      1
-TH_GAMMA     0.5
-ST_BETA      0.25
-ST_GAMMA     0.5
-ST_ALPHA_M   0.5
-ST_ALPHA_F   0.5
-TH_INITMPR   0.0
-------------------------------------------------------OPTIMIZATION
-OPT_NUMITER   10 total number of iteration steps
-OPT_TYPE      Topo type of optimization
-OPT_STRATEGY  FSD type of optimization strategy
-//
-FSD_GRAD      Explicit gradientenbestimmung  
-FSD_NUMITER   10 number of iteration steps with fsd
-FSD_ACC       1.0E-07 erforderliche genauigkeit                  
-FSD_ALPHA     1.0E-05 genauigkeit fuer die gleichheitsrestriktion
-FSD_BETA      0.55 schreitweitenfaktor                        
-FSD_DELTA     0.25 schrittweitenbegrenzung                    
-FSD_GAMMA     0.0 gleichheitsrestriktionswert                
-//
-OPT_SMO       ON smooth gradients or other values
-SMO_TYPE      gradient
-SMO_ERAD      1.1 radius
-SMO_EXPO      2.2 exponent
-//
-OPT_OBJ       Stiffness objective
-//
-OV_VAR 1 global opt. variables
-  ELEofMAT 1 TYPE DENS  DL 1.0E-4  DU 1.0E0 SCL 1.
-OV_END
-//
-OC_ICO 0 global inequality constraints
-//
-OC_ECO 1 global   equality constraints
-      DVOLU 1 TYP WEIGHT  SCL 1. 
 ------------------------------------------------------FLUID SOLVER
 SOLVER         Aztec_MSR          // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0                  // output every so often, 0 no output
