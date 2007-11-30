@@ -73,10 +73,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
   /*----------------------------------------------------------------------*/
   ParameterList& discret = list->sublist("DISCRETISATION",false,"");
 
-  setIntParameter("NUMFLUIDDIS",0,"",&discret);
-  setIntParameter("NUMSTRUCDIS",0,"",&discret);
-  setIntParameter("NUMALEDIS",0,"",&discret);
-  setIntParameter("NUMTHERMDIS",0,"",&discret);
+  setIntParameter("NUMFLUIDDIS",1,"Number of meshes in fluid field",&discret);
+  setIntParameter("NUMSTRUCDIS",1,"Number of meshes in structural field",&discret);
+  setIntParameter("NUMALEDIS",1,"Number of meshes in ale field",&discret);
+  setIntParameter("NUMTHERMDIS",1,"Number of meshes in thermal field",&discret);
 
   /*----------------------------------------------------------------------*/
   ParameterList& size = list->sublist("PROBLEM SIZE",false,"");
@@ -245,7 +245,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
                                  "Inc_Acc_Gen_Alpha",
                                  "Theta_Adamsbashforth"
                                  ),
-                               tuple<int>(
+                               tuple<FLUID_TIMEINTTYPE>(
                                  timeint_stationary,
                                  timeint_gen_alpha,
                                  timeint_gen_alpha,

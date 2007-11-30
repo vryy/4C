@@ -21,7 +21,9 @@ Maintainer: Peter Gamnitzer
 #include <ctime>
 #include <cstdlib>
 #include <iostream>
+
 #include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -130,9 +132,8 @@ void dyn_fluid_drt()
   // this warning can be removed, if we can not fallinto the trap of choosing TIMETYP in awrong way
   // a.ger 11/07
   dsassert(genprob.timetyp==time_dynamic, "alldyn not allocated!!!\n For stationary computations, choose TIMETYP Dynamic and switch time integration for fluid to stationary instead");
-  FLUID_DYNAMIC *fdyn     = alldyn[0].fdyn;
-  fdyn->step              =   0;
-  fdyn->acttime           = 0.0;
+
+  const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
 
   // -------------------------------------------------------------------
   // create a solver
@@ -142,11 +143,10 @@ void dyn_fluid_drt()
   solver.TranslateSolverParameters(*solveparams,actsolv);
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
 
-  if(fdyn->iop == timeint_stationary
-     ||
-     fdyn->iop == timeint_one_step_theta
-     ||
-     fdyn->iop == timeint_bdf2
+  FLUID_TIMEINTTYPE iop = Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(fdyn,"TIMEINTEGR");
+  if(iop == timeint_stationary or
+     iop == timeint_one_step_theta or
+     iop == timeint_bdf2
     )
   {
     // -------------------------------------------------------------------
@@ -158,47 +158,42 @@ void dyn_fluid_drt()
     // number of degrees of freedom
     fluidtimeparams.set<int>              ("number of velocity degrees of freedom" ,genprob.ndim);
     // the default time step size
-    fluidtimeparams.set<double>           ("time step size"           ,fdyn->dt);
+    fluidtimeparams.set<double>           ("time step size"           ,fdyn.get<double>("TIMESTEP"));
     // max. sim. time
-    fluidtimeparams.set<double>           ("total time"               ,fdyn->maxtime);
+    fluidtimeparams.set<double>           ("total time"               ,fdyn.get<double>("MAXTIME"));
     // parameter for time-integration
-    fluidtimeparams.set<double>           ("theta"                    ,fdyn->theta);
+    fluidtimeparams.set<double>           ("theta"                    ,fdyn.get<double>("THETA"));
     // which kind of time-integration
-    fluidtimeparams.set<FLUID_TIMEINTTYPE>("time int algo"            ,fdyn->iop);
+    fluidtimeparams.set<FLUID_TIMEINTTYPE>("time int algo"            ,iop);
     // bound for the number of timesteps
-    fluidtimeparams.set<int>              ("max number timesteps"     ,fdyn->nstep);
+    fluidtimeparams.set<int>              ("max number timesteps"     ,fdyn.get<int>("NUMSTEP"));
     // number of steps with start algorithm
-    fluidtimeparams.set<int>              ("number of start steps"    ,fdyn->nums);
+    fluidtimeparams.set<int>              ("number of start steps"    ,fdyn.get<int>("NUMSTASTEPS"));
     // parameter for start algo
-    fluidtimeparams.set<double>           ("start theta"              ,fdyn->thetas);
+    fluidtimeparams.set<double>           ("start theta"              ,fdyn.get<double>("START_THETA"));
 
 
     // ---------------------------------------------- nonlinear iteration
     // set linearisation scheme
-    if(fdyn->ite==2)
-    {
-      fluidtimeparams.set<bool>("Use reaction terms for linearisation",true);
-    }
-    else
-    {
-      fluidtimeparams.set<bool>("Use reaction terms for linearisation",false);
-    }
+    fluidtimeparams.set<bool>("Use reaction terms for linearisation",
+                              Teuchos::getIntegralValue<int>(fdyn,"NONLINITER")==2);
     // maximum number of nonlinear iteration steps
-    fluidtimeparams.set<int>             ("max nonlin iter steps"     ,fdyn->itemax);
+    fluidtimeparams.set<int>             ("max nonlin iter steps"     ,fdyn.get<int>("ITEMAX"));
     // stop nonlinear iteration when both incr-norms are below this bound
-    fluidtimeparams.set<double>          ("tolerance for nonlin iter" ,fdyn->ittol);
+    fluidtimeparams.set<double>          ("tolerance for nonlin iter" ,fdyn.get<double>("CONVTOL"));
 
     // ----------------------------------------------- restart and output
     // restart
-    fluidtimeparams.set                  ("write restart every"       ,fdyn->uprestart);
+    fluidtimeparams.set                  ("write restart every"       ,fdyn.get<int>("RESTARTEVRY"));
     // solution output
-    fluidtimeparams.set                  ("write solution every"      ,fdyn->upres);
+    fluidtimeparams.set                  ("write solution every"      ,fdyn.get<int>("UPRES"));
     // flag for writing stresses
     fluidtimeparams.set                  ("write stresses"            ,ioflags.fluid_stress);
 
     //--------------------------------------------------
     // evaluate error for test flows with analytical solutions
-    fluidtimeparams.set                  ("eval err for analyt sol"   ,fdyn->init);
+    int init = Teuchos::getIntegralValue<int>(fdyn,"INITIALFIELD");
+    fluidtimeparams.set                  ("eval err for analyt sol"   ,init);
 
 
     //--------------------------------------------------
@@ -220,9 +215,14 @@ void dyn_fluid_drt()
     else
     {
       // set initial field for analytical test problems etc
-      if(fdyn->init>0)
+      if(init>0)
       {
-        fluidimplicit.SetInitialFlowField(fdyn->init,fdyn->startfuncno);
+        int startfuncno = fdyn.get<int>("STARTFUNCNO");
+        if (init!=2 and init!=3)
+        {
+          startfuncno=-1;
+        }
+        fluidimplicit.SetInitialFlowField(init,startfuncno);
       }
     }
 
@@ -240,7 +240,7 @@ void dyn_fluid_drt()
     testmanager.TestAll();
 #endif
   }
-  else if (fdyn->iop == timeint_gen_alpha)
+  else if (iop == timeint_gen_alpha)
   {
     // -------------------------------------------------------------------
     // create a generalised alpha time integrator for fluid problems
@@ -251,45 +251,40 @@ void dyn_fluid_drt()
     // number of degrees of freedom
     fluidtimeparams.set<int>              ("number of velocity degrees of freedom" ,genprob.ndim);
     // the default time step size
-    fluidtimeparams.set<double>           ("time step size"           ,fdyn->dt);
+    fluidtimeparams.set<double>           ("time step size"           ,fdyn.get<double>("TIMESTEP"));
     // max. sim. time
-    fluidtimeparams.set<double>           ("total time"               ,fdyn->maxtime);
+    fluidtimeparams.set<double>           ("total time"               ,fdyn.get<double>("MAXTIME"));
     // parameters for time-integration
-    fluidtimeparams.set<double>           ("alpha_M"                  ,fdyn->alpha_m);
+    fluidtimeparams.set<double>           ("alpha_M"                  ,fdyn.get<double>("ALPHA_M"));
     // parameters for time-integration
-    fluidtimeparams.set<double>           ("alpha_F"                  ,fdyn->alpha_f);
+    fluidtimeparams.set<double>           ("alpha_F"                  ,fdyn.get<double>("ALPHA_F"));
     // bound for the number of timesteps
-    fluidtimeparams.set<int>              ("max number timesteps"     ,fdyn->nstep);
+    fluidtimeparams.set<int>              ("max number timesteps"     ,fdyn.get<int>("NUMSTEP"));
 
     // ---------------------------------------------- nonlinear iteration
     //     // set linearisation scheme
-    if(fdyn->ite==2)
-    {
-      fluidtimeparams.set<bool>("Use reaction terms for linearisation",true);
-    }
-    else
-    {
-      fluidtimeparams.set<bool>("Use reaction terms for linearisation",false);
-    }
+    fluidtimeparams.set<bool>("Use reaction terms for linearisation",
+                              Teuchos::getIntegralValue<int>(fdyn,"NONLINITER")==2);
     // maximum number of nonlinear iteration steps
-    fluidtimeparams.set<int>             ("max nonlin iter steps"     ,fdyn->itemax);
+    fluidtimeparams.set<int>             ("max nonlin iter steps"     ,fdyn.get<int>("ITEMAX"));
     // stop nonlinear iteration when both incr-norms are below this bound
-    fluidtimeparams.set<double>          ("tolerance for nonlin iter" ,fdyn->ittol);
+    fluidtimeparams.set<double>          ("tolerance for nonlin iter" ,fdyn.get<double>("CONVTOL"));
 
     // ----------------------------------------------- restart and output
-    fluidtimeparams.set                  ("write restart every"       ,fdyn->uprestart);
+    fluidtimeparams.set                  ("write restart every"       ,fdyn.get<int>("RESTARTEVRY"));
     // solution output
-    fluidtimeparams.set                  ("write solution every"      ,fdyn->upres);
+    fluidtimeparams.set                  ("write solution every"      ,fdyn.get<int>("UPRES"));
     // flag for writing stresses
     fluidtimeparams.set                  ("write stresses"            ,ioflags.fluid_stress);
 
     //------------evaluate error for test flows with analytical solutions
-    fluidtimeparams.set                  ("eval err for analyt sol"   ,fdyn->init);
+    int init = Teuchos::getIntegralValue<int>(fdyn,"INITIALFIELD");
+    fluidtimeparams.set                  ("eval err for analyt sol"   ,init);
 
     //------------compute statistical data for turbulent channel LES
-    if(fdyn->turbu==4)
+    if (Teuchos::getIntegralValue<int>(fdyn,"TURBULENCE")==4)
     {
-      fluidtimeparams.set("normal to hom. planes in channel",fdyn->planenormal);
+      fluidtimeparams.set("normal to hom. planes in channel",Teuchos::getIntegralValue<int>(fdyn,"HOMDIRECT"));
       fluidtimeparams.set("evaluate turbulence statistic",true);
       fluidtimeparams.set("statistics outfile",allfiles.outputfile_kenner);
     }
@@ -318,14 +313,19 @@ void dyn_fluid_drt()
     else
     {
       // set initial field for analytical test problems etc
-      if(fdyn->init>0)
+      if(init>0)
       {
-        genalphaint.SetInitialFlowField(fdyn->init,fdyn->startfuncno);
+        int startfuncno = fdyn.get<int>("STARTFUNCNO");
+        if (init!=2 and init!=3)
+        {
+          startfuncno=-1;
+        }
+        genalphaint.SetInitialFlowField(init,startfuncno);
       }
     }
 
     //------------------------- do timeintegration till maxtime
-    genalphaint.GenAlphaIntegrateTo(fdyn->nstep,fdyn->maxtime);
+    genalphaint.GenAlphaIntegrateTo(fdyn.get<int>("NUMSTEP"),fdyn.get<double>("MAXTIME"));
 
     //--------------------------------------------------
     // do the result test

@@ -1491,8 +1491,8 @@ frread();
 /* allocate fluid mulitlevel variables */
 fdyn->mlvar = (FLUID_DYN_ML*)CCACALLOC(1,sizeof(FLUID_DYN_ML));
 
-while(strncmp(allfiles.actplace,"------",6)!=0)
-{
+while(strncmp(allfiles.actplace,"------",6)!=0){
+
 /*--------------read chars */
    frchar("MULEVELFEM"  ,buffer    ,&ierr);
    if (ierr==1)
