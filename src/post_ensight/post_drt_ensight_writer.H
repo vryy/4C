@@ -28,6 +28,8 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_element.H"
+#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/linalg_utils.H"
 #include "../drt_xfem/dof_management.H"
 
 using namespace std;
@@ -110,18 +112,68 @@ protected:
             ofstream& os,
             T i) const
     {
-        os.write(reinterpret_cast<const char*>(&i), sizeof(T));
+    	// only processor 0 does the writing !!
+        if (myrank_==0) 
+    	os.write(reinterpret_cast<const char*>(&i), sizeof(T));
     }
+    
+    /*!
+     \brief write a formated string to already opened filestream.
+            currently used for writing the ensight casefile
+     \author gjb
+     \date 11/07
+     */
+    void WriteFormatedString(
+            ofstream& os,
+            const string s) const
+    {
+    	// first ensure, that the file is already open  
+    	if (os.is_open())
+    	  {
+    	    // only processor 0 does the writing !!
+    	    if (myrank_==0) 
+    	      {os << s;}
+    	  }
+    	  else
+    	  {
+    	    dserror("File is not open");
+    	  }
+    }
+
+    /*!
+     * \brief writes int like a formated string to already open filestream
+     */  
+    void WriteFormatedString(
+            ofstream& os,
+            const int s) const
+    {
+    	// first ensure, that the file is already open  
+    	if (os.is_open())
+    	  {
+    	    // only processor 0 does the writing !!
+    	    if (myrank_==0) 
+    	      {os << s;}
+    	  }
+    	  else
+    	  {
+    	    dserror("File is not open");
+    	  }
+    }
+    
     void Write(
             ofstream& os,
             const string s) const
     {
+    	// only processor 0 does the writing !!
+        if (myrank_==0) 
         WriteString(os, s);
     }
     void Write(
             ofstream& os,
             const char* s) const
     {
+    	// only processor 0 does the writing !!
+        if (myrank_==0) 
         WriteString(os, s);
     }
 
