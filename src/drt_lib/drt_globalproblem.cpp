@@ -120,6 +120,12 @@ RefCountPtr<DRT::Problem> DRT::Problem::Instance(int num)
 /*----------------------------------------------------------------------*/
 void DRT::Problem::Done()
 {
+  // This is called at the very end of a baci run.
+  //
+  // It removes all global problem objects. Therefore all
+  // discretizations as well and everything inside those.
+  //
+  // There is a whole lot going on here...
   instances_.clear();
 }
 

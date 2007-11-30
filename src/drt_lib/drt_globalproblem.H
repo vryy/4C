@@ -45,48 +45,81 @@ class DatFileReader;
 
 /// Global problem instance that keeps the discretizations
 /*!
-  The point of the Problem class is to store the discretizations in a
-  structure that parallels the old ccarat field variables. (The fields
-  are needed nevertheless, the old input routines depend on them.)
-  So it is the responsibilty of the input functions to setup the
-  ccarat fields and the Problem class in the same way.
 
-  In addition to the discretizations all stuff from the input file
-  that ends up in global variables in the old code naturally belongs
-  here. However, we port things on demand only.
+  The global problem represents the input file passed to baci. This
+  class organizes the reading of a dat file (utilizing the
+  DatFileReader of course). That is way, in all but the most eccentric
+  cases there will be exactly one object of this class during a baci
+  run. This object contains all parameters read from the input file as
+  well as any material definitions and even all the discretizations.
 
-  For a start there is the vector of materials material_. During the
-  reading phase we add one material after the other using
-  AddMaterial(). These material structures are copied and stored here,
-  that is the Problem class takes the ownership of all dynamically
-  allocated memory.
+  <h3>Input parameters</h3>
 
-  However, all the code still accesses the material by means of the
-  global variable mat. So we have mat point to our internal vector
-  material_. This is called activating the materials and done by
-  ActivateMaterial(). Don't bother. It works automatically.
+  All input parameters are known by the global problem object. These
+  parameters are guaranteed to be valid (because they passed the
+  validation) and are guaranteed to be there (because default values
+  have been set for all parameters missing from the input file.) This
+  is Teuchos::ParameterList magic, that just requires the list of
+  valid parameters in the file drt_validparameters.cpp to be
+  complete.
 
-  At this point it is crucially to understand that classes like
-  Problem where introduced to gradually get rid of the old global
-  variables. So the whole point of activating a material (and other
-  stuff if need arises) is simply the most non-intrusive modification
-  that allows to keep the materials at an appropiate place, that
-  allows to have more that one set of materials if desired, without
-  touching all the places where materials are actually used. The idea
-  is to provide a default behavior that mimics the global variable
-  approach but enable more advanced uses as well.
+  The algorithms are meant to ask the global problem object for their
+  parameters and extract them from the respective parameter list
+  directly.
 
-  This class behaves like a singleton, so there is always one instance
-  available. But you can have more than one instance of Problem. In
-  normal situations this will not be needed. So don't bother. Just
-  call the static Instance() function to get the global instance and
-  access your discretizations.
+  <h3>Discretizations</h3>
+
+  The global problem object knows the discretizations defined by the
+  input file. In order to access a particular discretization you get
+  the global problem object and ask.
+
+  <h3>Materials</h3>
+
+  The global problem object knows the material descriptions from the
+  input file. These are not to be confused with the material classes
+  the elements know and work with. The global problem object does not
+  keep track of gauss point material values, all that is known here
+  are the definitions from the input file.
+
+  <h3>Purpose</h3>
+
+  baci evolved out of ccarat in a (somewhat) smooth fashion. The old
+  ccarat used global C struct variables all over the place. It is
+  indeed the aim of the global problem to collect these variables in
+  one place and provide a sane interface to the data. The transition
+  is already pretty advanced, however there are still many places
+  where global variables are used. These places will have to be
+  revised some day.
+
+  The global problem class is still evolving.
+
+  \note It is illegal to introduce new global variables in baci. It is
+  illegal to used global variables where other means to do the job are
+  available. We just did not get around to remove all of them yet.
+
+  <h3>Singleton behavior</h3>
+
+  \warning This is a guru only section!
+
+  The global problem behaves like a singleton, so there is always one
+  instance available. But you can have more than one instance of
+  Problem. In normal situations this will not be needed. So don't
+  bother. Just call the static Instance() function to get the global
+  instance and access your discretizations.
 
   In the special case that you want to read more that one input file,
   however, you will need to handle the fields from each file
   separately. This is something you cannot do with ccarat's field
   variable so in that case you will have to rely on a second Problem
   instance.
+
+  One artefact that comes from using global variables together with
+  multiple Problem objects is the notion of activating of problem
+  object. This translates to setting the global variable pointers to
+  this Problem object's internal variables. Normally, if there is just
+  one Problem object, this is done by default. If you need more that
+  one, however, you will have to activate the global problems
+  yourself.
 
   \author u.kue
   \date 06/07
