@@ -25,6 +25,7 @@ Maintainer: Michael Gee
 #include "../io/io_drt.H"
 #include "../drt_contact/drt_contact_manager.H"
 #include "../drt_lib/linalg_mfoperator.H"
+#include "../drt_lib/drt_volume_constraint_manager.H"
 
 #include "Epetra_Vector.h"
 #include "Epetra_Operator.h"
@@ -137,7 +138,7 @@ public:
     \brief Compute Volume Changes for constraint volumes in predicted state 
 
     */
-  virtual void PredictorErrorVolConstr();
+//  virtual void PredictorErrorVolConstr();
   
   /*!
     \brief do full Newton iteration respecting volume constraint
@@ -311,6 +312,8 @@ protected:
   RefCountPtr<Epetra_Vector>    fextm_;
   RefCountPtr<Epetra_Vector>    fextn_;
   RefCountPtr<Epetra_Vector>    fresm_;
+  
+  RefCountPtr<DRT::VolConstrManager>   volConstrMan_;
 
   // stuff needed to use NOX as nonlinear solver
   RefCountPtr<NLNML::NLNML_FineLevelNoxInterface> fineinterface_;
@@ -319,39 +322,6 @@ protected:
   RefCountPtr<NOX::Epetra::LinearSystemAztecOO>   rcpazlinsys_;
   RefCountPtr<NOX::StatusTest::Combo>             combo_;
   
-  //variables and methods needed for volume constraint boundary condition
-  RefCountPtr<Epetra_SerialDenseVector> referencevolumes_;
-  RefCountPtr<Epetra_SerialDenseVector> startvolumes_;
-  RefCountPtr<Epetra_SerialDenseVector> actvol_;
-  RefCountPtr<Epetra_SerialDenseVector> volerr_;
-  int minConstrID_;
-  int maxConstrID_;
-  int numConstrID_;
-  double fact_;
-  RefCountPtr<Epetra_SerialDenseVector> lagrMultVec_;
-  RefCountPtr<Epetra_SerialDenseVector> lagrMultInc_;
-  map<int, RCP<Epetra_Map> > voldofrowmaps_;
-  RefCountPtr<Epetra_Vector> constrVec_;
-  
-  /*!
-    \brief synchronize processors after evaluating constraint volume 
-
-  */  
-  virtual void SynchronizeVolConstraint(const Epetra_Comm& Comm, 
-			ParameterList& params,
-			RCP<Epetra_SerialDenseVector>& vect,
-			int& minID,
-			int& maxID,
-			int& numID);
-  
-  /*!
-      \brief Setup separate dofrowmaps for any condition ID and initialize lagrange multiplier
-
-  */  
-  virtual void SetupVolDofrowmaps(DRT::Discretization& actdis,
-		  map<int, RCP<Epetra_Map> >& voldofrowmaps,
-		  int numconstID,
-		  const string& condstring);
 
 }; // class StruGenAlpha
 
