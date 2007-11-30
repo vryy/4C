@@ -135,7 +135,7 @@ void DRT::Problem::ReadParameter(DRT::DatFileReader& reader)
   reader.ReadGidSection("--PROBLEM TYP", *list);
   reader.ReadGidSection("--IO", *list);
   //reader.ReadGidSection("--STATIC", *list);
-  reader.ReadGidSection("--EIGENVALUE ANALYSIS", *list);
+  //reader.ReadGidSection("--EIGENVALUE ANALYSIS", *list);
   reader.ReadGidSection("--STRUCTURAL DYNAMIC", *list);
   reader.ReadGidSection("--FLUID DYNAMIC", *list);
   reader.ReadGidSection("--ALE DYNAMIC", *list);
@@ -175,8 +175,8 @@ void DRT::Problem::InputControl()
 
   const Teuchos::ParameterList& type = ProblemTypeParams();
 
-  genprob.probtyp        = static_cast<PROBLEM_TYP>(Teuchos::getIntegralValue<int>(type,"PROBLEMTYP"));
-  genprob.timetyp        = static_cast<TIME_TYP>(Teuchos::getIntegralValue<int>(type,"TIMETYP"));
+  genprob.probtyp        = Teuchos::getIntegralValue<PROBLEM_TYP>(type,"PROBLEMTYP");
+  genprob.timetyp        = Teuchos::getIntegralValue<TIME_TYP>(type,"TIMETYP");
   genprob.restart        = type.get<int>("RESTART");
   genprob.numfld         = type.get<int>("NUMFIELD");
   genprob.multisc_struct = type.get<int>("MULTISC_STRUCT");

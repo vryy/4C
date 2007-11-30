@@ -36,6 +36,7 @@ extern "C" /* stuff which is c and is accessed from c++ */
 
 
 /*----------------------------------------------------------------------*/
+//! Print function to be called from C
 /*----------------------------------------------------------------------*/
 extern "C"
 void PrintValidParameters()
@@ -47,8 +48,32 @@ void PrintValidParameters()
               .showFlags(false)
               .indent(4)
               .showTypes(false));
-  //std::cout << *list;
-  //list->print(std::cout);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::IntParameter(std::string const &paramName,
+                          int const value,
+                          std::string const &docString,
+                          Teuchos::ParameterList *paramList)
+{
+  Teuchos::AnyNumberParameterEntryValidator::AcceptedTypes validator(false);
+  validator.allowInt(true);
+  Teuchos::setIntParameter(paramName,value,docString,paramList,validator);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::DoubleParameter(std::string const &paramName,
+                             double const &value,
+                             std::string const &docString,
+                             Teuchos::ParameterList *paramList)
+{
+  Teuchos::AnyNumberParameterEntryValidator::AcceptedTypes validator(false);
+  validator.allowDouble(true);
+  Teuchos::setDoubleParameter(paramName,value,docString,paramList,validator);
 }
 
 
@@ -56,39 +81,33 @@ void PrintValidParameters()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
 {
-  using Teuchos::RCP;
-  using Teuchos::rcp;
   using Teuchos::tuple;
   using Teuchos::setStringToIntegralParameter;
-  using Teuchos::setIntParameter;
-  using Teuchos::setDoubleParameter;
-  using Teuchos::ParameterList;
-
 
   Teuchos::Array<std::string> yesnotuple = tuple<std::string>("Yes","No","yes","no","YES","NO");
   Teuchos::Array<int> yesnovalue = tuple<int>(true,false,true,false,true,false);
 
-  RCP<Teuchos::ParameterList> list = Teuchos::rcp(new Teuchos::ParameterList);
+  Teuchos::RCP<Teuchos::ParameterList> list = Teuchos::rcp(new Teuchos::ParameterList);
 
   /*----------------------------------------------------------------------*/
-  ParameterList& discret = list->sublist("DISCRETISATION",false,"");
+  Teuchos::ParameterList& discret = list->sublist("DISCRETISATION",false,"");
 
-  setIntParameter("NUMFLUIDDIS",1,"Number of meshes in fluid field",&discret);
-  setIntParameter("NUMSTRUCDIS",1,"Number of meshes in structural field",&discret);
-  setIntParameter("NUMALEDIS",1,"Number of meshes in ale field",&discret);
-  setIntParameter("NUMTHERMDIS",1,"Number of meshes in thermal field",&discret);
-
-  /*----------------------------------------------------------------------*/
-  ParameterList& size = list->sublist("PROBLEM SIZE",false,"");
-
-  setIntParameter("ELEMENTS",0,"Total number of elements",&size);
-  setIntParameter("NODES",0,"Total number of nodes",&size);
-  setIntParameter("DIM",3,"2d or 3d problem",&size);
-  setIntParameter("MATERIALS",0,"number of materials",&size);
-  setIntParameter("NUMDF",3,"maximum number of degrees of freedom",&size);
+  IntParameter("NUMFLUIDDIS",1,"Number of meshes in fluid field",&discret);
+  IntParameter("NUMSTRUCDIS",1,"Number of meshes in structural field",&discret);
+  IntParameter("NUMALEDIS",1,"Number of meshes in ale field",&discret);
+  IntParameter("NUMTHERMDIS",1,"Number of meshes in thermal field",&discret);
 
   /*----------------------------------------------------------------------*/
-  ParameterList& type = list->sublist("PROBLEM TYP",false,"");
+  Teuchos::ParameterList& size = list->sublist("PROBLEM SIZE",false,"");
+
+  IntParameter("ELEMENTS",0,"Total number of elements",&size);
+  IntParameter("NODES",0,"Total number of nodes",&size);
+  IntParameter("DIM",3,"2d or 3d problem",&size);
+  IntParameter("MATERIALS",0,"number of materials",&size);
+  IntParameter("NUMDF",3,"maximum number of degrees of freedom",&size);
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& type = list->sublist("PROBLEM TYP",false,"");
 
   setStringToIntegralParameter("PROBLEMTYP","Fluid_Structure_Interaction","",
                                tuple<std::string>(
@@ -100,31 +119,31 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
                                  "Ale",
                                  "Thermal_Structure_Interaction",
                                  "Structure_Multiscale"),
-                                tuple<int>(
-                                  prb_structure,
-                                  prb_fluid,
-                                  prb_fluid_xfem,
-                                  prb_condif,
-                                  prb_fsi,
-                                  prb_ale,
-                                  prb_tsi,
-                                  prb_struct_multi),
+                               tuple<PROBLEM_TYP>(
+                                 prb_structure,
+                                 prb_fluid,
+                                 prb_fluid_xfem,
+                                 prb_condif,
+                                 prb_fsi,
+                                 prb_ale,
+                                 prb_tsi,
+                                 prb_struct_multi),
                                &type);
-  setIntParameter("NUMFIELD",1,"",&type);
+  IntParameter("NUMFIELD",1,"",&type);
   setStringToIntegralParameter("TIMETYP","Dynamic","",
                                tuple<std::string>("Static","Dynamic"),
-                               tuple<int>(time_static,time_dynamic),
+                               tuple<TIME_TYP>(time_static,time_dynamic),
                                &type);
-  //setIntParameter("GRADERW",0,"",&type);
-  setIntParameter("MULTISC_STRUCT",0,"",&type);
-  setIntParameter("RESTART",0,"",&type);
+  //IntParameter("GRADERW",0,"",&type);
+  IntParameter("MULTISC_STRUCT",0,"",&type);
+  IntParameter("RESTART",0,"",&type);
   setStringToIntegralParameter("ALGEBRA","Trilinos","outdated",
                                tuple<std::string>("Trilinos","ccarat"),
                                tuple<int>(1,0),
                                &type);
 
   /*----------------------------------------------------------------------*/
-  ParameterList& io = list->sublist("IO",false,"");
+  Teuchos::ParameterList& io = list->sublist("IO",false,"");
 
   // are these needed?
   setStringToIntegralParameter("OUTPUT_OUT","No","",yesnotuple,yesnovalue,&io);
@@ -144,15 +163,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
   setStringToIntegralParameter("THERM_TEMPERATURE","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter("THERM_HEATFLUX","No","",yesnotuple,yesnovalue,&io);
 
-  setIntParameter("FILESTEPS",1000,"",&io);
+  IntParameter("FILESTEPS",1000,"",&io);
 
   //ParameterList& stat = list->sublist("STATIC",false,"");
 
   /*----------------------------------------------------------------------*/
-  ParameterList& eigen = list->sublist("EIGENVALUE ANALYSIS",false,"");
+  //Teuchos::ParameterList& eigen = list->sublist("EIGENVALUE ANALYSIS",false,"");
 
   /*----------------------------------------------------------------------*/
-  ParameterList& sdyn = list->sublist("STRUCTURAL DYNAMIC",false,"");
+  Teuchos::ParameterList& sdyn = list->sublist("STRUCTURAL DYNAMIC",false,"");
 
   setStringToIntegralParameter("DYNAMICTYP","Gen_Alfa",
                                "type of time integration control",
@@ -160,36 +179,36 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
                                tuple<int>(STRUCT_DYNAMIC::centr_diff,STRUCT_DYNAMIC::Gen_EMM,STRUCT_DYNAMIC::gen_alfa),
                                &sdyn);
 
-  setIntParameter("EIGEN",0,"EIGEN make eigenanalysis of the initial dynamic system",&sdyn);
-  setIntParameter("RESEVRYDISP",1,"save displacements and contact forces every RESEVRYDISP steps",&sdyn);
-  setIntParameter("RESEVRYSTRS",1,"save stresses every RESEVRYSTRS steps",&sdyn);
-  setIntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&sdyn);
-  setDoubleParameter("TIMESTEP",0.05,"time step size",&sdyn);
-  setIntParameter("NUMSTEP",200,"maximum number of steps",&sdyn);
-  setDoubleParameter("MAXTIME",5.0,"maximum time",&sdyn);
-  setDoubleParameter("BETA",0.25,"generalized alpha factors, also used by explicit time integration",&sdyn);
-  setDoubleParameter("GAMMA",0.5,"generalized alpha factors, also used by explicit time integration",&sdyn);
-  setDoubleParameter("ALPHA_M",0.5,"generalized alpha factors",&sdyn);
-  setDoubleParameter("ALPHA_F",0.5,"generalized alpha factors",&sdyn);
+  IntParameter("EIGEN",0,"EIGEN make eigenanalysis of the initial dynamic system",&sdyn);
+  IntParameter("RESEVRYDISP",1,"save displacements and contact forces every RESEVRYDISP steps",&sdyn);
+  IntParameter("RESEVRYSTRS",1,"save stresses every RESEVRYSTRS steps",&sdyn);
+  IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&sdyn);
+  DoubleParameter("TIMESTEP",0.05,"time step size",&sdyn);
+  IntParameter("NUMSTEP",200,"maximum number of steps",&sdyn);
+  DoubleParameter("MAXTIME",5.0,"maximum time",&sdyn);
+  DoubleParameter("BETA",0.25,"generalized alpha factors, also used by explicit time integration",&sdyn);
+  DoubleParameter("GAMMA",0.5,"generalized alpha factors, also used by explicit time integration",&sdyn);
+  DoubleParameter("ALPHA_M",0.5,"generalized alpha factors",&sdyn);
+  DoubleParameter("ALPHA_F",0.5,"generalized alpha factors",&sdyn);
   setStringToIntegralParameter("DAMPING","No",
                                "build raleigh damping matrix and use it from M_DAMP x M + K_DAMP x K",
                                yesnotuple,yesnovalue,
                                &sdyn);
-  setDoubleParameter("M_DAMP",0.5,"",&sdyn);
-  setDoubleParameter("K_DAMP",0.5,"",&sdyn);
+  DoubleParameter("M_DAMP",0.5,"",&sdyn);
+  DoubleParameter("K_DAMP",0.5,"",&sdyn);
 
   setStringToIntegralParameter("ITERATION","full","unused",
                                tuple<std::string>("full","Full","FULL"),
                                tuple<int>(1,1,1),
                                &sdyn);
 
-  setDoubleParameter("TOLDISP",1.0E-10,
-                     "tolerance in the displacement norm for the newton iteration",
-                     &sdyn);
-  setIntParameter("MAXITER",50,
-                  "maximum number of iterations allowed for newton iteration before failure",
+  DoubleParameter("TOLDISP",1.0E-10,
+                  "tolerance in the displacement norm for the newton iteration",
                   &sdyn);
-  setIntParameter("CONTACT",0,"contact algorithms",&sdyn);
+  IntParameter("MAXITER",50,
+               "maximum number of iterations allowed for newton iteration before failure",
+               &sdyn);
+  IntParameter("CONTACT",0,"contact algorithms",&sdyn);
 
   setStringToIntegralParameter("NLNSOL","fullnewton","",
                                tuple<std::string>(
@@ -218,15 +237,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
                                &sdyn);
 
   // time adaptivity (old style)
-  setIntParameter("TIMEADAPT",0,"",&sdyn);
-  setIntParameter("ITWANT",0,"",&sdyn);
-  setDoubleParameter("MAXDT",0.0,"",&sdyn);
-  setDoubleParameter("RESULTDT",0.0,"",&sdyn);
+  IntParameter("TIMEADAPT",0,"",&sdyn);
+  IntParameter("ITWANT",0,"",&sdyn);
+  DoubleParameter("MAXDT",0.0,"",&sdyn);
+  DoubleParameter("RESULTDT",0.0,"",&sdyn);
 
   SetValidTimeAdaptivityParameters(sdyn);
 
   /*----------------------------------------------------------------------*/
-  ParameterList& fdyn = list->sublist("FLUID DYNAMIC",false,"");
+  Teuchos::ParameterList& fdyn = list->sublist("FLUID DYNAMIC",false,"");
 
   setStringToIntegralParameter("DYNAMICTYP","Nlin_Time_Int",
                                "Nonlinear Time Integraton Scheme",
@@ -429,48 +448,48 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
                                tuple<int>(0,1,2),
                                &fdyn);
 
-  setIntParameter("UPPSS",1,"Increment for visualisation (unused)",&fdyn);
-  setIntParameter("UPOUT",1,"Increment for writing solution to output file",&fdyn);
-  setIntParameter("UPRES",1,"Increment for writing solution",&fdyn);
-  setIntParameter("RESSTEP",0,"Restart Step",&fdyn);
-  setIntParameter("RESTARTEVRY",20,"Increment for writing restart",&fdyn);
-  setIntParameter("NUMSTEP",1,"Total number of Timesteps",&fdyn);
-  setIntParameter("STEADYSTEP",-1,"steady state check every step",&fdyn);
-  setIntParameter("NUMSTASTEPS",0,"Number of Steps for Starting Scheme",&fdyn);
-  setIntParameter("STARTFUNCNO",-1,"Function for Initial Starting Field",&fdyn);
-  setIntParameter("ITEMAX",10,"max. number of nonlin. iterations",&fdyn);
+  IntParameter("UPPSS",1,"Increment for visualisation (unused)",&fdyn);
+  IntParameter("UPOUT",1,"Increment for writing solution to output file",&fdyn);
+  IntParameter("UPRES",1,"Increment for writing solution",&fdyn);
+  IntParameter("RESSTEP",0,"Restart Step",&fdyn);
+  IntParameter("RESTARTEVRY",20,"Increment for writing restart",&fdyn);
+  IntParameter("NUMSTEP",1,"Total number of Timesteps",&fdyn);
+  IntParameter("STEADYSTEP",-1,"steady state check every step",&fdyn);
+  IntParameter("NUMSTASTEPS",0,"Number of Steps for Starting Scheme",&fdyn);
+  IntParameter("STARTFUNCNO",-1,"Function for Initial Starting Field",&fdyn);
+  IntParameter("ITEMAX",10,"max. number of nonlin. iterations",&fdyn);
 
-  setDoubleParameter("TIMESTEP",0.01,"Time increment dt",&fdyn);
-  setDoubleParameter("MAXTIME",1000.0,"Total simulation time",&fdyn);
-  setDoubleParameter("ALPHA_M",1.0,"Time integration factor",&fdyn);
-  setDoubleParameter("ALPHA_F",1.0,"Time integration factor",&fdyn);
+  DoubleParameter("TIMESTEP",0.01,"Time increment dt",&fdyn);
+  DoubleParameter("MAXTIME",1000.0,"Total simulation time",&fdyn);
+  DoubleParameter("ALPHA_M",1.0,"Time integration factor",&fdyn);
+  DoubleParameter("ALPHA_F",1.0,"Time integration factor",&fdyn);
 
-  setDoubleParameter("THETA",0.66,"Time integration factor",&fdyn);
+  DoubleParameter("THETA",0.66,"Time integration factor",&fdyn);
 
-  setDoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&fdyn);
-  setDoubleParameter("STEADYTOL",1e-6,"Tolerance for steady state check",&fdyn);
-  setDoubleParameter("START_THETA",1.0,"Time integraton factor for starting scheme",&fdyn);
-  setDoubleParameter("INT_LENGHT",0.0,"",&fdyn);
-  setDoubleParameter("ROUGHTNESS",0.0,"",&fdyn);
-  setDoubleParameter("SC_COORD_X",0.0,"",&fdyn);
-  setDoubleParameter("SC_COORD_Y",0.0,"",&fdyn);
-  setDoubleParameter("MAX_DT",1.0,"Maximal Time increment dt_max in adaptive case",&fdyn);
-  setDoubleParameter("MIN_DT",0.0,"Minimal Time increment dt_min in adaptive case",&fdyn);
-  setDoubleParameter("LOC_TRUN_ERR",1e-3,"Local Truncation Error to rule adaptive time stepping",&fdyn);
-  setDoubleParameter("SMAGCONST",0.0,"",&fdyn);
+  DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&fdyn);
+  DoubleParameter("STEADYTOL",1e-6,"Tolerance for steady state check",&fdyn);
+  DoubleParameter("START_THETA",1.0,"Time integraton factor for starting scheme",&fdyn);
+  DoubleParameter("INT_LENGHT",0.0,"",&fdyn);
+  DoubleParameter("ROUGHTNESS",0.0,"",&fdyn);
+  DoubleParameter("SC_COORD_X",0.0,"",&fdyn);
+  DoubleParameter("SC_COORD_Y",0.0,"",&fdyn);
+  DoubleParameter("MAX_DT",1.0,"Maximal Time increment dt_max in adaptive case",&fdyn);
+  DoubleParameter("MIN_DT",0.0,"Minimal Time increment dt_min in adaptive case",&fdyn);
+  DoubleParameter("LOC_TRUN_ERR",1e-3,"Local Truncation Error to rule adaptive time stepping",&fdyn);
+  DoubleParameter("SMAGCONST",0.0,"",&fdyn);
 
   /*----------------------------------------------------------------------*/
-  ParameterList& adyn = list->sublist("ALE DYNAMIC",false,"");
+  Teuchos::ParameterList& adyn = list->sublist("ALE DYNAMIC",false,"");
 
-  setDoubleParameter("TIMESTEP",0.1,"",&adyn);
-  setIntParameter("NUMSTEP",41,"",&adyn);
-  setDoubleParameter("MAXTIME",4.0,"",&adyn);
+  DoubleParameter("TIMESTEP",0.1,"",&adyn);
+  IntParameter("NUMSTEP",41,"",&adyn);
+  DoubleParameter("MAXTIME",4.0,"",&adyn);
   setStringToIntegralParameter("ALE_TYPE","classic_lin","",
                                tuple<std::string>("classic_lin"),
                                tuple<int>(ALE_DYNAMIC::classic_lin),
                                &adyn);
-  setIntParameter("NUM_INITSTEP",0,"",&adyn);
-  setIntParameter("RESEVRYDISP",1,"",&adyn);
+  IntParameter("NUM_INITSTEP",0,"",&adyn);
+  IntParameter("RESEVRYDISP",1,"",&adyn);
 
   setStringToIntegralParameter("QUALITY","none","unused",
                                tuple<std::string>("none","NONE"),
@@ -480,7 +499,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
                                &adyn);
 
   /*----------------------------------------------------------------------*/
-  ParameterList& fsidyn = list->sublist(
+  Teuchos::ParameterList& fsidyn = list->sublist(
     "FSI DYNAMIC",false,
     "Fluid Structure Interaction\n"
     "Partitioned FSI solver with various coupling methods"
@@ -563,38 +582,36 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
                                  FSI_DYNAMIC::cf_nodeforce),
                                &fsidyn);
 
-  setIntParameter("ITECHAPP",1,"",&fsidyn);
-  setIntParameter("ICHMAX",1,"",&fsidyn);
-  setIntParameter("ISDMAX",1,"not used up to now",&fsidyn);
-  setIntParameter("NUMSTEP",1,"Total number of Timesteps",&fsidyn);
-  setIntParameter("ITEMAX",1,"Maximum number of iterations over fields",&fsidyn);
-  setIntParameter("UPPSS",1,"Increment for visualisation",&fsidyn);
-  setIntParameter("UPRES",1,"Increment for writing solution",&fsidyn);
-  setIntParameter("RESTARTEVRY",1,"Increment for writing restart",&fsidyn);
+  IntParameter("ITECHAPP",1,"",&fsidyn);
+  IntParameter("ICHMAX",1,"",&fsidyn);
+  IntParameter("ISDMAX",1,"not used up to now",&fsidyn);
+  IntParameter("NUMSTEP",1,"Total number of Timesteps",&fsidyn);
+  IntParameter("ITEMAX",1,"Maximum number of iterations over fields",&fsidyn);
+  IntParameter("UPPSS",1,"Increment for visualisation",&fsidyn);
+  IntParameter("UPRES",1,"Increment for writing solution",&fsidyn);
+  IntParameter("RESTARTEVRY",1,"Increment for writing restart",&fsidyn);
 
-  setDoubleParameter("TIMESTEP",0.1,"Time increment dt",&fsidyn);
-  setDoubleParameter("MAXTIME",1000.0,"Total simulation time",&fsidyn);
-  setDoubleParameter("TOLENCHECK",1e-6,"Tolerance for energy check",&fsidyn);
-  setDoubleParameter("RELAX",1.0,"fixed relaxation parameter",&fsidyn);
-  setDoubleParameter("CONVTOL",1e-6,"Tolerance for iteration over fields",&fsidyn);
+  DoubleParameter("TIMESTEP",0.1,"Time increment dt",&fsidyn);
+  DoubleParameter("MAXTIME",1000.0,"Total simulation time",&fsidyn);
+  DoubleParameter("TOLENCHECK",1e-6,"Tolerance for energy check",&fsidyn);
+  DoubleParameter("RELAX",1.0,"fixed relaxation parameter",&fsidyn);
+  DoubleParameter("CONVTOL",1e-6,"Tolerance for iteration over fields",&fsidyn);
 
   /*----------------------------------------------------------------------*/
-  ParameterList& fluidsolver = list->sublist("FLUID SOLVER",false,"");
+  Teuchos::ParameterList& fluidsolver = list->sublist("FLUID SOLVER",false,"");
   SetValidSolverParameters(fluidsolver);
 
   /*----------------------------------------------------------------------*/
-  ParameterList& structsolver = list->sublist("STRUCT SOLVER",false,"");
+  Teuchos::ParameterList& structsolver = list->sublist("STRUCT SOLVER",false,"");
   SetValidSolverParameters(structsolver);
 
   /*----------------------------------------------------------------------*/
-  ParameterList& alesolver = list->sublist("ALE SOLVER",false,"");
+  Teuchos::ParameterList& alesolver = list->sublist("ALE SOLVER",false,"");
   SetValidSolverParameters(alesolver);
 
-#ifdef D_TSI
   /*----------------------------------------------------------------------*/
-  ParameterList& thermalsolver = list->sublist("THERMAL SOLVER",false,"");
+  Teuchos::ParameterList& thermalsolver = list->sublist("THERMAL SOLVER",false,"");
   SetValidSolverParameters(thermalsolver);
-#endif
 
   return list;
 }
@@ -604,13 +621,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
 /*----------------------------------------------------------------------*/
 void DRT::SetValidSolverParameters(Teuchos::ParameterList& list)
 {
-  using Teuchos::RCP;
-  using Teuchos::rcp;
   using Teuchos::tuple;
   using Teuchos::setStringToIntegralParameter;
-  using Teuchos::setIntParameter;
-  using Teuchos::setDoubleParameter;
-  using Teuchos::ParameterList;
 
   setStringToIntegralParameter("SOLVER","UMFPACK","",
                                tuple<std::string>(
@@ -674,34 +686,34 @@ void DRT::SetValidSolverParameters(Teuchos::ParameterList& list)
       azprec_RILU).append(azprec_BILU).append(azprec_ML).append(azprec_MLfluid).append(azprec_MLfluid2).append(azprec_MLAPI),
     &list
     );
-  setIntParameter(
+  IntParameter(
     "AZOVERLAP", 0,
     "The amount of overlap used for the internal \"ilu\" and \"ilut\" preconditioners.",
     &list
     );
-  setIntParameter(
+  IntParameter(
     "AZGFILL", 0,
     "The amount of fill allowed for the internal \"ilu\" preconditioner.",
     &list
     );
-  setDoubleParameter(
+  DoubleParameter(
     "AZDROP", 0.0,
     "The tolerance below which an entry from the factors of an internal \"ilut\"\n"
     "preconditioner will be dropped.",
     &list
     );
-  setDoubleParameter(
+  DoubleParameter(
     "AZFILL", 1.0,
     "The amount of fill allowed for an internal \"ilut\" preconditioner.",
     &list
     );
-//   setIntParameter(
+//   IntParameter(
 //     Steps_name, 3,
 //     "Number of steps taken for the \"Jacobi\" or the \"Symmetric Gauss-Seidel\"\n"
 //     "internal preconditioners for each preconditioner application.",
 //     &list
 //     );
-  setIntParameter(
+  IntParameter(
     "AZPOLY", 3,
     "The order for of the polynomials used for the \"Polynomial\" and\n"
     "\"Least-squares Polynomial\" internal preconditioners.",
@@ -722,7 +734,7 @@ void DRT::SetValidSolverParameters(Teuchos::ParameterList& list)
 //     tuple<int>(AZ_classic,AZ_modified),
 //     &list
 //     );
-  setIntParameter(
+  IntParameter(
     "AZSUB", 300,
     "The maximum size of the Krylov subspace used with \"GMRES\" before\n"
     "a restart is performed.",
@@ -755,25 +767,25 @@ void DRT::SetValidSolverParameters(Teuchos::ParameterList& list)
       ),
     &list
     );
-//   setDoubleParameter(
+//   DoubleParameter(
 //     IllConditioningThreshold_name, 1e+11,
 //     "The threshold tolerance above which a system is considered\n"
 //     "ill conditioned.",
 //     &list
 //     );
-  setIntParameter(
+  IntParameter(
     "AZOUTPUT", 0, // By default, no output from Aztec!
     "The number of iterations between each output of the solver's progress.",
     &list
     );
 
-  setIntParameter("AZREUSE", 0, "how often to recompute some preconditioners", &list);
-  setIntParameter("AZITER", 1000, "max iterations", &list);
-  setIntParameter("AZGRAPH", 0, "unused", &list);
-  setIntParameter("AZBDIAG", 0, "", &list);
+  IntParameter("AZREUSE", 0, "how often to recompute some preconditioners", &list);
+  IntParameter("AZITER", 1000, "max iterations", &list);
+  IntParameter("AZGRAPH", 0, "unused", &list);
+  IntParameter("AZBDIAG", 0, "", &list);
 
-  setDoubleParameter("AZTOL", 1e-8, "tolerance in (un)scaled residual", &list);
-  setDoubleParameter("AZOMEGA", 0.0, "unused", &list);
+  DoubleParameter("AZTOL", 1e-8, "tolerance in (un)scaled residual", &list);
+  DoubleParameter("AZOMEGA", 0.0, "unused", &list);
 
   setStringToIntegralParameter(
     "AZSCAL","none","scaling of the system",
@@ -783,20 +795,20 @@ void DRT::SetValidSolverParameters(Teuchos::ParameterList& list)
 
   // parameters of ML preconditioner
 
-  setIntParameter("ML_PRINT",0,
-                  "ML print-out level (0-10)",&list);
-  setIntParameter("ML_MAXCOARSESIZE",5000,
-                  "ML stop coarsening when coarse ndof smaller then this",&list);
-  setIntParameter("ML_MAXLEVEL",5,
-                  "ML max number of levels",&list);
-  setIntParameter("ML_AGG_SIZE",27,
-                  "objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27",&list);
+  IntParameter("ML_PRINT",0,
+               "ML print-out level (0-10)",&list);
+  IntParameter("ML_MAXCOARSESIZE",5000,
+               "ML stop coarsening when coarse ndof smaller then this",&list);
+  IntParameter("ML_MAXLEVEL",5,
+               "ML max number of levels",&list);
+  IntParameter("ML_AGG_SIZE",27,
+               "objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27",&list);
 
-  setDoubleParameter("ML_DAMPFINE",1.,"damping fine grid",&list);
-  setDoubleParameter("ML_DAMPMED",1.,"damping med grids",&list);
-  setDoubleParameter("ML_DAMPCOARSE",1.,"damping coarse grid",&list);
-  setDoubleParameter("ML_PROLONG_SMO",0.,"damping factor for prolongator smoother (usually 1.33 or 0.0)",&list);
-  setDoubleParameter("ML_PROLONG_THRES",0.,"threshold for prolongator smoother/aggregation",&list);
+  DoubleParameter("ML_DAMPFINE",1.,"damping fine grid",&list);
+  DoubleParameter("ML_DAMPMED",1.,"damping med grids",&list);
+  DoubleParameter("ML_DAMPCOARSE",1.,"damping coarse grid",&list);
+  DoubleParameter("ML_PROLONG_SMO",0.,"damping factor for prolongator smoother (usually 1.33 or 0.0)",&list);
+  DoubleParameter("ML_PROLONG_THRES",0.,"threshold for prolongator smoother/aggregation",&list);
 
   setNumericStringParameter("ML_SMOTIMES","1 1 1 1 1 1",
                             "no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)",&list);
@@ -837,13 +849,8 @@ void DRT::SetValidSolverParameters(Teuchos::ParameterList& list)
 /*----------------------------------------------------------------------*/
 void DRT::SetValidTimeAdaptivityParameters(Teuchos::ParameterList& list)
 {
-  using Teuchos::RCP;
-  using Teuchos::rcp;
   using Teuchos::tuple;
   using Teuchos::setStringToIntegralParameter;
-  using Teuchos::setIntParameter;
-  using Teuchos::setDoubleParameter;
-  using Teuchos::ParameterList;
 
   setStringToIntegralParameter(
     "TA_KIND","None","",
@@ -853,11 +860,11 @@ void DRT::SetValidTimeAdaptivityParameters(Teuchos::ParameterList& list)
       TIMADA_DYNAMIC::timada_kind_zienxie),
     &list);
 
-  setDoubleParameter("TA_STEPSIZEMAX", 0.0, "", &list);
-  setDoubleParameter("TA_STEPSIZEMIN", 0.0, "", &list);
-  setDoubleParameter("TA_SIZERATIOMAX", 0.0, "", &list);
-  setDoubleParameter("TA_SIZERATIOMIN", 0.0, "", &list);
-  setDoubleParameter("TA_SIZERATIOSCALE", 0.0, "", &list);
+  DoubleParameter("TA_STEPSIZEMAX", 0.0, "", &list);
+  DoubleParameter("TA_STEPSIZEMIN", 0.0, "", &list);
+  DoubleParameter("TA_SIZERATIOMAX", 0.0, "", &list);
+  DoubleParameter("TA_SIZERATIOMIN", 0.0, "", &list);
+  DoubleParameter("TA_SIZERATIOSCALE", 0.0, "", &list);
 
   setStringToIntegralParameter(
     "TA_ERRNORM", "Vague", "",
@@ -873,8 +880,8 @@ void DRT::SetValidTimeAdaptivityParameters(Teuchos::ParameterList& list)
                TIMADA_DYNAMIC::timada_err_norm_inf),
     &list);
 
-  setDoubleParameter("TA_ERRTOL", 0.0, "", &list);
-  setIntParameter("TA_ADAPTSTEPMAX", 0, "", &list);
+  DoubleParameter("TA_ERRTOL", 0.0, "", &list);
+  IntParameter("TA_ADAPTSTEPMAX", 0, "", &list);
 }
 
 

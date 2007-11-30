@@ -25,6 +25,18 @@ Maintainer: Ulrich Kuettler
 
 namespace DRT {
 
+  /// local wrapper for Teuchos::setIntParameter() that allows only integers
+  void IntParameter(std::string const &paramName,
+                    int const value,
+                    std::string const &docString,
+                    Teuchos::ParameterList *paramList);
+
+  /// local wrapper for Teuchos::setDoubleParameter() that allows only doubles
+  void DoubleParameter(std::string const &paramName,
+                       double const &value,
+                       std::string const &docString,
+                       Teuchos::ParameterList *paramList);
+
   /// construct list with all parameters and documentation
   Teuchos::RCP<const Teuchos::ParameterList> ValidParameters();
 
