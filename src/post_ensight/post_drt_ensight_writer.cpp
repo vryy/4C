@@ -61,52 +61,53 @@ void EnsightWriter::WriteFiles()
     const vector<double> soltime = result.get_result_times(field_->name());
 
     //
-    // now do the case file
+    // write geometry file
+    //
+    const string geofilename = filename_ + "_"+ field_->name() + ".geo";
+    WriteGeoFile(geofilename);
+    vector<int> filesteps;
+    filesteps.push_back(1);
+    filesetmap_["geo"] = filesteps;
+    vector<int> timesteps;
+    timesteps.push_back(1);
+    timesetmap_["geo"] = timesteps;
+    const int geotimeset = 1;
+    const int geofileset = 1;
+    // at the moment, we can only print out the first step -> to be changed
+    vector<double> geotime; // timesteps when the geometry is written
+    geotime.push_back(soltime[0]);
+    
+    
+    //
+    // solution fields files
+    //
+    const int soltimeset = 2;
+    WriteAllResults(field_);
+    
+    
+    
+    
+    
+    //
+    // now write the case file
     //
     const string casefilename = filename_ + "_"+ field_->name() + ".case";
     ofstream casefile;
     casefile.open(casefilename.c_str());
     casefile << "# created using post_drt_ensight\n"<< "FORMAT\n\n"<< "type:\tensight gold\n";
-
-    //
-    // GEOMETRY section
-    //
-    const int geotimeset = 1;
-    const int geofileset = 1;
-    const string geofilename = filename_ + "_"+ field_->name() + ".geo";
-    casefile << "\nGEOMETRY\n\n"<< "model:\t"<<geotimeset<<"\t"<<geofileset<<"\t"<< geofilename<< "\n";
-    WriteGeoFile(geofilename);
-
-    //
-    // VARIABLE section
-    //
-    // whatever result we need, inside the variable entries in the case file are generated
-    const int soltimeset = 2;
-    const int solfileset = 2; /// default, if not split to multiple files
-    casefile << "\nVARIABLE\n\n";
-    casefile << WriteAllResults(field_);
-
-    //
-    // TIME section
-    //
-    casefile << "\nTIME\n";
-
-    // write time steps for geometry file
-    // at the moment, we can only print out the first step -> to be changed
-    vector<double> geotime; // timesteps when the geometry is written
-    geotime.push_back(soltime[0]);
-    casefile << GetTimeSectionString(geotimeset, geotime);
     
-    // write time steps for result file
+    casefile << "\nGEOMETRY\n\n";
+    casefile << "model:\t"<<geotimeset<<"\t"<<geofileset<<"\t"<< geofilename<< "\n";
+        
+    casefile << "\nVARIABLE\n\n";
+    casefile << GetVariableSection(filesetmap_, variablenumdfmap_, variablefilenamemap_);
+    
+    casefile << "\nTIME\n\n";
+    casefile << GetTimeSectionString(geotimeset, geotime);
     casefile << GetTimeSectionString(soltimeset, soltime);
 
-    //
-    // FILE section
-    //
-    casefile << "FILE\n";
-    casefile << "file set:\t\t"<<geofileset<<"\n"<< "number of steps:\t"<< geotime.size() << "\n\n";
-    casefile << "file set:\t\t"<<solfileset<<"\n"<< "number of steps:\t"<< soltime.size() << "\n\n";
-    casefile << GetFileSectionStringFromFilesets(solfilesets_);
+    casefile << "\nFILE\n\n";
+    casefile << GetFileSectionStringFromFilesets(filesetmap_);
 
     casefile.close();
 }
@@ -354,7 +355,7 @@ string EnsightWriter::GetEnsightString(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-string EnsightWriter::WriteResult(
+void EnsightWriter::WriteResult(
         const string groupname,
         const string name,
         const int numdf,
@@ -363,7 +364,7 @@ string EnsightWriter::WriteResult(
     PostResult result = PostResult(field_);
     result.next_result();
     if (!map_has_map(result.group(), const_cast<char*>(groupname.c_str())))
-        return "";
+        return;
 
     // new for file continuation
     bool multiple_files = false;
@@ -381,7 +382,7 @@ string EnsightWriter::WriteResult(
         const int indexsize = 80+2*sizeof(int)+(file.tellp()/stepsize+2)*sizeof(long);
         if (static_cast<long unsigned int>(file.tellp())+stepsize+indexsize>= FILE_SIZE_LIMIT_)
         {
-            FileSwitcher(file, multiple_files, solfilesets_, resultfilepos, stepsize, name, filename);
+            FileSwitcher(file, multiple_files, filesetmap_, resultfilepos, stepsize, name, filename);
         }
         WriteResultStep(file, result, resultfilepos, groupname, name, numdf, from);
     }
@@ -390,22 +391,20 @@ string EnsightWriter::WriteResult(
     WriteIndexTable(file, resultfilepos[name]);
     resultfilepos[name].clear();
 
+    filesetmap_[name].push_back(file.tellp()/stepsize);
+    
     string filename_for_casefile;
-    int fileset_for_casefile = 2;
-    if (multiple_files)
+    if (filesetmap_[name].size() > 1)
     {
-        const int last_fileset = solfilesets_.size()-1;
-        solfilesets_[last_fileset].push_back(file.tellp()/stepsize);
         filename_for_casefile = filename + "***";
-        fileset_for_casefile = solfilesets_.size() + FILE_SET_OFFSET_;
     }
     else
     {
         filename_for_casefile = filename;
-        fileset_for_casefile = 2;
     }
 
-    return GetVariableEntryForCaseFile(numdf, fileset_for_casefile, name, filename_for_casefile);
+    variablenumdfmap_[name] = numdf;
+    variablefilenamemap_[name] = filename_for_casefile;
 }
 
 /*----------------------------------------------------------------------*/
@@ -413,20 +412,21 @@ string EnsightWriter::WriteResult(
 void EnsightWriter::FileSwitcher(
         ofstream& file,
         bool& multiple_files,
-        vector<vector<int> >& filesets,
+        map<string,vector<int> >& filesetmap,
         map<string, vector<ofstream::pos_type> >& resultfilepos,
         const int stepsize,
         const string name,
         const string filename) const
 {
     ostringstream newfilename;
+    
     if (multiple_files == false)
     {
         multiple_files = true;
 
         vector<int> numsteps;
         numsteps.push_back(file.tellp()/stepsize);
-        filesets.push_back(numsteps);
+        filesetmap[name] = numsteps;
         
         // append index table
         WriteIndexTable(file, resultfilepos[name]);
@@ -438,8 +438,7 @@ void EnsightWriter::FileSwitcher(
     }
     else
     {
-        const int last_entry = filesets.size()-1;
-        filesets[last_entry].push_back(file.tellp()/stepsize);
+        filesetmap[name].push_back(file.tellp()/stepsize);
         
         // append index table
         WriteIndexTable(file, resultfilepos[name]);
@@ -449,7 +448,7 @@ void EnsightWriter::FileSwitcher(
         newfilename << filename;
         newfilename.width(3);
         newfilename.fill('0');
-        newfilename << filesets[last_entry].size()+1;
+        newfilename << filesetmap[name].size()+1;
     }
     file.open(newfilename.str().c_str());
 }
@@ -464,26 +463,68 @@ string EnsightWriter::GetVariableEntryForCaseFile(
 {
     stringstream str;
     
-    const int variable_set = 2;
+    const int timeset = 2;
     
     // create variable entry
     switch (numdf)
     {
     case 6:
-        str << "tensor symm per node:\t"<< variable_set <<"\t"<< fileset << "\t"<< name << "\t"<< filename << "\n";
+        str << "tensor symm per node:\t"<< timeset <<"\t"<< fileset << "\t"<< name << "\t"<< filename << "\n";
         break;
     case 3:
     case 2:
-        str << "vector per node:\t"<< variable_set <<"\t"<< fileset << "\t"<< name << "\t"<< filename << "\n";
+        str << "vector per node:\t"<< timeset <<"\t"<< fileset << "\t"<< name << "\t"<< filename << "\n";
         break;
     case 1:
-        str << "scalar per node:\t"<< variable_set <<"\t"<< fileset << "\t"<< name << "\t"<< filename << "\n";
+        str << "scalar per node:\t"<< timeset <<"\t"<< fileset << "\t"<< name << "\t"<< filename << "\n";
         break;
     default:
         dserror("unknown number of dof per node");
     };
     return str.str();
 }
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+string EnsightWriter::GetVariableSection(
+        map<string,vector<int> > filesetmap,
+        map<string,int> variablenumdfmap,
+        map<string,string> variablefilenamemap
+        ) const
+{
+    stringstream str;
+    
+    map<string,int>::const_iterator variable;
+    
+    int filesetcounter = 2; // we begin with 2, since 1 is for the geometry section
+    for (variable = variablenumdfmap.begin(); variable != variablenumdfmap.end(); ++variable)
+    {
+        const string name = variable->first;
+        const int numdf = variable->second;
+        const string filename = variablefilenamemap[name];
+        
+        map<string,vector<int> >::const_iterator entry = filesetmap.find(name);
+        if (entry == filesetmap.end()) 
+            dserror("filesetmap not defined for '%s'", name.c_str());
+        
+        const int numsubfilesteps = entry->second.size();
+        string filename_for_casefile;
+        if (numsubfilesteps > 1)
+        {
+            filename_for_casefile = filename + "***";
+        }
+        else
+        {
+            filename_for_casefile = filename;
+        }
+            
+        str << GetVariableEntryForCaseFile(numdf, filesetcounter, name, filename_for_casefile);
+        filesetcounter++;
+    }
+
+    return str.str();
+}
+
 
 /*!
  \brief Write nodal values for one timestep
@@ -591,7 +632,7 @@ string EnsightWriter::GetTimeSectionString(
         const vector<double>& times) const
 {
     stringstream s;
-    s << "time set:\t\t" << timeset << "\n"<< "number of steps:\t"<< times.size() << "\ntime values: ";
+    s << "\ntime set:\t\t" << timeset << "\n"<< "number of steps:\t"<< times.size() << "\ntime values: ";
     for (unsigned i=0; i<times.size(); ++i)
     {
         s << times[i]<< " ";
@@ -600,7 +641,7 @@ string EnsightWriter::GetTimeSectionString(
             s << "\n";
         }
     }
-    s << "\n\n";
+    s << "\n";
     return s.str();
 }
 
@@ -612,26 +653,31 @@ string EnsightWriter::GetTimeSectionString(
  */
 /*----------------------------------------------------------------------*/
 string EnsightWriter::GetFileSectionStringFromFilesets(
-        const vector<vector<int> >& filesets) const
+        const map<string,vector<int> >& filesetmap) const
 {
     stringstream s;
-    
-    // we write standard strings
-    int offset = 0;
-    if (filesets.size() > 0){
-        offset += FILE_SET_OFFSET_;
-    }
         
-    
-    for (unsigned int i = 0; i < filesets.size(); ++i)
+    map<string,vector<int> >::const_iterator fileset;
+    int setnumber = 1;
+
+    for (fileset = filesetmap.begin(); fileset != filesetmap.end(); ++fileset)
     {
-        //s << "\nfile set:\t\t"<< 3+i << "\n";
-        s << "file set:\t\t"<< 1+i+offset << "\n";
-        for (unsigned int j = 0; j < filesets[i].size(); ++j)
+        vector<int> subsets = fileset->second;
+        s << "file set:\t\t"<< setnumber << "\n";
+        if (subsets.size() == 1)
         {
-            s << "filename index:\t"<< 1+j << "\n"<< "number of steps:\t"<< filesets[i][j] << "\n";
+            s << "number of steps:\t"<< subsets[0] << "\n\n";
         }
-        s << "\n";
+        else
+        {
+            for (unsigned int j = 0; j < subsets.size(); ++j)
+            {
+                s << "filename index:\t"<< 1+j << "\n";
+                s << "number of steps:\t"<< subsets[j] << "\n";
+            }
+            s << "\n";
+        }
+        setnumber++;
     }
     return s.str();
 }

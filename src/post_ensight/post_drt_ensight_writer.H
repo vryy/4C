@@ -81,7 +81,7 @@ public:
 protected:
 
     //! look for problem dependent result entries and write them
-    virtual string WriteAllResults(
+    virtual void WriteAllResults(
             PostField* field) = 0;
 
     /*!
@@ -94,14 +94,10 @@ protected:
      pressure) and we want to write just one part of it. So we have to
      specify which part.
 
-     Finally, after writing to the result file, a string is returned that
-     describes the result for the case file VARIABLE section
-
-     \return string with entry for VARIABLE section in case file
      \author u.kue
      \date 03/07
      */
-    string WriteResult(
+    void WriteResult(
             const string groupname, ///< name of the result group in the control file
             const string name, ///< name of the result to be written
             const int numdf, ///< number of dofs per node to this result
@@ -202,10 +198,22 @@ protected:
      *        that corresponds to the current field
      */
     string GetVariableEntryForCaseFile(
-            const int numdf, ///< degrees of freedom per node for this field
-            const unsigned int fileset,
-            const string name,
-            const string filename) const;
+            int numdf,               ///< degrees of freedom per node for this field
+            unsigned int fileset,
+            string name,
+            string filename
+            ) const;
+    /*!
+     * \brief create string for the VARIABLE section
+     *        for all fields in the variablemap
+     */
+    string GetVariableSection(
+            map<string,vector<int> > filesetmap,
+            map<string,int>          variablenumdfmap,
+            map<string,string>       variablefilenamemap
+            ) const;
+            
+            
     /*!
      * \brief estimate, how many elements of each distype will be written
      * \return map between distype and number of elements to be written
@@ -222,7 +230,7 @@ protected:
     void FileSwitcher(
             ofstream& file,                                          ///< filestream that is switched
             bool& multiple_files,                                    ///< ???
-            vector<vector<int> >& filesets,                          ///< ???
+            map<string,vector<int> >& filesetmap,                    ///< ???
             map<string, vector<ofstream::pos_type> >& resultfilepos, ///< ???
             const int stepsize,                                      ///< ???
             const string name,                                       ///< ???
@@ -241,29 +249,28 @@ protected:
     
     //! create string for FILE section in the case file
     string GetFileSectionStringFromFilesets(
-            const vector<vector<int> >& filesets  ///< filesets when using multiple huge binary files
+            const map<string,vector<int> >& filesetmap  ///< filesets when using multiple huge binary files
             ) const;
     
     PostField* field_;
     string filename_;
     int myrank_;
 
-    /// keep track, in how many files we split the result due to FILE_SIZE_LIMIT_
-    /// store filesets for the solution in the order they are written (velocity, pressure,...)
-    /// In there, we can store, how many resultsteps are in each of the splitted files
-    vector<vector<int> > solfilesets_;
+    map<string,vector<int> > filesetmap_;
+    
+    map<string,vector<int> > timesetmap_;
+    
+    map<string,int>          variablenumdfmap_;
+    map<string,string>       variablefilenamemap_;
+
 
     //! maps a distype to the corresponding Ensight cell type
     map<DRT::Element::DiscretizationType, string> distype2ensightstring_;
     
     // maximum file size
-    static const unsigned FILE_SIZE_LIMIT_ = 0x7fffffff; // 2GB
-    //static const unsigned FILE_SIZE_LIMIT_ = 1024*10; // 10kB ... usefull for debugging ;-)
+    //static const unsigned FILE_SIZE_LIMIT_ = 0x7fffffff; // 2GB
+    static const unsigned FILE_SIZE_LIMIT_ = 1024*10; // 10kB ... usefull for debugging ;-)
     
-    //! we write new file sets, if files are split, but let the old ones in the case file
-    //! we offset the new sets by this factor (look at the case file for illustration)
-    //! of set to 1, we overwrite the filel set for the geo file.
-    static const unsigned FILE_SET_OFFSET_ = 11;
 };
 
 

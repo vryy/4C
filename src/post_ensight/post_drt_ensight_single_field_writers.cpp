@@ -21,54 +21,47 @@ using namespace std;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-string StructureEnsightWriter::WriteAllResults(
+void StructureEnsightWriter::WriteAllResults(
         PostField* field)
 {
-    stringstream str;
-    str << EnsightWriter::WriteResult("displacement", "displacement", field->problem()->num_dim());
-    str << EnsightWriter::WriteResult("velocity", "velocity", field->problem()->num_dim());
-    str << EnsightWriter::WriteResult("acceleration", "acceleration", field->problem()->num_dim());
-    return str.str();
+    EnsightWriter::WriteResult("displacement", "displacement", field->problem()->num_dim());
+    EnsightWriter::WriteResult("velocity", "velocity", field->problem()->num_dim());
+    EnsightWriter::WriteResult("acceleration", "acceleration", field->problem()->num_dim());
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-string FluidEnsightWriter::WriteAllResults(
+void FluidEnsightWriter::WriteAllResults(
         PostField* field)
 {
-    stringstream str;
-    str << EnsightWriter::WriteResult("velnp", "velocity", field->problem()->num_dim());
-    str << EnsightWriter::WriteResult("velnp", "pressure", 1, field->problem()->num_dim());
-    str << EnsightWriter::WriteResult("residual", "residual", field->problem()->num_dim());
-    str << EnsightWriter::WriteResult("dispnp", "displacement", field->problem()->num_dim());
-    str << EnsightWriter::WriteResult("traction", "traction", field->problem()->num_dim());
-    return str.str();
+    EnsightWriter::WriteResult("velnp", "velocity", field->problem()->num_dim());
+    EnsightWriter::WriteResult("velnp", "pressure", 1, field->problem()->num_dim());
+    EnsightWriter::WriteResult("residual", "residual", field->problem()->num_dim());
+    EnsightWriter::WriteResult("dispnp", "displacement", field->problem()->num_dim());
+    EnsightWriter::WriteResult("traction", "traction", field->problem()->num_dim());
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-string AleEnsightWriter::WriteAllResults(
+void AleEnsightWriter::WriteAllResults(
         PostField* field)
 {
-    stringstream str;
-    str << EnsightWriter::WriteResult("dispnp", "displacement", field->problem()->num_dim());
-    return str.str();
+    EnsightWriter::WriteResult("dispnp", "displacement", field->problem()->num_dim());
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-string XFluidEnsightWriter::WriteAllResults(
+void XFluidEnsightWriter::WriteAllResults(
         PostField* field)
 {
     stringstream str;
-    str << EnsightWriter::WriteResult("velnp", "velocity", field->problem()->num_dim());
-    str << EnsightWriter::WriteResult("velnp", "pressure", 1, field->problem()->num_dim());
-    str << EnsightWriter::WriteResult("residual", "residual", field->problem()->num_dim());
+    EnsightWriter::WriteResult("velnp", "velocity", field->problem()->num_dim());
+    EnsightWriter::WriteResult("velnp", "pressure", 1, field->problem()->num_dim());
+    EnsightWriter::WriteResult("residual", "residual", field->problem()->num_dim());
     
     str << XFluidEnsightWriter::WriteResult("velnp", "velocity(physical)", field->problem()->num_dim());
     str << XFluidEnsightWriter::WriteResult("velnp", "pressure(physical)", 1, field->problem()->num_dim());
     str << XFluidEnsightWriter::WriteResult("residual", "residual(physical)", field->problem()->num_dim());
-    return str.str();
 }
 
 /*----------------------------------------------------------------------*/
@@ -105,7 +98,7 @@ void XFluidEnsightWriter::WriteFiles()
     const int soltimeset = 2;
     const int solfileset = 2; /// default, if not split to multiple files
     casefile << "\nVARIABLE\n\n";
-    casefile << WriteAllResults(field_);
+    WriteAllResults(field_);
 
     //
     // TIME section
@@ -127,7 +120,7 @@ void XFluidEnsightWriter::WriteFiles()
     casefile << "FILE\n";
     casefile << "file set:\t\t"<<geofileset<<"\n"<< "number of steps:\t"<< geotime.size() << "\n\n";
     casefile << "file set:\t\t"<<solfileset<<"\n"<< "number of steps:\t"<< soltime.size() << "\n\n";
-    casefile << GetFileSectionStringFromFilesets(solfilesets_);
+    //casefile << GetFileSectionStringFromFilesets(solfilesets_);
 
     casefile.close();
 }
@@ -141,49 +134,49 @@ string XFluidEnsightWriter::WriteResult(
         const int numdf,
         const int from)
 {
-    PostResult result = PostResult(field_);
-    result.next_result();
-    if (!map_has_map(result.group(), const_cast<char*>(groupname.c_str())))
-        return "";
-
-    // new for file continuation
-    bool multiple_files = false;
-    const Epetra_Map* nodemap = field_->discretization()->NodeRowMap();
-    const int numnp = nodemap->NumMyElements();
-    const int stepsize = 5*80+sizeof(int)+numdf*numnp*sizeof(float);
-
-    const string filename = filename_ + "_"+ field_->name() + "."+ name;
-    ofstream file(filename.c_str());
-
-    map<string, vector<ofstream::pos_type> > resultfilepos;
-    WriteResultStep(file, result, resultfilepos, groupname, name, numdf, from);
-    while (result.next_result())
-    {
-        const int indexsize = 80+2*sizeof(int)+(file.tellp()/stepsize+2)*sizeof(long);
-        if (static_cast<long unsigned int>(file.tellp())+stepsize+indexsize>= FILE_SIZE_LIMIT_)
-        {
-            FileSwitcher(file, multiple_files, solfilesets_, resultfilepos, stepsize, name, filename);
-        }
-        WriteResultStep(file, result, resultfilepos, groupname, name, numdf, from);
-    }
-
-    // append index table
-    WriteIndexTable(file, resultfilepos[name]);
-    resultfilepos[name].clear();
-
-    string filename_for_casefile;
-    if (multiple_files)
-    {
-        const int last_fileset = solfilesets_.size()-1;
-        solfilesets_[last_fileset].push_back(file.tellp()/stepsize);
-        filename_for_casefile = filename + "***";
-    }
-    else
-    {
-        filename_for_casefile = filename;
-    }
-    const int file_set = solfilesets_.size() + FILE_SET_OFFSET_;
-    return GetVariableEntryForCaseFile(numdf, file_set, name, filename_for_casefile);
+//    PostResult result = PostResult(field_);
+//    result.next_result();
+//    if (!map_has_map(result.group(), const_cast<char*>(groupname.c_str())))
+//        return "";
+//
+//    // new for file continuation
+//    bool multiple_files = false;
+//    const Epetra_Map* nodemap = field_->discretization()->NodeRowMap();
+//    const int numnp = nodemap->NumMyElements();
+//    const int stepsize = 5*80+sizeof(int)+numdf*numnp*sizeof(float);
+//
+//    const string filename = filename_ + "_"+ field_->name() + "."+ name;
+//    ofstream file(filename.c_str());
+//
+//    map<string, vector<ofstream::pos_type> > resultfilepos;
+//    WriteResultStep(file, result, resultfilepos, groupname, name, numdf, from);
+//    while (result.next_result())
+//    {
+//        const int indexsize = 80+2*sizeof(int)+(file.tellp()/stepsize+2)*sizeof(long);
+//        if (static_cast<long unsigned int>(file.tellp())+stepsize+indexsize>= FILE_SIZE_LIMIT_)
+//        {
+//            //FileSwitcher(file, multiple_files, solfilesets_, resultfilepos, stepsize, name, filename);
+//        }
+//        WriteResultStep(file, result, resultfilepos, groupname, name, numdf, from);
+//    }
+//
+//    // append index table
+//    WriteIndexTable(file, resultfilepos[name]);
+//    resultfilepos[name].clear();
+//
+//    string filename_for_casefile;
+//    if (multiple_files)
+//    {
+//        const int last_fileset = solfilesets_.size()-1;
+//        solfilesets_[last_fileset].push_back(file.tellp()/stepsize);
+//        filename_for_casefile = filename + "***";
+//    }
+//    else
+//    {
+//        filename_for_casefile = filename;
+//    }
+//    const int file_set = solfilesets_.size();
+//    return GetVariableEntryForCaseFile(numdf, file_set, name, filename_for_casefile);
 }
 
 #endif

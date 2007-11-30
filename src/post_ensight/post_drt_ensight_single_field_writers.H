@@ -31,7 +31,7 @@ public:
 
 protected:
 
-    virtual string WriteAllResults(
+    virtual void WriteAllResults(
             PostField* field);
 };
 
@@ -52,7 +52,7 @@ public:
 
 protected:
 
-    virtual string WriteAllResults(
+    virtual void WriteAllResults(
             PostField* field);
 };
 
@@ -73,7 +73,7 @@ public:
 
 protected:
 
-    virtual string WriteAllResults(
+    virtual void WriteAllResults(
             PostField* field);
 };
 
@@ -110,7 +110,7 @@ public:
             
 protected:
 
-    virtual string WriteAllResults(
+    virtual void WriteAllResults(
             PostField* field);
     
 //    /*!
