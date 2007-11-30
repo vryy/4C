@@ -24,6 +24,7 @@ Maintainer: Ulrich Kuettler
 
 
 #include "drt_validparameters.H"
+#include "drt_colors.H"
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -60,7 +61,9 @@ void DRT::IntParameter(std::string const &paramName,
 {
   Teuchos::AnyNumberParameterEntryValidator::AcceptedTypes validator(false);
   validator.allowInt(true);
-  Teuchos::setIntParameter(paramName,value,docString,paramList,validator);
+  Teuchos::setIntParameter(paramName,value,
+                           string(YELLOW_LIGHT) + docString + string(END_COLOR),
+                           paramList,validator);
 }
 
 
@@ -73,7 +76,9 @@ void DRT::DoubleParameter(std::string const &paramName,
 {
   Teuchos::AnyNumberParameterEntryValidator::AcceptedTypes validator(false);
   validator.allowDouble(true);
-  Teuchos::setDoubleParameter(paramName,value,docString,paramList,validator);
+  Teuchos::setDoubleParameter(paramName,value,
+                              string(YELLOW_LIGHT) + docString + string(END_COLOR),
+                              paramList,validator);
 }
 
 
