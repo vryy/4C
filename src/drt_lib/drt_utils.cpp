@@ -611,6 +611,26 @@ void DRT::Utils::AllreduceEMap(map<int,int>& idxmap, const Epetra_Map& emap)
   }
 }
 
+/*----------------------------------------------------------------------*
+ |  create an allreduced map on a distinct processor (public)  gjb 11/07|  
+ *----------------------------------------------------------------------*/
+RCP<Epetra_Map> DRT::Utils::AllreduceEMap(const Epetra_Map& emap, const int pid)
+{
+  vector<int> rv;
+  AllreduceEMap(rv,emap);
+  RCP<Epetra_Map> rmap;
+
+  if (emap.Comm().MyPID()==pid)
+  {
+    rmap = rcp(new Epetra_Map(-1,rv.size(),&rv[0],0,emap.Comm()));
+  }
+  else
+  {
+    rv.clear();
+    rmap = rcp(new Epetra_Map(-1,0,NULL,0,emap.Comm()));
+  }
+  return rmap;
+}
 
 /*----------------------------------------------------------------------*
  |  partition a graph using metis  (public)                  mwgee 11/06|

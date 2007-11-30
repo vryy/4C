@@ -129,6 +129,23 @@ namespace Utils
    */
   void AllreduceEMap(map<int,int>& idxmap, const Epetra_Map& emap);
 
+  /// Create an allreduced gid to index map from the given Epetra_Map 
+  /// on a distinct processor, all other procs create empty maps instead.
+  /*!
+    This method is currently used within the parallel post_drt_ensight 
+    filter in order to import all values stored in a distributed Epetra_Vector 
+    to processor 0 for writing them into file. 
+
+    \note see also documentation for the usual AllreduceEMap methods
+
+    \param emap (i) any distributed Epetra_Map
+    \param pid (i)  processor id where you want to have the allreduced map
+    				exclusively
+    \author gjb
+    \date 11/07
+   */
+  RCP<Epetra_Map> AllreduceEMap(const Epetra_Map& emap, const int pid); 
+  
   /// find position of my map elements in a consecutive vector
   /*!
     The idea is to put the entries of a given map into a redundant
