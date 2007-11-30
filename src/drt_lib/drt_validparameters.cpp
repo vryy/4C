@@ -140,10 +140,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
   setStringToIntegralParameter("FLUID_STRESS","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter("FLUID_VIS","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter("ALE_DISP","No","",yesnotuple,yesnovalue,&io);
-#ifdef D_TSI
+
   setStringToIntegralParameter("THERM_TEMPERATURE","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter("THERM_HEATFLUX","No","",yesnotuple,yesnovalue,&io);
-#endif
 
   setIntParameter("FILESTEPS",1000,"",&io);
 
