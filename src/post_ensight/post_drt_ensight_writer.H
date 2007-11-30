@@ -175,6 +175,13 @@ protected:
             ) const;
     void WriteGeoFile(
             const string& geofilename) const;
+    void WriteGeoFileOneTimeStep(
+            ofstream& file,
+            PostResult& result,
+            map<string, vector<ofstream::pos_type> >& resultfilepos,
+            const string groupname,
+            const string name,
+            const int from) const;    
     void WriteCoordinates(
             ofstream& geofile,                         ///< filestream for the geometry
             const RefCountPtr<DRT::Discretization> dis ///< discretization where the nodal positions are take from
@@ -208,9 +215,9 @@ protected:
      *        for all fields in the variablemap
      */
     string GetVariableSection(
-            const map<string,vector<int> >& filesetmap,
-            const map<string,int>&          variablenumdfmap,
-            const map<string,string>&       variablefilenamemap
+            map<string,vector<int> > filesetmap,
+            map<string,int>          variablenumdfmap,
+            map<string,string>       variablefilenamemap
             ) const;
             
             

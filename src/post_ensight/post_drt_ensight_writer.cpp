@@ -165,6 +165,43 @@ void EnsightWriter::WriteGeoFile(
     geofile.close();
 }
 
+
+void EnsightWriter::WriteGeoFileOneTimeStep(
+        ofstream& file,
+        PostResult& result,
+        map<string, vector<ofstream::pos_type> >& resultfilepos,
+        const string groupname,
+        const string name,
+        const int from) const
+{
+    vector<ofstream::pos_type>& filepos = resultfilepos[name];
+    Write(file, "BEGIN TIME STEP");
+    filepos.push_back(file.tellp());
+    
+    Write(file, field_->name() + " geometry");
+    Write(file, "Comment");
+    Write(file,"node id given");
+    //Write(geofile, "node id assign");
+    Write(file, "element id off");
+
+    // part + partnumber + comment
+    // careful! field_->field_pos() returns the position of the ccarat
+    // field, ignoring the discretizations. So if there are many
+    // discretizations in one field, we have to do something different...
+    Write(file, "part");
+    Write(file, field_->field_pos()+1);
+    Write(file, field_->name() + " field");
+
+    Write(file, "coordinates");
+    Write(file, field_->num_nodes());
+
+    // write the grid information
+    WriteCoordinates(file, field_->discretization());
+    WriteCells(file, field_->discretization());
+
+    Write(file, "END TIME STEP");
+}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteCoordinates(
@@ -477,9 +514,9 @@ string EnsightWriter::GetVariableEntryForCaseFile(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 string EnsightWriter::GetVariableSection(
-        const map<string,vector<int> >& filesetmap,
-        const map<string,int>& variablenumdfmap,
-        const map<string,string>& variablefilenamemap
+        map<string,vector<int> > filesetmap,
+        map<string,int> variablenumdfmap,
+        map<string,string> variablefilenamemap
         ) const
 {
     stringstream str;
