@@ -183,7 +183,14 @@ protected:
             ofstream& geofile,                         ///< filestream for the geometry
             const RefCountPtr<DRT::Discretization> dis ///< discretization where the nodal positions are take from
             ) const;
+    void WriteCoordinatesPar(
+            ofstream& geofile,                         ///< filestream for the geometry
+            const RefCountPtr<DRT::Discretization> dis ///< discretization where the nodal positions are take from
+            ) const;
     void WriteCells(
+            ofstream& geofile,
+            const RefCountPtr<DRT::Discretization> dis) const;
+    void WriteCellsPar(
             ofstream& geofile,
             const RefCountPtr<DRT::Discretization> dis) const;
     void WriteResultStep(

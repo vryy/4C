@@ -69,12 +69,12 @@ void XFluidEnsightWriter::WriteAllResults(
 /*----------------------------------------------------------------------*/
 void XFluidEnsightWriter::WriteFiles()
 {
-    PostResult result = PostResult(field_);
-    
 #ifndef PARALLEL
-    if (myrank_>0) dserror("have serial filter version, but myrank > 0");
+    if (myrank_ > 0) dserror("have serial filter version, but myrank_ > 0");
 #endif
-    
+
+    PostResult result = PostResult(field_);
+
     // timesteps when the solution is written
     const vector<double> soltime = result.get_result_times(field_->name());
 

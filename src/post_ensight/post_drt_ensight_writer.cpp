@@ -53,19 +53,19 @@ EnsightWriter::EnsightWriter(
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteFiles()
 {
-    PostResult result = PostResult(field_);
-    
 #ifndef PARALLEL
-    if (myrank_>0) dserror("have serial filter version, but myrank > 0");
+    if (myrank_ > 0) dserror("have serial filter version, but myrank_ > 0");
 #endif
-    
+	
+	PostResult result = PostResult(field_);
+
     // timesteps when the solution is written
     const vector<double> soltime = result.get_result_times(field_->name());
 
     
-    //
-    // write geometry file
-    //
+    ///////////////////////////////////
+    //  write geometry file          //
+    ///////////////////////////////////
     const string geofilename = filename_ + "_"+ field_->name() + ".geo";
     WriteGeoFile(geofilename);
     vector<int> filesteps;
@@ -81,16 +81,18 @@ void EnsightWriter::WriteFiles()
     geotime.push_back(soltime[0]);
     
     
-    //
-    // write solution fields files
-    //
+    ///////////////////////////////////
+    //  write solution fields files  //
+    ///////////////////////////////////
     const int soltimeset = 2;
     WriteAllResults(field_);
     
     
-    //
-    // now write the case file
-    //
+    ///////////////////////////////////
+    //  now write the case file      //
+    ///////////////////////////////////
+    if (myrank_ == 0) 
+    {
     const string casefilename = filename_ + "_"+ field_->name() + ".case";
     ofstream casefile;
     casefile.open(casefilename.c_str());
@@ -110,6 +112,7 @@ void EnsightWriter::WriteFiles()
     casefile << GetFileSectionStringFromFilesets(filesetmap_);
 
     casefile.close();
+    }
 }
 
 
@@ -120,9 +123,12 @@ void EnsightWriter::WriteGeoFile(
 {
     // open file
     ofstream geofile;
-    geofile.open(geofilename.c_str());
-    if (!geofile)
-        dserror("failed to open file: %s", geofilename.c_str());
+    if (myrank_ == 0)
+    {
+      geofile.open(geofilename.c_str());
+      if (!geofile)
+          dserror("failed to open file: %s", geofilename.c_str());
+    }
 
     // header
     Write(geofile, "C Binary");
@@ -135,8 +141,6 @@ void EnsightWriter::WriteGeoFile(
     vector<ofstream::pos_type> fileposition;
     {
         WriteGeoFileOneTimeStep(geofile, resultfilepos, "geo");
-        
-
     }
 
     // append index table
@@ -144,8 +148,9 @@ void EnsightWriter::WriteGeoFile(
     // it is also correct to ommit WriteIndexTable, however the EnsightGold Format manual says, 
     // it would improve performance to have it on...
     // WriteIndexTable(geofile, fileposition); 
+    if (geofile.is_open())
+      geofile.close();
 
-    geofile.close();
 }
 
 
@@ -178,8 +183,13 @@ void EnsightWriter::WriteGeoFileOneTimeStep(
     Write(file, field_->num_nodes());
 
     // write the grid information
+   #ifdef PARALLEL
+    WriteCoordinatesPar(file, field_->discretization());
+    WriteCellsPar(file, field_->discretization());
+   #else
     WriteCoordinates(file, field_->discretization());
-    WriteCells(file, field_->discretization());
+    WriteCells(file, field_->discretization());    
+   #endif
 
     Write(file, "END TIME STEP");
 }
@@ -194,6 +204,37 @@ void EnsightWriter::WriteCoordinates(
     const Epetra_Map* nodemap = dis->NodeRowMap();
     dsassert(nodemap->NumMyElements() == nodemap->NumGlobalElements(),
             "filter cannot be run in parallel");
+
+    const int numnp = nodemap->NumMyElements();
+    // write node ids
+    for (int inode=0; inode<numnp; ++inode)
+    {
+        Write(geofile,nodemap->GID(inode)+1);
+    }
+
+    const int NSD = 3; ///< number of space dimensions
+    // ensight format requires x_1 .. x_n, y_1 .. y_n, z_1 ... z_n
+    for (int isd=0; isd<NSD; ++isd)
+    {
+        for (int inode=0; inode<numnp; inode++)
+        {
+            const int gid = nodemap->GID(inode);
+            const DRT::Node* actnode = dis->gNode(gid);
+            Write(geofile, static_cast<float>(actnode->X()[isd]));
+        }
+    }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void EnsightWriter::WriteCoordinatesPar(
+        ofstream& geofile,
+        const RefCountPtr<DRT::Discretization> dis) const
+{
+    const Epetra_Map* nodemap = dis->NodeRowMap();
+ //   dsassert(nodemap->NumMyElements() == nodemap->NumGlobalElements(),
+ //           "filter cannot be run in parallel");
 
     const int numnp = nodemap->NumMyElements();
     // write node ids
@@ -310,6 +351,17 @@ void EnsightWriter::WriteCells(
             };
         };
     };
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void EnsightWriter::WriteCellsPar(
+        ofstream& geofile,
+        const RefCountPtr<DRT::Discretization> dis) const
+{
+dserror("WriteCellsPar not implemented.");
+return;
 }
 
 
