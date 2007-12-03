@@ -124,7 +124,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
   // stabilization parameter
   // This has to be done before anything else is calculated because
   // we use the same arrays internally.
-  Caltau(ele,evelnp,distype,visc,timefac,false);
+  Caltau(ele,evelnp,distype,visc,timefac);
 
   // flag for higher order elements
   const bool higher_order_ele = ele->isHigherOrderElement(distype);
@@ -1702,8 +1702,8 @@ void DRT::Elements::Fluid3Impl::Caltau(
   const blitz::Array<double,2>&           evelnp,
   const DRT::Element::DiscretizationType  distype,
   const double                            visc,
-  const double                            timefac,
-  const bool                              stationary)
+  const double                            timefac
+  )
 {
   blitz::firstIndex i;    // Placeholder for the first index
   blitz::secondIndex j;   // Placeholder for the second index
@@ -1815,9 +1815,6 @@ void DRT::Elements::Fluid3Impl::Caltau(
   const double strle = 2.0/val;
 
   // calculate tau
-  if (not stationary)
-  {
-    // stabilization parameters for instationary case (default)
 
         /*----------------------------------------------------- compute tau_Mu ---*/
         /* stability parameter definition according to
@@ -1888,25 +1885,6 @@ void DRT::Elements::Fluid3Impl::Caltau(
     */
     const double xi_tau_c = DMIN(re2,1.0);
     tau_(2) = vel_norm * hk * 0.5 * xi_tau_c /timefac;
-  }
-  else
-  {
-    // stabilization parameters for stationary case
-
-    // compute tau_Mu
-    const double re_tau_mu = mk * vel_norm * strle / (2.0 * visc);   /* convective : viscous forces */
-    const double xi_tau_mu = DMAX(re_tau_mu, 1.0);
-    tau_(0) = (DSQR(strle)*mk)/(4.0*visc*xi_tau_mu);
-
-    // compute tau_Mp
-    const double re_tau_mp = mk * vel_norm * hk / (2.0 * visc);      /* convective : viscous forces */
-    const double xi_tau_mp = DMAX(re_tau_mp,1.0);
-    tau_(1) = (DSQR(hk)*mk)/(4.0*visc*xi_tau_mp);
-
-    // compute tau_C
-    const double xi_tau_c = DMIN(re_tau_mp, 1.0);
-    tau_(2) = 0.5*vel_norm*hk*xi_tau_c;
-  }
 }
 
 

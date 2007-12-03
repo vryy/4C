@@ -117,8 +117,7 @@ namespace Elements
       const blitz::Array<double,2>&           evelnp,
       const DRT::Element::DiscretizationType  distype,
       const double                            visc,
-      const double                            timefac,
-      const bool                              stationary);
+      const double                            timefac);
 
     /*!
      * \brief calculate the body force from the nodes condition
