@@ -69,14 +69,6 @@ extern struct _FILES  allfiles;
 extern struct _SOLVAR  *solv;
 
 /*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | pointer to allocate dynamic variables if needed                      |
- | dedfined in global_control.c                                         |
- | ALLDYNA               *alldyn;                                       |
- *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;
-
-/*----------------------------------------------------------------------*
  |                                                       m.gee 02/02    |
  | number of load curves numcurve                                       |
  | vector of structures of curves                                       |
@@ -122,9 +114,6 @@ void dyn_fluid_drt()
   // set some pointers and variables
   // -------------------------------------------------------------------
   SOLVAR        *actsolv  = &solv[0];
-  // this warning can be removed, if we can not fallinto the trap of choosing TIMETYP in awrong way
-  // a.ger 11/07
-  dsassert(genprob.timetyp==time_dynamic, "alldyn not allocated!!!\n For stationary computations, choose TIMETYP Dynamic and switch time integration for fluid to stationary instead");
 
   const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
   const Teuchos::ParameterList& probsize = DRT::Problem::Instance()->ProblemSizeParams();

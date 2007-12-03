@@ -6,6 +6,8 @@
 #include <set>
 #include <functional>
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 #include "fsi_dyn.H"
 #include "fsi_dirichletneumann.H"
 #include "fsi_utils.H"
@@ -43,14 +45,6 @@
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
-
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | pointer to allocate dynamic variables if needed                      |
- | dedfined in global_control.c                                         |
- | ALLDYNA               *alldyn;                                       |
- *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;
 
 
 
@@ -319,9 +313,9 @@ void fsi_ale_drt()
   if (aledis->NumGlobalNodes()==0)
     CreateAleDiscretization();
 
-  FSI_DYNAMIC *fsidyn = alldyn[3].fsidyn;
+  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
-  if (fsidyn->ifsi != fsi_iter_monolithic)
+  if (Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO") != fsi_iter_monolithic)
   {
     Teuchos::RefCountPtr<FSI::DirichletNeumannCoupling> fsi = rcp(new FSI::DirichletNeumannCoupling(comm));
 

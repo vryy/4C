@@ -127,6 +127,7 @@ extern struct _MATERIAL     *mat;
   *----------------------------------------------------------------------*/
 extern struct _MULTIMAT  *multimat;
 
+#ifndef CCADISCRET
 /*----------------------------------------------------------------------*
   |                                                       m.gee 06/01    |
   | pointer to allocate dynamic variables if needed                      |
@@ -134,6 +135,7 @@ extern struct _MULTIMAT  *multimat;
   | struct _ALLDYNA       *alldyn;                                       |
   *----------------------------------------------------------------------*/
 extern ALLDYNA *alldyn;
+#endif
 
 /*----------------------------------------------------------------------*/
 /*!

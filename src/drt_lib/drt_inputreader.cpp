@@ -134,7 +134,7 @@ bool DatFileReader::ReadSection(string name, Teuchos::ParameterList& list)
   if (name.length() < 3 or name[0]!='-' or name[1]!='-')
     dserror("illegal section name '%s'", name.c_str());
 
-  Teuchos::ParameterList& sublist = list.sublist(name.substr(2));
+  Teuchos::ParameterList& sublist = FindSublist(name.substr(2), list);
 
   if (positions_.find(name)==positions_.end())
     return false;
@@ -174,7 +174,7 @@ bool DatFileReader::ReadGidSection(string name, Teuchos::ParameterList& list)
   if (name.length() < 3 or name[0]!='-' or name[1]!='-')
     dserror("illegal section name '%s'", name.c_str());
 
-  Teuchos::ParameterList& sublist = list.sublist(name.substr(2));
+  Teuchos::ParameterList& sublist = FindSublist(name.substr(2), list);
 
   if (positions_.find(name)==positions_.end())
     return false;
@@ -217,6 +217,24 @@ bool DatFileReader::ReadGidSection(string name, Teuchos::ParameterList& list)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::ParameterList& DatFileReader::FindSublist(string name, Teuchos::ParameterList& list)
+{
+  Teuchos::ParameterList* sublist = &list;
+
+  for (string::size_type pos=name.find('/');
+       pos!=string::npos;
+       pos=name.find('/'))
+  {
+    sublist = &sublist->sublist(name.substr(0,pos));
+    name = name.substr(pos+1);
+  }
+
+  return sublist->sublist(name);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DatFileReader::AddEntry(string key, string value, Teuchos::ParameterList& list)
 {
   const char* v = value.c_str();
@@ -238,25 +256,7 @@ void DatFileReader::AddEntry(string key, string value, Teuchos::ParameterList& l
     }
     else
     {
-#if 0
-      if (value=="True" or value=="true" or value=="TRUE")
-        list.set(key,true);
-      else if (value=="False" or value=="false" or value=="FALSE")
-        list.set(key,false);
-
-      else if (value=="Yes" or value=="yes" or value=="YES")
-        list.set(key,true);
-      else if (value=="No" or value=="no" or value=="NO")
-        list.set(key,false);
-
-      else if (value=="On" or value=="on" or value=="ON")
-        list.set(key,true);
-      else if (value=="Off" or value=="off" or value=="OFF")
-        list.set(key,false);
-
-      else
-#endif
-        list.set(key,value);
+      list.set(key,value);
     }
   }
 }

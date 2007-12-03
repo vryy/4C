@@ -43,14 +43,6 @@ extern struct _SOLVAR  *solv;
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
- | pointer to allocate dynamic variables if needed                      |
- | dedfined in global_control.c                                         |
- | ALLDYNA               *alldyn;                                       |
- *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;
-
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
  | general problem data                                                 |
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
@@ -98,9 +90,7 @@ void dyn_ale_drt()
   // -------------------------------------------------------------------
   SOLVAR        *actsolv  = &solv[0];
 
-  ALE_DYNAMIC *adyn     = alldyn[0].adyn;
-  adyn->step            =   0;
-  adyn->time            = 0.0;
+  const Teuchos::ParameterList& adyn     = DRT::Problem::Instance()->AleDynamicParams();
 
   // -------------------------------------------------------------------
   // create a solver
@@ -112,9 +102,9 @@ void dyn_ale_drt()
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
 
   RefCountPtr<ParameterList> params = rcp(new ParameterList());
-  params->set<int>("nstep", adyn->nstep);
-  params->set<double>("maxtime", adyn->maxtime);
-  params->set<double>("dt", adyn->dt);
+  params->set<int>("nstep", adyn.get<int>("NUMSTEP"));
+  params->set<double>("maxtime", adyn.get<double>("MAXTIME"));
+  params->set<double>("dt", adyn.get<double>("TIMESTEP"));
 
   FSI::AleLinear ale(actdis, solver, params, output);
 

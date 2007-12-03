@@ -19,6 +19,8 @@ Maintainer: Michael Gee
 #include <cstdlib>
 #include <iostream>
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
@@ -59,13 +61,6 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 extern FILES allfiles;
 
 /*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | structure of flags to control output                                 |
- | defined in out_global.c                                              |
- *----------------------------------------------------------------------*/
-extern IO_FLAGS ioflags;
-
-/*----------------------------------------------------------------------*
  | global variable *solv, vector of lenght numfld of structures SOLVAR  |
  | defined in solver_control.c                                          |
  |                                                                      |
@@ -73,17 +68,10 @@ extern IO_FLAGS ioflags;
  *----------------------------------------------------------------------*/
 extern SOLVAR* solv;
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | pointer to allocate dynamic variables if needed                      |
- | dedfined in global_control.c                                         |
- | ALLDYNA               *alldyn;                                       |
- *----------------------------------------------------------------------*/
-extern ALLDYNA* alldyn;
 
 /*======================================================================*/
 /*!
-\brief Set parameter list 
+\brief Set parameter list
        This is a work around due to the fact that the object
        does not properly own its parameters. These are stored
        in ParameterList& params_; thus is only has a reference
@@ -124,12 +112,12 @@ void genalpha_setparalist
   params.set<bool>("damping", damp);
   params.set<double>("damping factor K", damp_k);
   params.set<double>("damping factor M", damp_m);
-   
+
   params.set<double>("beta", beta);
   params.set<double>("gamma", gamma);
   params.set<double>("alpha m", alpham);
   params.set<double>("alpha f", alphaf);
-   
+
   params.set<double>("total time", timein);
   params.set<double>("delta time", stepsize);
   params.set<int>("step", step);
@@ -137,15 +125,15 @@ void genalpha_setparalist
   params.set<int>("max iterations", itermax);
   params.set<int>("num iterations", iter);
   params.set<double>("tolerance displacements", toldisp);
-   
+
   params.set<bool>("io structural disp", ioflags_struct_disp);
   params.set<int>("io disp every nstep", updevry_disp);
   params.set<bool>("io structural stress", ioflags_struct_stress);
   params.set<int>("io stress every nstep", updevry_stress);
-   
+
   params.set<int>("restart", restart);
   params.set<int>("write restart every", res_write_evry);
-   
+
   params.set<bool>("print to screen", print_to_stdout);
   params.set<bool>("print to err", print_to_errfile);
   params.set<FILE*>("err file", errfilein);
@@ -172,7 +160,7 @@ void genalpha_setparalist
   default:
     equisoltech = "full newton";
     break;
-  }      
+  }
   params.set<string>("equilibrium iteration", equisoltech);
 
   // set predictor (takes values "constant" "consistent")
@@ -182,7 +170,7 @@ void genalpha_setparalist
     dserror("You have to define the predictor");
     break;
   case STRUCT_DYNAMIC::pred_constdis:
-    params.set<string>("predictor","consistent");        
+    params.set<string>("predictor","consistent");
     break;
   case STRUCT_DYNAMIC::pred_constdisvelacc:
     params.set<string>("predictor","constant");
@@ -203,14 +191,16 @@ void genalpha_setparalist
   \author bborn
   \date 10/07
 */
-void stru_genalpha_zienxie_drt() 
+void stru_genalpha_zienxie_drt()
 {
   // --------------------------------------------------------------------
   // set some pointers and variables
   const INT disnum = 0;
   SOLVAR* actsolv = &solv[disnum];
-  STRUCT_DYNAMIC* sdyn = alldyn[disnum].sdyn;
-  TIMADA_DYNAMIC* timada = &(sdyn->timada);
+
+  const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
+  const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
+  const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
 
   // --------------------------------------------------------------------
   // access the discretization
@@ -231,7 +221,7 @@ void stru_genalpha_zienxie_drt()
   LINALG::Solver solver(solveparams,actdis->Comm(),allfiles.out_err);
   solver.TranslateSolverParameters(*solveparams,actsolv);
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
-   
+
   // --------------------------------------------------------------------
   // A word to the user
   if (myrank == 0)
@@ -240,29 +230,29 @@ void stru_genalpha_zienxie_drt()
     printf("   Generalised-alpha (marching scheme)\n");
     printf("   Zienkiewicz-Xie (auxiliar scheme)\n");
   }
-  
+
   // --------------------------------------------------------------------
   // allocate adaptive time integrator
   ZienkiewiczXie::ZienkiewiczXie adatimint
   (
     0.0,
-    (double) sdyn->maxtime,
+    (double) sdyn.get<double>("MAXTIME"),
     0,
-    (int) sdyn->nstep,
-    (double) sdyn->dt,
+    (int) sdyn.get<int>("NUMSTEP"),
+    (double) sdyn.get<double>("TIMESTEP"),
     //
-    (double) timada->dt_max,
-    (double) timada->dt_min,
-    (double) timada->dt_scl_max,
-    (double) timada->dt_scl_min,
-    (double) timada->dt_scl_saf,
-    (TimeAdaptivity::TAErrNorm) timada->err_norm,
-    (double) timada->err_tol,
+    (double) sdyn.get<double>("TA_STEPSIZEMAX"),
+    (double) sdyn.get<double>("TA_STEPSIZEMIN"),
+    (double) sdyn.get<double>("TA_SIZERATIOMAX"),
+    (double) sdyn.get<double>("TA_SIZERATIOMIN"),
+    (double) sdyn.get<double>("TA_SIZERATIOSCALE"),
+    (TimeAdaptivity::TAErrNorm) Teuchos::getIntegralValue<int>(sdyn,"TA_ERRNORM"),
+    (double) sdyn.get<double>("TA_ERRTOL"),
     3,
-    (int) timada->adastpmax,
+    (int) sdyn.get<int>("TA_ADAPTSTEPMAX"),
     //
-    *actdis, 
-    solver, 
+    *actdis,
+    solver,
     output
   );
 // debug begin
@@ -279,37 +269,37 @@ void stru_genalpha_zienxie_drt()
   genalpha_setparalist
   (
     genalphaparams,
-    sdyn->damp,
-    sdyn->k_damp,
-    sdyn->m_damp,
-    sdyn->beta,
-    sdyn->gamma,
-    sdyn->alpha_m,
-    sdyn->alpha_f,
+    sdyn.get<int>("DAMPING"),
+    sdyn.get<double>("K_DAMP"),
+    sdyn.get<double>("M_DAMP"),
+    sdyn.get<double>("BETA"),
+    sdyn.get<double>("GAMMA"),
+    sdyn.get<double>("ALPHA_M"),
+    sdyn.get<double>("ALPHA_F"),
     0.0,
-    sdyn->dt,
+    sdyn.get<double>("TIMESTEP"),
     0,
-    sdyn->nstep,
-    sdyn->maxiter,
+    sdyn.get<int>("NUMSTEP"),
+    sdyn.get<int>("MAXITER"),
     -1,
-    sdyn->toldisp,
-    ioflags.struct_disp,
-    sdyn->updevry_disp,
-    ioflags.struct_stress,
-    sdyn->updevry_stress,
-    genprob.restart,
-    sdyn->res_write_evry,
+    sdyn.get<double>("TOLDISP"),
+    Teuchos::getIntegralValue<int>(ioflags,"STRUCT_DISP"),
+    sdyn.get<int>("RESEVRYDISP"),
+    Teuchos::getIntegralValue<int>(ioflags,"STRUCT_STRESS"),
+    sdyn.get<int>("RESEVRYSTRS"),
+    probtype.get<int>("RESTART"),
+    sdyn.get<int>("RESTARTEVRY"),
     true,
     true,
     allfiles.out_err,
-    sdyn->nlnSolvTyp,
-    sdyn->predtype
+    (STRUCT_DYNAMIC::_nlnSolvTyp) Teuchos::getIntegralValue<int>(sdyn,"NLNSOL"),
+    (STRUCT_DYNAMIC::_PredType) Teuchos::getIntegralValue<int>(sdyn,"PREDICT")
   );
 
   // create the time integrator
-  StruGenAlpha timint(genalphaparams, 
-                      *actdis, 
-                      solver, 
+  StruGenAlpha timint(genalphaparams,
+                      *actdis,
+                      solver,
                       output);
 
   // do restart if demanded from input file
@@ -318,17 +308,17 @@ void stru_genalpha_zienxie_drt()
   {
     timint.ReadRestart(genprob.restart);
   }
-   
+
   // write mesh always at beginning of calc or restart
   {
     int step = genalphaparams.get<int>("step",0);
     double time = genalphaparams.get<double>("total time",0.0);
     output.WriteMesh(step,time);
   }
-   
+
   // associate parameter list
   //adatimint.SetParaList(genalphaparams);
-   
+
   // integrate adaptively in time
   adatimint.Integrate(timint);
 

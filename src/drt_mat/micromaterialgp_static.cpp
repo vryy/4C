@@ -38,14 +38,6 @@ extern struct _GENPROB     genprob;
  *----------------------------------------------------------------------*/
 extern struct _SOLVAR  *solv;
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | pointer to allocate dynamic variables if needed                      |
- | defined in global_control.c                                          |
- | ALLDYNA               *alldyn;                                       |
- *----------------------------------------------------------------------*/
-extern ALLDYNA  *alldyn;
-
 /*!----------------------------------------------------------------------
 \brief file pointers
 
@@ -112,7 +104,7 @@ void MAT::MicroMaterialGP::SetUpMicroStatic()
   SOLVAR* actsolv;
   actsolv->solvertyp = umfpack;
 
-  STRUCT_DYNAMIC* sdyn     = alldyn[genprob.numsf].sdyn;
+  const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
 
   // -------------------------------------------------------------------
   // create a solver
@@ -129,18 +121,18 @@ void MAT::MicroMaterialGP::SetUpMicroStatic()
   RefCountPtr<ParameterList> params = rcp(new ParameterList());
   MicroStatic::SetDefaults(*params);
 
-  params->set<double>("beta",sdyn->beta);
-  params->set<double>("gamma",sdyn->gamma);
-  params->set<double>("alpha m",sdyn->alpha_m);
-  params->set<double>("alpha f",sdyn->alpha_f);
+  params->set<double>("beta",sdyn.get<double>("BETA"));
+  params->set<double>("gamma",sdyn.get<double>("GAMMA"));
+  params->set<double>("alpha m",sdyn.get<double>("ALPHA_M"));
+  params->set<double>("alpha f",sdyn.get<double>("ALPHA_F"));
 
   params->set<double>("total time",0.0);
-  params->set<double>("delta time",sdyn->dt);
+  params->set<double>("delta time",sdyn.get<double>("TIMESTEP"));
   params->set<int>   ("step",0);
-  params->set<int>   ("nstep",sdyn->nstep);
-  params->set<int>   ("max iterations",sdyn->maxiter);
+  params->set<int>   ("nstep",sdyn.get<int>("NUMSTEP"));
+  params->set<int>   ("max iterations",sdyn.get<int>("MAXITER"));
   params->set<int>   ("num iterations",-1);
-  params->set<double>("tolerance displacements",sdyn->toldisp);
+  params->set<double>("tolerance displacements",sdyn.get<double>("TOLDISP"));
 
   // takes values "full newton" , "modified newton" , "nonlinear cg"
   params->set<string>("equilibrium iteration","full newton");
@@ -174,10 +166,10 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
 
     // initialize total time, time step number and set time step size
 
-    STRUCT_DYNAMIC* sdyn     = alldyn[genprob.numsf].sdyn;
+    const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
     timen_ = 0.;
     istep_ = 0;
-    dt_    = sdyn->dt;
+    dt_    = sdyn.get<double>("TIMESTEP");
   }
 
   // if derived generalized alpha class for microscale simulations is

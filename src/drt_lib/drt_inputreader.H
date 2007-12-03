@@ -119,6 +119,9 @@ public:
 
 private:
 
+  /// parse name string an get sublist of global input list
+  Teuchos::ParameterList& FindSublist(string name, Teuchos::ParameterList& list);
+
   /// parse the value and add the key,value pair to the list
   void AddEntry(string key, string value, Teuchos::ParameterList& list);
 

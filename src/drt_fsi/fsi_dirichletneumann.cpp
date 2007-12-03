@@ -43,14 +43,6 @@ extern struct _GENPROB     genprob;
  *----------------------------------------------------------------------*/
 extern struct _SOLVAR  *solv;
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | pointer to allocate dynamic variables if needed                      |
- | dedfined in global_control.c                                         |
- | ALLDYNA               *alldyn;                                       |
- *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;
-
 /*!----------------------------------------------------------------------
 \brief file pointers
 
@@ -81,12 +73,13 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
   : comm_(comm),
     counter_(7)
 {
-  FSI_DYNAMIC *fsidyn = alldyn[3].fsidyn;
+  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+
   step_ = 0;
   time_ = 0.;
-  dt_ = fsidyn->dt;
-  nstep_ = fsidyn->nstep;
-  maxtime_ = fsidyn->maxtime;
+  dt_ = fsidyn.get<double>("TIMESTEP");
+  nstep_ = fsidyn.get<int>("NUMSTEP");
+  maxtime_ = fsidyn.get<double>("MAXTIME");
 
   if (globalparameterlist==Teuchos::null)
     globalparameterlist = Teuchos::rcp(new Teuchos::ParameterList);

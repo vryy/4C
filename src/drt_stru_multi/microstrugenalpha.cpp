@@ -232,7 +232,7 @@ void MicroStruGenAlpha::ConstantPredictor(const Epetra_SerialDenseMatrix* defgrd
   // -------------------------------------------------------------------
   double time        = params_->get<double>("total time"     ,0.0);
   double dt          = params_->get<double>("delta time"     ,0.01);
-  int    istep       = params_->get<int>   ("step"           ,0);
+  //int    istep       = params_->get<int>   ("step"           ,0);
   bool   damping     = params_->get<bool>  ("damping"        ,false);
   double alphaf      = params_->get<double>("alpha f"        ,0.459);
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
@@ -343,7 +343,7 @@ void MicroStruGenAlpha::ConsistentPredictor(const Epetra_SerialDenseMatrix* defg
   // -------------------------------------------------------------------
   double time        = params_->get<double>("total time"     ,0.0);
   double dt          = params_->get<double>("delta time"     ,0.01);
-  int    istep       = params_->get<int>   ("step"           ,0);
+  //int    istep       = params_->get<int>   ("step"           ,0);
   bool   damping     = params_->get<bool>  ("damping"        ,false);
   double alphaf      = params_->get<double>("alpha f"        ,0.459);
   double alpham      = params_->get<double>("alpha m"        ,0.378);
@@ -469,7 +469,7 @@ void MicroStruGenAlpha::FullNewton()
   // -------------------------------------------------------------------
   double time      = params_->get<double>("total time"             ,0.0);
   double dt        = params_->get<double>("delta time"             ,0.01);
-  int    istep     = params_->get<int>   ("step"                   ,0);
+  //int    istep     = params_->get<int>   ("step"                   ,0);
   int    maxiter   = params_->get<int>   ("max iterations"         ,10);
   bool   damping   = params_->get<bool>  ("damping"                ,false);
   double beta      = params_->get<double>("beta"                   ,0.292);

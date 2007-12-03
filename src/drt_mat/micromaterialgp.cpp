@@ -37,14 +37,6 @@ extern struct _GENPROB     genprob;
  *----------------------------------------------------------------------*/
 extern struct _SOLVAR  *solv;
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | pointer to allocate dynamic variables if needed                      |
- | defined in global_control.c                                          |
- | ALLDYNA               *alldyn;                                       |
- *----------------------------------------------------------------------*/
-extern ALLDYNA  *alldyn;
-
 /*!----------------------------------------------------------------------
 \brief file pointers
 
@@ -112,7 +104,7 @@ void MAT::MicroMaterialGP::SetUpMicroGenAlpha()
   SOLVAR* actsolv;
   actsolv->solvertyp = umfpack;
 
-  STRUCT_DYNAMIC* sdyn     = alldyn[genprob.numsf].sdyn;
+  const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
 
   // -------------------------------------------------------------------
   // create a solver
@@ -178,10 +170,10 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
 
     // initialize total time, time step number and set time step size
 
-    STRUCT_DYNAMIC* sdyn     = alldyn[genprob.numsf].sdyn;
+    const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
     timen_ = 0.;
     istep_ = 0;
-    dt_    = sdyn->dt;
+    dt_    = sdyn.get<double>("TIMESTEP");
   }
 
   // if derived generalized alpha class for microscale simulations is

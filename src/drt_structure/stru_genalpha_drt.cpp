@@ -63,14 +63,6 @@ extern struct _IO_FLAGS     ioflags;
  *----------------------------------------------------------------------*/
 extern struct _SOLVAR  *solv;
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | pointer to allocate dynamic variables if needed                      |
- | dedfined in global_control.c                                         |
- | ALLDYNA               *alldyn;                                       |
- *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;
-
 
 /*----------------------------------------------------------------------*
   | structural nonlinear dynamics (gen-alpha)              m.gee 12/06  |
@@ -105,7 +97,7 @@ void stru_genalpha_drt()
   // set some pointers and variables
   // -------------------------------------------------------------------
   SOLVAR*         actsolv  = &solv[0];
-  STRUCT_DYNAMIC* sdyn     = alldyn[0].sdyn;
+  const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
   STRUCT_DYN_CALC dynvar;
   memset(&dynvar, 0, sizeof(STRUCT_DYN_CALC));
   double          time = 0.0;  // we should add an input parameter
@@ -132,7 +124,7 @@ void stru_genalpha_drt()
   RefCountPtr<Epetra_CrsMatrix> mass_mat  = LINALG::CreateMatrix(*dofrowmap,81);
   RefCountPtr<Epetra_CrsMatrix> damp_mat  = null;
   bool damping = false;
-  if (sdyn->damp==1)
+  if (sdyn.get<int>("DAMPING")==1)
   {
     damping = true;
     damp_mat = LINALG::CreateMatrix(*dofrowmap,81);
@@ -204,7 +196,7 @@ void stru_genalpha_drt()
     params.set("assemble vector 3",false);
     // other parameters needed by the elements
     params.set("total time",time);
-    params.set("delta time",sdyn->dt);
+    params.set("delta time",sdyn.get<double>("TIMESTEP"));
     // set vector values needed by elements
     actdis->ClearState();
     actdis->SetState("displacement",dis);
@@ -238,7 +230,7 @@ void stru_genalpha_drt()
     params.set("assemble vector 3",false);
     // other parameters that might be needed by the elements
     params.set("total time",time);
-    params.set("delta time",sdyn->dt);
+    params.set("delta time",sdyn.get<double>("TIMESTEP"));
     // set vector values needed by elements
     actdis->ClearState();
     actdis->SetState("residual displacement",zeros);
@@ -256,8 +248,8 @@ void stru_genalpha_drt()
   // build damping matrix if neccessary
   if (damping)
   {
-    LINALG::Add(*stiff_mat,false,sdyn->k_damp,*damp_mat,0.0);
-    LINALG::Add(*mass_mat ,false,sdyn->m_damp,*damp_mat,1.0);
+    LINALG::Add(*stiff_mat,false,sdyn.get<double>("K_DAMP"),*damp_mat,0.0);
+    LINALG::Add(*mass_mat ,false,sdyn.get<double>("M_DAMP"),*damp_mat,1.0);
     LINALG::Complete(*damp_mat);
     stiff_mat = null;
   }
@@ -273,11 +265,11 @@ void stru_genalpha_drt()
   }
 
   //------------------------------------------ time integration parameters
-  const double beta   = sdyn->beta;
-  const double gamma  = sdyn->gamma;
-  const double alpham = sdyn->alpha_m;
-  const double alphaf = sdyn->alpha_f;
-  const double dt     = sdyn->dt;
+  const double beta   = sdyn.get<double>("BETA");
+  const double gamma  = sdyn.get<double>("GAMMA");
+  const double alpham = sdyn.get<double>("ALPHA_M");
+  const double alphaf = sdyn.get<double>("ALPHA_F");
+  const double dt     = sdyn.get<double>("TIMESTEP");
   int istep = 0;  // time step index
 
   //------------------------------------------------- output initial state
@@ -287,7 +279,7 @@ void stru_genalpha_drt()
   output.WriteVector("acceleration", acc);
 
   //==================================================== start of timeloop
-  while (time<=sdyn->maxtime && istep<=sdyn->nstep)
+  while (time<=sdyn.get<double>("MAXTIME") && istep<=sdyn.get<int>("NUMSTEP"))
   {
     //------------------------------------------------------- current time
     // we are at t_{n} == time; the new time is t_{n+1} == time+dt
@@ -429,7 +421,7 @@ void stru_genalpha_drt()
 
     //=================================================== equilibrium loop
     int numiter=0;
-    while (norm>sdyn->toldisp && numiter<=sdyn->maxiter)
+    while (norm>sdyn.get<double>("TOLDISP") && numiter<=sdyn.get<int>("MAXITER"))
     {
       //------------------------------------------- effective rhs is fresm
       //---------------------------------------------- build effective lhs
@@ -536,7 +528,7 @@ void stru_genalpha_drt()
     } //============================================= end equilibrium loop
 
     //-------------------------------- test whether max iterations was hit
-    if (numiter==sdyn->maxiter) dserror("Newton unconverged in %d iterations",numiter);
+    if (numiter==sdyn.get<int>("MAXITER")) dserror("Newton unconverged in %d iterations",numiter);
 
     //---------------------------- determine new end-quantities and update
     // new displacements at t_{n+1} -> t_n
@@ -578,7 +570,7 @@ void stru_genalpha_drt()
     time += dt;  // time t_n := t_{n+1} = t_n + Delta t
 
     //----------------------------------------------------- output results
-    int mod_disp   = sdyn->step % sdyn->updevry_disp;
+    int mod_disp   = istep % sdyn.get<int>("RESEVRYDISP");
     if (!mod_disp && ioflags.struct_disp==1)
     {
       output.NewStep(istep, time);
@@ -588,7 +580,7 @@ void stru_genalpha_drt()
     }
 
     //---------------------------------------------- do stress calculation
-    int mod_stress = sdyn->step % sdyn->updevry_stress;
+    int mod_stress = istep % sdyn.get<int>("RESEVRYSTRS");
     if (!mod_stress && ioflags.struct_stress==1)
     {
       // create the parameters for the discretization
@@ -616,9 +608,9 @@ void stru_genalpha_drt()
     if (!myrank)
     {
       printf("step %6d | nstep %6d | time %-14.8E | dt %-14.8E | numiter %3d\n",
-             istep,sdyn->nstep,timen,dt,numiter);
+             istep,sdyn.get<int>("NUMSTEP"),timen,dt,numiter);
       fprintf(errfile,"step %6d | nstep %6d | time %-14.8E | dt %-14.8E | numiter %3d\n",
-              istep,sdyn->nstep,timen,dt,numiter);
+              istep,sdyn.get<int>("NUMSTEP"),timen,dt,numiter);
       printf("----------------------------------------------------------------------------------\n");
       fprintf(errfile,"----------------------------------------------------------------------------------\n");
       fflush(stdout);

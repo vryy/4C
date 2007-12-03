@@ -34,14 +34,6 @@ extern struct _GENPROB     genprob;
  *----------------------------------------------------------------------*/
 extern struct _SOLVAR  *solv;
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | pointer to allocate dynamic variables if needed                      |
- | defined in global_control.c                                          |
- | ALLDYNA               *alldyn;                                       |
- *----------------------------------------------------------------------*/
-extern ALLDYNA  *alldyn;
-
 /*!----------------------------------------------------------------------
 \brief file pointers
 

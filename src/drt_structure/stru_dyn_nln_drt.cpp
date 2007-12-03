@@ -68,14 +68,6 @@ extern struct _IO_FLAGS     ioflags;
 extern struct _SOLVAR  *solv;
 
 /*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | pointer to allocate dynamic variables if needed                      |
- | dedfined in global_control.c                                         |
- | ALLDYNA               *alldyn;                                       |
- *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;
-
-/*----------------------------------------------------------------------*
   | structural nonlinear dynamics (gen-alpha)              m.gee 12/06  |
  *----------------------------------------------------------------------*/
 void dyn_nlnstructural_drt()

@@ -484,6 +484,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
   DoubleParameter("SMAGCONST",0.0,"",&fdyn);
 
   /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& fdyn_stab = fdyn.sublist("STABILIZATION",false,"");
+
+  /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& adyn = list->sublist("ALE DYNAMIC",false,"");
 
   DoubleParameter("TIMESTEP",0.1,"",&adyn);

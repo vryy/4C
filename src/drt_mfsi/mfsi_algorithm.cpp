@@ -47,14 +47,6 @@ extern "C"
 extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | pointer to allocate dynamic variables if needed                      |
- | dedfined in global_control.c                                         |
- | ALLDYNA               *alldyn;                                       |
- *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;
-
-/*----------------------------------------------------------------------*
  | global variable *solv, vector of lenght numfld of structures SOLVAR  |
  | defined in solver_control.c                                          |
  |                                                                      |
@@ -91,12 +83,13 @@ extern Teuchos::RCP<Teuchos::ParameterList> globalparameterlist;
 MFSI::Algorithm::Algorithm(Epetra_Comm& comm)
   : comm_(comm)
 {
-  FSI_DYNAMIC *fsidyn = alldyn[3].fsidyn;
+  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+
   step_ = 0;
   time_ = 0.;
-  dt_ = fsidyn->dt;
-  nstep_ = fsidyn->nstep;
-  maxtime_ = fsidyn->maxtime;
+  dt_ = fsidyn.get<double>("TIMESTEP");
+  nstep_ = fsidyn.get<int>("NUMSTEP");
+  maxtime_ = fsidyn.get<double>("MAXTIME");
 
   SetupStructure();
   SetupFluid();
