@@ -113,28 +113,26 @@ protected:
     virtual void WriteAllResults(
             PostField* field);
     
-//    /*!
-//     \brief write all time steps of a result for xfem problems with varying number of unknowns per node
-//
-//     Write nodal results. The results are taken from a reconstructed
-//     Epetra_Vector. We always assume a dofmanager that knows about the unknowns distribution
-//     So we have to specify which XFEM::Physics::Field.
-//
-//     Finally, after writing to the result file, a string is returned that
-//     describes the result for the case file VARIABLE section
-//
-//     \return string with entry for VARIABLE section in case file
-//     \author a.ger
-//     \date 11/07
-//     */
-//    string WriteResult(
-//            const string groupname,                   ///< name of the result group in the control file
-//            const string name,                        ///< name of the result to be written
-//            const vector<XFEM::Physics::Field> fields ///< Fieldnames to print, could be just one (pressure) or a list (Dispx,Dispy,Dispz)
-//            );
-    
-    
-    
+    void WriteGeoFileOneTimeStep(
+            ofstream& file,
+            map<string, vector<ofstream::pos_type> >& resultfilepos,
+            const string name) const;
+    void WriteGeoFilePart(
+            ofstream& file,
+            map<string, vector<ofstream::pos_type> >& resultfilepos,
+            const string name) const;
+    void WriteCoordinates(
+            ofstream& geofile,                         ///< filestream for the geometry
+            const RefCountPtr<DRT::Discretization> dis ///< discretization where the nodal positions are take from
+            ) const;
+    void WriteCoordinatesIntCell(
+            ofstream& geofile,                          ///< filestream for the geometry
+            const RefCountPtr<DRT::Discretization> dis, ///< discretization where the nodal positions are take from
+            const RefCountPtr<XFEM::InterfaceHandle> ih ///< interfacehandle
+            ) const;
+    void WriteCells(
+            ofstream& geofile,
+            const RefCountPtr<DRT::Discretization> dis) const;
     /*!
      \brief write all time steps of a result
 
@@ -152,7 +150,7 @@ protected:
      \author u.kue
      \date 03/07
      */
-    string WriteResult(
+    void WriteResult(
             const string groupname, ///< name of the result group in the control file
             const string name, ///< name of the result to be written
             const int numdf, ///< number of dofs per node to this result
