@@ -67,7 +67,10 @@ private:
   RefCountPtr<MicroDiscretizationWriter> micro_output_;
 
   /// my vector of displacements
-  RefCountPtr<Epetra_Vector> disp_;
+  RefCountPtr<Epetra_Vector> dis_;
+
+  /// my vector of displacements at the generalized midpoint
+  RefCountPtr<Epetra_Vector> dism_;
 
   /// my vector of residual displacements
   RefCountPtr<Epetra_Vector> disi_;

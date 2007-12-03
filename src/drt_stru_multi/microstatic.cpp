@@ -211,21 +211,7 @@ void MicroStatic::ConstantPredictor(const Epetra_SerialDenseMatrix* defgrd)
   // -------------------------------------------------------------------
   double time        = params_->get<double>("total time"     ,0.0);
   double dt          = params_->get<double>("delta time"     ,0.01);
-//   int    istep       = params_->get<int>   ("step"           ,0);
-  double alphaf      = params_->get<double>("alpha f"        ,0.459);
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-  // cout << "time: " << time << " step: " << istep << "\n";
-
-  //--------------------------------------------------- predicting state
-  // constant predictor : displacement in domain
-  disn_->Update(1.0,*dis_,0.0);
-
-  //------------------------------ compute interpolated dis, vel and acc
-  // constant predictor
-  // mid-displacements D_{n+1-alpha_f} (dism)
-  //    D_{n+1-alpha_f} := (1.-alphaf) * D_{n+1} + alpha_f * D_{n}
-  dism_->Update(1.-alphaf,*disn_,alphaf,*dis_,0.0);
 
   // apply new displacements at DBCs -> this has to be done with the
   // mid-displacements since the given macroscopic deformation
@@ -238,10 +224,7 @@ void MicroStatic::ConstantPredictor(const Epetra_SerialDenseMatrix* defgrd)
   }
 
   //------------------------------- compute interpolated external forces
-  // external mid-forces F_{ext;n+1-alpha_f} (fextm)
-  //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1}
-  //                         + alpha_f * F_{ext;n}
-  fextm_->Update(1.-alphaf,*fextn_,alphaf,*fext_,0.0);
+  fextm_->Scale(0.0);  // we do not have any external forces in the microproblem!
 
   //------------- eval fint at interpolated state, eval stiffness matrix
   {
@@ -269,14 +252,10 @@ void MicroStatic::ConstantPredictor(const Epetra_SerialDenseMatrix* defgrd)
     discret_->ClearState();
     // complete stiffness matrix
     LINALG::Complete(*stiff_);
-    //const int maxentriesperrow = stiff_mat->MaxNumEntries();
-//     double stiffnorm;
-//     stiffnorm = stiff_->NormFrobenius();
   }
 
   //-------------------------------------------- compute residual forces
   // add static mid-balance
-  //fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
   fresm_->Update(-1.0,*fint_,1.0,*fextm_,0.0);
 
   // blank residual at DOFs on Dirichlet BC
@@ -292,6 +271,8 @@ void MicroStatic::ConstantPredictor(const Epetra_SerialDenseMatrix* defgrd)
   //------------------------------------------------ build residual norm
   fresm_->Norm2(&norm_);
 
+  cout << "MICROSCALE Predictor residual: " << norm_ << "\n";
+
   return;
 } // MicroStatic::ConstantPredictor()
 
@@ -306,9 +287,7 @@ void MicroStatic::FullNewton()
   // -------------------------------------------------------------------
   double time      = params_->get<double>("total time"             ,0.0);
   double dt        = params_->get<double>("delta time"             ,0.01);
-//   int    istep     = params_->get<int>   ("step"                   ,0);
   int    maxiter   = params_->get<int>   ("max iterations"         ,10);
-  double alphaf    = params_->get<double>("alpha f"                ,0.459);
   double toldisp   = params_->get<double>("tolerance displacements",1.0e-07);
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
@@ -336,7 +315,7 @@ void MicroStatic::FullNewton()
     //---------------------------------- update mid configuration values
     // displacements
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
-    dism_->Update(1.-alphaf,*disi_,1.0);
+    dism_->Update(1.0,*disi_,1.0);
 
     //---------------------------- compute internal forces and stiffness
     {
@@ -387,7 +366,7 @@ void MicroStatic::FullNewton()
 
     norm_ = disinorm;
 
-//     cout << "disinorm: " << disinorm << " fresmnorm: " << fresmnorm << "\n";
+    cout << "MICROSCALE NEWTON: disinorm: " << disinorm << " fresmnorm: " << fresmnorm << "\n";
 
     //--------------------------------- increment equilibrium loop index
     ++numiter;
@@ -397,6 +376,12 @@ void MicroStatic::FullNewton()
 
   //-------------------------------- test whether max iterations was hit
   if (numiter>=maxiter) dserror("Newton unconverged in %d iterations",numiter);
+  else
+  {
+    printf("MICROSCALE: Newton iteration converged: numiter %d\n",
+           numiter);
+    fflush(stdout);
+  }
   params_->set<int>("num iterations",numiter);
 
   //stiff_ = null;   -> microscale needs this for homogenization purposes
@@ -420,9 +405,7 @@ void MicroStatic::Update()
   //    D_{n} := D_{n+1} = 1./(1.-alphaf) * D_{n+1-alpha_f}
   //                     - alphaf/(1.-alphaf) * D_n
   dis_->Update(1./(1.-alphaf),*dism_,-alphaf/(1.-alphaf));
-  // new velocities at t_{n+1} -> t_n
-  //    V_{n} := V_{n+1} = 1./(1.-alphaf) * V_{n+1-alpha_f}
-  //                     - alphaf/(1.-alphaf) * V_n
+
   // update new external force
   //    F_{ext;n} := F_{ext;n+1}
   fext_->Update(1.0,*fextn_,0.0);
@@ -606,14 +589,24 @@ void MicroStatic::EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd)
 
 }
 
-void MicroStatic::SetOldState(RefCountPtr<Epetra_Vector> disp,
+void MicroStatic::SetOldState(RefCountPtr<Epetra_Vector> dis,
+                              RefCountPtr<Epetra_Vector> dism,
                               RefCountPtr<Epetra_Vector> disi)
 {
-  dis_ = disp;
+  dis_ = dis;
+  dism_ = dism;
   disi_ = disi;
   fext_->PutScalar(0.);     // we do not have any external loads on
                             // the microscale, so assign all components
                             // to zero
+}
+
+void MicroStatic::UpdateNewTimeStep(RefCountPtr<Epetra_Vector> dis,
+                                    RefCountPtr<Epetra_Vector> dism)
+{
+  double alphaf = params_->get<double>("alpha f",0.459);
+  dis->Update(1.0/(1.0-alphaf), *dism, -alphaf/(1.0-alphaf));
+  dism->Update(1.0, *dis, 0.0);
 }
 
 void MicroStatic::SetTime(double timen, int istep)
@@ -622,13 +615,15 @@ void MicroStatic::SetTime(double timen, int istep)
   params_->set<int>   ("step", istep);
 }
 
-RefCountPtr<Epetra_Vector> MicroStatic::ReturnNewDisp() { return rcp(new Epetra_Vector(*dis_)); }
+RefCountPtr<Epetra_Vector> MicroStatic::ReturnNewDism() { return rcp(new Epetra_Vector(*dism_)); }
+RefCountPtr<Epetra_Vector> MicroStatic::ReturnDis() { return rcp(new Epetra_Vector(*disn_)); }
 
 RefCountPtr<Epetra_Vector> MicroStatic::ReturnNewResDisp() { return rcp(new Epetra_Vector(*disi_)); }
 
 void MicroStatic::ClearState()
 {
   dis_ = null;
+  dism_ = null;
   disi_ = null;
 }
 
@@ -972,6 +967,7 @@ void MicroStatic::StaticHomogenization(Epetra_SerialDenseVector* stress,
   {
     (*stress)[i]=S[i];
   }
+
 
   // split effective dynamic stiffness -> we want Kpp, Kpf, Kfp and Kff
   // Kpp and Kff are sparse matrices, whereas Kpf and Kfp are MultiVectors
