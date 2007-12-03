@@ -16,6 +16,8 @@ Maintainer: Michael Gee
 #include <cstdlib>
 #include <iostream>
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
@@ -96,7 +98,10 @@ void dyn_nlnstructural_drt()
   // set some pointers and variables
   // -------------------------------------------------------------------
   SOLVAR*         actsolv  = &solv[0];
-  STRUCT_DYNAMIC* sdyn     = alldyn[0].sdyn;
+
+  const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
+  const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
+  const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
 
   // -------------------------------------------------------------------
   // create a solver
@@ -109,7 +114,7 @@ void dyn_nlnstructural_drt()
   // -------------------------------------------------------------------
   // create a generalized alpha time integrator
   // -------------------------------------------------------------------
-  switch(sdyn->Typ)
+  switch (Teuchos::getIntegralValue<int>(sdyn,"DYNAMICTYP"))
   {
     //==================================================================
     // Generalized alpha time integration
@@ -119,37 +124,37 @@ void dyn_nlnstructural_drt()
       ParameterList genalphaparams;
       StruGenAlpha::SetDefaults(genalphaparams);
 
-      genalphaparams.set<bool>  ("damping",sdyn->damp);
-      genalphaparams.set<double>("damping factor K",sdyn->k_damp);
-      genalphaparams.set<double>("damping factor M",sdyn->m_damp);
+      genalphaparams.set<bool>  ("damping",Teuchos::getIntegralValue<int>(sdyn,"DAMPING"));
+      genalphaparams.set<double>("damping factor K",sdyn.get<double>("K_DAMP"));
+      genalphaparams.set<double>("damping factor M",sdyn.get<double>("M_DAMP"));
 
-      genalphaparams.set<double>("beta",sdyn->beta);
-      genalphaparams.set<double>("gamma",sdyn->gamma);
-      genalphaparams.set<double>("alpha m",sdyn->alpha_m);
-      genalphaparams.set<double>("alpha f",sdyn->alpha_f);
+      genalphaparams.set<double>("beta",sdyn.get<double>("BETA"));
+      genalphaparams.set<double>("gamma",sdyn.get<double>("GAMMA"));
+      genalphaparams.set<double>("alpha m",sdyn.get<double>("ALPHA_M"));
+      genalphaparams.set<double>("alpha f",sdyn.get<double>("ALPHA_F"));
 
       genalphaparams.set<double>("total time",0.0);
-      genalphaparams.set<double>("delta time",sdyn->dt);
+      genalphaparams.set<double>("delta time",sdyn.get<double>("TIMESTEP"));
       genalphaparams.set<int>   ("step",0);
-      genalphaparams.set<int>   ("nstep",sdyn->nstep);
-      genalphaparams.set<int>   ("max iterations",sdyn->maxiter);
+      genalphaparams.set<int>   ("nstep",sdyn.get<int>("NUMSTEP"));
+      genalphaparams.set<int>   ("max iterations",sdyn.get<int>("MAXITER"));
       genalphaparams.set<int>   ("num iterations",-1);
-      genalphaparams.set<double>("tolerance displacements",sdyn->toldisp);
-      genalphaparams.set<bool>  ("contact",(bool)sdyn->contact);
+      genalphaparams.set<double>("tolerance displacements",sdyn.get<double>("TOLDISP"));
+      genalphaparams.set<bool>  ("contact",static_cast<bool>(sdyn.get<int>("CONTACT")));
 
-      genalphaparams.set<bool>  ("io structural disp",ioflags.struct_disp);
-      genalphaparams.set<int>   ("io disp every nstep",sdyn->updevry_disp);
-      genalphaparams.set<bool>  ("io structural stress",ioflags.struct_stress);
-      genalphaparams.set<int>   ("io stress every nstep",sdyn->updevry_stress);
+      genalphaparams.set<bool>  ("io structural disp",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_DISP"));
+      genalphaparams.set<int>   ("io disp every nstep",sdyn.get<int>("RESEVRYDISP"));
+      genalphaparams.set<bool>  ("io structural stress",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_STRESS"));
+      genalphaparams.set<int>   ("io stress every nstep",sdyn.get<int>("RESEVRYSTRS"));
 
-      genalphaparams.set<int>   ("restart",genprob.restart);
-      genalphaparams.set<int>   ("write restart every",sdyn->res_write_evry);
+      genalphaparams.set<int>   ("restart",probtype.get<int>("RESTART"));
+      genalphaparams.set<int>   ("write restart every",sdyn.get<int>("RESTARTEVRY"));
 
       genalphaparams.set<bool>  ("print to screen",true);
       genalphaparams.set<bool>  ("print to err",true);
       genalphaparams.set<FILE*> ("err file",allfiles.out_err);
 
-      switch(sdyn->nlnSolvTyp)
+      switch (Teuchos::getIntegralValue<int>(sdyn,"NLNSOL"))
       {
         case STRUCT_DYNAMIC::fullnewton:
           genalphaparams.set<string>("equilibrium iteration","full newton");
@@ -172,13 +177,13 @@ void dyn_nlnstructural_drt()
       }
 
       // set predictor (takes values "constant" "consistent")
-      switch(sdyn->predtype)
+      switch (Teuchos::getIntegralValue<int>(sdyn,"PREDICT"))
       {
         case STRUCT_DYNAMIC::pred_vague:
           dserror("You have to define the predictor");
           break;
         case STRUCT_DYNAMIC::pred_constdis:
-          genalphaparams.set<string>("predictor","consistent");        
+          genalphaparams.set<string>("predictor","consistent");
           break;
         case STRUCT_DYNAMIC::pred_constdisvelacc:
           genalphaparams.set<string>("predictor","constant");

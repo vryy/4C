@@ -49,7 +49,7 @@ FSI::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
     restartstep_(0),
     uprestart_(params->get("write restart every", -1))
 {
-  nstep_   = params_->get<int>("nstep");
+  numstep_   = params_->get<int>("numstep");
   maxtime_ = params_->get<double>("maxtime");
   dt_      = params_->get<double>("dt");
 
@@ -151,7 +151,7 @@ void FSI::AleLinear::Output()
  *----------------------------------------------------------------------*/
 void FSI::AleLinear::Integrate()
 {
-  while (step_ < nstep_-1 and time_ <= maxtime_)
+  while (step_ < numstep_-1 and time_ <= maxtime_)
   {
     PrepareTimeStep();
     Solve();

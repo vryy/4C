@@ -185,7 +185,7 @@ private:
 
   //! @name Algorithm core variables
   int step_;
-  int nstep_;
+  int numstep_;
   double time_;
   double maxtime_;
   double dt_;

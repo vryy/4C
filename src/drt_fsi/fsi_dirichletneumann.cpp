@@ -218,8 +218,11 @@ void FSI::DirichletNeumannCoupling::SetupStructure()
   // set some pointers and variables
   // -------------------------------------------------------------------
   SOLVAR*         actsolv  = &solv[genprob.numsf];
-  FSI_DYNAMIC*    fsidyn   = alldyn[3].fsidyn;
-  STRUCT_DYNAMIC* sdyn     = alldyn[genprob.numsf].sdyn;
+
+  const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
+  const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
+  const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
   // -------------------------------------------------------------------
   // create a solver
@@ -236,36 +239,36 @@ void FSI::DirichletNeumannCoupling::SetupStructure()
   RefCountPtr<ParameterList> genalphaparams = rcp(new ParameterList());
   Structure::SetDefaults(*genalphaparams);
 
-  genalphaparams->set<bool>  ("damping",sdyn->damp);
-  genalphaparams->set<double>("damping factor K",sdyn->k_damp);
-  genalphaparams->set<double>("damping factor M",sdyn->m_damp);
+  genalphaparams->set<bool>  ("damping",Teuchos::getIntegralValue<int>(sdyn,"DAMPING"));
+  genalphaparams->set<double>("damping factor K",sdyn.get<double>("K_DAMP"));
+  genalphaparams->set<double>("damping factor M",sdyn.get<double>("M_DAMP"));
 
-  genalphaparams->set<double>("beta",sdyn->beta);
-  genalphaparams->set<double>("gamma",sdyn->gamma);
-  genalphaparams->set<double>("alpha m",sdyn->alpha_m);
-  genalphaparams->set<double>("alpha f",sdyn->alpha_f);
+  genalphaparams->set<double>("beta",sdyn.get<double>("BETA"));
+  genalphaparams->set<double>("gamma",sdyn.get<double>("GAMMA"));
+  genalphaparams->set<double>("alpha m",sdyn.get<double>("ALPHA_M"));
+  genalphaparams->set<double>("alpha f",sdyn.get<double>("ALPHA_F"));
 
   genalphaparams->set<double>("total time",0.0);
-  genalphaparams->set<double>("delta time",fsidyn->dt);
+  genalphaparams->set<double>("delta time",fsidyn.get<double>("TIMESTEP"));
   genalphaparams->set<int>   ("step",0);
-  genalphaparams->set<int>   ("nstep",fsidyn->nstep);
-  genalphaparams->set<int>   ("max iterations",sdyn->maxiter);
+  genalphaparams->set<int>   ("nstep",fsidyn.get<int>("NUMSTEP"));
+  genalphaparams->set<int>   ("max iterations",sdyn.get<int>("MAXITER"));
   genalphaparams->set<int>   ("num iterations",-1);
-  genalphaparams->set<double>("tolerance displacements",sdyn->toldisp);
+  genalphaparams->set<double>("tolerance displacements",sdyn.get<double>("TOLDISP"));
 
-  genalphaparams->set<bool>  ("io structural disp",ioflags.struct_disp);
-  genalphaparams->set<int>   ("io disp every nstep",sdyn->updevry_disp);
-  genalphaparams->set<bool>  ("io structural stress",ioflags.struct_stress);
-  genalphaparams->set<int>   ("io stress every nstep",sdyn->updevry_stress);
+  genalphaparams->set<bool>  ("io structural disp",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_DISP"));
+  genalphaparams->set<int>   ("io disp every nstep",fsidyn.get<int>("UPRES"));
+  genalphaparams->set<bool>  ("io structural stress",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_STRESS"));
+  genalphaparams->set<int>   ("io stress every nstep",sdyn.get<int>("RESEVRYSTRS"));
 
-  genalphaparams->set<int>   ("restart",genprob.restart);
-  genalphaparams->set<int>   ("write restart every",fsidyn->uprestart);
+  genalphaparams->set<int>   ("restart",probtype.get<int>("RESTART"));
+  genalphaparams->set<int>   ("write restart every",fsidyn.get<int>("RESTARTEVRY"));
 
   genalphaparams->set<bool>  ("print to screen",true);
   genalphaparams->set<bool>  ("print to err",true);
   genalphaparams->set<FILE*> ("err file",allfiles.out_err);
 
-  switch (sdyn->nlnSolvTyp)
+  switch (Teuchos::getIntegralValue<int>(sdyn,"NLNSOL"))
   {
   case STRUCT_DYNAMIC::fullnewton:
     genalphaparams->set<string>("equilibrium iteration","full newton");
@@ -288,7 +291,7 @@ void FSI::DirichletNeumannCoupling::SetupStructure()
   }
 
   // set predictor (takes values "constant" "consistent")
-  switch (sdyn->predtype)
+  switch (Teuchos::getIntegralValue<int>(sdyn,"PREDICT"))
   {
   case STRUCT_DYNAMIC::pred_vague:
     dserror("You have to define the predictor");
@@ -389,7 +392,7 @@ void FSI::DirichletNeumannCoupling::SetupFluid()
   // restart
   fluidtimeparams->set                 ("write restart every"       ,fsidyn.get<int>("RESTARTEVRY"));
   // solution output
-  fluidtimeparams->set                 ("write solution every"      ,fdyn.get<int>("UPRES"));
+  fluidtimeparams->set                 ("write solution every"      ,fsidyn.get<int>("UPRES"));
   // flag for writing stresses
   fluidtimeparams->set                 ("write stresses"            ,Teuchos::getIntegralValue<int>(ioflags,"FLUID_STRESS"));
 
@@ -435,10 +438,7 @@ void FSI::DirichletNeumannCoupling::SetupAle()
   // -------------------------------------------------------------------
   SOLVAR        *actsolv  = &solv[genprob.numaf];
 
-  FSI_DYNAMIC *fsidyn   = alldyn[3].fsidyn;
-  ALE_DYNAMIC *adyn     = alldyn[genprob.numaf].adyn;
-  adyn->step            =   0;
-  adyn->time            = 0.0;
+  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
   // -------------------------------------------------------------------
   // create a solver
@@ -450,13 +450,13 @@ void FSI::DirichletNeumannCoupling::SetupAle()
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
 
   RefCountPtr<ParameterList> params = rcp(new ParameterList());
-  params->set<int>("nstep", fsidyn->nstep);
-  params->set<double>("maxtime", fsidyn->maxtime);
-  params->set<double>("dt", fsidyn->dt);
+  params->set<int>("numstep",    fsidyn.get<int>("NUMSTEP"));
+  params->set<double>("maxtime", fsidyn.get<double>("MAXTIME"));
+  params->set<double>("dt",      fsidyn.get<double>("TIMESTEP"));
 
   // ----------------------------------------------- restart and output
   // restart
-  params->set<int>("write restart every", fsidyn->uprestart);
+  params->set<int>("write restart every", fsidyn.get<int>("RESTARTEVRY"));
 
   ale_ = rcp(new AleLinear(actdis, solver, params, output));
 }
