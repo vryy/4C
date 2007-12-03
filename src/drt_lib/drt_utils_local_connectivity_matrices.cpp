@@ -37,30 +37,30 @@ int DRT::Utils::getNumberOfElementNodes(
     const DRT::Element::DiscretizationType&     distype)
 {
     
-    int numCornerNodes = 0;
+    int numnodes = 0;
     
     switch(distype)
     {
         case DRT::Element::hex8:
-            numCornerNodes = 8;
+            numnodes = 8;
             break;
         case DRT::Element::hex20:
-            numCornerNodes = 20;
+            numnodes = 20;
             break;
         case DRT::Element::hex27:
-            numCornerNodes = 27;
+            numnodes = 27;
             break;
         case DRT::Element::tet4:
-            numCornerNodes = 4;
+            numnodes = 4;
             break;
         case DRT::Element::tet10:
-            numCornerNodes = 10;
+            numnodes = 10;
             break;   
         default:
             dserror("discretization type not yet implemented");     
     }
     
-    return numCornerNodes;     
+    return numnodes;     
 }   
 
 
