@@ -18,7 +18,7 @@ Maintainer: Ulrich Kuettler
 #ifndef FSI_DIRICHLETNEUMANN_H
 #define FSI_DIRICHLETNEUMANN_H
 
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
 #include <AztecOO.h>
@@ -67,7 +67,7 @@ namespace FSI {
 
   Inside the time loop the interface problem is solved using NOX. To
   do so Timeloop() needs to know an object which defines the nonlinear
-  residual of the FSI problem. This is always a RefCountPtr to the
+  residual of the FSI problem. This is always a RCP to the
   DirichletNeumannCoupling object itself!
 
   So the second part of this class consists of the interface residual
@@ -114,7 +114,7 @@ public:
   void ReadRestart(int step);
 
   /// outer level FSI time loop
-  void Timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Interface::Required>& interface);
+  void Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
 
   /// compute FSI interface residuum S^{-1}(F(d)) - d
   bool computeF(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag);
@@ -131,37 +131,37 @@ public:
 private:
 
   ///
-  Teuchos::RefCountPtr<NOX::Epetra::LinearSystem>
+  Teuchos::RCP<NOX::Epetra::LinearSystem>
   CreateLinearSystem(ParameterList& nlParams,
-                     const Teuchos::RefCountPtr<NOX::Epetra::Interface::Required>& interface,
+                     const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface,
                      NOX::Epetra::Vector& noxSoln,
-                     Teuchos::RefCountPtr<NOX::Utils> utils);
+                     Teuchos::RCP<NOX::Utils> utils);
 
   ///
-  Teuchos::RefCountPtr<NOX::StatusTest::Combo> CreateStatusTest(ParameterList& nlParams,
-                                                                Teuchos::RefCountPtr<NOX::Epetra::Group> grp);
+  Teuchos::RCP<NOX::StatusTest::Combo> CreateStatusTest(ParameterList& nlParams,
+                                                                Teuchos::RCP<NOX::Epetra::Group> grp);
 
   /// interface fluid operator
-  Teuchos::RefCountPtr<Epetra_Vector> FluidOp(Teuchos::RefCountPtr<Epetra_Vector> idisp,
+  Teuchos::RCP<Epetra_Vector> FluidOp(Teuchos::RCP<Epetra_Vector> idisp,
                                               const FillType fillFlag);
 
   /// interface structural operator
-  Teuchos::RefCountPtr<Epetra_Vector> StructOp(Teuchos::RefCountPtr<Epetra_Vector> iforce,
+  Teuchos::RCP<Epetra_Vector> StructOp(Teuchos::RCP<Epetra_Vector> iforce,
                                                const FillType fillFlag);
 
   /// interface velocity calculation given the interface displacements
-  Teuchos::RefCountPtr<Epetra_Vector> InterfaceVelocity(Teuchos::RefCountPtr<Epetra_Vector> idispnp);
+  Teuchos::RCP<Epetra_Vector> InterfaceVelocity(Teuchos::RCP<Epetra_Vector> idispnp);
 
-  Teuchos::RefCountPtr<Epetra_Vector> StructToAle(Teuchos::RefCountPtr<Epetra_Vector> iv);
-  Teuchos::RefCountPtr<Epetra_Vector> StructToFluid(Teuchos::RefCountPtr<Epetra_Vector> iv);
-  Teuchos::RefCountPtr<Epetra_Vector> FluidToStruct(Teuchos::RefCountPtr<Epetra_Vector> iv);
-  Teuchos::RefCountPtr<Epetra_Vector> AleToFluid(Teuchos::RefCountPtr<Epetra_Vector> iv);
+  Teuchos::RCP<Epetra_Vector> StructToAle(Teuchos::RCP<Epetra_Vector> iv);
+  Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv);
+  Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<Epetra_Vector> iv);
+  Teuchos::RCP<Epetra_Vector> AleToFluid(Teuchos::RCP<Epetra_Vector> iv);
 
   /// current interface displacements
-  Teuchos::RefCountPtr<Epetra_Vector> InterfaceDisp();
+  Teuchos::RCP<Epetra_Vector> InterfaceDisp();
 
   /// current interface forces
-  Teuchos::RefCountPtr<Epetra_Vector> InterfaceForce();
+  Teuchos::RCP<Epetra_Vector> InterfaceForce();
 
   /// setup structure algorithm
   void SetupStructure();
@@ -188,13 +188,13 @@ private:
   Epetra_Comm& comm_;
 
   /// structural field solver
-  RefCountPtr<Structure> structure_;
+  RCP<Structure> structure_;
 
   /// fluid field solver
-  RefCountPtr<Fluid>     fluid_;
+  RCP<Fluid>     fluid_;
 
   /// ale field solver
-  RefCountPtr<Ale>       ale_;
+  RCP<Ale>       ale_;
 
   /// coupling of structure and fluid at the interface
   Coupling               coupsf_;
@@ -209,10 +209,10 @@ private:
   CouplingMortar         coupsfm_;
 
   /// interface displacement from time step begin
-  Teuchos::RefCountPtr<Epetra_Vector> idispn_;
+  Teuchos::RCP<Epetra_Vector> idispn_;
 
   //! connection of interface dofs for finite differences
-  Teuchos::RefCountPtr<Epetra_CrsGraph> rawGraph_;
+  Teuchos::RCP<Epetra_CrsGraph> rawGraph_;
 
   //! counters on how many times the residuum was called in a time step
   /*!
@@ -233,7 +233,7 @@ private:
   /*!
     \warning This variable is only valid during when the time loop runs.
    */
-  Teuchos::RefCountPtr<NOX::Utils> utils_;
+  Teuchos::RCP<NOX::Utils> utils_;
 
   /// parameters handed in to NOX
   Teuchos::ParameterList noxparameterlist;

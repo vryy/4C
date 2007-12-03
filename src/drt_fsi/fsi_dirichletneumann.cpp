@@ -145,7 +145,7 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
 
 #if 0
   // create connection graph of interface elements
-  Teuchos::RefCountPtr<Epetra_Map> imap = structure_->InterfaceMap();
+  Teuchos::RCP<Epetra_Map> imap = structure_->InterfaceMap();
 
   vector<int> rredundant;
   DRT::Utils::AllreduceEMap(rredundant, *imap);
@@ -328,6 +328,7 @@ void FSI::DirichletNeumannCoupling::SetDefaultParameters(const Teuchos::Paramete
   {
     // sequential coupling (no iteration!)
     nlParams.set("Jacobian", "None");
+    nlParams.set("Max Iterations", 1.);
 
     dirParams.set("Method","User Defined");
     Teuchos::RCP<NOX::Direction::UserDefinedFactory> fixpointfactory =
@@ -374,7 +375,7 @@ void FSI::DirichletNeumannCoupling::SetupStructure()
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  RefCountPtr<DRT::Discretization> actdis = null;
+  RCP<DRT::Discretization> actdis = null;
   actdis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
 
   // set degrees of freedom in the discretization
@@ -383,7 +384,7 @@ void FSI::DirichletNeumannCoupling::SetupStructure()
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  RefCountPtr<IO::DiscretizationWriter> output =
+  RCP<IO::DiscretizationWriter> output =
     rcp(new IO::DiscretizationWriter(actdis));
   output->WriteMesh(0,0.0);
 
@@ -400,8 +401,8 @@ void FSI::DirichletNeumannCoupling::SetupStructure()
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
-  RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
-  RefCountPtr<LINALG::Solver> solver =
+  RCP<ParameterList> solveparams = rcp(new ParameterList());
+  RCP<LINALG::Solver> solver =
     rcp(new LINALG::Solver(solveparams,actdis->Comm(),allfiles.out_err));
   solver->TranslateSolverParameters(*solveparams,actsolv);
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
@@ -409,7 +410,7 @@ void FSI::DirichletNeumannCoupling::SetupStructure()
   // -------------------------------------------------------------------
   // create a generalized alpha time integrator
   // -------------------------------------------------------------------
-  RefCountPtr<ParameterList> genalphaparams = rcp(new ParameterList());
+  RCP<ParameterList> genalphaparams = rcp(new ParameterList());
   Structure::SetDefaults(*genalphaparams);
 
   genalphaparams->set<bool>  ("damping",Teuchos::getIntegralValue<int>(sdyn,"DAMPING"));
@@ -491,7 +492,7 @@ void FSI::DirichletNeumannCoupling::SetupFluid()
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  RefCountPtr<DRT::Discretization> actdis = null;
+  RCP<DRT::Discretization> actdis = null;
   actdis = DRT::Problem::Instance()->Dis(genprob.numff,0);
 
   // -------------------------------------------------------------------
@@ -502,7 +503,7 @@ void FSI::DirichletNeumannCoupling::SetupFluid()
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  RefCountPtr<IO::DiscretizationWriter> output =
+  RCP<IO::DiscretizationWriter> output =
     rcp(new IO::DiscretizationWriter(actdis));
   output->WriteMesh(0,0.0);
 
@@ -520,8 +521,8 @@ void FSI::DirichletNeumannCoupling::SetupFluid()
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
-  RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
-  RefCountPtr<LINALG::Solver> solver =
+  RCP<ParameterList> solveparams = rcp(new ParameterList());
+  RCP<LINALG::Solver> solver =
     rcp(new LINALG::Solver(solveparams,actdis->Comm(),allfiles.out_err));
   solver->TranslateSolverParameters(*solveparams,actsolv);
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
@@ -529,7 +530,7 @@ void FSI::DirichletNeumannCoupling::SetupFluid()
   // -------------------------------------------------------------------
   // create a fluid nonlinear time integrator
   // -------------------------------------------------------------------
-  RefCountPtr<ParameterList> fluidtimeparams = rcp(new ParameterList());
+  RCP<ParameterList> fluidtimeparams = rcp(new ParameterList());
   Fluid::SetDefaults(*fluidtimeparams);
 
   FLUID_TIMEINTTYPE iop = Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(fdyn,"TIMEINTEGR");
@@ -591,7 +592,7 @@ void FSI::DirichletNeumannCoupling::SetupAle()
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  RefCountPtr<DRT::Discretization> actdis = null;
+  RCP<DRT::Discretization> actdis = null;
   actdis = DRT::Problem::Instance()->Dis(genprob.numaf,0);
 
   // -------------------------------------------------------------------
@@ -602,7 +603,7 @@ void FSI::DirichletNeumannCoupling::SetupAle()
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  RefCountPtr<IO::DiscretizationWriter> output =
+  RCP<IO::DiscretizationWriter> output =
     rcp(new IO::DiscretizationWriter(actdis));
   output->WriteMesh(0,0.0);
 
@@ -616,13 +617,13 @@ void FSI::DirichletNeumannCoupling::SetupAle()
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
-  RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
-  RefCountPtr<LINALG::Solver> solver =
+  RCP<ParameterList> solveparams = rcp(new ParameterList());
+  RCP<LINALG::Solver> solver =
     rcp(new LINALG::Solver(solveparams,actdis->Comm(),allfiles.out_err));
   solver->TranslateSolverParameters(*solveparams,actsolv);
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
 
-  RefCountPtr<ParameterList> params = rcp(new ParameterList());
+  RCP<ParameterList> params = rcp(new ParameterList());
   params->set<int>("numstep",    fsidyn.get<int>("NUMSTEP"));
   params->set<double>("maxtime", fsidyn.get<double>("MAXTIME"));
   params->set<double>("dt",      fsidyn.get<double>("TIMESTEP"));
@@ -637,9 +638,12 @@ void FSI::DirichletNeumannCoupling::SetupAle()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Interface::Required>& interface)
+void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface)
 {
+  // not such a smart idea?!
   bool secondsolver = false;
+
+  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
   // Get the top level parameter list
   Teuchos::ParameterList& nlParams = noxparameterlist;
@@ -650,67 +654,16 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
   Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
 
-  //Teuchos::ParameterList& searchParams = nlParams.sublist("Line Search");
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
 
   // Create printing utilities
   utils_ = Teuchos::rcp(new NOX::Utils(printParams));
 
-#if 0
-  // Set user defined aitken line search object.
-  if (nlParams.sublist("Line Search").get("Method","Aitken")=="Aitken")
-  {
-    // insert user defined aitken relaxation
-    Teuchos::ParameterList& linesearch = nlParams.sublist("Line Search");
-    Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> aitkenfactory =
-      Teuchos::rcp(new NOX::FSI::AitkenFactory());
-
-    // We change the method here.
-    linesearch.set("Method","User Defined");
-    linesearch.set("User Defined Line Search Factory", aitkenfactory);
-
-    Teuchos::ParameterList& aitkenList = linesearch.sublist("Aitken");
-    if (aitkenList.get("start steps only", false))
-    {
-      // we start with aitken and switch to a different solver
-      // afterwards
-      secondsolver = true;
-    }
-  }
-
-  // Set user defined steepest descent line search object.
-  else if (nlParams.sublist("Line Search").get("Method","Aitken")=="SD")
-  {
-    // insert user defined aitken relaxation
-    Teuchos::ParameterList& linesearch = nlParams.sublist("Line Search");
-    Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> sdfactory =
-      Teuchos::rcp(new NOX::FSI::SDFactory());
-
-    // We change the method here.
-    linesearch.set("Method","User Defined");
-    linesearch.set("User Defined Line Search Factory", sdfactory);
-  }
-#endif
-
-#if 0
-  // the very special experimental extrapolation
-  else if (nlParams.sublist("Line Search").get("Method","Aitken")=="Extrapolate")
-  {
-    // insert user defined extrapolate relaxation
-    Teuchos::ParameterList& linesearch = nlParams.sublist("Line Search");
-    Teuchos::RefCountPtr<NOX::LineSearch::Generic> extrapolate = Teuchos::rcp(new NOX::FSI::Extrapolate(utils_,linesearch));
-
-    // We change the method here.
-    linesearch.set("Method","User Defined");
-    linesearch.set("User Defined Line Search",extrapolate);
-  }
-#endif
-
   // ==================================================================
 
   // log solver iterations
 
-  Teuchos::RefCountPtr<std::ofstream> log;
+  Teuchos::RCP<std::ofstream> log;
   if (comm_.MyPID()==0)
   {
     std::string s = allfiles.outputfile_kenner;
@@ -721,6 +674,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
            << "# Jacobian       = " << nlParams.get("Jacobian", "None") << "\n"
            << "# Preconditioner = " << nlParams.get("Preconditioner","None") << "\n"
            << "# Line Search    = " << nlParams.sublist("Line Search").get("Method","Aitken") << "\n"
+           << "# Predictor      = '" << fsidyn.get<std::string>("PREDICTOR") << "'\n"
            << "#\n"
            << "# step  time/step  #nliter  |R|  #liter  Residual  Jac  Prec  FD_Res  MF_Res  MF_Jac  User\n"
       ;
@@ -744,57 +698,44 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
     linsolvcount_.resize(0);
 
     // start time measurement
-    Teuchos::RefCountPtr<Teuchos::TimeMonitor> timemonitor = rcp(new Teuchos::TimeMonitor(timer,true));
+    Teuchos::RCP<Teuchos::TimeMonitor> timemonitor = rcp(new Teuchos::TimeMonitor(timer,true));
 
     /*----------------- CSD - predictor for itnum==0 --------------------*/
 
     // Begin Nonlinear Solver ************************************
 
     // Get initial guess.
-    Teuchos::RefCountPtr<Epetra_Vector> soln;
+    Teuchos::RCP<Epetra_Vector> soln;
     if (displacementcoupling_)
     {
-      // Here some predictor could be useful.
-      // On the other hand, the structural algorithm has its own
-      // predictor and it has been run. We extract the predicted
-      // interface displacements. Is there any sense in trying to
-      // predict another time?
-
-      // d(n)
-      soln = InterfaceDisp();
-
-      // These predictors are available within the old code.
-
-      // d(n)+dt*(1.5*v(n)-0.5*v(n-1))
-      // d(n)+dt*v(n)
-      // d(n)+dt*v(n)+0.5*dt^2*a(n)
-
-#if 0
-      Teuchos::RefCountPtr<Epetra_Vector> veln = structure_->ExtractInterfaceVel();
-      Teuchos::RefCountPtr<Epetra_Vector> accn = structure_->ExtractInterfaceAcc();
-      soln->Update(dt_,*veln,0.5*dt_*dt_,*accn,1.);
-#endif
+      // predict displacement
+      soln = structure_->PredictInterfaceDisplacement();
     }
     else
     {
+      if (Teuchos::getIntegralValue<int>(fsidyn,"PREDICTOR")!=1)
+      {
+        dserror("unknown interface force predictor '%s'",
+                fsidyn.get<string>("PREDICTOR").c_str());
+      }
       soln = InterfaceForce();
     }
 
     NOX::Epetra::Vector noxSoln(soln, NOX::Epetra::Vector::CreateView);
 
     // Create the linear system
-    Teuchos::RefCountPtr<NOX::Epetra::LinearSystem> linSys =
+    Teuchos::RCP<NOX::Epetra::LinearSystem> linSys =
       CreateLinearSystem(nlParams, interface, noxSoln, utils_);
 
     // Create the Group
-    Teuchos::RefCountPtr<NOX::Epetra::Group> grp =
+    Teuchos::RCP<NOX::Epetra::Group> grp =
       Teuchos::rcp(new NOX::Epetra::Group(printParams, interface, noxSoln, linSys));
 
     // Convergence Tests
-    Teuchos::RefCountPtr<NOX::StatusTest::Combo> combo = CreateStatusTest(nlParams, grp);
+    Teuchos::RCP<NOX::StatusTest::Combo> combo = CreateStatusTest(nlParams, grp);
 
     // Create the solver
-    Teuchos::RefCountPtr<NOX::Solver::Generic> solver = NOX::Solver::buildSolver(grp,combo,RefCountPtr<ParameterList>(&nlParams,false));
+    Teuchos::RCP<NOX::Solver::Generic> solver = NOX::Solver::buildSolver(grp,combo,RCP<ParameterList>(&nlParams,false));
 
 #if 0
     if ((step_ % 10) == 0)
@@ -836,7 +777,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
       combo = CreateStatusTest(nlParams.sublist("Second"), grp);
 
       // Create the solver
-      solver = NOX::Solver::buildSolver(grp, combo, RefCountPtr<ParameterList>(&nlParams.sublist("Second"),false));
+      solver = NOX::Solver::buildSolver(grp, combo, RCP<ParameterList>(&nlParams.sublist("Second"),false));
 
       // solve the whole thing again
       status = solver->solve();
@@ -916,11 +857,11 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RefCountPtr<NOX::Epetra::LinearSystem>
+Teuchos::RCP<NOX::Epetra::LinearSystem>
 FSI::DirichletNeumannCoupling::CreateLinearSystem(ParameterList& nlParams,
-                                                  const Teuchos::RefCountPtr<NOX::Epetra::Interface::Required>& interface,
+                                                  const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface,
                                                   NOX::Epetra::Vector& noxSoln,
-                                                  Teuchos::RefCountPtr<NOX::Utils> utils)
+                                                  Teuchos::RCP<NOX::Utils> utils)
 {
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
 
@@ -928,20 +869,20 @@ FSI::DirichletNeumannCoupling::CreateLinearSystem(ParameterList& nlParams,
   Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Aitken"));
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
 
-  Teuchos::RefCountPtr<NOX::FSI::FSIMatrixFree> FSIMF;
-  Teuchos::RefCountPtr<NOX::Epetra::MatrixFree> MF;
-  Teuchos::RefCountPtr<NOX::Epetra::FiniteDifference> FD;
-  Teuchos::RefCountPtr<NOX::Epetra::FiniteDifferenceColoring> FDC;
-  Teuchos::RefCountPtr<NOX::Epetra::FiniteDifferenceColoring> FDC1;
-  Teuchos::RefCountPtr<NOX::Epetra::BroydenOperator> B;
+  Teuchos::RCP<NOX::FSI::FSIMatrixFree> FSIMF;
+  Teuchos::RCP<NOX::Epetra::MatrixFree> MF;
+  Teuchos::RCP<NOX::Epetra::FiniteDifference> FD;
+  Teuchos::RCP<NOX::Epetra::FiniteDifferenceColoring> FDC;
+  Teuchos::RCP<NOX::Epetra::FiniteDifferenceColoring> FDC1;
+  Teuchos::RCP<NOX::Epetra::BroydenOperator> B;
 
-  Teuchos::RefCountPtr<NOX::Epetra::Interface::Jacobian> iJac;
-  Teuchos::RefCountPtr<NOX::Epetra::Interface::Preconditioner> iPrec;
+  Teuchos::RCP<NOX::Epetra::Interface::Jacobian> iJac;
+  Teuchos::RCP<NOX::Epetra::Interface::Preconditioner> iPrec;
 
-  Teuchos::RefCountPtr<Epetra_Operator> J;
-  Teuchos::RefCountPtr<Epetra_Operator> M;
+  Teuchos::RCP<Epetra_Operator> J;
+  Teuchos::RCP<Epetra_Operator> M;
 
-  Teuchos::RefCountPtr<NOX::Epetra::LinearSystem> linSys;
+  Teuchos::RCP<NOX::Epetra::LinearSystem> linSys;
 
   // ==================================================================
   // decide on Jacobian and preconditioner
@@ -1062,7 +1003,7 @@ FSI::DirichletNeumannCoupling::CreateLinearSystem(ParameterList& nlParams,
     double alpha = fdParams.get("alpha", 1.0e-4);
     double beta  = fdParams.get("beta",  1.0e-6);
 
-    Teuchos::RefCountPtr<NOX::Epetra::FiniteDifference> precFD =
+    Teuchos::RCP<NOX::Epetra::FiniteDifference> precFD =
       Teuchos::rcp(new NOX::Epetra::FiniteDifference(printParams, interface, noxSoln, rawGraph_, beta, alpha));
     iPrec = precFD;
     M = precFD;
@@ -1081,40 +1022,40 @@ FSI::DirichletNeumannCoupling::CreateLinearSystem(ParameterList& nlParams,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RefCountPtr<NOX::StatusTest::Combo>
+Teuchos::RCP<NOX::StatusTest::Combo>
 FSI::DirichletNeumannCoupling::CreateStatusTest(ParameterList& nlParams,
-                                                Teuchos::RefCountPtr<NOX::Epetra::Group> grp)
+                                                Teuchos::RCP<NOX::Epetra::Group> grp)
 {
   // Create the convergence tests
-  Teuchos::RefCountPtr<NOX::StatusTest::Combo> combo       = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
-  Teuchos::RefCountPtr<NOX::StatusTest::Combo> converged   = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
+  Teuchos::RCP<NOX::StatusTest::Combo> combo       = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
+  Teuchos::RCP<NOX::StatusTest::Combo> converged   = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
 
-  Teuchos::RefCountPtr<NOX::StatusTest::MaxIters> maxiters = Teuchos::rcp(new NOX::StatusTest::MaxIters(nlParams.get("Max Iterations", 100)));
-  Teuchos::RefCountPtr<NOX::StatusTest::FiniteValue> fv    = Teuchos::rcp(new NOX::StatusTest::FiniteValue);
+  Teuchos::RCP<NOX::StatusTest::MaxIters> maxiters = Teuchos::rcp(new NOX::StatusTest::MaxIters(nlParams.get("Max Iterations", 100)));
+  Teuchos::RCP<NOX::StatusTest::FiniteValue> fv    = Teuchos::rcp(new NOX::StatusTest::FiniteValue);
 
   combo->addStatusTest(fv);
   combo->addStatusTest(converged);
   combo->addStatusTest(maxiters);
 
-  Teuchos::RefCountPtr<NOX::StatusTest::NormF> absresid =
+  Teuchos::RCP<NOX::StatusTest::NormF> absresid =
     Teuchos::rcp(new NOX::StatusTest::NormF(nlParams.get("Norm abs F", 1.0e-6)));
   converged->addStatusTest(absresid);
 
   if (nlParams.isParameter("Norm Update"))
   {
-    Teuchos::RefCountPtr<NOX::StatusTest::NormUpdate> update =
+    Teuchos::RCP<NOX::StatusTest::NormUpdate> update =
       Teuchos::rcp(new NOX::StatusTest::NormUpdate(nlParams.get("Norm Update", 1.0e-5)));
     converged->addStatusTest(update);
   }
 
   if (nlParams.isParameter("Norm rel F"))
   {
-    Teuchos::RefCountPtr<NOX::StatusTest::NormF> relresid =
+    Teuchos::RCP<NOX::StatusTest::NormF> relresid =
       Teuchos::rcp(new NOX::StatusTest::NormF(*grp.get(), nlParams.get("Norm rel F", 1.0e-2)));
     converged->addStatusTest(relresid);
   }
 
-  //Teuchos::RefCountPtr<NOX::StatusTest::NormWRMS> wrms     = Teuchos::rcp(new NOX::StatusTest::NormWRMS(1.0e-2, 1.0e-8));
+  //Teuchos::RCP<NOX::StatusTest::NormWRMS> wrms     = Teuchos::rcp(new NOX::StatusTest::NormWRMS(1.0e-2, 1.0e-8));
   //converged->addStatusTest(wrms);
 
   return combo;
@@ -1123,7 +1064,7 @@ FSI::DirichletNeumannCoupling::CreateStatusTest(ParameterList& nlParams,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::InterfaceDisp()
+Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::InterfaceDisp()
 {
   // extract displacements
   return structure_->ExtractInterfaceDisplacement();
@@ -1132,7 +1073,7 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::InterfaceDisp
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::InterfaceForce()
+Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::InterfaceForce()
 {
   // extract forces
   return FluidToStruct(fluid_->ExtractInterfaceForces());
@@ -1185,10 +1126,10 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
   }
 #endif
 
-    Teuchos::RefCountPtr<Epetra_Vector> idispn = rcp(new Epetra_Vector(x));
+    Teuchos::RCP<Epetra_Vector> idispn = rcp(new Epetra_Vector(x));
 
-    Teuchos::RefCountPtr<Epetra_Vector> iforce = FluidOp(idispn, fillFlag);
-    Teuchos::RefCountPtr<Epetra_Vector> idispnp = StructOp(iforce, fillFlag);
+    Teuchos::RCP<Epetra_Vector> iforce = FluidOp(idispn, fillFlag);
+    Teuchos::RCP<Epetra_Vector> idispnp = StructOp(iforce, fillFlag);
 
 #if 0
   if (comm_.NumProc()==1)
@@ -1259,10 +1200,10 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
   }
   else
   {
-    Teuchos::RefCountPtr<Epetra_Vector> iforcen = rcp(new Epetra_Vector(x));
+    Teuchos::RCP<Epetra_Vector> iforcen = rcp(new Epetra_Vector(x));
 
-    Teuchos::RefCountPtr<Epetra_Vector> idisp = StructOp(iforcen, fillFlag);
-    Teuchos::RefCountPtr<Epetra_Vector> iforcenp = FluidOp(idisp, fillFlag);
+    Teuchos::RCP<Epetra_Vector> idisp = StructOp(iforcen, fillFlag);
+    Teuchos::RCP<Epetra_Vector> iforcenp = FluidOp(idisp, fillFlag);
 
     F.Update(1.0, *iforcenp, -1.0, *iforcen, 0.0);
   }
@@ -1276,8 +1217,8 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RefCountPtr<Epetra_Vector>
-FSI::DirichletNeumannCoupling::FluidOp(Teuchos::RefCountPtr<Epetra_Vector> idisp,
+Teuchos::RCP<Epetra_Vector>
+FSI::DirichletNeumannCoupling::FluidOp(Teuchos::RCP<Epetra_Vector> idisp,
                                        const FillType fillFlag)
 {
   if (comm_.MyPID()==0 and utils_->isPrintType(NOX::Utils::OuterIteration))
@@ -1294,7 +1235,7 @@ FSI::DirichletNeumannCoupling::FluidOp(Teuchos::RefCountPtr<Epetra_Vector> idisp
     // grid velocity
     ale_->ApplyInterfaceDisplacements(StructToAle(idisp));
     ale_->Solve();
-    Teuchos::RefCountPtr<Epetra_Vector> fluiddisp = AleToFluid(ale_->ExtractDisplacement());
+    Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(ale_->ExtractDisplacement());
     fluiddisp->Scale(1./dt_);
 
     fluid_->ApplyMeshVelocity(fluiddisp);
@@ -1302,7 +1243,7 @@ FSI::DirichletNeumannCoupling::FluidOp(Teuchos::RefCountPtr<Epetra_Vector> idisp
     // grid position is done inside RelaxationSolve
 
     // the displacement -> velocity conversion at the interface
-    Teuchos::RefCountPtr<Epetra_Vector> ivel = rcp(new Epetra_Vector(*idisp));
+    Teuchos::RCP<Epetra_Vector> ivel = rcp(new Epetra_Vector(*idisp));
     ivel->Scale(1./dt_);
 
     return FluidToStruct(fluid_->RelaxationSolve(StructToFluid(ivel)));
@@ -1315,8 +1256,8 @@ FSI::DirichletNeumannCoupling::FluidOp(Teuchos::RefCountPtr<Epetra_Vector> idisp
     ale_->Solve();
 
     // the displacement -> velocity conversion at the interface
-    Teuchos::RefCountPtr<Epetra_Vector> ivel = InterfaceVelocity(idisp);
-    Teuchos::RefCountPtr<Epetra_Vector> fluiddisp = AleToFluid(ale_->ExtractDisplacement());
+    Teuchos::RCP<Epetra_Vector> ivel = InterfaceVelocity(idisp);
+    Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(ale_->ExtractDisplacement());
 
     fluid_->ApplyInterfaceVelocities(StructToFluid(ivel));
     fluid_->ApplyMeshDisplacement(fluiddisp);
@@ -1335,8 +1276,8 @@ FSI::DirichletNeumannCoupling::FluidOp(Teuchos::RefCountPtr<Epetra_Vector> idisp
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RefCountPtr<Epetra_Vector>
-FSI::DirichletNeumannCoupling::StructOp(Teuchos::RefCountPtr<Epetra_Vector> iforce,
+Teuchos::RCP<Epetra_Vector>
+FSI::DirichletNeumannCoupling::StructOp(Teuchos::RCP<Epetra_Vector> iforce,
                                         const FillType fillFlag)
 {
   if (comm_.MyPID()==0 and utils_->isPrintType(NOX::Utils::OuterIteration))
@@ -1359,9 +1300,9 @@ FSI::DirichletNeumannCoupling::StructOp(Teuchos::RefCountPtr<Epetra_Vector> ifor
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::InterfaceVelocity(Teuchos::RefCountPtr<Epetra_Vector> idispnp)
+Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::InterfaceVelocity(Teuchos::RCP<Epetra_Vector> idispnp)
 {
-  Teuchos::RefCountPtr<Epetra_Vector> ivel = rcp(new Epetra_Vector(*idispn_));
+  Teuchos::RCP<Epetra_Vector> ivel = rcp(new Epetra_Vector(*idispn_));
   ivel->Update(1.0, *idispnp, -1.0);
   ivel->Scale(1./dt_);
   return ivel;
@@ -1370,7 +1311,7 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::InterfaceVelo
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::StructToAle(Teuchos::RefCountPtr<Epetra_Vector> iv)
+Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::StructToAle(Teuchos::RCP<Epetra_Vector> iv)
 {
   if (matchingnodes_)
   {
@@ -1379,7 +1320,7 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::StructToAle(T
   else
   {
     // We cannot go from structure to ale directly. So go via the fluid field.
-    Teuchos::RefCountPtr<Epetra_Vector> fdisp = coupsfm_.MasterToSlave(iv);
+    Teuchos::RCP<Epetra_Vector> fdisp = coupsfm_.MasterToSlave(iv);
     return coupsa_.MasterToSlave(fdisp);
   }
 }
@@ -1387,7 +1328,7 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::StructToAle(T
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::StructToFluid(Teuchos::RefCountPtr<Epetra_Vector> iv)
+Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::StructToFluid(Teuchos::RCP<Epetra_Vector> iv)
 {
   if (matchingnodes_)
   {
@@ -1402,7 +1343,7 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::StructToFluid
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::FluidToStruct(Teuchos::RefCountPtr<Epetra_Vector> iv)
+Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::FluidToStruct(Teuchos::RCP<Epetra_Vector> iv)
 {
   if (matchingnodes_)
   {
@@ -1411,8 +1352,8 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::FluidToStruct
   else
   {
     // Translate consistent nodal forces to interface loads
-    RefCountPtr<Epetra_Vector> ishape = fluid_->IntegrateInterfaceShape();
-    RefCountPtr<Epetra_Vector> iforce = rcp(new Epetra_Vector(iv->Map()));
+    Teuchos::RCP<Epetra_Vector> ishape = fluid_->IntegrateInterfaceShape();
+    Teuchos::RCP<Epetra_Vector> iforce = rcp(new Epetra_Vector(iv->Map()));
 
     if ( iforce->ReciprocalMultiply( 1.0, *ishape, *iv, 0.0 ) )
       dserror("ReciprocalMultiply failed");
@@ -1424,7 +1365,7 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::FluidToStruct
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::AleToFluid(Teuchos::RefCountPtr<Epetra_Vector> iv)
+Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::AleToFluid(Teuchos::RCP<Epetra_Vector> iv)
 {
   return coupfa_.SlaveToMaster(iv);
 }
@@ -1436,11 +1377,6 @@ void FSI::DirichletNeumannCoupling::PrepareTimeStep()
 {
   step_ += 1;
   time_ += dt_;
-
-  // update the fields
-  //structure_->NewStep(step_, time_);
-  //fluid_->NewStep(step_, time_);
-  //ale_->NewStep(step_, time_);
 
   structure_->PrepareTimeStep();
   fluid_->    PrepareTimeStep();

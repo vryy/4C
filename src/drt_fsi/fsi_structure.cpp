@@ -18,8 +18,10 @@ Maintainer: Ulrich Kuettler
 #include "fsi_structure.H"
 
 #include <vector>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include "../drt_lib/drt_condition.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 
 /*----------------------------------------------------------------------*
@@ -99,45 +101,62 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Structure::ExtractInterfaceDisplacement
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RefCountPtr<Epetra_Vector> FSI::Structure::ExtractInterfaceVel()
+Teuchos::RefCountPtr<Epetra_Vector> FSI::Structure::PredictInterfaceDisplacement()
 {
-  Teuchos::RefCountPtr<Epetra_Vector> ivelm = rcp(new Epetra_Vector(*idispmap_));
-  Teuchos::RefCountPtr<Epetra_Vector> ivel  = rcp(new Epetra_Vector(*idispmap_));
+  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
-  int err = ivel->Import(*vel_,*extractor_,Insert);
+  Teuchos::RefCountPtr<Epetra_Vector> idis  = rcp(new Epetra_Vector(*idispmap_));
+  int err = idis->Import(*dis_,*extractor_,Insert);
   if (err)
     dserror("Export using exporter returned err=%d",err);
 
-  err = ivelm->Import(*velm_,*extractor_,Insert);
-  if (err)
-    dserror("Export using exporter returned err=%d",err);
+  switch (Teuchos::getIntegralValue<int>(fsidyn,"PREDICTOR"))
+  {
+  case 1:
+    // d(n)
+    // nothing to do
+    break;
+  case 2:
+    // d(n)+dt*(1.5*v(n)-0.5*v(n-1))
+    dserror("interface velocity v(n-1) not available");
+    break;
+  case 3:
+  {
+    // d(n)+dt*v(n)
+    double dt            = params_->get<double>("delta time"             ,0.01);
 
-  double alphaf = params_->get<double>("alpha f", 0.459);
-  ivel->Update(1./(1.-alphaf),*ivelm,-alphaf/(1.-alphaf));
+    Teuchos::RefCountPtr<Epetra_Vector> ivel  = rcp(new Epetra_Vector(*idispmap_));
+    err = ivel->Import(*vel_,*extractor_,Insert);
+    if (err)
+      dserror("Export using exporter returned err=%d",err);
 
-  return ivel;
-}
+    idis->Update(dt,*ivel,1.0);
+    break;
+  }
+  case 4:
+  {
+    // d(n)+dt*v(n)+0.5*dt^2*a(n)
+    double dt            = params_->get<double>("delta time"             ,0.01);
 
+    Teuchos::RefCountPtr<Epetra_Vector> ivel  = rcp(new Epetra_Vector(*idispmap_));
+    err = ivel->Import(*vel_,*extractor_,Insert);
+    if (err)
+      dserror("Export using exporter returned err=%d",err);
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RefCountPtr<Epetra_Vector> FSI::Structure::ExtractInterfaceAcc()
-{
-  Teuchos::RefCountPtr<Epetra_Vector> iaccm = rcp(new Epetra_Vector(*idispmap_));
-  Teuchos::RefCountPtr<Epetra_Vector> iacc  = rcp(new Epetra_Vector(*idispmap_));
+    Teuchos::RefCountPtr<Epetra_Vector> iacc  = rcp(new Epetra_Vector(*idispmap_));
+    err = iacc->Import(*acc_,*extractor_,Insert);
+    if (err)
+      dserror("Export using exporter returned err=%d",err);
 
-  int err = iacc->Import(*acc_,*extractor_,Insert);
-  if (err)
-    dserror("Export using exporter returned err=%d",err);
+    idis->Update(dt,*ivel,0.5*dt*dt,*iacc,1.0);
+    break;
+  }
+  default:
+    dserror("unknown interface displacement predictor '%s'",
+            fsidyn.get<string>("PREDICTOR").c_str());
+  }
 
-  err = iaccm->Import(*accm_,*extractor_,Insert);
-  if (err)
-    dserror("Export using exporter returned err=%d",err);
-
-  double alpham = params_->get<double>("alpha m", 0.378);
-  iacc->Update(1./(1.-alpham),*iaccm,-alpham/(1.-alpham));
-
-  return iacc;
+  return idis;
 }
 
 

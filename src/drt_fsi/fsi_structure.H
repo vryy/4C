@@ -67,11 +67,8 @@ public:
   /// extract displacements
   Teuchos::RefCountPtr<Epetra_Vector> ExtractInterfaceDisplacement();
 
-  /// extract velocities
-  Teuchos::RefCountPtr<Epetra_Vector> ExtractInterfaceVel();
-
-  /// extract accelerations
-  Teuchos::RefCountPtr<Epetra_Vector> ExtractInterfaceAcc();
+  /// Predictor for interface displacements
+  Teuchos::RefCountPtr<Epetra_Vector> PredictInterfaceDisplacement();
 
   //@}
 

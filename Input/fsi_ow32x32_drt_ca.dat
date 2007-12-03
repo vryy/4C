@@ -96,8 +96,8 @@ UPRES        1
 RESTARTEVRY  1
 COUPALGO     iter_stagg_AITKEN_rel_param
 //COUPALGO     iter_stagg_steep_desc
-//PREDICTOR    d(n)
-PREDICTOR    d(n)+dt*(1.5*v(n)-0.5*v(n-1))
+PREDICTOR    d(n)
+//PREDICTOR    d(n)+dt*(1.5*v(n)-0.5*v(n-1))
 //PREDICTOR    d(n)+dt*v(n)
 //PREDICTOR    d(n)+dt*v(n)+0.5*dt^2*a(n)
 CONVCRIT     ||g(i)||:sqrt(neq)
