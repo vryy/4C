@@ -19,6 +19,7 @@ Maintainer: Axel Gerstenberger
 #include <set>
 #include <string>
 #include "../drt_lib/drt_element.H"
+#include "../drt_lib/drt_node.H"
 
 
 namespace XFEM
@@ -65,7 +66,14 @@ public:
 
      \return cells nodal coordinates  
      */
-    std::vector< std::vector<double> > GetDomainCoord() const;
+    virtual std::vector< std::vector<double> > GetDomainCoord() const;
+    
+    /*!
+     \brief returns the coordinates of the integration cell in physical coordinates
+
+     \return cells nodal coordinates  
+     */
+    std::vector< std::vector<double> > GetPhysicalCoord(DRT::Element& ele) const;
     
     virtual std::string Print() const;
 
@@ -74,6 +82,8 @@ protected:
     //! shape
     DRT::Element::DiscretizationType distype_;
 
+    vector<vector<double> > ComputePhysicalCoordinates(
+            DRT::Element&  ele) const;
 };
 
 
@@ -128,7 +138,17 @@ public:
 
      \return cells nodal coordinates  
      */
-    std::vector< std::vector<double> > GetDomainCoord() const;
+    std::vector< std::vector<double> > GetDomainCoord() const {return domainCoordinates_;};
+
+    /*!
+     \brief returns the coordinates of the integration cell in physical coordinates
+
+     \return cells nodal coordinates  
+     */
+    std::vector< std::vector<double> > GetPhysicalCoord(DRT::Element& ele) const
+    {
+        return ComputePhysicalCoordinates(ele);
+    };
     
     const vector<double> modifyGaussRule3D(
             const bool standard_integration,
@@ -136,11 +156,11 @@ public:
             const double& cell_e1,
             const double& cell_e2) const;
     
-    std::string Print() const;
+    virtual std::string Print() const;
 
 protected:
     
-    //! coordinates of the nodes
+    //! coordinates of the nodes in the parent volume element coordinates xi
     std::vector< std::vector<double> > domainCoordinates_;
     
 private:
@@ -192,14 +212,24 @@ public:
 
      \return cells nodal coordinates  
      */
-    std::vector< std::vector<double> > GetDomainCoord() const;
+    std::vector< std::vector<double> > GetDomainCoord() const {return domainCoordinates_;};
+    
+    /*!
+     \brief returns the coordinates of the integration cell in physical coordinates
+
+     \return cells nodal coordinates  
+     */
+    std::vector< std::vector<double> > GetPhysicalCoord(DRT::Element& ele) const
+    {
+        return ComputePhysicalCoordinates(ele);
+    };
     
     /*!
      \brief returns the coordinates of the integration cell in surface element coordinates
 
      \return cells nodal coordinates  
      */
-    std::vector< std::vector<double> > GetBoundaryCoord() const;
+    std::vector< std::vector<double> > GetBoundaryCoord() const {return boundaryCoordinates_;};
     
     std::string Print() const;
 

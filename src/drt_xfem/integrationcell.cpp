@@ -17,6 +17,7 @@ Maintainer: Axel Gerstenberger
 #include <string>
 #include <sstream>
 #include <blitz/array.h>
+#include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_utils_integration.H"
 #include "../drt_lib/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_utils_local_connectivity_matrices.H"
@@ -56,13 +57,15 @@ IntCell::~IntCell()
   return;
 }
 
-////
-////  get coordinates
-////
-//vector< vector<double> >  IntCell::GetDomainCoord() const
-//{
-//    return domainCoordinates_;   
-//}
+//
+//  get coordinates
+//
+vector< vector<double> > IntCell::GetDomainCoord() const
+{
+    dserror("no default implementation is given");
+    vector<vector<double> > dummy;
+    return dummy;
+}
 
 //
 // virtual Print method
@@ -73,6 +76,47 @@ std::string IntCell::Print() const
 }
 
 
+vector<vector<double> > IntCell::ComputePhysicalCoordinates(
+        DRT::Element&  ele) const
+{
+    vector<vector<double> > physicalCoordinates;
+    
+    const int nsd = 3;
+    const int nen = DRT::Utils::getNumberOfElementNodes(this->Shape());
+    
+    // coordinates
+    for (int inen = 0; inen < nen; ++inen)
+    {
+        // shape functions
+        Epetra_SerialDenseVector funct(27);
+        DRT::Utils::shape_function_3D(
+                funct,
+                this->GetDomainCoord()[inen][0],
+                this->GetDomainCoord()[inen][1],
+                this->GetDomainCoord()[inen][2],
+                ele.Shape());
+    
+        //interpolate position to x-space
+        vector<double> x_interpol(nsd);
+        for (int isd=0;isd < nsd;++isd ){
+            x_interpol[isd] = 0.0;
+        }
+        
+        DRT::Node** nodes = ele.Nodes();
+        
+        for (int inenparent = 0; inenparent < ele.NumNode();++inenparent)
+        {
+            const double* pos = nodes[inenparent]->X();
+            for (int isd=0;isd < nsd;++isd )
+            {
+                x_interpol[isd] += pos[isd] * funct(inenparent);
+            }
+        }
+        // store position
+        physicalCoordinates.push_back(x_interpol);
+    };
+    return physicalCoordinates;
+}
 
 //
 //  ctor
@@ -109,14 +153,6 @@ DomainIntCell::DomainIntCell(
     return;   
 }
      
-//
-//  get coordinates
-//
-vector< vector<double> >  DomainIntCell::GetDomainCoord() const
-{
-    return domainCoordinates_;   
-}
-
 string DomainIntCell::Print() const
 {
     stringstream s;
@@ -273,23 +309,6 @@ BoundaryIntCell::BoundaryIntCell(
     return;   
 }
      
-//
-//  get coordinates
-//
-vector< vector<double> >  BoundaryIntCell::GetDomainCoord() const
-{
-    return domainCoordinates_;   
-}
-
-//
-//  get coordinates
-//
-vector< vector<double> >  BoundaryIntCell::GetBoundaryCoord() const
-{
-    return boundaryCoordinates_;   
-}
-
-
 string BoundaryIntCell::Print() const
 {
     stringstream s;

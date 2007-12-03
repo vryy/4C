@@ -19,7 +19,6 @@ Maintainer: Axel Gerstenberger
 #include "gmsh.H"
 #include "integrationcell.H"
 #include "../drt_lib/drt_node.H"
-#include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_element.H"
 
 using namespace std;
@@ -64,35 +63,15 @@ string GMSH::cellToString(const double scalar, const DomainIntCell& cell, DRT::E
     stringstream pos_array_string;
     pos_array_string << "SS(";
     
-    const int nsd = 3;
     const int nen = 4;
-    const DRT::Element::DiscretizationType distype = ele->Shape();
     
     // coordinates
     for (int inen = 0; inen < nen;++inen)
     {
-        // shape functions
-        Epetra_SerialDenseVector funct(27);
-        DRT::Utils::shape_function_3D(funct,cell.GetDomainCoord()[inen][0],
-                                            cell.GetDomainCoord()[inen][1],
-                                            cell.GetDomainCoord()[inen][2],
-                                            distype);
-        
-        //interpolate position to x-space
-        vector<double> x_interpol(nsd);
-        for (int isd=0;isd < nsd;++isd ){
-            x_interpol[isd] = 0.0;
-        }
-        for (int inenparent = 0; inenparent < ele->NumNode();++inenparent)
-        {
-            for (int isd=0;isd < nsd;++isd ){
-                x_interpol[isd] += ele->Nodes()[inenparent]->X()[isd] * funct(inenparent);
-            }
-        }
         // print position in x-space
-        pos_array_string << scientific << x_interpol[0] << ",";
-        pos_array_string << scientific << x_interpol[1] << ",";
-        pos_array_string << scientific << x_interpol[2];
+        pos_array_string << scientific << cell.GetPhysicalCoord(*ele)[inen][0] << ",";
+        pos_array_string << scientific << cell.GetPhysicalCoord(*ele)[inen][1] << ",";
+        pos_array_string << scientific << cell.GetPhysicalCoord(*ele)[inen][2];
         if (inen < nen-1){
             pos_array_string << ",";
         }
@@ -117,35 +96,15 @@ string GMSH::cellToString(const double scalar, const BoundaryIntCell& cell, DRT:
     pos_array_string << "SS2(";
     //pos_array_string << "SS(";
     
-    const int nsd = 3;
     const int nen = 10;
-    const DRT::Element::DiscretizationType distype = ele->Shape();
     
     // coordinates
     for (int inen = 0; inen < nen;++inen)
     {
-        // shape functions
-        Epetra_SerialDenseVector funct(27);
-        DRT::Utils::shape_function_3D(funct,cell.GetDomainCoord()[inen][0],
-                                            cell.GetDomainCoord()[inen][1],
-                                            cell.GetDomainCoord()[inen][2],
-                                            distype);
-        
-        //interpolate position to x-space
-        vector<double> x_interpol(nsd);
-        for (int isd=0;isd < nsd;++isd ){
-            x_interpol[isd] = 0.0;
-        }
-        for (int inenparent = 0; inenparent < ele->NumNode();++inenparent)
-        {
-            for (int isd=0;isd < nsd;++isd ){
-                x_interpol[isd] += ele->Nodes()[inenparent]->X()[isd] * funct(inenparent);
-            }
-        }
         // print position in x-space
-        pos_array_string << scientific << x_interpol[0] << ",";
-        pos_array_string << scientific << x_interpol[1] << ",";
-        pos_array_string << scientific << x_interpol[2];
+        pos_array_string << scientific << cell.GetPhysicalCoord(*ele)[inen][0] << ",";
+        pos_array_string << scientific << cell.GetPhysicalCoord(*ele)[inen][1] << ",";
+        pos_array_string << scientific << cell.GetPhysicalCoord(*ele)[inen][2];
         if (inen < nen-1){
             pos_array_string << ",";
         }
