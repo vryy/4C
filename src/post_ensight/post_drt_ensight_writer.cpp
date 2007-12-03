@@ -54,7 +54,7 @@ EnsightWriter::EnsightWriter(
 void EnsightWriter::WriteFiles()
 {
 #ifndef PARALLEL
-    if (myrank_ > 0) dserror("have serial filter version, but myrank_ > 0");
+    if (myrank_ > 0) dserror("have serial filter version, but myrank_ = %d",myrank_);
 #endif
 	
 	PostResult result = PostResult(field_);
@@ -113,6 +113,8 @@ void EnsightWriter::WriteFiles()
 
     casefile.close();
     }
+    
+    return;
 }
 
 
@@ -150,7 +152,7 @@ void EnsightWriter::WriteGeoFile(
     // WriteIndexTable(geofile, fileposition); 
     if (geofile.is_open())
       geofile.close();
-
+    return;
 }
 
 
@@ -192,6 +194,7 @@ void EnsightWriter::WriteGeoFileOneTimeStep(
    #endif
 
     Write(file, "END TIME STEP");
+    return;
 }
 
 
@@ -223,6 +226,7 @@ void EnsightWriter::WriteCoordinates(
             Write(geofile, static_cast<float>(actnode->X()[isd]));
         }
     }
+    return;
 }
 
 
@@ -233,27 +237,63 @@ void EnsightWriter::WriteCoordinatesPar(
         const RefCountPtr<DRT::Discretization> dis) const
 {
     const Epetra_Map* nodemap = dis->NodeRowMap();
- //   dsassert(nodemap->NumMyElements() == nodemap->NumGlobalElements(),
- //           "filter cannot be run in parallel");
-
     const int numnp = nodemap->NumMyElements();
-    // write node ids
-    for (int inode=0; inode<numnp; ++inode)
-    {
-        Write(geofile,nodemap->GID(inode)+1);
-    }
+    const int numnpglobal = nodemap->NumGlobalElements();
+    RefCountPtr<Epetra_MultiVector> nodecoords = rcp(new Epetra_MultiVector(*nodemap,3));
 
     const int NSD = 3; ///< number of space dimensions
-    // ensight format requires x_1 .. x_n, y_1 .. y_n, z_1 ... z_n
-    for (int isd=0; isd<NSD; ++isd)
+
+    // loop over nodes on this proc and store the coordinate information
+    for (int inode=0; inode<numnp; inode++)
     {
-        for (int inode=0; inode<numnp; inode++)
-        {
-            const int gid = nodemap->GID(inode);
-            const DRT::Node* actnode = dis->gNode(gid);
-            Write(geofile, static_cast<float>(actnode->X()[isd]));
-        }
+         int gid = nodemap->GID(inode);
+         const DRT::Node* actnode = dis->gNode(gid);
+         for (int isd=0; isd<NSD; ++isd)
+         {
+           double val = ((actnode->X())[isd]);      
+           nodecoords->ReplaceMyValue(inode, isd, val);
+         }
+     }
+    
+    // put all coordinate information on proc 0
+    RefCountPtr<Epetra_Map> proc0map;
+    proc0map = DRT::Utils::AllreduceEMap(*nodemap,0);
+    // check the map
+    if (myrank_==0)
+    {
+    dsassert(proc0map->NumMyElements() == numnpglobal,
+            "Proc 0 will not get all of the node coordinates");
     }
+    else
+    {
+        dsassert(proc0map->NumMyElements() == 0,
+            "At least one proc will keep some of the node coordinates");
+    }
+    
+    // import my new values (proc0 gets everything, other procs empty)
+     Epetra_Import proc0importer(*proc0map,*nodemap);   
+     RefCountPtr<Epetra_MultiVector> allnodecoords = rcp(new Epetra_MultiVector(*proc0map,3));
+    
+     // import node coordinates from ALL nodes of current discretization
+     int err = allnodecoords->Import(*nodecoords,proc0importer,Insert);
+     if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);   
+    
+     // write the node coordinates
+     // ensight format requires x_1 .. x_n, y_1 .. y_n, z_1 ... z_n  
+     // this is fulfilled automatically due to Epetra_MultiVector usage (columnwise writing data)
+     if (myrank_==0)
+     {
+       double* coords = allnodecoords->Values();
+       int numentries = (3*allnodecoords->GlobalLength());
+       dsassert(numentries == (3*numnpglobal),"proc 0 has not all of the node coordinates");
+       for (int i=0; i<numentries; ++i) // this loop is empty on other procs
+       {
+    	  //int gid = proc0map->GID(i);
+    	  cout<<"Proc "<<myrank_<<" writing geofile entry "<<i<<" = "<< coords[i]<<endl;
+    	  Write(geofile, static_cast<float>(coords[i])); // ensures writing on myrank==0
+       }
+     }
+     return;
 }
 
 
@@ -351,6 +391,7 @@ void EnsightWriter::WriteCells(
             };
         };
     };
+    return;
 }
 
 
@@ -476,6 +517,8 @@ void EnsightWriter::WriteResult(
     filesetmap_[name].push_back(file.tellp()/stepsize);
     variablenumdfmap_[name] = numdf;
     variablefilenamemap_[name] = filename;
+    
+    return;
 }
 
 
@@ -523,6 +566,8 @@ void EnsightWriter::FileSwitcher(
         newfilename << filesetmap[name].size()+1;
     }
     file.open(newfilename.str().c_str());
+
+    return;
 }
 
 
@@ -584,6 +629,7 @@ void EnsightWriter::WriteResultStep(
     }
 
     Write(file, "END TIME STEP");
+    return;
 }
 
 
@@ -603,6 +649,7 @@ void EnsightWriter::WriteIndexTable(
     Write(file, 0);
     Write<long>(file, lastpos);
     Write(file, "FILE_INDEX");
+    return;
 }
 
 
@@ -622,6 +669,8 @@ void EnsightWriter::WriteString(
         s.push_back('\0');
     }
     stream.write(&s[0], 80);
+    
+    return;
 }
 
 
