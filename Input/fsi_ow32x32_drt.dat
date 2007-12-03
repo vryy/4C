@@ -109,19 +109,6 @@ CONVTOL      1.0E-7
 ISDMAX       0
 ICHMAX       0
 ITECHAPP     20
-------------------------------------------------------------------------List
-Nonlinear Solver = Line Search Based
-Max Iterations = 100
-Preconditioner = None
-Jacobian = None
-Norm abs F = 1e-07
-------------------------------------------------------------List/Line Search
-Method = Aitken
----------------------------------------------------------------List/Printing
-Output Information = 65535
-Output Precision = 3
------------------------------------------------------List/Line Search/Aitken
-max step size = 1.0
 ------------------------------------------------------FLUID SOLVER
 SOLVER         UMFPACK
 //SOLVER         Aztec_MSR
