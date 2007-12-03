@@ -73,6 +73,17 @@ public:
     	}
         return tmp->second;
     };
+    
+    inline set<int> getSetOfIntersectedElementIds() const
+    {
+        set<int> eleidset;
+        map<int,DomainIntCells>::const_iterator tmp;
+        for (tmp = elementalDomainIntCells_.begin(); tmp != elementalDomainIntCells_.end(); ++tmp) {
+            const int eleid = tmp->first;
+            eleidset.insert(eleid);
+        }
+        return eleidset;
+    }
 
 private:
 	// intersected domain
