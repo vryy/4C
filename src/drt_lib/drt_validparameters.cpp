@@ -543,8 +543,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
                                  fsi_iter_monolithic),
                                &fsidyn);
 
-  setStringToIntegralParameter("PREDICTOR","d(n)",
-                               "Predictor for interface displacements (unused)",
+  setStringToIntegralParameter("PREDICTOR","d(n)+dt*v(n)+0.5*dt^2*a(n)",
+                               "Predictor for interface displacements",
                                tuple<std::string>(
                                  "d(n)",
                                  "d(n)+dt*(1.5*v(n)-0.5*v(n-1))",
