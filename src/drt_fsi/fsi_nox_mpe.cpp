@@ -40,11 +40,11 @@ NOX::FSI::MinimalPolynomial::MinimalPolynomial(const Teuchos::RefCountPtr<NOX::U
                                                Teuchos::ParameterList& params)
   : utils_(utils)
 {
-  Teuchos::ParameterList& mpeparams = params.sublist("MPE");
+  Teuchos::ParameterList& mpeparams = params.sublist("Extrapolation");
   kmax_ = mpeparams.get("kmax", 10);
-  omega_ = mpeparams.get("omega", 0.1);
-  eps_ = mpeparams.get("Tolerance", 1e-8);
-  mpe_ = mpeparams.get("MPE", true);
+  omega_ = mpeparams.get("omega", 0.01);
+  eps_ = mpeparams.get("Tolerance", 1e-1);
+  mpe_ = mpeparams.get("Method", "RRE") == "MPE";
 }
 
 

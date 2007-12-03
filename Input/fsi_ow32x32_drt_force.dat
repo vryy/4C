@@ -94,6 +94,7 @@ IALE         Pseudo_Structure
 UPPSS        1
 UPRES        1
 RESTARTEVRY  1
+COUPVARIABLE Force
 COUPALGO     iter_stagg_AITKEN_rel_param
 //COUPALGO     iter_stagg_steep_desc
 //PREDICTOR    d(n)
@@ -105,7 +106,7 @@ ENERGYCHECK  yes
 TOLENCHECK   1.0
 RELAX        0.825
 ITEMAX       100
-CONVTOL      1.0E-8
+CONVTOL      1.0E-7
 ISDMAX       0
 ICHMAX       0
 ITECHAPP     20

@@ -517,21 +517,29 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
                                "Iteration Scheme over the fields",
                                tuple<std::string>(
                                  "basic_sequ_stagg",
-                                 "sequ_stagg_pred",
-                                 "sequ_stagg_shift",
+                                 //"sequ_stagg_pred",
+                                 //"sequ_stagg_shift",
                                  "iter_stagg_fixed_rel_param",
                                  "iter_stagg_AITKEN_rel_param",
                                  "iter_stagg_steep_desc",
-                                 "iter_nox",
+                                 "iter_stagg_NLCG",
+                                 "iter_stagg_MFNK_FD",
+                                 "iter_stagg_MFNK_FSI",
+                                 "iter_stagg_MPE",
+                                 "iter_stagg_RRE",
                                  "iter_monolithic"),
                                tuple<int>(
                                  fsi_basic_sequ_stagg,
-                                 fsi_sequ_stagg_pred,
-                                 fsi_sequ_stagg_shift,
+                                 //fsi_sequ_stagg_pred,
+                                 //fsi_sequ_stagg_shift,
                                  fsi_iter_stagg_fixed_rel_param,
                                  fsi_iter_stagg_AITKEN_rel_param,
                                  fsi_iter_stagg_steep_desc,
-                                 fsi_iter_nox,
+                                 fsi_iter_stagg_NLCG,
+                                 fsi_iter_stagg_MFNK_FD,
+                                 fsi_iter_stagg_MFNK_FSI,
+                                 fsi_iter_stagg_MPE,
+                                 fsi_iter_stagg_RRE,
                                  fsi_iter_monolithic),
                                &fsidyn);
 
@@ -553,6 +561,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
                                  "||g(i)||:||g(0)||"
                                  ),
                                tuple<int>(1,2),
+                               &fsidyn);
+
+  setStringToIntegralParameter("COUPVARIABLE","Displacement",
+                               "Coupling variable at the interface",
+                               tuple<std::string>("Displacement","Force"),
+                               tuple<int>(0,1),
                                &fsidyn);
 
   setStringToIntegralParameter("ENERGYCHECK","No",
@@ -593,8 +607,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
   IntParameter("ITECHAPP",1,"",&fsidyn);
   IntParameter("ICHMAX",1,"",&fsidyn);
   IntParameter("ISDMAX",1,"not used up to now",&fsidyn);
-  IntParameter("NUMSTEP",1,"Total number of Timesteps",&fsidyn);
-  IntParameter("ITEMAX",1,"Maximum number of iterations over fields",&fsidyn);
+  IntParameter("NUMSTEP",200,"Total number of Timesteps",&fsidyn);
+  IntParameter("ITEMAX",100,"Maximum number of iterations over fields",&fsidyn);
   IntParameter("UPPSS",1,"Increment for visualisation",&fsidyn);
   IntParameter("UPRES",1,"Increment for writing solution",&fsidyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&fsidyn);

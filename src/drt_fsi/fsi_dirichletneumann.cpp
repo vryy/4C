@@ -64,11 +64,6 @@ extern struct _IO_FLAGS     ioflags;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-extern Teuchos::RefCountPtr<Teuchos::ParameterList> globalparameterlist;
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
   : comm_(comm),
     counter_(7)
@@ -80,11 +75,9 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
   dt_ = fsidyn.get<double>("TIMESTEP");
   nstep_ = fsidyn.get<int>("NUMSTEP");
   maxtime_ = fsidyn.get<double>("MAXTIME");
+  displacementcoupling_ = fsidyn.get<std::string>("COUPVARIABLE") == "Displacement";
 
-  if (globalparameterlist==Teuchos::null)
-    globalparameterlist = Teuchos::rcp(new Teuchos::ParameterList);
-
-  displacementcoupling_ = globalparameterlist->get("Displacement Coupling", true);
+  SetDefaultParameters(fsidyn,noxparameterlist);
 
   SetupStructure();
   SetupFluid();
@@ -94,8 +87,7 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
   //cout << fluid_->Discretization();
   //cout << ale_->Discretization();
 
-  std::string method = globalparameterlist->get("Coupling Method", "Matching Nodes");
-  if (method=="Matching Nodes")
+  if (Teuchos::getIntegralValue<int>(fsidyn,"COUPMETHOD"))
   {
     matchingnodes_ = true;
     coupsf_.SetupConditionCoupling(structure_->Discretization(),
@@ -121,7 +113,7 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
     fluid_    ->SetInterfaceMap(coupsf_.SlaveDofMap());
     ale_      ->SetInterfaceMap(coupsa_.SlaveDofMap());
   }
-  else if (method=="Mortar")
+  else
   {
     matchingnodes_ = false;
     coupsfm_.Setup( structure_->Discretization(),
@@ -138,10 +130,6 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
     structure_->SetInterfaceMap(coupsfm_.MasterDofMap());
     fluid_    ->SetInterfaceMap(coupsfm_.SlaveDofMap());
     ale_      ->SetInterfaceMap(coupsa_.SlaveDofMap());
-  }
-  else
-  {
-    dserror("unsupported coupling method '%s'",method.c_str());
   }
 
   // the fluid-ale coupling always matches
@@ -171,6 +159,198 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
   }
   rawGraph_->FillComplete();
 #endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::DirichletNeumannCoupling::SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list)
+{
+  // Get the top level parameter list
+  Teuchos::ParameterList& nlParams = list;
+
+  nlParams.set("Nonlinear Solver", "Line Search Based");
+  nlParams.set("Preconditioner", "None");
+  nlParams.set("Norm abs F", fsidyn.get<double>("CONVTOL"));
+  nlParams.set("Max Iterations", fsidyn.get<int>("ITEMAX"));
+
+  // sublists
+
+  Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
+  Teuchos::ParameterList& lineSearchParams = nlParams.sublist("Line Search");
+
+  //
+  // Set parameters for NOX to chose the solver direction and line
+  // search step.
+  //
+
+  switch (Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO"))
+  {
+  case fsi_iter_stagg_fixed_rel_param:
+  {
+    // fixed-point solver with fixed relaxation parameter
+    nlParams.set("Jacobian", "None");
+
+    dirParams.set("Method","User Defined");
+    Teuchos::RCP<NOX::Direction::UserDefinedFactory> fixpointfactory =
+      Teuchos::rcp(new NOX::FSI::FixPointFactory());
+    dirParams.set("User Defined Direction Factory",fixpointfactory);
+
+    //Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
+    //lsParams.set("Preconditioner","None");
+
+    lineSearchParams.set("Method", "Full Step");
+    lineSearchParams.sublist("Full Step").set("Full Step", fsidyn.get<double>("RELAX"));
+    break;
+  }
+  case fsi_iter_stagg_AITKEN_rel_param:
+  {
+    // fixed-point solver with Aitken relaxation parameter
+    nlParams.set("Jacobian", "None");
+
+    dirParams.set("Method","User Defined");
+    Teuchos::RCP<NOX::Direction::UserDefinedFactory> fixpointfactory =
+      Teuchos::rcp(new NOX::FSI::FixPointFactory());
+    dirParams.set("User Defined Direction Factory",fixpointfactory);
+
+    Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> aitkenfactory =
+      Teuchos::rcp(new NOX::FSI::AitkenFactory());
+    lineSearchParams.set("Method","User Defined");
+    lineSearchParams.set("User Defined Line Search Factory", aitkenfactory);
+
+    //lineSearchParams.sublist("Aitken").set("max step size", fsidyn.get<double>("MAXSTARTOMEGA"));
+    break;
+  }
+  case fsi_iter_stagg_steep_desc:
+  {
+    // fixed-point solver with steepest descent relaxation parameter
+    nlParams.set("Jacobian", "None");
+
+    dirParams.set("Method","User Defined");
+    Teuchos::RCP<NOX::Direction::UserDefinedFactory> fixpointfactory =
+      Teuchos::rcp(new NOX::FSI::FixPointFactory());
+    dirParams.set("User Defined Direction Factory",fixpointfactory);
+
+    Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> sdfactory =
+      Teuchos::rcp(new NOX::FSI::SDFactory());
+    lineSearchParams.set("Method","User Defined");
+    lineSearchParams.set("User Defined Line Search Factory", sdfactory);
+    break;
+  }
+  case fsi_iter_stagg_NLCG:
+  {
+    // nonlinear CG solver (pretty much steepest descent with finite
+    // difference Jacobian)
+
+    nlParams.set("Jacobian", "None");
+    dirParams.set("Method", "NonlinearCG");
+    lineSearchParams.set("Method", "NonlinearCG");
+    break;
+  }
+  case fsi_iter_stagg_MFNK_FD:
+  {
+    // matrix free Newton Krylov with finite difference Jacobian
+
+    nlParams.set("Jacobian", "Matrix Free");
+
+    Teuchos::ParameterList& mfParams = nlParams.sublist("Matrix Free");
+    mfParams.set("lambda", 1.0e-4);
+    mfParams.set("itemax", -1);
+    mfParams.set("Kelley Perturbation", false);
+
+    lineSearchParams.set("Method", "Full Step");
+    lineSearchParams.sublist("Full Step").set("Full Step", 1.0);
+    break;
+  }
+  case fsi_iter_stagg_MFNK_FSI:
+  {
+    // matrix free Newton Krylov with FSI specific Jacobian
+
+    nlParams.set("Jacobian", "FSI Matrix Free");
+
+    lineSearchParams.set("Method", "Full Step");
+    lineSearchParams.sublist("Full Step").set("Full Step", 1.0);
+    break;
+  }
+  case fsi_iter_stagg_MPE:
+  {
+    // minimal polynomial extrapolation
+
+    nlParams.set("Jacobian", "None");
+    dirParams.set("Method","User Defined");
+
+    Teuchos::RCP<NOX::Direction::UserDefinedFactory> factory =
+      Teuchos::rcp(new NOX::FSI::MinimalPolynomialFactory());
+    dirParams.set("User Defined Direction Factory",factory);
+
+    Teuchos::ParameterList& exParams = dirParams.sublist("Extrapolation");
+    exParams.set("Tolerance", 1e-01);
+    exParams.set("omega", fsidyn.get<double>("RELAX"));
+    exParams.set("kmax", 10);
+    exParams.set("Method", "MPE");
+
+    //lsParams.set("Preconditioner","None");
+
+    lineSearchParams.set("Method", "Full Step");
+    lineSearchParams.sublist("Full Step").set("Full Step", 1.0);
+    break;
+  }
+  case fsi_iter_stagg_RRE:
+  {
+    // reduced rank extrapolation
+
+    nlParams.set("Jacobian", "None");
+    dirParams.set("Method","User Defined");
+
+    Teuchos::RCP<NOX::Direction::UserDefinedFactory> factory =
+      Teuchos::rcp(new NOX::FSI::MinimalPolynomialFactory());
+    dirParams.set("User Defined Direction Factory",factory);
+
+    Teuchos::ParameterList& exParams = dirParams.sublist("Extrapolation");
+    exParams.set("Tolerance", 1e-01);
+    exParams.set("omega", fsidyn.get<double>("RELAX"));
+    exParams.set("kmax", 10);
+    exParams.set("Method", "RRE");
+
+    //lsParams.set("Preconditioner","None");
+
+    lineSearchParams.set("Method", "Full Step");
+    lineSearchParams.sublist("Full Step").set("Full Step", 1.0);
+    break;
+  }
+  case fsi_iter_nox:
+    dserror("obsolete");
+    break;
+  case fsi_iter_monolithic:
+    dserror("No monolithic coupling with Dirichlet-Neumann partitioning. Panic.");
+    break;
+  case fsi_basic_sequ_stagg:
+  {
+    // sequential coupling (no iteration!)
+    nlParams.set("Jacobian", "None");
+
+    dirParams.set("Method","User Defined");
+    Teuchos::RCP<NOX::Direction::UserDefinedFactory> fixpointfactory =
+      Teuchos::rcp(new NOX::FSI::FixPointFactory());
+    dirParams.set("User Defined Direction Factory",fixpointfactory);
+
+    lineSearchParams.set("Method", "Full Step");
+    lineSearchParams.sublist("Full Step").set("Full Step", 1.0);
+    break;
+  }
+  case fsi_sequ_stagg_pred:
+  case fsi_sequ_stagg_shift:
+  default:
+    dserror("coupling method type '%s' unsupported", fsidyn.get<string>("COUPALGO").c_str());
+  }
+
+  Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
+  printParams.set("MyPID", comm_.MyPID());
+
+  // set default output flag to no output
+  // The field solver will output a lot, anyway.
+  printParams.get("Output Information",0);
+
 }
 
 
@@ -462,7 +642,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
   bool secondsolver = false;
 
   // Get the top level parameter list
-  Teuchos::ParameterList& nlParams = *globalparameterlist;
+  Teuchos::ParameterList& nlParams = noxparameterlist;
 
   // sublists
 
@@ -472,15 +652,11 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
 
   //Teuchos::ParameterList& searchParams = nlParams.sublist("Line Search");
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
-  printParams.set("MyPID", comm_.MyPID());
-
-  // set default output flag to no output
-  // The field solver will output a lot, anyway.
-  printParams.get("Output Information",0);
 
   // Create printing utilities
   utils_ = Teuchos::rcp(new NOX::Utils(printParams));
 
+#if 0
   // Set user defined aitken line search object.
   if (nlParams.sublist("Line Search").get("Method","Aitken")=="Aitken")
   {
@@ -514,6 +690,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
     linesearch.set("Method","User Defined");
     linesearch.set("User Defined Line Search Factory", sdfactory);
   }
+#endif
 
 #if 0
   // the very special experimental extrapolation
@@ -791,12 +968,11 @@ FSI::DirichletNeumannCoupling::CreateLinearSystem(ParameterList& nlParams,
     J = FSIMF;
   }
 
-  // Matrix Free Newton Krylov. This is supposed to be the most
-  // appropiate choice.
+  // Matrix Free Newton Krylov.
   else if (jacobian=="Matrix Free")
   {
     Teuchos::ParameterList& mfParams = nlParams.sublist("Matrix Free");
-    double lambda = mfParams.get("lambda", 1.0e-6);
+    double lambda = mfParams.get("lambda", 1.0e-4);
     mfresitemax_ = mfParams.get("itemax", -1);
 
     bool kelleyPerturbation = mfParams.get("Kelley Perturbation", false);
@@ -810,51 +986,13 @@ FSI::DirichletNeumannCoupling::CreateLinearSystem(ParameterList& nlParams,
     J = MF;
   }
 
-  // No Jacobian at all. Do a fix point iteration. This is a user
-  // extension, so we have to modify the parameter list here.
+  // No Jacobian at all. Do a fix point iteration.
   else if (jacobian=="None")
   {
-    dirParams.set("Method","User Defined");
-    Teuchos::RCP<NOX::Direction::UserDefinedFactory> fixpointfactory =
-      Teuchos::rcp(new NOX::FSI::FixPointFactory());
-    dirParams.set("User Defined Direction Factory",fixpointfactory);
-    lsParams.set("Preconditioner","None");
     preconditioner="None";
   }
 
-  // Minimal Polynomial vector extrapolation
-  else if (jacobian=="MPE")
-  {
-    dirParams.set("Method","User Defined");
-    Teuchos::RCP<NOX::Direction::UserDefinedFactory> mpefactory =
-      Teuchos::rcp(new NOX::FSI::MinimalPolynomialFactory());
-    dirParams.set("User Defined Direction Factory",mpefactory);
-    lsParams.set("Preconditioner","None");
-    preconditioner="None";
-  }
-
-#if 0
-  // epsilon vector extrapolation
-  else if (jacobian=="Epsilon")
-  {
-    Teuchos::RefCountPtr<NOX::Direction::Generic> mpe = Teuchos::rcp(new NOX::FSI::EpsilonExtrapolation(utils,nlParams));
-    dirParams.set("Method","User Defined");
-    dirParams.set("User Defined Direction",mpe);
-    lsParams.set("Preconditioner","None");
-    preconditioner="None";
-  }
-
-  // the strange coupling proposed by Michler
-  else if (jacobian=="Michler")
-  {
-    Teuchos::RefCountPtr<NOX::Direction::Generic> michler = Teuchos::rcp(new NOX::FSI::Michler(utils,nlParams));
-    dirParams.set("Method","User Defined");
-    dirParams.set("User Defined Direction",michler);
-    lsParams.set("Preconditioner","None");
-    preconditioner="None";
-  }
-#endif
-
+  // This is pretty much debug code. Or rather research code.
   else if (jacobian=="Dumb Finite Difference")
   {
     Teuchos::ParameterList& fdParams = nlParams.sublist("Finite Difference");
@@ -886,17 +1024,9 @@ FSI::DirichletNeumannCoupling::CreateLinearSystem(ParameterList& nlParams,
 
   // ==================================================================
 
-  // No preconditioning at all. This might work. But on large
-  // systems it probably won't.
+  // No preconditioning at all.
   if (preconditioner=="None")
   {
-    if (lsParams.get("Preconditioner", "None")!="None")
-    {
-      if (comm_.MyPID()==0)
-        utils->out() << RED "Warning: Preconditioner turned on in linear solver settings.\n"
-                     << "Jacobian operator will be used for preconditioning as well." END_COLOR "\n";
-    }
-
     if (Teuchos::is_null(iJac))
     {
       // if no Jacobian has been set this better be the fix point

@@ -181,6 +181,9 @@ private:
   /// write output
   void Output();
 
+  /// setup list with default parameters
+  void SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
+
   /// comunication (mainly for screen output)
   Epetra_Comm& comm_;
 
@@ -231,6 +234,9 @@ private:
     \warning This variable is only valid during when the time loop runs.
    */
   Teuchos::RefCountPtr<NOX::Utils> utils_;
+
+  /// parameters handed in to NOX
+  Teuchos::ParameterList noxparameterlist;
 
   int step_;
   int nstep_;
