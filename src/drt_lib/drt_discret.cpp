@@ -496,9 +496,9 @@ void DRT::Discretization::GetCondition(const string& name,vector<DRT::Condition*
  |  Get a condition of a certain name                          (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-DRT::Condition* DRT::Discretization::GetCondition(const string& name)
+DRT::Condition* DRT::Discretization::GetCondition(const string& name) const
 {
-  multimap<string,RefCountPtr<Condition> >::iterator curr =
+  multimap<string,RefCountPtr<Condition> >::const_iterator curr =
                                          condition_.find(name);
   if (curr==condition_.end()) return NULL;
   curr = condition_.lower_bound(name);

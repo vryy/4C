@@ -494,7 +494,7 @@ public:
   \param out  (out): vector of pointers to all conditions with that name
 
   */
-  virtual void GetCondition(const string& name, vector<DRT::Condition*>& out);
+  virtual void GetCondition(const string& name, vector<DRT::Condition*>& out) const;
 
   /*!
   \brief Get a condition with a certain name
@@ -509,7 +509,7 @@ public:
 
   \return Returns NULL if condition with that name does not exist
   */
-  virtual DRT::Condition* GetCondition(const string& name);
+  virtual DRT::Condition* GetCondition(const string& name) const;
 
   /*!
   \brief Delete all conditions set to this element

@@ -521,7 +521,7 @@ public:
 
   \return Returns NULL if condition with that name does not exist
   */
-  virtual DRT::Condition* GetCondition(const string& name);
+  virtual DRT::Condition* GetCondition(const string& name) const;
 
   //@}
 

@@ -228,7 +228,7 @@ bool DRT::Element::BuildNodalPointers(map<int,RefCountPtr<DRT::Node> >& nodes)
   node_.resize(nnode);
   for (int i=0; i<nnode; ++i)
   {
-    map<int,RefCountPtr<DRT::Node> >::iterator curr = nodes.find(nodeids[i]);
+    map<int,RefCountPtr<DRT::Node> >::const_iterator curr = nodes.find(nodeids[i]);
     // this node is not on this proc
     if (curr==nodes.end()) dserror("Element %d cannot find node %d",Id(),nodeids[i]);
     else
@@ -253,16 +253,16 @@ bool DRT::Element::BuildNodalPointers(DRT::Node** nodes)
  |  Get a condition of a certain name                          (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-void DRT::Element::GetCondition(const string& name,vector<DRT::Condition*>& out)
+void DRT::Element::GetCondition(const string& name,vector<DRT::Condition*>& out) const
 {
   const int num = condition_.count(name);
   out.resize(num);
-  multimap<string,RefCountPtr<Condition> >::iterator startit =
+  multimap<string,RefCountPtr<Condition> >::const_iterator startit =
                                          condition_.lower_bound(name);
-  multimap<string,RefCountPtr<Condition> >::iterator endit =
+  multimap<string,RefCountPtr<Condition> >::const_iterator endit =
                                          condition_.upper_bound(name);
   int count=0;
-  multimap<string,RefCountPtr<Condition> >::iterator curr;
+  multimap<string,RefCountPtr<Condition> >::const_iterator curr;
   for (curr=startit; curr!=endit; ++curr)
     out[count++] = curr->second.get();
   if (count != num) dserror("Mismatch in number of conditions found");
@@ -273,9 +273,9 @@ void DRT::Element::GetCondition(const string& name,vector<DRT::Condition*>& out)
  |  Get a condition of a certain name                          (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-DRT::Condition* DRT::Element::GetCondition(const string& name)
+DRT::Condition* DRT::Element::GetCondition(const string& name) const
 {
-  multimap<string,RefCountPtr<Condition> >::iterator curr =
+  multimap<string,RefCountPtr<Condition> >::const_iterator curr =
                                          condition_.find(name);
   if (curr==condition_.end()) return NULL;
   curr = condition_.lower_bound(name);
