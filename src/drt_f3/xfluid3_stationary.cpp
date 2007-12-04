@@ -298,8 +298,8 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
       const int gid = nodes[inode]->Id();
       const blitz::Array<double,1> nodalpos(xyze_(_,inode));
 
-      const std::set<XFEM::EnrField>  enrfieldset = dofman.EnrFieldSetPerNode(gid);
-      for (std::set<XFEM::EnrField>::const_iterator enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
+      const std::set<XFEM::FieldEnr>  enrfieldset = dofman.FieldEnrSetPerNode(gid);
+      for (std::set<XFEM::FieldEnr>::const_iterator enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
       {
           if (enrfield->getField() == XFEM::Physics::Velx)
           {
