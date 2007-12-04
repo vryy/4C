@@ -348,6 +348,7 @@ void EnsightWriter::WriteCells(
                 case DRT::Element::quad4:
                 case DRT::Element::quad8:
                 case DRT::Element::tet4:
+                case DRT::Element::tet10:
                 case DRT::Element::tri3:
                 case DRT::Element::wedge6:
                 case DRT::Element::wedge15:
@@ -377,14 +378,6 @@ void EnsightWriter::WriteCells(
                                     +1);
                     break;
                 }
-                case DRT::Element::tet10:
-                {
-                    // write just the corner nodes of the tet10
-                  for (int isubnode=0; isubnode<4; ++isubnode)
-                      Write(geofile, nodemap->LID(nodes[subtet10map[0][isubnode]]->Id())
-                              +1);
-                  break;
-               }
                 default:
                     dserror("don't know, how to write this element type as a Cell");
                 };
@@ -462,9 +455,6 @@ string EnsightWriter::GetEnsightString(
         break;
     case DRT::Element::quad9:
         entry = distype2ensightstring_.find(DRT::Element::quad4);
-        break;
-    case DRT::Element::tet10:
-        entry = distype2ensightstring_.find(DRT::Element::tet4);
         break;
     default:
         entry = distype2ensightstring_.find(distype);
@@ -787,18 +777,18 @@ string EnsightWriter::GetFileSectionStringFromFilesets(
 
     for (fileset = filesetmap.begin(); fileset != filesetmap.end(); ++fileset)
     {
-        vector<int> subsets = fileset->second;
+        vector<int> stepsperfile = fileset->second;
         s << "file set:\t\t"<< setnumber << "\n";
-        if (subsets.size() == 1)
+        if (stepsperfile.size() == 1)
         {
-            s << "number of steps:\t"<< subsets[0] << "\n\n";
+            s << "number of steps:\t"<< stepsperfile[0] << "\n\n";
         }
         else
         {
-            for (unsigned int j = 0; j < subsets.size(); ++j)
+            for (unsigned int j = 0; j < stepsperfile.size(); ++j)
             {
                 s << "filename index:\t"<< 1+j << "\n";
-                s << "number of steps:\t"<< subsets[j] << "\n";
+                s << "number of steps:\t"<< stepsperfile[j] << "\n";
             }
             s << "\n";
         }

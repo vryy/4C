@@ -20,6 +20,7 @@ Maintainer: Axel Gerstenberger
 #include <string>
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_node.H"
+#include "../drt_lib/drt_utils.H"
 
 
 namespace XFEM
@@ -59,7 +60,7 @@ public:
 
      \return distype_
      */
-    DRT::Element::DiscretizationType Shape() const {return distype_;};
+    inline DRT::Element::DiscretizationType Shape() const {return distype_;};
     
     /*!
      \brief returns the coordinates of the integration cell
@@ -73,7 +74,7 @@ public:
 
      \return cells nodal coordinates  
      */
-    std::vector< std::vector<double> > GetPhysicalCoord(DRT::Element& ele) const;
+    virtual std::vector< std::vector<double> > GetPhysicalCoord(DRT::Element& ele) const;
     
     virtual std::string Print() const;
 
@@ -131,21 +132,28 @@ public:
 
      \return distype_
      */
-    DRT::Element::DiscretizationType Shape() const {return distype_;};
+    inline DRT::Element::DiscretizationType Shape() const {return distype_;};
+    
+    /*!
+     \brief returns number of nodes
+
+     \return number of nodes
+     */
+    inline int NumNode() const {return DRT::Utils::getNumberOfElementNodes(distype_);};
     
     /*!
      \brief returns the coordinates of the integration cell
 
      \return cells nodal coordinates  
      */
-    std::vector< std::vector<double> > GetDomainCoord() const {return domainCoordinates_;};
+    inline std::vector< std::vector<double> > GetDomainCoord() const {return domainCoordinates_;};
 
     /*!
      \brief returns the coordinates of the integration cell in physical coordinates
 
      \return cells nodal coordinates  
      */
-    std::vector< std::vector<double> > GetPhysicalCoord(DRT::Element& ele) const
+    inline std::vector< std::vector<double> > GetPhysicalCoord(DRT::Element& ele) const
     {
         return ComputePhysicalCoordinates(ele);
     };
@@ -205,21 +213,28 @@ public:
 
      \return distype_
      */
-    DRT::Element::DiscretizationType Shape() const {return distype_;};
+    inline DRT::Element::DiscretizationType Shape() const {return distype_;};
+    
+    /*!
+     \brief returns number of nodes
+
+     \return number of nodes
+     */
+    inline int NumNode() const {return DRT::Utils::getNumberOfElementNodes(distype_);};
     
     /*!
      \brief returns the coordinates of the integration cell in domain element coordinates
 
      \return cells nodal coordinates  
      */
-    std::vector< std::vector<double> > GetDomainCoord() const {return domainCoordinates_;};
+    inline std::vector< std::vector<double> > GetDomainCoord() const {return domainCoordinates_;};
     
     /*!
      \brief returns the coordinates of the integration cell in physical coordinates
 
      \return cells nodal coordinates  
      */
-    std::vector< std::vector<double> > GetPhysicalCoord(DRT::Element& ele) const
+    inline std::vector< std::vector<double> > GetPhysicalCoord(DRT::Element& ele) const
     {
         return ComputePhysicalCoordinates(ele);
     };
@@ -229,7 +244,7 @@ public:
 
      \return cells nodal coordinates  
      */
-    std::vector< std::vector<double> > GetBoundaryCoord() const {return boundaryCoordinates_;};
+    inline std::vector< std::vector<double> > GetBoundaryCoord() const {return boundaryCoordinates_;};
     
     std::string Print() const;
 

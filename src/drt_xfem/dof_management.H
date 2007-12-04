@@ -29,23 +29,23 @@ namespace XFEM
 using namespace Physics;
 
 /*!
- \class EnrField
+ \class FieldEnr
 
  \brief Corresponds to a specific enriched physical field variable
 
- type EnrField = (Field, Enrichment)
+ type FieldEnr = (Field, Enrichment)
 
  */
-class EnrField
+class FieldEnr
 {
 public:
 
-    explicit EnrField(
+    explicit FieldEnr(
             const Field physvar,
             const Enrichment enr);
-    EnrField(
-            const EnrField& other);
-    ~EnrField();
+    FieldEnr(
+            const FieldEnr& other);
+    ~FieldEnr();
 
     string toString() const;
 
@@ -59,7 +59,7 @@ public:
         return enr_;
     };
     
-    inline bool operator <(const EnrField& rhs) const
+    inline bool operator <(const FieldEnr& rhs) const
     {
         if (getField() < rhs.getField())
             return true;
@@ -74,7 +74,7 @@ public:
         }
     }
     
-    inline bool operator ==(const EnrField& rhs) const
+    inline bool operator ==(const FieldEnr& rhs) const
     {
         if (getField() == rhs.getField() and getEnrichment() == rhs.getEnrichment())
             return true;
@@ -82,7 +82,7 @@ public:
             return false;
     }
     
-    inline bool operator !=(const EnrField& rhs) const
+    inline bool operator !=(const FieldEnr& rhs) const
     {
         return (!(*this == rhs));
     }
@@ -94,7 +94,7 @@ private:
     // specific enrichment for this physical field
     Enrichment enr_;
 
-}; // class EnrField
+}; // class FieldEnr
 
 
 // general function that returns the enrichment value for a given enrichment and position
@@ -118,18 +118,18 @@ public:
 	explicit ElementDofManager();
 	
 	explicit ElementDofManager(
-			map<int, const set <XFEM::EnrField> >&  nodalDofMap);
+			map<int, const set <XFEM::FieldEnr> >&  nodalDofMap);
     ~ElementDofManager();
 
     std::string toString() const;
 
-    inline const std::set<EnrField> EnrFieldSetPerNode(const int gid) const
+    inline const std::set<FieldEnr> FieldEnrSetPerNode(const int gid) const
     {
         //TODO: return proper default set given as second argument
-    	map<int, const std::set<EnrField> >::const_iterator tmp = nodalDofMap_.find(gid);
+    	map<int, const std::set<FieldEnr> >::const_iterator tmp = nodalDofMap_.find(gid);
     	if (tmp == nodalDofMap_.end()){
     	    cout << gid << endl;
-    	    dserror("EnrFieldSetPerNode: global node id not found!");
+    	    dserror("FieldEnrSetPerNode: global node id not found!");
     	    return emptyset_;
     	}
         return tmp->second;
@@ -196,7 +196,7 @@ public:
             
 private:
 	//! unknowns for each global node id (gid)
-	map<int, const set <XFEM::EnrField> > nodalDofMap_;
+	map<int, const set <XFEM::FieldEnr> > nodalDofMap_;
 
 	//! number of unknowns for each global node id (gid)
 	map<int, int> nodalNumDofMap_;
@@ -207,8 +207,8 @@ private:
 	//! local (elemental) dofpos
 	map<XFEM::Physics::Field, vector<int> > paramsLocalEntries_;
 	
-	//! dummy empty set that we can return in EnrFieldSetPerNode
-	std::set<EnrField> emptyset_;
+	//! dummy empty set that we can return in FieldEnrSetPerNode
+	std::set<FieldEnr> emptyset_;
 };
 
 
@@ -228,28 +228,20 @@ public:
 
     string toString() const;
 
-    inline const std::set<EnrField> getDofs(const int gid) const
+    inline const std::set<FieldEnr> getDofSet(const int gid) const
     {
-    	map<int, const std::set<EnrField> >::const_iterator tmp = nodalDofMap_.find(gid);
-    	if (tmp == nodalDofMap_.end())
-    	{	
-    		//dserror("global node id not found!");
-    		cout << "warning: global node id not found! Could be due to not properly initialized ElementDofManager";
-    		std::set<EnrField> x;
-    		return x;
-    	}
-        return tmp->second;
+        return nodalDofMap_.find(gid)->second;
     };
     
-    inline std::pair<int, const set<XFEM::EnrField> > getDofsAsPair(const int gid) const
+    inline std::pair<int, const set<XFEM::FieldEnr> > getDofsAsPair(const int gid) const
     {
-    	map<int, const std::set<EnrField> >::const_iterator tmp = nodalDofMap_.find(gid);
+    	map<int, const std::set<FieldEnr> >::const_iterator tmp = nodalDofMap_.find(gid);
     	if (tmp == nodalDofMap_.end()){
-    		//dserror("global node id not found!");
-    		cout << "getDofsAsPair: warning: global node id not found! Could be due to not properly initialized ElementDofManager";
-    		return std::pair<int, const set<XFEM::EnrField> >(tmp->first,tmp->second);
+    		dserror("global node id not found!");
+    		//cout << "getDofsAsPair: warning: global node id not found! Could be due to not properly initialized ElementDofManager";
+    		//return std::pair<int, const set<XFEM::FieldEnr> >(tmp->first,tmp->second);
     	}
-        return std::pair<int, const set<XFEM::EnrField> >(tmp->first,tmp->second);
+        return std::pair<int, const set<XFEM::FieldEnr> >(tmp->first,tmp->second);
     };
 
     const XFEM::ElementDofManager constructElementDofManager(DRT::Element& ele) const;
@@ -263,15 +255,15 @@ private:
 	RefCountPtr<DRT::Discretization> xfemdis_;
 	
 	// unknowns for each global node id (gid) on this processor
-	map<int, const set <XFEM::EnrField> > nodalDofMap_;
+	map<int, const set <XFEM::FieldEnr> > nodalDofMap_;
 	
 	// create a map that for each node (gid) on this processor has its unknowns
-	const map<int, const set<EnrField> > createNodalDofMap(
+	const map<int, const set<FieldEnr> > createNodalDofMap(
 			const RefCountPtr<DRT::Discretization> xfemdis,
 	        const map<int, DomainIntCells >&  elementDomainIntCellMap) const;
 };
 
-typedef pair<int,EnrField> DofKey;
+typedef pair<int,FieldEnr> DofKey;
 
 }; // namespace XFEM
 

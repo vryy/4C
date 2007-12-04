@@ -68,6 +68,16 @@ vector< vector<double> > IntCell::GetDomainCoord() const
 }
 
 //
+//  get coordinates in physical space
+//
+vector< vector<double> > IntCell::GetPhysicalCoord(DRT::Element& ele) const
+{
+    dserror("no default implementation is given");
+    vector<vector<double> > dummy;
+    return dummy;
+}
+
+//
 // virtual Print method
 //
 std::string IntCell::Print() const
@@ -124,7 +134,7 @@ vector<vector<double> > IntCell::ComputePhysicalCoordinates(
 DomainIntCell::DomainIntCell(
         const DRT::Element::DiscretizationType distype,
         const vector< vector<double> >& domainCoordinates) :
-            IntCell(DRT::Element::tet4),
+            IntCell(distype),
             domainCoordinates_(domainCoordinates)
 {
     return;

@@ -55,10 +55,6 @@ const int subhexmap[8][8] =
         { 26, 22, 14, 23, 25, 17, 6, 18 },
         { 24, 26, 23, 15, 19, 25, 18, 7 } };
 
-//! defines that a qudratic tet10 is temporarily written just as a tet4.
-const int subtet10map[1][4] =
-    {{0,1,2,3}};
-
 typedef map<DRT::Element::DiscretizationType, int> NumElePerDisType;
 
 /*----------------------------------------------------------------------*/

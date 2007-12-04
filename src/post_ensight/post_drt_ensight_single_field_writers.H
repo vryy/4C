@@ -15,6 +15,7 @@
 #ifdef CCADISCRET
 
 #include "post_drt_ensight_writer.H"
+#include "../drt_xfem/physics.H"
 
 /*
  \brief Writer for structural problems
@@ -112,7 +113,8 @@ protected:
 
     virtual void WriteAllResults(
             PostField* field);
-    
+    void WriteGeoFile(
+            const string& geofilename) const;
     void WriteGeoFileOneTimeStep(
             ofstream& file,
             map<string, vector<ofstream::pos_type> >& resultfilepos,
@@ -120,19 +122,29 @@ protected:
     void WriteGeoFilePart(
             ofstream& file,
             map<string, vector<ofstream::pos_type> >& resultfilepos,
-            const string name) const;
-    void WriteCoordinates(
-            ofstream& geofile,                         ///< filestream for the geometry
-            const RefCountPtr<DRT::Discretization> dis ///< discretization where the nodal positions are take from
+            const string name,
+            const RefCountPtr<XFEM::InterfaceHandle> ih ///< interfacehandle        
             ) const;
-    void WriteCoordinatesIntCell(
+    int NumNodesPerField(
+            const RefCountPtr<XFEM::InterfaceHandle> ih ///< interfacehandle
+            ) const;
+    void WriteCoordinates(
             ofstream& geofile,                          ///< filestream for the geometry
             const RefCountPtr<DRT::Discretization> dis, ///< discretization where the nodal positions are take from
             const RefCountPtr<XFEM::InterfaceHandle> ih ///< interfacehandle
             ) const;
     void WriteCells(
             ofstream& geofile,
-            const RefCountPtr<DRT::Discretization> dis) const;
+            const RefCountPtr<DRT::Discretization> dis,
+            const RefCountPtr<XFEM::InterfaceHandle> ih ///< interfacehandle
+            ) const;
+    /*!
+     * \brief estimate, how many elements of each distype will be written
+     * \return map between distype and number of elements to be written
+     */
+    NumElePerDisType GetNumElePerDisType(
+            const RefCountPtr<DRT::Discretization> dis,
+            const RefCountPtr<XFEM::InterfaceHandle> ih) const;
     /*!
      \brief write all time steps of a result
 
@@ -152,10 +164,19 @@ protected:
      */
     void WriteResult(
             const string groupname, ///< name of the result group in the control file
-            const string name, ///< name of the result to be written
-            const int numdf, ///< number of dofs per node to this result
-            const int from=0 ///< start position of values in nodes
+            const string name,      ///< name of the result to be written
+            const set<XFEM::Physics::Field> fieldset
             );
+    void WriteResultStep(
+            ofstream& file,
+            PostResult& result,
+            map<string, vector<ofstream::pos_type> >& resultfilepos,
+            const string groupname,
+            const string name,
+            const set<XFEM::Physics::Field> fieldset,
+            const RCP<XFEM::InterfaceHandle> ih,
+            const RCP<XFEM::DofManager> dofman
+            ) const;
     
     PostField* cutterfield_;
 };
