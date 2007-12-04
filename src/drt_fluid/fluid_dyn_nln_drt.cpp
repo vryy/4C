@@ -123,7 +123,7 @@ void dyn_fluid_drt()
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
-  RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
+  RCP<ParameterList> solveparams = rcp(new ParameterList());
   LINALG::Solver solver(solveparams,actdis->Comm(),allfiles.out_err);
   solver.TranslateSolverParameters(*solveparams,actsolv);
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
