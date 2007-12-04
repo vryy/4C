@@ -28,6 +28,7 @@ Maintainer: Michael Gee
 #include "../drt_contact/contactstrugenalpha.H"
 #include "../io/io_drt.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_validparameters.H"
 
 /*----------------------------------------------------------------------*
   |                                                       m.gee 06/01    |
@@ -129,6 +130,9 @@ void dyn_nlnstructural_drt()
   const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
   const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
   const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
+
+  if (actdis->Comm().MyPID()==0)
+    DRT::PrintDefaultParameters(std::cout, sdyn);
 
   // -------------------------------------------------------------------
   // create a solver
