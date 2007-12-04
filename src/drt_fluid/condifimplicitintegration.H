@@ -178,6 +178,9 @@ protected:
 
   RefCountPtr<Epetra_Vector>    invtoggle_;
 
+  /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
+  RefCountPtr<Epetra_Vector>    zeros_;
+
   /// the vector containing body and surface forces
   RefCountPtr<Epetra_Vector>    neumann_loads_;
 
