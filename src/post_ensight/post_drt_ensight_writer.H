@@ -179,7 +179,7 @@ protected:
             ofstream& geofile,                         ///< filestream for the geometry
             const RefCountPtr<DRT::Discretization> dis ///< discretization where the nodal positions are take from
             ) const;
-    void WriteCoordinatesPar(
+    RefCountPtr<Epetra_Map> WriteCoordinatesPar(
             ofstream& geofile,                         ///< filestream for the geometry
             const RefCountPtr<DRT::Discretization> dis ///< discretization where the nodal positions are take from
             ) const;
@@ -188,7 +188,8 @@ protected:
             const RefCountPtr<DRT::Discretization> dis) const;
     void WriteCellsPar(
             ofstream& geofile,
-            const RefCountPtr<DRT::Discretization> dis) const;
+            const RefCountPtr<DRT::Discretization> dis,
+            RefCountPtr<Epetra_Map> proc0map) const;
     void WriteResultStep(
             ofstream& file,
             PostResult& result,
@@ -262,6 +263,7 @@ protected:
     PostField* field_;
     string filename_;
     int myrank_;
+    bool nodeidgiven_;
 
     map<string,vector<int> > filesetmap_;
     
