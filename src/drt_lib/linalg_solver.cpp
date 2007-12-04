@@ -257,6 +257,7 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_Operator>  Operator,
   return;
 }
 
+#if 0
 /*----------------------------------------------------------------------*
  |  solve vm3 (public)                                     vgravem 06/07|
  *----------------------------------------------------------------------*/
@@ -285,6 +286,7 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
 
   return;
 }
+#endif
 
 
 /*----------------------------------------------------------------------*
