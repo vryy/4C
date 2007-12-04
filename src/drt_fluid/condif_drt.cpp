@@ -160,8 +160,8 @@ void dyn_condif_drt()
     //--------------------------------------------------
     // velocity field
     condiftimeparams.set<int>              ("condif velocity field"     ,Teuchos::getIntegralValue<int>(fdyn,"CD_VELOCITY"));
-    // discontinuity capturing?
-    condiftimeparams.set<int>              ("discontinuity capturing"   ,Teuchos::getIntegralValue<int>(fdyn,"DISC_CAPT"));
+    // (fine-scale) subgrid diffusivity?
+    condiftimeparams.set<int>              ("fs subgrid viscosity"   ,Teuchos::getIntegralValue<int>(fdyn,"SUBGRIDVISC"));
 
     //--------------------------------------------------
     // create all vectors and variables associated with the time

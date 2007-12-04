@@ -180,6 +180,9 @@ void dyn_fluid_drt()
     int init = Teuchos::getIntegralValue<int>(fdyn,"INITIALFIELD");
     fluidtimeparams.set                  ("eval err for analyt sol"   ,init);
 
+    // (fine-scale) subgrid viscosity?
+    fluidtimeparams.set<int>              ("fs subgrid viscosity"   ,Teuchos::getIntegralValue<int>(fdyn,"SUBGRIDVISC"));
+
 
     //--------------------------------------------------
     // create all vectors and variables associated with the time

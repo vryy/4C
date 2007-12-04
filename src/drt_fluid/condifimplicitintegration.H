@@ -166,7 +166,7 @@ protected:
   double theta_;
 
   int cdvel_;
-  int discap_;
+  int fssgd_;
 
   /// system matrices: standard (stabilized) matrix and complete system matrix
   /// including discontinuity-capturing (artificial diffusivity) matrix

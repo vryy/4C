@@ -85,11 +85,11 @@ int DRT::Elements::Condif2::Evaluate(ParameterList& params,
       // get type of velocity field
       const int vel_field = params.get<int>("condif velocity field",0);
 
-      // get flag for discontinuity capturing (1=yes, 0=no)
-      const int discap = params.get<int>("discontinuity capturing",0);
+      // get flag for (fine-scale) subgrid diffusivity (1=artificial, 0=no)
+      const int fssgd = params.get<int>("fs subgrid viscosity",0);
 
       // calculate element coefficient matrix and rhs
-      condif2_sys_mat(lm,myhist,&elemat1,&elemat2,&elevec1,actmat,time,timefac,vel_field,discap,
+      condif2_sys_mat(lm,myhist,&elemat1,&elemat2,&elevec1,actmat,time,timefac,vel_field,fssgd,
                       is_stationary);
 
     }
@@ -132,7 +132,7 @@ void DRT::Elements::Condif2::condif2_sys_mat(vector<int>&              lm,
                                          double                    time,
                                          double                    timefac,
                                          int                       vel_field,
-                                         int                       discap,
+                                         int                       fssgd,
                                          bool                      is_stationary)
 {
 
@@ -310,7 +310,7 @@ void DRT::Elements::Condif2::condif2_sys_mat(vector<int>&              lm,
     tau = (DSQR(hk)*mk)/(2.0*diffus*xi1);
 
   }
-  if (discap == 1)
+  if (fssgd == 1)
   {
     /*-------------------------- compute artificial diffusivity kappa_art ---*/
     epe1 = mk * vel_norm * hk / diffus;     /* convective : diffusive forces */
@@ -392,10 +392,10 @@ void DRT::Elements::Condif2::condif2_sys_mat(vector<int>&              lm,
       /*-------------- perform integration for entire matrix and rhs ---*/
       if(is_stationary==false)
         condif2_calmat(*sys_mat,*sys_mat_dc,*residual,velint,hist,funct,derxy,derxy2,
-                       edeadng,tau,kart,fac,diffus,iel,discap,timefac);
+                       edeadng,tau,kart,fac,diffus,iel,fssgd,timefac);
       else
         condif2_calmat_stat(*sys_mat,*sys_mat_dc,*residual,velint,hist,funct,derxy,
-                            derxy2,edeadng,tau,kart,fac,diffus,iel,discap);
+                            derxy2,edeadng,tau,kart,fac,diffus,iel,fssgd);
 
   } // end of loop over integration points
 
@@ -815,7 +815,7 @@ void DRT::Elements::Condif2::condif2_calmat(
     const double&             fac,
     const double&             diffus,
     const int&                iel,
-    const int&                discap,
+    const int&                fssgd,
     double                    timefac
     )
 {
@@ -872,7 +872,7 @@ for (int i=0; i<iel; i++) /* loop over nodes of element */
 #undef rhsint_
 #undef diffus_
 
-if (discap == 1)
+if (fssgd == 1)
 {
   // parameter for artificial diffusivity
   const double kartfac = kart*timefacfac;
@@ -956,7 +956,7 @@ void DRT::Elements::Condif2::condif2_calmat_stat(
     const double&             fac,
     const double&             diffus,
     const int&                iel,
-    const int&                discap
+    const int&                fssgd
     )
 {
 /*========================= further variables =========================*/
@@ -1008,7 +1008,7 @@ for (int i=0; i<iel; i++) /* loop over nodes of element */
 #undef rhsint_
 #undef diffus_
 
-if (discap == 1)
+if (fssgd == 1)
 {
   // parameter for artificial diffusivity
   const double kartfac = kart*fac;
