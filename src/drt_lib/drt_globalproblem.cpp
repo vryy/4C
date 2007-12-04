@@ -134,7 +134,7 @@ void DRT::Problem::Done()
 /*----------------------------------------------------------------------*/
 void DRT::Problem::ReadParameter(DRT::DatFileReader& reader)
 {
-  RCP<ParameterList> list = rcp(new ParameterList("Input Parameters"));
+  RCP<ParameterList> list = rcp(new ParameterList("DAT FILE"));
 
   reader.ReadGidSection("--DISCRETISATION", *list);
   reader.ReadGidSection("--PROBLEM SIZE", *list);

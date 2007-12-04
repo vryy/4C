@@ -54,6 +54,31 @@ void PrintValidParameters()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void DRT::PrintDefaultParameters(std::ostream& stream, const Teuchos::ParameterList& list)
+{
+  bool hasDefault = false;
+  for (Teuchos::ParameterList::ConstIterator i = list.begin();
+       i!=list.end();
+       ++i)
+  {
+    const Teuchos::ParameterEntry& entry = list.entry(i);
+    if (entry.isDefault())
+    {
+      if (not hasDefault)
+      {
+        hasDefault = true;
+        stream << "default parameters in list '" << list.name() << "':\n";
+      }
+      stream << "    " << list.name(i) << "\n";
+    }
+  }
+  if (hasDefault)
+    stream << "\n";
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::IntParameter(std::string const &paramName,
                           int const value,
                           std::string const &docString,

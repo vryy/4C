@@ -45,6 +45,9 @@ namespace DRT {
 
   /// set parameters for time adaptivity
   void SetValidTimeAdaptivityParameters(Teuchos::ParameterList& list);
+
+  /// print all parameters that have a default value
+  void PrintDefaultParameters(std::ostream& stream, const Teuchos::ParameterList& list);
 }
 
 #endif /* end of #ifdef __cplusplus */

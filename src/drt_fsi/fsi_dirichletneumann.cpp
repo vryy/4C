@@ -4,6 +4,7 @@
 #include "fsi_dirichletneumann.H"
 #include "fsi_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_validparameters.H"
 
 #include "../drt_lib/drt_colors.H"
 
@@ -69,6 +70,9 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
     counter_(7)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+
+  if (comm_.MyPID()==0)
+    DRT::PrintDefaultParameters(std::cout, fsidyn);
 
   step_ = 0;
   time_ = 0.;
@@ -415,6 +419,9 @@ void FSI::DirichletNeumannCoupling::SetupStructure()
   const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
+  if (comm_.MyPID()==0)
+    DRT::PrintDefaultParameters(std::cout, sdyn);
+
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
@@ -534,6 +541,9 @@ void FSI::DirichletNeumannCoupling::SetupFluid()
   const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
   const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+
+  if (comm_.MyPID()==0)
+    DRT::PrintDefaultParameters(std::cout, fdyn);
 
   // -------------------------------------------------------------------
   // create a solver
