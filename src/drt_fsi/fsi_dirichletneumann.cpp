@@ -189,6 +189,8 @@ void FSI::DirichletNeumannCoupling::SetDefaultParameters(const Teuchos::Paramete
   case fsi_iter_stagg_fixed_rel_param:
   {
     // fixed-point solver with fixed relaxation parameter
+    method_ = "ITERATIVE STAGGERED SCHEME WITH FIXED RELAXATION PARAMETER";
+
     nlParams.set("Jacobian", "None");
 
     dirParams.set("Method","User Defined");
@@ -206,6 +208,8 @@ void FSI::DirichletNeumannCoupling::SetDefaultParameters(const Teuchos::Paramete
   case fsi_iter_stagg_AITKEN_rel_param:
   {
     // fixed-point solver with Aitken relaxation parameter
+    method_ = "ITERATIVE STAGGERED SCHEME WITH RELAXATION PARAMETER VIA AITKEN ITERATION";
+
     nlParams.set("Jacobian", "None");
 
     dirParams.set("Method","User Defined");
@@ -224,6 +228,8 @@ void FSI::DirichletNeumannCoupling::SetDefaultParameters(const Teuchos::Paramete
   case fsi_iter_stagg_steep_desc:
   {
     // fixed-point solver with steepest descent relaxation parameter
+    method_ = "ITERATIVE STAGGERED SCHEME WITH RELAXATION PARAMETER VIA STEEPEST DESCENT METHOD";
+
     nlParams.set("Jacobian", "None");
 
     dirParams.set("Method","User Defined");
@@ -241,6 +247,7 @@ void FSI::DirichletNeumannCoupling::SetDefaultParameters(const Teuchos::Paramete
   {
     // nonlinear CG solver (pretty much steepest descent with finite
     // difference Jacobian)
+    method_ = "ITERATIVE STAGGERED SCHEME WITH NONLINEAR CG SOLVER";
 
     nlParams.set("Jacobian", "None");
     dirParams.set("Method", "NonlinearCG");
@@ -250,6 +257,7 @@ void FSI::DirichletNeumannCoupling::SetDefaultParameters(const Teuchos::Paramete
   case fsi_iter_stagg_MFNK_FD:
   {
     // matrix free Newton Krylov with finite difference Jacobian
+    method_ = "MATRIX FREE NEWTON KRYLOV SOLVER BASED ON FINITE DIFFERENCES";
 
     nlParams.set("Jacobian", "Matrix Free");
 
@@ -265,6 +273,7 @@ void FSI::DirichletNeumannCoupling::SetDefaultParameters(const Teuchos::Paramete
   case fsi_iter_stagg_MFNK_FSI:
   {
     // matrix free Newton Krylov with FSI specific Jacobian
+    method_ = "MATRIX FREE NEWTON KRYLOV SOLVER BASED ON FSI SPECIFIC JACOBIAN APPROXIMATION";
 
     nlParams.set("Jacobian", "FSI Matrix Free");
 
@@ -275,6 +284,7 @@ void FSI::DirichletNeumannCoupling::SetDefaultParameters(const Teuchos::Paramete
   case fsi_iter_stagg_MPE:
   {
     // minimal polynomial extrapolation
+    method_ = "ITERATIVE STAGGERED SCHEME WITH MINIMAL POLYNOMIAL EXTRAPOLATION";
 
     nlParams.set("Jacobian", "None");
     dirParams.set("Method","User Defined");
@@ -298,6 +308,7 @@ void FSI::DirichletNeumannCoupling::SetDefaultParameters(const Teuchos::Paramete
   case fsi_iter_stagg_RRE:
   {
     // reduced rank extrapolation
+    method_ = "ITERATIVE STAGGERED SCHEME WITH REDUCED RANK EXTRAPOLATION";
 
     nlParams.set("Jacobian", "None");
     dirParams.set("Method","User Defined");
@@ -327,6 +338,8 @@ void FSI::DirichletNeumannCoupling::SetDefaultParameters(const Teuchos::Paramete
   case fsi_basic_sequ_stagg:
   {
     // sequential coupling (no iteration!)
+    method_ = "BASIC SEQUENTIAL STAGGERED SCHEME";
+
     nlParams.set("Jacobian", "None");
     nlParams.set("Max Iterations", 1.);
 
@@ -350,7 +363,11 @@ void FSI::DirichletNeumannCoupling::SetDefaultParameters(const Teuchos::Paramete
 
   // set default output flag to no output
   // The field solver will output a lot, anyway.
-  printParams.get("Output Information",0);
+  printParams.get("Output Information",
+                  ::NOX::Utils::Warning |
+                  ::NOX::Utils::OuterIteration |
+                  ::NOX::Utils::OuterIterationStatusTest
+    );
 
 }
 
@@ -1090,9 +1107,13 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
   double startTime = timer.WallTime();
 
   if (comm_.MyPID()==0)
+  {
     utils_->out() << "\n "
                   << YELLOW_LIGHT << "FSI residual calculation" << END_COLOR
-                  << ".\n fillFlag = " RED << flags[fillFlag] << END_COLOR "\n";
+                  << ".\n";
+    if (fillFlag!=Residual)
+      utils_->out() << " fillFlag = " RED << flags[fillFlag] << END_COLOR "\n";
+  }
 
   // we count the number of times the residuum is build
   counter_[fillFlag] += 1;
@@ -1377,6 +1398,16 @@ void FSI::DirichletNeumannCoupling::PrepareTimeStep()
 {
   step_ += 1;
   time_ += dt_;
+
+  if (comm_.MyPID()==0)
+    utils_->out() << "\n"
+                  << method_ << "\n"
+                  << "TIME:  " << utils_->sciformat(time_) << "/" << utils_->sciformat(maxtime_)
+                  << "     DT = " << utils_->sciformat(dt_)
+                  << "     STEP = " YELLOW_LIGHT << setw(4) << step_ << END_COLOR "/" << setw(4) << nstep_
+                  << "\n"
+                  << NOX::Utils::fill(82)
+                  << "\n\n";
 
   structure_->PrepareTimeStep();
   fluid_->    PrepareTimeStep();

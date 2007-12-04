@@ -245,6 +245,9 @@ private:
   double dt_;
   int mfresitemax_;
 
+  /// method name prepared for output
+  std::string method_;
+
   /// nodes at the fluid-structure interface match
   bool matchingnodes_;
 };
