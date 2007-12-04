@@ -77,12 +77,12 @@ norm_(1.0e+06)
     //                \  1   i-th DOF is free
     invtoggle_ = LINALG::CreateVector(*dofrowmap,false);
 
-  // displacements D_{n} at last time
-  dis_ = LINALG::CreateVector(*dofrowmap,true);
-  // velocities V_{n} at last time
-  vel_ = LINALG::CreateVector(*dofrowmap,true);
-  // accelerations A_{n} at last time
-  acc_ = LINALG::CreateVector(*dofrowmap,true);
+    // displacements D_{n} at last time
+    dis_ = LINALG::CreateVector(*dofrowmap,true);
+    // velocities V_{n} at last time
+    vel_ = LINALG::CreateVector(*dofrowmap,true);
+    // accelerations A_{n} at last time
+    acc_ = LINALG::CreateVector(*dofrowmap,true);
 
     // displacements D_{n+1} at new time
     disn_ = LINALG::CreateVector(*dofrowmap,true);
@@ -801,7 +801,9 @@ void StruGenAlpha::FullNewton()
   double fresmnorm;
   double disinorm;
   fresm_->Norm2(&fresmnorm);
-  while ( norm_>toldisp && fresmnorm>toldisp && numiter<=maxiter)
+  Epetra_Time timer(discret_.Comm());
+  timer.ResetStartTime();
+  while ( (norm_>toldisp || fresmnorm>toldisp) && numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
@@ -933,7 +935,7 @@ void StruGenAlpha::FullNewton()
 
   } // while (norm_>toldisp && fresmnorm>toldisp && numiter<=maxiter)
   //=================================================================== end equilibrium loop
-
+  double timepernlnsolve = timer.ElapsedTime();
   //-------------------------------- test whether max iterations was hit
   if (numiter>=maxiter)
   {
@@ -943,8 +945,8 @@ void StruGenAlpha::FullNewton()
   {
      if ( (myrank_ ==  0) && (printscreen) )
      {
-        printf("Newton iteration converged: numiter %d res-norm %e dis-norm %e\n",
-               numiter+1, fresmnorm, disinorm);
+        printf("Newton iteration converged: numiter %d res-norm %e dis-norm %e time %10.5f\n",
+               numiter,fresmnorm,disinorm,timepernlnsolve);
         fflush(stdout);
      }
   }
@@ -997,7 +999,7 @@ void StruGenAlpha::FullNewtonUzawa()
   
   double volnorm=volConstrMan_->GetVolumeErrorNorm();
   int numConstrVol=volConstrMan_->GetNumberOfVolumes() ;
-  while (((norm_>toldisp && fresmnorm>toldisp) || volnorm > toldisp )&& numiter<=maxiter)
+  while (((norm_>toldisp || fresmnorm>toldisp) || volnorm > toldisp ) && numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
@@ -1268,7 +1270,7 @@ void StruGenAlpha::FullNewtonUzawa()
   stiff_ = null;
 
   return;
-} // StruGenAlpha::FullNewton()
+} // StruGenAlpha::FullNewtonUzawa()
 
 /*----------------------------------------------------------------------*
  |  do modified Newton iteration (public)                    mwgee 03/07|
@@ -1314,7 +1316,9 @@ void StruGenAlpha::ModifiedNewton()
   double fresmnorm;
   double disinorm;
   fresm_->Norm2(&fresmnorm);
-  while (norm_>toldisp && fresmnorm>toldisp  && numiter<=maxiter)
+  Epetra_Time timer(discret_.Comm());
+  timer.ResetStartTime();
+  while ( (norm_>toldisp || fresmnorm>toldisp)  && numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
     //----------------------- apply dirichlet BCs to system of equations
@@ -1430,6 +1434,7 @@ void StruGenAlpha::ModifiedNewton()
     ++numiter;
   } // while (norm_>toldisp && fresmnorm>toldisp && numiter<=maxiter)
   //============================================= end equilibrium loop
+  double timepernlnsolve = timer.ElapsedTime();
 
   //-------------------------------- test whether max iterations was hit
   if (numiter>=maxiter) dserror("Newton unconverged in %d iterations",numiter);
@@ -1437,8 +1442,8 @@ void StruGenAlpha::ModifiedNewton()
   {
      if ( (myrank_ ==  0) && (printscreen) )
      {
-        printf("Modified Newton iteration converged: numiter %d res-norm %e dis-norm %e\n", 
-               numiter, fresmnorm, disinorm);
+        printf("Modified Newton iteration converged: numiter %d res-norm %e dis-norm %e time %10.5f\n", 
+               numiter,fresmnorm,disinorm,timepernlnsolve);
         fflush(stdout);
      }  
   }
@@ -1482,7 +1487,7 @@ void StruGenAlpha::MatrixFreeNewton()
   //=================================================== equilibrium loop
   double fresmnorm;
   fresm_->Norm2(&fresmnorm);
-  while (norm_>toldisp && fresmnorm>toldisp  && numiter<=maxiter)
+  while ( (norm_>toldisp || fresmnorm>toldisp)  && numiter<=maxiter)
   {
 
     LINALG::Add(*mass_,false,(1.-alpham)/(beta*dt*dt),*stiff_,1.-alphaf); // test
@@ -2163,7 +2168,7 @@ void StruGenAlpha::PTC()
 
 
   // hard wired ptc parameters
-  double ptcdt = 1.0e-02;
+  double ptcdt = 1.0e-03;
   double nc;
   fresm_->NormInf(&nc);
   double dti = 1/ptcdt;
@@ -2176,7 +2181,9 @@ void StruGenAlpha::PTC()
   double fresmnorm;
   double disinorm;
   fresm_->Norm2(&fresmnorm);
-  while (norm_>toldisp && fresmnorm>toldisp && numiter<=maxiter)
+  Epetra_Time timer(discret_.Comm());
+  timer.ResetStartTime();
+  while ( (norm_>toldisp || fresmnorm>toldisp) && numiter<=maxiter)
   {
     double dtim = dti0;
     dti0 = dti;
@@ -2319,14 +2326,12 @@ void StruGenAlpha::PTC()
     norm_ = disinorm;
 
     //------------------------------------ PTC update of artificial time
-#if 1
+#if 0
     // SER step size control
     dti *= (np/nc);
     dti = max(dti,0.0);
     nc = np;
-#endif
-
-#if 0
+#else
     {
       // TTI step size control
       double ttau=0.75;
@@ -2355,6 +2360,7 @@ void StruGenAlpha::PTC()
 
   } // while (norm_>toldisp && fresmnorm>toldisp && numiter<=maxiter)
   //============================================= end equilibrium loop
+  double timepernlnsolve = timer.ElapsedTime();
 
   //-------------------------------- test whether max iterations was hit
   if (numiter>=maxiter) dserror("Ptc unconverged in %d iterations",numiter);
@@ -2362,8 +2368,8 @@ void StruGenAlpha::PTC()
   {
      if ( (myrank_ ==  0) && (printscreen) )
      {
-        printf("Ptc converged: numiter %d res-norm %e dis-norm %e\n", 
-               numiter, fresmnorm, disinorm);
+        printf("Ptc converged: numiter %d res-norm %e dis-norm %e time %10.5f\n", 
+               numiter, fresmnorm, disinorm,timepernlnsolve);
         fflush(stdout);
      }  
   }
