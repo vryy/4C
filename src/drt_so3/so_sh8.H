@@ -238,9 +238,11 @@ private:
   void sosh8_evaluateT(const Epetra_SerialDenseMatrix jac,  // actual jacobian
                        Epetra_SerialDenseMatrix& TinvT);    // corr. T^{-T}
 
-  ThicknessDirection sosh8_findthickdir() ;
+  ThicknessDirection sosh8_findthickdir();
   
-  void sosh8_setcylinderfiberdirection(Epetra_SerialDenseMatrix xrefe);
+  void sosh8_gmshplotlabeledelement(const int LabelIds[NUMNOD_SOH8]);
+  
+  void sosh8_setcylinderfiberdirection(const Epetra_SerialDenseMatrix xrefe);
 
  
 }; // class So_sh8
@@ -338,6 +340,8 @@ public:
   //@}
 
 private:
+
+  void sosh8_gmshplotdis(const DRT::Discretization& dis);
 
 }; // class Sosh8Register
 

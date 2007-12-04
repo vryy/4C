@@ -28,6 +28,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/linalg_serialdensematrix.H"
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
+#include "../drt_xfem/gmsh.H"
 
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
@@ -816,7 +817,6 @@ DRT::Elements::So_sh8::ThicknessDirection DRT::Elements::So_sh8::sosh8_findthick
     xrefe(i, 1) = this->Nodes()[i]->X()[1];
     xrefe(i, 2) = this->Nodes()[i]->X()[2];
   }
-
   // vector of df(origin)
   double df0_vector[NUMDOF_SOH8*NUMNOD_SOH8] =
                {-0.125,-0.125,-0.125,
@@ -881,9 +881,11 @@ DRT::Elements::So_sh8::ThicknessDirection DRT::Elements::So_sh8::sosh8_findthick
   Epetra_SerialDenseVector glo_thickvec(3);
   loc_thickvec(thick_index) = 1.0;
   // thickness-vector in global coord is J times local thickness-vector
-  glo_thickvec.Multiply('N','N',1.0,jac0,loc_thickvec,0.0);
-  // return doubles of thickness-vector 
+  glo_thickvec.Multiply('T','N',1.0,jac0,loc_thickvec,0.0);
+  // return doubles of thickness-vector
+  thickvec_.resize(3);
   thickvec_[0] = glo_thickvec(0); thickvec_[1] = glo_thickvec(1); thickvec_[2] = glo_thickvec(2);
+  
 
   // set fiber direction for anisotropic material law
   sosh8_setcylinderfiberdirection(xrefe);
@@ -898,6 +900,7 @@ DRT::Elements::So_sh8::ThicknessDirection DRT::Elements::So_sh8::sosh8_findthick
 int DRT::Elements::Sosh8Register::Initialize(DRT::Discretization& dis)
 //int DRT::Elements::So_sh8::Initialize_numbers(DRT::Discretization& dis)
 {
+  //sosh8_gmshplotdis(dis);
   //-------------------- loop all my column elements and define thickness direction
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
@@ -906,23 +909,23 @@ int DRT::Elements::Sosh8Register::Initialize(DRT::Discretization& dis)
     DRT::Elements::So_sh8* actele = dynamic_cast<DRT::Elements::So_sh8*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_sh8* failed");
     
-    if (!actele->nodes_rearranged_){
-    // check for automatic definition of thickness direction
-    if (actele->thickdir_ == DRT::Elements::So_sh8::autoj) {
-      actele->thickdir_ = actele->sosh8_findthickdir();
-    }
-    
-    //int orig_nodeids[NUMNOD_SOH8];
-    int new_nodeids[NUMNOD_SOH8];
+    if (!actele->nodes_rearranged_) {
+      // check for automatic definition of thickness direction
+      if (actele->thickdir_ == DRT::Elements::So_sh8::autoj) {
+        actele->thickdir_ = actele->sosh8_findthickdir();
+      }
 
-    switch (actele->thickdir_) {
+      //int orig_nodeids[NUMNOD_SOH8];
+      int new_nodeids[NUMNOD_SOH8];
+
+      switch (actele->thickdir_) {
       case DRT::Elements::So_sh8::autor:
-      case DRT::Elements::So_sh8::globx:{
-//        cout << endl << "thickness direction is X" << endl;
-//        for (int node = 0; node < NUMNOD_SOH8; ++node) {
-//          orig_nodeids[node] = actele->NodeIds()[node];
-//          cout << node << ": " << orig_nodeids[node] << " inputID: " << actele->inp_nodeIds_[node]<< endl;
-//        }
+      case DRT::Elements::So_sh8::globx: {
+        //        cout << endl << "thickness direction is X" << endl;
+        //        for (int node = 0; node < NUMNOD_SOH8; ++node) {
+        //          orig_nodeids[node] = actele->NodeIds()[node];
+        //          cout << node << ": " << orig_nodeids[node] << " inputID: " << actele->inp_nodeIds_[node]<< endl;
+        //        }
         // resorting of nodes to arrive at local t-dir for global x-dir
         new_nodeids[0] = actele->inp_nodeIds_[7];
         new_nodeids[1] = actele->inp_nodeIds_[4];
@@ -932,14 +935,16 @@ int DRT::Elements::Sosh8Register::Initialize(DRT::Discretization& dis)
         new_nodeids[5] = actele->inp_nodeIds_[5];
         new_nodeids[6] = actele->inp_nodeIds_[1];
         new_nodeids[7] = actele->inp_nodeIds_[2];
+//        actele->sosh8_gmshplotlabeledelement(actele->inp_nodeIds_);
+//        actele->sosh8_gmshplotlabeledelement(new_nodeids);
         break;
       }
       case DRT::Elements::So_sh8::autos:
-      case DRT::Elements::So_sh8::globy:{
-//        for (int node = 0; node < NUMNOD_SOH8; ++node) {
-//          orig_nodeids[node] = actele->NodeIds()[node];
-//          cout << node << ": " << orig_nodeids[node] << " inputID: " << actele->inp_nodeIds_[node]<< endl;
-//        }
+      case DRT::Elements::So_sh8::globy: {
+        //        for (int node = 0; node < NUMNOD_SOH8; ++node) {
+        //          orig_nodeids[node] = actele->NodeIds()[node];
+        //          cout << node << ": " << orig_nodeids[node] << " inputID: " << actele->inp_nodeIds_[node]<< endl;
+        //        }
         // resorting of nodes to arrive at local t-dir for global y-dir
         new_nodeids[0] = actele->inp_nodeIds_[4];
         new_nodeids[1] = actele->inp_nodeIds_[5];
@@ -952,53 +957,177 @@ int DRT::Elements::Sosh8Register::Initialize(DRT::Discretization& dis)
         break;
       }
       case DRT::Elements::So_sh8::autot:
-      case DRT::Elements::So_sh8::globz:{ 
+      case DRT::Elements::So_sh8::globz: {
         // no resorting necessary
         for (int node = 0; node < 8; ++node) {
           new_nodeids[node] = actele->inp_nodeIds_[node];
-//          orig_nodeids[node] = actele->NodeIds()[node];
-//          cout << node << ": " << orig_nodeids[node] << " inputID: " << actele->inp_nodeIds_[node]<< endl;
+          //          orig_nodeids[node] = actele->NodeIds()[node];
+          //          cout << node << ": " << orig_nodeids[node] << " inputID: " << actele->inp_nodeIds_[node]<< endl;
         }
         break;
       }
       default:
-      dserror("no thickness direction for So_sh8");
-    }
-    actele->SetNodeIds(NUMNOD_SOH8,new_nodeids);
-    actele->nodes_rearranged_ = true;
+        dserror("no thickness direction for So_sh8");
+      }
+      //actele->sosh8_gmshplotlabeledelement(actele->NodeIds());
+      actele->SetNodeIds(NUMNOD_SOH8, new_nodeids);
+      actele->nodes_rearranged_ = true;
     }
   }
   // fill complete again to reconstruct element-node pointers,
   // but without element init, etc.
   dis.FillComplete(false,false,false);
-  
+
+  // **************** debug printout ot gmesh **********************************
+  sosh8_gmshplotdis(dis);
+
   return 0;
 }
 
-void DRT::Elements::So_sh8::sosh8_setcylinderfiberdirection(Epetra_SerialDenseMatrix xrefe)
+void DRT::Elements::So_sh8::sosh8_setcylinderfiberdirection(const Epetra_SerialDenseMatrix xrefe)
 {
-  // calculate hex8 midpoint
+//  // calculate hex8 midpoint
+//  Epetra_SerialDenseVector midpoint(3);
+//  Epetra_SerialDenseVector diagonal(3);
+//  for (int i = 0; i < 3; ++i){
+//    diagonal(i) = xrefe(0,i) - xrefe(4,i);
+//    midpoint(i) = xrefe(0,i);
+//  }
+//  diagonal.Scale(0.5);
+//  midpoint += diagonal;
+//  // cylinder coordinates
+//  //double radius = sqrt(midpoint(0)*midpoint(0) + midpoint(1)*midpoint(1));
   Epetra_SerialDenseVector midpoint(3);
-  Epetra_SerialDenseVector diagonal(3);
-  for (int i = 0; i < 3; ++i){
-    diagonal(i) = xrefe(0,i) - xrefe(4,i);
-    midpoint(i) = xrefe(0,i);
-  }
-  diagonal.Scale(0.5);
-  midpoint += diagonal;
-  // cylinder coordinates
-  //double radius = sqrt(midpoint(0)*midpoint(0) + midpoint(1)*midpoint(1));
-  double theta = atan(midpoint(1)/midpoint(0));
+  midpoint(0) = soh8_ElementCenterRefeCoords()[0];
+  midpoint(1) = soh8_ElementCenterRefeCoords()[1];
+  midpoint(2) = soh8_ElementCenterRefeCoords()[2];
+  midpoint.Scale(midpoint.Norm2());
+  //double theta = atan(midpoint(1)/midpoint(0));
   // tangent circumferential direction = - r_unit
   Epetra_SerialDenseVector circ(3);
-  circ(0) = - cos(theta); circ(1) = - sin(theta);
+  //circ(0) = - cos(theta); circ(1) = - sin(theta);
+  circ(0) = - midpoint(1); circ(1) = midpoint(0);
   // rotate by 45°
+  fiberdirection_.resize(3);
   fiberdirection_[0] = circ(0);
   fiberdirection_[1] = circ(1);
   fiberdirection_[2] = sqrt(circ(0)*circ(0) + circ(1)*circ(1));
   
+//  fiberdirection_[0] = circ(0);
+//  fiberdirection_[1] = circ(1);
+//  fiberdirection_[2] = circ(2);
+  
   return;
   
+}
+
+void DRT::Elements::So_sh8::sosh8_gmshplotlabeledelement(const int LabelIds[NUMNOD_SOH8])
+{
+  stringstream filename;
+  filename << "solidelement" << this->Id() << ".gmsh";
+  ofstream f_system("solidelement.gmsh");
+  stringstream gmshfilecontent;
+  gmshfilecontent << "View \" One Solid Element \" {" << endl;
+  gmshfilecontent << GMSH::elementToString(this->thickdir_, this) << endl;
+  // plot vector from 1st node to 5th node which is parametric t-dir
+  vector<double> X15(3);
+  X15[0] = this->Nodes()[4]->X()[0] - this->Nodes()[0]->X()[0];
+  X15[1] = this->Nodes()[4]->X()[1] - this->Nodes()[0]->X()[1];
+  X15[2] = this->Nodes()[4]->X()[2] - this->Nodes()[0]->X()[2];
+  gmshfilecontent << "VP(" << scientific << this->Nodes()[0]->X()[0] << ",";
+  gmshfilecontent << scientific << this->Nodes()[0]->X()[1] << ",";
+  gmshfilecontent << scientific << this->Nodes()[0]->X()[2] << ")";
+  gmshfilecontent << "{" << scientific << X15[0] << "," << X15[1] << "," << X15[2] << "};" << endl;
+  gmshfilecontent << "};" << endl;
+  gmshfilecontent << "View \" LabelIds \" {" << endl;
+  for (int i=0; i<NUMNOD_SOH8; ++i) {
+    gmshfilecontent << "SP(" << scientific << this->Nodes()[i]->X()[0] << ",";
+    gmshfilecontent << scientific << this->Nodes()[i]->X()[1] << ",";
+    gmshfilecontent << scientific << this->Nodes()[i]->X()[2] << ")";
+    gmshfilecontent << "{" << LabelIds[i] << "};" << endl;
+  }
+  gmshfilecontent << "};" << endl;
+  gmshfilecontent << "View \" I order \" {" << endl;
+  for (int i=0; i<NUMNOD_SOH8; ++i) {
+    gmshfilecontent << "SP(" << scientific << this->Nodes()[i]->X()[0] << ",";
+    gmshfilecontent << scientific << this->Nodes()[i]->X()[1] << ",";
+    gmshfilecontent << scientific << this->Nodes()[i]->X()[2] << ")";
+    gmshfilecontent << "{" << i << "};" << endl;
+  }
+  gmshfilecontent << "};" << endl;
+  f_system << gmshfilecontent.str();
+  f_system.close();
+  return;
+}
+
+void DRT::Elements::Sosh8Register::sosh8_gmshplotdis(const DRT::Discretization& dis)
+{
+  ofstream f_system("solidelements.gmsh");
+  stringstream gmshfilecontent;
+  gmshfilecontent << "View \" Solid Elements thickdir_ \" {" << endl;
+  // plot elements
+  for (int i=0; i<dis.NumMyColElements(); ++i)
+  {
+    if (dis.lColElement(i)->Type() != DRT::Element::element_sosh8) continue;
+    DRT::Elements::So_sh8* actele = dynamic_cast<DRT::Elements::So_sh8*>(dis.lColElement(i));
+    if (!actele) dserror("cast to So_sh8* failed");
+    // plot elements
+    gmshfilecontent << GMSH::elementToString(actele->thickdir_, actele) << endl;
+    // plot vector from 1st node to 5th node which is parametric t-dir
+    vector<double> X15(3);
+    X15[0] = actele->Nodes()[4]->X()[0] - actele->Nodes()[0]->X()[0];
+    X15[1] = actele->Nodes()[4]->X()[1] - actele->Nodes()[0]->X()[1];
+    X15[2] = actele->Nodes()[4]->X()[2] - actele->Nodes()[0]->X()[2];
+    gmshfilecontent << "VP(" << scientific << actele->Nodes()[0]->X()[0] << ",";
+    gmshfilecontent << scientific << actele->Nodes()[0]->X()[1] << ",";
+    gmshfilecontent << scientific << actele->Nodes()[0]->X()[2] << ")";
+    gmshfilecontent << "{" << scientific << X15[0] << "," << X15[1] << "," << X15[2] << "};" << endl;
+  }
+  gmshfilecontent << "};" << endl;
+  gmshfilecontent << "View \" Solid Elements Id \" {" << endl;
+  // plot elements
+  for (int i=0; i<dis.NumMyColElements(); ++i)
+  {
+    if (dis.lColElement(i)->Type() != DRT::Element::element_sosh8) continue;
+    DRT::Elements::So_sh8* actele = dynamic_cast<DRT::Elements::So_sh8*>(dis.lColElement(i));
+    if (!actele) dserror("cast to So_sh8* failed");
+    // plot elements
+    gmshfilecontent << GMSH::elementToString(actele->LID(), actele) << endl;
+  }
+  gmshfilecontent << "};" << endl;
+  // plot vectors
+  gmshfilecontent << "View \" Thickness Vectors \" {" << endl;
+  for (int i=0; i<dis.NumMyColElements(); ++i)
+  {
+    if (dis.lColElement(i)->Type() != DRT::Element::element_sosh8) continue;
+    DRT::Elements::So_hex8* actele = dynamic_cast<DRT::Elements::So_hex8*>(dis.lColElement(i));
+    if (!actele) dserror("cast to So_hex8* failed");
+    // plot vector in center of elements
+    const vector<double> pv = actele->GetThickvec();
+    vector<double> ec = actele->soh8_ElementCenterRefeCoords();
+    //gmshfilecontent << "VP(0,0,0){1,1.3,1.7};" << endl;
+    gmshfilecontent << "VP(" << scientific << ec[0] << "," << ec[1] << "," << ec[2] << ")";
+    gmshfilecontent << "{" << scientific << pv[0] << "," << pv[1] << "," << pv[2] << "};" << endl; 
+  }
+  gmshfilecontent << "};" << endl;
+  // plot vectors
+  gmshfilecontent << "View \" Fiber Direction Vectors \" {" << endl;
+  for (int i=0; i<dis.NumMyColElements(); ++i)
+  {
+    if (dis.lColElement(i)->Type() != DRT::Element::element_sosh8) continue;
+    DRT::Elements::So_hex8* actele = dynamic_cast<DRT::Elements::So_hex8*>(dis.lColElement(i));
+    if (!actele) dserror("cast to So_hex8* failed");
+    // plot vector in center of elements
+    const vector<double> pv = actele->GetFibervec();
+    vector<double> ec = actele->soh8_ElementCenterRefeCoords();
+    //gmshfilecontent << "VP(0,0,0){1,1.3,1.7};" << endl;
+    gmshfilecontent << "VP(" << scientific << ec[0] << "," << ec[1] << "," << ec[2] << ")";
+    gmshfilecontent << "{" << scientific << pv[0] << "," << pv[1] << "," << pv[2] << "};" << endl; 
+  }
+  gmshfilecontent << "};" << endl;
+  f_system << gmshfilecontent.str();
+  f_system.close();
+  return;
 }
 
 #endif  // #ifdef CCADISCRET

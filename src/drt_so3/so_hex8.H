@@ -282,6 +282,10 @@ public:
                               Epetra_SerialDenseVector& elevec1);
 
 
+  const vector<double> GetThickvec(){return thickvec_;};
+  const vector<double> GetFibervec(){return fiberdirection_;};
+  const vector<double> soh8_ElementCenterRefeCoords();
+  
   //@}
 
 protected:
@@ -360,8 +364,8 @@ protected:
   bool                                            donerewinding_;
 
   //! vector in thickness direction for compatibility with sosh8
-  double                                         thickvec_[3];
-  double                                      fiberdirection_[3];
+  vector<double>                                   thickvec_;
+  vector<double>                                   fiberdirection_;
 
   // internal calculation methods
 
@@ -414,7 +418,7 @@ protected:
                   vector<double>& residual);
 
   bool soh8_checkRewinding();
-
+  
 }; // class So_hex8
 
 

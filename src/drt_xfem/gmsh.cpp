@@ -58,6 +58,83 @@ string GMSH::elementToString(const double scalar, DRT::Element* ele)
     return pos_array_string.str();
 }
 
+string GMSH::elementToString(const vector<double> scalarfield, DRT::Element* ele)
+{
+    DRT::Node** nodes = ele->Nodes();
+    
+    const DRT::Element::DiscretizationType distype = ele->Shape();
+    const int numnode = distypeToGmshNumNode(distype);
+    
+    if ((unsigned int)(scalarfield.size()) != (unsigned int)numnode) dserror("Size mismatch: No of Nodes vs Size of Scalarfield");
+    
+    stringstream pos_array_string;
+    pos_array_string << "S" << distypeToGmshElementHeader(distype) << "(";
+    for (int i = 0; i<numnode;++i)
+    {
+        const DRT::Node* node = nodes[i];
+        const double* x = node->X();
+        pos_array_string << scientific << x[0] << ",";
+        pos_array_string << scientific << x[1] << ",";
+        pos_array_string << scientific << x[2];
+        if (i < numnode-1){
+            pos_array_string << ",";
+        }
+    };
+    pos_array_string << ")";
+    // values
+    pos_array_string << "{";
+    for (int i = 0; i<numnode;++i)
+    {
+        pos_array_string << scientific << scalarfield[i];
+        if (i < numnode-1){
+            pos_array_string << ",";
+        }
+    };
+    pos_array_string << "};";
+    return pos_array_string.str();
+}
+
+string GMSH::elementToString(const vector<vector<double> > vectorfield, DRT::Element* ele)
+{
+    DRT::Node** nodes = ele->Nodes();
+    
+    const DRT::Element::DiscretizationType distype = ele->Shape();
+    const int numnode = distypeToGmshNumNode(distype);
+    const int numcomp=3;
+    
+    if ((unsigned int)vectorfield.size() != (unsigned int)numnode) dserror("Size mismatch: No of Nodes vs Size of Vectorfield");
+    if ((unsigned int)vectorfield[0].size() != 3) dserror("Size mismatch: Vector of Vectorfield must have length 3");
+    
+    stringstream pos_array_string;
+    pos_array_string << "S" << distypeToGmshElementHeader(distype) << "(";
+    for (int i = 0; i<numnode;++i)
+    {
+        const DRT::Node* node = nodes[i];
+        const double* x = node->X();
+        pos_array_string << scientific << x[0] << ",";
+        pos_array_string << scientific << x[1] << ",";
+        pos_array_string << scientific << x[2];
+        if (i < numnode-1){
+            pos_array_string << ",";
+        }
+    };
+    pos_array_string << ")";
+    // values
+    pos_array_string << "{";
+    for (int i = 0; i<numnode;++i)
+    {
+        for (int component = 0; component < numcomp; ++component) {
+          pos_array_string << scientific << vectorfield[i][component];
+          if (component < numcomp-1) pos_array_string << ",";
+        }
+        if (i < numnode-1){
+            pos_array_string << ",";
+        }
+    };
+    pos_array_string << "};";
+    return pos_array_string.str();
+}
+
 string GMSH::cellToString(const double scalar, const DomainIntCell& cell, DRT::Element* ele)
 {
     stringstream pos_array_string;

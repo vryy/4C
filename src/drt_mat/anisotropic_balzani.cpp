@@ -141,7 +141,7 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
 //  cout << "Enhanced Cauchy-Green: " << C;
 //  
 //  Epetra_SerialDenseMatrix C_lock(3,3);
-//  C_lock.Multiply('T','N',1.0,*defgrd,*defgrd,0.0);
+//  //C_lock.Multiply('T','N',1.0,*defgrd,*defgrd,0.0);
 //  cout << "Disp-based Cauchy-Green: " << C_lock;
   
 //  // compute eigenvalues of C
@@ -223,6 +223,15 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
                  + eps1 * eps2 * ( pow(I3,eps2-1.0) - pow(I3,(-eps2-1.0)));
   S.Scale(scalar1);
   double scalar2 = c1*pow(I3,-1.0/3.0);
+  if (isnan(scalar1) || isnan(scalar2)){
+    cout << "anisotropic_balzani Material evaluated NaN" << endl;
+    cout << "I1 = " << I1 << "; I3 = " << I3 << endl;
+    cout << "scalar1: " << scalar1 << "; scalar2: " << scalar2 << endl;
+    cout << "ElementID: " << ele_ID << "; gp: " << gp << "; time: " << time << endl;
+    cout << "GL-Strain: " << *glstrain;
+    cout << "Cauchy-Green: " << C;
+    dserror("Material computed NaN");
+  }
   Epetra_SerialDenseMatrix Iscale(I);
   Iscale.Scale(scalar2);
   S += Iscale;
@@ -246,7 +255,7 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
   // the wellknown factor 2!
   S.Scale(2.0);
   
-//  cout << setprecision(10) << S;
+  //cout << setprecision(10) << S;
   
   (*stress)(0) = S(0,0);
   (*stress)(1) = S(1,1);
