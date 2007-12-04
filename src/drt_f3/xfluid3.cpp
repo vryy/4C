@@ -349,71 +349,77 @@ void DRT::Elements::XFluid3::CreateSurfacesHex(const int& nsurf,
 
 void DRT::Elements::XFluid3::CreateSurfaceWedge(const int& nsurf, const int& wedgetype)
 {
-  int nnode, trisurfacenodes, quadsurfacenodes;
-
-  switch (wedgetype){
-  case 6:
-    trisurfacenodes=3;
-    quadsurfacenodes=4;
-    for (int isurf=0; isurf<nsurf; isurf++)
+    switch (wedgetype)
     {
-      int nodeids[nnode];
-      DRT::Node* nodes[nnode];
-
-
-      if (isurf <=2)
-        nnode=trisurfacenodes;
-      else
-        nnode=quadsurfacenodes;
-
-
-      for (int inode=0; inode<nnode;inode++)
-      {
-        if (isurf < 2){
-        nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_trisurfaces[isurf][inode]];
-      nodes[inode] = Nodes()[ eleNodeNumbering_wedge15_trisurfaces[isurf][inode]];
-    }
-    else
-      nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[isurf][inode]];
-      nodes[inode] = Nodes()[ eleNodeNumbering_wedge15_quadsurfaces[isurf][inode]];
-  }
-       surfaces_[isurf] = rcp(new DRT::Elements::XFluid3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
-        surfaceptrs_[isurf] = surfaces_[isurf].get();
-    }
-    break;
-
-  case 15:
-    trisurfacenodes=6;
-    quadsurfacenodes=8;
-
-    for (int isurf=0; isurf<nsurf; isurf++)
+    case 6:
     {
+        const int trisurfacenodes=3;   // tri3
+        const int quadsurfacenodes=4;  // quad4
+        for (int isurf=0; isurf<nsurf; isurf++)
+        {
+            int nnode = 0;
+            if (isurf <=2)
+                nnode=trisurfacenodes;
+            else
+                nnode=quadsurfacenodes;
 
-      int nodeids[nnode];
-      DRT::Node* nodes[nnode];
+            int nodeids[nnode];
+            DRT::Node* nodes[nnode];
 
-      if (isurf <=2)
-        nnode=trisurfacenodes;
-      else
-        nnode=quadsurfacenodes;
-
-
-      for (int inode=0; inode<nnode;inode++)
-      {
-        if (isurf < 2){
-        nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_trisurfaces[isurf][inode]];
-      nodes[inode] = Nodes()[ eleNodeNumbering_wedge15_trisurfaces[isurf][inode]];
+            for (int inode=0; inode<nnode; inode++)
+            {
+                if (isurf < 2)
+                {
+                    nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_trisurfaces[isurf][inode]];
+                    nodes[  inode] = Nodes()[ eleNodeNumbering_wedge15_trisurfaces[isurf][inode]];
+                }
+                else
+                {
+                    nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[isurf][inode]];
+                    nodes[  inode] = Nodes()[ eleNodeNumbering_wedge15_quadsurfaces[isurf][inode]];
+                }
+                surfaces_[isurf] = rcp(new DRT::Elements::XFluid3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
+                surfaceptrs_[isurf] = surfaces_[isurf].get();
+            }
+        }
+        break;
     }
-    else
-      nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[isurf][inode]];
-      nodes[inode] = Nodes()[ eleNodeNumbering_wedge15_quadsurfaces[isurf][inode]];
-  }
-       surfaces_[isurf] = rcp(new DRT::Elements::XFluid3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
-        surfaceptrs_[isurf] = surfaces_[isurf].get();
-    }
-    break;
+    case 15:
+    {
+        const int trisurfacenodes=6;   // tri6
+        const int quadsurfacenodes=8;  // quad8
 
-}
+        for (int isurf=0; isurf<nsurf; isurf++)
+        {
+            int nnode = 0;
+            if (isurf <=2)
+                nnode=trisurfacenodes;
+            else
+                nnode=quadsurfacenodes;
+
+            int nodeids[nnode];
+            DRT::Node* nodes[nnode];
+            for (int inode=0; inode<nnode; inode++)
+            {
+                if (isurf < 2)
+                {
+                    nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_trisurfaces[isurf][inode]];
+                    nodes[inode] = Nodes()[ eleNodeNumbering_wedge15_trisurfaces[isurf][inode]];
+                }
+                else
+                {
+                    nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[isurf][inode]];
+                    nodes[inode] = Nodes()[ eleNodeNumbering_wedge15_quadsurfaces[isurf][inode]];
+                }
+                surfaces_[isurf] = rcp(new DRT::Elements::XFluid3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
+                surfaceptrs_[isurf] = surfaces_[isurf].get();
+            }
+        }
+        break;
+    }
+    default:
+        dserror("incorrect wedgetype");
+    } // end switch wedge type
 }
 
 void DRT::Elements::XFluid3::CreateSurfacesPyramid()
