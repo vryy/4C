@@ -8,21 +8,144 @@
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               vg 06/07|
  *----------------------------------------------------------------------*/
-VM3_Solver::VM3_Solver(
-                                    RefCountPtr<Epetra_CrsMatrix> Aplus,
-                                    RefCountPtr<Epetra_CrsMatrix> A,
-                                    ParameterList& mlparams,
-                                    bool compute) :
-iscomputed_(false),
+VM3_Solver::VM3_Solver(RefCountPtr<Epetra_CrsMatrix>& Aplus,
+                       RefCountPtr<Epetra_CrsMatrix>& A,
+                       RefCountPtr<Epetra_Vector>& rplus,
+                       RefCountPtr<Epetra_Vector>& r,
+                       RefCountPtr<Epetra_Vector>& sol,
+                       const RefCountPtr<Epetra_Vector> dbctoggle,
+                       ParameterList& mlparams,
+                       bool increm) :
+increm_(increm),
 mlparams_(mlparams),
 Aplus_(Aplus),
-A_(A)
+A_(A),
+rplus_(rplus),
+r_(r),
+sol_(sol)
 {
-  label_  = "VM3_Solver";
-  if (compute) Compute();
+  const Epetra_Vector& dbct = *dbctoggle;
+
+  // this is important to have!!!
+  MLAPI::Init();
+
+  // get nullspace parameters
+  double* nullspace     = mlparams_.get("null space: vectors",(double*)NULL);
+  if (!nullspace) dserror("No nullspace supplied in parameter list");
+  int     nsdim         = mlparams_.get("null space: dimension",1);
+
+  Space space(Aplus_->RowMap());
+  Operator mlapiAplus(space,space,Aplus_.get(),false);
+
+  // build nullspace;
+  MultiVector NS;
+  MultiVector NextNS;
+  NS.Reshape(mlapiAplus.GetRangeSpace(),nsdim);
+  if (nullspace)
+  {
+    const int length = NS.GetMyLength();
+    for (int i=0; i<nsdim; ++i)
+     for (int j=0; j<length; ++j)
+        if (dbct[j]!=1.0) NS(j,i) = nullspace[i*length+j];
+  }
+
+  // get plain aggregation P and R
+  Operator Ptent;
+  Operator Rtent;
+  GetPtent(mlapiAplus,mlparams_,NS,Ptent,NextNS);
+  Rtent = GetTranspose(Ptent);
+
+  // get scale-separating operator S
+  Operator S;
+  Operator I = GetIdentity(mlapiAplus.GetDomainSpace(),mlapiAplus.GetRangeSpace());
+  S = I - (Ptent * Rtent);
+
+#if 0
+  // get fine-scale discontinuity-capturing matrix Mfsdc
+  Operator Mfsdc;
+  Mfsdc = GetTranspose(S) * mlapiAplus * S;
+
+  Epetra_CrsMatrix* tmpcrs;
+  int maxentries;
+  double time;
+  ML_Operator2EpetraCrsMatrix(Mfsdc.GetML_Operator(),tmpcrs,maxentries,true,time,0,true);
+  Aplus_ = rcp(tmpcrs);
+
+  cout << Aplus_->RowMap() << A_->RowMap(); exit(0);
+  int length = A_->MaxNumEntries();
+  vector<int>    cindices(length);
+  vector<double> values(length);
+  const int amapsize = A_->RowMap().NumMyElements();
+  for (int i=0; i<amapsize; ++i)
+  {
+    // new global row id
+    const int grid = A_->RowMap().GID(i);
+    int numindices = 0;
+    int err = Aplus_->ExtractMyRowCopy(i,length,numindices,&values[0],&cindices[0]);
+    if (err<0) dserror("ExtractMyRowCopy returned %d",err);
+    // new global column id gcid = (lcid -> gcid)
+    for (int j=0; j<numindices; ++j) cindices[j] = A_->ColMap().GID(cindices[j]);
+    for (int j=0; j<numindices; ++j)
+    {
+      err = A_->SumIntoGlobalValues(grid,1,&values[j],&cindices[j]);
+      if (err<0 || err==2) err = A_->InsertGlobalValues(grid,1,&values[j],&cindices[j]);
+      if (err < 0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d",err);
+    }
+  }
+#endif
+
+  Epetra_CrsMatrix* tmpcrs;
+  int maxentries;
+  double time;
+  ML_Operator2EpetraCrsMatrix(S.GetML_Operator(),tmpcrs,maxentries,true,time,0,true);
+  RCP<Epetra_CrsMatrix> tmprcp = rcp(tmpcrs);
+  Epetra_Export exporter(tmprcp->RowMap(),Aplus_->RowMap());
+  RCP<Epetra_CrsMatrix> Sep = LINALG::CreateMatrix(Aplus_->RowMap(),maxentries+20);
+  int err = Sep->Export(*tmprcp,exporter,Insert);
+  if (err) dserror("Export returned %d",err);
+  if (!Sep->Filled()) Sep->FillComplete(Aplus_->DomainMap(),Aplus_->RangeMap());
+  tmprcp = null;
+  //cout << *Sep;
+  if (!Sep->RowMap().SameAs(Aplus_->RowMap())) dserror("rowmap not equal");
+  if (!Sep->RangeMap().SameAs(Aplus_->RangeMap())) dserror("rangemap not equal");
+  if (!Sep->DomainMap().SameAs(Aplus_->DomainMap())) dserror("domainmap not equal");
+  //if (!Sep->ColMap().SameAs(Aplus_->ColMap())) dserror("colmap not equal");
+
+  //cout << *Sep;
+//#if 0
+  //cout << Sep->RowMap();
+  //exit(0);
+//#endif
+
+  Aplus_ = LINALG::MatMatMult(*Aplus_,false,*Sep,false);
+  Aplus_ = LINALG::MatMatMult(*Sep,true,*Aplus_,false);
+
+  // add the fine-scale discontinuity-capturing matrix to obtain complete matrix
+  LINALG::Add(*Aplus_,false,1.0,*A_,1.0);
+
+//RCP<Epetra_CrsMatrix> Acombined = LINALG::CreateMatrix(Aplus_->RowMap(),maxentries+20);
+//LINALG::Add(*A_,false,1.0,*Acombined,0.0);
+//LINALG::Add(*Aplus_,false,1.0,*Acombined,1.0);
+//int err = Acombined->FillComplete();
+//err = Acombined->OptimizeStorage();
+//A_ = Acombined;
+
+  if (increm_)
+  {
+    Aplus_->Multiply(false,*sol_,*rplus_);
+    r_->Update(-1.0,*rplus_,1.0);
+  }
+
+  // store Ptent and Rtent
+  Ptent_ = Ptent;
+  Rtent_ = Rtent;
+
   return;
 }
 
+
+#if 0
+// version with extended equation system
 /*----------------------------------------------------------------------*
  |  multigrid solver for VM3                                    vg 06/07|
  *----------------------------------------------------------------------*/
@@ -63,6 +186,69 @@ int VM3_Solver::Solve(const Epetra_Vector& B, Epetra_Vector& X, ParameterList& p
   
   LINALG::Solver solver(rcpparams,Acombined_->RowMatrixRowMap().Comm(),NULL);
   solver.Solve(Acombined_,x,b,true,true);
+  
+  LINALG::Export(*x,*xcshifted);
+  LINALG::Export(*x,X);
+  for (int i=0; i<mylength; ++i)
+    xcoarse(i,0) = (*xcshifted)[i];
+ 
+  MultiVector x3h_h;
+  x3h_h = Ptent_ * xcoarse;
+  
+  const int longlength = X.MyLength();
+  for (int i=0; i<longlength; ++i)
+    X[i] += x3h_h(i,0);
+
+  return 0;
+
+}
+
+/*----------------------------------------------------------------------*
+ |  multigrid solver for VM3 for incremental formulation        vg 11/07|
+ *----------------------------------------------------------------------*/
+int VM3_Solver::Solve(const Epetra_Vector& B, 
+                      const Epetra_Vector& Bplus, 
+                            Epetra_Vector& X, 
+                            ParameterList& params)
+{
+    // do setup if not already done
+  if (!iscomputed_) Compute();
+
+  RCP<Epetra_Vector> x = LINALG::CreateVector(Acombined_->OperatorDomainMap(),true);
+  RCP<Epetra_Vector> b = LINALG::CreateVector(Acombined_->OperatorRangeMap(),true);
+  LINALG::Export(X,*x);
+  LINALG::Export(Bplus,*b);
+  
+  const Epetra_BlockMap& bmap = X.Map();
+  Space space;
+  space.Reshape(bmap.NumGlobalElements(),bmap.NumMyElements(),bmap.MyGlobalElements());
+  
+  MultiVector mvX(space,X.Pointers(),1);
+  MultiVector mvB(space,B.Pointers(),1);
+  
+  MultiVector bcoarse;
+  MultiVector xcoarse;
+  bcoarse = Rtent_ * mvB;
+  xcoarse = Rtent_ * mvX;
+  
+  RCP<Epetra_Vector> xcshifted = LINALG::CreateVector(*coarsermap_,true);
+  RCP<Epetra_Vector> bcshifted = LINALG::CreateVector(*coarsermap_,true);
+  const int mylength = xcshifted->MyLength();
+  for (int i=0; i<mylength; ++i)
+  {
+    (*xcshifted)[i] = xcoarse(i,0);
+    (*bcshifted)[i] = bcoarse(i,0);
+  }
+  LINALG::Export(*xcshifted,*x);
+  LINALG::Export(*bcshifted,*b);
+  
+  RCP<ParameterList> rcpparams = rcp( new ParameterList(params));
+  
+  LINALG::Solver solver(rcpparams,Acombined_->RowMatrixRowMap().Comm(),NULL);
+  solver.Solve(Acombined_,x,b,true,true);
+  //cout << *Acombined_;
+  //AztecOO azsolver(Acombined_.get(),x.get(),b.get());
+  //azsolver.Iterate(5000,1.0e-08);
   
   LINALG::Export(*x,*xcshifted);
   LINALG::Export(*x,X);
@@ -261,6 +447,6 @@ bool VM3_Solver::Compute()
   return true;
 }
 
-
+#endif
 
 #endif
