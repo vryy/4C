@@ -74,12 +74,28 @@ namespace MAT
                   
     double Density();                  
 
-    Epetra_SerialDenseMatrix tensorproduct(const Epetra_SerialDenseMatrix A,
-                                           const Epetra_SerialDenseMatrix B,
-                                           const double scalarA,
-                                           const double scalarB);
 
   private:
+    void hyper_ElastSymTensorMultiply(Epetra_SerialDenseMatrix& C,
+                                     const double ScalarAB,
+                                     const Epetra_SerialDenseMatrix& A,
+                                     const Epetra_SerialDenseMatrix& B,
+                                     const double ScalarThis);
+    void hyper_ElastSymTensorMultiplyAddSym(Epetra_SerialDenseMatrix& C,
+                                     const double ScalarAB,
+                                     const Epetra_SerialDenseMatrix& A,
+                                     const Epetra_SerialDenseMatrix& B,
+                                     const double ScalarThis);
+    void hyper_ElastSymTensor_o_Multiply(Epetra_SerialDenseMatrix& C,
+                                     const double ScalarAB,
+                                     const Epetra_SerialDenseMatrix& A,
+                                     const Epetra_SerialDenseMatrix& B,
+                                     const double ScalarThis);
+//    Epetra_SerialDenseMatrix tensorproduct(const Epetra_SerialDenseMatrix A,
+//                                           const Epetra_SerialDenseMatrix B,
+//                                           const double scalarA,
+//                                           const double scalarB);
+
 
     /// my material parameters
     MATERIAL* matdata_;

@@ -240,15 +240,15 @@ void MAT::HyperPolyconvex::Evaluate(const Epetra_SerialDenseVector* glstrain,
   delta(6) += -4.0 * epsilon * gamma * (pow(Inv(2),gamma) - pow(Inv(2),-gamma));
   
   // *** new "faster" evaluate of C-Matrix
-  ElastSymTensorMultiply((*cmat),delta(0),I,I,1.0);           // I x I
-  ElastSymTensorMultiplyAddSym((*cmat),delta(1),I,C,1.0);     // I x C + C x I
-  ElastSymTensorMultiplyAddSym((*cmat),delta(2),I,Cinv,1.0);  // I x Cinv + Cinv x I
-  ElastSymTensorMultiply((*cmat),delta(3),C,C,1.0);           // C x C
-  ElastSymTensorMultiplyAddSym((*cmat),delta(4),C,Cinv,1.0);  // C x Cinv + Cinv x C
-  ElastSymTensorMultiply((*cmat),delta(5),Cinv,Cinv,1.0);     // Cinv x Cinv
-  ElastSymTensor_o_Multiply((*cmat),delta(6),Cinv,Cinv,1.0);  // Cinv o Cinv
+  hyper_ElastSymTensorMultiply((*cmat),delta(0),I,I,1.0);           // I x I
+  hyper_ElastSymTensorMultiplyAddSym((*cmat),delta(1),I,C,1.0);     // I x C + C x I
+  hyper_ElastSymTensorMultiplyAddSym((*cmat),delta(2),I,Cinv,1.0);  // I x Cinv + Cinv x I
+  hyper_ElastSymTensorMultiply((*cmat),delta(3),C,C,1.0);           // C x C
+  hyper_ElastSymTensorMultiplyAddSym((*cmat),delta(4),C,Cinv,1.0);  // C x Cinv + Cinv x C
+  hyper_ElastSymTensorMultiply((*cmat),delta(5),Cinv,Cinv,1.0);     // Cinv x Cinv
+  hyper_ElastSymTensor_o_Multiply((*cmat),delta(6),Cinv,Cinv,1.0);  // Cinv o Cinv
   // fiber part
-  ElastSymTensorMultiply((*cmat),(deltafib*kappa*kappa),I,I,1.0);
+  hyper_ElastSymTensorMultiply((*cmat),(deltafib*kappa*kappa),I,I,1.0);
   
   
 //  // ************* evaluate C-matrix ***************************
@@ -340,7 +340,238 @@ void MAT::HyperPolyconvex::Evaluate(const Epetra_SerialDenseVector* glstrain,
   return;
 }
 
-///*----------------------------------------------------------------------*
+/*----------------------------------------------------------------------*
+ * THIS IS A REIMPLEMENTATION from LINALG::ElastSymTensorMultiply       *
+ * WHICH RESTORES THE ORIGINAL CCARAT HYPERPOLYCONVEX MATERIAL          *
+ * DIFFERENCE IS THE CONSIDERATION OF THE VOIGT NOTATION                *
+ |  compute the "material tensor product" A x B of two 2nd order tensors|
+ | (in matrix notation) and add the result to a 4th order tensor        |
+ | (also in matrix notation) using the symmetry-conditions inherent to  |
+ | material tensors, or tangent matrices, respectively.                 |
+ | The implementation is based on the Epetra-Method Matrix.Multiply.    |
+ | (public)                                                    maf 11/07|
+ *----------------------------------------------------------------------*/
+void MAT::HyperPolyconvex::hyper_ElastSymTensorMultiply(Epetra_SerialDenseMatrix& C,
+                                 const double ScalarAB,
+                                 const Epetra_SerialDenseMatrix& A,
+                                 const Epetra_SerialDenseMatrix& B,
+                                 const double ScalarThis)
+{
+  // check sizes
+  if (A.M() != A.N() || B.M() != B.N() || A.M() != 3 || B.M() != 3){
+    dserror("2nd order tensors must be 3 by 3");
+  }
+  if (C.M() != C.N() || C.M() != 6) dserror("4th order tensor must be 6 by 6");
+  
+  // everything in Voigt-Notation
+  Epetra_SerialDenseMatrix AVoigt(6,1);
+  Epetra_SerialDenseMatrix BVoigt(6,1);
+  AVoigt(0,0) = A(0,0); AVoigt(1,0) = A(1,1); AVoigt(2,0) = A(2,2);
+  AVoigt(3,0) = A(1,0); AVoigt(4,0) = A(2,1); AVoigt(5,0) = A(2,0);
+  BVoigt(0,0) = B(0,0); BVoigt(1,0) = B(1,1); BVoigt(2,0) = B(2,2);
+  BVoigt(3,0) = B(1,0); BVoigt(4,0) = B(2,1); BVoigt(5,0) = B(2,0);
+  C.Multiply('N','T',ScalarAB,AVoigt,BVoigt,ScalarThis);
+
+  // this is explicitly what the former .Multiply does:
+//  C(0,0)= ScalarThis*C(0,0) + ScalarAB * A(0,0)*B(0,0);
+//  C(0,1)= ScalarThis*C(0,1) + ScalarAB * A(0,0)*B(1,1);
+//  C(0,2)= ScalarThis*C(0,2) + ScalarAB * A(0,0)*B(2,2);
+//  C(0,3)= ScalarThis*C(0,3) + ScalarAB * A(0,0)*B(1,0);
+//  C(0,4)= ScalarThis*C(0,4) + ScalarAB * A(0,0)*B(2,1);
+//  C(0,5)= ScalarThis*C(0,5) + ScalarAB * A(0,0)*B(2,0);
+//  
+//  C(1,0)= ScalarThis*C(1,0) + ScalarAB * A(1,1)*B(0,0);
+//  C(1,1)= ScalarThis*C(1,1) + ScalarAB * A(1,1)*B(1,1);
+//  C(1,2)= ScalarThis*C(1,2) + ScalarAB * A(1,1)*B(2,2);
+//  C(1,3)= ScalarThis*C(1,3) + ScalarAB * A(1,1)*B(1,0);
+//  C(1,4)= ScalarThis*C(1,4) + ScalarAB * A(1,1)*B(2,1);
+//  C(1,5)= ScalarThis*C(1,5) + ScalarAB * A(1,1)*B(2,0);
+//               
+//  C(2,0)= ScalarThis*C(2,0) + ScalarAB * A(2,2)*B(0,0);
+//  C(2,1)= ScalarThis*C(2,1) + ScalarAB * A(2,2)*B(1,1);
+//  C(2,2)= ScalarThis*C(2,2) + ScalarAB * A(2,2)*B(2,2);
+//  C(2,3)= ScalarThis*C(2,3) + ScalarAB * A(2,2)*B(1,0);
+//  C(2,4)= ScalarThis*C(2,4) + ScalarAB * A(2,2)*B(2,1);
+//  C(2,5)= ScalarThis*C(2,5) + ScalarAB * A(2,2)*B(2,0);
+//
+//  C(3,0)= ScalarThis*C(3,0) + ScalarAB * A(1,0)*B(0,0);
+//  C(3,1)= ScalarThis*C(3,1) + ScalarAB * A(1,0)*B(1,1);
+//  C(3,2)= ScalarThis*C(3,2) + ScalarAB * A(1,0)*B(2,2);
+//  C(3,3)= ScalarThis*C(3,3) + ScalarAB * A(1,0)*B(1,0);
+//  C(3,4)= ScalarThis*C(3,4) + ScalarAB * A(1,0)*B(2,1);
+//  C(3,5)= ScalarThis*C(3,5) + ScalarAB * A(1,0)*B(2,0);
+//  
+//  C(4,0)= ScalarThis*C(4,0) + ScalarAB * A(2,1)*B(0,0);
+//  C(4,1)= ScalarThis*C(4,1) + ScalarAB * A(2,1)*B(1,1);
+//  C(4,2)= ScalarThis*C(4,2) + ScalarAB * A(2,1)*B(2,2);
+//  C(4,3)= ScalarThis*C(4,3) + ScalarAB * A(2,1)*B(1,0);
+//  C(4,4)= ScalarThis*C(4,4) + ScalarAB * A(2,1)*B(2,1);
+//  C(4,5)= ScalarThis*C(4,5) + ScalarAB * A(2,1)*B(2,0);
+//  
+//  C(5,0)= ScalarThis*C(5,0) + ScalarAB * A(2,0)*B(0,0);
+//  C(5,1)= ScalarThis*C(5,1) + ScalarAB * A(2,0)*B(1,1);
+//  C(5,2)= ScalarThis*C(5,2) + ScalarAB * A(2,0)*B(2,2);
+//  C(5,3)= ScalarThis*C(5,3) + ScalarAB * A(2,0)*B(1,0);
+//  C(5,4)= ScalarThis*C(5,4) + ScalarAB * A(2,0)*B(2,1);
+//  C(5,5)= ScalarThis*C(5,5) + ScalarAB * A(2,0)*B(2,0);
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ * THIS IS A REIMPLEMENTATION from LINALG::ElastSymTensorMultiplyAddSym *
+ * WHICH RESTORES THE ORIGINAL CCARAT HYPERPOLYCONVEX MATERIAL          *
+ * DIFFERENCE IS THE CONSIDERATION OF THE VOIGT NOTATION                *
+ | compute the "material tensor product" (A x B + B x A) of two 2nd     |
+ | order tensors                                                        |
+ | (in matrix notation) and add the result to a 4th order tensor        |
+ | (also in matrix notation) using the symmetry-conditions inherent to  |
+ | material tensors, or tangent matrices, respectively.                 |
+ | The implementation is based on the Epetra-Method Matrix.Multiply.    |
+ | (public)                                                    maf 11/07|
+ *----------------------------------------------------------------------*/
+void MAT::HyperPolyconvex::hyper_ElastSymTensorMultiplyAddSym(Epetra_SerialDenseMatrix& C,
+                                 const double ScalarAB,
+                                 const Epetra_SerialDenseMatrix& A,
+                                 const Epetra_SerialDenseMatrix& B,
+                                 const double ScalarThis)
+{
+  // check sizes
+  if (A.M() != A.N() || B.M() != B.N() || A.M() != 3 || B.M() != 3){
+    dserror("2nd order tensors must be 3 by 3");
+  }
+  if (C.M() != C.N() || C.M() != 6) dserror("4th order tensor must be 6 by 6");
+
+  // everything in Voigt-Notation
+  Epetra_SerialDenseMatrix AVoigt(6,1);
+  Epetra_SerialDenseMatrix BVoigt(6,1);
+  AVoigt(0,0) = A(0,0); AVoigt(1,0) = A(1,1); AVoigt(2,0) = A(2,2);
+  AVoigt(3,0) = A(1,0); AVoigt(4,0) = A(2,1); AVoigt(5,0) = A(2,0);
+  BVoigt(0,0) = B(0,0); BVoigt(1,0) = B(1,1); BVoigt(2,0) = B(2,2);
+  BVoigt(3,0) = B(1,0); BVoigt(4,0) = B(2,1); BVoigt(5,0) = B(2,0);
+  C.Multiply('N','T',ScalarAB,AVoigt,BVoigt,ScalarThis);
+  C.Multiply('N','T',ScalarAB,BVoigt,AVoigt,1.0);
+  
+  // this is explicitly what the former .Multiplies do:
+//  C(0,0)= ScalarThis*C(0,0) + ScalarAB * (A(0,0)*B(0,0) + B(0,0)*A(0,0));
+//  C(0,1)= ScalarThis*C(0,1) + ScalarAB * (A(0,0)*B(1,1) + B(0,0)*A(1,1));
+//  C(0,2)= ScalarThis*C(0,2) + ScalarAB * (A(0,0)*B(2,2) + B(0,0)*A(2,2));
+//  C(0,3)= ScalarThis*C(0,3) + ScalarAB * (A(0,0)*B(1,0) + B(0,0)*A(1,0));
+//  C(0,4)= ScalarThis*C(0,4) + ScalarAB * (A(0,0)*B(2,1) + B(0,0)*A(2,1));
+//  C(0,5)= ScalarThis*C(0,5) + ScalarAB * (A(0,0)*B(2,0) + B(0,0)*A(2,0));
+//  
+//  C(1,0)= ScalarThis*C(1,0) + ScalarAB * (A(1,1)*B(0,0) + B(1,1)*A(0,0));
+//  C(1,1)= ScalarThis*C(1,1) + ScalarAB * (A(1,1)*B(1,1) + B(1,1)*A(1,1));
+//  C(1,2)= ScalarThis*C(1,2) + ScalarAB * (A(1,1)*B(2,2) + B(1,1)*A(2,2));
+//  C(1,3)= ScalarThis*C(1,3) + ScalarAB * (A(1,1)*B(1,0) + B(1,1)*A(1,0));
+//  C(1,4)= ScalarThis*C(1,4) + ScalarAB * (A(1,1)*B(2,1) + B(1,1)*A(2,1));
+//  C(1,5)= ScalarThis*C(1,5) + ScalarAB * (A(1,1)*B(2,0) + B(1,1)*A(2,0));
+//               
+//  C(2,0)= ScalarThis*C(2,0) + ScalarAB * (A(2,2)*B(0,0) + B(2,2)*A(0,0));
+//  C(2,1)= ScalarThis*C(2,1) + ScalarAB * (A(2,2)*B(1,1) + B(2,2)*A(1,1));
+//  C(2,2)= ScalarThis*C(2,2) + ScalarAB * (A(2,2)*B(2,2) + B(2,2)*A(2,2));
+//  C(2,3)= ScalarThis*C(2,3) + ScalarAB * (A(2,2)*B(1,0) + B(2,2)*A(1,0));
+//  C(2,4)= ScalarThis*C(2,4) + ScalarAB * (A(2,2)*B(2,1) + B(2,2)*A(2,1));
+//  C(2,5)= ScalarThis*C(2,5) + ScalarAB * (A(2,2)*B(2,0) + B(2,2)*A(2,0));
+//
+//  C(3,0)= ScalarThis*C(3,0) + ScalarAB * (A(1,0)*B(0,0) + B(1,0)*A(0,0));
+//  C(3,1)= ScalarThis*C(3,1) + ScalarAB * (A(1,0)*B(1,1) + B(1,0)*A(1,1));
+//  C(3,2)= ScalarThis*C(3,2) + ScalarAB * (A(1,0)*B(2,2) + B(1,0)*A(2,2));
+//  C(3,3)= ScalarThis*C(3,3) + ScalarAB * (A(1,0)*B(1,0) + B(1,0)*A(1,0));
+//  C(3,4)= ScalarThis*C(3,4) + ScalarAB * (A(1,0)*B(2,1) + B(1,0)*A(2,1));
+//  C(3,5)= ScalarThis*C(3,5) + ScalarAB * (A(1,0)*B(2,0) + B(1,0)*A(2,0));
+//  
+//  C(4,0)= ScalarThis*C(4,0) + ScalarAB * (A(2,1)*B(0,0) + B(2,1)*A(0,0));
+//  C(4,1)= ScalarThis*C(4,1) + ScalarAB * (A(2,1)*B(1,1) + B(2,1)*A(1,1));
+//  C(4,2)= ScalarThis*C(4,2) + ScalarAB * (A(2,1)*B(2,2) + B(2,1)*A(2,2));
+//  C(4,3)= ScalarThis*C(4,3) + ScalarAB * (A(2,1)*B(1,0) + B(2,1)*A(1,0));
+//  C(4,4)= ScalarThis*C(4,4) + ScalarAB * (A(2,1)*B(2,1) + B(2,1)*A(2,1));
+//  C(4,5)= ScalarThis*C(4,5) + ScalarAB * (A(2,1)*B(2,0) + B(2,1)*A(2,0));
+//  
+//  C(5,0)= ScalarThis*C(5,0) + ScalarAB * (A(2,0)*B(0,0) + B(2,0)*A(0,0));
+//  C(5,1)= ScalarThis*C(5,1) + ScalarAB * (A(2,0)*B(1,1) + B(2,0)*A(1,1));
+//  C(5,2)= ScalarThis*C(5,2) + ScalarAB * (A(2,0)*B(2,2) + B(2,0)*A(2,2));
+//  C(5,3)= ScalarThis*C(5,3) + ScalarAB * (A(2,0)*B(1,0) + B(2,0)*A(1,0));
+//  C(5,4)= ScalarThis*C(5,4) + ScalarAB * (A(2,0)*B(2,1) + B(2,0)*A(2,1));
+//  C(5,5)= ScalarThis*C(5,5) + ScalarAB * (A(2,0)*B(2,0) + B(2,0)*A(2,0));
+  
+  return;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ * THIS IS A REIMPLEMENTATION from LINALG::ElastSymTensorMultiplyAddSym *
+ * WHICH RESTORES THE ORIGINAL CCARAT HYPERPOLYCONVEX MATERIAL          *
+ * DIFFERENCE IS THE CONSIDERATION OF THE VOIGT NOTATION                *
+ |  compute the "material tensor product" A o B of two 2nd order tensors|
+ | (in matrix notation) and add the result to a 4th order tensor        |
+ | (also in matrix notation) using the symmetry-conditions inherent to  |
+ | material tensors, or tangent matrices, respectively.                 |
+ | The implementation is based on the Epetra-Method Matrix.Multiply.    |
+ | (public)                                                    maf 11/07|
+ *----------------------------------------------------------------------*/
+void MAT::HyperPolyconvex::hyper_ElastSymTensor_o_Multiply(Epetra_SerialDenseMatrix& C,
+                                 const double ScalarAB,
+                                 const Epetra_SerialDenseMatrix& A,
+                                 const Epetra_SerialDenseMatrix& B,
+                                 const double ScalarThis)
+{
+  // check sizes
+  if (A.M() != A.N() || B.M() != B.N() || A.M() != 3 || B.M() != 3){
+    dserror("2nd order tensors must be 3 by 3");
+  }
+  if (C.M() != C.N() || C.M() != 6) dserror("4th order tensor must be 6 by 6");
+  
+  C(0,0)= ScalarThis*C(0,0) + ScalarAB * 0.5 * (A(0,0)*B(0,0) + A(0,0)*B(0,0));
+  C(0,1)= ScalarThis*C(0,1) + ScalarAB * 0.5 * (A(0,1)*B(0,1) + A(0,1)*B(0,1));
+  C(0,2)= ScalarThis*C(0,2) + ScalarAB * 0.5 * (A(0,2)*B(0,2) + A(0,2)*B(0,2));
+  C(0,3)= ScalarThis*C(0,3) + ScalarAB * 0.5 * (A(0,1)*B(0,0) + A(0,0)*B(0,1));
+  C(0,4)= ScalarThis*C(0,4) + ScalarAB * 0.5 * (A(0,2)*B(0,1) + A(0,1)*B(0,2));
+  C(0,5)= ScalarThis*C(0,5) + ScalarAB * 0.5 * (A(0,2)*B(0,0) + A(0,0)*B(0,2));
+  
+  C(1,0)= ScalarThis*C(1,0) + ScalarAB * 0.5 * (A(1,0)*B(1,0) + A(1,0)*B(1,0));
+  C(1,1)= ScalarThis*C(1,1) + ScalarAB * 0.5 * (A(1,1)*B(1,1) + A(1,1)*B(1,1));
+  C(1,2)= ScalarThis*C(1,2) + ScalarAB * 0.5 * (A(1,2)*B(1,2) + A(1,2)*B(1,2));
+  C(1,3)= ScalarThis*C(1,3) + ScalarAB * 0.5 * (A(1,1)*B(1,0) + A(1,0)*B(1,1));
+  C(1,4)= ScalarThis*C(1,4) + ScalarAB * 0.5 * (A(1,2)*B(1,1) + A(1,1)*B(1,2));
+  C(1,5)= ScalarThis*C(1,5) + ScalarAB * 0.5 * (A(1,2)*B(1,0) + A(1,0)*B(1,2));
+               
+  C(2,0)= ScalarThis*C(2,0) + ScalarAB * 0.5 * (A(2,0)*B(2,0) + A(2,0)*B(2,0));
+  C(2,1)= ScalarThis*C(2,1) + ScalarAB * 0.5 * (A(2,1)*B(2,1) + A(2,1)*B(2,1));
+  C(2,2)= ScalarThis*C(2,2) + ScalarAB * 0.5 * (A(2,2)*B(2,2) + A(2,2)*B(2,2));
+  C(2,3)= ScalarThis*C(2,3) + ScalarAB * 0.5 * (A(2,1)*B(2,0) + A(2,0)*B(2,1));
+  C(2,4)= ScalarThis*C(2,4) + ScalarAB * 0.5 * (A(2,2)*B(2,1) + A(2,1)*B(2,2));
+  C(2,5)= ScalarThis*C(2,5) + ScalarAB * 0.5 * (A(2,2)*B(2,0) + A(2,0)*B(2,2));
+
+  C(3,0)= ScalarThis*C(3,0) + ScalarAB * 0.5 * (A(1,0)*B(0,0) + A(1,0)*B(0,0));
+  C(3,1)= ScalarThis*C(3,1) + ScalarAB * 0.5 * (A(1,1)*B(0,1) + A(1,1)*B(0,1));
+  C(3,2)= ScalarThis*C(3,2) + ScalarAB * 0.5 * (A(1,2)*B(0,2) + A(1,2)*B(0,2));
+  C(3,3)= ScalarThis*C(3,3) + ScalarAB * 0.5 * (A(1,1)*B(0,0) + A(1,0)*B(0,1));
+  C(3,4)= ScalarThis*C(3,4) + ScalarAB * 0.5 * (A(1,2)*B(0,1) + A(1,1)*B(0,2));
+  C(3,5)= ScalarThis*C(3,5) + ScalarAB * 0.5 * (A(1,2)*B(0,0) + A(1,0)*B(0,2));
+  
+  C(4,0)= ScalarThis*C(4,0) + ScalarAB * 0.5 * (A(2,0)*B(1,0) + A(2,0)*B(1,0));
+  C(4,1)= ScalarThis*C(4,1) + ScalarAB * 0.5 * (A(2,1)*B(1,1) + A(2,1)*B(1,1));
+  C(4,2)= ScalarThis*C(4,2) + ScalarAB * 0.5 * (A(2,2)*B(1,2) + A(2,2)*B(1,2));
+  C(4,3)= ScalarThis*C(4,3) + ScalarAB * 0.5 * (A(2,1)*B(1,0) + A(2,0)*B(1,1));
+  C(4,4)= ScalarThis*C(4,4) + ScalarAB * 0.5 * (A(2,2)*B(1,1) + A(2,1)*B(1,2));
+  C(4,5)= ScalarThis*C(4,5) + ScalarAB * 0.5 * (A(2,2)*B(1,0) + A(2,0)*B(1,2));
+  
+  C(5,0)= ScalarThis*C(5,0) + ScalarAB * 0.5 * (A(2,0)*B(0,0) + A(2,0)*B(0,0));
+  C(5,1)= ScalarThis*C(5,1) + ScalarAB * 0.5 * (A(2,1)*B(0,1) + A(2,1)*B(0,1));
+  C(5,2)= ScalarThis*C(5,2) + ScalarAB * 0.5 * (A(2,2)*B(0,2) + A(2,2)*B(0,2));
+  C(5,3)= ScalarThis*C(5,3) + ScalarAB * 0.5 * (A(2,1)*B(0,0) + A(2,0)*B(0,1));
+  C(5,4)= ScalarThis*C(5,4) + ScalarAB * 0.5 * (A(2,2)*B(0,1) + A(2,1)*B(0,2));
+  C(5,5)= ScalarThis*C(5,5) + ScalarAB * 0.5 * (A(2,2)*B(0,0) + A(2,0)*B(0,2));
+  
+  return;
+
+}
+
+
+/* THIS IS THE ORIGINAL CCARAT TENSORPRODUCT ROUTINE
+// *----------------------------------------------------------------------*
 // |  Calculate tensor product of two tensors of 2nd order       maf 04/07|
 // *----------------------------------------------------------------------*/
 //Epetra_SerialDenseMatrix MAT::HyperPolyconvex::tensorproduct(
