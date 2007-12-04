@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file
+\file condif_drt.cpp
 \brief Control routine for convection-diffusion time integration. Includes
 
      o Singele step one-step-theta time integration
@@ -21,7 +21,9 @@ Maintainer: Volker Gravemeier
 #include <ctime>
 #include <cstdlib>
 #include <iostream>
+
 #include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -56,13 +58,6 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
-
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | structure of flags to control output                                 |
- | defined in out_global.c                                              |
- *----------------------------------------------------------------------*/
-extern struct _IO_FLAGS     ioflags;
 
 /*----------------------------------------------------------------------*
  | global variable *solv, vector of lenght numfld of structures SOLVAR  |
@@ -127,9 +122,9 @@ void dyn_condif_drt()
   // set some pointers and variables
   // -------------------------------------------------------------------
   SOLVAR        *actsolv  = &solv[0];
-  FLUID_DYNAMIC *fdyn     = alldyn[0].fdyn;
-  fdyn->step              =   0;
-  fdyn->acttime           = 0.0;
+
+  const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
+  const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
 
   // -------------------------------------------------------------------
   // create a solver
@@ -139,14 +134,12 @@ void dyn_condif_drt()
   solver.TranslateSolverParameters(*solveparams,actsolv);
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
 
-  if(fdyn->iop == timeint_stationary
-     ||
-     fdyn->iop == timeint_one_step_theta
-     ||
-     fdyn->iop == timeint_bdf2
+  FLUID_TIMEINTTYPE iop = Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(fdyn,"TIMEINTEGR");
+  if(iop == timeint_stationary or
+     iop == timeint_one_step_theta or
+     iop == timeint_bdf2
     )
   {
-
     // -------------------------------------------------------------------
     // create a convection-diffusion one-step-theta/BDF2 time integrator
     // -------------------------------------------------------------------
@@ -154,29 +147,29 @@ void dyn_condif_drt()
     CondifImplicitTimeInt::SetDefaults(condiftimeparams);
 
     // the default time step size
-    condiftimeparams.set<double>           ("time step size"           ,fdyn->dt);
+    condiftimeparams.set<double>           ("time step size"           ,fdyn.get<double>("TIMESTEP"));
     // max. sim. time
-    condiftimeparams.set<double>           ("total time"               ,fdyn->maxtime);
+    condiftimeparams.set<double>           ("total time"               ,fdyn.get<double>("MAXTIME"));
     // parameter for time-integration
-    condiftimeparams.set<double>           ("theta"                    ,fdyn->theta);
+    condiftimeparams.set<double>           ("theta"                    ,fdyn.get<double>("THETA"));
     // which kind of time-integration
-    condiftimeparams.set<FLUID_TIMEINTTYPE>("time int algo"            ,fdyn->iop);
+    condiftimeparams.set<FLUID_TIMEINTTYPE>("time int algo"            ,iop);
     // bound for the number of timesteps
-    condiftimeparams.set<int>              ("max number timesteps"     ,fdyn->nstep);
+    condiftimeparams.set<int>              ("max number timesteps"     ,fdyn.get<int>("NUMSTEP"));
     // number of steps with start algorithm
-    condiftimeparams.set<int>              ("number of start steps"    ,fdyn->nums);
+    condiftimeparams.set<int>              ("number of start steps"    ,fdyn.get<int>("NUMSTASTEPS"));
     // parameter for start algo
-    condiftimeparams.set<double>           ("start theta"              ,fdyn->thetas);
+    condiftimeparams.set<double>           ("start theta"              ,fdyn.get<double>("START_THETA"));
     // restart
-    condiftimeparams.set                  ("write restart every"       ,fdyn->uprestart);
+    condiftimeparams.set                  ("write restart every"       ,fdyn.get<int>("RESTARTEVRY"));
     // solution output
-    condiftimeparams.set                  ("write solution every"      ,fdyn->upres);
+    condiftimeparams.set                  ("write solution every"      ,fdyn.get<int>("UPRES"));
 
     //--------------------------------------------------
     // velocity field
-    condiftimeparams.set<int>              ("condif velocity field"     ,fdyn->cdvel);
+    condiftimeparams.set<int>              ("condif velocity field"     ,Teuchos::getIntegralValue<int>(fdyn,"CD_VELOCITY"));
     // discontinuity capturing?
-    condiftimeparams.set<int>              ("discontinuity capturing"   ,fdyn->dis_capt);
+    condiftimeparams.set<int>              ("discontinuity capturing"   ,Teuchos::getIntegralValue<int>(fdyn,"DISC_CAPT"));
 
     //--------------------------------------------------
     // create all vectors and variables associated with the time
@@ -187,15 +180,18 @@ void dyn_condif_drt()
                                         output);
 
     //--------------------------------------------------
-    // read the restart information, set vectors and variables
-    if (genprob.restart) condifimplicit.ReadRestart(genprob.restart);
+    if (probtype.get<int>("RESTART"))
+    {
+      // read the restart information, set vectors and variables
+      condifimplicit.ReadRestart(probtype.get<int>("RESTART"));
+    }
 
     //--------------------------------------------------
     // do the time integration (start algo and standard algo)
     condifimplicit.Integrate();
 
   }
-  else if (fdyn->iop == timeint_gen_alpha)
+  else if (iop == timeint_gen_alpha)
   {
 
     // -------------------------------------------------------------------
@@ -205,25 +201,24 @@ void dyn_condif_drt()
     ParameterList condiftimeparams;
 
     // the default time step size
-    condiftimeparams.set<double>           ("time step size"           ,fdyn->dt);
+    condiftimeparams.set<double>           ("time step size"           ,fdyn.get<double>("TIMESTEP"));
     // max. sim. time
-    condiftimeparams.set<double>           ("total time"               ,fdyn->maxtime);
+    condiftimeparams.set<double>           ("total time"               ,fdyn.get<double>("MAXTIME"));
     // parameters for time-integration
-    condiftimeparams.set<double>           ("alpha_M"                  ,fdyn->alpha_m);
+    condiftimeparams.set<double>           ("alpha_M"                  ,fdyn.get<double>("ALPHA_M"));
     // parameters for time-integration
-    condiftimeparams.set<double>           ("alpha_F"                  ,fdyn->alpha_f);
-    // bound for the number of timesteps
-    condiftimeparams.set<int>              ("max number timesteps"     ,fdyn->nstep);
-    // restart and output
-    condiftimeparams.set                  ("write restart every"       ,fdyn->uprestart);
+    condiftimeparams.set<double>           ("alpha_F"                  ,fdyn.get<double>("ALPHA_F"));
+    condiftimeparams.set<int>              ("max number timesteps"     ,fdyn.get<int>("NUMSTEP"));
+    // restart
+    condiftimeparams.set                  ("write restart every"       ,fdyn.get<int>("RESTARTEVRY"));
     // solution output
-    condiftimeparams.set                  ("write solution every"      ,fdyn->upres);
+    condiftimeparams.set                  ("write solution every"      ,fdyn.get<int>("UPRES"));
 
     //--------------------------------------------------
     // velocity field
-    condiftimeparams.set<int>              ("condif velocity field"     ,fdyn->cdvel);
+    condiftimeparams.set<int>              ("condif velocity field"     ,Teuchos::getIntegralValue<int>(fdyn,"CD_VELOCITY"));
     // discontinuity capturing?
-    condiftimeparams.set<int>              ("discontinuity capturing"   ,fdyn->dis_capt);
+    condiftimeparams.set<int>              ("discontinuity capturing"   ,Teuchos::getIntegralValue<int>(fdyn,"DISC_CAPT"));
 
     //--------------------------------------------------
     // create all vectors and variables associated with the time
@@ -235,14 +230,14 @@ void dyn_condif_drt()
 
 
     //------------- initialize the field from input or restart
-    if (genprob.restart)
+    if (probtype.get<int>("RESTART"))
     {
       // read the restart information, set vectors and variables
       genalphaint.ReadRestart(genprob.restart);
     }
 
     //------------------------- do timeintegration till maxtime
-    genalphaint.GenAlphaIntegrateTo(fdyn->nstep,fdyn->maxtime);
+    genalphaint.GenAlphaIntegrateTo(fdyn.get<int>("NUMSTEP"),fdyn.get<double>("MAXTIME"));
 
   }
   else
