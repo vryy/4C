@@ -10,6 +10,8 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
+
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 #include "../fluid_full/fluid_prototypes.h"
@@ -89,3 +91,5 @@ void caldyn()
 #endif
 return;
 } /* end of caldyn */
+
+#endif

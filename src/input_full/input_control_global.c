@@ -68,9 +68,8 @@ extern struct _IO_FLAGS     ioflags;
  *----------------------------------------------------------------------*/
 extern struct _FIELD       *field;
 
-/*----------------------------------------------------------------------*
- | input of control information                           m.gee 8/00    |
- *----------------------------------------------------------------------*/
+
+#ifndef CCADISCRET
 
 
 #ifdef WALLCONTACT
@@ -81,6 +80,10 @@ extern struct _WALL_CONTACT contact;
 void inpctr_dyn_ssi(SSI_DYNAMIC *ssidyn);
 #endif
 
+
+/*----------------------------------------------------------------------*
+ | input of control information                           m.gee 8/00    |
+ *----------------------------------------------------------------------*/
 void inpctr()
 {
 #ifdef DEBUG
@@ -609,6 +612,7 @@ return;
 } /* end of inpctrprob */
 
 
+#endif
 
 
 /*----------------------------------------------------------------------*
@@ -867,6 +871,8 @@ dstrc_exit();
 return;
 } /* end of inpctr_eig_struct */
 
+
+#ifndef CCADISCRET
 
 /*----------------------------------------------------------------------*
  | input of dynamic problem data                          m.gee 2/01    |
@@ -2292,3 +2298,4 @@ void inpctr_dyn_timada(TIMADA_DYNAMIC* timada)
   return;
 }
 
+#endif

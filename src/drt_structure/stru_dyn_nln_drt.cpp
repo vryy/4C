@@ -23,6 +23,7 @@ Maintainer: Michael Gee
 #endif
 
 #include "stru_dyn_nln_drt.H"
+#include "stru_genalpha_zienxie_drt.H"
 #include "strugenalpha.H"
 #include "../drt_contact/contactstrugenalpha.H"
 #include "../io/io_drt.H"
@@ -66,6 +67,40 @@ extern struct _IO_FLAGS     ioflags;
  |                                                       m.gee 11/00    |
  *----------------------------------------------------------------------*/
 extern struct _SOLVAR  *solv;
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+extern "C"
+void caldyn_drt()
+{
+  const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
+
+  switch (Teuchos::getIntegralValue<int>(sdyn,"DYNAMICTYP"))
+  {
+  case STRUCT_DYNAMIC::centr_diff:
+    dserror("no central differences in DRT");
+    break;
+  case STRUCT_DYNAMIC::gen_alfa:
+    switch (Teuchos::getIntegralValue<int>(sdyn,"TA_KIND"))
+    {
+    case TIMADA_DYNAMIC::timada_kind_none:
+      dyn_nlnstructural_drt();
+      break;
+    case TIMADA_DYNAMIC::timada_kind_zienxie:
+      stru_genalpha_zienxie_drt();
+      break;
+    default:
+      dserror("unknown time adaption scheme '%s'", sdyn.get<std::string>("TA_KIND").c_str());
+    }
+  case STRUCT_DYNAMIC::Gen_EMM:
+    dserror("GEMM not supported");
+    break;
+  default:
+    dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
+  }
+}
+
 
 /*----------------------------------------------------------------------*
   | structural nonlinear dynamics (gen-alpha)              m.gee 12/06  |

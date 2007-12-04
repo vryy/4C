@@ -113,8 +113,9 @@ void ntainp_ccadiscret()
 
   // read dynamic control data
   if (genprob.timetyp==time_dynamic)
-    inpctrdyn();
-
+  {
+    // nothing to do! We do not use alldyn anymore!
+  }
   // read static control data
   else inpctrstat();
 

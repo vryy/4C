@@ -64,6 +64,7 @@ struct _PARTITION    *partition;
 struct _DESIGN       *design;
 
 
+#ifndef CCADISCRET
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
@@ -71,6 +72,7 @@ struct _DESIGN       *design;
  | struct _ALLDYNA       *alldyn;                                       |
  *----------------------------------------------------------------------*/
 ALLDYNA             *alldyn;
+#endif
 
 
 /*----------------------------------------------------------------------*

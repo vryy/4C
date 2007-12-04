@@ -81,8 +81,10 @@ extern struct _FIELD      *sm_field;
  *----------------------------------------------------------------------*/
 void ntacal()
 {
+#ifndef CCADISCRET
 INT i;
 FIELD *actfield;
+#endif
 #ifdef D_MLSTRUCT
 FIELD *actsmfield;
 #endif /* D_MLSTRUCT */
@@ -226,7 +228,11 @@ case prb_struct_multi:
 #endif*/
     break;
   case time_dynamic:
-    caldyn();
+#ifndef CCADISCRET
+  caldyn();
+#else
+  caldyn_drt();
+#endif
     break;
   default:
     dserror("Unspecified time handling");
