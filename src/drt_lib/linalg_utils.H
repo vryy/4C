@@ -221,6 +221,23 @@ namespace LINALG
            Epetra_CrsMatrix& B, const double scalarB);
 
   /*!
+  \brief Multiply a (transposed) Epetra_CrsMatrix with another (transposed): C = A(^T)*B(^T)
+
+  Multiply one matrix with another. Both matrices must be completed. Sparsity 
+  Respective Range, Row and Domain maps of A(^T) and B(^T) have to match.
+
+  Note that this is a true parallel multiplication, even in the transposed case!
+
+  \param A          (in)     : Matrix to multiply with B (must have Filled()==true)
+  \param transA     (in)     : flag indicating whether transposed of A should be used
+  \param B          (in)     : Matrix to multiply with A (must have Filled()==true)
+  \param transB     (in)     : flag indicating whether transposed of B should be used
+  \param C          (out)    : Matrix product C
+  */
+  RCP<Epetra_CrsMatrix> MatMatMult(const Epetra_CrsMatrix& A, bool transA, 
+                                   const Epetra_CrsMatrix& B, bool transB);
+
+  /*!
   \brief Apply dirichlet boundary condition to a linear system of equations
 
   Modifies a system of equations such that dirichlet boundary conditions are enforced.

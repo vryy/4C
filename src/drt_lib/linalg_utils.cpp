@@ -15,6 +15,7 @@ Maintainer: Michael Gee
 #include "linalg_utils.H"
 #include "drt_dserror.H"
 #include "EpetraExt_Transpose_RowMatrix.h"
+#include "EpetraExt_MatrixMatrix.h"
 #include "Epetra_SerialDenseSolver.h"
 
 
@@ -270,6 +271,29 @@ extern "C"
   void dsytri(char *uplo, int *n, double *a, int *lda, int *ipiv, double *work, int *info);
   void dgetrf(int *m,int *n, double *a, int *lda, int *ipiv, int* info);
   void dgetri(int *n, double *a, int *lda, int *ipiv, double *work, int *lwork, int *info);
+}
+
+/*----------------------------------------------------------------------*
+ | Multiply matrices A*B                                     mwgee 01/06|
+ *----------------------------------------------------------------------*/
+RCP<Epetra_CrsMatrix> LINALG::MatMatMult(const Epetra_CrsMatrix& A, bool transA, 
+                                         const Epetra_CrsMatrix& B, bool transB)
+{
+  // make sure FillComplete was called on the matrices
+  if (!A.Filled()) dserror("A has to be FillComplete");
+  if (!B.Filled()) dserror("B has to be FillComplete");
+  
+  // create resultmatrix with correct rowmap
+  Epetra_CrsMatrix* C = NULL;
+  if (!transA)
+    C = new Epetra_CrsMatrix(Copy,A.OperatorRangeMap(),20,false);
+  else
+    C = new Epetra_CrsMatrix(Copy,A.OperatorDomainMap(),20,false);
+  
+  int err = EpetraExt::MatrixMatrix::Multiply(A,transA,B,transB,*C);
+  if (err) dserror("EpetraExt::MatrixMatrix::Multiply returned err = &d",err);
+
+  return rcp(C);
 }
 
 /*----------------------------------------------------------------------*
