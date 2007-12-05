@@ -367,32 +367,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
                                tuple<int>(0,1,2,3,6,7,8,9,10),
                                &fdyn);
 
-  setStringToIntegralParameter("VISCSTRESS","Yes",
-                               "when calculating fluid stresses include viscose part (unused)",
-                               yesnotuple,yesnovalue,&fdyn);
-
-  setStringToIntegralParameter("FREESURFACE","No",
-                               "Treatment of free surface",
-                               tuple<std::string>(
-                                 "No",
-                                 "no",
-                                 "loclag_exp",
-                                 "loclag_imp",
-                                 "hf_vert_sep",
-                                 "hf_vert_imp",
-                                 "genfs"
-                                 ),
-                               tuple<int>(0,0,1,2,3,5,6),
-                               &fdyn);
-
-  setStringToIntegralParameter("SURFTENSION","Yes",
-                               "Include surfadce tension effects",
-                               yesnotuple,yesnovalue,&fdyn);
-
-  setStringToIntegralParameter("CHECKAREA","Yes",
-                               "Monitor the size of the fluid domain",
-                               yesnotuple,yesnovalue,&fdyn);
-
   setStringToIntegralParameter("LIFTDRAG","No",
                                "Calculate lift and drag forces along specified lines",
                                tuple<std::string>(
@@ -421,28 +395,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
                                  ),
                                &fdyn);
 
-  setStringToIntegralParameter("TURBULENCE","No","",
-                               tuple<std::string>(
-                                 "No",
-                                 "algebraic",
-                                 "kappa-eps",
-                                 "kappa-omega",
-                                 "VMM-LES"
-                                 ),
-                               tuple<int>(0,1,2,3,4),
-                               &fdyn);
-
-  setStringToIntegralParameter("HOMDIRECT","xy",
-                               "homogeneous directions needed to evaluate in plane statistics for turbulent channel",
-                               tuple<std::string>("xy","yz","xz"),
-                               tuple<int>(2,0,1),
-                               &fdyn);
-
-  setStringToIntegralParameter("DISC_CAPT","No","",yesnotuple,yesnovalue,&fdyn);
-  setStringToIntegralParameter("ADAPT_TIME","No",
-                               "time stepping is adaptive",
-                               yesnotuple,yesnovalue,&fdyn);
-
   setStringToIntegralParameter("CD_VELOCITY","Navier_Stokes","",
                                tuple<std::string>(
                                  "Navier_Stokes",
@@ -452,22 +404,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
                                  "min60_degree"
                                  ),
                                tuple<int>(0,1,2,3,4),
-                               &fdyn);
-
-  setStringToIntegralParameter("CONVECTERM","convective","convective term",
-                               tuple<std::string>(
-                                 "convective",
-                                 "divergence",
-                                 "skew_symmetric"
-                                 ),
-                               tuple<int>(0,1,2),
-                               &fdyn);
-  setStringToIntegralParameter("VISCTERM","conventional","viscous term",
-                               tuple<std::string>(
-                                 "conventional",
-                                 "stress_divergence"
-                                 ),
-                               tuple<int>(0,1),
                                &fdyn);
 
   setStringToIntegralParameter("SUBGRIDVISC","No","subgrid viscosity",
@@ -500,14 +436,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
   DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&fdyn);
   DoubleParameter("STEADYTOL",1e-6,"Tolerance for steady state check",&fdyn);
   DoubleParameter("START_THETA",1.0,"Time integraton factor for starting scheme",&fdyn);
-  DoubleParameter("INT_LENGHT",0.0,"",&fdyn);
-  DoubleParameter("ROUGHTNESS",0.0,"",&fdyn);
-  DoubleParameter("SC_COORD_X",0.0,"",&fdyn);
-  DoubleParameter("SC_COORD_Y",0.0,"",&fdyn);
-  DoubleParameter("MAX_DT",1.0,"Maximal Time increment dt_max in adaptive case",&fdyn);
-  DoubleParameter("MIN_DT",0.0,"Minimal Time increment dt_min in adaptive case",&fdyn);
-  DoubleParameter("LOC_TRUN_ERR",1e-3,"Local Truncation Error to rule adaptive time stepping",&fdyn);
-  DoubleParameter("SMAGCONST",0.0,"",&fdyn);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_stab = fdyn.sublist("STABILIZATION",false,"");
