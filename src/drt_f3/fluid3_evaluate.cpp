@@ -270,6 +270,10 @@ DRT::Elements::Fluid3::ActionType DRT::Elements::Fluid3::convertStringToActionTy
     act = Fluid3::calc_fluid_beltrami_error;
   else if (action == "calc_turbulence_statistics")
     act = Fluid3::calc_turbulence_statistics;
+  else if (action == "calc_fluid_box_filter")
+    act = Fluid3::calc_fluid_box_filter;
+  else if (action == "calc_smagorinsky_const")
+    act = Fluid3::calc_smagorinsky_const;
   else if (action == "calc_Shapefunction")
     act = Fluid3::calc_Shapefunction;
   else if (action == "calc_ShapeDeriv1")
@@ -515,6 +519,117 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
         }
       }
       break;
+      case calc_fluid_box_filter:
+      {
+        // --------------------------------------------------
+        // extract velocities from the global distributed vectors
+
+        // velocity and pressure values (most recent
+        // intermediatesolution, n+alphaF)
+        RefCountPtr<const Epetra_Vector> velaf =
+          discretization.GetState("u and p (n+alpha_F,trial)");
+
+        if (velaf==null)
+        {
+          dserror("Cannot get state vectors 'velaf'");
+        }
+
+        // extract local values from the global vectors
+        vector<double> myvelaf(lm.size());
+        DRT::Utils::ExtractMyValues(*velaf,myvelaf,lm);
+
+        // create blitz objects for element arrays
+        const int numnode = NumNode();
+        blitz::Array<double, 2> evelaf(3,numnode,blitz::ColumnMajorArray<2>());
+
+        // split velocity and throw away  pressure, insert into element array
+        for (int i=0;i<numnode;++i)
+        {
+          evelaf(0,i) = myvelaf[0+(i*4)];
+          evelaf(1,i) = myvelaf[1+(i*4)];
+          evelaf(2,i) = myvelaf[2+(i*4)];
+        }
+
+        // initialise the contribution of this element to the patch volume to zero
+        double volume_contribution = 0;
+
+        // wrap Epetra Objects in Blitz array
+        blitz::Array<double, 1> velaf_hat(elevec1.Values(),
+                                          blitz::shape(elevec1.Length()),
+                                          blitz::neverDeleteData);
+
+        blitz::Array<double, 2> reystress_hat(elemat1.A(),
+                                              blitz::shape(elemat1.M(),elemat1.N()),
+                                              blitz::neverDeleteData,
+                                              blitz::ColumnMajorArray<2>());
+
+        blitz::Array<double, 2> modeled_stress_grid_scale_hat(elemat2.A(),
+                                                              blitz::shape(elemat2.M(),elemat2.N()),
+                                                              blitz::neverDeleteData,
+                                                              blitz::ColumnMajorArray<2>());
+
+        // integrate the convolution with the box filter function for this element
+        // the results are assembled onto the *_hat arrays
+        this->f3_apply_box_filter(evelaf,
+                                  velaf_hat,
+                                  reystress_hat,
+                                  modeled_stress_grid_scale_hat,
+                                  volume_contribution);
+
+        // hand down the volume contribution to the time integration algorithm
+        params.set<double>("volume_contribution",volume_contribution);
+        
+      }
+      break;
+      case calc_smagorinsky_const:
+      {
+        RefCountPtr<Epetra_MultiVector> filtered_vel                        =
+          params.get<RefCountPtr<Epetra_MultiVector> >("col_filtered_vel");
+        RefCountPtr<Epetra_MultiVector> col_filtered_reynoldsstress         =
+          params.get<RefCountPtr<Epetra_MultiVector> >("col_filtered_reynoldsstress");
+        RefCountPtr<Epetra_MultiVector> col_filtered_modeled_subgrid_stress =
+          params.get<RefCountPtr<Epetra_MultiVector> >("col_filtered_modeled_subgrid_stress");
+
+        const int numnode = this->NumNode();
+        blitz::Array<double, 2> evelaf_hat                           (3,numnode,blitz::ColumnMajorArray<2>());
+        blitz::Array<double, 3> ereynoldsstress_hat                  (3,3,numnode,blitz::ColumnMajorArray<3>());
+        blitz::Array<double, 3> efiltered_modeled_subgrid_stress_hat (3,3,numnode,blitz::ColumnMajorArray<3>());
+
+        
+        for (int nn=0;nn<numnode;++nn)
+        {
+          DRT::Node* actnode = this->Nodes()[nn];
+          
+          for (int dimi=0;dimi<3;++dimi)
+          {
+            evelaf_hat(dimi,nn) = (*((*filtered_vel)(dimi)))[actnode->LID()];
+            
+            for (int dimj=0;dimj<3;++dimj)
+            {
+              ereynoldsstress_hat                  (dimi,dimj,nn) = (*((*col_filtered_reynoldsstress        )(3*dimi+dimj)))[actnode->LID()];
+              efiltered_modeled_subgrid_stress_hat (dimi,dimj,nn) = (*((*col_filtered_modeled_subgrid_stress)(3*dimi+dimj)))[actnode->LID()];
+            }
+          }
+        }
+
+        double LijMij   = 0;
+        double MijMij   = 0;
+        double center   = 0;
+        
+        this->f3_calc_smag_const_LijMij_and_MijMij(evelaf_hat,
+                                                   ereynoldsstress_hat,
+                                                   efiltered_modeled_subgrid_stress_hat,
+                                                   LijMij,
+                                                   MijMij,
+                                                   center);
+
+        
+        params.set<double>("LijMij",LijMij);
+        params.set<double>("MijMij",MijMij);
+        params.set<double>("center",center);
+
+      }
+      break;
       case calc_fluid_genalpha_sysmat_and_residual:
       {
         // --------------------------------------------------
@@ -591,45 +706,45 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
 
         // --------------------------------------------------
         // set parameters for stabilisation
-        ParameterList& stablist = params.sublist("stabilisation");
+        ParameterList& stablist = params.sublist("STABILIZATION");
 
         // if not available, define map from string to action
         if(stabstrtoact_.empty())
         {
-          stabstrtoact_["quasistatic subscales"                        ]=subscales_quasistatic;
-          stabstrtoact_["time dependent subscales"                     ]=subscales_time_dependent;
-          stabstrtoact_["drop inertia stabilisation"                   ]=inertia_stab_drop;
-          stabstrtoact_["keep inertia stabilisation"                   ]=inertia_stab_keep;
-          stabstrtoact_["inf-sup-stable (off)"                         ]=pstab_assume_inf_sup_stable;
-          stabstrtoact_["(svel,nabla q)"                               ]=pstab_use_pspg;
-          stabstrtoact_["off"                                          ]=convective_stab_none;
-          stabstrtoact_["(svel,(u o nabla)v)"                          ]=convective_stab_supg;
-          stabstrtoact_["off"                                          ]=viscous_stab_none;
-          stabstrtoact_["(svel,+2 visc nabla o eps(v))"                ]=viscous_stab_gls;
-          stabstrtoact_["(svel,+2 visc nabla o eps(v)) [RHS]"          ]=viscous_stab_gls_only_rhs;
-          stabstrtoact_["(svel,-2 visc nabla o eps(v))"                ]=viscous_stab_agls;
-          stabstrtoact_["(svel,-2 visc nabla o eps(v)) [RHS]"          ]=viscous_stab_agls_only_rhs;
-          stabstrtoact_["(spres,nabla o v)"                            ]=continuity_stab_yes;
-          stabstrtoact_["off"                                          ]=continuity_stab_none;
-          stabstrtoact_["((svel o nabla)u,v)"                          ]=cross_stress_stab;
-          stabstrtoact_["((svel o nabla)u,v) [RHS]"                    ]=cross_stress_stab_only_rhs;
-          stabstrtoact_["off"                                          ]=cross_stress_stab_none;
-          stabstrtoact_["(svel,(svel o nabla)v) [RHS]"                 ]=reynolds_stress_stab_only_rhs;
-          stabstrtoact_["off"                                          ]=reynolds_stress_stab_none;
+          stabstrtoact_["quasistatic_subscales"            ]=subscales_quasistatic;
+          stabstrtoact_["time_dependent_subscales"         ]=subscales_time_dependent;
+          stabstrtoact_["drop"                             ]=inertia_stab_drop;
+          stabstrtoact_["+(sacc,v)"                        ]=inertia_stab_keep;
+          stabstrtoact_["off"                              ]=pstab_assume_inf_sup_stable;
+          stabstrtoact_["-(svel,nabla_q)"                  ]=pstab_use_pspg;
+          stabstrtoact_["off"                              ]=convective_stab_none;
+          stabstrtoact_["-(svel,(u_o_nabla)_v)"            ]=convective_stab_supg;
+          stabstrtoact_["off"                              ]=viscous_stab_none;
+          stabstrtoact_["+2*nu*(svel,nabla_o_eps(v))"      ]=viscous_stab_gls;
+          stabstrtoact_["+2*nu*(svel,nabla_o_eps(v))_[RHS]"]=viscous_stab_gls_only_rhs;
+          stabstrtoact_["-2*nu*(svel,nabla_o_eps(v))"      ]=viscous_stab_agls;
+          stabstrtoact_["-2*nu*(svel,nabla_o_eps(v))_[RHS]"]=viscous_stab_agls_only_rhs;
+          stabstrtoact_["-(spre,nabla_o_v)"                ]=continuity_stab_yes;
+          stabstrtoact_["off"                              ]=continuity_stab_none;
+          stabstrtoact_["+((svel_o_nabla)_u,v)"            ]=cross_stress_stab;
+          stabstrtoact_["+((svel_o_nabla)_u,v)_[RHS]"      ]=cross_stress_stab_only_rhs;
+          stabstrtoact_["off"                              ]=cross_stress_stab_none;
+          stabstrtoact_["-(svel,(svel_o_grad)_v)_[RHS]"    ]=reynolds_stress_stab_only_rhs;
+          stabstrtoact_["off"                              ]=reynolds_stress_stab_none;
         }
 
-        StabilisationAction tds      = ConvertStringToStabAction(stablist.get<string>("TDS"));
-        StabilisationAction inertia  = ConvertStringToStabAction(stablist.get<string>("INERTIA"));
-        StabilisationAction pspg     = ConvertStringToStabAction(stablist.get<string>("PSPG"));
-        StabilisationAction supg     = ConvertStringToStabAction(stablist.get<string>("SUPG"));
-        StabilisationAction vstab    = ConvertStringToStabAction(stablist.get<string>("VSTAB"));
-        StabilisationAction cstab    = ConvertStringToStabAction(stablist.get<string>("CSTAB"));
-        StabilisationAction cross    = ConvertStringToStabAction(stablist.get<string>("CROSS-STRESS"));
-        StabilisationAction reynolds = ConvertStringToStabAction(stablist.get<string>("REYNOLDS-STRESS"));
+        StabilisationAction tds      = ConvertStringToStabAction(stablist.get<string>("RVMM_TDS"));
+        StabilisationAction inertia  = ConvertStringToStabAction(stablist.get<string>("RVMM_INERTIA"));
+        StabilisationAction pspg     = ConvertStringToStabAction(stablist.get<string>("RVMM_PSPG"));
+        StabilisationAction supg     = ConvertStringToStabAction(stablist.get<string>("RVMM_SUPG"));
+        StabilisationAction vstab    = ConvertStringToStabAction(stablist.get<string>("RVMM_VSTAB"));
+        StabilisationAction cstab    = ConvertStringToStabAction(stablist.get<string>("RVMM_CSTAB"));
+        StabilisationAction cross    = ConvertStringToStabAction(stablist.get<string>("RVMM_CROSS-STRESS"));
+        StabilisationAction reynolds = ConvertStringToStabAction(stablist.get<string>("RVMM_REYNOLDS-STRESS"));
 
         // --------------------------------------------------
         // set parameters for turbulence model
-        ParameterList& turbmodelparams    = params.sublist("turbulence model");
+        ParameterList& turbmodelparams    = params.sublist("TURBULENCE MODEL");
 
         // initialise the Smagorinsky constant Cs and the viscous length scale l_tau to zero
         double Cs    = 0.0;
@@ -637,21 +752,19 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
 
         // the default action is no model        
         TurbModelAction turb_mod_action = no_model;
-        
-        if (turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") != "none")
-        {
-        
-          string& physical_turbulence_model = turbmodelparams.get<string>("PHYSICAL_MODEL");
 
+
+        if (turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
+        {
+          string& physical_turbulence_model = turbmodelparams.get<string>("PHYSICAL_MODEL");
  
           if (physical_turbulence_model == "Smagorinsky")
           {
             // the classic Smagorinsky model only requires one constant parameter
             turb_mod_action = smagorinsky;
             Cs              = turbmodelparams.get<double>("C_SMAGORINSKY");
-            
           }
-          else if (physical_turbulence_model == "Smagorinsky with van Driest damping")
+          else if (physical_turbulence_model == "Smagorinsky_with_van_Driest_damping")
           {
             // for the Smagorinsky model with van Driest damping, we need a viscous length to determine
             // the y+ (heigth in wall units)
@@ -659,10 +772,51 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
             Cs              = turbmodelparams.get<double>("C_SMAGORINSKY");
             l_tau           = turbmodelparams.get<double>("L_TAU");
           }
-          else
+          else if (physical_turbulence_model == "Dynamic_Smagorinsky")
           {
-            dserror("Up to now, only Smagorinsky with and without wall function is available");
-          }
+            turb_mod_action = dynamic_smagorinsky;
+            
+            RefCountPtr<vector<double> > averaged_LijMij  = turbmodelparams.get<RefCountPtr<vector<double> > >("averaged_LijMij_");
+            RefCountPtr<vector<double> > averaged_MijMij  = turbmodelparams.get<RefCountPtr<vector<double> > >("averaged_MijMij_");
+            
+            RefCountPtr<vector<double> > planecoords      = turbmodelparams.get<RefCountPtr<vector<double> > >("planecoords_");
+                        
+            const int iel = NumNode();
+            
+            //this will be the y-coordinate of a point in the element interior
+            double center = 0;
+            for(int inode=0;inode<iel;inode++)
+            {
+              center+=Nodes()[inode]->X()[1];
+            }
+            center/=iel;
+            
+            int  nlayer;
+            bool found = false;
+            for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
+            {
+                if(center<(*planecoords)[nlayer+1])
+                {
+                  found = true;
+                  break;
+                }
+                nlayer++;
+              }
+              if (found ==false)
+              {
+                dserror("could not determine element layer");
+              }
+//              cout << "layer "  << nlayer <<  " center  " << center << "   ";
+              
+              Cs = 0.5 * (*averaged_LijMij)[nlayer]/(*averaged_MijMij)[nlayer] ;
+              
+              if (Cs<0)
+                Cs=0;
+            }
+            else
+            {
+              dserror("Up to now, only Smagorinsky (constant coefficient with and without wall function as well as dynamic) is available");
+            }
         }
 
         // --------------------------------------------------
@@ -884,8 +1038,8 @@ void DRT::Elements::Fluid3::f3_int_beltrami_err(
   const DiscretizationType distype = this->Shape();
 
   Epetra_SerialDenseVector  funct(iel);
-  Epetra_SerialDenseMatrix 	xjm(3,3);
-  Epetra_SerialDenseMatrix 	deriv(3,iel);
+  Epetra_SerialDenseMatrix  xjm(3,3);
+  Epetra_SerialDenseMatrix  deriv(3,iel);
 
   // get node coordinates of element
   Epetra_SerialDenseMatrix xyze(3,iel);
@@ -1134,9 +1288,11 @@ void DRT::Elements::Fluid3::f3_int_beltrami_err(
  |                      ___           ___           ___           ___
  |                       ^2            ^2            ^2            ^2
  | and         numele * u  , numele * v  , numele * w  , numele * p
- |
+ |                      _ _           _ _           _ _  
+ | as well as  numele * u*v, numele * u*w, numele * v*w
+ | 
  | as well as numele.
- | All results are communicated vi the parameter list!
+ | All results are communicated via the parameter list!
  |
  *---------------------------------------------------------------------*/
 void DRT::Elements::Fluid3::f3_calc_means(
@@ -1159,15 +1315,18 @@ void DRT::Elements::Fluid3::f3_calc_means(
   RefCountPtr<vector<double> > planes = params.get<RefCountPtr<vector<double> > >("coordinate vector for hom. planes");
 
   // get the pointers to the solution vectors
-  RefCountPtr<vector<double> > sumu   = params.get<RefCountPtr<vector<double> > >("mean velocities x direction");
-  RefCountPtr<vector<double> > sumv   = params.get<RefCountPtr<vector<double> > >("mean velocities y direction");
-  RefCountPtr<vector<double> > sumw   = params.get<RefCountPtr<vector<double> > >("mean velocities z direction");
-  RefCountPtr<vector<double> > sump   = params.get<RefCountPtr<vector<double> > >("mean pressure");
+  RefCountPtr<vector<double> > sumu   = params.get<RefCountPtr<vector<double> > >("mean velocity u");
+  RefCountPtr<vector<double> > sumv   = params.get<RefCountPtr<vector<double> > >("mean velocity v");
+  RefCountPtr<vector<double> > sumw   = params.get<RefCountPtr<vector<double> > >("mean velocity w");
+  RefCountPtr<vector<double> > sump   = params.get<RefCountPtr<vector<double> > >("mean pressure p");
 
-  RefCountPtr<vector<double> > sumsqu = params.get<RefCountPtr<vector<double> > >("variance velocities x direction");
-  RefCountPtr<vector<double> > sumsqv = params.get<RefCountPtr<vector<double> > >("variance velocities y direction");
-  RefCountPtr<vector<double> > sumsqw = params.get<RefCountPtr<vector<double> > >("variance velocities z direction");
-  RefCountPtr<vector<double> > sumsqp = params.get<RefCountPtr<vector<double> > >("variance pressure");
+  RefCountPtr<vector<double> > sumsqu = params.get<RefCountPtr<vector<double> > >("mean value u^2");
+  RefCountPtr<vector<double> > sumsqv = params.get<RefCountPtr<vector<double> > >("mean value v^2");
+  RefCountPtr<vector<double> > sumsqw = params.get<RefCountPtr<vector<double> > >("mean value w^2");
+  RefCountPtr<vector<double> > sumuv  = params.get<RefCountPtr<vector<double> > >("mean value uv");
+  RefCountPtr<vector<double> > sumuw  = params.get<RefCountPtr<vector<double> > >("mean value uw");
+  RefCountPtr<vector<double> > sumvw  = params.get<RefCountPtr<vector<double> > >("mean value vw");
+  RefCountPtr<vector<double> > sumsqp = params.get<RefCountPtr<vector<double> > >("mean value p^2");
 
 
   // get node coordinates of element
@@ -1316,6 +1475,9 @@ void DRT::Elements::Fluid3::f3_calc_means(
     double usqbar=0;
     double vsqbar=0;
     double wsqbar=0;
+    double uvbar =0;
+    double uwbar =0;
+    double vwbar =0;
     double psqbar=0;
 
     // get the intgration point in wall normal direction
@@ -1387,6 +1549,9 @@ void DRT::Elements::Fluid3::f3_calc_means(
       usqbar += ugp*ugp*fac;
       vsqbar += vgp*vgp*fac;
       wsqbar += wgp*wgp*fac;
+      uvbar  += ugp*vgp*fac;
+      uwbar  += ugp*wgp*fac;
+      vwbar  += vgp*wgp*fac;
       psqbar += pgp*pgp*fac;
     } // end loop integration points
 
@@ -1399,6 +1564,9 @@ void DRT::Elements::Fluid3::f3_calc_means(
     (*sumsqu)[*id] += usqbar;
     (*sumsqv)[*id] += vsqbar;
     (*sumsqw)[*id] += wsqbar;
+    (*sumuv) [*id] += uvbar;
+    (*sumuw) [*id] += uwbar;
+    (*sumvw) [*id] += vwbar;
     (*sumsqp)[*id] += psqbar;
 
     // jump to the next layer in the element.
@@ -1409,6 +1577,503 @@ void DRT::Elements::Fluid3::f3_calc_means(
   }
 
 
+  return;
+} // DRT::Elements::Fluid3::f3_calc_means
+
+//----------------------------------------------------------------------
+//
+//----------------------------------------------------------------------
+void DRT::Elements::Fluid3::f3_apply_box_filter(
+    blitz::Array<double, 2>&  evelaf,
+    blitz::Array<double, 1>&  vel_hat,
+    blitz::Array<double, 2>&  reystr_hat,
+    blitz::Array<double, 2>&  modeled_stress_grid_scale_hat,
+    double&                   volume
+    )
+{
+
+  //------------------------------------------------------------------
+  //                     BLITZ CONFIGURATION
+  //------------------------------------------------------------------
+  //
+  // We define the variables i,j,k to be indices to blitz arrays.
+  // These are used for array expressions, that is matrix-vector
+  // products in the following.
+
+  blitz::firstIndex  i;   // Placeholder for the first index
+  blitz::secondIndex j;   // Placeholder for the second index
+  blitz::thirdIndex  k;   // Placeholder for the third index
+
+  // set element data
+  const int iel = NumNode();
+  const DiscretizationType distype = this->Shape();
+
+  // allocate arrays for shapefunctions, derivatives and the transposed jacobian
+  blitz::Array<double,1>  funct(iel);
+  blitz::Array<double,2>  xjm  (3,3);
+  blitz::Array<double,2>  deriv(3,iel,blitz::ColumnMajorArray<2>());
+
+
+  // get node coordinates of element
+  blitz::Array<double,2>  xyze(3,iel);
+  for(int inode=0;inode<iel;inode++)
+  {
+    xyze(0,inode)=Nodes()[inode]->X()[0];
+    xyze(1,inode)=Nodes()[inode]->X()[1];
+    xyze(2,inode)=Nodes()[inode]->X()[2];
+  }
+
+  // use one point gauss rule to calculate tau at element center
+  DRT::Utils::GaussRule3D integrationrule_filter=DRT::Utils::intrule_hex_1point;
+  switch (distype)
+  {
+      case DRT::Element::hex8:
+        integrationrule_filter = DRT::Utils::intrule_hex_1point;
+        break;
+      case DRT::Element::tet4:
+        integrationrule_filter = DRT::Utils::intrule_tet_1point;
+        break;
+      case DRT::Element::tet10:
+      case DRT::Element::hex20:
+      case DRT::Element::hex27:
+        dserror("the box filtering operation is only permitted for linear elements\n");
+        break;
+      default:
+        dserror("invalid discretization type for fluid3");
+  }
+
+  // gaussian points
+  const DRT::Utils::IntegrationPoints3D intpoints_onepoint(integrationrule_filter);
+  
+  // shape functions and derivs at element center
+  const double e1    = intpoints_onepoint.qxg[0][0];
+  const double e2    = intpoints_onepoint.qxg[0][1];
+  const double e3    = intpoints_onepoint.qxg[0][2];
+  const double wquad = intpoints_onepoint.qwgt[0];
+  
+  DRT::Utils::shape_function_3D       (funct,e1,e2,e3,distype);
+  DRT::Utils::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
+
+  // get Jacobian matrix and determinant
+  xjm = blitz::sum(deriv(i,k)*xyze(j,k),k);
+  const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
+                     xjm(0,1)*xjm(1,2)*xjm(2,0)+
+                     xjm(0,2)*xjm(1,0)*xjm(2,1)-
+                     xjm(0,2)*xjm(1,1)*xjm(2,0)-
+                     xjm(0,0)*xjm(1,2)*xjm(2,1)-
+                     xjm(0,1)*xjm(1,0)*xjm(2,2);
+
+  //
+  //             compute global first derivates
+  //
+  blitz::Array<double,2>  derxy(3,iel,blitz::ColumnMajorArray<2>());
+  /*
+    Use the Jacobian and the known derivatives in element coordinate
+    directions on the right hand side to compute the derivatives in
+    global coordinate directions
+
+          +-                 -+     +-    -+      +-    -+
+          |  dx    dy    dz   |     | dN_k |      | dN_k |
+          |  --    --    --   |     | ---- |      | ---- |
+          |  dr    dr    dr   |     |  dx  |      |  dr  |
+          |                   |     |      |      |      |
+          |  dx    dy    dz   |     | dN_k |      | dN_k |
+          |  --    --    --   |  *  | ---- |   =  | ---- | for all k
+          |  ds    ds    ds   |     |  dy  |      |  ds  |
+          |                   |     |      |      |      |
+          |  dx    dy    dz   |     | dN_k |      | dN_k |
+          |  --    --    --   |     | ---- |      | ---- |
+          |  dt    dt    dt   |     |  dz  |      |  dt  |
+          +-                 -+     +-    -+      +-    -+
+
+          Do one LU factorisation, everything else is backward substitution!
+
+  */
+  
+  {
+    // LAPACK solver
+    Epetra_LAPACK          solver;
+    
+    // this copy of xjm will be used to calculate a in place factorisation
+    blitz::Array<double,2> factorU(3,3,blitz::ColumnMajorArray<2>());
+    factorU=xjm.copy();
+    
+    // a vector specifying the pivots (reordering)
+    int pivot[3];
+
+    // error code
+    int ierr = 0;
+
+    // Perform LU factorisation
+    solver.GETRF(3,3,factorU.data(),3,&(pivot[0]),&ierr);
+    
+    if (ierr!=0)
+    {
+      dserror("Unable to perform LU factorisation during computation of derxy");
+    }
+    
+    // backward substitution. The copy is required since GETRS replaces
+    // the input with the result
+    derxy =deriv.copy();
+    solver.GETRS('N',3,iel,factorU.data(),3,&(pivot[0]),derxy.data(),3,&ierr);
+    
+    if (ierr!=0)
+    {
+      dserror("Unable to perform backward substitution after factorisation of jacobian");
+    }
+  }
+  
+  // get velocities (n+alpha_F,i) at integration point
+  //
+  //                 +-----
+  //       n+af       \                  n+af
+  //    vel    (x) =   +      N (x) * vel
+  //                  /        j         j
+  //                 +-----
+  //                 node j
+  //
+  blitz::Array<double,1> velintaf (3);
+  velintaf = blitz::sum(funct(j)*evelaf(i,j),j);
+
+
+  // get velocity (n+alpha_F,i) derivatives at integration point
+  //
+  //       n+af      +-----  dN (x)
+  //   dvel    (x)    \        k         n+af
+  //   ----------- =   +     ------ * vel
+  //       dx         /        dx        k
+  //         j       +-----      j
+  //                 node k
+  //
+  // j : direction of derivative x/y/z
+  //
+  blitz::Array<double,2>  vderxyaf(3,3);
+  vderxyaf = blitz::sum(derxy(j,k)*evelaf(i,k),k);
+
+  /*                            
+                            +-     n+af          n+af    -+
+          / h \       1.0   |  dvel_i  (x)   dvel_j  (x)  |
+     eps | u   |    = --- * |  ----------- + -----------  |
+          \   / ij    2.0   |      dx            dx       |
+                            +-       j             i     -+
+  */
+  blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());
+  epsilon = 0.5 * ( vderxyaf(i,j) + vderxyaf(j,i) );
+  
+  //
+  // modeled part of subgrid scale stresses
+  // 
+  /*    +-                                 -+ 1                 
+        |          / h \           / h \    | -         / h \   
+        | 2 * eps | u   |   * eps | u   |   | 2  * eps | u   |  
+        |          \   / kl        \   / kl |           \   / ij
+        +-                                 -+                   
+      
+        |                                   |
+        +-----------------------------------+
+             'resolved' rate of strain
+  */
+  
+  double rateofstrain = 0;
+  
+  for(int rr=0;rr<3;rr++)
+  {
+    for(int mm=0;mm<3;mm++)
+    {
+      rateofstrain += epsilon(rr,mm)*epsilon(rr,mm);
+    }
+  }
+  rateofstrain *= 2.0;
+  rateofstrain = sqrt(rateofstrain);
+
+  
+  //--------------------------------------------------
+  // one point integrations
+
+  // determine contribution to patch volume
+  volume = wquad*det;
+
+  // add contribution to integral over velocities
+  vel_hat += velintaf*wquad*det;
+  
+  // add contribution to integral over reynolds stresses
+  reystr_hat += velintaf(i)*velintaf(j)*wquad*det;
+  
+  // add contribution to integral over the modeled part of subgrid
+  // scale stresses 
+  modeled_stress_grid_scale_hat += rateofstrain * epsilon * wquad*det;
+
+  return;
+} // DRT::Elements::Fluid3::f3_apply_box_filter
+
+
+void DRT::Elements::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
+  blitz::Array<double, 2> evelaf_hat,
+  blitz::Array<double, 3> ereynoldsstress_hat,
+  blitz::Array<double, 3> efiltered_modeled_subgrid_stress_hat,
+  double&                 numerator,
+  double&                 denominator,
+  double&                 center)
+{
+
+  //------------------------------------------------------------------
+  //                     BLITZ CONFIGURATION
+  //------------------------------------------------------------------
+  //
+  // We define the variables i,j,k to be indices to blitz arrays.
+  // These are used for array expressions, that is matrix-vector
+  // products in the following.
+
+  blitz::firstIndex  i;   // Placeholder for the first index
+  blitz::secondIndex j;   // Placeholder for the second index
+  blitz::thirdIndex  k;   // Placeholder for the third index
+
+  // set element data
+  const int iel = NumNode();
+  const DiscretizationType distype = this->Shape();
+
+  // allocate arrays for shapefunctions, derivatives and the transposed jacobian
+  blitz::Array<double,1>  funct(iel);
+  blitz::Array<double,2>  xjm  (3,3);
+  blitz::Array<double,2>  deriv(3,iel,blitz::ColumnMajorArray<2>());
+
+
+  //this will be the y-coordinate of a point in the element interior
+  center = 0;
+  
+  // get node coordinates of element
+  blitz::Array<double,2>  xyze(3,iel);
+  for(int inode=0;inode<iel;inode++)
+  {
+    xyze(0,inode)=Nodes()[inode]->X()[0];
+    xyze(1,inode)=Nodes()[inode]->X()[1];
+    xyze(2,inode)=Nodes()[inode]->X()[2];
+
+    center+=xyze(1,inode);
+  }
+  center/=iel;
+  
+
+  // use one point gauss rule to calculate tau at element center
+  DRT::Utils::GaussRule3D integrationrule_filter=DRT::Utils::intrule_hex_1point;
+  switch (distype)
+  {
+      case DRT::Element::hex8:
+      case DRT::Element::hex20:
+      case DRT::Element::hex27:
+        integrationrule_filter = DRT::Utils::intrule_hex_1point;
+        break;
+      case DRT::Element::tet4:
+      case DRT::Element::tet10:
+        integrationrule_filter = DRT::Utils::intrule_tet_1point;
+        break;
+      default:
+        dserror("invalid discretization type for fluid3");
+  }
+
+  // gaussian points
+  const DRT::Utils::IntegrationPoints3D intpoints_onepoint(integrationrule_filter);
+  const double e1    = intpoints_onepoint.qxg[0][0];
+  const double e2    = intpoints_onepoint.qxg[0][1];
+  const double e3    = intpoints_onepoint.qxg[0][2];
+  
+  // shape functions and derivs at element center
+  DRT::Utils::shape_function_3D       (funct,e1,e2,e3,distype);
+  DRT::Utils::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
+  
+  // get element type constant for tau
+  double mk=0.0;
+  switch (distype)
+  {
+      case DRT::Element::tet4:
+      case DRT::Element::hex8:
+        mk = 0.333333333333333333333;
+        break;
+      case DRT::Element::hex20:
+      case DRT::Element::hex27:
+      case DRT::Element::tet10:
+        mk = 0.083333333333333333333;
+        break;
+      default:
+        dserror("type unknown!\n");
+  }
+
+  // get Jacobian matrix 
+  xjm = blitz::sum(deriv(i,k)*xyze(j,k),k);
+
+  //
+  //             compute global first derivates
+  //
+  blitz::Array<double,2>  derxy(3,iel,blitz::ColumnMajorArray<2>());
+  /*
+    Use the Jacobian and the known derivatives in element coordinate
+    directions on the right hand side to compute the derivatives in
+    global coordinate directions
+
+          +-                 -+     +-    -+      +-    -+
+          |  dx    dy    dz   |     | dN_k |      | dN_k |
+          |  --    --    --   |     | ---- |      | ---- |
+          |  dr    dr    dr   |     |  dx  |      |  dr  |
+          |                   |     |      |      |      |
+          |  dx    dy    dz   |     | dN_k |      | dN_k |
+          |  --    --    --   |  *  | ---- |   =  | ---- | for all k
+          |  ds    ds    ds   |     |  dy  |      |  ds  |
+          |                   |     |      |      |      |
+          |  dx    dy    dz   |     | dN_k |      | dN_k |
+          |  --    --    --   |     | ---- |      | ---- |
+          |  dt    dt    dt   |     |  dz  |      |  dt  |
+          +-                 -+     +-    -+      +-    -+
+
+          Do one LU factorisation, everything else is backward substitution!
+
+  */
+  
+  {
+    // LAPACK solver
+    Epetra_LAPACK          solver;
+    
+    // this copy of xjm will be used to calculate a in place factorisation
+    blitz::Array<double,2> factorU(3,3,blitz::ColumnMajorArray<2>());
+    factorU=xjm.copy();
+    
+    // a vector specifying the pivots (reordering)
+    int pivot[3];
+
+    // error code
+    int ierr = 0;
+
+    // Perform LU factorisation
+    solver.GETRF(3,3,factorU.data(),3,&(pivot[0]),&ierr);
+    
+    if (ierr!=0)
+    {
+      dserror("Unable to perform LU factorisation during computation of derxy");
+    }
+    
+    // backward substitution. The copy is required since GETRS replaces
+    // the input with the result
+    derxy =deriv.copy();
+    solver.GETRS('N',3,iel,factorU.data(),3,&(pivot[0]),derxy.data(),3,&ierr);
+    
+    if (ierr!=0)
+    {
+      dserror("Unable to perform backward substitution after factorisation of jacobian");
+    }
+  }
+  
+  // get velocities (n+alpha_F,i) at integration point
+  //
+  //                 +-----
+  //     ^ n+af       \                ^ n+af
+  //    vel    (x) =   +      N (x) * vel
+  //                  /        j         j
+  //                 +-----
+  //                 node j
+  //
+  blitz::Array<double,1> velintaf_hat (3);
+  velintaf_hat = blitz::sum(funct(j)*evelaf_hat(i,j),j);
+
+
+  // get velocity (n+alpha_F,i) derivatives at integration point
+  //
+  //     ^ n+af      +-----  dN (x)
+  //   dvel    (x)    \        k       ^ n+af
+  //   ----------- =   +     ------ * vel
+  //       dx         /        dx        k
+  //         j       +-----      j
+  //                 node k
+  //
+  // j : direction of derivative x/y/z
+  //
+  blitz::Array<double,2>  vderxyaf_hat(3,3);
+  vderxyaf_hat = blitz::sum(derxy(j,k)*evelaf_hat(i,k),k);
+
+  // get filtered reynolds stress (n+alpha_F,i) at integration point
+  //
+  //                      +-----
+  //        ^   n+af       \                   ^   n+af
+  //    restress    (x) =   +      N (x) * restress
+  //            ij         /        k              k, ij
+  //                      +-----
+  //                      node k
+  //
+  blitz::Array<double,2>  restress_hat(3,3);
+  restress_hat = blitz::sum(funct(k)*ereynoldsstress_hat(i,j,k),k);
+
+  // get filtered modeled subgrid stress (n+alpha_F,i) at integration point
+  //
+  //                                                 +-----
+  //                   ^                   n+af       \                              ^                   n+af
+  //    filtered_modeled_subgrid_stress_hat    (x) =   +      N (x) * filtered_modeled_subgrid_stress_hat
+  //                                       ij         /        k                                         k, ij
+  //                                                 +-----
+  //                                                 node k
+  //
+  blitz::Array<double,2>  filtered_modeled_subgrid_stress_hat(3,3);
+  filtered_modeled_subgrid_stress_hat = blitz::sum(funct(k)*efiltered_modeled_subgrid_stress_hat(i,j,k),k);
+
+  
+  /*                            
+                            +-   ^ n+af        ^ n+af    -+
+      ^   / h \       1.0   |  dvel_i  (x)   dvel_j  (x)  |
+     eps | u   |    = --- * |  ----------- + -----------  |
+          \   / ij    2.0   |      dx            dx       |
+                            +-       j             i     -+
+  */
+  blitz::Array<double,2> epsilon_hat(3,3,blitz::ColumnMajorArray<2>());
+  epsilon_hat = 0.5 * ( vderxyaf_hat(i,j) + vderxyaf_hat(j,i) );
+  
+  //
+  // modeled part of subtestfilter scale stresses
+  // 
+  /*    +-                                 -+ 1                 
+        |      ^   / h \       ^   / h \    | -     ^   / h \   
+        | 2 * eps | u   |   * eps | u   |   | 2  * eps | u   |  
+        |          \   / kl        \   / kl |           \   / ij
+        +-                                 -+                   
+      
+        |                                   |
+        +-----------------------------------+
+             'resolved' rate of strain
+  */
+  
+  double rateofstrain_hat = 0;
+  
+  for(int rr=0;rr<3;rr++)
+  {
+    for(int mm=0;mm<3;mm++)
+    {
+      rateofstrain_hat += epsilon_hat(rr,mm)*epsilon_hat(rr,mm);
+    }
+  }
+  rateofstrain_hat *= 2.0;
+  rateofstrain_hat = sqrt(rateofstrain_hat);
+  
+  blitz::Array<double, 2> L_ij (3,3,blitz::ColumnMajorArray<2>());
+  blitz::Array<double, 2> M_ij (3,3,blitz::ColumnMajorArray<2>());
+
+  L_ij = restress_hat(i,j) - velintaf_hat(i)*velintaf_hat(j);
+
+  // this is sqrt(3)
+  double filterwidthratio = 1.73;
+
+  M_ij = filtered_modeled_subgrid_stress_hat(i,j)
+         -
+         filterwidthratio*filterwidthratio*rateofstrain_hat*epsilon_hat(i,j);
+
+  numerator  =0;
+  denominator=0;
+  for(int rr=0;rr<3;rr++)
+  {
+    for(int mm=0;mm<3;mm++)
+    {
+      numerator   += L_ij(rr,mm)*M_ij(rr,mm);
+      denominator += M_ij(rr,mm)*M_ij(rr,mm);
+    }
+  }
+
+  
+  
   return;
 }
 

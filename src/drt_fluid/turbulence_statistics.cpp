@@ -101,8 +101,27 @@ TurbulenceStatistics::TurbulenceStatistics(
   set<double,PlaneSortCriterion> availablecoords;
 
   // get the plane normal direction from the parameterlist
-  dim_ = params_.get<int>("normal to hom. planes in channel");
+  {
+    string planestring = params_.sublist("TURBULENCE MODEL").get<string>("CHANNEL_HOMPLANE","xz");
 
+    if(planestring == "xz")
+    {
+      dim_ = 1;
+    }
+    else if(planestring == "yz")
+    {
+      dim_ = 0;
+    }
+    else if(planestring == "xy")
+    {
+      dim_ = 2;
+    }
+    else
+    {
+      dserror("homogeneuous plane for channel flow was specified incorrectly.");
+    }
+  }
+  
   // get fluid viscosity from material definition
   visc_ = mat->m.fluid->viscosity;
   
@@ -231,13 +250,14 @@ TurbulenceStatistics::TurbulenceStatistics(
   // push coordinates of planes in a vector
   //----------------------------------------------------------------------
   {
-    vector <double> nodeplane;
+    nodeplanes_ = rcp(new vector<double> );
+
     
     for(set<double,PlaneSortCriterion>::iterator coord=availablecoords.begin();
         coord!=availablecoords.end();
         ++coord)
     {
-      nodeplane.push_back(*coord);
+      nodeplanes_->push_back(*coord);
     }
     
     //----------------------------------------------------------------------
@@ -246,17 +266,16 @@ TurbulenceStatistics::TurbulenceStatistics(
     //----------------------------------------------------------------------
     const int numsubdivisions=5;
     
-    for(unsigned rr =0; rr < nodeplane.size()-1; ++rr)
+    for(unsigned rr =0; rr < nodeplanes_->size()-1; ++rr)
     {
-      double delta = (nodeplane[rr+1]-nodeplane[rr])/((double) numsubdivisions);
+      double delta = ((*nodeplanes_)[rr+1]-(*nodeplanes_)[rr])/((double) numsubdivisions);
 
       for (int mm =0; mm < numsubdivisions; ++mm)
       {
-        
-        planecoordinates_->push_back(nodeplane[rr]+delta*mm);
+        planecoordinates_->push_back((*nodeplanes_)[rr]+delta*mm);
       }
     }
-    planecoordinates_->push_back(nodeplane[nodeplane.size()-1]);
+    planecoordinates_->push_back((*nodeplanes_)[(*nodeplanes_).size()-1]);
   }
   //----------------------------------------------------------------------
   // allocate arrays for sums of in plane mean values
@@ -284,6 +303,16 @@ TurbulenceStatistics::TurbulenceStatistics(
   sumsqw_ =  rcp(new vector<double> );
   sumsqw_->resize(size,0.0);
 
+  sumuv_ =  rcp(new vector<double> );
+  sumuv_->resize(size,0.0);
+
+  sumuw_ =  rcp(new vector<double> );
+  sumuw_->resize(size,0.0);
+
+  sumvw_ =  rcp(new vector<double> );
+  sumvw_->resize(size,0.0);
+
+  
   sumsqp_ =  rcp(new vector<double> );
   sumsqp_->resize(size,0.0);
 
@@ -291,11 +320,11 @@ TurbulenceStatistics::TurbulenceStatistics(
   Teuchos::RefCountPtr<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.get<string>("statistics outfile");
+    std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
     s.append(".flow_statistic");
     
     log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
-    (*log) << "# Flow statistics for turbulent channel flow \n\n";
+    (*log) << "# Flow statistics for turbulent channel flow (first an second order moments)\n\n";
 
     log->flush();
     
@@ -441,6 +470,15 @@ void TurbulenceStatistics::EvaluateMeanValuesInPlanes()
   RefCountPtr<vector<double> > locsumsqw =  rcp(new vector<double> );
   locsumsqw->resize(size,0.0);
 
+  RefCountPtr<vector<double> > locsumuv  =  rcp(new vector<double> );
+  locsumuv->resize(size,0.0);
+
+  RefCountPtr<vector<double> > locsumuw  =  rcp(new vector<double> );
+  locsumuw->resize(size,0.0);
+
+  RefCountPtr<vector<double> > locsumvw  =  rcp(new vector<double> );
+  locsumvw->resize(size,0.0);
+  
   RefCountPtr<vector<double> > locsumsqp =  rcp(new vector<double> );
   locsumsqp->resize(size,0.0);
 
@@ -465,19 +503,31 @@ void TurbulenceStatistics::EvaluateMeanValuesInPlanes()
   RefCountPtr<vector<double> > globsumsqw =  rcp(new vector<double> );
   globsumsqw->resize(size,0.0);
 
+  RefCountPtr<vector<double> > globsumuv  =  rcp(new vector<double> );
+  globsumuv->resize(size,0.0);
+
+  RefCountPtr<vector<double> > globsumuw  =  rcp(new vector<double> );
+  globsumuw->resize(size,0.0);
+
+  RefCountPtr<vector<double> > globsumvw  =  rcp(new vector<double> );
+  globsumvw->resize(size,0.0);
+  
   RefCountPtr<vector<double> > globsumsqp =  rcp(new vector<double> );
   globsumsqp->resize(size,0.0);
   
   // communicate pointers to the result vectors to the element
-  eleparams.set("mean velocities x direction"     ,locsumu);
-  eleparams.set("mean velocities y direction"     ,locsumv);
-  eleparams.set("mean velocities z direction"     ,locsumw);
-  eleparams.set("mean pressure"                   ,locsump);
+  eleparams.set("mean velocity u"     ,locsumu);
+  eleparams.set("mean velocity v"     ,locsumv);
+  eleparams.set("mean velocity w"     ,locsumw);
+  eleparams.set("mean pressure p"     ,locsump);
 
-  eleparams.set("variance velocities x direction",locsumsqu);
-  eleparams.set("variance velocities y direction",locsumsqv);
-  eleparams.set("variance velocities z direction",locsumsqw);
-  eleparams.set("variance pressure"              ,locsumsqp);
+  eleparams.set("mean value u^2",locsumsqu);
+  eleparams.set("mean value v^2",locsumsqv);
+  eleparams.set("mean value w^2",locsumsqw);
+  eleparams.set("mean value uv" ,locsumuv );
+  eleparams.set("mean value uw" ,locsumuw );
+  eleparams.set("mean value vw" ,locsumvw );
+  eleparams.set("mean value p^2",locsumsqp);
 
   // counts the number of elements in the lowest homogeneous plane
   // (the number is the same for all planes, since we use a structured
@@ -508,6 +558,9 @@ void TurbulenceStatistics::EvaluateMeanValuesInPlanes()
   discret_->Comm().SumAll(&((*locsumsqu)[0]),&((*globsumsqu)[0]),size);
   discret_->Comm().SumAll(&((*locsumsqv)[0]),&((*globsumsqv)[0]),size);
   discret_->Comm().SumAll(&((*locsumsqw)[0]),&((*globsumsqw)[0]),size);
+  discret_->Comm().SumAll(&((*locsumuv)[0]) ,&((*globsumuv)[0]) ,size);
+  discret_->Comm().SumAll(&((*locsumuw)[0]) ,&((*globsumuw)[0]) ,size);
+  discret_->Comm().SumAll(&((*locsumvw)[0]) ,&((*globsumvw)[0]) ,size); 
   discret_->Comm().SumAll(&((*locsumsqp)[0]),&((*globsumsqp)[0]),size);
 
 
@@ -529,6 +582,9 @@ void TurbulenceStatistics::EvaluateMeanValuesInPlanes()
     (*sumsqu_)[i]+=(*globsumsqu)[i];
     (*sumsqv_)[i]+=(*globsumsqv)[i];
     (*sumsqw_)[i]+=(*globsumsqw)[i];
+    (*sumuv_)[i] +=(*globsumuv) [i];
+    (*sumuw_)[i] +=(*globsumuw) [i];
+    (*sumvw_)[i] +=(*globsumvw) [i];
     (*sumsqp_)[i]+=(*globsumsqp)[i];
   }
 
@@ -614,7 +670,7 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
   Teuchos::RefCountPtr<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.get<string>("statistics outfile");
+    std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
     s.append(".flow_statistic");
     
     log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::app));
@@ -630,7 +686,8 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
     
     (*log) << "#     y            y+";
     (*log) << "           umean         vmean         wmean         pmean";
-    (*log) << "          Varu          Varv          Varw          Varp   \n";
+    (*log) << "         mean u^2      mean v^2      mean w^2";
+    (*log) << "         mean u*v      mean u*w      mean v*w      Varp   \n";
 
     (*log) << scientific;
     for(unsigned i=0; i<planecoordinates_->size(); ++i)
@@ -641,10 +698,14 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
       (*log) << "   " << setw(11) << setprecision(4) << (*sumv_)  [i];
       (*log) << "   " << setw(11) << setprecision(4) << (*sumw_)  [i];
       (*log) << "   " << setw(11) << setprecision(4) << (*sump_)  [i];
-      (*log) << "   " << setw(11) << setprecision(4) << ((*sumsqu_)[i]-(*sumu_)[i]*(*sumu_)[i]);
-      (*log) << "   " << setw(11) << setprecision(4) << ((*sumsqv_)[i]-(*sumv_)[i]*(*sumv_)[i]);
-      (*log) << "   " << setw(11) << setprecision(4) << ((*sumsqw_)[i]-(*sumw_)[i]*(*sumw_)[i]);
-      (*log) << "   " << setw(11) << setprecision(4) << ((*sumsqp_)[i]-(*sump_)[i]*(*sump_)[i]) << "   \n";
+      (*log) << "   " << setw(11) << setprecision(4) << ((*sumsqu_)[i]);
+      (*log) << "   " << setw(11) << setprecision(4) << ((*sumsqv_)[i]);
+      (*log) << "   " << setw(11) << setprecision(4) << ((*sumsqw_)[i]);
+      (*log) << "   " << setw(11) << setprecision(4) << ((*sumsqu_)[i]);
+      (*log) << "   " << setw(11) << setprecision(4) << ((*sumuv_)[i]);
+      (*log) << "   " << setw(11) << setprecision(4) << ((*sumuw_)[i]);
+      (*log) << "   " << setw(11) << setprecision(4) << ((*sumvw_)[i]);
+      (*log) << "   " << setw(11) << setprecision(4) << ((*sumsqp_)[i]) << "   \n";
     }
     log->flush();
   }

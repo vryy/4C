@@ -150,6 +150,16 @@ public:
   */
 
   void ClearStatistics();
+
+  /*!
+  \brief Provide the coordinates of the homogeneous planes for a
+  turbulent channel flow
+  
+  */
+  vector<double> ReturnNodePlaneCoords()
+    {
+      return(*nodeplanes_);
+    };
   
   //@}
 
@@ -208,7 +218,11 @@ private:
   RefCountPtr<Epetra_Vector>       togglew_;
   RefCountPtr<Epetra_Vector>       togglep_;
 
-  //! the dim_-coordinates of the homogeneous planes
+  //! the dim_-coordinates of the homogeneous planes containing nodes
+  RefCountPtr<vector<double> >     nodeplanes_;
+  
+  //! the dim_-coordinates of the homogeneous planes --- including
+  //additional sampling planes
   RefCountPtr<vector<double> >     planecoordinates_;
 
   //! a bounding box for the channel
@@ -229,6 +243,12 @@ private:
   RefCountPtr<vector<double> >     sumsqv_;
   //! sum over w^2 (over one plane in each component)
   RefCountPtr<vector<double> >     sumsqw_;
+  //! sum over uv (over one plane in each component)
+  RefCountPtr<vector<double> >     sumuv_;
+  //! sum over uw (over one plane in each component)
+  RefCountPtr<vector<double> >     sumuw_;
+  //! sum over vw (over one plane in each component)
+  RefCountPtr<vector<double> >     sumvw_;
   //! sum over p^2 (over one plane in each component)
   RefCountPtr<vector<double> >     sumsqp_;
 

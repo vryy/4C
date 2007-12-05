@@ -226,7 +226,16 @@ public:
   
   //@}
 
+
+  //! @name methos to provide constructed node to node coupling
   
+  map<int,vector<int> > ReturnAllCoupledNodesOnThisProc()
+  {
+    return (*allcoupledcolnodes_);
+  }
+    
+  //@}
+
 protected:
   //!\brief the discretisation
   RefCountPtr<DRT::Discretization> discret_;

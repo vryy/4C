@@ -1,6 +1,15 @@
 /*!----------------------------------------------------------------------
 \file fluid_dyn_nln_drt.H
-\brief
+\brief Control routine for fluid (time) integration. Calls
+
+     o Single step one-step-theta time integration
+
+     o Two step BDF2 Gear's methode with one-step-theta start step
+
+     o Genalpha time integartion
+
+     o Stationary solver
+
 
 <pre>
 Maintainer: Peter Gamnitzer
@@ -10,6 +19,7 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 *----------------------------------------------------------------------*/
+
 #ifdef CCADISCRET
 
 #ifndef FLUID_DYN_NLN_DRT_H

@@ -295,8 +295,14 @@ public:
   */
   void EvaluateErrorComparedToAnalyticalSol();
 
+  //@}
+
+  
+  //! @name methods for turbulence models (dynamic Smagorinsky)
+  
+  void ApplyFilterForDynamicComputationOfCs();
+  
    //@}
- 
 
 protected:
 
@@ -305,7 +311,7 @@ private:
   RefCountPtr<DRT::Discretization> discret_;
   LINALG::Solver&                  solver_;
   ParameterList&                   params_;
-  IO::DiscretizationWriter&            output_;
+  IO::DiscretizationWriter&        output_;
 
   // the dimension of the problem --- determines which dofs are pressure dofs
   int                              numdim_;
@@ -340,7 +346,6 @@ private:
 
   // turbulence statistics
   RefCountPtr<TurbulenceStatistics> turbulencestatistics_;
-  bool                              evalstatistics_;
   
   // system matrix --- stiffness and mass are assembled in one matrix!
   RefCountPtr<Epetra_CrsMatrix>    sysmat_;
@@ -392,6 +397,21 @@ private:
   RefCountPtr<Epetra_Vector>       onlypre;
 
 
+  // connectivity generated from periodic boundary conditions
+  // --------------------------------------------------------
+  // 
+  // (the connection between master and slave nodes on this proc)
+  map<int,vector<int> > mapmastertoslave_;
+
+  // Vectors used for filtering (for dynamic Smagorinsky model)
+  // --------------------------
+  RefCountPtr<Epetra_MultiVector>  filtered_vel_;
+  RefCountPtr<Epetra_MultiVector>  filtered_reynoldsstress_;
+  RefCountPtr<Epetra_MultiVector>  filtered_modeled_subgrid_stress_;
+
+  RefCountPtr<vector<double> >     averaged_LijMij_;
+  RefCountPtr<vector<double> >     averaged_MijMij_;
+  RefCountPtr<vector<double> >     planecoords_;
   // time measurement
   // ----------------
   RefCountPtr<Time> timedyntot_     ;

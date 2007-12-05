@@ -18,8 +18,6 @@ Maintainer: Peter Gamnitzer
 
 #include "fluid_genalpha_integration.H"
 
-extern Teuchos::RefCountPtr<Teuchos::ParameterList> globalparameterlist;
-
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -76,6 +74,8 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(discret_);
   pbc.UpdateDofsForPeriodicBoundaryConditions();
 
+  mapmastertoslave_ = pbc.ReturnAllCoupledNodesOnThisProc();
+  
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled()) discret_->FillComplete();
 
@@ -97,7 +97,8 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // -------------------------------------------------------------------
   {
     // Define sets which will hold the dof number of the velocity or
-    // pressure dofs
+    // pressure dofs. Only velocity and pressure dofs owned by this
+    // processor are inserted into the map
 
     set<int> veldofset;
     set<int> predofset;
@@ -125,6 +126,8 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
       }
     }
 
+    // these vectors now contain all velocity/pressure dofs on this
+    // processor
     vector<int> velmapdata(veldofset.begin(),veldofset.end());
     vector<int> premapdata(predofset.begin(),predofset.end());
 
@@ -199,19 +202,42 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // Nonlinear iteration increment vector
   increment_    = LINALG::CreateVector(*dofrowmap,true);
 
-
-
-
-
   // -------------------------------------------------------------------
   // initialise turbulence statistics evaluation
   // -------------------------------------------------------------------
-  evalstatistics_ = params_.get<bool>("evaluate turbulence statistic");
-  if (evalstatistics_)
+  if (params_.sublist("TURBULENCE MODEL").get<string>("CANONICAL_FLOW","no")
+      ==
+      "channel_flow_of_height_2")
   {
     turbulencestatistics_=rcp(new TurbulenceStatistics(discret_,params_));
   }
 
+  // -------------------------------------------------------------------
+  // get a vector layout from the discretization to construct 
+  // -------------------------------------------------------------------
+  const Epetra_Map* noderowmap = discret_->NodeRowMap();
+  
+  // -------------------------------------------------------------------
+  // initialise vectors for dynamic Smagorinsky model
+  // (the smoothed quantities)
+  // -------------------------------------------------------------------
+  if (params_.sublist("TURBULENCE MODEL").get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
+      ==
+      "CLASSICAL_LES")
+  {
+    if(params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+       ==
+       "Dynamic_Smagorinsky"
+      )
+    {
+      filtered_vel_                   = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+      filtered_reynoldsstress_        = rcp(new Epetra_MultiVector(*noderowmap,9,true));
+      filtered_modeled_subgrid_stress_= rcp(new Epetra_MultiVector(*noderowmap,9,true));
+      
+      averaged_LijMij_                = rcp(new vector<double>);
+      averaged_MijMij_                = rcp(new vector<double>);
+    }
+  }
   // end time measurement for timeloop
   tm7_ref_ = null;
 
@@ -282,53 +308,89 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
     
     /* output of stabilisation details */
     {
-      ParameterList *  stabparams=&((*globalparameterlist).sublist("FluidStabilisation"));
+      ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
     
       cout << "Stabilisation type         : " << stabparams->get<string>("STABTYPE") << &endl;
-      cout << "                             " << stabparams->get<string>("TDS")<< &endl;
+      cout << "                             " << stabparams->get<string>("RVMM_TDS")<< &endl;
       cout << &endl;
-      if(stabparams->get<string>("TDS") == "time dependent subscales")
+      
+      if(stabparams->get<string>("RVMM_TDS") == "quasistatic_subscales")
       {
-        cout <<  "                             " << "INERTIA         = " << stabparams->get<string>("INERTIA")        <<&endl;
+        if(stabparams->get<string>("RVMM_INERTIA")=="+(sacc,v)")
+        {
+          dserror("The quasistatic version supports only GLS_0 or USFEM_0 type stabilisation,\nso please drop the inertia stabilisation term in this case.");
+        }
       }
-      cout <<  "                             " << "SUPG            = " << stabparams->get<string>("SUPG")           <<&endl;
-      cout <<  "                             " << "PSPG            = " << stabparams->get<string>("PSPG")           <<&endl;
-      cout <<  "                             " << "CSTAB           = " << stabparams->get<string>("CSTAB")          <<&endl;
-      cout <<  "                             " << "VSTAB           = " << stabparams->get<string>("VSTAB")          <<&endl;
-      cout <<  "                             " << "CROSS-STRESS    = " << stabparams->get<string>("CROSS-STRESS")   <<&endl;
-      cout <<  "                             " << "REYNOLDS-STRESS = " << stabparams->get<string>("REYNOLDS-STRESS")<<&endl;
+      cout <<  "                             " << "INERTIA         = " << stabparams->get<string>("RVMM_INERTIA")        <<&endl;
+      cout <<  "                             " << "SUPG            = " << stabparams->get<string>("RVMM_SUPG")           <<&endl;
+      cout <<  "                             " << "PSPG            = " << stabparams->get<string>("RVMM_PSPG")           <<&endl;
+      cout <<  "                             " << "CSTAB           = " << stabparams->get<string>("RVMM_CSTAB")          <<&endl;
+      cout <<  "                             " << "VSTAB           = " << stabparams->get<string>("RVMM_VSTAB")          <<&endl;
+      cout <<  "                             " << "CROSS-STRESS    = " << stabparams->get<string>("RVMM_CROSS-STRESS")   <<&endl;
+      cout <<  "                             " << "REYNOLDS-STRESS = " << stabparams->get<string>("RVMM_REYNOLDS-STRESS")<<&endl;
       cout << &endl;
     }
 
     /* output of turbulence model if any */
     {
-      ParameterList *  modelparams =&((*globalparameterlist).sublist("TurbulenceModel"));
+      ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
 
       if (modelparams->get<string>("TURBULENCE_APPROACH", "none") != "none")
       {
-      
-        cout << "Turbulence approach        : " << modelparams->get<string>("TURBULENCE_APPROACH") << &endl;
+
+        string special_flow = modelparams->get<string>("CANONICAL_FLOW","no");
+        string hom_plane    = modelparams->get<string>("CHANNEL_HOMPLANE","xz");
+        
+        cout << "Turbulence approach        : " << modelparams->get<string>("TURBULENCE_APPROACH") << &endl << &endl;
+        
         if(modelparams->get<string>("TURBULENCE_APPROACH") == "RANS")
         {
           dserror("RANS approaches not implemented yet\n");
         }
-        
-        cout << "                           : " << modelparams->get<string>("PHYSICAL_MODEL") ;
-        if(modelparams->get<string>("PHYSICAL_MODEL") == "Smagorinsky with van Driest damping")
+        else if(modelparams->get<string>("TURBULENCE_APPROACH") == "CLASSICAL_LES")
         {
-          cout << ", channel flow with"<< &endl;
-          cout << "                             " << "Re_tau=" << modelparams->get<double>("RE_TAU");
-          cout << ", l_tau=" <<  modelparams->get<double>("L_TAU") << " and" ;
+          string physmodel = modelparams->get<string>("PHYSICAL_MODEL");
+          
+          cout << "                             " << physmodel << &endl;
+          if (physmodel == "Smagorinsky")
+          {
+            cout << "                             " ;
+            cout << "with Smagorinsky constant Cs= " <<  modelparams->get<double>("C_SMAGORINSKY") ;
+          }
+          else if(physmodel == "Smagorinsky_with_van_Driest_damping")
+          {
+            if (special_flow != "channel_flow_of_height_2" || hom_plane != "xz")
+            {
+              dserror("The van Driest damping is only implemented for a channel flow with wall \nnormal direction y");
+            }
+            
+            cout << "                             " ;
+            cout << "- Smagorinsky constant:   Cs   = " <<  modelparams->get<double>("C_SMAGORINSKY") << &endl;
+            cout << "                             " ;
+            cout << "- viscous length      :   l_tau= " <<  modelparams->get<double>("CHANNEL_L_TAU") << &endl ;
+          }
+          else if(physmodel == "Dynamic_Smagorinsky")
+          {
+            if (special_flow != "channel_flow_of_height_2" || hom_plane != "xz")
+            {
+              dserror("The dynamic Smagorinsky model is only implemented for a channel flow with \nwall normal direction y");
+            }
+          }
+          
+          cout << &endl;
         }
-        if (modelparams->get<string>("PHYSICAL_MODEL") == "Smagorinsky with van Driest damping"
-            ||
-            modelparams->get<string>("PHYSICAL_MODEL") == "Smagorinsky")
+        
+        if (special_flow == "channel_flow_of_height_2")
         {
-          cout << " Smagorinsky constant Cs= " <<  modelparams->get<double>("C_SMAGORINSKY") ;
+          cout << "                             " ;
+          cout << "Turbulence statistics are evaluated for a turbulent channel flow.\n";
+          cout << "                             " ;
+          cout << "The solution is averaged over the homogeneous " << hom_plane << " plane and over time.\n";
         }
         cout << &endl;
-        
         cout << &endl;
+
+        
       }
     }
   }
@@ -398,7 +460,9 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
     // -------------------------------------------------------------------
     // add calculated velocity to mean value calculation
     // -------------------------------------------------------------------
-    if(evalstatistics_)
+    if(params_.sublist("TURBULENCE MODEL").get<string>("CANONICAL_FLOW","no")
+       ==
+       "channel_flow_of_height_2")
     {
       turbulencestatistics_->DoTimeSample(velnp_,*force_);
     }
@@ -453,12 +517,11 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
   )
 {
 
-  int               itnum         = 0;
-  double            tcpu   ;
+  int               itnum = 0;
+  double            tcpu     ;
 
   dtsolve_ = 0;
   dtele_   = 0;
-
 
   // start time measurement for nonlinear iteration
   tm6_ref_ = rcp(new TimeMonitor(*timenlnloop_));
@@ -476,7 +539,7 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
 
   // time measurement --- stop TimeMonitor tm9
   tm9_ref_        = null;
-
+  
   // -------------------------------------------------------------------
   // call elements to calculate residual and matrix for first iteration
   // -------------------------------------------------------------------
@@ -801,7 +864,7 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
     }
 
 
-    if(evalstatistics_)
+    if((params_.sublist("TURBULENCE MODEL")).get<string>("CANONICAL_FLOW","no") == "channel_flow_of_height_2")
     {
       turbulencestatistics_->TimeAverageMeansAndOutputOfStatistics(step_);
 
@@ -851,6 +914,24 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
   //                       matrix anymore if itemax is reached (speedup)
   int     itemax    =params_.get<int>   ("max nonlin iter steps");
 
+
+  // -------------------------------------------------------------------
+  // Filter velocity for dynamic Smagorinsky model --- this provides
+  // the necessary dynamic constant
+  // -------------------------------------------------------------------
+  if (params_.sublist("TURBULENCE MODEL").get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
+      ==
+      "CLASSICAL_LES")
+  {
+    if(params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+       ==
+       "Dynamic_Smagorinsky"
+      )
+    {
+      this->ApplyFilterForDynamicComputationOfCs();
+    }
+  }
+  
   // -------------------------------------------------------------------
   // call elements to calculate residual and matrix
   // -------------------------------------------------------------------
@@ -914,12 +995,12 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
 
   // parameters for stabilisation
   {
-    eleparams.sublist("stabilisation")    = (*globalparameterlist).sublist("FluidStabilisation");
+    eleparams.sublist("STABILIZATION")    = params_.sublist("STABILIZATION");
   }
 
   // parameters for a turbulence model
   {
-    eleparams.sublist("turbulence model") = (*globalparameterlist).sublist("TurbulenceModel");
+    eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
   }
   
   // set vector values needed by elements
@@ -1574,6 +1655,330 @@ void FluidGenAlphaIntegration::EvaluateErrorComparedToAnalyticalSol()
   return;
 } // end EvaluateErrorComparedToAnalyticalSol
 
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | filter quantities for dynamic Smagorinsky model. Compute averaged    |
+ | values for LijMij and MijMij.                             gammi 12/07|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
+{
+  // get the dofrowmap for access of velocity dofs
+  const Epetra_Map* dofrowmap       = discret_->DofRowMap();
+
+  // generate a parameterlist for communication and control
+  ParameterList filterparams;
+  // action for elements
+  filterparams.set("action","calc_fluid_box_filter");
+  
+  // set state vector to pass distributed vector to the element
+  discret_->ClearState();
+  discret_->SetState("u and p (n+alpha_F,trial)",velaf_);
+
+  // loop all nodes on the processor
+  for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+  {
+    // get the processor local node
+    DRT::Node*  lnode       = discret_->lRowNode(lnodeid);
+
+    // the set of degrees of freedom associated with the node
+    vector<int> nodedofset = discret_->Dof(lnode);
+
+    // check whether the node is on a wall, i.e. all velocity dofs
+    // are Dirichlet constrained 
+    int is_no_slip_node =0;
+    for(int index=0;index<numdim_;++index)
+    {
+      int gid = nodedofset[index];
+      int lid = dofrowmap->LID(gid);
+
+      if ((*dirichtoggle_)[lid]==1)
+      {
+        is_no_slip_node++;
+      }
+    }
+
+    // skip this node if it is on a wall
+    if (is_no_slip_node == numdim_)
+    {
+      continue;
+    }
+
+    // now check whether we have a pbc condition on this node
+    vector<DRT::Condition*> mypbc;
+    
+    lnode->GetCondition("SurfacePeriodic",mypbc);
+
+    // check whether a periodic boundary condition is active on this node
+    bool ispbcmaster = false;
+    
+    if (mypbc.size()>0)
+    {
+      // get the list of all his slavenodes
+      map<int, vector<int> >::iterator master = mapmastertoslave_.find(lnode->Id());
+
+      // slavenodes are ignored
+      if(master == mapmastertoslave_.end())
+      {
+        continue;
+      }
+
+      // we have a master. Remember this cause we have to extend the patch
+      // to the other side...
+      ispbcmaster = true;
+    }
+
+    // generate a vector of all adjacent elements
+    vector <DRT::Element*> patcheles;
+    for(int rr=0;rr<lnode->NumElement();++rr)
+    {
+      patcheles.push_back(lnode->Elements()[rr]);
+    }
+
+    // add the elements connected to the slavenodes --- master and
+    // slavenodes are treated as they were identical!
+    if(ispbcmaster == true)
+    {
+      for (unsigned slavecount = 0;slavecount<mapmastertoslave_[lnode->Id()].size();++slavecount)
+      {  
+        // get the corresponding slavenodes
+        DRT::Node*  slavenode = discret_->gNode(mapmastertoslave_[lnode->Id()][slavecount]);
+
+        // add the elements
+        for(int rr=0;rr<slavenode->NumElement();++rr)
+        {
+          patcheles.push_back(slavenode->Elements()[rr]);
+        }
+      }
+    }
+
+    // define element matrices and vectors --- they are used to
+    // transfer information into the element routine and back
+    Epetra_SerialDenseMatrix ep_reystress_hat(3,3);
+    Epetra_SerialDenseMatrix ep_modeled_stress_grid_scale_hat(3,3);
+    Epetra_SerialDenseVector ep_velaf_hat (3);
+    Epetra_SerialDenseVector dummy1;
+    Epetra_SerialDenseVector dummy2;
+
+    // the patch volume has to be initialised to zero
+    double patchvolume = 0;
+    
+    for (unsigned nele=0;nele<patcheles.size();++nele)
+    {
+      DRT::Element* nbele = (patcheles[nele]);
+
+      // get element location vector, dirichlet flags and ownerships
+      vector<int> lm;
+      vector<int> lmowner;
+      nbele->LocationVector(*discret_,lm,lmowner);
+
+      // call the element evaluate method to integrate functions
+      // against heaviside function element
+      int err = nbele->Evaluate(filterparams,
+                                *discret_,
+                                lm,
+                                ep_reystress_hat,
+                                ep_modeled_stress_grid_scale_hat,
+                                ep_velaf_hat,dummy1,dummy2);
+      if (err) dserror("Proc %d: Element %d returned err=%d",
+                       discret_->Comm().MyPID(),nbele->Id(),err);
+
+      // get contribution to patch volume of this element. Add it up.
+      double volume_contribution =filterparams.get<double>("volume_contribution");
+
+      patchvolume+=volume_contribution;
+    }
+
+    // wrap Epetra Object in Blitz array
+    blitz::Array<double, 1> velaf_hat(ep_velaf_hat.Values(),
+                                      blitz::shape(ep_velaf_hat.Length()),
+                                      blitz::neverDeleteData);
+    
+    blitz::Array<double, 2> reystress_hat(ep_reystress_hat.A(),
+                                          blitz::shape(ep_reystress_hat.M(),ep_reystress_hat.N()),
+                                          blitz::neverDeleteData,
+                                          blitz::ColumnMajorArray<2>());
+    
+    blitz::Array<double, 2> modeled_stress_grid_scale_hat(ep_modeled_stress_grid_scale_hat.A(),
+                                                          blitz::shape(ep_modeled_stress_grid_scale_hat.M(),ep_modeled_stress_grid_scale_hat.N()),
+                                                          blitz::neverDeleteData,
+                                                          blitz::ColumnMajorArray<2>());
+
+    // normalize the computed convolution products by the complete patchvolume
+    reystress_hat                /=patchvolume;
+    modeled_stress_grid_scale_hat/=patchvolume;
+    velaf_hat                    /=patchvolume;
+
+    double val = 0;
+    int    id  = (lnode->Id());
+    
+    for (int idim =0;idim<3;++idim)
+    {
+      val = velaf_hat(idim);
+      ((*filtered_vel_)(idim))->ReplaceGlobalValues(1,&val,&id);
+
+      for (int jdim =0;jdim<3;++jdim)
+      {
+        val = reystress_hat (idim,jdim);
+        ((*filtered_reynoldsstress_ )       (3*idim+jdim))->ReplaceGlobalValues(1,&val,&id);
+
+        val = modeled_stress_grid_scale_hat(idim,jdim);
+        ((*filtered_modeled_subgrid_stress_)(3*idim+jdim))->ReplaceGlobalValues(1,&val,&id);
+      }
+    }
+    if (ispbcmaster == true)
+    {
+      for (unsigned slavecount = 0;slavecount<mapmastertoslave_[lnode->Id()].size();++slavecount)
+      {  
+        // get the corresponding slavenodes
+        DRT::Node*  slavenode = discret_->gNode(mapmastertoslave_[lnode->Id()][slavecount]);
+
+        int    slaveid  = (slavenode->Id());
+          
+        for (int idim =0;idim<3;++idim)
+        {
+          val = (velaf_hat(idim));
+          ((*filtered_vel_)(idim))->ReplaceGlobalValues(1,&val,&slaveid);
+
+          for (int jdim =0;jdim<3;++jdim)
+          {
+            val = reystress_hat (idim,jdim);
+            ((*filtered_reynoldsstress_ )       (3*idim+jdim))->ReplaceGlobalValues(1,&val,&slaveid);
+            
+            val = modeled_stress_grid_scale_hat(idim,jdim);
+            ((*filtered_modeled_subgrid_stress_)(3*idim+jdim))->ReplaceGlobalValues(1,&val,&slaveid);
+          }
+        }
+      }
+    }
+  }
+
+  // clean up
+  discret_->ClearState();
+
+  
+  const Epetra_Map* nodecolmap = discret_->NodeColMap();
+
+  // allocate distributed vectors in col map format to have the filtered
+  // quantities available on ghosted nodes
+  RefCountPtr<Epetra_MultiVector> col_filtered_vel                    = rcp(new Epetra_MultiVector(*nodecolmap,3,true));
+  RefCountPtr<Epetra_MultiVector> col_filtered_reynoldsstress         = rcp(new Epetra_MultiVector(*nodecolmap,9,true));
+  RefCountPtr<Epetra_MultiVector> col_filtered_modeled_subgrid_stress = rcp(new Epetra_MultiVector(*nodecolmap,9,true));
+
+  // export filtered vectors in rowmap to columnmap format
+  LINALG::Export(*filtered_vel_                   ,*col_filtered_vel);
+  LINALG::Export(*filtered_reynoldsstress_        ,*col_filtered_reynoldsstress);
+  LINALG::Export(*filtered_modeled_subgrid_stress_,*col_filtered_modeled_subgrid_stress);
+
+  // get ordered layers of elements in which LijMij and MijMij are averaged
+  if (planecoords_ == null)
+  {
+    planecoords_ = rcp( new vector<double>((turbulencestatistics_->ReturnNodePlaneCoords()).size()));
+  }
+  
+  (*planecoords_) = turbulencestatistics_->ReturnNodePlaneCoords();
+
+  averaged_LijMij_->resize((*planecoords_).size()-1);
+  averaged_MijMij_->resize((*planecoords_).size()-1);
+  
+  vector<int>  count_for_average((*planecoords_).size()-1);
+
+  
+  for (unsigned rr=0;rr<(*planecoords_).size()-1;++rr)
+  {
+    (*averaged_LijMij_)[rr]=0;
+    (*averaged_MijMij_)[rr]=0;
+
+    count_for_average[rr]=0;
+  }
+
+  // generate a parameterlist for communication and control
+  ParameterList calc_smag_const_params;
+  // action for elements
+  calc_smag_const_params.set("action","calc_smagorinsky_const");
+
+  calc_smag_const_params.set("col_filtered_vel"                   ,col_filtered_vel);
+  calc_smag_const_params.set("col_filtered_reynoldsstress"        ,col_filtered_reynoldsstress);
+  calc_smag_const_params.set("col_filtered_modeled_subgrid_stress",col_filtered_modeled_subgrid_stress);
+
+  
+  Epetra_SerialDenseMatrix dummym1;
+  Epetra_SerialDenseMatrix dummym2;
+  Epetra_SerialDenseVector dummyv1;
+  Epetra_SerialDenseVector dummyv2;
+  Epetra_SerialDenseVector dummyv3;
+
+  
+  for (int nele=0;nele<discret_->NumMyColElements();++nele)
+  {
+    DRT::Element* ele = discret_->lColElement(nele);
+    
+    // get element location vector, dirichlet flags and ownerships
+    vector<int> lm;
+    vector<int> lmowner;
+    ele->LocationVector(*discret_,lm,lmowner);
+
+    // call the element evaluate method to integrate functions
+    // against heaviside function element
+    int err = ele->Evaluate(calc_smag_const_params,
+                            *discret_,
+                            lm,
+                            dummym1,dummym2,
+                            dummyv1,dummyv2,dummyv3);
+    if (err) dserror("Proc %d: Element %d returned err=%d",
+                     discret_->Comm().MyPID(),ele->Id(),err);
+
+    
+    double LijMij = calc_smag_const_params.get<double>("LijMij");
+    double MijMij = calc_smag_const_params.get<double>("MijMij");
+    double center = calc_smag_const_params.get<double>("center");
+
+    int  nlayer;
+    bool found = false;
+    for (nlayer=0;nlayer<(int)(*planecoords_).size()-1;)
+    {
+      if(center<(*planecoords_)[nlayer+1])
+      {
+        found = true;
+        break;
+      }
+      nlayer++;
+    }
+    if (found ==false)
+    {
+      dserror("could not determine element layer");
+    }
+
+//    cout << center << " " << nlayer << " " << LijMij << " " << MijMij << &endl;
+
+    
+    (*averaged_LijMij_)[nlayer] += LijMij;
+    (*averaged_MijMij_)[nlayer] += MijMij;
+    
+    count_for_average[nlayer]++;
+  }
+  for (unsigned rr=0;rr<(*planecoords_).size()-1;++rr)
+  {
+    (*averaged_LijMij_)[rr]/=count_for_average[rr];
+    (*averaged_MijMij_)[rr]/=count_for_average[rr];
+
+//    cout << rr << " " << ((*averaged_LijMij_)[rr]/(*averaged_MijMij_)[rr]) << "  "  << count_for_average[rr]<< &endl;
+  }
+
+  {
+    ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+
+    modelparams->set<RefCountPtr<vector<double> > >("averaged_LijMij_",averaged_LijMij_);
+    modelparams->set<RefCountPtr<vector<double> > >("averaged_MijMij_",averaged_MijMij_);
+    modelparams->set<RefCountPtr<vector<double> > >("planecoords_",planecoords_);
+  }
+
+  return;
+}
 
 
 #endif

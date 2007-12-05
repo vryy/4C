@@ -324,6 +324,19 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
   //                 node j
   //
   velintaf_ = blitz::sum(funct_(j)*evelaf(i,j),j);
+  
+  // get velocity (n+alpha_F,i) derivatives at integration point
+  //
+  //       n+af      +-----  dN (x)
+  //   dvel    (x)    \        k         n+af
+  //   ----------- =   +     ------ * vel
+  //       dx         /        dx        k
+  //         j       +-----      j
+  //                 node k
+  //
+  // j : direction of derivative x/y/z
+  //
+  vderxyaf_ = blitz::sum(derxy_(j,k)*evelaf(i,k),k);
 
   // get velocities (n+1,i)  at integration point
   //
@@ -564,10 +577,11 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
     //
     // SMAGORINSKY MODEL
     // -----------------
-    // 
-    //                        2   |          / h \           / h \    |
-    //    visc          = lmix  * | 2 * eps | u   |   * eps | u   |   |
+    //                            +-                                 -+ 1
+    //                        2   |          / h \           / h \    | -
+    //    visc          = lmix  * | 2 * eps | u   |   * eps | u   |   | 2
     //        turbulent    |      |          \   / ij        \   / ij |
+    //                     |      +-                                 -+
     //                     |
     //                     |      |                                   |
     //                     |      +-----------------------------------+
@@ -649,25 +663,59 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
       
       // multiply with van Driest damping function
       lmix *= (1.0-exp(-y_plus/A_plus));
-      if (6.18502 < centernodecoord(0)&& 6.18504 > centernodecoord(0))
+    
+      //                                                                  
+      //          visc    = visc + visc                                   
+      //              eff              turbulent
+
+      visceff_ = visc + lmix * lmix * rateofstrain;
+
+    }
+  }
+  else if(turb_mod_action == Fluid3::dynamic_smagorinsky)
+  {
+    //
+    // SMAGORINSKY MODEL
+    // -----------------
+    //                            +-                                 -+ 1
+    //                        2   |          / h \           / h \    | -
+    //    visc          = lmix  * | 2 * eps | u   |   * eps | u   |   | 2
+    //        turbulent    |      |          \   / ij        \   / ij |
+    //                     |      +-                                 -+
+    //                     |
+    //                     |      |                                   |
+    //                     |      +-----------------------------------+
+    //                     |           'resolved' rate of strain
+    //                    mixing length
+    //
+    
+    double rateofstrain = 0;
+    {
+      blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());
+      epsilon = 0.5 * ( vderxyaf_(i,j) + vderxyaf_(j,i) );
+      
+      for(int rr=0;rr<3;rr++)
       {
-        if (-2.02896 < centernodecoord(2)&& -2.02894 > centernodecoord(2))
+        for(int mm=0;mm<3;mm++)
         {
-          cout << centernodecoord(0) << "  " << centernodecoord(1) << "  " << centernodecoord(2) << "  " << (1.0-exp(-y_plus/A_plus)) << &endl;
+          rateofstrain += epsilon(rr,mm)*epsilon(rr,mm);
         }
       }
+      rateofstrain *= 2.0;
+      rateofstrain = sqrt(rateofstrain);
     }
-    
-    //                                                                  
-    //          visc    = visc + visc                                   
-    //              eff              turbulent
 
-    visceff_ = visc + lmix * lmix * rateofstrain;
+    visceff_ = visc + Cs * rateofstrain;
+
+    ;
+//    cout << sqrt(Cs)/pow((vol_),(1.0/3.0)) <<&endl;
   }
   else
   {
     visceff_ = visc;
   }
+
+
   
   //----------------------------------------------------------------------------
   // 

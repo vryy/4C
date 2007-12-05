@@ -273,18 +273,16 @@ void dyn_fluid_drt()
     int init = Teuchos::getIntegralValue<int>(fdyn,"INITIALFIELD");
     fluidtimeparams.set                  ("eval err for analyt sol"   ,init);
 
-    //------------compute statistical data for turbulent channel LES
-    if (Teuchos::getIntegralValue<int>(fdyn,"TURBULENCE")==4)
-    {
-      fluidtimeparams.set("normal to hom. planes in channel",Teuchos::getIntegralValue<int>(fdyn,"HOMDIRECT"));
-      fluidtimeparams.set("evaluate turbulence statistic",true);
-      fluidtimeparams.set("statistics outfile",allfiles.outputfile_kenner);
-    }
-    else
-    {
-      fluidtimeparams.set("evaluate turbulence statistic",false);
-    }
+    // hand down the STABILIZATION parameters to the fluid algorithm
+    fluidtimeparams.sublist("STABILIZATION")=fdyn.sublist("STABILIZATION");
 
+    // hand down the TURBULENCE MODEL parameters to the fluid algorithm
+    {
+      fluidtimeparams.sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
+
+      fluidtimeparams.sublist("TURBULENCE MODEL").set<string>("statistics outfile",allfiles.outputfile_kenner);
+    }
+    
     //--------------------------------------------------
     // create all vectors and variables associated with the time
     // integration (call the constructor)
@@ -322,11 +320,9 @@ void dyn_fluid_drt()
     //--------------------------------------------------
     // do the result test
 #ifdef RESULTTEST
-#if 1
     DRT::ResultTestManager testmanager(actdis->Comm());
     testmanager.AddFieldTest(rcp(new FluidResultTest(genalphaint)));
     testmanager.TestAll();
-#endif
 #endif
 
   }
