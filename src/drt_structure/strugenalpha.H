@@ -144,7 +144,7 @@ public:
     \brief do full Newton iteration respecting volume constraint
 
     */
-  virtual void FullNewtonUzawa();
+  virtual void FullNewtonLinearUzawa();
   
   /*!
   \brief do modified Newton iteration (makes sense with direct solvers only)

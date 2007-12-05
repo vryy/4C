@@ -173,6 +173,8 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<int>   ("num iterations",-1);
       genalphaparams.set<double>("tolerance displacements",sdyn.get<double>("TOLDISP"));
       genalphaparams.set<bool>  ("contact",static_cast<bool>(sdyn.get<int>("CONTACT")));
+      
+      genalphaparams.set<double>("uzawa parameter",sdyn.get<double>("UZAWAPARAM"));
 
       genalphaparams.set<bool>  ("io structural disp",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_DISP"));
       genalphaparams.set<int>   ("io disp every nstep",sdyn.get<int>("RESEVRYDISP"));

@@ -271,6 +271,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
   IntParameter("ITWANT",0,"",&sdyn);
   DoubleParameter("MAXDT",0.0,"",&sdyn);
   DoubleParameter("RESULTDT",0.0,"",&sdyn);
+  DoubleParameter("UZAWAPARAM",1.0,"Parameter for Uzawa algorithm dealing with lagrange multipliers",&sdyn);
 
   SetValidTimeAdaptivityParameters(sdyn);
 

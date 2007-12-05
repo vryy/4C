@@ -963,7 +963,7 @@ void StruGenAlpha::FullNewton()
  | Newton iteration respecting volume constraint.						|
  | Uzawa algorithm is used to deal with lagrange multipliers			|
  *----------------------------------------------------------------------*/
-void StruGenAlpha::FullNewtonUzawa()
+void StruGenAlpha::FullNewtonLinearUzawa()
 {
   // -------------------------------------------------------------------
   // get some parameters from parameter list
@@ -1078,7 +1078,7 @@ void StruGenAlpha::FullNewtonUzawa()
 	  	  }
 	  	  
 	  	  //compute lagrange multiplier increments
-	  	  double Uzawa_param=2; 	  	  
+	  	  double Uzawa_param=params_.get<double>("uzawa parameter",1); 	  	  
 	  	  
 	  	  for (int foo = 0; foo < numConstrVol; ++foo) 
 	  	  {
@@ -2787,10 +2787,10 @@ void StruGenAlpha::Integrate()
         double time          = params_.get<double>("total time"             ,0.0);
         double dt            = params_.get<double>("delta time"             ,0.01);
         volConstrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
-        FullNewtonUzawa();
+        FullNewtonLinearUzawa();
         UpdateandOutput();
       }	  
-  }  
+  } 
   else if (equil=="full newton")
   {
     for (int i=step; i<nstep; ++i)
