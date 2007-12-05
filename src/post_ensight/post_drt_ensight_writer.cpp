@@ -269,17 +269,6 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinatesPar(
 	// put all coordinate information on proc 0
 	RefCountPtr<Epetra_Map> proc0map;
 	proc0map = DRT::Utils::AllreduceEMap(*nodemap,0);
-	// check the map
-	if (myrank_==0)
-	{
-		dsassert(proc0map->NumMyElements() == numnpglobal,
-				"Proc 0 will not get all of the node coordinates");
-	}
-	else
-	{
-		dsassert(proc0map->NumMyElements() == 0,
-				"At least one proc will keep some of the node coordinates");
-	}
 
 	// import my new values (proc0 gets everything, other procs empty)
 	Epetra_Import proc0importer(*proc0map,*nodemap);   
@@ -545,6 +534,8 @@ void EnsightWriter::WriteNodeConnectivityPar(
 	    const vector<int>& nodevector,
         const RefCountPtr<Epetra_Map> proc0map) const
 {
+#ifdef PARALLEL
+	
 	// no we have communicate the connectivity infos from proc 1...proc n to proc 0
 
 	vector<char> sblock; // sending block
@@ -615,7 +606,9 @@ void EnsightWriter::WriteNodeConnectivityPar(
 		exporter.Comm().Barrier();
 
 	}// for pid
-
+	
+#endif
+	
 	return;
 }
 
@@ -738,7 +731,7 @@ void EnsightWriter::WriteResult(
     // new for file continuation
     bool multiple_files = false;
     const Epetra_Map* nodemap = field_->discretization()->NodeRowMap();
-    const int numnp = nodemap->NumMyElements();
+    const int numnp = nodemap->NumGlobalElements();
     const int stepsize = 5*80+sizeof(int)+numdf*numnp*sizeof(float);
 
 
@@ -746,7 +739,7 @@ void EnsightWriter::WriteResult(
     ofstream file;
     if (myrank_==0)
     {
-    file.open(filename.c_str());
+    	file.open(filename.c_str());
     }
     
     map<string, vector<ofstream::pos_type> > resultfilepos;
@@ -769,6 +762,10 @@ void EnsightWriter::WriteResult(
     filesetmap_[name].push_back(file.tellp()/stepsize);
     variablenumdfmap_[name] = numdf;
     variablefilenamemap_[name] = filename;
+
+    // close result file   
+    if (file.is_open())
+    	file.close();
     
     return;
 }
@@ -785,40 +782,42 @@ void EnsightWriter::FileSwitcher(
         const string name,
         const string filename) const
 {
-    ostringstream newfilename;
-    
-    if (multiple_files == false)
-    {
-        multiple_files = true;
+	if (myrank_==0)
+	{
+		ostringstream newfilename;
 
-        vector<int> numsteps;
-        numsteps.push_back(file.tellp()/stepsize);
-        filesetmap[name] = numsteps;
-        
-        // append index table
-        WriteIndexTable(file, resultfilepos[name]);
-        resultfilepos[name].clear();
-        file.close();
-        rename(filename.c_str(), (filename+"001").c_str());
-        
-        newfilename << filename << "002";
-    }
-    else
-    {
-        filesetmap[name].push_back(file.tellp()/stepsize);
-        
-        // append index table
-        WriteIndexTable(file, resultfilepos[name]);
-        resultfilepos[name].clear();
-        file.close();
+		if (multiple_files == false)
+		{
+			multiple_files = true;
 
-        newfilename << filename;
-        newfilename.width(3);
-        newfilename.fill('0');
-        newfilename << filesetmap[name].size()+1;
-    }
-    file.open(newfilename.str().c_str());
+			vector<int> numsteps;
+			numsteps.push_back(file.tellp()/stepsize);
+			filesetmap[name] = numsteps;
 
+			// append index table
+			WriteIndexTable(file, resultfilepos[name]);
+			resultfilepos[name].clear();
+			file.close();
+			rename(filename.c_str(), (filename+"001").c_str());
+
+			newfilename << filename << "002";
+		}
+		else
+		{
+			filesetmap[name].push_back(file.tellp()/stepsize);
+
+			// append index table
+			WriteIndexTable(file, resultfilepos[name]);
+			resultfilepos[name].clear();
+			file.close();
+
+			newfilename << filename;
+			newfilename.width(3);
+			newfilename.fill('0');
+			newfilename << filesetmap[name].size()+1;
+		}
+		file.open(newfilename.str().c_str());
+	}
     return;
 }
 
@@ -847,11 +846,36 @@ void EnsightWriter::WriteResultStep(
     Write(file, "coordinates");
 
     const RefCountPtr<DRT::Discretization> dis = field_->discretization();
-    const Epetra_Map* nodemap = dis->NodeRowMap();
+    const Epetra_Map* nodemap = dis->NodeRowMap(); //local node map
     const RefCountPtr<Epetra_Vector> data = result.read_result(groupname);
-    const Epetra_BlockMap& datamap = data->Map();
 
-    const int numnp = nodemap->NumMyElements();
+#ifdef PARALLEL
+    const Epetra_BlockMap& datamapser = data->Map();
+    // put all coordinate information on proc 0
+    RefCountPtr<Epetra_Map> proc0datamap;
+    RefCountPtr<Epetra_Map> epetradatamap;
+    epetradatamap = rcp(new Epetra_Map(datamapser.NumGlobalElements(),
+    		datamapser.NumMyElements(),
+    		datamapser.MyGlobalElements(),
+    		0,
+    		dis->Comm()));
+
+    proc0datamap = DRT::Utils::AllreduceEMap(*epetradatamap,0);
+    // import my new values (proc0 gets everything, other procs empty)
+    Epetra_Import proc0importer(*proc0datamap,*epetradatamap);   
+    RefCountPtr<Epetra_Vector> proc0data = rcp(new Epetra_Vector(*proc0datamap));
+
+    // import node coordinates from ALL nodes of current discretization
+    int err = proc0data->Import(*data,proc0importer,Insert);
+    if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);   
+    // redirect
+    const Epetra_BlockMap& datamap = proc0data->Map();
+#else
+    const Epetra_BlockMap& datamap = data->Map();
+#endif
+
+    
+    const int numnp = nodemap->NumGlobalElements();
     for (int idf=0; idf<numdf; ++idf)
     {
         for (int inode=0; inode<numnp; inode++)
