@@ -170,11 +170,11 @@ protected:
             const string str   ///< string to be written to file
             ) const;
     void WriteGeoFile(
-            const string& geofilename) const;
+            const string& geofilename);
     void WriteGeoFileOneTimeStep(
             ofstream& file,
             map<string, vector<ofstream::pos_type> >& resultfilepos,
-            const string name) const;    
+            const string name);    
     void WriteCoordinates(
             ofstream& geofile,                         ///< filestream for the geometry
             const RefCountPtr<DRT::Discretization> dis ///< discretization where the nodal positions are take from
@@ -187,9 +187,16 @@ protected:
             ofstream& geofile,
             const RefCountPtr<DRT::Discretization> dis) const;
     void WriteCellsPar(
+            ofstream& geofile,///< filestream for the geometry
+            const RefCountPtr<DRT::Discretization> dis, ///< discretization where the nodal positions are take from
+            const RefCountPtr<Epetra_Map> proc0map ///< current proc0 node map, created by WriteCoordinatesPar
+            ) const;
+    void WriteNodeConnectivityPar(
             ofstream& geofile,
             const RefCountPtr<DRT::Discretization> dis,
-            RefCountPtr<Epetra_Map> proc0map) const;
+    	    const vector<int>& nodevector,
+            const RefCountPtr<Epetra_Map> proc0map
+            ) const;
     void WriteResultStep(
             ofstream& file,
             PostResult& result,
@@ -262,8 +269,10 @@ protected:
     
     PostField* field_;
     string filename_;
-    int myrank_;
-    bool nodeidgiven_;
+    int myrank_; ///< global processor id
+    bool nodeidgiven_; ///< indicates whether BACI global node ids are written to geometry file. default value: true
+    
+    RCP<Epetra_Map> proc0map_; ///< allreduced nodal map for proc 0
 
     map<string,vector<int> > filesetmap_;
     
@@ -278,7 +287,7 @@ protected:
     
     // maximum file size
     static const unsigned FILE_SIZE_LIMIT_ = 0x7fffffff; // 2GB
-    //static const unsigned FILE_SIZE_LIMIT_ = 1024*10; // 10kB ... usefull for debugging ;-)
+    //static const unsigned FILE_SIZE_LIMIT_ = 1024*10; // 10kB ... useful for debugging ;-)
     
 };
 
