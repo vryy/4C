@@ -34,7 +34,7 @@ DRT::Element(id,element_fluid3,owner),
 is_ale_(false),
 data_()
 {
-    gaussrule_ = intrule_hex_27point;
+    gaussrule_ = intrule3D_undefined;
     surfaces_.resize(0);
     surfaceptrs_.resize(0);
     lines_.resize(0);

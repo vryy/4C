@@ -35,7 +35,7 @@ is_ale_(false),
 data_(),
 eleDofManager_()
 {
-    gaussrule_ = intrule_hex_27point;
+    gaussrule_ = intrule3D_undefined;
     surfaces_.resize(0);
     surfaceptrs_.resize(0);
     lines_.resize(0);
