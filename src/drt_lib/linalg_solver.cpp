@@ -297,7 +297,7 @@ void LINALG::Solver::Solve_aztec(const bool reset)
   if (!Params().isSublist("Aztec Parameters"))
     dserror("Do not have aztec parameter list");
   ParameterList& azlist = Params().sublist("Aztec Parameters");
-
+  
   // see whether Operator is a Epetra_CrsMatrix
   Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>(A_.get());
 
@@ -309,14 +309,12 @@ void LINALG::Solver::Solve_aztec(const bool reset)
   else if (!reuse)           create = true;
   else if (Ncall()%reuse==0) create = true;
 
-  // Allocate an aztec solver
+  // Allocate an aztec solver with default parameters
   if (create)
   {
     // create an aztec solver
     aztec_ = rcp(new AztecOO());
     aztec_->SetAztecDefaults();
-    //aztec_->SetParameters(azlist,false); moved this further down gee
-
     // tell aztec to which stream to write
     aztec_->SetOutputStream(std::cout);
     aztec_->SetErrorStream(std::cerr);
@@ -373,8 +371,16 @@ void LINALG::Solver::Solve_aztec(const bool reset)
   // pass linear problem to aztec
   aztec_->SetProblem(*lp_);
 
-  // don't want linear problem to alter our aztec parameters (idiot feature!)
+  // Don't want linear problem to alter our aztec parameters (idiot feature!)
+  // this is why we set our list here AFTER the linear problem has been set
+  //
+  // We don't want to use Aztec's scaling capabilities as we prefer to do
+  // the scaling ourselves (so we precisely know what happens)
+  // Therefore set scaling parameter to none and reset it after aztec has made
+  // its internal copy of the parameter list
+  azlist.set("scaling","none");
   aztec_->SetParameters(azlist,false);
+  azlist.set("scaling",scaling);
 
   // get type of preconditioner and build either Ifpack or ML
   // if we have an ifpack parameter list, we do ifpack
