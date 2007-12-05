@@ -1745,7 +1745,7 @@ void DRT::Elements::XFluid3Impl::Caltau(
   blitz::fourthIndex l;   // Placeholder for the fourth index
 
   // use one point gauss rule to calculate tau at element center
-  DRT::Utils::GaussRule3D integrationrule_stabili=DRT::Utils::intrule_hex_1point;
+  DRT::Utils::GaussRule3D integrationrule_stabili=DRT::Utils::intrule3D_undefined;
   switch (distype)
   {
   case DRT::Element::hex8:

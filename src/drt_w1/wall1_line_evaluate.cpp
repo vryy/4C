@@ -112,7 +112,7 @@ int DRT::Elements::Wall1Line::EvaluateNeumann(ParameterList& params,
 
 DRT::Utils::GaussRule1D DRT::Elements::Wall1Line::getOptimalGaussrule(const DiscretizationType& distype)
 {
-  DRT::Utils::GaussRule1D rule;
+  DRT::Utils::GaussRule1D rule = DRT::Utils::intrule1D_undefined;
   switch (distype)
     {
     case line2:

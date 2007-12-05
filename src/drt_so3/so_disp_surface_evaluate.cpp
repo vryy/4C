@@ -137,7 +137,7 @@ int DRT::Elements::SoDispSurface::EvaluateNeumann(ParameterList&           param
     xscurr(i,2) = xsrefe(i,2) + mydisp[i*NODDOF_DISP+2];
   }
 
-  DRT::Utils::GaussRule2D gaussrule;
+  DRT::Utils::GaussRule2D gaussrule = intrule2D_undefined;
   switch(distype){
   case quad4:
     gaussrule = intrule_quad_4point;

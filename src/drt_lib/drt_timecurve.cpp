@@ -268,7 +268,7 @@ DRT::Utils::ExplicitTimeSlice::ExplicitTimeSlice(int numex, double c1, double c2
 /*----------------------------------------------------------------------*/
 double DRT::Utils::ExplicitTimeSlice::f(double T)
 {
-  double fac;
+  double fac = 1.0;
 
   switch (numex_)
   {

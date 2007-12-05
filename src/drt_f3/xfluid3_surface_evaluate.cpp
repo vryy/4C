@@ -126,7 +126,7 @@ int DRT::Elements::XFluid3Surface::EvaluateNeumann(
   // set number of nodes
   const int iel   = this->NumNode();
 
-  GaussRule2D  gaussrule;
+  GaussRule2D  gaussrule = intrule2D_undefined;
   switch(distype)
   {
   case quad4:
@@ -328,7 +328,7 @@ void DRT::Elements::XFluid3Surface::IntegrateShapeFunction(ParameterList& params
   // set number of nodes
   const int iel   = this->NumNode();
 
-  GaussRule2D  gaussrule;
+  GaussRule2D  gaussrule = intrule2D_undefined;
   switch(distype)
   {
   case quad4:

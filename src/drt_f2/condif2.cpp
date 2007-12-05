@@ -239,7 +239,7 @@ DRT::Element** DRT::Elements::Condif2::Surfaces()
 
 GaussRule2D DRT::Elements::Condif2::getOptimalGaussrule(const DiscretizationType& distype)
 {
-    GaussRule2D rule;
+    GaussRule2D rule = intrule2D_undefined;
     switch (distype)
     {
     case quad4:

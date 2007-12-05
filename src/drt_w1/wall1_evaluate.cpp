@@ -887,7 +887,7 @@ void DRT::Elements::Wall1::w1_fint(Epetra_SerialDenseMatrix& stress,
 
 DRT::Utils::GaussRule2D DRT::Elements::Wall1::getGaussrule()
 {
-  DRT::Utils::GaussRule2D rule;
+  DRT::Utils::GaussRule2D rule = DRT::Utils::intrule2D_undefined;
 
   switch (NumNode())
   {

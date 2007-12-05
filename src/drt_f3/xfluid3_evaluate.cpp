@@ -675,7 +675,7 @@ int DRT::Elements::XFluid3::EvaluateNeumann(ParameterList& params,
 // get optimal gaussrule for discretization type
 GaussRule3D DRT::Elements::XFluid3::getOptimalGaussrule(const DiscretizationType& distype)
 {
-    GaussRule3D rule = intrule_hex_8point;
+    GaussRule3D rule = intrule3D_undefined;
     switch (distype)
     {
     case hex8:
@@ -1275,7 +1275,7 @@ bool DRT::Elements::XFluid3::checkRewinding()
   const DiscretizationType distype = this->Shape();
   const int iel = NumNode();
   // use one point gauss rule to calculate tau at element center
-  GaussRule3D integrationrule_1point = intrule_hex_1point;
+  GaussRule3D integrationrule_1point = intrule3D_undefined;
   switch(distype)
   {
   case hex8: case hex20: case hex27:

@@ -277,7 +277,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
 
   /*------------------------------------------------------- initialise ---*/
     // use one point gauss rule to calculate tau at element center
-  GaussRule2D integrationrule_stabili;
+  GaussRule2D integrationrule_stabili = intrule2D_undefined;
   switch(distype)
   {
   case quad4: case quad8: case quad9:

@@ -510,7 +510,7 @@ void DRT::Elements::Ale3::static_ke(vector<int>&              lm,
 // get optimal gaussrule for discretization type
 GaussRule3D DRT::Elements::Ale3::getOptimalGaussrule(const DiscretizationType& distype)
 {
-    GaussRule3D rule;
+    GaussRule3D rule = intrule3D_undefined;
     switch (distype)
     {
     case hex8:

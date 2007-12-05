@@ -91,7 +91,7 @@ int DRT::Elements::Sow6Surface::EvaluateNeumann(ParameterList&           params,
     xscurr(i,2) = xsrefe(i,2) + mydisp[i*NODDOF_WEG6+2];
   }
 
-  DRT::Utils::GaussRule2D gaussrule;
+  DRT::Utils::GaussRule2D gaussrule = intrule2D_undefined;
   switch(distype){
   case quad4:
     gaussrule = intrule_quad_4point;

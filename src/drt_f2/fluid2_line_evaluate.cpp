@@ -193,7 +193,7 @@ int DRT::Elements::Fluid2Line::EvaluateNeumann(
 
 GaussRule1D DRT::Elements::Fluid2Line::getOptimalGaussrule(const DiscretizationType& distype)
 {
-  GaussRule1D rule;
+  GaussRule1D rule = intrule1D_undefined;
   switch (distype)
     {
     case line2:

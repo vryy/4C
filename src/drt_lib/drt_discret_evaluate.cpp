@@ -459,10 +459,10 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
       }
 
       const bool assemblemat1 = params.get("assemble matrix 1",false);
-      const bool assemblemat2 = params.get("assemble matrix 2",false);
+      //const bool assemblemat2 = params.get("assemble matrix 2",false);
       const bool assemblevec1 = params.get("assemble vector 1",false);
       const bool assemblevec2 = params.get("assemble vector 2",false);
-      const bool assemblevec3 = params.get("assemble vector 3",false);
+      //const bool assemblevec3 = params.get("assemble vector 3",false);
 
       // define element matrices and vectors
       Epetra_SerialDenseMatrix elematrix1;
