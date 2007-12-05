@@ -612,22 +612,28 @@ void DRT::Utils::AllreduceEMap(map<int,int>& idxmap, const Epetra_Map& emap)
 }
 
 /*----------------------------------------------------------------------*
- |  create an allreduced map on a distinct processor (public)  gjb 11/07|  
+ |  create an allreduced map on a distinct processor (public)  gjb 12/07|  
  *----------------------------------------------------------------------*/
 RCP<Epetra_Map> DRT::Utils::AllreduceEMap(const Epetra_Map& emap, const int pid)
 {
   vector<int> rv;
   AllreduceEMap(rv,emap);
-  RCP<Epetra_Map> rmap;
+  RefCountPtr<Epetra_Map> rmap;
 
   if (emap.Comm().MyPID()==pid)
   {
-    rmap = rcp(new Epetra_Map(-1,rv.size(),&rv[0],0,emap.Comm()));
+	  rmap = rcp(new Epetra_Map(-1,rv.size(),&rv[0],0,emap.Comm()));
+	  // check the map
+	  dsassert(rmap->NumMyElements() == rmap->NumGlobalElements(),
+	  			  "Processor with pid does not get all map elements");
   }
   else
   {
-    rv.clear();
-    rmap = rcp(new Epetra_Map(-1,0,NULL,0,emap.Comm()));
+	  rv.clear();
+	  rmap = rcp(new Epetra_Map(-1,0,NULL,0,emap.Comm()));
+	  // check the map
+	  dsassert(rmap->NumMyElements() == 0,
+	  			  "At least one proc will keep a map element");
   }
   return rmap;
 }
@@ -812,7 +818,7 @@ RefCountPtr<Epetra_CrsGraph> DRT::Utils::PartGraphUsingMetis(
 
 
 /*----------------------------------------------------------------------*
- |  locallly extract a subset of values  (public)            mwgee 12/06|
+ |  locally extract a subset of values  (public)            mwgee 12/06|
  *----------------------------------------------------------------------*/
 void DRT::Utils::ExtractMyValues(const Epetra_Vector& global,
                                  vector<double>& local,
