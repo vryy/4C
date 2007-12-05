@@ -27,7 +27,7 @@ namespace Utils
 //! supported 3d gauss rules
 enum GaussRule3D
 {
-    intrule3D_undefined,
+    intrule3D_undefined,   ///< use this to initialize a gaussrule, if you don't know the value, yet!
     intrule_hex_1point,
     intrule_hex_8point,
     intrule_hex_27point,
@@ -49,7 +49,7 @@ enum GaussRule3D
 //! supported 2d gauss rules
 enum GaussRule2D
 {
-    intrule2D_undefined,
+    intrule2D_undefined,   ///< use this to initialize a gaussrule, if you don't know the value, yet!
     intrule_quad_1point,
     intrule_quad_4point,
     intrule_quad_9point,
@@ -62,7 +62,7 @@ enum GaussRule2D
 //! supported 1d gauss rules
 enum GaussRule1D
 {
-    intrule1D_undefined,
+    intrule1D_undefined,   ///< use this to initialize a gaussrule, if you don't know the value, yet!
     intrule_line_1point,
     intrule_line_2point,
     intrule_line_3point
