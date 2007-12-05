@@ -71,7 +71,7 @@ bool DRT::Elements::Fluid3::ReadElement()
     int   nodes[27];
     DiscretizationType distype;
 
-    Gid2DisType::iterator iter;
+    Gid2DisType::const_iterator iter;
     for( iter = gid2distype.begin(); iter != gid2distype.end(); iter++ )
     {
         const string eletext = iter->first;

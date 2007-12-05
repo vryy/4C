@@ -290,7 +290,7 @@ DRT::Elements::Fluid3::StabilisationAction DRT::Elements::Fluid3::ConvertStringT
 {
   DRT::Elements::Fluid3::StabilisationAction act = stabaction_unspecified;
 
-  map<string,StabilisationAction>::iterator iter=stabstrtoact_.find(action);
+  map<string,StabilisationAction>::const_iterator iter=stabstrtoact_.find(action);
 
   if (iter != stabstrtoact_.end())
   {
@@ -1305,7 +1305,7 @@ void DRT::Elements::Fluid3::f3_calc_means(
   double layershift=0;
 
   // loop all levels in element
-  for(set<int>::iterator id = planesinele.begin();id!=planesinele.end() ;++id)
+  for(set<int>::const_iterator id = planesinele.begin();id!=planesinele.end() ;++id)
   {
     // reset temporary values
     double ubar=0;
