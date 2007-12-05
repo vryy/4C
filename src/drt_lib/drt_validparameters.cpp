@@ -440,6 +440,193 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_stab = fdyn.sublist("STABILIZATION",false,"");
 
+  // this parameter seperates stabilized from unstabilized methods
+  setStringToIntegralParameter("STABTYPE",
+                               "no_stabilization",
+                               "Apply (un)stabilized fluid formulation",
+                               tuple<std::string>(
+                                 "no_stabilization",
+                                 "residual_based_VMM"),
+                               tuple<std::string>(
+                                 "Do not use any stabilization --- this only makes sense for inf-sup stable elements!",
+                                 "Use a residual based stabilisation like SUPG, GLS or more general a stabilization \nbased on the concept of the residual based variational multiscale method...\nExpecting additional input.")  ,
+                               tuple<int>(0,1),
+                               &fdyn_stab);
+
+  // the following parameters are necessary only if a residual based stabilized method is applied
+  setStringToIntegralParameter("RVMM_TDS",
+                               "quasistatic_subscales",
+                               "Flag to allow time dependency of subscales for residual based stabilization.",
+                               tuple<std::string>(
+                                 "quasistatic_subscales",
+                                 "time_dependent_subscales"),
+                               tuple<std::string>(
+                                 "Use a residual based stabilization assuming subscales to adjust instantaniously\nto the large scale residual",
+                                 "Residual based stabilization including time evolution equations for subscales"),
+                               tuple<int>(0,1),
+                               &fdyn_stab);
+
+  setStringToIntegralParameter("RVMM_INERTIA",
+                               "drop",
+                               "Specify how to treat the time derivative stabilization term for a residual based stabilized method.",
+                               tuple<std::string>(
+                                 "drop",
+                                 "+(sacc,v)"),
+                               tuple<std::string>(
+                                 "Do something like GLS_0 or USFEM_0 (recommended for quasistatic subscales)",
+                                 "Use a stabilization term related to the inertia term in the equations,\nrecommended for the usage of time dependent subscales."),
+                               tuple<int>(0,1),
+                               &fdyn_stab);
+  
+  setStringToIntegralParameter("RVMM_SUPG",
+                               "off",
+                               "This flag (de)activates streamline upwinding for residual based stabilization.",
+                               tuple<std::string>(
+                                 "off",
+                                 "-(svel,(u_o_nabla)_v)"),
+                               tuple<std::string>(
+                                 "No streamline upwinding",
+                                 "Streamline upwinding as common for SUPG stabilization."),
+                               tuple<int>(0,1),
+                               &fdyn_stab);
+  
+  setStringToIntegralParameter("RVMM_PSPG",
+                               "off",
+                               "For residual based stabilization, this flag (de)activates the pressure \nstabilization.",
+                               tuple<std::string>(
+                                 "off",
+                                 "-(svel,nabla_q)"),
+                               tuple<std::string>(
+                                 "No pressure stabilization --- inf-sup stable elements are mandatory.",
+                                 "Pressure stabilization allowing equal order interpolation."),
+                               tuple<int>(0,1),
+                               &fdyn_stab);
+
+  setStringToIntegralParameter("RVMM_VSTAB",
+                               "off",
+                               "For residual based stabilization, this flag (de)activates the viscous \nstabilization GLS+/- type.",
+                               tuple<std::string>(
+                                 "off",
+                                 "-2*nu*(svel,nabla_o_eps(v))",
+                                 "+2*nu*(svel,nabla_o_eps(v))",
+                                 "-2*nu*(svel,nabla_o_eps(v))_[RHS]",
+                                 "+2*nu*(svel,nabla_o_eps(v))_[RHS]"
+                                 ),
+                               tuple<std::string>(
+                                 "No viscous stabilisation.",
+                                 "Viscous stabilization of USFEM type.",
+                                 "Viscous stabilization of GLS type.",
+                                 "Viscous stabilization of USFEM type, included only on the right hand side.",
+                                 "Viscous stabilization of GLS type, included only on the right hand side."
+                                 ),
+                               tuple<int>(0,1,2,3,4),
+                               &fdyn_stab);
+
+  setStringToIntegralParameter("RVMM_CROSS-STRESS",
+                               "off",
+                               "For residual based stabilization, this flag (de)activates the cross\nstress term which might be useful for turbulence modelling.",
+                               tuple<std::string>(
+                                 "off",
+                                 "+((svel_o_nabla)_u,v)",
+                                 "+((svel_o_nabla)_u,v)_[RHS]"
+                                 ),
+                               tuple<std::string>(
+                                 "Neglects the cross stress term.",
+                                 "Include the cross stress term with a linearization of the convective part.",
+                                 "Include the cross stress term , but only explicitly on the right hand side."
+                                 ),
+                               tuple<int>(0,1,2),
+                               &fdyn_stab);
+
+  setStringToIntegralParameter("RVMM_REYNOLDS-STRESS",
+                               "off",
+                               "For residual based stabilization, this flag (de)activates the reynolds\nstress term which might be useful for turbulence modelling. A major\nimpact is only expected for high Reynolds number flows",
+                               tuple<std::string>(
+                                 "off",
+                                 "-(svel,(svel_o_grad)_v)_[RHS]"
+                                 ),
+                               tuple<std::string>(
+                                 "Neglects the reynolds stress term.",
+                                 "Include the reynolds stress term, but only explicitly on the right hand side."
+                                 ),
+                               tuple<int>(0,1),
+                               &fdyn_stab);
+
+  setStringToIntegralParameter("RVMM_CSTAB",
+                               "off",
+                               "For residual based stabilization, this flag (de)activates the least \nsquares stabilization of the continuity equation.",
+                               tuple<std::string>(
+                                 "off",
+                                 "-(spre,nabla_o_v)"),
+                               tuple<std::string>(
+                                 "Omit least squares stabilization of continuity equation.",
+                                 "Take least squares stabilization of continuity equation into account.\nThis means additional, artificial diffusion for the equation, \nbut will be very useful to keep solutions stable at higher Reynolds numbers."),
+                               tuple<int>(0,1),
+                               &fdyn_stab);
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& fdyn_turbu = fdyn.sublist("TURBULENCE MODEL",false,"");
+
+  setStringToIntegralParameter("TURBULENCE_APPROACH",
+                               "DNS_OR_RESVMM_LES",
+                               "There are several options to deal with turbulent flows.",
+                               tuple<std::string>(
+                                 "DNS_OR_RESVMM_LES",
+                                 "CLASSICAL_LES",
+                                 "RANS"),
+                               tuple<std::string>(
+                                 "Try to solve flow as an underresolved DNS.\nMind that your stabilisation already acts as a kind of turbulence model!",
+                                 "Perform a classical Large Eddy Simulation adding \naddititional turbulent viscosity. This may be based on various physical models.",
+                                 "Solve Reynolds averaged Navier Stokes using an \nalgebraic, one- or two equation closure.\nNot implemented yet."),
+                               tuple<int>(0,1,2),
+                               &fdyn_turbu);
+
+  setStringToIntegralParameter("PHYSICAL_MODEL",
+                               "no_model",
+                               "Classical LES approaches require an additional model for\nthe turbulent viscosity.",
+                               tuple<std::string>(
+                                 "no_model",
+                                 "Smagorinsky",
+                                 "Smagorinsky_with_van_Driest_damping",
+                                 "Dynamic_Smagorinsky"),
+                               tuple<std::string>(
+                                 "If classical LES is our turbulence approach, this is a contradiction and should cause a dserror.",
+                                 "Classical constant coefficient Smagorinsky model. Be careful if you \nhave a wall bounded flow domain!",
+                                 "Use an exponential damping function for the turbulent viscosity \nclose to the wall. This is only implemented for a channel geometry of \nheight 2 in y direction. The viscous lengthscale l_tau is \nrequired as additional input.",
+                                 "The solution is filtered and by comparison of the filtered \nvelocity field with the real solution, the Smagorinsky constant is \nestimated in each step --- mind that this procedure includes \nan averaging in the xz plane, hence this implementation will only work \nfor a channel flow."),
+                               tuple<int>(0,1,2,3),
+                               &fdyn_turbu);
+
+  DoubleParameter("C_SMAGORINSKY",0.0,"Constant for the Smagorinsky model. Something between 0.1 to 0.24",&fdyn_turbu);
+
+  setStringToIntegralParameter("CANONICAL_FLOW",
+                               "no",
+                               "Sampling is different for different canonical flows \n--- so specify what kind of flow you've got",
+                               tuple<std::string>(
+                                 "no",
+                                 "channel_flow_of_height_2"),
+                               tuple<std::string>(
+                                 "The flow is not further specified, so spatial averaging \nand hence the standard sampling procedure is not possible",
+                                 "For this flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow."),
+                               tuple<int>(0,1),
+                               &fdyn_turbu);
+  
+  setStringToIntegralParameter("CHANNEL_HOMPLANE",
+                               "xz",
+                               "Specify the homogenous plane in a channel flow",
+                               tuple<std::string>(
+                                 "xy",
+                                 "xz",
+                                 "yz"),
+                               tuple<std::string>(
+                                 "Wall normal direction is z",
+                                 "Wall normal direction is y (the standard case)",
+                                 "Wall normal direction is x"),
+                               tuple<int>(0,1,2),
+                               &fdyn_turbu);
+  
+  DoubleParameter("CHANNEL_L_TAU",0.0,"Used for normalisation of the wall normal distance in the Van \nDriest Damping function. May be taken from the output of \nthe apply_mesh_stretching.pl preprocessing script.",&fdyn_turbu);
+  
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& adyn = list->sublist("ALE DYNAMIC",false,"");
 
