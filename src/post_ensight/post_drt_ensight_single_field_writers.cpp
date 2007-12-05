@@ -474,7 +474,7 @@ void XFluidEnsightWriter::WriteResult(
     // for file continuation
     bool multiple_files = false;
     const int numdf = fieldset.size();
-    const int numnp = field_->discretization()->NodeRowMap()->NumMyElements();
+    const int numnp = NumNodesPerField(ih);
     const int stepsize = 5*80+sizeof(int)+numdf*numnp*sizeof(float);
 
     const string filename = filename_ + "_"+ field_->name() + "."+ name;
@@ -612,7 +612,7 @@ void XFluidEnsightWriter::WriteResultStep(
     Write(file, "coordinates");
 
     const RefCountPtr<DRT::Discretization> dis = field_->discretization();
-    const Epetra_Map* nodemap = dis->NodeRowMap();
+    //const Epetra_Map* nodemap = dis->NodeRowMap();
     const RefCountPtr<Epetra_Vector> data = result.read_result(groupname);
     const Epetra_BlockMap& datamap = data->Map();
     
@@ -621,7 +621,6 @@ void XFluidEnsightWriter::WriteResultStep(
             "xfem filter cannot be run in parallel");
     
     const int numdf = fieldset.size();
-    const int numnp = nodemap->NumMyElements();
     
     bool propernumdf;
     if (numdf == 1 or numdf == 3 or numdf == 6) {
