@@ -23,7 +23,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/linalg_serialdensematrix.H"
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
-#include "../drt_xfem/gmsh.H"
+#include "../io/gmsh.H"
 
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra

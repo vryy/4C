@@ -14,7 +14,7 @@ Maintainer: Axel Gerstenberger
 
 #include "interface.H"
 #include "intersection.H"
-#include "gmsh.H"
+#include "../io/gmsh.H"
 
 /*----------------------------------------------------------------------*
  |  ctor                                                        ag 11/07|

@@ -27,7 +27,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/interface.H"
 #include "../drt_xfem/integrationcell.H"
 #include "../drt_xfem/dof_management.H"
-#include "../drt_xfem/gmsh.H"
+#include "../io/gmsh.H"
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

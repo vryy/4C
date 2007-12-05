@@ -17,7 +17,7 @@ Maintainer: Axel Gerstenberger
 #include <blitz/array.h>
 
 #include "gmsh.H"
-#include "integrationcell.H"
+#include "../drt_xfem/integrationcell.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_element.H"
 

@@ -1957,6 +1957,7 @@ void Intersection::computeCDT(
     tetgenio in;
     tetgenio out;
     char switches[] = "pnno2Q";    //o2 Y
+    //char switches[] = "T1e-10Mpnno2QY";    //o2 Y
     tetgenio::facet *f;
     tetgenio::polygon *p;
     

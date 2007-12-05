@@ -483,7 +483,8 @@ OBJS_IO       = src/io/io_singlefile.o \
                 src/io/io_drt.o \
 		src/io/io_drt_micro.o
 #
-OBJS_IO_LIB   = src/io/hdf_reader.o
+OBJS_IO_LIB   = src/io/hdf_reader.o \
+                src/io/gmsh.o
 #------------------------------------------------- w1 drt version
 OBJS_DRT_W1_LIB = src/drt_w1/wall1.o \
                   src/drt_w1/wall1_line.o \
@@ -1065,8 +1066,7 @@ OBJS_INTERSECTION = src/drt_xfem/predicates.o \
                     src/drt_xfem/intersection_math.o \
                     src/drt_xfem/intersection.o \
                     src/drt_xfem/interface.o \
-                    src/drt_xfem/drt_xelement.o \
-                    src/drt_xfem/gmsh.o
+                    src/drt_xfem/drt_xelement.o
 #               time adaptivity
 OBJS_DRT_TIMADA = src/drt_timada/timeadaptivity.o \
                   src/drt_timada/ta_zienkiewiczxie.o
