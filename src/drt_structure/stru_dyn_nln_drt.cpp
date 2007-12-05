@@ -94,6 +94,7 @@ void caldyn_drt()
     default:
       dserror("unknown time adaption scheme '%s'", sdyn.get<std::string>("TA_KIND").c_str());
     }
+    break;
   case STRUCT_DYNAMIC::Gen_EMM:
     dserror("GEMM not supported");
     break;
