@@ -73,8 +73,6 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
 
   dtp_ = dta_ = params_.get<double>("time step size");
 
-  int numdim = params_.get<int>("number of velocity degrees of freedom");
-
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------

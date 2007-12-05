@@ -245,27 +245,27 @@ const map<int, const set <XFEM::FieldEnr> > XFEM::DofManager::createNodalDofMap(
     }
 
     // for surface 1, loop my col elements and add void enrichments to each elements member nodes
-    const XFEM::Enrichment enr_void1(1, XFEM::Enrichment::typeVoid);
-    for (int i=0; i<xfemdis->NumMyColElements(); ++i)
-    {
-        const DRT::Element* actele = xfemdis->lColElement(i);
-        if (elementDomainIntCellMap.count(actele->Id()))
-        {
-            const int nen = actele->NumNode();
-            const int* nodeidptrs = actele->NodeIds();
-            for (int inen = 0; inen<nen; ++inen)
-            {
-                const int node_gid = nodeidptrs[inen];
-                //nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velx, enr_void1));
-                //nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Vely, enr_void1));
-                //nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velz, enr_void1));
-                //nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Pres, enr_void1));
-                //              nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::LMPLambdax, enr_void1));
-                //              nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::LMPLambday, enr_void1));
-                //              nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::LMPLambdaz, enr_void1));              
-            };
-        }
-    };
+//    const XFEM::Enrichment enr_void1(1, XFEM::Enrichment::typeVoid);
+//    for (int i=0; i<xfemdis->NumMyColElements(); ++i)
+//    {
+//        const DRT::Element* actele = xfemdis->lColElement(i);
+//        if (elementDomainIntCellMap.count(actele->Id()))
+//        {
+//            const int nen = actele->NumNode();
+//            const int* nodeidptrs = actele->NodeIds();
+//            for (int inen = 0; inen<nen; ++inen)
+//            {
+//                const int node_gid = nodeidptrs[inen];
+//                nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velx, enr_void1));
+//                nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Vely, enr_void1));
+//                nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velz, enr_void1));
+//                nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Pres, enr_void1));
+//                //              nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::LMPLambdax, enr_void1));
+//                //              nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::LMPLambday, enr_void1));
+//                //              nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::LMPLambdaz, enr_void1));              
+//            };
+//        }
+//    };
     
     // create const sets from standard sets, so the sets cannot be changed by accident
     // could be removed later, if this is aperformance bottleneck
