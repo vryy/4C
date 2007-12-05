@@ -931,7 +931,7 @@ public:
                              The vector is NOT initialized to zero by this method.
   */								 
   virtual void EvaluateCondition(ParameterList& params,
-		  RefCountPtr<Epetra_Vector> systemvector1,
+		                 RefCountPtr<Epetra_Vector> systemvector1,
 				 const string& condstring);
  
   /*!
@@ -973,7 +973,7 @@ public:
 			RefCountPtr<Epetra_CrsMatrix> systemmatrix1,
 			RefCountPtr<Epetra_Vector> systemvector1,
 			RefCountPtr<Epetra_Vector> systemvector2,
-		    const string& condstring);
+		        const string& condstring);
   /*!
   \brief Compute the nullspace of the discretization
 
