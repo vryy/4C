@@ -291,6 +291,9 @@ break;
 case m_hyper_polyconvex:/*--------------hyperelastic polyconvex material*/
 	*density = mat->m.hyper_polyconvex->density;
 break;
+case m_itskov:/*--------------hyperelastic polyconvex material*/
+        *density = mat->m.itskov->density;
+break;
 case m_compogden:/*--------------hyperelastic polyconvex material*/
 	*density = mat->m.compogden->density;
 break;

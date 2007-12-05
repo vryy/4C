@@ -687,6 +687,14 @@ void c1_calc_invariants (DOUBLE **M, DOUBLE *Inv);
 void c1_calc_inverse (DOUBLE **M, DOUBLE **Minv, DOUBLE *Inv);
 void c1_calc_tensorproduct (DOUBLE **A, DOUBLE **B, DOUBLE **AB);
 /*----------------------------------------------------------------------*
+ | - polyconvex non linear material model following Itskov      ah 10/07|
+ *----------------------------------------------------------------------*/
+ void c1_mat_itskov(
+                                ITSKOV *mat,
+                                DOUBLE *disd,
+                                DOUBLE *stress,
+                                DOUBLE **d);
+/*----------------------------------------------------------------------*
  * decoupled Ogden material law adapted from shell 8           rm 01/07 |
  *----------------------------------------------------------------------*/
 void c1_mat_ogden_decoupled(
