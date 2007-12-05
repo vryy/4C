@@ -465,7 +465,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       mat[i].mattyp      = m_itskov;
       mat[i].m.itskov = (ITSKOV*)CCACALLOC(1,sizeof(ITSKOV));
-      frdouble("M"       ,&(mat[i].m.itskov->m)       ,&ierr);
+      frdouble("MU"       ,&(mat[i].m.itskov->mu)       ,&ierr);
       frdouble("ALPHA"      ,&(mat[i].m.itskov->alpha)     ,&ierr);
       frdouble("BETA"      ,&(mat[i].m.itskov->beta)        ,&ierr);
       frdouble("EPSILON" ,&(mat[i].m.itskov->epsilon)    ,&ierr);

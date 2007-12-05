@@ -563,7 +563,7 @@ typedef struct _HYPER_POLYCONVEX
  *----------------------------------------------------------------------*/
 typedef struct _ITSKOV
 {
-     DOUBLE                    m;	/* material parameter */
+     DOUBLE                    mu;	/* material parameter */
      DOUBLE                    alpha;	/* material parameters */
      DOUBLE                    beta;
      DOUBLE                    epsilon; /* Penalty function */

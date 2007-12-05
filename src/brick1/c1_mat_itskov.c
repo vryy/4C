@@ -1,26 +1,61 @@
+/*!----------------------------------------------------------------------
+\file
+\brief contains the routine 'c1_mat_itskov' to establish local material law,
+       following the hyperpolyconvex formulation from Itskov,
+       stress-strain law for isotropic material for a 3D hex element
 
-
-/*----------------------------------------------------------------------*/
+<pre>
+Maintainer: Robert Metzke
+            metzke@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/metzke/
+            089 289 15244
+</pre>
+*----------------------------------------------------------------------*/
 #ifdef D_BRICK1
 
 #include "../headers/standardtypes.h"
 #include "brick1.h"
 #include "brick1_prototypes.h"
-void c1_mat_itskov( COMPOGDEN *mat, DOUBLE *disd, DOUBLE *stress, DOUBLE **d, INT ip);
+/*!
+\addtogroup BRICK1
+*//*! @{ (documentation module open)*/
 
-extern ALLDYNA      *alldyn;
+/*!----------------------------------------------------------------------
+\brief establish local material
 
+<pre>                                                              rm 11/07
+Itskov, M.; Ehret, A. & Mavrilas, D.
+A polyconvex anisotropic strain energy function for soft collagenous tissues
+Biomechanics and Modeling in Mechanobiology, 2006, 5, 17-26
+
+Ehret, A. & Itskov, M.
+A polyconvex hyperelastic model for fiber-reinforced materials in application to soft tissues
+Journal of Materials Science, 2007, 42, 8853-8863
+</pre>
+\param          alpha DOUBLE    (i)   material parameter
+\param           beta DOUBLE    (i)   material parameter
+\param             mu DOUBLE    (i)   material parameter (scale factor) (in function: m)
+\param        epsilon DOUBLE    (i)   penalty parameter (in function: epsilonPen)
+\param          gamma DOUBLE    (i)   penalty parameter (in function: epsilonPen)
+\param         disd   DOUBLE*   (i)   displacement derivatives
+\param       stress   DOUBLE*   (o)   ele stress (-resultant) vector
+\param            d   DOUBLE**  (o)   constitutive matrix
+
+\warning There is nothing special to this routine
+\return void
+\sa calling: ---; called by: c1_call_mat()
+
+*----------------------------------------------------------------------*/
 void c1_mat_itskov(
-		 COMPOGDEN *mat,
+		 ITSKOV *mat,
 		 DOUBLE *disd,
 		 DOUBLE *stress,
-		 DOUBLE **d,
-		 INT ip)
+		 DOUBLE **d)
 {
 	INT i,j,k,l;
-	DOUBLE alpha, beta, gamma, m;    /*Parameter der strain-energy-function*/
-	DOUBLE q, epsilonPen, gammaPen;  /*Parameter der Straffunktionen*/
-	DOUBLE energy, energyconstr, Kr, K;
+	DOUBLE alpha, beta, m;    /*Parameter der strain-energy-function*/
+	DOUBLE epsilonPen, gammaPen;  /*Parameter der Straffunktionen*/
+	DOUBLE energy, energyconstr, Kr;
 	static DOUBLE **FT;
 	static ARRAY FT_a;
 	static DOUBLE **C;
@@ -67,23 +102,6 @@ void c1_mat_itskov(
 	static ARRAY CinvLCinv_a;
 	static DOUBLE **CL;
 	static ARRAY CL_a;
-	
-	/*nur fuer Ableitung nach Holzapfel*/
-	/*static DOUBLE **IxC;
-	static ARRAY IxC_a;
-	static DOUBLE **CxI;
-	static ARRAY CxI_a;
-	static DOUBLE **IxCinv;
-	static ARRAY IxCinv_a;
-	static DOUBLE **CinvxI;
-	static ARRAY CinvxI_a;
-	static DOUBLE **CxC;
-	static ARRAY CxC_a;
-	static DOUBLE **CxCinv;
-	static ARRAY CxCinv_a;
-	static DOUBLE **CinvxC;
-	static ARRAY CinvxC_a;*/
-
 
 	if (FT==NULL)
 	{
@@ -109,16 +127,7 @@ void c1_mat_itskov(
 		CinvL = amdef("CinvL",&CinvL_a,3,3,"DA");
 		L = amdef("L",&L_a,3,3,"DA");
 		CinvLCinv = amdef("CinvLCinv",&CinvLCinv_a,3,3,"DA");
-		CL = amdef("CL",&CL_a,3,3,"DA");
-		
-		/*nur fuer Ableitung nach Holzapfel*/
-		/*IxC = amdef("IxC",&IxC_a,9,9,"DA");
-		CxI = amdef("CxI",&CxI_a,9,9,"DA");
-		IxCinv = amdef("IxCinv",&IxCinv_a,9,9,"DA");
-		CinvxI = amdef("CinvxI",&CinvxI_a,9,9,"DA");
-		CxC = amdef("CxC",&CxC_a,9,9,"DA");
-		CxCinv = amdef("CxCinv",&CxCinv_a,9,9,"DA");
-		CinvxC = amdef("CinvxC",&CinvxC_a,9,9,"DA");*/		
+		CL = amdef("CL",&CL_a,3,3,"DA");	
 	}
 	
 	amzero(&FT_a);
@@ -144,77 +153,34 @@ void c1_mat_itskov(
     amzero(&L_a);
     amzero(&CinvLCinv_a);
     amzero(&CL_a);
-    
-    /*nur fuer Ableitung nach Holzapfel*/
-    /*amzero(&IxC_a);
-    amzero(&CxI_a);
-    amzero(&IxCinv_a);
-    amzero(&CinvxI_a);
-    amzero(&CxC_a);
-    amzero(&CxCinv_a);
-    amzero(&CinvxC_a);*/
-	
-	
+		
 	#ifdef DEBUG
 	dstrc_enter("c1_mat_itskov");
 	#endif
 
-    exit(0);
-
-	/*Parameter der strain-energy function*/
-	alpha=30.0;
-	beta=25.0;
-	gamma=1.0;
-	m=1.3563;
-	
+	/* Parameter der strain-energy function */
+	alpha=mat->alpha;
+	beta=mat->beta;
+	m=mat->mu;
 	/*Parameter der Straffunktion nach Balzani*/
-	epsilonPen=50.0; 
-	gammaPen=50.0;
+	epsilonPen=mat->epsilon; 
+	gammaPen=mat->gamma;
 	
-	/*Parameter der Straffunktion im Itskov-Paper*/
-	/*q=15.0;*/
-	
-	
-/*---------------------------------------------------------Definition structural tensor L (siehe Itskov-Paper Gleichung (37))*/
+/*---Definition structural tensor L (siehe Itskov-Paper Gleichung (37))*/
 	for (k=0; k<3; k++) {
 		for (i=0; i<3; i++) {
 			if (i==k)
 				L[i][k]=1.0/3.0;
 			else
-				L[i][k]=0.0; } }	
-
-/*--------------------------------------------------um den aktuellen Zeitschritt mit auszugeben*/
-STRUCT_DYNAMIC *sdyn;   
-INT disnum;
-DOUBLE time;
-disnum = 0;     
-sdyn = alldyn[disnum].sdyn;
-time = sdyn->time;
-
-
-/*---------------------------------------------------------Definition Einheitstensor*/	
+				L[i][k]=0.0; } }
+/*--------------------------------------------Definition Einheitstensor*/
 	for (k=0; k<3; k++) {
 		for (i=0; i<3; i++) {
 			if (i==k)
 				I[i][k]=1;
 			else
-				I[i][k]=0; } }
-										
-/*---------------------------------------------------------Tensoren mit Nulleintraegen fuellen*/	
-					
-	for (k=0; k<3; k++) {
-		for (i=0; i<3; i++) {
-					CinvL[i][k]=0;} }	
-					
-	for (k=0; k<3; k++) {
-		for (i=0; i<3; i++) {
-					CinvLCinv[i][k]=0;} }	
-					
-	for (k=0; k<3; k++) {
-		for (i=0; i<3; i++) {
-					CL[i][k]=0;} }		
-	
-/*---------------------------------------------------------Deformation Gradient, transposed */
+				I[i][k]=0; } }										
+/*------------------------------------Deformation Gradient, transposed */
 	FT[0][0]=disd[0]+1.0;
 	FT[1][1]=disd[1]+1.0;
 	FT[2][2]=disd[2]+1.0;
@@ -224,222 +190,107 @@ time = sdyn->time;
 	FT[2][1]=disd[6];
 	FT[0][2]=disd[7];
 	FT[2][0]=disd[8];
-	
-	/*nur zum testen*/
-	/*double lam11 = 1.5;
-	FT[0][0] = lam11;
-	FT[1][1] = 1./sqrt(lam11);
-	FT[2][2] = 1./sqrt(lam11);
-	FT[1][0] = 0.0;
-	FT[0][1] = 0.0;
-	FT[2][1] = 0.0;
-	FT[1][2] = 0.0;
-	FT[2][0] = 0.0;
-	FT[0][2] = 0.0;*/	
-/*---------------------------------------------------------Right Cauchy Green Tensor*/
+/*--------------------------------------------Right Cauchy Green Tensor*/
 	for (k=0; k<3; k++) {
 		for (i=0; i<3; i++) {
 			for (j=0; j<3; j++) {
 				C[i][k]+=(FT[i][j]*FT[k][j]); } } }
-
-/*---------------------------------------------------------Bestimmung von q (damit Beitrag der Straffunktion im undeformiertren zustand 0 ist)*/
-	if (C[1][1]==1 && C[2][2]==1 && C[0][0]==1)
-		q=0;
 /*---------------------------------------------------------Invariants I*/
 	c1_calc_invariants(C, Inv); 
-/*---------------------------------------------------------Inverse Right Cauchy Green Tensor*/				
+/*------------------------------------Inverse Right Cauchy Green Tensor*/				
 	c1_calc_inverse (C,Cinv,Inv);
-/*---------------------------------------------------------Cinv*L*Cinv*/
+/*----------------------------------------------------------Cinv*L*Cinv*/
 	for (i=0; i<3; i++) {
 		for (k=0; k<3; k++) {
 			for (j=0; j<3; j++) {
 				CinvL[i][k]+=Cinv[i][j]*L[j][k];} } }	
-					
 	for (i=0; i<3; i++) {
 		for (k=0; k<3; k++) {
 			for (j=0; j<3; j++) {
 				CinvLCinv[i][k]+=CinvL[i][j]*Cinv[j][k];} } }	
-
-/*---------------------------------------------------------Invarianten J mit structural tensor*/
-/*---------------------------------------------------------1. Invariante: tr(CL)*/
+/*----------------------------------Invarianten J mit structural tensor*/
+/*------------------------------------------------1. Invariante: tr(CL)*/
    	for (i=0; i<3; i++) {
 		for (k=0; k<3; k++) {
 			for (j=0; j<3; j++) {
 					CL[i][k]+=C[i][j]*L[j][k];} } }	
-   	   	
    	J[0]= CL[0][0]+CL[1][1]+CL[2][2];	
-/*---------------------------------------------------------3. Invariante: detC*/
+/*--------------------------------------------------3. Invariante: detC*/
 	J[2]=Inv[2];
-/*---------------------------------------------------------2. Invariante: tr[(cofC)L]*/
+/*-------------------------------------------2. Invariante: tr[(cofC)L]*/
 	J[1]=J[2]*(CinvL[0][0]+CinvL[1][1]+CinvL[2][2]);
-/*---------------------------------------------------------2. Invariante für inkompressibel: tr[Cinv*L]*/	
+/*-------------------------2. Invariante für inkompressibel: tr[Cinv*L]*/	
 	Kr=(CinvL[0][0]+CinvL[1][1]+CinvL[2][2]); 
-/*------------------------------------------------------------------------------------------*/
-
+/*---------------------------------------------------------------------*/
 	
-/*---------------------------------------------------------constraint function*/
-    /*Straffunktion nach Balzani*/
-    energyconstr= (epsilonPen*(pow(Inv[2],gammaPen)+pow(Inv[2],(-gammaPen))-2));
-       
-/*---------------------------------------------------------strain-energy-function*/	
-
-	/*kompressibel*/
-	/*energy=m/4*((exp(alpha*(J[0]-1.0))-1.0)/alpha+(exp(beta*(J[1]-1.0))-1.0)/beta+(pow(J[2],-gamma)-1.0)/gamma)+energyconstr;*/
-	
-	/*inkompressibel (also I3=1 eingesetzt)*/
+/*--------------------------------------------------constraint function*/
+/*-------------------------------------------Straffunktion nach Balzani*/
+    energyconstr= (epsilonPen*(pow(Inv[2],gammaPen)+pow(Inv[2],(-gammaPen))-2));   
+/*-----------------------------------------------strain-energy-function*/	
 	energy=m/4.0*((exp(alpha*(J[0]-1.0))-1.0)/alpha+(exp(beta*(Kr-1.0))-1.0)/beta)+energyconstr;
-	
-	
-/*--------------------------------------------------------------------------------*/
-/*--------------------------2nd Piola-Kirchhoff Stress ---------------------------*/
-/*--------------------------------------------------------------------------------*/	
-/*---------------------------------------------------------constraint function*/
+/*---------------------------------------------------------------------*/
+/*---------------2nd Piola-Kirchhoff Stress ---------------------------*/
+/*---------------------------------------------------------------------*/	
+/*--------------------------------------------------constraint function*/
 for (i=0; i<3; i++) {
 	for (k=0; k<3; k++) {
-	
-	/*Straffunktion nach Itskov*/			
-	/*SPKconstr[i][k]=q/3.0*Cinv[i][k];*/
-	
-	/*Straffunktion nach Balzani*/
 	SPKconstr[i][k]=2.0*epsilonPen*gammaPen*Cinv[k][i]*(pow(Inv[2],gammaPen)-pow(Inv[2],(-gammaPen)));
-	
-	 }}
-	
-/*---------------------------------------------------------2nd Piola-Kirchhoff Stress tensor*/
+	}}
+/*------------------------------------2nd Piola-Kirchhoff Stress tensor*/
 for (k=0; k<3; k++) {
 		for (i=0; i<3; i++) {
-			
-						
-			/* --> Siehe Itskov Paper --- Inkompressibel*/
 			SPK[i][k]=m/2.0*(exp(alpha*(J[0]-1.0))*L[i][k]
 						-exp(beta*(Kr-1.0))*CinvLCinv[i][k])
-						+ SPKconstr[i][k];
-			
-			/* --> Ableitung Siehe Holzapfel-Buch */		
-			/*SPK[i][k]=m/2.0*(exp(alpha*(Inv[0]/3.0-1.0))/3.0*I[i][k]
-						+ exp(beta*(Inv[1]/3.0-1.0))/3.0*(Inv[0]*I[i][k]-C[i][k])
-						- pow(Inv[2],-gamma)*Cinv[i][k])
-						+ SPKconstr[i][k];*/						
-			} }			
-						
-
-/*---------------------------------------------------------Element Stress Vector*/
+						+ SPKconstr[i][k];					
+			} }
+/*------------------------------------------------Element Stress Vector*/
 	stress[0]=SPK[0][0];
 	stress[1]=SPK[1][1];
 	stress[2]=SPK[2][2];
 	stress[3]=SPK[0][1];
 	stress[4]=SPK[1][2];
 	stress[5]=SPK[0][2];
-	
-	
-/*----------------------------------------------------------------------------------------------*/	
-/*-------------------------------------tangent elasticity tensor--------------------------------*/
-/*----------------------------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------Deltas für Ableitung nach Holzapfel-Buch*/	
-	delta[0] = m * ( alpha/9. * exp(alpha*(Inv[0]/3.-1.))
-	               + 1./3. * exp(beta*(Inv[1]/3.-1.))
-	               + pow(Inv[0],2.) * beta/9. * exp(beta*(Inv[1]/3.-1.)));
-	delta[1] = -m*Inv[0]*beta/9.*exp(beta*(Inv[1]/3.-1.));
-	delta[2] = 0.0;
-	delta[3] = m*beta/9.*exp(beta*(Inv[1]/3.-1.));
-	delta[4] = 0.0;
-	delta[5] = m*gamma*pow(Inv[2],-gamma);
-	delta[6] = m*pow(Inv[2],-gamma);
-	delta[7] = -m/3.*exp(beta*(Inv[1]/3.-1.));
-/*---------------------------------------------------------Tensor Products*/
-	
+/*---------------------------------------------------------------------*/	
+/*------------tangent elasticity tensor--------------------------------*/
+/*---------------------------------------------------------------------*/
+/*------------------------------------------------------Tensor Products*/
 	c1_calc_tensorproduct(L,L,LxL);
 	c1_calc_tensorproduct(Cinv,Cinv,CinvxCinv);
 	c1_calc_tensorproduct(CinvLCinv,CinvLCinv,CinvLCinvxCinvLCinv);
-	
-	/*nur fuer Ableitung nach Holzapfel-Buch*/
-	/* c1_calc_tensorproduct(I,I,IxI);
-	c1_calc_tensorproduct(I,C,IxC);
-	c1_calc_tensorproduct(C,I,CxI);
-	c1_calc_tensorproduct(I,Cinv,IxCinv);
-	c1_calc_tensorproduct(Cinv,I,CinvxI);
-	c1_calc_tensorproduct(C,C,CxC);
-	c1_calc_tensorproduct(C,Cinv,CxCinv);
-	c1_calc_tensorproduct(Cinv,C,CinvxC);*/
-	
-			
+
 	for (k=0; k<9; k+=3) {
 		for (l=0; l<9; l+=3) {
 			for (i=0; i<3; i++) {
 				for (j=0; j<3; j++) {
 					CinvoCinv[i+k][j+l]= 0.5*+(Cinv[k/3][i]*Cinv[l/3][j]+Cinv[k/3][j]*Cinv[l/3][i]);}}}}
-
 	for (k=0; k<9; k+=3) {
 		for (l=0; l<9; l+=3) {
 			for (i=0; i<3; i++) {
 				for (j=0; j<3; j++) {
 					CinvoCinvLCinv[i+k][j+l]= 0.5*+(Cinv[k/3][i]*CinvLCinv[l/3][j]+Cinv[k/3][j]*CinvLCinv[l/3][i]);}}}}
-
 	for (k=0; k<9; k+=3) {
 		for (l=0; l<9; l+=3) {
 			for (i=0; i<3; i++) {
 				for (j=0; j<3; j++) {
 					CinvLCinvoCinv[i+k][j+l]= 0.5*+(CinvLCinv[k/3][i]*Cinv[l/3][j]+CinvLCinv[k/3][j]*Cinv[l/3][i]);}}}}
-	
-					
-	/*II nach Definition im Holzapfelbuch IIijkl=dik*djl*/
-	/*for (k=0; k<9; k+=3) {
-		for (l=0; l<9; l+=3) {
-			for (i=0; i<3; i++) {
-				for (j=0; j<3; j++) {
-					if (i==k/3 && j==l/3){
-						II[i+k][j+l]=1;}
-					else			{
-						II[i+k][j+l]=0;} } } }	}*/
-						
-	/*II nach andrer Definition (zB siehe NiLiFEM-Skript) IIijkl=0.5(dik*djl+dil*djk)*/					
-	/*for (k=0; k<9; k+=3) {
-		for (l=0; l<9; l+=3) {
-			for (i=0; i<3; i++) {
-				for (j=0; j<3; j++) {
-					II[i+k][j+l]= 0.5*+(I[k/3][i]*I[l/3][j]+I[k/3][j]*I[l/3][i]);}}}}*/		
-	
-/*---------------------------------------------------------constraint function*/
+/*--------------------------------------------------constraint function*/
 for (k=0; k<9; k+=3) {
 	  for (l=0; l<9; l+=3) {
 		for (i=0; i<3; i++) {
 		    for (j=0; j<3; j++) {		
-			
-			/*Straffunktion nach Itskov*/
-			/*Celastconstraint[i+k][j+l] = 2.0/3.0*q*(1.0/3.0*CinvxCinv[i+k][j+l] - CinvoCinv[i+k][j+l]);*/
-						
-			/*Straffunktion nach Balzani*/
 			Celastconstraint[i+k][j+l] = 4.0*epsilonPen*pow(gammaPen,2)*(pow(Inv[2],gammaPen)+pow(Inv[2],-gammaPen))*CinvxCinv[i+k][j+l]
 										-4.0*epsilonPen*gammaPen*(pow(Inv[2],gammaPen)-pow(Inv[2],-gammaPen))*CinvoCinv[i+k][j+l];
-				
-			}}}}	
-				
-/*---------------------------------------------------------tangent elasticity tensor*/
-
+			}}}}
+/*---------------------------------------------tangent elasticity tensor*/
 	for (k=0; k<9; k+=3) {
 	  for (l=0; l<9; l+=3) {
 		for (i=0; i<3; i++) {
 		  for (j=0; j<3; j++) {	
- 						   
-	/* --> Siehe Itskov Paper --- Inkompressibel */	
-	Celast[i+k][j+l] = m*  (alpha*exp(alpha*(J[0]-1.0))*LxL[i+k][j+l]
+	Celast[i+k][j+l] = m * (alpha*exp(alpha*(J[0]-1.0))*LxL[i+k][j+l]
 						   +beta*exp(beta*(Kr-1.0))*CinvLCinvxCinvLCinv[i+k][j+l]
 						   +exp(beta*(Kr-1.0))*(CinvoCinvLCinv[i+k][j+l]+CinvLCinvoCinv[i+k][j+l]))
  						   + Celastconstraint[i+k][j+l];
- 					
-	/* --> Siehe Holzapfel-Buch*/	
- 	/*Celast[i+k][j+l] = delta[0]*IxI[i+k][j+l]
-						+ delta[1]*(IxC[i+k][j+l]+CxI[i+k][j+l])
-						+ delta[2]*(IxCinv[i+k][j+l]+CinvxI[i+k][j+l])
-						+ delta[3]*CxC[i+k][j+l]
-						+ delta[4]*(CxCinv[i+k][j+l]+CinvxC[i+k][j+l])
-						+ delta[5]*CinvxCinv[i+k][j+l]
-						+ delta[6]*CinvoCinv[i+k][j+l]
-						+ delta[7]*II[i+k][j+l]
-						+ Celastconstraint[i+k][j+l];*/
-								
-			}}}}
+	}}}}
 /*---------------------------------------------------------Constitutive Matrix*/
 			d[0][0]=Celast[0][0];
 			d[0][1]=Celast[1][1];
@@ -482,45 +333,11 @@ for (k=0; k<9; k+=3) {
 			d[5][3]=Celast[7][0];
 			d[5][4]=Celast[8][1];
 			d[5][5]=Celast[8][0];
-	
-/*---------------------------------------------------------Ausgaben zum testen*/
-if (ip==0)
-	{
-	printf("time:%f      detC:%f\n", time, Inv[2]);
-	
-	printf("\nRight cauchy green\n");
-	for (k=0; k<3; k++) {
-		for (i=0; i<3; i++) {
-				printf("%f   ", C[i][k]);}
-				printf("\n");}
-	
-	printf("\nSecond Piola Kirchhhoff\n");
-	for (k=0; k<3; k++) {
-		for (i=0; i<3; i++) {
-				printf("%f   ", SPK[i][k]);}
-				printf("\n");}
-				
-	/*printf("\nCelast\n");				
-	for (k=0; k<9; k++) {
-	  for (l=0; l<9; l++) {
-			printf("%f  ", Celast[k][l]);}
-			printf("\n");}*/
-	
-	/*K = d[0][0]*sqrt(C[0][0]) - 0.5*d[0][1]/C[0][0] - 0.5*d[0][2]/C[0][0];
-	printf("\nK: %lf \n",K);*/
-	
-	FILE *pDatei = fopen("test_I3.txt", "at");
-	fprintf(pDatei, "time:%f      detC:%f          SPK11:%f          SPKconstr11:%f\n", time, Inv[2], SPK[0][0], SPKconstr[0][0]);
-	fclose(pDatei);
-	
-	}
-	
-/*exit(0);*/
 
 #ifdef DEBUG
 	dstrc_exit();
 #endif
 return;
 }
-
+/*! @} (documentation module close)*/
 #endif /*D_BRICK1 */
