@@ -41,8 +41,6 @@ NUMTHERMDIS  0
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP   Nlin_Time_Int
 TIMEINTEGR   BDF2 
-VISCSTRESS   no
-FREESURFACE  no
 UPPSS        1
 UPOUT        1
 UPRES        1
@@ -64,12 +62,6 @@ START_THETA  0.80
 INITIALFIELD BELTRAMI-FLOW
 RESSTEP      4
 STARTFUNCNO  8
-TURBULENCE   No
-INT_LENGHT   1.0
-ROUGHTNESS   1.0
-SC_COORD_X   0.0
-SC_COORD_Y   0.0
-DISC_CAPT    No
 -------------------------------------------------------FSI DYNAMIC
 -------------------------------------------------------ALE DYNAMIC
 ------------------------------------------------------OPTIMIZATION

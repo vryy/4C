@@ -56,8 +56,6 @@ MAXITER      50
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP   Nlin_Time_Int
 TIMEINTEGR   One_Step_Theta
-VISCSTRESS   no
-FREESURFACE  no
 UPPSS        1
 UPOUT        1
 UPRES        1
@@ -80,7 +78,6 @@ INITIALFIELD zero_field
 //INITIALFIELD field_from_file
 RESSTEP      5
 STARTFUNCNO  2
-TURBULENCE   No
 -------------------------------------------------------FSI DYNAMIC
 MAXTIME      1000.0
 TIMESTEP     0.05
