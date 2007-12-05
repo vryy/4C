@@ -11,6 +11,7 @@ Maintainer: Robert Metzke
             089 289 15244
 </pre>
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_BRICK1
 
 #include "../headers/standardtypes.h"
@@ -87,7 +88,7 @@ void c1_mat_itskov(
 	static DOUBLE **CinvoCinvLCinv;
 	static ARRAY CinvoCinvLCinv_a;
 	static DOUBLE **CinvLCinvoCinv;
-	static ARRAY CinvLCinvoCinv_a;	
+	static ARRAY CinvLCinvoCinv_a;
 	static DOUBLE **II;
 	static ARRAY II_a;
 	static DOUBLE **Celast;
@@ -127,9 +128,9 @@ void c1_mat_itskov(
 		CinvL = amdef("CinvL",&CinvL_a,3,3,"DA");
 		L = amdef("L",&L_a,3,3,"DA");
 		CinvLCinv = amdef("CinvLCinv",&CinvLCinv_a,3,3,"DA");
-		CL = amdef("CL",&CL_a,3,3,"DA");	
+		CL = amdef("CL",&CL_a,3,3,"DA");
 	}
-	
+
 	amzero(&FT_a);
 	amzero(&C_a);
 	amzero(&Inv_a);
@@ -140,7 +141,7 @@ void c1_mat_itskov(
 	amzero(&SPKconstr_a);
 	amzero(&delta_a);
 	amzero(&IxI_a);
-	amzero(&LxL_a);   
+	amzero(&LxL_a);
     amzero(&CinvxCinv_a);
     amzero(&CinvLCinvxCinvLCinv_a);
     amzero(&CinvoCinv_a);
@@ -153,7 +154,7 @@ void c1_mat_itskov(
     amzero(&L_a);
     amzero(&CinvLCinv_a);
     amzero(&CL_a);
-		
+
 	#ifdef DEBUG
 	dstrc_enter("c1_mat_itskov");
 	#endif
@@ -163,9 +164,9 @@ void c1_mat_itskov(
 	beta=mat->beta;
 	m=mat->mu;
 	/*Parameter der Straffunktion nach Balzani*/
-	epsilonPen=mat->epsilon; 
+	epsilonPen=mat->epsilon;
 	gammaPen=mat->gamma;
-	
+
 /*---Definition structural tensor L (siehe Itskov-Paper Gleichung (37))*/
 	for (k=0; k<3; k++) {
 		for (i=0; i<3; i++) {
@@ -179,7 +180,7 @@ void c1_mat_itskov(
 			if (i==k)
 				I[i][k]=1;
 			else
-				I[i][k]=0; } }										
+				I[i][k]=0; } }
 /*------------------------------------Deformation Gradient, transposed */
 	FT[0][0]=disd[0]+1.0;
 	FT[1][1]=disd[1]+1.0;
@@ -196,41 +197,41 @@ void c1_mat_itskov(
 			for (j=0; j<3; j++) {
 				C[i][k]+=(FT[i][j]*FT[k][j]); } } }
 /*---------------------------------------------------------Invariants I*/
-	c1_calc_invariants(C, Inv); 
-/*------------------------------------Inverse Right Cauchy Green Tensor*/				
+	c1_calc_invariants(C, Inv);
+/*------------------------------------Inverse Right Cauchy Green Tensor*/
 	c1_calc_inverse (C,Cinv,Inv);
 /*----------------------------------------------------------Cinv*L*Cinv*/
 	for (i=0; i<3; i++) {
 		for (k=0; k<3; k++) {
 			for (j=0; j<3; j++) {
-				CinvL[i][k]+=Cinv[i][j]*L[j][k];} } }	
+				CinvL[i][k]+=Cinv[i][j]*L[j][k];} } }
 	for (i=0; i<3; i++) {
 		for (k=0; k<3; k++) {
 			for (j=0; j<3; j++) {
-				CinvLCinv[i][k]+=CinvL[i][j]*Cinv[j][k];} } }	
+				CinvLCinv[i][k]+=CinvL[i][j]*Cinv[j][k];} } }
 /*----------------------------------Invarianten J mit structural tensor*/
 /*------------------------------------------------1. Invariante: tr(CL)*/
    	for (i=0; i<3; i++) {
 		for (k=0; k<3; k++) {
 			for (j=0; j<3; j++) {
-					CL[i][k]+=C[i][j]*L[j][k];} } }	
-   	J[0]= CL[0][0]+CL[1][1]+CL[2][2];	
+					CL[i][k]+=C[i][j]*L[j][k];} } }
+   	J[0]= CL[0][0]+CL[1][1]+CL[2][2];
 /*--------------------------------------------------3. Invariante: detC*/
 	J[2]=Inv[2];
 /*-------------------------------------------2. Invariante: tr[(cofC)L]*/
 	J[1]=J[2]*(CinvL[0][0]+CinvL[1][1]+CinvL[2][2]);
-/*-------------------------2. Invariante für inkompressibel: tr[Cinv*L]*/	
-	Kr=(CinvL[0][0]+CinvL[1][1]+CinvL[2][2]); 
+/*-------------------------2. Invariante für inkompressibel: tr[Cinv*L]*/
+	Kr=(CinvL[0][0]+CinvL[1][1]+CinvL[2][2]);
 /*---------------------------------------------------------------------*/
-	
+
 /*--------------------------------------------------constraint function*/
 /*-------------------------------------------Straffunktion nach Balzani*/
-    energyconstr= (epsilonPen*(pow(Inv[2],gammaPen)+pow(Inv[2],(-gammaPen))-2));   
-/*-----------------------------------------------strain-energy-function*/	
+    energyconstr= (epsilonPen*(pow(Inv[2],gammaPen)+pow(Inv[2],(-gammaPen))-2));
+/*-----------------------------------------------strain-energy-function*/
 	energy=m/4.0*((exp(alpha*(J[0]-1.0))-1.0)/alpha+(exp(beta*(Kr-1.0))-1.0)/beta)+energyconstr;
 /*---------------------------------------------------------------------*/
 /*---------------2nd Piola-Kirchhoff Stress ---------------------------*/
-/*---------------------------------------------------------------------*/	
+/*---------------------------------------------------------------------*/
 /*--------------------------------------------------constraint function*/
 for (i=0; i<3; i++) {
 	for (k=0; k<3; k++) {
@@ -241,7 +242,7 @@ for (k=0; k<3; k++) {
 		for (i=0; i<3; i++) {
 			SPK[i][k]=m/2.0*(exp(alpha*(J[0]-1.0))*L[i][k]
 						-exp(beta*(Kr-1.0))*CinvLCinv[i][k])
-						+ SPKconstr[i][k];					
+						+ SPKconstr[i][k];
 			} }
 /*------------------------------------------------Element Stress Vector*/
 	stress[0]=SPK[0][0];
@@ -250,7 +251,7 @@ for (k=0; k<3; k++) {
 	stress[3]=SPK[0][1];
 	stress[4]=SPK[1][2];
 	stress[5]=SPK[0][2];
-/*---------------------------------------------------------------------*/	
+/*---------------------------------------------------------------------*/
 /*------------tangent elasticity tensor--------------------------------*/
 /*---------------------------------------------------------------------*/
 /*------------------------------------------------------Tensor Products*/
@@ -277,7 +278,7 @@ for (k=0; k<3; k++) {
 for (k=0; k<9; k+=3) {
 	  for (l=0; l<9; l+=3) {
 		for (i=0; i<3; i++) {
-		    for (j=0; j<3; j++) {		
+		    for (j=0; j<3; j++) {
 			Celastconstraint[i+k][j+l] = 4.0*epsilonPen*pow(gammaPen,2)*(pow(Inv[2],gammaPen)+pow(Inv[2],-gammaPen))*CinvxCinv[i+k][j+l]
 										-4.0*epsilonPen*gammaPen*(pow(Inv[2],gammaPen)-pow(Inv[2],-gammaPen))*CinvoCinv[i+k][j+l];
 			}}}}
@@ -285,7 +286,7 @@ for (k=0; k<9; k+=3) {
 	for (k=0; k<9; k+=3) {
 	  for (l=0; l<9; l+=3) {
 		for (i=0; i<3; i++) {
-		  for (j=0; j<3; j++) {	
+		  for (j=0; j<3; j++) {
 	Celast[i+k][j+l] = m * (alpha*exp(alpha*(J[0]-1.0))*LxL[i+k][j+l]
 						   +beta*exp(beta*(Kr-1.0))*CinvLCinvxCinvLCinv[i+k][j+l]
 						   +exp(beta*(Kr-1.0))*(CinvoCinvLCinv[i+k][j+l]+CinvLCinvoCinv[i+k][j+l]))
@@ -298,35 +299,35 @@ for (k=0; k<9; k+=3) {
 			d[0][3]=Celast[1][0];
 			d[0][4]=Celast[2][1];
 			d[0][5]=Celast[2][0];
-			
+
 			d[1][0]=Celast[3][3];
 			d[1][1]=Celast[4][4];
 			d[1][2]=Celast[5][5];
 			d[1][3]=Celast[4][3];
 			d[1][4]=Celast[5][4];
 			d[1][5]=Celast[5][3];
-			
+
 			d[2][0]=Celast[6][6];
 			d[2][1]=Celast[7][7];
 			d[2][2]=Celast[8][8];
 			d[2][3]=Celast[7][6];
 			d[2][4]=Celast[8][7];
 			d[2][5]=Celast[8][6];
-		
+
 			d[3][0]=Celast[3][0];
 			d[3][1]=Celast[4][1];
 			d[3][2]=Celast[5][2];
 			d[3][3]=Celast[4][0];
 			d[3][4]=Celast[5][1];
 			d[3][5]=Celast[5][0];
-			
+
 			d[4][0]=Celast[6][3];
 			d[4][1]=Celast[7][4];
 			d[4][2]=Celast[8][5];
 			d[4][3]=Celast[7][3];
 			d[4][4]=Celast[8][4];
 			d[4][5]=Celast[8][3];
-			
+
 			d[5][0]=Celast[6][0];
 			d[5][1]=Celast[7][1];
 			d[5][2]=Celast[8][2];
@@ -341,3 +342,4 @@ return;
 }
 /*! @} (documentation module close)*/
 #endif /*D_BRICK1 */
+#endif
