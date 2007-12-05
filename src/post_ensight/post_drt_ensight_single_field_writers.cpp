@@ -63,12 +63,12 @@ void XFluidEnsightWriter::WriteAllResults(
 //    EnsightWriter::WriteResult("residual", "residual", field->problem()->num_dim());
 
     cout << "now to xfem solutions" << endl;
-    set<XFEM::Physics::Field> velocity_fieldset;
-    velocity_fieldset.insert(XFEM::Physics::Velx);
-    velocity_fieldset.insert(XFEM::Physics::Vely);
-    velocity_fieldset.insert(XFEM::Physics::Velz);
-    set<XFEM::Physics::Field> pressure_fieldset;
-    pressure_fieldset.insert(XFEM::Physics::Pres);
+    set<XFEM::PHYSICS::Field> velocity_fieldset;
+    velocity_fieldset.insert(XFEM::PHYSICS::Velx);
+    velocity_fieldset.insert(XFEM::PHYSICS::Vely);
+    velocity_fieldset.insert(XFEM::PHYSICS::Velz);
+    set<XFEM::PHYSICS::Field> pressure_fieldset;
+    pressure_fieldset.insert(XFEM::PHYSICS::Pres);
     
     XFluidEnsightWriter::WriteResult("velnp", "velocity_physical", velocity_fieldset);
     XFluidEnsightWriter::WriteResult("residual", "residual_physical", velocity_fieldset);
@@ -455,7 +455,7 @@ NumElePerDisType XFluidEnsightWriter::GetNumElePerDisType(
 void XFluidEnsightWriter::WriteResult(
         const string groupname,
         const string name,
-        const set<XFEM::Physics::Field> fieldset
+        const set<XFEM::PHYSICS::Field> fieldset
         )
 {
     PostResult result = PostResult(field_);
@@ -503,6 +503,89 @@ void XFluidEnsightWriter::WriteResult(
     variablefilenamemap_[name] = filename;
 }
 
+vector<double> computeScalarCellNodeValues(
+        DRT::Element&  ele,
+        const XFEM::ElementDofManager& dofman,
+        const XFEM::DomainIntCell& cell,
+        const XFEM::PHYSICS::Field field,
+        const vector<double> elementvalues
+        )
+{
+    vector<double> cellvalues;
+    
+    const int nen_cell = DRT::Utils::getNumberOfElementNodes(cell.Shape());
+    const int numparam  = dofman.NumDofPerField(field);
+    
+    const int maxnod = 27;
+    const int nsd = 3;
+    
+    blitz::Range _  = blitz::Range::all();
+    
+    DRT::Node** const nodes = ele.Nodes();
+    blitz::Array<double,2> xyze(nsd,maxnod,blitz::ColumnMajorArray<2>());
+    for (int inode=0; inode<ele.NumNode(); inode++)
+    {
+      const double* x = nodes[inode]->X();
+      xyze(0,inode) = x[0];
+      xyze(1,inode) = x[1];
+      xyze(2,inode) = x[2];
+    }
+    
+    // cell corner nodes
+    for (int inen = 0; inen < nen_cell; ++inen)
+    {
+        // shape functions
+        blitz::Array<double,1> funct(maxnod);
+        DRT::Utils::shape_function_3D(
+                funct,
+                cell.GetDomainCoord()[inen][0],
+                cell.GetDomainCoord()[inen][1],
+                cell.GetDomainCoord()[inen][2],
+                ele.Shape());
+    
+        vector<double> cellnodeposvector = cell.GetPhysicalCoord(ele)[inen];
+        blitz::Array<double,1> cellnodepos(3);
+        for (int isd = 0; isd < nsd; ++isd) {
+            cellnodepos(isd) = cellnodeposvector[isd];
+        }
+        
+        // simplest case: jump or void enrichment
+        // -> no chain rule, since enrichment function derivative is zero
+        // TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
+        
+        blitz::Array<double,1> enr_funct(numparam);
+        int dofcounter = 0;
+        for (int inode=0; inode<ele.NumNode(); inode++)
+        {
+          const int gid = nodes[inode]->Id();
+          const blitz::Array<double,1> nodalpos(xyze(_,inode));
+
+          const std::set<XFEM::FieldEnr>  enrfieldset = dofman.FieldEnrSetPerNode(gid);
+          for (std::set<XFEM::FieldEnr>::const_iterator enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
+          {
+              if (enrfield->getField() == XFEM::PHYSICS::Velx)
+              {
+                  const XFEM::Enrichment enr = enrfield->getEnrichment();
+                  const double enrval = dofman.enrValue(enr,cellnodepos,nodalpos);
+                  enr_funct(dofcounter) = funct(inode) * enrval;
+                  dofcounter += 1;
+              }
+          }
+        }
+        
+        // interpolate value
+        double x = 0.0;
+        for (int iparam = 0; iparam < numparam; ++iparam)
+        {
+            x += elementvalues[iparam] * enr_funct(iparam);
+        }
+        // store position
+        cellvalues.push_back(x);
+    }
+    return cellvalues;
+}
+
+
 
 
 /*!
@@ -514,7 +597,7 @@ void XFluidEnsightWriter::WriteResultStep(
         map<string, vector<ofstream::pos_type> >& resultfilepos,
         const string groupname,
         const string name,
-        const set<XFEM::Physics::Field> fieldset,
+        const set<XFEM::PHYSICS::Field> fieldset,
         const RCP<XFEM::InterfaceHandle> ih,
         const RCP<XFEM::DofManager> dofman
         ) const
@@ -556,9 +639,13 @@ void XFluidEnsightWriter::WriteResultStep(
     // get the number of elements for each distype
     const NumElePerDisType numElePerDisType = GetNumElePerDisType(dis, ih);
     
+    //
+    const XFEM::Enrichment enr_std(0, XFEM::Enrichment::typeStandard);
     
-    for (set<XFEM::Physics::Field>::const_iterator field=fieldset.begin(); field!=fieldset.end(); ++field)
+    for (set<XFEM::PHYSICS::Field>::const_iterator fielditer=fieldset.begin(); fielditer!=fieldset.end(); ++fielditer)
     {
+        const XFEM::PHYSICS::Field field = *fielditer;
+        
         // for each found distype write block of the same typed elements
         int counter = 0;
         for (NumElePerDisType::const_iterator iter=numElePerDisType.begin(); iter != numElePerDisType.end(); ++iter)
@@ -568,33 +655,33 @@ void XFluidEnsightWriter::WriteResultStep(
             {
                 const int elegid = elementmap->GID(iele);
                 DRT::Element* const actele = dis->gElement(elegid);
+                
+                // create local copy of information about dofs
+                XFEM::ElementDofManager eledofman = dofman->constructElementDofManager(*actele);
+                
+                vector<int> lm;
+                vector<int> lmowner;
+                actele->LocationVector(*(field_->discretization()),lm,lmowner);
+                
+                // extract local values from the global vector
+                vector<double> myvelnp(lm.size());
+                DRT::Utils::ExtractMyValues(*data,myvelnp,lm);
+                
+                const int numparam = eledofman.NumDofPerField(field);
+                const vector<int> dof = eledofman.LocalDofPosPerField(field);
+                
+                vector<double> elementvalues(numparam);
+                for (int iparam=0; iparam<numparam; ++iparam)   elementvalues[iparam] = myvelnp[dof[iparam]];
+                
                 const XFEM::DomainIntCells domainintcells = ih->domainIntCells(elegid, actele->Shape());
                 for (XFEM::DomainIntCells::const_iterator cell = domainintcells.begin(); cell != domainintcells.end(); ++cell)
                 {
                     if (cell->Shape() == distypeiter)
                     {
-                        for (int inode = 0; inode < cell->NumNode(); ++inode) {
-                            
-                        
-//                        set<XFEM::FieldEnr> dofset = dofman->getDofSet(nodegid);
-//                        
-//                        dofset.find()
-//                        
-//                        cont int dofgid = dis->Dof(n, from+idf)
-//                        const int lid = datamap.LID(dofgid);
-//                        
-//                        double sol
-//                        if (lid > -1)
-//                        {
-//                            sol = ;
-//                        }
-//                        else
-//                        {
-//                            // Assume we have to write a value here.
-//                            sol = 0.0;
-//                        }
-//                        Write(file, static_cast<float>(sol));
-                            Write(file, static_cast<float>(0.0));
+                        const vector<double> cellvalues = computeScalarCellNodeValues(*actele, eledofman, *cell, field, elementvalues);
+                        for (int inode = 0; inode < cell->NumNode(); ++inode)
+                        {
+                            Write(file, static_cast<float>(cellvalues[inode]));
                             counter++;
                         }
                     }

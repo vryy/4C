@@ -228,13 +228,13 @@ void XFluidImplicitTimeInt::ComputeSingleFieldRowMaps(RCP<XFEM::DofManager> dofm
 		unsigned int countdof = 0;
 		for (enrvar = enrvarset.begin(); enrvar != enrvarset.end(); ++enrvar) {
 			switch (enrvar->getField()) {
-				case XFEM::Physics::Velx:
-				case XFEM::Physics::Vely: 
-				case XFEM::Physics::Velz:
+				case XFEM::PHYSICS::Velx:
+				case XFEM::PHYSICS::Vely: 
+				case XFEM::PHYSICS::Velz:
 					velmapdata.push_back(dof[countdof]);
 					countveldofs++;
 					break;
-				case XFEM::Physics::Pres:
+				case XFEM::PHYSICS::Pres:
 					premapdata.push_back(dof[countdof]);
 					countpredofs++;
 					break;
@@ -1817,7 +1817,7 @@ void XFluidImplicitTimeInt::LiftDrag()
 
 
     // now step the label map
-    for( std::map< const int, std::set<DRT::Node*> >::iterator labelit = ldnodemap.begin();
+    for( std::map< const int, std::set<DRT::Node*> >::const_iterator labelit = ldnodemap.begin();
          labelit != ldnodemap.end(); ++labelit )
     {
       const std::set<DRT::Node*>& nodes = labelit->second; // pointer to nodeset of present label

@@ -24,7 +24,7 @@ Maintainer: Axel Gerstenberger
 using namespace std;
 using namespace XFEM;
 
-string GMSH::elementToString(const double scalar, DRT::Element* ele)
+string IO::GMSH::elementToString(const double scalar, DRT::Element* ele)
 {
     DRT::Node** nodes = ele->Nodes();
     
@@ -58,7 +58,7 @@ string GMSH::elementToString(const double scalar, DRT::Element* ele)
     return pos_array_string.str();
 }
 
-string GMSH::elementToString(const vector<double> scalarfield, DRT::Element* ele)
+string IO::GMSH::elementToString(const vector<double> scalarfield, DRT::Element* ele)
 {
     DRT::Node** nodes = ele->Nodes();
     
@@ -94,7 +94,7 @@ string GMSH::elementToString(const vector<double> scalarfield, DRT::Element* ele
     return pos_array_string.str();
 }
 
-string GMSH::elementToString(const vector<vector<double> > vectorfield, DRT::Element* ele)
+string IO::GMSH::elementToString(const vector<vector<double> > vectorfield, DRT::Element* ele)
 {
     DRT::Node** nodes = ele->Nodes();
     
@@ -135,7 +135,7 @@ string GMSH::elementToString(const vector<vector<double> > vectorfield, DRT::Ele
     return pos_array_string.str();
 }
 
-string GMSH::cellToString(const double scalar, const DomainIntCell& cell, DRT::Element* ele)
+string IO::GMSH::cellToString(const double scalar, const DomainIntCell& cell, DRT::Element* ele)
 {
     stringstream pos_array_string;
     pos_array_string << "SS(";
@@ -167,7 +167,7 @@ string GMSH::cellToString(const double scalar, const DomainIntCell& cell, DRT::E
     return pos_array_string.str();
 };
 
-string GMSH::cellToString(const double scalar, const BoundaryIntCell& cell, DRT::Element* ele)
+string IO::GMSH::cellToString(const double scalar, const BoundaryIntCell& cell, DRT::Element* ele)
 {
     stringstream pos_array_string;
     pos_array_string << "SS2(";
@@ -200,7 +200,7 @@ string GMSH::cellToString(const double scalar, const BoundaryIntCell& cell, DRT:
     return pos_array_string.str();
 };
 
-string GMSH::disToString(const std::string s, const double scalar, 
+string IO::GMSH::disToString(const std::string s, const double scalar, 
         RefCountPtr<DRT::Discretization> dis)
 {
     stringstream gmshfilecontent;
@@ -208,13 +208,13 @@ string GMSH::disToString(const std::string s, const double scalar,
     for (int i=0; i<dis->NumMyColElements(); ++i)
     {
         DRT::Element* actele = dis->lColElement(i);
-        gmshfilecontent << GMSH::elementToString(scalar, actele) << endl;
+        gmshfilecontent << IO::GMSH::elementToString(scalar, actele) << endl;
     };
     gmshfilecontent << "};" << endl;
     return gmshfilecontent.str();
 }
 
-string GMSH::disToString(const std::string s, const double scalar, 
+string IO::GMSH::disToString(const std::string s, const double scalar, 
         RefCountPtr<DRT::Discretization> dis,
         map<int, DomainIntCells >& elementDomainIntCellsMap)
 {
@@ -229,19 +229,19 @@ string GMSH::disToString(const std::string s, const double scalar,
             XFEM::DomainIntCells::const_iterator cell;
             for(cell = elementDomainIntCellsMap[id].begin(); cell != elementDomainIntCellsMap[id].end(); ++cell )
             {
-                gmshfilecontent << GMSH::cellToString(scalar, *cell, actele) << endl;
+                gmshfilecontent << IO::GMSH::cellToString(scalar, *cell, actele) << endl;
             }
         }
         else
         {
-            gmshfilecontent << GMSH::elementToString(scalar, actele) << endl;
+            gmshfilecontent << IO::GMSH::elementToString(scalar, actele) << endl;
         };
     };
     gmshfilecontent << "};" << endl;
     return gmshfilecontent.str();
 }
 
-std::string GMSH::getConfigString(const int numview)
+std::string IO::GMSH::getConfigString(const int numview)
 {
     stringstream gmshfilecontent;
     for (int iview = 0; iview < numview; ++iview) {
@@ -252,7 +252,7 @@ std::string GMSH::getConfigString(const int numview)
     return gmshfilecontent.str();
 }
 
-std::string GMSH::distypeToGmshElementHeader(const DRT::Element::DiscretizationType distype)
+std::string IO::GMSH::distypeToGmshElementHeader(const DRT::Element::DiscretizationType distype)
 {
 	switch (distype){
 	case DRT::Element::point1: return "P";   break;
@@ -270,7 +270,7 @@ std::string GMSH::distypeToGmshElementHeader(const DRT::Element::DiscretizationT
 	return "xxx";
 }
 
-int GMSH::distypeToGmshNumNode(const DRT::Element::DiscretizationType distype)
+int IO::GMSH::distypeToGmshNumNode(const DRT::Element::DiscretizationType distype)
 {
 	switch (distype){
 	case DRT::Element::point1: return 1;   break;

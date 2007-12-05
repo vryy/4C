@@ -32,9 +32,9 @@ XFEM::InterfaceHandle::InterfaceHandle(
 	  
 	  // debug: write both meshes to file in Gmsh format
 	  ofstream f_system("elements_coupled_system.pos");
-	  f_system << GMSH::disToString("Fluid", 0.0, xfemdis, elementalDomainIntCells_);
-	  f_system << GMSH::disToString("Solid", 1.0, cutterdis);
-	  f_system << GMSH::getConfigString(2);
+	  f_system << IO::GMSH::disToString("Fluid", 0.0, xfemdis, elementalDomainIntCells_);
+	  f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis);
+	  f_system << IO::GMSH::getConfigString(2);
 	  f_system.close();
 }
 		

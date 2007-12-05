@@ -20,7 +20,7 @@ Maintainer: Axel Gerstenberger
  |  ctor                                                        ag 11/07|
  *----------------------------------------------------------------------*/
 XFEM::FieldEnr::FieldEnr(
-        const Physics::Field field,
+        const PHYSICS::Field field,
         const Enrichment enr) :
         	field_(field), enr_(enr)
 {
@@ -53,7 +53,7 @@ XFEM::FieldEnr::~FieldEnr()
 string XFEM::FieldEnr::toString() const
 {
     stringstream s;
-    s << "Enriched Field: " << Physics::physVarToString(this->field_) << ", Enrichment: " << enr_.toString();
+    s << "Enriched Field: " << PHYSICS::physVarToString(this->field_) << ", Enrichment: " << enr_.toString();
     return s.str();
 }
 
@@ -91,7 +91,7 @@ XFEM::ElementDofManager::ElementDofManager(
 	for (tmp = nodalDofMap.begin(); tmp != nodalDofMap.end(); ++tmp) {
 		const set<XFEM::FieldEnr> enrfieldset = tmp->second;
 		for (enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield) {
-			const XFEM::Physics::Field field = enrfield->getField();
+			const XFEM::PHYSICS::Field field = enrfield->getField();
 			numParamsPerFieldMap_[field] = 0;
 			paramsLocalEntries_[field] = vector<int>();
 		}
@@ -103,7 +103,7 @@ XFEM::ElementDofManager::ElementDofManager(
 		const set<XFEM::FieldEnr> enrfieldset = tmp->second;
 		
 		for (enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield) {
-			const XFEM::Physics::Field field = enrfield->getField();
+			const XFEM::PHYSICS::Field field = enrfield->getField();
 			numParamsPerFieldMap_[field] += 1;
 			paramsLocalEntries_[field].push_back(counter);
 			counter++;
@@ -238,10 +238,10 @@ const map<int, const set <XFEM::FieldEnr> > XFEM::DofManager::createNodalDofMap(
     {
         const DRT::Node* actnode = xfemdis->lColNode(i);
         const int gid = actnode->Id();
-        nodalDofMap[gid].insert(XFEM::FieldEnr(Physics::Velx, enr_std));
-        nodalDofMap[gid].insert(XFEM::FieldEnr(Physics::Vely, enr_std));
-        nodalDofMap[gid].insert(XFEM::FieldEnr(Physics::Velz, enr_std));
-        nodalDofMap[gid].insert(XFEM::FieldEnr(Physics::Pres, enr_std));
+        nodalDofMap[gid].insert(XFEM::FieldEnr(PHYSICS::Velx, enr_std));
+        nodalDofMap[gid].insert(XFEM::FieldEnr(PHYSICS::Vely, enr_std));
+        nodalDofMap[gid].insert(XFEM::FieldEnr(PHYSICS::Velz, enr_std));
+        nodalDofMap[gid].insert(XFEM::FieldEnr(PHYSICS::Pres, enr_std));
     }
 
     // for surface 1, loop my col elements and add void enrichments to each elements member nodes
@@ -256,13 +256,13 @@ const map<int, const set <XFEM::FieldEnr> > XFEM::DofManager::createNodalDofMap(
             for (int inen = 0; inen<nen; ++inen)
             {
                 const int node_gid = nodeidptrs[inen];
-                //nodalDofMap[node_gid].insert(XFEM::FieldEnr(Physics::Velx, enr_void1));
-                //nodalDofMap[node_gid].insert(XFEM::FieldEnr(Physics::Vely, enr_void1));
-                //nodalDofMap[node_gid].insert(XFEM::FieldEnr(Physics::Velz, enr_void1));
-                //nodalDofMap[node_gid].insert(XFEM::FieldEnr(Physics::Pres, enr_void1));
-                //              nodalDofMap[node_gid].insert(XFEM::FieldEnr(Physics::LMPLambdax, enr_void1));
-                //              nodalDofMap[node_gid].insert(XFEM::FieldEnr(Physics::LMPLambday, enr_void1));
-                //              nodalDofMap[node_gid].insert(XFEM::FieldEnr(Physics::LMPLambdaz, enr_void1));              
+                //nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velx, enr_void1));
+                //nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Vely, enr_void1));
+                //nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velz, enr_void1));
+                //nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Pres, enr_void1));
+                //              nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::LMPLambdax, enr_void1));
+                //              nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::LMPLambday, enr_void1));
+                //              nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::LMPLambdaz, enr_void1));              
             };
         }
     };
@@ -359,6 +359,8 @@ double XFEM::enrValue(
         }
         
         enrval = actpos_enr_val - nodepos_enr_val;
+        enrval = 1.0;
+        dserror("not yet");
         
         break;
     }

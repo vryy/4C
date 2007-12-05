@@ -22,7 +22,7 @@ Maintainer: Axel Gerstenberger
 
 #include <Epetra_SerialDenseSolver.h>
 
-using namespace XFEM::Physics;
+using namespace XFEM::PHYSICS;
 
 DRT::Elements::XFluid3Stationary::XFluid3Stationary(
 		const int iel,
@@ -67,10 +67,10 @@ DRT::Elements::XFluid3Stationary::XFluid3Stationary(
 inline void integrateMatrix(
         const XFEM::ElementDofManager&    dofman,
         blitz::Array<double,2>&           estif,
-        const XFEM::Physics::Field&       testfield,
+        const XFEM::PHYSICS::Field&       testfield,
         const blitz::Array<double,1>&     testshape,
         const double&                     fac,
-        const XFEM::Physics::Field&       trialfield,
+        const XFEM::PHYSICS::Field&       trialfield,
         const blitz::Array<double,1>&     trialshape
         )
 {
@@ -97,7 +97,7 @@ inline void integrateMatrix(
 inline void integrateVector(
         const XFEM::ElementDofManager&    dofman,
         blitz::Array<double,1>&           eforce,
-        const XFEM::Physics::Field&       testfield,
+        const XFEM::PHYSICS::Field&       testfield,
         const blitz::Array<double,1>&     testshape,
         const double&                     fac
         )
@@ -301,7 +301,7 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
       const std::set<XFEM::FieldEnr>  enrfieldset = dofman.FieldEnrSetPerNode(gid);
       for (std::set<XFEM::FieldEnr>::const_iterator enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
       {
-          if (enrfield->getField() == XFEM::Physics::Velx)
+          if (enrfield->getField() == XFEM::PHYSICS::Velx)
           {
               const XFEM::Enrichment enr = enrfield->getEnrichment();
               const double enrval = dofman.enrValue(enr,gauss_pos,nodalpos);

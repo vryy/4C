@@ -92,10 +92,10 @@ vector<vector<double> > IntCell::ComputePhysicalCoordinates(
     vector<vector<double> > physicalCoordinates;
     
     const int nsd = 3;
-    const int nen = DRT::Utils::getNumberOfElementNodes(this->Shape());
+    const int nen_cell = DRT::Utils::getNumberOfElementNodes(this->Shape());
     
     // coordinates
-    for (int inen = 0; inen < nen; ++inen)
+    for (int inen = 0; inen < nen_cell; ++inen)
     {
         // shape functions
         Epetra_SerialDenseVector funct(27);

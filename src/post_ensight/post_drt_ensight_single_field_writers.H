@@ -165,7 +165,7 @@ protected:
     void WriteResult(
             const string groupname, ///< name of the result group in the control file
             const string name,      ///< name of the result to be written
-            const set<XFEM::Physics::Field> fieldset
+            const set<XFEM::PHYSICS::Field> fieldset
             );
     void WriteResultStep(
             ofstream& file,
@@ -173,7 +173,7 @@ protected:
             map<string, vector<ofstream::pos_type> >& resultfilepos,
             const string groupname,
             const string name,
-            const set<XFEM::Physics::Field> fieldset,
+            const set<XFEM::PHYSICS::Field> fieldset,
             const RCP<XFEM::InterfaceHandle> ih,
             const RCP<XFEM::DofManager> dofman
             ) const;

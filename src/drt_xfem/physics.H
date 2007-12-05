@@ -19,7 +19,7 @@ Maintainer: Axel Gerstenberger
 
 namespace XFEM
 {
-namespace Physics
+namespace PHYSICS
 {
 
 ///

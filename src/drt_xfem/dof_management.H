@@ -26,7 +26,7 @@ Maintainer: Axel Gerstenberger
 namespace XFEM
 {
 
-using namespace Physics;
+using namespace PHYSICS;
 
 /*!
  \class FieldEnr
@@ -150,22 +150,22 @@ public:
     
     /// return number of dofs on this element for a given field. E.g., if we have 4 nodes with 
     /// standard x displacements at each node and 2 enriched displacements, this function will return 6
-    inline int NumDofPerField(const XFEM::Physics::Field field) const
+    inline int NumDofPerField(const XFEM::PHYSICS::Field field) const
     {
-    	map<XFEM::Physics::Field, int>::const_iterator tmp = numParamsPerFieldMap_.find(field);
+    	map<XFEM::PHYSICS::Field, int>::const_iterator tmp = numParamsPerFieldMap_.find(field);
     	if (tmp == numParamsPerFieldMap_.end()){
-    		cout << XFEM::Physics::physVarToString(field) << endl;
+    		cout << XFEM::PHYSICS::physVarToString(field) << endl;
     		dserror("field not found!");
     	}
         return tmp->second;
     };
     
     /// return a list of local positions in a array of dofs
-    const vector<int> LocalDofPosPerField(const XFEM::Physics::Field field) const
+    const vector<int> LocalDofPosPerField(const XFEM::PHYSICS::Field field) const
     {
-    	map<XFEM::Physics::Field, vector<int> >::const_iterator tmp = paramsLocalEntries_.find(field);
+    	map<XFEM::PHYSICS::Field, vector<int> >::const_iterator tmp = paramsLocalEntries_.find(field);
     	if (tmp == paramsLocalEntries_.end()){
-    		cout << XFEM::Physics::physVarToString(field) << endl;
+    		cout << XFEM::PHYSICS::physVarToString(field) << endl;
     		dserror("field not found!");
     	}
         return tmp->second;
@@ -202,10 +202,10 @@ private:
 	map<int, int> nodalNumDofMap_;
 	
 	//! number of parameters for each field
-	map<XFEM::Physics::Field, int> numParamsPerFieldMap_;
+	map<XFEM::PHYSICS::Field, int> numParamsPerFieldMap_;
 	
 	//! local (elemental) dofpos
-	map<XFEM::Physics::Field, vector<int> > paramsLocalEntries_;
+	map<XFEM::PHYSICS::Field, vector<int> > paramsLocalEntries_;
 	
 	//! dummy empty set that we can return in FieldEnrSetPerNode
 	std::set<FieldEnr> emptyset_;

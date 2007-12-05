@@ -162,7 +162,7 @@ void DRT::Elements::So_sh8::sosh8_gmshplotlabeledelement(const int LabelIds[NUMN
   ofstream f_system("solidelement.gmsh");
   stringstream gmshfilecontent;
   gmshfilecontent << "View \" One Solid Element \" {" << endl;
-  gmshfilecontent << GMSH::elementToString(this->thickdir_, this) << endl;
+  gmshfilecontent << IO::GMSH::elementToString(this->thickdir_, this) << endl;
   // plot vector from 1st node to 5th node which is parametric t-dir
   vector<double> X15(3);
   X15[0] = this->Nodes()[4]->X()[0] - this->Nodes()[0]->X()[0];
@@ -206,7 +206,7 @@ void DRT::Elements::Sosh8Register::sosh8_gmshplotdis(const DRT::Discretization& 
     DRT::Elements::So_sh8* actele = dynamic_cast<DRT::Elements::So_sh8*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_sh8* failed");
     // plot elements
-    gmshfilecontent << GMSH::elementToString(actele->thickdir_, actele) << endl;
+    gmshfilecontent << IO::GMSH::elementToString(actele->thickdir_, actele) << endl;
     // plot vector from 1st node to 5th node which is parametric t-dir
     vector<double> X15(3);
     X15[0] = actele->Nodes()[4]->X()[0] - actele->Nodes()[0]->X()[0];
@@ -226,7 +226,7 @@ void DRT::Elements::Sosh8Register::sosh8_gmshplotdis(const DRT::Discretization& 
     DRT::Elements::So_sh8* actele = dynamic_cast<DRT::Elements::So_sh8*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_sh8* failed");
     // plot elements
-    gmshfilecontent << GMSH::elementToString(actele->LID(), actele) << endl;
+    gmshfilecontent << IO::GMSH::elementToString(actele->LID(), actele) << endl;
   }
   gmshfilecontent << "};" << endl;
   // plot vectors

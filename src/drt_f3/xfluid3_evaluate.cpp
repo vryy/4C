@@ -335,10 +335,10 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
           DRT::Utils::ExtractMyValues(*gridv,mygridv,lm);
         }
 
-        const int numparampres = eleDofManager_.NumDofPerField(XFEM::Physics::Pres);
-        const int numparamvelx = eleDofManager_.NumDofPerField(XFEM::Physics::Velx);
-        const int numparamvely = eleDofManager_.NumDofPerField(XFEM::Physics::Vely);
-        const int numparamvelz = eleDofManager_.NumDofPerField(XFEM::Physics::Velz);
+        const int numparampres = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Pres);
+        const int numparamvelx = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Velx);
+        const int numparamvely = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Vely);
+        const int numparamvelz = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Velz);
         dsassert((numparamvelx == numparamvely and numparamvelx == numparamvelz and numparamvelx == numparampres),
                 "for now, we enrich velocity and pressure together");
         
@@ -349,10 +349,10 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
         blitz::Array<double, 2> edispnp(3,numparamvelx,blitz::ColumnMajorArray<2>());
         blitz::Array<double, 2> egridv(3,numparamvelx,blitz::ColumnMajorArray<2>());
 
-        const vector<int> velxdof = eleDofManager_.LocalDofPosPerField(XFEM::Physics::Velx);
-        const vector<int> velydof = eleDofManager_.LocalDofPosPerField(XFEM::Physics::Vely);
-        const vector<int> velzdof = eleDofManager_.LocalDofPosPerField(XFEM::Physics::Velz);
-        const vector<int> presdof = eleDofManager_.LocalDofPosPerField(XFEM::Physics::Pres);
+        const vector<int> velxdof = eleDofManager_.LocalDofPosPerField(XFEM::PHYSICS::Velx);
+        const vector<int> velydof = eleDofManager_.LocalDofPosPerField(XFEM::PHYSICS::Vely);
+        const vector<int> velzdof = eleDofManager_.LocalDofPosPerField(XFEM::PHYSICS::Velz);
+        const vector<int> presdof = eleDofManager_.LocalDofPosPerField(XFEM::PHYSICS::Pres);
         
         // split velocity and pressure, insert into element arrays
         for (int iparam=0; iparam<numparamvelx; ++iparam)   evelnp(0,iparam) = myvelnp[velxdof[iparam]];
@@ -566,17 +566,17 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
           // split velocity and pressure
           // create blitz objects
 
-          const int numparampres = eleDofManager_.NumDofPerField(XFEM::Physics::Pres);
-          const int numparamvelx = eleDofManager_.NumDofPerField(XFEM::Physics::Velx);
-          const int numparamvely = eleDofManager_.NumDofPerField(XFEM::Physics::Vely);
-          const int numparamvelz = eleDofManager_.NumDofPerField(XFEM::Physics::Velz);
+          const int numparampres = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Pres);
+          const int numparamvelx = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Velx);
+          const int numparamvely = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Vely);
+          const int numparamvelz = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Velz);
           dsassert((numparamvelx == numparamvely and numparamvelx == numparamvelz and numparamvelx == numparampres),
         		  "for now, we enrich velocity and pressure together");
           
-          const vector<int> velxdof = eleDofManager_.LocalDofPosPerField(XFEM::Physics::Velx);
-          const vector<int> velydof = eleDofManager_.LocalDofPosPerField(XFEM::Physics::Vely);
-          const vector<int> velzdof = eleDofManager_.LocalDofPosPerField(XFEM::Physics::Velz);
-          const vector<int> presdof = eleDofManager_.LocalDofPosPerField(XFEM::Physics::Pres);
+          const vector<int> velxdof = eleDofManager_.LocalDofPosPerField(XFEM::PHYSICS::Velx);
+          const vector<int> velydof = eleDofManager_.LocalDofPosPerField(XFEM::PHYSICS::Vely);
+          const vector<int> velzdof = eleDofManager_.LocalDofPosPerField(XFEM::PHYSICS::Velz);
+          const vector<int> presdof = eleDofManager_.LocalDofPosPerField(XFEM::PHYSICS::Pres);
 
           blitz::Array<double, 1> eprenp(numparampres);
           blitz::Array<double, 2> evelnp(3,numparamvelx,blitz::ColumnMajorArray<2>());

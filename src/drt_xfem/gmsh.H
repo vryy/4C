@@ -23,6 +23,8 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_discret.H"
 
+namespace IO
+{
 namespace GMSH
 {
 
@@ -45,6 +47,7 @@ std::string distypeToGmshElementHeader(const DRT::Element::DiscretizationType di
 
 int distypeToGmshNumNode(const DRT::Element::DiscretizationType distype);
 
+};
 };
 
 #endif // #ifdef CCADISCRET
