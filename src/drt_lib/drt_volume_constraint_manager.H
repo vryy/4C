@@ -32,36 +32,52 @@ Maintainer: Thomas Kloeppel
 using namespace std;
 using namespace Teuchos;
 
+
 namespace DRT
 {
 class VolConstrManager
 {
 public:
+
+	class StruGenAlpha;
 	//! @name Constructors and destructors and related methods
 
 	  /*!
 	  \brief Standard Constructor
+	  
+	  \param disc (in): Discretization
+	  \param disp (in): current displacement to compute initial constraint volume 
 
 	  */
 	
-	  VolConstrManager(const double time, DRT::Discretization& disc,
-			  RCP<Epetra_Vector> disp,RCP<Epetra_Vector> resdisp);
+	  VolConstrManager(DRT::Discretization& disc,
+			  RCP<Epetra_Vector> disp);
 	  
+	  /*!
+	  	  \brief Destructor
+
+	 */
 	  ~VolConstrManager(){return;};
 
 	  //@}
 	  
+	  //! @name Public Member Functions
 	  /*!
-	    \brief Compute volume difference and change stiffness matrix and force vector accordingly
+	    \brief Change stiffness matrix and force vector according to the volume constraint.
+	    Values of lagrange multiplier are taken from intern variable. 
+	    Difference between current and prescribed volume is calculated and stored as well.
 	    
-	    Volume difference will be stored in volerr_.
+	    \param time (in):        time at end of time step
+	    \param disp (in):        Displacement at end of time step
+	    \param fint (in/out):	 Vector of internal forces
+	    \param stiff (in/out):   Stiffness matrix
 	  */  
 	  void StiffnessAndInternalForces(const double time, 
 			  RCP<Epetra_Vector> disp,
 			  RefCountPtr<Epetra_Vector> fint,
 			  RefCountPtr<Epetra_CrsMatrix> stiff);
 	  
-	  /*
+	  /*!
 	   \brief Return norm of difference between actual and prescribed volumes
 	  */
 	  double GetVolumeErrorNorm()
@@ -69,7 +85,7 @@ public:
 		  return volerr_->Norm2();
 	  };
 	  	  
-	  /*
+	  /*!
 	  	   \brief Return number of constrained volumes
 	  */ 
 	  int GetNumberOfVolumes()
@@ -77,7 +93,7 @@ public:
 		  return numConstrID_; 
 	  };
 	  
-	  /*
+	  /*!
 	  	   \brief Return DofRowMap of volume i
 	  */
 	  Epetra_Map GetDofMap(int i)
@@ -85,7 +101,7 @@ public:
 		  return *(voldofrowmaps_[i]);
 	  };
 	  
-	  /*
+	  /*!
 	  	   \brief Scale increment of lagrange multiplier increment by a double d
 	  */
 	  void ScaleLagrIncr(double d)
@@ -94,20 +110,38 @@ public:
 		  return;
 	  };
 	  
-	  /*
-	  	   \brief Update lagrange multiplier as needed in Uzawa algorithm
+	  /*!
+	  	  	   \brief Scale lagrange multiplier increment by a double d
+	  */
+	  void ScaleLagrMult(double d)
+	  	  {
+	  		  lagrMultVec_->Scale(d);
+	  		  return;
+	  	  };
+  
+	  /*!
+	  	   \brief Update increment of lagrange multiplier Delta lambda_{n+1}=Delta lambda_{n}+factor*(vect+volerr)
 	  */
 	  void UpdateLagrIncr(double factor, Epetra_SerialDenseVector vect);
 	  
-	  /*
+	  /*!
+	  	   \brief Update lagrange multiplier lambda_{n+1}=lambda_{n}+factor*(volerr)
+	  */	  
+	  void UpdateLagrMult(double factor);
+	  /*!
 	  	   \brief Return lagrange multiplier increment
 	  */
-	  double GetLagrIncr(int i)
+	  	  double GetLagrIncr(int i)
 	  {
 		  return (*lagrMultInc_)[i];
 	  };
 	  
-	  /*
+	  /*!
+	  	  	   \brief Compute difference between current and prescribed volume at a given time and a given displacement 
+	  */
+	  void ComputeVolumeError(double time,RCP<Epetra_Vector> disp);
+	  
+	  /*!
 	  	   \brief Return differences between prescribed and actual value of volume number i
 	  */
 	  double GetVolumeError(int i)
@@ -115,7 +149,7 @@ public:
 		  return (*volerr_)[i];
 	  }
 	  
-	  /*
+	  /*!
 	  	   \brief Return additional vector containing constraints
 	  */
 	  RCP<Epetra_Vector> GetConstrVec()
@@ -123,14 +157,24 @@ public:
 		  return constrVec_;
 	  };
 	  
-	  /*
+	  /*!
 	  	   \brief Add Increment to lagrange multiplier
 	  */
 	  void UpdateLagrMult();
 	  
+	  /*!
+	  	  	   \brief Return lagrange multiplier for volume i
+	  */
+	  double GetLagrMult(int i)
+	  {
+		  return (*lagrMultVec_)[i];		  
+	  }
+	  
+	  //@}
 	  
 private:
 	
+	  //! name@ Private Member Functions 	
 	  //methods used by constructor and other public functions
 	  /*!
 	    \brief synchronize processors after evaluating constraint volume 
@@ -145,7 +189,7 @@ private:
 
 	  */  
 	  void SetupVolDofrowmaps();
-
+	  //@}
 	
 private:
 	
@@ -155,7 +199,7 @@ private:
 	VolConstrManager(const DRT::VolConstrManager& old);    
 
 	
-	//variables needed for volume constraint boundary condition
+	//! name@ Private Attributes
 	DRT::Discretization& actdisc_;	
 	RefCountPtr<Epetra_SerialDenseVector> referencevolumes_;
 	RefCountPtr<Epetra_SerialDenseVector> initialvolumes_;
@@ -169,7 +213,7 @@ private:
 	RefCountPtr<Epetra_SerialDenseVector> lagrMultInc_;
 	map<int, RCP<Epetra_Map> > voldofrowmaps_;
 	RefCountPtr<Epetra_Vector> constrVec_;
-	
+	//@}
     
 
 }; //class

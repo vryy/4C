@@ -177,7 +177,7 @@ norm_(1.0e+06)
       discret_.GetCondition("VolumeConstraint_3D",volconstrcond);
       if (volconstrcond.size()) 
       {
-    	  volConstrMan_=rcp(new DRT::VolConstrManager(time,discret_, dis_, zeros_));
+    	  volConstrMan_=rcp(new DRT::VolConstrManager(discret_, dis_));
       }
       
     }

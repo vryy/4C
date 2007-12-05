@@ -20,16 +20,15 @@ Maintainer: Thomas Kloeppel
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            	tk 11/07|
  *----------------------------------------------------------------------*/
-DRT::VolConstrManager::VolConstrManager(const double time, DRT::Discretization& discr,
-		RCP<Epetra_Vector> disp,RCP<Epetra_Vector> resdisp):
+DRT::VolConstrManager::VolConstrManager(DRT::Discretization& discr,
+		RCP<Epetra_Vector> disp):
 actdisc_(discr)
 {
 	const Epetra_Map* dofrowmap = actdisc_.DofRowMap();
 	constrVec_=LINALG::CreateVector(*dofrowmap,true);
 	ParameterList p;
-	p.set("total time",time);
     p.set("action","calc_struct_constrvol");
-    actdisc_.SetState("residual displacement",resdisp);
+    //actdisc_.SetState("residual displacement",resdisp);
     actdisc_.SetState("displacement",disp);
     actdisc_.EvaluateCondition(p,"VolumeConstraint_3D");
     SynchronizeVolConstraint(p, initialvolumes_);
@@ -82,9 +81,7 @@ void DRT::VolConstrManager::StiffnessAndInternalForces(
     constrVec_=LINALG::CreateVector(*dofrowmap,true);
     actdisc_.EvaluateCondition(p,stiff,fint,constrVec_,"VolumeConstraint_3D");
     SynchronizeVolConstraint(p,actvol_);
-    volerr_=rcp(new Epetra_SerialDenseVector(numConstrID_));
     fact_=p.get("LoadCurveFactor",1.0);
-    referencevolumes_=rcp(new Epetra_SerialDenseVector(numConstrID_)); 
     *referencevolumes_=*initialvolumes_;
     referencevolumes_->Scale(fact_);
     for (int iter = 0; iter < numConstrID_; ++iter) 
@@ -96,6 +93,21 @@ void DRT::VolConstrManager::StiffnessAndInternalForces(
 		
 	return;
 }
+
+void DRT::VolConstrManager::ComputeVolumeError(double time,RCP<Epetra_Vector> disp)
+{
+	ParameterList p;
+	p.set("total time",time);
+    p.set("action","calc_struct_constrvol");
+    actdisc_.SetState("displacement",disp);
+    actdisc_.EvaluateCondition(p,"VolumeConstraint_3D");
+    SynchronizeVolConstraint(p, actvol_);
+    for (int iter = 0; iter < numConstrID_; ++iter) 
+    {
+	  (*volerr_)[iter]=(*referencevolumes_)[iter]-(*actvol_)[iter];
+    }
+    return;
+}
 		
 void DRT::VolConstrManager::UpdateLagrIncr(double factor, Epetra_SerialDenseVector vect)
 {
@@ -106,6 +118,15 @@ void DRT::VolConstrManager::UpdateLagrIncr(double factor, Epetra_SerialDenseVect
 	return;
 }
 
+void DRT::VolConstrManager::UpdateLagrMult(double factor)
+{
+	for (int i=0;i < numConstrID_; i++)
+	{
+		(*lagrMultVec_)[i]+=factor*(*volerr_)[i] ;
+	}
+	return;	
+}
+
 void DRT::VolConstrManager::UpdateLagrMult()
 {
 	for (int i=0;i < numConstrID_; i++)
@@ -114,7 +135,7 @@ void DRT::VolConstrManager::UpdateLagrMult()
 	}
 	return;
 }
-		
+
 /*----------------------------------------------------------------------*
  |(private)                                                 tk 11/07    |
  |small subroutine to synchronize processors after evaluating the       |
