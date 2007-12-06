@@ -583,7 +583,7 @@ void Intersection::getCutterElementsInParallel(
   				for(int k = 0; k < xfemdis->NumMyColElements(); k++)
     			{      
         			DRT::Element* xfemElement = xfemdis->lColElement(k);
-       				initializeXFEM(xfemElement);    
+       				initializeXFEM(k, xfemElement);    
   					Epetra_SerialDenseMatrix    xfemXAABB    = computeFastXAABB(xfemElement);                               
             		bool intersected = intersectionOfXAABB(cutterXAABB, xfemXAABB);    
             		//debugXAABBIntersection( cutterXAABB, xfemXAABB, actCutter, xfemElement, i, k);
