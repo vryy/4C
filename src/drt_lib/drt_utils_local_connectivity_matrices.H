@@ -354,6 +354,14 @@ namespace Utils
   int getDimension(
     DRT::Element*   element     ///< element
     );
+  
+  /*!
+  \brief    Returns the geometric center of the element in local coordinates
+            
+  */   
+  std::vector<double> getLocalCenterPosition(
+    const DRT::Element::DiscretizationType   distype     ///< shape of the element
+    );
 
 } // namespace Utils
 } // namespace DRT
