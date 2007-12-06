@@ -472,6 +472,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("GAMMA"   ,&(mat[i].m.itskov->gamma)    ,&ierr);
       frdouble("DENS"    ,&(mat[i].m.itskov->density)     ,&ierr);
    }
+   frchk("MAT_QUADRATIC_ANISO",&ierr);
+   if (ierr==1)
+   {
+      mat[i].mattyp      = m_quadratic_aniso;
+      mat[i].m.quadratic_aniso = (QUADRATIC_ANISO*)CCACALLOC(1,sizeof(QUADRATIC_ANISO));
+      frdouble("DENS"    ,&(mat[i].m.quadratic_aniso->density)     ,&ierr);
+   }
    /* Fourier's law of isotropic heat conduction --> heat cond. coeff. */
    frchk("MAT_Therm_Fourier_iso",&ierr);
    if (ierr==1)

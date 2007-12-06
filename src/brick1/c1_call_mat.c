@@ -165,6 +165,14 @@ dstrc_enter("c1_call_mat");
     					disd,
     					stress,
     					d);
+  case m_quadratic_aniso:
+  c1_mat_quadratic_aniso(
+		 	  ele,
+		 	  ip,
+			  mat,
+			  disd,
+			  stress,
+			  d);
   break;
   case m_viscohyper:
     c1_mat_ogden_viscous(
@@ -293,6 +301,9 @@ case m_hyper_polyconvex:/*--------------hyperelastic polyconvex material*/
 break;
 case m_itskov:/*--------------hyperelastic polyconvex material*/
         *density = mat->m.itskov->density;
+break;
+case m_quadratic_aniso:/*--------------hyperelastic polyconvex material*/
+        *density = mat->m.quadratic_aniso->density;
 break;
 case m_compogden:/*--------------hyperelastic polyconvex material*/
 	*density = mat->m.compogden->density;

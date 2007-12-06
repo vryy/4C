@@ -694,6 +694,16 @@ void c1_calc_tensorproduct (DOUBLE **A, DOUBLE **B, DOUBLE **AB);
                                 DOUBLE *disd,
                                 DOUBLE *stress,
                                 DOUBLE **d);
+ /*----------------------------------------------------------------------*
+ | - quadratic anisotropic material formulation                  rm 12/07|
+ *----------------------------------------------------------------------*/
+ void c1_mat_quadratic_aniso(
+         ELEMENT *ele,
+         INT ip,
+         MATERIAL *mat,
+         DOUBLE *disd,
+         DOUBLE *stress,
+         DOUBLE **d );
 /*----------------------------------------------------------------------*
  * decoupled Ogden material law adapted from shell 8           rm 01/07 |
  *----------------------------------------------------------------------*/

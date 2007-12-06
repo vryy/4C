@@ -49,6 +49,7 @@ typedef struct _MATERIAL
      struct _DAMAGE_GE        *damage_ge;    /* isotropic gradient enhanced damage material */
      struct _HYPER_POLYCONVEX *hyper_polyconvex; /* hyperelastic polyconvex energy strain function */
      struct _ITSKOV           *itskov;       /* Itskov material for isotropic case */
+     struct _QUADRATIC_ANISO  *quadratic_aniso;       /* Anisotropic quadratic material */
      struct _ANISOTROPIC_BALZANI *anisotropic_balzani; /* anisotropic hyperelastic polyconvex material */
      struct _TH_FOURIER_ISO   *th_fourier_iso;   /* isotropic Fourier's law of heat conduction */
      struct _TH_FOURIER_GEN   *th_fourier_gen;   /* general heat conduction matrix of Fourier's (linear) law of heat conduction */
@@ -570,6 +571,14 @@ typedef struct _ITSKOV
      DOUBLE                    gamma;
      DOUBLE					   density;
 } ITSKOV;
+/*----------------------------------------------------------------------*
+ | anisotropic material                                        rm 10/07 |
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+typedef struct _QUADRATIC_ANISO
+{
+     DOUBLE					   density;
+} QUADRATIC_ANISO;
 /*----------------------------------------------------------------------*
  | anisotropic hyperelastic polyconvex material based on      maf 11/07 |
  | Balzani et. al.                                                      |
