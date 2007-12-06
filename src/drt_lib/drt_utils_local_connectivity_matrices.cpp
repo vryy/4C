@@ -894,9 +894,9 @@ std::vector<double> DRT::Utils::getLocalCenterPosition(
         }
         case DRT::Element::tet4 : case DRT::Element::tet10 :
         {
-            pos[0] = 1.0/3.0;
-            pos[1] = 1.0/3.0;
-            pos[2] = 1.0/3.0;
+            pos[0] = 1.0/4.0;
+            pos[1] = 1.0/4.0;
+            pos[2] = 1.0/4.0;
             break;
         }   
         default:
