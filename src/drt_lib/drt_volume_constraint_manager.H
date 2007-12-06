@@ -168,10 +168,16 @@ public:
 	  double GetLagrMult(int i)
 	  {
 		  return (*lagrMultVec_)[i];		  
+	  }	  
+	  
+	  /*!
+	   \brief Return current value of volume i
+	  */
+	  double GetCurrVol(int i)
+	  {
+		  return (*actvol_)[i];
 	  }
-	  
 	  //@}
-	  
 private:
 	
 	  //! name@ Private Member Functions 	
