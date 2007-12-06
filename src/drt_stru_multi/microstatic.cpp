@@ -25,6 +25,8 @@ Maintainer: Lena Wiechert
 #include "../drt_lib/drt_globalproblem.H"
 #include "../io/io_drt_micro.H"
 
+#include "../drt_mfsi/mfsi_debug.H"
+
 using namespace IO;
 
 /*----------------------------------------------------------------------*
@@ -163,8 +165,6 @@ solver_(solver)
   if (V0_ == -1.0)
     dserror("Calculation of initial volume failed");
 
-  cout << "V0: " << V0_ << endl;
-
   // ------------------------- Calculate initial density of microstructure
   // the macroscopic density has to be averaged over the entire
   // microstructural reference volume
@@ -199,6 +199,9 @@ solver_(solver)
 
   return;
 } // MicroStatic::MicroStatic
+
+
+MFSI::Debug dbg;
 
 
 /*----------------------------------------------------------------------*
@@ -245,6 +248,7 @@ void MicroStatic::ConstantPredictor(const Epetra_SerialDenseMatrix* defgrd)
     p.set("delta time",dt);
     // set vector values needed by elements
     discret_->ClearState();
+    //disi_->Scale(0.0);
     discret_->SetState("residual displacement",disi_);
     discret_->SetState("displacement",dism_);
     fint_->PutScalar(0.0);  // initialise internal force vector
@@ -268,10 +272,14 @@ void MicroStatic::ConstantPredictor(const Epetra_SerialDenseMatrix* defgrd)
     fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
   }
 
+  dbg.DumpVector("fresm", *discret_, *fresm_);
+  dbg.DumpVector("dism", *discret_, *dism_);
+
+
   //------------------------------------------------ build residual norm
   fresm_->Norm2(&norm_);
 
-  cout << "MICROSCALE Predictor residual: " << norm_ << "\n";
+  cout << "MICROSCALE PREDICTOR fresmnorm: " << norm_ << "\n";
 
   return;
 } // MicroStatic::ConstantPredictor()
@@ -296,7 +304,8 @@ void MicroStatic::FullNewton()
   double fresmnorm;
   double disinorm;
   fresm_->Norm2(&fresmnorm);
-  while (norm_>toldisp && fresmnorm>toldisp && numiter<=maxiter)
+
+  while ((norm_>toldisp || fresmnorm>toldisp) && numiter<=maxiter)
   {
 
     //----------------------- apply dirichlet BCs to system of equations
@@ -616,7 +625,7 @@ void MicroStatic::SetTime(double timen, int istep)
 }
 
 RefCountPtr<Epetra_Vector> MicroStatic::ReturnNewDism() { return rcp(new Epetra_Vector(*dism_)); }
-RefCountPtr<Epetra_Vector> MicroStatic::ReturnDis() { return rcp(new Epetra_Vector(*disn_)); }
+RefCountPtr<Epetra_Vector> MicroStatic::ReturnDis() { return rcp(new Epetra_Vector(*dis_)); }
 
 RefCountPtr<Epetra_Vector> MicroStatic::ReturnNewResDisp() { return rcp(new Epetra_Vector(*disi_)); }
 
@@ -632,13 +641,6 @@ void MicroStatic::SetUpHomogenization()
   int indp = 0;
   int indf = 0;
 
-  //RefCountPtr<DRT::Discretization> dis =
-  //  DRT::Problem::Instance(1)->Dis(genprob.numsf,0);
-
-  //int toggle_len = dis->NodeRowMap()->NumMyElements();
-  //toggle_len*=3; // three dofs per node
-
-  //ndof_ = toggle_len;
   ndof_ = discret_->DofRowMap()->NumMyElements();
 
   std::vector <int>   pdof(np_);
@@ -646,7 +648,7 @@ void MicroStatic::SetUpHomogenization()
                                               // has been just fdof(np_),
                                               // but how should that
                                               // work for ndof_-np_>np_???
-  cout << "ndof, np, nf: " << ndof_ << " " << np_ << " " << ndof_-np_ << "\n";
+
   for (int it=0; it<ndof_; ++it)
   {
     if ((*dirichtoggle_)[it] == 1.0)
@@ -660,7 +662,6 @@ void MicroStatic::SetUpHomogenization()
       ++indf;
     }
   }
-  cout << "indp, indf: " << indp << " " << indf << "\n";
 
   // create map based on the determined dofs of prescribed and free nodes
   pdof_ = rcp(new Epetra_Map(-1, np_, &pdof[0], 0, discret_->Comm()));
@@ -772,11 +773,6 @@ void MicroStatic::Homogenization(Epetra_SerialDenseVector* stress,
   discret_->Evaluate(p,null,null,null,null,null);
   discret_->ClearState();
 
-//   *density = 1/V0_*p.get<double>("homogdens", 0.0);
-//   if (*density == 0.0)
-//     dserror("Density determined from homogenization procedure
-//     equals zero!");
-
   // homogenized density was already determined in the constructor
   *density = density_;
 
@@ -821,8 +817,6 @@ void MicroStatic::Homogenization(Epetra_SerialDenseVector* stress,
     (*stress)[4] += F_inv(1, i)*P(i,2);                     // S23
     (*stress)[5] += F_inv(0, i)*P(i,2);                     // S13
   }
-
-//   cout << "stress:\n" << *stress << "\n";
 
   // for testing reasons only!!!!!!!!!! begin testing region
   const double Emod  = 100.0;
@@ -1125,7 +1119,7 @@ void MicroStatic::StaticHomogenization(Epetra_SerialDenseVector* stress,
   // homogenized density was already determined in the constructor
   *density = density_;
 
-  cout << "cmat:\n" << *cmat << "\nstress:\n" << *stress << "\n";
+  //cout << "cmat:\n" << *cmat << "\nstress:\n" << *stress << "\n";
 }
 
 

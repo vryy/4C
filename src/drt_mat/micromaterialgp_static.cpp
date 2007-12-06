@@ -182,7 +182,8 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
 
   if (time != timen_)
   {
-    microstatic_->UpdateNewTimeStep(dis_, dism_);
+     microstatic_->UpdateNewTimeStep(dis_, dism_);
+     disi_->Scale(0.0);
   }
 
   // set displacements, velocities and accelerations of last step
@@ -217,7 +218,7 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
   microstatic_->StaticHomogenization(stress, cmat, density, defgrd);
 
   // save calculated displacements, velocities and accelerations
-  dis_ = microstatic_->ReturnDis();
+  //dis_ = microstatic_->ReturnDis();
   dism_ = microstatic_->ReturnNewDism();
   disi_ = microstatic_->ReturnNewResDisp();
 
