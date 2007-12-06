@@ -89,8 +89,7 @@ int DRT::Elements::Condif2::Evaluate(ParameterList& params,
       const int fssgd = params.get<int>("fs subgrid viscosity",0);
 
       // calculate element coefficient matrix and rhs
-      condif2_sys_mat(lm,myhist,&elemat1,&elemat2,&elevec1,actmat,time,timefac,vel_field,fssgd,
-                      is_stationary);
+      condif2_sys_mat(lm,myhist,&elemat1,&elemat2,&elevec1,actmat,time,timefac,vel_field,fssgd,is_stationary);
 
     }
     break;
@@ -126,7 +125,7 @@ int DRT::Elements::Condif2::EvaluateNeumann(ParameterList& params,
 void DRT::Elements::Condif2::condif2_sys_mat(vector<int>&              lm,
                                          vector<double>&           ehist,
                                          Epetra_SerialDenseMatrix* sys_mat,
-                                         Epetra_SerialDenseMatrix* sys_mat_dc,
+                                         Epetra_SerialDenseMatrix* sys_mat_sd,
                                          Epetra_SerialDenseVector* residual,
                                          struct _MATERIAL*         material,
                                          double                    time,
@@ -176,7 +175,7 @@ void DRT::Elements::Condif2::condif2_sys_mat(vector<int>&              lm,
   /*----------------------------------------------------------------------*/
   /*------------------------------------------------------- initialize ---*/
     // use one point gauss rule to calculate tau at element center
-  GaussRule2D integrationrule_stabili = intrule2D_undefined;
+  GaussRule2D integrationrule_stabili;
   switch(distype)
   {
   case quad4: case quad8: case quad9:
@@ -391,10 +390,10 @@ void DRT::Elements::Condif2::condif2_sys_mat(vector<int>&              lm,
 
       /*-------------- perform integration for entire matrix and rhs ---*/
       if(is_stationary==false)
-        condif2_calmat(*sys_mat,*sys_mat_dc,*residual,velint,hist,funct,derxy,derxy2,
+        condif2_calmat(*sys_mat,*sys_mat_sd,*residual,velint,hist,funct,derxy,derxy2,
                        edeadng,tau,kart,fac,diffus,iel,fssgd,timefac);
       else
-        condif2_calmat_stat(*sys_mat,*sys_mat_dc,*residual,velint,hist,funct,derxy,
+        condif2_calmat_stat(*sys_mat,*sys_mat_sd,*residual,velint,hist,funct,derxy,
                             derxy2,edeadng,tau,kart,fac,diffus,iel,fssgd);
 
   } // end of loop over integration points
@@ -802,7 +801,7 @@ for further comments see comment lines within code.
 
 void DRT::Elements::Condif2::condif2_calmat(
     Epetra_SerialDenseMatrix& estif,
-    Epetra_SerialDenseMatrix& edc,
+    Epetra_SerialDenseMatrix& esd,
     Epetra_SerialDenseVector& eforce,
     vector<double>&           velint,
     const double&             hist,
@@ -878,13 +877,13 @@ if (fssgd == 1)
   const double kartfac = kart*timefacfac;
   const double taumfac = tau*timefacfac;
 
-  #define edc_(i,j)    edc(i,j)
+  #define esd_(i,j)    esd(i,j)
   #define derxy_(i,j)  derxy(i,j)
   #define conv_(j)       conv[j]
 
   #include "condif2_kart.cpp"
 
-  #undef edc_
+  #undef esd_
   #undef derxy_
   #undef conv_
 }
@@ -943,7 +942,7 @@ for further comments see comment lines within code.
 
 void DRT::Elements::Condif2::condif2_calmat_stat(
     Epetra_SerialDenseMatrix& estif,
-    Epetra_SerialDenseMatrix& edc,
+    Epetra_SerialDenseMatrix& esd,
     Epetra_SerialDenseVector& eforce,
     vector<double>&           velint,
     const double&             hist,
@@ -1014,13 +1013,13 @@ if (fssgd == 1)
   const double kartfac = kart*fac;
   const double taumfac = tau*fac;
 
-  #define edc_(i,j)    edc(i,j)
+  #define esd_(i,j)    esd(i,j)
   #define derxy_(i,j)  derxy(i,j)
   #define conv_(j)       conv[j]
 
   #include "condif2_kart.cpp"
 
-  #undef edc_
+  #undef esd_
   #undef derxy_
   #undef conv_
 }

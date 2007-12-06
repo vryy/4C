@@ -303,7 +303,7 @@ private:
   void condif2_sys_mat(vector<int>&              lm,
                    vector<double>&           ehist,
                    Epetra_SerialDenseMatrix* sys_mat,
-                   Epetra_SerialDenseMatrix* sys_mat_dc,
+                   Epetra_SerialDenseMatrix* sys_mat_sd,
                    Epetra_SerialDenseVector* residual,
                    struct _MATERIAL*         material,
                    double                    time,
@@ -346,7 +346,7 @@ private:
 
   // evaluate convection-diffusion coefficient matrix
   void condif2_calmat(Epetra_SerialDenseMatrix& estif,
-                    Epetra_SerialDenseMatrix& edc,
+                    Epetra_SerialDenseMatrix& esd,
                     Epetra_SerialDenseVector& eforce,
                     vector<double>&           velint,
                     const double&             hist,
@@ -364,7 +364,7 @@ private:
 		
   // evaluate convection-diffusion coefficient matrix for stationary problems
   void condif2_calmat_stat(Epetra_SerialDenseMatrix& estif,
-                         Epetra_SerialDenseMatrix& edc,
+                         Epetra_SerialDenseMatrix& esd,
                          Epetra_SerialDenseVector& eforce,
                          vector<double>&           velint,
                          const double&             hist,

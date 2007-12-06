@@ -113,8 +113,8 @@ CondifImplicitTimeInt::CondifImplicitTimeInt(RefCountPtr<DRT::Discretization> ac
 
   // initialize standard (stabilized) system matrix
   sysmat_ = null;
-  // initialize standard (stabilized) + discontinuity-capturing system matrix
-  sysmat_dc_ = null;
+  // initialize standard (stabilized) + (fine-scale) diffusivity matrix
+  sysmat_sd_ = null;
 
   // -------------------------------------------------------------------
   // create empty vectors
@@ -210,7 +210,7 @@ void CondifImplicitTimeInt::Integrate()
   cdvel_  =params_.get<int>("condif velocity field");
 
   // (fine-scale) subgrid diffusivity?
-  fssgd_  =params_.get<int>("fs subgrid viscosity");
+  fssgd_  =params_.get<int>("fs subgrid viscosity",0);
 
   // time measurement --- this causes the TimeMonitor tm1 to stop here
   //                                                (call of destructor)
@@ -500,8 +500,8 @@ void CondifImplicitTimeInt::Solve(
     tcpu=ds_cputime();
 
     sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
-    if (fssgd_ == 1)
-      sysmat_dc_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_); 
+    if (fssgd_ > 0)
+      sysmat_sd_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_); 
 
     // zero out residual
     //residual_->PutScalar(0.0); don't need this, see next line
@@ -517,7 +517,7 @@ void CondifImplicitTimeInt::Solve(
     eleparams.set("total time",time_);
     eleparams.set("thsl",theta_*dta_);
     eleparams.set("condif velocity field",cdvel_);
-    eleparams.set("discontinuity capturing",fssgd_);
+    eleparams.set("fs subgrid viscosity",fssgd_);
     eleparams.set("using stationary formulation",is_stat);
 
     // set vector values needed by elements
@@ -526,39 +526,39 @@ void CondifImplicitTimeInt::Solve(
     discret_->SetState("hist"  ,hist_ );
 
     // call loop over elements
-    if (fssgd_ == 1)
-      discret_->Evaluate(eleparams,sysmat_,sysmat_dc_,residual_);
+    if (fssgd_ > 0)
+      discret_->Evaluate(eleparams,sysmat_,sysmat_sd_,residual_);
     else
       discret_->Evaluate(eleparams,sysmat_,residual_);
 
     discret_->ClearState();
 
-    if (fssgd_ == 1)
+    if (fssgd_ > 0)
     {
-      // finalize the discontinuity-capturing matrix
-      LINALG::Complete(*sysmat_dc_);
+      // finalize the (fine-scale) diffusivity matrix
+      LINALG::Complete(*sysmat_sd_);
 
-      LINALG::ApplyDirichlettoSystem(sysmat_dc_,phinp_,residual_,phinp_,dirichtoggle_);
+      LINALG::ApplyDirichlettoSystem(sysmat_sd_,phinp_,residual_,phinp_,dirichtoggle_);
 
       // extract the ML parameters and build system of equations
       ParameterList&  mllist = solver_.Params().sublist("ML Parameters");
-      RCP<VM3_Solver> vm3_solver = rcp(new VM3_Solver::VM3_Solver(sysmat_dc_,sysmat_,zeros_,zeros_,zeros_,dirichtoggle_,mllist,false) );
+      RCP<VM3_Solver> vm3_solver = rcp(new VM3_Solver::VM3_Solver(sysmat_sd_,sysmat_,zeros_,zeros_,zeros_,dirichtoggle_,mllist,false) );
     }
 
     // finalize the complete matrix
     LINALG::Complete(*sysmat_);
 
 #if 0
-    if (fssgd_ == 1)
+    if (fssgd_ > 0)
     {
-      // add the discontinuity-capturing (artificial diffusivity) matrix to 
-      // the standard (stabilized) matrix; sum is stored as sysmat_dc
-      LINALG::Add(*sysmat_,false,1.0,*sysmat_dc_,1.0);
+      // add the (fine-scale) diffusivity matrix to 
+      // the standard (stabilized) matrix; sum is stored as sysmat_sv
+      LINALG::Add(*sysmat_,false,1.0,*sysmat_sd_,1.0);
 
       // finalize the complete system matrix, that is,
-      // standard (stabilized) matrix + discontinuity-capturing matrix
-      LINALG::Complete(*sysmat_dc_);
-      maxentriesperrow_ = sysmat_dc_->MaxNumEntries();
+      // standard (stabilized) matrix + (fine-scale) diffusivity matrix
+      LINALG::Complete(*sysmat_sd_);
+      maxentriesperrow_ = sysmat_sd_->MaxNumEntries();
     }
 #endif
 
@@ -576,8 +576,8 @@ void CondifImplicitTimeInt::Solve(
     LINALG::ApplyDirichlettoSystem(sysmat_,phinp_,residual_,
 				     phinp_,dirichtoggle_);
 
-    //if (fssgd_ == 1)
-      //LINALG::ApplyDirichlettoSystem(sysmat_dc_,phinp_,residual_,
+    //if (fssgd_ > 0)
+      //LINALG::ApplyDirichlettoSystem(sysmat_sd_,phinp_,residual_,
       	//		  phinp_,dirichtoggle_);
 
     // end time measurement for application of dirichlet conditions
@@ -591,8 +591,8 @@ void CondifImplicitTimeInt::Solve(
     // get cpu time
     tcpu=ds_cputime();
 
-    //if (fssgd_ == 1)
-      //solver_.Solve(sysmat_dc_,sysmat_,phinp_,residual_,true,true);
+    //if (fssgd_ > 0)
+      //solver_.Solve(sysmat_sd_,sysmat_,phinp_,residual_,true,true);
     //else
       solver_.Solve(sysmat_,phinp_,residual_,true,true); 
 
@@ -895,7 +895,7 @@ void CondifImplicitTimeInt::SolveStationaryProblem()
      eleparams.set("assemble vector 3",false);
      // other parameter needed by the elements
      eleparams.set("condif velocity field",cdvel_);
-     eleparams.set("discontinuity capturing",fssgd_);
+     eleparams.set("fs subgrid viscosity",fssgd_);
      eleparams.set("using stationary formulation",true);
 
      // set vector values needed by elements

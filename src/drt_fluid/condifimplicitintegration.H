@@ -168,10 +168,10 @@ protected:
   int cdvel_;
   int fssgd_;
 
-  /// system matrices: standard (stabilized) matrix and complete system matrix
-  /// including discontinuity-capturing (artificial diffusivity) matrix
+  /// system matrices: standard (stabilized) matrix and (fine-scale) 
+  /// subgrid-(artificial-)diffusivity matrix
   RefCountPtr<Epetra_CrsMatrix> sysmat_;
-  RefCountPtr<Epetra_CrsMatrix> sysmat_dc_;
+  RefCountPtr<Epetra_CrsMatrix> sysmat_sd_;
 
   /// toggle vector indicating which dofs have Dirichlet BCs
   RefCountPtr<Epetra_Vector>    dirichtoggle_;
