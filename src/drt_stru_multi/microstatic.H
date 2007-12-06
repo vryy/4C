@@ -117,16 +117,11 @@ public:
   void EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd);
 
   void SetOldState(RefCountPtr<Epetra_Vector> dis,
-                   RefCountPtr<Epetra_Vector> dism,
-                   RefCountPtr<Epetra_Vector> disi);
+                   RefCountPtr<Epetra_Vector> dism);
 
   void SetTime(double timen, int istep);
 
-  RefCountPtr<Epetra_Vector> ReturnDis();
-
   RefCountPtr<Epetra_Vector> ReturnNewDism();
-
-  RefCountPtr<Epetra_Vector> ReturnNewResDisp();
 
   void ClearState();
 

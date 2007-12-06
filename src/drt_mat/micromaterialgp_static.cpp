@@ -73,7 +73,6 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID)
   RefCountPtr<DRT::Discretization> microdis = microproblem->Dis(0, 0);
   dism_ = LINALG::CreateVector(*microdis->DofRowMap(),true);
   dis_ = LINALG::CreateVector(*microdis->DofRowMap(),true);
-  disi_ = LINALG::CreateVector(*microdis->DofRowMap(),true);
 }
 
 /// destructor
@@ -182,12 +181,11 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
 
   if (time != timen_)
   {
-     microstatic_->UpdateNewTimeStep(dis_, dism_);
-     disi_->Scale(0.0);
+    microstatic_->UpdateNewTimeStep(dis_, dism_);
   }
 
   // set displacements, velocities and accelerations of last step
-  microstatic_->SetOldState(dis_, dism_, disi_);
+  microstatic_->SetOldState(dis_, dism_);
 
   // check if we have to update absolute time and step number
   if (time != timen_)
@@ -218,13 +216,10 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
   microstatic_->StaticHomogenization(stress, cmat, density, defgrd);
 
   // save calculated displacements, velocities and accelerations
-  //dis_ = microstatic_->ReturnDis();
   dism_ = microstatic_->ReturnNewDism();
-  disi_ = microstatic_->ReturnNewResDisp();
 
   // clear displacements in MicroStruGenAlpha for next usage
   microstatic_->ClearState();
-
 }
 
 #endif

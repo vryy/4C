@@ -248,7 +248,7 @@ void MicroStatic::ConstantPredictor(const Epetra_SerialDenseMatrix* defgrd)
     p.set("delta time",dt);
     // set vector values needed by elements
     discret_->ClearState();
-    //disi_->Scale(0.0);
+    disi_->Scale(0.0);
     discret_->SetState("residual displacement",disi_);
     discret_->SetState("displacement",dism_);
     fint_->PutScalar(0.0);  // initialise internal force vector
@@ -599,12 +599,10 @@ void MicroStatic::EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd)
 }
 
 void MicroStatic::SetOldState(RefCountPtr<Epetra_Vector> dis,
-                              RefCountPtr<Epetra_Vector> dism,
-                              RefCountPtr<Epetra_Vector> disi)
+                              RefCountPtr<Epetra_Vector> dism)
 {
   dis_ = dis;
   dism_ = dism;
-  disi_ = disi;
   fext_->PutScalar(0.);     // we do not have any external loads on
                             // the microscale, so assign all components
                             // to zero
@@ -625,15 +623,11 @@ void MicroStatic::SetTime(double timen, int istep)
 }
 
 RefCountPtr<Epetra_Vector> MicroStatic::ReturnNewDism() { return rcp(new Epetra_Vector(*dism_)); }
-RefCountPtr<Epetra_Vector> MicroStatic::ReturnDis() { return rcp(new Epetra_Vector(*dis_)); }
-
-RefCountPtr<Epetra_Vector> MicroStatic::ReturnNewResDisp() { return rcp(new Epetra_Vector(*disi_)); }
 
 void MicroStatic::ClearState()
 {
   dis_ = null;
   dism_ = null;
-  disi_ = null;
 }
 
 void MicroStatic::SetUpHomogenization()

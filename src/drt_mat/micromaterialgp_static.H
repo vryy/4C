@@ -72,9 +72,6 @@ private:
   /// my vector of displacements at the generalized midpoint
   RefCountPtr<Epetra_Vector> dism_;
 
-  /// my vector of residual displacements
-  RefCountPtr<Epetra_Vector> disi_;
-
   /// current absolute time
   double timen_;
 
