@@ -335,6 +335,8 @@ private:
     calc_fluid_stationary_systemmat_and_residual,    
     calc_fluid_beltrami_error,
     calc_turbulence_statistics,
+    calc_fluid_box_filter,
+    calc_smagorinsky_const,
     calc_Shapefunction,
     calc_ShapeDeriv1,
     calc_ShapeDeriv2,
@@ -372,7 +374,8 @@ private:
   {
     no_model,
     smagorinsky,
-    smagorinsky_with_wall_damping
+    smagorinsky_with_wall_damping,
+    dynamic_smagorinsky
   };
   
   //! map that converts strings to actions (stabilisation)
@@ -522,11 +525,15 @@ private:
     size 2x2
 
     The method computes:
-                       _             _             _             _
-              numele * u  , numele * v  , numele * w  , numele * p
-                       ___           ___           ___           ___
-                        ^2            ^2            ^2            ^2
-    and       numele * u  , numele * v  , numele * w  , numele * p
+                        _             _             _             _
+               numele * u  , numele * v  , numele * w  , numele * p
+                        ___           ___           ___           ___
+                         ^2            ^2            ^2            ^2
+    and        numele * u  , numele * v  , numele * w  , numele * p
+
+                        _ _           _ _           _ _  
+   as well as  numele * u*v, numele * u*w, numele * v*w
+  
 
     as well as numele.
     All results are communicated via the parameter list!
@@ -540,6 +547,44 @@ private:
     ParameterList& 	      params
     );
 
+  /*!
+    \brief one point integration of convolutions with box filter
+    function. The filter function is not normalized yet, this has
+    to be done as a 'postprocessing' step after the patchvolume
+    is calculated, i.e. after the volume contribution of all
+    elements adjacent to a node has been added to the
+    normalisation constant.
+
+    \param evelaf                        (in )  : nodal velocities
+    \param vel_hat                       (out)  : integrated convolution
+                                                  with velocity
+    \param reystr_hat                    (out)  : integrated convolution
+                                                  with reynolds stresses 
+    \param modeled_stress_grid_scale_hat (out)  : integrated convolution
+                                                  with subgrid scale
+                                                  stress tensor model
+    \param volume                        (out)  : element volume
+    \return void
+    
+   */
+  void f3_apply_box_filter(
+    blitz::Array<double, 2>&  evelaf,
+    blitz::Array<double, 1>&  vel_hat,
+    blitz::Array<double, 2>&  reystr_hat,
+    blitz::Array<double, 2>&  modeled_stress_grid_scale_hat,
+    double&                   volume
+    );
+
+
+void f3_calc_smag_const_LijMij_and_MijMij(
+  blitz::Array<double, 2> evelaf_hat,
+  blitz::Array<double, 3> ereynoldsstress_hat,
+  blitz::Array<double, 3> efiltered_modeled_subgrid_stress_hat,
+  double&                 numerator,
+  double&                 denominator,
+  double&                 center);
+
+  
   void CreateLinesTet(const int& nline,
                       const int& nnode);
 

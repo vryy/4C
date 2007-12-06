@@ -408,7 +408,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
         // get control parameter
         const double time = params.get<double>("total time",-1.0);
 
-        bool newton = params.get<bool>("include reactive terms for linearisation",false);
+        const bool newton = params.get<bool>("include reactive terms for linearisation",false);
 
         // the stabilisation scheme is hardcoded up to now --- maybe it's worth taking
         // this into the input or to choose a standard implementation and drop all ifs
@@ -421,8 +421,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
 
         // One-step-Theta: timefac = theta*dt
         // BDF2:           timefac = 2/3 * dt
-        double timefac = 0.0;
-        timefac = params.get<double>("thsl",-1.0);
+        const double timefac = params.get<double>("thsl",-1.0);
         if (timefac < 0.0) dserror("No thsl supplied");
 
         // wrap epetra serial dense objects in blitz objects

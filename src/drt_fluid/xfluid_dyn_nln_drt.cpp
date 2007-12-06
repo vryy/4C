@@ -34,13 +34,52 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_resulttest.H"
 #include "xfluidresulttest.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_validparameters.H"
 
-extern struct _FIELD    *field;
-extern struct _GENPROB  genprob;
-extern struct _FILES  	allfiles;
-extern struct _IO_FLAGS ioflags;
-extern struct _SOLVAR   *solv;
-extern struct _CURVE  	*curve;
+/*----------------------------------------------------------------------*
+  |                                                       m.gee 06/01    |
+  | vector of numfld FIELDs, defined in global_control.c                 |
+ *----------------------------------------------------------------------*/
+extern struct _FIELD      *field;
+
+/*----------------------------------------------------------------------*
+  |                                                       m.gee 06/01    |
+  | general problem data                                                 |
+  | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+/*!----------------------------------------------------------------------
+\brief file pointers
+
+<pre>                                                         m.gee 8/00
+This structure struct _FILES allfiles is defined in input_control_global.c
+and the type is in standardtypes.h
+It holds all file pointers and some variables needed for the FRSYSTEM
+</pre>
+*----------------------------------------------------------------------*/
+extern struct _FILES  allfiles;
+
+/*----------------------------------------------------------------------*
+ | global variable *solv, vector of lenght numfld of structures SOLVAR  |
+ | defined in solver_control.c                                          |
+ |                                                                      |
+ |                                                       m.gee 11/00    |
+ *----------------------------------------------------------------------*/
+extern struct _SOLVAR  *solv;
+
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 02/02    |
+ | number of load curves numcurve                                       |
+ | vector of structures of curves                                       |
+ | defined in input_curves.c                                            |
+ | INT                   numcurve;                                      |
+ | struct _CURVE      *curve;                                           |
+ *----------------------------------------------------------------------*/
+extern INT            numcurve;
+extern struct _CURVE *curve;
+
+
 
 
 /*----------------------------------------------------------------------*
@@ -99,6 +138,9 @@ void xdyn_fluid_drt()
   const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
   const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
   //const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
+
+if (fluiddis->Comm().MyPID()==0)
+    DRT::PrintDefaultParameters(std::cout, fdyn);
 
   // -------------------------------------------------------------------
   // create a solver
@@ -160,6 +202,9 @@ void xdyn_fluid_drt()
     int init = Teuchos::getIntegralValue<int>(fdyn,"INITIALFIELD");
     fluidtimeparams.set                  ("eval err for analyt sol"   ,init);
 
+    // (fine-scale) subgrid viscosity?
+    fluidtimeparams.set<int>              ("fs subgrid viscosity"   ,Teuchos::getIntegralValue<int>(fdyn,"SUBGRIDVISC"));
+
 
     //--------------------------------------------------
     // create all vectors and variables associated with the time
@@ -179,7 +224,7 @@ void xdyn_fluid_drt()
     if (probtype.get<int>("RESTART"))
     {
       // read the restart information, set vectors and variables
-      fluidimplicit.ReadRestart(genprob.restart);
+      fluidimplicit.ReadRestart(probtype.get<int>("RESTART"));
     }
     else
     {
@@ -213,6 +258,9 @@ void xdyn_fluid_drt()
   {
     dserror("Unknown time type for drt xfluid");
   }
+
+  //---------- this is the end. Beautiful friend. My only friend, The end.
+  // thanks to RefCountPtr<> we do not need to delete anything here!
 
   return;
 

@@ -1,6 +1,15 @@
 /*!----------------------------------------------------------------------
 \file xfluid_dyn_nln_drt.H
-\brief
+\brief Control routine for fluid (time) integration. Calls
+
+     o Single step one-step-theta time integration
+
+     o Two step BDF2 Gear's methode with one-step-theta start step
+
+     o Genalpha time integartion
+
+     o Stationary solver
+
 
 <pre>
 Maintainer: Axel Gerstenberger

@@ -35,7 +35,6 @@ Maintainer: Axel Gerstenberger
 #include <Epetra_SerialDenseSolver.h>
 
 using namespace DRT::Utils;
-//using namespace XFEM;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of material laws                                              |
@@ -232,6 +231,10 @@ DRT::Elements::XFluid3::ActionType DRT::Elements::XFluid3::convertStringToAction
     act = XFluid3::calc_fluid_beltrami_error;
   else if (action == "calc_turbulence_statistics")
     act = XFluid3::calc_turbulence_statistics;
+  else if (action == "calc_fluid_box_filter")
+    act = XFluid3::calc_fluid_box_filter;
+  else if (action == "calc_smagorinsky_const")
+    act = XFluid3::calc_smagorinsky_const;
   else if (action == "calc_Shapefunction")
     act = XFluid3::calc_Shapefunction;
   else if (action == "calc_ShapeDeriv1")
@@ -993,15 +996,18 @@ void DRT::Elements::XFluid3::f3_calc_means(
   RefCountPtr<vector<double> > planes = params.get<RefCountPtr<vector<double> > >("coordinate vector for hom. planes");
 
   // get the pointers to the solution vectors
-  RefCountPtr<vector<double> > sumu   = params.get<RefCountPtr<vector<double> > >("mean velocities x direction");
-  RefCountPtr<vector<double> > sumv   = params.get<RefCountPtr<vector<double> > >("mean velocities y direction");
-  RefCountPtr<vector<double> > sumw   = params.get<RefCountPtr<vector<double> > >("mean velocities z direction");
-  RefCountPtr<vector<double> > sump   = params.get<RefCountPtr<vector<double> > >("mean pressure");
+  RefCountPtr<vector<double> > sumu   = params.get<RefCountPtr<vector<double> > >("mean velocity u");
+  RefCountPtr<vector<double> > sumv   = params.get<RefCountPtr<vector<double> > >("mean velocity v");
+  RefCountPtr<vector<double> > sumw   = params.get<RefCountPtr<vector<double> > >("mean velocity w");
+  RefCountPtr<vector<double> > sump   = params.get<RefCountPtr<vector<double> > >("mean pressure p");
 
-  RefCountPtr<vector<double> > sumsqu = params.get<RefCountPtr<vector<double> > >("variance velocities x direction");
-  RefCountPtr<vector<double> > sumsqv = params.get<RefCountPtr<vector<double> > >("variance velocities y direction");
-  RefCountPtr<vector<double> > sumsqw = params.get<RefCountPtr<vector<double> > >("variance velocities z direction");
-  RefCountPtr<vector<double> > sumsqp = params.get<RefCountPtr<vector<double> > >("variance pressure");
+  RefCountPtr<vector<double> > sumsqu = params.get<RefCountPtr<vector<double> > >("mean value u^2");
+  RefCountPtr<vector<double> > sumsqv = params.get<RefCountPtr<vector<double> > >("mean value v^2");
+  RefCountPtr<vector<double> > sumsqw = params.get<RefCountPtr<vector<double> > >("mean value w^2");
+  RefCountPtr<vector<double> > sumuv  = params.get<RefCountPtr<vector<double> > >("mean value uv");
+  RefCountPtr<vector<double> > sumuw  = params.get<RefCountPtr<vector<double> > >("mean value uw");
+  RefCountPtr<vector<double> > sumvw  = params.get<RefCountPtr<vector<double> > >("mean value vw");
+  RefCountPtr<vector<double> > sumsqp = params.get<RefCountPtr<vector<double> > >("mean value p^2");
 
 
   // get node coordinates of element
@@ -1150,6 +1156,9 @@ void DRT::Elements::XFluid3::f3_calc_means(
     double usqbar=0;
     double vsqbar=0;
     double wsqbar=0;
+    double uvbar =0;
+    double uwbar =0;
+    double vwbar =0;
     double psqbar=0;
 
     // get the intgration point in wall normal direction
@@ -1221,6 +1230,9 @@ void DRT::Elements::XFluid3::f3_calc_means(
       usqbar += ugp*ugp*fac;
       vsqbar += vgp*vgp*fac;
       wsqbar += wgp*wgp*fac;
+      uvbar  += ugp*vgp*fac;
+      uwbar  += ugp*wgp*fac;
+      vwbar  += vgp*wgp*fac;
       psqbar += pgp*pgp*fac;
     } // end loop integration points
 
@@ -1233,6 +1245,9 @@ void DRT::Elements::XFluid3::f3_calc_means(
     (*sumsqu)[*id] += usqbar;
     (*sumsqv)[*id] += vsqbar;
     (*sumsqw)[*id] += wsqbar;
+    (*sumuv) [*id] += uvbar;
+    (*sumuw) [*id] += uwbar;
+    (*sumvw) [*id] += vwbar;
     (*sumsqp)[*id] += psqbar;
 
     // jump to the next layer in the element.
