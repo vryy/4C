@@ -302,7 +302,7 @@ BoundaryIntCell::BoundaryIntCell(
         const vector< vector<double> > boundaryCoordinates) :
             IntCell(distype),
             domainCoordinates_(domainCoordinates),
-            boundaryCoordinates_(boundaryCoordinates_)
+            boundaryCoordinates_(boundaryCoordinates)
 {
     return;
 }
