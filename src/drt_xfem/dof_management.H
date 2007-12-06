@@ -97,14 +97,6 @@ private:
 }; // class FieldEnr
 
 
-// general function that returns the enrichment value for a given enrichment and position
-double enrValue(
-        const XFEM::Enrichment enr,
-        const blitz::Array<double,1>& actpos,
-        const blitz::Array<double,1>& nodalpos
-        );
-
-
 /*!
  \class ElementDofManager
 
@@ -170,13 +162,6 @@ public:
     	}
         return tmp->second;
     };
-    
-    /// return enrichment value for a given position
-    double enrValue(
-            const XFEM::Enrichment enr,
-            const blitz::Array<double,1>& actpos,
-            const blitz::Array<double,1>& nodalpos
-            ) const {return XFEM::enrValue(enr,actpos,nodalpos);};
 
     inline bool operator !=(const ElementDofManager& rhs) const
     {

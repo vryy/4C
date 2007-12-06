@@ -20,7 +20,9 @@ Maintainer: Axel Gerstenberger
 #include <string>
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_node.H"
-#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_utils_integration.H"
+#include "../drt_lib/drt_utils_fem_shapefunctions.H"
+#include "../drt_lib/drt_utils_local_connectivity_matrices.H"
 
 
 namespace XFEM
@@ -165,6 +167,8 @@ public:
             const double& cell_e2) const;
     
     virtual std::string Print() const;
+    
+    blitz::Array<double,1> GetCenterPosition(DRT::Element& ele) const;
 
 protected:
     

@@ -238,37 +238,41 @@ const map<int, const set <XFEM::FieldEnr> > XFEM::DofManager::createNodalDofMap(
     {
         const DRT::Node* actnode = xfemdis->lColNode(i);
         const int gid = actnode->Id();
-        nodalDofMap[gid].insert(XFEM::FieldEnr(PHYSICS::Velx, enr_std));
-        nodalDofMap[gid].insert(XFEM::FieldEnr(PHYSICS::Vely, enr_std));
-        nodalDofMap[gid].insert(XFEM::FieldEnr(PHYSICS::Velz, enr_std));
-        nodalDofMap[gid].insert(XFEM::FieldEnr(PHYSICS::Pres, enr_std));
+        
+        //if (actnode->X()[0] < 0.9)
+        //{
+            nodalDofMap[gid].insert(XFEM::FieldEnr(PHYSICS::Velx, enr_std));
+            nodalDofMap[gid].insert(XFEM::FieldEnr(PHYSICS::Vely, enr_std));
+            nodalDofMap[gid].insert(XFEM::FieldEnr(PHYSICS::Velz, enr_std));
+            nodalDofMap[gid].insert(XFEM::FieldEnr(PHYSICS::Pres, enr_std));
+        //}
     }
 
     // for surface 1, loop my col elements and add void enrichments to each elements member nodes
-//    const XFEM::Enrichment enr_void1(1, XFEM::Enrichment::typeVoid);
-//    for (int i=0; i<xfemdis->NumMyColElements(); ++i)
-//    {
-//        const DRT::Element* actele = xfemdis->lColElement(i);
-//        if (elementDomainIntCellMap.count(actele->Id()))
-//        {
-//            const int nen = actele->NumNode();
-//            const int* nodeidptrs = actele->NodeIds();
-//            for (int inen = 0; inen<nen; ++inen)
-//            {
-//                const int node_gid = nodeidptrs[inen];
-//                nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velx, enr_void1));
-//                nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Vely, enr_void1));
-//                nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velz, enr_void1));
-//                nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Pres, enr_void1));
-//                //              nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::LMPLambdax, enr_void1));
-//                //              nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::LMPLambday, enr_void1));
-//                //              nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::LMPLambdaz, enr_void1));              
-//            };
-//        }
-//    };
+    const XFEM::Enrichment enr_void1(1, XFEM::Enrichment::typeVoid);
+    for (int i=0; i<xfemdis->NumMyColElements(); ++i)
+    {
+        const DRT::Element* actele = xfemdis->lColElement(i);
+        if (elementDomainIntCellMap.count(actele->Id()))
+        {
+            const int nen = actele->NumNode();
+            const int* nodeidptrs = actele->NodeIds();
+            for (int inen = 0; inen<nen; ++inen)
+            {
+                const int node_gid = nodeidptrs[inen];
+                nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velx, enr_void1));
+                nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Vely, enr_void1));
+                nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velz, enr_void1));
+                nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Pres, enr_void1));
+                //              nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::LMPLambdax, enr_void1));
+                //              nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::LMPLambday, enr_void1));
+                //              nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::LMPLambdaz, enr_void1));              
+            };
+        }
+    };
     
-    // create const sets from standard sets, so the sets cannot be changed by accident
-    // could be removed later, if this is aperformance bottleneck
+    // create const sets from standard sets, so the sets cannot be accidentily changed
+    // could be removed later, if this is a performance bottleneck
     for ( map<int, set <XFEM::FieldEnr> >::const_iterator oneset = nodalDofMap.begin(); oneset != nodalDofMap.end(); ++oneset )
     {
         nodalDofMapFinal.insert( make_pair(oneset->first, oneset->second));
@@ -296,78 +300,6 @@ bool inCircleCylinder(
         in_circle = false;
     }
     return in_circle;
-}
-
-/*----------------------------------------------------------------------*
- |  get enrichment value                                        ag 11/07|
- *----------------------------------------------------------------------*/
-double XFEM::enrValue(
-        const XFEM::Enrichment enr,
-        const blitz::Array<double,1>& actpos,
-        const blitz::Array<double,1>& nodalpos
-        )
-{
-    // return value
-    double enrval = 1.0;
-    
-    switch (enr.Type()){
-    case XFEM::Enrichment::typeStandard:
-    {
-        enrval = 1.0;
-        break;
-    }
-//    case XFEM::Enrichment::typeVoid:
-//    {
-//        // TODO: generalize
-//        blitz::Array<double,1> center(3);
-//        center(0) = 0.6; center(1) = 0.5; center(2) = 0.0;
-//        const double cylinder_radius = 0.2;
-//       
-//        double actpos_enr_val = 0.0;
-//        if (inCircleCylinder(actpos, center, cylinder_radius)) {
-//            actpos_enr_val = 0.0;
-//        } else {
-//            actpos_enr_val = 1.0;
-//        }
-//        
-//        double nodepos_enr_val = 0.0;
-//        if (inCircleCylinder(actpos, center, cylinder_radius)) {
-//            nodepos_enr_val = 0.0;
-//        } else {
-//            nodepos_enr_val = 1.0;
-//        }
-//        
-//        enrval = actpos_enr_val - nodepos_enr_val;
-//        
-//        break;
-//    }
-    case XFEM::Enrichment::typeVoid:
-    {
-        // TODO: generalize
-        double actpos_enr_val = 0.0;
-        if (actpos(0) > 1.525) {
-            actpos_enr_val = 0.0;
-        } else {
-            actpos_enr_val = 1.0;
-        }
-        
-        double nodepos_enr_val = 0.0;
-        if (nodalpos(0) > 1.525) {
-            nodepos_enr_val = 0.0;
-        } else {
-            nodepos_enr_val = 1.0;
-        }
-        
-        enrval = actpos_enr_val - nodepos_enr_val;
-        enrval = 1.0;
-        dserror("not yet");
-        
-        break;
-    }
-    default:
-        dserror("unsupported enrichment!");
-    }
-    return enrval;
 }
 
 

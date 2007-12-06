@@ -511,6 +511,7 @@ vector<double> computeScalarCellNodeValues(
         const vector<double> elementvalues
         )
 {
+    // return value
     vector<double> cellvalues;
     
     const int nen_cell = DRT::Utils::getNumberOfElementNodes(cell.Shape());
@@ -531,6 +532,11 @@ vector<double> computeScalarCellNodeValues(
       xyze(2,inode) = x[2];
     }
     
+    // if cell node is on the interface, the value is not defined for a jump.
+    // however, we approach the interface from one particular side and therefore,
+    // -> we use the center of the cell to determine, where we come from
+    const blitz::Array<double,1> cellcenterpos(cell.GetCenterPosition(ele));
+    
     // cell corner nodes
     for (int inen = 0; inen < nen_cell; ++inen)
     {
@@ -543,7 +549,7 @@ vector<double> computeScalarCellNodeValues(
                 cell.GetDomainCoord()[inen][2],
                 ele.Shape());
     
-        vector<double> cellnodeposvector = cell.GetPhysicalCoord(ele)[inen];
+        const vector<double> cellnodeposvector = cell.GetPhysicalCoord(ele)[inen];
         blitz::Array<double,1> cellnodepos(3);
         for (int isd = 0; isd < nsd; ++isd) {
             cellnodepos(isd) = cellnodeposvector[isd];
@@ -563,10 +569,10 @@ vector<double> computeScalarCellNodeValues(
           const std::set<XFEM::FieldEnr>  enrfieldset = dofman.FieldEnrSetPerNode(gid);
           for (std::set<XFEM::FieldEnr>::const_iterator enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
           {
-              if (enrfield->getField() == XFEM::PHYSICS::Velx)
+              if (enrfield->getField() == field)
               {
                   const XFEM::Enrichment enr = enrfield->getEnrichment();
-                  const double enrval = dofman.enrValue(enr,cellnodepos,nodalpos);
+                  const double enrval = enr.enrValue(cellnodepos,nodalpos,cellcenterpos);
                   enr_funct(dofcounter) = funct(inode) * enrval;
                   dofcounter += 1;
               }

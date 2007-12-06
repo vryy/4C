@@ -207,6 +207,11 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
 
   // gaussian points
   const DRT::Utils::IntegrationPoints3D intpoints(gaussrule);
+  
+  // if cell node is on the interface, the value is not defined for a jump.
+  // however, we approach the interface from one particular side and therefore,
+  // -> we use the center of the cell to determine, where we come from
+  const blitz::Array<double,1> cellcenterpos(cell->GetCenterPosition(*ele));
 
   // integration loop
   for (int iquad=0; iquad<intpoints.nquad; ++iquad)
@@ -304,7 +309,7 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
           if (enrfield->getField() == XFEM::PHYSICS::Velx)
           {
               const XFEM::Enrichment enr = enrfield->getEnrichment();
-              const double enrval = dofman.enrValue(enr,gauss_pos,nodalpos);
+              const double enrval = enr.enrValue(gauss_pos,nodalpos,cellcenterpos);
               enr_funct_(dofcounter) = funct_(inode) * enrval;
               enr_derxy_(_,dofcounter) = derxy_(_,inode) * enrval;
               // compute second global derivative
@@ -343,7 +348,11 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
     double press = blitz::sum(enr_funct_*eprenp);
 
     // get bodyforce in gausspoint
-    bodyforce_ =  0.0;
+    bodyforce_ = 0.0;
+//    if (cellcenterpos(0) < 1.525)
+//        bodyforce_ =  1.0;
+//    else
+//        bodyforce_ =  0.0;
     //////////////////////////////////////////bodyforce_ = blitz::sum(enr_edeadng_(i,j)*enr_funct_(j),j);
 
     // perform integration for entire matrix and rhs

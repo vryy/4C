@@ -294,6 +294,45 @@ void DomainIntCell::SetDefaultCoordinates(
 }
 
 //
+// return the center of the cell in physical coordinates
+//
+blitz::Array<double,1> DomainIntCell::GetCenterPosition(DRT::Element& ele) const
+{
+    // number of space dimensions
+    const int nsd = 3;
+    
+    //interpolate position to x-space
+    blitz::Array<double, 1> x_interpol(nsd);
+    x_interpol = 0.0;
+
+    // physical positions of cell nodes
+    const vector<vector<double> > physcoord = this->GetPhysicalCoord(ele);
+    
+    // center in local coordinates
+    const vector<double> localcenterpos = DRT::Utils::getLocalCenterPosition(this->Shape());
+
+    // shape functions
+    blitz::Array<double, 1> funct(27);
+    DRT::Utils::shape_function_3D(
+            funct,
+            localcenterpos[0],
+            localcenterpos[1],
+            localcenterpos[2],
+            this->Shape());
+    
+    for (int inen = 0; inen < this->NumNode();++inen)
+    {
+        for (int isd=0;isd < nsd;++isd )
+        {
+            x_interpol(isd) += physcoord[inen][isd] * funct(inen);
+        }
+    }
+    // return position
+    return x_interpol;
+}
+
+
+//
 //  ctor
 //
 BoundaryIntCell::BoundaryIntCell(

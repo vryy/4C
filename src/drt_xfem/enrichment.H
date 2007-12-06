@@ -14,6 +14,7 @@ Maintainer: Axel Gerstenberger
 #ifndef ENRICHMENT_H
 #define ENRICHMENT_H
 
+#include <blitz/array.h>
 #include "Teuchos_RefCountPtr.hpp"
 using namespace std;
 using namespace Teuchos;
@@ -83,8 +84,14 @@ public:
             else
                 return false;
         }
-    } 
+    }
 
+    double enrValue(
+            const blitz::Array<double,1>& actpos,
+            const blitz::Array<double,1>& nodalpos,
+            const blitz::Array<double,1>& cellcenterpos
+            ) const;
+    
 private:
     // a global id used to distuinguish several surfaces within one element
     // might become or contain reference to a certain condition
