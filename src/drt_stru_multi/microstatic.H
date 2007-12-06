@@ -88,13 +88,6 @@ public:
   void FullNewton();
 
   /*!
-  \brief update configuration
-
-  */
-  void Update();
-
-
-  /*!
   \brief update for a new time step
 
   */

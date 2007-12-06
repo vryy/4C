@@ -400,30 +400,6 @@ void MicroStatic::FullNewton()
 
 
 /*----------------------------------------------------------------------*
- |  do Update (public)                                       mwgee 03/07|
- *----------------------------------------------------------------------*/
-void MicroStatic::Update()
-{
-  // -------------------------------------------------------------------
-  // get some parameters from parameter list
-  // -------------------------------------------------------------------
-  double alphaf        = params_->get<double>("alpha f"                ,0.459);
-
-  //---------------------------- determine new end-quantities and update
-  // new displacements at t_{n+1} -> t_n
-  //    D_{n} := D_{n+1} = 1./(1.-alphaf) * D_{n+1-alpha_f}
-  //                     - alphaf/(1.-alphaf) * D_n
-  dis_->Update(1./(1.-alphaf),*dism_,-alphaf/(1.-alphaf));
-
-  // update new external force
-  //    F_{ext;n} := F_{ext;n+1}
-  fext_->Update(1.0,*fextn_,0.0);
-
-  return;
-} // MicroStatic::Update()
-
-
-/*----------------------------------------------------------------------*
  |  write output (public)                                    mwgee 03/07|
  *----------------------------------------------------------------------*/
 void MicroStatic::Output(RefCountPtr<MicroDiscretizationWriter> output,
