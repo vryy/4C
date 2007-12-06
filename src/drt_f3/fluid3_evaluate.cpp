@@ -713,22 +713,22 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
           stabstrtoact_["quasistatic_subscales"            ]=subscales_quasistatic;
           stabstrtoact_["time_dependent_subscales"         ]=subscales_time_dependent;
           stabstrtoact_["drop"                             ]=inertia_stab_drop;
-          stabstrtoact_["+(sacc,v)"                        ]=inertia_stab_keep;
+          stabstrtoact_["+(sacc|v)"                        ]=inertia_stab_keep;
           stabstrtoact_["off"                              ]=pstab_assume_inf_sup_stable;
-          stabstrtoact_["-(svel,nabla_q)"                  ]=pstab_use_pspg;
+          stabstrtoact_["-(svel|nabla_q)"                  ]=pstab_use_pspg;
           stabstrtoact_["off"                              ]=convective_stab_none;
-          stabstrtoact_["-(svel,(u_o_nabla)_v)"            ]=convective_stab_supg;
+          stabstrtoact_["-(svel|(u_o_nabla)_v)"            ]=convective_stab_supg;
           stabstrtoact_["off"                              ]=viscous_stab_none;
-          stabstrtoact_["+2*nu*(svel,nabla_o_eps(v))"      ]=viscous_stab_gls;
-          stabstrtoact_["+2*nu*(svel,nabla_o_eps(v))_[RHS]"]=viscous_stab_gls_only_rhs;
-          stabstrtoact_["-2*nu*(svel,nabla_o_eps(v))"      ]=viscous_stab_agls;
-          stabstrtoact_["-2*nu*(svel,nabla_o_eps(v))_[RHS]"]=viscous_stab_agls_only_rhs;
-          stabstrtoact_["-(spre,nabla_o_v)"                ]=continuity_stab_yes;
+          stabstrtoact_["+2*nu*(svel|nabla_o_eps(v))"      ]=viscous_stab_gls;
+          stabstrtoact_["+2*nu*(svel|nabla_o_eps(v))_[RHS]"]=viscous_stab_gls_only_rhs;
+          stabstrtoact_["-2*nu*(svel|nabla_o_eps(v))"      ]=viscous_stab_agls;
+          stabstrtoact_["-2*nu*(svel|nabla_o_eps(v))_[RHS]"]=viscous_stab_agls_only_rhs;
+          stabstrtoact_["-(spre|nabla_o_v)"                ]=continuity_stab_yes;
           stabstrtoact_["off"                              ]=continuity_stab_none;
-          stabstrtoact_["+((svel_o_nabla)_u,v)"            ]=cross_stress_stab;
-          stabstrtoact_["+((svel_o_nabla)_u,v)_[RHS]"      ]=cross_stress_stab_only_rhs;
+          stabstrtoact_["+((svel_o_nabla)_u|v)"            ]=cross_stress_stab;
+          stabstrtoact_["+((svel_o_nabla)_u|v)_[RHS]"      ]=cross_stress_stab_only_rhs;
           stabstrtoact_["off"                              ]=cross_stress_stab_none;
-          stabstrtoact_["-(svel,(svel_o_grad)_v)_[RHS]"    ]=reynolds_stress_stab_only_rhs;
+          stabstrtoact_["-(svel|(svel_o_grad)_v)_[RHS]"    ]=reynolds_stress_stab_only_rhs;
           stabstrtoact_["off"                              ]=reynolds_stress_stab_none;
         }
 
@@ -769,7 +769,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
             // the y+ (heigth in wall units)
             turb_mod_action = smagorinsky_with_wall_damping;
             Cs              = turbmodelparams.get<double>("C_SMAGORINSKY");
-            l_tau           = turbmodelparams.get<double>("L_TAU");
+            l_tau           = turbmodelparams.get<double>("CHANNEL_L_TAU");
           }
           else if (physical_turbulence_model == "Dynamic_Smagorinsky")
           {

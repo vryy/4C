@@ -686,8 +686,8 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
     
     (*log) << "#     y            y+";
     (*log) << "           umean         vmean         wmean         pmean";
-    (*log) << "         mean u^2      mean v^2      mean w^2";
-    (*log) << "         mean u*v      mean u*w      mean v*w      Varp   \n";
+    (*log) << "        mean u^2      mean v^2      mean w^2";
+    (*log) << "      mean u*v      mean u*w      mean v*w        Varp   \n";
 
     (*log) << scientific;
     for(unsigned i=0; i<planecoordinates_->size(); ++i)
@@ -701,7 +701,6 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
       (*log) << "   " << setw(11) << setprecision(4) << ((*sumsqu_)[i]);
       (*log) << "   " << setw(11) << setprecision(4) << ((*sumsqv_)[i]);
       (*log) << "   " << setw(11) << setprecision(4) << ((*sumsqw_)[i]);
-      (*log) << "   " << setw(11) << setprecision(4) << ((*sumsqu_)[i]);
       (*log) << "   " << setw(11) << setprecision(4) << ((*sumuv_)[i]);
       (*log) << "   " << setw(11) << setprecision(4) << ((*sumuw_)[i]);
       (*log) << "   " << setw(11) << setprecision(4) << ((*sumvw_)[i]);

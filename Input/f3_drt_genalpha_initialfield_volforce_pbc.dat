@@ -60,12 +60,12 @@ ALPHA_F      0.666666666666660
 STABTYPE              residual_based_VMM
 RVMM_TDS              time_dependent_subscales
 RVMM_INERTIA          drop
-RVMM_SUPG             -(svel,(u_o_nabla)_v)
-RVMM_PSPG             -(svel,nabla_q)
-RVMM_VSTAB            -2*nu*(svel,nabla_o_eps(v))
-RVMM_CROSS-STRESS     +((svel_o_nabla)_u,v)_[RHS]
-RVMM_REYNOLDS-STRESS  -(svel,(svel_o_grad)_v)_[RHS]
-RVMM_CSTAB            -(spre,nabla_o_v)
+RVMM_SUPG             -(svel|(u_o_nabla)_v)
+RVMM_PSPG             -(svel|nabla_q)
+RVMM_VSTAB            -2*nu*(svel|nabla_o_eps(v))
+RVMM_CROSS-STRESS     +((svel_o_nabla)_u|v)_[RHS]
+RVMM_REYNOLDS-STRESS  -(svel|(svel_o_grad)_v)_[RHS]
+RVMM_CSTAB            -(spre|nabla_o_v)
 ------------------------------------------------------FLUID SOLVER
 //SOLVER         Aztec_MSR          // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 SOLVER         Aztec_MSR
