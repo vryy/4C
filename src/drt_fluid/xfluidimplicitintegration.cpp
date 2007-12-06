@@ -79,9 +79,6 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // apply enrichments
   RCP<XFEM::DofManager> initialdofmanager = rcp(new XFEM::DofManager(ih));
   
-  // debug: print enrichments to screen
-  //cout << initialdofmanager->toString() << endl;
-  
   // tell elements about the dofs and the integration
   {
 	  ParameterList eleparams;

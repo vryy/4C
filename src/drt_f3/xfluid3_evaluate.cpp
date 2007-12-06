@@ -384,9 +384,9 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
         dsassert(ih!=null, "you did not give the InterfaceHandle");
         
         //! information about domain integration cells
-        const XFEM::DomainIntCells   domainIntCells   = ih->domainIntCells(this->Id(),this->Shape());
+        const XFEM::DomainIntCells   domainIntCells   = ih->GetDomainIntCells(this->Id(),this->Shape());
         //! information about boundary integration cells
-        const XFEM::BoundaryIntCells boundaryIntCells = ih->boundaryIntCells(this->Id());
+        const XFEM::BoundaryIntCells boundaryIntCells = ih->GetBoundaryIntCells(this->Id());
         
         // get control parameter
         const double time = params.get<double>("total time",-1.0);

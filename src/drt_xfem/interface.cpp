@@ -29,12 +29,35 @@ XFEM::InterfaceHandle::InterfaceHandle(
 	  elementalBoundaryIntCells_.clear();
 	  XFEM::Intersection is;
 	  is.computeIntersection(xfemdis,cutterdis,elementalDomainIntCells_,elementalBoundaryIntCells_);
-	  cout << "numcuttedelements = " << elementalDomainIntCells_.size() << endl;
+	  std::cout << "numcuttedelements = " << elementalDomainIntCells_.size() << endl;
 	  // debug: write both meshes to file in Gmsh format
-	  ofstream f_system("elements_coupled_system.pos");
+	  std::ofstream f_system("elements_coupled_system.pos");
 	  f_system << IO::GMSH::disToString("Fluid", 0.0, xfemdis, elementalDomainIntCells_);
 	  f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis);
-	  f_system << IO::GMSH::getConfigString(2);
+	  {
+	      stringstream gmshfilecontent;
+	      gmshfilecontent << "View \" " << "CellCenter" << " Elements and Integration Cells \" {" << endl;
+	      for (int i=0; i<xfemdis->NumMyColElements(); ++i)
+	      {
+	          DRT::Element* actele = xfemdis->lColElement(i);
+	          XFEM::DomainIntCells elementDomainIntCells = this->GetDomainIntCells(actele->Id(), actele->Shape());
+	          XFEM::DomainIntCells::const_iterator cell;
+	          for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
+	          {
+	              const blitz::Array<double,1> cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
+	              gmshfilecontent << "SP(";
+	              gmshfilecontent << scientific << cellcenterpos(0) << ",";
+	              gmshfilecontent << scientific << cellcenterpos(1) << ",";
+	              gmshfilecontent << scientific << cellcenterpos(2);
+	              gmshfilecontent << "){";
+	              gmshfilecontent << "0.0};" << endl;
+	          };
+	      };
+	      gmshfilecontent << "};" << endl;
+	      f_system << gmshfilecontent.str();
+	  }
+	  
+	  f_system << IO::GMSH::getConfigString(3);
 	  f_system.close();
 }
 		
@@ -49,10 +72,42 @@ XFEM::InterfaceHandle::~InterfaceHandle()
 /*----------------------------------------------------------------------*
  |  transform  to a string                                      ag 11/07|
  *----------------------------------------------------------------------*/
-string XFEM::InterfaceHandle::toString() const
+std::string XFEM::InterfaceHandle::toString() const
 {
-	stringstream s(" ");
+	std::stringstream s(" ");
 	return s.str();
 }
+
+XFEM::DomainIntCells XFEM::InterfaceHandle::GetDomainIntCells(
+        const int gid,
+        const DRT::Element::DiscretizationType distype
+        )const
+{
+    std::map<int,DomainIntCells>::const_iterator tmp = elementalDomainIntCells_.find(gid);
+    if (tmp == elementalDomainIntCells_.end())
+    {   
+        // create default set with one dummy DomainIntCell of proper size
+        XFEM::DomainIntCells cells;
+        cells.push_back(XFEM::DomainIntCell(distype));
+        return cells;
+    }
+    return tmp->second;
+};
+
+XFEM::BoundaryIntCells XFEM::InterfaceHandle::GetBoundaryIntCells(
+        const int gid
+        ) const
+{
+    std::map<int,XFEM::BoundaryIntCells>::const_iterator tmp = elementalBoundaryIntCells_.find(gid);
+    if (tmp == elementalBoundaryIntCells_.end())
+    {   
+        // return empty list
+        const XFEM::BoundaryIntCells cells;
+        return cells;
+    }
+    return tmp->second;
+};
+
+
 
 #endif  // #ifdef CCADISCRET

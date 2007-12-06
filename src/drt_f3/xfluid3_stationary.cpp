@@ -139,9 +139,9 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
   const DRT::Element::DiscretizationType distype = ele->Shape();
 
   //! information about domain integration cells
-  const XFEM::DomainIntCells   domainIntCells   = ih->domainIntCells(ele->Id(),distype);
+  const XFEM::DomainIntCells   domainIntCells   = ih->GetDomainIntCells(ele->Id(),distype);
   //! information about boundary integration cells
-  const XFEM::BoundaryIntCells boundaryIntCells = ih->boundaryIntCells(ele->Id());
+  const XFEM::BoundaryIntCells boundaryIntCells = ih->GetBoundaryIntCells(ele->Id());
 
   // get node coordinates
   DRT::Node** const nodes = ele->Nodes();
@@ -183,7 +183,8 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
   // stabilization parameter
   // This has to be done before anything else is calculated because
   // we use the same arrays internally.
-  CalTauStationary(ele,evelnp,distype,visc);
+  const double hk = HK(ele,evelnp,distype,visc);
+  const double mk = MK(distype);
 
   // flag for higher order elements
   const bool higher_order_ele = ele->isHigherOrderElement(distype);
@@ -211,7 +212,7 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
   // if cell node is on the interface, the value is not defined for a jump.
   // however, we approach the interface from one particular side and therefore,
   // -> we use the center of the cell to determine, where we come from
-  const blitz::Array<double,1> cellcenterpos(cell->GetCenterPosition(*ele));
+  blitz::Array<double,1> cellcenterpos(cell->GetPhysicalCenterPosition(*ele));
 
   // integration loop
   for (int iquad=0; iquad<intpoints.nquad; ++iquad)
@@ -357,6 +358,41 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
 
     // perform integration for entire matrix and rhs
 
+    // get velocity norm
+    const double vel_norm = sqrt(blitz::sum(velint_*velint_));
+
+    // normed velocity at element centre
+    if (vel_norm>=1e-6)
+    {
+      velino_ = velint_/vel_norm;
+    }
+    else
+    {
+      velino_ = 0.;
+      velino_(0) = 1;
+    }
+
+    // get streamlength
+    const double val = blitz::sum(blitz::abs(blitz::sum(velino_(j)*derxy_(j,i),j)));
+    const double strle = 2.0/val;
+
+    // calculate tau
+    // stabilization parameters for stationary case
+
+    // compute tau_Mu
+    const double re_tau_mu = mk * vel_norm * strle / (2.0 * visc);   /* convective : viscous forces */
+    const double xi_tau_mu = DMAX(re_tau_mu, 1.0);
+    tau_(0) = (DSQR(strle)*mk)/(4.0*visc*xi_tau_mu);
+
+    // compute tau_Mp
+    const double re_tau_mp = mk * vel_norm * hk / (2.0 * visc);      /* convective : viscous forces */
+    const double xi_tau_mp = DMAX(re_tau_mp,1.0);
+    tau_(1) = (DSQR(hk)*mk)/(4.0*visc*xi_tau_mp);
+
+    // compute tau_C
+    const double xi_tau_c = DMIN(re_tau_mp, 1.0);
+    tau_(2) = 0.5*vel_norm*hk*xi_tau_c;
+    
     // stabilisation parameter
     const double tau_M  = tau_(0)*fac;
     const double tau_Mp = tau_(1)*fac;
@@ -1133,6 +1169,119 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
   }
   } // end loop over integration cells
   return;
+}
+
+//
+// calculate stabilization parameter
+//
+double DRT::Elements::XFluid3Stationary::HK(
+  XFluid3* ele,
+  const blitz::Array<double,2>&           evelnp,
+  const DRT::Element::DiscretizationType  distype,
+  const double                            visc
+  )
+{
+  blitz::firstIndex i;    // Placeholder for the first index
+  blitz::secondIndex j;   // Placeholder for the second index
+  blitz::thirdIndex k;    // Placeholder for the third index
+  blitz::fourthIndex l;   // Placeholder for the fourth index
+
+  // use one point gauss rule to calculate tau at element center
+  DRT::Utils::GaussRule3D integrationrule_stabili=DRT::Utils::intrule3D_undefined;
+  switch (distype)
+  {
+  case DRT::Element::hex8:
+  case DRT::Element::hex20:
+  case DRT::Element::hex27:
+    integrationrule_stabili = DRT::Utils::intrule_hex_1point;
+    break;
+  case DRT::Element::tet4:
+  case DRT::Element::tet10:
+    integrationrule_stabili = DRT::Utils::intrule_tet_1point;
+    break;
+  case DRT::Element::wedge6:
+  case DRT::Element::wedge15:
+    integrationrule_stabili = DRT::Utils::intrule_wedge_1point;
+    break;
+  case DRT::Element::pyramid5:
+    integrationrule_stabili = DRT::Utils::intrule_pyramid_1point;
+    break;
+  default:
+    dserror("invalid discretization type for fluid3");
+  }
+
+  // gaussian points
+  const DRT::Utils::IntegrationPoints3D intpoints(integrationrule_stabili);
+
+  // shape functions and derivs at element center
+  const double e1    = intpoints.qxg[0][0];
+  const double e2    = intpoints.qxg[0][1];
+  const double e3    = intpoints.qxg[0][2];
+  const double wquad = intpoints.qwgt[0];
+
+  DRT::Utils::shape_function_3D(funct_,e1,e2,e3,distype);
+  DRT::Utils::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
+
+  // get element type constant for tau
+  double mk=0.0;
+  switch (distype)
+  {
+  case DRT::Element::tet4:
+  case DRT::Element::pyramid5:
+  case DRT::Element::hex8:
+  case DRT::Element::wedge6:
+    mk = 0.333333333333333333333;
+    break;
+  case DRT::Element::hex20:
+  case DRT::Element::hex27:
+  case DRT::Element::tet10:
+  case DRT::Element::wedge15:
+    mk = 0.083333333333333333333;
+    break;
+  default:
+    dserror("type unknown!\n");
+  }
+
+  // get Jacobian matrix and determinant
+  xjm_ = blitz::sum(deriv_(i,k)*xyze_(j,k),k);
+  const double det = xjm_(0,0)*xjm_(1,1)*xjm_(2,2)+
+                     xjm_(0,1)*xjm_(1,2)*xjm_(2,0)+
+                     xjm_(0,2)*xjm_(1,0)*xjm_(2,1)-
+                     xjm_(0,2)*xjm_(1,1)*xjm_(2,0)-
+                     xjm_(0,0)*xjm_(1,2)*xjm_(2,1)-
+                     xjm_(0,1)*xjm_(1,0)*xjm_(2,2);
+  const double vol = wquad*det;
+
+  // get element length for tau_Mp/tau_C: volume-equival. diameter/sqrt(3)
+  const double hk = pow((6.*vol/PI),(1.0/3.0))/sqrt(3.0);
+  
+  return hk;
+}
+
+
+double DRT::Elements::XFluid3Stationary::MK(
+  const DRT::Element::DiscretizationType  distype
+  )
+{
+    double mk=0.0;
+    switch (distype)
+    {
+        case DRT::Element::tet4:
+        case DRT::Element::pyramid5:
+        case DRT::Element::hex8:
+        case DRT::Element::wedge6:
+            mk = 0.333333333333333333333;
+            break;
+        case DRT::Element::hex20:
+        case DRT::Element::hex27:
+        case DRT::Element::tet10:
+        case DRT::Element::wedge15:
+            mk = 0.083333333333333333333;
+            break;
+        default:
+            dserror("type unknown!\n");
+    }
+    return mk;
 }
 
 

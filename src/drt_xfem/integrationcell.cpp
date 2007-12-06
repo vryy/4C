@@ -148,7 +148,7 @@ DomainIntCell::DomainIntCell(
         const DRT::Element::DiscretizationType distype) :
             IntCell(distype)
 {
-    SetDefaultCoordinates(distype);
+    domainCoordinates_ = GetDefaultCoordinates(distype);
     return;
 }
         
@@ -260,14 +260,13 @@ const vector<double> DomainIntCell::modifyGaussRule3D(
 }
 
 // set element nodal coordinates according to given distype
-void DomainIntCell::SetDefaultCoordinates(
-        const DRT::Element::DiscretizationType distype)
+vector<vector<double> > DomainIntCell::GetDefaultCoordinates(
+        const DRT::Element::DiscretizationType distype) const
 {
-    
+    vector<vector<double> > coords;
     const int nsd = 3;
     const int numnode = DRT::Utils::getNumberOfElementNodes(distype);
     
-    domainCoordinates_.clear();
     for(int j = 0; j < numnode; j++){
         vector<double> coord(nsd);
         switch (distype){
@@ -288,15 +287,15 @@ void DomainIntCell::SetDefaultCoordinates(
         default:
             dserror("not supported in integrationcells. can be coded easily... ;-)");
         }
-        domainCoordinates_.push_back(coord);  
+        coords.push_back(coord);  
     }
-    return;
+    return coords;
 }
 
 //
 // return the center of the cell in physical coordinates
 //
-blitz::Array<double,1> DomainIntCell::GetCenterPosition(DRT::Element& ele) const
+blitz::Array<double,1> DomainIntCell::GetPhysicalCenterPosition(DRT::Element& ele) const
 {
     // number of space dimensions
     const int nsd = 3;
@@ -310,6 +309,7 @@ blitz::Array<double,1> DomainIntCell::GetCenterPosition(DRT::Element& ele) const
     
     // center in local coordinates
     const vector<double> localcenterpos = DRT::Utils::getLocalCenterPosition(this->Shape());
+    cout << localcenterpos[0] << localcenterpos[1] <<localcenterpos[2] << endl;
 
     // shape functions
     blitz::Array<double, 1> funct(27);

@@ -16,7 +16,7 @@ Maintainer: Axel Gerstenberger
 
 #include <blitz/array.h>
 #include "Teuchos_RefCountPtr.hpp"
-using namespace std;
+
 using namespace Teuchos;
 
 
@@ -49,9 +49,9 @@ public:
             const Enrichment& other);
     ~Enrichment();
     
-    string toString() const;
+    std::string toString() const;
 
-    string enrTypeToString(const EnrType type) const;
+    std::string enrTypeToString(const EnrType type) const;
     
     inline int Id() const
     {

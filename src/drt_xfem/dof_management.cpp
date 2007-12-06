@@ -76,13 +76,13 @@ XFEM::ElementDofManager::ElementDofManager(
 		map<int, const set <XFEM::FieldEnr> >& nodalDofMap) :
 			nodalDofMap_(nodalDofMap)
 {
-	// count number of dos for each node
+	// count number of dofs for each node
 	map<int, const set<XFEM::FieldEnr> >::const_iterator tmp;
 	for (tmp = nodalDofMap.begin(); tmp != nodalDofMap.end(); ++tmp) {
 		const int gid = tmp->first;
 		const set<XFEM::FieldEnr> enrfieldset = tmp->second;
 		const int numdof = enrfieldset.size();
-		dsassert(numdof > 0, "sollte jetzt noch nicht sein");
+		//dsassert(numdof > 0, "sollte jetzt noch nicht sein");
 		nodalNumDofMap_[gid] = numdof;
 	}
 	
@@ -192,7 +192,7 @@ const XFEM::ElementDofManager XFEM::DofManager::constructElementDofManager(DRT::
     map<int, const set <XFEM::FieldEnr> > nodaldofset; 
     for (int inode = 0; inode < numnode; ++inode) {
         const int gid = nodegids[inode];
-        nodaldofset.insert(this->getDofsAsPair(gid));
+        nodaldofset.insert(std::pair<int, const set<XFEM::FieldEnr> >(gid,this->getDofSet(gid)));
     }
 
     // create a local dofmanager
@@ -239,13 +239,13 @@ const map<int, const set <XFEM::FieldEnr> > XFEM::DofManager::createNodalDofMap(
         const DRT::Node* actnode = xfemdis->lColNode(i);
         const int gid = actnode->Id();
         
-        //if (actnode->X()[0] < 0.9)
-        //{
+        if (actnode->X()[0] < 0.9)
+        {
             nodalDofMap[gid].insert(XFEM::FieldEnr(PHYSICS::Velx, enr_std));
             nodalDofMap[gid].insert(XFEM::FieldEnr(PHYSICS::Vely, enr_std));
             nodalDofMap[gid].insert(XFEM::FieldEnr(PHYSICS::Velz, enr_std));
             nodalDofMap[gid].insert(XFEM::FieldEnr(PHYSICS::Pres, enr_std));
-        //}
+        }
     }
 
     // for surface 1, loop my col elements and add void enrichments to each elements member nodes
@@ -253,7 +253,7 @@ const map<int, const set <XFEM::FieldEnr> > XFEM::DofManager::createNodalDofMap(
     for (int i=0; i<xfemdis->NumMyColElements(); ++i)
     {
         const DRT::Element* actele = xfemdis->lColElement(i);
-        if (elementDomainIntCellMap.count(actele->Id()))
+        if (elementDomainIntCellMap.count(actele->Id()) >= 1)
         {
             const int nen = actele->NumNode();
             const int* nodeidptrs = actele->NodeIds();

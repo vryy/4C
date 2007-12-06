@@ -115,12 +115,22 @@ public:
 
     std::string toString() const;
 
+    /*!
+     * \brief get a set with the enriched fields on this node
+     * 
+     * this function shall always fail, if the dofmanager not set properly
+     * the number of unknowns has a default, but this one not!!!
+     * 
+     * \return set with enriched fields
+     * 
+     */
     inline const std::set<FieldEnr> FieldEnrSetPerNode(const int gid) const
     {
         //TODO: return proper default set given as second argument
     	map<int, const std::set<FieldEnr> >::const_iterator tmp = nodalDofMap_.find(gid);
     	if (tmp == nodalDofMap_.end()){
     	    cout << gid << endl;
+    	    // let this always be here so we can recognize errors early
     	    dserror("FieldEnrSetPerNode: global node id not found!");
     	    return emptyset_;
     	}
@@ -146,8 +156,9 @@ public:
     {
     	map<XFEM::PHYSICS::Field, int>::const_iterator tmp = numParamsPerFieldMap_.find(field);
     	if (tmp == numParamsPerFieldMap_.end()){
-    		cout << XFEM::PHYSICS::physVarToString(field) << endl;
-    		dserror("field not found!");
+    		//cout << XFEM::PHYSICS::physVarToString(field) << endl;
+    		//dserror("field not found!");
+    		return 0;
     	}
         return tmp->second;
     };
@@ -157,8 +168,9 @@ public:
     {
     	map<XFEM::PHYSICS::Field, vector<int> >::const_iterator tmp = paramsLocalEntries_.find(field);
     	if (tmp == paramsLocalEntries_.end()){
-    		cout << XFEM::PHYSICS::physVarToString(field) << endl;
-    		dserror("field not found!");
+    		//cout << XFEM::PHYSICS::physVarToString(field) << endl;
+    		//dserror("field not found!");
+    		return vector<int>(0);
     	}
         return tmp->second;
     };
@@ -218,17 +230,6 @@ public:
         return nodalDofMap_.find(gid)->second;
     };
     
-    inline std::pair<int, const set<XFEM::FieldEnr> > getDofsAsPair(const int gid) const
-    {
-    	map<int, const std::set<FieldEnr> >::const_iterator tmp = nodalDofMap_.find(gid);
-    	if (tmp == nodalDofMap_.end()){
-    		dserror("global node id not found!");
-    		//cout << "getDofsAsPair: warning: global node id not found! Could be due to not properly initialized ElementDofManager";
-    		//return std::pair<int, const set<XFEM::FieldEnr> >(tmp->first,tmp->second);
-    	}
-        return std::pair<int, const set<XFEM::FieldEnr> >(tmp->first,tmp->second);
-    };
-
     const XFEM::ElementDofManager constructElementDofManager(DRT::Element& ele) const;
     
     void checkForConsistency(
@@ -246,6 +247,9 @@ private:
 	const map<int, const set<FieldEnr> > createNodalDofMap(
 			const RefCountPtr<DRT::Discretization> xfemdis,
 	        const map<int, DomainIntCells >&  elementDomainIntCellMap) const;
+	
+	//! dummy empty set that we can return in FieldEnrSetPerNode
+	std::set<FieldEnr> emptyset_;
 };
 
 typedef pair<int,FieldEnr> DofKey;

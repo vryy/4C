@@ -53,16 +53,16 @@ Enrichment::~Enrichment()
 /*----------------------------------------------------------------------*
  |  create string                                                       |
  *----------------------------------------------------------------------*/
-string Enrichment::toString() const
+std::string Enrichment::toString() const
 {
-    stringstream s;
+    std::stringstream s;
     s << "Enrichment id: " << this->id_ << ", type: " << enrTypeToString(this->type_);
     return s.str();
 }
 
-string Enrichment::enrTypeToString(const EnrType type) const
+std::string Enrichment::enrTypeToString(const EnrType type) const
 {
-    string typetext;
+    std::string typetext;
     switch (type){
         case typeStandard:  typetext = "Standard"; break;
         case typeJump:      typetext = "Jump    "; break;

@@ -168,7 +168,7 @@ public:
     
     virtual std::string Print() const;
     
-    blitz::Array<double,1> GetCenterPosition(DRT::Element& ele) const;
+    blitz::Array<double,1> GetPhysicalCenterPosition(DRT::Element& ele) const;
 
 protected:
     
@@ -177,8 +177,8 @@ protected:
     
 private:
     
-    void SetDefaultCoordinates(
-            const DRT::Element::DiscretizationType distype);
+    std::vector<std::vector<double> > GetDefaultCoordinates(
+            const DRT::Element::DiscretizationType distype) const;
 };
 
 typedef std::vector<XFEM::DomainIntCell > DomainIntCells;

@@ -46,44 +46,29 @@ public:
     RCP<DRT::Discretization> cutterdis() const {return cutterdis_;};
     
     // ok, we copy the whole thing, this can be more elegant later on or not used at all
-    const map<int,DomainIntCells> elementalDomainIntCells() const {return elementalDomainIntCells_;};
-    const map<int,BoundaryIntCells> elementalBoundaryIntCells() const {return elementalBoundaryIntCells_;};
+    map<int,DomainIntCells> elementalDomainIntCells() const {return elementalDomainIntCells_;};
+    map<int,BoundaryIntCells> elementalBoundaryIntCells() const {return elementalBoundaryIntCells_;};
 
-    // return set of integrationcells, however the set can be empty -> always terminates
-    inline const DomainIntCells domainIntCells(const int gid, const DRT::Element::DiscretizationType distype) const
-    {
-    	map<int,DomainIntCells>::const_iterator tmp = elementalDomainIntCells_.find(gid);
-    	if (tmp == elementalDomainIntCells_.end())
-    	{	
-    	    // create default set with one dummy DomainIntCell
-    		DomainIntCells x;
-    		x.push_back(DomainIntCell(distype));
-    		return x;
-    	}
-        return tmp->second;
-    };
+    // return list of integrationcells, however the list can be empty -> always terminates
+    DomainIntCells GetDomainIntCells(
+            const int gid,
+            const DRT::Element::DiscretizationType distype
+            ) const;
     
-    inline const BoundaryIntCells boundaryIntCells(const int gid) const
-    {
-    	map<int,BoundaryIntCells>::const_iterator tmp = elementalBoundaryIntCells_.find(gid);
-    	if (tmp == elementalBoundaryIntCells_.end())
-    	{	
-    		const BoundaryIntCells x;
-    		return x;
-    	}
-        return tmp->second;
-    };
+    BoundaryIntCells GetBoundaryIntCells(
+            const int gid
+            ) const;
     
-    inline set<int> getSetOfIntersectedElementIds() const
-    {
-        set<int> eleidset;
-        map<int,DomainIntCells>::const_iterator tmp;
-        for (tmp = elementalDomainIntCells_.begin(); tmp != elementalDomainIntCells_.end(); ++tmp) {
-            const int eleid = tmp->first;
-            eleidset.insert(eleid);
-        }
-        return eleidset;
-    }
+//    inline set<int> getSetOfIntersectedElementIds() const
+//    {
+//        set<int> eleidset;
+//        map<int,DomainIntCells>::const_iterator tmp;
+//        for (tmp = elementalDomainIntCells_.begin(); tmp != elementalDomainIntCells_.end(); ++tmp) {
+//            const int eleid = tmp->first;
+//            eleidset.insert(eleid);
+//        }
+//        return eleidset;
+//    }
 
 private:
 	// intersected domain

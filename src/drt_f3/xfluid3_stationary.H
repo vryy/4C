@@ -140,6 +140,17 @@ namespace Elements
     blitz::Array<double,1> enr_funct_; /// enriched shape functions
     blitz::Array<double,2> enr_derxy_; /// enriched shape derivative with respect to x
     blitz::Array<double,2> enr_derxy2_;/// enriched second shape derivative with respect to x
+    
+    double HK(
+      XFluid3* ele,
+      const blitz::Array<double,2>&           evelnp,
+      const DRT::Element::DiscretizationType  distype,
+      const double                            visc
+      );
+    
+    double MK(
+      const DRT::Element::DiscretizationType  distype
+      );
   };
 
 }

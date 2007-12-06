@@ -249,7 +249,7 @@ int XFluidEnsightWriter::NumNodesPerField(
     for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
     {
         const int elegid = elementmap->GID(iele);
-        const XFEM::DomainIntCells domainintcells = ih->domainIntCells(elegid, dis->gElement(elegid)->Shape());
+        const XFEM::DomainIntCells domainintcells = ih->GetDomainIntCells(elegid, dis->gElement(elegid)->Shape());
         for (XFEM::DomainIntCells::const_iterator cell = domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
             switch (cell->Shape())
@@ -321,7 +321,7 @@ void XFluidEnsightWriter::WriteCoordinates(
             {
                 const int elegid = elementmap->GID(iele);
                 DRT::Element* const actele = dis->gElement(elegid);
-                const XFEM::DomainIntCells domainintcells = ih->domainIntCells(elegid, actele->Shape());
+                const XFEM::DomainIntCells domainintcells = ih->GetDomainIntCells(elegid, actele->Shape());
                 for (XFEM::DomainIntCells::const_iterator cell = domainintcells.begin(); cell != domainintcells.end(); ++cell)
                 {
                     if (cell->Shape() == distypeiter)
@@ -378,7 +378,7 @@ void XFluidEnsightWriter::WriteCells(
         for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
         {
             const int elegid = elementmap->GID(iele);
-            const XFEM::DomainIntCells domainintcells = ih->domainIntCells(elegid, dis->gElement(elegid)->Shape());
+            const XFEM::DomainIntCells domainintcells = ih->GetDomainIntCells(elegid, dis->gElement(elegid)->Shape());
             for (XFEM::DomainIntCells::const_iterator cell = domainintcells.begin(); cell != domainintcells.end(); ++cell)
             {
                 if (cell->Shape() == distypeiter)
@@ -440,7 +440,7 @@ NumElePerDisType XFluidEnsightWriter::GetNumElePerDisType(
     for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
     {
         const int elegid = elementmap->GID(iele);
-        const XFEM::DomainIntCells domainintcells = ih->domainIntCells(elegid, dis->gElement(elegid)->Shape());
+        const XFEM::DomainIntCells domainintcells = ih->GetDomainIntCells(elegid, dis->gElement(elegid)->Shape());
         for (XFEM::DomainIntCells::const_iterator cell = domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
             // update counter for current distype
@@ -470,6 +470,21 @@ void XFluidEnsightWriter::WriteResult(
     // apply enrichments
     RCP<XFEM::DofManager> dofman = rcp(new XFEM::DofManager(ih));
     
+    // tell elements about the dofs and the integration
+    {
+        ParameterList eleparams;
+        eleparams.set("action","store_xfem_info");
+        eleparams.set("dofmanager",dofman);
+        eleparams.set("assemble matrix 1",false);
+        eleparams.set("assemble matrix 2",false);
+        eleparams.set("assemble vector 1",false);
+        eleparams.set("assemble vector 2",false);
+        eleparams.set("assemble vector 3",false);
+        field_->discretization()->Evaluate(eleparams,null,null,null,null,null);
+    }
+    
+    // ensure that degrees of freedom in the discretization have been set
+    field_->discretization()->FillComplete();
     
     // for file continuation
     bool multiple_files = false;
@@ -535,7 +550,7 @@ vector<double> computeScalarCellNodeValues(
     // if cell node is on the interface, the value is not defined for a jump.
     // however, we approach the interface from one particular side and therefore,
     // -> we use the center of the cell to determine, where we come from
-    const blitz::Array<double,1> cellcenterpos(cell.GetCenterPosition(ele));
+    const blitz::Array<double,1> cellcenterpos(cell.GetPhysicalCenterPosition(ele));
     
     // cell corner nodes
     for (int inen = 0; inen < nen_cell; ++inen)
@@ -678,7 +693,7 @@ void XFluidEnsightWriter::WriteResultStep(
                 vector<double> elementvalues(numparam);
                 for (int iparam=0; iparam<numparam; ++iparam)   elementvalues[iparam] = myvelnp[dof[iparam]];
                 
-                const XFEM::DomainIntCells domainintcells = ih->domainIntCells(elegid, actele->Shape());
+                const XFEM::DomainIntCells domainintcells = ih->GetDomainIntCells(elegid, actele->Shape());
                 for (XFEM::DomainIntCells::const_iterator cell = domainintcells.begin(); cell != domainintcells.end(); ++cell)
                 {
                     if (cell->Shape() == distypeiter)
