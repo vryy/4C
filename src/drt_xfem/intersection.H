@@ -20,13 +20,13 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_utils_local_connectivity_matrices.H"
 #include "../drt_lib/drt_element.H"
-#include "../drt_f3/fluid3.H"
+#include "../io/io_drt.H"
 #include "tetgen.h"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Teuchos_RefCountPtr.hpp"
 
-
+ 
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
@@ -60,8 +60,8 @@ enum pointType {INTERNAL, SURFACE, LINE, NODE, INTERSECTION };
 typedef struct
 {
   int           nsurf;
-  int           surfaces[3];    /*!< surfaces*/
-  double        coord[3];       /*!< coordinates */
+  int           surfaces[3];    /*!< adjacent surfaces */
+  double        coord[3];       /*!< point coordinates */
   pointType     pType;          /*!< point type */
 } InterfacePoint;
 
@@ -74,27 +74,31 @@ class Intersection
 
                                                        
         /*!
-        \brief computes the intersection between to different fields
+        \brief  computes the intersection of two discretizations.
+        
+        This methods localizes the interface of the
+        cutter discretization within the xfem discretization. Each intersected xfem element
+        is tetrahedralized with help of a Constrained Delaunay Tetrahedralization. 
+        The output consists of a list of qadratic tetrahedral volume integration cells and 
+        a list of quadratic triangular boundary integration cells 
+        representing the curved interface.
+               
     
         \param xfemdis              (in)    : xfem discretization
         \param cutterdis            (in)    : cutter discretization
-        \param domainintcells      (out)    : list of domainintegrationcells for each intersected element
-        \param boundaryintcells    (out)    : list of boundaryintegrationcells for each intersected element
+        \param domainintcells       (out)   : list of domainintegrationcells for each intersected element
+        \param boundaryintcells     (out)   : list of boundaryintegrationcells for each intersected element
         */            
         void computeIntersection(   
-            const RefCountPtr<DRT::Discretization>        xfemdis, 
-            const RefCountPtr<DRT::Discretization>        cutterdis, 
-            map< int, DomainIntCells >&	domainintcells,
-            map< int, BoundaryIntCells >& boundaryintcells
+            const RefCountPtr<DRT::Discretization>        	xfemdis, 
+            const RefCountPtr<DRT::Discretization>        	cutterdis, 
+            map< int, DomainIntCells >&						domainintcells,
+            map< int, BoundaryIntCells >& 					boundaryintcells
             );
 		
         
         
         private:
-        
-        int countMissedPoints_;
-        
-        bool higherorder_;
         
         //! tolerance 1e-14 used for residuals in all Newton-methods
         static const double                 TOL14_ = 1e-14;
@@ -107,6 +111,9 @@ class Intersection
               
         //! discretization type of the xfem element
         DRT::Element::DiscretizationType    xfemDistype_;      
+        
+        //! discretization type of the previously handled xfem element
+        DRT::Element::DiscretizationType    xfemOldDistype_;      
         
         //! discretization type of the cutter element
         DRT::Element::DiscretizationType    cutterDistype_;
@@ -126,16 +133,19 @@ class Intersection
         //! number of surface points
         int                                 numBoundaryPoints_;
         
-         //! vector of nodes for each surface
+        //! counts missed points during the recovery
+        int                                 countMissedPoints_;
+        
+         //! vector of nodes for each surface of a single element
         vector< vector <int> >              eleNumberingSurfaces_;
         
-        //! vector of adjacent surfaces for each node
+        //! vector of adjacent surfaces for each node of a single element
         vector< vector <int> >              eleNodesSurfaces_;
         
-        //! vector of adjacent surfaces for each line
+        //! vector of adjacent surfaces for each line of a single element
         vector< vector <int> >              eleLinesSurfaces_;
         
-        //! nodal reference coordinate
+        //! nodal element coordinate
         vector< vector <double> >           eleRefCoordinates_;
         
         //! list of interface points to be stored in the Tetgen data structure
@@ -153,17 +163,28 @@ class Intersection
         //! list of intersecting cutter elements
         vector< DRT::Element* >             intersectingCutterElements_; 
         
-        //! list of facet marker numbered in the order of the intersected surface elments
+        //! list of face markers numbered in the order of the intersected surface elments
         vector<int>                         faceMarker_; 
         
         
         /*!
+        \brief initializes the the intersection computation
+    
+        \param xfemdis   (in) : xfem discretization
+        */
+        void initializeIntersection(
+            const RefCountPtr<DRT::Discretization>  xfemdis
+            );
+        
+        /*!
         \brief initializes the private members of the xfem element
     
+        \param xfemId        (in) : id of the current xfem element
         \param xfemElement   (in) : xfem element
         */
         void initializeXFEM(  
-            DRT::Element* xfemElement
+            int             xfemId,
+            DRT::Element*   xfemElement
             );
             
             
@@ -178,42 +199,118 @@ class Intersection
            		
         
         /*!
-        \brief transforms a point in reference coordinates to a point
+        \brief transforms a point in element coordinates to a point
                in current coordinates with respect to a given element
     
         \param element          (in)        : element
-        \param xsi              (in/out)    : vector of reference coordinates/
+        \param xsi              (in/out)    : vector of element coordinates/
                                               vector of current coordinates
         */
-        void referenceToCurrentCoordinates( 
+        void elementToCurrentCoordinates( 
             DRT::Element*               element, 
             Epetra_SerialDenseVector&   xsi
             );
  
  
         /*!
-        \brief transforms a point in reference coordinates to a point
+        \brief transforms a point in element coordinates to a point
                in current coordinates with respect to a given surfaceElement
                based on given nodal coordinates
     
         \param surfacElement    (in)        : surfaceElement
-        \param xsi              (in/out)    : vector of reference coordinates/
+        \param xsi              (in/out)    : vector of element coordinates/
                                               vector of current coordinates
         \param surfaceNodes     (in)        : nodal coordinates of the surface element
         */
-        void referenceToCurrentCoordinates(   
+        void elementToCurrentCoordinates(   
             DRT::Element*                               surfaceElement, 
             Epetra_SerialDenseVector&                   xsi,
             const vector <Epetra_SerialDenseVector>&    surfaceNodes
             );
     
+        
+        /*!
+        \brief transforms a point in element coordinates to a point
+               in current coordinates with respect to a given plane
+               based on given nodal coordinates
     
+        \param xsi          (in/out)    : vector of element coordinates/
+                                          vector of current coordinates
+        \param plane        (in)        : quad4 surface element
+        */
+        void elementToCurrentCoordinates(  
+            Epetra_SerialDenseVector&                   xsi,
+            const vector<Epetra_SerialDenseVector>&     plane
+            );
+
+
+        /*!
+        \brief transforms a point in current coordinates to a point
+               in element coordinates with respect to a given element
+    
+        \param element          (in)        : element
+        \param xsi              (in/out)    : vector of current coordinates/
+                                              vector of element coordinates
+        */
+        void currentToElementCoordinates( 
+            DRT::Element*               element,                     
+            Epetra_SerialDenseVector&   xsi
+            );
+ 
+        
+        /*!
+       	\brief transforms a point in current coordinates to a point
+               in element coordinates with respect to a given element
+            
+        \param element          (in)        : element
+        \param xsi              (in/out)    : vector of current coordinates/
+                                              vector of element coordinates
+        */
+        void currentToElementCoordinates(   
+        	DRT::Element*               element, 
+        	vector<double>&   			xsiVector
+          	);
+    
+        
+        /*!
+       	\brief transforms a point in current coordinates to a point
+               in element coordinates with respect to a given element
+            
+        \param element          (in)        : element
+        \param xsi              (in/out)    : vector of current coordinates/
+                                              vector of element coordinates
+        */
+        void elementToCurrentCoordinates(   
+            DRT::Element* 	element, 
+            vector<double>& xsi
+            );
+        
+        
+        /*!
+        \brief computes a global numbering for cutter elements, which are boundary
+               elements with xfem conditions
+    
+        \param cutterdis            (in)    : cutter discretization
+        \param xfemConditions       (in)    : list of boundary elements with xfem conditions
+        \param conditionEleCount    (out)   : global element counter
+        */
     	void adjustCutterElementNumbering( 
 			const RefCountPtr<DRT::Discretization>& 	cutterdis,  
 			vector< DRT::Condition * >&   				xfemConditions,
 			vector<int>& 								conditionEleCount
 			);
     
+    
+        /*!
+        \brief packs data for parallelization
+    
+        \param cutterdis            (in)        : cutter discretization
+        \param conditionSend        (in)        : list of boundary elements with xfem conditions
+        \param lengthSend           (in)        : size of packed data
+        \param nodeSetSizeSend      (in)        : size of node set
+        \param nodeVectorSend       (in)        : node vector
+        \param cutterDataSend       (out)       : cutter data
+        */
         void packData(
             const RefCountPtr<DRT::Discretization>      cutterdis,
             vector<int>&                                conditionSend, 
@@ -223,6 +320,15 @@ class Intersection
             vector<char>&                               cutterDataSend 
             );
         
+        
+        /*!
+        \brief unpacks nodes after a MPI send
+    
+        \param index            (in)        : start index in cutter data to read the nodes
+        \param cutterDataRecv   (in)        : received cutter data
+        \param nodeVectorRecv   (in)        : received node vector
+        \param nodeMap          (out)       : node map
+        */
         void unpackNodes(
             int                                     index, 
             vector<char>&                           cutterDataRecv, 
@@ -230,6 +336,18 @@ class Intersection
             map< int, RefCountPtr<DRT::Node> >&     nodeMap 
             );
     
+    
+        /*!
+        \brief sends and recieves cutter element data
+    
+        \param xfemConditions       (in)        : list of cutter elements with xfem conditions
+        \param conditionEleCount    (in)        : global cutter element count
+        \param cutterElementMap     (in)        : map of cutter elements
+        \param cutterNodeMap        (out)       : map of nodes for cutter elements
+        \param xfemCutterIdMap      (out)       : map of cutter ids
+        \param xfemdis              (in)        : xfem discretization
+        \param cutterdis            (in)        : cutter discretization
+        */
     	void getCutterElementsInParallel(	
 			vector< DRT::Condition * >&      		xfemConditions,
 			vector<int>&							conditionEleCount, 
@@ -240,35 +358,7 @@ class Intersection
 		   	const RefCountPtr<DRT::Discretization>& cutterdis  
 		   	);
     
-         /*!
-        \brief transforms a point in reference coordinates to a point
-               in current coordinates with respect to a given plane
-               based on given nodal coordinates
-    
-        \param xsi          (in/out)    : vector of reference coordinates/
-                                          vector of current coordinates
-        \param plane        (in)        : quad4 surface element
-        */
-        void referenceToCurrentCoordinates(  
-            Epetra_SerialDenseVector&                   xsi,
-            const vector<Epetra_SerialDenseVector>&     plane
-            );
-
-
-        /*!
-        \brief transforms a point in current coordinates to a point
-               in reference coordinates with respect to a given element
-    
-        \param element          (in)        : element
-        \param xsi              (in/out)    : vector of current coordinates/
-                                              vector of reference coordinates
-        */
-        void currentToReferenceCoordinates( 
-            DRT::Element*               element,                     
-            Epetra_SerialDenseVector&   xsi
-            );
- 
-            
+  
         /*!
         \brief compares two points (overloaded method)
     
@@ -431,12 +521,12 @@ class Intersection
         
                        							
         /*!
-        \brief updates the system matrix at the corresponding reference coordinates for the 
+        \brief updates the system matrix at the corresponding element coordinates for the 
                computation if a node in current coordinates lies within an element 
     
         \param dim               (in)       : dimension of the problem
         \param A                 (out)      : system matrix
-        \param xsi               (in)       : vector of reference coordinates
+        \param xsi               (in)       : vector of element coordinates
         \param element           (in)       : element 
         */                                                                                                      
         void updateAForNWE( 
@@ -448,12 +538,12 @@ class Intersection
         
           
         /*!
-        \brief updates the rhs at the corresponding reference coordinates for the 
+        \brief updates the rhs at the corresponding element coordinates for the 
                computation whether a node in current coordinates lies within an element 
     
         \param dim               (in)       : dimension of the problem
         \param b                 (out)      : right-hand-side       
-        \param xsi               (in)       : vector of reference coordinates
+        \param xsi               (in)       : vector of element coordinates
         \param x                 (in)       : node in current coordinates
         \param element           (in)       : element
         */                               
@@ -472,7 +562,7 @@ class Intersection
     
         \param element              (in)        : element 
         \param x                    (in)        : node in current coordinates
-        \param xsi                  (in)        : node in reference coordinates
+        \param xsi                  (in)        : node in element coordinates
         */	
 		bool checkNodeWithinElement(	
             DRT::Element*                       element,
@@ -485,7 +575,7 @@ class Intersection
         \brief  checks if a node that lies within an element and if it 
                 lies on one of its surfaces, lines or nodes          .
     
-        \param xsi                  (in)        : node in reference coordinates
+        \param xsi                  (in)        : node in element coordinates
         \param ip                   (in)        : interface point
         \return true if the node is lying on a boundary false otherwise
         */  
@@ -534,6 +624,7 @@ class Intersection
             DRT::Element*                   lineElement,
             const int                       surfaceId,
             const int                       lineId,
+            Epetra_SerialDenseVector&       xsiOld,
             Epetra_SerialDenseVector&       upLimit,
             Epetra_SerialDenseVector&       loLimit,
             std::vector<InterfacePoint>&    interfacePoints,
@@ -548,7 +639,7 @@ class Intersection
     
         \param surfaceElement   (in)        : surface element
         \param lineElement      (in)        : line element
-        \param xsi              (in/out)    : starting value/vector of reference coordinates
+        \param xsi              (in/out)    : starting value/vector of element coordinates
         \param upLimit          (in)        : upper search interval boundary
         \param loLimit          (int)       : lower search interval boundary        
         return true if an intersection point was found, otherwise false 
@@ -561,13 +652,28 @@ class Intersection
             Epetra_SerialDenseVector&   loLimit
             );
         
-                                                           
+        
+        /*!
+            \brief solves a singular system of equations
+    
+        \param xsi              (in/out)    : vector of element domain coordinates
+        \param lineElement      (in)        : line element
+        \param surfaceElement   (in)        : surface element
+        return true if resulting system is singular , false otherwise
+        */                                               
+        bool computeSingularCSI(
+            Epetra_SerialDenseVector&   xsi,
+            DRT::Element*               lineElement,
+            DRT::Element*               surfaceElement
+            );
+            
+                 
 		/*!
-	  	\brief updates the systemmatrix at the corresponding reference coordinates 
+	  	\brief updates the systemmatrix at the corresponding element coordinates 
                for the computation of curve surface intersections
 	
 		\param A  				 (out)		: system matrix
-		\param xsi				 (in)	    : vector of reference coordinates
+		\param xsi				 (in)	    : vector of element coordinates
 	  	\param surfaceElement    (in) 		: surface element
 	  	\param lineElement       (in) 		: line element
 	  	*/							
@@ -580,11 +686,11 @@ class Intersection
 		
           	            
         /*!
-        \brief updates the rhs at the corresponding reference coordinates 
+        \brief updates the rhs at the corresponding element coordinates 
                for the computation of curve surface intersections
    
         \param b                 (out)      : right-hand-side
-        \param xsi               (in)       : vector of reference coordinates
+        \param xsi               (in)       : vector of element coordinates
         \param surfaceElement    (in)       : surface element
         \param lineElement       (in)       : line element
         */                          	 					
@@ -620,7 +726,25 @@ class Intersection
             const int                       lineId,
             const bool 					    lines
             );
-					   							
+			
+            
+        /*!
+        \brief  creates new limits for the recursive intersection computation
+    
+        \param xsi              (in)        : intersection point
+        \param upLimit          (in)        : upper limits
+        \param loLimit          (in)        : lower limits
+        \param upperLimits      (out)       : list of upper limits of new ranges
+        \param lowerLimits      (out)       : list of lower limits of new ranges
+        */              
+        void createNewLimits(
+            Epetra_SerialDenseVector&               xsi, 
+            Epetra_SerialDenseVector&               upLimit,
+            Epetra_SerialDenseVector&               loLimit,
+            vector< Epetra_SerialDenseVector >&     upperLimits, 
+            vector< Epetra_SerialDenseVector >&     lowerLimits
+            );		   							
+        
         
         /*!
         \brief  computes the convex hull of a set of points
@@ -652,13 +776,16 @@ class Intersection
         \brief  computes the Constrained Delaunay Tetrahedralization CDT
                 of an intersected xfem element
     
-        \param element                  (in)        : element
-        \param cutterElement            (in)        : cutter element
+        \param element              (in)    : xfem element
+        \param cutterElement        (in)    : cutter element
+        \param domainintcells       (out)   : list of domainintegrationcells for each intersected element
+        \param boundaryintcells     (out)   : list of boundaryintegrationcells for each intersected element
         */       
         void computeCDT(    
             DRT::Element*                           element,
             DRT::Element*                           cutterElement,
-            map< int, DomainIntCells >&   domainintcells
+            map< int, DomainIntCells >&             domainintcells,
+            map< int, BoundaryIntCells >&           boundaryintcells
             );
     
     
@@ -750,8 +877,9 @@ class Intersection
         \param out                  (in/out)    :   output data structure of TetGen
         */      
         void recoverCurvedInterface(
-            DRT::Element*   xfemElement, 
-            tetgenio&       out
+            DRT::Element*                   xfemElement, 
+            map< int, BoundaryIntCells >&   boundaryintcells,
+            tetgenio&                       out
             );
            
             
@@ -798,7 +926,7 @@ class Intersection
         \param out                      (in)     :   output data structure of TetGen
         \return true the point lies in the cutter element and false if on an edge
         */     
-        bool decideNormalOrPlane(  
+        int decideSteinerCase(  
             int                         steinerIndex,
             int&                        lineIndex, 
             int&                        cutterIndex,  
@@ -841,7 +969,6 @@ class Intersection
         \param adjacentFacesList        (in)     :   list of adjacent faces 
         \param xfemElement              (in)     :   xfem element  
         \param out                      (in)     :   output data structure of TetGen
-        \return true the point lies in the cutter element and false if on an edge
         */     
         void liftSteinerPointOnEdge(
             int                         steinerIndex,
@@ -854,7 +981,25 @@ class Intersection
             tetgenio&                   out
             );
           
-           
+        
+        /*!
+        \brief  lifts the Steiner point on an edge that lies on the xfem boundary
+    
+        \param steinerIndex             (in)     :   index of the Steiner point 
+        \param adjacentFacesList        (in)     :   list of adjacent faces 
+        \param adjacentFacemarkerList   (in)     :   list of adjacent face marker
+        \param xfemElement              (in)     :   xfem element  
+        \param out                      (in)     :   output data structure of TetGen
+        */       
+        void liftSteinerPointOnBoundary( 
+            int                         steinerIndex, 
+            vector< vector <int> >&     adjacentFacesList, 
+            vector< vector <int> >&     adjacentFacemarkerList, 
+            DRT::Element*               xfemElement, 
+            tetgenio&                   out
+            );
+            
+             
         /*!
         \brief  gathers information of a tetrahedron adjacent to an 
                 interface 
@@ -1087,7 +1232,7 @@ class Intersection
             );
             
 
-         /*!
+        /*!
         \brief  computes the normal to the interface edge of two
                 adjacent triangular faces passing through the midpoint of that edge.             
               
@@ -1111,6 +1256,27 @@ class Intersection
             );    
    
    
+        /*!
+        \brief  computes the normal to the interface edge of a triangular
+                faces on the xfem boundary passing through the Steiner point of that edge.             
+              
+        \param steinerIndex             (in)    : index of Steiner point
+        \param edgeIndex                (in)    : index of the other edge point
+        \param oppositeIndex            (in)    : index of the point on the boundary triangle opposite the edge
+        \param plane                    (out)   : nodes of the normal and plane 
+        \param xfemElement              (in)    : xfem element
+        \param out                      (in)    : output data structure of tetGen
+        */    
+        void computeIntersectionNormal( 
+            const int                               steinerIndex,
+            const int                               edgeIndex,
+            const int                               oppositeIndex,
+            vector<Epetra_SerialDenseVector>&       plane,
+            DRT::Element*                           xfemElement,
+            const tetgenio&                         out
+            );
+            
+            
         /*!
         \brief  compute the midpoint of a line described by two points
                 
@@ -1243,8 +1409,46 @@ class Intersection
             DRT::Element*                               xfemElement, 
             tetgenio&                                   out
             );
+        
+        
+        /*!
+        \brief  stores domain integration cells
+    
+        \param xfemElement          (in)        :   xfem element
+        \param domainintcells       (out)       :   domain integration cells
+        \param out                  (in)        :   tetgenio output data structure 
+        */    
+        void storeDomainIntCells(
+            DRT::Element*                   xfemElement,
+            map< int, DomainIntCells >&     domainintcells,
+            tetgenio&                       out
+            ); 
+             
               
-                  
+        /*!
+        \brief  stores boundary integration cells
+    
+        \param trifaceIndex             (in)        :   index of the triangular face
+        \param cornerIndex              (in)        :   global index of corner node of an triangle edge
+        \param globalHigherOrderIndex   (in)        :   global higher-order index the midpoint of an triangle edge
+        \param faceMarker   			(in)        :   id of cutter element
+        \param domainCoord            	(out)       :   point coordinates of the triangular face in xfem configuration
+        \param boundaryCoord            (out)       :   point coordinates of the triangular face in cutter configuration
+        \param xfemElement				(in)		:	xfem element
+        \param out                      (in)        :   tetgenio output data structure 
+        */      
+        void storeBoundaryIntCells(
+        	const int                         		trifaceIndex,
+        	const int                         		cornerIndex, 
+        	const int                         		globalHigherOrderIndex, 
+        	const int                         		faceMarker, 
+		    std::vector< std::vector<double> >&   	domainCoord, 
+		    std::vector< std::vector<double> >&   	boundaryCoord, 
+		    DRT::Element*							xfemElement,
+		    tetgenio&                   			out
+            );
+            
+                    
         /*!
         \brief Debugging the intersection of XAABB's (DEBUG ONLY)
     
@@ -1270,7 +1474,7 @@ class Intersection
     
         \param element          (in)    : element
         \param node             (in)    : node
-        \param xsi              (in)    : reference coordinates
+        \param xsi              (in)    : element coordinates
         \param noE              (in)    : id of the element
         \param noN              (in)    : id of the node
         \param within           (in)    : true if within, false otherwise
@@ -1290,7 +1494,7 @@ class Intersection
     
         \param surfaceElement   (in)    : surfaceElement
         \param lineElement      (in)    : lineElement 
-        \param xsi              (in)    : reference coordinates
+        \param xsi              (in)    : element coordinates
         \param noSE             (in)    : id of the surface element
         \param noLE             (in)    : id of the line element
         \param within           (in)    : true if within, false otherwise
@@ -1346,27 +1550,12 @@ class Intersection
             int id
             );  
             
-       
+
         /*!
         \brief  computes unique coordinates for a certain region in the 
                 xfem element. It is copied into the data structure of Tetgen
                    
-        \param xfemElement           (in)        : xfem element
-        \param cutterElement         (in)        : cutter element
-        \param regioncoordinates     (out)       : coordinates of the region points
-        */    
-        void computeRegionCoordinates(  
-            DRT::Element*  xfemElement,
-            DRT::Element*  cutterElement,
-            double* regionCoordinates
-            ); 
-            
-            
-        /*!
-        \brief  computes unique coordinates for a certain region in the 
-                xfem element. It is copied into the data structure of Tetgen
-                   
-        \param indec            (in)        : index of the xfem element
+        \param index            (in)        : index of the xfem element
         \param out              (in)        : tetgenio output data structure
         */        
         void printTetViewOutput(
@@ -1375,7 +1564,13 @@ class Intersection
             ); 
             
             
-            
+        /*!
+        \brief  computes unique coordinates for a certain region in the 
+                xfem element. It is copied into the data structure of Tetgen
+                   
+        \param index            (in)        : index of the xfem element
+        \param out              (in)        : tetgenio output data structure
+        */           
         void printTetViewOutputPLC(
             DRT::Element*   xfemElement,
             int             index,

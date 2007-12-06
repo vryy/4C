@@ -24,7 +24,7 @@
 <pre>
 Maintainer: Ursula Mayer
 </pre>
-
+ 
 *----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
@@ -36,7 +36,6 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_utils_local_connectivity_matrices.H"
 #include "../drt_lib/drt_element.H"
-//#include "../drt_f3/fluid3.H"
 
 #ifdef PARALLEL
 #include "../drt_lib/drt_exporter.H"
@@ -54,18 +53,22 @@ using namespace DRT::Utils;
  *----------------------------------------------------------------------*/  
 void Intersection::computeIntersection( const RefCountPtr<DRT::Discretization>  xfemdis,
                                         const RefCountPtr<DRT::Discretization>  cutterdis,  
-                                        map< int, DomainIntCells >&   domainintcells,
-                                        map< int, BoundaryIntCells >&   boundaryintcells)
+                                        map< int, DomainIntCells >&   			domainintcells,
+                                        map< int, BoundaryIntCells >&   		boundaryintcells)
 {
     
 	
     bool xfemIntersection; 
+    double t_start, t_end;
     vector< DRT::Condition * >      		xfemConditions;
     map< int, vector< DRT::Element* > >     cutterElementMap;
     DRT::Element*                   		xfemElement;
     vector< DRT::Element* > 				cutterElements;
 
     countMissedPoints_ = 0;
+    
+    t_start = ds_cputime();
+    initializeIntersection(xfemdis);
     
 #ifdef PARALLEL
 	const int cmyrank = cutterdis->Comm().MyPID();
@@ -84,23 +87,20 @@ void Intersection::computeIntersection( const RefCountPtr<DRT::Discretization>  
     cutterdis->GetCondition ("XFEMCoupling", xfemConditions);
         
     if(xfemConditions.size()==0)
-    {
-        //dserror("number of fsi xfem conditions = 0");
-        cout << "number of fsi xfem conditions = 0 !!!" << endl;
-    };
+        dserror("number of fsi xfem conditions = 0");
       
        
 #ifdef PARALLEL
 		adjustCutterElementNumbering(cutterdis, xfemConditions, conditionEleCount);
 #endif         
-       
-       
+   
+	int countCDT = 0;
     //  k < xfemdis->NumMyColElements()
     for(int k = 0; k < xfemdis->NumMyColElements(); k++)
     {
         xfemIntersection = false;
         xfemElement = xfemdis->lColElement(k);
-        initializeXFEM(xfemElement);  
+        initializeXFEM(k, xfemElement);  
         
         Epetra_SerialDenseMatrix xfemXAABB = computeFastXAABB(xfemElement);
             
@@ -164,7 +164,7 @@ void Intersection::computeIntersection( const RefCountPtr<DRT::Discretization>  
     {
         xfemIntersection = false;
         xfemElement = xfemdis->lColElement(k);
-        initializeXFEM(xfemElement);    
+        initializeXFEM(k, xfemElement);    
         startPointList();
 
 #endif         
@@ -188,13 +188,12 @@ void Intersection::computeIntersection( const RefCountPtr<DRT::Discretization>  
             for(int m=0; m<cutterElements[i]->NumLine() ; m++)                    
                 collectInternalPoints( xfemElement, cutterElements[i], cutterElements[i]->Nodes()[m],
                                         interfacePoints, k, m);
-          
+  
             // collect intersection points                                   
             for(int m=0; m<xfemElement->NumLine() ; m++) 
                 if(collectIntersectionPoints(   cutterElements[i], xfemElement->Lines()[m],
                                                 interfacePoints, 0, m, false, xfemIntersection))                                         
                     storeIntersectedCutterElement(cutterElements[i]); 
-            
             
             for(int m=0; m<cutterElements[i]->NumLine() ; m++)                                              
                 for(int p=0; p<xfemElement->NumSurface() ; p++) 
@@ -207,29 +206,31 @@ void Intersection::computeIntersection( const RefCountPtr<DRT::Discretization>  
             if(interfacePoints.size()!=0)
             {
 #ifdef QHULL
+            	xfemIntersection = true;
                 computeConvexHull( xfemElement, cutterElements[i], interfacePoints);
 #else
                 dserror("Set QHULL flag to use XFEM intersections!!!");
 #endif
             }    
-            interfacePoints.clear();     
+            interfacePoints.clear();  
         }// for-loop over all cutter elements
         
-        
         if(xfemIntersection)
-        {                                                                          
+        {           
+        	countCDT++;
             //debugTetgenDataStructure(xfemElement);
-            computeCDT(xfemElement, cutterElements[0], domainintcells);
+            computeCDT(xfemElement, cutterElements[0], domainintcells, boundaryintcells);
         }
-       
+        
     }// for-loop over all  actdis->NumMyColElements()
-    
+    //printf("countCDT = %d\n",countCDT );
     //debugDomainIntCells(domainintcells,2);
+    t_end = ds_cputime()-t_start;
     cout << endl;
     if(countMissedPoints_ > 0)
     	cout << "Number of missed points during the recovery copy = " << countMissedPoints_ << endl;
     	
-    cout << "Intersection computed sucessfully ";
+    cout << "Intersection computed sucessfully in " << t_end  <<  " secs";
 #ifdef PARALLEL
     flush(cout);
 	cout << " rank = " << cmyrank;
@@ -241,43 +242,59 @@ void Intersection::computeIntersection( const RefCountPtr<DRT::Discretization>  
 }
 
 
+/*----------------------------------------------------------------------*
+ |  INIT:   initializes the intersection computation         u.may 12/07|
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+void Intersection::initializeIntersection(
+    const RefCountPtr<DRT::Discretization>  xfemdis)
+{
+    xfemOldDistype_ = xfemdis->lColElement(0)->Shape();
+}
+
+
 
 /*----------------------------------------------------------------------*
  |  INIT:   initializes the private members of the           u.may 08/07|
  |          current xfem element                                        |
  *----------------------------------------------------------------------*/
-void Intersection::initializeXFEM(  
-    DRT::Element* xfemElement)
+void Intersection::initializeXFEM(
+    int             xfemId,
+    DRT::Element*   xfemElement)
 { 
     xfemDistype_ = xfemElement->Shape();
+ 
+    // todo check for paralleilzation
+    //if(xfemOldDistype_ != xfemDistype_ || xfemId == 0) 
+    //{   
+        numXFEMSurfaces_ = xfemElement->NumSurface(); 
+        numXFEMLines_ = xfemElement->NumLine(); 
+       
+        numXFEMCornerNodes_  = getNumberOfElementCornerNodes(xfemDistype_);
+        
+        eleLinesSurfaces_.clear();
+        eleNodesSurfaces_.clear();
+        eleNumberingSurfaces_.clear();
+        eleRefCoordinates_.clear(); 
+        
+        eleLinesSurfaces_ = getEleNodeNumbering_lines_surfaces(xfemDistype_);
+        eleNodesSurfaces_ = getEleNodeNumbering_nodes_surfaces(xfemDistype_);
+        eleNumberingSurfaces_ = getEleNodeNumberingSurfaces(xfemDistype_);
+        eleRefCoordinates_ = getEleNodeNumbering_nodes_reference(xfemDistype_);
+    //}
     
-    numXFEMSurfaces_ = xfemElement->NumSurface(); 
-    numXFEMLines_ = xfemElement->NumLine(); 
-   
-    numXFEMCornerNodes_  = getNumberOfElementCornerNodes(xfemDistype_);
+    xfemOldDistype_ = xfemElement->Shape();
     
     pointList_.clear();
     segmentList_.clear();                 
     surfacePointList_.clear();                
     triangleList_.clear();
     
-    intersectingCutterElements_.clear();
-    faceMarker_.clear();
-    
-    eleLinesSurfaces_.clear();
-    eleNodesSurfaces_.clear();
-    eleNumberingSurfaces_.clear();
-    eleRefCoordinates_.clear(); 
-     
     segmentList_.resize(numXFEMSurfaces_);
     surfacePointList_.resize(numXFEMSurfaces_);    
     
-    eleLinesSurfaces_ = getEleNodeNumbering_lines_surfaces(xfemDistype_);
-    eleNodesSurfaces_ = getEleNodeNumbering_nodes_surfaces(xfemDistype_);
-    eleNumberingSurfaces_ = getEleNodeNumberingSurfaces(xfemDistype_);
-    eleRefCoordinates_ = getEleNodeNumbering_nodes_reference(xfemDistype_);
-    
-    higherorder_ = false;
+    intersectingCutterElements_.clear();
+    faceMarker_.clear();
 }
 
 
@@ -626,40 +643,100 @@ void Intersection::getCutterElementsInParallel(
 
 
 /*----------------------------------------------------------------------*
- | GM:      transforms a node in reference coordinates       u.may 07/07|
+ | GM:      transforms a node in element coordinates       u.may 07/07|
  |          into current coordinates                                    |
  *----------------------------------------------------------------------*/  
-void Intersection::referenceToCurrentCoordinates(   
+void Intersection::elementToCurrentCoordinates(   
     DRT::Element* element, 
     Epetra_SerialDenseVector& xsi)
 {
     const int numNodes = element->NumNode();
-    vector<int> actParams(1,0);
     Epetra_SerialDenseVector funct(numNodes);
-    Epetra_SerialDenseMatrix emptyM;
-    Epetra_SerialDenseVector emptyV;
-    DRT::Discretization dummyDis("dummy discretization", null);
-    ParameterList params;   
-    params.set("action","calc_Shapefunction");
-           
-    actParams[0] = numNodes;            
-    element->Evaluate(params, dummyDis, actParams, emptyM, emptyM , funct, xsi, emptyV);           
-        
-    for(int i=0; i<3; i++)
+    
+    switch(getDimension(element))
     {
-        xsi[i] = 0.0;
-        for(int j=0; j<numNodes; j++)
-            xsi[i] += element->Nodes()[j]->X()[i] * funct(j);
+        case 1:
+        {
+            shape_function_1D(funct, xsi[0], element->Shape());
+            break;
+        }
+        case 2:
+        {
+            shape_function_2D(funct, xsi[0], xsi[1], element->Shape());
+            break;
+        }
+        case 3:
+        {
+            shape_function_3D(funct, xsi[0], xsi[1], xsi[2], element->Shape());
+            break;
+        }
+        default:
+            dserror("dimension of the element is not correct");
+    }          
+        
+    xsi.Scale(0.0);
+    
+    for(int i=0; i<numNodes; i++)
+    {
+        DRT::Node* node = element->Nodes()[i];
+        for(int j=0; j<3; j++)
+            xsi[j] += node->X()[j] * funct(i);
     }
 }
 
 
 
 /*----------------------------------------------------------------------*
- | GM:      transforms a node in reference coordinates       u.may 07/07|
+ | GM:      transforms a node in element coordinates       u.may 07/07|
  |          into current coordinates                                    |
  *----------------------------------------------------------------------*/  
-void Intersection::referenceToCurrentCoordinates(   
+void Intersection::elementToCurrentCoordinates(   
+    DRT::Element* 	element, 
+    vector<double>& xsi)
+{
+	int dim = getDimension(element);
+    const int numNodes = element->NumNode();
+    Epetra_SerialDenseVector funct(numNodes);
+    
+    switch(dim)
+    {
+        case 1:
+        {
+            shape_function_1D(funct, xsi[0], element->Shape());
+            break;
+        }
+        case 2:
+        {
+            shape_function_2D(funct, xsi[0], xsi[1], element->Shape());
+            break;
+        }
+        case 3:
+        {
+            shape_function_3D(funct, xsi[0], xsi[1], xsi[2], element->Shape());
+            break;
+        }
+        default:
+            dserror("dimension of the element is not correct");
+    }          
+        
+    for(int i = 0; i<dim; i++)
+    	xsi[i] = 0.0;
+    
+    for(int i=0; i<numNodes; i++)
+    {
+        DRT::Node* node = element->Nodes()[i];
+        for(int j=0; j<dim; j++)
+            xsi[j] += node->X()[j] * funct(i);
+    }
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | GM:      transforms a node in element coordinates       u.may 07/07|
+ |          into current coordinates                                    |
+ *----------------------------------------------------------------------*/  
+void Intersection::elementToCurrentCoordinates(   
     DRT::Element*                               surfaceElement, 
     Epetra_SerialDenseVector&                   xsi,
     const vector<Epetra_SerialDenseVector>&     surfaceNodes)
@@ -667,30 +744,23 @@ void Intersection::referenceToCurrentCoordinates(
     const int numNodes = surfaceElement->NumNode();
     vector<int> actParams(1,0);
     Epetra_SerialDenseVector funct(numNodes);
-    Epetra_SerialDenseMatrix emptyM;
-    Epetra_SerialDenseVector emptyV;
-    DRT::Discretization dummyDis("dummy discretization", null);
-    ParameterList params;   
-    params.set("action","calc_Shapefunction");
-           
-    actParams[0] = numNodes;            
-    surfaceElement->Evaluate(params, dummyDis, actParams, emptyM, emptyM , funct, xsi, emptyV);           
-        
-    for(int dim=0; dim<3; dim++)
-    {
-        xsi[dim] = 0.0;
-        for(int i=0; i<numNodes; i++)
-            xsi[dim] += surfaceNodes[i][dim] * funct(i);
-    }
+  
+    shape_function_2D(funct, xsi[0], xsi[1], surfaceElement->Shape());
+       
+    xsi.Scale(0.0); 
+    for(int i=0; i<numNodes; i++)     
+        for(int j=0; j<3; j++)
+            xsi[j] += surfaceNodes[i][j] * funct(i);
+    
 }
 
 
 
 /*----------------------------------------------------------------------*
- | GM:      transforms a node in reference coordinates       u.may 07/07|
+ | GM:      transforms a node in element coordinates       u.may 07/07|
  |          into current coordinates                                    |
  *----------------------------------------------------------------------*/  
-void Intersection::referenceToCurrentCoordinates(  
+void Intersection::elementToCurrentCoordinates(  
     Epetra_SerialDenseVector&                   xsi,
     const vector<Epetra_SerialDenseVector>&     plane)
 {
@@ -698,49 +768,69 @@ void Intersection::referenceToCurrentCoordinates(
     Epetra_SerialDenseVector funct(numNodes);
     
     shape_function_2D(funct, xsi[0], xsi[1], DRT::Element::quad4);
-        
-    for(int dim=0; dim<3; dim++)
-    {
-        xsi[dim] = 0.0;
-        for(int i=0; i<numNodes; i++)
-            xsi[dim] += plane[i][dim] * funct(i);
-    }
+    
+    xsi.Scale(0.0);
+    for(int i=0; i<numNodes; i++)
+        for(int j=0; j<3; j++)   
+            xsi[j] += plane[i][j] * funct(i);
+    
 }
 
 
 
 /*----------------------------------------------------------------------*
  | GM:  transforms a node in current coordinates            u.may 07/07 |
- |      into reference coordinates                                      |
+ |      into element coordinates                                        |
  *----------------------------------------------------------------------*/  
-void Intersection::currentToReferenceCoordinates(   
+void Intersection::currentToElementCoordinates(   
     DRT::Element*               element, 
     Epetra_SerialDenseVector&   xsi)
 {
     
     Epetra_SerialDenseVector x(3);
     
-    for(int i = 0; i < 3; i++)
-    {
-        x[i] = xsi[i];
-        xsi[i] = 0.0;
-    }
+    x = xsi;
+    xsi.Scale(0.0);
     
     checkNodeWithinElement(element, x, xsi);
-    
-/*    if(!nodeWithinElement)
-    {
-        printf("xsi = %f \t %f \t %f\n", xsi[0], xsi[1], xsi[2]);
-    }
-    //    dserror("node not within element");
-*/        
-        
+   
     // rounding 1 and -1 to be exact for the CDT
     for(int j = 0; j < 3; j++)
     {
         if( fabs((fabs(xsi[j])-1.0)) < TOL7_ &&  xsi[j] < 0)    xsi[j] = -1.0;
         if( fabs((fabs(xsi[j])-1.0)) < TOL7_ &&  xsi[j] > 0)    xsi[j] =  1.0;      
     }  
+}     
+
+
+
+/*----------------------------------------------------------------------*
+ | GM:  transforms a node in current coordinates            u.may 12/07 |
+ |      into element coordinates  (vector<double>)                      |
+ *----------------------------------------------------------------------*/  
+void Intersection::currentToElementCoordinates(   
+    DRT::Element*               element, 
+    vector<double>&   			xsiVector)
+{
+    
+	int dim = getDimension(element);
+    Epetra_SerialDenseVector x(dim);
+    Epetra_SerialDenseVector xsi(dim);
+    
+    for(int i = 0; i < dim; i++)
+    	x[i] = xsiVector[i];
+  
+    checkNodeWithinElement(element, x, xsi);
+   
+    // rounding 1 and -1 to be exact for the CDT
+    for(int j = 0; j < dim; j++)
+    {
+        if( fabs((fabs(xsi[j])-1.0)) < TOL7_ &&  xsi[j] < 0)    xsi[j] = -1.0;
+        if( fabs((fabs(xsi[j])-1.0)) < TOL7_ &&  xsi[j] > 0)    xsi[j] =  1.0;      
+    } 
+    
+    for(int i = 0; i < dim; i++)
+    	xsiVector[i] = xsi[i];
 }     
 
 
@@ -778,9 +868,6 @@ bool Intersection::comparePoints(
     const double*             point2)
 {   
     bool equal = true;
-    
-    if(point2 == NULL)
-        dserror("array is NULL");
         
     for(unsigned int i = 0; i < point1.size() ; i++)
         if(fabs(point1[i] - point2[i]) > TOL7_)
@@ -804,9 +891,6 @@ bool Intersection::comparePoints(
 {   
     bool equal = true;
     
-    if(point1.size() != point2.size())
-        dserror("arrays of nodes need to have the same length");
-             
     for(unsigned int i = 0; i < point1.size() ; i++)
         if(fabs(point1[i] - point2[i]) > TOL7_)
         {
@@ -852,9 +936,6 @@ bool Intersection::comparePoints(
 {   
     bool equal = true;
     
-    if(point1.Length() != point2.Length())
-        dserror("arrays of nodes need to have the same length");
-             
     for(int i = 0; i < point1.Length() ; i++)
         if(fabs(point1[i] - point2[i]) > TOL7_)
         {
@@ -943,19 +1024,23 @@ Epetra_SerialDenseMatrix Intersection::computeFastXAABB(
     double  maxDistance; 
     Epetra_SerialDenseMatrix XAABB(3, 2);
     
+    DRT::Node* node = element->Nodes()[0];
 	for(int dim=0; dim<3; dim++)
 	{
-		XAABB(dim, 0) = element->Nodes()[0]->X()[dim] - TOL7_;
-   		XAABB(dim, 1) = element->Nodes()[0]->X()[dim] + TOL7_;
+		XAABB(dim, 0) = node->X()[dim] - TOL7_;
+   		XAABB(dim, 1) = node->X()[dim] + TOL7_;
 	}
     
     for(int i=1; i<element->NumNode(); i++)
+    {
+        DRT::Node* nodeEle = element->Nodes()[i];
         for(int dim=0; dim<3; dim++)
 		{
-            XAABB(dim, 0) = std::min( XAABB(dim, 0), element->Nodes()[i]->X()[dim] - TOL7_);
-			XAABB(dim, 1) = std::max( XAABB(dim, 1), element->Nodes()[i]->X()[dim] + TOL7_);
+            XAABB(dim, 0) = std::min( XAABB(dim, 0), nodeEle->X()[dim] - TOL7_);
+			XAABB(dim, 1) = std::max( XAABB(dim, 1), nodeEle->X()[dim] + TOL7_);
 		}
- 
+    }
+    
     maxDistance = fabs(XAABB(0,1) - XAABB(0,0));
  	for(int dim=1; dim<3; dim++)
 	   maxDistance = std::max(maxDistance, fabs(XAABB(dim,1)-XAABB(dim,0)) );
@@ -1128,7 +1213,7 @@ bool Intersection::collectInternalPoints(
         if(checkIfOnBoundary(xsi, ip))  numBoundaryPoints_++;
                                    
         // intersection coordinates in the surface 
-        // element reference coordinate system
+        // element element coordinate system
         getNodeCoordinates(nodeId, ip.coord, cutterElement->Shape());
                           
         interfacePoints.push_back(ip);
@@ -1152,28 +1237,41 @@ void Intersection::updateAForNWE(
     DRT::Element*               element)                                                  
 {	
     const int numNodes = element->NumNode();
-    vector<int> actParams(1,0);
     Epetra_SerialDenseMatrix deriv1(dim, numNodes);
-    Epetra_SerialDenseMatrix emptyM;
-    Epetra_SerialDenseVector emptyV;
-    DRT::Discretization dummyDis("dummy discretization", null);
-    ParameterList params;
-   
     
-    params.set("action","calc_ShapeDeriv1");
-    actParams[0] = numNodes;  
-       
-    element->Evaluate(params, dummyDis, actParams, deriv1, emptyM , emptyV, xsi, emptyV);       
-       
-    for(int i=0; i<dim; i++)
-        for(int j=0; j<dim; j++)
-            A[i][j] = 0.0;
-          
-    for(int i=0; i<dim; i++)
-        for(int k=0; k<dim; k++)
-            for(int j=0; j<numNodes; j++)
-                A[i][k] += element->Nodes()[j]->X()[i] * deriv1[j][k];
-        
+    A.Scale(0.0);
+   
+    switch(dim)
+    {
+        case 1:
+        {
+            shape_function_1D_deriv1(deriv1, xsi[0], element->Shape());
+            break;
+        }
+        case 2:
+        {
+            shape_function_2D_deriv1(deriv1, xsi[0], xsi[1], element->Shape());
+            break;
+        }
+        case 3:
+        {
+            shape_function_3D_deriv1(deriv1, xsi[0], xsi[1], xsi[2], element->Shape());
+            break;
+        }
+        default:
+            dserror("dimension of the element is not correct");
+    }
+    
+    for(int j=0; j<numNodes; j++) 
+    {
+        DRT::Node* node = element->Nodes()[j];
+        for(int i=0; i<dim; i++)
+        {
+            double nodalCoord = node->X()[i];
+            for(int k=0; k<dim; k++)
+                A[i][k] += nodalCoord * deriv1[j][k];
+        }
+    }      
 }
 
 
@@ -1190,26 +1288,39 @@ void Intersection::updateRHSForNWE(
     DRT::Element*                       element)                                                  
 {
     const int numNodes = element->NumNode();
-    vector<int> actParams(1,0);
     Epetra_SerialDenseVector funct(numNodes);
-    Epetra_SerialDenseMatrix emptyM;
-    Epetra_SerialDenseVector emptyV;
-    DRT::Discretization dummyDis("dummy discretization", null);
-    ParameterList params;
       
-    params.set("action","calc_Shapefunction");
-    actParams[0] = numNodes;       
+    b.Scale(0.0);
+     
+    switch(dim)
+    {
+        case 1:
+        {
+            shape_function_1D(funct, xsi[0], element->Shape());
+            break;
+        }
+        case 2:
+        {
+            shape_function_2D(funct, xsi[0], xsi[1], element->Shape());
+            break;
+        }
+        case 3:
+        {
+            shape_function_3D(funct, xsi[0], xsi[1], xsi[2], element->Shape());
+            break;
+        }
+        default:
+            dserror("dimension of the element is not correct");
+    }
+    
+    for(int j=0; j<numNodes; j++)
+    {
+        DRT::Node* node = element->Nodes()[j];
+        for(int i=0; i<dim; i++)
+            b[i] += (-1.0) * node->X()[i] * funct[j];
+    }
       
-    element->Evaluate(params, dummyDis, actParams, emptyM, emptyM , funct, xsi, emptyV);        
-    
     for(int i=0; i<dim; i++)
-        b[i] = 0.0;
-    
-    for(int i=0; i<dim; i++)
-        for(int j=0; j<numNodes; j++)
-            b[i] += (-1.0) * element->Nodes()[j]->X()[i] * funct[j];
-        
-     for(int i=0; i<dim; i++)
         b[i] += x[i];
 }
 
@@ -1227,65 +1338,37 @@ bool Intersection::checkNodeWithinElement(
 	bool nodeWithinElement = true;
     int iter = 0;
     int dim = getDimension(element);
-    const int maxiter = 50;
+    const int maxiter = 20;
     double residual = 1.0;
     
     Epetra_SerialDenseMatrix A(dim,dim);
     Epetra_SerialDenseVector b(dim);
-    
-    Epetra_SerialDenseMatrix A_old(dim,dim);
-    Epetra_SerialDenseVector b_old(dim);
     Epetra_SerialDenseVector dx(dim);
     
-    for(int i = 0; i<dim; i++)
-        xsi[i] = 0.0;
-
-    dx = xsi;
+    xsi.Scale(0.0);
             
     updateRHSForNWE( dim, b, xsi, x, element);
    
     while(residual > TOL14_)
-    { 
+    {   
         updateAForNWE( dim, A, xsi, element);
-        A_old = A;
-        b_old = b;
-        //!gaussElimination(A, b, dx, true, dim, 1)
-        //!solveLinearSystemWithSVD(A, b, dx, dim)
+   
         if(!gaussElimination(A, b, dx, true, dim, 1))
         {
-            printf("MATRIX SINGULAR\n");
             nodeWithinElement = false;
             break;
         }   
         
-        Epetra_SerialDenseVector b_new(dim);
-        
-        /*for(int i = 0 ; i < dim ; i++)
-        {
-            b_new[i] = 0.0;
-            for(int j = 0 ; j < dim ; j++)
-                b_new[i] += A_old[i][j]*dx[j];
-        }
-        printf("x = %20.16f\t, x = %20.16f\t, x = %20.16f\n", x[0],x[1],x[2]);
-        printf("dx = %20.16f\t, dx = %20.16f\t, dx = %20.16f\n", dx[0],dx[1],dx[2]);
-        printf("b = %20.16f\t, b = %20.16f\t, b = %20.16f\n", b_old[0],b_old[1],b_old[2]);
-        printf("b1 = %20.16f\t, b1 = %20.16f\t, b1 = %20.16f\n", b_new[0],b_new[1],b_new[2]);
-        printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\n", xsi[0],xsi[1],xsi[2]);
-        
-        printf("\n");
-        */
         xsi = addTwoVectors(xsi,dx);
+        updateRHSForNWE(dim, b, xsi, x, element);
+        residual = b.Norm2();
+        iter++; 
         
         if(iter >= maxiter)
         {   
             nodeWithinElement = false;
             break;
         }   
-        
-            
-        updateRHSForNWE(dim, b, xsi, x, element);
-        residual = b.Norm2();
-        iter++; 
     }
     
     //printf("iter = %d\n", iter);
@@ -1363,16 +1446,9 @@ bool Intersection::collectIntersectionPoints(
     Epetra_SerialDenseVector xsi(3);
     Epetra_SerialDenseVector upLimit(3);
     Epetra_SerialDenseVector loLimit(3);
-   
-    if(!checkIfSurfaceElement(surfaceElement))
-        dserror("surface element has to be a surface element\n");
-    if(!checkIfLineElement(lineElement))
-        dserror("line element has to be a line element\n");
-  
   
     for(int i = 0; i < 3; i++)
     {
-       xsi[i] =  0.0; 
        upLimit[i]  =  1.0;  
        loLimit[i]  = -1.0;
        // extend for triangle
@@ -1381,7 +1457,7 @@ bool Intersection::collectIntersectionPoints(
     bool intersected = computeCurveSurfaceIntersection(surfaceElement, lineElement, xsi, upLimit, loLimit);
                                         
     if(intersected) 
-        addIntersectionPoint( surfaceElement, lineElement,xsi, upLimit, loLimit, 
+        addIntersectionPoint( surfaceElement, lineElement, xsi, upLimit, loLimit, 
                               interfacePoints, surfaceId, lineId, lines);
       
     
@@ -1408,15 +1484,11 @@ bool Intersection::computeCurveSurfaceIntersection(
 {
     bool intersection = true;
     int iter = 0;
-    const int maxiter = 50;
+    const int maxiter = 30;
     double residual = 1.0;
     Epetra_SerialDenseMatrix A(3,3);
     Epetra_SerialDenseVector b(3);
     Epetra_SerialDenseVector dx(3);
-   
-    Epetra_SerialDenseMatrix A_old(3,3);
-    Epetra_SerialDenseVector b_old(3);
-    Epetra_SerialDenseVector b_gauss(3);
     dx = xsi;
  
     updateRHSForCSI( b, xsi, surfaceElement, lineElement);
@@ -1424,63 +1496,85 @@ bool Intersection::computeCurveSurfaceIntersection(
     while(residual > TOL14_)
     {   
         updateAForCSI( A, xsi, surfaceElement, lineElement);
-   
-        A_old = A;
-        b_old = b;
         
-      /*if(!gaussElimination(A, b, dx, true, 3, 1))
-        {
-            intersection = false;
-            break;
-        } 
-        */
-        if(!solveLinearSystemWithSVD(A, b, dx, 3))
-        {
-            intersection = false;
-            break;
-        } 
-   
-      /*printf("\n");  
-        printf("Intersection\n");  
-        printf("=============================================================================\n");  
-        printf("\n");  
-        printf("dx = %20.16f\t, dx = %20.16f\t, dx = %20.16f\n", dx[0], dx[1], dx[2]);
-        
-       for(int i = 0; i < 3; i++ )
-       {
-            b_gauss[i] = 0.0;
-            for(int  k = 0; k < 3; k++ )
-            {  
-                b_gauss[i] += A_old[i][k]*dx[k];
-            }
-            printf("b = %f\t  b_gauss = %f\n", b_old[i], b_gauss[i]);
+        if(!gaussElimination(A, b, dx, true, 3, 1))
+        {    
+            if(computeSingularCSI(xsi, lineElement, surfaceElement));
+            {
+                intersection = false;
+                break;
+            } 
+            for(int i = 0; i < 3; i++)  dx[i] = 0.0;
+            iter++;
+            printf("SINGULAR\n");
         }
-        printf("\n");
-        printf("\n");  
-        printf("=============================================================================\n");  
-        printf("\n");  
-        */
         
-        xsi = addTwoVectors(xsi,dx);
-       
-        if(iter >= maxiter)
-        {   
-            intersection = false;
-            break;
-        }       
-       
+        xsi = addTwoVectors(xsi,dx); 
         updateRHSForCSI( b, xsi, surfaceElement, lineElement);
         residual = b.Norm2(); 
         iter++;
+        
+        if(iter >= maxiter )
+        {   
+            intersection = false;
+            break;
+        }      
     } 
     
-    
-    if( (xsi[0] > upLimit[0]+TOL7_) || (xsi[1] > upLimit[1]+TOL7_) || (xsi[2] > upLimit[2]+TOL7_)  || 
-        (xsi[0] < loLimit[0]-TOL7_) || (xsi[1] < loLimit[1]-TOL7_) || (xsi[2] < loLimit[2]-TOL7_)) 
-            intersection = false;
-        
-        
+    if(intersection)
+    {
+        if( (xsi[0] > (upLimit[0]+TOL7_)) || (xsi[1] > (upLimit[1]+TOL7_)) || (xsi[2] > (upLimit[2]+TOL7_))  || 
+            (xsi[0] < (loLimit[0]-TOL7_)) || (xsi[1] < (loLimit[1]-TOL7_)) || (xsi[2] < (loLimit[2]-TOL7_))) 
+                intersection = false;
+    }
+           
     return intersection;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  CLI:    solves a singular linear system with the hel     u.may 12/07| 
+ |          of a Singular Value Decomposition (SVD)                     |
+ *----------------------------------------------------------------------*/
+bool Intersection::computeSingularCSI(
+    Epetra_SerialDenseVector&   xsi,
+    DRT::Element*               lineElement,
+    DRT::Element*               surfaceElement)
+{
+    bool singular = false;
+    int iter = 0;
+    const int maxiter = 5;
+    double residual = 1.0;
+    Epetra_SerialDenseMatrix A(3,3);
+    Epetra_SerialDenseVector b(3);
+    Epetra_SerialDenseVector dx(3);
+ 
+    updateRHSForCSI( b, xsi, surfaceElement, lineElement);
+              
+    while(residual > TOL14_)
+    {   
+        updateAForCSI( A, xsi, surfaceElement, lineElement);
+        
+        if(solveLinearSystemWithSVD(A, b, dx, 3))
+        {
+            singular = false;
+            xsi = addTwoVectors(xsi,dx); 
+            break;
+        }
+        
+        xsi = addTwoVectors(xsi,dx); 
+        updateRHSForCSI( b, xsi, surfaceElement, lineElement);
+        residual = b.Norm2(); 
+        iter++;
+        
+        if(iter >= maxiter )
+        {
+            singular = true;
+            break;    
+        }
+    } 
+    return singular;            
 }
 
 
@@ -1496,49 +1590,36 @@ void Intersection::updateAForCSI(  	Epetra_SerialDenseMatrix&   A,
 {	
 	const int numNodesSurface = surfaceElement->NumNode();
    	const int numNodesLine = lineElement->NumNode();
-	vector<int> actParams(1,0);
 	Epetra_SerialDenseMatrix surfaceDeriv1(2,numNodesSurface);
 	Epetra_SerialDenseMatrix lineDeriv1(1,numNodesLine);
-	Epetra_SerialDenseMatrix emptyM;
-	Epetra_SerialDenseVector emptyV;
-    Epetra_SerialDenseVector xsiSurface(2);
-    Epetra_SerialDenseVector xsiLine(1);
-	DRT::Discretization dummyDis("dummy discretization", null);
-	ParameterList params;
-	 
-    xsiSurface(0) = xsi[0]; // r-coordinate surface
-    xsiSurface(1) = xsi[1]; // s-coordinate surface
-    xsiLine(0) = xsi[2];    // r-coordinate line
-	actParams[0] = numNodesSurface;     
-	
-    for(unsigned int i=0; i<3; i++)
-        for(unsigned int j=0; j<3; j++)
-            A[i][j] = 0.0;
-	
-	params.set("action","calc_ShapeDeriv1");
-	surfaceElement->Evaluate(params, dummyDis, actParams, surfaceDeriv1, emptyM , emptyV, xsiSurface, emptyV);			
-    //printf("num of nodes surfaces = %d\n", numOfNodesSurface);
+    
+    A.Scale(0.0);
+  
+    shape_function_2D_deriv1(surfaceDeriv1, xsi[0], xsi[1], surfaceElement->Shape()); 
        	
-    for(int dim=0; dim<3; dim++)
-   	    for(int i=0; i<numNodesSurface; i++)
+    for(int i=0; i<numNodesSurface; i++)
+    {
+        DRT::Node* node = surfaceElement->Nodes()[i];
+        for(int dim=0; dim<3; dim++)
 		{
-			A[dim][0] += surfaceElement->Nodes()[i]->X()[dim] * surfaceDeriv1(0,i);
-			A[dim][1] += surfaceElement->Nodes()[i]->X()[dim] * surfaceDeriv1(1,i);
+			A[dim][0] += node->X()[dim] * surfaceDeriv1(0,i);
+			A[dim][1] += node->X()[dim] * surfaceDeriv1(1,i);
 		}
-		
+    }	
    
-    actParams[0] = numNodesLine;
-    lineElement->Evaluate(params, dummyDis, actParams, lineDeriv1, emptyM , emptyV, xsiLine, emptyV);
+    shape_function_1D_deriv1(lineDeriv1, xsi[2], lineElement->Shape()); 
 
-    for(int dim=0; dim<3; dim++)
-        for(int i=0; i<numNodesLine; i++)
+    for(int i=0; i<numNodesLine; i++)
+    {   
+        DRT::Node*  node = lineElement->Nodes()[i];
+        for(int dim=0; dim<3; dim++)
         {
-            A[dim][2] +=  (-1) * lineElement->Nodes()[i]->X()[dim] * lineDeriv1(0,i);
-        }
-        
+            A[dim][2] +=  (-1) * node->X()[dim] * lineDeriv1(0,i);
+        }   
+    }
 }
 
-
+   
 
 /*----------------------------------------------------------------------*
  |  CLI:    updates the right-hand-side for the              u.may 06/07|
@@ -1553,43 +1634,27 @@ void Intersection::updateRHSForCSI(
 {
     int numNodesSurface = surfaceElement->NumNode();
     int numNodesLine = lineElement->NumNode();
-    vector<int> actParams(1,0);
     Epetra_SerialDenseVector surfaceFunct(numNodesSurface);
     Epetra_SerialDenseVector lineFunct(numNodesLine);
-    Epetra_SerialDenseMatrix emptyML(1,numNodesLine);
-    Epetra_SerialDenseMatrix emptyM;
-    Epetra_SerialDenseVector emptyV;
-    Epetra_SerialDenseVector xsiSurface(2);
-    Epetra_SerialDenseVector xsiLine(1);
-    DRT::Discretization dummyDis("dummy discretization", null);
-    ParameterList params;
+ 		
+    b.Scale(0.0);
+              
+    shape_function_2D( surfaceFunct, xsi[0], xsi[1], surfaceElement->Shape());
+    shape_function_1D( lineFunct, xsi[2], lineElement->Shape());
     
+    for(int i=0; i<numNodesSurface; i++)
+    {
+        DRT::Node* node = surfaceElement->Nodes()[i];
+   	    for(int dim=0; dim<3; dim++)
+			b[dim] += (-1) * node->X()[dim] * surfaceFunct(i);
+    }
     
-    xsiSurface(0) = xsi[0]; // r-coordinate surface
-    xsiSurface(1) = xsi[1]; // s-coordinate surface
-    xsiLine(0) = xsi[2];    // r-coordinate line
-    params.set("action","calc_Shapefunction");
-    		
-   	for(unsigned int i=0; i<3; i++)   
-		b[i] = 0.0;
-    
-   	actParams[0] = numNodesSurface;            
-	surfaceElement->Evaluate(params, dummyDis, actParams, emptyM, emptyM , surfaceFunct, xsiSurface, emptyV);			
-  
-	actParams[0] = numNodesLine;     
-	lineElement->Evaluate(params, dummyDis, actParams, emptyM, emptyML, lineFunct, xsiLine, emptyV);
-		
-   	for(int dim=0; dim<3; dim++)
-   		for(int i=0; i<numNodesSurface; i++)
-		{
-			b[dim] += (-1) * surfaceElement->Nodes()[i]->X()[dim] * surfaceFunct(i);
-		}
-	
-	for(int dim=0; dim<3; dim++)
-   		for(int i=0; i<numNodesLine; i++)
-		{
-			b[dim] += lineElement->Nodes()[i]->X()[dim] * lineFunct(i);
-		}
+    for(int i=0; i<numNodesLine; i++)
+    {
+       DRT::Node* node = lineElement->Nodes()[i];
+	   for(int dim=0; dim<3; dim++)   
+			b[dim] += node->X()[dim] * lineFunct(i);
+    }
 }
 
 
@@ -1604,6 +1669,7 @@ int Intersection::computeNewStartingPoint(
     DRT::Element*                lineElement,
     const int                    surfaceId,
     const int                    lineId,
+    Epetra_SerialDenseVector&    xsiOld,
     Epetra_SerialDenseVector&    upLimit,
     Epetra_SerialDenseVector&    loLimit,
     std::vector<InterfacePoint>& interfacePoints,
@@ -1613,7 +1679,7 @@ int Intersection::computeNewStartingPoint(
 	int numInterfacePoints = 0;
 	Epetra_SerialDenseVector xsi(3);
 	
-    //printf("xsi2 = %f   %f   %f\n", fabs(xsi[0]), fabs(xsi[1]), fabs(xsi[2]) ); 
+    //printf("xsi = %f   %f   %f\n", fabs(xsi[0]), fabs(xsi[1]), fabs(xsi[2]) ); 
     //printf("lolimit = %f   %f   %f\n", fabs(loLimit[0]), fabs(loLimit[1]), fabs(loLimit[2]) ); 
     //printf("uplimit = %f   %f   %f\n", fabs(upLimit[0]), fabs(upLimit[1]), fabs(upLimit[2]) ); 
     
@@ -1622,13 +1688,11 @@ int Intersection::computeNewStartingPoint(
         
 	for(int i = 0; i < 3; i++)
 		xsi[i] = (double) (( upLimit[i] + loLimit[i] )/2.0);
-       
- 
+         
 	bool intersected = computeCurveSurfaceIntersection(surfaceElement, lineElement, xsi, upLimit, loLimit);
    
     
-    if( comparePoints(xsi,upLimit))     intersected = false;
-    if( comparePoints(xsi,loLimit))     intersected = false;
+    if( comparePoints(xsi, xsiOld))     intersected = false;
        							 	
 	if(intersected && interval)		
    		numInterfacePoints = addIntersectionPoint(	surfaceElement, lineElement,xsi, upLimit, loLimit, 
@@ -1691,19 +1755,91 @@ int Intersection::addIntersectionPoint(
       
     if(!alreadyInList)      
     {
-        //printf("alreadyinlist = false\n");
+        vector< Epetra_SerialDenseVector >  upperLimits(8, Epetra_SerialDenseVector(3));
+        vector< Epetra_SerialDenseVector >  lowerLimits(8, Epetra_SerialDenseVector(3));
+        createNewLimits(xsi, upLimit, loLimit, upperLimits, lowerLimits);
+        
         interfacePoints.push_back(ip);  
         numInterfacePoints++;
-    }   
-    
-    // recursive call 8 times !!!!
-    numInterfacePoints =  numInterfacePoints +
-      computeNewStartingPoint(	surfaceElement, lineElement, surfaceId, lineId, 
-      							upLimit, xsi, interfacePoints, lines) +
-      computeNewStartingPoint(	surfaceElement, lineElement, surfaceId, lineId, 
-      							xsi, loLimit, interfacePoints, lines);
-
+        
+        // recursive call
+        for(int i = 0; i < 8; i++)
+            numInterfacePoints += computeNewStartingPoint(  
+                                        surfaceElement, lineElement, surfaceId, lineId, xsi,
+                                        upperLimits[i], lowerLimits[i], interfacePoints, lines);
+        
+    }
 	return numInterfacePoints;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  CLI:    create new ranges for the recursive              u.may 07/07|
+ |          computation of all intersection points                      |
+ *----------------------------------------------------------------------*/  
+void Intersection::createNewLimits(
+    Epetra_SerialDenseVector&               xsi, 
+    Epetra_SerialDenseVector&               upLimit,
+    Epetra_SerialDenseVector&               loLimit,
+    vector< Epetra_SerialDenseVector >&     upperLimits, 
+    vector< Epetra_SerialDenseVector >&     lowerLimits)
+{
+    
+
+/*          Surface:                                Line:
+ *        (-1, 1)               (1,1)
+ *          0_____________________1
+ *          |          s          | 
+ *          |         /\          |
+ *          |          |          |                 4 ___________x__________ 5
+ *          |          |          |              ( -1 )                    ( 1 )
+ *          |          x ----> r  |
+ *          |                     |
+ *          |                     |
+ *          |                     |
+ *          2_____________________3
+ *        (-1,-1)                (1,-1)
+ */     
+
+    // upper left corner of surface with lower part of line
+    upperLimits[0][0] = xsi[0];         lowerLimits[0][0] = loLimit[0]; 
+    upperLimits[0][1] = upLimit[1];     lowerLimits[0][1] = xsi[1];
+    upperLimits[0][2] = xsi[2];         lowerLimits[0][2] = loLimit[2];
+    
+    // upper left corner of surface with upper part of line
+    upperLimits[1][0] = xsi[0];         lowerLimits[1][0] = loLimit[0]; 
+    upperLimits[1][1] = upLimit[1];     lowerLimits[1][1] = xsi[1];
+    upperLimits[1][2] = upLimit[2];     lowerLimits[1][2] = xsi[2];
+    
+    // upper right corner of surface with lower part of line
+    upperLimits[2][0] = upLimit[0];     lowerLimits[2][0] = xsi[0]; 
+    upperLimits[2][1] = upLimit[1];     lowerLimits[2][1] = xsi[1];
+    upperLimits[2][2] = xsi[2];         lowerLimits[2][2] = loLimit[2];
+    
+    // upper right corner of surface with upper part of line
+    upperLimits[3][0] = upLimit[0];     lowerLimits[3][0] = xsi[0]; 
+    upperLimits[3][1] = upLimit[1];     lowerLimits[3][1] = xsi[1];
+    upperLimits[3][2] = upLimit[2];     lowerLimits[3][2] = xsi[2];
+
+    // lower right corner of surface with lower part of line
+    upperLimits[4][0] = upLimit[0];     lowerLimits[4][0] = xsi[0]; 
+    upperLimits[4][1] = xsi[1];         lowerLimits[4][1] = loLimit[1];
+    upperLimits[4][2] = xsi[2];         lowerLimits[4][2] = loLimit[2];
+    
+    // lower right corner of surface with upper part of line
+    upperLimits[5][0] = upLimit[0];     lowerLimits[5][0] = xsi[0]; 
+    upperLimits[5][1] = xsi[1];         lowerLimits[5][1] = loLimit[1];
+    upperLimits[5][2] = upLimit[2];     lowerLimits[5][2] = xsi[2];
+    
+    // lower left corner of surface with lower part of line
+    upperLimits[6][0] = xsi[0];         lowerLimits[6][0] = loLimit[0];
+    upperLimits[6][1] = xsi[1];         lowerLimits[6][1] = loLimit[1];
+    upperLimits[6][2] = xsi[2];         lowerLimits[6][2] = loLimit[2];
+    
+    // lower left corner of surface with upper part of line
+    upperLimits[7][0] = xsi[0];         lowerLimits[7][0] = loLimit[0];
+    upperLimits[7][1] = xsi[1];         lowerLimits[7][1] = loLimit[1];
+    upperLimits[7][2] = upLimit[2];     lowerLimits[7][2] = xsi[2];
 }
 
 
@@ -1728,16 +1864,13 @@ void Intersection::computeConvexHull(
     InterfacePoint              midpoint;
     
            
-    if(!checkIfSurfaceElement(surfaceElement))
-   		dserror("surface element has to be a surface element\n");
-          
     if(interfacePoints.size() > 2)  
     {
         midpoint = computeMidpoint(interfacePoints);
         // transform it into current coordinates
         for(int j = 0; j < 2; j++)      curCoord[j]  = midpoint.coord[j];            
-        referenceToCurrentCoordinates(surfaceElement, curCoord);    
-        currentToReferenceCoordinates(xfemElement, curCoord);    
+        elementToCurrentCoordinates(surfaceElement, curCoord);    
+        currentToElementCoordinates(xfemElement, curCoord);    
         for(int j = 0; j < 3; j++)      midpoint.coord[j] = curCoord[j]; 
      
         // store coordinates in 
@@ -1759,8 +1892,8 @@ void Intersection::computeConvexHull(
             for(int j = 0; j < 2; j++)      
                 curCoord[j]  = interfacePoints[i].coord[j];   
                           
-            referenceToCurrentCoordinates(surfaceElement, curCoord);  
-            currentToReferenceCoordinates(xfemElement, curCoord);
+            elementToCurrentCoordinates(surfaceElement, curCoord);  
+            currentToElementCoordinates(xfemElement, curCoord);
                      
             for(int j = 0; j < 3; j++)         
                 interfacePoints[i].coord[j] = curCoord[j];
@@ -1785,10 +1918,10 @@ void Intersection::computeConvexHull(
                     vertex[k] = point[k];
                                 
                 for(int m = 0; m < 2; m++)      curCoord[m]  = vertex[m];           
-                // surface reference coordinates to current coordinates       
-                referenceToCurrentCoordinates(surfaceElement, curCoord); 
-                // current coordinates to xfem element reference coordinates
-                currentToReferenceCoordinates(xfemElement, curCoord);    
+                // surface element coordinates to current coordinates       
+                elementToCurrentCoordinates(surfaceElement, curCoord); 
+                // current coordinates to xfem element element coordinates
+                currentToElementCoordinates(xfemElement, curCoord);    
                 for(int m = 0; m < 3; m++)      vertex[m] = curCoord[m];
                                                 
                 vertices.push_back(vertex);
@@ -1814,10 +1947,10 @@ void Intersection::computeConvexHull(
             for(int j = 0; j < 2; j++)         
                 curCoord[j]  = interfacePoints[i].coord[j];   
             
-            // surface reference coordinates to current coordinates       
-            referenceToCurrentCoordinates(surfaceElement, curCoord); 
-            // current coordinates to xfem element reference coordinates
-            currentToReferenceCoordinates(xfemElement, curCoord);   
+            // surface element coordinates to current coordinates       
+            elementToCurrentCoordinates(surfaceElement, curCoord); 
+            // current coordinates to xfem element element coordinates
+            currentToElementCoordinates(xfemElement, curCoord);   
               
             for(int j = 0; j < 3; j++)      
             {   
@@ -1921,7 +2054,7 @@ void Intersection::findNextSegment(
 /*----------------------------------------------------------------------*
  |  CDT:    computes the Constrained Delaunay                u.may 06/07|
  |          Tetrahedralization in 3D with help of Tetgen library        |
- |  for an intersected xfem element in reference configuration          |
+ |  for an intersected xfem element in element configuration          |
  |  TetGen provides the method                                          |
  |  void "tetrahedralize(char *switches, tetgenio* in, tetgenio* out)"  |
  |  as an interface for its use within other codes.                     |
@@ -1949,15 +2082,15 @@ void Intersection::findNextSegment(
 void Intersection::computeCDT(  
     DRT::Element*               			element,
     DRT::Element*               			cutterElement,
-    map< int, DomainIntCells >&	domainintcells)
+    map< int, DomainIntCells >&	            domainintcells,
+    map< int, BoundaryIntCells >&           boundaryintcells)
 {
     int dim = 3;
     int nsegments = 0; 
     int nsurfPoints = 0;
     tetgenio in;
     tetgenio out;
-    char switches[] = "pnno2Q";    //o2 Y
-    //char switches[] = "T1e-10Mpnno2QY";    //o2 Y
+    char switches[] = "pnno2AQ";    //o2 Y
     tetgenio::facet *f;
     tetgenio::polygon *p;
     
@@ -2063,7 +2196,7 @@ void Intersection::computeCDT(
         
         
 	// specify regions
-	bool regions = false;	
+/*	bool regions = true;	
 	if(regions)
 	{
         //double regionCoordinates[6];
@@ -2077,12 +2210,12 @@ void Intersection::computeCDT(
 	    	// store coordinates 
 	    	//for(int j = 0; j < 3; j++)
 	    	//	in.regionlist[fill++] = regionCoordinates[read++];
-            in.regionlist[fill++] = 0.9;
-            in.regionlist[fill++] = 0.9;
+            in.regionlist[fill++] = -0.9;
+            in.regionlist[fill++] = -0.9;
             in.regionlist[fill++] = 0.9;
 	    		
 	    	// store regional attribute (switch A)   i=0 cutter i=1 fluid
-	    	in.regionlist[fill++] = 0;
+	    	in.regionlist[fill++] = 1;
 	    	
 	    	// store volume constraint (switch a)   
 	    	in.regionlist[fill++] = 0.0;
@@ -2092,13 +2225,14 @@ void Intersection::computeCDT(
             in.regionlist[fill++] = -1.0;
                 
             // store regional attribute (switch A)   i=0 cutter i=1 fluid
-            in.regionlist[fill++] = 1;
+            in.regionlist[fill++] = 0;
             
             // store volume constraint (switch a)   
             in.regionlist[fill++] = 0.0;
 		//} 
 	}
-	   
+	*/
+    
     in.save_nodes("tetin");   
     in.save_poly("tetin");   
     //  Tetrahedralize the PLC. Switches are chosen to read a PLC (p),
@@ -2118,36 +2252,19 @@ void Intersection::computeCDT(
     // recover curved interface for higher order meshes
     bool curvedInterface = true;
     if(curvedInterface)
-        recoverCurvedInterface(element, out);
+        recoverCurvedInterface(element, boundaryintcells, out);
  
     //printTetViewOutput(element->Id(), out);
-   
     
-   
-    // store integrationcells
-    DomainIntCells listperElement;
-    
-    for(int i=0; i<out.numberoftetrahedra; i++ )
-    {   
-        vector< vector<double> > tetrahedronCoord;
-        for(int j = 0; j < out.numberofcorners; j++)
-        {
-            vector<double> tetnodes(3);
-            for(int k = 0; k < 3; k++)
-                tetnodes[k] = out.pointlist[out.tetrahedronlist[i*out.numberofcorners+j]*3+k];
-         
-            tetrahedronCoord.push_back(tetnodes);    
-        }
-        listperElement.push_back(DomainIntCell(DRT::Element::tet10, tetrahedronCoord));                 
-    }
-    domainintcells.insert(make_pair(element->Id(),listperElement));
+    // store domain integration cells
+    storeDomainIntCells(element, domainintcells, out);
 }
 
 
 
 /*----------------------------------------------------------------------*
  |  CDT:    fills the point list with the corner points      u.may 06/07|
- |          in reference coordinates of the xfem element                |
+ |          in element coordinates of the xfem element                |
  *----------------------------------------------------------------------*/  
 void Intersection::startPointList(
     )
@@ -2376,7 +2493,6 @@ void Intersection::storeSegments(
 }
     
 
-
 /*----------------------------------------------------------------------*
  |  CDT:    stores a triangle within a list of trianles      u.may 06/07|
  |          which is to be copy to the tetgen data structure            |
@@ -2407,7 +2523,6 @@ void Intersection::storeTriangles(
 }
 
 
-
 /*----------------------------------------------------------------------*
  |  RCI:    stores a pointer to each intersecting            u.may 08/07|
  |          cutter element  used for the recovery of curved interface   |     
@@ -2435,15 +2550,19 @@ void Intersection::storeIntersectedCutterElement(
  |          Constrained Delaunay Tetrahedralization                     |
  *----------------------------------------------------------------------*/  
 void Intersection::recoverCurvedInterface(
-    DRT::Element*   xfemElement, 
-    tetgenio&       out
+    DRT::Element*                   xfemElement, 
+    map< int, BoundaryIntCells >&   boundaryintcells,
+    tetgenio&                       out
     )
 {
     vector<int>                                     order(3,0);
     vector<int>                                     tetraCornerIndices(4,0); 
-    vector < Epetra_SerialDenseVector >             tetraCornerNodes(4, Epetra_SerialDenseVector(3));
+    vector< Epetra_SerialDenseVector >             	tetraCornerNodes(4, Epetra_SerialDenseVector(3));
+    BoundaryIntCells                     			listBoundaryICPerElement;
     
     
+    std::vector< std::vector<double> > domainCoord;
+    std::vector< std::vector<double> > boundaryCoord;
     // list of point markers , if already visited = 1 , if not = 0
     int* visitedPointIndexList = new int[out.numberofpoints];      
     for(int i = 0; i<out.numberofpoints; i++)
@@ -2456,7 +2575,9 @@ void Intersection::recoverCurvedInterface(
     {
         // run over all faces not lying in on of the xfem element planes
         int faceMarker = out.trifacemarkerlist[i] - facetMarkerOffset_;
-        
+        domainCoord.clear();
+        boundaryCoord.clear();
+                	
         if(faceMarker > -1)
         {        
             int tetIndex = out.adjtetlist[i*2];
@@ -2485,9 +2606,23 @@ void Intersection::recoverCurvedInterface(
                     computeHigherOrderPoint(    index1, index2, i, faceMarker, globalHigherOrderIndex, 
                                                 tetraCornerIndices, tetraCornerNodes, xfemElement, out);                     
                 }
+                
+                // store boundary integration cells
+                storeBoundaryIntCells(	i, index1, globalHigherOrderIndex, faceMarker, 
+                						domainCoord, boundaryCoord, xfemElement, out);
             }
+            
+            /*for(int ii=0; ii < 6; ii++)
+            	for(int jj=0; jj < 3; jj++)
+            		printf("boundary = %f\n",boundaryCoord[ii][jj]);
+            	*/
+            listBoundaryICPerElement.push_back(BoundaryIntCell(DRT::Element::tri6, domainCoord, boundaryCoord));        
+         
         }
+        
     }
+    
+    boundaryintcells.insert(make_pair(xfemElement->Id(),listBoundaryICPerElement));
     
     delete [] visitedPointIndexList;
     visitedPointIndexList = (int *) NULL;
@@ -2515,16 +2650,33 @@ void Intersection::liftAllSteinerPoints(
     
     if(!adjacentFacesList.empty())
     {
+        // run over all Steiner points
         for(unsigned int i=0; i<adjacentFacesList.size(); i++)
         {        
-            bool  normalSteiner = decideNormalOrPlane(  i, lineIndex, cutterIndex, adjacentFacesList, adjacentFacemarkerList,
-                                                        edgePoint, oppositePoint, xfemElement, out);
-              
-            if(normalSteiner)
-                liftSteinerPointOnSurface(i, adjacentFacesList, adjacentFacemarkerList, xfemElement, out);
-            else
-                liftSteinerPointOnEdge( i, lineIndex, cutterIndex, edgePoint, oppositePoint, 
+            int  caseSteiner = decideSteinerCase(  i, lineIndex, cutterIndex, adjacentFacesList, adjacentFacemarkerList,
+                                                   edgePoint, oppositePoint, xfemElement, out);
+            switch(caseSteiner)
+            {
+                case 1:
+                {
+                    liftSteinerPointOnSurface(i, adjacentFacesList, adjacentFacemarkerList, xfemElement, out);
+                    break;
+                }
+                case 2:
+                {
+                    liftSteinerPointOnEdge( i, lineIndex, cutterIndex, edgePoint, oppositePoint, 
                                         adjacentFacesList, xfemElement, out);
+                    break;
+                }
+                case 3:
+                {
+                    liftSteinerPointOnBoundary( i, adjacentFacesList, adjacentFacemarkerList, xfemElement, out);
+                    break;
+                }
+         
+                default:
+                    dserror("case of lifting Steiner point does not exist");
+            }
         }
     }
 }
@@ -2592,7 +2744,7 @@ void Intersection::locateSteinerPoints(
  |  RCI:    checks if the Steiner points lies within         u.may 11/07|
  |          the cutter element or on one of its edges                   |   
  *----------------------------------------------------------------------*/
-bool Intersection::decideNormalOrPlane( 
+int Intersection::decideSteinerCase( 
     int                         steinerIndex,
     int&                        lineIndex, 
     int&                        cutterIndex,  
@@ -2610,14 +2762,11 @@ bool Intersection::decideNormalOrPlane(
     Epetra_SerialDenseVector    xsi(3);
         
     for(int k=0; k<3; k++)
-    {
         x[k]   = out.pointlist[pointIndex*3 + k];
-        xsi[k] = 0.0;
-    }
    
     InterfacePoint emptyIp;
     checkNodeWithinElement(xfemElement, x, xsi);
-    if(checkIfOnBoundary(xsi, emptyIp))     out.pointmarkerlist[pointIndex] = 3;    // on xfem boundary
+    if(checkIfOnBoundary(xsi, emptyIp))     out.pointmarkerlist[pointIndex] = 3;    // on xfem boundary  
     else                                    out.pointmarkerlist[pointIndex] = 2;    // not on xfem boundary
     
    
@@ -2641,7 +2790,16 @@ bool Intersection::decideNormalOrPlane(
         }
         if(!normalSteiner)      break;
     }
-    return normalSteiner;
+    
+    int caseSteiner = 0;
+    
+    if(normalSteiner)                                   caseSteiner = 1;
+    else                                                caseSteiner = 2;
+    if(out.pointmarkerlist[pointIndex] == 3)            caseSteiner = 3;
+                                                                 
+   
+    
+    return caseSteiner;
 }
 
 
@@ -2668,7 +2826,7 @@ void Intersection::liftSteinerPointOnSurface(
         averageNormal[j] = 0.0;
         Steinerpoint[j] = out.pointlist[adjacentFacesList[steinerIndex][0]*3 + j];
     }
-    referenceToCurrentCoordinates(xfemElement, Steinerpoint);   
+    elementToCurrentCoordinates(xfemElement, Steinerpoint);   
    
     double length = (int) ( ( (double) (adjacentFacesList[steinerIndex].size()-1))*0.5 );
     
@@ -2685,8 +2843,8 @@ void Intersection::liftSteinerPointOnSurface(
             p2[k] =  out.pointlist[pointIndex2*3 + k];
         }
     
-        referenceToCurrentCoordinates(xfemElement, p1);   
-        referenceToCurrentCoordinates(xfemElement, p2);   
+        elementToCurrentCoordinates(xfemElement, p1);   
+        elementToCurrentCoordinates(xfemElement, p2);   
         Epetra_SerialDenseVector n1 = subtractsTwoVectors(p1, Steinerpoint);
         Epetra_SerialDenseVector n2 = subtractsTwoVectors(p2, Steinerpoint);
     
@@ -2704,7 +2862,7 @@ void Intersection::liftSteinerPointOnSurface(
         averageNormal[j] = averageNormal[j]/( (double)length);
            
         
-    vector<Epetra_SerialDenseVector> plane(4);                      
+    vector<Epetra_SerialDenseVector> plane(4, Epetra_SerialDenseVector(3));                      
     plane[0] = addTwoVectors(Steinerpoint, averageNormal);               
     plane[1] = subtractsTwoVectors(Steinerpoint, averageNormal);
  
@@ -2764,9 +2922,9 @@ void Intersection::liftSteinerPointOnEdge(
     for(int j=0; j<3; j++)
         Steinerpoint[j] = out.pointlist[adjacentFacesList[steinerIndex][0]*3 + j];
     
-    referenceToCurrentCoordinates(xfemElement, Steinerpoint);   
-    referenceToCurrentCoordinates(xfemElement, edgePoint);   
-    referenceToCurrentCoordinates(xfemElement, oppositePoint);  
+    elementToCurrentCoordinates(xfemElement, Steinerpoint);   
+    elementToCurrentCoordinates(xfemElement, edgePoint);   
+    elementToCurrentCoordinates(xfemElement, oppositePoint);  
      
     Epetra_SerialDenseVector r1 = subtractsTwoVectors( edgePoint, Steinerpoint);
     Epetra_SerialDenseVector r2 = subtractsTwoVectors( oppositePoint, Steinerpoint);
@@ -2777,7 +2935,7 @@ void Intersection::liftSteinerPointOnEdge(
     normalizeVector(n1);
     normalizeVector(n2);
 
-    vector<Epetra_SerialDenseVector> plane(4);      
+    vector<Epetra_SerialDenseVector> plane(4, Epetra_SerialDenseVector(3));      
     plane[0] = addTwoVectors(Steinerpoint, n1);               
     plane[1] = subtractsTwoVectors(Steinerpoint, n1);
     plane[2] = addTwoVectors(plane[1], n2);
@@ -2796,6 +2954,91 @@ void Intersection::liftSteinerPointOnEdge(
         countMissedPoints_++;
         printf("STEINER POINT NOT LIFTED\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");   
     }
+}
+
+
+/*----------------------------------------------------------------------*
+ |  RCI:    lifts Steiner points lying                       u.may 11/07|
+ |          on the boundary of the xfem element                         |   
+ *----------------------------------------------------------------------*/
+void Intersection::liftSteinerPointOnBoundary( 
+    int                         steinerIndex, 
+    vector< vector <int> >&     adjacentFacesList, 
+    vector< vector <int> >&     adjacentFacemarkerList, 
+    DRT::Element*               xfemElement, 
+    tetgenio&                   out)
+{
+    int edgeIndex = 0;
+    int oppositeIndex = 0;
+    int faceIndex = 0;
+    int facemarkerIndex = 0;
+   
+    // find egde on boundary
+    bool edgeFound = false;
+    for(unsigned int i = 1; i < adjacentFacesList[steinerIndex].size(); i++ )
+    {
+        edgeIndex = adjacentFacesList[steinerIndex][i];
+        if(out.pointmarkerlist[edgeIndex] == 3)
+        {
+            edgeFound = true;
+            facemarkerIndex = (int) (i+1)/2;
+            break;
+        }
+    }   
+        
+    faceIndex = adjacentFacemarkerList[steinerIndex][facemarkerIndex];
+    // locate triangle on boundary
+    bool oppositeFound = false;
+    for(int i = 0; i < out.numberoftrifaces; i++)
+    {   
+        if( (out.trifacemarkerlist[i]-facetMarkerOffset_) == -1)
+        {
+            int countIndex = 0;
+            for(int j = 0; j < 3; j++)
+            {
+                int index = out.trifacelist[i*3+j];
+                if(index == steinerIndex || index == edgeIndex)
+                    countIndex++;
+            }
+            
+            if(countIndex == 2)
+            {
+                for(int j = 0; j < 3; j++)
+                {
+                    int index = out.trifacelist[i*3+j];
+                    if(index != steinerIndex && index != edgeIndex)
+                    {
+                        oppositeIndex = index;
+                        oppositeFound = true;
+                        break;
+                    }
+                } 
+            }
+        }
+        if(!oppositeFound)
+            break;
+    }
+        
+    // compute normal through Steiner point lying in the boundary triangle
+    vector <Epetra_SerialDenseVector> plane(5, Epetra_SerialDenseVector(3)); 
+    computeIntersectionNormal( adjacentFacesList[steinerIndex][0], edgeIndex, oppositeIndex, plane,
+                               xfemElement, out);
+               
+    // compute intersection normal on boundary
+    Epetra_SerialDenseVector xsi(3);
+    bool intersected = computeRecoveryNormal(xsi, plane, intersectingCutterElements_[faceIndex], true);
+    
+    if(intersected)
+    {   
+        storeHigherOrderNode(   true, adjacentFacesList[steinerIndex][0], -1, xsi,
+                                intersectingCutterElements_[faceIndex], xfemElement, out);
+    }
+    else
+    {
+        countMissedPoints_++;
+        printf("STEINER POINT NOT LIFTED\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");   
+    }
+
 }
 
 
@@ -2857,7 +3100,7 @@ void Intersection::getTetrahedronNodes(
         for(int j = 0; j < 3; j++)
             tetraCornerNodes[i][j] = out.pointlist[tetraCornerIndices[i]*3+j];
         
-        referenceToCurrentCoordinates(xfemElement, tetraCornerNodes[i]);   
+        elementToCurrentCoordinates(xfemElement, tetraCornerNodes[i]);   
     }
 }
 
@@ -2891,7 +3134,6 @@ void Intersection::computeHigherOrderPoint(
     findAdjacentFace(  tetraCornerIndices[index1], tetraCornerIndices[index2], 
                        faceMarker, adjacentFaceMarker, faceIndex, adjacentFaceIndex, out); 
                            
-    //printf("adjacentfaceMarker = %d\n",adjacentFaceMarker);
     
     // edge lies within the xfem element
     if(adjacentFaceMarker  > -1)
@@ -2955,7 +3197,7 @@ void Intersection::computeHigherOrderPoint(
     else 
     {
         countMissedPoints_++;
-        printf("NO INTERSECTION POINT FOUND!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+        printf("NO INTERSECTION POINT FOUND!!!!! adjacentFaceMarker = %d\n", adjacentFaceMarker);
     }
 
 }
@@ -3003,18 +3245,14 @@ bool Intersection::computeRecoveryNormal(
     Epetra_SerialDenseVector    b(3);
     Epetra_SerialDenseVector    dx(3);
     
-    for(int i = 0; i < 3; i++)
-        xsi[i]= 0.0; 
-        
-    dx = xsi;
-    
+    xsi.Scale(0.0);
     updateRHSForRCINormal( b, xsi, normal, cutterElement, onBoundary);
                                 
     while(residual > TOL14_)
     {   
         updateAForRCINormal( A, xsi, normal, cutterElement, onBoundary);
          
-        if(!solveLinearSystemWithSVD(A, b, dx, 3))  
+        if(!solveLinearSystemWithSVD(A, b, dx, 3))
             countSingular++;
     
         if(countSingular > 5)
@@ -3040,14 +3278,14 @@ bool Intersection::computeRecoveryNormal(
     
     if( (fabs(xsi[0])-1.0) > TOL7_  || (fabs(xsi[1])-1.0) > TOL7_ )    // line coordinate may be bigger than 1
     {
-        printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0], xsi[1], xsi[2], residual, TOL14_);
+        //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0], xsi[1], xsi[2], residual, TOL14_);
         intersection = false;
     }
         
     return intersection;
 }
-
-
+    
+    
 
 /*----------------------------------------------------------------------*
  |  RCI:    updates the systemmatrix for the                 u.may 08/07|
@@ -3063,61 +3301,50 @@ void Intersection::updateAForRCINormal(
     const bool                                  onBoundary)                                                 
 {   
     const int numNodesSurface = surfaceElement->NumNode();
-    const int numNodesLine = 3;
-    vector<int> actParams(1,0);
     Epetra_SerialDenseMatrix surfaceDeriv1(2,numNodesSurface);
-    Epetra_SerialDenseMatrix emptyM;
-    Epetra_SerialDenseVector emptyV;
-    Epetra_SerialDenseVector xsiSurface(2);
-    Epetra_SerialDenseVector xsiLine(1);
-    DRT::Discretization dummyDis("dummy discretization", null);
-    ParameterList params;
-     
-    xsiSurface(0) = xsi[0]; // r-coordinate surface
-    xsiSurface(1) = xsi[1]; // s-coordinate surface
-    xsiLine(0)    = xsi[2]; // r-coordinate line
-    actParams[0] = numNodesSurface;     
     
-    for(unsigned int i=0; i<3; i++)
-        for(unsigned int j=0; j<3; j++)
-            A[i][j] = 0.0;
-    
-    params.set("action","calc_ShapeDeriv1");
-    surfaceElement->Evaluate(params, dummyDis, actParams, surfaceDeriv1, emptyM , emptyV, xsiSurface, emptyV);          
+    A.Scale(0.0);
+    shape_function_2D_deriv1( surfaceDeriv1, xsi[0], xsi[1], surfaceElement->Shape());
+   
     //printf("num of nodes surfaces = %d\n", numOfNodesSurface);
-        
     if(!onBoundary)
     {
-        for(int dim=0; dim<3; dim++)
+        for(int i=0; i<numNodesSurface; i++)
         {
-            for(int i=0; i<numNodesSurface; i++)
+            DRT::Node* node = surfaceElement->Nodes()[i];
+            for(int dim=0; dim<3; dim++)
             {
-                A[dim][0] += surfaceElement->Nodes()[i]->X()[dim] * surfaceDeriv1[i][0];
-                A[dim][1] += surfaceElement->Nodes()[i]->X()[dim] * surfaceDeriv1[i][1];
+                A[dim][0] += node->X()[dim] * surfaceDeriv1[i][0];
+                A[dim][1] += node->X()[dim] * surfaceDeriv1[i][1];
             }
-            A[dim][2] = (-1.0) * ( normal[0][dim] * (-0.5) + normal[1][dim] * 0.5 );  
         }
+        
+        for(int dim=0; dim<3; dim++)
+            A[dim][2] = (-1.0) * ( normal[0][dim] * (-0.5) + normal[1][dim] * 0.5 );  
     }
     else
     {
+        const int numNodesLine = 3;   
         Epetra_SerialDenseMatrix lineDeriv1(1,numNodesLine);
-        shape_function_1D_deriv1(lineDeriv1, xsiLine[0], DRT::Element::line3);
+        shape_function_1D_deriv1(lineDeriv1, xsi[2], DRT::Element::line3);
      
-        for(int dim=0; dim<3; dim++)
+        for(int i=0; i<numNodesSurface; i++)
         {
-            for(int i=0; i<numNodesSurface; i++)
+            DRT::Node* node = surfaceElement->Nodes()[i];
+            for(int dim=0; dim<3; dim++)
             {
-                A[dim][0] += surfaceElement->Nodes()[i]->X()[dim] * surfaceDeriv1[i][0];
-                A[dim][1] += surfaceElement->Nodes()[i]->X()[dim] * surfaceDeriv1[i][1];
+                A[dim][0] += node->X()[dim] * surfaceDeriv1[i][0];
+                A[dim][1] += node->X()[dim] * surfaceDeriv1[i][1];
             }
-            
+        }
+        
+        for(int dim=0; dim<3; dim++)    
             for(int i = 0; i < 3; i++)
             {
                 int index = i;
                 if(i > 1)   index = 4;
                 A[dim][2] += (-1.0) * normal[index][dim] * lineDeriv1[i][0]; 
-            } 
-        }
+            }  
     }
 }
 
@@ -3137,52 +3364,39 @@ void Intersection::updateRHSForRCINormal(
     const bool                                  onBoundary)                                                    
 {
     const int numNodesSurface = surfaceElement->NumNode();
-    const int numNodesLine = 3;
-    vector<int> actParams(1,0);
     Epetra_SerialDenseVector surfaceFunct(numNodesSurface);
-    Epetra_SerialDenseMatrix emptyM;
-    Epetra_SerialDenseVector emptyV;
-    Epetra_SerialDenseVector xsiSurface(2);
-    Epetra_SerialDenseVector xsiLine(1);
-    DRT::Discretization dummyDis("dummy discretization", null);
-    ParameterList params;
-    
-    
-    xsiSurface(0) = xsi[0]; // r-coordinate surface
-    xsiSurface(1) = xsi[1]; // s-coordinate surface
-    xsiLine(0)    = xsi[2]; // r-coordinate line
-    params.set("action","calc_Shapefunction");
-            
-    for(unsigned int i=0; i<3; i++)   
-        b[i] = 0.0;
-    
-    actParams[0] = numNodesSurface;            
-    surfaceElement->Evaluate(params, dummyDis, actParams, emptyM, emptyM , surfaceFunct, xsiSurface, emptyV);           
+  
+    b.Scale(0.0);  
+    shape_function_2D( surfaceFunct, xsi[0], xsi[1], surfaceElement->Shape());     
   
     if(!onBoundary)
     {
-        for(int dim=0; dim<3; dim++)
-            for(int i=0; i<numNodesSurface; i++)
-            {
-                b[dim] += (-1.0) * surfaceElement->Nodes()[i]->X()[dim] * surfaceFunct[i];
-            }
+        for(int i=0; i<numNodesSurface; i++)
+        {
+            DRT::Node* node = surfaceElement->Nodes()[i];
+            for(int dim=0; dim<3; dim++)    
+                b[dim] += (-1.0) * node->X()[dim] * surfaceFunct[i];
+        }
             
         for(int dim=0; dim<3; dim++)
             b[dim] += normal[0][dim] * 0.5*(1.0 - xsi[2]) + normal[1][dim] * 0.5*(1.0 + xsi[2]);
     }
     else
     {
+        const int numNodesLine = 3;
         Epetra_SerialDenseVector lineFunct(numNodesLine);
-        shape_function_1D( lineFunct, xsiLine[0], DRT::Element::line3);
+        shape_function_1D( lineFunct, xsi[2], DRT::Element::line3);
        
-        for(int dim=0; dim<3; dim++)
-            for(int i=0; i<numNodesSurface; i++)
-            {
-                b[dim] += (-1.0) * surfaceElement->Nodes()[i]->X()[dim] * surfaceFunct[i];
-            }
+        for(int i=0; i<numNodesSurface; i++)
+        {
+            DRT::Node* node = surfaceElement->Nodes()[i];
+            for(int dim=0; dim<3; dim++)
+                b[dim] += (-1.0) * node->X()[dim] * surfaceFunct[i];
+        }
         
-        for(int dim=0; dim<3; dim++)
-            for(int i=0; i<numNodesLine; i++)
+       
+        for(int i=0; i<numNodesLine; i++)
+            for(int dim=0; dim<3; dim++)
             {
                 int index = i;
                 if(i > 1)   index = 4;
@@ -3231,12 +3445,8 @@ bool Intersection::computeRecoveryPlane(
         Epetra_SerialDenseVector    dx(3);
       
         intersection = true;
-        // starting value equals (0,0,0)
-        for(int j = 0; j < 3; j++)
-            xsi[j]= 0.0; 
+        xsi.Scale(0.0); 
         
-        dx = xsi;
-    
         updateRHSForRCIPlane( b, xsi, plane, lineElement);
                         
         while( residual > TOL14_ )
@@ -3294,48 +3504,25 @@ void Intersection::updateAForRCIPlane(
 {   
     const int numNodesLine = lineElement->NumNode();
     const int numNodesSurface = 4;
-    vector<int> actParams(1,0);
     Epetra_SerialDenseMatrix surfaceDeriv(2, numNodesSurface);
     Epetra_SerialDenseMatrix lineDeriv(1,numNodesLine);
-    Epetra_SerialDenseMatrix emptyM;
-    Epetra_SerialDenseVector emptyV;
-    Epetra_SerialDenseVector xsiSurface(2);
-    Epetra_SerialDenseVector xsiLine(1);
-    DRT::Discretization dummyDis("dummy discretization", null);
-    ParameterList params;
-     
-    xsiSurface[0] = xsi[0]; // r-coordinate surface
-    xsiSurface[1] = xsi[1]; // s-coordinate surface
-    xsiLine[0]    = xsi[2]; // r-coordinate line
-    
-    for(unsigned int i=0; i<3; i++)
-        for(unsigned int j=0; j<3; j++)
-            A[i][j] = 0.0;
-    
-    
-    params.set("action","calc_ShapeDeriv1");
-    //actParams[0] = surfaceElement->NumNode();  
-    //surfaceElement->Evaluate(params, dummyDis, actParams, surfaceDeriv, emptyM , emptyV, xsiSurface, emptyV);   
-    shape_function_2D_deriv1(surfaceDeriv,  xsiSurface[0],  xsiSurface[1], DRT::Element::quad4);
-       
-    actParams[0] = numNodesLine;    
-    lineElement->Evaluate(params, dummyDis, actParams, lineDeriv, emptyM , emptyV, xsiLine, emptyV);               
    
+    A.Scale(0.0);
+    shape_function_2D_deriv1(surfaceDeriv,  xsi[0],  xsi[1], DRT::Element::quad4);
+    shape_function_1D_deriv1(lineDeriv, xsi[2], lineElement->Shape());
+    
     for(int dim=0; dim<3; dim++)
-    {
         for(int i=0; i<numNodesSurface; i++)
         {
             A[dim][0] += plane[i][dim] * surfaceDeriv[i][0];
             A[dim][1] += plane[i][dim] * surfaceDeriv[i][1];
         }
-    }
         
-    for(int dim=0; dim<3; dim++)
+    for(int i=0; i<numNodesLine; i++)
     {
-        for(int i=0; i<numNodesLine; i++)
-        {
-            A[dim][2] += (-1.0) * lineElement->Nodes()[i]->X()[dim] * lineDeriv[i][0];   
-        }
+        DRT::Node* node = lineElement->Nodes()[i];
+        for(int dim=0; dim<3; dim++)
+            A[dim][2] += (-1.0) * node->X()[dim] * lineDeriv[i][0];   
     }        
 }
 
@@ -3355,41 +3542,27 @@ void Intersection::updateRHSForRCIPlane(
 {
     const int numNodesLine    = lineElement->NumNode();
     const int numNodesSurface = 4;
-    vector<int> actParams(1,0);
     Epetra_SerialDenseVector surfaceFunct(numNodesSurface);
     Epetra_SerialDenseVector lineFunct(numNodesLine);
-    Epetra_SerialDenseMatrix emptyM;
-    Epetra_SerialDenseVector emptyV;
-    Epetra_SerialDenseVector xsiSurface(2);
-    Epetra_SerialDenseVector xsiLine(1);
-    DRT::Discretization dummyDis("dummy discretization", null);
-    ParameterList params;
-    
-    xsiSurface[0] = xsi[0]; // r-coordinate surface
-    xsiSurface[1] = xsi[1]; // s-coordinate surface
-    xsiLine[0]    = xsi[2]; // r-coordinate line
-    params.set("action","calc_Shapefunction");
-            
-    for(unsigned int i=0; i<3; i++)   
-        b[i] = 0.0;
-    
-    // shape function for the plane 
-    shape_function_2D( surfaceFunct, xsiSurface[0], xsiSurface[1], DRT::Element::quad4 ); 
-    // shape function for the curve
-    actParams[0] = numNodesLine;   
-    lineElement->Evaluate(params, dummyDis, actParams, emptyM, emptyV , lineFunct, xsiLine, emptyV);    
-  
+   
+    b.Scale(0.0);
+    shape_function_2D( surfaceFunct, xsi[0], xsi[1], DRT::Element::quad4 ); 
+    shape_function_1D(lineFunct, xsi[2], lineElement->Shape());
+   
     for(int dim=0; dim<3; dim++)
         for(int i=0; i<numNodesSurface; i++)
         {
             b[dim] += (-1.0) * plane[i][dim] * surfaceFunct[i];
         }
         
-    for(int dim=0; dim<3; dim++)
-        for(int i=0; i<numNodesLine; i++)
+    for(int i=0; i<numNodesLine; i++)
+    { 
+        DRT::Node* node = lineElement->Nodes()[i];
+        for(int dim=0; dim<3; dim++)    
         {
-            b[dim] +=  lineElement->Nodes()[i]->X()[dim]  * lineFunct[i];        
+            b[dim] +=  node->X()[dim]  * lineFunct[i];        
         }
+    }
 }
 
 
@@ -3414,11 +3587,6 @@ void Intersection::computeIntersectionNormal(
     Epetra_SerialDenseVector  p1(3);
     Epetra_SerialDenseVector  p2(3);
     Epetra_SerialDenseVector  p3(3);        
-    Epetra_SerialDenseVector  m(3);
-    Epetra_SerialDenseVector  n(3);
-    Epetra_SerialDenseVector  r(3);
-    Epetra_SerialDenseVector  r1(3);
-    Epetra_SerialDenseVector  r2(3);
     
     
     if(!onBoundary)
@@ -3441,19 +3609,19 @@ void Intersection::computeIntersectionNormal(
     }
                  
     // compute direction vectors of the plane 
-    r1 = subtractsTwoVectors(p1, p2);
-    r2 = subtractsTwoVectors(p3, p2);
+    Epetra_SerialDenseVector  r1 = subtractsTwoVectors(p1, p2);
+    Epetra_SerialDenseVector  r2 = subtractsTwoVectors(p3, p2);
  
     // normal of the plane
-    n = computeCrossProduct(r1, r2);
+    Epetra_SerialDenseVector  n = computeCrossProduct(r1, r2);
     normalizeVector(n);
  
     // direction vector of the intersection line
-    r = computeCrossProduct(n, r2);  
+    Epetra_SerialDenseVector  r = computeCrossProduct(n, r2);  
     normalizeVector(r);
  
     // computes the start point of the line
-    m = computeLineMidpoint(p2, p3);
+    Epetra_SerialDenseVector  m = computeLineMidpoint(p2, p3);
     
     if(!onBoundary)
         m = computeLineMidpoint(p2, p3);
@@ -3473,9 +3641,9 @@ void Intersection::computeIntersectionNormal(
     if(onBoundary)
     {
         for(int i = 0; i < 4; i++)
-            referenceToCurrentCoordinates(xfemElement, plane[i]);
+            elementToCurrentCoordinates(xfemElement, plane[i]);
         
-        referenceToCurrentCoordinates(xfemElement, m);
+        elementToCurrentCoordinates(xfemElement, m);
           
         plane[4] = m;
       
@@ -3530,10 +3698,10 @@ void Intersection::computeIntersectionNormal(
         p4[i] = out.pointlist[adjacentOppositePointIndex*3 + i];                       
     }
     
-    referenceToCurrentCoordinates(xfemElement, p1);  
-    referenceToCurrentCoordinates(xfemElement, p2);  
-    referenceToCurrentCoordinates(xfemElement, p3);  
-    referenceToCurrentCoordinates(xfemElement, p4);  
+    elementToCurrentCoordinates(xfemElement, p1);  
+    elementToCurrentCoordinates(xfemElement, p2);  
+    elementToCurrentCoordinates(xfemElement, p3);  
+    elementToCurrentCoordinates(xfemElement, p4);  
     
     Epetra_SerialDenseVector r1 = subtractsTwoVectors(p1,p2);
     Epetra_SerialDenseVector r2 = subtractsTwoVectors(p3,p2);
@@ -3555,7 +3723,7 @@ void Intersection::computeIntersectionNormal(
     for(int i = 0; i < 3; i++)
         m[i] = out.pointlist[globalHigherOrderIndex*3+i];
 
-    referenceToCurrentCoordinates(xfemElement, m);  
+    elementToCurrentCoordinates(xfemElement, m);  
     
     // compute nodes of the normal to the interface edge of the tetrahedron
     plane[0] = addTwoVectors(m, averageNormal);               
@@ -3571,6 +3739,60 @@ void Intersection::computeIntersectionNormal(
         printf("\n");
     }
     */
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  RCI:    computes the normal to the interface edge of     u.may 08/07|
+ |          the tetrahedron facet lying within this facet               |
+ *----------------------------------------------------------------------*/  
+void Intersection::computeIntersectionNormal( 
+    const int                               steinerIndex,
+    const int                               edgeIndex,
+    const int                               oppositeIndex,
+    vector<Epetra_SerialDenseVector>&       plane,
+    DRT::Element*                           xfemElement,
+    const tetgenio&                         out)
+{            
+    
+    Epetra_SerialDenseVector  p1(3);
+    Epetra_SerialDenseVector  p2(3);
+    Epetra_SerialDenseVector  p3(3);        
+    
+  
+    for(int i=0; i<3; i++)
+    {
+        p1[i] = out.pointlist[oppositeIndex*3  + i];
+        p2[i] = out.pointlist[steinerIndex*3   + i];
+        p3[i] = out.pointlist[edgeIndex*3      + i];                       
+    }
+           
+    // compute direction vectors of the plane 
+    Epetra_SerialDenseVector  r1 = subtractsTwoVectors(p1, p2);
+    Epetra_SerialDenseVector  r2 = subtractsTwoVectors(p3, p2);
+ 
+    // normal of the plane
+    Epetra_SerialDenseVector  n = computeCrossProduct(r1, r2);
+    normalizeVector(n);
+ 
+    // direction vector of the intersection line
+    Epetra_SerialDenseVector  r = computeCrossProduct(n, r2);  
+    normalizeVector(r);
+ 
+    // compute nodes of the normal to the interface edge of the tetrahedron
+    plane[0] = addTwoVectors(p2, r);               
+    plane[1] = subtractsTwoVectors(p2, r);
+    plane[2] = addTwoVectors(plane[1], n);               
+    plane[3] = addTwoVectors(plane[0], n);
+    
+    
+    for(int i = 0; i < 4; i++)
+        elementToCurrentCoordinates(xfemElement, plane[i]);
+    
+    elementToCurrentCoordinates(xfemElement, p2);
+      
+    plane[4] = p2;
 }
 
 
@@ -3614,7 +3836,7 @@ void Intersection::findAdjacentFace(
         adjacentFaceMarker = out.trifacemarkerlist[i] - facetMarkerOffset_;
         adjacentFaceIndex = i;
         
-        if(adjacentFaceMarker >= -1)
+        if((adjacentFaceMarker >= -1) && (faceIndex != adjacentFaceIndex))
         {        
             int countPoints = 0;
             for(int j = 0; j < 3 ; j++)
@@ -3624,7 +3846,7 @@ void Intersection::findAdjacentFace(
                     countPoints++;
             }
             
-            if((countPoints == 2) && (faceIndex != adjacentFaceIndex))
+            if(countPoints == 2) 
                 faceMarkerFound = true;
         }
         if(faceMarkerFound)
@@ -3804,8 +4026,8 @@ int Intersection::findIntersectingSurfaceEdge(
         node2[i] = edgeNode2[i];
     }
       
-    referenceToCurrentCoordinates(xfemElement, node1);
-    referenceToCurrentCoordinates(xfemElement, node2);
+    elementToCurrentCoordinates(xfemElement, node1);
+    elementToCurrentCoordinates(xfemElement, node2);
     
     x1[0] = node1[0];
     x2[0] = node2[0];
@@ -3855,15 +4077,15 @@ void Intersection::storeHigherOrderNode(
     for(int i = 0; i < 3; i++)
         xsiLine[i] = 0.0;
         
-    if(normal)     referenceToCurrentCoordinates(surfaceElement, xsi);
+    if(normal)     elementToCurrentCoordinates(surfaceElement, xsi);
     else           
     {   
         xsiLine[0] = xsi[2];
-        referenceToCurrentCoordinates(surfaceElement->Lines()[lineIndex], xsiLine);
+        elementToCurrentCoordinates(surfaceElement->Lines()[lineIndex], xsiLine);
         for(int i=0; i<3; i++)
             xsi[i] = xsiLine[i];
     }       
-    currentToReferenceCoordinates(xfemElement, xsi);
+    currentToElementCoordinates(xfemElement, xsi);
     
     //printf("xsiold0 = %20.16f\t, xsiold1 = %20.16f\t, xsiold2 = %20.16f\n", out.pointlist[index*3], out.pointlist[index*3+1], out.pointlist[index*3+2]);
     
@@ -3872,6 +4094,89 @@ void Intersection::storeHigherOrderNode(
    
     //printf("xsi0    = %20.16f\t, xsi1    = %20.16f\t, xsi2    = %20.16f\n", xsi[0], xsi[1], xsi[2]);
     //printf("\n");
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  RCI:    stores domain integration cells                  u.may 11/07|
+ *----------------------------------------------------------------------*/  
+void Intersection::storeDomainIntCells(
+    DRT::Element*                   xfemElement,
+    map< int, DomainIntCells >&     domainintcells,
+    tetgenio&                       out)
+{   
+    
+    // store domain integration cells
+    DomainIntCells   listDomainICPerElement;
+
+    for(int i=0; i<out.numberoftetrahedra; i++ )
+    {   
+        vector< vector<double> > tetrahedronCoord;
+        for(int j = 0; j < out.numberofcorners; j++)
+        {
+            vector<double> tetnodes(3);
+            for(int k = 0; k < 3; k++)
+                tetnodes[k] = out.pointlist[out.tetrahedronlist[i*out.numberofcorners+j]*3+k];
+              
+            tetrahedronCoord.push_back(tetnodes);    
+        }
+        listDomainICPerElement.push_back(DomainIntCell(DRT::Element::tet10, tetrahedronCoord));                 
+    }
+    domainintcells.insert(make_pair(xfemElement->Id(),listDomainICPerElement));
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  RCI:    stores boundary integration cells                u.may 11/07|
+ *----------------------------------------------------------------------*/  
+void Intersection::storeBoundaryIntCells(
+    const int                         		trifaceIndex,
+    const int                         		cornerIndex, 
+    const int                         		globalHigherOrderIndex, 
+    const int                         		faceMarker, 
+    std::vector< std::vector<double> >&   	domainCoord, 
+    std::vector< std::vector<double> >&   	boundaryCoord, 
+    DRT::Element*							xfemElement,
+    tetgenio&                   			out)
+{                
+	
+    vector<double> trinodes(3);
+    
+    // store corner node
+    for(int k = 0; k < 3; k++)
+        trinodes[k] = out.pointlist[out.trifacelist[trifaceIndex*3+cornerIndex]*3+k];
+  
+    domainCoord.push_back(trinodes);
+    
+
+    elementToCurrentCoordinates(xfemElement, trinodes);
+    //for(int i = 0; i < 3; i++)
+    	//printf("phys coord = %f\n", trinodes[i] );
+    currentToElementCoordinates(intersectingCutterElements_[faceMarker], trinodes);
+    trinodes[2] = 0.0;
+    //for(int i = 0; i < 3; i++)
+      //  printf("ele coord = %f\n", trinodes[i] );
+    boundaryCoord.push_back(trinodes);
+    
+    // store higher order node
+    for(int k = 0; k < 3; k++)
+        trinodes[k] = out.pointlist[globalHigherOrderIndex*3+k];
+ 
+    domainCoord.push_back(trinodes); 
+    
+    elementToCurrentCoordinates(xfemElement, trinodes);
+    
+    //for(int i = 0; i < 3; i++)
+      //  	printf("phys coord = %f\n", trinodes[i] );
+    
+    currentToElementCoordinates(intersectingCutterElements_[faceMarker], trinodes);
+    trinodes[2] = 0.0;
+    //for(int i = 0; i < 3; i++)
+     //       printf("ele coord = %f\n", trinodes[i] );
+   
+    boundaryCoord.push_back(trinodes);
 }
 
 
@@ -4031,7 +4336,7 @@ void Intersection::debugTetgenDataStructure(    DRT::Element*               elem
         {
             xsi[j] = pointList_[i].coord[j];
         }
-        referenceToCurrentCoordinates(element, xsi);
+        elementToCurrentCoordinates(element, xsi);
         
         cout << i << ".th point:   ";
         for(int j = 0; j< 3; j++)
@@ -4248,7 +4553,7 @@ void Intersection::printTetViewOutputPLC(
         for(int j = 0; j < 3; j++)
             xsi[j] = in.pointlist[i*3 + j];
         
-        referenceToCurrentCoordinates(xfemElement, xsi);
+        elementToCurrentCoordinates(xfemElement, xsi);
         
         fprintf(outFile, "%d  %.16g  %.16g  %.16g", i, xsi[0], xsi[1], xsi[2]);
     
@@ -4264,86 +4569,5 @@ void Intersection::printTetViewOutputPLC(
     }
     fclose(outFile);    
 }
-
-
-
-
-/*----------------------------------------------------------------------*
- |  computes the coordinates of a point within a region for  u.may 07/07|
- |  the Tetgen data structure       (only for visualization)            |
- *----------------------------------------------------------------------*/  
-// dependency on Fluid3Surface. This cannot be used for the standard fluid tests
-// so switch on, if needed, but don't commit
-#if 0
-void Intersection::computeRegionCoordinates(    
-    DRT::Element*  xfemElement,
-    DRT::Element*  cutterElement,
-    double* regionCoordinates)
-{
-
-    bool inStored = false;
-    bool outStored = false;
-    bool nodeWithin = false;
-    int fill = 0;
-    int numCornerPoints = 8;
-    DRT::Element*  cutterVolume;
-    Epetra_SerialDenseVector xsi(3);
-    
-    
-    const DRT::Element::ElementType etype = cutterElement->Type();
-  
-    switch(etype)
-    {
-        case DRT::Element::element_fluid3surface:
-        {       
-            DRT::Elements::Fluid3Surface* fluid3surface = (DRT::Elements::Fluid3Surface *) (cutterElement);
-            
-            if(fluid3surface == NULL) 
-                dserror("fluid3surface is NULL");
-                
-            cutterVolume = fluid3surface->GetParent();
-            
-            if(cutterVolume == NULL) 
-                dserror("cuttervolume is NULL");
-            break;
-        }
-        default:
-            dserror("elementtype not yet handled");
-    }
-
-    for(int i = 0; i < numCornerPoints; i++)
-    {
-        Epetra_SerialDenseVector x;       
-        for(int ii = 0; ii < 3; ii++)
-            x[ii] = xfemElement->Nodes()[i]->X()[ii];
-            
-        nodeWithin = checkNodeWithinElement(cutterVolume, x, xsi);
-                                
-        if(nodeWithin && !inStored)
-        {
-            for(int j = 0; j < 3; j++)
-                regionCoordinates[fill++] = xfemElement->Nodes()[i]->X()[j];
-            
-            inStored = true;
-        }
-        
-        if(!nodeWithin && !outStored)
-        {
-            for(int j = 0; j < 3; j++)
-                regionCoordinates[fill++] = xfemElement->Nodes()[i]->X()[j];
-    
-            outStored = true;
-        }
-        
-        if(inStored && outStored)
-        {
-            break;
-        }
-    }
-}
-#endif
-
-
-
 
 #endif  // #ifdef CCADISCRET
