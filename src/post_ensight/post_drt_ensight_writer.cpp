@@ -292,7 +292,7 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinatesPar(
 			for (int inode=0; inode<proc0map->NumGlobalElements(); ++inode) // this loop is empty on other procs
 			{
 				// write node ids
-				Write(geofile,static_cast<float>(proc0map->GID(inode))+1); // gid +1 ?????
+				Write(geofile,static_cast<float>(proc0map->GID(inode))+1); // gid +1 delivers GID numbering
 #if 0
 				cout<<"LID:"<<inode<<" -- map GID: "<<(proc0map->GID(inode))<<endl; 
 #endif
@@ -766,7 +766,11 @@ void EnsightWriter::WriteResult(
     // close result file   
     if (file.is_open())
     	file.close();
-    
+
+    // some output
+    if (myrank_==0)
+    	cout<<"writing field "<<name<<endl;
+
     return;
 }
 
@@ -817,7 +821,7 @@ void EnsightWriter::FileSwitcher(
 			newfilename << filesetmap[name].size()+1;
 		}
 		file.open(newfilename.str().c_str());
-	}
+	} // if (myrank_==0)
     return;
 }
 
@@ -850,29 +854,106 @@ void EnsightWriter::WriteResultStep(
     const RefCountPtr<Epetra_Vector> data = result.read_result(groupname);
 
 #ifdef PARALLEL
-    const Epetra_BlockMap& datamapser = data->Map();
-    // put all coordinate information on proc 0
-    RefCountPtr<Epetra_Map> proc0datamap;
-    RefCountPtr<Epetra_Map> epetradatamap;
-    epetradatamap = rcp(new Epetra_Map(datamapser.NumGlobalElements(),
-    		datamapser.NumMyElements(),
-    		datamapser.MyGlobalElements(),
-    		0,
-    		dis->Comm()));
+	int numnpglobal = nodemap->NumGlobalElements();
+	
+	// check if the data is distributed over several processors
+	if (data->DistributedGlobal())
+		;
+	// if not we have to have everything on proc0
 
-    proc0datamap = DRT::Utils::AllreduceEMap(*epetradatamap,0);
-    // import my new values (proc0 gets everything, other procs empty)
-    Epetra_Import proc0importer(*proc0datamap,*epetradatamap);   
-    RefCountPtr<Epetra_Vector> proc0data = rcp(new Epetra_Vector(*proc0datamap));
+	const Epetra_BlockMap& datamapser = data->Map();
 
-    // import node coordinates from ALL nodes of current discretization
-    int err = proc0data->Import(*data,proc0importer,Insert);
-    if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);   
-    // redirect
-    const Epetra_BlockMap& datamap = proc0data->Map();
+	// each processor provides its information
+	RefCountPtr<Epetra_MultiVector> dofgidperlocalnodeid = rcp(new Epetra_MultiVector(*nodemap,numdf));
+	//initialize
+	dofgidperlocalnodeid->PutScalar(-1.0);
+
+	const int numnp = nodemap->NumMyElements();
+	for (int idf=0; idf<numdf; ++idf)
+	{
+		for (int inode=0; inode<numnp; inode++)
+		{
+			DRT::Node* n = dis->lRowNode(inode);
+			//const int nodegid = proc0map_->GID(inode); // old information??? unused
+			const double dofgid = (double) dis->Dof(n, from + idf);
+			if (dofgid > -1.0)
+			{    
+				dofgidperlocalnodeid->ReplaceMyValue(inode, idf, dofgid);
+			}
+			else
+			{
+				dserror("Error while creating Epetra_MultiVector dofgidperlocalnodeid");
+			}
+		}
+	}
+
+	// put all coordinate information on proc 0
+
+	RefCountPtr<Epetra_Map> epetradatamap;
+	epetradatamap = rcp(new Epetra_Map(datamapser.NumGlobalElements(),
+			datamapser.NumMyElements(),
+			datamapser.MyGlobalElements(),
+			0,
+			dis->Comm()));
+
+	RefCountPtr<Epetra_Map> proc0datamap;
+	proc0datamap = DRT::Utils::AllreduceEMap(*epetradatamap,0);
+	
+	// import my new values (proc0 gets everything, other procs empty)
+	Epetra_Import proc0dataimporter(*proc0datamap,*epetradatamap);   
+	RefCountPtr<Epetra_Vector> proc0data = rcp(new Epetra_Vector(*proc0datamap));
+
+	// import node coordinates from ALL nodes of current discretization
+	int err = proc0data->Import(*data,proc0dataimporter,Insert);
+	if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);   
+	// redirect
+	const Epetra_BlockMap& datamap = proc0data->Map();
+
+	// contract on proc0
+	RefCountPtr<Epetra_MultiVector> dofgidperlocalnodeid_proc0 = rcp(new Epetra_MultiVector(*proc0map_,numdf));
+	// import my new values (proc0 gets everything, other procs empty)
+	Epetra_Import proc0dofimporter(*proc0map_,*nodemap);   
+
+	// import node coordinates from ALL nodes of current discretization
+	err = dofgidperlocalnodeid_proc0->Import(*dofgidperlocalnodeid,proc0dofimporter,Insert);
+	if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
+
+	// now write
+	if (myrank_==0)
+	{
+		numnpglobal = proc0map_->NumGlobalElements();
+
+		dsassert(proc0map_->NumMyElements()==numnpglobal,"have not all data");
+
+		double* dofgids = (dofgidperlocalnodeid_proc0->Values()); // columnwise data storage
+		for (int idf=0; idf<numdf; ++idf)
+		{
+			for (int inode=0; inode<numnpglobal; inode++) // inode == lid of node since use of proc0map_
+			{
+				// get node gid
+				//const int nodegid = proc0map_->GID(inode);
+				//dofgidperlocalnodeid_proc0->Map().LID(nodegid);
+				// get row lid
+				const int doflid =  inode;
+
+				// sorry for converting double to int
+				const int actdofgid = (int) (dofgids[doflid]);
+				dsassert(actdofgid>= 0, "error");
+				// now we do the usual things
+				int lid = datamap.LID(actdofgid);
+				if (lid > -1)
+				{
+					Write(file, static_cast<float>((*proc0data)[lid]));
+				}
+				else
+					dserror("error while writing result file");
+			}
+		}// for idf
+	} // myrank==0
+
+      
 #else
     const Epetra_BlockMap& datamap = data->Map();
-#endif
 
     
     const int numnp = nodemap->NumGlobalElements();
@@ -893,7 +974,8 @@ void EnsightWriter::WriteResultStep(
             }
         }
     }
-
+#endif
+  
     // 2 component vectors in a 3d problem require a row of zeros.
     // do we really need this?
     if (numdf==2)
