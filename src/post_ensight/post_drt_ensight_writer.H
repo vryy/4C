@@ -280,6 +280,9 @@ protected:
     
     map<string,int>          variablenumdfmap_;
     map<string,string>       variablefilenamemap_;
+    
+    map<string,int> timesetnumbermap_;
+    map<string,int> filesetnumbermap_;
 
 
     //! maps a distype to the corresponding Ensight cell type

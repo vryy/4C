@@ -76,7 +76,6 @@ void EnsightWriter::WriteFiles()
     timesteps.push_back(1);
     timesetmap_["geo"] = timesteps;
     const int geotimeset = 1;
-    const int geofileset = 1;
     // at the moment, we can only print out the first step -> to be changed
     vector<double> geotime; // timesteps when the geometry is written
     geotime.push_back(soltime[0]);
@@ -87,6 +86,22 @@ void EnsightWriter::WriteFiles()
     ///////////////////////////////////
     const int soltimeset = 2;
     WriteAllResults(field_);
+    
+    
+
+    int counttime = 0;
+    for (map<string,vector<int> >::const_iterator entry = timesetmap_.begin(); entry != timesetmap_.end(); ++entry) {
+    	counttime++;
+		string key = entry->first;
+		timesetnumbermap_[key] = counttime;
+	}
+    int countfile = 0;
+    for (map<string,vector<int> >::const_iterator entry = filesetmap_.begin(); entry != filesetmap_.end(); ++entry) {
+    	countfile++;
+		string key = entry->first;
+		filesetnumbermap_[key] = countfile;
+	}
+    
     
     
     ///////////////////////////////////
@@ -100,7 +115,7 @@ void EnsightWriter::WriteFiles()
     	casefile << "# created using post_drt_ensight\n"<< "FORMAT\n\n"<< "type:\tensight gold\n";
 
     	casefile << "\nGEOMETRY\n\n";
-    	casefile << "model:\t"<<geotimeset<<"\t"<<geofileset<<"\t"<< geofilename<< "\n";
+    	casefile << "model:\t"<<timesetnumbermap_["geo"]<<"\t"<<filesetnumbermap_["geo"]<<"\t"<< geofilename<< "\n";
 
     	casefile << "\nVARIABLE\n\n";
     	casefile << GetVariableSection(filesetmap_, variablenumdfmap_, variablefilenamemap_);
@@ -1044,18 +1059,22 @@ string EnsightWriter::GetVariableSection(
     
     map<string,int>::const_iterator variable;
     
-    int filesetcounter = 2; // we begin with 2, since 1 is for the geometry section
     for (variable = variablenumdfmap.begin(); variable != variablenumdfmap.end(); ++variable)
     {
-        const string name = variable->first;
+        const string key = variable->first;
         const int numdf = variable->second;
-        const string filename = variablefilenamemap[name];
+        const string filename = variablefilenamemap[key];
         
-        map<string,vector<int> >::const_iterator entry = filesetmap.find(name);
-        if (entry == filesetmap.end()) 
-            dserror("filesetmap not defined for '%s'", name.c_str());
+    	map<string,int>::const_iterator entry1 = filesetnumbermap_.find(key);
+    	if (entry1 == filesetnumbermap_.end())
+    		dserror("key not found!");
+    	const int setnumber = entry1->second;
         
-        const int numsubfilesteps = entry->second.size();
+        map<string,vector<int> >::const_iterator entry2 = filesetmap.find(key);
+        if (entry2 == filesetmap.end()) 
+            dserror("filesetmap not defined for '%s'", key.c_str());
+        
+        const int numsubfilesteps = entry2->second.size();
         string filename_for_casefile;
         if (numsubfilesteps > 1)
         {
@@ -1066,8 +1085,7 @@ string EnsightWriter::GetVariableSection(
             filename_for_casefile = filename;
         }
             
-        str << GetVariableEntryForCaseFile(numdf, filesetcounter, name, filename_for_casefile);
-        filesetcounter++;
+        str << GetVariableEntryForCaseFile(numdf, setnumber, key, filename_for_casefile);
     }
 
     return str.str();
@@ -1141,10 +1159,14 @@ string EnsightWriter::GetFileSectionStringFromFilesets(
     stringstream s;
         
     map<string,vector<int> >::const_iterator fileset;
-    int setnumber = 1;
 
     for (fileset = filesetmap.begin(); fileset != filesetmap.end(); ++fileset)
     {
+    	string key = fileset->first;
+    	map<string,int>::const_iterator entry = filesetnumbermap_.find(key);
+    	if (entry == filesetnumbermap_.end())
+    		dserror("key not found!");
+    	const int setnumber = entry->second;
         vector<int> stepsperfile = fileset->second;
         s << "file set:\t\t"<< setnumber << "\n";
         if (stepsperfile.size() == 1)
@@ -1160,7 +1182,6 @@ string EnsightWriter::GetFileSectionStringFromFilesets(
             }
             s << "\n";
         }
-        setnumber++;
     }
     return s.str();
 }
