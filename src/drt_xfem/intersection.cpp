@@ -82,7 +82,7 @@ void Intersection::computeIntersection( const RefCountPtr<DRT::Discretization>  
 		dserror("the number of processors for xfem and cutter discretizations have to equal each other");		
 #endif
 
-	
+	//debugXFEMConditions(cutterdis);
     // obtain vector of pointers to all xfem conditions of all cutter discretizations
     cutterdis->GetCondition ("XFEMCoupling", xfemConditions);
         
@@ -94,7 +94,6 @@ void Intersection::computeIntersection( const RefCountPtr<DRT::Discretization>  
 		adjustCutterElementNumbering(cutterdis, xfemConditions, conditionEleCount);
 #endif         
    
-	int countCDT = 0;
     //  k < xfemdis->NumMyColElements()
     for(int k = 0; k < xfemdis->NumMyColElements(); k++)
     {
@@ -106,23 +105,23 @@ void Intersection::computeIntersection( const RefCountPtr<DRT::Discretization>  
             
         startPointList();
         
-        //printf("size of xfem condition = %d\n", xfemConditions.size());
+        //printf("size of xfem condition = %d\n", c);
         for(unsigned int i=0; i<xfemConditions.size(); i++)
         {
             map< int, RefCountPtr<DRT::Element > >  geometryMap = xfemConditions[i]->Geometry();
             map<int, RefCountPtr<DRT::Element > >::iterator iterGeo;   
             //if(geometryMap.size()==0)   printf("geometry does not obtain elements\n");
           	//printf("size of %d.geometry map = %d\n",i, geometryMap.size());
-         	
+         
             for(iterGeo = geometryMap.begin(); iterGeo != geometryMap.end(); iterGeo++ )
             { 
                 DRT::Element*  cutterElement = iterGeo->second.get();
                 if(cutterElement == NULL) dserror("geometry does not obtain elements");
             	
-                Epetra_SerialDenseMatrix    cutterXAABB = computeFastXAABB(cutterElement);                                 
-                bool intersected = intersectionOfXAABB(cutterXAABB, xfemXAABB);    
-                //debugXAABBIntersection( cutterXAABB, xfemXAABB, cutterElement, xfemElement, i, k);
-                                          
+                Epetra_SerialDenseMatrix    cutterXAABB = computeFastXAABB(cutterElement);   
+                  
+                bool intersected = intersectionOfXAABB(cutterXAABB, xfemXAABB);   
+              
                 if(intersected) 
                 {
                 	if(cutterElementMap.find(xfemElement->LID()) != cutterElementMap.end())
@@ -151,8 +150,8 @@ void Intersection::computeIntersection( const RefCountPtr<DRT::Discretization>  
                    	}
 #endif                   	
                 } 
-          	}// for-loop over all geometryMap.size()
-		 }// for-loop over all xfemConditions.size()           
+            }// for-loop over all geometryMap.size()
+		}// for-loop over all xfemConditions.size()           
 
 #ifdef PARALLEL
 	} // for loop over all xfem elements} 
@@ -170,12 +169,16 @@ void Intersection::computeIntersection( const RefCountPtr<DRT::Discretization>  
 #endif         
         
         if(cutterElementMap.find(xfemElement->LID()) != cutterElementMap.end())
+        {
             cutterElements = cutterElementMap.find(k)->second;
+            //debugIntersection(xfemElement, cutterElements);
+        }
         else
             cutterElements.resize(0);
-            
+          
         for(unsigned int i = 0; i < cutterElements.size(); i++ )
         {
+        	
             numInternalPoints_= 0; 
             numBoundaryPoints_ = 0;
             vector< InterfacePoint >  interfacePoints; 
@@ -202,28 +205,28 @@ void Intersection::computeIntersection( const RefCountPtr<DRT::Discretization>  
                                                     p, m, true, xfemIntersection)) 
                         storeIntersectedCutterElement(cutterElements[i]); 
             
+            
             // order interface points           
-            if(interfacePoints.size()!=0)
+            if( interfacePoints.size() > 0)
             {
 #ifdef QHULL
-            	xfemIntersection = true;
                 computeConvexHull( xfemElement, cutterElements[i], interfacePoints);
 #else
                 dserror("Set QHULL flag to use XFEM intersections!!!");
 #endif
             }    
-            interfacePoints.clear();  
+           
+            //interfacePoints.clear();  
         }// for-loop over all cutter elements
         
         if(xfemIntersection)
-        {           
-        	countCDT++;
+        {         
             //debugTetgenDataStructure(xfemElement);
             computeCDT(xfemElement, cutterElements[0], domainintcells, boundaryintcells);
         }
         
     }// for-loop over all  actdis->NumMyColElements()
-    //printf("countCDT = %d\n",countCDT );
+   
     //debugDomainIntCells(domainintcells,2);
     t_end = ds_cputime()-t_start;
     cout << endl;
@@ -1073,8 +1076,7 @@ bool Intersection::isNodeWithinXAABB(
     const Epetra_SerialDenseMatrix&    XAABB)
 {
 	bool isWithin = true;
-    const double tol = TOL7_;
-	
+	/*
 	for (int dim=0; dim<3; dim++)
 	{
         double diffMin = node[dim] - XAABB(dim,0);
@@ -1083,10 +1085,67 @@ bool Intersection::isNodeWithinXAABB(
    	    if((diffMin < -tol)||(diffMax < -tol)) //check again !!!!!      
             isWithin = false;
     }
-		 	
+	*/
+    for (int dim=0; dim<3; dim++)
+	{
+        double diffMin = XAABB(dim,0) - TOL7_;
+        double diffMax = XAABB(dim,1) + TOL7_;
+        
+       // printf("nodal value =  %f, min =  %f, max =  %f\n", node[dim], diffMin, diffMax);
+        
+   	    if((node[dim] < diffMin)||(node[dim] > diffMax)) //check again !!!!!   
+   	    {
+            isWithin = false;
+            break;
+   	    }
+    }
+   
 	return isWithin;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  ICS:    checks if a node is within an XAABB               u.may 06/07|
+ *----------------------------------------------------------------------*/
+bool Intersection::isLineWithinXAABB(    
+    const std::vector<double>&         node1,
+    const std::vector<double>&         node2,
+    const Epetra_SerialDenseMatrix&    XAABB)
+{
+	bool isWithin = true;
+	int dim = -1;
+	
+    for(dim=0; dim<3; dim++)
+    	if(fabs(node1[dim]-node2[dim]) > TOL7_)
+    		break;
+    
+    for(int i = 0; i < 3; i++)
+    {
+    	if(i != dim)
+    	{
+    		double min = XAABB(i,0) - TOL7_;
+    		double max = XAABB(i,1) + TOL7_;
+   
+    		if((node1[i] < min)||(node1[i] > max))
+    			isWithin = false;
+    		
+    	}
+    	if(!isWithin)
+    		break;
+    }
+    	
+    if(isWithin && dim > -1)
+    {
+    	isWithin = false;
+    	double min = XAABB(dim,0) - TOL7_;
+    	double max = XAABB(dim,1) + TOL7_;
+    	    		        
+    	if( ((node1[dim] < min) && (node2[dim] > max)) ||  
+    		((node2[dim] < min) && (node1[dim] > max)) )
+    		isWithin = true;
+    }
+	return isWithin;
+}
 
 
 /*----------------------------------------------------------------------*
@@ -1156,7 +1215,20 @@ bool Intersection::intersectionOfXAABB(
 			break;
 		}
 	
-		
+	if(!intersection)
+	{
+		for (int i = 0; i < 12; i++)
+		{
+			const int index1 = eleNodeNumbering_hex27_lines[i][0];
+			const int index2 = eleNodeNumbering_hex27_lines[i][1];
+			if(isLineWithinXAABB(nodes[index1], nodes[index2], xfemXAABB))
+			{
+				intersection = true;
+				break;
+			}
+		}
+	}
+	
 	if(!intersection)
 	{
 		nodes[0][0] = xfemXAABB(0,0);	nodes[0][1] = xfemXAABB(1,0);	nodes[0][2] = xfemXAABB(2,0);	// node 0	
@@ -1175,6 +1247,20 @@ bool Intersection::intersectionOfXAABB(
 				break;
 			}
 	}	
+	
+	if(!intersection)
+	{
+		for (int i = 0; i < 12; i++)
+		{
+			const int index1 = eleNodeNumbering_hex27_lines[i][0];
+			const int index2 = eleNodeNumbering_hex27_lines[i][1];
+			if(isLineWithinXAABB(nodes[index1], nodes[index2], cutterXAABB))
+			{
+				intersection = true;
+				break;
+			}
+		}
+	}
 	return intersection;
 }
 
@@ -2233,8 +2319,8 @@ void Intersection::computeCDT(
 	}
 	*/
     
-    in.save_nodes("tetin");   
-    in.save_poly("tetin");   
+    //in.save_nodes("tetin");   
+    //in.save_poly("tetin");   
     //  Tetrahedralize the PLC. Switches are chosen to read a PLC (p),
     //  do quality mesh generation (q) with a specified quality bound
     //  (1.414), and apply a maximum volume constraint (a0.1)
@@ -2243,10 +2329,10 @@ void Intersection::computeCDT(
     
     //Debug
     vector<int> elementIds;
-    for(int i = 0; i<numXFEMCornerNodes_; i++)
+    for(int i = 388; i<389; i++)
         elementIds.push_back(i);
     
-    debugTetgenOutput(in, out, element, elementIds);
+    //debugTetgenOutput(in, out, element, elementIds);
     //printTetViewOutputPLC( element, element->Id(), in);
     
     // recover curved interface for higher order meshes
@@ -2254,6 +2340,9 @@ void Intersection::computeCDT(
     if(curvedInterface)
         recoverCurvedInterface(element, boundaryintcells, out);
  
+    //if(element->Id()==388)
+    //	debugFaceMarker(element->Id(), out);
+    	
     //printTetViewOutput(element->Id(), out);
     
     // store domain integration cells
@@ -3836,7 +3925,7 @@ void Intersection::findAdjacentFace(
         adjacentFaceMarker = out.trifacemarkerlist[i] - facetMarkerOffset_;
         adjacentFaceIndex = i;
         
-        if((adjacentFaceMarker >= -1) && (faceIndex != adjacentFaceIndex))
+        if((adjacentFaceMarker > -2) && (faceIndex != adjacentFaceIndex))
         {        
             int countPoints = 0;
             for(int j = 0; j < 3 ; j++)
@@ -4569,5 +4658,124 @@ void Intersection::printTetViewOutputPLC(
     }
     fclose(outFile);    
 }
+
+
+void Intersection::debugFaceMarker(
+		const int 						eleId,
+		tetgenio&						out)
+{
+	
+	ofstream f_system("element_faceMarker.pos");
+	f_system << "View \" Face Markers" << " \" {" << endl;
+	
+	for(int i=0; i<out.numberoftrifaces; i++)
+    {
+        int trifaceMarker = out.trifacemarkerlist[i] - facetMarkerOffset_;
+       
+        if(trifaceMarker > -2)
+        {
+        	vector< vector<double> > triface(3, vector<double>(3));
+        	for(int j = 0; j < 3; j++)
+        		for(int k = 0; k < 3; k++)
+        			triface[j][k] = out.pointlist[out.trifacelist[i*3+j]*3 + k];
+        		
+        	f_system << IO::GMSH::trifaceToString(trifaceMarker, triface) << endl;
+        }
+	}
+	f_system << "};" << endl;
+	//f_system << IO::GMSH::getConfigString(2);	
+	f_system.close();
+}
+
+
+void Intersection::debugXFEMConditions(
+	const RefCountPtr<DRT::Discretization>  cutterdis)
+{
+	
+	vector< DRT::Condition * >	xfemConditions;
+	cutterdis->GetCondition ("XFEMCoupling", xfemConditions);
+	
+	ofstream f_system("element_xfemconditions.pos");
+	f_system << "View \" XFEM conditions" << " \" {" << endl;
+	
+	for(unsigned int i=0; i<xfemConditions.size(); i++)
+    {
+        map< int, RefCountPtr<DRT::Element > >  geometryMap = xfemConditions[i]->Geometry();
+        map<int, RefCountPtr<DRT::Element > >::iterator iterGeo;   
+        //if(geometryMap.size()==0)   printf("geometry does not obtain elements\n");
+      	//printf("size of %d.geometry map = %d\n",i, geometryMap.size());
+     	
+        for(iterGeo = geometryMap.begin(); iterGeo != geometryMap.end(); iterGeo++ )
+        { 
+            DRT::Element*  cutterElement = iterGeo->second.get();
+            f_system << IO::GMSH::elementToString(i, cutterElement) << endl;
+        }
+    }
+	
+	f_system << "};" << endl;
+	f_system.close();
+}
+
+
+void Intersection::debugIntersection(
+		DRT::Element*			xfemElement,
+		vector <DRT::Element*> 	cutterElements)
+{
+	
+	ofstream f_system("intersection.pos");
+	f_system << "View \" Intersection" << " \" {" << endl;
+	
+	f_system << IO::GMSH::elementToString(0, xfemElement) << endl;
+	
+	for(unsigned int i=0; i<cutterElements.size(); i++)
+		f_system << IO::GMSH::elementToString(i+1, cutterElements[i]) << endl;
+    
+	
+	f_system << "};" << endl;
+	f_system.close();
+}
+
+
+
+void Intersection::debugXAABBs(
+	const int							id,
+	const Epetra_SerialDenseMatrix&     cutterXAABB, 
+	const Epetra_SerialDenseMatrix&     xfemXAABB)
+{
+	char filename[100];
+	sprintf(filename, "element_XAABB%d.pos", id);
+	   
+	ofstream f_system(filename);
+	f_system << "View \" XAABB " << " \" {" << endl;
+	std::vector < std::vector <double> > nodes(8, vector<double> (3, 0.0));
+	
+	//cutterXAABB
+	nodes[0][0] = cutterXAABB(0,0);	nodes[0][1] = cutterXAABB(1,0);	nodes[0][2] = cutterXAABB(2,0);	// node 0	
+	nodes[1][0] = cutterXAABB(0,1);	nodes[1][1] = cutterXAABB(1,0);	nodes[1][2] = cutterXAABB(2,0);	// node 1
+	nodes[2][0] = cutterXAABB(0,1);	nodes[2][1] = cutterXAABB(1,1);	nodes[2][2] = cutterXAABB(2,0);	// node 2
+	nodes[3][0] = cutterXAABB(0,0);	nodes[3][1] = cutterXAABB(1,1);	nodes[3][2] = cutterXAABB(2,0);	// node 3
+	nodes[4][0] = cutterXAABB(0,0);	nodes[4][1] = cutterXAABB(1,0);	nodes[4][2] = cutterXAABB(2,1);	// node 4
+	nodes[5][0] = cutterXAABB(0,1);	nodes[5][1] = cutterXAABB(1,0);	nodes[5][2] = cutterXAABB(2,1);	// node 5
+	nodes[6][0] = cutterXAABB(0,1);	nodes[6][1] = cutterXAABB(1,1);	nodes[6][2] = cutterXAABB(2,1);	// node 6
+	nodes[7][0] = cutterXAABB(0,0);	nodes[7][1] = cutterXAABB(1,1);	nodes[7][2] = cutterXAABB(2,1);	// node 7
+	
+	f_system << IO::GMSH::XAABBToString(id+1, nodes) << endl;
+	
+	//xfemXAABB
+	nodes[0][0] = xfemXAABB(0,0);	nodes[0][1] = xfemXAABB(1,0);	nodes[0][2] = xfemXAABB(2,0);	// node 0	
+	nodes[1][0] = xfemXAABB(0,1);	nodes[1][1] = xfemXAABB(1,0);	nodes[1][2] = xfemXAABB(2,0);	// node 1
+	nodes[2][0] = xfemXAABB(0,1);	nodes[2][1] = xfemXAABB(1,1);	nodes[2][2] = xfemXAABB(2,0);	// node 2
+	nodes[3][0] = xfemXAABB(0,0);	nodes[3][1] = xfemXAABB(1,1);	nodes[3][2] = xfemXAABB(2,0);	// node 3
+	nodes[4][0] = xfemXAABB(0,0);	nodes[4][1] = xfemXAABB(1,0);	nodes[4][2] = xfemXAABB(2,1);	// node 4
+	nodes[5][0] = xfemXAABB(0,1);	nodes[5][1] = xfemXAABB(1,0);	nodes[5][2] = xfemXAABB(2,1);	// node 5
+	nodes[6][0] = xfemXAABB(0,1);	nodes[6][1] = xfemXAABB(1,1);	nodes[6][2] = xfemXAABB(2,1);	// node 6
+	nodes[7][0] = xfemXAABB(0,0);	nodes[7][1] = xfemXAABB(1,1);	nodes[7][2] = xfemXAABB(2,1);	// node 7
+	
+	f_system << IO::GMSH::XAABBToString(0, nodes) << endl;
+	
+	f_system << "};" << endl;
+	f_system.close();
+}
+
 
 #endif  // #ifdef CCADISCRET

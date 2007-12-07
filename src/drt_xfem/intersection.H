@@ -21,6 +21,7 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/drt_utils_local_connectivity_matrices.H"
 #include "../drt_lib/drt_element.H"
 #include "../io/io_drt.H"
+#include "../io/gmsh.H"
 #include "tetgen.h"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
@@ -484,7 +485,14 @@ class Intersection
             const Epetra_SerialDenseMatrix&    XAABB
             );
         
-                                                                                        
+         
+        bool isLineWithinXAABB(    
+            const std::vector<double>&         node1,
+            const std::vector<double>&         node2,
+            const Epetra_SerialDenseMatrix&    XAABB
+            );
+        
+        
         /*!
         \brief checks if two extended axis aligned bounding boxes intersect
     
@@ -1576,6 +1584,27 @@ class Intersection
             int             index,
             tetgenio&       in
             );   
+        
+        
+       void debugFaceMarker(
+        	const int 						eleId,
+        	tetgenio&						out
+        	);
+       
+       void debugXFEMConditions(
+       	const RefCountPtr<DRT::Discretization>  cutterdis
+       	);
+       
+       void debugIntersection(
+       		DRT::Element*			xfemElement,
+       		vector <DRT::Element*> 	cutterElements
+       		);
+       
+       void debugXAABBs(
+        const int							id,
+       	const Epetra_SerialDenseMatrix&     cutterXAABB, 
+       	const Epetra_SerialDenseMatrix&     xfemXAABB
+       	);
                                                
 };
 
