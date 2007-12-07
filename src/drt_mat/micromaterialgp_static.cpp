@@ -97,21 +97,17 @@ void MAT::MicroMaterialGP::SetUpMicroStatic()
   // -------------------------------------------------------------------
   // set some pointers and variables
   // -------------------------------------------------------------------
-  //SOLVAR*         actsolv  = &solv[0];
-
-  //always choose UMFPACK as microstructural solver
-  SOLVAR* actsolv;
-  actsolv->solvertyp = umfpack;
-
   const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
 
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
+  // always choose UMFPACK as microstructural solver
   RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
+  solveparams->set("solver","umfpack");
+  solveparams->set("symmetric",false);
   RefCountPtr<LINALG::Solver> solver =
     rcp(new LINALG::Solver(solveparams,actdis->Comm(),allfiles.out_err));
-  solver->TranslateSolverParameters(*solveparams,actsolv);
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
 
   // -------------------------------------------------------------------
