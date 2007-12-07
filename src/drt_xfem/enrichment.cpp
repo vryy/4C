@@ -138,6 +138,29 @@ double Enrichment::enrValue(
         
         break;
     }
+    case XFEM::Enrichment::typeJump:
+    {
+        // TODO: generalize
+        double actpos_enr_val = 0.0;
+        if (cellcenterpos(0) > 1.525) {
+            actpos_enr_val = -1.0;
+        } else {
+            actpos_enr_val = 1.0;
+        }
+        
+        double nodepos_enr_val = 0.0;
+        if (nodalpos(0) > 1.525) {
+            nodepos_enr_val = -1.0;
+        } else {
+            nodepos_enr_val = 1.0;
+        }
+        
+        enrval = nodepos_enr_val - actpos_enr_val;
+        //enrval = actpos_enr_val;
+//        dserror("not yet");
+        
+        break;
+    }
     default:
         dserror("unsupported enrichment!");
     }

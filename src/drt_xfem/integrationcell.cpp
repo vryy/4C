@@ -180,7 +180,7 @@ string DomainIntCell::Print() const
 }
 
 // get volume in parameter space using Gauss integration
-const vector<double> DomainIntCell::modifyGaussRule3D(
+vector<double> DomainIntCell::modifyGaussRule3D(
         const bool standard_integration,
         const double& cell_e0,
         const double& cell_e1,
@@ -250,7 +250,7 @@ const vector<double> DomainIntCell::modifyGaussRule3D(
                            xjm(0,1)*xjm(1,0)*xjm(2,2);
     
   
-        // gauss coordinates of cell in element coordinates
+        // gauss coordinates of cell in element coordinates + gauss weight
         element_e[0] = e(0);
         element_e[1] = e(1);
         element_e[2] = e(2);
@@ -309,7 +309,6 @@ blitz::Array<double,1> DomainIntCell::GetPhysicalCenterPosition(DRT::Element& el
     
     // center in local coordinates
     const vector<double> localcenterpos = DRT::Utils::getLocalCenterPosition(this->Shape());
-    cout << localcenterpos[0] << localcenterpos[1] <<localcenterpos[2] << endl;
 
     // shape functions
     blitz::Array<double, 1> funct(27);

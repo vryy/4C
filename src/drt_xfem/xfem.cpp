@@ -52,8 +52,6 @@ void XFEM::ComputeEnrichedShapefunction(
         const blitz::Array<double,1> nodalpos(toBlitzArray(nodes[inode]->X()));
 
         const std::set<XFEM::FieldEnr> enrfieldset = dofman.FieldEnrSetPerNode(gid);
-        cout << "Node " << gid+1 << ": numdf = "
-                << dofman.NumDofPerNode(gid, 4) << endl;
 
         for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
                 enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
@@ -97,8 +95,6 @@ void XFEM::ComputeEnrichedShapefunction(
         const blitz::Array<double,1> nodalpos(toBlitzArray(nodes[inode]->X()));
 
         const std::set<XFEM::FieldEnr> enrfieldset = dofman.FieldEnrSetPerNode(gid);
-        cout << "Node " << gid+1 << ": numdf = "
-                << dofman.NumDofPerNode(gid, 4) << endl;
 
         for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
                 enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)

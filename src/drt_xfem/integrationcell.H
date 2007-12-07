@@ -160,7 +160,7 @@ public:
         return ComputePhysicalCoordinates(ele);
     };
     
-    const vector<double> modifyGaussRule3D(
+    vector<double> modifyGaussRule3D(
             const bool standard_integration,
             const double& cell_e0,
             const double& cell_e1,

@@ -573,6 +573,11 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
           const int numparamvelx = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Velx);
           const int numparamvely = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Vely);
           const int numparamvelz = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Velz);
+          cout << "numparampres " << numparampres << endl;
+          cout << "numparamvelx " << numparamvelx << endl;
+          cout << "numparamvely " << numparamvely << endl;
+          cout << "numparamvelz " << numparamvelz << endl;
+          
           dsassert((numparamvelx == numparamvely and numparamvelx == numparamvelz and numparamvelx == numparampres),
         		  "for now, we enrich velocity and pressure together");
           

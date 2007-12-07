@@ -2176,7 +2176,7 @@ void Intersection::computeCDT(
     int nsurfPoints = 0;
     tetgenio in;
     tetgenio out;
-    char switches[] = "pnno2AQ";    //o2 Y
+    char switches[] = "pnno2Q";    //o2 Y
     tetgenio::facet *f;
     tetgenio::polygon *p;
     

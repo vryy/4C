@@ -20,6 +20,7 @@
 #include "../drt_xfem/integrationcell.H"
 #include "../drt_xfem/physics.H"
 #include "../drt_xfem/dof_management.H"
+#include "../drt_xfem/xfem.H"
 
 using namespace std;
 
@@ -463,8 +464,7 @@ void XFluidEnsightWriter::WriteResult(
     if (!map_has_map(result.group(), const_cast<char*>(groupname.c_str())))
         return;
 
-    
-    // initial Intersection
+    // Intersection
     RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(field_->discretization(),
                                                                   cutterfield_->discretization()));
     // apply enrichments
@@ -537,16 +537,6 @@ vector<double> computeScalarCellNodeValues(
     
     blitz::Range _  = blitz::Range::all();
     
-    DRT::Node** const nodes = ele.Nodes();
-    blitz::Array<double,2> xyze(nsd,maxnod,blitz::ColumnMajorArray<2>());
-    for (int inode=0; inode<ele.NumNode(); inode++)
-    {
-      const double* x = nodes[inode]->X();
-      xyze(0,inode) = x[0];
-      xyze(1,inode) = x[1];
-      xyze(2,inode) = x[2];
-    }
-    
     // if cell node is on the interface, the value is not defined for a jump.
     // however, we approach the interface from one particular side and therefore,
     // -> we use the center of the cell to determine, where we come from
@@ -570,30 +560,8 @@ vector<double> computeScalarCellNodeValues(
             cellnodepos(isd) = cellnodeposvector[isd];
         }
         
-        // simplest case: jump or void enrichment
-        // -> no chain rule, since enrichment function derivative is zero
-        // TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
-        
         blitz::Array<double,1> enr_funct(numparam);
-        int dofcounter = 0;
-        for (int inode=0; inode<ele.NumNode(); inode++)
-        {
-          const int gid = nodes[inode]->Id();
-          const blitz::Array<double,1> nodalpos(xyze(_,inode));
-
-          const std::set<XFEM::FieldEnr>  enrfieldset = dofman.FieldEnrSetPerNode(gid);
-          for (std::set<XFEM::FieldEnr>::const_iterator enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
-          {
-              if (enrfield->getField() == field)
-              {
-                  const XFEM::Enrichment enr = enrfield->getEnrichment();
-                  const double enrval = enr.enrValue(cellnodepos,nodalpos,cellcenterpos);
-                  enr_funct(dofcounter) = funct(inode) * enrval;
-                  dofcounter += 1;
-              }
-          }
-        }
-        
+        XFEM::ComputeEnrichedShapefunction(ele, dofman, field, cellnodepos, cellcenterpos, funct, enr_funct);
         // interpolate value
         double x = 0.0;
         for (int iparam = 0; iparam < numparam; ++iparam)
@@ -677,7 +645,7 @@ void XFluidEnsightWriter::WriteResultStep(
                 DRT::Element* const actele = dis->gElement(elegid);
                 
                 // create local copy of information about dofs
-                XFEM::ElementDofManager eledofman = dofman->constructElementDofManager(*actele);
+                const XFEM::ElementDofManager eledofman = dofman->constructElementDofManager(*actele);
                 
                 vector<int> lm;
                 vector<int> lmowner;
@@ -689,6 +657,7 @@ void XFluidEnsightWriter::WriteResultStep(
                 
                 const int numparam = eledofman.NumDofPerField(field);
                 const vector<int> dof = eledofman.LocalDofPosPerField(field);
+                cout << XFEM::PHYSICS::physVarToString(field) << ": numparam = " << numparam << endl;  
                 
                 vector<double> elementvalues(numparam);
                 for (int iparam=0; iparam<numparam; ++iparam)   elementvalues[iparam] = myvelnp[dof[iparam]];

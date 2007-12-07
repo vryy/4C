@@ -239,17 +239,17 @@ const map<int, const set <XFEM::FieldEnr> > XFEM::DofManager::createNodalDofMap(
         const DRT::Node* actnode = xfemdis->lColNode(i);
         const int gid = actnode->Id();
         
-        if (actnode->X()[0] < 0.9)
-        {
+//        if (actnode->X()[0] < 0.9)
+//        {
             nodalDofMap[gid].insert(XFEM::FieldEnr(PHYSICS::Velx, enr_std));
             nodalDofMap[gid].insert(XFEM::FieldEnr(PHYSICS::Vely, enr_std));
             nodalDofMap[gid].insert(XFEM::FieldEnr(PHYSICS::Velz, enr_std));
             nodalDofMap[gid].insert(XFEM::FieldEnr(PHYSICS::Pres, enr_std));
-        }
+//        }
     }
 
     // for surface 1, loop my col elements and add void enrichments to each elements member nodes
-    const XFEM::Enrichment enr_void1(1, XFEM::Enrichment::typeVoid);
+    const XFEM::Enrichment enr_void1(1, XFEM::Enrichment::typeJump);
     for (int i=0; i<xfemdis->NumMyColElements(); ++i)
     {
         const DRT::Element* actele = xfemdis->lColElement(i);

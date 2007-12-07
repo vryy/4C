@@ -19,6 +19,7 @@ Maintainer: Axel Gerstenberger
 #include "xfluid3_stationary.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_lib/drt_timecurve.H"
+#include "../drt_xfem/xfem.H"
 
 #include <Epetra_SerialDenseSolver.h>
 
@@ -176,8 +177,6 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
 //   blitz::Range uz = blitz::Range(2, 4*iel_-2, 4);
 //   blitz::Range p  = blitz::Range(3, 4*iel_-1, 4);
 
-  // TODO: put in global dofmanager and check whether the global dofmanager gives the same results as the stored local one. only then we can be sure that we made no mistake
-  
   const XFEM::ElementDofManager& dofman = ele->eleDofManager_;
 
   // stabilization parameter
@@ -293,40 +292,21 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
       derxy2_  = 0.;
     }
 
-
-    // enrich shape functions and derivatives
-    // simplest case: jump or void enrichment
-    // -> no chain rule, since enrichment function derivative is zero
-
-    int dofcounter = 0;
-    for (int inode=0; inode<iel_; inode++)
-    {
-      const int gid = nodes[inode]->Id();
-      const blitz::Array<double,1> nodalpos(xyze_(_,inode));
-
-      const std::set<XFEM::FieldEnr>  enrfieldset = dofman.FieldEnrSetPerNode(gid);
-      for (std::set<XFEM::FieldEnr>::const_iterator enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
-      {
-          if (enrfield->getField() == XFEM::PHYSICS::Velx)
-          {
-              const XFEM::Enrichment enr = enrfield->getEnrichment();
-              const double enrval = enr.enrValue(gauss_pos,nodalpos,cellcenterpos);
-              enr_funct_(dofcounter) = funct_(inode) * enrval;
-              enr_derxy_(_,dofcounter) = derxy_(_,inode) * enrval;
-              // compute second global derivative
-              if (higher_order_ele)
-              {
-                enr_derxy2_(_,dofcounter) = derxy2_(_,inode) * enrval;
-              }
-              else
-              {
-                enr_derxy2_(_,dofcounter) = 0.;
-              }
-              dofcounter += 1;
-          }
-      }
-    }
-
+    // after this call, one should only use the enriched shape functions and derivatives!
+    // can currently not be enforced due to "global" class variables
+    XFEM::ComputeEnrichedShapefunction(
+            *ele, 
+            dofman, 
+            XFEM::PHYSICS::Velx, 
+            gauss_pos,
+            cellcenterpos, 
+            funct_, 
+            derxy_, 
+            derxy2_, 
+            enr_funct_,
+            enr_derxy_,
+            enr_derxy2_);
+    
     // get velocities (n+g,i) at integration point
     velint_ = blitz::sum(enr_funct_(j)*evelnp(i,j),j);
 
@@ -657,42 +637,22 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
 
         if (newton)
         {
-          dserror("not translated to XFEM integrator yet!");
-          for (int ui=0; ui<iel_; ++ui)
-          {
-            const int UDF = ui*4;
-            const int VDF = ui*4+1;
-            const int WDF = ui*4+2;
-            for (int vi=0; vi<iel_; ++vi)
-            {
-              const int dPDF = vi*4+3;
-              /*  pressure stabilisation: convection, reactive part
-
-                  /                             \
-                 |  /          \   n+1           |
-                 | | Du o nabla | u     , grad q |
-                 |  \          /   (i)           |
-                  \                             /
-
-              */
-              estif(dPDF, UDF) += tau_Mp*(enr_derxy_(0, vi)*enr_conv_r_(0, 0, ui)
-                                          +
-                                          enr_derxy_(1, vi)*enr_conv_r_(1, 0, ui)
-                                          +
-                                          enr_derxy_(2, vi)*enr_conv_r_(2, 0, ui)) ;
-              estif(dPDF, VDF) += tau_Mp*(enr_derxy_(0, vi)*enr_conv_r_(0, 1, ui)
-                                          +
-                                          enr_derxy_(1, vi)*enr_conv_r_(1, 1, ui)
-                                          +
-                                          enr_derxy_(2, vi)*enr_conv_r_(2, 1, ui)) ;
-              estif(dPDF, WDF) += tau_Mp*(enr_derxy_(0, vi)*enr_conv_r_(0, 2, ui)
-                                          +
-                                          enr_derxy_(1, vi)*enr_conv_r_(1, 2, ui)
-                                          +
-                                          enr_derxy_(2, vi)*enr_conv_r_(2, 2, ui)) ;
-
-            } // vi
-          } // ui
+            /*  pressure stabilisation: convection, reactive part
+              /                             \
+             |  /          \   n+1           |
+             | | Du o nabla | u     , grad q |
+             |  \          /   (i)           |
+              \                             /
+            */
+          integrateMatrix(dofman, estif, Pres, enr_derxy_(0,_), tau_Mp, Velx, enr_conv_r_(0, 0, _));
+          integrateMatrix(dofman, estif, Pres, enr_derxy_(1,_), tau_Mp, Velx, enr_conv_r_(1, 0, _));
+          integrateMatrix(dofman, estif, Pres, enr_derxy_(2,_), tau_Mp, Velx, enr_conv_r_(2, 0, _));
+          integrateMatrix(dofman, estif, Pres, enr_derxy_(0,_), tau_Mp, Vely, enr_conv_r_(0, 1, _));
+          integrateMatrix(dofman, estif, Pres, enr_derxy_(1,_), tau_Mp, Vely, enr_conv_r_(1, 1, _));
+          integrateMatrix(dofman, estif, Pres, enr_derxy_(2,_), tau_Mp, Vely, enr_conv_r_(2, 1, _));
+          integrateMatrix(dofman, estif, Pres, enr_derxy_(0,_), tau_Mp, Velz, enr_conv_r_(0, 2, _));
+          integrateMatrix(dofman, estif, Pres, enr_derxy_(1,_), tau_Mp, Velz, enr_conv_r_(1, 2, _));
+          integrateMatrix(dofman, estif, Pres, enr_derxy_(2,_), tau_Mp, Velz, enr_conv_r_(2, 2, _));
         } // if newton
 
         // pressure stabilisation
@@ -752,6 +712,7 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
 
         if (newton)
         {
+            dserror("not translated to XFEM integrator yet!");
           for (int ui=0; ui<iel_; ++ui)
           {
             const int UDF = ui*4;
@@ -921,6 +882,7 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
 
       if(vstab)
       {
+          dserror("not translated to XFEM integrator yet!");
         for (int ui=0; ui<iel_; ++ui)
         {
           const int UDF = ui*4;
@@ -1051,6 +1013,7 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
 
         if (newton)
         {
+            dserror("not translated to XFEM integrator yet!");
           for (int ui=0; ui<iel_; ++ui)
           {
             const int UDF = ui*4;
@@ -1222,28 +1185,8 @@ double DRT::Elements::XFluid3Stationary::HK(
   DRT::Utils::shape_function_3D(funct_,e1,e2,e3,distype);
   DRT::Utils::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
 
-  // get element type constant for tau
-  double mk=0.0;
-  switch (distype)
-  {
-  case DRT::Element::tet4:
-  case DRT::Element::pyramid5:
-  case DRT::Element::hex8:
-  case DRT::Element::wedge6:
-    mk = 0.333333333333333333333;
-    break;
-  case DRT::Element::hex20:
-  case DRT::Element::hex27:
-  case DRT::Element::tet10:
-  case DRT::Element::wedge15:
-    mk = 0.083333333333333333333;
-    break;
-  default:
-    dserror("type unknown!\n");
-  }
-
   // get Jacobian matrix and determinant
-  xjm_ = blitz::sum(deriv_(i,k)*xyze_(j,k),k);
+  const blitz::Array<double,2> xjm_(blitz::sum(deriv_(i,k)*xyze_(j,k),k));
   const double det = xjm_(0,0)*xjm_(1,1)*xjm_(2,2)+
                      xjm_(0,1)*xjm_(1,2)*xjm_(2,0)+
                      xjm_(0,2)*xjm_(1,0)*xjm_(2,1)-
@@ -1261,7 +1204,7 @@ double DRT::Elements::XFluid3Stationary::HK(
 
 double DRT::Elements::XFluid3Stationary::MK(
   const DRT::Element::DiscretizationType  distype
-  )
+  ) const
 {
     double mk=0.0;
     switch (distype)

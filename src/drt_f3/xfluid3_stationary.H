@@ -150,7 +150,7 @@ namespace Elements
     
     double MK(
       const DRT::Element::DiscretizationType  distype
-      );
+      ) const;
   };
 
 }

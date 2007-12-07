@@ -124,7 +124,7 @@ public:
      * \return set with enriched fields
      * 
      */
-    inline const std::set<FieldEnr> FieldEnrSetPerNode(const int gid) const
+    inline std::set<FieldEnr> FieldEnrSetPerNode(const int gid) const
     {
         //TODO: return proper default set given as second argument
     	map<int, const std::set<FieldEnr> >::const_iterator tmp = nodalDofMap_.find(gid);
@@ -164,7 +164,7 @@ public:
     };
     
     /// return a list of local positions in a array of dofs
-    const vector<int> LocalDofPosPerField(const XFEM::PHYSICS::Field field) const
+    vector<int> LocalDofPosPerField(const XFEM::PHYSICS::Field field) const
     {
     	map<XFEM::PHYSICS::Field, vector<int> >::const_iterator tmp = paramsLocalEntries_.find(field);
     	if (tmp == paramsLocalEntries_.end()){

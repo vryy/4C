@@ -97,8 +97,8 @@ namespace Elements
      */
     void Sysmat(
     		XFluid3* ele,
-    		const XFEM::DomainIntCells&       domainIntCells,   /// integration cells used for exact integration of discontinuities
-            const XFEM::BoundaryIntCells&     boundaryIntCells, /// facets used for integrating the surface forces
+    		const XFEM::DomainIntCells&       domainIntCells,   ///< integration cells used for exact integration of discontinuities
+            const XFEM::BoundaryIntCells&     boundaryIntCells, ///< facets used for integrating the surface forces
             const blitz::Array<double,2>&     evelnp,
 			const blitz::Array<double,1>&     eprenp,
 			const blitz::Array<double,2>&     evhist,
