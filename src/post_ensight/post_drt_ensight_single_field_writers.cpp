@@ -83,18 +83,18 @@ void XFluidEnsightWriter::WriteAllResults(
 void XFluidEnsightWriter::WriteFiles()
 {
 #ifndef PARALLEL
-    if (myrank_ > 0) dserror("have serial filter version, but myrank_ > 0");
+    if (myrank_ > 0) dserror("have serial filter version, but myrank_ = %d",myrank_);
 #endif
-
+    
     PostResult result = PostResult(field_);
 
     // timesteps when the solution is written
     const vector<double> soltime = result.get_result_times(field_->name());
 
     
-    //
-    // write geometry file
-    //
+    ///////////////////////////////////
+    //  write geometry file          //
+    ///////////////////////////////////
     const string geofilename = filename_ + "_"+ field_->name() + ".geo";
     WriteGeoFile(geofilename);
     vector<int> filesteps;
@@ -104,41 +104,61 @@ void XFluidEnsightWriter::WriteFiles()
     timesteps.push_back(1);
     timesetmap_["geo"] = timesteps;
     const int geotimeset = 1;
-    const int geofileset = 1;
     // at the moment, we can only print out the first step -> to be changed
     vector<double> geotime; // timesteps when the geometry is written
     geotime.push_back(soltime[0]);
     
     
-    //
-    // write solution fields files
-    //
+    ///////////////////////////////////
+    //  write solution fields files  //
+    ///////////////////////////////////
     const int soltimeset = 2;
     WriteAllResults(field_);
     
     
-    //
-    // now write the case file
-    //
-    const string casefilename = filename_ + "_"+ field_->name() + ".case";
-    ofstream casefile;
-    casefile.open(casefilename.c_str());
-    casefile << "# created using post_drt_ensight\n"<< "FORMAT\n\n"<< "type:\tensight gold\n";
-    
-    casefile << "\nGEOMETRY\n\n";
-    casefile << "model:\t"<<geotimeset<<"\t"<<geofileset<<"\t"<< geofilename<< "\n";
-        
-    casefile << "\nVARIABLE\n\n";
-    casefile << GetVariableSection(filesetmap_, variablenumdfmap_, variablefilenamemap_);
-    
-    casefile << "\nTIME\n\n";
-    casefile << GetTimeSectionString(geotimeset, geotime);
-    casefile << GetTimeSectionString(soltimeset, soltime);
 
-    casefile << "\nFILE\n\n";
-    casefile << GetFileSectionStringFromFilesets(filesetmap_);
+    int counttime = 0;
+    for (map<string,vector<int> >::const_iterator entry = timesetmap_.begin(); entry != timesetmap_.end(); ++entry) {
+        counttime++;
+        string key = entry->first;
+        timesetnumbermap_[key] = counttime;
+    }
+    int countfile = 0;
+    for (map<string,vector<int> >::const_iterator entry = filesetmap_.begin(); entry != filesetmap_.end(); ++entry) {
+        countfile++;
+        string key = entry->first;
+        filesetnumbermap_[key] = countfile;
+    }
+    
+    
+    
+    ///////////////////////////////////
+    //  now write the case file      //
+    ///////////////////////////////////
+    if (myrank_ == 0) 
+    {
+        const string casefilename = filename_ + "_"+ field_->name() + ".case";
+        ofstream casefile;
+        casefile.open(casefilename.c_str());
+        casefile << "# created using post_drt_ensight\n"<< "FORMAT\n\n"<< "type:\tensight gold\n";
 
-    casefile.close();
+        casefile << "\nGEOMETRY\n\n";
+        casefile << "model:\t"<<timesetnumbermap_["geo"]<<"\t"<<filesetnumbermap_["geo"]<<"\t"<< geofilename<< "\n";
+
+        casefile << "\nVARIABLE\n\n";
+        casefile << GetVariableSection(filesetmap_, variablenumdfmap_, variablefilenamemap_);
+
+        casefile << "\nTIME\n\n";
+        casefile << GetTimeSectionString(geotimeset, geotime);
+        casefile << GetTimeSectionString(soltimeset, soltime);
+
+        casefile << "\nFILE\n\n";
+        casefile << GetFileSectionStringFromFilesets(filesetmap_);
+
+        casefile.close();
+    }
+    
+    return;
 }
 
 
@@ -523,7 +543,7 @@ vector<double> computeScalarCellNodeValues(
         const XFEM::ElementDofManager& dofman,
         const XFEM::DomainIntCell& cell,
         const XFEM::PHYSICS::Field field,
-        const vector<double> elementvalues
+        const blitz::Array<double,1> elementvalues
         )
 {
     // return value
@@ -545,6 +565,12 @@ vector<double> computeScalarCellNodeValues(
     // cell corner nodes
     for (int inen = 0; inen < nen_cell; ++inen)
     {
+        const vector<double> cellnodeposvector = cell.GetPhysicalCoord(ele)[inen];
+        blitz::Array<double,1> cellnodepos(3);
+        for (int isd = 0; isd < nsd; ++isd) {
+            cellnodepos(isd) = cellnodeposvector[isd];
+        }
+        
         // shape functions
         blitz::Array<double,1> funct(maxnod);
         DRT::Utils::shape_function_3D(
@@ -553,21 +579,12 @@ vector<double> computeScalarCellNodeValues(
                 cell.GetDomainCoord()[inen][1],
                 cell.GetDomainCoord()[inen][2],
                 ele.Shape());
-    
-        const vector<double> cellnodeposvector = cell.GetPhysicalCoord(ele)[inen];
-        blitz::Array<double,1> cellnodepos(3);
-        for (int isd = 0; isd < nsd; ++isd) {
-            cellnodepos(isd) = cellnodeposvector[isd];
-        }
         
         blitz::Array<double,1> enr_funct(numparam);
         XFEM::ComputeEnrichedShapefunction(ele, dofman, field, cellnodepos, cellcenterpos, funct, enr_funct);
         // interpolate value
-        double x = 0.0;
-        for (int iparam = 0; iparam < numparam; ++iparam)
-        {
-            x += elementvalues[iparam] * enr_funct(iparam);
-        }
+        const double x = blitz::sum(elementvalues * enr_funct);
+        
         // store position
         cellvalues.push_back(x);
     }
@@ -634,7 +651,7 @@ void XFluidEnsightWriter::WriteResultStep(
     {
         const XFEM::PHYSICS::Field field = *fielditer;
         
-        // for each found distype write block of the same typed elements
+        // for each found distype, write block of the same typed elements
         int counter = 0;
         for (NumElePerDisType::const_iterator iter=numElePerDisType.begin(); iter != numElePerDisType.end(); ++iter)
         {
@@ -653,14 +670,16 @@ void XFluidEnsightWriter::WriteResultStep(
                 
                 // extract local values from the global vector
                 vector<double> myvelnp(lm.size());
+                cout << "lm: size = " << lm.size() << endl;
+                
                 DRT::Utils::ExtractMyValues(*data,myvelnp,lm);
                 
                 const int numparam = eledofman.NumDofPerField(field);
-                const vector<int> dof = eledofman.LocalDofPosPerField(field);
+                const vector<int> dofpos = eledofman.LocalDofPosPerField(field);
                 cout << XFEM::PHYSICS::physVarToString(field) << ": numparam = " << numparam << endl;  
                 
-                vector<double> elementvalues(numparam);
-                for (int iparam=0; iparam<numparam; ++iparam)   elementvalues[iparam] = myvelnp[dof[iparam]];
+                blitz::Array<double,1> elementvalues(numparam);
+                for (int iparam=0; iparam<numparam; ++iparam)   elementvalues(iparam) = myvelnp[dofpos[iparam]];
                 
                 const XFEM::DomainIntCells domainintcells = ih->GetDomainIntCells(elegid, actele->Shape());
                 for (XFEM::DomainIntCells::const_iterator cell = domainintcells.begin(); cell != domainintcells.end(); ++cell)
