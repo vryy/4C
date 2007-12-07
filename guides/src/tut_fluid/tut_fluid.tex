@@ -52,11 +52,12 @@ so
 \item Fancy stuff: COLOROUTPUT, DSERROR\_DUMP;
 \end{itemize}
 \item Save the changes in the \emph{defines.drt.my} file. 
-\item Next in the console the call (in the \baci{} directory) \emph{./configure
-config/muench.fc6.ser config/defines.drt.my} creates the makefile needed
+\item Execute the following command in the console (in the \baci{} directory):\\
+\emph{./configure config/muench.fc6.ser config/defines.drt.my}\\
+This creates the \texttt{Makefile} needed for compiling the code.
 in the following steps. 
 \item Use \emph{make clean} before recompiling. 
-\item Next simply run \emph{make}.
+\item Now simply run \emph{make}.
 \end{itemize}
 This created everything necessary for BACI to solve your specific
 problem.
@@ -209,13 +210,18 @@ this should produce \texttt{\emph{tut\_fluid.dat}}.
 
 After the successful creation of the input file in the previous section,
 you are ready to start the simulation with \\
-\texttt{./cca\_fc6\_ser.fast tut\_fluid.dat outputname}
+\texttt{./cca\_fc6\_ser.fast tut\_fluid.dat outputname} 
+\\
+\\
+Since the input file (\texttt{\emph{tut\_fluid.dat}}) is a ASCII textfile you can
+watch and edit it easily with your favourite text editor. For a list of valid input parameters
+we refer to chapter \ref{input_parameters:chap}.
 %%
 %%============================
 \section{Postprocessing}
 
-For the postprocessing we want to use a software called \emph{paraview}. 
-In principal you can use GID (or any other supported tool) for visualization 
+For the postprocessing we want to use a software called \emph{Paraview}. 
+In principal you can use GID (or any other supported tool like Ensight) for visualization 
 of your data as well.
 
 \subsection{Filtering result data}
@@ -225,7 +231,7 @@ which converts the generic binary \baci{} output to the desired format.
 Starting from the \baci{} directory execute \texttt{make post\_drt\_ensight}.
 \item The filter should now be available in your \baci{} directory. Filter your results with
 the call (inside the \baci{} directory): \texttt{post\_drt\_ensight -\,-file=outputname} 
-\item Further options of the filter program are made visible by the command \texttt{post\_drt\_ensight}.
+\item Further options of the filter program are made visible by the command \texttt{post\_drt\_ensight --help}
 \end{itemize}
 
 \subsection{Visualize your results in Paraview}
@@ -234,13 +240,14 @@ the call (inside the \baci{} directory): \texttt{post\_drt\_ensight -\,-file=out
 \texttt{/lnm/programs/paraview-3.0.2-Linux-x86/bin/paraview \&}
 \item \emph{File$\to$Open} and select the filtered \emph{*.case}
 file: \emph{outputname.case}
-\item shift \emph{Byte order} to \emph{little endian}. 
+\item shift \emph{Byte order} to \emph{little endian} (!) 
 \item press \emph{Accept} to activate the display.
 \item choose time step 100 in the top menu bar 
 \item in the \emph{Display} tab (section \emph{Color}) press \emph{Rescale to Data Range}. At \emph{Color by} you can choose now
 between \emph{Point pressure} and \emph{Point velocity}, whatever
 you want to display.
 \item For the scale, press \emph{Edit Color Map}, choose the tab \emph{Color legend} and activate \emph{Show color legend}.
+You recieve a visualization of the pressure field like shown in figure \ref{fig:tut_fluid_mesh}.
 \end{itemize}
 \begin{figure}[h]
 \begin{center}
