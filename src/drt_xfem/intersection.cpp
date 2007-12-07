@@ -87,7 +87,7 @@ void Intersection::computeIntersection( const RefCountPtr<DRT::Discretization>  
     cutterdis->GetCondition ("XFEMCoupling", xfemConditions);
         
     if(xfemConditions.size()==0)
-        dserror("number of fsi xfem conditions = 0");
+        cout << "number of fsi xfem conditions = 0" << endl;
       
        
 #ifdef PARALLEL
