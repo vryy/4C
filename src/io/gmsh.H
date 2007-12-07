@@ -47,6 +47,10 @@ std::string distypeToGmshElementHeader(const DRT::Element::DiscretizationType di
 
 int distypeToGmshNumNode(const DRT::Element::DiscretizationType distype);
 
+string trifaceToString(const double scalar, const vector< vector <double> >& triface);
+
+string XAABBToString(const double scalar, const vector< vector <double> >& XAABB);
+
 };
 };
 

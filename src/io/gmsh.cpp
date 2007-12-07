@@ -58,6 +58,7 @@ string IO::GMSH::elementToString(const double scalar, DRT::Element* ele)
     return pos_array_string.str();
 }
 
+
 string IO::GMSH::elementToString(const vector<double> scalarfield, DRT::Element* ele)
 {
     DRT::Node** nodes = ele->Nodes();
@@ -288,5 +289,69 @@ int IO::GMSH::distypeToGmshNumNode(const DRT::Element::DiscretizationType distyp
 	}
 	return -1;
 }
+
+
+string IO::GMSH::trifaceToString(const double scalar, const vector< vector <double> >& triface)
+{  
+    const DRT::Element::DiscretizationType distype = DRT::Element::tri3;
+    const int numnode = distypeToGmshNumNode(distype);
+    
+    stringstream pos_array_string;
+    pos_array_string << "S" << distypeToGmshElementHeader(distype) << "(";
+    for (int i = 0; i<numnode;++i)
+    {
+        pos_array_string << scientific << triface[i][0] << ",";
+        pos_array_string << scientific << triface[i][1] << ",";
+        pos_array_string << scientific << triface[i][2];
+        if (i < numnode-1){
+            pos_array_string << ",";
+        }
+    };
+    pos_array_string << ")";
+    // values
+    pos_array_string << "{";
+    for (int i = 0; i<numnode;++i)
+    {
+        pos_array_string << scientific << scalar;
+        if (i < numnode-1){
+            pos_array_string << ",";
+        }
+    };
+    pos_array_string << "};";
+    return pos_array_string.str();
+}
+
+
+
+string IO::GMSH::XAABBToString(const double scalar, const vector< vector <double> >& XAABB)
+{  
+    const DRT::Element::DiscretizationType distype = DRT::Element::hex8;
+    const int numnode = distypeToGmshNumNode(distype);
+    
+    stringstream pos_array_string;
+    pos_array_string << "S" << distypeToGmshElementHeader(distype) << "(";
+    for (int i = 0; i<numnode;++i)
+    {
+        pos_array_string << scientific << XAABB[i][0] << ",";
+        pos_array_string << scientific << XAABB[i][1] << ",";
+        pos_array_string << scientific << XAABB[i][2];
+        if (i < numnode-1){
+            pos_array_string << ",";
+        }
+    };
+    pos_array_string << ")";
+    // values
+    pos_array_string << "{";
+    for (int i = 0; i<numnode;++i)
+    {
+        pos_array_string << scientific << scalar;
+        if (i < numnode-1){
+            pos_array_string << ",";
+        }
+    };
+    pos_array_string << "};";
+    return pos_array_string.str();
+}
+
 
 #endif // #ifdef CCADISCRET
