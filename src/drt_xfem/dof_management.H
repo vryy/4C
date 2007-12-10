@@ -110,6 +110,7 @@ public:
 	explicit ElementDofManager();
 	
 	explicit ElementDofManager(
+	        DRT::Element& ele,
 			map<int, const set <XFEM::FieldEnr> >&  nodalDofMap);
     ~ElementDofManager();
 

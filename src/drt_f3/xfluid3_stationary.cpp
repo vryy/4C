@@ -198,7 +198,7 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
       standard_integration = true;
   }
   else {
-      gaussrule = DRT::Utils::intrule_tet_24point;
+      gaussrule = DRT::Utils::intrule_tet_11point;
       standard_integration = false;
   }
 
@@ -211,7 +211,7 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
   // if cell node is on the interface, the value is not defined for a jump.
   // however, we approach the interface from one particular side and therefore,
   // -> we use the center of the cell to determine, where we come from
-  blitz::Array<double,1> cellcenterpos(cell->GetPhysicalCenterPosition(*ele));
+  const blitz::Array<double,1> cellcenterpos(cell->GetPhysicalCenterPosition(*ele));
 
   // integration loop
   for (int iquad=0; iquad<intpoints.nquad; ++iquad)

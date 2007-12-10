@@ -194,7 +194,7 @@ public:
   number of degrees of freedom per node along the way for each of it's nodes
   separately.
   */
-  virtual int NumDofPerNode(const DRT::Node& node) const {return this->eleDofManager_.NumDofPerNode(node.Id(), 4);}
+  virtual int NumDofPerNode(const DRT::Node& node) const {return this->eleDofManager_.NumDofPerNode(node.Id(), 0);}
 
   /*!
   \brief Get number of degrees of freedom per element

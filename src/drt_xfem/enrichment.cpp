@@ -155,8 +155,8 @@ double Enrichment::enrValue(
             nodepos_enr_val = 1.0;
         }
         
-        enrval = nodepos_enr_val - actpos_enr_val;
-        //enrval = actpos_enr_val;
+        //enrval = actpos_enr_val - nodepos_enr_val;
+        enrval = actpos_enr_val;
 //        dserror("not yet");
         
         break;

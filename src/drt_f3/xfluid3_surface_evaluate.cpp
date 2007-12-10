@@ -100,6 +100,7 @@ int DRT::Elements::XFluid3Surface::EvaluateNeumann(
                                            Epetra_SerialDenseVector& elevec1)
 {
   // there are 3 velocities and 1 pressure
+  return 0;
   const int numdf = 4;
 
   const double thsl = params.get("thsl",0.0);
@@ -313,6 +314,7 @@ void DRT::Elements::XFluid3Surface::IntegrateShapeFunction(ParameterList& params
                   const std::vector<double>& edispnp)
 {
   // there are 3 velocities and 1 pressure
+    return;
   const int numdf = 4;
 
 //  const double thsl = params.get("thsl",1.0);

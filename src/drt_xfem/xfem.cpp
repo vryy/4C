@@ -65,6 +65,7 @@ void XFEM::ComputeEnrichedShapefunction(
             }
         }
     }
+    dsassert(dofcounter == dofman.NumDofPerField(field), "mismatch in information from eledofmanager!");
 }
 
 //
@@ -110,6 +111,7 @@ void XFEM::ComputeEnrichedShapefunction(
             }
         }
     }
+    dsassert(dofcounter == dofman.NumDofPerField(field), "mismatch in information from eledofmanager!");
 }
 
 

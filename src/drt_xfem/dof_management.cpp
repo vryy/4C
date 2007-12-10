@@ -73,6 +73,7 @@ XFEM::ElementDofManager::ElementDofManager()
  |  ctor                                                        ag 11/07|
  *----------------------------------------------------------------------*/
 XFEM::ElementDofManager::ElementDofManager(
+        DRT::Element& ele,
 		map<int, const set <XFEM::FieldEnr> >& nodalDofMap) :
 			nodalDofMap_(nodalDofMap)
 {
@@ -98,18 +99,26 @@ XFEM::ElementDofManager::ElementDofManager(
 	}
 	
 	// count number of parameters per field
+	// define local position of unknown by looping first over nodes and then over its unknowns!
 	int counter = 0;
-	for (tmp = nodalDofMap.begin(); tmp != nodalDofMap.end(); ++tmp) {
-		const set<XFEM::FieldEnr> enrfieldset = tmp->second;
-		
-		for (enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield) {
-			const XFEM::PHYSICS::Field field = enrfield->getField();
-			numParamsPerFieldMap_[field] += 1;
-			paramsLocalEntries_[field].push_back(counter);
-			counter++;
-		}
+	DRT::Node** const nodes = ele.Nodes();
+	for (int inode=0; inode<ele.NumNode(); inode++)
+	{
+	    const int gid = nodes[inode]->Id();
+	    map<int, const set <XFEM::FieldEnr> >::const_iterator entry = nodalDofMap_.find(gid);
+	    if (entry == nodalDofMap_.end())
+	        dserror("impossible ;-)");
+	    const set<XFEM::FieldEnr> enrfieldset = entry->second;
+	    
+	    set<XFEM::FieldEnr>::const_iterator enrfield;
+	    for (enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
+	    {
+	        const XFEM::PHYSICS::Field field = enrfield->getField();
+	        numParamsPerFieldMap_[field] += 1;
+	        paramsLocalEntries_[field].push_back(counter);
+	        counter++;
+	    }
 	}
-	
 	return;
 }
 
@@ -196,7 +205,7 @@ const XFEM::ElementDofManager XFEM::DofManager::constructElementDofManager(DRT::
     }
 
     // create a local dofmanager
-    XFEM::ElementDofManager eleDofManager = XFEM::ElementDofManager(nodaldofset);
+    XFEM::ElementDofManager eleDofManager = XFEM::ElementDofManager(ele, nodaldofset);
     return eleDofManager;
 }
 
@@ -239,13 +248,13 @@ const map<int, const set <XFEM::FieldEnr> > XFEM::DofManager::createNodalDofMap(
         const DRT::Node* actnode = xfemdis->lColNode(i);
         const int gid = actnode->Id();
         
-//        if (actnode->X()[0] < 0.9)
-//        {
+        //if (actnode->X()[0] < 0.9 or actnode->X()[0] > 2.1)
+        //{
             nodalDofMap[gid].insert(XFEM::FieldEnr(PHYSICS::Velx, enr_std));
             nodalDofMap[gid].insert(XFEM::FieldEnr(PHYSICS::Vely, enr_std));
             nodalDofMap[gid].insert(XFEM::FieldEnr(PHYSICS::Velz, enr_std));
             nodalDofMap[gid].insert(XFEM::FieldEnr(PHYSICS::Pres, enr_std));
-//        }
+        //}
     }
 
     // for surface 1, loop my col elements and add void enrichments to each elements member nodes

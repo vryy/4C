@@ -479,11 +479,6 @@ void XFluidEnsightWriter::WriteResult(
         const set<XFEM::PHYSICS::Field> fieldset
         )
 {
-    PostResult result = PostResult(field_);
-    result.next_result();
-    if (!map_has_map(result.group(), const_cast<char*>(groupname.c_str())))
-        return;
-
     // Intersection
     RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(field_->discretization(),
                                                                   cutterfield_->discretization()));
@@ -505,6 +500,13 @@ void XFluidEnsightWriter::WriteResult(
     
     // ensure that degrees of freedom in the discretization have been set
     field_->discretization()->FillComplete();
+    
+    PostResult result = PostResult(field_);
+    result.next_result();
+    if (!map_has_map(result.group(), const_cast<char*>(groupname.c_str())))
+        return;
+
+
     
     // for file continuation
     bool multiple_files = false;
@@ -670,13 +672,12 @@ void XFluidEnsightWriter::WriteResultStep(
                 
                 // extract local values from the global vector
                 vector<double> myvelnp(lm.size());
-                cout << "lm: size = " << lm.size() << endl;
                 
                 DRT::Utils::ExtractMyValues(*data,myvelnp,lm);
                 
                 const int numparam = eledofman.NumDofPerField(field);
                 const vector<int> dofpos = eledofman.LocalDofPosPerField(field);
-                cout << XFEM::PHYSICS::physVarToString(field) << ": numparam = " << numparam << endl;  
+                //cout << XFEM::PHYSICS::physVarToString(field) << ": numparam = " << numparam << ": lm.size() = " << lm.size() << endl;  
                 
                 blitz::Array<double,1> elementvalues(numparam);
                 for (int iparam=0; iparam<numparam; ++iparam)   elementvalues(iparam) = myvelnp[dofpos[iparam]];

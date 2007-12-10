@@ -33,8 +33,8 @@ class Enrichment
 {
 public:
 
-    // Various kinds of enrichments, which differ in ther way,
-    // how the enrichment function is evaluated
+    // Various kinds of enrichments, which differ in the way,
+    // the enrichment function is evaluated
     enum EnrType
     {
         typeStandard,
