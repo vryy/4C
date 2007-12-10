@@ -51,6 +51,28 @@ CondifImplicitTimeInt::CondifImplicitTimeInt(RefCountPtr<DRT::Discretization> ac
 {
 
   // -------------------------------------------------------------------
+  // get the basic parameters first
+  // -------------------------------------------------------------------
+
+  // bound for the number of timesteps
+  stepmax_                   =params_.get<int>   ("max number timesteps");
+  // max. sim. time
+  maxtime_                   =params_.get<double>("total time");
+
+  // parameter for time-integration
+  theta_                     =params_.get<double>("theta");
+  // which kind of time-integration
+  timealgo_                  =params_.get<FLUID_TIMEINTTYPE>("time int algo");
+
+  dtp_ = dta_  =params_.get<double>("time step size");
+
+  // (fine-scale) subgrid diffusivity?
+  fssgd_  =params_.get<int>("fs subgrid viscosity",0);
+
+  // type of convective velocity field
+  cdvel_  =params_.get<int>("condif velocity field");
+
+  // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
   PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(discret_);
@@ -113,8 +135,6 @@ CondifImplicitTimeInt::CondifImplicitTimeInt(RefCountPtr<DRT::Discretization> ac
 
   // initialize standard (stabilized) system matrix
   sysmat_ = null;
-  // initialize standard (stabilized) + (fine-scale) diffusivity matrix
-  sysmat_sd_ = null;
 
   // -------------------------------------------------------------------
   // create empty vectors
@@ -153,6 +173,13 @@ CondifImplicitTimeInt::CondifImplicitTimeInt(RefCountPtr<DRT::Discretization> ac
   // The residual vector --- more or less the rhs
   residual_     = LINALG::CreateVector(*dofrowmap,true);
 
+  // necessary only for the VM3 approach
+  if (fssgd_ > 0)
+  {
+    // initialize (fine-scale) diffusivity matrix
+    sysmat_sd_ = null;
+  }
+
   // -------------------------------------------------------------------
   // create timers and time monitor
   // -------------------------------------------------------------------
@@ -185,36 +212,9 @@ void CondifImplicitTimeInt::Integrate()
 {
   // time measurement --- start TimeMonitor tm0 and tm1
   tm0_ref_        = rcp(new TimeMonitor(*timedyntot_ ));
-  tm1_ref_        = rcp(new TimeMonitor(*timedyninit_));
 
-  // ----------------------------------------------------- stop criteria
   // bound for the number of startsteps
   int    numstasteps         =params_.get<int>   ("number of start steps");
-  // bound for the number of timesteps
-  stepmax_                   =params_.get<int>   ("max number timesteps");
-  // max. sim. time
-  maxtime_                   =params_.get<double>("total time");
-
-  // parameter for time-integration
-  theta_                     =params_.get<double>("theta");
-  // which kind of time-integration
-  timealgo_                  =params_.get<FLUID_TIMEINTTYPE>("time int algo");
-
-  // parameter for start algorithm
-  //double starttheta          =params_.get<double>("start theta");
-  //FLUID_TIMEINTTYPE startalgo=timeint_one_step_theta;
-
-  dtp_ = dta_  =params_.get<double>("time step size");
-
-  // velocity field
-  cdvel_  =params_.get<int>("condif velocity field");
-
-  // (fine-scale) subgrid diffusivity?
-  fssgd_  =params_.get<int>("fs subgrid viscosity",0);
-
-  // time measurement --- this causes the TimeMonitor tm1 to stop here
-  //                                                (call of destructor)
-  tm1_ref_ = null;
 
   if (timealgo_==timeint_stationary)
     // stationary case
@@ -486,6 +486,7 @@ void CondifImplicitTimeInt::Solve(
   )
 {
   const Epetra_Map* dofrowmap       = discret_->DofRowMap();
+
   double            dtsolve = 0;
   double            dtele   = 0;
   double            tcpu   ;
@@ -500,11 +501,8 @@ void CondifImplicitTimeInt::Solve(
     tcpu=ds_cputime();
 
     sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
-    if (fssgd_ > 0)
-      sysmat_sd_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_); 
 
-    // zero out residual
-    //residual_->PutScalar(0.0); don't need this, see next line
+      // add Neumann loads
     residual_->Update(1.0,*neumann_loads_,0.0);
 
     // create the parameters for the discretization
@@ -525,42 +523,51 @@ void CondifImplicitTimeInt::Solve(
     discret_->SetState("phinp",phinp_);
     discret_->SetState("hist"  ,hist_ );
 
-    // call loop over elements
-    if (fssgd_ > 0)
-      discret_->Evaluate(eleparams,sysmat_,sysmat_sd_,residual_);
-    else
-      discret_->Evaluate(eleparams,sysmat_,residual_);
-
-    discret_->ClearState();
-
+    // decide whether VM3-based solution approach or standard approach
     if (fssgd_ > 0)
     {
-      // finalize the (fine-scale) diffusivity matrix
+      // define flag for computation in first time step
+      bool compute;
+      if (step_ == 1) 
+      {
+        compute=true;
+
+        // create scale-separation matrix
+        scalesep_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+      }
+      else compute=false; 
+
+      // create (fine-scale) subgrid-diffusivity matrix
+      sysmat_sd_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_); 
+
+      // call loop over elements (two system matrices will be filled)
+      discret_->Evaluate(eleparams,sysmat_,sysmat_sd_,residual_);
+      discret_->ClearState();
+
+      // finalize the (fine-scale) subgrid-diffusivity matrix
       LINALG::Complete(*sysmat_sd_);
 
+      // apply DBC to (fine-scale) subgrid-diffusivity matrix
       LINALG::ApplyDirichlettoSystem(sysmat_sd_,phinp_,residual_,phinp_,dirichtoggle_);
 
-      // extract the ML parameters and build system of equations
+      // extract the ML parameters
       ParameterList&  mllist = solver_.Params().sublist("ML Parameters");
-      RCP<VM3_Solver> vm3_solver = rcp(new VM3_Solver::VM3_Solver(sysmat_sd_,sysmat_,zeros_,zeros_,zeros_,dirichtoggle_,mllist,false) );
+
+      // call the VM3 constructor (will only be effective on the first call)
+      RCP<VM3_Solver> vm3_solver = rcp(new VM3_Solver::VM3_Solver(scalesep_,sysmat_sd_,sysmat_,zeros_,zeros_,zeros_,dirichtoggle_,mllist,compute) );
+
+      // call the VM3 scale separator
+      vm3_solver-> VM3_Solver::Separate(scalesep_,sysmat_sd_,sysmat_,zeros_,zeros_,zeros_,false );
+    }
+    else
+    {
+      // call loop over elements
+      discret_->Evaluate(eleparams,sysmat_,residual_);
+      discret_->ClearState();
     }
 
     // finalize the complete matrix
     LINALG::Complete(*sysmat_);
-
-#if 0
-    if (fssgd_ > 0)
-    {
-      // add the (fine-scale) diffusivity matrix to 
-      // the standard (stabilized) matrix; sum is stored as sysmat_sv
-      LINALG::Add(*sysmat_,false,1.0,*sysmat_sd_,1.0);
-
-      // finalize the complete system matrix, that is,
-      // standard (stabilized) matrix + (fine-scale) diffusivity matrix
-      LINALG::Complete(*sysmat_sd_);
-      maxentriesperrow_ = sysmat_sd_->MaxNumEntries();
-    }
-#endif
 
     // end time measurement for element call
     tm3_ref_=null;
@@ -573,12 +580,7 @@ void CondifImplicitTimeInt::Solve(
     // start time measurement for application of dirichlet conditions
     tm4_ref_ = rcp(new TimeMonitor(*timeapplydirich_));
 
-    LINALG::ApplyDirichlettoSystem(sysmat_,phinp_,residual_,
-				     phinp_,dirichtoggle_);
-
-    //if (fssgd_ > 0)
-      //LINALG::ApplyDirichlettoSystem(sysmat_sd_,phinp_,residual_,
-      	//		  phinp_,dirichtoggle_);
+    LINALG::ApplyDirichlettoSystem(sysmat_,phinp_,residual_,phinp_,dirichtoggle_);
 
     // end time measurement for application of dirichlet conditions
     tm4_ref_=null;
@@ -591,10 +593,7 @@ void CondifImplicitTimeInt::Solve(
     // get cpu time
     tcpu=ds_cputime();
 
-    //if (fssgd_ > 0)
-      //solver_.Solve(sysmat_sd_,sysmat_,phinp_,residual_,true,true);
-    //else
-      solver_.Solve(sysmat_,phinp_,residual_,true,true); 
+    solver_.Solve(sysmat_,phinp_,residual_,true,true); 
 
     // end time measurement for solver call
     tm5_ref_=null;
@@ -879,6 +878,7 @@ void CondifImplicitTimeInt::SolveStationaryProblem()
   //                         out to screen
   // -------------------------------------------------------------------
   if (myrank_==0) printf("Stationary Solver\n");
+  step_=1;
 
   // -------------------------------------------------------------------
   //         evaluate dirichlet and neumann boundary conditions
@@ -911,11 +911,11 @@ void CondifImplicitTimeInt::SolveStationaryProblem()
      neumann_loads_->PutScalar(0.0);
      discret_->EvaluateNeumann(eleparams,*neumann_loads_);
      discret_->ClearState();
-
-     //----------------------- compute an inverse of the dirichtoggle vector
-     invtoggle_->PutScalar(1.0);
-     invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
   }
+
+  //----------------------- compute an inverse of the dirichtoggle vector
+  invtoggle_->PutScalar(1.0);
+  invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
 
   // -------------------------------------------------------------------
   //                     solve nonlinear equation

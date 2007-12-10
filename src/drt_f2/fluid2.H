@@ -312,10 +312,12 @@ private:
                   vector<double>&           edispnp,
                   vector<double>&           egridv,
                   Epetra_SerialDenseMatrix* sys_mat,
+                  Epetra_SerialDenseMatrix* sys_mat_sv,
                   Epetra_SerialDenseVector* residual,
                   struct _MATERIAL*         material,
                   double                    time,
                   double                    timefac,
+                  int                       fssgv,
                   bool                      is_stationary
 		  );
 
@@ -354,6 +356,7 @@ private:
 
   // evaluate fluid coefficient matrix
     void f2_calmat( Epetra_SerialDenseMatrix& estif,
+                Epetra_SerialDenseMatrix& esv,
                 Epetra_SerialDenseVector&  	eforce,
                 vector<double>&  	velint,
                 vector<double>&   	histvec,
@@ -364,17 +367,20 @@ private:
                 vector<double>&   	  gradp,
                 Epetra_SerialDenseVector& funct,
 		        vector<double>&   tau,
+                const double&             vart,
                 Epetra_SerialDenseMatrix& derxy,
                 Epetra_SerialDenseMatrix& derxy2,
                 const vector<double>&     edeadng,
                 const double&   	fac,
                 const double&   	visc,
                 const int&      	iel,
+                const int&              fssgv,
 		double                  timefac
       		);
 
   // evaluate fluid coefficient matrix for stationary problems
     void f2_calmat_stationary( Epetra_SerialDenseMatrix& estif,
+                Epetra_SerialDenseMatrix& esv,
                 Epetra_SerialDenseVector&  	eforce,
                 vector<double>&  	velint,
                 vector<double>&   	histvec,
@@ -385,12 +391,14 @@ private:
                 vector<double>&   	gradp,
                 Epetra_SerialDenseVector& funct,
 		vector<double>&   	tau,
+                const double&             vart,
                 Epetra_SerialDenseMatrix& derxy,
                 Epetra_SerialDenseMatrix& derxy2,
                 const vector<double>&     edeadng,
                 const double&   	fac,
                 const double&   	visc,
-                const int&      	iel
+                const int&      	iel,
+                const int&              fssgv
       );
 
   // set number of gauss points to element shape default

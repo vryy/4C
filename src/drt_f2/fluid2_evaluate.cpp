@@ -46,7 +46,7 @@ int DRT::Elements::Fluid2::Evaluate(ParameterList& params,
 
   // set default value for (at the moment still necessary) control parameter
  bool is_stationary = false;
-  
+
   // get the action required
   string action = params.get<string>("action","none");
   if (action == "none") dserror("No action supplied");
@@ -136,9 +136,12 @@ int DRT::Elements::Fluid2::Evaluate(ParameterList& params,
         if (timefac < 0.0) dserror("No thsl supplied");
       }
 
+      // get flag for (fine-scale) subgrid viscosity (1=yes, 0=no)
+      const int fssgv = params.get<int>("fs subgrid viscosity",0);
+
       // calculate element coefficient matrix and rhs
-      f2_sys_mat(lm,myvelnp,myprenp,myvhist,mydispnp,mygridv,&elemat1,&elevec1,actmat,
-                 time,timefac,is_stationary);
+      f2_sys_mat(lm,myvelnp,myprenp,myvhist,mydispnp,mygridv,&elemat1,&elemat2,&elevec1,actmat,
+                 time,timefac,fssgv,is_stationary);
 
       // This is a very poor way to transport the density to the
       // outside world. Is there a better one?
@@ -212,10 +215,12 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
                                        vector<double>&           edispnp,
                                        vector<double>&           egridv,
                                        Epetra_SerialDenseMatrix* sys_mat,
+                                       Epetra_SerialDenseMatrix* sys_mat_sv,
                                        Epetra_SerialDenseVector* residual,
                                        struct _MATERIAL*         material,
                                        double                    time,
                                        double                    timefac,
+                                       int                       fssgv,
                                        bool                      is_stationary
   )
 {
@@ -274,6 +279,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
   double         		mk=0.0;
   static vector<double>         velint(2);
   static vector<double>         tau(3); // stab parameters
+  double                        vart; // artificial subgrid viscosity
 
   /*------------------------------------------------------- initialise ---*/
     // use one point gauss rule to calculate tau at element center
@@ -407,6 +413,14 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
     /*-- stability parameter definition according to Codina (2002), CMAME 191 */
     xi = DMIN(re,1.0);
     tau[2] = 0.5*vel_norm*hk*xi;
+  }
+  if (fssgv == 1)
+  {
+    /*----------------------- compute artificial subgrid viscosity nu_art ---*/
+    re = mk * vel_norm * hk / visc;     /* convective : viscous forces */
+    xi = DMAX(re,1.0);
+
+    vart = (DSQR(hk)*mk*DSQR(vel_norm))/(2.0*visc*xi);
   }
 
 
@@ -550,20 +564,20 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
 
       // perform integration for entire matrix and rhs
       if(is_stationary==false)
-        f2_calmat(*sys_mat,*residual,
+        f2_calmat(*sys_mat,*sys_mat_sv,*residual,
                   velint,histvec,gridvelint,press,
                   vderxy,vderxy2,gradp,
-                  funct,tau,
+                  funct,tau,vart,
                   derxy,derxy2,edeadng,
-                  fac,visc,iel,
+                  fac,visc,iel,fssgv,
                   timefac);
       else
-        f2_calmat_stationary(*sys_mat,*residual,
+        f2_calmat_stationary(*sys_mat,*sys_mat_sv,*residual,
                              velint,histvec,gridvelint,press,
                              vderxy,vderxy2,gradp,
-                             funct,tau,
+                             funct,tau,vart,
                              derxy,derxy2,edeadng,
-                             fac,visc,iel);
+                             fac,visc,iel,fssgv);
 
 
   } // end of loop over integration points
@@ -1086,6 +1100,7 @@ for further comments see comment lines within code.
 
 void DRT::Elements::Fluid2::f2_calmat(
     Epetra_SerialDenseMatrix& estif,
+    Epetra_SerialDenseMatrix& esv,
     Epetra_SerialDenseVector& eforce,
     vector<double>&           velint,
     vector<double>&           histvec,
@@ -1096,12 +1111,14 @@ void DRT::Elements::Fluid2::f2_calmat(
     vector<double>&           gradp,
     Epetra_SerialDenseVector& funct,
     vector<double>&           tau,
+    const double&             vart,
     Epetra_SerialDenseMatrix& derxy,
     Epetra_SerialDenseMatrix& derxy2,
     const vector<double>&     edeadng,
     const double&             fac,
     const double&             visc,
     const int&                iel,
+    const int&                fssgv,
     double                    timefac
     )
 {
@@ -1274,12 +1291,30 @@ void DRT::Elements::Fluid2::f2_calmat(
 #undef nu_
 #undef thsl
 
+if (fssgv == 1)
+{
+  // parameter for artificial subgrid viscosity
+  const double vartfac = vart*timefacfac;
+  const double taumfac = tau[0]*timefac*timefacfac;
+
+  #define esv_(i,j)    esv(i,j)
+  #define derxy_(i,j)  derxy(i,j)
+  #define conv_c_(j)   conv_c[j]
+
+  #include "fluid2_vart.cpp"
+
+  #undef esv_
+  #undef derxy_
+  #undef conv_c_
+}
+
   return;
 } // end of DRT:Elements:Fluid2:f2_calmat
 
 
 void DRT::Elements::Fluid2::f2_calmat_stationary(
     Epetra_SerialDenseMatrix& estif,
+    Epetra_SerialDenseMatrix& esv,
     Epetra_SerialDenseVector& eforce,
     vector<double>&           velint,
     vector<double>&           histvec,
@@ -1290,12 +1325,14 @@ void DRT::Elements::Fluid2::f2_calmat_stationary(
     vector<double>&           gradp,
     Epetra_SerialDenseVector& funct,
     vector<double>&           tau,
+    const double&             vart,
     Epetra_SerialDenseMatrix& derxy,
     Epetra_SerialDenseMatrix& derxy2,
     const vector<double>&     edeadng,
     const double&             fac,
     const double&             visc,
-    const int&                iel
+    const int&                iel,
+    const int&                fssgv
     )
 {
 /*========================= further variables =========================*/
@@ -1450,6 +1487,23 @@ for (int i=0; i<iel; i++) /* loop over nodes of element */
 #undef rhsint_
 #undef nu_
 #undef thsl
+
+if (fssgv == 1)
+{
+  // parameter for artificial subgrid viscosity
+  const double vartfac = vart*fac;
+  const double taumfac = tau[0]*fac;
+
+  #define esv_(i,j)    esv(i,j)
+  #define derxy_(i,j)  derxy(i,j)
+  #define conv_c_(j)   conv_c[j]
+
+  #include "fluid2_vart.cpp"
+
+  #undef esv_
+  #undef derxy_
+  #undef conv_c_
+}
 
 return;
 } // end of DRT:Elements:Fluid2:f2_calmat_stationary

@@ -66,14 +66,15 @@ public:
   \brief ctor
 
   */
-  explicit VM3_Solver( RefCountPtr<Epetra_CrsMatrix>& Aplus,
+  explicit VM3_Solver( RefCountPtr<Epetra_CrsMatrix>& Sep,
+                       RefCountPtr<Epetra_CrsMatrix>& Aplus,
                        RefCountPtr<Epetra_CrsMatrix>& A,
                        RefCountPtr<Epetra_Vector>& rplus,
                        RefCountPtr<Epetra_Vector>& r,
                        RefCountPtr<Epetra_Vector>& sol,
                        const RefCountPtr<Epetra_Vector> dbctoggle,
                        ParameterList& mlparams,
-                       bool increm);
+                       bool compute);
 
   /*!
   \brief Destroys an instance of this class
@@ -100,6 +101,13 @@ public:
 
 
   /*!
+  \brief Compute the vm3 solver
+
+   Compute the vm3 solver
+  */
+  bool Compute();
+
+  /*!
   \brief Apply the VM3 solver
 
    Perform one sweep of the VM3 solver
@@ -109,22 +117,13 @@ public:
                      solver
    \param Y (Out)  : Epetra_MultiVector containing the result on output
   */
-  int Solve(const Epetra_Vector& X, Epetra_Vector& Y, ParameterList& params);
-
-
-  /*!
-  \brief Apply the VM3 solver for incremental formulation
-
-   Perform one sweep of the VM3 solver for incremental formulation
-
-
-   \param X  (In)  : Epetra_MultiVector matching the fine level map of this
-                     solver
-   \param X2  (In)  : modified Epetra_MultiVector matching the fine level map of this
-                     solver
-   \param Y (Out)  : Epetra_MultiVector containing the result on output
-  */
-  int Solve(const Epetra_Vector& X, const Epetra_Vector& X2, Epetra_Vector& Y, ParameterList& params);
+   void Separate(RefCountPtr<Epetra_CrsMatrix>& Sep,
+                     RefCountPtr<Epetra_CrsMatrix>& Aplus,
+                     RefCountPtr<Epetra_CrsMatrix>& A,
+                     RefCountPtr<Epetra_Vector>& rplus,
+                     RefCountPtr<Epetra_Vector>& r,
+                     RefCountPtr<Epetra_Vector>& sol,
+                     bool increm);
 
 
 private:
@@ -133,19 +132,19 @@ private:
   VM3_Solver(VM3_Solver& old);
   VM3_Solver operator = (const VM3_Solver& old);
 
-  bool                           increm_;  // flag indicating incremental formulation 
+  bool                           compute_;  // flag indicating whether scale-separation matrix should be computed
 
   ParameterList&                 mlparams_;    // ML parameter list
 
+  RCP<Epetra_CrsMatrix>& Sep_;       // input matrix including fine-scale term
   RCP<Epetra_CrsMatrix>& Aplus_;     // input matrix including fine-scale term
   RCP<Epetra_CrsMatrix>& A_;         // input matrix without fine-scale term
   RCP<Epetra_Vector>& rplus_;
   RCP<Epetra_Vector>& r_;
   RCP<Epetra_Vector>& sol_;
-  //RCP<Epetra_CrsMatrix>  Acombined_; // input matrix without fine-scale term
+  const RCP<Epetra_Vector>& dbctoggle_;
   Operator               Ptent_;
   Operator               Rtent_;
-  //RCP<Epetra_Map>        coarsermap_;
 
 }; // VM3_Solver
 

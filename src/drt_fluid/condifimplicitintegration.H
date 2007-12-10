@@ -168,10 +168,13 @@ protected:
   int cdvel_;
   int fssgd_;
 
-  /// system matrices: standard (stabilized) matrix and (fine-scale) 
-  /// subgrid-(artificial-)diffusivity matrix
+  /// system matrices: standard (stabilized) matrix and (fine-scale)
+  /// subgrid-diffusivity matrix
   RefCountPtr<Epetra_CrsMatrix> sysmat_;
   RefCountPtr<Epetra_CrsMatrix> sysmat_sd_;
+
+  /// scale-separation matrix for VM3-based solution approach
+  RefCountPtr<Epetra_CrsMatrix> scalesep_;
 
   /// toggle vector indicating which dofs have Dirichlet BCs
   RefCountPtr<Epetra_Vector>    dirichtoggle_;

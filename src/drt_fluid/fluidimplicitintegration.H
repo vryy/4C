@@ -244,8 +244,15 @@ protected:
   double dtp_;
   double theta_;
 
-  /// system matrix --- stiffness and mass are assembled in one matrix!
+  int fssgv_;
+
+  /// system matrices: standard (stabilized) matrix and (fine-scale)
+  /// subgrid-viscosity matrix
   RefCountPtr<Epetra_CrsMatrix> sysmat_;
+  RefCountPtr<Epetra_CrsMatrix> sysmat_sv_;
+
+  /// scale-separation matrix for VM3-based solution approach
+  RefCountPtr<Epetra_CrsMatrix> scalesep_;
 
   /// toggle vector indicating which dofs have Dirichlet BCs
   RefCountPtr<Epetra_Vector>    dirichtoggle_;
@@ -258,9 +265,10 @@ protected:
   /// the vector containing body and surface forces
   RefCountPtr<Epetra_Vector>    neumann_loads_;
 
-  /// The residual vector --- more or less the rhs for the incremental
-  /// formulation!!!
+  /// rhs: standard (stabilized) residual vector (rhs for the incremental form)
+  /// and (fine-scale) subgrid-viscosity residual vector
   RefCountPtr<Epetra_Vector>    residual_;
+  RefCountPtr<Epetra_Vector>    residual_sv_;
 
   /// true (rescaled) residual vector without zeros at dirichlet positions
   RefCountPtr<Epetra_Vector>    trueresidual_;

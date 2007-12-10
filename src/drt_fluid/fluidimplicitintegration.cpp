@@ -73,6 +73,9 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
 
   dtp_ = dta_ = params_.get<double>("time step size");
 
+  // (fine-scale) subgrid viscosity?
+  fssgv_  =params_.get<int>("fs subgrid viscosity",0);
+
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
@@ -163,6 +166,7 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   // a 'good' estimate
   maxentriesperrow_ = 108;
 
+  // initialize standard (stabilized) system matrix
   sysmat_ = null;
 
   // -------------------------------------------------------------------
@@ -209,14 +213,22 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   // Vectors used for solution process
   // ---------------------------------
 
-  // The residual vector --- more or less the rhs for the incremental
-  // formulation!!!
+  // rhs: standard (stabilized) residual vector (rhs for the incremental form)
   residual_     = LINALG::CreateVector(*dofrowmap,true);
   trueresidual_ = LINALG::CreateVector(*dofrowmap,true);
 
   // Nonlinear iteration increment vector
   incvel_       = LINALG::CreateVector(*dofrowmap,true);
 
+  // necessary only for the VM3 approach
+  if (fssgv_ > 0)
+  {
+    // initialize (fine-scale) subgrid-viscosity system matrix
+    sysmat_sv_ = null;
+
+    // residual vector containing (fine-scale) subgrid-viscosity residual
+    residual_sv_  = LINALG::CreateVector(*dofrowmap,true);
+  }
 
   // -------------------------------------------------------------------
   // create timers and time monitor
@@ -612,6 +624,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
       tcpu=ds_cputime();
 
       sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+
       // add Neumann loads
       residual_->Update(1.0,*neumann_loads_,0.0);
 
@@ -627,6 +640,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
       // other parameters that might be needed by the elements
       eleparams.set("total time",time_);
       eleparams.set("thsl",theta_*dta_);
+      eleparams.set("fs subgrid viscosity",fssgv_);
       eleparams.set("include reactive terms for linearisation",newton_);
 
       // set vector values needed by elements
@@ -639,14 +653,52 @@ void FluidImplicitTimeInt::NonlinearSolve()
         discret_->SetState("gridv", gridv_);
       }
 
-      // call loop over elements
-      discret_->Evaluate(eleparams,sysmat_,residual_);
+      // decide whether VM3-based solution approach or standard approach
+      if (fssgv_ > 0)
+      {
+        // define flag for computation in first time step
+        bool compute;
+        if (step_ == 1) 
+        {
+          compute=true;
 
-      discret_->ClearState();
+          // create scale-separation matrix
+          scalesep_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+        }
+        else compute=false; 
+
+        // create (fine-scale) subgrid-viscosity matrix
+        sysmat_sv_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_); 
+
+        // call loop over elements (two system matrices will be filled)
+        discret_->Evaluate(eleparams,sysmat_,sysmat_sv_,residual_);
+        discret_->ClearState();
+
+        // finalize the (fine-scale) subgrid-viscosity matrix
+        LINALG::Complete(*sysmat_sv_);
+
+        // apply DBC to (fine-scale) subgrid-viscosity matrix
+        LINALG::ApplyDirichlettoSystem(sysmat_sv_,incvel_,residual_sv_,zeros_,dirichtoggle_);
+
+        // extract the ML parameters
+        ParameterList&  mllist = solver_.Params().sublist("ML Parameters");
+
+        // call the VM3 constructor (will only be effective on the first call)
+        RCP<VM3_Solver> vm3_solver = rcp(new VM3_Solver::VM3_Solver(scalesep_,sysmat_sv_,sysmat_,residual_sv_,residual_,velnp_,dirichtoggle_,mllist,compute) );
+
+        // call the VM3 scale separator for incremental formulation
+        vm3_solver-> VM3_Solver::Separate(scalesep_,sysmat_sv_,sysmat_,residual_sv_,residual_,velnp_,true);
+      }
+      else
+      {
+        // call loop over elements
+        discret_->Evaluate(eleparams,sysmat_,residual_);
+        discret_->ClearState();
+      }
 
       density = eleparams.get("density", 0.0);
 
-      // finalize the system matrix
+      // finalize the complete matrix
       LINALG::Complete(*sysmat_);
       maxentriesperrow_ = sysmat_->MaxNumEntries();
 
@@ -791,8 +843,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
       // start time measurement for application of dirichlet conditions
       tm4_ref_ = rcp(new TimeMonitor(*timeapplydirich_));
 
-      LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,
-				     zeros_,dirichtoggle_);
+      LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,dirichtoggle_);
 
       // end time measurement for application of dirichlet conditions
       tm4_ref_=null;
@@ -1045,7 +1096,7 @@ void FluidImplicitTimeInt::TimeUpdate()
           case timeint_one_step_theta: /* One step Theta time integration */
           {
             const double fact1 = 1.0/(theta_*dta_);
-            const double fact2 =-1.0/theta_ +1.0;	/* = -1/Theta + 1		*/
+            const double fact2 =-1.0/theta_ +1.0;	/* = -1/Theta + 1 */
 
             accn_->Update( fact1,*velnp_,0.0);
             accn_->Update(-fact1,*veln_ ,1.0);
@@ -1543,8 +1594,8 @@ void FluidImplicitTimeInt::SolveStationaryProblem()
     // -------------------------------------------------------------------
     //              set (pseudo-)time dependent parameters
     // -------------------------------------------------------------------
-	   step_ += 1;
-	   time_ += dta_;
+           step_ += 1;
+           time_ += dta_;
 
 	// -------------------------------------------------------------------
 	//                         out to screen
@@ -1571,6 +1622,7 @@ void FluidImplicitTimeInt::SolveStationaryProblem()
 	     eleparams.set("total time",time_);
 	     eleparams.set("delta time",dta_);
 	     eleparams.set("thsl",1.0); // no timefac in stationary case
+             eleparams.set("fs subgrid viscosity",fssgv_);
 
 	     // set vector values needed by elements
 	     discret_->ClearState();
@@ -1807,7 +1859,7 @@ void FluidImplicitTimeInt::LiftDrag()
         if (ndim == 2)
 	{
 	  cout << "     " << label << "         ";
-      cout << std::scientific << resultvec[0] << "    ";
+	  cout << std::scientific << resultvec[0] << "    ";
 	  cout << std::scientific << resultvec[1] << "    ";
 	  cout << std::scientific << resultvec[5];
 	  cout << "\n";
@@ -1815,7 +1867,7 @@ void FluidImplicitTimeInt::LiftDrag()
         if (ndim == 3)
 	{
 	  cout << "     " << label << "         ";
-      cout << std::scientific << resultvec[0] << "    ";
+	  cout << std::scientific << resultvec[0] << "    ";
 	  cout << std::scientific << resultvec[1] << "    ";
 	  cout << std::scientific << resultvec[2] << "    ";
 	  cout << std::scientific << resultvec[3] << "    ";
