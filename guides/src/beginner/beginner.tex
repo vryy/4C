@@ -448,7 +448,8 @@ does not yet support writing processor local files.
 \item The \texttt{PREFIX} and \texttt{INPUT} variables are most likely to
 need a change.
 \item If you want to restart a calculation you have to set the \texttt{PREFIX}
-variable accordingly and specify \texttt{RESTART=restart}. Additionally
+variable accordingly and specify \\
+\texttt{RESTART=restart}. Additionally
 the restart step must be set inside the input file.
 \end{itemize}
 To submit the job use \texttt{qsub job.sh}, with the above file saved
@@ -472,7 +473,8 @@ as \texttt{job.sh}. Each job in the queue gets an unique number.
 \item You are allowed to login to any node that is used by your job via
 \texttt{ssh}.
 \item You can get a nice view on the current cluster performance by browsing
-to ganglia \url{http://hop.lnm.mw.tum.de/ganglia/}.
+to ganglia\\
+\url{http://hop.lnm.mw.tum.de/ganglia/}.
 \item The \texttt{\#PBS} comments in the job file can be given as command
 line arguments to \texttt{qsub} as well. Without the \texttt{\#PBS}
 string.
@@ -710,14 +712,16 @@ supported problem types: 2d and 3d fluid and fsi another Michael Geppert
 filter.
 
 
-\subsubsection{post\_drt\_ensight}
+\subsubsection{post\_cmp}
 
-generate ensight (paraview) input files:
+compare two binary fluid results, assuming the same mesh was used.
+Create difference of velocity:
 
 \begin{lyxcode}
-./post\_drt\_ensight~control-file
+./post\_cmp~control-file1~control-file2
 \end{lyxcode}
-supported problem types: 2d and 3d fluid for new discretisation
+Issues: very simple tool. Just for velocity of fluid problems. Enhancements
+are possible.
 
 
 \subsubsection{post\_drt\_gid}
@@ -730,16 +734,74 @@ called your output file base name \texttt{xxx}, you execute
 \end{verbatim}
 
 
-\subsubsection{post\_cmp}
+\subsubsection{post\_drt\_ensight}
 
-compare two binary fluid results, assuming the same mesh was used.
-Create difference of velocity:
+generate ensight (paraview) input files of \baci{} data: For
+instance, if you 
+called your output file base name \texttt{xxx}, you execute
 
 \begin{lyxcode}
-./post\_cmp~control-file1~control-file2
+./post\_drt\_ensight --file="xxx"
 \end{lyxcode}
-Issues: very simple tool. Just for velocity of fluid problems. Enhancements
-are possible.
+Additional filter options can be made visible by
+\begin{lyxcode}
+./post\_drt\_ensight --help
+\end{lyxcode}
+
+
+\subsubsection{post\_drt\_ensight\_par}
+If you configure \baci{} for parallel runs, also the post filters
+are configured with parallel layout (indicated by "\_par").
+The parallel filter version is especially recommended for computations based on huge discretizations
+(more than 1 mio. elements as a rough rule of thumb). The main idea is to have the discretization distributed over several processors and hence a distributed consumption of RAM preventing a possible swapping on a single machine.
+On your local machine you can execute the parallel filter with
+\begin{lyxcode}
+lamboot\\
+mpirun~-np~2~post\_drt\_ensight --file="xxx"
+\end{lyxcode}
+Note, that also the call
+\texttt{./post\_drt\_ensight\_par --file="xxx"}
+is still valid.\\
+After computing "big jobs" on the cluster it is \emph{strongly} recommend that you keep your output there
+and filter your data on the cluster, too. Finally, the filtered dataset can be exported for visualization.\\
+An example job file for executing the parallel ensight filter on \emph{hop} is given below: 
+
+\begin{verbatim}
+ #!/bin/sh
+
+#PBS -N ensightfilter_par
+#PBS -l nodes=3:ppn=2
+#mkdir -p /scratch/$USER/benchmark
+#cd /scratch/$USER/test
+
+srcdir=$PBS_O_WORKDIR
+cd $srcdir
+
+PROCS=6
+PREFIX=xxx
+FILE=--file=$PREFIX
+EXE=post_drt_ensight_par
+START=--start=0
+END=--end=10
+STEP=--step=1
+STEPPING=$START" "$END" "$STEP
+OUTNAME=yyy
+OUTPUT=--output=$OUTNAME
+echo $PBS_NODEFILE
+VAPILIB=/usr/local/ibgd/driver/infinihost/lib64
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$VAPILIB
+
+# use newest version of openmpi
+MPIDIR=/cluster/openmpi-1.1.4
+# use gcc-4.2.2 compiler
+CPPLIB=/cluster/gcc-4.2.2/lib64
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CPPLIB
+
+# execute the filter
+$MPIDIR/bin/mpirun -np $PROCS -hostfile $PBS_NODEFILE $srcdir/$EXE $FILE $STEPPING \
+ $OUTPUT | tee $PREFIX.filter.log
+\end{verbatim}
+
 
 
 \section{Development environment}
