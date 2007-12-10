@@ -290,27 +290,4 @@ const map<int, const set <XFEM::FieldEnr> > XFEM::DofManager::createNodalDofMap(
 }
 
 
-
-bool inCircleCylinder(
-        const blitz::Array<double,1>& pos,
-        const blitz::Array<double,1>& center,
-        const double cylinder_radius
-        )
-{
-    blitz::Range _  = blitz::Range::all();
-    const blitz::Array<double,1> origincircle(pos(_) - center(_));
-    
-    const double circle_radius = sqrt(origincircle(0)*origincircle(0) + origincircle(1)*origincircle(1));
-    
-    bool in_circle = false;
-    if (circle_radius <= cylinder_radius){
-        in_circle = true;
-    } else {
-        in_circle = false;
-    }
-    return in_circle;
-}
-
-
-
 #endif  // #ifdef CCADISCRET

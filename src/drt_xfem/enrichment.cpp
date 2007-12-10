@@ -72,6 +72,27 @@ std::string Enrichment::enrTypeToString(const EnrType type) const
     return typetext;
 }
 
+
+bool inCircleCylinder(
+        const blitz::Array<double,1>& pos,
+        const blitz::Array<double,1>& center,
+        const double cylinder_radius
+        )
+{
+    blitz::Range _  = blitz::Range::all();
+    const blitz::Array<double,1> origincircle(pos(_) - center(_));
+    
+    const double circle_radius = sqrt(origincircle(0)*origincircle(0) + origincircle(1)*origincircle(1));
+    
+    bool in_circle = false;
+    if (circle_radius <= cylinder_radius){
+        in_circle = true;
+    } else {
+        in_circle = false;
+    }
+    return in_circle;
+}
+
 /*----------------------------------------------------------------------*
  |  get enrichment value                                        ag 11/07|
  *----------------------------------------------------------------------*/
@@ -90,7 +111,7 @@ double Enrichment::enrValue(
         enrval = 1.0;
         break;
     }
-//    case XFEM::Enrichment::typeVoid:
+//    case XFEM::Enrichment::typeJump:
 //    {
 //        // TODO: generalize
 //        blitz::Array<double,1> center(3);
@@ -98,51 +119,52 @@ double Enrichment::enrValue(
 //        const double cylinder_radius = 0.2;
 //       
 //        double actpos_enr_val = 0.0;
-//        if (inCircleCylinder(actpos, center, cylinder_radius)) {
+//        if (inCircleCylinder(cellcenterpos, center, cylinder_radius)) {
+//            actpos_enr_val = -1.0;
+//        } else {
+//            actpos_enr_val = 1.0;
+//        }
+//        
+//        double nodepos_enr_val = 0.0;
+//        if (inCircleCylinder(nodalpos, center, cylinder_radius)) {
+//            nodepos_enr_val = -1.0;
+//        } else {
+//            nodepos_enr_val = 1.0;
+//        }
+//        
+//        enrval = actpos_enr_val - nodepos_enr_val;
+//        //enrval = actpos_enr_val;
+//        
+//        break;
+//    }
+//    case XFEM::Enrichment::typeVoid:
+//    {
+//        // TODO: generalize
+//        double actpos_enr_val = 0.0;
+//        if (cellcenterpos(0) > 1.525) {
 //            actpos_enr_val = 0.0;
 //        } else {
 //            actpos_enr_val = 1.0;
 //        }
 //        
 //        double nodepos_enr_val = 0.0;
-//        if (inCircleCylinder(actpos, center, cylinder_radius)) {
+//        if (nodalpos(0) > 1.525) {
 //            nodepos_enr_val = 0.0;
 //        } else {
 //            nodepos_enr_val = 1.0;
 //        }
 //        
-//        enrval = actpos_enr_val - nodepos_enr_val;
+//        //enrval = actpos_enr_val - nodepos_enr_val;
+//        enrval = actpos_enr_val;
+////        dserror("not yet");
 //        
 //        break;
 //    }
-    case XFEM::Enrichment::typeVoid:
-    {
-        // TODO: generalize
-        double actpos_enr_val = 0.0;
-        if (cellcenterpos(0) > 1.525) {
-            actpos_enr_val = 0.0;
-        } else {
-            actpos_enr_val = 1.0;
-        }
-        
-        double nodepos_enr_val = 0.0;
-        if (nodalpos(0) > 1.525) {
-            nodepos_enr_val = 0.0;
-        } else {
-            nodepos_enr_val = 1.0;
-        }
-        
-        //enrval = actpos_enr_val - nodepos_enr_val;
-        enrval = actpos_enr_val;
-//        dserror("not yet");
-        
-        break;
-    }
     case XFEM::Enrichment::typeJump:
     {
         // TODO: generalize
         double actpos_enr_val = 0.0;
-        if (cellcenterpos(0) > 1.525) {
+        if (actpos(0) > 1.525) {
             actpos_enr_val = -1.0;
         } else {
             actpos_enr_val = 1.0;
@@ -155,9 +177,8 @@ double Enrichment::enrValue(
             nodepos_enr_val = 1.0;
         }
         
-        //enrval = actpos_enr_val - nodepos_enr_val;
-        enrval = actpos_enr_val;
-//        dserror("not yet");
+        enrval = actpos_enr_val - nodepos_enr_val;
+        //enrval = actpos_enr_val;
         
         break;
     }
