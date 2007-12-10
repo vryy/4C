@@ -198,6 +198,9 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
       standard_integration = true;
   }
   else {
+      // attention: don't use gausspoint rules that have gausspoints on the element boundary 
+      // (so called closed rules)
+      // -> enrichment vaule might be undefined 
       gaussrule = DRT::Utils::intrule_tet_11point;
       standard_integration = false;
   }
