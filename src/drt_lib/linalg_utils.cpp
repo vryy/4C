@@ -276,20 +276,20 @@ extern "C"
 /*----------------------------------------------------------------------*
  | Multiply matrices A*B                                     mwgee 01/06|
  *----------------------------------------------------------------------*/
-RCP<Epetra_CrsMatrix> LINALG::MatMatMult(const Epetra_CrsMatrix& A, bool transA, 
+RCP<Epetra_CrsMatrix> LINALG::MatMatMult(const Epetra_CrsMatrix& A, bool transA,
                                          const Epetra_CrsMatrix& B, bool transB)
 {
   // make sure FillComplete was called on the matrices
   if (!A.Filled()) dserror("A has to be FillComplete");
   if (!B.Filled()) dserror("B has to be FillComplete");
-  
+
   // create resultmatrix with correct rowmap
   Epetra_CrsMatrix* C = NULL;
   if (!transA)
     C = new Epetra_CrsMatrix(Copy,A.OperatorRangeMap(),20,false);
   else
     C = new Epetra_CrsMatrix(Copy,A.OperatorDomainMap(),20,false);
-  
+
   int err = EpetraExt::MatrixMatrix::Multiply(A,transA,B,transB,*C);
   if (err) dserror("EpetraExt::MatrixMatrix::Multiply returned err = &d",err);
 
@@ -407,7 +407,7 @@ void LINALG::ElastSymTensorMultiply(Epetra_SerialDenseMatrix& C,
     dserror("2nd order tensors must be 3 by 3");
   }
   if (C.M() != C.N() || C.M() != 6) dserror("4th order tensor must be 6 by 6");
-  
+
   // everything in Voigt-Notation
   Epetra_SerialDenseMatrix AVoigt(6,1);
   Epetra_SerialDenseMatrix BVoigt(6,1);
@@ -426,14 +426,14 @@ void LINALG::ElastSymTensorMultiply(Epetra_SerialDenseMatrix& C,
 //  C(0,3)= ScalarThis*C(0,3) + ScalarAB * A(0,0)*B(1,0);
 //  C(0,4)= ScalarThis*C(0,4) + ScalarAB * A(0,0)*B(2,1);
 //  C(0,5)= ScalarThis*C(0,5) + ScalarAB * A(0,0)*B(2,0);
-//  
+//
 //  C(1,0)= ScalarThis*C(1,0) + ScalarAB * A(1,1)*B(0,0);
 //  C(1,1)= ScalarThis*C(1,1) + ScalarAB * A(1,1)*B(1,1);
 //  C(1,2)= ScalarThis*C(1,2) + ScalarAB * A(1,1)*B(2,2);
 //  C(1,3)= ScalarThis*C(1,3) + ScalarAB * A(1,1)*B(1,0);
 //  C(1,4)= ScalarThis*C(1,4) + ScalarAB * A(1,1)*B(2,1);
 //  C(1,5)= ScalarThis*C(1,5) + ScalarAB * A(1,1)*B(2,0);
-//               
+//
 //  C(2,0)= ScalarThis*C(2,0) + ScalarAB * A(2,2)*B(0,0);
 //  C(2,1)= ScalarThis*C(2,1) + ScalarAB * A(2,2)*B(1,1);
 //  C(2,2)= ScalarThis*C(2,2) + ScalarAB * A(2,2)*B(2,2);
@@ -447,21 +447,21 @@ void LINALG::ElastSymTensorMultiply(Epetra_SerialDenseMatrix& C,
 //  C(3,3)= ScalarThis*C(3,3) + ScalarAB * A(1,0)*B(1,0);
 //  C(3,4)= ScalarThis*C(3,4) + ScalarAB * A(1,0)*B(2,1);
 //  C(3,5)= ScalarThis*C(3,5) + ScalarAB * A(1,0)*B(2,0);
-//  
+//
 //  C(4,0)= ScalarThis*C(4,0) + ScalarAB * A(2,1)*B(0,0);
 //  C(4,1)= ScalarThis*C(4,1) + ScalarAB * A(2,1)*B(1,1);
 //  C(4,2)= ScalarThis*C(4,2) + ScalarAB * A(2,1)*B(2,2);
 //  C(4,3)= ScalarThis*C(4,3) + ScalarAB * A(2,1)*B(1,0);
 //  C(4,4)= ScalarThis*C(4,4) + ScalarAB * A(2,1)*B(2,1);
 //  C(4,5)= ScalarThis*C(4,5) + ScalarAB * A(2,1)*B(2,0);
-//  
+//
 //  C(5,0)= ScalarThis*C(5,0) + ScalarAB * A(2,0)*B(0,0);
 //  C(5,1)= ScalarThis*C(5,1) + ScalarAB * A(2,0)*B(1,1);
 //  C(5,2)= ScalarThis*C(5,2) + ScalarAB * A(2,0)*B(2,2);
 //  C(5,3)= ScalarThis*C(5,3) + ScalarAB * A(2,0)*B(1,0);
 //  C(5,4)= ScalarThis*C(5,4) + ScalarAB * A(2,0)*B(2,1);
 //  C(5,5)= ScalarThis*C(5,5) + ScalarAB * A(2,0)*B(2,0);
-  
+
   return;
 }
 
@@ -497,7 +497,7 @@ void LINALG::ElastSymTensorMultiplyAddSym(Epetra_SerialDenseMatrix& C,
   BVoigt(3,0) = 2.0*B(1,0); BVoigt(4,0) = 2.0*B(2,1); BVoigt(5,0) = 2.0*B(2,0);
   C.Multiply('N','T',ScalarAB,AVoigt,BVoigt,ScalarThis);
   C.Multiply('N','T',ScalarAB,BVoigt,AVoigt,1.0);
-  
+
   // this is explicitly what the former .Multiplies do:
 //  C(0,0)= ScalarThis*C(0,0) + ScalarAB * (A(0,0)*B(0,0) + B(0,0)*A(0,0));
 //  C(0,1)= ScalarThis*C(0,1) + ScalarAB * (A(0,0)*B(1,1) + B(0,0)*A(1,1));
@@ -505,14 +505,14 @@ void LINALG::ElastSymTensorMultiplyAddSym(Epetra_SerialDenseMatrix& C,
 //  C(0,3)= ScalarThis*C(0,3) + ScalarAB * (A(0,0)*B(1,0) + B(0,0)*A(1,0));
 //  C(0,4)= ScalarThis*C(0,4) + ScalarAB * (A(0,0)*B(2,1) + B(0,0)*A(2,1));
 //  C(0,5)= ScalarThis*C(0,5) + ScalarAB * (A(0,0)*B(2,0) + B(0,0)*A(2,0));
-//  
+//
 //  C(1,0)= ScalarThis*C(1,0) + ScalarAB * (A(1,1)*B(0,0) + B(1,1)*A(0,0));
 //  C(1,1)= ScalarThis*C(1,1) + ScalarAB * (A(1,1)*B(1,1) + B(1,1)*A(1,1));
 //  C(1,2)= ScalarThis*C(1,2) + ScalarAB * (A(1,1)*B(2,2) + B(1,1)*A(2,2));
 //  C(1,3)= ScalarThis*C(1,3) + ScalarAB * (A(1,1)*B(1,0) + B(1,1)*A(1,0));
 //  C(1,4)= ScalarThis*C(1,4) + ScalarAB * (A(1,1)*B(2,1) + B(1,1)*A(2,1));
 //  C(1,5)= ScalarThis*C(1,5) + ScalarAB * (A(1,1)*B(2,0) + B(1,1)*A(2,0));
-//               
+//
 //  C(2,0)= ScalarThis*C(2,0) + ScalarAB * (A(2,2)*B(0,0) + B(2,2)*A(0,0));
 //  C(2,1)= ScalarThis*C(2,1) + ScalarAB * (A(2,2)*B(1,1) + B(2,2)*A(1,1));
 //  C(2,2)= ScalarThis*C(2,2) + ScalarAB * (A(2,2)*B(2,2) + B(2,2)*A(2,2));
@@ -526,21 +526,21 @@ void LINALG::ElastSymTensorMultiplyAddSym(Epetra_SerialDenseMatrix& C,
 //  C(3,3)= ScalarThis*C(3,3) + ScalarAB * (A(1,0)*B(1,0) + B(1,0)*A(1,0));
 //  C(3,4)= ScalarThis*C(3,4) + ScalarAB * (A(1,0)*B(2,1) + B(1,0)*A(2,1));
 //  C(3,5)= ScalarThis*C(3,5) + ScalarAB * (A(1,0)*B(2,0) + B(1,0)*A(2,0));
-//  
+//
 //  C(4,0)= ScalarThis*C(4,0) + ScalarAB * (A(2,1)*B(0,0) + B(2,1)*A(0,0));
 //  C(4,1)= ScalarThis*C(4,1) + ScalarAB * (A(2,1)*B(1,1) + B(2,1)*A(1,1));
 //  C(4,2)= ScalarThis*C(4,2) + ScalarAB * (A(2,1)*B(2,2) + B(2,1)*A(2,2));
 //  C(4,3)= ScalarThis*C(4,3) + ScalarAB * (A(2,1)*B(1,0) + B(2,1)*A(1,0));
 //  C(4,4)= ScalarThis*C(4,4) + ScalarAB * (A(2,1)*B(2,1) + B(2,1)*A(2,1));
 //  C(4,5)= ScalarThis*C(4,5) + ScalarAB * (A(2,1)*B(2,0) + B(2,1)*A(2,0));
-//  
+//
 //  C(5,0)= ScalarThis*C(5,0) + ScalarAB * (A(2,0)*B(0,0) + B(2,0)*A(0,0));
 //  C(5,1)= ScalarThis*C(5,1) + ScalarAB * (A(2,0)*B(1,1) + B(2,0)*A(1,1));
 //  C(5,2)= ScalarThis*C(5,2) + ScalarAB * (A(2,0)*B(2,2) + B(2,0)*A(2,2));
 //  C(5,3)= ScalarThis*C(5,3) + ScalarAB * (A(2,0)*B(1,0) + B(2,0)*A(1,0));
 //  C(5,4)= ScalarThis*C(5,4) + ScalarAB * (A(2,0)*B(2,1) + B(2,0)*A(2,1));
 //  C(5,5)= ScalarThis*C(5,5) + ScalarAB * (A(2,0)*B(2,0) + B(2,0)*A(2,0));
-  
+
   return;
 }
 
@@ -566,12 +566,12 @@ void LINALG::ElastSymTensor_o_Multiply(Epetra_SerialDenseMatrix& C,
     dserror("2nd order tensors must be 3 by 3");
   }
   if (C.M() != C.N() || C.M() != 6) dserror("4th order tensor must be 6 by 6");
-  
+
   /* the kronecker-product in matrix notation is:
    * A11*B11 A11*B12 A11*B13   A12*B11 A12*B12 A12*B13   A13*B11 A13*B12 A13*B13
    * A11*B21 ...
    * A11*B31 ...
-   * 
+   *
    * A21*B11
    * A21*B21
    * A21*B31
@@ -579,7 +579,7 @@ void LINALG::ElastSymTensor_o_Multiply(Epetra_SerialDenseMatrix& C,
    *                                                     A33*B21 A33*B22 A33*B23
    *                                                     A33*B31 A33*B32 A33*B33
    */
-  /* to reduce the resulting 9by9 matrix to 6by6 we refer to the 
+  /* to reduce the resulting 9by9 matrix to 6by6 we refer to the
    * Diss. from Balzani, Anhang D, BUT
    * we consider a factor 2 for colums/rows 4-6 :
    *  C(1)               2* 1/2*(C(2)+C(3))
@@ -588,21 +588,21 @@ void LINALG::ElastSymTensor_o_Multiply(Epetra_SerialDenseMatrix& C,
    *    1                 1/2
    *   1/2                1/2
    */
-  
+
   C(0,0)= ScalarThis*C(0,0) + ScalarAB * A(0,0)*B(0,0);
   C(0,1)= ScalarThis*C(0,1) + ScalarAB * A(0,0)*B(0,1);
   C(0,2)= ScalarThis*C(0,2) + ScalarAB * A(0,0)*B(0,2);
   C(0,3)= ScalarThis*C(0,3) + ScalarAB * (A(0,1)*B(0,0) + A(0,2)*B(0,0));
   C(0,4)= ScalarThis*C(0,4) + ScalarAB * (A(0,1)*B(0,1) + A(0,2)*B(0,1));
   C(0,5)= ScalarThis*C(0,5) + ScalarAB * (A(0,1)*B(0,2) + A(0,2)*B(0,2));
-  
+
   C(1,0)= ScalarThis*C(1,0) + ScalarAB * A(0,0)*B(1,0);
   C(1,1)= ScalarThis*C(1,1) + ScalarAB * A(0,0)*B(1,1);
   C(1,2)= ScalarThis*C(1,2) + ScalarAB * A(0,0)*B(1,2);
   C(1,3)= ScalarThis*C(1,3) + ScalarAB * (A(0,1)*B(1,0) + A(0,2)*B(1,0));
   C(1,4)= ScalarThis*C(1,4) + ScalarAB * (A(0,1)*B(1,1) + A(0,2)*B(1,1));
   C(1,5)= ScalarThis*C(1,5) + ScalarAB * (A(0,1)*B(1,2) + A(0,2)*B(1,2));
-  
+
   C(2,0)= ScalarThis*C(2,0) + ScalarAB * A(0,0)*B(2,0);
   C(2,1)= ScalarThis*C(2,1) + ScalarAB * A(0,0)*B(2,1);
   C(2,2)= ScalarThis*C(2,2) + ScalarAB * A(0,0)*B(2,2);
@@ -616,7 +616,7 @@ void LINALG::ElastSymTensor_o_Multiply(Epetra_SerialDenseMatrix& C,
   C(3,3)= ScalarThis*C(3,3) + ScalarAB * 0.5*(A(1,1)*B(0,0) + 2.0*A(1,2)*B(0,0) + A(2,2)*B(0,0));
   C(3,4)= ScalarThis*C(3,4) + ScalarAB * 0.5*(A(1,1)*B(0,1) + 2.0*A(1,2)*B(0,1) + A(2,2)*B(0,1));
   C(3,5)= ScalarThis*C(3,5) + ScalarAB * 0.5*(A(1,1)*B(0,2) + 2.0*A(1,2)*B(0,2) + A(2,2)*B(0,2));
-  
+
   C(4,0)= ScalarThis*C(4,0) + ScalarAB * (A(1,0)*B(1,0) + A(2,0)*B(1,0));
   C(4,1)= ScalarThis*C(4,1) + ScalarAB * (A(1,0)*B(1,1) + A(2,0)*B(1,1));
   C(4,2)= ScalarThis*C(4,2) + ScalarAB * (A(1,0)*B(1,2) + A(2,0)*B(1,2));
@@ -630,21 +630,21 @@ void LINALG::ElastSymTensor_o_Multiply(Epetra_SerialDenseMatrix& C,
   C(5,3)= ScalarThis*C(5,3) + ScalarAB * 0.5*(A(1,1)*B(2,0) + 2.0*A(1,2)*B(2,0) + A(2,2)*B(2,0));
   C(5,4)= ScalarThis*C(5,4) + ScalarAB * 0.5*(A(1,1)*B(2,1) + 2.0*A(1,2)*B(2,1) + A(2,2)*B(2,1));
   C(5,5)= ScalarThis*C(5,5) + ScalarAB * 0.5*(A(1,1)*B(2,2) + 2.0*A(1,2)*B(2,2) + A(2,2)*B(2,2));
-  
+
 //  C(0,0)= ScalarThis*C(0,0) + ScalarAB * 0.5 * (A(0,0)*B(0,0) + A(0,0)*B(0,0));
 //  C(0,1)= ScalarThis*C(0,1) + ScalarAB * 0.5 * (A(0,1)*B(0,1) + A(0,1)*B(0,1));
 //  C(0,2)= ScalarThis*C(0,2) + ScalarAB * 0.5 * (A(0,2)*B(0,2) + A(0,2)*B(0,2));
 //  C(0,3)= ScalarThis*C(0,3) + ScalarAB * 0.5 * (A(0,1)*B(0,0) + A(0,0)*B(0,1));
 //  C(0,4)= ScalarThis*C(0,4) + ScalarAB * 0.5 * (A(0,2)*B(0,1) + A(0,1)*B(0,2));
 //  C(0,5)= ScalarThis*C(0,5) + ScalarAB * 0.5 * (A(0,2)*B(0,0) + A(0,0)*B(0,2));
-//  
+//
 //  C(1,0)= ScalarThis*C(1,0) + ScalarAB * 0.5 * (A(1,0)*B(1,0) + A(1,0)*B(1,0));
 //  C(1,1)= ScalarThis*C(1,1) + ScalarAB * 0.5 * (A(1,1)*B(1,1) + A(1,1)*B(1,1));
 //  C(1,2)= ScalarThis*C(1,2) + ScalarAB * 0.5 * (A(1,2)*B(1,2) + A(1,2)*B(1,2));
 //  C(1,3)= ScalarThis*C(1,3) + ScalarAB * 0.5 * (A(1,1)*B(1,0) + A(1,0)*B(1,1));
 //  C(1,4)= ScalarThis*C(1,4) + ScalarAB * 0.5 * (A(1,2)*B(1,1) + A(1,1)*B(1,2));
 //  C(1,5)= ScalarThis*C(1,5) + ScalarAB * 0.5 * (A(1,2)*B(1,0) + A(1,0)*B(1,2));
-//               
+//
 //  C(2,0)= ScalarThis*C(2,0) + ScalarAB * 0.5 * (A(2,0)*B(2,0) + A(2,0)*B(2,0));
 //  C(2,1)= ScalarThis*C(2,1) + ScalarAB * 0.5 * (A(2,1)*B(2,1) + A(2,1)*B(2,1));
 //  C(2,2)= ScalarThis*C(2,2) + ScalarAB * 0.5 * (A(2,2)*B(2,2) + A(2,2)*B(2,2));
@@ -658,21 +658,21 @@ void LINALG::ElastSymTensor_o_Multiply(Epetra_SerialDenseMatrix& C,
 //  C(3,3)= ScalarThis*C(3,3) + ScalarAB * 0.5 * (A(1,1)*B(0,0) + A(1,0)*B(0,1));
 //  C(3,4)= ScalarThis*C(3,4) + ScalarAB * 0.5 * (A(1,2)*B(0,1) + A(1,1)*B(0,2));
 //  C(3,5)= ScalarThis*C(3,5) + ScalarAB * 0.5 * (A(1,2)*B(0,0) + A(1,0)*B(0,2));
-//  
+//
 //  C(4,0)= ScalarThis*C(4,0) + ScalarAB * 0.5 * (A(2,0)*B(1,0) + A(2,0)*B(1,0));
 //  C(4,1)= ScalarThis*C(4,1) + ScalarAB * 0.5 * (A(2,1)*B(1,1) + A(2,1)*B(1,1));
 //  C(4,2)= ScalarThis*C(4,2) + ScalarAB * 0.5 * (A(2,2)*B(1,2) + A(2,2)*B(1,2));
 //  C(4,3)= ScalarThis*C(4,3) + ScalarAB * 0.5 * (A(2,1)*B(1,0) + A(2,0)*B(1,1));
 //  C(4,4)= ScalarThis*C(4,4) + ScalarAB * 0.5 * (A(2,2)*B(1,1) + A(2,1)*B(1,2));
 //  C(4,5)= ScalarThis*C(4,5) + ScalarAB * 0.5 * (A(2,2)*B(1,0) + A(2,0)*B(1,2));
-//  
+//
 //  C(5,0)= ScalarThis*C(5,0) + ScalarAB * 0.5 * (A(2,0)*B(0,0) + A(2,0)*B(0,0));
 //  C(5,1)= ScalarThis*C(5,1) + ScalarAB * 0.5 * (A(2,1)*B(0,1) + A(2,1)*B(0,1));
 //  C(5,2)= ScalarThis*C(5,2) + ScalarAB * 0.5 * (A(2,2)*B(0,2) + A(2,2)*B(0,2));
 //  C(5,3)= ScalarThis*C(5,3) + ScalarAB * 0.5 * (A(2,1)*B(0,0) + A(2,0)*B(0,1));
 //  C(5,4)= ScalarThis*C(5,4) + ScalarAB * 0.5 * (A(2,2)*B(0,1) + A(2,1)*B(0,2));
 //  C(5,5)= ScalarThis*C(5,5) + ScalarAB * 0.5 * (A(2,2)*B(0,0) + A(2,0)*B(0,2));
-  
+
   return;
 
 }
@@ -855,5 +855,352 @@ void LINALG::ApplyDirichlettoSystem(RefCountPtr<Epetra_CrsMatrix>&   A,
 #endif
 
 
+
+/*----------------------------------------------------------------------*
+ | split matrix into 2x2 block system with given rowmap A22rowmap  06/06|
+ *----------------------------------------------------------------------*/
+bool LINALG::SplitMatrix2x2(RefCountPtr<Epetra_CrsMatrix> A,
+                            RefCountPtr<Epetra_Map>& A11rowmap,
+                            RefCountPtr<Epetra_Map>& A22rowmap,
+                            RefCountPtr<Epetra_CrsMatrix>& A11,
+                            RefCountPtr<Epetra_CrsMatrix>& A12,
+                            RefCountPtr<Epetra_CrsMatrix>& A21,
+                            RefCountPtr<Epetra_CrsMatrix>& A22)
+{
+  if (A==null)
+  {
+    cout << "***ERR*** LINALG::SplitMatrix2x2_A22row_given:\n"
+         << "***ERR*** A == null on entry\n"
+         << "***ERR*** file/line: " << __FILE__ << "/" << __LINE__ << "\n";
+    exit(EXIT_FAILURE);
+  }
+  if (A11rowmap==null && A22rowmap != null)
+    A11rowmap = rcp(LINALG::SplitMap(A->RowMap(),*A22rowmap));
+  else if (A11rowmap != null && A22rowmap != null);
+  else if (A11rowmap != null && A22rowmap == null)
+    A22rowmap = rcp(LINALG::SplitMap(A->RowMap(),*A11rowmap));
+  else
+  {
+    cout << "***ERR*** LINALG::SplitMatrix2x2_A22row_given:\n"
+         << "***ERR*** Either A11rowmap OR A22rowmap or both have to be not null"
+         << "***ERR*** file/line: " << __FILE__ << "/" << __LINE__ << "\n";
+    exit(EXIT_FAILURE);
+  }
+
+  const Epetra_Comm& Comm   = A->Comm();
+  const Epetra_Map&  A22map = *(A22rowmap.get());
+  const Epetra_Map&  A11map = *(A11rowmap.get());
+
+  //----------------------------- create a parallel redundant map of A22map
+  map<int,int> a22gmap;
+  {
+    vector<int> a22global(A22map.NumGlobalElements());
+    int count=0;
+    for (int proc=0; proc<Comm.NumProc(); ++proc)
+    {
+      int length = 0;
+      if (proc==Comm.MyPID())
+      {
+        for (int i=0; i<A22map.NumMyElements(); ++i)
+        {
+          a22global[count+length] = A22map.GID(i);
+          ++length;
+        }
+      }
+      Comm.Broadcast(&length,1,proc);
+      Comm.Broadcast(&a22global[count],length,proc);
+      count += length;
+    }
+    if (count != A22map.NumGlobalElements())
+    {
+      cout << "***ERR*** LINALG::SplitMatrix2x2_A22row_given:\n"
+           << "***ERR*** mismatch in dimensions\n"
+           << "***ERR*** file/line: " << __FILE__ << "/" << __LINE__ << "\n";
+      exit(EXIT_FAILURE);
+    }
+    // create the map
+    for (int i=0; i<count; ++i)
+      a22gmap[a22global[i]] = 1;
+    a22global.clear();
+  }
+
+  //--------------------------------------------------- create matrix A22
+  A22 = rcp(new Epetra_CrsMatrix(Copy,A22map,100));
+  {
+    vector<int>    a22gcindices(100);
+    vector<double> a22values(100);
+    for (int i=0; i<A->NumMyRows(); ++i)
+    {
+      const int grid = A->GRID(i);
+      if (A22map.MyGID(grid)==false)
+        continue;
+      //cout << "Row " << grid << " in A22 Columns ";
+      int     numentries;
+      double* values;
+      int*    cindices;
+      int err = A->ExtractMyRowView(i,numentries,values,cindices);
+      if (err)
+      {
+        cout << "***ERR*** LINALG::SplitMatrix2x2_A22row_given:\n"
+             << "***ERR*** A->ExtractMyRowView returned " << err << endl
+             << "***ERR*** file/line: " << __FILE__ << "/" << __LINE__ << "\n";
+        exit(EXIT_FAILURE);
+      }
+      if (numentries>(int)a22gcindices.size())
+      {
+        a22gcindices.resize(numentries);
+        a22values.resize(numentries);
+      }
+      int count=0;
+      for (int j=0; j<numentries; ++j)
+      {
+        const int gcid = A->ColMap().GID(cindices[j]);
+        // see whether we have gcid in a22gmap
+        map<int,int>::iterator curr = a22gmap.find(gcid);
+        if (curr==a22gmap.end()) continue;
+        //cout << gcid << " ";
+        a22gcindices[count] = gcid;
+        a22values[count]    = values[j];
+        ++count;
+      }
+      //cout << endl; fflush(stdout);
+      // add this filtered row to A22
+      err = A22->InsertGlobalValues(grid,count,&a22values[0],&a22gcindices[0]);
+      if (err<0)
+      {
+        cout << "***ERR*** LINALG::SplitMatrix2x2_A22row_given:\n"
+             << "***ERR*** A22->InsertGlobalValues returned " << err << endl
+             << "***ERR*** file/line: " << __FILE__ << "/" << __LINE__ << "\n";
+        exit(EXIT_FAILURE);
+      }
+    } //for (int i=0; i<A->NumMyRows(); ++i)
+    a22gcindices.clear();
+    a22values.clear();
+  }
+  A22->FillComplete();
+  A22->OptimizeStorage();
+
+  //----------------------------------------------------- create matrix A11
+  A11 = rcp(new Epetra_CrsMatrix(Copy,A11map,100));
+  {
+    vector<int>    a11gcindices(100);
+    vector<double> a11values(100);
+    for (int i=0; i<A->NumMyRows(); ++i)
+    {
+      const int grid = A->GRID(i);
+      if (A11map.MyGID(grid)==false) continue;
+      int     numentries;
+      double* values;
+      int*    cindices;
+      int err = A->ExtractMyRowView(i,numentries,values,cindices);
+      if (err)
+      {
+        cout << "***ERR*** LINALG::SplitMatrix2x2_A22row_given:\n"
+             << "***ERR*** A->ExtractMyRowView returned " << err << endl
+             << "***ERR*** file/line: " << __FILE__ << "/" << __LINE__ << "\n";
+        exit(EXIT_FAILURE);
+      }
+      if (numentries>(int)a11gcindices.size())
+      {
+        a11gcindices.resize(numentries);
+        a11values.resize(numentries);
+      }
+      int count=0;
+      for (int j=0; j<numentries; ++j)
+      {
+        const int gcid = A->ColMap().GID(cindices[j]);
+        // see whether we have gcid as part of a22gmap
+        map<int,int>::iterator curr = a22gmap.find(gcid);
+        if (curr!=a22gmap.end()) continue;
+        a11gcindices[count] = gcid;
+        a11values[count] = values[j];
+        ++count;
+      }
+      err = A11->InsertGlobalValues(grid,count,&a11values[0],&a11gcindices[0]);
+      if (err<0)
+      {
+        cout << "***ERR*** LINALG::SplitMatrix2x2_A22row_given:\n"
+             << "***ERR*** A11->InsertGlobalValues returned " << err << endl
+             << "***ERR*** file/line: " << __FILE__ << "/" << __LINE__ << "\n";
+        exit(EXIT_FAILURE);
+      }
+    } // for (int i=0; i<A->NumMyRows(); ++i)
+    a11gcindices.clear();
+    a11values.clear();
+  }
+  A11->FillComplete();
+  A11->OptimizeStorage();
+
+  //---------------------------------------------------- create matrix A12
+  A12 = rcp(new Epetra_CrsMatrix(Copy,A11map,100));
+  {
+    vector<int>    a12gcindices(100);
+    vector<double> a12values(100);
+    for (int i=0; i<A->NumMyRows(); ++i)
+    {
+      const int grid = A->GRID(i);
+      if (A11map.MyGID(grid)==false) continue;
+      int     numentries;
+      double* values;
+      int*    cindices;
+      int err = A->ExtractMyRowView(i,numentries,values,cindices);
+      if (err)
+      {
+        cout << "***ERR*** LINALG::SplitMatrix2x2_A22row_given:\n"
+             << "***ERR*** A->ExtractMyRowView returned " << err << endl
+             << "***ERR*** file/line: " << __FILE__ << "/" << __LINE__ << "\n";
+        exit(EXIT_FAILURE);
+      }
+      if (numentries>(int)a12gcindices.size())
+      {
+        a12gcindices.resize(numentries);
+        a12values.resize(numentries);
+      }
+      int count=0;
+      for (int j=0; j<numentries; ++j)
+      {
+        const int gcid = A->ColMap().GID(cindices[j]);
+        // see whether we have gcid as part of a22gmap
+        map<int,int>::iterator curr = a22gmap.find(gcid);
+        if (curr==a22gmap.end()) continue;
+        a12gcindices[count] = gcid;
+        a12values[count] = values[j];
+        ++count;
+      }
+      err = A12->InsertGlobalValues(grid,count,&a12values[0],&a12gcindices[0]);
+      if (err<0)
+      {
+        cout << "***ERR*** LINALG::SplitMatrix2x2_A22row_given:\n"
+             << "***ERR*** A12->InsertGlobalValues returned " << err << endl
+             << "***ERR*** file/line: " << __FILE__ << "/" << __LINE__ << "\n";
+        exit(EXIT_FAILURE);
+      }
+    } // for (int i=0; i<A->NumMyRows(); ++i)
+    a12values.clear();
+    a12gcindices.clear();
+  }
+  A12->FillComplete(A22map,A11map);
+  A12->OptimizeStorage();
+
+  //----------------------------------------------------------- create A21
+  A21 = rcp(new Epetra_CrsMatrix(Copy,A22map,100));
+  {
+    vector<int>    a21gcindices(100);
+    vector<double> a21values(100);
+    for (int i=0; i<A->NumMyRows(); ++i)
+    {
+      const int grid = A->GRID(i);
+      if (A22map.MyGID(grid)==false) continue;
+      int     numentries;
+      double* values;
+      int*    cindices;
+      int err = A->ExtractMyRowView(i,numentries,values,cindices);
+      if (err)
+      {
+        cout << "***ERR*** LINALG::SplitMatrix2x2_A22row_given:\n"
+             << "***ERR*** A->ExtractMyRowView returned " << err << endl
+             << "***ERR*** file/line: " << __FILE__ << "/" << __LINE__ << "\n";
+        exit(EXIT_FAILURE);
+      }
+      if (numentries>(int)a21gcindices.size())
+      {
+        a21gcindices.resize(numentries);
+        a21values.resize(numentries);
+      }
+      int count=0;
+      for (int j=0; j<numentries; ++j)
+      {
+        const int gcid = A->ColMap().GID(cindices[j]);
+        // see whether we have gcid as part of a22gmap
+        map<int,int>::iterator curr = a22gmap.find(gcid);
+        if (curr!=a22gmap.end()) continue;
+        a21gcindices[count] = gcid;
+        a21values[count] = values[j];
+        ++count;
+      }
+      err = A21->InsertGlobalValues(grid,count,&a21values[0],&a21gcindices[0]);
+      if (err<0)
+      {
+        cout << "***ERR*** LINALG::SplitMatrix2x2_A22row_given:\n"
+             << "***ERR*** A12->InsertGlobalValues returned " << err << endl
+             << "***ERR*** file/line: " << __FILE__ << "/" << __LINE__ << "\n";
+        exit(EXIT_FAILURE);
+      }
+    } // for (int i=0; i<A->NumMyRows(); ++i)
+    a21values.clear();
+    a21gcindices.clear();
+  }
+  A21->FillComplete(A11map,A22map);
+  A21->OptimizeStorage();
+
+  //-------------------------------------------------------------- tidy up
+  a22gmap.clear();
+  return true;
+}
+
+
+/*----------------------------------------------------------------------*
+ | split a map into 2 pieces with given Agiven                     06/06|
+ *----------------------------------------------------------------------*/
+Epetra_Map* LINALG::SplitMap(const Epetra_Map& Amap,
+                             const Epetra_Map& Agiven)
+{
+  const Epetra_Comm& Comm = Amap.Comm();
+  const Epetra_Map&  Ag = Agiven;
+
+  int count=0;
+  vector<int> myaugids(Amap.NumMyElements());
+  for (int i=0; i<Amap.NumMyElements(); ++i)
+  {
+    const int gid = Amap.GID(i);
+    if (Ag.MyGID(gid)) continue;
+    myaugids[count] = gid;
+    ++count;
+  }
+  myaugids.resize(count);
+  int gcount;
+  Comm.SumAll(&count,&gcount,1);
+  Epetra_Map* Aunknown = new Epetra_Map(gcount,count,&myaugids[0],0,Comm);
+  myaugids.clear();
+  return Aunknown;
+}
+
+
+/*----------------------------------------------------------------------*
+ | split a vector into 2 pieces with given submaps                 06/06|
+ *----------------------------------------------------------------------*/
+bool LINALG::SplitVector(const Epetra_Vector& x,
+                         const Epetra_Map& x1map,
+                         Epetra_Vector*&   x1,
+                         const Epetra_Map& x2map,
+                         Epetra_Vector*&   x2)
+{
+  x1 = new Epetra_Vector(x1map,false);
+  x2 = new Epetra_Vector(x2map,false);
+
+  //use an exporter or importer object
+  Epetra_Export exporter_x1(x.Map(),x1map);
+  Epetra_Export exporter_x2(x.Map(),x2map);
+
+  int err = x1->Export(x,exporter_x1,Insert);
+  if (err)
+  {
+    cout << "***ERR*** LINALG::SplitVector:\n"
+         << "***ERR*** Export returned " << err << endl
+         << "***ERR*** file/line: " << __FILE__ << "/" << __LINE__ << "\n";
+    exit(EXIT_FAILURE);
+  }
+
+  err = x2->Export(x,exporter_x2,Insert);
+  if (err)
+  {
+    cout << "***ERR*** LINALG::SplitVector:\n"
+         << "***ERR*** Export returned " << err << endl
+         << "***ERR*** file/line: " << __FILE__ << "/" << __LINE__ << "\n";
+    exit(EXIT_FAILURE);
+  }
+
+  return true;
+}
 
 #endif  // #ifdef CCADISCRET

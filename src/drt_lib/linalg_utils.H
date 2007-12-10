@@ -68,14 +68,14 @@ namespace LINALG
   \param target (out): target vector values will be inserted in
   */
   void Export(const Epetra_MultiVector& source, Epetra_MultiVector& target);
-  
+
   /*!
   \brief Make Epetra_SerialDenseMatrix symmetric by averaging upper and lower traingular indices
-  
+
   \param A (in/out): Matrix to be symmetrised
   */
   void SymmetriseMatrix(Epetra_SerialDenseMatrix& A);
-  
+
   /*!
   \brief Compute all eigenvalues and, optionally, eigenvectors
    of a real symmetric matrix A
@@ -223,7 +223,7 @@ namespace LINALG
   /*!
   \brief Multiply a (transposed) Epetra_CrsMatrix with another (transposed): C = A(^T)*B(^T)
 
-  Multiply one matrix with another. Both matrices must be completed. Sparsity 
+  Multiply one matrix with another. Both matrices must be completed. Sparsity
   Respective Range, Row and Domain maps of A(^T) and B(^T) have to match.
 
   Note that this is a true parallel multiplication, even in the transposed case!
@@ -234,7 +234,7 @@ namespace LINALG
   \param transB     (in)     : flag indicating whether transposed of B should be used
   \param C          (out)    : Matrix product C
   */
-  RCP<Epetra_CrsMatrix> MatMatMult(const Epetra_CrsMatrix& A, bool transA, 
+  RCP<Epetra_CrsMatrix> MatMatMult(const Epetra_CrsMatrix& A, bool transA,
                                    const Epetra_CrsMatrix& B, bool transB);
 
   /*!
@@ -310,7 +310,53 @@ namespace LINALG
                               const RefCountPtr<Epetra_Vector> dbctoggle);
 
 
+  /*!
+  \brief split a matrix into a 2x2 block system where the rowmap of one of the blocks is given
 
+  Splits a given matrix into a 2x2 block system where the rowmap of one of the blocks is given
+  on input. Blocks A11 and A22 are assumed to be square.
+  All values on entry have to be Teuchos::null except the given rowmap and matrix A.
+  Note that either A11rowmap or A22rowmap or both have to be nonzero. In case
+  both rowmaps are supplied they have to be an exact and nonoverlapping split of A->RowMap().
+  Matrix blocks are FillComplete() on exit.
+
+  \param A         : Matrix A on input
+  \param A11rowmap : rowmap of A11 or null
+  \param A22rowmap : rowmap of A22 or null
+  \param A11       : on exit matrix block A11
+  \param A12       : on exit matrix block A12
+  \param A21       : on exit matrix block A21
+  \param A22       : on exit matrix block A22
+  */
+  bool SplitMatrix2x2(RefCountPtr<Epetra_CrsMatrix> A,
+                      RefCountPtr<Epetra_Map>& A11rowmap,
+                      RefCountPtr<Epetra_Map>& A22rowmap,
+                      RefCountPtr<Epetra_CrsMatrix>& A11,
+                      RefCountPtr<Epetra_CrsMatrix>& A12,
+                      RefCountPtr<Epetra_CrsMatrix>& A21,
+                      RefCountPtr<Epetra_CrsMatrix>& A22);
+
+  /*!
+  \brief split a rowmap of matrix A
+
+  splits A->RowMap() into 2 maps and returns them, where one of the rowmaps has
+  to be given on input
+
+  \param Amap      : Map to split on input
+  \param Agiven    : on entry submap that is given and part of Amap
+  \return the remainder map of Amap that is not overlapping with Agiven
+  */
+  Epetra_Map* SplitMap(const Epetra_Map& Amap,
+                       const Epetra_Map& Agiven);
+
+  /*!
+  \brief split a vector into 2 non-overlapping pieces
+  */
+  bool SplitVector(const Epetra_Vector& x,
+                   const Epetra_Map& x1map,
+                   Epetra_Vector*&   x1,
+                   const Epetra_Map& x2map,
+                   Epetra_Vector*&   x2);
 
   /*!
   \brief Gather information of type vector<T> on a subset of processors
