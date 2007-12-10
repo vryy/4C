@@ -129,24 +129,6 @@ protected:
     	      dserror("File is not open");
     	  }
     }
-
-    /*!
-     * \brief writes int like a formated string to already open filestream
-     */  
-    void WriteFormatedString(
-            ofstream& os,
-            const int i) const
-    {
-    	// only processor 0 does the writing !! 
-    	if (myrank_==0)
-    	  {
-    		// first ensure, that the file is already open 
-    	    if (os.is_open()) 
-    	      {os << i;}
-    	    else
-    	      dserror("File is not open");
-    	  }
-    }
     
     void Write(
             ofstream& os,
@@ -189,7 +171,7 @@ protected:
     void WriteCellsPar(
             ofstream& geofile,///< filestream for the geometry
             const RefCountPtr<DRT::Discretization> dis, ///< discretization where the nodal positions are take from
-            const RefCountPtr<Epetra_Map> proc0map ///< current proc0 node map, created by WriteCoordinatesPar
+            const RefCountPtr<Epetra_Map>& proc0map ///< current proc0 node map, created by WriteCoordinatesPar
             ) const;
     void WriteNodeConnectivityPar(
             ofstream& geofile,
@@ -272,7 +254,7 @@ protected:
     int myrank_; ///< global processor id
     bool nodeidgiven_; ///< indicates whether BACI global node ids are written to geometry file. default value: true
     
-    RCP<Epetra_Map> proc0map_; ///< allreduced nodal map for proc 0
+    RCP<Epetra_Map> proc0map_; ///< allreduced nodal map for proc 0, empty on other procs
 
     map<string,vector<int> > filesetmap_;
     

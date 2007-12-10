@@ -30,6 +30,10 @@ EnsightWriter::EnsightWriter(
     myrank_(((field->problem())->comm())->MyPID()),
     nodeidgiven_(true)
 {
+    // initialize proc0map_ correctly    	
+    const Epetra_Map* nodemap = field_->discretization()->NodeRowMap();
+    proc0map_ = DRT::Utils::AllreduceEMap(*nodemap,0);
+
     // map between distype in BACI and Ensight string
     //  note: these would be the direct mappings
     //  look in the actual writer, whether we output hex instead of hex27, e.g.
@@ -87,8 +91,6 @@ void EnsightWriter::WriteFiles()
     const int soltimeset = 2;
     WriteAllResults(field_);
     
-    
-
     int counttime = 0;
     for (map<string,vector<int> >::const_iterator entry = timesetmap_.begin(); entry != timesetmap_.end(); ++entry) {
     	counttime++;
@@ -269,7 +271,7 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinatesPar(
 
 	const int NSD = 3; ///< number of space dimensions
 
-	// loop over nodes on this proc and store the coordinate information
+	// loop over the nodes on this proc and store the coordinate information
 	for (int inode=0; inode<numnp; inode++)
 	{
 		int gid = nodemap->GID(inode);
@@ -288,12 +290,10 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinatesPar(
 	// import my new values (proc0 gets everything, other procs empty)
 	Epetra_Import proc0importer(*proc0map,*nodemap);   
 	RefCountPtr<Epetra_MultiVector> allnodecoords = rcp(new Epetra_MultiVector(*proc0map,3));
-
-	// import node coordinates from ALL nodes of current discretization
 	int err = allnodecoords->Import(*nodecoords,proc0importer,Insert);
 	if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);   
 
-	// write the node coordinates
+	// write the node coordinates (only proc 0)
 	// ensight format requires x_1 .. x_n, y_1 .. y_n, z_1 ... z_n  
 	// this is fulfilled automatically due to Epetra_MultiVector usage (columnwise writing data)
 	if (myrank_==0)
@@ -303,23 +303,17 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinatesPar(
 		dsassert(numentries == (3*numnpglobal),"proc 0 has not all of the node coordinates");
 		if (nodeidgiven_)
 		{
-			// write gids first (case: "node id given" is true)
-			for (int inode=0; inode<proc0map->NumGlobalElements(); ++inode) // this loop is empty on other procs
+			// first write node global ids (default)
+			for (int inode=0; inode<proc0map->NumGlobalElements(); ++inode)
 			{
-				// write node ids
-				Write(geofile,static_cast<float>(proc0map->GID(inode))+1); // gid +1 delivers GID numbering
-#if 0
-				cout<<"LID:"<<inode<<" -- map GID: "<<(proc0map->GID(inode))<<endl; 
-#endif
+				Write(geofile,static_cast<float>(proc0map->GID(inode))+1); 
+				// gid+1 delivers the node numbering of the *.dat file starting with 1
 			}
 		}
-		// go on with the coordinate information      
-		for (int i=0; i<numentries; ++i) // this loop is empty on other procs
+		// now write the coordinate information      
+		for (int i=0; i<numentries; ++i) 
 		{
-#if 0
-			cout<<"Proc "<<myrank_<<" writing geofile entry "<<i<<" = "<< coords[i]<<endl;
-#endif
-			Write(geofile, static_cast<float>(coords[i])); // ensures writing on myrank==0
+			Write(geofile, static_cast<float>(coords[i])); 
 		}
 	}
 	
@@ -424,16 +418,18 @@ void EnsightWriter::WriteCells(
 void EnsightWriter::WriteCellsPar(
         ofstream& geofile,
         const RefCountPtr<DRT::Discretization> dis,
-        const RefCountPtr<Epetra_Map> proc0map
+        const RefCountPtr<Epetra_Map>& proc0map
         ) const
 {
-	//const Epetra_Map* localnodemap = dis->NodeRowMap();
-#if 0    
-	if (!(nodemap->DistributedGlobal())) dserror("only one proc");
-#endif
-
 	const Epetra_Map* elementmap = dis->ElementRowMap();
 
+	vector<int> nodevector;
+	if (myrank_>0)
+	{
+		//reserve sufficient memory for storing the node connectivity
+		//(ghosted nodes included)
+		nodevector.reserve(dis->NumMyColNodes()); 
+	}
 
 	// get the number of elements for each distype (global numbers)
 	const NumElePerDisType numElePerDisType = GetNumElePerDisType(dis);
@@ -460,10 +456,7 @@ void EnsightWriter::WriteCellsPar(
 			Write(geofile, ne);
 		}
 
-		vector<int> nodevector;
-		const int numnodes = 4;
-		//reserve memory
-		nodevector.reserve(ne*numnodes);
+		nodevector.clear();
 
 		// loop all available elements
 		for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
@@ -472,7 +465,6 @@ void EnsightWriter::WriteCellsPar(
 			if (actele->Shape() == distypeiter)
 			{
 				DRT::Node** const nodes = actele->Nodes();
-                //vector<int> nodalidsNodeIds ();
 				switch (actele->Shape())
 				{
 				case DRT::Element::hex20:
@@ -528,9 +520,11 @@ void EnsightWriter::WriteCellsPar(
 			}
 		}
 
-		// now do some communicative work for the parallel case:
-		// proc 1 to proc n have to send their stored node connectivity to proc0 for writing
 #ifdef PARALLEL
+		// now do some communicative work for the parallel case:
+		// proc 1 to proc n have to send their stored node connectivity to proc0 
+		// which does the writing
+		
 		WriteNodeConnectivityPar(geofile, dis, nodevector, proc0map);
 #endif	
 
@@ -540,8 +534,10 @@ void EnsightWriter::WriteCellsPar(
 	
 	
 /*!
-* \brief write node connectivity information in parallel case
-author gjb
+* \brief communicate and write node connectivity in parallel case
+
+  \author gjb
+  \date 12/07
 */	
 void EnsightWriter::WriteNodeConnectivityPar(       
 		ofstream& geofile,
@@ -550,7 +546,6 @@ void EnsightWriter::WriteNodeConnectivityPar(
         const RefCountPtr<Epetra_Map> proc0map) const
 {
 #ifdef PARALLEL
-	
 	// no we have communicate the connectivity infos from proc 1...proc n to proc 0
 
 	vector<char> sblock; // sending block
@@ -559,11 +554,11 @@ void EnsightWriter::WriteNodeConnectivityPar(
 	// create an exporter for communication
 	DRT::Exporter exporter(dis->Comm());
 
-	// pack node ids into sendbuffer
+	// pack my node ids into sendbuffer
 	sblock.clear();
 	DRT::ParObject::AddtoPack(sblock,nodevector);
 
-	// now we start the the communication starting with proc 1
+	// now we start the communication
 	for (int pid=0;pid<(dis->Comm()).NumProc();++pid)
 	{
 		MPI_Request request;
@@ -571,7 +566,7 @@ void EnsightWriter::WriteNodeConnectivityPar(
 		int         frompid=pid;
 		int         topid  =0;   
 		int         length=sblock.size();
-		
+
 		//--------------------------------------------------
 		// proc pid sends its values to proc 0
 		if (myrank_==pid)
@@ -580,9 +575,9 @@ void EnsightWriter::WriteNodeConnectivityPar(
 					&(sblock[0]),sblock.size(),
 					tag,request);
 		}
-		
+
 		//--------------------------------------------------
-		// proc 0 receives from proc with myrank_==pid
+		// proc 0 receives from proc pid
 		rblock.clear();  
 		if (myrank_ == 0)
 		{
@@ -603,33 +598,35 @@ void EnsightWriter::WriteNodeConnectivityPar(
 		{
 			int index = 0;
 			vector<int> nodeids;
+			// extract data from recieved package
 			while (index < (int)rblock.size())
 			{
 
 				DRT::ParObject::ExtractfromPack(index,rblock,nodeids);
 			}
-			// compute node id based on proc0map and write it to file
+			// compute node lid based on proc0map and write it to file
 			for(int i=0;i<(int) nodeids.size();++i)
 			{
+				// using the same map as for the writing the node coordinates
 				int id = (proc0map->LID(nodeids[i]))+1;
 				Write(geofile, id);
 			}
 			nodeids.clear();
-		} // end unpacking
+		} // end unpack
 
 		// for safety
 		exporter.Comm().Barrier();
 
 	}// for pid
-	
+
 #endif
-	
+
 	return;
 }
 
 
 /*!
- * \brief parse all elements and get the number of elements for each distype
+ * \brief parse all elements and get the global(!) number of elements for each distype
  */
 NumElePerDisType EnsightWriter::GetNumElePerDisType(
         const RefCountPtr<DRT::Discretization> dis) const
@@ -646,14 +643,16 @@ NumElePerDisType EnsightWriter::GetNumElePerDisType(
     }
     
 #ifndef PARALLEL
-     return numElePerDisType;
+     return numElePerDisType; // these are already the global numbers
+
 #else
-    // in parallel case we have to make the ele numbers known globally
+    // in parallel case we have to sum up the local element distype numbers
      
-    // how many element discretization types exist?
+    // determine maximum number of possible element discretization types
     DRT::Element::DiscretizationType numeledistypes = DRT::Element::max_distype;
+
+    // write the final local numbers into a vector
     vector<int> myNumElePerDisType(numeledistypes);
-    // write final local numbers into a vector
 	NumElePerDisType::const_iterator iter;
 	for (iter=numElePerDisType.begin(); iter != numElePerDisType.end(); ++iter)
 	{
