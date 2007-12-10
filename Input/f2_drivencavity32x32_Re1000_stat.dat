@@ -3665,9 +3665,9 @@ CURVE1 on Explicit FUNC f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1 c1 2.0 c2 1.0
 ------------------------------------------------------------FUNCT5
 ------------------------------------------------------------FUNCT6
 ------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 27 POSITION vely NAME vely VALUE -6.558032352e-01 TOLERANCE 1e-6
-FLUID DIS 1 NODE 27 POSITION velx NAME velx VALUE -2.374093856e-02 TOLERANCE 1e-6
-FLUID DIS 1 NODE 27 POSITION pressure NAME pressure VALUE 1.353257532e-02 TOLERANCE 1e-4
+FLUID DIS 1 NODE 27 POSITION vely NAME vely VALUE -6.558033435e-01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 27 POSITION velx NAME velx VALUE -2.374083683e-02 TOLERANCE 1e-6
+FLUID DIS 1 NODE 27 POSITION pressure NAME pressure VALUE 1.352930466e-02 TOLERANCE 1e-4
 -----------------------------------------------------------LOCSYS1
 -----------------------------------------------------------LOCSYS2
 -----------------------------------------------------------LOCSYS3
