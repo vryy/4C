@@ -408,6 +408,9 @@ private:
   RefCountPtr<Epetra_MultiVector>  filtered_vel_;
   RefCountPtr<Epetra_MultiVector>  filtered_reynoldsstress_;
   RefCountPtr<Epetra_MultiVector>  filtered_modeled_subgrid_stress_;
+  RefCountPtr<Epetra_MultiVector>  col_filtered_vel_;
+  RefCountPtr<Epetra_MultiVector>  col_filtered_reynoldsstress_;
+  RefCountPtr<Epetra_MultiVector>  col_filtered_modeled_subgrid_stress_;
 
   RefCountPtr<vector<double> >     averaged_LijMij_;
   RefCountPtr<vector<double> >     averaged_MijMij_;
@@ -438,6 +441,7 @@ private:
 
   double                   dtele_;
   double                   dtsolve_;
+  double                   dtfilter_;
 };
 
 

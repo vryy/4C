@@ -753,6 +753,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
         TurbModelAction turb_mod_action = no_model;
 
 
+        int  nlayer=0;
         if (turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
         {
           string& physical_turbulence_model = turbmodelparams.get<string>("PHYSICAL_MODEL");
@@ -790,7 +791,6 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
             }
             center/=iel;
             
-            int  nlayer;
             bool found = false;
             for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
             {
@@ -800,22 +800,24 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
                   break;
                 }
                 nlayer++;
-              }
-              if (found ==false)
-              {
-                dserror("could not determine element layer");
-              }
-//              cout << "layer "  << nlayer <<  " center  " << center << "   ";
-              
-              Cs = 0.5 * (*averaged_LijMij)[nlayer]/(*averaged_MijMij)[nlayer] ;
-              
-              if (Cs<0)
-                Cs=0;
             }
-            else
+            if (found ==false)
             {
-              dserror("Up to now, only Smagorinsky (constant coefficient with and without wall function as well as dynamic) is available");
+              dserror("could not determine element layer");
             }
+            
+            Cs = 0.5 * (*averaged_LijMij)[nlayer]/(*averaged_MijMij)[nlayer] ;
+            
+            // clipping to get algorithm stable
+            if (Cs<0)
+              {
+                Cs=0;
+              }
+          }
+          else
+          {
+            dserror("Up to now, only Smagorinsky (constant coefficient with and without wall function as well as dynamic) is available");
+          }
         }
 
         // --------------------------------------------------
@@ -851,6 +853,24 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
                                  l_tau,
                                  compute_elemat
           );
+
+
+        if (turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
+        {
+          string& physical_turbulence_model = turbmodelparams.get<string>("PHYSICAL_MODEL");
+          
+          if (physical_turbulence_model == "Dynamic_Smagorinsky")
+          {
+            // Cs was changed in Sysmat (Cs->sqrt(Cs/hk)) to compare it with the standard
+            // Smagorinsky Cs
+
+            if(this->Owner() == discretization.Comm().MyPID())
+            {
+              (*(turbmodelparams.get<RefCountPtr<vector<double> > >("local_Cs_sum")))[nlayer]+=Cs;
+            }
+          }
+        }
+        
       }
       break;
       case calc_fluid_genalpha_update_for_subscales:

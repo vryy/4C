@@ -160,7 +160,17 @@ public:
     {
       return(*nodeplanes_);
     };
+
+  /*!
+  \brief Return pointer to vector of values of the Smagorinsky constant.
+  It will be passed to the element in order to compute average values.
   
+  */
+  RefCountPtr<vector<double> > ReturnCsAverage()
+    {
+      return(sumCs_);
+    };
+    
   //@}
 
   
@@ -259,6 +269,9 @@ private:
   //! sum over nodal forces on boundary in w direction
   double                           sumforcew_;
 
+  //! sum over Cs --- useful for dynamic Smagorinsky model
+  RefCountPtr<vector<double> >     sumCs_;
+  
   //! viscosity to calculate l_tau, y+ etc.
   double                           visc_;
 

@@ -546,19 +546,29 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
   // start time measurement for element call
   tm3_ref_ = rcp(new TimeMonitor(*timeeleloop_));
 
-  // get cpu time
-  tcpu=ds_cputime();
 
   this->GenAlphaAssembleResidualAndMatrix(itnum);
 
   // end time measurement for element call
   tm3_ref_=null;
-  dtele_=ds_cputime()-tcpu;
 
   if(myrank_ == 0)
   {
     printf("+------------+-------------------+--------------+--------------+--------------+--------------+ \n");
-    printf("|- step/max -|- tol      [norm] -|- vel-error --|- pre-error --|- vres-norm --|- pres-norm --|                 (te=%10.3E)\n",dtele_);
+    printf("|- step/max -|- tol      [norm] -|- vel-error --|- pre-error --|- vres-norm --|- pres-norm --|                 (te=%10.3E)",dtele_);
+    if (params_.sublist("TURBULENCE MODEL").get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
+        ==
+        "CLASSICAL_LES")
+    {
+      if(params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+         ==
+         "Dynamic_Smagorinsky"
+        )
+      {
+        printf("(tf=%10.3E)",dtfilter_);
+      }
+    }
+    cout << &endl;
   }
 
   bool              stopnonliniter = false;
@@ -609,18 +619,12 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
     // start time measurement for element call
     tm3_ref_ = rcp(new TimeMonitor(*timeeleloop_));
 
-    // get cpu time
-    tcpu=ds_cputime();
-
 //    if(itnum<params_.get<int>("max nonlin iter steps"))
     {
       this->GenAlphaAssembleResidualAndMatrix(itnum);
     }
     // end time measurement for element call
     tm3_ref_=null;
-
-    dtele_=ds_cputime()-tcpu;
-
 
     // -------------------------------------------------------------------
     // do convergence check
@@ -931,7 +935,10 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
       this->ApplyFilterForDynamicComputationOfCs();
     }
   }
-  
+
+  // get cpu time
+  double tcpu=ds_cputime();
+
   // -------------------------------------------------------------------
   // call elements to calculate residual and matrix
   // -------------------------------------------------------------------
@@ -1009,11 +1016,69 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
   discret_->SetState("u and p (n+alpha_F,trial)",velaf_);
   discret_->SetState("acc     (n+alpha_M,trial)",accam_);
 
+  // extended statistics (plane average of Cs) for dynamic Smagorinsky model
+  RefCountPtr<vector<double> > global_Cs_sum;
+  RefCountPtr<vector<double> > global_incr_Cs_sum;
+  RefCountPtr<vector<double> > local_Cs_sum;
+  global_incr_Cs_sum =  rcp(new vector<double> );
+  local_Cs_sum       =  rcp(new vector<double> );
+
+    
+  if (params_.sublist("TURBULENCE MODEL").get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
+      ==
+      "CLASSICAL_LES")
+  {
+    if(params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+       ==
+       "Dynamic_Smagorinsky"
+      )
+    {
+      global_Cs_sum=turbulencestatistics_->ReturnCsAverage();
+
+      if(global_Cs_sum==null)
+      {
+        dserror("expected existence of vector global_Cs_sum --- not available\n");
+      }
+      local_Cs_sum->resize(global_Cs_sum->size(),0.0);
+      global_incr_Cs_sum->resize(global_Cs_sum->size(),0.0);
+      
+      eleparams.sublist("TURBULENCE MODEL").set<RefCountPtr<vector<double> > >("local_Cs_sum",local_Cs_sum);
+    }
+  }
+  
   // call loop over elements
   {
     discret_->Evaluate(eleparams,sysmat_,null,residual_,null,null);
     discret_->ClearState();
   }
+
+  // extended statistics (plane average of Cs) for dynamic Smagorinsky model --- communication part
+  if (params_.sublist("TURBULENCE MODEL").get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
+      ==
+      "CLASSICAL_LES")
+  {
+    if(params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+       ==
+       "Dynamic_Smagorinsky"
+      )
+    {
+      // now add all the stuff from the different processors
+
+      for (unsigned rr=0;rr<(*global_Cs_sum).size();++rr)
+      {
+        discret_->Comm().SumAll(&((*local_Cs_sum)[rr]),&((*global_incr_Cs_sum)[rr]),1);
+      }
+
+      for (unsigned rr=0;rr<(*global_Cs_sum).size();++rr)
+      {
+        (*global_Cs_sum)[rr]+=(*global_incr_Cs_sum)[rr];
+      }
+    }
+  }
+
+  global_incr_Cs_sum =  null;
+  local_Cs_sum       =  null;
+
 #if 0  // DEBUG IO --- the whole systemmatrix
       {
 	  int rr;
@@ -1100,6 +1165,10 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
 
   // end time measurement for application of dirichlet conditions
   tm4_ref_=null;
+
+  // end measurement element call
+  dtele_=ds_cputime()-tcpu;
+
 
   return;
 } // FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix
@@ -1308,9 +1377,23 @@ bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(
   // out to screen
   if(myrank_ == 0)
   {
-    printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |  (ts=%10.3E)(te=%10.3E)\n",
+    printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |  (ts=%10.3E)(te=%10.3E)",
            itnum,itemax,ittol,incvelnorm_L2/velnorm_L2,
            incprenorm_L2/prenorm_L2, velresnorm_L2,preresnorm_L2,dtsolve_,dtele_);
+
+    if (params_.sublist("TURBULENCE MODEL").get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
+        ==
+        "CLASSICAL_LES")
+    {
+      if(params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+         ==
+         "Dynamic_Smagorinsky"
+        )
+      {
+        printf("(tf=%10.3E)",dtfilter_);
+      }
+    }
+    cout << &endl;
   }
 
   // this is the convergence check
@@ -1667,6 +1750,10 @@ void FluidGenAlphaIntegration::EvaluateErrorComparedToAnalyticalSol()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
 {
+
+  // time measurement
+  double tcpu=ds_cputime();
+  
   // get the dofrowmap for access of velocity dofs
   const Epetra_Map* dofrowmap       = discret_->DofRowMap();
 
@@ -1724,6 +1811,7 @@ void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
       // slavenodes are ignored
       if(master == mapmastertoslave_.end())
       {
+        // the node is a slave --- so don't do anything
         continue;
       }
 
@@ -1740,7 +1828,7 @@ void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
     }
 
     // add the elements connected to the slavenodes --- master and
-    // slavenodes are treated as they were identical!
+    // slavenodes are treated like they were identical!
     if(ispbcmaster == true)
     {
       for (unsigned slavecount = 0;slavecount<mapmastertoslave_[lnode->Id()].size();++slavecount)
@@ -1766,9 +1854,11 @@ void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
 
     // the patch volume has to be initialised to zero
     double patchvolume = 0;
-    
+
+    // loop all adjacent elements to this node
     for (unsigned nele=0;nele<patcheles.size();++nele)
     {
+      // get the neighbouring element
       DRT::Element* nbele = (patcheles[nele]);
 
       // get element location vector, dirichlet flags and ownerships
@@ -1813,6 +1903,7 @@ void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
     modeled_stress_grid_scale_hat/=patchvolume;
     velaf_hat                    /=patchvolume;
 
+    // now assemble the computed values into the global vector
     double val = 0;
     int    id  = (lnode->Id());
     
@@ -1830,6 +1921,8 @@ void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
         ((*filtered_modeled_subgrid_stress_)(3*idim+jdim))->ReplaceGlobalValues(1,&val,&id);
       }
     }
+
+    // for masternodes, all slavenodes get the same values
     if (ispbcmaster == true)
     {
       for (unsigned slavecount = 0;slavecount<mapmastertoslave_[lnode->Id()].size();++slavecount)
@@ -1860,19 +1953,19 @@ void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
   // clean up
   discret_->ClearState();
 
-  
+  // get the column map in order to communicate the result to all ghosted nodes
   const Epetra_Map* nodecolmap = discret_->NodeColMap();
 
   // allocate distributed vectors in col map format to have the filtered
   // quantities available on ghosted nodes
-  RefCountPtr<Epetra_MultiVector> col_filtered_vel                    = rcp(new Epetra_MultiVector(*nodecolmap,3,true));
-  RefCountPtr<Epetra_MultiVector> col_filtered_reynoldsstress         = rcp(new Epetra_MultiVector(*nodecolmap,9,true));
-  RefCountPtr<Epetra_MultiVector> col_filtered_modeled_subgrid_stress = rcp(new Epetra_MultiVector(*nodecolmap,9,true));
+  col_filtered_vel_                    = rcp(new Epetra_MultiVector(*nodecolmap,3,true));
+  col_filtered_reynoldsstress_         = rcp(new Epetra_MultiVector(*nodecolmap,9,true));
+  col_filtered_modeled_subgrid_stress_ = rcp(new Epetra_MultiVector(*nodecolmap,9,true));
 
   // export filtered vectors in rowmap to columnmap format
-  LINALG::Export(*filtered_vel_                   ,*col_filtered_vel);
-  LINALG::Export(*filtered_reynoldsstress_        ,*col_filtered_reynoldsstress);
-  LINALG::Export(*filtered_modeled_subgrid_stress_,*col_filtered_modeled_subgrid_stress);
+  LINALG::Export(*filtered_vel_                   ,*col_filtered_vel_);
+  LINALG::Export(*filtered_reynoldsstress_        ,*col_filtered_reynoldsstress_);
+  LINALG::Export(*filtered_modeled_subgrid_stress_,*col_filtered_modeled_subgrid_stress_);
 
   // get ordered layers of elements in which LijMij and MijMij are averaged
   if (planecoords_ == null)
@@ -1885,15 +1978,20 @@ void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
   averaged_LijMij_->resize((*planecoords_).size()-1);
   averaged_MijMij_->resize((*planecoords_).size()-1);
   
-  vector<int>  count_for_average((*planecoords_).size()-1);
+  vector<int>  count_for_average      ((*planecoords_).size()-1);
+  vector<int>  local_count_for_average((*planecoords_).size()-1);
+
+  vector <double> local_ele_sum_LijMij((*planecoords_).size()-1);
+  vector <double> local_ele_sum_MijMij((*planecoords_).size()-1);
 
   
   for (unsigned rr=0;rr<(*planecoords_).size()-1;++rr)
   {
-    (*averaged_LijMij_)[rr]=0;
-    (*averaged_MijMij_)[rr]=0;
-
-    count_for_average[rr]=0;
+    (*averaged_LijMij_)    [rr]=0;
+    (*averaged_MijMij_)    [rr]=0;
+    local_ele_sum_LijMij   [rr]=0;
+    local_ele_sum_MijMij   [rr]=0;
+    local_count_for_average[rr]=0;
   }
 
   // generate a parameterlist for communication and control
@@ -1901,21 +1999,23 @@ void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
   // action for elements
   calc_smag_const_params.set("action","calc_smagorinsky_const");
 
-  calc_smag_const_params.set("col_filtered_vel"                   ,col_filtered_vel);
-  calc_smag_const_params.set("col_filtered_reynoldsstress"        ,col_filtered_reynoldsstress);
-  calc_smag_const_params.set("col_filtered_modeled_subgrid_stress",col_filtered_modeled_subgrid_stress);
+  // hand filtered global vectors down to the element
+  calc_smag_const_params.set("col_filtered_vel"                   ,col_filtered_vel_);
+  calc_smag_const_params.set("col_filtered_reynoldsstress"        ,col_filtered_reynoldsstress_);
+  calc_smag_const_params.set("col_filtered_modeled_subgrid_stress",col_filtered_modeled_subgrid_stress_);
 
-  
+  // dummy matrices and vectors for element call
   Epetra_SerialDenseMatrix dummym1;
   Epetra_SerialDenseMatrix dummym2;
   Epetra_SerialDenseVector dummyv1;
   Epetra_SerialDenseVector dummyv2;
   Epetra_SerialDenseVector dummyv3;
 
-  
-  for (int nele=0;nele<discret_->NumMyColElements();++nele)
+  // loop all elements on this proc (excluding ghosted ones)
+  for (int nele=0;nele<discret_->NumMyRowElements();++nele)
   {
-    DRT::Element* ele = discret_->lColElement(nele);
+    // get the element
+    DRT::Element* ele = discret_->lRowElement(nele);
     
     // get element location vector, dirichlet flags and ownerships
     vector<int> lm;
@@ -1932,11 +2032,15 @@ void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
     if (err) dserror("Proc %d: Element %d returned err=%d",
                      discret_->Comm().MyPID(),ele->Id(),err);
 
-    
+
+    // get the result from the element call
     double LijMij = calc_smag_const_params.get<double>("LijMij");
     double MijMij = calc_smag_const_params.get<double>("MijMij");
     double center = calc_smag_const_params.get<double>("center");
 
+    // add result into result vetor
+
+    // for this purpose, determine the layer (the plane for average)
     int  nlayer;
     bool found = false;
     for (nlayer=0;nlayer<(int)(*planecoords_).size()-1;)
@@ -1953,22 +2057,40 @@ void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
       dserror("could not determine element layer");
     }
 
-//    cout << center << " " << nlayer << " " << LijMij << " " << MijMij << &endl;
-
+    // add it up
+    local_ele_sum_LijMij[nlayer] += LijMij;
+    local_ele_sum_MijMij[nlayer] += MijMij;
     
-    (*averaged_LijMij_)[nlayer] += LijMij;
-    (*averaged_MijMij_)[nlayer] += MijMij;
-    
-    count_for_average[nlayer]++;
+    local_count_for_average[nlayer]++;
   }
+
+  // now add all the stuff from the different processors
+
+  for (unsigned rr=0;rr<(*planecoords_).size()-1;++rr)
+  {
+    discret_->Comm().SumAll(&(local_count_for_average[rr]),&(count_for_average[rr]),1);
+    discret_->Comm().SumAll(&(local_ele_sum_LijMij[rr]),&((*averaged_LijMij_)[rr]),1);
+    discret_->Comm().SumAll(&(local_ele_sum_MijMij[rr]),&((*averaged_MijMij_)[rr]),1);
+  }
+
+  // do averaging
   for (unsigned rr=0;rr<(*planecoords_).size()-1;++rr)
   {
     (*averaged_LijMij_)[rr]/=count_for_average[rr];
     (*averaged_MijMij_)[rr]/=count_for_average[rr];
-
-//    cout << rr << " " << ((*averaged_LijMij_)[rr]/(*averaged_MijMij_)[rr]) << "  "  << count_for_average[rr]<< &endl;
+   
+//    cout << ((*planecoords_)[rr]+(*planecoords_)[rr+1])/2 << " " << ((*averaged_LijMij_)[rr]/(*averaged_MijMij_)[rr]) <<  &endl;
   }
 
+/*  if(myrank_==0)
+  {
+    for (unsigned rr=0;rr<(*planecoords_).size()-1;++rr)
+    {
+      cout  << ((*planecoords_)[rr]+(*planecoords_)[rr+1])/2 << " " << (*averaged_LijMij_)[rr] << " " <<(*averaged_MijMij_)[rr] <<  &endl;
+    }
+  }
+*/
+  // provide necessary information for the elements
   {
     ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
 
@@ -1977,6 +2099,8 @@ void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
     modelparams->set<RefCountPtr<vector<double> > >("planecoords_",planecoords_);
   }
 
+  dtfilter_=ds_cputime()-tcpu;
+  
   return;
 }
 

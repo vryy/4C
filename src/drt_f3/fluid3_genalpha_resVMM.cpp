@@ -111,7 +111,7 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
   const enum Fluid3::StabilisationAction                cross,
   const enum Fluid3::StabilisationAction                reynolds,
   const enum Fluid3::TurbModelAction                    turb_mod_action,
-  const double                                          Cs,
+  double&                                               Cs,
   const double                                          l_tau,
   const bool                                            compute_elemat
   )
@@ -707,8 +707,11 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
 
     visceff_ = visc + Cs * rateofstrain;
 
-    ;
-//    cout << sqrt(Cs)/pow((vol_),(1.0/3.0)) <<&endl;
+    // for evaluation of statistics: remember the 'real' Cs
+    Cs=sqrt(Cs/pow((vol_),(1.0/3.0)));
+    
+    
+//    cout << (Cs)/pow((vol_),(1.0/3.0)) <<&endl;
   }
   else
   {

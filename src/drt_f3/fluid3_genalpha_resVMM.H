@@ -155,7 +155,7 @@ namespace DRT
         \param cross           (i) flag to add (u,(u_sub o nabla) v) to right hand side
         \param reynolds        (i) flag to add (u_sub,(u_sub o nabla) v) to right hand side
         \param turb_mod_action (i) action flag for the application of a turbulence model
-        \param Cs              (i) value for Smagorinsky constant (zero if unused)
+        \param Cs            (i/o) value for Smagorinsky constant (zero if unused)
         \param l_tau           (i) viscous length scale for van Driest damping (zero if unused)
         \param compute_elemat  (i) if false, element matrices are not computed
         
@@ -183,7 +183,7 @@ namespace DRT
                   const enum Fluid3::StabilisationAction                cross,
                   const enum Fluid3::StabilisationAction                reynolds,
                   const enum Fluid3::TurbModelAction                    turb_mod_action,
-                  const double                                          Cs,
+                  double&                                               Cs,
                   const double                                          l_tau,
                   const bool                                            compute_elemat);
     private:

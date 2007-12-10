@@ -423,7 +423,6 @@ void PostProblem::read_meshes()
           reader.ReadElementData(step, comm_->NumProc(), comm_->MyPID());
         currfield.discretization()->UnPackMyElements(element_data);
 
-#if 1
         // read periodic boundary conditions if available
         RefCountPtr<vector<char> > cond_pbcsline =
         reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "LinePeriodic");
@@ -431,12 +430,12 @@ void PostProblem::read_meshes()
         RefCountPtr<vector<char> > cond_pbcssurf =
         reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "SurfacePeriodic");
         currfield.discretization()->UnPackCondition(cond_pbcssurf, "SurfacePeriodic");
-
+                
         // read XFEMCoupling boundary conditions if available
         RefCountPtr<vector<char> > cond_xfem =
         reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "XFEMCoupling");
         currfield.discretization()->UnPackCondition(cond_xfem, "XFEMCoupling");
-#endif
+
         // before we can call discretization functions (in parallel) we
         // need field based communicators.
         create_communicators();
@@ -449,7 +448,7 @@ void PostProblem::read_meshes()
 
         //distribute_drt_grids();
         currfield.discretization()->FillComplete();
-#if 1
+
         // -------------------------------------------------------------------
         // connect degrees of freedom for periodic boundary conditions
         // -------------------------------------------------------------------
@@ -458,7 +457,7 @@ void PostProblem::read_meshes()
           PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(currfield.discretization());
           pbc.UpdateDofsForPeriodicBoundaryConditions();
         }
-#endif
+
         fields_.push_back(currfield);
       }
     }
