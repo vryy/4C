@@ -163,8 +163,8 @@ namespace XFEM
     \param XAABB (in)       : extended axis-aligned bouning box
     \return true if node is within the XAABB or false otherwise
     */
-    bool isNodeWithinXAABB(  
-        const std::vector<double>&         node,
+    bool isPositionWithinXAABB(  
+        const std::vector<double>&         pos,
         const Epetra_SerialDenseMatrix&    XAABB
         );
     
@@ -179,39 +179,48 @@ namespace XFEM
     \return true if node is within the XAABB or false otherwise
     */
     bool isLineWithinXAABB(    
-        const std::vector<double>&         node1,
-        const std::vector<double>&         node2,
+        const std::vector<double>&         pos1,
+        const std::vector<double>&         pos2,
         const Epetra_SerialDenseMatrix&    XAABB
         );
         
     
     /*!
-    \brief checks if a node in current coordinates lies within a certain element           
+    \brief checks if a position in current coordinates lies within a certain element           
            The nonlinear system of equation is solved with help of the Newton-method.
 
     \param element              (in)        : element 
     \param x                    (in)        : node in current coordinates
     \param xsi                  (inout)     : node in element coordinates
     */  
-    bool checkNodeWithinElement(    
+    bool checkPositionWithinElement(    
         DRT::Element*                       element,
         const Epetra_SerialDenseVector&     x,
         Epetra_SerialDenseVector&           xsi
         );
     
     /*!
-    \brief checks if a node in current coordinates lies within a certain element           
+    \brief checks if a position in current coordinates lies within a certain element           
            The nonlinear system of equation is solved with help of the Newton-method.
 
     \param element              (in)        : element 
     \param x                    (in)        : node in current coordinates
     */  
-    bool checkNodeWithinElement(    
+    bool checkPositionWithinElement(    
         DRT::Element*                       element,
         const Epetra_SerialDenseVector&     x
         );   
     
-    
+    /*!
+    \brief checks if a position in current coordinates lies within a certain element           
+           The nonlinear system of equation is solved with help of the Newton-method.
+
+    \param element              (in)        : element 
+    \param x                    (in)        : node in current coordinates
+    */  
+    bool checkPositionWithinDiscretization(  
+        RCP<DRT::Discretization>            dis,
+        const Epetra_SerialDenseVector&     x);
     /*!
     \brief updates the system matrix at the corresponding element coordinates for the 
            computation if a node in current coordinates lies within an element 

@@ -227,10 +227,10 @@ bool XFEM::checkIfLineElement(
 
 
 /*----------------------------------------------------------------------*
- |  ICS:    checks if a node is within an XAABB               u.may 06/07|
+ |  ICS:    checks if a position is within an XAABB          u.may 06/07|
  *----------------------------------------------------------------------*/
-bool XFEM::isNodeWithinXAABB(    
-    const std::vector<double>&         node,
+bool XFEM::isPositionWithinXAABB(    
+    const std::vector<double>&         pos,
     const Epetra_SerialDenseMatrix&    XAABB)
 {
     bool isWithin = true;
@@ -251,7 +251,7 @@ bool XFEM::isNodeWithinXAABB(
         
        // printf("nodal value =  %f, min =  %f, max =  %f\n", node[dim], diffMin, diffMax);
         
-        if((node[dim] < diffMin)||(node[dim] > diffMax)) //check again !!!!!   
+        if((pos[dim] < diffMin)||(pos[dim] > diffMax)) //check again !!!!!   
         {
             isWithin = false;
             break;
@@ -263,18 +263,18 @@ bool XFEM::isNodeWithinXAABB(
 
 
 /*----------------------------------------------------------------------*
- |  ICS:    checks if a node is within an XAABB               u.may 06/07|
+ |  ICS:    checks if a pos is within an XAABB               u.may 06/07|
  *----------------------------------------------------------------------*/
 bool XFEM::isLineWithinXAABB(    
-    const std::vector<double>&         node1,
-    const std::vector<double>&         node2,
+    const std::vector<double>&         pos1,
+    const std::vector<double>&         pos2,
     const Epetra_SerialDenseMatrix&    XAABB)
 {
     bool isWithin = true;
     int dim = -1;
     
     for(dim=0; dim<3; dim++)
-        if(fabs(node1[dim]-node2[dim]) > TOL7)
+        if(fabs(pos1[dim]-pos2[dim]) > TOL7)
             break;
     
     for(int i = 0; i < 3; i++)
@@ -284,7 +284,7 @@ bool XFEM::isLineWithinXAABB(
             double min = XAABB(i,0) - TOL7;
             double max = XAABB(i,1) + TOL7;
    
-            if((node1[i] < min)||(node1[i] > max))
+            if((pos1[i] < min)||(pos1[i] > max))
                 isWithin = false;
             
         }
@@ -298,8 +298,8 @@ bool XFEM::isLineWithinXAABB(
         double min = XAABB(dim,0) - TOL7;
         double max = XAABB(dim,1) + TOL7;
                             
-        if( ((node1[dim] < min) && (node2[dim] > max)) ||  
-            ((node2[dim] < min) && (node1[dim] > max)) )
+        if( ((pos1[dim] < min) && (pos2[dim] > max)) ||  
+            ((pos2[dim] < min) && (pos1[dim] > max)) )
             isWithin = true;
     }
     return isWithin;
@@ -307,9 +307,9 @@ bool XFEM::isLineWithinXAABB(
 
 
 /*----------------------------------------------------------------------*
- |  CLI:    checks if a node is within a given element       u.may 06/07|   
+ |  CLI:    checks if a position is within a given element   u.may 06/07|   
  *----------------------------------------------------------------------*/
-bool XFEM::checkNodeWithinElement(  
+bool XFEM::checkPositionWithinElement(  
     DRT::Element*                       element,
     const Epetra_SerialDenseVector&     x)
 {
@@ -366,7 +366,7 @@ bool XFEM::checkNodeWithinElement(
 /*----------------------------------------------------------------------*
  |  CLI:    checks if a node is within a given element       u.may 06/07|   
  *----------------------------------------------------------------------*/
-bool XFEM::checkNodeWithinElement(  
+bool XFEM::checkPositionWithinElement(  
     DRT::Element*                       element,
     const Epetra_SerialDenseVector&     x,
     Epetra_SerialDenseVector&           xsi)
@@ -421,6 +421,31 @@ bool XFEM::checkNodeWithinElement(
     return nodeWithinElement;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  CLI:    checks if a position is within a given mesh      a.ger 12/07|   
+ *----------------------------------------------------------------------*/
+bool XFEM::checkPositionWithinDiscretization(  
+    RCP<DRT::Discretization>            dis,
+    const Epetra_SerialDenseVector&     x)
+{
+    bool nodeWithinMesh = false;
+    
+    // loop all elements on this processor
+    for (int i=0; i<dis->NumMyRowElements(); ++i)
+    {
+        DRT::Element* ele = dis->lRowElement(i);
+        nodeWithinMesh = checkPositionWithinElement(ele, x);
+        if (nodeWithinMesh)
+            break;
+    }
+
+    // TODO: in parallel, we have to ask all processors, whether there is any match!!!!
+#ifdef PARALLEL
+    dserror("not implemented, yet");
+#endif
+    return nodeWithinMesh;
+}
 
 /*----------------------------------------------------------------------*
  |  CLI:    updates the Jacobi matrix for the computation    u.may 06/07|

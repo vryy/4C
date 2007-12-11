@@ -348,7 +348,7 @@ class Intersection
 			map< int, set<int> >& 					xfemCutterIdMap,
 			const RefCountPtr<DRT::Discretization>& xfemdis,
 		   	const RefCountPtr<DRT::Discretization>& cutterdis  
-		   	) const;
+		   	);
     
   
         /*!

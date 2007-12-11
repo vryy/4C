@@ -445,7 +445,7 @@ void Intersection::getCutterElementsInParallel(
 	map< int, RefCountPtr<DRT::Node> >&  	cutterNodeMap,
 	map<int, set<int> >& 					xfemCutterIdMap,
 	const RefCountPtr<DRT::Discretization>& xfemdis,
-   	const RefCountPtr<DRT::Discretization>& cutterdis  ) const
+   	const RefCountPtr<DRT::Discretization>& cutterdis  )
 {
 	const int cmyrank = cutterdis->Comm().MyPID();
 	const int cnumproc = cutterdis->Comm().NumProc();
@@ -796,7 +796,7 @@ void Intersection::currentToElementCoordinates(
     x = xsi;
     xsi.Scale(0.0);
     
-    checkNodeWithinElement(element, x, xsi);
+    checkPositionWithinElement(element, x, xsi);
    
     // rounding 1 and -1 to be exact for the CDT
     for(int j = 0; j < 3; j++)
@@ -824,7 +824,7 @@ void Intersection::currentToElementCoordinates(
     for(int i = 0; i < dim; i++)
     	x[i] = xsiVector[i];
   
-    checkNodeWithinElement(element, x, xsi);
+    checkPositionWithinElement(element, x, xsi);
    
     // rounding 1 and -1 to be exact for the CDT
     for(int j = 0; j < dim; j++)
@@ -1063,7 +1063,7 @@ bool Intersection::intersectionOfXAABB(
 	nodes[7][0] = cutterXAABB(0,0);	nodes[7][1] = cutterXAABB(1,1);	nodes[7][2] = cutterXAABB(2,1);	// node 7
 	
 	for (int i = 0; i < 8; i++)
-		if(isNodeWithinXAABB(nodes[i], xfemXAABB))
+		if(isPositionWithinXAABB(nodes[i], xfemXAABB))
 		{
 			intersection = true;
 			break;
@@ -1095,7 +1095,7 @@ bool Intersection::intersectionOfXAABB(
 		nodes[7][0] = xfemXAABB(0,0);	nodes[7][1] = xfemXAABB(1,1);	nodes[7][2] = xfemXAABB(2,1);	// node 7
 	
 		for (int i = 0; i < 8; i++)
-			if(isNodeWithinXAABB(nodes[i], cutterXAABB))
+			if(isPositionWithinXAABB(nodes[i], cutterXAABB))
 			{
 				intersection = true;
 				break;
@@ -1139,7 +1139,7 @@ bool Intersection::collectInternalPoints(
     x[1] = node->X()[1];
     x[2] = node->X()[2];
     
-    bool nodeWithinElement = checkNodeWithinElement(xfemElement, x, xsi);
+    bool nodeWithinElement = checkPositionWithinElement(xfemElement, x, xsi);
     // debugNodeWithinElement(xfemElement,node, xsi, elemId ,nodeId, nodeWithinElement);  
     
     if(nodeWithinElement)
@@ -2560,7 +2560,7 @@ int Intersection::decideSteinerCase(
         x[k]   = out.pointlist[pointIndex*3 + k];
    
     InterfacePoint emptyIp;
-    checkNodeWithinElement(xfemElement, x, xsi);
+    checkPositionWithinElement(xfemElement, x, xsi);
     if(checkIfOnBoundary(xsi, emptyIp))     out.pointmarkerlist[pointIndex] = 3;    // on xfem boundary  
     else                                    out.pointmarkerlist[pointIndex] = 2;    // not on xfem boundary
     
@@ -3833,8 +3833,8 @@ int Intersection::findIntersectingSurfaceEdge(
         Epetra_SerialDenseVector xsi2(1);
         DRT::Element*  lineElement = cutterElement->Lines()[i];
         
-        const bool check1 = checkNodeWithinElement( lineElement, x1, xsi1);
-        const bool check2 = checkNodeWithinElement( lineElement, x2, xsi2);
+        const bool check1 = checkPositionWithinElement( lineElement, x1, xsi1);
+        const bool check2 = checkPositionWithinElement( lineElement, x2, xsi2);
         if( check1  &&  check2 )
         {   
             lineIndex = i;  //countIndex;
