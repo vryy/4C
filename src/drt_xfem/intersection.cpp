@@ -30,6 +30,7 @@ Maintainer: Ursula Mayer
 #ifdef CCADISCRET
 
 #include "intersection.H"
+#include "../drt_xfem/intersection_service.H"
 #include "../drt_xfem/intersection_math.H"
 #include "../drt_xfem/integrationcell.H"
 #include "../drt_lib/drt_discret.H"
