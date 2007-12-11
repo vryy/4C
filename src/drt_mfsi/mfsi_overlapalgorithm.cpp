@@ -100,6 +100,77 @@ extern Teuchos::RCP<Teuchos::ParameterList> globalparameterlist;
 MFSI::OverlapAlgorithm::OverlapAlgorithm(Epetra_Comm& comm)
   : Algorithm(comm)
 {
+  // right now we use matching meshes at the interface
+
+  Coupling& coupsf = StructureFluidCoupling();
+  Coupling& coupsa = StructureAleCoupling();
+  Coupling& coupfa = FluidAleCoupling();
+
+  // structure to fluid
+
+  coupsf.SetupConditionCoupling(*StructureField()->Discretization(),
+                                 *FluidField()->Discretization(),
+                                 "FSICoupling");
+
+  coupsf.SetupInnerDofMaps(*StructureField()->Discretization()->DofRowMap(),
+                           *FluidField()->Discretization()->DofRowMap());
+
+  // structure to ale
+
+  coupsa.SetupConditionCoupling(*StructureField()->Discretization(),
+                                 *AleField()->Discretization(),
+                                 "FSICoupling");
+
+  coupsa.SetupInnerDofMaps(*StructureField()->Discretization()->DofRowMap(),
+                           *AleField()->Discretization()->DofRowMap());
+
+  // In the following we assume that both couplings find the same dof
+  // map at the structural side. This enables us to use just one
+  // interface dof map for all fields and have just one transfer
+  // operator from the interface map to the full field map.
+  if (not coupsf.MasterDofMap()->SameAs(*coupsa.MasterDofMap()))
+    dserror("structure interface dof maps do not match");
+
+  if (coupsf.MasterDofMap()->NumGlobalElements()==0)
+    dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
+
+  // init transfer from interface to field
+  StructureField()->SetInterfaceMap(coupsf.MasterDofMap());
+  FluidField()    ->SetInterfaceMap(coupsf.SlaveDofMap());
+  AleField()      ->SetInterfaceMap(coupsa.SlaveDofMap());
+
+  // the fluid-ale coupling always matches
+  const Epetra_Map* fluidnodemap = FluidField()->Discretization()->NodeRowMap();
+  const Epetra_Map* alenodemap   = AleField()->Discretization()->NodeRowMap();
+
+  coupfa.SetupCoupling(*FluidField()->Discretization(),
+                        *AleField()->Discretization(),
+                        *fluidnodemap,
+                        *alenodemap);
+
+  FluidField()->SetMeshMap(coupfa.MasterDofMap());
+
+  // create combined map
+  //
+  // We could use the fluid interface map for the coupling
+  // equations. We assume that most of the time the structural matrix
+  // will be smaller that the fluid one, so there would less work to
+  // do to transfer the stuff.
+  //
+  // On the other hand, we have no direct interface only Fluid-Ale
+  // coupling. So for a start it will be simpler to use the structural
+  // interface map.
+
+  int numBlocks = 4;
+  std::vector<Teuchos::RCP<const Thyra::VectorSpaceBase<double> > > vecSpaces(numBlocks);
+
+  vecSpaces[0] = Thyra::create_VectorSpace(coupsf.MasterInnerDofMap());
+  vecSpaces[1] = Thyra::create_VectorSpace(coupsf.MasterDofMap());
+  vecSpaces[2] = Thyra::create_VectorSpace(coupsf.SlaveInnerDofMap());
+  vecSpaces[3] = Thyra::create_VectorSpace(coupsa.SlaveInnerDofMap());
+
+  SetDofRowMap(Teuchos::rcp(new Thyra::DefaultProductVectorSpace<double>(numBlocks, &vecSpaces[0])));
+
 }
 
 

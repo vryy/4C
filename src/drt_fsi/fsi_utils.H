@@ -75,22 +75,6 @@ namespace FSI
                       Teuchos::RefCountPtr<Epetra_Vector> soln,
                       std::string filename);
 
-    /// Arnoldi's algorithm (modified Gram-Schmidt)
-    void MGS(NOX::Epetra::Interface::Required& interface,
-             Teuchos::RefCountPtr<Epetra_Vector> soln,
-             int m);
-
-    /// Arnoldi's algorithm (modified Gram-Schmidt)
-    void MGS(const NOX::Abstract::Group& grp,
-             const NOX::Abstract::Vector& dir,
-             int m,
-             std::ostream &stream);
-
-    /// finite difference matrix vector product
-    Teuchos::RefCountPtr<NOX::Abstract::Vector>
-    computeDirectionalDerivative(const NOX::Abstract::Vector& dir,
-                                 const NOX::Abstract::Group& grp);
-
  }
 }
 

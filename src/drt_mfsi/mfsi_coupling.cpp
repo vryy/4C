@@ -1,6 +1,10 @@
 #ifdef CCADISCRET
 
+#include <vector>
+#include <algorithm>
+
 #include "mfsi_coupling.H"
+#include "../drt_fsi/fsi_utils.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -44,6 +48,40 @@ void MFSI::Coupling::SetupCouplingMatrices(const Epetra_Map& masterdomainmap, co
   matmm_trans_->FillComplete(*MasterDofMap(),masterdomainmap);
   matsm_trans_->FillComplete(*MasterDofMap(),slavedomainmap);
 
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MFSI::Coupling::SetupInnerDofMaps(const Epetra_Map& masterdomainmap, const Epetra_Map& slavedomainmap)
+{
+  // do the master inner map
+  int* mastergids = masterdomainmap.MyGlobalElements();
+  int masterelements = masterdomainmap.NumMyElements();
+
+  std::vector<int> master;
+  master.reserve(masterelements);
+
+  std::remove_copy_if(mastergids,
+                      mastergids+masterelements,
+                      back_inserter(master),
+                      FSI::Utils::MyGID(&*MasterDofMap()));
+
+  masterinnerdofmap_ = Teuchos::rcp(new Epetra_Map(-1,master.size(),&master[0],0,masterdomainmap.Comm()));
+
+  // do the slave inner map
+  int* slavegids = slavedomainmap.MyGlobalElements();
+  int slaveelements = slavedomainmap.NumMyElements();
+
+  std::vector<int> slave;
+  slave.reserve(slaveelements);
+
+  std::remove_copy_if(slavegids,
+                      slavegids+slaveelements,
+                      back_inserter(slave),
+                      FSI::Utils::MyGID(&*SlaveDofMap()));
+
+  slaveinnerdofmap_ = Teuchos::rcp(new Epetra_Map(-1,slave.size(),&slave[0],0,slavedomainmap.Comm()));
 }
 
 
