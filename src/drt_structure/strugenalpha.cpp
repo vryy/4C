@@ -2786,6 +2786,7 @@ void StruGenAlpha::Integrate()
         //Does predicted displacement satisfy volume constraint?
         double time          = params_.get<double>("total time"             ,0.0);
         double dt            = params_.get<double>("delta time"             ,0.01);
+        volConstrMan_->ScaleLagrMult(0.0);
         volConstrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
         FullNewtonLinearUzawa();
         UpdateandOutput();
