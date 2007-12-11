@@ -95,152 +95,6 @@ MFSI::Algorithm::Algorithm(Epetra_Comm& comm)
   SetupFluid();
   SetupAle();
 
-  // right now we use matching meshes at the interface
-
-  // structure to fluid
-
-  coupsf_.SetupConditionCoupling(*structure_->Discretization(),
-                                 *fluid_->Discretization(),
-                                 "FSICoupling");
-
-  // setup the very simple structure to fluid coupling
-  // u(n+1)*dt = d(n+1) - d(n)
-  // but we solve both fields for the increments
-  // the structure is even solved for the middle increment
-  //
-  // du(n+1)*dt = 1/(1-alpha_f)*dd(n+m)
-
-  coupsf_.SetupCouplingMatrices(*structure_->Discretization()->DofRowMap(),
-                                *fluid_->Discretization()->DofRowMap());
-
-//   coupsf_.MasterToMasterMat()->Scale(structure_->DispIncrFactor());
-//   coupsf_.MasterToMasterMatTrans()->Scale(structure_->DispIncrFactor());
-  coupsf_.SlaveToMasterMat()->Scale(-dt_);
-  coupsf_.SlaveToMasterMatTrans()->Scale(-dt_);
-
-  // structure to ale
-
-  coupsa_.SetupConditionCoupling(*structure_->Discretization(),
-                                 *ale_->Discretization(),
-                                 "FSICoupling");
-
-  // setup structure to ale coupling
-  //
-  // dd(G,n+1) = 1/(1-alpha_f)*dd(n+m)
-
-  coupsa_.SetupCouplingMatrices(*structure_->Discretization()->DofRowMap(),
-                                *ale_->Discretization()->DofRowMap());
-
-//   coupsa_.MasterToMasterMat()->Scale(structure_->DispIncrFactor());
-//   coupsa_.MasterToMasterMatTrans()->Scale(structure_->DispIncrFactor());
-  coupsa_.SlaveToMasterMat()->Scale(-1.);
-  coupsa_.SlaveToMasterMatTrans()->Scale(-1.);
-
-  // In the following we assume that both couplings find the same dof
-  // map at the structural side. This enables us to use just one
-  // interface dof map for all fields and have just one transfer
-  // operator from the interface map to the full field map.
-  if (not coupsf_.MasterDofMap()->SameAs(*coupsa_.MasterDofMap()))
-    dserror("structure interface dof maps do not match");
-
-  if (coupsf_.MasterDofMap()->NumGlobalElements()==0)
-    dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
-
-  // init transfer from interface to field
-  structure_->SetInterfaceMap(coupsf_.MasterDofMap());
-  fluid_    ->SetInterfaceMap(coupsf_.SlaveDofMap());
-  ale_      ->SetInterfaceMap(coupsa_.SlaveDofMap());
-
-  ifstruct_ = Teuchos::rcp(new Epetra_Vector(*structure_->InterfaceMap()));
-  iastruct_ = Teuchos::rcp(new Epetra_Vector(*structure_->InterfaceMap()));
-
-  // the fluid-ale coupling always matches
-  const Epetra_Map* fluidnodemap = fluid_->Discretization()->NodeRowMap();
-  const Epetra_Map* alenodemap   = ale_->Discretization()->NodeRowMap();
-
-  coupfa_.SetupCoupling(*fluid_->Discretization(),
-                        *ale_->Discretization(),
-                        *fluidnodemap,
-                        *alenodemap);
-
-  fluid_->SetMeshMap(coupfa_.MasterDofMap());
-
-  // create Thyra vector spaces from Epetra maps for all fields
-  smap_ = Thyra::create_VectorSpace(structure_->DofRowMap());
-  fmap_ = Thyra::create_VectorSpace(fluid_->DofRowMap());
-  amap_ = Thyra::create_VectorSpace(ale_->DofRowMap());
-
-  sfmap_ = Thyra::create_VectorSpace(coupsf_.MasterDofMap());
-
-  // stack vector spaces to build a composite that contains them all
-  int numBlocks = 5;
-  std::vector<Teuchos::RCP<const Thyra::VectorSpaceBase<double> > > vecSpaces(numBlocks);
-  vecSpaces[0] = smap_;
-  vecSpaces[1] = fmap_;
-  vecSpaces[2] = amap_;
-  vecSpaces[3] = sfmap_;
-  vecSpaces[4] = sfmap_;
-  dofrowmap_ = Teuchos::rcp(new Thyra::DefaultProductVectorSpace<double>(numBlocks, &vecSpaces[0]));
-
-#if 0
-  Teuchos::RCP<Teuchos::FancyOStream> out = Teuchos::VerboseObjectBase::getDefaultOStream();
-
-  // use a solver builder for the standard field solvers so we get all the default behaviour
-  Thyra::DefaultRealLinearSolverBuilder linearSolverBuilder;
-
-  if (comm_.MyPID()==0)
-  {
-    std::cout << *linearSolverBuilder.getValidParameters() << std::endl;
-
-    //linearSolverBuilder.getValidParameters()->print(std::cout,
-    //                                                Teuchos::ParameterList::PrintOptions().showDoc(true).indent(2).showTypes(true));
-  }
-
-  Teuchos::RCP< Teuchos::ParameterList > paramList = Teuchos::rcp(new ParameterList());
-  linearSolverBuilder.setParameterList(paramList);
-
-  if (comm_.MyPID()==0)
-  {
-    paramList->print(std::cout);
-  }
-
-  structsolverfactory_ = linearSolverBuilder.createLinearSolveStrategy("");
-  structsolverfactory_->setOStream(out);
-  structsolverfactory_->setVerbLevel(Teuchos::VERB_LOW);
-
-  fluidsolverfactory_ = linearSolverBuilder.createLinearSolveStrategy("");
-  fluidsolverfactory_->setOStream(out);
-  fluidsolverfactory_->setVerbLevel(Teuchos::VERB_LOW);
-
-  alesolverfactory_ = linearSolverBuilder.createLinearSolveStrategy("");
-  alesolverfactory_->setOStream(out);
-  alesolverfactory_->setVerbLevel(Teuchos::VERB_LOW);
-#else
-  // field solvers used within the block preconditioner
-  structsolverfactory_ = Teuchos::rcp(new Thyra::AmesosLinearOpWithSolveFactory(Thyra::Amesos::KLU));
-  fluidsolverfactory_ = Teuchos::rcp(new Thyra::AmesosLinearOpWithSolveFactory(Thyra::Amesos::UMFPACK));
-  alesolverfactory_ = Teuchos::rcp(new Thyra::AmesosLinearOpWithSolveFactory(Thyra::Amesos::KLU));
-#endif
-
-  sfidentity_ = Teuchos::rcp(new Thyra::DefaultIdentityLinearOp<double>(Thyra::create_VectorSpace(structure_->InterfaceMap())));
-
-  //Thyra::ConstLinearOperator<double> sfihandle = sfidentity;
-
-  // the factory to create the special block preconditioner
-  preconditionerfactory_ =
-    Teuchos::rcp(new PreconditionerFactory(structsolverfactory_,
-                                           fluidsolverfactory_,
-                                           alesolverfactory_,
-                                           sfidentity_));
-
-  // Lets use aztec for now. This a about the only choice we have got.
-  solverfactory_ = Teuchos::rcp(new Thyra::AztecOOLinearOpWithSolveFactory());
-  solverfactory_->setPreconditionerFactory(preconditionerfactory_, "FSI block preconditioner");
-
-  // We cannot use Amesos, since it expects the unterlying matrix to
-  // be a Epetra_Operator.
-  //solverfactory_ = Teuchos::rcp(new Thyra::AmesosLinearOpWithSolveFactory());
-
   // Create the system matrix. Right now it is empty. It is filled in
   // create_W_op().
   mat_ = Teuchos::rcp(new Thyra::DefaultBlockedLinearOp<double>());
@@ -489,7 +343,7 @@ void MFSI::Algorithm::Timeloop()
 
   //Teuchos::ParameterList& searchParams = nlParams.sublist("Line Search");
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
-  printParams.set("MyPID", comm_.MyPID());
+  printParams.set("MyPID", Comm().MyPID());
 
   // turn on output
   printParams.set("Output Information", 0xffff);
@@ -498,12 +352,12 @@ void MFSI::Algorithm::Timeloop()
   utils_ = Teuchos::rcp(new NOX::Utils(printParams));
 
   Teuchos::RefCountPtr<std::ofstream> log;
-  if (comm_.MyPID()==0)
+  if (Comm().MyPID()==0)
   {
     std::string s = allfiles.outputfile_kenner;
     s.append(".iteration");
     log = Teuchos::rcp(new std::ofstream(s.c_str()));
-    (*log) << "# num procs      = " << comm_.NumProc() << "\n"
+    (*log) << "# num procs      = " << Comm().NumProc() << "\n"
            << "# Method         = " << nlParams.sublist("Direction").get("Method","Newton") << "\n"
            << "#\n"
       ;
@@ -511,7 +365,7 @@ void MFSI::Algorithm::Timeloop()
 
   Teuchos::Time timer("time step timer");
 
-  while (step_ < nstep_ and time_ <= maxtime_)
+  while (NotFinished())
   {
     PrepareTimeStep();
 
@@ -542,7 +396,7 @@ void MFSI::Algorithm::Timeloop()
     NOX::StatusTest::StatusType status = solver->solve();
 
     if (status != NOX::StatusTest::Converged)
-      if (comm_.MyPID()==0)
+      if (Comm().MyPID()==0)
         utils_->out() << RED "Nonlinear solver failed to converge!" END_COLOR << endl;
 
     // cleanup
@@ -553,18 +407,14 @@ void MFSI::Algorithm::Timeloop()
     // stop time measurement
     timemonitor = Teuchos::null;
 
-    if (comm_.MyPID()==0)
+    if (Comm().MyPID()==0)
     {
-      (*log) << step_
+      (*log) << Step()
              << " " << timer.totalElapsedTime()
              << " " << nlParams.sublist("Output").get("Nonlinear Iterations",0)
              << " " << nlParams.sublist("Output").get("2-Norm of Residual", 0.)
              << " " << lsParams.sublist("Output").get("Total Number of Linear Iterations",0)
         ;
-      //for (std::vector<int>::size_type i=0; i<counter_.size(); ++i)
-      //{
-      //  (*log) << " " << counter_[i];
-      //}
       (*log) << std::endl;
     }
 
@@ -576,26 +426,10 @@ void MFSI::Algorithm::Timeloop()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Thyra::VectorSpaceBase<double> > MFSI::Algorithm::get_x_space() const
-{
-  return dofrowmap_;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<const Thyra::VectorSpaceBase<double> > MFSI::Algorithm::get_f_space() const
-{
-  return dofrowmap_;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 Thyra::ModelEvaluatorBase::InArgs<double> MFSI::Algorithm::createInArgs() const
 {
   // Here we define what kinds of input arguments
-  // MFSI::Algorithm::evalModelImpl() supports
+  // MFSI::OverlapAlgorithm::evalModelImpl() supports
   Thyra::ModelEvaluatorBase::InArgsSetup<double> inArgs;
   inArgs.setModelEvalDescription(this->description());
   inArgs.setSupports(Thyra::ModelEvaluatorBase::IN_ARG_x);
@@ -608,7 +442,7 @@ Thyra::ModelEvaluatorBase::InArgs<double> MFSI::Algorithm::createInArgs() const
 Thyra::ModelEvaluatorBase::OutArgs<double> MFSI::Algorithm::createOutArgsImpl() const
 {
   // Here we define what result types
-  // MFSI::Algorithm::evalModelImpl() supports
+  // MFSI::OverlapAlgorithm::evalModelImpl() supports
   Thyra::ModelEvaluatorBase::OutArgsSetup<double> outArgs;
   outArgs.setModelEvalDescription(this->description());
   outArgs.setSupports(Thyra::ModelEvaluatorBase::OUT_ARG_f);
@@ -640,194 +474,8 @@ void MFSI::Algorithm::evalModelImpl(const Thyra::ModelEvaluatorBase::InArgs<doub
   {
     // We know that W_bar contains mat_. We cannot extract it,
     // though. We could set it again.
-    SetupSysMat(*mat_);
+    SetupSysMat(*SysMat());
   }
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MFSI::Algorithm::Evaluate(Teuchos::RCP<const Thyra::DefaultProductVector<double> > x) const
-{
-  if (x!=Teuchos::null)
-  {
-    if (Thyra::norm(*x)!=0)
-    {
-      utils_->out() << YELLOW_LIGHT "element call with new x" END_COLOR << endl;
-
-      Teuchos::RCP<const Epetra_Vector> sx = Thyra::get_Epetra_Vector(*structure_->DofRowMap(), x->getVectorBlock(0));
-      Teuchos::RCP<const Epetra_Vector> fx = Thyra::get_Epetra_Vector(*fluid_    ->DofRowMap(), x->getVectorBlock(1));
-      Teuchos::RCP<const Epetra_Vector> ax = Thyra::get_Epetra_Vector(*ale_      ->DofRowMap(), x->getVectorBlock(2));
-
-//       debug.DumpVector("sx",*structure_->Discretization(),*sx);
-//       debug.DumpVector("fx",*fluid_->Discretization(),*fx);
-//       debug.DumpVector("ax",*ale_->Discretization(),*ax);
-
-      // Call all elements and assemble rhs and matrices
-      // We only need the rhs here because NOX will ask for the rhs
-      // only. But the Jacobian is stored internally and will be returnd
-      // later on without looking at x again!
-      structure_->Evaluate(sx);
-      ale_      ->Evaluate(ax);
-
-      // transfer the current ale mesh positions to the fluid field
-      Teuchos::RefCountPtr<Epetra_Vector> fluiddisp = coupfa_.SlaveToMaster(ale_->ExtractDisplacement());
-      fluid_->ApplyMeshDisplacement(fluiddisp);
-
-      fluid_    ->Evaluate(fx);
-    }
-  }
-  else
-  {
-    utils_->out() << YELLOW_LIGHT "element call at current x" END_COLOR << endl;
-
-    structure_->Evaluate(Teuchos::null);
-    ale_      ->Evaluate(Teuchos::null);
-
-    // transfer the current ale mesh positions to the fluid field
-    Teuchos::RefCountPtr<Epetra_Vector> fluiddisp = coupfa_.SlaveToMaster(ale_->ExtractDisplacement());
-    fluid_->ApplyMeshDisplacement(fluiddisp);
-
-    fluid_    ->Evaluate(Teuchos::null);
-  }
-
-  //debug.DumpVector("sres",*structure_->Discretization(),*structure_->RHS());
-  //debug.DumpVector("fres",*fluid_->Discretization(),*fluid_->RHS());
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-#if 0
-void MFSI::Algorithm::CurrentX(Thyra::DefaultProductVector<double>& x)
-{
-  Teuchos::RCP< Thyra::VectorBase< double > > sx = Thyra::create_Vector(structure_->Dispm(), smap_);
-  Teuchos::RCP< Thyra::VectorBase< double > > fx = Thyra::create_Vector(fluid_->Vel(), fmap_);
-  Teuchos::RCP< Thyra::VectorBase< double > > ax = Thyra::create_Vector(ale_->Disp(), amap_);
-
-  Teuchos::RCP< Thyra::VectorBase< double > > sfx =
-    Thyra::create_Vector(ifstruct_, Thyra::create_VectorSpace(structure_->InterfaceMap()));
-
-  Teuchos::RCP< Thyra::VectorBase< double > > sax =
-    Thyra::create_Vector(iastruct_, Thyra::create_VectorSpace(structure_->InterfaceMap()));
-
-  int numBlocks = 5;
-  std::vector<Teuchos::RCP<Thyra::VectorBase<double> > > vec(numBlocks);
-  vec[0] = sx;
-  vec[1] = fx;
-  vec[2] = ax;
-  vec[3] = sfx;
-  vec[4] = sax;
-  x.initialize(dofrowmap_,&vec[0]);
-}
-#endif
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MFSI::Algorithm::InitialGuess(Thyra::DefaultProductVector<double>& ig)
-{
-  // the linear field systems must be setup before the initial guess
-  // is known
-  Teuchos::RCP< const Thyra::VectorBase< double > > sig = Thyra::create_Vector(structure_->InitialGuess(), smap_);
-  Teuchos::RCP< const Thyra::VectorBase< double > > fig = Thyra::create_Vector(fluid_->InitialGuess(), fmap_);
-  Teuchos::RCP< const Thyra::VectorBase< double > > aig = Thyra::create_Vector(ale_->InitialGuess(), amap_);
-
-  Teuchos::RCP< const Thyra::VectorBase< double > > sfig =
-    Thyra::create_Vector(ifstruct_, Thyra::create_VectorSpace(structure_->InterfaceMap()));
-
-  Teuchos::RCP< const Thyra::VectorBase< double > > saig =
-    Thyra::create_Vector(iastruct_, Thyra::create_VectorSpace(structure_->InterfaceMap()));
-
-  int numBlocks = 5;
-  std::vector<Teuchos::RCP<const Thyra::VectorBase<double> > > vec(numBlocks);
-  vec[0] = sig;
-  vec[1] = fig;
-  vec[2] = aig;
-  vec[3] = sfig;
-  vec[4] = saig;
-  ig.initialize(dofrowmap_,&vec[0]);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MFSI::Algorithm::SetupRHS(Thyra::DefaultProductVector<double> &f) const
-{
-  // Extract RHS and put it into f
-
-  // make a local copy so that we can modify the rhs vectors
-  Teuchos::RCP<Epetra_Vector> sv = rcp(new Epetra_Vector(*structure_->RHS()));
-  Teuchos::RCP<Epetra_Vector> fv = rcp(new Epetra_Vector(*fluid_->RHS()));
-  Teuchos::RCP<Epetra_Vector> av = rcp(new Epetra_Vector(*ale_->RHS()));
-
-//   debug.DumpVector("sf",*structure_->Discretization(),*sv);
-//   debug.DumpVector("ff",*fluid_->Discretization(),*fv);
-//   debug.DumpVector("af",*ale_->Discretization(),*av);
-
-  // wrap epetra vectors in thyra
-  Teuchos::RCP< Thyra::VectorBase< double > > srhs = Thyra::create_Vector(sv, smap_);
-  Teuchos::RCP< Thyra::VectorBase< double > > frhs = Thyra::create_Vector(fv, fmap_);
-  Teuchos::RCP< Thyra::VectorBase< double > > arhs = Thyra::create_Vector(av, amap_);
-
-  // We couple absolute vectors, no increments. So we have a nonzero rhs.
-
-  Teuchos::RCP< Epetra_Vector > ifstruct = structure_->FluidCondRHS();
-  ifstruct->Update(1.0*dt_,*coupsf_.SlaveToMaster(fluid_->StructCondRHS()),-1.0);
-  Teuchos::RCP< Thyra::VectorBase< double > > sfrhs =
-    Thyra::create_Vector(ifstruct, Thyra::create_VectorSpace(structure_->InterfaceMap()));
-
-  Teuchos::RCP< Epetra_Vector > iastruct = structure_->MeshCondRHS();
-  iastruct->Update(1.0,*coupsa_.SlaveToMaster(ale_->StructCondRHS()),-1.0);
-  Teuchos::RCP< Thyra::VectorBase< double > > sarhs =
-    Thyra::create_Vector(iastruct, Thyra::create_VectorSpace(structure_->InterfaceMap()));
-
-  // create block vector
-  int numBlocks = 5;
-  std::vector<Teuchos::RCP<Thyra::VectorBase<double> > > vec(numBlocks);
-  vec[0] = srhs;
-  vec[1] = frhs;
-  vec[2] = arhs;
-  vec[3] = sfrhs;
-  vec[4] = sarhs;
-  f.initialize(dofrowmap_,&vec[0]);
-
-  // NOX expects a different sign here.
-  Thyra::scale(-1., &f);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MFSI::Algorithm::SetupSysMat(Thyra::DefaultBlockedLinearOp<double>& mat) const
-{
-  // extract Jacobian matrices and put them into composite system
-  // matrix W
-  Teuchos::RCP<Thyra::LinearOpBase<double> > smat = Teuchos::rcp(new Thyra::EpetraLinearOp(structure_->SysMat()));
-  Teuchos::RCP<Thyra::LinearOpBase<double> > fmat = Teuchos::rcp(new Thyra::EpetraLinearOp(fluid_->SysMat()));
-  Teuchos::RCP<Thyra::LinearOpBase<double> > amat = Teuchos::rcp(new Thyra::EpetraLinearOp(ale_->SysMat()));
-
-  mat.beginBlockFill(dofrowmap_, dofrowmap_);
-  mat.setBlock(0,0,smat);
-  mat.setBlock(1,1,fmat);
-  mat.setBlock(2,2,amat);
-
-  // structure to fluid coupling
-  mat.setBlock(3,0,Teuchos::rcp(new Thyra::EpetraLinearOp(coupsf_.MasterToMasterMat())));
-  mat.setBlock(3,1,Teuchos::rcp(new Thyra::EpetraLinearOp(coupsf_.SlaveToMasterMat())));
-  mat.setBlock(0,3,Teuchos::rcp(new Thyra::EpetraLinearOp(coupsf_.MasterToMasterMatTrans())));
-  mat.setBlock(1,3,Teuchos::rcp(new Thyra::EpetraLinearOp(coupsf_.SlaveToMasterMatTrans())));
-  //mat.setBlock(3,3,sfidentity_);
-
-  // structure to ale coupling
-  // note there is no ale effect on the structural equations
-  mat.setBlock(4,0,Teuchos::rcp(new Thyra::EpetraLinearOp(coupsa_.MasterToMasterMat())));
-  mat.setBlock(4,2,Teuchos::rcp(new Thyra::EpetraLinearOp(coupsa_.SlaveToMasterMat())));
-  //mat.setBlock(0,4,Teuchos::rcp(new Thyra::EpetraLinearOp(coupsa_.MasterToMasterMatTrans())));
-  mat.setBlock(2,4,Teuchos::rcp(new Thyra::EpetraLinearOp(coupsa_.SlaveToMasterMatTrans())));
-  //mat.setBlock(4,4,sfidentity_);
-
-  mat.endBlockFill();
 }
 
 
@@ -851,6 +499,73 @@ Teuchos::RCP<Thyra::LinearOpBase<double> > MFSI::Algorithm::create_W_op() const
 {
   SetupSysMat(*mat_);
   return mat_;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MFSI::Algorithm::Evaluate(Teuchos::RCP<const Thyra::DefaultProductVector<double> > x) const
+{
+  if (x!=Teuchos::null)
+  {
+    if (Thyra::norm(*x)!=0)
+    {
+      Utils()->out() << YELLOW_LIGHT "element call with new x" END_COLOR << endl;
+
+      Teuchos::RCP<const Epetra_Vector> sx = Thyra::get_Epetra_Vector(*StructureField()->DofRowMap(), x->getVectorBlock(0));
+      Teuchos::RCP<const Epetra_Vector> fx = Thyra::get_Epetra_Vector(*FluidField()    ->DofRowMap(), x->getVectorBlock(1));
+      Teuchos::RCP<const Epetra_Vector> ax = Thyra::get_Epetra_Vector(*AleField()      ->DofRowMap(), x->getVectorBlock(2));
+
+//       debug.DumpVector("sx",*StructureField()->Discretization(),*sx);
+//       debug.DumpVector("fx",*FluidField()->Discretization(),*fx);
+//       debug.DumpVector("ax",*AleField()->Discretization(),*ax);
+
+      // Call all elements and assemble rhs and matrices
+      // We only need the rhs here because NOX will ask for the rhs
+      // only. But the Jacobian is stored internally and will be returnd
+      // later on without looking at x again!
+      StructureField()->Evaluate(sx);
+      AleField()      ->Evaluate(ax);
+
+      // transfer the current ale mesh positions to the fluid field
+      Teuchos::RefCountPtr<Epetra_Vector> fluiddisp = AleToFluid(AleField()->ExtractDisplacement());
+      FluidField()->ApplyMeshDisplacement(fluiddisp);
+
+      FluidField()    ->Evaluate(fx);
+    }
+  }
+  else
+  {
+    Utils()->out() << YELLOW_LIGHT "element call at current x" END_COLOR << endl;
+
+    StructureField()->Evaluate(Teuchos::null);
+    AleField()      ->Evaluate(Teuchos::null);
+
+    // transfer the current ale mesh positions to the fluid field
+    Teuchos::RefCountPtr<Epetra_Vector> fluiddisp = AleToFluid(AleField()->ExtractDisplacement());
+    FluidField()->ApplyMeshDisplacement(fluiddisp);
+
+    FluidField()    ->Evaluate(Teuchos::null);
+  }
+
+  //debug.DumpVector("sres",*StructureField()->Discretization(),*StructureField()->RHS());
+  //debug.DumpVector("fres",*FluidField()->Discretization(),*FluidField()->RHS());
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Thyra::VectorSpaceBase<double> > MFSI::Algorithm::get_x_space() const
+{
+  return dofrowmap_;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Thyra::VectorSpaceBase<double> > MFSI::Algorithm::get_f_space() const
+{
+  return dofrowmap_;
 }
 
 
@@ -893,81 +608,41 @@ void MFSI::Algorithm::Output()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<NOX::StatusTest::Combo>
-MFSI::Algorithm::CreateStatusTest(Teuchos::ParameterList& nlParams,
-                                  Teuchos::RCP<NOX::Thyra::Group> grp)
+Teuchos::RCP<Epetra_Vector> MFSI::Algorithm::StructToAle(Teuchos::RCP<Epetra_Vector> iv) const
 {
-  // Create the convergence tests
-  Teuchos::RCP<NOX::StatusTest::Combo> combo       = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
-  Teuchos::RCP<NOX::StatusTest::Combo> converged   = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
-
-  Teuchos::RCP<NOX::StatusTest::MaxIters> maxiters = Teuchos::rcp(new NOX::StatusTest::MaxIters(nlParams.get("Max Iterations", 100)));
-  Teuchos::RCP<NOX::StatusTest::FiniteValue> fv    = Teuchos::rcp(new NOX::StatusTest::FiniteValue);
-
-  combo->addStatusTest(fv);
-  combo->addStatusTest(converged);
-  combo->addStatusTest(maxiters);
-
-  Teuchos::RCP<PartialNormF> structureDisp =
-    Teuchos::rcp(new PartialNormF("displacement",
-                                  0,
-                                  *structure_->DofRowMap(),
-                                  *structure_->InnerDisplacementRowMap(),
-                                  nlParams.get("Norm abs disp", 1.0e-6),
-                                  PartialNormF::Scaled));
-  converged->addStatusTest(structureDisp);
-
-  Teuchos::RCP<PartialNormF> innerFluidVel =
-    Teuchos::rcp(new PartialNormF("velocity",
-                                  1,
-                                  *fluid_->DofRowMap(),
-                                  *fluid_->InnerVelocityRowMap(),
-                                  nlParams.get("Norm abs vel", 1.0e-6),
-                                  PartialNormF::Scaled));
-  converged->addStatusTest(innerFluidVel);
-
-  Teuchos::RCP<PartialNormF> fluidPress =
-    Teuchos::rcp(new PartialNormF("pressure",
-                                  1,
-                                  *fluid_->DofRowMap(),
-                                  *fluid_->PressureRowMap(),
-                                  nlParams.get("Norm abs pres", 1.0e-6),
-                                  PartialNormF::Scaled));
-  converged->addStatusTest(fluidPress);
-
-  Teuchos::RCP<InterfaceNormF> interface =
-    Teuchos::rcp(new InterfaceNormF(1.,
-                                    *structure_->DofRowMap(),
-                                    *coupsf_.MasterDofMap(),
-                                    fluid_->ResidualScaling(),
-                                    *fluid_->DofRowMap(),
-                                    *coupsf_.SlaveDofMap(),
-                                    coupsf_,
-                                    nlParams.get("Norm abs interface", 1.0e-6),
-                                    PartialNormF::Scaled));
-  converged->addStatusTest(interface);
-
-#if 0
-  if (nlParams.isParameter("Norm Update"))
-  {
-    Teuchos::RCP<NOX::StatusTest::NormUpdate> update =
-      Teuchos::rcp(new NOX::StatusTest::NormUpdate(nlParams.get("Norm Update", 1.0e-5)));
-    converged->addStatusTest(update);
-  }
-
-  if (nlParams.isParameter("Norm rel F"))
-  {
-    Teuchos::RCP<NOX::StatusTest::NormF> relresid =
-      Teuchos::rcp(new NOX::StatusTest::NormF(*grp.get(), nlParams.get("Norm rel F", 1.0e-2)));
-    converged->addStatusTest(relresid);
-  }
-#endif
-
-  //Teuchos::RCP<NOX::StatusTest::NormWRMS> wrms     = Teuchos::rcp(new NOX::StatusTest::NormWRMS(1.0e-2, 1.0e-8));
-  //converged->addStatusTest(wrms);
-
-  return combo;
+  return coupsa_.MasterToSlave(iv);
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> MFSI::Algorithm::AleToStruct(Teuchos::RCP<Epetra_Vector> iv) const
+{
+  return coupsa_.SlaveToMaster(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> MFSI::Algorithm::StructToFluid(Teuchos::RCP<Epetra_Vector> iv) const
+{
+  return coupsf_.MasterToSlave(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> MFSI::Algorithm::FluidToStruct(Teuchos::RCP<Epetra_Vector> iv) const
+{
+  return coupsf_.SlaveToMaster(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> MFSI::Algorithm::AleToFluid(Teuchos::RCP<Epetra_Vector> iv) const
+{
+  return coupfa_.SlaveToMaster(iv);
+}
 
 #endif

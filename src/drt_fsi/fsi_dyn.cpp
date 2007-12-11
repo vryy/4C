@@ -13,6 +13,7 @@
 #include "fsi_utils.H"
 
 #include "../drt_mfsi/mfsi_algorithm.H"
+#include "../drt_mfsi/mfsi_lagrangealgorithm.H"
 
 #include "../drt_lib/drt_resulttest.H"
 #include "../drt_lib/drt_utils.H"
@@ -335,7 +336,7 @@ void fsi_ale_drt()
   }
   else
   {
-    Teuchos::RCP<MFSI::Algorithm> mfsi = rcp(new MFSI::Algorithm(comm));
+    Teuchos::RCP<MFSI::Algorithm> mfsi = rcp(new MFSI::LagrangeAlgorithm(comm));
     mfsi->Timeloop();
   }
 }
