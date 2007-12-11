@@ -698,7 +698,7 @@ void Intersection::elementToCurrentCoordinates(
     DRT::Element* 	element, 
     vector<double>& xsi)
 {
-	int dim = getDimension(element);
+	const int dim = getDimension(element);
     const int numNodes = element->NumNode();
     Epetra_SerialDenseVector funct(numNodes);
     
@@ -951,73 +951,6 @@ bool Intersection::comparePoints(
 }
 
 
-
-/*----------------------------------------------------------------------*
- |  GM:     checks if a certain element is a                 u.may 06/07|
- |          volume  element with help of the discretization type        |
- *----------------------------------------------------------------------*/  
-bool Intersection::checkIfVolumeElement(
-    DRT::Element* element)
-{
-    bool isVolume = false;
-    DRT::Element::DiscretizationType distype = element->Shape();
-    
-    if( distype == DRT::Element::hex8  ||
-        distype == DRT::Element::hex20 ||
-        distype == DRT::Element::hex27 ||
-        distype == DRT::Element::tet4  ||
-        distype == DRT::Element::tet10  )
-    {
-        isVolume = true;        
-    }
-    return isVolume;
-}
-
-
-
-/*----------------------------------------------------------------------*
- |  GM:     checks if a certain element is a                 u.may 06/07|
- |          with help of the discretization type                        |
- *----------------------------------------------------------------------*/  
-bool Intersection::checkIfSurfaceElement(
-    DRT::Element* element)
-{
-    bool isSurface = false;
-    DRT::Element::DiscretizationType distype = element->Shape();
-    
-    if( distype == DRT::Element::quad4 ||
-        distype == DRT::Element::quad8 ||
-        distype == DRT::Element::quad9 ||
-        distype == DRT::Element::tri3  ||
-        distype == DRT::Element::tri6  )
-    {
-        isSurface = true;       
-    }
-    return isSurface;
-}
-
-
-
-/*----------------------------------------------------------------------*
- |  GM:     checks if a certain element is a                 u.may 06/07|
- |          line element with help of the discretization type           |
- *----------------------------------------------------------------------*/  
-bool Intersection::checkIfLineElement(
-    DRT::Element* element)
-{
-    bool isLine = false;
-    DRT::Element::DiscretizationType distype = element->Shape();
-    
-    if( distype == DRT::Element::line2 ||
-        distype == DRT::Element::line3 )
-    {
-        isLine = true;      
-    }
-    return isLine;
-}
-
-
-
 /*----------------------------------------------------------------------*
  |  ICS:    computes an extended axis-aligned bounding box   u.may 06/07|
  |          XAABB for a given element                                   |
@@ -1065,87 +998,6 @@ Epetra_SerialDenseMatrix Intersection::computeFastXAABB(
 	*/
     
 	return XAABB;
-}
-
-
-
-/*----------------------------------------------------------------------*
- |  ICS:    checks if a node is within an XAABB               u.may 06/07|
- *----------------------------------------------------------------------*/
-bool Intersection::isNodeWithinXAABB(    
-    const std::vector<double>&         node,
-    const Epetra_SerialDenseMatrix&    XAABB)
-{
-	bool isWithin = true;
-	/*
-	for (int dim=0; dim<3; dim++)
-	{
-        double diffMin = node[dim] - XAABB(dim,0);
-        double diffMax = XAABB(dim,1) - node[dim];
-        
-   	    if((diffMin < -tol)||(diffMax < -tol)) //check again !!!!!      
-            isWithin = false;
-    }
-	*/
-    for (int dim=0; dim<3; dim++)
-	{
-        double diffMin = XAABB(dim,0) - TOL7;
-        double diffMax = XAABB(dim,1) + TOL7;
-        
-       // printf("nodal value =  %f, min =  %f, max =  %f\n", node[dim], diffMin, diffMax);
-        
-   	    if((node[dim] < diffMin)||(node[dim] > diffMax)) //check again !!!!!   
-   	    {
-            isWithin = false;
-            break;
-   	    }
-    }
-   
-	return isWithin;
-}
-
-
-/*----------------------------------------------------------------------*
- |  ICS:    checks if a node is within an XAABB               u.may 06/07|
- *----------------------------------------------------------------------*/
-bool Intersection::isLineWithinXAABB(    
-    const std::vector<double>&         node1,
-    const std::vector<double>&         node2,
-    const Epetra_SerialDenseMatrix&    XAABB)
-{
-	bool isWithin = true;
-	int dim = -1;
-	
-    for(dim=0; dim<3; dim++)
-    	if(fabs(node1[dim]-node2[dim]) > TOL7)
-    		break;
-    
-    for(int i = 0; i < 3; i++)
-    {
-    	if(i != dim)
-    	{
-    		double min = XAABB(i,0) - TOL7;
-    		double max = XAABB(i,1) + TOL7;
-   
-    		if((node1[i] < min)||(node1[i] > max))
-    			isWithin = false;
-    		
-    	}
-    	if(!isWithin)
-    		break;
-    }
-    	
-    if(isWithin && dim > -1)
-    {
-    	isWithin = false;
-    	double min = XAABB(dim,0) - TOL7;
-    	double max = XAABB(dim,1) + TOL7;
-    	    		        
-    	if( ((node1[dim] < min) && (node2[dim] > max)) ||  
-    		((node2[dim] < min) && (node1[dim] > max)) )
-    		isWithin = true;
-    }
-	return isWithin;
 }
 
 
@@ -1313,163 +1165,11 @@ bool Intersection::collectInternalPoints(
 
 
 
-/*----------------------------------------------------------------------*
- |  CLI:    updates the Jacobi matrix for the computation    u.may 06/07|
- |          if a node is in a given element                             |
- *----------------------------------------------------------------------*/
-void Intersection::updateAForNWE(   
-    const int                   dim,
-    Epetra_SerialDenseMatrix&   A,
-    Epetra_SerialDenseVector&   xsi,
-    DRT::Element*               element)                                                  
-{	
-    const int numNodes = element->NumNode();
-    Epetra_SerialDenseMatrix deriv1(dim, numNodes);
-    
-    A.Scale(0.0);
-   
-    switch(dim)
-    {
-        case 1:
-        {
-            shape_function_1D_deriv1(deriv1, xsi[0], element->Shape());
-            break;
-        }
-        case 2:
-        {
-            shape_function_2D_deriv1(deriv1, xsi[0], xsi[1], element->Shape());
-            break;
-        }
-        case 3:
-        {
-            shape_function_3D_deriv1(deriv1, xsi[0], xsi[1], xsi[2], element->Shape());
-            break;
-        }
-        default:
-            dserror("dimension of the element is not correct");
-    }
-    
-    for(int j=0; j<numNodes; j++) 
-    {
-        DRT::Node* node = element->Nodes()[j];
-        for(int i=0; i<dim; i++)
-        {
-            double nodalCoord = node->X()[i];
-            for(int k=0; k<dim; k++)
-                A[i][k] += nodalCoord * deriv1[j][k];
-        }
-    }      
-}
 
 
 
-/*----------------------------------------------------------------------*
- |  CLI:    updates the rhs for the computation if a         u.may 06/07|
- |          node is in a given element                                  |
- *----------------------------------------------------------------------*/
-void Intersection::updateRHSForNWE( 
-    const int                           dim,
-    Epetra_SerialDenseVector&           b,
-    Epetra_SerialDenseVector&           xsi,
-    const Epetra_SerialDenseVector&     x,
-    DRT::Element*                       element)                                                  
-{
-    const int numNodes = element->NumNode();
-    Epetra_SerialDenseVector funct(numNodes);
-      
-    b.Scale(0.0);
-     
-    switch(dim)
-    {
-        case 1:
-        {
-            shape_function_1D(funct, xsi[0], element->Shape());
-            break;
-        }
-        case 2:
-        {
-            shape_function_2D(funct, xsi[0], xsi[1], element->Shape());
-            break;
-        }
-        case 3:
-        {
-            shape_function_3D(funct, xsi[0], xsi[1], xsi[2], element->Shape());
-            break;
-        }
-        default:
-            dserror("dimension of the element is not correct");
-    }
-    
-    for(int j=0; j<numNodes; j++)
-    {
-        DRT::Node* node = element->Nodes()[j];
-        for(int i=0; i<dim; i++)
-            b[i] += (-1.0) * node->X()[i] * funct[j];
-    }
-      
-    for(int i=0; i<dim; i++)
-        b[i] += x[i];
-}
 
 
-
-/*----------------------------------------------------------------------*
- |  CLI:    checks if a node is within a given element       u.may 06/07|	
- *----------------------------------------------------------------------*/
-bool Intersection::checkNodeWithinElement(	
-    DRT::Element*                       element,
-    const Epetra_SerialDenseVector&     x,
-    Epetra_SerialDenseVector&           xsi)
-{
-
-	bool nodeWithinElement = true;
-    int iter = 0;
-    int dim = getDimension(element);
-    const int maxiter = 20;
-    double residual = 1.0;
-    
-    Epetra_SerialDenseMatrix A(dim,dim);
-    Epetra_SerialDenseVector b(dim);
-    Epetra_SerialDenseVector dx(dim);
-    
-    xsi.Scale(0.0);
-            
-    updateRHSForNWE( dim, b, xsi, x, element);
-   
-    while(residual > TOL14)
-    {   
-        updateAForNWE( dim, A, xsi, element);
-   
-        if(!gaussElimination(A, b, dx, true, dim, 1))
-        {
-            nodeWithinElement = false;
-            break;
-        }   
-        
-        xsi = addTwoVectors(xsi,dx);
-        updateRHSForNWE(dim, b, xsi, x, element);
-        residual = b.Norm2();
-        iter++; 
-        
-        if(iter >= maxiter)
-        {   
-            nodeWithinElement = false;
-            break;
-        }   
-    }
-    
-    //printf("iter = %d\n", iter);
-    //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0],xsi[1],xsi[2], residual, TOL14);
-    
-    for(int i=0; i<dim; i++)
-        if( (fabs(xsi[i])-1.0) > TOL7)     
-        {    
-            nodeWithinElement = false;
-            break;
-        }
-        
-    return nodeWithinElement;
-}
 
 
 
@@ -4128,8 +3828,8 @@ int Intersection::findIntersectingSurfaceEdge(
         Epetra_SerialDenseVector xsi2(1);
         DRT::Element*  lineElement = cutterElement->Lines()[i];
         
-        bool check1 = checkNodeWithinElement( lineElement, x1, xsi1);
-        bool check2 = checkNodeWithinElement( lineElement, x2, xsi2);
+        const bool check1 = checkNodeWithinElement( lineElement, x1, xsi1);
+        const bool check2 = checkNodeWithinElement( lineElement, x2, xsi2);
         if( check1  &&  check2 )
         {   
             lineIndex = i;  //countIndex;

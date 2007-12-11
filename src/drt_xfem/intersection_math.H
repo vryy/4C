@@ -24,12 +24,6 @@ Maintainer: Ursula Mayer
 #include "Teuchos_RefCountPtr.hpp"
 
 
-using namespace std;
-using namespace DRT;
-using namespace DRT::Utils;
-using namespace Teuchos;
-
-
 namespace XFEM
 {
 

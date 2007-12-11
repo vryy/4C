@@ -423,39 +423,6 @@ class Intersection
  
         
         /*!
-        \brief checks if element is a volume element
-    
-        \param element       (in)    : element
-        \return true if it is a volume element, false otherwise
-        */      
-        bool checkIfVolumeElement(
-            DRT::Element* element
-            );
-        
-        
-        /*!
-        \brief checks if element is a surface element
-    
-        \param element       (in)    : element
-        \return true if it is a surface element, false otherwise
-        */     
-        bool checkIfSurfaceElement(
-            DRT::Element* element
-            );
-        
-        
-        /*!
-        \brief checks if element is a line element
-    
-        \param element       (in)    : element
-        \return true if it is a line element, false otherwise
-        */     
-        bool checkIfLineElement(
-            DRT::Element* element
-            );
-           
-           
-        /*!
         \brief Computes a rough overestimating extended  
                axis-aligned bounding box for an element (XAABB)
     
@@ -467,27 +434,6 @@ class Intersection
             );
         
                                                 
-        /*!
-        \brief Checks if a node is within an 
-               extended axis-aligned bounding box (XAABB)
-    
-        \param node (in)        : node to be checked
-        \param XAABB (in)       : extended axis-aligned bouning box
-        \return true if node is within the XAABB or false otherwise
-        */
-        bool isNodeWithinXAABB(  
-            const std::vector<double>&         node,
-            const Epetra_SerialDenseMatrix&    XAABB
-            );
-        
-         
-        bool isLineWithinXAABB(    
-            const std::vector<double>&         node1,
-            const std::vector<double>&         node2,
-            const Epetra_SerialDenseMatrix&    XAABB
-            );
-        
-        
         /*!
         \brief checks if two extended axis aligned bounding boxes intersect
     
@@ -523,57 +469,6 @@ class Intersection
             );
         
                        							
-        /*!
-        \brief updates the system matrix at the corresponding element coordinates for the 
-               computation if a node in current coordinates lies within an element 
-    
-        \param dim               (in)       : dimension of the problem
-        \param A                 (out)      : system matrix
-        \param xsi               (in)       : vector of element coordinates
-        \param element           (in)       : element 
-        */                                                                                                      
-        void updateAForNWE( 
-            const int                   dim,
-            Epetra_SerialDenseMatrix&   A,
-            Epetra_SerialDenseVector&   xsi,
-            DRT::Element*               element
-            );
-        
-          
-        /*!
-        \brief updates the rhs at the corresponding element coordinates for the 
-               computation whether a node in current coordinates lies within an element 
-    
-        \param dim               (in)       : dimension of the problem
-        \param b                 (out)      : right-hand-side       
-        \param xsi               (in)       : vector of element coordinates
-        \param x                 (in)       : node in current coordinates
-        \param element           (in)       : element
-        */                               
-        void updateRHSForNWE(  
-            const int                           dim, 
-            Epetra_SerialDenseVector&           b,
-            Epetra_SerialDenseVector&           xsi,
-            const Epetra_SerialDenseVector&     x,
-            DRT::Element*                       element
-            );         
-        
-            
-		/*!
-        \brief checks if a node in current coordinates lies within a certain element           
-               The nonlinear system of equation is solved with help of the Newton-method.
-    
-        \param element              (in)        : element 
-        \param x                    (in)        : node in current coordinates
-        \param xsi                  (in)        : node in element coordinates
-        */	
-		bool checkNodeWithinElement(	
-            DRT::Element*                       element,
-            const Epetra_SerialDenseVector&     x,
-            Epetra_SerialDenseVector&           xsi
-            );	       
-        
-        
         /*!
         \brief  checks if a node that lies within an element and if it 
                 lies on one of its surfaces, lines or nodes          .
