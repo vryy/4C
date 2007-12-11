@@ -427,9 +427,6 @@ bool XFEM::gaussElimination(
     const int                   order)
 {
     bool solution = true;
-    int i,j,k;
-    double tmp[4];    // check changed
-    int pivot;
 
     //printf("A[0][] = %8e %8e %8e | %8e\n", A[0][0],A[0][1],A[0][2],b[0]);
     //printf("A[1][] = %8e %8e %8e | %8e\n", A[1][0],A[1][1],A[1][2],b[1]);
@@ -438,45 +435,47 @@ if(dim > 1)
 {
 
     if (!do_piv) {
-        for (k=0;k<dim;k++)
+        for (int k=0;k<dim;k++)
         {
             A[k][k]=1./A[k][k];
 
-            for (i=k+1;i<dim;i++)
+            for (int i=k+1;i<dim;i++)
             {
                 A[i][k] = A[i][k] * A[k][k];
                 x[i] = A[i][k];
 
-                for (j=k+1;j<dim;j++)
+                for (int j=k+1;j<dim;j++)
                 {
                     A[i][j] = A[i][j] - A[i][k] * A[k][j];
                 }
             }
 
-            for (i=k+1;i<dim;i++)
+            for (int i=k+1;i<dim;i++)
             {
                 b[i]=b[i]-x[i]*b[k];
             }
         }
     }
     else {
-        for (k=0;k<dim;k++)
+        for (int k=0;k<dim;k++)
         {
-            pivot = k;
+            int pivot = k;
             /* search for pivot element */
-            for (i=k+1;i<dim;i++)
+            for (int i=k+1;i<dim;i++)
             {
                 pivot = (fabs(A[pivot][pivot]) < fabs(A[i][k])) ? i : pivot;
             }
             /* copy pivot row to current row */
-            if (pivot != k) {
-                for (j=0;j<dim;j++)
+            if (pivot != k)
+            {
+                double tmp[4];    // check changed
+                for (int j=0;j<dim;j++)
                     tmp[j] = A[pivot][j];
                 tmp[dim] = b[pivot];
-                for (j=0;j<dim;j++)
+                for (int j=0;j<dim;j++)
                     A[pivot][j] = A[k][j];
                 b[pivot] = b[k];
-                for (j=0;j<dim;j++)
+                for (int j=0;j<dim;j++)
                     A[k][j] = tmp[j];
                 b[k] = tmp[dim];
             }
@@ -485,18 +484,18 @@ if(dim > 1)
             //printf("inf_diag = %8e\n", A[k][k]);
             //fflush(NULL);
 
-            for (i=k+1;i<dim;i++)
+            for (int i=k+1;i<dim;i++)
             {
                 A[i][k] = A[i][k] * A[k][k];
                 x[i] = A[i][k];
 
-                for (j=k+1;j<dim;j++)
+                for (int j=k+1;j<dim;j++)
                 {
                     A[i][j] = A[i][j] - A[i][k] * A[k][j];
                 }
             }
 
-            for (i=k+1;i<dim;i++)
+            for (int i=k+1;i<dim;i++)
             {
                 b[i]=b[i]-x[i]*b[k];
             }
@@ -510,9 +509,9 @@ if(dim > 1)
     /* backward substitution */
     x[dim-1]=b[dim-1]*A[dim-1][dim-1];
 
-    for (i=dim-2;i>=0;i--)
+    for (int i=dim-2;i>=0;i--)
     {
-        for (j=dim-1;j>i;j--)
+        for (int j=dim-1;j>i;j--)
         {
             b[i]=b[i]-A[i][j]*x[j];
         }

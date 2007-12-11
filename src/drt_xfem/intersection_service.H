@@ -13,7 +13,7 @@ Maintainer: Ursula Mayer
 #ifndef INTERSECTION_SERVICE_H_
 #define INTERSECTION_SERVICE_H_
 
-
+#include <blitz/array.h>
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_utils_fem_shapefunctions.H"

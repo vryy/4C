@@ -45,8 +45,7 @@ Epetra_SerialDenseVector XFEM::addTwoVectors(
 {   
     Epetra_SerialDenseVector vResult(v1.Length());
     
-    if(v1.Length() != v2.Length())
-        dserror("both vectors need to have the same size\n"); 
+    dsassert(v1.Length() == v2.Length(), "both vectors need to have the same size\n"); 
 
     for(int i = 0; i < v1.Length(); i++)
         vResult[i] = v1[i] + v2[i];
@@ -65,8 +64,7 @@ vector<double> XFEM::addTwoVectors(
 {   
     vector<double> vResult(v1.size());
     
-    if(v1.size() != v2.size())
-        dserror("both vectors need to have the same size\n"); 
+    dsassert(v1.size() == v2.size(), "both vectors need to have the same size\n");
 
     for(unsigned int i = 0; i < v1.size(); i++)
         vResult[i] = v1[i] + v2[i];
@@ -435,7 +433,7 @@ void XFEM::updateAForNWE(
     DRT::Element*               element)                                                  
 {   
     const int numNodes = element->NumNode();
-    Epetra_SerialDenseMatrix deriv1(dim, numNodes);
+    blitz::Array<double,2> deriv1(dim, numNodes, blitz::ColumnMajorArray<2>());
     
     A.Scale(0.0);
    
@@ -460,14 +458,14 @@ void XFEM::updateAForNWE(
             dserror("dimension of the element is not correct");
     }
     
-    for(int j=0; j<numNodes; j++) 
+    for(int inode=0; inode<numNodes; inode++) 
     {
-        DRT::Node* node = element->Nodes()[j];
-        for(int i=0; i<dim; i++)
+        const double* x = element->Nodes()[inode]->X();
+        for(int isd=0; isd<dim; ++isd)
         {
-            double nodalCoord = node->X()[i];
-            for(int k=0; k<dim; k++)
-                A[i][k] += nodalCoord * deriv1[j][k];
+            const double nodalCoord = x[isd];
+            for(int jsd=0; jsd<dim; ++jsd)
+                A[isd][jsd] += nodalCoord * deriv1(jsd,inode);
         }
     }      
 }
@@ -485,7 +483,7 @@ void XFEM::updateRHSForNWE(
     DRT::Element*                       element)                                                  
 {
     const int numNodes = element->NumNode();
-    Epetra_SerialDenseVector funct(numNodes);
+    blitz::Array<double,1> funct(numNodes);
       
     b.Scale(0.0);
      
@@ -512,9 +510,9 @@ void XFEM::updateRHSForNWE(
     
     for(int j=0; j<numNodes; j++)
     {
-        DRT::Node* node = element->Nodes()[j];
+        const double* x = element->Nodes()[j]->X();
         for(int i=0; i<dim; i++)
-            b[i] += (-1.0) * node->X()[i] * funct[j];
+            b[i] -= x[i] * funct(j);
     }
       
     for(int i=0; i<dim; i++)

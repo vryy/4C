@@ -1378,31 +1378,35 @@ void Intersection::updateAForCSI(  	Epetra_SerialDenseMatrix&   A,
 {	
 	const int numNodesSurface = surfaceElement->NumNode();
    	const int numNodesLine = lineElement->NumNode();
-	Epetra_SerialDenseMatrix surfaceDeriv1(2,numNodesSurface);
-	Epetra_SerialDenseMatrix lineDeriv1(1,numNodesLine);
+   	
+   	blitz::Array<double,2> surfaceDeriv1(2, numNodesSurface, blitz::ColumnMajorArray<2>());
+   	blitz::Array<double,2> lineDeriv1(1, numNodesLine, blitz::ColumnMajorArray<2>());
+   	
+	//Epetra_SerialDenseMatrix surfaceDeriv1(2,numNodesSurface);
+	//Epetra_SerialDenseMatrix lineDeriv1(1,numNodesLine);
     
     A.Scale(0.0);
   
     shape_function_2D_deriv1(surfaceDeriv1, xsi[0], xsi[1], surfaceElement->Shape()); 
        	
-    for(int i=0; i<numNodesSurface; i++)
+    for(int inode=0; inode<numNodesSurface; inode++)
     {
-        DRT::Node* node = surfaceElement->Nodes()[i];
-        for(int dim=0; dim<3; dim++)
+        const double* x = surfaceElement->Nodes()[inode] ->X();
+        for(int isd=0; isd<3; isd++)
 		{
-			A[dim][0] += node->X()[dim] * surfaceDeriv1(0,i);
-			A[dim][1] += node->X()[dim] * surfaceDeriv1(1,i);
+			A[isd][0] += x[isd] * surfaceDeriv1(0,inode);
+			A[isd][1] += x[isd] * surfaceDeriv1(1,inode);
 		}
     }	
    
     shape_function_1D_deriv1(lineDeriv1, xsi[2], lineElement->Shape()); 
 
-    for(int i=0; i<numNodesLine; i++)
+    for(int inode=0; inode<numNodesLine; inode++)
     {   
-        DRT::Node*  node = lineElement->Nodes()[i];
-        for(int dim=0; dim<3; dim++)
+        const double* x = lineElement->Nodes()[inode]->X();
+        for(int isd=0; isd<3; isd++)
         {
-            A[dim][2] +=  (-1) * node->X()[dim] * lineDeriv1(0,i);
+            A[isd][2] -= x[isd] * lineDeriv1(0,inode);
         }   
     }
 }
@@ -1420,8 +1424,8 @@ void Intersection::updateRHSForCSI(
     DRT::Element*               surfaceElement,
     DRT::Element*               lineElement) const
 {
-    int numNodesSurface = surfaceElement->NumNode();
-    int numNodesLine = lineElement->NumNode();
+    const int numNodesSurface = surfaceElement->NumNode();
+    const int numNodesLine = lineElement->NumNode();
     Epetra_SerialDenseVector surfaceFunct(numNodesSurface);
     Epetra_SerialDenseVector lineFunct(numNodesLine);
  		
@@ -1432,16 +1436,16 @@ void Intersection::updateRHSForCSI(
     
     for(int i=0; i<numNodesSurface; i++)
     {
-        DRT::Node* node = surfaceElement->Nodes()[i];
+        const double* x = surfaceElement->Nodes()[i]->X();
    	    for(int dim=0; dim<3; dim++)
-			b[dim] += (-1) * node->X()[dim] * surfaceFunct(i);
+			b[dim] -= x[dim] * surfaceFunct(i);
     }
     
     for(int i=0; i<numNodesLine; i++)
     {
-       DRT::Node* node = lineElement->Nodes()[i];
+       const double* x = lineElement->Nodes()[i]->X();
 	   for(int dim=0; dim<3; dim++)   
-			b[dim] += node->X()[dim] * lineFunct(i);
+			b[dim] += x[dim] * lineFunct(i);
     }
 }
 
@@ -2658,7 +2662,7 @@ void Intersection::liftSteinerPointOnSurface(
     plane[1] = subtractsTwoVectors(Steinerpoint, averageNormal);
  
  
-    int faceMarker = adjacentFacemarkerList[steinerIndex][0];
+    const int faceMarker = adjacentFacemarkerList[steinerIndex][0];
     Epetra_SerialDenseVector xsi(3);
     
     bool intersected = computeRecoveryNormal( xsi, plane, intersectingCutterElements_[faceMarker],false);
