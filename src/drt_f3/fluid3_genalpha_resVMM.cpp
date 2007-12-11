@@ -664,13 +664,14 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
       // multiply with van Driest damping function
       lmix *= (1.0-exp(-y_plus/A_plus));
     
-      //                                                                  
-      //          visc    = visc + visc                                   
-      //              eff              turbulent
-
-      visceff_ = visc + lmix * lmix * rateofstrain;
-
     }
+
+    //                                                                  
+    //          visc    = visc + visc                                   
+    //              eff              turbulent
+
+    visceff_ = visc + lmix * lmix * rateofstrain;
+
   }
   else if(turb_mod_action == Fluid3::dynamic_smagorinsky)
   {

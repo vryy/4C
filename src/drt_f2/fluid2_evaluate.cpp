@@ -414,6 +414,8 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
     xi = DMIN(re,1.0);
     tau[2] = 0.5*vel_norm*hk*xi;
   }
+
+  /*------------------------------------ compute subgrid viscosity nu_art ---*/
   if (fssgv == 1)
   {
     /*----------------------- compute artificial subgrid viscosity nu_art ---*/
@@ -421,6 +423,73 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
     xi = DMAX(re,1.0);
 
     vart = (DSQR(hk)*mk*DSQR(vel_norm))/(2.0*visc*xi);
+  }
+  else if (fssgv == 2)
+  {
+    //
+    // SMAGORINSKY MODEL
+    // -----------------
+    //                               +-                                 -+ 1
+    //                           2   |          / h \           / h \    | -
+    //    visc          = (C_S*h)  * | 2 * eps | u   |   * eps | u   |   | 2
+    //        turbulent              |          \   / ij        \   / ij |
+    //                               +-                                 -+
+    //                               |                                   |
+    //                               +-----------------------------------+
+    //                                    'resolved' rate of strain
+    //
+
+    double rateofstrain = 0.0;
+    {
+      /*---------------------------------------- compute global derivates */
+      f2_gder(derxy,deriv,xjm,det,iel);
+
+      /*-------------- get velocity (np,i) derivatives at element center */
+      // expression for f2_vder(vderxy,derxy,evelnp,iel);
+      for (int i=0;i<2;i++)
+      {
+        vderxy(0,i)=0.0;
+        vderxy(1,i)=0.0;
+        for (int j=0;j<iel;j++)
+        {
+          vderxy(0,i) += derxy(i,j)*evelnp[0+(2*j)];
+          vderxy(1,i) += derxy(i,j)*evelnp[1+(2*j)];
+        } /* end of loop over j */
+      } /* end of loop over i */
+
+      Epetra_SerialDenseMatrix  epsilon(2,2);
+
+      /*-------------------------- get rate-of-strain tensor epsilon(u) */
+      for (int i=0;i<2;i++)
+      {
+        for (int j=0;j<2;j++)
+        {
+          epsilon(i,j) = 0.5 * ( vderxy(i,j) + vderxy(j,i) );
+        } /* end of loop over j */
+      } /* end of loop over i */
+
+      for(int rr=0;rr<2;rr++)
+      {
+        for(int mm=0;mm<2;mm++)
+        {
+          rateofstrain += epsilon(rr,mm)*epsilon(rr,mm);
+        }
+      }
+      rateofstrain *= 2.0;
+      rateofstrain = sqrt(rateofstrain);
+    }
+    // 
+    // Choices of the Smagorinsky constant Cs:
+    //
+    //             Cs = 0.17   (Lilly --- Determined from filter
+    //                          analysis of Kolmogorov spectrum of
+    //                          isotropic turbulence)
+    //
+    //             0.1 < Cs < 0.24 (depending on the flow)
+
+    double Cs = 0.17;
+
+    vart = Cs * Cs * hk * hk * rateofstrain;
   }
 
 
@@ -1291,11 +1360,13 @@ void DRT::Elements::Fluid2::f2_calmat(
 #undef nu_
 #undef thsl
 
-if (fssgv == 1)
+if (fssgv > 0)
 {
   // parameter for artificial subgrid viscosity
   const double vartfac = vart*timefacfac;
-  const double taumfac = tau[0]*timefac*timefacfac;
+  double taumfac;
+  if (fssgv == 1) taumfac = tau[0]*timefac*timefacfac;
+  else taumfac=0.0;
 
   #define esv_(i,j)    esv(i,j)
   #define derxy_(i,j)  derxy(i,j)
@@ -1488,11 +1559,13 @@ for (int i=0; i<iel; i++) /* loop over nodes of element */
 #undef nu_
 #undef thsl
 
-if (fssgv == 1)
+if (fssgv > 0)
 {
   // parameter for artificial subgrid viscosity
   const double vartfac = vart*fac;
-  const double taumfac = tau[0]*fac;
+  double taumfac;
+  if (fssgv == 1) taumfac = tau[0]*fac;
+  else taumfac=0.0;
 
   #define esv_(i,j)    esv(i,j)
   #define derxy_(i,j)  derxy(i,j)
