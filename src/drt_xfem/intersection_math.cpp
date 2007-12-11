@@ -41,10 +41,6 @@ static int              iminarg1,iminarg2;
 #define                 IMIN(a,b) (iminarg1=(a),iminarg2=(b),(iminarg1) < (iminarg2) ?\
                         (iminarg1) : (iminarg2))
 
-static const double     TOL14_ = 1e-14;
-               
-static const double     TOL7_ = 1e-7;
-
 
 /*----------------------------------------------------------------------*
  |  ML:     adds two Epetra_SerialDenseVector                u.may 06/07|
@@ -663,7 +659,7 @@ if(dim > 1)
     for(int i = 0 ; i < dim; i++)
         det = det * (1.0/A(i,i));
     //printf("matrix is singular A1 = %f, A2 = %f, A3 = %f, det = %f\n ", 1/A(0,0), 1/A(1,1), 1/A(2,2), fabs(det) );
-    if(fabs(det) < TOL7_ && order == 1)
+    if(fabs(det) < TOL7 && order == 1)
     {
         solution = false;
         //printf("matrix is singular A1 = %f, A2 = %f, A3 = %f, det = %f\n ", 1/A(0,0), 1/A(1,1), 1/A(2,2), det );
@@ -672,7 +668,7 @@ if(dim > 1)
 }
 else
 {
-    if( fabs(A[0][0]) < TOL7_)
+    if( fabs(A[0][0]) < TOL7)
     {
         printf("singular \n");
         solution = false;

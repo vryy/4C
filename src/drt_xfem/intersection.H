@@ -101,12 +101,6 @@ class Intersection
         
         private:
         
-        //! tolerance 1e-14 used for residuals in all Newton-methods
-        static const double                 TOL14_ = 1e-14;
-        
-        //! tolerance 1e-7 
-        static const double                 TOL7_ = 1e-7;
-        
         //! offset in facet marker list
         static const int                    facetMarkerOffset_ = 11;
               

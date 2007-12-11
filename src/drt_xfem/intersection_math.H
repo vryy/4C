@@ -33,6 +33,11 @@ using namespace Teuchos;
 namespace XFEM
 {
 
+    //! tolerance 1e-14 used for residuals in all Newton-methods
+    const double                 TOL14 = 1e-14;
+
+    //! tolerance 1e-7 
+    const double                 TOL7 = 1e-7;
 
     /*!
     \brief Returns the sum of two Epetra_SerialDenseVectors

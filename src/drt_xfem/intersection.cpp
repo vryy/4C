@@ -800,8 +800,8 @@ void Intersection::currentToElementCoordinates(
     // rounding 1 and -1 to be exact for the CDT
     for(int j = 0; j < 3; j++)
     {
-        if( fabs((fabs(xsi[j])-1.0)) < TOL7_ &&  xsi[j] < 0)    xsi[j] = -1.0;
-        if( fabs((fabs(xsi[j])-1.0)) < TOL7_ &&  xsi[j] > 0)    xsi[j] =  1.0;      
+        if( fabs((fabs(xsi[j])-1.0)) < TOL7 &&  xsi[j] < 0)    xsi[j] = -1.0;
+        if( fabs((fabs(xsi[j])-1.0)) < TOL7 &&  xsi[j] > 0)    xsi[j] =  1.0;      
     }  
 }     
 
@@ -828,8 +828,8 @@ void Intersection::currentToElementCoordinates(
     // rounding 1 and -1 to be exact for the CDT
     for(int j = 0; j < dim; j++)
     {
-        if( fabs((fabs(xsi[j])-1.0)) < TOL7_ &&  xsi[j] < 0)    xsi[j] = -1.0;
-        if( fabs((fabs(xsi[j])-1.0)) < TOL7_ &&  xsi[j] > 0)    xsi[j] =  1.0;      
+        if( fabs((fabs(xsi[j])-1.0)) < TOL7 &&  xsi[j] < 0)    xsi[j] = -1.0;
+        if( fabs((fabs(xsi[j])-1.0)) < TOL7 &&  xsi[j] > 0)    xsi[j] =  1.0;      
     } 
     
     for(int i = 0; i < dim; i++)
@@ -851,7 +851,7 @@ bool Intersection::comparePoints(
     bool equal = true;
              
     for(int i = 0; i < length; i++)
-        if(fabs(point1[i] - point2[i]) > TOL7_)
+        if(fabs(point1[i] - point2[i]) > TOL7)
         {
             equal = false;
             break;
@@ -873,7 +873,7 @@ bool Intersection::comparePoints(
     bool equal = true;
         
     for(unsigned int i = 0; i < point1.size() ; i++)
-        if(fabs(point1[i] - point2[i]) > TOL7_)
+        if(fabs(point1[i] - point2[i]) > TOL7)
         {
             equal = false;
             break;
@@ -895,7 +895,7 @@ bool Intersection::comparePoints(
     bool equal = true;
     
     for(unsigned int i = 0; i < point1.size() ; i++)
-        if(fabs(point1[i] - point2[i]) > TOL7_)
+        if(fabs(point1[i] - point2[i]) > TOL7)
         {
             equal = false;
             break;
@@ -917,7 +917,7 @@ bool Intersection::comparePoints(
     bool equal = true;
              
     for(unsigned int i = 0; i < 3 ; i++)
-        if(fabs(point1->X()[i] - point2->X()[i]) > TOL7_)
+        if(fabs(point1->X()[i] - point2->X()[i]) > TOL7)
         {
             equal = false;
             break;
@@ -940,7 +940,7 @@ bool Intersection::comparePoints(
     bool equal = true;
     
     for(int i = 0; i < point1.Length() ; i++)
-        if(fabs(point1[i] - point2[i]) > TOL7_)
+        if(fabs(point1[i] - point2[i]) > TOL7)
         {
             equal = false;
             break;
@@ -1030,8 +1030,8 @@ Epetra_SerialDenseMatrix Intersection::computeFastXAABB(
     DRT::Node* node = element->Nodes()[0];
 	for(int dim=0; dim<3; dim++)
 	{
-		XAABB(dim, 0) = node->X()[dim] - TOL7_;
-   		XAABB(dim, 1) = node->X()[dim] + TOL7_;
+		XAABB(dim, 0) = node->X()[dim] - TOL7;
+   		XAABB(dim, 1) = node->X()[dim] + TOL7;
 	}
     
     for(int i=1; i<element->NumNode(); i++)
@@ -1039,8 +1039,8 @@ Epetra_SerialDenseMatrix Intersection::computeFastXAABB(
         DRT::Node* nodeEle = element->Nodes()[i];
         for(int dim=0; dim<3; dim++)
 		{
-            XAABB(dim, 0) = std::min( XAABB(dim, 0), nodeEle->X()[dim] - TOL7_);
-			XAABB(dim, 1) = std::max( XAABB(dim, 1), nodeEle->X()[dim] + TOL7_);
+            XAABB(dim, 0) = std::min( XAABB(dim, 0), nodeEle->X()[dim] - TOL7);
+			XAABB(dim, 1) = std::max( XAABB(dim, 1), nodeEle->X()[dim] + TOL7);
 		}
     }
     
@@ -1088,8 +1088,8 @@ bool Intersection::isNodeWithinXAABB(
 	*/
     for (int dim=0; dim<3; dim++)
 	{
-        double diffMin = XAABB(dim,0) - TOL7_;
-        double diffMax = XAABB(dim,1) + TOL7_;
+        double diffMin = XAABB(dim,0) - TOL7;
+        double diffMax = XAABB(dim,1) + TOL7;
         
        // printf("nodal value =  %f, min =  %f, max =  %f\n", node[dim], diffMin, diffMax);
         
@@ -1116,15 +1116,15 @@ bool Intersection::isLineWithinXAABB(
 	int dim = -1;
 	
     for(dim=0; dim<3; dim++)
-    	if(fabs(node1[dim]-node2[dim]) > TOL7_)
+    	if(fabs(node1[dim]-node2[dim]) > TOL7)
     		break;
     
     for(int i = 0; i < 3; i++)
     {
     	if(i != dim)
     	{
-    		double min = XAABB(i,0) - TOL7_;
-    		double max = XAABB(i,1) + TOL7_;
+    		double min = XAABB(i,0) - TOL7;
+    		double max = XAABB(i,1) + TOL7;
    
     		if((node1[i] < min)||(node1[i] > max))
     			isWithin = false;
@@ -1137,8 +1137,8 @@ bool Intersection::isLineWithinXAABB(
     if(isWithin && dim > -1)
     {
     	isWithin = false;
-    	double min = XAABB(dim,0) - TOL7_;
-    	double max = XAABB(dim,1) + TOL7_;
+    	double min = XAABB(dim,0) - TOL7;
+    	double max = XAABB(dim,1) + TOL7;
     	    		        
     	if( ((node1[dim] < min) && (node2[dim] > max)) ||  
     		((node2[dim] < min) && (node1[dim] > max)) )
@@ -1435,7 +1435,7 @@ bool Intersection::checkNodeWithinElement(
             
     updateRHSForNWE( dim, b, xsi, x, element);
    
-    while(residual > TOL14_)
+    while(residual > TOL14)
     {   
         updateAForNWE( dim, A, xsi, element);
    
@@ -1458,10 +1458,10 @@ bool Intersection::checkNodeWithinElement(
     }
     
     //printf("iter = %d\n", iter);
-    //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0],xsi[1],xsi[2], residual, TOL14_);
+    //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0],xsi[1],xsi[2], residual, TOL14);
     
     for(int i=0; i<dim; i++)
-        if( (fabs(xsi[i])-1.0) > TOL7_)     
+        if( (fabs(xsi[i])-1.0) > TOL7)     
         {    
             nodeWithinElement = false;
             break;
@@ -1579,7 +1579,7 @@ bool Intersection::computeCurveSurfaceIntersection(
  
     updateRHSForCSI( b, xsi, surfaceElement, lineElement);
               
-    while(residual > TOL14_)
+    while(residual > TOL14)
     {   
         updateAForCSI( A, xsi, surfaceElement, lineElement);
         
@@ -1609,8 +1609,8 @@ bool Intersection::computeCurveSurfaceIntersection(
     
     if(intersection)
     {
-        if( (xsi[0] > (upLimit[0]+TOL7_)) || (xsi[1] > (upLimit[1]+TOL7_)) || (xsi[2] > (upLimit[2]+TOL7_))  || 
-            (xsi[0] < (loLimit[0]-TOL7_)) || (xsi[1] < (loLimit[1]-TOL7_)) || (xsi[2] < (loLimit[2]-TOL7_))) 
+        if( (xsi[0] > (upLimit[0]+TOL7)) || (xsi[1] > (upLimit[1]+TOL7)) || (xsi[2] > (upLimit[2]+TOL7))  || 
+            (xsi[0] < (loLimit[0]-TOL7)) || (xsi[1] < (loLimit[1]-TOL7)) || (xsi[2] < (loLimit[2]-TOL7))) 
                 intersection = false;
     }
            
@@ -1638,7 +1638,7 @@ bool Intersection::computeSingularCSI(
  
     updateRHSForCSI( b, xsi, surfaceElement, lineElement);
               
-    while(residual > TOL14_)
+    while(residual > TOL14)
     {   
         updateAForCSI( A, xsi, surfaceElement, lineElement);
         
@@ -3337,7 +3337,7 @@ bool Intersection::computeRecoveryNormal(
     xsi.Scale(0.0);
     updateRHSForRCINormal( b, xsi, normal, cutterElement, onBoundary);
                                 
-    while(residual > TOL14_)
+    while(residual > TOL14)
     {   
         updateAForRCINormal( A, xsi, normal, cutterElement, onBoundary);
          
@@ -3362,12 +3362,12 @@ bool Intersection::computeRecoveryNormal(
         residual = b.Norm2(); 
         iter++;
         
-        //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0], xsi[1], xsi[2], residual, TOL14_);
+        //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0], xsi[1], xsi[2], residual, TOL14);
     } 
     
-    if( (fabs(xsi[0])-1.0) > TOL7_  || (fabs(xsi[1])-1.0) > TOL7_ )    // line coordinate may be bigger than 1
+    if( (fabs(xsi[0])-1.0) > TOL7  || (fabs(xsi[1])-1.0) > TOL7 )    // line coordinate may be bigger than 1
     {
-        //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0], xsi[1], xsi[2], residual, TOL14_);
+        //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0], xsi[1], xsi[2], residual, TOL14);
         intersection = false;
     }
         
@@ -3538,7 +3538,7 @@ bool Intersection::computeRecoveryPlane(
         
         updateRHSForRCIPlane( b, xsi, plane, lineElement);
                         
-        while( residual > TOL14_ )
+        while( residual > TOL14 )
         {   
             updateAForRCIPlane( A, xsi, plane, lineElement, surfaceElement);
             
@@ -3561,8 +3561,8 @@ bool Intersection::computeRecoveryPlane(
             iter++;
         } 
     
-        if( (fabs(xsi[2])-1.0) > TOL7_ )     // planes coordinate may be bigger than 1
-        {   printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0], xsi[1], xsi[2], residual, TOL14_);
+        if( (fabs(xsi[2])-1.0) > TOL7 )     // planes coordinate may be bigger than 1
+        {   printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0], xsi[1], xsi[2], residual, TOL14);
             intersection = false;
         }  
         
