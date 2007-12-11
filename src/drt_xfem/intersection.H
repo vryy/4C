@@ -46,10 +46,6 @@ extern "C"
 }
 #endif
 
-using namespace std;
-using namespace DRT;
-using namespace DRT::Utils;
-using namespace Teuchos;
 
 namespace XFEM
 {
@@ -205,7 +201,7 @@ class Intersection
         void elementToCurrentCoordinates( 
             DRT::Element*               element, 
             Epetra_SerialDenseVector&   xsi
-            );
+            ) const;
  
  
         /*!
@@ -222,7 +218,7 @@ class Intersection
             DRT::Element*                               surfaceElement, 
             Epetra_SerialDenseVector&                   xsi,
             const vector <Epetra_SerialDenseVector>&    surfaceNodes
-            );
+            ) const;
     
         
         /*!
@@ -237,7 +233,7 @@ class Intersection
         void elementToCurrentCoordinates(  
             Epetra_SerialDenseVector&                   xsi,
             const vector<Epetra_SerialDenseVector>&     plane
-            );
+            ) const;
 
 
         /*!
@@ -251,7 +247,7 @@ class Intersection
         void currentToElementCoordinates( 
             DRT::Element*               element,                     
             Epetra_SerialDenseVector&   xsi
-            );
+            ) const;
  
         
         /*!
@@ -265,7 +261,7 @@ class Intersection
         void currentToElementCoordinates(   
         	DRT::Element*               element, 
         	vector<double>&   			xsiVector
-          	);
+          	) const;
     
         
         /*!
@@ -279,7 +275,7 @@ class Intersection
         void elementToCurrentCoordinates(   
             DRT::Element* 	element, 
             vector<double>& xsi
-            );
+            ) const;
         
         
         /*!
@@ -294,7 +290,7 @@ class Intersection
 			const RefCountPtr<DRT::Discretization>& 	cutterdis,  
 			vector< DRT::Condition * >&   				xfemConditions,
 			vector<int>& 								conditionEleCount
-			);
+			) const;
     
     
         /*!
@@ -314,7 +310,7 @@ class Intersection
             int&                                        nodeSetSizeSend,  
             vector<int>&                                nodeVectorSend,
             vector<char>&                               cutterDataSend 
-            );
+            ) const;
         
         
         /*!
@@ -330,7 +326,7 @@ class Intersection
             vector<char>&                           cutterDataRecv, 
             vector<int>&                            nodeVectorRecv, 
             map< int, RefCountPtr<DRT::Node> >&     nodeMap 
-            );
+            ) const;
     
     
         /*!
@@ -352,7 +348,7 @@ class Intersection
 			map< int, set<int> >& 					xfemCutterIdMap,
 			const RefCountPtr<DRT::Discretization>& xfemdis,
 		   	const RefCountPtr<DRT::Discretization>& cutterdis  
-		   	);
+		   	) const;
     
   
         /*!
@@ -365,7 +361,7 @@ class Intersection
         bool comparePoints( 
             const vector<double>&     point1,
             const double*             point2
-            );
+            ) const;
  
              
         /*!
@@ -380,7 +376,7 @@ class Intersection
             const double*     point1,
             const double*     point2,
             const int         length
-            ); 
+            ) const; 
  
                                     
         /*!
@@ -393,7 +389,7 @@ class Intersection
         bool comparePoints( 
             const vector<double>&     point1,
             const vector<double>&     point2
-            );
+            ) const;
  
                             
         /*!
@@ -406,7 +402,7 @@ class Intersection
         bool comparePoints( 
             const Epetra_SerialDenseVector&     point1,
             const Epetra_SerialDenseVector&     point2
-            );
+            ) const;
             
        
         /*!
@@ -419,7 +415,7 @@ class Intersection
         bool comparePoints( 
             const DRT::Node*     point1,
             const DRT::Node*     point2
-            );
+            ) const;
  
         
         /*!
@@ -431,7 +427,7 @@ class Intersection
         */
         Epetra_SerialDenseMatrix computeFastXAABB( 
             DRT::Element*   element
-            );
+            ) const;
         
                                                 
         /*!
@@ -444,7 +440,7 @@ class Intersection
         bool intersectionOfXAABB(    
             const Epetra_SerialDenseMatrix&    cutterXAABB,
             const Epetra_SerialDenseMatrix&    xfemXAABB
-            );
+            ) const;
         
         	       
         /*!
@@ -548,7 +544,7 @@ class Intersection
             Epetra_SerialDenseVector&   xsi,
             Epetra_SerialDenseVector&   upLimit,
             Epetra_SerialDenseVector&   loLimit
-            );
+            ) const;
         
         
         /*!
@@ -563,7 +559,7 @@ class Intersection
             Epetra_SerialDenseVector&   xsi,
             DRT::Element*               lineElement,
             DRT::Element*               surfaceElement
-            );
+            ) const;
             
                  
 		/*!
@@ -580,7 +576,7 @@ class Intersection
             Epetra_SerialDenseVector&   xsi,
             DRT::Element*               surfaceElement,
             DRT::Element*               lineElement
-            ); 
+            ) const;
 		
           	            
         /*!
@@ -596,7 +592,7 @@ class Intersection
             Epetra_SerialDenseVector&   b,
             Epetra_SerialDenseVector&   xsi,
             DRT::Element*               surfaceElement,
-            DRT::Element*               lineElement);       		
+            DRT::Element*               lineElement) const;
         
             
   		/*!
@@ -641,7 +637,7 @@ class Intersection
             Epetra_SerialDenseVector&               loLimit,
             vector< Epetra_SerialDenseVector >&     upperLimits, 
             vector< Epetra_SerialDenseVector >&     lowerLimits
-            );		   							
+            ) const;		   							
         
         
         /*!
@@ -667,7 +663,7 @@ class Intersection
         void findNextSegment( 
             vector< vector<double> >&   vertices,
             vector<double>&             searchPoint
-            );
+            ) const;
   
         
         /*!
@@ -806,7 +802,7 @@ class Intersection
             vector< vector <int> >&     adjacentFacesList,
             vector< vector <int> >&     adjacentFacemarkerList,
             tetgenio&                   out
-            );
+            ) const;
          
          
         /*!
@@ -915,7 +911,7 @@ class Intersection
             vector<int>&        tetraCornerIndices,
             vector<int>&        order,
             const tetgenio&     out
-            );          
+            ) const;          
         
         
         /*!
@@ -933,7 +929,7 @@ class Intersection
             vector<int>&                            tetraCornerIndices,
             DRT::Element*                           xfemElement,
             const tetgenio&                         out
-            ); 
+            ) const; 
         
                 
         /*!
@@ -974,7 +970,7 @@ class Intersection
             tetgenio&   out, 
             int         trifaceIndex, 
             int         steinerPointIndex
-            );
+            ) const;
             
               
         /*!
@@ -994,7 +990,7 @@ class Intersection
             const vector<Epetra_SerialDenseVector>&     normal,
             DRT::Element*                               cutterElement,
             const bool                                  onBoundary
-            );
+            ) const;
         
         
         /*!
@@ -1015,7 +1011,7 @@ class Intersection
             const vector<Epetra_SerialDenseVector>&     normal,
             DRT::Element*                               surfaceElement,
             const bool                                  onBoundary
-            );         
+            ) const;
          
         
         /*!
@@ -1036,7 +1032,7 @@ class Intersection
             const vector<Epetra_SerialDenseVector>&     normal,
             DRT::Element*                               surfaceElement,
             const bool                                  onBoundary
-            );           
+            ) const;           
               
         
         /*!
@@ -1056,7 +1052,7 @@ class Intersection
             Epetra_SerialDenseVector&                   xsi,
             const vector<Epetra_SerialDenseVector>&     plane,
             DRT::Element*                               surfaceElement
-            );
+            ) const;
             
          
         /*!
@@ -1076,7 +1072,7 @@ class Intersection
             const vector<Epetra_SerialDenseVector>&     plane,
             DRT::Element*                               lineElement,
             DRT::Element*                               surfaceElement
-            );
+            ) const;
             
             
         /*!
@@ -1095,7 +1091,7 @@ class Intersection
             Epetra_SerialDenseVector&                   xsi,    
             const vector <Epetra_SerialDenseVector>&    plane,
             DRT::Element*                               lineElement
-            );
+            ) const;
             
                            
         /*!
@@ -1127,7 +1123,7 @@ class Intersection
             vector<Epetra_SerialDenseVector>&       plane,
             DRT::Element*                           xfemElement,
             const tetgenio&                         out
-            );
+            ) const;
             
 
         /*!
@@ -1151,7 +1147,7 @@ class Intersection
             vector<Epetra_SerialDenseVector>&   plane,
             DRT::Element*                       xfemElement,
             tetgenio&                           out
-            );    
+            ) const;    
    
    
         /*!
@@ -1172,7 +1168,7 @@ class Intersection
             vector<Epetra_SerialDenseVector>&       plane,
             DRT::Element*                           xfemElement,
             const tetgenio&                         out
-            );
+            ) const;
             
             
         /*!
@@ -1185,7 +1181,7 @@ class Intersection
         Epetra_SerialDenseVector computeLineMidpoint(  
             const Epetra_SerialDenseVector& p1,
             const Epetra_SerialDenseVector& p2
-            );      
+            ) const;      
            
            
         /*!
@@ -1206,7 +1202,7 @@ class Intersection
             int             faceIndex,
             int&            adjacentFaceIndex,
             tetgenio&       out
-            );   
+            ) const;   
             
             
         /*!
@@ -1227,7 +1223,7 @@ class Intersection
             Epetra_SerialDenseVector&           edgePoint,
             Epetra_SerialDenseVector&           oppositePoint,
             tetgenio&                           out
-            );
+            ) const;
             
       
         /*!
@@ -1245,7 +1241,7 @@ class Intersection
             const int                                       faceIndex2,
             int&                                            lineIndex,
             int&                                            cutterIndex
-            );
+            ) const;
         
         
        /*!
@@ -1262,7 +1258,7 @@ class Intersection
             int                                 edgeIndex2, 
             int                                 adjacentFaceIndex,
             tetgenio&                           out
-            );
+            ) const;
     
              
         /*!
@@ -1282,7 +1278,7 @@ class Intersection
             DRT::Element*                       cutterElement,
             Epetra_SerialDenseVector&           edgeNode1,
             Epetra_SerialDenseVector&           edgeNode2
-            );
+            ) const;
     
     
         /*!
@@ -1316,11 +1312,11 @@ class Intersection
         \param domainintcells       (out)       :   domain integration cells
         \param out                  (in)        :   tetgenio output data structure 
         */    
-        void storeDomainIntCells(
+        void addCellsToDomainIntCellsMap(
             DRT::Element*                   xfemElement,
             map< int, DomainIntCells >&     domainintcells,
             tetgenio&                       out
-            ); 
+            ) const; 
              
               
         /*!
@@ -1335,7 +1331,7 @@ class Intersection
         \param xfemElement				(in)		:	xfem element
         \param out                      (in)        :   tetgenio output data structure 
         */      
-        void storeBoundaryIntCells(
+        void addCellsToBoundaryIntCellsMap(
         	const int                         		trifaceIndex,
         	const int                         		cornerIndex, 
         	const int                         		globalHigherOrderIndex, 
@@ -1344,7 +1340,7 @@ class Intersection
 		    std::vector< std::vector<double> >&   	boundaryCoord, 
 		    DRT::Element*							xfemElement,
 		    tetgenio&                   			out
-            );
+            ) const;
             
                     
         /*!
@@ -1364,7 +1360,7 @@ class Intersection
             DRT::Element*               xfemElement,
             int                         noC,
             int                         noX
-            );
+            ) const;
                                     
           
         /*!
@@ -1384,7 +1380,7 @@ class Intersection
             int                         noE,
             int                         noN,
             bool                        within
-            );
+            ) const;
                                         
                                         
         /*!
@@ -1404,7 +1400,7 @@ class Intersection
             int                         noSE,
             int                         noLE,
             bool                        within
-            );
+            ) const;
     
       
         /*!
@@ -1415,7 +1411,7 @@ class Intersection
         */                             
         void debugTetgenDataStructure(  
             DRT::Element*               element
-            );  
+            ) const;
                                         
           
         /*!
@@ -1435,7 +1431,7 @@ class Intersection
 			tetgenio& out, 
 		    DRT::Element* element,
             vector<int>& elementIds
-            );
+            ) const;
 														
 						
 		/*!
@@ -1446,7 +1442,7 @@ class Intersection
        	void debugDomainIntCells(
             map< int, DomainIntCells >&	domainintcells,
             int id
-            );  
+            ) const;  
             
 
         /*!
@@ -1459,7 +1455,7 @@ class Intersection
         void printTetViewOutput(
             int             index,
             tetgenio&       out
-            ); 
+            ) const; 
             
             
         /*!
@@ -1473,28 +1469,28 @@ class Intersection
             DRT::Element*   xfemElement,
             int             index,
             tetgenio&       in
-            );   
+            ) const;
         
         
        void debugFaceMarker(
         	const int 						eleId,
         	tetgenio&						out
-        	);
+        	) const;
        
        void debugXFEMConditions(
        	const RefCountPtr<DRT::Discretization>  cutterdis
-       	);
+       	) const;
        
        void debugIntersection(
        		DRT::Element*			xfemElement,
        		vector <DRT::Element*> 	cutterElements
-       		);
+       		) const;
        
        void debugXAABBs(
         const int							id,
        	const Epetra_SerialDenseMatrix&     cutterXAABB, 
        	const Epetra_SerialDenseMatrix&     xfemXAABB
-       	);
+       	) const;
                                                
 };
 
