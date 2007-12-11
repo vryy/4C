@@ -21,7 +21,8 @@ o loop planes (e.g. plane coordinates)
 
   - 2 * 4 scalarproducts for mean values
 
-
+o Write statistics for the Smagorinsky "constant" Cs if a dynamic
+  procedure to determine it is applied
   
 Maintainer: Peter Gamnitzer
             gamnitzer@lnm.mw.tum.de
@@ -321,11 +322,12 @@ TurbulenceStatistics::TurbulenceStatistics(
   sumCs_  =  rcp(new vector<double> );
   sumCs_->resize(nodeplanes_->size()-1,0.0);
   
+  incrsumCs_  =  rcp(new vector<double> );
+  incrsumCs_->resize(nodeplanes_->size()-1,0.0);
 
   // initialise output
   Teuchos::RefCountPtr<std::ofstream> log;
   Teuchos::RefCountPtr<std::ofstream> log_Cs;
-
 
   if (discret_->Comm().MyPID()==0)
   {
@@ -336,7 +338,6 @@ TurbulenceStatistics::TurbulenceStatistics(
     (*log) << "# Flow statistics for turbulent channel flow (first an second order moments)\n\n";
 
     log->flush();
-
 
     // additional output for dynamic Smagorinsky model
     if (params_.sublist("TURBULENCE MODEL").get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
@@ -353,7 +354,6 @@ TurbulenceStatistics::TurbulenceStatistics(
 
         log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),ios::out));
         (*log_Cs) << "# Statistics for turbulent channel flow (Smagorinsky constant)\n\n";
-
       }
     }
     
@@ -445,6 +445,24 @@ void TurbulenceStatistics::DoTimeSample(
     }
   }
 
+  // add increment of last iteration to the sum of Cs values
+  // (statistics for dynamic Smagorinsky model)
+  if (params_.sublist("TURBULENCE MODEL").get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
+      ==
+      "CLASSICAL_LES")
+  {
+    if(params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+       ==
+       "Dynamic_Smagorinsky"
+      )
+    {
+      for (unsigned rr=0;rr<(*incrsumCs_).size();++rr)
+      {
+        (*sumCs_)[rr]+=(*incrsumCs_)[rr];
+      }        
+    }
+  }
+  
   return;
 }// TurbulenceStatistics::DoTimeSample
 
@@ -723,16 +741,16 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
     {
       (*log) <<  " "  << setw(11) << setprecision(4) << (*planecoordinates_)[i];
       (*log) << "   " << setw(11) << setprecision(4) << (*planecoordinates_)[i]/ltau;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumu_)  [i];
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumv_)  [i];
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumw_)  [i];
-      (*log) << "   " << setw(11) << setprecision(4) << (*sump_)  [i];
+      (*log) << "   " << setw(11) << setprecision(4) << (*sumu_)   [i];
+      (*log) << "   " << setw(11) << setprecision(4) << (*sumv_)   [i];
+      (*log) << "   " << setw(11) << setprecision(4) << (*sumw_)   [i];
+      (*log) << "   " << setw(11) << setprecision(4) << (*sump_)   [i];
       (*log) << "   " << setw(11) << setprecision(4) << ((*sumsqu_)[i]);
       (*log) << "   " << setw(11) << setprecision(4) << ((*sumsqv_)[i]);
       (*log) << "   " << setw(11) << setprecision(4) << ((*sumsqw_)[i]);
-      (*log) << "   " << setw(11) << setprecision(4) << ((*sumuv_)[i]);
-      (*log) << "   " << setw(11) << setprecision(4) << ((*sumuw_)[i]);
-      (*log) << "   " << setw(11) << setprecision(4) << ((*sumvw_)[i]);
+      (*log) << "   " << setw(11) << setprecision(4) << ((*sumuv_) [i]);
+      (*log) << "   " << setw(11) << setprecision(4) << ((*sumuw_) [i]);
+      (*log) << "   " << setw(11) << setprecision(4) << ((*sumvw_) [i]);
       (*log) << "   " << setw(11) << setprecision(4) << ((*sumsqp_)[i]) << "   \n";
     }
     log->flush();
@@ -751,6 +769,7 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
          "Dynamic_Smagorinsky"
         )
       {
+        // get the outfile
         Teuchos::RefCountPtr<std::ofstream> log_Cs;
         
         std::string s_smag = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
@@ -764,16 +783,13 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
     
         for (unsigned rr=0;rr<sumCs_->size();++rr)
         {
-          (*log_Cs)  << setw(11) << setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  "<< setw(11) << setprecision(4) << ((*sumCs_)[rr])/(numele_*numsamp_) << &endl;
-          
-          // reset value
-          (*sumCs_)[rr]=0;
+          (*log_Cs) << setw(11) << setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
+          (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_)[rr])/(numele_*numsamp_) << &endl;
         }
         log_Cs->flush();
       }
     }
   }
-
   
   // log was written, so increase counter for records
   countrecord_++;
@@ -801,7 +817,6 @@ void TurbulenceStatistics::ClearStatistics()
     (*sumw_)[i]  =0;
     (*sump_)[i]  =0;
 
-
     (*sumsqu_)[i]=0;
     (*sumsqv_)[i]=0;
     (*sumsqw_)[i]=0;
@@ -809,7 +824,25 @@ void TurbulenceStatistics::ClearStatistics()
   }
   
   meanvelnp_->PutScalar(0.0);
-
+  
+  // reset smapling for dynamic Smagorinsky model
+  if (params_.sublist("TURBULENCE MODEL").get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
+      ==
+      "CLASSICAL_LES")
+  {
+    if(params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+       ==
+       "Dynamic_Smagorinsky"
+      )
+    {
+      for (unsigned rr=0;rr<sumCs_->size();++rr)
+      {
+        // reset value
+        (*sumCs_)[rr]=0;
+      }
+    }
+  }
+ 
   return;  
 }// TurbulenceStatistics::ClearStatistics
   

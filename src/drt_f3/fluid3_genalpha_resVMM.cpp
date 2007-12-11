@@ -687,6 +687,8 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
     //                     |      +-----------------------------------+
     //                     |           'resolved' rate of strain
     //                    mixing length
+    //               provided by the dynamic model
+    //                procedure and stored in Cs
     //
     
     double rateofstrain = 0;
@@ -708,10 +710,8 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
     visceff_ = visc + Cs * rateofstrain;
 
     // for evaluation of statistics: remember the 'real' Cs
-    Cs=sqrt(Cs/pow((vol_),(1.0/3.0)));
-    
-    
-//    cout << (Cs)/pow((vol_),(1.0/3.0)) <<&endl;
+    Cs=sqrt(Cs)/pow((vol_),(1.0/3.0));
+
   }
   else
   {

@@ -1017,7 +1017,7 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
   discret_->SetState("acc     (n+alpha_M,trial)",accam_);
 
   // extended statistics (plane average of Cs) for dynamic Smagorinsky model
-  RefCountPtr<vector<double> > global_Cs_sum;
+  RefCountPtr<vector<double> > incrsumCs;
   RefCountPtr<vector<double> > global_incr_Cs_sum;
   RefCountPtr<vector<double> > local_Cs_sum;
   global_incr_Cs_sum =  rcp(new vector<double> );
@@ -1033,14 +1033,14 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
        "Dynamic_Smagorinsky"
       )
     {
-      global_Cs_sum=turbulencestatistics_->ReturnCsAverage();
+      incrsumCs=turbulencestatistics_->ReturnCsAverage();
 
-      if(global_Cs_sum==null)
+      if(incrsumCs==null)
       {
         dserror("expected existence of vector global_Cs_sum --- not available\n");
       }
-      local_Cs_sum->resize(global_Cs_sum->size(),0.0);
-      global_incr_Cs_sum->resize(global_Cs_sum->size(),0.0);
+      local_Cs_sum->resize(incrsumCs->size(),0.0);
+      global_incr_Cs_sum->resize(incrsumCs->size(),0.0);
       
       eleparams.sublist("TURBULENCE MODEL").set<RefCountPtr<vector<double> > >("local_Cs_sum",local_Cs_sum);
     }
@@ -1064,14 +1064,14 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
     {
       // now add all the stuff from the different processors
 
-      for (unsigned rr=0;rr<(*global_Cs_sum).size();++rr)
+      for (unsigned rr=0;rr<(*incrsumCs).size();++rr)
       {
         discret_->Comm().SumAll(&((*local_Cs_sum)[rr]),&((*global_incr_Cs_sum)[rr]),1);
       }
 
-      for (unsigned rr=0;rr<(*global_Cs_sum).size();++rr)
+      for (unsigned rr=0;rr<(*incrsumCs).size();++rr)
       {
-        (*global_Cs_sum)[rr]+=(*global_incr_Cs_sum)[rr];
+        (*incrsumCs)[rr]=(*global_incr_Cs_sum)[rr];
       }
     }
   }
@@ -2078,18 +2078,8 @@ void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
   {
     (*averaged_LijMij_)[rr]/=count_for_average[rr];
     (*averaged_MijMij_)[rr]/=count_for_average[rr];
-   
-//    cout << ((*planecoords_)[rr]+(*planecoords_)[rr+1])/2 << " " << ((*averaged_LijMij_)[rr]/(*averaged_MijMij_)[rr]) <<  &endl;
   }
 
-/*  if(myrank_==0)
-  {
-    for (unsigned rr=0;rr<(*planecoords_).size()-1;++rr)
-    {
-      cout  << ((*planecoords_)[rr]+(*planecoords_)[rr+1])/2 << " " << (*averaged_LijMij_)[rr] << " " <<(*averaged_MijMij_)[rr] <<  &endl;
-    }
-  }
-*/
   // provide necessary information for the elements
   {
     ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));

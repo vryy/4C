@@ -810,9 +810,9 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
             
             // clipping to get algorithm stable
             if (Cs<0)
-              {
-                Cs=0;
-              }
+            {
+              Cs=0;
+            }
           }
           else
           {
@@ -1830,8 +1830,8 @@ void DRT::Elements::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
   blitz::Array<double, 2> evelaf_hat,
   blitz::Array<double, 3> ereynoldsstress_hat,
   blitz::Array<double, 3> efiltered_modeled_subgrid_stress_hat,
-  double&                 numerator,
-  double&                 denominator,
+  double&                 LijMij,
+  double&                 MijMij,
   double&                 center)
 {
 
@@ -2080,21 +2080,19 @@ void DRT::Elements::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
          -
          filterwidthratio*filterwidthratio*rateofstrain_hat*epsilon_hat(i,j);
 
-  numerator  =0;
-  denominator=0;
+  LijMij =0;
+  MijMij =0;
   for(int rr=0;rr<3;rr++)
   {
     for(int mm=0;mm<3;mm++)
     {
-      numerator   += L_ij(rr,mm)*M_ij(rr,mm);
-      denominator += M_ij(rr,mm)*M_ij(rr,mm);
+      LijMij += L_ij(rr,mm)*M_ij(rr,mm);
+      MijMij += M_ij(rr,mm)*M_ij(rr,mm);
     }
   }
-
-  
   
   return;
-}
+} // DRT::Elements::Fluid3::f3_calc_smag_const_LijMij_and_MijMij
 
 //
 // check for higher order derivatives for shape functions

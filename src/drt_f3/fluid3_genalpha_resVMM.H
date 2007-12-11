@@ -112,7 +112,23 @@ namespace DRT
     o Smagorinsky with Van Driest damping
       -----------------------------------
       Exponential damping of mixing lenght close to the wall      
+
+    o Dynamic Smagorinsky
+      -------------------
+      Based on Germano's model, see for example. Note that Cs is averaged over
+      planes in the channel flow and clipping of negative values of Cs is
+      applied (and necessary to keep the algorithm stable)
+
+      M. Germano, U. Piomelli, P. Moin, W.H. Cabot:
+      A dynamic subgrid-scale eddy viscosity model
+      (Phys. Fluids 1991)
       
+      or
+
+      D.K. Lilly:
+      A proposed modification of the Germano subgrid-scale closure method
+      (Phys. Fluids 1992)
+
     </pre>
         
     The stabilisation flags as well as turbulence model options are have been read
@@ -156,6 +172,9 @@ namespace DRT
         \param reynolds        (i) flag to add (u_sub,(u_sub o nabla) v) to right hand side
         \param turb_mod_action (i) action flag for the application of a turbulence model
         \param Cs            (i/o) value for Smagorinsky constant (zero if unused)
+                                   in case of the dynamic model, it is only equal to the
+                                   Smagorinsky constant on output. On input, it corresponds to
+                                   (Cs*hk)^2
         \param l_tau           (i) viscous length scale for van Driest damping (zero if unused)
         \param compute_elemat  (i) if false, element matrices are not computed
         

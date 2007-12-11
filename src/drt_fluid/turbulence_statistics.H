@@ -24,6 +24,9 @@ o loop planes (e.g. plane coordinates)
 o in plane mean values are averaged in time over all steps between two
   outputs
 
+o Write statistics for the Smagorinsky "constant" Cs if a dynamic
+  procedure to determine it is applied
+  
 Required parameters are the number of velocity degrees of freedom (3),
 the normal direction to the plane, in which the average values in space
 should be computed, and the basename of the statistics outfile. These
@@ -168,7 +171,7 @@ public:
   */
   RefCountPtr<vector<double> > ReturnCsAverage()
     {
-      return(sumCs_);
+      return(incrsumCs_);
     };
     
   //@}
@@ -269,8 +272,10 @@ private:
   //! sum over nodal forces on boundary in w direction
   double                           sumforcew_;
 
-  //! sum over Cs --- useful for dynamic Smagorinsky model
+  //! sum over Cs --- used only for dynamic Smagorinsky model
   RefCountPtr<vector<double> >     sumCs_;
+  //! increment of sumCs over in one timestep
+  RefCountPtr<vector<double> >     incrsumCs_;
   
   //! viscosity to calculate l_tau, y+ etc.
   double                           visc_;
