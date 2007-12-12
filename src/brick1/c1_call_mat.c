@@ -165,6 +165,7 @@ dstrc_enter("c1_call_mat");
     					disd,
     					stress,
     					d);
+  break;
   case m_quadratic_aniso:
   c1_mat_quadratic_aniso(
 		 	  ele,

@@ -330,6 +330,71 @@ Input/b3\_matnln.dat \\ \\
 
 
 
+\section{brick1}
+
+
+\subsection{Itskov material law for soft collagenous tissues}
+
+The function describes an inkompressibel hyperelastic material model based on the following papers:
+\begin{itemize}
+	\item (1) Itskov, Ehret, Mavrilas (2006) {\it A polyconvex anisotropic strain-energy function for soft colagenous tissues}
+	\item (2) Ehret, Itskov (2007) {\it A polyconvex hyperelastic model for fiber-reinforced materials in application to soft tissues}
+	\item (3) Balzani, Neff, Schroeder, Holzapfel (2005) {\it A Polyconvex Framework for Soft Biological Tissues. Adjustment to experimental Data.}
+\end{itemize}
+
+\subsubsection*{Strain-energy-function:}
+It is described by a strain energy function given in (1) which for the inkompressible, isotropic case takes the form
+\begin{displaymath}
+	W = 1/4\mu\left\{\frac{1}{\alpha} \left( \exp \left[ \alpha \Bigl(tr(C)-1 \Bigr) \right]  -1    \right) +	\frac{1}{\beta} \left( \exp \left[ \beta \Bigl(tr(C^{-1})-1   \Bigr) \right]  -1    \right) 
+	\right\}
+\end{displaymath}
+\noindent where $C$ is the right Cauchy-Green tensor and $\alpha$, $\beta$ and $\mu$ are material parameters.
+
+\subsubsection*{Inkompressibility:}
+To archieve inkompressibility the following penalty function according to (3) is used 
+\begin{displaymath}
+	W_{Pen} = \epsilon \left(I_3^\gamma+\frac{1}{I_3^\gamma}-2  \right)
+\end{displaymath}
+\noindent where $\gamma$ and $\epsilon$ are parameters and $I_3=det(C)$ is the third invariant of the right cauchy green tensor.
+
+\subsubsection*{Example for stress-strain-curve}
+For uniaxial tension with parameters $\alpha=20$, $\beta = 20$, $m=2.02$ and $\epsilon=100$, $\gamma=100$ a stress-strain-curve of the following shape is obtained.
+\begin{center}
+\includegraphics[width=80mm]{figures/stress-strain}
+\end{center}
+
+\subsubsection*{Parameters:}
+\begin{tabular}{|c|c|c|}
+	\hline
+	Name inside Function	& Name to write in Inputfile	& Description \\ \hline \hline
+	m		& M		& material parameter \\ \hline
+	alpha		& APLPHA 	& material parameter\\ \hline
+	beta		& BETA 		& material parameter \\ \hline
+	gamma\_Pen	& GAMMA	 	& Parameter penalty function\\ \hline
+	epsilon\_Pen	& EPSILON	 & Parameter penalty function\\ \hline
+\end{tabular}
+
+\subsubsection*{Line to describe itskov material in the input file:}
+{\tt MAT 1 MAT\_ITSKOV  M 2.026255 ALPHA 20.0 BETA 20.0 EPSILON 100.0 GAMMA 100.0 DENS 1.0E-10}
+
+\subsubsection*{Modified files:}
+\begin{itemize}
+	\item {\tt src/brick1/c1\_mat\_itskov.c}
+	\par \noindent itskov material law 	
+	\item {\tt src/brick1/brick1\_prototypes.h}
+	\par \noindent declaration of the function {\tt c1\_mat\_itskov}	
+	\item {\tt src/brick1/c1\_call\_mat.c}
+	\par \noindent call of the function {\tt c1\_mat\_itskov}
+	\par \noindent pass over densitiy
+	\item {\tt src/input\_full/input\_material.c}
+	\par \noindent definition of parameters from the input file
+	\item {\tt src/headers/materials.h}
+	\par \noindent definition of the structure {\tt ITSKOV} and insertion into the structure {\tt MATERIAL}
+	\item {\tt src/headers/enums.h}
+	\par \noindent insertion of {\tt m\_itskov} into the structure {\tt MATERIAL\_TYP}
+\end{itemize}
+
+
 \section{wallge}
 
 Corresponding routine: wge\_call\_mat\\
