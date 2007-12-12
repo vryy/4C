@@ -201,8 +201,9 @@ public:
      */
     BoundaryIntCell(
             const DRT::Element::DiscretizationType distype,
-            const std::vector< std::vector<double> > domainCoordinates,
-            const std::vector< std::vector<double> > boundaryCoordinates);
+            const int xfemConditionLabel,
+            const std::vector< std::vector<double> >& domainCoordinates,
+            const std::vector< std::vector<double> >& boundaryCoordinates);
 
     /*!
      \brief Copy Constructor
@@ -253,6 +254,12 @@ public:
     std::string Print() const;
 
 private:
+    
+    //! the boundaryIntCell must know to which xfemCondition it belongs
+    int xfemConditionLabel_;
+    
+    //! the boundaryIntCell should know, to which cutterElement it belongs!?
+    int surface_ele_gid_;
     
     //! coordinates of the nodes
     std::vector< std::vector<double> > domainCoordinates_;

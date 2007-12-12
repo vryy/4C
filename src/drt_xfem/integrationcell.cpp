@@ -336,9 +336,11 @@ blitz::Array<double,1> DomainIntCell::GetPhysicalCenterPosition(DRT::Element& el
 //
 BoundaryIntCell::BoundaryIntCell(
         const DRT::Element::DiscretizationType distype,
-        const vector< vector<double> > domainCoordinates,
-        const vector< vector<double> > boundaryCoordinates) :
+        const int xfemConditionLabel,
+        const vector< vector<double> >& domainCoordinates,
+        const vector< vector<double> >& boundaryCoordinates) :
             IntCell(distype),
+            xfemConditionLabel_(xfemConditionLabel),
             domainCoordinates_(domainCoordinates),
             boundaryCoordinates_(boundaryCoordinates)
 {
@@ -351,6 +353,7 @@ BoundaryIntCell::BoundaryIntCell(
 BoundaryIntCell::BoundaryIntCell(
         const BoundaryIntCell& old) :
             IntCell(old),
+            xfemConditionLabel_(old.xfemConditionLabel_),
             domainCoordinates_(old.domainCoordinates_),
             boundaryCoordinates_(old.boundaryCoordinates_)
 {

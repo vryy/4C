@@ -2235,7 +2235,7 @@ void Intersection::recoverCurvedInterface(
             	for(int jj=0; jj < 3; jj++)
             		printf("boundary = %f\n",boundaryCoord[ii][jj]);
             	*/
-            listBoundaryICPerElement.push_back(BoundaryIntCell(DRT::Element::tri6, domainCoord, boundaryCoord));        
+            listBoundaryICPerElement.push_back(BoundaryIntCell(DRT::Element::tri6, 1, domainCoord, boundaryCoord));        
          
         }
         
