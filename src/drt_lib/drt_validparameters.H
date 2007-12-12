@@ -63,6 +63,9 @@ extern "C"
   /*! print list of valid parameters with documentation */
   void PrintValidParameters();
 
+  /*! print flag sections of dat file with default flags */
+  void PrintDefaultDatHeader();
+
 #ifdef __cplusplus
 }
 #endif

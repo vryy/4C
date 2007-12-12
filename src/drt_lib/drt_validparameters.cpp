@@ -19,6 +19,8 @@ Maintainer: Ulrich Kuettler
 
 #include <Teuchos_Array.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+#include <Teuchos_StrUtils.hpp>
+#include <Teuchos_any.hpp>
 
 #include <AztecOO.h>
 
@@ -49,6 +51,71 @@ void PrintValidParameters()
               .showFlags(false)
               .indent(4)
               .showTypes(false));
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+static void PrintDefaultDatHeader(const Teuchos::ParameterList& list, std::string parentname="")
+{
+  for (Teuchos::ParameterList::ConstIterator i = list.begin();
+       i!=list.end();
+       ++i)
+  {
+    const Teuchos::ParameterEntry& entry = list.entry(i);
+    const std::string &name = list.name(i);
+    Teuchos::RCP<const Teuchos::ParameterEntryValidator> validator = entry.validator();
+
+    std::string doc = entry.docString();
+    if (doc!="")
+    {
+      Teuchos::StrUtils::printLines(std::cout,BLUE2_LIGHT "// ",doc);
+      std::cout << END_COLOR;
+    }
+
+    if (entry.isList())
+    {
+      std::string secname = parentname;
+      if (secname!="")
+        secname += "/";
+      secname += name;
+      unsigned l = secname.length();
+      std::cout << RED_LIGHT << "--";
+      for (int i=0; i<std::max<int>(65-l,0); ++i) std::cout << '-';
+      std::cout << GREEN_LIGHT << secname << END_COLOR << '\n';
+      PrintDefaultDatHeader(list.sublist(name),secname);
+    }
+    else
+    {
+      if (validator!=Teuchos::null)
+      {
+        Teuchos::RCP<const Teuchos::Array<std::string> > values = validator->validStringValues();
+        if (values!=Teuchos::null)
+        {
+          for (unsigned i=0; i<values->size(); ++i)
+          {
+            cout << BLUE2_LIGHT << "//     " << MAGENTA_LIGHT << (*values)[i] << END_COLOR << '\n';
+          }
+        }
+      }
+      const Teuchos::any& v = entry.getAny(false);
+      std::cout << BLUE_LIGHT << name << END_COLOR;
+      unsigned l = name.length();
+      for (int i=0; i<std::max<int>(31-l,0); ++i) std::cout << ' ';
+      std::cout << ' ' << YELLOW_LIGHT << v << END_COLOR << '\n';
+    }
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+//! Print function to be called from C
+/*----------------------------------------------------------------------*/
+extern "C"
+void PrintDefaultDatHeader()
+{
+  Teuchos::RCP<const Teuchos::ParameterList> list = DRT::ValidParameters();
+  PrintDefaultDatHeader(*list);
 }
 
 
@@ -87,7 +154,7 @@ void DRT::IntParameter(std::string const &paramName,
   Teuchos::AnyNumberParameterEntryValidator::AcceptedTypes validator(false);
   validator.allowInt(true);
   Teuchos::setIntParameter(paramName,value,
-                           string(YELLOW_LIGHT) + docString + string(END_COLOR),
+                           docString,
                            paramList,validator);
 }
 
@@ -102,7 +169,7 @@ void DRT::DoubleParameter(std::string const &paramName,
   Teuchos::AnyNumberParameterEntryValidator::AcceptedTypes validator(false);
   validator.allowDouble(true);
   Teuchos::setDoubleParameter(paramName,value,
-                              string(YELLOW_LIGHT) + docString + string(END_COLOR),
+                              docString,
                               paramList,validator);
 }
 
@@ -478,7 +545,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
                                  "Use a stabilization term related to the inertia term in the equations,\nrecommended for the usage of time dependent subscales."),
                                tuple<int>(0,1),
                                &fdyn_stab);
-  
+
   setStringToIntegralParameter("RVMM_SUPG",
                                "off",
                                "This flag (de)activates streamline upwinding for residual based stabilization.",
@@ -490,7 +557,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
                                  "Streamline upwinding as common for SUPG stabilization."),
                                tuple<int>(0,1),
                                &fdyn_stab);
-  
+
   setStringToIntegralParameter("RVMM_PSPG",
                                "off",
                                "For residual based stabilization, this flag (de)activates the pressure \nstabilization.",
@@ -611,7 +678,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
                                  "For this flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow."),
                                tuple<int>(0,1),
                                &fdyn_turbu);
-  
+
   setStringToIntegralParameter("CHANNEL_HOMPLANE",
                                "xz",
                                "Specify the homogenous plane in a channel flow",
@@ -625,9 +692,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
                                  "Wall normal direction is x"),
                                tuple<int>(0,1,2),
                                &fdyn_turbu);
-  
+
   DoubleParameter("CHANNEL_L_TAU",0.0,"Used for normalisation of the wall normal distance in the Van \nDriest Damping function. May be taken from the output of \nthe apply_mesh_stretching.pl preprocessing script.",&fdyn_turbu);
-  
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& adyn = list->sublist("ALE DYNAMIC",false,"");
 

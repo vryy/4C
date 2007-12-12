@@ -178,6 +178,17 @@ else if ((argc == 2) &&
     printf("\n\n");
   }
 }
+else if ((argc == 2) &&
+	 ((strcmp(argv[1], "-d") == 0) ||
+	   (strcmp(argv[1], "--datfile") == 0)))
+{
+  if (par.myrank==0)
+  {
+    printf("\n\nValid dat file header\n\n");
+    PrintDefaultDatHeader();
+    printf("\n\n");
+  }
+}
 #endif
 else {
   /* Here we turn the NaN and inf numbers of. No need to calculate
