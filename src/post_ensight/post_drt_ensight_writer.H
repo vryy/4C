@@ -109,27 +109,6 @@ protected:
     	os.write(reinterpret_cast<const char*>(&i), sizeof(T));
     }
     
-    /*!
-     \brief write a formated string to already opened filestream.
-            currently used for writing the ensight casefile
-     \author gjb
-     \date 11/07
-     */
-    void WriteFormatedString(
-            ofstream& os,
-            const string s) const
-    {
-    	// only processor 0 does the writing !! 
-    	if (myrank_==0)
-    	  {
-    		// first ensure, that the file is already open 
-    	    if (os.is_open()) 
-    	      {os << s;}
-    	    else
-    	      dserror("File is not open");
-    	  }
-    }
-    
     void Write(
             ofstream& os,
             const string s) const
@@ -138,6 +117,7 @@ protected:
         if (myrank_==0) 
         WriteString(os, s);
     }
+
     void Write(
             ofstream& os,
             const char* s) const
@@ -157,18 +137,11 @@ protected:
             ofstream& file,
             map<string, vector<ofstream::pos_type> >& resultfilepos,
             const string name);    
-    void WriteCoordinates(
-            ofstream& geofile,                         ///< filestream for the geometry
-            const RefCountPtr<DRT::Discretization> dis ///< discretization where the nodal positions are take from
-            ) const;
-    RefCountPtr<Epetra_Map> WriteCoordinatesPar(
+    RefCountPtr<Epetra_Map> WriteCoordinates(
             ofstream& geofile,                         ///< filestream for the geometry
             const RefCountPtr<DRT::Discretization> dis ///< discretization where the nodal positions are take from
             ) const;
     void WriteCells(
-            ofstream& geofile,
-            const RefCountPtr<DRT::Discretization> dis) const;
-    void WriteCellsPar(
             ofstream& geofile,///< filestream for the geometry
             const RefCountPtr<DRT::Discretization> dis, ///< discretization where the nodal positions are take from
             const RefCountPtr<Epetra_Map>& proc0map ///< current proc0 node map, created by WriteCoordinatesPar

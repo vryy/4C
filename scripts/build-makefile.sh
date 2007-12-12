@@ -68,8 +68,6 @@ VISUAL2_LIB=$VISUAL2_LIB
 VISUAL3_LIB=$VISUAL3_LIB
 #VISUAL3_INC=$VISUAL3_INC
 
-FILTERSUFFIX=$POSTFILTERSUFFIX
-
 #----------------------- binaries -----------------------------------
 include \$(SRC)/Makefile.objects
 #--------------------------------------------------------------------

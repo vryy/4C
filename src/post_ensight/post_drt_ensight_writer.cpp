@@ -210,16 +210,9 @@ void EnsightWriter::WriteGeoFileOneTimeStep(
     Write(file, field_->num_nodes());
 
     // write the grid information
-#ifdef PARALLEL
-    dserror("parallel configured filter not finished yet. build a serial one!");
-    RefCountPtr<Epetra_Map> proc0map = WriteCoordinatesPar(file, field_->discretization());
-	// update the internal map 
-	proc0map_=proc0map;
-    WriteCellsPar(file, field_->discretization(), proc0map);
-#else
-    WriteCoordinates(file, field_->discretization());
-    WriteCells(file, field_->discretization());    
-#endif
+    RefCountPtr<Epetra_Map> proc0map = WriteCoordinates(file, field_->discretization());
+	proc0map_=proc0map; // update the internal map 
+    WriteCells(file, field_->discretization(), proc0map);
 
     Write(file, "END TIME STEP");
     return;
@@ -228,39 +221,7 @@ void EnsightWriter::WriteGeoFileOneTimeStep(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EnsightWriter::WriteCoordinates(
-        ofstream& geofile,
-        const RefCountPtr<DRT::Discretization> dis) const
-{
-    const Epetra_Map* nodemap = dis->NodeRowMap();
-    dsassert(nodemap->NumMyElements() == nodemap->NumGlobalElements(),
-            "filter cannot be run in parallel");
-
-    const int numnp = nodemap->NumMyElements();
-    // write node ids
-    for (int inode=0; inode<numnp; ++inode)
-    {
-        Write(geofile,nodemap->GID(inode)+1);
-    }
-
-    const int NSD = 3; ///< number of space dimensions
-    // ensight format requires x_1 .. x_n, y_1 .. y_n, z_1 ... z_n
-    for (int isd=0; isd<NSD; ++isd)
-    {
-        for (int inode=0; inode<numnp; inode++)
-        {
-            const int gid = nodemap->GID(inode);
-            const DRT::Node* actnode = dis->gNode(gid);
-            Write(geofile, static_cast<float>(actnode->X()[isd]));
-        }
-    }
-    return;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinatesPar(
+RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
         ofstream& geofile,
         const RefCountPtr<DRT::Discretization> dis) const
 {
@@ -321,101 +282,10 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinatesPar(
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void EnsightWriter::WriteCells(
-        ofstream& geofile,
-        const RefCountPtr<DRT::Discretization> dis) const
-{
-    const Epetra_Map* nodemap = dis->NodeRowMap();
-    dsassert(nodemap->NumMyElements() == nodemap->NumGlobalElements(),
-            "filter cannot be run in parallel");
-
-    const Epetra_Map* elementmap = dis->ElementRowMap();
-    dsassert(elementmap->NumMyElements() == elementmap->NumGlobalElements(),
-            "filter cannot be run in parallel");
-
-    // get the number of elements for each distype
-    const NumElePerDisType numElePerDisType = GetNumElePerDisType(dis);
-
-    // for each found distype write block of the same typed elements
-    NumElePerDisType::const_iterator iter;
-    for (iter=numElePerDisType.begin(); iter != numElePerDisType.end(); ++iter)
-    {
-        const DRT::Element::DiscretizationType distypeiter = iter->first;
-        const int ne = GetNumEleOutput(distypeiter, iter->second);
-        const string ensightString = GetEnsightString(distypeiter);
-
-        map<DRT::Element::DiscretizationType, string>::const_iterator entry = distype2ensightstring_.find(distypeiter);
-        if (entry == distype2ensightstring_.end())
-            dserror("no entry in distype2ensightstring_ found");
-        const string realcellshape = entry->second;
-        
-        cout << "writing "<< iter->second<< " "<< realcellshape << " elements"
-                << " ("<< ne << " cells) per distype."<< " ensight output celltype: "
-                << ensightString<< endl;
-
-        Write(geofile, ensightString);
-        Write(geofile, ne);
-
-        // loop all available elements
-        for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
-        {
-            DRT::Element* const actele = dis->gElement(elementmap->GID(iele));
-            if (actele->Shape() == distypeiter)
-            {
-                DRT::Node** const nodes = actele->Nodes();
-                switch (actele->Shape())
-                {
-                case DRT::Element::hex20:
-                case DRT::Element::hex8:
-                case DRT::Element::quad4:
-                case DRT::Element::quad8:
-                case DRT::Element::tet4:
-                case DRT::Element::tet10:
-                case DRT::Element::tri3:
-                case DRT::Element::wedge6:
-                case DRT::Element::wedge15:
-                case DRT::Element::pyramid5:
-                {
-                    // standard case with direct support
-                    const int numnp = actele->NumNode();
-                    for (int inode=0; inode<numnp; ++inode)
-                        Write(geofile, nodemap->LID(nodes[inode]->Id())+1);
-                    break;
-                }
-                case DRT::Element::hex27:
-                {
-                    // write subelements
-                    for (int isubele=0; isubele<8; ++isubele)
-                        for (int isubnode=0; isubnode<8; ++isubnode)
-                            Write(geofile, nodemap->LID(nodes[subhexmap[isubele][isubnode]]->Id())
-                                    +1);
-                    break;
-                }
-                case DRT::Element::quad9:
-                {
-                    // write subelements
-                    for (int isubele=0; isubele<4; ++isubele)
-                        for (int isubnode=0; isubnode<4; ++isubnode)
-                            Write(geofile, nodemap->LID(nodes[subquadmap[isubele][isubnode]]->Id())
-                                    +1);
-                    break;
-                }
-                default:
-                    dserror("don't know, how to write this element type as a cell");
-                };
-            };
-        };
-    };
-    return;
-}
-
-
 /*----------------------------------------------------------------------*
  | write node connectivity for every element                  gjb 12/07 |
  *----------------------------------------------------------------------*/
-void EnsightWriter::WriteCellsPar(
+void EnsightWriter::WriteCells(
         ofstream& geofile,
         const RefCountPtr<DRT::Discretization> dis,
         const RefCountPtr<Epetra_Map>& proc0map
@@ -756,6 +626,10 @@ void EnsightWriter::WriteResult(
     	file.open(filename.c_str());
     }
     
+    // some output
+    if (myrank_==0)
+    	cout<<"writing field "<<name<<endl;
+    
     map<string, vector<ofstream::pos_type> > resultfilepos;
     WriteResultStep(file, result, resultfilepos, groupname, name, numdf, from);
     while (result.next_result())
@@ -780,10 +654,6 @@ void EnsightWriter::WriteResult(
     // close result file   
     if (file.is_open())
     	file.close();
-
-    // some output
-    if (myrank_==0)
-    	cout<<"writing field "<<name<<endl;
 
     return;
 }
@@ -854,45 +724,71 @@ void EnsightWriter::WriteResultStep(
         const int numdf,
         const int from) const
 {
-    vector<ofstream::pos_type>& filepos = resultfilepos[name];
-    Write(file, "BEGIN TIME STEP");
-    filepos.push_back(file.tellp());
+	//-------------------------------------------
+	// write some key words and read result data
+	//-------------------------------------------
 
-    Write(file, "description");
-    Write(file, "part");
-    Write(file, field_->field_pos()+1);
-    Write(file, "coordinates");
+	vector<ofstream::pos_type>& filepos = resultfilepos[name];
+	Write(file, "BEGIN TIME STEP");
+	filepos.push_back(file.tellp());
 
-    const RefCountPtr<DRT::Discretization> dis = field_->discretization();
-    const Epetra_Map* nodemap = dis->NodeRowMap(); //local node map
-    const RefCountPtr<Epetra_Vector> data = result.read_result(groupname);
+	Write(file, "description");
+	Write(file, "part");
+	Write(file, field_->field_pos()+1);
+	Write(file, "coordinates");
 
-#ifdef PARALLEL
-	int numnpglobal = nodemap->NumGlobalElements();
-	
+	const RefCountPtr<DRT::Discretization> dis = field_->discretization();
+	const Epetra_Map* nodemap = dis->NodeRowMap(); //local node row map
+	const int numnp = nodemap->NumGlobalElements();
+
+	const RefCountPtr<Epetra_Vector> data = result.read_result(groupname);
+	const Epetra_BlockMap& datamap = data->Map();
+
+	// do stupid conversion into Epetra map
+	RefCountPtr<Epetra_Map> epetradatamap;
+	epetradatamap = rcp(new Epetra_Map(datamap.NumGlobalElements(),
+			datamap.NumMyElements(),
+			datamap.MyGlobalElements(),
+			0,
+			datamap.Comm()));
+
+	if (epetradatamap->PointSameAs(*proc0map_))
+		cout<<"identical maps"<<endl;
 	// check if the data is distributed over several processors
-	if (data->DistributedGlobal())
-		;
-	// if not we have to have everything on proc0
+	//bool isdistributed = (data->DistributedGlobal());
 
-	const Epetra_BlockMap& datamapser = data->Map();
+	//------------------------------------------------------
+	// each processor provides its result values for proc 0
+	//------------------------------------------------------
 
-	// each processor provides its information
-	RefCountPtr<Epetra_MultiVector> dofgidperlocalnodeid = rcp(new Epetra_MultiVector(*nodemap,numdf));
-	//initialize
-	dofgidperlocalnodeid->PutScalar(-1.0);
+	RefCountPtr<Epetra_Map> proc0datamap;
+	proc0datamap = DRT::Utils::AllreduceEMap(*epetradatamap,0);
 
-	const int numnp = nodemap->NumMyElements();
+	// contract result values on proc0 (proc0 gets everything, other procs empty)
+	Epetra_Import proc0dataimporter(*proc0datamap,*epetradatamap);   
+	RefCountPtr<Epetra_Vector> proc0data = rcp(new Epetra_Vector(*proc0datamap));
+	int err = proc0data->Import(*data,proc0dataimporter,Insert);
+	if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
+
+	const Epetra_BlockMap& finaldatamap = proc0data->Map();
+
+	//------------------------------------------------------------------
+	// each processor provides its dof global id information for proc 0
+	//------------------------------------------------------------------
+
+	RefCountPtr<Epetra_MultiVector> dofgidpernodelid = rcp(new Epetra_MultiVector(*nodemap,numdf));
+	dofgidpernodelid->PutScalar(-1.0);
+
+	const int mynumnp = nodemap->NumMyElements();
 	for (int idf=0; idf<numdf; ++idf)
 	{
-		for (int inode=0; inode<numnp; inode++)
+		for (int inode=0; inode<mynumnp; inode++)
 		{
 			DRT::Node* n = dis->lRowNode(inode);
-			//const int nodegid = proc0map_->GID(inode); // old information??? unused
 			const double dofgid = (double) dis->Dof(n, from + idf);
 			if (dofgid > -1.0)
 			{    
-				dofgidperlocalnodeid->ReplaceMyValue(inode, idf, dofgid);
+				dofgidpernodelid->ReplaceMyValue(inode, idf, dofgid);
 			}
 			else
 			{
@@ -901,107 +797,53 @@ void EnsightWriter::WriteResultStep(
 		}
 	}
 
-	// put all coordinate information on proc 0
-
-	RefCountPtr<Epetra_Map> epetradatamap;
-	epetradatamap = rcp(new Epetra_Map(datamapser.NumGlobalElements(),
-			datamapser.NumMyElements(),
-			datamapser.MyGlobalElements(),
-			0,
-			dis->Comm()));
-
-	RefCountPtr<Epetra_Map> proc0datamap;
-	proc0datamap = DRT::Utils::AllreduceEMap(*epetradatamap,0);
-	
-	// import my new values (proc0 gets everything, other procs empty)
-	Epetra_Import proc0dataimporter(*proc0datamap,*epetradatamap);   
-	RefCountPtr<Epetra_Vector> proc0data = rcp(new Epetra_Vector(*proc0datamap));
-
-	// import node coordinates from ALL nodes of current discretization
-	int err = proc0data->Import(*data,proc0dataimporter,Insert);
-	if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);   
-	// redirect
-	const Epetra_BlockMap& datamap = proc0data->Map();
-
-	// contract on proc0
-	RefCountPtr<Epetra_MultiVector> dofgidperlocalnodeid_proc0 = rcp(new Epetra_MultiVector(*proc0map_,numdf));
-	// import my new values (proc0 gets everything, other procs empty)
+	// contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
+	RefCountPtr<Epetra_MultiVector> dofgidpernodelid_proc0 = rcp(new Epetra_MultiVector(*proc0map_,numdf));
 	Epetra_Import proc0dofimporter(*proc0map_,*nodemap);   
-
-	// import node coordinates from ALL nodes of current discretization
-	err = dofgidperlocalnodeid_proc0->Import(*dofgidperlocalnodeid,proc0dofimporter,Insert);
+	err = dofgidpernodelid_proc0->Import(*dofgidpernodelid,proc0dofimporter,Insert);
 	if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
 
-	// now write
-	if (myrank_==0)
+	//---------------
+	// write results
+	//---------------
+
+	const int finalnumnode = proc0map_->NumGlobalElements();
+	if (myrank_==0) // ensures pointer dofgids is valid
 	{
-		numnpglobal = proc0map_->NumGlobalElements();
-
-		dsassert(proc0map_->NumMyElements()==numnpglobal,"have not all data");
-
-		double* dofgids = (dofgidperlocalnodeid_proc0->Values()); // columnwise data storage
+		double* dofgids = (dofgidpernodelid_proc0->Values()); // columnwise data storage
 		for (int idf=0; idf<numdf; ++idf)
 		{
-			for (int inode=0; inode<numnpglobal; inode++) // inode == lid of node since use of proc0map_
+			for (int inode=0; inode<finalnumnode; inode++) // inode == lid of node because we use proc0map_
 			{
-				// get node gid
-				//const int nodegid = proc0map_->GID(inode);
-				//dofgidperlocalnodeid_proc0->Map().LID(nodegid);
-				// get row lid
-				const int doflid =  inode;
-
-				// sorry for converting double to int
+				// local storage position of desired dof gid
+				const int doflid = inode + (idf*numnp);  
+                // get the dof global id 
 				const int actdofgid = (int) (dofgids[doflid]);
-				dsassert(actdofgid>= 0, "error");
-				// now we do the usual things
-				int lid = datamap.LID(actdofgid);
+				dsassert(actdofgid>= 0, "error while getting dof global id");
+                // get the dof local id w.r.t. the finaldatamap
+				int lid = finaldatamap.LID(actdofgid);
 				if (lid > -1)
 				{
 					Write(file, static_cast<float>((*proc0data)[lid]));
 				}
 				else
-					dserror("error while writing result file");
+					dserror("recieved illegal dof local id: ", lid);
 			}
 		}// for idf
-	} // myrank==0
+	} // if (myrank_==0)
 
-      
-#else
-    const Epetra_BlockMap& datamap = data->Map();
+	// 2 component vectors in a 3d problem require a row of zeros.
+	// do we really need this?
+	if (numdf==2)
+	{
+		for (int inode=0; inode<numnp; inode++)
+		{
+			Write<float>(file, 0.);
+		}
+	}
 
-    
-    const int numnp = nodemap->NumGlobalElements();
-    for (int idf=0; idf<numdf; ++idf)
-    {
-        for (int inode=0; inode<numnp; inode++)
-        {
-            DRT::Node* n = dis->lRowNode(inode);
-            const int lid = datamap.LID(dis->Dof(n, from+idf));
-            if (lid > -1)
-            {
-                Write(file, static_cast<float>((*data)[lid]));
-            }
-            else
-            {
-                // Assume we have to write a value here.
-                Write<float>(file, 0.);
-            }
-        }
-    }
-#endif
-  
-    // 2 component vectors in a 3d problem require a row of zeros.
-    // do we really need this?
-    if (numdf==2)
-    {
-        for (int inode=0; inode<numnp; inode++)
-        {
-            Write<float>(file, 0.);
-        }
-    }
-
-    Write(file, "END TIME STEP");
-    return;
+	Write(file, "END TIME STEP");
+	return;
 }
 
 
