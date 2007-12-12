@@ -147,6 +147,15 @@ public:
     );
 
   /*!
+    \brief build linear system matrix and rhs
+
+    Monolithic FSI needs to access the linear fluid problem.
+
+    \param vel new guess at velocity and pressure
+  */
+  void Evaluate(Teuchos::RCP<const Epetra_Vector> vel);
+
+  /*!
   \brief Update the solution after convergence of the nonlinear
          iteration. Current solution becomes old solution of next
          timestep.
@@ -180,13 +189,43 @@ public:
 
   */
   RefCountPtr<Epetra_Vector> CalcStresses();
-  
+
   /*!
   \brief read restart data
 
   */
   void ReadRestart(int step);
 
+  //! @name access methods for composite algorithms
+  /// monolithic FSI needs to access the linear fluid problem
+
+  Teuchos::RCP<Epetra_Vector> InitialGuess() { return incvel_; }
+  Teuchos::RCP<Epetra_Vector> Residual() { return residual_; }
+  Teuchos::RCP<Epetra_Vector> Vel() { return velnp_; }
+  Teuchos::RCP<Epetra_Vector> Dirichlet() { return dirichtoggle_; }
+  Teuchos::RCP<Epetra_Vector> Dispnp() { return dispnp_; }
+  Teuchos::RCP<Epetra_Vector> Dispn() { return dispn_; }
+  Teuchos::RCP<Epetra_Operator> SysMat() { return sysmat_; }
+  Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
+
+  Teuchos::RCP<Epetra_Map> VelocityRowMap() { return velrowmap_; }
+  Teuchos::RCP<Epetra_Map> PressureRowMap() { return prerowmap_; }
+
+  double ResidualScaling() const { return density_/dta_/theta_; }
+
+  void UpdateGridv() {
+    // There are other choices how to approximate that. Which one to
+    // chose?
+    gridv_->Update(1/dta_, *dispnp_, -1/dta_, *dispn_, 0.0);
+  }
+
+  /*!
+  \brief calculate lift&drag forces and angular momenta
+
+  */
+    void LiftDrag() const;
+  
+  //@}
 
 protected:
 
@@ -200,6 +239,7 @@ protected:
   ParameterList&                params_;
   IO::DiscretizationWriter&         output_;
   IO::DiscretizationWriter&         solidoutput_;
+  int                           myrank_;
   int                           maxentriesperrow_;
   bool                          alefluid_;
 
@@ -223,8 +263,15 @@ protected:
   double dtp_;
   double theta_;
 
-  /// system matrix --- stiffness and mass are assembled in one matrix!
+  int fssgv_;
+
+  /// system matrices: standard (stabilized) matrix and (fine-scale)
+  /// subgrid-viscosity matrix
   RefCountPtr<Epetra_CrsMatrix> sysmat_;
+  RefCountPtr<Epetra_CrsMatrix> sysmat_sv_;
+
+  /// scale-separation matrix for VM3-based solution approach
+  RefCountPtr<Epetra_CrsMatrix> scalesep_;
 
   /// toggle vector indicating which dofs have Dirichlet BCs
   RefCountPtr<Epetra_Vector>    dirichtoggle_;
@@ -237,9 +284,10 @@ protected:
   /// the vector containing body and surface forces
   RefCountPtr<Epetra_Vector>    neumann_loads_;
 
-  /// The residual vector --- more or less the rhs for the incremental
-  /// formulation!!!
+  /// rhs: standard (stabilized) residual vector (rhs for the incremental form)
+  /// and (fine-scale) subgrid-viscosity residual vector
   RefCountPtr<Epetra_Vector>    residual_;
+  RefCountPtr<Epetra_Vector>    residual_sv_;
 
   /// true (rescaled) residual vector without zeros at dirichlet positions
   RefCountPtr<Epetra_Vector>    trueresidual_;
@@ -295,14 +343,8 @@ protected:
   RefCountPtr<TimeMonitor> tm5_ref_ ;
   RefCountPtr<TimeMonitor> tm6_ref_ ;
 
-private:
-
-/*!
-\brief calculate lift&drag forces and angular momenta
-
-*/
-  void LiftDrag();
-
+  /// density extracted from element material
+  double density_;
 
 }; // class FluidImplicitTimeInt
 

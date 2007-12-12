@@ -1594,8 +1594,8 @@ void FluidImplicitTimeInt::SolveStationaryProblem()
     // -------------------------------------------------------------------
     //              set (pseudo-)time dependent parameters
     // -------------------------------------------------------------------
-           step_ += 1;
-           time_ += dta_;
+       step_ += 1;
+       time_ += dta_;
 
 	// -------------------------------------------------------------------
 	//                         out to screen
@@ -1622,7 +1622,7 @@ void FluidImplicitTimeInt::SolveStationaryProblem()
 	     eleparams.set("total time",time_);
 	     eleparams.set("delta time",dta_);
 	     eleparams.set("thsl",1.0); // no timefac in stationary case
-             eleparams.set("fs subgrid viscosity",fssgv_);
+         eleparams.set("fs subgrid viscosity",fssgv_);
 
 	     // set vector values needed by elements
 	     discret_->ClearState();
@@ -1753,7 +1753,7 @@ Notice: Angular moments obtained from lift&drag forces currently refere to the
         initial configuration, i.e. are built with the coordinates X of a particular
         node irrespective of its current position.
 */
-void FluidImplicitTimeInt::LiftDrag()
+void FluidImplicitTimeInt::LiftDrag() const
 {
   std::map< const int, std::set<DRT::Node* > > ldnodemap;
   std::map< const int, const std::vector<double>* > ldcoordmap;
@@ -1813,7 +1813,7 @@ void FluidImplicitTimeInt::LiftDrag()
 
 
     // now step the label map
-    for( std::map< const int, std::set<DRT::Node*> >::iterator labelit = ldnodemap.begin();
+    for( std::map< const int, std::set<DRT::Node*> >::const_iterator labelit = ldnodemap.begin();
          labelit != ldnodemap.end(); ++labelit )
     {
       const std::set<DRT::Node*>& nodes = labelit->second; // pointer to nodeset of present label
@@ -1859,7 +1859,7 @@ void FluidImplicitTimeInt::LiftDrag()
         if (ndim == 2)
 	{
 	  cout << "     " << label << "         ";
-	  cout << std::scientific << resultvec[0] << "    ";
+      cout << std::scientific << resultvec[0] << "    ";
 	  cout << std::scientific << resultvec[1] << "    ";
 	  cout << std::scientific << resultvec[5];
 	  cout << "\n";
@@ -1867,7 +1867,7 @@ void FluidImplicitTimeInt::LiftDrag()
         if (ndim == 3)
 	{
 	  cout << "     " << label << "         ";
-	  cout << std::scientific << resultvec[0] << "    ";
+      cout << std::scientific << resultvec[0] << "    ";
 	  cout << std::scientific << resultvec[1] << "    ";
 	  cout << std::scientific << resultvec[2] << "    ";
 	  cout << std::scientific << resultvec[3] << "    ";

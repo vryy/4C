@@ -65,6 +65,28 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 {
 
   // -------------------------------------------------------------------
+  // get the basic parameters first
+  // -------------------------------------------------------------------
+
+  // bound for the number of timesteps
+  stepmax_                   =params_.get<int>   ("max number timesteps");
+  // max. sim. time
+  maxtime_                   =params_.get<double>("total time");
+
+  // parameter for time-integration
+  theta_                     =params_.get<double>("theta");
+  // which kind of time-integration
+  timealgo_                  =params_.get<FLUID_TIMEINTTYPE>("time int algo");
+
+  // parameter for linearisation scheme (fixed point like or newton like)
+  newton_ = params_.get<bool>("Use reaction terms for linearisation",false);
+
+  dtp_ = dta_ = params_.get<double>("time step size");
+
+  // (fine-scale) subgrid viscosity?
+  fssgv_  =params_.get<int>("fs subgrid viscosity",0);
+
+  // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
   PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(discret_);
@@ -106,6 +128,11 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   ComputeSingleFieldRowMaps(initialdofmanager);
 
   // -------------------------------------------------------------------
+  // get the processor ID from the communicator
+  // -------------------------------------------------------------------
+  myrank_  = discret_->Comm().MyPID();
+
+  // -------------------------------------------------------------------
   // create empty system matrix --- stiffness and mass are assembled in
   // one system matrix!
   // -------------------------------------------------------------------
@@ -117,6 +144,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // a 'good' estimate
   maxentriesperrow_ = 108;
 
+  // initialize standard (stabilized) system matrix
   sysmat_ = null;
 
   // -------------------------------------------------------------------
@@ -163,13 +191,22 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // Vectors used for solution process
   // ---------------------------------
 
-  // The residual vector --- more or less the rhs for the incremental
-  // formulation!!!
+  // rhs: standard (stabilized) residual vector (rhs for the incremental form)
   residual_     = LINALG::CreateVector(*dofrowmap,true);
   trueresidual_ = LINALG::CreateVector(*dofrowmap,true);
 
   // Nonlinear iteration increment vector
   incvel_       = LINALG::CreateVector(*dofrowmap,true);
+
+  // necessary only for the VM3 approach
+  if (fssgv_ > 0)
+  {
+    // initialize (fine-scale) subgrid-viscosity system matrix
+    sysmat_sv_ = null;
+
+    // residual vector containing (fine-scale) subgrid-viscosity residual
+    residual_sv_  = LINALG::CreateVector(*dofrowmap,true);
+  }
 
   // solid displacement
   soliddispnp_       = LINALG::CreateVector(*soliddofrowmap,true);
@@ -270,33 +307,9 @@ void XFluidImplicitTimeInt::Integrate()
 {
   // time measurement --- start TimeMonitor tm0 and tm1
   tm0_ref_        = rcp(new TimeMonitor(*timedyntot_ ));
-  tm1_ref_        = rcp(new TimeMonitor(*timedyninit_));
 
-  // ----------------------------------------------------- stop criteria
   // bound for the number of startsteps
   int    numstasteps         =params_.get<int>   ("number of start steps");
-  // bound for the number of timesteps
-  stepmax_                   =params_.get<int>   ("max number timesteps");
-  // max. sim. time
-  maxtime_                   =params_.get<double>("total time");
-
-  // parameter for time-integration
-  theta_                     =params_.get<double>("theta");
-  // which kind of time-integration
-  timealgo_                  =params_.get<FLUID_TIMEINTTYPE>("time int algo");
-
-  // parameter for linearisation scheme (fixed point like or newton like)
-  newton_ = params_.get<bool>("Use reaction terms for linearisation",false);
-
-  // parameter for start algorithm
-  //double starttheta          =params_.get<double>("start theta");
-  //FLUID_TIMEINTTYPE startalgo=timeint_one_step_theta;
-
-  dtp_ = dta_ = params_.get<double>("time step size");
-
-  // time measurement --- this causes the TimeMonitor tm1 to stop here
-  //                                                (call of destructor)
-  tm1_ref_ = null;
 
   if (timealgo_==timeint_stationary)
     // stationary case
@@ -322,7 +335,7 @@ void XFluidImplicitTimeInt::Integrate()
   // print the results of time measurements
 
   tm0_ref_ = null; // end total time measurement
-  cout<<endl<<endl;
+  //cout<<endl<<endl;
   TimeMonitor::summarize();
 
   return;
@@ -512,7 +525,7 @@ void XFluidImplicitTimeInt::PrepareTimeStep()
   // -------------------------------------------------------------------
   //                         out to screen
   // -------------------------------------------------------------------
-  if (discret_->Comm().MyPID()==0)
+  if (myrank_==0)
   {
     switch (timealgo_)
     {
@@ -653,7 +666,7 @@ void XFluidImplicitTimeInt::NonlinearSolve()
   }
   
   
-  if (discret_->Comm().MyPID() == 0)
+  if (myrank_ == 0)
   {
     printf("+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+\n");
     printf("|- step/max -|- tol      [norm] -|-- vel-res ---|-- pre-res ---|-- fullres ---|-- vel-inc ---|-- pre-inc ---|-- fullinc ---|\n");
@@ -674,19 +687,8 @@ void XFluidImplicitTimeInt::NonlinearSolve()
       // get cpu time
       tcpu=ds_cputime();
 
-#if 1
       sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
-#else
-      // zero out the stiffness matrix
-      // We reuse the sparse mask and assemble into a filled matrix
-      // after the first step. This is way faster.
-      if (sysmat_==null)
-        sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
-      else
-        sysmat_->PutScalar(0.0);
-#endif
-      // zero out residual
-      residual_->PutScalar(0.0);
+
       // add Neumann loads
       residual_->Update(1.0,*neumann_loads_,0.0);
 
@@ -695,23 +697,16 @@ void XFluidImplicitTimeInt::NonlinearSolve()
 
       // action for elements
       if (timealgo_==timeint_stationary)
-          eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");    	  
+          eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
       else
           eleparams.set("action","calc_fluid_systemmat_and_residual");
 
       // other parameters that might be needed by the elements
       eleparams.set("total time",time_);
       eleparams.set("thsl",theta_*dta_);
+      eleparams.set("fs subgrid viscosity",fssgv_);
       eleparams.set("include reactive terms for linearisation",newton_);
-#if 0
-      // this parameter is obsolete due to the usage of different actions
-      // g.bau 11/07
-      if (timealgo_==timeint_stationary)
-          eleparams.set("using stationary formulation",true);
-      else
-          eleparams.set("using stationary formulation",false);
-#endif
-      
+
       // set vector values needed by elements
       discret_->ClearState();
       discret_->SetState("velnp",velnp_);
@@ -733,13 +728,13 @@ void XFluidImplicitTimeInt::NonlinearSolve()
 
       density = eleparams.get("density", 0.0);
 
-      // finalize the system matrix
+      // finalize the complete matrix
       LINALG::Complete(*sysmat_);
       maxentriesperrow_ = sysmat_->MaxNumEntries();
 
       // end time measurement for element call
       tm3_ref_=null;
-      dtele=ds_cputime() - tcpu;
+      dtele=ds_cputime()-tcpu;
     }
 
     // How to extract the density from the fluid material?
@@ -816,7 +811,7 @@ void XFluidImplicitTimeInt::NonlinearSolve()
       full.Norm2(&fullnorm_L2);
     }
 
-    // care for the case that nothing really happens in the velocity 
+    // care for the case that nothing really happens in the velocity
     // or pressure field
     if (velnorm_L2 < 1e-5)
     {
@@ -833,18 +828,18 @@ void XFluidImplicitTimeInt::NonlinearSolve()
 
     //-------------------------------------------------- output to screen
     /* special case of very first iteration step:
-        - solution increment is not yet available 
+        - solution increment is not yet available
         - convergence check is not required (we solve at least once!)    */
     if (itnum == 1)
     {
-      if (discret_->Comm().MyPID() == 0)
+      if (myrank_ == 0)
       {
         printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   |      --      |      --      |      --      |",
                itnum,itemax,ittol,vresnorm,presnorm,fullresnorm);
         printf(" (      --     ,te=%10.3E)\n",dtele);
       }
     }
-    /* ordinary case later iteration steps: 
+    /* ordinary case later iteration steps:
         - solution increment can be printed
         - convergence check should be done*/
     else
@@ -856,7 +851,7 @@ void XFluidImplicitTimeInt::NonlinearSolve()
           incvelnorm_L2/velnorm_L2 <= ittol and incprenorm_L2/prenorm_L2 <= ittol)
       {
         stopnonliniter=true;
-        if (discret_->Comm().MyPID() == 0)
+        if (myrank_ == 0)
         {
           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
                  itnum,itemax,ittol,vresnorm,presnorm,fullresnorm,
@@ -867,14 +862,14 @@ void XFluidImplicitTimeInt::NonlinearSolve()
         break;
       }
       else // if not yet converged
-        if (discret_->Comm().MyPID() == 0)
+        if (myrank_ == 0)
         {
           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
                  itnum,itemax,ittol,vresnorm,presnorm,fullresnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2,incfullnorm_L2/fullnorm_L2);
           printf(" (ts=%10.3E,te=%10.3E)\n",dtsolve,dtele);
         }
-    } 
+    }
 
     // warn if itemax is reached without convergence, but proceed to
     // next timestep...
@@ -885,7 +880,7 @@ void XFluidImplicitTimeInt::NonlinearSolve()
                              incfullnorm_L2/fullnorm_L2 > ittol))
     {
       stopnonliniter=true;
-      if (discret_->Comm().MyPID() == 0)
+      if (myrank_ == 0)
       {
         printf("+---------------------------------------------------------------+\n");
         printf("|            >>>>>> not converged in itemax steps!              |\n");
@@ -902,8 +897,7 @@ void XFluidImplicitTimeInt::NonlinearSolve()
       // start time measurement for application of dirichlet conditions
       tm4_ref_ = rcp(new TimeMonitor(*timeapplydirich_));
 
-      LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,
-				     zeros_,dirichtoggle_);
+      LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,dirichtoggle_);
 
       // end time measurement for application of dirichlet conditions
       tm4_ref_=null;
@@ -935,6 +929,76 @@ void XFluidImplicitTimeInt::NonlinearSolve()
 
   return;
 } // FluidImplicitTimeInt::NonlinearSolve
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | build linear system matrix and rhs                        u.kue 11/07|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void XFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
+{
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+
+  // set the new solution we just got
+  if (vel!=Teuchos::null)
+  {
+    incvel_->Update(1.0, *vel, 0.);
+
+    //------------------------------------------------ update (u,p) trial
+    velnp_->Update(1.0,*incvel_,1.0);
+  }
+
+  // add Neumann loads
+  residual_->Update(1.0,*neumann_loads_,0.0);
+
+  // create the parameters for the discretization
+  ParameterList eleparams;
+
+  // action for elements
+  if (timealgo_==timeint_stationary)
+    eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
+  else
+    eleparams.set("action","calc_fluid_systemmat_and_residual");
+
+  // other parameters that might be needed by the elements
+  eleparams.set("total time",time_);
+  eleparams.set("thsl",theta_*dta_);
+  eleparams.set("include reactive terms for linearisation",newton_);
+
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("velnp",velnp_);
+  discret_->SetState("hist"  ,hist_ );
+  if (alefluid_)
+  {
+    discret_->SetState("dispnp", dispnp_);
+    discret_->SetState("gridv", gridv_);
+  }
+
+  // call loop over elements
+  discret_->Evaluate(eleparams,sysmat_,residual_);
+  discret_->ClearState();
+
+  density_ = eleparams.get("density", 0.0);
+
+  // finalize the system matrix
+  LINALG::Complete(*sysmat_);
+  maxentriesperrow_ = sysmat_->MaxNumEntries();
+
+  trueresidual_->Update(density_/dta_/theta_,*residual_,0.0);
+
+  // Apply dirichlet boundary conditions to system of equations
+  // residual displacements are supposed to be zero at boundary
+  // conditions
+  incvel_->PutScalar(0.0);
+  LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,dirichtoggle_);
+}
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -994,7 +1058,7 @@ void XFluidImplicitTimeInt::NonlinearConvCheck(
   }
 
   // out to screen
-  if(discret_->Comm().MyPID() == 0)
+  if(myrank_ == 0)
   {
     printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |",
            itnum,itemax,ittol,incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
@@ -1005,7 +1069,7 @@ void XFluidImplicitTimeInt::NonlinearConvCheck(
   if(incvelnorm_L2/velnorm_L2 <= ittol && incprenorm_L2/prenorm_L2 <= ittol)
   {
     stopnonliniter=true;
-    if(discret_->Comm().MyPID() == 0)
+    if(myrank_ == 0)
     {
       printf("+------------+-------------------+--------------+--------------+ \n");
     }
@@ -1020,7 +1084,7 @@ void XFluidImplicitTimeInt::NonlinearConvCheck(
        incprenorm_L2/prenorm_L2 > ittol))
   {
     stopnonliniter=true;
-    if(discret_->Comm().MyPID() == 0)
+    if(myrank_ == 0)
     {
       printf("+---------------------------------------------------------------+\n");
       printf("|            >>>>>> not converged in itemax steps!              |\n");
@@ -1086,7 +1150,7 @@ void XFluidImplicitTimeInt::TimeUpdate()
           case timeint_one_step_theta: /* One step Theta time integration */
           {
             const double fact1 = 1.0/(theta_*dta_);
-            const double fact2 =-1.0/theta_ +1.0;	/* = -1/Theta + 1		*/
+            const double fact2 =-1.0/theta_ +1.0;	/* = -1/Theta + 1 */
 
             accn_->Update( fact1,*velnp_,0.0);
             accn_->Update(-fact1,*veln_ ,1.0);
@@ -1252,7 +1316,7 @@ void XFluidImplicitTimeInt::Output()
 
 
 #if 0  // DEBUG IO --- incremental solution
-      if (discret_->Comm().MyPID()==0)
+      if (myrank_==0)
       {
         int rr;
         double* data = incvel_->Values();
@@ -1266,7 +1330,7 @@ void XFluidImplicitTimeInt::Output()
 
 
 #if 0  // DEBUG IO --- the solution vector after convergence
-      if (discret_->Comm().MyPID()==0)
+      if (myrank_==0)
       {
         int rr;
         double* data = velnp_->Values();
@@ -1507,7 +1571,7 @@ void XFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
     preerr = sqrt(preerr);
 
 
-    if (discret_->Comm().MyPID() == 0)
+    if (myrank_ == 0)
     {
       printf("\n  L2_err for beltrami flow:  velocity %15.8e  pressure %15.8e\n\n",
              velerr,preerr);
@@ -1580,15 +1644,15 @@ void XFluidImplicitTimeInt::SolveStationaryProblem()
 
   // set theta to one in order to avoid misuse
   theta_ = 1.0;
-  
+
 
   // -------------------------------------------------------------------
   // pseudo time loop (continuation loop)
-  // ------------------------------------------------------------------- 
-  // slightly increasing b.c. values by given (pseudo-)timecurves to reach 
+  // -------------------------------------------------------------------
+  // slightly increasing b.c. values by given (pseudo-)timecurves to reach
   // convergence also for higher Reynolds number flows
-  // as a side effect, you can do parameter studies for different Reynolds 
-  // numbers within only ONE simulation when you apply a proper 
+  // as a side effect, you can do parameter studies for different Reynolds
+  // numbers within only ONE simulation when you apply a proper
   // (pseudo-)timecurve
 
   while (step_< stepmax_)
@@ -1596,13 +1660,13 @@ void XFluidImplicitTimeInt::SolveStationaryProblem()
     // -------------------------------------------------------------------
     //              set (pseudo-)time dependent parameters
     // -------------------------------------------------------------------
-	   step_ += 1;
-	   time_ += dta_;
+       step_ += 1;
+       time_ += dta_;
 
 	// -------------------------------------------------------------------
 	//                         out to screen
 	// -------------------------------------------------------------------
-	   if (discret_->Comm().MyPID()==0)
+	   if (myrank_==0)
 	   {
 	       printf("Stationary Fluid Solver - STEP = %4d/%4d \n",step_,stepmax_);
 	   }
@@ -1624,6 +1688,7 @@ void XFluidImplicitTimeInt::SolveStationaryProblem()
 	     eleparams.set("total time",time_);
 	     eleparams.set("delta time",dta_);
 	     eleparams.set("thsl",1.0); // no timefac in stationary case
+         eleparams.set("fs subgrid viscosity",fssgv_);
 
 	     // set vector values needed by elements
 	     discret_->ClearState();
@@ -1632,8 +1697,8 @@ void XFluidImplicitTimeInt::SolveStationaryProblem()
 	     // velnp then also holds prescribed new dirichlet values
 	     // dirichtoggle is 1 for dirichlet dofs, 0 elsewhere
 	     discret_->EvaluateDirichlet(eleparams,*velnp_,*dirichtoggle_);
-	     discret_->ClearState();	     
-	     
+	     discret_->ClearState();
+
 	     // evaluate Neumann b.c.
 	     neumann_loads_->PutScalar(0.0);
 	     discret_->EvaluateNeumann(eleparams,*neumann_loads_);
@@ -1650,7 +1715,7 @@ void XFluidImplicitTimeInt::SolveStationaryProblem()
     // -------------------------------------------------------------------
     this->NonlinearSolve();
 
-    
+
     // -------------------------------------------------------------------
     //                         output of solution
     // -------------------------------------------------------------------
@@ -1743,18 +1808,18 @@ added to a present L&D force.
 
 Idea of this routine:
 
-create 
+create
 
-map< label, set<DRT::Node*> > 
+map< label, set<DRT::Node*> >
 
 which is a set of nodes to each L&D Id
 nodal forces of all the nodes within one set are added to one L&D force
 
-Notice: Angular moments obtained from lift&drag forces currently refere to the 
+Notice: Angular moments obtained from lift&drag forces currently refere to the
         initial configuration, i.e. are built with the coordinates X of a particular
         node irrespective of its current position.
 */
-void XFluidImplicitTimeInt::LiftDrag()
+void XFluidImplicitTimeInt::LiftDrag() const
 {
   std::map< const int, std::set<DRT::Node* > > ldnodemap;
   std::map< const int, const std::vector<double>* > ldcoordmap;
@@ -1771,7 +1836,7 @@ void XFluidImplicitTimeInt::LiftDrag()
   {
 
     // prepare output
-    if (discret_->Comm().MyPID()==0) 
+    if (myrank_==0)
     {
       cout << "Lift and drag calculation:" << "\n";
       if (ndim == 2)
@@ -1807,7 +1872,7 @@ void XFluidImplicitTimeInt::LiftDrag()
         // give me present node Id
         const int node_id = (*ids)[j];
         // put it into nodeset of actual label if node is new and mine
-        if( discret_->HaveGlobalNode(node_id) && discret_->gNode(node_id)->Owner()==discret_->Comm().MyPID() )
+        if( discret_->HaveGlobalNode(node_id) && discret_->gNode(node_id)->Owner()==myrank_ )
 	  nodes.insert(discret_->gNode(node_id));
       }
     } // end loop over conditions
@@ -1855,7 +1920,7 @@ void XFluidImplicitTimeInt::LiftDrag()
       trueresidual_->Comm().SumAll (&(values[0]), &(resultvec[0]), 6);
 
       // do the output
-      if (discret_->Comm().MyPID()==0)
+      if (myrank_==0)
       {
         if (ndim == 2)
 	{
@@ -1878,7 +1943,7 @@ void XFluidImplicitTimeInt::LiftDrag()
 	}
       }
     } // end: loop over L&D labels
-    if (discret_->Comm().MyPID()==0)
+    if (myrank_== 0)
     {
       cout << "\n";
     }

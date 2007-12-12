@@ -212,7 +212,7 @@ public:
   \brief calculate lift&drag forces and angular momenta
 
   */
-    void LiftDrag();
+    void LiftDrag() const;
   
   //@}
 
