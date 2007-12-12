@@ -583,7 +583,7 @@ vector<double> computeScalarCellNodeValues(
                 ele.Shape());
         
         blitz::Array<double,1> enr_funct(numparam);
-        XFEM::ComputeEnrichedShapefunction(ele, dofman, field, cellnodepos, cellcenterpos, funct, enr_funct);
+        XFEM::ComputeEnrichedShapefunction(ele, dofman, field, cellcenterpos, cellcenterpos, funct, enr_funct);
         // interpolate value
         const double x = blitz::sum(elementvalues * enr_funct);
         
@@ -622,7 +622,6 @@ void XFluidEnsightWriter::WriteResultStep(
     const RefCountPtr<DRT::Discretization> dis = field_->discretization();
     //const Epetra_Map* nodemap = dis->NodeRowMap();
     const RefCountPtr<Epetra_Vector> data = result.read_result(groupname);
-    const Epetra_BlockMap& datamap = data->Map();
     
     const Epetra_Map* elementmap = dis->ElementRowMap();
     dsassert(elementmap->NumMyElements() == elementmap->NumGlobalElements(),
