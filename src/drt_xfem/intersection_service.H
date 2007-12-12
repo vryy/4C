@@ -164,7 +164,7 @@ namespace XFEM
     \return true if node is within the XAABB or false otherwise
     */
     bool isPositionWithinXAABB(  
-        const std::vector<double>&         pos,
+        const Epetra_SerialDenseVector&    pos,
         const Epetra_SerialDenseMatrix&    XAABB
         );
     
@@ -179,8 +179,8 @@ namespace XFEM
     \return true if node is within the XAABB or false otherwise
     */
     bool isLineWithinXAABB(    
-        const std::vector<double>&         pos1,
-        const std::vector<double>&         pos2,
+        const Epetra_SerialDenseVector&    pos1,
+        const Epetra_SerialDenseVector&    pos2,
         const Epetra_SerialDenseMatrix&    XAABB
         );
         
@@ -215,10 +215,10 @@ namespace XFEM
     \brief checks if a position in current coordinates lies within a certain element           
            The nonlinear system of equation is solved with help of the Newton-method.
 
-    \param element              (in)        : element 
+    \param discretization       (in)        : mesh 
     \param x                    (in)        : node in current coordinates
     */  
-    bool checkPositionWithinDiscretization(  
+    bool PositionWithinDiscretization(  
         RCP<DRT::Discretization>            dis,
         const Epetra_SerialDenseVector&     x);
     /*!
@@ -255,6 +255,44 @@ namespace XFEM
         const Epetra_SerialDenseVector&     x,
         DRT::Element*                       element
         );  
+    
+    
+    /*!
+    \brief Computes a rough overestimating extended  
+           axis-aligned bounding box for an element (XAABB)
+
+    \param  element          (in)      : element (DRT::Element*)
+    \return extended axis-aligned bounding box  (XAABB) for an element
+    */
+    Epetra_SerialDenseMatrix computeFastXAABB( 
+        DRT::Element*   element
+        );
+    
+                                            
+    /*!
+    \brief checks if two extended axis aligned bounding boxes intersect
+
+    \param cutterXAABB (in)         : XAABB of the cutting element
+    \param xfemXAABB   (in)         : XAABB of the xfem element
+    \return true if the XAABB's intersect or false otherwise
+    */
+    bool intersectionOfXAABB(    
+        const Epetra_SerialDenseMatrix&    cutterXAABB,
+        const Epetra_SerialDenseMatrix&    xfemXAABB
+        );
+    
+    
+    /*!
+    \brief checks if a position is within an extended axis aligned bounding boxe
+
+    \param pos     (in)         : position
+    \param XAABB   (in)         : XAABB of the xfem element
+    \return true if the position is within the XAABB, false otherwise
+    */
+    bool PositionInXAABB(    
+        const Epetra_SerialDenseVector&    pos,
+        const Epetra_SerialDenseMatrix&    XAABB
+        );
     
 };
 

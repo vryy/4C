@@ -419,31 +419,6 @@ class Intersection
  
         
         /*!
-        \brief Computes a rough overestimating extended  
-               axis-aligned bounding box for an element (XAABB)
-    
-        \param  element          (in)      : element (DRT::Element*)
-        \return extended axis-aligned bounding box  (XAABB) for an element
-        */
-        Epetra_SerialDenseMatrix computeFastXAABB( 
-            DRT::Element*   element
-            ) const;
-        
-                                                
-        /*!
-        \brief checks if two extended axis aligned bounding boxes intersect
-    
-        \param cutterXAABB (in)         : XAABB of the cutting element
-        \param xfemXAABB   (in)         : XAABB of the xfem element
-        \return true if the XAABB's intersect or false otherwise
-        */
-        bool intersectionOfXAABB(    
-            const Epetra_SerialDenseMatrix&    cutterXAABB,
-            const Epetra_SerialDenseMatrix&    xfemXAABB
-            ) const;
-        
-        	       
-        /*!
         \brief collects points belonging to an interface lying inside xfem elements         
                The nonlinear system of equation is solved with help of the Newton-method.
     

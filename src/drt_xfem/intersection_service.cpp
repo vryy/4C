@@ -230,28 +230,19 @@ bool XFEM::checkIfLineElement(
  |  ICS:    checks if a position is within an XAABB          u.may 06/07|
  *----------------------------------------------------------------------*/
 bool XFEM::isPositionWithinXAABB(    
-    const std::vector<double>&         pos,
+    const Epetra_SerialDenseVector&    pos,
     const Epetra_SerialDenseMatrix&    XAABB)
 {
+    const int nsd = 3;
     bool isWithin = true;
-    /*
-    for (int dim=0; dim<3; dim++)
+    for (int isd=0; isd<nsd; isd++)
     {
-        double diffMin = node[dim] - XAABB(dim,0);
-        double diffMax = XAABB(dim,1) - node[dim];
-        
-        if((diffMin < -tol)||(diffMax < -tol)) //check again !!!!!      
-            isWithin = false;
-    }
-    */
-    for (int dim=0; dim<3; dim++)
-    {
-        double diffMin = XAABB(dim,0) - TOL7;
-        double diffMax = XAABB(dim,1) + TOL7;
+        const double diffMin = XAABB(isd,0) - TOL7;
+        const double diffMax = XAABB(isd,1) + TOL7;
         
        // printf("nodal value =  %f, min =  %f, max =  %f\n", node[dim], diffMin, diffMax);
         
-        if((pos[dim] < diffMin)||(pos[dim] > diffMax)) //check again !!!!!   
+        if((pos(isd) < diffMin)||(pos(isd) > diffMax)) //check again !!!!!   
         {
             isWithin = false;
             break;
@@ -266,25 +257,26 @@ bool XFEM::isPositionWithinXAABB(
  |  ICS:    checks if a pos is within an XAABB               u.may 06/07|
  *----------------------------------------------------------------------*/
 bool XFEM::isLineWithinXAABB(    
-    const std::vector<double>&         pos1,
-    const std::vector<double>&         pos2,
+    const Epetra_SerialDenseVector&    pos1,
+    const Epetra_SerialDenseVector&    pos2,
     const Epetra_SerialDenseMatrix&    XAABB)
 {
+    const int nsd = 3;
     bool isWithin = true;
-    int dim = -1;
+    int isd = -1;
     
-    for(dim=0; dim<3; dim++)
-        if(fabs(pos1[dim]-pos2[dim]) > TOL7)
+    for(isd=0; isd<nsd; isd++)
+        if(fabs(pos1[isd]-pos2[isd]) > TOL7)
             break;
     
-    for(int i = 0; i < 3; i++)
+    for(int ksd = 0; ksd < nsd; ksd++)
     {
-        if(i != dim)
+        if(ksd != isd)
         {
-            double min = XAABB(i,0) - TOL7;
-            double max = XAABB(i,1) + TOL7;
+            double min = XAABB(ksd,0) - TOL7;
+            double max = XAABB(ksd,1) + TOL7;
    
-            if((pos1[i] < min)||(pos1[i] > max))
+            if((pos1[ksd] < min)||(pos1[ksd] > max))
                 isWithin = false;
             
         }
@@ -292,14 +284,14 @@ bool XFEM::isLineWithinXAABB(
             break;
     }
         
-    if(isWithin && dim > -1)
+    if(isWithin && isd > -1)
     {
         isWithin = false;
-        double min = XAABB(dim,0) - TOL7;
-        double max = XAABB(dim,1) + TOL7;
+        const double min = XAABB(isd,0) - TOL7;
+        const double max = XAABB(isd,1) + TOL7;
                             
-        if( ((pos1[dim] < min) && (pos2[dim] > max)) ||  
-            ((pos2[dim] < min) && (pos1[dim] > max)) )
+        if( ((pos1[isd] < min) && (pos2[isd] > max)) ||  
+            ((pos2[isd] < min) && (pos1[isd] > max)) )
             isWithin = true;
     }
     return isWithin;
@@ -425,7 +417,7 @@ bool XFEM::checkPositionWithinElement(
 /*----------------------------------------------------------------------*
  |  CLI:    checks if a position is within a given mesh      a.ger 12/07|   
  *----------------------------------------------------------------------*/
-bool XFEM::checkPositionWithinDiscretization(  
+bool XFEM::PositionWithinDiscretization(  
     RCP<DRT::Discretization>            dis,
     const Epetra_SerialDenseVector&     x)
 {
@@ -435,9 +427,12 @@ bool XFEM::checkPositionWithinDiscretization(
     for (int i=0; i<dis->NumMyRowElements(); ++i)
     {
         DRT::Element* ele = dis->lRowElement(i);
-        nodeWithinMesh = checkPositionWithinElement(ele, x);
-        if (nodeWithinMesh)
-            break;
+        if (isPositionWithinXAABB(x, computeFastXAABB(ele)))
+        {
+            nodeWithinMesh = checkPositionWithinElement(ele, x);
+            if (nodeWithinMesh)
+                break;
+        }
     }
 
     // TODO: in parallel, we have to ask all processors, whether there is any match!!!!
@@ -544,6 +539,173 @@ void XFEM::updateRHSForNWE(
         b[i] += x[i];
 }
 
+
+/*----------------------------------------------------------------------*
+ |  ICS:    computes an extended axis-aligned bounding box   u.may 06/07|
+ |          XAABB for a given element                                   |
+ *----------------------------------------------------------------------*/
+Epetra_SerialDenseMatrix XFEM::computeFastXAABB( 
+    DRT::Element* element)
+{
+    double  maxDistance;
+    const int nsd = 3;
+    Epetra_SerialDenseMatrix XAABB(nsd, 2);
+    
+    DRT::Node* node = element->Nodes()[0];
+    for(int dim=0; dim<nsd; dim++)
+    {
+        XAABB(dim, 0) = node->X()[dim] - TOL7;
+        XAABB(dim, 1) = node->X()[dim] + TOL7;
+    }
+    
+    for(int i=1; i<element->NumNode(); i++)
+    {
+        DRT::Node* nodeEle = element->Nodes()[i];
+        for(int dim=0; dim<nsd; dim++)
+        {
+            XAABB(dim, 0) = std::min( XAABB(dim, 0), nodeEle->X()[dim] - TOL7);
+            XAABB(dim, 1) = std::max( XAABB(dim, 1), nodeEle->X()[dim] + TOL7);
+        }
+    }
+    
+    maxDistance = fabs(XAABB(0,1) - XAABB(0,0));
+    for(int dim=1; dim<nsd; dim++)
+       maxDistance = std::max(maxDistance, fabs(XAABB(dim,1)-XAABB(dim,0)) );
+    
+    // subtracts half of the maximal distance to minX, minY, minZ
+    // adds half of the maximal distance to maxX, maxY, maxZ 
+    for(int dim=0; dim<nsd; dim++)
+    {
+        XAABB(dim, 0) = XAABB(dim, 0) - 0.5*maxDistance;
+        XAABB(dim, 1) = XAABB(dim, 1) + 0.5*maxDistance;
+    }   
+    
+    /*
+    printf("\n");
+    printf("axis-aligned bounding box:\n minX = %f\n minY = %f\n minZ = %f\n maxX = %f\n maxY = %f\n maxZ = %f\n", 
+              XAABB(0,0), XAABB(1,0), XAABB(2,0), XAABB(0,1), XAABB(1,1), XAABB(2,1));
+    printf("\n");
+    */
+    
+    return XAABB;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  ICS:    checks if two XAABB's intersect                  u.may 06/07|
+ *----------------------------------------------------------------------*/
+bool XFEM::intersectionOfXAABB(  
+    const Epetra_SerialDenseMatrix&     cutterXAABB, 
+    const Epetra_SerialDenseMatrix&     xfemXAABB)
+{
+    
+  /*====================================================================*/
+  /* bounding box topology*/
+  /*--------------------------------------------------------------------*/
+  /* parameter coordinates (x,y,z) of nodes
+   * node 0: (minX, minY, minZ)
+   * node 1: (maxX, minY, minZ)
+   * node 2: (maxX, maxY, minZ)
+   * node 3: (minX, maxY, minZ)
+   * node 4: (minX, minY, maxZ)
+   * node 5: (maxX, minY, maxZ)
+   * node 6: (maxX, maxY, maxZ)
+   * node 7: (minX, maxY, maxZ)
+   * 
+   *                      z
+   *                      |           
+   *             4========|================7
+   *           //|        |               /||
+   *          // |        |              //||
+   *         //  |        |             // ||
+   *        //   |        |            //  ||
+   *       //    |        |           //   ||
+   *      //     |        |          //    ||
+   *     //      |        |         //     ||
+   *     5=========================6       ||
+   *    ||       |        |        ||      ||
+   *    ||       |        o--------||---------y
+   *    ||       |       /         ||      ||
+   *    ||       0------/----------||------3
+   *    ||      /      /           ||     //
+   *    ||     /      /            ||    //
+   *    ||    /      /             ||   //
+   *    ||   /      /              ||  //
+   *    ||  /      /               || //
+   *    || /      x                ||//
+   *    ||/                        ||/
+   *     1=========================2
+   *
+   */
+  /*====================================================================*/
+    
+    bool intersection =  false;
+    std::vector < Epetra_SerialDenseVector > nodes(8, Epetra_SerialDenseVector(3));
+    
+    nodes[0][0] = cutterXAABB(0,0); nodes[0][1] = cutterXAABB(1,0); nodes[0][2] = cutterXAABB(2,0); // node 0   
+    nodes[1][0] = cutterXAABB(0,1); nodes[1][1] = cutterXAABB(1,0); nodes[1][2] = cutterXAABB(2,0); // node 1
+    nodes[2][0] = cutterXAABB(0,1); nodes[2][1] = cutterXAABB(1,1); nodes[2][2] = cutterXAABB(2,0); // node 2
+    nodes[3][0] = cutterXAABB(0,0); nodes[3][1] = cutterXAABB(1,1); nodes[3][2] = cutterXAABB(2,0); // node 3
+    nodes[4][0] = cutterXAABB(0,0); nodes[4][1] = cutterXAABB(1,0); nodes[4][2] = cutterXAABB(2,1); // node 4
+    nodes[5][0] = cutterXAABB(0,1); nodes[5][1] = cutterXAABB(1,0); nodes[5][2] = cutterXAABB(2,1); // node 5
+    nodes[6][0] = cutterXAABB(0,1); nodes[6][1] = cutterXAABB(1,1); nodes[6][2] = cutterXAABB(2,1); // node 6
+    nodes[7][0] = cutterXAABB(0,0); nodes[7][1] = cutterXAABB(1,1); nodes[7][2] = cutterXAABB(2,1); // node 7
+    
+    for (int i = 0; i < 8; i++)
+        if(isPositionWithinXAABB(nodes[i], xfemXAABB))
+        {
+            intersection = true;
+            break;
+        }
+    
+    if(!intersection)
+    {
+        for (int i = 0; i < 12; i++)
+        {
+            const int index1 = eleNodeNumbering_hex27_lines[i][0];
+            const int index2 = eleNodeNumbering_hex27_lines[i][1];
+            if(isLineWithinXAABB(nodes[index1], nodes[index2], xfemXAABB))
+            {
+                intersection = true;
+                break;
+            }
+        }
+    }
+    
+    if(!intersection)
+    {
+        nodes[0][0] = xfemXAABB(0,0);   nodes[0][1] = xfemXAABB(1,0);   nodes[0][2] = xfemXAABB(2,0);   // node 0   
+        nodes[1][0] = xfemXAABB(0,1);   nodes[1][1] = xfemXAABB(1,0);   nodes[1][2] = xfemXAABB(2,0);   // node 1
+        nodes[2][0] = xfemXAABB(0,1);   nodes[2][1] = xfemXAABB(1,1);   nodes[2][2] = xfemXAABB(2,0);   // node 2
+        nodes[3][0] = xfemXAABB(0,0);   nodes[3][1] = xfemXAABB(1,1);   nodes[3][2] = xfemXAABB(2,0);   // node 3
+        nodes[4][0] = xfemXAABB(0,0);   nodes[4][1] = xfemXAABB(1,0);   nodes[4][2] = xfemXAABB(2,1);   // node 4
+        nodes[5][0] = xfemXAABB(0,1);   nodes[5][1] = xfemXAABB(1,0);   nodes[5][2] = xfemXAABB(2,1);   // node 5
+        nodes[6][0] = xfemXAABB(0,1);   nodes[6][1] = xfemXAABB(1,1);   nodes[6][2] = xfemXAABB(2,1);   // node 6
+        nodes[7][0] = xfemXAABB(0,0);   nodes[7][1] = xfemXAABB(1,1);   nodes[7][2] = xfemXAABB(2,1);   // node 7
+    
+        for (int i = 0; i < 8; i++)
+            if(isPositionWithinXAABB(nodes[i], cutterXAABB))
+            {
+                intersection = true;
+                break;
+            }
+    }   
+    
+    if(!intersection)
+    {
+        for (int i = 0; i < 12; i++)
+        {
+            const int index1 = eleNodeNumbering_hex27_lines[i][0];
+            const int index2 = eleNodeNumbering_hex27_lines[i][1];
+            if(isLineWithinXAABB(nodes[index1], nodes[index2], cutterXAABB))
+            {
+                intersection = true;
+                break;
+            }
+        }
+    }
+    return intersection;
+}
 
 
 #endif  // #ifdef CCADISCRET
