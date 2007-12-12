@@ -80,127 +80,6 @@ void XFluidEnsightWriter::WriteAllResults(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void XFluidEnsightWriter::WriteFiles()
-{
-#ifndef PARALLEL
-    if (myrank_ > 0) dserror("have serial filter version, but myrank_ = %d",myrank_);
-#endif
-    
-    PostResult result = PostResult(field_);
-
-    // timesteps when the solution is written
-    const vector<double> soltime = result.get_result_times(field_->name());
-
-    
-    ///////////////////////////////////
-    //  write geometry file          //
-    ///////////////////////////////////
-    const string geofilename = filename_ + "_"+ field_->name() + ".geo";
-    WriteGeoFile(geofilename);
-    vector<int> filesteps;
-    filesteps.push_back(1);
-    filesetmap_["geo"] = filesteps;
-    vector<int> timesteps;
-    timesteps.push_back(1);
-    timesetmap_["geo"] = timesteps;
-    const int geotimeset = 1;
-    // at the moment, we can only print out the first step -> to be changed
-    vector<double> geotime; // timesteps when the geometry is written
-    geotime.push_back(soltime[0]);
-    
-    
-    ///////////////////////////////////
-    //  write solution fields files  //
-    ///////////////////////////////////
-    const int soltimeset = 2;
-    WriteAllResults(field_);
-    
-    
-
-    int counttime = 0;
-    for (map<string,vector<int> >::const_iterator entry = timesetmap_.begin(); entry != timesetmap_.end(); ++entry) {
-        counttime++;
-        string key = entry->first;
-        timesetnumbermap_[key] = counttime;
-    }
-    int countfile = 0;
-    for (map<string,vector<int> >::const_iterator entry = filesetmap_.begin(); entry != filesetmap_.end(); ++entry) {
-        countfile++;
-        string key = entry->first;
-        filesetnumbermap_[key] = countfile;
-    }
-    
-    
-    
-    ///////////////////////////////////
-    //  now write the case file      //
-    ///////////////////////////////////
-    if (myrank_ == 0) 
-    {
-        const string casefilename = filename_ + "_"+ field_->name() + ".case";
-        ofstream casefile;
-        casefile.open(casefilename.c_str());
-        casefile << "# created using post_drt_ensight\n"<< "FORMAT\n\n"<< "type:\tensight gold\n";
-
-        casefile << "\nGEOMETRY\n\n";
-        casefile << "model:\t"<<timesetnumbermap_["geo"]<<"\t"<<filesetnumbermap_["geo"]<<"\t"<< geofilename<< "\n";
-
-        casefile << "\nVARIABLE\n\n";
-        casefile << GetVariableSection(filesetmap_, variablenumdfmap_, variablefilenamemap_);
-
-        casefile << "\nTIME\n\n";
-        casefile << GetTimeSectionString(geotimeset, geotime);
-        casefile << GetTimeSectionString(soltimeset, soltime);
-
-        casefile << "\nFILE\n\n";
-        casefile << GetFileSectionStringFromFilesets(filesetmap_);
-
-        casefile.close();
-    }
-    
-    return;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void XFluidEnsightWriter::WriteGeoFile(
-        const string& geofilename) const
-{
-    // open file
-    ofstream geofile;
-    if (myrank_ == 0)
-    {
-      geofile.open(geofilename.c_str());
-      if (!geofile)
-          dserror("failed to open file: %s", geofilename.c_str());
-    }
-
-    // header
-    Write(geofile, "C Binary");
-
-    // print out one timestep
-    // if more are needed, this has to go into a loop
-    map<string, vector<ofstream::pos_type> > resultfilepos;
-    
-    
-    vector<ofstream::pos_type> fileposition;
-    {
-        WriteGeoFileOneTimeStep(geofile, resultfilepos, "geo");
-    }
-
-    // append index table
-    // TODO: ens_checker complains if this is turned!!!! but I can't see, whats wrong here a.ger 11/07
-    // it is also correct to ommit WriteIndexTable, however the EnsightGold Format manual says, 
-    // it would improve performance to have it on...
-    // WriteIndexTable(geofile, fileposition); 
-    if (geofile.is_open())
-      geofile.close();
-    return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void XFluidEnsightWriter::WriteGeoFileOneTimeStep(
         ofstream& file,
         map<string, vector<ofstream::pos_type> >& resultfilepos,
@@ -592,9 +471,6 @@ vector<double> computeScalarCellNodeValues(
     }
     return cellvalues;
 }
-
-
-
 
 /*!
  \brief Write nodal values for one timestep
