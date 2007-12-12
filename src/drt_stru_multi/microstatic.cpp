@@ -201,13 +201,13 @@ solver_(solver)
 } // MicroStatic::MicroStatic
 
 
-MFSI::Debug dbg;
+//MFSI::Debug dbg;
 
 
 /*----------------------------------------------------------------------*
  |  do constant predictor step (public)                      mwgee 03/07|
  *----------------------------------------------------------------------*/
-void MicroStatic::ConstantPredictor(const Epetra_SerialDenseMatrix* defgrd)
+void MicroStatic::Predictor(const Epetra_SerialDenseMatrix* defgrd)
 {
   // -------------------------------------------------------------------
   // get some parameters from parameter list
@@ -272,8 +272,8 @@ void MicroStatic::ConstantPredictor(const Epetra_SerialDenseMatrix* defgrd)
     fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
   }
 
-  dbg.DumpVector("fresm", *discret_, *fresm_);
-  dbg.DumpVector("dism", *discret_, *dism_);
+//   dbg.DumpVector("fresm", *discret_, *fresm_);
+//   dbg.DumpVector("dism", *discret_, *dism_);
 
 
   //------------------------------------------------ build residual norm
@@ -282,7 +282,7 @@ void MicroStatic::ConstantPredictor(const Epetra_SerialDenseMatrix* defgrd)
   cout << "MICROSCALE PREDICTOR fresmnorm: " << norm_ << "\n";
 
   return;
-} // MicroStatic::ConstantPredictor()
+} // MicroStatic::Predictor()
 
 
 /*----------------------------------------------------------------------*
@@ -637,11 +637,9 @@ void MicroStatic::SetUpHomogenization()
   pdof_ = rcp(new Epetra_Map(-1, np_, &pdof[0], 0, discret_->Comm()));
   fdof_ = rcp(new Epetra_Map(-1, ndof_-np_, &fdof[0], 0, discret_->Comm()));
 
-  // create an exporter
-  //export_ = rcp(new Epetra_Export(*(dis->DofRowMap()), *pdof_));
-
-  // create an exporter
-  import_ = rcp(new Epetra_Import(*pdof_, *(discret_->DofRowMap())));
+  // create importer
+  importp_ = rcp(new Epetra_Import(*pdof_, *(discret_->DofRowMap())));
+  importf_ = rcp(new Epetra_Import(*fdof_, *(discret_->DofRowMap())));
 
   // create vector containing material coordinates of prescribed nodes
   Epetra_Vector Xp_temp(*pdof_);
@@ -685,6 +683,48 @@ void MicroStatic::SetUpHomogenization()
   Xp_ = LINALG::CreateVector(*pdof_,true);
   *Xp_ = Xp_temp;
 
+  // now create D and its transpose DT (following Miehe et al., 2002)
+
+  Epetra_Map Dmap(9, 0, Epetra_SerialComm());
+  D_ = rcp(new Epetra_MultiVector(Dmap, np_));
+
+  for (int n=0;n<np_/3;++n)
+  {
+    Epetra_Vector* temp1 = (*D_)(3*n);
+    (*temp1)[0] = (*Xp_)[3*n];
+    (*temp1)[3] = (*Xp_)[3*n+1];
+    (*temp1)[6] = (*Xp_)[3*n+2];
+    Epetra_Vector* temp2 = (*D_)(3*n+1);
+    (*temp2)[1] = (*Xp_)[3*n+1];
+    (*temp2)[4] = (*Xp_)[3*n+2];
+    (*temp2)[7] = (*Xp_)[3*n];
+    Epetra_Vector* temp3 = (*D_)(3*n+2);
+    (*temp3)[2] = (*Xp_)[3*n+2];
+    (*temp3)[5] = (*Xp_)[3*n];
+    (*temp3)[8] = (*Xp_)[3*n+1];
+  }
+
+  Epetra_MultiVector DT(*pdof_, 9);
+
+  for (int n=0;n<np_/3;++n)
+  {
+    (*(DT(0)))[3*n]   = (*Xp_)[3*n];
+    (*(DT(1)))[3*n+1] = (*Xp_)[3*n+1];
+    (*(DT(2)))[3*n+2] = (*Xp_)[3*n+2];
+    (*(DT(3)))[3*n]   = (*Xp_)[3*n+1];
+    (*(DT(4)))[3*n+1] = (*Xp_)[3*n+2];
+    (*(DT(5)))[3*n+2] = (*Xp_)[3*n];
+    (*(DT(6)))[3*n]   = (*Xp_)[3*n+2];
+    (*(DT(7)))[3*n+1] = (*Xp_)[3*n];
+    (*(DT(8)))[3*n+2] = (*Xp_)[3*n+1];
+  }
+
+  rhs_ = rcp(new Epetra_MultiVector(*(discret_->DofRowMap()), 9));
+
+  for (int i=0;i<9;++i)
+  {
+    ((*rhs_)(i))->Export(*(DT(i)), *importp_, Insert);
+  }
 }
 
 
@@ -850,9 +890,9 @@ void MicroStatic::StaticHomogenization(Epetra_SerialDenseVector* stress,
 
   Epetra_Vector fp(*pdof_);
 
-  int err = fp.Import(*fresm_dirich_, *import_, Insert);
+  int err = fp.Import(*fresm_dirich_, *importp_, Insert);
   if (err)
-    dserror("Importing external forces of prescribed dofs using exporter returned err=%d",err);
+    dserror("Importing external forces of prescribed dofs using importer returned err=%d",err);
 
   // Now we have all forces in the material description acting on the
   // boundary nodes together in one vector
@@ -932,161 +972,67 @@ void MicroStatic::StaticHomogenization(Epetra_SerialDenseVector* stress,
     (*stress)[i]=S[i];
   }
 
+  // The calculation of the consistent macroscopic constitutive tensor
+  // follows
+  //
+  // C. Miehe, Computational micro-to-macro transitions for
+  // discretized micro-structures of heterogeneous materials at finite
+  // strains based on a minimization of averaged incremental energy.
+  // Computer Methods in Applied Mechanics and Engineering 192: 559-591, 2003.
 
-  // split effective dynamic stiffness -> we want Kpp, Kpf, Kfp and Kff
-  // Kpp and Kff are sparse matrices, whereas Kpf and Kfp are MultiVectors
-  // (we need that for the solution of Kpf*inv(Kff)*Kfp)
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  Epetra_MultiVector cmatpf(D_->Map(), 9);
 
-  int *IndexOffset;
-  int *Indices;
-  double *Values;
+  Epetra_Vector x(*dofrowmap);
+  Epetra_Vector y(*dofrowmap);
+  stiff_dirich_ = stiff_; // now stiff_dirich_ points to the 'original'
+                          // stiffness matrix of the system.
+                          // after having applied the Dirichlet conditions
+                          // stiff_dirich_ still points to the 'original'
+                          // stiffness whereas the rcp of stiff_ is
+                          // assigned to a modified matrix
+  RCP<Epetra_Vector>tmp=null;
 
-  stiff_->FillComplete();                   // needed for ExtractCrsDataPointers
-  stiff_->OptimizeStorage();                // needed for ExtractCrsDataPointers
+  LINALG::ApplyDirichlettoSystem(stiff_,tmp,tmp,zeros_,dirichtoggle_);
 
-  err = stiff_->ExtractCrsDataPointers(IndexOffset, Indices, Values);
-  if (err)
-    dserror("Extraction of internal data pointers associated with Crs matrix failed");
-
-  Epetra_MultiVector Kpp(*pdof_, np_);
-  Epetra_CrsMatrix   Kff(Copy, *fdof_, stiff_->MaxNumEntries());
-  Epetra_CrsMatrix Kpf(Copy, *pdof_, *fdof_, stiff_->MaxNumEntries());
-  Epetra_MultiVector x(*fdof_, np_);
-
-  const Epetra_Map* dofrowmap = dis->DofRowMap();
-
-  for (int row=0; row<dofrowmap->NumMyElements(); ++row)
-  {
-    int rowgid = dofrowmap->GID(row);
-
-    if (pdof_->MyGID(rowgid))              // this means we are dealing with
-                                           // either Kpp or Kpf
-    {
-      for (int col=IndexOffset[row]; col<IndexOffset[row+1]; ++col)
-      {
-        int colgid = dofrowmap->GID(Indices[col]);
-
-        if (pdof_->MyGID(colgid))          // -> Kpp
-        {
-          err = Kpp.ReplaceMyValue(pdof_->LID(rowgid), pdof_->LID(colgid), Values[col]);
-          if (err)
-            dserror("Insertion of values into Kpp failed");
-        }
-        else
-        {
-          err = Kpf.InsertGlobalValues(rowgid, 1, &(Values[col]), &colgid);
-          if (err)
-            dserror("Insertion of value %g into Kpf(%d,%d) failed with err=%d", Values[col], rowgid, colgid, err);
-        }
-      }
-    }
-
-    else if (fdof_->MyGID(rowgid))         // this means we are dealing with
-                                           // either Kff or Kfp
-    {
-      for (int col=IndexOffset[row]; col<IndexOffset[row+1]; ++col)
-      {
-        int colgid = dofrowmap->GID(Indices[col]);
-
-        if (fdof_->MyGID(colgid))          // -> Kff
-        {
-          err = Kff.InsertGlobalValues(rowgid, 1, &(Values[col]), &colgid);
-          if (err)
-            dserror("Insertion of value %g into Kff(%d,%d) failed with err=%d", Values[col], rowgid, colgid, err);
-        }
-        // we do not need to compute Kfp here because it is simply the
-        // transpose of Kpf in the symmetric case
-      }
-    }
-    else
-      dserror("GID neither in DofMap for prescribed nor for free dofs");
-  }
-
-  // now perform static condensation: KM=Kpp-Kpf*inv(Kff)*Kfp
-  // first define an Epetra_LinearProblem object for solving Kff*x=Kfp
-  // (thus circumventing the explicit inversion of Kff for the static
-  // condensation)
-  // in order to save time and memory, split Kfp (and therefore also
-  // x) in single vectors -> the matrix-matrix multiplication Kpf*x
-  // then simplifies to several matrix-vector multiplications exploiting
-  // the sparsity of the matrix
-
-  err = Kff.FillComplete();
-  if (err!=0)
-    dserror("FillComplete failed with err=%d", err);
-
-  Epetra_Vector column(*fdof_);          // this will later on be a column of Kfp
-  Epetra_Vector res(*fdof_);             // this will later on be a column of x
-  Epetra_LinearProblem linprob(&Kff, &res, &column);
+  Epetra_LinearProblem linprob(&(*stiff_), &x, &y);
   int error=linprob.CheckInput();
   if (error)
     dserror("Input for linear problem inconsistent");
-
   Amesos_Klu solver(linprob);
-  err = solver.NumericFactorization();   // LU decomposition of Kff only once
-                                         // for all solutions of Kff*res=column
+  err = solver.NumericFactorization();   // LU decomposition of stiff_ only once
   if (err)
-    dserror("Numeric factorization of Kff failed");
+    dserror("Numeric factorization of stiff_ for homogenization failed");
 
-  // to determine the single columns of Kfp, take its transpose (=>Kpf in the
-  // symmetric case) to extract the rows which is much simpler
-
-  Kpf.FillComplete(*fdof_, *pdof_);      // needed for ExtractCrsDataPointers
-  Kpf.OptimizeStorage();                 // needed for ExtractCrsDataPointers
-
-  int *Offset;
-  int *Ind;
-  double *Val;
-
-  err = Kpf.ExtractCrsDataPointers(Offset, Ind, Val);
-  if (err)
-    dserror("Extraction of internal data pointers associated with Crs matrix failed");
-
-  Epetra_MultiVector Ktemp(*pdof_, np_);
-  Epetra_Vector temp(*pdof_);
-
-  for (int i=0;i<np_;++i)
+  for (int i=0;i<9;++i)
   {
-    column.Scale(0.0);
-
-    int beg = Offset[i];
-    int diff = Offset[i+1]-Offset[i];
-
-    // fill in the non-zero components of *Kfp(i) into column
-    for (int j=0;j<diff;++j)
-    {
-      column[Ind[beg+j]] = Val[beg+j];
-    }
-
-    // now solve for res
+    x.PutScalar(0.0);
+    y.Update(1.0, *((*rhs_)(i)), 0.0);
     solver.Solve();
 
-    // do matrix-vector multiplication and save the result in the
-    // corresponding column of the Epetra_MultiVector Ktemp
-    Kpf.Multiply(false, res, *Ktemp(i));
+    Epetra_Vector f(*dofrowmap);
+    stiff_dirich_->Multiply(false, x, f);
+    Epetra_Vector fexp(*pdof_);
+    int err = fexp.Import(f, *importp_, Insert);
+    if (err)
+      dserror("Export of boundary 'forces' failed with err=%d", err);
+
+    (cmatpf(i))->Multiply('N', 'N', 1.0/V0_, *D_, fexp, 0.0);
   }
 
-  // now static condensation of free (not prescribed) dofs can be done
-  // KM = Kpp+Kpf*x = Kpp+Ktemp
-  // result will be saved in Kpp to avoid copying
+  // We now have to transform the calculated constitutive tensor
+  // relating first Piola-Kirchhoff stresses to the deformation
+  // gradient into a constitutive tensor relating second
+  // Piola-Kirchhoff stresses to Green-Lagrange strains.
 
-  Kpp.Update(-1., Ktemp, 1.);    // Kpp now holds KM=Kpp-Kpf*inv(Kff)*Kfp
-
-  // Now we have to calculate 1/V0 Xp_ Kpp Xp_ (inner product) to obtain
-  // the contitutive tensor relating the first Piola Kirchhoff stress
-  // tensor to the deformation gradient
-  // With corresponding push forward operations the constitutive
-  // tensor relating second Piola Kirchhoff stresses to Green Lagrange
-  // strains has to be determined (this is what Solid3 Hex8 wants to
-  // be returned by the material routine)
-
-  MicroStatic::calc_cmat(Kpp, F_inv, *stress, cmat, defgrd);
+  ConvertMat(cmatpf, F_inv, *stress, *cmat);
 
   // after having all homogenization stuff done, we now really don't need stiff_ anymore
 
   stiff_ = null;
 
   // homogenized density was already determined in the constructor
+
   *density = density_;
 
   //cout << "cmat:\n" << *cmat << "\nstress:\n" << *stress << "\n";

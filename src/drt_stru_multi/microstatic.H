@@ -79,7 +79,7 @@ public:
   \brief do constant predictor step
 
   */
-  void ConstantPredictor(const Epetra_SerialDenseMatrix* defgrd);
+  void Predictor(const Epetra_SerialDenseMatrix* defgrd);
 
   /*!
   \brief do full Newton iteration
@@ -131,6 +131,12 @@ public:
                             double *density,
                             const Epetra_SerialDenseMatrix* defgrd);
 
+  void ConvertMat(const Epetra_MultiVector& cmatpf,
+                  const Epetra_SerialDenseMatrix& inv_defgrd,
+                  const Epetra_SerialDenseVector& S,
+                  Epetra_SerialDenseMatrix& cmat);
+
+
   void calc_cmat(const Epetra_MultiVector& K_M,
                  const Epetra_SerialDenseMatrix& inv_defgrd,
                  const Epetra_SerialDenseVector& S,
@@ -152,6 +158,7 @@ protected:
   double                        norm_;
 
   RefCountPtr<Epetra_CrsMatrix> stiff_;
+  RefCountPtr<Epetra_CrsMatrix> stiff_dirich_;
 
   RefCountPtr<Epetra_Vector>    dirichtoggle_;
   RefCountPtr<Epetra_Vector>    invtoggle_;
@@ -167,6 +174,9 @@ protected:
   RefCountPtr<Epetra_Vector>    fresm_;
   RefCountPtr<Epetra_Vector>    fresm_dirich_;
 
+  RefCountPtr<Epetra_MultiVector> D_;  // D Matrix following Miehe et al., 2002
+  RefCountPtr<Epetra_MultiVector> rhs_; // exported transpose of D (pdof -> dofrowmap)
+
   double                         V0_;  // initial volume of RVE
   double                    density_;  // initial density of RVE
 
@@ -176,8 +186,8 @@ protected:
                                        // coordinates of boundary nodes
   RefCountPtr<Epetra_Map>      pdof_;  // prescribed dofs
   RefCountPtr<Epetra_Map>      fdof_;  // free dofs
-  RefCountPtr<Epetra_Export> export_;
-  RefCountPtr<Epetra_Import> import_;
+  RefCountPtr<Epetra_Import> importp_;
+  RefCountPtr<Epetra_Import> importf_;
 };
 
 #endif

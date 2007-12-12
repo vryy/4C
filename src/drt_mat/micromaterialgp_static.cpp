@@ -206,7 +206,7 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
   // set current absolute time, step number
   microstatic_->SetTime(timen_, istep_);
 
-  microstatic_->ConstantPredictor(defgrd);
+  microstatic_->Predictor(defgrd);
   microstatic_->FullNewton();
   //microstatic_->Homogenization(stress, cmat, density, defgrd, action);
   microstatic_->StaticHomogenization(stress, cmat, density, defgrd);

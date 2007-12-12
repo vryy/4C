@@ -816,14 +816,11 @@ OBJS_DRT_MAT_LIB = src/drt_mat/micromaterial.o \
 		src/drt_mat/convecdiffus.o \
 		src/drt_mat/material.o
 #
-OBJS_DRT_MAT  = src/drt_mat/micromaterialgp.o \
-                src/drt_mat/micromaterialgp_static.o \
+OBJS_DRT_MAT  = src/drt_mat/micromaterialgp_static.o \
                 src/drt_mat/micromaterial_evaluate.o
 #               structural multiscale in new discretization
-OBJS_DRT_STRU_MULTI = src/drt_stru_multi/microstrugenalpha.o \
-                      src/drt_stru_multi/calc_mat.o \
-                      src/drt_stru_multi/microstatic.o \
-                      src/drt_stru_multi/calc_mat_static.o
+OBJS_DRT_STRU_MULTI = src/drt_stru_multi/microstatic.o \
+                      src/drt_stru_multi/convert_mat.o
 #               structure-structure interaction
 OBJS_SSI      = src/ssi_full/ssi_dyn.o \
                 src/ssi_full/ssi_coupling.o \
