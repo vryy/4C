@@ -443,6 +443,44 @@ bool XFEM::PositionWithinDiscretization(
 }
 
 /*----------------------------------------------------------------------*
+ |  CLI:    checks if a position is within condition-enclosed region      a.ger 12/07|   
+ *----------------------------------------------------------------------*/
+bool XFEM::PositionWithinCondition(
+        const blitz::Array<double,1>&       x_in,
+        const int                           xfem_condition_label, 
+        RCP<DRT::Discretization>            cutterdis
+    )
+{
+    const int nsd = 3;
+    Epetra_SerialDenseVector x(nsd);
+    for (int isd = 0; isd < nsd; ++isd) {
+        x(isd) = x_in(isd);
+    }
+
+    // TODO: use label to identify the surface/xfem condition
+    
+    bool nodeWithinMesh = false;
+    // loop all elements on this processor
+    for (int i=0; i<cutterdis->NumMyRowElements(); ++i)
+    {
+        DRT::Element* ele = cutterdis->lRowElement(i);
+        if (isPositionWithinXAABB(x, computeFastXAABB(ele)))
+        {
+            nodeWithinMesh = checkPositionWithinElement(ele, x);
+            if (nodeWithinMesh)
+                break;
+        }
+    }
+
+    // TODO: in parallel, we have to ask all processors, whether there is any match!!!!
+#ifdef PARALLEL
+    dserror("not implemented, yet");
+#endif
+    return nodeWithinMesh;
+}
+
+
+/*----------------------------------------------------------------------*
  |  CLI:    updates the Jacobi matrix for the computation    u.may 06/07|
  |          if a node is in a given element                             |
  *----------------------------------------------------------------------*/

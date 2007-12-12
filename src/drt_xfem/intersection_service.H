@@ -221,6 +221,20 @@ namespace XFEM
     bool PositionWithinDiscretization(  
         RCP<DRT::Discretization>            dis,
         const Epetra_SerialDenseVector&     x);
+    
+    /*!
+    \brief checks if a position in current coordinates lies within a certain element           
+           The nonlinear system of equation is solved with help of the Newton-method.
+
+    \param discretization       (in)        : mesh 
+    \param x                    (in)        : node in current coordinates
+    */  
+    bool PositionWithinCondition(
+            const blitz::Array<double,1>&     x,
+            const int                         xfem_condition_label, 
+            RCP<DRT::Discretization>          cutterdis
+        );
+    
     /*!
     \brief updates the system matrix at the corresponding element coordinates for the 
            computation if a node in current coordinates lies within an element 

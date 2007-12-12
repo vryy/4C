@@ -160,7 +160,7 @@ std::string XFEM::ElementDofManager::toString() const
 XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih) :
         	xfemdis_(ih->xfemdis())
 {
-	nodalDofMap_ = XFEM::DofManager::createNodalDofMap(ih->xfemdis(), ih->elementalDomainIntCells());
+	nodalDofMap_ = XFEM::DofManager::createNodalDofMap(ih->xfemdis(), ih->cutterdis(), ih->elementalDomainIntCells());
 }
 		
 /*----------------------------------------------------------------------*
@@ -232,6 +232,7 @@ void XFEM::DofManager::checkForConsistency(
  *----------------------------------------------------------------------*/
 const map<int, const set <XFEM::FieldEnr> > XFEM::DofManager::createNodalDofMap(
         const RCP<DRT::Discretization>        xfemdis,
+        const RCP<DRT::Discretization>        cutterdis,
         const map<int, XFEM::DomainIntCells >&  elementDomainIntCellMap) const
 {
 	// the final map
@@ -241,7 +242,8 @@ const map<int, const set <XFEM::FieldEnr> > XFEM::DofManager::createNodalDofMap(
     map<int, set <XFEM::FieldEnr> >  nodalDofMap;
     
     // standard enrichment used for all nodes (for now -> we can remove them from holes in the fluid)
-    const XFEM::Enrichment enr_std(0, XFEM::Enrichment::typeStandard);
+    const int standard_label = 0;
+    const XFEM::Enrichment enr_std(standard_label, XFEM::Enrichment::typeStandard);
     // loop my row nodes and add standard degrees of freedom
     for (int i=0; i<xfemdis->NumMyColNodes(); ++i)
     {
@@ -257,27 +259,39 @@ const map<int, const set <XFEM::FieldEnr> > XFEM::DofManager::createNodalDofMap(
         //}
     }
 
-    // for surface 1, loop my col elements and add void enrichments to each elements member nodes
-    const XFEM::Enrichment enr_void1(1, XFEM::Enrichment::typeJump);
-    for (int i=0; i<xfemdis->NumMyColElements(); ++i)
+    vector< DRT::Condition * >              xfemConditions;
+    cutterdis->GetCondition ("XFEMCoupling", xfemConditions);
+    cout << "numcondition = " << xfemConditions.size() << endl;
+    
+    vector< DRT::Condition * >::const_iterator condition_iter;
+    for (condition_iter = xfemConditions.begin(); condition_iter != xfemConditions.end(); ++condition_iter)
     {
-        const DRT::Element* actele = xfemdis->lColElement(i);
-        if (elementDomainIntCellMap.count(actele->Id()) >= 1)
+        const DRT::Condition * condition = *condition_iter;
+        const int label = condition->Getint("label");
+        cout << "condition with label = " << label << endl;
+    
+        // for surface 1, loop my col elements and add void enrichments to each elements member nodes
+        const XFEM::Enrichment enr(label, XFEM::Enrichment::typeJump);
+        for (int i=0; i<xfemdis->NumMyColElements(); ++i)
         {
-            const int nen = actele->NumNode();
-            const int* nodeidptrs = actele->NodeIds();
-            for (int inen = 0; inen<nen; ++inen)
+            const DRT::Element* actele = xfemdis->lColElement(i);
+            if (elementDomainIntCellMap.count(actele->Id()) >= 1)
             {
-                const int node_gid = nodeidptrs[inen];
-                nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velx, enr_void1));
-                nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Vely, enr_void1));
-                nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velz, enr_void1));
-                nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Pres, enr_void1));
-                //              nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::LMPLambdax, enr_void1));
-                //              nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::LMPLambday, enr_void1));
-                //              nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::LMPLambdaz, enr_void1));              
-            };
-        }
+                const int nen = actele->NumNode();
+                const int* nodeidptrs = actele->NodeIds();
+                for (int inen = 0; inen<nen; ++inen)
+                {
+                    const int node_gid = nodeidptrs[inen];
+                    nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velx, enr));
+                    nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Vely, enr));
+                    nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velz, enr));
+                    nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Pres, enr));
+                    //              nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::LMPLambdax, enr_void1));
+                    //              nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::LMPLambday, enr_void1));
+                    //              nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::LMPLambdaz, enr_void1));              
+                };
+            }
+        };
     };
     
     // create const sets from standard sets, so the sets cannot be accidentily changed

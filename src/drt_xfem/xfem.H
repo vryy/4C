@@ -38,6 +38,7 @@ inline blitz::Array<double,1> toBlitzArray(const double* x);
  */
 void ComputeEnrichedShapefunction(
         DRT::Element&  ele,
+        const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
         const blitz::Array<double,1>& actpos,
@@ -48,6 +49,7 @@ void ComputeEnrichedShapefunction(
 
 void ComputeEnrichedShapefunction(
         DRT::Element&  ele,
+        const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
         const blitz::Array<double,1>& actpos,

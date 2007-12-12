@@ -105,11 +105,16 @@ public:
         cutterfield_(cutterfield)
     {
     }
+
+    //! write the whole thing
+    void WriteFiles();
             
 protected:
 
     virtual void WriteAllResults(
             PostField* field);
+    void WriteGeoFile(
+            const string& geofilename) const;
     void WriteGeoFileOneTimeStep(
             ofstream& file,
             map<string, vector<ofstream::pos_type> >& resultfilepos,

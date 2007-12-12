@@ -16,6 +16,7 @@ Maintainer: Axel Gerstenberger
 
 #include <blitz/array.h>
 #include "Teuchos_RefCountPtr.hpp"
+#include "../drt_lib/drt_discret.H"
 
 using namespace Teuchos;
 
@@ -89,7 +90,8 @@ public:
     double enrValue(
             const blitz::Array<double,1>& actpos,
             const blitz::Array<double,1>& nodalpos,
-            const blitz::Array<double,1>& cellcenterpos
+            const blitz::Array<double,1>& cellcenterpos,
+            const RCP<DRT::Discretization>& cutterdis
             ) const;
     
 private:

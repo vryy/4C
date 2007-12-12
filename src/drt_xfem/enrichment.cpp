@@ -15,6 +15,8 @@ Maintainer: Axel Gerstenberger
 #include <blitz/array.h>
 #include "enrichment.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_discret.H"
+#include "intersection_service.H"
 #include <string>
 #include <sstream>
 
@@ -99,7 +101,8 @@ bool inCircleCylinder(
 double Enrichment::enrValue(
         const blitz::Array<double,1>& actpos,
         const blitz::Array<double,1>& nodalpos,
-        const blitz::Array<double,1>& cellcenterpos
+        const blitz::Array<double,1>& cellcenterpos,
+        const RCP<DRT::Discretization>& cutterdis
         ) const
 {
     // return value
@@ -160,18 +163,41 @@ double Enrichment::enrValue(
 //        
 //        break;
 //    }
+//    case XFEM::Enrichment::typeJump:
+//    {
+//        // TODO: generalize
+//        double actpos_enr_val = 0.0;
+//        if (actpos(0) > 1.525) {
+//            actpos_enr_val = -1.0;
+//        } else {
+//            actpos_enr_val = 1.0;
+//        }
+//        
+//        double nodepos_enr_val = 0.0;
+//        if (nodalpos(0) > 1.525) {
+//            nodepos_enr_val = -1.0;
+//        } else {
+//            nodepos_enr_val = 1.0;
+//        }
+//        
+//        enrval = actpos_enr_val - nodepos_enr_val;
+//        //enrval = actpos_enr_val;
+//        
+//        break;
+//    }
     case XFEM::Enrichment::typeJump:
     {
-        // TODO: generalize
+        const int xfemcondition_label = this->Id();
+        
         double actpos_enr_val = 0.0;
-        if (actpos(0) > 1.525) {
+        if (PositionWithinCondition(actpos, xfemcondition_label,cutterdis)) {
             actpos_enr_val = -1.0;
         } else {
             actpos_enr_val = 1.0;
         }
         
         double nodepos_enr_val = 0.0;
-        if (nodalpos(0) > 1.525) {
+        if (PositionWithinCondition(nodalpos, xfemcondition_label,cutterdis)) {
             nodepos_enr_val = -1.0;
         } else {
             nodepos_enr_val = 1.0;
@@ -182,6 +208,7 @@ double Enrichment::enrValue(
         
         break;
     }
+    
     default:
         dserror("unsupported enrichment!");
     }

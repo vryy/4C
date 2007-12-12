@@ -20,6 +20,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_xfem/xfem.H"
+#include "../drt_xfem/intersection_service.H"
 
 #include <Epetra_SerialDenseSolver.h>
 
@@ -298,13 +299,14 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
     // after this call, one should only use the enriched shape functions and derivatives!
     // can currently not be enforced due to "global" class variables
     XFEM::ComputeEnrichedShapefunction(
-            *ele, 
-            dofman, 
-            XFEM::PHYSICS::Velx, 
+            *ele,
+            ih,
+            dofman,
+            XFEM::PHYSICS::Velx,
             gauss_pos,
-            cellcenterpos, 
-            funct_, 
-            derxy_, 
+            cellcenterpos,
+            funct_,
+            derxy_,
             derxy2_, 
             enr_funct_,
             enr_derxy_,
@@ -333,10 +335,10 @@ void DRT::Elements::XFluid3Stationary::Sysmat(XFluid3* ele,
 
     // get bodyforce in gausspoint
     bodyforce_ = 0.0;
-//    if (cellcenterpos(0) < 1.525)
-//        bodyforce_ =  1.0;
-//    else
-//        bodyforce_ =  0.0;
+//    if ( not (XFEM::PositionWithinCondition(cellcenterpos, 1, ih->cutterdis())))
+//    {
+//        bodyforce_(1) = 1.0;
+//    }
     //////////////////////////////////////////bodyforce_ = blitz::sum(enr_edeadng_(i,j)*enr_funct_(j),j);
 
     // perform integration for entire matrix and rhs

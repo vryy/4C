@@ -247,6 +247,7 @@ private:
 	// create a map that for each node (gid) on this processor has its unknowns
 	const map<int, const set<FieldEnr> > createNodalDofMap(
 			const RefCountPtr<DRT::Discretization> xfemdis,
+			const RefCountPtr<DRT::Discretization> cutterdis,
 	        const map<int, DomainIntCells >&  elementDomainIntCellMap) const;
 	
 	//! dummy empty set that we can return in FieldEnrSetPerNode
