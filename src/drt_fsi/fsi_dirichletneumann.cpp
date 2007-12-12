@@ -1441,6 +1441,7 @@ void FSI::DirichletNeumannCoupling::Output()
 {
   fluid_->Output();
   ale_  ->Output();
+  fluid_->LiftDrag();
 }
 
 

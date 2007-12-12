@@ -208,6 +208,12 @@ public:
     gridv_->Update(1/dta_, *dispnp_, -1/dta_, *dispn_, 0.0);
   }
 
+  /*!
+  \brief calculate lift&drag forces and angular momenta
+
+  */
+    void LiftDrag();
+  
   //@}
 
 protected:
@@ -324,15 +330,6 @@ protected:
 
   /// density extracted from element material
   double density_;
-
-private:
-
-/*!
-\brief calculate lift&drag forces and angular momenta
-
-*/
-  void LiftDrag();
-
 
 }; // class FluidImplicitTimeInt
 
