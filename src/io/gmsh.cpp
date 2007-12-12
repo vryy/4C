@@ -256,17 +256,18 @@ std::string IO::GMSH::getConfigString(const int numview)
 std::string IO::GMSH::distypeToGmshElementHeader(const DRT::Element::DiscretizationType distype)
 {
 	switch (distype){
-	case DRT::Element::point1: return "P";   break;
-	case DRT::Element::quad4:  return "Q";   break;
+	case DRT::Element::point1: return "P";  break;
+	case DRT::Element::quad4:  return "Q";  break;
 	case DRT::Element::quad9:  return "Q";  break;
-	case DRT::Element::tri3:   return "T";   break;
+	case DRT::Element::tri3:   return "T";  break;
 	case DRT::Element::tri6:   return "T";  break;
-	case DRT::Element::hex8:   return "H";   break;
+	case DRT::Element::hex8:   return "H";  break;
+	case DRT::Element::hex20:  return "H";  break;
 	case DRT::Element::hex27:  return "H";  break;
-	case DRT::Element::tet4:   return "S";   break;
+	case DRT::Element::tet4:   return "S";  break;
 	case DRT::Element::tet10:  return "S";  break;
 	default:
-		dserror("distype not supported for printout!");
+		dserror("distypeToGmshElementHeader: distype not supported for printout!");
 	}
 	return "xxx";
 }
@@ -285,7 +286,7 @@ int IO::GMSH::distypeToGmshNumNode(const DRT::Element::DiscretizationType distyp
 	case DRT::Element::tet4:   return 4;   break;
 	case DRT::Element::tet10:  return 4;   break;
 	default:
-		dserror("distype not supported for printout!");
+		dserror("distypeToGmshNumNode: distype not supported for printout!");
 	}
 	return -1;
 }
