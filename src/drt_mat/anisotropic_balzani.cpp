@@ -323,13 +323,13 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
   }
   
   // the factor 4! multiplied with factor 1/2 due to Voigts factor 2 used in tensor products
-  (*cmat).Scale(2.0);
-  // repair upper-left matrix part due to Voigts factor 2 used in tensor products
-  for (int i = 0; i < 3; ++i) {
-    for (int j = 0; j < 3; ++j) {
-      (*cmat)(i,j) = 2.0 * (*cmat)(i,j);
-    }
-  }
+  (*cmat).Scale(4.0);
+//  // repair upper-left matrix part due to Voigts factor 2 used in tensor products
+//  for (int i = 0; i < 3; ++i) {
+//    for (int j = 0; j < 3; ++j) {
+//      (*cmat)(i,j) = 2.0 * (*cmat)(i,j);
+//    }
+//  }
   
 //  cout << (*cmat);
   // end of ********** evaluate C-Matrix *****************************
