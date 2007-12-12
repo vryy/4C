@@ -175,6 +175,7 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<bool>  ("contact",static_cast<bool>(sdyn.get<int>("CONTACT")));
       
       genalphaparams.set<double>("uzawa parameter",sdyn.get<double>("UZAWAPARAM"));
+      genalphaparams.set<int>("uzawa maxiter",sdyn.get<int>("UZAWAMAXITER"));
 
       genalphaparams.set<bool>  ("io structural disp",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_DISP"));
       genalphaparams.set<int>   ("io disp every nstep",sdyn.get<int>("RESEVRYDISP"));

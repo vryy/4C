@@ -980,6 +980,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   double toldisp   = params_.get<double>("tolerance displacements",1.0e-07);
   bool printscreen = params_.get<bool>  ("print to screen",true);
   bool printerr    = params_.get<bool>  ("print to err",false);
+  int  maxiterUzawa   = params_.get<int>   ("uzawa maxiter"         ,50);
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
   if (!errfile) printerr = false;
   const Epetra_Map* dofrowmap = discret_.DofRowMap();
@@ -1062,7 +1063,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     //Solve one iteration step with augmented lagrange
   	//Since we calculate displacement norm as well, at least one step has to be taken
     while (((norm_uzawa > toldisp||norm_vol_uzawa>toldisp) 
-    		&& numiter_uzawa < maxiter)||numiter_uzawa<1)
+    		&& numiter_uzawa < maxiterUzawa)||numiter_uzawa<1)
     {
   	  	  
 	  	  LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresmcopy,zeros_,dirichtoggle_);
@@ -1129,9 +1130,9 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     {
     	cout<<"Uzawa steps"<<numiter_uzawa<<endl;
     }
-    if (numiter_uzawa==maxiter)
+    if (numiter_uzawa==maxiterUzawa)
     {
-          dserror("Uzawa unconverged in %d iterations",numiter_uzawa);
+          //dserror("Uzawa unconverged in %d iterations",numiter_uzawa);
     }
     
     //update lagrange multiplier
