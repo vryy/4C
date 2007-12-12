@@ -592,11 +592,20 @@ filter.
 
 \subsection{Paraview}
 
-By applying the filter \texttt{post\_drt\_ensight} (see next section) 
+By applying the filter \texttt{post\_drt\_ensight} 
 to your binary \baci{} result data, a \emph{*.case} file is created.
 This result format can then be loaded into \emph{paraview} for visualization. 
-Start paraview with the command
-\texttt{/lnm/programs/paraview-3.0.2-Linux-x86/bin/paraview}.
+Start paraview with the command\\
+\texttt{/lnm/programs/paraview-3.0.2-Linux-x86/bin/paraview}
+
+
+\subsection{Ensight}
+
+By applying the filter \texttt{post\_drt\_ensight} (see next section) 
+to your binary \baci{} result data, a \emph{*.case} file is created.
+This result format can then be loaded into \emph{Ensight} for visualization. 
+Start Ensight with the command
+\texttt{/lnm/programs/CEI/bin/ensight8}\\
 
 
 \subsection{Filters}
@@ -735,11 +744,9 @@ called your output file base name \texttt{xxx}, you execute
 
 
 \subsubsection{post\_drt\_ensight}
-
 generate ensight (paraview) input files of \baci{} data: For
 instance, if you 
 called your output file base name \texttt{xxx}, you execute
-
 \begin{lyxcode}
 ./post\_drt\_ensight --file="xxx"
 \end{lyxcode}
@@ -747,25 +754,25 @@ Additional filter options can be made visible by
 \begin{lyxcode}
 ./post\_drt\_ensight --help
 \end{lyxcode}
-
-
-\subsubsection{post\_drt\_ensight\_par}
+With the help of a small tool called \texttt{ens\_checker} (available via
+ \texttt{/lnm/programs/CEI/bin/ens\_checker})\\
+it is also possible to check whether the generated filter output fulfills the ensight format.\\
+\\
 If you configure \baci{} for parallel runs, also the post filters
-are configured with parallel layout (indicated by "\_par").
+are configured with parallel layout.
 The parallel filter version is especially recommended for computations based on huge discretizations
 (more than 1 mio. elements as a rough rule of thumb). The main idea is to have the discretization distributed over several processors and hence a distributed consumption of RAM preventing a possible swapping on a single machine.
-On your local machine you can execute the parallel filter with
+On your local machine you can execute the parallel filter on \emph{numprocs} processors with
 \begin{lyxcode}
 lamboot\\
-mpirun~-np~2~post\_drt\_ensight --file="xxx"
+mpirun~-np~\emph{numprocs}~post\_drt\_ensight --file="xxx"
 \end{lyxcode}
 Note, that also the call
 \texttt{./post\_drt\_ensight\_par --file="xxx"}
 is still valid.\\
-After computing "big jobs" on the cluster it is \emph{strongly} recommend that you keep your output there
-and filter your data on the cluster, too. Finally, the filtered dataset can be exported for visualization.\\
+After computing "big jobs" on the cluster it is \emph{strongly} recommended that you keep the \baci{} output where it is (on the cluster!)
+and filter your data there, too. Finally, the filtered dataset can be exported for visualization.\\
 An example job file for executing the parallel ensight filter on \emph{hop} is given below: 
-
 \begin{verbatim}
  #!/bin/sh
 
@@ -801,7 +808,6 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CPPLIB
 $MPIDIR/bin/mpirun -np $PROCS -hostfile $PBS_NODEFILE $srcdir/$EXE $FILE $STEPPING \
  $OUTPUT | tee $PREFIX.filter.log
 \end{verbatim}
-
 
 
 \section{Development environment}
