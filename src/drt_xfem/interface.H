@@ -70,6 +70,11 @@ public:
 //        return eleidset;
 //    }
 
+    bool PositionWithinSpecificClosedRegion(
+            const blitz::Array<double,1>& actpos,
+            const int xfemcondition_label
+            ) const;
+    
 private:
 	// intersected domain
 	RefCountPtr<DRT::Discretization> xfemdis_;

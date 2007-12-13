@@ -108,6 +108,14 @@ XFEM::BoundaryIntCells XFEM::InterfaceHandle::GetBoundaryIntCells(
     return tmp->second;
 };
 
+bool XFEM::InterfaceHandle::PositionWithinSpecificClosedRegion(
+        const blitz::Array<double,1>& actpos,
+        const int xfemcondition_label
+        ) const
+{
+    return PositionWithinCondition(actpos, xfemcondition_label,cutterdis_);
+}
+
 
 
 #endif  // #ifdef CCADISCRET

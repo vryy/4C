@@ -42,7 +42,6 @@ void ComputeEnrichedShapefunction(
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
         const blitz::Array<double,1>& actpos,
-        const blitz::Array<double,1>& cellcenterpos,
         const blitz::Array<double,1>& funct,
         blitz::Array<double,1>& enr_funct
         );
@@ -53,7 +52,6 @@ void ComputeEnrichedShapefunction(
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
         const blitz::Array<double,1>& actpos,
-        const blitz::Array<double,1>& cellcenterpos,
         const blitz::Array<double,1>& funct,
         const blitz::Array<double,2>& derxy,
         const blitz::Array<double,2>& derxy2,

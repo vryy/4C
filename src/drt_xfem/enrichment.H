@@ -90,7 +90,6 @@ public:
     double enrValue(
             const blitz::Array<double,1>& actpos,
             const blitz::Array<double,1>& nodalpos,
-            const blitz::Array<double,1>& cellcenterpos,
             const RCP<DRT::Discretization>& cutterdis
             ) const;
     

@@ -584,7 +584,7 @@ vector<double> computeScalarCellNodeValues(
                 ele.Shape());
         
         blitz::Array<double,1> enr_funct(numparam);
-        XFEM::ComputeEnrichedShapefunction(ele, ih, dofman, field, cellcenterpos, cellcenterpos, funct, enr_funct);
+        XFEM::ComputeEnrichedShapefunction(ele, ih, dofman, field, cellcenterpos, funct, enr_funct);
         // interpolate value
         const double x = blitz::sum(elementvalues * enr_funct);
         

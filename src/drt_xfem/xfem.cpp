@@ -38,7 +38,6 @@ void XFEM::ComputeEnrichedShapefunction(
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
         const blitz::Array<double,1>& actpos,
-        const blitz::Array<double,1>& cellcenterpos,
         const blitz::Array<double,1>& funct,
         blitz::Array<double,1>& enr_funct
         )
@@ -60,7 +59,7 @@ void XFEM::ComputeEnrichedShapefunction(
             if (enrfield->getField() == field)
             {
                 const XFEM::Enrichment enr = enrfield->getEnrichment();
-                const double enrval = enr.enrValue(actpos, nodalpos, cellcenterpos, ih->cutterdis());
+                const double enrval = enr.enrValue(actpos, nodalpos, ih->cutterdis());
                 enr_funct(dofcounter) = funct(inode) * enrval;
                 dofcounter += 1;
             }
@@ -78,7 +77,6 @@ void XFEM::ComputeEnrichedShapefunction(
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
         const blitz::Array<double,1>& actpos,
-        const blitz::Array<double,1>& cellcenterpos,
         const blitz::Array<double,1>& funct,
         const blitz::Array<double,2>& derxy,
         const blitz::Array<double,2>& derxy2,
@@ -105,7 +103,7 @@ void XFEM::ComputeEnrichedShapefunction(
             if (enrfield->getField() == field)
             {
                 const XFEM::Enrichment enr = enrfield->getEnrichment();
-                const double enrval = enr.enrValue(actpos, nodalpos, cellcenterpos, ih->cutterdis());
+                const double enrval = enr.enrValue(actpos, nodalpos, ih->cutterdis());
                 enr_funct(dofcounter) = funct(inode) * enrval;
                 enr_derxy(_,dofcounter) = derxy(_,inode) * enrval;
                 enr_derxy2(_,dofcounter) = derxy2(_,inode) * enrval;
