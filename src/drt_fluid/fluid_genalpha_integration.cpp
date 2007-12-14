@@ -465,6 +465,103 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
        "channel_flow_of_height_2")
     {
       turbulencestatistics_->DoTimeSample(velnp_,*force_);
+
+
+      // create the parameters for the discretization
+      ParameterList eleparams;
+      
+      // action for elements
+      eleparams.set("action","time average for subscales and residual");
+
+      eleparams.set("assemble matrix 1",false);
+      eleparams.set("assemble matrix 2",false);
+      eleparams.set("assemble vector 1",false);
+      eleparams.set("assemble vector 2",false);
+      eleparams.set("assemble vector 3",false);
+
+      // other parameters that might be needed by the elements
+      {
+        ParameterList& timelist = eleparams.sublist("time integration parameters");
+        
+        timelist.set("alpha_M",alphaM_);
+        timelist.set("alpha_F",alphaF_);
+        timelist.set("gamma"  ,gamma_ );
+        timelist.set("time"   ,time_  );
+        timelist.set("dt"     ,dt_    );
+      }
+
+      // parameters for stabilisation
+      {
+        eleparams.sublist("STABILIZATION")    = params_.sublist("STABILIZATION");
+      }
+  
+      // set vector values needed by elements
+      discret_->ClearState();
+      discret_->SetState("u and p (n+1      ,trial)",velnp_);
+      discret_->SetState("u and p (n+alpha_F,trial)",velaf_);
+      discret_->SetState("acc     (n+alpha_M,trial)",accam_);
+
+      // get ordered layers of elements in which LijMij and MijMij are averaged
+      if (planecoords_ == null)
+      {
+        planecoords_ = rcp( new vector<double>((turbulencestatistics_->ReturnNodePlaneCoords()).size()));
+      }
+      
+      (*planecoords_) = turbulencestatistics_->ReturnNodePlaneCoords();
+
+      RefCountPtr<vector<double> > local_incrres;
+      local_incrres=  rcp(new vector<double> );
+      local_incrres->resize(3*(planecoords_->size()-1),0.0);
+
+      RefCountPtr<vector<double> > global_incrres;
+      global_incrres=  rcp(new vector<double> );
+      global_incrres->resize(3*(planecoords_->size()-1),0.0);
+
+      RefCountPtr<vector<double> > local_incrres_sq;
+      local_incrres_sq=  rcp(new vector<double> );
+      local_incrres_sq->resize(3*(planecoords_->size()-1),0.0);
+
+      RefCountPtr<vector<double> > global_incrres_sq;
+      global_incrres_sq=  rcp(new vector<double> );
+      global_incrres_sq->resize(3*(planecoords_->size()-1),0.0);
+
+      RefCountPtr<vector<double> > local_incrsacc;
+      local_incrsacc=  rcp(new vector<double> );
+      local_incrsacc->resize(3*(planecoords_->size()-1),0.0);
+
+      RefCountPtr<vector<double> > global_incrsacc;
+      global_incrsacc=  rcp(new vector<double> );
+      global_incrsacc->resize(3*(planecoords_->size()-1),0.0);
+
+      RefCountPtr<vector<double> > local_incrsacc_sq;
+      local_incrsacc_sq=  rcp(new vector<double> );
+      local_incrsacc_sq->resize(3*(planecoords_->size()-1),0.0);
+
+      RefCountPtr<vector<double> > global_incrsacc_sq;
+      global_incrsacc_sq=  rcp(new vector<double> );
+      global_incrsacc_sq->resize(3*(planecoords_->size()-1),0.0);
+
+      eleparams.set<RefCountPtr<vector<double> > >("planecoords_",planecoords_);
+      eleparams.set<RefCountPtr<vector<double> > >("incrres"    ,local_incrres);
+      eleparams.set<RefCountPtr<vector<double> > >("incrres_sq" ,local_incrres_sq);
+      eleparams.set<RefCountPtr<vector<double> > >("incrsacc"   ,local_incrsacc);
+      eleparams.set<RefCountPtr<vector<double> > >("incrsacc_sq",local_incrsacc_sq);
+
+      // call loop over elements
+      {
+        discret_->Evaluate(eleparams,null,null,null,null,null);
+        discret_->ClearState();
+      }
+
+      discret_->Comm().SumAll(&((*local_incrres)[0])    ,&((*global_incrres)[0])    ,3*(planecoords_->size()-1));
+      discret_->Comm().SumAll(&((*local_incrres_sq)[0]) ,&((*global_incrres_sq)[0]) ,3*(planecoords_->size()-1));
+      discret_->Comm().SumAll(&((*local_incrsacc)[0])   ,&((*global_incrsacc)[0])   ,3*(planecoords_->size()-1));
+      discret_->Comm().SumAll(&((*local_incrsacc_sq)[0]),&((*global_incrsacc_sq)[0]),3*(planecoords_->size()-1));
+
+      turbulencestatistics_->AddToResAverage(global_incrres,
+                                             global_incrres_sq,
+                                             global_incrsacc,
+                                             global_incrsacc_sq);
     }
 
     // -------------------------------------------------------------------
@@ -918,7 +1015,6 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
   //                       matrix anymore if itemax is reached (speedup)
   int     itemax    =params_.get<int>   ("max nonlin iter steps");
 
-
   // -------------------------------------------------------------------
   // Filter velocity for dynamic Smagorinsky model --- this provides
   // the necessary dynamic constant
@@ -1016,14 +1112,27 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
   discret_->SetState("u and p (n+alpha_F,trial)",velaf_);
   discret_->SetState("acc     (n+alpha_M,trial)",accam_);
 
-  // extended statistics (plane average of Cs) for dynamic Smagorinsky model
-  RefCountPtr<vector<double> > incrsumCs;
+  // extended statistics (plane average of Cs, (Cs_delta)^2, visceff)
+  // for dynamic Smagorinsky model
+
   RefCountPtr<vector<double> > global_incr_Cs_sum;
   RefCountPtr<vector<double> > local_Cs_sum;
   global_incr_Cs_sum =  rcp(new vector<double> );
   local_Cs_sum       =  rcp(new vector<double> );
 
-    
+
+  RefCountPtr<vector<double> > global_incr_Cs_delta_sq_sum;
+  RefCountPtr<vector<double> > local_Cs_delta_sq_sum;
+  global_incr_Cs_delta_sq_sum =  rcp(new vector<double> );
+  local_Cs_delta_sq_sum       =  rcp(new vector<double> );
+
+
+  RefCountPtr<vector<double> > global_incr_visceff_sum;
+  RefCountPtr<vector<double> > local_visceff_sum;
+  global_incr_visceff_sum =  rcp(new vector<double> );
+  local_visceff_sum       =  rcp(new vector<double> );
+
+  
   if (params_.sublist("TURBULENCE MODEL").get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
       ==
       "CLASSICAL_LES")
@@ -1033,16 +1142,19 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
        "Dynamic_Smagorinsky"
       )
     {
-      incrsumCs=turbulencestatistics_->ReturnCsAverage();
 
-      if(incrsumCs==null)
-      {
-        dserror("expected existence of vector global_Cs_sum --- not available\n");
-      }
-      local_Cs_sum->resize(incrsumCs->size(),0.0);
-      global_incr_Cs_sum->resize(incrsumCs->size(),0.0);
+      local_Cs_sum->resize      (planecoords_->size()-1,0.0);
+      global_incr_Cs_sum->resize(planecoords_->size()-1,0.0);
+
+      local_Cs_delta_sq_sum->resize      (planecoords_->size()-1,0.0);
+      global_incr_Cs_delta_sq_sum->resize(planecoords_->size()-1,0.0);     
+
+      local_visceff_sum->resize      (planecoords_->size()-1,0.0);
+      global_incr_visceff_sum->resize(planecoords_->size()-1,0.0);
       
       eleparams.sublist("TURBULENCE MODEL").set<RefCountPtr<vector<double> > >("local_Cs_sum",local_Cs_sum);
+      eleparams.sublist("TURBULENCE MODEL").set<RefCountPtr<vector<double> > >("local_Cs_delta_sq_sum",local_Cs_delta_sq_sum);
+      eleparams.sublist("TURBULENCE MODEL").set<RefCountPtr<vector<double> > >("local_visceff_sum",local_visceff_sum);
     }
   }
   
@@ -1063,22 +1175,14 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
       )
     {
       // now add all the stuff from the different processors
-
-      for (unsigned rr=0;rr<(*incrsumCs).size();++rr)
-      {
-        discret_->Comm().SumAll(&((*local_Cs_sum)[rr]),&((*global_incr_Cs_sum)[rr]),1);
-      }
-
-      for (unsigned rr=0;rr<(*incrsumCs).size();++rr)
-      {
-        (*incrsumCs)[rr]=(*global_incr_Cs_sum)[rr];
-      }
+      discret_->Comm().SumAll(&((*local_Cs_sum         )[0]),&((*global_incr_Cs_sum         )[0]),local_Cs_sum->size());
+      discret_->Comm().SumAll(&((*local_Cs_delta_sq_sum)[0]),&((*global_incr_Cs_delta_sq_sum)[0]),local_Cs_delta_sq_sum->size());
+      discret_->Comm().SumAll(&((*local_visceff_sum    )[0]),&((*global_incr_visceff_sum    )[0]),local_visceff_sum->size());
     }
+    turbulencestatistics_->ReplaceCsIncrement(global_incr_Cs_sum,global_incr_Cs_delta_sq_sum,global_incr_visceff_sum);
   }
 
-  global_incr_Cs_sum =  null;
-  local_Cs_sum       =  null;
-
+  
 #if 0  // DEBUG IO --- the whole systemmatrix
       {
 	  int rr;

@@ -333,6 +333,7 @@ private:
     calc_fluid_systemmat_and_residual,
     calc_fluid_genalpha_sysmat_and_residual,
     calc_fluid_genalpha_update_for_subscales,
+    calc_fluid_genalpha_average_for_subscales_and_residual,
     calc_fluid_stationary_systemmat_and_residual,    
     calc_fluid_beltrami_error,
     calc_turbulence_statistics,

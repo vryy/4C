@@ -164,6 +164,7 @@ public:
       return(*nodeplanes_);
     };
 
+#if 0
   /*!
   \brief Return pointer to vector of values of the Smagorinsky constant.
   It will be passed to the element in order to compute average values.
@@ -172,6 +173,47 @@ public:
   RefCountPtr<vector<double> > ReturnCsAverage()
     {
       return(incrsumCs_);
+    };
+#endif
+  /*!
+  \brief Replace increment to compute average of Smagorinsky Constant, effective
+  viscosity and (Cs_delta)^2
+  
+  */
+   void ReplaceCsIncrement(
+     RefCountPtr<vector<double> > incrsumCs,
+     RefCountPtr<vector<double> > incr_Cs_delta_sq_sum,
+     RefCountPtr<vector<double> > incr_visceff_sum
+    )
+    {
+      for (unsigned rr=0;rr<incrsumCs->size();++rr)
+      {
+        (*incrsumCs_         )[rr] =(*incrsumCs           )[rr];
+        (*incrsumCs_delta_sq_)[rr] =(*incr_Cs_delta_sq_sum)[rr];
+        (*incrsumvisceff_    )[rr] =(*incr_visceff_sum    )[rr];
+      }
+      return;
+    };
+  
+  /*!
+  \brief Add computed sums to compute average of residuals
+  
+  */
+   void AddToResAverage(
+     RefCountPtr<vector<double> > incrres,
+     RefCountPtr<vector<double> > incrres_sq,
+     RefCountPtr<vector<double> > incrsacc,
+     RefCountPtr<vector<double> > incrsacc_sq
+    )
+    {
+      for (unsigned rr=0;rr<incrres->size();++rr)
+      {
+          (*sumres_    )[rr]+=(*incrres)    [rr];
+          (*sumres_sq_ )[rr]+=(*incrres_sq) [rr];
+          (*sumsacc_   )[rr]+=(*incrsacc)   [rr];
+          (*sumsacc_sq_)[rr]+=(*incrsacc_sq)[rr];
+      }
+      return;
     };
     
   //@}
@@ -274,8 +316,26 @@ private:
 
   //! sum over Cs --- used only for dynamic Smagorinsky model
   RefCountPtr<vector<double> >     sumCs_;
+  //! sum over (Cs*delta)^2 --- used only for dynamic Smagorinsky model
+  RefCountPtr<vector<double> >     sumCs_delta_sq_;
+  //! sum over effective viscosity --- used only for dynamic Smagorinsky model
+  RefCountPtr<vector<double> >     sumvisceff_;  
   //! increment of sumCs over in one timestep
   RefCountPtr<vector<double> >     incrsumCs_;
+  //! increment of sumCs_delta_sq over in one timestep
+  RefCountPtr<vector<double> >     incrsumCs_delta_sq_;
+  //! increment of sumvisceff over in one timestep
+  RefCountPtr<vector<double> >     incrsumvisceff_;
+
+  //! sum over all in plane residuals
+  RefCountPtr<vector<double> >     sumres_;
+  //! sum over all in plane squared residuals
+  RefCountPtr<vector<double> >     sumres_sq_;
+  //! sum over all in plane subscale accelerations
+  RefCountPtr<vector<double> >     sumsacc_;
+  //! sum over all in plane squared subscale accelerations
+  RefCountPtr<vector<double> >     sumsacc_sq_;
+  
   
   //! viscosity to calculate l_tau, y+ etc.
   double                           visc_;

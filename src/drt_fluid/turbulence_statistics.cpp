@@ -325,9 +325,34 @@ TurbulenceStatistics::TurbulenceStatistics(
   incrsumCs_  =  rcp(new vector<double> );
   incrsumCs_->resize(nodeplanes_->size()-1,0.0);
 
+  // means for (Cs*delta)^2
+  sumCs_delta_sq_  =  rcp(new vector<double> );
+  sumCs_delta_sq_->resize(nodeplanes_->size()-1,0.0);
+  
+  incrsumCs_delta_sq_  =  rcp(new vector<double> );
+  incrsumCs_delta_sq_->resize(nodeplanes_->size()-1,0.0);
+
+  // means for the effective viscosity
+  sumvisceff_  =  rcp(new vector<double> );
+  sumvisceff_->resize(nodeplanes_->size()-1,0.0);
+  
+  incrsumvisceff_  =  rcp(new vector<double> );
+  incrsumvisceff_->resize(nodeplanes_->size()-1,0.0);
+  
+  // means for comparison of of residual and subscale acceleration
+  sumres_    =  rcp(new vector<double> );
+  sumres_->resize(3*(nodeplanes_->size()-1),0.0);
+  sumres_sq_ =  rcp(new vector<double> );
+  sumres_sq_->resize(3*(nodeplanes_->size()-1),0.0);
+  sumsacc_   =  rcp(new vector<double> );
+  sumsacc_->resize(3*(nodeplanes_->size()-1),0.0);
+  sumsacc_sq_=  rcp(new vector<double> );
+  sumsacc_sq_->resize(3*(nodeplanes_->size()-1),0.0);
+  
   // initialise output
   Teuchos::RefCountPtr<std::ofstream> log;
   Teuchos::RefCountPtr<std::ofstream> log_Cs;
+  Teuchos::RefCountPtr<std::ofstream> log_res;
 
   if (discret_->Comm().MyPID()==0)
   {
@@ -356,6 +381,13 @@ TurbulenceStatistics::TurbulenceStatistics(
         (*log_Cs) << "# Statistics for turbulent channel flow (Smagorinsky constant)\n\n";
       }
     }
+
+    // output of residuals and subscale quantities
+    std::string s_res = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+    s_res.append(".res_statistic");
+    
+    log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),ios::out));
+    (*log_res) << "# Statistics for turbulent channel flow (residuals and subscale quantities)\n\n";
     
   }
 
@@ -458,8 +490,10 @@ void TurbulenceStatistics::DoTimeSample(
     {
       for (unsigned rr=0;rr<(*incrsumCs_).size();++rr)
       {
-        (*sumCs_)[rr]+=(*incrsumCs_)[rr];
-      }        
+        (*sumCs_         )[rr]+=(*incrsumCs_         )[rr];
+        (*sumCs_delta_sq_)[rr]+=(*incrsumCs_delta_sq_)[rr];
+        (*sumvisceff_    )[rr]+=(*incrsumvisceff_    )[rr];
+      }
     }
   }
   
@@ -780,16 +814,76 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
         (*log_Cs) << "\n\n\n";
         (*log_Cs) << "# Statistics record " << countrecord_;
         (*log_Cs) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
-    
+
+        
+        (*log_Cs) << "#     y      ";
+        (*log_Cs) << "     Cs     ";
+        (*log_Cs) << "   (Cs*hk)^2 ";
+        (*log_Cs) << "    visceff  ";
+        (*log_Cs) << &endl;
+        (*log_Cs) << scientific;
         for (unsigned rr=0;rr<sumCs_->size();++rr)
         {
           (*log_Cs) << setw(11) << setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
-          (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_)[rr])/(numele_*numsamp_) << &endl;
+          (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_)[rr])/(numele_*numsamp_) << "  ";
+          (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_delta_sq_)[rr])/(numele_*numsamp_)<< "  " ;
+          (*log_Cs) << setw(11) << setprecision(4) << ((*sumvisceff_)[rr])/(numele_*numsamp_) << &endl;
         }
         log_Cs->flush();
       }
     }
   }
+     
+  if (discret_->Comm().MyPID()==0)
+  {
+    Teuchos::RefCountPtr<std::ofstream> log_res;
+
+    // output of residuals and subscale quantities
+    std::string s_res = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+    s_res.append(".res_statistic");
+    
+    log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),ios::app));
+
+    (*log_res) << "\n\n\n";
+    (*log_res) << "# Statistics record " << countrecord_;
+    (*log_res) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
+    (*log_res) << "#       y    ";  
+    (*log_res) << "    res_x  ";  
+    (*log_res) << "      res_y  ";  
+    (*log_res) << "      res_z  ";
+    (*log_res) << "     sacc_x  ";  
+    (*log_res) << "     sacc_y  ";  
+    (*log_res) << "     sacc_z   ";
+    (*log_res) << "   res_sq_x  ";  
+    (*log_res) << "   res_sq_y  ";  
+    (*log_res) << "   res_sq_z  ";
+    (*log_res) << "   sacc_sq_x ";  
+    (*log_res) << "   sacc_sq_y ";  
+    (*log_res) << "   sacc_sq_z "<<&endl;
+
+    (*log_res) << scientific;
+    for (unsigned rr=0;rr<nodeplanes_->size()-1;++rr)
+    {
+      (*log_res)  << setw(11) << setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
+      (*log_res)  << setw(11) << setprecision(4) << (*sumres_)[3*rr  ]/(numele_*numsamp_) << "  ";
+      (*log_res)  << setw(11) << setprecision(4) << (*sumres_)[3*rr+1]/(numele_*numsamp_) << "  ";
+      (*log_res)  << setw(11) << setprecision(4) << (*sumres_)[3*rr+2]/(numele_*numsamp_) << "  ";
+
+      (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_)[3*rr  ]/(numele_*numsamp_) << "  ";
+      (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_)[3*rr+1]/(numele_*numsamp_) << "  ";
+      (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_)[3*rr+2]/(numele_*numsamp_) << "  ";
+
+      (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_)[3*rr  ]/(numele_*numsamp_) << "  ";
+      (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_)[3*rr+1]/(numele_*numsamp_) << "  ";
+      (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_)[3*rr+2]/(numele_*numsamp_) << "  ";
+
+      (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_sq_)[3*rr  ]/(numele_*numsamp_) << "  ";
+      (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_sq_)[3*rr+1]/(numele_*numsamp_) << "  ";
+      (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_sq_)[3*rr+2]/(numele_*numsamp_) << &endl;
+    }
+    log_res->flush();
+  }
+
   
   // log was written, so increase counter for records
   countrecord_++;
@@ -838,10 +932,32 @@ void TurbulenceStatistics::ClearStatistics()
       for (unsigned rr=0;rr<sumCs_->size();++rr)
       {
         // reset value
-        (*sumCs_)[rr]=0;
+        (*sumCs_)         [rr]=0;
+        (*sumCs_delta_sq_)[rr]=0;
+        (*sumvisceff_)    [rr]=0;
       }
     }
   }
+
+  for (unsigned rr=0;rr<sumres_->size()/3;++rr)
+  {
+    (*sumres_)[3*rr  ]=0;
+    (*sumres_)[3*rr+1]=0;
+    (*sumres_)[3*rr+2]=0;
+
+    (*sumsacc_)[3*rr  ]=0;
+    (*sumsacc_)[3*rr+1]=0;
+    (*sumsacc_)[3*rr+2]=0;
+
+    (*sumres_sq_)[3*rr  ]=0;
+    (*sumres_sq_)[3*rr+1]=0;
+    (*sumres_sq_)[3*rr+2]=0;
+
+    (*sumsacc_sq_)[3*rr  ]=0;
+    (*sumsacc_sq_)[3*rr+1]=0;
+    (*sumsacc_sq_)[3*rr+2]=0;
+  }
+  
  
   return;  
 }// TurbulenceStatistics::ClearStatistics

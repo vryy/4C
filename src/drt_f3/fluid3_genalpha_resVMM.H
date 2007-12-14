@@ -203,8 +203,31 @@ namespace DRT
                   const enum Fluid3::StabilisationAction                reynolds,
                   const enum Fluid3::TurbModelAction                    turb_mod_action,
                   double&                                               Cs,
+                  double&                                               Cs_delta_sq,
+                  double&                                               visceff,
                   const double                                          l_tau,
                   const bool                                            compute_elemat);
+
+
+
+      void CalcRes(Fluid3*                                               ele,
+                   const blitz::Array<double,2>&                         evelnp,
+                   const blitz::Array<double,1>&                         eprenp,
+                   const blitz::Array<double,2>&                         eaccam,
+                   const blitz::Array<double,2>&                         evelaf,
+                   const struct _MATERIAL*                               material,
+                   const double                                          alphaM,
+                   const double                                          alphaF,
+                   const double                                          gamma,
+                   const double                                          dt,
+                   const double                                          time,
+                   const enum Fluid3::StabilisationAction                tds,
+                   blitz::Array<double,1>&                               mean_res,
+                   blitz::Array<double,1>&                               mean_sacc,
+                   blitz::Array<double,1>&                               mean_res_sq,
+                   blitz::Array<double,1>&                               mean_sacc_sq);
+
+     
     private:
       ///  Get the nodal values of the bodyforce. The values are stored in edeadnf
       //
@@ -322,8 +345,10 @@ namespace DRT
       */
       //! the element volume, used to define element length
       double                  vol_;
+#if 0
       //! the effective viscosity (material+turbulent viscosity)
       double                  visceff_;
+#endif
     };
   }
 }

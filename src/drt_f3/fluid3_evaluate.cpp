@@ -264,6 +264,8 @@ DRT::Elements::Fluid3::ActionType DRT::Elements::Fluid3::convertStringToActionTy
     act = Fluid3::calc_fluid_genalpha_sysmat_and_residual;
   else if (action == "time update for subscales")
     act = Fluid3::calc_fluid_genalpha_update_for_subscales;
+  else if (action == "time average for subscales and residual")
+    act = Fluid3::calc_fluid_genalpha_average_for_subscales_and_residual;
   else if (action == "calc_fluid_stationary_systemmat_and_residual")
     act = Fluid3::calc_fluid_stationary_systemmat_and_residual;  
   else if (action == "calc_fluid_beltrami_error")
@@ -660,7 +662,6 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
         DRT::Utils::ExtractMyValues(*accam,myaccam,lm);
 
         // create blitz matrix objects
-
         const int numnode = NumNode();
         blitz::Array<double, 1> eprenp (  numnode);
         blitz::Array<double, 2> evelnp (3,numnode,blitz::ColumnMajorArray<2>());
@@ -746,9 +747,11 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
         ParameterList& turbmodelparams    = params.sublist("TURBULENCE MODEL");
 
         // initialise the Smagorinsky constant Cs and the viscous length scale l_tau to zero
-        double Cs    = 0.0;
-        double l_tau = 0.0;
-
+        double Cs            = 0.0;
+        double Cs_delta_sq   = 0.0;
+        double l_tau         = 0.0;
+        double visceff       = 0.0;
+        
         // the default action is no model        
         TurbModelAction turb_mod_action = no_model;
 
@@ -806,12 +809,12 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
               dserror("could not determine element layer");
             }
             
-            Cs = 0.5 * (*averaged_LijMij)[nlayer]/(*averaged_MijMij)[nlayer] ;
+            Cs_delta_sq = 0.5 * (*averaged_LijMij)[nlayer]/(*averaged_MijMij)[nlayer] ;
             
             // clipping to get algorithm stable
-            if (Cs<0)
+            if (Cs_delta_sq<0)
             {
-              Cs=0;
+              Cs_delta_sq=0;
             }
           }
           else
@@ -850,6 +853,8 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
                                  reynolds,
                                  turb_mod_action,
                                  Cs,
+                                 Cs_delta_sq,
+                                 visceff,
                                  l_tau,
                                  compute_elemat
           );
@@ -866,14 +871,16 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
 
             if(this->Owner() == discretization.Comm().MyPID())
             {
-              (*(turbmodelparams.get<RefCountPtr<vector<double> > >("local_Cs_sum")))[nlayer]+=Cs;
+              (*(turbmodelparams.get<RefCountPtr<vector<double> > >("local_Cs_sum")))         [nlayer]+=Cs;
+              (*(turbmodelparams.get<RefCountPtr<vector<double> > >("local_Cs_delta_sq_sum")))[nlayer]+=Cs_delta_sq;
+              (*(turbmodelparams.get<RefCountPtr<vector<double> > >("local_visceff_sum")))    [nlayer]+=visceff;
             }
           }
         }
-        
       }
       break;
       case calc_fluid_genalpha_update_for_subscales:
+      {
         // most recent subscale pressure becomes the old subscale pressure
         // for the next timestep
         //
@@ -890,14 +897,14 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
             acc  <-  --------- - acc * |  ---------  |
                      gamma*dt           \   gamma   /
         */
-        {
-          const double dt     = params.get<double>("dt");
-          const double gamma  = params.get<double>("gamma");
+        
+        const double dt     = params.get<double>("dt");
+        const double gamma  = params.get<double>("gamma");
 
-          sub_acc_old_ = (sub_vel_-sub_vel_old_)/(gamma*dt)
-                         -
-                         sub_acc_old_*(1.0-gamma)/gamma;
-        }
+        sub_acc_old_ = (sub_vel_-sub_vel_old_)/(gamma*dt)
+                       -
+                       sub_acc_old_*(1.0-gamma)/gamma;
+
         // most recent subscale velocity becomes the old subscale velocity
         // for the next timestep
         //
@@ -905,6 +912,189 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
         //  u <- u
         //
         sub_vel_old_=sub_vel_;
+      }
+      break;
+      case calc_fluid_genalpha_average_for_subscales_and_residual:
+      {
+        if(this->Owner() == discretization.Comm().MyPID())
+        {
+          // --------------------------------------------------
+          // extract velocities, pressure and accelerations from the
+          // global distributed vectors
+
+          // velocity and pressure values (current iterate, n+1)
+          RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("u and p (n+1      ,trial)");
+
+          // velocities    (intermediate time step, n+alpha_F)
+          RefCountPtr<const Epetra_Vector> velaf = discretization.GetState("u and p (n+alpha_F,trial)");
+
+          // accelerations (intermediate time step, n+alpha_M)
+          RefCountPtr<const Epetra_Vector> accam = discretization.GetState("acc     (n+alpha_M,trial)");
+          
+          if (velnp==null || velaf==null || accam==null)
+          {
+            dserror("Cannot get state vectors 'velnp', 'velaf'  and/or 'accam'");
+          }
+          
+          // extract local values from the global vectors
+          vector<double> myvelnp(lm.size());
+          DRT::Utils::ExtractMyValues(*velnp,myvelnp,lm);
+          
+          vector<double> myvelaf(lm.size());
+          DRT::Utils::ExtractMyValues(*velaf,myvelaf,lm);
+          
+          vector<double> myaccam(lm.size());
+          DRT::Utils::ExtractMyValues(*accam,myaccam,lm);
+          
+          // create blitz matrix objects
+          
+          const int numnode = NumNode();
+          blitz::Array<double, 1> eprenp (  numnode);
+          blitz::Array<double, 2> evelnp (3,numnode,blitz::ColumnMajorArray<2>());
+          blitz::Array<double, 2> evelaf (3,numnode,blitz::ColumnMajorArray<2>());
+          blitz::Array<double, 2> eaccam (3,numnode,blitz::ColumnMajorArray<2>());
+          
+          
+          // split "my_velnp" into velocity part "myvelnp" and pressure part "myprenp"
+          // Additionally only the 'velocity' components of my_velaf
+          // and my_accam are important!
+          for (int i=0;i<numnode;++i)
+          {
+            eprenp(i)   = myvelnp[3+(i*4)];
+            
+            evelnp(0,i) = myvelnp[0+(i*4)];
+            evelnp(1,i) = myvelnp[1+(i*4)];
+            evelnp(2,i) = myvelnp[2+(i*4)];
+            
+            evelaf(0,i) = myvelaf[0+(i*4)];
+            evelaf(1,i) = myvelaf[1+(i*4)];
+            evelaf(2,i) = myvelaf[2+(i*4)];
+            
+            eaccam(0,i) = myaccam[0+(i*4)];
+            eaccam(1,i) = myaccam[1+(i*4)];
+            eaccam(2,i) = myaccam[2+(i*4)];
+          }
+          
+          // --------------------------------------------------
+          // set parameters for time integration
+          ParameterList& timelist = params.sublist("time integration parameters");
+          
+          const double alphaM = timelist.get<double>("alpha_M");
+          const double alphaF = timelist.get<double>("alpha_F");
+          const double gamma  = timelist.get<double>("gamma");
+          const double dt     = timelist.get<double>("dt");
+          const double time   = timelist.get<double>("time");
+          
+          // --------------------------------------------------
+          // set parameters for stabilisation
+          ParameterList& stablist = params.sublist("STABILIZATION");
+          
+          // if not available, define map from string to action
+          if(stabstrtoact_.empty())
+          {
+            stabstrtoact_["quasistatic_subscales"            ]=subscales_quasistatic;
+            stabstrtoact_["time_dependent_subscales"         ]=subscales_time_dependent;
+            stabstrtoact_["drop"                             ]=inertia_stab_drop;
+            stabstrtoact_["+(sacc|v)"                        ]=inertia_stab_keep;
+            stabstrtoact_["off"                              ]=pstab_assume_inf_sup_stable;
+            stabstrtoact_["-(svel|nabla_q)"                  ]=pstab_use_pspg;
+            stabstrtoact_["off"                              ]=convective_stab_none;
+            stabstrtoact_["-(svel|(u_o_nabla)_v)"            ]=convective_stab_supg;
+            stabstrtoact_["off"                              ]=viscous_stab_none;
+            stabstrtoact_["+2*nu*(svel|nabla_o_eps(v))"      ]=viscous_stab_gls;
+            stabstrtoact_["+2*nu*(svel|nabla_o_eps(v))_[RHS]"]=viscous_stab_gls_only_rhs;
+            stabstrtoact_["-2*nu*(svel|nabla_o_eps(v))"      ]=viscous_stab_agls;
+            stabstrtoact_["-2*nu*(svel|nabla_o_eps(v))_[RHS]"]=viscous_stab_agls_only_rhs;
+            stabstrtoact_["-(spre|nabla_o_v)"                ]=continuity_stab_yes;
+            stabstrtoact_["off"                              ]=continuity_stab_none;
+            stabstrtoact_["+((svel_o_nabla)_u|v)"            ]=cross_stress_stab;
+            stabstrtoact_["+((svel_o_nabla)_u|v)_[RHS]"      ]=cross_stress_stab_only_rhs;
+            stabstrtoact_["off"                              ]=cross_stress_stab_none;
+            stabstrtoact_["-(svel|(svel_o_grad)_v)_[RHS]"    ]=reynolds_stress_stab_only_rhs;
+            stabstrtoact_["off"                              ]=reynolds_stress_stab_none;
+          }
+          
+          StabilisationAction tds      = ConvertStringToStabAction(stablist.get<string>("RVMM_TDS"));
+          
+          blitz::Array<double, 1>  mean_res(3);
+          blitz::Array<double, 1>  mean_sacc(3);
+          blitz::Array<double, 1>  mean_res_sq(3);
+          blitz::Array<double, 1>  mean_sacc_sq(3);
+
+          mean_res    =0;
+          mean_sacc   =0;
+          mean_res_sq =0;
+          mean_sacc_sq=0;
+
+          RefCountPtr<vector<double> > incrres       = params.get<RefCountPtr<vector<double> > >("incrres");
+          RefCountPtr<vector<double> > incrres_sq    = params.get<RefCountPtr<vector<double> > >("incrres_sq");
+          RefCountPtr<vector<double> > incrsacc      = params.get<RefCountPtr<vector<double> > >("incrsacc");
+          RefCountPtr<vector<double> > incrsacc_sq   = params.get<RefCountPtr<vector<double> > >("incrsacc_sq");
+          
+          RefCountPtr<vector<double> > planecoords   = params.get<RefCountPtr<vector<double> > >("planecoords_");
+          
+          // --------------------------------------------------
+          // calculate element coefficient matrix
+          GenalphaResVMM()->CalcRes(this,
+                                    evelnp,
+                                    eprenp,
+                                    eaccam,
+                                    evelaf,
+                                    actmat,
+                                    alphaM,
+                                    alphaF,
+                                    gamma,
+                                    dt,
+                                    time,
+                                    tds,
+                                    mean_res,
+                                    mean_sacc,
+                                    mean_res_sq,
+                                    mean_sacc_sq);
+          
+
+          //this will be the y-coordinate of a point in the element interior
+          double center = 0;
+          
+          // get node coordinates of element
+          blitz::Array<double,2>  xyze(3,NumNode());
+          for(int inode=0;inode<NumNode();inode++)
+          {
+            xyze(0,inode)=Nodes()[inode]->X()[0];
+            xyze(1,inode)=Nodes()[inode]->X()[1];
+            xyze(2,inode)=Nodes()[inode]->X()[2];
+            
+            center+=xyze(1,inode);
+          }
+          center/=NumNode();
+
+          bool found = false;
+          
+          int nlayer;
+          for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
+          {
+            if(center<(*planecoords)[nlayer+1])
+            {
+              found = true;
+              break;
+            }
+            nlayer++;
+          }
+          if (found ==false)
+          {
+              dserror("could not determine element layer");
+          }
+
+
+          for(int mm=0;mm<3;++mm)
+          {
+            (*incrres)    [3*nlayer+mm] += mean_res    (mm);
+            (*incrres_sq) [3*nlayer+mm] += mean_res_sq (mm);
+            (*incrsacc)   [3*nlayer+mm] += mean_sacc   (mm);
+            (*incrsacc_sq)[3*nlayer+mm] += mean_sacc_sq(mm);
+          }
+        }
+      }
       break;
       case calc_fluid_stationary_systemmat_and_residual:
       {
@@ -916,7 +1106,6 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
           // extract local values from the global vector
           vector<double> myvelnp(lm.size());
           DRT::Utils::ExtractMyValues(*velnp,myvelnp,lm);
-
 
           if (is_ale_)
           {
