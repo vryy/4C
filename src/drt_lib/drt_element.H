@@ -671,7 +671,22 @@ public:
   */
   virtual bool BuildNodalPointers(DRT::Node** nodes);
 
+#ifdef ELEMINTERFACES  
+  /*!
+  \brief Build pointer vector from map of elements
 
+  The method is used to build the element connectivty in this element. For standard elements this 
+  procedure returns true and does nothing. For interface-elements a connection is made between the 
+  interface and it's left and right element. It is called from DRT::Discretization in 
+  DRT::Discretization::FillComplete() to create the pointers from elements to elements 
+  (next to the node-element and nodes-elements connectivity).
+  
+  \param elements (in): A map of all elements of a discretization
+  */
+  virtual bool BuildElementPointers(map<int,RefCountPtr<DRT::Element> >& elements) {return true;}
+  
+#endif //ELEMINTERFACES
+  
 private:
 
   //! \brief A unique global element id

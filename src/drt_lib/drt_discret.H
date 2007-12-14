@@ -431,6 +431,7 @@ public:
   - column map of elements
   - pointers from elements to nodes
   - pointers from nodes to elements
+  - pointers from elements to elements
   - assigns degrees of freedoms
   - map of element register classes
   - calls all element register initialize methods
@@ -1136,6 +1137,13 @@ private:
   */
   virtual void BuildElementToNodePointers();
 
+#ifdef ELEMINTERFACES
+  /*!
+  \brief Build pointers elements -> elements for interface-elements (Filled()==true NOT prerequisite)
+  */
+  virtual void BuildElementToElementPointers();  
+#endif //ELEMINTERFACES
+  
   /*!
   \brief Build pointers Node -> Element (Filled()==true NOT prerequisite)
 

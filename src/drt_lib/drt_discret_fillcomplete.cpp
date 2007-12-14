@@ -69,6 +69,12 @@ int DRT::Discretization::FillComplete(bool assigndegreesoffreedom,
   // (re)construct node -> element pointers
   BuildNodeToElementPointers();
 
+#ifdef ELEMINTERFACES
+  // bos 12/07
+  // (re)construct element -> element pointers for interface-elements 
+  BuildElementToElementPointers();
+#endif // ELEMINTERFACES
+  
   // set the flag indicating Filled()==true
   // as the following methods make use of maps
   // which we just built
@@ -336,6 +342,23 @@ void DRT::Discretization::BuildElementToNodePointers()
   }
   return;
 }
+
+#ifdef ELEMINTERFACES
+/*----------------------------------------------------------------------*
+ |  Build ptrs element -> element (private)                      mwgee 11/06|
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::BuildElementToElementPointers()
+{
+  map<int,RefCountPtr<DRT::Element> >::iterator elecurr;
+  for (elecurr=element_.begin(); elecurr != element_.end(); ++elecurr)
+  {
+    bool success = elecurr->second->BuildElementPointers(element_);
+    if (!success)
+      dserror("Building element <-> element topology failed");
+  }
+  return;
+}
+#endif //ELEMINTERFACES
 
 /*----------------------------------------------------------------------*
  |  Build ptrs node -> element (private)                      mwgee 11/06|
