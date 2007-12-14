@@ -120,6 +120,11 @@ public:
     element_sodispline,
     element_contact,
     element_so_shw6,
+#ifdef ELEMINTERFACES    
+    interfaceelement_surface,
+    interfaceelement_line,
+    interfaceelement_point
+#endif // ELEMINTERFACES    
   };
 
   /*!
