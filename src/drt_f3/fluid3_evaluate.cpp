@@ -769,11 +769,38 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
           }
           else if (physical_turbulence_model == "Smagorinsky_with_van_Driest_damping")
           {
+            RefCountPtr<vector<double> > planecoords      = turbmodelparams.get<RefCountPtr<vector<double> > >("planecoords_");
+
             // for the Smagorinsky model with van Driest damping, we need a viscous length to determine
             // the y+ (heigth in wall units)
             turb_mod_action = smagorinsky_with_wall_damping;
             Cs              = turbmodelparams.get<double>("C_SMAGORINSKY");
             l_tau           = turbmodelparams.get<double>("CHANNEL_L_TAU");
+
+            const int iel = NumNode();
+            
+            //this will be the y-coordinate of a point in the element interior
+            double center = 0;
+            for(int inode=0;inode<iel;inode++)
+            {
+              center+=Nodes()[inode]->X()[1];
+            }
+            center/=iel;
+            
+            bool found = false;
+            for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
+            {
+                if(center<(*planecoords)[nlayer+1])
+                {
+                  found = true;
+                  break;
+                }
+                nlayer++;
+            }
+            if (found ==false)
+            {
+              dserror("could not determine element layer");
+            }
           }
           else if (physical_turbulence_model == "Dynamic_Smagorinsky")
           {
@@ -864,7 +891,10 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
         {
           string& physical_turbulence_model = turbmodelparams.get<string>("PHYSICAL_MODEL");
           
-          if (physical_turbulence_model == "Dynamic_Smagorinsky")
+          if (physical_turbulence_model == "Dynamic_Smagorinsky"
+              ||
+              physical_turbulence_model ==  "Smagorinsky_with_van_Driest_damping"
+            )
           {
             // Cs was changed in Sysmat (Cs->sqrt(Cs/hk)) to compare it with the standard
             // Smagorinsky Cs

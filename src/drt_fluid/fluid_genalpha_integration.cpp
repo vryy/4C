@@ -1140,8 +1140,18 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
     if(params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
        ==
        "Dynamic_Smagorinsky"
+       ||
+       params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+       ==
+       "Smagorinsky_with_van_Driest_damping"
       )
     {
+      // get ordered layers of elements in which LijMij and MijMij are averaged
+      if (planecoords_ == null)
+      {
+        planecoords_ = rcp( new vector<double>((turbulencestatistics_->ReturnNodePlaneCoords()).size()));
+        (*planecoords_) = turbulencestatistics_->ReturnNodePlaneCoords();
+      }
 
       local_Cs_sum->resize      (planecoords_->size()-1,0.0);
       global_incr_Cs_sum->resize(planecoords_->size()-1,0.0);
@@ -1151,7 +1161,8 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
 
       local_visceff_sum->resize      (planecoords_->size()-1,0.0);
       global_incr_visceff_sum->resize(planecoords_->size()-1,0.0);
-      
+
+      eleparams.sublist("TURBULENCE MODEL").set<RefCountPtr<vector<double> > >("planecoords_",planecoords_);
       eleparams.sublist("TURBULENCE MODEL").set<RefCountPtr<vector<double> > >("local_Cs_sum",local_Cs_sum);
       eleparams.sublist("TURBULENCE MODEL").set<RefCountPtr<vector<double> > >("local_Cs_delta_sq_sum",local_Cs_delta_sq_sum);
       eleparams.sublist("TURBULENCE MODEL").set<RefCountPtr<vector<double> > >("local_visceff_sum",local_visceff_sum);
@@ -1172,6 +1183,10 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
     if(params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
        ==
        "Dynamic_Smagorinsky"
+       ||
+       params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+       ==
+       "Smagorinsky_with_van_Driest_damping"
       )
     {
       // now add all the stuff from the different processors

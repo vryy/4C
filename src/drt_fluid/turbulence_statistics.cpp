@@ -372,6 +372,10 @@ TurbulenceStatistics::TurbulenceStatistics(
       if(params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
          ==
          "Dynamic_Smagorinsky"
+         ||
+         params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+         ==
+         "Smagorinsky_with_van_Driest_damping"
         )
       {
         std::string s_smag = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
@@ -486,6 +490,10 @@ void TurbulenceStatistics::DoTimeSample(
     if(params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
        ==
        "Dynamic_Smagorinsky"
+       ||
+       params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+       ==
+       "Smagorinsky_with_van_Driest_damping"
       )
     {
       for (unsigned rr=0;rr<(*incrsumCs_).size();++rr)
@@ -801,6 +809,10 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
       if(params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
          ==
          "Dynamic_Smagorinsky"
+         ||
+         params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+         ==
+         "Smagorinsky_with_van_Driest_damping"
         )
       {
         // get the outfile
@@ -927,6 +939,10 @@ void TurbulenceStatistics::ClearStatistics()
     if(params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
        ==
        "Dynamic_Smagorinsky"
+       ||
+       params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+       ==
+       "Smagorinsky_with_van_Driest_damping"
       )
     {
       for (unsigned rr=0;rr<sumCs_->size();++rr)

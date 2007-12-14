@@ -617,15 +617,6 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
     //                          
     //             Cs dynamic  (Germano model. Use several filter
     //                          resolutions to determine Cs)
-    
-    const double hk = pow((vol_),(1.0/3.0));
-    
-    // 
-    // mixing length set proportional to grid witdh
-    //
-    //                     lmix = Cs * hk
-
-    double lmix = Cs * hk;
 
     if (turb_mod_action == Fluid3::smagorinsky_with_wall_damping)
     {
@@ -663,15 +654,27 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
         y_plus=(1.0+centernodecoord(1))/l_tau;
       }
       
+//      lmix *= (1.0-exp(-y_plus/A_plus));
       // multiply with van Driest damping function
-      lmix *= (1.0-exp(-y_plus/A_plus));
+      Cs *= (1.0-exp(-y_plus/A_plus));
     }
+    
+    const double hk = pow((vol_),(1.0/3.0));
+    
+    // 
+    // mixing length set proportional to grid witdh
+    //
+    //                     lmix = Cs * hk
 
+    double lmix = Cs * hk;
+
+    Cs_delta_sq = lmix * lmix;
+    
     //                                                                  
     //          visc    = visc + visc                                   
     //              eff              turbulent
 
-    visceff = visc + lmix * lmix * rateofstrain;
+    visceff = visc + Cs_delta_sq * rateofstrain;
   }
   else if(turb_mod_action == Fluid3::dynamic_smagorinsky)
   {
