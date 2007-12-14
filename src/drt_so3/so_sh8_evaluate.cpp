@@ -259,7 +259,7 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
     */
     soh8_eassetup(&M_GP,detJ0,T0invT,xrefe);
   } else if (eastype_ == soh8_easnone){
-    cout << "Warning: Solid-Shell8 without EAS" << endl;
+  //cout << "Warning: Solid-Shell8 without EAS" << endl;
   } else dserror("Solid-Shell8 only with eas_sosh8");// ------------------- EAS
 
   /*
@@ -812,7 +812,7 @@ void DRT::Elements::So_sh8::sosh8_evaluateT(const Epetra_SerialDenseMatrix jac,
 int DRT::Elements::Sosh8Register::Initialize(DRT::Discretization& dis)
 //int DRT::Elements::So_sh8::Initialize_numbers(DRT::Discretization& dis)
 {
-  //sosh8_gmshplotdis(dis);
+  sosh8_gmshplotdis(dis);
   //-------------------- loop all my column elements and define thickness direction
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {

@@ -31,7 +31,6 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/linalg_solver.H"
 
 using namespace std;
-using namespace Teuchos;
 
 
 

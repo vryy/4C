@@ -26,9 +26,6 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/drt_globalproblem.H"
 
 
-// NUMBERING
-#include "../drt_so3/so_sh8.H"
-
 /*----------------------------------------------------------------------*
  |                                                         maf 05/07    |
  | vector of numfld FIELDs, defined in global_control.c                 |
