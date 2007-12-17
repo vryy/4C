@@ -827,7 +827,7 @@ void EnsightWriter::WriteResultStep(
 					Write(file, static_cast<float>((*proc0data)[lid]));
 				}
 				else
-					dserror("recieved illegal dof local id: ", lid);
+					dserror("recieved illegal dof local id: %d", lid);
 			}
 		}// for idf
 	} // if (myrank_==0)
