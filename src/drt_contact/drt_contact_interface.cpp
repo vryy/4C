@@ -178,11 +178,105 @@ void CONTACT::Interface::FillComplete()
 }
 
 /*----------------------------------------------------------------------*
+ |  set current deformation state                             popp 12/07|
+ *----------------------------------------------------------------------*/
+void CONTACT::Interface::SetState(const string& statename, const RCP<Epetra_Vector> vec)
+{
+  idiscret_->SetState(statename, vec);
+  
+  //Epetra_Vector global(*idiscret_->DofColMap(),false);
+  //LINALG::Export(*vec,global);
+  
+  // Alternative method to get vec to full overlap
+  RCP<const Epetra_Vector> global = idiscret_->GetState(statename);
+
+/*#ifdef DEBUG
+  vec->Print(cout);
+  comm_.Barrier();
+  global->Print(cout);
+#endif // #ifdef DEBUG*/
+  
+  // loop over all nodes to set current displacement
+  // usefully overlapping column map to make disp. available on all procs
+  if (statename=="displacement")
+  for (int i=0;i<idiscret_->NumMyColNodes();++i)
+  {
+  	CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(i));
+  	const int numdof = node->NumDof();
+  	vector<double> mydisp(numdof);
+  	vector<int> lm(numdof);
+  	
+  	for (int j=0;j<numdof;++j)
+  		lm[j]=node->Dofs()[j];
+
+  	DRT::Utils::ExtractMyValues(*global,mydisp,lm);
+  	
+  	// add mydisp[2]=0 for 2D problems
+  	if (mydisp.size()<3)
+  	  		mydisp.resize(3);
+  	
+/*#ifdef DEBUG
+  	cout << "PROC " << comm_.MyPID() << " thinks that CNode " << node->Id() << ", owned by PROC " << node->Owner()
+  			 << ", Dofs " << lm[0] << " " << lm[1] << " " << lm[2]
+  			 << ", has the displacements): \n"
+  			 << mydisp[0] << "\t\t"
+  			 << mydisp[1] << "\t\t"
+  			 << mydisp[2] << "\n\n";
+#endif // #ifdef DEBUG*/
+  	
+  	// set current configuration and displacement, reset normal
+  	for (int j=0;j<3;++j)
+    {
+  		node->u()[j]=mydisp[j];
+  		node->xspatial()[j]=node->X()[j]+mydisp[j];
+  		node->n()[j]=0.0;
+    }
+  }
+  
+  // loop over all elements to set current area or length
+  // use fully overlapping column map to make areas available on all procs
+  if (statename=="displacement")
+  for (int i=0;i<idiscret_->NumMyColElements();++i)
+  {
+  	CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
+  	element->Area()=element->ComputeArea();
+  }
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  evaluate contact (public)                                 popp 11/07|
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::Evaluate()
 {
-  // not yet implemented
+	// interface needs to be complete
+	if (!Filled() && comm_.MyPID()==0)
+	    dserror("ERROR: FillComplete() not called on interface %", id_);
+	
+	// loop over all slave nodes of the interface
+	// use standard column map to include processor "border nodes" 
+	for(int i=0; i<snodecolmap_->NumMyElements();++i)
+	{
+		int gid = snodecolmap_->GID(i);
+		DRT::Node* node = idiscret_->gNode(gid);
+		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+		CNode* cnode = static_cast<CNode*>(node);
+		
+#ifdef DEBUG
+		cnode->Print(cout);
+		cout << endl;
+#endif // #ifdef DEBUG
+		
+	  // build averaged normal at each slave node
+	  cnode->BuildAveragedNormal();
+	  
+	  // find projection of each slave node to master surface
+	  // NOT YET IMPLEMENTED!!!
+	  // Project_SlaveToMaster();
+	}
+			
+	exit(0);
   return;
 }
 

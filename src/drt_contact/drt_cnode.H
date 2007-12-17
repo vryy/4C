@@ -136,7 +136,27 @@ public:
   \brief Get predefined degrees of freedom
   */
   inline virtual const int* Dofs() const { return &dofs_[0]; }
+  
+  /*!
+  \brief Build nodal normal
+  */
+  virtual void BuildAveragedNormal();
 
+  /*!
+  \brief Return current configuration (length 3)
+  */
+  virtual inline double* xspatial() { return xspatial_; }
+  
+  /*!
+  \brief Return current displacement (length 3)
+  */
+  virtual inline double* u() { return u_; }
+  
+  /*!
+  \brief Return current nodal normal (only for slave side!) (length 3)
+  */
+  virtual inline double* n() { return n_; }
+  
   //@}
 
   //! @name Construction
@@ -148,7 +168,10 @@ protected:
 
   bool            isslave_;      // true of cnode is on slave side of contact problem
   int             numdof_;       // number of degrees of freedom (length of dofs_)
-  vector<int>     dofs_;         // degrees of freedom of this node 
+  vector<int>     dofs_;         // degrees of freedom of this node
+  double          n_[3];				 // nodal normal for contact methods
+  double					xspatial_[3];	 // current configuration
+  double					u_[3];				 // current displacement
   
 
 

@@ -13,6 +13,9 @@ Maintainer: Michael Gee
 #ifdef CCADISCRET
 
 #include "drt_celement.H"
+#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/linalg_serialdensematrix.H"
 
 
 /*----------------------------------------------------------------------*
@@ -28,6 +31,8 @@ shape_(shape),
 isslave_(isslave)
 {
   SetNodeIds(numnode,nodeids);
+  RefArea()=0.0;
+  Area()=RefArea();
   return;
 }
 
@@ -36,7 +41,10 @@ isslave_(isslave)
  *----------------------------------------------------------------------*/
 CONTACT::CElement::CElement(const CONTACT::CElement& old) :
 DRT::Element(old),
-shape_(old.shape_)
+shape_(old.shape_),
+isslave_(old.isslave_),
+refarea_(old.refarea_),
+area_(old.area_)
 {
   return;
 }
@@ -93,6 +101,10 @@ void CONTACT::CElement::Pack(vector<char>& data) const
   AddtoPack(data,shape_);
   // add isslave_
   AddtoPack(data,isslave_);
+  // add refarea_
+  AddtoPack(data,refarea_);
+  // add area_
+  AddtoPack(data,area_);
 
   return;
 }
@@ -117,6 +129,10 @@ void CONTACT::CElement::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,shape_);
   // isslave_
   ExtractfromPack(position,data,isslave_);
+  // refarea_
+  ExtractfromPack(position,data,refarea_);
+  // area_
+  ExtractfromPack(position,data,area_);
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -141,9 +157,268 @@ int CONTACT::CElement::Evaluate(ParameterList& params,
   return -1;
 }
 
+/*----------------------------------------------------------------------*
+ |  Get local coordinates for local node id                   popp 12/07|
+ *----------------------------------------------------------------------*/
+bool CONTACT::CElement::LocalCoordinatesOfNode(int lid, double* xi)
+{
+	if (lid==0)
+		xi[0]=-1.0;
+	else if (lid==1)
+		xi[0]= 1.0;
+	else if (lid==2)
+		xi[0]= 0.0;
+	else
+	  dserror("ERROR: LocalCoordinatesOfNode: Node number % in segment % out of range",lid,Id());
+	
+	// only 2D case implemented at the moment
+	xi[1]=0.0;
+	
+	return true;
+}
 
+/*----------------------------------------------------------------------*
+ |  Get local numbering for global node id                    popp 12/07|
+ *----------------------------------------------------------------------*/
+int CONTACT::CElement::GetLocalNodeId(int nid)
+{
+	int lid = -1;	
+	
+	// look for global ID nid in element's modes
+	for (int i=0;i<NumNode();++i)
+	{
+		if ( *(NodeIds()+i) == nid )
+		{
+			lid=i;
+			break;
+		}
+	}
+	
+	if (lid<0)
+		dserror("ERROR: Cannot find node % in segment %", nid, Id());
+	
+	return lid;
+}
 
+/*----------------------------------------------------------------------*
+ |  Build element normal at node                              popp 12/07|
+ *----------------------------------------------------------------------*/
+void CONTACT::CElement::BuildNormalAtNode(int nid, vector<double>& n)
+{
+	if (n.size()!=3) n.resize(3);
+	
+	// find this node in my list of nodes and get local numbering
+	int lid = GetLocalNodeId(nid);
+	
+	// get local coordinates for this node
+	double xi[2];
+	LocalCoordinatesOfNode(lid,xi);
+	
+	// build an outward unit normal at xi and return it
+	ComputeNormalAtXi(xi,n);
 
+	return;
+}
 
+/*----------------------------------------------------------------------*
+ |  Compute element normal at loc. coord. xi                  popp 12/07|
+ *----------------------------------------------------------------------*/
+void CONTACT::CElement::ComputeNormalAtXi(double* xi, vector<double>& n)
+{
+	int nnodes = NumNode();
+	DRT::Node** mynodes = Nodes();
+	
+	vector<double> val(nnodes);
+	vector<double> deriv(nnodes);
+	vector<double> g(3);
+	LINALG::SerialDenseMatrix coord(3,nnodes);
+	
+	// get shape function values and derivatives at xi
+	EvaluateShape_Quad1D(xi, val, deriv, nnodes);
+
+	// get coordinates of element nodes and build basis vector g
+	for (int i=0;i<nnodes;++i)
+	{
+		CNode* mycnode = static_cast<CNode*> (mynodes[i]);
+		coord(0,i) = mycnode->xspatial()[0];
+		coord(1,i) = mycnode->xspatial()[1];
+		coord(2,i) = mycnode->xspatial()[2];
+		//cout << coord[0][i] << " " << coord[1][i] << " " << coord[2][i] << endl;
+		g[0]+=deriv[i]*coord(0,i);
+		g[1]+=deriv[i]*coord(1,i);
+		g[2]+=deriv[i]*coord(2,i);
+	}
+	
+	
+	// only 2D case implemented, normal easy to compute from g
+	n[0] = g[1];
+	n[1] =-g[0];
+	n[2] = 0.0;
+	
+	double length = sqrt(n[0]*n[0]+n[1]*n[1]);
+	if (length==0.0)
+		dserror("ERROR: ComputeNormalAtXi computes normal of length zero!");
+	
+	// create unit normal (division by length)
+	for (int i=0;i<3;++i)
+		n[i]/=length;
+	
+	return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Compute length (in 3D area) of the element                popp 12/07|
+ *----------------------------------------------------------------------*/
+double CONTACT::CElement::ComputeArea()
+{
+	double area = 0.0;
+	
+	// only 2D quadratic case implemented so far
+	if (Shape()==line3)
+	{
+		// Gauss quadrature (2point)
+		const DRT::Utils::IntegrationPoints1D intpoints(DRT::Utils::intrule_line_2point);
+		int nnodes = NumNode();
+		DRT::Node** mynodes = Nodes();
+	  
+		vector<double> val(nnodes);
+		vector<double> deriv(nnodes);
+		LINALG::SerialDenseMatrix coord(3,nnodes);
+		double g[3];
+		double detg;
+		
+		// get coordinates of element nodes
+		for (int i=0;i<nnodes;++i)
+		{
+			CNode* mycnode = static_cast<CNode*> (mynodes[i]);
+			coord(0,i) = mycnode->xspatial()[0];
+			coord(1,i) = mycnode->xspatial()[1];
+			coord(2,i) = mycnode->xspatial()[2];
+		}
+		
+		// loop over all Gauss points, build Jacobian and compute area
+		for (int j=0;j<intpoints.nquad;++j)
+		{
+			EvaluateShape_Quad1D(&intpoints.qxg[j], val, deriv, nnodes);
+			g[0] = deriv[0]*coord(0,0)+deriv[1]*coord(0,1)+deriv[2]*coord(0,2);
+			g[1] = deriv[0]*coord(1,0)+deriv[1]*coord(1,1)+deriv[2]*coord(1,2);
+			g[2] = deriv[0]*coord(2,0)+deriv[1]*coord(2,1)+deriv[2]*coord(2,2);
+			detg = sqrt(g[0]*g[0]+g[1]*g[1]+g[2]*g[2]);
+			
+			area+= intpoints.qwgt[j]*detg;
+		}	
+	}
+	else
+		dserror("ERROR: Area computation not implemented for this type of CElement");
+	
+	return area;
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluate shape functions - QUAD 1D                        popp 12/07|
+ *----------------------------------------------------------------------*/
+bool CONTACT::CElement::EvaluateShape_Quad1D(const double* xi, vector<double>& val,
+																						 vector<double>& deriv, const int valdim)
+{
+	if (valdim!=3)
+		dserror("ERROR: EvaluateShape_Quad1D called with incorrect valdim");
+	if (!xi)
+		dserror("ERROR: EvaluateShape_Quad1D called with xi=NULL");
+	if (Shape()!=line3)
+		dserror("ERROR: EvaluateShape_Quad1D called for CEl type != line3");
+	
+	if (val.size()!=0)
+	{
+		val[0] = 0.5*xi[0]*(xi[0]-1);
+		val[1] = 0.5*xi[0]*(xi[0]+1);
+		val[2] = (1-xi[0])*(1+xi[0]);
+	}
+	if (deriv.size()!=0)
+	{
+		deriv[0] = xi[0]-0.5;
+		deriv[1] = xi[0]+0.5;
+		deriv[2] = -2*xi[0];
+	}
+	return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluate dual shape functions - QUAD 1D                   popp 12/07|
+ *----------------------------------------------------------------------*/
+bool CONTACT::CElement::EvaluateShape_DualQuad1D(const double* xi, vector<double>& val,
+																							   vector<double>& deriv, const int valdim)
+{
+	if (valdim!=3)
+		dserror("ERROR: EvaluateShape_DualQuad1D called with incorrect valdim");
+	if (!xi)
+		dserror("ERROR: EvaluateShape_DualQuad1D called with xi=NULL");
+	if (Shape()!=line3)
+		dserror("ERROR: EvaluateShape_DualQuad1D called for CEl type != line3");
+	
+	// establish fundamental data	
+	int nnodes = NumNode();
+	DRT::Node** mynodes = Nodes();
+		
+	LINALG::SerialDenseMatrix coord(3,nnodes);
+	double g[3];
+	double detg;
+		
+	for (int i=0;i<nnodes;++i)
+	{
+		CNode* mycnode = static_cast<CNode*> (mynodes[i]);
+		coord(0,i) = mycnode->xspatial()[0];
+		coord(1,i) = mycnode->xspatial()[1];
+		coord(2,i) = mycnode->xspatial()[2];
+	}
+		
+	// compute entries to bi-ortho matrices Me/De with 3p Gauss Integration
+	const DRT::Utils::IntegrationPoints1D intpoints(DRT::Utils::intrule_line_3point);
+		
+	Epetra_SerialDenseMatrix Me(nnodes,nnodes);
+	Epetra_SerialDenseMatrix De(nnodes,nnodes);
+		
+	for (int i=0;i<intpoints.nquad;++i)
+	{
+		EvaluateShape_Quad1D(&intpoints.qxg[i], val, deriv, nnodes);
+		g[0] = deriv[0]*coord(0,0)+deriv[1]*coord(0,1)+deriv[2]*coord(0,2);
+		g[1] = deriv[0]*coord(1,0)+deriv[1]*coord(1,1)+deriv[2]*coord(1,2);
+		g[2] = deriv[0]*coord(2,0)+deriv[1]*coord(2,1)+deriv[2]*coord(2,2);
+		detg = sqrt(g[0]*g[0]+g[1]*g[1]+g[2]*g[2]);
+			
+		for (int j=0;j<nnodes;++j)
+			for (int k=0;k<nnodes;++k)
+			{
+				Me(j,k)+=intpoints.qwgt[j]*val[j]*val[k]*detg;
+				De(j,k)+=(j==k)*intpoints.qwgt[j]*val[j]*detg;
+			}	
+	}
+		
+	// invert bi-ortho matrix Me
+	LINALG::SymmetricInverse(Me,nnodes);
+		
+	// get solution matrix with dual parameters
+	Epetra_SerialDenseMatrix Ae(nnodes,nnodes);
+	Ae.Multiply('N','N',1.0,De,Me,0.0);
+		
+	// evaluate dual shape functions at loc. coord. xi
+	EvaluateShape_Quad1D(xi, val, deriv, nnodes);
+		
+	vector<double> valtemp(nnodes);
+	vector<double> derivtemp(nnodes);
+	for (int i=0;i<nnodes;++i)
+	{
+		valtemp[i]=0.0;
+		derivtemp[i]=0.0;
+		for (int j=0;j<nnodes;++j)
+		{
+			valtemp[i]+=Ae(i,j)*val[j];
+			derivtemp[i]+=Ae(i,j)*deriv[j];
+		}
+	}
+	val=valtemp;
+	deriv=derivtemp;
+	
+	return true;
+}
 
 #endif  // #ifdef CCADISCRET

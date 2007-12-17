@@ -183,7 +183,19 @@ public:
 
   */
   virtual void Print(ostream& os) const;
+  
+  /*!
+  \brief Return reference area
 
+  */
+  virtual inline double& RefArea() { return refarea_; }
+  
+  /*!
+  \brief Return current area
+
+  */
+  virtual inline double& Area() { return area_; }
+  
   //@}
 
   //! @name Construction
@@ -234,7 +246,42 @@ public:
                        Epetra_SerialDenseVector& elevec2,
                        Epetra_SerialDenseVector& elevec3);
 
-
+  /*!
+  \brief Get local coordinates for local node id
+  */
+  virtual bool LocalCoordinatesOfNode(int lid, double* xi);
+    
+  /*!
+  \brief Get local numbering for global node id
+  */
+  virtual int GetLocalNodeId(int nid);
+  
+  /*!
+  \brief Build element normal at node passed in
+  */
+  virtual void BuildNormalAtNode(int nid, vector<double>& n);
+  
+  /*!
+  \brief Compute element normal at local coordinate xi
+  */
+  virtual void ComputeNormalAtXi(double* xi, vector<double>& n);
+  
+  /*!
+  \brief Compute length (in 3D area) of the element
+  */
+  virtual double ComputeArea();
+  
+  /*!
+  \brief Evaluate shape functions and derivatives - QUAD 1D 
+  */
+  virtual bool EvaluateShape_Quad1D(const double* xi, vector<double>& val,
+  																	vector<double>& deriv, const int valdim);
+  
+  /*!
+  \brief Evaluate dual shape functions and derivatives - QUAD 1D 
+  */
+  virtual bool EvaluateShape_DualQuad1D(const double* xi, vector<double>& val,
+  																			vector<double>& deriv, const int valdim);
 
   //@}
 
@@ -243,6 +290,8 @@ private:
 
   DRT::Element::DiscretizationType shape_;   // shape of this element
   bool                             isslave_; // indicating slave or master side
+  double													 refarea_; // element length or area in reference configuration
+  double													 area_;	   // element length or area in current configuration
 
 }; // class CElement
 } // namespace CONTACT

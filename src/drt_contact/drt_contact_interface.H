@@ -173,11 +173,10 @@ public:
   \brief Set current deformation state
     
   */
-  inline virtual void SetState(const string& statename, const RCP<Epetra_Vector> vec)
-  { idiscret_->SetState(statename, vec); return; }
+  virtual void SetState(const string& statename, const RCP<Epetra_Vector> vec);
 
   /*!
-  \brief Evaluate contact
+  \brief Evaluate contact interface
       
   */
   virtual void Evaluate();

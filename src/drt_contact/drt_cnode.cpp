@@ -14,7 +14,7 @@ Maintainer: Michael Gee
 
 #include "drt_cnode.H"
 #include "../drt_lib/drt_dserror.H"
-
+#include "drt_celement.H"
 
 
 /*----------------------------------------------------------------------*
@@ -27,6 +27,12 @@ isslave_(isslave),
 numdof_(numdof),
 dofs_(dofs)
 {
+  for (int i=0;i<3;++i)
+  {
+  	n()[i]=0.0;
+    u()[i]=0.0;
+    xspatial()[i]=X()[i];
+  }  
   return;
 }
 
@@ -39,7 +45,13 @@ isslave_(old.isslave_),
 numdof_(old.numdof_),
 dofs_(old.dofs_)
 {
-  return;
+	for (int i=0;i<3;++i)
+	  {
+	  	n()[i]=old.n_[i];
+	    u()[i]=old.u_[i];
+	    xspatial()[i]=old.xspatial_[i];
+	  }
+	return;
 }
 
 /*----------------------------------------------------------------------*
@@ -104,7 +116,13 @@ void CONTACT::CNode::Pack(vector<char>& data) const
   AddtoPack(data,numdof_);
   // add dofs_
   AddtoPack(data,dofs_);
-
+  // add xspatial_
+  AddtoPack(data,xspatial_,3);
+  // add n_
+  AddtoPack(data,n_,3);
+  // add u_
+  AddtoPack(data,u_,3);
+  
   return;
 }
 
@@ -130,11 +148,71 @@ void CONTACT::CNode::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,numdof_);
   // dofs_
   ExtractfromPack(position,data,dofs_);
+  // xspatial_
+  ExtractfromPack(position,data,xspatial_,3);
+  // n_
+  ExtractfromPack(position,data,n_,3);
+  // u_
+  ExtractfromPack(position,data,u_,3);
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  Build nodal normal                                        popp 12/07|
+ *----------------------------------------------------------------------*/
+void CONTACT::CNode::BuildAveragedNormal()
+{
+	int nseg = NumElement();
+	DRT::Element** adj_eles = Elements();
+	
+	for (int i=0;i<nseg;++i)
+	{
+		CElement* adj_cele = static_cast<CElement*> (adj_eles[i]);
+		
+#ifdef DEBUG
+		adj_cele->Print(cout);
+		cout << endl;
+#endif // #ifdef DEBUG	 
+	
+		// build element normal at current node
+		vector<double> ele_n(3);
+		adj_cele->BuildNormalAtNode(Id(),ele_n);
+		double wgt = adj_cele->Area();
+		
+#ifdef DEBUG
+		cout << "Area for CElement " << adj_cele->Id() << " is " << wgt << endl;
+#endif // #ifdef DEBUG
+		
+		// add weighted element normal to nodal normal n_
+		for (int j=0;j<3;++j)
+		  n()[j]+=wgt*ele_n[j];
+		
+		/* average normal without weighting (see Diss. HARTMANN, 2007)
+		for (int j=0;j<3;++j)
+		 n()[j]+=ele_n[j];*/
+	}
+	
+	// create unit normal vector
+	double length = sqrt(n()[0]*n()[0]+n()[1]*n()[1]+n()[2]*n()[2]);
+	
+	if (length==0.0)
+	  cout << "ERROR: Nodal normal of length zero" << endl;
+	else
+		for (int j=0;j<3;++j)
+			n()[j]/=length;
+	
+#ifdef DEBUG
+	cout << endl;
+	cout << "Unit normal for node " << Id() << " is " << n()[0] << " "
+																										<< n()[1] << " "
+																										<< n()[2] << endl;
+	cout << endl;
+#endif // #ifdef DEBUG
+	
+  return;
+}
 
 #endif  // #ifdef CCADISCRET
