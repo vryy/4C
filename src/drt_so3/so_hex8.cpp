@@ -97,6 +97,9 @@ void DRT::Elements::So_hex8::Pack(vector<char>& data) const
   // rewind flags
   AddtoPack(data,donerewinding_);
   AddtoPack(data,rewind_);
+  // fiber related
+  AddtoPack(data,thickvec_);
+  AddtoPack(data,fiberdirection_);
   // data_
   vector<char> tmp(0);
   data_.Pack(tmp);
@@ -134,6 +137,9 @@ void DRT::Elements::So_hex8::Unpack(const vector<char>& data)
   // rewinding flags
   ExtractfromPack(position,data,donerewinding_);
   ExtractfromPack(position,data,rewind_);
+  // fiber related
+  ExtractfromPack(position,data,thickvec_);
+  ExtractfromPack(position,data,fiberdirection_);
   // data_
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
