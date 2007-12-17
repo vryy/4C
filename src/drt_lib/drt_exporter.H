@@ -336,19 +336,19 @@ public:
   \param request (in): mpi request handle
 
   */
-  
-  
+
+
   /*!
-  \brief performs an allreduce operation on all processors 
+  \brief performs an allreduce operation on all processors
   		 and sends the result to all processors
 
-  \param sendbuff (input): buffer containing data that has to be sent  
+  \param sendbuff (input): buffer containing data that has to be sent
   \param recvbuff (output): buffer containing received data
   \param mpi_op   (input): MPI operation
   */
   void Allreduce(vector<int>& sendbuff, vector<int>& recvbuff, MPI_Op mpi_op);
-  
-  
+
+
   void Wait(MPI_Request& request) { MPI_Status status; MPI_Wait(&request,&status); return;}
 
 
@@ -444,14 +444,10 @@ template<typename T> void DRT::Exporter::Export(
 
 
 #ifdef PARALLEL
-  // allocate requests for unknown number of sends
-  vector<MPI_Request> request(100);
-  MPI_Request         sizerequest;
 
   //------------------------------------------------ do the send/recv loop
   for (int i=0; i<NumProc()-1; ++i)
   {
-    int countsend=0; // count how many sends to tproc
     int tproc = MyPID()+1+i;
     int sproc = MyPID()-1-i;
     if (tproc<0) tproc += NumProc();
@@ -462,8 +458,9 @@ template<typename T> void DRT::Exporter::Export(
     //fflush(stdout);
 
     //------------------------------------------------ do sending to tproc
-    // count how many objects will actually be send to tproc
-    int nsend=0;
+    // gather all objects to be send
+    vector<char> sendblock;
+    vector<int> sendgid;
     for (int i=0; i<SourceMap().NumMyElements(); ++i)
     {
       const int lid = i;
@@ -471,78 +468,74 @@ template<typename T> void DRT::Exporter::Export(
       const int gid = SourceMap().MyGlobalElements()[lid];
       typename map<int,RefCountPtr<T> >::iterator curr = parobjects.find(gid);
       if (curr==parobjects.end()) continue;
-      nsend++;
+      vector<char> data;
+      curr->second->Pack(data);
+      ParObject::AddtoPack(sendblock,data);
+      sendgid.push_back(curr->first);
     }
 
-    // send tproc no. of messages tproc must receive
-    vector<int> snmessages(1);
-    snmessages[0] = nsend;
-    ISend(MyPID(),tproc,&snmessages[0],1,1,sizerequest);
+    // send tproc no. of chars tproc must receive
+    vector<int> snmessages(2);
+    snmessages[0] = sendblock.size();
+    snmessages[1] = sendgid.size();
+
+    MPI_Request sizerequest;
+    ISend(MyPID(),tproc,&snmessages[0],2,1,sizerequest);
 
     // do the sending of the objects
-    for (int i=0; i<SourceMap().NumMyElements(); ++i)
-    {
-      const int lid = i;
-      if (SendPlan()(lid,tproc)!=1) continue;
-      const int gid = SourceMap().MyGlobalElements()[lid];
-      typename map<int,RefCountPtr<T> >::iterator curr = parobjects.find(gid);
-      if (curr==parobjects.end()) continue;
-      RefCountPtr<T> actobject = curr->second;
-      // pack the stuff
-      actobject->Pack(SendBuff()[lid]);
-      SendSize()[lid] = SendBuff()[lid].size();
-      if (countsend>=(int)request.size()) request.resize(request.size()+500);
-      ISend(MyPID(),tproc,&SendBuff()[lid][0],SendSize()[lid],gid,request[countsend]);
-      ++countsend;
-    }
-    if (countsend!=nsend) dserror("No. of send messages wrong");
+    MPI_Request sendrequest;
+    ISend(MyPID(),tproc,&sendblock[0],sendblock.size(),2,sendrequest);
+
+    MPI_Request sendgidrequest;
+    ISend(MyPID(),tproc,&sendgid[0],sendgid.size(),3,sendgidrequest);
 
     //---------------------------------------- do the receiving from sproc
     // receive how many messages I will receive from sproc
-    vector<int> rnmessages(1);
+    vector<int> rnmessages(2);
     int source = sproc;
-    int tag = 1;
     int length = 0;
+    int tag = 1;
     // do a blocking specific receive
     Receive(source,tag,rnmessages,length);
-    if (length!=1) dserror("Messages got mixed up");
-    int nrecv = rnmessages[0];
+    if (length!=2 or tag!=1) dserror("Messages got mixed up");
 
     // receive the objects
-    vector<char> recvbuff(500);
-    for (int i=0; i<nrecv; ++i)
+    vector<char> recvblock(rnmessages[0]);
+    tag = 2;
+    ReceiveAny(source,tag,recvblock,length);
+    if (tag!=2) dserror("Messages got mixed up");
+
+    // receive the gids
+    vector<int> recvgid(rnmessages[1]);
+    tag = 3;
+    ReceiveAny(source,tag,recvgid,length);
+    if (tag!=3) dserror("Messages got mixed up");
+
+    int index = 0;
+    int j = 0;
+    while (index < static_cast<int>(recvblock.size()))
     {
-      int source=-1;
-      int gid=-1;
-      int length=0;
-      ReceiveAny(source,gid,recvbuff,length);
-      if (source!=sproc) dserror("Messages got mixed up");
-      recvbuff.resize(length);
-      if (!TargetMap().MyGID(gid)) dserror("Received object with gid that I did not want");
-      // check whether I already have this object (might happen)
-      // in this case do nothing
-      typename map<int,RefCountPtr<T> >::iterator curr = parobjects.find(gid);
-      if (curr != parobjects.end()) continue;
-      // create object and unpack
-      DRT::ParObject* object = DRT::Utils::Factory(recvbuff);
-      T* ptr = dynamic_cast<T*>(object);
+      vector<char> data;
+
+      // Note the counter j parallels the behavior of
+      // ExtractfromPack. This is due to the bad design of
+      // ParObject. :(
+      int gid = recvgid[j];
+      ParObject::ExtractfromPack(index,recvblock,data);
+
+      DRT::ParObject* o = DRT::Utils::Factory(data);
+      T* ptr = dynamic_cast<T*>(o);
       if (!ptr) dserror("typename T in template does not implement ParObject (dynamic_cast failed)");
       RefCountPtr<T> refptr = rcp(ptr);
       // add object to my map
       parobjects[gid] = refptr;
+      j += 1;
     }
 
     //----------------------------------- do waiting for messages to tproc to leave
     Wait(sizerequest);
-    for (int i=0; i<countsend; ++i)
-    {
-      Wait(request[i]);
-    }
-    for (int i=0; i<SourceMap().NumMyElements(); ++i)
-    {
-      SendBuff()[i].clear();
-      SendSize()[i] = 0;
-    }
+    Wait(sendrequest);
+    Wait(sendgidrequest);
 
     // make sure we do not get mixed up messages as we use wild card receives here
     Comm().Barrier();
