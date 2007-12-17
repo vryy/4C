@@ -426,11 +426,18 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
         const double timefac = params.get<double>("thsl",-1.0);
         if (timefac < 0.0) dserror("No thsl supplied");
 
+        // get flag for (fine-scale) subgrid viscosity (1=yes, 0=no)
+        const int fssgv = params.get<int>("fs subgrid viscosity",0);
+
         // wrap epetra serial dense objects in blitz objects
         blitz::Array<double, 2> estif(elemat1.A(),
                                       blitz::shape(elemat1.M(),elemat1.N()),
                                       blitz::neverDeleteData,
                                       blitz::ColumnMajorArray<2>());
+        blitz::Array<double, 2> esv(elemat2.A(),
+                                    blitz::shape(elemat2.M(),elemat2.N()),
+                                    blitz::neverDeleteData,
+                                    blitz::ColumnMajorArray<2>());
         blitz::Array<double, 1> eforce(elevec1.Values(),
                                        blitz::shape(elevec1.Length()),
                                        blitz::neverDeleteData);
@@ -443,11 +450,13 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
                        edispnp,
                        egridv,
                        estif,
+                       esv,
                        eforce,
                        actmat,
                        time,
                        timefac,
                        newton ,
+                       fssgv  ,
                        pstab  ,
                        supg   ,
                        vstab  ,
@@ -1169,11 +1178,18 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
           const bool vstab  =false;  // viscous stabilisation part switched off !!
           const bool cstab  =true;        
 
+          // get flag for (fine-scale) subgrid viscosity (1=yes, 0=no)
+          const int fssgv = params.get<int>("fs subgrid viscosity",0);
+
           // wrap epetra serial dense objects in blitz objects
           blitz::Array<double, 2> estif(elemat1.A(),
                                         blitz::shape(elemat1.M(),elemat1.N()),
                                         blitz::neverDeleteData,
                                         blitz::ColumnMajorArray<2>());
+          blitz::Array<double, 2> esv(elemat2.A(),
+                                      blitz::shape(elemat2.M(),elemat2.N()),
+                                      blitz::neverDeleteData,
+                                      blitz::ColumnMajorArray<2>());
           blitz::Array<double, 1> eforce(elevec1.Values(),
                                          blitz::shape(elevec1.Length()),
                                          blitz::neverDeleteData);
@@ -1183,10 +1199,12 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
                          evelnp,
                          eprenp,
                          estif,
+                         esv,
                          eforce,
                          actmat,
                          pseudotime,
                          newton ,
+                         fssgv  ,
                          pstab  ,
                          supg   ,
                          vstab  ,

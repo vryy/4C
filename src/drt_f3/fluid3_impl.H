@@ -84,11 +84,12 @@ namespace Elements
       \param edispnp (i) nodal displacements (on moving mesh)
       \param egridv  (i) grid velocity (on moving mesh)
       \param estif   (o) element matrix to calculate
+      \param esv     (o) fine-scale subgrid-viscosity element matrix
       \param eforce  (o) element rhs to calculate
       \param material (i) fluid material
       \param time     (i) current simulation time
       \param timefac  (i) time discretization factor
-      \param is_stationary (i) stationary flag
+      \param fssgv    (i) flag for type of fine-scale subgrid viscosity
      */
     void Sysmat(Fluid3* ele,
                 const blitz::Array<double,2>&     evelnp,
@@ -97,11 +98,13 @@ namespace Elements
                 const blitz::Array<double,2>&     edispnp,
                 const blitz::Array<double,2>&     egridv,
                 blitz::Array<double,2>&           estif,
+                blitz::Array<double,2>&           esv,
                 blitz::Array<double,1>&           eforce,
                 struct _MATERIAL*       material,
                 double                  time,
                 double                  timefac,
                 bool                    newton ,
+                int                     fssgv ,
                 bool                    pstab  ,
                 bool                    supg   ,
                 bool                    vstab  ,
@@ -117,7 +120,8 @@ namespace Elements
       const blitz::Array<double,2>&           evelnp,
       const DRT::Element::DiscretizationType  distype,
       const double                            visc,
-      const double                            timefac);
+      const double                            timefac,
+      const int                               fssgv);
 
     /*!
      * \brief calculate the body force from the nodes condition
@@ -131,6 +135,7 @@ namespace Elements
 
   private:
     int iel_;
+    double vart_;
     blitz::Array<double,2> xyze_;
     blitz::Array<double,2> edeadng_;
     blitz::Array<double,1> funct_;
