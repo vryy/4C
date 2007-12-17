@@ -136,7 +136,6 @@ void MonWriter::WriteMonFile(PostProblem& problem, string& infieldtype, int node
 	ofstream outfile;
 	if (nodeowner_) 
 	{
-		cout<<"proc "<<myrank_<<" is the owner of node "<<node<<endl;
 		outfile.open(filename.c_str());
 	}
 	//int numdis = problem.num_discr();
