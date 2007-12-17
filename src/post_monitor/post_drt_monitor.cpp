@@ -35,8 +35,64 @@ Maintainer: Christiane Förster
 class MonWriter
 {
 public:
-  //! constructor
-  MonWriter(){}
+//! constructor
+MonWriter(PostProblem& problem, string& infieldtype, int node):
+  myrank_(problem.comm()->MyPID()) // get my processor id
+  {
+	
+	// determine the owner of the node 
+	nodeowner_=false;
+
+	int numdis = problem.num_discr();
+	string fieldtype="";
+	// loop over all available discretizations
+	for (int i=0;i<numdis;++i)		
+	{
+		PostField* field = problem.get_discretization(i);
+		switch(field->type())
+		{
+		case none:
+			fieldtype = "none";
+			break;
+		case fluid:
+			fieldtype = "fluid";
+			break;
+		case ale:
+			fieldtype = "ale";			
+			break;
+		case structure:
+			fieldtype = "structure";
+			break;		
+		case thermal:
+			fieldtype = "thermal";
+			break;		
+		case pressure:
+			fieldtype = "pressure";
+		}
+
+		if (fieldtype==infieldtype)
+		{
+			// pointer (rcp) to actual discretisation
+			RCP< DRT::Discretization > mydiscrete = field->discretization();
+			// store, if this node belongs to me
+			if (mydiscrete->HaveGlobalNode(node))
+			{
+				nodeowner_ = mydiscrete->HaveGlobalNode(node); 
+			}
+		}
+	}// end loop over dis
+
+	//ensure that we really found exactly one node owner
+	{
+		int localnodeowner = (int) nodeowner_;
+		int numnodeowner = 0;
+		(problem.comm())->SumAll(&localnodeowner,&numnodeowner,1);
+		if ((myrank_==0) and (numnodeowner==0))
+			dserror("Could not find node %d",node);
+		if ((myrank_==0) and (numnodeowner>1))
+			dserror("Found more than one owner of node %d: %d",node,numnodeowner);
+	}
+  }
   //! destructor
   virtual ~MonWriter()
   {
@@ -59,6 +115,9 @@ protected:
 
   virtual void WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& ldof, int dim) = 0;
 
+  const int myrank_; //! local processor id
+  bool nodeowner_;   //! only true if proc owns the node
+
 private:
   // undesired copy constructor
   MonWriter(const MonWriter& old);
@@ -71,64 +130,82 @@ private:
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MonWriter::WriteMonFile(PostProblem& problem, string& infieldtype, int node)
-{
-  // create my output file
-  string filename = problem.outname() + ".mon";
-  ofstream outfile;
-  outfile.open(filename.c_str());
+{		
+	// create my output file
+	string filename = problem.outname() + ".mon";
+	ofstream outfile;
+	if (nodeowner_) 
+	{
+		cout<<"proc "<<myrank_<<" is the owner of node "<<node<<endl;
+		outfile.open(filename.c_str());
+	}
+	//int numdis = problem.num_discr();
 
-  // int numdis = problem.num_discr();
+	// get pointer to discretisation of actual field
+	PostField* field = GetFieldPtr(problem);
 
-  // get pointer to discretisation of actual field
-  PostField* field = GetFieldPtr(problem);
+	CheckInfieldType(infieldtype);
 
-  CheckInfieldType(infieldtype);
+	// pointer (rcp) to actual discretisation
+	RCP< DRT::Discretization > mydiscrete = field->discretization();
+	// space dimension of the problem
+	int dim = problem.num_dim();
 
-  // pointer (rcp) to actual discretisation
-  RCP< DRT::Discretization > mydiscrete = field->discretization();
+	// global nodal dof numbers
+	std::vector<int> gdof;
+	std::vector<int> ldof(dim+1); // local nodal dof numbers
 
-  // test, if this node belongs to me
-  bool ismynode = mydiscrete->HaveGlobalNode(node);
-    if (!ismynode) // if this node does not belong to this field ( or proc, but we should be seriell)
-    FieldError(node);
+	if (nodeowner_) 
+	{
+		// test, if this node belongs to me
+		bool ismynode = mydiscrete->HaveGlobalNode(node);
+		if (!ismynode) // if this node does not belong to this field ( or proc, but we should be seriell)
+			FieldError(node);
 
-  // pointer to my actual node
-  const DRT::Node* mynode = mydiscrete->gNode(node);
+		// pointer to my actual node
+		const DRT::Node* mynode = mydiscrete->gNode(node);
 
-  const Epetra_Map* mydofrowmap = mydiscrete->DofRowMap();
+		const Epetra_Map* mydofrowmap = mydiscrete->DofRowMap();
 
-  // space dimension of the problem
-  int dim = problem.num_dim();
+		// global nodal dof numbers
+		gdof = mydiscrete->Dof(mynode);
 
-  // global nodal dof numbers
-  std::vector<int> gdof = mydiscrete->Dof(mynode);
-  std::vector<int> ldof(dim+1); // local nodal dof numbers
+		for(int i=0; i < dim+1; ++i)
+		{
+			ldof[i] = mydofrowmap->LID(gdof[i]);
+		}
 
-  for(int i=0; i < dim+1; ++i)
-  {
-    ldof[i] = mydofrowmap->LID(gdof[i]);
-  }
+		// write header
+		WriteHeader(outfile);
+		outfile << node << "\n";
+		outfile << "# control information: nodal coordinates   ";
+		outfile << "x = " << mynode->X()[0] << "    ";
+		outfile << "y = " << mynode->X()[1] << "    ";
+		outfile << "z = " << mynode->X()[2] << "\n";
+		outfile << "#\n";
 
-  // write header
-  WriteHeader(outfile);
-  outfile << node << "\n";
-  outfile << "# control information: nodal coordinates   ";
-  outfile << "x = " << mynode->X()[0] << "    ";
-  outfile << "y = " << mynode->X()[1] << "    ";
-  outfile << "z = " << mynode->X()[2] << "\n";
-  outfile << "#\n";
+		WriteTableHead(outfile,dim);
+	}
 
-  WriteTableHead(outfile,dim);
+	else // this proc is not the node owner
+	{
+		// set some dummy values
+		for(int i=0; i < dim+1; ++i)
+		{
+			ldof[i] = -1; 
+		}
+	}
 
-  // get actual results of total problem
-  PostResult result = PostResult(field);
+	// get actual results of total problem
+	PostResult result = PostResult(field);
 
-  // this is a loop over all time steps that should be written
-  // writing step size is considered
-  while(result.next_result())
-    WriteResult(outfile,result,ldof,dim);
+	// this is a loop over all time steps that should be written
+	// writing step size is considered
+	while(result.next_result())
+		WriteResult(outfile,result,ldof,dim);
 
-  outfile.close();
+	if (outfile.is_open()) 
+		outfile.close();
 }
 
 /*----------------------------------------------------------------------*/
@@ -137,7 +214,7 @@ class FieldMonWriter : public MonWriter
 {
 public:
   //! constructor
-  FieldMonWriter(){}
+  FieldMonWriter(PostProblem& problem, string& infieldtype, int node):MonWriter(problem,infieldtype,node){}
   //! destructor
   virtual ~FieldMonWriter()
   {}
@@ -164,7 +241,8 @@ class FluidMonWriter : public FieldMonWriter
 {
 public:
   //! constructor
-  FluidMonWriter(){}
+  FluidMonWriter(PostProblem& problem, string& infieldtype, int node):
+	  FieldMonWriter(problem,infieldtype,node){}
   //! destructor
   virtual ~FluidMonWriter()
   {}
@@ -220,16 +298,18 @@ void FluidMonWriter::WriteTableHead(ofstream& outfile, int dim)
 
 void FluidMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& ldof, int dim)
 {
-  // get actual result vector
-  RCP< Epetra_Vector > resvec = result.read_result("velnp");
-
-  // do output
-  outfile << "   " << result.step() << "    " << result.time() << "  ";
-  for (int i=0; i<dim+1; ++i)
-  {
-    outfile << (*resvec)[ldof[i]] << "   ";
-  }
-  outfile << "\n";
+	// get actual result vector
+	RCP< Epetra_Vector > resvec = result.read_result("velnp");
+	if (nodeowner_)
+	{
+		// do output
+		outfile << "   " << result.step() << "    " << result.time() << "  ";
+		for (int i=0; i<dim+1; ++i)
+		{
+			outfile << (*resvec)[ldof[i]] << "   ";
+		}
+		outfile << "\n";
+	}
 }
 
 
@@ -239,7 +319,8 @@ class StructMonWriter : public FieldMonWriter
 {
 public:
   //! constructor
-  StructMonWriter(){}
+  StructMonWriter(PostProblem& problem, string& infieldtype, int node):
+	  FieldMonWriter(problem,infieldtype,node){}
   //! destructor
   virtual ~StructMonWriter()
   {}
@@ -296,31 +377,39 @@ void StructMonWriter::WriteTableHead(ofstream& outfile, int dim)
 
 void StructMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& ldof, int dim)
 {
-  // get actual result vector for displacement
-  RCP< Epetra_Vector > resvec = result.read_result("displacement");
-
-  // do output of time step data
-  outfile << "   " << result.step() << "    " << result.time() << "  ";
-  // output displacement
-  for (int i=0; i<dim; ++i)
-  {
-    outfile << (*resvec)[ldof[i]] << "   ";
-  }
-  // get actual result vector for velocity
-  resvec = result.read_result("velocity");
-  // output velocity
-  for (int i=0; i<dim; ++i)
-  {
-    outfile << (*resvec)[ldof[i]] << "   ";
-  }
-  // get actual result vector for acceleration
-  resvec = result.read_result("acceleration");
-  // output acceleration
-  for (int i=0; i<dim; ++i)
-  {
-    outfile << (*resvec)[ldof[i]] << "   ";
-  }
-  outfile << "\n";
+	// get actual result vector for displacement
+	RCP< Epetra_Vector > resvec = result.read_result("displacement");
+	if (nodeowner_)
+	{
+		// do output of time step data
+		outfile << "   " << result.step() << "    " << result.time() << "  ";
+		// output displacement
+		for (int i=0; i<dim; ++i)
+		{
+			outfile << (*resvec)[ldof[i]] << "   ";
+		}
+	}
+	// get actual result vector for velocity
+	resvec = result.read_result("velocity");
+	if (nodeowner_)
+	{
+		// output velocity
+		for (int i=0; i<dim; ++i)
+		{
+			outfile << (*resvec)[ldof[i]] << "   ";
+		}
+	}
+	// get actual result vector for acceleration
+	resvec = result.read_result("acceleration");
+	if (nodeowner_)
+	{
+		// output acceleration
+		for (int i=0; i<dim; ++i)
+		{
+			outfile << (*resvec)[ldof[i]] << "   ";
+		}
+		outfile << "\n";
+	}
 }
 
 
@@ -330,7 +419,8 @@ class AleMonWriter : public FieldMonWriter
 {
 public:
   //! constructor
-  AleMonWriter(){}
+  AleMonWriter(PostProblem& problem, string& infieldtype, int node):
+	  FieldMonWriter(problem,infieldtype,node){}
   //! destructor
   virtual ~AleMonWriter()
   {}
@@ -387,17 +477,19 @@ void AleMonWriter::WriteTableHead(ofstream& outfile, int dim)
 
 void AleMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& ldof, int dim)
 {
-  // get actual result vector for displacement
-  RCP< Epetra_Vector > resvec = result.read_result("displacement");
-
-  // do output of time step data
-  outfile << "   " << result.step() << "    " << result.time() << "  ";
-  // output displacement
-  for (int i=0; i<dim; ++i)
-  {
-    outfile << (*resvec)[ldof[i]] << "   ";
-  }
-  outfile << "\n";
+	// get actual result vector for displacement
+	RCP< Epetra_Vector > resvec = result.read_result("displacement");
+	if (nodeowner_)
+	{
+		// do output of time step data
+		outfile << "   " << result.step() << "    " << result.time() << "  ";
+		// output displacement
+		for (int i=0; i<dim; ++i)
+		{
+			outfile << (*resvec)[ldof[i]] << "   ";
+		}
+		outfile << "\n";
+	}
 }
 
 /*----------------------------------------------------------------------*/
@@ -406,7 +498,8 @@ class FsiFluidMonWriter : public FluidMonWriter
 {
 public:
   //! constructor
-  FsiFluidMonWriter(){}
+  FsiFluidMonWriter(PostProblem& problem, string& infieldtype, int node):
+	  FluidMonWriter(problem,infieldtype,node){}
   //! destructor
   virtual ~FsiFluidMonWriter()
   {}
@@ -462,22 +555,27 @@ void FsiFluidMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::
 {
   // get actual result vector for displacement
   RCP< Epetra_Vector > resvec = result.read_result("dispnp");
-
-  // do output of general time step data
-  outfile << "   " << result.step() << "    " << result.time() << "  ";
-  // do output of displacement
-  for (int i=0; i<dim; ++i)
+  if (nodeowner_)
   {
-    outfile << (*resvec)[ldof[i]] << "   ";
+	// do output of general time step data
+	outfile << "   " << result.step() << "    " << result.time() << "  ";
+	// do output of displacement
+	for (int i=0; i<dim; ++i)
+	{
+		outfile << (*resvec)[ldof[i]] << "   ";
+	}
   }
   // get actual result vector for velocity
   resvec = result.read_result("velnp");
-  // do output for velocity and pressure
-  for (int i=0; i<dim+1; ++i)
+  if (nodeowner_)
   {
-    outfile << (*resvec)[ldof[i]] << "   ";
+	// do output for velocity and pressure
+	for (int i=0; i<dim+1; ++i)
+	{
+		outfile << (*resvec)[ldof[i]] << "   ";
+	}
+	outfile << "\n";
   }
-  outfile << "\n";
 }
 
 
@@ -487,7 +585,8 @@ class FsiStructMonWriter : public StructMonWriter
 {
 public:
   //! constructor
-  FsiStructMonWriter(){}
+  FsiStructMonWriter(PostProblem& problem, string& infieldtype, int node):
+	  StructMonWriter(problem,infieldtype,node){}
   //! destructor
   virtual ~FsiStructMonWriter()
   {}
@@ -527,7 +626,8 @@ class FsiAleMonWriter : public AleMonWriter
 {
 public:
   //! constructor
-  FsiAleMonWriter(){}
+  FsiAleMonWriter(PostProblem& problem, string& infieldtype, int node):
+	  AleMonWriter(problem,infieldtype,node){}
   //! destructor
   virtual ~FsiAleMonWriter()
   {}
@@ -598,18 +698,18 @@ int main(int argc, char** argv)
     {
       if(infieldtype == "fluid")
       {
-        FsiFluidMonWriter mymonwriter;
+        FsiFluidMonWriter mymonwriter(problem,infieldtype,node);
         mymonwriter.WriteMonFile(problem,infieldtype,node);
       }
       else if(infieldtype == "structure")
       {
-        FsiStructMonWriter mymonwriter;
+        FsiStructMonWriter mymonwriter(problem,infieldtype,node);
         mymonwriter.WriteMonFile(problem,infieldtype,node);
       }
       else if(infieldtype == "ale")
       {
         dserror("There is no ALE output. Displacements of fluid nodes can be printed.");
-        FsiAleMonWriter mymonwriter;
+        FsiAleMonWriter mymonwriter(problem,infieldtype,node);
         mymonwriter.WriteMonFile(problem,infieldtype,node);
       }
       else
@@ -618,19 +718,19 @@ int main(int argc, char** argv)
     }
     case prb_structure:
     {
-      StructMonWriter mymonwriter;
+      StructMonWriter mymonwriter(problem,infieldtype,node);
       mymonwriter.WriteMonFile(problem,infieldtype,node);
       break;
     }
     case prb_fluid:
     {
-      FluidMonWriter mymonwriter;
+      FluidMonWriter mymonwriter(problem,infieldtype,node);
       mymonwriter.WriteMonFile(problem,infieldtype,node);
       break;
     }
     case prb_ale:
     {
-      AleMonWriter mymonwriter;
+      AleMonWriter mymonwriter(problem,infieldtype,node);
       mymonwriter.WriteMonFile(problem,infieldtype,node);
       break;
     }
