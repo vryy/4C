@@ -73,7 +73,19 @@ namespace MAT
                   Epetra_SerialDenseVector* stress,
                   double avec[3]);
                   
-    double Density();                  
+    double Density();
+    
+    vector<double> ReturnGlobalFiberDirection() {
+      vector<double> aglob(3);
+      aglob[0] = matdata_->m.anisotropic_balzani->a1[0];
+      aglob[1] = matdata_->m.anisotropic_balzani->a1[1];
+      aglob[2] = matdata_->m.anisotropic_balzani->a1[2];
+      return aglob;
+    }
+    bool GlobalFiberDirection() const {
+      if (matdata_->m.anisotropic_balzani->aloc == 1) return false;
+      else return true;
+    };
 
   private:
 

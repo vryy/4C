@@ -24,6 +24,8 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "../io/gmsh.H"
+#include "../drt_mat/anisotropic_balzani.H"
+#include "../drt_mat/material.H"
 
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
@@ -252,8 +254,17 @@ void DRT::Elements::Sosh8Register::sosh8_gmshplotdis(const DRT::Discretization& 
     DRT::Elements::So_hex8* actele = dynamic_cast<DRT::Elements::So_hex8*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex8* failed");
     // plot vector in center of elements
-    const vector<double> pv = actele->GetFibervec();
     vector<double> ec = actele->soh8_ElementCenterRefeCoords();
+    RefCountPtr<MAT::Material> mat = actele->Material();
+    MAT::AnisotropicBalzani* anba = static_cast <MAT::AnisotropicBalzani*>(mat.get());
+    vector<double> pv(3);
+    if (anba->GlobalFiberDirection()){
+      pv = anba->ReturnGlobalFiberDirection();
+    }
+    else{
+      pv = actele->GetFibervec();
+    }
+      
     //gmshfilecontent << "VP(0,0,0){1,1.3,1.7};" << endl;
     gmshfilecontent << "VP(" << scientific << ec[0] << "," << ec[1] << "," << ec[2] << ")";
     gmshfilecontent << "{" << scientific << pv[0] << "," << pv[1] << "," << pv[2] << "};" << endl; 

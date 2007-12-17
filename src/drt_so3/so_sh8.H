@@ -339,7 +339,7 @@ public:
 
   //@}
 
-private:
+
 
   void sosh8_gmshplotdis(const DRT::Discretization& dis);
 
