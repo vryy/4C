@@ -233,6 +233,9 @@ void CONTACT::CElement::ComputeNormalAtXi(double* xi, vector<double>& n)
 	vector<double> g(3);
 	LINALG::SerialDenseMatrix coord(3,nnodes);
 	
+	// test dual shape function values and derivatives at xi
+	EvaluateShape_DualQuad1D(xi, val, deriv, nnodes);
+	cout << "DualShapeFct:" << endl << val[0] << "\t" << val[1] << "\t" << val[2] << endl;
 	// get shape function values and derivatives at xi
 	EvaluateShape_Quad1D(xi, val, deriv, nnodes);
 
@@ -388,8 +391,8 @@ bool CONTACT::CElement::EvaluateShape_DualQuad1D(const double* xi, vector<double
 		for (int j=0;j<nnodes;++j)
 			for (int k=0;k<nnodes;++k)
 			{
-				Me(j,k)+=intpoints.qwgt[j]*val[j]*val[k]*detg;
-				De(j,k)+=(j==k)*intpoints.qwgt[j]*val[j]*detg;
+				Me(j,k)+=intpoints.qwgt[i]*val[j]*val[k]*detg;
+				De(j,k)+=(j==k)*intpoints.qwgt[i]*val[j]*detg;
 			}	
 	}
 		
