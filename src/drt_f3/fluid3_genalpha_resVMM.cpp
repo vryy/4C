@@ -354,195 +354,6 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
   // get velocity norms
   const double vel_normaf = sqrt(blitz::sum(velintaf_*velintaf_));
   const double vel_normnp = sqrt(blitz::sum(velintnp_*velintnp_));
-  
-  if(tds == Fluid3::subscales_time_dependent)
-  {
-    // INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA, TIME DEPENDENT SUBSCALES
-    //
-    // tau_M: modification of
-    //
-    //    Franca, L.P. and Valentin, F.: On an Improved Unusual Stabilized
-    //    Finite Element Method for the Advective-Reactive-Diffusive
-    //    Equation. Computer Methods in Applied Mechanics and Enginnering,
-    //    Vol. 190, pp. 1785-1800, 2000.
-    //    http://www.lncc.br/~valentin/publication.htm                   */
-    //
-    // tau_Mp: modification of Barrenechea, G.R. and Valentin, F.
-    //
-    //    Barrenechea, G.R. and Valentin, F.: An unusual stabilized finite
-    //    element method for a generalized Stokes problem. Numerische
-    //    Mathematik, Vol. 92, pp. 652-677, 2002.
-    //    http://www.lncc.br/~valentin/publication.htm
-    //
-    //
-    // tau_C: kept Wall definition
-    //
-    // for the modifications see Codina, Principe, Guasch, Badia
-    //    "Time dependent subscales in the stabilized finite  element
-    //     approximation of incompressible flow problems"
-    //
-    //
-    // see also: Codina, R. and Soto, O.: Approximation of the incompressible
-    //    Navier-Stokes equations using orthogonal subscale stabilisation
-    //    and pressure segregation on anisotropic finite element meshes.
-    //    Computer methods in Applied Mechanics and Engineering,
-    //    Vol 193, pp. 1403-1419, 2004.
-
-    //---------------------------------------------- compute tau_Mu = tau_Mp
-    /* convective : viscous forces (element reynolds number)*/
-    const double re_convectaf = (vel_normaf * hk / visc ) * (mk/2.0);
-    
-    const double xi_convectaf = DMAX(re_convectaf,1.0);
-
-    /*
-               xi_convect ^
-                          |      /
-                          |     /
-                          |    /
-                        1 +---+
-                          |
-                          |
-                          |
-                          +--------------> re_convect
-                              1
-    */
-
-    /* the 4.0 instead of the Franca's definition 2.0 results from the viscous
-     * term in the Navier-Stokes-equations, which is scaled by 2.0*nu         */
-
-    tau_(0) = DSQR(hk) / (4.0 * visc / mk + ( 4.0 * visc/mk) * xi_convectaf);
-
-    /*------------------------------------------------------ compute tau_C ---*/
-
-    //-- stability parameter definition according to Wall Diss. 99
-    /*
-               xi_convect ^
-                          |
-                        1 |   +-----------
-                          |  /
-                          | /
-                          |/
-                          +--------------> Re_convect
-                              1
-    */
-    const double re_convectnp = (vel_normnp * hk / visc ) * (mk/2.0);
-
-    const double xi_tau_c = DMIN(re_convectnp,1.0);
-
-    tau_(2) = vel_normnp * hk * 0.5 * xi_tau_c;
-
-#if 0
-    /*-- stability parameter definition according to Codina (2002), CMAME 191
-     *
-     * Analysis of a stabilized finite element approximation of the transient
-     * convection-diffusion-reaction equation using orthogonal subscales.
-     * Ramon Codina, Jordi Blasco; Comput. Visual. Sci., 4 (3): 167-174, 2002.
-     *
-     * */
-    tau_(2) = sqrt(DSQR(visc)+DSQR(0.5*vel_normnp*hk));
-#endif
-  }
-  else
-  {
-    // INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
-    // tau_M: Barrenechea, G.R. and Valentin, F.
-    // tau_C: Wall
-
-   
-    // this copy of velintaf_ will be used to store the normed velocity
-    blitz::Array<double,1> normed_velintaf(3);
-    normed_velintaf=velintaf_.copy();
-    
-    // normed velocity at element center (we use the copy for safety reasons!)
-    if (vel_normaf>=1e-6)
-    {
-      normed_velintaf = velintaf_/vel_normaf;
-    }
-    else
-    {
-      normed_velintaf    = 0.;
-      normed_velintaf(0) = 1.;
-    }
-    
-    // get streamlength
-    const double val = blitz::sum(blitz::abs(blitz::sum(normed_velintaf(j)*derxy_(j,i),j)));
-    const double strle = 2.0/val;
-
-    // time factor
-    const double timefac = gamma*dt;
-
-    /*----------------------------------------------------- compute tau_Mu ---*/
-    /* stability parameter definition according to
-
-              Barrenechea, G.R. and Valentin, F.: An unusual stabilized finite
-              element method for a generalized Stokes problem. Numerische
-              Mathematik, Vol. 92, pp. 652-677, 2002.
-              http://www.lncc.br/~valentin/publication.htm
-    and:
-              Franca, L.P. and Valentin, F.: On an Improved Unusual Stabilized
-              Finite Element Method for the Advective-Reactive-Diffusive
-              Equation. Computer Methods in Applied Mechanics and Enginnering,
-              Vol. 190, pp. 1785-1800, 2000.
-              http://www.lncc.br/~valentin/publication.htm                   */
-
-
-    const double re1 = 4.0 * timefac * visc / (mk * DSQR(strle));   /* viscous : reactive forces   */
-    const double re2 = mk * vel_normaf * strle / (2.0 * visc);      /* convective : viscous forces */
-
-    const double xi1 = DMAX(re1,1.0);
-    const double xi2 = DMAX(re2,1.0);
-
-    tau_(0) = timefac * DSQR(strle) / (DSQR(strle)*xi1+( 4.0 * timefac*visc/mk)*xi2);
-
-    // compute tau_Mp
-    //    stability parameter definition according to Franca and Valentin (2000)
-    //                                       and Barrenechea and Valentin (2002)
-    const double re_viscous = 4.0 * timefac * visc / (mk * DSQR(hk)); /* viscous : reactive forces   */
-    const double re_convect = mk * vel_normaf * hk / (2.0 * visc);    /* convective : viscous forces */
-
-    const double xi_viscous = DMAX(re_viscous,1.0);
-    const double xi_convect = DMAX(re_convect,1.0);
-
-    /*
-                  xi1,xi2 ^
-                          |      /
-                          |     /
-                          |    /
-                        1 +---+
-                          |
-                          |
-                          |
-                          +--------------> re1,re2
-                              1
-    */
-    tau_(1) = timefac * DSQR(hk) / (DSQR(hk) * xi_viscous + ( 4.0 * timefac * visc/mk) * xi_convect);
-
-    // Wall Diss. 99
-    /*
-                      xi2 ^
-                          |
-                        1 |   +-----------
-                          |  /
-                          | /
-                          |/
-                          +--------------> Re2
-                              1
-    */
-    const double xi_tau_c = DMIN(re2,1.0);
-    tau_(2) = vel_normnp * hk * 0.5 * xi_tau_c;
-
-#if 0
-    /*------------------------------------------------------ compute tau_C ---*/
-    /*-- stability parameter definition according to Codina (2002), CMAME 191
-     *
-     * Analysis of a stabilized finite element approximation of the transient
-     * convection-diffusion-reaction equation using orthogonal subscales.
-     * Ramon Codina, Jordi Blasco; Comput. Visual. Sci., 4 (3): 167-174, 2002.
-     *
-     * */
-    tau_(2) = sqrt(DSQR(visc)+DSQR(0.5*vel_normnp*hk));
-#endif
-  }
 
   /*------------------------------------------------------------------*/
   /*                                                                  */
@@ -712,39 +523,203 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
     }
 
     visceff = visc + Cs_delta_sq * rateofstrain;
-
-#if 0
-      // the integration point coordinate is defined by the isometric approach
-      /*
-                  +-----
-                   \                
-              x =   +      N (x) * x
-                   /        j       j
-                  +-----
-                  node j
-      */
-      blitz::Array<double,1> centernodecoord(3);
-      centernodecoord = blitz::sum(funct_(j)*xyze_(i,j),j);
-#endif
-
     
     // for evaluation of statistics: remember the 'real' Cs
     Cs=sqrt(Cs_delta_sq)/pow((vol_),(1.0/3.0));
-#if 0
-    if (0.994182<centernodecoord(1))
-    {
-      cout << centernodecoord(1);
-    
-      cout << " visceff " << visceff << "visc " << visc << "Cs " << Cs << "rateofstrain " << rateofstrain << "hk " << pow((vol_),(1.0/3.0)) << &endl;
-    }
-#endif
   }
   else
   {
     visceff = visc;
   }
+  
+  if(tds == Fluid3::subscales_time_dependent)
+  {
+    // INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA, TIME DEPENDENT SUBSCALES
+    //
+    // tau_M: modification of
+    //
+    //    Franca, L.P. and Valentin, F.: On an Improved Unusual Stabilized
+    //    Finite Element Method for the Advective-Reactive-Diffusive
+    //    Equation. Computer Methods in Applied Mechanics and Enginnering,
+    //    Vol. 190, pp. 1785-1800, 2000.
+    //    http://www.lncc.br/~valentin/publication.htm                   */
+    //
+    // tau_Mp: modification of Barrenechea, G.R. and Valentin, F.
+    //
+    //    Barrenechea, G.R. and Valentin, F.: An unusual stabilized finite
+    //    element method for a generalized Stokes problem. Numerische
+    //    Mathematik, Vol. 92, pp. 652-677, 2002.
+    //    http://www.lncc.br/~valentin/publication.htm
+    //
+    //
+    // tau_C: kept Wall definition
+    //
+    // for the modifications see Codina, Principe, Guasch, Badia
+    //    "Time dependent subscales in the stabilized finite  element
+    //     approximation of incompressible flow problems"
+    //
+    //
+    // see also: Codina, R. and Soto, O.: Approximation of the incompressible
+    //    Navier-Stokes equations using orthogonal subscale stabilisation
+    //    and pressure segregation on anisotropic finite element meshes.
+    //    Computer methods in Applied Mechanics and Engineering,
+    //    Vol 193, pp. 1403-1419, 2004.
+
+    //---------------------------------------------- compute tau_Mu = tau_Mp
+    /* convective : viscous forces (element reynolds number)*/
+    const double re_convectaf = (vel_normaf * hk / visceff ) * (mk/2.0);
+    
+    const double xi_convectaf = DMAX(re_convectaf,1.0);
+
+    /*
+               xi_convect ^
+                          |      /
+                          |     /
+                          |    /
+                        1 +---+
+                          |
+                          |
+                          |
+                          +--------------> re_convect
+                              1
+    */
+
+    /* the 4.0 instead of the Franca's definition 2.0 results from the viscous
+     * term in the Navier-Stokes-equations, which is scaled by 2.0*nu         */
+
+    tau_(0) = DSQR(hk) / (4.0 * visceff / mk + ( 4.0 * visceff/mk) * xi_convectaf);
+
+    /*------------------------------------------------------ compute tau_C ---*/
+
+    //-- stability parameter definition according to Wall Diss. 99
+    /*
+               xi_convect ^
+                          |
+                        1 |   +-----------
+                          |  /
+                          | /
+                          |/
+                          +--------------> Re_convect
+                              1
+    */
+    const double re_convectnp = (vel_normnp * hk / visceff ) * (mk/2.0);
+
+    const double xi_tau_c = DMIN(re_convectnp,1.0);
+
+    tau_(2) = vel_normnp * hk * 0.5 * xi_tau_c;
+
+#if 0
+    /*-- stability parameter definition according to Codina (2002), CMAME 191
+     *
+     * Analysis of a stabilized finite element approximation of the transient
+     * convection-diffusion-reaction equation using orthogonal subscales.
+     * Ramon Codina, Jordi Blasco; Comput. Visual. Sci., 4 (3): 167-174, 2002.
+     *
+     * */
+    tau_(2) = sqrt(DSQR(visceff)+DSQR(0.5*vel_normnp*hk));
+#endif
+  }
+  else
+  {
+    // INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
+    // tau_M: Barrenechea, G.R. and Valentin, F.
+    // tau_C: Wall
+
+   
+    // this copy of velintaf_ will be used to store the normed velocity
+    blitz::Array<double,1> normed_velintaf(3);
+    normed_velintaf=velintaf_.copy();
+    
+    // normed velocity at element center (we use the copy for safety reasons!)
+    if (vel_normaf>=1e-6)
+    {
+      normed_velintaf = velintaf_/vel_normaf;
+    }
+    else
+    {
+      normed_velintaf    = 0.;
+      normed_velintaf(0) = 1.;
+    }
+    
+    // get streamlength
+    const double val = blitz::sum(blitz::abs(blitz::sum(normed_velintaf(j)*derxy_(j,i),j)));
+    const double strle = 2.0/val;
+
+    // time factor
+    const double timefac = gamma*dt;
+
+    /*----------------------------------------------------- compute tau_Mu ---*/
+    /* stability parameter definition according to
+
+              Barrenechea, G.R. and Valentin, F.: An unusual stabilized finite
+              element method for a generalized Stokes problem. Numerische
+              Mathematik, Vol. 92, pp. 652-677, 2002.
+              http://www.lncc.br/~valentin/publication.htm
+    and:
+              Franca, L.P. and Valentin, F.: On an Improved Unusual Stabilized
+              Finite Element Method for the Advective-Reactive-Diffusive
+              Equation. Computer Methods in Applied Mechanics and Enginnering,
+              Vol. 190, pp. 1785-1800, 2000.
+              http://www.lncc.br/~valentin/publication.htm                   */
 
 
+    const double re1 = 4.0 * timefac * visceff / (mk * DSQR(strle));   /* viscous : reactive forces   */
+    const double re2 = mk * vel_normaf * strle / (2.0 * visceff);      /* convective : viscous forces */
+
+    const double xi1 = DMAX(re1,1.0);
+    const double xi2 = DMAX(re2,1.0);
+
+    tau_(0) = timefac * DSQR(strle) / (DSQR(strle)*xi1+( 4.0 * timefac*visceff/mk)*xi2);
+
+    // compute tau_Mp
+    //    stability parameter definition according to Franca and Valentin (2000)
+    //                                       and Barrenechea and Valentin (2002)
+    const double re_viscous = 4.0 * timefac * visceff / (mk * DSQR(hk)); /* viscous : reactive forces   */
+    const double re_convect = mk * vel_normaf * hk / (2.0 * visceff);    /* convective : viscous forces */
+
+    const double xi_viscous = DMAX(re_viscous,1.0);
+    const double xi_convect = DMAX(re_convect,1.0);
+
+    /*
+                  xi1,xi2 ^
+                          |      /
+                          |     /
+                          |    /
+                        1 +---+
+                          |
+                          |
+                          |
+                          +--------------> re1,re2
+                              1
+    */
+    tau_(1) = timefac * DSQR(hk) / (DSQR(hk) * xi_viscous + ( 4.0 * timefac * visceff/mk) * xi_convect);
+
+    // Wall Diss. 99
+    /*
+                      xi2 ^
+                          |
+                        1 |   +-----------
+                          |  /
+                          | /
+                          |/
+                          +--------------> Re2
+                              1
+    */
+    const double xi_tau_c = DMIN(re2,1.0);
+    tau_(2) = vel_normnp * hk * 0.5 * xi_tau_c;
+
+#if 0
+    /*------------------------------------------------------ compute tau_C ---*/
+    /*-- stability parameter definition according to Codina (2002), CMAME 191
+     *
+     * Analysis of a stabilized finite element approximation of the transient
+     * convection-diffusion-reaction equation using orthogonal subscales.
+     * Ramon Codina, Jordi Blasco; Comput. Visual. Sci., 4 (3): 167-174, 2002.
+     *
+     * */
+    tau_(2) = sqrt(DSQR(visceff)+DSQR(0.5*vel_normnp*hk));
+#endif
+  }
   
   //----------------------------------------------------------------------------
   // 

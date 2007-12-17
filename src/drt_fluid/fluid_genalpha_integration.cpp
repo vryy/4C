@@ -1621,8 +1621,22 @@ void FluidGenAlphaIntegration::SetInitialFlowField(
         int err =0;
 
         // random noise is perc percent of the initial profile
-        double perc = 0.1;
 
+        double perc = 0.1;
+        
+        if (params_.sublist("TURBULENCE MODEL").get<string>("CANONICAL_FLOW","no")
+            ==
+            "channel_flow_of_height_2")
+        {
+          perc = params_.sublist("TURBULENCE MODEL").get<double>("CHANNEL_AMPLITUDE_INITIAL_DISTURBANCE");
+          // out to screen
+          if (myrank_==0)
+          {
+            cout << "Disturbed initial profile:   max. " << perc << "\% random perturbation\n";
+            cout << &endl << &endl;
+          }
+        }
+          
         // loop all nodes on the processor
         for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();++lnodeid)
         {
