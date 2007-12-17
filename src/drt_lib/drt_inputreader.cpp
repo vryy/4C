@@ -422,7 +422,7 @@ void DatFileReader::ReadDat()
 
   // Now finally find the section names. We have to do this on all
   // processors, so it cannot be done while reading.
-  for (vector<char*>::size_type i=0; i<lines_.size(); ++i)
+  for (vector<char*>::size_type i=0; i<lines_.size()-1; ++i)
   {
     char* l = lines_[i];
     if (l and l[0]=='-' and l[1]=='-')
