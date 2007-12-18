@@ -17,14 +17,15 @@ Maintainer: Ulrich Kuettler
 
 #include "mfsi_overlapalgorithm.H"
 
-
 #include "mfsi_algorithm.H"
+#include "mfsi_couplingoperator.H"
 #include "mfsi_nox_thyra_group.H"
 #include "mfsi_preconditionerfactory.H"
 #include "mfsi_statustest.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_colors.H"
+#include "../drt_lib/linalg_utils.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -36,6 +37,8 @@ Maintainer: Ulrich Kuettler
 
 #include <Thyra_VectorStdOps.hpp>
 #include <Thyra_DefaultIdentityLinearOp.hpp>
+#include <Thyra_DefaultAddedLinearOp.hpp>
+#include <Thyra_DefaultScaledAdjointLinearOp.hpp>
 
 // fix clashes between ccarat and Thyra::AmesosLinearOpWithSolveFactory
 #ifdef UMFPACK
@@ -192,6 +195,95 @@ void MFSI::OverlapAlgorithm::SetupRHS(Thyra::DefaultProductVector<double> &f) co
 /*----------------------------------------------------------------------*/
 void MFSI::OverlapAlgorithm::SetupSysMat(Thyra::DefaultBlockedLinearOp<double>& mat) const
 {
+  // extract Jacobian matrices and put them into composite system
+  // matrix W
+  //Teuchos::RCP<Thyra::LinearOpBase<double> > smat = Teuchos::rcp(new Thyra::EpetraLinearOp(StructureField()->SysMat()));
+  //Teuchos::RCP<Thyra::LinearOpBase<double> > fmat = Teuchos::rcp(new Thyra::EpetraLinearOp(FluidField()->SysMat()));
+  //Teuchos::RCP<Thyra::LinearOpBase<double> > amat = Teuchos::rcp(new Thyra::EpetraLinearOp(AleField()->SysMat()));
+
+  const Coupling& coupsf = StructureFluidCoupling();
+  const Coupling& coupsa = StructureAleCoupling();
+
+  // split structural matrix
+
+  Teuchos::RCP<Epetra_CrsMatrix> sii;
+  Teuchos::RCP<Epetra_CrsMatrix> sig;
+  Teuchos::RCP<Epetra_CrsMatrix> sgi;
+  Teuchos::RCP<Epetra_CrsMatrix> sgg;
+
+  Teuchos::RCP<Epetra_Map> sgmap = coupsf.MasterDofMap();
+  Teuchos::RCP<Epetra_Map> simap = coupsf.MasterInnerDofMap();
+
+  Teuchos::RCP<Epetra_CrsMatrix> s = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(StructureField()->SysMat());
+
+  if (not LINALG::SplitMatrix2x2(s,simap,sgmap,sii,sig,sgi,sgg))
+  {
+    dserror("failed to split structural matrix");
+  }
+
+  // split fluid matrix
+
+  Teuchos::RCP<Epetra_CrsMatrix> fii;
+  Teuchos::RCP<Epetra_CrsMatrix> fig;
+  Teuchos::RCP<Epetra_CrsMatrix> fgi;
+  Teuchos::RCP<Epetra_CrsMatrix> fgg;
+
+  Teuchos::RCP<Epetra_Map> fgmap = coupsf.SlaveDofMap();
+  Teuchos::RCP<Epetra_Map> fimap = coupsf.SlaveInnerDofMap();
+
+  Teuchos::RCP<Epetra_CrsMatrix> f = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(FluidField()->SysMat());
+
+  if (not LINALG::SplitMatrix2x2(f,fimap,fgmap,fii,fig,fgi,fgg))
+  {
+    dserror("failed to split fluid matrix");
+  }
+
+//   fgg = coupsf.RCSlaveToMaster(fgg);
+//   fgi = coupsf.RSlaveToMaster(fgi);
+//   fig = coupsf.CSlaveToMaster(fig);
+
+  // split ale matrix
+
+  Teuchos::RCP<Epetra_CrsMatrix> aii;
+  Teuchos::RCP<Epetra_CrsMatrix> aig;
+  Teuchos::RCP<Epetra_CrsMatrix> agi;
+  Teuchos::RCP<Epetra_CrsMatrix> agg;
+
+  Teuchos::RCP<Epetra_Map> agmap = coupsa.SlaveDofMap();
+  Teuchos::RCP<Epetra_Map> aimap = coupsa.SlaveInnerDofMap();
+
+  Teuchos::RCP<Epetra_CrsMatrix> a = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(AleField()->SysMat());
+
+  if (not LINALG::SplitMatrix2x2(a,aimap,agmap,aii,aig,agi,agg))
+  {
+    dserror("failed to split ale matrix");
+  }
+
+//   aig = coupsa.CSlaveToMaster(aig);
+
+  // build block matrix
+
+  mat.beginBlockFill(DofRowMap(), DofRowMap());
+
+  mat.setBlock(0,0,Thyra::nonconstEpetraLinearOp(sii));
+  mat.setBlock(0,1,Thyra::nonconstEpetraLinearOp(sig));
+  mat.setBlock(1,0,Thyra::nonconstEpetraLinearOp(sgi));
+
+  double scale = 1.0;
+
+  mat.setBlock(1,1,Thyra::nonconstAdd<double>(Thyra::nonconstEpetraLinearOp(sgg),
+                                              Thyra::nonconstScale<double>(scale,
+                                                                           nonconstCouplingOp(fgg))
+                 ));
+
+  mat.setBlock(1,2,nonconstCouplingOp(fgi));
+  mat.setBlock(2,1,nonconstCouplingOp(fig));
+  mat.setBlock(2,2,Thyra::nonconstEpetraLinearOp(fii));
+
+  mat.setBlock(3,1,nonconstCouplingOp(aig));
+  mat.setBlock(3,3,Thyra::nonconstEpetraLinearOp(aii));
+
+  mat.endBlockFill();
 }
 
 

@@ -85,4 +85,27 @@ void MFSI::Coupling::SetupInnerDofMaps(const Epetra_Map& masterdomainmap, const 
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_CrsMatrix> MFSI::Coupling::RCSlaveToMaster(const Teuchos::RCP<Epetra_CrsMatrix> s) const
+{
+  return Teuchos::null;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_CrsMatrix> MFSI::Coupling::RSlaveToMaster(const Teuchos::RCP<Epetra_CrsMatrix> s) const
+{
+  return Teuchos::null;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_CrsMatrix> MFSI::Coupling::CSlaveToMaster(const Teuchos::RCP<Epetra_CrsMatrix> s) const
+{
+  return Teuchos::null;
+}
+
 #endif

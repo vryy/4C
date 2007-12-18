@@ -22,6 +22,9 @@ Maintainer: Ulrich Kuettler
 
 namespace MFSI
 {
+
+  class CouplingOperator;
+
   /// monolithic FSI coupling
   /*!
 
@@ -61,6 +64,10 @@ namespace MFSI
 
     Teuchos::RCP<Epetra_Map> MasterInnerDofMap() const { return masterinnerdofmap_; }
     Teuchos::RCP<Epetra_Map> SlaveInnerDofMap() const  { return slaveinnerdofmap_; }
+
+    Teuchos::RCP<Epetra_CrsMatrix> RCSlaveToMaster(const Teuchos::RCP<Epetra_CrsMatrix> s) const;
+    Teuchos::RCP<Epetra_CrsMatrix> RSlaveToMaster(const Teuchos::RCP<Epetra_CrsMatrix> s) const;
+    Teuchos::RCP<Epetra_CrsMatrix> CSlaveToMaster(const Teuchos::RCP<Epetra_CrsMatrix> s) const;
 
   private:
 
