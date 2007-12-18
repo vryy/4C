@@ -344,6 +344,7 @@ void EnsightWriter::WriteCells(
 				case DRT::Element::tet4:
 				case DRT::Element::tet10:
 				case DRT::Element::tri3:
+				case DRT::Element::tri6:
 				case DRT::Element::wedge6:
 				case DRT::Element::wedge15:
 				case DRT::Element::pyramid5:
