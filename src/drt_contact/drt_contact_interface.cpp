@@ -275,8 +275,9 @@ void CONTACT::Interface::Evaluate()
 	  // NOT YET IMPLEMENTED!!!
 	  // Project_SlaveToMaster();
 	}
-			
-	exit(0);
+	
+	// Exit 0 - Debug
+	//exit(0);
   return;
 }
 
