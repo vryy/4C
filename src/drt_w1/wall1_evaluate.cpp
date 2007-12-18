@@ -142,8 +142,7 @@ int DRT::Elements::Wall1::EvaluateNeumann(ParameterList& params,
   const int numdf = 2;
 
   // gaussian points 
-  const DRT::Utils::GaussRule2D gaussrule = getGaussrule(); 
-  const DRT::Utils::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
+  const DRT::Utils::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule_);
   
   //  vector<double>* thick = data_.Get<vector<double> >("thick");
   //  if (!thick) dserror("Cannot find vector of nodal thickness");
@@ -293,8 +292,7 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
   const DiscretizationType distype = this->Shape();
   
   // gaussian points 
-  const DRT::Utils::GaussRule2D gaussrule = getGaussrule(); 
-  const DRT::Utils::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
+  const DRT::Utils::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule_);
   
   /*----------------------------------------------------- geometry update */
   for (int k=0; k<iel; ++k)
@@ -360,168 +358,6 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- |  get the coordinates of gaussian points (private)        mgit 06/07|
- *----------------------------------------------------------------------*/
-/*void DRT::Elements::Wall1::w1_gpdom(int& totngp,
-                                    double** gpcr, double** gpcs,
-                                    double** gpwr)
-{
-
-  static double gpcl[6][6] = {
-    {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-    {-1.0/sqrt(3.0),1.0/sqrt(3.0),0.0,0.0,0.0,0.0},
-    {-sqrt(3.0/5.0),0.0,sqrt(3.0/5.0),0.0,0.0,0.0},
-    {-sqrt((15.0+sqrt(120.0))/35.0), 
-     -sqrt((15.0-sqrt(120.0))/35.0),
-      sqrt((15.0-sqrt(120.0))/35.0),
-     +sqrt((15.0+sqrt(120.0))/35.0)},
-    {-0.9061798459387,-0.5384693101057,0.0,
-     +0.5384693101057,0.9061798459387},
-    {-0.9324695142032,-0.6612093864663,
-     -0.2386191860832,0.2386191860832,
-     0.6612093864663,0.9324695142032}
-                             };
-
-  static double gpwl[6][6]={
-    {2.0,0.0,0.0,0.0,0.0,0.0},
-    {1.0,1.0,0.0,0.0,0.0,0.0},
-    {5.0/9.0,8.0/9.0,5.0/9.0,0.0,0.0,0.0},
-    {(18.0-sqrt(30.0))/36.0,(18.0+sqrt(30.0))/36.0,
-     (18.0+sqrt(30.0))/36.0,(18.0-sqrt(30.0))/36.0,0.0,0.0},
-    {0.2369268850562,0.4786286704994,0.5688888888889,0.4786286704994,
-     0.2369268850562,0},
-    {0.1713244923792,0.3607615730481,0.4679139345727,
-     0.4679139345727,0.3607615730481,0.1713244923792}
-                            };
-
-  static double gprq1[1] = {0.0};
-  static double gpsq1[1] = {0.0};
-  static double gpwq1[1] = {4.0};
-
-  static double gprq4[4] = {-1.0/sqrt(3.0),-1.0/sqrt(3.0),
-                            +1.0/sqrt(3.0),+1.0/sqrt(3.0)};
-  static double gpsq4[4] = {-1.0/sqrt(3.0),+1.0/sqrt(3.0),
-                            -1.0/sqrt(3.0),+1.0/sqrt(3.0)};
-  static double gpwq4[4] = {1.0, 1.0,
-                            1.0, 1.0};
-
-  static double gprq9[9] = {-sqrt(3.0/5.0),-sqrt(3.0/5.0),-sqrt(3.0/5.0),
-                            0.0,0.0,0.0,
-                            sqrt(3.0/5.0),sqrt(3.0/5.0),sqrt(3.0/5.0)};
-  static double gpsq9[9] = {-sqrt(3.0/5.0),0.0,sqrt(3.0/5.0),
-                            -sqrt(3.0/5.0),0.0,sqrt(3.0/5.0),
-                            -sqrt(3.0/5.0),0.0,sqrt(3.0/5.0)};
-  static double gpwq9[9] = {0.308641975308642,0.493827160493827,0.308641975308642,
-                            0.493827160493827,0.790123456790123,0.493827160493827,
-                            0.308641975308642,0.493827160493827,0.308641975308642};
-
-  static double gprq[36];
-  static double gpsq[36];
-  static double gpwq[36];
-
-  static double gprt1[1] = {1/3};
-  static double gpst1[1] = {1/3};
-  static double gpwt1[1] = {1/2};
-
-  static double gprt3_1[3] = {1.0/2.0,1.0/2.0, 0.0};
-  static double gpst3_1[3] = {0.0, 1.0/2.0, 1.0/2.0};
-  static double gpwt3_1[3] = {1.0/6.0, 1.0/6.0, 1.0/6.0};
-
-  static double gprt3_2[3] = {1.0/6.0, 2.0/3.0, 1.0/6.0};
-  static double gpst3_2[3] = {1.0/6.0, 1.0/6.0, 2.0/3.0};
-  static double gpwt3_2[3] = {1.0/6.0, 1.0/6.0, 1.0/6.0};
-
-  switch (NumNode())
-  {
-    case 4: case 8: case 9:        *//* --> quad - element */
- /*   {
-       totngp=ngp_[0]*ngp_[1];
-       if ( (ngp_[0]==1) && (ngp_[1]==1) )
-       {
-          *gpcr = gprq1;
-          *gpcs = gpsq1;
-          *gpwr = gpwq1;
-       }
-       else if ( (ngp_[0]==2) && (ngp_[1]==2) )
-       {
-          *gpcr = gprq4;
-          *gpcs = gpsq4;
-          *gpwr = gpwq4;
-       }
-       else if ( (ngp_[0]==3) && (ngp_[1]==3) )
-       {
-          *gpcr = gprq9;
-          *gpcs = gpsq9;
-          *gpwr = gpwq9;
-       }
-       else
-       {
-         int ip = 0;
-         for (int ir=0; ir<ngp_[0]; ++ir)
-         {
-           for (int is=0; is<ngp_[1]; ++is)
-           {
-             gprq[ip] = gpcl[ngp_[0]-1][ir];
-             gpsq[ip] = gpcl[ngp_[1]-1][is];
-             gpwq[ip] = gpwl[ngp_[0]-1][ir] * gpwl[ngp_[1]-1][is];
-             ++ip;
-           }
-         }
-         *gpcr = gprq;
-         *gpcs = gpsq;
-         *gpwr = gpwq;
-       }
-    }
-  break; 
-  case 3: case 6:                 *//* --> triangle - element */
-/*  {
-     totngp=ngp_[0];
-
-      switch (ngp_[0])
-      {
-        case 1:                   *//* constant */
-/*          *gpcr = gprt1;
-          *gpcs = gpst1;
-          *gpwr = gpwt1;
-          break;
-
-        //  GAUSS INTEGRATION 3 SAMPLING POINTS, DEG.OF PRECISION 2
-        case 3:  *//* quadratic - type 1 and 2*/
-/*        { 
-          if (ngp_[1]-1 == 0)  // integration 1
-          {
-            *gpcr = gprt3_1;
-            *gpcs = gpst3_1;
-            *gpwr = gpwt3_1;
-          }
-          else if (ngp_[1]-1 == 1)  // integration 2
-          {
-            *gpcr = gprt3_2;
-            *gpcs = gpst3_2;
-            *gpwr = gpwt3_2;
-          }
-          else
-          {
-            dserror("Integration case %g is not available\n", ngp_[1]);
-          }
-     
-          break;
-        }
-        default:
-          dserror("Unknown number of Gauss points");  
-
-    }
-    break;
-    default:
-       dserror("Unknown number of Gauss points");
-      }
-   } 
-
-  return;
-}
-*/
 /*----------------------------------------------------------------------*
  |  jacobian matrix (private)                                  mgit 04/07|
  *----------------------------------------------------------------------*/
@@ -881,76 +717,6 @@ void DRT::Elements::Wall1::w1_fint(Epetra_SerialDenseMatrix& stress,
 }
 
 /* DRT::Elements::Wall1::w1_fint */
-
-
-//Get gaussrule on dependance of gausspoints 
-
-DRT::Utils::GaussRule2D DRT::Elements::Wall1::getGaussrule()
-{
-  DRT::Utils::GaussRule2D rule = DRT::Utils::intrule2D_undefined;
-
-  switch (NumNode())
-  {
-    case 4: case 8: case 9:        /* --> quad - element */
-    {
-       if ( (ngp_[0]==1) && (ngp_[1]==1) )
-       {
-    	 rule = DRT::Utils::intrule_quad_1point;
-       }
-       else if ( (ngp_[0]==2) && (ngp_[1]==2) )
-       {
-    	 rule = DRT::Utils::intrule_quad_4point;
-       }
-       else if ( (ngp_[0]==3) && (ngp_[1]==3) )
-       {
-    	 rule = DRT::Utils::intrule_quad_9point;
-       }
-       else
-    	   dserror("Unknown number of Gauss points");    
-    }
-    break; 
-    case 3: case 6:                 /* --> triangle - element */
-    {
-       switch (ngp_[0])
-       {
-         case 1:                   /* constant */
-         {
-      	   rule = DRT::Utils::intrule_tri_1point; 
-         }
-         break;
-        //  GAUSS INTEGRATION 3 SAMPLING POINTS, DEG.OF PRECISION 2
-         case 3:  /* quadratic - type 1 and 2*/
-         { 
-           if (ngp_[1]-1 == 0)  // integration 1
-          {
-         	 rule = DRT::Utils::intrule_tri_3point; 
-          }
-          else if (ngp_[1]-1 == 1)  // integration 2
-          {
-         	 rule = DRT::Utils::intrule_tri_3point_on_corners; 
-          }
-          else
-          {
-            dserror("Integration case %g is not available\n", ngp_[1]);
-          }
-     
-          break;
-         }
-         case 6: 
-         {
-        	 rule = DRT::Utils::intrule_tri_6point;       
-         }
-         default:
-           dserror("Unknown number of Gauss points");  
-    }
-    break;
-    default:
-       dserror("Unknown number of nodes");
-      }
-   } 
-  return rule;
-}
-
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_WALL1

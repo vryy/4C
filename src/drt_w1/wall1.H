@@ -323,9 +323,7 @@ private:
   //! vector of lines adjacent to this element (wall1: 3 or 4 lines)
   vector<DRT::Elements::Wall1Line*>               lineptrs_;
   //! gaussian points
-  int                                             ngp_[2];
-//  //! no. gaussian points for triangle elements
-//  int                                             ngptri_;
+  DRT::Utils::GaussRule2D                         gaussrule_;
   //! problem type
   DimensionalReduction                            wtype_;
   //! type of stress calculation
@@ -417,7 +415,7 @@ private:
                        const int& nnode);
   
   // set number of gauss points to element shape default
-   DRT::Utils::GaussRule2D getGaussrule();
+   DRT::Utils::GaussRule2D getGaussrule(int* ngp);
   
 
 }; // class Wall1

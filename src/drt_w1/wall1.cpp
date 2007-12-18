@@ -28,9 +28,9 @@ DRT::Elements::Wall1::Wall1(int id, int owner) :
 DRT::Element(id,element_wall1,owner),
 data_(),
 material_(0),
-thickness_(0.0)
+thickness_(0.0),
+gaussrule_(DRT::Utils::intrule2D_undefined)
 {
-  ngp_[0] = ngp_[1] = 0;
   lines_.resize(0);
   lineptrs_.resize(0);
   return;
@@ -45,9 +45,9 @@ data_(old.data_),
 material_(old.material_),
 thickness_(old.thickness_),
 lines_(old.lines_),
-lineptrs_(old.lineptrs_)
+lineptrs_(old.lineptrs_),
+gaussrule_(old.gaussrule_)
 {
-  for (int i=0; i<2; ++i) ngp_[i] = old.ngp_[i];
   return;
 }
 
@@ -101,8 +101,8 @@ void DRT::Elements::Wall1::Pack(vector<char>& data) const
   AddtoPack(data,material_);
   //thickness
   AddtoPack(data,thickness_);
-  // ngp_
-  AddtoPack(data,ngp_,2*sizeof(int));
+  // gaussrule_
+  AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   vector<char> tmp(0);
   data_.Pack(tmp);
   AddtoPack(data,tmp);
@@ -130,8 +130,10 @@ void DRT::Elements::Wall1::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,material_);
   // thickness_
   ExtractfromPack(position,data,thickness_);
-  // ngp_
-  ExtractfromPack(position,data,ngp_,2*sizeof(int));
+  // gaussrule_
+  int gausrule_integer;
+  ExtractfromPack(position,data,gausrule_integer);
+  gaussrule_ = DRT::Utils::GaussRule2D(gausrule_integer); //explicit conversion from integer to enum
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
@@ -158,7 +160,7 @@ void DRT::Elements::Wall1::Print(ostream& os) const
 {
   os << "Wall1 ";
   Element::Print(os);
-  os << " ngp_: " << ngp_[0] << " " << ngp_[1] << " ";
+  os << " gaussrule_: " << gaussrule_ << " ";
   return;
 }
 
