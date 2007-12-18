@@ -56,8 +56,25 @@ void PrintValidParameters()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-static void PrintDefaultDatHeader(const Teuchos::ParameterList& list, std::string parentname="")
+void DRT::PrintDatHeader(std::ostream& stream, const Teuchos::ParameterList& list, std::string parentname, bool color)
 {
+  std::string blue2light = "";
+  std::string bluelight = "";
+  std::string redlight = "";
+  std::string yellowlight = "";
+  std::string greenlight = "";
+  std::string magentalight = "";
+  std::string endcolor = "";
+  if (color)
+  {
+    blue2light = BLUE2_LIGHT;
+    bluelight = BLUE_LIGHT;
+    redlight = RED_LIGHT;
+    yellowlight = YELLOW_LIGHT;
+    greenlight = GREEN_LIGHT;
+    magentalight = MAGENTA_LIGHT;
+    endcolor = END_COLOR;
+  }
   for (Teuchos::ParameterList::ConstIterator i = list.begin();
        i!=list.end();
        ++i)
@@ -69,8 +86,8 @@ static void PrintDefaultDatHeader(const Teuchos::ParameterList& list, std::strin
     std::string doc = entry.docString();
     if (doc!="")
     {
-      Teuchos::StrUtils::printLines(std::cout,BLUE2_LIGHT "// ",doc);
-      std::cout << END_COLOR;
+      Teuchos::StrUtils::printLines(stream,blue2light + "// ",doc);
+      stream << endcolor;
     }
 
     if (entry.isList())
@@ -80,10 +97,10 @@ static void PrintDefaultDatHeader(const Teuchos::ParameterList& list, std::strin
         secname += "/";
       secname += name;
       unsigned l = secname.length();
-      std::cout << RED_LIGHT << "--";
-      for (int i=0; i<std::max<int>(65-l,0); ++i) std::cout << '-';
-      std::cout << GREEN_LIGHT << secname << END_COLOR << '\n';
-      PrintDefaultDatHeader(list.sublist(name),secname);
+      stream << redlight << "--";
+      for (int i=0; i<std::max<int>(65-l,0); ++i) stream << '-';
+      stream << greenlight << secname << endcolor << '\n';
+      PrintDatHeader(stream,list.sublist(name),secname,color);
     }
     else
     {
@@ -94,15 +111,15 @@ static void PrintDefaultDatHeader(const Teuchos::ParameterList& list, std::strin
         {
           for (unsigned i=0; i<values->size(); ++i)
           {
-            cout << BLUE2_LIGHT << "//     " << MAGENTA_LIGHT << (*values)[i] << END_COLOR << '\n';
+            cout << blue2light << "//     " << magentalight << (*values)[i] << endcolor << '\n';
           }
         }
       }
       const Teuchos::any& v = entry.getAny(false);
-      std::cout << BLUE_LIGHT << name << END_COLOR;
+      stream << bluelight << name << endcolor;
       unsigned l = name.length();
-      for (int i=0; i<std::max<int>(31-l,0); ++i) std::cout << ' ';
-      std::cout << ' ' << YELLOW_LIGHT << v << END_COLOR << '\n';
+      for (int i=0; i<std::max<int>(31-l,0); ++i) stream << ' ';
+      stream << ' ' << yellowlight << v << endcolor << '\n';
     }
   }
 }
@@ -115,7 +132,7 @@ extern "C"
 void PrintDefaultDatHeader()
 {
   Teuchos::RCP<const Teuchos::ParameterList> list = DRT::ValidParameters();
-  PrintDefaultDatHeader(*list);
+  DRT::PrintDatHeader(std::cout,*list,"",true);
 }
 
 

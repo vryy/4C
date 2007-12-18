@@ -812,7 +812,7 @@ void DRT::Elements::So_sh8::sosh8_evaluateT(const Epetra_SerialDenseMatrix jac,
 int DRT::Elements::Sosh8Register::Initialize(DRT::Discretization& dis)
 //int DRT::Elements::So_sh8::Initialize_numbers(DRT::Discretization& dis)
 {
-  sosh8_gmshplotdis(dis);
+  //sosh8_gmshplotdis(dis);
   //-------------------- loop all my column elements and define thickness direction
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {

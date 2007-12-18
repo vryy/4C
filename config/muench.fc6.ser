@@ -75,6 +75,8 @@ VISUAL3_LIB="-L/usr/X11R6/lib -lVisual3 -lg2c -lGLU -lGL -lX11 -lXext -ldl -lpth
 # hdf5
 HDF5_LIB="-lhdf5_hl -lhdf5 -lpthread -lz"
 
+EXODUS_LIB="-lexoIIv2c -L/usr/lib/netcdf-3 -lnetcdf"
+
 #LIBS="-lc -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis"
 LIBS="-lc -lg2c -lmetis -lblitz -llapack -lblas"
 

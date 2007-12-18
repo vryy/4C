@@ -48,6 +48,9 @@ namespace DRT {
 
   /// print all parameters that have a default value
   void PrintDefaultParameters(std::ostream& stream, const Teuchos::ParameterList& list);
+  
+  /// print flag sections of dat file with given list
+  void PrintDatHeader(std::ostream& stream, const Teuchos::ParameterList& list, std::string parentname="", bool color=false);
 }
 
 #endif /* end of #ifdef __cplusplus */
