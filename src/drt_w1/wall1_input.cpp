@@ -167,49 +167,53 @@ DRT::Utils::GaussRule2D DRT::Elements::Wall1::getGaussrule(int* ngp)
          rule = DRT::Utils::intrule_quad_9point;
        }
        else
-           dserror("Unknown number of Gauss points");    
+         dserror("Unknown number of Gauss points for quad element");  
+       break;
     }
-    break; 
     case DRT::Element::tri3:
     case DRT::Element::tri6:
     {
-       switch (ngp[0])
-       {
-         case 1:                   /* constant */
-         {
-           rule = DRT::Utils::intrule_tri_1point; 
-         }
-         break;
-        //  GAUSS INTEGRATION 3 SAMPLING POINTS, DEG.OF PRECISION 2
-         case 3:  /* quadratic - type 1 and 2*/
-         { 
-           if (ngp[1]-1 == 0)  // integration 1
-          {
-             rule = DRT::Utils::intrule_tri_3point; 
-          }
-          else if (ngp[1]-1 == 1)  // integration 2
-          {
-             rule = DRT::Utils::intrule_tri_3point_on_corners; 
-          }
-          else
-          {
-            dserror("Integration case %g is not available\n", ngp[1]);
-          }
+        switch (ngp[0])
+        {
+            case 1:                   /* constant */
+            {
+                rule = DRT::Utils::intrule_tri_1point;
+                break;
+            }
+            case 3:  /* quadratic - type 1 and 2*/
+            {
+                //  GAUSS INTEGRATION 3 SAMPLING POINTS, DEG.OF PRECISION 2 
+                if (ngp[1]-1 == 0)  // integration 1
+                    {
+                    rule = DRT::Utils::intrule_tri_3point; 
+                    }
+                else if (ngp[1]-1 == 1)  // integration 2
+                    {
+                    rule = DRT::Utils::intrule_tri_3point_on_corners; 
+                    }
+                else
+                    {
+                    dserror("Integration case %g is not available\n", ngp[1]);
+                    }
      
-          break;
-         }
-         case 6: 
-         {
-             rule = DRT::Utils::intrule_tri_6point;       
-         }
-         default:
-           dserror("Unknown number of Gauss points");  
-    }
-    break;
+                break;
+            }
+            case 6: 
+            {
+                rule = DRT::Utils::intrule_tri_6point;
+                break;
+            }
+            default:
+            {
+                cout << ngp[0] << "  " << ngp[1] << endl;
+                dserror("Unknown number of Gauss points for tri element");
+            }
+        }
+        break;        
     default:
        dserror("Unknown distype");
-      }
-   } 
+    }
+  } 
   return rule;
 }
 
