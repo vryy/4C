@@ -247,6 +247,13 @@ public:
   */
   virtual map<int,RefCountPtr<DRT::Element> >& Geometry() { return geometry_; }
 
+  /*!
+  \brief Adjust IDs of associated elements in order to obtain global
+  unique IDs within one condition type
+
+  */
+  void AdjustId(const int shift);
+
   //@}
 
   // @{ \name Construction

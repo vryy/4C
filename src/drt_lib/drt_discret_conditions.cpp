@@ -59,6 +59,10 @@ void DRT::Discretization::BoundaryConditionsGeometry()
     }
   }
 
+  // create a map that holds the overall number of created elements
+  // associated with a specific condition type
+  map<string, int> numele;
+
   // Loop all conditions and build geometry description if desired
   for (fool=condition_.begin(); fool != condition_.end(); ++fool)
   {
@@ -77,199 +81,42 @@ void DRT::Discretization::BoundaryConditionsGeometry()
     // build a volume element geometry description
     else if (fool->second->GType()==DRT::Condition::Volume)
       BuildVolumesinCondition(fool->first,fool->second);
-  }
 
+    // determine the local number of created elements associated with
+    // the active condition
+    int localcount=0;
+    for (map<int,RefCountPtr<DRT::Element> >::iterator iter=fool->second->Geometry().begin();
+         iter!=fool->second->Geometry().end();
+         ++iter)
+    {
+      // do not count ghosted elements
+      if (iter->second->Owner()==Comm().MyPID())
+      {
+        localcount += 1;
+      }
+    }
+
+    // determine the global number of created elements associated with
+    // the active condition
+    int count;
+    Comm().SumAll(&localcount, &count, 1);
+
+    if (numele.find(fool->first)==numele.end())
+    {
+      numele[fool->first] = 0;
+    }
+
+    // adjust the IDs of the elements associated with the active
+    // condition in order to obtain unique IDs within one condition type
+    fool->second->AdjustId(numele[fool->first]);
+
+    // adjust the number of elements associated with the current
+    // condition type
+    numele[fool->first]+=count;
+  }
   return;
 }
 
-#if 0 // old version
-/*----------------------------------------------------------------------*
- |  Build line geometry in a condition (public)              mwgee 01/07|
- *----------------------------------------------------------------------*/
-void DRT::Discretization::BuildLinesinCondition(
-                                        const string name,
-                                        RefCountPtr<DRT::Condition> cond)
-{
-
-  // get ptrs to all node ids that have this condition
-  const vector<int>* nodeids = cond->Nodes();
-  if (!nodeids) dserror("Cannot find array 'Node Ids' in condition");
-
-  // number of global nodes in this cloud
-  const int ngnode = nodeids->size();
-
-  // ptrs to my row/column nodes of those
-  map<int,DRT::Node*> rownodes;
-  map<int,DRT::Node*> colnodes;
-
-  for (int i=0; i<ngnode; ++i)
-  {
-    if (NodeColMap()->MyGID((*nodeids)[i]))
-    {
-      DRT::Node* actnode = gNode((*nodeids)[i]);
-      if (!actnode) dserror("Cannot find global node");
-      colnodes[actnode->Id()] = actnode;
-    }
-  }
-  for (int i=0; i<ngnode; ++i)
-  {
-    if (NodeRowMap()->MyGID((*nodeids)[i]))
-    {
-      DRT::Node* actnode = gNode((*nodeids)[i]);
-      if (!actnode) dserror("Cannot find global node");
-      rownodes[actnode->Id()] = actnode;
-    }
-  }
-
-  // multimap of lines in our cloud
-  multimap<int,RefCountPtr<DRT::Element> > linemap;
-  // loop these nodes and build all lines attached to them
-  map<int,DRT::Node*>::iterator fool;
-  for (fool=rownodes.begin(); fool != rownodes.end(); ++fool)
-  {
-    // currently looking at actnode
-    DRT::Node*     actnode  = fool->second;
-    // loop all elements attached to actnode
-    DRT::Element** elements = actnode->Elements();
-    for (int i=0; i<actnode->NumElement(); ++i)
-    {
-      // loop all lines of all elements attached to actnode
-      const int numlines = elements[i]->NumLine();
-      if (!numlines) continue;
-      DRT::Element** lines = elements[i]->Lines();
-      if (!lines) dserror("Element returned no lines");
-      for (int j=0; j<numlines; ++j)
-      {
-        DRT::Element* actline = lines[j];
-        // find lines that are attached to actnode
-        const int nnodeperline   = actline->NumNode();
-        DRT::Node** nodesperline = actline->Nodes();
-        if (!nodesperline) dserror("Line returned no nodes");
-        for (int k=0; k<nnodeperline; ++k)
-          if (nodesperline[k] == actnode)
-          {
-            // line is attached to actnode
-            // see whether all nodes on the line are in our nodal cloud
-            bool allin = true;
-            for (int l=0; l<nnodeperline; ++l)
-            {
-              map<int,DRT::Node*>::iterator test = colnodes.find(nodesperline[l]->Id());
-              if (test==colnodes.end())
-              {
-                allin = false;
-                break;
-              }
-            } // for (int l=0; l<nnodeperline; ++l)
-            // if all nodes on line are in our cloud, add line
-            if (allin)
-            {
-              RefCountPtr<DRT::Element> tmp = rcp(actline->Clone());
-              linemap.insert(pair<int,RefCountPtr<DRT::Element> >(actnode->Id(),tmp));
-            }
-            break;
-          } // if (nodesperline[k] == actnode)
-      } // for (int j=0; j<numlines; ++j)
-    } // for (int i=0; i<actnode->NumElement(); ++i)
-  } // for (fool=nodes.begin(); fool != nodes.end(); ++fool)
-
-  // linemap contains all lines in our cloud, but it also contains a lot
-  // of duplicates for now which need to be detected and deleted
-  multimap<int,RefCountPtr<DRT::Element> >::iterator linecurr;
-  for (linecurr=linemap.begin(); linecurr!=linemap.end(); ++linecurr)
-  {
-    // this lines was already deleted
-    if (linecurr->second == null) continue;
-
-    // get the lines
-    RefCountPtr<DRT::Element> actline = linecurr->second;
-
-    // get all nodal ids on this lineace
-    const int  nnode   = actline->NumNode();
-    const int* nodeids = actline->NodeIds();
-
-    // loop all lines associated with entries of nodeids
-    for(int nid=0;nid<nnode;nid++)
-    {
-      multimap<int,RefCountPtr<DRT::Element> >::iterator startit =
-        linemap.lower_bound(nodeids[nid]);
-      multimap<int,RefCountPtr<DRT::Element> >::iterator endit   =
-        linemap.upper_bound(nodeids[nid]);
-
-      multimap<int,RefCountPtr<DRT::Element> >::iterator curr;
-      for (curr=startit; curr!=endit; ++curr)
-      {
-        if(curr->second == null   ) continue;
-        if(curr         == linecurr) continue;
-
-        const int nn    = curr->second->NumNode();
-        if (nn != nnode) continue;
-        const int* nids = curr->second->NodeIds();
-
-        // nids must contain same ids as nodeids,
-        // where ordering is arbitrary
-        bool ident = true;
-        for (int i=0; i<nnode; ++i)
-        {
-          bool foundit = false;
-          for (int j=0; j<nnode; ++j)
-            if (nodeids[i]==nids[j])
-            {
-              foundit = true;
-              break;
-            }
-          if (!foundit)
-          {
-            ident = false;
-            break;
-          }
-        }
-        if (ident)
-          curr->second = null;
-        else
-          continue;
-      }
-    }
-  }
-
-  // Build a clean map of the remaining now unique lines
-  // and add it to the condition
-  int count=0;
-  map<int,RefCountPtr<DRT::Element> > finallines;
-  for (linecurr=linemap.begin(); linecurr!=linemap.end(); ++linecurr)
-  {
-    if (linecurr->second == null) continue;
-    linecurr->second->SetId(count);
-    finallines[count] = linecurr->second;
-    ++count;
-  }
-
-  // Build a global numbering for these elements
-  // the elements are in a column map state but the numbering is unique anyway
-  // and does NOT reflect the overlap!
-  // This is somehow dirty but works for the moment
-  vector<int> snelements(Comm().NumProc());
-  vector<int> rnelements(Comm().NumProc());
-  for (int i=0; i<Comm().NumProc(); ++i) snelements[i] = 0;
-  snelements[Comm().MyPID()] = finallines.size();
-  Comm().SumAll(&snelements[0],&rnelements[0],Comm().NumProc());
-  int sum=0;
-  for (int i=0; i<Comm().MyPID(); ++i) sum += rnelements[i];
-  map<int,RefCountPtr<DRT::Element> > finalfinallines;
-  count=0;
-  for (linecurr=finallines.begin(); linecurr!=finallines.end(); ++linecurr)
-  {
-    linecurr->second->SetId(count+sum);
-    finalfinallines[count+sum] = linecurr->second;
-    ++count;
-  }
-  finallines.clear();
-
-  cond->AddGeometry(finalfinallines);
-
-
-  return;
-} // DRT::Discretization::BuildLinesinCondition
-#endif // DEBUG
 
 /*
  *  A helper function for BuildLinesinCondition and
@@ -414,7 +261,7 @@ static void AssignGlobalIDs( const Epetra_Comm& comm,
   }
 } // AssignGlobalIDs
 
-#if 1 // new version
+
 /*----------------------------------------------------------------------*
  |  Build line geometry in a condition (public)              mwgee 01/07|
  *----------------------------------------------------------------------*/
@@ -522,7 +369,7 @@ void DRT::Discretization::BuildLinesinCondition( const string name,
   AssignGlobalIDs( Comm(), linemap, finallines );
   cond->AddGeometry( finallines );
 } // DRT::Discretization::BuildLinesinCondition
-#endif // new version of this method
+
 
 /*----------------------------------------------------------------------*
  |  Build surface geometry in a condition (public)           mwgee 01/07|

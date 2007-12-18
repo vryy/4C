@@ -29,7 +29,7 @@ buildgeometry_(buildgeometry),
 type_(type),
 gtype_(gtype),
 comm_(null)
-{ 
+{
   return;
 }
 
@@ -75,7 +75,7 @@ DRT::Condition::~Condition()
  *----------------------------------------------------------------------*/
 ostream& operator << (ostream& os, const DRT::Condition& cond)
 {
-  cond.Print(os); 
+  cond.Print(os);
   return os;
 }
 
@@ -98,8 +98,10 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==XFEMCoupling)                os << "XFEM Coupling condition:";
   else if (Type()==LineLIFTDRAG)                os << "Line LIFTDRAG condition:";
   else if (Type()==SurfLIFTDRAG)                os << "Surf LIFTDRAG condition:";
-  else if (Type()==VolumeConstraint_3D)            os << "Volume constraint surface boundary condition:";
- 
+  else if (Type()==SurfaceStress)               os << "Surface stress condition:";
+  else if (Type()==MicroBoundary)               os << "Microscale boundary condition:";
+  else if (Type()==VolumeConstraint_3D)         os << "Volume constraint surface boundary condition:";
+
   else dserror("no output string for condition defined in DRT::Condition::Print");
   Container::Print(os);
   if ((int)geometry_.size())
@@ -120,7 +122,7 @@ void DRT::Condition::Print(ostream& os) const
 void DRT::Condition::Pack(vector<char>& data) const
 {
   data.resize(0);
-  
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -136,7 +138,7 @@ void DRT::Condition::Pack(vector<char>& data) const
   AddtoPack(data,type_);
   // gtype_
   AddtoPack(data,gtype_);
-  
+
   return;
 }
 
@@ -164,13 +166,34 @@ void DRT::Condition::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,type_);
   // gtype_
   ExtractfromPack(position,data,gtype_);
-  
+
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
-} 
+}
 
 
+/*----------------------------------------------------------------------*
+ |                                                             (public) |
+ |  Adjust Ids of elements in order to obtain unique Ids within one     |
+ |  condition type                                                      |
+ |                                                             lw 12/07 |
+ *----------------------------------------------------------------------*/
+void DRT::Condition::AdjustId(const int shift)
+{
+  map<int,RefCountPtr<DRT::Element> > geometry;
+  map<int,RefCountPtr<DRT::Element> >::iterator iter;
+
+  for (iter=geometry_.begin();iter!=geometry_.end();++iter)
+  {
+    iter->second->SetId(iter->first+shift);
+    geometry[iter->first+shift]=geometry_[iter->first];
+  }
+
+  swap(geometry_, geometry);
+
+  return;
+}
 
 
 #endif  // #ifdef CCADISCRET
