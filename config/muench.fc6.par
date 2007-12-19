@@ -17,7 +17,7 @@ MPIHALT=lamhalt
 
 BASEDIR=/lnm/lib/$LINUX_DIST/$MPI_VERSION
 
-INCLUDEDIRS="-I$BASEDIR/include -I/usr/include/lam"
+INCLUDEDIRS="-I$BASEDIR/include -I/usr/include/lam -I/usr/include/netcdf-3"
 LIBDIRS="-L$BASEDIR/lib -L/usr/lib/gcc/i386-redhat-linux/3.4.6/"
 
 # Trilinos
@@ -81,6 +81,7 @@ VISUAL3_LIB="-L/usr/X11R6/lib -lVisual3 -lg2c -lGLU -lGL -lX11 -lXext -ldl -lpth
 # hdf5
 HDF5_LIB="-lhdf5_hl -lhdf5 -lpthread -lz"
 
+# exodus
 EXODUS_LIB="-lexoIIv2c -L/usr/lib/netcdf-3 -lnetcdf"
 
 #LIBS="-lc -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis"
