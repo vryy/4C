@@ -155,7 +155,6 @@ protected:
   RefCountPtr<LINALG::Solver>                solver_;
   int                           myrank_;
   int                           maxentriesperrow_;
-  double                        norm_;
 
   RefCountPtr<Epetra_CrsMatrix> stiff_;
   RefCountPtr<Epetra_CrsMatrix> stiff_dirich_;

@@ -288,7 +288,6 @@ protected:
   IO::DiscretizationWriter&     output_;
   int                           myrank_;
   int                           maxentriesperrow_;
-  double                        norm_;
 
   RefCountPtr<Epetra_CrsMatrix> stiff_;
   RefCountPtr<Epetra_CrsMatrix> mass_;

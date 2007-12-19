@@ -351,11 +351,12 @@ void ContactStruGenAlpha::ConsistentPredictor()
   }
 
   //------------------------------------------------ build residual norm
+  double fresmnorm = 1.0;
   if (printscreen)
-    fresm_->Norm2(&norm_);
+    fresm_->Norm2(&fresmnorm);
   if (!myrank_ && printscreen)
   {
-    cout << "Predictor residual forces " << norm_ << endl;
+    cout << "Predictor residual forces " << fresmnorm << endl;
     fflush(stdout);
   }
 
@@ -487,11 +488,12 @@ void ContactStruGenAlpha::ConstantPredictor()
   }
 
   //------------------------------------------------ build residual norm
+  double fresmnorm = 1.0;
   if (printscreen)
-    fresm_->Norm2(&norm_);
+    fresm_->Norm2(&fresmnorm);
   if (!myrank_ && printscreen)
   {
-    cout << "Predictor residual forces " << norm_ << endl;
+    cout << "Predictor residual forces " << fresmnorm << endl;
     fflush(stdout);
   }
 
@@ -535,7 +537,7 @@ void ContactStruGenAlpha::FullNewton()
   double fresmnorm;
   double disinorm;
   fresm_->Norm2(&fresmnorm);
-  while (norm_>toldisp && fresmnorm>toldisp && numiter<=maxiter)
+  while (disinorm>toldisp && fresmnorm>toldisp && numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
@@ -666,13 +668,11 @@ void ContactStruGenAlpha::FullNewton()
         fflush(errfile);
       }
     }
-    // criteria to stop Newton iteration
-    norm_ = disinorm;
 
     //--------------------------------- increment equilibrium loop index
     ++numiter;
 
-  } // while (norm_>toldisp && fresmnorm>toldisp && numiter<=maxiter)
+  }
   //=================================================================== end equilibrium loop
 
   //-------------------------------- test whether max iterations was hit

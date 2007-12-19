@@ -29,8 +29,7 @@ discret_(dis),
 solver_(solver),
 output_(output),
 myrank_(discret_.Comm().MyPID()),
-maxentriesperrow_(81),
-norm_(1.0e+06)
+maxentriesperrow_(81)
 {
   if (init)
   {
@@ -340,11 +339,12 @@ void StruGenAlpha::ConstantPredictor()
   }
 
   //------------------------------------------------ build residual norm
+  double fresmnorm = 1.0;
   if (printscreen)
-    fresm_->Norm2(&norm_);
+    fresm_->Norm2(&fresmnorm);
   if (!myrank_ && printscreen)
   {
-    cout << "Predictor residual forces " << norm_ << endl;
+    cout << "Predictor residual forces " << fresmnorm << endl;
     fflush(stdout);
   }
 
@@ -476,11 +476,12 @@ void StruGenAlpha::MatrixFreeConstantPredictor()
   }
 
   //------------------------------------------------ build residual norm
+  double fresmnorm = 1.0;
   if (printscreen)
-    fresm_->Norm2(&norm_);
+    fresm_->Norm2(&fresmnorm);
   if (!myrank_ && printscreen)
   {
-    cout << "Predictor residual forces " << norm_ << endl;
+    cout << "Predictor residual forces " << fresmnorm << endl;
     fflush(stdout);
   }
 
@@ -630,11 +631,12 @@ void StruGenAlpha::ConsistentPredictor()
   }
 
   //------------------------------------------------ build residual norm
+  double fresmnorm = 1.0;
   if (printscreen)
-    fresm_->Norm2(&norm_);
+    fresm_->Norm2(&fresmnorm);
   if (!myrank_ && printscreen)
   {
-    cout << "Predictor residual forces " << norm_ << endl;
+    cout << "Predictor residual forces " << fresmnorm << endl;
     fflush(stdout);
   }
 
@@ -798,12 +800,12 @@ void StruGenAlpha::FullNewton()
 
   //=================================================== equilibrium loop
   int numiter=0;
-  double fresmnorm;
-  double disinorm;
+  double fresmnorm = 1.0e6;
+  double disinorm = 1.0e6;
   fresm_->Norm2(&fresmnorm);
   Epetra_Time timer(discret_.Comm());
   timer.ResetStartTime();
-  while ( (norm_>toldisp || fresmnorm>toldisp) && numiter<=maxiter)
+  while ( (disinorm>toldisp || fresmnorm>toldisp) && numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
@@ -927,13 +929,11 @@ void StruGenAlpha::FullNewton()
         fflush(errfile);
       }
     }
-    // criteria to stop Newton iteration
-    norm_ = disinorm;
 
     //--------------------------------- increment equilibrium loop index
     ++numiter;
 
-  } // while (norm_>toldisp && fresmnorm>toldisp && numiter<=maxiter)
+  }
   //=================================================================== end equilibrium loop
   double timepernlnsolve = timer.ElapsedTime();
   //-------------------------------- test whether max iterations was hit
@@ -994,13 +994,13 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 
   //=================================================== equilibrium loop
   int numiter=0;
-  double fresmnorm;
-  double disinorm;
+  double fresmnorm = 1.0e6;
+  double disinorm = 1.0e6;
   fresm_->Norm2(&fresmnorm);
   
   double volnorm=volConstrMan_->GetVolumeErrorNorm();
   int numConstrVol=volConstrMan_->GetNumberOfVolumes() ;
-  while (((norm_>toldisp || fresmnorm>toldisp) || volnorm > toldisp ) && numiter<=maxiter)
+  while (((disinorm>toldisp || fresmnorm>toldisp) || volnorm > toldisp ) && numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
@@ -1242,13 +1242,11 @@ void StruGenAlpha::FullNewtonLinearUzawa()
         fflush(errfile);
       }
     }
-    // criteria to stop Newton iteration
-    norm_ = disinorm;
 
     //--------------------------------- increment equilibrium loop index
     ++numiter;
 
-  } // while (norm_>toldisp && fresmnorm>toldisp && numiter<=maxiter)
+  }
   //=================================================================== end equilibrium loop
 
   //-------------------------------- test whether max iterations was hit
@@ -1314,12 +1312,12 @@ void StruGenAlpha::ModifiedNewton()
   LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
 
   //=================================================== equilibrium loop
-  double fresmnorm;
-  double disinorm;
+  double fresmnorm = 1.0e6;
+  double disinorm = 1.0e6;
   fresm_->Norm2(&fresmnorm);
   Epetra_Time timer(discret_.Comm());
   timer.ResetStartTime();
-  while ( (norm_>toldisp || fresmnorm>toldisp)  && numiter<=maxiter)
+  while ( (disinorm>toldisp || fresmnorm>toldisp)  && numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
     //----------------------- apply dirichlet BCs to system of equations
@@ -1428,12 +1426,10 @@ void StruGenAlpha::ModifiedNewton()
         fflush(errfile);
       }
     }
-    // criteria to stop Newton iteration
-    norm_ = disinorm;
 
     //--------------------------------- increment equilibrium loop index
     ++numiter;
-  } // while (norm_>toldisp && fresmnorm>toldisp && numiter<=maxiter)
+  }
   //============================================= end equilibrium loop
   double timepernlnsolve = timer.ElapsedTime();
 
@@ -1486,9 +1482,10 @@ void StruGenAlpha::MatrixFreeNewton()
   LINALG::ApplyDirichlettoSystem(disi_,fresm_,zeros_,dirichtoggle_);
 
   //=================================================== equilibrium loop
-  double fresmnorm;
+  double fresmnorm = 1.0e6;
+  double disinorm = 1.0e6;
   fresm_->Norm2(&fresmnorm);
-  while ( (norm_>toldisp || fresmnorm>toldisp)  && numiter<=maxiter)
+  while ( (disinorm>toldisp || fresmnorm>toldisp)  && numiter<=maxiter)
   {
 
     LINALG::Add(*mass_,false,(1.-alpham)/(beta*dt*dt),*stiff_,1.-alphaf); // test
@@ -1595,30 +1592,27 @@ void StruGenAlpha::MatrixFreeNewton()
     }
 
     //---------------------------------------------- build residual norm
-    double disinorm;
     disi_->Norm2(&disinorm);
 
-    fresm_->Norm2(&norm_);
+    fresm_->Norm2(&fresmnorm);
     // a short message
     if (!myrank_)
     {
       if (printscreen)
       {
-        printf("numiter %d res-norm %e dis-norm %e\n",numiter+1, norm_, disinorm);
+        printf("numiter %d res-norm %e dis-norm %e\n",numiter+1, fresmnorm, disinorm);
         fflush(stdout);
       }
       if (printerr)
       {
-        fprintf(errfile,"numiter %d res-norm %e dis-norm %e\n",numiter+1, norm_, disinorm);
+        fprintf(errfile,"numiter %d res-norm %e dis-norm %e\n",numiter+1, fresmnorm, disinorm);
         fflush(errfile);
       }
     }
-    // criteria to stop Newton iteration
-    norm_ = disinorm;
 
     //--------------------------------- increment equilibrium loop index
     ++numiter;
-  } // while (norm_>toldisp && fresmnorm>toldisp && numiter<=maxiter)
+  }
   //============================================= end equilibrium loop
 
   //-------------------------------- test whether max iterations was hit
@@ -2175,16 +2169,15 @@ void StruGenAlpha::PTC()
   double dti = 1/ptcdt;
   double dti0 = dti;
   RCP<Epetra_Vector> x0 = rcp(new Epetra_Vector(*disi_));
-  double np = nc;
 
   //=================================================== equilibrium loop
   int numiter=0;
-  double fresmnorm;
-  double disinorm;
+  double fresmnorm = 1.0e6;
+  double disinorm = 1.0e6;
   fresm_->Norm2(&fresmnorm);
   Epetra_Time timer(discret_.Comm());
   timer.ResetStartTime();
-  while ( (norm_>toldisp || fresmnorm>toldisp) && numiter<=maxiter)
+  while ( (disinorm>toldisp || fresmnorm>toldisp) && numiter<=maxiter)
   {
     double dtim = dti0;
     dti0 = dti;
@@ -2323,8 +2316,6 @@ void StruGenAlpha::PTC()
         fflush(errfile);
       }
     }
-    // criteria to stop Newton iteration
-    norm_ = disinorm;
 
     //------------------------------------ PTC update of artificial time
 #if 0
@@ -2359,7 +2350,7 @@ void StruGenAlpha::PTC()
     //--------------------------------- increment equilibrium loop index
     ++numiter;
 
-  } // while (norm_>toldisp && fresmnorm>toldisp && numiter<=maxiter)
+  }
   //============================================= end equilibrium loop
   double timepernlnsolve = timer.ElapsedTime();
 

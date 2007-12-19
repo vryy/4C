@@ -415,13 +415,14 @@ void stru_genalpha_drt()
     }
 
     //------------------------------------------------ build residual norm
-    double norm;
-    fresm->Norm2(&norm);
-    if (!myrank) cout << "Predictor residual forces " << norm << endl; fflush(stdout);
+    double disinorm = 1.0e6;
+    double fresmnorm = 1.0e6;
+    fresm->Norm2(&fresmnorm);
+    if (!myrank) cout << "Predictor residual forces " << fresmnorm << endl; fflush(stdout);
 
     //=================================================== equilibrium loop
     int numiter=0;
-    while (norm>sdyn.get<double>("TOLDISP") && numiter<=sdyn.get<int>("MAXITER"))
+    while (disinorm>sdyn.get<double>("TOLDISP") && numiter<=sdyn.get<int>("MAXITER"))
     {
       //------------------------------------------- effective rhs is fresm
       //---------------------------------------------- build effective lhs
@@ -508,20 +509,17 @@ void stru_genalpha_drt()
       }
 
       //---------------------------------------------- build residual norm
-      double disinorm;
       disi->Norm2(&disinorm);
 
-      fresm->Norm2(&norm);
+      fresm->Norm2(&fresmnorm);
       // a short message
       if (!myrank)
       {
-        printf("numiter %d res-norm %e dis-norm %e\n",numiter+1, norm, disinorm);
-        fprintf(errfile,"numiter %d res-norm %e dis-norm %e\n",numiter+1, norm, disinorm);
+        printf("numiter %d res-norm %e dis-norm %e\n",numiter+1, fresmnorm, disinorm);
+        fprintf(errfile,"numiter %d res-norm %e dis-norm %e\n",numiter+1, fresmnorm, disinorm);
         fflush(stdout);
         fflush(errfile);
       }
-      // criteria to stop Newton iteration
-      norm = disinorm;
 
       //--------------------------------- increment equilibrium loop index
       ++numiter;

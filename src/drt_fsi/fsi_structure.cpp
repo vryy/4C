@@ -262,9 +262,6 @@ void FSI::Structure::CalculateStiffness()
   // blank residual at DOFs on Dirichlet BC
   Epetra_Vector fresmcopy(*fresm_);
   fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
-
-  //------------------------------------------------ build residual norm
-  fresm_->Norm2(&norm_);
 }
 
 

@@ -277,9 +277,10 @@ void MicroStatic::Predictor(const Epetra_SerialDenseMatrix* defgrd)
 
 
   //------------------------------------------------ build residual norm
-  fresm_->Norm2(&norm_);
+  double fresmnorm = 1.0;
+  fresm_->Norm2(&fresmnorm);
 
-  cout << "MICROSCALE PREDICTOR fresmnorm: " << norm_ << "\n";
+  cout << "MICROSCALE PREDICTOR fresmnorm: " << fresmnorm << "\n";
 
   return;
 } // MicroStatic::Predictor()
@@ -301,11 +302,11 @@ void MicroStatic::FullNewton()
 
   //=================================================== equilibrium loop
   int numiter=0;
-  double fresmnorm;
-  double disinorm;
+  double fresmnorm = 1.0e6;
+  double disinorm = 1.0e6;
   fresm_->Norm2(&fresmnorm);
 
-  while ((norm_>toldisp || fresmnorm>toldisp) && numiter<=maxiter)
+  while ((disinorm>toldisp || fresmnorm>toldisp) && numiter<=maxiter)
   {
 
     //----------------------- apply dirichlet BCs to system of equations
@@ -373,14 +374,11 @@ void MicroStatic::FullNewton()
 
     fresm_->Norm2(&fresmnorm);
 
-    norm_ = disinorm;
-
     cout << "MICROSCALE NEWTON: disinorm: " << disinorm << " fresmnorm: " << fresmnorm << "\n";
 
     //--------------------------------- increment equilibrium loop index
     ++numiter;
-
-  } // while (norm_>toldisp && numiter<=maxiter)
+  }
   //============================================= end equilibrium loop
 
   //-------------------------------- test whether max iterations was hit
