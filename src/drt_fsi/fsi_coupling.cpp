@@ -248,22 +248,12 @@ void FSI::Coupling::BuildDofMaps(const DRT::Discretization& dis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Coupling::MasterToSlave(Teuchos::RCP<Epetra_Vector> mv) const
+Teuchos::RCP<Epetra_Vector> FSI::Coupling::MasterToSlave(Teuchos::RCP<const Epetra_Vector> mv) const
 {
-#ifdef DEBUG
-  if (not mv->Map().SameAs(*masterdofmap_))
-    dserror("master dof map vector expected");
-#endif
-
-  Epetra_Vector perm(*permslavedofmap_);
-  copy(mv->Values(), mv->Values()+mv->MyLength(), perm.Values());
-
   Teuchos::RCP<Epetra_Vector> sv =
-    rcp(new Epetra_Vector(*slavedofmap_));
+    Teuchos::rcp(new Epetra_Vector(*slavedofmap_));
 
-  int err = sv->Export(perm,*slaveexport_,Insert);
-  if (err)
-    dserror("Export to slave distribution returned err=%d",err);
+  MasterToSlave(mv,sv);
 
   return sv;
 }
@@ -271,24 +261,84 @@ Teuchos::RCP<Epetra_Vector> FSI::Coupling::MasterToSlave(Teuchos::RCP<Epetra_Vec
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Coupling::SlaveToMaster(Teuchos::RCP<Epetra_Vector> sv) const
+Teuchos::RCP<Epetra_Vector> FSI::Coupling::SlaveToMaster(Teuchos::RCP<const Epetra_Vector> sv) const
+{
+  Teuchos::RCP<Epetra_Vector> mv =
+    Teuchos::rcp(new Epetra_Vector(*masterdofmap_));
+
+  SlaveToMaster(sv,mv);
+
+  return mv;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_MultiVector> FSI::Coupling::MasterToSlave(Teuchos::RCP<const Epetra_MultiVector> mv) const
+{
+  Teuchos::RCP<Epetra_MultiVector> sv =
+    Teuchos::rcp(new Epetra_MultiVector(*slavedofmap_,mv->NumVectors()));
+
+  MasterToSlave(mv,sv);
+
+  return sv;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_MultiVector> FSI::Coupling::SlaveToMaster(Teuchos::RCP<const Epetra_MultiVector> sv) const
+{
+  Teuchos::RCP<Epetra_MultiVector> mv =
+    Teuchos::rcp(new Epetra_MultiVector(*masterdofmap_,sv->NumVectors()));
+
+  SlaveToMaster(sv,mv);
+
+  return mv;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::Coupling::MasterToSlave(Teuchos::RCP<const Epetra_MultiVector> mv, Teuchos::RCP<Epetra_MultiVector> sv) const
 {
 #ifdef DEBUG
+  if (not mv->Map().SameAs(*masterdofmap_))
+    dserror("master dof map vector expected");
   if (not sv->Map().SameAs(*slavedofmap_))
     dserror("slave dof map vector expected");
+  if (sv->NumVectors()!=mv->NumVectors())
+    dserror("column number mismatch %d!=%d",sv->NumVectors(),mv->NumVectors());
 #endif
 
-  Epetra_Vector perm(*permmasterdofmap_);
-  copy(sv->Values(), sv->Values()+sv->MyLength(), perm.Values());
+  Epetra_MultiVector perm(*permslavedofmap_,mv->NumVectors());
+  copy(mv->Values(), mv->Values()+(mv->MyLength()*mv->NumVectors()), perm.Values());
 
-  Teuchos::RCP<Epetra_Vector> mv =
-    rcp(new Epetra_Vector(*masterdofmap_));
+  int err = sv->Export(perm,*slaveexport_,Insert);
+  if (err)
+    dserror("Export to slave distribution returned err=%d",err);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::Coupling::SlaveToMaster(Teuchos::RCP<const Epetra_MultiVector> sv, Teuchos::RCP<Epetra_MultiVector> mv) const
+{
+#ifdef DEBUG
+  if (not mv->Map().SameAs(*masterdofmap_))
+    dserror("master dof map vector expected");
+  if (not sv->Map().SameAs(*slavedofmap_))
+    dserror("slave dof map vector expected");
+  if (sv->NumVectors()!=mv->NumVectors())
+    dserror("column number mismatch %d!=%d",sv->NumVectors(),mv->NumVectors());
+#endif
+
+  Epetra_MultiVector perm(*permmasterdofmap_,sv->NumVectors());
+  copy(sv->Values(), sv->Values()+(sv->MyLength()*sv->NumVectors()), perm.Values());
 
   int err = mv->Export(perm,*masterexport_,Insert);
   if (err)
     dserror("Export to master distribution returned err=%d",err);
-
-  return mv;
 }
 
 

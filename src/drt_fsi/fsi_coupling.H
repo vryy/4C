@@ -117,10 +117,38 @@ namespace FSI
                        const Epetra_Map& slavenodes);
 
     /// transfer a dof vector from master to slave
-    Teuchos::RCP<Epetra_Vector> MasterToSlave(Teuchos::RCP<Epetra_Vector> mv) const;
+    Teuchos::RCP<Epetra_Vector> MasterToSlave(Teuchos::RCP<Epetra_Vector> mv) const
+      { return MasterToSlave(Teuchos::rcp_static_cast<const Epetra_Vector>(mv)); }
 
     /// transfer a dof vector from slave to master
-    Teuchos::RCP<Epetra_Vector> SlaveToMaster(Teuchos::RCP<Epetra_Vector> sv) const;
+    Teuchos::RCP<Epetra_Vector> SlaveToMaster(Teuchos::RCP<Epetra_Vector> sv) const
+      { return SlaveToMaster(Teuchos::rcp_static_cast<const Epetra_Vector>(sv)); }
+
+    /// transfer a dof vector from master to slave
+    Teuchos::RCP<Epetra_MultiVector> MasterToSlave(Teuchos::RCP<Epetra_MultiVector> mv) const
+      { return MasterToSlave(Teuchos::rcp_static_cast<const Epetra_MultiVector>(mv)); }
+
+    /// transfer a dof vector from slave to master
+    Teuchos::RCP<Epetra_MultiVector> SlaveToMaster(Teuchos::RCP<Epetra_MultiVector> sv) const
+      { return SlaveToMaster(Teuchos::rcp_static_cast<const Epetra_MultiVector>(sv)); }
+
+    /// transfer a dof vector from master to slave
+    Teuchos::RCP<Epetra_Vector> MasterToSlave(Teuchos::RCP<const Epetra_Vector> mv) const;
+
+    /// transfer a dof vector from slave to master
+    Teuchos::RCP<Epetra_Vector> SlaveToMaster(Teuchos::RCP<const Epetra_Vector> sv) const;
+
+    /// transfer a dof vector from master to slave
+    Teuchos::RCP<Epetra_MultiVector> MasterToSlave(Teuchos::RCP<const Epetra_MultiVector> mv) const;
+
+    /// transfer a dof vector from slave to master
+    Teuchos::RCP<Epetra_MultiVector> SlaveToMaster(Teuchos::RCP<const Epetra_MultiVector> sv) const;
+
+    /// transfer a dof vector from master to slave
+    void MasterToSlave(Teuchos::RCP<const Epetra_MultiVector> mv, Teuchos::RCP<Epetra_MultiVector> sv) const;
+
+    /// transfer a dof vector from slave to master
+    void SlaveToMaster(Teuchos::RCP<const Epetra_MultiVector> sv, Teuchos::RCP<Epetra_MultiVector> mv) const;
 
     /// the interface dof map of the master side
     Teuchos::RCP<Epetra_Map> MasterDofMap() const { return masterdofmap_; }

@@ -28,7 +28,9 @@ namespace MFSI
 
     CouplingOperator();
 
-    CouplingOperator(const Teuchos::RCP<Epetra_Operator> &op);
+    CouplingOperator(const Teuchos::RCP<Epetra_Operator> &op,
+                     Teuchos::RCP<const Coupling> domaincoup=Teuchos::null,
+                     Teuchos::RCP<const Coupling> rangecoup=Teuchos::null);
 
     /** \brief Initialize
      *
@@ -46,7 +48,9 @@ namespace MFSI
      * <li> <tt>this->opSupported(TRNAS) == adjointSupport==EPETRA_OP_ADJOINT_SUPPORTED</tt>
      * </ul>
      */
-    void initialize(const Teuchos::RCP<Epetra_Operator> &op);
+    void initialize(const Teuchos::RCP<Epetra_Operator> &op,
+                    Teuchos::RCP<const Coupling> domaincoup=Teuchos::null,
+                    Teuchos::RCP<const Coupling> rangecoup=Teuchos::null);
 
     /** \brief Set to uninitialized and optionally return the current state.
      *
@@ -128,6 +132,18 @@ namespace MFSI
 
     ///
     Teuchos::RCP<Thyra::EpetraLinearOp> op_;
+
+    ///
+    Teuchos::RCP<const Coupling> domaincoup_;
+
+    ///
+    Teuchos::RCP<const Coupling> rangecoup_;
+
+    ///
+    Teuchos::RCP<const Thyra::ScalarProdVectorSpaceBase<Scalar> > domainspace_;
+
+    ///
+    Teuchos::RCP<const Thyra::ScalarProdVectorSpaceBase<Scalar> > rangespace_;
   };
 
 
@@ -139,10 +155,12 @@ namespace MFSI
   inline
   Teuchos::RCP<CouplingOperator>
   nonconstCouplingOp(
-    const Teuchos::RCP<Epetra_Operator> &op
+    const Teuchos::RCP<Epetra_Operator> &op,
+    Teuchos::RCP<const Coupling> domaincoup=Teuchos::null,
+    Teuchos::RCP<const Coupling> rangecoup=Teuchos::null
     )
   {
-    return Teuchos::rcp(new CouplingOperator(op));
+    return Teuchos::rcp(new CouplingOperator(op,domaincoup,rangecoup));
   }
 
 }

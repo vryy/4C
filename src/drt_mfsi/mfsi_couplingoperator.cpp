@@ -3,32 +3,75 @@
 
 #include "mfsi_couplingoperator.H"
 
+#include <Thyra_EpetraThyraWrappers.hpp>
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 MFSI::CouplingOperator::CouplingOperator()
 {
 }
 
 
-MFSI::CouplingOperator::CouplingOperator(const Teuchos::RCP<Epetra_Operator> &op)
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+MFSI::CouplingOperator::CouplingOperator(const Teuchos::RCP<Epetra_Operator> &op,
+                                         Teuchos::RCP<const Coupling> domaincoup,
+                                         Teuchos::RCP<const Coupling> rangecoup)
 {
-  initialize(op);
+  initialize(op,domaincoup,rangecoup);
 }
 
 
-void MFSI::CouplingOperator::initialize(const Teuchos::RCP<Epetra_Operator> &op)
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MFSI::CouplingOperator::initialize(const Teuchos::RCP<Epetra_Operator> &op,
+                                        Teuchos::RCP<const Coupling> domaincoup,
+                                        Teuchos::RCP<const Coupling> rangecoup)
 {
   op_ = Thyra::nonconstEpetraLinearOp(op);
+  domaincoup_ = domaincoup;
+  rangecoup_ = rangecoup;
+
+  // We always show the master dof map to the outside world. This is
+  // the special case needed for FSI. The linear operator actually
+  // expects (or creates) vectors in the slave dof map. (This is why
+  // we are here in the first place.) So these are going to be
+  // translated.
+
+  if (domaincoup_!=Teuchos::null)
+  {
+    domainspace_ =
+      Teuchos::rcp_dynamic_cast<const Thyra::ScalarProdVectorSpaceBase<Scalar> >(
+        Thyra::create_VectorSpace(domaincoup_->MasterDofMap()));
+  }
+
+  if (rangecoup_!=Teuchos::null)
+  {
+    rangespace_ =
+      Teuchos::rcp_dynamic_cast<const Thyra::ScalarProdVectorSpaceBase<Scalar> >(
+        Thyra::create_VectorSpace(rangecoup_->MasterDofMap()));
+  }
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void MFSI::CouplingOperator::uninitialize(Teuchos::RCP<Epetra_Operator> *op)
 {
   if (op) *op = op_->epetra_op();
 
   op_ = Teuchos::null;
+  domaincoup_ = Teuchos::null;
+  rangecoup_ = Teuchos::null;
+
+  domainspace_ = Teuchos::null;
+  rangespace_ = Teuchos::null;
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP< const Thyra::SpmdVectorSpaceBase<MFSI::CouplingOperator::Scalar> >
 MFSI::CouplingOperator::spmdRange() const
 {
@@ -36,6 +79,8 @@ MFSI::CouplingOperator::spmdRange() const
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP< const Thyra::SpmdVectorSpaceBase<MFSI::CouplingOperator::Scalar> >
 MFSI::CouplingOperator::spmdDomain() const
 {
@@ -43,26 +88,48 @@ MFSI::CouplingOperator::spmdDomain() const
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 bool MFSI::CouplingOperator::opSupported(Thyra::ETransp M_trans) const
 {
   return op_->opSupported(M_trans);
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<const Thyra::ScalarProdVectorSpaceBase<MFSI::CouplingOperator::Scalar> >
 MFSI::CouplingOperator::rangeScalarProdVecSpc() const
 {
-  return op_->rangeScalarProdVecSpc();
+  if (rangecoup_==Teuchos::null)
+  {
+    return op_->rangeScalarProdVecSpc();
+  }
+  else
+  {
+    return rangespace_;
+  }
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<const Thyra::ScalarProdVectorSpaceBase<MFSI::CouplingOperator::Scalar> >
 MFSI::CouplingOperator::domainScalarProdVecSpc() const
 {
-  return op_->domainScalarProdVecSpc();
+  if (domaincoup_==Teuchos::null)
+  {
+    return op_->domainScalarProdVecSpc();
+  }
+  else
+  {
+    return domainspace_;
+  }
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void MFSI::CouplingOperator::euclideanApply(
   const Thyra::ETransp M_trans,
   const Thyra::MultiVectorBase<Scalar> &X_in,
@@ -71,10 +138,49 @@ void MFSI::CouplingOperator::euclideanApply(
   const Scalar beta
   ) const
 {
-  op_->euclideanApply(M_trans,X_in,Y_inout,alpha,beta);
+  if (M_trans!=Thyra::NOTRANS)
+    dserror("no transpose supported");
+
+  Teuchos::RCP<const Thyra::MultiVectorBase<Scalar> > X = Teuchos::rcp(&X_in,false);
+  Teuchos::RCP<Thyra::MultiVectorBase<Scalar> > Y = Teuchos::rcp(Y_inout,false);
+
+  // convert domain vector if needed
+
+  if (domaincoup_!=Teuchos::null)
+  {
+    Teuchos::RCP<const Epetra_MultiVector> e = Thyra::get_Epetra_MultiVector(*domaincoup_->MasterDofMap(), X_in);
+    e = domaincoup_->MasterToSlave(e);
+    X = Thyra::create_MultiVector(e,domainspace_);
+  }
+
+  // prepare to convert range vector if needed
+
+  Teuchos::RCP<Epetra_MultiVector> Yslave;
+
+  if (rangecoup_!=Teuchos::null)
+  {
+    Teuchos::RCP<Epetra_Map> m = domaincoup_->SlaveDofMap();
+    Yslave = Teuchos::rcp(new Epetra_Vector(*m));
+    //Y = Thyra::create_MultiVector(Yslave,Thyra::create_VectorSpace(m));
+    Y = Thyra::create_MultiVector(Yslave,op_->domainScalarProdVecSpc());
+  }
+
+  // actual application
+
+  op_->euclideanApply(M_trans,*X,&*Y,alpha,beta);
+
+  // convert range vector
+
+  if (rangecoup_!=Teuchos::null)
+  {
+    Teuchos::RCP<Epetra_MultiVector> Ymaster = Thyra::get_Epetra_MultiVector(*rangecoup_->MasterDofMap(), *Y_inout);
+    domaincoup_->SlaveToMaster(Yslave,Ymaster);
+  }
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<const Thyra::LinearOpBase<MFSI::CouplingOperator::Scalar> >
 MFSI::CouplingOperator::clone() const
 {
@@ -83,12 +189,16 @@ MFSI::CouplingOperator::clone() const
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 std::string MFSI::CouplingOperator::description() const
 {
   return op_->description();
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void MFSI::CouplingOperator::describe(
   Teuchos::FancyOStream &out,
   const Teuchos::EVerbosityLevel verbLevel

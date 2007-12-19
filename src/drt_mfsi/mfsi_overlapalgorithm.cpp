@@ -271,16 +271,22 @@ void MFSI::OverlapAlgorithm::SetupSysMat(Thyra::DefaultBlockedLinearOp<double>& 
 
   double scale = 1.0;
 
-  mat.setBlock(1,1,Thyra::nonconstAdd<double>(Thyra::nonconstEpetraLinearOp(sgg),
-                                              Thyra::nonconstScale<double>(scale,
-                                                                           nonconstCouplingOp(fgg))
+  mat.setBlock(1,1,
+               Thyra::nonconstAdd<double>(
+                 Thyra::nonconstEpetraLinearOp(sgg),
+                 Thyra::nonconstScale<double>(
+                   scale,
+                   nonconstCouplingOp(
+                     fgg,
+                     Teuchos::rcp(&coupsf,false),
+                     Teuchos::rcp(&coupsf,false)))
                  ));
 
-  mat.setBlock(1,2,nonconstCouplingOp(fgi));
-  mat.setBlock(2,1,nonconstCouplingOp(fig));
+  mat.setBlock(1,2,nonconstCouplingOp(fgi,Teuchos::null,Teuchos::rcp(&coupsf,false)));
+  mat.setBlock(2,1,nonconstCouplingOp(fig,Teuchos::rcp(&coupsf,false)));
   mat.setBlock(2,2,Thyra::nonconstEpetraLinearOp(fii));
 
-  mat.setBlock(3,1,nonconstCouplingOp(aig));
+  mat.setBlock(3,1,nonconstCouplingOp(aig,Teuchos::rcp(&coupsa,false)));
   mat.setBlock(3,3,Thyra::nonconstEpetraLinearOp(aii));
 
   mat.endBlockFill();
