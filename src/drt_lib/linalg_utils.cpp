@@ -222,7 +222,8 @@ void LINALG::Add(const Epetra_CrsMatrix& A,
     Aprime = const_cast<Epetra_CrsMatrix*>(&A);
   }
 
-  B.Scale(scalarB);
+  if (scalarB != 1.0) B.Scale(scalarB);
+  if (scalarB == 0.0) B.PutScalar(0.0);
 
   //Loop over Aprime's rows and sum into
   int MaxNumEntries = EPETRA_MAX( Aprime->MaxNumEntries(), B.MaxNumEntries() );
