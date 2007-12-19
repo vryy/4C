@@ -111,7 +111,7 @@ void DRT::PrintDatHeader(std::ostream& stream, const Teuchos::ParameterList& lis
         {
           for (unsigned i=0; i<values->size(); ++i)
           {
-            cout << blue2light << "//     " << magentalight << (*values)[i] << endcolor << '\n';
+            stream << blue2light << "//     " << magentalight << (*values)[i] << endcolor << '\n';
           }
         }
       }

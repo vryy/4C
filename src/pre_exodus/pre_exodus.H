@@ -28,7 +28,11 @@ or the well-known .dat file is created.
 //#include <stdlib.h>
 #include <string>
 #include <iostream>
-#include "exodusII.h"
+//#include <exodusII.h>
+extern "C" /* stuff which is c and is accessed from c++ */
+{
+#include <exodusII.h>
+}
 
 
 

@@ -24,6 +24,7 @@ or the well-known .dat file is created.
 #include <Teuchos_RefCountPtr.hpp>
 #include <Teuchos_CommandLineProcessor.hpp>
 #include "../drt_lib/drt_validparameters.H"
+#include "pre_exodus_reader.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -57,26 +58,47 @@ int main(
       exit(1);
     }
 
-    if (exofile=="123")
+    mesh(exofile.c_str());
+    
+    int CPU_word_size,IO_word_size, exoid;
+    float exoversion;                   /* version of exodus */
+    CPU_word_size = sizeof(float);      /* float or double */
+    IO_word_size = 0;                   /* use what is stored in file */
+    if (exofile=="")
     {
       My_CLP.printHelpMessage(argv[0],cout);
       exit(1);
     }
-    
-#ifdef __cplusplus /* stuff which is c++ specific */
-cout << "we are at c++" << endl;    
-#endif
-    
+    else
+    {
+      /* open EXODUS II files */
+      exoid = ex_open(exofile.c_str(),EX_READ,&CPU_word_size,&IO_word_size,&exoversion);
+      if (exoid<0){ cout <<"Exo-file does not exist"<< endl; exit(1);}
+      cout<<"Input file uses EXODUS II library version "<<exoversion<<endl; 
+      int error;
+      error = ex_close(exoid);
+    }
+      
+   
     if (headfile=="")
     {
       cout << "Headfile leer, jetzt validparameters" << endl;
+      string defaultheadfilename = "default.head";
+      ofstream defaulthead(defaultheadfilename.c_str());
+      if (!defaulthead);
+          //dserror("failed to open file: %s", defaultheadfilename.c_str());
+      
       Teuchos::RCP<const Teuchos::ParameterList> list = DRT::ValidParameters();
       //cout << *list << endl;
       //PrintDefaultDatHeader();
-      DRT::PrintDatHeader(*list);
+      DRT::PrintDatHeader(defaulthead,*list);
+      if (defaulthead.is_open()) defaulthead.close();
+
       exit(0);
       
     }
+    
+    
 
     
     cout << "Hello World" << endl;
