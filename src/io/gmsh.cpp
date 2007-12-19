@@ -266,6 +266,8 @@ std::string IO::GMSH::distypeToGmshElementHeader(const DRT::Element::Discretizat
 	case DRT::Element::hex27:  return "H";  break;
 	case DRT::Element::tet4:   return "S";  break;
 	case DRT::Element::tet10:  return "S";  break;
+	case DRT::Element::line2:  return "L";  break;
+	case DRT::Element::line3:  return "L2"; break;
 	default:
 		dserror("distypeToGmshElementHeader: distype not supported for printout!");
 	}
@@ -285,6 +287,8 @@ int IO::GMSH::distypeToGmshNumNode(const DRT::Element::DiscretizationType distyp
 	case DRT::Element::hex27:  return 8;   break;
 	case DRT::Element::tet4:   return 4;   break;
 	case DRT::Element::tet10:  return 4;   break;
+	case DRT::Element::line2:  return 2;   break;
+	case DRT::Element::line3:  return 3;   break;
 	default:
 		dserror("distypeToGmshNumNode: distype not supported for printout!");
 	}
