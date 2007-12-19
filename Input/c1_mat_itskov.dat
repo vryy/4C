@@ -765,8 +765,8 @@ NODE           11     COORD 1.000000000000000e+00     0.000000000000000e+00     
 NODE           12     COORD 1.000000000000000e+00     5.000000000000000e-01     5.000000000000000e-01   
 ----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
-      1 BRICK1 HEX8       7      8      6      4      3      5      2      1 MAT       1 GP 2 2 2 GP_TET 4 HYB 0 FORM 22 STRESSES NDXYZ TSI_COUPTYP None 
-      2 BRICK1 HEX8      11     12     10      9      7      8      6      4 MAT       1 GP 2 2 2 GP_TET 4 HYB 0 FORM 2 STRESSES NDXYZ TSI_COUPTYP None 
+      1 BRICK1 HEX8       7      8      6      4      3      5      2      1 MAT       1 GP 2 2 2 GP_TET 4 HYB 0 FORM 0 STRESSES NDXYZ TSI_COUPTYP None 
+      2 BRICK1 HEX8      11     12     10      9      7      8      6      4 MAT       1 GP 2 2 2 GP_TET 4 HYB 0 FORM 0 STRESSES NDXYZ TSI_COUPTYP None 
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
 --------------------------------------------------THERMAL ELEMENTS
