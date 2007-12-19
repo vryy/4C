@@ -19,6 +19,7 @@ or the well-known .dat file is created.
 
 */
 /*----------------------------------------------------------------------*/
+#ifdef EXODUS
 #ifdef CCADISCRET
 #include "pre_exodus.H"
 #include <Teuchos_RefCountPtr.hpp>
@@ -58,12 +59,7 @@ int main(
       exit(1);
     }
 
-    mesh(exofile.c_str());
     
-    int CPU_word_size,IO_word_size, exoid;
-    float exoversion;                   /* version of exodus */
-    CPU_word_size = sizeof(float);      /* float or double */
-    IO_word_size = 0;                   /* use what is stored in file */
     if (exofile=="")
     {
       My_CLP.printHelpMessage(argv[0],cout);
@@ -71,12 +67,7 @@ int main(
     }
     else
     {
-      /* open EXODUS II files */
-      exoid = ex_open(exofile.c_str(),EX_READ,&CPU_word_size,&IO_word_size,&exoversion);
-      if (exoid<0){ cout <<"Exo-file does not exist"<< endl; exit(1);}
-      cout<<"Input file uses EXODUS II library version "<<exoversion<<endl; 
-      int error;
-      error = ex_close(exoid);
+      mesh(exofile.c_str());
     }
       
    
@@ -107,4 +98,5 @@ int main(
 
 
 
+#endif
 #endif

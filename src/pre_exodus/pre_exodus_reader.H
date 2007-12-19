@@ -32,10 +32,29 @@ class mesh
 {
 public:
   //! constructor
-  mesh(const string &exofilename);
+  mesh(string exofilename);
   
   //! destructor
   virtual ~mesh();
+  
+private:
+  //! number of dimensions
+  int num_dim_;
+  //! number of nodes
+  int num_nodes_;
+  //! number of elements
+  int num_elem_;
+  //! number of element blocks
+  int num_elem_blk_;
+  //! number of node sets
+  int num_node_sets_;
+  //! number of side sets
+  int num_side_sets_;
+  //! exoid
+  int exoid_;
+  //! title
+  char title_[MAX_LINE_LENGTH+1];
+  
 };
 
 

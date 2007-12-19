@@ -37,6 +37,7 @@ CCADISCRET           # use new baci discretization subsystem DRT
 # BINIO              # binary io
 # QHULL              # needed for XFEM simulations
 # TDS                # Fluid stabilization using time dependent subscales
+# EXODUS						 # Pre_exodus (exodusII, netcdf)
 
 #   tools
 #  =======

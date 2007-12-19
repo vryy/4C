@@ -19,6 +19,8 @@ or the well-known .dat file is created.
 
 */
 /*----------------------------------------------------------------------*/
+#ifdef EXODUS
+
 #ifndef PRE_EXODUS_H_
 #define PRE_EXODUS_H_
 
@@ -39,3 +41,4 @@ extern "C" /* stuff which is c and is accessed from c++ */
 
 #endif /* of CCADISCRET */
 #endif /*PRE_EXODUS_H_*/
+#endif 
