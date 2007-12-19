@@ -27,6 +27,8 @@ Maintainer: Ulrich Kuettler
 
 #include "../drt_fluid/fluidimplicitintegration.H"
 
+#include "../drt_fsi/fsi_conditiondofmap.H"
+
 
 namespace MFSI {
 
@@ -77,6 +79,9 @@ namespace MFSI {
     virtual void ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp) = 0;
 
     virtual double ResidualScaling() = 0;
+
+    /// communication object at the interface
+    virtual const FSI::ConditionDofMap& Interface() const = 0;
   };
 
 
@@ -117,10 +122,19 @@ namespace MFSI {
 
     virtual double ResidualScaling();
 
+    /// communication object at the interface
+    virtual const FSI::ConditionDofMap& Interface() const { return interface_; }
+
   private:
 
     /// the actual fluid algorithm
     FluidImplicitTimeInt fluid_;
+
+    /// the interface map setup for interface <-> full translation
+    FSI::ConditionDofMap interface_;
+
+    /// ALE dof map
+    FSI::ConditionDofMap meshmap_;
 
     //! @name local copies of input parameters
     Teuchos::RCP<DRT::Discretization> dis_;
@@ -129,20 +143,8 @@ namespace MFSI {
     Teuchos::RCP<IO::DiscretizationWriter> output_;
     //@}
 
-    /// interface dof map
-    Teuchos::RefCountPtr<Epetra_Map> ivelmap_;
-
     /// all velocity dofs not at the interface
     Teuchos::RefCountPtr<Epetra_Map> innervelmap_;
-
-    /// communicator between interface dof map and field dof map
-    Teuchos::RefCountPtr<Epetra_Import> extractor_;
-
-    /// ALE dof map
-    Teuchos::RefCountPtr<Epetra_Map> meshmap_;
-
-    /// communicator between ALE dof map and field dof map
-    Teuchos::RefCountPtr<Epetra_Import> meshextractor_;
 
     /// what a hack
     Teuchos::RCP<Epetra_Vector> sumincvel_;

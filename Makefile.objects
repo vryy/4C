@@ -181,6 +181,7 @@ OBJS_DRT_FSI  = src/drt_fsi/ale_dyn.o \
                 src/drt_fsi/fsi_coupling.o \
 		src/drt_fsi/fsi_coupling_mortar.o \
                 src/drt_fsi/fsi_utils.o \
+                src/drt_fsi/fsi_conditiondofmap.o \
                 src/drt_fsi/fsi_ale_resulttest.o
 # ------------------ drt version of monolithic fluid structure interaction
 OBJS_DRT_MFSI = src/drt_mfsi/mfsi_algorithm.o \

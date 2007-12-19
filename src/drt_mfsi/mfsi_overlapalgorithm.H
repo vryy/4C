@@ -45,10 +45,30 @@ namespace MFSI
 
   private:
 
+    /// build thyra product vector from field vectors
+    void SetupVector(Thyra::DefaultProductVector<double> &f,
+                     Teuchos::RCP<const Epetra_Vector> sv,
+                     Teuchos::RCP<const Epetra_Vector> fv,
+                     Teuchos::RCP<const Epetra_Vector> av,
+                     double fluidscale) const;
+
     /// setup of NOX convergance tests
     Teuchos::RCP<NOX::StatusTest::Combo>
     CreateStatusTest(Teuchos::ParameterList& nlParams,
                      Teuchos::RCP<NOX::Thyra::Group> grp);
+
+    /// structure field inner map
+    Teuchos::RCP<const Thyra::VectorSpaceBase<double> > simap_;
+
+    /// structure field interface map
+    Teuchos::RCP<const Thyra::VectorSpaceBase<double> > sgmap_;
+
+    /// fluid field inner map
+    Teuchos::RCP<const Thyra::VectorSpaceBase<double> > fimap_;
+
+    /// ale field inner map
+    Teuchos::RCP<const Thyra::VectorSpaceBase<double> > aimap_;
+
   };
 }
 

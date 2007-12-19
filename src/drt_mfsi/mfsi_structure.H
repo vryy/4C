@@ -27,6 +27,8 @@ Maintainer: Ulrich Kuettler
 
 #include "../drt_structure/strugenalpha.H"
 
+#include "../drt_fsi/fsi_conditiondofmap.H"
+
 
 namespace MFSI {
 
@@ -71,6 +73,9 @@ namespace MFSI {
     virtual void SetInterfaceMap(Teuchos::RCP<Epetra_Map> im) = 0;
     virtual Teuchos::RCP<Epetra_Map> InterfaceMap() = 0;
     virtual Teuchos::RCP<Epetra_Map> InnerDisplacementRowMap() = 0;
+
+    /// communication object at the interface
+    virtual const FSI::ConditionDofMap& Interface() const = 0;
   };
 
 
@@ -103,13 +108,19 @@ namespace MFSI {
     void Output();
 
     void SetInterfaceMap(Teuchos::RCP<Epetra_Map> im);
-    Teuchos::RCP<Epetra_Map> InterfaceMap() { return idispmap_; }
-    Teuchos::RCP<Epetra_Map> InnerDisplacementRowMap() { return innerdispmap_; }
+    Teuchos::RCP<Epetra_Map> InterfaceMap() { return interface_.CondDofMap(); }
+    Teuchos::RCP<Epetra_Map> InnerDisplacementRowMap() { return interface_.OtherDofMap(); }
+
+    /// communication object at the interface
+    virtual const FSI::ConditionDofMap& Interface() const { return interface_; }
 
   private:
 
     /// the actual structure algorithm
     StruGenAlpha structure_;
+
+    /// the interface map setup for interface <-> full translation
+    FSI::ConditionDofMap interface_;
 
     //! @name local copies of input parameters
 
@@ -119,15 +130,6 @@ namespace MFSI {
     Teuchos::RCP<IO::DiscretizationWriter> output_;
 
     //@}
-
-    /// interface dof map
-    Teuchos::RefCountPtr<Epetra_Map> idispmap_;
-
-    /// all velocity dofs not at the interface
-    Teuchos::RefCountPtr<Epetra_Map> innerdispmap_;
-
-    /// communicator between interface dof map and field dof map
-    Teuchos::RefCountPtr<Epetra_Import> extractor_;
 
     /// what a hack
     Teuchos::RCP<Epetra_Vector> sumdisi_;

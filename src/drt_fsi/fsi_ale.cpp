@@ -36,7 +36,8 @@ FSI::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
                           Teuchos::RCP<LINALG::Solver> solver,
                           Teuchos::RCP<ParameterList> params,
                           Teuchos::RCP<IO::DiscretizationWriter> output)
-  : discret_(actdis),
+  : interface_(actdis),
+    discret_(actdis),
     solver_ (solver),
     params_ (params),
     output_ (output),
@@ -56,15 +57,17 @@ FSI::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   dispnp_         = LINALG::CreateVector(*dofrowmap,true);
-  //dispn_          = LINALG::CreateVector(*dofrowmap,true);
-  //dispnm_         = LINALG::CreateVector(*dofrowmap,true);
 
   residual_       = LINALG::CreateVector(*dofrowmap,true);
 
   dirichtoggle_ = LINALG::CreateVector(*dofrowmap,true);
-  //zeros_        = LINALG::CreateVector(*dofrowmap,true);
 
   sumdisi_        = LINALG::CreateVector(*dofrowmap,true);
+
+  interface_.SetupCondDofMap("FSICoupling");
+
+  // needed for MFSI
+  interface_.SetupOtherDofMap();
 }
 
 
@@ -233,8 +236,6 @@ void FSI::AleLinear::EvaluateElements()
  *----------------------------------------------------------------------*/
 void FSI::AleLinear::SetInterfaceMap(Teuchos::RCP<Epetra_Map> im)
 {
-  imeshmap_ = im;
-  extractor_ = rcp(new Epetra_Import(*imeshmap_, *discret_->DofRowMap()));
 }
 
 
@@ -242,14 +243,10 @@ void FSI::AleLinear::SetInterfaceMap(Teuchos::RCP<Epetra_Map> im)
  *----------------------------------------------------------------------*/
 void FSI::AleLinear::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp)
 {
-  int err = dispnp_->Export(*idisp,*extractor_,Insert);
-  if (err)
-    dserror("Insert using extractor returned err=%d",err);
+  interface_.InsertCondVector(idisp,dispnp_);
 
   idisp->PutScalar(1.0);
-  err = dirichtoggle_->Export(*idisp,*extractor_,Insert);
-  if (err)
-    dserror("Insert using extractor returned err=%d",err);
+  interface_.InsertCondVector(idisp,dirichtoggle_);
 }
 
 
@@ -267,11 +264,7 @@ Teuchos::RCP<Epetra_Vector> FSI::AleLinear::ExtractDisplacement()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::AleLinear::StructCondRHS()
 {
-  Teuchos::RCP<Epetra_Vector> idispnp = Teuchos::rcp(new Epetra_Vector(*imeshmap_));
-  int err = idispnp->Import(*dispnp_,*extractor_,Insert);
-  if (err)
-    dserror("Import using importer returned err=%d",err);
-  return idispnp;
+  return interface_.ExtractCondVector(dispnp_);
 }
 
 

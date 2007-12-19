@@ -36,6 +36,8 @@ Maintainer: Ulrich Kuettler
 
 #include <set>
 
+#include "fsi_conditiondofmap.H"
+
 
 namespace FSI {
 
@@ -109,6 +111,8 @@ public:
   /// read restart for given step
   virtual void ReadRestart(int step) = 0;
 
+  /// communication object at the interface
+  virtual const ConditionDofMap& Interface() const = 0;
 };
 
 
@@ -174,7 +178,13 @@ public:
   /// read restart for given step
   virtual void ReadRestart(int step);
 
+  /// communication object at the interface
+  const ConditionDofMap& Interface() const { return interface_; }
+
 private:
+
+  /// the interface map setup for interface <-> full translation
+  ConditionDofMap interface_;
 
   //! @name local copies of input parameters
   Teuchos::RCP<DRT::Discretization> discret_;
@@ -203,12 +213,6 @@ private:
 
   Teuchos::RCP<Epetra_Vector>    residual_;
   //@}
-
-  /// interface dof map
-  Teuchos::RCP<Epetra_Map> imeshmap_;
-
-  /// communicator between interface dof map and field dof map
-  Teuchos::RCP<Epetra_Import> extractor_;
 
   /// what a hack (monolithic FSI only)
   Teuchos::RCP<Epetra_Vector> sumdisi_;

@@ -41,9 +41,6 @@ namespace MFSI
   master interface map. (That is the structural interface map for FSI
   coupling.)
 
-  Additionally we need to have the interior maps of both fields. So we
-  build them here as well.
-
   \author u.kue
   \date 11/07
    */
@@ -59,16 +56,6 @@ namespace MFSI
     Teuchos::RCP<Epetra_CrsMatrix> MasterToMasterMatTrans() const { return matmm_trans_; }
     Teuchos::RCP<Epetra_CrsMatrix> SlaveToMasterMatTrans() const { return matsm_trans_; }
 
-    /// create dof maps of the fields interior
-    void SetupInnerDofMaps(const Epetra_Map& masterdomainmap, const Epetra_Map& slavedomainmap);
-
-    Teuchos::RCP<Epetra_Map> MasterInnerDofMap() const { return masterinnerdofmap_; }
-    Teuchos::RCP<Epetra_Map> SlaveInnerDofMap() const  { return slaveinnerdofmap_; }
-
-    Teuchos::RCP<Epetra_CrsMatrix> RCSlaveToMaster(const Teuchos::RCP<Epetra_CrsMatrix> s) const;
-    Teuchos::RCP<Epetra_CrsMatrix> RSlaveToMaster(const Teuchos::RCP<Epetra_CrsMatrix> s) const;
-    Teuchos::RCP<Epetra_CrsMatrix> CSlaveToMaster(const Teuchos::RCP<Epetra_CrsMatrix> s) const;
-
   private:
 
     /// coupling matrices for Lagrangian multiplier coupling
@@ -76,9 +63,6 @@ namespace MFSI
     Teuchos::RCP<Epetra_CrsMatrix> matsm_;
     Teuchos::RCP<Epetra_CrsMatrix> matmm_trans_;
     Teuchos::RCP<Epetra_CrsMatrix> matsm_trans_;
-
-    Teuchos::RCP<Epetra_Map> masterinnerdofmap_;
-    Teuchos::RCP<Epetra_Map> slaveinnerdofmap_;
   };
 }
 

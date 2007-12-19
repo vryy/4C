@@ -28,11 +28,13 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-FSI::Fluid::Fluid(RefCountPtr<DRT::Discretization> dis,
-                  RefCountPtr<LINALG::Solver> solver,
-                  RefCountPtr<ParameterList> params,
-                  RefCountPtr<IO::DiscretizationWriter> output)
+FSI::Fluid::Fluid(Teuchos::RCP<DRT::Discretization> dis,
+                  Teuchos::RCP<LINALG::Solver> solver,
+                  Teuchos::RCP<ParameterList> params,
+                  Teuchos::RCP<IO::DiscretizationWriter> output)
   : FluidImplicitTimeInt(dis,*solver,*params,*output,true),
+    interface_(dis),
+    meshmap_(dis),
     solver_(solver),
     params_(params),
     output_(output)
@@ -46,6 +48,8 @@ FSI::Fluid::Fluid(RefCountPtr<DRT::Discretization> dis,
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
   relax_ = LINALG::CreateVector(*dofrowmap,true);
   griddisp_ = LINALG::CreateVector(*dofrowmap,true);
+
+  interface_.SetupCondDofMap("FSICoupling");
 }
 
 
@@ -67,41 +71,31 @@ void FSI::Fluid::SetItemax(int itemax)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::Fluid::SetInterfaceMap(Teuchos::RefCountPtr<Epetra_Map> im)
+void FSI::Fluid::SetInterfaceMap(Teuchos::RCP<Epetra_Map> im)
 {
-  ivelmap_ = im;
-  extractor_ = rcp(new Epetra_Import(*ivelmap_, residual_->Map()));
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RefCountPtr<Epetra_Vector> FSI::Fluid::ExtractInterfaceForces()
+Teuchos::RCP<Epetra_Vector> FSI::Fluid::ExtractInterfaceForces()
 {
-  Teuchos::RefCountPtr<Epetra_Vector> iforce = rcp(new Epetra_Vector(*ivelmap_));
-  int err = iforce->Import(*trueresidual_,*extractor_,Insert);
-  if (err)
-    dserror("Export using exporter returned err=%d",err);
-  return iforce;
+  return interface_.ExtractCondVector(trueresidual_);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::Fluid::ApplyInterfaceVelocities(Teuchos::RefCountPtr<Epetra_Vector> ivel)
+void FSI::Fluid::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
 {
-  int err = velnp_->Export(*ivel,*extractor_,Insert);
-  if (err)
-    dserror("Insert using extractor returned err=%d",err);
+  interface_.InsertCondVector(ivel,velnp_);
 
   // mark all interface velocities as dirichlet values
   // this is very easy, but there are two dangers:
   // - We change ivel here. It must not be used afterwards.
   // - The algorithm must support the sudden change of dirichtoggle_
   ivel->PutScalar(1.0);
-  err = dirichtoggle_->Export(*ivel,*extractor_,Insert);
-  if (err)
-    dserror("Insert using extractor returned err=%d",err);
+  interface_.InsertCondVector(ivel,dirichtoggle_);
 
   //----------------------- compute an inverse of the dirichtoggle vector
   invtoggle_->PutScalar(1.0);
@@ -111,20 +105,17 @@ void FSI::Fluid::ApplyInterfaceVelocities(Teuchos::RefCountPtr<Epetra_Vector> iv
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::Fluid::SetMeshMap(Teuchos::RefCountPtr<Epetra_Map> mm)
+void FSI::Fluid::SetMeshMap(Teuchos::RCP<Epetra_Map> mm)
 {
-  meshmap_ = mm;
-  meshextractor_ = rcp(new Epetra_Import(*meshmap_, residual_->Map()));
+  meshmap_.SetupCondDofMap(mm);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::Fluid::ApplyMeshDisplacement(Teuchos::RefCountPtr<Epetra_Vector> fluiddisp)
+void FSI::Fluid::ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp)
 {
-  int err = dispnp_->Export(*fluiddisp,*meshextractor_,Insert);
-  if (err)
-    dserror("Insert using extractor returned err=%d",err);
+  meshmap_.InsertCondVector(fluiddisp,dispnp_);
 
   // new grid velocity
   UpdateGridv();
@@ -133,18 +124,15 @@ void FSI::Fluid::ApplyMeshDisplacement(Teuchos::RefCountPtr<Epetra_Vector> fluid
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::Fluid::ApplyMeshVelocity(Teuchos::RefCountPtr<Epetra_Vector> gridvel)
+void FSI::Fluid::ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel)
 {
-  //gridv_->PutScalar(0);
-  int err = gridv_->Export(*gridvel,*meshextractor_,Insert);
-  if (err)
-    dserror("Insert using extractor returned err=%d",err);
+  meshmap_.InsertCondVector(gridvel,gridv_);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RefCountPtr<Epetra_Vector> FSI::Fluid::RelaxationSolve(Teuchos::RefCountPtr<Epetra_Vector> ivel)
+Teuchos::RCP<Epetra_Vector> FSI::Fluid::RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel)
 {
   //
   // This method is really stupid, but simple. We calculate the fluid
@@ -164,9 +152,7 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Fluid::RelaxationSolve(Teuchos::RefCoun
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   relax_->PutScalar(0.0);
-  int err = relax_->Export(*ivel,*extractor_,Insert);
-  if (err)
-    dserror("Insert using extractor returned err=%d",err);
+  interface_.InsertCondVector(ivel,relax_);
 
   // set the grid displacement independent of the trial value at the
   // interface
@@ -267,7 +253,7 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Fluid::RelaxationSolve(Teuchos::RefCoun
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-RefCountPtr<Epetra_Vector> FSI::Fluid::IntegrateInterfaceShape()
+Teuchos::RCP<Epetra_Vector> FSI::Fluid::IntegrateInterfaceShape()
 {
   ParameterList eleparams;
   // set action for elements
@@ -279,7 +265,7 @@ RefCountPtr<Epetra_Vector> FSI::Fluid::IntegrateInterfaceShape()
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   // create vector (+ initialization with zeros)
-  RefCountPtr<Epetra_Vector> integratedshapefunc = LINALG::CreateVector(*dofrowmap,true);
+  Teuchos::RCP<Epetra_Vector> integratedshapefunc = LINALG::CreateVector(*dofrowmap,true);
 
   // call loop over elements
   discret_->ClearState();
@@ -287,11 +273,7 @@ RefCountPtr<Epetra_Vector> FSI::Fluid::IntegrateInterfaceShape()
   discret_->EvaluateCondition(eleparams,integratedshapefunc,"FSICoupling");
   discret_->ClearState();
 
-  Teuchos::RefCountPtr<Epetra_Vector> ishape = rcp(new Epetra_Vector(*ivelmap_));
-  int err = ishape->Import(*integratedshapefunc,*extractor_,Insert);
-  if (err)
-    dserror("Export using exporter returned err=%d",err);
-  return ishape;
+  return interface_.ExtractCondVector(integratedshapefunc);
 }
 
 #endif

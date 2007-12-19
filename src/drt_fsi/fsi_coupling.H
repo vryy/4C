@@ -19,6 +19,8 @@
 namespace FSI
 {
 
+  class ConditionDofMap;
+
   /// Management of coupling between two (matching) sets of nodes from two discretizations
   /*!
     Interface coupled problems with matching meshes need to transfer
@@ -63,18 +65,17 @@ namespace FSI
     /// empty constructor
     Coupling();
 
+    /** \name Setup */
+    //@{
+
     /// setup coupling of nodes marked with condition
     /*!
       Setup the whole thing. Find matching nodes via octtree and build
-      appropiate dof maps.
+      appropriate dof maps.
 
-      \param masterdis  (i) master side mesh
-      \param slavedis   (i) slave side mesh
-      \param coupname   (i) name of condition on coupling nodes
      */
-    void SetupConditionCoupling(const DRT::Discretization& masterdis,
-                                const DRT::Discretization& slavedis,
-                                std::string coupname);
+    void SetupConditionCoupling(const ConditionDofMap& master,
+                                const ConditionDofMap& slave);
 
     /// setup coupling of given nodes
     /*!
@@ -116,6 +117,13 @@ namespace FSI
                        const Epetra_Map& masternodes,
                        const Epetra_Map& slavenodes);
 
+    //@}
+
+    /** \name Conversion between master and slave */
+    //@{
+    /// There are different versions to satisfy all needs. The basic
+    /// idea is the same for all of them.
+
     /// transfer a dof vector from master to slave
     Teuchos::RCP<Epetra_Vector> MasterToSlave(Teuchos::RCP<Epetra_Vector> mv) const
       { return MasterToSlave(Teuchos::rcp_static_cast<const Epetra_Vector>(mv)); }
@@ -150,11 +158,18 @@ namespace FSI
     /// transfer a dof vector from slave to master
     void SlaveToMaster(Teuchos::RCP<const Epetra_MultiVector> sv, Teuchos::RCP<Epetra_MultiVector> mv) const;
 
+    //@}
+
+    /** \name Coupled maps */
+    //@{
+
     /// the interface dof map of the master side
     Teuchos::RCP<Epetra_Map> MasterDofMap() const { return masterdofmap_; }
 
     /// the interface dof map of the slave side
     Teuchos::RCP<Epetra_Map> SlaveDofMap()  const { return slavedofmap_; }
+
+    //@}
 
   private:
 
@@ -193,11 +208,6 @@ namespace FSI
                       RCP<Epetra_Map>& dofmap,
                       RCP<Epetra_Map>& permdofmap,
                       RCP<Epetra_Export>& exporter);
-
-    /// find all local nodes from discretization marked with condition
-    void FindCondNodes(const DRT::Discretization& dis,
-                       std::string condname,
-                       std::set<int>& nodes);
 
     Teuchos::RCP<Epetra_Map> masterdofmap_;
     Teuchos::RCP<Epetra_Map> permmasterdofmap_;

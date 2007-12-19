@@ -35,16 +35,18 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-FSI::Structure::Structure(Teuchos::RefCountPtr<ParameterList> params,
-                          Teuchos::RefCountPtr<DRT::Discretization> dis,
-                          Teuchos::RefCountPtr<LINALG::Solver> solver,
-                          Teuchos::RefCountPtr<IO::DiscretizationWriter> output)
+FSI::Structure::Structure(Teuchos::RCP<ParameterList> params,
+                          Teuchos::RCP<DRT::Discretization> dis,
+                          Teuchos::RCP<LINALG::Solver> solver,
+                          Teuchos::RCP<IO::DiscretizationWriter> output)
 
   : StruGenAlpha(*params, *dis, *solver, *output),
+    interface_(dis),
     params_(params),
     solver_(solver),
     output_(output)
 {
+  interface_.SetupCondDofMap("FSICoupling");
 }
 
 
@@ -70,27 +72,17 @@ void FSI::Structure::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::Structure::SetInterfaceMap(Teuchos::RefCountPtr<Epetra_Map> im)
+void FSI::Structure::SetInterfaceMap(Teuchos::RCP<Epetra_Map> im)
 {
-  idispmap_ = im;
-  extractor_ = rcp(new Epetra_Import(*idispmap_, dis_->Map()));
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RefCountPtr<Epetra_Vector> FSI::Structure::ExtractInterfaceDisplacement()
+Teuchos::RCP<Epetra_Vector> FSI::Structure::ExtractInterfaceDisplacement()
 {
-  Teuchos::RefCountPtr<Epetra_Vector> idism = rcp(new Epetra_Vector(*idispmap_));
-  Teuchos::RefCountPtr<Epetra_Vector> idis  = rcp(new Epetra_Vector(*idispmap_));
-
-  int err = idis->Import(*dis_,*extractor_,Insert);
-  if (err)
-    dserror("Export using exporter returned err=%d",err);
-
-  err = idism->Import(*dism_,*extractor_,Insert);
-  if (err)
-    dserror("Export using exporter returned err=%d",err);
+  Teuchos::RCP<Epetra_Vector> idism = interface_.ExtractCondVector(dism_);
+  Teuchos::RCP<Epetra_Vector> idis  = interface_.ExtractCondVector(dis_);
 
   double alphaf = params_->get<double>("alpha f", 0.459);
   idis->Update(1./(1.-alphaf),*idism,-alphaf/(1.-alphaf));
@@ -101,14 +93,11 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Structure::ExtractInterfaceDisplacement
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RefCountPtr<Epetra_Vector> FSI::Structure::PredictInterfaceDisplacement()
+Teuchos::RCP<Epetra_Vector> FSI::Structure::PredictInterfaceDisplacement()
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
-  Teuchos::RefCountPtr<Epetra_Vector> idis  = rcp(new Epetra_Vector(*idispmap_));
-  int err = idis->Import(*dis_,*extractor_,Insert);
-  if (err)
-    dserror("Export using exporter returned err=%d",err);
+  Teuchos::RCP<Epetra_Vector> idis  = interface_.ExtractCondVector(dis_);
 
   switch (Teuchos::getIntegralValue<int>(fsidyn,"PREDICTOR"))
   {
@@ -125,10 +114,7 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Structure::PredictInterfaceDisplacement
     // d(n)+dt*v(n)
     double dt            = params_->get<double>("delta time"             ,0.01);
 
-    Teuchos::RefCountPtr<Epetra_Vector> ivel  = rcp(new Epetra_Vector(*idispmap_));
-    err = ivel->Import(*vel_,*extractor_,Insert);
-    if (err)
-      dserror("Export using exporter returned err=%d",err);
+    Teuchos::RCP<Epetra_Vector> ivel  = interface_.ExtractCondVector(vel_);
 
     idis->Update(dt,*ivel,1.0);
     break;
@@ -138,15 +124,8 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Structure::PredictInterfaceDisplacement
     // d(n)+dt*v(n)+0.5*dt^2*a(n)
     double dt            = params_->get<double>("delta time"             ,0.01);
 
-    Teuchos::RefCountPtr<Epetra_Vector> ivel  = rcp(new Epetra_Vector(*idispmap_));
-    err = ivel->Import(*vel_,*extractor_,Insert);
-    if (err)
-      dserror("Export using exporter returned err=%d",err);
-
-    Teuchos::RefCountPtr<Epetra_Vector> iacc  = rcp(new Epetra_Vector(*idispmap_));
-    err = iacc->Import(*acc_,*extractor_,Insert);
-    if (err)
-      dserror("Export using exporter returned err=%d",err);
+    Teuchos::RCP<Epetra_Vector> ivel  = interface_.ExtractCondVector(vel_);
+    Teuchos::RCP<Epetra_Vector> iacc  = interface_.ExtractCondVector(acc_);
 
     idis->Update(dt,*ivel,0.5*dt*dt,*iacc,1.0);
     break;
@@ -162,7 +141,7 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Structure::PredictInterfaceDisplacement
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::Structure::ApplyInterfaceForces(Teuchos::RefCountPtr<Epetra_Vector> iforce)
+void FSI::Structure::ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce)
 {
   // Play it save. In the first iteration everything is already set up
   // properly. However, all following iterations need to calculate the
@@ -197,9 +176,7 @@ void FSI::Structure::ApplyInterfaceForces(Teuchos::RefCountPtr<Epetra_Vector> if
 
   // reset of external forces is needed
   fextn_->Update(1.0, *fextncopy_, 0.0);
-  int err = fextn_->Export(*iforce,*extractor_,Add);
-  if (err)
-    dserror("Insert using extractor returned err=%d",err);
+  interface_.InsertCondVector(iforce,fextn_);
 
   fextm_->Update(1.-alphaf,*fextn_,alphaf,*fext_,0.0);
 
@@ -251,7 +228,7 @@ void FSI::Structure::CalculateStiffness()
   // add mid-viscous damping force
   if (damping)
   {
-      RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
+      RCP<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
       damp_->Multiply(false,*velm_,*fviscm);
       fresm_->Update(1.0,*fviscm,1.0);
   }
@@ -267,7 +244,7 @@ void FSI::Structure::CalculateStiffness()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RefCountPtr<Epetra_Vector> FSI::Structure::RelaxationSolve(Teuchos::RefCountPtr<Epetra_Vector> iforce)
+Teuchos::RCP<Epetra_Vector> FSI::Structure::RelaxationSolve(Teuchos::RCP<Epetra_Vector> iforce)
 {
   // -------------------------------------------------------------------
   // get some parameters from parameter list
@@ -281,9 +258,7 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Structure::RelaxationSolve(Teuchos::Ref
 
   // set external forces to just the forces at the interface
   fextn_->PutScalar(0.0);
-  int err = fextn_->Export(*iforce,*extractor_,Insert);
-  if (err)
-    dserror("Insert using extractor returned err=%d",err);
+  interface_.InsertCondVector(iforce,fextn_);
 
   // we start from zero
   fextm_->Update(1.-alphaf,*fextn_,0.0);
@@ -309,11 +284,8 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Structure::RelaxationSolve(Teuchos::Ref
   solver_->Solve(stiff_,disi_,fextm_,true,true);
   stiff_ = null;
 
-  // we are just interessted in the incremental interface displacements
-  Teuchos::RefCountPtr<Epetra_Vector> idisi = rcp(new Epetra_Vector(*idispmap_));
-  err = idisi->Import(*disi_,*extractor_,Insert);
-  if (err)
-    dserror("Export using exporter returned err=%d",err);
+  // we are just interested in the incremental interface displacements
+  Teuchos::RCP<Epetra_Vector> idisi = interface_.ExtractCondVector(disi_);
 
 //   double norm;
 //   disi_->Norm2(&norm);

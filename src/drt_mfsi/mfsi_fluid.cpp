@@ -17,11 +17,15 @@ MFSI::FluidAdapter::FluidAdapter(Teuchos::RCP<DRT::Discretization> dis,
                                  Teuchos::RCP<ParameterList> params,
                                  Teuchos::RCP<IO::DiscretizationWriter> output)
   : fluid_(dis, *solver, *params, *output, true),
+    interface_(dis),
+    meshmap_(dis),
     dis_(dis),
     solver_(solver),
     params_(params),
     output_(output)
 {
+  interface_.SetupCondDofMap("FSICoupling");
+  interface_.SetupOtherDofMap();
   sumincvel_ = Teuchos::rcp(new Epetra_Vector(Vel()->Map()));
 }
 
@@ -79,11 +83,7 @@ Teuchos::RCP<DRT::Discretization> MFSI::FluidAdapter::Discretization()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> MFSI::FluidAdapter::StructCondRHS()
 {
-  Teuchos::RCP<Epetra_Vector> ivelnp = Teuchos::rcp(new Epetra_Vector(*ivelmap_));
-  int err = ivelnp->Import(*Vel(),*extractor_,Insert);
-  if (err)
-    dserror("Import using importer returned err=%d",err);
-  return ivelnp;
+  return interface_.ExtractCondVector(Vel());
 }
 
 
@@ -143,9 +143,6 @@ void MFSI::FluidAdapter::Output()
 /*----------------------------------------------------------------------*/
 void MFSI::FluidAdapter::SetInterfaceMap(Teuchos::RefCountPtr<Epetra_Map> im)
 {
-  ivelmap_ = im;
-  extractor_ = rcp(new Epetra_Import(*ivelmap_, Vel()->Map()));
-
   // build inner velocity map
   // dofs at the interface are excluded
   // we use only velocity dofs and only those without Dirichlet constraint
@@ -160,7 +157,7 @@ void MFSI::FluidAdapter::SetInterfaceMap(Teuchos::RefCountPtr<Epetra_Map> im)
   for (int i=0; i<numvelids; ++i)
   {
     int gid = velmap->GID(i);
-    if (not ivelmap_->MyGID(gid) and (*dirichtoggle)[fullmap->LID(gid)]==0.)
+    if (not interface_.CondDofMap()->MyGID(gid) and (*dirichtoggle)[fullmap->LID(gid)]==0.)
     {
       velids.push_back(gid);
     }
@@ -174,7 +171,7 @@ void MFSI::FluidAdapter::SetInterfaceMap(Teuchos::RefCountPtr<Epetra_Map> im)
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> MFSI::FluidAdapter::InterfaceMap()
 {
-  return ivelmap_;
+  return interface_.CondDofMap();
 }
 
 
@@ -198,8 +195,7 @@ Teuchos::RCP<Epetra_Map> MFSI::FluidAdapter::PressureRowMap()
  *----------------------------------------------------------------------*/
 void MFSI::FluidAdapter::SetMeshMap(Teuchos::RCP<Epetra_Map> mm)
 {
-  meshmap_ = mm;
-  meshextractor_ = rcp(new Epetra_Import(*meshmap_, RHS()->Map()));
+  meshmap_.SetupCondDofMap(mm);
 }
 
 
@@ -207,14 +203,10 @@ void MFSI::FluidAdapter::SetMeshMap(Teuchos::RCP<Epetra_Map> mm)
 /*----------------------------------------------------------------------*/
 void MFSI::FluidAdapter::ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp)
 {
-  Epetra_Vector deltadispnp(RHS()->Map());
+  Teuchos::RCP<Epetra_Vector> deltadispnp = meshmap_.InsertCondVector(fluiddisp);
 
-  int err = deltadispnp.Export(*fluiddisp,*meshextractor_,Insert);
-  if (err)
-    dserror("Insert using extractor returned err=%d",err);
-
-  //fluid_.Dispnp()->Update(1.0, deltadispnp, 1.0, *fluid_.Dispn(), 0.0);
-  fluid_.Dispnp()->Update(1.0, deltadispnp, 0.0);
+  //fluid_.Dispnp()->Update(1.0, *deltadispnp, 1.0, *fluid_.Dispn(), 0.0);
+  fluid_.Dispnp()->Update(1.0, *deltadispnp, 0.0);
 
   // new grid velocity
   fluid_.UpdateGridv();

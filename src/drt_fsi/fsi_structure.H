@@ -21,7 +21,9 @@ Maintainer: Ulrich Kuettler
 #include "../drt_structure/strugenalpha.H"
 
 #include <Epetra_Map.h>
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
+
+#include "fsi_conditiondofmap.H"
 
 
 namespace FSI
@@ -43,10 +45,10 @@ namespace FSI
 class Structure : public StruGenAlpha
 {
 public:
-  Structure(Teuchos::RefCountPtr<ParameterList> params,
-            Teuchos::RefCountPtr<DRT::Discretization> dis,
-            Teuchos::RefCountPtr<LINALG::Solver> solver,
-            Teuchos::RefCountPtr<IO::DiscretizationWriter> output);
+  Structure(Teuchos::RCP<ParameterList> params,
+            Teuchos::RCP<DRT::Discretization> dis,
+            Teuchos::RCP<LINALG::Solver> solver,
+            Teuchos::RCP<IO::DiscretizationWriter> output);
 
   /// announce a new time step to the solver
   /*!
@@ -57,18 +59,18 @@ public:
   //! @name Interface Map
   //! the map of all interface dofs will be set from the outside
 
-  Teuchos::RefCountPtr<Epetra_Map> InterfaceMap() { return idispmap_; }
-  void SetInterfaceMap(Teuchos::RefCountPtr<Epetra_Map> im);
+  Teuchos::RCP<const Epetra_Map> InterfaceMap() { return interface_.CondDofMap(); }
+  void SetInterfaceMap(Teuchos::RCP<Epetra_Map> im);
 
   //@}
 
   //! @name Extract interface values
 
   /// extract displacements
-  Teuchos::RefCountPtr<Epetra_Vector> ExtractInterfaceDisplacement();
+  Teuchos::RCP<Epetra_Vector> ExtractInterfaceDisplacement();
 
   /// Predictor for interface displacements
-  Teuchos::RefCountPtr<Epetra_Vector> PredictInterfaceDisplacement();
+  Teuchos::RCP<Epetra_Vector> PredictInterfaceDisplacement();
 
   //@}
 
@@ -81,7 +83,7 @@ public:
 
     \note This is not yet the most efficient implementation.
    */
-  void ApplyInterfaceForces(Teuchos::RefCountPtr<Epetra_Vector> iforce);
+  void ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce);
 
   //@}
 
@@ -95,26 +97,26 @@ public:
 
     \note Can only be called after a valid structural solve.
    */
-  Teuchos::RefCountPtr<Epetra_Vector> RelaxationSolve(Teuchos::RefCountPtr<Epetra_Vector> iforce);
+  Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> iforce);
+
+  /// communication object at the interface
+  const ConditionDofMap& Interface() const { return interface_; }
 
 private:
 
   /// element call and effective stiffness calculation
   void CalculateStiffness();
 
-  /// interface dof map
-  Teuchos::RefCountPtr<Epetra_Map> idispmap_;
-
-  /// communicator between interface dof map and field dof map
-  Teuchos::RefCountPtr<Epetra_Import> extractor_;
+  /// the interface map setup for interface <-> full translation
+  ConditionDofMap interface_;
 
   /// copy of external forces needed to reapply the interface forces
-  Teuchos::RefCountPtr<Epetra_Vector> fextncopy_;
+  Teuchos::RCP<Epetra_Vector> fextncopy_;
 
   //! @name local copies of input parameters
-  Teuchos::RefCountPtr<ParameterList> params_;
-  Teuchos::RefCountPtr<LINALG::Solver> solver_;
-  Teuchos::RefCountPtr<IO::DiscretizationWriter> output_;
+  Teuchos::RCP<ParameterList> params_;
+  Teuchos::RCP<LINALG::Solver> solver_;
+  Teuchos::RCP<IO::DiscretizationWriter> output_;
   //@}
 };
 

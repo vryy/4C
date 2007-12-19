@@ -107,9 +107,8 @@ MFSI::LagrangeAlgorithm::LagrangeAlgorithm(Epetra_Comm& comm)
 
   // structure to fluid
 
-  coupsf.SetupConditionCoupling(*StructureField()->Discretization(),
-                                 *FluidField()->Discretization(),
-                                 "FSICoupling");
+  coupsf.SetupConditionCoupling(StructureField()->Interface(),
+                                FluidField()->Interface());
 
   // setup the very simple structure to fluid coupling
   // u(n+1)*dt = d(n+1) - d(n)
@@ -128,9 +127,8 @@ MFSI::LagrangeAlgorithm::LagrangeAlgorithm(Epetra_Comm& comm)
 
   // structure to ale
 
-  coupsa.SetupConditionCoupling(*StructureField()->Discretization(),
-                                 *AleField()->Discretization(),
-                                 "FSICoupling");
+  coupsa.SetupConditionCoupling(StructureField()->Interface(),
+                                AleField()->Interface());
 
   // setup structure to ale coupling
   //

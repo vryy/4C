@@ -17,11 +17,14 @@ MFSI::StructureAdapter::StructureAdapter(Teuchos::RCP<Teuchos::ParameterList> pa
                                          Teuchos::RCP<LINALG::Solver> solver,
                                          Teuchos::RCP<IO::DiscretizationWriter> output)
   : structure_(*params, *dis, *solver, *output),
+    interface_(dis),
     dis_(dis),
     params_(params),
     solver_(solver),
     output_(output)
 {
+  interface_.SetupCondDofMap("FSICoupling");
+  interface_.SetupOtherDofMap();
   sumdisi_ = Teuchos::rcp(new Epetra_Vector(Dispm()->Map()));
 }
 
@@ -93,15 +96,8 @@ Teuchos::RCP<Epetra_Vector> MFSI::StructureAdapter::FluidCondRHS()
 
   // extrapolate d(n+1) at the interface and substract d(n)
 
-  Teuchos::RCP<Epetra_Vector> idism = Teuchos::rcp(new Epetra_Vector(*idispmap_));
-  int err = idism->Import(*structure_.Dispm(),*extractor_,Insert);
-  if (err)
-    dserror("Import using importer returned err=%d",err);
-
-  Teuchos::RCP<Epetra_Vector> idis  = Teuchos::rcp(new Epetra_Vector(*idispmap_));
-  err = idis->Import(*structure_.Disp(),*extractor_,Insert);
-  if (err)
-    dserror("Import using importer returned err=%d",err);
+  Teuchos::RCP<Epetra_Vector> idism = interface_.ExtractCondVector(structure_.Dispm());
+  Teuchos::RCP<Epetra_Vector> idis  = interface_.ExtractCondVector(structure_.Disp ());
 
   double alphaf = structure_.AlphaF();
   idis->Update(1./(1.-alphaf), *idism, -alphaf/(1.-alphaf)-1.);
@@ -118,15 +114,8 @@ Teuchos::RCP<Epetra_Vector> MFSI::StructureAdapter::MeshCondRHS()
 
   // extrapolate d(n+1) at the interface
 
-  Teuchos::RCP<Epetra_Vector> idism = Teuchos::rcp(new Epetra_Vector(*idispmap_));
-  int err = idism->Import(*structure_.Dispm(),*extractor_,Insert);
-  if (err)
-    dserror("Import using importer returned err=%d",err);
-
-  Teuchos::RCP<Epetra_Vector> idis  = Teuchos::rcp(new Epetra_Vector(*idispmap_));
-  err = idis->Import(*structure_.Disp(),*extractor_,Insert);
-  if (err)
-    dserror("Import using importer returned err=%d",err);
+  Teuchos::RCP<Epetra_Vector> idism = interface_.ExtractCondVector(structure_.Dispm());
+  Teuchos::RCP<Epetra_Vector> idis  = interface_.ExtractCondVector(structure_.Disp ());
 
   double alphaf = structure_.AlphaF();
   idis->Update(1./(1.-alphaf), *idism, -alphaf/(1.-alphaf));
@@ -211,9 +200,7 @@ void MFSI::StructureAdapter::Output()
 /*----------------------------------------------------------------------*/
 void MFSI::StructureAdapter::SetInterfaceMap(Teuchos::RCP<Epetra_Map> im)
 {
-  idispmap_ = im;
-  extractor_ = rcp(new Epetra_Import(*idispmap_, Dispm()->Map()));
-
+#if 0
   // build inner displacement map
   // dofs at the interface are excluded
   // we use only dofs without Dirichlet constraint
@@ -227,13 +214,14 @@ void MFSI::StructureAdapter::SetInterfaceMap(Teuchos::RCP<Epetra_Map> im)
   for (int i=0; i<numids; ++i)
   {
     int gid = dispmap->GID(i);
-    if (not idispmap_->MyGID(gid) and (*dirichtoggle)[i]==0.)
+    if (not interface_.CondDofMap()->MyGID(gid) and (*dirichtoggle)[i]==0.)
     {
       ids.push_back(gid);
     }
   }
 
   innerdispmap_ = Teuchos::rcp(new Epetra_Map(-1,ids.size(), &ids[0], 0, dispmap->Comm()));
+#endif
 }
 
 

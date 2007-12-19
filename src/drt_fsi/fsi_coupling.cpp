@@ -4,6 +4,8 @@
 #include "fsi_coupling.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
 
+#include "fsi_conditiondofmap.H"
+
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -25,26 +27,36 @@ FSI::Coupling::Coupling()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Coupling::SetupConditionCoupling(const DRT::Discretization& masterdis,
-                                           const DRT::Discretization& slavedis,
-                                           std::string coupname)
+void FSI::Coupling::SetupConditionCoupling(const ConditionDofMap& master,
+                                           const ConditionDofMap& slave)
 {
-  set<int> masternodeset;
-  set<int> slavenodeset;
-
-  FindCondNodes(masterdis, coupname, masternodeset);
-  FindCondNodes(slavedis,  coupname, slavenodeset);
-
-  vector<int> masternodes(masternodeset.begin(), masternodeset.end());
-  vector<int> slavenodes(slavenodeset.begin(), slavenodeset.end());
-
-  SetupCoupling(masterdis, slavedis, masternodes, slavenodes);
+  SetupCoupling(master.Discret(), slave.Discret(), master.Nodes(), slave.Nodes());
 
   // test for completeness
-  if (static_cast<int>(masternodes.size())*genprob.ndim != masterdofmap_->NumMyElements())
+  if (static_cast<int>(master.Nodes().size())*genprob.ndim != masterdofmap_->NumMyElements())
     dserror("failed to setup master nodes properly");
-  if (static_cast<int>(slavenodes.size())*genprob.ndim != slavedofmap_->NumMyElements())
+  if (static_cast<int>(slave.Nodes().size())*genprob.ndim != slavedofmap_->NumMyElements())
     dserror("failed to setup slave nodes properly");
+
+  // Now swap in the maps we already had.
+  // So we did a little more work than required. But there are cases
+  // where we have to do that work (fluid-ale coupling) and we want to
+  // use just one setup implementation.
+  //
+  // The point is to make sure there is only one map for each
+  // interface.
+
+  if (not masterdofmap_->SameAs(*master.CondDofMap()))
+    dserror("master dof map mismatch");
+
+  if (not slavedofmap_->SameAs(*slave.CondDofMap()))
+    dserror("master dof map mismatch");
+
+  masterdofmap_ = master.CondDofMap();
+  masterexport_ = rcp(new Epetra_Export(*permmasterdofmap_, *masterdofmap_));
+
+  slavedofmap_ = slave.CondDofMap();
+  slaveexport_ = rcp(new Epetra_Export(*permslavedofmap_, *slavedofmap_));
 }
 
 
@@ -339,29 +351,6 @@ void FSI::Coupling::SlaveToMaster(Teuchos::RCP<const Epetra_MultiVector> sv, Teu
   int err = mv->Export(perm,*masterexport_,Insert);
   if (err)
     dserror("Export to master distribution returned err=%d",err);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FSI::Coupling::FindCondNodes(const DRT::Discretization& dis, std::string condname, std::set<int>& nodes)
-{
-  int myrank = dis.Comm().MyPID();
-  vector<DRT::Condition*> conds;
-  dis.GetCondition(condname, conds);
-  for (unsigned i=0; i<conds.size(); ++i)
-  {
-    const vector<int>* n = conds[i]->Get<vector<int> >("Node Ids");
-    for (unsigned j=0; j<n->size(); ++j)
-    {
-      int gid = (*n)[j];
-      if (dis.HaveGlobalNode(gid) and dis.gNode(gid)->Owner()==myrank)
-      {
-        nodes.insert(gid);
-      }
-    }
-    //std::copy(n->begin(), n->end(), inserter(nodes, nodes.begin()));
-  }
 }
 
 

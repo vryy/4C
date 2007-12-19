@@ -111,21 +111,13 @@ MFSI::OverlapAlgorithm::OverlapAlgorithm(Epetra_Comm& comm)
 
   // structure to fluid
 
-  coupsf.SetupConditionCoupling(*StructureField()->Discretization(),
-                                 *FluidField()->Discretization(),
-                                 "FSICoupling");
-
-  coupsf.SetupInnerDofMaps(*StructureField()->Discretization()->DofRowMap(),
-                           *FluidField()->Discretization()->DofRowMap());
+  coupsf.SetupConditionCoupling(StructureField()->Interface(),
+                                FluidField()->Interface());
 
   // structure to ale
 
-  coupsa.SetupConditionCoupling(*StructureField()->Discretization(),
-                                 *AleField()->Discretization(),
-                                 "FSICoupling");
-
-  coupsa.SetupInnerDofMaps(*StructureField()->Discretization()->DofRowMap(),
-                           *AleField()->Discretization()->DofRowMap());
+  coupsa.SetupConditionCoupling(StructureField()->Interface(),
+                                AleField()->Interface());
 
   // In the following we assume that both couplings find the same dof
   // map at the structural side. This enables us to use just one
@@ -147,9 +139,9 @@ MFSI::OverlapAlgorithm::OverlapAlgorithm(Epetra_Comm& comm)
   const Epetra_Map* alenodemap   = AleField()->Discretization()->NodeRowMap();
 
   coupfa.SetupCoupling(*FluidField()->Discretization(),
-                        *AleField()->Discretization(),
-                        *fluidnodemap,
-                        *alenodemap);
+                       *AleField()->Discretization(),
+                       *fluidnodemap,
+                       *alenodemap);
 
   FluidField()->SetMeshMap(coupfa.MasterDofMap());
 
@@ -167,10 +159,15 @@ MFSI::OverlapAlgorithm::OverlapAlgorithm(Epetra_Comm& comm)
   int numBlocks = 4;
   std::vector<Teuchos::RCP<const Thyra::VectorSpaceBase<double> > > vecSpaces(numBlocks);
 
-  vecSpaces[0] = Thyra::create_VectorSpace(coupsf.MasterInnerDofMap());
-  vecSpaces[1] = Thyra::create_VectorSpace(coupsf.MasterDofMap());
-  vecSpaces[2] = Thyra::create_VectorSpace(coupsf.SlaveInnerDofMap());
-  vecSpaces[3] = Thyra::create_VectorSpace(coupsa.SlaveInnerDofMap());
+  simap_ = Thyra::create_VectorSpace(StructureField()->Interface().OtherDofMap());
+  sgmap_ = Thyra::create_VectorSpace(StructureField()->Interface().CondDofMap());
+  fimap_ = Thyra::create_VectorSpace(FluidField()    ->Interface().OtherDofMap());
+  aimap_ = Thyra::create_VectorSpace(AleField()      ->Interface().OtherDofMap());
+
+  vecSpaces[0] = simap_;
+  vecSpaces[1] = sgmap_;
+  vecSpaces[2] = fimap_;
+  vecSpaces[3] = aimap_;
 
   SetDofRowMap(Teuchos::rcp(new Thyra::DefaultProductVectorSpace<double>(numBlocks, &vecSpaces[0])));
 
@@ -181,6 +178,11 @@ MFSI::OverlapAlgorithm::OverlapAlgorithm(Epetra_Comm& comm)
 /*----------------------------------------------------------------------*/
 void MFSI::OverlapAlgorithm::InitialGuess(Thyra::DefaultProductVector<double>& ig)
 {
+  SetupVector(ig,
+              StructureField()->InitialGuess(),
+              FluidField()->InitialGuess(),
+              AleField()->InitialGuess(),
+              1.0);
 }
 
 
@@ -188,6 +190,46 @@ void MFSI::OverlapAlgorithm::InitialGuess(Thyra::DefaultProductVector<double>& i
 /*----------------------------------------------------------------------*/
 void MFSI::OverlapAlgorithm::SetupRHS(Thyra::DefaultProductVector<double> &f) const
 {
+  SetupVector(f,
+              StructureField()->RHS(),
+              FluidField()->RHS(),
+              AleField()->RHS(),
+              1.0);
+
+  // NOX expects a different sign here.
+  Thyra::scale(-1., &f);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MFSI::OverlapAlgorithm::SetupVector(Thyra::DefaultProductVector<double> &f,
+                                         Teuchos::RCP<const Epetra_Vector> sv,
+                                         Teuchos::RCP<const Epetra_Vector> fv,
+                                         Teuchos::RCP<const Epetra_Vector> av,
+                                         double fluidscale) const
+{
+
+  // extract the inner and boundary dofs of all three fields
+
+  Teuchos::RCP<Epetra_Vector> sov = StructureField()->Interface().ExtractOtherVector(sv);
+  Teuchos::RCP<Epetra_Vector> fov = FluidField()    ->Interface().ExtractOtherVector(fv);
+  Teuchos::RCP<Epetra_Vector> aov = AleField()      ->Interface().ExtractOtherVector(av);
+
+  Teuchos::RCP<Epetra_Vector> scv = StructureField()->Interface().ExtractCondVector(sv);
+  Teuchos::RCP<Epetra_Vector> fcv = FluidField()    ->Interface().ExtractCondVector(fv);
+
+  scv->Update(fluidscale, *FluidToStruct(fcv), 1.0);
+
+  int numBlocks = 4;
+  std::vector<Teuchos::RCP<Thyra::VectorBase<double> > > vec(numBlocks);
+
+  vec[0] = Thyra::create_Vector(sov,simap_);
+  vec[1] = Thyra::create_Vector(scv,sgmap_);
+  vec[2] = Thyra::create_Vector(fov,fimap_);
+  vec[3] = Thyra::create_Vector(aov,aimap_);
+
+  f.initialize(DofRowMap(),&vec[0]);
 }
 
 
@@ -197,9 +239,6 @@ void MFSI::OverlapAlgorithm::SetupSysMat(Thyra::DefaultBlockedLinearOp<double>& 
 {
   // extract Jacobian matrices and put them into composite system
   // matrix W
-  //Teuchos::RCP<Thyra::LinearOpBase<double> > smat = Teuchos::rcp(new Thyra::EpetraLinearOp(StructureField()->SysMat()));
-  //Teuchos::RCP<Thyra::LinearOpBase<double> > fmat = Teuchos::rcp(new Thyra::EpetraLinearOp(FluidField()->SysMat()));
-  //Teuchos::RCP<Thyra::LinearOpBase<double> > amat = Teuchos::rcp(new Thyra::EpetraLinearOp(AleField()->SysMat()));
 
   const Coupling& coupsf = StructureFluidCoupling();
   const Coupling& coupsa = StructureAleCoupling();
@@ -211,8 +250,8 @@ void MFSI::OverlapAlgorithm::SetupSysMat(Thyra::DefaultBlockedLinearOp<double>& 
   Teuchos::RCP<Epetra_CrsMatrix> sgi;
   Teuchos::RCP<Epetra_CrsMatrix> sgg;
 
-  Teuchos::RCP<Epetra_Map> sgmap = coupsf.MasterDofMap();
-  Teuchos::RCP<Epetra_Map> simap = coupsf.MasterInnerDofMap();
+  Teuchos::RCP<Epetra_Map> sgmap = StructureField()->Interface().CondDofMap();
+  Teuchos::RCP<Epetra_Map> simap = StructureField()->Interface().OtherDofMap();
 
   Teuchos::RCP<Epetra_CrsMatrix> s = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(StructureField()->SysMat());
 
@@ -228,8 +267,8 @@ void MFSI::OverlapAlgorithm::SetupSysMat(Thyra::DefaultBlockedLinearOp<double>& 
   Teuchos::RCP<Epetra_CrsMatrix> fgi;
   Teuchos::RCP<Epetra_CrsMatrix> fgg;
 
-  Teuchos::RCP<Epetra_Map> fgmap = coupsf.SlaveDofMap();
-  Teuchos::RCP<Epetra_Map> fimap = coupsf.SlaveInnerDofMap();
+  Teuchos::RCP<Epetra_Map> fgmap = FluidField()->Interface().CondDofMap();
+  Teuchos::RCP<Epetra_Map> fimap = FluidField()->Interface().OtherDofMap();
 
   Teuchos::RCP<Epetra_CrsMatrix> f = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(FluidField()->SysMat());
 
@@ -238,10 +277,6 @@ void MFSI::OverlapAlgorithm::SetupSysMat(Thyra::DefaultBlockedLinearOp<double>& 
     dserror("failed to split fluid matrix");
   }
 
-//   fgg = coupsf.RCSlaveToMaster(fgg);
-//   fgi = coupsf.RSlaveToMaster(fgi);
-//   fig = coupsf.CSlaveToMaster(fig);
-
   // split ale matrix
 
   Teuchos::RCP<Epetra_CrsMatrix> aii;
@@ -249,8 +284,8 @@ void MFSI::OverlapAlgorithm::SetupSysMat(Thyra::DefaultBlockedLinearOp<double>& 
   Teuchos::RCP<Epetra_CrsMatrix> agi;
   Teuchos::RCP<Epetra_CrsMatrix> agg;
 
-  Teuchos::RCP<Epetra_Map> agmap = coupsa.SlaveDofMap();
-  Teuchos::RCP<Epetra_Map> aimap = coupsa.SlaveInnerDofMap();
+  Teuchos::RCP<Epetra_Map> agmap = AleField()->Interface().CondDofMap();
+  Teuchos::RCP<Epetra_Map> aimap = AleField()->Interface().OtherDofMap();
 
   Teuchos::RCP<Epetra_CrsMatrix> a = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(AleField()->SysMat());
 
@@ -258,8 +293,6 @@ void MFSI::OverlapAlgorithm::SetupSysMat(Thyra::DefaultBlockedLinearOp<double>& 
   {
     dserror("failed to split ale matrix");
   }
-
-//   aig = coupsa.CSlaveToMaster(aig);
 
   // build block matrix
 
