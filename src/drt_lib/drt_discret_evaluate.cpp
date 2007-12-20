@@ -139,6 +139,39 @@ void DRT::Discretization::Evaluate(ParameterList&                params,
 
 
 /*----------------------------------------------------------------------*
+ |  evaluate (public)                                           vg 12/07|
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::Evaluate(ParameterList&                params,
+                                   RefCountPtr<Epetra_CrsMatrix> systemmatrix,
+                                   RefCountPtr<Epetra_Vector>    systemvector,
+                                   RefCountPtr<Epetra_Vector>    systemvector2)
+{
+  params.set("assemble matrix 1",true);
+  params.set("assemble matrix 2",false);
+  params.set("assemble vector 1",true);
+  params.set("assemble vector 2",true);
+  params.set("assemble vector 3",false);
+  Evaluate(params, systemmatrix, null, systemvector, systemvector2, null);
+}
+
+/*----------------------------------------------------------------------*
+ |  evaluate (public)                                           vg 11/07|
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::Evaluate(ParameterList&                params,
+                                   RefCountPtr<Epetra_CrsMatrix> systemmatrix,
+                                   RefCountPtr<Epetra_CrsMatrix> systemmatrix2,
+                                   RefCountPtr<Epetra_Vector>    systemvector,
+                                   RefCountPtr<Epetra_Vector>    systemvector2)
+{
+  params.set("assemble matrix 1",true);
+  params.set("assemble matrix 2",true);
+  params.set("assemble vector 1",true);
+  params.set("assemble vector 2",true);
+  params.set("assemble vector 3",false);
+  Evaluate(params, systemmatrix, systemmatrix2, systemvector, systemvector2, null);
+}
+
+/*----------------------------------------------------------------------*
  |  evaluate Neumann conditions (public)                     mwgee 12/06|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::EvaluateNeumann(ParameterList& params, Epetra_Vector& systemvector)

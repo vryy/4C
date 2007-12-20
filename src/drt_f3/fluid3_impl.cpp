@@ -53,7 +53,8 @@ DRT::Elements::Fluid3Impl::Fluid3Impl(int iel)
     conv_old_(3),
     visc_old_(3),
     res_old_(3),
-    xder2_(6,3,blitz::ColumnMajorArray<2>())
+    xder2_(6,3,blitz::ColumnMajorArray<2>()),
+    numepn_(iel_)
 {
 }
 
@@ -70,6 +71,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
                                        blitz::Array<double,2>&           estif,
                                        blitz::Array<double,2>&           esv,
                                        blitz::Array<double,1>&           eforce,
+                                       blitz::Array<double,1>&           sugrvisc,
                                        struct _MATERIAL*       material,
                                        double                  time,
                                        double                  timefac,
@@ -85,7 +87,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
   // set element data
   const DRT::Element::DiscretizationType distype = ele->Shape();
 
-  // get node coordinates
+  // get node coordinates and number of elements per node
   DRT::Node** nodes = ele->Nodes();
   for (int inode=0; inode<iel_; inode++)
   {
@@ -93,6 +95,8 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
     xyze_(0,inode) = x[0];
     xyze_(1,inode) = x[1];
     xyze_(2,inode) = x[2];
+
+    numepn_(inode) = nodes[inode]->NumElement();
   }
 
   // add displacement, when fluid nodes move in the ALE case
@@ -249,7 +253,9 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
     const double ttimetauMp = timefac * timetauMp;
     const double timefacfac = timefac * fac;
 
-    const double vartfac = vart_*timefacfac;
+    // subgrid-viscosity factor
+    //const double vartfac = vart_*timefacfac;
+    const double vartfac = timefacfac;
 
     /*------------------------- evaluate rhs vector at integration point ---*/
     // no switch here at the moment w.r.t. is_ale
@@ -1729,6 +1735,13 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
                                                         derxy_(1, ui)*derxy_(1, vi)
                                                         +
                                                         2.0*derxy_(2, ui)*derxy_(2, vi)) ;
+
+          /* subgrid-viscosity-scaling vector */
+          const double meanvart = vart_/numepn_(vi);
+          sugrvisc(vi*4)   = meanvart;
+          sugrvisc(vi*4+1) = meanvart;
+          sugrvisc(vi*4+2) = meanvart;
+
           }
         }
       }

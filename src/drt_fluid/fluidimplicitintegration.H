@@ -275,6 +275,7 @@ protected:
   /// and (fine-scale) subgrid-viscosity residual vector
   RefCountPtr<Epetra_Vector>    residual_;
   RefCountPtr<Epetra_Vector>    residual_sv_;
+  RefCountPtr<Epetra_Vector>    sugrvisc_;
 
   /// true (rescaled) residual vector without zeros at dirichlet positions
   RefCountPtr<Epetra_Vector>    trueresidual_;

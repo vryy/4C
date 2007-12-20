@@ -89,7 +89,7 @@ int DRT::Elements::Condif2::Evaluate(ParameterList& params,
       const int fssgd = params.get<int>("fs subgrid viscosity",0);
 
       // calculate element coefficient matrix and rhs
-      condif2_sys_mat(lm,myhist,&elemat1,&elemat2,&elevec1,actmat,time,timefac,vel_field,fssgd,is_stationary);
+      condif2_sys_mat(lm,myhist,&elemat1,&elemat2,&elevec1,elevec2,actmat,time,timefac,vel_field,fssgd,is_stationary);
 
     }
     break;
@@ -127,6 +127,7 @@ void DRT::Elements::Condif2::condif2_sys_mat(vector<int>&              lm,
                                          Epetra_SerialDenseMatrix* sys_mat,
                                          Epetra_SerialDenseMatrix* sys_mat_sd,
                                          Epetra_SerialDenseVector* residual,
+                                         Epetra_SerialDenseVector& sugrvisc,
                                          struct _MATERIAL*         material,
                                          double                    time,
                                          double                    timefac,
@@ -316,6 +317,11 @@ void DRT::Elements::Condif2::condif2_sys_mat(vector<int>&              lm,
     xi1 = DMAX(epe1,1.0);
 
     kart = (DSQR(hk)*mk*DSQR(vel_norm))/(2.0*diffus*xi1);
+
+    for (int vi=0; vi<iel; ++vi)
+    {
+      sugrvisc(vi) = kart/Nodes()[vi]->NumElement();
+    }
   }
 
   /*----------------------------------------------------------------------*/
@@ -874,8 +880,10 @@ for (int i=0; i<iel; i++) /* loop over nodes of element */
 if (fssgd == 1)
 {
   // parameter for artificial diffusivity
-  const double kartfac = kart*timefacfac;
-  const double taumfac = tau*timefacfac;
+  const double kartfac = timefacfac;
+  //const double kartfac = kart*timefacfac;
+  const double taumfac = 0.0;
+  //const double taumfac = tau*timefacfac;
 
   #define esd_(i,j)    esd(i,j)
   #define derxy_(i,j)  derxy(i,j)
@@ -1010,8 +1018,10 @@ for (int i=0; i<iel; i++) /* loop over nodes of element */
 if (fssgd == 1)
 {
   // parameter for artificial diffusivity
-  const double kartfac = kart*fac;
-  const double taumfac = tau*fac;
+  const double kartfac = fac;
+  //const double kartfac = kart*fac;
+  const double taumfac = 0.0;
+  //const double taumfac = tau*fac;
 
   #define esd_(i,j)    esd(i,j)
   #define derxy_(i,j)  derxy(i,j)

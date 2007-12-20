@@ -526,42 +526,59 @@ void CondifImplicitTimeInt::Solve(
     // decide whether VM3-based solution approach or standard approach
     if (fssgd_ > 0)
     {
-      // define flag for computation in first time step
+      // extract the ML parameters
+      ParameterList&  mllist = solver_.Params().sublist("ML Parameters");
+
+      // subgrid-viscosity-scaling vector
+      sugrvisc_     = LINALG::CreateVector(*dofrowmap,true);
+
+      // define flag for computation of matrices (true only in first time step)
       bool compute;
+
       if (step_ == 1) 
       {
         compute=true;
 
         // create scale-separation matrix
         scalesep_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+
+        // create (fine-scale) subgrid-diffusivity matrix
+        sysmat_sd_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_); 
+
+        // call loop over elements (two matrices + subgr.-visc.-scal. vector)
+        discret_->Evaluate(eleparams,sysmat_,sysmat_sd_,residual_,sugrvisc_);
+        discret_->ClearState();
+
+        // finalize the (fine-scale) subgrid-diffusivity matrix
+        LINALG::Complete(*sysmat_sd_);
+
+        // apply DBC to (fine-scale) subgrid-diffusivity matrix
+        LINALG::ApplyDirichlettoSystem(sysmat_sd_,phinp_,residual_,phinp_,dirichtoggle_);
+
+        // call the VM3 constructor
+        RCP<VM3_Solver> vm3_solver = rcp(new VM3_Solver::VM3_Solver(scalesep_,sysmat_sd_,sysmat_,sugrvisc_,zeros_,zeros_,zeros_,dirichtoggle_,mllist,compute) );
+
+        // call the VM3 scale separator: precomputation of unscaled S^T*M*S
+        vm3_solver-> VM3_Solver::Separate(scalesep_,sysmat_sd_);
       }
-      else compute=false; 
+      else
+      {
+        compute=false;
 
-      // create (fine-scale) subgrid-diffusivity matrix
-      sysmat_sd_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_); 
+        // call loop over elements (one matrix + subgr.-visc.-scal. vector)
+        discret_->Evaluate(eleparams,sysmat_,residual_,sugrvisc_);
+        discret_->ClearState();
+      }
+      // call the VM3 constructor
+      RCP<VM3_Solver> vm3_solver = rcp(new VM3_Solver::VM3_Solver(scalesep_,sysmat_sd_,sysmat_,sugrvisc_,zeros_,zeros_,zeros_,dirichtoggle_,mllist,compute) );
 
-      // call loop over elements (two system matrices will be filled)
-      discret_->Evaluate(eleparams,sysmat_,sysmat_sd_,residual_);
-      discret_->ClearState();
-
-      // finalize the (fine-scale) subgrid-diffusivity matrix
-      LINALG::Complete(*sysmat_sd_);
-
-      // apply DBC to (fine-scale) subgrid-diffusivity matrix
-      LINALG::ApplyDirichlettoSystem(sysmat_sd_,phinp_,residual_,phinp_,dirichtoggle_);
-
-      // extract the ML parameters
-      ParameterList&  mllist = solver_.Params().sublist("ML Parameters");
-
-      // call the VM3 constructor (will only be effective on the first call)
-      RCP<VM3_Solver> vm3_solver = rcp(new VM3_Solver::VM3_Solver(scalesep_,sysmat_sd_,sysmat_,zeros_,zeros_,zeros_,dirichtoggle_,mllist,compute) );
-
-      // call the VM3 scale separator
-      vm3_solver-> VM3_Solver::Separate(scalesep_,sysmat_sd_,sysmat_,zeros_,zeros_,zeros_,false );
+      // call the VM3 scaling:
+      // scale precomputed matrix product by subgrid-viscosity-scaling vector
+      vm3_solver->VM3_Solver::Scale(sysmat_sd_,sysmat_,sugrvisc_,zeros_,zeros_,zeros_,false );
     }
     else
     {
-      // call loop over elements
+      // call standard loop over elements
       discret_->Evaluate(eleparams,sysmat_,residual_);
       discret_->ClearState();
     }

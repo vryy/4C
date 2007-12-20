@@ -431,7 +431,6 @@ public:
   - column map of elements
   - pointers from elements to nodes
   - pointers from nodes to elements
-  - pointers from elements to elements
   - assigns degrees of freedoms
   - map of element register classes
   - calls all element register initialize methods
@@ -864,6 +863,75 @@ public:
                 RefCountPtr<Epetra_Vector>    systemvector);
 
 
+  /// Call elements to evaluate
+  /*!
+    Abbreviated Evaluate() call that always assembles one matrix and
+    TWO vectors. No need to set assemble instructions to the
+    ParameterList.
+
+    \param params (in): Parameter list past to the elements containing
+                        commands and parameters for the elements and
+                        containing assembly intructions
+    \param systemmatrix (out) : Sparse matrix that may be filled by
+                                assembly of element contributions.
+                                May not be Teuchos::null.
+                                Matrix must be systemmatrix->Filled()==false on input.
+    \param systemvector (out) : Distributed vector that may be filled by
+                                assembly of element contributions.
+                                May not be Teuchos::null.
+                                Vector will NOT be initialized to zero by
+                                the underlying assembly methods that add element
+                                contributions.
+    \param systemvector2 (out) : Distributed vector that may be filled by
+                                 assembly of element contributions.
+                                 May not be Teuchos::null.
+                                 Vector will NOT be initialized to zero by
+                                 the underlying assembly methods that add element
+                                 contributions.
+   */
+  void Evaluate(ParameterList&                params,
+                RefCountPtr<Epetra_CrsMatrix> systemmatrix,
+                RefCountPtr<Epetra_Vector>    systemvector,
+                RefCountPtr<Epetra_Vector>    systemvector2);
+
+
+  /// Call elements to evaluate
+  /*!
+    Abbreviated Evaluate() call that always assembles TWO matrices and
+    TWO vectors. No need to set assemble instructions to the
+    ParameterList.
+
+    \param params (in): Parameter list past to the elements containing
+                        commands and parameters for the elements and
+                        containing assembly intructions
+    \param systemmatrix (out) : Sparse matrix that may be filled by
+                                assembly of element contributions.
+                                May not be Teuchos::null.
+                                Matrix must be systemmatrix->Filled()==false on input.
+    \param systemmatrix2 (out) : Sparse matrix that may be filled by
+                                 assembly of element contributions.
+                                 May not be Teuchos::null.
+                                 Matrix must be systemmatrix->Filled()==false on input.
+    \param systemvector (out) : Distributed vector that may be filled by
+                                assembly of element contributions.
+                                May not be Teuchos::null.
+                                Vector will NOT be initialized to zero by
+                                the underlying assembly methods that add element
+                                contributions.
+    \param systemvector2 (out) : Distributed vector that may be filled by
+                                 assembly of element contributions.
+                                 May not be Teuchos::null.
+                                 Vector will NOT be initialized to zero by
+                                 the underlying assembly methods that add element
+                                 contributions.
+   */
+  void Evaluate(ParameterList&                params,
+                RefCountPtr<Epetra_CrsMatrix> systemmatrix,
+                RefCountPtr<Epetra_CrsMatrix> systemmatrix2,
+                RefCountPtr<Epetra_Vector>    systemvector,
+                RefCountPtr<Epetra_Vector>    systemvector2);
+
+
   /*!
   \brief Evaluate Neumann boundary conditions
 
@@ -1137,13 +1205,6 @@ private:
   */
   virtual void BuildElementToNodePointers();
 
-#ifdef ELEMINTERFACES
-  /*!
-  \brief Build pointers elements -> elements for interface-elements (Filled()==true NOT prerequisite)
-  */
-  virtual void BuildElementToElementPointers();  
-#endif //ELEMINTERFACES
-  
   /*!
   \brief Build pointers Node -> Element (Filled()==true NOT prerequisite)
 

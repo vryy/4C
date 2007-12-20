@@ -305,6 +305,7 @@ private:
                    Epetra_SerialDenseMatrix* sys_mat,
                    Epetra_SerialDenseMatrix* sys_mat_sd,
                    Epetra_SerialDenseVector* residual,
+                   Epetra_SerialDenseVector& sugrvisc,
                    struct _MATERIAL*         material,
                    double                    time,
                    double                    timefac,

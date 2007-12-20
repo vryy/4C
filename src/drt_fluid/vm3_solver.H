@@ -69,6 +69,7 @@ public:
   explicit VM3_Solver( RefCountPtr<Epetra_CrsMatrix>& Sep,
                        RefCountPtr<Epetra_CrsMatrix>& Aplus,
                        RefCountPtr<Epetra_CrsMatrix>& A,
+                       RefCountPtr<Epetra_Vector>& sugrvisc,
                        RefCountPtr<Epetra_Vector>& rplus,
                        RefCountPtr<Epetra_Vector>& r,
                        RefCountPtr<Epetra_Vector>& sol,
@@ -101,29 +102,82 @@ public:
 
 
   /*!
-  \brief Compute the vm3 solver
+  \brief routine for generating the scale-separation matrix S
 
-   Compute the vm3 solver
+   (will only be called in the first timestep) 
+
   */
   bool Compute();
 
   /*!
-  \brief Apply the VM3 solver
+  \brief scale-separating routine
 
-   Perform one sweep of the VM3 solver
+   precomputation of unscaled S^T*M*S
+   (called in the first timestep)
 
+   \param Sep  (In)       : scale-separation matrix
+   \param Aplus (In/Out)  : (fine-scale) subgrid-viscosity matrix
 
-   \param X  (In)  : Epetra_MultiVector matching the fine level map of this
-                     solver
-   \param Y (Out)  : Epetra_MultiVector containing the result on output
   */
    void Separate(RefCountPtr<Epetra_CrsMatrix>& Sep,
-                     RefCountPtr<Epetra_CrsMatrix>& Aplus,
-                     RefCountPtr<Epetra_CrsMatrix>& A,
-                     RefCountPtr<Epetra_Vector>& rplus,
-                     RefCountPtr<Epetra_Vector>& r,
-                     RefCountPtr<Epetra_Vector>& sol,
-                     bool increm);
+                 RefCountPtr<Epetra_CrsMatrix>& Aplus);
+
+  /*!
+  \brief scaling routine
+
+   scale precomput. matrix product by subgrid-viscosity-scaling vector
+   (called in every timestep)
+
+   \param Aplus (In)      : (fine-scale) subgrid-viscosity matrix
+   \param A (In/Out)      : complete system matrix
+   \param sugrvisc (In)   : subgrid-viscosity-scaling vector
+   \param rplus (In)      : (fine-scale) subgrid-viscosity rhs vector
+   \param r (In/Out)      : complete rhs vector
+   \param sol (In)        : current solution vector
+   \param increm (In)     : flag for incremental formulation
+
+  */
+   void Scale(RefCountPtr<Epetra_CrsMatrix>& Aplus,
+              RefCountPtr<Epetra_CrsMatrix>& A,
+              RefCountPtr<Epetra_Vector>& sugrvisc,
+              RefCountPtr<Epetra_Vector>& rplus,
+              RefCountPtr<Epetra_Vector>& r,
+              RefCountPtr<Epetra_Vector>& sol,
+              bool increm);
+
+  /*!
+  \brief Add a Epetra_CrsMatrix to another, where the first one is vector-scaled: B = B + A*vector
+
+  Add one matrix to another. the matrix B to be added to must not be
+  completed. Sparsity patterns of A and B need not match and A and B can be
+  nonsymmetric in value and pattern.
+  Range, Row and Domain maps of A and B have to match.
+
+  Note that this is a true parallel add!
+
+  \param A          (in)     : Matrix to add to B (must have Filled()==true)
+  \param V          (in)     : scaling vector for A
+  \param B          (in/out) : Matrix to be added to (must have Filled()==false)
+  */
+  void AddVecScal(const Epetra_CrsMatrix& A, const Epetra_Vector& V,
+                        Epetra_CrsMatrix& B);
+
+  /*!
+  \brief Add a Epetra_CrsMatrix to another, where the first one is vector-scaled: B = B + A*vector
+
+  Add one matrix to another. the matrix B to be added to must not be
+  completed. Sparsity patterns of A and B need not match and A and B can be
+  nonsymmetric in value and pattern.
+  Range, Row and Domain maps of A and B have to match.
+
+  Note that this is a true parallel add!
+
+  \param A          (in)     : Matrix to add to B (must have Filled()==true)
+  \param V          (in)     : scaling vector for A
+  \param B          (in/out) : Matrix to be added to (must have Filled()==false)
+  */
+  void AddVecScalMult(const Epetra_CrsMatrix& A, const Epetra_Vector& S,
+                      const Epetra_Vector& V, Epetra_CrsMatrix& B, Epetra_Vector& R);
 
 
 private:
@@ -132,19 +186,19 @@ private:
   VM3_Solver(VM3_Solver& old);
   VM3_Solver operator = (const VM3_Solver& old);
 
-  bool                           compute_;  // flag indicating whether scale-separation matrix should be computed
+  bool compute_;  // flag whether scale-separation matrix should be computed
 
-  ParameterList&                 mlparams_;    // ML parameter list
+  ParameterList& mlparams_;    // ML parameter list
 
-  RCP<Epetra_CrsMatrix>& Sep_;       // input matrix including fine-scale term
-  RCP<Epetra_CrsMatrix>& Aplus_;     // input matrix including fine-scale term
-  RCP<Epetra_CrsMatrix>& A_;         // input matrix without fine-scale term
-  RCP<Epetra_Vector>& rplus_;
-  RCP<Epetra_Vector>& r_;
-  RCP<Epetra_Vector>& sol_;
-  const RCP<Epetra_Vector>& dbctoggle_;
-  Operator               Ptent_;
-  Operator               Rtent_;
+  RCP<Epetra_CrsMatrix>& Sep_;       // scale-separation matrix
+  RCP<Epetra_CrsMatrix>& Aplus_;     // (fine-scale) subgrid-viscosity matrix
+  RCP<Epetra_CrsMatrix>& A_;         // complete system matrix
+  RCP<Epetra_Vector>& sugrvisc_;     // subgrid-viscosity-scaling vector
+  RCP<Epetra_Vector>& rplus_;        // (fine-scale) subgrid-viscosity rhs vector
+  RCP<Epetra_Vector>& r_;            // complete rhs vector
+  RCP<Epetra_Vector>& sol_;          // current solution vector
+
+  const RCP<Epetra_Vector>& dbctoggle_;  // DBC toggle vector
 
 }; // VM3_Solver
 

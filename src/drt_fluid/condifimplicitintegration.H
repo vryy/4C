@@ -189,6 +189,7 @@ protected:
 
   /// The residual vector
   RefCountPtr<Epetra_Vector>    residual_;
+  RefCountPtr<Epetra_Vector>    sugrvisc_;
 
   /// time derivatives of phi at time n and n-1
   RefCountPtr<Epetra_Vector>    phidtn_;

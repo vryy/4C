@@ -100,6 +100,7 @@ namespace Elements
                 blitz::Array<double,2>&           estif,
                 blitz::Array<double,2>&           esv,
                 blitz::Array<double,1>&           eforce,
+                blitz::Array<double,1>&           sugrvisc,
                 struct _MATERIAL*       material,
                 double                  time,
                 double                  timefac,
@@ -164,6 +165,7 @@ namespace Elements
     blitz::Array<double,1> visc_old_;
     blitz::Array<double,1> res_old_;
     blitz::Array<double,2> xder2_;
+    blitz::Array<int,1> numepn_;
   };
 
 }

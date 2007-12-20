@@ -441,6 +441,9 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
         blitz::Array<double, 1> eforce(elevec1.Values(),
                                        blitz::shape(elevec1.Length()),
                                        blitz::neverDeleteData);
+        blitz::Array<double, 1> sugrvisc(elevec2.Values(),
+                                         blitz::shape(elevec2.Length()),
+                                         blitz::neverDeleteData);
 
         // calculate element coefficient matrix and rhs     
         Impl()->Sysmat(this,
@@ -452,6 +455,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
                        estif,
                        esv,
                        eforce,
+                       sugrvisc,
                        actmat,
                        time,
                        timefac,
@@ -1193,6 +1197,9 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
           blitz::Array<double, 1> eforce(elevec1.Values(),
                                          blitz::shape(elevec1.Length()),
                                          blitz::neverDeleteData);
+          blitz::Array<double, 1> sugrvisc(elevec2.Values(),
+                                           blitz::shape(elevec2.Length()),
+                                           blitz::neverDeleteData);
 
           // calculate element coefficient matrix and rhs         
           StationaryImpl()->Sysmat(this,
@@ -1201,6 +1208,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
                          estif,
                          esv,
                          eforce,
+                         sugrvisc,
                          actmat,
                          pseudotime,
                          newton ,
