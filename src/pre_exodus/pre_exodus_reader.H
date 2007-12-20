@@ -21,6 +21,8 @@ is handed to a c++ object mesh.
 
 #include <string>
 #include <iostream>
+#include <vector>
+#include <Teuchos_RefCountPtr.hpp>
 
 extern "C" /* stuff which is c and is accessed from c++ */
 {
@@ -28,7 +30,19 @@ extern "C" /* stuff which is c and is accessed from c++ */
 }
 
 using namespace std;
+using namespace Teuchos;
 
+//forward declaration
+class Entity;
+
+/*!
+\class Mesh
+
+\brief Mesh will in future store all information necessary to build a mesh
+
+
+\author maf (frenzel@lnm.mw.tum.de)
+*/
 class Mesh
 {
 public:
@@ -48,6 +62,9 @@ public:
   void Print(ostream& os) const;
   
 private:
+  
+  vector<RCP<Entity> > myEntities_;
+  
   //! number of dimensions
   int num_dim_;
   //! number of nodes
@@ -118,6 +135,8 @@ private:
   string entity_name_;
   //! entity type name
   string entity_type_;
+  //! property name (so far provided from ICEM for NodeSets
+  string entity_prop_name_;
 
 };
 

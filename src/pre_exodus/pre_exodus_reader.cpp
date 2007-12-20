@@ -19,6 +19,7 @@ is handed to a c++ object mesh.
 #include "pre_exodus_reader.H"
 
 using namespace std;
+using namespace Teuchos;
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 12/07|
@@ -48,49 +49,87 @@ Mesh::Mesh(string exofilename)
   // num_entities_ are all ElementBlocks, NodeSets, and SideSets together
   num_entities_ = num_elem_blk_ + num_node_sets_ + num_side_sets_;
   
-  
+  myEntities_.reserve(num_entities_);   
   // entityconuter counts all ElementBlocks, NodeSets, and SideSets together
   int entitycounter = 0;
   
   // get all ElementBlocks
+  int epropID[num_elem_blk_];
+  error = ex_get_prop_array(exoid_, EX_ELEM_BLOCK, "ID", epropID);
   for (int i = 0; i < num_elem_blk_; ++i) {
-    Entity myentity(exoid_,entitycounter,i+1,Entity::elem_blk);
+    //RCP<Entity> myentity = rcp(new Entity(exoid_,entitycounter,epropID[i],Entity::elem_blk));
+    myEntities_[entitycounter] = rcp(new Entity(exoid_,entitycounter,epropID[i],Entity::elem_blk));
+    myEntities_[entitycounter]->Print(cout);
     entitycounter++;
-    
-    myentity.Print(cout);
   }
   
   // get all NodeSets
+  int npropID[num_node_sets_];
+  error = ex_get_prop_array(exoid_, EX_NODE_SET, "ID", npropID);
   for (int i = 0; i < num_node_sets_; ++i) {
-    Entity myentity(exoid_,entitycounter,i+1,Entity::node_set);
+    Entity myentity(exoid_,entitycounter,npropID[i],Entity::node_set);
     entitycounter++;
 
     myentity.Print(cout);
   }
   
   // get all SideSets
+  int spropID[num_side_sets_];
+  error = ex_get_prop_array(exoid_, EX_SIDE_SET, "ID", spropID);
   for (int i = 0; i < num_side_sets_; ++i) {
-    Entity myentity(exoid_,entitycounter,i+1,Entity::side_set);
+    Entity myentity(exoid_,entitycounter,spropID[i],Entity::side_set);
     entitycounter++;
     
     myentity.Print(cout);
   }
+  
+  myEntities_[0]->Print(cout);
 
-  /* Read NodeSet property names
-   * They are assigned by ICEM and provide recognition */
-  // read number of node set properties
-  int num_props;
-  float fdum;
-  char *cdum;
-  error = ex_inquire (exoid_, EX_INQ_NS_PROP, &num_props, &fdum, cdum);
-  // allocate memory for NodeSet property names
-  char** prop_names = new char*[num_props];
-  for (int i=0; i<num_props; ++i)
-  {
-     prop_names[i] = new char[MAX_STR_LENGTH+1];
-  }
-  // get prop names of node sets  
-  error = ex_get_prop_names(exoid_,EX_NODE_SET,prop_names);
+//  /* Read NodeSet property names
+//   * They are assigned by ICEM and provide recognition */
+//  // read number of node set properties
+//  int num_props;
+//  float fdum;
+//  char *cdum;
+//  error = ex_inquire (exoid_, EX_INQ_NS_PROP, &num_props, &fdum, cdum);
+//  // allocate memory for NodeSet property names
+//  char** prop_names = new char*[num_props];
+//  for (int i=0; i<num_props; ++i)
+//  {
+//     prop_names[i] = new char[MAX_STR_LENGTH+1];
+//  }
+//  // get prop names of node sets  
+//  error = ex_get_prop_names(exoid_,EX_NODE_SET,prop_names);
+//  /* Read NodeSet property names
+//   * The first name refers to the ID!!
+//   * They are assigned by ICEM and provide recognition */
+//  // read number of node set properties
+//  int num_props;
+//  float fdum;
+//  char *cdum;
+//  error = ex_inquire (exoid, EX_INQ_NS_PROP, &num_props, &fdum, cdum);
+//  
+//  // allocate memory for NodeSet property names
+//  char** prop_names = new char*[num_props];
+//  for (int i=0; i<num_props; ++i)
+//  {
+//     prop_names[i] = new char[MAX_STR_LENGTH+1];
+//  }
+//  // get prop names of node sets  
+//  error = ex_get_prop_names(exoid,EX_NODE_SET,prop_names);
+////    for (int i=0; i<num_props; ++i)   
+////    {
+////      printf("%3d   %s\n",i,prop_names[i]);
+////    }
+//  
+//  // prefer string to store name
+//  if (num_props > 1){
+////      string propname(prop_names[typeID], int(MAX_STR_LENGTH));
+////      entity_prop_name_ = propname;
+//  } else entity_prop_name_ = "none";
+
+  
+  
 
   
 
@@ -150,12 +189,14 @@ Entity::Entity(int exoid, int entityID, int typeID, EntityType entitytype)
     
     // number of nodes for blocks is:
     num_nodes_ = num_nod_per_elem_ * num_el_in_blk_;
+    // property name (not yet supported for ElementBlocks)
+    entity_prop_name_ = "None";
     break;
   }
   case node_set:
   {
     entity_type_ = "NodeSet";
-    int num_nodes_in_set, num_df_in_set;
+    int num_nodes_in_set=0, num_df_in_set=0;
     error = ex_get_node_set_param (exoid, typeID, &num_nodes_in_set,&num_df_in_set);
     num_nodes_ = num_nodes_in_set;
     
@@ -170,6 +211,7 @@ Entity::Entity(int exoid, int entityID, int typeID, EntityType entitytype)
     elem_type_ = "No Element Type";
     num_nod_per_elem_ = 0;
     num_el_in_blk_ = 0;
+    entity_prop_name_ = "None";
     break;
   }
   case side_set:
@@ -183,6 +225,7 @@ Entity::Entity(int exoid, int entityID, int typeID, EntityType entitytype)
     entity_name_ = sidesetname;
     
     elem_type_ = "Side Sets not yet supported";
+    entity_prop_name_ = "none";
     break;
   }
   default: cout << "EntityType not valid" << endl;
@@ -205,7 +248,8 @@ void Entity::Print(ostream& os) const
   os << " is named " << entity_name_ << endl;
   os << "with " << num_nodes_ << " Nodes in cloud" << endl;
   os << "Additional Info: " << endl;
-  os << "Element Type: " << elem_type_;
+  os << "Property Name: " << entity_prop_name_ << endl;
+  os << ", Element Type: " << elem_type_ << endl;
   os << ", Num Attr: " << num_attr_;
   os << ", ele per block: " << num_el_in_blk_ << ", num per ele: " << num_nod_per_elem_ << endl << endl;
   return;
