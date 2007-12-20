@@ -86,6 +86,13 @@ int main(
         writer.WriteFiles();
         break;
     }
+    case prb_condif:
+    {
+        PostField* field = problem.get_discretization(0);
+        ConDifEnsightWriter writer(field, problem.outname());
+        writer.WriteFiles();
+        break;
+    }
     case prb_fluid_xfem:
     {
         cout << "Output XFEM Problem" << endl;

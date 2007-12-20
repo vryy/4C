@@ -752,11 +752,12 @@ void EnsightWriter::WriteResultStep(
 			datamap.MyGlobalElements(),
 			0,
 			datamap.Comm()));
-
+#if 0
 	if (epetradatamap->PointSameAs(*proc0map_))
-		cout<<"identical maps"<<endl;
+		cout<<"INFO: proc0map and epetradatamap are identical."<<endl;
 	// check if the data is distributed over several processors
-	//bool isdistributed = (data->DistributedGlobal());
+	bool isdistributed = (data->DistributedGlobal());
+#endif
 
 	//------------------------------------------------------
 	// each processor provides its result values for proc 0

@@ -78,6 +78,32 @@ protected:
             PostField* field);
 };
 
+
+/*----------------------------------------------------------------------*/
+/* 
+ \brief Writer for convection-diffusion problems
+ 
+ \author gjb
+ \date 12/07
+*/
+/*----------------------------------------------------------------------*/
+class ConDifEnsightWriter : public EnsightWriter
+{
+public:
+    ConDifEnsightWriter(
+            PostField* field,
+            string filename) :
+        EnsightWriter(field, filename)
+    {
+    }
+
+protected:
+
+    virtual void WriteAllResults(
+            PostField* field);
+};
+
+
 /*----------------------------------------------------------------------*/
 /*
  \brief Writer for fluid problems including xfem interfaces
