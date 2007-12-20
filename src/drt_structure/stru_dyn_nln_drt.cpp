@@ -172,8 +172,9 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<int>   ("max iterations",sdyn.get<int>("MAXITER"));
       genalphaparams.set<int>   ("num iterations",-1);
       genalphaparams.set<double>("tolerance displacements",sdyn.get<double>("TOLDISP"));
+      genalphaparams.set<double>("tolerance residual",sdyn.get<double>("TOLRES"));
       genalphaparams.set<bool>  ("contact",static_cast<bool>(sdyn.get<int>("CONTACT")));
-      
+
       genalphaparams.set<double>("uzawa parameter",sdyn.get<double>("UZAWAPARAM"));
       genalphaparams.set<int>("uzawa maxiter",sdyn.get<int>("UZAWAMAXITER"));
 

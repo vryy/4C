@@ -26,6 +26,7 @@ Maintainer: Michael Gee
 #include "../drt_contact/drt_contact_manager.H"
 #include "../drt_lib/linalg_mfoperator.H"
 #include "../drt_lib/drt_volume_constraint_manager.H"
+#include "../drt_surfstress/drt_surfstress_manager.H"
 
 #include "Epetra_Vector.h"
 #include "Epetra_Operator.h"
@@ -133,19 +134,19 @@ public:
   virtual void FullNewton();
 
 
-  
+
   /*!
-    \brief Compute Volume Changes for constraint volumes in predicted state 
+    \brief Compute Volume Changes for constraint volumes in predicted state
 
     */
 //  virtual void PredictorErrorVolConstr();
-  
+
   /*!
     \brief do full Newton iteration respecting volume constraint
 
     */
   virtual void FullNewtonLinearUzawa();
-  
+
   /*!
   \brief do modified Newton iteration (makes sense with direct solvers only)
 
@@ -183,6 +184,8 @@ public:
   \param F (out): residual matching current solution state (dirichlet dofs will be blanked)
   */
   virtual void computeF(const Epetra_Vector& x, Epetra_Vector& F);
+
+  virtual void computeFmatrixfree(const Epetra_Vector& x, Epetra_Vector& F);
 
 
   /*!
@@ -311,8 +314,10 @@ protected:
   RefCountPtr<Epetra_Vector>    fextm_;
   RefCountPtr<Epetra_Vector>    fextn_;
   RefCountPtr<Epetra_Vector>    fresm_;
-  
+
   RefCountPtr<DRT::VolConstrManager>   volConstrMan_;
+
+  RefCountPtr<DRT::SurfStressManager>   surf_stress_man_;
 
   // stuff needed to use NOX as nonlinear solver
   RefCountPtr<NLNML::NLNML_FineLevelNoxInterface> fineinterface_;
@@ -320,7 +325,7 @@ protected:
   RefCountPtr<NOX::Epetra::MatrixFree>            matfreeoperator_;
   RefCountPtr<NOX::Epetra::LinearSystemAztecOO>   rcpazlinsys_;
   RefCountPtr<NOX::StatusTest::Combo>             combo_;
-  
+
 
 }; // class StruGenAlpha
 
@@ -328,7 +333,7 @@ protected:
 
 /*!
 \class NoxInterface
- 
+
 
 \brief An interface to Nox/ML for structural gen alpha
 

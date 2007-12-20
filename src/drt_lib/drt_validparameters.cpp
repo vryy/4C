@@ -319,6 +319,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
   DoubleParameter("TOLDISP",1.0E-10,
                   "tolerance in the displacement norm for the newton iteration",
                   &sdyn);
+  DoubleParameter("TOLRES",1.0E-08,
+                  "tolerance in the residual norm for the newton iteration",
+                  &sdyn);
   IntParameter("MAXITER",50,
                "maximum number of iterations allowed for newton iteration before failure",
                &sdyn);
@@ -713,7 +716,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
   DoubleParameter("CHANNEL_L_TAU",0.0,"Used for normalisation of the wall normal distance in the Van \nDriest Damping function. May be taken from the output of \nthe apply_mesh_stretching.pl preprocessing script.",&fdyn_turbu);
 
   DoubleParameter("CHANNEL_AMPLITUDE_INITIAL_DISTURBANCE",0.1,"Max. amplitude of the random disturbance in percent of the initial value in mean flow direction.",&fdyn_turbu);
-  
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& adyn = list->sublist("ALE DYNAMIC",false,"");
 
