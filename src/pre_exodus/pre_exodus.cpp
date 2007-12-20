@@ -65,10 +65,9 @@ int main(
       My_CLP.printHelpMessage(argv[0],cout);
       exit(1);
     }
-    else
-    {
-      mesh(exofile.c_str());
-    }
+    Mesh mymesh(exofile.c_str());
+    
+    mymesh.Print(cout);
       
    
     if (headfile=="")
@@ -88,12 +87,6 @@ int main(
       exit(0);
       
     }
-    
-    
-
-    
-    cout << "Hello World" << endl;
-    
 }
 
 
