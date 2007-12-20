@@ -30,6 +30,7 @@ DRT::Elements::XFluid3Impl::XFluid3Impl(
 		const int numparamvelz,
 		const int numparampres)
   : iel_(iel),
+    vart_(),
     xyze_(3,iel_,blitz::ColumnMajorArray<2>()),
     edeadng_(3,numparamvelx,blitz::ColumnMajorArray<2>()),
     funct_(iel_),
@@ -74,11 +75,13 @@ void DRT::Elements::XFluid3Impl::Sysmat(XFluid3* ele,
                                        const blitz::Array<double,2>&     edispnp,
                                        const blitz::Array<double,2>&     egridv,
                                        blitz::Array<double,2>&           estif,
+                                       blitz::Array<double,2>&           esv,
                                        blitz::Array<double,1>&           eforce,
                                        struct _MATERIAL*       material,
                                        double                  time,
                                        double                  timefac,
                                        bool                    newton ,
+                                       int                     fssgv ,
                                        bool                    pstab  ,
                                        bool                    supg   ,
                                        bool                    vstab  ,
@@ -131,7 +134,7 @@ void DRT::Elements::XFluid3Impl::Sysmat(XFluid3* ele,
   // stabilization parameter
   // This has to be done before anything else is calculated because
   // we use the same arrays internally.
-  Caltau(ele,evelnp,distype,visc,timefac,false);
+  Caltau(ele,evelnp,distype,visc,timefac,fssgv);
 
   // flag for higher order elements
   const bool higher_order_ele = ele->isHigherOrderElement(distype);
@@ -277,6 +280,8 @@ void DRT::Elements::XFluid3Impl::Sysmat(XFluid3* ele,
     const double ttimetauM  = timefac * timetauM;
     const double ttimetauMp = timefac * timetauMp;
     const double timefacfac = timefac * fac;
+
+    const double vartfac = vart_*timefacfac;
 
     /*------------------------- evaluate rhs vector at integration point ---*/
     // no switch here at the moment w.r.t. is_ale
@@ -1720,6 +1725,45 @@ void DRT::Elements::XFluid3Impl::Sysmat(XFluid3* ele,
         }
 
       }
+
+      if(fssgv > 0)
+      {
+        for (int ui=0; ui<iel_; ++ui)
+        {
+          for (int vi=0; vi<iel_; ++vi)
+          {
+          /* subgrid-viscosity term */
+          /*
+                        /                        \
+                       |       /  \         / \   |
+              nu_art * |  eps | Du | , eps | v |  |
+                       |       \  /         \ /   |
+                        \                        /
+          */
+          esv(vi*4, ui*4)         += vartfac*(2.0*derxy_(0, ui)*derxy_(0, vi)
+                                                        +
+                                                        derxy_(1, ui)*derxy_(1, vi)
+                                                        +
+                                                        derxy_(2, ui)*derxy_(2, vi)) ;
+          esv(vi*4, ui*4 + 1)     += vartfac*derxy_(0, ui)*derxy_(1, vi) ;
+          esv(vi*4, ui*4 + 2)     += vartfac*derxy_(0, ui)*derxy_(2, vi) ;
+          esv(vi*4 + 1, ui*4)     += vartfac*derxy_(0, vi)*derxy_(1, ui) ;
+          esv(vi*4 + 1, ui*4 + 1) += vartfac*(derxy_(0, ui)*derxy_(0, vi)
+                                                        +
+                                                        2.0*derxy_(1, ui)*derxy_(1, vi)
+                                                        +
+                                                        derxy_(2, ui)*derxy_(2, vi)) ;
+          esv(vi*4 + 1, ui*4 + 2) += vartfac*derxy_(1, ui)*derxy_(2, vi) ;
+          esv(vi*4 + 2, ui*4)     += vartfac*derxy_(0, vi)*derxy_(2, ui) ;
+          esv(vi*4 + 2, ui*4 + 1) += vartfac*derxy_(1, vi)*derxy_(2, ui) ;
+          esv(vi*4 + 2, ui*4 + 2) += vartfac*(derxy_(0, ui)*derxy_(0, vi)
+                                                        +
+                                                        derxy_(1, ui)*derxy_(1, vi)
+                                                        +
+                                                        2.0*derxy_(2, ui)*derxy_(2, vi)) ;
+          }
+        }
+      }
     }
   }
   } // end loop over integration cells
@@ -1737,7 +1781,8 @@ void DRT::Elements::XFluid3Impl::Caltau(
   const DRT::Element::DiscretizationType  distype,
   const double                            visc,
   const double                            timefac,
-  const bool                              stationary)
+  const int                               fssgv
+  )
 {
   blitz::firstIndex i;    // Placeholder for the first index
   blitz::secondIndex j;   // Placeholder for the second index
@@ -1849,9 +1894,6 @@ void DRT::Elements::XFluid3Impl::Caltau(
   const double strle = 2.0/val;
 
   // calculate tau
-  if (not stationary)
-  {
-    // stabilization parameters for instationary case (default)
 
         /*----------------------------------------------------- compute tau_Mu ---*/
         /* stability parameter definition according to
@@ -1922,24 +1964,62 @@ void DRT::Elements::XFluid3Impl::Caltau(
     */
     const double xi_tau_c = DMIN(re2,1.0);
     tau_(2) = vel_norm * hk * 0.5 * xi_tau_c /timefac;
-  }
-  else
+
+  /*------------------------------------------- compute subgrid viscosity ---*/
+  if (fssgv == 1)
   {
-    // stabilization parameters for stationary case
+    /*----------------------------- compute artificial subgrid viscosity ---*/
+    const double re = 2.0 * re_convect;  /* convective : viscous forces */
+    const double xi = DMAX(re,1.0);
 
-    // compute tau_Mu
-    const double re_tau_mu = mk * vel_norm * strle / (2.0 * visc);   /* convective : viscous forces */
-    const double xi_tau_mu = DMAX(re_tau_mu, 1.0);
-    tau_(0) = (DSQR(strle)*mk)/(4.0*visc*xi_tau_mu);
+    vart_ = (DSQR(hk)*mk*DSQR(vel_norm))/(2.0*visc*xi);
 
-    // compute tau_Mp
-    const double re_tau_mp = mk * vel_norm * hk / (2.0 * visc);      /* convective : viscous forces */
-    const double xi_tau_mp = DMAX(re_tau_mp,1.0);
-    tau_(1) = (DSQR(hk)*mk)/(4.0*visc*xi_tau_mp);
+  }
+  else if (fssgv == 2)
+  {
+    //
+    // SMAGORINSKY MODEL
+    // -----------------
+    //                               +-                                 -+ 1
+    //                           2   |          / h \           / h \    | -
+    //    visc          = (C_S*h)  * | 2 * eps | u   |   * eps | u   |   | 2
+    //        turbulent              |          \   / ij        \   / ij |
+    //                               +-                                 -+
+    //                               |                                   |
+    //                               +-----------------------------------+
+    //                                    'resolved' rate of strain
+    //
 
-    // compute tau_C
-    const double xi_tau_c = DMIN(re_tau_mp, 1.0);
-    tau_(2) = 0.5*vel_norm*hk*xi_tau_c;
+    double rateofstrain = 0.0;
+    {
+      // get velocity (np,i) derivatives at element center
+      vderxy_ = blitz::sum(derxy_(j,k)*evelnp(i,k),k);
+
+      blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());
+      epsilon = 0.5 * ( vderxy_(i,j) + vderxy_(j,i) );
+
+      for(int rr=0;rr<3;rr++)
+      {
+        for(int mm=0;mm<3;mm++)
+        {
+          rateofstrain += epsilon(rr,mm)*epsilon(rr,mm);
+        }
+      }
+      rateofstrain *= 2.0;
+      rateofstrain = sqrt(rateofstrain);
+    }
+    //
+    // Choices of the Smagorinsky constant Cs:
+    //
+    //             Cs = 0.17   (Lilly --- Determined from filter
+    //                          analysis of Kolmogorov spectrum of
+    //                          isotropic turbulence)
+    //
+    //             0.1 < Cs < 0.24 (depending on the flow)
+
+    const double Cs = 0.17;
+
+    vart_ = Cs * Cs * hk * hk * rateofstrain;
   }
 }
 

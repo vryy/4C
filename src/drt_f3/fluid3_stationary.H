@@ -76,7 +76,7 @@ namespace Elements
       \param evelnp  		(i) nodal velocities at n+1
       \param eprenp  		(i) nodal pressure
       \param estif   		(o) element matrix to calculate
-      \param esv                (o) fine-scale subgrid-viscosity element matrix
+      \param esv            (o) fine-scale subgrid-viscosity element matrix
       \param eforce  		(o) element rhs to calculate
       \param material 		(i) fluid material
       \param pseudotime     (i) current simulation pseudotime
@@ -85,22 +85,23 @@ namespace Elements
       \param supg     		(i) boolean flag for stabilisation
       \param vstab     		(i) boolean flag for stabilisation
       \param cstab     		(i) boolean flag for stabilisation
-      \param fssgv              (i) flag for type of fine-scale subgrid viscosity
+      \param fssgv          (i) flag for type of fine-scale subgrid viscosity
      */
-    void Sysmat(Fluid3* ele,
-                const blitz::Array<double,2>&     evelnp,
-                const blitz::Array<double,1>&     eprenp,
-                blitz::Array<double,2>&           estif,
-                blitz::Array<double,2>&           esv,
-                blitz::Array<double,1>&           eforce,
-                struct _MATERIAL*       material,
-                double                  pseudotime,
-                bool                    newton ,
-                int                     fssgv ,
-                bool                    pstab  ,
-                bool                    supg   ,
-                bool                    vstab  ,
-                bool                    cstab  );
+    void Sysmat(
+    		Fluid3* ele,
+            const blitz::Array<double,2>&     evelnp,
+            const blitz::Array<double,1>&     eprenp,
+            blitz::Array<double,2>&           estif,
+            blitz::Array<double,2>&           esv,
+            blitz::Array<double,1>&           eforce,
+            struct _MATERIAL*                 material,
+            double                            pseudotime,
+            bool                              newton,
+            int                               fssgv ,
+            bool                              pstab,
+            bool                              supg,
+            bool                              vstab,
+            bool                              cstab);
 
   private:
 

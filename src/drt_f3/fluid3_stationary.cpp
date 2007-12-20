@@ -204,7 +204,7 @@ void DRT::Elements::Fluid3Stationary::Sysmat(Fluid3* ele,
     // get pressure gradients
     gradp_ = blitz::sum(derxy_(i,j)*eprenp(j),j);
 
-    double press = blitz::sum(funct_*eprenp);
+    const double press = blitz::sum(funct_*eprenp);
 
     // get bodyforce in gausspoint
     bodyforce_ = blitz::sum(edeadng_(i,j)*funct_(j),j);

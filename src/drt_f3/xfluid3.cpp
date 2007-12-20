@@ -122,6 +122,22 @@ void DRT::Elements::XFluid3::Pack(vector<char>& data) const
   // rewinding bools
   AddtoPack(data,rewind_);
   AddtoPack(data,donerewinding_);
+
+  // history variables
+  AddtoPack(data,sub_acc_old_.extent(blitz::firstDim));
+  AddtoPack(data,sub_acc_old_.extent(blitz::secondDim));
+  
+  int size = sub_acc_old_.extent(blitz::firstDim)
+             *sub_acc_old_.extent(blitz::secondDim)
+             *sizeof(double);
+  AddtoPack(data,sub_acc_old_.data(),size);
+  AddtoPack(data,sub_vel_.data()    ,size);
+  AddtoPack(data,sub_vel_old_.data(),size);
+
+  size = sub_acc_old_.extent(blitz::secondDim)*sizeof(double);
+  AddtoPack(data,sub_pre_.data()    ,size);
+  AddtoPack(data,sub_pre_old_.data(),size);
+    
   // data_
   vector<char> tmp(0);
   data_.Pack(tmp);
@@ -155,6 +171,35 @@ void DRT::Elements::XFluid3::Unpack(const vector<char>& data)
   // rewinding bools
   ExtractfromPack(position,data,rewind_); 
   ExtractfromPack(position,data,donerewinding_);
+
+
+  // history variables (subscale velocities, accelerations and pressure)
+  {
+    int firstdim;
+    int secondim;
+
+    ExtractfromPack(position,data,firstdim);
+    ExtractfromPack(position,data,secondim);
+
+    sub_acc_old_.resize(firstdim,secondim);
+    sub_vel_    .resize(firstdim,secondim);
+    sub_vel_old_.resize(firstdim,secondim);
+ 
+    int size = firstdim*secondim*sizeof(double);
+       
+    ExtractfromPack(position,data,&(sub_acc_old_.data()[0]),size);
+    ExtractfromPack(position,data,&(sub_vel_.data()[0])    ,size);
+    ExtractfromPack(position,data,&(sub_vel_old_.data()[0]),size);
+
+    sub_pre_    .resize(secondim);
+    sub_pre_old_.resize(secondim);
+
+    ExtractfromPack(position,data,&(sub_pre_.data()[0])    ,secondim*sizeof(double));
+    ExtractfromPack(position,data,&(sub_pre_old_.data()[0]),secondim*sizeof(double));
+
+    
+  }
+  
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);

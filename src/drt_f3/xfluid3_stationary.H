@@ -72,21 +72,42 @@ namespace Elements
     		int numparamvelz,
     		int numparampres);
 
-    /// Calculate matrix and rhs for stationary problem formulation
+    /// calculating element matrix and rhs
+    /*!
+      Calculate matrix and rhs for stationary problem formulation
+      Here the whole thing is hidden.
+
+      \param ele     		(i) the element those matrix is calculated
+      \param evelnp  		(i) nodal velocities at n+1
+      \param eprenp  		(i) nodal pressure
+      \param estif   		(o) element matrix to calculate
+      \param esv            (o) fine-scale subgrid-viscosity element matrix
+      \param eforce  		(o) element rhs to calculate
+      \param material 		(i) fluid material
+      \param pseudotime     (i) current simulation pseudotime
+      \param newton     	(i) full Newton or fixed-point-like
+      \param pstab     		(i) boolean flag for stabilisation 
+      \param supg     		(i) boolean flag for stabilisation
+      \param vstab     		(i) boolean flag for stabilisation
+      \param cstab     		(i) boolean flag for stabilisation
+      \param fssgv          (i) flag for type of fine-scale subgrid viscosity
+     */
     void Sysmat(
-            XFluid3* ele,                                       /// the element those matrix is calculated
+            XFluid3* ele,
             const RCP<XFEM::InterfaceHandle>  ih,               /// interface handle
-            const blitz::Array<double,2>&     evelnp,           /// nodal velocities at n+1
-            const blitz::Array<double,1>&     eprenp,           /// nodal pressure
-            blitz::Array<double,2>&           estif,            /// element matrix to calculate
-            blitz::Array<double,1>&           eforce,           /// element rhs to calculate
-            struct _MATERIAL*                 material,         /// fluid material
-            double                            pseudotime,       /// current simulation pseudotime
-            bool                              newton,           /// full Newton or fixed-point-like
-            bool                              pstab,            /// boolean flag for stabilisation
-            bool                              supg,             /// boolean flag for stabilisation
-            bool                              vstab,            /// boolean flag for stabilisation
-            bool                              cstab);           /// boolean flag for stabilisation
+            const blitz::Array<double,2>&     evelnp,
+            const blitz::Array<double,1>&     eprenp,
+            blitz::Array<double,2>&           estif,
+            blitz::Array<double,2>&           esv,
+            blitz::Array<double,1>&           eforce,
+            struct _MATERIAL*                 material,
+            double                            pseudotime,
+            bool                              newton,
+            int                               fssgv ,
+            bool                              pstab,
+            bool                              supg,
+            bool                              vstab,
+            bool                              cstab);
 
   private:
 
@@ -97,7 +118,8 @@ namespace Elements
       XFluid3* ele,
       const blitz::Array<double,2>&           evelnp,
       const DRT::Element::DiscretizationType  distype,
-      const double                            visc);
+      const double                            visc,
+      const int                               fssgv);
 
     /*!
      * \brief calculate the body force from the nodes condition
@@ -111,6 +133,7 @@ namespace Elements
 
   private:
     int iel_;                          /// number of nodes
+    double vart_;                      /// fine-scale subgrid viscosity
     blitz::Array<double,2> xyze_;      /// nodal position array
     blitz::Array<double,2> edeadng_;   /// nodal dead load 
     blitz::Array<double,1> funct_;     /// nodal shape functions

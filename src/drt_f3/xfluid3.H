@@ -332,6 +332,7 @@ private:
     calc_fluid_systemmat_and_residual,
     calc_fluid_genalpha_sysmat_and_residual,
     calc_fluid_genalpha_update_for_subscales,
+    calc_fluid_genalpha_average_for_subscales_and_residual,
     calc_fluid_stationary_systemmat_and_residual,    
     calc_fluid_beltrami_error,
     calc_turbulence_statistics,
@@ -555,6 +556,15 @@ private:
     elements adjacent to a node has been added to the
     normalisation constant.
 
+    See reference
+
+    A.E. Tejada-Martinez, K.E. Jansen
+    Spatial test filters for dynamic model large-eddy simulation with
+    finite elements.
+    Communications in numerical methods in engineering, 2000
+
+    for details
+
     \param evelaf                        (in )  : nodal velocities
     \param vel_hat                       (out)  : integrated convolution
                                                   with velocity
@@ -575,13 +585,66 @@ private:
     double&                   volume
     );
 
+  /*!
+    \brief compute the quantities necessary to determine Cs for the dynamic
+    model.
+
+    References are
+
+    
+    M. Germano, U. Piomelli, P. Moin, W.H. Cabot:
+    A dynamic subgrid-scale eddy viscosity model
+    (Phys. Fluids 1991)
+      
+    or
+
+    D.K. Lilly:
+    A proposed modification of the Germano subgrid-scale closure method
+    (Phys. Fluids 1992)
+
+    or
+    A.E. Tejada-Martinez
+    Dynamic subgrid-scale modeling for large eddy simulation of turbulent
+    flows with a stabilized finite element method
+    (Phd thesis, Rensselaer Polytechnic Institute, Troy, New York)
+
+    <pre>
+    
+    L_ij : the tensor of resolved components of the stress tensor associated
+           with the scales of motion between the resolved and the test scale
+
+    M_ij : the tensor of modeled components of the stress tensor associated
+           with the scales of motion between the resolved and the test scale
+           (modulo 2Cs, a constant)
+    
+    </pre>
+
+    
+    \param evelaf                        (in )  : nodal velocities
+    \param vel_hat                       (in)   : integrated convolution
+                                                  with velocity
+    \param reystr_hat                    (in)   : integrated convolution
+                                                  with reynolds stresses 
+    \param modeled_stress_grid_scale_hat (in)   : integrated convolution
+                                                  with subgrid scale
+                                                  stress tensor model
+    \param LijMij                        (out)  : trace of product of resolved
+                                                  stress tensor with modeled
+                                                  stress tensor
+    \param MijMij                        (out)  : trace of product of modeled
+                                                  resolved stress tensor with
+                                                  itself
+    \param center                        (out)  : element center
+    \return void
+    
+   */
 
 void f3_calc_smag_const_LijMij_and_MijMij(
   blitz::Array<double, 2> evelaf_hat,
   blitz::Array<double, 3> ereynoldsstress_hat,
   blitz::Array<double, 3> efiltered_modeled_subgrid_stress_hat,
-  double&                 numerator,
-  double&                 denominator,
+  double&                 LijMij,
+  double&                 MijMij,
   double&                 center);
 
   
