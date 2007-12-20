@@ -57,7 +57,13 @@ public:
   
   //! destructor
   virtual ~Mesh();
-
+  
+  //! get number of entities
+  int GetNumberEntities(){ return num_entities_;};
+  
+//  //! get one entitiy
+//  Entity GetEntity(int EntityID){ return myEntities_[EntityID];};
+  
   //! Print mesh info
   void Print(ostream& os) const;
   
@@ -115,6 +121,9 @@ public:
   //! destructor
   virtual ~Entity();
   
+  //! Set Property name, designated by ICEM to available parts
+  void SetPropertyName(string prop_name);
+
   //! Print entity
   void Print(ostream& os) const;
   

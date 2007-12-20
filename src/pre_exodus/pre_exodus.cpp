@@ -68,6 +68,19 @@ int main(
     Mesh mymesh(exofile.c_str());
     
     mymesh.Print(cout);
+    
+    if (bcfile=="")
+    {
+      cout << "BCfile leer, jetzt Vorschlag" << endl;
+      string defaultbcfilename = "default.bc";
+      ofstream defaultbc(defaultbcfilename.c_str());
+      mymesh.Print(defaultbc);
+      for (int i = 0; i < mymesh.GetNumberEntities(); ++i) {
+//        Entity actEntity = GetEntity(i);
+//        actEntity.Print(defaultbc);
+      }
+      if (defaultbc.is_open()) defaultbc.close();
+    }
       
    
     if (headfile=="")
