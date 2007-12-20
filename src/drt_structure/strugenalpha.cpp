@@ -805,7 +805,7 @@ void StruGenAlpha::FullNewton()
   fresm_->Norm2(&fresmnorm);
   Epetra_Time timer(discret_.Comm());
   timer.ResetStartTime();
-  while ( (disinorm>toldisp || fresmnorm>toldisp) && numiter<=maxiter)
+  while ( (disinorm>toldisp && fresmnorm>toldisp) && numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
@@ -1000,7 +1000,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   
   double volnorm=volConstrMan_->GetVolumeErrorNorm();
   int numConstrVol=volConstrMan_->GetNumberOfVolumes() ;
-  while (((disinorm>toldisp || fresmnorm>toldisp) || volnorm > toldisp ) && numiter<=maxiter)
+  while (((disinorm>toldisp && fresmnorm>toldisp) || volnorm > toldisp ) && numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
@@ -1317,7 +1317,7 @@ void StruGenAlpha::ModifiedNewton()
   fresm_->Norm2(&fresmnorm);
   Epetra_Time timer(discret_.Comm());
   timer.ResetStartTime();
-  while ( (disinorm>toldisp || fresmnorm>toldisp)  && numiter<=maxiter)
+  while ( (disinorm>toldisp && fresmnorm>toldisp)  && numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
     //----------------------- apply dirichlet BCs to system of equations
@@ -1485,7 +1485,7 @@ void StruGenAlpha::MatrixFreeNewton()
   double fresmnorm = 1.0e6;
   double disinorm = 1.0e6;
   fresm_->Norm2(&fresmnorm);
-  while ( (disinorm>toldisp || fresmnorm>toldisp)  && numiter<=maxiter)
+  while ( (disinorm>toldisp && fresmnorm>toldisp)  && numiter<=maxiter)
   {
 
     LINALG::Add(*mass_,false,(1.-alpham)/(beta*dt*dt),*stiff_,1.-alphaf); // test
@@ -2177,7 +2177,7 @@ void StruGenAlpha::PTC()
   fresm_->Norm2(&fresmnorm);
   Epetra_Time timer(discret_.Comm());
   timer.ResetStartTime();
-  while ( (disinorm>toldisp || fresmnorm>toldisp) && numiter<=maxiter)
+  while ( (disinorm>toldisp && fresmnorm>toldisp) && numiter<=maxiter)
   {
     double dtim = dti0;
     dti0 = dti;
