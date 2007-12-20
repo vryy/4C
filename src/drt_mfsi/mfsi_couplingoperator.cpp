@@ -148,7 +148,8 @@ void MFSI::CouplingOperator::euclideanApply(
 
   if (domaincoup_!=Teuchos::null)
   {
-    Teuchos::RCP<const Epetra_MultiVector> e = Thyra::get_Epetra_MultiVector(*domaincoup_->MasterDofMap(), X_in);
+    Teuchos::RCP<const Epetra_MultiVector> e =
+      Thyra::get_Epetra_MultiVector(*domaincoup_->MasterDofMap(), X_in);
     e = domaincoup_->MasterToSlave(e);
     X = Thyra::create_MultiVector(e,domainspace_);
   }
@@ -159,10 +160,10 @@ void MFSI::CouplingOperator::euclideanApply(
 
   if (rangecoup_!=Teuchos::null)
   {
-    Teuchos::RCP<Epetra_Map> m = domaincoup_->SlaveDofMap();
+    Teuchos::RCP<Epetra_Map> m = rangecoup_->SlaveDofMap();
     Yslave = Teuchos::rcp(new Epetra_Vector(*m));
     //Y = Thyra::create_MultiVector(Yslave,Thyra::create_VectorSpace(m));
-    Y = Thyra::create_MultiVector(Yslave,op_->domainScalarProdVecSpc());
+    Y = Thyra::create_MultiVector(Yslave,op_->rangeScalarProdVecSpc());
   }
 
   // actual application
@@ -174,7 +175,7 @@ void MFSI::CouplingOperator::euclideanApply(
   if (rangecoup_!=Teuchos::null)
   {
     Teuchos::RCP<Epetra_MultiVector> Ymaster = Thyra::get_Epetra_MultiVector(*rangecoup_->MasterDofMap(), *Y_inout);
-    domaincoup_->SlaveToMaster(Yslave,Ymaster);
+    rangecoup_->SlaveToMaster(Yslave,Ymaster);
   }
 }
 

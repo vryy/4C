@@ -136,6 +136,11 @@ namespace MFSI
     CreateStatusTest(Teuchos::ParameterList& nlParams,
                      Teuchos::RCP<NOX::Thyra::Group> grp);
 
+    /// extract the three field vectors from a given composed vector
+    virtual void ExtractFieldVectors(Teuchos::RCP<const Thyra::DefaultProductVector<double> > x,
+                                     Teuchos::RCP<const Epetra_Vector>& sx,
+                                     Teuchos::RCP<const Epetra_Vector>& fx,
+                                     Teuchos::RCP<const Epetra_Vector>& ax) const;
   private:
 
     //! @name Wrapped Thyra maps

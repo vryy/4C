@@ -43,6 +43,18 @@ namespace MFSI
 
     //@}
 
+  protected:
+
+    /// setup of NOX convergance tests
+    Teuchos::RCP<NOX::StatusTest::Combo>
+    CreateStatusTest(Teuchos::ParameterList& nlParams,
+                     Teuchos::RCP<NOX::Thyra::Group> grp);
+
+    /// extract the three field vectors from a given composed vector
+    virtual void ExtractFieldVectors(Teuchos::RCP<const Thyra::DefaultProductVector<double> > x,
+                                     Teuchos::RCP<const Epetra_Vector>& sx,
+                                     Teuchos::RCP<const Epetra_Vector>& fx,
+                                     Teuchos::RCP<const Epetra_Vector>& ax) const;
   private:
 
     /// build thyra product vector from field vectors
@@ -51,11 +63,7 @@ namespace MFSI
                      Teuchos::RCP<const Epetra_Vector> fv,
                      Teuchos::RCP<const Epetra_Vector> av,
                      double fluidscale) const;
-
-    /// setup of NOX convergance tests
-    Teuchos::RCP<NOX::StatusTest::Combo>
-    CreateStatusTest(Teuchos::ParameterList& nlParams,
-                     Teuchos::RCP<NOX::Thyra::Group> grp);
+    //! @name thyra vector spaces
 
     /// structure field inner map
     Teuchos::RCP<const Thyra::VectorSpaceBase<double> > simap_;
@@ -68,6 +76,24 @@ namespace MFSI
 
     /// ale field inner map
     Teuchos::RCP<const Thyra::VectorSpaceBase<double> > aimap_;
+
+    //@}
+
+    //! @name global system solvers
+
+    /// solver factory for inner structure system in preconditioner
+    Teuchos::RCP<Thyra::LinearOpWithSolveFactoryBase<double> > structsolverfactory_;
+
+    /// solver factory for interface system in preconditioner
+    Teuchos::RCP<Thyra::LinearOpWithSolveFactoryBase<double> > interfacesolverfactory_;
+
+    /// solver factory for inner fluid system in preconditioner
+    Teuchos::RCP<Thyra::LinearOpWithSolveFactoryBase<double> > fluidsolverfactory_;
+
+    /// solver factory for inner ale system in preconditioner
+    Teuchos::RCP<Thyra::LinearOpWithSolveFactoryBase<double> > alesolverfactory_;
+
+    //@}
 
   };
 }

@@ -130,6 +130,12 @@ namespace MFSI
     CreateStatusTest(Teuchos::ParameterList& nlParams,
                      Teuchos::RCP<NOX::Thyra::Group> grp) = 0;
 
+    /// extract the three field vectors from a given composed vector
+    virtual void ExtractFieldVectors(Teuchos::RCP<const Thyra::DefaultProductVector<double> > x,
+                                     Teuchos::RCP<const Epetra_Vector>& sx,
+                                     Teuchos::RCP<const Epetra_Vector>& fx,
+                                     Teuchos::RCP<const Epetra_Vector>& ax) const = 0;
+
     //! @name Access methods for subclasses
 
     Epetra_Comm& Comm() { return comm_; }
@@ -176,6 +182,12 @@ namespace MFSI
     Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv) const;
     Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<Epetra_Vector> iv) const;
     Teuchos::RCP<Epetra_Vector> AleToFluid(Teuchos::RCP<Epetra_Vector> iv) const;
+
+    Teuchos::RCP<Epetra_Vector> StructToAle(Teuchos::RCP<const Epetra_Vector> iv) const;
+    Teuchos::RCP<Epetra_Vector> AleToStruct(Teuchos::RCP<const Epetra_Vector> iv) const;
+    Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<const Epetra_Vector> iv) const;
+    Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<const Epetra_Vector> iv) const;
+    Teuchos::RCP<Epetra_Vector> AleToFluid(Teuchos::RCP<const Epetra_Vector> iv) const;
 
     //@}
 

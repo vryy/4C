@@ -191,6 +191,7 @@ OBJS_DRT_MFSI = src/drt_mfsi/mfsi_algorithm.o \
 		src/drt_mfsi/mfsi_structure.o \
 		src/drt_mfsi/mfsi_nox_thyra_group.o \
 		src/drt_mfsi/mfsi_preconditionerfactory.o \
+		src/drt_mfsi/mfsi_overlappreccondfactory.o \
 		src/drt_mfsi/mfsi_coupling.o \
 		src/drt_mfsi/mfsi_couplingoperator.o \
 		src/drt_mfsi/mfsi_statustest.o \

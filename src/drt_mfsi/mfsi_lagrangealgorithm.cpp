@@ -235,9 +235,9 @@ MFSI::LagrangeAlgorithm::LagrangeAlgorithm(Epetra_Comm& comm)
   // the factory to create the special block preconditioner
   SetPreconditionerFactory(
     Teuchos::rcp(new MFSI::PreconditionerFactory(structsolverfactory_,
-                                           fluidsolverfactory_,
-                                           alesolverfactory_,
-                                           sfidentity_)));
+                                                 fluidsolverfactory_,
+                                                 alesolverfactory_,
+                                                 sfidentity_)));
 
   // Lets use aztec for now. This a about the only choice we have got.
   SetSolverFactory(Teuchos::rcp(new Thyra::AztecOOLinearOpWithSolveFactory()));
@@ -357,6 +357,19 @@ void MFSI::LagrangeAlgorithm::SetupSysMat(Thyra::DefaultBlockedLinearOp<double>&
   //mat.setBlock(4,4,sfidentity_);
 
   mat.endBlockFill();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MFSI::LagrangeAlgorithm::ExtractFieldVectors(Teuchos::RCP<const Thyra::DefaultProductVector<double> > x,
+                                                  Teuchos::RCP<const Epetra_Vector>& sx,
+                                                  Teuchos::RCP<const Epetra_Vector>& fx,
+                                                  Teuchos::RCP<const Epetra_Vector>& ax) const
+{
+  sx = Thyra::get_Epetra_Vector(*StructureField()->DofRowMap(), x->getVectorBlock(0));
+  fx = Thyra::get_Epetra_Vector(*FluidField()    ->DofRowMap(), x->getVectorBlock(1));
+  ax = Thyra::get_Epetra_Vector(*AleField()      ->DofRowMap(), x->getVectorBlock(2));
 }
 
 

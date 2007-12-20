@@ -120,6 +120,7 @@ namespace MFSI {
     /// tell the mesh displacement to the fluid solver
     virtual void ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp);
 
+    /// scaling factor needed to convert the residual to real forces
     virtual double ResidualScaling();
 
     /// communication object at the interface

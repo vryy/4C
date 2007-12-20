@@ -20,8 +20,9 @@ Maintainer: Ulrich Kuettler
 #include "mfsi_algorithm.H"
 #include "mfsi_couplingoperator.H"
 #include "mfsi_nox_thyra_group.H"
-#include "mfsi_preconditionerfactory.H"
+#include "mfsi_overlappreccondfactory.H"
 #include "mfsi_statustest.H"
+#include "mfsi_overlappreccondfactory.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_colors.H"
@@ -171,6 +172,22 @@ MFSI::OverlapAlgorithm::OverlapAlgorithm(Epetra_Comm& comm)
 
   SetDofRowMap(Teuchos::rcp(new Thyra::DefaultProductVectorSpace<double>(numBlocks, &vecSpaces[0])));
 
+  // field solvers used within the block preconditioner
+  structsolverfactory_ = Teuchos::rcp(new Thyra::AmesosLinearOpWithSolveFactory(Thyra::Amesos::UMFPACK));
+  interfacesolverfactory_ = Teuchos::rcp(new Thyra::AztecOOLinearOpWithSolveFactory());
+  fluidsolverfactory_ = Teuchos::rcp(new Thyra::AmesosLinearOpWithSolveFactory(Thyra::Amesos::UMFPACK));
+  alesolverfactory_ = Teuchos::rcp(new Thyra::AmesosLinearOpWithSolveFactory(Thyra::Amesos::UMFPACK));
+
+  // the factory to create the special block preconditioner
+  SetPreconditionerFactory(
+    Teuchos::rcp(new MFSI::OverlappingPCFactory(structsolverfactory_,
+                                                interfacesolverfactory_,
+                                                fluidsolverfactory_,
+                                                alesolverfactory_)));
+
+  // Lets use aztec for now. This a about the only choice we have got.
+  SetSolverFactory(Teuchos::rcp(new Thyra::AztecOOLinearOpWithSolveFactory()));
+  SolverFactory()->setPreconditionerFactory(PreconditionerFactory(), "FSI block preconditioner");
 }
 
 
@@ -182,7 +199,7 @@ void MFSI::OverlapAlgorithm::InitialGuess(Thyra::DefaultProductVector<double>& i
               StructureField()->InitialGuess(),
               FluidField()->InitialGuess(),
               AleField()->InitialGuess(),
-              1.0);
+              0.0);
 }
 
 
@@ -194,7 +211,7 @@ void MFSI::OverlapAlgorithm::SetupRHS(Thyra::DefaultProductVector<double> &f) co
               StructureField()->RHS(),
               FluidField()->RHS(),
               AleField()->RHS(),
-              1.0);
+              FluidField()->ResidualScaling());
 
   // NOX expects a different sign here.
   Thyra::scale(-1., &f);
@@ -230,6 +247,38 @@ void MFSI::OverlapAlgorithm::SetupVector(Thyra::DefaultProductVector<double> &f,
   vec[3] = Thyra::create_Vector(aov,aimap_);
 
   f.initialize(DofRowMap(),&vec[0]);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MFSI::OverlapAlgorithm::ExtractFieldVectors(Teuchos::RCP<const Thyra::DefaultProductVector<double> > x,
+                                                 Teuchos::RCP<const Epetra_Vector>& sx,
+                                                 Teuchos::RCP<const Epetra_Vector>& fx,
+                                                 Teuchos::RCP<const Epetra_Vector>& ax) const
+{
+  Teuchos::RCP<const Epetra_Vector> sox = Thyra::get_Epetra_Vector(*StructureField()->Interface().OtherDofMap(), x->getVectorBlock(0));
+  Teuchos::RCP<const Epetra_Vector> fox = Thyra::get_Epetra_Vector(*FluidField()    ->Interface().OtherDofMap(), x->getVectorBlock(2));
+  Teuchos::RCP<const Epetra_Vector> aox = Thyra::get_Epetra_Vector(*AleField()      ->Interface().OtherDofMap(), x->getVectorBlock(3));
+
+  Teuchos::RCP<const Epetra_Vector> scx = Thyra::get_Epetra_Vector(*StructureField()->Interface().CondDofMap(),  x->getVectorBlock(1));
+  Teuchos::RCP<Epetra_Vector> fcx = StructToFluid(scx);
+  Teuchos::RCP<Epetra_Vector> acx = StructToAle(scx);
+
+  // We convert Delta d to Delta u here.
+  fcx->Scale(1./Dt());
+
+  Teuchos::RCP<Epetra_Vector> s = StructureField()->Interface().InsertOtherVector(sox);
+  Teuchos::RCP<Epetra_Vector> f = FluidField()    ->Interface().InsertOtherVector(fox);
+  Teuchos::RCP<Epetra_Vector> a = AleField()      ->Interface().InsertOtherVector(aox);
+
+  StructureField()->Interface().InsertCondVector(scx, s);
+  FluidField()    ->Interface().InsertCondVector(fcx, f);
+  AleField()      ->Interface().InsertCondVector(acx, a);
+
+  sx = s;
+  fx = f;
+  ax = a;
 }
 
 
@@ -302,7 +351,7 @@ void MFSI::OverlapAlgorithm::SetupSysMat(Thyra::DefaultBlockedLinearOp<double>& 
   mat.setBlock(0,1,Thyra::nonconstEpetraLinearOp(sig));
   mat.setBlock(1,0,Thyra::nonconstEpetraLinearOp(sgi));
 
-  double scale = 1.0;
+  double scale = FluidField()->ResidualScaling();
 
   mat.setBlock(1,1,
                Thyra::nonconstAdd<double>(
@@ -315,7 +364,14 @@ void MFSI::OverlapAlgorithm::SetupSysMat(Thyra::DefaultBlockedLinearOp<double>& 
                      Teuchos::rcp(&coupsf,false)))
                  ));
 
-  mat.setBlock(1,2,nonconstCouplingOp(fgi,Teuchos::null,Teuchos::rcp(&coupsf,false)));
+  mat.setBlock(1,2,
+               Thyra::nonconstScale<double>(
+                 scale,
+                 nonconstCouplingOp(
+                   fgi,
+                   Teuchos::null,
+                   Teuchos::rcp(&coupsf,false))
+                 ));
   mat.setBlock(2,1,nonconstCouplingOp(fig,Teuchos::rcp(&coupsf,false)));
   mat.setBlock(2,2,Thyra::nonconstEpetraLinearOp(fii));
 
@@ -330,7 +386,7 @@ void MFSI::OverlapAlgorithm::SetupSysMat(Thyra::DefaultBlockedLinearOp<double>& 
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<NOX::StatusTest::Combo>
 MFSI::OverlapAlgorithm::CreateStatusTest(Teuchos::ParameterList& nlParams,
-                                          Teuchos::RCP<NOX::Thyra::Group> grp)
+                                         Teuchos::RCP<NOX::Thyra::Group> grp)
 {
   // Create the convergence tests
   Teuchos::RCP<NOX::StatusTest::Combo> combo       = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
@@ -343,7 +399,12 @@ MFSI::OverlapAlgorithm::CreateStatusTest(Teuchos::ParameterList& nlParams,
   combo->addStatusTest(converged);
   combo->addStatusTest(maxiters);
 
-  // ToDo
+  // Very simple absolute test. We need to do something more
+  // sophisticated here.
+
+  Teuchos::RCP<NOX::StatusTest::NormF> absresid =
+    Teuchos::rcp(new NOX::StatusTest::NormF(nlParams.get("Norm abs F", 1.0e-6)));
+  converged->addStatusTest(absresid);
 
   return combo;
 }
