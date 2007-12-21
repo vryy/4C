@@ -351,7 +351,7 @@ void ContactStruGenAlpha::ConsistentPredictor()
   }
 
   //------------------------------------------------ build residual norm
-  double fresmnorm = 1.0;
+  double fresmnorm = 1.0e6;
   if (printscreen)
     fresm_->Norm2(&fresmnorm);
   if (!myrank_ && printscreen)
@@ -488,7 +488,7 @@ void ContactStruGenAlpha::ConstantPredictor()
   }
 
   //------------------------------------------------ build residual norm
-  double fresmnorm = 1.0;
+  double fresmnorm = 1.0e6;
   if (printscreen)
     fresm_->Norm2(&fresmnorm);
   if (!myrank_ && printscreen)
@@ -535,8 +535,8 @@ void ContactStruGenAlpha::FullNewton()
 
   //=================================================== equilibrium loop
   int numiter=0;
-  double fresmnorm;
-  double disinorm;
+  double disinorm = 1.0e6;
+  double fresmnorm = 1.0e6;
   fresm_->Norm2(&fresmnorm);
   while (disinorm>toldisp && fresmnorm>tolres && numiter<=maxiter)
   {
