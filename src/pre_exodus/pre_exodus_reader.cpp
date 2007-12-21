@@ -18,6 +18,10 @@ is handed to a c++ object mesh.
 #ifdef EXODUS
 #include "pre_exodus_reader.H"
 
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
+
 using namespace std;
 using namespace Teuchos;
 
@@ -39,7 +43,7 @@ Mesh::Mesh(string exofilename)
 
   // open EXODUS II file
   exoid_ = ex_open(exofilenamechar,EX_READ,&CPU_word_size,&IO_word_size,&exoversion);
-  if (exoid_<0)
+  if (exoid_<=0)
 	  dserror("Error while opening EXODUS II file %s",exofilenamechar);
 
   // print version
@@ -235,7 +239,8 @@ void Entity::SetPropertyName(string propname)
 void Entity::Print(ostream& os) const
 {
   // do not remove the .c_str() since they are needed for printing into a file stream
-  os << "Entity " << entityID_ << " is of type " << entity_type_;
+  // entityID_ is raised by 1 to match matr numbering of existing exofilter
+  os << "Entity " << entityID_+1<< " is of type " << entity_type_;
   os << " is named " << entity_name_.c_str() << endl;
   os << "with " << num_nodes_ << " Nodes in cloud" << endl;
   os << "Additional Info: " << endl;

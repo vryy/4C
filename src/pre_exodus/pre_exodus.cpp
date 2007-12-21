@@ -34,6 +34,11 @@ int main(
         int argc,
         char** argv)
 {
+	
+#ifdef PARALLEL
+  MPI_Init(&argc,&argv);
+#endif
+
     string exofile;
     string bcfile;
     string headfile;
@@ -82,12 +87,29 @@ int main(
     	  dserror("failed to open file: %s", defaultbcfilename.c_str());
 
       // write general mesh info
+      defaultbc<<"----------- general info -----------"<<endl<<endl;
       mymesh.Print(defaultbc);
       // write infos of each mesh entity
+      defaultbc<<"----------- entity info  -----------"<<endl<<endl;
       for (int i = 0; i < mymesh.GetNumberEntities(); ++i) 
       {
         RCP<Entity> actEntity = mymesh.GetEntity(i);
         actEntity->Print(defaultbc);
+      }
+      // show all necessary bc and element specifications (suggestion for user)     
+      defaultbc<<"-----------Please specify:-----------"<<endl<<endl;
+	  defaultbc<<"\\\\SYNTAX:"<<endl;
+      defaultbc<<"\\\\"<<"*matrID"<<"=\"<DESIGN TYPE or ELEMENT>\"\"<DESIGN-number or ELEMENT-TYPE>\""<<endl
+      <<"\\\\"<<"boundr_cond=\"<BC TYPE>\"\"<the BC itself>\""<<endl
+      <<"\\\\"<<"type=\"<ELEMENT-type>\"\"<ELEMENT-type2>\"\"<ELEMENT-type3>\""<<endl
+      <<"\\\\"<<"prop=\"<element flags>\""<<endl<<endl;
+      
+      for (int i = 0; i < mymesh.GetNumberEntities(); ++i) 
+      {    
+    	  defaultbc<<"*matr"<<i+1<<"=\"\"\"\""<<endl
+    	  <<"boundr_cond=\"\"\"\""<<endl
+    	  <<"type=\"\"\"\"\"\""<<endl
+    	  <<"prop=\"\""<<endl<<endl;
       }
 
       // close default bc specification file
@@ -112,10 +134,12 @@ int main(
 
       // close default header file    
       if (defaulthead.is_open()) 
-    	  defaulthead.close();
-
-      exit(0);    
+    	  defaulthead.close();   
     }
+    
+#ifdef PARALLEL
+  MPI_Finalize();
+#endif
 }
 
 #endif
