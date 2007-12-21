@@ -106,6 +106,10 @@ StruGenAlpha(params,dis,solver,output,false)
 
   // internal force vector F_int at different times
   fint_ = LINALG::CreateVector(*dofrowmap,true);
+  // inertial force vector F_inert at different times
+  finert_ = LINALG::CreateVector(*dofrowmap,true);
+  // viscous force vector F_visc at different times
+  fvisc_ = LINALG::CreateVector(*dofrowmap,true);
   // external force vector F_ext at last times
   fext_ = LINALG::CreateVector(*dofrowmap,true);
   // external mid-force vector F_{ext;n+1-alpha_f}
