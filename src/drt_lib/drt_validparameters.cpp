@@ -315,6 +315,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
                                tuple<std::string>("full","Full","FULL"),
                                tuple<int>(1,1,1),
                                &sdyn);
+  setStringToIntegralParameter("CONV_CHECK","AbsRes_Or_AbsDis","type of convergence check",
+                               tuple<std::string>(
+                                 "AbsRes_Or_AbsDis",
+                                 "AbsRes_And_AbsDis",
+                                 "RelRes_Or_AbsDis",
+                                 "RelRes_And_AbsDis",
+                                 "RelRes_Or_RelDis",
+                                 "RelRes_And_RelDis"),
+                               tuple<int>(STRUCT_DYNAMIC::absres_or_absdis,STRUCT_DYNAMIC::absres_and_absdis,
+                                          STRUCT_DYNAMIC::relres_or_absdis,STRUCT_DYNAMIC::relres_and_absdis,
+                                          STRUCT_DYNAMIC::relres_or_reldis,STRUCT_DYNAMIC::relres_and_reldis),
+                               &sdyn);
 
   DoubleParameter("TOLDISP",1.0E-10,
                   "tolerance in the displacement norm for the newton iteration",

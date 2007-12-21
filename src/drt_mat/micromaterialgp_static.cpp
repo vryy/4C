@@ -120,14 +120,17 @@ void MAT::MicroMaterialGP::SetUpMicroStatic()
   params->set<double>("gamma",sdyn.get<double>("GAMMA"));
   params->set<double>("alpha m",sdyn.get<double>("ALPHA_M"));
   params->set<double>("alpha f",sdyn.get<double>("ALPHA_F"));
-
+  params->set<string>("convcheck", sdyn.get<string>("CONV_CHECK"));
   params->set<double>("total time",0.0);
   params->set<double>("delta time",sdyn.get<double>("TIMESTEP"));
   params->set<int>   ("step",0);
   params->set<int>   ("nstep",sdyn.get<int>("NUMSTEP"));
   params->set<int>   ("max iterations",sdyn.get<int>("MAXITER"));
   params->set<int>   ("num iterations",-1);
+
+  params->set<double>("tolerance residual",sdyn.get<double>("TOLRES"));
   params->set<double>("tolerance displacements",sdyn.get<double>("TOLDISP"));
+  params->set<bool>  ("print to screen",true);
 
   // takes values "full newton" , "modified newton" , "nonlinear cg"
   params->set<string>("equilibrium iteration","full newton");

@@ -243,7 +243,7 @@ void MicroStatic::ConvertMat(const Epetra_MultiVector& cmatpf,
   cmat(5,3) = cmat(3,5);
   cmat(5,4) = cmat(4,5);
 
-  cout << "cmat:\n" << cmat << "\n";
+  //cout << "cmat:\n" << cmat << "\n";
 }
 
 #endif

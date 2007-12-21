@@ -226,7 +226,16 @@ void ContactStruGenAlpha::ConsistentPredictor()
   double beta        = params_.get<double>("beta"           ,0.292);
   double gamma       = params_.get<double>("gamma"          ,0.581);
   bool   printscreen = params_.get<bool>  ("print to screen",false);
+  string convcheck   = params_.get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
   const Epetra_Map* dofrowmap = discret_.DofRowMap();
+
+  // store norms of old displacements and maximum of norms of
+  // internal, external and inertial forces if a relative convergence
+  // check is desired
+  if (time != 0. && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
+  {
+    CalcRefNorms();
+  }
 
   // increment time and step
   double timen = time + dt;  // t_{n+1}
@@ -332,13 +341,14 @@ void ContactStruGenAlpha::ConsistentPredictor()
   //     + F_int(D_{n+1-alpha_f})
   //     - F_{ext;n+1-alpha_f}
   // add mid-inertial force
-  mass_->Multiply(false,*accm_,*fresm_);
+  mass_->Multiply(false,*accm_,*finert_);
+  fresm_->Update(1.0,*finert_,0.0);
   // add mid-viscous damping force
   if (damping)
   {
-    RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
-    damp_->Multiply(false,*velm_,*fviscm);
-    fresm_->Update(1.0,*fviscm,1.0);
+    //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
+    damp_->Multiply(false,*velm_,*fvisc_);
+    fresm_->Update(1.0,*fvisc_,1.0);
   }
 
   // add static mid-balance
@@ -352,12 +362,20 @@ void ContactStruGenAlpha::ConsistentPredictor()
 
   //------------------------------------------------ build residual norm
   double fresmnorm = 1.0e6;
+
+  // store norms of displacements and maximum of norms of internal,
+  // external and inertial forces if a relative convergence check
+  // is desired and we are in the first time step
+  if (time == 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
+  {
+    CalcRefNorms();
+  }
+
   if (printscreen)
     fresm_->Norm2(&fresmnorm);
   if (!myrank_ && printscreen)
   {
-    cout << "Predictor residual forces " << fresmnorm << endl;
-    fflush(stdout);
+    PrintPredictor(convcheck, fresmnorm);
   }
 
   return;
@@ -379,7 +397,16 @@ void ContactStruGenAlpha::ConstantPredictor()
   bool   damping     = params_.get<bool>  ("damping"        ,false);
   double alphaf      = params_.get<double>("alpha f"        ,0.459);
   bool   printscreen = params_.get<bool>  ("print to screen",false);
+  string convcheck   = params_.get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
   const Epetra_Map* dofrowmap = discret_.DofRowMap();
+
+  // store norms of old displacements and maximum of norms of
+  // internal, external and inertial forces if a relative convergence
+  // check is desired
+  if (time != 0. && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
+  {
+    CalcRefNorms();
+  }
 
   // increment time and step
   double timen = time += dt;
@@ -469,13 +496,14 @@ void ContactStruGenAlpha::ConstantPredictor()
   //     + F_int(D_{n+1-alpha_f})
   //     - F_{ext;n+1-alpha_f}
   // add mid-inertial force
-  mass_->Multiply(false,*accm_,*fresm_);
+  mass_->Multiply(false,*accm_,*finert_);
+  fresm_->Update(1.0,*finert_,0.0);
   // add mid-viscous damping force
   if (damping)
   {
-      RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
-      damp_->Multiply(false,*velm_,*fviscm);
-      fresm_->Update(1.0,*fviscm,1.0);
+      //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
+      damp_->Multiply(false,*velm_,*fvisc_);
+      fresm_->Update(1.0,*fvisc_,1.0);
   }
 
   // add static mid-balance
@@ -493,8 +521,15 @@ void ContactStruGenAlpha::ConstantPredictor()
     fresm_->Norm2(&fresmnorm);
   if (!myrank_ && printscreen)
   {
-    cout << "Predictor residual forces " << fresmnorm << endl;
-    fflush(stdout);
+    PrintPredictor(convcheck, fresmnorm);
+  }
+
+  // store norms of displacements and maximum of norms of internal,
+  // external and inertial forces if a relative convergence check
+  // is desired and we are in the first time step
+  if (time == 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
+  {
+    CalcRefNorms();
   }
 
   return;
@@ -518,6 +553,7 @@ void ContactStruGenAlpha::FullNewton()
   double gamma     = params_.get<double>("gamma"                  ,0.581);
   double alpham    = params_.get<double>("alpha m"                ,0.378);
   double alphaf    = params_.get<double>("alpha f"                ,0.459);
+  string convcheck = params_.get<string>("convcheck"              ,"AbsRes_Or_AbsDis");
   double toldisp   = params_.get<double>("tolerance displacements",1.0e-07);
   double tolres    = params_.get<double>("tolerance residual"     ,1.0e-07);
   bool printscreen = params_.get<bool>  ("print to screen",true);
@@ -538,7 +574,11 @@ void ContactStruGenAlpha::FullNewton()
   double disinorm = 1.0e6;
   double fresmnorm = 1.0e6;
   fresm_->Norm2(&fresmnorm);
-  while (disinorm>toldisp && fresmnorm>tolres && numiter<=maxiter)
+  Epetra_Time timer(discret_.Comm());
+  timer.ResetStartTime();
+  bool print_unconv = true;
+
+  while (Unconverged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
@@ -635,13 +675,14 @@ void ContactStruGenAlpha::FullNewton()
     //     + F_int(D_{n+1-alpha_f})
     //     - F_{ext;n+1-alpha_f}
     // add inertia mid-forces
-    mass_->Multiply(false,*accm_,*fresm_);
+    mass_->Multiply(false,*accm_,*finert_);
+    fresm_->Update(1.0,*finert_,0.0);
     // add viscous mid-forces
     if (damping)
     {
-      RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
-      damp_->Multiply(false,*velm_,*fviscm);
-      fresm_->Update(1.0,*fviscm,1.0);
+      //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
+      damp_->Multiply(false,*velm_,*fvisc_);
+      fresm_->Update(1.0,*fvisc_,1.0);
     }
     // add static mid-balance
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
@@ -655,19 +696,12 @@ void ContactStruGenAlpha::FullNewton()
     disi_->Norm2(&disinorm);
 
     fresm_->Norm2(&fresmnorm);
+
     // a short message
-    if (!myrank_)
+    if (!myrank_ && (printscreen || printerr))
     {
-      if (printscreen)
-      {
-        printf("numiter %d res-norm %e dis-norm %e\n",numiter+1, fresmnorm, disinorm);
-        fflush(stdout);
-      }
-      if (printerr)
-      {
-        fprintf(errfile,"numiter %d res-norm %e dis-norm %e\n",numiter+1, fresmnorm, disinorm);
-        fflush(errfile);
-      }
+      PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
+                  fresmnorm,disinorm,convcheck);
     }
 
     //--------------------------------- increment equilibrium loop index
@@ -675,6 +709,7 @@ void ContactStruGenAlpha::FullNewton()
 
   }
   //=================================================================== end equilibrium loop
+  print_unconv = false;
 
   //-------------------------------- test whether max iterations was hit
   if (numiter>=maxiter)
@@ -683,13 +718,13 @@ void ContactStruGenAlpha::FullNewton()
   }
   else
   {
-     if ( (myrank_ ==  0) && (printscreen) )
+     if (!myrank_ && printscreen)
      {
-        printf("Newton iteration converged: numiter %d res-norm %e dis-norm %e\n",
-               numiter+1, fresmnorm, disinorm);
-        fflush(stdout);
+       PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
+                   fresmnorm,disinorm,convcheck);
      }
   }
+
   params_.set<int>("num iterations",numiter);
 
   //-------------------------------------- don't need this at the moment

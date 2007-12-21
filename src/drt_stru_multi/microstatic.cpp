@@ -214,7 +214,17 @@ void MicroStatic::Predictor(const Epetra_SerialDenseMatrix* defgrd)
   // -------------------------------------------------------------------
   double time        = params_->get<double>("total time"     ,0.0);
   double dt          = params_->get<double>("delta time"     ,0.01);
+  string convcheck   = params_->get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
+  bool   printscreen = params_->get<bool>  ("print to screen",false);
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+  // store norms of old displacements and maximum of norms of
+  // internal, external and inertial forces if a relative convergence
+  // check is desired
+  if (time != 0. && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
+  {
+    CalcRefNorms();
+  }
 
   // apply new displacements at DBCs -> this has to be done with the
   // mid-displacements since the given macroscopic deformation
@@ -278,9 +288,20 @@ void MicroStatic::Predictor(const Epetra_SerialDenseMatrix* defgrd)
 
   //------------------------------------------------ build residual norm
   double fresmnorm = 1.0;
-  fresm_->Norm2(&fresmnorm);
+  if (printscreen)
+    fresm_->Norm2(&fresmnorm);
+  if (!myrank_ && printscreen)
+  {
+    PrintPredictor(convcheck, fresmnorm);
+  }
 
-  cout << "MICROSCALE PREDICTOR fresmnorm: " << fresmnorm << "\n";
+  // store norms of displacements and maximum of norms of internal,
+  // external and inertial forces if a relative convergence check
+  // is desired and we are in the first time step
+  if (time == 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
+  {
+    CalcRefNorms();
+  }
 
   return;
 } // MicroStatic::Predictor()
@@ -297,8 +318,10 @@ void MicroStatic::FullNewton()
   double time      = params_->get<double>("total time"             ,0.0);
   double dt        = params_->get<double>("delta time"             ,0.01);
   int    maxiter   = params_->get<int>   ("max iterations"         ,10);
+  string convcheck = params_->get<string>("convcheck"              ,"AbsRes_Or_AbsDis");
   double toldisp   = params_->get<double>("tolerance displacements",1.0e-07);
   double tolres    = params_->get<double>("tolerance residual"     ,1.0e-07);
+  bool printscreen = params_->get<bool>  ("print to screen",true);
   //double toldisp = 1.0e-08;
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
@@ -307,8 +330,11 @@ void MicroStatic::FullNewton()
   double fresmnorm = 1.0e6;
   double disinorm = 1.0e6;
   fresm_->Norm2(&fresmnorm);
+  Epetra_Time timer(discret_->Comm());
+  timer.ResetStartTime();
+  bool print_unconv = true;
 
-  while ((disinorm>toldisp && fresmnorm>tolres) && numiter<=maxiter)
+  while (Unconverged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter<=maxiter)
   {
 
     //----------------------- apply dirichlet BCs to system of equations
@@ -376,21 +402,33 @@ void MicroStatic::FullNewton()
 
     fresm_->Norm2(&fresmnorm);
 
-    cout << "MICROSCALE NEWTON: disinorm: " << disinorm << " fresmnorm: " << fresmnorm << "\n";
+    // a short message
+    if (!myrank_ && printscreen)
+    {
+      PrintNewton(printscreen,print_unconv,timer,numiter,maxiter,
+                  fresmnorm,disinorm,convcheck);
+    }
 
     //--------------------------------- increment equilibrium loop index
     ++numiter;
   }
   //============================================= end equilibrium loop
+  print_unconv = false;
 
   //-------------------------------- test whether max iterations was hit
-  if (numiter>=maxiter) dserror("Newton unconverged in %d iterations",numiter);
+  if (numiter>=maxiter)
+  {
+     dserror("Newton unconverged in %d iterations",numiter);
+  }
   else
   {
-    printf("MICROSCALE: Newton iteration converged: numiter %d\n",
-           numiter);
-    fflush(stdout);
+     if (!myrank_ && printscreen)
+     {
+       PrintNewton(printscreen,print_unconv,timer,numiter,maxiter,
+                   fresmnorm,disinorm,convcheck);
+     }
   }
+
   params_->set<int>("num iterations",numiter);
 
   //stiff_ = null;   -> microscale needs this for homogenization purposes
@@ -726,6 +764,159 @@ void MicroStatic::SetUpHomogenization()
     ((*rhs_)(i))->Export(*(DT(i)), *importp_, Insert);
   }
 }
+
+
+/*----------------------------------------------------------------------*
+ |  check convergence of Newton iteration (public)              lw 12/07|
+ *----------------------------------------------------------------------*/
+bool MicroStatic::Unconverged(const string type, const double disinorm,
+                              const double resnorm, const double toldisp,
+                              const double tolres)
+{
+  if (type == "AbsRes_Or_AbsDis")
+  {
+    return (disinorm>toldisp && resnorm>tolres);
+  }
+  else if (type == "AbsRes_And_AbsDis")
+  {
+    return (disinorm>toldisp || resnorm>tolres);
+  }
+  else if (type == "RelRes_Or_AbsDis")
+  {
+    if (ref_fnorm_ == 0.) ref_fnorm_ = 1.0;
+    return (disinorm>toldisp && (resnorm/ref_fnorm_)>tolres);
+  }
+  else if (type == "RelRes_And_AbsDis")
+  {
+    if (ref_fnorm_ == 0.) ref_fnorm_ = 1.0;
+    return (disinorm>toldisp || (resnorm/ref_fnorm_)>tolres);
+  }
+  else if (type == "RelRes_Or_RelDis")
+  {
+    if (ref_fnorm_ == 0.) ref_fnorm_ = 1.0;
+    if (ref_disnorm_ == 0.) ref_disnorm_ = 1.0;
+    return ((disinorm/ref_disnorm_)>toldisp && (resnorm/ref_fnorm_)>tolres);
+  }
+  else if (type == "RelRes_And_RelDis")
+  {
+    if (ref_fnorm_ == 0.) ref_fnorm_ = 1.0;
+    if (ref_disnorm_ == 0.) ref_disnorm_ = 1.0;
+
+    return ((disinorm/ref_disnorm_)>toldisp || (resnorm/ref_fnorm_)>tolres);
+  }
+  else
+  {
+    dserror("Requested convergence check not (yet) implemented");
+    return true;
+  }
+}
+
+/*----------------------------------------------------------------------*
+ |  calculate reference norms for relative convergence checks   lw 12/07|
+ *----------------------------------------------------------------------*/
+void MicroStatic::CalcRefNorms()
+{
+  // The reference norms are used to scale the calculated iterative
+  // displacement norm and/or the residual force norm. For this
+  // purpose we only need the right order of magnitude, so we don't
+  // mind evaluating the corresponding norms at possibly different
+  // points within the timestep (end point, generalized midpoint).
+
+  dis_->Norm2(&ref_disnorm_);
+
+
+  double fintnorm, fextnorm;
+  fint_->Norm2(&fintnorm);
+  fextm_->Norm2(&fextnorm);
+
+  ref_fnorm_=max(fintnorm, fextnorm);
+}
+
+/*----------------------------------------------------------------------*
+ |  print to screen and/or error file                           lw 12/07|
+ *----------------------------------------------------------------------*/
+void MicroStatic::PrintNewton(bool printscreen, bool print_unconv,
+                              Epetra_Time timer, int numiter,
+                              int maxiter, double fresmnorm, double disinorm,
+                              string convcheck)
+{
+  bool relres        = (convcheck == "RelRes_And_AbsDis" || convcheck == "RelRes_Or_AbsDis");
+  bool relres_reldis = (convcheck == "RelRes_And_RelDis" || convcheck == "RelRes_Or_RelDis");
+
+  if (relres)
+  {
+    fresmnorm /= ref_fnorm_;
+  }
+  if (relres_reldis)
+  {
+    fresmnorm /= ref_fnorm_;
+    disinorm  /= ref_disnorm_;
+  }
+
+  if (print_unconv)
+  {
+    if (printscreen)
+    {
+      if (relres)
+      {
+        printf("      MICROSCALE numiter %2d scaled res-norm %10.5e absolute dis-norm %20.15E\n",numiter+1, fresmnorm, disinorm);
+        fflush(stdout);
+      }
+      else if (relres_reldis)
+      {
+        printf("      MICROSCALE numiter %2d scaled res-norm %10.5e scaled dis-norm %20.15E\n",numiter+1, fresmnorm, disinorm);
+        fflush(stdout);
+      }
+      else
+        {
+        printf("      MICROSCALE numiter %2d absolute res-norm %10.5e absolute dis-norm %20.15E\n",numiter+1, fresmnorm, disinorm);
+        fflush(stdout);
+      }
+    }
+  }
+  else
+  {
+    double timepernlnsolve = timer.ElapsedTime();
+
+    if (relres)
+    {
+      printf("      MICROSCALE Newton iteration converged: numiter %d scaled res-norm %e absolute dis-norm %e time %10.5f\n\n",
+             numiter,fresmnorm,disinorm,timepernlnsolve);
+      fflush(stdout);
+    }
+    else if (relres_reldis)
+    {
+      printf("      MICROSCALE Newton iteration converged: numiter %d scaled res-norm %e scaled dis-norm %e time %10.5f\n\n",
+             numiter,fresmnorm,disinorm,timepernlnsolve);
+      fflush(stdout);
+    }
+    else
+    {
+      printf("      MICROSCALE Newton iteration converged: numiter %d absolute res-norm %e absolute dis-norm %e time %10.5f\n\n",
+             numiter,fresmnorm,disinorm,timepernlnsolve);
+      fflush(stdout);
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*
+ |  print to screen                                             lw 12/07|
+ *----------------------------------------------------------------------*/
+void MicroStatic::PrintPredictor(string convcheck, double fresmnorm)
+{
+  if (convcheck != "AbsRes_And_AbsDis" && convcheck != "AbsRes_Or_AbsDis")
+  {
+    fresmnorm /= ref_fnorm_;
+    cout << "      MICROSCALE Predictor scaled res-norm " << fresmnorm << endl;
+  }
+  else
+  {
+    cout << "      MICROSCALE Predictor absolute res-norm " << fresmnorm << endl;
+  }
+  fflush(stdout);
+}
+
+
 
 
 // after having finished all the testing, remove cmat from the input

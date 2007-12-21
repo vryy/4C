@@ -136,12 +136,24 @@ public:
                   const Epetra_SerialDenseVector& S,
                   Epetra_SerialDenseMatrix& cmat);
 
-
   void calc_cmat(const Epetra_MultiVector& K_M,
                  const Epetra_SerialDenseMatrix& inv_defgrd,
                  const Epetra_SerialDenseVector& S,
                  Epetra_SerialDenseMatrix* cmat,
                  const Epetra_SerialDenseMatrix* F);
+
+  bool Unconverged(const string type, const double disinorm,
+                   const double resnorm, const double toldisp,
+                   const double tolres);
+
+  void CalcRefNorms();
+
+  void PrintNewton(bool printscreen, bool print_unconv,
+                   Epetra_Time timer, int numiter, int maxiter,
+                   double fresmnorm, double disinorm, string convcheck);
+
+   void PrintPredictor(string convcheck, double fresmnorm);
+
 
 
 protected:
@@ -155,6 +167,9 @@ protected:
   RefCountPtr<LINALG::Solver>                solver_;
   int                           myrank_;
   int                           maxentriesperrow_;
+
+  double                        ref_fnorm_;
+  double                        ref_disnorm_;
 
   RefCountPtr<Epetra_CrsMatrix> stiff_;
   RefCountPtr<Epetra_CrsMatrix> stiff_dirich_;

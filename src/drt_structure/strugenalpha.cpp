@@ -103,6 +103,10 @@ maxentriesperrow_(81)
 
     // internal force vector F_int at different times
     fint_ = LINALG::CreateVector(*dofrowmap,true);
+    // inertial force vector F_inert at different times
+    finert_ = LINALG::CreateVector(*dofrowmap,true);
+    // viscous force vector F_visc at different times
+    fvisc_ = LINALG::CreateVector(*dofrowmap,true);
     // external force vector F_ext at last times
     fext_ = LINALG::CreateVector(*dofrowmap,true);
     // external mid-force vector F_{ext;n+1-alpha_f}
@@ -229,7 +233,16 @@ void StruGenAlpha::ConstantPredictor()
   bool   damping     = params_.get<bool>  ("damping"        ,false);
   double alphaf      = params_.get<double>("alpha f"        ,0.459);
   bool   printscreen = params_.get<bool>  ("print to screen",false);
+  string convcheck   = params_.get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
   const Epetra_Map* dofrowmap = discret_.DofRowMap();
+
+  // store norms of old displacements and maximum of norms of
+  // internal, external and inertial forces if a relative convergence
+  // check is desired
+  if (time != 0. && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
+  {
+    CalcRefNorms();
+  }
 
   // increment time and step
   double timen = time += dt;
@@ -319,13 +332,14 @@ void StruGenAlpha::ConstantPredictor()
   //     + F_int(D_{n+1-alpha_f})
   //     - F_{ext;n+1-alpha_f}
   // add mid-inertial force
-  mass_->Multiply(false,*accm_,*fresm_);
+  mass_->Multiply(false,*accm_,*finert_);
+  fresm_->Update(1.0,*finert_,0.0);
   // add mid-viscous damping force
   if (damping)
   {
-      RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
-      damp_->Multiply(false,*velm_,*fviscm);
-      fresm_->Update(1.0,*fviscm,1.0);
+      //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
+      damp_->Multiply(false,*velm_,*fvisc_);
+      fresm_->Update(1.0,*fvisc_,1.0);
   }
 
   // add static mid-balance
@@ -343,8 +357,15 @@ void StruGenAlpha::ConstantPredictor()
     fresm_->Norm2(&fresmnorm);
   if (!myrank_ && printscreen)
   {
-    cout << "Predictor residual forces " << fresmnorm << endl;
-    fflush(stdout);
+    PrintPredictor(convcheck, fresmnorm);
+  }
+
+  // store norms of displacements and maximum of norms of internal,
+  // external and inertial forces if a relative convergence check
+  // is desired and we are in the first time step
+  if (time == 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
+  {
+    CalcRefNorms();
   }
 
   return;
@@ -365,7 +386,16 @@ void StruGenAlpha::MatrixFreeConstantPredictor()
   bool   damping     = params_.get<bool>  ("damping"        ,false);
   double alphaf      = params_.get<double>("alpha f"        ,0.459);
   bool   printscreen = params_.get<bool>  ("print to screen",false);
+  string convcheck   = params_.get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
   const Epetra_Map* dofrowmap = discret_.DofRowMap();
+
+  // store norms of old displacements and maximum of norms of
+  // internal, external and inertial forces if a relative convergence
+  // check is desired
+  if (time != 0. && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
+  {
+    CalcRefNorms();
+  }
 
   // increment time and step
   double timen = time + dt;  // t_{n+1}
@@ -456,13 +486,14 @@ void StruGenAlpha::MatrixFreeConstantPredictor()
   //     + F_int(D_{n+1-alpha_f})
   //     - F_{ext;n+1-alpha_f}
   // add mid-inertial force
-  mass_->Multiply(false,*accm_,*fresm_);
+  mass_->Multiply(false,*accm_,*finert_);
+  fresm_->Update(1.0,*finert_,0.0);
   // add mid-viscous damping force
   if (damping)
   {
-      RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
-      damp_->Multiply(false,*velm_,*fviscm);
-      fresm_->Update(1.0,*fviscm,1.0);
+      //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
+      damp_->Multiply(false,*velm_,*fvisc_);
+      fresm_->Update(1.0,*fvisc_,1.0);
   }
 
   // add static mid-balance
@@ -480,8 +511,15 @@ void StruGenAlpha::MatrixFreeConstantPredictor()
     fresm_->Norm2(&fresmnorm);
   if (!myrank_ && printscreen)
   {
-    cout << "Predictor residual forces " << fresmnorm << endl;
-    fflush(stdout);
+    PrintPredictor(convcheck, fresmnorm);
+  }
+
+  // store norms of displacements and maximum of norms of internal,
+  // external and inertial forces if a relative convergence check
+  // is desired and we are in the first time step
+  if (time == 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
+  {
+    CalcRefNorms();
   }
 
   return;
@@ -505,7 +543,16 @@ void StruGenAlpha::ConsistentPredictor()
   double beta        = params_.get<double>("beta"           ,0.292);
   double gamma       = params_.get<double>("gamma"          ,0.581);
   bool   printscreen = params_.get<bool>  ("print to screen",false);
+  string convcheck   = params_.get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
   const Epetra_Map* dofrowmap = discret_.DofRowMap();
+
+  // store norms of old displacements and maximum of norms of
+  // internal, external and inertial forces if a relative convergence
+  // check is desired
+  if (time != 0. && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
+  {
+    CalcRefNorms();
+  }
 
   // increment time and step
   double timen = time + dt;  // t_{n+1}
@@ -612,13 +659,14 @@ void StruGenAlpha::ConsistentPredictor()
   //     + F_int(D_{n+1-alpha_f})
   //     - F_{ext;n+1-alpha_f}
   // add mid-inertial force
-  mass_->Multiply(false,*accm_,*fresm_);
+  mass_->Multiply(false,*accm_,*finert_);
+  fresm_->Update(1.0,*finert_,0.0);
   // add mid-viscous damping force
   if (damping)
   {
-    RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
-    damp_->Multiply(false,*velm_,*fviscm);
-    fresm_->Update(1.0,*fviscm,1.0);
+    //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
+    damp_->Multiply(false,*velm_,*fvisc_);
+    fresm_->Update(1.0,*fvisc_,1.0);
   }
 
   // add static mid-balance
@@ -632,12 +680,20 @@ void StruGenAlpha::ConsistentPredictor()
 
   //------------------------------------------------ build residual norm
   double fresmnorm = 1.0;
+
+  // store norms of displacements and maximum of norms of internal,
+  // external and inertial forces if a relative convergence check
+  // is desired and we are in the first time step
+  if (time == 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
+  {
+    CalcRefNorms();
+  }
+
   if (printscreen)
     fresm_->Norm2(&fresmnorm);
   if (!myrank_ && printscreen)
   {
-    cout << "Predictor residual forces " << fresmnorm << endl;
-    fflush(stdout);
+    PrintPredictor(convcheck, fresmnorm);
   }
 
   return;
@@ -734,13 +790,14 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
     //     + F_int(D_{n+1-alpha_f})
     //     - F_{ext;n+1-alpha_f}
     // add inertia mid-forces
-    mass_->Multiply(false,*accm_,*fresm_);
+    mass_->Multiply(false,*accm_,*finert_);
+    fresm_->Update(1.0,*finert_,0.0);
     // add viscous mid-forces
     if (damping)
     {
-      RCP<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
-      damp_->Multiply(false,*velm_,*fviscm);
-      fresm_->Update(1.0,*fviscm,1.0);
+      //RCP<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
+      damp_->Multiply(false,*velm_,*fvisc_);
+      fresm_->Update(1.0,*fvisc_,1.0);
     }
     // add static mid-balance
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
@@ -784,6 +841,7 @@ void StruGenAlpha::FullNewton()
   double gamma     = params_.get<double>("gamma"                  ,0.581);
   double alpham    = params_.get<double>("alpha m"                ,0.378);
   double alphaf    = params_.get<double>("alpha f"                ,0.459);
+  string convcheck = params_.get<string>("convcheck"              ,"AbsRes_Or_AbsDis");
   double toldisp   = params_.get<double>("tolerance displacements",1.0e-07);
   double tolres    = params_.get<double>("tolerance residual"     ,1.0e-07);
   bool printscreen = params_.get<bool>  ("print to screen",true);
@@ -806,8 +864,9 @@ void StruGenAlpha::FullNewton()
   fresm_->Norm2(&fresmnorm);
   Epetra_Time timer(discret_.Comm());
   timer.ResetStartTime();
+  bool print_unconv = true;
 
-  while ( (disinorm>toldisp && fresmnorm>tolres) && numiter<=maxiter)
+  while (Unconverged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
@@ -896,13 +955,14 @@ void StruGenAlpha::FullNewton()
     //     + F_int(D_{n+1-alpha_f})
     //     - F_{ext;n+1-alpha_f}
     // add inertia mid-forces
-    mass_->Multiply(false,*accm_,*fresm_);
+    mass_->Multiply(false,*accm_,*finert_);
+    fresm_->Update(1.0,*finert_,0.0);
     // add viscous mid-forces
     if (damping)
     {
-      RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
-      damp_->Multiply(false,*velm_,*fviscm);
-      fresm_->Update(1.0,*fviscm,1.0);
+      //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
+      damp_->Multiply(false,*velm_,*fvisc_);
+      fresm_->Update(1.0,*fvisc_,1.0);
     }
     // add static mid-balance
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
@@ -918,18 +978,10 @@ void StruGenAlpha::FullNewton()
     fresm_->Norm2(&fresmnorm);
 
     // a short message
-    if (!myrank_)
+    if (!myrank_ && (printscreen || printerr))
     {
-      if (printscreen)
-      {
-        printf("numiter %2d res-norm %10.5e dis-norm %20.15E\n",numiter+1, fresmnorm, disinorm);
-        fflush(stdout);
-      }
-      if (printerr)
-      {
-        fprintf(errfile,"numiter %2d res-norm %10.5e dis-norm %10.5e\n",numiter+1, fresmnorm, disinorm);
-        fflush(errfile);
-      }
+      PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
+                  fresmnorm,disinorm,convcheck);
     }
 
     //--------------------------------- increment equilibrium loop index
@@ -937,7 +989,8 @@ void StruGenAlpha::FullNewton()
 
   }
   //=================================================================== end equilibrium loop
-  double timepernlnsolve = timer.ElapsedTime();
+  print_unconv = false;
+
   //-------------------------------- test whether max iterations was hit
   if (numiter>=maxiter)
   {
@@ -945,13 +998,13 @@ void StruGenAlpha::FullNewton()
   }
   else
   {
-     if ( (myrank_ ==  0) && (printscreen) )
+     if (!myrank_ && printscreen)
      {
-        printf("Newton iteration converged: numiter %d res-norm %e dis-norm %e time %10.5f\n",
-               numiter,fresmnorm,disinorm,timepernlnsolve);
-        fflush(stdout);
+       PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
+                   fresmnorm,disinorm,convcheck);
      }
   }
+
   params_.set<int>("num iterations",numiter);
 
   //-------------------------------------- don't need this at the moment
@@ -979,6 +1032,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   double gamma     = params_.get<double>("gamma"                  ,0.581);
   double alpham    = params_.get<double>("alpha m"                ,0.378);
   double alphaf    = params_.get<double>("alpha f"                ,0.459);
+  string convcheck = params_.get<string>("convcheck"              ,"AbsRes_Or_AbsDis");
   double toldisp   = params_.get<double>("tolerance displacements",1.0e-07);
   double tolres    = params_.get<double>("tolerance residual"     ,1.0e-07);
   bool printscreen = params_.get<bool>  ("print to screen",true);
@@ -1003,7 +1057,12 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 
   double volnorm=volConstrMan_->GetVolumeErrorNorm();
   int numConstrVol=volConstrMan_->GetNumberOfVolumes() ;
-  while (((disinorm>toldisp && fresmnorm>tolres) || volnorm > toldisp ) && numiter<=maxiter)
+  Epetra_Time timer(discret_.Comm());
+  timer.ResetStartTime();
+  bool print_unconv = true;
+
+  while ((Unconverged(convcheck, disinorm, fresmnorm, toldisp, tolres) || volnorm > toldisp )
+         && numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
@@ -1210,13 +1269,14 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     //     + F_int(D_{n+1-alpha_f})
     //     - F_{ext;n+1-alpha_f}
     // add inertia mid-forces
-    mass_->Multiply(false,*accm_,*fresm_);
+    mass_->Multiply(false,*accm_,*finert_);
+    fresm_->Update(1.0,*finert_,0.0);
     // add viscous mid-forces
     if (damping)
     {
-      RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
-      damp_->Multiply(false,*velm_,*fviscm);
-      fresm_->Update(1.0,*fviscm,1.0);
+      //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
+      damp_->Multiply(false,*velm_,*fvisc_);
+      fresm_->Update(1.0,*fvisc_,1.0);
     }
     // add static mid-balance
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
@@ -1232,18 +1292,10 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     fresm_->Norm2(&fresmnorm);
 
     // a short message
-    if (!myrank_)
+    if (!myrank_ && (printscreen || printerr))
     {
-      if (printscreen)
-      {
-        printf("numiter %d res-norm %e dis-norm %e vol_norm %e\n",numiter+1, fresmnorm, disinorm, volnorm);
-        fflush(stdout);
-      }
-      if (printerr)
-      {
-        fprintf(errfile,"numiter %d res-norm %e dis-norm %e volnorm %e\n",numiter+1, fresmnorm, disinorm, volnorm);
-        fflush(errfile);
-      }
+      PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
+                  fresmnorm,disinorm,convcheck);
     }
 
     //--------------------------------- increment equilibrium loop index
@@ -1251,6 +1303,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 
   }
   //=================================================================== end equilibrium loop
+  print_unconv = false;
 
   //-------------------------------- test whether max iterations was hit
   if (numiter>=maxiter)
@@ -1259,13 +1312,13 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   }
   else
   {
-     if ( (myrank_ ==  0) && (printscreen) )
+     if (!myrank_ && printscreen)
      {
-        printf("Newton iteration converged: numiter %d res-norm %e dis-norm %e\n",
-               numiter, fresmnorm, disinorm);
-        fflush(stdout);
+       PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
+                   fresmnorm,disinorm,convcheck);
      }
   }
+
   params_.set<int>("num iterations",numiter);
 
   //-------------------------------------- don't need this at the moment
@@ -1291,13 +1344,14 @@ void StruGenAlpha::ModifiedNewton()
   double gamma     = params_.get<double>("gamma"                  ,0.581);
   double alpham    = params_.get<double>("alpha m"                ,0.378);
   double alphaf    = params_.get<double>("alpha f"                ,0.459);
+  string convcheck = params_.get<string>("convcheck"              ,"AbsRes_Or_AbsDis");
   double toldisp   = params_.get<double>("tolerance displacements",1.0e-07);
   double tolres    = params_.get<double>("tolerance residual"     ,1.0e-07);
   bool printscreen = params_.get<bool>  ("print to screen",true);
   bool printerr    = params_.get<bool>  ("print to err",false);
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
   if (!errfile) printerr = false;
-  const Epetra_Map* dofrowmap = discret_.DofRowMap();
+  //const Epetra_Map* dofrowmap = discret_.DofRowMap();
 
   // check whether we have a stiffness matrix, that is not filled yet
   // and mass and damping are present
@@ -1321,7 +1375,9 @@ void StruGenAlpha::ModifiedNewton()
   fresm_->Norm2(&fresmnorm);
   Epetra_Time timer(discret_.Comm());
   timer.ResetStartTime();
-  while ( (disinorm>toldisp && fresmnorm>tolres)  && numiter<=maxiter)
+  bool print_unconv = true;
+
+  while (Unconverged(convcheck, disinorm, fresmnorm, toldisp, tolres)  && numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
     //----------------------- apply dirichlet BCs to system of equations
@@ -1396,13 +1452,14 @@ void StruGenAlpha::ModifiedNewton()
     //     + F_int(D_{n+1-alpha_f})
     //     - F_{ext;n+1-alpha_f}
     // add inertia mid-forces
-    mass_->Multiply(false,*accm_,*fresm_);
+    mass_->Multiply(false,*accm_,*finert_);
+    fresm_->Update(1.0,*finert_,0.0);
     // add viscous mid-forces
     if (damping)
     {
-      RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
-      damp_->Multiply(false,*velm_,*fviscm);
-      fresm_->Update(1.0,*fviscm,1.0);
+      //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
+      damp_->Multiply(false,*velm_,*fvisc_);
+      fresm_->Update(1.0,*fvisc_,1.0);
     }
     // add static mid-balance
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
@@ -1417,37 +1474,32 @@ void StruGenAlpha::ModifiedNewton()
 
     fresm_->Norm2(&fresmnorm);
     // a short message
-    if (!myrank_)
+    if (!myrank_ && (printscreen || printerr))
     {
-      if (printscreen)
-      {
-        printf("numiter %2d res-norm %10.5e dis-norm %20.15E\n",numiter+1, fresmnorm, disinorm);
-        fflush(stdout);
-      }
-      if (printerr)
-      {
-        fprintf(errfile,"numiter %2d res-norm %10.5e dis-norm %20.15E\n",numiter+1, fresmnorm, disinorm);
-        fflush(errfile);
-      }
+      PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
+                  fresmnorm,disinorm,convcheck);
     }
 
     //--------------------------------- increment equilibrium loop index
     ++numiter;
   }
   //============================================= end equilibrium loop
-  double timepernlnsolve = timer.ElapsedTime();
+  print_unconv = false;
 
   //-------------------------------- test whether max iterations was hit
-  if (numiter>=maxiter) dserror("Newton unconverged in %d iterations",numiter);
+  if (numiter>=maxiter)
+  {
+     dserror("Newton unconverged in %d iterations",numiter);
+  }
   else
   {
-     if ( (myrank_ ==  0) && (printscreen) )
+     if (!myrank_ && printscreen)
      {
-        printf("Modified Newton iteration converged: numiter %d res-norm %e dis-norm %e time %10.5f\n",
-               numiter,fresmnorm,disinorm,timepernlnsolve);
-        fflush(stdout);
+       PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
+                   fresmnorm,disinorm,convcheck);
      }
   }
+
   params_.set<int>("num iterations",numiter);
 
   //-------------------------------------- don't need this at the moment
@@ -1474,13 +1526,14 @@ void StruGenAlpha::MatrixFreeNewton()
   double gamma     = params_.get<double>("gamma"                  ,0.581);
   double alpham    = params_.get<double>("alpha m"                ,0.378);
   double alphaf    = params_.get<double>("alpha f"                ,0.459);
+  string convcheck = params_.get<string>("convcheck"              ,"AbsRes_Or_AbsDis");
   double toldisp   = params_.get<double>("tolerance displacements",1.0e-07);
   double tolres    = params_.get<double>("tolerance residual"     ,1.0e-07);
   bool printscreen = params_.get<bool>  ("print to screen",true);
   bool printerr    = params_.get<bool>  ("print to err",false);
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
   if (!errfile) printerr = false;
-  const Epetra_Map* dofrowmap = discret_.DofRowMap();
+  //const Epetra_Map* dofrowmap = discret_.DofRowMap();
 
   int numiter=0;
   //---------------------------------------------- build effective lhs
@@ -1490,7 +1543,11 @@ void StruGenAlpha::MatrixFreeNewton()
   double fresmnorm = 1.0e6;
   double disinorm = 1.0e6;
   fresm_->Norm2(&fresmnorm);
-  while ( (disinorm>toldisp && fresmnorm>tolres)  && numiter<=maxiter)
+  Epetra_Time timer(discret_.Comm());
+  timer.ResetStartTime();
+  bool print_unconv = true;
+
+  while (Unconverged(convcheck, disinorm, fresmnorm, toldisp, tolres)  && numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
     //----------------------- apply dirichlet BCs to system of equations
@@ -1568,13 +1625,14 @@ void StruGenAlpha::MatrixFreeNewton()
     //     + F_int(D_{n+1-alpha_f})
     //     - F_{ext;n+1-alpha_f}
     // add inertia mid-forces
-    mass_->Multiply(false,*accm_,*fresm_);
+    mass_->Multiply(false,*accm_,*finert_);
+    fresm_->Update(1.0,*finert_,0.0);
     // add viscous mid-forces
     if (damping)
     {
-      RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
-      damp_->Multiply(false,*velm_,*fviscm);
-      fresm_->Update(1.0,*fviscm,1.0);
+      //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
+      damp_->Multiply(false,*velm_,*fvisc_);
+      fresm_->Update(1.0,*fvisc_,1.0);
     }
     // add static mid-balance
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
@@ -1589,28 +1647,31 @@ void StruGenAlpha::MatrixFreeNewton()
 
     fresm_->Norm2(&fresmnorm);
     // a short message
-    if (!myrank_)
+    if (!myrank_ && (printscreen || printerr))
     {
-      if (printscreen)
-      {
-        printf("numiter %d res-norm %e dis-norm %e\n",numiter+1, fresmnorm, disinorm);
-        fflush(stdout);
-      }
-      if (printerr)
-      {
-        fprintf(errfile,"numiter %d res-norm %e dis-norm %e\n",numiter+1, fresmnorm, disinorm);
-        fflush(errfile);
-      }
+      PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
+                  fresmnorm,disinorm,convcheck);
     }
 
     //--------------------------------- increment equilibrium loop index
     ++numiter;
   }
   //============================================= end equilibrium loop
+  print_unconv = false;
 
   //-------------------------------- test whether max iterations was hit
-  if (numiter>=maxiter) dserror("Newton unconverged in %d iterations",numiter);
-  params_.set<int>("num iterations",numiter);
+  if (numiter>=maxiter)
+  {
+     dserror("Newton unconverged in %d iterations",numiter);
+  }
+  else
+  {
+     if (!myrank_ && printscreen)
+     {
+       PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
+                   fresmnorm,disinorm,convcheck);
+     }
+  }
 
   //-------------------------------------- don't need this at the moment
   stiff_ = null;
@@ -1951,6 +2012,7 @@ void StruGenAlpha::PTC()
   double gamma     = params_.get<double>("gamma"                  ,0.581);
   double alpham    = params_.get<double>("alpha m"                ,0.378);
   double alphaf    = params_.get<double>("alpha f"                ,0.459);
+  string convcheck = params_.get<string>("convcheck"              ,"AbsRes_Or_AbsDis");
   double toldisp   = params_.get<double>("tolerance displacements",1.0e-07);
   double tolres    = params_.get<double>("tolerance residual"     ,1.0e-07);
   bool printscreen = params_.get<bool>  ("print to screen",true);
@@ -1982,7 +2044,9 @@ void StruGenAlpha::PTC()
   fresm_->Norm2(&fresmnorm);
   Epetra_Time timer(discret_.Comm());
   timer.ResetStartTime();
-  while ( (disinorm>toldisp && fresmnorm>tolres) && numiter<=maxiter)
+  bool print_unconv = true;
+
+  while (Unconverged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter<=maxiter)
   {
     double dtim = dti0;
     dti0 = dti;
@@ -2083,13 +2147,14 @@ void StruGenAlpha::PTC()
     //     + F_int(D_{n+1-alpha_f})
     //     - F_{ext;n+1-alpha_f}
     // add inertia mid-forces
-    mass_->Multiply(false,*accm_,*fresm_);
+    mass_->Multiply(false,*accm_,*finert_);
+    fresm_->Update(1.0,*finert_,0.0);
     // add viscous mid-forces
     if (damping)
     {
-      RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
-      damp_->Multiply(false,*velm_,*fviscm);
-      fresm_->Update(1.0,*fviscm,1.0);
+      //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
+      damp_->Multiply(false,*velm_,*fvisc_);
+      fresm_->Update(1.0,*fvisc_,1.0);
     }
     // add static mid-balance
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
@@ -2108,18 +2173,10 @@ void StruGenAlpha::PTC()
 
     fresm_->Norm2(&fresmnorm);
     // a short message
-    if (!myrank_)
+    if (!myrank_ && (printscreen || printerr))
     {
-      if (printscreen)
-      {
-        printf("numiter %2d res-norm %10.5e dis-norm %20.15E dti %20.15E\n",numiter+1, fresmnorm, disinorm,dti);
-        fflush(stdout);
-      }
-      if (printerr)
-      {
-        fprintf(errfile,"numiter %2d res-norm %10.5e dis-norm %20.15E dti %20.15E\n",numiter+1, fresmnorm, disinorm,dti);
-        fflush(errfile);
-      }
+      PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
+                  fresmnorm,disinorm,convcheck);
     }
 
     //------------------------------------ PTC update of artificial time
@@ -2157,19 +2214,22 @@ void StruGenAlpha::PTC()
 
   }
   //============================================= end equilibrium loop
-  double timepernlnsolve = timer.ElapsedTime();
+  print_unconv = false;
 
   //-------------------------------- test whether max iterations was hit
-  if (numiter>=maxiter) dserror("Ptc unconverged in %d iterations",numiter);
+  if (numiter>=maxiter)
+  {
+     dserror("Newton unconverged in %d iterations",numiter);
+  }
   else
   {
-     if ( (myrank_ ==  0) && (printscreen) )
+     if (!myrank_ && printscreen)
      {
-        printf("Ptc converged: numiter %d res-norm %e dis-norm %e time %10.5f\n",
-               numiter, fresmnorm, disinorm,timepernlnsolve);
-        fflush(stdout);
+       PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
+                   fresmnorm,disinorm,convcheck);
      }
   }
+
   params_.set<int>("num iterations",numiter);
 
   //-------------------------------------- don't need this at the moment
@@ -2271,13 +2331,14 @@ void StruGenAlpha::computeF(const Epetra_Vector& x, Epetra_Vector& F)
     //     + F_int(D_{n+1-alpha_f})
     //     - F_{ext;n+1-alpha_f}
     // add inertia mid-forces
-    mass_->Multiply(false,*accm,*fresm_);
+    mass_->Multiply(false,*accm,*finert_);
+    fresm_->Update(1.0,*finert_,0.0);
     // add viscous mid-forces
     if (damping)
     {
-      RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
-      damp_->Multiply(false,*velm,*fviscm);
-      fresm_->Update(1.0,*fviscm,1.0);
+      //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
+      damp_->Multiply(false,*velm,*fvisc_);
+      fresm_->Update(1.0,*fvisc_,1.0);
     }
     // add static mid-balance
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
@@ -2939,5 +3000,182 @@ void StruGenAlpha::SetTimeStep(const int& stp)
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  check convergence of Newton iteration (public)              lw 12/07|
+ *----------------------------------------------------------------------*/
+bool StruGenAlpha::Unconverged(const string type, const double disinorm,
+                               const double resnorm, const double toldisp,
+                               const double tolres)
+{
+  if (type == "AbsRes_Or_AbsDis")
+  {
+    return (disinorm>toldisp && resnorm>tolres);
+  }
+  else if (type == "AbsRes_And_AbsDis")
+  {
+    return (disinorm>toldisp || resnorm>tolres);
+  }
+  else if (type == "RelRes_Or_AbsDis")
+  {
+    if (ref_fnorm_ == 0.) ref_fnorm_ = 1.0;
+    return (disinorm>toldisp && (resnorm/ref_fnorm_)>tolres);
+  }
+  else if (type == "RelRes_And_AbsDis")
+  {
+    if (ref_fnorm_ == 0.) ref_fnorm_ = 1.0;
+    return (disinorm>toldisp || (resnorm/ref_fnorm_)>tolres);
+  }
+  else if (type == "RelRes_Or_RelDis")
+  {
+    if (ref_fnorm_ == 0.) ref_fnorm_ = 1.0;
+    if (ref_disnorm_ == 0.) ref_disnorm_ = 1.0;
+    return ((disinorm/ref_disnorm_)>toldisp && (resnorm/ref_fnorm_)>tolres);
+  }
+  else if (type == "RelRes_And_RelDis")
+  {
+    if (ref_fnorm_ == 0.) ref_fnorm_ = 1.0;
+    if (ref_disnorm_ == 0.) ref_disnorm_ = 1.0;
+    return ((disinorm/ref_disnorm_)>toldisp || (resnorm/ref_fnorm_)>tolres);
+  }
+  else
+  {
+    dserror("Requested convergence check not (yet) implemented");
+    return true;
+  }
+}
+
+/*----------------------------------------------------------------------*
+ |  calculate reference norms for relative convergence checks   lw 12/07|
+ *----------------------------------------------------------------------*/
+void StruGenAlpha::CalcRefNorms()
+{
+  // The reference norms are used to scale the calculated iterative
+  // displacement norm and/or the residual force norm. For this
+  // purpose we only need the right order of magnitude, so we don't
+  // mind evaluating the corresponding norms at possibly different
+  // points within the timestep (end point, generalized midpoint).
+
+  dis_->Norm2(&ref_disnorm_);
+
+  bool damping   = params_.get<bool>  ("damping",false);
+
+  double fintnorm, fextnorm, finertnorm;
+  fint_->Norm2(&fintnorm);
+  fextm_->Norm2(&fextnorm);
+  finert_->Norm2(&finertnorm);
+
+  if (damping)
+  {
+    double fviscnorm;
+    fvisc_->Norm2(&fviscnorm);
+    ref_fnorm_=max(fviscnorm, max(finertnorm, max(fintnorm, fextnorm)));
+  }
+  else
+  {
+    ref_fnorm_=max(finertnorm, max(fintnorm, fextnorm));
+  }
+}
+
+/*----------------------------------------------------------------------*
+ |  print to screen and/or error file                           lw 12/07|
+ *----------------------------------------------------------------------*/
+void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_unconv,
+                               FILE* errfile, Epetra_Time timer, int numiter,
+                               int maxiter, double fresmnorm, double disinorm,
+                               string convcheck)
+{
+  bool relres        = (convcheck == "RelRes_And_AbsDis" || convcheck == "RelRes_Or_AbsDis");
+  bool relres_reldis = (convcheck == "RelRes_And_RelDis" || convcheck == "RelRes_Or_RelDis");
+
+  if (relres)
+  {
+    fresmnorm /= ref_fnorm_;
+  }
+  if (relres_reldis)
+  {
+    fresmnorm /= ref_fnorm_;
+    disinorm  /= ref_disnorm_;
+  }
+
+  if (print_unconv)
+  {
+    if (printscreen)
+    {
+      if (relres)
+      {
+        printf("numiter %2d scaled res-norm %10.5e absolute dis-norm %20.15E\n",numiter+1, fresmnorm, disinorm);
+        fflush(stdout);
+      }
+      else if (relres_reldis)
+      {
+        printf("numiter %2d scaled res-norm %10.5e scaled dis-norm %20.15E\n",numiter+1, fresmnorm, disinorm);
+        fflush(stdout);
+      }
+      else
+        {
+        printf("numiter %2d absolute res-norm %10.5e absolute dis-norm %20.15E\n",numiter+1, fresmnorm, disinorm);
+        fflush(stdout);
+      }
+    }
+    if (printerr)
+    {
+      if (relres)
+      {
+        fprintf(errfile, "numiter %2d scaled res-norm %10.5e absolute dis-norm %20.15E\n",numiter+1, fresmnorm, disinorm);
+        fflush(errfile);
+      }
+      else if (relres_reldis)
+      {
+        fprintf(errfile, "numiter %2d scaled res-norm %10.5e scaled dis-norm %20.15E\n",numiter+1, fresmnorm, disinorm);
+        fflush(errfile);
+      }
+      else
+        {
+        fprintf(errfile, "numiter %2d absolute res-norm %10.5e absolute dis-norm %20.15E\n",numiter+1, fresmnorm, disinorm);
+        fflush(errfile);
+      }
+    }
+  }
+  else
+  {
+    double timepernlnsolve = timer.ElapsedTime();
+
+    if (relres)
+    {
+      printf("Newton iteration converged: numiter %d scaled res-norm %e absolute dis-norm %e time %10.5f\n",
+             numiter,fresmnorm,disinorm,timepernlnsolve);
+      fflush(stdout);
+    }
+    else if (relres_reldis)
+    {
+      printf("Newton iteration converged: numiter %d scaled res-norm %e scaled dis-norm %e time %10.5f\n",
+             numiter,fresmnorm,disinorm,timepernlnsolve);
+      fflush(stdout);
+    }
+    else
+    {
+      printf("Newton iteration converged: numiter %d absolute res-norm %e absolute dis-norm %e time %10.5f\n",
+             numiter,fresmnorm,disinorm,timepernlnsolve);
+      fflush(stdout);
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*
+ |  print to screen                                             lw 12/07|
+ *----------------------------------------------------------------------*/
+void StruGenAlpha::PrintPredictor(string convcheck, double fresmnorm)
+{
+  if (convcheck != "AbsRes_And_AbsDis" && convcheck != "AbsRes_Or_AbsDis")
+  {
+    fresmnorm /= ref_fnorm_;
+    cout << "Predictor scaled res-norm " << fresmnorm << endl;
+  }
+  else
+  {
+    cout << "Predictor absolute res-norm " << fresmnorm << endl;
+  }
+  fflush(stdout);
+}
 
 #endif  // #ifdef CCADISCRET

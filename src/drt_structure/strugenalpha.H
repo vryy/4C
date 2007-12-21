@@ -252,6 +252,36 @@ public:
   virtual void SetTimeStep(const int& stp);
 
   /*!
+  \brief Check convergence of Newton iteration
+
+  */
+  virtual bool Unconverged(const string type, const double disinorm,
+                           const double resnorm, const double toldisp,
+                           const double tolres);
+
+  /*!
+  \brief Determine reference norm of displacements and maximum of
+  norms of internal, external and inertial forces
+
+  */
+  virtual void CalcRefNorms();
+
+  /*!
+  \brief Print to screen and/or error file
+
+  */
+  virtual void PrintNewton(bool printscreen, bool printerr, bool print_unconv,
+                           FILE* errfile, Epetra_Time timer, int numiter,
+                           int maxiter, double fresmnorm, double disinorm,
+                           string convcheck);
+
+   /*!
+  \brief Print to screen and/or error file
+
+  */
+  virtual void PrintPredictor(string convcheck, double fresmnorm);
+
+  /*!
   \brief Get last converged accelerations
 
   */
@@ -310,10 +340,15 @@ protected:
   RefCountPtr<Epetra_Vector>    accm_;
   RefCountPtr<Epetra_Vector>    disi_;
   RefCountPtr<Epetra_Vector>    fint_;
+  RefCountPtr<Epetra_Vector>    finert_;
+  RefCountPtr<Epetra_Vector>    fvisc_;
   RefCountPtr<Epetra_Vector>    fext_;
   RefCountPtr<Epetra_Vector>    fextm_;
   RefCountPtr<Epetra_Vector>    fextn_;
   RefCountPtr<Epetra_Vector>    fresm_;
+
+  double                        ref_disnorm_;
+  double                        ref_fnorm_;
 
   RefCountPtr<DRT::VolConstrManager>   volConstrMan_;
 

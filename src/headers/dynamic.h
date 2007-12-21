@@ -20,9 +20,9 @@ typedef union _ALLDYNA
    struct _FSI_DYNAMIC       *fsidyn; /* ptr for allocation of fsi dynamic data */
    struct _SSI_DYNAMIC       *ssidyn; /* ptr for allocation of ssi dynamic data */
    struct _ALE_DYNAMIC       *adyn;   /* ptr for allocation of ale dynamic data */
-   struct _THERM_DYNAMIC     *tdyn;  /* ptr for allocation of THERMAL 
+   struct _THERM_DYNAMIC     *tdyn;  /* ptr for allocation of THERMAL
                                           dynamic control data */
-   struct _TSI_DYNAMIC       *tsidyn;  /* ptr for allocation of TSI 
+   struct _TSI_DYNAMIC       *tsidyn;  /* ptr for allocation of TSI
                                           dynamic control data */
 } ALLDYNA;
 
@@ -40,9 +40,9 @@ typedef struct _TIMADA_DYNAMIC
   DOUBLE dt_min;                /* minimally permitted step size */
   DOUBLE dt_scl_min;            /* minimally permitted ratio of
                                  * new to last size */
-  DOUBLE dt_scl_max;            /* maximally permitted ratio of 
+  DOUBLE dt_scl_max;            /* maximally permitted ratio of
                                  * new to last size */
-  DOUBLE dt_scl_saf;            /* safety scale of optimally predicted 
+  DOUBLE dt_scl_saf;            /* safety scale of optimally predicted
                                  * new step size */
   enum {
     timada_err_norm_vague = 0,  /* undetermined norm */
@@ -83,6 +83,23 @@ enum _PredType
      pred_constdis,             /* constant displacements */
      pred_constdisvelacc        /* constant displacements, velocities and accelerations */
    }               predtype;    /* predictor type */
+enum
+   {
+     absres_or_absdis,          /* absolute norms of residual forces
+                                 * OR iterative displacement increments */
+     absres_and_absdis,         /* absolute norms of residual forces
+                                 * AND iterative displacement increments */
+     relres_or_absdis,          /* relative norm of residual forces
+                                 * OR absolute norm if iterative
+                                 * displacement increments */
+     relres_and_absdis,         /* relative norm of residual forces
+                                 * AND absolute norm if iterative
+                                 * displacement increments */
+     relres_or_reldis,          /* relative norms of residual forces
+                                 * OR iterative displacement increments */
+     relres_and_reldis          /* relative norms of residual forces
+                                 * AND iterative displacement increments */
+   }               convcheck;
 INT                updevry_disp;/* write result very updevry step */
 INT                updevry_stress;/* write result very updevry step */
 INT                res_write_evry;/* write restart every res_write_evry step */
@@ -315,7 +332,7 @@ typedef struct _TSI_DYNAMIC
                                      * solved, then only the structure
                                      * is time-integrated with
                                      * Fehlberg4 scheme */
-    tsi_therm_pred_struct_dyn       /* thermal field is predefined 
+    tsi_therm_pred_struct_dyn       /* thermal field is predefined
                                      * initially, ie it is not solved,
                                      * later on only the structural field
                                      * is integrated in time */
@@ -332,18 +349,18 @@ typedef struct _TSI_DYNAMIC
 
   /* iteration constants */
   INT              maxiter;         /* maximum number of iterations */
-  DOUBLE           entol;           /* tolerance for energy check 
+  DOUBLE           entol;           /* tolerance for energy check
                                        over fields */
 
   /* integrator constants */
   DOUBLE           th_gamma;        /* 'theta' of one-step-theta */
-  DOUBLE           st_beta;         /* 0.0<'beta'<=0.5 in 
+  DOUBLE           st_beta;         /* 0.0<'beta'<=0.5 in
                                      * generalised-alpha/Newmark's method */
-  DOUBLE           st_gamma;        /* 0.0<'gamma'<=1.0 in 
+  DOUBLE           st_gamma;        /* 0.0<'gamma'<=1.0 in
                                      * generalised-alpha/Newmark's method */
-  DOUBLE           st_alpha_m;      /* 0.0<'alpha_m'<1.0 in 
+  DOUBLE           st_alpha_m;      /* 0.0<'alpha_m'<1.0 in
                                      * generalised-alpha method */
-  DOUBLE           st_alpha_f;      /* 0.0<'alpha_f'<1.0 in 
+  DOUBLE           st_alpha_f;      /* 0.0<'alpha_f'<1.0 in
                                      * generalised-alpha method */
 
   /* integrator variables */
