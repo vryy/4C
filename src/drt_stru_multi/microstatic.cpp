@@ -201,7 +201,7 @@ solver_(solver)
 } // MicroStatic::MicroStatic
 
 
-//MFSI::Debug dbg;
+MFSI::Debug dbg;
 
 
 /*----------------------------------------------------------------------*
@@ -272,8 +272,8 @@ void MicroStatic::Predictor(const Epetra_SerialDenseMatrix* defgrd)
     fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
   }
 
-//   dbg.DumpVector("fresm", *discret_, *fresm_);
-//   dbg.DumpVector("dism", *discret_, *dism_);
+  //dbg.DumpVector("fresm", *discret_, *fresm_);
+  //dbg.DumpVector("dism", *discret_, *dism_);
 
 
   //------------------------------------------------ build residual norm
@@ -298,6 +298,8 @@ void MicroStatic::FullNewton()
   double dt        = params_->get<double>("delta time"             ,0.01);
   int    maxiter   = params_->get<int>   ("max iterations"         ,10);
   double toldisp   = params_->get<double>("tolerance displacements",1.0e-07);
+  double tolres    = params_->get<double>("tolerance residual"     ,1.0e-07);
+  //double toldisp = 1.0e-08;
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   //=================================================== equilibrium loop
@@ -306,7 +308,7 @@ void MicroStatic::FullNewton()
   double disinorm = 1.0e6;
   fresm_->Norm2(&fresmnorm);
 
-  while ((disinorm>toldisp || fresmnorm>toldisp) && numiter<=maxiter)
+  while ((disinorm>toldisp && fresmnorm>tolres) && numiter<=maxiter)
   {
 
     //----------------------- apply dirichlet BCs to system of equations

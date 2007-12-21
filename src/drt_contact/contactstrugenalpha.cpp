@@ -178,7 +178,7 @@ StruGenAlpha(params,dis,solver,output,false)
   LINALG::Complete(*mass_);
   maxentriesperrow_ = mass_->MaxNumEntries();
 
-  // build damping matrix if desired  
+  // build damping matrix if desired
   if (damping)
   {
     LINALG::Complete(*stiff_);
@@ -519,6 +519,7 @@ void ContactStruGenAlpha::FullNewton()
   double alpham    = params_.get<double>("alpha m"                ,0.378);
   double alphaf    = params_.get<double>("alpha f"                ,0.459);
   double toldisp   = params_.get<double>("tolerance displacements",1.0e-07);
+  double tolres    = params_.get<double>("tolerance residual"     ,1.0e-07);
   bool printscreen = params_.get<bool>  ("print to screen",true);
   bool printerr    = params_.get<bool>  ("print to err",false);
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
@@ -537,7 +538,7 @@ void ContactStruGenAlpha::FullNewton()
   double fresmnorm;
   double disinorm;
   fresm_->Norm2(&fresmnorm);
-  while (disinorm>toldisp && fresmnorm>toldisp && numiter<=maxiter)
+  while (disinorm>toldisp && fresmnorm>tolres && numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
@@ -554,9 +555,9 @@ void ContactStruGenAlpha::FullNewton()
     	contactmanager_->SetState("displacement",dism_);
     	// (almost) all contact stuff is done here!
     	contactmanager_->Evaluate();
-    	
+
     }
-    
+
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
@@ -684,10 +685,10 @@ void ContactStruGenAlpha::FullNewton()
   {
      if ( (myrank_ ==  0) && (printscreen) )
      {
-        printf("Newton iteration converged: numiter %d res-norm %e dis-norm %e\n", 
+        printf("Newton iteration converged: numiter %d res-norm %e dis-norm %e\n",
                numiter+1, fresmnorm, disinorm);
         fflush(stdout);
-     }  
+     }
   }
   params_.set<int>("num iterations",numiter);
 
