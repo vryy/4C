@@ -285,7 +285,7 @@ public:
   const vector<double> GetThickvec(){return thickvec_;};
   const vector<double> GetFibervec(){return fiberdirection_;};
   const vector<double> soh8_ElementCenterRefeCoords();
-  
+
   //@}
 
 protected:
@@ -418,7 +418,7 @@ protected:
                   vector<double>& residual);
 
   bool soh8_checkRewinding();
-  
+
 }; // class So_hex8
 
 
@@ -694,14 +694,14 @@ public:
 
     \return 0 if successful, negative otherwise
     */
-  	virtual int Evaluate(ParameterList& params,
-                         DRT::Discretization&      discretization,
-                         vector<int>&              lm,
-                         Epetra_SerialDenseMatrix& elematrix1,
-                         Epetra_SerialDenseMatrix& elematrix2,
-                         Epetra_SerialDenseVector& elevector1,
-                         Epetra_SerialDenseVector& elevector2,
-                         Epetra_SerialDenseVector& elevector3);
+  virtual int Evaluate(ParameterList& params,
+                       DRT::Discretization&      discretization,
+                       vector<int>&              lm,
+                       Epetra_SerialDenseMatrix& elematrix1,
+                       Epetra_SerialDenseMatrix& elematrix2,
+                       Epetra_SerialDenseVector& elevector1,
+                       Epetra_SerialDenseVector& elevector2,
+                       Epetra_SerialDenseVector& elevector3);
   //@}
 
 
@@ -712,7 +712,8 @@ protected:
 	    none,
 	    calc_struct_constrvol,
 	    calc_struct_volconstrstiff,
-            calc_init_vol
+            calc_init_vol,
+            calc_surfstress_stiff
 	  };
 
 

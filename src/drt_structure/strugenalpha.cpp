@@ -182,6 +182,20 @@ maxentriesperrow_(81)
       {
     	  volConstrMan_=rcp(new DRT::VolConstrManager(discret_, dis_));
       }
+
+      // Check for surface stress conditions due to interfacial phenomena
+      vector<DRT::Condition*> surfstresscond;
+      discret_.GetCondition("SurfaceStress",surfstresscond);
+      if (surfstresscond.size())
+      {
+        // Determine number of associated surface elements
+        int numsurf=0;
+        for (unsigned i=0;i<surfstresscond.size();++i)
+        {
+          numsurf+=surfstresscond[i]->Geometry().size();
+        }
+        surf_stress_man_=rcp(new DRT::SurfStressManager(discret_, numsurf));
+      }
     }
     // close mass matrix
     LINALG::Complete(*mass_);
@@ -323,6 +337,13 @@ void StruGenAlpha::ConstantPredictor()
     fint_->PutScalar(0.0);  // initialise internal force vector
     discret_.Evaluate(p,stiff_,null,fint_,null,null);
     discret_.ClearState();
+
+    if (surf_stress_man_!=null)
+    {
+      p.set("surfstr_man", surf_stress_man_);
+      surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
+    }
+
     // do NOT finalize the stiffness matrix, add mass and damping to it later
   }
 
@@ -650,6 +671,13 @@ void StruGenAlpha::ConsistentPredictor()
     fint_->PutScalar(0.0);  // initialise internal force vector
     discret_.Evaluate(p,stiff_,null,fint_,null,null);
     discret_.ClearState();
+
+    if (surf_stress_man_!=null)
+    {
+      p.set("surfstr_man", surf_stress_man_);
+      surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
+    }
+
     // do NOT finalize the stiffness matrix, add mass and damping to it later
   }
 
@@ -946,6 +974,13 @@ void StruGenAlpha::FullNewton()
       fint_->PutScalar(0.0);  // initialise internal force vector
       discret_.Evaluate(p,stiff_,null,fint_,null,null);
       discret_.ClearState();
+
+      if (surf_stress_man_!=null)
+      {
+        p.set("surfstr_man", surf_stress_man_);
+        surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
+      }
+
       // do NOT finalize the stiffness matrix to add masses to it later
     }
 

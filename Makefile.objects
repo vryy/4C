@@ -824,6 +824,8 @@ OBJS_DRT_MAT  = src/drt_mat/micromaterialgp_static.o \
 #               structural multiscale in new discretization
 OBJS_DRT_STRU_MULTI = src/drt_stru_multi/microstatic.o \
                       src/drt_stru_multi/convert_mat.o
+#               surface stresses due to interfacial phenomena
+OBJS_DRT_SURFSTRESS = src/drt_surfstress/drt_surfstress_manager.o
 #               structure-structure interaction
 OBJS_SSI      = src/ssi_full/ssi_dyn.o \
                 src/ssi_full/ssi_coupling.o \

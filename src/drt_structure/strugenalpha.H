@@ -26,7 +26,7 @@ Maintainer: Michael Gee
 #include "../drt_contact/drt_contact_manager.H"
 #include "../drt_lib/linalg_mfoperator.H"
 #include "../drt_lib/drt_volume_constraint_manager.H"
-//#include "../drt_surfstress/drt_surfstress_manager.H"
+#include "../drt_surfstress/drt_surfstress_manager.H"
 
 #include "Epetra_Vector.h"
 #include "Epetra_Operator.h"
@@ -352,7 +352,7 @@ protected:
 
   RefCountPtr<DRT::VolConstrManager>   volConstrMan_;
 
-  //RefCountPtr<DRT::SurfStressManager>   surf_stress_man_;
+  RefCountPtr<DRT::SurfStressManager>   surf_stress_man_;
 
   // stuff needed to use NOX as nonlinear solver
   RefCountPtr<NLNML::NLNML_FineLevelNoxInterface> fineinterface_;

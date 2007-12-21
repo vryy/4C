@@ -19,6 +19,8 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
+#include "../drt_surfstress/drt_surfstress_manager.H"
+#include "../drt_lib/drt_container.H"
 
 /*----------------------------------------------------------------------*
  * Integrate a Surface Neumann boundary condition (public)     maf 04/07*
@@ -229,6 +231,7 @@ int DRT::Elements::Soh8Surface::Evaluate(ParameterList& params,
 	else if (action=="calc_struct_constrvol")    act = Soh8Surface::calc_struct_constrvol;
 	else if (action=="calc_struct_volconstrstiff") act= Soh8Surface::calc_struct_volconstrstiff;
         else if (action=="calc_init_vol") act= Soh8Surface::calc_init_vol;
+        else if (action=="calc_surfstress_stiff") act= Soh8Surface::calc_surfstress_stiff;
 	else dserror("Unknown type of action for Soh8Surface");
 	//create communicator
 	const Epetra_Comm& Comm = discretization.Comm();
@@ -347,6 +350,8 @@ int DRT::Elements::Soh8Surface::Evaluate(ParameterList& params,
                   // normal vector of the surface element (exploiting the
                   // fact that div(X)=1.0)
 
+                  // this is intended to be used in the serial case (microstructure)
+
                   double V = params.get<double>("V0", 0.0);
                   double dV = 0.0;
                   const int numnod = 4;
@@ -400,6 +405,71 @@ int DRT::Elements::Soh8Surface::Evaluate(ParameterList& params,
                   params.set("V0", V+dV);
                 }
                 break;
+
+                case calc_surfstress_stiff:
+	  	{
+                  // element geometry update
+                  RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+                  if (disp==null) dserror("Cannot get state vector 'displacement'");
+                  vector<double> mydisp(lm.size());
+                  DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
+                  const int numnod = 4;
+                  Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOH8);  // material coord. of element
+                  Epetra_SerialDenseMatrix xscurr(numnod,NUMDIM_SOH8);  // material coord. of element
+                  for (int i=0; i<numnod; ++i){
+                    xsrefe(i,0) = Nodes()[i]->X()[0];
+                    xsrefe(i,1) = Nodes()[i]->X()[1];
+                    xsrefe(i,2) = Nodes()[i]->X()[2];
+
+                    xscurr(i,0) = xsrefe(i,0) + mydisp[i*NODDOF_SOH8+0];
+                    xscurr(i,1) = xsrefe(i,1) + mydisp[i*NODDOF_SOH8+1];
+                    xscurr(i,2) = xsrefe(i,2) + mydisp[i*NODDOF_SOH8+2];
+                  }
+
+                  RefCountPtr<SurfStressManager> surfstressman =
+                    params.get<RefCountPtr<SurfStressManager> >("surfstr_man", null);
+
+                  if (surfstressman==null)
+                    dserror("No SurfStressManager in SoHex8Surface available");
+
+                  double time = params.get<double>("total time",-1.0);
+                  double dt = params.get<double>("delta time",0.0);
+                  RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
+                  if (cond==null)
+                    dserror("Condition not available in SoHex8Surface");
+
+                  int surfflag = cond->Getint("surface_flag");
+
+                  if (surfflag==0)     // dynamic surfactant model
+                  {
+                    double k1xC = cond->GetDouble("k1xCbulk");
+                    double k2 = cond->GetDouble("k2");
+                    double m1 = cond->GetDouble("m1");
+                    double m2 = cond->GetDouble("m2");
+                    double gamma_0 = cond->GetDouble("gamma_0");
+                    double gamma_min = cond->GetDouble("gamma_min");
+                    double gamma_min_eq = cond->GetDouble("gamma_min_eq");
+                    double con_quot_max = cond->GetDouble("con_quot_max");
+                    double con_quot_eq = cond->GetDouble("con_quot_eq");
+
+                    surfstressman->StiffnessAndInternalForces(xscurr, elevector1, elematrix1, this->Id(),
+                                                              time, dt, surfflag, 0.0, k1xC, k2, m1, m2, gamma_0,
+                                                              gamma_min, gamma_min_eq, con_quot_max,
+                                                              con_quot_eq);
+                  }
+                  else if (surfflag==1) // ideal liquid
+                  {
+                    double const_gamma = cond->GetDouble("gamma");
+
+                    surfstressman->StiffnessAndInternalForces(xscurr, elevector1, elematrix1, this->Id(),
+                                                              time, dt, surfflag, const_gamma, 0.0, 0.0, 0.0,
+                                                              0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+                  }
+                  else
+                    dserror("Unknown surface flag");
+	  	}
+                break;
+
 	  	default:
 	  		dserror("Unimplemented type of action for Soh8Surface");
 

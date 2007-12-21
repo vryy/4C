@@ -2043,9 +2043,9 @@ void input_surf_xfem_coupling(multimap<int,RefCountPtr<DRT::Condition> >& sxfemc
                                                                    DRT::Condition::XFEMCoupling,
                                                                    true,
                                                                    DRT::Condition::Surface));
-    
+
     condition->Add("label", int(coupleId));
-    
+
     //--------------------------------- put condition in map of conditions
     sxfemcoupmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dsurfaceid,condition));
 
@@ -2095,31 +2095,41 @@ void input_surf_stress(multimap<int,RefCountPtr<DRT::Condition> >& ssmap)
     frchk("SURFACTANT", &ierr);
     if (ierr)
     {
+      condition->Add("surface_flag", 0);
       double temp;
-      condition->Add("type","surfactant");
-      frdouble("k1", &temp, &ierr);
+//       condition->Add("type","surfactant");
+//       frdouble("k1", &temp, &ierr);
+//       if (ierr == 1)
+//         condition->Add("k1", temp);
+//       else
+//         dserror("Cannot read k1 for surfactant");
+      double k1xC;
+      frdouble("k1xCbulk", &k1xC, &ierr);
       if (ierr == 1)
-        condition->Add("k1", temp);
+        condition->Add("k1xCbulk", k1xC);
       else
-        dserror("Cannot read k1 for surfactant");
-      frdouble("k2", &temp, &ierr);
+        dserror("Cannot read k1xCbulk for surfactant");
+
+      double k2;
+      frdouble("k2", &k2, &ierr);
       if (ierr == 1)
-        condition->Add("k2", temp);
+        condition->Add("k2", k2);
       else
         dserror("Cannot read k2 for surfactant");
-      frdouble("Cbulk", &temp, &ierr);
-      if (ierr == 1)
-        condition->Add("Cbulk", temp);
-      else
-        dserror("Cannot read Cbulk for surfactant");
+//       frdouble("Cbulk", &temp, &ierr);
+//       if (ierr == 1)
+//         condition->Add("Cbulk", temp);
+//       else
+//         dserror("Cannot read Cbulk for surfactant");
       frdouble("m1", &temp, &ierr);
       if (ierr == 1)
         condition->Add("m1", temp);
       else
         dserror("Cannot read m1 for surfactant");
-      frdouble("m2", &temp, &ierr);
+      double m2;
+      frdouble("m2", &m2, &ierr);
       if (ierr == 1)
-        condition->Add("m2", temp);
+        condition->Add("m2", m2);
       else
         dserror("Cannot read m2 for surfactant");
       frdouble("gamma_0", &temp, &ierr);
@@ -2127,16 +2137,23 @@ void input_surf_stress(multimap<int,RefCountPtr<DRT::Condition> >& ssmap)
         condition->Add("gamma_0", temp);
       else
         dserror("Cannot read gamma_0 for surfactant");
-      frdouble("gamma_min", &temp, &ierr);
+      double gamma_min;
+      frdouble("gamma_min", &gamma_min, &ierr);
       if (ierr == 1)
-        condition->Add("gamma_min", temp);
+        condition->Add("gamma_min", gamma_min);
       else
         dserror("Cannot read gamma_min for surfactant");
-      frdouble("gamma_min_eq", &temp, &ierr);
+      double gamma_min_eq;
+      frdouble("gamma_min_eq", &gamma_min_eq, &ierr);
       if (ierr == 1)
-        condition->Add("gamma_min_eq", temp);
+        condition->Add("gamma_min_eq", gamma_min_eq);
       else
         dserror("Cannot read gamma_min_eq for surfactant");
+
+      double con_quot_max=(gamma_min_eq-gamma_min)/m2+1.;
+      condition->Add("con_quot_max", con_quot_max);
+      double con_quot_eq=(k1xC)/(k1xC+k2);
+      condition->Add("con_quot_eq", con_quot_eq);
     }
 
     // read input in case of constant surface tension
@@ -2145,6 +2162,7 @@ void input_surf_stress(multimap<int,RefCountPtr<DRT::Condition> >& ssmap)
     frchk("SURFACE TENSION", &ierr1);
     if (ierr1)
     {
+      condition->Add("surface_flag", 1);
       double temp;
       condition->Add("type","surftension");
       frdouble("gamma", &temp, &ierr);

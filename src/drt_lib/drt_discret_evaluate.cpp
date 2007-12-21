@@ -445,9 +445,9 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
  |  evaluate a condition (public)                               tk 07/07|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::EvaluateCondition(ParameterList& params,
-						RefCountPtr<Epetra_CrsMatrix> systemmatrix1,
-						RefCountPtr<Epetra_Vector> systemvector1,
-						RefCountPtr<Epetra_Vector> systemvector2,
+                                            RefCountPtr<Epetra_CrsMatrix> systemmatrix1,
+                                            RefCountPtr<Epetra_Vector> systemvector1,
+                                            RefCountPtr<Epetra_Vector> systemvector2,
 					    const string& condstring)
 {
   if (!Filled()) dserror("FillComplete() was not called");
@@ -488,8 +488,10 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
       const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
       if (CondIDVec)
       {
-      		params.set("ConditionID",(*CondIDVec)[0]);
+        params.set("ConditionID",(*CondIDVec)[0]);
       }
+
+      params.set<RefCountPtr<DRT::Condition> >("condition", fool->second);
 
       const bool assemblemat1 = params.get("assemble matrix 1",false);
       //const bool assemblemat2 = params.get("assemble matrix 2",false);
