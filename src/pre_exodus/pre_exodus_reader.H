@@ -23,6 +23,7 @@ is handed to a c++ object mesh.
 #include <iostream>
 #include <vector>
 #include <Teuchos_RefCountPtr.hpp>
+#include "../drt_lib/drt_dserror.H"
 
 extern "C" /* stuff which is c and is accessed from c++ */
 {

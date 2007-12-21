@@ -56,53 +56,57 @@ int main(
     }
     if (parseReturn != CommandLineProcessor::PARSE_SUCCESSFUL)
     {
-      exit(1);
+      dserror("CommandLineProcessor reported an error");
     }
 
-    
     if (exofile=="")
     {
+      cout<<"No Exodus II file was found"<<endl;
       My_CLP.printHelpMessage(argv[0],cout);
       exit(1);
     }
+
+    // create mesh object based on given exodus II file
     Mesh mymesh(exofile.c_str());
-    
+    // print infos to cout
     mymesh.Print(cout);
-    
+
     if (bcfile=="")
     {
-      cout << "BCfile leer, jetzt Vorschlag" << endl;
       string defaultbcfilename = "default.bc";
+      cout << "found no BC specification file --> creating " <<defaultbcfilename<< endl;
       ofstream defaultbc(defaultbcfilename.c_str());
       mymesh.Print(defaultbc);
-      for (int i = 0; i < mymesh.GetNumberEntities(); ++i) {
+      for (int i = 0; i < mymesh.GetNumberEntities(); ++i) 
+      {
 //        Entity actEntity = GetEntity(i);
 //        actEntity.Print(defaultbc);
       }
-      if (defaultbc.is_open()) defaultbc.close();
+      // close default bc specification file
+      if (defaultbc.is_open()) 
+    	  defaultbc.close();
     }
-      
-   
+
     if (headfile=="")
     {
-      cout << "Headfile leer, jetzt validparameters" << endl;
       string defaultheadfilename = "default.head";
+      cout << "found no header file --> creating valid default header: " <<defaultheadfilename<< endl;
       ofstream defaulthead(defaultheadfilename.c_str());
-      if (!defaulthead);
-          //dserror("failed to open file: %s", defaultheadfilename.c_str());
-      
+      if (!defaulthead)
+      dserror("failed to open file: %s", defaultheadfilename.c_str());
+
       Teuchos::RCP<const Teuchos::ParameterList> list = DRT::ValidParameters();
       //cout << *list << endl;
-      //PrintDefaultDatHeader();
-      DRT::PrintDatHeader(defaulthead,*list);
-      if (defaulthead.is_open()) defaulthead.close();
 
-      exit(0);
-      
+      // write default .dat header into file 
+      DRT::PrintDatHeader(defaulthead,*list);
+      // close default header file    
+      if (defaulthead.is_open()) 
+    	  defaulthead.close();
+
+      exit(0);    
     }
 }
-
-
 
 #endif
 #endif

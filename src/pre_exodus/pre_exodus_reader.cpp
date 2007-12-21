@@ -32,35 +32,40 @@ Mesh::Mesh(string exofilename)
   CPU_word_size = sizeof(float);      /* float or double */
   IO_word_size = 0;                   /* use what is stored in file */
 
-  cout << "meshfilename: " << exofilename.c_str() << endl;
-  
+  //cout << "meshfilename: " << exofilename.c_str() << endl;
+
   const char *exofilenamechar;
   exofilenamechar=exofilename.c_str();
-  
-  /* open EXODUS II files */
+
+  // open EXODUS II file
   exoid_ = ex_open(exofilenamechar,EX_READ,&CPU_word_size,&IO_word_size,&exoversion);
-  if (exoid_<0){ cout <<"Exo-file does not exist"<< endl; exit(1);}
+  if (exoid_<0)
+	  dserror("Error while opening EXODUS II file %s",exofilenamechar);
+
   // print version
-  cout<<"Input file uses EXODUS II library version "<<exoversion<<endl;
-  
-  /* read database parameters */
+  cout<<exofilename<<" was created with EXODUS II library version "<<exoversion<<endl;
+
+  // read database parameters
   error = ex_get_init (exoid_, title_, &num_dim_, &num_nodes_,&num_elem_, &num_elem_blk_, &num_node_sets_, &num_side_sets_);
-  
+
   // num_entities_ are all ElementBlocks, NodeSets, and SideSets together
   num_entities_ = num_elem_blk_ + num_node_sets_ + num_side_sets_;
+
+  // allocate sufficient memory for the entities
+  myEntities_.reserve(num_entities_);
   
-  myEntities_.reserve(num_entities_);   
-  // entityconuter counts all ElementBlocks, NodeSets, and SideSets together
+  // entitycounter counts all ElementBlocks, NodeSets, and SideSets together
   int entitycounter = 0;
   
   // get all ElementBlocks
   int epropID[num_elem_blk_];
   error = ex_get_prop_array(exoid_, EX_ELEM_BLOCK, "ID", epropID);
-  for (int i = 0; i < num_elem_blk_; ++i) {
-    //RCP<Entity> myentity = rcp(new Entity(exoid_,entitycounter,epropID[i],Entity::elem_blk));
-    myEntities_[entitycounter] = rcp(new Entity(exoid_,entitycounter,epropID[i],Entity::elem_blk));
-    //myEntities_[entitycounter]->Print(cout);
-    entitycounter++;
+  for (int i = 0; i < num_elem_blk_; ++i) 
+  {
+	  //RCP<Entity> myentity = rcp(new Entity(exoid_,entitycounter,epropID[i],Entity::elem_blk));
+	  myEntities_[entitycounter] = rcp(new Entity(exoid_,entitycounter,epropID[i],Entity::elem_blk));
+	  //myEntities_[entitycounter]->Print(cout);
+	  entitycounter++;
   }
   
   // get all NodeSets
@@ -110,10 +115,11 @@ Mesh::Mesh(string exofilename)
     }
   }
 
-  // close exofile
+  // close exodus II file
   error = ex_close(exoid_);
-  if (error);
-  
+  if (error < 0)
+	  dserror("error while closing exodus II file");
+
   return;
 }
 
@@ -125,6 +131,9 @@ Mesh::~Mesh()
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  Print method (public)                                      maf 12/07|
+ *----------------------------------------------------------------------*/
 void Mesh::Print(ostream & os) const
 {
   os << "Mesh consists of ";
@@ -133,7 +142,7 @@ void Mesh::Print(ostream & os) const
   os << num_entities_ << " Entities, divided into " << endl;
   os << num_elem_blk_ << " ElementBlocks, ";
   os << num_node_sets_ << " NodeSets, ";
-  os << num_side_sets_ << " SideSets, ";
+  os << num_side_sets_ << " SideSets ";
   os << endl << endl;
 }
 
