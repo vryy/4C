@@ -234,12 +234,13 @@ void Entity::SetPropertyName(string propname)
 
 void Entity::Print(ostream& os) const
 {
+  // do not remove the .c_str() since they are needed for printing into a file stream
   os << "Entity " << entityID_ << " is of type " << entity_type_;
-  os << " is named " << entity_name_ << endl;
+  os << " is named " << entity_name_.c_str() << endl;
   os << "with " << num_nodes_ << " Nodes in cloud" << endl;
   os << "Additional Info: " << endl;
-  os << "Property Name: " << entity_prop_name_ << endl;
-  os << "Element Type: " << elem_type_ << endl;
+  os << "Property Name: " << entity_prop_name_.c_str() << endl;
+  os << "Element Type: " << elem_type_.c_str() << endl;
   os << "Num Attr: " << num_attr_;
   os << ", ele per block: " << num_el_in_blk_ << ", num per ele: " << num_nod_per_elem_ << endl << endl;
   return;

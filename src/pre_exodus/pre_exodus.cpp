@@ -75,13 +75,21 @@ int main(
     {
       string defaultbcfilename = "default.bc";
       cout << "found no BC specification file --> creating " <<defaultbcfilename<< endl;
+
+      // open default bc specification file
       ofstream defaultbc(defaultbcfilename.c_str());
+      if (!defaultbc)
+    	  dserror("failed to open file: %s", defaultbcfilename.c_str());
+
+      // write general mesh info
       mymesh.Print(defaultbc);
+      // write infos of each mesh entity
       for (int i = 0; i < mymesh.GetNumberEntities(); ++i) 
       {
-//        Entity actEntity = GetEntity(i);
-//        actEntity.Print(defaultbc);
+        RCP<Entity> actEntity = mymesh.GetEntity(i);
+        actEntity->Print(defaultbc);
       }
+
       // close default bc specification file
       if (defaultbc.is_open()) 
     	  defaultbc.close();
@@ -90,16 +98,18 @@ int main(
     if (headfile=="")
     {
       string defaultheadfilename = "default.head";
-      cout << "found no header file --> creating valid default header: " <<defaultheadfilename<< endl;
+      cout << "found no header file           --> creating "<<defaultheadfilename<< endl;
+      // open default header file
       ofstream defaulthead(defaultheadfilename.c_str());
       if (!defaulthead)
-      dserror("failed to open file: %s", defaultheadfilename.c_str());
+    	  dserror("failed to open file: %s", defaultheadfilename.c_str());
 
+      // get valid input parameters
       Teuchos::RCP<const Teuchos::ParameterList> list = DRT::ValidParameters();
-      //cout << *list << endl;
 
       // write default .dat header into file 
       DRT::PrintDatHeader(defaulthead,*list);
+
       // close default header file    
       if (defaulthead.is_open()) 
     	  defaulthead.close();

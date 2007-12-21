@@ -62,8 +62,8 @@ public:
   //! get number of entities
   int GetNumberEntities(){ return num_entities_;};
   
-//  //! get one entitiy
-//  Entity GetEntity(int EntityID){ return myEntities_[EntityID];};
+  //! get one entitiy
+  RCP<Entity> GetEntity(int EntityID){ return myEntities_[EntityID];};
   
   //! Print mesh info
   void Print(ostream& os) const;
