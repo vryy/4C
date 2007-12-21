@@ -277,6 +277,20 @@ public:
   int Getint(const string& name) const;
 
   /*!
+  \brief Get a single double back without all that hassle
+
+  Receive <int>
+
+  \param name (in): Name of data to receive
+
+  Usage is<br>
+  \code
+  double mynumber = Container::GetDouble("name_of_my_number")
+  \endcode
+  */
+  double GetDouble(const string& name) const;
+
+  /*!
   \brief Get data of type int, double, string or Epetra_SerialDenseMatrix
 
   Receive <int>, <double>, <string>, <Epetra_SerialDenseMatrix> data of a given name.

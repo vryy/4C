@@ -428,4 +428,16 @@ int DRT::Container::Getint(const string& name) const
   return (*vecptr)[0];
 }
 
+/*----------------------------------------------------------------------*
+ |  just get a double back                                     (public) |
+ |                                                             lw 12/07 |
+ *----------------------------------------------------------------------*/
+double DRT::Container::GetDouble(const string& name) const
+{
+  const vector<double>* vecptr = Get<vector<double> >(name);
+  if(vecptr==NULL) dserror("A double cannot be read from the container.");
+  if( vecptr->size()!=1 ) dserror("Trying to read double from vector of wrong length.");
+  return (*vecptr)[0];
+}
+
 #endif  // #ifdef CCADISCRET
