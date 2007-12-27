@@ -115,10 +115,12 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
 {
   // get material parameters
   double c1 = matdata_->m.anisotropic_balzani->c1;          //parameter for ground substance
-  double eps1 = matdata_->m.anisotropic_balzani->eps1;      //parameter for fiber potential
-  double eps2 = matdata_->m.anisotropic_balzani->eps2;      //parameter for fiber potential
-  double alpha1 = matdata_->m.anisotropic_balzani->alpha1;  //parameter for fiber potential
-  double alpha2 = matdata_->m.anisotropic_balzani->alpha2;  //parameter for fiber potential
+  double eps1 = matdata_->m.anisotropic_balzani->eps1;      //parameter for incomp. penalty
+  double eps2 = matdata_->m.anisotropic_balzani->eps2;      //parameter for incomp. penalty
+  double alpha1 = matdata_->m.anisotropic_balzani->alpha1;  //parameter for 1st fiber potential
+  double alpha2 = matdata_->m.anisotropic_balzani->alpha2;  //parameter for 1st fiber potential
+  double alpha1_2 = matdata_->m.anisotropic_balzani->alpha1_2;//parameter for 2nd fiber potential
+  double alpha2_2 = matdata_->m.anisotropic_balzani->alpha2_2;//parameter for 2nd fiber potential
     
   // Identity Matrix
   Epetra_SerialDenseMatrix I(3,3);
@@ -206,6 +208,36 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
   
   // anisotropic associated reducible Invariant K3 = I1*J4 - J5
   double K3 = I1 * J4 - J5;
+
+  /* Second fiber part ******************************************************/
+  // Structural Tensor M_2, defined by a_2 x a_2
+  Epetra_SerialDenseVector a_2(3);
+  if (matdata_->m.anisotropic_balzani->aloc != 1){
+    a_2(0) = matdata_->m.anisotropic_balzani->a2[0];  // 2nd fiber vector from input
+    a_2(1) = matdata_->m.anisotropic_balzani->a2[1];
+    a_2(2) = matdata_->m.anisotropic_balzani->a2[2];
+  }
+  // normalize a_2
+  double norma_2 = a_2.Norm2();
+  a_2.Scale(1.0/norma_2);
+  Epetra_SerialDenseMatrix M_2(3,3);
+  M_2.Multiply('N','T',1.0,a_2,a_2,0.0);
+  
+  Epetra_SerialDenseMatrix CM_2(3,3);
+  CM_2.Multiply('N','N',1.0,C,M_2,0.0);
+  // compute CM_2 + M_2C
+  Epetra_SerialDenseMatrix CMMC_2(CM_2);  // CMMC_2 = CM_2
+  CMMC_2.Multiply('N','N',1.0,M_2,C,1.0); // CMMC_2 = CM_2 + MC_2
+  // anisotropic Invariant J4_2 = tr[CM_2]
+  double J4_2 = CM_2(0,0) + CM_2(1,1) + CM_2(2,2);
+
+  Epetra_SerialDenseMatrix CsqM_2(3,3);
+  CsqM_2.Multiply('N','N',1.0,Csq,M_2,0.0);
+  // anisotropic Invariant J5_2 = tr[C^2M_2]
+  double J5_2 = CsqM_2(0,0) + CsqM_2(1,1) + CsqM_2(2,2);
+  // anisotropic associated reducible Invariant K3_2 = I1*J4_2 - J5_2
+  double K3_2 = I1 * J4_2 - J5_2;
+  /* end of Second fiber part ***********************************************/
   
   // cofC = det(C)*C^-T
   Epetra_SerialDenseMatrix CofC(Cinv);
@@ -238,17 +270,33 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
   
   // ***** fiber part *******
   if ( (K3 - 2.0) > 1.0E-15){
+    // 1st fiber active
     double fiberscalar = alpha1*pow( (K3-2.0),(alpha2-1.0) )*alpha2;
     Epetra_SerialDenseMatrix Mscale(M);
-    Mscale.Scale(fiberscalar*I1);
+    Mscale.Scale(fiberscalar*I1);       // dW/dJ4 M
     S += Mscale;
-    // compute CM + MC
+
     Epetra_SerialDenseMatrix CMMCscale(CMMC);
-    CMMCscale.Scale(-fiberscalar);
+    CMMCscale.Scale(-fiberscalar);      // dW/dJ5 (CM + MC)
     S += CMMCscale;
     
     Iscale = I;
-    Iscale.Scale(fiberscalar*J4);
+    Iscale.Scale(fiberscalar*J4);       // dW/dI1 I just fiber part
+    S += Iscale;
+  }
+  if ( (K3_2 - 2.0) > 1.0E-15){
+    // 2nd fiber active
+    double fiberscalar = alpha1_2*pow( (K3_2-2.0),(alpha2_2-1.0) )*alpha2_2;
+    Epetra_SerialDenseMatrix Mscale(M_2);
+    Mscale.Scale(fiberscalar*I1);       // dW/dJ4_2 M_2
+    S += Mscale;
+
+    Epetra_SerialDenseMatrix CMMCscale(CMMC_2);
+    CMMCscale.Scale(-fiberscalar);      // dW/dJ5_2 (CM_2 + M_2C)
+    S += CMMCscale;
+    
+    Iscale = I;
+    Iscale.Scale(fiberscalar*J4_2);     // dW/dI1 I just fiber part
     S += Iscale;
   }
   
@@ -282,6 +330,7 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
   ElastSymTensor_o_Multiply((*cmat),-I3 * dW_dI3,Cinv,Cinv,1.0);// - Cinv o Cinv
   
   // fiber part
+  // 1st fiber active
   if ( (K3 - 2.0) > 1.0E-15){
     // compute derivatives of W_ti w.r.t. Invariants
     double K3fac = pow( K3-2.0 , alpha2-2.0);
@@ -321,15 +370,32 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
     ElastSymTensor_o_Multiply((*cmat),dW_dJ5,I,M,1.0);          // I o M
     ElastSymTensor_o_Multiply((*cmat),dW_dJ5,M,I,1.0);          // M o I
   }
+  //2nd fiber active
+  if ( (K3_2 - 2.0) > 1.0E-15) {
+    // temporay factors are NOT renamed to *_2 but refer to 2nd fiber 
+    // compute derivatives of W_ti w.r.t. Invariants
+    double K3fac = pow( K3_2-2.0 , alpha2_2-2.0);
+    double d2W_dJ4dJ4 = alpha1_2 * alpha2_2 * I1*I1 * (alpha2_2-1.0) * K3fac;
+    double d2W_dJ5dJ5 = alpha1_2 * alpha2_2 * (alpha2_2-1.0) * K3fac;
+    double d2W_dI1dJ4 = alpha1_2 * alpha2_2 * J4_2 * I1 * (alpha2_2-1.0) * K3fac
+                      + alpha1_2 * alpha2_2 * (K3_2-2.0) * K3fac;
+    double d2W_dI1dJ5 = alpha1_2 * alpha2_2 * J4_2 * (1.0-alpha2_2) * K3fac;
+    double d2W_dJ4dJ5 = alpha1_2 * alpha2_2 * I1 * (1.0-alpha2_2) * K3fac;
+    double dW_dJ5     = - alpha1_2 * alpha2_2 * (K3_2-2.0) * K3fac;
+    double d2W_dI1dI1 = alpha1_2 * alpha2_2 * (alpha2_2-1.0) * J4_2*J4_2 * K3fac; 
+    
+    // multiply these with corresponding tensor products
+    ElastSymTensorMultiply((*cmat),d2W_dI1dI1,I,I,1.0);         // I x I
+    ElastSymTensorMultiply((*cmat),d2W_dJ4dJ4,M_2,M_2,1.0);         // M x M
+    ElastSymTensorMultiply((*cmat),d2W_dJ5dJ5,CMMC_2,CMMC_2,1.0);   // (CM+MC) x (CM+MC)
+    ElastSymTensorMultiplyAddSym((*cmat),d2W_dI1dJ4,I,M_2,1.0);   // I x M + M x I
+    ElastSymTensorMultiplyAddSym((*cmat),d2W_dI1dJ5,CMMC_2,I,1.0);// (CM+MC) x I + I x (CM+MC)
+    ElastSymTensorMultiplyAddSym((*cmat),d2W_dJ4dJ5,CMMC_2,M_2,1.0);// (CM+MC) x M + M x (CM+MC)
+    ElastSymTensor_o_Multiply((*cmat),dW_dJ5,I,M_2,1.0);          // I o M
+    ElastSymTensor_o_Multiply((*cmat),dW_dJ5,M_2,I,1.0);          // M o I
+  }
   
-  // the factor 4! multiplied with factor 1/2 due to Voigts factor 2 used in tensor products
   (*cmat).Scale(4.0);
-//  // repair upper-left matrix part due to Voigts factor 2 used in tensor products
-//  for (int i = 0; i < 3; ++i) {
-//    for (int j = 0; j < 3; ++j) {
-//      (*cmat)(i,j) = 2.0 * (*cmat)(i,j);
-//    }
-//  }
   
 //  cout << (*cmat);
   // end of ********** evaluate C-Matrix *****************************

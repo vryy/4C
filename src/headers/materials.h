@@ -593,6 +593,9 @@ typedef struct _ANISOTROPIC_BALZANI
      DOUBLE                    density;
      INT                       aloc;
      DOUBLE                    a1[3];
+     DOUBLE                    alpha1_2;
+     DOUBLE                    alpha2_2;
+     DOUBLE                    a2[3];
 } ANISOTROPIC_BALZANI;
 /*----------------------------------------------------------------------*
  | Isotropic heat conduction coefficient                    bborn 03/06 |
