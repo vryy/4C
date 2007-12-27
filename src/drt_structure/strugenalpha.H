@@ -352,7 +352,9 @@ protected:
 
   RefCountPtr<DRT::VolConstrManager>   volConstrMan_;
 
+#ifdef SURFSTRESS
   RefCountPtr<DRT::SurfStressManager>   surf_stress_man_;
+#endif
 
   // stuff needed to use NOX as nonlinear solver
   RefCountPtr<NLNML::NLNML_FineLevelNoxInterface> fineinterface_;
