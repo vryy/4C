@@ -87,12 +87,6 @@ void stru_static_drt()
   if (!actdis->Filled()) actdis->FillComplete();
 
   // -------------------------------------------------------------------
-  // context for output and restart
-  // -------------------------------------------------------------------
-  IO::DiscretizationWriter output(actdis);
-  output.WriteMesh(0,0.0);
-
-  // -------------------------------------------------------------------
   // get a communicator and myrank
   // -------------------------------------------------------------------
   const Epetra_Comm& Comm = actdis->Comm();
@@ -174,6 +168,32 @@ void stru_static_drt()
   int istep = 0;
   double time = 0.0;  // we should add an input parameter
   double timen;
+
+  // -------------------------------------------------------------------
+  // context for output and restart
+  // -------------------------------------------------------------------
+  IO::DiscretizationWriter output(actdis);
+  if (genprob.restart){
+    int restartstep = genprob.restart;
+    RefCountPtr<DRT::Discretization> rcpdiscret(actdis);
+    rcpdiscret.release();
+    IO::DiscretizationReader reader(rcpdiscret,restartstep);
+    double rtime  = reader.ReadDouble("time");
+    int    rstep = reader.ReadInt("step");
+    if (rstep != restartstep) dserror("Time step on file not equal to given step");
+
+    reader.ReadVector(dis, "displacement");
+    //reader.ReadVector(fext, "fexternal");
+    //reader.ReadMesh(restartstep);
+
+    // override current time and step with values from file
+    time = rtime;
+    istep = rstep;
+  }
+
+  // write mesh always at beginning of calc or restart
+  output.WriteMesh(istep,time);
+
 
   //-------------------------------------- parameters for volume constraint
   // required volumes (can change over time with a given loadcurve
@@ -621,9 +641,28 @@ void stru_static_drt()
     ++istep;      // load step n := n + 1
     time += dt;   // load factor / pseudo time  t_n := t_{n+1} = t_n + Delta t
 
+    //------------------------------------------------- write restart step
+    bool isdatawritten = false;
+    if (istep % statvar->resevery_restart==0)
+    {
+      output.NewStep(istep, time);
+      output.WriteVector("displacement",dis);
+      //output.WriteVector("fexternal", fext);
+      output.WriteMesh(istep,time);
+      isdatawritten = true;
+
+      if (!myrank)
+      {
+        cout << "====== Restart written in step " << istep << endl;
+        fflush(stdout);
+        fprintf(errfile,"====== Restart written in step %d\n",istep);
+        fflush(errfile);
+      }
+    }
+
     //----------------------------------------------------- output results
     int mod_disp   = istep % statvar->resevry_disp;
-    if (!mod_disp && ioflags.struct_disp==1)
+    if (!mod_disp && ioflags.struct_disp==1 && !isdatawritten)
     {
       output.NewStep(istep, time);
       output.WriteVector("displacement", dis);
