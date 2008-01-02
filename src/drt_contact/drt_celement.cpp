@@ -15,7 +15,6 @@ Maintainer: Michael Gee
 #include "drt_celement.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/linalg_serialdensematrix.H"
 
 
 /*----------------------------------------------------------------------*
@@ -270,6 +269,22 @@ void CONTACT::CElement::ComputeNormalAtXi(double* xi, vector<double>& n)
 }
 
 /*----------------------------------------------------------------------*
+ |  Evaluate Jacobian determinant - QUAD 1D                   popp 12/07|
+ *----------------------------------------------------------------------*/
+double CONTACT::CElement::Jacobian_Quad1D(const vector<double>& val,
+																	 			  const vector<double>& deriv,
+  																			  const LINALG::SerialDenseMatrix& coord)
+{
+	double g[3];
+	
+	g[0] = deriv[0]*coord(0,0)+deriv[1]*coord(0,1)+deriv[2]*coord(0,2);
+	g[1] = deriv[0]*coord(1,0)+deriv[1]*coord(1,1)+deriv[2]*coord(1,2);
+	g[2] = deriv[0]*coord(2,0)+deriv[1]*coord(2,1)+deriv[2]*coord(2,2);
+	
+	return sqrt(g[0]*g[0]+g[1]*g[1]+g[2]*g[2]);
+}
+
+/*----------------------------------------------------------------------*
  |  Compute length (in 3D area) of the element                popp 12/07|
  *----------------------------------------------------------------------*/
 double CONTACT::CElement::ComputeArea()
@@ -287,7 +302,6 @@ double CONTACT::CElement::ComputeArea()
 		vector<double> val(nnodes);
 		vector<double> deriv(nnodes);
 		LINALG::SerialDenseMatrix coord(3,nnodes);
-		double g[3];
 		double detg;
 		
 		// get coordinates of element nodes
@@ -303,11 +317,7 @@ double CONTACT::CElement::ComputeArea()
 		for (int j=0;j<intpoints.nquad;++j)
 		{
 			EvaluateShape_Quad1D(&intpoints.qxg[j], val, deriv, nnodes);
-			g[0] = deriv[0]*coord(0,0)+deriv[1]*coord(0,1)+deriv[2]*coord(0,2);
-			g[1] = deriv[0]*coord(1,0)+deriv[1]*coord(1,1)+deriv[2]*coord(1,2);
-			g[2] = deriv[0]*coord(2,0)+deriv[1]*coord(2,1)+deriv[2]*coord(2,2);
-			detg = sqrt(g[0]*g[0]+g[1]*g[1]+g[2]*g[2]);
-			
+			detg = Jacobian_Quad1D(val,deriv,coord);			
 			area+= intpoints.qwgt[j]*detg;
 		}	
 	}
@@ -363,7 +373,6 @@ bool CONTACT::CElement::EvaluateShape_DualQuad1D(const double* xi, vector<double
 	DRT::Node** mynodes = Nodes();
 		
 	LINALG::SerialDenseMatrix coord(3,nnodes);
-	double g[3];
 	double detg;
 		
 	for (int i=0;i<nnodes;++i)
@@ -383,10 +392,7 @@ bool CONTACT::CElement::EvaluateShape_DualQuad1D(const double* xi, vector<double
 	for (int i=0;i<intpoints.nquad;++i)
 	{
 		EvaluateShape_Quad1D(&intpoints.qxg[i], val, deriv, nnodes);
-		g[0] = deriv[0]*coord(0,0)+deriv[1]*coord(0,1)+deriv[2]*coord(0,2);
-		g[1] = deriv[0]*coord(1,0)+deriv[1]*coord(1,1)+deriv[2]*coord(1,2);
-		g[2] = deriv[0]*coord(2,0)+deriv[1]*coord(2,1)+deriv[2]*coord(2,2);
-		detg = sqrt(g[0]*g[0]+g[1]*g[1]+g[2]*g[2]);
+		detg = Jacobian_Quad1D(val,deriv,coord);
 			
 		for (int j=0;j<nnodes;++j)
 			for (int k=0;k<nnodes;++k)
@@ -404,6 +410,7 @@ bool CONTACT::CElement::EvaluateShape_DualQuad1D(const double* xi, vector<double
 	Ae.Multiply('N','N',1.0,De,Me,0.0);
 		
 	// evaluate dual shape functions at loc. coord. xi
+	// need standard shape functions at xi first
 	EvaluateShape_Quad1D(xi, val, deriv, nnodes);
 		
 	vector<double> valtemp(nnodes);

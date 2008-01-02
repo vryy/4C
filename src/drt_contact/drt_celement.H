@@ -21,6 +21,8 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
 #include "drt_cnode.H"
+#include "../drt_lib/linalg_serialdensematrix.H"
+
 using namespace std;
 using namespace Teuchos;
 
@@ -265,6 +267,13 @@ public:
   \brief Compute element normal at local coordinate xi
   */
   virtual void ComputeNormalAtXi(double* xi, vector<double>& n);
+  
+  /*!
+  \brief Evaluate Jacobian det for parameter space integration - QUAD 1D
+  */
+  virtual double Jacobian_Quad1D(const vector<double>& val,
+  																	const vector<double>& deriv,
+  																  const LINALG::SerialDenseMatrix& coord);
   
   /*!
   \brief Compute length (in 3D area) of the element
