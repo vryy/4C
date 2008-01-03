@@ -215,4 +215,46 @@ void CONTACT::CNode::BuildAveragedNormal()
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  Find closest node from given node set                     popp 01/08|
+ *----------------------------------------------------------------------*/
+int CONTACT::CNode::FindClosestNode(const RCP<DRT::Discretization> intdis,
+  																	const RCP<Epetra_Map> nodesearchmap)
+{
+	// initialization
+	double mindist = 1.0e+20;
+	CNode* closestnode = NULL;
+	
+	// loop over all nodes of the DRT::Discretization that are
+	// included in the given Epetra_Map
+	for(int i=0; i<nodesearchmap->NumMyElements();++i)
+	{
+		int gid = nodesearchmap->GID(i);
+		DRT::Node* node = intdis->gNode(gid);
+		if (!node) dserror("ERROR: FindClosestNode: Cannot find node with gid %",gid);
+		CNode* cnode = static_cast<CNode*>(node);
+		
+		// build distance between the two nodes
+		double dist = 0.0;
+		const double* p1 = this->xspatial();
+		const double* p2 = cnode->xspatial();
+		
+		for (int j=0;j<3;++j)
+			dist+=(p1[j]-p2[j])*(p1[j]-p2[j]);
+		dist=sqrt(dist);
+		
+		// new closest node found, update
+		if (dist <= mindist)
+		{
+			mindist=dist;
+			closestnode=cnode;
+		}
+	}
+	
+	if (!closestnode)
+		dserror("ERROR: FindClosestNode: No closest node found at all!");
+	
+	return closestnode->Id();
+}
+
 #endif  // #ifdef CCADISCRET

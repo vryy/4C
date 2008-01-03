@@ -21,6 +21,7 @@ Maintainer: Michael Gee
 
 
 #include "../drt_lib/drt_node.H"
+#include "../drt_lib/drt_discret.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -136,11 +137,6 @@ public:
   \brief Get predefined degrees of freedom
   */
   inline virtual const int* Dofs() const { return &dofs_[0]; }
-  
-  /*!
-  \brief Build nodal normal
-  */
-  virtual void BuildAveragedNormal();
 
   /*!
   \brief Return current configuration (length 3)
@@ -159,9 +155,26 @@ public:
   
   //@}
 
-  //! @name Construction
+  //! @name Construction methods
 
-
+  /*!
+  \brief Build nodal normal
+  */
+  virtual void BuildAveragedNormal();
+  
+  /*!
+  \brief Find closest node from given node set and return global ID
+    
+  This method will compute the distance of the active CNode to all
+  nodes of the given Epetra_Map on the given DRT::Discretization
+    
+  \param intdis (in):         Master Node to project
+  \param nodesearchmap (in) : Slave Celement to project on
+  \param xi (out) : Local coordinates of projection on Celement
+  */
+  virtual int FindClosestNode(const RCP<DRT::Discretization> intdis,
+  														const RCP<Epetra_Map> nodesearchmap);
+    
   //@}
 
 protected:
