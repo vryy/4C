@@ -96,12 +96,13 @@ namespace Elements
                 blitz::Array<double,1>&           sugrvisc,
                 struct _MATERIAL*                 material,
                 double                            pseudotime,
-                bool                              newton ,
-                int                               fssgv ,
-                bool                              pstab  ,
-                bool                              supg   ,
-                bool                              vstab  ,
-                bool                              cstab  );
+                bool                              newton,
+                int                               fssgv,
+                bool                              pstab,
+                bool                              supg,
+                bool                              vstab,
+                bool                              cstab,
+                double                            Cs);
 
   private:
 
@@ -113,7 +114,8 @@ namespace Elements
       const blitz::Array<double,2>&           evelnp,
       const DRT::Element::DiscretizationType  distype,
       const double                            visc,
-      const int                               fssgv);
+      const int                               fssgv,
+      const double                            Cs);
 
     /*!
      * \brief calculate the body force from the nodes condition

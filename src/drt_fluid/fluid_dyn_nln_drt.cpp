@@ -187,6 +187,12 @@ void dyn_fluid_drt()
     // (fine-scale) subgrid viscosity?
     fluidtimeparams.set<int>              ("fs subgrid viscosity"   ,Teuchos::getIntegralValue<int>(fdyn,"SUBGRIDVISC"));
 
+    // hand down the TURBULENCE MODEL parameters to the fluid algorithm
+    {
+      fluidtimeparams.sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
+
+      fluidtimeparams.sublist("TURBULENCE MODEL").set<string>("statistics outfile",allfiles.outputfile_kenner);
+    }
 
     //--------------------------------------------------
     // create all vectors and variables associated with the time
@@ -282,7 +288,7 @@ void dyn_fluid_drt()
 
       fluidtimeparams.sublist("TURBULENCE MODEL").set<string>("statistics outfile",allfiles.outputfile_kenner);
     }
-    
+
     //--------------------------------------------------
     // create all vectors and variables associated with the time
     // integration (call the constructor)

@@ -429,6 +429,9 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
         // get flag for (fine-scale) subgrid viscosity (1=yes, 0=no)
         const int fssgv = params.get<int>("fs subgrid viscosity",0);
 
+        // get Smagorinsky model parameter
+        const double Cs = params.get<double>("Smagorinsky parameter",0.0);
+
         // wrap epetra serial dense objects in blitz objects
         blitz::Array<double, 2> estif(elemat1.A(),
                                       blitz::shape(elemat1.M(),elemat1.N()),
@@ -460,11 +463,12 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
                        time,
                        timefac,
                        newton ,
-                       fssgv  ,
-                       pstab  ,
-                       supg   ,
-                       vstab  ,
-                       cstab  );
+                       fssgv,
+                       pstab,
+                       supg,
+                       vstab,
+                       cstab,
+                       Cs);
 
         // This is a very poor way to transport the density to the
         // outside world. Is there a better one?
@@ -1185,6 +1189,9 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
           // get flag for (fine-scale) subgrid viscosity (1=yes, 0=no)
           const int fssgv = params.get<int>("fs subgrid viscosity",0);
 
+          // get Smagorinsky model parameter
+          const double Cs = params.get<double>("Smagorinsky parameter",0.0);
+
           // wrap epetra serial dense objects in blitz objects
           blitz::Array<double, 2> estif(elemat1.A(),
                                         blitz::shape(elemat1.M(),elemat1.N()),
@@ -1203,20 +1210,21 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
 
           // calculate element coefficient matrix and rhs         
           StationaryImpl()->Sysmat(this,
-                         evelnp,
-                         eprenp,
-                         estif,
-                         esv,
-                         eforce,
-                         sugrvisc,
-                         actmat,
-                         pseudotime,
-                         newton ,
-                         fssgv  ,
-                         pstab  ,
-                         supg   ,
-                         vstab  ,
-                         cstab  );
+                                   evelnp,
+                                   eprenp,
+                                   estif,
+                                   esv,
+                                   eforce,
+                                   sugrvisc,
+                                   actmat,
+                                   pseudotime,
+                                   newton,
+                                   fssgv,
+                                   pstab,
+                                   supg,
+                                   vstab,
+                                   cstab,
+                                   Cs);
 
           // This is a very poor way to transport the density to the
           // outside world. Is there a better one?

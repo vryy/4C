@@ -139,8 +139,11 @@ int DRT::Elements::Fluid2::Evaluate(ParameterList& params,
       // get flag for (fine-scale) subgrid viscosity (1=yes, 0=no)
       const int fssgv = params.get<int>("fs subgrid viscosity",0);
 
+      // get Smagorinsky model parameter
+      const double Cs = params.get<double>("Smagorinsky parameter",0.0);
+
       // calculate element coefficient matrix and rhs
-      f2_sys_mat(lm,myvelnp,myprenp,myvhist,mydispnp,mygridv,&elemat1,&elemat2,&elevec1,elevec2,actmat,time,timefac,fssgv,is_stationary);
+      f2_sys_mat(lm,myvelnp,myprenp,myvhist,mydispnp,mygridv,&elemat1,&elemat2,&elevec1,elevec2,actmat,time,timefac,fssgv,Cs,is_stationary);
 
       // This is a very poor way to transport the density to the
       // outside world. Is there a better one?
@@ -221,6 +224,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
                                        double                    time,
                                        double                    timefac,
                                        int                       fssgv,
+                                       double                    Cs,
                                        bool                      is_stationary
   )
 {
@@ -488,8 +492,6 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
       //                          isotropic turbulence)
       //
       //             0.1 < Cs < 0.24 (depending on the flow)
-
-      double Cs = 0.17;
 
       vart = Cs * Cs * hk * hk * rateofstrain;
 

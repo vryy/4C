@@ -104,12 +104,13 @@ namespace Elements
                 struct _MATERIAL*       material,
                 double                  time,
                 double                  timefac,
-                bool                    newton ,
-                int                     fssgv ,
-                bool                    pstab  ,
-                bool                    supg   ,
-                bool                    vstab  ,
-                bool                    cstab);
+                bool                    newton,
+                int                     fssgv,
+                bool                    pstab,
+                bool                    supg,
+                bool                    vstab,
+                bool                    cstab,
+                double                  Cs);
 
   private:
 
@@ -122,7 +123,8 @@ namespace Elements
       const DRT::Element::DiscretizationType  distype,
       const double                            visc,
       const double                            timefac,
-      const int                               fssgv);
+      const int                               fssgv,
+      const double                            Cs);
 
     /*!
      * \brief calculate the body force from the nodes condition

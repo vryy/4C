@@ -75,12 +75,13 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
                                        struct _MATERIAL*       material,
                                        double                  time,
                                        double                  timefac,
-                                       bool                    newton ,
-                                       int                     fssgv ,
-                                       bool                    pstab  ,
-                                       bool                    supg   ,
-                                       bool                    vstab  ,
-                                       bool                    cstab
+                                       bool                    newton,
+                                       int                     fssgv,
+                                       bool                    pstab,
+                                       bool                    supg,
+                                       bool                    vstab,
+                                       bool                    cstab,
+                                       double                  Cs
   )
 {
 
@@ -131,7 +132,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
   // stabilization parameter
   // This has to be done before anything else is calculated because
   // we use the same arrays internally.
-  Caltau(ele,evelnp,distype,visc,timefac,fssgv);
+  Caltau(ele,evelnp,distype,visc,timefac,fssgv,Cs);
 
   // flag for higher order elements
   const bool higher_order_ele = ele->isHigherOrderElement(distype);
@@ -1760,7 +1761,8 @@ void DRT::Elements::Fluid3Impl::Caltau(
   const DRT::Element::DiscretizationType  distype,
   const double                            visc,
   const double                            timefac,
-  const int                               fssgv
+  const int                               fssgv,
+  const double                            Cs
   )
 {
   blitz::firstIndex i;    // Placeholder for the first index
@@ -1995,8 +1997,6 @@ void DRT::Elements::Fluid3Impl::Caltau(
     //                          isotropic turbulence)
     //
     //             0.1 < Cs < 0.24 (depending on the flow)
-
-    const double Cs = 0.17;
 
     vart_ = Cs * Cs * hk * hk * rateofstrain;
   }

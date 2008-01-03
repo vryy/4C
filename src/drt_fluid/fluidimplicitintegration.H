@@ -250,7 +250,9 @@ protected:
   double dtp_;
   double theta_;
 
+  /// (fine-scale) subgrid-viscosity flag and Smagorinsky model parameter
   int fssgv_;
+  double Cs_;
 
   /// system matrices: standard (stabilized) matrix and (fine-scale)
   /// subgrid-viscosity matrix

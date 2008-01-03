@@ -69,12 +69,13 @@ void DRT::Elements::Fluid3Stationary::Sysmat(Fluid3* ele,
                                        blitz::Array<double,1>&           sugrvisc,
                                        struct _MATERIAL*       material,
                                        double                  pseudotime,
-                                       bool                    newton ,
-                                       int                     fssgv ,
-                                       bool                    pstab  ,
-                                       bool                    supg   ,
-                                       bool                    vstab  ,
-                                       bool                    cstab  
+                                       bool                    newton,
+                                       int                     fssgv,
+                                       bool                    pstab,
+                                       bool                    supg,
+                                       bool                    vstab,
+                                       bool                    cstab,
+                                       double                  Cs
   )
 {
 
@@ -119,7 +120,7 @@ void DRT::Elements::Fluid3Stationary::Sysmat(Fluid3* ele,
   // stabilization parameter
   // This has to be done before anything else is calculated because
   // we use the same arrays internally.
-  CalTauStationary(ele,evelnp,distype,visc,fssgv);
+  CalTauStationary(ele,evelnp,distype,visc,fssgv,Cs);
 
   // flag for higher order elements
   const bool higher_order_ele = ele->isHigherOrderElement(distype);
@@ -1117,7 +1118,8 @@ void DRT::Elements::Fluid3Stationary::CalTauStationary(
   const blitz::Array<double,2>&           evelnp,
   const DRT::Element::DiscretizationType  distype,
   const double                            visc,
-  const int                               fssgv
+  const int                               fssgv,
+  const double                            Cs
   )
 {
   blitz::firstIndex i;    // Placeholder for the first index
@@ -1297,8 +1299,6 @@ void DRT::Elements::Fluid3Stationary::CalTauStationary(
     //                          isotropic turbulence)
     //
     //             0.1 < Cs < 0.24 (depending on the flow)
-
-    const double Cs = 0.17;
 
     vart_ = Cs * Cs * hk * hk * rateofstrain;
   }

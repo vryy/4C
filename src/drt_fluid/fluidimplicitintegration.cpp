@@ -74,7 +74,11 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   dtp_ = dta_ = params_.get<double>("time step size");
 
   // (fine-scale) subgrid viscosity?
-  fssgv_  =params_.get<int>("fs subgrid viscosity",0);
+  fssgv_ = params_.get<int>("fs subgrid viscosity",0);
+
+  // Smagorinsky model parameter from turbulence model sublist
+  ParameterList *  turbmodelparams =&(params_.sublist("TURBULENCE MODEL"));
+  Cs_ = turbmodelparams->get<double>("C_SMAGORINSKY",0.0);
 
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
@@ -641,6 +645,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
       eleparams.set("total time",time_);
       eleparams.set("thsl",theta_*dta_);
       eleparams.set("fs subgrid viscosity",fssgv_);
+      eleparams.set("Smagorinsky parameter",Cs_);
       eleparams.set("include reactive terms for linearisation",newton_);
 
       // set vector values needed by elements
