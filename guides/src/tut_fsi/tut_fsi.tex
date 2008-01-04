@@ -755,23 +755,24 @@ to set
 \item Use the \emph{Fluid Surface Stab} for the two rectangles, like in
 4.3.
 \end{itemize}
-\item Before we move to the boundary conditions, we have to activate the
-material parameters for the ALE first (some default values, which
-are needed by the solver). Go to
 
-\begin{itemize}
-\item \emph{Data$\to$Materials$\to$Structure} and set for 
-\item \emph{MAT Struct StVenantKir} some default parameters (e.g. \emph{1},
-\emph{0.3}, \emph{1}) and then click 
-\item \emph{Close}. You are then asked if you want to save the changed parameters,
-which you confirm with \emph{}
-\item \emph{Yes}.
-\end{itemize}
-\end{itemize}
-The \emph{Create ALE} button (when you define the fluid element) is
-necessary, because the ALE is another mesh, which has to be generated
-separately. It also needs special boundary conditions, as we will
-see later on.
+%\item Before we move to the boundary conditions, we have to activate the
+%material parameters for the ALE first (some default values, which
+%are needed by the solver). Go to
+
+%\begin{itemize}
+%\item \emph{Data$\to$Materials$\to$Structure} and set for 
+%\item \emph{MAT Struct StVenantKir} some default parameters (e.g. \emph{1},
+%\emph{0.3}, \emph{1}) and then click 
+%\item \emph{Close}. You are then asked if you want to save the changed parameters,
+%which you confirm with \emph{}
+%\item \emph{Yes}.
+%\end{itemize}
+%\end{itemize}
+%The \emph{Create ALE} button (when you define the fluid element) is
+%necessary, because the ALE is another mesh, which has to be generated
+%separately. It also needs special boundary conditions, as we will
+%see later on.
 
 This should also explain, why we have to set the \emph{NetAlgo} to
 \emph{ALE}.
