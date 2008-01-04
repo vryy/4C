@@ -583,14 +583,14 @@ DRT::Utils::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
 {
   switch(gaussrule)
   {
-  case intrule_line_1point :
+  case intrule_line_1point:
   {
     nquad = 1;
     qwgt[0]  =  2.0;
     qxg[0]   =  0.0;
     break;
   }
-  case intrule_line_2point :
+  case intrule_line_2point:
   {
     nquad = 2;
     qwgt[0]  =  1.0;
@@ -610,6 +610,36 @@ DRT::Utils::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
     qxg[1] =  0.0;
     qxg[2] =  xi3;
     break;
+  }
+  case intrule_line_4point:
+  {
+      nquad = 4;
+      qwgt[0]  =  0.3478548451375;
+      qwgt[1]  =  0.6521451548625;
+      qwgt[2]  =  0.6521451548625;
+      qwgt[3]  =  0.3478548451375;
+      
+      qxg[0]   = -0.8611363115941;
+      qxg[1]   = -0.3399810435849;
+      qxg[2]   =  0.3399810435849;
+      qxg[3]   =  0.8611363115941;
+      break;
+  }
+  case intrule_line_5point:
+  {
+      nquad = 5;
+      qwgt[0]  =  0.2369268850562;
+      qwgt[1]  =  0.4786286704994;
+      qwgt[2]  =  0.5688888888889;
+      qwgt[3]  =  0.4786286704994;
+      qwgt[4]  =  0.2369268850562;
+        
+      qxg[0]   = -0.9061798459387;
+      qxg[1]   = -0.5384693101057;
+      qxg[2]   =  0.0;
+      qxg[3]   =  0.5384693101057;
+      qxg[4]   =  0.9061798459387;
+      break;
   }
   default:
     dserror("unknown 1D integration rule");

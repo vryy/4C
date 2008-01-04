@@ -65,7 +65,9 @@ enum GaussRule1D
     intrule1D_undefined,   ///< use this to initialize a gaussrule, if you don't know the value, yet!
     intrule_line_1point,
     intrule_line_2point,
-    intrule_line_3point
+    intrule_line_3point,
+    intrule_line_4point,
+    intrule_line_5point
 };
 
 /*!
@@ -110,8 +112,8 @@ struct IntegrationPoints1D
 {
   IntegrationPoints1D(const GaussRule1D gaussrule);
   int           nquad;        ///< number of gausspoints
-  double        qxg[3];       ///< coordinates */
-  double        qwgt[3];      ///< weights */
+  double        qxg[5];       ///< coordinates */
+  double        qwgt[5];      ///< weights */
 };
 
 /*!
