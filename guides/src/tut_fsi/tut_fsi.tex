@@ -40,7 +40,7 @@ in three parts:
 
 \begin{enumerate}
 \item First we'll study the structure (the bottom) only. We will load it
-for simplicity with the stationary fluid weight only.
+for simplicity with a pressure load only.
 \item Next we will simulate the fluid in a completely rigid chamber (we
 neglect the deformation of the bottom for simplicity).
 \item And in the end we will set up the whole example as an FSI simulation.
@@ -94,10 +94,10 @@ This created everything necessary for BACI to solve your specific
 problem.
 
 
-\section{First structural try}
+\section{The Structure Part}
 
 As already mentioned in the introduction, we will simulate the bottom
-of the driven cavity loaded with the stationary fluid weight here.
+of the driven cavity loaded with a Neumann load.
 
 To start the preprocess, open GID (\emph{/lnm/gid/gid} starts the evaluation 
 mode, more information in LNM beginners guide) and make yourself familiar with
@@ -139,6 +139,20 @@ this number depending on your example (2D, 3D, fluid, structure,..).
 OUTPUT GID is kind of a filter, that writes the necessary data for
 postprocessing to a file.
 
+Next we have to set the correct parameters for the static structural algorithm.
+\begin{itemize}
+\item In \emph{Data$\to$Problem Data$\to$ Static}
+\begin{itemize}
+\item click \emph{Static Nonlinear}, 
+\item set \emph{Static Kintyp} to \emph{Tot Lagr}, 
+\item change \emph{Static Nwtn Raphson} to \emph{Load Control}, 
+\item set \emph{Static Numstep} to \emph{1} and
+\item make sure that \emph{Static Max Iter} is set to \emph{20}.
+\item Click \emph{Accept data} and save your changes.
+\end{itemize}
+
+\end{itemize}
+These changes are necessary, since the BACI code only supports static nonlinear computations.
 
 \subsection{Geometry}
 
@@ -285,8 +299,7 @@ the rectangle, with a constant value for the whole line.
 \begin{itemize}
 \item \emph{line} button and pick 
 \item \emph{L Neum} from the pulldown menu.
-\item Set the \emph{y}-direction (\emph{2}) to \emph{On}, the value to \emph{-1}
-(the line weight of the fluid) and 
+\item Set the \emph{y}-direction (\emph{2}) to \emph{On}, the value to \emph{-0.001} and 
 \item \emph{Assign} the uppermost line of our rectangle.
 \end{itemize}
 \end{itemize}
@@ -392,7 +405,7 @@ All lessons learned here are necessary for the next chapter and won't
 be explained again, so keep them in mind.
 
 
-\section{The fluid try}
+\section{The Fluid Part}
 
 Here we are going to simulate the driven cavity with a rigid bottom,
 but everything else as we want to have it in the final FSI example.
@@ -419,7 +432,17 @@ Here \emph{Dynamic} has to be selected, as we have a time dependent
 velocity. But even in a stationary fluid problem you have to set it
 to \emph{Dynamic} as in fluid simulations you always have to start
 the velocities from zero with a time-dependent curve to get good
-solutions.
+solutions. The time-dependent curve for our example will be defined later on, 
+but we will set some of the parameters for the algorithm right away. Therefore
+go to 
+\begin{itemize}
+\item \emph{Data$\to$Problem Data$\to$Dynamic} and choose the \emph{Fluid} tab.
+\begin{itemize}
+\item Set \emph{Fluid Dyn Num Steps} to \emph{100} and 
+\item \emph{Fluid Dyn Time Step} to \emph{0.05} 
+\end {itemize}
+which corresponds to the problem description with total time \emph{T=5s}. 
+\end{itemize}
 
 
 \subsection{Geometry}
@@ -431,7 +454,7 @@ a u-profile for the lower one, so you don't have two lines laying
 on each other where they meet).
 
 \begin{itemize}
-\item First draw the u-profile using the points \emph{0,1}, \emph{0,0} and \emph{1,1}.
+\item First draw the u-profile using the points \emph{0,1}, \emph{0,0}, \emph{1,0} and \emph{1,1}.
 \item For the upper rectangle use the corners \emph{0,1} (\emph{Join}), \emph{1,1} (\emph{Join}), \emph{1,1.1}, \emph{0,1.1} and finally \emph{0,1} (\emph{Join}) 
 \item Generate two surfaces in between the lines. 
 \end{itemize}
@@ -471,16 +494,12 @@ the fluid. Click the
 
 \begin{itemize}
 \item \emph{surface} button in \emph{SingleLayer,} choose the 
-\item \emph{Fluid Surface Stab} from the pulldown menu and
-\item \emph{Assign} our two rectangles.
+\item \emph{Fluid Surface Stab} from the pulldown menu and change \emph{stabtype} to  \emph{GLS}.
+\item Finally \emph{Assign} our two rectangles.
 \end{itemize}
 \end{itemize}
 In the \emph{Fluid2} menu make sure that \emph{Net Algo} is set to
-\emph{Euler}, the default algorithm. We are going to use the \emph{ALE}
-algorithm later in the FSI section.
-
-The stabilisation has to be made separately here, which is a little
-clumsy but necessary for science. Just don't forget about it.
+\emph{Euler}, the default algorithm. 
 
 
 \subsection{Numbering and boundary conditions}
@@ -505,7 +524,7 @@ of the container).
 \end{itemize}
 \item Don't forget the points! All four lower points need to be treated
 like above, too.
-\item For the intake we have to concentrate a bit more: In \emph{SingleLayer}
+\item For the inflow we have to concentrate a bit more: In \emph{SingleLayer}
 click the
 
 \begin{itemize}
@@ -518,7 +537,7 @@ it a time dependency, so we switch
 \item \emph{Load Curve value 1} to \emph{1}. To make the field also dependent
 of the y-coordinate, we have to switch 
 \item \emph{Load Funct value 1} to \emph{1}. 
-\item Now \emph{Assign} the intake line.
+\item Now \emph{Assign} the inflow line.
 \end{itemize}
 \item Next we are going to define the expressions for \emph{curve 1} and
 \emph{funct 1}. Go to 
@@ -544,14 +563,14 @@ so we go to
 The velocity field now results from a multiplication of curve 1, function
 1 and the maximum value (here: 1). The coordinates of a spatial function are defined relatively to a user-defined origin. It can be set by changing \emph{F1 x}, \emph{F1 y} and  \emph{F1 z}. We used in our example the default value \emph{0,0,0}, so we are dealing with absolute coordinates.
 
-So far for the intake.
+So far for the inflow region.
 
 \begin{itemize}
 \item Use the uppermost horizontal line for boundary condition 
 
 \begin{itemize}
 \item x-velocity = \emph{1} and, as it has the same time dependency like
-the intake, pick also 
+the inflow, pick also 
 \item \emph{curve 1} as factor.
 \end{itemize}
 \end{itemize}
