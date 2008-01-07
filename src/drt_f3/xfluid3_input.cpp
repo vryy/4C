@@ -69,7 +69,7 @@ bool DRT::Elements::XFluid3::ReadElement()
     int   ierr = 0;
     int   nnode = 0;
     int   nodes[27];
-    DiscretizationType distype;
+    DiscretizationType distype = dis_none;
 
     Gid2DisType::const_iterator iter;
     for( iter = gid2distype.begin(); iter != gid2distype.end(); iter++ )
