@@ -501,9 +501,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
                                  "straight",
                                  "30_degree",
                                  "60_degree",
-                                 "min60_degree"
+                                 "min60_degree",
+                                 "No"
                                  ),
-                               tuple<int>(0,1,2,3,4),
+                               tuple<int>(0,1,2,3,4,5),
                                &fdyn);
 
   setStringToIntegralParameter("SUBGRIDVISC","No","subgrid viscosity",

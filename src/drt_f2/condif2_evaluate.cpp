@@ -232,6 +232,10 @@ void DRT::Elements::Condif2::condif2_sys_mat(vector<int>&              lm,
     velint[0]=0.5;
     velint[1]=-0.5*sqrt(3.0);
     break;
+  case 5:
+	velint[0]=0.0;
+	velint[1]=0.0;
+	break;
   default: dserror("condif velocity field unknown!\n");
   }
 
@@ -376,6 +380,10 @@ void DRT::Elements::Condif2::condif2_sys_mat(vector<int>&              lm,
       case 4:
         velint[0]=0.5;
         velint[1]=-0.5*sqrt(3.0);
+        break;
+      case 5:
+        velint[0]=0.0;
+        velint[1]=0.0;
         break;
       default: dserror("condif velocity field unknown!\n");
       }
