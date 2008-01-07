@@ -75,7 +75,7 @@ void DRT::Elements::Fluid3Stationary::Sysmat(Fluid3* ele,
                                        bool                    supg,
                                        bool                    vstab,
                                        bool                    cstab,
-                                       double                  Cs
+                                       double                  Cs_fs
   )
 {
 
@@ -120,7 +120,7 @@ void DRT::Elements::Fluid3Stationary::Sysmat(Fluid3* ele,
   // stabilization parameter
   // This has to be done before anything else is calculated because
   // we use the same arrays internally.
-  CalTauStationary(ele,evelnp,distype,visc,fssgv,Cs);
+  CalTauStationary(ele,evelnp,distype,visc,fssgv,Cs_fs);
 
   // flag for higher order elements
   const bool higher_order_ele = ele->isHigherOrderElement(distype);
@@ -1119,7 +1119,7 @@ void DRT::Elements::Fluid3Stationary::CalTauStationary(
   const DRT::Element::DiscretizationType  distype,
   const double                            visc,
   const int                               fssgv,
-  const double                            Cs
+  const double                            Cs_fs
   )
 {
   blitz::firstIndex i;    // Placeholder for the first index
@@ -1292,7 +1292,7 @@ void DRT::Elements::Fluid3Stationary::CalTauStationary(
       rateofstrain = sqrt(rateofstrain);
     }
     //
-    // Choices of the Smagorinsky constant Cs:
+    // Choices of the fine-scale Smagorinsky constant Cs_fs:
     //
     //             Cs = 0.17   (Lilly --- Determined from filter
     //                          analysis of Kolmogorov spectrum of
@@ -1300,7 +1300,7 @@ void DRT::Elements::Fluid3Stationary::CalTauStationary(
     //
     //             0.1 < Cs < 0.24 (depending on the flow)
 
-    vart_ = Cs * Cs * hk * hk * rateofstrain;
+    vart_ = Cs_fs * Cs_fs * hk * hk * rateofstrain;
   }
 }
 

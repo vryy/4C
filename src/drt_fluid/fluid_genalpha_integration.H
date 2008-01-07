@@ -344,15 +344,25 @@ private:
   int                              writestep_;
   int                              upres_;
 
+  // (fine-scale) subgrid-viscosity flag
+  int                              fssgv_;
+
   // turbulence statistics
   RefCountPtr<TurbulenceStatistics> turbulencestatistics_;
-  
-  // system matrix --- stiffness and mass are assembled in one matrix!
-  RefCountPtr<Epetra_CrsMatrix>    sysmat_;
 
-  // The residual vector --- more or less the rhs for the incremental
-  // formulation!!!
+  // system matrices: standard (stabilized) matrix and (fine-scale)
+  // subgrid-viscosity matrix
+  RefCountPtr<Epetra_CrsMatrix>    sysmat_;
+  RefCountPtr<Epetra_CrsMatrix>    sysmat_sv_;
+
+  // scale-separation matrix for VM3-based solution approach
+  RefCountPtr<Epetra_CrsMatrix>    scalesep_;
+
+  // rhs: standard (stabilized) residual vector (rhs for the incremental form),
+  // (fine-scale) subgrid-viscosity residual and scaling vector
   RefCountPtr<Epetra_Vector>       residual_;
+  RefCountPtr<Epetra_Vector>       residual_sv_;
+  RefCountPtr<Epetra_Vector>       sugrvisc_;
 
   // the force vector is a copy of the residual without dirichlet
   // forces applied

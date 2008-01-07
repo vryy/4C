@@ -85,7 +85,7 @@ namespace Elements
       \param supg     		(i) boolean flag for stabilisation
       \param vstab     		(i) boolean flag for stabilisation
       \param cstab     		(i) boolean flag for stabilisation
-      \param fssgv              (i) flag for type of fine-scale subgrid viscosity
+      \param Cs_fs  (i) Smagorinsky model param. for fine-scale subgrid viscosity
      */
     void Sysmat(Fluid3* ele,
                 const blitz::Array<double,2>&     evelnp,
@@ -102,7 +102,7 @@ namespace Elements
                 bool                              supg,
                 bool                              vstab,
                 bool                              cstab,
-                double                            Cs);
+                double                            Cs_fs);
 
   private:
 
@@ -115,7 +115,7 @@ namespace Elements
       const DRT::Element::DiscretizationType  distype,
       const double                            visc,
       const int                               fssgv,
-      const double                            Cs);
+      const double                            Cs_fs);
 
     /*!
      * \brief calculate the body force from the nodes condition

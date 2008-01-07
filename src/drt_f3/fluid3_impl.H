@@ -90,7 +90,8 @@ namespace Elements
       \param time     (i) current simulation time
       \param timefac  (i) time discretization factor
       \param fssgv    (i) flag for type of fine-scale subgrid viscosity
-     */
+      \param Cs_fs    (i) Smagorinsky model param. for fine-scale subgrid viscosity
+      */
     void Sysmat(Fluid3* ele,
                 const blitz::Array<double,2>&     evelnp,
                 const blitz::Array<double,1>&     eprenp,
@@ -110,7 +111,7 @@ namespace Elements
                 bool                    supg,
                 bool                    vstab,
                 bool                    cstab,
-                double                  Cs);
+                double                  Cs_fs);
 
   private:
 
@@ -124,7 +125,7 @@ namespace Elements
       const double                            visc,
       const double                            timefac,
       const int                               fssgv,
-      const double                            Cs);
+      const double                            Cs_fs);
 
     /*!
      * \brief calculate the body force from the nodes condition

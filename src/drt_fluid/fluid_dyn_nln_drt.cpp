@@ -188,11 +188,7 @@ void dyn_fluid_drt()
     fluidtimeparams.set<int>              ("fs subgrid viscosity"   ,Teuchos::getIntegralValue<int>(fdyn,"SUBGRIDVISC"));
 
     // hand down the TURBULENCE MODEL parameters to the fluid algorithm
-    {
-      fluidtimeparams.sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
-
-      fluidtimeparams.sublist("TURBULENCE MODEL").set<string>("statistics outfile",allfiles.outputfile_kenner);
-    }
+    fluidtimeparams.sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
 
     //--------------------------------------------------
     // create all vectors and variables associated with the time
@@ -278,6 +274,9 @@ void dyn_fluid_drt()
     //------------evaluate error for test flows with analytical solutions
     int init = Teuchos::getIntegralValue<int>(fdyn,"INITIALFIELD");
     fluidtimeparams.set                  ("eval err for analyt sol"   ,init);
+
+    // (fine-scale) subgrid viscosity?
+    fluidtimeparams.set<int>              ("fs subgrid viscosity"   ,Teuchos::getIntegralValue<int>(fdyn,"SUBGRIDVISC"));
 
     // hand down the STABILIZATION parameters to the fluid algorithm
     fluidtimeparams.sublist("STABILIZATION")=fdyn.sublist("STABILIZATION");

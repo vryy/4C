@@ -429,8 +429,8 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
         // get flag for (fine-scale) subgrid viscosity (1=yes, 0=no)
         const int fssgv = params.get<int>("fs subgrid viscosity",0);
 
-        // get Smagorinsky model parameter
-        const double Cs = params.get<double>("Smagorinsky parameter",0.0);
+        // get Smagorinsky model parameter for fine-scale subgrid viscosity
+        const double Cs_fs = params.get<double>("fs Smagorinsky parameter",0.0);
 
         // wrap epetra serial dense objects in blitz objects
         blitz::Array<double, 2> estif(elemat1.A(),
@@ -462,13 +462,13 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
                        actmat,
                        time,
                        timefac,
-                       newton ,
+                       newton,
                        fssgv,
                        pstab,
                        supg,
                        vstab,
                        cstab,
-                       Cs);
+                       Cs_fs);
 
         // This is a very poor way to transport the density to the
         // outside world. Is there a better one?
@@ -721,6 +721,9 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
 
         const bool newton = params.get<bool>("include reactive terms for linearisation");
 
+        // get flag for (fine-scale) subgrid viscosity (1=yes, 0=no)
+        const int fssgv = params.get<int>("fs subgrid viscosity",0);
+
         // --------------------------------------------------
         // set parameters for stabilisation
         ParameterList& stablist = params.sublist("STABILIZATION");
@@ -762,6 +765,9 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
         // --------------------------------------------------
         // set parameters for turbulence model
         ParameterList& turbmodelparams    = params.sublist("TURBULENCE MODEL");
+
+        // get Smagorinsky model parameter for fine-scale subgrid viscosity
+        const double Cs_fs = turbmodelparams.get<double>("C_SMAGORINSKY",0.0);
 
         // initialise the Smagorinsky constant Cs and the viscous length scale l_tau to zero
         double Cs            = 0.0;
@@ -875,7 +881,9 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix
         GenalphaResVMM()->Sysmat(this,
                                  elemat1,
+                                 elemat2,
                                  elevec1,
+                                 elevec2,
                                  evelnp,
                                  eprenp,
                                  eaccam,
@@ -887,6 +895,8 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
                                  dt,
                                  time,
                                  newton,
+                                 fssgv,
+                                 Cs_fs,
                                  tds,
                                  inertia,
                                  pspg,
@@ -1189,8 +1199,8 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
           // get flag for (fine-scale) subgrid viscosity (1=yes, 0=no)
           const int fssgv = params.get<int>("fs subgrid viscosity",0);
 
-          // get Smagorinsky model parameter
-          const double Cs = params.get<double>("Smagorinsky parameter",0.0);
+          // get Smagorinsky model parameter for fine-scale subgrid viscosity
+          const double Cs_fs = params.get<double>("fs Smagorinsky parameter",0.0);
 
           // wrap epetra serial dense objects in blitz objects
           blitz::Array<double, 2> estif(elemat1.A(),
@@ -1224,7 +1234,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
                                    supg,
                                    vstab,
                                    cstab,
-                                   Cs);
+                                   Cs_fs);
 
           // This is a very poor way to transport the density to the
           // outside world. Is there a better one?

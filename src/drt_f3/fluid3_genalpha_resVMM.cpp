@@ -39,6 +39,8 @@ Maintainer: Peter Gamnitzer
   *----------------------------------------------------------------------*/
 DRT::Elements::Fluid3GenalphaResVMM::Fluid3GenalphaResVMM(int iel)
   : iel_        (iel),
+// fine-scale subgrid viscosity
+    vart_(),
 // nodal data
 //-----------------------+------------+------------------------------------
 //                  dim  | derivative | node
@@ -78,7 +80,8 @@ DRT::Elements::Fluid3GenalphaResVMM::Fluid3GenalphaResVMM(int iel)
     viscaf_old_   (3),
     resM_         (3),
     conv_resM_    (                      iel_),
-    conv_subaf_   (                      iel_)
+    conv_subaf_   (                      iel_),
+    numepn_       (                      iel_)
 {
 }
 
@@ -90,7 +93,9 @@ DRT::Elements::Fluid3GenalphaResVMM::Fluid3GenalphaResVMM(int iel)
 void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
   Fluid3*                                               ele,
   Epetra_SerialDenseMatrix&                             elemat,
+  Epetra_SerialDenseMatrix&                             esv,
   Epetra_SerialDenseVector&                             elevec,
+  Epetra_SerialDenseVector&                             sugrvisc,
   const blitz::Array<double,2>&                         evelnp,
   const blitz::Array<double,1>&                         eprenp,
   const blitz::Array<double,2>&                         eaccam,
@@ -102,6 +107,8 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
   const double                                          dt,
   const double                                          time,
   const bool                                            newton,
+  const int                                             fssgv,
+  const double                                          Cs_fs,
   const enum Fluid3::StabilisationAction                tds,
   const enum Fluid3::StabilisationAction                inertia,
   const enum Fluid3::StabilisationAction                pspg,
@@ -164,6 +171,8 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
     xyze_(0,inode) = x[0];
     xyze_(1,inode) = x[1];
     xyze_(2,inode) = x[2];
+
+    numepn_(inode) = nodes[inode]->NumElement();
   }
 
   // add displacement, when fluid nodes move in the ALE case
@@ -720,7 +729,58 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
     tau_(2) = sqrt(DSQR(visceff)+DSQR(0.5*vel_normnp*hk));
 #endif
   }
-  
+
+  /*------------------------------------------- compute subgrid viscosity ---*/
+  if (fssgv == 1)
+  {
+    /*----------------------------- compute artificial subgrid viscosity ---*/
+    const double re = mk * vel_normaf * hk / visc;  /* convective:viscous forces */
+    const double xi = DMAX(re,1.0);
+
+    vart_ = (DSQR(hk)*mk*DSQR(vel_normaf))/(2.0*visc*xi);
+  }
+  else if (fssgv == 2)
+  {
+    //
+    // SMAGORINSKY MODEL
+    // -----------------
+    //                               +-                                 -+ 1
+    //                           2   |          / h \           / h \    | -
+    //    visc          = (C_S*h)  * | 2 * eps | u   |   * eps | u   |   | 2
+    //        turbulent              |          \   / ij        \   / ij |
+    //                               +-                                 -+
+    //                               |                                   |
+    //                               +-----------------------------------+
+    //                                    'resolved' rate of strain
+    //
+
+    double rateofstrain = 0.0;
+    {
+      blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());
+      epsilon = 0.5 * ( vderxyaf_(i,j) + vderxyaf_(j,i) );
+
+      for(int rr=0;rr<3;rr++)
+      {
+        for(int mm=0;mm<3;mm++)
+        {
+          rateofstrain += epsilon(rr,mm)*epsilon(rr,mm);
+        }
+      }
+      rateofstrain *= 2.0;
+      rateofstrain = sqrt(rateofstrain);
+    }
+    //
+    // Choices of the fine-scale Smagorinsky constant Cs_fs:
+    //
+    //             Cs = 0.17   (Lilly --- Determined from filter
+    //                          analysis of Kolmogorov spectrum of
+    //                          isotropic turbulence)
+    //
+    //             0.1 < Cs < 0.24 (depending on the flow)
+
+    vart_ = Cs_fs * Cs_fs * hk * hk * rateofstrain;
+  }
+
   //----------------------------------------------------------------------------
   // 
   //    From here onwards, we are working on the gausspoints of the element
@@ -3110,6 +3170,10 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
       const double tauMp  = tau_(1);
       const double tauC   = tau_(2);
 
+      // subgrid-viscosity factor
+      //const double vartfac = vart_*fac*afgdt;
+      const double vartfac = fac*afgdt;
+
       /*
         This is the operator
 
@@ -3967,8 +4031,54 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
             } // end loop rows (test functions for matrix)
           } // end loop columns (solution for matrix, test function for vector)
         } // end cross
-        
       } // end if compute_elemat
+
+      /* compute fine-scale subgrid-viscosity term */
+      if(fssgv > 0)
+      {
+        for (int ui=0; ui<iel_; ++ui)
+        {
+          for (int vi=0; vi<iel_; ++vi)
+          {
+          /* subgrid-viscosity term */
+          /*
+                        /                        \
+                       |       /  \         / \   |
+              nu_art * |  eps | Du | , eps | v |  |
+                       |       \  /         \ /   |
+                        \                        /
+          */
+          esv(vi*4, ui*4)         += vartfac*(2.0*derxy_(0, ui)*derxy_(0, vi)
+                                                        +
+                                                        derxy_(1, ui)*derxy_(1, vi)
+                                                        +
+                                                        derxy_(2, ui)*derxy_(2, vi)) ;
+          esv(vi*4, ui*4 + 1)     += vartfac*derxy_(0, ui)*derxy_(1, vi) ;
+          esv(vi*4, ui*4 + 2)     += vartfac*derxy_(0, ui)*derxy_(2, vi) ;
+          esv(vi*4 + 1, ui*4)     += vartfac*derxy_(0, vi)*derxy_(1, ui) ;
+          esv(vi*4 + 1, ui*4 + 1) += vartfac*(derxy_(0, ui)*derxy_(0, vi)
+                                                        +
+                                                        2.0*derxy_(1, ui)*derxy_(1, vi)
+                                                        +
+                                                        derxy_(2, ui)*derxy_(2, vi)) ;
+          esv(vi*4 + 1, ui*4 + 2) += vartfac*derxy_(1, ui)*derxy_(2, vi) ;
+          esv(vi*4 + 2, ui*4)     += vartfac*derxy_(0, vi)*derxy_(2, ui) ;
+          esv(vi*4 + 2, ui*4 + 1) += vartfac*derxy_(1, vi)*derxy_(2, ui) ;
+          esv(vi*4 + 2, ui*4 + 2) += vartfac*(derxy_(0, ui)*derxy_(0, vi)
+                                                        +
+                                                        derxy_(1, ui)*derxy_(1, vi)
+                                                        +
+                                                        2.0*derxy_(2, ui)*derxy_(2, vi)) ;
+
+          /* subgrid-viscosity-scaling vector */
+          const double meanvart = vart_/numepn_(vi);
+          sugrvisc(vi*4)   = meanvart;
+          sugrvisc(vi*4+1) = meanvart;
+          sugrvisc(vi*4+2) = meanvart;
+
+          }
+        }
+      } // end if fssgv
 
       //---------------------------------------------------------------
       //---------------------------------------------------------------

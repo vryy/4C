@@ -162,7 +162,9 @@ namespace DRT
         \param gamma           (i) one step theta based parameter
         \param dt              (i) time step size
         \param time            (i) current simulation time
-        \param linearisation   (i) flag for use of full linearisation of reactive terms
+        \param newton          (i) flag for use of full linearisation of reactive terms
+        \param fssgv           (i) flag for type of fine-scale subgrid viscosity
+        \param Cs_fs           (i) Smagorinsky model parameter for fine-scale subgrid viscosity
         \param tds             (i) flag for use of time dependent subscale stabilisation
         \param inertia         (i) flag for use of subscale accelerations for stabilisation (only for tds==true)
         \param pspg            (i) flag for use of nabla q testfunctions 
@@ -181,7 +183,9 @@ namespace DRT
       */
       void Sysmat(Fluid3*                                               ele,
                   Epetra_SerialDenseMatrix&                             elemat,
+                  Epetra_SerialDenseMatrix&                             esv,
                   Epetra_SerialDenseVector&                             elevec,
+                  Epetra_SerialDenseVector&                             sugrvisc,
                   const blitz::Array<double,2>&                         evelnp,
                   const blitz::Array<double,1>&                         eprenp,
                   const blitz::Array<double,2>&                         eaccam,
@@ -193,6 +197,8 @@ namespace DRT
                   const double                                          dt,
                   const double                                          time,
                   const bool                                            newton,
+                  const int                                             fssgv,
+                  const double                                          Cs_fs,
                   const enum Fluid3::StabilisationAction                tds,
                   const enum Fluid3::StabilisationAction                inertia,
                   const enum Fluid3::StabilisationAction                pspg,
@@ -237,6 +243,9 @@ namespace DRT
                              const double time);
       //! number of nodes --- determines array sizes
       int iel_;                             
+
+      //! fine-scale subgrid viscosity
+      double vart_;
 
       // nodal arrays
       // ------------
@@ -343,6 +352,10 @@ namespace DRT
                    | u      o nabla |
                     \   (i)        /
       */
+
+      //! the number of elements per node, required for fine-scale subgrid viscosity
+      blitz::Array<int,1> numepn_;
+
       //! the element volume, used to define element length
       double                  vol_;
 #if 0

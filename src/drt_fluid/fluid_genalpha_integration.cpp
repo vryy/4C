@@ -212,6 +212,19 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
     turbulencestatistics_=rcp(new TurbulenceStatistics(discret_,params_));
   }
 
+  // (fine-scale) subgrid viscosity?
+  fssgv_ = params_.get<int>("fs subgrid viscosity",0);
+
+  // necessary only for the VM3 approach
+  if (fssgv_ > 0)
+  {
+    // initialize (fine-scale) subgrid-viscosity system matrix
+    sysmat_sv_ = null;
+
+    // residual vector containing (fine-scale) subgrid-viscosity residual
+    residual_sv_  = LINALG::CreateVector(*dofrowmap,true);
+  }
+
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct 
   // -------------------------------------------------------------------
@@ -1105,7 +1118,10 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
   {
     eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
   }
-  
+
+  // (fine-scale) subgrid viscosity flag
+  eleparams.set("fs subgrid viscosity",fssgv_);
+
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("u and p (n+1      ,trial)",velnp_);
@@ -1168,10 +1184,69 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
       eleparams.sublist("TURBULENCE MODEL").set<RefCountPtr<vector<double> > >("local_visceff_sum",local_visceff_sum);
     }
   }
-  
-  // call loop over elements
+
+  // decide whether VM3-based solution approach or standard approach
+  if (fssgv_ > 0)
   {
-    discret_->Evaluate(eleparams,sysmat_,null,residual_,null,null);
+    // extract the ML parameters
+    ParameterList&  mllist = solver_.Params().sublist("ML Parameters");
+
+    // subgrid-viscosity-scaling vector
+    sugrvisc_ = LINALG::CreateVector(*dofrowmap,true);
+
+    // define flag for computation of matrices (true only in first time step)
+    bool compute;
+
+    if (step_ == 1) 
+    {
+      compute=true;
+
+      // create scale-separation matrix
+      scalesep_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+
+      // create (fine-scale) subgrid-viscosity matrix
+      sysmat_sv_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_); 
+
+      // call loop over elements (two matrices + subgr.-visc.-scal. vector)
+      discret_->Evaluate(eleparams,sysmat_,sysmat_sv_,residual_,sugrvisc_);
+      discret_->ClearState();
+
+      // finalize the (fine-scale) subgrid-viscosity matrix
+      LINALG::Complete(*sysmat_sv_);
+
+      // apply DBC to (fine-scale) subgrid-viscosity matrix
+      LINALG::ApplyDirichlettoSystem(sysmat_sv_,increment_,residual_sv_,zeros_,dirichtoggle_);
+
+      // extract the ML parameters
+      ParameterList&  mllist = solver_.Params().sublist("ML Parameters");
+
+      // call the VM3 constructor
+      RCP<VM3_Solver> vm3_solver = rcp(new VM3_Solver::VM3_Solver(scalesep_,sysmat_sv_,sysmat_,sugrvisc_,residual_sv_,residual_,velaf_,dirichtoggle_,mllist,compute) );
+
+      // call the VM3 scale separator for incremental formulation:
+      // precomputation of unscaled S^T*M*S
+      vm3_solver-> VM3_Solver::Separate(scalesep_,sysmat_sv_);
+    }
+    else
+    {
+      compute=false;
+
+      // call loop over elements (one matrix + subgr.-visc.-scal. vector)
+      discret_->Evaluate(eleparams,sysmat_,residual_,sugrvisc_);
+      discret_->ClearState();
+    }
+    // call the VM3 constructor
+    RCP<VM3_Solver> vm3_solver = rcp(new VM3_Solver::VM3_Solver(scalesep_,sysmat_sv_,sysmat_,sugrvisc_,residual_sv_,residual_,velaf_,dirichtoggle_,mllist,compute) );
+
+    residual_sv_->PutScalar(0.0);
+    // call the VM3 scaling:
+    // scale precomputed matrix product by subgrid-viscosity-scaling vector
+    vm3_solver->VM3_Solver::Scale(sysmat_sv_,sysmat_,sugrvisc_,residual_sv_,residual_,velaf_,true);
+  }
+  else
+  {
+    // call standard loop over elements
+    discret_->Evaluate(eleparams,sysmat_,residual_);
     discret_->ClearState();
   }
 
