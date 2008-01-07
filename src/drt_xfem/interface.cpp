@@ -116,6 +116,20 @@ bool XFEM::InterfaceHandle::PositionWithinSpecificClosedRegion(
     return PositionWithinCondition(actpos, xfemcondition_label,cutterdis_);
 }
 
+bool XFEM::InterfaceHandle::ElementIntersected(
+        const int element_gid
+        ) const
+{
+    std::map<int,DomainIntCells>::const_iterator tmp = elementalDomainIntCells_.find(element_gid);
+    if (tmp == elementalDomainIntCells_.end())
+    {   
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
 
 
 #endif  // #ifdef CCADISCRET

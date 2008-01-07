@@ -75,6 +75,10 @@ public:
             const int xfemcondition_label
             ) const;
     
+    bool ElementIntersected(
+            const int element_gid
+            ) const;
+    
 private:
 	// intersected domain
 	RefCountPtr<DRT::Discretization> xfemdis_;
