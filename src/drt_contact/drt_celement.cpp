@@ -225,12 +225,10 @@ void CONTACT::CElement::BuildNormalAtNode(int nid, vector<double>& n)
 void CONTACT::CElement::ComputeNormalAtXi(double* xi, vector<double>& n)
 {
 	int nnodes = NumNode();
-	DRT::Node** mynodes = Nodes();
-	
 	vector<double> val(nnodes);
 	vector<double> deriv(nnodes);
 	vector<double> g(3);
-	LINALG::SerialDenseMatrix coord(3,nnodes);
+	
 	
 	// test dual shape function values and derivatives at xi
 	EvaluateShape_DualQuad1D(xi, val, deriv, nnodes);
@@ -238,19 +236,17 @@ void CONTACT::CElement::ComputeNormalAtXi(double* xi, vector<double>& n)
 	// get shape function values and derivatives at xi
 	EvaluateShape_Quad1D(xi, val, deriv, nnodes);
 
-	// get coordinates of element nodes and build basis vector g
+	// get coordinates of element nodes
+	LINALG::SerialDenseMatrix coord(3,nnodes);
+	coord = GetNodalCoords();
+	
+	// build basis vector g
 	for (int i=0;i<nnodes;++i)
 	{
-		CNode* mycnode = static_cast<CNode*> (mynodes[i]);
-		coord(0,i) = mycnode->xspatial()[0];
-		coord(1,i) = mycnode->xspatial()[1];
-		coord(2,i) = mycnode->xspatial()[2];
-		//cout << coord[0][i] << " " << coord[1][i] << " " << coord[2][i] << endl;
 		g[0]+=deriv[i]*coord(0,i);
 		g[1]+=deriv[i]*coord(1,i);
 		g[2]+=deriv[i]*coord(2,i);
 	}
-	
 	
 	// only 2D case implemented, normal easy to compute from g
 	n[0] = g[1];
@@ -266,6 +262,29 @@ void CONTACT::CElement::ComputeNormalAtXi(double* xi, vector<double>& n)
 		n[i]/=length;
 	
 	return;
+}
+/*----------------------------------------------------------------------*
+ |  Get nodal coordinates of the element                      popp 01/08|
+ *----------------------------------------------------------------------*/
+LINALG::SerialDenseMatrix CONTACT::CElement::GetNodalCoords()
+{
+	int nnodes = NumNode();
+	DRT::Node** mynodes = Nodes();
+	LINALG::SerialDenseMatrix coord(3,nnodes);
+	if (!mynodes)
+		dserror("ERROR: GetNodalCoords: Null pointer!");
+	
+	for (int i=0;i<nnodes;++i)
+	{
+		CNode* mycnode = static_cast<CNode*> (mynodes[i]);
+		if (!mycnode)
+			dserror("ERROR: GetNodalCoords: Null pointer!");
+		coord(0,i) = mycnode->xspatial()[0];
+		coord(1,i) = mycnode->xspatial()[1];
+		coord(2,i) = mycnode->xspatial()[2];
+	}
+	
+	return coord;
 }
 
 /*----------------------------------------------------------------------*
@@ -294,24 +313,15 @@ double CONTACT::CElement::ComputeArea()
 	// only 2D quadratic case implemented so far
 	if (Shape()==line3)
 	{
-		// Gauss quadrature (2point)
-		const DRT::Utils::IntegrationPoints1D intpoints(DRT::Utils::intrule_line_2point);
+		// Gauss quadrature (5point)
+		const DRT::Utils::IntegrationPoints1D intpoints(DRT::Utils::intrule_line_5point);
 		int nnodes = NumNode();
-		DRT::Node** mynodes = Nodes();
-	  
+		double detg = 0.0;
 		vector<double> val(nnodes);
 		vector<double> deriv(nnodes);
-		LINALG::SerialDenseMatrix coord(3,nnodes);
-		double detg;
 		
-		// get coordinates of element nodes
-		for (int i=0;i<nnodes;++i)
-		{
-			CNode* mycnode = static_cast<CNode*> (mynodes[i]);
-			coord(0,i) = mycnode->xspatial()[0];
-			coord(1,i) = mycnode->xspatial()[1];
-			coord(2,i) = mycnode->xspatial()[2];
-		}
+		LINALG::SerialDenseMatrix coord(3,nnodes);
+		coord = GetNodalCoords();
 		
 		// loop over all Gauss points, build Jacobian and compute area
 		for (int j=0;j<intpoints.nquad;++j)
@@ -370,21 +380,13 @@ bool CONTACT::CElement::EvaluateShape_DualQuad1D(const double* xi, vector<double
 	
 	// establish fundamental data	
 	int nnodes = NumNode();
-	DRT::Node** mynodes = Nodes();
-		
+	double detg = 0.0;
+	
 	LINALG::SerialDenseMatrix coord(3,nnodes);
-	double detg;
+	coord = GetNodalCoords();
 		
-	for (int i=0;i<nnodes;++i)
-	{
-		CNode* mycnode = static_cast<CNode*> (mynodes[i]);
-		coord(0,i) = mycnode->xspatial()[0];
-		coord(1,i) = mycnode->xspatial()[1];
-		coord(2,i) = mycnode->xspatial()[2];
-	}
-		
-	// compute entries to bi-ortho matrices Me/De with 3p Gauss Integration
-	const DRT::Utils::IntegrationPoints1D intpoints(DRT::Utils::intrule_line_3point);
+	// compute entries to bi-ortho matrices Me/De with 5p Gauss Integration
+	const DRT::Utils::IntegrationPoints1D intpoints(DRT::Utils::intrule_line_5point);
 		
 	Epetra_SerialDenseMatrix Me(nnodes,nnodes);
 	Epetra_SerialDenseMatrix De(nnodes,nnodes);

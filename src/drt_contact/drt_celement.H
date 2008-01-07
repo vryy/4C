@@ -198,6 +198,12 @@ public:
   */
   virtual inline double& Area() { return area_; }
   
+  /*!
+  \brief Return slave (true) or master status
+
+  */
+  virtual inline bool IsSlave() { return isslave_; }
+  
   //@}
 
   //! @name Construction
@@ -268,6 +274,11 @@ public:
   */
   virtual void ComputeNormalAtXi(double* xi, vector<double>& n);
   
+  /*!
+  \brief Compute element normal at local coordinate xi
+  */
+  virtual LINALG::SerialDenseMatrix GetNodalCoords();
+    
   /*!
   \brief Evaluate Jacobian det for parameter space integration - QUAD 1D
   */
