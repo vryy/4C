@@ -20,12 +20,25 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_element.H"
 #include "physics.H"
 #include "dof_management.H"
+#include "interface.H"
 
 using namespace Teuchos;
 
 
 namespace XFEM
 {
+
+enum Assembly
+{
+    xfem_assembly,
+    standard_assembly
+};
+
+enum Integration
+{
+    sub_integration,
+    standard_integration
+};
 
 inline blitz::Array<double,1> toBlitzArray(const double* x);
 
