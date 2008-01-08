@@ -26,6 +26,12 @@ Maintainer: Axel Gerstenberger
 namespace XFEM
 {
 
+enum Assembly
+{
+    xfem_assembly,
+    standard_assembly
+};
+
 using namespace PHYSICS;
 
 /*!
@@ -255,6 +261,13 @@ private:
 };
 
 typedef pair<int,FieldEnr> DofKey;
+
+
+XFEM::Assembly CheckForStandardEnrichmentsOnly(
+        const ElementDofManager&   eleDofManager_,
+        const int                  numnode,
+        const int*                 nodeids
+        );
 
 }; // namespace XFEM
 

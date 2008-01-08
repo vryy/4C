@@ -28,12 +28,6 @@ using namespace Teuchos;
 namespace XFEM
 {
 
-enum Assembly
-{
-    xfem_assembly,
-    standard_assembly
-};
-
 enum Integration
 {
     sub_integration,

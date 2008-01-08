@@ -65,7 +65,7 @@ int getFieldNumber()
 
 
 template <DRT::Element::DiscretizationType DISTYPE, 
-          XFEM::Assembly INTTYPE>
+          XFEM::Assembly ASSEMBLYTYPE>
 class Integrator
 {
 public:
@@ -680,7 +680,7 @@ BlitzMat BodyForce(DRT::Elements::XFluid3* ele, const double pseudotime)
   
 
   // get volume in parameter space using Gauss integration
-  template <XFEM::Assembly INTTYPE>
+  template <XFEM::Assembly ASSEMBLYTYPE>
   vector<double> modifyGaussRule3D(
           const XFEM::DomainIntCell& cell,
           const double               cell_e0,
@@ -689,7 +689,7 @@ BlitzMat BodyForce(DRT::Elements::XFluid3* ele, const double pseudotime)
   {   
       // return value
       vector<double> element_e(4);
-      if (INTTYPE == XFEM::standard_assembly) {
+      if (ASSEMBLYTYPE == XFEM::standard_assembly) {
           // gauss coordinates of cell in element coordinates
           element_e[0] = cell_e0;
           element_e[1] = cell_e1;
@@ -781,7 +781,8 @@ BlitzMat BodyForce(DRT::Elements::XFluid3* ele, const double pseudotime)
     \param vstab          (i) boolean flag for stabilisation
     \param cstab          (i) boolean flag for stabilisation
    */
-  template <DRT::Element::DiscretizationType DISTYPE>
+  template <DRT::Element::DiscretizationType DISTYPE,
+            XFEM::Assembly ASSEMBLYTYPE>
   void Sysmat(
           DRT::Elements::XFluid3* ele,
           const RCP<XFEM::InterfaceHandle>  ih,
@@ -852,8 +853,7 @@ BlitzMat BodyForce(DRT::Elements::XFluid3* ele, const double pseudotime)
         gaussrule = DRT::Utils::intrule_tet_11point;
     }
     
-    const XFEM::Assembly INTTYPE = XFEM::standard_assembly;
-    Integrator<DISTYPE, INTTYPE> integrator;
+    Integrator<DISTYPE, ASSEMBLYTYPE> integrator;
     
     const blitz::Range _  = blitz::Range::all();
     
@@ -866,7 +866,7 @@ BlitzMat BodyForce(DRT::Elements::XFluid3* ele, const double pseudotime)
     blitz::thirdIndex k;    // Placeholder for the third index
     
     int numparamvelx = 0;
-    if (INTTYPE == XFEM::xfem_assembly)
+    if (ASSEMBLYTYPE == XFEM::xfem_assembly)
     {
         numparamvelx = dofman.NumDofPerField(XFEM::PHYSICS::Velx);
     }
@@ -896,7 +896,7 @@ BlitzMat BodyForce(DRT::Elements::XFluid3* ele, const double pseudotime)
       const double cell_e2 = intpoints.qxg[iquad][2];
 
       //const vector<double> e = cell->modifyGaussRule3D(standard_integration, cell_e0,cell_e1,cell_e2);
-      const vector<double> e = modifyGaussRule3D<INTTYPE>(*cell, cell_e0,cell_e1,cell_e2);
+      const vector<double> e = modifyGaussRule3D<ASSEMBLYTYPE>(*cell, cell_e0,cell_e1,cell_e2);
 
       // coordinates of the current integration point in element coordinates \xi
       const double e1 = e[0];
@@ -977,7 +977,7 @@ BlitzMat BodyForce(DRT::Elements::XFluid3* ele, const double pseudotime)
       BlitzVec enr_funct_(numparamvelx);
       BlitzMat enr_derxy_(3,numparamvelx,blitz::ColumnMajorArray<2>());
       BlitzMat enr_derxy2_(6,numparamvelx,blitz::ColumnMajorArray<2>());
-      if (INTTYPE == XFEM::xfem_assembly)
+      if (ASSEMBLYTYPE == XFEM::xfem_assembly)
       {
           XFEM::ComputeEnrichedShapefunction(
                   *ele,
