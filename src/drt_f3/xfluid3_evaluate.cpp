@@ -557,7 +557,7 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
                                          blitz::shape(elevec1.Length()),
                                          blitz::neverDeleteData);
 
-          const XFEM::Assembly assembly_type = CheckForStandardEnrichmentsOnly(
+          const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
                   eleDofManager_, NumNode(), NodeIds());
           
           // calculate element coefficient matrix and rhs

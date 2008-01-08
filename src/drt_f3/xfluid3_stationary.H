@@ -27,6 +27,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/intersection_service.H"
 #include "../drt_lib/drt_utils.H"
 #include "fluid3_stabilization.H"
+#include "xfluid3_local_assembler.H"
 
 #include <Epetra_SerialDenseSolver.h>
 
@@ -36,240 +37,6 @@ using namespace XFEM::PHYSICS;
 
 typedef blitz::Array<double,1> BlitzVec; ///< a short-cut for a one-dimensional BLITZ vector
 typedef blitz::Array<double,2> BlitzMat; ///< a short-cut for a two-dimensional BLITZ matrix
-
-
-//! for non-xfem elements, figure out the position in the array
-template <XFEM::PHYSICS::Field field>
-int getFieldNumber()
-{
-    int pos = 0;
-    switch (field)
-    {
-    case XFEM::PHYSICS::Velx:
-        pos = 0;
-        break;
-    case XFEM::PHYSICS::Vely:
-        pos = 1;
-        break;
-    case XFEM::PHYSICS::Velz:
-        pos = 2;
-        break;
-    case XFEM::PHYSICS::Pres:
-        pos = 3;
-        break;
-    default:
-        dserror("this field does not belong to the 3d fluid"); 
-    }
-    return pos;
-}
-
-
-template <DRT::Element::DiscretizationType DISTYPE, 
-          XFEM::Assembly ASSEMBLYTYPE>
-class Integrator
-{
-public:
-    //! integrate one expression for the element stiffness matrix for a given test and trial field
-    template <XFEM::PHYSICS::Field testfield,
-              XFEM::PHYSICS::Field trialfield>
-    void integrateMatrix(
-            const XFEM::ElementDofManager&    dofman,
-            blitz::Array<double,2>&           estif,
-            const blitz::Array<double,1>&     testshape,
-            const double                      fac,
-            const blitz::Array<double,1>&     trialshape
-            ) const
-    {
-        const std::vector<int> testdof  = dofman.LocalDofPosPerField(testfield);
-        const std::vector<int> trialdof = dofman.LocalDofPosPerField(trialfield);
-        
-        const int numparamtest  = testdof.size();
-        const int numparamtrial = trialdof.size();
-    
-        for (int ui=0; ui<numparamtrial; ++ui)
-        {
-            const int trialpos = trialdof[ui];
-    
-            for (int vi=0; vi<numparamtest; ++vi)
-            {
-                const int testpos = testdof[vi];
-    
-                estif(testpos, trialpos) += fac*testshape(vi)*trialshape(ui) ;
-            }
-        }
-    };
-    
-    //! integrate one expression for the element rhs for a given test field
-    template <XFEM::PHYSICS::Field testfield>
-    void integrateVector(
-            const XFEM::ElementDofManager&    dofman,
-            blitz::Array<double,1>&           eforce,
-            const blitz::Array<double,1>&     testshape,
-            const double                      fac
-            ) const
-    {
-        const std::vector<int> testdof = dofman.LocalDofPosPerField(testfield);
-        const int numparamtest = testdof.size();
-        for (int vi=0; vi<numparamtest; ++vi)
-        {
-            const int testpos = testdof[vi];
-            eforce(testpos) += fac*testshape(vi);
-        }
-    };
-};
-
-template <DRT::Element::DiscretizationType DISTYPE>
-class Integrator<DISTYPE, XFEM::standard_assembly>
-{
-public:
-    //! integrate one expression for the element stiffness matrix for a given test and trial field
-    template <XFEM::PHYSICS::Field testfield,
-              XFEM::PHYSICS::Field trialfield>
-    void integrateMatrix(
-            const XFEM::ElementDofManager&    dofman,
-            blitz::Array<double,2>&           estif,
-            const blitz::Array<double,1>&     testshape,
-            const double                      fac,
-            const blitz::Array<double,1>&     trialshape
-            ) const
-    {
-        const int numparam = DRT::Utils::getNumberOfElementNodes<DISTYPE>();
-        for (int ui=0; ui<numparam; ++ui)
-        {
-            const int trialpos = 4*ui + getFieldNumber<trialfield>();
-            for (int vi=0; vi<numparam; ++vi)
-            {
-                const int testpos = 4*vi + getFieldNumber<testfield>();
-                estif(testpos, trialpos) += fac*testshape(vi)*trialshape(ui) ;
-            }
-        }
-    };
-    
-    //! integrate one expression for the element rhs for a given test field
-    template <XFEM::PHYSICS::Field testfield>
-    void integrateVector(
-            const XFEM::ElementDofManager&    dofman,
-            blitz::Array<double,1>&           eforce,
-            const blitz::Array<double,1>&     testshape,
-            const double                      fac
-            ) const
-    {
-        const int numparam = DRT::Utils::getNumberOfElementNodes<DISTYPE>();
-        for (int vi=0; vi<numparam; ++vi)
-        {
-            const int testpos = 4*vi + getFieldNumber<testfield>();
-            eforce(testpos) += fac*testshape(vi);
-        }
-    };
-};
-
-
-
-
-
-
-
-
-
-
-
-//! integrate one expression for the element stiffness matrix for a given test and trial field
-template <DRT::Element::DiscretizationType DISTYPE>
-void integrateMatrix(
-        const XFEM::ElementDofManager&    dofman,
-        blitz::Array<double,2>&           estif,
-        const XFEM::PHYSICS::Field&       testfield,
-        const blitz::Array<double,1>&     testshape,
-        const double&                     fac,
-        const XFEM::PHYSICS::Field&       trialfield,
-        const blitz::Array<double,1>&     trialshape
-        )
-{
-    const std::vector<int> testdof  = dofman.LocalDofPosPerField(testfield);
-    const std::vector<int> trialdof = dofman.LocalDofPosPerField(trialfield);
-    
-    const int numparamtest  = testdof.size();
-    const int numparamtrial = trialdof.size();
-
-    for (int ui=0; ui<numparamtrial; ++ui)
-    {
-        const int trialpos = trialdof[ui];
-
-        for (int vi=0; vi<numparamtest; ++vi)
-        {
-            const int testpos = testdof[vi];
-
-            estif(testpos, trialpos) += fac*testshape(vi)*trialshape(ui) ;
-        }
-    }
-};
-
-
-//void integrateMatrixFast(
-//        const XFEM::ElementDofManager&    dofman,
-//        blitz::Array<double,2>&           estif,
-//        const XFEM::PHYSICS::Field&       testfield,
-//        const XFEM::PHYSICS::Field&       trialfield,
-//        const blitz::Array<double,2>&     shapeprod
-//        )
-//{
-//    const vector<int> testdof  = dofman.LocalDofPosPerField(testfield);
-//    const vector<int> trialdof = dofman.LocalDofPosPerField(trialfield);
-//    
-//    const int numparamtest  = testdof.size();
-//    const int numparamtrial = trialdof.size();
-//
-//    for (int ui=0; ui<numparamtrial; ++ui)
-//    {
-//        const int trialpos = trialdof[ui];
-//
-//        for (int vi=0; vi<numparamtest; ++vi)
-//        {
-//            const int testpos = testdof[vi];
-//
-//            estif(testpos, trialpos) += shapeprod(vi, ui) ;
-//        }
-//    }
-//}
-
-//! integrate one expression for the element rhs for a given test field
-template <DRT::Element::DiscretizationType DISTYPE>
-void integrateVector(
-        const XFEM::ElementDofManager&    dofman,
-        blitz::Array<double,1>&           eforce,
-        const XFEM::PHYSICS::Field&       testfield,
-        const blitz::Array<double,1>&     testshape,
-        const double                      fac
-        )
-{
-    const std::vector<int> testdof = dofman.LocalDofPosPerField(testfield);
-    const int numparamtest = testdof.size();
-    for (int vi=0; vi<numparamtest; ++vi)
-    {
-        const int testpos = testdof[vi];
-        eforce(testpos) += fac*testshape(vi);
-    }
-};
-
-//void integrateVectorBlock(
-//        const XFEM::ElementDofManager&    dofman,
-//        blitz::Array<double,1>&           eforce,
-//        const XFEM::PHYSICS::Field&       testfield,
-//        const blitz::Array<double,1>&     testshape
-//        )
-//{
-//
-//    const vector<int> testdof  = dofman.LocalDofPosPerField(testfield);
-//    
-//    const int numparamtest = testdof.size();
-//
-//    for (int vi=0; vi<numparamtest; ++vi)
-//    {
-//        const int testpos = testdof[vi];
-//
-//        eforce(testpos) += testshape(vi);
-//    }
-//}
 
 
 /*!
@@ -680,7 +447,7 @@ BlitzMat BodyForce(DRT::Elements::XFluid3* ele, const double pseudotime)
   
 
   // get volume in parameter space using Gauss integration
-  template <XFEM::Assembly ASSEMBLYTYPE>
+  template <XFEM::AssemblyType ASSTYPE>
   vector<double> modifyGaussRule3D(
           const XFEM::DomainIntCell& cell,
           const double               cell_e0,
@@ -689,7 +456,7 @@ BlitzMat BodyForce(DRT::Elements::XFluid3* ele, const double pseudotime)
   {   
       // return value
       vector<double> element_e(4);
-      if (ASSEMBLYTYPE == XFEM::standard_assembly) {
+      if (ASSTYPE == XFEM::standard_assembly) {
           // gauss coordinates of cell in element coordinates
           element_e[0] = cell_e0;
           element_e[1] = cell_e1;
@@ -782,7 +549,7 @@ BlitzMat BodyForce(DRT::Elements::XFluid3* ele, const double pseudotime)
     \param cstab          (i) boolean flag for stabilisation
    */
   template <DRT::Element::DiscretizationType DISTYPE,
-            XFEM::Assembly ASSEMBLYTYPE>
+            XFEM::AssemblyType ASSTYPE>
   void Sysmat(
           DRT::Elements::XFluid3* ele,
           const RCP<XFEM::InterfaceHandle>  ih,
@@ -853,7 +620,7 @@ BlitzMat BodyForce(DRT::Elements::XFluid3* ele, const double pseudotime)
         gaussrule = DRT::Utils::intrule_tet_11point;
     }
     
-    Integrator<DISTYPE, ASSEMBLYTYPE> integrator;
+    LocalAssembler<DISTYPE, ASSTYPE> localAssembler;
     
     const blitz::Range _  = blitz::Range::all();
     
@@ -866,7 +633,7 @@ BlitzMat BodyForce(DRT::Elements::XFluid3* ele, const double pseudotime)
     blitz::thirdIndex k;    // Placeholder for the third index
     
     int numparamvelx = 0;
-    if (ASSEMBLYTYPE == XFEM::xfem_assembly)
+    if (ASSTYPE == XFEM::xfem_assembly)
     {
         numparamvelx = dofman.NumDofPerField(XFEM::PHYSICS::Velx);
     }
@@ -896,7 +663,7 @@ BlitzMat BodyForce(DRT::Elements::XFluid3* ele, const double pseudotime)
       const double cell_e2 = intpoints.qxg[iquad][2];
 
       //const vector<double> e = cell->modifyGaussRule3D(standard_integration, cell_e0,cell_e1,cell_e2);
-      const vector<double> e = modifyGaussRule3D<ASSEMBLYTYPE>(*cell, cell_e0,cell_e1,cell_e2);
+      const vector<double> e = modifyGaussRule3D<ASSTYPE>(*cell, cell_e0,cell_e1,cell_e2);
 
       // coordinates of the current integration point in element coordinates \xi
       const double e1 = e[0];
@@ -977,7 +744,7 @@ BlitzMat BodyForce(DRT::Elements::XFluid3* ele, const double pseudotime)
       BlitzVec enr_funct_(numparamvelx);
       BlitzMat enr_derxy_(3,numparamvelx,blitz::ColumnMajorArray<2>());
       BlitzMat enr_derxy2_(6,numparamvelx,blitz::ColumnMajorArray<2>());
-      if (ASSEMBLYTYPE == XFEM::xfem_assembly)
+      if (ASSTYPE == XFEM::xfem_assembly)
       {
           XFEM::ComputeEnrichedShapefunction(
                   *ele,
@@ -1161,13 +928,9 @@ BlitzMat BodyForce(DRT::Elements::XFluid3* ele, const double pseudotime)
   //      integrateMatrixFast(dofman, estif, Vely, Vely, shapeprod);
   //      integrateMatrixFast(dofman, estif, Velz, Velz, shapeprod);
         
-        integrator.integrateMatrix<Velx,Velx>(dofman, estif, enr_funct_(_), fac, enr_conv_c_(_));
-        integrator.integrateMatrix<Vely,Vely>(dofman, estif, enr_funct_(_), fac, enr_conv_c_(_));
-        integrator.integrateMatrix<Velz,Velz>(dofman, estif, enr_funct_(_), fac, enr_conv_c_(_));
-            
-//        integrateMatrix<DISTYPE>(dofman, estif, Velx, enr_funct_(_), fac, Velx, enr_conv_c_(_));
-//        integrateMatrix<DISTYPE>(dofman, estif, Vely, enr_funct_(_), fac, Vely, enr_conv_c_(_));
-//        integrateMatrix<DISTYPE>(dofman, estif, Velz, enr_funct_(_), fac, Velz, enr_conv_c_(_));
+        localAssembler.template Matrix<Velx,Velx>(dofman, estif, enr_funct_(_), fac, enr_conv_c_(_));
+        localAssembler.template Matrix<Vely,Vely>(dofman, estif, enr_funct_(_), fac, enr_conv_c_(_));
+        localAssembler.template Matrix<Velz,Velz>(dofman, estif, enr_funct_(_), fac, enr_conv_c_(_));
         }
         
         /* Viskositaetsterm */
@@ -1181,54 +944,37 @@ BlitzMat BodyForce(DRT::Elements::XFluid3* ele, const double pseudotime)
   //      const blitz::Array<double,1> shpdx(enr_derxy_(0,_));
   //      const blitz::Array<double,1> shpdy(enr_derxy_(1,_));
   //      const blitz::Array<double,1> shpdz(enr_derxy_(2,_));
-  //      integrateMatrix<DISTYPE>Fast(dofman, estif, Velx, Velx, BlitzMat(visc*fac*(2.0*(shpdx(i)*shpdx(j))
+  //      Matrix<DISTYPE>Fast(dofman, estif, Velx, Velx, BlitzMat(visc*fac*(2.0*(shpdx(i)*shpdx(j))
   //                                                                           + shpdy(i)*shpdy(j)
   //                                                                           + shpdz(i)*shpdz(j))));
-//        integrateMatrix<DISTYPE>(dofman, estif, Velx, enr_derxy_(0,_), 2.0*visc*fac, Velx, enr_derxy_(0,_));
-//        integrateMatrix<DISTYPE>(dofman, estif, Velx, enr_derxy_(1,_),     visc*fac, Velx, enr_derxy_(1,_));
-//        integrateMatrix<DISTYPE>(dofman, estif, Velx, enr_derxy_(2,_),     visc*fac, Velx, enr_derxy_(2,_));
-//
-//        integrateMatrix<DISTYPE>(dofman, estif, Velx, enr_derxy_(1,_),     visc*fac, Vely, enr_derxy_(0,_));
-//        integrateMatrix<DISTYPE>(dofman, estif, Velx, enr_derxy_(2,_),     visc*fac, Velz, enr_derxy_(0,_));
-//        integrateMatrix<DISTYPE>(dofman, estif, Vely, enr_derxy_(0,_),     visc*fac, Velx, enr_derxy_(1,_));
         
-        integrator.integrateMatrix<Velx,Velx>(dofman, estif, enr_derxy_(0,_), 2.0*visc*fac, enr_derxy_(0,_));
-        integrator.integrateMatrix<Velx,Velx>(dofman, estif, enr_derxy_(1,_),     visc*fac, enr_derxy_(1,_));
-        integrator.integrateMatrix<Velx,Velx>(dofman, estif, enr_derxy_(2,_),     visc*fac, enr_derxy_(2,_));
+        localAssembler.template Matrix<Velx,Velx>(dofman, estif, enr_derxy_(0,_), 2.0*visc*fac, enr_derxy_(0,_));
+        localAssembler.template Matrix<Velx,Velx>(dofman, estif, enr_derxy_(1,_),     visc*fac, enr_derxy_(1,_));
+        localAssembler.template Matrix<Velx,Velx>(dofman, estif, enr_derxy_(2,_),     visc*fac, enr_derxy_(2,_));
         
-        integrator.integrateMatrix<Velx,Vely>(dofman, estif, enr_derxy_(1,_),     visc*fac, enr_derxy_(0,_));
-        integrator.integrateMatrix<Velx,Velz>(dofman, estif, enr_derxy_(2,_),     visc*fac, enr_derxy_(0,_));
-        integrator.integrateMatrix<Vely,Velx>(dofman, estif, enr_derxy_(0,_),     visc*fac, enr_derxy_(1,_));
+        localAssembler.template Matrix<Velx,Vely>(dofman, estif, enr_derxy_(1,_),     visc*fac, enr_derxy_(0,_));
+        localAssembler.template Matrix<Velx,Velz>(dofman, estif, enr_derxy_(2,_),     visc*fac, enr_derxy_(0,_));
+        localAssembler.template Matrix<Vely,Velx>(dofman, estif, enr_derxy_(0,_),     visc*fac, enr_derxy_(1,_));
 
   //      integrateMatrixFast(dofman, estif, Vely, Vely, BlitzMat(visc*fac*(     shpdx(i)*shpdx(j)
   //                                                                       +2.0*(shpdy(i)*shpdy(j))
   //                                                                            +shpdz(i)*shpdz(j))));
-//        integrateMatrix<DISTYPE>(dofman, estif, Vely, enr_derxy_(0,_),     visc*fac, Vely, enr_derxy_(0,_));
-//        integrateMatrix<DISTYPE>(dofman, estif, Vely, enr_derxy_(1,_), 2.0*visc*fac, Vely, enr_derxy_(1,_));
-//        integrateMatrix<DISTYPE>(dofman, estif, Vely, enr_derxy_(2,_),     visc*fac, Vely, enr_derxy_(2,_));
-//
-//        integrateMatrix<DISTYPE>(dofman, estif, Vely, enr_derxy_(2,_),     visc*fac, Velz, enr_derxy_(1,_));
-//        integrateMatrix<DISTYPE>(dofman, estif, Velz, enr_derxy_(0,_),     visc*fac, Velx, enr_derxy_(2,_));
-//        integrateMatrix<DISTYPE>(dofman, estif, Velz, enr_derxy_(1,_),     visc*fac, Vely, enr_derxy_(2,_));
         
-        integrator.integrateMatrix<Vely,Vely>(dofman, estif, enr_derxy_(0,_),     visc*fac, enr_derxy_(0,_));
-        integrator.integrateMatrix<Vely,Vely>(dofman, estif, enr_derxy_(1,_), 2.0*visc*fac, enr_derxy_(1,_));
-        integrator.integrateMatrix<Vely,Vely>(dofman, estif, enr_derxy_(2,_),     visc*fac, enr_derxy_(2,_));
+        localAssembler.template Matrix<Vely,Vely>(dofman, estif, enr_derxy_(0,_),     visc*fac, enr_derxy_(0,_));
+        localAssembler.template Matrix<Vely,Vely>(dofman, estif, enr_derxy_(1,_), 2.0*visc*fac, enr_derxy_(1,_));
+        localAssembler.template Matrix<Vely,Vely>(dofman, estif, enr_derxy_(2,_),     visc*fac, enr_derxy_(2,_));
 
-        integrator.integrateMatrix<Vely,Velz>(dofman, estif, enr_derxy_(2,_),     visc*fac, enr_derxy_(1,_));
-        integrator.integrateMatrix<Velz,Velx>(dofman, estif, enr_derxy_(0,_),     visc*fac, enr_derxy_(2,_));
-        integrator.integrateMatrix<Velz,Vely>(dofman, estif, enr_derxy_(1,_),     visc*fac, enr_derxy_(2,_));
+        localAssembler.template Matrix<Vely,Velz>(dofman, estif, enr_derxy_(2,_),     visc*fac, enr_derxy_(1,_));
+        localAssembler.template Matrix<Velz,Velx>(dofman, estif, enr_derxy_(0,_),     visc*fac, enr_derxy_(2,_));
+        localAssembler.template Matrix<Velz,Vely>(dofman, estif, enr_derxy_(1,_),     visc*fac, enr_derxy_(2,_));
 
   //      integrateMatrixFast(dofman, estif, Velz, Velz, BlitzMat(visc*fac*(     shpdx(i)*shpdx(j)
   //                                                                           + shpdy(i)*shpdy(j)
   //                                                                       +2.0*(shpdz(i)*shpdz(j)))));
-//        integrateMatrix<DISTYPE>(dofman, estif, Velz, enr_derxy_(0,_),     visc*fac, Velz, enr_derxy_(0,_));
-//        integrateMatrix<DISTYPE>(dofman, estif, Velz, enr_derxy_(1,_),     visc*fac, Velz, enr_derxy_(1,_));
-//        integrateMatrix<DISTYPE>(dofman, estif, Velz, enr_derxy_(2,_), 2.0*visc*fac, Velz, enr_derxy_(2,_));
 
-        integrator.integrateMatrix<Velz,Velz>(dofman, estif, enr_derxy_(0,_),     visc*fac, enr_derxy_(0,_));
-        integrator.integrateMatrix<Velz,Velz>(dofman, estif, enr_derxy_(1,_),     visc*fac, enr_derxy_(1,_));
-        integrator.integrateMatrix<Velz,Velz>(dofman, estif, enr_derxy_(2,_), 2.0*visc*fac, enr_derxy_(2,_));
+        localAssembler.template Matrix<Velz,Velz>(dofman, estif, enr_derxy_(0,_),     visc*fac, enr_derxy_(0,_));
+        localAssembler.template Matrix<Velz,Velz>(dofman, estif, enr_derxy_(1,_),     visc*fac, enr_derxy_(1,_));
+        localAssembler.template Matrix<Velz,Velz>(dofman, estif, enr_derxy_(2,_), 2.0*visc*fac, enr_derxy_(2,_));
         
         /* Druckterm */
         /*
@@ -1238,13 +984,9 @@ BlitzMat BodyForce(DRT::Elements::XFluid3* ele, const double pseudotime)
                        |                  |
                         \                /
         */
-//        integrateMatrix<DISTYPE>(dofman, estif, Velx, enr_derxy_(0,_), -fac, Pres, enr_funct_(_));
-//        integrateMatrix<DISTYPE>(dofman, estif, Vely, enr_derxy_(1,_), -fac, Pres, enr_funct_(_));
-//        integrateMatrix<DISTYPE>(dofman, estif, Velz, enr_derxy_(2,_), -fac, Pres, enr_funct_(_));
-        
-        integrator.integrateMatrix<Velx,Pres>(dofman, estif, enr_derxy_(0,_), -fac, enr_funct_(_));
-        integrator.integrateMatrix<Vely,Pres>(dofman, estif, enr_derxy_(1,_), -fac, enr_funct_(_));
-        integrator.integrateMatrix<Velz,Pres>(dofman, estif, enr_derxy_(2,_), -fac, enr_funct_(_));
+        localAssembler.template Matrix<Velx,Pres>(dofman, estif, enr_derxy_(0,_), -fac, enr_funct_(_));
+        localAssembler.template Matrix<Vely,Pres>(dofman, estif, enr_derxy_(1,_), -fac, enr_funct_(_));
+        localAssembler.template Matrix<Velz,Pres>(dofman, estif, enr_derxy_(2,_), -fac, enr_funct_(_));
 
         /* Divergenzfreiheit */
         /*
@@ -1254,92 +996,88 @@ BlitzMat BodyForce(DRT::Elements::XFluid3* ele, const double pseudotime)
                       |                  |
                        \                /
         */
-//        integrateMatrix<DISTYPE>(dofman, estif, Pres, enr_funct_(_), fac, Velx, enr_derxy_(0,_));
-//        integrateMatrix<DISTYPE>(dofman, estif, Pres, enr_funct_(_), fac, Vely, enr_derxy_(1,_));
-//        integrateMatrix<DISTYPE>(dofman, estif, Pres, enr_funct_(_), fac, Velz, enr_derxy_(2,_));
-
-        integrator.integrateMatrix<Pres,Velx>(dofman, estif, enr_funct_(_), fac, enr_derxy_(0,_));
-        integrator.integrateMatrix<Pres,Vely>(dofman, estif, enr_funct_(_), fac, enr_derxy_(1,_));
-        integrator.integrateMatrix<Pres,Velz>(dofman, estif, enr_funct_(_), fac, enr_derxy_(2,_));
+        localAssembler.template Matrix<Pres,Velx>(dofman, estif, enr_funct_(_), fac, enr_derxy_(0,_));
+        localAssembler.template Matrix<Pres,Vely>(dofman, estif, enr_funct_(_), fac, enr_derxy_(1,_));
+        localAssembler.template Matrix<Pres,Velz>(dofman, estif, enr_funct_(_), fac, enr_derxy_(2,_));
         
 
 //        if (newton)
 //        {
-//            /*  convection, reactive part
-//                   /                         \
-//                  |  /          \   n+1       |
-//                  | | Du o nabla | u     , v  |
-//                  |  \          /   (i)       |
-//                   \                         /
-//            */
-//            integrateMatrix<DISTYPE>(dofman, estif, Velx, enr_funct_(_), fac, Velx, enr_conv_r_(0, 0, _));
-//            integrateMatrix<DISTYPE>(dofman, estif, Velx, enr_funct_(_), fac, Vely, enr_conv_r_(0, 1, _));
-//            integrateMatrix<DISTYPE>(dofman, estif, Velx, enr_funct_(_), fac, Velz, enr_conv_r_(0, 2, _));
+            /*  convection, reactive part
+                   /                         \
+                  |  /          \   n+1       |
+                  | | Du o nabla | u     , v  |
+                  |  \          /   (i)       |
+                   \                         /
+            */
+//            Matrix<DISTYPE>(dofman, estif, Velx, enr_funct_(_), fac, Velx, enr_conv_r_(0, 0, _));
+//            Matrix<DISTYPE>(dofman, estif, Velx, enr_funct_(_), fac, Vely, enr_conv_r_(0, 1, _));
+//            Matrix<DISTYPE>(dofman, estif, Velx, enr_funct_(_), fac, Velz, enr_conv_r_(0, 2, _));
 //
-//            integrateMatrix<DISTYPE>(dofman, estif, Vely, enr_funct_(_), fac, Velx, enr_conv_r_(1, 0, _));
-//            integrateMatrix<DISTYPE>(dofman, estif, Vely, enr_funct_(_), fac, Vely, enr_conv_r_(1, 1, _));
-//            integrateMatrix<DISTYPE>(dofman, estif, Vely, enr_funct_(_), fac, Velz, enr_conv_r_(1, 2, _));
+//            Matrix<DISTYPE>(dofman, estif, Vely, enr_funct_(_), fac, Velx, enr_conv_r_(1, 0, _));
+//            Matrix<DISTYPE>(dofman, estif, Vely, enr_funct_(_), fac, Vely, enr_conv_r_(1, 1, _));
+//            Matrix<DISTYPE>(dofman, estif, Vely, enr_funct_(_), fac, Velz, enr_conv_r_(1, 2, _));
 //
-//            integrateMatrix<DISTYPE>(dofman, estif, Velz, enr_funct_(_), fac, Velx, enr_conv_r_(2, 0, _));
-//            integrateMatrix<DISTYPE>(dofman, estif, Velz, enr_funct_(_), fac, Vely, enr_conv_r_(2, 1, _));
-//            integrateMatrix<DISTYPE>(dofman, estif, Velz, enr_funct_(_), fac, Velz, enr_conv_r_(2, 2, _));
+//            Matrix<DISTYPE>(dofman, estif, Velz, enr_funct_(_), fac, Velx, enr_conv_r_(2, 0, _));
+//            Matrix<DISTYPE>(dofman, estif, Velz, enr_funct_(_), fac, Vely, enr_conv_r_(2, 1, _));
+//            Matrix<DISTYPE>(dofman, estif, Velz, enr_funct_(_), fac, Velz, enr_conv_r_(2, 2, _));
 //        }
 
         /* convection */
-        integrateVector<DISTYPE>(dofman, eforce, Velx, enr_conv_r_(0, 0, _), -fac*velint_(0));
-        integrateVector<DISTYPE>(dofman, eforce, Velx, enr_conv_r_(0, 1, _), -fac*velint_(1));
-        integrateVector<DISTYPE>(dofman, eforce, Velx, enr_conv_r_(0, 2, _), -fac*velint_(2));
   //      integrateVectorBlock(dofman, eforce, Velx, BlitzVec(-fac*(velint_(0)*enr_conv_r_(0, 0, _)
   //                                                               +velint_(1)*enr_conv_r_(0, 1, _)
   //                                                               +velint_(2)*enr_conv_r_(0, 2, _))));
+        localAssembler.template Vector<Velx>(dofman, eforce, enr_conv_r_(0, 0, _), -fac*velint_(0));
+        localAssembler.template Vector<Velx>(dofman, eforce, enr_conv_r_(0, 1, _), -fac*velint_(1));
+        localAssembler.template Vector<Velx>(dofman, eforce, enr_conv_r_(0, 2, _), -fac*velint_(2));
 
-        integrateVector<DISTYPE>(dofman, eforce, Vely, enr_conv_r_(1, 0, _), -fac*velint_(0));
-        integrateVector<DISTYPE>(dofman, eforce, Vely, enr_conv_r_(1, 1, _), -fac*velint_(1));
-        integrateVector<DISTYPE>(dofman, eforce, Vely, enr_conv_r_(1, 2, _), -fac*velint_(2));
+        localAssembler.template Vector<Vely>(dofman, eforce, enr_conv_r_(1, 0, _), -fac*velint_(0));
+        localAssembler.template Vector<Vely>(dofman, eforce, enr_conv_r_(1, 1, _), -fac*velint_(1));
+        localAssembler.template Vector<Vely>(dofman, eforce, enr_conv_r_(1, 2, _), -fac*velint_(2));
   //      integrateVectorBlock(dofman, eforce, Vely, BlitzVec(-fac*(velint_(0)*enr_conv_r_(1, 0, _)
   //                                                               +velint_(1)*enr_conv_r_(1, 1, _)
   //                                                               +velint_(2)*enr_conv_r_(1, 2, _))));
 
-        integrateVector<DISTYPE>(dofman, eforce, Velz, enr_conv_r_(2, 0, _), -fac*velint_(0));
-        integrateVector<DISTYPE>(dofman, eforce, Velz, enr_conv_r_(2, 1, _), -fac*velint_(1));
-        integrateVector<DISTYPE>(dofman, eforce, Velz, enr_conv_r_(2, 2, _), -fac*velint_(2));
+        localAssembler.template Vector<Velz>(dofman, eforce, enr_conv_r_(2, 0, _), -fac*velint_(0));
+        localAssembler.template Vector<Velz>(dofman, eforce, enr_conv_r_(2, 1, _), -fac*velint_(1));
+        localAssembler.template Vector<Velz>(dofman, eforce, enr_conv_r_(2, 2, _), -fac*velint_(2));
   //      integrateVectorBlock(dofman, eforce, Velz, BlitzVec(-fac*(velint_(0)*enr_conv_r_(2, 0, _)
   //                                                               +velint_(1)*enr_conv_r_(2, 1, _)
   //                                                               +velint_(2)*enr_conv_r_(2, 2, _))));
 
         /* pressure */
-        integrateVector<DISTYPE>(dofman, eforce, Velx, enr_derxy_(0, _), press*fac);
-        integrateVector<DISTYPE>(dofman, eforce, Vely, enr_derxy_(1, _), press*fac);
-        integrateVector<DISTYPE>(dofman, eforce, Velz, enr_derxy_(2, _), press*fac);
+        localAssembler.template Vector<Velx>(dofman, eforce, enr_derxy_(0, _), press*fac);
+        localAssembler.template Vector<Vely>(dofman, eforce, enr_derxy_(1, _), press*fac);
+        localAssembler.template Vector<Velz>(dofman, eforce, enr_derxy_(2, _), press*fac);
 
         /* viscosity */
-        integrateVector<DISTYPE>(dofman, eforce, Velx, enr_derxy_(0, _), -2.0*visc*fac*vderxy_(0, 0));
-        integrateVector<DISTYPE>(dofman, eforce, Velx, enr_derxy_(1, _),     -visc*fac*vderxy_(0, 1));
-        integrateVector<DISTYPE>(dofman, eforce, Velx, enr_derxy_(1, _),     -visc*fac*vderxy_(1, 0));
-        integrateVector<DISTYPE>(dofman, eforce, Velx, enr_derxy_(2, _),     -visc*fac*vderxy_(0, 2));
-        integrateVector<DISTYPE>(dofman, eforce, Velx, enr_derxy_(2, _),     -visc*fac*vderxy_(2, 0));
+        localAssembler.template Vector<Velx>(dofman, eforce, enr_derxy_(0, _), -2.0*visc*fac*vderxy_(0, 0));
+        localAssembler.template Vector<Velx>(dofman, eforce, enr_derxy_(1, _),     -visc*fac*vderxy_(0, 1));
+        localAssembler.template Vector<Velx>(dofman, eforce, enr_derxy_(1, _),     -visc*fac*vderxy_(1, 0));
+        localAssembler.template Vector<Velx>(dofman, eforce, enr_derxy_(2, _),     -visc*fac*vderxy_(0, 2));
+        localAssembler.template Vector<Velx>(dofman, eforce, enr_derxy_(2, _),     -visc*fac*vderxy_(2, 0));
   //      integrateVectorBlock(dofman, eforce, Velx, BlitzVec(-visc*fac*(2.0*vderxy_(0, 0)*enr_derxy_(0, _)
   //                                                                        +vderxy_(0, 1)*enr_derxy_(1, _)
   //                                                                        +vderxy_(1, 0)*enr_derxy_(1, _)
   //                                                                        +vderxy_(0, 2)*enr_derxy_(2, _)
   //                                                                        +vderxy_(2, 0)*enr_derxy_(2, _))));
         
-        integrateVector<DISTYPE>(dofman, eforce, Vely, enr_derxy_(0, _),     -visc*fac*vderxy_(0, 1));
-        integrateVector<DISTYPE>(dofman, eforce, Vely, enr_derxy_(0, _),     -visc*fac*vderxy_(1, 0));
-        integrateVector<DISTYPE>(dofman, eforce, Vely, enr_derxy_(1, _), -2.0*visc*fac*vderxy_(1, 1));
-        integrateVector<DISTYPE>(dofman, eforce, Vely, enr_derxy_(2, _),     -visc*fac*vderxy_(1, 2));
-        integrateVector<DISTYPE>(dofman, eforce, Vely, enr_derxy_(2, _),     -visc*fac*vderxy_(2, 1));
+        localAssembler.template Vector<Vely>(dofman, eforce, enr_derxy_(0, _),     -visc*fac*vderxy_(0, 1));
+        localAssembler.template Vector<Vely>(dofman, eforce, enr_derxy_(0, _),     -visc*fac*vderxy_(1, 0));
+        localAssembler.template Vector<Vely>(dofman, eforce, enr_derxy_(1, _), -2.0*visc*fac*vderxy_(1, 1));
+        localAssembler.template Vector<Vely>(dofman, eforce, enr_derxy_(2, _),     -visc*fac*vderxy_(1, 2));
+        localAssembler.template Vector<Vely>(dofman, eforce, enr_derxy_(2, _),     -visc*fac*vderxy_(2, 1));
   //      integrateVectorBlock(dofman, eforce, Vely, BlitzVec(-visc*fac*(2.0*vderxy_(1, 1)*enr_derxy_(1, _)
   //                                                                        +vderxy_(0, 1)*enr_derxy_(0, _)
   //                                                                        +vderxy_(1, 0)*enr_derxy_(0, _)
   //                                                                        +vderxy_(1, 2)*enr_derxy_(2, _)
   //                                                                        +vderxy_(2, 1)*enr_derxy_(2, _))));
 
-        integrateVector<DISTYPE>(dofman, eforce, Velz, enr_derxy_(0, _),     -visc*fac*vderxy_(0, 2));
-        integrateVector<DISTYPE>(dofman, eforce, Velz, enr_derxy_(0, _),     -visc*fac*vderxy_(2, 0));
-        integrateVector<DISTYPE>(dofman, eforce, Velz, enr_derxy_(1, _),     -visc*fac*vderxy_(1, 2));
-        integrateVector<DISTYPE>(dofman, eforce, Velz, enr_derxy_(1, _),     -visc*fac*vderxy_(2, 1));
-        integrateVector<DISTYPE>(dofman, eforce, Velz, enr_derxy_(2, _), -2.0*visc*fac*vderxy_(2, 2));
+        localAssembler.template Vector<Velz>(dofman, eforce, enr_derxy_(0, _),     -visc*fac*vderxy_(0, 2));
+        localAssembler.template Vector<Velz>(dofman, eforce, enr_derxy_(0, _),     -visc*fac*vderxy_(2, 0));
+        localAssembler.template Vector<Velz>(dofman, eforce, enr_derxy_(1, _),     -visc*fac*vderxy_(1, 2));
+        localAssembler.template Vector<Velz>(dofman, eforce, enr_derxy_(1, _),     -visc*fac*vderxy_(2, 1));
+        localAssembler.template Vector<Velz>(dofman, eforce, enr_derxy_(2, _), -2.0*visc*fac*vderxy_(2, 2));
   //      integrateVectorBlock(dofman, eforce, Velz, BlitzVec(-visc*fac*(2.0*vderxy_(2, 2)*enr_derxy_(2, _)
   //                                                                        +vderxy_(0, 2)*enr_derxy_(0, _)
   //                                                                        +vderxy_(2, 0)*enr_derxy_(0, _)
@@ -1347,14 +1085,14 @@ BlitzMat BodyForce(DRT::Elements::XFluid3* ele, const double pseudotime)
   //                                                                        +vderxy_(2, 1)*enr_derxy_(1, _))));
         
         // source term of the right hand side
-        integrateVector<DISTYPE>(dofman, eforce, Velx, enr_funct_(_), fac*rhsint_(0));
-        integrateVector<DISTYPE>(dofman, eforce, Vely, enr_funct_(_), fac*rhsint_(1));
-        integrateVector<DISTYPE>(dofman, eforce, Velz, enr_funct_(_), fac*rhsint_(2));
+        localAssembler.template Vector<Velx>(dofman, eforce, enr_funct_(_), fac*rhsint_(0));
+        localAssembler.template Vector<Vely>(dofman, eforce, enr_funct_(_), fac*rhsint_(1));
+        localAssembler.template Vector<Velz>(dofman, eforce, enr_funct_(_), fac*rhsint_(2));
 
         // continuity equation
-        integrateVector<DISTYPE>(dofman, eforce, Pres, enr_conv_r_(0, 0, _), -fac);
-        integrateVector<DISTYPE>(dofman, eforce, Pres, enr_conv_r_(1, 1, _), -fac);
-        integrateVector<DISTYPE>(dofman, eforce, Pres, enr_conv_r_(2, 2, _), -fac);
+        localAssembler.template Vector<Pres>(dofman, eforce, enr_conv_r_(0, 0, _), -fac);
+        localAssembler.template Vector<Pres>(dofman, eforce, enr_conv_r_(1, 1, _), -fac);
+        localAssembler.template Vector<Pres>(dofman, eforce, enr_conv_r_(2, 2, _), -fac);
   //      integrateVectorBlock(dofman, eforce, Pres, BlitzVec(-fac*(enr_conv_r_(0, 0, _)
   //                                                               +enr_conv_r_(1, 1, _)
   //                                                               +enr_conv_r_(2, 2, _))));
@@ -1374,12 +1112,9 @@ BlitzMat BodyForce(DRT::Elements::XFluid3* ele, const double pseudotime)
                    |  \ (i)       /               |
                     \                            /
           */
-//          integrateMatrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(0,_), tau_Mp, Velx, enr_conv_c_(_));
-//          integrateMatrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(1,_), tau_Mp, Vely, enr_conv_c_(_));
-//          integrateMatrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(2,_), tau_Mp, Velz, enr_conv_c_(_));
-          integrator.integrateMatrix<Pres,Velx>(dofman, estif, enr_derxy_(0,_), tau_Mp, enr_conv_c_(_));
-          integrator.integrateMatrix<Pres,Vely>(dofman, estif, enr_derxy_(1,_), tau_Mp, enr_conv_c_(_));
-          integrator.integrateMatrix<Pres,Velz>(dofman, estif, enr_derxy_(2,_), tau_Mp, enr_conv_c_(_));
+          localAssembler.template Matrix<Pres,Velx>(dofman, estif, enr_derxy_(0,_), tau_Mp, enr_conv_c_(_));
+          localAssembler.template Matrix<Pres,Vely>(dofman, estif, enr_derxy_(1,_), tau_Mp, enr_conv_c_(_));
+          localAssembler.template Matrix<Pres,Velz>(dofman, estif, enr_derxy_(2,_), tau_Mp, enr_conv_c_(_));
 
           /* pressure stabilisation: viscosity (-L_visc_u) */
           /*
@@ -1389,29 +1124,17 @@ BlitzMat BodyForce(DRT::Elements::XFluid3* ele, const double pseudotime)
                   |               \  /             |
                    \                              /
           */
-//          integrateMatrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(0,_), 2.0*visc*tau_Mp, Velx, enr_viscs2_(0, 0, _));
-//          integrateMatrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(1,_), 2.0*visc*tau_Mp, Velx, enr_viscs2_(0, 1, _));
-//          integrateMatrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(2,_), 2.0*visc*tau_Mp, Velx, enr_viscs2_(0, 2, _));
-//
-//          integrateMatrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(0,_), 2.0*visc*tau_Mp, Vely, enr_viscs2_(0, 1, _));
-//          integrateMatrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(1,_), 2.0*visc*tau_Mp, Vely, enr_viscs2_(1, 1, _));
-//          integrateMatrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(2,_), 2.0*visc*tau_Mp, Vely, enr_viscs2_(1, 2, _));
-//
-//          integrateMatrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(0,_), 2.0*visc*tau_Mp, Velz, enr_viscs2_(0, 2, _));
-//          integrateMatrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(1,_), 2.0*visc*tau_Mp, Velz, enr_viscs2_(1, 2, _));
-//          integrateMatrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(2,_), 2.0*visc*tau_Mp, Velz, enr_viscs2_(2, 2, _));
+          localAssembler.template Matrix<Pres,Velx>(dofman, estif, enr_derxy_(0,_), 2.0*visc*tau_Mp, enr_viscs2_(0, 0, _));
+          localAssembler.template Matrix<Pres,Velx>(dofman, estif, enr_derxy_(1,_), 2.0*visc*tau_Mp, enr_viscs2_(0, 1, _));
+          localAssembler.template Matrix<Pres,Velx>(dofman, estif, enr_derxy_(2,_), 2.0*visc*tau_Mp, enr_viscs2_(0, 2, _));
 
-          integrator.integrateMatrix<Pres,Velx>(dofman, estif, enr_derxy_(0,_), 2.0*visc*tau_Mp, enr_viscs2_(0, 0, _));
-          integrator.integrateMatrix<Pres,Velx>(dofman, estif, enr_derxy_(1,_), 2.0*visc*tau_Mp, enr_viscs2_(0, 1, _));
-          integrator.integrateMatrix<Pres,Velx>(dofman, estif, enr_derxy_(2,_), 2.0*visc*tau_Mp, enr_viscs2_(0, 2, _));
+          localAssembler.template Matrix<Pres,Vely>(dofman, estif, enr_derxy_(0,_), 2.0*visc*tau_Mp, enr_viscs2_(0, 1, _));
+          localAssembler.template Matrix<Pres,Vely>(dofman, estif, enr_derxy_(1,_), 2.0*visc*tau_Mp, enr_viscs2_(1, 1, _));
+          localAssembler.template Matrix<Pres,Vely>(dofman, estif, enr_derxy_(2,_), 2.0*visc*tau_Mp, enr_viscs2_(1, 2, _));
 
-          integrator.integrateMatrix<Pres,Vely>(dofman, estif, enr_derxy_(0,_), 2.0*visc*tau_Mp, enr_viscs2_(0, 1, _));
-          integrator.integrateMatrix<Pres,Vely>(dofman, estif, enr_derxy_(1,_), 2.0*visc*tau_Mp, enr_viscs2_(1, 1, _));
-          integrator.integrateMatrix<Pres,Vely>(dofman, estif, enr_derxy_(2,_), 2.0*visc*tau_Mp, enr_viscs2_(1, 2, _));
-
-          integrator.integrateMatrix<Pres,Velz>(dofman, estif, enr_derxy_(0,_), 2.0*visc*tau_Mp, enr_viscs2_(0, 2, _));
-          integrator.integrateMatrix<Pres,Velz>(dofman, estif, enr_derxy_(1,_), 2.0*visc*tau_Mp, enr_viscs2_(1, 2, _));
-          integrator.integrateMatrix<Pres,Velz>(dofman, estif, enr_derxy_(2,_), 2.0*visc*tau_Mp, enr_viscs2_(2, 2, _));
+          localAssembler.template Matrix<Pres,Velz>(dofman, estif, enr_derxy_(0,_), 2.0*visc*tau_Mp, enr_viscs2_(0, 2, _));
+          localAssembler.template Matrix<Pres,Velz>(dofman, estif, enr_derxy_(1,_), 2.0*visc*tau_Mp, enr_viscs2_(1, 2, _));
+          localAssembler.template Matrix<Pres,Velz>(dofman, estif, enr_derxy_(2,_), 2.0*visc*tau_Mp, enr_viscs2_(2, 2, _));
           
           /* pressure stabilisation: pressure( L_pres_p) */
           /*
@@ -1421,38 +1144,34 @@ BlitzMat BodyForce(DRT::Elements::XFluid3* ele, const double pseudotime)
                      |                      |
                       \                    /
           */
-//          integrateMatrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(0,_), tau_Mp, Pres, enr_derxy_(0, _));
-//          integrateMatrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(1,_), tau_Mp, Pres, enr_derxy_(1, _));
-//          integrateMatrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(2,_), tau_Mp, Pres, enr_derxy_(2, _));
-
-          integrator.integrateMatrix<Pres,Pres>(dofman, estif, enr_derxy_(0,_), tau_Mp, enr_derxy_(0, _));
-          integrator.integrateMatrix<Pres,Pres>(dofman, estif, enr_derxy_(1,_), tau_Mp, enr_derxy_(1, _));
-          integrator.integrateMatrix<Pres,Pres>(dofman, estif, enr_derxy_(2,_), tau_Mp, enr_derxy_(2, _));
+          localAssembler.template Matrix<Pres,Pres>(dofman, estif, enr_derxy_(0,_), tau_Mp, enr_derxy_(0, _));
+          localAssembler.template Matrix<Pres,Pres>(dofman, estif, enr_derxy_(1,_), tau_Mp, enr_derxy_(1, _));
+          localAssembler.template Matrix<Pres,Pres>(dofman, estif, enr_derxy_(2,_), tau_Mp, enr_derxy_(2, _));
           
 //          if (newton)
 //          {
-//              /*  pressure stabilisation: convection, reactive part
-//                /                             \
-//               |  /          \   n+1           |
-//               | | Du o nabla | u     , grad q |
-//               |  \          /   (i)           |
-//                \                             /
-//              */
-//            integrateMatrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(0,_), tau_Mp, Velx, enr_conv_r_(0, 0, _));
-//            integrateMatrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(1,_), tau_Mp, Velx, enr_conv_r_(1, 0, _));
-//            integrateMatrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(2,_), tau_Mp, Velx, enr_conv_r_(2, 0, _));
-//            integrateMatrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(0,_), tau_Mp, Vely, enr_conv_r_(0, 1, _));
-//            integrateMatrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(1,_), tau_Mp, Vely, enr_conv_r_(1, 1, _));
-//            integrateMatrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(2,_), tau_Mp, Vely, enr_conv_r_(2, 1, _));
-//            integrateMatrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(0,_), tau_Mp, Velz, enr_conv_r_(0, 2, _));
-//            integrateMatrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(1,_), tau_Mp, Velz, enr_conv_r_(1, 2, _));
-//            integrateMatrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(2,_), tau_Mp, Velz, enr_conv_r_(2, 2, _));
+              /*  pressure stabilisation: convection, reactive part
+                /                             \
+               |  /          \   n+1           |
+               | | Du o nabla | u     , grad q |
+               |  \          /   (i)           |
+                \                             /
+              */
+//            Matrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(0,_), tau_Mp, Velx, enr_conv_r_(0, 0, _));
+//            Matrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(1,_), tau_Mp, Velx, enr_conv_r_(1, 0, _));
+//            Matrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(2,_), tau_Mp, Velx, enr_conv_r_(2, 0, _));
+//            Matrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(0,_), tau_Mp, Vely, enr_conv_r_(0, 1, _));
+//            Matrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(1,_), tau_Mp, Vely, enr_conv_r_(1, 1, _));
+//            Matrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(2,_), tau_Mp, Vely, enr_conv_r_(2, 1, _));
+//            Matrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(0,_), tau_Mp, Velz, enr_conv_r_(0, 2, _));
+//            Matrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(1,_), tau_Mp, Velz, enr_conv_r_(1, 2, _));
+//            Matrix<DISTYPE>(dofman, estif, Pres, enr_derxy_(2,_), tau_Mp, Velz, enr_conv_r_(2, 2, _));
 //          } // if newton
 
           // pressure stabilisation
-          integrateVector<DISTYPE>(dofman, eforce, Pres, enr_derxy_(0,_), -tau_Mp*res_old(0));
-          integrateVector<DISTYPE>(dofman, eforce, Pres, enr_derxy_(1,_), -tau_Mp*res_old(1));
-          integrateVector<DISTYPE>(dofman, eforce, Pres, enr_derxy_(2,_), -tau_Mp*res_old(2));
+          localAssembler.template Vector<Pres>(dofman, eforce, enr_derxy_(0,_), -tau_Mp*res_old(0));
+          localAssembler.template Vector<Pres>(dofman, eforce, enr_derxy_(1,_), -tau_Mp*res_old(1));
+          localAssembler.template Vector<Pres>(dofman, eforce, enr_derxy_(2,_), -tau_Mp*res_old(2));
         }
 
         //----------------------------------------------------------------------
@@ -1468,12 +1187,9 @@ BlitzMat BodyForce(DRT::Elements::XFluid3* ele, const double pseudotime)
                 |    \ (i)        /        \ (i)        /     |
                  \                                           /
             */
-//            integrateMatrix<DISTYPE>(dofman, estif, Velx, enr_conv_c_(_), tau_M, Velx, enr_conv_c_(_));
-//            integrateMatrix<DISTYPE>(dofman, estif, Vely, enr_conv_c_(_), tau_M, Vely, enr_conv_c_(_));
-//            integrateMatrix<DISTYPE>(dofman, estif, Velz, enr_conv_c_(_), tau_M, Velz, enr_conv_c_(_));
-            integrator.integrateMatrix<Velx,Velx>(dofman, estif, enr_conv_c_(_), tau_M, enr_conv_c_(_));
-            integrator.integrateMatrix<Vely,Vely>(dofman, estif, enr_conv_c_(_), tau_M, enr_conv_c_(_));
-            integrator.integrateMatrix<Velz,Velz>(dofman, estif, enr_conv_c_(_), tau_M, enr_conv_c_(_)); 
+            localAssembler.template Matrix<Velx,Velx>(dofman, estif, enr_conv_c_(_), tau_M, enr_conv_c_(_));
+            localAssembler.template Matrix<Vely,Vely>(dofman, estif, enr_conv_c_(_), tau_M, enr_conv_c_(_));
+            localAssembler.template Matrix<Velz,Velz>(dofman, estif, enr_conv_c_(_), tau_M, enr_conv_c_(_)); 
             /* supg stabilisation: pressure part  ( L_pres_p) */
             /*
                       /                              \
@@ -1482,12 +1198,9 @@ BlitzMat BodyForce(DRT::Elements::XFluid3* ele, const double pseudotime)
                      |              \ (i)       /     |
                       \                              /
             */
-//            integrateMatrix<DISTYPE>(dofman, estif, Velx, enr_conv_c_(_), tau_M, Pres, enr_derxy_(0, _));
-//            integrateMatrix<DISTYPE>(dofman, estif, Vely, enr_conv_c_(_), tau_M, Pres, enr_derxy_(1, _));
-//            integrateMatrix<DISTYPE>(dofman, estif, Velz, enr_conv_c_(_), tau_M, Pres, enr_derxy_(2, _));
-            integrator.integrateMatrix<Velx,Pres>(dofman, estif, enr_conv_c_(_), tau_M, enr_derxy_(0, _));
-            integrator.integrateMatrix<Vely,Pres>(dofman, estif, enr_conv_c_(_), tau_M, enr_derxy_(1, _));
-            integrator.integrateMatrix<Velz,Pres>(dofman, estif, enr_conv_c_(_), tau_M, enr_derxy_(2, _));
+            localAssembler.template Matrix<Velx,Pres>(dofman, estif, enr_conv_c_(_), tau_M, enr_derxy_(0, _));
+            localAssembler.template Matrix<Vely,Pres>(dofman, estif, enr_conv_c_(_), tau_M, enr_derxy_(1, _));
+            localAssembler.template Matrix<Velz,Pres>(dofman, estif, enr_conv_c_(_), tau_M, enr_derxy_(2, _));
             
             /* supg stabilisation: viscous part  (-L_visc_u) */
             /*
@@ -1497,33 +1210,21 @@ BlitzMat BodyForce(DRT::Elements::XFluid3* ele, const double pseudotime)
                  |               \  /    \ (i)        /     |
                   \                                        /
             */
-//            integrateMatrix<DISTYPE>(dofman, estif, Velx, enr_conv_c_(_), 2.0*visc*tau_M, Velx, enr_viscs2_(0, 0, _));
-//            integrateMatrix<DISTYPE>(dofman, estif, Velx, enr_conv_c_(_), 2.0*visc*tau_M, Vely, enr_viscs2_(0, 1, _));
-//            integrateMatrix<DISTYPE>(dofman, estif, Velx, enr_conv_c_(_), 2.0*visc*tau_M, Velz, enr_viscs2_(0, 2, _));
-//            
-//            integrateMatrix<DISTYPE>(dofman, estif, Vely, enr_conv_c_(_), 2.0*visc*tau_M, Velx, enr_viscs2_(0, 1, _));
-//            integrateMatrix<DISTYPE>(dofman, estif, Vely, enr_conv_c_(_), 2.0*visc*tau_M, Vely, enr_viscs2_(1, 1, _));
-//            integrateMatrix<DISTYPE>(dofman, estif, Vely, enr_conv_c_(_), 2.0*visc*tau_M, Velz, enr_viscs2_(1, 2, _));
-//            
-//            integrateMatrix<DISTYPE>(dofman, estif, Velz, enr_conv_c_(_), 2.0*visc*tau_M, Velx, enr_viscs2_(0, 2, _));
-//            integrateMatrix<DISTYPE>(dofman, estif, Velz, enr_conv_c_(_), 2.0*visc*tau_M, Vely, enr_viscs2_(1, 2, _));
-//            integrateMatrix<DISTYPE>(dofman, estif, Velz, enr_conv_c_(_), 2.0*visc*tau_M, Velz, enr_viscs2_(2, 2, _));
+            localAssembler.template Matrix<Velx,Velx>(dofman, estif, enr_conv_c_(_), 2.0*visc*tau_M, enr_viscs2_(0, 0, _));
+            localAssembler.template Matrix<Velx,Vely>(dofman, estif, enr_conv_c_(_), 2.0*visc*tau_M, enr_viscs2_(0, 1, _));
+            localAssembler.template Matrix<Velx,Velz>(dofman, estif, enr_conv_c_(_), 2.0*visc*tau_M, enr_viscs2_(0, 2, _));
             
-            integrator.integrateMatrix<Velx,Velx>(dofman, estif, enr_conv_c_(_), 2.0*visc*tau_M, enr_viscs2_(0, 0, _));
-            integrator.integrateMatrix<Velx,Vely>(dofman, estif, enr_conv_c_(_), 2.0*visc*tau_M, enr_viscs2_(0, 1, _));
-            integrator.integrateMatrix<Velx,Velz>(dofman, estif, enr_conv_c_(_), 2.0*visc*tau_M, enr_viscs2_(0, 2, _));
+            localAssembler.template Matrix<Vely,Velx>(dofman, estif, enr_conv_c_(_), 2.0*visc*tau_M, enr_viscs2_(0, 1, _));
+            localAssembler.template Matrix<Vely,Vely>(dofman, estif, enr_conv_c_(_), 2.0*visc*tau_M, enr_viscs2_(1, 1, _));
+            localAssembler.template Matrix<Vely,Velz>(dofman, estif, enr_conv_c_(_), 2.0*visc*tau_M, enr_viscs2_(1, 2, _));
             
-            integrator.integrateMatrix<Vely,Velx>(dofman, estif, enr_conv_c_(_), 2.0*visc*tau_M, enr_viscs2_(0, 1, _));
-            integrator.integrateMatrix<Vely,Vely>(dofman, estif, enr_conv_c_(_), 2.0*visc*tau_M, enr_viscs2_(1, 1, _));
-            integrator.integrateMatrix<Vely,Velz>(dofman, estif, enr_conv_c_(_), 2.0*visc*tau_M, enr_viscs2_(1, 2, _));
-            
-            integrator.integrateMatrix<Velz,Velx>(dofman, estif, enr_conv_c_(_), 2.0*visc*tau_M, enr_viscs2_(0, 2, _));
-            integrator.integrateMatrix<Velz,Vely>(dofman, estif, enr_conv_c_(_), 2.0*visc*tau_M, enr_viscs2_(1, 2, _));
-            integrator.integrateMatrix<Velz,Velz>(dofman, estif, enr_conv_c_(_), 2.0*visc*tau_M, enr_viscs2_(2, 2, _));
+            localAssembler.template Matrix<Velz,Velx>(dofman, estif, enr_conv_c_(_), 2.0*visc*tau_M, enr_viscs2_(0, 2, _));
+            localAssembler.template Matrix<Velz,Vely>(dofman, estif, enr_conv_c_(_), 2.0*visc*tau_M, enr_viscs2_(1, 2, _));
+            localAssembler.template Matrix<Velz,Velz>(dofman, estif, enr_conv_c_(_), 2.0*visc*tau_M, enr_viscs2_(2, 2, _));
 
           if (newton)
           {
-              dserror("not translated to XFEM integrator yet!");
+              dserror("not translated to XFEM localAssembler yet!");
             for (int ui=0; ui<iel_; ++ui)
             {
               const int UDF = ui*4;
@@ -1676,9 +1377,9 @@ BlitzMat BodyForce(DRT::Elements::XFluid3* ele, const double pseudotime)
           } // if newton
 
           // supg stabilisation
-          integrateVector<DISTYPE>(dofman, eforce, Velx, enr_conv_c_(_), -tau_M*res_old(0));
-          integrateVector<DISTYPE>(dofman, eforce, Vely, enr_conv_c_(_), -tau_M*res_old(1));
-          integrateVector<DISTYPE>(dofman, eforce, Velz, enr_conv_c_(_), -tau_M*res_old(2));
+          localAssembler.template Vector<Velx>(dofman, eforce, enr_conv_c_(_), -tau_M*res_old(0));
+          localAssembler.template Vector<Vely>(dofman, eforce, enr_conv_c_(_), -tau_M*res_old(1));
+          localAssembler.template Vector<Velz>(dofman, eforce, enr_conv_c_(_), -tau_M*res_old(2));
         }
 
 
@@ -1693,7 +1394,7 @@ BlitzMat BodyForce(DRT::Elements::XFluid3* ele, const double pseudotime)
         
         if(vstab)
         {
-            dserror("not translated to XFEM integrator yet!");
+            dserror("not translated to XFEM localAssembler yet!");
           for (int ui=0; ui<iel_; ++ui)
           {
             const int UDF = ui*4;
@@ -1824,7 +1525,7 @@ BlitzMat BodyForce(DRT::Elements::XFluid3* ele, const double pseudotime)
 
           if (newton)
           {
-              dserror("not translated to XFEM integrator yet!");
+              dserror("not translated to XFEM localAssembler yet!");
             for (int ui=0; ui<iel_; ++ui)
             {
               const int UDF = ui*4;
@@ -1893,17 +1594,17 @@ BlitzMat BodyForce(DRT::Elements::XFluid3* ele, const double pseudotime)
           } // if newton
 
           /* viscous stabilisation */
-          integrateVector<DISTYPE>(dofman, eforce, Velx, enr_viscs2_(0, 0, _), -2.0*visc*tau_Mp*res_old(0));
-          integrateVector<DISTYPE>(dofman, eforce, Velx, enr_viscs2_(0, 1, _), -2.0*visc*tau_Mp*res_old(1));
-          integrateVector<DISTYPE>(dofman, eforce, Velx, enr_viscs2_(0, 2, _), -2.0*visc*tau_Mp*res_old(2));
+          localAssembler.template Vector<Velx>(dofman, eforce, enr_viscs2_(0, 0, _), -2.0*visc*tau_Mp*res_old(0));
+          localAssembler.template Vector<Velx>(dofman, eforce, enr_viscs2_(0, 1, _), -2.0*visc*tau_Mp*res_old(1));
+          localAssembler.template Vector<Velx>(dofman, eforce, enr_viscs2_(0, 2, _), -2.0*visc*tau_Mp*res_old(2));
           
-          integrateVector<DISTYPE>(dofman, eforce, Vely, enr_viscs2_(0, 1, _), -2.0*visc*tau_Mp*res_old(0));
-          integrateVector<DISTYPE>(dofman, eforce, Vely, enr_viscs2_(1, 1, _), -2.0*visc*tau_Mp*res_old(1));
-          integrateVector<DISTYPE>(dofman, eforce, Vely, enr_viscs2_(1, 2, _), -2.0*visc*tau_Mp*res_old(2));
+          localAssembler.template Vector<Vely>(dofman, eforce, enr_viscs2_(0, 1, _), -2.0*visc*tau_Mp*res_old(0));
+          localAssembler.template Vector<Vely>(dofman, eforce, enr_viscs2_(1, 1, _), -2.0*visc*tau_Mp*res_old(1));
+          localAssembler.template Vector<Vely>(dofman, eforce, enr_viscs2_(1, 2, _), -2.0*visc*tau_Mp*res_old(2));
                   
-          integrateVector<DISTYPE>(dofman, eforce, Velz, enr_viscs2_(0, 2, _), -2.0*visc*tau_Mp*res_old(0));
-          integrateVector<DISTYPE>(dofman, eforce, Velz, enr_viscs2_(1, 2, _), -2.0*visc*tau_Mp*res_old(1));
-          integrateVector<DISTYPE>(dofman, eforce, Velz, enr_viscs2_(2, 2, _), -2.0*visc*tau_Mp*res_old(2));
+          localAssembler.template Vector<Velz>(dofman, eforce, enr_viscs2_(0, 2, _), -2.0*visc*tau_Mp*res_old(0));
+          localAssembler.template Vector<Velz>(dofman, eforce, enr_viscs2_(1, 2, _), -2.0*visc*tau_Mp*res_old(1));
+          localAssembler.template Vector<Velz>(dofman, eforce, enr_viscs2_(2, 2, _), -2.0*visc*tau_Mp*res_old(2));
           
         } // endif vstab
 
@@ -1920,35 +1621,23 @@ BlitzMat BodyForce(DRT::Elements::XFluid3* ele, const double pseudotime)
                     |                          |
                      \                        /
           */
-//          integrateMatrix<DISTYPE>(dofman, estif, Velx, enr_derxy_(0, _), tau_C, Velx, enr_derxy_(0, _));
-//          integrateMatrix<DISTYPE>(dofman, estif, Velx, enr_derxy_(0, _), tau_C, Vely, enr_derxy_(1, _));
-//          integrateMatrix<DISTYPE>(dofman, estif, Velx, enr_derxy_(0, _), tau_C, Velz, enr_derxy_(2, _));
-//          
-//          integrateMatrix<DISTYPE>(dofman, estif, Vely, enr_derxy_(1, _), tau_C, Velx, enr_derxy_(0, _));
-//          integrateMatrix<DISTYPE>(dofman, estif, Vely, enr_derxy_(1, _), tau_C, Vely, enr_derxy_(1, _));
-//          integrateMatrix<DISTYPE>(dofman, estif, Vely, enr_derxy_(1, _), tau_C, Velz, enr_derxy_(2, _));
-//          
-//          integrateMatrix<DISTYPE>(dofman, estif, Velz, enr_derxy_(2, _), tau_C, Velx, enr_derxy_(0, _));
-//          integrateMatrix<DISTYPE>(dofman, estif, Velz, enr_derxy_(2, _), tau_C, Vely, enr_derxy_(1, _));
-//          integrateMatrix<DISTYPE>(dofman, estif, Velz, enr_derxy_(2, _), tau_C, Velz, enr_derxy_(2, _));
+            localAssembler.template Matrix<Velx,Velx>(dofman, estif, enr_derxy_(0, _), tau_C, enr_derxy_(0, _));
+            localAssembler.template Matrix<Velx,Vely>(dofman, estif, enr_derxy_(0, _), tau_C, enr_derxy_(1, _));
+            localAssembler.template Matrix<Velx,Velz>(dofman, estif, enr_derxy_(0, _), tau_C, enr_derxy_(2, _));
           
-            integrator.integrateMatrix<Velx,Velx>(dofman, estif, enr_derxy_(0, _), tau_C, enr_derxy_(0, _));
-            integrator.integrateMatrix<Velx,Vely>(dofman, estif, enr_derxy_(0, _), tau_C, enr_derxy_(1, _));
-            integrator.integrateMatrix<Velx,Velz>(dofman, estif, enr_derxy_(0, _), tau_C, enr_derxy_(2, _));
+            localAssembler.template Matrix<Vely,Velx>(dofman, estif, enr_derxy_(1, _), tau_C, enr_derxy_(0, _));
+            localAssembler.template Matrix<Vely,Vely>(dofman, estif, enr_derxy_(1, _), tau_C, enr_derxy_(1, _));
+            localAssembler.template Matrix<Vely,Velz>(dofman, estif, enr_derxy_(1, _), tau_C, enr_derxy_(2, _));
           
-            integrator.integrateMatrix<Vely,Velx>(dofman, estif, enr_derxy_(1, _), tau_C, enr_derxy_(0, _));
-            integrator.integrateMatrix<Vely,Vely>(dofman, estif, enr_derxy_(1, _), tau_C, enr_derxy_(1, _));
-            integrator.integrateMatrix<Vely,Velz>(dofman, estif, enr_derxy_(1, _), tau_C, enr_derxy_(2, _));
+            localAssembler.template Matrix<Velz,Velx>(dofman, estif, enr_derxy_(2, _), tau_C, enr_derxy_(0, _));
+            localAssembler.template Matrix<Velz,Vely>(dofman, estif, enr_derxy_(2, _), tau_C, enr_derxy_(1, _));
+            localAssembler.template Matrix<Velz,Velz>(dofman, estif, enr_derxy_(2, _), tau_C, enr_derxy_(2, _));
           
-            integrator.integrateMatrix<Velz,Velx>(dofman, estif, enr_derxy_(2, _), tau_C, enr_derxy_(0, _));
-            integrator.integrateMatrix<Velz,Vely>(dofman, estif, enr_derxy_(2, _), tau_C, enr_derxy_(1, _));
-            integrator.integrateMatrix<Velz,Velz>(dofman, estif, enr_derxy_(2, _), tau_C, enr_derxy_(2, _));
-          
-          const double tau_C_divunp=tau_C*(vderxy_(0, 0)+vderxy_(1, 1)+vderxy_(2, 2));
+            const double tau_C_divunp=tau_C*(vderxy_(0, 0)+vderxy_(1, 1)+vderxy_(2, 2));
 
-          integrateVector<DISTYPE>(dofman, eforce, Velx, enr_derxy_(0, _), -tau_C_divunp);
-          integrateVector<DISTYPE>(dofman, eforce, Vely, enr_derxy_(1, _), -tau_C_divunp);
-          integrateVector<DISTYPE>(dofman, eforce, Velz, enr_derxy_(2, _), -tau_C_divunp);
+            localAssembler.template Vector<Velx>(dofman, eforce, enr_derxy_(0, _), -tau_C_divunp);
+            localAssembler.template Vector<Vely>(dofman, eforce, enr_derxy_(1, _), -tau_C_divunp);
+            localAssembler.template Vector<Velz>(dofman, eforce, enr_derxy_(2, _), -tau_C_divunp);
 
         } // endif cstab
       }

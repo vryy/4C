@@ -303,14 +303,14 @@ const map<int, const set <XFEM::FieldEnr> > XFEM::DofManager::createNodalDofMap(
     return nodalDofMapFinal;
 }
 
-XFEM::Assembly XFEM::CheckForStandardEnrichmentsOnly(
+XFEM::AssemblyType XFEM::CheckForStandardEnrichmentsOnly(
         const ElementDofManager&   eleDofManager_,
         const int                  numnode,
         const int*                 nodeids
         )
 {
     // find out whether we can use standard assembly or need xfem assembly
-    XFEM::Assembly assembly_type = XFEM::standard_assembly;
+    XFEM::AssemblyType assembly_type = XFEM::standard_assembly;
     for (int inode = 0; inode < numnode; ++inode)
     {
         if (assembly_type == XFEM::xfem_assembly)

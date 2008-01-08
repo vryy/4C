@@ -26,7 +26,10 @@ Maintainer: Axel Gerstenberger
 namespace XFEM
 {
 
-enum Assembly
+/*!
+ \brief Allows to distuingish between normal assembly and xfem assembly
+ */
+enum AssemblyType
 {
     xfem_assembly,
     standard_assembly
@@ -263,7 +266,7 @@ private:
 typedef pair<int,FieldEnr> DofKey;
 
 
-XFEM::Assembly CheckForStandardEnrichmentsOnly(
+XFEM::AssemblyType CheckForStandardEnrichmentsOnly(
         const ElementDofManager&   eleDofManager_,
         const int                  numnode,
         const int*                 nodeids

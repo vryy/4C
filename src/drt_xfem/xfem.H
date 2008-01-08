@@ -28,7 +28,7 @@ using namespace Teuchos;
 namespace XFEM
 {
 
-enum Integration
+enum IntegrationType
 {
     sub_integration,
     standard_integration
