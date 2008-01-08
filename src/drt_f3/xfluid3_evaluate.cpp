@@ -135,83 +135,6 @@ DRT::Elements::XFluid3Impl* DRT::Elements::XFluid3::Impl(
 }
 
 
-DRT::Elements::XFluid3Stationary* DRT::Elements::XFluid3::StationaryImpl(
-		const int numnode,
-		const int numparamvelx,
-		const int numparamvely,
-		const int numparamvelz,
-		const int numparampres)
-{
-  switch (numnode)
-  {
-  case 8:
-  {
-    static XFluid3Stationary* f8;
-    if (f8==NULL)
-      f8 = new XFluid3Stationary(numnode,numnode,numnode,numnode,numnode);
-    return f8;
-  }
-  case 20:
-  {
-    static XFluid3Stationary* f20;
-    if (f20==NULL)
-      f20 = new XFluid3Stationary(numnode,numnode,numnode,numnode,numnode);
-    return f20;
-  }
-  case 27:
-  {
-    static XFluid3Stationary* f27;
-    if (f27==NULL)
-      f27 = new XFluid3Stationary(numnode,numnode,numnode,numnode,numnode);
-    return f27;
-  }
-  case 4:
-  {
-    static XFluid3Stationary* f4;
-    if (f4==NULL)
-      f4 = new XFluid3Stationary(numnode,numnode,numnode,numnode,numnode);
-    return f4;
-  }
-  case 10:
-  {
-    static XFluid3Stationary* f10;
-    if (f10==NULL)
-      f10 = new XFluid3Stationary(numnode,numnode,numnode,numnode,numnode);
-    return f10;
-  }
-  case 6:
-  {
-    static XFluid3Stationary* f6;
-    if (f6==NULL)
-      f6 = new XFluid3Stationary(numnode,numnode,numnode,numnode,numnode);
-    return f6;
-  }
-  case 15:
-  {
-    static XFluid3Stationary* f15;
-    if (f15==NULL)
-      f15 = new XFluid3Stationary(numnode,numnode,numnode,numnode,numnode);
-    return f15;
-  }
-  case 5:
-  {
-    static XFluid3Stationary* f5;
-    if (f5==NULL)
-      f5 = new XFluid3Stationary(numnode,numnode,numnode,numnode,numnode);
-    return f5;
-  }
-  default:
-  {
-	static XFluid3Stationary* fx;
-    if (fx!=NULL)
-    	delete fx;
-    fx = new XFluid3Stationary(numnode,numparamvelx,numparamvely,numparamvelz,numparampres);
-    return fx;
-  }
-  }
-  return NULL;
-}
-
 // converts a string into an Action for this element
 DRT::Elements::XFluid3::ActionType DRT::Elements::XFluid3::convertStringToActionType(
               const string& action) const
@@ -621,9 +544,6 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
           const bool vstab  =false;  // viscous stabilisation part switched off !!
           const bool cstab  =true;        
 
-          // get flag for (fine-scale) subgrid viscosity (1=yes, 0=no)
-          const int fssgv = params.get<int>("fs subgrid viscosity",0);
-
           // wrap epetra serial dense objects in blitz objects
           blitz::Array<double, 2> estif(elemat1.A(),
                                         blitz::shape(elemat1.M(),elemat1.N()),
@@ -637,23 +557,33 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
                                          blitz::shape(elevec1.Length()),
                                          blitz::neverDeleteData);
 
-          // calculate element coefficient matrix and rhs        
-          RCP<DRT::Elements::XFluid3Stationary> integral = rcp(new XFluid3Stationary(this->NumNode(),numparamvelx,numparamvely,numparamvelz,numparampres));
-          integral->Sysmat(this,
-        		         ih,
-                         evelnp,
-                         eprenp,
-                         estif,
-                         esv,
-                         eforce,
-                         actmat,
-                         pseudotime,
-                         newton ,
-                         fssgv  ,
-                         pstab  ,
-                         supg   ,
-                         vstab  ,
-                         cstab  );
+          // calculate element coefficient matrix and rhs
+          switch (Shape()) 
+          {
+          case hex8:
+          {
+              Sysmat<hex8>(
+                      this, ih, eleDofManager_, evelnp, eprenp, estif, esv, eforce,
+                      actmat, pseudotime, newton, pstab, supg, vstab, cstab);
+              break;
+          }
+          case hex20:
+          {
+              Sysmat<hex20>(
+                      this, ih, eleDofManager_, evelnp, eprenp, estif, esv, eforce,
+                      actmat, pseudotime, newton, pstab, supg, vstab, cstab);
+              break;
+          }
+          case hex27:
+          {
+              Sysmat<hex27>(
+                      this, ih, eleDofManager_, evelnp, eprenp, estif, esv, eforce,
+                      actmat, pseudotime, newton, pstab, supg, vstab, cstab);
+              break;
+          }
+          default:
+              dserror("not templated yet");
+          };
 
           // This is a very poor way to transport the density to the
           // outside world. Is there a better one?
