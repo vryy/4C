@@ -14,7 +14,7 @@ code is done.
 In order to keep it as simple as possible, we will mainly focus on
 a step by step example here. If you wish to get more detailed explanations,
 after each major step there are sections with some more background
-information. The idea is that you can follow the example without 
+information. The idea is that you can follow the example without
 reading any background information in a first attempt and come back
 later for more details.
 
@@ -56,7 +56,7 @@ As science at LNM doesn't focus on preprocessing, BACI (the code)
 is a solver only.
 
 This means, you have to do the pre- and the postprocessing in a commercial
-program (here: GID and Paraview). 
+program (here: GID and Paraview).
 
 If you need more information on this software than provided here,
 you can also refer to a special GID/Paraview tutorial, or - regarding
@@ -83,11 +83,11 @@ so
 \item Anachronisms: MAXNOD\_WALL1=9
 \end{itemize}
 \item Save the changed \emph{defines.drt} file in the same directory as e.g.
-\emph{defines.drt.my}. 
+\emph{defines.drt.my}.
 \item Next in the console the call (in the ccarat directory) \emph{./configure
 config/muench.fc6.ser config/defines.drt.my} creates the makefile needed
-in the following steps. 
-\item Use \emph{make clean} before recompiling. 
+in the following steps.
+\item Use \emph{make clean} before recompiling.
 \item Next simply run \emph{make}.
 \end{itemize}
 This created everything necessary for BACI to solve your specific
@@ -99,7 +99,7 @@ problem.
 As already mentioned in the introduction, we will simulate the bottom
 of the driven cavity loaded with a Neumann load.
 
-To start the preprocess, open GID (\emph{/lnm/gid/gid} starts the evaluation 
+To start the preprocess, open GID (\emph{/lnm/gid/gid} starts the evaluation
 mode, more information in LNM beginners guide) and make yourself familiar with
 the very sophisticated desktop. Try to get comfortable with the zoom
 and pan tools in the left bar, as they won't be explained any further
@@ -119,13 +119,13 @@ define boundary conditions, elements etc.
 
 \begin{itemize}
 \item In \emph{Data$\to$Problem Data$\to$General Problem Data} you have
-to check the tabs: make sure that 
+to check the tabs: make sure that
 
 \begin{itemize}
-\item \emph{Problem Type} is set to \emph{Structure}, 
-\item \emph{Number of Fields} is set to \emph{1}, 
+\item \emph{Problem Type} is set to \emph{Structure},
+\item \emph{Number of Fields} is set to \emph{1},
 \item \emph{Max NumDOF} is set to \emph{2} (two displacements in 2D) and
-in 
+in
 \item \emph{IO}, \emph{OUTPUT GID} is on.
 \end{itemize}
 \end{itemize}
@@ -143,9 +143,9 @@ Next we have to set the correct parameters for the static structural algorithm.
 \begin{itemize}
 \item In \emph{Data$\to$Problem Data$\to$ Static}
 \begin{itemize}
-\item click \emph{Static Nonlinear}, 
-\item set \emph{Static Kintyp} to \emph{Tot Lagr}, 
-\item change \emph{Static Nwtn Raphson} to \emph{Load Control}, 
+\item click \emph{Static Nonlinear},
+\item set \emph{Static Kintyp} to \emph{Tot Lagr},
+\item change \emph{Static Nwtn Raphson} to \emph{Load Control},
 \item set \emph{Static Numstep} to \emph{1} and
 \item make sure that \emph{Static Max Iter} is set to \emph{20}.
 \item Click \emph{Accept data} and save your changes.
@@ -159,22 +159,22 @@ These changes are necessary, since the BACI code only supports static nonlinear 
 \begin{itemize}
 \item Draw the bottom as a rectangle, with the line tool (you find it in
 the left toolbar). When you clicked the \emph{Create line} button,
-you are asked for some coordinates (at the bottom of the screen). 
+you are asked for some coordinates (at the bottom of the screen).
 
 \begin{itemize}
 \item Start at \emph{0,0,0} (type it into the command line at the bottom
-of the screen and hit \emph{enter}), 
+of the screen and hit \emph{enter}),
 \item then go to \emph{1,0},\emph{0,} \emph{1,-0.002,0}, \emph{0,-0.002,0}
-and finally end at \emph{0,0,0}. 
+and finally end at \emph{0,0,0}.
 \item Click \emph{join} to close the rectangle. Hit \emph{esc} to leave
 the \emph{line} mode.
 \end{itemize}
 \item Now we need to define a surface in between these lines to tell GID
-that we have a material here. 
+that we have a material here.
 
 \begin{itemize}
-\item Click on the \emph{Create NURBS surface} tool (in the left toolbar), 
-\item pick the four lines and hit \emph{esc} to confirm. 
+\item Click on the \emph{Create NURBS surface} tool (in the left toolbar),
+\item pick the four lines and hit \emph{esc} to confirm.
 \end{itemize}
 The surface should now be displayed as a light red rectangle. Your
 screen should now look somehow like in Fig. \ref{tut_fsi:3.1}.
@@ -205,11 +205,11 @@ into several easy parts.
 is selected. Change the
 
 \begin{itemize}
-\item \emph{young modulus} to \emph{250}, 
+\item \emph{young modulus} to \emph{250},
 \item \emph{Poisson's ratio} to \emph{0.3, }
-\item \emph{density} to \emph{500} and 
+\item \emph{density} to \emph{500} and
 \item \emph{Assign} the surface (click on \emph{Assign$\to$Surfaces} and
-pick one of the light red edges) you created previously and confirm with \emph{finish} or by hitting \emph{esc}. 
+pick one of the light red edges) you created previously and confirm with \emph{finish} or by hitting \emph{esc}.
 \item Check this step in the materials menu via \emph{Draw$\to$This Structure}.
 As you see, the assigned components are then highlighted in some color.
 Go to \emph{finish} to leave and
@@ -223,7 +223,7 @@ Here you can also, among others, choose e.g. plastic behaviour.
 In more dimensional problems you have to deal with volumes, where
 you then need the \emph{Assign-Volumes} button.
 
-A selection you want to assign a specific property to is always completed with \emph{finish} or \emph{esc}, whatever you prefer. So this will not be repeated any time for the further steps. 
+A selection you want to assign a specific property to is always completed with \emph{finish} or \emph{esc}, whatever you prefer. So this will not be repeated any time for the further steps.
 
 
 The \emph{Draw$\to$This Structure} button is very helpful if you
@@ -234,12 +234,12 @@ check, if everything is still selected.
 \item As we want to choose the necessary finite element type next, we have
 to enter the \emph{SingleLayer} menu via \emph{Data$\to$Conditions$\to$SingleLayer}.
 On the top of this menu you can choose between \emph{points}, \emph{lines},
-\emph{surfaces} and \emph{volumes}. Click the 
+\emph{surfaces} and \emph{volumes}. Click the
 
 \begin{itemize}
-\item \emph{surface} button, choose 
-\item \emph{Wall} from the pulldown menu and 
-\item \emph{Assign} our rectangle. 
+\item \emph{surface} button, choose
+\item \emph{Wall} from the pulldown menu and
+\item \emph{Assign} our rectangle.
 \item You can check again with \emph{Draw$\to$Colors}.
 \end{itemize}
 \end{itemize}
@@ -255,17 +255,17 @@ which we have to generate manually.
 All the next steps are done in \emph{SingleLayer}.
 
 \begin{itemize}
-\item To generate the numbering, choose e.g. 
+\item To generate the numbering, choose e.g.
 
 \begin{itemize}
-\item \emph{Point} and 
-\item \emph{Design Node Number} from the pull down menu. 
+\item \emph{Point} and
+\item \emph{Design Node Number} from the pull down menu.
 \item \emph{Assign} all four points of our geometry.
-\item Confirm with \emph{finish}. 
-\item Check with \emph{Draw$\to$Colors}. 
+\item Confirm with \emph{finish}.
+\item Check with \emph{Draw$\to$Colors}.
 \end{itemize}
 \item The same has to be done for all lines (choose \emph{Design Line Number})
-and 
+and
 \item surfaces (\emph{Design Surface Number}).
 \end{itemize}
 The numbering is quite often a source of problems if you changed something
@@ -276,14 +276,14 @@ the geometry is okay (no gaps, etc.).
 
 Now you can focus on the boundary conditions: We want to lock the
 displacements of the left and right vertical lines, as they connect
-the flexible bottom with the rigid walls. 
+the flexible bottom with the rigid walls.
 
 \begin{itemize}
-\item In SingleLayer click the 
+\item In SingleLayer click the
 
 \begin{itemize}
-\item \emph{line} button and choose 
-\item \emph{L Dirich} from the pull-down menu. 
+\item \emph{line} button and choose
+\item \emph{L Dirich} from the pull-down menu.
 \item Tick \emph{1} and \emph{2} (x- and y-direction) to \emph{On} and leave
 the values below to \emph{0.0} as default.
 \item Then \emph{Assign} the left and right line.
@@ -291,15 +291,15 @@ the values below to \emph{0.0} as default.
 \end{itemize}
 The weight of the fluid on the bottom has to be modeled next, so we
 have to specify a Neumann boundary condition on the upper line of
-the rectangle, with a constant value for the whole line. 
+the rectangle, with a constant value for the whole line.
 
 \begin{itemize}
-\item In \emph{SingleLayer} click the 
+\item In \emph{SingleLayer} click the
 
 \begin{itemize}
-\item \emph{line} button and pick 
+\item \emph{line} button and pick
 \item \emph{L Neum} from the pulldown menu.
-\item Set the \emph{y}-direction (\emph{2}) to \emph{On}, the value to \emph{-0.001} and 
+\item Set the \emph{y}-direction (\emph{2}) to \emph{On}, the value to \emph{-0.001} and
 \item \emph{Assign} the uppermost line of our rectangle.
 \end{itemize}
 \end{itemize}
@@ -315,7 +315,7 @@ a physical coordinate) or a \emph{Load Curve} (dependent on time)
 for dynamic problems. All the ticked functions, curves and the value
 are multiplied to a resultant loading. The functions or curves can
 be specified via \emph{Data$\to$Problem Data$\to$Functions} or to
-\emph{Data$\to$Interval Data}. We will use this functionality in the fluid section. 
+\emph{Data$\to$Interval Data}. We will use this functionality in the fluid section.
 
 
 \subsection{Meshing}
@@ -326,23 +326,23 @@ our surface into several elements and then to mesh these divided lines
 
 \begin{itemize}
 \item Close SingleLayer and go to \emph{Meshing$\to$Structured$\to$Surfaces}.
-You are then asked for a surface. 
+You are then asked for a surface.
 
 \begin{itemize}
-\item Click on an edge of our rectangular surface and hit 
+\item Click on an edge of our rectangular surface and hit
 \item \emph{esc}.
 \item In the following window you are asked for the divisions to be made,
 where you type in \emph{1} (one element in vertical direction is enough
-as the bottom is only 0.002 thick) and click 
-\item \emph{ok}. 
+as the bottom is only 0.002 thick) and click
+\item \emph{ok}.
 \item Pick one of our vertical lines (the other one is selected automatically)
-and hit 
+and hit
 \item \emph{esc}.
 \item Now we have to repeat this step for the horizontal line. Type in \emph{64}
-and click 
-\item \emph{ok}. Then 
-\item select one of the horizontal lines and hit 
-\item \emph{esc} twice. 
+and click
+\item \emph{ok}. Then
+\item select one of the horizontal lines and hit
+\item \emph{esc} twice.
 \end{itemize}
 \item Go to \emph{Meshing$\to$Generate}. Ignore the value window (it is
 necessary for unstructured meshing). At this point you should see
@@ -388,8 +388,8 @@ the result directory with the prefix you chose.
 \item Before you can open our results, you have to generate a filter. Starting from the ccarat directory go to \emph{./src/post\_gid}. Call \emph{make post\_drt\_gid}.
 \item The filter should now be available in your ccarat directory. You do not have to rebuild it any time. Filter your results with the call (inside the ccarat directory): \emph{post\_drt\_gid -\,-file=outputdirectory/result\_prefix}.
 \item To do the postprocessing shift GID via \emph{Files$\to$Postprocess}.
-Then 
-\item open the \emph{{*}.flavia.res} of your example and 
+Then
+\item open the \emph{{*}.flavia.res} of your example and
 \item plot the results via \emph{View results$\to$...}, see also \ref{tut_fsi:3.3}.
 \end{itemize}
 %
@@ -415,33 +415,33 @@ but everything else as we want to have it in the final FSI example.
 
 \begin{itemize}
 \item Activate \emph{Data$\to$Problem Type$\to$lnm\_general} as basis.
-\item In \emph{Data$\to$Problem Data$\to$General Problem Data} check if 
+\item In \emph{Data$\to$Problem Data$\to$General Problem Data} check if
 
 \begin{itemize}
-\item \emph{Problem Typ} is set to \emph{Fluid}, 
-\item \emph{Number of Fields} is set to \emph{1}, 
-\item \emph{Max NumDOF} is set to \emph{4} and 
+\item \emph{Problem Typ} is set to \emph{Fluid},
+\item \emph{Number of Fields} is set to \emph{1},
+\item \emph{Max NumDOF} is set to \emph{4} and
 \item \emph{Static/Dynamic} is set to \emph{Dynamic.}
 \end{itemize}
 \end{itemize}
 We choose four degrees of freedom, although we have a two dimensional
 problem and three would be sufficient (two velocities and the pressure).
-Well, you can type in three, but basically it doesn't matter. 
+Well, you can type in three, but basically it doesn't matter.
 
 Here \emph{Dynamic} has to be selected, as we have a time dependent
 velocity. But even in a stationary fluid problem you have to set it
 to \emph{Dynamic} as in fluid simulations you always have to start
 the velocities from zero with a time-dependent curve to get good
-solutions. The time-dependent curve for our example will be defined later on, 
+solutions. The time-dependent curve for our example will be defined later on,
 but we will set some of the parameters for the algorithm right away. Therefore
-go to 
+go to
 \begin{itemize}
 \item \emph{Data$\to$Problem Data$\to$Dynamic} and choose the \emph{Fluid} tab.
 \begin{itemize}
-\item Set \emph{Fluid Dyn Num Steps} to \emph{100} and 
-\item \emph{Fluid Dyn Time Step} to \emph{0.05} 
+\item Set \emph{Fluid Dyn Num Steps} to \emph{100} and
+\item \emph{Fluid Dyn Time Step} to \emph{0.05}
 \end {itemize}
-which corresponds to the problem description with total time \emph{T=5s}. 
+which corresponds to the problem description with total time \emph{T=5s}.
 \end{itemize}
 
 
@@ -455,8 +455,8 @@ on each other where they meet).
 
 \begin{itemize}
 \item First draw the u-profile using the points \emph{0,1}, \emph{0,0}, \emph{1,0} and \emph{1,1}.
-\item For the upper rectangle use the corners \emph{0,1} (\emph{Join}), \emph{1,1} (\emph{Join}), \emph{1,1.1}, \emph{0,1.1} and finally \emph{0,1} (\emph{Join}) 
-\item Generate two surfaces in between the lines. 
+\item For the upper rectangle use the corners \emph{0,1} (\emph{Join}), \emph{1,1} (\emph{Join}), \emph{1,1.1}, \emph{0,1.1} and finally \emph{0,1} (\emph{Join})
+\item Generate two surfaces in between the lines.
 \end{itemize}
 What you have now should look like Fig. \ref{tut_fsi:4.1}.
 
@@ -474,32 +474,32 @@ What you have now should look like Fig. \ref{tut_fsi:4.1}.
 
 \begin{itemize}
 \item Go to \emph{Data$\to$Materials$\to$Fluid} and adjust the fluid parameters
-to 
+to
 
 \begin{itemize}
 \item \emph{density = 1, }
-\item \emph{viscosity = 0.01}. Then 
-\item \emph{Assign} our two rectangles. 
+\item \emph{viscosity = 0.01}. Then
+\item \emph{Assign} our two rectangles.
 \end{itemize}
-\item For the specification of the element, go to 
+\item For the specification of the element, go to
 
 \begin{itemize}
-\item \emph{SingleLayer} and click the 
-\item \emph{Surfaces} button. Choose the 
-\item \emph{Fluid2} element from the pull-down menu and 
+\item \emph{SingleLayer} and click the
+\item \emph{Surfaces} button. Choose the
+\item \emph{Fluid2} element from the pull-down menu and
 \item \emph{Assign} our two rectangular surfaces, as they make up our fluid.
 \end{itemize}
 \item In order to prevent oscillations in the solution, we have to stabilize
-the fluid. Click the 
+the fluid. Click the
 
 \begin{itemize}
-\item \emph{surface} button in \emph{SingleLayer,} choose the 
+\item \emph{surface} button in \emph{SingleLayer,} choose the
 \item \emph{Fluid Surface Stab} from the pulldown menu and change \emph{stabtype} to  \emph{GLS}.
 \item Finally \emph{Assign} our two rectangles.
 \end{itemize}
 \end{itemize}
 In the \emph{Fluid2} menu make sure that \emph{Net Algo} is set to
-\emph{Euler}, the default algorithm. 
+\emph{Euler}, the default algorithm.
 
 
 \subsection{Numbering and boundary conditions}
@@ -516,11 +516,11 @@ is the one and only menu we need for the following:
 \item First we want to set the boundary conditions at the walls, so click the
 
 \begin{itemize}
-\item line button. Activate 
+\item line button. Activate
 \item \emph{1} and \emph{2} (velocity in x- and y-direction) and leave them
 at default values (\emph{0.0}, because we have no slip at the wall).
 \item Assign the according lines (the two lower vertical- and the bottom-line
-of the container). 
+of the container).
 \end{itemize}
 \item Don't forget the points! All four lower points need to be treated
 like above, too.
@@ -528,36 +528,36 @@ like above, too.
 click the
 
 \begin{itemize}
-\item \emph{lines} button and choose 
+\item \emph{lines} button and choose
 \item \emph{L Dirich}. Our triangle-shaped, time dependent velocity field
-will point towards the x-direction so we switch 
+will point towards the x-direction so we switch
 \item \emph{1} to \emph{on} and set the value to \emph{1}. Further we want
 a \emph{load curve} to be multiplied to this constant factor, to give
-it a time dependency, so we switch 
+it a time dependency, so we switch
 \item \emph{Load Curve value 1} to \emph{1}. To make the field also dependent
-of the y-coordinate, we have to switch 
-\item \emph{Load Funct value 1} to \emph{1}. 
+of the y-coordinate, we have to switch
+\item \emph{Load Funct value 1} to \emph{1}.
 \item Now \emph{Assign} the inflow line.
 \end{itemize}
 \item Next we are going to define the expressions for \emph{curve 1} and
-\emph{funct 1}. Go to 
+\emph{funct 1}. Go to
 
 \begin{itemize}
 \item \emph{Data$\to$Interval Data} and pick
-\item \emph{curve 1}. Switch it to 
-\item \emph{on} and choose 
-\item \emph{EXPR} from the pulldown menu. We type in 
-\item \emph{1-cos(2{*}t{*}pi/5)}. 
-\item Set \emph{Cu1 Time End} to \emph{5}. Go to 
-\item \emph{Accept data} and 
+\item \emph{curve 1}. Switch it to
+\item \emph{on} and choose
+\item \emph{EXPR} from the pulldown menu. We type in
+\item \emph{1-cos(2{*}t{*}pi/5)}.
+\item Set \emph{Cu1 Time End} to \emph{5}. Go to
+\item \emph{Accept data} and
 \item \emph{Close}. Quite the same has to be done for the load function,
-so we go to 
-\item \emph{Data$\to$Problem Data$\to$Functions}. Switch 
-\item \emph{Funct 1} to 
-\item \emph{on} and activate 
-\item \emph{EXPR}. 
+so we go to
+\item \emph{Data$\to$Problem Data$\to$Functions}. Switch
+\item \emph{Funct 1} to
+\item \emph{on} and activate
+\item \emph{EXPR}.
 \item \emph{10{*}(y-1)} to give it the triangular shape as our line is between
-0,1 and 0,1.1. 
+0,1 and 0,1.1.
 \end{itemize}
 \end{itemize}
 The velocity field now results from a multiplication of curve 1, function
@@ -566,26 +566,26 @@ The velocity field now results from a multiplication of curve 1, function
 So far for the inflow region.
 
 \begin{itemize}
-\item Use the uppermost horizontal line for boundary condition 
+\item Use the uppermost horizontal line for boundary condition
 
 \begin{itemize}
 \item x-velocity = \emph{1} and, as it has the same time dependency like
-the inflow, pick also 
+the inflow, pick also
 \item \emph{curve 1} as factor.
 \end{itemize}
 \end{itemize}
 The exhaust doesn't need a boundary condition (we just want the pressure
-to be zero there) so we can skip it in this section. 
+to be zero there) so we can skip it in this section.
 
 
 \subsection{Meshing}
 
 \begin{itemize}
 \item Use the same procedure like in the structural example. Mesh our example
-with 
+with
 
 \begin{itemize}
-\item 64x7 and 
+\item 64x7 and
 \item 64x64 elements, respectively. This should be a good compromise for
 the result we need.
 \end{itemize}
@@ -608,20 +608,20 @@ For the postprocess we want to use another software called \emph{paraview}. You 
 \item Before you can open our results, you have to generate a filter again. Starting from the ccarat directory go to \emph{./src/post\_ensight}. Call \emph{make post\_drt\_ensight}.
 \item The filter should now be available in your ccarat directory. Filter your results with
 the call (inside the ccarat directory): \emph{post\_drt\_ensight -\,-file=outputdirectory/result\_prefix}
-\item After this open \emph{paraview}, go to 
+\item After this open \emph{paraview}, go to
 
 \begin{itemize}
 \item \emph{File$\to$Open Data} and select the filtered \emph{{*}.case
-file}. 
+file}.
 \item Select the time step in the \emph{Select Time Value} window on the
-left and 
-\item shift \emph{Byte order} to \emph{little endian}. Go to 
+left and
+\item shift \emph{Byte order} to \emph{little endian}. Go to
 \item \emph{Accept} to activate the display.
 \item In the \emph{Display tab} (section \emph{Color}) you can choose now
 between \emph{Point pressure} and \emph{Point velocity}, whatever
 you want to display.
 \item For the scale, activate the \emph{Scalar bar} button in the \emph{View
-section}. 
+section}.
 \end{itemize}
 \end{itemize}
 See also Fig. \ref{tut_fsi:4.2} for comparison.
@@ -643,16 +643,16 @@ See also Fig. \ref{tut_fsi:4.2} for comparison.
 
 \begin{itemize}
 \item Set \emph{lnm\_general} as basis and set \emph{}
-\item \emph{Data-Problem Data$\to$General Problem Data}. Here we have 
+\item \emph{Data-Problem Data$\to$General Problem Data}. Here we have
 
 \begin{itemize}
-\item three fields (structure, fluid and ALE), 
-\item four degrees of freedom and a 
-\item dynamic problem (like when we dealt with the simple fluid problem). 
+\item three fields (structure, fluid and ALE),
+\item four degrees of freedom and a
+\item dynamic problem (like when we dealt with the simple fluid problem).
 \item Problem Typ is Fluid Structure Interaction now.
 \end{itemize}
 \end{itemize}
-The FSI problem, in comparison to the previous ones, needs some 
+The FSI problem, in comparison to the previous ones, needs some
 definitions due to the coupling between structure mesh and fluid mesh.
 
 \begin{enumerate}
@@ -669,15 +669,15 @@ and fluid.
 \subsection{Geometry}
 
 \begin{itemize}
-\item We need to generate two layers first. Click the 
+\item We need to generate two layers first. Click the
 
 \begin{itemize}
-\item \emph{Layers} button in the upper tool bar and type in the name 
-\item \emph{Structure} in the command line of the layers tab. Then click 
+\item \emph{Layers} button in the upper tool bar and type in the name
+\item \emph{Structure} in the command line of the layers tab. Then click
 \item \emph{New} and in the upper part of the tab the \emph{Structure} layer
-should be displayed. The next thing we do here is to rename \emph{Layer0}. 
-\item Mark it in the upper list of the tab, type 
-\item \emph{Fluid} into the command line and click 
+should be displayed. The next thing we do here is to rename \emph{Layer0}.
+\item Mark it in the upper list of the tab, type
+\item \emph{Fluid} into the command line and click
 \item \emph{Rename}.
 \end{itemize}
 \end{itemize}
@@ -698,16 +698,16 @@ The layers menu should look like in Fig \ref{tut_fsi:5.1} now.
 \begin{itemize}
 \item \emph{Structure} layer and click
 \item \emph{On}. Do the same, but with \emph{}
-\item \emph{Off} for \emph{Fluid} to deactivate the other one. 
-\item Now draw a rectangle (like in 3.2) with corners \emph{0,0} and \emph{1,-0.002}. 
+\item \emph{Off} for \emph{Fluid} to deactivate the other one.
+\item Now draw a rectangle (like in 3.2) with corners \emph{0,0} and \emph{1,-0.002}.
 \item Generate a surface in between.
 \end{itemize}
 \item Now we move on to the fluid. Activate the \emph{}
 
 \begin{itemize}
-\item \emph{fluid} layer and turn 
+\item \emph{fluid} layer and turn
 \item \emph{Off} the structure layer to prevent complications. You should
-have an {}``empty'' workspace again. 
+have an {}``empty'' workspace again.
 \item Create the two rectangular surfaces like in 4.2.
 \end{itemize}
 \item Now activate the \emph{structure} layer again and check if you have
@@ -726,32 +726,32 @@ The easiest way to make sure about the lines laying on each other
 right from the beginning is to draw them by coordinates. Experienced
 users can also try to copy the according design elements from one
 layer to the other via the \emph{Copy/Transform} button in the upper
-tool bar. 
+tool bar.
 
 
 \subsection{Material and finite element}
 
 \begin{itemize}
 \item Activate the \emph{structure} layer only. Go to \emph{Data$\to$Materials}
-and 
+and
 
 \begin{itemize}
-\item assign the bottom as structure with material parameters like in 3.3. 
+\item assign the bottom as structure with material parameters like in 3.3.
 \item In \emph{SingleLayer} specify the finite element you need for the
 structure (\emph{Wall} element with default settings).
 \end{itemize}
-\item Now activate the \emph{fluid} layer only. Go to 
+\item Now activate the \emph{fluid} layer only. Go to
 
 \begin{itemize}
-\item \emph{Data$\to$Materials-Fluid}, set 
-\item \emph{density} and \emph{viscosity} as in 4.3 (\emph{1} and \emph{0.01} respectively) and 
-\item \emph{Assign} the two rectangles. Move on to 
-\item \emph{SingleLayer}. The according finite element for us is the 
+\item \emph{Data$\to$Materials-Fluid}, set
+\item \emph{density} and \emph{viscosity} as in 4.3 (\emph{1} and \emph{0.01} respectively) and
+\item \emph{Assign} the two rectangles. Move on to
+\item \emph{SingleLayer}. The according finite element for us is the
 \item \emph{Fluid2} element. Use it for the two surfaces, but make sure
-to set 
-\item \emph{Net Algo} to \emph{ALE} and activate the 
-\item \emph{Create Ale} button before you 
-\item \emph{Assign}. 
+to set
+\item \emph{Net Algo} to \emph{ALE} and activate the
+\item \emph{Create Ale} button before you
+\item \emph{Assign}.
 \item Use the \emph{Fluid Surface Stab} for the two rectangles, like in
 4.3.
 \end{itemize}
@@ -761,14 +761,14 @@ to set
 %are needed by the solver). Go to
 
 %\begin{itemize}
-%\item \emph{Data$\to$Materials$\to$Structure} and set for 
+%\item \emph{Data$\to$Materials$\to$Structure} and set for
 %\item \emph{MAT Struct StVenantKir} some default parameters (e.g. \emph{1},
-%\emph{0.3}, \emph{1}) and then click 
+%\emph{0.3}, \emph{1}) and then click
 %\item \emph{Close}. You are then asked if you want to save the changed parameters,
 %which you confirm with \emph{}
 %\item \emph{Yes}.
 %\end{itemize}
-%\end{itemize}
+\end{itemize}
 %The \emph{Create ALE} button (when you define the fluid element) is
 %necessary, because the ALE is another mesh, which has to be generated
 %separately. It also needs special boundary conditions, as we will
@@ -790,12 +790,12 @@ Generally here you have to specify all boundary conditions for structure and flu
 and some additional ones for the ALE.
 
 \begin{itemize}
-\item Activate the structure layer only. 
+\item Activate the structure layer only.
 
 \begin{itemize}
 \item Use the left and right vertical lines for Dirichlet boundary condition with displacement
-set to 
-\item \emph{0} and \emph{0}. 
+set to
+\item \emph{0} and \emph{0}.
 \item Use all four points and set their displacement also to \emph{0} and
 \emph{0}.
 \item The uppermost line is our coupling element between the fluid and the
@@ -806,11 +806,11 @@ it in \emph{SingleLayer}) with \emph{Field structure}.
 So far for the bottom.
 
 \begin{itemize}
-\item Now we activate the fluid layer only. 
+\item Now we activate the fluid layer only.
 
 \begin{itemize}
-\item Use the four lower points and 
-\item the two lower vertical lines for Dirichlet boundary condition with 
+\item Use the four lower points and
+\item the two lower vertical lines for Dirichlet boundary condition with
 \item \emph{0} and \emph{0} velocity.
 \item The upper left vertical line (the inlet) again has the triangle shaped
 velocity distribution. To specify it, use the same procedure as in
@@ -822,20 +822,20 @@ Line} with \emph{Field fluid}.
 \end{itemize}
 \item The last thing for us to do before meshing is to work on the ALE:
 We have to tell the code, which part of the fluids mesh which will
-remain stationary. Here these are 
+remain stationary. Here these are
 
 \begin{itemize}
-\item all points and 
-\item all the outer lines except of the bottom line. 
+\item all points and
+\item all the outer lines except of the bottom line.
 \item \emph{Assign} them as \emph{P AleDirich} or \emph{L AleDirich} (also
 in \emph{SingleLayer}), respectively with displacement \emph{0} and
-\emph{0}. 
+\emph{0}.
 \end{itemize}
 \end{itemize}
 Make sure to only use geometry of the fluid layer for fluid boundary conditions
 and only geometry from the structure layer for structure boundary conditions. The
 easiest way to accomplish this is by switching the one not needed
-to \emph{Off} during the selection, as we did right from the beginning. 
+to \emph{Off} during the selection, as we did right from the beginning.
 
 The coupling elements are geometries, which make sure, that the fluid
 and the structure deteriorate in the same way. They serve two purposes:
@@ -843,7 +843,7 @@ and the structure deteriorate in the same way. They serve two purposes:
 \begin{enumerate}
 \item They ensure, that fluid and structure deform equally there and
 \item that the fluid has also the same tangential velocity as the structure
-(no slip at the surface). 
+(no slip at the surface).
 \end{enumerate}
 
 \subsection{Meshing}
@@ -852,23 +852,23 @@ and the structure deteriorate in the same way. They serve two purposes:
 \item Meshing is the same procedure like in 3.5 and 4.5, except that
 you should mesh structure and fluid separately, with the according
 layer activated only. This makes picking of the lines easier and produces
-less problems. Mesh the surfaces of our example with 
+less problems. Mesh the surfaces of our example with
 
 \begin{itemize}
-\item 64x7, 
-\item 64x64 and 
+\item 64x7,
+\item 64x64 and
 \item 64x1 elements, respectively.
 \end{itemize}
 \end{itemize}
 Keep in mind, that structure and fluid have to have congruent meshes
-at the coupling elements. 
+at the coupling elements.
 
 
 \subsection{Solving}
 
 \begin{itemize}
 \item Go to Calculate\emph{$\to$}Calculate to write the \emph{{*}.dat}
-file. 
+file.
 \item Again, use the call \emph{./cca\_fc6\_ser.fast ../file\_directory/example.dat
 ../file\_directory/result\_prefix} to start the solver and
 \item \emph{./post\_drt\_ensight -\,-file=result} to filter the results for
