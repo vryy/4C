@@ -49,6 +49,9 @@ using namespace Teuchos;
 namespace DRT
 {
 
+class ExporterHelper;
+
+
 /*!
 \class Exporter
 
@@ -157,6 +160,20 @@ public:
   */
   template<typename T> void Export(map<int,vector<T> >& data);
 
+  /*!
+  \brief Communicate a map of plain old data (POD) objects
+
+  This method takes a map of objects and redistributes them according to
+  the send and receive plans. It is implicitly assumed, that the key in
+  the map of objects pointwise matches SourceMap(). It is also assumed,
+  that type T supports bitwise copy.
+
+  \param parobjects (in/out): A map of POD objects. On input, the map
+                              has a distribution matching SourceMap().
+                              On output, the map has a distribution of
+                              TargetMap().
+  */
+  template<typename T> void Export(map<int,T>& data);
 
 
 #ifdef PARALLEL
@@ -392,6 +409,10 @@ private:
   */
   inline vector<int>& SendSize() { return sendsize_; }
 
+  /*!
+  \brief generic export algorithm that delegates the specific pack/unpack to a helper
+   */
+  void GenericExport(ExporterHelper& helper);
 
 private:
 
@@ -418,8 +439,210 @@ private:
 
 
 }; // class Exporter
-} // namespace DRT
 
+
+  /// Internal helper class for Exporter that encapsulates packing and unpacking
+  /*!
+    The communication algorithm we use to export a map of objects is the same
+    independent of the actual type of objects we have. However, different
+    object types require different packing and unpacking routines. So we put
+    the type specific stuff in a helper class and get away with one clean
+    communication algorithm. Nice.
+   */
+  class ExporterHelper
+  {
+  public:
+
+    /// have a virtual destructor
+    virtual ~ExporterHelper() {}
+
+    /// validations performed before the communication
+    virtual void PreExportTest(Exporter* exporter) = 0;
+
+    /// Pack one object
+    /*!
+      Get the object by gid, pack it and append it to the sendblock. We only
+      pack it if we know about it.
+     */
+    virtual void PackObject(int gid, vector<char>& sendblock) = 0;
+
+    /// Unpack one object
+    /*!
+      After receiving we know the gid of the object and have its packed data
+      at position index in recvblock. index must be incremented by the objects
+      size.
+     */
+    virtual void UnpackObject(int gid, int& index, const vector<char>& recvblock) = 0;
+
+    /// after communication remove all objects that are not in the target map
+    virtual void PostExportCleanup(Exporter* exporter) = 0;
+
+  };
+
+
+  /// Concrete helper class that handles RCPs to ParObjects
+  template<typename T>
+  class ParObjectExporterHelper : public ExporterHelper
+  {
+  public:
+
+    explicit ParObjectExporterHelper(map<int,RefCountPtr<T> >& parobjects)
+      : parobjects_(parobjects) {}
+
+    virtual void PreExportTest(Exporter* exporter)
+    {
+      // test whether type T implements ParObject
+      typename map<int,RefCountPtr<T> >::iterator curr = parobjects_.begin();
+      if (curr != parobjects_.end())
+      {
+        T* ptr = curr->second.get();
+        ParObject* tester = dynamic_cast<ParObject*>(ptr);
+        if (!tester) dserror("typename T in template does not implement class ParObject (dynamic_cast failed)");
+      }
+    }
+
+    virtual void PackObject(int gid, vector<char>& sendblock)
+    {
+      typename map<int,RefCountPtr<T> >::iterator curr = parobjects_.find(gid);
+      if (curr!=parobjects_.end())
+      {
+        vector<char> data;
+        curr->second->Pack(data);
+        ParObject::AddtoPack(sendblock,data);
+      }
+    }
+
+    virtual void UnpackObject(int gid, int& index, const vector<char>& recvblock)
+    {
+      vector<char> data;
+      ParObject::ExtractfromPack(index,recvblock,data);
+
+      DRT::ParObject* o = DRT::Utils::Factory(data);
+      T* ptr = dynamic_cast<T*>(o);
+      if (!ptr) dserror("typename T in template does not implement ParObject (dynamic_cast failed)");
+      RefCountPtr<T> refptr = rcp(ptr);
+      // add object to my map
+      parobjects_[gid] = refptr;
+    }
+
+    virtual void PostExportCleanup(Exporter* exporter)
+    {
+      // loop map and kick out everything that's not in TargetMap()
+      map<int,RefCountPtr<T> > newmap;
+      typename map<int,RefCountPtr<T> >::iterator fool;
+      for (fool=parobjects_.begin(); fool != parobjects_.end(); ++fool)
+        if (exporter->TargetMap().MyGID(fool->first))
+          newmap[fool->first] = fool->second;
+      swap(newmap,parobjects_);
+    }
+
+  private:
+    map<int,RefCountPtr<T> >& parobjects_;
+  };
+
+
+  /// Concrete helper class that handles plain old data (POD) objects
+  template<typename T>
+  class PODExporterHelper : public ExporterHelper
+  {
+  public:
+
+    explicit PODExporterHelper(map<int,T>& objects)
+      : objects_(objects) {}
+
+    virtual void PreExportTest(Exporter* exporter)
+    {
+      // Nothing to do. We do not check for T to be POD.
+    }
+
+    virtual void PackObject(int gid, vector<char>& sendblock)
+    {
+      typename map<int,T>::iterator curr = objects_.find(gid);
+      if (curr!=objects_.end())
+      {
+        unsigned pos = sendblock.size();
+        sendblock.resize(pos+sizeof(T));
+        memcpy(&sendblock[pos],&curr->second,sizeof(T));
+      }
+    }
+
+    virtual void UnpackObject(int gid, int& index, const vector<char>& recvblock)
+    {
+      memcpy(&objects_[gid],&recvblock[index],sizeof(T));
+      index += sizeof(T);
+    }
+
+    virtual void PostExportCleanup(Exporter* exporter)
+    {
+      // loop map and kick out everything that's not in TargetMap()
+      map<int,T> newmap;
+      typename map<int,T>::iterator fool;
+      for (fool=objects_.begin(); fool != objects_.end(); ++fool)
+        if (exporter->TargetMap().MyGID(fool->first))
+          newmap[fool->first] = fool->second;
+      swap(newmap,objects_);
+    }
+
+  private:
+    map<int,T>& objects_;
+  };
+
+
+  /// Concrete helper class that handles vectors of plain old data (POD) objects
+  template<typename T>
+  class PODVectorExporterHelper : public ExporterHelper
+  {
+  public:
+
+    explicit PODVectorExporterHelper(map<int,vector<T> >& objects)
+      : objects_(objects) {}
+
+    virtual void PreExportTest(Exporter* exporter)
+    {
+      // Nothing to do. We do not check for T to be POD.
+    }
+
+    virtual void PackObject(int gid, vector<char>& sendblock)
+    {
+      typename map<int,vector<T> >::iterator curr = objects_.find(gid);
+      if (curr!=objects_.end())
+      {
+        unsigned pos = sendblock.size();
+        unsigned count = sizeof(T)*curr->second.size();
+        unsigned size = curr->second.size();
+        sendblock.resize(pos+count+sizeof(unsigned));
+        memcpy(&sendblock[pos],&size,sizeof(unsigned));
+        memcpy(&sendblock[pos+sizeof(unsigned)],&curr->second[0],count);
+      }
+    }
+
+    virtual void UnpackObject(int gid, int& index, const vector<char>& recvblock)
+    {
+      unsigned size;
+      memcpy(&size,&recvblock[index],sizeof(unsigned));
+      index += sizeof(unsigned);
+      objects_[gid].resize(size);
+      memcpy(&objects_[gid][0],&recvblock[index],sizeof(T)*size);
+      index += sizeof(T)*size;
+    }
+
+    virtual void PostExportCleanup(Exporter* exporter)
+    {
+      // loop map and kick out everything that's not in TargetMap()
+      map<int,vector<T> > newmap;
+      typename map<int,vector<T> >::iterator fool;
+      for (fool=objects_.begin(); fool != objects_.end(); ++fool)
+        if (exporter->TargetMap().MyGID(fool->first))
+          swap(newmap[fool->first], fool->second);
+      swap(newmap,objects_);
+    }
+
+  private:
+    map<int,vector<T> >& objects_;
+  };
+
+
+} // namespace DRT
 
 
 #if 0 // old version before Uli's rewrite on 17.12.2007 (which is below this one)
@@ -565,6 +788,7 @@ template<typename T> void DRT::Exporter::Export(
 #endif
 
 
+#if 0
 /*----------------------------------------------------------------------*
  |  communicate objects (public)                             mwgee 11/06|
  *----------------------------------------------------------------------*/
@@ -697,9 +921,20 @@ template<typename T> void DRT::Exporter::Export(
 #endif
   return;
 }
+#endif
+
+/*----------------------------------------------------------------------*
+ |  communicate objects (public)                             mwgee 11/06|
+ *----------------------------------------------------------------------*/
+template<typename T> void DRT::Exporter::Export(
+                                     map<int,RefCountPtr<T> >& parobjects)
+{
+  ParObjectExporterHelper<T> helper(parobjects);
+  GenericExport(helper);
+}
 
 
-
+#if 0
 //static void Huhu() { cout << "Huhu\n"; fflush(stdout); return; }
 /*----------------------------------------------------------------------*
  |  communicate objects (public)                             mwgee 11/06|
@@ -816,7 +1051,27 @@ template<typename T> void DRT::Exporter::Export(map<int,vector<T> >& data)
 #endif
   return;
 }
+#endif
 
+
+/*----------------------------------------------------------------------*
+ |  communicate objects (public)                             mwgee 11/06|
+ *----------------------------------------------------------------------*/
+template<typename T> void DRT::Exporter::Export(map<int,vector<T> >& data)
+{
+  PODVectorExporterHelper<T> helper(data);
+  GenericExport(helper);
+}
+
+
+/*----------------------------------------------------------------------*
+ |  communicate objects (public)                             mwgee 11/06|
+ *----------------------------------------------------------------------*/
+template<typename T> void DRT::Exporter::Export(map<int,T>& data)
+{
+  PODExporterHelper<T> helper(data);
+  GenericExport(helper);
+}
 
 
 #endif  // #ifndef EXPORTER_H

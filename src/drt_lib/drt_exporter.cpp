@@ -240,11 +240,11 @@ void DRT::Exporter::Allreduce(	vector<int>& sendbuff, vector<int>& recvbuff,
 {
   const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
   if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
-  
+
   int length = (int) sendbuff.size();
   if (length>(int)recvbuff.size()) recvbuff.resize(length);
-  
-  MPI_Allreduce( 	&(sendbuff[0]), &(recvbuff[0]), length, 
+
+  MPI_Allreduce( 	&(sendbuff[0]), &(recvbuff[0]), length,
   					MPI_INT, mpi_op, comm->Comm() );
   return;
 }
@@ -369,5 +369,103 @@ void DRT::Exporter::ConstructExporter()
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  communicate objects (public)                             mwgee 11/06|
+ *----------------------------------------------------------------------*/
+void DRT::Exporter::GenericExport(ExporterHelper& helper)
+{
+  if (SendPlan().N()==0) return;
+  //if (SourceMap().SameAs(TargetMap())) return;
+
+  helper.PreExportTest(this);
+
+#ifdef PARALLEL
+
+  //------------------------------------------------ do the send/recv loop
+  for (int i=0; i<NumProc()-1; ++i)
+  {
+    int tproc = MyPID()+1+i;
+    int sproc = MyPID()-1-i;
+    if (tproc<0) tproc += NumProc();
+    if (sproc<0) sproc += NumProc();
+    if (tproc>NumProc()-1) tproc -= NumProc();
+    if (sproc>NumProc()-1) sproc -= NumProc();
+    //cout << "Proc " << MyPID() << " tproc " << tproc << " sproc " << sproc << endl;
+    //fflush(stdout);
+
+    //------------------------------------------------ do sending to tproc
+    // gather all objects to be send
+    vector<char> sendblock;
+    vector<int> sendgid;
+    for (int i=0; i<SourceMap().NumMyElements(); ++i)
+    {
+      const int lid = i;
+      if (SendPlan()(lid,tproc)!=1) continue;
+      const int gid = SourceMap().MyGlobalElements()[lid];
+      helper.PackObject(gid,sendblock);
+      sendgid.push_back(gid);
+    }
+
+    // send tproc no. of chars tproc must receive
+    vector<int> snmessages(2);
+    snmessages[0] = sendblock.size();
+    snmessages[1] = sendgid.size();
+
+    MPI_Request sizerequest;
+    ISend(MyPID(),tproc,&snmessages[0],2,1,sizerequest);
+
+    // do the sending of the objects
+    MPI_Request sendrequest;
+    ISend(MyPID(),tproc,&sendblock[0],sendblock.size(),2,sendrequest);
+
+    MPI_Request sendgidrequest;
+    ISend(MyPID(),tproc,&sendgid[0],sendgid.size(),3,sendgidrequest);
+
+    //---------------------------------------- do the receiving from sproc
+    // receive how many messages I will receive from sproc
+    vector<int> rnmessages(2);
+    int source = sproc;
+    int length = 0;
+    int tag = 1;
+    // do a blocking specific receive
+    Receive(source,tag,rnmessages,length);
+    if (length!=2 or tag!=1) dserror("Messages got mixed up");
+
+    // receive the objects
+    vector<char> recvblock(rnmessages[0]);
+    tag = 2;
+    ReceiveAny(source,tag,recvblock,length);
+    if (tag!=2) dserror("Messages got mixed up");
+
+    // receive the gids
+    vector<int> recvgid(rnmessages[1]);
+    tag = 3;
+    ReceiveAny(source,tag,recvgid,length);
+    if (tag!=3) dserror("Messages got mixed up");
+
+    int index = 0;
+    int j = 0;
+    while (index < static_cast<int>(recvblock.size()))
+    {
+      int gid = recvgid[j];
+      helper.UnpackObject(gid, index, recvblock);
+      j += 1;
+    }
+
+    //----------------------------------- do waiting for messages to tproc to leave
+    Wait(sizerequest);
+    Wait(sendrequest);
+    Wait(sendgidrequest);
+
+    // make sure we do not get mixed up messages as we use wild card receives here
+    Comm().Barrier();
+  } // for (int i=0; i<NumProc()-1; ++i)
+
+  helper.PostExportCleanup(this);
+
+#endif
+  return;
+}
 
 #endif  // #ifdef CCADISCRET
