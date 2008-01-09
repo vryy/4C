@@ -561,64 +561,9 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
                   eleDofManager_, NumNode(), NodeIds());
           
           // calculate element coefficient matrix and rhs
-          if (assembly_type == XFEM::standard_assembly)
-          {
-              switch (Shape()) 
-              {
-              case hex8:
-              {
-                  Sysmat<hex8,XFEM::standard_assembly>(
-                          this, ih, eleDofManager_, evelnp, eprenp, estif, esv, eforce,
-                          actmat, pseudotime, newton, pstab, supg, vstab, cstab);
-                  break;
-              }
-              case hex20:
-              {
-                  Sysmat<hex20,XFEM::standard_assembly>(
-                          this, ih, eleDofManager_, evelnp, eprenp, estif, esv, eforce,
-                          actmat, pseudotime, newton, pstab, supg, vstab, cstab);
-                  break;
-              }
-              case hex27:
-              {
-                  Sysmat<hex27,XFEM::standard_assembly>(
-                          this, ih, eleDofManager_, evelnp, eprenp, estif, esv, eforce,
-                          actmat, pseudotime, newton, pstab, supg, vstab, cstab);
-                  break;
-              }
-              default:
-                  dserror("not templated yet");
-              };
-          }
-          else
-          {
-              switch (Shape()) 
-              {
-              case hex8:
-              {
-                  Sysmat<hex8,XFEM::xfem_assembly>(
-                          this, ih, eleDofManager_, evelnp, eprenp, estif, esv, eforce,
-                          actmat, pseudotime, newton, pstab, supg, vstab, cstab);
-                  break;
-              }
-              case hex20:
-              {
-                  Sysmat<hex20,XFEM::xfem_assembly>(
-                          this, ih, eleDofManager_, evelnp, eprenp, estif, esv, eforce,
-                          actmat, pseudotime, newton, pstab, supg, vstab, cstab);
-                  break;
-              }
-              case hex27:
-              {
-                  Sysmat<hex27,XFEM::xfem_assembly>(
-                          this, ih, eleDofManager_, evelnp, eprenp, estif, esv, eforce,
-                          actmat, pseudotime, newton, pstab, supg, vstab, cstab);
-                  break;
-              }
-              default:
-                  dserror("not templated yet");
-              };
-          }
+          callSysmat(Shape(), assembly_type,
+                  this, ih, eleDofManager_, evelnp, eprenp, estif, esv, eforce,
+                  actmat, pseudotime, newton, pstab, supg, vstab, cstab);
 
           // This is a very poor way to transport the density to the
           // outside world. Is there a better one?

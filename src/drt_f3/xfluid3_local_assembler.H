@@ -1,8 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfluid3_stationary.H
+\file xfluid3_local_assembler.H
 
-\brief Internal implementation of Fluid3 element -- stationary formulation
+\brief rotuines to assemble element stiffness matrix and vector
 
 <pre>
 Maintainer: Axel Gerstenberger
@@ -13,22 +13,14 @@ Maintainer: Axel Gerstenberger
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef D_FLUID3
 #ifdef CCADISCRET
 
-#ifndef XFLUID3_INTEGRATORY_H
-#define XFLUID3_INTEGRATORY_H
+#ifndef XFLUID3_LOCAL_ASSEMBLER_H
+#define XFLUID3_LOCAL_ASSEMBLER_H
 
-#include "xfluid3.H"
 #include <blitz/array.h>
-#include "../drt_mat/newtonianfluid.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "../drt_xfem/xfem.H"
-#include "../drt_xfem/intersection_service.H"
 #include "../drt_lib/drt_utils.H"
-#include "fluid3_stabilization.H"
-
-#include <Epetra_SerialDenseSolver.h>
 
 using namespace std;
 using namespace XFEM::PHYSICS;
@@ -38,7 +30,7 @@ typedef blitz::Array<double,1> BlitzVec; ///< a short-cut for a one-dimensional 
 typedef blitz::Array<double,2> BlitzMat; ///< a short-cut for a two-dimensional BLITZ matrix
 
 
-//! for non-xfem elements, figure out the position in the array
+//! for non-xfem elements, figure out the order of unknowns per node in the array
 template <XFEM::PHYSICS::Field field> int getFieldNumber()
 {
     dserror("this field does not belong to the 3d fluid");
@@ -60,7 +52,7 @@ public:
     //! assemble one expression for the element stiffness matrix for a given test and trial field
     template <XFEM::PHYSICS::Field testfield,
               XFEM::PHYSICS::Field trialfield>
-    void Matrix(
+    inline void Matrix(
             const XFEM::ElementDofManager&    dofman,
             blitz::Array<double,2>&           estif,
             const blitz::Array<double,1>&     testshape,
@@ -89,7 +81,7 @@ public:
     
     //! assemble one expression for the element rhs for a given test field
     template <XFEM::PHYSICS::Field testfield>
-    void Vector(
+    inline void Vector(
             const XFEM::ElementDofManager&    dofman,
             blitz::Array<double,1>&           eforce,
             const blitz::Array<double,1>&     testshape,
@@ -113,12 +105,12 @@ public:
     //! assemble one expression for the element stiffness matrix for a given test and trial field
     template <XFEM::PHYSICS::Field testfield,
               XFEM::PHYSICS::Field trialfield>
-    void Matrix(
+    inline void Matrix(
             const XFEM::ElementDofManager&    dofman,
             blitz::Array<double,2>&           estif,
-            const blitz::Array<double,1>&     testshape,
+            blitz::Array<double,1>     testshape,
             const double                      fac,
-            const blitz::Array<double,1>&     trialshape
+            blitz::Array<double,1>     trialshape
             ) const
     {
         const int numparam = DRT::Utils::getNumberOfElementNodes<DISTYPE>();
@@ -135,7 +127,7 @@ public:
     
     //! assemble one expression for the element rhs for a given test field
     template <XFEM::PHYSICS::Field testfield>
-    void Vector(
+    inline void Vector(
             const XFEM::ElementDofManager&    dofman,
             blitz::Array<double,1>&           eforce,
             const blitz::Array<double,1>&     testshape,
@@ -204,5 +196,4 @@ public:
   
 #endif
 
-#endif
 #endif

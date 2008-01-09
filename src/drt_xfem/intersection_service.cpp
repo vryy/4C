@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file interface_service.cpp
+\file intersection_service.cpp
 
 \brief collection of math tools for the interface determination of trv1o meshes
 

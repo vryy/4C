@@ -1,5 +1,5 @@
 /*!
- \file integrationcell.H
+ \file interface.H
 
  \brief interface handle that transports the intersection related things around
 
