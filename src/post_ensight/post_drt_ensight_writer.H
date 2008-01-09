@@ -253,6 +253,7 @@ protected:
     
     map<string,int>          variablenumdfmap_;
     map<string,string>       variablefilenamemap_;
+    map<string,string>       variableresulttypemap_; ///< STL map for storing the result-type per variable name 
     
     map<string,int> timesetnumbermap_;
     map<string,int> filesetnumbermap_;

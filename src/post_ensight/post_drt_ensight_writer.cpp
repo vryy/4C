@@ -657,6 +657,7 @@ void EnsightWriter::WriteResult(
         filesetmap_[name].push_back(file.tellp()/stepsize);
         variablenumdfmap_[name] = numdf;
         variablefilenamemap_[name] = filename;
+        variableresulttypemap_[name] = "node";
     }
         break;
         
@@ -688,7 +689,8 @@ void EnsightWriter::WriteResult(
         // store information for later case file creation
         filesetmap_[name].push_back(file.tellp()/stepsize);
         variablenumdfmap_[name] = numdf;
-        variablefilenamemap_[name] = filename;  
+        variablefilenamemap_[name] = filename;
+        variableresulttypemap_[name] = "element";
     }
     	break;
     	
@@ -1038,18 +1040,24 @@ string EnsightWriter::GetVariableEntryForCaseFile(
     
     const int timeset = 2;
     
-    // create variable entry
+    // determine the type of this result variable (node-/element-based)
+	map<string,string>::const_iterator entry = variableresulttypemap_.find(name);
+	if (entry == variableresulttypemap_.end())
+		dserror("key not found!");
+	const string restypestring = entry->second;
+       
+    // create variable entry in the case-file
     switch (numdf)
     {
     case 6:
-        str << "tensor symm per node:\t"<< timeset <<"\t"<< fileset << "\t"<< name << "\t"<< filename << "\n";
+        str << "tensor symm per "<<restypestring<<":\t"<< timeset <<"\t"<< fileset << "\t"<< name << "\t"<< filename << "\n";
         break;
     case 3:
     case 2:
-        str << "vector per node:\t"<< timeset <<"\t"<< fileset << "\t"<< name << "\t"<< filename << "\n";
+        str << "vector per "<<restypestring<<":\t"<< timeset <<"\t"<< fileset << "\t"<< name << "\t"<< filename << "\n";
         break;
     case 1:
-        str << "scalar per node:\t"<< timeset <<"\t"<< fileset << "\t"<< name << "\t"<< filename << "\n";
+        str << "scalar per "<<restypestring<<":\t"<< timeset <<"\t"<< fileset << "\t"<< name << "\t"<< filename << "\n";
         break;
     default:
         dserror("unknown number of dof per node");
