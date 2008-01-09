@@ -42,7 +42,7 @@ namespace Utils
 {
 
   /*!
-  \brief Fill a Epetra_SerialDenseVector with with 3D shape function
+  \brief Fill blitz-vector with with 3D shape function
   */
   void shape_function_3D(
     blitz::Array<double, 1>&                 funct,   ///< to be filled with shape function values
@@ -53,7 +53,7 @@ namespace Utils
     );
 
   /*!
-  \brief Fill a Epetra_SerialDenseMatrix with with 3D first shape function derivatives
+  \brief Fill a blitz-matrix with with 3D first shape function derivatives
   */
   void shape_function_3D_deriv1(
     blitz::Array<double, 2>&                 deriv1,  ///< to be filled with shape function derivative values
@@ -64,7 +64,7 @@ namespace Utils
     );
 
   /*!
-  \brief Fill a Epetra_SerialDenseMatrix with with 3D second shape function derivatives
+  \brief Fill a blitz-matrix with with 3D second shape function derivatives
   */
   void shape_function_3D_deriv2(
     blitz::Array<double, 2>&                 deriv2,  ///< to be filled with shape function 2-nd derivative values
@@ -75,7 +75,7 @@ namespace Utils
     );
 
   /*!
-  \brief Fill a Epetra_SerialDenseVector with 2D shape function
+  \brief Fill a blitz-matrix with 2D shape function
   */
   void shape_function_2D(
     blitz::Array<double, 1>&                 funct,   ///< to be filled with shape function values
@@ -85,7 +85,7 @@ namespace Utils
     );
 
   /*!
-  \brief Fill a Epetra_SerialDenseVector with first 2D shape function derivative
+  \brief Fill a blitz-matrix with first 2D shape function derivative
   */
   void shape_function_2D_deriv1(
     blitz::Array<double, 2>&                 deriv1,  ///< to be filled with shape function derivative values
@@ -95,7 +95,7 @@ namespace Utils
     );
 
   /*!
-  \brief Fill a Epetra_SerialDenseVector with second 2D shape function derivative
+  \brief Fill a blitz-matrix with second 2D shape function derivative
   */
   void shape_function_2D_deriv2(
     blitz::Array<double, 2>&                 deriv2,  ///< to be filled with shape function 2-nd derivative values
@@ -105,7 +105,7 @@ namespace Utils
     );
 
   /*!
-  \brief Fill a Epetra_SerialDenseVector with 1D shape function
+  \brief Fill a blitz-matrix with 1D shape function
   */
   void shape_function_1D(
     blitz::Array<double, 1>&                 funct,   ///< to be filled with shape function values
@@ -114,7 +114,7 @@ namespace Utils
     );
 
   /*!
-  \brief Fill a Epetra_SerialDenseVector with first 1D shape function derivative
+  \brief Fill a blitz-matrix with first 1D shape function derivative
   */
   void shape_function_1D_deriv1(
     blitz::Array<double, 2>&                 deriv1,  ///< to be filled with shape function derivative values
@@ -123,7 +123,7 @@ namespace Utils
     );
 
   /*!
-  \brief Fill a Epetra_SerialDenseVector with second 1D shape function derivative
+  \brief Fill a blitz-matrix with second 1D shape function derivative
   */
   void shape_function_1D_deriv2(
     blitz::Array<double, 2>&                 deriv2,  ///< to be filled with shape function 2-nd derivative values
