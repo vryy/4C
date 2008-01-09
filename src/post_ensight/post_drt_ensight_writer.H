@@ -57,6 +57,15 @@ const int subhexmap[8][8] =
 
 typedef map<DRT::Element::DiscretizationType, int> NumElePerDisType;
 
+//! defines different result types (node-based, element-based, Gauss-Points?)
+enum ResultType
+{
+  no_restype,          // unknown result type
+  nodebased,           // node-based result values
+  elementbased,        // element-based result values
+  max_restype          //  end marker. must be the last entry
+};
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 class EnsightWriter
@@ -96,6 +105,7 @@ protected:
     void WriteResult(
             const string groupname, ///< name of the result group in the control file
             const string name, ///< name of the result to be written
+            const int restype, ///< type of the result to be written (nodal-/element-based)
             const int numdf, ///< number of dofs per node to this result
             const int from=0 ///< start position of values in nodes
             );
@@ -152,7 +162,15 @@ protected:
     	    const vector<int>& nodevector,
             const RefCountPtr<Epetra_Map> proc0map
             ) const;
-    void WriteResultStep(
+    void WriteNodalResultStep(
+            ofstream& file,
+            PostResult& result,
+            map<string, vector<ofstream::pos_type> >& resultfilepos,
+            const string groupname,
+            const string name,
+            const int numdf,
+            const int from) const;
+    void WriteElementResultStep(
             ofstream& file,
             PostResult& result,
             map<string, vector<ofstream::pos_type> >& resultfilepos,

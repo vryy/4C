@@ -605,6 +605,7 @@ string EnsightWriter::GetEnsightString(
 void EnsightWriter::WriteResult(
         const string groupname,
         const string name,
+        const int restype,
         const int numdf,
         const int from)
 {
@@ -615,11 +616,8 @@ void EnsightWriter::WriteResult(
 
     // new for file continuation
     bool multiple_files = false;
-    const Epetra_Map* nodemap = field_->discretization()->NodeRowMap();
-    const int numnp = nodemap->NumGlobalElements();
-    const int stepsize = 5*80+sizeof(int)+numdf*numnp*sizeof(float);
-
-
+    
+    // open file
     const string filename = filename_ + "_"+ field_->name() + "."+ name;
     ofstream file;
     if (myrank_==0)
@@ -627,30 +625,77 @@ void EnsightWriter::WriteResult(
     	file.open(filename.c_str());
     }
     
-    // some output
-    if (myrank_==0)
-    	cout<<"writing field "<<name<<endl;
-    
-    map<string, vector<ofstream::pos_type> > resultfilepos;
-    WriteResultStep(file, result, resultfilepos, groupname, name, numdf, from);
-    while (result.next_result())
+    // distinguish between node- and element-based results
+    switch(restype)
     {
-        const int indexsize = 80+2*sizeof(int)+(file.tellp()/stepsize+2)*sizeof(long);
-        if (static_cast<long unsigned int>(file.tellp())+stepsize+indexsize>= FILE_SIZE_LIMIT_)
+    case nodebased:
+    {
+        if (myrank_==0)     		
+        	cout<<"writing node-based field "<<name<<endl;
+    	
+    	const Epetra_Map* nodemap = field_->discretization()->NodeRowMap();
+        const int numnp = nodemap->NumGlobalElements();
+        const int stepsize = 5*80+sizeof(int)+numdf*numnp*sizeof(float);
+    	
+        map<string, vector<ofstream::pos_type> > resultfilepos;
+        WriteNodalResultStep(file, result, resultfilepos, groupname, name, numdf, from);
+        while (result.next_result())
         {
-            FileSwitcher(file, multiple_files, filesetmap_, resultfilepos, stepsize, name, filename);
+            const int indexsize = 80+2*sizeof(int)+(file.tellp()/stepsize+2)*sizeof(long);
+            if (static_cast<long unsigned int>(file.tellp())+stepsize+indexsize>= FILE_SIZE_LIMIT_)
+            {
+                FileSwitcher(file, multiple_files, filesetmap_, resultfilepos, stepsize, name, filename);
+            }
+            WriteNodalResultStep(file, result, resultfilepos, groupname, name, numdf, from);
         }
-        WriteResultStep(file, result, resultfilepos, groupname, name, numdf, from);
+        
+        // append index table
+        WriteIndexTable(file, resultfilepos[name]);
+        resultfilepos[name].clear();
+        
+        // store information for later case file creation
+        filesetmap_[name].push_back(file.tellp()/stepsize);
+        variablenumdfmap_[name] = numdf;
+        variablefilenamemap_[name] = filename;
     }
+        break;
+        
+    case elementbased:
+    {
+    	if (myrank_==0)     		
+    		cout<<"writing element-based field "<<name<<endl;
 
-    // append index table
-    WriteIndexTable(file, resultfilepos[name]);
-    resultfilepos[name].clear();
-    
-    // store information for later case file creation
-    filesetmap_[name].push_back(file.tellp()/stepsize);
-    variablenumdfmap_[name] = numdf;
-    variablefilenamemap_[name] = filename;
+    	const Epetra_Map* elementmap = field_->discretization()->ElementRowMap();
+    	const int numele = elementmap->NumGlobalElements();
+    	const int stepsize = 5*80+sizeof(int)+numdf*numele*sizeof(float);
+    	
+        map<string, vector<ofstream::pos_type> > resultfilepos;
+        WriteElementResultStep(file, result, resultfilepos, groupname, name, numdf, from);
+        while (result.next_result())
+        {
+        	const int indexsize = 80+2*sizeof(int)+(file.tellp()/stepsize+2)*sizeof(long);
+        	if (static_cast<long unsigned int>(file.tellp())+stepsize+indexsize>= FILE_SIZE_LIMIT_)
+        	{
+        		FileSwitcher(file, multiple_files, filesetmap_, resultfilepos, stepsize, name, filename);
+        	}
+        	WriteElementResultStep(file, result, resultfilepos, groupname, name, numdf, from);
+        }
+        
+        // append index table
+        WriteIndexTable(file, resultfilepos[name]);
+        resultfilepos[name].clear();
+        
+        // store information for later case file creation
+        filesetmap_[name].push_back(file.tellp()/stepsize);
+        variablenumdfmap_[name] = numdf;
+        variablefilenamemap_[name] = filename;  
+    }
+    	break;
+    	
+    case no_restype:
+    case max_restype:
+    	dserror("found invalid result type");
+    } // end of switch(restype)
 
     // close result file   
     if (file.is_open())
@@ -716,7 +761,7 @@ void EnsightWriter::FileSwitcher(
 
  Each node has to have the same number of dofs.
  */
-void EnsightWriter::WriteResultStep(
+void EnsightWriter::WriteNodalResultStep(
         ofstream& file,
         PostResult& result,
         map<string, vector<ofstream::pos_type> >& resultfilepos,
@@ -848,6 +893,52 @@ void EnsightWriter::WriteResultStep(
 	return;
 }
 
+/*----------------------------------------------------------------------*/
+/*!
+ \brief Write element values for one timestep
+
+ Each element has to have the same number of dofs.
+ */
+/*----------------------------------------------------------------------*/
+void EnsightWriter::WriteElementResultStep(
+	       ofstream& file,
+	        PostResult& result,
+	        map<string, vector<ofstream::pos_type> >& resultfilepos,
+	        const string groupname,
+	        const string name,
+	        const int numdf,
+	        const int from) const
+	{	
+
+	//-------------------------------------------
+	// write some key words and read result data
+	//-------------------------------------------
+	
+	vector<ofstream::pos_type>& filepos = resultfilepos[name];
+	Write(file, "BEGIN TIME STEP");
+	filepos.push_back(file.tellp());
+
+	Write(file, "description");
+	Write(file, "part");
+	Write(file, field_->field_pos()+1);
+	//specify the element type
+	Write(file, "quad4");
+	
+	const RefCountPtr<DRT::Discretization> dis = field_->discretization();
+	const Epetra_Map* elementmap = dis->ElementRowMap(); //local element row map
+	const int numele = elementmap->NumGlobalElements();
+
+	// create dummy output
+	for (int iele=0; iele<numele; iele++)
+	{
+		Write<float>(file, iele);
+	}
+	
+	// finish writing the current time step
+	Write(file, "END TIME STEP");
+	return;
+
+	}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

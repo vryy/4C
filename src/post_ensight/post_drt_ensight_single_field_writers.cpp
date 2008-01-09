@@ -29,9 +29,9 @@ using namespace std;
 void StructureEnsightWriter::WriteAllResults(
         PostField* field)
 {
-    EnsightWriter::WriteResult("displacement", "displacement", field->problem()->num_dim());
-    EnsightWriter::WriteResult("velocity", "velocity", field->problem()->num_dim());
-    EnsightWriter::WriteResult("acceleration", "acceleration", field->problem()->num_dim());
+    EnsightWriter::WriteResult("displacement", "displacement", nodebased, field->problem()->num_dim());
+    EnsightWriter::WriteResult("velocity", "velocity", nodebased, field->problem()->num_dim());
+    EnsightWriter::WriteResult("acceleration", "acceleration", nodebased, field->problem()->num_dim());
 }
 
 /*----------------------------------------------------------------------*/
@@ -39,11 +39,13 @@ void StructureEnsightWriter::WriteAllResults(
 void FluidEnsightWriter::WriteAllResults(
         PostField* field)
 {
-    EnsightWriter::WriteResult("velnp", "velocity", field->problem()->num_dim());
-    EnsightWriter::WriteResult("velnp", "pressure", 1, field->problem()->num_dim());
-    EnsightWriter::WriteResult("residual", "residual", field->problem()->num_dim());
-    EnsightWriter::WriteResult("dispnp", "displacement", field->problem()->num_dim());
-    EnsightWriter::WriteResult("traction", "traction", field->problem()->num_dim());
+    EnsightWriter::WriteResult("velnp", "velocity", nodebased, field->problem()->num_dim());
+    EnsightWriter::WriteResult("velnp", "pressure", nodebased, 1, field->problem()->num_dim());
+    EnsightWriter::WriteResult("residual", "residual", nodebased, field->problem()->num_dim());
+    EnsightWriter::WriteResult("dispnp", "displacement", nodebased, field->problem()->num_dim());
+    EnsightWriter::WriteResult("traction", "traction", nodebased, field->problem()->num_dim());
+    // this is under development (gjb)
+    //EnsightWriter::WriteResult("localerror", "localerror", elementbased, 1);  
 }
 
 /*----------------------------------------------------------------------*/
@@ -51,7 +53,7 @@ void FluidEnsightWriter::WriteAllResults(
 void AleEnsightWriter::WriteAllResults(
         PostField* field)
 {
-    EnsightWriter::WriteResult("dispnp", "displacement", field->problem()->num_dim());
+    EnsightWriter::WriteResult("dispnp", "displacement", nodebased, field->problem()->num_dim());
 }
 
 
@@ -64,7 +66,7 @@ void ConDifEnsightWriter::WriteAllResults(
 	//phinp is a scalar result field with ONE dof per node.
 	//Therefore it is NOT possible to hand over field->problem()->num_dim() 
 	// (equals 2 or 3) as a number of dofs
-    EnsightWriter::WriteResult("phinp", "phi",1);
+    EnsightWriter::WriteResult("phinp", "phi", nodebased, 1);
 }
 
 
