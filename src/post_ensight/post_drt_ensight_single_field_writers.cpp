@@ -44,8 +44,7 @@ void FluidEnsightWriter::WriteAllResults(
     EnsightWriter::WriteResult("residual", "residual", nodebased, field->problem()->num_dim());
     EnsightWriter::WriteResult("dispnp", "displacement", nodebased, field->problem()->num_dim());
     EnsightWriter::WriteResult("traction", "traction", nodebased, field->problem()->num_dim());
-    // this line is just due to current development (gjb), and has no effect:
-    EnsightWriter::WriteResult("localerror", "localerror", elementbased, 1);  
+    EnsightWriter::WriteResult("domain_decomp", "domain_decomp", elementbased, 1);  
 }
 
 /*----------------------------------------------------------------------*/

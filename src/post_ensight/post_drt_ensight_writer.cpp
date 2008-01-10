@@ -30,9 +30,13 @@ EnsightWriter::EnsightWriter(
     myrank_(((field->problem())->comm())->MyPID()),
     nodeidgiven_(true)
 {
-    // initialize proc0map_ correctly    	
-    const Epetra_Map* nodemap = field_->discretization()->NodeRowMap();
+    // initialize proc0map_ correctly   
+    const RCP<DRT::Discretization> dis = field_->discretization();
+    const Epetra_Map* nodemap = dis->NodeRowMap();
     proc0map_ = DRT::Utils::AllreduceEMap(*nodemap,0);
+    
+	// get the number of elements for each distype (global numbers)
+    numElePerDisType_ = GetNumElePerDisType(dis);
 
     // map between distype in BACI and Ensight string
     //  note: these would be the direct mappings
@@ -301,12 +305,9 @@ void EnsightWriter::WriteCells(
 		nodevector.reserve(dis->NumMyColNodes()); 
 	}
 
-	// get the number of elements for each distype (global numbers)
-	const NumElePerDisType numElePerDisType = GetNumElePerDisType(dis);
-
 	// for each found distype write block of the same typed elements
 	NumElePerDisType::const_iterator iter;
-	for (iter=numElePerDisType.begin(); iter != numElePerDisType.end(); ++iter)
+	for (iter=numElePerDisType_.begin(); iter != numElePerDisType_.end(); ++iter)
 	{
 		const DRT::Element::DiscretizationType distypeiter = iter->first;
 		const int ne = GetNumEleOutput(distypeiter, iter->second);
@@ -901,6 +902,8 @@ void EnsightWriter::WriteNodalResultStep(
  \brief Write element values for one timestep
 
  Each element has to have the same number of dofs.
+ \author gjb
+ \date 01/08
  */
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteElementResultStep(
@@ -912,6 +915,8 @@ void EnsightWriter::WriteElementResultStep(
 	        const int numdf,
 	        const int from) const
 	{	
+	//TODO +make WriteElementResultStep running also in parallel
+	//     +support for results based on hybrid meshes
 
 	//-------------------------------------------
 	// write some key words and read result data
@@ -923,12 +928,26 @@ void EnsightWriter::WriteElementResultStep(
 	Write(file, "description");
 	Write(file, "part");
 	Write(file, field_->field_pos()+1);
+
 	//specify the element type
-	Write(file, "quad4");
-	
+	int count=0;
+	NumElePerDisType::const_iterator iter;
+	for (iter=numElePerDisType_.begin(); iter != numElePerDisType_.end(); ++iter)
+	{
+		const DRT::Element::DiscretizationType distypeiter = iter->first;
+		//const int ne = GetNumEleOutput(distypeiter, iter->second);
+		const string ensighteleString = GetEnsightString(distypeiter);
+		Write(file, ensighteleString);
+		if (count != 0) dserror("no support for element-based result for hybrid meshes");
+		count+=1;
+	}
+
 	const RefCountPtr<DRT::Discretization> dis = field_->discretization();
 	const Epetra_Map* elementmap = dis->ElementRowMap(); //local element row map
 	const int numele = elementmap->NumGlobalElements();
+
+	if (numele != elementmap->NumMyElements())
+	dserror("Parallel filter does not yet support element-based results");
 
 	const RefCountPtr<Epetra_Vector> data = result.read_result(groupname);
 	const Epetra_BlockMap& datamap = data->Map();

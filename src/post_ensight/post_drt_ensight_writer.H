@@ -244,6 +244,7 @@ protected:
     string filename_;
     int myrank_; ///< global processor id
     bool nodeidgiven_; ///< indicates whether BACI global node ids are written to geometry file. default value: true
+    NumElePerDisType numElePerDisType_; ///< number of elements per element discretization type
     
     RCP<Epetra_Map> proc0map_; ///< allreduced nodal map for proc 0, empty on other procs
 
