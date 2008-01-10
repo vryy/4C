@@ -625,6 +625,10 @@ void EnsightWriter::WriteResult(
     	file.open(filename.c_str());
     }
     
+    map<string, vector<ofstream::pos_type> > resultfilepos;
+    int startfilepos = file.tellp(); // file position should be zero, but we stay flexible
+    int stepsize = 0;
+    
     // distinguish between node- and element-based results
     switch(restype)
     {
@@ -632,13 +636,21 @@ void EnsightWriter::WriteResult(
     {
         if (myrank_==0)     		
         	cout<<"writing node-based field "<<name<<endl;
+        // store information for later case file creation
+        variableresulttypemap_[name] = "node";
     	
-    	const Epetra_Map* nodemap = field_->discretization()->NodeRowMap();
-        const int numnp = nodemap->NumGlobalElements();
-        const int stepsize = 5*80+sizeof(int)+numdf*numnp*sizeof(float);
+    	//const Epetra_Map* nodemap = field_->discretization()->NodeRowMap();
+        //const int numnp = nodemap->NumGlobalElements();
+        //int effnumdf = numdf;
+        //if (numdf==2) effnumdf=3; // in 2D we still have to write a 3D vector with zero z-components!!!
+        // get the number of bits to be written each time step
+        //const int stepsize = 5*80+sizeof(int)+effnumdf*numnp*sizeof(float);
     	
-        map<string, vector<ofstream::pos_type> > resultfilepos;
         WriteNodalResultStep(file, result, resultfilepos, groupname, name, numdf, from);
+        // how many bits are necessary per time step (we assume a fixed size)?
+        stepsize = ((int) file.tellp())-startfilepos;
+        if (stepsize <= 0) dserror("found invalid step size for result file");
+        
         while (result.next_result())
         {
             const int indexsize = 80+2*sizeof(int)+(file.tellp()/stepsize+2)*sizeof(long);
@@ -648,16 +660,6 @@ void EnsightWriter::WriteResult(
             }
             WriteNodalResultStep(file, result, resultfilepos, groupname, name, numdf, from);
         }
-        
-        // append index table
-        WriteIndexTable(file, resultfilepos[name]);
-        resultfilepos[name].clear();
-        
-        // store information for later case file creation
-        filesetmap_[name].push_back(file.tellp()/stepsize);
-        variablenumdfmap_[name] = numdf;
-        variablefilenamemap_[name] = filename;
-        variableresulttypemap_[name] = "node";
     }
         break;
         
@@ -665,13 +667,14 @@ void EnsightWriter::WriteResult(
     {
     	if (myrank_==0)     		
     		cout<<"writing element-based field "<<name<<endl;
-
-    	const Epetra_Map* elementmap = field_->discretization()->ElementRowMap();
-    	const int numele = elementmap->NumGlobalElements();
-    	const int stepsize = 5*80+sizeof(int)+numdf*numele*sizeof(float);
-    	
-        map<string, vector<ofstream::pos_type> > resultfilepos;
+        // store information for later case file creation
+        variableresulttypemap_[name] = "element";
+   	
         WriteElementResultStep(file, result, resultfilepos, groupname, name, numdf, from);
+        // how many bits are necessary per time step (we assume a fixed size)?
+        stepsize = ((int) file.tellp())-startfilepos;
+        if (stepsize <= 0) dserror("found invalid step size for result file");
+        
         while (result.next_result())
         {
         	const int indexsize = 80+2*sizeof(int)+(file.tellp()/stepsize+2)*sizeof(long);
@@ -681,16 +684,6 @@ void EnsightWriter::WriteResult(
         	}
         	WriteElementResultStep(file, result, resultfilepos, groupname, name, numdf, from);
         }
-        
-        // append index table
-        WriteIndexTable(file, resultfilepos[name]);
-        resultfilepos[name].clear();
-        
-        // store information for later case file creation
-        filesetmap_[name].push_back(file.tellp()/stepsize);
-        variablenumdfmap_[name] = numdf;
-        variablefilenamemap_[name] = filename;
-        variableresulttypemap_[name] = "element";
     }
     	break;
     	
@@ -699,6 +692,15 @@ void EnsightWriter::WriteResult(
     	dserror("found invalid result type");
     } // end of switch(restype)
 
+    // store information for later case file creation
+    filesetmap_[name].push_back(file.tellp()/stepsize);// has to be done BEFORE writing the index table
+    variablenumdfmap_[name] = numdf;
+    variablefilenamemap_[name] = filename;
+    
+    // append index table
+    WriteIndexTable(file, resultfilepos[name]);
+    resultfilepos[name].clear();
+     
     // close result file   
     if (file.is_open())
     	file.close();
@@ -779,7 +781,6 @@ void EnsightWriter::WriteNodalResultStep(
 	vector<ofstream::pos_type>& filepos = resultfilepos[name];
 	Write(file, "BEGIN TIME STEP");
 	filepos.push_back(file.tellp());
-
 	Write(file, "description");
 	Write(file, "part");
 	Write(file, field_->field_pos()+1);
@@ -915,11 +916,10 @@ void EnsightWriter::WriteElementResultStep(
 	//-------------------------------------------
 	// write some key words and read result data
 	//-------------------------------------------
-	
+
 	vector<ofstream::pos_type>& filepos = resultfilepos[name];
 	Write(file, "BEGIN TIME STEP");
 	filepos.push_back(file.tellp());
-
 	Write(file, "description");
 	Write(file, "part");
 	Write(file, field_->field_pos()+1);
@@ -930,12 +930,41 @@ void EnsightWriter::WriteElementResultStep(
 	const Epetra_Map* elementmap = dis->ElementRowMap(); //local element row map
 	const int numele = elementmap->NumGlobalElements();
 
-	// create dummy output
-	for (int iele=0; iele<numele; iele++)
+	const RefCountPtr<Epetra_Vector> data = result.read_result(groupname);
+	const Epetra_BlockMap& datamap = data->Map();
+
+	//---------------
+	// write results
+	//---------------
+
+	if (myrank_==0) // ensures pointer dofgids is valid
 	{
-		Write<float>(file, iele);
+		for (int idf=0; idf<numdf; ++idf)
+		{
+			for (int iele=0; iele<numele; iele++)
+			{
+				// get the dof local id w.r.t. the finaldatamap
+				int lid = datamap.LID(iele);
+				if (lid > -1)
+				{
+					Write(file, static_cast<float>((*data)[lid]));
+				}
+				else
+					dserror("recieved illegal dof local id: %d", lid);
+			}
+		}
 	}
-	
+
+	// 2 component vectors in a 3d problem require a row of zeros.
+	// do we really need this?
+	if (numdf==2)
+	{
+		for (int iele=0; iele<numele; iele++)
+		{
+			Write<float>(file, 0.);
+		}
+	}
+
 	// finish writing the current time step
 	Write(file, "END TIME STEP");
 	return;
@@ -1127,7 +1156,5 @@ string EnsightWriter::GetFileSectionStringFromFilesets(
     }
     return s.str();
 }
-
-
 
 #endif
