@@ -74,8 +74,11 @@ XFEM::ElementDofManager::ElementDofManager()
  *----------------------------------------------------------------------*/
 XFEM::ElementDofManager::ElementDofManager(
         DRT::Element& ele,
-		map<int, const set <XFEM::FieldEnr> >& nodalDofMap) :
-			nodalDofMap_(nodalDofMap)
+		const map<int, const set<XFEM::FieldEnr> >& nodalDofMap,
+        const vector<XFEM::FieldEnr>& elementDofs
+		) :
+			nodalDofMap_(nodalDofMap),
+			elementDofs_(elementDofs)
 {
 	// count number of dofs for each node
 	map<int, const set<XFEM::FieldEnr> >::const_iterator tmp;
@@ -160,7 +163,9 @@ std::string XFEM::ElementDofManager::toString() const
 XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih) :
         	xfemdis_(ih->xfemdis())
 {
-	nodalDofMap_ = XFEM::DofManager::createNodalDofMap(ih->xfemdis(), ih->cutterdis(), ih->elementalDomainIntCells());
+    XFEM::DofManager::createDofMap(
+            ih->xfemdis(), ih->cutterdis(), ih->elementalDomainIntCells(),
+            nodalDofMap_, elementalDofMap_);
 }
 		
 /*----------------------------------------------------------------------*
@@ -198,14 +203,19 @@ const XFEM::ElementDofManager XFEM::DofManager::constructElementDofManager(DRT::
     const int numnode = ele.NumNode();
     const int* nodegids = ele.NodeIds();
     
+    // nodal dofs for ele
     map<int, const set <XFEM::FieldEnr> > nodaldofset; 
     for (int inode = 0; inode < numnode; ++inode) {
         const int gid = nodegids[inode];
-        nodaldofset.insert(std::pair<int, const set<XFEM::FieldEnr> >(gid,this->getDofSet(gid)));
+        nodaldofset.insert(std::pair<int, const set<XFEM::FieldEnr> >(gid,this->getNodeDofSet(gid)));
     }
 
+    // element dofs for ele
+    const std::vector<XFEM::FieldEnr> elementdofs = this->getElementDofs(ele.Id());
+    
     // create a local dofmanager
-    XFEM::ElementDofManager eleDofManager = XFEM::ElementDofManager(ele, nodaldofset);
+    XFEM::ElementDofManager eleDofManager = XFEM::ElementDofManager(ele, nodaldofset, elementdofs);
+
     return eleDofManager;
 }
 
@@ -230,16 +240,17 @@ void XFEM::DofManager::checkForConsistency(
 /*----------------------------------------------------------------------*
  |  construct dofmap                                            ag 11/07|
  *----------------------------------------------------------------------*/
-const map<int, const set <XFEM::FieldEnr> > XFEM::DofManager::createNodalDofMap(
-        const RCP<DRT::Discretization>        xfemdis,
-        const RCP<DRT::Discretization>        cutterdis,
-        const map<int, XFEM::DomainIntCells >&  elementDomainIntCellMap) const
+void XFEM::DofManager::createDofMap(
+        const RCP<DRT::Discretization>            xfemdis,
+        const RCP<DRT::Discretization>            cutterdis,
+        const map<int, XFEM::DomainIntCells >&    elementDomainIntCellMap,
+        map<int, const set<XFEM::FieldEnr> >&     nodalDofMapFinal,
+        map<int, const vector<XFEM::FieldEnr> >&  elementalDofMapFinal
+        ) const
 {
-	// the final map
-	map<int, const set <XFEM::FieldEnr> >  nodalDofMapFinal;
-
 	// temporary assembly
-    map<int, set <XFEM::FieldEnr> >  nodalDofMap;
+    map<int, set<XFEM::FieldEnr> >  nodalDofMap;
+    map<int, vector<XFEM::FieldEnr> >  elementalDofMap;
     
     // standard enrichment used for all nodes (for now -> we can remove them from holes in the fluid)
     const int standard_label = 0;
@@ -290,17 +301,45 @@ const map<int, const set <XFEM::FieldEnr> > XFEM::DofManager::createNodalDofMap(
                     //              nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::LMPLambday, enr_void1));
                     //              nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::LMPLambdaz, enr_void1));              
                 };
+                // add discontinuous stress unknowns
+                int numstressparam = 0;
+                switch (actele->Shape())
+                {
+                    case DRT::Element::hex20: case DRT::Element::hex27: case DRT::Element::tet10:
+                        numstressparam = 4;
+                        break;
+                    case DRT::Element::hex8: case DRT::Element::tet4:
+                        numstressparam = 1;
+                        break;
+                    default:
+                        dserror("nope, not yet defined in createDofMap");
+                };
+                
+                const int element_gid = actele->NumNode();
+                for (int inen = 0; inen<numstressparam; ++inen)
+                {
+                    elementalDofMap[element_gid].push_back(XFEM::FieldEnr(PHYSICS::Tauxx, enr));
+                    elementalDofMap[element_gid].push_back(XFEM::FieldEnr(PHYSICS::Tauyy, enr));
+                    elementalDofMap[element_gid].push_back(XFEM::FieldEnr(PHYSICS::Tauzz, enr));
+                    elementalDofMap[element_gid].push_back(XFEM::FieldEnr(PHYSICS::Tauxy, enr));
+                    elementalDofMap[element_gid].push_back(XFEM::FieldEnr(PHYSICS::Tauxz, enr));
+                    elementalDofMap[element_gid].push_back(XFEM::FieldEnr(PHYSICS::Tauyz, enr));
+                }
             }
         };
     };
     
     // create const sets from standard sets, so the sets cannot be accidentily changed
     // could be removed later, if this is a performance bottleneck
-    for ( map<int, set <XFEM::FieldEnr> >::const_iterator oneset = nodalDofMap.begin(); oneset != nodalDofMap.end(); ++oneset )
+    for ( map<int, set<XFEM::FieldEnr> >::const_iterator oneset = nodalDofMap.begin(); oneset != nodalDofMap.end(); ++oneset )
     {
         nodalDofMapFinal.insert( make_pair(oneset->first, oneset->second));
     };
-    return nodalDofMapFinal;
+    
+    for ( map<int, vector<XFEM::FieldEnr> >::const_iterator oneset = elementalDofMap.begin(); oneset != elementalDofMap.end(); ++oneset )
+    {
+        elementalDofMapFinal.insert( make_pair(oneset->first, oneset->second));
+    };
 }
 
 XFEM::AssemblyType XFEM::CheckForStandardEnrichmentsOnly(

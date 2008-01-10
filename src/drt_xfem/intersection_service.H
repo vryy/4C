@@ -225,14 +225,11 @@ namespace XFEM
     /*!
     \brief checks if a position in current coordinates lies within a certain element           
            The nonlinear system of equation is solved with help of the Newton-method.
-
-    \param discretization       (in)        : mesh 
-    \param x                    (in)        : node in current coordinates
     */  
     bool PositionWithinCondition(
-            const blitz::Array<double,1>&     x,
+            const blitz::Array<double,1>&     x,                     ///< node in current coordinates
             const int                         xfem_condition_label, 
-            RCP<DRT::Discretization>          cutterdis
+            RCP<DRT::Discretization>          cutterdis              ///< mesh
         );
     
     /*!

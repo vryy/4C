@@ -493,8 +493,8 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
             dserror("Cannot get state vector 'velnp'");
 
           // extract local values from the global vector
-          vector<double> myvelnp(lm.size());
-          DRT::Utils::ExtractMyValues(*velnp,myvelnp,lm);
+          vector<double> locval(lm.size());
+          DRT::Utils::ExtractMyValues(*velnp,locval,lm);
 
           if (is_ale_)
           {
@@ -508,6 +508,12 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
           const int numparamvelx = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Velx);
           const int numparamvely = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Vely);
           const int numparamvelz = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Velz);
+          const int numparamtauxx = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Tauxx);
+          const int numparamtauyy = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Tauyy);
+          const int numparamtauzz = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Tauzz);
+          const int numparamtauxy = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Tauxy);
+          const int numparamtauxz = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Tauxz);
+          const int numparamtauyz = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Tauyz);
 //          cout << "numparampres " << numparampres << endl;
 //          cout << "numparamvelx " << numparamvelx << endl;
 //          cout << "numparamvely " << numparamvely << endl;
@@ -524,10 +530,10 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
           blitz::Array<double, 1> eprenp(numparampres);
           blitz::Array<double, 2> evelnp(3,numparamvelx,blitz::ColumnMajorArray<2>());
           
-          for (int iparam=0; iparam<numparamvelx; ++iparam)   evelnp(0,iparam) = myvelnp[velxdof[iparam]];
-          for (int iparam=0; iparam<numparamvely; ++iparam)   evelnp(1,iparam) = myvelnp[velydof[iparam]];
-          for (int iparam=0; iparam<numparamvelz; ++iparam)   evelnp(2,iparam) = myvelnp[velzdof[iparam]];
-          for (int iparam=0; iparam<numparampres; ++iparam)   eprenp(iparam) = myvelnp[presdof[iparam]];
+          for (int iparam=0; iparam<numparamvelx; ++iparam)   evelnp(0,iparam) = locval[velxdof[iparam]];
+          for (int iparam=0; iparam<numparamvely; ++iparam)   evelnp(1,iparam) = locval[velydof[iparam]];
+          for (int iparam=0; iparam<numparamvelz; ++iparam)   evelnp(2,iparam) = locval[velzdof[iparam]];
+          for (int iparam=0; iparam<numparampres; ++iparam)   eprenp(iparam) = locval[presdof[iparam]];
           
           
           const RCP<XFEM::InterfaceHandle> ih = params.get< RCP< XFEM::InterfaceHandle > >("interfacehandle",null);

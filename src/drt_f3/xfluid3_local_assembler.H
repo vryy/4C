@@ -44,6 +44,9 @@ template <> int getFieldNumber<XFEM::PHYSICS::Pres>() {return 3;};
 
 
 
+//TODO put stiffness matrix and rhs vector as object variables to save A LOT of typing
+// might allow fixed size array for estiff und eforce
+
 template <DRT::Element::DiscretizationType DISTYPE, 
           XFEM::AssemblyType ASSEMBLYTYPE>
 class LocalAssembler

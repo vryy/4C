@@ -608,6 +608,7 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
     // check here, if we really have a fluid !!
     dsassert(material->mattyp == m_fluid, "Material law is not of type m_fluid.");
     const double visc = material->m.fluid->viscosity;
+    const double reciproke_visc = 1.0 / visc;
 
     // stabilization parameter
     // This has to be done before anything else is calculated because
@@ -648,6 +649,9 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
 
     // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
     const int numparamvelx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velx, iel_);
+
+    // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
+    const int numparamtauxx = 0;//getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxx, iel_);
 
     for (XFEM::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell < domainIntCells.end(); ++cell)
     {
@@ -792,7 +796,22 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
       // get pressure gradients
       const BlitzVec gradp_(blitz::sum(enr_derxy_(i,j)*eprenp(j),j));
 
+      // get pressurrrrre
       const double press = blitz::sum(enr_funct_*eprenp);
+
+      // get viscous stress unknowns per interface
+      vector<BlitzMat> taus;
+      const int numinterface = 1;
+      for (int iiface = 0; iiface < numinterface; ++iiface)
+      {
+          BlitzMat tau(3,3,blitz::ColumnMajorArray<2>());
+
+          // fill tau
+
+          // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+          taus.push_back(tau);
+
+      }
 
       // get bodyforce in gausspoint
       BlitzVec bodyforce_(3);
@@ -828,24 +847,24 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
       // stabilization parameters for stationary case
 
       // compute tau_Mu
-      BlitzVec tau_(3);
+      BlitzVec tau_stab(3);
       const double re_tau_mu = mk * vel_norm * strle / (2.0 * visc);   /* convective : viscous forces */
       const double xi_tau_mu = DMAX(re_tau_mu, 1.0);
-      tau_(0) = (DSQR(strle)*mk)/(4.0*visc*xi_tau_mu);
+      tau_stab(0) = (DSQR(strle)*mk)/(4.0*visc*xi_tau_mu);
 
       // compute tau_Mp
       const double re_tau_mp = mk * vel_norm * hk / (2.0 * visc);      /* convective : viscous forces */
       const double xi_tau_mp = DMAX(re_tau_mp,1.0);
-      tau_(1) = (DSQR(hk)*mk)/(4.0*visc*xi_tau_mp);
+      tau_stab(1) = (DSQR(hk)*mk)/(4.0*visc*xi_tau_mp);
 
       // compute tau_C
       const double xi_tau_c = DMIN(re_tau_mp, 1.0);
-      tau_(2) = 0.5*vel_norm*hk*xi_tau_c;
+      tau_stab(2) = 0.5*vel_norm*hk*xi_tau_c;
       
       // stabilisation parameter
-      const double tau_M  = tau_(0)*fac;
-      const double tau_Mp = tau_(1)*fac;
-      const double tau_C  = tau_(2)*fac;
+      const double tau_M  = tau_stab(0)*fac;
+      const double tau_Mp = tau_stab(1)*fac;
+      const double tau_C  = tau_stab(2)*fac;
 
       const BlitzVec shp(enr_funct_);
       const BlitzVec shp_dx(enr_derxy_(0,_));
@@ -855,6 +874,11 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
 //      BlitzVec shp_dy(enr_derxy2_(1,_));
 //      BlitzVec shp_dz(enr_derxy2_(2,_));
       
+      const BlitzVec shp_tau;
+      const BlitzVec shp_tau_dx;
+      const BlitzVec shp_tau_dy;
+      const BlitzVec shp_tau_dz;
+
       /*------------------------- evaluate rhs vector at integration point ---*/
       //   rhsint_ = histvec_(i) + bodyforce_(i);
       // histvec is always zero in stationary case (!):
@@ -870,6 +894,9 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
       visc_old_(0) = vderxy2_(0,0) + 0.5 * (vderxy2_(0,1) + vderxy2_(1,3) + vderxy2_(0,2) + vderxy2_(2,4));
       visc_old_(1) = vderxy2_(1,1) + 0.5 * (vderxy2_(1,0) + vderxy2_(0,3) + vderxy2_(1,2) + vderxy2_(2,5));
       visc_old_(2) = vderxy2_(2,2) + 0.5 * (vderxy2_(2,0) + vderxy2_(0,4) + vderxy2_(2,1) + vderxy2_(1,5));
+
+      // evaluate residual once for all stabilisation right hand sides
+      const BlitzVec res_old(-rhsint_+(conv_old_+gradp_-2.0*visc*visc_old_));
 
       /* Reactive term  u:  funct */
       /* linearise convective term */
@@ -893,7 +920,7 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
          |  u_old_z,x   u_old_z,y   u_old_z,z  |
          \                                     /
          with  N .. form function matrix                                   */
-      const blitz::Array<double,3> enr_conv_r_(vderxy_(i, j)*enr_funct_(k));
+      const blitz::Array<double,3> enr_conv_r_(vderxy_(i, j)*shp(k));
 
       /*--- viscous term  - grad * epsilon(u): ----------------------------*/
       /*   /                                                \
@@ -922,8 +949,6 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
 
       /*--------------------------------- now build single stiffness terms ---*/
       {
-        // evaluate residual once for all stabilisation right hand sides
-        const BlitzVec res_old(-rhsint_+(conv_old_+gradp_-2.0*visc*visc_old_));
 
         //----------------------------------------------------------------------
         //                            GALERKIN PART
@@ -936,60 +961,121 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
                     |  \ (i)       /          |
                      \                       /
         */
-        {
-  //      const blitz::Array<double,2> shapeprod(fac*(enr_funct_(i)*enr_conv_c_(j)));
-  //      integrateMatrixFast(dofman, estif, Velx, Velx, shapeprod);
-  //      integrateMatrixFast(dofman, estif, Vely, Vely, shapeprod);
-  //      integrateMatrixFast(dofman, estif, Velz, Velz, shapeprod);
-        
         localAssembler.template Matrix<Velx,Velx>(dofman, estif, shp, fac, enr_conv_c_);
         localAssembler.template Matrix<Vely,Vely>(dofman, estif, shp, fac, enr_conv_c_);
         localAssembler.template Matrix<Velz,Velz>(dofman, estif, shp, fac, enr_conv_c_);
-        }
-        
+
+        /* convection */
+        localAssembler.template Vector<Velx>(dofman, eforce, enr_conv_r_(0, 0, _), -fac*velint_(0));
+        localAssembler.template Vector<Velx>(dofman, eforce, enr_conv_r_(0, 1, _), -fac*velint_(1));
+        localAssembler.template Vector<Velx>(dofman, eforce, enr_conv_r_(0, 2, _), -fac*velint_(2));
+
+        localAssembler.template Vector<Vely>(dofman, eforce, enr_conv_r_(1, 0, _), -fac*velint_(0));
+        localAssembler.template Vector<Vely>(dofman, eforce, enr_conv_r_(1, 1, _), -fac*velint_(1));
+        localAssembler.template Vector<Vely>(dofman, eforce, enr_conv_r_(1, 2, _), -fac*velint_(2));
+
+        localAssembler.template Vector<Velz>(dofman, eforce, enr_conv_r_(2, 0, _), -fac*velint_(0));
+        localAssembler.template Vector<Velz>(dofman, eforce, enr_conv_r_(2, 1, _), -fac*velint_(1));
+        localAssembler.template Vector<Velz>(dofman, eforce, enr_conv_r_(2, 2, _), -fac*velint_(2));
+
         /* Viskositaetsterm */
-        /*
-                      /                        \
-                     |       /  \         / \   |
-                     |  eps | Du | , eps | v |  |
-                     |       \  /         \ /   |
-                      \                        /
-        */
-  //      const blitz::Array<double,1> shpdx(shp_dx);
-  //      const blitz::Array<double,1> shpdy(shp_dy);
-  //      const blitz::Array<double,1> shpdz(shp_dz);
-  //      Matrix<DISTYPE>Fast(dofman, estif, Velx, Velx, BlitzMat(visc*fac*(2.0*(shpdx(i)*shpdx(j))
-  //                                                                           + shpdy(i)*shpdy(j)
-  //                                                                           + shpdz(i)*shpdz(j))));
-        
-        localAssembler.template Matrix<Velx,Velx>(dofman, estif, shp_dx, 2.0*visc*fac, shp_dx);
-        localAssembler.template Matrix<Velx,Velx>(dofman, estif, shp_dy,     visc*fac, shp_dy);
-        localAssembler.template Matrix<Velx,Velx>(dofman, estif, shp_dz,     visc*fac, shp_dz);
-        
-        localAssembler.template Matrix<Velx,Vely>(dofman, estif, shp_dy,     visc*fac, shp_dx);
-        localAssembler.template Matrix<Velx,Velz>(dofman, estif, shp_dz,     visc*fac, shp_dx);
-        localAssembler.template Matrix<Vely,Velx>(dofman, estif, shp_dx,     visc*fac, shp_dy);
+        if (numparamtauxx == 0)
+        {
+            /*
+                          /                        \
+                         |       /  \         / \   |
+                         |  tau | Du | , eps | v |  |
+                         |       \  /         \ /   |
+                          \                        /
+            */
+            localAssembler.template Matrix<Velx,Velx>(dofman, estif, shp_dx, 2.0*visc*fac, shp_dx);
+            localAssembler.template Matrix<Velx,Velx>(dofman, estif, shp_dy,     visc*fac, shp_dy);
+            localAssembler.template Matrix<Velx,Velx>(dofman, estif, shp_dz,     visc*fac, shp_dz);
+            localAssembler.template Matrix<Velx,Vely>(dofman, estif, shp_dy,     visc*fac, shp_dx);
+            localAssembler.template Matrix<Velx,Velz>(dofman, estif, shp_dz,     visc*fac, shp_dx);
 
-  //      integrateMatrixFast(dofman, estif, Vely, Vely, BlitzMat(visc*fac*(     shpdx(i)*shpdx(j)
-  //                                                                       +2.0*(shpdy(i)*shpdy(j))
-  //                                                                            +shpdz(i)*shpdz(j))));
-        
-        localAssembler.template Matrix<Vely,Vely>(dofman, estif, shp_dx,     visc*fac, shp_dx);
-        localAssembler.template Matrix<Vely,Vely>(dofman, estif, shp_dy, 2.0*visc*fac, shp_dy);
-        localAssembler.template Matrix<Vely,Vely>(dofman, estif, shp_dz,     visc*fac, shp_dz);
+            localAssembler.template Matrix<Vely,Velx>(dofman, estif, shp_dx,     visc*fac, shp_dy);
+            localAssembler.template Matrix<Vely,Vely>(dofman, estif, shp_dx,     visc*fac, shp_dx);
+            localAssembler.template Matrix<Vely,Vely>(dofman, estif, shp_dy, 2.0*visc*fac, shp_dy);
+            localAssembler.template Matrix<Vely,Vely>(dofman, estif, shp_dz,     visc*fac, shp_dz);
+            localAssembler.template Matrix<Vely,Velz>(dofman, estif, shp_dz,     visc*fac, shp_dy);
 
-        localAssembler.template Matrix<Vely,Velz>(dofman, estif, shp_dz,     visc*fac, shp_dy);
-        localAssembler.template Matrix<Velz,Velx>(dofman, estif, shp_dx,     visc*fac, shp_dz);
-        localAssembler.template Matrix<Velz,Vely>(dofman, estif, shp_dy,     visc*fac, shp_dz);
+            localAssembler.template Matrix<Velz,Velx>(dofman, estif, shp_dx,     visc*fac, shp_dz);
+            localAssembler.template Matrix<Velz,Vely>(dofman, estif, shp_dy,     visc*fac, shp_dz);
+            localAssembler.template Matrix<Velz,Velz>(dofman, estif, shp_dx,     visc*fac, shp_dx);
+            localAssembler.template Matrix<Velz,Velz>(dofman, estif, shp_dy,     visc*fac, shp_dy);
+            localAssembler.template Matrix<Velz,Velz>(dofman, estif, shp_dz, 2.0*visc*fac, shp_dz);
+            
+            localAssembler.template Vector<Velx>(dofman, eforce, shp_dx, -2.0*visc*fac*vderxy_(0, 0));
+            localAssembler.template Vector<Velx>(dofman, eforce, shp_dy,     -visc*fac*vderxy_(0, 1));
+            localAssembler.template Vector<Velx>(dofman, eforce, shp_dy,     -visc*fac*vderxy_(1, 0));
+            localAssembler.template Vector<Velx>(dofman, eforce, shp_dz,     -visc*fac*vderxy_(0, 2));
+            localAssembler.template Vector<Velx>(dofman, eforce, shp_dz,     -visc*fac*vderxy_(2, 0));
 
-  //      integrateMatrixFast(dofman, estif, Velz, Velz, BlitzMat(visc*fac*(     shpdx(i)*shpdx(j)
-  //                                                                           + shpdy(i)*shpdy(j)
-  //                                                                       +2.0*(shpdz(i)*shpdz(j)))));
+            localAssembler.template Vector<Vely>(dofman, eforce, shp_dx,     -visc*fac*vderxy_(1, 0));
+            localAssembler.template Vector<Vely>(dofman, eforce, shp_dx,     -visc*fac*vderxy_(0, 1));
+            localAssembler.template Vector<Vely>(dofman, eforce, shp_dy, -2.0*visc*fac*vderxy_(1, 1));
+            localAssembler.template Vector<Vely>(dofman, eforce, shp_dz,     -visc*fac*vderxy_(1, 2));
+            localAssembler.template Vector<Vely>(dofman, eforce, shp_dz,     -visc*fac*vderxy_(2, 1));
 
-        localAssembler.template Matrix<Velz,Velz>(dofman, estif, shp_dx,     visc*fac, shp_dx);
-        localAssembler.template Matrix<Velz,Velz>(dofman, estif, shp_dy,     visc*fac, shp_dy);
-        localAssembler.template Matrix<Velz,Velz>(dofman, estif, shp_dz, 2.0*visc*fac, shp_dz);
-        
+            localAssembler.template Vector<Velz>(dofman, eforce, shp_dx,     -visc*fac*vderxy_(2, 0));
+            localAssembler.template Vector<Velz>(dofman, eforce, shp_dx,     -visc*fac*vderxy_(0, 2));
+            localAssembler.template Vector<Velz>(dofman, eforce, shp_dy,     -visc*fac*vderxy_(2, 1));
+            localAssembler.template Vector<Velz>(dofman, eforce, shp_dy,     -visc*fac*vderxy_(1, 2));
+            localAssembler.template Vector<Velz>(dofman, eforce, shp_dz, -2.0*visc*fac*vderxy_(2, 2));
+        }
+        else
+        {
+            for (int iiface = 0; iiface < numinterface; ++iiface)
+            {
+                /*
+                              /                  \
+                             |              / \   |
+                             |  Dtau , eps | v |  |
+                             |              \ /   |
+                              \                  /
+                */
+                localAssembler.template Matrix<Velx,Tauxx>(dofman, estif, shp_dx, 2.0*fac, shp_tau);
+                localAssembler.template Matrix<Velx,Tauxy>(dofman, estif, shp_dy,     fac, shp_tau);
+                localAssembler.template Matrix<Velx,Tauxz>(dofman, estif, shp_dz,     fac, shp_tau);
+                localAssembler.template Matrix<Velx,Tauyx>(dofman, estif, shp_dy,     fac, shp_tau);
+                localAssembler.template Matrix<Velx,Tauzx>(dofman, estif, shp_dz,     fac, shp_tau);
+    
+                localAssembler.template Matrix<Vely,Tauxy>(dofman, estif, shp_dx,     fac, shp_tau);
+                localAssembler.template Matrix<Vely,Tauyx>(dofman, estif, shp_dx,     fac, shp_tau);
+                localAssembler.template Matrix<Vely,Tauyy>(dofman, estif, shp_dy, 2.0*fac, shp_tau);
+                localAssembler.template Matrix<Vely,Tauyz>(dofman, estif, shp_dz,     fac, shp_tau);
+                localAssembler.template Matrix<Vely,Tauzy>(dofman, estif, shp_dz,     fac, shp_tau);
+    
+                localAssembler.template Matrix<Velz,Tauxz>(dofman, estif, shp_dx,     fac, shp_tau);
+                localAssembler.template Matrix<Velz,Tauyz>(dofman, estif, shp_dy,     fac, shp_tau);
+                localAssembler.template Matrix<Velz,Tauzx>(dofman, estif, shp_dx,     fac, shp_tau);
+                localAssembler.template Matrix<Velz,Tauzy>(dofman, estif, shp_dy,     fac, shp_tau);
+                localAssembler.template Matrix<Velz,Tauzz>(dofman, estif, shp_dz, 2.0*fac, shp_tau);
+                
+                BlitzMat tau = taus[iiface];
+    
+                localAssembler.template Vector<Velx>(dofman, eforce, shp_dx, -2.0*fac*tau(0, 0));
+                localAssembler.template Vector<Velx>(dofman, eforce, shp_dy,     -fac*tau(0, 1));
+                localAssembler.template Vector<Velx>(dofman, eforce, shp_dy,     -fac*tau(1, 0));
+                localAssembler.template Vector<Velx>(dofman, eforce, shp_dz,     -fac*tau(0, 2));
+                localAssembler.template Vector<Velx>(dofman, eforce, shp_dz,     -fac*tau(2, 0));
+    
+                localAssembler.template Vector<Vely>(dofman, eforce, shp_dx,     -fac*tau(1, 0));
+                localAssembler.template Vector<Vely>(dofman, eforce, shp_dx,     -fac*tau(0, 1));
+                localAssembler.template Vector<Vely>(dofman, eforce, shp_dy, -2.0*fac*tau(1, 1));
+                localAssembler.template Vector<Vely>(dofman, eforce, shp_dz,     -fac*tau(1, 2));
+                localAssembler.template Vector<Vely>(dofman, eforce, shp_dz,     -fac*tau(2, 1));
+    
+                localAssembler.template Vector<Velz>(dofman, eforce, shp_dx,     -fac*tau(2, 0));
+                localAssembler.template Vector<Velz>(dofman, eforce, shp_dx,     -fac*tau(0, 2));
+                localAssembler.template Vector<Velz>(dofman, eforce, shp_dy,     -fac*tau(2, 1));
+                localAssembler.template Vector<Velz>(dofman, eforce, shp_dy,     -fac*tau(1, 2));
+                localAssembler.template Vector<Velz>(dofman, eforce, shp_dz, -2.0*fac*tau(2, 2));
+            }
+        }
+
+
         /* Druckterm */
         /*
                         /                \
@@ -998,11 +1084,16 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
                        |                  |
                         \                /
         */
-        localAssembler.template Matrix<Velx,Pres>(dofman, estif, shp_dx, -fac, enr_funct_);
-        localAssembler.template Matrix<Vely,Pres>(dofman, estif, shp_dy, -fac, enr_funct_);
-        localAssembler.template Matrix<Velz,Pres>(dofman, estif, shp_dz, -fac, enr_funct_);
+        localAssembler.template Matrix<Velx,Pres>(dofman, estif, shp_dx, -fac, shp);
+        localAssembler.template Matrix<Vely,Pres>(dofman, estif, shp_dy, -fac, shp);
+        localAssembler.template Matrix<Velz,Pres>(dofman, estif, shp_dz, -fac, shp);
+        
+        localAssembler.template Vector<Velx>(dofman, eforce, shp_dx, press*fac);
+        localAssembler.template Vector<Vely>(dofman, eforce, shp_dy, press*fac);
+        localAssembler.template Vector<Velz>(dofman, eforce, shp_dz, press*fac);
 
-        /* Divergenzfreiheit */
+
+        /* Divergenzfreiheit - continuity equation*/
         /*
                        /                \
                       |                  |
@@ -1010,107 +1101,97 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
                       |                  |
                        \                /
         */
-        localAssembler.template Matrix<Pres,Velx>(dofman, estif, enr_funct_, fac, shp_dx);
-        localAssembler.template Matrix<Pres,Vely>(dofman, estif, enr_funct_, fac, shp_dy);
-        localAssembler.template Matrix<Pres,Velz>(dofman, estif, enr_funct_, fac, shp_dz);
+        localAssembler.template Matrix<Pres,Velx>(dofman, estif, shp, fac, shp_dx);
+        localAssembler.template Matrix<Pres,Vely>(dofman, estif, shp, fac, shp_dy);
+        localAssembler.template Matrix<Pres,Velz>(dofman, estif, shp, fac, shp_dz);
         
-
-//        if (newton)
-//        {
-            /*  convection, reactive part
-                   /                         \
-                  |  /          \   n+1       |
-                  | | Du o nabla | u     , v  |
-                  |  \          /   (i)       |
-                   \                         /
-            */
-//            Matrix<DISTYPE>(dofman, estif, Velx, enr_funct_, fac, Velx, enr_conv_r_(0, 0, _));
-//            Matrix<DISTYPE>(dofman, estif, Velx, enr_funct_, fac, Vely, enr_conv_r_(0, 1, _));
-//            Matrix<DISTYPE>(dofman, estif, Velx, enr_funct_, fac, Velz, enr_conv_r_(0, 2, _));
-//
-//            Matrix<DISTYPE>(dofman, estif, Vely, enr_funct_, fac, Velx, enr_conv_r_(1, 0, _));
-//            Matrix<DISTYPE>(dofman, estif, Vely, enr_funct_, fac, Vely, enr_conv_r_(1, 1, _));
-//            Matrix<DISTYPE>(dofman, estif, Vely, enr_funct_, fac, Velz, enr_conv_r_(1, 2, _));
-//
-//            Matrix<DISTYPE>(dofman, estif, Velz, enr_funct_, fac, Velx, enr_conv_r_(2, 0, _));
-//            Matrix<DISTYPE>(dofman, estif, Velz, enr_funct_, fac, Vely, enr_conv_r_(2, 1, _));
-//            Matrix<DISTYPE>(dofman, estif, Velz, enr_funct_, fac, Velz, enr_conv_r_(2, 2, _));
-//        }
-
-        /* convection */
-  //      integrateVectorBlock(dofman, eforce, Velx, BlitzVec(-fac*(velint_(0)*enr_conv_r_(0, 0, _)
-  //                                                               +velint_(1)*enr_conv_r_(0, 1, _)
-  //                                                               +velint_(2)*enr_conv_r_(0, 2, _))));
-        localAssembler.template Vector<Velx>(dofman, eforce, enr_conv_r_(0, 0, _), -fac*velint_(0));
-        localAssembler.template Vector<Velx>(dofman, eforce, enr_conv_r_(0, 1, _), -fac*velint_(1));
-        localAssembler.template Vector<Velx>(dofman, eforce, enr_conv_r_(0, 2, _), -fac*velint_(2));
-
-        localAssembler.template Vector<Vely>(dofman, eforce, enr_conv_r_(1, 0, _), -fac*velint_(0));
-        localAssembler.template Vector<Vely>(dofman, eforce, enr_conv_r_(1, 1, _), -fac*velint_(1));
-        localAssembler.template Vector<Vely>(dofman, eforce, enr_conv_r_(1, 2, _), -fac*velint_(2));
-  //      integrateVectorBlock(dofman, eforce, Vely, BlitzVec(-fac*(velint_(0)*enr_conv_r_(1, 0, _)
-  //                                                               +velint_(1)*enr_conv_r_(1, 1, _)
-  //                                                               +velint_(2)*enr_conv_r_(1, 2, _))));
-
-        localAssembler.template Vector<Velz>(dofman, eforce, enr_conv_r_(2, 0, _), -fac*velint_(0));
-        localAssembler.template Vector<Velz>(dofman, eforce, enr_conv_r_(2, 1, _), -fac*velint_(1));
-        localAssembler.template Vector<Velz>(dofman, eforce, enr_conv_r_(2, 2, _), -fac*velint_(2));
-  //      integrateVectorBlock(dofman, eforce, Velz, BlitzVec(-fac*(velint_(0)*enr_conv_r_(2, 0, _)
-  //                                                               +velint_(1)*enr_conv_r_(2, 1, _)
-  //                                                               +velint_(2)*enr_conv_r_(2, 2, _))));
-
-        /* pressure */
-        localAssembler.template Vector<Velx>(dofman, eforce, shp_dx, press*fac);
-        localAssembler.template Vector<Vely>(dofman, eforce, shp_dy, press*fac);
-        localAssembler.template Vector<Velz>(dofman, eforce, shp_dz, press*fac);
-
-        /* viscosity */
-        localAssembler.template Vector<Velx>(dofman, eforce, shp_dx, -2.0*visc*fac*vderxy_(0, 0));
-        localAssembler.template Vector<Velx>(dofman, eforce, shp_dy,     -visc*fac*vderxy_(0, 1));
-        localAssembler.template Vector<Velx>(dofman, eforce, shp_dy,     -visc*fac*vderxy_(1, 0));
-        localAssembler.template Vector<Velx>(dofman, eforce, shp_dz,     -visc*fac*vderxy_(0, 2));
-        localAssembler.template Vector<Velx>(dofman, eforce, shp_dz,     -visc*fac*vderxy_(2, 0));
-  //      integrateVectorBlock(dofman, eforce, Velx, BlitzVec(-visc*fac*(2.0*vderxy_(0, 0)*shp_dx
-  //                                                                        +vderxy_(0, 1)*shp_dy
-  //                                                                        +vderxy_(1, 0)*shp_dy
-  //                                                                        +vderxy_(0, 2)*shp_dz
-  //                                                                        +vderxy_(2, 0)*shp_dz)));
-        
-        localAssembler.template Vector<Vely>(dofman, eforce, shp_dx,     -visc*fac*vderxy_(0, 1));
-        localAssembler.template Vector<Vely>(dofman, eforce, shp_dx,     -visc*fac*vderxy_(1, 0));
-        localAssembler.template Vector<Vely>(dofman, eforce, shp_dy, -2.0*visc*fac*vderxy_(1, 1));
-        localAssembler.template Vector<Vely>(dofman, eforce, shp_dz,     -visc*fac*vderxy_(1, 2));
-        localAssembler.template Vector<Vely>(dofman, eforce, shp_dz,     -visc*fac*vderxy_(2, 1));
-  //      integrateVectorBlock(dofman, eforce, Vely, BlitzVec(-visc*fac*(2.0*vderxy_(1, 1)*shp_dy
-  //                                                                        +vderxy_(0, 1)*shp_dx
-  //                                                                        +vderxy_(1, 0)*shp_dx
-  //                                                                        +vderxy_(1, 2)*shp_dz
-  //                                                                        +vderxy_(2, 1)*shp_dz)));
-
-        localAssembler.template Vector<Velz>(dofman, eforce, shp_dx,     -visc*fac*vderxy_(0, 2));
-        localAssembler.template Vector<Velz>(dofman, eforce, shp_dx,     -visc*fac*vderxy_(2, 0));
-        localAssembler.template Vector<Velz>(dofman, eforce, shp_dy,     -visc*fac*vderxy_(1, 2));
-        localAssembler.template Vector<Velz>(dofman, eforce, shp_dy,     -visc*fac*vderxy_(2, 1));
-        localAssembler.template Vector<Velz>(dofman, eforce, shp_dz, -2.0*visc*fac*vderxy_(2, 2));
-  //      integrateVectorBlock(dofman, eforce, Velz, BlitzVec(-visc*fac*(2.0*vderxy_(2, 2)*shp_dz
-  //                                                                        +vderxy_(0, 2)*shp_dx
-  //                                                                        +vderxy_(2, 0)*shp_dx
-  //                                                                        +vderxy_(1, 2)*shp_dy
-  //                                                                        +vderxy_(2, 1)*shp_dy)));
-        
-        // source term of the right hand side
-        localAssembler.template Vector<Velx>(dofman, eforce, enr_funct_, fac*rhsint_(0));
-        localAssembler.template Vector<Vely>(dofman, eforce, enr_funct_, fac*rhsint_(1));
-        localAssembler.template Vector<Velz>(dofman, eforce, enr_funct_, fac*rhsint_(2));
-
-        // continuity equation
         localAssembler.template Vector<Pres>(dofman, eforce, enr_conv_r_(0, 0, _), -fac);
         localAssembler.template Vector<Pres>(dofman, eforce, enr_conv_r_(1, 1, _), -fac);
         localAssembler.template Vector<Pres>(dofman, eforce, enr_conv_r_(2, 2, _), -fac);
-  //      integrateVectorBlock(dofman, eforce, Pres, BlitzVec(-fac*(enr_conv_r_(0, 0, _)
-  //                                                               +enr_conv_r_(1, 1, _)
-  //                                                               +enr_conv_r_(2, 2, _))));
+
         
+
+        // source term of the right hand side
+        localAssembler.template Vector<Velx>(dofman, eforce, shp, fac*rhsint_(0));
+        localAssembler.template Vector<Vely>(dofman, eforce, shp, fac*rhsint_(1));
+        localAssembler.template Vector<Velz>(dofman, eforce, shp, fac*rhsint_(2));
+
+
+        // Hellinger-Reissner terms
+        if (numparamtauxx > 0)
+        {
+            for (int iiface = 0; iiface < numinterface; ++iiface)
+            {
+                BlitzMat tau = taus[iiface];
+                /* quadratic part */
+                /*
+                               /                     \
+                              |                       |
+                              | eps(Dtau)  , virt tau |
+                              |                       |
+                               \                     /
+                */
+                localAssembler.template Matrix<Tauxx,Tauxx>(dofman, estif, shp_tau, -reciproke_visc*fac, shp_tau);
+                localAssembler.template Matrix<Tauyy,Tauyy>(dofman, estif, shp_tau, -reciproke_visc*fac, shp_tau);
+                localAssembler.template Matrix<Tauzz,Tauzz>(dofman, estif, shp_tau, -reciproke_visc*fac, shp_tau);
+                localAssembler.template Matrix<Tauxy,Tauxy>(dofman, estif, shp_tau, -reciproke_visc*fac, shp_tau);
+                localAssembler.template Matrix<Tauxz,Tauxz>(dofman, estif, shp_tau, -reciproke_visc*fac, shp_tau);
+                localAssembler.template Matrix<Tauyz,Tauyz>(dofman, estif, shp_tau, -reciproke_visc*fac, shp_tau);
+
+                localAssembler.template Vector<Tauxx>(dofman, eforce, shp_tau, reciproke_visc*fac*tau(0,0));
+                localAssembler.template Vector<Tauyy>(dofman, eforce, shp_tau, reciproke_visc*fac*tau(1,1));
+                localAssembler.template Vector<Tauzz>(dofman, eforce, shp_tau, reciproke_visc*fac*tau(2,2));
+                localAssembler.template Vector<Tauxy>(dofman, eforce, shp_tau, reciproke_visc*fac*tau(0,1));
+                localAssembler.template Vector<Tauxz>(dofman, eforce, shp_tau, reciproke_visc*fac*tau(0,2));
+                localAssembler.template Vector<Tauyz>(dofman, eforce, shp_tau, reciproke_visc*fac*tau(1,2));
+
+                /* rectangular part */
+                /*
+                               /                   \
+                              |                     |
+                              | eps(Du)  , virt tau |
+                              |                     |
+                               \                   /
+                */
+                localAssembler.template Matrix<Tauxx,Velx>(dofman, estif, shp_tau, 2.0*fac, shp_dx);
+                localAssembler.template Matrix<Tauxy,Velx>(dofman, estif, shp_tau,     fac, shp_dy);
+                localAssembler.template Matrix<Tauxz,Velx>(dofman, estif, shp_tau,     fac, shp_dz);
+                localAssembler.template Matrix<Tauyx,Velx>(dofman, estif, shp_tau,     fac, shp_dy);
+                localAssembler.template Matrix<Tauzx,Velx>(dofman, estif, shp_tau,     fac, shp_dz);
+
+                localAssembler.template Matrix<Tauxy,Vely>(dofman, estif, shp_tau,     fac, shp_dx);
+                localAssembler.template Matrix<Tauyx,Vely>(dofman, estif, shp_tau,     fac, shp_dx);
+                localAssembler.template Matrix<Tauyy,Vely>(dofman, estif, shp_tau, 2.0*fac, shp_dy);
+                localAssembler.template Matrix<Tauyz,Vely>(dofman, estif, shp_tau,     fac, shp_dz);
+                localAssembler.template Matrix<Tauzy,Vely>(dofman, estif, shp_tau,     fac, shp_dz);
+
+                localAssembler.template Matrix<Tauxz,Velz>(dofman, estif, shp_tau,     fac, shp_dx);
+                localAssembler.template Matrix<Tauyz,Velz>(dofman, estif, shp_tau,     fac, shp_dy);
+                localAssembler.template Matrix<Tauzx,Velz>(dofman, estif, shp_tau,     fac, shp_dx);
+                localAssembler.template Matrix<Tauzy,Velz>(dofman, estif, shp_tau,     fac, shp_dy);
+                localAssembler.template Matrix<Tauzz,Velz>(dofman, estif, shp_tau, 2.0*fac, shp_dz);
+
+
+                localAssembler.template Vector<Tauxx>(dofman, eforce, shp_tau, 2.0*fac*vderxy_(0, 0));
+                localAssembler.template Vector<Tauxy>(dofman, eforce, shp_tau,     fac*vderxy_(0, 1));
+                localAssembler.template Vector<Tauxz>(dofman, eforce, shp_tau,     fac*vderxy_(0, 2));
+                localAssembler.template Vector<Tauyx>(dofman, eforce, shp_tau,     fac*vderxy_(0, 1));
+                localAssembler.template Vector<Tauzx>(dofman, eforce, shp_tau,     fac*vderxy_(0, 2));
+
+                localAssembler.template Vector<Tauxy>(dofman, eforce, shp_tau,     fac*vderxy_(1, 0));
+                localAssembler.template Vector<Tauyx>(dofman, eforce, shp_tau,     fac*vderxy_(1, 0));
+                localAssembler.template Vector<Tauyy>(dofman, eforce, shp_tau, 2.0*fac*vderxy_(1, 1));
+                localAssembler.template Vector<Tauyz>(dofman, eforce, shp_tau,     fac*vderxy_(1, 2));
+                localAssembler.template Vector<Tauzy>(dofman, eforce, shp_tau,     fac*vderxy_(1, 2));
+
+                localAssembler.template Vector<Tauxz>(dofman, eforce, shp_tau,     fac*vderxy_(2, 0));
+                localAssembler.template Vector<Tauyz>(dofman, eforce, shp_tau,     fac*vderxy_(2, 1));
+                localAssembler.template Vector<Tauzx>(dofman, eforce, shp_tau,     fac*vderxy_(2, 0));
+                localAssembler.template Vector<Tauzy>(dofman, eforce, shp_tau,     fac*vderxy_(2, 1));
+                localAssembler.template Vector<Tauzz>(dofman, eforce, shp_tau, 2.0*fac*vderxy_(2, 2));
+            }
+        }
+
         //----------------------------------------------------------------------
         //                 PRESSURE STABILISATION PART
 
@@ -1131,25 +1212,53 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
           localAssembler.template Matrix<Pres,Velz>(dofman, estif, shp_dz, tau_Mp, enr_conv_c_);
 
           /* pressure stabilisation: viscosity (-L_visc_u) */
-          /*
-                   /                              \
-                  |               /  \             |
-                  |  nabla o eps | Du | , nabla q  |
-                  |               \  /             |
-                   \                              /
-          */
-          localAssembler.template Matrix<Pres,Velx>(dofman, estif, shp_dx, 2.0*visc*tau_Mp, enr_viscs2_(0, 0, _));
-          localAssembler.template Matrix<Pres,Velx>(dofman, estif, shp_dy, 2.0*visc*tau_Mp, enr_viscs2_(0, 1, _));
-          localAssembler.template Matrix<Pres,Velx>(dofman, estif, shp_dz, 2.0*visc*tau_Mp, enr_viscs2_(0, 2, _));
-
-          localAssembler.template Matrix<Pres,Vely>(dofman, estif, shp_dx, 2.0*visc*tau_Mp, enr_viscs2_(0, 1, _));
-          localAssembler.template Matrix<Pres,Vely>(dofman, estif, shp_dy, 2.0*visc*tau_Mp, enr_viscs2_(1, 1, _));
-          localAssembler.template Matrix<Pres,Vely>(dofman, estif, shp_dz, 2.0*visc*tau_Mp, enr_viscs2_(1, 2, _));
-
-          localAssembler.template Matrix<Pres,Velz>(dofman, estif, shp_dx, 2.0*visc*tau_Mp, enr_viscs2_(0, 2, _));
-          localAssembler.template Matrix<Pres,Velz>(dofman, estif, shp_dy, 2.0*visc*tau_Mp, enr_viscs2_(1, 2, _));
-          localAssembler.template Matrix<Pres,Velz>(dofman, estif, shp_dz, 2.0*visc*tau_Mp, enr_viscs2_(2, 2, _));
-          
+          if (numparamtauxx == 0)
+          {
+              /*
+                       /                              \
+                      |               /  \             |
+                      |  nabla o tau | Du | , nabla q  |
+                      |               \  /             |
+                       \                              /
+              */
+              localAssembler.template Matrix<Pres,Velx>(dofman, estif, shp_dx, 2.0*visc*tau_Mp, enr_viscs2_(0, 0, _));
+              localAssembler.template Matrix<Pres,Velx>(dofman, estif, shp_dy, 2.0*visc*tau_Mp, enr_viscs2_(0, 1, _));
+              localAssembler.template Matrix<Pres,Velx>(dofman, estif, shp_dz, 2.0*visc*tau_Mp, enr_viscs2_(0, 2, _));
+    
+              localAssembler.template Matrix<Pres,Vely>(dofman, estif, shp_dx, 2.0*visc*tau_Mp, enr_viscs2_(0, 1, _));
+              localAssembler.template Matrix<Pres,Vely>(dofman, estif, shp_dy, 2.0*visc*tau_Mp, enr_viscs2_(1, 1, _));
+              localAssembler.template Matrix<Pres,Vely>(dofman, estif, shp_dz, 2.0*visc*tau_Mp, enr_viscs2_(1, 2, _));
+    
+              localAssembler.template Matrix<Pres,Velz>(dofman, estif, shp_dx, 2.0*visc*tau_Mp, enr_viscs2_(0, 2, _));
+              localAssembler.template Matrix<Pres,Velz>(dofman, estif, shp_dy, 2.0*visc*tau_Mp, enr_viscs2_(1, 2, _));
+              localAssembler.template Matrix<Pres,Velz>(dofman, estif, shp_dz, 2.0*visc*tau_Mp, enr_viscs2_(2, 2, _));
+          }
+          else
+          {
+              /*
+                       /                        \
+                      |                          |
+                      |  nabla o Dtau , nabla q  |
+                      |                          |
+                       \                        /
+              */              
+              for (int iiface = 0; iiface < numinterface; ++iiface)
+              {
+                  BlitzMat tau = taus[iiface];
+                  localAssembler.template Matrix<Pres,Tauxx>(dofman, estif, shp_dx, tau_Mp, shp_tau_dx);
+                  localAssembler.template Matrix<Pres,Tauyx>(dofman, estif, shp_dy, tau_Mp, shp_tau_dx);
+                  localAssembler.template Matrix<Pres,Tauzx>(dofman, estif, shp_dz, tau_Mp, shp_tau_dx);
+        
+                  localAssembler.template Matrix<Pres,Tauxy>(dofman, estif, shp_dx, tau_Mp, shp_tau_dy);
+                  localAssembler.template Matrix<Pres,Tauyy>(dofman, estif, shp_dy, tau_Mp, shp_tau_dy);
+                  localAssembler.template Matrix<Pres,Tauzy>(dofman, estif, shp_dz, tau_Mp, shp_tau_dy);
+        
+                  localAssembler.template Matrix<Pres,Tauxz>(dofman, estif, shp_dx, tau_Mp, shp_tau_dz);
+                  localAssembler.template Matrix<Pres,Tauyz>(dofman, estif, shp_dy, tau_Mp, shp_tau_dz);
+                  localAssembler.template Matrix<Pres,Tauzz>(dofman, estif, shp_dz, tau_Mp, shp_tau_dz);
+              }
+          }
+                  
           /* pressure stabilisation: pressure( L_pres_p) */
           /*
                       /                    \
@@ -1161,26 +1270,6 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
           localAssembler.template Matrix<Pres,Pres>(dofman, estif, shp_dx, tau_Mp, shp_dx);
           localAssembler.template Matrix<Pres,Pres>(dofman, estif, shp_dy, tau_Mp, shp_dy);
           localAssembler.template Matrix<Pres,Pres>(dofman, estif, shp_dz, tau_Mp, shp_dz);
-          
-//          if (newton)
-//          {
-              /*  pressure stabilisation: convection, reactive part
-                /                             \
-               |  /          \   n+1           |
-               | | Du o nabla | u     , grad q |
-               |  \          /   (i)           |
-                \                             /
-              */
-//            Matrix<DISTYPE>(dofman, estif, Pres, shp_dx, tau_Mp, Velx, enr_conv_r_(0, 0, _));
-//            Matrix<DISTYPE>(dofman, estif, Pres, shp_dy, tau_Mp, Velx, enr_conv_r_(1, 0, _));
-//            Matrix<DISTYPE>(dofman, estif, Pres, shp_dz, tau_Mp, Velx, enr_conv_r_(2, 0, _));
-//            Matrix<DISTYPE>(dofman, estif, Pres, shp_dx, tau_Mp, Vely, enr_conv_r_(0, 1, _));
-//            Matrix<DISTYPE>(dofman, estif, Pres, shp_dy, tau_Mp, Vely, enr_conv_r_(1, 1, _));
-//            Matrix<DISTYPE>(dofman, estif, Pres, shp_dz, tau_Mp, Vely, enr_conv_r_(2, 1, _));
-//            Matrix<DISTYPE>(dofman, estif, Pres, shp_dx, tau_Mp, Velz, enr_conv_r_(0, 2, _));
-//            Matrix<DISTYPE>(dofman, estif, Pres, shp_dy, tau_Mp, Velz, enr_conv_r_(1, 2, _));
-//            Matrix<DISTYPE>(dofman, estif, Pres, shp_dz, tau_Mp, Velz, enr_conv_r_(2, 2, _));
-//          } // if newton
 
           // pressure stabilisation
           localAssembler.template Vector<Pres>(dofman, eforce, shp_dx, -tau_Mp*res_old(0));
@@ -1203,7 +1292,7 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
             */
             localAssembler.template Matrix<Velx,Velx>(dofman, estif, enr_conv_c_, tau_M, enr_conv_c_);
             localAssembler.template Matrix<Vely,Vely>(dofman, estif, enr_conv_c_, tau_M, enr_conv_c_);
-            localAssembler.template Matrix<Velz,Velz>(dofman, estif, enr_conv_c_, tau_M, enr_conv_c_); 
+            localAssembler.template Matrix<Velz,Velz>(dofman, estif, enr_conv_c_, tau_M, enr_conv_c_);
             /* supg stabilisation: pressure part  ( L_pres_p) */
             /*
                       /                              \
@@ -1215,7 +1304,7 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
             localAssembler.template Matrix<Velx,Pres>(dofman, estif, enr_conv_c_, tau_M, shp_dx);
             localAssembler.template Matrix<Vely,Pres>(dofman, estif, enr_conv_c_, tau_M, shp_dy);
             localAssembler.template Matrix<Velz,Pres>(dofman, estif, enr_conv_c_, tau_M, shp_dz);
-            
+
             /* supg stabilisation: viscous part  (-L_visc_u) */
             /*
                   /                                        \
@@ -1227,11 +1316,11 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
             localAssembler.template Matrix<Velx,Velx>(dofman, estif, enr_conv_c_, 2.0*visc*tau_M, enr_viscs2_(0, 0, _));
             localAssembler.template Matrix<Velx,Vely>(dofman, estif, enr_conv_c_, 2.0*visc*tau_M, enr_viscs2_(0, 1, _));
             localAssembler.template Matrix<Velx,Velz>(dofman, estif, enr_conv_c_, 2.0*visc*tau_M, enr_viscs2_(0, 2, _));
-            
+
             localAssembler.template Matrix<Vely,Velx>(dofman, estif, enr_conv_c_, 2.0*visc*tau_M, enr_viscs2_(0, 1, _));
             localAssembler.template Matrix<Vely,Vely>(dofman, estif, enr_conv_c_, 2.0*visc*tau_M, enr_viscs2_(1, 1, _));
             localAssembler.template Matrix<Vely,Velz>(dofman, estif, enr_conv_c_, 2.0*visc*tau_M, enr_viscs2_(1, 2, _));
-            
+
             localAssembler.template Matrix<Velz,Velx>(dofman, estif, enr_conv_c_, 2.0*visc*tau_M, enr_viscs2_(0, 2, _));
             localAssembler.template Matrix<Velz,Vely>(dofman, estif, enr_conv_c_, 2.0*visc*tau_M, enr_viscs2_(1, 2, _));
             localAssembler.template Matrix<Velz,Velz>(dofman, estif, enr_conv_c_, 2.0*visc*tau_M, enr_viscs2_(2, 2, _));
@@ -1239,156 +1328,7 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
           if (newton)
           {
               dserror("not translated to XFEM localAssembler yet!");
-            for (int ui=0; ui<iel_; ++ui)
-            {
-              const int UDF = ui*4;
-              const int VDF = ui*4+1;
-              const int WDF = ui*4+2;
-              for (int vi=0; vi<iel_; ++vi)
-              {
-                const int dUDF = vi*4;
-                const int dVDF = vi*4+1;
-                const int dWDF = vi*4+2;
-                /* supg stabilisation: reactive part of convection and linearisation of testfunction ( L_conv_u) */
-                /*
-                         /                                           \
-                        |    / n+1        \   n+1    /          \     |
-                        |   | u    o nabla | u    , | Du o nabla | v  |
-                        |    \ (i)        /   (i)    \          /     |
-                         \                                           /
-
-                         /                                           \
-                        |    /          \   n+1    / n+1        \     |
-                        |   | Du o nabla | u    , | u    o nabla | v  |
-                        |    \          /   (i)    \ (i)        /     |
-                         \                                           /
-                */
-                estif(dUDF, UDF) += tau_M*(enr_conv_c_(vi)*enr_conv_r_(0, 0, ui)
-                                           +
-                                           velint_(0)*enr_derxy_(0, vi)*enr_conv_r_(0, 0, ui)
-                                           +
-                                           velint_(1)*enr_derxy_(0, vi)*enr_conv_r_(0, 1, ui)
-                                           +
-                                           velint_(2)*enr_derxy_(0, vi)*enr_conv_r_(0, 2, ui)) ;
-                estif(dUDF, VDF) += tau_M*(enr_conv_c_(vi)*enr_conv_r_(0, 1, ui)
-                                           +
-                                           velint_(0)*enr_derxy_(1, vi)*enr_conv_r_(0, 0, ui)
-                                           +
-                                           velint_(1)*enr_derxy_(1, vi)*enr_conv_r_(0, 1, ui)
-                                           +
-                                           velint_(2)*enr_derxy_(1, vi)*enr_conv_r_(0, 2, ui)) ;
-                estif(dUDF, WDF) += tau_M*(enr_conv_c_(vi)*enr_conv_r_(0, 2, ui)
-                                           +
-                                           velint_(0)*enr_derxy_(2, vi)*enr_conv_r_(0, 0, ui)
-                                           +
-                                           velint_(1)*enr_derxy_(2, vi)*enr_conv_r_(0, 1, ui)
-                                           +
-                                           velint_(2)*enr_derxy_(2, vi)*enr_conv_r_(0, 2, ui)) ;
-                estif(dVDF, UDF) += tau_M*(enr_conv_c_(vi)*enr_conv_r_(1, 0, ui)
-                                           +
-                                           velint_(0)*enr_derxy_(0, vi)*enr_conv_r_(1, 0, ui)
-                                           +
-                                           velint_(1)*enr_derxy_(0, vi)*enr_conv_r_(1, 1, ui)
-                                           +
-                                           velint_(2)*enr_derxy_(0, vi)*enr_conv_r_(1, 2, ui)) ;
-                estif(dVDF, VDF) += tau_M*(enr_conv_c_(vi)*enr_conv_r_(1, 1, ui)
-                                           +
-                                           velint_(0)*enr_derxy_(1, vi)*enr_conv_r_(1, 0, ui)
-                                           +
-                                           velint_(1)*enr_derxy_(1, vi)*enr_conv_r_(1, 1, ui)
-                                           +
-                                           velint_(2)*enr_derxy_(1, vi)*enr_conv_r_(1, 2, ui)) ;
-                estif(dVDF, WDF) += tau_M*(enr_conv_c_(vi)*enr_conv_r_(1, 2, ui)
-                                           +
-                                           velint_(0)*enr_derxy_(2, vi)*enr_conv_r_(1, 0, ui)
-                                           +
-                                           velint_(1)*enr_derxy_(2, vi)*enr_conv_r_(1, 1, ui)
-                                           +
-                                           velint_(2)*enr_derxy_(2, vi)*enr_conv_r_(1, 2, ui)) ;
-                estif(dWDF, UDF) += tau_M*(enr_conv_c_(vi)*enr_conv_r_(2, 0, ui)
-                                           +
-                                           velint_(0)*enr_derxy_(0, vi)*enr_conv_r_(2, 0, ui)
-                                           +
-                                           velint_(1)*enr_derxy_(0, vi)*enr_conv_r_(2, 1, ui)
-                                           +
-                                           velint_(2)*enr_derxy_(0, vi)*enr_conv_r_(2, 2, ui)) ;
-                estif(dWDF, VDF) += tau_M*(enr_conv_c_(vi)*enr_conv_r_(2, 1, ui)
-                                           +
-                                           velint_(0)*enr_derxy_(1, vi)*enr_conv_r_(2, 0, ui)
-                                           +
-                                           velint_(1)*enr_derxy_(1, vi)*enr_conv_r_(2, 1, ui)
-                                           +
-                                           velint_(2)*enr_derxy_(1, vi)*enr_conv_r_(2, 2, ui)) ;
-                estif(dWDF, WDF) += tau_M*(enr_conv_c_(vi)*enr_conv_r_(2, 2, ui)
-                                           +
-                                           velint_(0)*enr_derxy_(2, vi)*enr_conv_r_(2, 0, ui)
-                                           +
-                                           velint_(1)*enr_derxy_(2, vi)*enr_conv_r_(2, 1, ui)
-                                           +
-                                           velint_(2)*enr_derxy_(2, vi)*enr_conv_r_(2, 2, ui)) ;
-
-
-                /* supg stabilisation: pressure part, linearisation of test function  ( L_pres_p) */
-                /*
-                              /                               \
-                             |         n+1    /          \     |
-                             |  nabla p    , | Du o nabla | v  |
-                             |         (i)    \          /     |
-                              \                               /
-                */
-                estif(dUDF, UDF) += tau_M*enr_funct_(ui)*gradp_(0)*enr_derxy_(0, vi) ;
-                estif(dUDF, VDF) += tau_M*enr_funct_(ui)*gradp_(0)*enr_derxy_(1, vi) ;
-                estif(dUDF, WDF) += tau_M*enr_funct_(ui)*gradp_(0)*enr_derxy_(2, vi) ;
-                estif(dVDF, UDF) += tau_M*enr_funct_(ui)*gradp_(1)*enr_derxy_(0, vi) ;
-                estif(dVDF, VDF) += tau_M*enr_funct_(ui)*gradp_(1)*enr_derxy_(1, vi) ;
-                estif(dVDF, WDF) += tau_M*enr_funct_(ui)*gradp_(1)*enr_derxy_(2, vi) ;
-                estif(dWDF, UDF) += tau_M*enr_funct_(ui)*gradp_(2)*enr_derxy_(0, vi) ;
-                estif(dWDF, VDF) += tau_M*enr_funct_(ui)*gradp_(2)*enr_derxy_(1, vi) ;
-                estif(dWDF, WDF) += tau_M*enr_funct_(ui)*gradp_(2)*enr_derxy_(2, vi) ;
-
-
-                /* supg stabilisation: viscous part, linearisation of test function  (-L_visc_u) */
-                /*
-                        /                                         \
-                       |               / n+1 \    /          \     |
-                       |  nabla o eps | u     |, | Du o nabla | v  |
-                       |               \ (i) /    \          /     |
-                        \                                         /
-                */
-                estif(dUDF, UDF) += -2.0*visc*tau_M*enr_funct_(ui)*visc_old_(0)*enr_derxy_(0, vi) ;
-                estif(dUDF, VDF) += -2.0*visc*tau_M*enr_funct_(ui)*visc_old_(0)*enr_derxy_(1, vi) ;
-                estif(dUDF, WDF) += -2.0*visc*tau_M*enr_funct_(ui)*visc_old_(0)*enr_derxy_(2, vi) ;
-                estif(dVDF, UDF) += -2.0*visc*tau_M*enr_funct_(ui)*visc_old_(1)*enr_derxy_(0, vi) ;
-                estif(dVDF, VDF) += -2.0*visc*tau_M*enr_funct_(ui)*visc_old_(1)*enr_derxy_(1, vi) ;
-                estif(dVDF, WDF) += -2.0*visc*tau_M*enr_funct_(ui)*visc_old_(1)*enr_derxy_(2, vi) ;
-                estif(dWDF, UDF) += -2.0*visc*tau_M*enr_funct_(ui)*visc_old_(2)*enr_derxy_(0, vi) ;
-                estif(dWDF, VDF) += -2.0*visc*tau_M*enr_funct_(ui)*visc_old_(2)*enr_derxy_(1, vi) ;
-                estif(dWDF, WDF) += -2.0*visc*tau_M*enr_funct_(ui)*visc_old_(2)*enr_derxy_(2, vi) ;
-
-
-                /* supg stabilisation: bodyforce part, linearisation of test function */
-
-                /*
-                            /                             \
-                           |              /          \     |
-                           |  rhsint   , | Du o nabla | v  |
-                           |              \          /     |
-                            \                             /
-
-                */
-                estif(dUDF, UDF) += -(tau_M*enr_funct_(ui)*enr_derxy_(0, vi)*rhsint_(0)) ;
-                estif(dUDF, VDF) += -(tau_M*enr_funct_(ui)*enr_derxy_(1, vi)*rhsint_(0)) ;
-                estif(dUDF, WDF) += -(tau_M*enr_funct_(ui)*enr_derxy_(2, vi)*rhsint_(0)) ;
-                estif(dVDF, UDF) += -(tau_M*enr_funct_(ui)*enr_derxy_(0, vi)*rhsint_(1)) ;
-                estif(dVDF, VDF) += -(tau_M*enr_funct_(ui)*enr_derxy_(1, vi)*rhsint_(1)) ;
-                estif(dVDF, WDF) += -(tau_M*enr_funct_(ui)*enr_derxy_(2, vi)*rhsint_(1)) ;
-                estif(dWDF, UDF) += -(tau_M*enr_funct_(ui)*enr_derxy_(0, vi)*rhsint_(2)) ;
-                estif(dWDF, VDF) += -(tau_M*enr_funct_(ui)*enr_derxy_(1, vi)*rhsint_(2)) ;
-                estif(dWDF, WDF) += -(tau_M*enr_funct_(ui)*enr_derxy_(2, vi)*rhsint_(2)) ;
-
-              } // vi
-            } // ui
-          } // if newton
+              } // if newton
 
           // supg stabilisation
           localAssembler.template Vector<Velx>(dofman, eforce, enr_conv_c_, -tau_M*res_old(0));
@@ -1399,228 +1339,15 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
 
         //----------------------------------------------------------------------
         //                       STABILISATION, VISCOUS PART
-        
-        
-  //  !!!!      
-  //  viscous part of stabilisation is switched off!
-  //  vstab is set to false within fluid3_evaluate.cpp
-  //!!!! 
-        
+
         if(vstab)
         {
+            //!!!!
+            //  viscous part of stabilisation is switched off!
+            //  vstab is set to false within fluid3_evaluate.cpp
+            //!!!!
             dserror("not translated to XFEM localAssembler yet!");
-          for (int ui=0; ui<iel_; ++ui)
-          {
-            const int UDF = ui*4;
-            const int VDF = ui*4+1;
-            const int WDF = ui*4+2;
-            const int PDF = ui*4+3;
-            for (int vi=0; vi<iel_; ++vi)
-            {
-              const int dUDF = vi*4;
-              const int dVDF = vi*4+1;
-              const int dWDF = vi*4+2;
-              /* viscous stabilisation, inertia part */
-              /*
-                          /                  \
-                         |                    |
-                         |  Du , div eps (v)  |
-                         |                    |
-                          \                  /
-              */
-              estif(dUDF, UDF) += 2.0*visc*tau_Mp*enr_funct_(ui)*enr_viscs2_(0, 0, vi) ;
-              estif(dUDF, VDF) += 2.0*visc*tau_Mp*enr_funct_(ui)*enr_viscs2_(0, 1, vi) ;
-              estif(dUDF, WDF) += 2.0*visc*tau_Mp*enr_funct_(ui)*enr_viscs2_(0, 2, vi) ;
-              estif(dVDF, UDF) += 2.0*visc*tau_Mp*enr_funct_(ui)*enr_viscs2_(0, 1, vi) ;
-              estif(dVDF, VDF) += 2.0*visc*tau_Mp*enr_funct_(ui)*enr_viscs2_(1, 1, vi) ;
-              estif(dVDF, WDF) += 2.0*visc*tau_Mp*enr_funct_(ui)*enr_viscs2_(1, 2, vi) ;
-              estif(dWDF, UDF) += 2.0*visc*tau_Mp*enr_funct_(ui)*enr_viscs2_(0, 2, vi) ;
-              estif(dWDF, VDF) += 2.0*visc*tau_Mp*enr_funct_(ui)*enr_viscs2_(1, 2, vi) ;
-              estif(dWDF, WDF) += 2.0*visc*tau_Mp*enr_funct_(ui)*enr_viscs2_(2, 2, vi) ;
-
-              /* viscous stabilisation, convective part */
-              /*
-                   /                                \
-                  |  / n+1       \                   |
-                  | | u   o nabla | Du , div eps (v) |
-                  |  \ (i)       /                   |
-                   \                                /
-              */
-              estif(dUDF, UDF) += 2.0*visc*tau_Mp*enr_conv_c_(ui)*enr_viscs2_(0, 0, vi) ;
-              estif(dUDF, VDF) += 2.0*visc*tau_Mp*enr_conv_c_(ui)*enr_viscs2_(0, 1, vi) ;
-              estif(dUDF, WDF) += 2.0*visc*tau_Mp*enr_conv_c_(ui)*enr_viscs2_(0, 2, vi) ;
-              estif(dVDF, UDF) += 2.0*visc*tau_Mp*enr_conv_c_(ui)*enr_viscs2_(0, 1, vi) ;
-              estif(dVDF, VDF) += 2.0*visc*tau_Mp*enr_conv_c_(ui)*enr_viscs2_(1, 1, vi) ;
-              estif(dVDF, WDF) += 2.0*visc*tau_Mp*enr_conv_c_(ui)*enr_viscs2_(1, 2, vi) ;
-              estif(dWDF, UDF) += 2.0*visc*tau_Mp*enr_conv_c_(ui)*enr_viscs2_(0, 2, vi) ;
-              estif(dWDF, VDF) += 2.0*visc*tau_Mp*enr_conv_c_(ui)*enr_viscs2_(1, 2, vi) ;
-              estif(dWDF, WDF) += 2.0*visc*tau_Mp*enr_conv_c_(ui)*enr_viscs2_(2, 2, vi) ;
-
-
-              /* viscous stabilisation, pressure part ( L_pres_p) */
-              /*
-                       /                        \
-                      |                          |
-                      |  nabla Dp , div eps (v)  |
-                      |                          |
-                       \                        /
-              */
-              estif(dUDF, PDF) += 2.0*visc*tau_Mp*(enr_derxy_(0, ui)*enr_viscs2_(0, 0, vi)
-                                                   +
-                                                   enr_derxy_(1, ui)*enr_viscs2_(0, 1, vi)
-                                                   +
-                                                   enr_derxy_(2, ui)*enr_viscs2_(0, 2, vi)) ;
-              estif(dVDF, PDF) += 2.0*visc*tau_Mp*(enr_derxy_(0, ui)*enr_viscs2_(0, 1, vi)
-                                                   +
-                                                   enr_derxy_(1, ui)*enr_viscs2_(1, 1, vi)
-                                                   +
-                                                   enr_derxy_(2, ui)*enr_viscs2_(1, 2, vi)) ;
-              estif(dWDF, PDF) += 2.0*visc*tau_Mp*(enr_derxy_(0, ui)*enr_viscs2_(0, 2, vi)
-                                                   +
-                                                   enr_derxy_(1, ui)*enr_viscs2_(1, 2, vi)
-                                                   +
-                                                   enr_derxy_(2, ui)*enr_viscs2_(2, 2, vi)) ;
-
-              /* viscous stabilisation, viscous part (-L_visc_u) */
-              /*
-                 /                                 \
-                |               /  \                |
-                |  nabla o eps | Du | , div eps (v) |
-                |               \  /                |
-                 \                                 /
-              */
-              estif(dUDF, UDF) += 4.0*(visc*visc)*tau_Mp*(enr_viscs2_(0, 0, ui)*enr_viscs2_(0, 0, vi)
-                                                          +
-                                                          enr_viscs2_(0, 1, ui)*enr_viscs2_(0, 1, vi)
-                                                          +
-                                                          enr_viscs2_(0, 2, ui)*enr_viscs2_(0, 2, vi)) ;
-              estif(dUDF, VDF) += 4.0*(visc*visc)*tau_Mp*(enr_viscs2_(0, 0, vi)*enr_viscs2_(0, 1, ui)
-                                                          +
-                                                          enr_viscs2_(0, 1, vi)*enr_viscs2_(1, 1, ui)
-                                                          +
-                                                          enr_viscs2_(0, 2, vi)*enr_viscs2_(1, 2, ui)) ;
-              estif(dUDF, WDF) += 4.0*(visc*visc)*tau_Mp*(enr_viscs2_(0, 0, vi)*enr_viscs2_(0, 2, ui)
-                                                          +
-                                                          enr_viscs2_(0, 1, vi)*enr_viscs2_(1, 2, ui)
-                                                          +
-                                                          enr_viscs2_(0, 2, vi)*enr_viscs2_(2, 2, ui)) ;
-              estif(dVDF, UDF) += 4.0*(visc*visc)*tau_Mp*(enr_viscs2_(0, 0, ui)*enr_viscs2_(0, 1, vi)
-                                                          +
-                                                          enr_viscs2_(0, 1, ui)*enr_viscs2_(1, 1, vi)
-                                                          +
-                                                          enr_viscs2_(0, 2, ui)*enr_viscs2_(1, 2, vi)) ;
-              estif(dVDF, VDF) += 4.0*(visc*visc)*tau_Mp*(enr_viscs2_(0, 1, ui)*enr_viscs2_(0, 1, vi)
-                                                          +
-                                                          enr_viscs2_(1, 1, ui)*enr_viscs2_(1, 1, vi)
-                                                          +
-                                                          enr_viscs2_(1, 2, ui)*enr_viscs2_(1, 2, vi)) ;
-              estif(dVDF, WDF) += 4.0*(visc*visc)*tau_Mp*(enr_viscs2_(0, 1, vi)*enr_viscs2_(0, 2, ui)
-                                                          +
-                                                          enr_viscs2_(1, 1, vi)*enr_viscs2_(1, 2, ui)
-                                                          +
-                                                          enr_viscs2_(1, 2, vi)*enr_viscs2_(2, 2, ui)) ;
-              estif(dWDF, UDF) += 4.0*(visc*visc)*tau_Mp*(enr_viscs2_(0, 0, ui)*enr_viscs2_(0, 2, vi)
-                                                          +
-                                                          enr_viscs2_(0, 1, ui)*enr_viscs2_(1, 2, vi)
-                                                          +
-                                                          enr_viscs2_(0, 2, ui)*enr_viscs2_(2, 2, vi)) ;
-              estif(dWDF, VDF) += 4.0*(visc*visc)*tau_Mp*(enr_viscs2_(0, 1, ui)*enr_viscs2_(0, 2, vi)
-                                                          +
-                                                          enr_viscs2_(1, 1, ui)*enr_viscs2_(1, 2, vi)
-                                                          +
-                                                          enr_viscs2_(1, 2, ui)*enr_viscs2_(2, 2, vi)) ;
-              estif(dWDF, WDF) += 4.0*(visc*visc)*tau_Mp*(enr_viscs2_(0, 2, ui)*enr_viscs2_(0, 2, vi)
-                                                          +
-                                                          enr_viscs2_(1, 2, ui)*enr_viscs2_(1, 2, vi)
-                                                          +
-                                                          enr_viscs2_(2, 2, ui)*enr_viscs2_(2, 2, vi)) ;
-            } // vi
-          } // ui
-
-          if (newton)
-          {
-              dserror("not translated to XFEM localAssembler yet!");
-            for (int ui=0; ui<iel_; ++ui)
-            {
-              const int UDF = ui*4;
-              const int VDF = ui*4+1;
-              const int WDF = ui*4+2;
-              for (int vi=0; vi<iel_; ++vi)
-              {
-                const int dUDF = vi*4;
-                const int dVDF = vi*4+1;
-                const int dWDF = vi*4+2;
-                /* viscous stabilisation, reactive part of convection */
-                /*
-                     /                                 \
-                    |  /          \   n+1               |
-                    | | Du o nabla | u    , div eps (v) |
-                    |  \          /   (i)               |
-                     \                                 /
-                */
-                estif(dUDF, UDF) += 2.0*visc*tau_Mp*(enr_viscs2_(0, 0, vi)*enr_conv_r_(0, 0, ui)
-                                                     +
-                                                     enr_viscs2_(0, 1, vi)*enr_conv_r_(1, 0, ui)
-                                                     +
-                                                     enr_viscs2_(0, 2, vi)*enr_conv_r_(2, 0, ui)) ;
-                estif(dUDF, VDF) += 2.0*visc*tau_Mp*(enr_viscs2_(0, 0, vi)*enr_conv_r_(0, 1, ui)
-                                                     +
-                                                     enr_viscs2_(0, 1, vi)*enr_conv_r_(1, 1, ui)
-                                                     +
-                                                     enr_viscs2_(0, 2, vi)*enr_conv_r_(2, 1, ui)) ;
-                estif(dUDF, WDF) += 2.0*visc*tau_Mp*(enr_viscs2_(0, 0, vi)*enr_conv_r_(0, 2, ui)
-                                                     +
-                                                     enr_viscs2_(0, 1, vi)*enr_conv_r_(1, 2, ui)
-                                                     +
-                                                     enr_viscs2_(0, 2, vi)*enr_conv_r_(2, 2, ui)) ;
-                estif(dVDF, UDF) += 2.0*visc*tau_Mp*(enr_viscs2_(0, 1, vi)*enr_conv_r_(0, 0, ui)
-                                                     +
-                                                     enr_viscs2_(1, 1, vi)*enr_conv_r_(1, 0, ui)
-                                                     +
-                                                     enr_viscs2_(1, 2, vi)*enr_conv_r_(2, 0, ui)) ;
-                estif(dVDF, VDF) += 2.0*visc*tau_Mp*(enr_viscs2_(0, 1, vi)*enr_conv_r_(0, 1, ui)
-                                                     +
-                                                     enr_viscs2_(1, 1, vi)*enr_conv_r_(1, 1, ui)
-                                                     +
-                                                     enr_viscs2_(1, 2, vi)*enr_conv_r_(2, 1, ui)) ;
-                estif(dVDF, WDF) += 2.0*visc*tau_Mp*(enr_viscs2_(0, 1, vi)*enr_conv_r_(0, 2, ui)
-                                                     +
-                                                     enr_viscs2_(1, 1, vi)*enr_conv_r_(1, 2, ui)
-                                                     +
-                                                     enr_viscs2_(1, 2, vi)*enr_conv_r_(2, 2, ui)) ;
-                estif(dWDF, UDF) += 2.0*visc*tau_Mp*(enr_viscs2_(0, 2, vi)*enr_conv_r_(0, 0, ui)
-                                                     +
-                                                     enr_viscs2_(1, 2, vi)*enr_conv_r_(1, 0, ui)
-                                                     +
-                                                     enr_viscs2_(2, 2, vi)*enr_conv_r_(2, 0, ui)) ;
-                estif(dWDF, VDF) += 2.0*visc*tau_Mp*(enr_viscs2_(0, 2, vi)*enr_conv_r_(0, 1, ui)
-                                                     +
-                                                     enr_viscs2_(1, 2, vi)*enr_conv_r_(1, 1, ui)
-                                                     +
-                                                     enr_viscs2_(2, 2, vi)*enr_conv_r_(2, 1, ui)) ;
-                estif(dWDF, WDF) += 2.0*visc*tau_Mp*(enr_viscs2_(0, 2, vi)*enr_conv_r_(0, 2, ui)
-                                                     +
-                                                     enr_viscs2_(1, 2, vi)*enr_conv_r_(1, 2, ui)
-                                                     +
-                                                     enr_viscs2_(2, 2, vi)*enr_conv_r_(2, 2, ui)) ;
-              } // vi
-            } // ui
-          } // if newton
-
-          /* viscous stabilisation */
-          localAssembler.template Vector<Velx>(dofman, eforce, enr_viscs2_(0, 0, _), -2.0*visc*tau_Mp*res_old(0));
-          localAssembler.template Vector<Velx>(dofman, eforce, enr_viscs2_(0, 1, _), -2.0*visc*tau_Mp*res_old(1));
-          localAssembler.template Vector<Velx>(dofman, eforce, enr_viscs2_(0, 2, _), -2.0*visc*tau_Mp*res_old(2));
-          
-          localAssembler.template Vector<Vely>(dofman, eforce, enr_viscs2_(0, 1, _), -2.0*visc*tau_Mp*res_old(0));
-          localAssembler.template Vector<Vely>(dofman, eforce, enr_viscs2_(1, 1, _), -2.0*visc*tau_Mp*res_old(1));
-          localAssembler.template Vector<Vely>(dofman, eforce, enr_viscs2_(1, 2, _), -2.0*visc*tau_Mp*res_old(2));
-                  
-          localAssembler.template Vector<Velz>(dofman, eforce, enr_viscs2_(0, 2, _), -2.0*visc*tau_Mp*res_old(0));
-          localAssembler.template Vector<Velz>(dofman, eforce, enr_viscs2_(1, 2, _), -2.0*visc*tau_Mp*res_old(1));
-          localAssembler.template Vector<Velz>(dofman, eforce, enr_viscs2_(2, 2, _), -2.0*visc*tau_Mp*res_old(2));
-          
-        } // endif vstab
+        };
 
         //----------------------------------------------------------------------
         //                     STABILISATION, CONTINUITY PART
@@ -1654,8 +1381,8 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
             localAssembler.template Vector<Velz>(dofman, eforce, shp_dz, -tau_C_divunp);
 
         } // endif cstab
-      }
-    }
+      } // end block stiffness terms
+    } // end loop over gauss points
     } // end loop over integration cells
     return;
   }
@@ -1676,14 +1403,14 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
           bool                    pstab  ,
           bool                    supg   ,
           bool                    vstab  ,
-          bool                    cstab  
+          bool                    cstab
     )
   {
       using DRT::Element;
-      
+
       if (assembly_type == XFEM::standard_assembly)
       {
-          switch (distype) 
+          switch (distype)
           {
           case DRT::Element::hex8:
           {
@@ -1712,7 +1439,7 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
       }
       else
       {
-          switch (distype) 
+          switch (distype)
           {
           case DRT::Element::hex8:
           {
@@ -1740,8 +1467,8 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
           };
       }
   }
-  
-  
+
+
 #endif
 
 #endif

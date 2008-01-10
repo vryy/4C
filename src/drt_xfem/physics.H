@@ -42,8 +42,17 @@ enum Field
     ,LMPLambday         /// Lagrange multiplier unknown in y-direction
     ,LMPLambdaz         /// Lagrange multiplier unknown in z-direction
     ,LMPMux             /// another Lagrange multiplier unknown in x-direction
-    ,LMPMuy             /// another Lagrange multiplier unknown in y-direction
-    ,LMPMuz             /// another Lagrange multiplier unknown in z-direction
+    ,LMPMuy             ///< another Lagrange multiplier unknown in y-direction
+    ,LMPMuz             ///< another Lagrange multiplier unknown in z-direction
+    ,Tauxx              ///< fluid deviatoric stress
+    ,Tauxy              ///< fluid deviatoric stress
+    ,Tauxz              ///< fluid deviatoric stress
+    ,Tauyx              ///< fluid deviatoric stress
+    ,Tauyy              ///< fluid deviatoric stress
+    ,Tauyz              ///< fluid deviatoric stress
+    ,Tauzx              ///< fluid deviatoric stress
+    ,Tauzy              ///< fluid deviatoric stress
+    ,Tauzz              ///< fluid deviatoric stress
 };
 
 std::string physVarToString(const Field var);

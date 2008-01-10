@@ -206,7 +206,7 @@ public:
         at the level of the total system of equations. Purely internal
         element dofs that are condensed internally should NOT be considered.
   */
-  virtual int NumDofPerElement() const { return 0; }
+  virtual int NumDofPerElement() const {return this->eleDofManager_.NumDofPerElement();}
 
   /*!
   \brief Print this element
