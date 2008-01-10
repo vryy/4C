@@ -286,7 +286,7 @@ void MFSI::OverlapAlgorithm::SetupSysMat(Thyra::DefaultBlockedLinearOp<double>& 
   // matrix W
 
   const Coupling& coupsf = StructureFluidCoupling();
-  //const Coupling& coupsa = StructureAleCoupling();
+  const Coupling& coupsa = StructureAleCoupling();
 
   Teuchos::RCP<Epetra_CrsMatrix> s = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(StructureField()->SysMat());
 
@@ -340,7 +340,7 @@ void MFSI::OverlapAlgorithm::SetupSysMat(Thyra::DefaultBlockedLinearOp<double>& 
   if (alestructcolmap_.size()==0)
   {
     DRT::Exporter ex(a->RowMap(),a->ColMap(),a->Comm());
-    coupsf.FillSlaveToMasterMap(alestructcolmap_);
+    coupsa.FillSlaveToMasterMap(alestructcolmap_);
     ex.Export(alestructcolmap_);
   }
 
@@ -413,15 +413,20 @@ void MFSI::OverlapAlgorithm::AddFluidInterface(double scale,
       dserror("ExtractMyRowView error: %d", err);
 
     int gid = perm_rowmap.GID(i);
+    std::map<int,int>::iterator iter = permfluidstructcolmap_.find(gid);
+    if (iter==permfluidstructcolmap_.end())
+      dserror("gid %d not found", gid);
+    int structgid = iter->second;
+
     for (int j=0; j<NumEntries; ++j)
     {
       int perm_gid = perm_colmap.GID(Indices[j]);
-      std::map<int,int>::iterator iter = permfluidstructcolmap_.find(perm_gid);
+      iter = permfluidstructcolmap_.find(perm_gid);
       if (iter==permfluidstructcolmap_.end())
         dserror("gid %d not found", perm_gid);
       int index = iter->second;
       double value = Values[j]*scale;
-      err = s->SumIntoGlobalValues(gid, 1, &value, &index);
+      err = s->SumIntoGlobalValues(structgid, 1, &value, &index);
       if (err)
         dserror("SumIntoGlobalValues error: %d", err);
     }
@@ -463,7 +468,7 @@ MFSI::OverlapAlgorithm::ConvertFigColmap(Teuchos::RCP<Epetra_CrsMatrix> fig,
 
     err = convfig->InsertGlobalValues(rowmap.GID(i), NumEntries, Values, Indices);
     if (err)
-      dserror("SumIntoGlobalValues error: %d", err);
+      dserror("InsertGlobalValues error: %d", err);
   }
 
   convfig->FillComplete(domainmap,rowmap);
@@ -511,7 +516,7 @@ MFSI::OverlapAlgorithm::ConvertFgiRowmap(Teuchos::RCP<Epetra_CrsMatrix> fgi,
     // put row into matrix with structure row map
     err = sfgi->InsertGlobalValues(coupsf.MasterDofMap()->GID(i), NumEntries, Values, Indices);
     if (err)
-      dserror("SumIntoGlobalValues error: %d", err);
+      dserror("InsertGlobalValues error: %d", err);
   }
 
   sfgi->FillComplete(fgi->DomainMap(),structrowmap);
