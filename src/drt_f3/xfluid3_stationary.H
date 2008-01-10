@@ -543,43 +543,28 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
       return iel_;
   }
   
-  /// calculating element matrix and rhs
+
+  
   /*!
     Calculate matrix and rhs for stationary problem formulation
-    Here the whole thing is hidden.
 
-    \param ele            (i) the element those matrix is calculated
-    \param evelnp         (i) nodal velocities at n+1
-    \param eprenp         (i) nodal pressure
-    \param estif          (o) element matrix to calculate
-    \param esv            (o) fine-scale subgrid-viscosity element matrix
-    \param eforce         (o) element rhs to calculate
-    \param material       (i) fluid material
-    \param pseudotime     (i) current simulation pseudotime
-    \param newton         (i) full Newton or fixed-point-like
-    \param pstab          (i) boolean flag for stabilisation 
-    \param supg           (i) boolean flag for stabilisation
-    \param vstab          (i) boolean flag for stabilisation
-    \param cstab          (i) boolean flag for stabilisation
    */
   template <DRT::Element::DiscretizationType DISTYPE,
             XFEM::AssemblyType ASSTYPE>
   void Sysmat(
-          DRT::Elements::XFluid3* ele,
-          const RCP<XFEM::InterfaceHandle>  ih,
-          const XFEM::ElementDofManager&    dofman,
-          const blitz::Array<double,2>&     evelnp,
-          const blitz::Array<double,1>&     eprenp,
-          blitz::Array<double,2>&           estif,
-          blitz::Array<double,2>&           esv,
-          blitz::Array<double,1>&           eforce,
-          struct _MATERIAL*       material,
-          double                  pseudotime,
-          bool                    newton ,
-          bool                    pstab  ,
-          bool                    supg   ,
-          bool                    vstab  ,
-          bool                    cstab  
+          DRT::Elements::XFluid3*           ele,           ///< the element those matrix is calculated
+          const RCP<XFEM::InterfaceHandle>  ih,            ///< connection to the interface handler
+          const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
+          const std::vector<double>&        locval,        ///< nodal unknowns at n+1, i
+          blitz::Array<double,2>&           estif,         ///< element matrix to calculate
+          blitz::Array<double,1>&           eforce,        ///< element rhs to calculate
+          struct _MATERIAL*                 material,      ///< fluid material
+          double                            pseudotime,    ///< current simulation pseudotime
+          bool                              newton,        ///< full Newton or fixed-point-like
+          bool                              pstab,         ///< flag for stabilisation
+          bool                              supg,          ///< flag for stabilisation
+          bool                              vstab,         ///< flag for stabilisation
+          bool                              cstab          ///< flag for stabilisation
     )
   {
     //! number of nodes for element
@@ -609,12 +594,6 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
     dsassert(material->mattyp == m_fluid, "Material law is not of type m_fluid.");
     const double visc = material->m.fluid->viscosity;
     const double reciproke_visc = 1.0 / visc;
-
-    // stabilization parameter
-    // This has to be done before anything else is calculated because
-    // we use the same arrays internally.
-    const double hk = DRT::Elements::FLUID::HK<DISTYPE>(evelnp,visc,xyze_);
-    const double mk = DRT::Elements::FLUID::MK<DISTYPE>();
 
     // flag for higher order elements
     const bool higher_order_ele = ele->isHigherOrderElement<DISTYPE>();
@@ -649,10 +628,45 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
 
     // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
     const int numparamvelx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velx, iel_);
+    const int numparamvely = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Vely, iel_);
+    const int numparamvelz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velz, iel_);
+    const int numparampres = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Pres, iel_);
+    const int numparamtauxx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxx, 0);
+//    const int numparamtauyy = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauyy, 0);
+//    const int numparamtauzz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauzz, 0);
+//    const int numparamtauxy = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxy, 0);
+//    const int numparamtauxz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxz, 0);
+//    const int numparamtauyz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauyz, 0);
+//          cout << "numparampres " << numparampres << endl;
+//          cout << "numparamvelx " << numparamvelx << endl;
+//          cout << "numparamvely " << numparamvely << endl;
+//          cout << "numparamvelz " << numparamvelz << endl;
+    
+    dsassert((numparamvelx == numparamvely and numparamvelx == numparamvelz and numparamvelx == numparampres),
+            "for now, we enrich velocity and pressure together");
+    
+    const vector<int> velxdof = dofman.LocalDofPosPerField(XFEM::PHYSICS::Velx);
+    const vector<int> velydof = dofman.LocalDofPosPerField(XFEM::PHYSICS::Vely);
+    const vector<int> velzdof = dofman.LocalDofPosPerField(XFEM::PHYSICS::Velz);
+    const vector<int> presdof = dofman.LocalDofPosPerField(XFEM::PHYSICS::Pres);
 
-    // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
-    const int numparamtauxx = 0;//getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxx, iel_);
-
+    // split velocity and pressure
+    blitz::Array<double, 1> eprenp(numparampres);
+    blitz::Array<double, 2> evelnp(3,numparamvelx,blitz::ColumnMajorArray<2>());
+    
+    for (int iparam=0; iparam<numparamvelx; ++iparam)   evelnp(0,iparam) = locval[velxdof[iparam]];
+    for (int iparam=0; iparam<numparamvely; ++iparam)   evelnp(1,iparam) = locval[velydof[iparam]];
+    for (int iparam=0; iparam<numparamvelz; ++iparam)   evelnp(2,iparam) = locval[velzdof[iparam]];
+    for (int iparam=0; iparam<numparampres; ++iparam)   eprenp(iparam) = locval[presdof[iparam]];
+    
+    
+    // stabilization parameter
+    // This has to be done before anything else is calculated because
+    // we use the same arrays internally.
+    const double hk = DRT::Elements::FLUID::HK<DISTYPE>(evelnp,visc,xyze_);
+    const double mk = DRT::Elements::FLUID::MK<DISTYPE>();
+    
+    // loop over integration cells
     for (XFEM::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell < domainIntCells.end(); ++cell)
     {
 
@@ -1387,15 +1401,13 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
     return;
   }
   
-  void callSysmat(DRT::Element::DiscretizationType distype,
+  void callSysmat(
           XFEM::AssemblyType assembly_type,
           DRT::Elements::XFluid3* ele,
           const RCP<XFEM::InterfaceHandle>  ih,
           const XFEM::ElementDofManager&    eleDofManager,
-          const blitz::Array<double,2>&     evelnp,
-          const blitz::Array<double,1>&     eprenp,
+          const std::vector<double>&        locval,
           blitz::Array<double,2>&           estif,
-          blitz::Array<double,2>&           esv,
           blitz::Array<double,1>&           eforce,
           struct _MATERIAL*       material,
           double                  pseudotime,
@@ -1410,26 +1422,26 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
 
       if (assembly_type == XFEM::standard_assembly)
       {
-          switch (distype)
+          switch (ele->Shape())
           {
           case DRT::Element::hex8:
           {
               Sysmat<DRT::Element::hex8,XFEM::standard_assembly>(
-                      ele, ih, eleDofManager, evelnp, eprenp, estif, esv, eforce,
+                      ele, ih, eleDofManager, locval, estif, eforce,
                       material, pseudotime, newton, pstab, supg, vstab, cstab);
               break;
           }
           case DRT::Element::hex20:
           {
               Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
-                      ele, ih, eleDofManager, evelnp, eprenp, estif, esv, eforce,
+                      ele, ih, eleDofManager, locval, estif, eforce,
                       material, pseudotime, newton, pstab, supg, vstab, cstab);
               break;
           }
           case DRT::Element::hex27:
           {
               Sysmat<DRT::Element::hex27,XFEM::standard_assembly>(
-                      ele, ih, eleDofManager, evelnp, eprenp, estif, esv, eforce,
+                      ele, ih, eleDofManager, locval, estif, eforce,
                       material, pseudotime, newton, pstab, supg, vstab, cstab);
               break;
           }
@@ -1439,26 +1451,26 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
       }
       else
       {
-          switch (distype)
+          switch (ele->Shape())
           {
           case DRT::Element::hex8:
           {
               Sysmat<DRT::Element::hex8,XFEM::xfem_assembly>(
-                      ele, ih, eleDofManager, evelnp, eprenp, estif, esv, eforce,
+                      ele, ih, eleDofManager, locval, estif, eforce,
                       material, pseudotime, newton, pstab, supg, vstab, cstab);
               break;
           }
           case DRT::Element::hex20:
           {
               Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
-                      ele, ih, eleDofManager, evelnp, eprenp, estif, esv, eforce,
+                      ele, ih, eleDofManager, locval, estif, eforce,
                       material, pseudotime, newton, pstab, supg, vstab, cstab);
               break;
           }
           case DRT::Element::hex27:
           {
               Sysmat<DRT::Element::hex27,XFEM::xfem_assembly>(
-                      ele, ih, eleDofManager, evelnp, eprenp, estif, esv, eforce,
+                      ele, ih, eleDofManager, locval, estif, eforce,
                       material, pseudotime, newton, pstab, supg, vstab, cstab);
               break;
           }

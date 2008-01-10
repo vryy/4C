@@ -487,6 +487,10 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
           // check for outdated dof information
           globaldofman->checkForConsistency((*this), eleDofManager_);
           
+          // get access to interface information
+          const RCP<XFEM::InterfaceHandle> ih = params.get< RCP< XFEM::InterfaceHandle > >("interfacehandle",null);
+          dsassert(ih!=null, "you did not give the InterfaceHandle");
+          
           // need current velocity/pressure 
           RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velnp");
           if (velnp==null)
@@ -500,44 +504,6 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
           {
         	  dserror("No ALE support within stationary fluid solver.");
           }
-
-          // split velocity and pressure
-          // create blitz objects
-
-          const int numparampres = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Pres);
-          const int numparamvelx = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Velx);
-          const int numparamvely = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Vely);
-          const int numparamvelz = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Velz);
-          const int numparamtauxx = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Tauxx);
-          const int numparamtauyy = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Tauyy);
-          const int numparamtauzz = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Tauzz);
-          const int numparamtauxy = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Tauxy);
-          const int numparamtauxz = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Tauxz);
-          const int numparamtauyz = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Tauyz);
-//          cout << "numparampres " << numparampres << endl;
-//          cout << "numparamvelx " << numparamvelx << endl;
-//          cout << "numparamvely " << numparamvely << endl;
-//          cout << "numparamvelz " << numparamvelz << endl;
-          
-          dsassert((numparamvelx == numparamvely and numparamvelx == numparamvelz and numparamvelx == numparampres),
-        		  "for now, we enrich velocity and pressure together");
-          
-          const vector<int> velxdof = eleDofManager_.LocalDofPosPerField(XFEM::PHYSICS::Velx);
-          const vector<int> velydof = eleDofManager_.LocalDofPosPerField(XFEM::PHYSICS::Vely);
-          const vector<int> velzdof = eleDofManager_.LocalDofPosPerField(XFEM::PHYSICS::Velz);
-          const vector<int> presdof = eleDofManager_.LocalDofPosPerField(XFEM::PHYSICS::Pres);
-
-          blitz::Array<double, 1> eprenp(numparampres);
-          blitz::Array<double, 2> evelnp(3,numparamvelx,blitz::ColumnMajorArray<2>());
-          
-          for (int iparam=0; iparam<numparamvelx; ++iparam)   evelnp(0,iparam) = locval[velxdof[iparam]];
-          for (int iparam=0; iparam<numparamvely; ++iparam)   evelnp(1,iparam) = locval[velydof[iparam]];
-          for (int iparam=0; iparam<numparamvelz; ++iparam)   evelnp(2,iparam) = locval[velzdof[iparam]];
-          for (int iparam=0; iparam<numparampres; ++iparam)   eprenp(iparam) = locval[presdof[iparam]];
-          
-          
-          const RCP<XFEM::InterfaceHandle> ih = params.get< RCP< XFEM::InterfaceHandle > >("interfacehandle",null);
-          dsassert(ih!=null, "you did not give the InterfaceHandle");
           
           // get control parameter
           const double pseudotime = params.get<double>("total time",-1.0);
@@ -545,20 +511,16 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
         	  dserror("no value for total (pseudo-)time in the parameter list");
 
           const bool newton = params.get<bool>("include reactive terms for linearisation",false);
-          const bool pstab  =true;
-          const bool supg   =true;
-          const bool vstab  =false;  // viscous stabilisation part switched off !!
-          const bool cstab  =true;        
+          const bool pstab  = true;
+          const bool supg   = true;
+          const bool vstab  = false;  // viscous stabilisation part switched off !!
+          const bool cstab  = true;        
 
           // wrap epetra serial dense objects in blitz objects
           blitz::Array<double, 2> estif(elemat1.A(),
                                         blitz::shape(elemat1.M(),elemat1.N()),
                                         blitz::neverDeleteData,
                                         blitz::ColumnMajorArray<2>());
-          blitz::Array<double, 2> esv(elemat2.A(),
-                                      blitz::shape(elemat2.M(),elemat2.N()),
-                                      blitz::neverDeleteData,
-                                      blitz::ColumnMajorArray<2>());
           blitz::Array<double, 1> eforce(elevec1.Values(),
                                          blitz::shape(elevec1.Length()),
                                          blitz::neverDeleteData);
@@ -567,8 +529,8 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
                   eleDofManager_, NumNode(), NodeIds());
           
           // calculate element coefficient matrix and rhs
-          callSysmat(Shape(), assembly_type,
-                  this, ih, eleDofManager_, evelnp, eprenp, estif, esv, eforce,
+          callSysmat(assembly_type,
+                  this, ih, eleDofManager_, locval, estif, eforce,
                   actmat, pseudotime, newton, pstab, supg, vstab, cstab);
 
           // This is a very poor way to transport the density to the

@@ -255,7 +255,7 @@ void XFluidImplicitTimeInt::ComputeSingleFieldRowMaps(RCP<XFEM::DofManager> dofm
 	// collect global dofids for velocity and pressure in vectors
 	for (int i=0; i<discret_->NumMyRowNodes(); ++i) {
 		const DRT::Node* node = discret_->lRowNode(i);
-		const std::set<XFEM::FieldEnr> enrvarset = dofman->getDofSet(node->Id());
+		const std::set<XFEM::FieldEnr> enrvarset = dofman->getNodeDofSet(node->Id());
 		const vector<int> dof = discret_->Dof(node);
 		dsassert(dof.size() == enrvarset.size(), "mismatch in length!");
 		std::set<XFEM::FieldEnr>::const_iterator enrvar;
