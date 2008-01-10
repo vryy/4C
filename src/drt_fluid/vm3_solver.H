@@ -146,7 +146,7 @@ public:
               bool increm);
 
   /*!
-  \brief Add a Epetra_CrsMatrix to another, where the first one is vector-scaled: B = B + A*vector
+  \brief Add a Epetra_CrsMatrix to another, where the first one is vector-scaled: B = B + A*V
 
   Add one matrix to another. the matrix B to be added to must not be
   completed. Sparsity patterns of A and B need not match and A and B can be
@@ -163,7 +163,7 @@ public:
                         Epetra_CrsMatrix& B);
 
   /*!
-  \brief Add a Epetra_CrsMatrix to another, where the first one is vector-scaled: B = B + A*vector
+  \brief Add a Epetra_CrsMatrix to another, where the first one is vector-scaled: B = B + A*V and calculate right hand side by multiplying vector-scaled (A*V) with solution vector S: R = (A*V)*S
 
   Add one matrix to another. the matrix B to be added to must not be
   completed. Sparsity patterns of A and B need not match and A and B can be
@@ -173,11 +173,24 @@ public:
   Note that this is a true parallel add!
 
   \param A          (in)     : Matrix to add to B (must have Filled()==true)
+  \param S          (in)     : solution vector
   \param V          (in)     : scaling vector for A
   \param B          (in/out) : Matrix to be added to (must have Filled()==false)
+  \param R          (out)    : right-hand-side vector
   */
   void AddVecScalMult(const Epetra_CrsMatrix& A, const Epetra_Vector& S,
                       const Epetra_Vector& V, Epetra_CrsMatrix& B, Epetra_Vector& R);
+
+  /*!
+  \brief Calculate right hand side by multiplying vector-scaled (A*V) with solution vector S: R = (A*V)*S
+
+  \param A          (in)     : Matrix A
+  \param S          (in)     : solution vector
+  \param V          (in)     : scaling vector for A
+  \param R          (out)    : right-hand-side vector
+  */
+  void VecScalMult(const Epetra_CrsMatrix& A, const Epetra_Vector& S,
+                   const Epetra_Vector& V, Epetra_Vector& R);
 
 
 private:

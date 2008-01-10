@@ -65,7 +65,8 @@ void VM3_Solver::Scale(RefCountPtr<Epetra_CrsMatrix>& Aplus,
   if (increm)
   {
     // add the subgrid-viscosity-scaled fine-scale matrix to obtain complete matrix
-    AddVecScalMult(*Aplus_,*sol_,*sugrvisc_,*A_,*rplus_);
+    //AddVecScalMult(*Aplus_,*sol_,*sugrvisc_,*A_,*rplus_);
+    VecScalMult(*Aplus_,*sol_,*sugrvisc_,*rplus_);
     r_->Update(-1.0,*rplus_,1.0);
   }
   else
@@ -76,13 +77,14 @@ void VM3_Solver::Scale(RefCountPtr<Epetra_CrsMatrix>& Aplus,
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  |  Add a sparse matrix to another, the first one vector-scaled vg 12/07|
- |  B = B + A*vector                                                    |
+ |  B = B + A*V                                                         |
  *----------------------------------------------------------------------*/
 void VM3_Solver::AddVecScal(const Epetra_CrsMatrix& A,
-                        const Epetra_Vector& V,
-                        Epetra_CrsMatrix& B)
+                            const Epetra_Vector& V,
+                                  Epetra_CrsMatrix& B)
 {
   if (!A.Filled()) dserror("FillComplete was not called on A");
   if (B.Filled()) dserror("FillComplete was called on B before");
@@ -122,13 +124,15 @@ void VM3_Solver::AddVecScal(const Epetra_CrsMatrix& A,
 
 /*----------------------------------------------------------------------*
  |  Add a sparse matrix to another, the first one vector-scaled vg 12/07|
- |  B = B + A*vector                                                    |
+ |  B = B + A*V                                                         |
+ |  and calculate right hand side by multiplying vector-scaled (A*V)    |
+ |  with solution vector S: R = (A*V)*S                                 |
  *----------------------------------------------------------------------*/
 void VM3_Solver::AddVecScalMult(const Epetra_CrsMatrix& A,
-                            const Epetra_Vector& S,
-                            const Epetra_Vector& V,
-                            Epetra_CrsMatrix& B,
-                            Epetra_Vector& R)
+                                const Epetra_Vector& S,
+                                const Epetra_Vector& V,
+                                      Epetra_CrsMatrix& B,
+                                      Epetra_Vector& R)
 {
   if (!A.Filled()) dserror("FillComplete was not called on A");
   if (B.Filled()) dserror("FillComplete was called on B before");
@@ -162,6 +166,41 @@ void VM3_Solver::AddVecScalMult(const Epetra_CrsMatrix& A,
         err = B.InsertGlobalValues(Row,1,&Values[j],&Indices[j]);
       if (err < 0)
         dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d",err);
+    }
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Calculate right hand side by multiplying vector-scaled (A*V)        |
+ |  with solution vector S: R = (A*V)*S                                 |
+ *----------------------------------------------------------------------*/
+void VM3_Solver::VecScalMult(const Epetra_CrsMatrix& A,
+                             const Epetra_Vector& S,
+                             const Epetra_Vector& V,
+                                   Epetra_Vector& R)
+{
+  Epetra_CrsMatrix*               Aprime = NULL;
+  Aprime = const_cast<Epetra_CrsMatrix*>(&A);
+
+  //Loop over Aprime's rows and sum into
+  int MaxNumEntries = Aprime->MaxNumEntries();
+  int NumEntries;
+  vector<int>    Indices(MaxNumEntries);
+  vector<double> Values(MaxNumEntries);
+
+  const int NumMyRows = Aprime->NumMyRows();
+  int Row, Col;
+  for( int i = 0; i < NumMyRows; ++i )
+  {
+    Row = Aprime->GRID(i);
+    int ierr = Aprime->ExtractGlobalRowCopy(Row,MaxNumEntries,NumEntries,&Values[0],&Indices[0]);
+    if (ierr) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d",ierr);
+    for( int j=0; j<NumEntries; ++j ) 
+    {
+      Col = Indices[j];
+      Values[j] *= (sqrt(V[Row])*sqrt(V[Col]));
+      R[i] += Values[j]*S[j];
     }
   }
   return;
