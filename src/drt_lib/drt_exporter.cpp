@@ -402,9 +402,9 @@ void DRT::Exporter::GenericExport(ExporterHelper& helper)
     {
       const int lid = i;
       if (SendPlan()(lid,tproc)!=1) continue;
-      const int gid = SourceMap().MyGlobalElements()[lid];
-      helper.PackObject(gid,sendblock);
-      sendgid.push_back(gid);
+      const int gid = SourceMap().GID(lid);
+      if (helper.PackObject(gid,sendblock))
+        sendgid.push_back(gid);
     }
 
     // send tproc no. of chars tproc must receive
@@ -467,5 +467,26 @@ void DRT::Exporter::GenericExport(ExporterHelper& helper)
 #endif
   return;
 }
+
+
+/*----------------------------------------------------------------------*
+ |  communicate objects (public)                             mwgee 11/06|
+ *----------------------------------------------------------------------*/
+void DRT::Exporter::Export(map<int,int>& data)
+{
+  PODExporterHelper<int> helper(data);
+  GenericExport(helper);
+}
+
+
+/*----------------------------------------------------------------------*
+ |  communicate objects (public)                             mwgee 11/06|
+ *----------------------------------------------------------------------*/
+void DRT::Exporter::Export(map<int,double>& data)
+{
+  PODExporterHelper<double> helper(data);
+  GenericExport(helper);
+}
+
 
 #endif  // #ifdef CCADISCRET

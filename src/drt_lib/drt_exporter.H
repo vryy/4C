@@ -161,19 +161,32 @@ public:
   template<typename T> void Export(map<int,vector<T> >& data);
 
   /*!
-  \brief Communicate a map of plain old data (POD) objects
+  \brief Communicate a map of int values
 
-  This method takes a map of objects and redistributes them according to
+  This method takes a map of ints and redistributes them according to
   the send and receive plans. It is implicitly assumed, that the key in
-  the map of objects pointwise matches SourceMap(). It is also assumed,
-  that type T supports bitwise copy.
+  the map of objects pointwise matches SourceMap().
 
-  \param parobjects (in/out): A map of POD objects. On input, the map
+  \param parobjects (in/out): A map of ints. On input, the map
                               has a distribution matching SourceMap().
                               On output, the map has a distribution of
                               TargetMap().
   */
-  template<typename T> void Export(map<int,T>& data);
+  void Export(map<int,int>& data);
+
+  /*!
+  \brief Communicate a map of double values
+
+  This method takes a map of doubles and redistributes them according to
+  the send and receive plans. It is implicitly assumed, that the key in
+  the map of objects pointwise matches SourceMap().
+
+  \param parobjects (in/out): A map of doubles. On input, the map
+                              has a distribution matching SourceMap().
+                              On output, the map has a distribution of
+                              TargetMap().
+  */
+  void Export(map<int,double>& data);
 
 
 #ifdef PARALLEL
@@ -464,7 +477,7 @@ private:
       Get the object by gid, pack it and append it to the sendblock. We only
       pack it if we know about it.
      */
-    virtual void PackObject(int gid, vector<char>& sendblock) = 0;
+    virtual bool PackObject(int gid, vector<char>& sendblock) = 0;
 
     /// Unpack one object
     /*!
@@ -501,7 +514,7 @@ private:
       }
     }
 
-    virtual void PackObject(int gid, vector<char>& sendblock)
+    virtual bool PackObject(int gid, vector<char>& sendblock)
     {
       typename map<int,RefCountPtr<T> >::iterator curr = parobjects_.find(gid);
       if (curr!=parobjects_.end())
@@ -509,7 +522,9 @@ private:
         vector<char> data;
         curr->second->Pack(data);
         ParObject::AddtoPack(sendblock,data);
+        return true;
       }
+      return false;
     }
 
     virtual void UnpackObject(int gid, int& index, const vector<char>& recvblock)
@@ -555,7 +570,7 @@ private:
       // Nothing to do. We do not check for T to be POD.
     }
 
-    virtual void PackObject(int gid, vector<char>& sendblock)
+    virtual bool PackObject(int gid, vector<char>& sendblock)
     {
       typename map<int,T>::iterator curr = objects_.find(gid);
       if (curr!=objects_.end())
@@ -563,7 +578,9 @@ private:
         unsigned pos = sendblock.size();
         sendblock.resize(pos+sizeof(T));
         memcpy(&sendblock[pos],&curr->second,sizeof(T));
+        return true;
       }
+      return false;
     }
 
     virtual void UnpackObject(int gid, int& index, const vector<char>& recvblock)
@@ -602,28 +619,20 @@ private:
       // Nothing to do. We do not check for T to be POD.
     }
 
-    virtual void PackObject(int gid, vector<char>& sendblock)
+    virtual bool PackObject(int gid, vector<char>& sendblock)
     {
       typename map<int,vector<T> >::iterator curr = objects_.find(gid);
       if (curr!=objects_.end())
       {
-        unsigned pos = sendblock.size();
-        unsigned count = sizeof(T)*curr->second.size();
-        unsigned size = curr->second.size();
-        sendblock.resize(pos+count+sizeof(unsigned));
-        memcpy(&sendblock[pos],&size,sizeof(unsigned));
-        memcpy(&sendblock[pos+sizeof(unsigned)],&curr->second[0],count);
+        ParObject::AddtoPack(sendblock,curr->second);
+        return true;
       }
+      return false;
     }
 
     virtual void UnpackObject(int gid, int& index, const vector<char>& recvblock)
     {
-      unsigned size;
-      memcpy(&size,&recvblock[index],sizeof(unsigned));
-      index += sizeof(unsigned);
-      objects_[gid].resize(size);
-      memcpy(&objects_[gid][0],&recvblock[index],sizeof(T)*size);
-      index += sizeof(T)*size;
+      ParObject::ExtractfromPack(index,recvblock,objects_[gid]);
     }
 
     virtual void PostExportCleanup(Exporter* exporter)
@@ -1060,16 +1069,6 @@ template<typename T> void DRT::Exporter::Export(map<int,vector<T> >& data)
 template<typename T> void DRT::Exporter::Export(map<int,vector<T> >& data)
 {
   PODVectorExporterHelper<T> helper(data);
-  GenericExport(helper);
-}
-
-
-/*----------------------------------------------------------------------*
- |  communicate objects (public)                             mwgee 11/06|
- *----------------------------------------------------------------------*/
-template<typename T> void DRT::Exporter::Export(map<int,T>& data)
-{
-  PODExporterHelper<T> helper(data);
   GenericExport(helper);
 }
 
