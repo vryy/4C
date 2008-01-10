@@ -512,9 +512,9 @@ void MFSI::Algorithm::Evaluate(Teuchos::RCP<const Thyra::DefaultProductVector<do
     {
       Utils()->out() << YELLOW_LIGHT "element call with new x" END_COLOR << endl;
 
-      Teuchos::RCP<const Epetra_Vector> sx = Thyra::get_Epetra_Vector(*StructureField()->DofRowMap(), x->getVectorBlock(0));
-      Teuchos::RCP<const Epetra_Vector> fx = Thyra::get_Epetra_Vector(*FluidField()    ->DofRowMap(), x->getVectorBlock(1));
-      Teuchos::RCP<const Epetra_Vector> ax = Thyra::get_Epetra_Vector(*AleField()      ->DofRowMap(), x->getVectorBlock(2));
+      Teuchos::RCP<const Epetra_Vector> sx;
+      Teuchos::RCP<const Epetra_Vector> fx;
+      Teuchos::RCP<const Epetra_Vector> ax;
 
       ExtractFieldVectors(x,sx,fx,ax);
 

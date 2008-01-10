@@ -63,13 +63,34 @@ namespace MFSI
                      Teuchos::RCP<const Epetra_Vector> fv,
                      Teuchos::RCP<const Epetra_Vector> av,
                      double fluidscale) const;
+
+    ///
+    void AddFluidInterface(double scale,
+                           Teuchos::RCP<Epetra_CrsMatrix> fgg,
+                           Teuchos::RCP<Epetra_CrsMatrix> s) const;
+
+    ///
+    Teuchos::RCP<Epetra_CrsMatrix>
+    ConvertFigColmap(Teuchos::RCP<Epetra_CrsMatrix> fig,
+                     const std::map<int,int>& convcolmap,
+                     const Epetra_Map& domainmap) const;
+
+    ///
+    Teuchos::RCP<Epetra_CrsMatrix>
+    ConvertFgiRowmap(Teuchos::RCP<Epetra_CrsMatrix> fgi,
+                     double scale,
+                     const Epetra_Map& structrowmap) const;
+
     //! @name thyra vector spaces
 
+    /// structure field map
+    Teuchos::RCP<const Thyra::VectorSpaceBase<double> > smap_;
+
     /// structure field inner map
-    Teuchos::RCP<const Thyra::VectorSpaceBase<double> > simap_;
+    //Teuchos::RCP<const Thyra::VectorSpaceBase<double> > simap_;
 
     /// structure field interface map
-    Teuchos::RCP<const Thyra::VectorSpaceBase<double> > sgmap_;
+    //Teuchos::RCP<const Thyra::VectorSpaceBase<double> > sgmap_;
 
     /// fluid field inner map
     Teuchos::RCP<const Thyra::VectorSpaceBase<double> > fimap_;
@@ -85,7 +106,7 @@ namespace MFSI
     Teuchos::RCP<Thyra::LinearOpWithSolveFactoryBase<double> > structsolverfactory_;
 
     /// solver factory for interface system in preconditioner
-    Teuchos::RCP<Thyra::LinearOpWithSolveFactoryBase<double> > interfacesolverfactory_;
+    //Teuchos::RCP<Thyra::LinearOpWithSolveFactoryBase<double> > interfacesolverfactory_;
 
     /// solver factory for inner fluid system in preconditioner
     Teuchos::RCP<Thyra::LinearOpWithSolveFactoryBase<double> > fluidsolverfactory_;
@@ -95,6 +116,12 @@ namespace MFSI
 
     //@}
 
+    /// column fluid to structure dof map
+    mutable std::map<int,int> permfluidstructcolmap_;
+
+    mutable std::map<int,int> fluidstructcolmap_;
+
+    mutable std::map<int,int> alestructcolmap_;
   };
 }
 

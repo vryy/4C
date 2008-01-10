@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <map>
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Export.h>
@@ -169,6 +170,26 @@ namespace FSI
     /// the interface dof map of the slave side
     Teuchos::RCP<Epetra_Map> SlaveDofMap()  const { return slavedofmap_; }
 
+    /// the permuted interface dof map of the master side
+    //Teuchos::RCP<Epetra_Map> PermMasterDofMap() const { return permmasterdofmap_; }
+
+    /// the permuted interface dof map of the slave side
+    //Teuchos::RCP<Epetra_Map> PermSlaveDofMap()  const { return permslavedofmap_; }
+
+    //@}
+
+    /** \name Matrix transform */
+    //@{
+
+    /// fill rowmap with slave -> master pairs
+    void FillSlaveToMasterMap(std::map<int,int>& rowmap) const;
+
+    /// redistribute crsmatrix from master row map to permuted master row map
+    Teuchos::RCP<Epetra_CrsMatrix> MasterToPermMaster(Teuchos::RCP<Epetra_CrsMatrix> sm) const;
+
+    /// redistribute crsmatrix from slave row map to permuted slave row map
+    Teuchos::RCP<Epetra_CrsMatrix> SlaveToPermSlave(Teuchos::RCP<Epetra_CrsMatrix> sm) const;
+
     //@}
 
   private:
@@ -209,13 +230,28 @@ namespace FSI
                       RCP<Epetra_Map>& permdofmap,
                       RCP<Epetra_Export>& exporter);
 
+    /** \name Fundamental dof maps */
+    //@{
+    /// We keep the master and slave dof map as well as permutated versions
+    /// that match the respective other side.
+
     Teuchos::RCP<Epetra_Map> masterdofmap_;
     Teuchos::RCP<Epetra_Map> permmasterdofmap_;
     Teuchos::RCP<Epetra_Map> slavedofmap_;
     Teuchos::RCP<Epetra_Map> permslavedofmap_;
 
+    //@}
+
+    /** \name Communication object */
+    //@{
+
+    /// permuted master dof map to master dof map exporter
     Teuchos::RCP<Epetra_Export> masterexport_;
+
+    /// permuted slave dof map to slave dof map exporter
     Teuchos::RCP<Epetra_Export> slaveexport_;
+
+    //@}
   };
 
 }

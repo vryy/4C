@@ -13,12 +13,12 @@
 /*----------------------------------------------------------------------*/
 MFSI::OverlappingPCFactory::OverlappingPCFactory(
   Teuchos::RCP<const Thyra::LinearOpWithSolveFactoryBase<double> > const&  structure,
-  Teuchos::RCP<const Thyra::LinearOpWithSolveFactoryBase<double> > const&  interface,
+  //Teuchos::RCP<const Thyra::LinearOpWithSolveFactoryBase<double> > const&  interface,
   Teuchos::RCP<const Thyra::LinearOpWithSolveFactoryBase<double> > const&  fluid,
   Teuchos::RCP<const Thyra::LinearOpWithSolveFactoryBase<double> > const&  ale
   )
   : structure_(structure),
-    interface_(interface),
+    //interface_(interface),
     fluid_(fluid),
     ale_(ale)
 {
@@ -53,14 +53,14 @@ void MFSI::OverlappingPCFactory::initializePrec(const Teuchos::RCP<const Thyra::
     Teuchos::rcp_dynamic_cast<const Thyra::DefaultBlockedLinearOp<double> >(fsiOp);
 
   Thyra::ConstLinearOperator<double> structInnerOp = blockFsiOp->getBlock(0,0);
-  Thyra::ConstLinearOperator<double> interfaceOp   = blockFsiOp->getBlock(1,1);
-  Thyra::ConstLinearOperator<double> fluidInnerOp  = blockFsiOp->getBlock(2,2);
-  Thyra::ConstLinearOperator<double> aleInnerOp    = blockFsiOp->getBlock(3,3);
+  //Thyra::ConstLinearOperator<double> interfaceOp   = blockFsiOp->getBlock(1,1);
+  Thyra::ConstLinearOperator<double> fluidInnerOp  = blockFsiOp->getBlock(1,1);
+  Thyra::ConstLinearOperator<double> aleInnerOp    = blockFsiOp->getBlock(2,2);
 
   // Build inverse operators
 
   Thyra::ConstLinearOperator<double> invstruct = inverse(*structure_,structInnerOp,Thyra::IGNORE_SOLVE_FAILURE);
-  Thyra::ConstLinearOperator<double> invinter  = inverse(*interface_,interfaceOp,  Thyra::IGNORE_SOLVE_FAILURE);
+  //Thyra::ConstLinearOperator<double> invinter  = inverse(*interface_,interfaceOp,  Thyra::IGNORE_SOLVE_FAILURE);
   Thyra::ConstLinearOperator<double> invfluid  = inverse(*fluid_,    fluidInnerOp, Thyra::IGNORE_SOLVE_FAILURE);
   Thyra::ConstLinearOperator<double> invale    = inverse(*ale_,      aleInnerOp,   Thyra::IGNORE_SOLVE_FAILURE);
 
@@ -68,12 +68,12 @@ void MFSI::OverlappingPCFactory::initializePrec(const Teuchos::RCP<const Thyra::
 
   Teuchos::RCP<Thyra::PhysicallyBlockedLinearOpBase<double> > M =
     Teuchos::rcp(new Thyra::DefaultBlockedLinearOp<double>());
-  M->beginBlockFill(4,4);
+  M->beginBlockFill(3,3);
 
   M->setBlock(0,0,invstruct.constPtr());
-  M->setBlock(1,1,invinter.constPtr());
-  M->setBlock(2,2,invfluid.constPtr());
-  M->setBlock(3,3,invale.constPtr());
+  //M->setBlock(1,1,invinter.constPtr());
+  M->setBlock(1,1,invfluid.constPtr());
+  M->setBlock(2,2,invale.constPtr());
 
   M->endBlockFill();
 

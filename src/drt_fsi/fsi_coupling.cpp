@@ -354,4 +354,45 @@ void FSI::Coupling::SlaveToMaster(Teuchos::RCP<const Epetra_MultiVector> sv, Teu
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::Coupling::FillSlaveToMasterMap(std::map<int,int>& rowmap) const
+{
+  for (int i=0; i<slavedofmap_->NumMyElements(); ++i)
+  {
+    rowmap[slavedofmap_->GID(i)] = permmasterdofmap_->GID(i);
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_CrsMatrix> FSI::Coupling::MasterToPermMaster(Teuchos::RCP<Epetra_CrsMatrix> sm) const
+{
+  Teuchos::RCP<Epetra_CrsMatrix> permsm = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*permmasterdofmap_,sm->MaxNumEntries()));
+  int err = permsm->Import(*sm,*masterexport_,Insert);
+  if (err)
+    dserror("Import failed with err=%d",err);
+
+  permsm->FillComplete(sm->DomainMap(),*permmasterdofmap_);
+
+  return permsm;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_CrsMatrix> FSI::Coupling::SlaveToPermSlave(Teuchos::RCP<Epetra_CrsMatrix> sm) const
+{
+  Teuchos::RCP<Epetra_CrsMatrix> permsm = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*permslavedofmap_,sm->MaxNumEntries()));
+  int err = permsm->Import(*sm,*slaveexport_,Insert);
+  if (err)
+    dserror("Import failed with err=%d",err);
+
+  permsm->FillComplete(sm->DomainMap(),*permslavedofmap_);
+
+  return permsm;
+}
+
+
 #endif

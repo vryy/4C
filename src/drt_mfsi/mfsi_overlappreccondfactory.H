@@ -23,7 +23,7 @@ namespace MFSI
 
     OverlappingPCFactory(
       Teuchos::RCP<const Thyra::LinearOpWithSolveFactoryBase<double> > const&  structure,
-      Teuchos::RCP<const Thyra::LinearOpWithSolveFactoryBase<double> > const&  interface,
+      //Teuchos::RCP<const Thyra::LinearOpWithSolveFactoryBase<double> > const&  interface,
       Teuchos::RCP<const Thyra::LinearOpWithSolveFactoryBase<double> > const&  fluid,
       Teuchos::RCP<const Thyra::LinearOpWithSolveFactoryBase<double> > const&  ale
       );
@@ -72,7 +72,7 @@ namespace MFSI
   private:
 
     Teuchos::RCP<const Thyra::LinearOpWithSolveFactoryBase<double> > structure_;
-    Teuchos::RCP<const Thyra::LinearOpWithSolveFactoryBase<double> > interface_;
+    //Teuchos::RCP<const Thyra::LinearOpWithSolveFactoryBase<double> > interface_;
     Teuchos::RCP<const Thyra::LinearOpWithSolveFactoryBase<double> > fluid_;
     Teuchos::RCP<const Thyra::LinearOpWithSolveFactoryBase<double> > ale_;
   };
