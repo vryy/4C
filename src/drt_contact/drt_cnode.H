@@ -179,7 +179,7 @@ public:
 
 protected:
 
-  bool            isslave_;      // true of cnode is on slave side of contact problem
+  bool            isslave_;      // true if cnode is on slave side of contact problem
   int             numdof_;       // number of degrees of freedom (length of dofs_)
   vector<int>     dofs_;         // degrees of freedom of this node
   double          n_[3];				 // nodal normal for contact methods

@@ -278,13 +278,13 @@ public:
   \brief Compute element normal at local coordinate xi
   */
   virtual LINALG::SerialDenseMatrix GetNodalCoords();
-    
+  	
   /*!
-  \brief Evaluate Jacobian det for parameter space integration - QUAD 1D
+  \brief Evaluate Jacobian det for parameter space integration - LINEAR / QUAD 1D
   */
-  virtual double Jacobian_Quad1D(const vector<double>& val,
-  																	const vector<double>& deriv,
-  																  const LINALG::SerialDenseMatrix& coord);
+  virtual double Jacobian_1D(const vector<double>& val,
+  													 const vector<double>& deriv,
+  													 const LINALG::SerialDenseMatrix& coord);
   
   /*!
   \brief Compute length (in 3D area) of the element
@@ -292,16 +292,30 @@ public:
   virtual double ComputeArea();
   
   /*!
-  \brief Evaluate shape functions and derivatives - QUAD 1D 
+  \brief Evaluate shape functions and derivatives - LINEAR / QUAD 1D 
   */
-  virtual bool EvaluateShape_Quad1D(const double* xi, vector<double>& val,
-  																	vector<double>& deriv, const int valdim);
+  virtual bool EvaluateShape_1D(const double* xi, vector<double>& val,
+  															vector<double>& deriv, const int valdim);
   
   /*!
-  \brief Evaluate dual shape functions and derivatives - QUAD 1D 
+  \brief Evaluate dual shape functions and derivatives - LINEAR / QUAD 1D 
   */
-  virtual bool EvaluateShape_DualQuad1D(const double* xi, vector<double>& val,
-  																			vector<double>& deriv, const int valdim);
+  virtual bool EvaluateShape_Dual1D(const double* xi, vector<double>& val,
+  																 	vector<double>& deriv, const int valdim);
+  
+  /*!
+  \brief Interpolate global coordinates for given local element coordinates
+  
+  This method interpolates global coordinates for a given local element
+  coordinate variable using the element node coordinates. For interpolation
+  one can choose between shape functions or shape function derivatives!
+  
+  \param xi (in)				: local element coordinates
+  \param inttype (in) 	: set to true for shape function usage,
+  												set to false for derivative usage
+  \param globccord (out): interpolated global coordinates
+  */
+  virtual bool LocalToGlobal(const double* xi, double* globcoord, bool inttype);
 
   //@}
 

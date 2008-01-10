@@ -180,6 +180,31 @@ public:
       
   */
   virtual void Evaluate();
+  
+  /*!
+  \brief Determine overlap and integrate slave / master pair (2D)
+        
+  */
+  virtual bool EvaluateOverlap_2D(CONTACT::CElement& sele,
+  													      CONTACT::CElement& mele);
+  
+  /*!
+  \brief Visualize slave nodal normals with gmsh
+        
+  */
+  virtual void VisualizeNormals_gmsh();
+  
+  /*!
+  \brief Visualize node projections with gmsh
+          
+  */
+  virtual void VisualizeProjections_gmsh(const Epetra_SerialDenseMatrix& csegs);
+  
+  /*!
+  \brief Return matrix of contact segment coordinates
+  
+  */
+  virtual Epetra_SerialDenseMatrix& CSegs() {return contactsegs_;};
 
 protected:
 
@@ -191,12 +216,22 @@ protected:
   int                           id_;            // unique interface id
   const Epetra_Comm&            comm_;          // communicator
   RCP<DRT::Discretization>      idiscret_;      // the discretization of the contact interface
+  
   RCP<Epetra_Map>               snoderowmap_;   // row map of all slave nodes
   RCP<Epetra_Map>               snodecolmap_;   // column map of all slave nodes
   RCP<Epetra_Map>               snodefullmap_;  // fully overlapping column map of all slave nodes
   RCP<Epetra_Map>               mnoderowmap_;   // row map of all master nodes
   RCP<Epetra_Map>               mnodecolmap_;   // column map of all master nodes
   RCP<Epetra_Map>               mnodefullmap_;  // fully overlapping column map of all master nodes
+  
+  RCP<Epetra_Map>               selerowmap_;   // row map of all slave elements
+  RCP<Epetra_Map>               selecolmap_;   // column map of all slave elements
+  RCP<Epetra_Map>               selefullmap_;  // fully overlapping column map of all slave elements
+  RCP<Epetra_Map>               melerowmap_;   // row map of all master elements
+  RCP<Epetra_Map>               melecolmap_;   // column map of all master elements
+  RCP<Epetra_Map>               melefullmap_;  // fully overlapping column map of all master elements
+  
+  Epetra_SerialDenseMatrix		  contactsegs_;	 // contains coordinates of all contact segments
   
 }; // class Interface
 } // namespace CONTACT

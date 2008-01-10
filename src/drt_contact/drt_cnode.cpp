@@ -32,7 +32,7 @@ dofs_(dofs)
   	n()[i]=0.0;
     u()[i]=0.0;
     xspatial()[i]=X()[i];
-  }  
+  }
   return;
 }
 
@@ -181,7 +181,7 @@ void CONTACT::CNode::BuildAveragedNormal()
 		vector<double> ele_n(3);
 		adj_cele->BuildNormalAtNode(Id(),ele_n);
 		double wgt = adj_cele->Area();
-		
+
 #ifdef DEBUG
 		cout << "Area for CElement " << adj_cele->Id() << " is " << wgt << endl;
 #endif // #ifdef DEBUG

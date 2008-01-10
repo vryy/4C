@@ -15,6 +15,9 @@ Maintainer: Michael Gee
 #include "drt_contact_interface.H"
 #include "drt_cdofset.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../io/gmsh.H"
+#include "drt_contact_projector.H"
+#include "drt_contact_integrator.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
@@ -76,6 +79,8 @@ void CONTACT::Interface::FillComplete()
   
   // get standard nodal column map
   RCP<Epetra_Map> oldnodecolmap = rcp (new Epetra_Map(*(Discret().NodeColMap() )));
+  // get standard element column map
+  RCP<Epetra_Map> oldelecolmap = rcp (new Epetra_Map(*(Discret().ElementColMap() )));
       
   // to ease our search algorithms we'll afford the luxury to ghost all nodes
   // on all processors. To do so, we'll take the nodal row map and export it
@@ -174,6 +179,40 @@ void CONTACT::Interface::FillComplete()
     mnodecolmap_ = rcp(new Epetra_Map(-1,(int)mc.size(),&mc[0],0,Comm()));
   }
   
+  // do the same business for elements
+  // (get row and column maps of slave and master elements seperately)
+  {
+  	const Epetra_Map* elerowmap = Discret().ElementRowMap();
+  	const Epetra_Map* elecolmap = Discret().ElementColMap();
+  	vector<int> sc;
+  	vector<int> sr;
+  	vector<int> scfull;
+  	vector<int> mc;
+  	vector<int> mr;
+  	vector<int> mcfull;
+  	for (int i=0; i<elecolmap->NumMyElements(); ++i)
+  	{
+  	  int gid = elecolmap->GID(i);
+  	  bool isslave = dynamic_cast<CONTACT::CElement*>(Discret().gElement(gid))->IsSlave();
+  	  if (oldelecolmap->MyGID(gid))
+  	  {
+  		  if (isslave) sc.push_back(gid);
+  	 	  else         mc.push_back(gid);
+  	  }  
+  	  if (isslave) scfull.push_back(gid);
+  	  else         mcfull.push_back(gid);
+  	  if (!elerowmap->MyGID(gid)) continue;
+  	  if (isslave) sr.push_back(gid);
+  	  else         mr.push_back(gid);
+    }
+    selerowmap_ = rcp(new Epetra_Map(-1,(int)sr.size(),&sr[0],0,Comm()));
+    selefullmap_ = rcp(new Epetra_Map(-1,(int)scfull.size(),&scfull[0],0,Comm()));
+    selecolmap_ = rcp(new Epetra_Map(-1,(int)sc.size(),&sc[0],0,Comm()));
+    melerowmap_ = rcp(new Epetra_Map(-1,(int)mr.size(),&mr[0],0,Comm()));
+    melefullmap_ = rcp(new Epetra_Map(-1,(int)mcfull.size(),&mcfull[0],0,Comm()));
+    melecolmap_ = rcp(new Epetra_Map(-1,(int)mc.size(),&mc[0],0,Comm()));
+  }
+  
   return;
 }
 
@@ -184,6 +223,7 @@ void CONTACT::Interface::SetState(const string& statename, const RCP<Epetra_Vect
 {
   idiscret_->SetState(statename, vec);
   
+  // Get vec to full overlap
   //Epetra_Vector global(*idiscret_->DofColMap(),false);
   //LINALG::Export(*vec,global);
   
@@ -197,51 +237,56 @@ void CONTACT::Interface::SetState(const string& statename, const RCP<Epetra_Vect
 #endif // #ifdef DEBUG*/
   
   // loop over all nodes to set current displacement
-  // usefully overlapping column map to make disp. available on all procs
+  // use fully overlapping column map to make disp. available on all procs
   if (statename=="displacement")
-  for (int i=0;i<idiscret_->NumMyColNodes();++i)
-  {
-  	CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(i));
-  	const int numdof = node->NumDof();
-  	vector<double> mydisp(numdof);
-  	vector<int> lm(numdof);
+  	for (int i=0;i<idiscret_->NumMyColNodes();++i)
+  	{
+  		CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(i));
+  		const int numdof = node->NumDof();
+  		vector<double> mydisp(numdof);
+  		vector<int> lm(numdof);
   	
-  	for (int j=0;j<numdof;++j)
-  		lm[j]=node->Dofs()[j];
+  		for (int j=0;j<numdof;++j)
+  			lm[j]=node->Dofs()[j];
 
-  	DRT::Utils::ExtractMyValues(*global,mydisp,lm);
+  		DRT::Utils::ExtractMyValues(*global,mydisp,lm);
   	
-  	// add mydisp[2]=0 for 2D problems
-  	if (mydisp.size()<3)
-  	  		mydisp.resize(3);
+  		// add mydisp[2]=0 for 2D problems
+  		if (mydisp.size()<3)
+  			mydisp.resize(3);
   	
 /*#ifdef DEBUG
-  	cout << "PROC " << comm_.MyPID() << " thinks that CNode " << node->Id() << ", owned by PROC " << node->Owner()
-  			 << ", Dofs " << lm[0] << " " << lm[1] << " " << lm[2]
-  			 << ", has the displacements): \n"
-  			 << mydisp[0] << "\t\t"
-  			 << mydisp[1] << "\t\t"
-  			 << mydisp[2] << "\n\n";
+  		cout << "PROC " << comm_.MyPID() << " thinks that CNode "
+  	       << node->Id() << ", owned by PROC " << node->Owner()
+  			   << ", Dofs " << lm[0] << " " << lm[1] << " " << lm[2]
+  			   << ", has the displacements): \n"
+  			   << mydisp[0] << "\t\t"
+  			   << mydisp[1] << "\t\t"
+  			   << mydisp[2] << "\n\n";
 #endif // #ifdef DEBUG*/
   	
-  	// set current configuration and displacement, reset normal
-  	for (int j=0;j<3;++j)
-    {
-  		node->u()[j]=mydisp[j];
-  		node->xspatial()[j]=node->X()[j]+mydisp[j];
-  		node->n()[j]=0.0;
-    }
-  }
+  		// set current configuration and displacement
+  		// reset normal and pojection point coords
+  		for (int j=0;j<3;++j)
+  		{
+  			node->u()[j]=mydisp[j];
+  			node->xspatial()[j]=node->X()[j]+mydisp[j];
+  			node->n()[j]=0.0;
+  		}
+  	}
   
   // loop over all elements to set current area or length
   // use fully overlapping column map to make areas available on all procs
   if (statename=="displacement")
-  for (int i=0;i<idiscret_->NumMyColElements();++i)
-  {
-  	CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
-  	element->Area()=element->ComputeArea();
-  }
+  	for (int i=0;i<idiscret_->NumMyColElements();++i)
+  	{
+  		CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
+  		element->Area()=element->ComputeArea();
+  	}
   
+  // set matrix containing interface contact segments back to size zero
+  CSegs().Shape(0,0);
+
   return;
 }
 
@@ -254,8 +299,8 @@ void CONTACT::Interface::Evaluate()
 	if (!Filled() && comm_.MyPID()==0)
 	    dserror("ERROR: FillComplete() not called on interface %", id_);
 	
-	// loop over all slave nodes of the interface
-	// use standard column map to include processor "border nodes" 
+	// loop over proc's slave nodes of the interface
+	// use standard column map to include processor's ghosted nodes 
 	for(int i=0; i<snodecolmap_->NumMyElements();++i)
 	{
 		int gid = snodecolmap_->GID(i);
@@ -270,16 +315,548 @@ void CONTACT::Interface::Evaluate()
 		
 	  // build averaged normal at each slave node
 	  cnode->BuildAveragedNormal();
-	  
-	  // find projection of each slave node to master surface
-	  // NOT YET IMPLEMENTED!!!
-	  // Project_SlaveToMaster();
 	}
+	
+#ifdef DEBUG
+	// Visualize slave nodal normals with gmsh
+	// currently only works for 1 processor case because of writing of output
+	if (comm_.NumProc()==1)
+		VisualizeNormals_gmsh();
+#endif // #ifdef DEBUG
+	
+#ifdef DEBUG
+	comm_.Barrier();
+#endif // #ifdef DEBUG
+	
+	// loop over proc's slave elements of the interface for integration
+	// use standard column map to include processor's ghosted nodes 
+	for (int i=0; i<selecolmap_->NumMyElements();++i)
+	{
+		int gid1 = selecolmap_->GID(i);
+		DRT::Element* ele1 = idiscret_->gElement(gid1);
+		if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
+		CElement* selement = static_cast<CElement*>(ele1);
+		
+		// loop over all master elements of the interface for integration
+		// // use fully overlapping column map to check all elements
+		for (int j=0;j<melefullmap_->NumMyElements();++j)
+		{
+			int gid2 = melefullmap_->GID(j);
+			DRT::Element* ele2 = idiscret_->gElement(gid2);
+			if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
+			CElement* melement = static_cast<CElement*>(ele2);
+			
+			// check for element overlap and integrate the pair
+				EvaluateOverlap_2D(*selement,*melement);
+		}		
+	}
+
+#ifdef DEBUG
+	// Visualize node projections with gmsh
+	// currently only works for 1 processor case because of writing of output
+	if (comm_.NumProc()==1)
+		VisualizeProjections_gmsh(CSegs());
+#endif // #ifdef DEBUG
 	
 	// Exit 0 - Debug
 	//exit(0);
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  Determine overlap and integrate sl/ma pair (public)       popp 11/07|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Interface::EvaluateOverlap_2D(CONTACT::CElement& sele,
+																			      CONTACT::CElement& mele)
+{
+	cout << "Proc " << comm_.MyPID() << " checking pair... Slave ID: "
+			 << sele.Id() << " Master ID: " << mele.Id() << endl;
+	
+	/************************************************************/
+	/* There are several cases how the 2 elements can overlap.  */
+	/* Handle all of them, including the ones that they don't   */
+	/* overlap at all !																					*/
+	/************************************************************/
+	
+	// set overlap tolerance
+	double projtol = 0.05;
+	
+	// create local booleans for projections of end nodes
+	bool s0_hasproj = false;
+	bool s1_hasproj = false;
+	bool m0_hasproj = false;
+	bool m1_hasproj = false;
+	
+	// get slave and master element nodes
+	DRT::Node** mysnodes = sele.Nodes();
+	if (!mysnodes)
+		dserror("ERROR: EvaluateOverlap_2D: Null pointer for mysnodes!");
+	DRT::Node** mymnodes = mele.Nodes();
+	if (!mymnodes)
+			dserror("ERROR: EvaluateOverlap_2D: Null pointer for mymnodes!");
+	
+	// create a 2-dimensional projector instance
+	CONTACT::Projector projector(true);
+		
+	// project slave nodes onto master element
+	vector<double> sprojxi(sele.NumNode());
+	for (int i=0;i<2;++i)
+	{
+		CONTACT::CNode* snode = static_cast<CONTACT::CNode*>(mysnodes[i]);
+		double xi[2] = {0.0, 0.0};
+		projector.Project_NodalNormal(*snode,mele,xi);
+		sprojxi[i]=xi[0];
+		
+		// save projection if it is feasible
+		// we need an expanded feasible domain in order to check pathological
+		// cases due to round-off error and iteration tolerances later!
+		if ((-1.0-projtol<=sprojxi[i]) && (sprojxi[i]<=1.0+projtol))
+		{
+			if (i==0) s0_hasproj=true;
+			if (i==1) s1_hasproj=true;
+		}		
+	}
+	
+	// project master nodes onto slave element
+	vector<double> mprojxi(mele.NumNode());
+	for (int i=0;i<2;++i)
+	{
+		CONTACT::CNode* mnode = static_cast<CONTACT::CNode*>(mymnodes[i]);
+		double xi[2] = {0.0, 0.0};
+		projector.Project_ElementNormal(*mnode,sele,xi);
+		mprojxi[i]=xi[0];
+		
+		// save projection if it is feasible
+		// we need an expanded feasible domain in order to check pathological
+		// cases due to round-off error and iteration tolerances later!!!
+		if ((-1.0-projtol<=mprojxi[i]) && (mprojxi[i]<=1.0+projtol))
+		{
+			if (i==0) m0_hasproj=true;
+		  if (i==1) m1_hasproj=true;
+		}		
+	}
+	
+	/**********************************************************************/
+	/* OVERLAP CASES																											*/
+	/* depending on mxi and sxi overlap will be decided										*/
+	/* even for 3noded CElements only the two end nodes matter in 2D!!!   */
+	/**********************************************************************/
+	bool overlap = false;
+	double sxia = 0.0;
+	double sxib = 0.0;
+	double mxia = 0.0;
+	double mxib = 0.0;
+	
+	/* CASE 1 (NO OVERLAP):
+	   no feasible projection found for any of the 4 outer element nodes  */
+	
+	if (!s0_hasproj && !s1_hasproj && !m0_hasproj && !m1_hasproj)
+	{
+		//do nothing
+	}
+		
+	/* CASES 2-5 (NO OVERLAP):
+	   feasible projection found only for 1 of the 4 outer element nodes
+	   (this can happen due to the necessary projection tolerance!!!)     */
+		
+	else if  (s0_hasproj && !s1_hasproj && !m0_hasproj && !m1_hasproj)
+	{
+		if (-1.0+projtol<=sprojxi[0])
+			dserror("ERROR: EvaluateOverlap_2D: Significant overlap ignored!");
+	}
+	
+	else if  (!s0_hasproj && s1_hasproj && !m0_hasproj && !m1_hasproj)
+	{
+		if (sprojxi[1]<=1.0-projtol)
+			dserror("ERROR: EvaluateOverlap_2D: Significant overlap ignored!");
+	}
+	
+  else if  (!s0_hasproj && !s1_hasproj && m0_hasproj && !m1_hasproj)
+	{
+  	if (-1.0+projtol<=mprojxi[0])
+			dserror("ERROR: EvaluateOverlap_2D: Significant overlap ignored!");
+	}
+	
+	else if  (!s0_hasproj && !s1_hasproj && !m0_hasproj && m1_hasproj)
+	{
+		if (mprojxi[1]<=1.0-projtol)
+			dserror("ERROR: EvaluateOverlap_2D: Significant overlap ignored!");
+	}
+	
+	/* CASE 6 (OVERLAP):
+		 feasible projection found for all 4 outer element nodes
+		 (this can happen due to the necessary projection tolerance!!!)     */
+	
+	else if (s0_hasproj && s1_hasproj && m0_hasproj && m1_hasproj)
+	{
+		overlap = true;
+		cout << "***WARNING***" << endl << "CONTACT::Interface::EvaluateOverlap_2D "<< endl
+				 << "has detected '4 feasible projections'-case for Slave/Master pair "
+				 << sele.Id() << "/" << mele.Id() << endl;
+		
+		// internal case 1 for global CASE 6
+		// (equivalent to global CASE 7, slave fully projects onto master)
+		if ((sprojxi[0]<1.0) && (sprojxi[1]>-1.0))
+		{
+			sxia = -1.0;
+			sxib = 1.0;
+			mxia = sprojxi[1];			// local node numbering always anti-clockwise!!!
+			mxib = sprojxi[0];
+		}
+		
+		// internal case 2 for global CASE 6
+		// (equivalent to global CASE 8, master fully projects onto slave)
+		else if ((mprojxi[0]<1.0) && (mprojxi[1]>-1.0))
+		{
+			mxia = -1.0;
+			mxib = 1.0;
+			sxia = mprojxi[1];			// local node numbering always anti-clockwise!!!
+			sxib = mprojxi[0];
+		}
+		
+		// internal case 3 for global CASE 6
+	  // (equivalent to global CASE 9, both nodes no. 0 project successfully)
+		else if ((sprojxi[0]<1.0) && (mprojxi[0]<1.0))
+		{
+			sxia = -1.0;
+			sxib = mprojxi[0];			// local node numbering always anti-clockwise!!!
+			mxia = -1.0;
+			mxib = sprojxi[0];
+		}
+		
+		// internal case 4 for global CASE 6
+		// (equivalent to global CASE 10, both nodes no. 1 project successfully)
+		else if ((sprojxi[1]>-1.0) && (mprojxi[1]>-1.0))
+		{
+			sxia = mprojxi[1];
+			sxib = 1.0;						// local node numbering always anti-clockwise!!!
+			mxia = sprojxi[1];
+			mxib = 1.0;
+		}
+		
+		// unknown internal case for global CASE 6
+		else
+			dserror("ERROR: EvaluateOverlap_2D: Unknown overlap case found in global case 6!");	
+	}
+	
+	/* CASES 7-8 (OVERLAP):
+		 feasible projections found for both nodes of one element, this 
+	 	 means one of the two elements is projecting fully onto the other!  */
+	
+	else if (s0_hasproj && s1_hasproj && !m0_hasproj && !m1_hasproj)
+	{
+		overlap = true;
+		sxia = -1.0;
+		sxib = 1.0;
+		mxia = sprojxi[1];			// local node numbering always anti-clockwise!!!
+		mxib = sprojxi[0];
+	}
+	
+	else if (!s0_hasproj && !s1_hasproj && m0_hasproj && m1_hasproj)
+	{
+		overlap = true;
+		mxia = -1.0;
+		mxib = 1.0;
+		sxia = mprojxi[1];			// local node numbering always anti-clockwise!!!
+		sxib = mprojxi[0];
+	}
+	
+	/* CASES 9-10 (OVERLAP):
+		 feasible projections found for one node of each element, due to
+		 node numbering only identical local node ID pairs possible!        */
+	
+	else if (s0_hasproj && !s1_hasproj && m0_hasproj && !m1_hasproj)
+	{
+		// do the two elements really have an overlap?
+		if ((sprojxi[0]>-1.0) && (mprojxi[0]>-1.0))
+		{
+			overlap = true;
+			sxia = -1.0;
+			sxib = mprojxi[0];			// local node numbering always anti-clockwise!!!
+			mxia = -1.0;
+			mxib = sprojxi[0];
+		}
+	}
+	
+	else if (!s0_hasproj && s1_hasproj && !m0_hasproj && m1_hasproj)
+	{
+		// do the two elements really have an overlap?
+		if ((sprojxi[1]<1.0) && (mprojxi[1]<1.0))
+		{
+			overlap = true;
+			sxia = mprojxi[1];
+			sxib = 1.0;						// local node numbering always anti-clockwise!!!
+			mxia = sprojxi[1];
+			mxib = 1.0;
+		}
+	}
+	
+	/* CASES 11-14 (OVERLAP):
+		 feasible projections found for 3 out of the total 4 nodes,
+		 this can either lead to cases 7/8 or 9/10!                         */
+	else if (s0_hasproj && s1_hasproj && m0_hasproj && !m1_hasproj)
+	{
+		overlap = true;
+		// equivalent to global case 7
+		if (mprojxi[0]>1.0)
+		{
+			sxia = -1.0;
+			sxib = 1.0;
+			mxia = sprojxi[1];		// local node numbering always anti-clockwise!!!
+			mxib = sprojxi[0];
+		}
+		// equivalent to global case 9
+		else
+		{
+			sxia = -1.0;
+			sxib = mprojxi[0];		// local node numbering always anti-clockwise!!!
+			mxia = -1.0;
+			mxib = sprojxi[0];
+		}
+	}
+	
+	else if (s0_hasproj && s1_hasproj && !m0_hasproj && m1_hasproj)
+	{
+		overlap = true;
+		// equivalent to global case 7
+		if (mprojxi[1]<-1.0)
+		{
+			sxia = -1.0;
+			sxib = 1.0;
+			mxia = sprojxi[1];	// local node numbering always anti-clockwise!!!
+			mxib = sprojxi[0];
+		}
+		// equivalent to global case 10
+		else
+		{
+			sxia = mprojxi[1];
+			sxib = 1.0;					// local node numbering always anti-clockwise!!!
+			mxia = sprojxi[1];
+			mxib = 1.0;
+		}
+	}
+	
+	else if (s0_hasproj && !s1_hasproj && m0_hasproj && m1_hasproj)
+	{
+		overlap = true;
+		// equivalent to global case 8
+		if (sprojxi[0]>1.0)
+		{
+			mxia = -1.0;
+			mxib = 1.0;
+			sxia = mprojxi[1];			// local node numbering always anti-clockwise!!!
+			sxib = mprojxi[0];
+		}
+		// equivalent to global case 9
+		else
+		{
+			sxia = -1.0;
+			sxib = mprojxi[0];		// local node numbering always anti-clockwise!!!
+			mxia = -1.0;
+			mxib = sprojxi[0];
+		}
+	}
+	
+	else if (!s0_hasproj && s1_hasproj && m0_hasproj && m1_hasproj)
+	{
+		overlap = true;
+		// equivalent to global case 8
+		if (sprojxi[1]<-1.0)
+		{
+			mxia = -1.0;
+			mxib = 1.0;
+			sxia = mprojxi[1];	// local node numbering always anti-clockwise!!!
+			sxib = mprojxi[0];
+		}
+		// equivalent to global case 10
+		else
+		{
+			sxia = mprojxi[1];
+			sxib = 1.0;					// local node numbering always anti-clockwise!!!
+			mxia = sprojxi[1];
+			mxib = 1.0;
+		}
+	}
+		
+	/* CASE DEFAULT: unknown overlap case													        */
+	else
+	{
+		dserror("ERROR: EvaluateOverlap_2D: Unknown overlap case found!");
+	}
+	
+	if ((sxia<-1.0) || (sxib>1.0) || (mxia<-1.0) || (mxib>1.0))
+		dserror("ERROR: EvaluateOverlap_2D: Determined infeasible limits!");
+	
+	if (overlap)
+	{
+		cout << "Found overlap!!!" << endl;
+		cout << "sxia: " << sxia << " sxib: " << sxib << endl;
+		cout << "mxia: " << mxia << " mxib: " << mxib << endl;
+		
+#ifdef DEBUG
+		// prepare gmsh visualization
+		// currently only works for 1 processor case because of writing of output
+		if (comm_.NumProc()==1)
+		{
+			double sxia_loc[2] = {sxia, 0.0};
+			double sxib_loc[2] = {sxib, 0.0};
+			double mxia_loc[2] = {mxia, 0.0};
+			double mxib_loc[2] = {mxib, 0.0};
+		
+			double sxia_glob[3] = {0.0, 0.0, 0.0};
+			double sxib_glob[3] = {0.0, 0.0, 0.0};
+			double mxia_glob[3] = {0.0, 0.0, 0.0};
+			double mxib_glob[3] = {0.0, 0.0, 0.0};
+		
+			sele.LocalToGlobal(sxia_loc,sxia_glob,true);
+			sele.LocalToGlobal(sxib_loc,sxib_glob,true);
+			mele.LocalToGlobal(mxia_loc,mxia_glob,true);
+			mele.LocalToGlobal(mxib_loc,mxib_glob,true);
+		
+			Epetra_SerialDenseMatrix& segs = CSegs();
+			segs.Reshape(segs.M()+1,12);
+			segs(segs.M()-1,0)  = sxia_glob[0];
+			segs(segs.M()-1,1)  = sxia_glob[1];
+			segs(segs.M()-1,2)  = sxia_glob[2];
+			segs(segs.M()-1,3)  = mxib_glob[0];
+			segs(segs.M()-1,4)  = mxib_glob[1];
+			segs(segs.M()-1,5)  = mxib_glob[2];
+			segs(segs.M()-1,6)  = mxia_glob[0];
+			segs(segs.M()-1,7)  = mxia_glob[1];
+			segs(segs.M()-1,8)  = mxia_glob[2];
+			segs(segs.M()-1,9)  = sxib_glob[0];
+			segs(segs.M()-1,10) = sxib_glob[1];
+			segs(segs.M()-1,11) = sxib_glob[2];
+		}
+#endif // #ifdef DEBUG
+	}
+	else
+	{
+		cout << "Did not find overlap!!!" << endl;
+	}
+	
+	return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Visualize slave nodal normals with gmsh                   popp 12/07|
+ *----------------------------------------------------------------------*/
+void CONTACT::Interface::VisualizeNormals_gmsh()
+{
+	std::stringstream gmshfilecontent;
+	std::ofstream f_system("slavenormals.gmsh");
+	gmshfilecontent << "View \" Slave and master side CElements \" {" << endl;
+	
+	// plot elements
+	for (int i=0; i<idiscret_->NumMyColElements(); ++i)
+	{
+		CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
+		gmshfilecontent << IO::GMSH::elementToString(element->Area(), element) << endl;
+	}
+	gmshfilecontent << "};" << endl;
+	
+	gmshfilecontent << "View \" Slave side nodal normals \" {" << endl;
+	
+	// plot vectors
+	for (int i=0; i<snodecolmap_->NumMyElements(); ++i)
+	{
+		int gid = snodecolmap_->GID(i);
+		DRT::Node* node = idiscret_->gNode(gid);
+		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+		CNode* cnode = static_cast<CNode*>(node);
+		if (!cnode) dserror("ERROR: Static Cast to CNode* failed");
+		
+	 	double nc[3];
+	 	double nn[3];
+	 	
+	 	for (int j=0;j<3;++j)
+	 	{
+	 		nc[j]=cnode->X()[j];
+	 		nn[j]=cnode->n()[j];
+	 	}
+	 	
+	 	gmshfilecontent << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
+	 	gmshfilecontent << "{" << scientific << nn[0] << "," << nn[1] << "," << nn[2] << "};" << endl;
+	}
+	
+	gmshfilecontent << "};" << endl; 
+	f_system << gmshfilecontent.str();
+	f_system.close();
+	
+	return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Visualize node projections with gmsh                      popp 01/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Interface::VisualizeProjections_gmsh(const Epetra_SerialDenseMatrix& csegs)
+{
+	std::stringstream gmshfilecontent;
+	std::ofstream f_system("projections.gmsh");
+	gmshfilecontent << "View \" Slave and master side CElements \" {" << endl;
+		
+	// plot elements
+	for (int i=0; i<idiscret_->NumMyColElements(); ++i)
+	{
+		CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
+		int nnodes = element->NumNode();
+		LINALG::SerialDenseMatrix coord(3,nnodes);
+		double area = element->Area();
+		
+		// 2D linear case (2noded line elements)
+		if (element->Shape()==DRT::Element::line2)
+		{
+			coord = element->GetNodalCoords();
+			
+			gmshfilecontent << "SL(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+							            << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+							            << coord(2,1) << ")";
+			gmshfilecontent << "{" << scientific << area << "," << area << "};" << endl;
+		}
+		
+		// 2D quadratic case (3noded line elements)
+		if (element->Shape()==DRT::Element::line3)
+		{
+			coord = element->GetNodalCoords();
+			
+			gmshfilecontent << "SL2(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+							            << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+							            << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
+							            << coord(2,2) << ")";
+			gmshfilecontent << "{" << scientific << area << "," << area << "," << area << "};" << endl;
+		}
+	}
+	
+	gmshfilecontent << "};" << endl;
+	
+	gmshfilecontent << "View \" Mortar contact segments \" {" << endl;
+	
+	// plot contact segments (slave and master projections)
+	for (int i=0; i<csegs.M(); ++i)
+	{
+		gmshfilecontent << "SQ(" << scientific << csegs(i,0) << "," << csegs(i,1) << ","
+		                << csegs(i,2) << "," << csegs(i,3) << "," << csegs(i,4) << ","
+		                << csegs(i,5) << "," << csegs(i,6) << "," << csegs(i,7) << ","
+		                << csegs(i,8) << "," << csegs(i,9) << "," << csegs(i,10) << ","
+		                << csegs(i,11) << ")";
+		gmshfilecontent << "{" << scientific << i << "," << i << "," << i << "," << i << "};" << endl; 
+		
+		gmshfilecontent << "SL(" << scientific << csegs(i,0) << "," << csegs(i,1) << ","
+				            << csegs(i,2) << "," << csegs(i,3) << "," << csegs(i,4) << ","
+				            << csegs(i,5) << ")";
+		gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl; 
+		
+		gmshfilecontent << "SL(" << scientific << csegs(i,6) << "," << csegs(i,7) << ","
+						        << csegs(i,8) << "," << csegs(i,9) << "," << csegs(i,10) << ","
+						        << csegs(i,11) << ")";
+		gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
+	}
+	
+	gmshfilecontent << "};" << endl;
+	f_system << gmshfilecontent.str();
+	f_system.close();
+	
+	return;
+}
 
 #endif  // #ifdef CCADISCRET
