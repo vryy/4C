@@ -183,7 +183,6 @@ maxentriesperrow_(81)
     	  volConstrMan_=rcp(new DRT::VolConstrManager(discret_, dis_));
       }
 
-//#ifdef SURFSTRESS
       // Check for surface stress conditions due to interfacial phenomena
       vector<DRT::Condition*> surfstresscond;
       discret_.GetCondition("SurfaceStress",surfstresscond);
@@ -197,7 +196,6 @@ maxentriesperrow_(81)
         }
         surf_stress_man_=rcp(new DRT::SurfStressManager(discret_, numsurf));
       }
-//#endif
     }
     // close mass matrix
     LINALG::Complete(*mass_);
@@ -340,13 +338,11 @@ void StruGenAlpha::ConstantPredictor()
     discret_.Evaluate(p,stiff_,null,fint_,null,null);
     discret_.ClearState();
 
-//#ifdef SURFSTRESS
     if (surf_stress_man_!=null)
     {
       p.set("surfstr_man", surf_stress_man_);
       surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
     }
-//#endif
 
     // do NOT finalize the stiffness matrix, add mass and damping to it later
   }
@@ -676,14 +672,11 @@ void StruGenAlpha::ConsistentPredictor()
     discret_.Evaluate(p,stiff_,null,fint_,null,null);
     discret_.ClearState();
 
-//#ifdef SURFSTRESS
     if (surf_stress_man_!=null)
     {
       p.set("surfstr_man", surf_stress_man_);
       surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
     }
-//#endif
-
     // do NOT finalize the stiffness matrix, add mass and damping to it later
   }
 
@@ -981,14 +974,11 @@ void StruGenAlpha::FullNewton()
       discret_.Evaluate(p,stiff_,null,fint_,null,null);
       discret_.ClearState();
 
-//#ifdef SURFSTRESS
       if (surf_stress_man_!=null)
       {
         p.set("surfstr_man", surf_stress_man_);
         surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
       }
-//#endif
-
       // do NOT finalize the stiffness matrix to add masses to it later
     }
 

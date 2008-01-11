@@ -408,7 +408,6 @@ int DRT::Elements::Soh8Surface::Evaluate(ParameterList& params,
 
                 case calc_surfstress_stiff:
 	  	{
-//#ifdef SURFSTRESS
                   // element geometry update
                   RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
                   if (disp==null) dserror("Cannot get state vector 'displacement'");
@@ -468,7 +467,6 @@ int DRT::Elements::Soh8Surface::Evaluate(ParameterList& params,
                   }
                   else
                     dserror("Unknown surface flag");
-//#endif
 	  	}
                 break;
 

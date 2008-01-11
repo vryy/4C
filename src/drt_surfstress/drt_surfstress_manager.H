@@ -1,4 +1,3 @@
-//#ifdef SURFSTRESS
 /*!----------------------------------------------------------------------
 \file drt_surfstress_manager.H
 
@@ -181,5 +180,3 @@ private:
 }//namespace DRT
 
 #endif /*SURFSTRESS_MANAGER_H*/
-//#endif // of SURFSTRESS
-
