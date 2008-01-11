@@ -147,10 +147,6 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const Discretization& dis, const int 
   vector<int> rredundantnodes(dis.NumGlobalNodes());
   dis.Comm().SumAll(&sredundantnodes[0],&rredundantnodes[0],dis.NumGlobalNodes());
 
-  for (unsigned i=0; i<rredundantnodes.size(); ++i)
-    if (rredundantnodes[i] > MAXDOFPERNODE)
-      dserror("MAXDOFPERNODE=%d and numdf=%d found", MAXDOFPERNODE, rredundantnodes[i]);
-
   int count=start;
   int localcolpos=0;
 
@@ -280,10 +276,6 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const Discretization& dis, const int 
 
   vector<int> rredundantelements(dis.NumGlobalElements());
   dis.Comm().SumAll(&sredundantelements[0],&rredundantelements[0],dis.NumGlobalElements());
-
-  for (unsigned i=0; i<rredundantelements.size(); ++i)
-    if (rredundantelements[i] > MAXDOFPERNODE)
-      dserror("MAXDOFPERNODE=%d and numdf=%d found", MAXDOFPERNODE, rredundantelements[i]);
 
   // enlarge the big dof vectors
   localrowdofs.reserve(lnumdof); // exact
