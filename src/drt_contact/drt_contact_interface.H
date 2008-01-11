@@ -22,6 +22,7 @@ Maintainer: Michael Gee
 #include "drt_cnode.H"
 #include "drt_celement.H"
 
+#define CONTACT_PROJTOL 0.05  		/* projection tol. for overlap decision */
 
 using namespace std;
 using namespace Teuchos;

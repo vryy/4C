@@ -47,30 +47,30 @@ bool CONTACT::Projector::Project_NodalNormal(CONTACT::CNode& node,
 		double deta = 0.0;
 		double F = 0.0;
 		double dF = 0.0;
-		int maxiter = 10;
 		int k=0;
 		
-		for (k=0;k<maxiter;++k)
+		for (k=0;k<CONTACT_MAXITER;++k)
 		{
 			F=Evaluate_F_NodalNormal(node,ele,eta);
-			if (abs(F) < 1.0e-10) break;
+			if (abs(F) < CONTACT_CONVTOL) break;
 			dF=Evaluate_gradF_NodalNormal(node,ele,eta);
 			deta=(-F)/dF;
 			eta[0]+=deta;
 		}
 		
-		// get result in any case
+		// get the result
 		xi[0]=eta[0];
 		
 		// Newton iteration unconverged
-		if (abs(F) > 1.0e-10)
+		if (abs(F) > CONTACT_CONVTOL)
 		{
 			ok = false;
+			xi[0] = 9999.99;
 			
 			// Here (S->M projection) we only give a warning, no error!!!
 			// This iteration sometimes diverges, when the projection is far off.
-			// Although these cases are harmless, as the elements then do not overlap anyway,
-			// one should check these warnings (at the moment by hand)!
+			// Although these cases are harmless, as these nodes then do not participate in
+			// the overlap detection anyway one should check these warnings (at the moment by hand)!
 			// (FIXME: Automatic check, if unconverged projections are really harmless!)
 			cout << "***WARNING*** Project_NodalNormal:" << endl << "Newton unconverged for NodeID "
 					 << node.Id() << " and CElementID " << ele.Id() << endl;	
@@ -120,30 +120,30 @@ bool CONTACT::Projector::Project_ElementNormal(CONTACT::CNode& node,
 		double deta = 0.0;
 		double F = 0.0;
 		double dF = 0.0;
-		int maxiter = 50;			// change maxiter here!!!
 		int k=0;
 		
-		for (k=0;k<maxiter;++k)
+		for (k=0;k<CONTACT_MAXITER;++k)
 		{
 			F=Evaluate_F_ElementNormal(node,ele,eta);
-			if (abs(F) < 1.0e-10) break;
+			if (abs(F) < CONTACT_CONVTOL) break;
 			dF=Evaluate_gradF_ElementNormal(node,ele,eta);
 			deta=(-F)/dF;
 			eta[0]+=deta;
 		}
 		
-		// get result in any case
+		// get the result
 		xi[0]=eta[0];
 		
 		// Newton iteration unconverged
-		if (abs(F) > 1.0e-10)
+		if (abs(F) > CONTACT_CONVTOL)
 		{
 			ok = false;
+			xi[0] = 9999.99;
 			
 			// Here (M->S projection) we only give a warning, no error!!!
 			// This iteration sometimes diverges, when the projection is far off.
-			// Although these cases are harmless, as the elements then do not overlap anyway,
-			// one should check these warnings (at the moment by hand)!
+			// Although these cases are harmless, as these nodes then do not participate in
+			// the overlap detection anyway one should check these warnings (at the moment by hand)!
 			// (FIXME: Automatic check, if unconverged projections are really harmless!)
 			cout << "***WARNING*** Project_ElementNormal:" << endl << "Newton unconverged for NodeID "
 					 << node.Id() << " and CElementID " << ele.Id() << endl;
@@ -225,20 +225,19 @@ bool CONTACT::Projector::Project_GaussPoint(CONTACT::CElement& gpele,
 		double deta = 0.0;
 		double F = 0.0;
 		double dF = 0.0;
-		int maxiter = 10;
 		int k=0;
 		
-		for (k=0;k<maxiter;++k)
+		for (k=0;k<CONTACT_MAXITER;++k)
 		{
 			F=Evaluate_F_GaussPoint(gpx,gpn,ele,eta);
-			if (abs(F) < 1.0e-10) break;
+			if (abs(F) < CONTACT_CONVTOL) break;
 			dF=Evaluate_gradF_GaussPoint(gpn,ele,eta);
 			deta=(-F)/dF;
 			eta[0]+=deta;
 		}
 		
 		// Newton iteration unconverged
-		if (abs(F) > 1.0e-10)
+		if (abs(F) > CONTACT_CONVTOL)
 		{
 			ok = false;
 			dserror("ERROR: Project_GaussPoint: Newton unconverged for GP at xi=%"

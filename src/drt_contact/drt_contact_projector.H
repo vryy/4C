@@ -20,6 +20,9 @@ Maintainer: Alexander Popp
 #include "drt_cnode.H"
 #include "drt_celement.H"
 
+#define CONTACT_MAXITER 10					/* max. no. iterations for local Newton   */
+#define CONTACT_CONVTOL 1.0e-10			/* convergence tolerance for local Newton */
+
 using namespace std;
 using namespace Teuchos;
 

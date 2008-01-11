@@ -378,9 +378,6 @@ bool CONTACT::Interface::EvaluateOverlap_2D(CONTACT::CElement& sele,
 	/* overlap at all !																					*/
 	/************************************************************/
 	
-	// set overlap tolerance
-	double projtol = 0.05;
-	
 	// create local booleans for projections of end nodes
 	bool s0_hasproj = false;
 	bool s1_hasproj = false;
@@ -410,7 +407,7 @@ bool CONTACT::Interface::EvaluateOverlap_2D(CONTACT::CElement& sele,
 		// save projection if it is feasible
 		// we need an expanded feasible domain in order to check pathological
 		// cases due to round-off error and iteration tolerances later!
-		if ((-1.0-projtol<=sprojxi[i]) && (sprojxi[i]<=1.0+projtol))
+		if ((-1.0-CONTACT_PROJTOL<=sprojxi[i]) && (sprojxi[i]<=1.0+CONTACT_PROJTOL))
 		{
 			if (i==0) s0_hasproj=true;
 			if (i==1) s1_hasproj=true;
@@ -429,7 +426,7 @@ bool CONTACT::Interface::EvaluateOverlap_2D(CONTACT::CElement& sele,
 		// save projection if it is feasible
 		// we need an expanded feasible domain in order to check pathological
 		// cases due to round-off error and iteration tolerances later!!!
-		if ((-1.0-projtol<=mprojxi[i]) && (mprojxi[i]<=1.0+projtol))
+		if ((-1.0-CONTACT_PROJTOL<=mprojxi[i]) && (mprojxi[i]<=1.0+CONTACT_PROJTOL))
 		{
 			if (i==0) m0_hasproj=true;
 		  if (i==1) m1_hasproj=true;
@@ -441,6 +438,19 @@ bool CONTACT::Interface::EvaluateOverlap_2D(CONTACT::CElement& sele,
 	/* depending on mxi and sxi overlap will be decided										*/
 	/* even for 3noded CElements only the two end nodes matter in 2D!!!   */
 	/**********************************************************************/
+	// For the non-overlapping cases, the possibility of an identical local
+	// node numbering direction for both sides is taken into account!!
+	// (this can happen, when elements far from each other are projected)
+	// For the overlapping cases, it is a prerequisite that the two local
+	// node numbering directions are opposite!!
+	// (this is the case, when the elements are sufficiently near each other)
+	
+	// FIXME: Yet, as long as there is no adequate search algorithm for
+	// potential contact surfaces, the projections might pose problems for
+	// the case, when the contact interface is chosen very large!!!
+	// (for example: ball(S) contacting plane(M), the whole ball surface is
+	// chosen as contact interface, then the top nodes are very critical!!!)
+	
 	bool overlap = false;
 	double sxia = 0.0;
 	double sxib = 0.0;
@@ -461,26 +471,50 @@ bool CONTACT::Interface::EvaluateOverlap_2D(CONTACT::CElement& sele,
 		
 	else if  (s0_hasproj && !s1_hasproj && !m0_hasproj && !m1_hasproj)
 	{
-		if (-1.0+projtol<=sprojxi[0])
-			dserror("ERROR: EvaluateOverlap_2D: Significant overlap ignored!");
+		if ((-1.0+CONTACT_PROJTOL<=sprojxi[0]) && (sprojxi[0]<=1.0-CONTACT_PROJTOL))
+		{
+			cout << "SElement Node IDs: " << mysnodes[0]->Id() << " " << mysnodes[1]->Id() << endl;
+			cout << "MElement Node IDs: " << mymnodes[0]->Id() << " " << mymnodes[1]->Id() << endl;
+			cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << endl;
+			cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << endl;
+			dserror("ERROR: EvaluateOverlap_2D: Significant overlap ignored S%i M%i!", sele.Id(), mele.Id());
+		}
 	}
 	
 	else if  (!s0_hasproj && s1_hasproj && !m0_hasproj && !m1_hasproj)
 	{
-		if (sprojxi[1]<=1.0-projtol)
-			dserror("ERROR: EvaluateOverlap_2D: Significant overlap ignored!");
+		if ((-1.0+CONTACT_PROJTOL<=sprojxi[1]) && (sprojxi[1]<=1.0-CONTACT_PROJTOL))
+		{
+			cout << "SElement Node IDs: " << mysnodes[0]->Id() << " " << mysnodes[1]->Id() << endl;
+			cout << "MElement Node IDs: " << mymnodes[0]->Id() << " " << mymnodes[1]->Id() << endl;
+			cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << endl;
+			cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << endl;
+			dserror("ERROR: EvaluateOverlap_2D: Significant overlap ignored S%i M%i!", sele.Id(), mele.Id());
+		}
 	}
 	
   else if  (!s0_hasproj && !s1_hasproj && m0_hasproj && !m1_hasproj)
 	{
-  	if (-1.0+projtol<=mprojxi[0])
-			dserror("ERROR: EvaluateOverlap_2D: Significant overlap ignored!");
+  	if ((-1.0+CONTACT_PROJTOL<=mprojxi[0]) && (mprojxi[0]<=1.0-CONTACT_PROJTOL))
+  	{
+  		cout << "SElement Node IDs: " << mysnodes[0]->Id() << " " << mysnodes[1]->Id() << endl;
+  	  cout << "MElement Node IDs: " << mymnodes[0]->Id() << " " << mymnodes[1]->Id() << endl;
+  		cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << endl;
+  		cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << endl;
+  		dserror("ERROR: EvaluateOverlap_2D: Significant overlap ignored S%i M%i!", sele.Id(), mele.Id());
+  	}
 	}
 	
 	else if  (!s0_hasproj && !s1_hasproj && !m0_hasproj && m1_hasproj)
 	{
-		if (mprojxi[1]<=1.0-projtol)
-			dserror("ERROR: EvaluateOverlap_2D: Significant overlap ignored!");
+		if ((-1.0+CONTACT_PROJTOL<=mprojxi[1]) && (mprojxi[1]<=1.0-CONTACT_PROJTOL))
+		{
+			cout << "SElement Node IDs: " << mysnodes[0]->Id() << " " << mysnodes[1]->Id() << endl;
+			cout << "MElement Node IDs: " << mymnodes[0]->Id() << " " << mymnodes[1]->Id() << endl;
+			cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << endl;
+			cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << endl;
+			dserror("ERROR: EvaluateOverlap_2D: Significant overlap ignored S%i M%i!", sele.Id(), mele.Id());
+		}
 	}
 	
 	/* CASE 6 (OVERLAP):
