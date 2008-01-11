@@ -3694,8 +3694,9 @@ int DRT::Elements::Shell8Register::Initialize(DRT::Discretization& dis)
 
 
   //------------------------------------ do directors at nodes Bischoff style
+  const int MAXELEHARDCODED = 6;  
   map<int,vector<double> > a3map;
-  Epetra_SerialDenseMatrix collaverdir(3,MAXELE);
+  Epetra_SerialDenseMatrix collaverdir(3,MAXELEHARDCODED);
   // loop my row nodes and build a3map
   for (int i=0; i<dis.NumMyRowNodes(); ++i)
   {
@@ -3718,7 +3719,7 @@ int DRT::Elements::Shell8Register::Initialize(DRT::Discretization& dis)
           collaverdir(1,numa3) = (*a3ref)(1,k);
           collaverdir(2,numa3) = (*a3ref)(2,k);
           ++numa3;
-          if (numa3>MAXELE) dserror("MAXELE too small");
+          if (numa3>MAXELEHARDCODED) dserror("MAXELEHARDCODED too small");
           break;
         }
       }
