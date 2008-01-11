@@ -26,6 +26,11 @@ Maintainer: Michael Gee
 #include "drt_function.H"
 
 
+/*! number of values that we can read for a neumann or dirichlet condition
+ * -> GiD has 6 boxes to insert values
+ */
+const int numreadvalue = 6;
+
 /*----------------------------------------------------------------------*
   |                                                       m.gee 06/01    |
   | vector of numfld FIELDs, defined in global_control.c                 |
@@ -463,10 +468,10 @@ void input_point_neum(multimap<int,RefCountPtr<DRT::Condition> >& pnmap)
     colptr++;
 
     //------------------------------- define some temporary reading vectors
-    vector<int>    neum_onoff(MAXDOFPERNODE);
-    vector<double> neum_val(MAXDOFPERNODE);
-    vector<int>    neum_funct(MAXDOFPERNODE);
-    for (int i=0; i<MAXDOFPERNODE; ++i)
+    vector<int>    neum_onoff(numreadvalue);
+    vector<double> neum_val(numreadvalue);
+    vector<int>    neum_funct(numreadvalue);
+    for (int i=0; i<numreadvalue; ++i)
     {
       neum_onoff[i] = 0;
       neum_val[i]   = 0.0;
@@ -499,24 +504,24 @@ void input_point_neum(multimap<int,RefCountPtr<DRT::Condition> >& pnmap)
 
 
     /* NOTE: number of read values = 6  does not need to be */
-    /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
+    /*       equivalent to the numreadvalue -> e.g. for shell9! sh 12/02 */
     // read on/off toggles
     for (int i=0; i<numread; ++i)
-      if (i<MAXDOFPERNODE)
+      if (i<numreadvalue)
         neum_onoff[i] = strtol(colptr,&colptr,10);
       else
         strtol(colptr,&colptr,10);
 
     // read values
     for (int i=0; i<numread; ++i)
-      if (i<MAXDOFPERNODE)
+      if (i<numreadvalue)
         neum_val[i] = strtod(colptr,&colptr);
       else
         strtod(colptr,&colptr);
 
      // read function numbers
      for (int i=0; i<numread; ++i)
-      if (i < MAXDOFPERNODE)
+      if (i < numreadvalue)
 	neum_funct[i] = strtol(colptr,&colptr,10);
       else
         strtol(colptr,&colptr,10);
@@ -585,11 +590,11 @@ void input_line_neum(multimap<int,RefCountPtr<DRT::Condition> >& lnmap)
     colptr++;
 
     //------------------------------- define some temporary reading vectors
-    vector<int>    neum_onoff(MAXDOFPERNODE);
-    vector<double> neum_val(MAXDOFPERNODE);
-    vector<int>    neum_funct(MAXDOFPERNODE);
+    vector<int>    neum_onoff(numreadvalue);
+    vector<double> neum_val(numreadvalue);
+    vector<int>    neum_funct(numreadvalue);
 
-    for (int i=0; i<MAXDOFPERNODE; ++i)
+    for (int i=0; i<numreadvalue; ++i)
     {
       neum_onoff[i] = 0;
       neum_val[i]   = 0.0;
@@ -622,24 +627,24 @@ void input_line_neum(multimap<int,RefCountPtr<DRT::Condition> >& lnmap)
 
 
     /* NOTE: number of read values = 6  does not need to be */
-    /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
+    /*       equivalent to the numreadvalue -> e.g. for shell9! sh 12/02 */
     // read on/off toggles
     for (int i=0; i<numread; ++i)
-      if (i<MAXDOFPERNODE)
+      if (i<numreadvalue)
         neum_onoff[i] = strtol(colptr,&colptr,10);
       else
         strtol(colptr,&colptr,10);
 
     // read values
     for (int i=0; i<numread; ++i)
-      if (i<MAXDOFPERNODE)
+      if (i<numreadvalue)
         neum_val[i] = strtod(colptr,&colptr);
       else
         strtod(colptr,&colptr);
 
     // read function numbers
      for (int i=0; i<numread; ++i)
-      if (i < MAXDOFPERNODE)
+      if (i < numreadvalue)
 	neum_funct[i] = strtol(colptr,&colptr,10);
       else
         strtol(colptr,&colptr,10);
@@ -728,10 +733,10 @@ void input_surf_neum(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
     colptr++;
 
     //------------------------------- define some temporary reading vectors
-    vector<int>    neum_onoff(MAXDOFPERNODE);
-    vector<double> neum_val(MAXDOFPERNODE);
-    vector<int>    neum_funct(MAXDOFPERNODE);
-    for (int i=0; i<MAXDOFPERNODE; ++i)
+    vector<int>    neum_onoff(numreadvalue);
+    vector<double> neum_val(numreadvalue);
+    vector<int>    neum_funct(numreadvalue);
+    for (int i=0; i<numreadvalue; ++i)
     {
       neum_onoff[i] = 0;
       neum_val[i]   = 0.0;
@@ -764,24 +769,24 @@ void input_surf_neum(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
 
 
     /* NOTE: number of read values = 6  does not need to be */
-    /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
+    /*       equivalent to the numreadvalue -> e.g. for shell9! sh 12/02 */
     // read on/off toggles
     for (int i=0; i<numread; ++i)
-      if (i<MAXDOFPERNODE)
+      if (i<numreadvalue)
         neum_onoff[i] = strtol(colptr,&colptr,10);
       else
         strtol(colptr,&colptr,10);
 
     // read values
     for (int i=0; i<numread; ++i)
-      if (i<MAXDOFPERNODE)
+      if (i<numreadvalue)
         neum_val[i] = strtod(colptr,&colptr);
       else
         strtod(colptr,&colptr);
 
      // read function numbers
      for (int i=0; i<numread; ++i)
-      if (i < MAXDOFPERNODE)
+      if (i < numreadvalue)
 	neum_funct[i] = strtol(colptr,&colptr,10);
       else
         strtol(colptr,&colptr,10);
@@ -872,10 +877,10 @@ void input_vol_neum(multimap<int,RefCountPtr<DRT::Condition> >& vnmap)
     colptr++;
 
     //------------------------------- define some temporary reading vectors
-    vector<int>    neum_onoff(MAXDOFPERNODE);
-    vector<double> neum_val(MAXDOFPERNODE);
-    vector<int>    neum_funct(MAXDOFPERNODE);
-    for (int i=0; i<MAXDOFPERNODE; ++i)
+    vector<int>    neum_onoff(numreadvalue);
+    vector<double> neum_val(numreadvalue);
+    vector<int>    neum_funct(numreadvalue);
+    for (int i=0; i<numreadvalue; ++i)
     {
       neum_onoff[i] = 0;
       neum_val[i]   = 0.0;
@@ -908,24 +913,24 @@ void input_vol_neum(multimap<int,RefCountPtr<DRT::Condition> >& vnmap)
 
 
     /* NOTE: number of read values = 6  does not need to be */
-    /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
+    /*       equivalent to the numreadvalue -> e.g. for shell9! sh 12/02 */
     // read on/off toggles
     for (int i=0; i<numread; ++i)
-      if (i<MAXDOFPERNODE)
+      if (i<numreadvalue)
         neum_onoff[i] = strtol(colptr,&colptr,10);
       else
         strtol(colptr,&colptr,10);
 
     // read values
     for (int i=0; i<numread; ++i)
-      if (i<MAXDOFPERNODE)
+      if (i<numreadvalue)
         neum_val[i] = strtod(colptr,&colptr);
       else
         strtod(colptr,&colptr);
 
      // read function numbers
      for (int i=0; i<numread; ++i)
-      if (i < MAXDOFPERNODE)
+      if (i < numreadvalue)
 	neum_funct[i] = strtol(colptr,&colptr,10);
       else
         strtol(colptr,&colptr,10);
@@ -1002,11 +1007,11 @@ void input_point_dirich(multimap<int,RefCountPtr<DRT::Condition> >& pdmap, bool 
     colptr++;
 
     //------------------------------- define some temporary reading vectors
-    vector<int>    dirich_onoff(MAXDOFPERNODE);
-    vector<double> dirich_val(MAXDOFPERNODE);
-    vector<int>    dirich_curve(MAXDOFPERNODE);
-    vector<int>    dirich_funct(MAXDOFPERNODE);
-    for (int i=0; i<MAXDOFPERNODE; ++i)
+    vector<int>    dirich_onoff(numreadvalue);
+    vector<double> dirich_val(numreadvalue);
+    vector<int>    dirich_curve(numreadvalue);
+    vector<int>    dirich_funct(numreadvalue);
+    for (int i=0; i<numreadvalue; ++i)
     {
       dirich_onoff[i] = 0;
       dirich_val[i]   = 0.0;
@@ -1015,17 +1020,17 @@ void input_point_dirich(multimap<int,RefCountPtr<DRT::Condition> >& pdmap, bool 
     }
 
     /* NOTE: number of read values = 6  does not need to be */
-    /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
+    /*       equivalent to the numreadvalue -> e.g. for shell9! sh 12/02 */
     // read on/off toggles
     for (int i=0; i<numread; ++i)
-      if (i<MAXDOFPERNODE)
+      if (i<numreadvalue)
         dirich_onoff[i] = strtol(colptr,&colptr,10);
       else
         strtol(colptr,&colptr,10);
 
     // read values
     for (int i=0; i<numread; ++i)
-      if (i<MAXDOFPERNODE)
+      if (i<numreadvalue)
         dirich_val[i] = strtod(colptr,&colptr);
       else
         strtod(colptr,&colptr);
@@ -1047,7 +1052,7 @@ void input_point_dirich(multimap<int,RefCountPtr<DRT::Condition> >& pdmap, bool 
       else
       {
         ierr=1;
-        if (i < MAXDOFPERNODE)
+        if (i < numreadvalue)
         {
           ierr=sscanf(colptr," %d ",&dirich_curve[i]);
           dirich_curve[i]--;
@@ -1062,7 +1067,7 @@ void input_point_dirich(multimap<int,RefCountPtr<DRT::Condition> >& pdmap, bool 
     // read function number
     for (int i=0; i<numread; ++i)
     {
-      if (i < MAXDOFPERNODE)
+      if (i < numreadvalue)
         dirich_funct[i] = strtol(colptr,&colptr,10);
       else
         strtol(colptr,&colptr,10);
@@ -1130,11 +1135,11 @@ void input_line_dirich(multimap<int,RefCountPtr<DRT::Condition> >& ldmap, bool a
     colptr++;
 
     //------------------------------- define some temporary reading vectors
-    vector<int>    dirich_onoff(MAXDOFPERNODE);
-    vector<double> dirich_val(MAXDOFPERNODE);
-    vector<int>    dirich_curve(MAXDOFPERNODE);
-    vector<int>    dirich_funct(MAXDOFPERNODE);
-    for (int i=0; i<MAXDOFPERNODE; ++i)
+    vector<int>    dirich_onoff(numreadvalue);
+    vector<double> dirich_val(numreadvalue);
+    vector<int>    dirich_curve(numreadvalue);
+    vector<int>    dirich_funct(numreadvalue);
+    for (int i=0; i<numreadvalue; ++i)
     {
       dirich_onoff[i] = 0;
       dirich_val[i]   = 0.0;
@@ -1143,17 +1148,17 @@ void input_line_dirich(multimap<int,RefCountPtr<DRT::Condition> >& ldmap, bool a
     }
 
     /* NOTE: number of read values = 6  does not need to be */
-    /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
+    /*       equivalent to the numreadvalue -> e.g. for shell9! sh 12/02 */
     // read on/off toggles
     for (int i=0; i<numread; ++i)
-      if (i<MAXDOFPERNODE)
+      if (i<numreadvalue)
         dirich_onoff[i] = strtol(colptr,&colptr,10);
       else
         strtol(colptr,&colptr,10);
 
     // read values
     for (int i=0; i<numread; ++i)
-      if (i<MAXDOFPERNODE)
+      if (i<numreadvalue)
         dirich_val[i] = strtod(colptr,&colptr);
       else
         strtod(colptr,&colptr);
@@ -1175,7 +1180,7 @@ void input_line_dirich(multimap<int,RefCountPtr<DRT::Condition> >& ldmap, bool a
       else
       {
         ierr=1;
-        if (i < MAXDOFPERNODE)
+        if (i < numreadvalue)
         {
           ierr=sscanf(colptr," %d ",&dirich_curve[i]);
           dirich_curve[i]--;
@@ -1189,7 +1194,7 @@ void input_line_dirich(multimap<int,RefCountPtr<DRT::Condition> >& ldmap, bool a
 
     // read function number
     for (int i=0; i<numread; ++i)
-      if (i < MAXDOFPERNODE)
+      if (i < numreadvalue)
         dirich_funct[i] = strtol(colptr,&colptr,10);
       else
         strtol(colptr,&colptr,10);
@@ -1255,11 +1260,11 @@ void input_surf_dirich(multimap<int,RefCountPtr<DRT::Condition> >& sdmap, bool a
     colptr++;
 
     //------------------------------- define some temporary reading vectors
-    vector<int>    dirich_onoff(MAXDOFPERNODE);
-    vector<double> dirich_val(MAXDOFPERNODE);
-    vector<int>    dirich_curve(MAXDOFPERNODE);
-    vector<int>    dirich_funct(MAXDOFPERNODE);
-    for (int i=0; i<MAXDOFPERNODE; ++i)
+    vector<int>    dirich_onoff(numreadvalue);
+    vector<double> dirich_val(numreadvalue);
+    vector<int>    dirich_curve(numreadvalue);
+    vector<int>    dirich_funct(numreadvalue);
+    for (int i=0; i<numreadvalue; ++i)
     {
       dirich_onoff[i] = 0;
       dirich_val[i]   = 0.0;
@@ -1268,17 +1273,17 @@ void input_surf_dirich(multimap<int,RefCountPtr<DRT::Condition> >& sdmap, bool a
     }
 
     /* NOTE: number of read values = 6  does not need to be */
-    /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
+    /*       equivalent to the numreadvalue -> e.g. for shell9! sh 12/02 */
     // read on/off toggles
     for (int i=0; i<numread; ++i)
-      if (i<MAXDOFPERNODE)
+      if (i<numreadvalue)
         dirich_onoff[i] = strtol(colptr,&colptr,10);
       else
         strtol(colptr,&colptr,10);
 
     // read values
     for (int i=0; i<numread; ++i)
-      if (i<MAXDOFPERNODE)
+      if (i<numreadvalue)
         dirich_val[i] = strtod(colptr,&colptr);
       else
         strtod(colptr,&colptr);
@@ -1300,7 +1305,7 @@ void input_surf_dirich(multimap<int,RefCountPtr<DRT::Condition> >& sdmap, bool a
       else
       {
         ierr=1;
-        if (i < MAXDOFPERNODE)
+        if (i < numreadvalue)
         {
           ierr=sscanf(colptr," %d ",&dirich_curve[i]);
           dirich_curve[i]--;
@@ -1314,7 +1319,7 @@ void input_surf_dirich(multimap<int,RefCountPtr<DRT::Condition> >& sdmap, bool a
 
     // read function number
     for (int i=0; i<numread; ++i)
-      if (i < MAXDOFPERNODE)
+      if (i < numreadvalue)
         dirich_funct[i] = strtol(colptr,&colptr,10);
       else
         strtol(colptr,&colptr,10);
@@ -1373,11 +1378,11 @@ void input_vol_dirich(multimap<int,RefCountPtr<DRT::Condition> >& vdmap)
     colptr++;
 
     //------------------------------- define some temporary reading vectors
-    vector<int>    dirich_onoff(MAXDOFPERNODE);
-    vector<double> dirich_val(MAXDOFPERNODE);
-    vector<int>    dirich_curve(MAXDOFPERNODE);
-    vector<int>    dirich_funct(MAXDOFPERNODE);
-    for (int i=0; i<MAXDOFPERNODE; ++i)
+    vector<int>    dirich_onoff(numreadvalue);
+    vector<double> dirich_val(numreadvalue);
+    vector<int>    dirich_curve(numreadvalue);
+    vector<int>    dirich_funct(numreadvalue);
+    for (int i=0; i<numreadvalue; ++i)
     {
       dirich_onoff[i] = 0;
       dirich_val[i]   = 0.0;
@@ -1386,17 +1391,17 @@ void input_vol_dirich(multimap<int,RefCountPtr<DRT::Condition> >& vdmap)
     }
 
     /* NOTE: number of read values = 6  does not need to be */
-    /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
+    /*       equivalent to the numreadvalue -> e.g. for shell9! sh 12/02 */
     // read on/off toggles
     for (int i=0; i<numread; ++i)
-      if (i<MAXDOFPERNODE)
+      if (i<numreadvalue)
         dirich_onoff[i] = strtol(colptr,&colptr,10);
       else
         strtol(colptr,&colptr,10);
 
     // read values
     for (int i=0; i<numread; ++i)
-      if (i<MAXDOFPERNODE)
+      if (i<numreadvalue)
         dirich_val[i] = strtod(colptr,&colptr);
       else
         strtod(colptr,&colptr);
@@ -1418,7 +1423,7 @@ void input_vol_dirich(multimap<int,RefCountPtr<DRT::Condition> >& vdmap)
       else
       {
         ierr=1;
-        if (i < MAXDOFPERNODE)
+        if (i < numreadvalue)
         {
           ierr=sscanf(colptr," %d ",&dirich_curve[i]);
           dirich_curve[i]--;
@@ -1432,7 +1437,7 @@ void input_vol_dirich(multimap<int,RefCountPtr<DRT::Condition> >& vdmap)
 
     // read function number
     for (int i=0; i<numread; ++i)
-      if (i < MAXDOFPERNODE)
+      if (i < numreadvalue)
         dirich_funct[i] = strtol(colptr,&colptr,10);
       else
         strtol(colptr,&colptr,10);
