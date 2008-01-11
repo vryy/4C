@@ -29,6 +29,8 @@ extern char* fieldnames[];
 
 using namespace std;
 
+const int MAXNODHARDCODED = 1000;
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void write_vector_result(string result_name, PostField* field, PostResult* result)
@@ -106,7 +108,7 @@ void write_mesh(PostProblem* problem, int disnum)
     GiD_BeginElements();
     for (int i=0; i<field->discretization()->NumGlobalElements(); ++i)
     {
-      int mesh_entry[MAXNOD];
+      int mesh_entry[MAXNODHARDCODED];
       for (int j = 0; j < field->discretization()->gElement(i)->NumNode(); ++j)
       {
         mesh_entry[j] = field->discretization()->gElement(i)->NodeIds()[j]+1;
@@ -201,7 +203,7 @@ void write_mesh(PostProblem* problem, int disnum)
     GiD_BeginElements();
     for (int i=0; i<field->discretization()->NumGlobalElements(); ++i)
     {
-      int mesh_entry[MAXNOD];
+      int mesh_entry[MAXNODHARDCODED];
       for (int j = 0; j < field->discretization()->gElement(i)->NumNode(); ++j)
       {
         mesh_entry[j] = field->discretization()->gElement(i)->NodeIds()[j]+1;
@@ -233,7 +235,7 @@ void write_mesh(PostProblem* problem, int disnum)
     GiD_BeginElements();
     for (int i=0; i<field->discretization()->NumGlobalElements(); ++i)
     {
-      int mesh_entry[MAXNOD];
+      int mesh_entry[MAXNODHARDCODED];
       for (int j = 0; j < field->discretization()->gElement(i)->NumNode(); ++j)
       {
         mesh_entry[j] = field->discretization()->gElement(i)->NodeIds()[j]+1;
@@ -265,7 +267,7 @@ void write_mesh(PostProblem* problem, int disnum)
     GiD_BeginElements();
     for (int i=0; i<field->discretization()->NumGlobalElements(); ++i)
     {
-      int mesh_entry[MAXNOD];
+      int mesh_entry[MAXNODHARDCODED];
       for (int j = 0; j < field->discretization()->gElement(i)->NumNode(); ++j)
       {
         mesh_entry[j] = field->discretization()->gElement(i)->NodeIds()[j]+1;
@@ -296,7 +298,7 @@ void write_mesh(PostProblem* problem, int disnum)
     GiD_BeginElements();
     for (int i=0; i<field->discretization()->NumGlobalElements(); ++i)
     {
-      int mesh_entry[MAXNOD];
+      int mesh_entry[MAXNODHARDCODED];
       for (int j = 0; j < field->discretization()->gElement(i)->NumNode(); ++j)
       {
         mesh_entry[j] = field->discretization()->gElement(i)->NodeIds()[j]+1;
@@ -327,7 +329,7 @@ void write_mesh(PostProblem* problem, int disnum)
     GiD_BeginElements();
     for (int i=0; i<field->discretization()->NumGlobalElements(); ++i)
     {
-      int mesh_entry[MAXNOD];
+      int mesh_entry[MAXNODHARDCODED];
       for (int j = 0; j < field->discretization()->gElement(i)->NumNode(); ++j)
       {
         mesh_entry[j] = field->discretization()->gElement(i)->NodeIds()[j]+1;
