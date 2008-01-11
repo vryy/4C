@@ -49,11 +49,3 @@ CCADISCRET           # use new baci discretization subsystem DRT
 # COLOROUTPUT        # use colored output to the terminal
 # DSERROR_DUMP       # dserror creates a core file
 # TRAP_FE            # crash ccarat if a nan of inf occurs
-
-
-#  Anachronisms 
-#  ============
-# These flags have to go away eventually.
-
-# MAXNOD_SHELL8=9
-# MAXNOD_WALL1=9

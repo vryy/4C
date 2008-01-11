@@ -28,6 +28,9 @@ using namespace Teuchos;
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
 
+#ifndef MAXNOD_SHELL8
+#define MAXNOD_SHELL8 (9)  /* maximum of element nodes : max quad9 */
+#endif
 
 // forward declarations
 struct _MATERIAL;
