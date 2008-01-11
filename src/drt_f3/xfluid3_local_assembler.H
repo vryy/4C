@@ -52,19 +52,37 @@ template <DRT::Element::DiscretizationType DISTYPE,
 class LocalAssembler
 {
 public:
+    
+    LocalAssembler(const XFEM::ElementDofManager&    dofman, BlitzMat& estif, BlitzVec& eforce) :
+        dofman_(dofman),
+        estif_(estif),
+        eforce_(eforce)
+    {
+        
+    }
+    
+    LocalAssembler(LocalAssembler& tmp)
+    {
+        dserror("no copying allowed");
+    }
+    
+    ~LocalAssembler()
+    {
+        return;
+    }
+    
+    
     //! assemble one expression for the element stiffness matrix for a given test and trial field
     template <XFEM::PHYSICS::Field testfield,
               XFEM::PHYSICS::Field trialfield>
     inline void Matrix(
-            const XFEM::ElementDofManager&    dofman,
-            blitz::Array<double,2>&           estif,
             const blitz::Array<double,1>&     testshape,
             const double                      fac,
             const blitz::Array<double,1>&     trialshape
             ) const
     {
-        const std::vector<int> testdof  = dofman.LocalDofPosPerField(testfield);
-        const std::vector<int> trialdof = dofman.LocalDofPosPerField(trialfield);
+        const std::vector<int> testdof  = dofman_.LocalDofPosPerField(testfield);
+        const std::vector<int> trialdof = dofman_.LocalDofPosPerField(trialfield);
         
         const int numparamtest  = testdof.size();
         const int numparamtrial = trialdof.size();
@@ -77,7 +95,7 @@ public:
             {
                 const int testpos = testdof[vi];
 
-                estif(testpos, trialpos) += fac*testshape(vi)*trialshape(ui) ;
+                estif_(testpos, trialpos) += fac*testshape(vi)*trialshape(ui) ;
             }
         }
     };
@@ -85,32 +103,52 @@ public:
     //! assemble one expression for the element rhs for a given test field
     template <XFEM::PHYSICS::Field testfield>
     inline void Vector(
-            const XFEM::ElementDofManager&    dofman,
-            blitz::Array<double,1>&           eforce,
             const blitz::Array<double,1>&     testshape,
             const double                      fac
             ) const
     {
-        const std::vector<int> testdof = dofman.LocalDofPosPerField(testfield);
+        const std::vector<int> testdof = dofman_.LocalDofPosPerField(testfield);
         const int numparamtest = testdof.size();
         for (int vi=0; vi<numparamtest; ++vi)
         {
             const int testpos = testdof[vi];
-            eforce(testpos) += fac*testshape(vi);
+            eforce_(testpos) += fac*testshape(vi);
         }
     };
+    
+private:
+    const XFEM::ElementDofManager& dofman_;
+    BlitzMat& estif_;
+    BlitzVec& eforce_;
 };
 
 template <DRT::Element::DiscretizationType DISTYPE>
 class LocalAssembler<DISTYPE, XFEM::standard_assembly>
 {
 public:
+    
+    LocalAssembler(const XFEM::ElementDofManager&    dofman, BlitzMat& estif, BlitzVec& eforce) :
+        dofman_(dofman),
+        estif_(estif),
+        eforce_(eforce)
+    {
+        return;
+    }
+    
+    LocalAssembler(LocalAssembler& tmp)
+    {
+        dserror("no copying allowed");
+    }
+    
+    ~LocalAssembler()
+    {
+        return;
+    }
+    
     //! assemble one expression for the element stiffness matrix for a given test and trial field
     template <XFEM::PHYSICS::Field testfield,
               XFEM::PHYSICS::Field trialfield>
     inline void Matrix(
-            const XFEM::ElementDofManager&    dofman,
-            blitz::Array<double,2>&           estif,
             blitz::Array<double,1>     testshape,
             const double                      fac,
             blitz::Array<double,1>     trialshape
@@ -123,7 +161,7 @@ public:
             for (int vi=0; vi<numparam; ++vi)
             {
                 const int testpos = 4*vi + getFieldNumber<testfield>();
-                estif(testpos, trialpos) += fac*testshape(vi)*trialshape(ui) ;
+                estif_(testpos, trialpos) += fac*testshape(vi)*trialshape(ui) ;
             }
         }
     };
@@ -131,8 +169,6 @@ public:
     //! assemble one expression for the element rhs for a given test field
     template <XFEM::PHYSICS::Field testfield>
     inline void Vector(
-            const XFEM::ElementDofManager&    dofman,
-            blitz::Array<double,1>&           eforce,
             const blitz::Array<double,1>&     testshape,
             const double                      fac
             ) const
@@ -141,9 +177,15 @@ public:
         for (int vi=0; vi<numparam; ++vi)
         {
             const int testpos = 4*vi + getFieldNumber<testfield>();
-            eforce(testpos) += fac*testshape(vi);
+            eforce_(testpos) += fac*testshape(vi);
         }
     };
+    
+private:
+    const XFEM::ElementDofManager& dofman_;
+    BlitzMat& estif_;
+    BlitzVec& eforce_;
+    
 };
 
 
