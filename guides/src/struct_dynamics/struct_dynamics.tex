@@ -42,7 +42,9 @@ integration schem, $real\in[0,1)$ \\
 ???)\\
 \cod{ITERATION \cgb none \cor mod \cor full \cge} \chs Newton Iteration, only
 \cod{full} works for implicit TISs \\
-\cod{TOLDISP $real$} \chs Convergence tolerance of Newton iteration \\
+\cod{CONVCHECK $string$} \chs type of convergence check in Newton iteration (Generalised-$\alpha$)\\
+\cod{TOLDISP $real$} \chs tolerance in the displacement norm for the newton iteration \\
+\cod{TOLRES $real$} \chs tolerance in the residual forces norm for the newton iteration (Generalised-$\alpha$)\\
 \cod{MAXITER $int$} \chs Maximally permitted Newton iterations \\
 \cod{CONTACT \cgb 0 \cor 1 \cge} \chs switch contact algorithms for
 shell8 and wall1 on/off: (0,1). Have to use SPOOLES\_nonsym in parallel as
@@ -72,9 +74,25 @@ Observations
 
 Works generally.
 
-\subitempart{Suggestions}
+\subsection{Convergence check}
+
+The type of convergence check can be chosen between currently six variants:
+
+\begin{itemize}
+\item absolute norm of residual forces AND absolute norm of iterative displacements increments \\(AbsRes\_And\_AbsDis) ...
+\item absolute norm of residual forces OR absolute norm of iterative displacements increments  \\(AbsRes\_Or\_AbsDis)  ...
+\item relative norm of residual forces AND absolute norm of iterative displacements increments \\(RelRes\_And\_AbsDis) ...
+\item relative norm of residual forces OR absolute norm of iterative displacements increments  \\(RelRes\_Or\_AbsDis)  ... 
+\item relative norm of residual forces AND relative norm of iterative displacements increments \\(RelRes\_And\_RelDis) ... 
+\item relative norm of residual forces OR relative norm of iterative displacements increments  \\(RelRes\_Or\_RelDis)  ...
+\end{itemize}
+
+... smaller than the respective error norms (TOLRES and TOLDISP).\\
+
+\noindent The relative norms are calculated by dividing the absolute norm by the norm of the overall displacements and the maximum norm of internal, external, inertial (and possibly viscous) forces of the last time step, respectively.
+
+\subsection{Suggestions}
 \begin{enumerate}
-\item Improve convergence check: Residual-based, relative and absolute kind
 \item Individual/No load curves. Currently, all external loads are scaled with
   the load curve \cod{CURVE1}, which \emph{must} be applied
 \item time-step size adaptivity?

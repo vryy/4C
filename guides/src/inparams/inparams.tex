@@ -374,8 +374,14 @@ DAMPING build Raleigh damping matrix and use it from $\text{M\_DAMP}
 make Newton Iteration (only full implemented, ignored by explicit
 time int.)
 
+\kw{CONVCHECK} $string$\\
+type of convergence check in Newton iteration (Generalised-$\alpha$)
+
 \kw{TOLDISP} $real$\\
-tolerance in the displacement norm for the newton iteration
+tolerance in the displacement norm for the Newton iteration 
+
+\kw{TOLRES} $real$\\
+tolerance in the residual forces norm for the Newton iteration (Generalised-$\alpha$)
 
 \kw{MAXITER} $int$\\
 maximum number of iterations allowed for newton iteration before failure
