@@ -1,4 +1,4 @@
-#ifdef SURFSTRESS
+//#ifdef SURFSTRESS
 /*!-------------------------------------------------------------------
 \file drt_surfstress_manager.cpp
 
@@ -456,5 +456,5 @@ void DRT::SurfStressManager::gamma_calc(
 
 #endif
 
-#endif // of SURFSTRESS
+//#endif // of SURFSTRESS
 
