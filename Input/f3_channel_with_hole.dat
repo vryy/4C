@@ -6,13 +6,6 @@
 //
 // necessary defines: D_FLUID3 RESULTTEST DEBUG CCADISCRET BINIO
 //
-//
-// #define MAXNOD           (27)
-// #define MAXELE           (27)
-// #define MAXDOFPERNODE    (4)
-// #define MAXGAUSS         (27)
-// #define MAXNOD_F3        (27)
-//
 =================================================================
                         General Data File CCARAT
 ==================================================================

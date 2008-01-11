@@ -6,14 +6,6 @@
 // 
 // necessary defines: D_FLUID2 RESULTTEST CCADISCRET BINIO D_ALE D_WALL1
 //
-// #define MAXNOD           (4)
-// #define MAXELE           (4)
-// #define MAXDOFPERNODE    (3)
-// #define MAXGAUSS         (4)
-// #define MAXNOD_F2        (4)
-// #define MAXNOD_ALE3      (4)
-// #define MAXNOD_WALL1     (4)
-//
 ==================================================================
                         General Data File C_CARAT
 ==================================================================

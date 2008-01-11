@@ -6,11 +6,6 @@
 //
 // necessary defines: D_SOH8 BINIO CCADISCRET RESULTTEST CHECK_MAX
 //
-// #define MAXNOD           (20)
-// #define MAXELE            (1)
-// #define MAXDOFPERNODE     (3)
-// #define MAXGAUSS         (27)
-//
 ==================================================================
                         General Data File CCARAT
 ==================================================================
