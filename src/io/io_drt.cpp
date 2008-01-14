@@ -82,7 +82,7 @@ extern CHAR* fieldnames[];
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-static void FindPosition(RefCountPtr<DRT::Discretization> dis, int& field_pos, int& disnum, int probnum=0)
+static void FindPosition(Teuchos::RCP<DRT::Discretization> dis, int& field_pos, int& disnum, int probnum=0)
 {
 #ifdef BINIO
 
@@ -104,7 +104,7 @@ static void FindPosition(RefCountPtr<DRT::Discretization> dis, int& field_pos, i
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-IO::DiscretizationReader::DiscretizationReader(RefCountPtr<DRT::Discretization> dis, int step)
+IO::DiscretizationReader::DiscretizationReader(Teuchos::RCP<DRT::Discretization> dis, int step)
   : dis_(dis)
 {
   restart_step_ = FindResultGroup(step);
@@ -113,13 +113,35 @@ IO::DiscretizationReader::DiscretizationReader(RefCountPtr<DRT::Discretization> 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::ReadVector(RefCountPtr<Epetra_Vector> vec, string name)
+void IO::DiscretizationReader::ReadVector(Teuchos::RCP<Epetra_Vector> vec, string name)
+{
+#ifdef BINIO
+  MAP* result = map_read_map(restart_step_, const_cast<char*>(name.c_str()));
+  int columns;
+  if (map_find_int(result,"columns",&columns))
+  {
+    if (columns != 1)
+      dserror("got multivector with name '%s', vector expected", name.c_str());
+  }
+  ReadMultiVector(vec, name);
+#endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IO::DiscretizationReader::ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> vec, string name)
 {
 #ifdef BINIO
   MAP* result = map_read_map(restart_step_, const_cast<char*>(name.c_str()));
   string id_path = map_read_string(result, "ids");
   string value_path = map_read_string(result, "values");
-  RefCountPtr<Epetra_Vector> nv = reader_->ReadResultData(id_path, value_path, dis_->Comm());
+  int columns;
+  if (not map_find_int(result,"columns",&columns))
+  {
+    columns = 1;
+  }
+  Teuchos::RCP<Epetra_MultiVector> nv = reader_->ReadResultData(id_path, value_path, columns, dis_->Comm());
   LINALG::Export(*nv, *vec);
 #endif
 }
@@ -132,15 +154,15 @@ void IO::DiscretizationReader::ReadMesh(int step)
 #ifdef BINIO
   FindMeshGroup(step);
 
-  RefCountPtr<vector<char> > nodedata =
+  Teuchos::RCP<vector<char> > nodedata =
     meshreader_->ReadNodeData(step,dis_->Comm().NumProc(),dis_->Comm().MyPID());
 
-  RefCountPtr<vector<char> > elementdata =
+  Teuchos::RCP<vector<char> > elementdata =
    meshreader_->ReadElementData(step,dis_->Comm().NumProc(),dis_->Comm().MyPID());
 
   // before we unpack nodes/elements we store a copy of the nodal row/col map
-  RefCountPtr<Epetra_Map> noderowmap = rcp(new Epetra_Map(*dis_->NodeRowMap()));
-  RefCountPtr<Epetra_Map> nodecolmap = rcp(new Epetra_Map(*dis_->NodeColMap()));
+  Teuchos::RCP<Epetra_Map> noderowmap = rcp(new Epetra_Map(*dis_->NodeRowMap()));
+  Teuchos::RCP<Epetra_Map> nodecolmap = rcp(new Epetra_Map(*dis_->NodeColMap()));
 
   // unpack nodes and elements and redistirbuted to current layout
   dis_->UnPackMyNodes(nodedata);
@@ -406,7 +428,7 @@ void IO::DiscretizationReader::OpenMeshFiles(MAP* result_step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-IO::DiscretizationWriter::DiscretizationWriter(RefCountPtr<DRT::Discretization> dis, int probnum):
+IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<DRT::Discretization> dis, int probnum):
   dis_(dis),
   disnum_(0),
   field_pos_(0),
@@ -531,6 +553,7 @@ void IO::DiscretizationWriter::CreateResultFile(const int step)
 
   // we will never refer to maps stored in other files
   mapcache_.clear();
+  mapstack_.clear();
 
   resultfile_ = H5Fcreate(resultname.str().c_str(),
                           H5F_ACC_TRUNC,H5P_DEFAULT,H5P_DEFAULT);
@@ -621,13 +644,13 @@ void IO::DiscretizationWriter::NewStep(const int step, const double time)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteVector(const string name, RefCountPtr<Epetra_Vector> vec)
+void IO::DiscretizationWriter::WriteVector(const string name, Teuchos::RCP<Epetra_MultiVector> vec, bool nodevector)
 {
 #ifdef BINIO
 
   string valuename = name + ".values";
   double* data = vec->Values();
-  const hsize_t size = vec->MyLength();
+  const hsize_t size = vec->MyLength() * vec->NumVectors();
   const herr_t make_status = H5LTmake_dataset_double(resultgroup_,valuename.c_str(),1,&size,data);
   if (make_status < 0)
     dserror("Failed to create dataset in HDF-resultfile");
@@ -668,15 +691,29 @@ void IO::DiscretizationWriter::WriteVector(const string name, RefCountPtr<Epetra
 
     // remember where we put the map
     mapcache_[mapdata] = idname;
+
+    // Make a copy of the map. This is a RCP copy internally. We just make
+    // sure here the map stays alive as long as we keep our cache. Otherwise
+    // subtle errors could occur.
+    mapstack_.push_back(vec->Map());
   }
 
   if (dis_->Comm().MyPID() == 0)
   {
+    std::string vectortype;
+    if (nodevector)
+      vectortype = "node";
+    else
+      vectortype = "element";
     fprintf(cf_,
             "    %s:\n"
+            "        type = \"%s\"\n"
+            "        columns = %d\n"
             "        values = \"%s\"\n"
             "        ids = \"%s\"\n\n",  // different names + other informations?
             name.c_str(),
+            vectortype.c_str(),
+            vec->NumVectors(),
             valuename.c_str(),
             idname.c_str()
       );
@@ -698,7 +735,7 @@ void IO::DiscretizationWriter::WriteCondition(const string condname) const
 {
 #ifdef BINIO
   // put condition into block
-  RefCountPtr<vector<char> > block = dis_->PackCondition(condname);
+  Teuchos::RCP<vector<char> > block = dis_->PackCondition(condname);
 
   // write block to file. Note: Block can be empty, if the condition is not found,
   // which means it is not used -> so no dserror() here
@@ -737,7 +774,7 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
   if (meshgroup_ < 0)
     dserror("Failed to write group in HDF-meshfile");
 
-  RefCountPtr<vector<char> > elementdata = dis_->PackMyElements();
+  Teuchos::RCP<vector<char> > elementdata = dis_->PackMyElements();
   if (elementdata->size()==0)
     dserror("no element data no proc %d. Too few elements?", dis_->Comm().MyPID());
   hsize_t dim = static_cast<hsize_t>(elementdata->size());
@@ -745,7 +782,7 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
   if (element_status < 0)
     dserror("Failed to create dataset in HDF-meshfile");
 
-  RefCountPtr<vector<char> > nodedata = dis_->PackMyNodes();
+  Teuchos::RCP<vector<char> > nodedata = dis_->PackMyNodes();
   dim = static_cast<hsize_t>(nodedata->size());
   const herr_t node_status = H5LTmake_dataset_char(meshgroup_,"nodes",1,&dim,&((*nodedata)[0]));
   if (node_status < 0)

@@ -18,7 +18,7 @@ Maintainer: Ulrich Kuettler
 
 #ifdef CCADISCRET
 
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Epetra_BlockMap.h>
 
 #include <map>
@@ -54,10 +54,13 @@ class DiscretizationReader
 public:
 
   /// construct reader for a given discretization to read a particular time step
-  explicit DiscretizationReader(RefCountPtr<DRT::Discretization> dis, int step);
+  explicit DiscretizationReader(Teuchos::RCP<DRT::Discretization> dis, int step);
 
   /// read into given vector
-  void ReadVector(RefCountPtr<Epetra_Vector> vec, string name);
+  void ReadVector(Teuchos::RCP<Epetra_Vector> vec, string name);
+
+  /// read into given vector
+  void ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> vec, string name);
 
   /// read an integer value from the control file
   int ReadInt(string name);
@@ -83,14 +86,14 @@ private:
   void OpenMeshFiles(MAP* result_step);
 
   //! my discretization
-  RefCountPtr<DRT::Discretization> dis_;
+  Teuchos::RCP<DRT::Discretization> dis_;
 
   /// control file entry of this step
   MAP *restart_step_;
 
 #ifdef BINIO
-  RefCountPtr<HDFReader> reader_;
-  RefCountPtr<HDFReader> meshreader_;
+  Teuchos::RCP<HDFReader> reader_;
+  Teuchos::RCP<HDFReader> meshreader_;
 #endif
 };
 
@@ -113,7 +116,7 @@ class DiscretizationWriter
 public:
 
   /// Writer constructor always needs a discretization
-  explicit DiscretizationWriter(RefCountPtr<DRT::Discretization> dis, int probnum=0);
+  explicit DiscretizationWriter(Teuchos::RCP<DRT::Discretization> dis, int probnum=0);
 
   /// cleanup, close hdf5 files
   ~DiscretizationWriter();
@@ -138,12 +141,13 @@ public:
 
     \param name : control file entry name
     \param vec  : the result data vector
+    \param nodevector : whether this vector has a row dof map (nodevector==true) or a row element map.
   */
-  void WriteVector(const string name, RefCountPtr<Epetra_Vector> vec);
+  void WriteVector(const string name, Teuchos::RCP<Epetra_MultiVector> vec, bool nodevector=true);
 
   //! write a condition identified by its name
   void WriteCondition(const string condname) const;
-  
+
   //! write new "field" group to control file including node and element chunks
   void WriteMesh(const int step, const double time);
 
@@ -163,7 +167,7 @@ private:
   void CreateResultFile(const int step);
 
   //! my discretization
-  RefCountPtr<DRT::Discretization> dis_;
+  Teuchos::RCP<DRT::Discretization> dis_;
 
   int disnum_;
   int field_pos_;
@@ -179,7 +183,11 @@ private:
   hid_t resultgroup_;
 #endif
 
+  /// cache to remember maps we have already written
   std::map<const Epetra_BlockMapData*, std::string> mapcache_;
+
+  /// dummy stack to really save the maps we cache
+  std::vector<Epetra_BlockMap> mapstack_;
 
   int resultfile_changed_;
   int meshfile_changed_;

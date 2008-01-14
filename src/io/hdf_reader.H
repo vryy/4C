@@ -107,16 +107,19 @@ public:
         const int my_id,
         const string condname) const;
 
-  //! read an Epetra_Vector from the result files
+  //! read an Epetra_MultiVector from the result files
   /*!
-    Right now an Epetra_Vector has to be read along with its map. Thus
+    Right now an Epetra_MultiVector has to be read along with its map. Thus
     we read an integer and a double array here.
+
+    \note If columns==1, we create an Epetra_Vector.
 
     \param id_path      (in): hdf5 path to map array (from control file)
     \param value_path   (in): hdf5 path to value array (from control file)
+    \param columns      (in): number of vector columns
     \param Comm         (in): the communicator
    */
-  RefCountPtr<Epetra_Vector> ReadResultData(string id_path, string value_path, const Epetra_Comm& Comm) const;
+  RefCountPtr<Epetra_MultiVector> ReadResultData(string id_path, string value_path, int columns, const Epetra_Comm& Comm) const;
 
 private:
 

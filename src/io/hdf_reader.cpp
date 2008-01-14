@@ -86,7 +86,7 @@ RefCountPtr<std::vector<char> > IO::HDFReader::ReadCondition(
 {
   if (files_.size()==0 || files_[0] == -1)
     dserror("Tried to read data without opening any file");
-  
+
   ostringstream path;
   path << "/step" << step << "/" << condname;
 
@@ -282,8 +282,8 @@ IO::HDFReader::ReadDoubleData(string path, int start, int end) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-RefCountPtr<Epetra_Vector>
-IO::HDFReader::ReadResultData(string id_path, string value_path, const Epetra_Comm& Comm) const
+RefCountPtr<Epetra_MultiVector>
+IO::HDFReader::ReadResultData(string id_path, string value_path, int columns, const Epetra_Comm& Comm) const
 {
   int new_proc_num = Comm.NumProc();
   int my_id = Comm.MyPID();
@@ -296,8 +296,17 @@ IO::HDFReader::ReadResultData(string id_path, string value_path, const Epetra_Co
   RefCountPtr<vector<int> > ids = ReadIntData(id_path,start,end);
   Epetra_Map map(-1,static_cast<int>(ids->size()), &((*ids)[0]),0,Comm);
 
-  RefCountPtr<Epetra_Vector> res = rcp(new Epetra_Vector(map,false));
+  RefCountPtr<Epetra_MultiVector> res;
+  if (columns==1)
+    res = rcp(new Epetra_Vector(map,false));
+  else
+    res = rcp(new Epetra_MultiVector(map,columns,false));
+
   RefCountPtr<vector<double> > values = ReadDoubleData(value_path,start,end);
+
+  if (static_cast<int>(values->size()) != res->MyLength()*res->NumVectors())
+    dserror("vector value size mismatch: %d != %d",values->size(),res->MyLength()*res->NumVectors());
+
   copy(values->begin(),values->end(),res->Values());
   return res;
 }
