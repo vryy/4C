@@ -2027,7 +2027,6 @@ void StruGenAlpha::NonlinearCG()
   return;
 } // StruGenAlpha::NonlinearCG()
 
-
 /*----------------------------------------------------------------------*
  |  do Newton iteration (public)                             mwgee 03/07|
  *----------------------------------------------------------------------*/
@@ -2060,7 +2059,6 @@ void StruGenAlpha::PTC()
   if (!mass_->Filled()) dserror("mass matrix must be filled here");
   if (damping)
     if (!damp_->Filled()) dserror("damping matrix must be filled here");
-
 
   // hard wired ptc parameters
   double ptcdt = 1.0e-03;
@@ -2213,7 +2211,7 @@ void StruGenAlpha::PTC()
     }
 
     //------------------------------------ PTC update of artificial time
-#if 0
+#if 1
     // SER step size control
     dti *= (np/nc);
     dti = max(dti,0.0);
