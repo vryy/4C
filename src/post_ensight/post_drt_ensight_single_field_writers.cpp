@@ -48,6 +48,7 @@ void FluidEnsightWriter::WriteAllResults(
     EnsightWriter::WriteResult("domain_decomp", "domain_decomp", elementbased, 1);  
 }
 
+        
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void AleEnsightWriter::WriteAllResults(
@@ -91,6 +92,88 @@ void XFluidEnsightWriter::WriteAllResults(
     XFluidEnsightWriter::WriteResult("residual", "residual_physical", velocity_fieldset);
     XFluidEnsightWriter::WriteResult("velnp", "pressure_physical", pressure_fieldset);
     
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void XFluidEnsightWriter::WriteFiles()
+{
+#ifndef PARALLEL
+    if (myrank_ > 0) dserror("have serial filter version, but myrank_ = %d",myrank_);
+#endif
+    
+    PostResult result = PostResult(field_);
+
+    // timesteps when the solution is written
+    const vector<double> soltime = result.get_result_times(field_->name());
+
+    
+    ///////////////////////////////////
+    //  write geometry file          //
+    ///////////////////////////////////
+    const string geofilename = filename_ + "_"+ field_->name() + ".geo";
+    WriteGeoFile(geofilename);
+    vector<int> filesteps;
+    filesteps.push_back(1);
+    filesetmap_["geo"] = filesteps;
+    vector<int> timesteps;
+    timesteps.push_back(1);
+    timesetmap_["geo"] = timesteps;
+    const int geotimeset = 1;
+    // at the moment, we can only print out the first step -> to be changed
+    vector<double> geotime; // timesteps when the geometry is written
+    geotime.push_back(soltime[0]);
+    
+    
+    ///////////////////////////////////
+    //  write solution fields files  //
+    ///////////////////////////////////
+    const int soltimeset = 2;
+    WriteAllResults(field_);
+    
+    int counttime = 0;
+    for (map<string,vector<int> >::const_iterator entry = timesetmap_.begin(); entry != timesetmap_.end(); ++entry) {
+        counttime++;
+        string key = entry->first;
+        timesetnumbermap_[key] = counttime;
+    }
+    int countfile = 0;
+    for (map<string,vector<int> >::const_iterator entry = filesetmap_.begin(); entry != filesetmap_.end(); ++entry) {
+        countfile++;
+        string key = entry->first;
+        filesetnumbermap_[key] = countfile;
+    }
+    
+    
+    
+    ///////////////////////////////////
+    //  now write the case file      //
+    ///////////////////////////////////
+    if (myrank_ == 0) 
+    {
+        const string casefilename = filename_ + "_"+ field_->name() + ".case";
+        ofstream casefile;
+        casefile.open(casefilename.c_str());
+        casefile << "# created using post_drt_ensight\n"<< "FORMAT\n\n"<< "type:\tensight gold\n";
+
+        casefile << "\nGEOMETRY\n\n";
+        casefile << "model:\t"<<timesetnumbermap_["geo"]<<"\t"<<filesetnumbermap_["geo"]<<"\t"<< geofilename<< "\n";
+
+        casefile << "\nVARIABLE\n\n";
+        casefile << GetVariableSection(filesetmap_, variablenumdfmap_, variablefilenamemap_);
+
+        casefile << "\nTIME\n\n";
+        casefile << GetTimeSectionString(geotimeset, geotime);
+        casefile << GetTimeSectionString(soltimeset, soltime);
+
+        casefile << "\nFILE\n\n";
+        casefile << GetFileSectionStringFromFilesets(filesetmap_);
+
+        casefile.close();
+    }
+    
+    return;
 }
 
 

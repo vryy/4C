@@ -134,6 +134,9 @@ public:
     {
     }
             
+    //! write the whole thing
+    void WriteFiles();
+            
 protected:
 
     virtual void WriteAllResults(
