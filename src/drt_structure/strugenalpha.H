@@ -267,13 +267,23 @@ public:
   virtual void CalcRefNorms();
 
   /*!
-  \brief Print to screen and/or error file
+  \brief Print Newton output to screen and/or error file
 
   */
   virtual void PrintNewton(bool printscreen, bool printerr, bool print_unconv,
                            FILE* errfile, Epetra_Time timer, int numiter,
                            int maxiter, double fresmnorm, double disinorm,
                            string convcheck);
+
+  /*!
+  \brief Print PTC output to screen and/or error file
+
+  \param dti (in): Psi tc stabilization parameter
+  */
+  virtual void PrintPTC(bool printscreen, bool printerr, bool print_unconv,
+                        FILE* errfile, Epetra_Time timer, int numiter,
+                        int maxiter, double fresmnorm, double disinorm,
+                        string convcheck,double dti);
 
    /*!
   \brief Print to screen and/or error file

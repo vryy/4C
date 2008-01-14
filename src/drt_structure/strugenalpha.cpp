@@ -2206,8 +2206,8 @@ void StruGenAlpha::PTC()
     // a short message
     if (!myrank_ && (printscreen || printerr))
     {
-      PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
-                  fresmnorm,disinorm,convcheck);
+      PrintPTC(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
+                  fresmnorm,disinorm,convcheck,dti);
     }
 
     //------------------------------------ PTC update of artificial time
@@ -2250,14 +2250,14 @@ void StruGenAlpha::PTC()
   //-------------------------------- test whether max iterations was hit
   if (numiter>=maxiter)
   {
-     dserror("Newton unconverged in %d iterations",numiter);
+     dserror("PTC unconverged in %d iterations",numiter);
   }
   else
   {
      if (!myrank_ && printscreen)
      {
-       PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
-                   fresmnorm,disinorm,convcheck);
+       PrintPTC(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
+                   fresmnorm,disinorm,convcheck,dti);
      }
   }
 
@@ -3191,6 +3191,92 @@ void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_uncon
     }
   }
 }
+
+/*----------------------------------------------------------------------*
+ |  print to screen and/or error file                          gee 01/08|
+ *----------------------------------------------------------------------*/
+void StruGenAlpha::PrintPTC(bool printscreen, bool printerr, bool print_unconv,
+                               FILE* errfile, Epetra_Time timer, int numiter,
+                               int maxiter, double fresmnorm, double disinorm,
+                               string convcheck, double dti)
+{
+  bool relres        = (convcheck == "RelRes_And_AbsDis" || convcheck == "RelRes_Or_AbsDis");
+  bool relres_reldis = (convcheck == "RelRes_And_RelDis" || convcheck == "RelRes_Or_RelDis");
+
+  if (relres)
+  {
+    fresmnorm /= ref_fnorm_;
+  }
+  if (relres_reldis)
+  {
+    fresmnorm /= ref_fnorm_;
+    disinorm  /= ref_disnorm_;
+  }
+
+  if (print_unconv)
+  {
+    if (printscreen)
+    {
+      if (relres)
+      {
+        printf("numiter %2d scaled res-norm %10.5e absolute dis-norm %20.15E dti %20.15E\n",numiter+1, fresmnorm, disinorm,dti);
+        fflush(stdout);
+      }
+      else if (relres_reldis)
+      {
+        printf("numiter %2d scaled res-norm %10.5e scaled dis-norm %20.15E dti %20.15E\n",numiter+1, fresmnorm, disinorm,dti);
+        fflush(stdout);
+      }
+      else
+        {
+        printf("numiter %2d absolute res-norm %10.5e absolute dis-norm %20.15E dti %20.15E\n",numiter+1, fresmnorm, disinorm,dti);
+        fflush(stdout);
+      }
+    }
+    if (printerr)
+    {
+      if (relres)
+      {
+        fprintf(errfile, "numiter %2d scaled res-norm %10.5e absolute dis-norm %20.15E dti %20.15E\n",numiter+1, fresmnorm, disinorm,dti);
+        fflush(errfile);
+      }
+      else if (relres_reldis)
+      {
+        fprintf(errfile, "numiter %2d scaled res-norm %10.5e scaled dis-norm %20.15E dti %20.15E\n",numiter+1, fresmnorm, disinorm,dti);
+        fflush(errfile);
+      }
+      else
+        {
+        fprintf(errfile, "numiter %2d absolute res-norm %10.5e absolute dis-norm %20.15E dti %20.15E\n",numiter+1, fresmnorm, disinorm,dti);
+        fflush(errfile);
+      }
+    }
+  }
+  else
+  {
+    double timepernlnsolve = timer.ElapsedTime();
+
+    if (relres)
+    {
+      printf("Psitc iteration converged: numiter %d scaled res-norm %e absolute dis-norm %e time %10.5f\n",
+             numiter,fresmnorm,disinorm,timepernlnsolve);
+      fflush(stdout);
+    }
+    else if (relres_reldis)
+    {
+      printf("Psitc iteration converged: numiter %d scaled res-norm %e scaled dis-norm %e time %10.5f\n",
+             numiter,fresmnorm,disinorm,timepernlnsolve);
+      fflush(stdout);
+    }
+    else
+    {
+      printf("Psitc iteration converged: numiter %d absolute res-norm %e absolute dis-norm %e time %10.5f\n",
+             numiter,fresmnorm,disinorm,timepernlnsolve);
+      fflush(stdout);
+    }
+  }
+} // end of StruGenAlpha::PrintPTC
+
 
 /*----------------------------------------------------------------------*
  |  print to screen                                             lw 12/07|
