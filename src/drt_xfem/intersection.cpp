@@ -268,7 +268,7 @@ void Intersection::initializeXFEM(
 { 
     xfemDistype_ = xfemElement->Shape();
  
-    // todo check for paralleilzation
+    // TODO: check for paralleilzation
     //if(xfemOldDistype_ != xfemDistype_ || xfemId == 0) 
     //{   
         numXFEMSurfaces_ = xfemElement->NumSurface(); 

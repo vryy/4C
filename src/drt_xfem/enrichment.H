@@ -54,9 +54,9 @@ public:
 
     std::string enrTypeToString(const EnrType type) const;
     
-    inline int Id() const
+    inline int XFEMConditionLabel() const
     {
-        return id_;
+        return xfemconditionlabel_;
     };
     
     inline EnrType Type() const
@@ -66,7 +66,7 @@ public:
 
     inline bool operator ==(const Enrichment& rhs) const
     {
-        if (Id() == rhs.Id() and Type() == rhs.Type())
+        if (XFEMConditionLabel() == rhs.XFEMConditionLabel() and Type() == rhs.Type())
             return true;
         else
             return false;
@@ -74,9 +74,9 @@ public:
     
     inline bool operator <(const Enrichment& rhs) const
     {
-        if (Id() < rhs.Id())
+        if (XFEMConditionLabel() < rhs.XFEMConditionLabel())
             return true;
-        else if (Id() > rhs.Id())
+        else if (XFEMConditionLabel() > rhs.XFEMConditionLabel())
             return false;
         else
         {
@@ -87,16 +87,21 @@ public:
         }
     }
 
-    double enrValue(
+    double ModifiedEnrValue(
             const blitz::Array<double,1>& actpos,
             const blitz::Array<double,1>& nodalpos,
+            const RCP<DRT::Discretization>& cutterdis
+            ) const;
+
+    double EnrValue(
+            const blitz::Array<double,1>& actpos,
             const RCP<DRT::Discretization>& cutterdis
             ) const;
     
 private:
     // a global id used to distuinguish several surfaces within one element
     // might become or contain reference to a certain condition
-    int id_;
+    int xfemconditionlabel_;
     // the specific type of enrichment
     EnrType type_;
 }; // class Enrichment

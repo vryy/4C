@@ -28,6 +28,9 @@ using namespace Teuchos;
 namespace XFEM
 {
 
+typedef blitz::Array<double,1> BlitzVec; ///< a short-cut for a one-dimensional BLITZ vector
+typedef blitz::Array<double,2> BlitzMat; ///< a short-cut for a two-dimensional BLITZ matrix
+
 enum IntegrationType
 {
     sub_integration,
@@ -48,24 +51,81 @@ void ComputeEnrichedShapefunction(
         const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
-        const blitz::Array<double,1>& actpos,
-        const blitz::Array<double,1>& funct,
-        blitz::Array<double,1>& enr_funct
+        const BlitzVec& actpos,
+        const BlitzVec& funct,
+        BlitzVec& enr_funct
         );
+
+//
+// For a given situation compute the enrichement values
+// 
+inline BlitzVec ComputeEnrichmentArrayForNodalDofs(
+        DRT::Element&  ele,
+        const RCP<XFEM::InterfaceHandle>  ih,
+        const XFEM::ElementDofManager& dofman,
+        const XFEM::PHYSICS::Field field,
+        const BlitzVec& actpos
+        )
+{
+    
+    BlitzVec enrvals(ele.NumNode());
+    
+    DRT::Node** const nodes = ele.Nodes();
+    
+    int dofcounter = 0;
+    for (int inode=0; inode<ele.NumNode(); inode++)
+    {
+        const int gid = nodes[inode]->Id();
+        const blitz::Array<double,1> nodalpos(toBlitzArray(nodes[inode]->X()));
+
+        const std::set<XFEM::FieldEnr> enrfieldset = dofman.FieldEnrSetPerNode(gid);
+
+        for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
+                enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
+        {
+            if (enrfield->getField() == field)
+            {
+                const XFEM::Enrichment enr = enrfield->getEnrichment();
+                enrvals(dofcounter) = enr.ModifiedEnrValue(actpos, nodalpos, ih->cutterdis());
+                dofcounter += 1;
+            }
+        }
+    }
+    dsassert(dofcounter == dofman.NumDofPerField(field), "mismatch in information from eledofmanager!");
+    return enrvals;
+}
 
 void ComputeEnrichedShapefunction(
         DRT::Element&  ele,
         const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
-        const blitz::Array<double,1>& actpos,
-        const blitz::Array<double,1>& funct,
-        const blitz::Array<double,2>& derxy,
-        const blitz::Array<double,2>& derxy2,
-        blitz::Array<double,1>& enr_funct,
-        blitz::Array<double,2>& enr_derxy,
-        blitz::Array<double,2>& enr_derxy2
+        const BlitzVec& actpos,
+        const BlitzVec& funct,
+        const BlitzMat& derxy,
+        const BlitzMat& derxy2,
+        BlitzVec& enr_funct,
+        BlitzMat& enr_derxy,
+        BlitzMat& enr_derxy2
         );
+
+inline std::map<Enrichment,double> getEnrichmentValues(
+        const RCP<XFEM::InterfaceHandle>  ih,
+        const XFEM::ElementDofManager& dofman,
+        const BlitzVec& actpos
+        )
+{
+    std::map<Enrichment,double> result;
+    
+    std::set<Enrichment> enrset= dofman.getUniqueEnrichmentSet();
+    for (std::set<Enrichment>::const_iterator enr = enrset.begin(); enr != enrset.end(); ++enr)
+    {
+        std::pair<Enrichment,double> p((*enr), enr->EnrValue(actpos, ih->cutterdis()));
+        result.insert(p);
+    }
+        
+    return result;
+}
 
 }
 

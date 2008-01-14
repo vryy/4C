@@ -59,7 +59,7 @@ void XFEM::ComputeEnrichedShapefunction(
             if (enrfield->getField() == field)
             {
                 const XFEM::Enrichment enr = enrfield->getEnrichment();
-                const double enrval = enr.enrValue(actpos, nodalpos, ih->cutterdis());
+                const double enrval = enr.ModifiedEnrValue(actpos, nodalpos, ih->cutterdis());
                 enr_funct(dofcounter) = funct(inode) * enrval;
                 dofcounter += 1;
             }
@@ -103,7 +103,7 @@ void XFEM::ComputeEnrichedShapefunction(
             if (enrfield->getField() == field)
             {
                 const XFEM::Enrichment enr = enrfield->getEnrichment();
-                const double enrval = enr.enrValue(actpos, nodalpos, ih->cutterdis());
+                const double enrval = enr.ModifiedEnrValue(actpos, nodalpos, ih->cutterdis());
                 enr_funct(dofcounter) = funct(inode) * enrval;
                 enr_derxy(_,dofcounter) = derxy(_,inode) * enrval;
                 enr_derxy2(_,dofcounter) = derxy2(_,inode) * enrval;
@@ -111,7 +111,6 @@ void XFEM::ComputeEnrichedShapefunction(
             }
         }
     }
-    dsassert(dofcounter == dofman.NumDofPerField(field), "mismatch in information from eledofmanager!");
 }
 
 

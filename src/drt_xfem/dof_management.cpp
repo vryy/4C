@@ -74,32 +74,38 @@ XFEM::ElementDofManager::ElementDofManager()
  *----------------------------------------------------------------------*/
 XFEM::ElementDofManager::ElementDofManager(
         DRT::Element& ele,
-		const map<int, const set<XFEM::FieldEnr> >& nodalDofMap,
+		const map<int, const set<XFEM::FieldEnr> >& nodalDofSet,
         const vector<XFEM::FieldEnr>& elementDofs
 		) :
-			nodalDofMap_(nodalDofMap),
+			nodalDofSet_(nodalDofSet),
 			elementDofs_(elementDofs)
 {
 	// count number of dofs for each node
-	map<int, const set<XFEM::FieldEnr> >::const_iterator tmp;
-	for (tmp = nodalDofMap.begin(); tmp != nodalDofMap.end(); ++tmp) {
+	std::map<int, const set<XFEM::FieldEnr> >::const_iterator tmp;
+	for (tmp = nodalDofSet.begin(); tmp != nodalDofSet.end(); ++tmp) {
 		const int gid = tmp->first;
 		const set<XFEM::FieldEnr> enrfieldset = tmp->second;
 		const int numdof = enrfieldset.size();
 		//dsassert(numdof > 0, "sollte jetzt noch nicht sein");
-		nodalNumDofMap_[gid] = numdof;
+		nodalNumDof_[gid] = numdof;
 	}
 	
 	// set number of parameters per field to zero
-	set<XFEM::FieldEnr>::const_iterator enrfield;
-	for (tmp = nodalDofMap.begin(); tmp != nodalDofMap.end(); ++tmp) {
-		const set<XFEM::FieldEnr> enrfieldset = tmp->second;
-		for (enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield) {
+	for (tmp = nodalDofSet.begin(); tmp != nodalDofSet.end(); ++tmp) {
+		const std::set<XFEM::FieldEnr> enrfieldset = tmp->second;
+		for (std::set<XFEM::FieldEnr>::const_iterator enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield) {
 			const XFEM::PHYSICS::Field field = enrfield->getField();
-			numParamsPerFieldMap_[field] = 0;
+			numParamsPerField_[field] = 0;
 			paramsLocalEntries_[field] = vector<int>();
 		}
 	}
+    for (std::vector<XFEM::FieldEnr>::const_iterator enrfield = elementDofs.begin(); enrfield != elementDofs.end(); ++enrfield) {
+        const XFEM::PHYSICS::Field field = enrfield->getField();
+        numParamsPerField_[field] = 0;
+        paramsLocalEntries_[field] = vector<int>();
+    }
+	
+	
 	
 	// count number of parameters per field
 	// define local position of unknown by looping first over nodes and then over its unknowns!
@@ -108,8 +114,8 @@ XFEM::ElementDofManager::ElementDofManager(
 	for (int inode=0; inode<ele.NumNode(); inode++)
 	{
 	    const int gid = nodes[inode]->Id();
-	    map<int, const set <XFEM::FieldEnr> >::const_iterator entry = nodalDofMap_.find(gid);
-	    if (entry == nodalDofMap_.end())
+	    map<int, const set <XFEM::FieldEnr> >::const_iterator entry = nodalDofSet_.find(gid);
+	    if (entry == nodalDofSet_.end())
 	        dserror("impossible ;-)");
 	    const set<XFEM::FieldEnr> enrfieldset = entry->second;
 	    
@@ -117,11 +123,18 @@ XFEM::ElementDofManager::ElementDofManager(
 	    for (enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
 	    {
 	        const XFEM::PHYSICS::Field field = enrfield->getField();
-	        numParamsPerFieldMap_[field] += 1;
+	        numParamsPerField_[field] += 1;
 	        paramsLocalEntries_[field].push_back(counter);
 	        counter++;
 	    }
 	}
+	// loop now over element dofs
+    for (std::vector<XFEM::FieldEnr>::const_iterator enrfield = elementDofs.begin(); enrfield != elementDofs.end(); ++enrfield) {
+        const XFEM::PHYSICS::Field field = enrfield->getField();
+        numParamsPerField_[field] += 1;
+        paramsLocalEntries_[field].push_back(counter);
+    }
+	
 	return;
 }
 
@@ -140,7 +153,7 @@ std::string XFEM::ElementDofManager::toString() const
 {
 	stringstream s;
 	map<int, const set<XFEM::FieldEnr> >::const_iterator tmp;
-	for (tmp = nodalDofMap_.begin(); tmp != nodalDofMap_.end(); ++tmp)
+	for (tmp = nodalDofSet_.begin(); tmp != nodalDofSet_.end(); ++tmp)
 	{
 		const int gid = tmp->first;
 		const set <XFEM::FieldEnr> actset = tmp->second;
@@ -165,7 +178,7 @@ XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih) :
 {
     XFEM::DofManager::createDofMap(
             ih->xfemdis(), ih->cutterdis(), ih->elementalDomainIntCells(),
-            nodalDofMap_, elementalDofMap_);
+            nodalDofSet_, elementalDofs_);
 }
 		
 /*----------------------------------------------------------------------*
@@ -185,7 +198,7 @@ string XFEM::DofManager::toString() const
 	for (int i=0; i<xfemdis_->NumMyRowNodes(); ++i)
 	{
 		const int gid = xfemdis_->lRowNode(i)->Id();
-		const set <XFEM::FieldEnr> actset = nodalDofMap_.find(gid)->second;
+		const set <XFEM::FieldEnr> actset = nodalDofSet_.find(gid)->second;
 		for ( set<XFEM::FieldEnr>::const_iterator var = actset.begin(); var != actset.end(); ++var )
 		{
 			s << "Node: " << gid << ", " << var->toString() << endl;
@@ -244,13 +257,13 @@ void XFEM::DofManager::createDofMap(
         const RCP<DRT::Discretization>            xfemdis,
         const RCP<DRT::Discretization>            cutterdis,
         const map<int, XFEM::DomainIntCells >&    elementDomainIntCellMap,
-        map<int, const set<XFEM::FieldEnr> >&     nodalDofMapFinal,
-        map<int, const vector<XFEM::FieldEnr> >&  elementalDofMapFinal
+        map<int, const set<XFEM::FieldEnr> >&     nodalDofSetFinal,
+        map<int, const vector<XFEM::FieldEnr> >&  elementalDofsFinal
         ) const
 {
 	// temporary assembly
-    map<int, set<XFEM::FieldEnr> >  nodalDofMap;
-    map<int, vector<XFEM::FieldEnr> >  elementalDofMap;
+    map<int, set<XFEM::FieldEnr> >  nodalDofSet;
+    map<int, vector<XFEM::FieldEnr> >  elementalDofs;
     
     // standard enrichment used for all nodes (for now -> we can remove them from holes in the fluid)
     const int standard_label = 0;
@@ -263,10 +276,10 @@ void XFEM::DofManager::createDofMap(
         
         //if (actnode->X()[0] < 0.9 or actnode->X()[0] > 2.1)
         //{
-            nodalDofMap[gid].insert(XFEM::FieldEnr(PHYSICS::Velx, enr_std));
-            nodalDofMap[gid].insert(XFEM::FieldEnr(PHYSICS::Vely, enr_std));
-            nodalDofMap[gid].insert(XFEM::FieldEnr(PHYSICS::Velz, enr_std));
-            nodalDofMap[gid].insert(XFEM::FieldEnr(PHYSICS::Pres, enr_std));
+            nodalDofSet[gid].insert(XFEM::FieldEnr(PHYSICS::Velx, enr_std));
+            nodalDofSet[gid].insert(XFEM::FieldEnr(PHYSICS::Vely, enr_std));
+            nodalDofSet[gid].insert(XFEM::FieldEnr(PHYSICS::Velz, enr_std));
+            nodalDofSet[gid].insert(XFEM::FieldEnr(PHYSICS::Pres, enr_std));
         //}
     }
 
@@ -282,7 +295,8 @@ void XFEM::DofManager::createDofMap(
         cout << "condition with label = " << label << endl;
     
         // for surface 1, loop my col elements and add void enrichments to each elements member nodes
-        const XFEM::Enrichment enr(label, XFEM::Enrichment::typeJump);
+        const XFEM::Enrichment jumpenr(label, XFEM::Enrichment::typeJump);
+        const XFEM::Enrichment voidenr(label, XFEM::Enrichment::typeVoid);
         for (int i=0; i<xfemdis->NumMyColElements(); ++i)
         {
             const DRT::Element* actele = xfemdis->lColElement(i);
@@ -293,52 +307,52 @@ void XFEM::DofManager::createDofMap(
                 for (int inen = 0; inen<nen; ++inen)
                 {
                     const int node_gid = nodeidptrs[inen];
-                    nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velx, enr));
-                    nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Vely, enr));
-                    nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velz, enr));
-                    nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::Pres, enr));
-                    //              nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::LMPLambdax, enr_void1));
-                    //              nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::LMPLambday, enr_void1));
-                    //              nodalDofMap[node_gid].insert(XFEM::FieldEnr(PHYSICS::LMPLambdaz, enr_void1));              
+                    nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velx, jumpenr));
+                    nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Vely, jumpenr));
+                    nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velz, jumpenr));
+                    nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Pres, jumpenr));
+                    //              nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::LMPLambdax, enr_void1));
+                    //              nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::LMPLambday, enr_void1));
+                    //              nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::LMPLambdaz, enr_void1));              
                 };
                 // add discontinuous stress unknowns
-                int numstressparam = 0;
-                switch (actele->Shape())
-                {
-                    case DRT::Element::hex20: case DRT::Element::hex27: case DRT::Element::tet10:
-                        numstressparam = 4;
-                        break;
-                    case DRT::Element::hex8: case DRT::Element::tet4:
-                        numstressparam = 1;
-                        break;
-                    default:
-                        dserror("nope, not yet defined in createDofMap");
-                };
-                
-                const int element_gid = actele->NumNode();
-                for (int inen = 0; inen<numstressparam; ++inen)
-                {
-                    elementalDofMap[element_gid].push_back(XFEM::FieldEnr(PHYSICS::Tauxx, enr));
-                    elementalDofMap[element_gid].push_back(XFEM::FieldEnr(PHYSICS::Tauyy, enr));
-                    elementalDofMap[element_gid].push_back(XFEM::FieldEnr(PHYSICS::Tauzz, enr));
-                    elementalDofMap[element_gid].push_back(XFEM::FieldEnr(PHYSICS::Tauxy, enr));
-                    elementalDofMap[element_gid].push_back(XFEM::FieldEnr(PHYSICS::Tauxz, enr));
-                    elementalDofMap[element_gid].push_back(XFEM::FieldEnr(PHYSICS::Tauyz, enr));
-                }
+//                int numstressparam = 0;
+//                switch (actele->Shape())
+//                {
+//                    case DRT::Element::hex20: case DRT::Element::hex27: case DRT::Element::tet10:
+//                        numstressparam = 4;
+//                        break;
+//                    case DRT::Element::hex8: case DRT::Element::tet4:
+//                        numstressparam = 1;
+//                        break;
+//                    default:
+//                        dserror("nope, not yet defined in createDofMap");
+//                };
+//                
+//                const int element_gid = actele->NumNode();
+//                for (int inen = 0; inen<numstressparam; ++inen)
+//                {
+//                    elementalDofs[element_gid].push_back(XFEM::FieldEnr(PHYSICS::Tauxx, enr));
+//                    elementalDofs[element_gid].push_back(XFEM::FieldEnr(PHYSICS::Tauyy, enr));
+//                    elementalDofs[element_gid].push_back(XFEM::FieldEnr(PHYSICS::Tauzz, enr));
+//                    elementalDofs[element_gid].push_back(XFEM::FieldEnr(PHYSICS::Tauxy, enr));
+//                    elementalDofs[element_gid].push_back(XFEM::FieldEnr(PHYSICS::Tauxz, enr));
+//                    elementalDofs[element_gid].push_back(XFEM::FieldEnr(PHYSICS::Tauyz, enr));
+//                }
             }
         };
     };
     
     // create const sets from standard sets, so the sets cannot be accidentily changed
     // could be removed later, if this is a performance bottleneck
-    for ( map<int, set<XFEM::FieldEnr> >::const_iterator oneset = nodalDofMap.begin(); oneset != nodalDofMap.end(); ++oneset )
+    for ( std::map<int, std::set<XFEM::FieldEnr> >::const_iterator oneset = nodalDofSet.begin(); oneset != nodalDofSet.end(); ++oneset )
     {
-        nodalDofMapFinal.insert( make_pair(oneset->first, oneset->second));
+        nodalDofSetFinal.insert( make_pair(oneset->first, oneset->second));
     };
     
-    for ( map<int, vector<XFEM::FieldEnr> >::const_iterator oneset = elementalDofMap.begin(); oneset != elementalDofMap.end(); ++oneset )
+    for ( std::map<int, std::vector<XFEM::FieldEnr> >::const_iterator oneset = elementalDofs.begin(); oneset != elementalDofs.end(); ++oneset )
     {
-        elementalDofMapFinal.insert( make_pair(oneset->first, oneset->second));
+        elementalDofsFinal.insert( make_pair(oneset->first, oneset->second));
     };
 }
 

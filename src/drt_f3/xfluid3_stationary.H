@@ -28,6 +28,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_utils.H"
 #include "fluid3_stabilization.H"
 #include "xfluid3_local_assembler.H"
+#include "xfluid3_shapefunction_stress.H"
 
 #include <Epetra_SerialDenseSolver.h>
 
@@ -700,6 +701,9 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
       BlitzMat deriv_(3,iel_,blitz::ColumnMajorArray<2>());
       DRT::Utils::shape_function_3D(funct_,e1,e2,e3,DISTYPE);
       DRT::Utils::shape_function_3D_deriv1(deriv_,e1,e2,e3,DISTYPE);
+      
+      BlitzVec funct_stress(DRT::Elements::FLUID::stress_shape_function_3D<DISTYPE>(e1,e2,e3));
+      BlitzMat deriv_stress(DRT::Elements::FLUID::stress_shape_function_3D_deriv1<DISTYPE>(e1,e2,e3));
 
       // position of the gausspoint in physical coordinates
       const BlitzVec gauss_pos(blitz::sum(funct_(j)*xyze_(i,j),j));
@@ -782,6 +786,10 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
                   enr_funct_,
                   enr_derxy_,
                   enr_derxy2_);
+          
+          //std::map<Enrichment,double> enrvals = getEnrichmentValues(ih, dofman, actpos);
+          
+          
       }
       else
       {

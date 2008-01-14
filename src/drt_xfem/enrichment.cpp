@@ -26,9 +26,10 @@ using namespace XFEM;
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
 Enrichment::Enrichment(
-        const int id,
+        const int xfemconditionlabel,
         const EnrType type) :
-    id_(id), type_(type)
+            xfemconditionlabel_(xfemconditionlabel),
+            type_(type)
 {
     return;
 }
@@ -38,7 +39,8 @@ Enrichment::Enrichment(
  *----------------------------------------------------------------------*/
 Enrichment::Enrichment(
         const Enrichment& other) :
-    id_(other.id_), type_(other.type_)
+            xfemconditionlabel_(other.xfemconditionlabel_),
+            type_(other.type_)
 {
     assert(&other != this);
     return;
@@ -58,7 +60,7 @@ Enrichment::~Enrichment()
 std::string Enrichment::toString() const
 {
     std::stringstream s;
-    s << "Enrichment id: " << this->id_ << ", type: " << enrTypeToString(this->type_);
+    s << "Enrichment XFEMConditionLabel: " << this->xfemconditionlabel_ << ", type: " << enrTypeToString(this->type_);
     return s.str();
 }
 
@@ -74,10 +76,51 @@ std::string Enrichment::enrTypeToString(const EnrType type) const
     return typetext;
 }
 
+
 /*----------------------------------------------------------------------*
  |  get enrichment value                                        ag 11/07|
  *----------------------------------------------------------------------*/
-double Enrichment::enrValue(
+double Enrichment::EnrValue(
+        const blitz::Array<double,1>& actpos,
+        const RCP<DRT::Discretization>& cutterdis
+        ) const
+{
+    // return value
+    double enrval = 1.0;
+    
+    switch (Type()){
+    case XFEM::Enrichment::typeStandard:
+    {
+        enrval = 1.0;
+        break;
+    }
+    case XFEM::Enrichment::typeVoid:
+    {
+        const int xfemcondition_label = this->XFEMConditionLabel();
+        
+        double actpos_enr_val = 0.0;
+        if (PositionWithinCondition(actpos, xfemcondition_label,cutterdis)) {
+            actpos_enr_val = 0.0;
+        } else {
+            actpos_enr_val = 1.0;
+        }
+
+        enrval = actpos_enr_val;
+        
+        break;
+    }
+    default:
+        dserror("unsupported enrichment!");
+    }
+    return enrval;
+}
+
+
+/*
+ *  get modified enrichment value (satisfied interpolation property
+ *                                                              ag 11/07
+ */
+double Enrichment::ModifiedEnrValue(
         const blitz::Array<double,1>& actpos,
         const blitz::Array<double,1>& nodalpos,
         const RCP<DRT::Discretization>& cutterdis
@@ -92,80 +135,31 @@ double Enrichment::enrValue(
         enrval = 1.0;
         break;
     }
-//    case XFEM::Enrichment::typeJump:
-//    {
-//        // TODO: generalize
-//        blitz::Array<double,1> center(3);
-//        center(0) = 0.6; center(1) = 0.5; center(2) = 0.0;
-//        const double cylinder_radius = 0.2;
-//       
-//        double actpos_enr_val = 0.0;
-//        if (inCircleCylinder(cellcenterpos, center, cylinder_radius)) {
-//            actpos_enr_val = -1.0;
-//        } else {
-//            actpos_enr_val = 1.0;
-//        }
-//        
-//        double nodepos_enr_val = 0.0;
-//        if (inCircleCylinder(nodalpos, center, cylinder_radius)) {
-//            nodepos_enr_val = -1.0;
-//        } else {
-//            nodepos_enr_val = 1.0;
-//        }
-//        
-//        enrval = actpos_enr_val - nodepos_enr_val;
-//        //enrval = actpos_enr_val;
-//        
-//        break;
-//    }
 //    case XFEM::Enrichment::typeVoid:
 //    {
-//        // TODO: generalize
+//        const int xfemcondition_label = this->XFEMConditionLabel();
+//        
 //        double actpos_enr_val = 0.0;
-//        if (cellcenterpos(0) > 1.525) {
+//        if (PositionWithinCondition(actpos, xfemcondition_label,cutterdis)) {
 //            actpos_enr_val = 0.0;
 //        } else {
 //            actpos_enr_val = 1.0;
 //        }
 //        
 //        double nodepos_enr_val = 0.0;
-//        if (nodalpos(0) > 1.525) {
+//        if (PositionWithinCondition(nodalpos, xfemcondition_label,cutterdis)) {
 //            nodepos_enr_val = 0.0;
 //        } else {
 //            nodepos_enr_val = 1.0;
 //        }
 //        
-//        //enrval = actpos_enr_val - nodepos_enr_val;
-//        enrval = actpos_enr_val;
-////        dserror("not yet");
-//        
-//        break;
-//    }
-//    case XFEM::Enrichment::typeJump:
-//    {
-//        // TODO: generalize
-//        double actpos_enr_val = 0.0;
-//        if (actpos(0) > 1.525) {
-//            actpos_enr_val = -1.0;
-//        } else {
-//            actpos_enr_val = 1.0;
-//        }
-//        
-//        double nodepos_enr_val = 0.0;
-//        if (nodalpos(0) > 1.525) {
-//            nodepos_enr_val = -1.0;
-//        } else {
-//            nodepos_enr_val = 1.0;
-//        }
-//        
 //        enrval = actpos_enr_val - nodepos_enr_val;
-//        //enrval = actpos_enr_val;
 //        
 //        break;
 //    }
     case XFEM::Enrichment::typeJump:
     {
-        const int xfemcondition_label = this->Id();
+        const int xfemcondition_label = this->XFEMConditionLabel();
         
         double actpos_enr_val = 0.0;
         if (PositionWithinCondition(actpos, xfemcondition_label,cutterdis)) {
@@ -182,7 +176,6 @@ double Enrichment::enrValue(
         }
         
         enrval = actpos_enr_val - nodepos_enr_val;
-        //enrval = actpos_enr_val;
         
         break;
     }

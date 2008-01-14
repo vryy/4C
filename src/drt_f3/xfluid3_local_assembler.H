@@ -44,8 +44,7 @@ template <> int getFieldNumber<XFEM::PHYSICS::Pres>() {return 3;};
 
 
 
-//TODO put stiffness matrix and rhs vector as object variables to save A LOT of typing
-// might allow fixed size array for estiff und eforce
+//TODO  allow fixed size array for estiff und eforce, if standard_assembly
 
 template <DRT::Element::DiscretizationType DISTYPE, 
           XFEM::AssemblyType ASSEMBLYTYPE>
@@ -58,12 +57,13 @@ public:
         estif_(estif),
         eforce_(eforce)
     {
-        
+        return;
     }
     
     LocalAssembler(LocalAssembler& tmp)
     {
         dserror("no copying allowed");
+        return;
     }
     
     ~LocalAssembler()
