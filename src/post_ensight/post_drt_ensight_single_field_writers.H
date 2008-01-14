@@ -11,8 +11,10 @@
  </pre>
 
  */
-
 #ifdef CCADISCRET
+
+#ifndef POST_DRT_ENSIGHT_SINGLE_FIELD_WRITER_H_
+#define POST_DRT_ENSIGHT_SINGLE_FIELD_WRITER_H_
 
 #include "post_drt_ensight_writer.H"
 #include "../drt_xfem/physics.H"
@@ -131,9 +133,6 @@ public:
         cutterfield_(cutterfield)
     {
     }
-
-    //! write the whole thing
-    void WriteFiles();
             
 protected:
 
@@ -193,7 +192,7 @@ protected:
             const string name,      ///< name of the result to be written
             const set<XFEM::PHYSICS::Field> fieldset
             );
-    void WriteResultStep(
+    void WriteNodalResultStep(
             ofstream& file,
             PostResult& result,
             map<string, vector<ofstream::pos_type> >& resultfilepos,
@@ -207,4 +206,6 @@ protected:
     PostField* cutterfield_;
 };
 
+
+#endif /*POST_DRT_ENSIGHT_SINGLE_FIELD_WRITER_H_*/
 #endif

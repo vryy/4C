@@ -24,6 +24,7 @@
 
 using namespace std;
 
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void StructureEnsightWriter::WriteAllResults(
@@ -57,14 +58,14 @@ void AleEnsightWriter::WriteAllResults(
 
 
 /*----------------------------------------------------------------------*
- |															 gjb 12/07  |
+ |                                                             gjb 12/07  |
 \*----------------------------------------------------------------------*/
 void ConDifEnsightWriter::WriteAllResults(
         PostField* field)
 {
-	//phinp is a scalar result field with ONE dof per node.
-	//Therefore it is NOT possible to hand over field->problem()->num_dim() 
-	// (equals 2 or 3) as a number of dofs
+    //phinp is a scalar result field with ONE dof per node.
+    //Therefore it is NOT possible to hand over field->problem()->num_dim() 
+    // (equals 2 or 3) as a number of dofs
     EnsightWriter::WriteResult("phinp", "phi", nodebased, 1);
 }
 
@@ -95,90 +96,6 @@ void XFluidEnsightWriter::WriteAllResults(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void XFluidEnsightWriter::WriteFiles()
-{
-#ifndef PARALLEL
-    if (myrank_ > 0) dserror("have serial filter version, but myrank_ = %d",myrank_);
-#endif
-    
-    PostResult result = PostResult(field_);
-
-    // timesteps when the solution is written
-    const vector<double> soltime = result.get_result_times(field_->name());
-
-    
-    ///////////////////////////////////
-    //  write geometry file          //
-    ///////////////////////////////////
-    const string geofilename = filename_ + "_"+ field_->name() + ".geo";
-    WriteGeoFile(geofilename);
-    vector<int> filesteps;
-    filesteps.push_back(1);
-    filesetmap_["geo"] = filesteps;
-    vector<int> timesteps;
-    timesteps.push_back(1);
-    timesetmap_["geo"] = timesteps;
-    const int geotimeset = 1;
-    // at the moment, we can only print out the first step -> to be changed
-    vector<double> geotime; // timesteps when the geometry is written
-    geotime.push_back(soltime[0]);
-    
-    
-    ///////////////////////////////////
-    //  write solution fields files  //
-    ///////////////////////////////////
-    const int soltimeset = 2;
-    WriteAllResults(field_);
-    
-    
-
-    int counttime = 0;
-    for (map<string,vector<int> >::const_iterator entry = timesetmap_.begin(); entry != timesetmap_.end(); ++entry) {
-        counttime++;
-        string key = entry->first;
-        timesetnumbermap_[key] = counttime;
-    }
-    int countfile = 0;
-    for (map<string,vector<int> >::const_iterator entry = filesetmap_.begin(); entry != filesetmap_.end(); ++entry) {
-        countfile++;
-        string key = entry->first;
-        filesetnumbermap_[key] = countfile;
-    }
-    
-    
-    
-    ///////////////////////////////////
-    //  now write the case file      //
-    ///////////////////////////////////
-    if (myrank_ == 0) 
-    {
-        const string casefilename = filename_ + "_"+ field_->name() + ".case";
-        ofstream casefile;
-        casefile.open(casefilename.c_str());
-        casefile << "# created using post_drt_ensight\n"<< "FORMAT\n\n"<< "type:\tensight gold\n";
-
-        casefile << "\nGEOMETRY\n\n";
-        casefile << "model:\t"<<timesetnumbermap_["geo"]<<"\t"<<filesetnumbermap_["geo"]<<"\t"<< geofilename<< "\n";
-
-        casefile << "\nVARIABLE\n\n";
-        casefile << GetVariableSection(filesetmap_, variablenumdfmap_, variablefilenamemap_);
-
-        casefile << "\nTIME\n\n";
-        casefile << GetTimeSectionString(geotimeset, geotime);
-        casefile << GetTimeSectionString(soltimeset, soltime);
-
-        casefile << "\nFILE\n\n";
-        casefile << GetFileSectionStringFromFilesets(filesetmap_);
-
-        casefile.close();
-    }
-    
-    return;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void XFluidEnsightWriter::WriteGeoFile(
         const string& geofilename) const
 {
@@ -186,9 +103,9 @@ void XFluidEnsightWriter::WriteGeoFile(
     ofstream geofile;
     if (myrank_ == 0)
     {
-      geofile.open(geofilename.c_str());
-      if (!geofile)
-          dserror("failed to open file: %s", geofilename.c_str());
+        geofile.open(geofilename.c_str());
+        if (!geofile)
+            dserror("failed to open file: %s", geofilename.c_str());
     }
 
     // header
@@ -209,10 +126,13 @@ void XFluidEnsightWriter::WriteGeoFile(
     // it is also correct to ommit WriteIndexTable, however the EnsightGold Format manual says, 
     // it would improve performance to have it on...
     // WriteIndexTable(geofile, fileposition); 
+
     if (geofile.is_open())
-      geofile.close();
+        geofile.close();
+
     return;
 }
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -328,7 +248,6 @@ int XFluidEnsightWriter::NumNodesPerField(
 }
 
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void XFluidEnsightWriter::WriteCoordinates(
@@ -337,11 +256,10 @@ void XFluidEnsightWriter::WriteCoordinates(
         const RefCountPtr<XFEM::InterfaceHandle> ih ///< interfacehandle
         ) const
 {
-    const int nsd = 3;
-    
     const Epetra_Map* elementmap = dis->ElementRowMap();
     dsassert(elementmap->NumMyElements() == elementmap->NumGlobalElements(),
             "xfem filter cannot be run in parallel");
+    const int nsd = 3; ///< number of space dimensions
 
     // get the number of elements for each distype
     const NumElePerDisType numElePerDisType = GetNumElePerDisType(dis, ih);
@@ -375,8 +293,9 @@ void XFluidEnsightWriter::WriteCoordinates(
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | write node connectivity for every element                  gjb 12/07 |
+ *----------------------------------------------------------------------*/
 void XFluidEnsightWriter::WriteCells(
         ofstream& geofile,
         const RefCountPtr<DRT::Discretization> dis,
@@ -463,16 +382,16 @@ void XFluidEnsightWriter::WriteCells(
 
 
 /*!
- * \brief parse all elements and get the number of elements for each distype
+ * \brief parse all elements and get the global(!) number of elements for each distype
  */
 NumElePerDisType XFluidEnsightWriter::GetNumElePerDisType(
         const RefCountPtr<DRT::Discretization> dis,
         const RefCountPtr<XFEM::InterfaceHandle> ih ///< interfacehandle
         ) const
 {
-    
-    NumElePerDisType numElePerDisType;
     const Epetra_Map* elementmap = dis->ElementRowMap();
+
+    NumElePerDisType numElePerDisType;
     for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
     {
         const int elegid = elementmap->GID(iele);
@@ -485,6 +404,7 @@ NumElePerDisType XFluidEnsightWriter::GetNumElePerDisType(
     }
     return numElePerDisType;
 }
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -521,19 +441,30 @@ void XFluidEnsightWriter::WriteResult(
     if (!map_has_map(result.group(), const_cast<char*>(groupname.c_str())))
         return;
 
-
-    
-    // for file continuation
+    // new for file continuation
     bool multiple_files = false;
     const int numdf = fieldset.size();
-    const int numnp = NumNodesPerField(ih);
-    const int stepsize = 5*80+sizeof(int)+numdf*numnp*sizeof(float);
 
+    // open file
     const string filename = filename_ + "_"+ field_->name() + "."+ name;
-    ofstream file(filename.c_str());
-
+    ofstream file;
+    if (myrank_==0)
+    {
+        file.open(filename.c_str());
+    }
+    
     map<string, vector<ofstream::pos_type> > resultfilepos;
-    WriteResultStep(file, result, resultfilepos, groupname, name, fieldset, ih, dofman);
+    const int startfilepos = file.tellp(); // file position should be zero, but we stay flexible
+    
+    cout<<"writing node-based field "<<name<<endl;
+    // store information for later case file creation
+    variableresulttypemap_[name] = "node";
+    
+    WriteNodalResultStep(file, result, resultfilepos, groupname, name, fieldset, ih, dofman);
+    // how many bits are necessary per time step (we assume a fixed size)?
+    const int stepsize = ((int) file.tellp())-startfilepos;
+    if (stepsize <= 0) dserror("found invalid step size for result file");
+    
     while (result.next_result())
     {
         const int indexsize = 80+2*sizeof(int)+(file.tellp()/stepsize+2)*sizeof(long);
@@ -542,18 +473,25 @@ void XFluidEnsightWriter::WriteResult(
             dserror("nope");
             FileSwitcher(file, multiple_files, filesetmap_, resultfilepos, stepsize, name, filename);
         }
-        WriteResultStep(file, result, resultfilepos, groupname, name, fieldset, ih, dofman);
+        WriteNodalResultStep(file, result, resultfilepos, groupname, name, fieldset, ih, dofman);
     }
 
+    // store information for later case file creation
+    filesetmap_[name].push_back(file.tellp()/stepsize);// has to be done BEFORE writing the index table
+    variablenumdfmap_[name] = numdf;
+    variablefilenamemap_[name] = filename;
+    
     // append index table
     WriteIndexTable(file, resultfilepos[name]);
     resultfilepos[name].clear();
-    
-    // store information for later case file creation
-    filesetmap_[name].push_back(file.tellp()/stepsize);
-    variablenumdfmap_[name] = numdf;
-    variablefilenamemap_[name] = filename;
+     
+    // close result file   
+    if (file.is_open())
+        file.close();
+
+    return;
 }
+
 
 vector<double> computeScalarCellNodeValues(
         DRT::Element&  ele,
@@ -614,8 +552,10 @@ vector<double> computeScalarCellNodeValues(
 
 /*!
  \brief Write nodal values for one timestep
+
+ No node has to have the same number of dofs.
  */
-void XFluidEnsightWriter::WriteResultStep(
+void XFluidEnsightWriter::WriteNodalResultStep(
         ofstream& file,
         PostResult& result,
         map<string, vector<ofstream::pos_type> >& resultfilepos,
@@ -626,10 +566,13 @@ void XFluidEnsightWriter::WriteResultStep(
         const RCP<XFEM::DofManager> dofman
         ) const
 {
+    //-------------------------------------------
+    // write some key words and read result data
+    //-------------------------------------------
+
     vector<ofstream::pos_type>& filepos = resultfilepos[name];
     Write(file, "BEGIN TIME STEP");
     filepos.push_back(file.tellp());
-
     Write(file, "description");
     Write(file, "part");
     Write(file, field_->field_pos()+1);
