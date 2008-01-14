@@ -126,7 +126,7 @@ void DRT::Elements::XFluid3::Pack(vector<char>& data) const
   // history variables
   AddtoPack(data,sub_acc_old_.extent(blitz::firstDim));
   AddtoPack(data,sub_acc_old_.extent(blitz::secondDim));
-  
+
   int size = sub_acc_old_.extent(blitz::firstDim)
              *sub_acc_old_.extent(blitz::secondDim)
              *sizeof(double);
@@ -137,7 +137,7 @@ void DRT::Elements::XFluid3::Pack(vector<char>& data) const
   size = sub_acc_old_.extent(blitz::secondDim)*sizeof(double);
   AddtoPack(data,sub_pre_.data()    ,size);
   AddtoPack(data,sub_pre_old_.data(),size);
-    
+
   // data_
   vector<char> tmp(0);
   data_.Pack(tmp);
@@ -169,7 +169,7 @@ void DRT::Elements::XFluid3::Unpack(const vector<char>& data)
   // is_ale_
   ExtractfromPack(position,data,is_ale_);
   // rewinding bools
-  ExtractfromPack(position,data,rewind_); 
+  ExtractfromPack(position,data,rewind_);
   ExtractfromPack(position,data,donerewinding_);
 
 
@@ -184,9 +184,9 @@ void DRT::Elements::XFluid3::Unpack(const vector<char>& data)
     sub_acc_old_.resize(firstdim,secondim);
     sub_vel_    .resize(firstdim,secondim);
     sub_vel_old_.resize(firstdim,secondim);
- 
+
     int size = firstdim*secondim*sizeof(double);
-       
+
     ExtractfromPack(position,data,&(sub_acc_old_.data()[0]),size);
     ExtractfromPack(position,data,&(sub_vel_.data()[0])    ,size);
     ExtractfromPack(position,data,&(sub_vel_old_.data()[0]),size);
@@ -197,9 +197,9 @@ void DRT::Elements::XFluid3::Unpack(const vector<char>& data)
     ExtractfromPack(position,data,&(sub_pre_.data()[0])    ,secondim*sizeof(double));
     ExtractfromPack(position,data,&(sub_pre_old_.data()[0]),secondim*sizeof(double));
 
-    
+
   }
-  
+
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
@@ -403,7 +403,7 @@ void DRT::Elements::XFluid3::CreateSurfaceWedge(const int& nsurf, const int& wed
         for (int isurf=0; isurf<nsurf; isurf++)
         {
             int nnode = 0;
-            if (isurf <=2)
+            if (isurf < 2)
                 nnode=trisurfacenodes;
             else
                 nnode=quadsurfacenodes;
@@ -420,8 +420,8 @@ void DRT::Elements::XFluid3::CreateSurfaceWedge(const int& nsurf, const int& wed
                 }
                 else
                 {
-                    nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[isurf][inode]];
-                    nodes[  inode] = Nodes()[ eleNodeNumbering_wedge15_quadsurfaces[isurf][inode]];
+                    nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
+                    nodes[  inode] = Nodes()[ eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
                 }
                 surfaces_[isurf] = rcp(new DRT::Elements::XFluid3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
                 surfaceptrs_[isurf] = surfaces_[isurf].get();
@@ -437,7 +437,7 @@ void DRT::Elements::XFluid3::CreateSurfaceWedge(const int& nsurf, const int& wed
         for (int isurf=0; isurf<nsurf; isurf++)
         {
             int nnode = 0;
-            if (isurf <=2)
+            if (isurf < 2)
                 nnode=trisurfacenodes;
             else
                 nnode=quadsurfacenodes;
@@ -453,8 +453,8 @@ void DRT::Elements::XFluid3::CreateSurfaceWedge(const int& nsurf, const int& wed
                 }
                 else
                 {
-                    nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[isurf][inode]];
-                    nodes[inode] = Nodes()[ eleNodeNumbering_wedge15_quadsurfaces[isurf][inode]];
+                    nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
+                    nodes[inode] = Nodes()[ eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
                 }
                 surfaces_[isurf] = rcp(new DRT::Elements::XFluid3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
                 surfaceptrs_[isurf] = surfaces_[isurf].get();

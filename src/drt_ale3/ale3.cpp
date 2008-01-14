@@ -209,11 +209,11 @@ void DRT::Elements::Ale3::CreateSurfaceWedge(const int& nsurf, const int& wedget
     for (int isurf=0; isurf<nsurf; isurf++)
     {
         int nnode = 0;
-        if (isurf <=2)
+        if (isurf < 2)
             nnode=trisurfacenodes;
         else
             nnode=quadsurfacenodes;
-        
+
         int nodeids[nnode];
         DRT::Node* nodes[nnode];
 
@@ -226,8 +226,8 @@ void DRT::Elements::Ale3::CreateSurfaceWedge(const int& nsurf, const int& wedget
             }
             else
             {
-                nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[isurf][inode]];
-                nodes[inode] = Nodes()[ eleNodeNumbering_wedge15_quadsurfaces[isurf][inode]];
+                nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
+                nodes[inode] = Nodes()[ eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
             }
             surfaces_[isurf] = rcp(new DRT::Elements::Ale3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
             surfaceptrs_[isurf] = surfaces_[isurf].get();
@@ -243,11 +243,11 @@ void DRT::Elements::Ale3::CreateSurfaceWedge(const int& nsurf, const int& wedget
     for (int isurf=0; isurf<nsurf; isurf++)
     {
         int nnode = 0;
-        if (isurf <=2)
+        if (isurf < 2)
             nnode=trisurfacenodes;
         else
             nnode=quadsurfacenodes;
-        
+
         int nodeids[nnode];
         DRT::Node* nodes[nnode];
         for (int inode=0; inode<nnode;inode++)
@@ -259,8 +259,8 @@ void DRT::Elements::Ale3::CreateSurfaceWedge(const int& nsurf, const int& wedget
             }
             else
             {
-                nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[isurf][inode]];
-                nodes[inode] = Nodes()[ eleNodeNumbering_wedge15_quadsurfaces[isurf][inode]];
+                nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
+                nodes[inode] = Nodes()[ eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
             }
             surfaces_[isurf] = rcp(new DRT::Elements::Ale3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
             surfaceptrs_[isurf] = surfaces_[isurf].get();
