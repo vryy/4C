@@ -38,7 +38,7 @@ namespace FLUID
 \return number of nodes of the discretization type
 */  
 template <DRT::Element::DiscretizationType DISTYPE>
-int getNumberOfStressDofs()
+inline int getNumberOfStressDofs()
 {
    switch(DISTYPE)
    {
@@ -60,6 +60,36 @@ int getNumberOfStressDofs()
    }
 };
 
+/*!
+\brief Returns the number of nodes of the discretization type
+       for each discretization type
+     
+\return number of nodes of the discretization type
+*/  
+inline int getNumberOfStressDofs(DRT::Element::DiscretizationType distype)
+{
+   switch(distype)
+   {
+       case DRT::Element::hex8:
+           return getNumberOfStressDofs<DRT::Element::hex8>();
+           break;
+       case DRT::Element::hex20:
+           return getNumberOfStressDofs<DRT::Element::hex20>();
+           break;
+       case DRT::Element::hex27:
+           return getNumberOfStressDofs<DRT::Element::hex27>();
+           break;
+       case DRT::Element::tet4:
+           return getNumberOfStressDofs<DRT::Element::tet4>();
+           break;
+       case DRT::Element::tet10:
+           return getNumberOfStressDofs<DRT::Element::tet10>();
+           break;   
+       default:
+           dserror("discretization type not yet implemented");  
+           return -1;
+   }
+};
 
 /*!
 \brief Fill a vector with with 3D stress shape function
