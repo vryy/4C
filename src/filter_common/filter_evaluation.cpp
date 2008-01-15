@@ -134,6 +134,15 @@ int Elements::Shell8Line::EvaluateNeumann(ParameterList& params,
   dserror("Elements::Shell8Line::EvaluateNeumann undefined");
   return 0;
 }
+
+void DRT::Elements::Shell8::VisNames(map<string,int>& names)
+{
+}
+
+void DRT::Elements::Shell8::VisData(const string& name, vector<double>& data)
+{
+}
+
 #endif
 
 namespace MAT
