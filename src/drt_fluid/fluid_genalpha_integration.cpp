@@ -666,6 +666,9 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
   {
     printf("+------------+-------------------+--------------+--------------+--------------+--------------+ \n");
     printf("|- step/max -|- tol      [norm] -|- vel-error --|- pre-error --|- vres-norm --|- pres-norm --|                 (te=%10.3E)",dtele_);
+    // reset time increment after output
+    dtele_   = 0;
+
     if (params_.sublist("TURBULENCE MODEL").get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
         ==
         "CLASSICAL_LES")
@@ -1575,6 +1578,10 @@ bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(
            itnum,itemax,ittol,incvelnorm_L2/velnorm_L2,
            incprenorm_L2/prenorm_L2, velresnorm_L2,preresnorm_L2,dtsolve_,dtele_);
 
+    // reset time increments after output
+    dtele_   = 0;
+    dtsolve_ = 0;
+
     if (params_.sublist("TURBULENCE MODEL").get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
         ==
         "CLASSICAL_LES")
@@ -1704,12 +1711,13 @@ void FluidGenAlphaIntegration::SetInitialFlowField(
             "channel_flow_of_height_2")
         {
           perc = params_.sublist("TURBULENCE MODEL").get<double>("CHANNEL_AMPLITUDE_INITIAL_DISTURBANCE");
-          // out to screen
-          if (myrank_==0)
-          {
-            cout << "Disturbed initial profile:   max. " << perc << "\% random perturbation\n";
-            cout << &endl << &endl;
-          }
+        }
+        
+        // out to screen
+        if (myrank_==0)
+        {
+          cout << "Disturbed initial profile:   max. " << perc << "\% random perturbation\n";
+          cout << &endl << &endl;
         }
           
         // loop all nodes on the processor
