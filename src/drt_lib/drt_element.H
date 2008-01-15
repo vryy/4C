@@ -387,8 +387,61 @@ public:
   */
   virtual void Print(ostream& os) const;
 
-  /// return the material of this element
+  /*!
+  \brief Return the material of this element
+  
+  */
   RefCountPtr<MAT::Material> Material() const { return mat_; }
+
+  /*!
+  \brief Query names of element data to be visualized using BINIO
+
+  This method is to be overloaded by a derived class.
+  The derived method is supposed to call this base method to visuzalize the owner of
+  the element.
+  The element is supposed to fill the provided map with key names of
+  visualization data the element wants to visualize AT THE CENTER
+  of the element geometry. The values is supposed to be dimension of the
+  data to be visualized. It can either be 1 (scalar), 3 (vector), 6 (sym. tensor) 
+  or 9 (nonsym. tensor)
+  
+  Example:
+  \code
+    // Name of data is 'StressesXYZ', dimension is 6 (sym. tensor value)
+    names.insert(pair<string,int>("StressesXYZ",6));  
+  \endcode  
+  
+  \param names (out): On return, the derived class has filled names with
+                      key names of data it wants to visualize and with int dimensions
+                      of that data.
+  */
+  virtual void VisNames(map<string,int>& names) 
+  { names.insert(pair<string,int>("Owner",1)); return; }
+
+  /*!
+  \brief Query data to be visualized using BINIO of a given name
+
+  This method is to be overloaded by a derived method.
+  The derived method is supposed to call this base method to visualize the owner of
+  the element. 
+  If the derived method recognizes a supported data name, it shall fill it 
+  with corresponding data.
+  If it does NOT recognizes the name, it shall do nothing.
+  
+  \warning The method must not change size of variable data
+  
+  \param name (in):   Name of data that is currently processed for visualization
+  \param data (out):  data to be filled by element if it recognizes the name
+  */
+  virtual void VisData(const string& name, vector<double>& data) 
+  { 
+    if (name=="Owner") 
+    {
+      if ((int)data.size()<1) dserror("Size mismatch");
+      data[0] = Owner();
+    }
+    return; 
+  }
 
   //@}
 
@@ -411,6 +464,7 @@ public:
 
   /*!
     \brief Set processor local col id
+    
     \param lid: processor local col id
    */
   virtual inline void SetLID(int lid) { lid_ = lid; }
@@ -648,8 +702,12 @@ public:
   //@}
 
 
+  //! @name Public methods to be used by DRT::Discretization only
+
   /*!
   \brief Build pointer vector from map of nodes
+
+  \warning (public, but to be used by DRT::Discretization ONLY!)
 
   The method is used to build the variable node_ in this element. It is called from
   DRT::Discretization in DRT::Discretization::FillComplete() to create the
@@ -662,6 +720,8 @@ public:
   /*!
   \brief Build pointer vector from vector of nodal pointers
 
+  \warning (public, but to be used by DRT::Discretization ONLY!)
+  
   The method is used to build the variable node_ in this element. It can be used
   to explicitly pass the nodal pointers to the element.
 
@@ -675,6 +735,8 @@ public:
   /*!
   \brief Build pointer vector from map of elements
 
+  \warning (public, but to be used by DRT::Discretization ONLY!)
+  
   The method is used to build the element connectivty in this element. For standard elements this 
   procedure returns true and does nothing. For interface-elements a connection is made between the 
   interface and it's left and right element. It is called from DRT::Discretization in 
@@ -686,6 +748,8 @@ public:
   virtual bool BuildElementPointers(map<int,RefCountPtr<DRT::Element> >& elements) {return true;}
   
 #endif //ELEMINTERFACES
+
+  //@}
   
 private:
 
