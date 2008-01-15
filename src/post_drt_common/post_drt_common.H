@@ -165,9 +165,9 @@ private:
   // Keeps track of global field variable
   PostField getfield(MAP* field_info);
 
-  //! creates the ghosting needed for a parallel discretization layout 
-  void setup_ghosting(RefCountPtr<DRT::Discretization> dis); 
-  
+  //! creates the ghosting needed for a parallel discretization layout
+  void setup_ghosting(RefCountPtr<DRT::Discretization> dis);
+
   //! type of the problem we post process
   PROBLEM_TYP problemtype_;
 
@@ -309,7 +309,7 @@ public:
   //
   // \returns vector with timesteps when the solution was written
   vector<double> get_result_times(const string& fieldname);
-  
+
   //! goes to the next result block in the slice
   //
   // Automatically opens new result files.
@@ -323,6 +323,13 @@ public:
   //
   // \returns vector with results read
   RefCountPtr<Epetra_Vector> read_result(const string name);
+
+  //! reads the data of the result vector 'name' from the current result block
+  //
+  // \param name (in): result vector name inside the control file
+  //
+  // \returns vector with results read
+  RefCountPtr<Epetra_MultiVector> read_multi_result(const string name);
 
   //@}
 

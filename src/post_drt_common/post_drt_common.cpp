@@ -430,7 +430,7 @@ void PostProblem::read_meshes()
         RefCountPtr<vector<char> > cond_pbcssurf =
         reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "SurfacePeriodic");
         currfield.discretization()->UnPackCondition(cond_pbcssurf, "SurfacePeriodic");
-                
+
         // read XFEMCoupling boundary conditions if available
         RefCountPtr<vector<char> > cond_xfem =
         reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "XFEMCoupling");
@@ -939,11 +939,32 @@ void PostResult::open_result_files(MAP* field_info)
  *----------------------------------------------------------------------*/
 RefCountPtr<Epetra_Vector> PostResult::read_result(const string name)
 {
+  MAP* result = map_read_map(group_, const_cast<char*>(name.c_str()));
+  int columns;
+  if (map_find_int(result,"columns",&columns))
+  {
+    if (columns != 1)
+      dserror("got multivector with name '%s', vector expected", name.c_str());
+  }
+  return Teuchos::rcp_dynamic_cast<Epetra_Vector>(read_multi_result(name));
+}
+
+/*----------------------------------------------------------------------*
+ * reads the data of the result vector 'name' from the current result
+ * block and returns it as an Epetra Vector.
+ *----------------------------------------------------------------------*/
+RefCountPtr<Epetra_MultiVector> PostResult::read_multi_result(const string name)
+{
   RefCountPtr<Epetra_Comm> comm = field_->problem()->comm();
   MAP* result = map_read_map(group_, const_cast<char*>(name.c_str()));
   string id_path = map_read_string(result, "ids");
   string value_path = map_read_string(result, "values");
-  return file_.ReadResultData(id_path, value_path, *comm);
+  int columns;
+  if (not map_find_int(result,"columns",&columns))
+  {
+    columns = 1;
+  }
+  return file_.ReadResultData(id_path, value_path, columns, *comm);
 }
 
 #endif
