@@ -24,6 +24,7 @@ Maintainer: Moritz Frenzel
 #include "stru_static_drt.H"
 #include "../io/io_drt.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "stru_resulttest.H"
 
 
 /*----------------------------------------------------------------------*
@@ -692,6 +693,24 @@ void stru_static_drt()
       actdis->Evaluate(params,null,null,null,null,null);
       actdis->ClearState();
     }
+//    
+//    
+//    ofstream f_system("stresses.gmsh");
+//    stringstream gmshfilecontent;
+//    gmshfilecontent << "View \" Solid Elements stresses \" {" << endl;
+//    // plot elements
+//    for (int i=0; i < actdis->NumMyColElements(); ++i)
+//    {
+//      if (actdis->lColElement(i)->Type() != DRT::Element::element_sosh8) continue;
+//      DRT::Elements::So_sh8* actele = dynamic_cast<DRT::Elements::So_sh8*>(actdis->lColElement(i));
+//      if (!actele) dserror("cast to So_sh8* failed");
+//      // plot elements
+//      gmshfilecontent << IO::GMSH::elementToString(actele->thickdir_, actele) << endl;
+//      Epetra_SerialDenseMatrix* mystresses(8,8);
+//      mystresses = actele->data_.Get<Epetra_SerialDenseMatrix>("Stresses");
+//      cout << *mystresses;
+//    }
+//    gmshfilecontent << "};" << endl;
 
     //---------------------------------------------------------- print out
     if (!myrank)
@@ -705,6 +724,14 @@ void stru_static_drt()
       fflush(stdout);
       fflush(errfile);
     }
+    
+    // Structure Resulttests
+#ifdef RESULTTEST
+    DRT::ResultTestManager testmanager(actdis->Comm());
+    testmanager.AddFieldTest(rcp(new StruResultTest(actdis,dis)));
+    testmanager.TestAll();
+#endif /* #ifdef RESULTTEST */
+
 
   }  //=============================================end time/loadstep loop
 

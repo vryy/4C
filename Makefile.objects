@@ -138,7 +138,8 @@ OBJS_DRT_STRUCTURE      = \
                 src/drt_structure/strugenalpha.o \
                 src/drt_structure/stru_genalpha_drt.o \
 		src/drt_structure/stru_genalpha_zienxie_drt.o \
-                src/drt_structure/stru_static_drt.o
+                src/drt_structure/stru_static_drt.o \
+                src/drt_structure/stru_resulttest.o
 #----------------------------------------------------- drt version contact
 OBJS_DRT_CONTACT = \
                 src/drt_contact/contactstrugenalpha.o
