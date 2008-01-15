@@ -18,6 +18,7 @@ Maintainer: Michael Gee
 #include "../io/gmsh.H"
 #include "drt_contact_projector.H"
 #include "drt_contact_integrator.H"
+#include "contactdefines.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
@@ -28,6 +29,7 @@ comm_(comm)
 {
   RCP<Epetra_Comm> com = rcp(Comm().Clone());
   idiscret_ = rcp(new DRT::Discretization((string)"Contact Interface",com));
+  counter_ = 0;
   return;
 }
 
@@ -307,22 +309,15 @@ void CONTACT::Interface::Evaluate()
 		DRT::Node* node = idiscret_->gNode(gid);
 		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
 		CNode* cnode = static_cast<CNode*>(node);
-		
+/*		
 #ifdef DEBUG
 		cnode->Print(cout);
 		cout << endl;
 #endif // #ifdef DEBUG
-		
+*/		
 	  // build averaged normal at each slave node
 	  cnode->BuildAveragedNormal();
 	}
-	
-#ifdef DEBUG
-	// Visualize slave nodal normals with gmsh
-	// currently only works for 1 processor case because of writing of output
-	if (comm_.NumProc()==1)
-		VisualizeNormals_gmsh();
-#endif // #ifdef DEBUG
 	
 #ifdef DEBUG
 	comm_.Barrier();
@@ -355,7 +350,7 @@ void CONTACT::Interface::Evaluate()
 	// Visualize node projections with gmsh
 	// currently only works for 1 processor case because of writing of output
 	if (comm_.NumProc()==1)
-		VisualizeProjections_gmsh(CSegs());
+		VisualizeGmsh(CSegs());
 #endif // #ifdef DEBUG
 	
 	// Exit 0 - Debug
@@ -369,8 +364,8 @@ void CONTACT::Interface::Evaluate()
 bool CONTACT::Interface::EvaluateOverlap_2D(CONTACT::CElement& sele,
 																			      CONTACT::CElement& mele)
 {
-	cout << "Proc " << comm_.MyPID() << " checking pair... Slave ID: "
-			 << sele.Id() << " Master ID: " << mele.Id() << endl;
+	//cout << "Proc " << comm_.MyPID() << " checking pair... Slave ID: "
+	//		 << sele.Id() << " Master ID: " << mele.Id() << endl;
 	
 	/************************************************************/
 	/* There are several cases how the 2 elements can overlap.  */
@@ -438,6 +433,7 @@ bool CONTACT::Interface::EvaluateOverlap_2D(CONTACT::CElement& sele,
 	/* depending on mxi and sxi overlap will be decided										*/
 	/* even for 3noded CElements only the two end nodes matter in 2D!!!   */
 	/**********************************************************************/
+	//
 	// For the non-overlapping cases, the possibility of an identical local
 	// node numbering direction for both sides is taken into account!!
 	// (this can happen, when elements far from each other are projected)
@@ -720,14 +716,14 @@ bool CONTACT::Interface::EvaluateOverlap_2D(CONTACT::CElement& sele,
 	
 	if ((sxia<-1.0) || (sxib>1.0) || (mxia<-1.0) || (mxib>1.0))
 		dserror("ERROR: EvaluateOverlap_2D: Determined infeasible limits!");
-	
+
+#ifdef DEBUG
 	if (overlap)
 	{
-		cout << "Found overlap!!!" << endl;
-		cout << "sxia: " << sxia << " sxib: " << sxib << endl;
-		cout << "mxia: " << mxia << " mxib: " << mxib << endl;
+		//cout << "Found overlap!!!" << endl;
+		//cout << "sxia: " << sxia << " sxib: " << sxib << endl;
+		//cout << "mxia: " << mxia << " mxib: " << mxib << endl;
 		
-#ifdef DEBUG
 		// prepare gmsh visualization
 		// currently only works for 1 processor case because of writing of output
 		if (comm_.NumProc()==1)
@@ -762,71 +758,66 @@ bool CONTACT::Interface::EvaluateOverlap_2D(CONTACT::CElement& sele,
 			segs(segs.M()-1,10) = sxib_glob[1];
 			segs(segs.M()-1,11) = sxib_glob[2];
 		}
-#endif // #ifdef DEBUG
 	}
 	else
 	{
-		cout << "Did not find overlap!!!" << endl;
+		//cout << "Did not find overlap!!!" << endl;
 	}
+#endif // #ifdef DEBUG
 	
+	/**********************************************************************/
+	/* INTEGRATION																									    	*/
+	/* depending on overlap, sxia, sxib, mxia and mxib 									*/
+	/* integrate the Mortar matrices D, M and the weighted gap function   */
+	/* on the overlap of the current Slave / Master CElement pair         */
+	/**********************************************************************/
+	
+	// send non-overlapping pairs out of here
+	if (!overlap)
+		return true;
+	
+	// create a 2D integrator instance of GP order 5
+	CONTACT::Integrator integrator(CONTACT_NGP,true);
+	
+	// do the three integrations
+	RCP<Epetra_SerialDenseMatrix> D_seg = integrator.Integrate_D(sele,sxia,sxib);
+	RCP<Epetra_SerialDenseMatrix> M_seg = integrator.Integrate_M(sele,sxia,sxib,mele,mxia,mxib);
+	RCP<Epetra_SerialDenseVector> g_seg = integrator.Integrate_g(sele,sxia,sxib,mele,mxia,mxib);
+/*	
+#ifdef DEBUG
+	cout << *D_seg << endl;
+	cout << *M_seg << endl;
+	cout << *g_seg << endl;
+#endif // #ifdef DEBUG
+*/	
 	return true;
-}
-
-/*----------------------------------------------------------------------*
- |  Visualize slave nodal normals with gmsh                   popp 12/07|
- *----------------------------------------------------------------------*/
-void CONTACT::Interface::VisualizeNormals_gmsh()
-{
-	std::stringstream gmshfilecontent;
-	std::ofstream f_system("slavenormals.gmsh");
-	gmshfilecontent << "View \" Slave and master side CElements \" {" << endl;
-	
-	// plot elements
-	for (int i=0; i<idiscret_->NumMyColElements(); ++i)
-	{
-		CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
-		gmshfilecontent << IO::GMSH::elementToString(element->Area(), element) << endl;
-	}
-	gmshfilecontent << "};" << endl;
-	
-	gmshfilecontent << "View \" Slave side nodal normals \" {" << endl;
-	
-	// plot vectors
-	for (int i=0; i<snodecolmap_->NumMyElements(); ++i)
-	{
-		int gid = snodecolmap_->GID(i);
-		DRT::Node* node = idiscret_->gNode(gid);
-		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-		CNode* cnode = static_cast<CNode*>(node);
-		if (!cnode) dserror("ERROR: Static Cast to CNode* failed");
-		
-	 	double nc[3];
-	 	double nn[3];
-	 	
-	 	for (int j=0;j<3;++j)
-	 	{
-	 		nc[j]=cnode->X()[j];
-	 		nn[j]=cnode->n()[j];
-	 	}
-	 	
-	 	gmshfilecontent << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
-	 	gmshfilecontent << "{" << scientific << nn[0] << "," << nn[1] << "," << nn[2] << "};" << endl;
-	}
-	
-	gmshfilecontent << "};" << endl; 
-	f_system << gmshfilecontent.str();
-	f_system.close();
-	
-	return;
 }
 
 /*----------------------------------------------------------------------*
  |  Visualize node projections with gmsh                      popp 01/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::VisualizeProjections_gmsh(const Epetra_SerialDenseMatrix& csegs)
+void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs)
 {
+	// increase counter variable by one
+	counter_+=1;
+	
+	// construct unique filename for gmsh output
+	std::ostringstream filename;
+	filename << "o/gmsh_output/contact_";
+	if (counter_<10)
+		filename << 0 << 0 << 0 << 0;
+	else if (counter_<100)
+		filename << 0 << 0 << 0;
+	else if (counter_<1000)
+		filename << 0 << 0;
+	else if (counter_<10000)
+		filename << 0;
+		
+	filename << counter_ << ".pos";
+	std::ofstream f_system(filename.str().c_str());
+	
+	// write output to temporary stringstreamg
 	std::stringstream gmshfilecontent;
-	std::ofstream f_system("projections.gmsh");
 	gmshfilecontent << "View \" Slave and master side CElements \" {" << endl;
 		
 	// plot elements
@@ -860,12 +851,31 @@ void CONTACT::Interface::VisualizeProjections_gmsh(const Epetra_SerialDenseMatri
 			gmshfilecontent << "{" << scientific << area << "," << area << "," << area << "};" << endl;
 		}
 	}
-	
-	gmshfilecontent << "};" << endl;
-	
-	gmshfilecontent << "View \" Mortar contact segments \" {" << endl;
-	
+		
+	// plot normal vectors
+	for (int i=0; i<snodecolmap_->NumMyElements(); ++i)
+	{
+		int gid = snodecolmap_->GID(i);
+		DRT::Node* node = idiscret_->gNode(gid);
+		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+		CNode* cnode = static_cast<CNode*>(node);
+		if (!cnode) dserror("ERROR: Static Cast to CNode* failed");
+		
+	 	double nc[3];
+	 	double nn[3];
+	 	
+	 	for (int j=0;j<3;++j)
+	 	{
+	 		nc[j]=cnode->xspatial()[j];
+	 		nn[j]=100*cnode->n()[j];
+	 	}
+	 	
+	 	gmshfilecontent << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
+	 	gmshfilecontent << "{" << scientific << nn[0] << "," << nn[1] << "," << nn[2] << "};" << endl;
+	}
+		
 	// plot contact segments (slave and master projections)
+	double sf = 100/csegs.M();
 	for (int i=0; i<csegs.M(); ++i)
 	{
 		gmshfilecontent << "SQ(" << scientific << csegs(i,0) << "," << csegs(i,1) << ","
@@ -873,7 +883,7 @@ void CONTACT::Interface::VisualizeProjections_gmsh(const Epetra_SerialDenseMatri
 		                << csegs(i,5) << "," << csegs(i,6) << "," << csegs(i,7) << ","
 		                << csegs(i,8) << "," << csegs(i,9) << "," << csegs(i,10) << ","
 		                << csegs(i,11) << ")";
-		gmshfilecontent << "{" << scientific << i << "," << i << "," << i << "," << i << "};" << endl; 
+		gmshfilecontent << "{" << scientific << i*sf << "," << i*sf << "," << i*sf << "," << i*sf << "};" << endl; 
 		
 		gmshfilecontent << "SL(" << scientific << csegs(i,0) << "," << csegs(i,1) << ","
 				            << csegs(i,2) << "," << csegs(i,3) << "," << csegs(i,4) << ","
@@ -887,6 +897,8 @@ void CONTACT::Interface::VisualizeProjections_gmsh(const Epetra_SerialDenseMatri
 	}
 	
 	gmshfilecontent << "};" << endl;
+	
+	// move everything to gmsh post-processing file and close it
 	f_system << gmshfilecontent.str();
 	f_system.close();
 	

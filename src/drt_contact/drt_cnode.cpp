@@ -171,21 +171,22 @@ void CONTACT::CNode::BuildAveragedNormal()
 	for (int i=0;i<nseg;++i)
 	{
 		CElement* adj_cele = static_cast<CElement*> (adj_eles[i]);
-		
+/*		
 #ifdef DEBUG
 		adj_cele->Print(cout);
 		cout << endl;
 #endif // #ifdef DEBUG	 
-	
+*/	
 		// build element normal at current node
 		vector<double> ele_n(3);
 		adj_cele->BuildNormalAtNode(Id(),ele_n);
 		double wgt = adj_cele->Area();
 
+/*
 #ifdef DEBUG
 		cout << "Area for CElement " << adj_cele->Id() << " is " << wgt << endl;
 #endif // #ifdef DEBUG
-		
+*/		
 		// add weighted element normal to nodal normal n_
 		for (int j=0;j<3;++j)
 		  n()[j]+=wgt*ele_n[j];
@@ -203,7 +204,8 @@ void CONTACT::CNode::BuildAveragedNormal()
 	else
 		for (int j=0;j<3;++j)
 			n()[j]/=length;
-	
+
+/*
 #ifdef DEBUG
 	cout << endl;
 	cout << "Unit normal for node " << Id() << " is " << n()[0] << " "
@@ -211,7 +213,7 @@ void CONTACT::CNode::BuildAveragedNormal()
 																										<< n()[2] << endl;
 	cout << endl;
 #endif // #ifdef DEBUG
-	
+*/	
   return;
 }
 

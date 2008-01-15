@@ -22,8 +22,6 @@ Maintainer: Michael Gee
 #include "drt_cnode.H"
 #include "drt_celement.H"
 
-#define CONTACT_PROJTOL 0.05  		/* projection tol. for overlap decision */
-
 using namespace std;
 using namespace Teuchos;
 
@@ -190,16 +188,10 @@ public:
   													      CONTACT::CElement& mele);
   
   /*!
-  \brief Visualize slave nodal normals with gmsh
-        
-  */
-  virtual void VisualizeNormals_gmsh();
-  
-  /*!
-  \brief Visualize node projections with gmsh
+  \brief Visualize node normals and projections with gmsh
           
   */
-  virtual void VisualizeProjections_gmsh(const Epetra_SerialDenseMatrix& csegs);
+  virtual void VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs);
   
   /*!
   \brief Return matrix of contact segment coordinates
@@ -232,7 +224,8 @@ protected:
   RCP<Epetra_Map>               melecolmap_;   // column map of all master elements
   RCP<Epetra_Map>               melefullmap_;  // fully overlapping column map of all master elements
   
-  Epetra_SerialDenseMatrix		  contactsegs_;	 // contains coordinates of all contact segments
+  Epetra_SerialDenseMatrix		  contactsegs_;	 // contains coordinates of all contact segments (gmsh)
+  int														counter_;			 // counts the number of calls to this interface (gmsh)
   
 }; // class Interface
 } // namespace CONTACT

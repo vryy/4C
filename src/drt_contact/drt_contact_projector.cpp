@@ -16,6 +16,7 @@ Maintainer: Alexander Popp
 #include "drt_contact_interface.H"
 #include "drt_celement.H"
 #include "drt_cnode.H"
+#include "contactdefines.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 01/08|
@@ -42,6 +43,9 @@ bool CONTACT::Projector::Project_NodalNormal(CONTACT::CNode& node,
 		//		 << " onto master CElement " << ele.Id() << endl;
 #endif // #ifdef DEBUG
 		
+		// boolean variable to check if projection is outward w.r.t to slave
+		bool outward = true;
+		
 		// local Newton iteration for xi, start in the element middle
 		double eta[2] = {0.0, 0.0};
 		double deta = 0.0;
@@ -51,7 +55,7 @@ bool CONTACT::Projector::Project_NodalNormal(CONTACT::CNode& node,
 		
 		for (k=0;k<CONTACT_MAXITER;++k)
 		{
-			F=Evaluate_F_NodalNormal(node,ele,eta);
+			F=Evaluate_F_NodalNormal(node,ele,eta,outward);
 			if (abs(F) < CONTACT_CONVTOL) break;
 			dF=Evaluate_gradF_NodalNormal(node,ele,eta);
 			deta=(-F)/dF;
@@ -72,10 +76,21 @@ bool CONTACT::Projector::Project_NodalNormal(CONTACT::CNode& node,
 			// Although these cases are harmless, as these nodes then do not participate in
 			// the overlap detection anyway one should check these warnings (at the moment by hand)!
 			// (FIXME: Automatic check, if unconverged projections are really harmless!)
-			cout << "***WARNING*** Project_NodalNormal:" << endl << "Newton unconverged for NodeID "
+			cout << "***WARNING*** Project_NodalNormal:" << " Newton unconverged for NodeID "
 					 << node.Id() << " and CElementID " << ele.Id() << endl;	
 		}
 		
+		// no outward projection w.r.t to slave found
+		else if (!outward)
+		{
+			ok = false;
+			xi[0] = 9999.99;
+			
+			// At the moment we give a warning here, just to check!!!
+			cout << "***WARNING*** Project_NodalNormal:" << " Inward projection for NodeID "
+					 << node.Id() << " and CElementID " << ele.Id() << endl;	
+		}
+/*		
 #ifdef DEBUG			
 		// Newton iteration converged
 		else
@@ -84,7 +99,7 @@ bool CONTACT::Projector::Project_NodalNormal(CONTACT::CNode& node,
 			  	 << "The result is: " << xi[0] << endl;
 		}
 #endif // #ifdef DEBUG
-		
+*/		
 	} // if (IsTwoDimesional())
 	
 	else
@@ -114,7 +129,10 @@ bool CONTACT::Projector::Project_ElementNormal(CONTACT::CNode& node,
 		//		 << "Ready for projection of master CNode " << node.Id()
 		//		 << " onto slave CElement " << ele.Id() << endl;
 #endif // #ifdef DEBUG
-			
+		
+		// boolean variable to check if projection is outward w.r.t to slave
+		bool outward = true;
+				
 		// local Newton iteration for xi, start in the element middle
 		double eta[2] = {0.0, 0.0};
 		double deta = 0.0;
@@ -124,7 +142,7 @@ bool CONTACT::Projector::Project_ElementNormal(CONTACT::CNode& node,
 		
 		for (k=0;k<CONTACT_MAXITER;++k)
 		{
-			F=Evaluate_F_ElementNormal(node,ele,eta);
+			F=Evaluate_F_ElementNormal(node,ele,eta,outward);
 			if (abs(F) < CONTACT_CONVTOL) break;
 			dF=Evaluate_gradF_ElementNormal(node,ele,eta);
 			deta=(-F)/dF;
@@ -145,10 +163,21 @@ bool CONTACT::Projector::Project_ElementNormal(CONTACT::CNode& node,
 			// Although these cases are harmless, as these nodes then do not participate in
 			// the overlap detection anyway one should check these warnings (at the moment by hand)!
 			// (FIXME: Automatic check, if unconverged projections are really harmless!)
-			cout << "***WARNING*** Project_ElementNormal:" << endl << "Newton unconverged for NodeID "
+			cout << "***WARNING*** Project_ElementNormal:" << " Newton unconverged for NodeID "
 					 << node.Id() << " and CElementID " << ele.Id() << endl;
 		}
 		
+		// no outward projection w.r.t to slave found
+		else if (!outward)
+		{
+			ok = false;
+			xi[0] = 9999.99;
+			
+			// At the moment we give a warning here, just to check!!!
+			cout << "***WARNING*** Project_ElementNormal:" << " Inward projection for NodeID "
+					 << node.Id() << " and CElementID " << ele.Id() << endl;	
+		}
+/*		
 #ifdef DEBUG			
 		// Newton iteration converged
 		else
@@ -157,7 +186,7 @@ bool CONTACT::Projector::Project_ElementNormal(CONTACT::CNode& node,
 			  	 << "The result is: " << xi[0] << endl;
 		}
 #endif // #ifdef DEBUG
-		
+*/		
 	} // if (IsTwoDimesional())
 		
 	else
@@ -220,6 +249,9 @@ bool CONTACT::Projector::Project_GaussPoint(CONTACT::CElement& gpele,
 			gpx[2]+=val[i]*coord(2,i);
 		}
 		
+		// boolean variable to check if projection is outward w.r.t to slave
+		bool outward = true;
+				
 		// local Newton iteration for xi, start in the element middle
 		double eta[2] = {0.0, 0.0};
 		double deta = 0.0;
@@ -229,7 +261,7 @@ bool CONTACT::Projector::Project_GaussPoint(CONTACT::CElement& gpele,
 		
 		for (k=0;k<CONTACT_MAXITER;++k)
 		{
-			F=Evaluate_F_GaussPoint(gpx,gpn,ele,eta);
+			F=Evaluate_F_GaussPoint(gpx,gpn,ele,eta,outward);
 			if (abs(F) < CONTACT_CONVTOL) break;
 			dF=Evaluate_gradF_GaussPoint(gpn,ele,eta);
 			deta=(-F)/dF;
@@ -244,12 +276,22 @@ bool CONTACT::Projector::Project_GaussPoint(CONTACT::CElement& gpele,
 							" from CElementID %", gpeta[0], gpele.Id());
 		}
 		
+		// no outward projection w.r.t to slave found
+		if (!outward)
+		{
+			ok = false;
+			dserror("ERROR: Project_GaussPoint: Inward projection for GP at xi=%"
+					    " from CElementID %", gpeta[0], gpele.Id());
+		}
+		
 		// Newton iteration converged
 		xi[0]=eta[0];
+/*
 #ifdef DEBUG
-		cout << "Newton iteration converged in " << k << " step(s)!" << endl
+		cout << "GP Newton iteration converged in " << k << " step(s)!" << endl
 				 << "The result is: " << xi[0] << endl;
 #endif // #ifdef DEBUG
+*/
 	}
 	
 	else
@@ -267,7 +309,8 @@ bool CONTACT::Projector::Project_GaussPoint(CONTACT::CElement& gpele,
  *----------------------------------------------------------------------*/
 double CONTACT::Projector::Evaluate_F_NodalNormal(CONTACT::CNode& node,
      																							CONTACT::CElement& ele,
-     																							const double* eta)
+     																							const double* eta,
+     																							bool& outward)
 {
 	/* Evaluate the function F(eta) = ( Ni * xim - xs ) x ns,
 		 or to be more precise the third component of this vector function!
@@ -294,6 +337,13 @@ double CONTACT::Projector::Evaluate_F_NodalNormal(CONTACT::CNode& node,
 	Nx[1]-=node.xspatial()[1];
 	Nx[2]-=node.xspatial()[2];
 
+	// update boolean variable outward
+	double gap = Nx[0]*node.n()[0]+Nx[1]*node.n()[1]+Nx[2]*node.n()[2];
+	if (gap<0.0)
+		outward = false;
+	else
+		outward = true;
+	
 	// calculate F
 	return (Nx[0]*node.n()[1]-Nx[1]*node.n()[0]);
 }
@@ -334,7 +384,8 @@ double CONTACT::Projector::Evaluate_gradF_NodalNormal(CONTACT::CNode& node,
  *----------------------------------------------------------------------*/
 double CONTACT::Projector::Evaluate_F_ElementNormal(CONTACT::CNode& node,
      																							  CONTACT::CElement& ele,
-     																							  const double* eta)
+     																							  const double* eta,
+     																							  bool& outward)
 {
 	/* Evaluate the function F(eta) = ( Ni * xis - xm ) x ( Nj * njs),
 	   or to be more precise the third component of this vector function!
@@ -378,6 +429,13 @@ double CONTACT::Projector::Evaluate_F_ElementNormal(CONTACT::CNode& node,
 	Nx[0]-=node.xspatial()[0];
 	Nx[1]-=node.xspatial()[1];
 	Nx[2]-=node.xspatial()[2];
+	
+	// update boolean variable outward
+	double gap = -Nx[0]*Nn[0]-Nx[1]*Nn[1]-Nx[2]*Nn[2];
+	if (gap<0.0)
+		outward = false;
+	else
+		outward = true;
 	
 	// calculate F
 	return (Nx[0]*Nn[1]-Nx[1]*Nn[0]);
@@ -459,7 +517,8 @@ double CONTACT::Projector::Evaluate_gradF_ElementNormal(CONTACT::CNode& node,
 double CONTACT::Projector::Evaluate_F_GaussPoint(const double* gpx,
 																								 const double* gpn,
      																						 CONTACT::CElement& ele,
-     																						 const double* eta)
+     																						 const double* eta,
+     																						 bool& outward)
 {
 	/* Evaluate the function F(eta) = ( Ni * xim - gpx ) x gpn,
 		 or to be more precise the third component of this vector function!
@@ -486,6 +545,13 @@ double CONTACT::Projector::Evaluate_F_GaussPoint(const double* gpx,
 	Nx[1]-=gpx[1];
 	Nx[2]-=gpx[2];
 
+	// update boolean variable outward
+	double gap = Nx[0]*gpn[0]+Nx[1]*gpn[1]+Nx[2]*gpn[2];
+	if (gap<0.0)
+		outward = false;
+	else
+		outward = true;
+	
 	// calculate F
 	return (Nx[0]*gpn[1]-Nx[1]*gpn[0]);
 }

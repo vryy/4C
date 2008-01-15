@@ -15,6 +15,8 @@ Maintainer: Michael Gee
 #include "drt_celement.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/linalg_utils.H"
+#include "drt_contact_integrator.H"
+#include "contactdefines.H"
 
 
 /*----------------------------------------------------------------------*
@@ -236,14 +238,14 @@ void CONTACT::CElement::ComputeNormalAtXi(double* xi, vector<double>& n)
 	vector<double> val(nnodes);
 	vector<double> deriv(nnodes);
 	vector<double> g(3);
-	
+	/*
 	// test dual shape function values and derivatives at xi
 	EvaluateShape_Dual1D(xi, val, deriv, nnodes);
 	if (Shape()==line2)
 		cout << "DualShapeFct:" << endl << val[0] << "\t" << val[1] << endl;
 	if (Shape()==line3)
 		cout << "DualShapeFct:" << endl << val[0] << "\t" << val[1] << "\t" << val[2] << endl;
-	
+	*/
 	// get shape function values and derivatives at xi
 	EvaluateShape_1D(xi, val, deriv, nnodes);
 
@@ -358,8 +360,8 @@ double CONTACT::CElement::ComputeArea()
 	// 2D quadratic case (3noded line element)
 	else if (Shape()==line3)
 	{
-		// Gauss quadrature (5point)
-		const DRT::Utils::IntegrationPoints1D intpoints(DRT::Utils::intrule_line_5point);
+		// Gauss quadrature
+		CONTACT::Integrator integrator(CONTACT_NGP,true);
 		int nnodes = NumNode();
 		double detg = 0.0;
 		vector<double> val(nnodes);
@@ -369,11 +371,12 @@ double CONTACT::CElement::ComputeArea()
 		coord = GetNodalCoords();
 		
 			// loop over all Gauss points, build Jacobian and compute area
-		for (int j=0;j<intpoints.nquad;++j)
+		for (int j=0;j<integrator.nGP();++j)
 		{
-			EvaluateShape_1D(&intpoints.qxg[j], val, deriv, nnodes);
+			double gpc[2] = {integrator.Coordinate(j), 0.0};
+			EvaluateShape_1D(gpc, val, deriv, nnodes);
 			detg = Jacobian_1D(val,deriv,coord);			
-			area+= intpoints.qwgt[j]*detg;
+			area+= integrator.Weight(j)*detg;
 		}	
 	}
 	
@@ -451,22 +454,23 @@ bool CONTACT::CElement::EvaluateShape_Dual1D(const double* xi, vector<double>& v
 		LINALG::SerialDenseMatrix coord(3,nnodes);
 		coord = GetNodalCoords();
 		
-		// compute entries to bi-ortho matrices Me/De with 5p Gauss Integration
-		const DRT::Utils::IntegrationPoints1D intpoints(DRT::Utils::intrule_line_5point);
+		// compute entries to bi-ortho matrices Me/De with Gauss quadrature
+		CONTACT::Integrator integrator(CONTACT_NGP,true);
 		
 		Epetra_SerialDenseMatrix Me(nnodes,nnodes);
 		Epetra_SerialDenseMatrix De(nnodes,nnodes);
 		
-		for (int i=0;i<intpoints.nquad;++i)
+		for (int i=0;i<integrator.nGP();++i)
 		{
-			EvaluateShape_1D(&intpoints.qxg[i], val, deriv, nnodes);
+			double gpc[2] = {integrator.Coordinate(i), 0.0};
+			EvaluateShape_1D(gpc, val, deriv, nnodes);
 			detg = Jacobian_1D(val,deriv,coord);
 			
 			for (int j=0;j<nnodes;++j)
 				for (int k=0;k<nnodes;++k)
 				{
-					Me(j,k)+=intpoints.qwgt[i]*val[j]*val[k]*detg;
-					De(j,k)+=(j==k)*intpoints.qwgt[i]*val[j]*detg;
+					Me(j,k)+=integrator.Weight(i)*val[j]*val[k]*detg;
+					De(j,k)+=(j==k)*integrator.Weight(i)*val[j]*detg;
 				}	
 		}
 		

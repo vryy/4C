@@ -20,9 +20,6 @@ Maintainer: Alexander Popp
 #include "drt_cnode.H"
 #include "drt_celement.H"
 
-#define CONTACT_MAXITER 10					/* max. no. iterations for local Newton   */
-#define CONTACT_CONVTOL 1.0e-10			/* convergence tolerance for local Newton */
-
 using namespace std;
 using namespace Teuchos;
 
@@ -146,7 +143,8 @@ public:
   */
   double Evaluate_F_NodalNormal(CONTACT::CNode& node,
   															CONTACT::CElement& ele,
-  															const double* eta);  
+  															const double* eta,
+  															bool& outward);  
   
   /*!
   \brief Evaluate gradF for nodal normal projection
@@ -162,7 +160,8 @@ public:
   */
   double Evaluate_F_ElementNormal(CONTACT::CNode& node,
   																CONTACT::CElement& ele,
-  																const double* eta);  
+  																const double* eta,
+  																bool& outward);  
   
   /*!
   \brief Evaluate gradF for element normal projection
@@ -179,7 +178,8 @@ public:
   double Evaluate_F_GaussPoint(const double* gpx,
   														 const double* gpn,
    														 CONTACT::CElement& ele,
-   														 const double* eta);  
+   														 const double* eta,
+   														 bool& outward);  
     
   /*!
   \brief Evaluate gradF for Gauss point projection

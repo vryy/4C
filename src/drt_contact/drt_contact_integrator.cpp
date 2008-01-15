@@ -158,11 +158,7 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::Integrate_D(CONTACT::CElement
 			}
 		}	
 	} // for (int gp=0;gp<nGP();++gp)
-	
-#ifdef DEBUG
-	cout << endl << *Ddense;
-#endif // #ifdef DEBUG
-	
+
 	return Ddense;
 }
 
@@ -253,10 +249,6 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::Integrate_M(CONTACT::CElement
 			}
 		}	
 	} // for (int gp=0;gp<nGP();++gp)
-	
-#ifdef DEBUG
-	cout << endl << *Mdense;
-#endif // #ifdef DEBUG
 	
 	return Mdense;
 }
@@ -367,9 +359,10 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::Integrate_g(CONTACT::CElement
 		for (int i=0;i<3;++i)
 			gap+=(mgpx[i]-sgpx[i])*gpn[i];
 				
-#ifdef DEBUG
 		gap = sqrt(gap);
-		cout << "GP gap: " << gap << endl;
+		
+#ifdef DEBUG
+		//cout << "GP gap: " << gap << endl;
 #endif // #ifdef DEBUG
 		
 		// evaluate the two slave side Jacobians
@@ -386,11 +379,7 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::Integrate_g(CONTACT::CElement
 		}
 		
 	} // for (int gp=0;gp<nGP();++gp)
-	
-#ifdef DEBUG
-	cout << endl << *gdense;
-#endif // #ifdef DEBUG
-	
+
 	return gdense;
 }
 
