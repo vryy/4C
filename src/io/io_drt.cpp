@@ -868,11 +868,11 @@ void IO::DiscretizationWriter::WriteElementData()
     // get names and dimensions from every element
     dis_->lRowElement(i)->VisNames(names);
   }
-  
+
   // make sure there's no name with a dimension of less than 1
   for (fool = names.begin(); fool!= names.end(); ++fool)
     if (fool->second<1) dserror("Dimension of data must be at least 1");
-  
+
   // loop all names aquired form the elements and fill data vectors
   vector<double> eledata(0);
   for (fool = names.begin(); fool!= names.end(); ++fool)
@@ -880,10 +880,10 @@ void IO::DiscretizationWriter::WriteElementData()
     const int dimension = fool->second;
     eledata.resize(dimension);
     for (int i=0; i<dimension; ++i) eledata[i] = 0.0;
-    
+
     // MultiVector stuff from the elements is put in
     Epetra_MultiVector sysdata(*elerowmap,dimension,true);
-    
+
     for (int i=0; i<elerowmap->NumMyElements(); ++i)
     {
       // get data for a given name from element & put in sysdata
@@ -892,13 +892,11 @@ void IO::DiscretizationWriter::WriteElementData()
         dserror("element manipulated size of visualization data");
       for (int j=0; j<dimension; ++j) (*sysdata(j))[i] = eledata[j];
     }
-    
-    // output multivector in element row map here
-    // data name is fool->first
-    // MultiVector is sysdata (no. of columns is dimension)
-    
+
+    WriteVector(fool->first, Teuchos::rcp(&sysdata,false), false);
+
   } // for (fool = names.begin(); fool!= names.end(); ++fool)
-  
+
 #endif
 }
 #endif
