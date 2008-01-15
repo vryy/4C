@@ -145,7 +145,8 @@ private:
     read.
   */
   RefCountPtr<std::vector<double> > ReadDoubleData(std::string path,
-                                                   int start, int end) const;
+                                                   int start, int end,
+                                                   std::vector<int>& lengths) const;
 
   //! Figure out which subset of files this process needs to read
   /*!

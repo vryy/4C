@@ -240,7 +240,7 @@ IO::HDFReader::ReadIntData(string path, int start, int end) const
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 RefCountPtr<std::vector<double> >
-IO::HDFReader::ReadDoubleData(string path, int start, int end) const
+IO::HDFReader::ReadDoubleData(string path, int start, int end, std::vector<int>& lengths) const
 {
   if (end == -1)
     end = num_output_proc_;
@@ -264,6 +264,7 @@ IO::HDFReader::ReadDoubleData(string path, int start, int end) const
     data->resize(offset+dim);
     herr_t status = H5Dread(dataset,H5T_NATIVE_DOUBLE,H5S_ALL,H5S_ALL,
                             H5P_DEFAULT,&((*data)[offset]));
+    lengths.push_back(dim);
     offset += dim;
     if (status < 0)
       dserror("Failed to read data from dataset %s in HDF-file %s",
@@ -302,12 +303,26 @@ IO::HDFReader::ReadResultData(string id_path, string value_path, int columns, co
   else
     res = rcp(new Epetra_MultiVector(map,columns,false));
 
-  RefCountPtr<vector<double> > values = ReadDoubleData(value_path,start,end);
+  std::vector<int> lengths;
+  RCP<std::vector<double> > values = ReadDoubleData(value_path,start,end,lengths);
 
   if (static_cast<int>(values->size()) != res->MyLength()*res->NumVectors())
     dserror("vector value size mismatch: %d != %d",values->size(),res->MyLength()*res->NumVectors());
 
-  copy(values->begin(),values->end(),res->Values());
+  // Rearrange multi vectors that are read with fewer processors than written.
+  int offset = 0;
+  for (int i = start; i < end; ++i)
+  {
+    int l = lengths[i-start] / columns;
+    for (int c=0; c<columns; ++c)
+    {
+      copy(&(*values)[offset*i+ c   *l],
+           &(*values)[offset*i+(c+1)*l],
+           &res->Values()[c*res->MyLength()+offset]);
+    }
+    offset += l;
+  }
+
   return res;
 }
 
