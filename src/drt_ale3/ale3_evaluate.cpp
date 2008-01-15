@@ -525,6 +525,15 @@ GaussRule3D DRT::Elements::Ale3::getOptimalGaussrule(const DiscretizationType& d
     case tet10:
         rule = intrule_tet_5point;
         break;
+    case wedge6:
+        rule = intrule_wedge_6point;
+        break;
+    case wedge15:
+        rule = intrule_wedge_9point;
+        break;
+    case pyramid5:
+      rule = intrule_pyramid_8point;
+        break;
     default: 
         dserror("unknown number of nodes for gaussrule initialization");
     }
