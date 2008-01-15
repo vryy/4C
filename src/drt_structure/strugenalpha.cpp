@@ -2658,30 +2658,6 @@ void StruGenAlpha::UpdateandOutput()
     discret_.Evaluate(p,null,null,null,null,null);
   }
 
-  //---------------------------------------------- do stress calculation
-  if (updevrystress && !istep%updevrystress && iostress)
-  {
-    // create the parameters for the discretization
-    ParameterList p;
-    // action for elements
-    p.set("action","calc_struct_stress");
-    // choose what to assemble
-    p.set("assemble matrix 1",false);
-    p.set("assemble matrix 2",false);
-    p.set("assemble vector 1",false);
-    p.set("assemble vector 2",false);
-    p.set("assemble vector 3",false);
-    // other parameters that might be needed by the elements
-    p.set("total time",timen);
-    p.set("delta time",dt);
-    // set vector values needed by elements
-    discret_.ClearState();
-    discret_.SetState("residual displacement",zeros_);
-    discret_.SetState("displacement",dis_);
-    discret_.Evaluate(p,null,null,null,null,null);
-    discret_.ClearState();
-  }
-
   //------------------------------------------------- write restart step
   bool isdatawritten = false;
   if (writeresevry && istep%writeresevry==0)
@@ -2714,6 +2690,32 @@ void StruGenAlpha::UpdateandOutput()
     output_.WriteVector("velocity",vel_);
     output_.WriteVector("acceleration",acc_);
     isdatawritten = true;
+  }
+
+  //------------------------------------- do stress calculation and output
+  if (updevrystress && !(istep%updevrystress) && iostress)
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_stress");
+    // choose what to assemble
+    p.set("assemble matrix 1",false);
+    p.set("assemble matrix 2",false);
+    p.set("assemble vector 1",false);
+    p.set("assemble vector 2",false);
+    p.set("assemble vector 3",false);
+    // other parameters that might be needed by the elements
+    p.set("total time",timen);
+    p.set("delta time",dt);
+    // set vector values needed by elements
+    discret_.ClearState();
+    discret_.SetState("residual displacement",zeros_);
+    discret_.SetState("displacement",dis_);
+    discret_.Evaluate(p,null,null,null,null,null);
+    discret_.ClearState();
+    if (!isdatawritten) output_.NewStep(istep, timen);
+    output_.WriteElementData();
   }
 
   //---------------------------------------------------------- print out
