@@ -681,9 +681,10 @@ void IO::DiscretizationWriter::WriteVector(const string name, Teuchos::RCP<Epetr
   }
   else
   {
+    const hsize_t mapsize = vec->MyLength();
     idname = name + ".ids";
     int* ids = vec->Map().MyGlobalElements();
-    const herr_t make_status = H5LTmake_dataset_int(resultgroup_,idname.c_str(),1,&size,ids);
+    const herr_t make_status = H5LTmake_dataset_int(resultgroup_,idname.c_str(),1,&mapsize,ids);
     if (make_status < 0)
       dserror("Failed to create dataset in HDF-resultfile");
 
