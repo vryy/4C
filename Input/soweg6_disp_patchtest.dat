@@ -10,13 +10,13 @@
                         General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-patchtest_sohex8
+solid wedge6 patchtest
 ------------------------------------------------------PROBLEM SIZE
-ELEMENTS           7
+ELEMENTS           8
 NODES             16
 DIM                3
 MATERIALS          1
-NUMDF              6
+NUMDF        6
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Structure
 NUMFIELD     1
@@ -48,7 +48,7 @@ NUMSTEP      1
 MAXITER      1
 TOLRESID     1.0E-06
 TOLDISP      1.0E-07
-STEPSIZE     1.0
+STEPSIZE     10
 IARC         No
 ARCSCL       1.0
 SIGNCHCSP    No
@@ -139,7 +139,7 @@ PARTITION      Cut_Elements
 SOLVER         UMFPACK
 PARTITION      Cut_Elements
 ---------------------------------------------------------MATERIALS
-MAT       1 MAT_Struct_StVenantKirchhoff  YOUNG 1.0 NUE 0.0 DENS 0.0 THEXPANS 0.0
+MAT       1 MAT_Struct_StVenantKirchhoff  YOUNG 1.0 NUE 0.0 DENS 0.0
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
@@ -149,9 +149,9 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000 FACTOR 0 10000
 ------------------------------------------------------------CURVE4
 ------------------------------------------------------------CURVE5
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 1 POSITION dispx NAME dispx VALUE 4.0 TOLERANCE 1e-14
-STRUCTURE DIS 1 NODE 1 POSITION dispy NAME dispy VALUE 0.0 TOLERANCE 1e-14
-STRUCTURE DIS 1 NODE 1 POSITION dispz NAME dispz VALUE 0.0 TOLERANCE 1e-14
+STRUCTURE DIS 1 NODE 1 POSITION dispx NAME dispx VALUE 4.003524147 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 1 POSITION dispy NAME dispy VALUE 0.001275588328 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 1 POSITION dispz NAME dispz VALUE -0.002561533331 TOLERANCE 1e-8
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 16
 NDLINE  32
@@ -159,7 +159,7 @@ NDSURF  24
 NDVOL   7
 ------------------------------------DESIGN POINT DIRICH CONDITIONS 
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DPOINT 1
+DPOINT 0
 E 1 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
@@ -506,7 +506,8 @@ NODE           16     COORD 0.000000000000000e+00     0.000000000000000e+00     
       3 SOLIDH8 HEX8       7      5      9     15     12     11     13     16 MAT       1 GP 2 2 2 KINEM Totlag STRESS None EAS none 
       4 SOLIDH8 HEX8       2      5      9      1      3      7     15     10 MAT       1 GP 2 2 2 KINEM Totlag STRESS None EAS none 
       5 SOLIDH8 HEX8       2      4      8      1      5     11     13      9 MAT       1 GP 2 2 2 KINEM Totlag STRESS None EAS none 
-      6 SOLIDH8 HEX8       6      4      8     14      3      2      1     10 MAT       1 GP 2 2 2 KINEM Totlag STRESS None EAS none 
-      7 SOLIDH8 HEX8       3      2      5      7      6      4     11     12 MAT       1 GP 2 2 2 KINEM Totlag STRESS None EAS none 
+      6 SOLIDH8 HEX8       6      4      8     14      3      2      1     10 MAT       1 GP 2 2 2 KINEM Totlag STRESS None EAS none
+      7 SOLIDW6 WEDGE6       3      2      5       6      4     11     MAT       1 KINEM Totlag STRESS None
+      8 SOLIDW6 WEDGE6       3      5      7       6      11    12     MAT       1 KINEM Totlag STRESS None
 ---------------------------------------------------------------END
 // END

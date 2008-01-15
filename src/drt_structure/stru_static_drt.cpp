@@ -724,18 +724,15 @@ void stru_static_drt()
       fflush(stdout);
       fflush(errfile);
     }
-    
-    // Structure Resulttests
-#ifdef RESULTTEST
-    DRT::ResultTestManager testmanager(actdis->Comm());
-    testmanager.AddFieldTest(rcp(new StruResultTest(actdis,dis)));
-    testmanager.TestAll();
-#endif /* #ifdef RESULTTEST */
-
-
+ 
   }  //=============================================end time/loadstep loop
 
-
+  // Structure Resulttests
+#ifdef RESULTTEST
+  DRT::ResultTestManager testmanager(actdis->Comm());
+  testmanager.AddFieldTest(rcp(new StruResultTest(actdis,dis)));
+  testmanager.TestAll();
+#endif /* #ifdef RESULTTEST */
 
   //----------------------------- this is the end my lonely friend the end
   return;
