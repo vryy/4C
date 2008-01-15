@@ -458,6 +458,105 @@ void DRT::Elements::Shell8::s8stress(struct _MATERIAL* material,
   return;
 } // DRT::Elements::Shell8::s8stress
 
+
+/*----------------------------------------------------------------------*
+ |  Return names of visualization data (public)              mwgee 01/08|
+ *----------------------------------------------------------------------*/
+void DRT::Elements::Shell8::VisNames(map<string,int>& names)
+{
+  // Put the owner of this element into the file (use base class method for this)
+  DRT::Element::VisNames(names);
+  
+  // see whether we have Forces and Moments
+  const Epetra_SerialDenseMatrix* gp_stress = data_.Get<Epetra_SerialDenseMatrix>("Forces");
+  if (!gp_stress) return; // no stresses present
+  else
+  {
+    string forcename;
+    string momentname;
+    if (forcetype_==s8_xyz) 
+    {
+      forcename = "ForcesXYZ";
+      momentname = "MomentsXYZ";
+    }
+    else if (forcetype_==s8_rst) 
+    {
+      forcename = "ForcesRST";
+      momentname = "MomentsRST";
+    }
+    else if (forcetype_==s8_rst_ortho) 
+    {
+      forcename = "ForcesRST_Orth";
+      momentname = "MomentsRST_Orth";
+    }
+    else dserror("Unknown type of force in shell8 element");
+    
+    names[forcename]  = 9; // use nonsymm. tensor to visualize forces
+    names[momentname] = 9; // use nonsymm. tensor to visualize moments
+    return;
+  }
+}
+
+/*----------------------------------------------------------------------*
+ |  Return visualization data (public)                       mwgee 01/08|
+ *----------------------------------------------------------------------*/
+void DRT::Elements::Shell8::VisData(const string& name, vector<double>& data)
+{
+  // Put the owner of this element into the file (use base class method for this)
+  DRT::Element::VisData(name,data);
+  
+  // these are the names shell8 recognizes, do nothing for everything else
+  if (name != "ForcesXYZ"      && name != "MomentsXYZ" && 
+      name != "ForcesRST"      && name != "MomentsRST" &&
+      name != "ForcesRST_Orth" && name != "MomentsRST_Orth") return;
+  
+  if ((int)data.size()!=9) dserror("size mismatch");
+  
+  // see whether we have Forces and Moments
+  const Epetra_SerialDenseMatrix* gp_stress = data_.Get<Epetra_SerialDenseMatrix>("Forces");
+  if (!gp_stress) return; // no stresses present, do nothing
+  
+  // Need to average the values of the gaussian point
+  const int nforce = gp_stress->M(); // first dimension is # of forces and moments
+  const int ngauss = gp_stress->N(); // second dimension is # gaussian point
+  
+  Epetra_SerialDenseMatrix centervalues(nforce,1);
+  for (int i=0; i<nforce; ++i)
+  {
+    for (int j=0; j<ngauss; ++j)
+      centervalues(i,0) += (*gp_stress)(i,j);
+    centervalues(i,0) /= ngauss;
+  }
+  
+  if (name == "ForcesXYZ" || name == "ForcesRST" || name == "ForcesRST_Orth")
+  {
+    data[0] = centervalues(0,0);  // N11
+    data[1] = centervalues(1,0);  // N22
+    data[2] = centervalues(9,0);  // N33
+    data[3] = centervalues(2,0);  // N12
+    data[4] = centervalues(8,0);  // N21
+    data[5] = centervalues(16,0); // N31
+    data[6] = centervalues(17,0); // N32
+    data[7] = centervalues(3,0);  // Q1
+    data[8] = centervalues(4,0);  // Q2
+  }
+  else if (name == "MomentsXYZ" || name == "MomentsRST" || name == "MomentsRST_Orth")
+  {
+    data[0] = centervalues(5,0);  // M11
+    data[1] = centervalues(6,0);  // M22
+    data[2] = centervalues(15,0); // M33
+    data[3] = centervalues(7,0);  // M12
+    data[4] = centervalues(14,0); // M21
+    data[5] = centervalues(12,0); // M31
+    data[6] = centervalues(13,0); // M32
+    data[7] = centervalues(10,0); // M13
+    data[8] = centervalues(11,0); // M23
+  }
+  else dserror("weirdo impossible case????");
+  
+  return;
+}
+
 /*----------------------------------------------------------------------*
  |  transform forces to local/global coordinates (static)    mwgee 02/07|
  *----------------------------------------------------------------------*/
