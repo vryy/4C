@@ -37,7 +37,17 @@ enum IntegrationType
     standard_integration
 };
 
-inline blitz::Array<double,1> toBlitzArray(const double* x);
+inline BlitzVec toBlitzArray(const double* x)
+{
+    BlitzVec blitz_x(3);
+    blitz_x(0) = x[0];
+    blitz_x(1) = x[1];
+    blitz_x(2) = x[2];
+    
+    // doesn't work... why?
+    // BlitzVec blitz_x(x, blitz::shape(3), blitz::duplicateData);
+    return blitz_x;
+}
 
 /*!
  * \brief For a given situation compute the enriched shape functions
@@ -61,6 +71,7 @@ void ComputeEnrichedShapefunction(
 // 
 inline BlitzVec ComputeEnrichmentArrayForNodalDofs(
         DRT::Element&  ele,
+        const int numparamvelx,
         const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
@@ -68,15 +79,16 @@ inline BlitzVec ComputeEnrichmentArrayForNodalDofs(
         )
 {
     
-    BlitzVec enrvals(ele.NumNode());
+    BlitzVec enrvals(numparamvelx);
     
     DRT::Node** const nodes = ele.Nodes();
     
     int dofcounter = 0;
     for (int inode=0; inode<ele.NumNode(); inode++)
     {
-        const int gid = nodes[inode]->Id();
-        const blitz::Array<double,1> nodalpos(toBlitzArray(nodes[inode]->X()));
+        const DRT::Node* node = nodes[inode]; 
+        const int gid = node->Id();
+        const BlitzVec nodalpos(toBlitzArray(node->X()));
 
         const std::set<XFEM::FieldEnr> enrfieldset = dofman.FieldEnrSetPerNode(gid);
 
@@ -107,6 +119,18 @@ void ComputeEnrichedShapefunction(
         BlitzVec& enr_funct,
         BlitzMat& enr_derxy,
         BlitzMat& enr_derxy2
+        );
+
+void ComputeEnrichedStressShapefunction(
+        DRT::Element&  ele,
+        const RCP<XFEM::InterfaceHandle>  ih,
+        const XFEM::ElementDofManager& dofman,
+        const XFEM::PHYSICS::Field field,
+        const BlitzVec& actpos,
+        const BlitzVec& funct,
+        const BlitzMat& derxy,
+        BlitzVec& enr_funct,
+        BlitzMat& enr_derxy
         );
 
 inline std::map<Enrichment,double> getEnrichmentValues(

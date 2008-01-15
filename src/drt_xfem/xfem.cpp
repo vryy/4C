@@ -20,15 +20,6 @@ Maintainer: Axel Gerstenberger
 #include <sstream>
 
 
-inline blitz::Array<double,1> XFEM::toBlitzArray(const double* x)
-{
-    blitz::Array<double,1> nodalpos(3);
-    nodalpos(0) = x[0];
-    nodalpos(1) = x[1];
-    nodalpos(2) = x[2];
-    return nodalpos;
-}
-
 //
 // For a given situation compute the enriched shape functions
 // 
@@ -109,6 +100,41 @@ void XFEM::ComputeEnrichedShapefunction(
                 enr_derxy2(_,dofcounter) = derxy2(_,inode) * enrval;
                 dofcounter += 1;
             }
+        }
+    }
+}
+
+
+//
+// For a given situation compute the enriched shape functions
+// 
+void XFEM::ComputeEnrichedStressShapefunction(
+        DRT::Element&  ele,
+        const RCP<XFEM::InterfaceHandle>  ih,
+        const XFEM::ElementDofManager& dofman,
+        const XFEM::PHYSICS::Field field,
+        const blitz::Array<double,1>& actpos,
+        const blitz::Array<double,1>& funct,
+        const blitz::Array<double,2>& derxy,
+        blitz::Array<double,1>& enr_funct,
+        blitz::Array<double,2>& enr_derxy
+        )
+{
+    blitz::Range _  = blitz::Range::all();
+    
+    int dofcounter = 0;
+    const std::set<XFEM::FieldEnr> enrfieldset = dofman.FieldEnrSetPerElement();
+
+    for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
+            enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
+    {
+        if (enrfield->getField() == field)
+        {
+            const XFEM::Enrichment enr = enrfield->getEnrichment();
+            const double enrval = enr.EnrValue(actpos, ih->cutterdis());
+            enr_funct(dofcounter) = funct(dofcounter) * enrval;
+            enr_derxy(_,dofcounter) = derxy(_,dofcounter) * enrval;
+            dofcounter += 1;
         }
     }
 }
