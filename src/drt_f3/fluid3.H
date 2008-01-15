@@ -362,6 +362,7 @@ private:
     viscous_stab_agls,
     viscous_stab_agls_only_rhs,
     continuity_stab_none,
+    continuity_stab_td,
     continuity_stab_yes,
     cross_stress_stab_none,
     cross_stress_stab,

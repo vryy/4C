@@ -658,11 +658,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
                                "For residual based stabilization, this flag (de)activates the least \nsquares stabilization of the continuity equation.",
                                tuple<std::string>(
                                  "off",
-                                 "-(spre|nabla_o_v)"),
+                                 "-(spre|nabla_o_v)",
+                                 "-(spre|nabla_o_v)_(td)"),
                                tuple<std::string>(
                                  "Omit least squares stabilization of continuity equation.",
-                                 "Take least squares stabilization of continuity equation into account.\nThis means additional, artificial diffusion for the equation, \nbut will be very useful to keep solutions stable at higher Reynolds numbers."),
-                               tuple<int>(0,1),
+                                 "Take least squares stabilization of continuity equation into account.\nThis means additional, artificial diffusion for the equation, \nbut will be very useful to keep solutions stable at higher Reynolds numbers.","time dependent generalization of continuity stabilization"),
+                               tuple<int>(0,1,2),
                                &fdyn_stab);
 
   /*----------------------------------------------------------------------*/

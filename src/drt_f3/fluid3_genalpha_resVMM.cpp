@@ -2601,6 +2601,35 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
         } // end (a)gls stabilisation
 
         if(cstab == Fluid3::continuity_stab_yes)
+         {
+          const double fac_gamma_dt_tauC = fac*gamma*dt*tauC;
+
+          for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
+          {
+            for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+            {
+              /*  factor: +gamma*dt*tauC
+
+                    /                          \
+                   |                            |
+                   | nabla o Dacc  , nabla o v  |
+                   |                            |
+                    \                          /
+              */
+
+              elemat(vi*4    , ui*4    ) += fac_gamma_dt_tauC*derxy_(0,ui)*derxy_(0,vi) ;
+              elemat(vi*4    , ui*4 + 1) += fac_gamma_dt_tauC*derxy_(1,ui)*derxy_(0,vi) ;
+              elemat(vi*4    , ui*4 + 2) += fac_gamma_dt_tauC*derxy_(2,ui)*derxy_(0,vi) ;
+              elemat(vi*4 + 1, ui*4    ) += fac_gamma_dt_tauC*derxy_(0,ui)*derxy_(1,vi) ;
+              elemat(vi*4 + 1, ui*4 + 1) += fac_gamma_dt_tauC*derxy_(1,ui)*derxy_(1,vi) ;
+              elemat(vi*4 + 1, ui*4 + 2) += fac_gamma_dt_tauC*derxy_(2,ui)*derxy_(1,vi) ;
+              elemat(vi*4 + 2, ui*4    ) += fac_gamma_dt_tauC*derxy_(0,ui)*derxy_(2,vi) ;
+              elemat(vi*4 + 2, ui*4 + 1) += fac_gamma_dt_tauC*derxy_(1,ui)*derxy_(2,vi) ;
+              elemat(vi*4 + 2, ui*4 + 2) += fac_gamma_dt_tauC*derxy_(2,ui)*derxy_(2,vi) ;
+            } // end loop rows vi (test functions for matrix)
+          } // end loop columns ui (solution for matrix, test function for vector)
+        } // end cstab
+        else if(cstab == Fluid3::continuity_stab_td)
         {
           //---------------------------------------------------------------
           //
@@ -2639,7 +2668,9 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
             } // end loop rows (test functions for matrix)
           } // end loop rows (solution for matrix, test function for vector)
 
-        } // end continuity stabilisation
+
+        }
+        // end continuity stabilisation
 
         if(cross == Fluid3::cross_stress_stab)
         {
@@ -3063,6 +3094,25 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
       } // endif (a)gls
       
       if(cstab == Fluid3::continuity_stab_yes)
+      {
+       const double fac_tauC = fac*tauC;
+        for (int ui=0; ui<iel_; ++ui) // loop rows  (test functions)
+        {
+          /* factor: +tauC
+
+                  /                          \
+                 |           n+1              |
+                 |  nabla o u    , nabla o v  |
+                 |                            |
+                  \                          /
+          */
+
+          elevec[ui*4    ] -= fac_tauC*divunp*derxy_(0,ui) ;
+          elevec[ui*4 + 1] -= fac_tauC*divunp*derxy_(1,ui) ;
+          elevec[ui*4 + 2] -= fac_tauC*divunp*derxy_(2,ui) ;
+        } // end loop rows
+      }
+      else if (cstab == Fluid3::continuity_stab_td)
       {
         const double fac_sprenp                       = fac*sprenp(iquad);
 

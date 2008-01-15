@@ -1063,6 +1063,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
             stabstrtoact_["-2*nu*(svel|nabla_o_eps(v))"      ]=viscous_stab_agls;
             stabstrtoact_["-2*nu*(svel|nabla_o_eps(v))_[RHS]"]=viscous_stab_agls_only_rhs;
             stabstrtoact_["-(spre|nabla_o_v)"                ]=continuity_stab_yes;
+            stabstrtoact_["-(spre|nabla_o_v)_(td)"           ]=continuity_stab_td;
             stabstrtoact_["off"                              ]=continuity_stab_none;
             stabstrtoact_["+((svel_o_nabla)_u|v)"            ]=cross_stress_stab;
             stabstrtoact_["+((svel_o_nabla)_u|v)_[RHS]"      ]=cross_stress_stab_only_rhs;
