@@ -761,8 +761,8 @@ void LINALG::ApplyDirichlettoSystem(RefCountPtr<Epetra_CrsMatrix>&   A,
     const int nummyrows     = A->NumMyRows();
     const int maxnumentries = A->MaxNumEntries();
     RefCountPtr<Epetra_CrsMatrix> Anew = LINALG::CreateMatrix(rowmap,maxnumentries);
-    vector<int> indices(maxnumentries);
-    vector<double> values(maxnumentries);
+    vector<int> indices(maxnumentries,0);
+    vector<double> values(maxnumentries,0.0);
     for (int i=0; i<nummyrows; ++i)
     {
       int row = A->GRID(i);
