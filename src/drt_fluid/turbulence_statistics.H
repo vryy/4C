@@ -307,6 +307,30 @@ private:
   //! sum over p^2 (over one plane in each component)
   RefCountPtr<vector<double> >     sumsqp_;
 
+
+#if 1
+  //! vector of squared velocities (pointwise)
+  RefCountPtr<Epetra_Vector>       pointsquaredvelnp_;
+
+
+//! sum over u (over one plane in each component)
+  RefCountPtr<vector<double> >     pointsumu_;
+  //! sum over v (over one plane in each component)
+  RefCountPtr<vector<double> >     pointsumv_;
+  //! sum over w (over one plane in each component)
+  RefCountPtr<vector<double> >     pointsumw_; 
+  //! sum over p (over one plane in each component)
+  RefCountPtr<vector<double> >     pointsump_;
+
+  //! sum over u^2 (over one plane in each component)
+  RefCountPtr<vector<double> >     pointsumsqu_;
+  //! sum over v^2 (over one plane in each component)
+  RefCountPtr<vector<double> >     pointsumsqv_;
+  //! sum over w^2 (over one plane in each component)
+  RefCountPtr<vector<double> >     pointsumsqw_;
+  //! sum over p^2 (over one plane in each component)
+  RefCountPtr<vector<double> >     pointsumsqp_;
+#endif
   //! sum over nodal forces on boundary in u direction
   double                           sumforceu_;
   //! sum over nodal forces on boundary in v direction
