@@ -313,12 +313,12 @@ IO::HDFReader::ReadResultData(string id_path, string value_path, int columns, co
   int offset = 0;
   for (int i = start; i < end; ++i)
   {
-    int l = lengths[i-start] / columns;
+    int l = lengths[i-start];
     for (int c=0; c<columns; ++c)
     {
       copy(&(*values)[offset*i+ c   *l],
            &(*values)[offset*i+(c+1)*l],
-           &res->Values()[c*res->MyLength()+offset]);
+           &res->Values()[c*res->MyLength()+offset/columns]);
     }
     offset += l;
   }
