@@ -119,7 +119,7 @@ public:
   explicit DiscretizationWriter(Teuchos::RCP<DRT::Discretization> dis, int probnum=0);
 
   /// cleanup, close hdf5 files
-  ~DiscretizationWriter();
+  virtual ~DiscretizationWriter();
 
 
   //!@name Output methods
@@ -132,7 +132,7 @@ public:
     \param step : current time step
     \param time : current absolute time
   */
-  void NewStep(const int step, const double time);
+  virtual void NewStep(const int step, const double time);
 
   //! write a result vector
   /*!
@@ -143,13 +143,16 @@ public:
     \param vec  : the result data vector
     \param nodevector : whether this vector has a row dof map (nodevector==true) or a row element map.
   */
-  void WriteVector(const string name, Teuchos::RCP<Epetra_MultiVector> vec, bool nodevector=true);
+  virtual void WriteVector(const string name, Teuchos::RCP<Epetra_MultiVector> vec, bool nodevector=true);
 
   //! write a condition identified by its name
-  void WriteCondition(const string condname) const;
+  virtual void WriteCondition(const string condname) const;
 
   //! write new "field" group to control file including node and element chunks
-  void WriteMesh(const int step, const double time);
+  virtual void WriteMesh(const int step, const double time);
+
+  //! write element data to file
+  virtual void WriteElementData();
 
   //@}
 
@@ -161,10 +164,10 @@ protected:
 private:
 
   //! open new mesh file
-  void CreateMeshFile(const int step);
+  virtual void CreateMeshFile(const int step);
 
   //! open new result file
-  void CreateResultFile(const int step);
+  virtual void CreateResultFile(const int step);
 
   //! my discretization
   Teuchos::RCP<DRT::Discretization> dis_;

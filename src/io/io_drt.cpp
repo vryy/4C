@@ -853,4 +853,52 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
 #endif
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IO::DiscretizationWriter::WriteElementData()
+{
+#ifdef BINIO
+  map<string,int>::iterator fool;
+  map<string,int> names;   // contains name and dimension of data
+
+  // loop all elements and build map of data names and dimensions
+  const Epetra_Map* elerowmap = dis_->ElementRowMap();
+  for (int i=0; i<elerowmap->NumMyElements(); ++i)
+  {
+    // get names and dimensions from every element
+    dis_->lRowElement(i)->VisNames(names);
+  }
+  
+  // make sure there's no name with a dimension of less than 1
+  for (fool = names.begin(); fool!= names.end(); ++fool)
+    if (fool->second<1) dserror("Dimension of data must be at least 1");
+  
+  // loop all names aquired form the elements and fill data vectors
+  vector<double> eledata(0);
+  for (fool = names.begin(); fool!= names.end(); ++fool)
+  {
+    const int dimension = fool->second;
+    eledata.resize(dimension);
+    for (int i=0; i<dimension; ++i) eledata[i] = 0.0;
+    
+    // MultiVector stuff from the elements is put in
+    Epetra_MultiVector sysdata(*elerowmap,dimension,true);
+    
+    for (int i=0; i<elerowmap->NumMyElements(); ++i)
+    {
+      // get data for a given name from element & put in sysdata
+      dis_->lRowElement(i)->VisData(fool->first,eledata);
+      if ((int)eledata.size() != dimension)
+        dserror("element manipulated size of visualization data");
+      for (int j=0; j<dimension; ++j) (*sysdata(j))[i] = eledata[j];
+    }
+    
+    // output multivector in element row map here
+    // data name is fool->first
+    // MultiVector is sysdata (no. of columns is dimension)
+    
+  } // for (fool = names.begin(); fool!= names.end(); ++fool)
+  
+#endif
+}
 #endif
