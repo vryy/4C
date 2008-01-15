@@ -31,6 +31,15 @@ std::string XFEM::PHYSICS::physVarToString(const XFEM::PHYSICS::Field var)
         case LMPLambdax:       text = "LMPLambdax"; break;
         case LMPLambday:       text = "LMPLambday"; break;
         case LMPLambdaz:       text = "LMPLambdaz"; break;
+        case Tauxx:            text = "Tauxx"; break;
+        case Tauxy:            text = "Tauxy"; break;
+        case Tauxz:            text = "Tauxz"; break;
+        case Tauyx:            text = "Tauyx"; break;
+        case Tauyy:            text = "Tauyy"; break;
+        case Tauyz:            text = "Tauyz"; break;
+        case Tauzx:            text = "Tauzx"; break;
+        case Tauzy:            text = "Tauzy"; break;
+        case Tauzz:            text = "Tauzz"; break;
         default: dserror("no string defined for Field");
     };
     return text;

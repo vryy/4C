@@ -34,6 +34,7 @@ Maintainer: Axel Gerstenberger
 #include <blitz/array.h>
 #include <Epetra_SerialDenseSolver.h>
 
+using namespace std;
 using namespace DRT::Utils;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -499,6 +500,10 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
           // extract local values from the global vector
           vector<double> locval(lm.size());
           DRT::Utils::ExtractMyValues(*velnp,locval,lm);
+          
+          //cout << "number of unknowns (node + element): " << lm.size() << endl;
+          //cout << "number of unknowns (node):  " << (eleDofManager_.NumDofPerField(XFEM::PHYSICS::Velx)*4) << endl;
+          //cout << "number of unknowns (tauxx): " << (eleDofManager_.NumDofPerField(XFEM::PHYSICS::Tauxx)) << endl;
 
           if (is_ale_)
           {
@@ -512,7 +517,7 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
 
           const bool newton = params.get<bool>("include reactive terms for linearisation",false);
           const bool pstab  = true;
-          const bool supg   = true;
+          const bool supg   = false;
           const bool vstab  = false;  // viscous stabilisation part switched off !!
           const bool cstab  = true;        
 

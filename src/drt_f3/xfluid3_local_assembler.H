@@ -42,6 +42,15 @@ template <> int getFieldNumber<XFEM::PHYSICS::Velz>() {return 2;};
 template <> int getFieldNumber<XFEM::PHYSICS::Pres>() {return 3;};
 
 
+//! for the viscous stress, replace shear stress components with symmetric part
+template <XFEM::PHYSICS::Field FIELD>
+XFEM::PHYSICS::Field mangle()
+{
+    return FIELD;
+}; 
+template <> XFEM::PHYSICS::Field mangle<XFEM::PHYSICS::Tauyx>() {return XFEM::PHYSICS::Tauxy;};
+template <> XFEM::PHYSICS::Field mangle<XFEM::PHYSICS::Tauzx>() {return XFEM::PHYSICS::Tauxz;};
+template <> XFEM::PHYSICS::Field mangle<XFEM::PHYSICS::Tauzy>() {return XFEM::PHYSICS::Tauyz;};
 
 
 //TODO  allow fixed size array for estiff und eforce, if standard_assembly
@@ -52,7 +61,11 @@ class LocalAssembler
 {
 public:
     
-    LocalAssembler(const XFEM::ElementDofManager&    dofman, BlitzMat& estif, BlitzVec& eforce) :
+    LocalAssembler(
+            const XFEM::ElementDofManager&    dofman,
+            BlitzMat& estif,
+            BlitzVec& eforce
+            ) :
         dofman_(dofman),
         estif_(estif),
         eforce_(eforce)
@@ -76,17 +89,26 @@ public:
     template <XFEM::PHYSICS::Field testfield,
               XFEM::PHYSICS::Field trialfield>
     inline void Matrix(
-            const blitz::Array<double,1>&     testshape,
-            const double                      fac,
-            const blitz::Array<double,1>&     trialshape
+            const BlitzVec&     testshape,
+            const double        fac,
+            const BlitzVec&     trialshape
             ) const
     {
-        const std::vector<int> testdof  = dofman_.LocalDofPosPerField(testfield);
-        const std::vector<int> trialdof = dofman_.LocalDofPosPerField(trialfield);
+        const std::vector<int> testdof  = dofman_.LocalDofPosPerField(mangle<testfield>());
+        const std::vector<int> trialdof = dofman_.LocalDofPosPerField(mangle<trialfield>());
         
         const int numparamtest  = testdof.size();
         const int numparamtrial = trialdof.size();
+        
+        //std::cout << "numparamtrial " << numparamtrial << endl;
+//        for (std::vector<int>::const_iterator pos = trialdof.begin(); pos != trialdof.end(); ++pos)
+//        {
+//            std::cout << "pos = " << (*pos) << endl;
+//        }
 
+        //std::cout << "size testshape " << testshape.length() << endl;
+        //std::cout << "size trialshape " << trialshape.length() << endl;
+        
         for (int ui=0; ui<numparamtrial; ++ui)
         {
             const int trialpos = trialdof[ui];
@@ -94,7 +116,8 @@ public:
             for (int vi=0; vi<numparamtest; ++vi)
             {
                 const int testpos = testdof[vi];
-
+                //std::cout << testshape(vi) << endl;
+                //std::cout << trialshape(ui) << endl;
                 estif_(testpos, trialpos) += fac*testshape(vi)*trialshape(ui) ;
             }
         }
@@ -103,11 +126,11 @@ public:
     //! assemble one expression for the element rhs for a given test field
     template <XFEM::PHYSICS::Field testfield>
     inline void Vector(
-            const blitz::Array<double,1>&     testshape,
-            const double                      fac
+            const BlitzVec&     testshape,
+            const double        fac
             ) const
     {
-        const std::vector<int> testdof = dofman_.LocalDofPosPerField(testfield);
+        const std::vector<int> testdof = dofman_.LocalDofPosPerField(mangle<testfield>());
         const int numparamtest = testdof.size();
         for (int vi=0; vi<numparamtest; ++vi)
         {
@@ -127,7 +150,11 @@ class LocalAssembler<DISTYPE, XFEM::standard_assembly>
 {
 public:
     
-    LocalAssembler(const XFEM::ElementDofManager&    dofman, BlitzMat& estif, BlitzVec& eforce) :
+    LocalAssembler(
+            const XFEM::ElementDofManager&    dofman,
+            BlitzMat&                         estif,
+            BlitzVec&                         eforce
+            ) :
         dofman_(dofman),
         estif_(estif),
         eforce_(eforce)
@@ -149,9 +176,9 @@ public:
     template <XFEM::PHYSICS::Field testfield,
               XFEM::PHYSICS::Field trialfield>
     inline void Matrix(
-            blitz::Array<double,1>     testshape,
-            const double                      fac,
-            blitz::Array<double,1>     trialshape
+            const BlitzVec&     testshape,
+            const double        fac,
+            const BlitzVec&     trialshape
             ) const
     {
         const int numparam = DRT::Utils::getNumberOfElementNodes<DISTYPE>();
@@ -169,8 +196,8 @@ public:
     //! assemble one expression for the element rhs for a given test field
     template <XFEM::PHYSICS::Field testfield>
     inline void Vector(
-            const blitz::Array<double,1>&     testshape,
-            const double                      fac
+            const BlitzVec&     testshape,
+            const double        fac
             ) const
     {
         const int numparam = DRT::Utils::getNumberOfElementNodes<DISTYPE>();

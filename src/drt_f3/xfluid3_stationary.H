@@ -51,13 +51,13 @@ typedef blitz::Array<double,2> BlitzMat; ///< a short-cut for a two-dimensional 
 template <DRT::Element::DiscretizationType DISTYPE>
 BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
 {
-  std::vector<DRT::Condition*> myneumcond;
-  const int iel_ = DRT::Utils::getNumberOfElementNodes<DISTYPE>();
-  BlitzMat edeadng_(3,iel_,blitz::ColumnMajorArray<2>());
   dserror("not adapted to xfem (, yet)!!!");
+    
+  std::vector<DRT::Condition*> myneumcond;
+  const int numnode = DRT::Utils::getNumberOfElementNodes<DISTYPE>();
   // check whether all nodes have a unique VolumeNeumann condition
   int nodecount = 0;
-  for (int inode=0;inode<iel_;inode++)
+  for (int inode=0;inode<numnode;inode++)
   {
     nodes[inode]->GetCondition("VolumeNeumann",myneumcond);
 
@@ -71,7 +71,8 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
     }
   }
 
-  if (nodecount == iel_)
+  BlitzMat edeadng_(3,numnode,blitz::ColumnMajorArray<2>());
+  if (nodecount == numnode)
   {
     // find out whether we will use a (pseudo-)time curve
     const vector<int>* curve  = myneumcond[0]->Get<vector<int> >("curve");
@@ -103,7 +104,7 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
     }
 
     // set this condition to the edeadng array
-    for (int jnode=0; jnode<iel_; jnode++)
+    for (int jnode=0; jnode<numnode; jnode++)
     {
       nodes[jnode]->GetCondition("VolumeNeumann",myneumcond);
 
@@ -431,8 +432,8 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
     |                      | | | | | 5 = dsdt
     |                  +-+-+-+-+
     */
-    const int iel_ = DRT::Utils::getNumberOfElementNodes<DISTYPE>();
-    Epetra_SerialDenseMatrix ederxy2(View,derxy2_.data(),6,6,iel_);
+    const int numnode = DRT::Utils::getNumberOfElementNodes<DISTYPE>();
+    Epetra_SerialDenseMatrix ederxy2(View,derxy2_.data(),6,6,numnode);
 
     Epetra_SerialDenseSolver solver;
     solver.SetMatrix(bm);
@@ -532,16 +533,16 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
   int getNumParam(
           const XFEM::ElementDofManager& dofman,
           const XFEM::PHYSICS::Field     field,
-          int iel_)
+          int numnode)
   {
       return dofman.NumDofPerField(field);
   }
   template<> int getNumParam<XFEM::standard_assembly>(
           const XFEM::ElementDofManager& dofman,
           const XFEM::PHYSICS::Field     field,
-          int iel_)
+          int numnode)
   {
-      return iel_;
+      return numnode;
   }
   
 
@@ -569,7 +570,7 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
     )
   {
     // number of nodes for element
-    const int iel_ = DRT::Utils::getNumberOfElementNodes<DISTYPE>();
+    const int numnode = DRT::Utils::getNumberOfElementNodes<DISTYPE>();
       
     // information about domain integration cells
     const XFEM::DomainIntCells   domainIntCells   = ih->GetDomainIntCells(ele->Id(),DISTYPE);
@@ -578,8 +579,8 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
 
     // get node coordinates
     DRT::Node** const nodes = ele->Nodes();
-    BlitzMat xyze_(3,iel_,blitz::ColumnMajorArray<2>());
-    for (int inode=0; inode<iel_; inode++)
+    BlitzMat xyze_(3,numnode,blitz::ColumnMajorArray<2>());
+    for (int inode=0; inode<numnode; inode++)
     {
       const double* x = nodes[inode]->X();
       xyze_(0,inode) = x[0];
@@ -628,16 +629,16 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
     blitz::thirdIndex k;    // Placeholder for the third index
 
     // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
-    const int numparamvelx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velx, iel_);
-    const int numparamvely = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Vely, iel_);
-    const int numparamvelz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velz, iel_);
-    const int numparampres = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Pres, iel_);
+    const int numparamvelx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velx, numnode);
+    const int numparamvely = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Vely, numnode);
+    const int numparamvelz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velz, numnode);
+    const int numparampres = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Pres, numnode);
     const int numparamtauxx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxx, 0);
-//    const int numparamtauyy = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauyy, 0);
-//    const int numparamtauzz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauzz, 0);
-//    const int numparamtauxy = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxy, 0);
-//    const int numparamtauxz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxz, 0);
-//    const int numparamtauyz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauyz, 0);
+    const int numparamtauyy = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauyy, 0);
+    const int numparamtauzz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauzz, 0);
+    const int numparamtauxy = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxy, 0);
+    const int numparamtauxz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxz, 0);
+    const int numparamtauyz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauyz, 0);
 //          cout << "numparampres " << numparampres << endl;
 //          cout << "numparamvelx " << numparamvelx << endl;
 //          cout << "numparamvely " << numparamvely << endl;
@@ -650,15 +651,29 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
     const vector<int> velydof = dofman.LocalDofPosPerField(XFEM::PHYSICS::Vely);
     const vector<int> velzdof = dofman.LocalDofPosPerField(XFEM::PHYSICS::Velz);
     const vector<int> presdof = dofman.LocalDofPosPerField(XFEM::PHYSICS::Pres);
+    const vector<int> tauxxdof = dofman.LocalDofPosPerField(XFEM::PHYSICS::Tauxx);
+    const vector<int> tauyydof = dofman.LocalDofPosPerField(XFEM::PHYSICS::Tauyy);
+    const vector<int> tauzzdof = dofman.LocalDofPosPerField(XFEM::PHYSICS::Tauzz);
+    const vector<int> tauxydof = dofman.LocalDofPosPerField(XFEM::PHYSICS::Tauxy);
+    const vector<int> tauxzdof = dofman.LocalDofPosPerField(XFEM::PHYSICS::Tauxz);
+    const vector<int> tauyzdof = dofman.LocalDofPosPerField(XFEM::PHYSICS::Tauyz);
 
     // split velocity and pressure
     blitz::Array<double, 1> eprenp(numparampres);
     blitz::Array<double, 2> evelnp(3,numparamvelx,blitz::ColumnMajorArray<2>());
+    blitz::Array<double, 2> etau(6,numparamtauxx,blitz::ColumnMajorArray<2>());
     
     for (int iparam=0; iparam<numparamvelx; ++iparam)   evelnp(0,iparam) = locval[velxdof[iparam]];
     for (int iparam=0; iparam<numparamvely; ++iparam)   evelnp(1,iparam) = locval[velydof[iparam]];
     for (int iparam=0; iparam<numparamvelz; ++iparam)   evelnp(2,iparam) = locval[velzdof[iparam]];
     for (int iparam=0; iparam<numparampres; ++iparam)   eprenp(iparam) = locval[presdof[iparam]];
+    for (int iparam=0; iparam<numparamtauxx; ++iparam)   etau(0,iparam) = locval[tauxxdof[iparam]];
+    for (int iparam=0; iparam<numparamtauyy; ++iparam)   etau(1,iparam) = locval[tauyydof[iparam]];
+    for (int iparam=0; iparam<numparamtauzz; ++iparam)   etau(2,iparam) = locval[tauzzdof[iparam]];
+    for (int iparam=0; iparam<numparamtauxy; ++iparam)   etau(3,iparam) = locval[tauxydof[iparam]];
+    for (int iparam=0; iparam<numparamtauxz; ++iparam)   etau(4,iparam) = locval[tauxzdof[iparam]];
+    for (int iparam=0; iparam<numparamtauyz; ++iparam)   etau(5,iparam) = locval[tauyzdof[iparam]];
+    
     
     
     // stabilization parameter
@@ -697,13 +712,15 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
       const double detcell = e[3];
 
       // shape functions and their first derivatives
-      BlitzVec funct_(iel_);
-      BlitzMat deriv_(3,iel_,blitz::ColumnMajorArray<2>());
+      BlitzVec funct_(numnode);
+      BlitzMat deriv_(3,numnode,blitz::ColumnMajorArray<2>());
       DRT::Utils::shape_function_3D(funct_,e1,e2,e3,DISTYPE);
       DRT::Utils::shape_function_3D_deriv1(deriv_,e1,e2,e3,DISTYPE);
       
-      BlitzVec funct_stress(DRT::Elements::FLUID::stress_shape_function_3D<DISTYPE>(e1,e2,e3));
-      BlitzMat deriv_stress(DRT::Elements::FLUID::stress_shape_function_3D_deriv1<DISTYPE>(e1,e2,e3));
+      const BlitzVec funct_stress(DRT::Elements::FLUID::stress_shape_function_3D<DISTYPE>(e1,e2,e3));
+      const BlitzMat deriv_stress(DRT::Elements::FLUID::stress_shape_function_3D_deriv1<DISTYPE>(e1,e2,e3));
+//      cout << "funct_stress" << funct_stress << endl;
+//      cout << "deriv_stress" << deriv_stress << endl;
 
       // position of the gausspoint in physical coordinates
       const BlitzVec gauss_pos(blitz::sum(funct_(j)*xyze_(i,j),j));
@@ -754,12 +771,13 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
 
       // compute global derivates
       const BlitzMat derxy_(blitz::sum(xji_(i,k)*deriv_(k,j),k));
+      const BlitzMat derxy_stress(blitz::sum(xji_(i,k)*deriv_stress(k,j),k));
 
       // compute second global derivative
-      BlitzMat derxy2_(6,iel_,blitz::ColumnMajorArray<2>());
+      BlitzMat derxy2_(6,numnode,blitz::ColumnMajorArray<2>());
       if (higher_order_ele)
       {
-        BlitzMat deriv2_(6,iel_,blitz::ColumnMajorArray<2>());
+        BlitzMat deriv2_(6,numnode,blitz::ColumnMajorArray<2>());
         DRT::Utils::shape_function_3D_deriv2(deriv2_,e1,e2,e3,DISTYPE);
         derxy2_ = gder2<DISTYPE>(xjm_, derxy_, deriv2_, xyze_);
       }
@@ -772,8 +790,12 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
       BlitzVec enr_funct_(numparamvelx);
       BlitzMat enr_derxy_(3,numparamvelx,blitz::ColumnMajorArray<2>());
       BlitzMat enr_derxy2_(6,numparamvelx,blitz::ColumnMajorArray<2>());
+      
+      BlitzVec enr_funct_stress(numparamtauxx);
+      BlitzMat enr_derxy_stress(3,numparamtauxx,blitz::ColumnMajorArray<2>());
       if (ASSTYPE == XFEM::xfem_assembly)
       {
+          // shape function for nodal dofs
           XFEM::ComputeEnrichedShapefunction(
                   *ele,
                   ih,
@@ -787,22 +809,46 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
                   enr_derxy_,
                   enr_derxy2_);
           
-          //std::map<Enrichment,double> enrvals = getEnrichmentValues(ih, dofman, actpos);
-          
-          
+          // shape functions for element dofs
+          XFEM::ComputeEnrichedStressShapefunction(
+                  *ele,
+                  ih,
+                  dofman,
+                  XFEM::PHYSICS::Tauxx,
+                  gauss_pos,
+                  funct_stress,
+                  derxy_stress,
+                  enr_funct_stress,
+                  enr_derxy_stress);
       }
       else
       {
           enr_funct_  = funct_;
           enr_derxy_  = derxy_;
           enr_derxy2_ = derxy2_;
+          
+          enr_funct_stress  = funct_stress;
+          enr_derxy_stress  = derxy_stress;
       }
+      
+//      cout << "enr_funct_stress" << enr_funct_stress << endl;
+//      cout << "enr_derxy_stress" << enr_derxy_stress << endl;
       
       // get velocities (n+g,i) at integration point
       const BlitzVec velint_(blitz::sum(enr_funct_(j)*evelnp(i,j),j));
 
       // get velocity (np,i) derivatives at integration point
       const BlitzMat vderxy_(blitz::sum(enr_derxy_(j,k)*evelnp(i,k),k));
+      
+      //BlitzMat eps(vderxy_(i,j) + vderxy_(j,i));
+      BlitzMat eps(3,3);
+      for (int m = 0; m < 3; ++m)
+    {
+        for (int n = 0; n < 3; ++n)
+        {
+            eps(m,n) = vderxy_(m,n) + vderxy_(n,m);
+        }
+    }
 
       // calculate 2nd velocity derivatives at integration point
       BlitzMat vderxy2_(3,6,blitz::ColumnMajorArray<2>());
@@ -821,19 +867,21 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
       // get pressurrrrre
       const double press = blitz::sum(enr_funct_*eprenp);
 
-      // get viscous stress unknowns per interface
-      vector<BlitzMat> taus;
-      const int numinterface = 1;
-      for (int iiface = 0; iiface < numinterface; ++iiface)
-      {
-          BlitzMat tau(3,3,blitz::ColumnMajorArray<2>());
+      // get viscous stress unknowns
+      BlitzMat tau(3,3,blitz::ColumnMajorArray<2>());
+      tau(0,0) = blitz::sum(enr_funct_stress(_)*etau(0,_));
+      tau(0,1) = blitz::sum(enr_funct_stress(_)*etau(3,_));
+      tau(0,2) = blitz::sum(enr_funct_stress(_)*etau(4,_));
+      tau(1,0) = tau(0,1);
+      tau(1,1) = blitz::sum(enr_funct_stress(_)*etau(0,_));
+      tau(1,2) = blitz::sum(enr_funct_stress(_)*etau(0,_));
+      tau(2,0) = tau(0,2);
+      tau(2,1) = tau(1,2);
+      tau(2,2) = blitz::sum(enr_funct_stress(_)*etau(5,_));
+      
+//      cout << "tau  " << tau << endl;
+//      cout << "eps^u" << eps << endl;
 
-          // fill tau
-
-          // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-          taus.push_back(tau);
-
-      }
 
       // get bodyforce in gausspoint
       BlitzVec bodyforce_(3);
@@ -888,18 +936,22 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
       const double tau_Mp = tau_stab(1)*fac;
       const double tau_C  = tau_stab(2)*fac;
 
+      // create vievs on the shape function arrays for easy handling in the assembly process
       const BlitzVec shp(enr_funct_);
       const BlitzVec shp_dx(enr_derxy_(0,_));
       const BlitzVec shp_dy(enr_derxy_(1,_));
       const BlitzVec shp_dz(enr_derxy_(2,_));
-//      BlitzVec shp_dx(enr_derxy2_(0,_));
-//      BlitzVec shp_dy(enr_derxy2_(1,_));
-//      BlitzVec shp_dz(enr_derxy2_(2,_));
+      const BlitzVec shp_dxdx(enr_derxy2_(0,_));
+      const BlitzVec shp_dydy(enr_derxy2_(1,_));
+      const BlitzVec shp_dzdz(enr_derxy2_(2,_));
+      const BlitzVec shp_dxdy(enr_derxy2_(3,_));
+      const BlitzVec shp_dxdz(enr_derxy2_(4,_));
+      const BlitzVec shp_dydz(enr_derxy2_(5,_));
       
-      const BlitzVec shp_tau;
-      const BlitzVec shp_tau_dx;
-      const BlitzVec shp_tau_dy;
-      const BlitzVec shp_tau_dz;
+      const BlitzVec shp_tau(enr_funct_stress);
+      const BlitzVec shp_tau_dx(enr_derxy_stress(0,_));
+      const BlitzVec shp_tau_dy(enr_derxy_stress(1,_));
+      const BlitzVec shp_tau_dz(enr_derxy_stress(2,_));
 
       /*------------------------- evaluate rhs vector at integration point ---*/
       //   rhsint_ = histvec_(i) + bodyforce_(i);
@@ -1048,53 +1100,48 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
         }
         else
         {
-            for (int iiface = 0; iiface < numinterface; ++iiface)
-            {
-                /*
-                              /                  \
-                             |              / \   |
-                             |  Dtau , eps | v |  |
-                             |              \ /   |
-                              \                  /
-                */
-                assembler.template Matrix<Velx,Tauxx>(shp_dx, 2.0*fac, shp_tau);
-                assembler.template Matrix<Velx,Tauxy>(shp_dy,     fac, shp_tau);
-                assembler.template Matrix<Velx,Tauxz>(shp_dz,     fac, shp_tau);
-                assembler.template Matrix<Velx,Tauyx>(shp_dy,     fac, shp_tau);
-                assembler.template Matrix<Velx,Tauzx>(shp_dz,     fac, shp_tau);
-    
-                assembler.template Matrix<Vely,Tauxy>(shp_dx,     fac, shp_tau);
-                assembler.template Matrix<Vely,Tauyx>(shp_dx,     fac, shp_tau);
-                assembler.template Matrix<Vely,Tauyy>(shp_dy, 2.0*fac, shp_tau);
-                assembler.template Matrix<Vely,Tauyz>(shp_dz,     fac, shp_tau);
-                assembler.template Matrix<Vely,Tauzy>(shp_dz,     fac, shp_tau);
-    
-                assembler.template Matrix<Velz,Tauxz>(shp_dx,     fac, shp_tau);
-                assembler.template Matrix<Velz,Tauyz>(shp_dy,     fac, shp_tau);
-                assembler.template Matrix<Velz,Tauzx>(shp_dx,     fac, shp_tau);
-                assembler.template Matrix<Velz,Tauzy>(shp_dy,     fac, shp_tau);
-                assembler.template Matrix<Velz,Tauzz>(shp_dz, 2.0*fac, shp_tau);
-                
-                BlitzMat tau = taus[iiface];
-    
-                assembler.template Vector<Velx>(shp_dx, -2.0*fac*tau(0, 0));
-                assembler.template Vector<Velx>(shp_dy,     -fac*tau(0, 1));
-                assembler.template Vector<Velx>(shp_dy,     -fac*tau(1, 0));
-                assembler.template Vector<Velx>(shp_dz,     -fac*tau(0, 2));
-                assembler.template Vector<Velx>(shp_dz,     -fac*tau(2, 0));
-    
-                assembler.template Vector<Vely>(shp_dx,     -fac*tau(1, 0));
-                assembler.template Vector<Vely>(shp_dx,     -fac*tau(0, 1));
-                assembler.template Vector<Vely>(shp_dy, -2.0*fac*tau(1, 1));
-                assembler.template Vector<Vely>(shp_dz,     -fac*tau(1, 2));
-                assembler.template Vector<Vely>(shp_dz,     -fac*tau(2, 1));
-    
-                assembler.template Vector<Velz>(shp_dx,     -fac*tau(2, 0));
-                assembler.template Vector<Velz>(shp_dx,     -fac*tau(0, 2));
-                assembler.template Vector<Velz>(shp_dy,     -fac*tau(2, 1));
-                assembler.template Vector<Velz>(shp_dy,     -fac*tau(1, 2));
-                assembler.template Vector<Velz>(shp_dz, -2.0*fac*tau(2, 2));
-            }
+            /*
+                          /                  \
+                         |              / \   |
+                         |  Dtau , eps | v |  |
+                         |              \ /   |
+                          \                  /
+            */
+            assembler.template Matrix<Velx,Tauxx>(shp_dx, 2.0*fac, shp_tau);
+            assembler.template Matrix<Velx,Tauxy>(shp_dy,     fac, shp_tau);
+            assembler.template Matrix<Velx,Tauxz>(shp_dz,     fac, shp_tau);
+            assembler.template Matrix<Velx,Tauyx>(shp_dy,     fac, shp_tau);
+            assembler.template Matrix<Velx,Tauzx>(shp_dz,     fac, shp_tau);
+
+            assembler.template Matrix<Vely,Tauxy>(shp_dx,     fac, shp_tau);
+            assembler.template Matrix<Vely,Tauyx>(shp_dx,     fac, shp_tau);
+            assembler.template Matrix<Vely,Tauyy>(shp_dy, 2.0*fac, shp_tau);
+            assembler.template Matrix<Vely,Tauyz>(shp_dz,     fac, shp_tau);
+            assembler.template Matrix<Vely,Tauzy>(shp_dz,     fac, shp_tau);
+
+            assembler.template Matrix<Velz,Tauxz>(shp_dx,     fac, shp_tau);
+            assembler.template Matrix<Velz,Tauyz>(shp_dy,     fac, shp_tau);
+            assembler.template Matrix<Velz,Tauzx>(shp_dx,     fac, shp_tau);
+            assembler.template Matrix<Velz,Tauzy>(shp_dy,     fac, shp_tau);
+            assembler.template Matrix<Velz,Tauzz>(shp_dz, 2.0*fac, shp_tau);
+            
+            assembler.template Vector<Velx>(shp_dx, -2.0*fac*tau(0, 0));
+            assembler.template Vector<Velx>(shp_dy,     -fac*tau(0, 1));
+            assembler.template Vector<Velx>(shp_dy,     -fac*tau(1, 0));
+            assembler.template Vector<Velx>(shp_dz,     -fac*tau(0, 2));
+            assembler.template Vector<Velx>(shp_dz,     -fac*tau(2, 0));
+
+            assembler.template Vector<Vely>(shp_dx,     -fac*tau(1, 0));
+            assembler.template Vector<Vely>(shp_dx,     -fac*tau(0, 1));
+            assembler.template Vector<Vely>(shp_dy, -2.0*fac*tau(1, 1));
+            assembler.template Vector<Vely>(shp_dz,     -fac*tau(1, 2));
+            assembler.template Vector<Vely>(shp_dz,     -fac*tau(2, 1));
+
+            assembler.template Vector<Velz>(shp_dx,     -fac*tau(2, 0));
+            assembler.template Vector<Velz>(shp_dx,     -fac*tau(0, 2));
+            assembler.template Vector<Velz>(shp_dy,     -fac*tau(2, 1));
+            assembler.template Vector<Velz>(shp_dy,     -fac*tau(1, 2));
+            assembler.template Vector<Velz>(shp_dz, -2.0*fac*tau(2, 2));
         }
 
 
@@ -1130,6 +1177,26 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
         assembler.template Vector<Pres>(enr_conv_r_(0, 0, _), -fac);
         assembler.template Vector<Pres>(enr_conv_r_(1, 1, _), -fac);
         assembler.template Vector<Pres>(enr_conv_r_(2, 2, _), -fac);
+        
+        if (numparamtauxx != 0)
+        {
+            /* Divergenzfreiheit - continuity equation*/
+            /*
+                           /                  \
+                          |                    |
+                          | trace (Dtau)  , q  |
+                          |                    |
+                           \                  /
+            */
+            assembler.template Matrix<Pres,Tauxx>(shp, fac, shp_tau);
+            assembler.template Matrix<Pres,Tauyy>(shp, fac, shp_tau);
+            assembler.template Matrix<Pres,Tauzz>(shp, fac, shp_tau);
+            
+            assembler.template Vector<Pres>(shp, -fac*tau(0,0));
+            assembler.template Vector<Pres>(shp, -fac*tau(1,1));
+            assembler.template Vector<Pres>(shp, -fac*tau(2,2));
+        }
+        
 
         
 
@@ -1140,78 +1207,81 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
 
 
         // Hellinger-Reissner terms
-        if (numparamtauxx > 0)
+        if (numparamtauxx != 0)
         {
-            for (int iiface = 0; iiface < numinterface; ++iiface)
-            {
-                BlitzMat tau = taus[iiface];
-                /* quadratic part */
-                /*
-                               /                     \
-                              |                       |
-                              | eps(Dtau)  , virt tau |
-                              |                       |
-                               \                     /
-                */
-                assembler.template Matrix<Tauxx,Tauxx>(shp_tau, -reciproke_visc*fac, shp_tau);
-                assembler.template Matrix<Tauyy,Tauyy>(shp_tau, -reciproke_visc*fac, shp_tau);
-                assembler.template Matrix<Tauzz,Tauzz>(shp_tau, -reciproke_visc*fac, shp_tau);
-                assembler.template Matrix<Tauxy,Tauxy>(shp_tau, -reciproke_visc*fac, shp_tau);
-                assembler.template Matrix<Tauxz,Tauxz>(shp_tau, -reciproke_visc*fac, shp_tau);
-                assembler.template Matrix<Tauyz,Tauyz>(shp_tau, -reciproke_visc*fac, shp_tau);
+            /* quadratic part */
+            /*
+                           /                     \
+                          |                       |
+                          | eps(Dtau)  , virt tau |
+                          |                       |
+                           \                     /
+            */
+            //cout << "HR: quadratic part" << endl;
+            assembler.template Matrix<Tauxx,Tauxx>(shp_tau, -reciproke_visc*fac, shp_tau);
+            assembler.template Matrix<Tauxy,Tauxy>(shp_tau, -reciproke_visc*fac, shp_tau);
+            assembler.template Matrix<Tauxz,Tauxz>(shp_tau, -reciproke_visc*fac, shp_tau);
+            assembler.template Matrix<Tauyx,Tauyx>(shp_tau, -reciproke_visc*fac, shp_tau);
+            assembler.template Matrix<Tauyy,Tauyy>(shp_tau, -reciproke_visc*fac, shp_tau);
+            assembler.template Matrix<Tauyz,Tauyz>(shp_tau, -reciproke_visc*fac, shp_tau);
+            assembler.template Matrix<Tauzx,Tauzx>(shp_tau, -reciproke_visc*fac, shp_tau);
+            assembler.template Matrix<Tauzy,Tauzy>(shp_tau, -reciproke_visc*fac, shp_tau);
+            assembler.template Matrix<Tauzz,Tauzz>(shp_tau, -reciproke_visc*fac, shp_tau);
 
-                assembler.template Vector<Tauxx>(shp_tau, reciproke_visc*fac*tau(0,0));
-                assembler.template Vector<Tauyy>(shp_tau, reciproke_visc*fac*tau(1,1));
-                assembler.template Vector<Tauzz>(shp_tau, reciproke_visc*fac*tau(2,2));
-                assembler.template Vector<Tauxy>(shp_tau, reciproke_visc*fac*tau(0,1));
-                assembler.template Vector<Tauxz>(shp_tau, reciproke_visc*fac*tau(0,2));
-                assembler.template Vector<Tauyz>(shp_tau, reciproke_visc*fac*tau(1,2));
+            assembler.template Vector<Tauxx>(shp_tau, reciproke_visc*fac*tau(0,0));
+            assembler.template Vector<Tauxy>(shp_tau, reciproke_visc*fac*tau(0,1));
+            assembler.template Vector<Tauxz>(shp_tau, reciproke_visc*fac*tau(0,2));
+            assembler.template Vector<Tauyx>(shp_tau, reciproke_visc*fac*tau(1,0));
+            assembler.template Vector<Tauyy>(shp_tau, reciproke_visc*fac*tau(1,1));
+            assembler.template Vector<Tauyz>(shp_tau, reciproke_visc*fac*tau(1,2));
+            assembler.template Vector<Tauzx>(shp_tau, reciproke_visc*fac*tau(2,0));
+            assembler.template Vector<Tauzy>(shp_tau, reciproke_visc*fac*tau(2,1));
+            assembler.template Vector<Tauzz>(shp_tau, reciproke_visc*fac*tau(2,2));
 
-                /* rectangular part */
-                /*
-                               /                   \
-                              |                     |
-                              | eps(Du)  , virt tau |
-                              |                     |
-                               \                   /
-                */
-                assembler.template Matrix<Tauxx,Velx>(shp_tau, 2.0*fac, shp_dx);
-                assembler.template Matrix<Tauxy,Velx>(shp_tau,     fac, shp_dy);
-                assembler.template Matrix<Tauxz,Velx>(shp_tau,     fac, shp_dz);
-                assembler.template Matrix<Tauyx,Velx>(shp_tau,     fac, shp_dy);
-                assembler.template Matrix<Tauzx,Velx>(shp_tau,     fac, shp_dz);
+            /* rectangular part */
+            /*
+                           /                   \
+                          |                     |
+                          | eps(Du)  , virt tau |
+                          |                     |
+                           \                   /
+            */
+            //cout << "HR: rectangular part" << endl;
+            assembler.template Matrix<Tauxx,Velx>(shp_tau, 2.0*fac, shp_dx);
+            assembler.template Matrix<Tauxy,Velx>(shp_tau,     fac, shp_dy);
+            assembler.template Matrix<Tauxy,Vely>(shp_tau,     fac, shp_dx);
+            assembler.template Matrix<Tauxz,Velx>(shp_tau,     fac, shp_dz);
+            assembler.template Matrix<Tauxz,Velz>(shp_tau,     fac, shp_dx);
+            
+            assembler.template Matrix<Tauyx,Velx>(shp_tau,     fac, shp_dy);
+            assembler.template Matrix<Tauyx,Vely>(shp_tau,     fac, shp_dx);
+            assembler.template Matrix<Tauyy,Vely>(shp_tau, 2.0*fac, shp_dy);
+            assembler.template Matrix<Tauyz,Velz>(shp_tau,     fac, shp_dz);
+            assembler.template Matrix<Tauyz,Vely>(shp_tau,     fac, shp_dx);
+            
+            assembler.template Matrix<Tauzx,Velx>(shp_tau,     fac, shp_dz);
+            assembler.template Matrix<Tauzx,Velz>(shp_tau,     fac, shp_dx);
+            assembler.template Matrix<Tauzy,Vely>(shp_tau,     fac, shp_dz);
+            assembler.template Matrix<Tauzy,Velz>(shp_tau,     fac, shp_dy);
+            assembler.template Matrix<Tauzz,Velz>(shp_tau, 2.0*fac, shp_dz);
 
-                assembler.template Matrix<Tauxy,Vely>(shp_tau,     fac, shp_dx);
-                assembler.template Matrix<Tauyx,Vely>(shp_tau,     fac, shp_dx);
-                assembler.template Matrix<Tauyy,Vely>(shp_tau, 2.0*fac, shp_dy);
-                assembler.template Matrix<Tauyz,Vely>(shp_tau,     fac, shp_dz);
-                assembler.template Matrix<Tauzy,Vely>(shp_tau,     fac, shp_dz);
+            assembler.template Vector<Tauxx>(shp_tau, -2.0*fac*vderxy_(0, 0));
+            assembler.template Vector<Tauxy>(shp_tau,     -fac*vderxy_(0, 1));
+            assembler.template Vector<Tauxy>(shp_tau,     -fac*vderxy_(1, 0));
+            assembler.template Vector<Tauxz>(shp_tau,     -fac*vderxy_(0, 2));
+            assembler.template Vector<Tauxz>(shp_tau,     -fac*vderxy_(2, 0));
 
-                assembler.template Matrix<Tauxz,Velz>(shp_tau,     fac, shp_dx);
-                assembler.template Matrix<Tauyz,Velz>(shp_tau,     fac, shp_dy);
-                assembler.template Matrix<Tauzx,Velz>(shp_tau,     fac, shp_dx);
-                assembler.template Matrix<Tauzy,Velz>(shp_tau,     fac, shp_dy);
-                assembler.template Matrix<Tauzz,Velz>(shp_tau, 2.0*fac, shp_dz);
+            assembler.template Vector<Tauyx>(shp_tau,     -fac*vderxy_(1, 0));
+            assembler.template Vector<Tauyx>(shp_tau,     -fac*vderxy_(0, 1));
+            assembler.template Vector<Tauyy>(shp_tau, -2.0*fac*vderxy_(1, 1));
+            assembler.template Vector<Tauyz>(shp_tau,     -fac*vderxy_(1, 2));
+            assembler.template Vector<Tauyz>(shp_tau,     -fac*vderxy_(2, 1));
 
-
-                assembler.template Vector<Tauxx>(shp_tau, 2.0*fac*vderxy_(0, 0));
-                assembler.template Vector<Tauxy>(shp_tau,     fac*vderxy_(0, 1));
-                assembler.template Vector<Tauxz>(shp_tau,     fac*vderxy_(0, 2));
-                assembler.template Vector<Tauyx>(shp_tau,     fac*vderxy_(0, 1));
-                assembler.template Vector<Tauzx>(shp_tau,     fac*vderxy_(0, 2));
-
-                assembler.template Vector<Tauxy>(shp_tau,     fac*vderxy_(1, 0));
-                assembler.template Vector<Tauyx>(shp_tau,     fac*vderxy_(1, 0));
-                assembler.template Vector<Tauyy>(shp_tau, 2.0*fac*vderxy_(1, 1));
-                assembler.template Vector<Tauyz>(shp_tau,     fac*vderxy_(1, 2));
-                assembler.template Vector<Tauzy>(shp_tau,     fac*vderxy_(1, 2));
-
-                assembler.template Vector<Tauxz>(shp_tau,     fac*vderxy_(2, 0));
-                assembler.template Vector<Tauyz>(shp_tau,     fac*vderxy_(2, 1));
-                assembler.template Vector<Tauzx>(shp_tau,     fac*vderxy_(2, 0));
-                assembler.template Vector<Tauzy>(shp_tau,     fac*vderxy_(2, 1));
-                assembler.template Vector<Tauzz>(shp_tau, 2.0*fac*vderxy_(2, 2));
-            }
+            assembler.template Vector<Tauzx>(shp_tau,     -fac*vderxy_(2, 0));
+            assembler.template Vector<Tauzx>(shp_tau,     -fac*vderxy_(0, 2));
+            assembler.template Vector<Tauzy>(shp_tau,     -fac*vderxy_(2, 1));
+            assembler.template Vector<Tauzy>(shp_tau,     -fac*vderxy_(1, 2));
+            assembler.template Vector<Tauzz>(shp_tau, -2.0*fac*vderxy_(2, 2));
         }
 
         //----------------------------------------------------------------------
@@ -1264,21 +1334,17 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
                       |                          |
                        \                        /
               */              
-              for (int iiface = 0; iiface < numinterface; ++iiface)
-              {
-                  BlitzMat tau = taus[iiface];
-                  assembler.template Matrix<Pres,Tauxx>(shp_dx, tau_Mp, shp_tau_dx);
-                  assembler.template Matrix<Pres,Tauyx>(shp_dy, tau_Mp, shp_tau_dx);
-                  assembler.template Matrix<Pres,Tauzx>(shp_dz, tau_Mp, shp_tau_dx);
-        
-                  assembler.template Matrix<Pres,Tauxy>(shp_dx, tau_Mp, shp_tau_dy);
-                  assembler.template Matrix<Pres,Tauyy>(shp_dy, tau_Mp, shp_tau_dy);
-                  assembler.template Matrix<Pres,Tauzy>(shp_dz, tau_Mp, shp_tau_dy);
-        
-                  assembler.template Matrix<Pres,Tauxz>(shp_dx, tau_Mp, shp_tau_dz);
-                  assembler.template Matrix<Pres,Tauyz>(shp_dy, tau_Mp, shp_tau_dz);
-                  assembler.template Matrix<Pres,Tauzz>(shp_dz, tau_Mp, shp_tau_dz);
-              }
+              assembler.template Matrix<Pres,Tauxx>(shp_dx, 2.0*tau_Mp, shp_tau_dx);
+              assembler.template Matrix<Pres,Tauyx>(shp_dy, 2.0*tau_Mp, shp_tau_dx);
+              assembler.template Matrix<Pres,Tauzx>(shp_dz, 2.0*tau_Mp, shp_tau_dx);
+    
+              assembler.template Matrix<Pres,Tauyx>(shp_dx, 2.0*tau_Mp, shp_tau_dy);
+              assembler.template Matrix<Pres,Tauyy>(shp_dy, 2.0*tau_Mp, shp_tau_dy);
+              assembler.template Matrix<Pres,Tauyz>(shp_dz, 2.0*tau_Mp, shp_tau_dy);
+    
+              assembler.template Matrix<Pres,Tauzx>(shp_dx, 2.0*tau_Mp, shp_tau_dz);
+              assembler.template Matrix<Pres,Tauzy>(shp_dy, 2.0*tau_Mp, shp_tau_dz);
+              assembler.template Matrix<Pres,Tauzz>(shp_dz, 2.0*tau_Mp, shp_tau_dz);
           }
                   
           /* pressure stabilisation: pressure( L_pres_p) */
@@ -1304,6 +1370,7 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
 
         if(supg)
         {
+            dserror("check first!");
             /* supg stabilisation: convective part ( L_conv_u) */
             /*
                  /                                           \
@@ -1347,15 +1414,15 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
             assembler.template Matrix<Velz,Vely>(enr_conv_c_, 2.0*visc*tau_M, enr_viscs2_(1, 2, _));
             assembler.template Matrix<Velz,Velz>(enr_conv_c_, 2.0*visc*tau_M, enr_viscs2_(2, 2, _));
 
-          if (newton)
-          {
-              dserror("not translated to XFEM assembler yet!");
-              } // if newton
+            if (newton)
+            {
+                dserror("not translated to XFEM assembler yet!");
+            } // if newton
 
-          // supg stabilisation
-          assembler.template Vector<Velx>(enr_conv_c_, -tau_M*res_old(0));
-          assembler.template Vector<Vely>(enr_conv_c_, -tau_M*res_old(1));
-          assembler.template Vector<Velz>(enr_conv_c_, -tau_M*res_old(2));
+            // supg stabilisation
+            assembler.template Vector<Velx>(enr_conv_c_, -tau_M*res_old(0));
+            assembler.template Vector<Vely>(enr_conv_c_, -tau_M*res_old(1));
+            assembler.template Vector<Velz>(enr_conv_c_, -tau_M*res_old(2));
         }
 
 
@@ -1376,14 +1443,14 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
 
         if(cstab)
         {
-          /* continuity stabilisation */
-          /*
+            /* continuity stabilisation */
+            /*
                      /                        \
                     |                          |
                     | nabla o Du  , nabla o v  |
                     |                          |
                      \                        /
-          */
+            */
             assembler.template Matrix<Velx,Velx>(shp_dx, tau_C, shp_dx);
             assembler.template Matrix<Velx,Vely>(shp_dx, tau_C, shp_dy);
             assembler.template Matrix<Velx,Velz>(shp_dx, tau_C, shp_dz);
