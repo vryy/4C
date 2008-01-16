@@ -1072,6 +1072,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   bool printscreen = params_.get<bool>  ("print to screen",true);
   bool printerr    = params_.get<bool>  ("print to err",false);
   int  maxiterUzawa   = params_.get<int>   ("uzawa maxiter"         ,50);
+  double Uzawa_param=params_.get<double>("uzawa parameter",1);
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
   if (!errfile) printerr = false;
   const Epetra_Map* dofrowmap = discret_.DofRowMap();
@@ -1094,6 +1095,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   Epetra_Time timer(discret_.Comm());
   timer.ResetStartTime();
   bool print_unconv = true;
+  
 
   while (Unconverged(convcheck, disinorm, fresmnorm, volnorm, toldisp, tolres, tolvol)
          && numiter<=maxiter)
@@ -1116,8 +1118,12 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     // For every iteration step an uzawa algorithm is used to solve the linear system.
     //Preparation of uzawa method to solve the linear system.
     double norm_uzawa;
+    double norm_uzawa_alt;
+    double quotient;
     double norm_vol_uzawa;
+    double norm_vol_uzawa_alt;
     int numiter_uzawa=0;
+    int counter_uzawa=0;
     volConstrMan_->ScaleLagrIncr(0.0);
 
     Epetra_Vector constrVecWeight(*(volConstrMan_->GetConstrVec()));
@@ -1148,14 +1154,14 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   	    uzawa_res.Multiply(1.0,*invtoggle_,rescopy,0.0);
   	}
   	uzawa_res.Norm2(&norm_uzawa);
-
+  	
   	Epetra_SerialDenseVector vol_res(numConstrVol);
   	for (int foo = 0; foo < numConstrVol; ++foo)
   	{
   	  vol_res[foo]=dotprod[foo]+volConstrMan_->GetVolumeError(foo);
   	}
   	norm_vol_uzawa=vol_res.Norm2();
-
+  	quotient =1;
     //Solve one iteration step with augmented lagrange
   	//Since we calculate displacement norm as well, at least one step has to be taken
     while (((norm_uzawa > toldisp||norm_vol_uzawa>tolvol)
@@ -1174,9 +1180,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 	  		  solver_.Solve(stiff_,disi_,fresmcopy,true,false);
 	  	  }
 
-	  	  //compute lagrange multiplier increments
-	  	  double Uzawa_param=params_.get<double>("uzawa parameter",1);
-
+	  	  //compute Lagrange multiplier increment
 	  	  for (int foo = 0; foo < numConstrVol; ++foo)
 	  	  {
 	  		  Epetra_Vector onlyvol_foo(volConstrMan_->GetDofMap(foo));
@@ -1211,14 +1215,43 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 	  	      Epetra_Vector rescopy(uzawa_res);
 	  		  uzawa_res.Multiply(1.0,*invtoggle_,rescopy,0.0);
 	  	  }
+	  	  norm_uzawa_alt=norm_uzawa;
 	  	  uzawa_res.Norm2(&norm_uzawa);
 	  	  Epetra_SerialDenseVector vol_res(numConstrVol);
 	  	  for (int foo = 0; foo < numConstrVol; ++foo)
 	  	  {
 	  		  vol_res[foo]=dotprod[foo]+volConstrMan_->GetVolumeError(foo);
 	  	  }
-	  	  norm_vol_uzawa=vol_res.Norm2();
-
+	  	  norm_vol_uzawa_alt=norm_vol_uzawa;
+	      norm_vol_uzawa=vol_res.Norm2();
+	      
+	      double	quotient_neu=norm_uzawa/norm_uzawa_alt;
+	      
+	      if (counter_uzawa>=1)
+	      {
+	    	  if (quotient_neu>1)
+	    	  {
+	    			Uzawa_param=Uzawa_param/(2);
+	    			counter_uzawa=-1;
+	    			quotient=1;
+	    	  }
+	    	  else
+	    	  {
+	    		  if (quotient<quotient_neu)
+	    		  {
+	    			  Uzawa_param=Uzawa_param/(1+quotient_neu);
+	    			  quotient=quotient_neu;
+	    			  counter_uzawa=-1;
+	    		  }
+	    		  else 
+	    		  {
+	    			  Uzawa_param=Uzawa_param*(1+quotient_neu);
+	    			  quotient=quotient_neu;
+	    			  counter_uzawa=-1;
+	    		  }
+	    	  }
+	      }
+	      counter_uzawa++;
 	  	  numiter_uzawa++;
     } //Uzawa loop
 
@@ -1354,7 +1387,8 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   }
 
   params_.set<int>("num iterations",numiter);
-
+  params_.set<double>("uzawa parameter",Uzawa_param);
+  
   //-------------------------------------- don't need this at the moment
   stiff_ = null;
 
