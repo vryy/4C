@@ -260,10 +260,19 @@ public:
                            const double tolres);
 
   /*!
+  \brief Check convergence of Newton iteration
+  */
+  virtual bool Unconverged(	const string type, const double disinorm,
+		  					const double resnorm, const double volnorm, 
+		  					const double toldisp, const double tolres,
+		  					const double tolvol);
+  
+  /*!
   \brief Determine reference norm of displacements and maximum of
   norms of internal, external and inertial forces
 
   */
+  
   virtual void CalcRefNorms();
 
   /*!
@@ -274,6 +283,15 @@ public:
                            FILE* errfile, Epetra_Time timer, int numiter,
                            int maxiter, double fresmnorm, double disinorm,
                            string convcheck);
+  
+  /*!
+    \brief Print Newton output to screen and/or error file considering volume constraints
+
+    */
+    virtual void PrintNewton(bool printscreen, bool printerr, bool print_unconv,
+                             FILE* errfile, Epetra_Time timer, int numiter,
+                             int maxiter, double fresmnorm, double disinorm,
+                             string convcheck, double volnorm);
 
   /*!
   \brief Print PTC output to screen and/or error file

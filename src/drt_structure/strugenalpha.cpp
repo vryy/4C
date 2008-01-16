@@ -1095,7 +1095,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   timer.ResetStartTime();
   bool print_unconv = true;
 
-  while ((Unconverged(convcheck, disinorm, fresmnorm, toldisp, tolres) || volnorm > tolvol)
+  while (Unconverged(convcheck, disinorm, fresmnorm, volnorm, toldisp, tolres, tolvol)
          && numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
@@ -3079,6 +3079,18 @@ bool StruGenAlpha::Unconverged(const string type, const double disinorm,
 }
 
 /*----------------------------------------------------------------------*
+ |  check convergence of Newton iteration (public)              tk 01/08|
+ |  take the volume constraint into account as well                     |  
+ *----------------------------------------------------------------------*/
+bool StruGenAlpha::Unconverged(const string type, const double disinorm,
+        const double resnorm, const double volnorm, 
+        const double toldisp, const double tolres,
+        const double tolvol)
+{
+	return (Unconverged(type,disinorm, resnorm, toldisp,tolres)|| (volnorm>tolvol));
+}
+
+/*----------------------------------------------------------------------*
  |  calculate reference norms for relative convergence checks   lw 12/07|
  *----------------------------------------------------------------------*/
 void StruGenAlpha::CalcRefNorms()
@@ -3190,6 +3202,91 @@ void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_uncon
     {
       printf("Newton iteration converged: numiter %d absolute res-norm %e absolute dis-norm %e time %10.5f\n",
              numiter,fresmnorm,disinorm,timepernlnsolve);
+      fflush(stdout);
+    }
+  }
+}
+
+/*------------------------------------------------------------------------------*
+ |  print to screen and/or error file considering volume constraints    tk 01/08|
+ *------------------------------------------------------------------------------*/
+void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_unconv,
+                               FILE* errfile, Epetra_Time timer, int numiter,
+                               int maxiter, double fresmnorm, double disinorm,
+                               string convcheck, double volnorm)
+{
+  bool relres        = (convcheck == "RelRes_And_AbsDis" || convcheck == "RelRes_Or_AbsDis");
+  bool relres_reldis = (convcheck == "RelRes_And_RelDis" || convcheck == "RelRes_Or_RelDis");
+
+  if (relres)
+  {
+    fresmnorm /= ref_fnorm_;
+  }
+  if (relres_reldis)
+  {
+    fresmnorm /= ref_fnorm_;
+    disinorm  /= ref_disnorm_;
+  }
+
+  if (print_unconv)
+  {
+    if (printscreen)
+    {
+      if (relres)
+      {
+        printf("numiter %2d scaled res-norm %10.5e absolute dis-norm %20.15E absolute vol-norm %10.5e\n",numiter+1, fresmnorm, disinorm, volnorm);
+        fflush(stdout);
+      }
+      else if (relres_reldis)
+      {
+        printf("numiter %2d scaled res-norm %10.5e scaled dis-norm %20.15E absolute res-norm %10.5e\n",numiter+1, fresmnorm, disinorm, volnorm);
+        fflush(stdout);
+      }
+      else
+        {
+        printf("numiter %2d absolute res-norm %10.5e absolute dis-norm %20.15E absolute res-norm %10.5e\n",numiter+1, fresmnorm, disinorm, volnorm);
+        fflush(stdout);
+      }
+    }
+    if (printerr)
+    {
+      if (relres)
+      {
+        fprintf(errfile, "numiter %2d scaled res-norm %10.5e absolute dis-norm %20.15E absolute res-norm %10.5e\n",numiter+1, fresmnorm, disinorm, volnorm);
+        fflush(errfile);
+      }
+      else if (relres_reldis)
+      {
+        fprintf(errfile, "numiter %2d scaled res-norm %10.5e scaled dis-norm %20.15E absolute res-norm %10.5e\n",numiter+1, fresmnorm, disinorm, volnorm);
+        fflush(errfile);
+      }
+      else
+        {
+        fprintf(errfile, "numiter %2d absolute res-norm %10.5e absolute dis-norm %20.15E absolute res-norm %10.5e\n",numiter+1, fresmnorm, disinorm, volnorm);
+        fflush(errfile);
+      }
+    }
+  }
+  else
+  {
+    double timepernlnsolve = timer.ElapsedTime();
+
+    if (relres)
+    {
+      printf("Newton iteration converged: numiter %d scaled res-norm %e absolute dis-norm %e absolute res-norm %e time %10.5f\n",
+             numiter,fresmnorm,disinorm, volnorm,timepernlnsolve);
+      fflush(stdout);
+    }
+    else if (relres_reldis)
+    {
+      printf("Newton iteration converged: numiter %d scaled res-norm %e scaled dis-norm %e absolute res-norm %e time %10.5f\n",
+             numiter,fresmnorm,disinorm, volnorm,timepernlnsolve);
+      fflush(stdout);
+    }
+    else
+    {
+      printf("Newton iteration converged: numiter %d absolute res-norm %e absolute dis-norm %e absolute res-norm %e time %10.5f\n",
+             numiter,fresmnorm,disinorm, volnorm,timepernlnsolve);
       fflush(stdout);
     }
   }
