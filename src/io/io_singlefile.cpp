@@ -375,9 +375,19 @@ void init_bin_out_main(CHAR* outputname)
     /* insert back reference */
     if (genprob.restart)
     {
+      CHAR* basename;
+      basename = rindex(outputname, '/');
+      if (basename != NULL)
+      {
+        basename += 1;
+      }
+      else
+      {
+        basename = outputname;
+      }
       fprintf(bin_out_main.control_file,
               "restarted_run = \"%s\"\n\n",
-              outputname);
+              basename);
     }
 
 #ifndef CCADISCRET
