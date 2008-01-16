@@ -41,23 +41,19 @@ int DRT::Utils::getNumberOfElementNodes(
     
     switch(distype)
     {
-        case DRT::Element::hex8:
-            numnodes = 8;
-            break;
-        case DRT::Element::hex20:
-            numnodes = 20;
-            break;
-        case DRT::Element::hex27:
-            numnodes = 27;
-            break;
-        case DRT::Element::tet4:
-            numnodes = 4;
-            break;
-        case DRT::Element::tet10:
-            numnodes = 10;
-            break;   
-        default:
-            dserror("discretization type not yet implemented");     
+    case DRT::Element::point1:       return 1;    break;
+    case DRT::Element::tri3:         return 3;    break;
+    case DRT::Element::tri6:         return 6;    break;
+    case DRT::Element::quad4:        return 4;    break;
+    case DRT::Element::quad8:        return 8;    break;
+    case DRT::Element::quad9:        return 9;    break;
+    case DRT::Element::hex8:         return 8;    break;
+    case DRT::Element::hex20:        return 20;   break;
+    case DRT::Element::hex27:        return 27;   break;
+    case DRT::Element::tet4:         return 4;    break;
+    case DRT::Element::tet10:        return 10;   break;
+    default:
+        dserror("discretization type not yet implemented");  
     }
     
     return numnodes;     
