@@ -28,7 +28,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_utils.H"
 #include "fluid3_stabilization.H"
 #include "xfluid3_local_assembler.H"
-#include "xfluid3_shapefunction_stress.H"
+#include "xfluid3_interpolation.H"
 
 #include <Epetra_SerialDenseSolver.h>
 
@@ -717,10 +717,13 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
       DRT::Utils::shape_function_3D(funct_,e1,e2,e3,DISTYPE);
       DRT::Utils::shape_function_3D_deriv1(deriv_,e1,e2,e3,DISTYPE);
       
-      const BlitzVec funct_stress(DRT::Elements::FLUID::stress_shape_function_3D<DISTYPE>(e1,e2,e3));
-      const BlitzMat deriv_stress(DRT::Elements::FLUID::stress_shape_function_3D_deriv1<DISTYPE>(e1,e2,e3));
-//      cout << "funct_stress" << funct_stress << endl;
-//      cout << "deriv_stress" << deriv_stress << endl;
+      const DRT::Element::DiscretizationType stressdistype = XFLUID::getStressInterpolationType(XFLUID::getElementFormulation(DISTYPE));
+      BlitzVec funct_stress(numparamtauxx);
+      BlitzMat deriv_stress(3,numparamtauxx,blitz::ColumnMajorArray<2>());
+      DRT::Utils::shape_function_3D(funct_stress,e1,e2,e3,stressdistype);
+      DRT::Utils::shape_function_3D_deriv1(deriv_stress,e1,e2,e3,stressdistype);
+      //cout << "funct_stress" << funct_stress << endl;
+      //cout << "deriv_stress" << deriv_stress << endl;
 
       // position of the gausspoint in physical coordinates
       const BlitzVec gauss_pos(blitz::sum(funct_(j)*xyze_(i,j),j));
@@ -870,17 +873,25 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
       // get viscous stress unknowns
       BlitzMat tau(3,3,blitz::ColumnMajorArray<2>());
       tau(0,0) = blitz::sum(enr_funct_stress(_)*etau(0,_));
+      tau(1,1) = blitz::sum(enr_funct_stress(_)*etau(1,_));
+      tau(2,2) = blitz::sum(enr_funct_stress(_)*etau(2,_));
       tau(0,1) = blitz::sum(enr_funct_stress(_)*etau(3,_));
       tau(0,2) = blitz::sum(enr_funct_stress(_)*etau(4,_));
+      tau(1,2) = blitz::sum(enr_funct_stress(_)*etau(5,_));
       tau(1,0) = tau(0,1);
-      tau(1,1) = blitz::sum(enr_funct_stress(_)*etau(0,_));
-      tau(1,2) = blitz::sum(enr_funct_stress(_)*etau(0,_));
       tau(2,0) = tau(0,2);
       tau(2,1) = tau(1,2);
-      tau(2,2) = blitz::sum(enr_funct_stress(_)*etau(5,_));
       
-//      cout << "tau  " << tau << endl;
-//      cout << "eps^u" << eps << endl;
+      
+//      const BlitzMat epstau(tau*reciproke_visc);
+//      
+//      if (ele->Id() == 3)
+//      {
+//          cout << endl;
+//          cout << "eps^tau: " << epstau << endl;
+//          cout << "eps^u:   " << eps << endl;
+//          cout << "pressure = " << press << endl;
+//      }
 
 
       // get bodyforce in gausspoint
@@ -1182,19 +1193,19 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
         {
             /* Divergenzfreiheit - continuity equation*/
             /*
-                           /                  \
-                          |                    |
-                          | trace (Dtau)  , q  |
-                          |                    |
-                           \                  /
+                           /                       \
+                          |                         |
+                          | trace (eps(Dtau))  , q  |
+                          |                         |
+                           \                       /
             */
-            assembler.template Matrix<Pres,Tauxx>(shp, fac, shp_tau);
-            assembler.template Matrix<Pres,Tauyy>(shp, fac, shp_tau);
-            assembler.template Matrix<Pres,Tauzz>(shp, fac, shp_tau);
+            assembler.template Matrix<Pres,Tauxx>(shp, reciproke_visc*fac, shp_tau);
+            assembler.template Matrix<Pres,Tauyy>(shp, reciproke_visc*fac, shp_tau);
+            assembler.template Matrix<Pres,Tauzz>(shp, reciproke_visc*fac, shp_tau);
             
-            assembler.template Vector<Pres>(shp, -fac*tau(0,0));
-            assembler.template Vector<Pres>(shp, -fac*tau(1,1));
-            assembler.template Vector<Pres>(shp, -fac*tau(2,2));
+            assembler.template Vector<Pres>(shp, -reciproke_visc*fac*tau(0,0));
+            assembler.template Vector<Pres>(shp, -reciproke_visc*fac*tau(1,1));
+            assembler.template Vector<Pres>(shp, -reciproke_visc*fac*tau(2,2));
         }
         
 

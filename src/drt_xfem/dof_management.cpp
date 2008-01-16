@@ -15,7 +15,7 @@ Maintainer: Axel Gerstenberger
 #include <blitz/array.h>
 #include "integrationcell.H"
 #include "dof_management.H"
-#include "../drt_f3/xfluid3_shapefunction_stress.H"
+#include "../drt_f3/xfluid3_interpolation.H"
 
 
 using namespace std;
@@ -277,12 +277,12 @@ void XFEM::createDofMap(
     map<int, set<XFEM::FieldEnr> >  nodalDofSet;
     map<int, set<XFEM::FieldEnr> >  elementalDofs;
     
-    // standard enrichment used for all nodes (for now -> we can remove them from holes in the fluid)
-    const int standard_label = 0;
-    const XFEM::Enrichment enr_std(standard_label, XFEM::Enrichment::typeStandard);
     // loop my row nodes and add standard degrees of freedom
     for (int i=0; i<xfemdis->NumMyColNodes(); ++i)
     {
+        // standard enrichment used for all nodes (for now -> we can remove them from holes in the fluid)
+        const int standard_label = 0;    
+        const XFEM::Enrichment enr_std(standard_label, XFEM::Enrichment::typeStandard);
         const DRT::Node* actnode = xfemdis->lColNode(i);
         const int gid = actnode->Id();
         nodalDofSet[gid].insert(XFEM::FieldEnr(PHYSICS::Velx, enr_std));
@@ -293,10 +293,13 @@ void XFEM::createDofMap(
     for (int i=0; i<xfemdis->NumMyColElements(); ++i)
     {
         const DRT::Element* actele = xfemdis->lColElement(i);
-        const int numstressparam = DRT::Elements::FLUID::getNumberOfStressDofs(actele->Shape());
+        const DRT::Element::DiscretizationType stressdistype = XFLUID::getStressInterpolationType(XFLUID::getElementFormulation(actele->Shape()));
+        const int numstressparam = DRT::Utils::getNumberOfElementNodes(stressdistype);
         const int element_gid = actele->Id();
         for (int inen = 0; inen<numstressparam; ++inen)
         {
+            const int offset_to_standard = 1;
+            const XFEM::Enrichment enr_std(inen + offset_to_standard, XFEM::Enrichment::typeStandard);
             elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Tauxx, enr_std));
             elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Tauyy, enr_std));
             elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Tauzz, enr_std));
