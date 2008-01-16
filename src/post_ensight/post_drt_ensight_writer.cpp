@@ -30,16 +30,16 @@ EnsightWriter::EnsightWriter(
     myrank_(((field->problem())->comm())->MyPID()),
     nodeidgiven_(true)
 {
-    // initialize proc0map_ correctly   
+    // initialize proc0map_ correctly
     const RCP<DRT::Discretization> dis = field_->discretization();
     const Epetra_Map* nodemap = dis->NodeRowMap();
     proc0map_ = DRT::Utils::AllreduceEMap(*nodemap,0);
-    
+
     // get the number of elements for each distype (global numbers)
     numElePerDisType_ = GetNumElePerDisType(dis);
-    
+
     // get the global ids of elements for each distype (global numbers)
-    eleGidPerDisType_ = GetEleGidPerDisType(dis, numElePerDisType_);  
+    eleGidPerDisType_ = GetEleGidPerDisType(dis, numElePerDisType_);
 
     // map between distype in BACI and Ensight string
     //  note: these would be the direct mappings
@@ -60,7 +60,7 @@ EnsightWriter::EnsightWriter(
     distype2ensightstring_[DRT::Element::pyramid5]= "pyramid5";
 }
 
-        
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteFiles()
@@ -68,13 +68,13 @@ void EnsightWriter::WriteFiles()
 #ifndef PARALLEL
     if (myrank_ > 0) dserror("have serial filter version, but myrank_ = %d",myrank_);
 #endif
-    
+
     PostResult result = PostResult(field_);
 
     // timesteps when the solution is written
     const vector<double> soltime = result.get_result_times(field_->name());
 
-    
+
     ///////////////////////////////////
     //  write geometry file          //
     ///////////////////////////////////
@@ -90,14 +90,14 @@ void EnsightWriter::WriteFiles()
     // at the moment, we can only print out the first step -> to be changed
     vector<double> geotime; // timesteps when the geometry is written
     geotime.push_back(soltime[0]);
-    
-    
+
+
     ///////////////////////////////////
     //  write solution fields files  //
     ///////////////////////////////////
     const int soltimeset = 2;
     WriteAllResults(field_);
-    
+
     int counttime = 0;
     for (map<string,vector<int> >::const_iterator entry = timesetmap_.begin(); entry != timesetmap_.end(); ++entry) {
         counttime++;
@@ -110,13 +110,13 @@ void EnsightWriter::WriteFiles()
         string key = entry->first;
         filesetnumbermap_[key] = countfile;
     }
-    
-    
-    
+
+
+
     ///////////////////////////////////
     //  now write the case file      //
     ///////////////////////////////////
-    if (myrank_ == 0) 
+    if (myrank_ == 0)
     {
         const string casefilename = filename_ + "_"+ field_->name() + ".case";
         ofstream casefile;
@@ -138,7 +138,7 @@ void EnsightWriter::WriteFiles()
 
         casefile.close();
     }
-    
+
     return;
 }
 
@@ -163,8 +163,8 @@ void EnsightWriter::WriteGeoFile(
     // print out one timestep
     // if more are needed, this has to go into a loop
     map<string, vector<ofstream::pos_type> > resultfilepos;
-    
-    
+
+
     vector<ofstream::pos_type> fileposition;
     {
         WriteGeoFileOneTimeStep(geofile, resultfilepos, "geo");
@@ -172,9 +172,9 @@ void EnsightWriter::WriteGeoFile(
 
     // append index table
     // TODO: ens_checker complains if this is turned!!!! but I can't see, whats wrong here a.ger 11/07
-    // it is also correct to ommit WriteIndexTable, however the EnsightGold Format manual says, 
+    // it is also correct to ommit WriteIndexTable, however the EnsightGold Format manual says,
     // it would improve performance to have it on...
-    // WriteIndexTable(geofile, fileposition); 
+    // WriteIndexTable(geofile, fileposition);
 
     if (geofile.is_open())
         geofile.close();
@@ -188,15 +188,15 @@ void EnsightWriter::WriteGeoFile(
 void EnsightWriter::WriteGeoFileOneTimeStep(
         ofstream& file,
         map<string, vector<ofstream::pos_type> >& resultfilepos,
-        const string name) 
+        const string name)
 {
     vector<ofstream::pos_type>& filepos = resultfilepos[name];
     Write(file, "BEGIN TIME STEP");
     filepos.push_back(file.tellp());
-    
+
     Write(file, field_->name() + " geometry");
     Write(file, "Comment");
-    
+
     //nodeidgiven_ is set to true inside the class constructor
     if (nodeidgiven_)
       Write(file,"node id given");
@@ -218,7 +218,7 @@ void EnsightWriter::WriteGeoFileOneTimeStep(
 
     // write the grid information
     RefCountPtr<Epetra_Map> proc0map = WriteCoordinates(file, field_->discretization());
-    proc0map_=proc0map; // update the internal map 
+    proc0map_=proc0map; // update the internal map
     WriteCells(file, field_->discretization(), proc0map);
 
     Write(file, "END TIME STEP");
@@ -247,7 +247,7 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
         const DRT::Node* actnode = dis->gNode(gid);
         for (int isd=0; isd<NSD; ++isd)
         {
-            double val = ((actnode->X())[isd]);      
+            double val = ((actnode->X())[isd]);
             nodecoords->ReplaceMyValue(inode, isd, val);
         }
     }
@@ -257,13 +257,13 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
     proc0map = DRT::Utils::AllreduceEMap(*nodemap,0);
 
     // import my new values (proc0 gets everything, other procs empty)
-    Epetra_Import proc0importer(*proc0map,*nodemap);   
+    Epetra_Import proc0importer(*proc0map,*nodemap);
     RefCountPtr<Epetra_MultiVector> allnodecoords = rcp(new Epetra_MultiVector(*proc0map,3));
     int err = allnodecoords->Import(*nodecoords,proc0importer,Insert);
-    if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);   
+    if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
 
     // write the node coordinates (only proc 0)
-    // ensight format requires x_1 .. x_n, y_1 .. y_n, z_1 ... z_n  
+    // ensight format requires x_1 .. x_n, y_1 .. y_n, z_1 ... z_n
     // this is fulfilled automatically due to Epetra_MultiVector usage (columnwise writing data)
     if (myrank_==0)
     {
@@ -275,17 +275,17 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
             // first write node global ids (default)
             for (int inode=0; inode<proc0map->NumGlobalElements(); ++inode)
             {
-                Write(geofile,static_cast<float>(proc0map->GID(inode))+1); 
+                Write(geofile,static_cast<float>(proc0map->GID(inode))+1);
                 // gid+1 delivers the node numbering of the *.dat file starting with 1
             }
         }
-        // now write the coordinate information      
-        for (int i=0; i<numentries; ++i) 
+        // now write the coordinate information
+        for (int i=0; i<numentries; ++i)
         {
-            Write(geofile, static_cast<float>(coords[i])); 
+            Write(geofile, static_cast<float>(coords[i]));
         }
     }
-    
+
     return proc0map;
 }
 
@@ -306,7 +306,7 @@ void EnsightWriter::WriteCells(
     {
         //reserve sufficient memory for storing the node connectivity
         //(ghosted nodes included)
-        nodevector.reserve(dis->NumMyColNodes()); 
+        nodevector.reserve(dis->NumMyColNodes());
     }
 
     // for each found distype write block of the same typed elements
@@ -326,7 +326,7 @@ void EnsightWriter::WriteCells(
         {
             cout << "writing "<< iter->second<< " "<< realcellshape << " elements"
             << " ("<< ne << " cells) per distype."<< " ensight output celltype: "
-            << ensightString<< endl;       
+            << ensightString<< endl;
             Write(geofile, ensightString);
             Write(geofile, ne);
         }
@@ -398,24 +398,24 @@ void EnsightWriter::WriteCells(
 
 #ifdef PARALLEL
         // now do some communicative work for the parallel case:
-        // proc 1 to proc n have to send their stored node connectivity to proc0 
+        // proc 1 to proc n have to send their stored node connectivity to proc0
         // which does the writing
-        
+
         WriteNodeConnectivityPar(geofile, dis, nodevector, proc0map);
-#endif    
+#endif
 
     }
     return;
 }
-    
-    
+
+
 /*!
 * \brief communicate and write node connectivity in parallel case
 
   \author gjb
   \date 12/07
-*/    
-void EnsightWriter::WriteNodeConnectivityPar(       
+*/
+void EnsightWriter::WriteNodeConnectivityPar(
         ofstream& geofile,
         const RefCountPtr<DRT::Discretization> dis,
         const vector<int>& nodevector,
@@ -438,9 +438,9 @@ void EnsightWriter::WriteNodeConnectivityPar(
     for (int pid=0;pid<(dis->Comm()).NumProc();++pid)
     {
         MPI_Request request;
-        int         tag    =0;   
+        int         tag    =0;
         int         frompid=pid;
-        int         topid  =0;   
+        int         topid  =0;
         int         length=sblock.size();
 
         //--------------------------------------------------
@@ -454,7 +454,7 @@ void EnsightWriter::WriteNodeConnectivityPar(
 
         //--------------------------------------------------
         // proc 0 receives from proc pid
-        rblock.clear();  
+        rblock.clear();
         if (myrank_ == 0)
         {
             exporter.ReceiveAny(frompid,tag,rblock,length);
@@ -518,13 +518,13 @@ NumElePerDisType EnsightWriter::GetNumElePerDisType(
         // update counter for current distype
         numElePerDisType[distype]++;
     }
-    
+
 #ifndef PARALLEL
      return numElePerDisType; // these are already the global numbers
 
 #else
     // in parallel case we have to sum up the local element distype numbers
-     
+
     // determine maximum number of possible element discretization types
     DRT::Element::DiscretizationType numeledistypes = DRT::Element::max_distype;
 
@@ -537,14 +537,14 @@ NumElePerDisType EnsightWriter::GetNumElePerDisType(
         const int ne = iter->second;
         myNumElePerDisType[distypeiter]+=ne;
     }
-    
+
     // wait for all procs before communication is started
     (dis->Comm()).Barrier();
-    
-    // form the global sum 
-    vector<int> globalnumeleperdistype(numeledistypes); 
+
+    // form the global sum
+    vector<int> globalnumeleperdistype(numeledistypes);
     (dis->Comm()).SumAll(&(myNumElePerDisType[0]),&(globalnumeleperdistype[0]),numeledistypes);
-  
+
     // create return argument containing the global element numbers per distype
     NumElePerDisType globalNumElePerDisType;
     for(int i =0; i<numeledistypes ;++i)
@@ -554,9 +554,9 @@ NumElePerDisType EnsightWriter::GetNumElePerDisType(
     }
 
     return globalNumElePerDisType;
-    
+
 #endif
-    
+
 }
 
 
@@ -594,14 +594,14 @@ EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
     const Epetra_Map* elementmap = dis->ElementRowMap();
 
     EleGidPerDisType eleGidPerDisType;
-    
+
     //allocate memory
     NumElePerDisType::const_iterator iter;
     for (iter=numElePerDisType_.begin(); iter != numElePerDisType_.end(); ++iter)
     {
     eleGidPerDisType[iter->first].reserve(iter->second);
     }
-    
+
     for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
     {
     	const int gid = elementmap->GID(iele);
@@ -610,15 +610,15 @@ EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
         // update counter for current distype
         eleGidPerDisType[distype].push_back(gid);
     }
-    
+
 #ifndef PARALLEL
      return eleGidPerDisType; // these are already the global numbers
 
 #else
-    
+
      /*
      // in parallel case we have to sum up the local element distype numbers
-     
+
     // determine maximum number of possible element discretization types
     DRT::Element::DiscretizationType numeledistypes = DRT::Element::max_distype;
 
@@ -631,14 +631,14 @@ EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
         const int ne = iter->second;
         myNumElePerDisType[distypeiter]+=ne;
     }
-    
+
     // wait for all procs before communication is started
     (dis->Comm()).Barrier();
-    
-    // form the global sum 
-    vector<int> globalnumeleperdistype(numeledistypes); 
+
+    // form the global sum
+    vector<int> globalnumeleperdistype(numeledistypes);
     (dis->Comm()).SumAll(&(myNumElePerDisType[0]),&(globalnumeleperdistype[0]),numeledistypes);
-  
+
     // create return argument containing the global element numbers per distype
     NumElePerDisType globalNumElePerDisType;
     for(int i =0; i<numeledistypes ;++i)
@@ -648,7 +648,7 @@ EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
     }
 */
     return eleGidPerDisType;
-    
+
 #endif
 }
 
@@ -677,6 +677,36 @@ string EnsightWriter::GetEnsightString(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void EnsightWriter::WriteElementResults(PostField* field)
+{
+  PostResult result = PostResult(field_);
+  result.next_result();
+
+  MAP_ITERATOR iter;
+  init_map_iterator(&iter,result.group());
+
+  while (next_map_node(&iter))
+  {
+    // We do not support multiple definitions of the same name here. We just
+    // use the map node to obtain the key string. Afterward we can use normal
+    // map functions to find out if this key names an element vector group.
+    MAP_NODE* node = iterator_get_node(&iter);
+    char* key = node->key;
+    if (map_has_map(result.group(),key))
+    {
+      MAP* entry = map_read_map(result.group(),key);
+      if (map_has_string(entry, "type", "element"))
+      {
+        int columns = map_read_int(entry, "columns");
+        WriteResult(key,key,elementbased,columns);
+      }
+    }
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void EnsightWriter::WriteResult(
         const string groupname,
         const string name,
@@ -692,7 +722,7 @@ void EnsightWriter::WriteResult(
 
     // new for file continuation
     bool multiple_files = false;
-    
+
     // open file
     const string filename = filename_ + "_"+ field_->name() + "."+ name;
     ofstream file;
@@ -702,27 +732,27 @@ void EnsightWriter::WriteResult(
         file.open(filename.c_str());
         startfilepos = file.tellp(); // file position should be zero, but we stay flexible
     }
-    
+
     map<string, vector<ofstream::pos_type> > resultfilepos;
     int stepsize = 0;
-    
+
     // distinguish between node- and element-based results
     switch(restype)
     {
     case nodebased:
     {
-        if (myrank_==0)             
+        if (myrank_==0)
             cout<<"writing node-based field "<<name<<endl;
         // store information for later case file creation
         variableresulttypemap_[name] = "node";
-        
+
         //const Epetra_Map* nodemap = field_->discretization()->NodeRowMap();
         //const int numnp = nodemap->NumGlobalElements();
         //int effnumdf = numdf;
         //if (numdf==2) effnumdf=3; // in 2D we still have to write a 3D vector with zero z-components!!!
         // get the number of bits to be written each time step
         //const int stepsize = 5*80+sizeof(int)+effnumdf*numnp*sizeof(float);
-        
+
         WriteNodalResultStep(file, result, resultfilepos, groupname, name, numdf, from);
         // how many bits are necessary per time step (we assume a fixed size)?
         if (myrank_==0)
@@ -732,7 +762,7 @@ void EnsightWriter::WriteResult(
         }
         else
         	stepsize = 1; //use dummy value on other procs
-        
+
         while (result.next_result())
         {
             const int indexsize = 80+2*sizeof(int)+(file.tellp()/stepsize+2)*sizeof(long);
@@ -744,14 +774,14 @@ void EnsightWriter::WriteResult(
         }
     }
         break;
-        
+
     case elementbased:
     {
-        if (myrank_==0)             
+        if (myrank_==0)
             cout<<"writing element-based field "<<name<<endl;
         // store information for later case file creation
         variableresulttypemap_[name] = "element";
-       
+
         WriteElementResultStep(file, result, resultfilepos, groupname, name, numdf, from);
         // how many bits are necessary per time step (we assume a fixed size)?
         if (myrank_==0)
@@ -761,7 +791,7 @@ void EnsightWriter::WriteResult(
         }
         else
         	stepsize = 1; //use dummy value on other procs
-        
+
         while (result.next_result())
         {
             const int indexsize = 80+2*sizeof(int)+(file.tellp()/stepsize+2)*sizeof(long);
@@ -773,7 +803,7 @@ void EnsightWriter::WriteResult(
         }
     }
         break;
-        
+
     case no_restype:
     case max_restype:
         dserror("found invalid result type");
@@ -783,12 +813,12 @@ void EnsightWriter::WriteResult(
     filesetmap_[name].push_back(file.tellp()/stepsize);// has to be done BEFORE writing the index table
     variablenumdfmap_[name] = numdf;
     variablefilenamemap_[name] = filename;
-    
+
     // append index table
     WriteIndexTable(file, resultfilepos[name]);
     resultfilepos[name].clear();
-     
-    // close result file   
+
+    // close result file
     if (file.is_open())
         file.close();
 
@@ -904,7 +934,7 @@ void EnsightWriter::WriteNodalResultStep(
     proc0datamap = DRT::Utils::AllreduceEMap(*epetradatamap,0);
 
     // contract result values on proc0 (proc0 gets everything, other procs empty)
-    Epetra_Import proc0dataimporter(*proc0datamap,*epetradatamap);   
+    Epetra_Import proc0dataimporter(*proc0datamap,*epetradatamap);
     RefCountPtr<Epetra_Vector> proc0data = rcp(new Epetra_Vector(*proc0datamap));
     int err = proc0data->Import(*data,proc0dataimporter,Insert);
     if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
@@ -926,7 +956,7 @@ void EnsightWriter::WriteNodalResultStep(
             DRT::Node* n = dis->lRowNode(inode);
             const double dofgid = (double) dis->Dof(n, from + idf);
             if (dofgid > -1.0)
-            {    
+            {
                 dofgidpernodelid->ReplaceMyValue(inode, idf, dofgid);
             }
             else
@@ -938,7 +968,7 @@ void EnsightWriter::WriteNodalResultStep(
 
     // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
     RefCountPtr<Epetra_MultiVector> dofgidpernodelid_proc0 = rcp(new Epetra_MultiVector(*proc0map_,numdf));
-    Epetra_Import proc0dofimporter(*proc0map_,*nodemap);   
+    Epetra_Import proc0dofimporter(*proc0map_,*nodemap);
     err = dofgidpernodelid_proc0->Import(*dofgidpernodelid,proc0dofimporter,Insert);
     if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
 
@@ -955,8 +985,8 @@ void EnsightWriter::WriteNodalResultStep(
             for (int inode=0; inode<finalnumnode; inode++) // inode == lid of node because we use proc0map_
             {
                 // local storage position of desired dof gid
-                const int doflid = inode + (idf*numnp);  
-                // get the dof global id 
+                const int doflid = inode + (idf*numnp);
+                // get the dof global id
                 const int actdofgid = (int) (dofgids[doflid]);
                 dsassert(actdofgid>= 0, "error while getting dof global id");
                 // get the dof local id w.r.t. the finaldatamap
@@ -1003,7 +1033,7 @@ void EnsightWriter::WriteElementResultStep(
 	        const int numdf,
 	        const int from
 	        ) const
-	{	
+	{
 	//TODO +make WriteElementResultStep running also in parallel
 	//     +support for results based on hybrid meshes
 
@@ -1025,10 +1055,10 @@ void EnsightWriter::WriteElementResultStep(
 
     if (numele != elementmap->NumMyElements())
     	dserror("Parallel filter does not yet support element-based results");
-    const RefCountPtr<Epetra_MultiVector> data = result.read_multi_result(groupname); 
+    const RefCountPtr<Epetra_MultiVector> data = result.read_multi_result(groupname);
     const Epetra_BlockMap& datamap = data->Map();
     const int numcol = data->NumVectors();
-    
+
     //---------------
     // specify the element type
     //---------------
@@ -1041,7 +1071,7 @@ void EnsightWriter::WriteElementResultStep(
         const int numelepertype = (iter->second).size();
         vector<int> actelegids(numelepertype);
         //actelegids = iter->second;
- 
+
 	    Write(file, ensighteleString);
 
     //---------------
@@ -1071,7 +1101,7 @@ void EnsightWriter::WriteElementResultStep(
     		}
     	    }
     	}
-    
+
 
     // 2 component vectors in a 3d problem require a row of zeros.
     // do we really need this?
@@ -1128,7 +1158,7 @@ void EnsightWriter::WriteString(
         s.push_back('\0');
     }
     stream.write(&s[0], 80);
-    
+
     return;
 }
 
@@ -1142,24 +1172,24 @@ string EnsightWriter::GetVariableSection(
         ) const
 {
     stringstream str;
-    
+
     map<string,int>::const_iterator variable;
-    
+
     for (variable = variablenumdfmap.begin(); variable != variablenumdfmap.end(); ++variable)
     {
         const string key = variable->first;
         const int numdf = variable->second;
         const string filename = variablefilenamemap[key];
-        
+
         map<string,int>::const_iterator entry1 = filesetnumbermap_.find(key);
         if (entry1 == filesetnumbermap_.end())
             dserror("key not found!");
         const int setnumber = entry1->second;
-        
+
         map<string,vector<int> >::const_iterator entry2 = filesetmap.find(key);
-        if (entry2 == filesetmap.end()) 
+        if (entry2 == filesetmap.end())
             dserror("filesetmap not defined for '%s'", key.c_str());
-        
+
         const int numsubfilesteps = entry2->second.size();
         string filename_for_casefile;
         if (numsubfilesteps > 1)
@@ -1170,7 +1200,7 @@ string EnsightWriter::GetVariableSection(
         {
             filename_for_casefile = filename;
         }
-            
+
         str << GetVariableEntryForCaseFile(numdf, setnumber, key, filename_for_casefile);
     }
 
@@ -1188,15 +1218,15 @@ string EnsightWriter::GetVariableEntryForCaseFile(
         ) const
 {
     stringstream str;
-    
+
     const int timeset = 2;
-    
+
     // determine the type of this result variable (node-/element-based)
     map<string,string>::const_iterator entry = variableresulttypemap_.find(name);
     if (entry == variableresulttypemap_.end())
         dserror("key not found!");
     const string restypestring = entry->second;
-       
+
     // create variable entry in the case-file
     switch (numdf)
     {
@@ -1255,7 +1285,7 @@ string EnsightWriter::GetFileSectionStringFromFilesets(
         ) const
 {
     stringstream s;
-        
+
     map<string,vector<int> >::const_iterator fileset;
 
     for (fileset = filesetmap.begin(); fileset != filesetmap.end(); ++fileset)

@@ -1,7 +1,7 @@
 /*!
  \file post_drt_ensight_writer.H
 
- \brief basis class for the Ensight filter 
+ \brief basis class for the Ensight filter
 
  <pre>
  Maintainer: Ulrich Kuettler
@@ -91,6 +91,13 @@ protected:
     virtual void WriteAllResults(
             PostField* field) = 0;
 
+    /// write all element based results
+    /*!
+      \note This method sees only those element results that are defined in
+      the first result group.
+     */
+    void WriteElementResults(PostField* field);
+
     /*!
      \brief write all time steps of a result
 
@@ -117,16 +124,16 @@ protected:
             T i) const
     {
     	// only processor 0 does the writing !!
-        if (myrank_==0) 
+        if (myrank_==0)
     	os.write(reinterpret_cast<const char*>(&i), sizeof(T));
     }
-    
+
     void Write(
             ofstream& os,
             const string s) const
     {
     	// only processor 0 does the writing !!
-        if (myrank_==0) 
+        if (myrank_==0)
         WriteString(os, s);
     }
 
@@ -135,7 +142,7 @@ protected:
             const char* s) const
     {
     	// only processor 0 does the writing !!
-        if (myrank_==0) 
+        if (myrank_==0)
         WriteString(os, s);
     }
 
@@ -148,7 +155,7 @@ protected:
     void WriteGeoFileOneTimeStep(
             ofstream& file,
             map<string, vector<ofstream::pos_type> >& resultfilepos,
-            const string name);    
+            const string name);
     RefCountPtr<Epetra_Map> WriteCoordinates(
             ofstream& geofile,                         ///< filestream for the geometry
             const RefCountPtr<DRT::Discretization> dis ///< discretization where the nodal positions are take from
@@ -202,8 +209,8 @@ protected:
             map<string,int>          variablenumdfmap,
             map<string,string>       variablefilenamemap
             ) const;
-            
-            
+
+
     /*!
      * \brief estimate, how many elements of each distype will be written
      * \return map between distype and number of elements to be written
@@ -230,7 +237,7 @@ protected:
     int GetNumEleOutput(
             const DRT::Element::DiscretizationType distype,
             const int numele) const;
-    
+
     /*!
      * \brief store, which elements are belonging to each present distype
      * \return map between distype and vector containing the global ids of th corresponding elements
@@ -239,46 +246,46 @@ protected:
             const RefCountPtr<DRT::Discretization> dis,
             NumElePerDisType numeleperdistype
             ) const;
-    
+
     //! create string for one TIME section in the case file
     string GetTimeSectionString(
             const int timeset,            ///< number of timeset to be written
             const vector<double>& times   ///< vector with time value for each time step
             ) const;
-    
+
     //! create string for FILE section in the case file
     string GetFileSectionStringFromFilesets(
             const map<string,vector<int> >& filesetmap  ///< filesets when using multiple huge binary files
             ) const;
-    
+
     PostField* field_;
     string filename_;
     int myrank_; ///< global processor id
     bool nodeidgiven_; ///< indicates whether BACI global node ids are written to geometry file. default value: true
     NumElePerDisType numElePerDisType_; ///< number of elements per element discretization type
     EleGidPerDisType eleGidPerDisType_; ///< global ids of corresponding elements per element discretization type
-    
+
     RCP<Epetra_Map> proc0map_; ///< allreduced nodal map for proc 0, empty on other procs
 
     map<string,vector<int> > filesetmap_;
-    
+
     map<string,vector<int> > timesetmap_;
-    
+
     map<string,int>          variablenumdfmap_;
     map<string,string>       variablefilenamemap_;
-    map<string,string>       variableresulttypemap_; ///< STL map for storing the result-type per variable name 
-    
+    map<string,string>       variableresulttypemap_; ///< STL map for storing the result-type per variable name
+
     map<string,int> timesetnumbermap_;
     map<string,int> filesetnumbermap_;
 
 
     //! maps a distype to the corresponding Ensight cell type
     map<DRT::Element::DiscretizationType, string> distype2ensightstring_;
-    
+
     // maximum file size
     static const unsigned FILE_SIZE_LIMIT_ = 0x7fffffff; // 2GB
     //static const unsigned FILE_SIZE_LIMIT_ = 1024*10; // 10kB ... useful for debugging ;-)
-    
+
 };
 
 

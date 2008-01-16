@@ -33,12 +33,15 @@ void StructureEnsightWriter::WriteAllResults(
     EnsightWriter::WriteResult("displacement", "displacement", nodebased, field->problem()->num_dim());
     EnsightWriter::WriteResult("velocity", "velocity", nodebased, field->problem()->num_dim());
     EnsightWriter::WriteResult("acceleration", "acceleration", nodebased, field->problem()->num_dim());
+#if 0
     // for testing:
     EnsightWriter::WriteResult("ForcesXYZ", "ForcesXYZ", elementbased, 9);
     EnsightWriter::WriteResult("MomentsXYZ", "MomentsXYZ", elementbased, 9);
     EnsightWriter::WriteResult("Owner", "Owner", elementbased, 1);
     EnsightWriter::WriteResult("StressCxyz", "StressCxyz", elementbased, 6);
     EnsightWriter::WriteResult("FiberVec", "FiberVec", elementbased, 3);
+#endif
+    WriteElementResults(field);
 }
 
 /*----------------------------------------------------------------------*/
@@ -52,16 +55,18 @@ void FluidEnsightWriter::WriteAllResults(
     EnsightWriter::WriteResult("dispnp", "displacement", nodebased, field->problem()->num_dim());
     EnsightWriter::WriteResult("traction", "traction", nodebased, field->problem()->num_dim());
     // for testing:
-    EnsightWriter::WriteResult("domain_decomp", "domain_decomp", elementbased, 1);  
+    //EnsightWriter::WriteResult("domain_decomp", "domain_decomp", elementbased, 1);
+    WriteElementResults(field);
 }
 
-        
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void AleEnsightWriter::WriteAllResults(
         PostField* field)
 {
     EnsightWriter::WriteResult("dispnp", "displacement", nodebased, field->problem()->num_dim());
+    WriteElementResults(field);
 }
 
 
@@ -72,7 +77,7 @@ void ConDifEnsightWriter::WriteAllResults(
         PostField* field)
 {
     //phinp is a scalar result field with ONE dof per node.
-    //Therefore it is NOT possible to hand over field->problem()->num_dim() 
+    //Therefore it is NOT possible to hand over field->problem()->num_dim()
     // (equals 2 or 3) as a number of dofs
     EnsightWriter::WriteResult("phinp", "phi", nodebased, 1);
 }
@@ -94,11 +99,11 @@ void XFluidEnsightWriter::WriteAllResults(
     velocity_fieldset.insert(XFEM::PHYSICS::Velz);
     set<XFEM::PHYSICS::Field> pressure_fieldset;
     pressure_fieldset.insert(XFEM::PHYSICS::Pres);
-    
+
     XFluidEnsightWriter::WriteResult("velnp", "velocity_physical", velocity_fieldset);
     XFluidEnsightWriter::WriteResult("residual", "residual_physical", velocity_fieldset);
     XFluidEnsightWriter::WriteResult("velnp", "pressure_physical", pressure_fieldset);
-    
+
 }
 
 
@@ -109,13 +114,13 @@ void XFluidEnsightWriter::WriteFiles()
 #ifndef PARALLEL
     if (myrank_ > 0) dserror("have serial filter version, but myrank_ = %d",myrank_);
 #endif
-    
+
     PostResult result = PostResult(field_);
 
     // timesteps when the solution is written
     const vector<double> soltime = result.get_result_times(field_->name());
 
-    
+
     ///////////////////////////////////
     //  write geometry file          //
     ///////////////////////////////////
@@ -131,14 +136,14 @@ void XFluidEnsightWriter::WriteFiles()
     // at the moment, we can only print out the first step -> to be changed
     vector<double> geotime; // timesteps when the geometry is written
     geotime.push_back(soltime[0]);
-    
-    
+
+
     ///////////////////////////////////
     //  write solution fields files  //
     ///////////////////////////////////
     const int soltimeset = 2;
     WriteAllResults(field_);
-    
+
     int counttime = 0;
     for (map<string,vector<int> >::const_iterator entry = timesetmap_.begin(); entry != timesetmap_.end(); ++entry) {
         counttime++;
@@ -151,13 +156,13 @@ void XFluidEnsightWriter::WriteFiles()
         string key = entry->first;
         filesetnumbermap_[key] = countfile;
     }
-    
-    
-    
+
+
+
     ///////////////////////////////////
     //  now write the case file      //
     ///////////////////////////////////
-    if (myrank_ == 0) 
+    if (myrank_ == 0)
     {
         const string casefilename = filename_ + "_"+ field_->name() + ".case";
         ofstream casefile;
@@ -179,7 +184,7 @@ void XFluidEnsightWriter::WriteFiles()
 
         casefile.close();
     }
-    
+
     return;
 }
 
@@ -204,8 +209,8 @@ void XFluidEnsightWriter::WriteGeoFile(
     // print out one timestep
     // if more are needed, this has to go into a loop
     map<string, vector<ofstream::pos_type> > resultfilepos;
-    
-    
+
+
     vector<ofstream::pos_type> fileposition;
     {
         WriteGeoFileOneTimeStep(geofile, resultfilepos, "geo");
@@ -213,9 +218,9 @@ void XFluidEnsightWriter::WriteGeoFile(
 
     // append index table
     // TODO: ens_checker complains if this is turned!!!! but I can't see, whats wrong here a.ger 11/07
-    // it is also correct to ommit WriteIndexTable, however the EnsightGold Format manual says, 
+    // it is also correct to ommit WriteIndexTable, however the EnsightGold Format manual says,
     // it would improve performance to have it on...
-    // WriteIndexTable(geofile, fileposition); 
+    // WriteIndexTable(geofile, fileposition);
 
     if (geofile.is_open())
         geofile.close();
@@ -236,11 +241,11 @@ void XFluidEnsightWriter::WriteGeoFileOneTimeStep(
                                                                   cutterfield_->discretization()));
     // apply enrichments
     RCP<XFEM::DofManager> initialdofmanager = rcp(new XFEM::DofManager(ih));
-    
+
     vector<ofstream::pos_type>& filepos = resultfilepos[name];
     Write(file, "BEGIN TIME STEP");
     filepos.push_back(file.tellp());
-    
+
     Write(file, field_->name() + " geometry");
     Write(file, "Comment");
     //Write(file,"node id given");
@@ -248,7 +253,7 @@ void XFluidEnsightWriter::WriteGeoFileOneTimeStep(
     Write(file, "element id off");
 
     WriteGeoFilePart(file, resultfilepos, name, ih);
-    
+
     Write(file, "END TIME STEP");
 }
 
@@ -269,12 +274,12 @@ void XFluidEnsightWriter::WriteGeoFilePart(
     Write(file, "part");
     Write(file, field_->field_pos()+1);
     Write(file, field_->name() + " field");
-    
+
     Write(file, "coordinates");
     Write(file, NumNodesPerField(ih));
-    
+
     cout << "writing " << NumNodesPerField(ih) << " nodes" << endl;
-    
+
     // write the grid information
     WriteCoordinates(file, field_->discretization(), ih);
     WriteCells(file, field_->discretization(), ih);
@@ -285,11 +290,11 @@ int XFluidEnsightWriter::NumNodesPerField(
         ) const
 {
     RCP<DRT::Discretization> dis = field_->discretization();
-    
+
     const Epetra_Map* elementmap = dis->ElementRowMap();
     dsassert(elementmap->NumMyElements() == elementmap->NumGlobalElements(),
             "xfem filter cannot be run in parallel");
-    
+
     // loop all available elements
     int counter = 0;
     for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
@@ -373,7 +378,7 @@ void XFluidEnsightWriter::WriteCoordinates(
                         const vector<vector<double> > xarray = cell->GetPhysicalCoord(*actele);
                         for (int inen = 0; inen < cell->NumNode(); ++inen)
                         {
-                            Write(geofile, static_cast<float>(xarray[inen][isd]));                    
+                            Write(geofile, static_cast<float>(xarray[inen][isd]));
                         }
                     }
                 }
@@ -411,7 +416,7 @@ void XFluidEnsightWriter::WriteCells(
         if (entry == distype2ensightstring_.end())
             dserror("no entry in distype2ensightstring_ found");
         const string realcellshape = entry->second;
-        
+
         cout << "writing "<< iter->second<< " "<< realcellshape << " elements"
                 << " ("<< ne << " cells) per distype."<< " ensight output celltype: "
                 << ensightCellType<< endl;
@@ -509,7 +514,7 @@ void XFluidEnsightWriter::WriteResult(
                                                                   cutterfield_->discretization()));
     // apply enrichments
     RCP<XFEM::DofManager> dofman = rcp(new XFEM::DofManager(ih));
-    
+
     // tell elements about the dofs and the integration
     {
         ParameterList eleparams;
@@ -522,10 +527,10 @@ void XFluidEnsightWriter::WriteResult(
         eleparams.set("assemble vector 3",false);
         field_->discretization()->Evaluate(eleparams,null,null,null,null,null);
     }
-    
+
     // ensure that degrees of freedom in the discretization have been set
     field_->discretization()->FillComplete();
-    
+
     PostResult result = PostResult(field_);
     result.next_result();
     if (!map_has_map(result.group(), const_cast<char*>(groupname.c_str())))
@@ -542,19 +547,19 @@ void XFluidEnsightWriter::WriteResult(
     {
         file.open(filename.c_str());
     }
-    
+
     map<string, vector<ofstream::pos_type> > resultfilepos;
     const int startfilepos = file.tellp(); // file position should be zero, but we stay flexible
-    
+
     cout<<"writing node-based field "<<name<<endl;
     // store information for later case file creation
     variableresulttypemap_[name] = "node";
-    
+
     WriteNodalResultStep(file, result, resultfilepos, groupname, name, fieldset, ih, dofman);
     // how many bits are necessary per time step (we assume a fixed size)?
     const int stepsize = ((int) file.tellp())-startfilepos;
     if (stepsize <= 0) dserror("found invalid step size for result file");
-    
+
     while (result.next_result())
     {
         const int indexsize = 80+2*sizeof(int)+(file.tellp()/stepsize+2)*sizeof(long);
@@ -570,12 +575,12 @@ void XFluidEnsightWriter::WriteResult(
     filesetmap_[name].push_back(file.tellp()/stepsize);// has to be done BEFORE writing the index table
     variablenumdfmap_[name] = numdf;
     variablefilenamemap_[name] = filename;
-    
+
     // append index table
     WriteIndexTable(file, resultfilepos[name]);
     resultfilepos[name].clear();
-     
-    // close result file   
+
+    // close result file
     if (file.is_open())
         file.close();
 
@@ -594,20 +599,20 @@ vector<double> computeScalarCellNodeValues(
 {
     // return value
     vector<double> cellvalues;
-    
+
     const int nen_cell = DRT::Utils::getNumberOfElementNodes(cell.Shape());
     const int numparam  = dofman.NumDofPerField(field);
-    
+
     const int maxnod = 27;
     const int nsd = 3;
-    
+
     blitz::Range _  = blitz::Range::all();
-    
+
     // if cell node is on the interface, the value is not defined for a jump.
     // however, we approach the interface from one particular side and therefore,
     // -> we use the center of the cell to determine, where we come from
     const blitz::Array<double,1> cellcenterpos(cell.GetPhysicalCenterPosition(ele));
-    
+
     // cell corner nodes
     for (int inen = 0; inen < nen_cell; ++inen)
     {
@@ -616,7 +621,7 @@ vector<double> computeScalarCellNodeValues(
         for (int isd = 0; isd < nsd; ++isd) {
             cellnodepos(isd) = cellnodeposvector[isd];
         }
-        
+
         // shape functions
         blitz::Array<double,1> funct(maxnod);
         DRT::Utils::shape_function_3D(
@@ -625,12 +630,12 @@ vector<double> computeScalarCellNodeValues(
                 cell.GetDomainCoord()[inen][1],
                 cell.GetDomainCoord()[inen][2],
                 ele.Shape());
-        
+
         blitz::Array<double,1> enr_funct(numparam);
         XFEM::ComputeEnrichedShapefunction(ele, ih, dofman, field, cellcenterpos, funct, enr_funct);
         // interpolate value
         const double x = blitz::sum(elementvalues * enr_funct);
-        
+
         // store position
         cellvalues.push_back(x);
     }
@@ -671,13 +676,13 @@ void XFluidEnsightWriter::WriteNodalResultStep(
     const RefCountPtr<DRT::Discretization> dis = field_->discretization();
     //const Epetra_Map* nodemap = dis->NodeRowMap();
     const RefCountPtr<Epetra_Vector> data = result.read_result(groupname);
-    
+
     const Epetra_Map* elementmap = dis->ElementRowMap();
     dsassert(elementmap->NumMyElements() == elementmap->NumGlobalElements(),
             "xfem filter cannot be run in parallel");
-    
+
     const int numdf = fieldset.size();
-    
+
     bool propernumdf;
     if (numdf == 1 or numdf == 3 or numdf == 6) {
         propernumdf = true;
@@ -688,19 +693,19 @@ void XFluidEnsightWriter::WriteNodalResultStep(
     {
         dserror("number of output dofs is not 1, 3 or 6");
     }
-    
-    
-    
+
+
+
     // get the number of elements for each distype
     const NumElePerDisType numElePerDisType = GetNumElePerDisType(dis, ih);
-    
+
     //
     const XFEM::Enrichment enr_std(0, XFEM::Enrichment::typeStandard);
-    
+
     for (set<XFEM::PHYSICS::Field>::const_iterator fielditer=fieldset.begin(); fielditer!=fieldset.end(); ++fielditer)
     {
         const XFEM::PHYSICS::Field field = *fielditer;
-        
+
         // for each found distype, write block of the same typed elements
         int counter = 0;
         for (NumElePerDisType::const_iterator iter=numElePerDisType.begin(); iter != numElePerDisType.end(); ++iter)
@@ -710,26 +715,26 @@ void XFluidEnsightWriter::WriteNodalResultStep(
             {
                 const int elegid = elementmap->GID(iele);
                 DRT::Element* const actele = dis->gElement(elegid);
-                
+
                 // create local copy of information about dofs
                 const XFEM::ElementDofManager eledofman = dofman->constructElementDofManager(*actele);
-                
+
                 vector<int> lm;
                 vector<int> lmowner;
                 actele->LocationVector(*(field_->discretization()),lm,lmowner);
-                
+
                 // extract local values from the global vector
                 vector<double> myvelnp(lm.size());
-                
+
                 DRT::Utils::ExtractMyValues(*data,myvelnp,lm);
-                
+
                 const int numparam = eledofman.NumDofPerField(field);
                 const vector<int> dofpos = eledofman.LocalDofPosPerField(field);
-                //cout << XFEM::PHYSICS::physVarToString(field) << ": numparam = " << numparam << ": lm.size() = " << lm.size() << endl;  
-                
+                //cout << XFEM::PHYSICS::physVarToString(field) << ": numparam = " << numparam << ": lm.size() = " << lm.size() << endl;
+
                 blitz::Array<double,1> elementvalues(numparam);
                 for (int iparam=0; iparam<numparam; ++iparam)   elementvalues(iparam) = myvelnp[dofpos[iparam]];
-                
+
                 const XFEM::DomainIntCells domainintcells = ih->GetDomainIntCells(elegid, actele->Shape());
                 for (XFEM::DomainIntCells::const_iterator cell = domainintcells.begin(); cell != domainintcells.end(); ++cell)
                 {
@@ -749,7 +754,7 @@ void XFluidEnsightWriter::WriteNodalResultStep(
     }
 
     Write(file, "END TIME STEP");
-    
+
     return;
 }
 
