@@ -175,6 +175,7 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<string>("convcheck", sdyn.get<string>("CONV_CHECK"));
       genalphaparams.set<double>("tolerance displacements",sdyn.get<double>("TOLDISP"));
       genalphaparams.set<double>("tolerance residual",sdyn.get<double>("TOLRES"));
+      genalphaparams.set<double>("tolerance volume",sdyn.get<double>("TOLVOL"));
 
       genalphaparams.set<bool>  ("contact",static_cast<bool>(sdyn.get<int>("CONTACT")));
 

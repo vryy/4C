@@ -1068,6 +1068,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   string convcheck = params_.get<string>("convcheck"              ,"AbsRes_Or_AbsDis");
   double toldisp   = params_.get<double>("tolerance displacements",1.0e-07);
   double tolres    = params_.get<double>("tolerance residual"     ,1.0e-07);
+  double tolvol    = params_.get<double>("tolerance volume"     ,1.0e-07);
   bool printscreen = params_.get<bool>  ("print to screen",true);
   bool printerr    = params_.get<bool>  ("print to err",false);
   int  maxiterUzawa   = params_.get<int>   ("uzawa maxiter"         ,50);
@@ -1094,7 +1095,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   timer.ResetStartTime();
   bool print_unconv = true;
 
-  while ((Unconverged(convcheck, disinorm, fresmnorm, toldisp, tolres) || volnorm > toldisp )
+  while ((Unconverged(convcheck, disinorm, fresmnorm, toldisp, tolres) || volnorm > tolvol)
          && numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
@@ -1157,7 +1158,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 
     //Solve one iteration step with augmented lagrange
   	//Since we calculate displacement norm as well, at least one step has to be taken
-    while (((norm_uzawa > toldisp||norm_vol_uzawa>toldisp)
+    while (((norm_uzawa > toldisp||norm_vol_uzawa>tolvol)
     		&& numiter_uzawa < maxiterUzawa)||numiter_uzawa<1)
     {
 
