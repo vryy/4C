@@ -26,7 +26,6 @@ MFSI::FluidAdapter::FluidAdapter(Teuchos::RCP<DRT::Discretization> dis,
 {
   interface_.SetupCondDofMap("FSICoupling");
   interface_.SetupOtherDofMap();
-  sumincvel_ = Teuchos::rcp(new Epetra_Vector(Vel()->Map()));
 }
 
 
@@ -93,8 +92,6 @@ void MFSI::FluidAdapter::PrepareTimeStep()
 {
   fluid_.PrepareTimeStep();
 
-  //sumincvel_->PutScalar(0.);
-
   // we add the whole fluid mesh displacement later on?
   //fluid_.Dispnp()->PutScalar(0.);
 }
@@ -112,9 +109,8 @@ void MFSI::FluidAdapter::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   if (vel!=Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> incvel = Teuchos::rcp(new Epetra_Vector(*vel));
-    incvel->Update(-1.0,*sumincvel_,1.0);
+    incvel->Update(-1.0,*fluid_.Vel(),1.0);
     fluid_.Evaluate(incvel);
-    sumincvel_->Update(1.0,*vel,0.0);
   }
   else
   {

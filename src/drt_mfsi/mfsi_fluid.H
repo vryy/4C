@@ -146,9 +146,6 @@ namespace MFSI {
 
     /// all velocity dofs not at the interface
     Teuchos::RefCountPtr<Epetra_Map> innervelmap_;
-
-    /// what a hack
-    Teuchos::RCP<Epetra_Vector> sumincvel_;
   };
 
 }
