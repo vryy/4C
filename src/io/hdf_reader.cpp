@@ -316,8 +316,8 @@ IO::HDFReader::ReadResultData(string id_path, string value_path, int columns, co
     int l = lengths[i-start];
     for (int c=0; c<columns; ++c)
     {
-      copy(&(*values)[offset+ c   *l],
-           &(*values)[offset+(c+1)*l],
+      copy(&(*values)[offset+ c   *l/columns],
+           &(*values)[offset+(c+1)*l/columns],
            &res->Values()[c*res->MyLength()+offset/columns]);
     }
     offset += l;
