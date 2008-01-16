@@ -274,6 +274,32 @@ void stru_static_drt()
   //------------------------------------------------- output initial state
   output.NewStep(istep, time);
   output.WriteVector("displacement", dis);
+  //---------------------------------------------- do "stress" calculation
+  int mod_stress = istep % statvar->resevry_stress;
+  if (!mod_stress && ioflags.struct_stress==1)
+  {
+    // create the parameters for the discretization
+    ParameterList params;
+    // action for elements
+    params.set("action","calc_struct_stress");
+    // choose what to assemble
+    params.set("assemble matrix 1",false);
+    params.set("assemble matrix 2",false);
+    params.set("assemble vector 1",false);
+    params.set("assemble vector 2",false);
+    params.set("assemble vector 3",false);
+    // other parameters that might be needed by the elements
+    params.set("total time",timen);
+    params.set("delta time",dt);
+    // set vector values needed by elements
+    actdis->ClearState();
+    actdis->SetState("residual displacement",disi);
+    actdis->SetState("displacement",dis);
+    actdis->Evaluate(params,null,null,null,null,null);
+    actdis->ClearState();
+    output.WriteElementData();
+  }
+  //---------------------------------------------end of output initial state
 
   //========================================== start of time/loadstep loop
   while ( istep < statvar->nstep)
@@ -638,6 +664,7 @@ void stru_static_drt()
       actdis->Evaluate(params,null,null,null,null,null);
     }
 
+
     //------------------------------------------ increment time/load step
     ++istep;      // load step n := n + 1
     time += dt;   // load factor / pseudo time  t_n := t_{n+1} = t_n + Delta t
@@ -667,6 +694,7 @@ void stru_static_drt()
     {
       output.NewStep(istep, time);
       output.WriteVector("displacement", dis);
+      isdatawritten = true;
     }
 
     //---------------------------------------------- do stress calculation
@@ -688,11 +716,14 @@ void stru_static_drt()
       params.set("delta time",dt);
       // set vector values needed by elements
       actdis->ClearState();
-      actdis->SetState("residual displacement",zeros);
+      actdis->SetState("residual displacement",disi);
       actdis->SetState("displacement",dis);
       actdis->Evaluate(params,null,null,null,null,null);
       actdis->ClearState();
+      if (!isdatawritten) output.NewStep(istep, timen);
+      output.WriteElementData();
     }
+
 //    
 //    
 //    ofstream f_system("stresses.gmsh");

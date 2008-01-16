@@ -221,6 +221,53 @@ public:
   /*!
   \brief Read input for this element
   */
+  /*!
+  \brief Query names of element data to be visualized using BINIO
+
+  The element fills the provided map with key names of
+  visualization data the element wants to visualize AT THE CENTER
+  of the element geometry. The values is supposed to be dimension of the
+  data to be visualized. It can either be 1 (scalar), 3 (vector), 6 (sym. tensor) 
+  or 9 (nonsym. tensor)
+  
+  Example:
+  \code
+    // Name of data is 'Owner', dimension is 1 (scalar value)
+    names.insert(pair<string,int>("Owner",1));  
+    // Name of data is 'StressesXYZ', dimension is 6 (sym. tensor value)
+    names.insert(pair<string,int>("StressesXYZ",6));  
+  \endcode  
+  
+  \param names (out): On return, the derived class has filled names with
+                      key names of data it wants to visualize and with int dimensions
+                      of that data.
+  */
+  virtual void VisNames(map<string,int>& names);
+
+  /*!
+  \brief Query data to be visualized using BINIO of a given name
+
+  The method is supposed to call this base method to visualize the owner of
+  the element. 
+  If the derived method recognizes a supported data name, it shall fill it 
+  with corresponding data.
+  If it does NOT recognizes the name, it shall do nothing.
+  
+  \warning The method must not change size of data
+  
+  \param name (in):   Name of data that is currently processed for visualization
+  \param data (out):  data to be filled by element if element recognizes the name
+  */
+  virtual void VisData(const string& name, vector<double>& data); 
+
+  //@}
+
+  //! @name Input and Creation
+
+  /*!
+  \brief Read input for this element
+  */
+
   virtual bool ReadElement();
 
   //@}
@@ -323,6 +370,7 @@ protected:
     soh8_stress_ndxyz,
     soh8_stress_ndrst,
     soh8_stress_nd123,
+    soh8_stress_cxyz,     // interpolated element center stresses
   };
   //! EAS technology types of so_hex8
   enum EASType
@@ -346,8 +394,10 @@ protected:
   DRT::Container                                  easdata_;
   //! container containing all kind of solid3 thisandthat
   DRT::Container                                  data_;
-  //! vector of volume (length 1) of this element
-  vector<RefCountPtr<DRT::Elements::Soh8Volume> > volume_;
+//  //! vector of volume (length 1) of this element
+//  vector<RefCountPtr<DRT::Elements::Soh8Volume> > volume_;
+  //! vector of volumes of this element (length 1)
+  vector<DRT::Element*>                           volume_;
   //! vector of surfaces of this element
   vector<RefCountPtr<DRT::Elements::Soh8Surface> > surfaces_;
   //! vector of surfaces of this element
@@ -356,6 +406,8 @@ protected:
   vector<RefCountPtr<DRT::Elements::Soh8Line> > lines_;
   //! vector of lines adjacent to this element
   vector<DRT::Elements::Soh8Line*>              lineptrs_;
+  //! vector of element stress tensor in Voigt notation
+  vector<double>                                stresses_;
 
   //! some distypes need rewinding of NodeIds due to bad input from mesher
   //! flag to rewind this element, must be availabale for friend class fluid3register
@@ -378,6 +430,7 @@ protected:
                                  Epetra_SerialDenseMatrix* stiffmatrix,
                                  Epetra_SerialDenseMatrix* massmatrix,
                                  Epetra_SerialDenseVector* force,
+                                 Epetra_SerialDenseMatrix* elestress,
                                  const double              time);
 
   void soh8_stress(vector<double>& mydisp,

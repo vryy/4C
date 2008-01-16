@@ -118,8 +118,15 @@ bool DRT::Elements::So_hex8::ReadElement()
   if (strncmp(buffer,"Ndxyz",5)==0) stresstype_= soh8_stress_ndxyz;
   if (strncmp(buffer,"Ndrst",5)==0) stresstype_= soh8_stress_ndrst;
   if (strncmp(buffer,"Nd123",5)==0) stresstype_= soh8_stress_nd123;
+  if (strncmp(buffer,"Cxyz",5)==0) stresstype_= soh8_stress_cxyz;
   // set default: no stresses
   else stresstype_= soh8_stress_none;
+  
+  // Initialize elestress
+  stresses_.resize(6);
+  
+  //Initialize fiber vector
+  fiberdirection_.resize(3);
   
   // Initialize winding flags
   rewind_ = false;

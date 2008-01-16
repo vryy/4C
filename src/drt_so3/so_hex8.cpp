@@ -88,6 +88,8 @@ void DRT::Elements::So_hex8::Pack(vector<char>& data) const
   //AddtoPack(data,ngp_,3*sizeof(int));
   // stresstype_
   AddtoPack(data,stresstype_);
+  // stress vector
+  AddtoPack(data,stresses_);
   // kintype_
   AddtoPack(data,kintype_);
   // eastype_
@@ -128,6 +130,8 @@ void DRT::Elements::So_hex8::Unpack(const vector<char>& data)
   //ExtractfromPack(position,data,ngp_,3*sizeof(int));
   // stresstype_
   ExtractfromPack(position,data,stresstype_);
+  // stress vector
+  ExtractfromPack(position,data,stresses_);
   // kintype_
   ExtractfromPack(position,data,kintype_);
   // eastype_
@@ -219,7 +223,8 @@ RefCountPtr<DRT::ElementRegister> DRT::Elements::So_hex8::ElementRegister() cons
 DRT::Element** DRT::Elements::So_hex8::Volumes()
 {
   volume_.resize(1);
-  return 0;
+  volume_[0] = this; //points to element itself
+  return (DRT::Element**)&volume_[0];
 }
 
  /*----------------------------------------------------------------------*
@@ -418,6 +423,57 @@ DRT::Element** DRT::Elements::So_hex8::Lines()
   lineptrs_[11] = lines_[11].get();
   return (DRT::Element**)(&(lineptrs_[0]));
 }
+
+/*----------------------------------------------------------------------*
+ |  Return names of visualization data (public)                maf 01/08|
+ *----------------------------------------------------------------------*/
+void DRT::Elements::So_hex8::VisNames(map<string,int>& names)
+{
+  // Put the owner of this element into the file (use base class method for this)
+  DRT::Element::VisNames(names);
+  
+  // stress vector (Voigt) at element center 
+  string stressname = "StressCxyz";
+  names[stressname] = 6;
+  
+  // element fiber direction vector
+  string fibervecname = "FiberVec";
+  names[fibervecname] = 3;
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Return visualization data (public)                         maf 01/08|
+ *----------------------------------------------------------------------*/
+void DRT::Elements::So_hex8::VisData(const string& name, vector<double>& data)
+{
+  // Put the owner of this element into the file (use base class method for this)
+  DRT::Element::VisData(name,data);
+  
+  // these are the names so_hex8 recognizes, do nothing for everything else
+  if (name != "StressCxyz" &&
+      name != "FiberVec") return;
+  
+  // check sizes
+  if ((name == "StressCxyz") && ((int)data.size()!=6)) dserror("StressCxyz size mismatch");
+  if ((name == "FiberVec") && ((int)data.size()!=3)) dserror("FiberVec size mismatch ");
+  
+  // see whether we have data
+//  if (!stresses_) return; // no stresses present, do nothing
+//  if (!fiberdirection_) return; // no fiber vector present, do nothing
+  
+  if (name == "StressCxyz"){
+    data = stresses_;
+  }
+  else if (name == "FiberVec"){
+    data = fiberdirection_;
+  }
+  else dserror("weirdo impossible case????");
+  
+  return;
+}
+
 
 
 //=======================================================================
