@@ -33,6 +33,10 @@ void StructureEnsightWriter::WriteAllResults(
     EnsightWriter::WriteResult("displacement", "displacement", nodebased, field->problem()->num_dim());
     EnsightWriter::WriteResult("velocity", "velocity", nodebased, field->problem()->num_dim());
     EnsightWriter::WriteResult("acceleration", "acceleration", nodebased, field->problem()->num_dim());
+    // for testing:
+    EnsightWriter::WriteResult("ForcesXYZ", "ForcesXYZ", elementbased, 9);
+    EnsightWriter::WriteResult("MomentsXYZ", "MomentsXYZ", elementbased, 9);
+    EnsightWriter::WriteResult("Owner", "Owner", elementbased, 1);
 }
 
 /*----------------------------------------------------------------------*/
@@ -45,6 +49,7 @@ void FluidEnsightWriter::WriteAllResults(
     EnsightWriter::WriteResult("residual", "residual", nodebased, field->problem()->num_dim());
     EnsightWriter::WriteResult("dispnp", "displacement", nodebased, field->problem()->num_dim());
     EnsightWriter::WriteResult("traction", "traction", nodebased, field->problem()->num_dim());
+    // for testing:
     EnsightWriter::WriteResult("domain_decomp", "domain_decomp", elementbased, 1);  
 }
 

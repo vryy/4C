@@ -37,6 +37,9 @@ EnsightWriter::EnsightWriter(
     
     // get the number of elements for each distype (global numbers)
     numElePerDisType_ = GetNumElePerDisType(dis);
+    
+    // get the global ids of elements for each distype (global numbers)
+    eleGidPerDisType_ = GetEleGidPerDisType(dis, numElePerDisType_);  
 
     // map between distype in BACI and Ensight string
     //  note: these would be the direct mappings
@@ -580,6 +583,75 @@ int EnsightWriter::GetNumEleOutput(
 }
 
 
+/*!
+ * \brief parse all elements and get the global ids of the elements for each distype
+ */
+EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
+        const RefCountPtr<DRT::Discretization> dis,
+        NumElePerDisType numeleperdistype
+        ) const
+{
+    const Epetra_Map* elementmap = dis->ElementRowMap();
+
+    EleGidPerDisType eleGidPerDisType;
+    
+    //allocate memory
+    NumElePerDisType::const_iterator iter;
+    for (iter=numElePerDisType_.begin(); iter != numElePerDisType_.end(); ++iter)
+    {
+    eleGidPerDisType[iter->first].reserve(iter->second);
+    }
+    
+    for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
+    {
+    	const int gid = elementmap->GID(iele);
+        DRT::Element* actele = dis->gElement(gid);
+        const DRT::Element::DiscretizationType distype = actele->Shape();
+        // update counter for current distype
+        eleGidPerDisType[distype].push_back(gid);
+    }
+    
+#ifndef PARALLEL
+     return eleGidPerDisType; // these are already the global numbers
+
+#else
+    
+     /*
+     // in parallel case we have to sum up the local element distype numbers
+     
+    // determine maximum number of possible element discretization types
+    DRT::Element::DiscretizationType numeledistypes = DRT::Element::max_distype;
+
+    // write the final local numbers into a vector
+    vector<int> myNumElePerDisType(numeledistypes);
+    NumElePerDisType::const_iterator iter;
+    for (iter=numElePerDisType.begin(); iter != numElePerDisType.end(); ++iter)
+    {
+        const DRT::Element::DiscretizationType distypeiter = iter->first;
+        const int ne = iter->second;
+        myNumElePerDisType[distypeiter]+=ne;
+    }
+    
+    // wait for all procs before communication is started
+    (dis->Comm()).Barrier();
+    
+    // form the global sum 
+    vector<int> globalnumeleperdistype(numeledistypes); 
+    (dis->Comm()).SumAll(&(myNumElePerDisType[0]),&(globalnumeleperdistype[0]),numeledistypes);
+  
+    // create return argument containing the global element numbers per distype
+    NumElePerDisType globalNumElePerDisType;
+    for(int i =0; i<numeledistypes ;++i)
+    {
+        if (globalnumeleperdistype[i]>0) // no entry when we have no element of this type
+        globalNumElePerDisType[DRT::Element::DiscretizationType(i)]=globalnumeleperdistype[i];
+    }
+*/
+    return eleGidPerDisType;
+    
+#endif
+}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 string EnsightWriter::GetEnsightString(
@@ -678,7 +750,7 @@ void EnsightWriter::WriteResult(
         // how many bits are necessary per time step (we assume a fixed size)?
         stepsize = ((int) file.tellp())-startfilepos;
         if (stepsize <= 0) dserror("found invalid step size for result file");
-        
+
         while (result.next_result())
         {
             const int indexsize = 80+2*sizeof(int)+(file.tellp()/stepsize+2)*sizeof(long);
@@ -912,17 +984,17 @@ void EnsightWriter::WriteNodalResultStep(
  */
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteElementResultStep(
-           ofstream& file,
-            PostResult& result,
-            map<string, vector<ofstream::pos_type> >& resultfilepos,
-            const string groupname,
-            const string name,
-            const int numdf,
-            const int from
-            ) const
-    {    
-    //TODO +make WriteElementResultStep running also in parallel
-    //     +support for results based on hybrid meshes
+	       ofstream& file,
+	        PostResult& result,
+	        map<string, vector<ofstream::pos_type> >& resultfilepos,
+	        const string groupname,
+	        const string name,
+	        const int numdf,
+	        const int from
+	        ) const
+	{	
+	//TODO +make WriteElementResultStep running also in parallel
+	//     +support for results based on hybrid meshes
 
     //-------------------------------------------
     // write some key words and read result data
@@ -935,60 +1007,72 @@ void EnsightWriter::WriteElementResultStep(
     Write(file, "part");
     Write(file, field_->field_pos()+1);
 
-    //specify the element type
-    int count=0;
-    NumElePerDisType::const_iterator iter;
-    for (iter=numElePerDisType_.begin(); iter != numElePerDisType_.end(); ++iter)
-    {
-        const DRT::Element::DiscretizationType distypeiter = iter->first;
-        //const int ne = GetNumEleOutput(distypeiter, iter->second);
-        const string ensighteleString = GetEnsightString(distypeiter);
-        Write(file, ensighteleString);
-        if (count != 0) dserror("no support for element-based result for hybrid meshes");
-        count+=1;
-    }
-
+    // get some data structures
     const RefCountPtr<DRT::Discretization> dis = field_->discretization();
     const Epetra_Map* elementmap = dis->ElementRowMap(); //local element row map
     const int numele = elementmap->NumGlobalElements();
 
     if (numele != elementmap->NumMyElements())
-    dserror("Parallel filter does not yet support element-based results");
-
-    const RefCountPtr<Epetra_Vector> data = result.read_result(groupname);
+    	dserror("Parallel filter does not yet support element-based results");
+    const RefCountPtr<Epetra_MultiVector> data = result.read_multi_result(groupname); 
     const Epetra_BlockMap& datamap = data->Map();
+    const int numcol = data->NumVectors();
+    
+    //---------------
+    // specify the element type
+    //---------------
+    if (eleGidPerDisType_.empty()==true) dserror("no element types available");
+    // loop over the different element types present
+    EleGidPerDisType::const_iterator iter;
+    for (iter=eleGidPerDisType_.begin(); iter != eleGidPerDisType_.end(); ++iter)
+    {
+        const string ensighteleString = GetEnsightString(iter->first);
+        const int numelepertype = (iter->second).size();
+        vector<int> actelegids(numelepertype);
+        //actelegids = iter->second;
+ 
+	    Write(file, ensighteleString);
 
     //---------------
     // write results
     //---------------
 
-    if (myrank_==0) // ensures pointer dofgids is valid
-    {
-        for (int idf=0; idf<numdf; ++idf)
-        {
-            for (int iele=0; iele<numele; iele++)
-            {
-                // get the dof local id w.r.t. the finaldatamap
-                int lid = datamap.LID(iele);
-                if (lid > -1)
-                {
-                    Write(file, static_cast<float>((*data)[lid]));
-                }
-                else
-                    dserror("recieved illegal dof local id: %d", lid);
-            }
-        }
-    }
+    	if (numdf+from > numcol) dserror("violated column range of Epetra_MultiVector: %d",numcol);
+    	for (int col=0; col<numdf; ++col)
+    	{
+    		//extract actual column
+    		Epetra_Vector* datacolumn = (*data)(col+from);
+    	    if (myrank_==0) // ensures pointer dofgids is valid
+    	    {
+    		for (int iele=0; iele<numelepertype; iele++)
+    		{
+    			const int gid = (iter->second)[iele];
+			// get the dof local id w.r.t. the finaldatamap
+    			//int lid = datamap.LID(iele);
+			int lid = datamap.LID(gid);
+    			if (lid > -1)
+    			{
+    				Write(file, static_cast<float>((*datacolumn)[lid]));
+    				//cout<<"writing "<<(*datacolumn)[lid]<<endl;
+    			}
+    			else
+    				dserror("recieved illegal dof local id: %d", lid);
+    		}
+    	    }
+    	}
+    
 
     // 2 component vectors in a 3d problem require a row of zeros.
     // do we really need this?
     if (numdf==2)
     {
-        for (int iele=0; iele<numele; iele++)
+        for (int iele=0; iele<numelepertype; iele++)
         {
             Write<float>(file, 0.);
         }
     }
+
+    } // end iteration over eleGidPerDisType_;
 
     // finish writing the current time step
     Write(file, "END TIME STEP");
@@ -1105,6 +1189,9 @@ string EnsightWriter::GetVariableEntryForCaseFile(
     // create variable entry in the case-file
     switch (numdf)
     {
+    case 9:
+        str << "tensor asymm per "<<restypestring<<":\t"<< timeset <<"\t"<< fileset << "\t"<< name << "\t"<< filename << "\n";
+        break;
     case 6:
         str << "tensor symm per "<<restypestring<<":\t"<< timeset <<"\t"<< fileset << "\t"<< name << "\t"<< filename << "\n";
         break;

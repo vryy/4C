@@ -57,6 +57,8 @@ const int subhexmap[8][8] =
 
 typedef map<DRT::Element::DiscretizationType, int> NumElePerDisType;
 
+typedef map<DRT::Element::DiscretizationType, vector<int> > EleGidPerDisType;
+
 //! defines different result types (node-based, element-based, Gauss-Points?)
 enum ResultType
 {
@@ -229,6 +231,15 @@ protected:
             const DRT::Element::DiscretizationType distype,
             const int numele) const;
     
+    /*!
+     * \brief store, which elements are belonging to each present distype
+     * \return map between distype and vector containing the global ids of th corresponding elements
+     */
+    EleGidPerDisType GetEleGidPerDisType(
+            const RefCountPtr<DRT::Discretization> dis,
+            NumElePerDisType numeleperdistype
+            ) const;
+    
     //! create string for one TIME section in the case file
     string GetTimeSectionString(
             const int timeset,            ///< number of timeset to be written
@@ -245,6 +256,7 @@ protected:
     int myrank_; ///< global processor id
     bool nodeidgiven_; ///< indicates whether BACI global node ids are written to geometry file. default value: true
     NumElePerDisType numElePerDisType_; ///< number of elements per element discretization type
+    EleGidPerDisType eleGidPerDisType_; ///< global ids of corresponding elements per element discretization type
     
     RCP<Epetra_Map> proc0map_; ///< allreduced nodal map for proc 0, empty on other procs
 
