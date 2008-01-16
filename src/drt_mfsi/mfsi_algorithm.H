@@ -131,6 +131,15 @@ namespace MFSI
                      Teuchos::RCP<NOX::Thyra::Group> grp) = 0;
 
     /// extract the three field vectors from a given composed vector
+    /*!
+      We are dealing with NOX here, so we get absolute values. x is the sum of
+      all increments up to this point.
+
+      \param x  (i) composed vector that contains all field vectors
+      \param sx (o) structural displacements
+      \param fx (o) fluid velocities and pressure
+      \param ax (o) ale displacements
+     */
     virtual void ExtractFieldVectors(Teuchos::RCP<const Thyra::DefaultProductVector<double> > x,
                                      Teuchos::RCP<const Epetra_Vector>& sx,
                                      Teuchos::RCP<const Epetra_Vector>& fx,
@@ -261,7 +270,13 @@ namespace MFSI
     double time_;
     double maxtime_;
     double dt_;
+    int nlnstep_;
     //@}
+
+  protected:
+
+    /// very simple one processor debug output facility
+    Debug debug_;
   };
 }
 

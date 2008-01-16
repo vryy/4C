@@ -54,6 +54,8 @@ namespace MFSI {
 
     virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() = 0;
     virtual Teuchos::RCP<Epetra_Vector> RHS() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> Dispnp() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> Disp() = 0;
     virtual Teuchos::RCP<Epetra_Vector> Dispm() = 0;
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap() = 0;
     virtual Teuchos::RCP<Epetra_Operator> SysMat() = 0;
@@ -76,6 +78,8 @@ namespace MFSI {
 
     /// communication object at the interface
     virtual const FSI::ConditionDofMap& Interface() const = 0;
+
+    virtual const Epetra_Map& DomainMap() = 0;
   };
 
 
@@ -91,6 +95,8 @@ namespace MFSI {
 
     Teuchos::RCP<const Epetra_Vector> InitialGuess();
     Teuchos::RCP<Epetra_Vector> RHS();
+    Teuchos::RCP<Epetra_Vector> Dispnp();
+    Teuchos::RCP<Epetra_Vector> Disp();
     Teuchos::RCP<Epetra_Vector> Dispm();
     Teuchos::RCP<const Epetra_Map> DofRowMap();
     Teuchos::RCP<Epetra_Operator> SysMat();
@@ -113,6 +119,8 @@ namespace MFSI {
 
     /// communication object at the interface
     virtual const FSI::ConditionDofMap& Interface() const { return interface_; }
+
+    virtual const Epetra_Map& DomainMap();
 
   private:
 

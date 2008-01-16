@@ -287,9 +287,9 @@ void MFSI::LagrangeAlgorithm::SetupRHS(Thyra::DefaultProductVector<double> &f) c
   Teuchos::RCP<Epetra_Vector> fv = rcp(new Epetra_Vector(*FluidField()->RHS()));
   Teuchos::RCP<Epetra_Vector> av = rcp(new Epetra_Vector(*AleField()->RHS()));
 
-//   debug.DumpVector("sf",*StructureField()->Discretization(),*sv);
-//   debug.DumpVector("ff",*FluidField()->Discretization(),*fv);
-//   debug.DumpVector("af",*AleField()->Discretization(),*av);
+//   debug_.DumpVector("sf",*StructureField()->Discretization(),*sv);
+//   debug_.DumpVector("ff",*FluidField()->Discretization(),*fv);
+//   debug_.DumpVector("af",*AleField()->Discretization(),*av);
 
   // wrap epetra vectors in thyra
   Teuchos::RCP< Thyra::VectorBase< double > > srhs = Thyra::create_Vector(sv, smap_);

@@ -185,9 +185,6 @@ namespace MFSI
     Teuchos::RCP<Thyra::LinearOpWithSolveFactoryBase<double> > alesolverfactory_;
 
     //@}
-
-    /// very simple one processor debug output facility
-    Debug debug;
   };
 }
 

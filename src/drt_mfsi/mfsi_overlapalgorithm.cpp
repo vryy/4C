@@ -181,6 +181,37 @@ MFSI::OverlapAlgorithm::OverlapAlgorithm(Epetra_Comm& comm)
   // Lets use aztec for now. This a about the only choice we have got.
   SetSolverFactory(Teuchos::rcp(new Thyra::AztecOOLinearOpWithSolveFactory()));
   SolverFactory()->setPreconditionerFactory(PreconditionerFactory(), "FSI block preconditioner");
+
+  /*----------------------------------------------------------------------*/
+  // Assume linear ALE. Prepare ALE system matrix once and for all.
+
+  AleField()->Evaluate(Teuchos::null);
+
+  // split ale matrix
+
+  Teuchos::RCP<Epetra_CrsMatrix> aii;
+  Teuchos::RCP<Epetra_CrsMatrix> aig;
+  Teuchos::RCP<Epetra_CrsMatrix> agi;
+  Teuchos::RCP<Epetra_CrsMatrix> agg;
+
+  Teuchos::RCP<Epetra_Map> agmap = AleField()->Interface().CondDofMap();
+  Teuchos::RCP<Epetra_Map> aimap = AleField()->Interface().OtherDofMap();
+
+  Teuchos::RCP<Epetra_CrsMatrix> a = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(AleField()->SysMat());
+
+  // map between ale interface and structure column map
+
+  DRT::Exporter ex(a->RowMap(),a->ColMap(),a->Comm());
+  coupsa.FillSlaveToMasterMap(alestructcolmap_);
+  ex.Export(alestructcolmap_);
+
+  if (not LINALG::SplitMatrix2x2(a,aimap,agmap,aii,aig,agi,agg))
+  {
+    dserror("failed to split ale matrix");
+  }
+
+  aig_ = this->ConvertFigColmap(aig,alestructcolmap_,StructureField()->DomainMap());
+  aii_ = aii;
 }
 
 
@@ -193,6 +224,11 @@ void MFSI::OverlapAlgorithm::InitialGuess(Thyra::DefaultProductVector<double>& i
               FluidField()->InitialGuess(),
               AleField()->InitialGuess(),
               0.0);
+
+  // debug
+  debug_.DumpVector("sig",*StructureField()->Discretization(),*StructureField()->InitialGuess());
+  debug_.DumpVector("fig",*FluidField()->Discretization(),*FluidField()->InitialGuess());
+  debug_.DumpVector("aig",*AleField()->Discretization(),*AleField()->InitialGuess());
 }
 
 
@@ -205,6 +241,26 @@ void MFSI::OverlapAlgorithm::SetupRHS(Thyra::DefaultProductVector<double> &f) co
               FluidField()->RHS(),
               AleField()->RHS(),
               FluidField()->ResidualScaling());
+
+  // This is needed to account for the structural predictor. But it is much
+  // better not to have any, as the fluid solution would have to be handled
+  // here as well.
+#if 0
+  // In the first nonlinear iteration we have to add the predicted structural
+  // displacements to the rhs.
+  if (Step()==1)
+  {
+    Epetra_Vector arhs(*AleField()->Interface().OtherDofMap());
+    Teuchos::RCP<Epetra_Vector> ddispnp = StructureField()->Dispnp();
+    ddispnp->Update(-1.0,*StructureField()->Disp(),1.0);
+    aig_->Apply(*ddispnp,arhs);
+
+    Teuchos::RCP<Epetra_Vector> a = Thyra::get_Epetra_Vector(*AleField()->Interface().OtherDofMap(),
+                                                             f.getNonconstVectorBlock(2));
+
+    a->Update(-1.0,arhs,1.0);
+  }
+#endif
 
   // NOX expects a different sign here.
   Thyra::scale(-1., &f);
@@ -222,23 +278,18 @@ void MFSI::OverlapAlgorithm::SetupVector(Thyra::DefaultProductVector<double> &f,
 
   // extract the inner and boundary dofs of all three fields
 
-  //Teuchos::RCP<Epetra_Vector> sov = StructureField()->Interface().ExtractOtherVector(sv);
   Teuchos::RCP<Epetra_Vector> fov = FluidField()    ->Interface().ExtractOtherVector(fv);
   Teuchos::RCP<Epetra_Vector> aov = AleField()      ->Interface().ExtractOtherVector(av);
 
-  //Teuchos::RCP<Epetra_Vector> scv = StructureField()->Interface().ExtractCondVector(sv);
   Teuchos::RCP<Epetra_Vector> fcv = FluidField()    ->Interface().ExtractCondVector(fv);
 
-  //scv->Update(fluidscale, *FluidToStruct(fcv), 1.0);
-
+  // add fluid interface values to structure vector
   Teuchos::RCP<Epetra_Vector> modsv = StructureField()->Interface().InsertCondVector(FluidToStruct(fcv));
   modsv->Update(1.0, *sv, fluidscale);
 
   int numBlocks = 3;
   std::vector<Teuchos::RCP<Thyra::VectorBase<double> > > vec(numBlocks);
 
-  //vec[0] = Thyra::create_Vector(sov,simap_);
-  //vec[1] = Thyra::create_Vector(scv,sgmap_);
   vec[0] = Thyra::create_Vector(modsv,smap_);
   vec[1] = Thyra::create_Vector(fov,fimap_);
   vec[2] = Thyra::create_Vector(aov,aimap_);
@@ -255,25 +306,37 @@ void MFSI::OverlapAlgorithm::ExtractFieldVectors(Teuchos::RCP<const Thyra::Defau
                                                  Teuchos::RCP<const Epetra_Vector>& ax) const
 {
   sx = Thyra::get_Epetra_Vector(*StructureField()->DofRowMap(), x->getVectorBlock(0));
-
-  Teuchos::RCP<const Epetra_Vector> fox = Thyra::get_Epetra_Vector(*FluidField()    ->Interface().OtherDofMap(), x->getVectorBlock(1));
-  Teuchos::RCP<const Epetra_Vector> aox = Thyra::get_Epetra_Vector(*AleField()      ->Interface().OtherDofMap(), x->getVectorBlock(2));
-
   Teuchos::RCP<const Epetra_Vector> scx = StructureField()->Interface().ExtractCondVector(sx);
 
+  // process fluid unknowns
+  Teuchos::RCP<const Epetra_Vector> fox = Thyra::get_Epetra_Vector(*FluidField()->Interface().OtherDofMap(), x->getVectorBlock(1));
   Teuchos::RCP<Epetra_Vector> fcx = StructToFluid(scx);
-  Teuchos::RCP<Epetra_Vector> acx = StructToAle(scx);
+
+  // get interface displacement at t(n)
+  Teuchos::RCP<Epetra_Vector> dispn = StructureField()->Disp();
+  dispn = StructureField()->Interface().ExtractCondVector(dispn);
 
   // We convert Delta d to Delta u here.
-  fcx->Scale(1./Dt());
+  fcx->Update(-1./Dt(),*StructToFluid(dispn),1./Dt());
 
-  Teuchos::RCP<Epetra_Vector> f = FluidField()    ->Interface().InsertOtherVector(fox);
-  Teuchos::RCP<Epetra_Vector> a = AleField()      ->Interface().InsertOtherVector(aox);
-
-  FluidField()    ->Interface().InsertCondVector(fcx, f);
-  AleField()      ->Interface().InsertCondVector(acx, a);
-
+  Teuchos::RCP<Epetra_Vector> f = FluidField()->Interface().InsertOtherVector(fox);
+  FluidField()->Interface().InsertCondVector(fcx, f);
   fx = f;
+
+  // process ale unknowns
+
+  Teuchos::RCP<const Epetra_Vector> aox = Thyra::get_Epetra_Vector(*AleField()->Interface().OtherDofMap(), x->getVectorBlock(2));
+  Teuchos::RCP<Epetra_Vector> acx = StructToAle(scx);
+
+  // Here we have to add the current structural interface displacement because
+  // we solve for the displacement increments on the structural side but for
+  // the absolute displacements on the ale side.
+  //
+  // We have x = d(n+1,i+1) - d(n) here, this makes things quite easy.
+  acx->Update(1.0,*StructToAle(dispn),1.0);
+
+  Teuchos::RCP<Epetra_Vector> a = AleField()->Interface().InsertOtherVector(aox);
+  AleField()->Interface().InsertCondVector(acx, a);
   ax = a;
 }
 
@@ -323,32 +386,6 @@ void MFSI::OverlapAlgorithm::SetupSysMat(Thyra::DefaultBlockedLinearOp<double>& 
 
   AddFluidInterface(scale,fgg,s);
 
-  // split ale matrix
-
-  Teuchos::RCP<Epetra_CrsMatrix> aii;
-  Teuchos::RCP<Epetra_CrsMatrix> aig;
-  Teuchos::RCP<Epetra_CrsMatrix> agi;
-  Teuchos::RCP<Epetra_CrsMatrix> agg;
-
-  Teuchos::RCP<Epetra_Map> agmap = AleField()->Interface().CondDofMap();
-  Teuchos::RCP<Epetra_Map> aimap = AleField()->Interface().OtherDofMap();
-
-  Teuchos::RCP<Epetra_CrsMatrix> a = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(AleField()->SysMat());
-
-  // map between ale interface and structure column map
-
-  if (alestructcolmap_.size()==0)
-  {
-    DRT::Exporter ex(a->RowMap(),a->ColMap(),a->Comm());
-    coupsa.FillSlaveToMasterMap(alestructcolmap_);
-    ex.Export(alestructcolmap_);
-  }
-
-  if (not LINALG::SplitMatrix2x2(a,aimap,agmap,aii,aig,agi,agg))
-  {
-    dserror("failed to split ale matrix");
-  }
-
   // build block matrix
 
   mat.beginBlockFill(DofRowMap(), DofRowMap());
@@ -372,10 +409,9 @@ void MFSI::OverlapAlgorithm::SetupSysMat(Thyra::DefaultBlockedLinearOp<double>& 
   mat.setBlock(1,1,Thyra::nonconstEpetraLinearOp(fii));
 
   //mat.setBlock(3,1,nonconstCouplingOp(aig,Teuchos::rcp(&coupsa,false)));
-  mat.setBlock(2,0,Thyra::nonconstEpetraLinearOp(ConvertFigColmap(aig,
-                                                                  alestructcolmap_,
-                                                                  s->DomainMap())));
-  mat.setBlock(2,2,Thyra::nonconstEpetraLinearOp(aii));
+
+  mat.setBlock(2,0,Thyra::nonconstEpetraLinearOp(aig_));
+  mat.setBlock(2,2,Thyra::nonconstEpetraLinearOp(aii_));
 
   mat.endBlockFill();
 }
@@ -545,9 +581,36 @@ MFSI::OverlapAlgorithm::CreateStatusTest(Teuchos::ParameterList& nlParams,
   // Very simple absolute test. We need to do something more
   // sophisticated here.
 
-  Teuchos::RCP<NOX::StatusTest::NormF> absresid =
-    Teuchos::rcp(new NOX::StatusTest::NormF(nlParams.get("Norm abs F", 1.0e-6)));
-  converged->addStatusTest(absresid);
+  //Teuchos::RCP<NOX::StatusTest::NormF> absresid =
+  //  Teuchos::rcp(new NOX::StatusTest::NormF(nlParams.get("Norm abs F", 1.0e-6)));
+  //converged->addStatusTest(absresid);
+
+  Teuchos::RCP<PartialNormF> structureDisp =
+    Teuchos::rcp(new PartialNormF("displacement",
+                                  0,
+                                  *StructureField()->DofRowMap(),
+                                  *StructureField()->DofRowMap(),
+                                  nlParams.get("Norm abs disp", 1.0e-6),
+                                  PartialNormF::Scaled));
+  converged->addStatusTest(structureDisp);
+
+  Teuchos::RCP<PartialNormF> innerFluidVel =
+    Teuchos::rcp(new PartialNormF("velocity",
+                                  1,
+                                  *FluidField()->Interface().OtherDofMap(),
+                                  *FluidField()->InnerVelocityRowMap(),
+                                  nlParams.get("Norm abs vel", 1.0e-6),
+                                  PartialNormF::Scaled));
+  converged->addStatusTest(innerFluidVel);
+
+  Teuchos::RCP<PartialNormF> fluidPress =
+    Teuchos::rcp(new PartialNormF("pressure",
+                                  1,
+                                  *FluidField()->Interface().OtherDofMap(),
+                                  *FluidField()->PressureRowMap(),
+                                  nlParams.get("Norm abs pres", 1.0e-6),
+                                  PartialNormF::Scaled));
+  converged->addStatusTest(fluidPress);
 
   return combo;
 }

@@ -35,7 +35,8 @@ extern struct _GENPROB     genprob;
 FSI::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
                           Teuchos::RCP<LINALG::Solver> solver,
                           Teuchos::RCP<ParameterList> params,
-                          Teuchos::RCP<IO::DiscretizationWriter> output)
+                          Teuchos::RCP<IO::DiscretizationWriter> output,
+                          bool dirichletcond)
   : interface_(actdis),
     discret_(actdis),
     solver_ (solver),
@@ -45,8 +46,6 @@ FSI::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
     time_(0.0),
     maxentriesperrow_(81),
     sysmat_(null),
-    haveF_(false),
-    haveJacobian_(false),
     restartstep_(0),
     uprestart_(params->get("write restart every", -1))
 {
@@ -56,18 +55,34 @@ FSI::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
 
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
+  dispn_          = LINALG::CreateVector(*dofrowmap,true);
   dispnp_         = LINALG::CreateVector(*dofrowmap,true);
-
   residual_       = LINALG::CreateVector(*dofrowmap,true);
-
-  dirichtoggle_ = LINALG::CreateVector(*dofrowmap,true);
-
-  sumdisi_        = LINALG::CreateVector(*dofrowmap,true);
+  dirichtoggle_   = LINALG::CreateVector(*dofrowmap,true);
 
   interface_.SetupCondDofMap("FSICoupling");
 
   // needed for MFSI
   interface_.SetupOtherDofMap();
+
+  // set fixed nodes (conditions != 0 are not supported right now)
+  ParameterList eleparams;
+  eleparams.set("total time", time_);
+  eleparams.set("delta time", dt_);
+  discret_->EvaluateDirichlet(eleparams,*dispnp_,*dirichtoggle_);
+
+  if (dirichletcond)
+  {
+    // for partitioned FSI the interface becames a Dirichlet boundary
+
+    Teuchos::RCP<Epetra_Vector> idisp = LINALG::CreateVector(*interface_.CondDofMap(),false);
+    idisp->PutScalar(1.0);
+    interface_.InsertCondVector(idisp,dirichtoggle_);
+  }
+
+  // build linear matrix once and for all
+  EvaluateElements();
+  LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,dirichtoggle_);
 }
 
 
@@ -77,20 +92,12 @@ void FSI::AleLinear::PrepareTimeStep()
 {
   step_ += 1;
   time_ += dt_;
-
-  ParameterList eleparams;
-  eleparams.set("total time", time_);
-  eleparams.set("delta time", dt_);
-
-  sumdisi_->PutScalar(0.);
-
-  discret_->EvaluateDirichlet(eleparams,*dispnp_,*dirichtoggle_);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::AleLinear::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
+void FSI::AleLinear::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp)
 {
   // We save the current solution here. This will not change the
   // result of our element call, but the next time somebody asks us we
@@ -98,14 +105,11 @@ void FSI::AleLinear::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
   //
   // Note: What we get here is the sum of all increments in this time
   // step, not just the latest increment. Be careful.
-  if (disp!=Teuchos::null)
-  {
-    dispnp_->Update(1.0,*disp,-1.0,*sumdisi_,1.0);
-    sumdisi_->Update(1.0,*disp,0.0);
-  }
 
-  EvaluateElements();
-  LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,dirichtoggle_);
+  if (ddisp!=Teuchos::null)
+  {
+    dispnp_->Update(1.0,*ddisp,1.0,*dispn_,0.0);
+  }
 }
 
 
@@ -113,8 +117,7 @@ void FSI::AleLinear::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
  *----------------------------------------------------------------------*/
 void FSI::AleLinear::Solve()
 {
-  Evaluate(Teuchos::null);
-  solver_->Solve(sysmat_,dispnp_,residual_,true,true);
+  solver_->Solve(sysmat_,dispnp_,residual_,true);
 }
 
 
@@ -122,6 +125,7 @@ void FSI::AleLinear::Solve()
  *----------------------------------------------------------------------*/
 void FSI::AleLinear::Update()
 {
+  dispn_->Update(1.0,*dispn_,0.0);
 }
 
 
@@ -135,17 +139,14 @@ void FSI::AleLinear::Output()
   restartstep_ += 1;
 
   output_->NewStep    (step_,time_);
+  output_->WriteVector("dispnp", dispnp_);
 
   if (restartstep_ == uprestart_)
   {
     restartstep_ = 0;
 
     // add restart data
-    // do we need any variables at all?
-
-    output_->WriteVector("dispnp", dispnp_);
-    //output_->WriteVector("dispn",  dispn_);
-    //output_->WriteVector("dispnm", dispnm_);
+    output_->WriteVector("dispn", dispn_);
   }
 }
 
@@ -166,37 +167,8 @@ void FSI::AleLinear::Integrate()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool FSI::AleLinear::computeF(const Epetra_Vector &x,
-                              Epetra_Vector &F,
-                              const FillType fillFlag)
-{
-  if (!haveF_)
-  {
-    EvaluateElements();
-  }
-  return true;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-bool FSI::AleLinear::computeJacobian(const Epetra_Vector &x, Epetra_Operator &Jac)
-{
-  if (!haveJacobian_)
-  {
-    EvaluateElements();
-  }
-  return true;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void FSI::AleLinear::EvaluateElements()
 {
-  haveF_ = true;
-  haveJacobian_ = true;
-
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
 #if 1
@@ -245,8 +217,8 @@ void FSI::AleLinear::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idi
 {
   interface_.InsertCondVector(idisp,dispnp_);
 
-  idisp->PutScalar(1.0);
-  interface_.InsertCondVector(idisp,dirichtoggle_);
+  // apply displacements to the rhs as well
+  interface_.InsertCondVector(idisp,residual_);
 }
 
 
@@ -276,11 +248,7 @@ void FSI::AleLinear::ReadRestart(int step)
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
 
-  // What variables do we need?
-
   reader.ReadVector(dispnp_, "dispnp");
-  //reader.ReadVector(dispn_,  "dispn");
-  //reader.ReadVector(dispnm_, "dispnm");
 }
 
 

@@ -48,6 +48,25 @@ Teuchos::RCP<Epetra_Vector> MFSI::StructureAdapter::RHS()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> MFSI::StructureAdapter::Dispnp()
+{
+  double alphaf = structure_.AlphaF();
+  Teuchos::RCP<Epetra_Vector> dispnp = Teuchos::rcp(new Epetra_Vector(*Disp()));
+  dispnp->Update(1./(1.-alphaf),*Dispm(),-alphaf/(1.-alphaf));
+  return dispnp;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> MFSI::StructureAdapter::Disp()
+{
+  return structure_.Disp();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> MFSI::StructureAdapter::Dispm()
 {
   return structure_.Dispm();
@@ -141,8 +160,9 @@ Teuchos::RCP<Epetra_Vector> MFSI::StructureAdapter::MeshCondRHS()
 /*----------------------------------------------------------------------*/
 void MFSI::StructureAdapter::PrepareTimeStep()
 {
-  sumdisi_->PutScalar(0.);
+  //sumdisi_->PutScalar(0.);
 
+#if 0
   std::string pred = params_->get<string>("predictor","consistent");
   if (pred=="constant")
   {
@@ -154,6 +174,11 @@ void MFSI::StructureAdapter::PrepareTimeStep()
   }
   else
     dserror("predictor %s unknown", pred.c_str());
+#endif
+
+  // Always use the constant predictor here. The structure must not predict
+  // any values independent of the other fields.
+  structure_.ConstantPredictor();
 }
 
 
@@ -222,6 +247,14 @@ void MFSI::StructureAdapter::SetInterfaceMap(Teuchos::RCP<Epetra_Map> im)
 
   innerdispmap_ = Teuchos::rcp(new Epetra_Map(-1,ids.size(), &ids[0], 0, dispmap->Comm()));
 #endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+const Epetra_Map& MFSI::StructureAdapter::DomainMap()
+{
+  return structure_.DomainMap();
 }
 
 

@@ -93,7 +93,7 @@ void MFSI::FluidAdapter::PrepareTimeStep()
 {
   fluid_.PrepareTimeStep();
 
-  sumincvel_->PutScalar(0.);
+  //sumincvel_->PutScalar(0.);
 
   // we add the whole fluid mesh displacement later on?
   //fluid_.Dispnp()->PutScalar(0.);

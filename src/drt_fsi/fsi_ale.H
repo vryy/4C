@@ -64,7 +64,7 @@ public:
   virtual void PrepareTimeStep() = 0;
 
   /// calculate linear system
-  virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disp) = 0;
+  virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp) = 0;
 
   /// solve this time step with currently applied interface displacements
   virtual void Solve() = 0;
@@ -120,9 +120,7 @@ public:
 /*!
   The most basic, most simple implementation.
  */
-class AleLinear : public Ale,
-                  public NOX::Epetra::Interface::Required,
-                  public NOX::Epetra::Interface::Jacobian
+class AleLinear : public Ale
 {
 #ifdef RESULTTEST
   friend class AleResultTest;
@@ -133,22 +131,18 @@ public:
   AleLinear(Teuchos::RCP<DRT::Discretization> actdis,
             Teuchos::RCP<LINALG::Solver> solver,
             Teuchos::RCP<ParameterList> params,
-            Teuchos::RCP<IO::DiscretizationWriter> output);
+            Teuchos::RCP<IO::DiscretizationWriter> output,
+            bool dirichletcond=true);
 
   /// a very simple time loop to be used for standalone ALE problems
   void Integrate();
 
   //! @name Algorithm core methods
   virtual void PrepareTimeStep();
-  virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disp);
+  virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp);
   virtual void Solve();
   virtual void Update();
   virtual void Output();
-  //@}
-
-  //! @name Unused and nonworking
-  virtual bool computeF(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag);
-  virtual bool computeJacobian(const Epetra_Vector &x, Epetra_Operator &Jac);
   //@}
 
   void SetInterfaceMap(Teuchos::RCP<Epetra_Map> im);
@@ -160,7 +154,7 @@ public:
   //! @name access functions for monolithic FSI
 
   virtual Teuchos::RCP<Epetra_Vector> InitialGuess()
-    { return dispnp_; }
+    { return residual_; }
   virtual Teuchos::RCP<Epetra_Vector> RHS()
     { return residual_; }
   virtual Teuchos::RCP<Epetra_Vector> Disp()
@@ -208,24 +202,16 @@ private:
   //Teuchos::RCP<Epetra_Vector>    zeros_;
 
   Teuchos::RCP<Epetra_Vector>    dispnp_;
-  //Teuchos::RCP<Epetra_Vector>    dispn_;
+  Teuchos::RCP<Epetra_Vector>    dispn_;
   //Teuchos::RCP<Epetra_Vector>    dispnm_;
 
   Teuchos::RCP<Epetra_Vector>    residual_;
   //@}
 
-  /// what a hack (monolithic FSI only)
-  Teuchos::RCP<Epetra_Vector> sumdisi_;
-
 private:
 
   /// element call
   void EvaluateElements();
-
-  //! @name Unused and nonworking
-  bool haveF_;
-  bool haveJacobian_;
-  //@}
 
   //! @name restart
   int restartstep_;

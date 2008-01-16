@@ -324,7 +324,7 @@ void MFSI::Algorithm::SetupAle()
   params->set<double>("maxtime", fsidyn.get<double>("MAXTIME"));
   params->set<double>("dt",      fsidyn.get<double>("TIMESTEP"));
 
-  ale_ = rcp(new FSI::AleLinear(actdis, solver, params, output));
+  ale_ = rcp(new FSI::AleLinear(actdis, solver, params, output, false));
 }
 
 
@@ -518,9 +518,10 @@ void MFSI::Algorithm::Evaluate(Teuchos::RCP<const Thyra::DefaultProductVector<do
 
       ExtractFieldVectors(x,sx,fx,ax);
 
-//       debug.DumpVector("sx",*StructureField()->Discretization(),*sx);
-//       debug.DumpVector("fx",*FluidField()->Discretization(),*fx);
-//       debug.DumpVector("ax",*AleField()->Discretization(),*ax);
+      // debug
+      debug_.DumpVector("sx",*StructureField()->Discretization(),*sx);
+      debug_.DumpVector("fx",*FluidField()->Discretization(),*fx);
+      debug_.DumpVector("ax",*AleField()->Discretization(),*ax);
 
       // Call all elements and assemble rhs and matrices
       // We only need the rhs here because NOX will ask for the rhs

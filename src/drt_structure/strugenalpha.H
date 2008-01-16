@@ -334,6 +334,7 @@ public:
   Teuchos::RCP<DRT::Discretization> Discretization() { return Teuchos::rcp(&discret_,false); }
   double DispIncrFactor() { return 1./(1.-params_.get<double>("alpha f",0.459)); }
   double AlphaF() { return params_.get<double>("alpha f",0.459); }
+  const Epetra_Map& DomainMap() { return mass_->DomainMap(); }
 
   //@}
 

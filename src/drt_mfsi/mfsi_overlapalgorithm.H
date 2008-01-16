@@ -116,6 +116,13 @@ namespace MFSI
 
     //@}
 
+    //! @name linear ALE matrix
+
+    Teuchos::RCP<Epetra_CrsMatrix> aii_;
+    Teuchos::RCP<Epetra_CrsMatrix> aig_;
+
+    //@}
+
     /// column fluid to structure dof map
     mutable std::map<int,int> permfluidstructcolmap_;
 
