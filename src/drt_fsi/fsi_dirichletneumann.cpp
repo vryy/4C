@@ -224,7 +224,7 @@ void FSI::DirichletNeumannCoupling::SetDefaultParameters(const Teuchos::Paramete
     lineSearchParams.set("Method","User Defined");
     lineSearchParams.set("User Defined Line Search Factory", aitkenfactory);
 
-    //lineSearchParams.sublist("Aitken").set("max step size", fsidyn.get<double>("MAXSTARTOMEGA"));
+    lineSearchParams.sublist("Aitken").set("max step size", fsidyn.get<double>("MAXOMEGA"));
     break;
   }
   case fsi_iter_stagg_steep_desc:
