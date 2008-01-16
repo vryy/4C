@@ -45,6 +45,11 @@ void DRT::Utils::shape_function_3D(
 
     switch (distype)
     {
+    case DRT::Element::point1:
+    {
+        funct(0) = 1.0;
+        break;
+    }
     case DRT::Element::hex8:
     {
         const double rp=1.0+r;
@@ -227,8 +232,6 @@ void DRT::Utils::shape_function_3D(
         funct(14)=t3*(2*t3-1)*p2;
         break;
     }
-
-
     case DRT::Element::pyramid5:
     {
       const double ration=(r*s*t)/(1-t);
@@ -240,7 +243,6 @@ void DRT::Utils::shape_function_3D(
      funct(4)=t;
      break;
     }
-
     default:
         dserror("distyp unknown\n");
     } /* end switch(distype) */
@@ -258,12 +260,24 @@ void DRT::Utils::shape_function_3D_deriv1(
         const double& t,
         const DRT::Element::DiscretizationType& distype)
 {
+    
+    const int dr = 0;
+    const int ds = 1;
+    const int dt = 2;
+    
     const double Q18 = 1.0/8.0;
     const double Q12 = 1.0/2.0;
     const double Q14 = 1.0/4.0;
 
     switch (distype)
     {
+    case DRT::Element::point1:
+    {
+        deriv1(dr,0) = 0.0;
+        deriv1(ds,0) = 0.0;
+        deriv1(dt,0) = 0.0;
+        break;
+    }
     case DRT::Element::hex8:
     {
         const double rp=1.0+r;
@@ -666,7 +680,6 @@ void DRT::Utils::shape_function_3D_deriv1(
         deriv1(2, 14)=t3*(2*t3-1)*pd2;
         break;
     }
-
     case DRT::Element::pyramid5:
     {
 
@@ -722,6 +735,16 @@ void DRT::Utils::shape_function_3D_deriv2(
 
     switch (distype)
     {
+    case DRT::Element::point1:
+    {
+        deriv2(drdr, 0) = 0.0;
+        deriv2(dsds, 0) = 0.0;
+        deriv2(dtdt, 0) = 0.0;
+        deriv2(drds, 0) = 0.0;
+        deriv2(drdt, 0) = 0.0;
+        deriv2(dsdt, 0) = 0.0;
+        break;
+    }
     case DRT::Element::hex8:
     {
 
@@ -1343,6 +1366,11 @@ void DRT::Utils::shape_function_2D(
 {
     switch (distype)
     {
+    case DRT::Element::point1:
+    {
+        funct(0) = 1.0;
+        break;
+    }
     case DRT::Element::quad4:
     {
         const double rp=1.0+r;
@@ -1469,8 +1497,18 @@ void DRT::Utils::shape_function_2D_deriv1(
         const double& s,
         const DRT::Element::DiscretizationType& distype)
 {
+    
+    const int dr = 0;
+    const int ds = 1;
+    
     switch (distype)
     {
+    case DRT::Element::point1:
+    {
+        deriv1(dr, 0) = 0.0;
+        deriv1(ds, 0) = 0.0;
+        break;
+    }
     case DRT::Element::quad4:
     {
         const double rp=1.0+r;
@@ -1478,17 +1516,17 @@ void DRT::Utils::shape_function_2D_deriv1(
         const double sp=1.0+s;
         const double sm=1.0-s;
 
-        deriv1(0, 0)=-0.25*sm;
-        deriv1(1, 0)=-0.25*rm;
+        deriv1(dr, 0)=-0.25*sm;
+        deriv1(ds, 0)=-0.25*rm;
 
-        deriv1(0, 1)= 0.25*sm;
-        deriv1(1, 1)=-0.25*rp;
+        deriv1(dr, 1)= 0.25*sm;
+        deriv1(ds, 1)=-0.25*rp;
 
-        deriv1(0, 2)= 0.25*sp;
-        deriv1(1, 2)= 0.25*rp;
+        deriv1(dr, 2)= 0.25*sp;
+        deriv1(ds, 2)= 0.25*rp;
 
-        deriv1(0, 3)=-0.25*sp;
-        deriv1(1, 3)= 0.25*rm;
+        deriv1(dr, 3)=-0.25*sp;
+        deriv1(ds, 3)= 0.25*rm;
         break;
     }
     case DRT::Element::quad8:
@@ -1666,6 +1704,13 @@ void DRT::Utils::shape_function_2D_deriv2(
 
     switch (distype)
     {
+    case DRT::Element::point1:
+    {
+        deriv2(drdr, 0) = 0.0;
+        deriv2(dsds, 0) = 0.0;
+        deriv2(drds, 0) = 0.0;
+        break;
+    }
     case DRT::Element::quad4:
     {
         deriv2(drdr, 0) = 0.0;
@@ -1896,6 +1941,11 @@ void DRT::Utils::shape_function_1D(
 {
     switch (distype)
     {
+    case DRT::Element::point1:
+    {
+        funct(0) = 1.0;
+        break;
+    }
     case DRT::Element::line2:
     {
         funct(0) = 0.5*(1.0 - r);
@@ -1928,6 +1978,11 @@ void DRT::Utils::shape_function_1D_deriv1(
     const int dr = 0;
     switch (distype)
     {
+    case DRT::Element::point1:
+    {
+        deriv1(0, dr) = 0.0;
+        break;
+    }
     case DRT::Element::line2:
     {
         deriv1(0, dr)= -0.5;
@@ -1957,20 +2012,25 @@ void DRT::Utils::shape_function_1D_deriv2(
         const double& r,
         const DRT::Element::DiscretizationType& distype)
 {
-    const int dr = 0;
+    const int drdr = 0;
     switch (distype)
     {
+    case DRT::Element::point1:
+    {
+        deriv2(0, drdr)= 0.0;
+        break;
+    }
     case DRT::Element::line2:
     {
-        deriv2(0, dr)= 0.0;
-        deriv2(1, dr)= 0.0;
+        deriv2(0, drdr)= 0.0;
+        deriv2(1, drdr)= 0.0;
         break;
     }
     case DRT::Element::line3:
     {
-        deriv2(0, dr)= 1.0;
-        deriv2(1, dr)= 1.0;
-        deriv2(2, dr)= -2.0;
+        deriv2(0, drdr)= 1.0;
+        deriv2(1, drdr)= 1.0;
+        deriv2(2, drdr)= -2.0;
         break;
     }
     default:
