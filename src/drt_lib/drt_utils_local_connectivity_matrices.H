@@ -240,23 +240,16 @@ namespace Utils
   {
      switch(DISTYPE)
      {
-         case DRT::Element::hex8:
-             return 8;
-             break;
-         case DRT::Element::hex20:
-             return 20;
-             break;
-         case DRT::Element::hex27:
-             return 27;
-             break;
-         case DRT::Element::tet4:
-             return 4;
-             break;
-         case DRT::Element::tet10:
-             return 10;
-             break;   
-         default:
-             dserror("discretization type not yet implemented");     
+     case DRT::Element::point1:       return 1;    break;
+     case DRT::Element::tri3:         return 3;    break;
+     case DRT::Element::tri6:         return 6;    break;
+     case DRT::Element::hex8:         return 8;    break;
+     case DRT::Element::hex20:        return 20;   break;
+     case DRT::Element::hex27:        return 27;   break;
+     case DRT::Element::tet4:         return 4;    break;
+     case DRT::Element::tet10:        return 10;   break;   
+     default:
+         dserror("discretization type not yet implemented");     
      }
   };
  
