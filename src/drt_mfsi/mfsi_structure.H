@@ -138,9 +138,6 @@ namespace MFSI {
     Teuchos::RCP<IO::DiscretizationWriter> output_;
 
     //@}
-
-    /// what a hack
-    Teuchos::RCP<Epetra_Vector> sumdisi_;
   };
 }
 

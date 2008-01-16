@@ -25,7 +25,6 @@ MFSI::StructureAdapter::StructureAdapter(Teuchos::RCP<Teuchos::ParameterList> pa
 {
   interface_.SetupCondDofMap("FSICoupling");
   interface_.SetupOtherDofMap();
-  sumdisi_ = Teuchos::rcp(new Epetra_Vector(Dispm()->Map()));
 }
 
 
@@ -160,8 +159,6 @@ Teuchos::RCP<Epetra_Vector> MFSI::StructureAdapter::MeshCondRHS()
 /*----------------------------------------------------------------------*/
 void MFSI::StructureAdapter::PrepareTimeStep()
 {
-  //sumdisi_->PutScalar(0.);
-
 #if 0
   std::string pred = params_->get<string>("predictor","consistent");
   if (pred=="constant")
@@ -194,9 +191,8 @@ void MFSI::StructureAdapter::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
   if (disp!=Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> disi = Teuchos::rcp(new Epetra_Vector(*disp));
-    disi->Update(-1.0,*sumdisi_,1.0);
+    disi->Update(-1.0,*Dispnp(),1.0);
     structure_.Evaluate(disi);
-    sumdisi_->Update(1.0,*disp,0.0);
   }
   else
   {
