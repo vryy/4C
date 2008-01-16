@@ -262,7 +262,9 @@ protected:
   double dtp_;
   double theta_;
 
+  /// (fine-scale) subgrid-viscosity flag and Smagorinsky model parameter
   int fssgv_;
+  double Cs_fs_;
 
   /// system matrices: standard (stabilized) matrix and (fine-scale)
   /// subgrid-viscosity matrix
@@ -283,8 +285,8 @@ protected:
   /// the vector containing body and surface forces
   RefCountPtr<Epetra_Vector>    neumann_loads_;
 
-  /// rhs: standard (stabilized) residual vector (rhs for the incremental form)
-  /// and (fine-scale) subgrid-viscosity residual vector
+  /// rhs: standard (stabilized) residual vector (rhs for the incremental form),
+  /// (fine-scale) subgrid-viscosity residual and scaling vector
   RefCountPtr<Epetra_Vector>    residual_;
   RefCountPtr<Epetra_Vector>    residual_sv_;
   RefCountPtr<Epetra_Vector>    sugrvisc_;

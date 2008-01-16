@@ -29,6 +29,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/dof_management.H"
 #include "../io/gmsh.H"
 
+using namespace std;
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -84,7 +85,11 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   dtp_ = dta_ = params_.get<double>("time step size");
 
   // (fine-scale) subgrid viscosity?
-  fssgv_  =params_.get<int>("fs subgrid viscosity",0);
+  fssgv_ = params_.get<int>("fs subgrid viscosity",0);
+
+  // Smagorinsky model parameter from turbulence model sublist
+  ParameterList *  turbmodelparams =&(params_.sublist("TURBULENCE MODEL"));
+  Cs_fs_ = turbmodelparams->get<double>("C_SMAGORINSKY",0.0);
 
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
@@ -249,9 +254,6 @@ void XFluidImplicitTimeInt::ComputeSingleFieldRowMaps(RCP<XFEM::DofManager> dofm
 	vector<int> velmapdata;
 	vector<int> premapdata;
 
-	int countveldofs = 0;
-	int countpredofs = 0;
-
 	// collect global dofids for velocity and pressure in vectors
 	for (int i=0; i<discret_->NumMyRowNodes(); ++i) {
 		const DRT::Node* node = discret_->lRowNode(i);
@@ -266,11 +268,9 @@ void XFluidImplicitTimeInt::ComputeSingleFieldRowMaps(RCP<XFEM::DofManager> dofm
 				case XFEM::PHYSICS::Vely: 
 				case XFEM::PHYSICS::Velz:
 					velmapdata.push_back(dof[countdof]);
-					countveldofs++;
 					break;
 				case XFEM::PHYSICS::Pres:
 					premapdata.push_back(dof[countdof]);
-					countpredofs++;
 					break;
 				default:
 					break;
@@ -705,6 +705,7 @@ void XFluidImplicitTimeInt::NonlinearSolve()
       eleparams.set("total time",time_);
       eleparams.set("thsl",theta_*dta_);
       eleparams.set("fs subgrid viscosity",fssgv_);
+      eleparams.set("fs Smagorinsky parameter",Cs_fs_);
       eleparams.set("include reactive terms for linearisation",newton_);
 
       // set vector values needed by elements
@@ -1202,6 +1203,20 @@ void XFluidImplicitTimeInt::Output()
     restartstep_ += 1;
     writestep_ += 1;
 
+    #if 0
+    // write domain decomposition for visualization
+    const Epetra_Map* elerowmap = discret_->ElementRowMap(); 
+    RCP<Epetra_Vector> domain_decomp = LINALG::CreateVector(*elerowmap,true);
+    for (int lid=0;lid<elerowmap->NumMyElements();++lid)
+    {
+    	double eleowner=(double) (discret_->lRowElement(lid)->Owner());
+    	domain_decomp->ReplaceMyValues(1, &eleowner, &lid);
+    	// global element ids
+    	//double gid=(double) (discret_->lRowElement(i)->Id());
+    	//myelevalues->ReplaceMyValues(1, &gid, &lid);
+    }
+    #endif
+
   if (writestep_ == upres_)  //write solution
     {
       writestep_= 0;
@@ -1209,6 +1224,7 @@ void XFluidImplicitTimeInt::Output()
       output_.NewStep    (step_,time_);
       output_.WriteVector("velnp", velnp_);
       output_.WriteVector("residual", trueresidual_);
+      //output_.WriteVector("domain_decomp",domain_decomp);
       if (alefluid_)
         output_.WriteVector("dispnp", dispnp_);
 
@@ -1245,6 +1261,7 @@ void XFluidImplicitTimeInt::Output()
     output_.NewStep    (step_,time_);
     output_.WriteVector("velnp", velnp_);
     //output_.WriteVector("residual", trueresidual_);
+    //output_.WriteVector("domain_decomp",domain_decomp);
     if (alefluid_)
       output_.WriteVector("dispnp", dispnp_);
 
