@@ -1329,7 +1329,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     if (!myrank_ && (printscreen || printerr))
     {
       PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
-                  fresmnorm,disinorm,convcheck);
+                  fresmnorm,disinorm,convcheck,volnorm);
     }
 
     //--------------------------------- increment equilibrium loop index
@@ -1349,7 +1349,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
      if (!myrank_ && printscreen)
      {
        PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
-                   fresmnorm,disinorm,convcheck);
+                   fresmnorm,disinorm,convcheck,volnorm);
      }
   }
 
@@ -3239,12 +3239,12 @@ void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_uncon
       }
       else if (relres_reldis)
       {
-        printf("numiter %2d scaled res-norm %10.5e scaled dis-norm %20.15E absolute res-norm %10.5e\n",numiter+1, fresmnorm, disinorm, volnorm);
+        printf("numiter %2d scaled res-norm %10.5e scaled dis-norm %20.15E absolute vol-norm %10.5e\n",numiter+1, fresmnorm, disinorm, volnorm);
         fflush(stdout);
       }
       else
         {
-        printf("numiter %2d absolute res-norm %10.5e absolute dis-norm %20.15E absolute res-norm %10.5e\n",numiter+1, fresmnorm, disinorm, volnorm);
+        printf("numiter %2d absolute res-norm %10.5e absolute dis-norm %20.15E absolute vol-norm %10.5e\n",numiter+1, fresmnorm, disinorm, volnorm);
         fflush(stdout);
       }
     }
@@ -3252,17 +3252,17 @@ void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_uncon
     {
       if (relres)
       {
-        fprintf(errfile, "numiter %2d scaled res-norm %10.5e absolute dis-norm %20.15E absolute res-norm %10.5e\n",numiter+1, fresmnorm, disinorm, volnorm);
+        fprintf(errfile, "numiter %2d scaled res-norm %10.5e absolute dis-norm %20.15E absolute vol-norm %10.5e\n",numiter+1, fresmnorm, disinorm, volnorm);
         fflush(errfile);
       }
       else if (relres_reldis)
       {
-        fprintf(errfile, "numiter %2d scaled res-norm %10.5e scaled dis-norm %20.15E absolute res-norm %10.5e\n",numiter+1, fresmnorm, disinorm, volnorm);
+        fprintf(errfile, "numiter %2d scaled res-norm %10.5e scaled dis-norm %20.15E absolute vol-norm %10.5e\n",numiter+1, fresmnorm, disinorm, volnorm);
         fflush(errfile);
       }
       else
         {
-        fprintf(errfile, "numiter %2d absolute res-norm %10.5e absolute dis-norm %20.15E absolute res-norm %10.5e\n",numiter+1, fresmnorm, disinorm, volnorm);
+        fprintf(errfile, "numiter %2d absolute res-norm %10.5e absolute dis-norm %20.15E absolute vol-norm %10.5e\n",numiter+1, fresmnorm, disinorm, volnorm);
         fflush(errfile);
       }
     }
@@ -3273,19 +3273,19 @@ void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_uncon
 
     if (relres)
     {
-      printf("Newton iteration converged: numiter %d scaled res-norm %e absolute dis-norm %e absolute res-norm %e time %10.5f\n",
+      printf("Newton iteration converged: numiter %d scaled res-norm %e absolute dis-norm %e absolute vol-norm %e time %10.5f\n",
              numiter,fresmnorm,disinorm, volnorm,timepernlnsolve);
       fflush(stdout);
     }
     else if (relres_reldis)
     {
-      printf("Newton iteration converged: numiter %d scaled res-norm %e scaled dis-norm %e absolute res-norm %e time %10.5f\n",
+      printf("Newton iteration converged: numiter %d scaled res-norm %e scaled dis-norm %e absolute vol-norm %e time %10.5f\n",
              numiter,fresmnorm,disinorm, volnorm,timepernlnsolve);
       fflush(stdout);
     }
     else
     {
-      printf("Newton iteration converged: numiter %d absolute res-norm %e absolute dis-norm %e absolute res-norm %e time %10.5f\n",
+      printf("Newton iteration converged: numiter %d absolute res-norm %e absolute dis-norm %e absolute vol-norm %e time %10.5f\n",
              numiter,fresmnorm,disinorm, volnorm,timepernlnsolve);
       fflush(stdout);
     }
