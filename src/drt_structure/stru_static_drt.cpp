@@ -673,10 +673,10 @@ void stru_static_drt()
     bool isdatawritten = false;
     if (istep % statvar->resevery_restart==0)
     {
+      output.WriteMesh(istep,time);
       output.NewStep(istep, time);
       output.WriteVector("displacement",dis);
       //output.WriteVector("fexternal", fext);
-      output.WriteMesh(istep,time);
       isdatawritten = true;
 
       if (!myrank)

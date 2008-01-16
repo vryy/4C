@@ -2697,12 +2697,12 @@ void StruGenAlpha::UpdateandOutput()
   bool isdatawritten = false;
   if (writeresevry && istep%writeresevry==0)
   {
+    output_.WriteMesh(istep,timen);
     output_.NewStep(istep, timen);
     output_.WriteVector("displacement",dis_);
     output_.WriteVector("velocity",vel_);
     output_.WriteVector("acceleration",acc_);
     output_.WriteVector("fexternal",fext_);
-    output_.WriteMesh(istep,timen);
     isdatawritten = true;
 
     if (discret_.Comm().MyPID()==0 && printscreen)

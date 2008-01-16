@@ -269,7 +269,7 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
       Epetra_SerialDenseMatrix* stiffmatrix,    // element stiffness matrix
       Epetra_SerialDenseMatrix* massmatrix,     // element mass matrix
       Epetra_SerialDenseVector* force,          // element internal force vector
-      Epetra_SerialDenseMatrix* elestress,      // element 
+      Epetra_SerialDenseMatrix* elestress,      // element stresses
       const double              time)           // current absolute time
 {
 /* ============================================================================*

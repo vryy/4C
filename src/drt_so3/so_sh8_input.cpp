@@ -144,6 +144,9 @@ bool DRT::Elements::So_sh8::ReadElement()
   // set default: no stresses
   else stresstype_= soh8_stress_none;
 
+  // Initialize elestress
+  stresses_.resize(6);
+  
   return true;
 } // So_sh8::ReadElement()
 

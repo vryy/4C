@@ -78,7 +78,7 @@ int DRT::Elements::So_sh8::Evaluate(ParameterList& params,
       for (int i=0; i<(int)mydisp.size(); ++i) mydisp[i] = 0.0;
       vector<double> myres(lm.size());
       for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;
-      sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1);
+      sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL);
     }
     break;
 
@@ -92,7 +92,7 @@ int DRT::Elements::So_sh8::Evaluate(ParameterList& params,
       DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::Utils::ExtractMyValues(*res,myres,lm);
-      sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1);
+      sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL);
     }
     break;
 
@@ -116,18 +116,27 @@ int DRT::Elements::So_sh8::Evaluate(ParameterList& params,
       DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::Utils::ExtractMyValues(*res,myres,lm);
-      sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1);
+      sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL);
     }
     break;
 
     // evaluate stresses
     case calc_struct_stress: {
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
       vector<double> mydisp(lm.size());
       DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
-      Epetra_SerialDenseMatrix stresses(NUMGPT_SOH8,NUMSTR_SOH8);
-      dserror("no stress evaluation yet");
+      Epetra_SerialDenseMatrix elestress(NUMSTR_SOH8,NUMGPT_SOH8);
+      vector<double> myres(lm.size());
+      DRT::Utils::ExtractMyValues(*res,myres,lm);
+      sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,&elestress);
+      // average gp stresses to store element (center) stresses
+      for (int i = 0; i < NUMSTR_SOH8; ++i) {
+        for (int j = 0; j < NUMGPT_SOH8; ++j) {
+          stresses_[i] += 0.125 * elestress(i,j);
+        }
+      }
     }
     break;
 
@@ -162,7 +171,8 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
       vector<double>&           residual,       // current residuum
       Epetra_SerialDenseMatrix* stiffmatrix,    // element stiffness matrix
       Epetra_SerialDenseMatrix* massmatrix,     // element mass matrix
-      Epetra_SerialDenseVector* force)          // element internal force vector
+      Epetra_SerialDenseVector* force,          // element internal force vector
+      Epetra_SerialDenseMatrix* elestress)      // element stresses
 {
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
@@ -466,6 +476,13 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
 
     soh8_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp, ele_ID, time);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
+
+    // return gp stresses
+    if (elestress != NULL){
+      for (int i = 0; i < NUMSTR_SOH8; ++i) {
+        (*elestress)(i,gp) = stress(i);
+      }
+    }
 
     // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
     (*force).Multiply('T','N',detJ * (*weights)(gp),bop,stress,1.0);

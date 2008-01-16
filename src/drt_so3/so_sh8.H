@@ -224,7 +224,8 @@ private:
                          vector<double>&           residual,
                          Epetra_SerialDenseMatrix* stiffmatrix,
                          Epetra_SerialDenseMatrix* massmatrix,
-                         Epetra_SerialDenseVector* force);
+                         Epetra_SerialDenseVector* force,
+                         Epetra_SerialDenseMatrix* elestress);
 
   void sosh8_anssetup(const int numsp,              // number of sampling points
           const int numans,             // number of ans strains

@@ -38,6 +38,7 @@ void StructureEnsightWriter::WriteAllResults(
     EnsightWriter::WriteResult("MomentsXYZ", "MomentsXYZ", elementbased, 9);
     EnsightWriter::WriteResult("Owner", "Owner", elementbased, 1);
     EnsightWriter::WriteResult("StressCxyz", "StressCxyz", elementbased, 6);
+    EnsightWriter::WriteResult("FiberVec", "FiberVec", elementbased, 3);
 }
 
 /*----------------------------------------------------------------------*/
