@@ -120,6 +120,7 @@ public:
     element_sodispline,
     element_contact,
     element_so_shw6,
+    element_beam2,
 #ifdef ELEMINTERFACES    
     interfaceelement_surface,
     interfaceelement_line,
