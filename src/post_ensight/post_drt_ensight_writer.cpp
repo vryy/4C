@@ -696,13 +696,14 @@ void EnsightWriter::WriteResult(
     // open file
     const string filename = filename_ + "_"+ field_->name() + "."+ name;
     ofstream file;
+    int startfilepos = 0;
     if (myrank_==0)
     {
         file.open(filename.c_str());
+        startfilepos = file.tellp(); // file position should be zero, but we stay flexible
     }
     
     map<string, vector<ofstream::pos_type> > resultfilepos;
-    int startfilepos = file.tellp(); // file position should be zero, but we stay flexible
     int stepsize = 0;
     
     // distinguish between node- and element-based results
@@ -724,8 +725,13 @@ void EnsightWriter::WriteResult(
         
         WriteNodalResultStep(file, result, resultfilepos, groupname, name, numdf, from);
         // how many bits are necessary per time step (we assume a fixed size)?
-        stepsize = ((int) file.tellp())-startfilepos;
-        if (stepsize <= 0) dserror("found invalid step size for result file");
+        if (myrank_==0)
+        {
+        	stepsize = ((int) file.tellp())-startfilepos;
+        	if (stepsize <= 0) dserror("found invalid step size for result file");
+        }
+        else
+        	stepsize = 1; //use dummy value on other procs
         
         while (result.next_result())
         {
@@ -748,9 +754,14 @@ void EnsightWriter::WriteResult(
        
         WriteElementResultStep(file, result, resultfilepos, groupname, name, numdf, from);
         // how many bits are necessary per time step (we assume a fixed size)?
-        stepsize = ((int) file.tellp())-startfilepos;
-        if (stepsize <= 0) dserror("found invalid step size for result file");
-
+        if (myrank_==0)
+        {
+        	stepsize = ((int) file.tellp())-startfilepos;
+        	if (stepsize <= 0) dserror("found invalid step size for result file");
+        }
+        else
+        	stepsize = 1; //use dummy value on other procs
+        
         while (result.next_result())
         {
             const int indexsize = 80+2*sizeof(int)+(file.tellp()/stepsize+2)*sizeof(long);
