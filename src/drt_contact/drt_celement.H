@@ -204,6 +204,18 @@ public:
   */
   virtual inline bool IsSlave() { return isslave_; }
   
+  /*!
+  \brief Return number of potentially contacting elements
+  
+  */
+  virtual inline int NumSearchElements() const { return (int)searchelements_.size(); }
+  
+  /*!
+  \brief Return global ids of potentially contacting elements
+  
+  */
+  virtual inline vector<int>& SearchElements() {return searchelements_; }
+  
   //@}
 
   //! @name Construction
@@ -317,15 +329,23 @@ public:
   */
   virtual bool LocalToGlobal(const double* xi, double* globcoord, bool inttype);
 
+  /*!
+  \brief Add CElements to this CElement's potentially contact partners
+  */
+  virtual bool AddSearchElements(const vector<int>& gids);
+  
   //@}
 
 
 private:
 
   DRT::Element::DiscretizationType shape_;   // shape of this element
-  bool                             isslave_; // indicating slave or master side
-  double													 refarea_; // element length or area in reference configuration
-  double													 area_;	   // element length or area in current configuration
+  
+  bool               isslave_; 							 // indicating slave or master side
+  double						 refarea_; 							 // element length or area in reference configuration
+  double						 area_;	   							 // element length or area in current configuration
+  
+  vector<int>		  	 searchelements_; 			 // global ids of potentially contacting elements 
 
 }; // class CElement
 } // namespace CONTACT

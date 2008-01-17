@@ -29,6 +29,7 @@ comm_(comm)
 {
   RCP<Epetra_Comm> com = rcp(Comm().Clone());
   idiscret_ = rcp(new DRT::Discretization((string)"Contact Interface",com));
+  contactsegs_.Reshape(0,0);
   counter_ = 0;
   return;
 }
@@ -278,12 +279,14 @@ void CONTACT::Interface::SetState(const string& statename, const RCP<Epetra_Vect
   	}
   
   // loop over all elements to set current area or length
+  // and to reset contact candidates (search lists)
   // use fully overlapping column map to make areas available on all procs
   if (statename=="displacement")
   	for (int i=0;i<idiscret_->NumMyColElements();++i)
   	{
   		CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
   		element->Area()=element->ComputeArea();
+  		element->SearchElements().resize(0);
   	}
   
   // set matrix containing interface contact segments back to size zero
@@ -323,8 +326,11 @@ void CONTACT::Interface::Evaluate()
 	comm_.Barrier();
 #endif // #ifdef DEBUG
 	
+	// contact search algorithm
+	EvaluateContactSearch();
+	
 	// loop over proc's slave elements of the interface for integration
-	// use standard column map to include processor's ghosted nodes 
+	// use standard column map to include processor's ghosted elements 
 	for (int i=0; i<selecolmap_->NumMyElements();++i)
 	{
 		int gid1 = selecolmap_->GID(i);
@@ -332,18 +338,18 @@ void CONTACT::Interface::Evaluate()
 		if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
 		CElement* selement = static_cast<CElement*>(ele1);
 		
-		// loop over all master elements of the interface for integration
-		// // use fully overlapping column map to check all elements
-		for (int j=0;j<melefullmap_->NumMyElements();++j)
+		// loop over the contact candidate master elements
+		// use slave element's candidate list SearchElements !!!
+		for (int j=0;j<selement->NumSearchElements();++j)
 		{
-			int gid2 = melefullmap_->GID(j);
+			int gid2 = selement->SearchElements()[j];
 			DRT::Element* ele2 = idiscret_->gElement(gid2);
 			if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
 			CElement* melement = static_cast<CElement*>(ele2);
 			
 			// check for element overlap and integrate the pair
-				EvaluateOverlap_2D(*selement,*melement);
-		}		
+			EvaluateOverlap_2D(*selement,*melement);
+		}
 	}
 
 #ifdef DEBUG
@@ -354,12 +360,104 @@ void CONTACT::Interface::Evaluate()
 #endif // #ifdef DEBUG
 	
 	// Exit 0 - Debug
-	//exit(0);
+	// exit(0);
   return;
 }
 
 /*----------------------------------------------------------------------*
- |  Determine overlap and integrate sl/ma pair (public)       popp 11/07|
+ |  Search for potentially contacting sl/ma pairs (public)    popp 01/08|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Interface::EvaluateContactSearch()
+{
+	/**********************************************************************/
+	/* CONTACT SEARCH ALGORITHM:                                          */
+	/* The idea of the search is to reduce the number of master / slave   */
+	/* element pairs that are checked for overlap and contact by intro-   */
+	/* ducing information about proximity and history!                    */
+	/* At the moment this is still brute force for finding the closest    */
+	/* CNode to each CNode, so it will have to replaced by a more         */
+	/* sophisticated approach in the future (bounding vol. hierarchies?)  */
+	/**********************************************************************/
+	
+	// loop over proc's slave nodes for closest node detection
+	// use standard column map to include processor's ghosted nodes 
+	for (int i=0; i<snodecolmap_->NumMyElements();++i)
+	{
+		int gid = snodecolmap_->GID(i);
+		DRT::Node* node = idiscret_->gNode(gid);
+		if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
+		CNode* snode = static_cast<CNode*>(node);
+		
+		// find closest master node to current slave node
+		double mindist = 1.0e12;
+		CNode* closestnode = snode->FindClosestNode(idiscret_,mnodefullmap_,mindist);
+		snode->ClosestNode() = closestnode->Id();
+		
+		// proceed only if nodes are not far from each other
+		if (mindist<=CONTACT_CRITDIST)
+		{
+			// get adjacent elements to current slave node and to closest node
+			int neles = snode->NumElement();
+			DRT::Element** adj_slave = snode->Elements();
+			int nelec = closestnode->NumElement();
+			DRT::Element** adj_closest = closestnode->Elements();	
+			
+			// get global element ids for closest node's adjacent elements
+			std::vector<int> cids(nelec);
+			for (int j=0;j<nelec;++j)
+				cids[j]=adj_closest[j]->Id();
+			
+			// try to add these to slave node's adjacent elements' search list
+			for (int j=0;j<neles;++j)
+			{
+				CElement* selement = static_cast<CElement*> (adj_slave[j]);
+				selement->AddSearchElements(cids);
+			}
+		}
+	}
+	
+	// loop over all master nodes for closest node detection
+	// use full overlap column map to include all nodes 
+	for (int i=0; i<mnodefullmap_->NumMyElements();++i)
+	{
+		int gid = mnodefullmap_->GID(i);
+		DRT::Node* node = idiscret_->gNode(gid);
+		if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
+		CNode* mnode = static_cast<CNode*>(node);
+			
+		// find closest slave node to current slave node
+		double mindist = 1.0e12;
+		CNode* closestnode = mnode->FindClosestNode(idiscret_,snodefullmap_,mindist);
+		mnode->ClosestNode() = closestnode->Id();
+		
+		// proceed only if nodes are not far from each other
+		if (mindist<=CONTACT_CRITDIST)
+		{
+			// get adjacent elements to current master node and to closest node
+			int nelem = mnode->NumElement();
+			DRT::Element** adj_master = mnode->Elements();
+			int nelec = closestnode->NumElement();
+			DRT::Element** adj_closest = closestnode->Elements();	
+			
+			// get global element ids for master node's adjacent elements
+			std::vector<int> mids(nelem);
+			for (int j=0;j<nelem;++j)
+				mids[j]=adj_master[j]->Id();
+			
+			// try to add these to closest node's adjacent elements' search list
+			for (int j=0;j<nelec;++j)
+			{
+				CElement* selement = static_cast<CElement*> (adj_closest[j]);
+				selement->AddSearchElements(mids);
+			}				
+		}
+	}
+	
+	return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Determine overlap and integrate sl/ma pair (public)       popp 01/08|
  *----------------------------------------------------------------------*/
 bool CONTACT::Interface::EvaluateOverlap_2D(CONTACT::CElement& sele,
 																			      CONTACT::CElement& mele)
@@ -875,25 +973,28 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs)
 	}
 		
 	// plot contact segments (slave and master projections)
-	double sf = 100/csegs.M();
-	for (int i=0; i<csegs.M(); ++i)
+	if (csegs.M()!=0)
 	{
-		gmshfilecontent << "SQ(" << scientific << csegs(i,0) << "," << csegs(i,1) << ","
-		                << csegs(i,2) << "," << csegs(i,3) << "," << csegs(i,4) << ","
-		                << csegs(i,5) << "," << csegs(i,6) << "," << csegs(i,7) << ","
-		                << csegs(i,8) << "," << csegs(i,9) << "," << csegs(i,10) << ","
-		                << csegs(i,11) << ")";
-		gmshfilecontent << "{" << scientific << i*sf << "," << i*sf << "," << i*sf << "," << i*sf << "};" << endl; 
+		double sf = 100/csegs.M();
+		for (int i=0; i<csegs.M(); ++i)
+		{
+			gmshfilecontent << "SQ(" << scientific << csegs(i,0) << "," << csegs(i,1) << ","
+															 << csegs(i,2) << "," << csegs(i,3) << "," << csegs(i,4) << ","
+															 << csegs(i,5) << "," << csegs(i,6) << "," << csegs(i,7) << ","
+															 << csegs(i,8) << "," << csegs(i,9) << "," << csegs(i,10) << ","
+															 << csegs(i,11) << ")";
+			gmshfilecontent << "{" << scientific << i*sf << "," << i*sf << "," << i*sf << "," << i*sf << "};" << endl; 
 		
-		gmshfilecontent << "SL(" << scientific << csegs(i,0) << "," << csegs(i,1) << ","
-				            << csegs(i,2) << "," << csegs(i,3) << "," << csegs(i,4) << ","
-				            << csegs(i,5) << ")";
-		gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl; 
+			gmshfilecontent << "SL(" << scientific << csegs(i,0) << "," << csegs(i,1) << ","
+											<< csegs(i,2) << "," << csegs(i,3) << "," << csegs(i,4) << ","
+											<< csegs(i,5) << ")";
+			gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl; 
 		
-		gmshfilecontent << "SL(" << scientific << csegs(i,6) << "," << csegs(i,7) << ","
-						        << csegs(i,8) << "," << csegs(i,9) << "," << csegs(i,10) << ","
-						        << csegs(i,11) << ")";
-		gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
+			gmshfilecontent << "SL(" << scientific << csegs(i,6) << "," << csegs(i,7) << ","
+											<< csegs(i,8) << "," << csegs(i,9) << "," << csegs(i,10) << ","
+											<< csegs(i,11) << ")";
+			gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
+		}
 	}
 	
 	gmshfilecontent << "};" << endl;

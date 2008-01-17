@@ -153,6 +153,11 @@ public:
   */
   virtual inline double* n() { return n_; }
   
+  /*!
+  \brief Return current closest node's global id (by reference)
+  */
+  virtual inline int& ClosestNode() { return closestnode_; }
+  
   //@}
 
   //! @name Construction methods
@@ -172,8 +177,9 @@ public:
   \param nodesearchmap (in) : Slave Celement to project on
   \param xi (out) : Local coordinates of projection on Celement
   */
-  virtual int FindClosestNode(const RCP<DRT::Discretization> intdis,
-  														const RCP<Epetra_Map> nodesearchmap);
+  virtual CONTACT::CNode* FindClosestNode(const RCP<DRT::Discretization> intdis,
+  														            const RCP<Epetra_Map> nodesearchmap,
+  														            double& mindist);
     
   //@}
 
@@ -185,6 +191,7 @@ protected:
   double          n_[3];				 // nodal normal for contact methods
   double					xspatial_[3];	 // current configuration
   double					u_[3];				 // current displacement
+  int							closestnode_;	 // closest node id on the other side of interface
   
 
 

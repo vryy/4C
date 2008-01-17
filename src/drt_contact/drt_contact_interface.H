@@ -181,6 +181,12 @@ public:
   virtual void Evaluate();
   
   /*!
+  \brief Search algorithm for limitation of potentially contacting slave / master pairs
+  
+  */
+  virtual bool EvaluateContactSearch();
+  
+  /*!
   \brief Determine overlap and integrate slave / master pair (2D)
         
   */

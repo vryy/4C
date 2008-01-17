@@ -25,7 +25,8 @@ CONTACT::CNode::CNode(int id, const double* coords, const int owner,
 DRT::Node(id,coords,owner),
 isslave_(isslave),
 numdof_(numdof),
-dofs_(dofs)
+dofs_(dofs),
+closestnode_(-1)
 {
   for (int i=0;i<3;++i)
   {
@@ -43,7 +44,8 @@ CONTACT::CNode::CNode(const CONTACT::CNode& old) :
 DRT::Node(old),
 isslave_(old.isslave_),
 numdof_(old.numdof_),
-dofs_(old.dofs_)
+dofs_(old.dofs_),
+closestnode_(old.closestnode_)
 {
 	for (int i=0;i<3;++i)
 	  {
@@ -122,6 +124,8 @@ void CONTACT::CNode::Pack(vector<char>& data) const
   AddtoPack(data,n_,3);
   // add u_
   AddtoPack(data,u_,3);
+  // add closestnode_
+  AddtoPack(data,closestnode_);
   
   return;
 }
@@ -154,6 +158,8 @@ void CONTACT::CNode::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,n_,3);
   // u_
   ExtractfromPack(position,data,u_,3);
+  // closestnode_
+  ExtractfromPack(position,data,closestnode_);
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -220,11 +226,10 @@ void CONTACT::CNode::BuildAveragedNormal()
 /*----------------------------------------------------------------------*
  |  Find closest node from given node set                     popp 01/08|
  *----------------------------------------------------------------------*/
-int CONTACT::CNode::FindClosestNode(const RCP<DRT::Discretization> intdis,
-  																	const RCP<Epetra_Map> nodesearchmap)
+CONTACT::CNode* CONTACT::CNode::FindClosestNode(const RCP<DRT::Discretization> intdis,
+  																	            const RCP<Epetra_Map> nodesearchmap,
+  																	            double& mindist)
 {
-	// initialization
-	double mindist = 1.0e+20;
 	CNode* closestnode = NULL;
 	
 	// loop over all nodes of the DRT::Discretization that are
@@ -256,7 +261,7 @@ int CONTACT::CNode::FindClosestNode(const RCP<DRT::Discretization> intdis,
 	if (!closestnode)
 		dserror("ERROR: FindClosestNode: No closest node found at all!");
 	
-	return closestnode->Id();
+	return closestnode;
 }
 
 #endif  // #ifdef CCADISCRET

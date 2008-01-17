@@ -34,6 +34,7 @@ isslave_(isslave)
   SetNodeIds(numnode,nodeids);
   RefArea()=0.0;
   Area()=RefArea();
+  searchelements_.resize(0); 		//FIXME: Is this necessary???
   return;
 }
 
@@ -45,7 +46,8 @@ DRT::Element(old),
 shape_(old.shape_),
 isslave_(old.isslave_),
 refarea_(old.refarea_),
-area_(old.area_)
+area_(old.area_),
+searchelements_(old.searchelements_)
 {
   return;
 }
@@ -106,6 +108,8 @@ void CONTACT::CElement::Pack(vector<char>& data) const
   AddtoPack(data,refarea_);
   // add area_
   AddtoPack(data,area_);
+  // add searchelements_
+  AddtoPack(data,&searchelements_,(int)searchelements_.size());
 
   return;
 }
@@ -134,6 +138,8 @@ void CONTACT::CElement::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,refarea_);
   // area_
   ExtractfromPack(position,data,area_);
+  // searchelements_
+  ExtractfromPack(position,data,&searchelements_,(int)searchelements_.size());
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -556,6 +562,34 @@ bool CONTACT::CElement::LocalToGlobal(const double* xi, double* globcoord,
 			globcoord[1]+=deriv[i]*coord(1,i);
 			globcoord[2]+=deriv[i]*coord(2,i);
 		}
+	}
+	
+	return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add CElements to potential contact partners               popp 01/08|
+ *----------------------------------------------------------------------*/
+bool CONTACT::CElement::AddSearchElements(const vector<int>& gids)
+{
+	// check input data and calling element type
+	if ((int)gids.size()==0)
+		dserror("ERROR: AddSearchElements called with vec of length zero!");
+	if (!IsSlave())
+		dserror("ERROR: AddSearchElements called for non-slave CElement!");
+	
+	// loop over all input gids
+	for (int i=0;i<(int)gids.size();++i)
+	{
+		// loop over all search candidates already known
+		bool found = false;
+		for (int j=0;j<NumSearchElements();++j)
+			if (gids[i]==searchelements_[j])
+				found = true;
+		
+		// add new gid to vector of search candidates
+		if (!found)
+			searchelements_.push_back(gids[i]);
 	}
 	
 	return true;

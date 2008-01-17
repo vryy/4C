@@ -144,7 +144,8 @@ public:
   double Evaluate_F_NodalNormal(CONTACT::CNode& node,
   															CONTACT::CElement& ele,
   															const double* eta,
-  															bool& outward);  
+  															bool& outward,
+  															double& gap);  
   
   /*!
   \brief Evaluate gradF for nodal normal projection
@@ -161,7 +162,8 @@ public:
   double Evaluate_F_ElementNormal(CONTACT::CNode& node,
   																CONTACT::CElement& ele,
   																const double* eta,
-  																bool& outward);  
+  																bool& outward,
+  																double& gap);  
   
   /*!
   \brief Evaluate gradF for element normal projection
@@ -179,7 +181,8 @@ public:
   														 const double* gpn,
    														 CONTACT::CElement& ele,
    														 const double* eta,
-   														 bool& outward);  
+   														 bool& outward,
+   														 double& gap);  
     
   /*!
   \brief Evaluate gradF for Gauss point projection
