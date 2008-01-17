@@ -23,8 +23,20 @@ using namespace Teuchos;
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 01/08|
  *----------------------------------------------------------------------*/
-Soshextrusion::Soshextrusion(string exofilename,double thickness,int layers)
+Soshextrusion::Soshextrusion(string exofilename,double thickness,int layers) :
+Mesh(exofilename)
 {
+  
+  cout << num_entities_ << endl;
+  
+  cout << "hello" << endl;
+  
+  for (int i = 0; i < num_entities_; ++i) {
+    RCP<Entity> actEntity = GetEntity(i);
+    actEntity->Print(cout);
+    
+  }
+  
   return;
   
 }
@@ -35,6 +47,9 @@ Soshextrusion::~Soshextrusion()
 {
   return;
 }
+
+
+
 
 
 #endif

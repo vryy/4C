@@ -68,7 +68,7 @@ public:
   //! Print mesh info
   void Print(ostream& os) const;
   
-private:
+//private:
   
   vector<RCP<Entity> > myEntities_;
   

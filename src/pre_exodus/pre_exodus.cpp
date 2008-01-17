@@ -46,7 +46,6 @@ int main(
     string datfile;
     
     // related to solid shell extrusion
-    string gensosh;
     double soshthickness;
     int soshnumlayer = 1;
 
@@ -58,8 +57,7 @@ int main(
     My_CLP.setOption("head",&headfile,"baci header file to open");
     My_CLP.setOption("dat",&datfile,"output .dat file name [defaults to exodus file name]");
     // here options related to solid shell extrusion are defined
-    My_CLP.setOption("gensosh",&gensosh,"generate solid-shells by surface extrusion");
-    My_CLP.setOption("thick",&soshthickness,"thickness of generated solid-shell body");
+    My_CLP.setOption("gensosh",&soshthickness,"generate solid-shell body with given thickness");
     My_CLP.setOption("numlayer",&soshnumlayer,"number of layers of generated solid-shell body");
     
     CommandLineProcessor::EParseCommandLineReturn
@@ -82,9 +80,9 @@ int main(
     }
     
     // generate solid shell extrusion based on exodus file
-    if (gensosh==""){
+    if (soshthickness){
       if (exofile=="") dserror("no exofile specified for extrusion");
-      if (!soshthickness) dserror("no thickness specified for solid-shell extrusion");
+      if (soshthickness < 0.0) dserror("thickness specified for solid-shell extrusion is negative");
       Soshextrusion mysosh(exofile.c_str(),soshthickness,soshnumlayer);
     }
     
