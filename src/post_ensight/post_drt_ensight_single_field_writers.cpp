@@ -307,21 +307,12 @@ int XFluidEnsightWriter::NumNodesPerField(
             case DRT::Element::pyramid5:
             {
                 // standard case with direct support
-                const int numnp = cell->NumNode();
-                for (int inode=0; inode<numnp; ++inode)
-                {
-                    counter++;
-                }
+                counter += cell->NumNode();
                 break;
             }
             case DRT::Element::hex27:
             {
-                // write subelements
-                for (int isubele=0; isubele<8; ++isubele)
-                    for (int isubnode=0; isubnode<8; ++isubnode)
-                    {
-                        counter++;
-                    }
+                counter += 20;
                 break;
             }
             default:
@@ -366,7 +357,12 @@ void XFluidEnsightWriter::WriteCoordinates(
                     if (cell->Shape() == distypeiter)
                     {
                         const vector<vector<double> > xarray = cell->GetPhysicalCoord(*actele);
-                        for (int inen = 0; inen < cell->NumNode(); ++inen)
+                        int numnode = cell->NumNode();
+                        if (distypeiter == DRT::Element::hex27)
+                        {
+                            numnode = 20;
+                        }
+                        for (int inen = 0; inen < numnode; ++inen)
                         {
                             Write(geofile, static_cast<float>(xarray[inen][isd]));
                         }
@@ -377,6 +373,28 @@ void XFluidEnsightWriter::WriteCoordinates(
     }
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+string XFluidEnsightWriter::GetEnsightString(
+        const DRT::Element::DiscretizationType distype) const
+{
+    map<DRT::Element::DiscretizationType, string>::const_iterator entry;
+    switch (distype)
+    {
+    case DRT::Element::hex27:
+        entry = distype2ensightstring_.find(DRT::Element::hex20);
+        break;
+    case DRT::Element::quad9:
+        entry = distype2ensightstring_.find(DRT::Element::quad8);
+        break;
+    default:
+        entry = distype2ensightstring_.find(distype);
+    }
+    if (entry == distype2ensightstring_.end())
+        dserror("no entry in distype2ensightstring_ found");
+    return entry->second;
+}
 
 /*----------------------------------------------------------------------*
  | write node connectivity for every element                  gjb 12/07 |
@@ -399,17 +417,15 @@ void XFluidEnsightWriter::WriteCells(
     for (NumElePerDisType::const_iterator iter=numElePerDisType.begin(); iter != numElePerDisType.end(); ++iter)
     {
         const DRT::Element::DiscretizationType distypeiter = iter->first;
-        const int ne = GetNumEleOutput(distypeiter, iter->second);
+        const int ne = iter->second;
         const string ensightCellType = GetEnsightString(distypeiter);
 
-        map<DRT::Element::DiscretizationType, string>::const_iterator entry = distype2ensightstring_.find(distypeiter);
-        if (entry == distype2ensightstring_.end())
-            dserror("no entry in distype2ensightstring_ found");
-        const string realcellshape = entry->second;
-
-        cout << "writing "<< iter->second<< " "<< realcellshape << " elements"
-                << " ("<< ne << " cells) per distype."<< " ensight output celltype: "
-                << ensightCellType<< endl;
+        {
+            cout << "writing "<< iter->second<< " "<< DistypeToString(distypeiter) << " element(s) as "
+            << ne << " " << ensightCellType << " ensight cell(s)..." << endl;
+            Write(geofile, ensightCellType);
+            Write(geofile, ne);
+        }
 
         Write(geofile, ensightCellType);
         Write(geofile, ne);
@@ -447,13 +463,21 @@ void XFluidEnsightWriter::WriteCells(
                     }
                     case DRT::Element::hex27:
                     {
-                        // write subelements
-                        for (int isubele=0; isubele<8; ++isubele)
-                            for (int isubnode=0; isubnode<8; ++isubnode)
-                            {
-                                Write(geofile, counter+1);
-                                counter++;
-                            }
+//                        // write subelements
+//                        for (int isubele=0; isubele<8; ++isubele)
+//                            for (int isubnode=0; isubnode<8; ++isubnode)
+//                            {
+//                                Write(geofile, counter+1);
+//                                counter++;
+//                            }
+//                        break;
+                        // standard case with direct support
+                        const int numnp = 20;
+                        for (int inode=0; inode<numnp; ++inode)
+                        {
+                            Write(geofile, counter+1);
+                            counter++;
+                        }
                         break;
                     }
                     default:
@@ -731,7 +755,12 @@ void XFluidEnsightWriter::WriteNodalResultStep(
                     if (cell->Shape() == distypeiter)
                     {
                         const vector<double> cellvalues = computeScalarCellNodeValues(*actele, ih, eledofman, *cell, field, elementvalues);
-                        for (int inode = 0; inode < cell->NumNode(); ++inode)
+                        int numnode = cell->NumNode();
+                        if (distypeiter == DRT::Element::hex27)
+                        {
+                            numnode = 20;
+                        }
+                        for (int inode = 0; inode < numnode; ++inode)
                         {
                             Write(file, static_cast<float>(cellvalues[inode]));
                             counter++;

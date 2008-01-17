@@ -287,6 +287,10 @@ protected:
 
 };
 
+/*!
+ * \brief translate to string for screen output
+ */
+std::string DistypeToString(const DRT::Element::DiscretizationType distype);
 
 #endif /*POST_DRT_ENSIGHT_WRITER_H_*/
 #endif

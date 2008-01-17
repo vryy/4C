@@ -156,6 +156,8 @@ protected:
     int NumNodesPerField(
             const RefCountPtr<XFEM::InterfaceHandle> ih ///< interfacehandle
             ) const;
+    string GetEnsightString(
+            const DRT::Element::DiscretizationType distype) const;
     void WriteCoordinates(
             ofstream& geofile,                          ///< filestream for the geometry
             const RefCountPtr<DRT::Discretization> dis, ///< discretization where the nodal positions are take from
