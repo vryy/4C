@@ -503,6 +503,8 @@ void EnsightWriter::WriteNodeConnectivityPar(
 
 /*!
  * \brief parse all elements and get the global(!) number of elements for each distype
+ * \author gjb
+ * \date 01/08
  */
 NumElePerDisType EnsightWriter::GetNumElePerDisType(
         const RefCountPtr<DRT::Discretization> dis
@@ -692,6 +694,7 @@ EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
     }// for pid
     } // for iter over type
 
+    // note: this map is only filled on proc 0 !!!!
     return globaleleGidPerDisType;
 
 #endif
@@ -1079,8 +1082,6 @@ void EnsightWriter::WriteElementResultStep(
 	        const int from
 	        ) const
 	{
-	//TODO +make WriteElementResultStep running also in parallel
-	//     +support for results based on hybrid meshes
 
     //-------------------------------------------
     // write some key words and read result data
@@ -1121,9 +1122,9 @@ void EnsightWriter::WriteElementResultStep(
 
     const Epetra_BlockMap& finaldatamap = proc0data->Map();
 
-    //---------------
+    //-------------------------
     // specify the element type
-    //---------------
+    //-------------------------
     if (myrank_==0)
     {
     	if (eleGidPerDisType_.empty()==true) dserror("no element types available");
@@ -1166,7 +1167,6 @@ void EnsightWriter::WriteElementResultStep(
     			}
     		}
     	} // if (myrank_==0)
-
 
     	// 2 component vectors in a 3d problem require a row of zeros.
     	if (numdf==2)
