@@ -142,7 +142,7 @@ protected:
     virtual void WriteAllResults(
             PostField* field);
     void WriteGeoFile(
-            const string& geofilename) const;
+            const string& geofilename);
     void WriteGeoFileOneTimeStep(
             ofstream& file,
             map<string, vector<ofstream::pos_type> >& resultfilepos,

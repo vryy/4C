@@ -15,6 +15,7 @@
 #ifdef CCADISCRET
 
 #include "post_drt_ensight_writer.H"
+#include <string>
 #include "post_drt_ensight_single_field_writers.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_xfem/integrationcell.H"
@@ -91,7 +92,7 @@ void XFluidEnsightWriter::WriteAllResults(
     pressure_fieldset.insert(XFEM::PHYSICS::Pres);
 
     XFluidEnsightWriter::WriteResult("velnp", "velocity_physical", velocity_fieldset);
-    XFluidEnsightWriter::WriteResult("residual", "residual_physical", velocity_fieldset);
+    //XFluidEnsightWriter::WriteResult("residual", "residual_physical", velocity_fieldset);
     XFluidEnsightWriter::WriteResult("velnp", "pressure_physical", pressure_fieldset);
 
 }
@@ -182,7 +183,7 @@ void XFluidEnsightWriter::WriteFiles()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void XFluidEnsightWriter::WriteGeoFile(
-        const string& geofilename) const
+        const string& geofilename)
 {
     // open file
     ofstream geofile;
@@ -420,6 +421,7 @@ void XFluidEnsightWriter::WriteCells(
         const int ne = iter->second;
         const string ensightCellType = GetEnsightString(distypeiter);
 
+        if (myrank_ == 0)
         {
             cout << "writing "<< iter->second<< " "<< DistypeToString(distypeiter) << " element(s) as "
             << ne << " " << ensightCellType << " ensight cell(s)..." << endl;
@@ -427,8 +429,6 @@ void XFluidEnsightWriter::WriteCells(
             Write(geofile, ne);
         }
 
-        Write(geofile, ensightCellType);
-        Write(geofile, ne);
 
         // loop all available elements
         for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
@@ -463,14 +463,6 @@ void XFluidEnsightWriter::WriteCells(
                     }
                     case DRT::Element::hex27:
                     {
-//                        // write subelements
-//                        for (int isubele=0; isubele<8; ++isubele)
-//                            for (int isubnode=0; isubnode<8; ++isubnode)
-//                            {
-//                                Write(geofile, counter+1);
-//                                counter++;
-//                            }
-//                        break;
                         // standard case with direct support
                         const int numnp = 20;
                         for (int inode=0; inode<numnp; ++inode)
