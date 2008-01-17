@@ -88,9 +88,11 @@ OBJS_SOLVER_CPP = src/solver/solver_trilinos_service.o \
                   src/solver/solver_trilinos_control.o \
                   src/solver/solver_trilinos_ml.o \
                   src/solver/solver_trilinos_spooles.o
+
 #               discretization (c++)
 OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/drt_discret_fillcomplete.o \
+                src/drt_lib/drt_discret_constructinterfaces.o \
                 src/drt_lib/drt_discret_conditions.o \
                 src/drt_lib/drt_discret_partition.o \
                 src/drt_lib/drt_discret_utils.o \

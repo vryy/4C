@@ -76,6 +76,11 @@ public:
   virtual inline bool Filled() const {return filled_;}
 
   /*!
+  \brief Get flag indicating whether interfaces need to be created
+  */
+  virtual inline bool RequiresInterfaces() const {return requireinterfaces_;}
+
+  /*!
   \brief Get name of this discretization
   */
   virtual inline const string& Name() const {return name_;}
@@ -456,6 +461,14 @@ public:
                            bool initelements = true,
                            bool doboundaryconditions = true);
 
+  
+  /*!
+   \brief Construct interfaces
+  
+   More comment will follow
+  */ 
+  virtual int ConstructInterfaces();
+  
   //@}
 
   //! @name Boundary condition construction methods
@@ -1213,6 +1226,13 @@ private:
   virtual void BuildNodeToElementPointers();
 
   /*!
+  \brief Build pointers Element -> Element (Filled()==true NOT prerequisite)
+
+  \note This is a collective call
+  */
+  virtual void BuildElementToElementPointers();
+
+  /*!
   \brief (Re)create a map of ElementRegister objects
 
   (Re)creates the map elementregister_ containing ONE register class
@@ -1280,33 +1300,34 @@ private:
 protected:
 
   // internal data
-  string                                        name_;            // name of this discretization
-  RefCountPtr<Epetra_Comm>                      comm_;            // an Epetra_comm
-  bool                                          filled_;          // flag indicating whether getOrganized has been called
-  bool                                          havedof_;         // flag indicating whether degrees of freedom where assigned
+  string                                        name_;              // name of this discretization
+  RefCountPtr<Epetra_Comm>                      comm_;              // an Epetra_comm
+  bool                                          filled_;            // flag indicating whether getOrganized has been called
+  bool                                          havedof_;           // flag indicating whether degrees of freedom where assigned
+  bool                                          requireinterfaces_; // flag indicating whether this discretization requires interfaces
+  
+  RefCountPtr<Epetra_Map>                       dofrowmap_;         // unique row map of degrees of freedom (node and element dofs))
+  RefCountPtr<Epetra_Map>                       dofcolmap_;         // unique column map of degrees of freedom (node and element dofs))
 
-  RefCountPtr<Epetra_Map>                       dofrowmap_;       // unique row map of degrees of freedom (node and element dofs))
-  RefCountPtr<Epetra_Map>                       dofcolmap_;       // unique column map of degrees of freedom (node and element dofs))
+  RefCountPtr<Epetra_Map>                       elerowmap_;         // unique distribution of element ownerships
+  RefCountPtr<Epetra_Map>                       elecolmap_;         // distribution of elements including ghost elements
+  vector<DRT::Element*>                         elerowptr_;         // vector of pointers to row elements for faster access
+  vector<DRT::Element*>                         elecolptr_;         // vector of pointers to column elements for faster access
+  map<int,RefCountPtr<DRT::Element> >           element_;           // map of elements
 
-  RefCountPtr<Epetra_Map>                       elerowmap_;       // unique distribution of element ownerships
-  RefCountPtr<Epetra_Map>                       elecolmap_;       // distribution of elements including ghost elements
-  vector<DRT::Element*>                         elerowptr_;       // vector of pointers to row elements for faster access
-  vector<DRT::Element*>                         elecolptr_;       // vector of pointers to column elements for faster access
-  map<int,RefCountPtr<DRT::Element> >           element_;         // map of elements
+  RefCountPtr<Epetra_Map>                       noderowmap_;        // unique distribution of nodal ownerships
+  RefCountPtr<Epetra_Map>                       nodecolmap_;        // distribution of nodes including ghost nodes
+  vector<DRT::Node*>                            noderowptr_;        // vector of pointers to row nodes for faster access
+  vector<DRT::Node*>                            nodecolptr_;        // vector of pointers to column nodes for faster access
+  map<int,RefCountPtr<DRT::Node> >              node_;              // map of nodes
 
-  RefCountPtr<Epetra_Map>                       noderowmap_;      // unique distribution of nodal ownerships
-  RefCountPtr<Epetra_Map>                       nodecolmap_;      // distribution of nodes including ghost nodes
-  vector<DRT::Node*>                            noderowptr_;      // vector of pointers to row nodes for faster access
-  vector<DRT::Node*>                            nodecolptr_;      // vector of pointers to column nodes for faster access
-  map<int,RefCountPtr<DRT::Node> >              node_;            // map of nodes
+  map<string,RefCountPtr<const Epetra_Vector> > state_;             // map of references to solution states
+  map<int,RefCountPtr<ElementRegister> >        elementregister_;   // register for types of elements in this discretization
 
-  map<string,RefCountPtr<const Epetra_Vector> > state_;           // map of references to solution states
-  map<int,RefCountPtr<ElementRegister> >        elementregister_; // register for types of elements in this discretization
+  multimap<string,RefCountPtr<Condition> >      condition_;         // some conditions e.g. BCs
 
-  multimap<string,RefCountPtr<Condition> >      condition_;       // some conditions e.g. BCs
-
-  vector<RefCountPtr<DofSet> >                  dofsets_;         // set of DofSets
-  int                                           currentdofset_;   // number of the DofSet we are currently working with
+  vector<RefCountPtr<DofSet> >                  dofsets_;           // set of DofSets
+  int                                           currentdofset_;     // number of the DofSet we are currently working with
 }; // class Discretization
 } // namespace DRT
 
