@@ -104,6 +104,7 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/drt_dofset.o \
                 src/drt_lib/drt_pbcdofset.o \
                 src/drt_lib/drt_utils_integration.o \
+                src/drt_lib/drt_utils_dgfem_basisfunctions.o \
                 src/drt_lib/drt_utils_fem_shapefunctions.o \
                 src/drt_lib/drt_utils_local_connectivity_matrices.o \
                 src/drt_lib/drt_utils.o \
