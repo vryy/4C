@@ -120,12 +120,11 @@ public:
     element_sodispline,
     element_contact,
     element_so_shw6,
-    element_beam2,
-#ifdef ELEMINTERFACES    
-    interfaceelement_surface,
-    interfaceelement_line,
-    interfaceelement_point
-#endif // ELEMINTERFACES    
+    element_beam2,    
+    element_dgfluid2,
+    element_dgfluid2interface,
+    element_dgfluid3,
+    element_dgfluid3interface
   };
 
   /*!
@@ -154,6 +153,14 @@ public:
     max_distype                 //  end marker. must be the last entry
   };
 
+  /*!
+   \brief Approach side for an interface
+  */
+  enum ApproachSide
+  {
+	  approachleft,
+	  approachright
+  };
   //@}
 
   //! @name Constructors and destructors and related methods
@@ -524,6 +531,32 @@ public:
 
   //@}
 
+  //! @name For the construction of interface
+  /*!
+  \brief Return number of faces connected to this element
+  
+  */
+  virtual int NumFace() const {return 0;}
+  
+  /*!
+  \brief Return primary node of a particular face
+  
+  */
+  virtual DRT::Node* FacePrimNode(const int iface) { return NULL; }
+  
+  /*!
+  \brief Return nodeids of a particular face
+  
+  */
+  virtual vector<int> FaceNodeIds(const int iface, DRT::Element::ApproachSide side) {return nodeid_;}
+    
+  /*!
+  \brief Tell the element to create a particular interface
+  */
+  virtual DRT::Element* CreateFace(const int facenumberl, const int elementrid, const int facenumberr) {return NULL;}
+  
+  //@}
+  
   //! @name Conditions
 
   /*!
@@ -732,13 +765,12 @@ public:
   */
   virtual bool BuildNodalPointers(DRT::Node** nodes);
 
-#ifdef ELEMINTERFACES  
   /*!
   \brief Build pointer vector from map of elements
 
   \warning (public, but to be used by DRT::Discretization ONLY!)
   
-  The method is used to build the element connectivty in this element. For standard elements this 
+  The method is used to build the element connectivity in this element. For standard elements this 
   procedure returns true and does nothing. For interface-elements a connection is made between the 
   interface and it's left and right element. It is called from DRT::Discretization in 
   DRT::Discretization::FillComplete() to create the pointers from elements to elements 
@@ -747,8 +779,6 @@ public:
   \param elements (in): A map of all elements of a discretization
   */
   virtual bool BuildElementPointers(map<int,RefCountPtr<DRT::Element> >& elements) {return true;}
-  
-#endif //ELEMINTERFACES
 
   //@}
   
