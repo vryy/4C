@@ -1373,7 +1373,7 @@ string EnsightWriter::GetFileSectionStringFromFilesets(
 /*!
  * \brief translate to string for screen output
  */
-inline std::string DistypeToString(const DRT::Element::DiscretizationType distype)
+std::string DistypeToString(const DRT::Element::DiscretizationType distype)
 {
     string s = "";
     switch (distype)
