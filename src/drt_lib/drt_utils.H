@@ -25,6 +25,7 @@ Maintainer: Michael Gee
 #include "drt_parobject.H"
 #include "drt_element.H"
 #include "drt_utils_fem_shapefunctions.H"
+#include "drt_utils_dgfem_basisfunctions.H"
 #include "drt_utils_integration.H"
 #include "drt_utils_local_connectivity_matrices.H"
 
