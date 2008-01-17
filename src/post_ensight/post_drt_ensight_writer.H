@@ -262,13 +262,13 @@ protected:
     string filename_;
     int myrank_; ///< global processor id
     bool nodeidgiven_; ///< indicates whether BACI global node ids are written to geometry file. default value: true
+
     NumElePerDisType numElePerDisType_; ///< number of elements per element discretization type
     EleGidPerDisType eleGidPerDisType_; ///< global ids of corresponding elements per element discretization type
 
-    RCP<Epetra_Map> proc0map_; ///< allreduced nodal map for proc 0, empty on other procs
+    RCP<Epetra_Map> proc0map_; ///< allreduced node row map for proc 0, empty on other procs
 
     map<string,vector<int> > filesetmap_;
-
     map<string,vector<int> > timesetmap_;
 
     map<string,int>          variablenumdfmap_;
@@ -277,7 +277,6 @@ protected:
 
     map<string,int> timesetnumbermap_;
     map<string,int> filesetnumbermap_;
-
 
     //! maps a distype to the corresponding Ensight cell type
     map<DRT::Element::DiscretizationType, string> distype2ensightstring_;

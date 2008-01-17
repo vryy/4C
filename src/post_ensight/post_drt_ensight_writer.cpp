@@ -32,8 +32,8 @@ EnsightWriter::EnsightWriter(
 {
     // initialize proc0map_ correctly
     const RCP<DRT::Discretization> dis = field_->discretization();
-    const Epetra_Map* nodemap = dis->NodeRowMap();
-    proc0map_ = DRT::Utils::AllreduceEMap(*nodemap,0);
+    const Epetra_Map* noderowmap = dis->NodeRowMap();  
+    proc0map_ = DRT::Utils::AllreduceEMap(*noderowmap,0); 
 
     // get the number of elements for each distype (global numbers)
     numElePerDisType_ = GetNumElePerDisType(dis);
@@ -616,38 +616,83 @@ EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
 
 #else
 
-     /*
-     // in parallel case we have to sum up the local element distype numbers
-
-    // determine maximum number of possible element discretization types
-    DRT::Element::DiscretizationType numeledistypes = DRT::Element::max_distype;
-
-    // write the final local numbers into a vector
-    vector<int> myNumElePerDisType(numeledistypes);
-    NumElePerDisType::const_iterator iter;
-    for (iter=numElePerDisType.begin(); iter != numElePerDisType.end(); ++iter)
+    // in parallel case we have to provide the ele gids located on other procs as well 
+    EleGidPerDisType globaleleGidPerDisType;
+    NumElePerDisType::const_iterator iterator;   
+    
+    for (iterator=numElePerDisType_.begin(); iterator != numElePerDisType_.end(); ++iterator)
     {
-        const DRT::Element::DiscretizationType distypeiter = iter->first;
-        const int ne = iter->second;
-        myNumElePerDisType[distypeiter]+=ne;
-    }
-
     // wait for all procs before communication is started
     (dis->Comm()).Barrier();
 
-    // form the global sum
-    vector<int> globalnumeleperdistype(numeledistypes);
-    (dis->Comm()).SumAll(&(myNumElePerDisType[0]),&(globalnumeleperdistype[0]),numeledistypes);
+    // no we have to communicate everything from proc 1...proc n to proc 0
+    vector<char> sblock; // sending block
+    vector<char> rblock; // recieving block
 
-    // create return argument containing the global element numbers per distype
-    NumElePerDisType globalNumElePerDisType;
-    for(int i =0; i<numeledistypes ;++i)
+    // create an exporter for communication
+    DRT::Exporter exporter(dis->Comm());
+
+    // pack my element gids of this discretization type into sendbuffer
+    sblock.clear();
+    DRT::ParObject::AddtoPack(sblock,eleGidPerDisType[iterator->first]);
+
+    // now we start the communication
+    for (int pid=0;pid<(dis->Comm()).NumProc();++pid)
     {
-        if (globalnumeleperdistype[i]>0) // no entry when we have no element of this type
-        globalNumElePerDisType[DRT::Element::DiscretizationType(i)]=globalnumeleperdistype[i];
-    }
-*/
-    return eleGidPerDisType;
+        MPI_Request request;
+        int         tag    =0;
+        int         frompid=pid;
+        int         topid  =0;
+        int         length=sblock.size();
+
+        //--------------------------------------------------
+        // proc pid sends its values to proc 0
+        if (myrank_==pid)
+        {
+            exporter.ISend(frompid,topid,
+                    &(sblock[0]),sblock.size(),
+                    tag,request);
+        }
+
+        //--------------------------------------------------
+        // proc 0 receives from proc pid
+        rblock.clear();
+        if (myrank_ == 0)
+        {
+            exporter.ReceiveAny(frompid,tag,rblock,length);
+            if(tag!=0)
+            {
+                dserror("Proc 0 received wrong message (ReceiveAny)");
+            }
+            exporter.Wait(request);
+        }
+
+        // for safety
+        exporter.Comm().Barrier();
+
+        //--------------------------------------------------
+        // Unpack received block and write the data
+        if (myrank_==0)
+        {
+            int index = 0;
+            vector<int> elegids;
+            // extract data from recieved package
+            while (index < (int)rblock.size())
+            {
+
+                DRT::ParObject::ExtractfromPack(index,rblock,elegids);
+            }
+            for(int i=0;i<(int) elegids.size();++i)
+            {
+            	globaleleGidPerDisType[iterator->first].push_back(elegids[i]);
+            }
+            elegids.clear();
+        } // end unpack
+
+    }// for pid
+    } // for iter over type
+
+    return globaleleGidPerDisType;
 
 #endif
 }
@@ -1047,71 +1092,90 @@ void EnsightWriter::WriteElementResultStep(
     Write(file, "description");
     Write(file, "part");
     Write(file, field_->field_pos()+1);
-
-    // get some data structures
-    const RefCountPtr<DRT::Discretization> dis = field_->discretization();
-    const Epetra_Map* elementmap = dis->ElementRowMap(); //local element row map
-    const int numele = elementmap->NumGlobalElements();
-
-    if (numele != elementmap->NumMyElements())
-    	dserror("Parallel filter does not yet support element-based results");
+ 
+    // read the results    
     const RefCountPtr<Epetra_MultiVector> data = result.read_multi_result(groupname);
     const Epetra_BlockMap& datamap = data->Map();
     const int numcol = data->NumVectors();
 
+    // do stupid conversion into Epetra map
+    RefCountPtr<Epetra_Map> epetradatamap;
+    epetradatamap = rcp(new Epetra_Map(datamap.NumGlobalElements(),
+            datamap.NumMyElements(),
+            datamap.MyGlobalElements(),
+            0,
+            datamap.Comm()));
+    
+    //------------------------------------------------------
+    // each processor provides its result values for proc 0
+    //------------------------------------------------------
+
+    RefCountPtr<Epetra_Map> proc0datamap;
+    proc0datamap = DRT::Utils::AllreduceEMap(*epetradatamap,0);
+
+    // contract result values on proc0 (proc0 gets everything, other procs empty)
+    Epetra_Import proc0dataimporter(*proc0datamap,*epetradatamap);
+    RefCountPtr<Epetra_MultiVector> proc0data = rcp(new Epetra_MultiVector(*proc0datamap,numcol));
+    int err = proc0data->Import(*data,proc0dataimporter,Insert);
+    if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
+
+    const Epetra_BlockMap& finaldatamap = proc0data->Map();
+
     //---------------
     // specify the element type
     //---------------
-    if (eleGidPerDisType_.empty()==true) dserror("no element types available");
+    if (myrank_==0)
+    {
+    	if (eleGidPerDisType_.empty()==true) dserror("no element types available");
+    }
     // loop over the different element types present
     EleGidPerDisType::const_iterator iter;
     for (iter=eleGidPerDisType_.begin(); iter != eleGidPerDisType_.end(); ++iter)
     {
-        const string ensighteleString = GetEnsightString(iter->first);
-        const int numelepertype = (iter->second).size();
-        vector<int> actelegids(numelepertype);
-        //actelegids = iter->second;
+    	const string ensighteleString = GetEnsightString(iter->first);
+    	const int numelepertype = (iter->second).size();
+    	vector<int> actelegids(numelepertype);
+    	actelegids = iter->second;
+    	// write element type
+    	Write(file, ensighteleString);
 
-	    Write(file, ensighteleString);
-
-    //---------------
-    // write results
-    //---------------
-
-    	if (numdf+from > numcol) dserror("violated column range of Epetra_MultiVector: %d",numcol);
-    	for (int col=0; col<numdf; ++col)
+    	//---------------
+    	// write results
+    	//---------------
+    	if (myrank_==0)
     	{
-    		//extract actual column
-    		Epetra_Vector* datacolumn = (*data)(col+from);
-    	    if (myrank_==0) // ensures pointer dofgids is valid
-    	    {
+    		if (numdf+from > numcol) dserror("violated column range of Epetra_MultiVector: %d",numcol);
+    		for (int col=0; col<numdf; ++col)
+    		{
+    			//extract actual column
+    			Epetra_Vector* datacolumn = (*proc0data)(col+from);
+
+    			for (int iele=0; iele<numelepertype; iele++)
+    			{
+    				// extract element global id
+    				const int gid = actelegids[iele];
+    				// get the dof local id w.r.t. the finaldatamap
+    				//int lid = datamap.LID(gid);    				
+    				int lid = finaldatamap.LID(gid);
+    				if (lid > -1)
+    				{
+    					Write(file, static_cast<float>((*datacolumn)[lid]));
+    				}
+    				else
+    					dserror("recieved illegal dof local id: %d", lid);
+    			}
+    		}
+    	} // if (myrank_==0)
+
+
+    	// 2 component vectors in a 3d problem require a row of zeros.
+    	if (numdf==2)
+    	{
     		for (int iele=0; iele<numelepertype; iele++)
     		{
-    			const int gid = (iter->second)[iele];
-			// get the dof local id w.r.t. the finaldatamap
-    			//int lid = datamap.LID(iele);
-			int lid = datamap.LID(gid);
-    			if (lid > -1)
-    			{
-    				Write(file, static_cast<float>((*datacolumn)[lid]));
-    				//cout<<"writing "<<(*datacolumn)[lid]<<endl;
-    			}
-    			else
-    				dserror("recieved illegal dof local id: %d", lid);
+    			Write<float>(file, 0.);
     		}
-    	    }
     	}
-
-
-    // 2 component vectors in a 3d problem require a row of zeros.
-    // do we really need this?
-    if (numdf==2)
-    {
-        for (int iele=0; iele<numelepertype; iele++)
-        {
-            Write<float>(file, 0.);
-        }
-    }
 
     } // end iteration over eleGidPerDisType_;
 
@@ -1119,7 +1183,7 @@ void EnsightWriter::WriteElementResultStep(
     Write(file, "END TIME STEP");
     return;
 
-    }
+	}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
