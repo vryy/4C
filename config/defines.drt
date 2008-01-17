@@ -33,7 +33,6 @@ CCADISCRET           # use new baci discretization subsystem DRT
 
 #   additional features
 #  =====================
-# ELEMINTERFACES     # create interfaces that are shared by 2 neighbouring elements
 # BINIO              # binary io
 # QHULL              # needed for XFEM simulations
 # TDS                # Fluid stabilization using time dependent subscales
