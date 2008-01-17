@@ -1,6 +1,7 @@
 #ifdef CCADISCRET
 
 #include "mfsi_overlappreccondfactory.H"
+#include "mfsi_overlappreccondoperator.H"
 
 #include <Thyra_DefaultBlockedLinearOp.hpp>
 #include <Thyra_DefaultPreconditioner.hpp>
@@ -52,6 +53,8 @@ void MFSI::OverlappingPCFactory::initializePrec(const Teuchos::RCP<const Thyra::
   Teuchos::RCP< const Thyra::DefaultBlockedLinearOp<double> > blockFsiOp =
     Teuchos::rcp_dynamic_cast<const Thyra::DefaultBlockedLinearOp<double> >(fsiOp);
 
+#if 0
+
   Thyra::ConstLinearOperator<double> structInnerOp = blockFsiOp->getBlock(0,0);
   //Thyra::ConstLinearOperator<double> interfaceOp   = blockFsiOp->getBlock(1,1);
   Thyra::ConstLinearOperator<double> fluidInnerOp  = blockFsiOp->getBlock(1,1);
@@ -76,6 +79,13 @@ void MFSI::OverlappingPCFactory::initializePrec(const Teuchos::RCP<const Thyra::
   M->setBlock(2,2,invale.constPtr());
 
   M->endBlockFill();
+
+#else
+
+  Teuchos::RCP<OverlappingPCOperator> M =
+    Teuchos::rcp(new OverlappingPCOperator(structure_,fluid_,ale_,blockFsiOp));
+
+#endif
 
   Teuchos::RCP<Thyra::LinearOpBase<double> > myM = M;
   Thyra::LinearOperator<double> constM = myM;
