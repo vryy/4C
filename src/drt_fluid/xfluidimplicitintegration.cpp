@@ -1223,7 +1223,7 @@ void XFluidImplicitTimeInt::Output()
 
       output_.NewStep    (step_,time_);
       output_.WriteVector("velnp", velnp_);
-      output_.WriteVector("residual", trueresidual_);
+      //output_.WriteVector("residual", trueresidual_);
       //output_.WriteVector("domain_decomp",domain_decomp);
       if (alefluid_)
         output_.WriteVector("dispnp", dispnp_);
