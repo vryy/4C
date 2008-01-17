@@ -69,11 +69,9 @@ int DRT::Discretization::FillComplete(bool assigndegreesoffreedom,
   // (re)construct node -> element pointers
   BuildNodeToElementPointers();
 
-#ifdef ELEMINTERFACES
   // bos 12/07
   // (re)construct element -> element pointers for interface-elements 
   BuildElementToElementPointers();
-#endif // ELEMINTERFACES
   
   // set the flag indicating Filled()==true
   // as the following methods make use of maps
@@ -343,7 +341,6 @@ void DRT::Discretization::BuildElementToNodePointers()
   return;
 }
 
-#ifdef ELEMINTERFACES
 /*----------------------------------------------------------------------*
  |  Build ptrs element -> element (private)                      mwgee 11/06|
  *----------------------------------------------------------------------*/
@@ -358,7 +355,6 @@ void DRT::Discretization::BuildElementToElementPointers()
   }
   return;
 }
-#endif //ELEMINTERFACES
 
 /*----------------------------------------------------------------------*
  |  Build ptrs node -> element (private)                      mwgee 11/06|
