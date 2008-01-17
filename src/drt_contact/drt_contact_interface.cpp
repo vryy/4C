@@ -393,7 +393,7 @@ bool CONTACT::Interface::EvaluateContactSearch()
 		CNode* closestnode = snode->FindClosestNode(idiscret_,mnodefullmap_,mindist);
 		snode->ClosestNode() = closestnode->Id();
 		
-		// proceed only if nodes are not far from each other
+		// proceed only if nodes are not far from each other!!!
 		if (mindist<=CONTACT_CRITDIST)
 		{
 			// get adjacent elements to current slave node and to closest node
@@ -425,12 +425,12 @@ bool CONTACT::Interface::EvaluateContactSearch()
 		if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
 		CNode* mnode = static_cast<CNode*>(node);
 			
-		// find closest slave node to current slave node
+		// find closest slave node to current master node
 		double mindist = 1.0e12;
 		CNode* closestnode = mnode->FindClosestNode(idiscret_,snodefullmap_,mindist);
 		mnode->ClosestNode() = closestnode->Id();
 		
-		// proceed only if nodes are not far from each other
+		// proceed only if nodes are not far from each other!!!
 		if (mindist<=CONTACT_CRITDIST)
 		{
 			// get adjacent elements to current master node and to closest node
