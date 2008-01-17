@@ -45,7 +45,7 @@ maxentriesperrow_(81)
     bool outerr    = params_.get<bool>  ("print to err"    ,false);
     FILE* errfile  = params_.get<FILE*> ("err file"        ,NULL);
     if (!errfile) outerr = false;
-
+    
     // -------------------------------------------------------------------
     // get a vector layout from the discretization to construct matching
     // vectors and matrices
@@ -1121,9 +1121,11 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     double norm_uzawa_alt;
     double quotient;
     double norm_vol_uzawa;
-    double norm_vol_uzawa_alt;
     int numiter_uzawa=0;
-    int counter_uzawa=0;
+    
+    //counter used for adaptivity
+    int count_paramadapt=1;
+    
     volConstrMan_->ScaleLagrIncr(0.0);
 
     Epetra_Vector constrVecWeight(*(volConstrMan_->GetConstrVec()));
@@ -1222,36 +1224,46 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 	  	  {
 	  		  vol_res[foo]=dotprod[foo]+volConstrMan_->GetVolumeError(foo);
 	  	  }
-	  	  norm_vol_uzawa_alt=norm_vol_uzawa;
 	      norm_vol_uzawa=vol_res.Norm2();
 	      
-	      double	quotient_neu=norm_uzawa/norm_uzawa_alt;
+	      //-------------Adapt Uzawa parameter--------------
+	      // For a constant parameter the quotient of two successive residual norms
+	      // stays constant during the computation. So this quotient seems to be a good
+	      // measure for the parameter choice
 	      
-	      if (counter_uzawa>=1)
+	      // Adaptivity only takes place every second step. Otherwise the quotient is not significant.
+	      if (count_paramadapt>=2)
 	      {
+	    	  double quotient_neu=norm_uzawa/norm_uzawa_alt;
+	    	  // In case of divergence the parameter must be choosen too high
 	    	  if (quotient_neu>1)
 	    	  {
-	    			Uzawa_param=Uzawa_param/(2);
-	    			counter_uzawa=-1;
+	    			Uzawa_param=Uzawa_param/2.;
+	    			count_paramadapt=0;
 	    			quotient=1;
 	    	  }
 	    	  else
 	    	  {
-	    		  if (quotient<quotient_neu)
-	    		  {
-	    			  Uzawa_param=Uzawa_param/(1+quotient_neu);
-	    			  quotient=quotient_neu;
-	    			  counter_uzawa=-1;
-	    		  }
-	    		  else 
+	    		  // In case the newly computed quotient is better than the one obtained from the 
+	    		  // previous parameter, the parameter is increased by a factor (1+quotient_neu)
+	    		  if (quotient>quotient_neu)
 	    		  {
 	    			  Uzawa_param=Uzawa_param*(1+quotient_neu);
 	    			  quotient=quotient_neu;
-	    			  counter_uzawa=-1;
+	    			  count_paramadapt=0;
+	    		  }
+	    		  // In case the newly computed quotient is worse than the one obtained from the 
+	    		  // previous parameter, the parameter is decreased by a factor 1/(1+quotient_neu)
+	    		  else 
+	    		  {
+	    			  Uzawa_param=Uzawa_param/(1+quotient_neu);
+	    			  quotient=quotient_neu;
+	    			  count_paramadapt=0;
 	    		  }
 	    	  }
 	      }
-	      counter_uzawa++;
+	      count_paramadapt++;
+	      
 	  	  numiter_uzawa++;
     } //Uzawa loop
 
@@ -1259,11 +1271,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     {
     	cout<<"Uzawa steps"<<numiter_uzawa<<endl;
     }
-    if (numiter_uzawa==maxiterUzawa)
-    {
-          //dserror("Uzawa unconverged in %d iterations",numiter_uzawa);
-    }
-
+    
     //update lagrange multiplier
     volConstrMan_->UpdateLagrMult();
 
@@ -1362,7 +1370,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     if (!myrank_ && (printscreen || printerr))
     {
       PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
-                  fresmnorm,disinorm,convcheck,volnorm);
+                  fresmnorm,disinorm,convcheck,volnorm, Uzawa_param);
     }
 
     //--------------------------------- increment equilibrium loop index
@@ -1382,7 +1390,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
      if (!myrank_ && printscreen)
      {
        PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
-                   fresmnorm,disinorm,convcheck,volnorm);
+                   fresmnorm,disinorm,convcheck,volnorm, Uzawa_param);
      }
   }
 
@@ -3247,7 +3255,7 @@ void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_uncon
 void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_unconv,
                                FILE* errfile, Epetra_Time timer, int numiter,
                                int maxiter, double fresmnorm, double disinorm,
-                               string convcheck, double volnorm)
+                               string convcheck, double volnorm, double UzawaPara)
 {
   bool relres        = (convcheck == "RelRes_And_AbsDis" || convcheck == "RelRes_Or_AbsDis");
   bool relres_reldis = (convcheck == "RelRes_And_RelDis" || convcheck == "RelRes_Or_RelDis");
@@ -3268,17 +3276,20 @@ void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_uncon
     {
       if (relres)
       {
-        printf("numiter %2d scaled res-norm %10.5e absolute dis-norm %20.15E absolute vol-norm %10.5e\n",numiter+1, fresmnorm, disinorm, volnorm);
+        printf("numiter %2d scaled res-norm %10.5e absolute dis-norm %20.15E absolute vol-norm %10.5e current Uzawa parameter %10.5e\n",
+        		numiter+1, fresmnorm, disinorm, volnorm, UzawaPara);
         fflush(stdout);
       }
       else if (relres_reldis)
       {
-        printf("numiter %2d scaled res-norm %10.5e scaled dis-norm %20.15E absolute vol-norm %10.5e\n",numiter+1, fresmnorm, disinorm, volnorm);
+        printf("numiter %2d scaled res-norm %10.5e scaled dis-norm %20.15E absolute vol-norm %10.5e current Uzawa parameter %10.5e\n",
+        		numiter+1, fresmnorm, disinorm, volnorm, UzawaPara);
         fflush(stdout);
       }
       else
         {
-        printf("numiter %2d absolute res-norm %10.5e absolute dis-norm %20.15E absolute vol-norm %10.5e\n",numiter+1, fresmnorm, disinorm, volnorm);
+        printf("numiter %2d absolute res-norm %10.5e absolute dis-norm %20.15E absolute vol-norm %10.5e current Uzawa parameter %10.5e\n",
+        		numiter+1, fresmnorm, disinorm, volnorm, UzawaPara);
         fflush(stdout);
       }
     }
@@ -3286,17 +3297,20 @@ void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_uncon
     {
       if (relres)
       {
-        fprintf(errfile, "numiter %2d scaled res-norm %10.5e absolute dis-norm %20.15E absolute vol-norm %10.5e\n",numiter+1, fresmnorm, disinorm, volnorm);
+        fprintf(errfile, "numiter %2d scaled res-norm %10.5e absolute dis-norm %20.15E absolute vol-norm %10.5e current Uzawa parameter %10.5e\n",
+        		numiter+1, fresmnorm, disinorm, volnorm, UzawaPara);
         fflush(errfile);
       }
       else if (relres_reldis)
       {
-        fprintf(errfile, "numiter %2d scaled res-norm %10.5e scaled dis-norm %20.15E absolute vol-norm %10.5e\n",numiter+1, fresmnorm, disinorm, volnorm);
+        fprintf(errfile, "numiter %2d scaled res-norm %10.5e scaled dis-norm %20.15E absolute vol-norm %10.5e current Uzawa parameter %10.5e\n",
+        		numiter+1, fresmnorm, disinorm, volnorm, UzawaPara);
         fflush(errfile);
       }
       else
         {
-        fprintf(errfile, "numiter %2d absolute res-norm %10.5e absolute dis-norm %20.15E absolute vol-norm %10.5e\n",numiter+1, fresmnorm, disinorm, volnorm);
+        fprintf(errfile, "numiter %2d absolute res-norm %10.5e absolute dis-norm %20.15E absolute vol-norm %10.5e current Uzawa parameter %10.5e\n",
+        		numiter+1, fresmnorm, disinorm, volnorm, UzawaPara);
         fflush(errfile);
       }
     }
