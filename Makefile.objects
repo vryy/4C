@@ -1046,7 +1046,8 @@ OBJS_FILTER_COMMON = src/filter_common/filter_evaluation.o
 
 #                 pre_exodus 
 OBJS_PRE_EXODUS = src/pre_exodus/pre_exodus.o \
-                  src/pre_exodus/pre_exodus_reader.o
+                  src/pre_exodus/pre_exodus_reader.o \
+                  src/pre_exodus/pre_exodus_soshextrusion.o
 
 #                 post_out
 OBJS_POST_OUT = src/post_out/post_out.o

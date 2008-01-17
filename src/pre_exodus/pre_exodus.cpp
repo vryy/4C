@@ -26,6 +26,7 @@ or the well-known .dat file is created.
 #include <Teuchos_CommandLineProcessor.hpp>
 #include "../drt_lib/drt_validparameters.H"
 #include "pre_exodus_reader.H"
+#include "pre_exodus_soshextrusion.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -43,6 +44,11 @@ int main(
     string bcfile;
     string headfile;
     string datfile;
+    
+    // related to solid shell extrusion
+    string gensosh;
+    double soshthickness;
+    int soshnumlayer = 1;
 
     Teuchos::CommandLineProcessor My_CLP;
     My_CLP.setDocString("Preprocessor Exodus2Baci \n");
@@ -51,6 +57,10 @@ int main(
     My_CLP.setOption("bc",&bcfile,"bc's and ele's file to open");
     My_CLP.setOption("head",&headfile,"baci header file to open");
     My_CLP.setOption("dat",&datfile,"output .dat file name [defaults to exodus file name]");
+    // here options related to solid shell extrusion are defined
+    My_CLP.setOption("gensosh",&gensosh,"generate solid-shells by surface extrusion");
+    My_CLP.setOption("thick",&soshthickness,"thickness of generated solid-shell body");
+    My_CLP.setOption("numlayer",&soshnumlayer,"number of layers of generated solid-shell body");
     
     CommandLineProcessor::EParseCommandLineReturn
       parseReturn = My_CLP.parse(argc,argv);
@@ -70,7 +80,14 @@ int main(
       My_CLP.printHelpMessage(argv[0],cout);
       exit(1);
     }
-
+    
+    // generate solid shell extrusion based on exodus file
+    if (gensosh==""){
+      if (exofile=="") dserror("no exofile specified for extrusion");
+      if (!soshthickness) dserror("no thickness specified for solid-shell extrusion");
+      Soshextrusion mysosh(exofile.c_str(),soshthickness,soshnumlayer);
+    }
+    
     // create mesh object based on given exodus II file
     Mesh mymesh(exofile.c_str());
     // print infos to cout

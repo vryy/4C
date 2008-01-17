@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file pre_exodus_reader.H
+\file pre_exodus_reader.cpp
 
 \brief preprocessor reader for exodusII format 
 
