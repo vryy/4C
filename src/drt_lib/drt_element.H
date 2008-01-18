@@ -553,7 +553,7 @@ public:
   /*!
   \brief Tell the element to create a particular interface
   */
-  virtual DRT::Element* CreateFace(const int facenumberl, const int elementrid, const int facenumberr) {return NULL;}
+  virtual DRT::Element* CreateFace(const int facenumberl, const int elementidr, const int facenumberr) {return NULL;}
   
   //@}
   
