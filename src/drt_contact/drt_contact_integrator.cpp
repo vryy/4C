@@ -177,7 +177,7 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::Integrate_M(CONTACT::CElement
 {
 	// check input data
 	if ((!sele.IsSlave()) || (mele.IsSlave()))
-		dserror("ERROR: Integrat_eM called on a wrong type of CElement pair!");
+		dserror("ERROR: Integrate_M called on a wrong type of CElement pair!");
 	if ((sxia<-1.0) || (sxib>1.0))
 		dserror("ERROR: Integrate_M called with infeasible slave limits!");
 	if ((mxia<-1.0) || (mxib>1.0))
@@ -251,6 +251,189 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::Integrate_M(CONTACT::CElement
 	} // for (int gp=0;gp<nGP();++gp)
 	
 	return Mdense;
+}
+
+/*----------------------------------------------------------------------*
+ |  Integrate a 1D slave / master overlap                     popp 01/08|
+ |	This method integrates the modification to the Mortar matrix M      |
+ |  for curved interface (Paper by Puso/Wohlmuth from given local       |
+ |	coordinates sxia to sxib. The corresponding master side local       |
+ |  element coordinates given by mxia and mxib												  |
+ |	Output is an Epetra_SerialDenseMatrix holding the int. values 			|
+ *----------------------------------------------------------------------*/
+RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::Integrate_Mmod(CONTACT::CElement& sele,
+																					 										    double sxia, double sxib,
+																					 										    CONTACT::CElement& mele,
+																					 										    double mxia, double mxib)
+{
+	// check input data
+	if ((!sele.IsSlave()) || (mele.IsSlave()))
+		dserror("ERROR: Integrate_Mmod called on a wrong type of CElement pair!");
+	if ((sxia<-1.0) || (sxib>1.0))
+		dserror("ERROR: Integrate_Mmod called with infeasible slave limits!");
+	if ((mxia<-1.0) || (mxib>1.0))
+			dserror("ERROR: Integrate_Mmod called with infeasible master limits!");
+	
+	// create empty Mmoddense object and wrap it with RCP
+	int nrow  = sele.NumNode();
+	int nrowdof = 2;							// up to now we only consider 2D problems!!!
+	int ncol  = mele.NumNode();
+	int ncoldof = 2;							// up to now we only consider 2D problems!!!
+	
+	RCP<Epetra_SerialDenseMatrix> Mmoddense = rcp(new Epetra_SerialDenseMatrix(nrow*nrowdof,ncol*ncoldof));
+	
+	// create empty vectors for shape fct. evaluation
+	vector<double> sval(nrow);
+	vector<double> sderiv(nrow);
+	vector<double> mval(ncol);
+	vector<double> mderiv(ncol);
+	vector<double> dualval(nrow);
+	vector<double> dualderiv(nrow);
+
+	// get slave nodal coords for Jacobian evaluation
+	LINALG::SerialDenseMatrix scoord(3,nrow);
+	scoord = sele.GetNodalCoords();
+	
+	// loop over all Gauss points for integration
+	for (int gp=0;gp<nGP();++gp)
+	{
+		double eta[2] = {0.0, 0.0};
+		eta[0] = Coordinate(gp);
+		double wgt = Weight(gp);
+		
+		double sxi[2] = {0.0, 0.0};
+		double mxi[2] = {0.0, 0.0};
+		
+		// coordinate transformation sxi->eta (slave CElement->Overlap)
+		sxi[0] = 0.5*(1-eta[0])*sxia + 0.5*(1+eta[0])*sxib;
+		
+		// project Gauss point onto master element
+		CONTACT::Projector projector(true);
+		projector.Project_GaussPoint(sele,sxi,mele,mxi);
+		
+		// check GP projection
+		if ((mxi[0]<mxia) || (mxi[0]>mxib))
+			dserror("ERROR: Integrate_Mmod: Gauss point projection failed!");
+		
+		// evaluate trace space shape functions (on both elements)
+		sele.EvaluateShape_1D(sxi,sval,sderiv,nrow);
+		mele.EvaluateShape_1D(mxi,mval,mderiv,ncol);
+		
+		// build the delta function of slave side shape functions
+		double delta_sval = sval[0]-sval[1];
+		
+		// evaluate the two slave side Jacobians
+		double dxdsxi = sele.Jacobian_1D(sval,sderiv,scoord);
+		double dsxideta = -0.5*sxia + 0.5*sxib;
+		
+		/* loop over all Mmoddense matrix entries
+		   nrow represents the slave Lagrange multipliers !!!
+		   ncol represents the master dofs !!!
+		   (this DOES matter here for Mmoddense, as it might
+		   sometimes be rectangular, not quadratic!)              */
+		for (int j=0;j<nrow*nrowdof;++j)
+		{
+			for (int k=0;k<ncol*ncoldof;++k)
+			{
+				// multiply the two shape functions
+				int mindex = (int)(k/ncoldof);
+				double prod = 0.5*delta_sval*mval[mindex];
+				// add current Gauss point's contribution to Mmoddense  
+				(*Mmoddense)(j,k) += prod*dxdsxi*dsxideta*wgt; 
+			}
+		}	
+	} // for (int gp=0;gp<nGP();++gp)
+	
+	/* OLD VERSION
+	// prepare computation of purely geometric part of Mmod entries
+	CNode* snode0 = static_cast<CNode*>(sele.Nodes()[0]);
+	CNode* snode1 = static_cast<CNode*>(sele.Nodes()[1]);
+
+	// normals
+	double n[2][2];
+	n[0][0] = snode0->n()[0];
+	n[0][1] = snode0->n()[1];
+	n[1][0] = snode1->n()[0];
+	n[1][1] = snode1->n()[1];
+	
+	// tangents
+	double t[2][2];
+	t[0][0] = -n[0][1];
+	t[0][1] =  n[0][0];
+	t[1][0] = -n[1][1];
+	t[1][1] =  n[1][0];
+	
+	// delta normals	
+	double dn[2];
+	dn[0] = n[0][0]-n[1][0];
+	dn[1] = n[0][1]-n[1][1];
+	
+	// delta tangents	
+	double dt[2];
+	dt[0] = t[0][0]-t[1][0];
+	dt[1] = t[0][1]-t[1][1];
+	
+	// loop over all Mmoddense matrix entries
+	for (int j=0;j<nrow*nrowdof;++j)
+	{
+		// prepare indices
+		int snode = (int)(j/nrowdof);
+		int sdof = (int)(j%nrowdof);
+		
+		for (int k=0;k<ncol*ncoldof;++k)
+		{
+			// prepare indices
+			int mdof = (int)(k%ncoldof);
+			
+			// multiply geometric part onto Mmod  
+			double val = n[snode][sdof] * dn[mdof] + t[snode][sdof] * dt[mdof];
+			(*Mmoddense)(j,k) *= val; 
+		}
+	}	
+	*/ //OLD VERSION
+	
+	// NEW VERSION
+	// prepare computation of purely geometric part of Mmod entries
+	CNode* snode0 = static_cast<CNode*>(sele.Nodes()[0]);
+	CNode* snode1 = static_cast<CNode*>(sele.Nodes()[1]);
+
+	// normals
+	double n[2][2];
+	n[0][0] = snode0->n()[0];
+	n[0][1] = snode0->n()[1];
+	n[1][0] = snode1->n()[0];
+	n[1][1] = snode1->n()[1];
+	
+	// tangents
+	double t[2][2];
+	t[0][0] = -n[0][1];
+	t[0][1] =  n[0][0];
+	t[1][0] = -n[1][1];
+	t[1][1] =  n[1][0];
+	
+	// scalar product n1 * n2
+	double n1n2 = 0.0;
+	for (int i=0;i<3;++i)
+		n1n2+=n[0][i]*n[1][i];
+	
+	// vector product n1 x n2
+	double n1xn2 = n[0][0]*n[1][1] - n[0][1]*n[1][0];
+	
+	// // multiply geometric part onto Mmod  
+	for (int i=0;i<ncol;++i)
+	{
+		(*Mmoddense)(0,0+i*ncoldof) *=  (1.0-n1n2);
+		(*Mmoddense)(1,0+i*ncoldof) *=  n1xn2;
+		(*Mmoddense)(0,1+i*ncoldof) *= -n1xn2;
+		(*Mmoddense)(1,1+i*ncoldof) *=  (1.0-n1n2);
+	
+		(*Mmoddense)(2,0+i*ncoldof) *=  (n1n2-1.0);
+		(*Mmoddense)(3,0+i*ncoldof) *=  n1xn2;
+		(*Mmoddense)(2,1+i*ncoldof) *= -n1xn2;
+		(*Mmoddense)(3,1+i*ncoldof) *=  (n1n2-1.0);
+	}
+	
+	return Mmoddense;
 }
 
 /*----------------------------------------------------------------------*

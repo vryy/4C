@@ -118,13 +118,27 @@ public:
 																					 double mxia, double mxib);
 	
 	/*!
-	\brief Integrate weighted gap g~ on a 1D slave / master overlap
-				
+	\brief Integrate modification Mmod on a 1D slave / master overlap
+	 
+	 This modification is based on a paper by Puso/Wohlmuth, 2005.<br>
+	 It is necessary in the case of linear slave side elements
+	 and dual shape functions for the Lagrange multipliers, when
+	 the interface is curved!
+
+	*/
+	RCP<Epetra_SerialDenseMatrix> Integrate_Mmod(CONTACT::CElement& sele,
+																					     double sxia, double sxib,
+																					     CONTACT::CElement& mele,
+																					     double mxia, double mxib);
+	
+	/*!
+  \brief Integrate weighted gap g~ on a 1D slave / master overlap
+					
 	*/
 	RCP<Epetra_SerialDenseVector> Integrate_g(CONTACT::CElement& sele,
-																					 double sxia, double sxib,
-																					 CONTACT::CElement& mele,
-																					 double mxia, double mxib);
+																						double sxia, double sxib,
+																						CONTACT::CElement& mele,
+																						double mxia, double mxib);
 		
   //@}
   		

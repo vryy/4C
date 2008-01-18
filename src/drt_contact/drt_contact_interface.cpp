@@ -881,13 +881,45 @@ bool CONTACT::Interface::EvaluateOverlap_2D(CONTACT::CElement& sele,
 	RCP<Epetra_SerialDenseMatrix> D_seg = integrator.Integrate_D(sele,sxia,sxib);
 	RCP<Epetra_SerialDenseMatrix> M_seg = integrator.Integrate_M(sele,sxia,sxib,mele,mxia,mxib);
 	RCP<Epetra_SerialDenseVector> g_seg = integrator.Integrate_g(sele,sxia,sxib,mele,mxia,mxib);
+	
+	// do the integration of Mmod for curved interfaces
+	// (based on the paper by M. Puso / B. Wohlmuth, IJNME, 2005)
+	bool modification = false;
+	
+	// conditions for modification
+	// (1) linear shape functions for the slave elements
+	// (2) 2D problems (3D unknown / unpublished ??)
+	// (3) curved interface, n1!=n2
+	// (4) use of dual shape functions for LM (always true in our case !!)
+	if (sele.Shape()==DRT::Element::line2)
+	{
+		if (integrator.IsOneDimensional())
+		{
+			CNode* snode0 = static_cast<CNode*>(sele.Nodes()[0]);
+			CNode* snode1 = static_cast<CNode*>(sele.Nodes()[1]);
+
+			const double* n0 = snode0->n();
+			const double* n1 = snode1->n();
+			double delta = (n0[0]-n1[0])*(n0[0]-n1[0]) + (n0[1]-n1[1])*(n0[1]-n1[1]);
+			
+			if (delta>1.0e-8)
+				modification = true;
+		}
+	}
+	
+	if (modification)
+	{
+		RCP<Epetra_SerialDenseMatrix> Mmod_seg = integrator.Integrate_Mmod(sele,sxia,sxib,mele,mxia,mxib);
+		cout << *Mmod_seg << endl;
+	}
+	
 /*	
 #ifdef DEBUG
 	cout << *D_seg << endl;
 	cout << *M_seg << endl;
 	cout << *g_seg << endl;
 #endif // #ifdef DEBUG
-*/	
+*/
 	return true;
 }
 
