@@ -27,11 +27,7 @@ typedef blitz::Array<double,1> BlitzVec;
 typedef blitz::Array<double,2> BlitzMat;
 
 
-namespace DRT
-{
-namespace Elements
-{
-namespace FLUID
+namespace XFLUID
 {
 
 //! for each distype there should be an m_k needed for stabilization computation
@@ -246,9 +242,7 @@ BlitzVec CalTauStationary(
 
   return tau_;
 }
-}  // end namespace FLUID
-}  // end namespace Elements
-}  // end namespace DRT
+}  // end namespace XFLUID
 
 #endif
 

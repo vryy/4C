@@ -277,7 +277,7 @@ void XFEM::createDofMap(
     map<int, set<XFEM::FieldEnr> >  nodalDofSet;
     map<int, set<XFEM::FieldEnr> >  elementalDofs;
     
-    // loop my row nodes and add standard degrees of freedom
+    // loop my row nodes and add standard degrees of freedom to nodes
     for (int i=0; i<xfemdis->NumMyColNodes(); ++i)
     {
         // standard enrichment used for all nodes (for now -> we can remove them from holes in the fluid)
@@ -290,12 +290,15 @@ void XFEM::createDofMap(
         nodalDofSet[gid].insert(XFEM::FieldEnr(PHYSICS::Velz, enr_std));
         nodalDofSet[gid].insert(XFEM::FieldEnr(PHYSICS::Pres, enr_std));
     };
+    // loop my col elements and add standard degrees of freedom to elements
+    bool stress_unknowns_used = false;
     for (int i=0; i<xfemdis->NumMyColElements(); ++i)
     {
         const DRT::Element* actele = xfemdis->lColElement(i);
-        const DRT::Element::DiscretizationType stressdistype = XFLUID::getStressInterpolationType(XFLUID::getElementFormulation(actele->Shape()));
+        const DRT::Element::DiscretizationType stressdistype = XFLUID::getStressInterpolationType3D(XFLUID::getElementFormulation(actele->Shape()));
         const int numstressparam = DRT::Utils::getNumberOfElementNodes(stressdistype);
         const int element_gid = actele->Id();
+        //cout << "numstressparam in createDofMaps: " << numstressparam << endl;
         for (int inen = 0; inen<numstressparam; ++inen)
         {
             const int offset_to_standard = 1;
@@ -306,10 +309,20 @@ void XFEM::createDofMap(
             elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Tauxy, enr_std));
             elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Tauxz, enr_std));
             elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Tauyz, enr_std));
+            stress_unknowns_used = true;
         }
     }
-    
+    if (stress_unknowns_used)
+    {
+        cout << (elementalDofs[0].size() / 6) << " continuous stress unknown(s) applied to " << elementalDofs.size() << " elements." << endl;
+//        const set<XFEM::FieldEnr> fieldset = elementalDofs[0];
+//        for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldset.begin(); fieldenr != fieldset.end(); ++fieldenr)
+//        {
+//            cout << fieldenr->toString() << endl;
+//        }
+    }
 
+    // loop xfem conditions and add appropriate enrichments
     vector< DRT::Condition * >              xfemConditions;
     cutterdis->GetCondition ("XFEMCoupling", xfemConditions);
     cout << "numcondition = " << xfemConditions.size() << endl;
@@ -330,7 +343,7 @@ void XFEM::createDofMap(
             if (elementDomainIntCellMap.count(actele->Id()) >= 1)
             {
                 const int nen = actele->NumNode();
-                const int* nodeidptrs = actele->NodeIds();
+                //const int* nodeidptrs = actele->NodeIds();
                 for (int inen = 0; inen<nen; ++inen)
                 {
 //                    const int node_gid = nodeidptrs[inen];
@@ -340,7 +353,7 @@ void XFEM::createDofMap(
 //                    nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Pres, jumpenr));
                 };
                 // add discontinuous stress unknowns
-//                const int numstressparam = DRT::Elements::FLUID::getNumberOfStressDofs(actele->Shape());
+//                const int numstressparam = XFLUID::getNumberOfStressDofs(actele->Shape());
 //                const int element_gid = actele->Id();
 //                for (int inen = 0; inen<numstressparam; ++inen)
 //                {

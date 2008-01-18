@@ -517,7 +517,7 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
 
           const bool newton = params.get<bool>("include reactive terms for linearisation",false);
           const bool pstab  = true;
-          const bool supg   = false;
+          const bool supg   = true;
           const bool vstab  = false;  // viscous stabilisation part switched off !!
           const bool cstab  = true;        
 
