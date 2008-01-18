@@ -19,6 +19,7 @@ Maintainer: Moritz Frenzel
 #include "mpi.h"
 #endif
 #include "so_hex8.H"
+#include "so_tet4.H"
 #include "so_tet10.H"
 #include "so_ctet10.H"
 #include "so_weg6.H"
@@ -83,19 +84,11 @@ void DRT::Elements::So_hex8::soh8_mat_sel(
       MAT::AnisotropicBalzani* anba = static_cast <MAT::AnisotropicBalzani*>(mat.get());
       
       double avec[3]= {0.0};
-      if (this->Type() == DRT::Element::element_sosh8){
+      if (this->Type() != DRT::Element::element_sosh8){
         // fiber direction for z-cylinder, calculated via cross-product and beta=45°
-        //Epetra_SerialDenseVector thickvec = getthicknessvector();
-        //cout << thickvec_;
-//        avec[0] = thickvec_[1];
-//        avec[1] = -1.0 * thickvec_[0];
-//        avec[2] = sqrt(avec[0]*avec[0] + avec[1]*avec[1]);
-        avec[0] = fiberdirection_[0];
-        avec[1] = fiberdirection_[1];
-        avec[2] = fiberdirection_[2];
-//        avec[0] = getthicknessvector()[1];
-//        avec[1] = -1.0 * getthicknessvector()[0];
-//        avec[2] = sqrt(avec[0]*avec[0] + avec[1]*avec[1]);
+        avec[0] = getthicknessvector()[1];
+        avec[1] = -1.0 * getthicknessvector()[0];
+        avec[2] = sqrt(avec[0]*avec[0] + avec[1]*avec[1]);
       }
 
       anba->Evaluate(glstrain,defgrd,gp,ele_ID,time,cmat,stress,avec);
@@ -239,6 +232,43 @@ void DRT::Elements::SoDisp::sodisp_mat_sel(
 }  // of sow6_mat_sel
 
 #ifdef D_SOTET
+/*----------------------------------------------------------------------* !!!!
+ | material laws for So_tet4                                  vlf 04/07|
+ | added as a fast solution by cloning soh8_mat_sel (which is inside a  |
+ | different class, and therefore cannot be used in So_tet10)           |
+ | one should think about other solutions for this like making this a   |
+ | member of a upper class the will be inherited by all so3 classes     |
+ *----------------------------------------------------------------------*/
+void DRT::Elements::So_tet4::so_tet4_mat_sel(
+      Epetra_SerialDenseVector* stress,
+      Epetra_SerialDenseMatrix* cmat,
+      double* density,
+      const Epetra_SerialDenseVector* glstrain,
+      const Epetra_SerialDenseMatrix* defgrd,
+      int gp)
+{
+  RefCountPtr<MAT::Material> mat = Material();
+  switch (mat->MaterialType())
+  {
+    case m_stvenant: /*------------------ st.venant-kirchhoff-material */
+    {
+      MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
+
+      stvk->Evaluate(glstrain,cmat,stress);
+
+      *density = stvk->Density();
+
+      break;
+    }
+    default:
+      dserror("Illegal type %d of material for element solid3 hex8", mat->MaterialType());
+      break;
+  }
+
+  /*--------------------------------------------------------------------*/
+  return;
+}  // of so_tet4_mat_sel
+
 /*----------------------------------------------------------------------* !!!!
  | material laws for So_tet10                                  vlf 04/07|
  | added as a fast solution by cloning soh8_mat_sel (which is inside a  |

@@ -16,9 +16,8 @@ written by: Alexander Volf
 
 *----------------------------------------------------------------------*/
 #ifdef D_SOTET
-#define SO3
-#ifdef SO3
 #ifdef CCADISCRET
+
 #ifndef SO3_H_
 #define SO3_H_
 
@@ -50,7 +49,7 @@ using namespace Teuchos;
 
 // forward declarations
 struct _MATERIAL;
-
+class SoDisp;
 /*!
 \brief DRT: namespace of the ccarat discretization module
 
@@ -60,6 +59,8 @@ namespace DRT
 
 namespace Elements
 {
+// forward declarations	
+	class SoDisp;
 /*!
 \class DRT::Elements::So_integrator
 
@@ -175,12 +176,17 @@ NOTE: X stands for the number of NODES (and shape functions) in a element
   		Integrator_tet4_1point(void);
   };
 
+  class Integrator_tri3_1point : public So_integrator
+  {
+  	public:
+  		Integrator_tri3_1point(void);
+  };
+  
   class Integrator_tet4_4point : public So_integrator
   {
   	public:
   		Integrator_tet4_4point(void);
-  };  
-
+  };
 } // namespace Elements
 } // namespace DRT
 
@@ -189,5 +195,4 @@ long double det_volf(Epetra_SerialDenseMatrix& in_matrix);
 
 #endif  // #ifndef SO_TET10_H_
 #endif  // #ifdef  CCADISCRET
-#endif  // #ifdef  SO3
 #endif  // #if D_SOTET

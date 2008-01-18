@@ -95,7 +95,8 @@ void StruResultTest::TestNode(_RESULTDESCR* res, int& nerr, int& test_count)
     }
 
 	//verbose output
-	cout << "RESULT IS " << result << endl;
+    cout.precision(18);
+	  cout << "RESULT IS " << result << endl;
     
     nerr += CompareValues(result, res);
     test_count++;

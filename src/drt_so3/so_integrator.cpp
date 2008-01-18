@@ -16,14 +16,13 @@ written by: Alexander Volf
 
 *----------------------------------------------------------------------*/
 #ifdef D_SOTET
-#define SO3
-#ifdef SO3
 
+#include "so_integrator.H"
+#include "so_tet4.H"
 #include "so_tet10.H"
 #include "so_ctet10.H"
-#include "so_tet4.H"
-#include "so_integrator.H"
 #include "so_hex8.H"
+#include "so_disp.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_exporter.H"
@@ -32,6 +31,8 @@ written by: Alexander Volf
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
 #include "../drt_lib/linalg_serialdensevector.H"
+#include "../drt_lib/drt_utils_integration.H"
+#include "../drt_lib/drt_utils_fem_shapefunctions.H"
 #include "Epetra_SerialDenseSolver.h"
 
 /*----------------------------------------------------------------------*
@@ -46,25 +47,255 @@ DRT::Elements::So_integrator::~So_integrator()
 }
 
 
+/*----------------------------------------------------------------------*
+ |  shape functions and derivatives for So_hex8                vlf 04/07|
+ *----------------------------------------------------------------------*/
+DRT::Elements::So_hex8::Integrator_So_hex8::Integrator_So_hex8()
+{
+
+    num_gp = NUMGPT_SOH8;
+    num_nodes = NUMNOD_SOH8 ;
+    num_coords = 3;
+    shapefct_gp = new Epetra_SerialDenseVector[NUMGPT_SOH8];
+    deriv_gp    = new Epetra_SerialDenseMatrix[NUMGPT_SOH8];
+    weights.Size(NUMGPT_SOH8);
+    
+#if 1 //OUR SHAPE FUNCTIONS
+
+  #if 1 // long double GP
+    const long double gploc    = 1.0/sqrt(3.0);    // gp sampling point value for linear fct
+    const long double gpw      = 1.0;              // weight at every gp for linear fct
+
+    // (r,s,t) gp-locations of fully integrated linear 8-node Hex
+    const long double r[NUMGPT_SOH8] = {-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc,-gploc};
+    const long double s[NUMGPT_SOH8] = {-gploc,-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc};
+    const long double t[NUMGPT_SOH8] = {-gploc,-gploc,-gploc,-gploc, gploc, gploc, gploc, gploc};
+    const long double w[NUMGPT_SOH8] = {   gpw,   gpw,   gpw,   gpw,   gpw,   gpw,   gpw,   gpw};
+
+    // fill up nodal f at each gp
+    for (int i=0; i<NUMGPT_SOH8; ++i) {
+    (shapefct_gp[i]).Size(NUMNOD_SOH8);    
+      (shapefct_gp[i])(0) = ((long double)1.0-r[i])*((long double)1.0-s[i])*((long double)1.0-t[i])*(long double)0.125;
+      (shapefct_gp[i])(1) = ((long double)1.0+r[i])*((long double)1.0-s[i])*((long double)1.0-t[i])*(long double)0.125;
+      (shapefct_gp[i])(2) = ((long double)1.0+r[i])*((long double)1.0+s[i])*((long double)1.0-t[i])*(long double)0.125;
+      (shapefct_gp[i])(3) = ((long double)1.0-r[i])*((long double)1.0+s[i])*((long double)1.0-t[i])*(long double)0.125;
+      (shapefct_gp[i])(4) = ((long double)1.0-r[i])*((long double)1.0-s[i])*((long double)1.0+t[i])*(long double)0.125;
+      (shapefct_gp[i])(5) = ((long double)1.0+r[i])*((long double)1.0-s[i])*((long double)1.0+t[i])*(long double)0.125;
+      (shapefct_gp[i])(6) = ((long double)1.0+r[i])*((long double)1.0+s[i])*((long double)1.0+t[i])*(long double)0.125;
+      (shapefct_gp[i])(7) = ((long double)1.0-r[i])*((long double)1.0+s[i])*((long double)1.0+t[i])*(long double)0.125;
+      weights[i] = w[i]*w[i]*w[i]; // just for clarity how to get weight factors
+    }
+
+    // fill up df w.r.t. rst directions (NUMDIM) at each gp
+    for (int i=0; i<NUMGPT_SOH8; ++i) {
+      (deriv_gp[i]).Shape(3,NUMNOD_SOH8);
+        // df wrt to r "+0" for each node(0..7) at each gp [i]
+        (deriv_gp[i])(0,0) = -((long double)1.0-s[i])*((long double)1.0-t[i])*(long double)0.125;
+        (deriv_gp[i])(0,1) =  ((long double)1.0-s[i])*((long double)1.0-t[i])*(long double)0.125;
+        (deriv_gp[i])(0,2) =  ((long double)1.0+s[i])*((long double)1.0-t[i])*(long double)0.125;
+        (deriv_gp[i])(0,3) = -((long double)1.0+s[i])*((long double)1.0-t[i])*(long double)0.125;
+        (deriv_gp[i])(0,4) = -((long double)1.0-s[i])*((long double)1.0+t[i])*(long double)0.125;
+        (deriv_gp[i])(0,5) =  ((long double)1.0-s[i])*((long double)1.0+t[i])*(long double)0.125;
+        (deriv_gp[i])(0,6) =  ((long double)1.0+s[i])*((long double)1.0+t[i])*(long double)0.125;
+        (deriv_gp[i])(0,7) = -((long double)1.0+s[i])*((long double)1.0+t[i])*(long double)0.125;
+
+        // df wrt to s "+1" for each node(0..7) at each gp [i]
+        (deriv_gp[i])(1,0) = -((long double)1.0-r[i])*((long double)1.0-t[i])*(long double)0.125;
+        (deriv_gp[i])(1,1) = -((long double)1.0+r[i])*((long double)1.0-t[i])*(long double)0.125;
+        (deriv_gp[i])(1,2) =  ((long double)1.0+r[i])*((long double)1.0-t[i])*(long double)0.125;
+        (deriv_gp[i])(1,3) =  ((long double)1.0-r[i])*((long double)1.0-t[i])*(long double)0.125;
+        (deriv_gp[i])(1,4) = -((long double)1.0-r[i])*((long double)1.0+t[i])*(long double)0.125;
+        (deriv_gp[i])(1,5) = -((long double)1.0+r[i])*((long double)1.0+t[i])*(long double)0.125;
+        (deriv_gp[i])(1,6) =  ((long double)1.0+r[i])*((long double)1.0+t[i])*(long double)0.125;
+        (deriv_gp[i])(1,7) =  ((long double)1.0-r[i])*((long double)1.0+t[i])*(long double)0.125;
+
+        // df wrt to t "+2" for each node(0..7) at each gp [i]
+        (deriv_gp[i])(2,0) = -((long double)1.0-r[i])*((long double)1.0-s[i])*(long double)0.125;
+        (deriv_gp[i])(2,1) = -((long double)1.0+r[i])*((long double)1.0-s[i])*(long double)0.125;
+        (deriv_gp[i])(2,2) = -((long double)1.0+r[i])*((long double)1.0+s[i])*(long double)0.125;
+        (deriv_gp[i])(2,3) = -((long double)1.0-r[i])*((long double)1.0+s[i])*(long double)0.125;
+        (deriv_gp[i])(2,4) =  ((long double)1.0-r[i])*((long double)1.0-s[i])*(long double)0.125;
+        (deriv_gp[i])(2,5) =  ((long double)1.0+r[i])*((long double)1.0-s[i])*(long double)0.125;
+        (deriv_gp[i])(2,6) =  ((long double)1.0+r[i])*((long double)1.0+s[i])*(long double)0.125;
+        (deriv_gp[i])(2,7) =  ((long double)1.0-r[i])*((long double)1.0+s[i])*(long double)0.125;
+    }
+  
+  #else // double GP 
+  const double gploc    = 1.0/sqrt(3.0);    // gp sampling point value for linear fct
+    const double gpw      = 1.0;              // weight at every gp for linear fct
+
+    // (r,s,t) gp-locations of fully integrated linear 8-node Hex
+    const double r[NUMGPT_SOH8] = {-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc,-gploc};
+    const double s[NUMGPT_SOH8] = {-gploc,-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc};
+    const double t[NUMGPT_SOH8] = {-gploc,-gploc,-gploc,-gploc, gploc, gploc, gploc, gploc};
+    const double w[NUMGPT_SOH8] = {   gpw,   gpw,   gpw,   gpw,   gpw,   gpw,   gpw,   gpw};
+    
+    // fill up nodal f at each gp
+    for (int i=0; i<NUMGPT_SOH8; ++i) {
+    (shapefct_gp[i]).Size(NUMNOD_SOH8);    
+      (shapefct_gp[i])(0) = (1.0-r[i])*(1.0-s[i])*(1.0-t[i])*0.125;
+      (shapefct_gp[i])(1) = (1.0+r[i])*(1.0-s[i])*(1.0-t[i])*0.125;
+      (shapefct_gp[i])(2) = (1.0+r[i])*(1.0+s[i])*(1.0-t[i])*0.125;
+      (shapefct_gp[i])(3) = (1.0-r[i])*(1.0+s[i])*(1.0-t[i])*0.125;
+      (shapefct_gp[i])(4) = (1.0-r[i])*(1.0-s[i])*(1.0+t[i])*0.125;
+      (shapefct_gp[i])(5) = (1.0+r[i])*(1.0-s[i])*(1.0+t[i])*0.125;
+      (shapefct_gp[i])(6) = (1.0+r[i])*(1.0+s[i])*(1.0+t[i])*0.125;
+      (shapefct_gp[i])(7) = (1.0-r[i])*(1.0+s[i])*(1.0+t[i])*0.125;
+      weights[i] = w[i]*w[i]*w[i]; // just for clarity how to get weight factors
+    }
+
+    // fill up df w.r.t. rst directions (NUMDIM) at each gp
+    for (int i=0; i<NUMGPT_SOH8; ++i) {
+      (deriv_gp[i]).Shape(3,NUMNOD_SOH8);
+        // df wrt to r "+0" for each node(0..7) at each gp [i]
+        (deriv_gp[i])(0,0) = -(1.0-s[i])*(1.0-t[i])*0.125;
+        (deriv_gp[i])(0,1) =  (1.0-s[i])*(1.0-t[i])*0.125;
+        (deriv_gp[i])(0,2) =  (1.0+s[i])*(1.0-t[i])*0.125;
+        (deriv_gp[i])(0,3) = -(1.0+s[i])*(1.0-t[i])*0.125;
+        (deriv_gp[i])(0,4) = -(1.0-s[i])*(1.0+t[i])*0.125;
+        (deriv_gp[i])(0,5) =  (1.0-s[i])*(1.0+t[i])*0.125;
+        (deriv_gp[i])(0,6) =  (1.0+s[i])*(1.0+t[i])*0.125;
+        (deriv_gp[i])(0,7) = -(1.0+s[i])*(1.0+t[i])*0.125;
+
+        // df wrt to s "+1" for each node(0..7) at each gp [i]
+        (deriv_gp[i])(1,0) = -(1.0-r[i])*(1.0-t[i])*0.125;
+        (deriv_gp[i])(1,1) = -(1.0+r[i])*(1.0-t[i])*0.125;
+        (deriv_gp[i])(1,2) =  (1.0+r[i])*(1.0-t[i])*0.125;
+        (deriv_gp[i])(1,3) =  (1.0-r[i])*(1.0-t[i])*0.125;
+        (deriv_gp[i])(1,4) = -(1.0-r[i])*(1.0+t[i])*0.125;
+        (deriv_gp[i])(1,5) = -(1.0+r[i])*(1.0+t[i])*0.125;
+        (deriv_gp[i])(1,6) =  (1.0+r[i])*(1.0+t[i])*0.125;
+        (deriv_gp[i])(1,7) =  (1.0-r[i])*(1.0+t[i])*0.125;
+
+        // df wrt to t "+2" for each node(0..7) at each gp [i]
+        (deriv_gp[i])(2,0) = -(1.0-r[i])*(1.0-s[i])*0.125;
+        (deriv_gp[i])(2,1) = -(1.0+r[i])*(1.0-s[i])*0.125;
+        (deriv_gp[i])(2,2) = -(1.0+r[i])*(1.0+s[i])*0.125;
+        (deriv_gp[i])(2,3) = -(1.0-r[i])*(1.0+s[i])*0.125;
+        (deriv_gp[i])(2,4) =  (1.0-r[i])*(1.0-s[i])*0.125;
+        (deriv_gp[i])(2,5) =  (1.0+r[i])*(1.0-s[i])*0.125;
+        (deriv_gp[i])(2,6) =  (1.0+r[i])*(1.0+s[i])*0.125;
+        (deriv_gp[i])(2,7) =  (1.0-r[i])*(1.0+s[i])*0.125;
+    }
+    #endif //#if // long double GP
+    
+#else  // DRT SHAPE FUNCTIONS
+  // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
+  // fill up nodal f at each gp
+  // fill up df w.r.t. rst directions (NUMDIM) at each gp
+  const DRT::Utils::GaussRule3D gaussrule_ = DRT::Utils::intrule_hex_8point;
+  const DRT::Utils::IntegrationPoints3D intpoints = getIntegrationPoints3D(gaussrule_);
+ 
+  for (int igp = 0; igp < intpoints.nquad; ++igp) {
+    const double r = intpoints.qxg[igp][0];
+    const double s = intpoints.qxg[igp][1];
+    const double t = intpoints.qxg[igp][2];
+
+    shapefct_gp[igp].Size(NUMNOD_SOH8);
+    deriv_gp[igp].Shape(NUMDIM_SOH8, NUMNOD_SOH8);
+    DRT::Utils::shape_function_3D(shapefct_gp[igp], r, s, t, hex8);
+    DRT::Utils::shape_function_3D_deriv1(deriv_gp[igp], r, s, t, hex8);
+    weights[igp] = intpoints.qwgt[igp];
+ }
+#endif  // #if 0 //OUR SHAPE FUNCTIONS
+
+#if 0 // COMPARE DRT SHAPE FUNCTIONS
+  // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
+  // fill up nodal f at each gp
+  // fill up df w.r.t. rst directions (NUMDIM) at each gp
+  const DRT::Utils::GaussRule3D gaussrule_ = DRT::Utils::intrule_hex_8point;
+  const DRT::Utils::IntegrationPoints3D intpoints = getIntegrationPoints3D(gaussrule_);
+ 
+  for (int igp = 0; igp < intpoints.nquad; ++igp) {
+    const double r = intpoints.qxg[igp][0];
+    const double s = intpoints.qxg[igp][1];
+    const double t = intpoints.qxg[igp][2];
+
+    Epetra_SerialDenseVector shapefct_gpmy(NUMNOD_SOH8);
+    Epetra_SerialDenseVector temp_vec(NUMNOD_SOH8);
+    Epetra_SerialDenseMatrix deriv_gpmy(NUMDIM_SOH8, NUMNOD_SOH8);
+    Epetra_SerialDenseMatrix temp_mat(NUMDIM_SOH8, NUMNOD_SOH8);
+    DRT::Utils::shape_function_3D(shapefct_gpmy, r, s, t, hex8);
+    DRT::Utils::shape_function_3D_deriv1(deriv_gpmy, r, s, t, hex8);
+    
+    temp_vec+=shapefct_gp[igp];
+    temp_vec.Scale(-1);
+    temp_vec+=shapefct_gpmy;
+    
+    temp_mat+=deriv_gp[igp];
+    temp_mat.Scale(-1);
+    temp_mat+=deriv_gpmy;
+    
+    cout << temp_vec;
+    cout << temp_mat;
+    getchar();
+  }
+#endif //#if 0 // COMPARE DRT SHAPE FUNCTIONS
+
+  return;
+}  // of DRT::Elements::So_hex8::Integrator_So_hex8::Integrator_So_hex8
+
+
+/*----------------------------------------------------------------------*
+ |  shape functions and derivatives for SoDisp                 vlf 04/07|
+ *----------------------------------------------------------------------*/
+DRT::Elements::SoDisp::Integrator_SoDisp::Integrator_SoDisp(DRT::Elements::SoDisp& this_element)
+{
+
+  const DRT::Element::DiscretizationType distype = this_element.Shape();
+    // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
+    // fill up nodal f at each gp
+    // fill up df w.r.t. rst directions (NUMDIM) at each gp
+    // forward initialization of necessary attributes
+
+    const DRT::Utils::IntegrationPoints3D intpoints = \
+        DRT::Utils::getIntegrationPoints3D(this_element.gaussrule_);
+    
+    num_gp = this_element.numgpt_disp_;
+    num_nodes = this_element.numnod_disp_ ;
+    num_coords = 3;
+    shapefct_gp = new Epetra_SerialDenseVector[num_gp];
+    deriv_gp    = new Epetra_SerialDenseMatrix[num_gp];
+    weights.Size(this_element.numgpt_disp_);
+    
+    for (int igp = 0; igp < intpoints.nquad; ++igp) {
+      const double r = intpoints.qxg[igp][0];
+      const double s = intpoints.qxg[igp][1];
+      const double t = intpoints.qxg[igp][2];
+
+      Epetra_SerialDenseVector funct(num_nodes);
+      Epetra_SerialDenseMatrix deriv(num_coords, num_nodes);
+      DRT::Utils::shape_function_3D(funct, r, s, t, distype);
+      DRT::Utils::shape_function_3D_deriv1(deriv, r, s, t, distype);
+        
+      // return adresses of just evaluated matrices
+      shapefct_gp[igp] = funct;
+      deriv_gp[igp]    = deriv;
+      weights[igp] = intpoints.qwgt[igp]; // return adress of static object to target of pointer
+    }
+
+    return;
+}
+
 DRT::Elements::Integrator_tet4_1point::Integrator_tet4_1point(void)
 {
 	 // forward initialization of necessary attributes
-  num_gp = NUMGPT_SUBTET4;
-  num_nodes = NUMNOD_SUBTET4 ;
-  num_coords = NUMCOORD_SUBTET4;
-  shapefct_gp = new Epetra_SerialDenseVector[NUMGPT_SUBTET4];
-  deriv_gp    = new Epetra_SerialDenseMatrix[NUMGPT_SUBTET4];
+  num_gp = NUMGPT_SOTET4;
+  num_nodes = NUMNOD_SOTET4;
+  num_coords = NUMCOORD_SOTET4;
+  shapefct_gp = new Epetra_SerialDenseVector[NUMGPT_SOTET4];
+  deriv_gp    = new Epetra_SerialDenseMatrix[NUMGPT_SOTET4];
   weights.Size(num_gp);
   
   //Quadrature rule from Carlos A. Felippa: Adv. FEM  §16.4 
   const double gploc_alpha    =  0.25;    // gp sampling point value for linear. fct
   const double gpw = 1.0;
   // (xsi1, xsi2, xsi3 ,xsi4) gp-locations of fully integrated linear 4-node Tet
-  const double xsi1[NUMGPT_SUBTET4] = {gploc_alpha};
-  const double xsi2[NUMGPT_SUBTET4] = {gploc_alpha};
-  const double xsi3[NUMGPT_SUBTET4] = {gploc_alpha};
-  const double xsi4[NUMGPT_SUBTET4] = {gploc_alpha};
-  const double w[NUMGPT_SUBTET4]    = {gpw};
+  const double xsi1[NUMGPT_SOTET4] = {gploc_alpha};
+  const double xsi2[NUMGPT_SOTET4] = {gploc_alpha};
+  const double xsi3[NUMGPT_SOTET4] = {gploc_alpha};
+  const double xsi4[NUMGPT_SOTET4] = {gploc_alpha};
+  const double w[NUMGPT_SOTET4]    = {gpw};
 	
    // fill up nodal f at each gp 
   for (int gp=0; gp<num_gp; gp++) {
@@ -247,22 +478,22 @@ DRT::Elements::Integrator_tet10_14point::Integrator_tet10_14point(void)
     	      jk6= {{1,2},{1,3},{1,4},{2,3},{2,4},{3,4}} 
 */
   
-  const double g1=0.09273525031089122640232391373703060;
-  const double g2=0.31088591926330060979734573376345783;
-  const double g3=0.45449629587435035050811947372066056;
-  const double gi1=1-3*g1;
-  const double gi2=1-3*g2;
-  const double gi3=1/2-g3; 
+  const long double g1=0.09273525031089122640232391373703060;
+  const long double g2=0.31088591926330060979734573376345783;
+  const long double g3=0.45449629587435035050811947372066056;
+  const long double gi1=1-3*g1;
+  const long double gi2=1-3*g2;
+  const long double gi3=1/2-g3; 
   
-  const double 	w1=(-1+6*g2*(2+g2*(-7+8*g2))+14*g3-60*g2*(3+4*g2*\
+  const long double 	w1=(-1+6*g2*(2+g2*(-7+8*g2))+14*g3-60*g2*(3+4*g2*\
     	(-3+4*g2))*g3+4*(-7+30*g2*(3+4*g2*(-3+4*g2)))*g3*g3)/\
     	(120*(g1-g2)*(g2*(-3+8*g2)+6*g3+8*g2*(-3+4*g2)*g3-4*\
 	    (3+4*g2*(-3+4*g2))*g3*g3+8*g1*g1*(1+12*g2*\
     	(-1+2*g2)+4*g3-8*g3*g3)+g1*(-3-96*g2*g3+24*g3*(-1+2*g3)+\
     	g2*(44+32*(1-2*g3)*g3))));
-  const double w2=(-1-20*(1+12*g1*(2*g1-1))*w1+20*g3*(2*g3-1)*(4*w1-1))/\
+  const long double w2=(-1-20*(1+12*g1*(2*g1-1))*w1+20*g3*(2*g3-1)*(4*w1-1))/\
    		(20*(1+12*g2*(2*g2-1)+4*g3-8*g3*g3));
-  const double w3= 1/6-2*(w1+w2)/3;
+  const long double w3= 1/6-2*(w1+w2)/3;
    			
   // (xsi1, xsi2, xsi3 ,xsi4) gp-locations of fully integrated linear 10-node Tet
   const double xsi1[number_gp] = {gi1,  g1,  g1,  g1, gi2,  g2,  g2,  g2, gi3, gi3, gi3,  g3,  g3,  g3};
@@ -344,6 +575,37 @@ DRT::Elements::Integrator_tet10_14point::Integrator_tet10_14point(void)
     
   }
   
+}
+
+/*----------------------------------------------------------------------*
+ * Get shape functions for a tet4 face					       vlf 08/07*
+ * ---------------------------------------------------------------------*/
+DRT::Elements::Integrator_tri3_1point::Integrator_tri3_1point(void)
+{
+  const int number_gp = 1;
+  // forward initialization of necessary attributes
+  num_gp = number_gp;
+  num_nodes = NUMNOD_SOTET4 ;
+  num_coords = NUMCOORD_SOTET4;
+  shapefct_gp = new Epetra_SerialDenseVector[number_gp];
+  deriv_gp    = new Epetra_SerialDenseMatrix[number_gp];
+  weights.Size(number_gp);
+
+ //Quadrature rule from Carlos A. Felippa: Adv. FEM  §17 
+  const double gploc_alpha    = (double)1/3;    // gp sampling point value for liner. fct
+  const double w			  = (double)1;
+
+  const double ksi1[NUMGPT_SOTET4_FACE] = {gploc_alpha };
+  const double ksi2[NUMGPT_SOTET4_FACE] = {gploc_alpha };
+  const double ksi3[NUMGPT_SOTET4_FACE] = {gploc_alpha };
+  
+  for (int gp=0; gp<NUMGPT_SOTET4_FACE; gp++) {
+  	  (shapefct_gp[gp]).Size(num_nodes);
+      shapefct_gp[gp](0) = ksi1[gp];
+      shapefct_gp[gp](1) = ksi2[gp];
+      shapefct_gp[gp](2) = ksi3[gp];
+      weights[gp] = w; // just for clarity how to get weight factors
+   }
 }
 
 /*----------------------------------------------------------------------*
@@ -484,12 +746,6 @@ long double LINALG::SerialDenseMatrix::Det_long()
 }
 
 #endif
-/*DRT::Elements::So_ctet10::Tet4_integrator_4point::~Tet4_integrator_4point()
-{
-	//cout << "~Tet4_integrator_4point";
-	//getchar();
-	
-}*/
 
-#endif // #ifdef SO3
+
 #endif // #ifdef D_SOTET

@@ -15,6 +15,7 @@ Maintainer: Moritz Frenzel
 #ifndef SO_DISP_H
 #define SO_DISP_H
 
+#include "so_integrator.H"
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_Vector.h"
 #include "Epetra_SerialDenseVector.h"
@@ -68,7 +69,7 @@ public:
   friend class SoDispRegister;
   friend class SoDispSurface;
   friend class SoDispLine;
-
+  friend class Integrator_SoDisp; 
   //@}
   //! @name Constructors and destructors and related methods
 
@@ -253,7 +254,6 @@ public:
                Epetra_SerialDenseVector& elevec2,
                Epetra_SerialDenseVector& elevec3);
 
-
   /*!
   \brief Evaluate a Neumann boundary condition
 
@@ -359,10 +359,23 @@ protected:
                     const Epetra_SerialDenseVector* glstrain,
                     const double time);
 
+  /*!
+  \brief Create a integrator for the SoDisp element
+  
+  this constructor provides Object Oriented So_integrator functionality by adapting the strictly procedural 
+  DRT::Utils::IntegrationPoints3D struct.
+  */     
+  class Integrator_SoDisp : public DRT::Elements::So_integrator
+  {
+  	public:
+  		Integrator_SoDisp(DRT::Elements::SoDisp& this_element);
+  }; 
+
+  /*********** became obsolete ************************/
   void sodisp_shapederiv(Epetra_SerialDenseMatrix** shapefct,
                        Epetra_SerialDenseMatrix** deriv,
                        Epetra_SerialDenseVector** weights);
-
+  /*****************************************************/
   void CreateLinesTet(const int& nline,
                       const int& nnode);
 

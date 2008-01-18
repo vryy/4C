@@ -26,6 +26,7 @@ Maintainer: Moritz Frenzel
 using namespace std;
 using namespace Teuchos;
 
+#include "so_integrator.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
@@ -436,11 +437,23 @@ protected:
   void soh8_stress(vector<double>& mydisp,
                    Epetra_SerialDenseMatrix* stresses,
                    const double time);
-
+                   
+  /*!
+  \brief Create a integrator for the SoHex8 element
+  
+  this constructor provides Object Oriented So_integrator functionality by adapting the strictly procedural 
+  DRT::Utils::IntegrationPoints3D struct.
+  */     
+  class Integrator_So_hex8 : public DRT::Elements::So_integrator
+  {
+  	public:
+  		Integrator_So_hex8();
+  };
+  /***************OBSOLETE**********************************/
   void soh8_shapederiv(Epetra_SerialDenseMatrix** shapefct,
                        Epetra_SerialDenseMatrix** deriv,
                        Epetra_SerialDenseVector** weights);
-
+  /***************OBSOLETE**********************************/
   // the deformation gradient, Gauss point number, element ID and the
   // action parameter (default: empty string) is needed only for multi-scale
   // materials
@@ -471,6 +484,9 @@ protected:
                   vector<double>& residual);
 
   bool soh8_checkRewinding();
+
+  vector<double> getthicknessvector() const {dserror("not implemented"); return vector<double>(3);};
+
 
 }; // class So_hex8
 
@@ -972,20 +988,8 @@ private:
 }; // class Soh8Line
 
 
-
-
 } // namespace Elements
 } // namespace DRT
-
-
-
-
-
-
-
-
-
-
 
 #endif  // #ifndef SOH8_H
 #endif  // #ifdef CCADISCRET

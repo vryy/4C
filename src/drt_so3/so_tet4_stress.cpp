@@ -21,6 +21,7 @@ Maintainer: Moritz Frenzel
 #ifdef PARALLEL
 #include "mpi.h"
 #endif
+#include "so_integrator.H"
 #include "so_tet4.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
@@ -58,9 +59,9 @@ void DRT::Elements::So_tet4::so_tet4_stress(struct _MATERIAL* material,
   DSTraceHelper dst("So_tet4::sotet4_stress");
 
 /* =============================================================================*
- * CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_10 with 4 GAUSS POINTS*
+ * CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_4 with 1 GAUSS POINT  *
  * =============================================================================*/
- const static Tet_integrator_4point tet10_dis;
+  const static DRT::Elements::Integrator_tet4_1point tet4_dis;
 /* ============================================================================*/
 
   // update element geometry
@@ -90,7 +91,7 @@ void DRT::Elements::So_tet4::so_tet4_stress(struct _MATERIAL* material,
     
     Epetra_SerialDenseMatrix jac_temp(NUMCOORD_SOTET4-1,NUMCOORD_SOTET4);
     Epetra_SerialDenseMatrix jac(NUMCOORD_SOTET4,NUMCOORD_SOTET4);
-    jac_temp.Multiply('T','N',1.0,xrefe,tet10_dis.deriv[gp],0.0);
+    jac_temp.Multiply('T','N',1.0,xrefe,tet4_dis.deriv_gp[gp],0.0);
    
     for (int i=0; i<4; i++) jac(0,i)=1;
     for (int row=0;row<3;row++)
@@ -146,7 +147,7 @@ void DRT::Elements::So_tet4::so_tet4_stress(struct _MATERIAL* material,
     cout << "deriv_gp\n" << deriv_gp;
     #endif //VERBOSE_OUTPUT
 
-    N_XYZ.Multiply('N','N',1.0,tet10_dis.deriv[gp],partials,0.0); //N_XYZ = N_xsi_k*partials
+    N_XYZ.Multiply('N','N',1.0,tet4_dis.deriv_gp[gp],partials,0.0); //N_XYZ = N_xsi_k*partials
       
     /* structure of N_XYZ:
     **             [   dN_1     dN_1     dN_1   ]

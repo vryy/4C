@@ -17,6 +17,7 @@ written by : Alexander Volf
 #ifdef TRILINOS_PACKAGE
 
 #include "so_tet4.H"
+#include "so_integrator.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_discret.H"
@@ -39,11 +40,8 @@ int DRT::Elements::Sotet4Surface::EvaluateNeumann(ParameterList&           param
                                                 Epetra_SerialDenseVector& elevec1)
 {
   DSTraceHelper dst("Sotet4Surface::EvaluateNeumann");
-
   // get values and switches from the condition
-  Epetra_SerialDenseMatrix* shapefct;
-  Epetra_SerialDenseVector* weights;  //[NUMGPT_SOTET4_FACE]
-  sotet4_surface_shapefunc(&shapefct,&weights);
+  static const DRT::Elements::Integrator_tri3_1point tri3_int;
   const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
   const vector<double>* val   = condition.Get<vector<double> >("val"  );
 
@@ -102,7 +100,7 @@ int DRT::Elements::Sotet4Surface::EvaluateNeumann(ParameterList&           param
   /*
   ** Here, we integrate a 6-node surface with 3 Gauss Points
   */
-  double fac = (*weights)(0) * detJ * curvefac;   // integration factor
+  double fac = tri3_int.weights[0] * detJ * curvefac;   // integration factor
 
   // gauss parameters
   for (int gpid = 0; gpid < NUMGPT_SOTET4_FACE; gpid++) {    // loop over intergration points
@@ -111,49 +109,13 @@ int DRT::Elements::Sotet4Surface::EvaluateNeumann(ParameterList&           param
     for (int nodid=0; nodid < NUMNOD_SOTET4_FACE; nodid++) {
       for(int dim=0; dim < NUMDIM_SOTET4; dim++) {
         elevec1[nodid*NUMDIM_SOTET4 + dim] +=\
-        	(*shapefct)(nodid,gpid) * (*onoff)[dim] * (*val)[dim] * fac;
+        	tri3_int.shapefct_gp[gpid](nodid) * (*onoff)[dim] * (*val)[dim] * fac;
       }
     }
   }
- 
+  
   return 0;
 } //Sotet4Surface::EvaluateNeumann(..)
-
-
-/*----------------------------------------------------------------------*
- * Get shape functions for a tet4 face					       vlf 08/07*
- * ---------------------------------------------------------------------*/
-void DRT::Elements::Sotet4Surface::sotet4_surface_shapefunc(
-      Epetra_SerialDenseMatrix** shapefct,  // pointer to pointer of shapefct
-      Epetra_SerialDenseVector** weights)   // pointer to pointer of weights
-{
-  DSTraceHelper dst("Sotet4Surface::sotet4_surface_shapefunc");
-
-  static Epetra_SerialDenseMatrix  f(NUMNOD_SOTET4_FACE,NUMGPT_SOTET4_FACE);  // shape functions
-  static Epetra_SerialDenseVector weightfactors(NUMGPT_SOTET4_FACE);   // weights for each gp
-
- //Quadrature rule from Carlos A. Felippa: Adv. FEM  §17 
-  const double gploc_alpha    = (double)1/3;    // gp sampling point value for liner. fct
-  const double w			  = (double)1;
-
-  const double ksi1[NUMGPT_SOTET4_FACE] = {gploc_alpha };
-  const double ksi2[NUMGPT_SOTET4_FACE] = {gploc_alpha };
-  const double ksi3[NUMGPT_SOTET4_FACE] = {gploc_alpha };
-  
-  for (int i=0; i<NUMGPT_SOTET4_FACE; i++) {
-      f(0,i) = ksi1[i];
-      f(1,i) = ksi2[i];
-      f(2,i) = ksi3[i];
-      weightfactors[i] = w; // just for clarity how to get weight factors
-   } 
-   
-   *weights  = &weightfactors;
-   *shapefct = &f;
-
-   return;
-
-}
-
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

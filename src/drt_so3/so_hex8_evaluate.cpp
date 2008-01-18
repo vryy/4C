@@ -202,15 +202,7 @@ int DRT::Elements::So_hex8::EvaluateNeumann(ParameterList& params,
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
 ** ============================================================================*/
-/* pointer to (static) shape function array
- * for each node, evaluated at each gp*/
-  Epetra_SerialDenseMatrix* shapefct; //[NUMNOD_SOH8][NUMGPT_SOH8]
-/* pointer to (static) shape function derivatives array
- * for each node wrt to each direction, evaluated at each gp*/
-  Epetra_SerialDenseMatrix* deriv;    //[NUMGPT_SOH8*NUMDIM][NUMNOD_SOH8]
-/* pointer to (static) weight factors at each gp */
-  Epetra_SerialDenseVector* weights;  //[NUMGPT_SOH8]
-  soh8_shapederiv(&shapefct,&deriv,&weights);   // call to evaluate
+   const static DRT::Elements::So_hex8::Integrator_So_hex8 int_hex8;
 /* ============================================================================*/
 
   // update element geometry
@@ -224,17 +216,9 @@ int DRT::Elements::So_hex8::EvaluateNeumann(ParameterList& params,
   /* ================================================= Loop over Gauss Points */
   for (int gp=0; gp<NUMGPT_SOH8; ++gp) {
 
-    // get submatrix of deriv at actual gp
-    Epetra_SerialDenseMatrix deriv_gp(NUMDIM_SOH8,NUMGPT_SOH8);
-    for (int m=0; m<NUMDIM_SOH8; ++m) {
-      for (int n=0; n<NUMGPT_SOH8; ++n) {
-        deriv_gp(m,n)=(*deriv)(NUMDIM_SOH8*gp+m,n);
-      }
-    }
-
     // compute the Jacobian matrix
     Epetra_SerialDenseMatrix jac(NUMDIM_SOH8,NUMDIM_SOH8);
-    jac.Multiply('N','N',1.0,deriv_gp,xrefe,1.0);
+    jac.Multiply('N','N',1.0,int_hex8.deriv_gp[gp],xrefe,1.0);
 
     // compute determinant of Jacobian by Sarrus' rule
     double detJ= jac(0,0) * jac(1,1) * jac(2,2)
@@ -246,11 +230,12 @@ int DRT::Elements::So_hex8::EvaluateNeumann(ParameterList& params,
     if (detJ == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
 
-    double fac = (*weights)(gp) * curvefac * detJ;          // integration factor
+    double fac = int_hex8.weights(gp) * curvefac * detJ;          // integration factor
     // distribute/add over element load vector
     for (int nodid=0; nodid<NUMNOD_SOH8; ++nodid) {
       for(int dim=0; dim<NUMDIM_SOH8; dim++) {
-        elevec1[nodid*NUMDIM_SOH8+dim] += (*shapefct)(nodid,gp) * (*onoff)[dim] * (*val)[dim] * fac;
+        elevec1[nodid*NUMDIM_SOH8+dim] += int_hex8.shapefct_gp[gp](nodid) * (*onoff)[dim] *\
+        								  (*val)[dim] * fac;
       }
     }
 
@@ -275,25 +260,23 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
 ** ============================================================================*/
-/* pointer to (static) shape function array
- * for each node, evaluated at each gp*/
-  Epetra_SerialDenseMatrix* shapefct; //[NUMNOD_SOH8][NUMGPT_SOH8]
-/* pointer to (static) shape function derivatives array
- * for each node wrt to each direction, evaluated at each gp*/
-  Epetra_SerialDenseMatrix* deriv;    //[NUMGPT_SOH8*NUMDIM][NUMNOD_SOH8]
-/* pointer to (static) weight factors at each gp */
-  Epetra_SerialDenseVector* weights;  //[NUMGPT_SOH8]
-  soh8_shapederiv(&shapefct,&deriv,&weights);   // call to evaluate
+   const static DRT::Elements::So_hex8::Integrator_So_hex8 int_hex8;
 /* ============================================================================*/
 
   // update element geometry
   Epetra_SerialDenseMatrix xrefe(NUMNOD_SOH8,NUMDIM_SOH8);  // material coord. of element
   Epetra_SerialDenseMatrix xcurr(NUMNOD_SOH8,NUMDIM_SOH8);  // current  coord. of element
   for (int i=0; i<NUMNOD_SOH8; ++i){
-    xrefe(i,0) = Nodes()[i]->X()[0];
+  	#if 0 //NODE TRANSLATION AROUND ZERO TO GAIN ACCURACY
+    xrefe(i,0) = Nodes()[i]->X()[0]-Nodes()[0]->X()[0];
+    xrefe(i,1) = Nodes()[i]->X()[1]-Nodes()[0]->X()[1];
+    xrefe(i,2) = Nodes()[i]->X()[2]-Nodes()[0]->X()[2];
+	  #else
+	  xrefe(i,0) = Nodes()[i]->X()[0];
     xrefe(i,1) = Nodes()[i]->X()[1];
     xrefe(i,2) = Nodes()[i]->X()[2];
-
+    #endif
+    
     xcurr(i,0) = xrefe(i,0) + disp[i*NODDOF_SOH8+0];
     xcurr(i,1) = xrefe(i,1) + disp[i*NODDOF_SOH8+1];
     xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_SOH8+2];
@@ -366,29 +349,31 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
   /* =========================================================================*/
   for (int gp=0; gp<NUMGPT_SOH8; ++gp) {
 
-    // get submatrix of deriv at actual gp
-    Epetra_SerialDenseMatrix deriv_gp(NUMDIM_SOH8,NUMGPT_SOH8);
-    for (int m=0; m<NUMDIM_SOH8; ++m) {
-      for (int n=0; n<NUMGPT_SOH8; ++n) {
-        deriv_gp(m,n)=(*deriv)(NUMDIM_SOH8*gp+m,n);
-      }
-    }
-
     /* compute the Jacobian matrix which looks like:
     **         [ x_,r  y_,r  z_,r ]
     **     J = [ x_,s  y_,s  z_,s ]
     **         [ x_,t  y_,t  z_,t ]
     */
     Epetra_SerialDenseMatrix jac(NUMDIM_SOH8,NUMDIM_SOH8);
-    jac.Multiply('N','N',1.0,deriv_gp,xrefe,1.0);
+    jac.Multiply('N','N',1.0,int_hex8.deriv_gp[gp],xrefe,1.0);
 
     // compute determinant of Jacobian by Sarrus' rule
+    #if 0 // SIMPLE DOUBLE DET COMPUTATION
     double detJ= jac(0,0) * jac(1,1) * jac(2,2)
                + jac(0,1) * jac(1,2) * jac(2,0)
                + jac(0,2) * jac(1,0) * jac(2,1)
                - jac(0,0) * jac(1,2) * jac(2,1)
                - jac(0,1) * jac(1,0) * jac(2,2)
                - jac(0,2) * jac(1,1) * jac(2,0);
+    #else 
+    double detJ= (long double)jac(0,0) * (long double)jac(1,1) * (long double)jac(2,2)
+               + (long double)jac(0,1) * (long double)jac(1,2) * (long double)jac(2,0)
+               + (long double)jac(0,2) * (long double)jac(1,0) * (long double)jac(2,1)
+               - (long double)jac(0,0) * (long double)jac(1,2) * (long double)jac(2,1)
+               - (long double)jac(0,1) * (long double)jac(1,0) * (long double)jac(2,2)
+               - (long double)jac(0,2) * (long double)jac(1,1) * (long double)jac(2,0);
+    #endif
+    
     if (detJ == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
 
@@ -399,12 +384,20 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     Epetra_SerialDenseMatrix N_XYZ(NUMDIM_SOH8,NUMNOD_SOH8);
     Epetra_SerialDenseSolver solve_for_inverseJac;  // solve A.X=B
     solve_for_inverseJac.SetMatrix(jac);            // set A=jac
-    solve_for_inverseJac.SetVectors(N_XYZ,deriv_gp);// set X=N_XYZ, B=deriv_gp
+    /* (unfortunately) we need a redundant copy of derivatives matrix
+     *  as the solver factorisation changes it */ 
+    Epetra_SerialDenseMatrix temp_deriv(int_hex8.deriv_gp[gp]);
+    solve_for_inverseJac.SetVectors(N_XYZ,temp_deriv);// set X=N_XYZ, B=deriv_gp
     solve_for_inverseJac.FactorWithEquilibration(true);
+    //solve_for_inverseJac.EquilibrateMatrix();
     int err2 = solve_for_inverseJac.Factor();
     int err = solve_for_inverseJac.Solve();         // N_XYZ = J^-1.N_rst
     if ((err != 0) && (err2!=0)) dserror("Inversion of Jacobian failed");
-
+	
+	/*cout << deriv_gp;
+    cout << int_hex8.deriv_gp[gp];
+    getchar();*/
+    
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
     Epetra_SerialDenseMatrix defgrd(NUMDIM_SOH8,NUMDIM_SOH8);
     defgrd.Multiply('T','T',1.0,xcurr,N_XYZ,1.0);
@@ -523,17 +516,17 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
 //    //cout << endl << "Delta S: " << DS;
 
     // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
-    (*force).Multiply('T','N',detJ * (*weights)(gp),bop,stress,1.0);
+    (*force).Multiply('T','N',detJ * int_hex8.weights(gp),bop,stress,1.0);
 
     // integrate `elastic' and `initial-displacement' stiffness matrix
     // keu = keu + (B^T . C . B) * detJ * w(gp)
     Epetra_SerialDenseMatrix cb(NUMSTR_SOH8,NUMDOF_SOH8);
     cb.Multiply('N','N',1.0,cmat,bop,1.0);          // temporary C . B
-    (*stiffmatrix).Multiply('T','N',detJ * (*weights)(gp),bop,cb,1.0);
+    (*stiffmatrix).Multiply('T','N',detJ * int_hex8.weights(gp),bop,cb,1.0);
 
     // integrate `geometric' stiffness matrix and add to keu *****************
     Epetra_SerialDenseVector sfac(stress); // auxiliary integrated stress
-    sfac.Scale(detJ * (*weights)(gp));     // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
+    sfac.Scale(detJ * int_hex8.weights(gp));     // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
     vector<double> SmB_L(NUMDIM_SOH8);     // intermediate Sm.B_L
     // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
     for (int inod=0; inod<NUMNOD_SOH8; ++inod){
@@ -551,7 +544,7 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
 
     // EAS technology: integrate matrices --------------------------------- EAS
     if (eastype_ != soh8_easnone) {
-      double integrationfactor = detJ * (*weights)(gp);
+      double integrationfactor = detJ * int_hex8.weights(gp);
       // integrate Kaa: Kaa += (M^T . cmat . M) * detJ * w(gp)
       Epetra_SerialDenseMatrix cM(NUMSTR_SOH8,neas_); // temporary c . M
       cM.Multiply('N','N',1.0,cmat,M,0.0);
@@ -568,8 +561,8 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
       // integrate concistent mass matrix
       for (int inod=0; inod<NUMNOD_SOH8; ++inod) {
         for (int jnod=0; jnod<NUMNOD_SOH8; ++jnod) {
-          double massfactor = (*shapefct)(inod,gp) * density * (*shapefct)(jnod,gp)
-                            * detJ * (*weights)(gp);     // intermediate factor
+          double massfactor = (int_hex8.shapefct_gp[gp])(inod) * density * (int_hex8.shapefct_gp[gp])(jnod)
+                            * detJ * int_hex8.weights(gp);     // intermediate factor
           (*massmatrix)(NUMDIM_SOH8*inod+0,NUMDIM_SOH8*jnod+0) += massfactor;
           (*massmatrix)(NUMDIM_SOH8*inod+1,NUMDIM_SOH8*jnod+1) += massfactor;
           (*massmatrix)(NUMDIM_SOH8*inod+2,NUMDIM_SOH8*jnod+2) += massfactor;
@@ -608,7 +601,6 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
   SymmetriseMatrix(*stiffmatrix);
   return;
 } // DRT::Elements::Shell8::s8_nlnstiffmass
-
 
 
 /*----------------------------------------------------------------------*

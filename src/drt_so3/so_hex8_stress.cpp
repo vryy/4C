@@ -51,15 +51,7 @@ void DRT::Elements::So_hex8::soh8_stress(vector<double>& disp,
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
 ** ============================================================================*/
-/* pointer to (static) shape function array
- * for each node, evaluated at each gp*/
-  Epetra_SerialDenseMatrix* shapefct; //[NUMNOD_SOH8][NUMGPT_SOH8]
-/* pointer to (static) shape function derivatives array
- * for each node wrt to each direction, evaluated at each gp*/
-  Epetra_SerialDenseMatrix* deriv;    //[NUMGPT_SOH8*NUMDIM][NUMNOD_SOH8]
-/* pointer to (static) weight factors at each gp */
-  Epetra_SerialDenseVector* weights;  //[NUMGPT_SOH8]
-  soh8_shapederiv(&shapefct,&deriv,&weights);   // call to evaluate
+   const static DRT::Elements::So_hex8::Integrator_So_hex8 int_hex8;
 /* ============================================================================*/
 
   // update element geometry
@@ -82,21 +74,13 @@ void DRT::Elements::So_hex8::soh8_stress(vector<double>& disp,
   /* =========================================================================*/
   for (int gp=0; gp<NUMGPT_SOH8; ++gp) {
 
-    // get submatrix of deriv at actual gp
-    Epetra_SerialDenseMatrix deriv_gp(NUMDIM_SOH8,NUMGPT_SOH8);
-    for (int m=0; m<NUMDIM_SOH8; ++m) {
-      for (int n=0; n<NUMGPT_SOH8; ++n) {
-        deriv_gp(m,n)=(*deriv)(NUMDIM_SOH8*gp+m,n);
-      }
-    }
-
     /* compute the Jacobian matrix which looks like:
     **         [ x_,r  y_,r  z_,r ]
     **     J = [ x_,s  y_,s  z_,s ]
     **         [ x_,t  y_,t  z_,t ]
     */
     Epetra_SerialDenseMatrix jac(NUMDIM_SOH8,NUMDIM_SOH8);
-    jac.Multiply('N','N',1.0,deriv_gp,xrefe,1.0);
+    jac.Multiply('N','N',1.0,int_hex8.deriv_gp[gp],xrefe,1.0);
 
     // compute determinant of Jacobian by Sarrus' rule
     double detJ= jac(0,0) * jac(1,1) * jac(2,2)
@@ -115,7 +99,7 @@ void DRT::Elements::So_hex8::soh8_stress(vector<double>& disp,
     Epetra_SerialDenseMatrix N_XYZ(NUMDIM_SOH8,NUMNOD_SOH8);
     Epetra_SerialDenseSolver solve_for_inverseJac;  // solve A.X=B
     solve_for_inverseJac.SetMatrix(jac);            // set A=jac
-    solve_for_inverseJac.SetVectors(N_XYZ,deriv_gp);// set X=N_XYZ, B=deriv_gp
+    solve_for_inverseJac.SetVectors(N_XYZ,int_hex8.deriv_gp[gp]);// set X=N_XYZ, B=deriv_gp
     solve_for_inverseJac.FactorWithEquilibration(true);
     int err2 = solve_for_inverseJac.Factor();
     int err = solve_for_inverseJac.Solve();         // N_XYZ = J^-1.N_rst

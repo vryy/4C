@@ -55,113 +55,64 @@ void DRT::Elements::So_ctet10::so_ctet10_stress(struct _MATERIAL* material,
                                          Epetra_SerialDenseMatrix* stresses)
 {
  
-/* =============================================================================*
- * CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_10 with 4 GAUSS POINTS*
- * =============================================================================*/
-  const static DRT::Elements::Integrator_tet4_1point tet10_dis;
-/* ============================================================================*/
-
-  // update element geometry
-  Epetra_SerialDenseMatrix xrefe(NUMNOD_SOCTET10,NUMDIM_SOCTET10);  // material coord. of element
+// update element geometry
+  Epetra_SerialDenseMatrix xrefe(NUMNOD_SOCTET10+1,NUMDIM_SOCTET10);  // material coord. of element
+  /* structure of xrefe:
+    **             [  X_1   Y_1   Z_1  ]
+    **     xrefe = [  X_2   Y_2   Z_2  ]
+    **             [   |     |     |   ]
+    **             [  X_10  Y_10  Z_10 ]
+    */
   Epetra_SerialDenseMatrix xcurr(NUMNOD_SOCTET10,NUMDIM_SOCTET10);  // current  coord. of element
+  /* structure of xcurr:
+    **             [  x_1   y_1   z_1  ]
+    **     xcurr = [  x_2   y_2   z_2  ]
+    **             [   |     |     |   ]
+    **             [  x_10  y_10  z_10 ]
+    */   
   for (int i=0; i<NUMNOD_SOCTET10; ++i){
-    xrefe(i,0) = Nodes()[i]->X()[0];
-    xrefe(i,1) = Nodes()[i]->X()[1];
-    xrefe(i,2) = Nodes()[i]->X()[2];
+    xrefe(i,0) = Nodes()[i]->X()[0] - Nodes()[0]->X()[0];
+    xrefe(i,1) = Nodes()[i]->X()[1] - Nodes()[0]->X()[1];
+    xrefe(i,2) = Nodes()[i]->X()[2] - Nodes()[0]->X()[2];
 
-    xcurr(i,0) = xrefe(i,0) + disp[i*NUMDOF_SOCTET10+0];
-    xcurr(i,1) = xrefe(i,1) + disp[i*NUMDOF_SOCTET10+1];
-    xcurr(i,2) = xrefe(i,2) + disp[i*NUMDOF_SOCTET10+2];
+    xcurr(i,0) = xrefe(i,0) + disp[i*NODDOF_SOCTET10+0];
+    xcurr(i,1) = xrefe(i,1) + disp[i*NODDOF_SOCTET10+1];
+    xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_SOCTET10+2];
   }
+ 
+  //create the midpoint of the tetrahedron as the 11th node of the element 
+  xrefe(NUMNOD_SOCTET10,0)=ctet10_midpoint(0);
+  xrefe(NUMNOD_SOCTET10,1)=ctet10_midpoint(1);
+  xrefe(NUMNOD_SOCTET10,2)=ctet10_midpoint(2);
+  
+  //build the sub-elements for the whole tetrahedron
+  SUB_STRUCTURE sub(xrefe);
+ 
+  //remove the extra added 11th node
+  xrefe.Reshape(NUMNOD_SOCTET10,NUMDIM_SOCTET10);
 
+  //create the integrator from the sub-elements  
+  L_AJ_integrator L_aj_int(sub);  
+ 	
   /* =========================================================================*/
   /* ============================================== Loop over Gauss Points ===*/
   /* =========================================================================*/
   for (int gp=0; gp<NUMGPT_SOCTET10; gp++) {
     
-    /* compute the Jacobian matrix which looks like this:
-    **         [  1        1        1  	     1      ]
-    **   jac = [ X_,xsi1  X_,xsi2  X_,xsi3  X_,xsi4 ]
-    **         [ Y_,xsi1  Y_,xsi2  Y_,xsi3  Y_,xsi4 ]
-    **		   [ Z_,xsi1  Z_,xsi2  Z_,xsi3  Z_,xsi4 ]
+    
+    /* structure of L_aj_int.deriv_gp, which replaces N_XYZ:
+    **                               [   dN_1     dN_1     dN_1   ]
+    **                               [  ------   ------   ------  ]
+    **                               [    dX       dY       dZ    ]
+    **    L_XYZ (is equivalent to)=  [     |        |        |    ]
+    **                               [                            ]
+    **                               [   dN_10    dN_10    dN_10  ]
+    **                               [  -------  -------  ------- ]
+    **                               [    dX       dY       dZ    ]
     */
     
-    Epetra_SerialDenseMatrix jac_temp(NUMCOORD_SOCTET10-1,NUMCOORD_SOCTET10);
-    Epetra_SerialDenseMatrix jac(NUMCOORD_SOCTET10,NUMCOORD_SOCTET10);
-    jac_temp.Multiply('T','N',1.0,xrefe,(tet10_dis.deriv_gp)[gp],0.0);
-   
-    for (int i=0; i<4; i++) jac(0,i)=1;
-    for (int row=0;row<3;row++)
-    {
-    	for (int col=0;col<4;col++)
-    	jac(row+1,col)=jac_temp(row,col);	
-    }
-
-    #ifdef VERBOSE_OUTPUT
-    cout << "jac\n" << jac;
-    cout << "xrefe\n" << xrefe;
-	#endif //VERBOSE_OUTPUT
-
-    /* compute partial derivatives at gp xsi_1, xsi_2, xsi_3, xsi_4 material coordinates
-    ** by solving   Jac . partials = I_aug   for partials
-    ** Inverse of Jacobian is therefore not explicitly computed
-    */ 
-    /* structure of partials:
-    **             [  dxsi_1   dxsi_1   dxsi_1  ]
-    **             [  ------   ------   ------  ]
-    **             [    dX       dY       dZ    ]
-    **             [     |        |        |    ]
-    ** partials =  [                            ]
-    **             [  dxsi_4   dxsi_4   dxsi_4  ]
-    **             [  ------   ------   ------  ]
-    **             [    dX       dY       dZ    ]
-    */   
-    
-    Epetra_SerialDenseMatrix I_aug(NUMCOORD_SOCTET10,NUMDIM_SOCTET10);
-    Epetra_SerialDenseMatrix partials(NUMCOORD_SOCTET10,NUMDIM_SOCTET10);
-    Epetra_SerialDenseMatrix N_XYZ(NUMNOD_SOCTET10,NUMDIM_SOCTET10);
-    I_aug(1,0)=1;
-	I_aug(2,1)=1;
-	I_aug(3,2)=1;
-	
-	#ifdef VERBOSE_OUTPUT
-	cout << "jac\n" << jac;
-	#endif //VERBOSE_OUTPUT
-	
-    Epetra_SerialDenseSolver solve_for_inverseJac;  // solve A.X=B
-    solve_for_inverseJac.SetMatrix(jac);            // set A=jac
-    solve_for_inverseJac.SetVectors(partials,I_aug);// set X=partials, B=I_aug
-    solve_for_inverseJac.FactorWithEquilibration(true);
-    int err2 = solve_for_inverseJac.Factor();        
-    int err = solve_for_inverseJac.Solve();         // partials = jac^-1.I_aug
-    if ((err != 0) && (err2!=0)){
-    	dserror("Inversion of Jacobian failed");
-    }
-
-    #ifdef VERBOSE_OUTPUT
-    cout << "I_aug\n" << I_aug;
-    cout << "partials\n" << partials;
-    cout << "deriv_gp\n" << deriv_gp;
-    #endif //VERBOSE_OUTPUT
-
-    N_XYZ.Multiply('N','N',1.0,(tet10_dis.deriv_gp),partials,0.0); //N_XYZ = N_xsi_k*partials
-      
-    /* structure of N_XYZ:
-    **             [   dN_1     dN_1     dN_1   ]
-    **             [  ------   ------   ------  ]
-    **             [    dX       dY       dZ    ]
-    **    N_XYZ =  [     |        |        |    ]
-    **             [                            ]
-    **             [   dN_10    dN_10    dN_10  ]
-    **             [  -------  -------  ------- ]
-    **             [    dX       dY       dZ    ]
-    */
-    
-    #ifdef VERBOSE_OUTPUT
-    cout << "N_XYZ\n" << N_XYZ;
-    #endif //VERBOSE_OUTPUT
     //                                      d xcurr 
-    // (material) deformation gradient F = --------- = xcurr^T * N_XYZ^T
+    // (material) deformation gradient F = --------- = L_XYZ^T * xcurr
     //                                      d xrefe  
     
     /*structure of F
@@ -179,7 +130,7 @@ void DRT::Elements::So_ctet10::so_ctet10_stress(struct _MATERIAL* material,
     */
 
     Epetra_SerialDenseMatrix defgrd(NUMDIM_SOCTET10,NUMDIM_SOCTET10);
-    defgrd.Multiply('T','N',1.0,xcurr,N_XYZ,0.0);
+    defgrd.Multiply('T','N',1.0,xcurr,L_aj_int.deriv_gp[gp],0.0);
     
     #ifdef VERBOSE_OUTPUT
 	cout << "defgr\n " << defgrd;
@@ -243,25 +194,34 @@ void DRT::Elements::So_ctet10::so_ctet10_stress(struct _MATERIAL* material,
     #endif //VERBOSE_OUTPUT
     
     for (int i=0; i<NUMNOD_SOCTET10; i++) {
-      bop(0,NODDOF_SOCTET10*i+0) = defgrd(0,0)*N_XYZ(i,0);
-      bop(0,NODDOF_SOCTET10*i+1) = defgrd(1,0)*N_XYZ(i,0);
-      bop(0,NODDOF_SOCTET10*i+2) = defgrd(2,0)*N_XYZ(i,0);
-      bop(1,NODDOF_SOCTET10*i+0) = defgrd(0,1)*N_XYZ(i,1);
-      bop(1,NODDOF_SOCTET10*i+1) = defgrd(1,1)*N_XYZ(i,1);
-      bop(1,NODDOF_SOCTET10*i+2) = defgrd(2,1)*N_XYZ(i,1);
-      bop(2,NODDOF_SOCTET10*i+0) = defgrd(0,2)*N_XYZ(i,2);
-      bop(2,NODDOF_SOCTET10*i+1) = defgrd(1,2)*N_XYZ(i,2);
-      bop(2,NODDOF_SOCTET10*i+2) = defgrd(2,2)*N_XYZ(i,2);
+      bop(0,NODDOF_SOCTET10*i+0) = defgrd(0,0)*L_aj_int.deriv_gp[gp](i,0);
+      bop(0,NODDOF_SOCTET10*i+1) = defgrd(1,0)*L_aj_int.deriv_gp[gp](i,0);
+      bop(0,NODDOF_SOCTET10*i+2) = defgrd(2,0)*L_aj_int.deriv_gp[gp](i,0);
+      bop(1,NODDOF_SOCTET10*i+0) = defgrd(0,1)*L_aj_int.deriv_gp[gp](i,1);
+      bop(1,NODDOF_SOCTET10*i+1) = defgrd(1,1)*L_aj_int.deriv_gp[gp](i,1);
+      bop(1,NODDOF_SOCTET10*i+2) = defgrd(2,1)*L_aj_int.deriv_gp[gp](i,1);
+      bop(2,NODDOF_SOCTET10*i+0) = defgrd(0,2)*L_aj_int.deriv_gp[gp](i,2);
+      bop(2,NODDOF_SOCTET10*i+1) = defgrd(1,2)*L_aj_int.deriv_gp[gp](i,2);
+      bop(2,NODDOF_SOCTET10*i+2) = defgrd(2,2)*L_aj_int.deriv_gp[gp](i,2);
       /* ~~~ */
-      bop(3,NODDOF_SOCTET10*i+0) = defgrd(0,0)*N_XYZ(i,1) + defgrd(0,1)*N_XYZ(i,0);
-      bop(3,NODDOF_SOCTET10*i+1) = defgrd(1,0)*N_XYZ(i,1) + defgrd(1,1)*N_XYZ(i,0);
-      bop(3,NODDOF_SOCTET10*i+2) = defgrd(2,0)*N_XYZ(i,1) + defgrd(2,1)*N_XYZ(i,0);
-      bop(4,NODDOF_SOCTET10*i+0) = defgrd(0,1)*N_XYZ(i,2) + defgrd(0,2)*N_XYZ(i,1);
-      bop(4,NODDOF_SOCTET10*i+1) = defgrd(1,1)*N_XYZ(i,2) + defgrd(1,2)*N_XYZ(i,1);
-      bop(4,NODDOF_SOCTET10*i+2) = defgrd(2,1)*N_XYZ(i,2) + defgrd(2,2)*N_XYZ(i,1);
-      bop(5,NODDOF_SOCTET10*i+0) = defgrd(0,2)*N_XYZ(i,0) + defgrd(0,0)*N_XYZ(i,2);
-      bop(5,NODDOF_SOCTET10*i+1) = defgrd(1,2)*N_XYZ(i,0) + defgrd(1,0)*N_XYZ(i,2);
-      bop(5,NODDOF_SOCTET10*i+2) = defgrd(2,2)*N_XYZ(i,0) + defgrd(2,0)*N_XYZ(i,2);
+      bop(3,NODDOF_SOCTET10*i+0) = defgrd(0,0)*L_aj_int.deriv_gp[gp](i,1) +\
+                                   defgrd(0,1)*L_aj_int.deriv_gp[gp](i,0);
+      bop(3,NODDOF_SOCTET10*i+1) = defgrd(1,0)*L_aj_int.deriv_gp[gp](i,1) +\
+                                   defgrd(1,1)*L_aj_int.deriv_gp[gp](i,0);
+      bop(3,NODDOF_SOCTET10*i+2) = defgrd(2,0)*L_aj_int.deriv_gp[gp](i,1) +\
+                                   defgrd(2,1)*L_aj_int.deriv_gp[gp](i,0);
+      bop(4,NODDOF_SOCTET10*i+0) = defgrd(0,1)*L_aj_int.deriv_gp[gp](i,2) +\
+                                   defgrd(0,2)*L_aj_int.deriv_gp[gp](i,1);
+      bop(4,NODDOF_SOCTET10*i+1) = defgrd(1,1)*L_aj_int.deriv_gp[gp](i,2) +\
+                                   defgrd(1,2)*L_aj_int.deriv_gp[gp](i,1);
+      bop(4,NODDOF_SOCTET10*i+2) = defgrd(2,1)*L_aj_int.deriv_gp[gp](i,2) +\
+                                   defgrd(2,2)*L_aj_int.deriv_gp[gp](i,1);
+      bop(5,NODDOF_SOCTET10*i+0) = defgrd(0,2)*L_aj_int.deriv_gp[gp](i,0) +\
+                                   defgrd(0,0)*L_aj_int.deriv_gp[gp](i,2);
+      bop(5,NODDOF_SOCTET10*i+1) = defgrd(1,2)*L_aj_int.deriv_gp[gp](i,0) +\
+                                   defgrd(1,0)*L_aj_int.deriv_gp[gp](i,2);
+      bop(5,NODDOF_SOCTET10*i+2) = defgrd(2,2)*L_aj_int.deriv_gp[gp](i,0) +\
+                                   defgrd(2,0)*L_aj_int.deriv_gp[gp](i,2);
     }
     
 

@@ -15,7 +15,7 @@ written by: Alexander Volf
 </pre>
 
 *----------------------------------------------------------------------*/
-#if 0
+
 #ifdef D_SOTET
 #ifdef CCADISCRET
 #ifndef SO_TET4_H_
@@ -43,9 +43,9 @@ using namespace Teuchos;
 #define NUMSTR_SOTET4       6      // number of strains/stresses 	/****/
 #define NUMGPT_SOTET4       1      // total gauss points per element	/****/
 #define NUMDIM_SOTET4       3      // number of dimensions 			/****/
-#define NUMCOORD_SOTET4	 4 		// number of shape function cooordinates (ksi1-ksi4) 
-#define NUMNOD_SOTET4_FACE  4		// number of nodes on a TET10 face (which is a TRI6) 
-#define NUMGPT_SOTET4_FACE	 1		// number of GP    on a TET10 face (which is a TRI6) 
+#define NUMCOORD_SOTET4	    4 		// number of shape function cooordinates (ksi1-ksi4) 
+#define NUMNOD_SOTET4_FACE   3		// number of nodes on a TET4 face (which is a TRI3) 
+#define NUMGPT_SOTET4_FACE	 1		// number of GP    on a TET4 face (which is a TRI3) 
 
 // forward declarations
 struct _MATERIAL;
@@ -311,19 +311,19 @@ protected:
   //! kinematic types of so_tet10
   enum KinematicType
   {
-    so_tet10_geolin,
-    so_tet10_totlag,
-    so_tet10_updlag,
+    so_tet4_geolin,
+    so_tet4_totlag,
+    so_tet4_updlag,
   };
   enum StressType//###################
   {
-    so_tet10_stress_none,
-    so_tet10_stress_gpxyz,
-    so_tet10_stress_gprst,
-    so_tet10_stress_gp123,
-    so_tet10_stress_ndxyz,
-    so_tet10_stress_ndrst,
-    so_tet10_stress_nd123,
+    so_tet4_stress_none,
+    so_tet4_stress_gpxyz,
+    so_tet4_stress_gprst,
+    so_tet4_stress_gp123,
+    so_tet4_stress_ndxyz,
+    so_tet4_stress_ndrst,
+    so_tet4_stress_nd123,
   };
 
   //! kinematic type
@@ -354,7 +354,7 @@ protected:
 
   // don't want = operator
   So_tet4& operator = (const So_tet4& old);
-  virtual void so_tet10_nlnstiffmass(vector<int>&              lm,
+  virtual void so_tet4_nlnstiffmass(vector<int>&              lm,
                                  vector<double>&           disp,
                                  vector<double>&           residual,
                                  Epetra_SerialDenseMatrix* stiffmatrix,
@@ -362,75 +362,14 @@ protected:
                                  Epetra_SerialDenseVector* force,
                                  struct _MATERIAL*         material);
 
-  void so_tet10_stress(struct _MATERIAL* material,
+  void so_tet4_stress(struct _MATERIAL* material,
                    vector<double>& mydisp,
                    Epetra_SerialDenseMatrix* stresses);
 
 
-/*---------------------------------------------------------------------------------*
-  | class Discrete_integrator											vlf 09/07   |
-  |																					|
-  | a general class agregating all necessery data for discrete integration			|
-  |																					|
-  |  pointer to (static) array of shape function stored in Epetra_Vectors			|
-  |  evaluated at each gp , for each node  it looks like this:				 		|
-  |  shapefct[gp] = [N_1(gp)  N_2(gp)  -- N_X(gp)]      						   	|
-  | 																			    |
-  |  pointer to (static) array of shape function derivatives stored in			    |
-  |	 Epetra_Matrices evaluated at each gp, for xsi1-4							    |
-  |  it looks like this:														    |
-  |                 [  N1_,xsi1   N1_,xsi2    N1_,xsi3   N1_,xsi4 ]				    |
-  |  deriv_gp[gp] = [  N2_,xsi1   N2_,xsi2    N2_,xsi3   N2_,xsi4 ] (at a given gp)	|
-  | 		        [     |		     |           |         |	  ]					|
-  | 		        [ NX_,xsi1    NX_,xsi2    NX_,xsi3   NX_,xsi4 ]   				|
-  |  where X stands for the number of NODES (and shape functions) in a element		|
-  | 																				|
-  *---------------------------------------------------------------------------------*/ 
-  class Discrete_integrator
-  {
-	public: 
-		Epetra_SerialDenseVector* shapefct_gp;  
-      	Epetra_SerialDenseMatrix* deriv_gp;  
-      	Epetra_SerialDenseVector weights;
-      	int num_gp;
-      	int num_nodes;
-      	int num_coords;
-      	~Discrete_integrator();
-  };
- /*---------------------------------------------------------------------------------*
-  | class Tet_integrator_1point											vlf 09/07   |
-  |																					|
-  | a special class for quadratic 4-node tetrahedra using a 4 point quadrature   	|
-  |	it is exaxt for linear and quadratic polynomials								|
-  |																					|
-  *---------------------------------------------------------------------------------*/
-  class Tet_integrator_4point : public Discrete_integrator
-  {
-  	public:
-  		Tet_integrator_4point(void);
-  };
- 
-  /*---------------------------------------------------------------------------------*
-  | class Tet_integrator_4point										vlf 09/07   |
-  |																					|
-  | a special class for quadratic 4-node tetrahedra using a 14 point quadrature   	|
-  |	it is exaxt for 0-4th order polynomials											|
-  |																					|
-  *---------------------------------------------------------------------------------*/
-  
-  class Tet_integrator_4point : public Discrete_integrator
-  {
-  	public:
-  		Tet_integrator_4point(void);
-  };
-  
-  void so_tet10_shapederiv(
-  	  Epetra_SerialDenseVector** shapefct_ptr,  
-      Epetra_SerialDenseMatrix** deriv_gp_ptr,  
-      Epetra_SerialDenseVector** weights);       
 
   // #### hier deklariert, in implementierung soll einfach soh8_mat_sel gerufen werden
-  void so_tet10_mat_sel(Epetra_SerialDenseVector* stress,
+  void so_tet4_mat_sel(Epetra_SerialDenseVector* stress,
                     Epetra_SerialDenseMatrix* cmat,
                     double* density,
                     const Epetra_SerialDenseVector* glstrain,
@@ -892,4 +831,5 @@ private:
 #endif  // #ifndef SO_TET4_H_
 #endif  // #ifdef  CCADISCRET
 #endif  // #ifdef  D_SOTET
-#endif
+
+

@@ -48,8 +48,8 @@ bool DRT::Elements::So_tet4::ReadElement()
 
 
   int ierr=0;
-  const int nnode=10;
-  int nodes[10];
+  const int nnode=4;
+  int nodes[4];
   frchk("SOLIDTET4",&ierr);
   if (ierr==1)
   {

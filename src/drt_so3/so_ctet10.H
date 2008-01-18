@@ -41,8 +41,10 @@ using namespace Teuchos;
 #define NUMGPT_SOCTET10       5     // total gauss points per element	/****/
 #define NUMDIM_SOCTET10       3     // number of dimensions 			/****/
 #define NUMCOORD_SOCTET10     4     // number of shape function cooordinates (ksi1-ksi4) 
-#define NUMNOD_SOCTET10_FACE  6	    // number of nodes on a TET10 face (which is a TRI6) 
-#define NUMGPT_SOCTET10_FACE  3	    // number of GP    on a TET10 face (which is a TRI6) 
+#define NUMNOD_SOCTET10_FACE  6	    // number of nodes on a CTET10 face (which is a TRI6) 
+#define NUMGPT_SOCTET10_FACE  3	    // number of GP    on a CTET10 face (which is a TRI6) 
+
+#define NUMSUBELEMS_SOCTET10 12		// number of sub elements in a CTET10
 
 #define NUMGPT_SUBTET4        1
 #define NUMNOD_SUBTET4        4
@@ -366,6 +368,8 @@ protected:
   void so_ctet10_stress(struct _MATERIAL* material,
                    vector<double>& mydisp,
                    Epetra_SerialDenseMatrix* stresses);
+                   
+  // SUB_NODE class provides information needed by a node of a sub-element 
   class SUB_NODE
   {	
   	public:
@@ -378,6 +382,7 @@ protected:
   	  ~SUB_NODE();   				
   };
 
+  // TET4_SUB class provides the information needed to integrate over a sub-element
   class TET4_SUB
   {
     public: 
@@ -396,6 +401,10 @@ protected:
   	  ~TET4_SUB(); 				
   };
 
+  /* SUB_STRUCTURE holds the sub elements of a CTET10 element 
+   * and provides a constructor, to build these from the element reference coordinates
+   * NOTE: these already should have the extra 11th node
+   */
   class SUB_STRUCTURE
   {
   	public:

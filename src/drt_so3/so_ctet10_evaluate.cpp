@@ -171,7 +171,7 @@ int DRT::Elements::So_ctet10::Evaluate(ParameterList& params,
 
 
 /*----------------------------------------------------------------------*
- |  Integrate a Volume Neumann boundary condition (public)     maf 04/07|
+ |  Integrate a Volume Neumann boundary condition (public)     vlf 01/08|
  *----------------------------------------------------------------------*/
 int DRT::Elements::So_ctet10::EvaluateNeumann(ParameterList& params,
                                            DRT::Discretization&      discretization,
@@ -179,7 +179,6 @@ int DRT::Elements::So_ctet10::EvaluateNeumann(ParameterList& params,
                                            vector<int>&              lm,
                                            Epetra_SerialDenseVector& elevec1)
 {
-#if 0 
   // get values and switches from the condition
   const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
   const vector<double>* val   = condition.Get<vector<double> >("val"  );
@@ -201,49 +200,57 @@ int DRT::Elements::So_ctet10::EvaluateNeumann(ParameterList& params,
     curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
   // **
   
-/* =============================================================================*
- * CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_10 with 4 GAUSS POINTS*
- * =============================================================================*/
-   const static Tet_integrator_4point tet10_dis;
-/* ============================================================================*/
-
-/* ================================================= Loop over Gauss Points */
-  for (int gp=0; gp<NUMGPT_SOCTET10; gp++) {
-    // get submatrix of deriv at actual gp
-   
-    /* get the matrix of the coordinates of edges needed to compute the volume,
-    ** which is used here as detJ in the quadrature rule.  
-    ** ("Jacobian matrix") for the quadrarture rule:
-    **             [  1    1    1  	 1  ]
-    ** jac_coord = [ x_1  x_2  x_3  x_4 ]
-    **             [ y_1  y_2  y_3  y_4 ]
-    **		       [ z_1  z_2  z_3  z_4 ]
+/* =========================*
+ * SUB STRUCTURE for CTET_10 
+ * =========================*/
+  // update element geometry
+  // actually we only need the first 4 nodes but for consistency all are included
+  Epetra_SerialDenseMatrix xrefe(NUMNOD_SOCTET10,NUMDIM_SOCTET10);  // material coord. of element
+  /* structure of xrefe:
+    **             [  X_1   Y_1   Z_1  ]
+    **     xrefe = [  X_2   Y_2   Z_2  ]
+    **             [   |     |     |   ]
+    **             [  X_10  Y_10  Z_10 ]
     */
-    Epetra_SerialDenseMatrix jac_coord(NUMCOORD_SOCTET10,NUMCOORD_SOCTET10);
-    for (int i=0; i<4; i++) jac_coord(0,i)=1;
-    for (int row=0;row<3;row++)
-    {
-    	for (int col=0;col<4;col++){
-    	jac_coord(row+1,col)= Nodes()[col]->X()[row];}   	
-    }
-    
-    // compute determinant of Jacobian with own algorithm
-    // !!warning detJ is not the actual determinant of the jacobian (here needed for the quadrature rule)
-    // but rather the volume of the tetrahedara
-    double detJ=det_volf(jac_coord);
-    if (detJ == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
-    else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
+  // the ussual translation of the whole element to the zeo is made in order to improve numerical accuracy  
+  for (int i=0; i<NUMNOD_SOCTET10; ++i){
+    xrefe(i,0) = Nodes()[i]->X()[0] - Nodes()[0]->X()[0];
+    xrefe(i,1) = Nodes()[i]->X()[1] - Nodes()[0]->X()[1];
+    xrefe(i,2) = Nodes()[i]->X()[2] - Nodes()[0]->X()[2];
+  }
+ 
+  Epetra_SerialDenseMatrix jac_coord(NUMCOORD_SUBTET4,NUMCOORD_SUBTET4);
+  for (int i=0; i<4; i++)  jac_coord(0,i)=1;
+  for (int row=0;row<3;row++)
+  {
+   	for (int col=0;col<4;col++)
+       jac_coord(row+1,col) = xrefe(row,col);	
+  }
+   
+  double volume=det_volf(jac_coord)/(double) 6;    //volume of a tetrahedra
 
-    double fac = tet10_dis.weights(gp) * curvefac * detJ;          // integration factor
-    // distribute/add over element load vector
-    for (int nodid=0; nodid<NUMNOD_SOCTET10; ++nodid) {
-      for(int dim=0; dim<NUMDIM_SOCTET10; dim++) {
-        elevec1[nodid+dim] += (tet10_dis.shapefct_gp[gp])(nodid) * (*onoff)[dim] * (*val)[dim] * fac;
-      }
-    }
-  }/* ==================================================== end of Loop over GP */
+  // integration factor 
+  // - is quit straight forward here as all sub elems are linear 
+  // their shape function values on all nodes are 1
+  // a sumation makes 
+  double intfactor = curvefac * volume / 32.0 * curvefac;
+  for (int i=0 ; i< 4; i ++)
+  {
+  		for (int dim = 0; dim < NUMDIM_SOCTET10; dim ++)
+  		{
+  			elevec1(NUMDIM_SOTET10*i+dim)= intfactor * (*onoff)[dim] * (*val)[dim];
+  		}
+  }
+  
+  intfactor = curvefac * volume * 7.0 /48.0;
+  for (int i=4 ; i< NUMNOD_SOCTET10; i ++)
+  {
+   		for (int dim = 0; dim < NUMDIM_SOCTET10; dim ++)
+  		{
+  			elevec1(NUMDIM_SOTET10*i+dim)= intfactor * (*onoff)[dim] * (*val)[dim];
+  		}
+  }
 
-#endif
   return 0;
 } // DRT::Elements::So_ctet10::EvaluateNeumann
 
@@ -261,12 +268,9 @@ void DRT::Elements::So_ctet10::so_ctet10_nlnstiffmass(
       Epetra_SerialDenseVector* force,          // element internal force vector
       struct _MATERIAL*         material)       // element material data
 {
-
-/* =============================================================================*
-** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_10 with 4 GAUSS POINTS*
-** =============================================================================*/
-/* ============================================================================*/
-
+/* =========================*
+ * SUB STRUCTURE for CTET_10 
+ * =========================*/
   // update element geometry
   Epetra_SerialDenseMatrix xrefe(NUMNOD_SOCTET10+1,NUMDIM_SOCTET10);  // material coord. of element
   /* structure of xrefe:
@@ -283,24 +287,28 @@ void DRT::Elements::So_ctet10::so_ctet10_nlnstiffmass(
     **             [  x_10  y_10  z_10 ]
     */   
   for (int i=0; i<NUMNOD_SOCTET10; ++i){
-    xrefe(i,0) = Nodes()[i]->X()[0];
-    xrefe(i,1) = Nodes()[i]->X()[1];
-    xrefe(i,2) = Nodes()[i]->X()[2];
+    xrefe(i,0) = Nodes()[i]->X()[0] - Nodes()[0]->X()[0];
+    xrefe(i,1) = Nodes()[i]->X()[1] - Nodes()[0]->X()[1];
+    xrefe(i,2) = Nodes()[i]->X()[2] - Nodes()[0]->X()[2];
 
     xcurr(i,0) = xrefe(i,0) + disp[i*NODDOF_SOCTET10+0];
     xcurr(i,1) = xrefe(i,1) + disp[i*NODDOF_SOCTET10+1];
     xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_SOCTET10+2];
   }
-  
+ 
+  //create the midpoint of the tetrahedron as the 11th node of the element 
   xrefe(NUMNOD_SOCTET10,0)=ctet10_midpoint(0);
   xrefe(NUMNOD_SOCTET10,1)=ctet10_midpoint(1);
   xrefe(NUMNOD_SOCTET10,2)=ctet10_midpoint(2);
+  
+  //build the sub-elements for the whole tetrahedron
   SUB_STRUCTURE sub(xrefe);
  
+  //remove the extra added 11th node
   xrefe.Reshape(NUMNOD_SOCTET10,NUMDIM_SOCTET10);
-  
-  L_AJ_integrator L_aj_int(sub);  
 
+  //create the integrator from the sub-elements  
+  L_AJ_integrator L_aj_int(sub);  
  	
   /* =========================================================================*/
   /* ============================================== Loop over Gauss Points ===*/
@@ -548,7 +556,7 @@ double DRT::Elements::So_ctet10::ctet10_midpoint(int coord)
 {
 	long double midpoint=0;
 	for (int nd_num=0;nd_num<4;nd_num++)
-		midpoint+= (long double) (Nodes()[nd_num]->X()[coord]);
+		midpoint+= (long double) (Nodes()[nd_num]->X()[coord]- Nodes()[0]->X()[coord]);
 	return midpoint/(long double) (4.0);		
 }
 
@@ -693,12 +701,6 @@ void DRT::Elements::So_ctet10::TET4_SUB::integrate(
     {
     	xi_c[i]= global_baricentre_xi[i];
     }
-    
-    /*for (int i=0; i<4 ;i++)
-    {
-    	xi_c[i]= 1.0/4;
-    }*/
-    //return N_aJ;      
 }
 
 double DRT::Elements::So_ctet10::TET4_SUB::my_volume()

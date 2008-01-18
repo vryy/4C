@@ -237,7 +237,7 @@ int DRT::Elements::So_tet10::EvaluateNeumann(ParameterList& params,
     // distribute/add over element load vector
     for (int nodid=0; nodid<NUMNOD_SOTET10; ++nodid) {
       for(int dim=0; dim<NUMDIM_SOTET10; dim++) {
-        elevec1[nodid+dim] += (tet10_dis.shapefct_gp[gp])(nodid) * (*onoff)[dim] * (*val)[dim] * fac;
+        elevec1[nodid*NUMDIM_SOTET10+dim] += (tet10_dis.shapefct_gp[gp])(nodid) * (*onoff)[dim] * (*val)[dim] * fac;
       }
     }
   }/* ==================================================== end of Loop over GP */
@@ -259,7 +259,6 @@ void DRT::Elements::So_tet10::so_tet10_nlnstiffmass(
       Epetra_SerialDenseVector* force,          // element internal force vector
       struct _MATERIAL*         material)       // element material data
 {
-
 /* =============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_10 with 4 GAUSS POINTS*
 ** =============================================================================*/

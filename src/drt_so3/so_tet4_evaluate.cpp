@@ -23,6 +23,7 @@ written by : Alexander Volf
 #endif
 #include "so_tet4.H"
 #include "so_hex8.H"
+#include "so_integrator.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_exporter.H"
@@ -49,70 +50,6 @@ using namespace LINALG; // our linear algebra
  | defined in global_control.c											|
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
-
-/*----------------------------------------------------------------------*
- |                                                         vlf 06/07    |
- | cuts a block out of in_matrix                                        |
- |                              										|
- *----------------------------------------------------------------------*/
-void cut_volf( 
-     Epetra_SerialDenseMatrix& in_matrix,
-	 int A_row,int A_col,
-	 int B_row,int B_col,
-	 Epetra_SerialDenseMatrix& out_matrix)
-{
-	out_matrix.Reshape(B_row-A_row,B_col-A_col);
-	
-	for (int i_row=0;i_row < out_matrix.M();i_row++)
-	for (int i_col; i_col < out_matrix.N();i_col++)
-	{
-		out_matrix(i_row,i_col)= in_matrix(i_row+A_row,i_col+A_col);			
-	}	
-}
-
-/*----------------------------------------------------------------------*
- |                                                         vlf 06/07    |
- | recursive computation of determinant of a  matrix using Sarrus rule  |
- |                              										|
- *----------------------------------------------------------------------*/
-double det_volf(Epetra_SerialDenseMatrix& in_matrix)
-{
-	//Epetra_SerialDenseMatrix temp_matrix(in_matrix.N()-1,in_matrix.N()-1);
-	
-	if (in_matrix.N()==1)
-	{
-		return in_matrix(0,0);	
-	}	
-	else if (in_matrix.N()==2)
-	{
-		return 	((in_matrix(0,0)*in_matrix(1,1))-(in_matrix(0,1)*in_matrix(1,0)));
-	}
-	else if (in_matrix.N()>2)
-	{
-		double out_det=0;
-		int sign=1;
-		for (int i_col=0;i_col < in_matrix.N();i_col++)
-		{
-			
-			Epetra_SerialDenseMatrix temp_matrix(in_matrix.N()-1,in_matrix.N()-1);
-			for (int c_col=0;c_col < i_col;c_col++)
-			{				
-				for(int row=1;row<in_matrix.N();row++)
-				temp_matrix(row-1,c_col)=in_matrix(row,c_col);							
-			}
-			for (int c_col=i_col+1;c_col <  in_matrix.N();c_col++)
-			{
-			for(int row=1;row<in_matrix.N();row++)
-			temp_matrix(row-1,c_col-1)=in_matrix(row,c_col);	
-			}
- 
-			out_det=out_det+(sign* in_matrix(0,i_col)*det_volf(temp_matrix));
-			sign*=-1;
-		}
-		return out_det;
-	}	
-	else return 0;
-}
 
 
 /*----------------------------------------------------------------------*
@@ -156,7 +93,7 @@ int DRT::Elements::So_tet4::Evaluate(ParameterList& params,
       for (int i=0; i<(int)mydisp.size(); ++i) mydisp[i] = 0.0;
       vector<double> myres(lm.size());
       for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;
-      so_tet4_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,actmat);//*
+      so_tet4_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,actmat);
 
     }
     break;
@@ -268,25 +205,7 @@ int DRT::Elements::So_tet4::EvaluateNeumann(ParameterList& params,
 /* =============================================================================*
  * CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_4 with 1 GAUSS POINTS*
  * =============================================================================*/
-/* pointer to (static) array of shape function stored in Epetra_Vectors
- * evaluated at each gp , for each node
- * it looks like this:
- * shapefct[gp] = [N1(gp)  N2(gp)  -- N4(gp)]
- */
-  Epetra_SerialDenseVector* shapefct; //[NUMGPT_SOTET4](NUMNOD_SOTET4)
-
-/* pointer to (static) array of shape function derivatives stored in Epetra_Matrices
- * evaluated at each gp, for xsi1-4
- * it looks like this:
- *                [  N1_,xsi1   N1_,xsi2    N1_,xsi3   N1_,xsi4 ]
- * deriv_gp[gp] = [  N2_,xsi1   N2_,xsi2    N2_,xsi3   N2_,xsi4 ] (at a given gp)
- *		          [     |		   |           |          |	    ]
- *		          [  N4_,xsi1   N4_,xsi2    N4_,xsi3   N4_,xsi4 ]   
- */
-  Epetra_SerialDenseMatrix* deriv;    //[NUMGPT_SOTET4](NUMDIM,NUMNOD_SOTET4)
-/* pointer to (static) weight factors at each gp */
-  Epetra_SerialDenseVector* weights;  //[NUMGPT_SOTET4]
-  so_tet4_shapederiv(&shapefct,&deriv,&weights);   // call to evaluate
+  const static DRT::Elements::Integrator_tet4_1point tet4_int;
 /* ============================================================================*/
 
 /* ================================================= Loop over Gauss Points */
@@ -316,11 +235,11 @@ int DRT::Elements::So_tet4::EvaluateNeumann(ParameterList& params,
     if (detJ == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
 
-    double fac = (*weights)(gp) * curvefac * detJ;          // integration factor
+    double fac = tet4_int.weights[gp] * curvefac * detJ;          // integration factor
     // distribute/add over element load vector
     for (int nodid=0; nodid<NUMNOD_SOTET4; ++nodid) {
       for(int dim=0; dim<NUMDIM_SOTET4; dim++) {
-        elevec1[nodid+dim] += shapefct[gp](nodid) * (*onoff)[dim] * (*val)[dim] * fac;
+        elevec1[nodid*NUMDIM_SOTET4+dim] += tet4_int.shapefct_gp[gp](nodid) * (*onoff)[dim] * (*val)[dim] * fac;
       }
     }
   }/* ==================================================== end of Loop over GP */
@@ -344,7 +263,7 @@ void DRT::Elements::So_tet4::so_tet4_nlnstiffmass(
 /* =============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_4  with 1 GAUSS POINTS*
 ** =============================================================================*/
-   const static Tet_integrator_4point tet10_dis;
+   const static DRT::Elements::Integrator_tet4_1point tet4_dis;
 /* ============================================================================*/
 
   // update element geometry
@@ -412,7 +331,7 @@ void DRT::Elements::So_tet4::so_tet4_nlnstiffmass(
     
     Epetra_SerialDenseMatrix jac_temp(NUMCOORD_SOTET4-1,NUMCOORD_SOTET4);
     Epetra_SerialDenseMatrix jac(NUMCOORD_SOTET4,NUMCOORD_SOTET4);
-    jac_temp.Multiply('T','N',1.0,xrefe,tet10_dis.deriv[gp],0.0);
+    jac_temp.Multiply('T','N',1.0,xrefe,tet4_dis.deriv_gp[gp],0.0);
    
     for (int i=0; i<4; i++) jac(0,i)=1;
     for (int row=0;row<3;row++)
@@ -468,7 +387,7 @@ void DRT::Elements::So_tet4::so_tet4_nlnstiffmass(
     cout << "deriv_gp\n" << deriv_gp;
     #endif //VERBOSE_OUTPUT
 
-    N_XYZ.Multiply('N','N',1.0,tet10_dis.deriv[gp],partials,0.0); //N_XYZ = N_xsi_k*partials
+    N_XYZ.Multiply('N','N',1.0,tet4_dis.deriv_gp[gp],partials,0.0); //N_XYZ = N_xsi_k*partials
       
     /* structure of N_XYZ:
     **             [   dN_1     dN_1     dN_1   ]
@@ -608,17 +527,17 @@ void DRT::Elements::So_tet4::so_tet4_nlnstiffmass(
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
-    (*force).Multiply('T','N',detJ * (tet10_dis.weights)(gp),bop,stress,1.0);
+    (*force).Multiply('T','N',detJ * (tet4_dis.weights)(gp),bop,stress,1.0);
 
     // integrate `elastic' and `initial-displacement' stiffness matrix
     // keu = keu + (B^T . C . B) * detJ * w(gp)
     Epetra_SerialDenseMatrix cb(NUMSTR_SOTET4,NUMDOF_SOTET4);
     cb.Multiply('N','N',1.0,cmat,bop,0.0);          // temporary C . B
-    stiffmatrix->Multiply('T','N',detJ * (tet10_dis.weights)(gp),bop,cb,1.0);
+    stiffmatrix->Multiply('T','N',detJ * (tet4_dis.weights)(gp),bop,cb,1.0);
 
     // intergrate `geometric' stiffness matrix and add to keu *****************
     Epetra_SerialDenseVector sfac(stress); // auxiliary integrated stress
-    sfac.Scale(detJ * (tet10_dis.weights)(gp));     // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
+    sfac.Scale(detJ * (tet4_dis.weights)(gp));     // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
     vector<double> SmB_L(NUMDIM_SOTET4);     // intermediate Sm.B_L
     // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
     for (int inod=0; inod<NUMNOD_SOTET4; ++inod){
@@ -639,8 +558,8 @@ void DRT::Elements::So_tet4::so_tet4_nlnstiffmass(
       //integrate concistent mass matrix
       for (int inod=0; inod<NUMNOD_SOTET4; ++inod) {
         for (int jnod=0; jnod<NUMNOD_SOTET4; ++jnod) {
-          double massfactor = (tet10_dis.shapefct_gp[gp])(inod) * density * (tet10_dis.shapefct_gp[gp])(jnod)
-                            * detJ * (tet10_dis.weights)(gp);     // intermediate factor
+          double massfactor = (tet4_dis.shapefct_gp[gp])(inod) * density * (tet4_dis.shapefct_gp[gp])(jnod)
+                            * detJ * (tet4_dis.weights)(gp);     // intermediate factor
           (*massmatrix)(NUMDIM_SOTET4*inod+0,NUMDIM_SOTET4*jnod+0) += massfactor;
           (*massmatrix)(NUMDIM_SOTET4*inod+1,NUMDIM_SOTET4*jnod+1) += massfactor;
           (*massmatrix)(NUMDIM_SOTET4*inod+2,NUMDIM_SOTET4*jnod+2) += massfactor;
@@ -658,69 +577,6 @@ void DRT::Elements::So_tet4::so_tet4_nlnstiffmass(
 } // DRT::Elements::So_tet4::so_tet4_nlnstiffmass
 
 
- 
-DRT::Elements::So_tet4::Tet_integrator_4point::Tet_integrator_4point(void)
-{
-  // forward initialization of necessary attributes
-  num_gp = NUMGPT_SOTET4;
-  num_nodes = NUMNOD_SOTET4 ;
-  num_coords = NUMCOORD_SOTET4;
-  shapefct_gp = new Epetra_SerialDenseVector[NUMGPT_SOTET4];
-  deriv_gp    = new Epetra_SerialDenseMatrix[NUMGPT_SOTET4];
-  weights.Size(num_gp);
-  
-  //Quadrature rule from Carlos A. Felippa: Adv. FEM  §16.4 
-  const double gploc_alpha    =  0.5;    // gp sampling point value for linear. fct
-  const double gpw = 1;
-  // (xsi1, xsi2, xsi3 ,xsi4) gp-locations of fully integrated linear 10-node Tet
-  const double xsi1[NUMGPT_SOTET4] = {gploc_alpha};
-  const double xsi2[NUMGPT_SOTET4] = {gploc_alpha};
-  const double xsi3[NUMGPT_SOTET4] = {gploc_alpha};
-  const double xsi4[NUMGPT_SOTET4] = {gploc_alpha};
-  const double w[NUMGPT_SOTET4]    = {gpw};
-	
-   // fill up nodal f at each gp 
-  for (int gp=0; gp<num_gp; gp++) {
-      (shapefct_gp[gp]).Size(num_nodes);
-      (shapefct_gp[gp])[0] = xsi1[gp];
-      (shapefct_gp[gp])[1] = xsi2[gp];
-      (shapefct_gp[gp])[2] = xsi3[gp];
-      (shapefct_gp[gp])[3] = xsi4[gp];
-      weights[gp] = w[gp]; 	// just for clarity how to get weight factors    
-  }
- 
-  // fill up df xsi1, xsi2, xsi3, xsi4 directions (NUMDIM) at each gp
-  for (int gp=0; gp<num_gp; gp++) {
-  	(deriv_gp[gp]).Shape(num_nodes,num_coords);
-  	// deriv_gp wrt to xsi1 "(0,..)" for each node(0..9) at each gp [i]
-	(deriv_gp[gp])(0,0) = 1;
-	(deriv_gp[gp])(1,0) = 0;
-    (deriv_gp[gp])(2,0) = 0;
-    (deriv_gp[gp])(3,0) = 0;
-    
-
-    // deriv_gp wrt to xsi2 "(1,..)" for each node(0..9) at each gp [gp]
-    (deriv_gp[gp])(0,1) = 0;
-    (deriv_gp[gp])(1,1) = 1;
-    (deriv_gp[gp])(2,1) = 0;
-    (deriv_gp[gp])(3,1) = 0;
-     	
-
-    // deriv_gp wrt to xsi3 "(2,..)" for each node(0..9) at each gp [gp]
-    (deriv_gp[gp])(0,2) = 0;
-    (deriv_gp[gp])(1,2) = 0;
-    (deriv_gp[gp])(2,2) = 1;
-    (deriv_gp[gp])(3,2) = 0;
-      
-
-    // deriv_gp wrt to xsi4 "(2,..)" for each node(0..9) at each gp [gp]
-    (deriv_gp[gp])(0,3) = 0;
-    (deriv_gp[gp])(1,3) = 0;
-    (deriv_gp[gp])(2,3) = 0;
-    (deriv_gp[gp])(3,3) = 1;
-  }
-}
- 
 int DRT::Elements::Sotet4Register::Initialize(DRT::Discretization& dis)
 {
   return 0;
