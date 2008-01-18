@@ -1763,7 +1763,7 @@ void DRT::Utils::shape_function_2D_deriv2(
         //(-1/2) (r - 1.0)
         deriv2(dsds, 3) = 0.5*rm;
         //(-1/4) (- 2.0 r + 2.0 s + 1.0)
-        deriv2(drds, 3) = 0.25*(-2*r+2*s+1.0);
+        deriv2(drds, 3) =-0.25*(-2*r+2*s+1.0);
 
         //s - 1.0
         deriv2(drdr, 4) = -sm;
