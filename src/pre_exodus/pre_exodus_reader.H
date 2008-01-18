@@ -68,6 +68,7 @@ public:
   //! Print mesh info
   void Print(ostream& os) const;
   
+  void CloseExo();
 //private:
   
   vector<RCP<Entity> > myEntities_;
@@ -124,6 +125,21 @@ public:
   
   //! Set Property name, designated by ICEM to available parts
   void SetPropertyName(string prop_name);
+  
+  //! Get element type
+  string GetElementType() const {return elem_type_;};
+  
+  //! Get num_nodes_
+  int GetNumNodes() const {return num_nodes_;};
+  
+  //! GetNumNodPerElem
+  int GetNumNodpElem() const {return num_nod_per_elem_;};
+  
+  //! GetNumEle
+  int GetNumEle() const {return num_el_in_blk_;};
+  
+  //! GetEntityId()
+  int GetEntityId() const {return entityID_;};
 
   //! Print entity
   void Print(ostream& os) const;

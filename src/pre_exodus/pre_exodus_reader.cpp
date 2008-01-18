@@ -119,10 +119,10 @@ Mesh::Mesh(string exofilename)
     }
   }
 
-  // close exodus II file
-  error = ex_close(exoid_);
-  if (error < 0)
-	  dserror("error while closing exodus II file");
+//  // close exodus II file
+//  error = ex_close(exoid_);
+//  if (error < 0)
+//	  dserror("error while closing exodus II file");
 
   return;
 }
@@ -132,8 +132,21 @@ Mesh::Mesh(string exofilename)
  *----------------------------------------------------------------------*/
 Mesh::~Mesh()
 {
+  CloseExo();
   return;
 }
+
+/*----------------------------------------------------------------------*
+ |  Close corresponding Exofile(public)                        maf 12/07|
+ *----------------------------------------------------------------------*/
+void Mesh::CloseExo()
+{
+  // close exodus II file
+  int error = ex_close(exoid_);
+  if (error < 0)
+    dserror("error while closing exodus II file");
+}
+
 
 /*----------------------------------------------------------------------*
  |  Print method (public)                                      maf 12/07|

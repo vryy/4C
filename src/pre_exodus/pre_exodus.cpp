@@ -90,6 +90,7 @@ int main(
     Mesh mymesh(exofile.c_str());
     // print infos to cout
     mymesh.Print(cout);
+    //mymesh.CloseExo();
 
     if (bcfile=="")
     {
