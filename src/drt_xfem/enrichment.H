@@ -44,7 +44,7 @@ public:
     };
     
     Enrichment(
-            const int id,
+            const int xfemconditionlabel,
             const EnrType type);
     Enrichment(
             const Enrichment& other);
