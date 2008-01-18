@@ -171,7 +171,7 @@ void DRT::SurfStressManager::StiffnessAndInternalForces(const Epetra_SerialDense
 
 void DRT::SurfStressManager::soh8_surface_calc(
       const Epetra_SerialDenseMatrix& xs,    // (i) element coords
-      double& A,                              // (o) surface area
+      double& A,                             // (o) surface area
       Epetra_SerialDenseVector& Adiff,       // (o) first partial derivatives of area
       Epetra_SerialDenseMatrix& Adiff2)      // (o) second partial derivatives of area
 
@@ -244,7 +244,7 @@ void DRT::SurfStressManager::soh8_surface_calc(
 
     // compute dXYZ / drs
     Epetra_SerialDenseMatrix dxyzdrs(2,3);
-    dxyzdrs.Multiply('T','N',1.0,deriv,xs,1.0);
+    dxyzdrs.Multiply('T','N',1.0,deriv,xs,0.0);
 
     det[0] = dxyzdrs(0,1) * dxyzdrs(1,2) - dxyzdrs(0,2) * dxyzdrs(1,1);
     det[1] = dxyzdrs(0,2) * dxyzdrs(1,0) - dxyzdrs(0,0) * dxyzdrs(1,2);
@@ -274,18 +274,6 @@ void DRT::SurfStressManager::soh8_surface_calc(
       jacobi_deriv[i*3+1] = 1/Jac*(det[2]*ddet[2][3*i+1]+det[0]*ddet[0][3*i+1]);
       jacobi_deriv[i*3+2] = 1/Jac*(det[0]*ddet[0][3*i+2]+det[1]*ddet[1][3*i+2]);
     }
-//     cout << "ddet:\n";
-//     for (int i=0;i<3;++i)
-//     {
-//       for (int j=0;j<12;++j)
-//         cout << ddet[i][j] << "    ";
-//       cout << "\n";
-//     }
-//     cout << "jacobi_deriv:\n";
-//     for (int i=0;i<12;++i)
-//     {
-//       cout << jacobi_deriv[i] << "\n";
-//     }
 
     /*--- calculation of first derivative of current interfacial area
      *----------------------------- with respect to the displacements */
@@ -301,23 +289,23 @@ void DRT::SurfStressManager::soh8_surface_calc(
     {
       for (int o=0;o<4;o++)
       {
-        ddet2[0][n*3+1][o*3+2] = deriv(0,n)*deriv(1,o)-deriv(1,n)*deriv(0,o);
-        ddet2[0][n*3+2][o*3+1] = -ddet2[0][n*3+1][o*3+2];
+        ddet2[0][n*3+1][o*3+2] = deriv(n,0)*deriv(o,1)-deriv(n,1)*deriv(o,0);
+        ddet2[0][n*3+2][o*3+1] = - ddet2[0][n*3+1][o*3+2];
 
-        ddet2[1][n*3][o*3+2]   = deriv(1,n)*deriv(0,o)-deriv(0,n)*deriv(1,o);
-        ddet2[1][n*3+2][o*3]   = -ddet2[1][n*3][o*3+2];
+        ddet2[1][n*3][o*3+2]   = deriv(n,1)*deriv(o,0)-deriv(n,0)*deriv(o,1);
+        ddet2[1][n*3+2][o*3]   = - ddet2[1][n*3][o*3+2];
 
-        ddet2[2][n*3][o*3+1]   = deriv(0,n)*deriv(1,o)-deriv(1,n)*deriv(0,o);
-        ddet2[2][n*3+1][o*3]   = -ddet2[2][n*3][o*3+1];
+        ddet2[2][n*3][o*3+1]   = deriv(n,0)*deriv(o,1)-deriv(n,1)*deriv(o,0);
+        ddet2[2][n*3+1][o*3]   = - ddet2[2][n*3][o*3+1];
       }
     }
 
     /*- calculation of second derivatives of current interfacial areas
      *----------------------------- with respect to the displacements */
-    int var1, var2;
-
     for (int i=0;i<12;i++)
     {
+      int var1, var2;
+
       if (i==0 || i==3 || i==6 || i==9)
       {
         var1 = 1;
@@ -342,8 +330,6 @@ void DRT::SurfStressManager::soh8_surface_calc(
       }
     }
   }
-//   cout << "A: " << A << "\n";
-//   cout << "Adiff:\n" << Adiff << "\nAdiff2:\n" << Adiff2 << "\n";
   return;
 }
 
