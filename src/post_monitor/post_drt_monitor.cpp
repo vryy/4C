@@ -113,7 +113,7 @@ protected:
 
   virtual void WriteTableHead(ofstream& outfile, int dim) = 0;
 
-  virtual void WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& ldof, int dim) = 0;
+  virtual void WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim) = 0;
 
   const int myrank_; //! local processor id
   bool nodeowner_;   //! only true if proc owns the node
@@ -131,80 +131,76 @@ private:
 /*----------------------------------------------------------------------*/
 void MonWriter::WriteMonFile(PostProblem& problem, string& infieldtype, int node)
 {		
-	// create my output file
-	string filename = problem.outname() + ".mon";
-	ofstream outfile;
-	if (nodeowner_) 
-	{
-		outfile.open(filename.c_str());
-	}
-	//int numdis = problem.num_discr();
+  // create my output file
+  string filename = problem.outname() + ".mon";
+  ofstream outfile;
+  if (nodeowner_) 
+  {
+    outfile.open(filename.c_str());
+  }
+  //int numdis = problem.num_discr();
 
-	// get pointer to discretisation of actual field
-	PostField* field = GetFieldPtr(problem);
+  // get pointer to discretisation of actual field
+  PostField* field = GetFieldPtr(problem);
 
-	CheckInfieldType(infieldtype);
+  CheckInfieldType(infieldtype);
 
-	// pointer (rcp) to actual discretisation
-	RCP< DRT::Discretization > mydiscrete = field->discretization();
-	// space dimension of the problem
-	int dim = problem.num_dim();
+  // pointer (rcp) to actual discretisation
+  RCP< DRT::Discretization > mydiscrete = field->discretization();
+  // space dimension of the problem
+  int dim = problem.num_dim();
 
-	// global nodal dof numbers
-	std::vector<int> gdof;
-	std::vector<int> ldof(dim+1); // local nodal dof numbers
+  // global nodal dof numbers
+  std::vector<int> gdof;
 
-	if (nodeowner_) 
-	{
-		// test, if this node belongs to me
-		bool ismynode = mydiscrete->HaveGlobalNode(node);
-		if (!ismynode) // if this node does not belong to this field ( or proc, but we should be seriell)
-			FieldError(node);
+  if (nodeowner_) 
+  {
+    // test, if this node belongs to me
+    bool ismynode = mydiscrete->HaveGlobalNode(node);
+    if (!ismynode) // if this node does not belong to this field ( or proc, but we should be seriell)
+      FieldError(node);
 
-		// pointer to my actual node
-		const DRT::Node* mynode = mydiscrete->gNode(node);
+    // pointer to my actual node
+    const DRT::Node* mynode = mydiscrete->gNode(node);
 
-		const Epetra_Map* mydofrowmap = mydiscrete->DofRowMap();
 
-		// global nodal dof numbers
-		gdof = mydiscrete->Dof(mynode);
+    // global nodal dof numbers
+    gdof = mydiscrete->Dof(mynode);
 
-		for(int i=0; i < dim+1; ++i)
-		{
-			ldof[i] = mydofrowmap->LID(gdof[i]);
-		}
+    // write header
+    WriteHeader(outfile);
+    outfile << node << "\n";
+    outfile << "# control information: nodal coordinates   ";
+    outfile << "x = " << mynode->X()[0] << "    ";
+    outfile << "y = " << mynode->X()[1] << "    ";
+    outfile << "z = " << mynode->X()[2] << "\n";
+    outfile << "#\n";
 
-		// write header
-		WriteHeader(outfile);
-		outfile << node << "\n";
-		outfile << "# control information: nodal coordinates   ";
-		outfile << "x = " << mynode->X()[0] << "    ";
-		outfile << "y = " << mynode->X()[1] << "    ";
-		outfile << "z = " << mynode->X()[2] << "\n";
-		outfile << "#\n";
+    WriteTableHead(outfile,dim);
+  }
 
-		WriteTableHead(outfile,dim);
-	}
+  else // this proc is not the node owner
+  {
+    // set some dummy values
+    for(int i=0; i < dim+1; ++i)
+    {
+      gdof.push_back(-1); 
+    }
+  }
 
-	else // this proc is not the node owner
-	{
-		// set some dummy values
-		for(int i=0; i < dim+1; ++i)
-		{
-			ldof[i] = -1; 
-		}
-	}
+  // get actual results of total problem
+  PostResult result = PostResult(field);
 
-	// get actual results of total problem
-	PostResult result = PostResult(field);
+  // this is a loop over all time steps that should be written
+  // writing step size is considered
+  if (nodeowner_) 
+  {
+    while(result.next_result())
+      WriteResult(outfile,result,gdof,dim);
+  }
 
-	// this is a loop over all time steps that should be written
-	// writing step size is considered
-	while(result.next_result())
-		WriteResult(outfile,result,ldof,dim);
-
-	if (outfile.is_open()) 
-		outfile.close();
+  if (outfile.is_open()) 
+    outfile.close();
 }
 
 /*----------------------------------------------------------------------*/
@@ -256,7 +252,7 @@ protected:
 
   void WriteTableHead(ofstream& outfile, int dim);
 
-  virtual void WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& ldof, int dim);
+  virtual void WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim);
 
 private:
 }; // end of class FluidMonWriter
@@ -295,20 +291,21 @@ void FluidMonWriter::WriteTableHead(ofstream& outfile, int dim)
   }
 }
 
-void FluidMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& ldof, int dim)
+void FluidMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
-	// get actual result vector
-	RCP< Epetra_Vector > resvec = result.read_result("velnp");
-	if (nodeowner_)
-	{
-		// do output
-		outfile << "   " << result.step() << "    " << result.time() << "  ";
-		for (int i=0; i<dim+1; ++i)
-		{
-			outfile << (*resvec)[ldof[i]] << "   ";
-		}
-		outfile << "\n";
-	}
+  // get actual result vector
+  RCP< Epetra_Vector > resvec = result.read_result("velnp");
+  const Epetra_BlockMap& velmap = resvec->Map();
+  // do output of general time step data
+  outfile << "   " << result.step() << "    " << result.time() << "  ";
+
+  // do output for velocity and pressure
+  for(unsigned i=0; i < gdof.size(); ++i)
+  {
+    int lid = velmap.LID(gdof[i]);
+    outfile << (*resvec)[lid] << "   ";
+  }
+  outfile << "\n";
 }
 
 
@@ -334,7 +331,7 @@ protected:
 
   void WriteTableHead(ofstream& outfile, int dim);
 
-  void WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& ldof, int dim);
+  void WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim);
 
 private:
 }; // end of class StructMonWriter
@@ -374,41 +371,44 @@ void StructMonWriter::WriteTableHead(ofstream& outfile, int dim)
   }
 }
 
-void StructMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& ldof, int dim)
+void StructMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
-	// get actual result vector for displacement
-	RCP< Epetra_Vector > resvec = result.read_result("displacement");
-	if (nodeowner_)
-	{
-		// do output of time step data
-		outfile << "   " << result.step() << "    " << result.time() << "  ";
-		// output displacement
-		for (int i=0; i<dim; ++i)
-		{
-			outfile << (*resvec)[ldof[i]] << "   ";
-		}
-	}
-	// get actual result vector for velocity
-	resvec = result.read_result("velocity");
-	if (nodeowner_)
-	{
-		// output velocity
-		for (int i=0; i<dim; ++i)
-		{
-			outfile << (*resvec)[ldof[i]] << "   ";
-		}
-	}
-	// get actual result vector for acceleration
-	resvec = result.read_result("acceleration");
-	if (nodeowner_)
-	{
-		// output acceleration
-		for (int i=0; i<dim; ++i)
-		{
-			outfile << (*resvec)[ldof[i]] << "   ";
-		}
-		outfile << "\n";
-	}
+  // get actual result vector displacement
+  RCP< Epetra_Vector > resvec = result.read_result("displacement");
+  const Epetra_BlockMap& dispmap = resvec->Map();
+  // do output of general time step data
+  outfile << "   " << result.step() << "    " << result.time() << "  ";
+
+  // do output for velocity and pressure
+  for(unsigned i=0; i < gdof.size()-1; ++i)
+  {
+    int lid = dispmap.LID(gdof[i]);
+    outfile << (*resvec)[lid] << "   ";
+  }
+
+  // get actual result vector velocity
+  resvec = result.read_result("velocity");
+  const Epetra_BlockMap& velmap = resvec->Map();
+
+  // do output for velocity
+  for(unsigned i=0; i < gdof.size()-1; ++i)
+  {
+    int lid = velmap.LID(gdof[i]);
+    outfile << (*resvec)[lid] << "   ";
+  }
+
+  // get actual result vector acceleration
+  resvec = result.read_result("acceleration");
+  const Epetra_BlockMap& accmap = resvec->Map();
+
+  // do output for velocity
+  for(unsigned i=0; i < gdof.size()-1; ++i)
+  {
+    int lid = accmap.LID(gdof[i]);
+    outfile << (*resvec)[lid] << "   ";
+  }
+
+  outfile << "\n";
 }
 
 
@@ -434,7 +434,7 @@ protected:
 
   void WriteTableHead(ofstream& outfile, int dim);
 
-  void WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& ldof, int dim);
+  void WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim);
 
 private:
 }; // end of class AleMonWriter
@@ -474,21 +474,21 @@ void AleMonWriter::WriteTableHead(ofstream& outfile, int dim)
   }
 }
 
-void AleMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& ldof, int dim)
+void AleMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
-	// get actual result vector for displacement
-	RCP< Epetra_Vector > resvec = result.read_result("displacement");
-	if (nodeowner_)
-	{
-		// do output of time step data
-		outfile << "   " << result.step() << "    " << result.time() << "  ";
-		// output displacement
-		for (int i=0; i<dim; ++i)
-		{
-			outfile << (*resvec)[ldof[i]] << "   ";
-		}
-		outfile << "\n";
-	}
+  // get actual result vector for displacement
+  RCP< Epetra_Vector > resvec = result.read_result("displacement");
+  const Epetra_BlockMap& dispmap = resvec->Map();
+  // do output of general time step data
+  outfile << "   " << result.step() << "    " << result.time() << "  ";
+
+  // do output for velocity and pressure
+  for(unsigned i=0; i < gdof.size()-1; ++i)
+  {
+    int lid = dispmap.LID(gdof[i]);
+    outfile << (*resvec)[lid] << "   ";
+  }
+  outfile << "\n";
 }
 
 /*----------------------------------------------------------------------*/
@@ -513,7 +513,7 @@ protected:
 
   void WriteTableHead(ofstream& outfile, int dim);
 
-  void WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& ldof, int dim);
+  void WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim);
 
 private:
 }; // end of class FsiFluidMonWriter
@@ -550,31 +550,32 @@ void FsiFluidMonWriter::WriteTableHead(ofstream& outfile, int dim)
   }
 }
 
-void FsiFluidMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& ldof, int dim)
+void FsiFluidMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
   // get actual result vector for displacement
   RCP< Epetra_Vector > resvec = result.read_result("dispnp");
-  if (nodeowner_)
+  const Epetra_BlockMap& dispmap = resvec->Map();
+  // do output of general time step data
+  outfile << "   " << result.step() << "    " << result.time() << "  ";
+
+  for(unsigned i=0; i < gdof.size()-1; ++i)
   {
-	// do output of general time step data
-	outfile << "   " << result.step() << "    " << result.time() << "  ";
-	// do output of displacement
-	for (int i=0; i<dim; ++i)
-	{
-		outfile << (*resvec)[ldof[i]] << "   ";
-	}
+    int lid = dispmap.LID(gdof[i]);
+    outfile << (*resvec)[lid] << "   ";
   }
+
+ 
   // get actual result vector for velocity
   resvec = result.read_result("velnp");
-  if (nodeowner_)
+  const Epetra_BlockMap& velmap = resvec->Map();
+
+  // do output for velocity and pressure
+  for(unsigned i=0; i < gdof.size(); ++i)
   {
-	// do output for velocity and pressure
-	for (int i=0; i<dim+1; ++i)
-	{
-		outfile << (*resvec)[ldof[i]] << "   ";
-	}
-	outfile << "\n";
+    int lid = velmap.LID(gdof[i]);
+    outfile << (*resvec)[lid] << "   ";
   }
+  outfile << "\n";
 }
 
 
