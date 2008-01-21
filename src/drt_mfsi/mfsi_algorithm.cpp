@@ -10,6 +10,7 @@
 #include "../drt_lib/drt_colors.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 #include <NOX.H>
 
@@ -100,6 +101,9 @@ MFSI::Algorithm::Algorithm(Epetra_Comm& comm)
   // Create the system matrix. Right now it is empty. It is filled in
   // create_W_op().
   mat_ = Teuchos::rcp(new Thyra::DefaultBlockedLinearOp<double>());
+
+  //--------------------------------------------------
+  evaluatetimer_ = Teuchos::TimeMonitor::getNewTimer("MFSI::Algorithm::evalModelImpl");
 }
 
 
@@ -107,6 +111,9 @@ MFSI::Algorithm::Algorithm(Epetra_Comm& comm)
 /*----------------------------------------------------------------------*/
 void MFSI::Algorithm::SetupStructure()
 {
+  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("MFSI::Algorithm::SetupStructure");
+  Teuchos::TimeMonitor monitor(*t);
+
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
@@ -188,6 +195,9 @@ void MFSI::Algorithm::SetupStructure()
 /*----------------------------------------------------------------------*/
 void MFSI::Algorithm::SetupFluid()
 {
+  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("MFSI::Algorithm::SetupFluid");
+  Teuchos::TimeMonitor monitor(*t);
+
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
@@ -287,6 +297,9 @@ void MFSI::Algorithm::SetupFluid()
 /*----------------------------------------------------------------------*/
 void MFSI::Algorithm::SetupAle()
 {
+  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("MFSI::Algorithm::SetupAle");
+  Teuchos::TimeMonitor monitor(*t);
+
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
@@ -458,6 +471,8 @@ Thyra::ModelEvaluatorBase::OutArgs<double> MFSI::Algorithm::createOutArgsImpl() 
 void MFSI::Algorithm::evalModelImpl(const Thyra::ModelEvaluatorBase::InArgs<double> &inArgs,
                                     const Thyra::ModelEvaluatorBase::OutArgs<double> &outArgs) const
 {
+  Teuchos::TimeMonitor monitor(*evaluatetimer_);
+
   const Thyra::VectorBase<double> &x_bar = *inArgs.get_x();
   const Thyra::DefaultProductVector<double> &x = dynamic_cast<const Thyra::DefaultProductVector<double>&>(x_bar);
 

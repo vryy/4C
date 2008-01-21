@@ -210,6 +210,10 @@ MFSI::OverlapAlgorithm::OverlapAlgorithm(Epetra_Comm& comm)
 
   aig_ = this->ConvertFigColmap(aig,alestructcolmap_,StructureField()->DomainMap());
   aii_ = aii;
+
+  /*----------------------------------------------------------------------*/
+  sysmattimer_ = Teuchos::TimeMonitor::getNewTimer("MFSI::OverlapAlgorithm::SetupSysMat");
+  rhstimer_    = Teuchos::TimeMonitor::getNewTimer("MFSI::OverlapAlgorithm::SetupRHS");
 }
 
 
@@ -234,6 +238,8 @@ void MFSI::OverlapAlgorithm::InitialGuess(Thyra::DefaultProductVector<double>& i
 /*----------------------------------------------------------------------*/
 void MFSI::OverlapAlgorithm::SetupRHS(Thyra::DefaultProductVector<double> &f) const
 {
+  Teuchos::TimeMonitor monitor(*rhstimer_);
+
   SetupVector(f,
               StructureField()->RHS(),
               FluidField()->RHS(),
@@ -343,11 +349,13 @@ void MFSI::OverlapAlgorithm::ExtractFieldVectors(Teuchos::RCP<const Thyra::Defau
 /*----------------------------------------------------------------------*/
 void MFSI::OverlapAlgorithm::SetupSysMat(Thyra::DefaultBlockedLinearOp<double>& mat) const
 {
+  Teuchos::TimeMonitor monitor(*sysmattimer_);
+
   // extract Jacobian matrices and put them into composite system
   // matrix W
 
   const Coupling& coupsf = StructureFluidCoupling();
-  const Coupling& coupsa = StructureAleCoupling();
+  //const Coupling& coupsa = StructureAleCoupling();
 
   Teuchos::RCP<Epetra_CrsMatrix> s = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(StructureField()->SysMat());
 

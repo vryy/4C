@@ -277,6 +277,12 @@ namespace MFSI
     int nlnstep_;
     //@}
 
+    //! @name time measurement
+
+    Teuchos::RCP<Teuchos::Time> evaluatetimer_;
+
+    //@}
+
   protected:
 
     /// very simple one processor debug output facility

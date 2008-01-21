@@ -7,6 +7,7 @@
 #include <functional>
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 #include "fsi_dyn.H"
 #include "fsi_dirichletneumann.H"
@@ -340,6 +341,8 @@ void fsi_ale_drt()
     Teuchos::RCP<MFSI::Algorithm> mfsi = rcp(new MFSI::OverlapAlgorithm(comm));
     mfsi->Timeloop();
   }
+
+  Teuchos::TimeMonitor::summarize();
 }
 
 #endif

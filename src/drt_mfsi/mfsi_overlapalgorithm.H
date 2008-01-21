@@ -123,6 +123,13 @@ namespace MFSI
 
     //@}
 
+    //! @name time measurement
+
+    Teuchos::RCP<Teuchos::Time> sysmattimer_;
+    Teuchos::RCP<Teuchos::Time> rhstimer_;
+
+    //@}
+
     /// column fluid to structure dof map
     mutable std::map<int,int> permfluidstructcolmap_;
 
