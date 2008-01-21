@@ -35,6 +35,7 @@ using namespace Teuchos;
 
 //forward declaration
 class Entity;
+class PreNode;
 
 /*!
 \class Mesh
@@ -68,10 +69,36 @@ public:
   //! Print mesh info
   void Print(ostream& os) const;
   
+  //! Get numer of nodes in mesh
+  int GetNumNodes() const {return num_nodes_;}
+  
+  //! Get number of elements in mesh
+  int GetNumEle() const {return num_elem_;}
+  
+  //! Get exodus file id
+  int GetExoId() const {return exoid_;}
+  
+  //! Get number of Entities in Mesh 
+  int GetNumEntities() const {return num_entities_;}
+  
+//  //! Get nodal coordinates
+//  int GetNodalCorrd_x() const {return x_;}
+//
+//  //! Get nodal coordinates
+//  int GetNodalCorrd_y() const {return y_;}
+//
+//  //! Get nodal coordinates
+//  int GetNodalCorrd_z() const {return z_;}
+  
+  RCP<PreNode> GetNode(int NodeID){ return myNodes_[NodeID];};
+
   void CloseExo();
-//private:
+
+private:
   
   vector<RCP<Entity> > myEntities_;
+  
+  vector<RCP<PreNode> > myNodes_;
   
   //! number of dimensions
   int num_dim_;
@@ -92,6 +119,10 @@ public:
   
   //! number of my entities
   int num_entities_;
+  
+  //! nodal coordinates
+  float x_, y_, z_;
+  
   
 };
 
@@ -163,7 +194,81 @@ private:
   string entity_type_;
   //! property name (so far provided from ICEM for NodeSets
   string entity_prop_name_;
+  //! element connectivity (only for element blocks)
+  vector<int> elem_conn_;
 
+};
+
+
+class PreElement
+{
+public:
+  enum ShapeType{
+    quad4,
+    tri3,
+  };
+  PreElement(int id, ShapeType shape);
+  
+  PreElement(const PreElement& old);
+  
+  virtual ~PreElement();
+  
+  inline int Id() const {return id_; }
+  
+  inline ShapeType Shape() const {return shape_;}
+  
+  inline int NumNode() const {return nodeid_.size(); }
+  
+  inline const int* NodeIds() const {if (nodeid_.size()) return &nodeid_[0];
+                                     else                return NULL;     }
+  
+  PreNode** Nodes() { if (node_.size()) return &node_[0]; else return NULL; }
+  
+  void Print(ostream& os) const;
+  
+  void SetNodeIds(const int nnode, const int* nodes);
+  
+private:
+  int id_;
+  
+  ShapeType shape_;
+  
+  vector<int> nodeid_;
+  
+  vector<PreNode*> node_;
+  
+};
+
+class PreNode
+{
+public:
+  PreNode(int id, const double* coords);
+  
+  PreNode(const PreNode& old);
+  
+  virtual ~PreNode();
+  
+  inline int Id() const {return id_;}
+  
+  inline const double* X() const {return x_; }
+  
+  inline int NumElement() const {return element_.size(); }
+  
+  PreElement** Elements()   { if (NumElement()) return &element_[0]; else return NULL; }
+  
+  void Print(ostream& os) const;
+  
+  void AddElementPtr(PreElement* eleptr)
+  { const int size = element_.size(); element_.resize(size+1);
+    element_[size] = eleptr; return;}
+
+private:
+  int id_;
+  
+  double x_[3];
+  
+  vector<PreElement*> element_;
+  
 };
 
 

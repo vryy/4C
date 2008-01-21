@@ -58,6 +58,21 @@ Mesh::Mesh(string exofilename)
   // allocate sufficient memory for the entities
   myEntities_.reserve(num_entities_);
   
+  // get nodal coordinates
+  float x_[num_nodes_];
+  float y_[num_nodes_];
+  float z_[num_nodes_];
+  error = ex_get_coord(exoid_,x_,y_,z_);
+  if (error != 0) dserror("exo error returned");
+  myNodes_.reserve(num_nodes_);
+  for (int i = 0; i < num_nodes_; ++i) {
+    double* coords[3];
+    *coords[0] = x_[i];
+    *coords[1] = y_[i];
+    *coords[2] = z_[i];
+    myNodes_[i] = rcp(new PreNode(i,*coords));
+  }
+
   // entitycounter counts all ElementBlocks, NodeSets, and SideSets together
   int entitycounter = 0;
   
@@ -192,6 +207,15 @@ Entity::Entity(int exoid, int entityID, int typeID, EntityType entitytype)
     num_nodes_ = num_nod_per_elem_ * num_el_in_blk_;
     // property name (not yet supported for ElementBlocks)
     entity_prop_name_ = "None";
+    
+    int connect[num_nodes_];
+    error = ex_get_elem_conn(exoid,typeID,connect);
+    if (error != 0) dserror("exo error returned");
+    for (int i = 0; i < num_nodes_; ++i) {
+      elem_conn_[i] = connect[i];
+    }
+
+    
     break;
   }
   case node_set:
@@ -264,5 +288,109 @@ void Entity::Print(ostream& os) const
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  ctor (public)                                              maf 01/08|
+ *----------------------------------------------------------------------*/
+PreElement::PreElement(int id, ShapeType shape)
+{
+  id_ =id;
+  shape_ = shape;
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  dtor (public)                                              maf 01/08|
+ *----------------------------------------------------------------------*/
+PreElement::~PreElement()
+{
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  copy-ctor (public)                                         maf 01/08|
+ *----------------------------------------------------------------------*/
+PreElement::PreElement(const PreElement& old)
+{
+  id_ = old.id_;
+  shape_ = old.shape_;
+  nodeid_ = old.nodeid_;
+  node_ = old.node_;
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  print element (public)                                     maf 01/08|
+ *----------------------------------------------------------------------*/
+void PreElement::Print(ostream& os) const
+{
+  os << "Id: " << Id() << " Shape: " ;
+  switch (Shape()) {
+    case quad4:
+      os << "quad4 ";
+      break;
+    case tri3:
+      os << "tri3 ";
+      break;
+    default:
+      dserror("unknown PreElement shape");
+      break;
+  } 
+  const int nnode = NumNode();
+  const int* nodes = NodeIds();
+  if (nnode)
+  {
+    os << " Nodes ";
+    for (int i=0; i<nnode; ++i) os << setw(10) << nodes[i] << " ";
+  }
+  os << endl;
+}
+
+/*----------------------------------------------------------------------*
+ |  set node numbers to element (public)                       maf 01/08|
+ *----------------------------------------------------------------------*/
+void PreElement::SetNodeIds(const int nnode, const int* nodes)
+{
+  nodeid_.resize(nnode);
+  for (int i=0; i<nnode; ++i) nodeid_[i] = nodes[i];
+  node_.resize(0);
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  ctor (public)                                              maf 01/08|
+ *----------------------------------------------------------------------*/
+PreNode::PreNode(int id, const double* coords)
+{
+  id_ =id;
+  for (int i=0; i<3; ++i) x_[i] = coords[i];
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  dtor (public)                                              maf 01/08|
+ *----------------------------------------------------------------------*/
+PreNode::~PreNode()
+{
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  copy-ctor (public)                                         maf 01/08|
+ *----------------------------------------------------------------------*/
+PreNode::PreNode(const PreNode& old)
+{
+  id_ = old.id_;
+  for (int i=0; i<3; ++i) x_[i] = old.x_[i];
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  print node    (public)                                     maf 01/08|
+ *----------------------------------------------------------------------*/
+void PreNode::Print(ostream& os) const
+{
+  os << "Id: " << Id() << " Coords: "
+     << X()[0] << "," << X()[1] << "," << X()[2] << endl;
+}
 
 #endif

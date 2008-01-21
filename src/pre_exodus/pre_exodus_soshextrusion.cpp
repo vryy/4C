@@ -27,7 +27,7 @@ Soshextrusion::Soshextrusion(string exofilename,double thickness,int layers) :
 Mesh(exofilename)
 {
   // go through all entities in Mesh
-  for (int i = 0; i < num_entities_; ++i) {
+  for (int i = 0; i < GetNumEntities(); ++i) {
     RCP<Entity> actEntity = GetEntity(i);
     cout << actEntity->GetElementType() << endl;
     cout << "NumEle: " << actEntity->GetNumEle() << endl;
@@ -40,7 +40,7 @@ Mesh(exofilename)
       cout << "I am a block" << endl;
       int blk_id = 1+actEntity->GetEntityId();
       cout << "entity id in block: " << blk_id << endl;
-      cout << "ExoID: " << exoid_ << endl;
+      cout << "ExoID: " << GetExoId() << endl;
       
       int sizeofconnect = actEntity->GetNumNodpElem()*actEntity->GetNumEle();
       //int* connect;
@@ -48,13 +48,32 @@ Mesh(exofilename)
       //int connect[int(actEntity->GetNumEle())][int(actEntity->GetNumNodpElem())];
       int error;
       int elem_blk_ids[20];
-      error = ex_get_elem_blk_ids (exoid_, elem_blk_ids);
+      error = ex_get_elem_blk_ids (GetExoId(), elem_blk_ids);
       if (error != 0) dserror("exo error returned");
       cout << "eleblockids: " << (*elem_blk_ids) << endl;
-      error = ex_get_elem_conn(exoid_,blk_id,connect);
+      error = ex_get_elem_conn(GetExoId(),blk_id,connect);
       if (error != 0) dserror("exo error returned");
       for (int i = 0; i < sizeofconnect; ++i) {
-        cout << connect[i] << "," << endl;
+        cout << connect[i] << " , ";
+      }
+      cout << endl;
+//      float x[num_nodes_];
+//      float y[num_nodes_];
+//      float z[num_nodes_];
+//      error = ex_get_coord(GetExoId(),x_,y_,z_);
+      if (error != 0) dserror("exo error returned");
+      for (int i = 0; i < GetNumNodes(); ++i) {
+        //cout << i << " : " << "x=" << x_[i] << ",y=" << y_[i] << ",z=" << z_[i] << endl;
+      }
+      
+      // create extrusion elements
+      int numele = actEntity->GetNumEle();
+      for (int i  = 0; i < numele; ++i) {
+        PreElement basele = PreElement(i,PreElement::quad4);
+        int* ids[4];
+        *ids[0] = 1;// = {1;2;3;4};
+        basele.SetNodeIds(4,*ids);
+        basele.Print(cout);
       }
       break;
     }
@@ -73,8 +92,6 @@ Soshextrusion::~Soshextrusion()
 {
   return;
 }
-
-
 
 
 
