@@ -280,7 +280,7 @@ DRT::Elements::SoDisp::Integrator_SoDisp::Integrator_SoDisp(DRT::Elements::SoDis
 }
 
 #endif
-#ifdef SO_TET
+#ifdef D_SOTET
 
 DRT::Elements::Integrator_tet4_1point::Integrator_tet4_1point(void)
 {
