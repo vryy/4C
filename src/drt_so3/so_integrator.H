@@ -15,7 +15,7 @@ written by: Alexander Volf
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOTET
+#if defined D_SOH8 || D_SOTET
 #ifdef CCADISCRET
 
 #ifndef SO3_H_

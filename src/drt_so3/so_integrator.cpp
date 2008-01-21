@@ -15,7 +15,7 @@ written by: Alexander Volf
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOTET
+#if defined D_SOH8 || D_SOTET
 
 #include "so_integrator.H"
 #include "so_tet4.H"
@@ -46,6 +46,8 @@ DRT::Elements::So_integrator::~So_integrator()
 	delete[] deriv_gp;	
 }
 
+#endif
+#ifdef D_SOH8
 
 /*----------------------------------------------------------------------*
  |  shape functions and derivatives for So_hex8                vlf 04/07|
@@ -276,6 +278,9 @@ DRT::Elements::SoDisp::Integrator_SoDisp::Integrator_SoDisp(DRT::Elements::SoDis
 
     return;
 }
+
+#endif
+#ifdef SO_TET
 
 DRT::Elements::Integrator_tet4_1point::Integrator_tet4_1point(void)
 {
@@ -654,6 +659,8 @@ long double det_volf(Epetra_SerialDenseMatrix& in_matrix)
 	else return 0;
 }
 
+#endif
+
 #if 0
 /*----------------------------------------------------------------------*
  |                                                         vlf 06/07    |
@@ -701,7 +708,6 @@ double det_volf(Epetra_SerialDenseMatrix& in_matrix)
 #endif
 
 
-
 #if 0
 /*----------------------------------------------------------------------*
  |                                                         vlf 06/07    |
@@ -746,6 +752,3 @@ long double LINALG::SerialDenseMatrix::Det_long()
 }
 
 #endif
-
-
-#endif // #ifdef D_SOTET
