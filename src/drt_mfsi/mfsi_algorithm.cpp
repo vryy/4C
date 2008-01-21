@@ -28,6 +28,8 @@
 #include <Thyra_DefaultRealLinearSolverBuilder.hpp>
 #include <Thyra_AmesosLinearOpWithSolveFactory.hpp>
 #include <Thyra_AztecOOLinearOpWithSolveFactory.hpp>
+#include <Thyra_IfpackPreconditionerFactory.hpp>
+#include <Thyra_MLPreconditionerFactory.hpp>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -686,6 +688,317 @@ Teuchos::RCP<Epetra_Vector> MFSI::Algorithm::FluidToStruct(Teuchos::RCP<const Ep
 Teuchos::RCP<Epetra_Vector> MFSI::Algorithm::AleToFluid(Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupfa_.SlaveToMaster(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Thyra::LinearOpWithSolveFactoryBase<double> >
+MFSI::Algorithm::CreateSolverFactory(struct _SOLVAR* actsolv)
+{
+  //ParameterList params;
+  //LINALG::Solver::TranslateSolverParameters(params, actsolv);
+
+  Teuchos::RCP<Thyra::LinearOpWithSolveFactoryBase<double> > solverfactory;
+
+  switch (actsolv->solvertyp)
+  {
+  case amesos_klu_sym://====================================== Tim Davis' KLU
+  case amesos_klu_nonsym://=================================== Tim Davis' KLU
+    solverfactory = Teuchos::rcp(new Thyra::AmesosLinearOpWithSolveFactory(Thyra::Amesos::KLU));
+    break;
+  case umfpack://========================================= Tim Davis' Umfpack
+    solverfactory = Teuchos::rcp(new Thyra::AmesosLinearOpWithSolveFactory(Thyra::Amesos::UMFPACK));
+    break;
+  case aztec_msr://================================================= AztecOO
+  {
+    Teuchos::RCP<Thyra::AztecOOLinearOpWithSolveFactory> aztecfactory =
+      Teuchos::rcp(new Thyra::AztecOOLinearOpWithSolveFactory());
+
+    AZVAR* azvar = actsolv->azvar;
+    Teuchos::RCP<ParameterList> aztecparams = Teuchos::rcp(new ParameterList("Aztec Parameters"));
+    //aztecparams.set("Output Every RHS",);
+    //aztecparams.set("Adjoint Solve",);
+
+    ParameterList& solveparams = aztecparams->sublist("Forward Solve");
+    solveparams.set("Max Iterations",azvar->aziter);
+    solveparams.set("Tolerance",azvar->aztol);
+
+    ParameterList& params = solveparams.sublist("AztecOO Settings");
+
+    switch (azvar->azsolvertyp)
+    {
+    case azsolv_CG:       params.set("Aztec Solver","CG");       break;
+    case azsolv_GMRES:    params.set("Aztec Solver","GMRES");    break;
+    case azsolv_CGS:      params.set("Aztec Solver","CGS");      break;
+    case azsolv_BiCGSTAB: params.set("Aztec Solver","BiCGStab"); break;
+    case azsolv_LU:       params.set("Aztec Solver","LU");       break;
+    case azsolv_TFQMR:    params.set("Aztec Solver","TFQMR");    break;
+    default: dserror("Unknown solver for AztecOO");               break;
+    }
+
+    // build preconditioner factory
+
+    switch (azvar->azprectyp)
+    {
+    case azprec_none:
+      params.set("Aztec Preconditioner","none");
+      break;
+    case azprec_ILUT:
+    case azprec_ILU:
+    case azprec_LU:
+    case azprec_ICC:
+    {
+      params.set("Aztec Preconditioner","none");
+      Teuchos::RCP<ParameterList> pcparams = Teuchos::rcp(new ParameterList("IFPACK Parameters"));
+      switch (azvar->azprectyp)
+      {
+      case azprec_ILUT:  pcparams->set("Prec Type","ILUT");   break;
+      case azprec_ILU:   pcparams->set("Prec Type","ILU");    break;
+      case azprec_LU:    pcparams->set("Prec Type","Amesos"); break;
+      case azprec_ICC:   pcparams->set("Prec Type","IC");     break;
+      default:
+        dserror("Logical breakdown. Panic.");
+      }
+      ParameterList& ifpackparams = pcparams->sublist("Ifpack Settings");
+      ifpackparams.set("fact: drop tolerance",azvar->azdrop);
+      ifpackparams.set("fact: level-of-fill",azvar->azgfill);
+      ifpackparams.set("fact: ilut level-of-fill",azvar->azfill);
+      ifpackparams.set("schwarz: combine mode","Add"); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
+      ifpackparams.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
+      ifpackparams.set("amesos: solver type", "Amesos_Klu"); // can be "Amesos_Klu", "Amesos_Umfpack", "Amesos_Superlu"
+
+      Teuchos::RCP<Thyra::IfpackPreconditionerFactory > precondfactory =
+        Teuchos::rcp(new Thyra::IfpackPreconditionerFactory());
+      precondfactory->setParameterList(pcparams);
+      aztecfactory->setPreconditionerFactory(precondfactory, "IFPACK Preconditioner");
+      break;
+    }
+    case azprec_Jacobi:
+      params.set("Aztec Preconditioner","Jacobi");
+      break;
+    case azprec_Neumann:
+      params.set("Aztec Preconditioner","Polynomial");
+      break;
+    case azprec_Least_Squares:
+      params.set("Aztec Preconditioner","Least-squares Polynomial");
+      break;
+    case azprec_SymmGaussSeidel:
+      params.set("Aztec Preconditioner","Symmetric Gauss-Seidel");
+      break;
+#if 0
+    case azprec_RILU:
+      azlist.set("AZ_precond",AZ_dom_decomp);
+      azlist.set("AZ_subdomain_solve",AZ_rilu);
+      azlist.set("AZ_graph_fill",azvar->azgfill);
+      break;
+#endif
+    case azprec_ML:
+    case azprec_MLfluid:
+    case azprec_MLAPI:
+    case azprec_MLfluid2:
+    {
+      params.set("Aztec Preconditioner","none");
+      Teuchos::RCP<Thyra::MLPreconditionerFactory> mlfactory =
+        Teuchos::rcp(new Thyra::MLPreconditionerFactory());
+      Teuchos::RCP<ParameterList> mlparams = Teuchos::rcp(new ParameterList("ML Parameters"));
+      ML_Epetra::SetDefaults("SA",*mlparams);
+
+      switch (azvar->azprectyp)
+      {
+      case azprec_ML: // do nothing, this is standard
+        break;
+      case azprec_MLAPI: // set flag to use mlapi operator
+        mlparams->set<bool>("LINALG::AMG_Operator",true);
+        break;
+      case azprec_MLfluid: // unsymmetric, unsmoothed restruction
+        mlparams->set("aggregation: use tentative restriction",true);
+        break;
+      case azprec_MLfluid2: // full Pretrov-Galerkin unsymmetric smoothed
+        mlparams->set("energy minimization: enable",true);
+        mlparams->set("energy minimization: type",3); // 1,2,3 cheap -> expensive
+        mlparams->set("aggregation: block scaling",false);
+        break;
+      default: dserror("Unknown type of ml preconditioner");
+      }
+      mlparams->set("output"                          ,azvar->mlprint);
+      if (azvar->mlprint==10)
+        mlparams->set("print unused"                  ,1);
+      else
+        mlparams->set("print unused"                  ,-2);
+      mlparams->set("increasing or decreasing"        ,"increasing");
+      mlparams->set("coarse: max size"                ,azvar->mlcsize);
+      mlparams->set("max levels"                      ,azvar->mlmaxlevel);
+      mlparams->set("smoother: pre or post"           ,"both");
+      mlparams->set("aggregation: threshold"          ,azvar->ml_threshold);
+      mlparams->set("aggregation: damping factor"     ,azvar->mldamp_prolong);
+      mlparams->set("aggregation: nodes per aggregate",azvar->mlaggsize);
+      switch (azvar->mlcoarsentype)
+      {
+      case 0:  mlparams->set("aggregation: type","Uncoupled");  break;
+      case 1:  mlparams->set("aggregation: type","METIS");      break;
+      case 2:  mlparams->set("aggregation: type","VBMETIS");    break;
+      case 3:  mlparams->set("aggregation: type","MIS");        break;
+      default: dserror("Unknown type of coarsening for ML"); break;
+      }
+      // set ml smoothers
+      for (int i=0; i<azvar->mlmaxlevel-1; ++i)
+      {
+        char levelstr[11];
+        sprintf(levelstr,"(level %d)",i);
+        int type;
+        double damp;
+        if (i==0)
+        {
+          type = azvar->mlsmotype_fine;
+          damp = azvar->mldamp_fine;
+        }
+        else if (i < azvar->mlmaxlevel-1)
+        {
+          type = azvar->mlsmotype_med;
+          damp = azvar->mldamp_med;
+        }
+        else
+        {
+          type = azvar->mlsmotype_coarse;
+          damp = azvar->mldamp_coarse;
+        }
+        switch (type)
+        {
+        case 0:
+          mlparams->set("smoother: type "+(string)levelstr                    ,"symmetric Gauss-Seidel");
+          mlparams->set("smoother: sweeps "+(string)levelstr                  ,azvar->mlsmotimes[i]);
+          mlparams->set("smoother: damping factor "+(string)levelstr          ,damp);
+          break;
+        case 1:
+          mlparams->set("smoother: type "+(string)levelstr                    ,"Jacobi");
+          mlparams->set("smoother: sweeps "+(string)levelstr                  ,azvar->mlsmotimes[i]);
+          mlparams->set("smoother: damping factor "+(string)levelstr          ,damp);
+          break;
+        case 2:
+          mlparams->set("smoother: type "+(string)levelstr                    ,"MLS");
+          mlparams->set("smoother: MLS polynomial order "+(string)levelstr    ,azvar->mlsmotimes[i]);
+          break;
+        case 3:
+          mlparams->set("smoother: type (level 0)"                            ,"MLS");
+          mlparams->set("smoother: MLS polynomial order "+(string)levelstr    ,-azvar->mlsmotimes[i]);
+          break;
+        case 4:
+        {
+          mlparams->set("smoother: type "+(string)levelstr                    ,"IFPACK");
+          mlparams->set("smoother: ifpack type "+(string)levelstr             ,"ILU");
+          mlparams->set("smoother: ifpack overlap "+(string)levelstr          ,0);
+          ParameterList& ifpacklist = mlparams->sublist("smoother: ifpack list");
+          ifpacklist.set<int>("fact: level-of-fill",azvar->mlsmotimes[i]);
+          ifpacklist.set("schwarz: reordering type","rcm");
+        }
+        break;
+        case 5:
+          mlparams->set("smoother: type "+(string)levelstr,"Amesos-KLU");
+          break;
+#ifdef PARALLEL
+        case 6:
+          mlparams->set("smoother: type "+(string)levelstr,"Amesos-Superludist");
+          break;
+#endif
+        default: dserror("Unknown type of smoother for ML"); break;
+        } // switch (type)
+      } // for (int i=0; i<azvar->mlmaxlevel-1; ++i)
+      // set coarse grid solver
+      const int coarse = azvar->mlmaxlevel-1;
+      switch (azvar->mlsmotype_coarse)
+      {
+      case 0:
+        mlparams->set("coarse: type"          ,"symmetric Gauss-Seidel");
+        mlparams->set("coarse: sweeps"        , azvar->mlsmotimes[coarse]);
+        mlparams->set("coarse: damping factor",azvar->mldamp_coarse);
+        break;
+      case 1:
+        mlparams->set("coarse: type"          ,"Jacobi");
+        mlparams->set("coarse: sweeps"        , azvar->mlsmotimes[coarse]);
+        mlparams->set("coarse: damping factor",azvar->mldamp_coarse);
+        break;
+      case 2:
+        mlparams->set("coarse: type"                ,"MLS");
+        mlparams->set("coarse: MLS polynomial order",azvar->mlsmotimes[coarse]);
+        break;
+      case 3:
+        mlparams->set("coarse: type"                ,"MLS");
+        mlparams->set("coarse: MLS polynomial order",-azvar->mlsmotimes[coarse]);
+        break;
+      case 4:
+      {
+        mlparams->set("coarse: type"          ,"IFPACK");
+        mlparams->set("coarse: ifpack type"   ,"ILU");
+        mlparams->set("coarse: ifpack overlap",0);
+        ParameterList& ifpacklist = mlparams->sublist("coarse: ifpack list");
+        ifpacklist.set<int>("fact: level-of-fill",azvar->mlsmotimes[coarse]);
+        ifpacklist.set("schwarz: reordering type","rcm");
+      }
+      break;
+      case 5:
+        mlparams->set("coarse: type","Amesos-KLU");
+        break;
+      case 6:
+        mlparams->set("coarse: type","Amesos-Superludist");
+        break;
+      default: dserror("Unknown type of coarse solver for ML"); break;
+      } // switch (azvar->mlsmotype_coarse)
+      // default values for nullspace
+      mlparams->set("PDE equations",1);
+      mlparams->set("null space: dimension",1);
+      mlparams->set("null space: type","pre-computed");
+      mlparams->set("null space: add default vectors",false);
+      mlparams->set<double*>("null space: vectors",NULL);
+
+      mlfactory->setParameterList(mlparams);
+      aztecfactory->setPreconditionerFactory(mlfactory, "ML Preconditioner");
+      break;
+    }
+    default:
+      dserror("Unknown preconditioner for AztecOO");
+    break;
+    }
+
+    //------------------------------------- set other aztec parameters
+    params.set("Overlap",0);
+    //params.set("Graph Fill",);
+    params.set("Drop Tolerance",azvar->azdrop);
+    //params.set("Fill Factor",);
+    //params.set("Steps",);
+    params.set("Polynomial Order",azvar->azpoly);
+    //params.set("RCM Reordering",);
+    //params.set("Orthogonalization",AZ_modified); // ???
+    params.set("Size of Krylov Subspace",azvar->azsub);
+
+    switch (azvar->azconv)
+    {
+    case AZ_r0:       params.set("Convergence Test","r0");         break;
+    case AZ_rhs:      params.set("Convergence Test","rhs");        break;
+    case AZ_Anorm:    params.set("Convergence Test","Anorm");      break;
+    case AZ_noscaled: params.set("Convergence Test","no scaling"); break;
+    case AZ_sol:      params.set("Convergence Test","sol");        break;
+    case AZ_weighted:
+    case AZ_expected_values:
+    case AZTECOO_conv_test:
+    case AZ_inf_noscaled:
+    default:
+      dserror("unsupported convergance criteria %d",azvar->azconv);
+    }
+
+    //params.set("Ill-Conditioning Threshold",);
+    params.set("Output Frequency",azvar->azoutput);
+
+    aztecfactory->setParameterList(aztecparams);
+
+    solverfactory = aztecfactory;
+    break;
+  }
+  default:
+    dserror("Unsupported type %d of solver",actsolv->solvertyp);
+  }
+
+  return solverfactory;
 }
 
 #endif

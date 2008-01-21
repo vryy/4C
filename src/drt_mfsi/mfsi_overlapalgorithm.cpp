@@ -151,14 +151,10 @@ MFSI::OverlapAlgorithm::OverlapAlgorithm(Epetra_Comm& comm)
   int numBlocks = 3;
   std::vector<Teuchos::RCP<const Thyra::VectorSpaceBase<double> > > vecSpaces(numBlocks);
 
-  //simap_ = Thyra::create_VectorSpace(StructureField()->Interface().OtherDofMap());
-  //sgmap_ = Thyra::create_VectorSpace(StructureField()->Interface().CondDofMap());
   smap_ =  Thyra::create_VectorSpace(StructureField()->DofRowMap());
   fimap_ = Thyra::create_VectorSpace(FluidField()    ->Interface().OtherDofMap());
   aimap_ = Thyra::create_VectorSpace(AleField()      ->Interface().OtherDofMap());
 
-  //vecSpaces[0] = simap_;
-  //vecSpaces[1] = sgmap_;
   vecSpaces[0] = smap_;
   vecSpaces[1] = fimap_;
   vecSpaces[2] = aimap_;
@@ -166,15 +162,17 @@ MFSI::OverlapAlgorithm::OverlapAlgorithm(Epetra_Comm& comm)
   SetDofRowMap(Teuchos::rcp(new Thyra::DefaultProductVectorSpace<double>(numBlocks, &vecSpaces[0])));
 
   // field solvers used within the block preconditioner
-  structsolverfactory_ = Teuchos::rcp(new Thyra::AmesosLinearOpWithSolveFactory(Thyra::Amesos::UMFPACK));
-  //interfacesolverfactory_ = Teuchos::rcp(new Thyra::AztecOOLinearOpWithSolveFactory());
-  fluidsolverfactory_ = Teuchos::rcp(new Thyra::AmesosLinearOpWithSolveFactory(Thyra::Amesos::UMFPACK));
-  alesolverfactory_ = Teuchos::rcp(new Thyra::AmesosLinearOpWithSolveFactory(Thyra::Amesos::UMFPACK));
+  //structsolverfactory_ = Teuchos::rcp(new Thyra::AmesosLinearOpWithSolveFactory(Thyra::Amesos::UMFPACK));
+  //fluidsolverfactory_ = Teuchos::rcp(new Thyra::AmesosLinearOpWithSolveFactory(Thyra::Amesos::UMFPACK));
+  //alesolverfactory_ = Teuchos::rcp(new Thyra::AmesosLinearOpWithSolveFactory(Thyra::Amesos::UMFPACK));
+
+  structsolverfactory_ = CreateSolverFactory(&(solv[genprob.numsf]));
+  fluidsolverfactory_  = CreateSolverFactory(&(solv[genprob.numff]));
+  alesolverfactory_    = CreateSolverFactory(&(solv[genprob.numaf]));
 
   // the factory to create the special block preconditioner
   SetPreconditionerFactory(
     Teuchos::rcp(new MFSI::OverlappingPCFactory(structsolverfactory_,
-                                                //interfacesolverfactory_,
                                                 fluidsolverfactory_,
                                                 alesolverfactory_)));
 

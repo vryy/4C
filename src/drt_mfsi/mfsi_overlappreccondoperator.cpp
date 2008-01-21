@@ -111,10 +111,12 @@ void MFSI::OverlappingPCOperator::apply(Thyra::EConj conj,
   // Solve structure equations for sy with the rhs sx
 
   Thyra::SolveStatus<double> status = Thyra::solve<double>(*invStruct,Thyra::NOTRANS,*sx,&*sy);
+#if 0
   if (status.solveStatus!=Thyra::SOLVE_STATUS_CONVERGED)
   {
     dserror("structure solve failed");
   }
+#endif
 
   // Solve fluid equations for fy with the rhs fx - F(I,Gamma) sy
 
@@ -122,10 +124,12 @@ void MFSI::OverlappingPCOperator::apply(Thyra::EConj conj,
   fluidBoundOp->apply(Thyra::NONCONJ_ELE,*sy,&*fb,-1.0);
   Thyra::update(1.0,*fx,&*fb);
   status = Thyra::solve<double>(*invFluid,Thyra::NOTRANS,*fb,&*fy);
+#if 0
   if (status.solveStatus!=Thyra::SOLVE_STATUS_CONVERGED)
   {
     dserror("fluid solve failed");
   }
+#endif
 
   // Solve ale equations for ay with the rhs ax - A(I,Gamma) sy
 
@@ -133,24 +137,10 @@ void MFSI::OverlappingPCOperator::apply(Thyra::EConj conj,
   aleBoundOp->apply(Thyra::NONCONJ_ELE,*sy,&*ab,-1.0);
   Thyra::update(1.0,*ax,&*ab);
   status = Thyra::solve<double>(*invAle,Thyra::NOTRANS,*ab,&*ay);
+#if 0
   if (status.solveStatus!=Thyra::SOLVE_STATUS_CONVERGED)
   {
     dserror("ale solve failed");
-  }
-
-#if 0
-  const SolveCriteria<double>* solveCriteria = fwdSolveCriteria_.get();
-
-  Thyra::assign(T.get(), 0.0); // Have to initialize before solve!
-
-  Thyra::SolveStatus<double> solveStatus = Thyra::solve<double>(*structure_lows_->getConstObj(),
-                                                                Thyra::NOTRANS,
-                                                                X,
-                                                                &*T,
-                                                                solveCriteria);
-  if (solveCriteria && solveStatus.solveStatus!=SOLVE_STATUS_CONVERGED)
-  {
-    dserror("solve failed");
   }
 #endif
 

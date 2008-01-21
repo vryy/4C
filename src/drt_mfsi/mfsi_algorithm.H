@@ -125,6 +125,10 @@ namespace MFSI
 
   protected:
 
+    /// translate baci solver variables to Thyra
+    Teuchos::RCP<Thyra::LinearOpWithSolveFactoryBase<double> >
+    CreateSolverFactory(struct _SOLVAR* actsolv);
+
     /// setup of NOX convergance tests
     virtual Teuchos::RCP<NOX::StatusTest::Combo>
     CreateStatusTest(Teuchos::ParameterList& nlParams,
