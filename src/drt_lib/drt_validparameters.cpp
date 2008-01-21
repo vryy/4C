@@ -375,7 +375,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
   DoubleParameter("RESULTDT",0.0,"",&sdyn);
   DoubleParameter("UZAWAPARAM",1.0,"Parameter for Uzawa algorithm dealing with lagrange multipliers",&sdyn);
   IntParameter("UZAWAMAXITER",50,"maximum number of iterations allowed for uzawa algorithm before failure going to next newton step",&sdyn);
-
+  setStringToIntegralParameter("UZAWAALGO","newtonlinuzawa","",
+                                 tuple<std::string>(
+                                   "newtonlinuzawa",
+                                   "augmentedlagrange"),
+                                 tuple<int>(
+                                   STRUCT_DYNAMIC::linuzawa,
+                                   STRUCT_DYNAMIC::nonlinuzawa),
+                                 &sdyn);
+  
   SetValidTimeAdaptivityParameters(sdyn);
 
   /*----------------------------------------------------------------------*/

@@ -133,13 +133,14 @@ public:
   */
   virtual void FullNewton();
 
-
+ 
 
   /*!
-    \brief Compute Volume Changes for constraint volumes in predicted state
+    \brief do classical augmented lagrange for volume constraint
 
     */
-//  virtual void PredictorErrorVolConstr();
+  virtual void NonLinearUzawaFullNewton(int predictor);
+
 
   /*!
     \brief do full Newton iteration respecting volume constraint

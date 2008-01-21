@@ -97,8 +97,10 @@ enum
                                  * displacement increments */
      relres_or_reldis,          /* relative norms of residual forces
                                  * OR iterative displacement increments */
-     relres_and_reldis          /* relative norms of residual forces
+     relres_and_reldis,          /* relative norms of residual forces
                                  * AND iterative displacement increments */
+     linuzawa,
+     nonlinuzawa
    }               convcheck;
 INT                updevry_disp;/* write result very updevry step */
 INT                updevry_stress;/* write result very updevry step */

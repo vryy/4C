@@ -979,6 +979,11 @@ void StruGenAlpha::FullNewton()
         p.set("surfstr_man", surf_stress_man_);
         surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
       }
+      
+      if (volConstrMan_!=Teuchos::null)
+      {
+    	  volConstrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
+      }
       // do NOT finalize the stiffness matrix to add masses to it later
     }
 
@@ -1045,6 +1050,41 @@ void StruGenAlpha::FullNewton()
 
   return;
 } // StruGenAlpha::FullNewton()
+
+void StruGenAlpha::NonLinearUzawaFullNewton(int predictor)
+{
+	  int  maxiterUzawa   	= params_.get<int>   ("uzawa maxiter"         ,50);
+	  double Uzawa_param	= params_.get<double>("uzawa parameter",1);
+	  double tolvol    		= params_.get<double>("tolerance volume"     ,1.0e-07);
+	  double alphaf    		= params_.get<double>("alpha f"                ,0.459);
+	  double time       	= params_.get<double>("total time"             ,0.0);
+	  double dt            	= params_.get<double>("delta time"             ,0.01);
+	  
+	  
+	  FullNewton();
+	  //--------------------update end configuration
+	  disn_->Update(1./(1.-alphaf),*dism_,-alphaf/(1.-alphaf));
+	  //--------------------compute volume error
+	  volConstrMan_->ComputeVolumeError(time+dt,disn_);
+	  double volnorm=volConstrMan_->GetVolumeErrorNorm();
+	  cout<<"Volume error for Newton solution: "<<volnorm<<endl;
+	  int numiter_uzawa=0;
+	  while (volnorm>tolvol && numiter_uzawa <= maxiterUzawa)
+	  {
+		  volConstrMan_->UpdateLagrMult(Uzawa_param);
+		  if      (predictor==1) ConstantPredictor();
+		  else if (predictor==2) ConsistentPredictor();
+		  volConstrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
+		  FullNewton();
+		  //--------------------update end configuration
+		  disn_->Update(1./(1.-alphaf),*dism_,-alphaf/(1.-alphaf));
+		  //--------------------compute volume error
+		  volConstrMan_->ComputeVolumeError(time+dt,disn_);
+		  volnorm=volConstrMan_->GetVolumeErrorNorm();
+		  cout<<"Volume error for Newton solution: "<<volnorm<<endl;
+		  numiter_uzawa++;		  
+	  }	  
+}
 
 /*----------------------------------------------------------------------*
  |  							                            	tk 11/07|
@@ -2837,6 +2877,8 @@ void StruGenAlpha::Integrate()
   //in case a volume is constrained, do full newton together with an Uzawa algorithm
   if (volConstrMan_!=Teuchos::null)
   {
+	  string algo = params_.get<string>("uzawa algorithm","newtonlinuzawa");
+	  volConstrMan_->ScaleLagrMult(0.0);
 	  for (int i=step; i<nstep; ++i)
       {
         if      (predictor==1) ConstantPredictor();
@@ -2844,9 +2886,17 @@ void StruGenAlpha::Integrate()
         //Does predicted displacement satisfy volume constraint?
         double time          = params_.get<double>("total time"             ,0.0);
         double dt            = params_.get<double>("delta time"             ,0.01);
-        volConstrMan_->ScaleLagrMult(0.0);
-        volConstrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
-        FullNewtonLinearUzawa();
+        if (algo=="newtonlinuzawa")
+        {
+        	volConstrMan_->ScaleLagrMult(0.0);
+        	volConstrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
+        	FullNewtonLinearUzawa();
+        }
+        else
+        {
+        	volConstrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
+        	NonLinearUzawaFullNewton(predictor);
+        }
         UpdateandOutput();
       }
   }
