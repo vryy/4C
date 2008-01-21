@@ -185,6 +185,7 @@ void DRT::DoubleParameter(std::string const &paramName,
 {
   Teuchos::AnyNumberParameterEntryValidator::AcceptedTypes validator(false);
   validator.allowDouble(true);
+  validator.allowInt(true);
   Teuchos::setDoubleParameter(paramName,value,
                               docString,
                               paramList,validator);
@@ -383,7 +384,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
                                    STRUCT_DYNAMIC::linuzawa,
                                    STRUCT_DYNAMIC::nonlinuzawa),
                                  &sdyn);
-  
+
   SetValidTimeAdaptivityParameters(sdyn);
 
   /*----------------------------------------------------------------------*/
