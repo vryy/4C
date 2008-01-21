@@ -18,7 +18,7 @@ Maintainer: Fedderik van der Bos
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_ParameterListExceptions.hpp>
 
-#include <drt_discret.H>
+#include "drt_discret.H"
 
 #ifdef PARALLEL
 #include "Epetra_MpiComm.h"
