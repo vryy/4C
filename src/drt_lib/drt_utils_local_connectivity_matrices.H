@@ -116,14 +116,13 @@ namespace Utils
           {0,  1,  4},
           {1,  2,  5},
           {2,  3,  6},
-          {0,  3,  7}};
+          {3,  0,  7}};
 
   //! 3 Lines of a Tri6 element with 3 nodes per line
   const int eleNodeNumbering_tri6_lines[3][3] = {
           {0,  1,  3},
           {1,  2,  4},
           {2,  0,  5}};
-
 
   //! for each of the 12 lines, tell me the 2 neighbouring faces
   const int eleNodeNumbering_hex27_lines_surfaces[12][2] = {
@@ -299,7 +298,6 @@ namespace Utils
     const DRT::Element::DiscretizationType&     distype     ///< discretization type
     );
 
-
   /*!
   \brief Fills a vector< vector<int> > with all surfaces for every line
          for each discretization type
@@ -381,6 +379,15 @@ namespace Utils
     DRT::Element*   element     ///< element
     );
   
+  /*!
+  \brief    Returns the dimension of an element based on its discretization-type
+            
+  */   
+  int getDimension(
+		  DRT::Element::DiscretizationType distype///< element-discretization type
+    );
+
+    
   /*!
   \brief    Returns the geometric center of the element in local coordinates
             

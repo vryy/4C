@@ -245,7 +245,9 @@ vector< vector<int> > DRT::Utils::getEleNodeNumberingSurfaces(
     return map;
 }
     
-    
+
+
+
    
 /*----------------------------------------------------------------------*
  |  Fills a vector< vector<int> > with all nodes for         u.may 08/07|
@@ -393,6 +395,10 @@ vector< vector<int> > DRT::Utils::getEleNodeNumberingLines(
     
     return map;
 }
+
+
+
+
 
 
 /*----------------------------------------------------------------------*
@@ -827,6 +833,38 @@ int DRT::Utils::getDimension(
 {
     int dim = 0;
     DRT::Element::DiscretizationType distype = element->Shape();
+    
+    switch(distype)
+    {
+        case DRT::Element::line2 :  case DRT::Element::line3 :
+        {
+            dim = 1;      
+            break;
+        }
+        case DRT::Element::quad4 : case DRT::Element::quad8 : case DRT::Element::quad9 :
+        case DRT::Element::tri3 : case DRT::Element::tri6 :
+        {
+            dim = 2;   
+            break;
+        }
+        case DRT::Element::hex8 : case DRT::Element::hex20 : case DRT::Element::hex27 :
+        case DRT::Element::tet4 : case DRT::Element::tet10 :
+        {
+            dim = 3;      
+            break;
+        }   
+        default:
+            dserror("discretization type is not yet implemented");
+    }
+    return dim;
+}
+
+/*----------------------------------------------------------------------*
+ |  returns the dimension of the element-shape                 bos 01/08|
+ *----------------------------------------------------------------------*/  
+int DRT::Utils::getDimension(DRT::Element::DiscretizationType distype)
+{
+    int dim = 0;
     
     switch(distype)
     {
