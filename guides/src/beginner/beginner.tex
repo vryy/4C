@@ -245,7 +245,7 @@ In \texttt{Input} there are test examples; all necessary ``packages''
 must have been activated in the defines-file that was used to configure
 the \ccarat{} at hand. For example,
 
-\texttt{./cca\_fc6\_ser.fast Input/f2\_drivencavity20x20_drt.dat xxx }
+\texttt{./cca\_fc6\_ser.fast Input/f2\_drivencavity20x20\_drt.dat xxx }
 
 runs the 2d fluid driven cavity example and writes the output to files
 beginning with \texttt{xxx}. If the run is interrupted with an error
@@ -256,7 +256,7 @@ line, \ldots; then recompile and rerun to run a parallel version you
 need to use the mpirun command like this:
 
 \begin{lyxcode}
-mpirun~-np~1~./cca\_fc6\_par.fast~Input/f2\_drivencavity20x20_drt.dat~xxx
+mpirun~-np~1~./cca\_fc6\_par.fast~Input/f2\_drivencavity20x20\_drt.dat~xxx
 \end{lyxcode}
 
 \section{Testing}
