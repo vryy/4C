@@ -1111,7 +1111,7 @@ void StruGenAlpha::NonLinearUzawaFullNewton(int predictor)
 		  cout<<"Volume error for computed displacement: "<<volnorm<<endl;
 		  numiter_uzawa++;		  
 	  }	  
-	  params_.set<int>("num iterations",numiter_uzawa);
+	  params_.set<int>("num iterations",numiter_uzawa+1);
 }
 
 /*----------------------------------------------------------------------*
