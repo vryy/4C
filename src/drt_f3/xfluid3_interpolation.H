@@ -51,8 +51,10 @@ enum ElementFormulation
     Q2Pm1,     ///< bi-/tri-quadratic velocity, linear discontinuous pressure
 
     // stabilized velocity-pressure formulation
-    Q1Q1,
-    Q2Q2,      ///< cont. quadratic velocity and pressure
+    P1P1,      ///< cont. linear velocity and pressure
+    P2P2,      ///< cont. quadratic velocity and pressure
+    Q1Q1,      ///< cont. bi-/tri-linear velocity and pressure
+    Q2Q2,      ///< cont. bi-/tri-quadratic velocity and pressure
     
     // inf-sup stable stress formulations (pressure is not inf-sup stable -> stabilized as always)
     Qm1Q1Q1,   ///< discont. bi-/tri-linear stress, cont. bi-/tri-linear velocity and pressure
@@ -83,6 +85,12 @@ inline DRT::Element::DiscretizationType getStressInterpolationType3D(ElementForm
     DRT::Element::DiscretizationType distype = DRT::Element::dis_none;
     switch (interpol)
     {
+        case P1P1:
+            distype = DRT::Element::dis_none;
+            break;
+        case P2P2:
+            distype = DRT::Element::dis_none;
+            break;
         case Q1Q1:
             distype = DRT::Element::dis_none;
             break;
@@ -127,6 +135,14 @@ inline ElementFormulation getElementFormulation(DRT::Element::DiscretizationType
     XFLUID::ElementFormulation form = XFLUID::QQQ_undefined;
     switch (distype)
     {
+    case DRT::Element::tet4:
+        //form = XFLUID::Qm1Q1Q1;
+        form = XFLUID::P1P1;
+        break;
+    case DRT::Element::tet10:
+        //form = XFLUID::Qm1Q1Q1;
+        form = XFLUID::P2P2;
+        break;
     case DRT::Element::hex8:
         //form = XFLUID::Qm1Q1Q1;
         form = XFLUID::Q1Q1;
