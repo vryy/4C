@@ -125,7 +125,7 @@ void FSI::AleLinear::Solve()
  *----------------------------------------------------------------------*/
 void FSI::AleLinear::Update()
 {
-  dispn_->Update(1.0,*dispn_,0.0);
+  dispn_->Update(1.0,*dispnp_,0.0);
 }
 
 
