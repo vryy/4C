@@ -26,6 +26,10 @@ using namespace Teuchos;
 Soshextrusion::Soshextrusion(string exofilename,double thickness,int layers) :
 Mesh(exofilename)
 {
+  for (int i = 0; i < GetNumNodes(); ++i) {
+    RCP<PreNode> actnode = GetNode(i);
+    actnode->Print(cout);
+  }
   // go through all entities in Mesh
   for (int i = 0; i < GetNumEntities(); ++i) {
     RCP<Entity> actEntity = GetEntity(i);
@@ -43,37 +47,33 @@ Mesh(exofilename)
       cout << "ExoID: " << GetExoId() << endl;
       
       int sizeofconnect = actEntity->GetNumNodpElem()*actEntity->GetNumEle();
-      //int* connect;
-      int connect[sizeofconnect];
-      //int connect[int(actEntity->GetNumEle())][int(actEntity->GetNumNodpElem())];
-      int error;
-      int elem_blk_ids[20];
-      error = ex_get_elem_blk_ids (GetExoId(), elem_blk_ids);
-      if (error != 0) dserror("exo error returned");
-      cout << "eleblockids: " << (*elem_blk_ids) << endl;
-      error = ex_get_elem_conn(GetExoId(),blk_id,connect);
-      if (error != 0) dserror("exo error returned");
+      const int* conn = actEntity->Conn();
       for (int i = 0; i < sizeofconnect; ++i) {
-        cout << connect[i] << " , ";
+        cout << conn[i] << " , ";
+        RCP<PreNode> actnode = GetNode(conn[i]);
+        actnode->Print(cout);
+        
       }
       cout << endl;
-//      float x[num_nodes_];
-//      float y[num_nodes_];
-//      float z[num_nodes_];
-//      error = ex_get_coord(GetExoId(),x_,y_,z_);
-      if (error != 0) dserror("exo error returned");
-      for (int i = 0; i < GetNumNodes(); ++i) {
-        //cout << i << " : " << "x=" << x_[i] << ",y=" << y_[i] << ",z=" << z_[i] << endl;
-      }
       
-      // create extrusion elements
+      // create base elements
+      vector<RCP<PreElement> > basels;
       int numele = actEntity->GetNumEle();
+      basels.resize(numele);
       for (int i  = 0; i < numele; ++i) {
         PreElement basele = PreElement(i,PreElement::quad4);
-        int* ids[4];
-        *ids[0] = 1;// = {1;2;3;4};
-        basele.SetNodeIds(4,*ids);
+        int ids[4];
+        ids[0] = conn[i*actEntity->GetNumNodpElem()];
+        ids[1] = conn[i*actEntity->GetNumNodpElem()+1];
+        ids[2] = conn[i*actEntity->GetNumNodpElem()+2];
+        ids[3] = conn[i*actEntity->GetNumNodpElem()+3];
+        basele.SetNodeIds(4,ids);
         basele.Print(cout);
+        basels[i] = rcp(new PreElement(basele));
+      }
+      for (int i = 0; i < numele; ++i) {
+        RCP<PreElement> safedbasele = basels[i];
+        safedbasele->Print(cout);
       }
       break;
     }

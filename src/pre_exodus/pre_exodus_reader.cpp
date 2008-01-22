@@ -17,6 +17,7 @@ is handed to a c++ object mesh.
 /*----------------------------------------------------------------------*/
 #ifdef EXODUS
 #include "pre_exodus_reader.H"
+#include <time.h>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -59,18 +60,20 @@ Mesh::Mesh(string exofilename)
   myEntities_.reserve(num_entities_);
   
   // get nodal coordinates
-  float x_[num_nodes_];
-  float y_[num_nodes_];
-  float z_[num_nodes_];
-  error = ex_get_coord(exoid_,x_,y_,z_);
+  float x[num_nodes_];
+  float y[num_nodes_];
+  float z[num_nodes_];
+  error = ex_get_coord(exoid_,x,y,z);
   if (error != 0) dserror("exo error returned");
+  
+  // create node pointer
   myNodes_.reserve(num_nodes_);
   for (int i = 0; i < num_nodes_; ++i) {
-    double* coords[3];
-    *coords[0] = x_[i];
-    *coords[1] = y_[i];
-    *coords[2] = z_[i];
-    myNodes_[i] = rcp(new PreNode(i,*coords));
+    double coords[3];
+    coords[0] = x[i];
+    coords[1] = y[i];
+    coords[2] = z[i];
+    myNodes_[i] = rcp(new PreNode(i,coords));
   }
 
   // entitycounter counts all ElementBlocks, NodeSets, and SideSets together
@@ -178,6 +181,59 @@ void Mesh::Print(ostream & os) const
   os << endl << endl;
 }
 
+/*----------------------------------------------------------------------*
+ |  Write Mesh into exodus file                                maf 01/08|
+ *----------------------------------------------------------------------*/
+void Mesh::WriteMesh(string newexofilename)
+{
+  //string newexofile(newexofilename);
+  //newexofile += ".exo";
+  const char *newexofilechar;
+  newexofilechar = newexofilename.c_str();
+  
+  int CPU_word_size, IO_word_size, exoid, error;
+  CPU_word_size = sizeof(float); /* use float or double*/
+  IO_word_size = 8; /* store variables as doubles */
+  
+  /* create EXODUS II file */
+  exoid = ex_create (newexofilechar, /* filename path */
+                     EX_CLOBBER,     /* create mode */
+                     &CPU_word_size, /* CPU float word size in bytes */
+                     &IO_word_size); /* I/O float word size in bytes */
+  
+//  // prefer strings
+//  string title = "New Exodus Mesh";
+//  const char *titlechar;
+//  titlechar = title.c_str();
+  
+  /* initialize file with parameters */
+  error = ex_put_init (exoid, title_, num_dim_, num_nodes_, num_elem_,num_elem_blk_, num_node_sets_, num_side_sets_);
+  if (error!=0) dserror("error in exfile init");
+  
+  /* Write QA record based on original exofile */
+  int num_qa_rec;
+  char *qa_record[MAX_STR_LENGTH+1][4];
+  char *cdum;
+  float fdum;
+  /* read QA records */
+  ex_inquire (exoid_, EX_INQ_QA, &num_qa_rec, &fdum, cdum);/* write QA records */
+  for (int i=0; i<num_qa_rec; i++)
+    for (int j=0; j<4; j++) qa_record[i][j] = (char *) calloc ((MAX_STR_LENGTH+1), sizeof(char));
+  error = ex_get_qa (exoid_, qa_record);
+  error = ex_put_qa (exoid, num_qa_rec, qa_record);
+  
+  
+  
+  
+  // close file
+  error = ex_close (exoid);
+  if (error!=0) dserror("error closing exodus file");
+  
+  
+  
+  
+}
+
 
 
 /*----------------------------------------------------------------------*
@@ -209,13 +265,12 @@ Entity::Entity(int exoid, int entityID, int typeID, EntityType entitytype)
     entity_prop_name_ = "None";
     
     int connect[num_nodes_];
+    elem_conn_.resize(num_nodes_);
     error = ex_get_elem_conn(exoid,typeID,connect);
     if (error != 0) dserror("exo error returned");
     for (int i = 0; i < num_nodes_; ++i) {
-      elem_conn_[i] = connect[i];
+      elem_conn_[i] = connect[i]-1;
     }
-
-    
     break;
   }
   case node_set:
@@ -237,6 +292,7 @@ Entity::Entity(int exoid, int entityID, int typeID, EntityType entitytype)
     num_nod_per_elem_ = 0;
     num_el_in_blk_ = 0;
     entity_prop_name_ = "None";
+    elem_conn_.resize(0);
     break;
   }
   case side_set:
@@ -249,8 +305,10 @@ Entity::Entity(int exoid, int entityID, int typeID, EntityType entitytype)
     string sidesetname(mychar, int(MAX_STR_LENGTH));
     entity_name_ = sidesetname;
     
+    // set other variables to default
     elem_type_ = "Side Sets not yet supported";
     entity_prop_name_ = "None";
+    elem_conn_.resize(0);
     break;
   }
   default: cout << "EntityType not valid" << endl;

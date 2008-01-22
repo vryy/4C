@@ -84,6 +84,9 @@ int main(
       if (exofile=="") dserror("no exofile specified for extrusion");
       if (soshthickness < 0.0) dserror("thickness specified for solid-shell extrusion is negative");
       Soshextrusion mysosh(exofile.c_str(),soshthickness,soshnumlayer);
+      string extrudefile;
+      extrudefile = "extr_" + exofile;
+      mysosh.WriteMesh(extrudefile);
     }
     
     // create mesh object based on given exodus II file

@@ -92,7 +92,11 @@ public:
   
   RCP<PreNode> GetNode(int NodeID){ return myNodes_[NodeID];};
 
+  //! Close Exodus File
   void CloseExo();
+  
+  //! Write Mesh into exodus file
+  void WriteMesh(string newexofilename);
 
 private:
   
@@ -116,14 +120,10 @@ private:
   int exoid_;
   //! title
   char title_[MAX_LINE_LENGTH+1];
-  
   //! number of my entities
   int num_entities_;
   
-  //! nodal coordinates
-  float x_, y_, z_;
-  
-  
+
 };
 
 /*!
@@ -172,6 +172,9 @@ public:
   //! GetEntityId()
   int GetEntityId() const {return entityID_;};
 
+  //! Get Element Connectivity
+  inline const int* Conn() const {if (elem_conn_.size()) return &elem_conn_[0];
+                                     else                return NULL;     }
   //! Print entity
   void Print(ostream& os) const;
   
