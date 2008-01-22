@@ -216,6 +216,30 @@ void CONTACT::Interface::FillComplete()
     melecolmap_ = rcp(new Epetra_Map(-1,(int)mc.size(),&mc[0],0,Comm()));
   }
   
+  // do part of the same business for dofs
+  // (get row map of slave and master dofs seperately)
+  {
+  	const Epetra_Map* noderowmap = Discret().NodeRowMap();
+  	vector<int> sr;
+  	vector<int> mr;
+  	for (int i=0; i<noderowmap->NumMyElements();++i)
+  	{
+  		int gid = noderowmap->GID(i);
+  		DRT::Node* node = Discret().gNode(gid);
+  		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+  		CNode* cnode = static_cast<CNode*>(node);
+  	
+  		if (cnode->IsSlave())
+  			for (int j=0;j<cnode->NumDof();++j)
+  				sr.push_back(cnode->Dofs()[j]);
+  		else
+  			for (int j=0;j<cnode->NumDof();++j)
+  				mr.push_back(cnode->Dofs()[j]);
+  	}
+  	sdofrowmap_ = rcp(new Epetra_Map(-1,(int)sr.size(),&sr[0],0,Comm()));
+  	mdofrowmap_ = rcp(new Epetra_Map(-1,(int)mr.size(),&mr[0],0,Comm()));
+  }
+  
   return;
 }
 
@@ -534,16 +558,16 @@ bool CONTACT::Interface::EvaluateOverlap_2D(CONTACT::CElement& sele,
 	//
 	// For the non-overlapping cases, the possibility of an identical local
 	// node numbering direction for both sides is taken into account!!
-	// (this can happen, when elements far from each other are projected)
+	// (this can happen, when elements far from each other are projected,
+	// which actually should be impossible due to the CONTACT_CRITDIST
+	// condition in the potential contact pair search above!
+	// But you never know...)
+	
 	// For the overlapping cases, it is a prerequisite that the two local
 	// node numbering directions are opposite!!
-	// (this is the case, when the elements are sufficiently near each other)
-	
-	// FIXME: Yet, as long as there is no adequate search algorithm for
-	// potential contact surfaces, the projections might pose problems for
-	// the case, when the contact interface is chosen very large!!!
-	// (for example: ball(S) contacting plane(M), the whole ball surface is
-	// chosen as contact interface, then the top nodes are very critical!!!)
+	// (this is the case, when the elements are sufficiently near each other,
+	// which is ensured by only processing nodes that fulfill the 
+	// CONTACT_CRITDIST condition above!)
 	
 	bool overlap = false;
 	double sxia = 0.0;

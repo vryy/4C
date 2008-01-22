@@ -132,7 +132,117 @@ public:
     else dserror("CONTACT::Interface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
+  
+  /*!
+  \brief Get fully overlapping column map of slave nodes (Filled()==true is prerequisite)
 
+  */
+  virtual const Epetra_Map& SlaveFullNodes() const 
+  { 
+    if (Filled()) return *snodefullmap_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+  
+  /*!
+  \brief Get fully overlapping column map of master nodes (Filled()==true is prerequisite)
+
+  */
+  virtual const Epetra_Map& MasterFullNodes() const 
+  { 
+    if (Filled()) return *mnodefullmap_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+  
+  /*!
+  \brief Get row map of slave elements (Filled()==true is prerequisite)
+
+  */
+  virtual const Epetra_Map& SlaveRowElements() const 
+  { 
+    if (Filled()) return *selerowmap_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+
+  /*!
+  \brief Get row map of master elements (Filled()==true is prerequisite)
+
+  */
+  virtual const Epetra_Map& MasterRowElements() const 
+  { 
+    if (Filled()) return *melerowmap_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+
+  /*!
+  \brief Get column map of slave elements (Filled()==true is prerequisite)
+
+  */
+  virtual const Epetra_Map& SlaveColElements() const 
+  { 
+    if (Filled()) return *selecolmap_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+
+  /*!
+  \brief Get column map of master elements (Filled()==true is prerequisite)
+
+  */
+  virtual const Epetra_Map& MasterColElements() const 
+  { 
+    if (Filled()) return *melecolmap_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+  
+  /*!
+  \brief Get fully overlapping column map of slave elements (Filled()==true is prerequisite)
+
+  */
+  virtual const Epetra_Map& SlaveFullElements() const 
+  { 
+    if (Filled()) return *selefullmap_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+  
+  /*!
+  \brief Get fully overlapping column map of master elements (Filled()==true is prerequisite)
+
+  */
+  virtual const Epetra_Map& MasterFullElements() const 
+  { 
+    if (Filled()) return *melefullmap_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+  
+  /*!
+  \brief Get row map of slave dofs (Filled()==true is prerequisite)
+
+  */
+  virtual const Epetra_Map& SlaveRowDofs() const 
+  { 
+    if (Filled()) return *sdofrowmap_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+
+  /*!
+  \brief Get row map of master dofs (Filled()==true is prerequisite)
+  
+  */
+  virtual const Epetra_Map& MasterRowDofs() const 
+  { 
+    if (Filled()) return *mdofrowmap_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }  
+  
   /*!
   \brief Add a CONTACT::CNode to the interface (Filled()==true NOT prerequisite)
   
@@ -229,6 +339,9 @@ protected:
   RCP<Epetra_Map>               melerowmap_;   // row map of all master elements
   RCP<Epetra_Map>               melecolmap_;   // column map of all master elements
   RCP<Epetra_Map>               melefullmap_;  // fully overlapping column map of all master elements
+  
+  RCP<Epetra_Map>               sdofrowmap_;   // row map of all slave dofs
+  RCP<Epetra_Map>               mdofrowmap_;   // row map of all master dofs
   
   Epetra_SerialDenseMatrix		  contactsegs_;	 // contains coordinates of all contact segments (gmsh)
   int														counter_;			 // counts the number of calls to this interface (gmsh)
