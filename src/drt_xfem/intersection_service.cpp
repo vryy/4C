@@ -19,14 +19,6 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_utils_local_connectivity_matrices.H"
 #include "../drt_lib/drt_element.H"
-//#include <ctype.h>
-//#include <errno.h>
-//#include <stdio.h>
-//#include <string.h>
-//#include <limits.h>
-//#include <stdlib.h>
-//#include <assert.h>
-//#include <math.h>
 
 using namespace XFEM;
 using namespace DRT::Utils;
@@ -34,6 +26,10 @@ using namespace DRT::Utils;
 
 static double           sqrarg;
 #define                 SQR(a) ((sqrarg=(a)) == 0.0 ? 0.0 : sqrarg*sqrarg)
+//inline double SQR(double sqrarg)
+//{
+//    return ((sqrarg) == 0.0 ? 0.0 : sqrarg*sqrarg);
+//}
 
 
 /*----------------------------------------------------------------------*

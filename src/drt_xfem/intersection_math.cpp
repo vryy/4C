@@ -32,16 +32,25 @@ using namespace XFEM;
 using namespace DRT::Utils;
 
 
-static double           sqrarg;
-#define                 SQR(a) ((sqrarg=(a)) == 0.0 ? 0.0 : sqrarg*sqrarg)
 #define                 SIGN(a,b) ((b) >= 0.0 ? fabs(a) : -fabs(a))
-static double           maxarg1,maxarg2;
-#define                 FMAX(a,b) (maxarg1=(a),maxarg2=(b),(maxarg1) > (maxarg2) ?\
-                        (maxarg1) : (maxarg2))
-static int              iminarg1,iminarg2;
-#define                 IMIN(a,b) (iminarg1=(a),iminarg2=(b),(iminarg1) < (iminarg2) ?\
-                        (iminarg1) : (iminarg2))
+//inline double SIGN(double a, double b)
+//{
+//    return ((b) >= 0.0 ? fabs(a) : -fabs(a));
+//}
 
+static double           maxarg1,maxarg2;
+#define                 FMAX(a,b) (maxarg1=(a),maxarg2=(b),(maxarg1) > (maxarg2) ? (maxarg1) : (maxarg2))
+//inline double FMAX(double maxarg1, double maxarg2)
+//{
+//    return ((maxarg1) > (maxarg2) ? (maxarg1) : (maxarg2));
+//}
+
+static int              iminarg1,iminarg2;
+#define                 IMIN(a,b) (iminarg1=(a),iminarg2=(b),(iminarg1) < (iminarg2) ? (iminarg1) : (iminarg2))
+//inline double IMIN(double iminarg1, double iminarg2)
+//{
+//    return ((iminarg1) < (iminarg2) ? (iminarg1) : (iminarg2));
+//}
 
 /*----------------------------------------------------------------------*
  |    computes the singular value decomposition             u.may 09/07 |
