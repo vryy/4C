@@ -181,6 +181,15 @@ MFSI::OverlapAlgorithm::OverlapAlgorithm(Epetra_Comm& comm)
   SolverFactory()->setPreconditionerFactory(PreconditionerFactory(), "FSI block preconditioner");
 
   /*----------------------------------------------------------------------*/
+  sysmattimer_         = Teuchos::TimeMonitor::getNewTimer("MFSI::OverlapAlgorithm::SetupSysMat");
+  igtimer_             = Teuchos::TimeMonitor::getNewTimer("MFSI::OverlapAlgorithm::InitialGuess");
+  rhstimer_            = Teuchos::TimeMonitor::getNewTimer("MFSI::OverlapAlgorithm::SetupRHS");
+  exctracttimer_       = Teuchos::TimeMonitor::getNewTimer("MFSI::OverlapAlgorithm::ExtractFieldVectors");
+  fluidinterfacetimer_ = Teuchos::TimeMonitor::getNewTimer("MFSI::OverlapAlgorithm::AddFluidInterface");
+  figcolmaptimer_      = Teuchos::TimeMonitor::getNewTimer("MFSI::OverlapAlgorithm::ConvertFigColmap");
+  fgirowmaptimer_      = Teuchos::TimeMonitor::getNewTimer("MFSI::OverlapAlgorithm::ConvertFgiRowmap");
+
+  /*----------------------------------------------------------------------*/
   // Assume linear ALE. Prepare ALE system matrix once and for all.
 
   AleField()->Evaluate(Teuchos::null);
@@ -210,10 +219,6 @@ MFSI::OverlapAlgorithm::OverlapAlgorithm(Epetra_Comm& comm)
 
   aig_ = this->ConvertFigColmap(aig,alestructcolmap_,StructureField()->DomainMap());
   aii_ = aii;
-
-  /*----------------------------------------------------------------------*/
-  sysmattimer_ = Teuchos::TimeMonitor::getNewTimer("MFSI::OverlapAlgorithm::SetupSysMat");
-  rhstimer_    = Teuchos::TimeMonitor::getNewTimer("MFSI::OverlapAlgorithm::SetupRHS");
 }
 
 
@@ -221,16 +226,20 @@ MFSI::OverlapAlgorithm::OverlapAlgorithm(Epetra_Comm& comm)
 /*----------------------------------------------------------------------*/
 void MFSI::OverlapAlgorithm::InitialGuess(Thyra::DefaultProductVector<double>& ig)
 {
+  Teuchos::TimeMonitor monitor(*igtimer_);
+
   SetupVector(ig,
               StructureField()->InitialGuess(),
               FluidField()->InitialGuess(),
               AleField()->InitialGuess(),
               0.0);
 
+#if 0
   // debug
   debug_.DumpVector("sig",*StructureField()->Discretization(),*StructureField()->InitialGuess());
   debug_.DumpVector("fig",*FluidField()->Discretization(),*FluidField()->InitialGuess());
   debug_.DumpVector("aig",*AleField()->Discretization(),*AleField()->InitialGuess());
+#endif
 }
 
 
@@ -309,6 +318,8 @@ void MFSI::OverlapAlgorithm::ExtractFieldVectors(Teuchos::RCP<const Thyra::Defau
                                                  Teuchos::RCP<const Epetra_Vector>& fx,
                                                  Teuchos::RCP<const Epetra_Vector>& ax) const
 {
+  Teuchos::TimeMonitor monitor(*exctracttimer_);
+
   sx = Thyra::get_Epetra_Vector(*StructureField()->DofRowMap(), x->getVectorBlock(0));
   Teuchos::RCP<const Epetra_Vector> scx = StructureField()->Interface().ExtractCondVector(sx);
 
@@ -429,6 +440,8 @@ void MFSI::OverlapAlgorithm::AddFluidInterface(double scale,
                                                Teuchos::RCP<Epetra_CrsMatrix> fgg,
                                                Teuchos::RCP<Epetra_CrsMatrix> s) const
 {
+  Teuchos::TimeMonitor monitor(*fluidinterfacetimer_);
+
   const Coupling& coupsf = StructureFluidCoupling();
 
   Teuchos::RCP<Epetra_CrsMatrix> perm_fgg = coupsf.SlaveToPermSlave(fgg);
@@ -483,6 +496,8 @@ MFSI::OverlapAlgorithm::ConvertFigColmap(Teuchos::RCP<Epetra_CrsMatrix> fig,
                                          const std::map<int,int>& convcolmap,
                                          const Epetra_Map& domainmap) const
 {
+  Teuchos::TimeMonitor monitor(*figcolmaptimer_);
+
   const Epetra_Map& rowmap = fig->RowMap();
   const Epetra_Map& colmap = fig->ColMap();
 
@@ -526,6 +541,8 @@ MFSI::OverlapAlgorithm::ConvertFgiRowmap(Teuchos::RCP<Epetra_CrsMatrix> fgi,
                                          double scale,
                                          const Epetra_Map& structrowmap) const
 {
+  Teuchos::TimeMonitor monitor(*fgirowmaptimer_);
+
   const Coupling& coupsf = StructureFluidCoupling();
 
   // redistribute fluid matrix to match distribution of structure matrix

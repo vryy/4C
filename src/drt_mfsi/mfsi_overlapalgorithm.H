@@ -126,7 +126,12 @@ namespace MFSI
     //! @name time measurement
 
     Teuchos::RCP<Teuchos::Time> sysmattimer_;
+    Teuchos::RCP<Teuchos::Time> igtimer_;
     Teuchos::RCP<Teuchos::Time> rhstimer_;
+    Teuchos::RCP<Teuchos::Time> exctracttimer_;
+    Teuchos::RCP<Teuchos::Time> fluidinterfacetimer_;
+    Teuchos::RCP<Teuchos::Time> figcolmaptimer_;
+    Teuchos::RCP<Teuchos::Time> fgirowmaptimer_;
 
     //@}
 
