@@ -1071,7 +1071,9 @@ void StruGenAlpha::NonLinearUzawaFullNewton(int predictor)
 	  int numiter_uzawa=0;
 	  while (volnorm>tolvol && numiter_uzawa <= maxiterUzawa)
 	  {
+		  // Lagrange multiplier is increased by Uzawa_param*VolErr
 		  volConstrMan_->UpdateLagrMult(Uzawa_param);
+		  // Keep new Lagrange multiplier fixed and solve for new displacements
 		  if      (predictor==1) ConstantPredictor();
 		  else if (predictor==2) ConsistentPredictor();
 		  volConstrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
@@ -1081,9 +1083,10 @@ void StruGenAlpha::NonLinearUzawaFullNewton(int predictor)
 		  //--------------------compute volume error
 		  volConstrMan_->ComputeVolumeError(time+dt,disn_);
 		  volnorm=volConstrMan_->GetVolumeErrorNorm();
-		  cout<<"Volume error for Newton solution: "<<volnorm<<endl;
+		  cout<<"Volume error for computed displacement: "<<volnorm<<endl;
 		  numiter_uzawa++;		  
 	  }	  
+	  params_.set<int>("num iterations",numiter_uzawa);
 }
 
 /*----------------------------------------------------------------------*
@@ -2886,17 +2889,23 @@ void StruGenAlpha::Integrate()
         //Does predicted displacement satisfy volume constraint?
         double time          = params_.get<double>("total time"             ,0.0);
         double dt            = params_.get<double>("delta time"             ,0.01);
+        // what algorithm is used?
+        // - "newtonlinuzawa": 			Potential is linearized wrt displacements and Lagrange multipliers
+        //					   			Linear problem is solved with Uzawa algorithm
+        // - "augmentedlagrange":		Potential is linearized wrt displacements keeping Lagrange multiplier fixed
+        //								Until convergence Lagrange multiplier increased by Uzawa_param*(Vol_err) 
         if (algo=="newtonlinuzawa")
         {
         	volConstrMan_->ScaleLagrMult(0.0);
         	volConstrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
         	FullNewtonLinearUzawa();
         }
-        else
+        else if (algo=="augmentedlagrange")
         {
         	volConstrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
         	NonLinearUzawaFullNewton(predictor);
         }
+        else dserror("Unknown type of algorithm to deal with volume constraint");
         UpdateandOutput();
       }
   }
