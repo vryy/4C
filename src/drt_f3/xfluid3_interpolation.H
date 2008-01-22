@@ -128,14 +128,14 @@ inline ElementFormulation getElementFormulation(DRT::Element::DiscretizationType
     switch (distype)
     {
     case DRT::Element::hex8:
-        form = XFLUID::Qm1Q1Q1;
-        //form = XFLUID::Q1Q1;
+        //form = XFLUID::Qm1Q1Q1;
+        form = XFLUID::Q1Q1;
         break;
     case DRT::Element::hex27:
         //form = XFLUID::Qm2Q2Q2;
         //form = XFLUID::Qm1Q2Q2;
-        form = XFLUID::Pm2Q2Q2;
-        //form = XFLUID::Q2Q2;
+        //form = XFLUID::Pm2Q2Q2;
+        form = XFLUID::Q2Q2;
         break;
     default:
         dserror("not defined!");
