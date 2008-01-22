@@ -1234,7 +1234,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   	quotient =1;
     //Solve one iteration step with augmented lagrange
   	//Since we calculate displacement norm as well, at least one step has to be taken
-    while (((norm_uzawa > toldisp||norm_vol_uzawa>tolvol)
+    while (((norm_uzawa > tolres/10||norm_vol_uzawa>tolvol/10)
     		&& numiter_uzawa < maxiterUzawa)||numiter_uzawa<1)
     {
 
