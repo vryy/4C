@@ -190,10 +190,20 @@ void LINALG::Complete(Epetra_CrsMatrix& A)
 {
   if (A.Filled()) return;
 
-  int err = A.FillComplete(A.OperatorDomainMap(),A.OperatorRangeMap());
+  int err = A.FillComplete(A.OperatorDomainMap(),A.OperatorRangeMap(),true);
   if (err) dserror("Epetra_CrsMatrix::FillComplete(domain,range) returned err=%d",err);
-  err = A.OptimizeStorage();
-  if (err) dserror("Epetra_CrsMatrix::OptimizeStorage() returned err=%d",err);
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  FillComplete a matrix  (public)                          mwgee 01/08|
+ *----------------------------------------------------------------------*/
+void  LINALG::Complete(Epetra_CrsMatrix& A, const Epetra_Map& domainmap, const Epetra_Map& rangemap)
+{
+  if (A.Filled()) return;
+
+  int err = A.FillComplete(domainmap,rangemap,true);
+  if (err) dserror("Epetra_CrsMatrix::FillComplete(domain,range) returned err=%d",err);
   return;
 }
 

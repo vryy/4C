@@ -197,9 +197,14 @@ namespace LINALG
 
 
   /*!
-  \brief Call FillComplete on a Epetra_CrsMatrix
+  \brief Call FillComplete on a Epetra_CrsMatrix (for square matrices only!)
   */
   void Complete(Epetra_CrsMatrix& A);
+
+  /*!
+  \brief Call FillComplete on a Epetra_CrsMatrix (for rectangular/square matrices)
+  */
+  void Complete(Epetra_CrsMatrix& A, const Epetra_Map& domainmap, const Epetra_Map& rangemap);
 
   /*!
   \brief Add a (transposed) Epetra_CrsMatrix to another: B = B*scalarB + A(^T)*scalarA
