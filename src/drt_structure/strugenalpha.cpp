@@ -45,7 +45,7 @@ maxentriesperrow_(81)
     bool outerr    = params_.get<bool>  ("print to err"    ,false);
     FILE* errfile  = params_.get<FILE*> ("err file"        ,NULL);
     if (!errfile) outerr = false;
-    
+
     // -------------------------------------------------------------------
     // get a vector layout from the discretization to construct matching
     // vectors and matrices
@@ -184,19 +184,43 @@ maxentriesperrow_(81)
       }
 
       // Check for surface stress conditions due to interfacial phenomena
-      vector<DRT::Condition*> surfstresscond;
+      vector<DRT::Condition*> surfstresscond(0);
       discret_.GetCondition("SurfaceStress",surfstresscond);
       if (surfstresscond.size())
       {
-        // Determine number of associated surface elements
-        int numsurf=0;
+        // Determine local number of associated surface elements
+        int localnumsurf=0;
         for (unsigned i=0;i<surfstresscond.size();++i)
         {
-          numsurf+=surfstresscond[i]->Geometry().size();
+          localnumsurf+=surfstresscond[i]->Geometry().size();
         }
-        surf_stress_man_=rcp(new DRT::SurfStressManager(discret_, numsurf));
+
+        // Create a map of the associated surface elements
+        // This is needed because the SurfStressManager creates
+        // several vectors containing history variables of the
+        // corresponding surface elements. These vectors need to be
+        // distributed over the processors in the same way as the
+        // surface elements are.
+
+        int localsurf[localnumsurf];
+        int count=0;
+        for (unsigned i=0;i<surfstresscond.size();++i)
+        {
+          for (map<int,RefCountPtr<DRT::Element> >::iterator iter=surfstresscond[i]->Geometry().begin();
+               iter!=surfstresscond[i]->Geometry().end();++iter)
+          {
+            localsurf[count]=iter->first;
+            count++;
+          }
+        }
+        Epetra_Map surfmap(-1, localnumsurf, localsurf, 0, discret_.Comm());
+
+        int numsurf;
+        discret_.Comm().SumAll(&localnumsurf, &numsurf, 1);
+        surf_stress_man_=rcp(new DRT::SurfStressManager(discret_, numsurf, surfmap));
       }
     }
+
     // close mass matrix
     LINALG::Complete(*mass_);
     maxentriesperrow_ = mass_->MaxNumEntries();
@@ -677,6 +701,7 @@ void StruGenAlpha::ConsistentPredictor()
       p.set("surfstr_man", surf_stress_man_);
       surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
     }
+
     // do NOT finalize the stiffness matrix, add mass and damping to it later
   }
 
@@ -1138,7 +1163,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   Epetra_Time timer(discret_.Comm());
   timer.ResetStartTime();
   bool print_unconv = true;
-  
+
 
   while (Unconverged(convcheck, disinorm, fresmnorm, volnorm, toldisp, tolres, tolvol)
          && numiter<=maxiter)
@@ -1165,10 +1190,10 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     double quotient;
     double norm_vol_uzawa;
     int numiter_uzawa=0;
-    
+
     //counter used for adaptivity
     int count_paramadapt=1;
-    
+
     volConstrMan_->ScaleLagrIncr(0.0);
 
     Epetra_Vector constrVecWeight(*(volConstrMan_->GetConstrVec()));
@@ -1199,7 +1224,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   	    uzawa_res.Multiply(1.0,*invtoggle_,rescopy,0.0);
   	}
   	uzawa_res.Norm2(&norm_uzawa);
-  	
+
   	Epetra_SerialDenseVector vol_res(numConstrVol);
   	for (int foo = 0; foo < numConstrVol; ++foo)
   	{
@@ -1268,12 +1293,12 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 	  		  vol_res[foo]=dotprod[foo]+volConstrMan_->GetVolumeError(foo);
 	  	  }
 	      norm_vol_uzawa=vol_res.Norm2();
-	      
+
 	      //-------------Adapt Uzawa parameter--------------
 	      // For a constant parameter the quotient of two successive residual norms
 	      // stays constant during the computation. So this quotient seems to be a good
 	      // measure for the parameter choice
-	      
+
 	      // Adaptivity only takes place every second step. Otherwise the quotient is not significant.
 	      if (count_paramadapt>=2)
 	      {
@@ -1287,7 +1312,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 	    	  }
 	    	  else
 	    	  {
-	    		  // In case the newly computed quotient is better than the one obtained from the 
+	    		  // In case the newly computed quotient is better than the one obtained from the
 	    		  // previous parameter, the parameter is increased by a factor (1+quotient_neu)
 	    		  if (quotient>quotient_neu)
 	    		  {
@@ -1295,9 +1320,9 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 	    			  quotient=quotient_neu;
 	    			  count_paramadapt=0;
 	    		  }
-	    		  // In case the newly computed quotient is worse than the one obtained from the 
+	    		  // In case the newly computed quotient is worse than the one obtained from the
 	    		  // previous parameter, the parameter is decreased by a factor 1/(1+quotient_neu)
-	    		  else 
+	    		  else
 	    		  {
 	    			  Uzawa_param=Uzawa_param/(1+quotient_neu);
 	    			  quotient=quotient_neu;
@@ -1306,7 +1331,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 	    	  }
 	      }
 	      count_paramadapt++;
-	      
+
 	  	  numiter_uzawa++;
     } //Uzawa loop
 
@@ -1314,7 +1339,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     {
     	cout<<"Uzawa steps"<<numiter_uzawa<<endl;
     }
-    
+
     //update lagrange multiplier
     volConstrMan_->UpdateLagrMult();
 
@@ -1439,7 +1464,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 
   params_.set<int>("num iterations",numiter);
   params_.set<double>("uzawa parameter",Uzawa_param);
-  
+
   //-------------------------------------- don't need this at the moment
   stiff_ = null;
 
@@ -3181,10 +3206,10 @@ bool StruGenAlpha::Unconverged(const string type, const double disinorm,
 
 /*----------------------------------------------------------------------*
  |  check convergence of Newton iteration (public)              tk 01/08|
- |  take the volume constraint into account as well                     |  
+ |  take the volume constraint into account as well                     |
  *----------------------------------------------------------------------*/
 bool StruGenAlpha::Unconverged(const string type, const double disinorm,
-        const double resnorm, const double volnorm, 
+        const double resnorm, const double volnorm,
         const double toldisp, const double tolres,
         const double tolvol)
 {

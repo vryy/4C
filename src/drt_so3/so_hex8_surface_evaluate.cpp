@@ -409,6 +409,7 @@ int DRT::Elements::Soh8Surface::Evaluate(ParameterList& params,
                 case calc_surfstress_stiff:
 	  	{
                   // element geometry update
+
                   RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
                   if (disp==null) dserror("Cannot get state vector 'displacement'");
                   vector<double> mydisp(lm.size());
@@ -416,6 +417,7 @@ int DRT::Elements::Soh8Surface::Evaluate(ParameterList& params,
                   const int numnod = 4;
                   Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOH8);  // material coord. of element
                   Epetra_SerialDenseMatrix xscurr(numnod,NUMDIM_SOH8);  // material coord. of element
+
                   for (int i=0; i<numnod; ++i){
                     xsrefe(i,0) = Nodes()[i]->X()[0];
                     xsrefe(i,1) = Nodes()[i]->X()[1];

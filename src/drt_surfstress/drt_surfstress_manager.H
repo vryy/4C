@@ -40,7 +40,8 @@ public:
 
     \param discret (in): Discretization
   */
-  SurfStressManager(DRT::Discretization& discret, const int numsurf);
+  SurfStressManager(DRT::Discretization& discret, const int numsurf,
+                    const Epetra_Map& surfmap);
 
   /*!
     \brief Destructor

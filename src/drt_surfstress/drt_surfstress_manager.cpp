@@ -21,10 +21,10 @@ Maintainer: Lena Wiechert
  |  ctor (public)                                            lw 12/07|
  *-------------------------------------------------------------------*/
 DRT::SurfStressManager::SurfStressManager(DRT::Discretization& discret,
-                                          const int numsurf):
+                                          const int numsurf,
+                                          const Epetra_Map& surfmap):
 discret_(discret)
 {
-  Epetra_Map surfmap(numsurf, 0, discret_.Comm());
   time_ = 0.0;
   A_old_temp_    = rcp(new Epetra_Vector(surfmap,true));
   A_old_         = rcp(new Epetra_Vector(surfmap,true));
@@ -55,7 +55,6 @@ void DRT::SurfStressManager::EvaluateSurfStress(ParameterList& p,
 
     discret_.ClearState();
     discret_.SetState("displacement",disp);
-
     discret_.EvaluateCondition(p,stiff,fint,null,"SurfaceStress");
 
     return;
@@ -86,25 +85,24 @@ void DRT::SurfStressManager::StiffnessAndInternalForces(const Epetra_SerialDense
                                                         const double con_quot_max,
                                                         const double con_quot_eq)
 {
-  //cout << "ID: " << ID << "\n";
-
   Epetra_SerialDenseVector Adiff(12);
   Epetra_SerialDenseMatrix Adiff2(12,12);
   double gamma, dgamma;
 
+  int LID = A_old_->Map().LID(ID);
+
   /*---------------------------------------------- update if necessary */
   if (time != time_)
   {
-    (*A_old_)[ID] = (*A_old_temp_)[ID];
-    (*con_quot_)[ID] = (*con_quot_temp_)[ID];
+    (*A_old_)[LID] = (*A_old_temp_)[LID];
+    (*con_quot_)[LID] = (*con_quot_temp_)[LID];
     time_ = time;
   }
 
   /*--------------------------------------------------- initialization */
-  (*A_old_temp_)[ID] = 0.0;
-  (*con_quot_temp_)[ID] = 0.0;
-
-  soh8_surface_calc(xs, (*A_old_temp_)[ID], Adiff, Adiff2);
+  (*A_old_temp_)[LID] = 0.0;
+  (*con_quot_temp_)[LID] = 0.0;
+  soh8_surface_calc(xs, (*A_old_temp_)[LID], Adiff, Adiff2);
 
   if (surface_flag==0)                                   // SURFACTANT
   {
@@ -113,13 +111,13 @@ void DRT::SurfStressManager::StiffnessAndInternalForces(const Epetra_SerialDense
     if (time<100.*dt)         /* gradual application of surface stress */
     {
       gamma = gamma_0-m1*con_quot_eq;
-      (*con_quot_temp_)[ID] = con_quot_eq;
+      (*con_quot_temp_)[LID] = con_quot_eq;
       dgamma = 0.;
     }
     else
     {
-      (*con_quot_temp_)[ID] = (*con_quot_)[ID];
-      gamma_calc(gamma, dgamma, (*con_quot_temp_)[ID], (*A_old_)[ID], (*A_old_temp_)[ID], dt, k1xC, k2, m1,
+      (*con_quot_temp_)[LID] = (*con_quot_)[LID];
+      gamma_calc(gamma, dgamma, (*con_quot_temp_)[LID], (*A_old_)[LID], (*A_old_temp_)[LID], dt, k1xC, k2, m1,
                m2, gamma_0, gamma_min, gamma_min_eq, con_quot_max);
     }
   }
@@ -145,8 +143,6 @@ void DRT::SurfStressManager::StiffnessAndInternalForces(const Epetra_SerialDense
     K_surf.Scale(-2*pow(time/(99.*dt), 3)+3*pow(time/(99.*dt), 2));
   }
 
-//   cout << "Ksurf:\n" << K_surf << "\n";
-
   /*------calculation of current internal force due to surface energy*/
   for (int i=0;i<12;i++)
   {
@@ -156,8 +152,6 @@ void DRT::SurfStressManager::StiffnessAndInternalForces(const Epetra_SerialDense
   {
     fint.Scale(-2*pow(time/(99.*dt), 3)+3*pow(time/(99.*dt), 2));
   }
-
-//   cout << "fsurf:\n" << fint << "\n";
 
   return;
 }
