@@ -166,7 +166,7 @@ string IO::GMSH::cellToString(const double scalar, const DomainIntCell& cell, DR
     };
     pos_array_string << "};";
     return pos_array_string.str();
-};
+}
 
 string IO::GMSH::cellToString(const double scalar, const BoundaryIntCell& cell, DRT::Element* ele)
 {
@@ -199,7 +199,7 @@ string IO::GMSH::cellToString(const double scalar, const BoundaryIntCell& cell, 
     };
     pos_array_string << "};";
     return pos_array_string.str();
-};
+}
 
 string IO::GMSH::disToString(const std::string s, const double scalar, 
         RefCountPtr<DRT::Discretization> dis)

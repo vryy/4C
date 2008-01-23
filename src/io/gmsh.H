@@ -51,8 +51,8 @@ string trifaceToString(const double scalar, const vector< vector <double> >& tri
 
 string XAABBToString(const double scalar, const vector< vector <double> >& XAABB);
 
-};
-};
+}
+}
 
 #endif // #ifdef CCADISCRET
 #endif /*GMSH_H*/
