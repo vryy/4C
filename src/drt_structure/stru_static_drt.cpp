@@ -11,7 +11,6 @@ Maintainer: Moritz Frenzel
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include <ctime>
 #include <cstdlib>
@@ -852,5 +851,4 @@ void setupVolDofrowmaps(RefCountPtr<DRT::Discretization> actdis,
     }
 	return;
 }
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

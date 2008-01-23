@@ -14,7 +14,6 @@ writen by : Alexander Volf
 *----------------------------------------------------------------------*/
 #ifdef D_SOTET
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "so_tet10.H"
 #include "../drt_lib/linalg_utils.H"
@@ -129,6 +128,5 @@ void DRT::ELEMENTS::Sotet10Surface::Print(ostream& os) const
   return;
 }
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif // #ifdef D_SOTET

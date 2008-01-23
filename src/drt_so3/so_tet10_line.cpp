@@ -12,7 +12,6 @@ Maintainer: Moritz Frenzel
 *----------------------------------------------------------------------*/
 #ifdef D_SOTET
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "so_tet10.H"
 #include "../drt_lib/linalg_utils.H"
@@ -148,6 +147,5 @@ int DRT::ELEMENTS::Sotet10Line::EvaluateNeumann(ParameterList&         params,
 
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif // #ifdef D_SOTET

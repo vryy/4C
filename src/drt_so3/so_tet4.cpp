@@ -14,7 +14,6 @@ writen by : Alexander Volf
 *----------------------------------------------------------------------*/
 #ifdef D_SOTET
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "so_tet4.H"
 #include "../drt_lib/drt_discret.H"
@@ -427,6 +426,5 @@ void DRT::ELEMENTS::Sotet4Register::Print(ostream& os) const
   return;
 }
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOTET

@@ -14,7 +14,6 @@ written by : Alexander Volf
 *----------------------------------------------------------------------*/
 #ifdef D_SOTET
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "so_tet4.H"
 #include "so_integrator.H"
@@ -117,6 +116,5 @@ int DRT::ELEMENTS::Sotet4Surface::EvaluateNeumann(ParameterList&           param
   return 0;
 } //Sotet4Surface::EvaluateNeumann(..)
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif // #ifdef D_SOTET
