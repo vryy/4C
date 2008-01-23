@@ -201,7 +201,7 @@ public:
     autor,    // automatically set to x
     autos,    // automatically set to y
     autot,    // automatically set to z
-    none,     // no rearrangement
+    none      // no rearrangement
   };
 
   int Initialize_numbers(DRT::Discretization& dis);

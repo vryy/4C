@@ -303,7 +303,7 @@ protected:
   {
     sodisp_geolin,
     sodisp_totlag,
-    sodisp_updlag,
+    sodisp_updlag
   };
   //! stress evaluation types of so_disp
   enum StressType
@@ -314,7 +314,7 @@ protected:
     sodisp_stress_gp123,
     sodisp_stress_ndxyz,
     sodisp_stress_ndrst,
-    sodisp_stress_nd123,
+    sodisp_stress_nd123
   };
   //! kinematic type
   KinematicType                                   kintype_;
@@ -717,7 +717,7 @@ private:
     none,
     calc_Shapefunction,
     calc_ShapeDeriv1,
-    calc_ShapeDeriv2,
+    calc_ShapeDeriv2
   };
   
   //! The parent element of this surface

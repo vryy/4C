@@ -291,7 +291,7 @@ protected:
   {
     sow6_geolin,
     sow6_totlag,
-    sow6_updlag,
+    sow6_updlag
   };
   //! stress evaluation types of so_weg6
   enum StressType
@@ -302,7 +302,7 @@ protected:
     sow6_stress_gp123,
     sow6_stress_ndxyz,
     sow6_stress_ndrst,
-    sow6_stress_nd123,
+    sow6_stress_nd123
   };
   //! kinematic type
   KinematicType                                   kintype_;

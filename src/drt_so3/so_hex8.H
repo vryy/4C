@@ -359,7 +359,7 @@ protected:
   {
     soh8_geolin,
     soh8_totlag,
-    soh8_updlag,
+    soh8_updlag
   };
   //! stress evaluation types of so_hex8
   enum StressType
@@ -371,7 +371,7 @@ protected:
     soh8_stress_ndxyz,
     soh8_stress_ndrst,
     soh8_stress_nd123,
-    soh8_stress_cxyz,     // interpolated element center stresses
+    soh8_stress_cxyz     // interpolated element center stresses
   };
   //! EAS technology types of so_hex8
   enum EASType
@@ -379,7 +379,7 @@ protected:
     soh8_easfull,
     soh8_easmild,
     soh8_eassosh8,
-    soh8_easnone,
+    soh8_easnone
   };
   //! kinematic type
   KinematicType                                   kintype_;

@@ -443,7 +443,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     so_tet10,
     so_ctet10,
     so_weg6,
-    sodisp,
+    sodisp
   };
 
   TypeofElement type = none;
