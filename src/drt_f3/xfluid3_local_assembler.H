@@ -73,12 +73,6 @@ public:
         return;
     }
     
-    LocalAssembler(LocalAssembler& tmp)
-    {
-        dserror("no copying allowed");
-        return;
-    }
-    
     ~LocalAssembler()
     {
         return;
@@ -140,6 +134,10 @@ public:
     };
     
 private:
+    // don't want = operator, cctor and destructor
+    LocalAssembler operator = (const LocalAssembler& old);
+    LocalAssembler(const LocalAssembler& old);
+    
     const XFEM::ElementDofManager& dofman_;
     BlitzMat& estif_;
     BlitzVec& eforce_;
