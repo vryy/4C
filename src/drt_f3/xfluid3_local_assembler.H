@@ -134,7 +134,7 @@ public:
     };
     
 private:
-    // don't want = operator, cctor and destructor
+    // don't want = operator and cctor
     LocalAssembler operator = (const LocalAssembler& old);
     LocalAssembler(const LocalAssembler& old);
     
@@ -158,11 +158,6 @@ public:
         eforce_(eforce)
     {
         return;
-    }
-    
-    LocalAssembler(LocalAssembler& tmp)
-    {
-        dserror("no copying allowed");
     }
     
     ~LocalAssembler()
@@ -207,10 +202,13 @@ public:
     };
     
 private:
+    // don't want = operator and cctor
+    LocalAssembler operator = (const LocalAssembler& old);
+    LocalAssembler(const LocalAssembler& old);
+    
     const XFEM::ElementDofManager& dofman_;
     BlitzMat& estif_;
     BlitzVec& eforce_;
-    
 };
 
 
