@@ -38,7 +38,7 @@ extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*
  |  read element input (public)                              mwgit 03/07|
  *----------------------------------------------------------------------*/
-bool DRT::Elements::Wall1::ReadElement()
+bool DRT::ELEMENTS::Wall1::ReadElement()
 {
   // read element's nodes
   int ierr=0;
@@ -144,7 +144,7 @@ bool DRT::Elements::Wall1::ReadElement()
 
 //Get gaussrule on dependance of gausspoints 
 
-DRT::UTILS::GaussRule2D DRT::Elements::Wall1::getGaussrule(int* ngp)
+DRT::UTILS::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
 {
   DRT::UTILS::GaussRule2D rule = DRT::UTILS::intrule2D_undefined;
 

@@ -26,7 +26,7 @@ using namespace DRT::UTILS;
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::SoDisp::SoDisp(int id, int owner) :
+DRT::ELEMENTS::SoDisp::SoDisp(int id, int owner) :
 DRT::Element(id,element_sodisp,owner),
 data_()
 {
@@ -41,7 +41,7 @@ data_()
  |  copy-ctor (public)                                         maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::SoDisp::SoDisp(const DRT::Elements::SoDisp& old) :
+DRT::ELEMENTS::SoDisp::SoDisp(const DRT::ELEMENTS::SoDisp& old) :
 DRT::Element(old),
 data_(old.data_),
 surfaces_(old.surfaces_),
@@ -56,9 +56,9 @@ lineptrs_(old.lineptrs_)
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::Elements::SoDisp::Clone() const
+DRT::Element* DRT::ELEMENTS::SoDisp::Clone() const
 {
-  DRT::Elements::SoDisp* newelement = new DRT::Elements::SoDisp(*this);
+  DRT::ELEMENTS::SoDisp* newelement = new DRT::ELEMENTS::SoDisp(*this);
   return newelement;
 }
 
@@ -66,7 +66,7 @@ DRT::Element* DRT::Elements::SoDisp::Clone() const
  |                                                             (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::Elements::SoDisp::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::SoDisp::Shape() const
 {
     switch (NumNode())
     {
@@ -87,7 +87,7 @@ DRT::Element::DiscretizationType DRT::Elements::SoDisp::Shape() const
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::SoDisp::Pack(vector<char>& data) const
+void DRT::ELEMENTS::SoDisp::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -115,7 +115,7 @@ void DRT::Elements::SoDisp::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::SoDisp::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::SoDisp::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -144,7 +144,7 @@ void DRT::Elements::SoDisp::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                              maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::SoDisp::~SoDisp()
+DRT::ELEMENTS::SoDisp::~SoDisp()
 {
   return;
 }
@@ -153,7 +153,7 @@ DRT::Elements::SoDisp::~SoDisp()
 /*----------------------------------------------------------------------*
  |  print this element (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::SoDisp::Print(ostream& os) const
+void DRT::ELEMENTS::SoDisp::Print(ostream& os) const
 {
   os << "SoDisp ";
   Element::Print(os);
@@ -165,16 +165,16 @@ void DRT::Elements::SoDisp::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  allocate and return SoDispRegister (public)                maf 04/07|
  *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::Elements::SoDisp::ElementRegister() const
+RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::SoDisp::ElementRegister() const
 {
-  return rcp(new DRT::Elements::SoDispRegister(Type()));
+  return rcp(new DRT::ELEMENTS::SoDispRegister(Type()));
 }
 
 
 /*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)                  maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::Elements::SoDisp::Volumes()
+DRT::Element** DRT::ELEMENTS::SoDisp::Volumes()
 {
   volume_.resize(1);
   return 0;
@@ -184,7 +184,7 @@ DRT::Element** DRT::Elements::SoDisp::Volumes()
  |  get vector of surfaces (public)                             maf 04/07|
  |  surface normals always point outward                                 |
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::Elements::SoDisp::Surfaces()
+DRT::Element** DRT::ELEMENTS::SoDisp::Surfaces()
 {
   
     const DiscretizationType distype = Shape();
@@ -222,7 +222,7 @@ DRT::Element** DRT::Elements::SoDisp::Surfaces()
 }
 
 // support for above
-void DRT::Elements::SoDisp::CreateSurfacesTet(const int& nsurf,
+void DRT::ELEMENTS::SoDisp::CreateSurfacesTet(const int& nsurf,
                                               const int& nnode)
 {
     for(int isurf=0;isurf<nsurf;isurf++)
@@ -235,14 +235,14 @@ void DRT::Elements::SoDisp::CreateSurfacesTet(const int& nsurf,
              nodeids[inode] = NodeIds()[eleNodeNumbering_tet10_surfaces[isurf][inode]];
              nodes[inode]   = Nodes()[  eleNodeNumbering_tet10_surfaces[isurf][inode]];
         }
-        surfaces_[isurf] = rcp(new DRT::Elements::SoDispSurface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
+        surfaces_[isurf] = rcp(new DRT::ELEMENTS::SoDispSurface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
         surfaceptrs_[isurf] = surfaces_[isurf].get();
     }
 }
 
 
 // support for above
-void DRT::Elements::SoDisp::CreateSurfacesHex(const int& nsurf,
+void DRT::ELEMENTS::SoDisp::CreateSurfacesHex(const int& nsurf,
                                                const int& nnode)
 {
     for(int isurf=0;isurf<nsurf;isurf++)
@@ -255,13 +255,13 @@ void DRT::Elements::SoDisp::CreateSurfacesHex(const int& nsurf,
              nodeids[inode] = NodeIds()[eleNodeNumbering_hex27_surfaces[isurf][inode]];
              nodes[inode]   = Nodes()[  eleNodeNumbering_hex27_surfaces[isurf][inode]];
         }
-        surfaces_[isurf] = rcp(new DRT::Elements::SoDispSurface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
+        surfaces_[isurf] = rcp(new DRT::ELEMENTS::SoDispSurface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
         surfaceptrs_[isurf] = surfaces_[isurf].get();
     }
 }
 
 // support for above
-void DRT::Elements::SoDisp::CreateSurfacesWegde6(const int& nsurf)
+void DRT::ELEMENTS::SoDisp::CreateSurfacesWegde6(const int& nsurf)
 {
     // first the 3 quad surfaces (#0..2)
     for (int qisurf = 0; qisurf < 3; ++qisurf) 
@@ -274,7 +274,7 @@ void DRT::Elements::SoDisp::CreateSurfacesWegde6(const int& nsurf)
             nodeids[qinode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[surfid][qinode]];
             nodes[qinode] = Nodes()[eleNodeNumbering_wedge15_quadsurfaces[surfid][qinode]];
           }
-          surfaces_[qisurf] = rcp(new DRT::Elements::SoDispSurface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
+          surfaces_[qisurf] = rcp(new DRT::ELEMENTS::SoDispSurface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
           surfaceptrs_[qisurf] = surfaces_[qisurf].get();
     };
     // then the tri's...
@@ -288,13 +288,13 @@ void DRT::Elements::SoDisp::CreateSurfacesWegde6(const int& nsurf)
           nodeids[tinode] = NodeIds()[eleNodeNumbering_wedge15_trisurfaces[surfid][tinode]];
           nodes[tinode] = Nodes()[eleNodeNumbering_wedge15_trisurfaces[surfid][tinode]];
         }
-        surfaces_[surfid] = rcp(new DRT::Elements::SoDispSurface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
+        surfaces_[surfid] = rcp(new DRT::ELEMENTS::SoDispSurface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
         surfaceptrs_[surfid] = surfaces_[surfid].get();
     };
 }
 
 // support for above
-void DRT::Elements::SoDisp::CreateSurfacesWegde15(const int& nsurf)
+void DRT::ELEMENTS::SoDisp::CreateSurfacesWegde15(const int& nsurf)
 {
     // first the 3 quad surfaces (#0..2)
     for (int qisurf = 0; qisurf < 3; ++qisurf) 
@@ -306,7 +306,7 @@ void DRT::Elements::SoDisp::CreateSurfacesWegde15(const int& nsurf)
         nodeids[qinode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[qisurf][qinode]];
         nodes[qinode] = Nodes()[eleNodeNumbering_wedge15_quadsurfaces[qisurf][qinode]];
       }
-      surfaces_[qisurf] = rcp(new DRT::Elements::SoDispSurface(qisurf,Owner(),nnode_surf,nodeids,nodes,this,qisurf));
+      surfaces_[qisurf] = rcp(new DRT::ELEMENTS::SoDispSurface(qisurf,Owner(),nnode_surf,nodeids,nodes,this,qisurf));
       surfaceptrs_[qisurf] = surfaces_[qisurf].get();
     };
     // then the tri's...
@@ -320,7 +320,7 @@ void DRT::Elements::SoDisp::CreateSurfacesWegde15(const int& nsurf)
           nodeids[tinode] = NodeIds()[eleNodeNumbering_wedge15_trisurfaces[tisurf][tinode]];
           nodes[tinode] = Nodes()[eleNodeNumbering_wedge15_trisurfaces[tisurf][tinode]];
         }
-        surfaces_[surfid] = rcp(new DRT::Elements::SoDispSurface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
+        surfaces_[surfid] = rcp(new DRT::ELEMENTS::SoDispSurface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
         surfaceptrs_[surfid] = surfaces_[surfid].get();
     };
 }
@@ -328,7 +328,7 @@ void DRT::Elements::SoDisp::CreateSurfacesWegde15(const int& nsurf)
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::Elements::SoDisp::Lines()
+DRT::Element** DRT::ELEMENTS::SoDisp::Lines()
 {
   dserror("SoDisp lines not yet implemented");
   const int nline = NumLine();
@@ -346,7 +346,7 @@ DRT::Element** DRT::Elements::SoDisp::Lines()
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::SoDispRegister::SoDispRegister(DRT::Element::ElementType etype) :
+DRT::ELEMENTS::SoDispRegister::SoDispRegister(DRT::Element::ElementType etype) :
 ElementRegister(etype)
 {
   return;
@@ -355,8 +355,8 @@ ElementRegister(etype)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                         maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::SoDispRegister::SoDispRegister(
-                               const DRT::Elements::SoDispRegister& old) :
+DRT::ELEMENTS::SoDispRegister::SoDispRegister(
+                               const DRT::ELEMENTS::SoDispRegister& old) :
 ElementRegister(old)
 {
   return;
@@ -366,16 +366,16 @@ ElementRegister(old)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Elements::SoDispRegister* DRT::Elements::SoDispRegister::Clone() const
+DRT::ELEMENTS::SoDispRegister* DRT::ELEMENTS::SoDispRegister::Clone() const
 {
-  return new DRT::Elements::SoDispRegister(*this);
+  return new DRT::ELEMENTS::SoDispRegister(*this);
 }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::SoDispRegister::Pack(vector<char>& data) const
+void DRT::ELEMENTS::SoDispRegister::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -395,7 +395,7 @@ void DRT::Elements::SoDispRegister::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::SoDispRegister::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::SoDispRegister::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -416,7 +416,7 @@ void DRT::Elements::SoDispRegister::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                              maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::SoDispRegister::~SoDispRegister()
+DRT::ELEMENTS::SoDispRegister::~SoDispRegister()
 {
   return;
 }
@@ -424,7 +424,7 @@ DRT::Elements::SoDispRegister::~SoDispRegister()
 /*----------------------------------------------------------------------*
  |  print (public)                                             maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::SoDispRegister::Print(ostream& os) const
+void DRT::ELEMENTS::SoDispRegister::Print(ostream& os) const
 {
   os << "SoDispRegister ";
   ElementRegister::Print(os);

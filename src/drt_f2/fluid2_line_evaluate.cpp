@@ -27,7 +27,7 @@ using namespace DRT::UTILS;
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            g.bau 07/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::Fluid2Line::Evaluate(        ParameterList&            params,
+int DRT::ELEMENTS::Fluid2Line::Evaluate(        ParameterList&            params,
                                                 DRT::Discretization&      discretization,
                                                 vector<int>&              lm,
                                                 Epetra_SerialDenseMatrix& elemat1,
@@ -36,7 +36,7 @@ int DRT::Elements::Fluid2Line::Evaluate(        ParameterList&            params
                                                 Epetra_SerialDenseVector& elevec2,
                                                 Epetra_SerialDenseVector& elevec3)
 {
-    DRT::Elements::Fluid2Line::ActionType act = Fluid2Line::none;
+    DRT::ELEMENTS::Fluid2Line::ActionType act = Fluid2Line::none;
     string action = params.get<string>("action","none");
     if (action == "none") dserror("No action supplied");
     else if (action == "integrate_Shapefunction")
@@ -69,14 +69,14 @@ int DRT::Elements::Fluid2Line::Evaluate(        ParameterList&            params
 
     return 0;
 
-} // DRT::Elements::Fluid2Line::Evaluate
+} // DRT::ELEMENTS::Fluid2Line::Evaluate
 
 
 
 /*----------------------------------------------------------------------*
  |  Integrate a Line Neumann boundary condition (public)     gammi 04/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::Fluid2Line::EvaluateNeumann(
+int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
     ParameterList& params,
     DRT::Discretization&      discretization,
     DRT::Condition&           condition,
@@ -191,7 +191,7 @@ int DRT::Elements::Fluid2Line::EvaluateNeumann(
   return 0;
 }
 
-GaussRule1D DRT::Elements::Fluid2Line::getOptimalGaussrule(const DiscretizationType& distype)
+GaussRule1D DRT::ELEMENTS::Fluid2Line::getOptimalGaussrule(const DiscretizationType& distype)
 {
   GaussRule1D rule = intrule1D_undefined;
   switch (distype)
@@ -209,7 +209,7 @@ GaussRule1D DRT::Elements::Fluid2Line::getOptimalGaussrule(const DiscretizationT
 }
 
 
-double  DRT::Elements::Fluid2Line::f2_substitution(
+double  DRT::ELEMENTS::Fluid2Line::f2_substitution(
   const Epetra_SerialDenseMatrix  xye,
   const Epetra_SerialDenseMatrix  deriv,
   const int iel)
@@ -225,7 +225,7 @@ double  DRT::Elements::Fluid2Line::f2_substitution(
 /*----------------------------------------------------------------------*
  |  Integrate shapefunctions over line (public)              g.bau 07/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Fluid2Line::IntegrateShapeFunction(ParameterList& params,
+void DRT::ELEMENTS::Fluid2Line::IntegrateShapeFunction(ParameterList& params,
                   DRT::Discretization&       discretization,
                   vector<int>&               lm,
                   Epetra_SerialDenseVector&  elevec1,
@@ -315,7 +315,7 @@ void DRT::Elements::Fluid2Line::IntegrateShapeFunction(ParameterList& params,
   } //end of loop over integrationen points
 
 return;
-} // DRT::Elements::Fluid2Line::IntegrateShapeFunction
+} // DRT::ELEMENTS::Fluid2Line::IntegrateShapeFunction
 
 
 #endif  // #ifdef CCADISCRET

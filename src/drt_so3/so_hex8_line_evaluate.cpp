@@ -24,7 +24,7 @@ Maintainer: Moritz Frenzel
 /*-----------------------------------------------------------------------*
  * Integrate a Line Neumann boundary condition (public)         maf 04/07*
  * ----------------------------------------------------------------------*/
-int DRT::Elements::Soh8Line::EvaluateNeumann(ParameterList&         params,
+int DRT::ELEMENTS::Soh8Line::EvaluateNeumann(ParameterList&         params,
                                              DRT::Discretization&   discretization,
                                              DRT::Condition&        condition,
                                              vector<int>&           lm,
@@ -126,7 +126,7 @@ int DRT::Elements::Soh8Line::EvaluateNeumann(ParameterList&         params,
 /*----------------------------------------------------------------------*
  * Evaluate sqrt of determinant of metric at gp (private)      maf 05/07*
  * ---------------------------------------------------------------------*/
-void DRT::Elements::Soh8Line::soh8_line_integ(
+void DRT::ELEMENTS::Soh8Line::soh8_line_integ(
       vector<double>* funct,                 // (o) shape functions
       double* sqrtdetg,                      // (o) pointer to sqrt of det(g)
       vector<double>* unrm,                  // (o) unit normal

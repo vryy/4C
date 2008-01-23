@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file so_tet10.H
 
-\class DRT::Elements::So_tet10
+\class DRT::ELEMENTS::So_tet10
 
 \brief A C++ version of the 10-node tet solid element
 
@@ -57,12 +57,12 @@ class SoDisp;
 namespace DRT
 {
 
-namespace Elements
+namespace ELEMENTS
 {
 // forward declarations	
 	class SoDisp;
 /*!
-\class DRT::Elements::So_integrator
+\class DRT::ELEMENTS::So_integrator
 
 \brief A general class agregating all necessery data for discrete integration
 
@@ -187,7 +187,7 @@ NOTE: X stands for the number of NODES (and shape functions) in a element
   	public:
   		Integrator_tet4_4point(void);
   };
-} // namespace Elements
+} // namespace ELEMENTS
 } // namespace DRT
 
 long double det_volf(Epetra_SerialDenseMatrix& in_matrix);

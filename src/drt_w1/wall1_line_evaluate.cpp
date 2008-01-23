@@ -25,7 +25,7 @@ Maintainer: Markus Gitterle
  |  Integrate a Line Neumann boundary condition (public)     mgit 03/07|
  *----------------------------------------------------------------------*/
 
-int DRT::Elements::Wall1Line::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
                               vector<int>&              lm,
@@ -110,7 +110,7 @@ int DRT::Elements::Wall1Line::EvaluateNeumann(ParameterList& params,
 }
 
 
-DRT::UTILS::GaussRule1D DRT::Elements::Wall1Line::getOptimalGaussrule(const DiscretizationType& distype)
+DRT::UTILS::GaussRule1D DRT::ELEMENTS::Wall1Line::getOptimalGaussrule(const DiscretizationType& distype)
 {
   DRT::UTILS::GaussRule1D rule = DRT::UTILS::intrule1D_undefined;
   switch (distype)
@@ -129,7 +129,7 @@ DRT::UTILS::GaussRule1D DRT::Elements::Wall1Line::getOptimalGaussrule(const Disc
 
 // determinant of jacobian matrix
 
-double  DRT::Elements::Wall1Line::w1_substitution(const Epetra_SerialDenseMatrix& xye,
+double  DRT::ELEMENTS::Wall1Line::w1_substitution(const Epetra_SerialDenseMatrix& xye,
                                                   const Epetra_SerialDenseMatrix& deriv,
                                                   const int iel)
 {

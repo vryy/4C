@@ -37,7 +37,7 @@ extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*
  |  read element input (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
-bool DRT::Elements::So_shw6::ReadElement()
+bool DRT::ELEMENTS::So_shw6::ReadElement()
 {
   // read element's nodes
   int ierr=0;

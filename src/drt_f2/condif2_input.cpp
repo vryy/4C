@@ -38,7 +38,7 @@ extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*
  |  read element input (public)                              gammi 04/07|
  *----------------------------------------------------------------------*/
-bool DRT::Elements::Condif2::ReadElement()
+bool DRT::ELEMENTS::Condif2::ReadElement()
 {
   // read element's nodes
   int   ierr = 0;

@@ -25,10 +25,10 @@ using namespace DRT::UTILS;
  |  ctor (public)                                            mwgee 01/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::Fluid3Surface::Fluid3Surface(int id, int owner,
+DRT::ELEMENTS::Fluid3Surface::Fluid3Surface(int id, int owner,
                               int nnode, const int* nodeids,
                               DRT::Node** nodes,
-                              DRT::Elements::Fluid3* parent,
+                              DRT::ELEMENTS::Fluid3* parent,
                               const int lsurface) :
 DRT::Element(id,element_fluid3surface,owner),
 parent_(parent),
@@ -44,7 +44,7 @@ lsurface_(lsurface)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Fluid3Surface::Fluid3Surface(const DRT::Elements::Fluid3Surface& old) :
+DRT::ELEMENTS::Fluid3Surface::Fluid3Surface(const DRT::ELEMENTS::Fluid3Surface& old) :
 DRT::Element(old),
 parent_(old.parent_),
 lsurface_(old.lsurface_),
@@ -58,9 +58,9 @@ lineptrs_(old.lineptrs_)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::Elements::Fluid3Surface::Clone() const
+DRT::Element* DRT::ELEMENTS::Fluid3Surface::Clone() const
 {
-  DRT::Elements::Fluid3Surface* newelement = new DRT::Elements::Fluid3Surface(*this);
+  DRT::ELEMENTS::Fluid3Surface* newelement = new DRT::ELEMENTS::Fluid3Surface(*this);
   return newelement;
 }
 
@@ -68,7 +68,7 @@ DRT::Element* DRT::Elements::Fluid3Surface::Clone() const
  |                                                             (public) |
  |                                                          u.kue 03/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::Elements::Fluid3Surface::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::Fluid3Surface::Shape() const
 {
   switch (NumNode())
   {
@@ -87,7 +87,7 @@ DRT::Element::DiscretizationType DRT::Elements::Fluid3Surface::Shape() const
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Fluid3Surface::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Fluid3Surface::Pack(vector<char>& data) const
 {
   data.resize(0);
   dserror("this Fluid3Surface element does not support communication");
@@ -99,7 +99,7 @@ void DRT::Elements::Fluid3Surface::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Fluid3Surface::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Fluid3Surface::Unpack(const vector<char>& data)
 {
   dserror("this Fluid3Surface element does not support communication");
   return;
@@ -108,7 +108,7 @@ void DRT::Elements::Fluid3Surface::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Fluid3Surface::~Fluid3Surface()
+DRT::ELEMENTS::Fluid3Surface::~Fluid3Surface()
 {
   return;
 }
@@ -117,7 +117,7 @@ DRT::Elements::Fluid3Surface::~Fluid3Surface()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 01/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Fluid3Surface::Print(ostream& os) const
+void DRT::ELEMENTS::Fluid3Surface::Print(ostream& os) const
 {
   os << "Fluid3Surface ";
   Element::Print(os);
@@ -127,7 +127,7 @@ void DRT::Elements::Fluid3Surface::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             gammi 04/07|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::Elements::Fluid3Surface::Lines()
+DRT::Element** DRT::ELEMENTS::Fluid3Surface::Lines()
 {
     const DiscretizationType distype = Shape();
     const int nline   = NumLine();
@@ -160,7 +160,7 @@ DRT::Element** DRT::Elements::Fluid3Surface::Lines()
 
 
 
-void DRT::Elements::Fluid3Surface::CreateLinesTri(const int& nline,
+void DRT::ELEMENTS::Fluid3Surface::CreateLinesTri(const int& nline,
                                                   const int& nnode)
 {
     for(int iline=0;iline<nline;iline++)
@@ -173,12 +173,12 @@ void DRT::Elements::Fluid3Surface::CreateLinesTri(const int& nline,
              nodeids[inode] = NodeIds()[eleNodeNumbering_tri6_lines[iline][inode]];
              nodes[inode]   = Nodes()[  eleNodeNumbering_tri6_lines[iline][inode]];
         }
-        lines_[iline] = rcp(new DRT::Elements::Fluid3Line(iline,Owner(),nnode,nodeids,nodes,this,NULL,iline));
+        lines_[iline] = rcp(new DRT::ELEMENTS::Fluid3Line(iline,Owner(),nnode,nodeids,nodes,this,NULL,iline));
         lineptrs_[iline] = lines_[iline].get();
     }
 }        
 
-void DRT::Elements::Fluid3Surface::CreateLinesQuad(const int& nline,
+void DRT::ELEMENTS::Fluid3Surface::CreateLinesQuad(const int& nline,
                                                    const int& nnode)
 {
     for(int iline=0;iline<nline;iline++)
@@ -191,7 +191,7 @@ void DRT::Elements::Fluid3Surface::CreateLinesQuad(const int& nline,
              nodeids[inode] = NodeIds()[eleNodeNumbering_quad9_lines[iline][inode]];
              nodes[inode]   = Nodes()[  eleNodeNumbering_quad9_lines[iline][inode]];
         }
-        lines_[iline] = rcp(new DRT::Elements::Fluid3Line(iline,Owner(),nnode,nodeids,nodes,this,NULL,iline));
+        lines_[iline] = rcp(new DRT::ELEMENTS::Fluid3Line(iline,Owner(),nnode,nodeids,nodes,this,NULL,iline));
         lineptrs_[iline] = lines_[iline].get();
     }
 }    

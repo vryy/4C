@@ -38,7 +38,7 @@ extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*
  |  read element input (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
-bool DRT::Elements::SoDisp::ReadElement()
+bool DRT::ELEMENTS::SoDisp::ReadElement()
 {
     typedef map<string, DiscretizationType> Gid2DisType;
     Gid2DisType gid2distype;

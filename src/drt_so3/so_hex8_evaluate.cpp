@@ -35,7 +35,7 @@ using namespace LINALG; // our linear algebra
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::So_hex8::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
                                     DRT::Discretization&      discretization,
                                     vector<int>&              lm,
                                     Epetra_SerialDenseMatrix& elemat1,
@@ -45,7 +45,7 @@ int DRT::Elements::So_hex8::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector& elevec3)
 {
   // start with "none"
-  DRT::Elements::So_hex8::ActionType act = So_hex8::none;
+  DRT::ELEMENTS::So_hex8::ActionType act = So_hex8::none;
 
   // get the required action
   string action = params.get<string>("action","none");
@@ -172,7 +172,7 @@ int DRT::Elements::So_hex8::Evaluate(ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)     maf 04/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::So_hex8::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::So_hex8::EvaluateNeumann(ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
                                            vector<int>&              lm,
@@ -202,7 +202,7 @@ int DRT::Elements::So_hex8::EvaluateNeumann(ParameterList& params,
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
 ** ============================================================================*/
-   const static DRT::Elements::So_hex8::Integrator_So_hex8 int_hex8;
+   const static DRT::ELEMENTS::So_hex8::Integrator_So_hex8 int_hex8;
 /* ============================================================================*/
 
   // update element geometry
@@ -242,12 +242,12 @@ int DRT::Elements::So_hex8::EvaluateNeumann(ParameterList& params,
   }/* ==================================================== end of Loop over GP */
 
   return 0;
-} // DRT::Elements::Shell8::s8_EvaluateNeumann
+} // DRT::ELEMENTS::Shell8::s8_EvaluateNeumann
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                             maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_hex8::soh8_nlnstiffmass(
+void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       vector<int>&              lm,             // location matrix
       vector<double>&           disp,           // current displacements
       vector<double>&           residual,       // current residuum
@@ -260,7 +260,7 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
 ** ============================================================================*/
-   const static DRT::Elements::So_hex8::Integrator_So_hex8 int_hex8;
+   const static DRT::ELEMENTS::So_hex8::Integrator_So_hex8 int_hex8;
 /* ============================================================================*/
 
   // update element geometry
@@ -600,13 +600,13 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
   } // -------------------------------------------------------------------- EAS
   SymmetriseMatrix(*stiffmatrix);
   return;
-} // DRT::Elements::Shell8::s8_nlnstiffmass
+} // DRT::ELEMENTS::Shell8::s8_nlnstiffmass
 
 
 /*----------------------------------------------------------------------*
  |  shape functions and derivatives for So_hex8                maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_hex8::soh8_shapederiv(
+void DRT::ELEMENTS::So_hex8::soh8_shapederiv(
       Epetra_SerialDenseMatrix** shapefct,  // pointer to pointer of shapefct
       Epetra_SerialDenseMatrix** deriv,     // pointer to pointer of derivs
       Epetra_SerialDenseVector** weights)   // pointer to pointer of weights
@@ -688,7 +688,7 @@ void DRT::Elements::So_hex8::soh8_shapederiv(
 }  // of soh8_shapederiv
 
 
-bool DRT::Elements::So_hex8::soh8_checkRewinding()
+bool DRT::ELEMENTS::So_hex8::soh8_checkRewinding()
 {
     const DRT::UTILS::IntegrationPoints3D intpoints = getIntegrationPoints3D(DRT::UTILS::intrule_hex_1point);
     const double r = intpoints.qxg[0][0];
@@ -731,14 +731,14 @@ bool DRT::Elements::So_hex8::soh8_checkRewinding()
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  maf 07/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::Soh8Register::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::Soh8Register::Initialize(DRT::Discretization& dis)
 {
   //-------------------- loop all my column elements and check rewinding
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
     // get the actual element
     if (dis.lColElement(i)->Type() != DRT::Element::element_so_hex8) continue;
-    DRT::Elements::So_hex8* actele = dynamic_cast<DRT::Elements::So_hex8*>(dis.lColElement(i));
+    DRT::ELEMENTS::So_hex8* actele = dynamic_cast<DRT::ELEMENTS::So_hex8*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex8* failed");
 
     if (!actele->donerewinding_) {

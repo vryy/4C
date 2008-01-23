@@ -54,7 +54,7 @@ extern struct _MATERIAL  *mat;
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              vlf 06/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::So_tet10::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
                                     DRT::Discretization&      discretization,
                                     vector<int>&              lm,
                                     Epetra_SerialDenseMatrix& elemat1,
@@ -64,7 +64,7 @@ int DRT::Elements::So_tet10::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector& elevec3)
 {
   // start with "none"
-  DRT::Elements::So_tet10::ActionType act = So_tet10::none;
+  DRT::ELEMENTS::So_tet10::ActionType act = So_tet10::none;
 
   // get the required action
   string action = params.get<string>("action","none");
@@ -173,7 +173,7 @@ int DRT::Elements::So_tet10::Evaluate(ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)     maf 04/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::So_tet10::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::So_tet10::EvaluateNeumann(ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
                                            vector<int>&              lm,
@@ -203,7 +203,7 @@ int DRT::Elements::So_tet10::EvaluateNeumann(ParameterList& params,
 /* =============================================================================*
  * CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_10 with 4 GAUSS POINTS*
  * =============================================================================*/
-   const static DRT::Elements::Integrator_tet10_4point tet10_dis;
+   const static DRT::ELEMENTS::Integrator_tet10_4point tet10_dis;
 /* ============================================================================*/
 
 /* ================================================= Loop over Gauss Points */
@@ -243,14 +243,14 @@ int DRT::Elements::So_tet10::EvaluateNeumann(ParameterList& params,
   }/* ==================================================== end of Loop over GP */
 
   return 0;
-} // DRT::Elements::So_tet10::EvaluateNeumann
+} // DRT::ELEMENTS::So_tet10::EvaluateNeumann
 
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                            vlf 06/07 |
  *----------------------------------------------------------------------*/
 
-void DRT::Elements::So_tet10::so_tet10_nlnstiffmass(
+void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
       vector<int>&              lm,             // location matrix
       vector<double>&           disp,           // current displacements
       vector<double>&           residual,       // current residuum
@@ -262,7 +262,7 @@ void DRT::Elements::So_tet10::so_tet10_nlnstiffmass(
 /* =============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_10 with 4 GAUSS POINTS*
 ** =============================================================================*/
-  const static DRT::Elements::Integrator_tet10_4point tet10_dis;
+  const static DRT::ELEMENTS::Integrator_tet10_4point tet10_dis;
 /* =============================================================================*/
   double density; //forward declaration for mass matrix
   // update element geometry
@@ -583,7 +583,7 @@ void DRT::Elements::So_tet10::so_tet10_nlnstiffmass(
 /* =============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_10 with 14 GAUSS POINTS*
 ** =============================================================================*/
-  const static DRT::Elements::Integrator_tet10_14point tet10_mass;
+  const static DRT::ELEMENTS::Integrator_tet10_14point tet10_mass;
 /* ============================================================================*/
   for (int gp=0; gp<tet10_mass.num_gp; gp++) {
     if (massmatrix != NULL){ // evaluate mass matrix +++++++++++++++++++++++++
@@ -604,10 +604,10 @@ void DRT::Elements::So_tet10::so_tet10_nlnstiffmass(
   cout << (*stiffmatrix);
   #endif //VERBOSE_OUTPUT
   return;
-} // DRT::Elements::So_tet10::so_tet10_nlnstiffmass
+} // DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass
 
 
-int DRT::Elements::Sotet10Register::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::Sotet10Register::Initialize(DRT::Discretization& dis)
 {
   return 0;
 }

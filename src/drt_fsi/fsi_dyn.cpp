@@ -94,7 +94,7 @@ void CreateAleDiscretization()
     bool myele = fluiddis->ElementRowMap()->MyGID(actele->Id());
 
 #ifdef D_FLUID2
-    DRT::Elements::Fluid2* f2 = dynamic_cast<DRT::Elements::Fluid2*>(actele);
+    DRT::ELEMENTS::Fluid2* f2 = dynamic_cast<DRT::ELEMENTS::Fluid2*>(actele);
     if (not found and f2!=NULL)
     {
       found = true;
@@ -105,7 +105,7 @@ void CreateAleDiscretization()
 #endif
 
 #ifdef D_FLUID3
-    DRT::Elements::Fluid3* f3 = dynamic_cast<DRT::Elements::Fluid3*>(actele);
+    DRT::ELEMENTS::Fluid3* f3 = dynamic_cast<DRT::ELEMENTS::Fluid3*>(actele);
     if (not found and f3!=NULL)
     {
       found = true;
@@ -211,7 +211,7 @@ void CreateAleDiscretization()
     // This is again really ugly as we have to extract the actual
     // element type in order to access the material property
 #ifdef D_ALE
-    DRT::Elements::Ale2* ale2 = dynamic_cast<DRT::Elements::Ale2*>(aleele.get());
+    DRT::ELEMENTS::Ale2* ale2 = dynamic_cast<DRT::ELEMENTS::Ale2*>(aleele.get());
     if (ale2!=NULL)
     {
       ale2->SetMaterial(matnr);
@@ -220,7 +220,7 @@ void CreateAleDiscretization()
 #endif
     {
 #ifdef D_ALE
-      DRT::Elements::Ale3* ale3 = dynamic_cast<DRT::Elements::Ale3*>(aleele.get());
+      DRT::ELEMENTS::Ale3* ale3 = dynamic_cast<DRT::ELEMENTS::Ale3*>(aleele.get());
       if (ale3!=NULL)
       {
         ale3->SetMaterial(matnr);

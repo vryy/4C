@@ -35,10 +35,10 @@ writen by : Alexander Volf
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 
-DRT::Elements::Sotet10Surface::Sotet10Surface(int id, int owner,
+DRT::ELEMENTS::Sotet10Surface::Sotet10Surface(int id, int owner,
                               int nnode, const int* nodeids,
                               DRT::Node** nodes,
-                              DRT::Elements::So_tet10* parent,
+                              DRT::ELEMENTS::So_tet10* parent,
                               const int lsurface) :
 DRT::Element(id,element_sotet10surface,owner),
 parent_(parent),
@@ -53,7 +53,7 @@ lsurface_(lsurface)
 /*----------------------------------------------------------------------***
  |  copy-ctor (public)                                         maf 01/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Sotet10Surface::Sotet10Surface(const DRT::Elements::Sotet10Surface& old) :
+DRT::ELEMENTS::Sotet10Surface::Sotet10Surface(const DRT::ELEMENTS::Sotet10Surface& old) :
 DRT::Element(old),
 parent_(old.parent_),
 lsurface_(old.lsurface_)
@@ -66,10 +66,10 @@ lsurface_(old.lsurface_)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            maf 01/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::Elements::Sotet10Surface::Clone() const
+DRT::Element* DRT::ELEMENTS::Sotet10Surface::Clone() const
 {
   //DSTraceHelper dst("Sotet10Surface::Clone");
-  DRT::Elements::Sotet10Surface* newelement = new DRT::Elements::Sotet10Surface(*this);
+  DRT::ELEMENTS::Sotet10Surface* newelement = new DRT::ELEMENTS::Sotet10Surface(*this);
   return newelement;
 }
 
@@ -77,7 +77,7 @@ DRT::Element* DRT::Elements::Sotet10Surface::Clone() const
  |                                                             (public) |
  |                                                          u.kue 03/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::Elements::Sotet10Surface::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::Sotet10Surface::Shape() const
 {
 
   return tri6;
@@ -87,7 +87,7 @@ DRT::Element::DiscretizationType DRT::Elements::Sotet10Surface::Shape() const
  |  Pack data                                                  (public) |
  |                                                            maf 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Sotet10Surface::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Sotet10Surface::Pack(vector<char>& data) const
 {
   //DSTraceHelper dst("Sotet10Surface::Pack");
   data.resize(0);
@@ -100,7 +100,7 @@ void DRT::Elements::Sotet10Surface::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Sotet10Surface::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Sotet10Surface::Unpack(const vector<char>& data)
 {
   //DSTraceHelper dst("Sotet10Surface::Unpack");
  
@@ -111,7 +111,7 @@ void DRT::Elements::Sotet10Surface::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------***
  |  dtor (public)                                              maf 01/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Sotet10Surface::~Sotet10Surface()
+DRT::ELEMENTS::Sotet10Surface::~Sotet10Surface()
 {
   //DSTraceHelper dst("Sotet10Surface::~Sotet10Surface");
   return;
@@ -121,7 +121,7 @@ DRT::Elements::Sotet10Surface::~Sotet10Surface()
 /*----------------------------------------------------------------------*
  |  print this element (public)                                maf 01/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Sotet10Surface::Print(ostream& os) const
+void DRT::ELEMENTS::Sotet10Surface::Print(ostream& os) const
 {
   //DSTraceHelper dst("Sotet10Surface::Print");
   os << "Sotet10Surface ";

@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file so_sh8.H
 
-\class DRT::Elements::So_sh8
+\class DRT::ELEMENTS::So_sh8
 
 \brief A C++ 8-node Solid-Shell element inherited from so_hex8
 
@@ -51,7 +51,7 @@ namespace DRT
 // forward declarations
 class Discretization;
 
-namespace Elements
+namespace ELEMENTS
 {
 // forward declarations
 class Sosh8Register;
@@ -280,7 +280,7 @@ public:
   Makes a deep copy of an Soh8Register
 
   */
-  Sosh8Register(const DRT::Elements::Sosh8Register& old);
+  Sosh8Register(const DRT::ELEMENTS::Sosh8Register& old);
 
   /*!
   \brief Deep copy this instance of Soh8Register and return pointer to the copy
@@ -289,7 +289,7 @@ public:
   where the type of the derived class is unknown and a copy-ctor is needed
 
   */
-  DRT::Elements::Sosh8Register* Clone() const;
+  DRT::ELEMENTS::Sosh8Register* Clone() const;
 
   /*!
   \brief Return unique ParObject id
@@ -354,7 +354,7 @@ public:
 
 
 
-} // namespace Elements
+} // namespace ELEMENTS
 } // namespace DRT
 
 

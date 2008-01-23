@@ -29,7 +29,7 @@ extern "C"
 /*----------------------------------------------------------------------*
  |  Integrate a Line Neumann boundary condition (public)     mwgee 01/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::Shell8Line::EvaluateNeumann(
+int DRT::ELEMENTS::Shell8Line::EvaluateNeumann(
                                            ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,

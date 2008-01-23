@@ -23,10 +23,10 @@ Maintainer: Moritz Frenzel
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::Soctet10Line::Soctet10Line(int id, int owner,
+DRT::ELEMENTS::Soctet10Line::Soctet10Line(int id, int owner,
                               int nnode, const int* nodeids,
                               DRT::Node** nodes,
-                              DRT::Elements::So_ctet10* parent,
+                              DRT::ELEMENTS::So_ctet10* parent,
                               const int lline) :
 DRT::Element(id,element_soctet10line,owner),
 parent_(parent),
@@ -40,7 +40,7 @@ lline_(lline)
 /*----------------------------------------------------------------------***
  |  copy-ctor (public)                                         maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Soctet10Line::Soctet10Line(const DRT::Elements::Soctet10Line& old) :
+DRT::ELEMENTS::Soctet10Line::Soctet10Line(const DRT::ELEMENTS::Soctet10Line& old) :
 DRT::Element(old),
 parent_(old.parent_),
 lline_(old.lline_)
@@ -52,10 +52,10 @@ lline_(old.lline_)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::Elements::Soctet10Line::Clone() const
+DRT::Element* DRT::ELEMENTS::Soctet10Line::Clone() const
 {
 
-  DRT::Elements::Soctet10Line* newelement = new DRT::Elements::Soctet10Line(*this);
+  DRT::ELEMENTS::Soctet10Line* newelement = new DRT::ELEMENTS::Soctet10Line(*this);
   return newelement;
 }
 
@@ -63,7 +63,7 @@ DRT::Element* DRT::Elements::Soctet10Line::Clone() const
  |                                                             (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::Elements::Soctet10Line::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::Soctet10Line::Shape() const
 {
   switch (NumNode())
   {
@@ -79,7 +79,7 @@ DRT::Element::DiscretizationType DRT::Elements::Soctet10Line::Shape() const
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Soctet10Line::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Soctet10Line::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -92,7 +92,7 @@ void DRT::Elements::Soctet10Line::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Soctet10Line::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Soctet10Line::Unpack(const vector<char>& data)
 {
   dserror("this line element does not support communication");
   return;
@@ -101,7 +101,7 @@ void DRT::Elements::Soctet10Line::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------***
  |  dtor (public)                                              maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Soctet10Line::~Soctet10Line()
+DRT::ELEMENTS::Soctet10Line::~Soctet10Line()
 {
   return;
 }
@@ -110,7 +110,7 @@ DRT::Elements::Soctet10Line::~Soctet10Line()
 /*----------------------------------------------------------------------***
  |  print this element (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Soctet10Line::Print(ostream& os) const
+void DRT::ELEMENTS::Soctet10Line::Print(ostream& os) const
 {
   os << "Soctet10Line ";
 
@@ -121,7 +121,7 @@ void DRT::Elements::Soctet10Line::Print(ostream& os) const
 /*-----------------------------------------------------------------------***
  * Integrate a Line Neumann boundary condition (public)         maf 04/07*
  * ----------------------------------------------------------------------*/
-int DRT::Elements::Soctet10Line::EvaluateNeumann(ParameterList&         params,
+int DRT::ELEMENTS::Soctet10Line::EvaluateNeumann(ParameterList&         params,
                                              DRT::Discretization&   discretization,
                                              DRT::Condition&        condition,
                                              vector<int>&           lm,

@@ -32,13 +32,13 @@ extern "C"
 /*----------------------------------------------------------------------*
  * Integrate a Surface Neumann boundary condition (public)     vlf 04/07*
  * ---------------------------------------------------------------------*/
-int DRT::Elements::Sotet10Surface::EvaluateNeumann(ParameterList&           params,
+int DRT::ELEMENTS::Sotet10Surface::EvaluateNeumann(ParameterList&           params,
                                                 DRT::Discretization&     discretization,
                                                 DRT::Condition&          condition,
                                                 vector<int>&             lm,
                                                 Epetra_SerialDenseVector& elevec1)
 {
-  //cout << "DRT::Elements::Sotet10Surface::EvaluateNeumann" << endl;
+  //cout << "DRT::ELEMENTS::Sotet10Surface::EvaluateNeumann" << endl;
   //getchar();
  
   // get values and switches from the condition
@@ -124,7 +124,7 @@ int DRT::Elements::Sotet10Surface::EvaluateNeumann(ParameterList&           para
 /*----------------------------------------------------------------------*
  * Get shape functions for a tet10 face					       vlf 05/07*
  * ---------------------------------------------------------------------*/
-void DRT::Elements::Sotet10Surface::sotet10_surface_shapefunc(
+void DRT::ELEMENTS::Sotet10Surface::sotet10_surface_shapefunc(
       Epetra_SerialDenseMatrix** shapefct,  // pointer to pointer of shapefct
       Epetra_SerialDenseVector** weights)   // pointer to pointer of weights
 {

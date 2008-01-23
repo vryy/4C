@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file wall1.H
 
-\class DRT::Elements::Wall1
+\class DRT::ELEMENTS::Wall1
 
 \brief A C++ wrapper for the wall1 element
 
@@ -48,7 +48,7 @@ namespace DRT
 class Discretization;
 class Wall1Register;
 
-namespace Elements
+namespace ELEMENTS
 {
 // forward declarations
 class Wall1Line;
@@ -319,9 +319,9 @@ private:
   //! vector of surfaces of this element (length 1)
   vector<DRT::Element*>                           surfaces_;  
   //! vector of lines adjacent to this element (wall1: 3 or 4 lines)
-  vector<RefCountPtr<DRT::Elements::Wall1Line> >  lines_;     
+  vector<RefCountPtr<DRT::ELEMENTS::Wall1Line> >  lines_;     
   //! vector of lines adjacent to this element (wall1: 3 or 4 lines)
-  vector<DRT::Elements::Wall1Line*>               lineptrs_;
+  vector<DRT::ELEMENTS::Wall1Line*>               lineptrs_;
   //! gaussian points
   DRT::UTILS::GaussRule2D                         gaussrule_;
   //! problem type
@@ -452,7 +452,7 @@ public:
   Makes a deep copy of an Wall1Register
   
   */
-  Wall1Register(const DRT::Elements::Wall1Register& old);
+  Wall1Register(const DRT::ELEMENTS::Wall1Register& old);
 
   /*!
   \brief Deep copy this instance of Wall1Register and return pointer to the copy
@@ -461,7 +461,7 @@ public:
   where the type of the derived class is unknown and a copy-ctor is needed
   
   */
-  DRT::Elements::Wall1Register* Clone() const;
+  DRT::ELEMENTS::Wall1Register* Clone() const;
 
   /*!
   \brief Return unique ParObject id
@@ -558,7 +558,7 @@ public:
   \param lline: the local line number of this line w.r.t. the parent element
   */
   Wall1Line(int id, int owner, int nnode, const int* nodeids,
-             DRT::Node** nodes, DRT::Elements::Wall1* parent, const int lline);
+             DRT::Node** nodes, DRT::ELEMENTS::Wall1* parent, const int lline);
 
   /*!
   \brief Copy Constructor
@@ -690,7 +690,7 @@ private:
   Wall1Line& operator = (const Wall1Line& old);
   
   //! The parent element of this line
-  DRT::Elements::Wall1* parent_;  
+  DRT::ELEMENTS::Wall1* parent_;  
   //! The local line number of this line w.r.t to the parent_ element
   int                    lline_;   
   
@@ -708,7 +708,7 @@ private:
 
 
 
-} // namespace Elements
+} // namespace ELEMENTS
 } // namespace DRT
 
 #endif  // #ifndef WALL1_H

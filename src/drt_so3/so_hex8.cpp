@@ -22,7 +22,7 @@ Maintainer: Moritz Frenzel
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::So_hex8::So_hex8(int id, int owner) :
+DRT::ELEMENTS::So_hex8::So_hex8(int id, int owner) :
 DRT::Element(id,element_so_hex8,owner),
 data_()
 {
@@ -38,7 +38,7 @@ data_()
  |  copy-ctor (public)                                         maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::So_hex8::So_hex8(const DRT::Elements::So_hex8& old) :
+DRT::ELEMENTS::So_hex8::So_hex8(const DRT::ELEMENTS::So_hex8& old) :
 DRT::Element(old),
 data_(old.data_),
 surfaces_(old.surfaces_),
@@ -54,9 +54,9 @@ lineptrs_(old.lineptrs_)
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::Elements::So_hex8::Clone() const
+DRT::Element* DRT::ELEMENTS::So_hex8::Clone() const
 {
-  DRT::Elements::So_hex8* newelement = new DRT::Elements::So_hex8(*this);
+  DRT::ELEMENTS::So_hex8* newelement = new DRT::ELEMENTS::So_hex8(*this);
   return newelement;
 }
 
@@ -64,7 +64,7 @@ DRT::Element* DRT::Elements::So_hex8::Clone() const
  |                                                             (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::Elements::So_hex8::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::So_hex8::Shape() const
 {
   return hex8;
 }
@@ -73,7 +73,7 @@ DRT::Element::DiscretizationType DRT::Elements::So_hex8::Shape() const
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_hex8::Pack(vector<char>& data) const
+void DRT::ELEMENTS::So_hex8::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -115,7 +115,7 @@ void DRT::Elements::So_hex8::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_hex8::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::So_hex8::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -158,7 +158,7 @@ void DRT::Elements::So_hex8::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                              maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::So_hex8::~So_hex8()
+DRT::ELEMENTS::So_hex8::~So_hex8()
 {
   return;
 }
@@ -167,7 +167,7 @@ DRT::Elements::So_hex8::~So_hex8()
 /*----------------------------------------------------------------------*
  |  print this element (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_hex8::Print(ostream& os) const
+void DRT::ELEMENTS::So_hex8::Print(ostream& os) const
 {
   os << "So_hex8 ";
   Element::Print(os);
@@ -179,9 +179,9 @@ void DRT::Elements::So_hex8::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  allocate and return So_hex8Register (public)                maf 04/07|
  *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::Elements::So_hex8::ElementRegister() const
+RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::So_hex8::ElementRegister() const
 {
-  return rcp(new DRT::Elements::Soh8Register(Type()));
+  return rcp(new DRT::ELEMENTS::Soh8Register(Type()));
 }
 
   /*====================================================================*/
@@ -220,7 +220,7 @@ RefCountPtr<DRT::ElementRegister> DRT::Elements::So_hex8::ElementRegister() cons
 /*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)                  maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::Elements::So_hex8::Volumes()
+DRT::Element** DRT::ELEMENTS::So_hex8::Volumes()
 {
   volume_.resize(1);
   volume_[0] = this; //points to element itself
@@ -231,7 +231,7 @@ DRT::Element** DRT::Elements::So_hex8::Volumes()
  |  get vector of surfaces (public)                             maf 04/07|
  |  surface normals always point outward                                 |
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::Elements::So_hex8::Surfaces()
+DRT::Element** DRT::ELEMENTS::So_hex8::Surfaces()
 {
   
   const int nsurf = NumSurface();
@@ -249,7 +249,7 @@ DRT::Element** DRT::Elements::So_hex8::Surfaces()
   nodes[2] = Nodes()[2];
   nodes[3] = Nodes()[1];
   surfaces_[0] =
-    rcp(new DRT::Elements::Soh8Surface(0,Owner(),4,nodeids,nodes,this,0));
+    rcp(new DRT::ELEMENTS::Soh8Surface(0,Owner(),4,nodeids,nodes,this,0));
   surfaceptrs_[0] = surfaces_[0].get();
 
   nodeids[0] = NodeIds()[0];
@@ -261,7 +261,7 @@ DRT::Element** DRT::Elements::So_hex8::Surfaces()
   nodes[2] = Nodes()[5];
   nodes[3] = Nodes()[4];
   surfaces_[1] =
-    rcp(new DRT::Elements::Soh8Surface(1,Owner(),4,nodeids,nodes,this,1));
+    rcp(new DRT::ELEMENTS::Soh8Surface(1,Owner(),4,nodeids,nodes,this,1));
   surfaceptrs_[1] = surfaces_[1].get();
 
   nodeids[0] = NodeIds()[0];
@@ -273,7 +273,7 @@ DRT::Element** DRT::Elements::So_hex8::Surfaces()
   nodes[2] = Nodes()[7];
   nodes[3] = Nodes()[3];
   surfaces_[2] =
-    rcp(new DRT::Elements::Soh8Surface(2,Owner(),4,nodeids,nodes,this,2));
+    rcp(new DRT::ELEMENTS::Soh8Surface(2,Owner(),4,nodeids,nodes,this,2));
   surfaceptrs_[2] = surfaces_[2].get();
 
   nodeids[0] = NodeIds()[2];
@@ -285,7 +285,7 @@ DRT::Element** DRT::Elements::So_hex8::Surfaces()
   nodes[2] = Nodes()[7];
   nodes[3] = Nodes()[6];
   surfaces_[3] =
-    rcp(new DRT::Elements::Soh8Surface(3,Owner(),4,nodeids,nodes,this,3));
+    rcp(new DRT::ELEMENTS::Soh8Surface(3,Owner(),4,nodeids,nodes,this,3));
   surfaceptrs_[3] = surfaces_[3].get();
 
   nodeids[0] = NodeIds()[1];
@@ -297,7 +297,7 @@ DRT::Element** DRT::Elements::So_hex8::Surfaces()
   nodes[2] = Nodes()[6];
   nodes[3] = Nodes()[5];
   surfaces_[4] =
-    rcp(new DRT::Elements::Soh8Surface(4,Owner(),4,nodeids,nodes,this,4));
+    rcp(new DRT::ELEMENTS::Soh8Surface(4,Owner(),4,nodeids,nodes,this,4));
   surfaceptrs_[4] = surfaces_[4].get();
 
   nodeids[0] = NodeIds()[4];
@@ -309,7 +309,7 @@ DRT::Element** DRT::Elements::So_hex8::Surfaces()
   nodes[2] = Nodes()[6];
   nodes[3] = Nodes()[7];
   surfaces_[5] =
-    rcp(new DRT::Elements::Soh8Surface(5,Owner(),4,nodeids,nodes,this,5));
+    rcp(new DRT::ELEMENTS::Soh8Surface(5,Owner(),4,nodeids,nodes,this,5));
   surfaceptrs_[5] = surfaces_[5].get();
 
   return (DRT::Element**)(&(surfaceptrs_[0]));
@@ -318,7 +318,7 @@ DRT::Element** DRT::Elements::So_hex8::Surfaces()
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::Elements::So_hex8::Lines()
+DRT::Element** DRT::ELEMENTS::So_hex8::Lines()
 {
   const int nline = NumLine();
   lines_.resize(nline);
@@ -331,7 +331,7 @@ DRT::Element** DRT::Elements::So_hex8::Lines()
   nodes[0] = Nodes()[0];
   nodes[1] = Nodes()[1];
   lines_[0] =
-    rcp(new DRT::Elements::Soh8Line(0,Owner(),2,nodeids,nodes,this,0));
+    rcp(new DRT::ELEMENTS::Soh8Line(0,Owner(),2,nodeids,nodes,this,0));
   lineptrs_[0] = lines_[0].get();
 
   nodeids[0] = NodeIds()[1];
@@ -339,7 +339,7 @@ DRT::Element** DRT::Elements::So_hex8::Lines()
   nodes[0] = Nodes()[1];
   nodes[1] = Nodes()[2];
   lines_[1] =
-    rcp(new DRT::Elements::Soh8Line(1,Owner(),2,nodeids,nodes,this,1));
+    rcp(new DRT::ELEMENTS::Soh8Line(1,Owner(),2,nodeids,nodes,this,1));
   lineptrs_[1] = lines_[1].get();
 
   nodeids[0] = NodeIds()[2];
@@ -347,7 +347,7 @@ DRT::Element** DRT::Elements::So_hex8::Lines()
   nodes[0] = Nodes()[2];
   nodes[1] = Nodes()[3];
   lines_[2] =
-    rcp(new DRT::Elements::Soh8Line(2,Owner(),2,nodeids,nodes,this,2));
+    rcp(new DRT::ELEMENTS::Soh8Line(2,Owner(),2,nodeids,nodes,this,2));
   lineptrs_[2] = lines_[2].get();
 
   nodeids[0] = NodeIds()[3];
@@ -355,7 +355,7 @@ DRT::Element** DRT::Elements::So_hex8::Lines()
   nodes[0] = Nodes()[3];
   nodes[1] = Nodes()[0];
   lines_[3] =
-    rcp(new DRT::Elements::Soh8Line(3,Owner(),2,nodeids,nodes,this,3));
+    rcp(new DRT::ELEMENTS::Soh8Line(3,Owner(),2,nodeids,nodes,this,3));
   lineptrs_[3] = lines_[3].get();
 
   nodeids[0] = NodeIds()[0];
@@ -363,7 +363,7 @@ DRT::Element** DRT::Elements::So_hex8::Lines()
   nodes[0] = Nodes()[0];
   nodes[1] = Nodes()[4];
   lines_[4] =
-    rcp(new DRT::Elements::Soh8Line(4,Owner(),2,nodeids,nodes,this,4));
+    rcp(new DRT::ELEMENTS::Soh8Line(4,Owner(),2,nodeids,nodes,this,4));
   lineptrs_[4] = lines_[4].get();
 
   nodeids[0] = NodeIds()[1];
@@ -371,7 +371,7 @@ DRT::Element** DRT::Elements::So_hex8::Lines()
   nodes[0] = Nodes()[1];
   nodes[1] = Nodes()[5];
   lines_[5] =
-    rcp(new DRT::Elements::Soh8Line(5,Owner(),2,nodeids,nodes,this,5));
+    rcp(new DRT::ELEMENTS::Soh8Line(5,Owner(),2,nodeids,nodes,this,5));
   lineptrs_[5] = lines_[5].get();
 
   nodeids[0] = NodeIds()[2];
@@ -379,7 +379,7 @@ DRT::Element** DRT::Elements::So_hex8::Lines()
   nodes[0] = Nodes()[2];
   nodes[1] = Nodes()[6];
   lines_[6] =
-    rcp(new DRT::Elements::Soh8Line(6,Owner(),2,nodeids,nodes,this,6));
+    rcp(new DRT::ELEMENTS::Soh8Line(6,Owner(),2,nodeids,nodes,this,6));
   lineptrs_[6] = lines_[6].get();
 
   nodeids[0] = NodeIds()[3];
@@ -387,7 +387,7 @@ DRT::Element** DRT::Elements::So_hex8::Lines()
   nodes[0] = Nodes()[3];
   nodes[1] = Nodes()[7];
   lines_[7] =
-    rcp(new DRT::Elements::Soh8Line(7,Owner(),2,nodeids,nodes,this,7));
+    rcp(new DRT::ELEMENTS::Soh8Line(7,Owner(),2,nodeids,nodes,this,7));
   lineptrs_[7] = lines_[7].get();
 
   nodeids[0] = NodeIds()[4];
@@ -395,7 +395,7 @@ DRT::Element** DRT::Elements::So_hex8::Lines()
   nodes[0] = Nodes()[4];
   nodes[1] = Nodes()[5];
   lines_[8] =
-    rcp(new DRT::Elements::Soh8Line(8,Owner(),2,nodeids,nodes,this,8));
+    rcp(new DRT::ELEMENTS::Soh8Line(8,Owner(),2,nodeids,nodes,this,8));
   lineptrs_[8] = lines_[8].get();
 
   nodeids[0] = NodeIds()[5];
@@ -403,7 +403,7 @@ DRT::Element** DRT::Elements::So_hex8::Lines()
   nodes[0] = Nodes()[5];
   nodes[1] = Nodes()[6];
   lines_[9] =
-    rcp(new DRT::Elements::Soh8Line(9,Owner(),2,nodeids,nodes,this,9));
+    rcp(new DRT::ELEMENTS::Soh8Line(9,Owner(),2,nodeids,nodes,this,9));
   lineptrs_[9] = lines_[9].get();
 
   nodeids[0] = NodeIds()[6];
@@ -411,7 +411,7 @@ DRT::Element** DRT::Elements::So_hex8::Lines()
   nodes[0] = Nodes()[6];
   nodes[1] = Nodes()[7];
   lines_[10] =
-    rcp(new DRT::Elements::Soh8Line(10,Owner(),2,nodeids,nodes,this,10));
+    rcp(new DRT::ELEMENTS::Soh8Line(10,Owner(),2,nodeids,nodes,this,10));
   lineptrs_[10] = lines_[10].get();
 
   nodeids[0] = NodeIds()[7];
@@ -419,7 +419,7 @@ DRT::Element** DRT::Elements::So_hex8::Lines()
   nodes[0] = Nodes()[7];
   nodes[1] = Nodes()[4];
   lines_[11] =
-    rcp(new DRT::Elements::Soh8Line(11,Owner(),2,nodeids,nodes,this,11));
+    rcp(new DRT::ELEMENTS::Soh8Line(11,Owner(),2,nodeids,nodes,this,11));
   lineptrs_[11] = lines_[11].get();
   return (DRT::Element**)(&(lineptrs_[0]));
 }
@@ -427,7 +427,7 @@ DRT::Element** DRT::Elements::So_hex8::Lines()
 /*----------------------------------------------------------------------*
  |  Return names of visualization data (public)                maf 01/08|
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_hex8::VisNames(map<string,int>& names)
+void DRT::ELEMENTS::So_hex8::VisNames(map<string,int>& names)
 {
   // Put the owner of this element into the file (use base class method for this)
   DRT::Element::VisNames(names);
@@ -446,7 +446,7 @@ void DRT::Elements::So_hex8::VisNames(map<string,int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                         maf 01/08|
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_hex8::VisData(const string& name, vector<double>& data)
+void DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   DRT::Element::VisData(name,data);
@@ -484,7 +484,7 @@ void DRT::Elements::So_hex8::VisData(const string& name, vector<double>& data)
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Soh8Register::Soh8Register(DRT::Element::ElementType etype) :
+DRT::ELEMENTS::Soh8Register::Soh8Register(DRT::Element::ElementType etype) :
 ElementRegister(etype)
 {
   return;
@@ -493,8 +493,8 @@ ElementRegister(etype)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                         maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Soh8Register::Soh8Register(
-                               const DRT::Elements::Soh8Register& old) :
+DRT::ELEMENTS::Soh8Register::Soh8Register(
+                               const DRT::ELEMENTS::Soh8Register& old) :
 ElementRegister(old)
 {
   return;
@@ -504,16 +504,16 @@ ElementRegister(old)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Elements::Soh8Register* DRT::Elements::Soh8Register::Clone() const
+DRT::ELEMENTS::Soh8Register* DRT::ELEMENTS::Soh8Register::Clone() const
 {
-  return new DRT::Elements::Soh8Register(*this);
+  return new DRT::ELEMENTS::Soh8Register(*this);
 }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Soh8Register::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Soh8Register::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -533,7 +533,7 @@ void DRT::Elements::Soh8Register::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Soh8Register::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Soh8Register::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -554,7 +554,7 @@ void DRT::Elements::Soh8Register::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                              maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Soh8Register::~Soh8Register()
+DRT::ELEMENTS::Soh8Register::~Soh8Register()
 {
   return;
 }
@@ -562,7 +562,7 @@ DRT::Elements::Soh8Register::~Soh8Register()
 /*----------------------------------------------------------------------*
  |  print (public)                                             maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Soh8Register::Print(ostream& os) const
+void DRT::ELEMENTS::Soh8Register::Print(ostream& os) const
 {
   os << "Soh8Register ";
   ElementRegister::Print(os);

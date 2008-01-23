@@ -25,7 +25,7 @@ using namespace DRT::UTILS;
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                               vg 08/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::Condif2Line::Evaluate(       ParameterList&            params,
+int DRT::ELEMENTS::Condif2Line::Evaluate(       ParameterList&            params,
                                                 DRT::Discretization&      discretization,
                                                 vector<int>&              lm,
                                                 Epetra_SerialDenseMatrix& elemat1,
@@ -34,7 +34,7 @@ int DRT::Elements::Condif2Line::Evaluate(       ParameterList&            params
                                                 Epetra_SerialDenseVector& elevec2,
                                                 Epetra_SerialDenseVector& elevec3)
 {
-    DRT::Elements::Condif2Line::ActionType act = Condif2Line::none;
+    DRT::ELEMENTS::Condif2Line::ActionType act = Condif2Line::none;
     string action = params.get<string>("action","none");
     if (action == "none") dserror("No action supplied");
     else if (action == "integrate_Shapefunction")
@@ -54,13 +54,13 @@ int DRT::Elements::Condif2Line::Evaluate(       ParameterList&            params
 
     return 0;
     
-} // DRT::Elements::Condif2Line::Evaluate
+} // DRT::ELEMENTS::Condif2Line::Evaluate
 
 
 /*----------------------------------------------------------------------*
  |  Integrate a Line Neumann boundary condition (public)        vg 05/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::Condif2Line::EvaluateNeumann(
+int DRT::ELEMENTS::Condif2Line::EvaluateNeumann(
     ParameterList& params,
     DRT::Discretization&      discretization,
     DRT::Condition&           condition,

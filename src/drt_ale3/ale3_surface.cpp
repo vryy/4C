@@ -10,12 +10,12 @@
 
 
 
-DRT::Elements::Ale3Surface::Ale3Surface(int id,
+DRT::ELEMENTS::Ale3Surface::Ale3Surface(int id,
                                         int owner,
                                         int nnode,
                                         const int* nodeids,
                                         DRT::Node** nodes,
-                                        DRT::Elements::Ale3* parent,
+                                        DRT::ELEMENTS::Ale3* parent,
                                         const int lsurface)
   : DRT::Element(id,element_ale3surface,owner),
     parent_(parent),
@@ -26,7 +26,7 @@ DRT::Elements::Ale3Surface::Ale3Surface(int id,
 }
 
 
-DRT::Elements::Ale3Surface::Ale3Surface(const DRT::Elements::Ale3Surface& old)
+DRT::ELEMENTS::Ale3Surface::Ale3Surface(const DRT::ELEMENTS::Ale3Surface& old)
   : DRT::Element(old),
     parent_(old.parent_),
     lsurface_(old.lsurface_)
@@ -34,14 +34,14 @@ DRT::Elements::Ale3Surface::Ale3Surface(const DRT::Elements::Ale3Surface& old)
 }
 
 
-DRT::Element* DRT::Elements::Ale3Surface::Clone() const
+DRT::Element* DRT::ELEMENTS::Ale3Surface::Clone() const
 {
-  DRT::Elements::Ale3Surface* newelement = new DRT::Elements::Ale3Surface(*this);
+  DRT::ELEMENTS::Ale3Surface* newelement = new DRT::ELEMENTS::Ale3Surface(*this);
   return newelement;
 }
 
 
-DRT::Element::DiscretizationType DRT::Elements::Ale3Surface::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::Ale3Surface::Shape() const
 {
   switch (NumNode())
   {
@@ -57,25 +57,25 @@ DRT::Element::DiscretizationType DRT::Elements::Ale3Surface::Shape() const
 }
 
 
-void DRT::Elements::Ale3Surface::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Ale3Surface::Pack(vector<char>& data) const
 {
   data.resize(0);
   dserror("this Ale3Surface element does not support communication");
 }
 
 
-void DRT::Elements::Ale3Surface::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Ale3Surface::Unpack(const vector<char>& data)
 {
   dserror("this Ale3Surface element does not support communication");
 }
 
 
-DRT::Elements::Ale3Surface::~Ale3Surface()
+DRT::ELEMENTS::Ale3Surface::~Ale3Surface()
 {
 }
 
 
-void DRT::Elements::Ale3Surface::Print(ostream& os) const
+void DRT::ELEMENTS::Ale3Surface::Print(ostream& os) const
 {
   os << "Ale3Surface ";
   Element::Print(os);

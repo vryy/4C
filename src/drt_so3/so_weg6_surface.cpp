@@ -22,10 +22,10 @@ Maintainer: Moritz Frenzel
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::Sow6Surface::Sow6Surface(int id, int owner,
+DRT::ELEMENTS::Sow6Surface::Sow6Surface(int id, int owner,
                               int nnode, const int* nodeids,
                               DRT::Node** nodes,
-                              DRT::Elements::So_weg6* parent,
+                              DRT::ELEMENTS::So_weg6* parent,
                               const int lsurface) :
 DRT::Element(id,element_sow6surface,owner),
 parent_(parent),
@@ -39,7 +39,7 @@ lsurface_(lsurface)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                         maf 01/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Sow6Surface::Sow6Surface(const DRT::Elements::Sow6Surface& old) :
+DRT::ELEMENTS::Sow6Surface::Sow6Surface(const DRT::ELEMENTS::Sow6Surface& old) :
 DRT::Element(old),
 parent_(old.parent_),
 lsurface_(old.lsurface_)
@@ -51,9 +51,9 @@ lsurface_(old.lsurface_)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            maf 01/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::Elements::Sow6Surface::Clone() const
+DRT::Element* DRT::ELEMENTS::Sow6Surface::Clone() const
 {
-  DRT::Elements::Sow6Surface* newelement = new DRT::Elements::Sow6Surface(*this);
+  DRT::ELEMENTS::Sow6Surface* newelement = new DRT::ELEMENTS::Sow6Surface(*this);
   return newelement;
 }
 
@@ -61,7 +61,7 @@ DRT::Element* DRT::Elements::Sow6Surface::Clone() const
  |                                                             (public) |
  |                                                          u.kue 03/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::Elements::Sow6Surface::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::Sow6Surface::Shape() const
 {
   const int numnode = this->NumNode();
   switch (numnode){
@@ -78,7 +78,7 @@ DRT::Element::DiscretizationType DRT::Elements::Sow6Surface::Shape() const
  |  Pack data                                                  (public) |
  |                                                            maf 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Sow6Surface::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Sow6Surface::Pack(vector<char>& data) const
 {
   data.resize(0);
   dserror("this Sow6Surface element does not support communication");
@@ -90,7 +90,7 @@ void DRT::Elements::Sow6Surface::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Sow6Surface::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Sow6Surface::Unpack(const vector<char>& data)
 {
   dserror("this Sow6Surface element does not support communication");
   return;
@@ -99,7 +99,7 @@ void DRT::Elements::Sow6Surface::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                              maf 01/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Sow6Surface::~Sow6Surface()
+DRT::ELEMENTS::Sow6Surface::~Sow6Surface()
 {
   return;
 }
@@ -108,7 +108,7 @@ DRT::Elements::Sow6Surface::~Sow6Surface()
 /*----------------------------------------------------------------------*
  |  print this element (public)                                maf 01/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Sow6Surface::Print(ostream& os) const
+void DRT::ELEMENTS::Sow6Surface::Print(ostream& os) const
 {
   os << "Sow6Surface ";
   Element::Print(os);

@@ -23,10 +23,10 @@ Maintainer: Moritz Frenzel
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::Soh8Line::Soh8Line(int id, int owner,
+DRT::ELEMENTS::Soh8Line::Soh8Line(int id, int owner,
                               int nnode, const int* nodeids,
                               DRT::Node** nodes,
-                              DRT::Elements::So_hex8* parent,
+                              DRT::ELEMENTS::So_hex8* parent,
                               const int lline) :
 DRT::Element(id,element_soh8line,owner),
 parent_(parent),
@@ -40,7 +40,7 @@ lline_(lline)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                         maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Soh8Line::Soh8Line(const DRT::Elements::Soh8Line& old) :
+DRT::ELEMENTS::Soh8Line::Soh8Line(const DRT::ELEMENTS::Soh8Line& old) :
 DRT::Element(old),
 parent_(old.parent_),
 lline_(old.lline_)
@@ -52,9 +52,9 @@ lline_(old.lline_)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::Elements::Soh8Line::Clone() const
+DRT::Element* DRT::ELEMENTS::Soh8Line::Clone() const
 {
-  DRT::Elements::Soh8Line* newelement = new DRT::Elements::Soh8Line(*this);
+  DRT::ELEMENTS::Soh8Line* newelement = new DRT::ELEMENTS::Soh8Line(*this);
   return newelement;
 }
 
@@ -62,7 +62,7 @@ DRT::Element* DRT::Elements::Soh8Line::Clone() const
  |                                                             (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::Elements::Soh8Line::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::Soh8Line::Shape() const
 {
   switch (NumNode())
   {
@@ -78,7 +78,7 @@ DRT::Element::DiscretizationType DRT::Elements::Soh8Line::Shape() const
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Soh8Line::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Soh8Line::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -91,7 +91,7 @@ void DRT::Elements::Soh8Line::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Soh8Line::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Soh8Line::Unpack(const vector<char>& data)
 {
   dserror("this line element does not support communication");
   return;
@@ -100,7 +100,7 @@ void DRT::Elements::Soh8Line::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                              maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Soh8Line::~Soh8Line()
+DRT::ELEMENTS::Soh8Line::~Soh8Line()
 {
   return;
 }
@@ -109,7 +109,7 @@ DRT::Elements::Soh8Line::~Soh8Line()
 /*----------------------------------------------------------------------*
  |  print this element (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Soh8Line::Print(ostream& os) const
+void DRT::ELEMENTS::Soh8Line::Print(ostream& os) const
 {
   os << "Soh8Line ";
   Element::Print(os);

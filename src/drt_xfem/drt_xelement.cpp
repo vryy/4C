@@ -20,12 +20,12 @@ Maintainer: Axel Gerstenberger
 #include "drt_xelement.H"
 
 
-//using namespace DRT::Elements;
+//using namespace DRT::ELEMENTS;
 
 /*----------------------------------------------------------------------*
  |  ctor                                                     mwgee 11/06|
  *----------------------------------------------------------------------*/
-DRT::Elements::XElement::XElement(const int id, const DRT::Element::ElementType etype, const int owner) :
+DRT::ELEMENTS::XElement::XElement(const int id, const DRT::Element::ElementType etype, const int owner) :
 Element(id, etype, owner)
 {
   return;
@@ -34,7 +34,7 @@ Element(id, etype, owner)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 11/06|
  *----------------------------------------------------------------------*/
-DRT::Elements::XElement::XElement(const DRT::Elements::XElement& old) :
+DRT::ELEMENTS::XElement::XElement(const DRT::ELEMENTS::XElement& old) :
 Element(old)
 {
   return;
@@ -43,7 +43,7 @@ Element(old)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-DRT::Elements::XElement::~XElement()
+DRT::ELEMENTS::XElement::~XElement()
 {
   return;
 }
@@ -52,7 +52,7 @@ DRT::Elements::XElement::~XElement()
 /*----------------------------------------------------------------------*
  |  evaluate element dummy (public)                          mwgee 12/06|
  *----------------------------------------------------------------------*/
-int DRT::Elements::XElement::EvaluateShape(const ParameterList& params,
+int DRT::ELEMENTS::XElement::EvaluateShape(const ParameterList& params,
                                  const DRT::Discretization&      discretization,
                                const vector<int>&              lm,
                                Epetra_SerialDenseMatrix& elemat1,
@@ -68,7 +68,7 @@ int DRT::Elements::XElement::EvaluateShape(const ParameterList& params,
 }
 
 
-int DRT::Elements::XElement::NumDofPerNode(const DRT::Node& node) const 
+int DRT::ELEMENTS::XElement::NumDofPerNode(const DRT::Node& node) const 
 {
     return 4;
 }

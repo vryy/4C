@@ -651,7 +651,7 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
   template <DRT::Element::DiscretizationType DISTYPE,
             XFEM::AssemblyType ASSTYPE>
   void Sysmat(
-          DRT::Elements::XFluid3*           ele,           ///< the element those matrix is calculated
+          DRT::ELEMENTS::XFluid3*           ele,           ///< the element those matrix is calculated
           const RCP<XFEM::InterfaceHandle>  ih,            ///< connection to the interface handler
           const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
           const std::vector<double>&        locval,        ///< nodal unknowns at n+1, i
@@ -2224,7 +2224,7 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
   
   void callSysmat(
           XFEM::AssemblyType assembly_type,
-          DRT::Elements::XFluid3* ele,
+          DRT::ELEMENTS::XFluid3* ele,
           const RCP<XFEM::InterfaceHandle>  ih,
           const XFEM::ElementDofManager&    eleDofManager,
           const std::vector<double>&        locval,

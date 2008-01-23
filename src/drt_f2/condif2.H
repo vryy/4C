@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file condif2.H
 
-\class DRT::Elements::Condif2
+\class DRT::ELEMENTS::Condif2
 
 \brief A C++ wrapper for the condif2 element
 
@@ -43,7 +43,7 @@ namespace DRT
 class Discretization;
 class Condif2Register;
 
-namespace Elements
+namespace ELEMENTS
 {
 // forward declarations
 class Condif2Line;
@@ -289,9 +289,9 @@ private:
   vector<DRT::Element*>                           surface_;
 
   //! vector of lines adjacent to this element (condif2: 3 or 4 lines)
-  vector<RefCountPtr<DRT::Elements::Condif2Line> > lines_;
+  vector<RefCountPtr<DRT::ELEMENTS::Condif2Line> > lines_;
   //! vector of lines adjacent to this element (condif2: 3 or 4 lines)
-  vector<DRT::Elements::Condif2Line*>              lineptrs_;
+  vector<DRT::ELEMENTS::Condif2Line*>              lineptrs_;
 
 
   // internal calculation methods
@@ -423,7 +423,7 @@ public:
   Makes a deep copy of an Condif2Register
 
   */
-  Condif2Register(const DRT::Elements::Condif2Register& old);
+  Condif2Register(const DRT::ELEMENTS::Condif2Register& old);
 
   /*!
   \brief Deep copy this instance of Condif2Register and return pointer to the copy
@@ -432,7 +432,7 @@ public:
   where the type of the derived class is unknown and a copy-ctor is needed
 
   */
-  DRT::Elements::Condif2Register* Clone() const;
+  DRT::ELEMENTS::Condif2Register* Clone() const;
 
   /*!
   \brief Return unique ParObject id
@@ -529,7 +529,7 @@ public:
   \param lline: the local line number of this line w.r.t. the parent element
   */
   Condif2Line(int id, int owner, int nnode, const int* nodeids,
-              DRT::Node** nodes, DRT::Elements::Condif2* parent, const int lline);
+              DRT::Node** nodes, DRT::ELEMENTS::Condif2* parent, const int lline);
 
   /*!
   \brief Copy Constructor
@@ -699,7 +699,7 @@ private:
   Condif2Line& operator = (const Condif2Line& old);
 
   //! The parent element of this line
-  DRT::Elements::Condif2* parent_;
+  DRT::ELEMENTS::Condif2* parent_;
   //! The local line number of this line w.r.t to the parent_ element
   int                    lline_;
 
@@ -723,7 +723,7 @@ private:
 
 
 
-} // namespace Elements
+} // namespace ELEMENTS
 } // namespace DRT
 
 

@@ -23,10 +23,10 @@ Maintainer: Michael Gee
  |  ctor (public)                                            mwgee 01/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::Shell8Line::Shell8Line(int id, int owner,
+DRT::ELEMENTS::Shell8Line::Shell8Line(int id, int owner,
                               int nnode, const int* nodeids,
                               DRT::Node** nodes,
-                              DRT::Elements::Shell8* parent,
+                              DRT::ELEMENTS::Shell8* parent,
                               const int lline) :
 DRT::Element(id,element_shell8line,owner),
 parent_(parent),
@@ -40,7 +40,7 @@ lline_(lline)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Shell8Line::Shell8Line(const DRT::Elements::Shell8Line& old) :
+DRT::ELEMENTS::Shell8Line::Shell8Line(const DRT::ELEMENTS::Shell8Line& old) :
 DRT::Element(old),
 parent_(old.parent_),
 lline_(old.lline_)
@@ -52,9 +52,9 @@ lline_(old.lline_)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::Elements::Shell8Line::Clone() const
+DRT::Element* DRT::ELEMENTS::Shell8Line::Clone() const
 {
-  DRT::Elements::Shell8Line* newelement = new DRT::Elements::Shell8Line(*this);
+  DRT::ELEMENTS::Shell8Line* newelement = new DRT::ELEMENTS::Shell8Line(*this);
   return newelement;
 }
 
@@ -62,7 +62,7 @@ DRT::Element* DRT::Elements::Shell8Line::Clone() const
  |                                                             (public) |
  |                                                          u.kue 03/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::Elements::Shell8Line::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::Shell8Line::Shape() const
 {
   switch (NumNode())
   {
@@ -78,7 +78,7 @@ DRT::Element::DiscretizationType DRT::Elements::Shell8Line::Shape() const
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8Line::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Shell8Line::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -91,7 +91,7 @@ void DRT::Elements::Shell8Line::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8Line::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Shell8Line::Unpack(const vector<char>& data)
 {
   dserror("this line element does not support communication");
   return;
@@ -100,7 +100,7 @@ void DRT::Elements::Shell8Line::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Shell8Line::~Shell8Line()
+DRT::ELEMENTS::Shell8Line::~Shell8Line()
 {
   return;
 }
@@ -109,7 +109,7 @@ DRT::Elements::Shell8Line::~Shell8Line()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 01/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8Line::Print(ostream& os) const
+void DRT::ELEMENTS::Shell8Line::Print(ostream& os) const
 {
   os << "Shell8Line ";
   Element::Print(os);

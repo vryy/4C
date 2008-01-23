@@ -23,7 +23,7 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_SerialDenseSolver.h>
 
 
-DRT::Elements::Fluid3Impl::Fluid3Impl(int iel)
+DRT::ELEMENTS::Fluid3Impl::Fluid3Impl(int iel)
   : iel_(iel),
     vart_(),
     xyze_(3,iel_,blitz::ColumnMajorArray<2>()),
@@ -62,7 +62,7 @@ DRT::Elements::Fluid3Impl::Fluid3Impl(int iel)
 /*----------------------------------------------------------------------*
  |  calculate system matrix and rhs (private)                g.bau 03/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
+void DRT::ELEMENTS::Fluid3Impl::Sysmat(Fluid3* ele,
                                        const blitz::Array<double,2>&     evelnp,
                                        const blitz::Array<double,1>&     eprenp,
                                        const blitz::Array<double,2>&     evhist,
@@ -1755,7 +1755,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
 //
 // calculate stabilization parameter
 //
-void DRT::Elements::Fluid3Impl::Caltau(
+void DRT::ELEMENTS::Fluid3Impl::Caltau(
   Fluid3* ele,
   const blitz::Array<double,2>&           evelnp,
   const DRT::Element::DiscretizationType  distype,
@@ -2009,7 +2009,7 @@ void DRT::Elements::Fluid3Impl::Caltau(
  |  the Neumann condition associated with the nodes is stored in the    |
  |  array edeadng only if all nodes have a VolumeNeumann condition      |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Fluid3Impl::BodyForce(Fluid3* ele, const double time)
+void DRT::ELEMENTS::Fluid3Impl::BodyForce(Fluid3* ele, const double time)
 {
   vector<DRT::Condition*> myneumcond;
   DRT::Node** nodes = ele->Nodes();
@@ -2193,7 +2193,7 @@ void DRT::Elements::Fluid3Impl::BodyForce(Fluid3* ele, const double time)
  |                                          'chainrulerhs'
  |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Fluid3Impl::gder2(Fluid3* ele)
+void DRT::ELEMENTS::Fluid3Impl::gder2(Fluid3* ele)
 {
   blitz::firstIndex i;    // Placeholder for the first index
   blitz::secondIndex j;   // Placeholder for the second index

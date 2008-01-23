@@ -47,7 +47,7 @@ namespace DRT
 // forward declarations
 class Discretization;
 
-namespace Elements
+namespace ELEMENTS
 {
 // forward declarations
 class SoDispVolume;
@@ -323,15 +323,15 @@ protected:
   //! container containing all kind of solid3 thisandthat
   DRT::Container                                  data_;
   //! vector of volume (length 1) of this element
-  vector<RefCountPtr<DRT::Elements::SoDispVolume> > volume_;
+  vector<RefCountPtr<DRT::ELEMENTS::SoDispVolume> > volume_;
   //! vector of surfaces of this element
-  vector<RefCountPtr<DRT::Elements::SoDispSurface> > surfaces_;
+  vector<RefCountPtr<DRT::ELEMENTS::SoDispSurface> > surfaces_;
   //! vector of surfaces of this element
-  vector<DRT::Elements::SoDispSurface*>           surfaceptrs_;
+  vector<DRT::ELEMENTS::SoDispSurface*>           surfaceptrs_;
   //! vector of lines adjacent to this element
-  vector<RefCountPtr<DRT::Elements::SoDispLine> > lines_;
+  vector<RefCountPtr<DRT::ELEMENTS::SoDispLine> > lines_;
   //! vector of lines adjacent to this element
-  vector<DRT::Elements::SoDispLine*>              lineptrs_;
+  vector<DRT::ELEMENTS::SoDispLine*>              lineptrs_;
   //! Gaussrule
   DRT::UTILS::GaussRule3D                         gaussrule_;
   
@@ -365,10 +365,10 @@ protected:
   this constructor provides Object Oriented So_integrator functionality by adapting the strictly procedural 
   DRT::UTILS::IntegrationPoints3D struct.
   */     
-  class Integrator_SoDisp : public DRT::Elements::So_integrator
+  class Integrator_SoDisp : public DRT::ELEMENTS::So_integrator
   {
   	public:
-  		Integrator_SoDisp(DRT::Elements::SoDisp& this_element);
+  		Integrator_SoDisp(DRT::ELEMENTS::SoDisp& this_element);
   }; 
 
   /*********** became obsolete ************************/
@@ -425,7 +425,7 @@ public:
   Makes a deep copy of an Soh8Register
 
   */
-  SoDispRegister(const DRT::Elements::SoDispRegister& old);
+  SoDispRegister(const DRT::ELEMENTS::SoDispRegister& old);
 
   /*!
   \brief Deep copy this instance of Soh8Register and return pointer to the copy
@@ -434,7 +434,7 @@ public:
   where the type of the derived class is unknown and a copy-ctor is needed
 
   */
-  DRT::Elements::SoDispRegister* Clone() const;
+  DRT::ELEMENTS::SoDispRegister* Clone() const;
 
   /*!
   \brief Return unique ParObject id
@@ -521,7 +521,7 @@ public:
   \param lsurface: the local surface number of this surface w.r.t. the parent element
   */
   SoDispSurface(int id, int owner, int nnode, const int* nodeids,
-             DRT::Node** nodes, DRT::Elements::SoDisp* parent, const int lsurface);
+             DRT::Node** nodes, DRT::ELEMENTS::SoDisp* parent, const int lsurface);
              
   /*!
   \brief Standard Constructor
@@ -721,7 +721,7 @@ private:
   };
   
   //! The parent element of this surface
-  DRT::Elements::SoDisp* parent_;
+  DRT::ELEMENTS::SoDisp* parent_;
   
   //! The local surface number of this surface w.r.t to the parent_ element
   int                    lsurface_;
@@ -730,9 +730,9 @@ private:
   DRT::Container                                  data_;
   
   //! vector of lines adjacent to this element
-  vector<RefCountPtr<DRT::Elements::SoDispLine> > lines_;
+  vector<RefCountPtr<DRT::ELEMENTS::SoDispLine> > lines_;
   //! vector of lines adjacent to this element
-  vector<DRT::Elements::SoDispLine*>              lineptrs_;
+  vector<DRT::ELEMENTS::SoDispLine*>              lineptrs_;
 
   void sodisp_surface_integ(
         double* sqrtdetg,                      // (o) pointer to sqrt of det(g)
@@ -782,8 +782,8 @@ public:
                 int nnode,
                 const int* nodeids,
                 DRT::Node** nodes,
-                DRT::Elements::SoDispSurface* surfaceParent,
-                DRT::Elements::SoDisp* parent,
+                DRT::ELEMENTS::SoDispSurface* surfaceParent,
+                DRT::ELEMENTS::SoDisp* parent,
                 const int lline);
 
   /*!
@@ -958,10 +958,10 @@ private:
   SoDispLine& operator = (const SoDispLine& old);
 
   //! The surface parent element of this line
-  DRT::Elements::SoDispSurface* surfaceParent_;
+  DRT::ELEMENTS::SoDispSurface* surfaceParent_;
 
   //! The volume parent element of this line
-  DRT::Elements::SoDisp* parent_;                  // problem !!! wth initialization
+  DRT::ELEMENTS::SoDisp* parent_;                  // problem !!! wth initialization
 
   //! The local line number of this line w.r.t to the parent_ element
   int                    lline_;
@@ -973,7 +973,7 @@ private:
 
 
 
-} // namespace Elements
+} // namespace ELEMENTS
 } // namespace DRT
 
 

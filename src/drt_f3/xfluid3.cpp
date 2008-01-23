@@ -23,13 +23,13 @@ using namespace DRT::UTILS;
 /*----------------------------------------------------------------------*/
 // map to convert strings tao actions (stabilisation)
 /*----------------------------------------------------------------------*/
-map<string,DRT::Elements::XFluid3::StabilisationAction> DRT::Elements::XFluid3::stabstrtoact_;
+map<string,DRT::ELEMENTS::XFluid3::StabilisationAction> DRT::ELEMENTS::XFluid3::stabstrtoact_;
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::XFluid3::XFluid3(int id, int owner) :
+DRT::ELEMENTS::XFluid3::XFluid3(int id, int owner) :
 DRT::Element(id,element_xfluid3,owner),
 is_ale_(false),
 data_(),
@@ -54,7 +54,7 @@ eleDofManager_()
  |  copy-ctor (public)                                       mwgee 11/06|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::XFluid3::XFluid3(const DRT::Elements::XFluid3& old) :
+DRT::ELEMENTS::XFluid3::XFluid3(const DRT::ELEMENTS::XFluid3& old) :
 DRT::Element(old),
 gaussrule_(old.gaussrule_),
 is_ale_(old.is_ale_),
@@ -72,9 +72,9 @@ eleDofManager_(old.eleDofManager_)
  |  Deep copy this instance of XFluid3 and return pointer to it (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::Elements::XFluid3::Clone() const
+DRT::Element* DRT::ELEMENTS::XFluid3::Clone() const
 {
-  DRT::Elements::XFluid3* newelement = new DRT::Elements::XFluid3(*this);
+  DRT::ELEMENTS::XFluid3* newelement = new DRT::ELEMENTS::XFluid3(*this);
   return newelement;
 }
 
@@ -82,7 +82,7 @@ DRT::Element* DRT::Elements::XFluid3::Clone() const
  |                                                             (public) |
  |                                                          u.kue 03/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::Elements::XFluid3::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::XFluid3::Shape() const
 {
   switch (NumNode())
   {
@@ -104,7 +104,7 @@ DRT::Element::DiscretizationType DRT::Elements::XFluid3::Shape() const
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::XFluid3::Pack(vector<char>& data) const
+void DRT::ELEMENTS::XFluid3::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -151,7 +151,7 @@ void DRT::Elements::XFluid3::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::XFluid3::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::XFluid3::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -213,7 +213,7 @@ void DRT::Elements::XFluid3::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-DRT::Elements::XFluid3::~XFluid3()
+DRT::ELEMENTS::XFluid3::~XFluid3()
 {
   return;
 }
@@ -222,7 +222,7 @@ DRT::Elements::XFluid3::~XFluid3()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Elements::XFluid3::Print(ostream& os) const
+void DRT::ELEMENTS::XFluid3::Print(ostream& os) const
 {
   os << "XFluid3 ";
   Element::Print(os);
@@ -234,16 +234,16 @@ void DRT::Elements::XFluid3::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  allocate and return Fluid3Register (public)              mwgee 12/06|
  *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::Elements::XFluid3::ElementRegister() const
+RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::XFluid3::ElementRegister() const
 {
-  return rcp(new DRT::Elements::XFluid3Register(Type()));
+  return rcp(new DRT::ELEMENTS::XFluid3Register(Type()));
 }
 
 
 /*----------------------------------------------------------------------*
  |  get vector of lines (length 1) (public)                g.bau 03/07|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::Elements::XFluid3::Lines()
+DRT::Element** DRT::ELEMENTS::XFluid3::Lines()
 {
     const DiscretizationType distype = Shape();
     const int nline = NumLine();
@@ -271,7 +271,7 @@ DRT::Element** DRT::Elements::XFluid3::Lines()
 }
 
 // support for above
-void DRT::Elements::XFluid3::CreateLinesTet(const int& nline,
+void DRT::ELEMENTS::XFluid3::CreateLinesTet(const int& nline,
                                            const int& nnode)
 {
     for(int iline=0;iline<nline;iline++)
@@ -284,14 +284,14 @@ void DRT::Elements::XFluid3::CreateLinesTet(const int& nline,
              nodeids[inode] = NodeIds()[eleNodeNumbering_tet10_lines[iline][inode]];
              nodes[inode]   = Nodes()[eleNodeNumbering_tet10_lines[iline][inode]];
         }
-        lines_[iline] = rcp(new DRT::Elements::XFluid3Line(iline,Owner(),nnode,nodeids,nodes,NULL,this,iline));
+        lines_[iline] = rcp(new DRT::ELEMENTS::XFluid3Line(iline,Owner(),nnode,nodeids,nodes,NULL,this,iline));
         lineptrs_[iline] = lines_[iline].get();
     }
 }
 
 
 // support for above
-void DRT::Elements::XFluid3::CreateLinesHex(const int& nline,
+void DRT::ELEMENTS::XFluid3::CreateLinesHex(const int& nline,
                                            const int& nnode)
 {
     for(int iline=0;iline<nline;iline++)
@@ -304,7 +304,7 @@ void DRT::Elements::XFluid3::CreateLinesHex(const int& nline,
              nodeids[inode] = NodeIds()[eleNodeNumbering_hex27_lines[iline][inode]];
              nodes[inode]   = Nodes()[eleNodeNumbering_hex27_lines[iline][inode]];
         }
-        lines_[iline] = rcp(new DRT::Elements::XFluid3Line(iline,Owner(),nnode,nodeids,nodes,NULL,this,iline));
+        lines_[iline] = rcp(new DRT::ELEMENTS::XFluid3Line(iline,Owner(),nnode,nodeids,nodes,NULL,this,iline));
         lineptrs_[iline] = lines_[iline].get();
     }
 }
@@ -312,7 +312,7 @@ void DRT::Elements::XFluid3::CreateLinesHex(const int& nline,
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          g.bau 03/07|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::Elements::XFluid3::Surfaces()
+DRT::Element** DRT::ELEMENTS::XFluid3::Surfaces()
 {
     const DiscretizationType distype = Shape();
     const int nsurf = NumSurface();
@@ -354,7 +354,7 @@ DRT::Element** DRT::Elements::XFluid3::Surfaces()
 
 
 // support for above
-void DRT::Elements::XFluid3::CreateSurfacesTet(const int& nsurf,
+void DRT::ELEMENTS::XFluid3::CreateSurfacesTet(const int& nsurf,
                                                const int& nnode)
 {
     for(int isurf=0;isurf<nsurf;isurf++)
@@ -367,14 +367,14 @@ void DRT::Elements::XFluid3::CreateSurfacesTet(const int& nsurf,
              nodeids[inode] = NodeIds()[eleNodeNumbering_tet10_surfaces[isurf][inode]];
              nodes[inode]   = Nodes()[  eleNodeNumbering_tet10_surfaces[isurf][inode]];
         }
-        surfaces_[isurf] = rcp(new DRT::Elements::XFluid3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
+        surfaces_[isurf] = rcp(new DRT::ELEMENTS::XFluid3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
         surfaceptrs_[isurf] = surfaces_[isurf].get();
     }
 }
 
 
 // support for above
-void DRT::Elements::XFluid3::CreateSurfacesHex(const int& nsurf,
+void DRT::ELEMENTS::XFluid3::CreateSurfacesHex(const int& nsurf,
                                                const int& nnode)
 {
     for(int isurf=0;isurf<nsurf;isurf++)
@@ -387,12 +387,12 @@ void DRT::Elements::XFluid3::CreateSurfacesHex(const int& nsurf,
              nodeids[inode] = NodeIds()[eleNodeNumbering_hex27_surfaces[isurf][inode]];
              nodes[inode]   = Nodes()[  eleNodeNumbering_hex27_surfaces[isurf][inode]];
         }
-        surfaces_[isurf] = rcp(new DRT::Elements::XFluid3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
+        surfaces_[isurf] = rcp(new DRT::ELEMENTS::XFluid3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
         surfaceptrs_[isurf] = surfaces_[isurf].get();
     }
 }
 
-void DRT::Elements::XFluid3::CreateSurfaceWedge(const int& nsurf, const int& wedgetype)
+void DRT::ELEMENTS::XFluid3::CreateSurfaceWedge(const int& nsurf, const int& wedgetype)
 {
     switch (wedgetype)
     {
@@ -423,7 +423,7 @@ void DRT::Elements::XFluid3::CreateSurfaceWedge(const int& nsurf, const int& wed
                     nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
                     nodes[  inode] = Nodes()[ eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
                 }
-                surfaces_[isurf] = rcp(new DRT::Elements::XFluid3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
+                surfaces_[isurf] = rcp(new DRT::ELEMENTS::XFluid3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
                 surfaceptrs_[isurf] = surfaces_[isurf].get();
             }
         }
@@ -456,7 +456,7 @@ void DRT::Elements::XFluid3::CreateSurfaceWedge(const int& nsurf, const int& wed
                     nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
                     nodes[inode] = Nodes()[ eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
                 }
-                surfaces_[isurf] = rcp(new DRT::Elements::XFluid3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
+                surfaces_[isurf] = rcp(new DRT::ELEMENTS::XFluid3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
                 surfaceptrs_[isurf] = surfaces_[isurf].get();
             }
         }
@@ -467,7 +467,7 @@ void DRT::Elements::XFluid3::CreateSurfaceWedge(const int& nsurf, const int& wed
     } // end switch wedge type
 }
 
-void DRT::Elements::XFluid3::CreateSurfacesPyramid()
+void DRT::ELEMENTS::XFluid3::CreateSurfacesPyramid()
 {
   // Quad surface
 
@@ -479,7 +479,7 @@ void DRT::Elements::XFluid3::CreateSurfacesPyramid()
           nodeids[qinode] = NodeIds()[eleNodeNumbering_hex27_surfaces[surfid][qinode]];
           nodes[qinode] = Nodes()[eleNodeNumbering_hex27_surfaces[surfid][qinode]];
         }
-        surfaces_[surfid] = rcp(new DRT::Elements::XFluid3Surface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
+        surfaces_[surfid] = rcp(new DRT::ELEMENTS::XFluid3Surface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
         surfaceptrs_[surfid] = surfaces_[surfid].get();
 
   // tri surfaces
@@ -493,7 +493,7 @@ void DRT::Elements::XFluid3::CreateSurfacesPyramid()
         nodeids[tinode] = NodeIds()[eleNodeNumbering_pyramid5_trisurfaces[tisurf][tinode]];
         nodes[tinode] = Nodes()[eleNodeNumbering_pyramid5_trisurfaces[tisurf][tinode]];
       }
-      surfaces_[surfid] = rcp(new DRT::Elements::XFluid3Surface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
+      surfaces_[surfid] = rcp(new DRT::ELEMENTS::XFluid3Surface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
       surfaceptrs_[surfid] = surfaces_[surfid].get();
 
   }
@@ -502,7 +502,7 @@ void DRT::Elements::XFluid3::CreateSurfacesPyramid()
 /*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)                g.bau 03/07|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::Elements::XFluid3::Volumes()
+DRT::Element** DRT::ELEMENTS::XFluid3::Volumes()
 {
   volume_.resize(1);
   volume_[0] = this; //points to Fluid3 element itself
@@ -518,7 +518,7 @@ DRT::Element** DRT::Elements::XFluid3::Volumes()
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 12/06|
  *----------------------------------------------------------------------*/
-DRT::Elements::XFluid3Register::XFluid3Register(DRT::Element::ElementType etype) :
+DRT::ELEMENTS::XFluid3Register::XFluid3Register(DRT::Element::ElementType etype) :
 ElementRegister(etype)
 {
   return;
@@ -527,8 +527,8 @@ ElementRegister(etype)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 12/06|
  *----------------------------------------------------------------------*/
-DRT::Elements::XFluid3Register::XFluid3Register(
-                               const DRT::Elements::XFluid3Register& old) :
+DRT::ELEMENTS::XFluid3Register::XFluid3Register(
+                               const DRT::ELEMENTS::XFluid3Register& old) :
 ElementRegister(old)
 {
   return;
@@ -538,16 +538,16 @@ ElementRegister(old)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-DRT::Elements::XFluid3Register* DRT::Elements::XFluid3Register::Clone() const
+DRT::ELEMENTS::XFluid3Register* DRT::ELEMENTS::XFluid3Register::Clone() const
 {
-  return new DRT::Elements::XFluid3Register(*this);
+  return new DRT::ELEMENTS::XFluid3Register(*this);
 }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::XFluid3Register::Pack(vector<char>& data) const
+void DRT::ELEMENTS::XFluid3Register::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -567,7 +567,7 @@ void DRT::Elements::XFluid3Register::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::XFluid3Register::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::XFluid3Register::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -588,7 +588,7 @@ void DRT::Elements::XFluid3Register::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 12/06|
  *----------------------------------------------------------------------*/
-DRT::Elements::XFluid3Register::~XFluid3Register()
+DRT::ELEMENTS::XFluid3Register::~XFluid3Register()
 {
   return;
 }
@@ -596,7 +596,7 @@ DRT::Elements::XFluid3Register::~XFluid3Register()
 /*----------------------------------------------------------------------*
  |  print (public)                                           mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::Elements::XFluid3Register::Print(ostream& os) const
+void DRT::ELEMENTS::XFluid3Register::Print(ostream& os) const
 {
   os << "XFluid3Register ";
   ElementRegister::Print(os);

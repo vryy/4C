@@ -37,7 +37,7 @@ using namespace LINALG; // our linear algebra
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::So_weg6::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
                                     DRT::Discretization&      discretization,
                                     vector<int>&              lm,
                                     Epetra_SerialDenseMatrix& elemat1,
@@ -47,7 +47,7 @@ int DRT::Elements::So_weg6::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector& elevec3)
 {
   // start with "none"
-  DRT::Elements::So_weg6::ActionType act = So_weg6::none;
+  DRT::ELEMENTS::So_weg6::ActionType act = So_weg6::none;
 
   // get the required action
   string action = params.get<string>("action","none");
@@ -147,7 +147,7 @@ int DRT::Elements::So_weg6::Evaluate(ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)     maf 04/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::So_weg6::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::So_weg6::EvaluateNeumann(ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
                                            vector<int>&              lm,
@@ -159,7 +159,7 @@ int DRT::Elements::So_weg6::EvaluateNeumann(ParameterList& params,
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                             maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_weg6::sow6_nlnstiffmass(
+void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
       vector<int>&              lm,             // location matrix
       vector<double>&           disp,           // current displacements
       vector<double>&           residual,       // current residuum
@@ -358,14 +358,14 @@ void DRT::Elements::So_weg6::sow6_nlnstiffmass(
    /* =========================================================================*/
 
   return;
-} // DRT::Elements::Shell8::s8_nlnstiffmass
+} // DRT::ELEMENTS::Shell8::s8_nlnstiffmass
 
 
 
 /*----------------------------------------------------------------------*
  |  shape functions and derivatives for So_hex8                maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_weg6::sow6_shapederiv(
+void DRT::ELEMENTS::So_weg6::sow6_shapederiv(
       Epetra_SerialDenseMatrix** shapefct,  // pointer to pointer of shapefct
       Epetra_SerialDenseMatrix** deriv,     // pointer to pointer of derivs
       Epetra_SerialDenseVector** weights)   // pointer to pointer of weights
@@ -415,7 +415,7 @@ void DRT::Elements::So_weg6::sow6_shapederiv(
   return;
 }  // of sow6_shapederiv
 
-bool DRT::Elements::So_weg6::soweg6_checkRewinding()
+bool DRT::ELEMENTS::So_weg6::soweg6_checkRewinding()
 {
     const DRT::UTILS::IntegrationPoints3D intpoints = getIntegrationPoints3D(DRT::UTILS::intrule_wedge_1point);
     const double r = intpoints.qxg[0][0];
@@ -459,14 +459,14 @@ bool DRT::Elements::So_weg6::soweg6_checkRewinding()
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  maf 07/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::Sow6Register::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::Sow6Register::Initialize(DRT::Discretization& dis)
 {
   //-------------------- loop all my column elements and check rewinding
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
     // get the actual element
     if (dis.lColElement(i)->Type() != DRT::Element::element_so_weg6) continue;
-    DRT::Elements::So_weg6* actele = dynamic_cast<DRT::Elements::So_weg6*>(dis.lColElement(i));
+    DRT::ELEMENTS::So_weg6* actele = dynamic_cast<DRT::ELEMENTS::So_weg6*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_weg6* failed");
     
     if (!actele->donerewinding_) {

@@ -37,7 +37,7 @@ using namespace LINALG; // our linear algebra
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::SoDisp::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::SoDisp::Evaluate(ParameterList& params,
                                     DRT::Discretization&      discretization,
                                     vector<int>&              lm,
                                     Epetra_SerialDenseMatrix& elemat1,
@@ -47,7 +47,7 @@ int DRT::Elements::SoDisp::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector& elevec3)
 {
   // start with "none"
-  DRT::Elements::SoDisp::ActionType act = SoDisp::none;
+  DRT::ELEMENTS::SoDisp::ActionType act = SoDisp::none;
 
   // get the required action
   string action = params.get<string>("action","none");
@@ -147,7 +147,7 @@ int DRT::Elements::SoDisp::Evaluate(ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)     maf 04/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::SoDisp::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::SoDisp::EvaluateNeumann(ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
                                            vector<int>&              lm,
@@ -159,7 +159,7 @@ int DRT::Elements::SoDisp::EvaluateNeumann(ParameterList& params,
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                             maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::SoDisp::sodisp_nlnstiffmass(
+void DRT::ELEMENTS::SoDisp::sodisp_nlnstiffmass(
       vector<int>&              lm,             // location matrix
       vector<double>&           disp,           // current displacements
       vector<double>&           residual,       // current residuum
@@ -173,7 +173,7 @@ void DRT::Elements::SoDisp::sodisp_nlnstiffmass(
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for Wedge_6 with 6 GAUSS POINTS*
 ** ============================================================================*/
   //here no const static due to flexible shape of so_disp element 
-  DRT::Elements::SoDisp::Integrator_SoDisp int_dis(*this); 
+  DRT::ELEMENTS::SoDisp::Integrator_SoDisp int_dis(*this); 
 /* ============================================================================*/
 
   // update element geometry

@@ -45,7 +45,7 @@ using namespace LINALG; // our linear algebra
 /*----------------------------------------------------------------------*
  | material laws for So_hex8                                   maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_hex8::soh8_mat_sel(
+void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       Epetra_SerialDenseVector* stress,
       Epetra_SerialDenseMatrix* cmat,
       double* density,
@@ -134,7 +134,7 @@ void DRT::Elements::So_hex8::soh8_mat_sel(
 /*----------------------------------------------------------------------*
  | material laws for So_weg6                                   maf 08/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_weg6::sow6_mat_sel(
+void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       Epetra_SerialDenseVector* stress,
       Epetra_SerialDenseMatrix* cmat,
       double* density,
@@ -184,7 +184,7 @@ void DRT::Elements::So_weg6::sow6_mat_sel(
 /*----------------------------------------------------------------------*
  | material laws for SoDisp                                   maf 08/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::SoDisp::sodisp_mat_sel(
+void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
       Epetra_SerialDenseVector* stress,
       Epetra_SerialDenseMatrix* cmat,
       double* density,
@@ -239,7 +239,7 @@ void DRT::Elements::SoDisp::sodisp_mat_sel(
  | one should think about other solutions for this like making this a   |
  | member of a upper class the will be inherited by all so3 classes     |
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_tet4::so_tet4_mat_sel(
+void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
       Epetra_SerialDenseVector* stress,
       Epetra_SerialDenseMatrix* cmat,
       double* density,
@@ -276,7 +276,7 @@ void DRT::Elements::So_tet4::so_tet4_mat_sel(
  | one should think about other solutions for this like making this a   |
  | member of a upper class the will be inherited by all so3 classes     |
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_tet10::so_tet10_mat_sel(
+void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
       Epetra_SerialDenseVector* stress,
       Epetra_SerialDenseMatrix* cmat,
       double* density,
@@ -313,7 +313,7 @@ void DRT::Elements::So_tet10::so_tet10_mat_sel(
  | one should think about other solutions for this like making this a   |
  | member of a upper class the will be inherited by all so3 classes     |
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_ctet10::so_ctet10_mat_sel(
+void DRT::ELEMENTS::So_ctet10::so_ctet10_mat_sel(
       Epetra_SerialDenseVector* stress,
       Epetra_SerialDenseMatrix* cmat,
       double* density,

@@ -23,7 +23,7 @@ Maintainer: Axel Gerstenberger
 #include <Epetra_SerialDenseSolver.h>
 
 
-DRT::Elements::XFluid3Impl::XFluid3Impl(
+DRT::ELEMENTS::XFluid3Impl::XFluid3Impl(
 		const int iel,
 		const int numparamvelx,
 		const int numparamvely,
@@ -66,7 +66,7 @@ DRT::Elements::XFluid3Impl::XFluid3Impl(
 /*----------------------------------------------------------------------*
  |  calculate system matrix and rhs (private)                g.bau 03/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::XFluid3Impl::Sysmat(XFluid3* ele,
+void DRT::ELEMENTS::XFluid3Impl::Sysmat(XFluid3* ele,
 									   const XFEM::DomainIntCells&   domainIntCells,
 									   const XFEM::BoundaryIntCells& boundaryIntCells,
                                        const blitz::Array<double,2>&     evelnp,
@@ -1775,7 +1775,7 @@ void DRT::Elements::XFluid3Impl::Sysmat(XFluid3* ele,
 //
 // calculate stabilization parameter
 //
-void DRT::Elements::XFluid3Impl::Caltau(
+void DRT::ELEMENTS::XFluid3Impl::Caltau(
   XFluid3* ele,
   const blitz::Array<double,2>&           evelnp,
   const DRT::Element::DiscretizationType  distype,
@@ -2030,7 +2030,7 @@ void DRT::Elements::XFluid3Impl::Caltau(
  |  the Neumann condition associated with the nodes is stored in the    |
  |  array edeadng only if all nodes have a VolumeNeumann condition      |
  *----------------------------------------------------------------------*/
-void DRT::Elements::XFluid3Impl::BodyForce(XFluid3* ele, const double time)
+void DRT::ELEMENTS::XFluid3Impl::BodyForce(XFluid3* ele, const double time)
 {
   vector<DRT::Condition*> myneumcond;
   DRT::Node** nodes = ele->Nodes();
@@ -2214,7 +2214,7 @@ void DRT::Elements::XFluid3Impl::BodyForce(XFluid3* ele, const double time)
  |                                          'chainrulerhs'
  |
  *----------------------------------------------------------------------*/
-void DRT::Elements::XFluid3Impl::gder2(XFluid3* ele)
+void DRT::ELEMENTS::XFluid3Impl::gder2(XFluid3* ele)
 {
   blitz::firstIndex i;    // Placeholder for the first index
   blitz::secondIndex j;   // Placeholder for the second index

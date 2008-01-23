@@ -94,19 +94,19 @@ extern "C" void input_ReadGlobalParameterList()
 /*----------------------------------------------------------------------*/
 
 #ifdef D_SHELL8
-int Elements::Shell8Register::Initialize(Discretization&)
+int ELEMENTS::Shell8Register::Initialize(Discretization&)
 {
-  // dserror("Elements::Shell8Register::Initialize undefined");
+  // dserror("ELEMENTS::Shell8Register::Initialize undefined");
   return 0;
 }
 
-bool Elements::Shell8::ReadElement()
+bool ELEMENTS::Shell8::ReadElement()
 {
-  dserror("Elements::Shell8::ReadElement undefined");
+  dserror("ELEMENTS::Shell8::ReadElement undefined");
   return false;
 }
 
-int Elements::Shell8::Evaluate(ParameterList&,
+int ELEMENTS::Shell8::Evaluate(ParameterList&,
                                Discretization&,
                                vector<int>&,
                                Epetra_SerialDenseMatrix&,
@@ -115,31 +115,31 @@ int Elements::Shell8::Evaluate(ParameterList&,
                                Epetra_SerialDenseVector&,
                                Epetra_SerialDenseVector&)
 {
-  dserror("Elements::Shell8::Evaluate undefined");
+  dserror("ELEMENTS::Shell8::Evaluate undefined");
   return 0;
 }
 
-int Elements::Shell8::EvaluateNeumann(ParameterList&, Discretization&, Condition&, vector<int>&, Epetra_SerialDenseVector&)
+int ELEMENTS::Shell8::EvaluateNeumann(ParameterList&, Discretization&, Condition&, vector<int>&, Epetra_SerialDenseVector&)
 {
-  dserror("Elements::Shell8::EvaluateNeumann undefined");
+  dserror("ELEMENTS::Shell8::EvaluateNeumann undefined");
   return 0;
 }
 
-int Elements::Shell8Line::EvaluateNeumann(ParameterList& params,
+int ELEMENTS::Shell8Line::EvaluateNeumann(ParameterList& params,
                                           Discretization&      discretization,
                                           Condition&           condition,
                                           vector<int>&              lm,
                                           Epetra_SerialDenseVector& elevec1)
 {
-  dserror("Elements::Shell8Line::EvaluateNeumann undefined");
+  dserror("ELEMENTS::Shell8Line::EvaluateNeumann undefined");
   return 0;
 }
 
-void DRT::Elements::Shell8::VisNames(map<string,int>& names)
+void DRT::ELEMENTS::Shell8::VisNames(map<string,int>& names)
 {
 }
 
-void DRT::Elements::Shell8::VisData(const string& name, vector<double>& data)
+void DRT::ELEMENTS::Shell8::VisData(const string& name, vector<double>& data)
 {
 }
 

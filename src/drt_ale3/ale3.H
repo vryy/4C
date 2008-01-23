@@ -23,7 +23,7 @@ namespace DRT
 class Discretization;
 class Ale3Register;
 
-namespace Elements
+namespace ELEMENTS
 {
 
 class Ale3Surface;
@@ -283,9 +283,9 @@ private:
   vector<DRT::Element*>                   volume_;
 
   //! vector of surfaces adjacent to this element (ale3: 4 or 6 surfaces)
-  vector<RefCountPtr<DRT::Elements::Ale3Surface> > surfaces_;
+  vector<RefCountPtr<DRT::ELEMENTS::Ale3Surface> > surfaces_;
   //! vector of surfaces adjacent to this element (ale3: 4 or 6 surfaces)
-  vector<DRT::Elements::Ale3Surface*>              surfaceptrs_;
+  vector<DRT::ELEMENTS::Ale3Surface*>              surfaceptrs_;
 
 
   // internal calculation methods
@@ -340,7 +340,7 @@ public:
   Makes a deep copy of an Ale3Register
 
   */
-  Ale3Register(const DRT::Elements::Ale3Register& old);
+  Ale3Register(const DRT::ELEMENTS::Ale3Register& old);
 
   /*!
   \brief Deep copy this instance of Ale3Register and return pointer to the copy
@@ -349,7 +349,7 @@ public:
   where the type of the derived class is unknown and a copy-ctor is needed
 
   */
-  DRT::Elements::Ale3Register* Clone() const;
+  DRT::ELEMENTS::Ale3Register* Clone() const;
 
   /*!
   \brief Return unique ParObject id
@@ -446,7 +446,7 @@ public:
   \param lsurface: the local surface number of this surface w.r.t. the parent element
   */
   Ale3Surface(int id, int owner, int nnode, const int* nodeids,
-             DRT::Node** nodes, DRT::Elements::Ale3* parent, const int lsurface);
+             DRT::Node** nodes, DRT::ELEMENTS::Ale3* parent, const int lsurface);
 
   /*!
   \brief Copy Constructor
@@ -575,7 +575,7 @@ private:
   Ale3Surface& operator = (const Ale3Surface& old);
 
   //! The parent element of this surface
-  DRT::Elements::Ale3* parent_;
+  DRT::ELEMENTS::Ale3* parent_;
   //! The local surface number of this surface w.r.t to the parent_ element
   int                    lsurface_;
 
@@ -592,7 +592,7 @@ private:
 
 
 
-} // namespace Elements
+} // namespace ELEMENTS
 } // namespace DRT
 
 

@@ -28,7 +28,7 @@ writen by : Alexander Volf
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::So_tet4::So_tet4(int id, int owner) :
+DRT::ELEMENTS::So_tet4::So_tet4(int id, int owner) :
 DRT::Element(id,element_so_tet4,owner),
 material_(0),
 data_()
@@ -45,7 +45,7 @@ data_()
  |  copy-ctor (public)                                         maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::So_tet4::So_tet4(const DRT::Elements::So_tet4& old) :
+DRT::ELEMENTS::So_tet4::So_tet4(const DRT::ELEMENTS::So_tet4& old) :
 DRT::Element(old),
 material_(old.material_),
 data_(old.data_),
@@ -62,9 +62,9 @@ lineptrs_(old.lineptrs_)
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::Elements::So_tet4::Clone() const
+DRT::Element* DRT::ELEMENTS::So_tet4::Clone() const
 {
-  DRT::Elements::So_tet4* newelement = new DRT::Elements::So_tet4(*this);  
+  DRT::ELEMENTS::So_tet4* newelement = new DRT::ELEMENTS::So_tet4(*this);  
   return newelement;
 }
 
@@ -72,7 +72,7 @@ DRT::Element* DRT::Elements::So_tet4::Clone() const
  |                                                             (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::Elements::So_tet4::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::So_tet4::Shape() const
 {
   return tet4;
 }
@@ -81,7 +81,7 @@ DRT::Element::DiscretizationType DRT::Elements::So_tet4::Shape() const
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_tet4::Pack(vector<char>& data) const
+void DRT::ELEMENTS::So_tet4::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -113,7 +113,7 @@ void DRT::Elements::So_tet4::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_tet4::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::So_tet4::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -146,7 +146,7 @@ void DRT::Elements::So_tet4::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------***
  |  dtor (public)                                              maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::So_tet4::~So_tet4()
+DRT::ELEMENTS::So_tet4::~So_tet4()
 {
   return;
 }
@@ -155,7 +155,7 @@ DRT::Elements::So_tet4::~So_tet4()
 /*----------------------------------------------------------------------***
  |  print this element (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_tet4::Print(ostream& os) const
+void DRT::ELEMENTS::So_tet4::Print(ostream& os) const
 {
   os << "So_tet4 ";
   Element::Print(os);
@@ -167,9 +167,9 @@ void DRT::Elements::So_tet4::Print(ostream& os) const
 /*------------------------------------------------------------------------*
  |  allocate and return So_tet4Register (public)               volf 10/07|
  *------------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::Elements::So_tet4::ElementRegister() const
+RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::So_tet4::ElementRegister() const
 {
-  return rcp(new DRT::Elements::Sotet4Register(Type()));
+  return rcp(new DRT::ELEMENTS::Sotet4Register(Type()));
 }
 
   /*====================================================================*/
@@ -202,7 +202,7 @@ RefCountPtr<DRT::ElementRegister> DRT::Elements::So_tet4::ElementRegister() cons
 /*----------------------------------------------------------------------***
  |  get vector of volumes (length 1) (public)                  maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::Elements::So_tet4::Volumes()
+DRT::Element** DRT::ELEMENTS::So_tet4::Volumes()
 {
   volume_.resize(1);
   return 0;
@@ -213,7 +213,7 @@ DRT::Element** DRT::Elements::So_tet4::Volumes()
  |  get vector of surfaces (public)                             maf 04/07|
  |  surface normals always point outward                                 |
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::Elements::So_tet4::Surfaces()
+DRT::Element** DRT::ELEMENTS::So_tet4::Surfaces()
 {
   
   const int nsurf = NumSurface();
@@ -229,7 +229,7 @@ DRT::Element** DRT::Elements::So_tet4::Surfaces()
   nodes[1] = Nodes()[1];
   nodes[2] = Nodes()[3];
   surfaces_[0] =
-    rcp(new DRT::Elements::Sotet4Surface(0,Owner(),3,nodeids,nodes,this,0));
+    rcp(new DRT::ELEMENTS::Sotet4Surface(0,Owner(),3,nodeids,nodes,this,0));
   surfaceptrs_[0] = surfaces_[0].get();
 
   nodeids[0] = NodeIds()[1];
@@ -239,7 +239,7 @@ DRT::Element** DRT::Elements::So_tet4::Surfaces()
   nodes[1] = Nodes()[2];
   nodes[2] = Nodes()[3];
   surfaces_[1] =
-    rcp(new DRT::Elements::Sotet4Surface(1,Owner(),3,nodeids,nodes,this,1));
+    rcp(new DRT::ELEMENTS::Sotet4Surface(1,Owner(),3,nodeids,nodes,this,1));
   surfaceptrs_[1] = surfaces_[1].get();
 
   nodeids[0] = NodeIds()[0];
@@ -249,7 +249,7 @@ DRT::Element** DRT::Elements::So_tet4::Surfaces()
   nodes[1] = Nodes()[3];
   nodes[2] = Nodes()[2];
   surfaces_[2] =
-    rcp(new DRT::Elements::Sotet4Surface(2,Owner(),3,nodeids,nodes,this,2));
+    rcp(new DRT::ELEMENTS::Sotet4Surface(2,Owner(),3,nodeids,nodes,this,2));
   surfaceptrs_[2] = surfaces_[2].get();
 
   nodeids[0] = NodeIds()[0];
@@ -259,7 +259,7 @@ DRT::Element** DRT::Elements::So_tet4::Surfaces()
   nodes[1] = Nodes()[2];
   nodes[2] = Nodes()[1];
   surfaces_[3] =
-    rcp(new DRT::Elements::Sotet4Surface(3,Owner(),3,nodeids,nodes,this,3));
+    rcp(new DRT::ELEMENTS::Sotet4Surface(3,Owner(),3,nodeids,nodes,this,3));
   surfaceptrs_[3] = surfaces_[3].get();
 
   return (DRT::Element**)(&(surfaceptrs_[0]));
@@ -270,7 +270,7 @@ DRT::Element** DRT::Elements::So_tet4::Surfaces()
 /*----------------------------------------------------------------------***++
  |  get vector of lines (public)                               maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::Elements::So_tet4::Lines()
+DRT::Element** DRT::ELEMENTS::So_tet4::Lines()
 {
   const int nline = NumLine();
   lines_.resize(nline);
@@ -283,7 +283,7 @@ DRT::Element** DRT::Elements::So_tet4::Lines()
   nodes[0] = Nodes()[0];
   nodes[1] = Nodes()[1];
   lines_[0] =
-    rcp(new DRT::Elements::Sotet4Line(0,Owner(),2,nodeids,nodes,this,0));
+    rcp(new DRT::ELEMENTS::Sotet4Line(0,Owner(),2,nodeids,nodes,this,0));
   lineptrs_[0] = lines_[0].get();
 
   nodeids[0] = NodeIds()[1];
@@ -291,7 +291,7 @@ DRT::Element** DRT::Elements::So_tet4::Lines()
   nodes[0] = Nodes()[1];
   nodes[1] = Nodes()[2];
   lines_[1] =
-    rcp(new DRT::Elements::Sotet4Line(1,Owner(),2,nodeids,nodes,this,1));
+    rcp(new DRT::ELEMENTS::Sotet4Line(1,Owner(),2,nodeids,nodes,this,1));
   lineptrs_[1] = lines_[1].get();
 
   nodeids[0] = NodeIds()[0];
@@ -299,7 +299,7 @@ DRT::Element** DRT::Elements::So_tet4::Lines()
   nodes[0] = Nodes()[0];
   nodes[1] = Nodes()[2];
   lines_[2] =
-    rcp(new DRT::Elements::Sotet4Line(2,Owner(),2,nodeids,nodes,this,2));
+    rcp(new DRT::ELEMENTS::Sotet4Line(2,Owner(),2,nodeids,nodes,this,2));
   lineptrs_[2] = lines_[2].get();
 
   nodeids[0] = NodeIds()[0];
@@ -307,7 +307,7 @@ DRT::Element** DRT::Elements::So_tet4::Lines()
   nodes[0] = Nodes()[0];
   nodes[1] = Nodes()[3];
   lines_[3] =
-    rcp(new DRT::Elements::Sotet4Line(3,Owner(),2,nodeids,nodes,this,3));
+    rcp(new DRT::ELEMENTS::Sotet4Line(3,Owner(),2,nodeids,nodes,this,3));
   lineptrs_[3] = lines_[3].get();
 
   nodeids[0] = NodeIds()[1];
@@ -315,7 +315,7 @@ DRT::Element** DRT::Elements::So_tet4::Lines()
   nodes[0] = Nodes()[1];
   nodes[1] = Nodes()[3];
   lines_[4] =
-    rcp(new DRT::Elements::Sotet4Line(4,Owner(),2,nodeids,nodes,this,4));
+    rcp(new DRT::ELEMENTS::Sotet4Line(4,Owner(),2,nodeids,nodes,this,4));
   lineptrs_[4] = lines_[4].get();
 
   nodeids[0] = NodeIds()[2];
@@ -323,7 +323,7 @@ DRT::Element** DRT::Elements::So_tet4::Lines()
   nodes[0] = Nodes()[2];
   nodes[1] = Nodes()[3];
   lines_[5] =
-    rcp(new DRT::Elements::Sotet4Line(5,Owner(),2,nodeids,nodes,this,5));
+    rcp(new DRT::ELEMENTS::Sotet4Line(5,Owner(),2,nodeids,nodes,this,5));
   lineptrs_[5] = lines_[5].get();
 
   return (DRT::Element**)(&(lineptrs_[0]));
@@ -340,7 +340,7 @@ DRT::Element** DRT::Elements::So_tet4::Lines()
 /*----------------------------------------------------------------------***
  |  ctor (public)                                              maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Sotet4Register::Sotet4Register(DRT::Element::ElementType etype) :
+DRT::ELEMENTS::Sotet4Register::Sotet4Register(DRT::Element::ElementType etype) :
 ElementRegister(etype)
 {
   return;
@@ -349,8 +349,8 @@ ElementRegister(etype)
 /*----------------------------------------------------------------------***
  |  copy-ctor (public)                                         maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Sotet4Register::Sotet4Register(
-                               const DRT::Elements::Sotet4Register& old) :
+DRT::ELEMENTS::Sotet4Register::Sotet4Register(
+                               const DRT::ELEMENTS::Sotet4Register& old) :
 ElementRegister(old)
 {
   return;
@@ -360,17 +360,17 @@ ElementRegister(old)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Elements::Sotet4Register* DRT::Elements::Sotet4Register::Clone() const
+DRT::ELEMENTS::Sotet4Register* DRT::ELEMENTS::Sotet4Register::Clone() const
 {
-//  return new DRT::Elements::Soh8Register(*this);
-  return new DRT::Elements::Sotet4Register(*this);
+//  return new DRT::ELEMENTS::Soh8Register(*this);
+  return new DRT::ELEMENTS::Sotet4Register(*this);
 }
 
 /*----------------------------------------------------------------------***
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Sotet4Register::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Sotet4Register::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -390,8 +390,8 @@ void DRT::Elements::Sotet4Register::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-//void DRT::Elements::Soh8Register::Unpack(const vector<char>& data)
-void DRT::Elements::Sotet4Register::Unpack(const vector<char>& data)
+//void DRT::ELEMENTS::Soh8Register::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Sotet4Register::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -412,7 +412,7 @@ void DRT::Elements::Sotet4Register::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------***
  |  dtor (public)                                              maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Sotet4Register::~Sotet4Register()
+DRT::ELEMENTS::Sotet4Register::~Sotet4Register()
 {
   return;
 }
@@ -420,7 +420,7 @@ DRT::Elements::Sotet4Register::~Sotet4Register()
 /*----------------------------------------------------------------------***
  |  print (public)                                             maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Sotet4Register::Print(ostream& os) const
+void DRT::ELEMENTS::Sotet4Register::Print(ostream& os) const
 {
   os << "Sotet4Register ";
   ElementRegister::Print(os);

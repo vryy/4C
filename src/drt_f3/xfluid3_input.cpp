@@ -41,7 +41,7 @@ using namespace DRT::UTILS;
 /*----------------------------------------------------------------------*
  |  read element input (public)                              g.bau 03/07|
  *----------------------------------------------------------------------*/
-bool DRT::Elements::XFluid3::ReadElement()
+bool DRT::ELEMENTS::XFluid3::ReadElement()
 {
     typedef map<string, DiscretizationType> Gid2DisType;
     Gid2DisType gid2distype;

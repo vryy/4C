@@ -31,13 +31,13 @@ extern "C"
 /*----------------------------------------------------------------------*
  * Integrate a Surface Neumann boundary condition (public)     vlf 04/07*
  * ---------------------------------------------------------------------*/
-int DRT::Elements::Soctet10Surface::EvaluateNeumann(ParameterList&           params,
+int DRT::ELEMENTS::Soctet10Surface::EvaluateNeumann(ParameterList&           params,
                                                 DRT::Discretization&     discretization,
                                                 DRT::Condition&          condition,
                                                 vector<int>&             lm,
                                                 Epetra_SerialDenseVector& elevec1)
 {
-  //cout << "DRT::Elements::Soctet10Surface::EvaluateNeumann" << endl;
+  //cout << "DRT::ELEMENTS::Soctet10Surface::EvaluateNeumann" << endl;
   //getchar();
   // OBSOLETE!!! needs change
   Epetra_SerialDenseMatrix* shapefct;
@@ -97,12 +97,12 @@ int DRT::Elements::Soctet10Surface::EvaluateNeumann(ParameterList&           par
 } //Sotet10Surface::EvaluateNeumann(..)
 
 
-DRT::Elements::Soctet10Surface::SUB_NODE::SUB_NODE()
+DRT::ELEMENTS::Soctet10Surface::SUB_NODE::SUB_NODE()
 {
 	//nothing to do
 }
 
-void DRT::Elements::Soctet10Surface::SUB_NODE::init(
+void DRT::ELEMENTS::Soctet10Surface::SUB_NODE::init(
 	const int in_local_id,
 	const int in_global_id,
 	const Epetra_SerialDenseMatrix& xrefe)
@@ -115,17 +115,17 @@ void DRT::Elements::Soctet10Surface::SUB_NODE::init(
 	my_x[2]=xrefe(global_id,2);
 }
 
-DRT::Elements::Soctet10Surface::SUB_NODE::~SUB_NODE()
+DRT::ELEMENTS::Soctet10Surface::SUB_NODE::~SUB_NODE()
 {
 	//nothing to do
 }
 
-DRT::Elements::Soctet10Surface::TRI3_SUB::TRI3_SUB()
+DRT::ELEMENTS::Soctet10Surface::TRI3_SUB::TRI3_SUB()
 {
 	//nothing to do
 }
 
-void DRT::Elements::Soctet10Surface::TRI3_SUB::init(
+void DRT::ELEMENTS::Soctet10Surface::TRI3_SUB::init(
 	const int& node1,
 	const int& node2,
 	const int& node3,
@@ -136,7 +136,7 @@ void DRT::Elements::Soctet10Surface::TRI3_SUB::init(
 	my_nodes[2].init(2,node3,xrefe);
 }
 
-double DRT::Elements::Soctet10Surface::TRI3_SUB::my_area()
+double DRT::ELEMENTS::Soctet10Surface::TRI3_SUB::my_area()
 {
     Epetra_SerialDenseMatrix xsrefe(3,NUMDIM_SOCTET10);  // material coord. of element
     for (int i=0; i<3; i++){
@@ -172,12 +172,12 @@ double DRT::Elements::Soctet10Surface::TRI3_SUB::my_area()
     return C.Norm2()/2;
 }
 
-DRT::Elements::Soctet10Surface::TRI3_SUB::~TRI3_SUB()
+DRT::ELEMENTS::Soctet10Surface::TRI3_SUB::~TRI3_SUB()
 {
 	//nothing to do
 }
 
-DRT::Elements::Soctet10Surface::SUB_STRUCTURE_SURF::SUB_STRUCTURE_SURF(const Epetra_SerialDenseMatrix& xrefe)
+DRT::ELEMENTS::Soctet10Surface::SUB_STRUCTURE_SURF::SUB_STRUCTURE_SURF(const Epetra_SerialDenseMatrix& xrefe)
 {
 	my_surface[ 0].init( 0, 3, 5, xrefe);
 	my_surface[ 1].init( 3, 1, 4, xrefe);
@@ -186,14 +186,14 @@ DRT::Elements::Soctet10Surface::SUB_STRUCTURE_SURF::SUB_STRUCTURE_SURF(const Epe
 	
 }
 
-DRT::Elements::Soctet10Surface::SUB_STRUCTURE_SURF::~SUB_STRUCTURE_SURF()
+DRT::ELEMENTS::Soctet10Surface::SUB_STRUCTURE_SURF::~SUB_STRUCTURE_SURF()
 {
 	//nothing to do
 }
 /*----------------------------------------------------------------------*
  * Get shape functions for a tet4 face					       vlf 08/07*
  * ---------------------------------------------------------------------*/
-void DRT::Elements::Soctet10Surface::sotet4_surface_shapefunc(
+void DRT::ELEMENTS::Soctet10Surface::sotet4_surface_shapefunc(
       Epetra_SerialDenseMatrix** shapefct,  // pointer to pointer of shapefct
       Epetra_SerialDenseVector** weights)   // pointer to pointer of weights
 {

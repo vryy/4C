@@ -33,7 +33,7 @@ using namespace DRT::UTILS;
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            gammi 04/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::Fluid2::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
                                     DRT::Discretization&      discretization,
                                     vector<int>&              lm,
                                     Epetra_SerialDenseMatrix& elemat1,
@@ -42,7 +42,7 @@ int DRT::Elements::Fluid2::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector& elevec2,
                                     Epetra_SerialDenseVector& elevec3)
 {
-  DRT::Elements::Fluid2::ActionType act = Fluid2::none;
+  DRT::ELEMENTS::Fluid2::ActionType act = Fluid2::none;
 
   // set default value for (at the moment still necessary) control parameter
  bool is_stationary = false;
@@ -187,7 +187,7 @@ int DRT::Elements::Fluid2::Evaluate(ParameterList& params,
   } // end of switch(act)
 
   return 0;
-} // end of DRT::Elements::Fluid2::Evaluate
+} // end of DRT::ELEMENTS::Fluid2::Evaluate
 
 
 /*----------------------------------------------------------------------*
@@ -197,7 +197,7 @@ int DRT::Elements::Fluid2::Evaluate(ParameterList& params,
  |  integration of the surface neumann loads takes place in the element.|
  |  We need it there for the stabilisation terms!                       |
  *----------------------------------------------------------------------*/
-int DRT::Elements::Fluid2::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::Fluid2::EvaluateNeumann(ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
                                            vector<int>&              lm,
@@ -210,7 +210,7 @@ int DRT::Elements::Fluid2::EvaluateNeumann(ParameterList& params,
 /*----------------------------------------------------------------------*
  |  calculate system matrix and rhs (private)                gammi 03/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
+void DRT::ELEMENTS::Fluid2::f2_sys_mat(vector<int>&              lm,
                                        vector<double>&           evelnp,
 				       vector<double>&           eprenp,
                                        vector<double>&           evhist,
@@ -664,7 +664,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
 
 
   return;
-} // DRT::Elements::Fluid2::f2_sys_mat
+} // DRT::ELEMENTS::Fluid2::f2_sys_mat
 
 
 /*----------------------------------------------------------------------*
@@ -682,7 +682,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
  |     +-        -+
  |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Fluid2::f2_jaco(const Epetra_SerialDenseMatrix& xyze,
+void DRT::ELEMENTS::Fluid2::f2_jaco(const Epetra_SerialDenseMatrix& xyze,
 				    const Epetra_SerialDenseMatrix& deriv,
                             	    Epetra_SerialDenseMatrix& xjm,
 				    double* det,
@@ -716,7 +716,7 @@ void DRT::Elements::Fluid2::f2_jaco(const Epetra_SerialDenseMatrix& xyze,
      dserror("Stopped not regulary!\n");
   }
 
-} //end of DRT::Elements::Fluid2::f2_jaco
+} //end of DRT::ELEMENTS::Fluid2::f2_jaco
 
 
 /*----------------------------------------------------------------------*
@@ -724,7 +724,7 @@ void DRT::Elements::Fluid2::f2_jaco(const Epetra_SerialDenseMatrix& xyze,
  |  the Neumann condition associated with the nodes is stored in the    |
  |  array edeadng only if all nodes have a surface Neumann condition   |
  *----------------------------------------------------------------------*/
-Epetra_SerialDenseMatrix DRT::Elements::Fluid2::f2_getbodyforce(
+Epetra_SerialDenseMatrix DRT::ELEMENTS::Fluid2::f2_getbodyforce(
         const double          time
 )
 {
@@ -809,7 +809,7 @@ Epetra_SerialDenseMatrix DRT::Elements::Fluid2::f2_getbodyforce(
   }
 
   return edeadng;
-} // end of DRT:Elements:Fluid2:f2_getbodyforce
+} // end of DRT:ELEMENTS:Fluid2:f2_getbodyforce
 
 
 /*----------------------------------------------------------------------*
@@ -834,7 +834,7 @@ Epetra_SerialDenseMatrix DRT::Elements::Fluid2::f2_getbodyforce(
  | inverted.
  |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Fluid2::f2_gder(Epetra_SerialDenseMatrix& derxy,
+void DRT::ELEMENTS::Fluid2::f2_gder(Epetra_SerialDenseMatrix& derxy,
 				    const Epetra_SerialDenseMatrix& deriv,
                                     Epetra_SerialDenseMatrix& xjm,
 				    double& det,
@@ -870,7 +870,7 @@ void DRT::Elements::Fluid2::f2_gder(Epetra_SerialDenseMatrix& derxy,
   /*----------------------------------------------------------------------*/
 
   return;
-} // end of DRT:Elements:Fluid2:f2_gder
+} // end of DRT:ELEMENTS:Fluid2:f2_gder
 
 /*----------------------------------------------------------------------*
  |  calculate second global derivatives w.r.t. x,y at point r,s (private)
@@ -940,7 +940,7 @@ void DRT::Elements::Fluid2::f2_gder(Epetra_SerialDenseMatrix& derxy,
  |
  *----------------------------------------------------------------------*/
 
-void DRT::Elements::Fluid2::f2_gder2(const Epetra_SerialDenseMatrix& xyze,
+void DRT::ELEMENTS::Fluid2::f2_gder2(const Epetra_SerialDenseMatrix& xyze,
 				     const Epetra_SerialDenseMatrix& xjm,
 				     const Epetra_SerialDenseMatrix& derxy,
 				     Epetra_SerialDenseMatrix& derxy2,
@@ -1073,7 +1073,7 @@ void DRT::Elements::Fluid2::f2_gder2(const Epetra_SerialDenseMatrix& xyze,
 /*----------------------------------------------------------------------*/
 
     return;
-} // end of DRT:Elements:Fluid2:f2_gder2
+} // end of DRT:ELEMENTS:Fluid2:f2_gder2
 
 
 
@@ -1178,7 +1178,7 @@ for further comments see comment lines within code.
 \return void
 ------------------------------------------------------------------------*/
 
-void DRT::Elements::Fluid2::f2_calmat(
+void DRT::ELEMENTS::Fluid2::f2_calmat(
     Epetra_SerialDenseMatrix& estif,
     Epetra_SerialDenseMatrix& esv,
     Epetra_SerialDenseVector& eforce,
@@ -1393,10 +1393,10 @@ if (fssgv > 0)
 }
 
   return;
-} // end of DRT:Elements:Fluid2:f2_calmat
+} // end of DRT:ELEMENTS:Fluid2:f2_calmat
 
 
-void DRT::Elements::Fluid2::f2_calmat_stationary(
+void DRT::ELEMENTS::Fluid2::f2_calmat_stationary(
     Epetra_SerialDenseMatrix& estif,
     Epetra_SerialDenseMatrix& esv,
     Epetra_SerialDenseVector& eforce,
@@ -1594,10 +1594,10 @@ if (fssgv > 0)
 }
 
 return;
-} // end of DRT:Elements:Fluid2:f2_calmat_stationary
+} // end of DRT:ELEMENTS:Fluid2:f2_calmat_stationary
 
 // check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
-bool DRT::Elements::Fluid2::is_higher_order_element(
+bool DRT::ELEMENTS::Fluid2::is_higher_order_element(
               const DRT::Element::DiscretizationType  distype) const
 {
     bool hoel = true;
@@ -1625,7 +1625,7 @@ bool DRT::Elements::Fluid2::is_higher_order_element(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                mwgee 12/06|
  *----------------------------------------------------------------------*/
-int DRT::Elements::Fluid2Register::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::Fluid2Register::Initialize(DRT::Discretization& dis)
 {
   return 0;
 }

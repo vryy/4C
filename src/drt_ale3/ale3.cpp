@@ -9,7 +9,7 @@
 
 using namespace DRT::UTILS;
 
-DRT::Elements::Ale3::Ale3(int id, int owner)
+DRT::ELEMENTS::Ale3::Ale3(int id, int owner)
   : DRT::Element(id,element_ale3,owner),
     data_()
 {
@@ -18,7 +18,7 @@ DRT::Elements::Ale3::Ale3(int id, int owner)
 }
 
 
-DRT::Elements::Ale3::Ale3(const DRT::Elements::Ale3& old)
+DRT::ELEMENTS::Ale3::Ale3(const DRT::ELEMENTS::Ale3& old)
   : DRT::Element(old),
     data_(old.data_),
     surfaces_(old.surfaces_),
@@ -28,14 +28,14 @@ DRT::Elements::Ale3::Ale3(const DRT::Elements::Ale3& old)
 }
 
 
-DRT::Element* DRT::Elements::Ale3::Clone() const
+DRT::Element* DRT::ELEMENTS::Ale3::Clone() const
 {
-  DRT::Elements::Ale3* newelement = new DRT::Elements::Ale3(*this);
+  DRT::ELEMENTS::Ale3* newelement = new DRT::ELEMENTS::Ale3(*this);
   return newelement;
 }
 
 
-DRT::Element::DiscretizationType DRT::Elements::Ale3::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::Ale3::Shape() const
 {
   switch (NumNode())
   {
@@ -53,7 +53,7 @@ DRT::Element::DiscretizationType DRT::Elements::Ale3::Shape() const
 }
 
 
-void DRT::Elements::Ale3::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Ale3::Pack(vector<char>& data) const
 {
   data.resize(0);
   // pack type of this instance of ParObject
@@ -72,7 +72,7 @@ void DRT::Elements::Ale3::Pack(vector<char>& data) const
 }
 
 
-void DRT::Elements::Ale3::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Ale3::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -95,12 +95,12 @@ void DRT::Elements::Ale3::Unpack(const vector<char>& data)
 }
 
 
-DRT::Elements::Ale3::~Ale3()
+DRT::ELEMENTS::Ale3::~Ale3()
 {
 }
 
 
-void DRT::Elements::Ale3::Print(ostream& os) const
+void DRT::ELEMENTS::Ale3::Print(ostream& os) const
 {
   os << "Ale3 ";
   Element::Print(os);
@@ -110,16 +110,16 @@ void DRT::Elements::Ale3::Print(ostream& os) const
 }
 
 
-RefCountPtr<DRT::ElementRegister> DRT::Elements::Ale3::ElementRegister() const
+RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Ale3::ElementRegister() const
 {
-  return rcp(new DRT::Elements::Ale3Register(Type()));
+  return rcp(new DRT::ELEMENTS::Ale3Register(Type()));
 }
 
 
 //
 // get vector of surfaces
 //
-DRT::Element** DRT::Elements::Ale3::Surfaces()
+DRT::Element** DRT::ELEMENTS::Ale3::Surfaces()
 {
     const DiscretizationType distype = Shape();
     const int nsurf = NumSurface();
@@ -161,7 +161,7 @@ DRT::Element** DRT::Elements::Ale3::Surfaces()
 
 
 // support for above
-void DRT::Elements::Ale3::CreateSurfacesTet(const int& nsurf,
+void DRT::ELEMENTS::Ale3::CreateSurfacesTet(const int& nsurf,
                                             const int& nnode)
 {
     for(int isurf=0;isurf<nsurf;isurf++)
@@ -174,14 +174,14 @@ void DRT::Elements::Ale3::CreateSurfacesTet(const int& nsurf,
              nodeids[inode] = NodeIds()[eleNodeNumbering_tet10_surfaces[isurf][inode]];
              nodes[inode]   = Nodes()[  eleNodeNumbering_tet10_surfaces[isurf][inode]];
         }
-        surfaces_[isurf] = rcp(new DRT::Elements::Ale3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
+        surfaces_[isurf] = rcp(new DRT::ELEMENTS::Ale3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
         surfaceptrs_[isurf] = surfaces_[isurf].get();
     }
 }
 
 
 // support for above
-void DRT::Elements::Ale3::CreateSurfacesHex(const int& nsurf,
+void DRT::ELEMENTS::Ale3::CreateSurfacesHex(const int& nsurf,
                                             const int& nnode)
 {
     for(int isurf=0;isurf<nsurf;isurf++)
@@ -194,12 +194,12 @@ void DRT::Elements::Ale3::CreateSurfacesHex(const int& nsurf,
              nodeids[inode] = NodeIds()[eleNodeNumbering_hex27_surfaces[isurf][inode]];
              nodes[inode]   = Nodes()[  eleNodeNumbering_hex27_surfaces[isurf][inode]];
         }
-        surfaces_[isurf] = rcp(new DRT::Elements::Ale3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
+        surfaces_[isurf] = rcp(new DRT::ELEMENTS::Ale3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
         surfaceptrs_[isurf] = surfaces_[isurf].get();
     }
 }
 
-void DRT::Elements::Ale3::CreateSurfaceWedge(const int& nsurf, const int& wedgetype)
+void DRT::ELEMENTS::Ale3::CreateSurfaceWedge(const int& nsurf, const int& wedgetype)
 {
   switch (wedgetype){
   case 6:
@@ -229,7 +229,7 @@ void DRT::Elements::Ale3::CreateSurfaceWedge(const int& nsurf, const int& wedget
                 nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
                 nodes[inode] = Nodes()[ eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
             }
-            surfaces_[isurf] = rcp(new DRT::Elements::Ale3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
+            surfaces_[isurf] = rcp(new DRT::ELEMENTS::Ale3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
             surfaceptrs_[isurf] = surfaces_[isurf].get();
         }
     }
@@ -262,7 +262,7 @@ void DRT::Elements::Ale3::CreateSurfaceWedge(const int& nsurf, const int& wedget
                 nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
                 nodes[inode] = Nodes()[ eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
             }
-            surfaces_[isurf] = rcp(new DRT::Elements::Ale3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
+            surfaces_[isurf] = rcp(new DRT::ELEMENTS::Ale3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
             surfaceptrs_[isurf] = surfaces_[isurf].get();
         }
     }
@@ -273,7 +273,7 @@ void DRT::Elements::Ale3::CreateSurfaceWedge(const int& nsurf, const int& wedget
   } // end switch wedge type
 }
 
-void DRT::Elements::Ale3::CreateSurfacesPyramid()
+void DRT::ELEMENTS::Ale3::CreateSurfacesPyramid()
 {
   // Quad surface
 
@@ -285,7 +285,7 @@ void DRT::Elements::Ale3::CreateSurfacesPyramid()
           nodeids[qinode] = NodeIds()[eleNodeNumbering_hex27_surfaces[surfid][qinode]];
           nodes[qinode] = Nodes()[eleNodeNumbering_hex27_surfaces[surfid][qinode]];
         }
-        surfaces_[surfid] = rcp(new DRT::Elements::Ale3Surface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
+        surfaces_[surfid] = rcp(new DRT::ELEMENTS::Ale3Surface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
         surfaceptrs_[surfid] = surfaces_[surfid].get();
 
   // tri surfaces
@@ -299,13 +299,13 @@ void DRT::Elements::Ale3::CreateSurfacesPyramid()
         nodeids[tinode] = NodeIds()[eleNodeNumbering_pyramid5_trisurfaces[tisurf][tinode]];
         nodes[tinode] = Nodes()[eleNodeNumbering_pyramid5_trisurfaces[tisurf][tinode]];
       }
-      surfaces_[surfid] = rcp(new DRT::Elements::Ale3Surface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
+      surfaces_[surfid] = rcp(new DRT::ELEMENTS::Ale3Surface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
       surfaceptrs_[surfid] = surfaces_[surfid].get();
 
   }
 }
 
-DRT::Element** DRT::Elements::Ale3::Volumes()
+DRT::Element** DRT::ELEMENTS::Ale3::Volumes()
 {
   volume_.resize(1);
   volume_[0] = this; //points to Ale3 element itself
@@ -319,25 +319,25 @@ DRT::Element** DRT::Elements::Ale3::Volumes()
 //=======================================================================
 
 
-DRT::Elements::Ale3Register::Ale3Register(DRT::Element::ElementType etype)
+DRT::ELEMENTS::Ale3Register::Ale3Register(DRT::Element::ElementType etype)
   : ElementRegister(etype)
 {
 }
 
 
-DRT::Elements::Ale3Register::Ale3Register(const DRT::Elements::Ale3Register& old)
+DRT::ELEMENTS::Ale3Register::Ale3Register(const DRT::ELEMENTS::Ale3Register& old)
   : ElementRegister(old)
 {
 }
 
 
-DRT::Elements::Ale3Register* DRT::Elements::Ale3Register::Clone() const
+DRT::ELEMENTS::Ale3Register* DRT::ELEMENTS::Ale3Register::Clone() const
 {
-  return new DRT::Elements::Ale3Register(*this);
+  return new DRT::ELEMENTS::Ale3Register(*this);
 }
 
 
-void DRT::Elements::Ale3Register::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Ale3Register::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -351,7 +351,7 @@ void DRT::Elements::Ale3Register::Pack(vector<char>& data) const
 }
 
 
-void DRT::Elements::Ale3Register::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Ale3Register::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -368,12 +368,12 @@ void DRT::Elements::Ale3Register::Unpack(const vector<char>& data)
 }
 
 
-DRT::Elements::Ale3Register::~Ale3Register()
+DRT::ELEMENTS::Ale3Register::~Ale3Register()
 {
 }
 
 
-void DRT::Elements::Ale3Register::Print(ostream& os) const
+void DRT::ELEMENTS::Ale3Register::Print(ostream& os) const
 {
   os << "Ale3Register ";
   ElementRegister::Print(os);

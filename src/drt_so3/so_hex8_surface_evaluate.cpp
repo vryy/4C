@@ -25,7 +25,7 @@ Maintainer: Moritz Frenzel
 /*----------------------------------------------------------------------*
  * Integrate a Surface Neumann boundary condition (public)     maf 04/07*
  * ---------------------------------------------------------------------*/
-int DRT::Elements::Soh8Surface::EvaluateNeumann(ParameterList&           params,
+int DRT::ELEMENTS::Soh8Surface::EvaluateNeumann(ParameterList&           params,
                                                 DRT::Discretization&     discretization,
                                                 DRT::Condition&          condition,
                                                 vector<int>&             lm,
@@ -155,7 +155,7 @@ int DRT::Elements::Soh8Surface::EvaluateNeumann(ParameterList&           params,
 /*----------------------------------------------------------------------*
  * Evaluate sqrt of determinant of metric at gp (private)      maf 05/07*
  * ---------------------------------------------------------------------*/
-void DRT::Elements::Soh8Surface::soh8_surface_integ(
+void DRT::ELEMENTS::Soh8Surface::soh8_surface_integ(
       vector<double>* funct,                 // (o) shape functions
       double* sqrtdetg,                      // (o) pointer to sqrt of det(g)
       vector<double>* unrm,                  // (o) unit normal
@@ -209,7 +209,7 @@ void DRT::Elements::Soh8Surface::soh8_surface_integ(
 /*----------------------------------------------------------------------*
  * Evaluate method for Soh8Surface-Elements                     tk 10/07*
  * ---------------------------------------------------------------------*/
-int DRT::Elements::Soh8Surface::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
         DRT::Discretization&      discretization,
         vector<int>&              lm,
         Epetra_SerialDenseMatrix& elematrix1,
@@ -223,7 +223,7 @@ int DRT::Elements::Soh8Surface::Evaluate(ParameterList& params,
 		dserror("Volume Constraint online works for quad4 surfaces!");
 
 	// start with "none"
-	DRT::Elements::Soh8Surface::ActionType act = Soh8Surface::none;
+	DRT::ELEMENTS::Soh8Surface::ActionType act = Soh8Surface::none;
 
 	// get the required action
 	string action = params.get<string>("action","none");
@@ -483,7 +483,7 @@ int DRT::Elements::Soh8Surface::Evaluate(ParameterList& params,
  * Compute Volume between surface and xy-plane.                 tk 10/07*
  * Yields to the enclosed volume when summed up over all elements       *
  * ---------------------------------------------------------------------*/
-double DRT::Elements::Soh8Surface::ComputeConstrVols(Epetra_SerialDenseMatrix xc)
+double DRT::ELEMENTS::Soh8Surface::ComputeConstrVols(Epetra_SerialDenseMatrix xc)
 {
 	double volume =0;
 	//Formula for volume computation based on calculation of Ulrich done
@@ -535,7 +535,7 @@ double DRT::Elements::Soh8Surface::ComputeConstrVols(Epetra_SerialDenseMatrix xc
  * Compute influence of volume constraint on stiffness matrix.  tk 10/07*
  * Second derivatives of volume with respect to the displacements       *
  * ---------------------------------------------------------------------*/
-void DRT::Elements::Soh8Surface::ComputeVolconstrStiff(Epetra_SerialDenseMatrix xc,
+void DRT::ELEMENTS::Soh8Surface::ComputeVolconstrStiff(Epetra_SerialDenseMatrix xc,
 		  Epetra_SerialDenseMatrix& elematrix)
 {
 	//Second derivatives of volume with respect to the displacements.
@@ -702,7 +702,7 @@ void DRT::Elements::Soh8Surface::ComputeVolconstrStiff(Epetra_SerialDenseMatrix 
  * Compute derivative of volume									tk 10/07*
  * with respect to the displacements							        *
  * ---------------------------------------------------------------------*/
-void DRT::Elements::Soh8Surface::ComputeVolconstrVolDeriv(Epetra_SerialDenseMatrix xc,
+void DRT::ELEMENTS::Soh8Surface::ComputeVolconstrVolDeriv(Epetra_SerialDenseMatrix xc,
 		Epetra_SerialDenseVector& elevector)
 {
 	//implementation based on symbolic calculation with mupad

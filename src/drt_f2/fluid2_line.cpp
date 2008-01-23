@@ -26,10 +26,10 @@ Maintainer: Peter Gamnitzer
  |  ctor (public)                                            gammi 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::Fluid2Line::Fluid2Line(int id, int owner,
+DRT::ELEMENTS::Fluid2Line::Fluid2Line(int id, int owner,
                               int nnode, const int* nodeids,
                               DRT::Node** nodes,
-                              DRT::Elements::Fluid2* parent,
+                              DRT::ELEMENTS::Fluid2* parent,
                               const int lline) :
 DRT::Element(id,element_fluid2line,owner),
 parent_(parent),
@@ -43,7 +43,7 @@ lline_(lline)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Fluid2Line::Fluid2Line(const DRT::Elements::Fluid2Line& old) :
+DRT::ELEMENTS::Fluid2Line::Fluid2Line(const DRT::ELEMENTS::Fluid2Line& old) :
 DRT::Element(old),
 parent_(old.parent_),
 lline_(old.lline_)
@@ -55,9 +55,9 @@ lline_(old.lline_)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::Elements::Fluid2Line::Clone() const
+DRT::Element* DRT::ELEMENTS::Fluid2Line::Clone() const
 {
-  DRT::Elements::Fluid2Line* newelement = new DRT::Elements::Fluid2Line(*this);
+  DRT::ELEMENTS::Fluid2Line* newelement = new DRT::ELEMENTS::Fluid2Line(*this);
   return newelement;
 }
 
@@ -65,7 +65,7 @@ DRT::Element* DRT::Elements::Fluid2Line::Clone() const
  |                                                             (public) |
  |                                                          u.kue 03/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::Elements::Fluid2Line::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::Fluid2Line::Shape() const
 {
   switch (NumNode())
   {
@@ -81,7 +81,7 @@ DRT::Element::DiscretizationType DRT::Elements::Fluid2Line::Shape() const
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Fluid2Line::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Fluid2Line::Pack(vector<char>& data) const
 {
   data.resize(0);
   dserror("this Fluid2Line element does not support communication");
@@ -93,7 +93,7 @@ void DRT::Elements::Fluid2Line::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Fluid2Line::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Fluid2Line::Unpack(const vector<char>& data)
 {
   dserror("this Fluid2Line element does not support communication");
   return;
@@ -102,7 +102,7 @@ void DRT::Elements::Fluid2Line::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Fluid2Line::~Fluid2Line()
+DRT::ELEMENTS::Fluid2Line::~Fluid2Line()
 {
   return;
 }
@@ -111,7 +111,7 @@ DRT::Elements::Fluid2Line::~Fluid2Line()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 01/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Fluid2Line::Print(ostream& os) const
+void DRT::ELEMENTS::Fluid2Line::Print(ostream& os) const
 {
   os << "Fluid2Line ";
   Element::Print(os);

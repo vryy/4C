@@ -37,7 +37,7 @@ using namespace LINALG; // our linear algebra
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                             maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_shw6::soshw6_nlnstiffmass(
+void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
       vector<int>&              lm,             // location matrix
       vector<double>&           disp,           // current displacements
       vector<double>&           residual,       // current residuum
@@ -303,13 +303,13 @@ void DRT::Elements::So_shw6::soshw6_nlnstiffmass(
    /* =========================================================================*/
 
   return;
-} // DRT::Elements::Shell8::s8_nlnstiffmass
+} // DRT::ELEMENTS::Shell8::s8_nlnstiffmass
 
 
 /*----------------------------------------------------------------------*
  |  setup of constant ANS data (private)                       maf 05/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_shw6::soshw6_anssetup(
+void DRT::ELEMENTS::So_shw6::soshw6_anssetup(
           const int numsp,              // number of sampling points
           const int numans,             // number of ans strains
           const Epetra_SerialDenseMatrix& xrefe, // material element coords
@@ -423,7 +423,7 @@ void DRT::Elements::So_shw6::soshw6_anssetup(
 /*----------------------------------------------------------------------*
  |  evaluate 'T'-transformation matrix )                       maf 05/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_shw6::soshw6_evaluateT(const Epetra_SerialDenseMatrix jac,
+void DRT::ELEMENTS::So_shw6::soshw6_evaluateT(const Epetra_SerialDenseMatrix jac,
                                             Epetra_SerialDenseMatrix& TinvT)
 {
   // build T^T transformation matrix which maps

@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file shell8.H
 
-\class DRT::Elements::Shell8
+\class DRT::ELEMENTS::Shell8
 
 \brief A C++ wrapper for the shell8 element
 
@@ -45,7 +45,7 @@ namespace DRT
 // forward declarations
 class Discretization;
 
-namespace Elements
+namespace ELEMENTS
 {
 // forward declarations
 class Shell8Line;
@@ -366,9 +366,9 @@ private:
   //! vector of surfaces of this element (length 1)
   vector<DRT::Element*>                           surfaces_;
   //! vector of lines adjacent to this element (shell8: 3 or 4 lines)
-  vector<RefCountPtr<DRT::Elements::Shell8Line> > lines_;
+  vector<RefCountPtr<DRT::ELEMENTS::Shell8Line> > lines_;
   //! vector of lines adjacent to this element (shell8: 3 or 4 lines)
-  vector<DRT::Elements::Shell8Line*>              lineptrs_;
+  vector<DRT::ELEMENTS::Shell8Line*>              lineptrs_;
 
   // internal calculation methods
 
@@ -642,7 +642,7 @@ public:
   Makes a deep copy of an Shell8Register
 
   */
-  Shell8Register(const DRT::Elements::Shell8Register& old);
+  Shell8Register(const DRT::ELEMENTS::Shell8Register& old);
 
   /*!
   \brief Deep copy this instance of Shell8Register and return pointer to the copy
@@ -651,7 +651,7 @@ public:
   where the type of the derived class is unknown and a copy-ctor is needed
 
   */
-  DRT::Elements::Shell8Register* Clone() const;
+  DRT::ELEMENTS::Shell8Register* Clone() const;
 
   /*!
   \brief Return unique ParObject id
@@ -748,7 +748,7 @@ public:
   \param lline: the local line number of this line w.r.t. the parent element
   */
   Shell8Line(int id, int owner, int nnode, const int* nodeids,
-             DRT::Node** nodes, DRT::Elements::Shell8* parent, const int lline);
+             DRT::Node** nodes, DRT::ELEMENTS::Shell8* parent, const int lline);
 
   /*!
   \brief Copy Constructor
@@ -877,7 +877,7 @@ private:
   Shell8Line& operator = (const Shell8Line& old);
 
   //! The parent element of this line
-  DRT::Elements::Shell8* parent_;
+  DRT::ELEMENTS::Shell8* parent_;
   //! The local line number of this line w.r.t to the parent_ element
   int                    lline_;
 
@@ -887,7 +887,7 @@ private:
 
 
 
-} // namespace Elements
+} // namespace ELEMENTS
 } // namespace DRT
 
 

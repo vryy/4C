@@ -25,8 +25,8 @@ Maintainer: Moritz Frenzel
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::So_sh8::So_sh8(int id, int owner) :
-DRT::Elements::So_hex8(id,owner)
+DRT::ELEMENTS::So_sh8::So_sh8(int id, int owner) :
+DRT::ELEMENTS::So_hex8(id,owner)
 {
   SetType(element_sosh8);
   return;
@@ -36,8 +36,8 @@ DRT::Elements::So_hex8(id,owner)
  |  copy-ctor (public)                                         maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::So_sh8::So_sh8(const DRT::Elements::So_sh8& old) :
-DRT::Elements::So_hex8(old)
+DRT::ELEMENTS::So_sh8::So_sh8(const DRT::ELEMENTS::So_sh8& old) :
+DRT::ELEMENTS::So_hex8(old)
 {
   return;
 }
@@ -46,9 +46,9 @@ DRT::Elements::So_hex8(old)
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::Elements::So_sh8::Clone() const
+DRT::Element* DRT::ELEMENTS::So_sh8::Clone() const
 {
-  DRT::Elements::So_sh8* newelement = new DRT::Elements::So_sh8(*this);
+  DRT::ELEMENTS::So_sh8* newelement = new DRT::ELEMENTS::So_sh8(*this);
   return newelement;
 }
 
@@ -56,7 +56,7 @@ DRT::Element* DRT::Elements::So_sh8::Clone() const
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_sh8::Pack(vector<char>& data) const
+void DRT::ELEMENTS::So_sh8::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -65,7 +65,7 @@ void DRT::Elements::So_sh8::Pack(vector<char>& data) const
   AddtoPack(data,type);
   // add base class So_hex8 Element
   vector<char> basedata(0);
-  DRT::Elements::So_hex8::Pack(basedata);
+  DRT::ELEMENTS::So_hex8::Pack(basedata);
   AddtoPack(data,basedata);
   // thickdir
   AddtoPack(data,thickdir_);
@@ -81,7 +81,7 @@ void DRT::Elements::So_sh8::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_sh8::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::So_sh8::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -91,7 +91,7 @@ void DRT::Elements::So_sh8::Unpack(const vector<char>& data)
   // extract base class So_hex8 Element
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
-  DRT::Elements::So_hex8::Unpack(basedata);
+  DRT::ELEMENTS::So_hex8::Unpack(basedata);
   // thickdir
   ExtractfromPack(position,data,thickdir_);
   //ExtractfromPack(position,data,thickvec_);
@@ -106,7 +106,7 @@ void DRT::Elements::So_sh8::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                              maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::So_sh8::~So_sh8()
+DRT::ELEMENTS::So_sh8::~So_sh8()
 {
   return;
 }
@@ -115,7 +115,7 @@ DRT::Elements::So_sh8::~So_sh8()
 /*----------------------------------------------------------------------*
  |  print this element (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_sh8::Print(ostream& os) const
+void DRT::ELEMENTS::So_sh8::Print(ostream& os) const
 {
   os << "So_sh8 ";
   Element::Print(os);
@@ -127,9 +127,9 @@ void DRT::Elements::So_sh8::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  allocate and return Sosh8Register (public)                 maf 04/07|
  *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::Elements::So_sh8::ElementRegister() const
+RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::So_sh8::ElementRegister() const
 {
-  return rcp(new DRT::Elements::Sosh8Register(Type()));
+  return rcp(new DRT::ELEMENTS::Sosh8Register(Type()));
 }
 
 //=======================================================================
@@ -140,8 +140,8 @@ RefCountPtr<DRT::ElementRegister> DRT::Elements::So_sh8::ElementRegister() const
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Sosh8Register::Sosh8Register(DRT::Element::ElementType etype) :
-DRT::Elements::Soh8Register::Soh8Register(etype)
+DRT::ELEMENTS::Sosh8Register::Sosh8Register(DRT::Element::ElementType etype) :
+DRT::ELEMENTS::Soh8Register::Soh8Register(etype)
 {
   return;
 }
@@ -149,9 +149,9 @@ DRT::Elements::Soh8Register::Soh8Register(etype)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                         maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Sosh8Register::Sosh8Register(
-                               const DRT::Elements::Sosh8Register& old) :
-DRT::Elements::Soh8Register::Soh8Register(old)
+DRT::ELEMENTS::Sosh8Register::Sosh8Register(
+                               const DRT::ELEMENTS::Sosh8Register& old) :
+DRT::ELEMENTS::Soh8Register::Soh8Register(old)
 {
   return;
 }
@@ -160,16 +160,16 @@ DRT::Elements::Soh8Register::Soh8Register(old)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Elements::Sosh8Register* DRT::Elements::Sosh8Register::Clone() const
+DRT::ELEMENTS::Sosh8Register* DRT::ELEMENTS::Sosh8Register::Clone() const
 {
-  return new DRT::Elements::Sosh8Register(*this);
+  return new DRT::ELEMENTS::Sosh8Register(*this);
 }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Sosh8Register::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Sosh8Register::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -178,7 +178,7 @@ void DRT::Elements::Sosh8Register::Pack(vector<char>& data) const
   AddtoPack(data,type);
   // add base class So_hex8 Element
   vector<char> basedata(0);
-  DRT::Elements::Soh8Register::Pack(basedata);
+  DRT::ELEMENTS::Soh8Register::Pack(basedata);
   AddtoPack(data,basedata);
 
   return;
@@ -189,7 +189,7 @@ void DRT::Elements::Sosh8Register::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Sosh8Register::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Sosh8Register::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -199,7 +199,7 @@ void DRT::Elements::Sosh8Register::Unpack(const vector<char>& data)
   // base class ElementRegister
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
-  DRT::Elements::Soh8Register::Unpack(basedata);
+  DRT::ELEMENTS::Soh8Register::Unpack(basedata);
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -209,7 +209,7 @@ void DRT::Elements::Sosh8Register::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print (public)                                             maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Sosh8Register::Print(ostream& os) const
+void DRT::ELEMENTS::Sosh8Register::Print(ostream& os) const
 {
   os << "Sosh8Register ";
   ElementRegister::Print(os);
@@ -219,7 +219,7 @@ void DRT::Elements::Sosh8Register::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  dtor (public)                                              maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Sosh8Register::~Sosh8Register()
+DRT::ELEMENTS::Sosh8Register::~Sosh8Register()
 {
   return;
 }

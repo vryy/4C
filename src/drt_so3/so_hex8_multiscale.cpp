@@ -35,7 +35,7 @@ using namespace std; // cout etc.
 
 
 // dynamic homogenization based on averaging the 1st PK stresses
-void DRT::Elements::So_hex8::soh8_homog(ParameterList&  params,
+void DRT::ELEMENTS::So_hex8::soh8_homog(ParameterList&  params,
                                         vector<double>& disp,
                                         const double    time,
                                         vector<double>& residual)

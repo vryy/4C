@@ -21,10 +21,10 @@
  |  ctor (public)                                            gammi 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::Ale2Line::Ale2Line(int id, int owner,
+DRT::ELEMENTS::Ale2Line::Ale2Line(int id, int owner,
                               int nnode, const int* nodeids,
                               DRT::Node** nodes,
-                              DRT::Elements::Ale2* parent,
+                              DRT::ELEMENTS::Ale2* parent,
                               const int lline) :
 DRT::Element(id,element_ale2line,owner),
 parent_(parent),
@@ -38,7 +38,7 @@ lline_(lline)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Ale2Line::Ale2Line(const DRT::Elements::Ale2Line& old) :
+DRT::ELEMENTS::Ale2Line::Ale2Line(const DRT::ELEMENTS::Ale2Line& old) :
 DRT::Element(old),
 parent_(old.parent_),
 lline_(old.lline_)
@@ -50,9 +50,9 @@ lline_(old.lline_)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::Elements::Ale2Line::Clone() const
+DRT::Element* DRT::ELEMENTS::Ale2Line::Clone() const
 {
-  DRT::Elements::Ale2Line* newelement = new DRT::Elements::Ale2Line(*this);
+  DRT::ELEMENTS::Ale2Line* newelement = new DRT::ELEMENTS::Ale2Line(*this);
   return newelement;
 }
 
@@ -60,7 +60,7 @@ DRT::Element* DRT::Elements::Ale2Line::Clone() const
  |                                                             (public) |
  |                                                          u.kue 03/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::Elements::Ale2Line::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::Ale2Line::Shape() const
 {
   switch (NumNode())
   {
@@ -76,7 +76,7 @@ DRT::Element::DiscretizationType DRT::Elements::Ale2Line::Shape() const
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Ale2Line::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Ale2Line::Pack(vector<char>& data) const
 {
   data.resize(0);
   dserror("this Ale2Line element does not support communication");
@@ -88,7 +88,7 @@ void DRT::Elements::Ale2Line::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Ale2Line::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Ale2Line::Unpack(const vector<char>& data)
 {
   dserror("this Ale2Line element does not support communication");
   return;
@@ -97,7 +97,7 @@ void DRT::Elements::Ale2Line::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Ale2Line::~Ale2Line()
+DRT::ELEMENTS::Ale2Line::~Ale2Line()
 {
   return;
 }
@@ -106,7 +106,7 @@ DRT::Elements::Ale2Line::~Ale2Line()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 01/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Ale2Line::Print(ostream& os) const
+void DRT::ELEMENTS::Ale2Line::Print(ostream& os) const
 {
   os << "Ale2Line ";
   Element::Print(os);

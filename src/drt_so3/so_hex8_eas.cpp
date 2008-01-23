@@ -35,7 +35,7 @@ using namespace LINALG; // our linear algebra
 /*----------------------------------------------------------------------*
  |  initialize EAS data (private)                              maf 05/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_hex8::soh8_easinit()
+void DRT::ELEMENTS::So_hex8::soh8_easinit()
 {
   // EAS enhanced strain parameters
   Epetra_SerialDenseMatrix alpha(neas_,1);
@@ -58,7 +58,7 @@ void DRT::Elements::So_hex8::soh8_easinit()
 /*----------------------------------------------------------------------*
  |  setup of constant EAS data (private)                       maf 05/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_hex8::soh8_eassetup(
+void DRT::ELEMENTS::So_hex8::soh8_eassetup(
           Epetra_SerialDenseMatrix** M_GP,    // M-matrix evaluated at GPs
           double& detJ0,                      // det of Jacobian at origin
           Epetra_SerialDenseMatrix& T0invT,   // maps M(origin) local to global

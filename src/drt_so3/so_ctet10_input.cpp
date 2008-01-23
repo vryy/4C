@@ -41,7 +41,7 @@ extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------**########
  |  read element input (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
-bool DRT::Elements::So_ctet10::ReadElement()
+bool DRT::ELEMENTS::So_ctet10::ReadElement()
 {
   DSTraceHelper dst("So_ctet10::ReadElement");
 

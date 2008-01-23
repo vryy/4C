@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file so_tet10.H
 
-\class DRT::Elements::So_tet4
+\class DRT::ELEMENTS::So_tet4
 
 \brief A C++ version of the 4-node tet solid element
 
@@ -59,7 +59,7 @@ namespace DRT
 // forward declarations
 class Discretization;
 
-namespace Elements
+namespace ELEMENTS
 {
 // forward declarations
 class Sotet4Volume;
@@ -337,15 +337,15 @@ protected:
 
   DRT::Container                                  data_;
   //! vector of volume (length 1) of this element
-  vector<RefCountPtr<DRT::Elements::Sotet4Volume> > volume_;
+  vector<RefCountPtr<DRT::ELEMENTS::Sotet4Volume> > volume_;
   //! vector of surfaces of this element
-    vector<RefCountPtr<DRT::Elements::Sotet4Surface> > surfaces_;
+    vector<RefCountPtr<DRT::ELEMENTS::Sotet4Surface> > surfaces_;
   //! vector of surfaces of this element
-  vector<DRT::Elements::Sotet4Surface*>           surfaceptrs_;
+  vector<DRT::ELEMENTS::Sotet4Surface*>           surfaceptrs_;
   //! vector of lines adjacent to this element
-  vector<RefCountPtr<DRT::Elements::Sotet4Line> > lines_;
+  vector<RefCountPtr<DRT::ELEMENTS::Sotet4Line> > lines_;
   //! vector of lines adjacent to this element
-  vector<DRT::Elements::Sotet4Line*>              lineptrs_;
+  vector<DRT::ELEMENTS::Sotet4Line*>              lineptrs_;
   //! vector of history variables for each Gauss point
   vector<RefCountPtr<MAT::Material> >                mat_;
 
@@ -404,7 +404,7 @@ public:
   Makes a deep copy of an Soh8Register
 
   */
-  Sotet4Register(const DRT::Elements::Sotet4Register& old);
+  Sotet4Register(const DRT::ELEMENTS::Sotet4Register& old);
 
   /*!
   \brief Deep copy this instance of Soh8Register and return pointer to the copy
@@ -413,7 +413,7 @@ public:
   where the type of the derived class is unknown and a copy-ctor is needed
 
   */
-  DRT::Elements::Sotet4Register* Clone() const;
+  DRT::ELEMENTS::Sotet4Register* Clone() const;
 
   /*!
   \brief Return unique ParObject id
@@ -511,7 +511,7 @@ public:
   \param lsurface: the local surface number of this surface w.r.t. the parent element
   */
   Sotet4Surface(int id, int owner, int nnode, const int* nodeids,
-             DRT::Node** nodes, DRT::Elements::So_tet4* parent, const int lsurface);
+             DRT::Node** nodes, DRT::ELEMENTS::So_tet4* parent, const int lsurface);
 
 
   /*!
@@ -642,7 +642,7 @@ private:
   Sotet4Surface& operator = (const Sotet4Surface& old);
 
   //! The parent element of this surface
-  DRT::Elements::So_tet4* parent_;
+  DRT::ELEMENTS::So_tet4* parent_;
   //! The local surface number of this surface w.r.t to the parent_ element
   int                    lsurface_;
 
@@ -689,7 +689,7 @@ public:
   \param lline: the local line number of this line w.r.t. the parent element
   */
   Sotet4Line(int id, int owner, int nnode, const int* nodeids,
-               DRT::Node** nodes, DRT::Elements::So_tet4* parent, const int lline);
+               DRT::Node** nodes, DRT::ELEMENTS::So_tet4* parent, const int lline);
 
   /*!
   \brief Copy Constructor
@@ -816,7 +816,7 @@ private:
   // don't want = operator
   Sotet4Line& operator = (const Sotet4Line& old);
   //! The parent element of this line
-  DRT::Elements::So_tet4* parent_;
+  DRT::ELEMENTS::So_tet4* parent_;
   //! The local line number of this line w.r.t to the parent_ element
   int                    lline_;
 
@@ -825,7 +825,7 @@ private:
 
 
 
-} // namespace Elements
+} // namespace ELEMENTS
 } // namespace DRT
 
 #endif  // #ifndef SO_TET4_H_

@@ -26,10 +26,10 @@ writen by : Alexander Volf
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 
-DRT::Elements::Soctet10Surface::Soctet10Surface(int id, int owner,
+DRT::ELEMENTS::Soctet10Surface::Soctet10Surface(int id, int owner,
                               int nnode, const int* nodeids,
                               DRT::Node** nodes,
-                              DRT::Elements::So_ctet10* parent,
+                              DRT::ELEMENTS::So_ctet10* parent,
                               const int lsurface) :
 DRT::Element(id,element_soctet10surface,owner),
 parent_(parent),
@@ -44,7 +44,7 @@ lsurface_(lsurface)
 /*----------------------------------------------------------------------***
  |  copy-ctor (public)                                         maf 01/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Soctet10Surface::Soctet10Surface(const DRT::Elements::Soctet10Surface& old) :
+DRT::ELEMENTS::Soctet10Surface::Soctet10Surface(const DRT::ELEMENTS::Soctet10Surface& old) :
 DRT::Element(old),
 parent_(old.parent_),
 lsurface_(old.lsurface_)
@@ -57,10 +57,10 @@ lsurface_(old.lsurface_)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            maf 01/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::Elements::Soctet10Surface::Clone() const
+DRT::Element* DRT::ELEMENTS::Soctet10Surface::Clone() const
 {
 
-  DRT::Elements::Soctet10Surface* newelement = new DRT::Elements::Soctet10Surface(*this);
+  DRT::ELEMENTS::Soctet10Surface* newelement = new DRT::ELEMENTS::Soctet10Surface(*this);
 
   return newelement;
 }
@@ -69,7 +69,7 @@ DRT::Element* DRT::Elements::Soctet10Surface::Clone() const
  |                                                             (public) |
  |                                                          u.kue 03/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::Elements::Soctet10Surface::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::Soctet10Surface::Shape() const
 {
   return tri6;
 }
@@ -78,7 +78,7 @@ DRT::Element::DiscretizationType DRT::Elements::Soctet10Surface::Shape() const
  |  Pack data                                                  (public) |
  |                                                            maf 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Soctet10Surface::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Soctet10Surface::Pack(vector<char>& data) const
 {
   data.resize(0);
   dserror("this Sote10Surface element does not support communication");
@@ -90,7 +90,7 @@ void DRT::Elements::Soctet10Surface::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Soctet10Surface::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Soctet10Surface::Unpack(const vector<char>& data)
 {
   dserror("this Soctet10Surface element does not support communication");
   return;
@@ -99,7 +99,7 @@ void DRT::Elements::Soctet10Surface::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------***
  |  dtor (public)                                              maf 01/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Soctet10Surface::~Soctet10Surface()
+DRT::ELEMENTS::Soctet10Surface::~Soctet10Surface()
 {
   return;
 }
@@ -108,7 +108,7 @@ DRT::Elements::Soctet10Surface::~Soctet10Surface()
 /*----------------------------------------------------------------------*
  |  print this element (public)                                maf 01/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Soctet10Surface::Print(ostream& os) const
+void DRT::ELEMENTS::Soctet10Surface::Print(ostream& os) const
 {
   os << "Soctet10Surface ";
 

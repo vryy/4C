@@ -23,7 +23,7 @@ namespace DRT
 class Discretization;
 class Ale2Register;
 
-namespace Elements
+namespace ELEMENTS
 {
 
 class Ale2Line;
@@ -282,9 +282,9 @@ private:
   vector<DRT::Element*>                           surface_;
 
   //! vector of lines adjacent to this element (ale2: 3 or 4 lines)
-  vector<RefCountPtr<DRT::Elements::Ale2Line> > lines_;
+  vector<RefCountPtr<DRT::ELEMENTS::Ale2Line> > lines_;
   //! vector of lines adjacent to this element (ale2: 3 or 4 lines)
-  vector<DRT::Elements::Ale2Line*>              lineptrs_;
+  vector<DRT::ELEMENTS::Ale2Line*>              lineptrs_;
 
 
   // internal calculation methods
@@ -331,7 +331,7 @@ public:
   Makes a deep copy of an Ale2Register
 
   */
-  Ale2Register(const DRT::Elements::Ale2Register& old);
+  Ale2Register(const DRT::ELEMENTS::Ale2Register& old);
 
   /*!
   \brief Deep copy this instance of Ale2Register and return pointer to the copy
@@ -340,7 +340,7 @@ public:
   where the type of the derived class is unknown and a copy-ctor is needed
 
   */
-  DRT::Elements::Ale2Register* Clone() const;
+  DRT::ELEMENTS::Ale2Register* Clone() const;
 
   /*!
   \brief Return unique ParObject id
@@ -437,7 +437,7 @@ public:
   \param lline: the local line number of this line w.r.t. the parent element
   */
   Ale2Line(int id, int owner, int nnode, const int* nodeids,
-           DRT::Node** nodes, DRT::Elements::Ale2* parent, const int lline);
+           DRT::Node** nodes, DRT::ELEMENTS::Ale2* parent, const int lline);
 
   /*!
   \brief Copy Constructor
@@ -567,7 +567,7 @@ private:
   Ale2Line& operator = (const Ale2Line& old);
 
   //! The parent element of this line
-  DRT::Elements::Ale2* parent_;
+  DRT::ELEMENTS::Ale2* parent_;
   //! The local line number of this line w.r.t to the parent_ element
   int                    lline_;
 
@@ -576,7 +576,7 @@ private:
 
 
 
-} // namespace Elements
+} // namespace ELEMENTS
 } // namespace DRT
 
 

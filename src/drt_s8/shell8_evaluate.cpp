@@ -41,7 +41,7 @@ extern struct _MATERIAL  *mat;
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            mwgee 12/06|
  *----------------------------------------------------------------------*/
-int DRT::Elements::Shell8::Evaluate(ParameterList&            params,
+int DRT::ELEMENTS::Shell8::Evaluate(ParameterList&            params,
                                     DRT::Discretization&      discretization,
                                     vector<int>&              lm,
                                     Epetra_SerialDenseMatrix& elemat1,
@@ -50,7 +50,7 @@ int DRT::Elements::Shell8::Evaluate(ParameterList&            params,
                                     Epetra_SerialDenseVector& elevec2,
                                     Epetra_SerialDenseVector& elevec3)
 {
-  DRT::Elements::Shell8::ActionType act = Shell8::none;
+  DRT::ELEMENTS::Shell8::ActionType act = Shell8::none;
 
   // get the action required
   string action = params.get<string>("action","none");
@@ -144,7 +144,7 @@ static void s8tettr(double x[][3], double a[][3], double b[][3]);
 /*----------------------------------------------------------------------*
  |  Do stress calculation (private)                          mwgee 02/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8stress(struct _MATERIAL* material,
+void DRT::ELEMENTS::Shell8::s8stress(struct _MATERIAL* material,
                                     vector<double>& mydisp)
 {
   // no. of nodes on this surface
@@ -456,13 +456,13 @@ void DRT::Elements::Shell8::s8stress(struct _MATERIAL* material,
   //------------------------------------- store forces inside the element
   data_.Add("Forces",gp_stress);
   return;
-} // DRT::Elements::Shell8::s8stress
+} // DRT::ELEMENTS::Shell8::s8stress
 
 
 /*----------------------------------------------------------------------*
  |  Return names of visualization data (public)              mwgee 01/08|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::VisNames(map<string,int>& names)
+void DRT::ELEMENTS::Shell8::VisNames(map<string,int>& names)
 {
   // Put the owner of this element into the file (use base class method for this)
   DRT::Element::VisNames(names);
@@ -500,7 +500,7 @@ void DRT::Elements::Shell8::VisNames(map<string,int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                       mwgee 01/08|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::VisData(const string& name, vector<double>& data)
+void DRT::ELEMENTS::Shell8::VisData(const string& name, vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   DRT::Element::VisData(name,data);
@@ -622,7 +622,7 @@ static void s8loadgaussianpoint(double eload[][MAXNOD_SHELL8], const double hhi,
 /*----------------------------------------------------------------------*
  |  Integrate a Surface Neumann boundary condition (public)  mwgee 01/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::Shell8::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::Shell8::EvaluateNeumann(ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
                                            vector<int>&              lm,
@@ -795,7 +795,7 @@ int DRT::Elements::Shell8::EvaluateNeumann(ParameterList& params,
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                            mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
+void DRT::ELEMENTS::Shell8::s8_nlnstiffmass(vector<int>&              lm,
                                             vector<double>&           disp,
                                             vector<double>&           residual,
                                             Epetra_SerialDenseMatrix* stiffmatrix,
@@ -1223,14 +1223,14 @@ fflush(stdout);
 #endif
 
   return;
-} // DRT::Elements::Shell8::s8_nlnstiffmass
+} // DRT::ELEMENTS::Shell8::s8_nlnstiffmass
 
 
 /*----------------------------------------------------------------------*
  | calculation of gaussian points mass with update of displacements     |
  |                                                 (private) 12/06 mgee |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8tmas(
+void DRT::ELEMENTS::Shell8::s8tmas(
               const vector<double>& funct, const vector<double>& thick,
               Epetra_SerialDenseMatrix& emass, const int iel, const int numdf,
               const double facv, const double facw, const double facvw)
@@ -1276,7 +1276,7 @@ void DRT::Elements::Shell8::s8tmas(
  | make internal forces                                                 |
  |                                                 (private) 12/06 mgee |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8intforce(Epetra_SerialDenseVector& intforce, const double stress_r[],
+void DRT::ELEMENTS::Shell8::s8intforce(Epetra_SerialDenseVector& intforce, const double stress_r[],
                   const Epetra_SerialDenseMatrix& bop, const int iel,
                   const int numdf, const int nstress_r, const double weight)
 {
@@ -1300,7 +1300,7 @@ void DRT::Elements::Shell8::s8intforce(Epetra_SerialDenseVector& intforce, const
  | geometric stiffness matrix kg  with ans                              |
  |                                                 (private) 12/06 mgee |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8anstvkg(
+void DRT::ELEMENTS::Shell8::s8anstvkg(
                  Epetra_SerialDenseMatrix& estif, double stress_r[],
                  const vector<double>& funct, const Epetra_SerialDenseMatrix& deriv,
                  const int numdf, const int iel, const double weight,
@@ -1420,7 +1420,7 @@ void DRT::Elements::Shell8::s8anstvkg(
  | geometric stiffness matrix kg                                        |
  |                                                 (private) 12/06 mgee |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8tvkg(
+void DRT::ELEMENTS::Shell8::s8tvkg(
               Epetra_SerialDenseMatrix& estif, double stress_r[],
               const vector<double>& funct, const Epetra_SerialDenseMatrix& deriv,
               const int numdf, const int iel, const double weight,
@@ -1507,7 +1507,7 @@ void DRT::Elements::Shell8::s8tvkg(
  | integrate material law and stresses in thickness direction of shell  |
  |                                                 (private) 12/06 mgee |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8tvma(
+void DRT::ELEMENTS::Shell8::s8tvma(
               double D[][12], double** C, double stress[], double stress_r[],
               const double e3, const double fact, const double condfac)
 {
@@ -1544,7 +1544,7 @@ for (int i=0; i<12; i++)
  | calculate Ke += Bt * D * B                                           |
  |                                                 (private) 12/06 mgee |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8BtDB(Epetra_SerialDenseMatrix& estif,
+void DRT::ELEMENTS::Shell8::s8BtDB(Epetra_SerialDenseMatrix& estif,
                                    const Epetra_SerialDenseMatrix& bop,
                                    const double D[][12],
                                    const int iel,
@@ -1578,7 +1578,7 @@ void DRT::Elements::Shell8::s8BtDB(Epetra_SerialDenseMatrix& estif,
 /*----------------------------------------------------------------------*
  | call material laws  (private)                             mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8tmat(
+void DRT::ELEMENTS::Shell8::s8tmat(
               struct _MATERIAL* material,
               double stress[], double strain[], double** C,
               double gmkovc[][3], double gmkonc[][3],
@@ -1679,7 +1679,7 @@ C.......................................................................
 C!    GEAENDERTE METRIK DES VERF. SCHALENRAUMS INFOLGE ENHANCED STRAIN .
 C.......................................................................
 */
-void DRT::Elements::Shell8::s8vthv(double gmkovc[][3], double gmkonc[][3],
+void DRT::ELEMENTS::Shell8::s8vthv(double gmkovc[][3], double gmkonc[][3],
                                    const vector<double>& epsh,
                                    double* detc, const double e3, const double condfac)
 {
@@ -1711,7 +1711,7 @@ void DRT::Elements::Shell8::s8vthv(double gmkovc[][3], double gmkonc[][3],
  |   (private)                                               mwgee 12/06|
  | modifications to metrics of shell body due to ans for querschub      |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8anstvheq(
+void DRT::ELEMENTS::Shell8::s8anstvheq(
                   double gmkovr[][3], double gmkovc[][3], double gmkonr[][3], double gmkonc[][3],
                   double gkovr[][3], double gkovc[][3], double amkovc[][3], double amkovr[][3],
                   double akovc[][3], double akovr[][3], double a3kvpc[][2], double a3kvpr[][2],
@@ -1803,7 +1803,7 @@ c!    in e3 quadratischen Anteile zu beruecksichtigen, d.h.
 c!    gmkovc_ij ungleich gkovc_i*gkovc_j                                         .
 C.......................................................................
 */
-void DRT::Elements::Shell8::s8tvhe(
+void DRT::ELEMENTS::Shell8::s8tvhe(
               double gmkovr[][3], double gmkovc[][3],
               double gmkonr[][3], double gmkonc[][3],
               double gkovr[][3], double gkovc[][3],
@@ -1874,7 +1874,7 @@ void DRT::Elements::Shell8::s8tvhe(
 /*----------------------------------------------------------------------*
  |  B-Operator ans modification (private)                    mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8ansbbarq(
+void DRT::ELEMENTS::Shell8::s8ansbbarq(
      Epetra_SerialDenseMatrix& bop,
      const double frq[], const double fsq[],
      const vector<double> funct1q[], const vector<double> funct2q[],
@@ -1957,7 +1957,7 @@ void DRT::Elements::Shell8::s8ansbbarq(
 /*----------------------------------------------------------------------*
  |  B-Operator for compatible strains (private)              mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8tvbo(const double e1, const double e2,
+void DRT::ELEMENTS::Shell8::s8tvbo(const double e1, const double e2,
                                    Epetra_SerialDenseMatrix& bop,
                                    const vector<double>& funct,
                                    const Epetra_SerialDenseMatrix& deriv,
@@ -2089,7 +2089,7 @@ void DRT::Elements::Shell8::s8tvbo(const double e1, const double e2,
 /*----------------------------------------------------------------------*
  |  transform the eas-strains from midpoint to gausspoint (private) mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8transeas(
+void DRT::ELEMENTS::Shell8::s8transeas(
                   Epetra_SerialDenseMatrix& P, Epetra_SerialDenseMatrix& transP,
                   Epetra_SerialDenseMatrix& T, const double akovr[][3],
                   const double akonr0[][3], const double detr, const double detr0,
@@ -2224,7 +2224,7 @@ void DRT::Elements::Shell8::s8transeas(
 /*----------------------------------------------------------------------*
  |  do eas (private)                                         mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8eas(const int nhyb, const double e1, const double e2,
+void DRT::ELEMENTS::Shell8::s8eas(const int nhyb, const double e1, const double e2,
                                   const int iel, const int* eas,
                                   Epetra_SerialDenseMatrix& P)
 {
@@ -2678,7 +2678,7 @@ void DRT::Elements::Shell8::s8eas(const int nhyb, const double e1, const double 
 /*----------------------------------------------------------------------*
  |  do ans (private)                                         mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8_ansqshapefunctions(
+void DRT::ELEMENTS::Shell8::s8_ansqshapefunctions(
                              double frq[], double fsq[], const double r,
                              const double s, const int iel, const int nsansq)
 {
@@ -2738,7 +2738,7 @@ void DRT::Elements::Shell8::s8_ansqshapefunctions(
 /*----------------------------------------------------------------------*
  |  do ans (private)                                         mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8_ans_colloquationpoints(
+void DRT::ELEMENTS::Shell8::s8_ans_colloquationpoints(
                                  const int nsansq, const int iel, const int ans,
                                  double xr1[], double xs1[], double xr2[], double xs2[],
                                  vector<double>                  funct1q[],
@@ -2795,7 +2795,7 @@ void DRT::Elements::Shell8::s8_ans_colloquationpoints(
 /*----------------------------------------------------------------------*
  |  do metric (private)                                      mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8tmtr(const double x[][MAXNOD_SHELL8],
+void DRT::ELEMENTS::Shell8::s8tmtr(const double x[][MAXNOD_SHELL8],
                                    const double a3[][MAXNOD_SHELL8],
                                    const double e3,
                                    double gkov[][3],
@@ -2854,7 +2854,7 @@ void DRT::Elements::Shell8::s8tmtr(const double x[][MAXNOD_SHELL8],
 /*----------------------------------------------------------------------*
  |  do Jacobian (private)                                    mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8_jaco(const vector<double>& funct,
+void DRT::ELEMENTS::Shell8::s8_jaco(const vector<double>& funct,
                                     const Epetra_SerialDenseMatrix& deriv,
                                     const double x[][MAXNOD_SHELL8],
                                     double xjm[][3],
@@ -2897,7 +2897,7 @@ void DRT::Elements::Shell8::s8_jaco(const vector<double>& funct,
 /*----------------------------------------------------------------------*
  |  do metric (private)                                      mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8tvmr(const double x[][MAXNOD_SHELL8],
+void DRT::ELEMENTS::Shell8::s8tvmr(const double x[][MAXNOD_SHELL8],
                                    const double a3[][MAXNOD_SHELL8],
                                    double akov[][3],
                                    double akon[][3],
@@ -2964,7 +2964,7 @@ void DRT::Elements::Shell8::s8tvmr(const double x[][MAXNOD_SHELL8],
 /*----------------------------------------------------------------------*
  |  do ans (private)                                         mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8_ans_colloquationcoords(double xqr1[], double xqs1[],
+void DRT::ELEMENTS::Shell8::s8_ans_colloquationcoords(double xqr1[], double xqs1[],
                                                       double xqr2[], double xqs2[],
                                                       const int iel, const int ans)
 {
@@ -3014,7 +3014,7 @@ void DRT::Elements::Shell8::s8_ans_colloquationcoords(double xqr1[], double xqs1
                for the fact, that rows and columns are changed by BLAS )|
  |                                                                      |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8matmatdense(Epetra_SerialDenseMatrix& R,
+void DRT::ELEMENTS::Shell8::s8matmatdense(Epetra_SerialDenseMatrix& R,
                                           const Epetra_SerialDenseMatrix& A,
                                           const Epetra_SerialDenseMatrix& B,
                                           const int ni,
@@ -3057,7 +3057,7 @@ void DRT::Elements::Shell8::s8matmatdense(Epetra_SerialDenseMatrix& R,
                for the fact, that rows and columns are changed by BLAS )|
  |                                                                      |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8matmatdense(Epetra_SerialDenseMatrix& R,
+void DRT::ELEMENTS::Shell8::s8matmatdense(Epetra_SerialDenseMatrix& R,
                                           const double A[][12],
                                           const Epetra_SerialDenseMatrix& B,
                                           const int ni,
@@ -3100,7 +3100,7 @@ void DRT::Elements::Shell8::s8matmatdense(Epetra_SerialDenseMatrix& R,
                for the fact, that rows and columns are changed by BLAS )|
  |                                                                      |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8mattrnmatdense(Epetra_SerialDenseMatrix& R,
+void DRT::ELEMENTS::Shell8::s8mattrnmatdense(Epetra_SerialDenseMatrix& R,
                                              const Epetra_SerialDenseMatrix& A,
                                              const Epetra_SerialDenseMatrix& B,
                                              const int ni,
@@ -3137,7 +3137,7 @@ void DRT::Elements::Shell8::s8mattrnmatdense(Epetra_SerialDenseMatrix& R,
  |  or                                                                  |
  |  r(I) += A(K,I)*b(K)*factor                                          |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8mattrnvecdense(
+void DRT::ELEMENTS::Shell8::s8mattrnvecdense(
                         vector<double>& r,
                         const Epetra_SerialDenseMatrix& A,
                         const double b[],
@@ -3164,7 +3164,7 @@ void DRT::Elements::Shell8::s8mattrnvecdense(
  |  y(I) += A(I,K)*x(K)*factor                                          |
  | (private)                                                            |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8_YpluseqAx(Epetra_SerialDenseVector& y,
+void DRT::ELEMENTS::Shell8::s8_YpluseqAx(Epetra_SerialDenseVector& y,
                                          const Epetra_SerialDenseMatrix& A,
                                          const vector<double>& x,
                                          const double factor,
@@ -3191,7 +3191,7 @@ void DRT::Elements::Shell8::s8_YpluseqAx(Epetra_SerialDenseVector& y,
  |  y(I) += A(I,K)*x(K)*factor                                          |
  | (private)                                                            |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8_YpluseqAx(vector<double>& y,
+void DRT::ELEMENTS::Shell8::s8_YpluseqAx(vector<double>& y,
                                          const Epetra_SerialDenseMatrix& A,
                                          const vector<double>& x,
                                          const double factor,
@@ -3217,7 +3217,7 @@ void DRT::Elements::Shell8::s8_YpluseqAx(vector<double>& y,
  |  calcs the inverse of an unsym 3x3 matrix and determinant m.gee12/06 |
  | (private)                                                            |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8inv3(double a[][3], double* det)
+void DRT::ELEMENTS::Shell8::s8inv3(double a[][3], double* det)
 {
   const double b00 = a[0][0];
   const double b01 = a[0][1];
@@ -3252,7 +3252,7 @@ void DRT::Elements::Shell8::s8inv3(double a[][3], double* det)
  |  calcs the inverse of an unsym 3x3 matrix and determinant m.gee12/06 |
  | (private)                                                            |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8trans3(double a[][3])
+void DRT::ELEMENTS::Shell8::s8trans3(double a[][3])
 {
   for (int i=0; i<3; ++i)
     for (int j=i+1; j<3; ++j)
@@ -3268,7 +3268,7 @@ void DRT::Elements::Shell8::s8trans3(double a[][3])
  |  make a vector unit lenght and return orig lenght         m.gee12/06 |
  | (private)                                                            |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8unvc(double* enorm, double vec[], const int n)
+void DRT::ELEMENTS::Shell8::s8unvc(double* enorm, double vec[], const int n)
 {
   double skalar = 0.0;
   for (int i=0; i<n; ++i) skalar += vec[i]*vec[i];
@@ -3281,7 +3281,7 @@ void DRT::Elements::Shell8::s8unvc(double* enorm, double vec[], const int n)
 /*----------------------------------------------------------------------*
  |  evaluate the element integration points (private)        mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8_integration_points(struct _S8_DATA& data)
+void DRT::ELEMENTS::Shell8::s8_integration_points(struct _S8_DATA& data)
 {
   const int numnode = NumNode();
 
@@ -3423,7 +3423,7 @@ void DRT::Elements::Shell8::s8_integration_points(struct _S8_DATA& data)
 /*----------------------------------------------------------------------*
  |  local coords of nodal point (private)                    mwgee 12/06|
  *----------------------------------------------------------------------*/
-const double DRT::Elements::Shell8::s8_localcoordsofnode(const int node, const int flag,
+const double DRT::ELEMENTS::Shell8::s8_localcoordsofnode(const int node, const int flag,
                                                          const int numnode) const
 {
   const double node489[9][2] = {{1.0,1.0},{-1.0,1.0},{-1.0,-1.0},{1.0,-1.0},
@@ -3449,7 +3449,7 @@ const double DRT::Elements::Shell8::s8_localcoordsofnode(const int node, const i
 /*----------------------------------------------------------------------*
  |  shape functions and derivatives (private)                mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8_shapefunctions(
+void DRT::ELEMENTS::Shell8::s8_shapefunctions(
                              vector<double>& funct,
                              Epetra_SerialDenseMatrix& deriv,
                              const double r, const double s, const int numnode,
@@ -3711,13 +3711,13 @@ static void s8_averagedirector(Epetra_SerialDenseMatrix& dir_list,
 /*----------------------------------------------------------------------*
  |  init the element (public)                                mwgee 12/06|
  *----------------------------------------------------------------------*/
-int DRT::Elements::Shell8Register::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::Shell8Register::Initialize(DRT::Discretization& dis)
 {
   //-------------------- loop all my column elements and init directors at nodes
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->Type() != DRT::Element::element_shell8) continue;
-    DRT::Elements::Shell8* actele = dynamic_cast<DRT::Elements::Shell8*>(dis.lColElement(i));
+    DRT::ELEMENTS::Shell8* actele = dynamic_cast<DRT::ELEMENTS::Shell8*>(dis.lColElement(i));
     if (!actele) dserror("cast to Shell8* failed");
 
     const int numnode = actele->NumNode();
@@ -3806,7 +3806,7 @@ int DRT::Elements::Shell8Register::Initialize(DRT::Discretization& dis)
     {
       DRT::Element* tmpele = actnode->Elements()[j];
       if (tmpele->Type()!=DRT::Element::element_shell8) continue;
-      DRT::Elements::Shell8* actele = dynamic_cast<DRT::Elements::Shell8*>(tmpele);
+      DRT::ELEMENTS::Shell8* actele = dynamic_cast<DRT::ELEMENTS::Shell8*>(tmpele);
       if (!actele) dserror("Element is not Shell8");
       for (int k=0; k<actele->NumNode(); ++k)
       {
@@ -3860,7 +3860,7 @@ int DRT::Elements::Shell8Register::Initialize(DRT::Discretization& dis)
       DRT::Element* tmpele = actnode->Elements()[j];
       if (!tmpele) continue;
       if (tmpele->Type()!=DRT::Element::element_shell8) continue;
-      DRT::Elements::Shell8* actele = dynamic_cast<DRT::Elements::Shell8*>(tmpele);
+      DRT::ELEMENTS::Shell8* actele = dynamic_cast<DRT::ELEMENTS::Shell8*>(tmpele);
       if (!actele) dserror("Element is not Shell8");
       for (int k=0; k<actele->NumNode(); ++k)
       {

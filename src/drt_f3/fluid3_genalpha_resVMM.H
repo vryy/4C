@@ -24,7 +24,7 @@ Maintainer: Peter Gamnitzer
 
 namespace DRT
 {
-  namespace Elements
+  namespace ELEMENTS
   {
   /// Internal Fluid3 implementation (genalpha version)
   /*!

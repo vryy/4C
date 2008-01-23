@@ -43,7 +43,7 @@ extern struct _MATERIAL  *mat;
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::So_sh8::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList& params,
                                     DRT::Discretization&      discretization,
                                     vector<int>&              lm,
                                     Epetra_SerialDenseMatrix& elemat1,
@@ -53,7 +53,7 @@ int DRT::Elements::So_sh8::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector& elevec3)
 {
   // start with "none"
-  DRT::Elements::So_hex8::ActionType act = So_hex8::none;
+  DRT::ELEMENTS::So_hex8::ActionType act = So_hex8::none;
 
   // get the required action
   string action = params.get<string>("action","none");
@@ -165,7 +165,7 @@ int DRT::Elements::So_sh8::Evaluate(ParameterList& params,
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                             maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
+void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
       vector<int>&              lm,             // location matrix
       vector<double>&           disp,           // current displacements
       vector<double>&           residual,       // current residuum
@@ -623,13 +623,13 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
 //  cout << "eigen(newstiff2): " << L26;
   
   return;
-} // DRT::Elements::Shell8::s8_nlnstiffmass
+} // DRT::ELEMENTS::Shell8::s8_nlnstiffmass
 
 
 /*----------------------------------------------------------------------*
  |  setup of constant ANS data (private)                       maf 05/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_sh8::sosh8_anssetup(
+void DRT::ELEMENTS::So_sh8::sosh8_anssetup(
           const int numsp,              // number of sampling points
           const int numans,             // number of ans strains
           const Epetra_SerialDenseMatrix& xrefe, // material element coords
@@ -762,7 +762,7 @@ void DRT::Elements::So_sh8::sosh8_anssetup(
 /*----------------------------------------------------------------------*
  |  evaluate 'T'-transformation matrix )                       maf 05/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_sh8::sosh8_evaluateT(const Epetra_SerialDenseMatrix jac,
+void DRT::ELEMENTS::So_sh8::sosh8_evaluateT(const Epetra_SerialDenseMatrix jac,
                                             Epetra_SerialDenseMatrix& TinvT)
 {
   // build T^T transformation matrix which maps
@@ -826,8 +826,8 @@ void DRT::Elements::So_sh8::sosh8_evaluateT(const Epetra_SerialDenseMatrix jac,
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  maf 07/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::Sosh8Register::Initialize(DRT::Discretization& dis)
-//int DRT::Elements::So_sh8::Initialize_numbers(DRT::Discretization& dis)
+int DRT::ELEMENTS::Sosh8Register::Initialize(DRT::Discretization& dis)
+//int DRT::ELEMENTS::So_sh8::Initialize_numbers(DRT::Discretization& dis)
 {
   //sosh8_gmshplotdis(dis);
   //-------------------- loop all my column elements and define thickness direction
@@ -835,12 +835,12 @@ int DRT::Elements::Sosh8Register::Initialize(DRT::Discretization& dis)
   {
     // get the actual element
     if (dis.lColElement(i)->Type() != DRT::Element::element_sosh8) continue;
-    DRT::Elements::So_sh8* actele = dynamic_cast<DRT::Elements::So_sh8*>(dis.lColElement(i));
+    DRT::ELEMENTS::So_sh8* actele = dynamic_cast<DRT::ELEMENTS::So_sh8*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_sh8* failed");
     
     if (!actele->nodes_rearranged_) {
       // check for automatic definition of thickness direction
-      if (actele->thickdir_ == DRT::Elements::So_sh8::autoj) {
+      if (actele->thickdir_ == DRT::ELEMENTS::So_sh8::autoj) {
         actele->thickdir_ = actele->sosh8_findthickdir();
       }
 
@@ -848,8 +848,8 @@ int DRT::Elements::Sosh8Register::Initialize(DRT::Discretization& dis)
       int new_nodeids[NUMNOD_SOH8];
 
       switch (actele->thickdir_) {
-      case DRT::Elements::So_sh8::autor:
-      case DRT::Elements::So_sh8::globx: {
+      case DRT::ELEMENTS::So_sh8::autor:
+      case DRT::ELEMENTS::So_sh8::globx: {
         //        cout << endl << "thickness direction is X" << endl;
         //        for (int node = 0; node < NUMNOD_SOH8; ++node) {
         //          orig_nodeids[node] = actele->NodeIds()[node];
@@ -868,8 +868,8 @@ int DRT::Elements::Sosh8Register::Initialize(DRT::Discretization& dis)
 //        actele->sosh8_gmshplotlabeledelement(new_nodeids);
         break;
       }
-      case DRT::Elements::So_sh8::autos:
-      case DRT::Elements::So_sh8::globy: {
+      case DRT::ELEMENTS::So_sh8::autos:
+      case DRT::ELEMENTS::So_sh8::globy: {
         //        for (int node = 0; node < NUMNOD_SOH8; ++node) {
         //          orig_nodeids[node] = actele->NodeIds()[node];
         //          cout << node << ": " << orig_nodeids[node] << " inputID: " << actele->inp_nodeIds_[node]<< endl;
@@ -885,8 +885,8 @@ int DRT::Elements::Sosh8Register::Initialize(DRT::Discretization& dis)
         new_nodeids[7] = actele->inp_nodeIds_[3];
         break;
       }
-      case DRT::Elements::So_sh8::autot:
-      case DRT::Elements::So_sh8::globz: {
+      case DRT::ELEMENTS::So_sh8::autot:
+      case DRT::ELEMENTS::So_sh8::globz: {
         // no resorting necessary
         for (int node = 0; node < 8; ++node) {
           new_nodeids[node] = actele->inp_nodeIds_[node];

@@ -28,7 +28,7 @@ using namespace DRT::UTILS;
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            g.bau 03/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::Fluid3Surface::Evaluate(     ParameterList&            params,
+int DRT::ELEMENTS::Fluid3Surface::Evaluate(     ParameterList&            params,
                                                 DRT::Discretization&      discretization,
                                                 vector<int>&              lm,
                                                 Epetra_SerialDenseMatrix& elemat1,
@@ -37,7 +37,7 @@ int DRT::Elements::Fluid3Surface::Evaluate(     ParameterList&            params
                                                 Epetra_SerialDenseVector& elevec2,
                                                 Epetra_SerialDenseVector& elevec3)
 {
-    DRT::Elements::Fluid3Surface::ActionType act = Fluid3Surface::none;
+    DRT::ELEMENTS::Fluid3Surface::ActionType act = Fluid3Surface::none;
     string action = params.get<string>("action","none");
     if (action == "none") dserror("No action supplied");
     else if (action == "calc_Shapefunction")
@@ -96,7 +96,7 @@ int DRT::Elements::Fluid3Surface::Evaluate(     ParameterList&            params
 /*----------------------------------------------------------------------*
  |  Integrate a Surface Neumann boundary condition (public)  gammi 04/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::Fluid3Surface::EvaluateNeumann(
+int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
                                            ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
@@ -241,7 +241,7 @@ int DRT::Elements::Fluid3Surface::EvaluateNeumann(
  they are needed for the integration over the surface element
 
 */
-void  DRT::Elements::Fluid3Surface::f3_metric_tensor_for_surface(
+void  DRT::ELEMENTS::Fluid3Surface::f3_metric_tensor_for_surface(
   const Epetra_SerialDenseMatrix  xyze,
   const Epetra_SerialDenseMatrix  deriv,
   Epetra_SerialDenseMatrix&       metrictensor,
@@ -310,7 +310,7 @@ void  DRT::Elements::Fluid3Surface::f3_metric_tensor_for_surface(
 /*----------------------------------------------------------------------*
  |  Integrate shapefunctions over surface (private)          g.bau 07/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Fluid3Surface::IntegrateShapeFunction(ParameterList& params,
+void DRT::ELEMENTS::Fluid3Surface::IntegrateShapeFunction(ParameterList& params,
                   DRT::Discretization&       discretization,
                   vector<int>&               lm,
                   Epetra_SerialDenseVector&  elevec1,
@@ -422,7 +422,7 @@ void DRT::Elements::Fluid3Surface::IntegrateShapeFunction(ParameterList& params,
 
 
 return;
-} // DRT::Elements::Fluid3Surface::IntegrateShapeFunction
+} // DRT::ELEMENTS::Fluid3Surface::IntegrateShapeFunction
 
 #endif  // #ifdef CCADISCRET
 #endif // #ifdef D_FLUID3

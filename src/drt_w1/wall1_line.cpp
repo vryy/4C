@@ -22,10 +22,10 @@ Maintainer: Markus Gitterle
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mgit 03/07|
   *----------------------------------------------------------------------*/
-DRT::Elements::Wall1Line::Wall1Line(int id, int owner,
+DRT::ELEMENTS::Wall1Line::Wall1Line(int id, int owner,
                               int nnode, const int* nodeids,
                               DRT::Node** nodes,
-                              DRT::Elements::Wall1* parent,
+                              DRT::ELEMENTS::Wall1* parent,
                               const int lline) :
 DRT::Element(id,element_wall1line,owner),
 parent_(parent),
@@ -39,7 +39,7 @@ lline_(lline)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mgit 03/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Wall1Line::Wall1Line(const DRT::Elements::Wall1Line& old) :
+DRT::ELEMENTS::Wall1Line::Wall1Line(const DRT::ELEMENTS::Wall1Line& old) :
 DRT::Element(old),
 parent_(old.parent_),
 lline_(old.lline_)
@@ -51,9 +51,9 @@ lline_(old.lline_)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::Elements::Wall1Line::Clone() const
+DRT::Element* DRT::ELEMENTS::Wall1Line::Clone() const
 {
-  DRT::Elements::Wall1Line* newelement = new DRT::Elements::Wall1Line(*this);
+  DRT::ELEMENTS::Wall1Line* newelement = new DRT::ELEMENTS::Wall1Line(*this);
   return newelement;
 }
 
@@ -61,7 +61,7 @@ DRT::Element* DRT::Elements::Wall1Line::Clone() const
  |                                                             (public) |
  |                                                          u.kue 03/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::Elements::Wall1Line::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::Wall1Line::Shape() const
 {
   switch (NumNode())
   {
@@ -77,7 +77,7 @@ DRT::Element::DiscretizationType DRT::Elements::Wall1Line::Shape() const
  |  Pack data                                                  (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Wall1Line::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Wall1Line::Pack(vector<char>& data) const
 {
   data.resize(0);
   
@@ -90,7 +90,7 @@ void DRT::Elements::Wall1Line::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Wall1Line::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Wall1Line::Unpack(const vector<char>& data)
 {
   dserror("this line element does not support communication");
   return;
@@ -99,7 +99,7 @@ void DRT::Elements::Wall1Line::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mgit 03/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Wall1Line::~Wall1Line()
+DRT::ELEMENTS::Wall1Line::~Wall1Line()
 {
   return;
 }
@@ -108,7 +108,7 @@ DRT::Elements::Wall1Line::~Wall1Line()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mgit 03/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Wall1Line::Print(ostream& os) const
+void DRT::ELEMENTS::Wall1Line::Print(ostream& os) const
 {
   os << "Wall1Line ";
   Element::Print(os);

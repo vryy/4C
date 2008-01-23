@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file so_hex8.H
 
-\class DRT::Elements::So_hex8
+\class DRT::ELEMENTS::So_hex8
 
 \brief A C++ version of the 8-node hex solid element
 
@@ -53,7 +53,7 @@ namespace DRT
 // forward declarations
 class Discretization;
 
-namespace Elements
+namespace ELEMENTS
 {
 // forward declarations
 class Soh8Volume;
@@ -396,17 +396,17 @@ protected:
   //! container containing all kind of solid3 thisandthat
   DRT::Container                                  data_;
 //  //! vector of volume (length 1) of this element
-//  vector<RefCountPtr<DRT::Elements::Soh8Volume> > volume_;
+//  vector<RefCountPtr<DRT::ELEMENTS::Soh8Volume> > volume_;
   //! vector of volumes of this element (length 1)
   vector<DRT::Element*>                           volume_;
   //! vector of surfaces of this element
-  vector<RefCountPtr<DRT::Elements::Soh8Surface> > surfaces_;
+  vector<RefCountPtr<DRT::ELEMENTS::Soh8Surface> > surfaces_;
   //! vector of surfaces of this element
-  vector<DRT::Elements::Soh8Surface*>           surfaceptrs_;
+  vector<DRT::ELEMENTS::Soh8Surface*>           surfaceptrs_;
   //! vector of lines adjacent to this element
-  vector<RefCountPtr<DRT::Elements::Soh8Line> > lines_;
+  vector<RefCountPtr<DRT::ELEMENTS::Soh8Line> > lines_;
   //! vector of lines adjacent to this element
-  vector<DRT::Elements::Soh8Line*>              lineptrs_;
+  vector<DRT::ELEMENTS::Soh8Line*>              lineptrs_;
   //! vector of element stress tensor in Voigt notation
   vector<double>                                stresses_;
 
@@ -444,7 +444,7 @@ protected:
   this constructor provides Object Oriented So_integrator functionality by adapting the strictly procedural 
   DRT::UTILS::IntegrationPoints3D struct.
   */     
-  class Integrator_So_hex8 : public DRT::Elements::So_integrator
+  class Integrator_So_hex8 : public DRT::ELEMENTS::So_integrator
   {
   	public:
   		Integrator_So_hex8();
@@ -522,7 +522,7 @@ public:
   Makes a deep copy of an Soh8Register
 
   */
-  Soh8Register(const DRT::Elements::Soh8Register& old);
+  Soh8Register(const DRT::ELEMENTS::Soh8Register& old);
 
   /*!
   \brief Deep copy this instance of Soh8Register and return pointer to the copy
@@ -531,7 +531,7 @@ public:
   where the type of the derived class is unknown and a copy-ctor is needed
 
   */
-  DRT::Elements::Soh8Register* Clone() const;
+  DRT::ELEMENTS::Soh8Register* Clone() const;
 
   /*!
   \brief Return unique ParObject id
@@ -629,7 +629,7 @@ public:
   \param lsurface: the local surface number of this surface w.r.t. the parent element
   */
   Soh8Surface(int id, int owner, int nnode, const int* nodeids,
-             DRT::Node** nodes, DRT::Elements::So_hex8* parent, const int lsurface);
+             DRT::Node** nodes, DRT::ELEMENTS::So_hex8* parent, const int lsurface);
 
   /*!
   \brief Copy Constructor
@@ -792,7 +792,7 @@ private:
   Soh8Surface& operator = (const Soh8Surface& old);
 
   //! The parent element of this surface
-  DRT::Elements::So_hex8* parent_;
+  DRT::ELEMENTS::So_hex8* parent_;
   //! The local surface number of this surface w.r.t to the parent_ element
   int                    lsurface_;
 
@@ -845,7 +845,7 @@ public:
   \param lline: the local line number of this line w.r.t. the parent element
   */
   Soh8Line(int id, int owner, int nnode, const int* nodeids,
-             DRT::Node** nodes, DRT::Elements::So_hex8* parent, const int lline);
+             DRT::Node** nodes, DRT::ELEMENTS::So_hex8* parent, const int lline);
 
   /*!
   \brief Copy Constructor
@@ -974,7 +974,7 @@ private:
   Soh8Line& operator = (const Soh8Line& old);
 
   //! The parent element of this line
-  DRT::Elements::So_hex8* parent_;
+  DRT::ELEMENTS::So_hex8* parent_;
   //! The local line number of this line w.r.t to the parent_ element
   int                    lline_;
 
@@ -988,7 +988,7 @@ private:
 }; // class Soh8Line
 
 
-} // namespace Elements
+} // namespace ELEMENTS
 } // namespace DRT
 
 #endif  // #ifndef SOH8_H

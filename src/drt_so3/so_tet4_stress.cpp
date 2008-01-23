@@ -52,7 +52,7 @@ extern struct _MATERIAL  *mat;
 /*----------------------------------------------------------------------**####
  |  Do stress calculation (private)                            vlf 08/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_tet4::so_tet4_stress(struct _MATERIAL* material,
+void DRT::ELEMENTS::So_tet4::so_tet4_stress(struct _MATERIAL* material,
                                          vector<double>& disp,
                                          Epetra_SerialDenseMatrix* stresses)
 {
@@ -61,7 +61,7 @@ void DRT::Elements::So_tet4::so_tet4_stress(struct _MATERIAL* material,
 /* =============================================================================*
  * CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_4 with 1 GAUSS POINT  *
  * =============================================================================*/
-  const static DRT::Elements::Integrator_tet4_1point tet4_dis;
+  const static DRT::ELEMENTS::Integrator_tet4_1point tet4_dis;
 /* ============================================================================*/
 
   // update element geometry

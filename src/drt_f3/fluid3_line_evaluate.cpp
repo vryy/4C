@@ -24,7 +24,7 @@ using namespace DRT::UTILS;
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            g.bau 03/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::Fluid3Line::Evaluate(	ParameterList& params,
+int DRT::ELEMENTS::Fluid3Line::Evaluate(	ParameterList& params,
                                     		DRT::Discretization&      discretization,
                                     		vector<int>&              lm,
                                    	 		Epetra_SerialDenseMatrix& elemat1,
@@ -33,7 +33,7 @@ int DRT::Elements::Fluid3Line::Evaluate(	ParameterList& params,
                                     		Epetra_SerialDenseVector& elevec2,
                                     		Epetra_SerialDenseVector& elevec3)
 {
-	DRT::Elements::Fluid3Line::ActionType act = Fluid3Line::none;
+	DRT::ELEMENTS::Fluid3Line::ActionType act = Fluid3Line::none;
 	string action = params.get<string>("action","none");
 	if (action == "none") dserror("No action supplied");
 	else if (action == "calc_Shapefunction")
@@ -73,7 +73,7 @@ int DRT::Elements::Fluid3Line::Evaluate(	ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a Surface Neumann boundary condition (public)  gammi 04/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::Fluid3Line::EvaluateNeumann(	ParameterList& params,
+int DRT::ELEMENTS::Fluid3Line::EvaluateNeumann(	ParameterList& params,
                                            		DRT::Discretization&      discretization,
                                            		DRT::Condition&           condition,
                                            		vector<int>&              lm,

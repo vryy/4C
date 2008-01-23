@@ -23,7 +23,7 @@ Maintainer: Moritz Frenzel
 using namespace DRT::UTILS;
 
 
-int DRT::Elements::SoDispSurface::Evaluate(     ParameterList&            params,
+int DRT::ELEMENTS::SoDispSurface::Evaluate(     ParameterList&            params,
                                                 DRT::Discretization&      discretization,
                                                 vector<int>&              lm,
                                                 Epetra_SerialDenseMatrix& elemat1,
@@ -32,7 +32,7 @@ int DRT::Elements::SoDispSurface::Evaluate(     ParameterList&            params
                                                 Epetra_SerialDenseVector& elevec2,
                                                 Epetra_SerialDenseVector& elevec3)
 {
-    DRT::Elements::SoDispSurface::ActionType act = SoDispSurface::none;
+    DRT::ELEMENTS::SoDispSurface::ActionType act = SoDispSurface::none;
     string action = params.get<string>("action","none");
     if (action == "none") dserror("No action supplied");
     else if (action == "calc_Shapefunction")
@@ -71,7 +71,7 @@ int DRT::Elements::SoDispSurface::Evaluate(     ParameterList&            params
 /*----------------------------------------------------------------------*
  * Integrate a Surface Neumann boundary condition (public)     maf 04/07*
  * ---------------------------------------------------------------------*/
-int DRT::Elements::SoDispSurface::EvaluateNeumann(ParameterList&           params,
+int DRT::ELEMENTS::SoDispSurface::EvaluateNeumann(ParameterList&           params,
                                                 DRT::Discretization&     discretization,
                                                 DRT::Condition&          condition,
                                                 vector<int>&             lm,
@@ -204,7 +204,7 @@ int DRT::Elements::SoDispSurface::EvaluateNeumann(ParameterList&           param
 /*----------------------------------------------------------------------*
  * Evaluate sqrt of determinant of metric at gp (private)      maf 05/07*
  * ---------------------------------------------------------------------*/
-void DRT::Elements::SoDispSurface::sodisp_surface_integ(
+void DRT::ELEMENTS::SoDispSurface::sodisp_surface_integ(
       double* sqrtdetg,                      // (o) pointer to sqrt of det(g)
       const Epetra_SerialDenseMatrix* xs,    // (i) element coords
       const Epetra_SerialDenseMatrix deriv)  // (i) shape funct derivs

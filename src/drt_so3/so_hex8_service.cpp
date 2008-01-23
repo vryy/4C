@@ -25,7 +25,7 @@ using namespace std; // cout etc.
 /*----------------------------------------------------------------------*
  |  return Center Coords in Reference System                   maf 11/07|
  *----------------------------------------------------------------------*/
-const vector<double> DRT::Elements::So_hex8::soh8_ElementCenterRefeCoords()
+const vector<double> DRT::ELEMENTS::So_hex8::soh8_ElementCenterRefeCoords()
 {
   // update element geometry
   Epetra_SerialDenseMatrix xrefe(NUMNOD_SOH8,NUMDIM_SOH8);  // material coord. of element

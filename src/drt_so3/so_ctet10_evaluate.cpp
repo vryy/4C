@@ -54,7 +54,7 @@ extern struct _MATERIAL  *mat;
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              vlf 06/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::So_ctet10::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::So_ctet10::Evaluate(ParameterList& params,
                                     DRT::Discretization&      discretization,
                                     vector<int>&              lm,
                                     Epetra_SerialDenseMatrix& elemat1,
@@ -64,7 +64,7 @@ int DRT::Elements::So_ctet10::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector& elevec3)
 {
   // start with "none"
-  DRT::Elements::So_ctet10::ActionType act = So_ctet10::none;
+  DRT::ELEMENTS::So_ctet10::ActionType act = So_ctet10::none;
 
   // get the required action
   string action = params.get<string>("action","none");
@@ -173,7 +173,7 @@ int DRT::Elements::So_ctet10::Evaluate(ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)     vlf 01/08|
  *----------------------------------------------------------------------*/
-int DRT::Elements::So_ctet10::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::So_ctet10::EvaluateNeumann(ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
                                            vector<int>&              lm,
@@ -252,14 +252,14 @@ int DRT::Elements::So_ctet10::EvaluateNeumann(ParameterList& params,
   }
 
   return 0;
-} // DRT::Elements::So_ctet10::EvaluateNeumann
+} // DRT::ELEMENTS::So_ctet10::EvaluateNeumann
 
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                            vlf 06/07 |
  *----------------------------------------------------------------------*/
 
-void DRT::Elements::So_ctet10::so_ctet10_nlnstiffmass(
+void DRT::ELEMENTS::So_ctet10::so_ctet10_nlnstiffmass(
       vector<int>&              lm,             // location matrix
       vector<double>&           disp,           // current displacements
       vector<double>&           residual,       // current residuum
@@ -541,10 +541,10 @@ void DRT::Elements::So_ctet10::so_ctet10_nlnstiffmass(
   cout << (*stiffmatrix);
   #endif //VERBOSE_OUTPUT
   return;
-} // DRT::Elements::So_ctet10::so_tet10_nlnstiffmass
+} // DRT::ELEMENTS::So_ctet10::so_tet10_nlnstiffmass
 
 /*
-double DRT::Elements::So_ctet10::ctet10_midpoint(int coord)
+double DRT::ELEMENTS::So_ctet10::ctet10_midpoint(int coord)
 {
 	double midpoint=0;
 	for (int nd_num=4;nd_num<NUMNOD_SOCTET10;nd_num++)
@@ -552,7 +552,7 @@ double DRT::Elements::So_ctet10::ctet10_midpoint(int coord)
 	return midpoint/double(6.0);		
 }*/
 
-double DRT::Elements::So_ctet10::ctet10_midpoint(int coord)
+double DRT::ELEMENTS::So_ctet10::ctet10_midpoint(int coord)
 {
 	long double midpoint=0;
 	for (int nd_num=0;nd_num<4;nd_num++)
@@ -560,12 +560,12 @@ double DRT::Elements::So_ctet10::ctet10_midpoint(int coord)
 	return midpoint/(long double) (4.0);		
 }
 
-DRT::Elements::So_ctet10::SUB_NODE::SUB_NODE()
+DRT::ELEMENTS::So_ctet10::SUB_NODE::SUB_NODE()
 {
 	//nothing to do
 }
 
-void DRT::Elements::So_ctet10::SUB_NODE::init(
+void DRT::ELEMENTS::So_ctet10::SUB_NODE::init(
 	const int in_local_id,
 	const int in_global_id,
 	const Epetra_SerialDenseMatrix& xrefe)
@@ -578,18 +578,18 @@ void DRT::Elements::So_ctet10::SUB_NODE::init(
 	my_x[2]=xrefe(global_id,2);
 }
 
-DRT::Elements::So_ctet10::SUB_NODE::~SUB_NODE()
+DRT::ELEMENTS::So_ctet10::SUB_NODE::~SUB_NODE()
 {
 	//nothing to do
 }
 
 
-DRT::Elements::So_ctet10::TET4_SUB::TET4_SUB()
+DRT::ELEMENTS::So_ctet10::TET4_SUB::TET4_SUB()
 {
 	//nothing to do
 }
 
-void DRT::Elements::So_ctet10::TET4_SUB::init(
+void DRT::ELEMENTS::So_ctet10::TET4_SUB::init(
 	const int& node1,
 	const int& node2,
 	const int& node3,
@@ -610,12 +610,12 @@ void DRT::Elements::So_ctet10::TET4_SUB::init(
 
 
 
-void DRT::Elements::So_ctet10::TET4_SUB::integrate(
+void DRT::ELEMENTS::So_ctet10::TET4_SUB::integrate(
     Epetra_SerialDenseVector& xi_c,
     Epetra_SerialDenseMatrix& in_Naj)
 
 {
-	const static DRT::Elements::Integrator_tet4_1point tet4_lin_int;
+	const static DRT::ELEMENTS::Integrator_tet4_1point tet4_lin_int;
 	//set gp = 0 because Tet4_integrator_4point has only one gp, so gp loop is obsolete
 	
 	const int gp = 0;
@@ -703,7 +703,7 @@ void DRT::Elements::So_ctet10::TET4_SUB::integrate(
     }
 }
 
-double DRT::Elements::So_ctet10::TET4_SUB::my_volume()
+double DRT::ELEMENTS::So_ctet10::TET4_SUB::my_volume()
 {
   Epetra_SerialDenseMatrix jac_coord(NUMCOORD_SUBTET4,NUMCOORD_SUBTET4);
   for (int i=0; i<4; i++)  jac_coord(0,i)=1;
@@ -720,12 +720,12 @@ double DRT::Elements::So_ctet10::TET4_SUB::my_volume()
 } 
 
 
-DRT::Elements::So_ctet10::TET4_SUB::~TET4_SUB()
+DRT::ELEMENTS::So_ctet10::TET4_SUB::~TET4_SUB()
 {
 	//nothing to do
 }
 
-DRT::Elements::So_ctet10::SUB_STRUCTURE::SUB_STRUCTURE(const Epetra_SerialDenseMatrix& xrefe)
+DRT::ELEMENTS::So_ctet10::SUB_STRUCTURE::SUB_STRUCTURE(const Epetra_SerialDenseMatrix& xrefe)
 {
 	//cout << xrefe;
 	my_elements[ 0].init( 0, 4, 6, 7,xrefe, double(5)/8.0,  double(1)/8.0,  double(1)/8.0,  double(1)/8.0);
@@ -749,7 +749,7 @@ DRT::Elements::So_ctet10::SUB_STRUCTURE::SUB_STRUCTURE(const Epetra_SerialDenseM
  | Aerospace Engineering Sciences - University of Colorado at Boulder   |
  *----------------------------------------------------------------------*/
  
-DRT::Elements::So_ctet10::Tet10c_integrator_5point::Tet10c_integrator_5point(SUB_STRUCTURE& sub_struct)
+DRT::ELEMENTS::So_ctet10::Tet10c_integrator_5point::Tet10c_integrator_5point(SUB_STRUCTURE& sub_struct)
 {
   num_gp = 5;
   num_nodes = 10;
@@ -795,7 +795,7 @@ DRT::Elements::So_ctet10::Tet10c_integrator_5point::Tet10c_integrator_5point(SUB
 }
 
 
-DRT::Elements::So_ctet10::L_AJ_integrator::L_AJ_integrator(SUB_STRUCTURE& sub_struct)
+DRT::ELEMENTS::So_ctet10::L_AJ_integrator::L_AJ_integrator(SUB_STRUCTURE& sub_struct)
 {
 	num_gp      = 5;
     num_nodes   = 10;
@@ -858,13 +858,13 @@ DRT::Elements::So_ctet10::L_AJ_integrator::L_AJ_integrator(SUB_STRUCTURE& sub_st
 
 }
 
-DRT::Elements::So_ctet10::SUB_STRUCTURE::~SUB_STRUCTURE()
+DRT::ELEMENTS::So_ctet10::SUB_STRUCTURE::~SUB_STRUCTURE()
 {
 	//nothing to do
 }
 
 
-int DRT::Elements::Soctet10Register::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::Soctet10Register::Initialize(DRT::Discretization& dis)
 {
   return 0;
 }

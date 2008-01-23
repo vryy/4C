@@ -32,7 +32,7 @@ using namespace DRT::UTILS;
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                               vg 05/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::Condif2::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::Condif2::Evaluate(ParameterList& params,
                                     DRT::Discretization&      discretization,
                                     vector<int>&              lm,
                                     Epetra_SerialDenseMatrix& elemat1,
@@ -41,7 +41,7 @@ int DRT::Elements::Condif2::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector& elevec2,
                                     Epetra_SerialDenseVector& elevec3)
 {
-  DRT::Elements::Condif2::ActionType act = Condif2::none;
+  DRT::ELEMENTS::Condif2::ActionType act = Condif2::none;
 
   // get the action required
   string action = params.get<string>("action","none");
@@ -98,7 +98,7 @@ int DRT::Elements::Condif2::Evaluate(ParameterList& params,
   } // end of switch(act)
 
   return 0;
-} // end of DRT::Elements::Condif2::Evaluate
+} // end of DRT::ELEMENTS::Condif2::Evaluate
 
 
 
@@ -109,7 +109,7 @@ int DRT::Elements::Condif2::Evaluate(ParameterList& params,
  |  integration of the surface neumann loads takes place in the element.|
  |  We need it there for the stabilization terms!                       |
  *----------------------------------------------------------------------*/
-int DRT::Elements::Condif2::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::Condif2::EvaluateNeumann(ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
                                            vector<int>&              lm,
@@ -122,7 +122,7 @@ int DRT::Elements::Condif2::EvaluateNeumann(ParameterList& params,
 /*----------------------------------------------------------------------*
  |  calculate system matrix and rhs for convec.-diff. (private) vg 05/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Condif2::condif2_sys_mat(vector<int>&              lm,
+void DRT::ELEMENTS::Condif2::condif2_sys_mat(vector<int>&              lm,
                                          vector<double>&           ehist,
                                          Epetra_SerialDenseMatrix* sys_mat,
                                          Epetra_SerialDenseMatrix* sys_mat_sd,
@@ -413,7 +413,7 @@ void DRT::Elements::Condif2::condif2_sys_mat(vector<int>&              lm,
   } // end of loop over integration points
 
     return;
-} // DRT::Elements::Condif2::condif2_sys_mat
+} // DRT::ELEMENTS::Condif2::condif2_sys_mat
 
 
 /*----------------------------------------------------------------------*
@@ -431,7 +431,7 @@ void DRT::Elements::Condif2::condif2_sys_mat(vector<int>&              lm,
  |     +-        -+
  |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Condif2::condif2_jaco(const Epetra_SerialDenseMatrix& xyze,
+void DRT::ELEMENTS::Condif2::condif2_jaco(const Epetra_SerialDenseMatrix& xyze,
 				    const Epetra_SerialDenseMatrix& deriv,
                                     Epetra_SerialDenseMatrix& xjm,
 				    double* det,
@@ -465,7 +465,7 @@ void DRT::Elements::Condif2::condif2_jaco(const Epetra_SerialDenseMatrix& xyze,
      dserror("Stopped not regulary!\n");
   }
 
-} //end of DRT::Elements::Condif2::condif2_jaco
+} //end of DRT::ELEMENTS::Condif2::condif2_jaco
 
 
 /*----------------------------------------------------------------------*
@@ -473,7 +473,7 @@ void DRT::Elements::Condif2::condif2_jaco(const Epetra_SerialDenseMatrix& xyze,
  |  the Neumann condition associated with the nodes is stored in the    |
  |  array edeadng only if all nodes have a surface Neumann condition    |
  *----------------------------------------------------------------------*/
-Epetra_SerialDenseVector DRT::Elements::Condif2::condif2_getbodyforce()
+Epetra_SerialDenseVector DRT::ELEMENTS::Condif2::condif2_getbodyforce()
 {
   const int iel = NumNode();
   Epetra_SerialDenseVector edeadng(iel);
@@ -485,7 +485,7 @@ Epetra_SerialDenseVector DRT::Elements::Condif2::condif2_getbodyforce()
   }
 
   return edeadng;
-} // end of DRT:Elements:Condif2:condif2_getbodyforce
+} // end of DRT:ELEMENTS:Condif2:condif2_getbodyforce
 
 
 /*----------------------------------------------------------------------*
@@ -510,7 +510,7 @@ Epetra_SerialDenseVector DRT::Elements::Condif2::condif2_getbodyforce()
  | inverted.
  |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Condif2::condif2_gder(Epetra_SerialDenseMatrix& derxy,
+void DRT::ELEMENTS::Condif2::condif2_gder(Epetra_SerialDenseMatrix& derxy,
 				    const Epetra_SerialDenseMatrix& deriv,
                                     Epetra_SerialDenseMatrix& xjm,
 				    double& det,
@@ -546,7 +546,7 @@ void DRT::Elements::Condif2::condif2_gder(Epetra_SerialDenseMatrix& derxy,
   /*----------------------------------------------------------------------*/
 
   return;
-} // end of DRT:Elements:Condif2:condif2_gder
+} // end of DRT:ELEMENTS:Condif2:condif2_gder
 
 /*----------------------------------------------------------------------*
  |  calculate second global derivatives w.r.t. x,y at point r,s (private)
@@ -616,7 +616,7 @@ void DRT::Elements::Condif2::condif2_gder(Epetra_SerialDenseMatrix& derxy,
  |
  *----------------------------------------------------------------------*/
 
-void DRT::Elements::Condif2::condif2_gder2(const Epetra_SerialDenseMatrix& xyze,
+void DRT::ELEMENTS::Condif2::condif2_gder2(const Epetra_SerialDenseMatrix& xyze,
 				     const Epetra_SerialDenseMatrix& xjm,
 				     const Epetra_SerialDenseMatrix& derxy,
 				     Epetra_SerialDenseMatrix& derxy2,
@@ -749,7 +749,7 @@ void DRT::Elements::Condif2::condif2_gder2(const Epetra_SerialDenseMatrix& xyze,
 /*----------------------------------------------------------------------*/
 
     return;
-} // end of DRT:Elements:Condif2:condif2_gder2
+} // end of DRT:ELEMENTS:Condif2:condif2_gder2
 
 
 /*----------------------------------------------------------------------*
@@ -813,7 +813,7 @@ for further comments see comment lines within code.
 \return void
 ------------------------------------------------------------------------*/
 
-void DRT::Elements::Condif2::condif2_calmat(
+void DRT::ELEMENTS::Condif2::condif2_calmat(
     Epetra_SerialDenseMatrix& estif,
     Epetra_SerialDenseMatrix& esd,
     Epetra_SerialDenseVector& eforce,
@@ -905,7 +905,7 @@ if (fssgd == 1)
 }
 
 return;
-} // end of DRT:Elements:Condif2:condif2_calmat
+} // end of DRT:ELEMENTS:Condif2:condif2_calmat
 
 
 /*----------------------------------------------------------------------*
@@ -956,7 +956,7 @@ for further comments see comment lines within code.
 \return void
 ------------------------------------------------------------------------*/
 
-void DRT::Elements::Condif2::condif2_calmat_stat(
+void DRT::ELEMENTS::Condif2::condif2_calmat_stat(
     Epetra_SerialDenseMatrix& estif,
     Epetra_SerialDenseMatrix& esd,
     Epetra_SerialDenseVector& eforce,
@@ -1043,10 +1043,10 @@ if (fssgd == 1)
 }
 
 return;
-} // end of DRT:Elements:Condif2:condif2_calmat_stat
+} // end of DRT:ELEMENTS:Condif2:condif2_calmat_stat
 
 // check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
-bool DRT::Elements::Condif2::is_higher_order_element(
+bool DRT::ELEMENTS::Condif2::is_higher_order_element(
               const DRT::Element::DiscretizationType  distype) const
 {
     bool hoel = true;
@@ -1074,7 +1074,7 @@ bool DRT::Elements::Condif2::is_higher_order_element(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                mwgee 12/06|
  *----------------------------------------------------------------------*/
-int DRT::Elements::Condif2Register::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::Condif2Register::Initialize(DRT::Discretization& dis)
 {
   return 0;
 }

@@ -50,7 +50,7 @@ extern struct _MATERIAL  *mat;
 /*----------------------------------------------------------------------**####
  |  Do stress calculation (private)                            maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_ctet10::so_ctet10_stress(struct _MATERIAL* material,
+void DRT::ELEMENTS::So_ctet10::so_ctet10_stress(struct _MATERIAL* material,
                                          vector<double>& disp,
                                          Epetra_SerialDenseMatrix* stresses)
 {

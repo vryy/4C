@@ -58,7 +58,7 @@ extern struct _MATERIAL  *mat;
   
   */
 
-DRT::Elements::XFluid3Impl* DRT::Elements::XFluid3::Impl(
+DRT::ELEMENTS::XFluid3Impl* DRT::ELEMENTS::XFluid3::Impl(
         const int numnode,
         const int numparamvelx,
         const int numparamvely,
@@ -137,12 +137,12 @@ DRT::Elements::XFluid3Impl* DRT::Elements::XFluid3::Impl(
 
 
 // converts a string into an Action for this element
-DRT::Elements::XFluid3::ActionType DRT::Elements::XFluid3::convertStringToActionType(
+DRT::ELEMENTS::XFluid3::ActionType DRT::ELEMENTS::XFluid3::convertStringToActionType(
               const string& action) const
 {
   dsassert(action != "none", "No action supplied");
 
-  DRT::Elements::XFluid3::ActionType act = XFluid3::none;
+  DRT::ELEMENTS::XFluid3::ActionType act = XFluid3::none;
   if (action == "calc_fluid_systemmat_and_residual")
     act = XFluid3::calc_fluid_systemmat_and_residual;
   else if (action == "calc_fluid_genalpha_sysmat_and_residual")
@@ -178,10 +178,10 @@ DRT::Elements::XFluid3::ActionType DRT::Elements::XFluid3::convertStringToAction
  // converts a string into an stabilisation action for this element
  //                                                          gammi 08/07
  *----------------------------------------------------------------------*/
-DRT::Elements::XFluid3::StabilisationAction DRT::Elements::XFluid3::ConvertStringToStabAction(
+DRT::ELEMENTS::XFluid3::StabilisationAction DRT::ELEMENTS::XFluid3::ConvertStringToStabAction(
   const string& action) const
 {
-  DRT::Elements::XFluid3::StabilisationAction act = stabaction_unspecified;
+  DRT::ELEMENTS::XFluid3::StabilisationAction act = stabaction_unspecified;
 
   map<string,StabilisationAction>::const_iterator iter=stabstrtoact_.find(action);
 
@@ -202,7 +202,7 @@ DRT::Elements::XFluid3::StabilisationAction DRT::Elements::XFluid3::ConvertStrin
  /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            g.bau 03/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
                                     DRT::Discretization&      discretization,
                                     vector<int>&              lm,
                                     Epetra_SerialDenseMatrix& elemat1,
@@ -213,7 +213,7 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
 {
   // get the action required
   const string action = params.get<string>("action","none");
-  const DRT::Elements::XFluid3::ActionType act = convertStringToActionType(action);
+  const DRT::ELEMENTS::XFluid3::ActionType act = convertStringToActionType(action);
 
   // get the material
   RefCountPtr<MAT::Material> mat = Material();
@@ -565,7 +565,7 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
   } // end of switch(act)
 
   return 0;
-} // end of DRT::Elements::Fluid3::Evaluate
+} // end of DRT::ELEMENTS::Fluid3::Evaluate
 
 
 /*----------------------------------------------------------------------*
@@ -575,7 +575,7 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
  |  integration of the volume neumann loads takes place in the element. |
  |  We need it there for the stabilisation terms!                       |
  *----------------------------------------------------------------------*/
-int DRT::Elements::XFluid3::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::XFluid3::EvaluateNeumann(ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
                                            vector<int>&              lm,
@@ -585,7 +585,7 @@ int DRT::Elements::XFluid3::EvaluateNeumann(ParameterList& params,
 }
 
 // get optimal gaussrule for discretization type
-GaussRule3D DRT::Elements::XFluid3::getOptimalGaussrule(const DiscretizationType& distype)
+GaussRule3D DRT::ELEMENTS::XFluid3::getOptimalGaussrule(const DiscretizationType& distype)
 {
     GaussRule3D rule = intrule3D_undefined;
     switch (distype)
@@ -612,7 +612,7 @@ GaussRule3D DRT::Elements::XFluid3::getOptimalGaussrule(const DiscretizationType
 /*---------------------------------------------------------------------*
  |  calculate error for beltrami test problem               gammi 04/07|
  *---------------------------------------------------------------------*/
-void DRT::Elements::XFluid3::f3_int_beltrami_err(
+void DRT::ELEMENTS::XFluid3::f3_int_beltrami_err(
   vector<double>&           evelnp,
   vector<double>&           eprenp,
   struct _MATERIAL*         material,
@@ -887,7 +887,7 @@ void DRT::Elements::XFluid3::f3_int_beltrami_err(
  | All results are communicated via the parameter list!
  |
  *---------------------------------------------------------------------*/
-void DRT::Elements::XFluid3::f3_calc_means(
+void DRT::ELEMENTS::XFluid3::f3_calc_means(
   vector<double>&           sol  ,
   ParameterList& 	    params
   )
@@ -1170,12 +1170,12 @@ void DRT::Elements::XFluid3::f3_calc_means(
 
 
   return;
-} // DRT::Elements::Fluid3::f3_calc_means
+} // DRT::ELEMENTS::Fluid3::f3_calc_means
 
 //----------------------------------------------------------------------
 //
 //----------------------------------------------------------------------
-void DRT::Elements::XFluid3::f3_apply_box_filter(
+void DRT::ELEMENTS::XFluid3::f3_apply_box_filter(
     blitz::Array<double, 2>&  evelaf,
     blitz::Array<double, 1>&  vel_hat,
     blitz::Array<double, 2>&  reystr_hat,
@@ -1396,10 +1396,10 @@ void DRT::Elements::XFluid3::f3_apply_box_filter(
   modeled_stress_grid_scale_hat += rateofstrain * epsilon * wquad*det;
 
   return;
-} // DRT::Elements::Fluid3::f3_apply_box_filter
+} // DRT::ELEMENTS::Fluid3::f3_apply_box_filter
 
 
-void DRT::Elements::XFluid3::f3_calc_smag_const_LijMij_and_MijMij(
+void DRT::ELEMENTS::XFluid3::f3_calc_smag_const_LijMij_and_MijMij(
   blitz::Array<double, 2> evelaf_hat,
   blitz::Array<double, 3> ereynoldsstress_hat,
   blitz::Array<double, 3> efiltered_modeled_subgrid_stress_hat,
@@ -1665,12 +1665,12 @@ void DRT::Elements::XFluid3::f3_calc_smag_const_LijMij_and_MijMij(
   }
   
   return;
-} // DRT::Elements::Fluid3::f3_calc_smag_const_LijMij_and_MijMij
+} // DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij
 
 //
 // check for higher order derivatives for shape functions
 //
-bool DRT::Elements::XFluid3::isHigherOrderElement(
+bool DRT::ELEMENTS::XFluid3::isHigherOrderElement(
   const DRT::Element::DiscretizationType  distype) const
 {
   bool hoel = true;
@@ -1691,7 +1691,7 @@ bool DRT::Elements::XFluid3::isHigherOrderElement(
 //
 // check for element rewinding based on Jacobian determinant
 //
-bool DRT::Elements::XFluid3::checkRewinding()
+bool DRT::ELEMENTS::XFluid3::checkRewinding()
 {
   const DiscretizationType distype = this->Shape();
   const int iel = NumNode();
@@ -1774,7 +1774,7 @@ bool DRT::Elements::XFluid3::checkRewinding()
 /*----------------------------------------------------------------------*
  |  init the element (public)                                mwgee 12/06|
  *----------------------------------------------------------------------*/
-int DRT::Elements::XFluid3Register::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::XFluid3Register::Initialize(DRT::Discretization& dis)
 {
   bool dofillcompleteagain = false;
   //-------------------- loop all my column elements and check rewinding
@@ -1782,7 +1782,7 @@ int DRT::Elements::XFluid3Register::Initialize(DRT::Discretization& dis)
   {
     // get the actual element
     if (dis.lColElement(i)->Type() != DRT::Element::element_fluid3) continue;
-    DRT::Elements::XFluid3* actele = dynamic_cast<DRT::Elements::XFluid3*>(dis.lColElement(i));
+    DRT::ELEMENTS::XFluid3* actele = dynamic_cast<DRT::ELEMENTS::XFluid3*>(dis.lColElement(i));
     if (!actele) dserror("cast to XFluid3* failed");
     
     const DRT::Element::DiscretizationType distype = actele->Shape();

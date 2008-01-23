@@ -25,13 +25,13 @@ Maintainer: Axel Gerstenberger
  |  ctor (public)                                            mwgee 01/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::XFluid3Line::XFluid3Line(  int id,
+DRT::ELEMENTS::XFluid3Line::XFluid3Line(  int id,
                                         int owner,
                                         int nnode,
                                         const int* nodeids,
                                         DRT::Node** nodes,
-                                        DRT::Elements::XFluid3Surface* surfaceParent,
-                                        DRT::Elements::XFluid3* parent,  
+                                        DRT::ELEMENTS::XFluid3Surface* surfaceParent,
+                                        DRT::ELEMENTS::XFluid3* parent,  
                                         const int lline) :
 DRT::Element(id,element_xfluid3line,owner),
 surfaceParent_(surfaceParent),
@@ -47,7 +47,7 @@ lline_(lline)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::XFluid3Line::XFluid3Line(const DRT::Elements::XFluid3Line& old) :
+DRT::ELEMENTS::XFluid3Line::XFluid3Line(const DRT::ELEMENTS::XFluid3Line& old) :
 DRT::Element(old),
 surfaceParent_(old.surfaceParent_),
 parent_(old.parent_),
@@ -61,9 +61,9 @@ lline_(old.lline_)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::Elements::XFluid3Line::Clone() const
+DRT::Element* DRT::ELEMENTS::XFluid3Line::Clone() const
 {
-  DRT::Elements::XFluid3Line* newelement = new DRT::Elements::XFluid3Line(*this);
+  DRT::ELEMENTS::XFluid3Line* newelement = new DRT::ELEMENTS::XFluid3Line(*this);
   return newelement;
 }
 
@@ -72,7 +72,7 @@ DRT::Element* DRT::Elements::XFluid3Line::Clone() const
  |                                                             (public) |
  |                                                          u.kue 03/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::Elements::XFluid3Line::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::XFluid3Line::Shape() const
 {
   switch (NumNode())
   {
@@ -89,7 +89,7 @@ DRT::Element::DiscretizationType DRT::Elements::XFluid3Line::Shape() const
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::XFluid3Line::Pack(vector<char>& data) const
+void DRT::ELEMENTS::XFluid3Line::Pack(vector<char>& data) const
 {
   data.resize(0);
   dserror("this XFluid3Line element does not support communication");
@@ -102,7 +102,7 @@ void DRT::Elements::XFluid3Line::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::XFluid3Line::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::XFluid3Line::Unpack(const vector<char>& data)
 {
   dserror("this XFluid3Line element does not support communication");
   return;
@@ -112,7 +112,7 @@ void DRT::Elements::XFluid3Line::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::XFluid3Line::~XFluid3Line()
+DRT::ELEMENTS::XFluid3Line::~XFluid3Line()
 {
   return;
 }
@@ -121,7 +121,7 @@ DRT::Elements::XFluid3Line::~XFluid3Line()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 01/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::XFluid3Line::Print(ostream& os) const
+void DRT::ELEMENTS::XFluid3Line::Print(ostream& os) const
 {
   os << "XFluid3Line ";
   Element::Print(os);

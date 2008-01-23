@@ -37,7 +37,7 @@ namespace DRT
 // forward declarations
 class Discretization;
 
-namespace Elements
+namespace ELEMENTS
 {
 // forward declarations
 class Sow6Volume;
@@ -311,15 +311,15 @@ protected:
   //! container containing all kind of solid3 thisandthat
   DRT::Container                                  data_;
   //! vector of volume (length 1) of this element
-  vector<RefCountPtr<DRT::Elements::Sow6Volume> > volume_;
+  vector<RefCountPtr<DRT::ELEMENTS::Sow6Volume> > volume_;
   //! vector of surfaces of this element
-  vector<RefCountPtr<DRT::Elements::Sow6Surface> > surfaces_;
+  vector<RefCountPtr<DRT::ELEMENTS::Sow6Surface> > surfaces_;
   //! vector of surfaces of this element
-  vector<DRT::Elements::Sow6Surface*>           surfaceptrs_;
+  vector<DRT::ELEMENTS::Sow6Surface*>           surfaceptrs_;
   //! vector of lines adjacent to this element
-  vector<RefCountPtr<DRT::Elements::Sow6Line> > lines_;
+  vector<RefCountPtr<DRT::ELEMENTS::Sow6Line> > lines_;
   //! vector of lines adjacent to this element
-  vector<DRT::Elements::Sow6Line*>              lineptrs_;
+  vector<DRT::ELEMENTS::Sow6Line*>              lineptrs_;
   
   //! some distypes need rewinding of NodeIds due to bad input from mesher
   //! flag to rewind this element, must be availabale for friend class fluid3register
@@ -387,7 +387,7 @@ public:
   Makes a deep copy of an Soh8Register
 
   */
-  Sow6Register(const DRT::Elements::Sow6Register& old);
+  Sow6Register(const DRT::ELEMENTS::Sow6Register& old);
 
   /*!
   \brief Deep copy this instance of Soh8Register and return pointer to the copy
@@ -396,7 +396,7 @@ public:
   where the type of the derived class is unknown and a copy-ctor is needed
 
   */
-  DRT::Elements::Sow6Register* Clone() const;
+  DRT::ELEMENTS::Sow6Register* Clone() const;
 
   /*!
   \brief Return unique ParObject id
@@ -492,7 +492,7 @@ public:
   \param lsurface: the local surface number of this surface w.r.t. the parent element
   */
   Sow6Surface(int id, int owner, int nnode, const int* nodeids,
-             DRT::Node** nodes, DRT::Elements::So_weg6* parent, const int lsurface);
+             DRT::Node** nodes, DRT::ELEMENTS::So_weg6* parent, const int lsurface);
 
   /*!
   \brief Copy Constructor
@@ -622,7 +622,7 @@ private:
   Sow6Surface& operator = (const Sow6Surface& old);
 
   //! The parent element of this surface
-  DRT::Elements::So_weg6* parent_;
+  DRT::ELEMENTS::So_weg6* parent_;
   //! The local surface number of this surface w.r.t to the parent_ element
   int                    lsurface_;
 
@@ -662,7 +662,7 @@ public:
   \param lline: the local line number of this line w.r.t. the parent element
   */
   Sow6Line(int id, int owner, int nnode, const int* nodeids,
-             DRT::Node** nodes, DRT::Elements::So_weg6* parent, const int lline);
+             DRT::Node** nodes, DRT::ELEMENTS::So_weg6* parent, const int lline);
 
   /*!
   \brief Copy Constructor
@@ -791,7 +791,7 @@ private:
   Sow6Line& operator = (const Sow6Line& old);
 
   //! The parent element of this line
-  DRT::Elements::So_weg6* parent_;
+  DRT::ELEMENTS::So_weg6* parent_;
   //! The local line number of this line w.r.t to the parent_ element
   int                    lline_;
 
@@ -800,7 +800,7 @@ private:
 
 
 
-} // namespace Elements
+} // namespace ELEMENTS
 } // namespace DRT
 
 

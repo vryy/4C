@@ -25,13 +25,13 @@ Maintainer: Axel Gerstenberger
  |  ctor (public)                                            mwgee 01/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::SoDispLine::SoDispLine(  int id,
+DRT::ELEMENTS::SoDispLine::SoDispLine(  int id,
                                         int owner,
                                         int nnode,
                                         const int* nodeids,
                                         DRT::Node** nodes,
-                                        DRT::Elements::SoDispSurface* surfaceParent,
-                                        DRT::Elements::SoDisp* parent,  
+                                        DRT::ELEMENTS::SoDispSurface* surfaceParent,
+                                        DRT::ELEMENTS::SoDisp* parent,  
                                         const int lline) :
 DRT::Element(id,element_sodispline,owner),
 surfaceParent_(surfaceParent),
@@ -47,7 +47,7 @@ lline_(lline)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::SoDispLine::SoDispLine(const DRT::Elements::SoDispLine& old) :
+DRT::ELEMENTS::SoDispLine::SoDispLine(const DRT::ELEMENTS::SoDispLine& old) :
 DRT::Element(old),
 surfaceParent_(old.surfaceParent_),
 parent_(old.parent_),
@@ -61,9 +61,9 @@ lline_(old.lline_)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::Elements::SoDispLine::Clone() const
+DRT::Element* DRT::ELEMENTS::SoDispLine::Clone() const
 {
-  DRT::Elements::SoDispLine* newelement = new DRT::Elements::SoDispLine(*this);
+  DRT::ELEMENTS::SoDispLine* newelement = new DRT::ELEMENTS::SoDispLine(*this);
   return newelement;
 }
 
@@ -72,7 +72,7 @@ DRT::Element* DRT::Elements::SoDispLine::Clone() const
  |                                                             (public) |
  |                                                          u.kue 03/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::Elements::SoDispLine::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::SoDispLine::Shape() const
 {
   switch (NumNode())
   {
@@ -89,7 +89,7 @@ DRT::Element::DiscretizationType DRT::Elements::SoDispLine::Shape() const
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::SoDispLine::Pack(vector<char>& data) const
+void DRT::ELEMENTS::SoDispLine::Pack(vector<char>& data) const
 {
   data.resize(0);
   dserror("this SoDispLine element does not support communication");
@@ -102,7 +102,7 @@ void DRT::Elements::SoDispLine::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::SoDispLine::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::SoDispLine::Unpack(const vector<char>& data)
 {
   dserror("this SoDispLine element does not support communication");
   return;
@@ -112,7 +112,7 @@ void DRT::Elements::SoDispLine::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::SoDispLine::~SoDispLine()
+DRT::ELEMENTS::SoDispLine::~SoDispLine()
 {
   return;
 }
@@ -121,7 +121,7 @@ DRT::Elements::SoDispLine::~SoDispLine()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 01/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::SoDispLine::Print(ostream& os) const
+void DRT::ELEMENTS::SoDispLine::Print(ostream& os) const
 {
   os << "SoDispLine ";
   Element::Print(os);

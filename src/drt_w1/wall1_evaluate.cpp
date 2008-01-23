@@ -36,7 +36,7 @@ extern struct _MATERIAL  *mat;
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            mwgee 12/06|
  *----------------------------------------------------------------------*/
-int DRT::Elements::Wall1::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::Wall1::Evaluate(ParameterList& params,
                                     DRT::Discretization&      discretization,
                                     vector<int>&              lm,
                                     Epetra_SerialDenseMatrix& elemat1,
@@ -45,7 +45,7 @@ int DRT::Elements::Wall1::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector& elevec2,
                                     Epetra_SerialDenseVector& elevec3)
 {
-  DRT::Elements::Wall1::ActionType act = Wall1::calc_none;
+  DRT::ELEMENTS::Wall1::ActionType act = Wall1::calc_none;
   // get the action required
   string action = params.get<string>("action","calc_none");
   if (action == "calc_none") dserror("No action supplied");
@@ -104,7 +104,7 @@ int DRT::Elements::Wall1::Evaluate(ParameterList& params,
  |  Integrate a Surface Neumann boundary condition (public)  mgit 05/07|
  *----------------------------------------------------------------------*/
 
-int DRT::Elements::Wall1::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::Wall1::EvaluateNeumann(ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
                                            vector<int>&              lm,
@@ -215,7 +215,7 @@ return 0;
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                            mgit 03/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
+void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(vector<int>&               lm,
                                             vector<double>&           disp,
                                             vector<double>&           residual,
                                             Epetra_SerialDenseMatrix* stiffmatrix,
@@ -362,7 +362,7 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
  |  jacobian matrix (private)                                  mgit 04/07|
  *----------------------------------------------------------------------*/
 
-void DRT::Elements::Wall1::w1_jacobianmatrix(double xrefe[2][MAXNOD_WALL1],
+void DRT::ELEMENTS::Wall1::w1_jacobianmatrix(double xrefe[2][MAXNOD_WALL1],
                           const Epetra_SerialDenseMatrix& deriv,
                           Epetra_SerialDenseMatrix& xjm,
 			              double* det,
@@ -386,13 +386,13 @@ void DRT::Elements::Wall1::w1_jacobianmatrix(double xrefe[2][MAXNOD_WALL1],
 /*----------------------------------------------------------------------*/
 
    return;
-} // DRT::Elements::Wall1::w1_jacobianmatrix
+} // DRT::ELEMENTS::Wall1::w1_jacobianmatrix
 
 /*----------------------------------------------------------------------*
  |  Matrix boplin in reference configuration (private)         mgit 04/07|
  *----------------------------------------------------------------------*/
 
-void DRT::Elements::Wall1::w1_boplin(Epetra_SerialDenseMatrix& boplin,
+void DRT::ELEMENTS::Wall1::w1_boplin(Epetra_SerialDenseMatrix& boplin,
                            Epetra_SerialDenseMatrix& deriv,
                            Epetra_SerialDenseMatrix& xjm,
                            double& det,
@@ -430,13 +430,13 @@ void DRT::Elements::Wall1::w1_boplin(Epetra_SerialDenseMatrix& boplin,
  return;
 }
 
-/* DRT::Elements::Wall1::w1_boplin */
+/* DRT::ELEMENTS::Wall1::w1_boplin */
 
 /*----------------------------------------------------------------------*
  | Deformation gradient F and Green-Langrange strain (private)  mgit 04/07|
  *----------------------------------------------------------------------*/
 
-void DRT::Elements::Wall1::w1_defgrad(Epetra_SerialDenseVector& F,
+void DRT::ELEMENTS::Wall1::w1_defgrad(Epetra_SerialDenseVector& F,
                            Epetra_SerialDenseVector& strain,
                            const double xrefe[][MAXNOD_WALL1],
                            const double xcure[][MAXNOD_WALL1],
@@ -472,7 +472,7 @@ void DRT::Elements::Wall1::w1_defgrad(Epetra_SerialDenseVector& F,
  return;
 }
 
-/* DRT::Elements::Wall1::w1_defgrad */
+/* DRT::ELEMENTS::Wall1::w1_defgrad */
 
 
 /*----------------------------------------------------------------------*
@@ -480,7 +480,7 @@ void DRT::Elements::Wall1::w1_defgrad(Epetra_SerialDenseVector& F,
  reference configuration (private)                             mgit 04/07|
  *----------------------------------------------------------------------*/
 
-void DRT::Elements::Wall1::w1_boplin_cure(Epetra_SerialDenseMatrix& b_cure,
+void DRT::ELEMENTS::Wall1::w1_boplin_cure(Epetra_SerialDenseMatrix& b_cure,
                                           Epetra_SerialDenseMatrix& boplin,
                                           Epetra_SerialDenseVector& F,
                                           int numeps,
@@ -517,13 +517,13 @@ void DRT::Elements::Wall1::w1_boplin_cure(Epetra_SerialDenseMatrix& b_cure,
   return;
 }
 
-/* DRT::Elements::Wall1::w1_boplin_cure */
+/* DRT::ELEMENTS::Wall1::w1_boplin_cure */
 
 /*----------------------------------------------------------------------*
  | Constitutive matrix C and stresses (private)                mgit 05/07|
  *----------------------------------------------------------------------*/
 
-void DRT::Elements::Wall1::w1_call_matgeononl(Epetra_SerialDenseVector& strain,
+void DRT::ELEMENTS::Wall1::w1_call_matgeononl(Epetra_SerialDenseVector& strain,
                                               Epetra_SerialDenseMatrix& stress,
                                               Epetra_SerialDenseMatrix& C,
                                               const int numeps,
@@ -640,14 +640,14 @@ void DRT::Elements::Wall1::w1_call_matgeononl(Epetra_SerialDenseVector& strain,
   return;
 }
 
-/* DRT::Elements::Wall1::w1_call_matgeononl */
+/* DRT::ELEMENTS::Wall1::w1_call_matgeononl */
 
 
 /*----------------------------------------------------------------------*
 | geometric stiffness part (total lagrange)                   mgit 05/07|
 *----------------------------------------------------------------------*/
 
-void DRT::Elements::Wall1::w1_kg(Epetra_SerialDenseMatrix& estif,
+void DRT::ELEMENTS::Wall1::w1_kg(Epetra_SerialDenseMatrix& estif,
                                  Epetra_SerialDenseMatrix& boplin,
                                  Epetra_SerialDenseMatrix& stress,
                                  double fac,
@@ -664,13 +664,13 @@ void DRT::Elements::Wall1::w1_kg(Epetra_SerialDenseMatrix& estif,
   return;
 }
 
-/* DRT::Elements::Wall1::w1_kg */
+/* DRT::ELEMENTS::Wall1::w1_kg */
 
 /*----------------------------------------------------------------------*
 | elastic and initial displacement stiffness (total lagrange)  mgit 05/07                   mgit 05/07|
 *----------------------------------------------------------------------*/
 
-void DRT::Elements::Wall1::w1_keu(Epetra_SerialDenseMatrix& estif,
+void DRT::ELEMENTS::Wall1::w1_keu(Epetra_SerialDenseMatrix& estif,
                                   Epetra_SerialDenseMatrix& b_cure,
                                   Epetra_SerialDenseMatrix& C,
                                   double fac,
@@ -688,13 +688,13 @@ void DRT::Elements::Wall1::w1_keu(Epetra_SerialDenseMatrix& estif,
   return;
 }
 
-/* DRT::Elements::Wall1::w1_keu */
+/* DRT::ELEMENTS::Wall1::w1_keu */
 
 /*----------------------------------------------------------------------*
  | evaluate internal element forces for large def (total Lagr) mgit 05/07  |
  *----------------------------------------------------------------------*/
 
-void DRT::Elements::Wall1::w1_fint(Epetra_SerialDenseMatrix& stress,
+void DRT::ELEMENTS::Wall1::w1_fint(Epetra_SerialDenseMatrix& stress,
                                    Epetra_SerialDenseMatrix& b_cure,
                                    Epetra_SerialDenseVector& intforce,
                                    double fac,
@@ -716,7 +716,7 @@ void DRT::Elements::Wall1::w1_fint(Epetra_SerialDenseMatrix& stress,
   return;
 }
 
-/* DRT::Elements::Wall1::w1_fint */
+/* DRT::ELEMENTS::Wall1::w1_fint */
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_WALL1

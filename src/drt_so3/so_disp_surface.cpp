@@ -23,10 +23,10 @@ Maintainer: Moritz Frenzel
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::SoDispSurface::SoDispSurface(int id, int owner,
+DRT::ELEMENTS::SoDispSurface::SoDispSurface(int id, int owner,
                               int nnode, const int* nodeids,
                               DRT::Node** nodes,
-                              DRT::Elements::SoDisp* parent,
+                              DRT::ELEMENTS::SoDisp* parent,
                               const int lsurface) :
 DRT::Element(id,element_sodispsurface,owner),
 parent_(parent),
@@ -43,7 +43,7 @@ data_()
  |  ctor (public)  for sending SoDispSurfaces                 umay 10/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::SoDispSurface::SoDispSurface(int id, int owner) :
+DRT::ELEMENTS::SoDispSurface::SoDispSurface(int id, int owner) :
 DRT::Element(id,element_sodispsurface,owner),
 parent_(),
 lsurface_(),
@@ -56,7 +56,7 @@ data_()
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                         maf 01/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::SoDispSurface::SoDispSurface(const DRT::Elements::SoDispSurface& old) :
+DRT::ELEMENTS::SoDispSurface::SoDispSurface(const DRT::ELEMENTS::SoDispSurface& old) :
 DRT::Element(old),
 parent_(old.parent_),
 lsurface_(old.lsurface_),
@@ -69,9 +69,9 @@ data_(old.data_)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            maf 01/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::Elements::SoDispSurface::Clone() const
+DRT::Element* DRT::ELEMENTS::SoDispSurface::Clone() const
 {
-  DRT::Elements::SoDispSurface* newelement = new DRT::Elements::SoDispSurface(*this);
+  DRT::ELEMENTS::SoDispSurface* newelement = new DRT::ELEMENTS::SoDispSurface(*this);
   return newelement;
 }
 
@@ -79,7 +79,7 @@ DRT::Element* DRT::Elements::SoDispSurface::Clone() const
  |                                                             (public) |
  |                                                          u.kue 03/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::Elements::SoDispSurface::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::SoDispSurface::Shape() const
 {
     switch (NumNode())
     {
@@ -98,7 +98,7 @@ DRT::Element::DiscretizationType DRT::Elements::SoDispSurface::Shape() const
  |  Pack data                                                  (public) |
  |                                                            maf 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::SoDispSurface::Pack(vector<char>& data) const
+void DRT::ELEMENTS::SoDispSurface::Pack(vector<char>& data) const
 {
   data.resize(0);
   // pack type of this instance of ParObject
@@ -121,7 +121,7 @@ void DRT::Elements::SoDispSurface::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::SoDispSurface::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::SoDispSurface::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -146,7 +146,7 @@ void DRT::Elements::SoDispSurface::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                              maf 01/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::SoDispSurface::~SoDispSurface()
+DRT::ELEMENTS::SoDispSurface::~SoDispSurface()
 {
   return;
 }
@@ -154,7 +154,7 @@ DRT::Elements::SoDispSurface::~SoDispSurface()
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             gammi 04/07|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::Elements::SoDispSurface::Lines()
+DRT::Element** DRT::ELEMENTS::SoDispSurface::Lines()
 {
     const DiscretizationType distype = Shape();
     const int nline   = NumLine();
@@ -185,7 +185,7 @@ DRT::Element** DRT::Elements::SoDispSurface::Lines()
     return (DRT::Element**)(&(lineptrs_[0]));
 }
 
-void DRT::Elements::SoDispSurface::CreateLinesTri(const int& nline,
+void DRT::ELEMENTS::SoDispSurface::CreateLinesTri(const int& nline,
                                                   const int& nnode)
 {
     for(int iline=0;iline<nline;iline++)
@@ -198,12 +198,12 @@ void DRT::Elements::SoDispSurface::CreateLinesTri(const int& nline,
              nodeids[inode] = NodeIds()[DRT::UTILS::eleNodeNumbering_tri6_lines[iline][inode]];
              nodes[inode]   = Nodes()[  DRT::UTILS::eleNodeNumbering_tri6_lines[iline][inode]];
         }
-        lines_[iline] = rcp(new DRT::Elements::SoDispLine(iline,Owner(),nnode,nodeids,nodes,this,NULL,iline));
+        lines_[iline] = rcp(new DRT::ELEMENTS::SoDispLine(iline,Owner(),nnode,nodeids,nodes,this,NULL,iline));
         lineptrs_[iline] = lines_[iline].get();
     }
 }        
 
-void DRT::Elements::SoDispSurface::CreateLinesQuad(const int& nline,
+void DRT::ELEMENTS::SoDispSurface::CreateLinesQuad(const int& nline,
                                                    const int& nnode)
 {
     for(int iline=0;iline<nline;iline++)
@@ -216,7 +216,7 @@ void DRT::Elements::SoDispSurface::CreateLinesQuad(const int& nline,
              nodeids[inode] = NodeIds()[DRT::UTILS::eleNodeNumbering_quad9_lines[iline][inode]];
              nodes[inode]   = Nodes()[  DRT::UTILS::eleNodeNumbering_quad9_lines[iline][inode]];
         }
-        lines_[iline] = rcp(new DRT::Elements::SoDispLine(iline,Owner(),nnode,nodeids,nodes,this,NULL,iline));
+        lines_[iline] = rcp(new DRT::ELEMENTS::SoDispLine(iline,Owner(),nnode,nodeids,nodes,this,NULL,iline));
         lineptrs_[iline] = lines_[iline].get();
     }
 }    
@@ -224,7 +224,7 @@ void DRT::Elements::SoDispSurface::CreateLinesQuad(const int& nline,
 /*----------------------------------------------------------------------*
  |  print this element (public)                                maf 01/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::SoDispSurface::Print(ostream& os) const
+void DRT::ELEMENTS::SoDispSurface::Print(ostream& os) const
 {
   os << "SoDispSurface ";
   Element::Print(os);

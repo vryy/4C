@@ -9,7 +9,7 @@ namespace DRT
 // forward declarations
 class Discretization;
 
-namespace Elements
+namespace ELEMENTS
 {
 // forward declarations
 class Soshw6Register;
@@ -178,7 +178,7 @@ public:
   Makes a deep copy of an Soh8Register
 
   */
-  Soshw6Register(const DRT::Elements::Soshw6Register& old);
+  Soshw6Register(const DRT::ELEMENTS::Soshw6Register& old);
 
   /*!
   \brief Deep copy this instance of Soh8Register and return pointer to the copy
@@ -187,7 +187,7 @@ public:
   where the type of the derived class is unknown and a copy-ctor is needed
 
   */
-  DRT::Elements::Soshw6Register* Clone() const;
+  DRT::ELEMENTS::Soshw6Register* Clone() const;
 
   /*!
   \brief Return unique ParObject id
@@ -237,7 +237,7 @@ private:
 
 }; // class Sow6Register
 
-} // namespace Elements
+} // namespace ELEMENTS
 } // namespace DRT
 
 

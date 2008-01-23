@@ -44,14 +44,14 @@ extern struct _MATERIAL  *mat;
 /*----------------------------------------------------------------------*
  |  Do stress calculation (private)                            maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_hex8::soh8_stress(vector<double>& disp,
+void DRT::ELEMENTS::So_hex8::soh8_stress(vector<double>& disp,
                                          Epetra_SerialDenseMatrix* stresses,
                                          const double time)
 {
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
 ** ============================================================================*/
-   const static DRT::Elements::So_hex8::Integrator_So_hex8 int_hex8;
+   const static DRT::ELEMENTS::So_hex8::Integrator_So_hex8 int_hex8;
 /* ============================================================================*/
 
   // update element geometry

@@ -19,7 +19,7 @@
 /*----------------------------------------------------------------------*
  |  Integrate a Line Neumann boundary condition (public)     gammi 04/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::Ale2Line::EvaluateNeumann(
+int DRT::ELEMENTS::Ale2Line::EvaluateNeumann(
     ParameterList& params,
     DRT::Discretization&      discretization,
     DRT::Condition&           condition,

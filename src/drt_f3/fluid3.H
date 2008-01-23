@@ -1,7 +1,7 @@
 /*!
 \file fluid3.H
 
-\class DRT::Elements::Fluid3
+\class DRT::ELEMENTS::Fluid3
 
 \brief A C++ wrapper for the fluid3 element
 
@@ -45,7 +45,7 @@ namespace DRT
 // forward declarations
 class Discretization;
 
-namespace Elements
+namespace ELEMENTS
 {
 // forward declarations
 class Fluid3Surface;
@@ -394,13 +394,13 @@ private:
   vector<DRT::Element*>                           volume_;
 
   //! vector of surfaces adjacent to this element (fluid3: 4 or 6 surfaces)
-  vector<RefCountPtr<DRT::Elements::Fluid3Surface> > surfaces_;
+  vector<RefCountPtr<DRT::ELEMENTS::Fluid3Surface> > surfaces_;
   //! vector of surfaces adjacent to this element (fluid3: 4 or 6 surfaces)
-  vector<DRT::Elements::Fluid3Surface*>              surfaceptrs_;
+  vector<DRT::ELEMENTS::Fluid3Surface*>              surfaceptrs_;
   //! vector of lines adjacent to this element
-  vector<RefCountPtr<DRT::Elements::Fluid3Line> > lines_;
+  vector<RefCountPtr<DRT::ELEMENTS::Fluid3Line> > lines_;
   //! vector of lines adjacent to this element
-  vector<DRT::Elements::Fluid3Line*>              lineptrs_;
+  vector<DRT::ELEMENTS::Fluid3Line*>              lineptrs_;
   
  
   //! some distypes need rewinding of NodeIds due to bad input from mesher
@@ -735,7 +735,7 @@ public:
   Makes a deep copy of an Fluid3Register
 
   */
-  Fluid3Register(const DRT::Elements::Fluid3Register& old);
+  Fluid3Register(const DRT::ELEMENTS::Fluid3Register& old);
 
   /*!
   \brief Deep copy this instance of Fluid3Register and return pointer to the copy
@@ -744,7 +744,7 @@ public:
   where the type of the derived class is unknown and a copy-ctor is needed
 
   */
-  DRT::Elements::Fluid3Register* Clone() const;
+  DRT::ELEMENTS::Fluid3Register* Clone() const;
 
   /*!
   \brief Return unique ParObject id
@@ -843,7 +843,7 @@ public:
   \param lsurface: the local surface number of this surface w.r.t. the parent element
   */
   Fluid3Surface(int id, int owner, int nnode, const int* nodeids,
-             DRT::Node** nodes, DRT::Elements::Fluid3* parent, const int lsurface);
+             DRT::Node** nodes, DRT::ELEMENTS::Fluid3* parent, const int lsurface);
 
   /*!
   \brief Copy Constructor
@@ -1025,7 +1025,7 @@ public:
 
   // to be removed soon or moved to the DRT::Element class
   // please ask me before using it! a.gerstenberger
-  DRT::Elements::Fluid3* GetParent(){return parent_;}
+  DRT::ELEMENTS::Fluid3* GetParent(){return parent_;}
 
 private:
 
@@ -1043,13 +1043,13 @@ private:
   Fluid3Surface& operator = (const Fluid3Surface& old);
 
   //! The parent element of this surface
-  DRT::Elements::Fluid3* parent_;
+  DRT::ELEMENTS::Fluid3* parent_;
   //! The local surface number of this surface w.r.t to the parent_ element
   int                    lsurface_;
   //! vector of lines adjacent to this element
-  vector<RefCountPtr<DRT::Elements::Fluid3Line> > lines_;
+  vector<RefCountPtr<DRT::ELEMENTS::Fluid3Line> > lines_;
   //! vector of lines adjacent to this element
-  vector<DRT::Elements::Fluid3Line*>              lineptrs_;
+  vector<DRT::ELEMENTS::Fluid3Line*>              lineptrs_;
 
   //  compute kovariant metric tensor G for fluid surface element
   //                                                  gammi 04/07
@@ -1108,8 +1108,8 @@ public:
                 int nnode,
                 const int* nodeids,
                 DRT::Node** nodes,
-                DRT::Elements::Fluid3Surface* surfaceParent,
-                DRT::Elements::Fluid3* parent,
+                DRT::ELEMENTS::Fluid3Surface* surfaceParent,
+                DRT::ELEMENTS::Fluid3* parent,
                 const int lline);
 
   /*!
@@ -1284,10 +1284,10 @@ private:
   Fluid3Line& operator = (const Fluid3Line& old);
 
   //! The surface parent element of this line
-  DRT::Elements::Fluid3Surface* surfaceParent_;
+  DRT::ELEMENTS::Fluid3Surface* surfaceParent_;
 
   //! The volume parent element of this line
-  DRT::Elements::Fluid3* parent_;                  // problem !!! wth initialization
+  DRT::ELEMENTS::Fluid3* parent_;                  // problem !!! wth initialization
 
 
 
@@ -1299,7 +1299,7 @@ private:
 }; // class Fluid3Line
 
 
-} // namespace Elements
+} // namespace ELEMENTS
 } // namespace DRT
 
 

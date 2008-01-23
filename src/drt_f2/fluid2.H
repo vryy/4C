@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file fluid2.H
 
-\class DRT::Elements::Fluid2
+\class DRT::ELEMENTS::Fluid2
 
 \brief A C++ wrapper for the fluid2 element
 
@@ -43,7 +43,7 @@ namespace DRT
 class Discretization;
 class Fluid2Register;
 
-namespace Elements
+namespace ELEMENTS
 {
 // forward declarations
 class Fluid2Line;
@@ -294,9 +294,9 @@ private:
   vector<DRT::Element*>                           surface_;
 
   //! vector of lines adjacent to this element (fluid2: 3 or 4 lines)
-  vector<RefCountPtr<DRT::Elements::Fluid2Line> > lines_;
+  vector<RefCountPtr<DRT::ELEMENTS::Fluid2Line> > lines_;
   //! vector of lines adjacent to this element (fluid2: 3 or 4 lines)
-  vector<DRT::Elements::Fluid2Line*>              lineptrs_;
+  vector<DRT::ELEMENTS::Fluid2Line*>              lineptrs_;
 
 
   // internal calculation methods
@@ -447,7 +447,7 @@ public:
   Makes a deep copy of an Fluid2Register
 
   */
-  Fluid2Register(const DRT::Elements::Fluid2Register& old);
+  Fluid2Register(const DRT::ELEMENTS::Fluid2Register& old);
 
   /*!
   \brief Deep copy this instance of Fluid2Register and return pointer to the copy
@@ -456,7 +456,7 @@ public:
   where the type of the derived class is unknown and a copy-ctor is needed
 
   */
-  DRT::Elements::Fluid2Register* Clone() const;
+  DRT::ELEMENTS::Fluid2Register* Clone() const;
 
   /*!
   \brief Return unique ParObject id
@@ -553,7 +553,7 @@ public:
   \param lline: the local line number of this line w.r.t. the parent element
   */
   Fluid2Line(int id, int owner, int nnode, const int* nodeids,
-             DRT::Node** nodes, DRT::Elements::Fluid2* parent, const int lline);
+             DRT::Node** nodes, DRT::ELEMENTS::Fluid2* parent, const int lline);
 
   /*!
   \brief Copy Constructor
@@ -725,7 +725,7 @@ private:
   Fluid2Line& operator = (const Fluid2Line& old);
 
   //! The parent element of this line
-  DRT::Elements::Fluid2* parent_;
+  DRT::ELEMENTS::Fluid2* parent_;
   //! The local line number of this line w.r.t to the parent_ element
   int                    lline_;
 
@@ -753,7 +753,7 @@ private:
 
 
 
-} // namespace Elements
+} // namespace ELEMENTS
 } // namespace DRT
 
 

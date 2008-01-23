@@ -55,7 +55,7 @@ extern struct _MATERIAL  *mat;
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              vlf 06/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::So_tet4::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
                                     DRT::Discretization&      discretization,
                                     vector<int>&              lm,
                                     Epetra_SerialDenseMatrix& elemat1,
@@ -65,7 +65,7 @@ int DRT::Elements::So_tet4::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector& elevec3)
 {
   // start with "none"
-  DRT::Elements::So_tet4::ActionType act = So_tet4::none;
+  DRT::ELEMENTS::So_tet4::ActionType act = So_tet4::none;
 
   // get the required action
   string action = params.get<string>("action","none");
@@ -174,13 +174,13 @@ int DRT::Elements::So_tet4::Evaluate(ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)     maf 04/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::So_tet4::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::So_tet4::EvaluateNeumann(ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
                                            vector<int>&              lm,
                                            Epetra_SerialDenseVector& elevec1)
 {
-  dserror("DRT::Elements::So_tet4::EvaluateNeumann not implemented");
+  dserror("DRT::ELEMENTS::So_tet4::EvaluateNeumann not implemented");
   // get values and switches from the condition
   const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
   const vector<double>* val   = condition.Get<vector<double> >("val"  );
@@ -205,7 +205,7 @@ int DRT::Elements::So_tet4::EvaluateNeumann(ParameterList& params,
 /* =============================================================================*
  * CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_4 with 1 GAUSS POINTS*
  * =============================================================================*/
-  const static DRT::Elements::Integrator_tet4_1point tet4_int;
+  const static DRT::ELEMENTS::Integrator_tet4_1point tet4_int;
 /* ============================================================================*/
 
 /* ================================================= Loop over Gauss Points */
@@ -245,13 +245,13 @@ int DRT::Elements::So_tet4::EvaluateNeumann(ParameterList& params,
   }/* ==================================================== end of Loop over GP */
 
   return 0;
-} // DRT::Elements::So_tet4::EvaluateNeumann
+} // DRT::ELEMENTS::So_tet4::EvaluateNeumann
 
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                            vlf 08/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_tet4::so_tet4_nlnstiffmass(
+void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
       vector<int>&              lm,             // location matrix
       vector<double>&           disp,           // current displacements
       vector<double>&           residual,       // current residuum
@@ -263,7 +263,7 @@ void DRT::Elements::So_tet4::so_tet4_nlnstiffmass(
 /* =============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_4  with 1 GAUSS POINTS*
 ** =============================================================================*/
-   const static DRT::Elements::Integrator_tet4_1point tet4_dis;
+   const static DRT::ELEMENTS::Integrator_tet4_1point tet4_dis;
 /* ============================================================================*/
 
   // update element geometry
@@ -574,10 +574,10 @@ void DRT::Elements::So_tet4::so_tet4_nlnstiffmass(
   cout << (*stiffmatrix);
   #endif //VERBOSE_OUTPUT
   return;
-} // DRT::Elements::So_tet4::so_tet4_nlnstiffmass
+} // DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass
 
 
-int DRT::Elements::Sotet4Register::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::Sotet4Register::Initialize(DRT::Discretization& dis)
 {
   return 0;
 }

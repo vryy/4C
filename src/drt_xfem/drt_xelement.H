@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file drt_xelement.H
 
-\class DRT::Elements::XElement
+\class DRT::ELEMENTS::XElement
 
 \brief A pure virtual XFEM element class
 
@@ -42,7 +42,7 @@ class Node;
 class Element;
 class ElementRegister;
 
-namespace Elements
+namespace ELEMENTS
 {
 
 /*!
@@ -161,7 +161,7 @@ public:
 private:
 
 }; // class XElement
-}; // namespace Elements
+}; // namespace ELEMENTS
 } // namespace DRT
 
 

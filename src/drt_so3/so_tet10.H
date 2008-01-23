@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file so_tet10.H
 
-\class DRT::Elements::So_tet10
+\class DRT::ELEMENTS::So_tet10
 
 \brief A C++ version of the 10-node tet solid element
 
@@ -56,7 +56,7 @@ namespace DRT
 // forward declarations
 class Discretization;
 
-namespace Elements
+namespace ELEMENTS
 {
 // forward declarations
 class Sotet10Volume;
@@ -334,15 +334,15 @@ protected:
 
   DRT::Container                                  data_;
   //! vector of volume (length 1) of this element
-  vector<RefCountPtr<DRT::Elements::Sotet10Volume> > volume_;
+  vector<RefCountPtr<DRT::ELEMENTS::Sotet10Volume> > volume_;
   //! vector of surfaces of this element
-    vector<RefCountPtr<DRT::Elements::Sotet10Surface> > surfaces_;
+    vector<RefCountPtr<DRT::ELEMENTS::Sotet10Surface> > surfaces_;
   //! vector of surfaces of this element
-  vector<DRT::Elements::Sotet10Surface*>           surfaceptrs_;
+  vector<DRT::ELEMENTS::Sotet10Surface*>           surfaceptrs_;
   //! vector of lines adjacent to this element
-  vector<RefCountPtr<DRT::Elements::Sotet10Line> > lines_;
+  vector<RefCountPtr<DRT::ELEMENTS::Sotet10Line> > lines_;
   //! vector of lines adjacent to this element
-  vector<DRT::Elements::Sotet10Line*>              lineptrs_;
+  vector<DRT::ELEMENTS::Sotet10Line*>              lineptrs_;
   //! vector of history variables for each Gauss point
   vector<RefCountPtr<MAT::Material> >                mat_;
 
@@ -364,7 +364,7 @@ protected:
                    Epetra_SerialDenseMatrix* stresses);
 
 /*!
-\class DRT::Elements::So_tet10::Discrete_integrator
+\class DRT::ELEMENTS::So_tet10::Discrete_integrator
 
 \brief A general class agregating all necessery data for discrete integration
 
@@ -475,7 +475,7 @@ public:
   Makes a deep copy of an Sotet10Register
 
   */
-  Sotet10Register(const DRT::Elements::Sotet10Register& old);
+  Sotet10Register(const DRT::ELEMENTS::Sotet10Register& old);
 
   /*!
   \brief Deep copy this instance of Sotet10Register and return pointer to the copy
@@ -484,7 +484,7 @@ public:
   where the type of the derived class is unknown and a copy-ctor is needed
 
   */
-  DRT::Elements::Sotet10Register* Clone() const;
+  DRT::ELEMENTS::Sotet10Register* Clone() const;
 
   /*!
   \brief Return unique ParObject id
@@ -582,7 +582,7 @@ public:
   \param lsurface: the local surface number of this surface w.r.t. the parent element
   */
   Sotet10Surface(int id, int owner, int nnode, const int* nodeids,
-             DRT::Node** nodes, DRT::Elements::So_tet10* parent, const int lsurface);
+             DRT::Node** nodes, DRT::ELEMENTS::So_tet10* parent, const int lsurface);
 
 
   /*!
@@ -713,7 +713,7 @@ private:
   Sotet10Surface& operator = (const Sotet10Surface& old);
 
   //! The parent element of this surface
-  DRT::Elements::So_tet10* parent_;
+  DRT::ELEMENTS::So_tet10* parent_;
   //! The local surface number of this surface w.r.t to the parent_ element
   int                    lsurface_;
 
@@ -760,7 +760,7 @@ public:
   \param lline: the local line number of this line w.r.t. the parent element
   */
   Sotet10Line(int id, int owner, int nnode, const int* nodeids,
-               DRT::Node** nodes, DRT::Elements::So_tet10* parent, const int lline);
+               DRT::Node** nodes, DRT::ELEMENTS::So_tet10* parent, const int lline);
 
   /*!
   \brief Copy Constructor
@@ -887,7 +887,7 @@ private:
   // don't want = operator
   Sotet10Line& operator = (const Sotet10Line& old);
   //! The parent element of this line
-  DRT::Elements::So_tet10* parent_;
+  DRT::ELEMENTS::So_tet10* parent_;
   //! The local line number of this line w.r.t to the parent_ element
   int                    lline_;
 
@@ -896,7 +896,7 @@ private:
 
 
 
-} // namespace Elements
+} // namespace ELEMENTS
 } // namespace DRT
 
 

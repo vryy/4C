@@ -24,7 +24,7 @@ Maintainer: Markus Gitterle
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mgit 03/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Wall1::Wall1(int id, int owner) :
+DRT::ELEMENTS::Wall1::Wall1(int id, int owner) :
 DRT::Element(id,element_wall1,owner),
 data_(),
 material_(0),
@@ -39,7 +39,7 @@ gaussrule_(DRT::UTILS::intrule2D_undefined)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mgit 03/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Wall1::Wall1(const DRT::Elements::Wall1& old) :
+DRT::ELEMENTS::Wall1::Wall1(const DRT::ELEMENTS::Wall1& old) :
 DRT::Element(old),
 data_(old.data_),
 material_(old.material_),
@@ -55,9 +55,9 @@ gaussrule_(old.gaussrule_)
  |  Deep copy this instance of Wall1 and return pointer to it (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::Elements::Wall1::Clone() const
+DRT::Element* DRT::ELEMENTS::Wall1::Clone() const
 {
-  DRT::Elements::Wall1* newelement = new DRT::Elements::Wall1(*this);
+  DRT::ELEMENTS::Wall1* newelement = new DRT::ELEMENTS::Wall1(*this);
   return newelement;
 }
 
@@ -65,7 +65,7 @@ DRT::Element* DRT::Elements::Wall1::Clone() const
  |                                                             (public) |
  |                                                          mgit 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::Elements::Wall1::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::Wall1::Shape() const
 {
   switch (NumNode())
   {
@@ -86,7 +86,7 @@ DRT::Element::DiscretizationType DRT::Elements::Wall1::Shape() const
  |  Pack data                                                  (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Wall1::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Wall1::Pack(vector<char>& data) const
 {
   data.resize(0);
   
@@ -115,7 +115,7 @@ void DRT::Elements::Wall1::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Wall1::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Wall1::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -147,7 +147,7 @@ void DRT::Elements::Wall1::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mgit 03/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Wall1::~Wall1()
+DRT::ELEMENTS::Wall1::~Wall1()
 {
   return;
 }
@@ -156,7 +156,7 @@ DRT::Elements::Wall1::~Wall1()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mgit 03/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Wall1::Print(ostream& os) const
+void DRT::ELEMENTS::Wall1::Print(ostream& os) const
 {
   os << "Wall1 ";
   Element::Print(os);
@@ -167,9 +167,9 @@ void DRT::Elements::Wall1::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  allocate and return Wall1Register (public)              mgit 03/07|
  *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::Elements::Wall1::ElementRegister() const
+RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Wall1::ElementRegister() const
 {
-  return rcp(new DRT::Elements::Wall1Register(Type()));
+  return rcp(new DRT::ELEMENTS::Wall1Register(Type()));
 }
 
 
@@ -177,7 +177,7 @@ RefCountPtr<DRT::ElementRegister> DRT::Elements::Wall1::ElementRegister() const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             mgit 07/07|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::Elements::Wall1::Lines()
+DRT::Element** DRT::ELEMENTS::Wall1::Lines()
 {
     const DiscretizationType distype = Shape();
     const int nline   = NumLine();
@@ -208,7 +208,7 @@ DRT::Element** DRT::Elements::Wall1::Lines()
     return (DRT::Element**)(&(lineptrs_[0]));
 }
 
-void DRT::Elements::Wall1::CreateLinesTri(const int& nline,
+void DRT::ELEMENTS::Wall1::CreateLinesTri(const int& nline,
                                          const int& nnode)
 {
     for(int iline=0;iline<nline;iline++)
@@ -221,12 +221,12 @@ void DRT::Elements::Wall1::CreateLinesTri(const int& nline,
              nodeids[inode] = NodeIds()[DRT::UTILS::eleNodeNumbering_tri6_lines[iline][inode]];
              nodes[inode]   = Nodes()[DRT::UTILS::eleNodeNumbering_tri6_lines[iline][inode]];
         }
-        lines_[iline] = rcp(new DRT::Elements::Wall1Line(iline,Owner(),nnode,nodeids,nodes,this,iline));
+        lines_[iline] = rcp(new DRT::ELEMENTS::Wall1Line(iline,Owner(),nnode,nodeids,nodes,this,iline));
         lineptrs_[iline] = lines_[iline].get();
     }
 }        
 
-void DRT::Elements::Wall1::CreateLinesQuad(const int& nline,
+void DRT::ELEMENTS::Wall1::CreateLinesQuad(const int& nline,
                                           const int& nnode)
 {
     for(int iline=0;iline<nline;iline++)
@@ -239,7 +239,7 @@ void DRT::Elements::Wall1::CreateLinesQuad(const int& nline,
              nodeids[inode] = NodeIds()[DRT::UTILS::eleNodeNumbering_quad9_lines[iline][inode]];
              nodes[inode]   = Nodes()[DRT::UTILS::eleNodeNumbering_quad9_lines[iline][inode]];
         }
-        lines_[iline] = rcp(new DRT::Elements::Wall1Line(iline,Owner(),nnode,nodeids,nodes,this,iline));
+        lines_[iline] = rcp(new DRT::ELEMENTS::Wall1Line(iline,Owner(),nnode,nodeids,nodes,this,iline));
         lineptrs_[iline] = lines_[iline].get();
     }
 }    
@@ -248,7 +248,7 @@ void DRT::Elements::Wall1::CreateLinesQuad(const int& nline,
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          mgit 03/07|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::Elements::Wall1::Surfaces()
+DRT::Element** DRT::ELEMENTS::Wall1::Surfaces()
 {
   surfaces_.resize(1);
   surfaces_[0] = this;
@@ -264,7 +264,7 @@ DRT::Element** DRT::Elements::Wall1::Surfaces()
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mgit 03/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Wall1Register::Wall1Register(DRT::Element::ElementType etype) :
+DRT::ELEMENTS::Wall1Register::Wall1Register(DRT::Element::ElementType etype) :
 ElementRegister(etype)
 {
   return;
@@ -273,8 +273,8 @@ ElementRegister(etype)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mgit 03/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Wall1Register::Wall1Register(
-                               const DRT::Elements::Wall1Register& old) :
+DRT::ELEMENTS::Wall1Register::Wall1Register(
+                               const DRT::ELEMENTS::Wall1Register& old) :
 ElementRegister(old)
 {
   return;
@@ -284,16 +284,16 @@ ElementRegister(old)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-DRT::Elements::Wall1Register* DRT::Elements::Wall1Register::Clone() const
+DRT::ELEMENTS::Wall1Register* DRT::ELEMENTS::Wall1Register::Clone() const
 {
-  return new DRT::Elements::Wall1Register(*this);
+  return new DRT::ELEMENTS::Wall1Register(*this);
 }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Wall1Register::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Wall1Register::Pack(vector<char>& data) const
 {
   data.resize(0);
   
@@ -313,7 +313,7 @@ void DRT::Elements::Wall1Register::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Wall1Register::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Wall1Register::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -334,7 +334,7 @@ void DRT::Elements::Wall1Register::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mgit 03/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Wall1Register::~Wall1Register()
+DRT::ELEMENTS::Wall1Register::~Wall1Register()
 {
   return;
 }
@@ -342,7 +342,7 @@ DRT::Elements::Wall1Register::~Wall1Register()
 /*----------------------------------------------------------------------*
  |  print (public)                                           mgit 03/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Wall1Register::Print(ostream& os) const
+void DRT::ELEMENTS::Wall1Register::Print(ostream& os) const
 {
   os << "Wall1Register ";
   ElementRegister::Print(os);
@@ -350,7 +350,7 @@ void DRT::Elements::Wall1Register::Print(ostream& os) const
 }
 
 
-int DRT::Elements::Wall1Register::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::Wall1Register::Initialize(DRT::Discretization& dis)
 {
   return 0;
 }

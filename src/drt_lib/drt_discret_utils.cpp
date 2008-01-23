@@ -143,8 +143,8 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     for (int i=0; i<NumMyRowNodes(); ++i)
     {
       DRT::Node* actnode = lRowNode(i);
-      DRT::Elements::Shell8* s8 =
-        dynamic_cast<DRT::Elements::Shell8*>(actnode->Elements()[0]);
+      DRT::ELEMENTS::Shell8* s8 =
+        dynamic_cast<DRT::ELEMENTS::Shell8*>(actnode->Elements()[0]);
       if (!s8) dserror("Cannot cast to Shell8");
       int j;
       for (j=0; j<s8->NumNode(); ++j)

@@ -37,7 +37,7 @@ Maintainer: Peter Gamnitzer
   | of nodes of the element                                             |
   |                            (public)                      gammi 06/07|
   *----------------------------------------------------------------------*/
-DRT::Elements::Fluid3GenalphaResVMM::Fluid3GenalphaResVMM(int iel)
+DRT::ELEMENTS::Fluid3GenalphaResVMM::Fluid3GenalphaResVMM(int iel)
   : iel_        (iel),
 // fine-scale subgrid viscosity
     vart_(),
@@ -90,7 +90,7 @@ DRT::Elements::Fluid3GenalphaResVMM::Fluid3GenalphaResVMM(int iel)
   |  calculate system matrix for a generalised alpha time integration   |
   |                            (public)                      gammi 06/07|
   *----------------------------------------------------------------------*/
-void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
+void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   Fluid3*                                               ele,
   Epetra_SerialDenseMatrix&                             elemat,
   Epetra_SerialDenseMatrix&                             esv,
@@ -4544,7 +4544,7 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
   // this is just for comparison of dynamic/quasistatic subscales --- NOT for
   // the comparison with physical turbulence models (Smagorinsky etc.)
 
-void DRT::Elements::Fluid3GenalphaResVMM::CalcRes(
+void DRT::ELEMENTS::Fluid3GenalphaResVMM::CalcRes(
   Fluid3*                                               ele,
   const blitz::Array<double,2>&                         evelnp,
   const blitz::Array<double,1>&                         eprenp,
@@ -5686,7 +5686,7 @@ void DRT::Elements::Fluid3GenalphaResVMM::CalcRes(
  |  the Neumann condition associated with the nodes is stored in the    |
  |  array edeadng only if all nodes have a VolumeNeumann condition      |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Fluid3GenalphaResVMM::GetNodalBodyForce(Fluid3* ele, const double time)
+void DRT::ELEMENTS::Fluid3GenalphaResVMM::GetNodalBodyForce(Fluid3* ele, const double time)
 {
   vector<DRT::Condition*> myneumcond;
   DRT::Node** nodes = ele->Nodes();

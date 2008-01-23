@@ -25,7 +25,7 @@ using namespace DRT::UTILS;
  |  ctor (public)                                               vg 05/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::Condif2::Condif2(int id, int owner) :
+DRT::ELEMENTS::Condif2::Condif2(int id, int owner) :
 DRT::Element(id,element_condif2,owner),
 data_()
 {
@@ -38,7 +38,7 @@ data_()
  |  copy-ctor (public)                                          vg 05/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::Condif2::Condif2(const DRT::Elements::Condif2& old) :
+DRT::ELEMENTS::Condif2::Condif2(const DRT::ELEMENTS::Condif2& old) :
 DRT::Element(old),
 data_(old.data_),
 lines_(old.lines_),
@@ -51,9 +51,9 @@ lineptrs_(old.lineptrs_)
  | Deep copy this instance of Condif2 and return pointer to it (public) |
  |                                                             vg 05/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::Elements::Condif2::Clone() const
+DRT::Element* DRT::ELEMENTS::Condif2::Clone() const
 {
-  DRT::Elements::Condif2* newelement = new DRT::Elements::Condif2(*this);
+  DRT::ELEMENTS::Condif2* newelement = new DRT::ELEMENTS::Condif2(*this);
   return newelement;
 }
 
@@ -61,7 +61,7 @@ DRT::Element* DRT::Elements::Condif2::Clone() const
  |                                                             (public) |
  |                                                             vg 05/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::Elements::Condif2::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::Condif2::Shape() const
 {
   switch (NumNode())
   {
@@ -80,7 +80,7 @@ DRT::Element::DiscretizationType DRT::Elements::Condif2::Shape() const
  |  Pack data                                                  (public) |
  |                                                             vg 05/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Condif2::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Condif2::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -104,7 +104,7 @@ void DRT::Elements::Condif2::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                             vg 05/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Condif2::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Condif2::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -129,7 +129,7 @@ void DRT::Elements::Condif2::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                               vg 05/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Condif2::~Condif2()
+DRT::ELEMENTS::Condif2::~Condif2()
 {
   return;
 }
@@ -138,7 +138,7 @@ DRT::Elements::Condif2::~Condif2()
 /*----------------------------------------------------------------------*
  |  print this element (public)                                 vg 05/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Condif2::Print(ostream& os) const
+void DRT::ELEMENTS::Condif2::Print(ostream& os) const
 {
   os << "Condif2 ";
   Element::Print(os);
@@ -150,15 +150,15 @@ void DRT::Elements::Condif2::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  allocate and return Condif2Register (public)                vg 05/07|
  *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::Elements::Condif2::ElementRegister() const
+RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Condif2::ElementRegister() const
 {
-  return rcp(new DRT::Elements::Condif2Register(Type()));
+  return rcp(new DRT::ELEMENTS::Condif2Register(Type()));
 }
 
 //
 // get vector of lines
 //
-DRT::Element** DRT::Elements::Condif2::Lines()
+DRT::Element** DRT::ELEMENTS::Condif2::Lines()
 {
   const DiscretizationType distype = Shape();
   const int nline   = NumLine();
@@ -189,7 +189,7 @@ DRT::Element** DRT::Elements::Condif2::Lines()
     return (DRT::Element**)(&(lineptrs_[0]));
 }
 
-void DRT::Elements::Condif2::CreateLinesTri(const int& nline,
+void DRT::ELEMENTS::Condif2::CreateLinesTri(const int& nline,
                                            const int& nnode)
 {
     for(int iline=0;iline<nline;iline++)
@@ -202,12 +202,12 @@ void DRT::Elements::Condif2::CreateLinesTri(const int& nline,
              nodeids[inode] = NodeIds()[eleNodeNumbering_tri6_lines[iline][inode]];
              nodes[inode]   = Nodes()[  eleNodeNumbering_tri6_lines[iline][inode]];
         }
-        lines_[iline] = rcp(new DRT::Elements::Condif2Line(iline,Owner(),nnode,nodeids,nodes,this,iline));
+        lines_[iline] = rcp(new DRT::ELEMENTS::Condif2Line(iline,Owner(),nnode,nodeids,nodes,this,iline));
         lineptrs_[iline] = lines_[iline].get();
     }
 }
 
-void DRT::Elements::Condif2::CreateLinesQuad(const int& nline,
+void DRT::ELEMENTS::Condif2::CreateLinesQuad(const int& nline,
                                             const int& nnode)
 {
     for(int iline=0;iline<nline;iline++)
@@ -220,7 +220,7 @@ void DRT::Elements::Condif2::CreateLinesQuad(const int& nline,
              nodeids[inode] = NodeIds()[eleNodeNumbering_quad9_lines[iline][inode]];
              nodes[inode]   = Nodes()[  eleNodeNumbering_quad9_lines[iline][inode]];
         }
-        lines_[iline] = rcp(new DRT::Elements::Condif2Line(iline,Owner(),nnode,nodeids,nodes,this,iline));
+        lines_[iline] = rcp(new DRT::ELEMENTS::Condif2Line(iline,Owner(),nnode,nodeids,nodes,this,iline));
         lineptrs_[iline] = lines_[iline].get();
     }
 }
@@ -229,7 +229,7 @@ void DRT::Elements::Condif2::CreateLinesQuad(const int& nline,
 /*----------------------------------------------------------------------*
  |  get vector of Surfaces (length 1) (public)                  vg 05/07|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::Elements::Condif2::Surfaces()
+DRT::Element** DRT::ELEMENTS::Condif2::Surfaces()
 {
   surface_.resize(1);
   surface_[0] = this; //points to Condif2 element itself
@@ -237,7 +237,7 @@ DRT::Element** DRT::Elements::Condif2::Surfaces()
 }
 
 
-GaussRule2D DRT::Elements::Condif2::getOptimalGaussrule(const DiscretizationType& distype)
+GaussRule2D DRT::ELEMENTS::Condif2::getOptimalGaussrule(const DiscretizationType& distype)
 {
     GaussRule2D rule = intrule2D_undefined;
     switch (distype)
@@ -268,7 +268,7 @@ GaussRule2D DRT::Elements::Condif2::getOptimalGaussrule(const DiscretizationType
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               vg 05/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Condif2Register::Condif2Register(DRT::Element::ElementType etype) :
+DRT::ELEMENTS::Condif2Register::Condif2Register(DRT::Element::ElementType etype) :
 ElementRegister(etype)
 {
   return;
@@ -277,8 +277,8 @@ ElementRegister(etype)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                          vg 05/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Condif2Register::Condif2Register(
-                               const DRT::Elements::Condif2Register& old) :
+DRT::ELEMENTS::Condif2Register::Condif2Register(
+                               const DRT::ELEMENTS::Condif2Register& old) :
 ElementRegister(old)
 {
   return;
@@ -288,16 +288,16 @@ ElementRegister(old)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                             vg 05/07 |
  *----------------------------------------------------------------------*/
-DRT::Elements::Condif2Register* DRT::Elements::Condif2Register::Clone() const
+DRT::ELEMENTS::Condif2Register* DRT::ELEMENTS::Condif2Register::Clone() const
 {
-  return new DRT::Elements::Condif2Register(*this);
+  return new DRT::ELEMENTS::Condif2Register(*this);
 }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                             vg 05/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Condif2Register::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Condif2Register::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -317,7 +317,7 @@ void DRT::Elements::Condif2Register::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                             vg 05/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Condif2Register::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Condif2Register::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -338,7 +338,7 @@ void DRT::Elements::Condif2Register::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                               vg 05/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Condif2Register::~Condif2Register()
+DRT::ELEMENTS::Condif2Register::~Condif2Register()
 {
   return;
 }
@@ -346,7 +346,7 @@ DRT::Elements::Condif2Register::~Condif2Register()
 /*----------------------------------------------------------------------*
  |  print (public)                                              vg 05/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Condif2Register::Print(ostream& os) const
+void DRT::ELEMENTS::Condif2Register::Print(ostream& os) const
 {
   os << "Condif2Register ";
   ElementRegister::Print(os);

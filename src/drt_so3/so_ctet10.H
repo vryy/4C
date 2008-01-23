@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file so_ctet10.H
 
-\class DRT::Elements::So_ctet10
+\class DRT::ELEMENTS::So_ctet10
 
 \brief A C++ version of the 10-node tet solid element
 
@@ -63,7 +63,7 @@ namespace DRT
 // forward declarations
 class Discretization;
 
-namespace Elements
+namespace ELEMENTS
 {
 // forward declarations
 class Soctet10Volume;
@@ -340,15 +340,15 @@ protected:
 
   DRT::Container                                  data_;
   //! vector of volume (length 1) of this element
-  vector<RefCountPtr<DRT::Elements::Soctet10Volume> > volume_;
+  vector<RefCountPtr<DRT::ELEMENTS::Soctet10Volume> > volume_;
   //! vector of surfaces of this element
-    vector<RefCountPtr<DRT::Elements::Soctet10Surface> > surfaces_;
+    vector<RefCountPtr<DRT::ELEMENTS::Soctet10Surface> > surfaces_;
   //! vector of surfaces of this element
-  vector<DRT::Elements::Soctet10Surface*>           surfaceptrs_;
+  vector<DRT::ELEMENTS::Soctet10Surface*>           surfaceptrs_;
   //! vector of lines adjacent to this element
-  vector<RefCountPtr<DRT::Elements::Soctet10Line> > lines_;
+  vector<RefCountPtr<DRT::ELEMENTS::Soctet10Line> > lines_;
   //! vector of lines adjacent to this element
-  vector<DRT::Elements::Soctet10Line*>              lineptrs_;
+  vector<DRT::ELEMENTS::Soctet10Line*>              lineptrs_;
   //! vector of history variables for each Gauss point
   vector<RefCountPtr<MAT::Material> >                mat_;
 
@@ -386,7 +386,7 @@ protected:
   class TET4_SUB
   {
     public: 
-  	  // RefCountPtr<DRT::Elements::So_ctet10::SUB_NODE> my_nodes;
+  	  // RefCountPtr<DRT::ELEMENTS::So_ctet10::SUB_NODE> my_nodes;
   	  SUB_NODE my_nodes[4];
   	  double global_baricentre_xi[4];
   	  
@@ -416,14 +416,14 @@ protected:
   
 
 /*!
-\class DRT::Elements::So_ctet10::Tet_integrator_14point	
+\class DRT::ELEMENTS::So_ctet10::Tet_integrator_14point	
 
-\brief A spezialisation of the DRT::Elements::Discrete_integrator class for the quadratic
+\brief A spezialisation of the DRT::ELEMENTS::Discrete_integrator class for the quadratic
 10-node tetrahedra using a  14 point quadrature, it is exaxt for 0-4th order polynomials.
 \author a.vlf
 */
 
-  class Tet10c_integrator_5point : public DRT::Elements::So_integrator
+  class Tet10c_integrator_5point : public DRT::ELEMENTS::So_integrator
   {
   	public:
   		Tet10c_integrator_5point(SUB_STRUCTURE& );
@@ -431,7 +431,7 @@ protected:
   };
   
 
-  class L_AJ_integrator : public DRT::Elements::So_integrator
+  class L_AJ_integrator : public DRT::ELEMENTS::So_integrator
   {
   	public:
   		L_AJ_integrator(SUB_STRUCTURE&);
@@ -477,7 +477,7 @@ public:
   Makes a deep copy of an Soctet10Register
 
   */
-  Soctet10Register(const DRT::Elements::Soctet10Register& old);
+  Soctet10Register(const DRT::ELEMENTS::Soctet10Register& old);
 
   /*!
   \brief Deep copy this instance of Soctet10Register and return pointer to the copy
@@ -486,7 +486,7 @@ public:
   where the type of the derived class is unknown and a copy-ctor is needed
 
   */
-  DRT::Elements::Soctet10Register* Clone() const;
+  DRT::ELEMENTS::Soctet10Register* Clone() const;
 
   /*!
   \brief Return unique ParObject id
@@ -584,7 +584,7 @@ public:
   \param lsurface: the local surface number of this surface w.r.t. the parent element
   */
   Soctet10Surface(int id, int owner, int nnode, const int* nodeids,
-             DRT::Node** nodes, DRT::Elements::So_ctet10* parent, const int lsurface);
+             DRT::Node** nodes, DRT::ELEMENTS::So_ctet10* parent, const int lsurface);
 
 
   /*!
@@ -715,7 +715,7 @@ private:
   Soctet10Surface& operator = (const Soctet10Surface& old);
 
   //! The parent element of this surface
-  DRT::Elements::So_ctet10* parent_;
+  DRT::ELEMENTS::So_ctet10* parent_;
   //! The local surface number of this surface w.r.t to the parent_ element
   int                    lsurface_;
 
@@ -734,7 +734,7 @@ private:
   class TRI3_SUB
   {
     public: 
-  	  // RefCountPtr<DRT::Elements::So_ctet10::SUB_NODE> my_nodes;
+  	  // RefCountPtr<DRT::ELEMENTS::So_ctet10::SUB_NODE> my_nodes;
   	  SUB_NODE my_nodes[3];
   	  
   	  TRI3_SUB();
@@ -791,7 +791,7 @@ public:
   \param lline: the local line number of this line w.r.t. the parent element
   */
   Soctet10Line(int id, int owner, int nnode, const int* nodeids,
-               DRT::Node** nodes, DRT::Elements::So_ctet10* parent, const int lline);
+               DRT::Node** nodes, DRT::ELEMENTS::So_ctet10* parent, const int lline);
 
   /*!
   \brief Copy Constructor
@@ -918,7 +918,7 @@ private:
   // don't want = operator
   Soctet10Line& operator = (const Soctet10Line& old);
   //! The parent element of this line
-  DRT::Elements::So_ctet10* parent_;
+  DRT::ELEMENTS::So_ctet10* parent_;
   //! The local line number of this line w.r.t to the parent_ element
   int                    lline_;
 
@@ -927,7 +927,7 @@ private:
 
 
 
-} // namespace Elements
+} // namespace ELEMENTS
 } // namespace DRT
 
 #endif  // #ifndef SO_CTET10_H_

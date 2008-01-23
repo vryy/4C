@@ -23,7 +23,7 @@ Maintainer: Georg Bauer
 #include <Epetra_SerialDenseSolver.h>
 
 
-DRT::Elements::Fluid3Stationary::Fluid3Stationary(int iel)
+DRT::ELEMENTS::Fluid3Stationary::Fluid3Stationary(int iel)
   : iel_(iel),
     vart_(),
     xyze_(3,iel_,blitz::ColumnMajorArray<2>()),
@@ -60,7 +60,7 @@ DRT::Elements::Fluid3Stationary::Fluid3Stationary(int iel)
 /*----------------------------------------------------------------------*
  |  calculate system matrix and rhs (private)                  gjb 11/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Fluid3Stationary::Sysmat(Fluid3* ele,
+void DRT::ELEMENTS::Fluid3Stationary::Sysmat(Fluid3* ele,
                                        const blitz::Array<double,2>&     evelnp,
                                        const blitz::Array<double,1>&     eprenp,
                                        blitz::Array<double,2>&           estif,
@@ -1113,7 +1113,7 @@ void DRT::Elements::Fluid3Stationary::Sysmat(Fluid3* ele,
 //
 // calculate stabilization parameter
 //
-void DRT::Elements::Fluid3Stationary::CalTauStationary(
+void DRT::ELEMENTS::Fluid3Stationary::CalTauStationary(
   Fluid3* ele,
   const blitz::Array<double,2>&           evelnp,
   const DRT::Element::DiscretizationType  distype,
@@ -1311,7 +1311,7 @@ void DRT::Elements::Fluid3Stationary::CalTauStationary(
  |  the Neumann condition associated with the nodes is stored in the    |
  |  array edeadng only if all nodes have a VolumeNeumann condition      |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Fluid3Stationary::BodyForce(Fluid3* ele, const double pseudotime)
+void DRT::ELEMENTS::Fluid3Stationary::BodyForce(Fluid3* ele, const double pseudotime)
 { 
   vector<DRT::Condition*> myneumcond;
   DRT::Node** nodes = ele->Nodes();
@@ -1495,7 +1495,7 @@ void DRT::Elements::Fluid3Stationary::BodyForce(Fluid3* ele, const double pseudo
  |                                          'chainrulerhs'
  |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Fluid3Stationary::gder2(Fluid3* ele)
+void DRT::ELEMENTS::Fluid3Stationary::gder2(Fluid3* ele)
 {
   blitz::firstIndex i;    // Placeholder for the first index
   blitz::secondIndex j;   // Placeholder for the second index

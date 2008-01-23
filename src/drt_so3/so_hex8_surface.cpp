@@ -23,10 +23,10 @@ Maintainer: Moritz Frenzel
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::Soh8Surface::Soh8Surface(int id, int owner,
+DRT::ELEMENTS::Soh8Surface::Soh8Surface(int id, int owner,
                               int nnode, const int* nodeids,
                               DRT::Node** nodes,
-                              DRT::Elements::So_hex8* parent,
+                              DRT::ELEMENTS::So_hex8* parent,
                               const int lsurface) :
 DRT::Element(id,element_soh8surface,owner),
 parent_(parent),
@@ -40,7 +40,7 @@ lsurface_(lsurface)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                         maf 01/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Soh8Surface::Soh8Surface(const DRT::Elements::Soh8Surface& old) :
+DRT::ELEMENTS::Soh8Surface::Soh8Surface(const DRT::ELEMENTS::Soh8Surface& old) :
 DRT::Element(old),
 parent_(old.parent_),
 lsurface_(old.lsurface_)
@@ -52,9 +52,9 @@ lsurface_(old.lsurface_)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            maf 01/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::Elements::Soh8Surface::Clone() const
+DRT::Element* DRT::ELEMENTS::Soh8Surface::Clone() const
 {
-  DRT::Elements::Soh8Surface* newelement = new DRT::Elements::Soh8Surface(*this);
+  DRT::ELEMENTS::Soh8Surface* newelement = new DRT::ELEMENTS::Soh8Surface(*this);
   return newelement;
 }
 
@@ -62,7 +62,7 @@ DRT::Element* DRT::Elements::Soh8Surface::Clone() const
  |                                                             (public) |
  |                                                          u.kue 03/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::Elements::Soh8Surface::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::Soh8Surface::Shape() const
 {
   return quad4;
 }
@@ -71,7 +71,7 @@ DRT::Element::DiscretizationType DRT::Elements::Soh8Surface::Shape() const
  |  Pack data                                                  (public) |
  |                                                            maf 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Soh8Surface::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Soh8Surface::Pack(vector<char>& data) const
 {
   data.resize(0);
   dserror("this Soh8Surface element does not support communication");
@@ -83,7 +83,7 @@ void DRT::Elements::Soh8Surface::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Soh8Surface::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Soh8Surface::Unpack(const vector<char>& data)
 {
   dserror("this Soh8Surface element does not support communication");
   return;
@@ -92,7 +92,7 @@ void DRT::Elements::Soh8Surface::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                              maf 01/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Soh8Surface::~Soh8Surface()
+DRT::ELEMENTS::Soh8Surface::~Soh8Surface()
 {
   return;
 }
@@ -101,7 +101,7 @@ DRT::Elements::Soh8Surface::~Soh8Surface()
 /*----------------------------------------------------------------------*
  |  print this element (public)                                maf 01/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Soh8Surface::Print(ostream& os) const
+void DRT::ELEMENTS::Soh8Surface::Print(ostream& os) const
 {
   os << "Soh8Surface ";
   Element::Print(os);

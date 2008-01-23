@@ -1,7 +1,7 @@
 /*!
 \file xfluid3.H
 
-\class DRT::Elements::XFluid3
+\class DRT::ELEMENTS::XFluid3
 
 \brief A C++ wrapper for the fluid3 element
 
@@ -48,7 +48,7 @@ namespace DRT
 // forward declarations
 class Discretization;
 
-namespace Elements
+namespace ELEMENTS
 {
 // forward declarations
 class XFluid3Surface;
@@ -413,13 +413,13 @@ private:
   vector<DRT::Element*>                           volume_;
 
   //! vector of surfaces adjacent to this element (fluid3: 4 or 6 surfaces)
-  vector<RefCountPtr<DRT::Elements::XFluid3Surface> > surfaces_;
+  vector<RefCountPtr<DRT::ELEMENTS::XFluid3Surface> > surfaces_;
   //! vector of surfaces adjacent to this element (fluid3: 4 or 6 surfaces)
-  vector<DRT::Elements::XFluid3Surface*>              surfaceptrs_;
+  vector<DRT::ELEMENTS::XFluid3Surface*>              surfaceptrs_;
   //! vector of lines adjacent to this element
-  vector<RefCountPtr<DRT::Elements::XFluid3Line> > lines_;
+  vector<RefCountPtr<DRT::ELEMENTS::XFluid3Line> > lines_;
   //! vector of lines adjacent to this element
-  vector<DRT::Elements::XFluid3Line*>              lineptrs_;
+  vector<DRT::ELEMENTS::XFluid3Line*>              lineptrs_;
   
  
   //! some distypes need rewinding of NodeIds due to bad input from mesher
@@ -756,7 +756,7 @@ public:
   Makes a deep copy of an Fluid3Register
 
   */
-  XFluid3Register(const DRT::Elements::XFluid3Register& old);
+  XFluid3Register(const DRT::ELEMENTS::XFluid3Register& old);
 
   /*!
   \brief Deep copy this instance of Fluid3Register and return pointer to the copy
@@ -765,7 +765,7 @@ public:
   where the type of the derived class is unknown and a copy-ctor is needed
 
   */
-  DRT::Elements::XFluid3Register* Clone() const;
+  DRT::ELEMENTS::XFluid3Register* Clone() const;
 
   /*!
   \brief Return unique ParObject id
@@ -864,7 +864,7 @@ public:
   \param lsurface: the local surface number of this surface w.r.t. the parent element
   */
   XFluid3Surface(int id, int owner, const int nnode, const int* nodeids,
-             DRT::Node** nodes, DRT::Elements::XFluid3* parent, const int lsurface);
+             DRT::Node** nodes, DRT::ELEMENTS::XFluid3* parent, const int lsurface);
 
   /*!
   \brief Copy Constructor
@@ -1046,7 +1046,7 @@ public:
 
   // to be removed soon or moved to the DRT::Element class
   // please ask me before using it! a.gerstenberger
-  const DRT::Elements::XFluid3* GetParent(){return parent_;}
+  const DRT::ELEMENTS::XFluid3* GetParent(){return parent_;}
 
 private:
 
@@ -1064,13 +1064,13 @@ private:
   XFluid3Surface& operator = (const XFluid3Surface& old);
 
   //! The parent element of this surface
-  DRT::Elements::XFluid3* parent_;
+  DRT::ELEMENTS::XFluid3* parent_;
   //! The local surface number of this surface w.r.t to the parent_ element
   const int                    lsurface_;
   //! vector of lines adjacent to this element
-  vector<RefCountPtr<DRT::Elements::XFluid3Line> > lines_;
+  vector<RefCountPtr<DRT::ELEMENTS::XFluid3Line> > lines_;
   //! vector of lines adjacent to this element
-  vector<DRT::Elements::XFluid3Line*>              lineptrs_;
+  vector<DRT::ELEMENTS::XFluid3Line*>              lineptrs_;
 
   //  compute kovariant metric tensor G for fluid surface element
   //                                                  gammi 04/07
@@ -1129,8 +1129,8 @@ public:
                 int nnode,
                 const int* nodeids,
                 DRT::Node** nodes,
-                DRT::Elements::XFluid3Surface* surfaceParent,
-                DRT::Elements::XFluid3* parent,
+                DRT::ELEMENTS::XFluid3Surface* surfaceParent,
+                DRT::ELEMENTS::XFluid3* parent,
                 const int lline);
 
   /*!
@@ -1305,10 +1305,10 @@ private:
   XFluid3Line& operator = (const XFluid3Line& old);
 
   //! The surface parent element of this line
-  DRT::Elements::XFluid3Surface* surfaceParent_;
+  DRT::ELEMENTS::XFluid3Surface* surfaceParent_;
 
   //! The volume parent element of this line
-  DRT::Elements::XFluid3* parent_;                  // problem !!! wth initialization
+  DRT::ELEMENTS::XFluid3* parent_;                  // problem !!! wth initialization
 
 
 
@@ -1320,7 +1320,7 @@ private:
 }; // class XFluid3Line
 
 
-} // namespace Elements
+} // namespace ELEMENTS
 } // namespace DRT
 
 

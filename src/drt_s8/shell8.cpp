@@ -25,7 +25,7 @@ Maintainer: Michael Gee
  |  ctor (public)                                            mwgee 11/06|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::Shell8::Shell8(int id, int owner) :
+DRT::ELEMENTS::Shell8::Shell8(int id, int owner) :
 DRT::Element(id,element_shell8,owner),
 forcetype_(s8_none),
 thickness_(0.0),
@@ -47,7 +47,7 @@ data_()
  |  copy-ctor (public)                                       mwgee 11/06|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::Shell8::Shell8(const DRT::Elements::Shell8& old) :
+DRT::ELEMENTS::Shell8::Shell8(const DRT::ELEMENTS::Shell8& old) :
 DRT::Element(old),
 forcetype_(old.forcetype_),
 thickness_(old.thickness_),
@@ -69,9 +69,9 @@ lineptrs_(old.lineptrs_)
  |  Deep copy this instance of Shell8 and return pointer to it (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::Elements::Shell8::Clone() const
+DRT::Element* DRT::ELEMENTS::Shell8::Clone() const
 {
-  DRT::Elements::Shell8* newelement = new DRT::Elements::Shell8(*this);
+  DRT::ELEMENTS::Shell8* newelement = new DRT::ELEMENTS::Shell8(*this);
   return newelement;
 }
 
@@ -79,7 +79,7 @@ DRT::Element* DRT::Elements::Shell8::Clone() const
  |                                                             (public) |
  |                                                          u.kue 03/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::Elements::Shell8::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::Shell8::Shape() const
 {
   switch (NumNode())
   {
@@ -96,7 +96,7 @@ DRT::Element::DiscretizationType DRT::Elements::Shell8::Shape() const
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Shell8::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -138,7 +138,7 @@ void DRT::Elements::Shell8::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Shell8::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -181,7 +181,7 @@ void DRT::Elements::Shell8::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-DRT::Elements::Shell8::~Shell8()
+DRT::ELEMENTS::Shell8::~Shell8()
 {
   return;
 }
@@ -190,7 +190,7 @@ DRT::Elements::Shell8::~Shell8()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::Print(ostream& os) const
+void DRT::ELEMENTS::Shell8::Print(ostream& os) const
 {
   os << "Shell8 ";
   Element::Print(os);
@@ -202,15 +202,15 @@ void DRT::Elements::Shell8::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  allocate and return Shell8Register (public)              mwgee 12/06|
  *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::Elements::Shell8::ElementRegister() const
+RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Shell8::ElementRegister() const
 {
-  return rcp(new DRT::Elements::Shell8Register(Type()));
+  return rcp(new DRT::ELEMENTS::Shell8Register(Type()));
 }
 
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::Elements::Shell8::Lines()
+DRT::Element** DRT::ELEMENTS::Shell8::Lines()
 {
   const int nline = NumLine();
   const int numnode = NumNode();
@@ -227,7 +227,7 @@ DRT::Element** DRT::Elements::Shell8::Lines()
       nodes[0] = Nodes()[0];
       nodes[1] = Nodes()[1];
       lines_[0] =
-        rcp(new DRT::Elements::Shell8Line(0,Owner(),2,nodeids,nodes,this,0));
+        rcp(new DRT::ELEMENTS::Shell8Line(0,Owner(),2,nodeids,nodes,this,0));
       lineptrs_[0] = lines_[0].get();
 
       nodeids[0] = NodeIds()[1];
@@ -235,7 +235,7 @@ DRT::Element** DRT::Elements::Shell8::Lines()
       nodes[0] = Nodes()[1];
       nodes[1] = Nodes()[2];
       lines_[1] =
-        rcp(new DRT::Elements::Shell8Line(1,Owner(),2,nodeids,nodes,this,1));
+        rcp(new DRT::ELEMENTS::Shell8Line(1,Owner(),2,nodeids,nodes,this,1));
       lineptrs_[1] = lines_[1].get();
 
       nodeids[0] = NodeIds()[2];
@@ -243,7 +243,7 @@ DRT::Element** DRT::Elements::Shell8::Lines()
       nodes[0] = Nodes()[2];
       nodes[1] = Nodes()[3];
       lines_[2] =
-        rcp(new DRT::Elements::Shell8Line(2,Owner(),2,nodeids,nodes,this,2));
+        rcp(new DRT::ELEMENTS::Shell8Line(2,Owner(),2,nodeids,nodes,this,2));
       lineptrs_[2] = lines_[2].get();
 
       nodeids[0] = NodeIds()[3];
@@ -251,7 +251,7 @@ DRT::Element** DRT::Elements::Shell8::Lines()
       nodes[0] = Nodes()[3];
       nodes[1] = Nodes()[0];
       lines_[3] =
-        rcp(new DRT::Elements::Shell8Line(3,Owner(),2,nodeids,nodes,this,3));
+        rcp(new DRT::ELEMENTS::Shell8Line(3,Owner(),2,nodeids,nodes,this,3));
       lineptrs_[3] = lines_[3].get();
     }
     else if (numnode==9)
@@ -263,7 +263,7 @@ DRT::Element** DRT::Elements::Shell8::Lines()
       nodes[1] = Nodes()[1];
       nodes[2] = Nodes()[4];
       lines_[0] =
-        rcp(new DRT::Elements::Shell8Line(0,Owner(),3,nodeids,nodes,this,0));
+        rcp(new DRT::ELEMENTS::Shell8Line(0,Owner(),3,nodeids,nodes,this,0));
       lineptrs_[0] = lines_[0].get();
 
       nodeids[0] = NodeIds()[1];
@@ -273,7 +273,7 @@ DRT::Element** DRT::Elements::Shell8::Lines()
       nodes[1] = Nodes()[2];
       nodes[2] = Nodes()[5];
       lines_[1] =
-        rcp(new DRT::Elements::Shell8Line(1,Owner(),3,nodeids,nodes,this,1));
+        rcp(new DRT::ELEMENTS::Shell8Line(1,Owner(),3,nodeids,nodes,this,1));
       lineptrs_[1] = lines_[1].get();
 
       nodeids[0] = NodeIds()[2];
@@ -283,7 +283,7 @@ DRT::Element** DRT::Elements::Shell8::Lines()
       nodes[1] = Nodes()[3];
       nodes[2] = Nodes()[6];
       lines_[2] =
-        rcp(new DRT::Elements::Shell8Line(2,Owner(),3,nodeids,nodes,this,2));
+        rcp(new DRT::ELEMENTS::Shell8Line(2,Owner(),3,nodeids,nodes,this,2));
       lineptrs_[2] = lines_[2].get();
 
       nodeids[0] = NodeIds()[3];
@@ -293,7 +293,7 @@ DRT::Element** DRT::Elements::Shell8::Lines()
       nodes[1] = Nodes()[0];
       nodes[2] = Nodes()[7];
       lines_[3] =
-        rcp(new DRT::Elements::Shell8Line(3,Owner(),3,nodeids,nodes,this,3));
+        rcp(new DRT::ELEMENTS::Shell8Line(3,Owner(),3,nodeids,nodes,this,3));
       lineptrs_[3] = lines_[3].get();
     }
     else dserror("Number of nodes not supported");
@@ -307,7 +307,7 @@ DRT::Element** DRT::Elements::Shell8::Lines()
       nodes[0] = Nodes()[0];
       nodes[1] = Nodes()[1];
       lines_[0] =
-        rcp(new DRT::Elements::Shell8Line(0,Owner(),2,nodeids,nodes,this,0));
+        rcp(new DRT::ELEMENTS::Shell8Line(0,Owner(),2,nodeids,nodes,this,0));
       lineptrs_[0] = lines_[0].get();
 
       nodeids[0] = NodeIds()[1];
@@ -315,7 +315,7 @@ DRT::Element** DRT::Elements::Shell8::Lines()
       nodes[0] = Nodes()[1];
       nodes[1] = Nodes()[2];
       lines_[1] =
-        rcp(new DRT::Elements::Shell8Line(1,Owner(),2,nodeids,nodes,this,1));
+        rcp(new DRT::ELEMENTS::Shell8Line(1,Owner(),2,nodeids,nodes,this,1));
       lineptrs_[1] = lines_[1].get();
 
       nodeids[0] = NodeIds()[2];
@@ -323,7 +323,7 @@ DRT::Element** DRT::Elements::Shell8::Lines()
       nodes[0] = Nodes()[1];
       nodes[1] = Nodes()[2];
       lines_[2] =
-        rcp(new DRT::Elements::Shell8Line(2,Owner(),2,nodeids,nodes,this,2));
+        rcp(new DRT::ELEMENTS::Shell8Line(2,Owner(),2,nodeids,nodes,this,2));
       lineptrs_[2] = lines_[2].get();
     }
     else if (numnode==6)
@@ -335,7 +335,7 @@ DRT::Element** DRT::Elements::Shell8::Lines()
       nodes[1] = Nodes()[1];
       nodes[2] = Nodes()[3];
       lines_[0] =
-        rcp(new DRT::Elements::Shell8Line(0,Owner(),3,nodeids,nodes,this,0));
+        rcp(new DRT::ELEMENTS::Shell8Line(0,Owner(),3,nodeids,nodes,this,0));
       lineptrs_[0] = lines_[0].get();
 
       nodeids[0] = NodeIds()[1];
@@ -345,7 +345,7 @@ DRT::Element** DRT::Elements::Shell8::Lines()
       nodes[1] = Nodes()[2];
       nodes[2] = Nodes()[4];
       lines_[1] =
-        rcp(new DRT::Elements::Shell8Line(1,Owner(),3,nodeids,nodes,this,1));
+        rcp(new DRT::ELEMENTS::Shell8Line(1,Owner(),3,nodeids,nodes,this,1));
       lineptrs_[1] = lines_[1].get();
 
       nodeids[0] = NodeIds()[2];
@@ -355,7 +355,7 @@ DRT::Element** DRT::Elements::Shell8::Lines()
       nodes[1] = Nodes()[0];
       nodes[2] = Nodes()[5];
       lines_[2] =
-        rcp(new DRT::Elements::Shell8Line(2,Owner(),3,nodeids,nodes,this,2));
+        rcp(new DRT::ELEMENTS::Shell8Line(2,Owner(),3,nodeids,nodes,this,2));
       lineptrs_[2] = lines_[2].get();
     }
     else dserror("Number of nodes not supported");
@@ -367,7 +367,7 @@ DRT::Element** DRT::Elements::Shell8::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::Elements::Shell8::Surfaces()
+DRT::Element** DRT::ELEMENTS::Shell8::Surfaces()
 {
   surfaces_.resize(1);
   surfaces_[0] = this;
@@ -383,7 +383,7 @@ DRT::Element** DRT::Elements::Shell8::Surfaces()
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 12/06|
  *----------------------------------------------------------------------*/
-DRT::Elements::Shell8Register::Shell8Register(DRT::Element::ElementType etype) :
+DRT::ELEMENTS::Shell8Register::Shell8Register(DRT::Element::ElementType etype) :
 ElementRegister(etype)
 {
   return;
@@ -392,8 +392,8 @@ ElementRegister(etype)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 12/06|
  *----------------------------------------------------------------------*/
-DRT::Elements::Shell8Register::Shell8Register(
-                               const DRT::Elements::Shell8Register& old) :
+DRT::ELEMENTS::Shell8Register::Shell8Register(
+                               const DRT::ELEMENTS::Shell8Register& old) :
 ElementRegister(old)
 {
   return;
@@ -403,16 +403,16 @@ ElementRegister(old)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-DRT::Elements::Shell8Register* DRT::Elements::Shell8Register::Clone() const
+DRT::ELEMENTS::Shell8Register* DRT::ELEMENTS::Shell8Register::Clone() const
 {
-  return new DRT::Elements::Shell8Register(*this);
+  return new DRT::ELEMENTS::Shell8Register(*this);
 }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8Register::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Shell8Register::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -432,7 +432,7 @@ void DRT::Elements::Shell8Register::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8Register::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Shell8Register::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -453,7 +453,7 @@ void DRT::Elements::Shell8Register::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 12/06|
  *----------------------------------------------------------------------*/
-DRT::Elements::Shell8Register::~Shell8Register()
+DRT::ELEMENTS::Shell8Register::~Shell8Register()
 {
   return;
 }
@@ -461,7 +461,7 @@ DRT::Elements::Shell8Register::~Shell8Register()
 /*----------------------------------------------------------------------*
  |  print (public)                                           mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8Register::Print(ostream& os) const
+void DRT::ELEMENTS::Shell8Register::Print(ostream& os) const
 {
   os << "Shell8Register ";
   ElementRegister::Print(os);

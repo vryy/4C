@@ -733,7 +733,7 @@ void stru_static_drt()
 //    for (int i=0; i < actdis->NumMyColElements(); ++i)
 //    {
 //      if (actdis->lColElement(i)->Type() != DRT::Element::element_sosh8) continue;
-//      DRT::Elements::So_sh8* actele = dynamic_cast<DRT::Elements::So_sh8*>(actdis->lColElement(i));
+//      DRT::ELEMENTS::So_sh8* actele = dynamic_cast<DRT::ELEMENTS::So_sh8*>(actdis->lColElement(i));
 //      if (!actele) dserror("cast to So_sh8* failed");
 //      // plot elements
 //      gmshfilecontent << IO::GMSH::elementToString(actele->thickdir_, actele) << endl;

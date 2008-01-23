@@ -26,7 +26,7 @@ using namespace DRT::UTILS;
  |  ctor (public)                                            gammi 11/06|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::Fluid2::Fluid2(int id, int owner) :
+DRT::ELEMENTS::Fluid2::Fluid2(int id, int owner) :
 DRT::Element(id,element_fluid2,owner),
 is_ale_(false),
 data_()
@@ -40,7 +40,7 @@ data_()
  |  copy-ctor (public)                                       gammi 11/06|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::Fluid2::Fluid2(const DRT::Elements::Fluid2& old) :
+DRT::ELEMENTS::Fluid2::Fluid2(const DRT::ELEMENTS::Fluid2& old) :
 DRT::Element(old),
 is_ale_(old.is_ale_),
 data_(old.data_),
@@ -54,9 +54,9 @@ lineptrs_(old.lineptrs_)
  |  Deep copy this instance of Fluid2 and return pointer to it (public) |
  |                                                          gammi 11/06 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::Elements::Fluid2::Clone() const
+DRT::Element* DRT::ELEMENTS::Fluid2::Clone() const
 {
-  DRT::Elements::Fluid2* newelement = new DRT::Elements::Fluid2(*this);
+  DRT::ELEMENTS::Fluid2* newelement = new DRT::ELEMENTS::Fluid2(*this);
   return newelement;
 }
 
@@ -64,7 +64,7 @@ DRT::Element* DRT::Elements::Fluid2::Clone() const
  |                                                             (public) |
  |                                                          u.kue 03/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::Elements::Fluid2::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::Fluid2::Shape() const
 {
   switch (NumNode())
   {
@@ -83,7 +83,7 @@ DRT::Element::DiscretizationType DRT::Elements::Fluid2::Shape() const
  |  Pack data                                                  (public) |
  |                                                          gammi 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Fluid2::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Fluid2::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -109,7 +109,7 @@ void DRT::Elements::Fluid2::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                          gammi 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Fluid2::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Fluid2::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -136,7 +136,7 @@ void DRT::Elements::Fluid2::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            gammi 11/06|
  *----------------------------------------------------------------------*/
-DRT::Elements::Fluid2::~Fluid2()
+DRT::ELEMENTS::Fluid2::~Fluid2()
 {
   return;
 }
@@ -145,7 +145,7 @@ DRT::Elements::Fluid2::~Fluid2()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              gammi 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Fluid2::Print(ostream& os) const
+void DRT::ELEMENTS::Fluid2::Print(ostream& os) const
 {
   os << "Fluid2 ";
   Element::Print(os);
@@ -157,15 +157,15 @@ void DRT::Elements::Fluid2::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  allocate and return Fluid2Register (public)              gammi 04/07|
  *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::Elements::Fluid2::ElementRegister() const
+RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Fluid2::ElementRegister() const
 {
-  return rcp(new DRT::Elements::Fluid2Register(Type()));
+  return rcp(new DRT::ELEMENTS::Fluid2Register(Type()));
 }
 
 //
 // get vector of lines
 //
-DRT::Element** DRT::Elements::Fluid2::Lines()
+DRT::Element** DRT::ELEMENTS::Fluid2::Lines()
 {
     const DiscretizationType distype = Shape();
     const int nline   = NumLine();
@@ -196,7 +196,7 @@ DRT::Element** DRT::Elements::Fluid2::Lines()
     return (DRT::Element**)(&(lineptrs_[0]));
 }
 
-void DRT::Elements::Fluid2::CreateLinesTri(const int& nline,
+void DRT::ELEMENTS::Fluid2::CreateLinesTri(const int& nline,
                                            const int& nnode)
 {
     for(int iline=0;iline<nline;iline++)
@@ -209,12 +209,12 @@ void DRT::Elements::Fluid2::CreateLinesTri(const int& nline,
              nodeids[inode] = NodeIds()[eleNodeNumbering_tri6_lines[iline][inode]];
              nodes[inode]   = Nodes()[  eleNodeNumbering_tri6_lines[iline][inode]];
         }
-        lines_[iline] = rcp(new DRT::Elements::Fluid2Line(iline,Owner(),nnode,nodeids,nodes,this,iline));
+        lines_[iline] = rcp(new DRT::ELEMENTS::Fluid2Line(iline,Owner(),nnode,nodeids,nodes,this,iline));
         lineptrs_[iline] = lines_[iline].get();
     }
 }
 
-void DRT::Elements::Fluid2::CreateLinesQuad(const int& nline,
+void DRT::ELEMENTS::Fluid2::CreateLinesQuad(const int& nline,
                                             const int& nnode)
 {
     for(int iline=0;iline<nline;iline++)
@@ -227,7 +227,7 @@ void DRT::Elements::Fluid2::CreateLinesQuad(const int& nline,
              nodeids[inode] = NodeIds()[eleNodeNumbering_quad9_lines[iline][inode]];
              nodes[inode]   = Nodes()[  eleNodeNumbering_quad9_lines[iline][inode]];
         }
-        lines_[iline] = rcp(new DRT::Elements::Fluid2Line(iline,Owner(),nnode,nodeids,nodes,this,iline));
+        lines_[iline] = rcp(new DRT::ELEMENTS::Fluid2Line(iline,Owner(),nnode,nodeids,nodes,this,iline));
         lineptrs_[iline] = lines_[iline].get();
     }
 }
@@ -236,7 +236,7 @@ void DRT::Elements::Fluid2::CreateLinesQuad(const int& nline,
 /*----------------------------------------------------------------------*
  |  get vector of Surfaces (length 1) (public)               gammi 04/07|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::Elements::Fluid2::Surfaces()
+DRT::Element** DRT::ELEMENTS::Fluid2::Surfaces()
 {
   surface_.resize(1);
   surface_[0] = this; //points to Fluid2 element itself
@@ -244,7 +244,7 @@ DRT::Element** DRT::Elements::Fluid2::Surfaces()
 }
 
 
-GaussRule2D DRT::Elements::Fluid2::getOptimalGaussrule(const DiscretizationType& distype)
+GaussRule2D DRT::ELEMENTS::Fluid2::getOptimalGaussrule(const DiscretizationType& distype)
 {
     GaussRule2D rule = intrule2D_undefined;
     switch (distype)
@@ -275,7 +275,7 @@ GaussRule2D DRT::Elements::Fluid2::getOptimalGaussrule(const DiscretizationType&
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 12/06|
  *----------------------------------------------------------------------*/
-DRT::Elements::Fluid2Register::Fluid2Register(DRT::Element::ElementType etype) :
+DRT::ELEMENTS::Fluid2Register::Fluid2Register(DRT::Element::ElementType etype) :
 ElementRegister(etype)
 {
   return;
@@ -284,8 +284,8 @@ ElementRegister(etype)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 12/06|
  *----------------------------------------------------------------------*/
-DRT::Elements::Fluid2Register::Fluid2Register(
-                               const DRT::Elements::Fluid2Register& old) :
+DRT::ELEMENTS::Fluid2Register::Fluid2Register(
+                               const DRT::ELEMENTS::Fluid2Register& old) :
 ElementRegister(old)
 {
   return;
@@ -295,16 +295,16 @@ ElementRegister(old)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-DRT::Elements::Fluid2Register* DRT::Elements::Fluid2Register::Clone() const
+DRT::ELEMENTS::Fluid2Register* DRT::ELEMENTS::Fluid2Register::Clone() const
 {
-  return new DRT::Elements::Fluid2Register(*this);
+  return new DRT::ELEMENTS::Fluid2Register(*this);
 }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Fluid2Register::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Fluid2Register::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -324,7 +324,7 @@ void DRT::Elements::Fluid2Register::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Fluid2Register::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Fluid2Register::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -345,7 +345,7 @@ void DRT::Elements::Fluid2Register::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 12/06|
  *----------------------------------------------------------------------*/
-DRT::Elements::Fluid2Register::~Fluid2Register()
+DRT::ELEMENTS::Fluid2Register::~Fluid2Register()
 {
   return;
 }
@@ -353,7 +353,7 @@ DRT::Elements::Fluid2Register::~Fluid2Register()
 /*----------------------------------------------------------------------*
  |  print (public)                                           mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Fluid2Register::Print(ostream& os) const
+void DRT::ELEMENTS::Fluid2Register::Print(ostream& os) const
 {
   os << "Fluid2Register ";
   ElementRegister::Print(os);

@@ -38,7 +38,7 @@ extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*
  |  read element input (public)                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-bool DRT::Elements::Shell8::ReadElement()
+bool DRT::ELEMENTS::Shell8::ReadElement()
 {
   // read element's nodes
   int ierr=0;

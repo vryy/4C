@@ -25,7 +25,7 @@ extern struct _FILES  allfiles;
 #include "ale2.H"
 
 
-bool DRT::Elements::Ale2::ReadElement()
+bool DRT::ELEMENTS::Ale2::ReadElement()
 {
   // read element's nodes
   int   ierr = 0;

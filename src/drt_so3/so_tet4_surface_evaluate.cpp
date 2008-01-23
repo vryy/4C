@@ -33,7 +33,7 @@ extern "C"
 /*----------------------------------------------------------------------*
  * Integrate a Surface Neumann boundary condition (public)     vlf 08/07*
  * ---------------------------------------------------------------------*/
-int DRT::Elements::Sotet4Surface::EvaluateNeumann(ParameterList&           params,
+int DRT::ELEMENTS::Sotet4Surface::EvaluateNeumann(ParameterList&           params,
                                                 DRT::Discretization&     discretization,
                                                 DRT::Condition&          condition,
                                                 vector<int>&             lm,
@@ -41,7 +41,7 @@ int DRT::Elements::Sotet4Surface::EvaluateNeumann(ParameterList&           param
 {
   DSTraceHelper dst("Sotet4Surface::EvaluateNeumann");
   // get values and switches from the condition
-  static const DRT::Elements::Integrator_tri3_1point tri3_int;
+  static const DRT::ELEMENTS::Integrator_tri3_1point tri3_int;
   const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
   const vector<double>* val   = condition.Get<vector<double> >("val"  );
 

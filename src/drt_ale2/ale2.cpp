@@ -9,7 +9,7 @@
 using namespace DRT::UTILS;
 
 
-DRT::Elements::Ale2::Ale2(int id, int owner)
+DRT::ELEMENTS::Ale2::Ale2(int id, int owner)
   : DRT::Element(id,element_ale2,owner),
     data_()
 {
@@ -18,7 +18,7 @@ DRT::Elements::Ale2::Ale2(int id, int owner)
 }
 
 
-DRT::Elements::Ale2::Ale2(const DRT::Elements::Ale2& old)
+DRT::ELEMENTS::Ale2::Ale2(const DRT::ELEMENTS::Ale2& old)
   : DRT::Element(old),
     data_(old.data_),
     lines_(old.lines_),
@@ -28,14 +28,14 @@ DRT::Elements::Ale2::Ale2(const DRT::Elements::Ale2& old)
 }
 
 
-DRT::Element* DRT::Elements::Ale2::Clone() const
+DRT::Element* DRT::ELEMENTS::Ale2::Clone() const
 {
-  DRT::Elements::Ale2* newelement = new DRT::Elements::Ale2(*this);
+  DRT::ELEMENTS::Ale2* newelement = new DRT::ELEMENTS::Ale2(*this);
   return newelement;
 }
 
 
-DRT::Element::DiscretizationType DRT::Elements::Ale2::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::Ale2::Shape() const
 {
   switch (NumNode())
   {
@@ -51,7 +51,7 @@ DRT::Element::DiscretizationType DRT::Elements::Ale2::Shape() const
 }
 
 
-void DRT::Elements::Ale2::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Ale2::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -69,7 +69,7 @@ void DRT::Elements::Ale2::Pack(vector<char>& data) const
 }
 
 
-void DRT::Elements::Ale2::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Ale2::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -90,12 +90,12 @@ void DRT::Elements::Ale2::Unpack(const vector<char>& data)
 }
 
 
-DRT::Elements::Ale2::~Ale2()
+DRT::ELEMENTS::Ale2::~Ale2()
 {
 }
 
 
-void DRT::Elements::Ale2::Print(ostream& os) const
+void DRT::ELEMENTS::Ale2::Print(ostream& os) const
 {
   os << "Ale2 ";
   Element::Print(os);
@@ -105,16 +105,16 @@ void DRT::Elements::Ale2::Print(ostream& os) const
 }
 
 
-RefCountPtr<DRT::ElementRegister> DRT::Elements::Ale2::ElementRegister() const
+RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Ale2::ElementRegister() const
 {
-  return rcp(new DRT::Elements::Ale2Register(Type()));
+  return rcp(new DRT::ELEMENTS::Ale2Register(Type()));
 }
 
 
 //
 // get vector of lines
 //
-DRT::Element** DRT::Elements::Ale2::Lines()
+DRT::Element** DRT::ELEMENTS::Ale2::Lines()
 {
     const DiscretizationType distype = Shape();
     const int nline   = NumLine();
@@ -145,7 +145,7 @@ DRT::Element** DRT::Elements::Ale2::Lines()
     return (DRT::Element**)(&(lineptrs_[0]));
 }
 
-void DRT::Elements::Ale2::CreateLinesTri(const int& nline,
+void DRT::ELEMENTS::Ale2::CreateLinesTri(const int& nline,
                                          const int& nnode)
 {
     for(int iline=0;iline<nline;iline++)
@@ -158,12 +158,12 @@ void DRT::Elements::Ale2::CreateLinesTri(const int& nline,
              nodeids[inode] = NodeIds()[eleNodeNumbering_tri6_lines[iline][inode]];
              nodes[inode]   = Nodes()[  eleNodeNumbering_tri6_lines[iline][inode]];
         }
-        lines_[iline] = rcp(new DRT::Elements::Ale2Line(iline,Owner(),nnode,nodeids,nodes,this,iline));
+        lines_[iline] = rcp(new DRT::ELEMENTS::Ale2Line(iline,Owner(),nnode,nodeids,nodes,this,iline));
         lineptrs_[iline] = lines_[iline].get();
     }
 }        
 
-void DRT::Elements::Ale2::CreateLinesQuad(const int& nline,
+void DRT::ELEMENTS::Ale2::CreateLinesQuad(const int& nline,
                                           const int& nnode)
 {
     for(int iline=0;iline<nline;iline++)
@@ -176,13 +176,13 @@ void DRT::Elements::Ale2::CreateLinesQuad(const int& nline,
              nodeids[inode] = NodeIds()[eleNodeNumbering_quad9_lines[iline][inode]];
              nodes[inode]   = Nodes()[  eleNodeNumbering_quad9_lines[iline][inode]];
         }
-        lines_[iline] = rcp(new DRT::Elements::Ale2Line(iline,Owner(),nnode,nodeids,nodes,this,iline));
+        lines_[iline] = rcp(new DRT::ELEMENTS::Ale2Line(iline,Owner(),nnode,nodeids,nodes,this,iline));
         lineptrs_[iline] = lines_[iline].get();
     }
 }    
 
 
-DRT::Element** DRT::Elements::Ale2::Surfaces()
+DRT::Element** DRT::ELEMENTS::Ale2::Surfaces()
 {
   surface_.resize(1);
   surface_[0] = this; //points to Ale2 element itself
@@ -190,7 +190,7 @@ DRT::Element** DRT::Elements::Ale2::Surfaces()
 }
 
 
-GaussRule2D DRT::Elements::Ale2::getOptimalGaussrule(const DiscretizationType& distype)
+GaussRule2D DRT::ELEMENTS::Ale2::getOptimalGaussrule(const DiscretizationType& distype)
 {
     GaussRule2D rule = intrule2D_undefined;
     switch (distype)
@@ -219,25 +219,25 @@ GaussRule2D DRT::Elements::Ale2::getOptimalGaussrule(const DiscretizationType& d
 //=======================================================================
 
 
-DRT::Elements::Ale2Register::Ale2Register(DRT::Element::ElementType etype)
+DRT::ELEMENTS::Ale2Register::Ale2Register(DRT::Element::ElementType etype)
   : ElementRegister(etype)
 {
 }
 
 
-DRT::Elements::Ale2Register::Ale2Register(const DRT::Elements::Ale2Register& old)
+DRT::ELEMENTS::Ale2Register::Ale2Register(const DRT::ELEMENTS::Ale2Register& old)
   : ElementRegister(old)
 {
 }
 
 
-DRT::Elements::Ale2Register* DRT::Elements::Ale2Register::Clone() const
+DRT::ELEMENTS::Ale2Register* DRT::ELEMENTS::Ale2Register::Clone() const
 {
-  return new DRT::Elements::Ale2Register(*this);
+  return new DRT::ELEMENTS::Ale2Register(*this);
 }
 
 
-void DRT::Elements::Ale2Register::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Ale2Register::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -251,7 +251,7 @@ void DRT::Elements::Ale2Register::Pack(vector<char>& data) const
 }
 
 
-void DRT::Elements::Ale2Register::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Ale2Register::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -268,12 +268,12 @@ void DRT::Elements::Ale2Register::Unpack(const vector<char>& data)
 }
 
 
-DRT::Elements::Ale2Register::~Ale2Register()
+DRT::ELEMENTS::Ale2Register::~Ale2Register()
 {
 }
 
 
-void DRT::Elements::Ale2Register::Print(ostream& os) const
+void DRT::ELEMENTS::Ale2Register::Print(ostream& os) const
 {
   os << "Ale2Register ";
   ElementRegister::Print(os);

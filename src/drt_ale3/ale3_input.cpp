@@ -28,7 +28,7 @@ extern struct _FILES  allfiles;
 using namespace DRT::UTILS;
 
 
-bool DRT::Elements::Ale3::ReadElement()
+bool DRT::ELEMENTS::Ale3::ReadElement()
 {
   cout << "input" <<endl;
   typedef map<string, DiscretizationType> Gid2DisType;

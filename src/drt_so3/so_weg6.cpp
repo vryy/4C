@@ -26,7 +26,7 @@ using namespace DRT::UTILS;
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::So_weg6::So_weg6(int id, int owner) :
+DRT::ELEMENTS::So_weg6::So_weg6(int id, int owner) :
 DRT::Element(id,element_so_weg6,owner),
 data_()
 {
@@ -41,7 +41,7 @@ data_()
  |  copy-ctor (public)                                         maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::So_weg6::So_weg6(const DRT::Elements::So_weg6& old) :
+DRT::ELEMENTS::So_weg6::So_weg6(const DRT::ELEMENTS::So_weg6& old) :
 DRT::Element(old),
 data_(old.data_),
 surfaces_(old.surfaces_),
@@ -56,9 +56,9 @@ lineptrs_(old.lineptrs_)
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::Elements::So_weg6::Clone() const
+DRT::Element* DRT::ELEMENTS::So_weg6::Clone() const
 {
-  DRT::Elements::So_weg6* newelement = new DRT::Elements::So_weg6(*this);
+  DRT::ELEMENTS::So_weg6* newelement = new DRT::ELEMENTS::So_weg6(*this);
   return newelement;
 }
 
@@ -66,7 +66,7 @@ DRT::Element* DRT::Elements::So_weg6::Clone() const
  |                                                             (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::Elements::So_weg6::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::So_weg6::Shape() const
 {
   return wedge6;
 }
@@ -75,7 +75,7 @@ DRT::Element::DiscretizationType DRT::Elements::So_weg6::Shape() const
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_weg6::Pack(vector<char>& data) const
+void DRT::ELEMENTS::So_weg6::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -106,7 +106,7 @@ void DRT::Elements::So_weg6::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_weg6::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::So_weg6::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -138,7 +138,7 @@ void DRT::Elements::So_weg6::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                              maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::So_weg6::~So_weg6()
+DRT::ELEMENTS::So_weg6::~So_weg6()
 {
   return;
 }
@@ -147,7 +147,7 @@ DRT::Elements::So_weg6::~So_weg6()
 /*----------------------------------------------------------------------*
  |  print this element (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_weg6::Print(ostream& os) const
+void DRT::ELEMENTS::So_weg6::Print(ostream& os) const
 {
   os << "So_weg6 ";
   Element::Print(os);
@@ -159,16 +159,16 @@ void DRT::Elements::So_weg6::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  allocate and return So_weg6Register (public)                maf 04/07|
  *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::Elements::So_weg6::ElementRegister() const
+RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::So_weg6::ElementRegister() const
 {
-  return rcp(new DRT::Elements::Sow6Register(Type()));
+  return rcp(new DRT::ELEMENTS::Sow6Register(Type()));
 }
 
 
 /*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)                  maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::Elements::So_weg6::Volumes()
+DRT::Element** DRT::ELEMENTS::So_weg6::Volumes()
 {
   volume_.resize(1);
   return 0;
@@ -178,7 +178,7 @@ DRT::Element** DRT::Elements::So_weg6::Volumes()
  |  get vector of surfaces (public)                             maf 04/07|
  |  surface normals always point outward                                 |
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::Elements::So_weg6::Surfaces()
+DRT::Element** DRT::ELEMENTS::So_weg6::Surfaces()
 {
   const int nsurf = NumSurface();
   surfaces_.resize(nsurf);
@@ -194,7 +194,7 @@ DRT::Element** DRT::Elements::So_weg6::Surfaces()
           nodeids[qinode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[surfid][qinode]];
           nodes[qinode] = Nodes()[eleNodeNumbering_wedge15_quadsurfaces[surfid][qinode]];
         }
-        surfaces_[qisurf] = rcp(new DRT::Elements::Sow6Surface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
+        surfaces_[qisurf] = rcp(new DRT::ELEMENTS::Sow6Surface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
         surfaceptrs_[qisurf] = surfaces_[qisurf].get();
   };
   // then the tri's...
@@ -208,7 +208,7 @@ DRT::Element** DRT::Elements::So_weg6::Surfaces()
         nodeids[tinode] = NodeIds()[eleNodeNumbering_wedge15_trisurfaces[surfid][tinode]];
         nodes[tinode] = Nodes()[eleNodeNumbering_wedge15_trisurfaces[surfid][tinode]];
       }
-      surfaces_[surfid] = rcp(new DRT::Elements::Sow6Surface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
+      surfaces_[surfid] = rcp(new DRT::ELEMENTS::Sow6Surface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
       surfaceptrs_[surfid] = surfaces_[surfid].get();
   };
   return (DRT::Element**)(&(surfaceptrs_[0]));
@@ -217,7 +217,7 @@ DRT::Element** DRT::Elements::So_weg6::Surfaces()
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::Elements::So_weg6::Lines()
+DRT::Element** DRT::ELEMENTS::So_weg6::Lines()
 {
   dserror("So_weg6 lines not yet implemented");
   const int nline = NumLine();
@@ -235,7 +235,7 @@ DRT::Element** DRT::Elements::So_weg6::Lines()
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Sow6Register::Sow6Register(DRT::Element::ElementType etype) :
+DRT::ELEMENTS::Sow6Register::Sow6Register(DRT::Element::ElementType etype) :
 ElementRegister(etype)
 {
   return;
@@ -244,8 +244,8 @@ ElementRegister(etype)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                         maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Sow6Register::Sow6Register(
-                               const DRT::Elements::Sow6Register& old) :
+DRT::ELEMENTS::Sow6Register::Sow6Register(
+                               const DRT::ELEMENTS::Sow6Register& old) :
 ElementRegister(old)
 {
   return;
@@ -255,16 +255,16 @@ ElementRegister(old)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Elements::Sow6Register* DRT::Elements::Sow6Register::Clone() const
+DRT::ELEMENTS::Sow6Register* DRT::ELEMENTS::Sow6Register::Clone() const
 {
-  return new DRT::Elements::Sow6Register(*this);
+  return new DRT::ELEMENTS::Sow6Register(*this);
 }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Sow6Register::Pack(vector<char>& data) const
+void DRT::ELEMENTS::Sow6Register::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -284,7 +284,7 @@ void DRT::Elements::Sow6Register::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Sow6Register::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Sow6Register::Unpack(const vector<char>& data)
 {
   int position = 0;
   // extract type
@@ -305,7 +305,7 @@ void DRT::Elements::Sow6Register::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                              maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Sow6Register::~Sow6Register()
+DRT::ELEMENTS::Sow6Register::~Sow6Register()
 {
   return;
 }
@@ -313,7 +313,7 @@ DRT::Elements::Sow6Register::~Sow6Register()
 /*----------------------------------------------------------------------*
  |  print (public)                                             maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Sow6Register::Print(ostream& os) const
+void DRT::ELEMENTS::Sow6Register::Print(ostream& os) const
 {
   os << "Sow6Register ";
   ElementRegister::Print(os);

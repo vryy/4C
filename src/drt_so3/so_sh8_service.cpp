@@ -34,7 +34,7 @@ using namespace LINALG; // our linear algebra
 /*----------------------------------------------------------------------*
  |  find shell-thickness direction via Jacobian                maf 07/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::So_sh8::ThicknessDirection DRT::Elements::So_sh8::sosh8_findthickdir() 
+DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_findthickdir() 
 {
   // update element geometry
   Epetra_SerialDenseMatrix xrefe(NUMNOD_SOH8,NUMDIM_SOH8); // material coord. of element
@@ -120,7 +120,7 @@ DRT::Elements::So_sh8::ThicknessDirection DRT::Elements::So_sh8::sosh8_findthick
 }
 
 
-void DRT::Elements::So_sh8::sosh8_setcylinderfiberdirection(const Epetra_SerialDenseMatrix xrefe)
+void DRT::ELEMENTS::So_sh8::sosh8_setcylinderfiberdirection(const Epetra_SerialDenseMatrix xrefe)
 {
 //  // calculate hex8 midpoint
 //  Epetra_SerialDenseVector midpoint(3);
@@ -157,7 +157,7 @@ void DRT::Elements::So_sh8::sosh8_setcylinderfiberdirection(const Epetra_SerialD
   
 }
 
-void DRT::Elements::So_sh8::sosh8_gmshplotlabeledelement(const int LabelIds[NUMNOD_SOH8])
+void DRT::ELEMENTS::So_sh8::sosh8_gmshplotlabeledelement(const int LabelIds[NUMNOD_SOH8])
 {
   stringstream filename;
   filename << "solidelement" << this->Id() << ".gmsh";
@@ -196,7 +196,7 @@ void DRT::Elements::So_sh8::sosh8_gmshplotlabeledelement(const int LabelIds[NUMN
   return;
 }
 
-void DRT::Elements::Sosh8Register::sosh8_gmshplotdis(const DRT::Discretization& dis)
+void DRT::ELEMENTS::Sosh8Register::sosh8_gmshplotdis(const DRT::Discretization& dis)
 {
   ofstream f_system("solidelements.gmsh");
   stringstream gmshfilecontent;
@@ -205,7 +205,7 @@ void DRT::Elements::Sosh8Register::sosh8_gmshplotdis(const DRT::Discretization& 
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->Type() != DRT::Element::element_sosh8) continue;
-    DRT::Elements::So_sh8* actele = dynamic_cast<DRT::Elements::So_sh8*>(dis.lColElement(i));
+    DRT::ELEMENTS::So_sh8* actele = dynamic_cast<DRT::ELEMENTS::So_sh8*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_sh8* failed");
     // plot elements
     gmshfilecontent << IO::GMSH::elementToString(actele->thickdir_, actele) << endl;
@@ -225,7 +225,7 @@ void DRT::Elements::Sosh8Register::sosh8_gmshplotdis(const DRT::Discretization& 
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->Type() != DRT::Element::element_sosh8) continue;
-    DRT::Elements::So_sh8* actele = dynamic_cast<DRT::Elements::So_sh8*>(dis.lColElement(i));
+    DRT::ELEMENTS::So_sh8* actele = dynamic_cast<DRT::ELEMENTS::So_sh8*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_sh8* failed");
     // plot elements
     gmshfilecontent << IO::GMSH::elementToString(actele->LID(), actele) << endl;
@@ -236,7 +236,7 @@ void DRT::Elements::Sosh8Register::sosh8_gmshplotdis(const DRT::Discretization& 
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->Type() != DRT::Element::element_sosh8) continue;
-    DRT::Elements::So_hex8* actele = dynamic_cast<DRT::Elements::So_hex8*>(dis.lColElement(i));
+    DRT::ELEMENTS::So_hex8* actele = dynamic_cast<DRT::ELEMENTS::So_hex8*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex8* failed");
     // plot vector in center of elements
     const vector<double> pv = actele->GetThickvec();
@@ -251,7 +251,7 @@ void DRT::Elements::Sosh8Register::sosh8_gmshplotdis(const DRT::Discretization& 
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->Type() != DRT::Element::element_sosh8) continue;
-    DRT::Elements::So_hex8* actele = dynamic_cast<DRT::Elements::So_hex8*>(dis.lColElement(i));
+    DRT::ELEMENTS::So_hex8* actele = dynamic_cast<DRT::ELEMENTS::So_hex8*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex8* failed");
     // plot vector in center of elements
     vector<double> ec = actele->soh8_ElementCenterRefeCoords();

@@ -27,7 +27,7 @@ extern struct _MATERIAL  *mat;
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            g.bau 03/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::Ale3::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::Ale3::Evaluate(ParameterList& params,
                                   DRT::Discretization&      discretization,
                                   vector<int>&              lm,
                                   Epetra_SerialDenseMatrix& elemat1,
@@ -36,7 +36,7 @@ int DRT::Elements::Ale3::Evaluate(ParameterList& params,
                                   Epetra_SerialDenseVector& elevec2,
                                   Epetra_SerialDenseVector& elevec3)
 {
-  DRT::Elements::Ale3::ActionType act = Ale3::none;
+  DRT::ELEMENTS::Ale3::ActionType act = Ale3::none;
 
   // get the action required
   string action = params.get<string>("action","none");
@@ -77,7 +77,7 @@ int DRT::Elements::Ale3::Evaluate(ParameterList& params,
  |  integration of the volume neumann loads takes place in the element. |
  |  We need it there for the stabilisation terms!                       |
  *----------------------------------------------------------------------*/
-int DRT::Elements::Ale3::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::Ale3::EvaluateNeumann(ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
                                            vector<int>&              lm,
@@ -87,7 +87,7 @@ int DRT::Elements::Ale3::EvaluateNeumann(ParameterList& params,
 }
 
 
-void DRT::Elements::Ale3::static_ke(vector<int>&              lm,
+void DRT::ELEMENTS::Ale3::static_ke(vector<int>&              lm,
                                     Epetra_SerialDenseMatrix* sys_mat,
                                     Epetra_SerialDenseVector* residual,
 				    RefCountPtr<MAT::Material> material,
@@ -508,7 +508,7 @@ void DRT::Elements::Ale3::static_ke(vector<int>&              lm,
 
 
 // get optimal gaussrule for discretization type
-GaussRule3D DRT::Elements::Ale3::getOptimalGaussrule(const DiscretizationType& distype)
+GaussRule3D DRT::ELEMENTS::Ale3::getOptimalGaussrule(const DiscretizationType& distype)
 {
     GaussRule3D rule = intrule3D_undefined;
     switch (distype)
@@ -544,7 +544,7 @@ GaussRule3D DRT::Elements::Ale3::getOptimalGaussrule(const DiscretizationType& d
 //=======================================================================
 //=======================================================================
 
-int DRT::Elements::Ale3Register::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::Ale3Register::Initialize(DRT::Discretization& dis)
 {
   return 0;
 }

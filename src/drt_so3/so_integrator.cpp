@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file so_tet10.H
 
-\class DRT::Elements::So_tet10
+\class DRT::ELEMENTS::So_tet10
 
 \brief A C++ version of the 10-node tet solid element
 
@@ -40,7 +40,7 @@ written by: Alexander Volf
  | makes sure the arrays shapefct_gp and deriv_gp are correctly			|
  | destroyed															|				
  *----------------------------------------------------------------------*/
-DRT::Elements::So_integrator::~So_integrator()
+DRT::ELEMENTS::So_integrator::~So_integrator()
 {
 	delete[] shapefct_gp;
 	delete[] deriv_gp;	
@@ -52,7 +52,7 @@ DRT::Elements::So_integrator::~So_integrator()
 /*----------------------------------------------------------------------*
  |  shape functions and derivatives for So_hex8                vlf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::So_hex8::Integrator_So_hex8::Integrator_So_hex8()
+DRT::ELEMENTS::So_hex8::Integrator_So_hex8::Integrator_So_hex8()
 {
 
     num_gp = NUMGPT_SOH8;
@@ -235,13 +235,13 @@ DRT::Elements::So_hex8::Integrator_So_hex8::Integrator_So_hex8()
 #endif //#if 0 // COMPARE DRT SHAPE FUNCTIONS
 
   return;
-}  // of DRT::Elements::So_hex8::Integrator_So_hex8::Integrator_So_hex8
+}  // of DRT::ELEMENTS::So_hex8::Integrator_So_hex8::Integrator_So_hex8
 
 
 /*----------------------------------------------------------------------*
  |  shape functions and derivatives for SoDisp                 vlf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::SoDisp::Integrator_SoDisp::Integrator_SoDisp(DRT::Elements::SoDisp& this_element)
+DRT::ELEMENTS::SoDisp::Integrator_SoDisp::Integrator_SoDisp(DRT::ELEMENTS::SoDisp& this_element)
 {
 
   const DRT::Element::DiscretizationType distype = this_element.Shape();
@@ -282,7 +282,7 @@ DRT::Elements::SoDisp::Integrator_SoDisp::Integrator_SoDisp(DRT::Elements::SoDis
 #endif
 #ifdef D_SOTET
 
-DRT::Elements::Integrator_tet4_1point::Integrator_tet4_1point(void)
+DRT::ELEMENTS::Integrator_tet4_1point::Integrator_tet4_1point(void)
 {
 	 // forward initialization of necessary attributes
   num_gp = NUMGPT_SOTET4;
@@ -349,7 +349,7 @@ DRT::Elements::Integrator_tet4_1point::Integrator_tet4_1point(void)
  | Aerospace Engineering Sciences - University of Colorado at Boulder   |
  *----------------------------------------------------------------------*/
  
-DRT::Elements::Integrator_tet10_4point::Integrator_tet10_4point(void)
+DRT::ELEMENTS::Integrator_tet10_4point::Integrator_tet10_4point(void)
 {
   // forward initialization of necessary attributes
   num_gp = NUMGPT_SOTET10;
@@ -450,7 +450,7 @@ DRT::Elements::Integrator_tet10_4point::Integrator_tet10_4point(void)
  | "natural coordinates" as described by Carlos A. Felippa in Adv. FEM  |
  | Aerospace Engineering Sciences - University of Colorado at Boulder   |
  *----------------------------------------------------------------------*/  
-DRT::Elements::Integrator_tet10_14point::Integrator_tet10_14point(void)
+DRT::ELEMENTS::Integrator_tet10_14point::Integrator_tet10_14point(void)
 {
   const int number_gp =14;
   // forward initialization of necessary attributes
@@ -585,7 +585,7 @@ DRT::Elements::Integrator_tet10_14point::Integrator_tet10_14point(void)
 /*----------------------------------------------------------------------*
  * Get shape functions for a tet4 face					       vlf 08/07*
  * ---------------------------------------------------------------------*/
-DRT::Elements::Integrator_tri3_1point::Integrator_tri3_1point(void)
+DRT::ELEMENTS::Integrator_tri3_1point::Integrator_tri3_1point(void)
 {
   const int number_gp = 1;
   // forward initialization of necessary attributes
