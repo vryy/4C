@@ -460,27 +460,27 @@ WARN_LOGFILE           =
 # with spaces.
 
 INPUT                  = index.doc \
-                         ./ \
-                         ../drt_xfem \
-                         ../drt_fluid \
-                         ../drt_s8 \
-                         ../drt_w1 \
-                         ../drt_f2 \
-                         ../drt_f3 \
-                         ../drt_so3 \
-                         ../io \
-                         ../drt_fsi \
-                         ../drt_mfsi \
-                         ../drt_ale2 \
-                         ../drt_ale3 \
-                         ../drt_mat \
-                         ../drt_stru_multi \
-                         ../post_drt_common \ 
-                         ../post_ensight \
-                         ../post_monitor \
-                         ../post_gid \
-                         ../drt_structure \
-                         ../drt_contact
+                         ../src/drt_lib \
+                         ../src/drt_xfem \
+                         ../src/drt_fluid \
+                         ../src/drt_s8 \
+                         ../src/drt_w1 \
+                         ../src/drt_f2 \
+                         ../src/drt_f3 \
+                         ../src/drt_so3 \
+                         ../src/io \
+                         ../src/drt_fsi \
+                         ../src/drt_mfsi \
+                         ../src/drt_ale2 \
+                         ../src/drt_ale3 \
+                         ../src/drt_mat \
+                         ../src/drt_stru_multi \
+                         ../src/post_drt_common \ 
+                         ../src/post_ensight \
+                         ../src/post_monitor \
+                         ../src/post_gid \
+                         ../src/drt_structure \
+                         ../src/drt_contact
 
 # If the value of the INPUT tag contains directories, you can use the 
 # FILE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp 
