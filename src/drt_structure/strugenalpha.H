@@ -380,7 +380,7 @@ protected:
   double                        ref_disnorm_;
   double                        ref_fnorm_;
 
-  RefCountPtr<DRT::VolConstrManager>   volConstrMan_;
+  RefCountPtr<VolConstrManager>   volConstrMan_;
 
   RefCountPtr<DRT::SurfStressManager>   surf_stress_man_;
 

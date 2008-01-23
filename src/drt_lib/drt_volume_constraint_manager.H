@@ -33,8 +33,7 @@ using namespace std;
 using namespace Teuchos;
 
 
-namespace DRT
-{
+
 class VolConstrManager
 {
 public:
@@ -202,7 +201,7 @@ private:
 	// don't want = operator, cctor and destructor
 	
 	VolConstrManager operator = (const VolConstrManager& old);
-	VolConstrManager(const DRT::VolConstrManager& old);    
+	VolConstrManager(const VolConstrManager& old);    
 
 	
 	//! name@ Private Attributes
@@ -223,6 +222,5 @@ private:
     
 
 }; //class
-}//namespace DRT
 
 #endif /*VOLUMECONSTRAINTMANAGER_H*/

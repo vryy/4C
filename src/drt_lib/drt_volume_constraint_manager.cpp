@@ -20,7 +20,7 @@ Maintainer: Thomas Kloeppel
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            	tk 11/07|
  *----------------------------------------------------------------------*/
-DRT::VolConstrManager::VolConstrManager(DRT::Discretization& discr,
+VolConstrManager::VolConstrManager(DRT::Discretization& discr,
 		RCP<Epetra_Vector> disp):
 actdisc_(discr)
 {
@@ -51,7 +51,7 @@ actdisc_(discr)
 |Change Stiffnessmatrix and internal force vector						|
 *-----------------------------------------------------------------------*/
 
-void DRT::VolConstrManager::StiffnessAndInternalForces(
+void VolConstrManager::StiffnessAndInternalForces(
 		const double time, 
 		RCP<Epetra_Vector> disp,
 		RefCountPtr<Epetra_Vector> fint,
@@ -94,7 +94,7 @@ void DRT::VolConstrManager::StiffnessAndInternalForces(
 	return;
 }
 
-void DRT::VolConstrManager::ComputeVolumeError(double time,RCP<Epetra_Vector> disp)
+void VolConstrManager::ComputeVolumeError(double time,RCP<Epetra_Vector> disp)
 {
 	ParameterList p;
 	p.set("total time",time);
@@ -109,7 +109,7 @@ void DRT::VolConstrManager::ComputeVolumeError(double time,RCP<Epetra_Vector> di
     return;
 }
 		
-void DRT::VolConstrManager::UpdateLagrIncr(double factor, Epetra_SerialDenseVector vect)
+void VolConstrManager::UpdateLagrIncr(double factor, Epetra_SerialDenseVector vect)
 {
 	for (int i=0;i < numConstrID_; i++)
 	{
@@ -118,7 +118,7 @@ void DRT::VolConstrManager::UpdateLagrIncr(double factor, Epetra_SerialDenseVect
 	return;
 }
 
-void DRT::VolConstrManager::UpdateLagrMult(double factor)
+void VolConstrManager::UpdateLagrMult(double factor)
 {
 	for (int i=0;i < numConstrID_; i++)
 	{
@@ -127,7 +127,7 @@ void DRT::VolConstrManager::UpdateLagrMult(double factor)
 	return;	
 }
 
-void DRT::VolConstrManager::UpdateLagrMult()
+void VolConstrManager::UpdateLagrMult()
 {
 	for (int i=0;i < numConstrID_; i++)
 	{
@@ -141,7 +141,7 @@ void DRT::VolConstrManager::UpdateLagrMult()
  |small subroutine to synchronize processors after evaluating the       |
  |constraint volume                                              		|
  *----------------------------------------------------------------------*/
-void DRT::VolConstrManager::SynchronizeVolConstraint(ParameterList& params,
+void VolConstrManager::SynchronizeVolConstraint(ParameterList& params,
 								RCP<Epetra_SerialDenseVector>& vect)
 {
 	actdisc_.Comm().MaxAll(&(params.get("MaxID",0)),&maxConstrID_,1);
@@ -165,7 +165,7 @@ void DRT::VolConstrManager::SynchronizeVolConstraint(ParameterList& params,
  |subroutine to setup separate dofrowmaps for any boundary condition ID |
  |and to initialize lagrange multipliers								| 
  *----------------------------------------------------------------------*/
-void DRT::VolConstrManager::SetupVolDofrowmaps()
+void VolConstrManager::SetupVolDofrowmaps()
 {  
 	// Allocate integer vectors which will hold the dof number of volume constraint dof
     map<int, vector<int> > dofdata;

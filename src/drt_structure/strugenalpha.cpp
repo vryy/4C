@@ -180,7 +180,7 @@ maxentriesperrow_(81)
       discret_.GetCondition("VolumeConstraint_3D",volconstrcond);
       if (volconstrcond.size())
       {
-    	  volConstrMan_=rcp(new DRT::VolConstrManager(discret_, dis_));
+    	  volConstrMan_=rcp(new VolConstrManager(discret_, dis_));
       }
 
       // Check for surface stress conditions due to interfacial phenomena
