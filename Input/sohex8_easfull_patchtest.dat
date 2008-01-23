@@ -4,7 +4,7 @@
 //             http://www.lnm.mw.tum.de
 //             089 - 289-15240
 //
-// necessary defines: CCADISCRET D_SOH8 BINIO
+// necessary defines: CCADISCRET UMFPACK D_SOH8 BINIO
 //
 ==================================================================
                         General Data File CCARAT

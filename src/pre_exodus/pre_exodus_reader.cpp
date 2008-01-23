@@ -222,7 +222,23 @@ void Mesh::WriteMesh(string newexofilename)
   error = ex_get_qa (exoid_, qa_record);
   error = ex_put_qa (exoid, num_qa_rec, qa_record);
   
+  // Write coord names based on original exofile
+  char *coord_names[3];
+  for (int i=0; i<num_dim_; i++) coord_names[i] = (char *) calloc ((MAX_STR_LENGTH+1), sizeof(char));
+  error = ex_get_coord_names (exoid_, coord_names);
+  error = ex_put_coord_names (exoid, coord_names);
   
+  // Write nodal coordinates
+  float x[num_nodes_];
+  float y[num_nodes_];
+  float z[num_nodes_];
+  for (int i = 0; i < num_nodes_; ++i) {
+    RCP<PreNode> actnode = GetNode(i);
+    x[i] = float(actnode->X()[0]);
+    y[i] = actnode->X()[1];
+    z[i] = actnode->X()[2];
+  }
+  error = ex_put_coord (exoid, x, y, z);
   
   
   // close file
