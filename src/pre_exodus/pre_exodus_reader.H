@@ -169,8 +169,14 @@ public:
   //! GetNumEle
   int GetNumEle() const {return num_el_in_blk_;};
   
+  //! GetNumAttr
+  int GetNumAttr() const {return num_attr_;};
+  
   //! GetEntityId()
   int GetEntityId() const {return entityID_;};
+
+  //! GetEntityType()
+  EntityType GetEntityType() const {return entitytype_;};
 
   //! Get Element Connectivity
   inline const int* Conn() const {if (elem_conn_.size()) return &elem_conn_[0];
@@ -179,6 +185,8 @@ public:
   void Print(ostream& os) const;
   
 private:
+  //! entity Type
+  EntityType entitytype_;
   //! entity ID
   int entityID_;
   //! element type

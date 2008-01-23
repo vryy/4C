@@ -137,10 +137,11 @@ Mesh::Mesh(string exofilename)
     }
   }
 
-//  // close exodus II file
-//  error = ex_close(exoid_);
-//  if (error < 0)
-//	  dserror("error while closing exodus II file");
+  /* moved to destructor
+  // close exodus II file
+  error = ex_close(exoid_);
+  if (error < 0)
+    dserror("error while closing exodus II file"); */
 
   return;
 }
@@ -234,11 +235,46 @@ void Mesh::WriteMesh(string newexofilename)
   float z[num_nodes_];
   for (int i = 0; i < num_nodes_; ++i) {
     RCP<PreNode> actnode = GetNode(i);
-    x[i] = float(actnode->X()[0]);
+    x[i] = actnode->X()[0];
     y[i] = actnode->X()[1];
     z[i] = actnode->X()[2];
   }
   error = ex_put_coord (exoid, x, y, z);
+  
+  // Write mesh entities
+  for (int i = 0; i < num_entities_; ++i) {
+    RCP<Entity> actEntity = GetEntity(i);
+    switch (actEntity->GetEntityType()){
+    case Entity::elem_blk:{
+      cout << "Block " << endl;
+      actEntity->Print(cout);
+      error = ex_put_elem_block(exoid,
+                                i+1,
+                                actEntity->GetElementType().c_str(),
+                                actEntity->GetNumEle(),
+                                actEntity->GetNumNodpElem(),
+                                actEntity->GetNumAttr());
+      if (error!=0){cout << error << endl; dserror("error writing element block");}
+      
+      error = ex_put_elem_conn (exoid, i+1, actEntity->Conn());
+      if (error!=0) dserror("error writing element conn");
+
+      break;
+    }
+    case Entity::node_set:{
+      cout << "NS" << endl;
+      break;
+    }
+    case Entity::side_set:{
+      cout << "SS" << endl;
+      break;
+    }
+    default: dserror("unknown entity type");
+    }
+    
+    
+
+  }
   
   
   // close file
@@ -262,6 +298,7 @@ Entity::Entity(int exoid, int entityID, int typeID, EntityType entitytype)
   switch (entitytype){
   case elem_blk:
   {
+    entitytype_ = Entity::elem_blk;
     entity_type_ = "ElementBlock";
     char mychar[MAX_STR_LENGTH+1];
     error = ex_get_elem_block (exoid, typeID, mychar, &num_el_in_blk_, &num_nod_per_elem_, &num_attr_);
@@ -285,12 +322,14 @@ Entity::Entity(int exoid, int entityID, int typeID, EntityType entitytype)
     error = ex_get_elem_conn(exoid,typeID,connect);
     if (error != 0) dserror("exo error returned");
     for (int i = 0; i < num_nodes_; ++i) {
-      elem_conn_[i] = connect[i]-1;
+      //!TODO: Sort start id from nodes: 0 or 1
+      elem_conn_[i] = connect[i];
     }
     break;
   }
   case node_set:
   {
+    entitytype_ = Entity::node_set;
     entity_type_ = "NodeSet";
     int num_nodes_in_set=0, num_df_in_set=0;
     error = ex_get_node_set_param (exoid, typeID, &num_nodes_in_set,&num_df_in_set);
@@ -313,6 +352,7 @@ Entity::Entity(int exoid, int entityID, int typeID, EntityType entitytype)
   }
   case side_set:
   {
+    entitytype_ = Entity::side_set;
     entity_type_ = "SideSet";
     // get SideSet name
     char mychar[MAX_STR_LENGTH+1];

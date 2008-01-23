@@ -50,7 +50,7 @@ Mesh(exofilename)
       const int* conn = actEntity->Conn();
       for (int i = 0; i < sizeofconnect; ++i) {
         cout << conn[i] << " , ";
-        RCP<PreNode> actnode = GetNode(conn[i]);
+        RCP<PreNode> actnode = GetNode(conn[i]-1);
         actnode->Print(cout);
         
       }
