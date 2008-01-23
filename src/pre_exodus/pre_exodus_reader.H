@@ -160,6 +160,9 @@ public:
   //! Get element type
   string GetElementType() const {return elem_type_;};
   
+  //! Get element type
+  string GetEntityName() const {return entity_name_;};
+
   //! Get num_nodes_
   int GetNumNodes() const {return num_nodes_;};
   
@@ -179,7 +182,7 @@ public:
   EntityType GetEntityType() const {return entitytype_;};
 
   //! Get Element Connectivity
-  inline const int* Conn() const {if (elem_conn_.size()) return &elem_conn_[0];
+  inline const int* Cont() const {if (entity_cont_.size()) return &entity_cont_[0];
                                      else                return NULL;     }
   //! Print entity
   void Print(ostream& os) const;
@@ -205,8 +208,8 @@ private:
   string entity_type_;
   //! property name (so far provided from ICEM for NodeSets
   string entity_prop_name_;
-  //! element connectivity (only for element blocks)
-  vector<int> elem_conn_;
+  //! entity content: element connectivity for element blocks or nodes for node sets
+  vector<int> entity_cont_;
 
 };
 

@@ -53,12 +53,6 @@ Mesh::Mesh(string exofilename)
   // read database parameters
   error = ex_get_init (exoid_, title_, &num_dim_, &num_nodes_,&num_elem_, &num_elem_blk_, &num_node_sets_, &num_side_sets_);
 
-  // num_entities_ are all ElementBlocks, NodeSets, and SideSets together
-  num_entities_ = num_elem_blk_ + num_node_sets_ + num_side_sets_;
-
-  // allocate sufficient memory for the entities
-  myEntities_.reserve(num_entities_);
-  
   // get nodal coordinates
   float x[num_nodes_];
   float y[num_nodes_];
@@ -76,6 +70,12 @@ Mesh::Mesh(string exofilename)
     myNodes_[i] = rcp(new PreNode(i,coords));
   }
 
+  // num_entities_ are all ElementBlocks, NodeSets, and SideSets together
+  num_entities_ = num_elem_blk_ + num_node_sets_ + num_side_sets_;
+
+  // allocate sufficient memory for the entities
+  myEntities_.reserve(num_entities_);
+  
   // entitycounter counts all ElementBlocks, NodeSets, and SideSets together
   int entitycounter = 0;
   
@@ -242,30 +242,46 @@ void Mesh::WriteMesh(string newexofilename)
   error = ex_put_coord (exoid, x, y, z);
   
   // Write mesh entities
+  int eb_counter = 0;
+  int ns_counter = 0;
+  int ss_counter = 0;
   for (int i = 0; i < num_entities_; ++i) {
     RCP<Entity> actEntity = GetEntity(i);
     switch (actEntity->GetEntityType()){
     case Entity::elem_blk:{
-      cout << "Block " << endl;
-      actEntity->Print(cout);
+      eb_counter += 1;
       error = ex_put_elem_block(exoid,
-                                i+1,
+                                eb_counter,
                                 actEntity->GetElementType().c_str(),
                                 actEntity->GetNumEle(),
                                 actEntity->GetNumNodpElem(),
                                 actEntity->GetNumAttr());
-      if (error!=0){cout << error << endl; dserror("error writing element block");}
+      if (error!=0) dserror("error writing element block");
       
-      error = ex_put_elem_conn (exoid, i+1, actEntity->Conn());
+      error = ex_put_elem_conn (exoid, eb_counter, actEntity->Cont());
       if (error!=0) dserror("error writing element conn");
+      
+      // write block name
+      string bname = actEntity->GetEntityName();
+      const char* blockname = bname.c_str();
+      error = ex_put_name (exoid, EX_ELEM_BLOCK, eb_counter, blockname);
 
       break;
     }
     case Entity::node_set:{
-      cout << "NS" << endl;
+//      ns_counter += 1;
+//      //actEntity->Print(cout);
+//      cout << "NS" << endl;
+//      error = ex_put_node_set_param (exoid,
+//                                     ns_counter,
+//                                     actEntity->GetNumNodes(),
+//                                     0);
+//      if (error!=0) dserror("error writing node set");
+//      error = ex_put_node_set (exoid, ns_counter, actEntity->Cont());
       break;
     }
     case Entity::side_set:{
+      ss_counter += 1;
       cout << "SS" << endl;
       break;
     }
@@ -317,13 +333,14 @@ Entity::Entity(int exoid, int entityID, int typeID, EntityType entitytype)
     // property name (not yet supported for ElementBlocks)
     entity_prop_name_ = "None";
     
+    // get element connectivity
     int connect[num_nodes_];
-    elem_conn_.resize(num_nodes_);
+    entity_cont_.resize(num_nodes_);
     error = ex_get_elem_conn(exoid,typeID,connect);
     if (error != 0) dserror("exo error returned");
     for (int i = 0; i < num_nodes_; ++i) {
       //!TODO: Sort start id from nodes: 0 or 1
-      elem_conn_[i] = connect[i];
+      entity_cont_[i] = connect[i];
     }
     break;
   }
@@ -342,12 +359,22 @@ Entity::Entity(int exoid, int entityID, int typeID, EntityType entitytype)
     string nodesetname(mychar, int(MAX_STR_LENGTH));
     entity_name_ = nodesetname;
 
+    // get nodes in node set
+    int *node_set_node_list;
+    entity_cont_.resize(0);
+//    entity_cont_.resize(num_nodes_);
+//    error = ex_get_node_set (exoid, typeID, node_set_node_list);
+//    if (error != 0) dserror("error reading node set");
+//    for (int i = 0; i < num_nodes_; ++i) {
+//      //!TODO: Sort start id from nodes: 0 or 1
+//      entity_cont_[i] = node_set_node_list[i];
+//    }
+
     // set other variables to default NodeSet
     elem_type_ = "No Element Type";
     num_nod_per_elem_ = 0;
     num_el_in_blk_ = 0;
     entity_prop_name_ = "None";
-    elem_conn_.resize(0);
     break;
   }
   case side_set:
@@ -364,7 +391,7 @@ Entity::Entity(int exoid, int entityID, int typeID, EntityType entitytype)
     // set other variables to default
     elem_type_ = "Side Sets not yet supported";
     entity_prop_name_ = "None";
-    elem_conn_.resize(0);
+    entity_cont_.resize(0);
     break;
   }
   default: cout << "EntityType not valid" << endl;
