@@ -1180,6 +1180,38 @@ Epetra_Map* LINALG::SplitMap(const Epetra_Map& Amap,
   return Aunknown;
 }
 
+/*----------------------------------------------------------------------*
+ | merge two given maps to one map                            popp 01/08|
+ *----------------------------------------------------------------------*/
+RCP<Epetra_Map> LINALG::MergeMap(const Epetra_Map& map1,
+                                 const Epetra_Map& map2)
+{
+	if ((!map1.UniqueGIDs()) || (!map2.UniqueGIDs()))
+		dserror("LINALG::MergeMap: One or both input maps are not unique");
+	if (map1.SameAs(map2))
+		return rcp(new Epetra_Map(map1));
+	
+	vector<int> mygids(map1.NumMyElements()+map2.NumMyElements());
+	int count = map1.NumMyElements();
+	
+	// get GIDs of input map1
+	for (int i=0;i<count;++i)
+		mygids[i] = map1.GID(i);
+	
+	// add GIDs of input map2 (only new ones)
+	for (int i=0;i<map2.NumMyElements();++i)
+		if (!map1.MyGID(map2.GID(i)))
+		{
+			mygids[count]=map2.GID(i);
+			++count;
+		}
+	mygids.resize(count);
+	
+	// sort merged map
+	Sort(&mygids[0],(int)mygids.size(),NULL,NULL);
+	
+	return rcp(new Epetra_Map(-1,(int)mygids.size(),&mygids[0],0,map1.Comm()));
+}
 
 /*----------------------------------------------------------------------*
  | split a vector into 2 pieces with given submaps                 06/06|
@@ -1216,6 +1248,226 @@ bool LINALG::SplitVector(const Epetra_Vector& x,
   }
 
   return true;
+}
+
+/*----------------------------------------------------------------------*
+ | Sort given input data lists                                popp 01/08|
+ *----------------------------------------------------------------------*/
+void LINALG::Sort(int list[], int N, int list2[], double list3[])
+{
+  // local variables
+
+  int    l, r, RR, K, j, i, flag;
+  int    RR2;
+  double RR3;
+
+  //************************ execution begins ***************************/
+  if (N <= 1) return;
+
+  l   = N / 2 + 1;
+  r   = N - 1;
+  l   = l - 1;
+  RR  = list[l - 1];
+  K   = list[l - 1];
+
+  if ((list2 != NULL) && (list3 != NULL)) {
+    RR2 = list2[l - 1];
+    RR3 = list3[l - 1];
+    while (r != 0) {
+      j = l;
+      flag = 1;
+
+      while (flag == 1) {
+        i = j;
+        j = j + j;
+
+        if (j > r + 1)
+          flag = 0;
+        else {
+          if (j < r + 1)
+            if (list[j] > list[j - 1]) j = j + 1;
+
+          if (list[j - 1] > K) {
+            list[ i - 1] = list[ j - 1];
+            list2[i - 1] = list2[j - 1];
+            list3[i - 1] = list3[j - 1];
+          }
+          else {
+            flag = 0;
+          }
+        }
+      }
+
+      list[ i - 1] = RR;
+      list2[i - 1] = RR2;
+      list3[i - 1] = RR3;
+
+      if (l == 1) {
+        RR  = list [r];
+        RR2 = list2[r];
+        RR3 = list3[r];
+
+        K = list[r];
+        list[r ] = list[0];
+        list2[r] = list2[0];
+        list3[r] = list3[0];
+        r = r - 1;
+      }
+      else {
+        l   = l - 1;
+        RR  = list[ l - 1];
+        RR2 = list2[l - 1];
+        RR3 = list3[l - 1];
+        K   = list[l - 1];
+      }
+    }
+
+    list[ 0] = RR;
+    list2[0] = RR2;
+    list3[0] = RR3;
+  }
+  else if (list2 != NULL) {
+    RR2 = list2[l - 1];
+    while (r != 0) {
+      j = l;
+      flag = 1;
+
+      while (flag == 1) {
+        i = j;
+        j = j + j;
+
+        if (j > r + 1)
+          flag = 0;
+        else {
+          if (j < r + 1)
+            if (list[j] > list[j - 1]) j = j + 1;
+
+          if (list[j - 1] > K) {
+            list[ i - 1] = list[ j - 1];
+            list2[i - 1] = list2[j - 1];
+          }
+          else {
+            flag = 0;
+          }
+        }
+      }
+
+      list[ i - 1] = RR;
+      list2[i - 1] = RR2;
+
+      if (l == 1) {
+        RR  = list [r];
+        RR2 = list2[r];
+
+        K = list[r];
+        list[r ] = list[0];
+        list2[r] = list2[0];
+        r = r - 1;
+      }
+      else {
+        l   = l - 1;
+        RR  = list[ l - 1];
+        RR2 = list2[l - 1];
+        K   = list[l - 1];
+      }
+    }
+
+    list[ 0] = RR;
+    list2[0] = RR2;
+  }
+  else if (list3 != NULL) {
+    RR3 = list3[l - 1];
+    while (r != 0) {
+      j = l;
+      flag = 1;
+
+      while (flag == 1) {
+        i = j;
+        j = j + j;
+
+        if (j > r + 1)
+          flag = 0;
+        else {
+          if (j < r + 1)
+            if (list[j] > list[j - 1]) j = j + 1;
+
+          if (list[j - 1] > K) {
+            list[ i - 1] = list[ j - 1];
+            list3[i - 1] = list3[j - 1];
+          }
+          else {
+            flag = 0;
+          }
+        }
+      }
+
+      list[ i - 1] = RR;
+      list3[i - 1] = RR3;
+
+      if (l == 1) {
+        RR  = list [r];
+        RR3 = list3[r];
+
+        K = list[r];
+        list[r ] = list[0];
+        list3[r] = list3[0];
+        r = r - 1;
+      }
+      else {
+        l   = l - 1;
+        RR  = list[ l - 1];
+        RR3 = list3[l - 1];
+        K   = list[l - 1];
+      }
+    }
+
+    list[ 0] = RR;
+    list3[0] = RR3;
+
+  }
+  else {
+    while (r != 0) {
+      j = l;
+      flag = 1;
+
+      while (flag == 1) {
+        i = j;
+        j = j + j;
+
+        if (j > r + 1)
+          flag = 0;
+        else {
+          if (j < r + 1)
+            if (list[j] > list[j - 1]) j = j + 1;
+
+          if (list[j - 1] > K) {
+            list[ i - 1] = list[ j - 1];
+          }
+          else {
+            flag = 0;
+          }
+        }
+      }
+
+      list[ i - 1] = RR;
+
+      if (l == 1) {
+        RR  = list [r];
+
+        K = list[r];
+        list[r ] = list[0];
+        r = r - 1;
+      }
+      else {
+        l   = l - 1;
+        RR  = list[ l - 1];
+        K   = list[l - 1];
+      }
+    }
+
+    list[ 0] = RR;
+  }
+
 }
 
 #endif  // #ifdef CCADISCRET

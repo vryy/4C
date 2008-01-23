@@ -355,6 +355,19 @@ namespace LINALG
                        const Epetra_Map& Agiven);
 
   /*!
+  \brief merges two given Epetra_Maps
+
+  merges input map1 and input map2, both of which have to be unique, but may
+  be overlapping, to a new map and returns RCP to it
+
+  \param map1      : one map to be merged
+  \param map2      : the other map to be merged
+  \return the (sorted) merged map of input maps map1 and map2
+  */
+  RCP<Epetra_Map> MergeMap(const Epetra_Map& map1,
+                           const Epetra_Map& map2);
+    
+  /*!
   \brief split a vector into 2 non-overlapping pieces
   */
   bool SplitVector(const Epetra_Vector& x,
@@ -441,6 +454,25 @@ namespace LINALG
     return;
   }
 
+  /*!
+  \brief Sort data lists
+
+  This routine was taken from Knuth: Sorting and Searching. It puts the input
+  data list into a heap and then sorts it.
+
+  \param list (in/out)  : on input, values to be sorted. On output,
+                          sorted values (i.e., list[i] <= list[i+1]).
+  \param N (in)         : length of vector 'list'.
+  \param list2 (in/out) : If on input, list2 = NULL: it is unchanged on output.
+                          If on input, list2 is a list associated with 'list':
+                          on output, if list[k] on input is now element 'j',
+                          list2[j] is now list2[k].
+  \param list3 (in/out) : If on input, list3 = NULL: it is unchanged on output.
+                          If on input, list3 is a list associated with 'list':
+                          on output, if list[k] on input is now element 'j',
+                          list3[j] is now list3[k].
+  */
+  void Sort(int list[], int N, int list2[], double list3[]);
 
 } // namespace LINALG
 
