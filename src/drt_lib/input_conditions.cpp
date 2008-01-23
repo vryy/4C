@@ -158,10 +158,10 @@ static void input_surf_volconstr(multimap<int,RefCountPtr<DRT::Condition> >& vcb
 void DRT::Problem::ReadConditions()
 {
   /*---------------------------------------------- input of time curves */
-  DRT::Utils::TimeCurveManager::Instance().ReadInput();
+  DRT::UTILS::TimeCurveManager::Instance().ReadInput();
   //cout << DRT::TimeCurveManager::Instance();
   /*---------------------------------------- input of spatial functions */
-  DRT::Utils::FunctionManager::Instance().ReadInput();
+  DRT::UTILS::FunctionManager::Instance().ReadInput();
   //------------------------------- read number of design objects we have
   // this currently serves to determine how many node sets we might have
   int ndnode=0;

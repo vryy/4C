@@ -57,26 +57,26 @@ double MK()
 
 //! get one point gauss rule to calculate tau at element center
 template<DRT::Element::DiscretizationType DISTYPE>
-DRT::Utils::GaussRule3D getIntegrationRuleForStabilization()
+DRT::UTILS::GaussRule3D getIntegrationRuleForStabilization()
 {
-    DRT::Utils::GaussRule3D integrationrule_stabili = DRT::Utils::intrule3D_undefined;
+    DRT::UTILS::GaussRule3D integrationrule_stabili = DRT::UTILS::intrule3D_undefined;
     switch (DISTYPE)
     {
     case DRT::Element::hex8:
     case DRT::Element::hex20:
     case DRT::Element::hex27:
-      integrationrule_stabili = DRT::Utils::intrule_hex_1point;
+      integrationrule_stabili = DRT::UTILS::intrule_hex_1point;
       break;
     case DRT::Element::tet4:
     case DRT::Element::tet10:
-      integrationrule_stabili = DRT::Utils::intrule_tet_1point;
+      integrationrule_stabili = DRT::UTILS::intrule_tet_1point;
       break;
     case DRT::Element::wedge6:
     case DRT::Element::wedge15:
-      integrationrule_stabili = DRT::Utils::intrule_wedge_1point;
+      integrationrule_stabili = DRT::UTILS::intrule_wedge_1point;
       break;
     case DRT::Element::pyramid5:
-      integrationrule_stabili = DRT::Utils::intrule_pyramid_1point;
+      integrationrule_stabili = DRT::UTILS::intrule_pyramid_1point;
       break;
     default:
       dserror("invalid discretization type for fluid3");
@@ -101,10 +101,10 @@ double HK(
   blitz::fourthIndex l;   // Placeholder for the fourth index
 
   // use one point gauss rule to calculate tau at element center
-  const DRT::Utils::GaussRule3D integrationrule_stabili = getIntegrationRuleForStabilization<DISTYPE>();
+  const DRT::UTILS::GaussRule3D integrationrule_stabili = getIntegrationRuleForStabilization<DISTYPE>();
 
   // gaussian points
-  const DRT::Utils::IntegrationPoints3D intpoints(integrationrule_stabili);
+  const DRT::UTILS::IntegrationPoints3D intpoints(integrationrule_stabili);
 
   // shape functions and derivs at element center
   const double e1    = intpoints.qxg[0][0];
@@ -112,9 +112,9 @@ double HK(
   const double e3    = intpoints.qxg[0][2];
   const double wquad = intpoints.qwgt[0];
 
-  const int iel_ = DRT::Utils::getNumberOfElementNodes<DISTYPE>();
+  const int iel_ = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
   BlitzMat deriv_(3,iel_,blitz::ColumnMajorArray<2>());
-  DRT::Utils::shape_function_3D_deriv1(deriv_,e1,e2,e3,DISTYPE);
+  DRT::UTILS::shape_function_3D_deriv1(deriv_,e1,e2,e3,DISTYPE);
 
   // get Jacobian matrix and determinant
   const blitz::Array<double,2> xjm_(blitz::sum(deriv_(i,k)*xyze_(j,k),k));
@@ -153,10 +153,10 @@ BlitzVec CalTauStationary(
   blitz::fourthIndex l;   // Placeholder for the fourth index
 
   // use one point gauss rule to calculate tau at element center
-  const DRT::Utils::GaussRule3D integrationrule_stabili = getIntegrationRuleForStabilization<DISTYPE>();
+  const DRT::UTILS::GaussRule3D integrationrule_stabili = getIntegrationRuleForStabilization<DISTYPE>();
 
   // gaussian points
-  const DRT::Utils::IntegrationPoints3D intpoints(integrationrule_stabili);
+  const DRT::UTILS::IntegrationPoints3D intpoints(integrationrule_stabili);
 
   // shape functions and derivs at element center
   const double e1    = intpoints.qxg[0][0];
@@ -164,11 +164,11 @@ BlitzVec CalTauStationary(
   const double e3    = intpoints.qxg[0][2];
   const double wquad = intpoints.qwgt[0];
 
-  const int iel_ = DRT::Utils::getNumberOfElementNodes<DISTYPE>();
+  const int iel_ = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
   BlitzVec funct_(iel_);
   BlitzMat deriv_(3,iel_,blitz::ColumnMajorArray<2>());
-  DRT::Utils::shape_function_3D(funct_,e1,e2,e3,DISTYPE);
-  DRT::Utils::shape_function_3D_deriv1(deriv_,e1,e2,e3,DISTYPE);
+  DRT::UTILS::shape_function_3D(funct_,e1,e2,e3,DISTYPE);
+  DRT::UTILS::shape_function_3D_deriv1(deriv_,e1,e2,e3,DISTYPE);
 
   // get element type constant for tau
   const double mk = MK<DISTYPE>();

@@ -134,7 +134,7 @@ void distribute_drt_grids()
       Epetra_Vector weights(nodegraph->RowMap(),false);
       weights.PutScalar(1.0);
       RefCountPtr<Epetra_CrsGraph> newnodegraph =
-                          DRT::Utils::PartGraphUsingMetis(*nodegraph,weights);
+                          DRT::UTILS::PartGraphUsingMetis(*nodegraph,weights);
       nodegraph = null;
 
       // the rowmap will become the new distribution of nodes

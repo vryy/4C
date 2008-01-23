@@ -28,7 +28,7 @@ Maintainer: Peter Gamnitzer
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/newtonianfluid.H"
 
-using namespace DRT::Utils;
+using namespace DRT::UTILS;
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            gammi 04/07|
@@ -84,9 +84,9 @@ int DRT::Elements::Fluid2::Evaluate(ParameterList& params,
 
       // extract local values from the global vectors
       vector<double> my_vel_pre_np(lm.size());
-      DRT::Utils::ExtractMyValues(*vel_pre_np,my_vel_pre_np,lm);
+      DRT::UTILS::ExtractMyValues(*vel_pre_np,my_vel_pre_np,lm);
       vector<double> myhist(lm.size());
-      DRT::Utils::ExtractMyValues(*hist,myhist,lm);
+      DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
 
       RefCountPtr<const Epetra_Vector> dispnp;
       vector<double> mydispnp;
@@ -98,12 +98,12 @@ int DRT::Elements::Fluid2::Evaluate(ParameterList& params,
         dispnp = discretization.GetState("dispnp");
         if (dispnp==null) dserror("Cannot get state vectors 'dispnp'");
         mydispnp.resize(lm.size());
-        DRT::Utils::ExtractMyValues(*dispnp,mydispnp,lm);
+        DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
 
         gridv = discretization.GetState("gridv");
         if (gridv==null) dserror("Cannot get state vectors 'gridv'");
         mygridv.resize(lm.size());
-        DRT::Utils::ExtractMyValues(*gridv,mygridv,lm);
+        DRT::UTILS::ExtractMyValues(*gridv,mygridv,lm);
       }
 
       // split "my_vel_pre_np" into velocity part "myvelnp" and pressure part "myprenp"
@@ -306,8 +306,8 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
   const double e1    = intpoints_tau.qxg[0][0];
   const double e2    = intpoints_tau.qxg[0][1];
   // shape functions and their derivatives
-  DRT::Utils::shape_function_2D(funct,e1,e2,distype);
-  DRT::Utils::shape_function_2D_deriv1(deriv,e1,e2,distype);
+  DRT::UTILS::shape_function_2D(funct,e1,e2,distype);
+  DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
 
 /*------------------------------- get element type constant for tau ---*/
   switch(iel)
@@ -766,14 +766,14 @@ Epetra_SerialDenseMatrix DRT::Elements::Fluid2::f2_getbodyforce(
       // time factor for the intermediate step
       if(time >= 0.0)
       {
-        curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
+        curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
       }
       else
       {
 	// do not compute an "alternative" curvefac here since a negative time value
 	// indicates an error.
          dserror("Negative time value in body force calculation: time = %f",time);
-	// curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(0.0);
+	// curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(0.0);
       }
     }
     else // we do not have a timecurve --- timefactors are constant equal 1

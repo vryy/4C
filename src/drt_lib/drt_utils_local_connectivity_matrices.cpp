@@ -33,7 +33,7 @@
  |  returns the number of nodes                              a.ger 11/07|
  |  for each discretization type                                        |
  *----------------------------------------------------------------------*/    
-int DRT::Utils::getNumberOfElementNodes( 
+int DRT::UTILS::getNumberOfElementNodes( 
     const DRT::Element::DiscretizationType&     distype)
 {
     
@@ -65,7 +65,7 @@ int DRT::Utils::getNumberOfElementNodes(
  |  returns the number of corner nodes                       u.may 08/07|
  |  for each discretization type                                        |
  *----------------------------------------------------------------------*/    
-int DRT::Utils::getNumberOfElementCornerNodes( 
+int DRT::UTILS::getNumberOfElementCornerNodes( 
     const DRT::Element::DiscretizationType&     distype)
 {
     
@@ -101,7 +101,7 @@ int DRT::Utils::getNumberOfElementCornerNodes(
  |  returns the number of lines                              a.ger 08/07|
  |  for each discretization type                                        |
  *----------------------------------------------------------------------*/    
-int DRT::Utils::getNumberOfElementLines( 
+int DRT::UTILS::getNumberOfElementLines( 
     const DRT::Element::DiscretizationType&     distype)
 {
     int numLines = 0;
@@ -133,7 +133,7 @@ int DRT::Utils::getNumberOfElementLines(
  |  returns the number of lines                              a.ger 08/07|
  |  for each discretization type                                        |
  *----------------------------------------------------------------------*/    
-int DRT::Utils::getNumberOfElementSurfaces( 
+int DRT::UTILS::getNumberOfElementSurfaces( 
     const DRT::Element::DiscretizationType&     distype)
 {
     int numSurf = 0;
@@ -158,7 +158,7 @@ int DRT::Utils::getNumberOfElementSurfaces(
  |  Fills a vector< vector<int> > with all nodes for         u.may 08/07|
  |  every surface for each discretization type                          |
  *----------------------------------------------------------------------*/    
-vector< vector<int> > DRT::Utils::getEleNodeNumberingSurfaces(   
+vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(   
     const DRT::Element::DiscretizationType&     distype)
 {   
     int nSurf;
@@ -253,7 +253,7 @@ vector< vector<int> > DRT::Utils::getEleNodeNumberingSurfaces(
  |  Fills a vector< vector<int> > with all nodes for         u.may 08/07|
  |  every line for each discretization type                             |
  *----------------------------------------------------------------------*/      
-vector< vector<int> > DRT::Utils::getEleNodeNumberingLines(  
+vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(  
     const DRT::Element::DiscretizationType&     distype)
 {   
     int nLine;
@@ -405,7 +405,7 @@ vector< vector<int> > DRT::Utils::getEleNodeNumberingLines(
  |  Fills a vector< vector<int> > with all surfaces for      u.may 08/07|
  |  every line for each discretization type                             |
  *----------------------------------------------------------------------*/   
-vector< vector<int> > DRT::Utils::getEleNodeNumbering_lines_surfaces(    
+vector< vector<int> > DRT::UTILS::getEleNodeNumbering_lines_surfaces(    
     const DRT::Element::DiscretizationType&     distype)
 {   
     int nLine;
@@ -451,7 +451,7 @@ vector< vector<int> > DRT::Utils::getEleNodeNumbering_lines_surfaces(
  |  Fills a vector< vector<int> > with all surfaces for      u.may 08/07|
  |  every node for each discretization type                             |
  *----------------------------------------------------------------------*/   
-vector< vector<int> > DRT::Utils::getEleNodeNumbering_nodes_surfaces(    
+vector< vector<int> > DRT::UTILS::getEleNodeNumbering_nodes_surfaces(    
     const DRT::Element::DiscretizationType&     distype)
 {
     int nNode;
@@ -496,7 +496,7 @@ vector< vector<int> > DRT::Utils::getEleNodeNumbering_nodes_surfaces(
  |  Fills a vector< vector<int> > with all nodes for         u.may 08/07|
  |  every surface for each discretization type                          |
  *----------------------------------------------------------------------*/   
-vector< vector<double> > DRT::Utils::getEleNodeNumbering_nodes_reference(   
+vector< vector<double> > DRT::UTILS::getEleNodeNumbering_nodes_reference(   
     const DRT::Element::DiscretizationType&     distype)
 {
 
@@ -584,7 +584,7 @@ vector< vector<double> > DRT::Utils::getEleNodeNumbering_nodes_reference(
  |  Fills an array with surface ID s a point is lying on     u.may 08/07|
  |  for each discretization type                                        |
  *----------------------------------------------------------------------*/   
-int DRT::Utils::getSurfaces(    
+int DRT::UTILS::getSurfaces(    
     const Epetra_SerialDenseVector&             rst,
     int*                                        surfaces,
     const DRT::Element::DiscretizationType&     distype)
@@ -622,7 +622,7 @@ int DRT::Utils::getSurfaces(
  |  system of the cutter element                                        |
  |  according to the node ID for each discretization type               |
  *----------------------------------------------------------------------*/   
-void DRT::Utils::getNodeCoordinates(    int                                         nodeId,
+void DRT::UTILS::getNodeCoordinates(    int                                         nodeId,
                                         double*                                     coord,
                                         const DRT::Element::DiscretizationType&     distype)
 {
@@ -697,7 +697,7 @@ void DRT::Utils::getNodeCoordinates(    int                                     
  |  system of the cutter element                                        |
  |  according to the line ID for each discretization type               |
  *----------------------------------------------------------------------*/   
-void DRT::Utils::getLineCoordinates(    
+void DRT::UTILS::getLineCoordinates(    
     int                                         lineId,
     double                                      lineCoord,
     double*                                     coord,
@@ -779,7 +779,7 @@ void DRT::Utils::getLineCoordinates(
  |  element node index lying between two specified corner               |
  |  node indices for each discretizationtype                            |
  *----------------------------------------------------------------------*/  
-int DRT::Utils::getHigherOrderIndex(
+int DRT::UTILS::getHigherOrderIndex(
     const int                                   index1, 
     const int                                   index2,
     const DRT::Element::DiscretizationType&     distype )
@@ -828,7 +828,7 @@ int DRT::Utils::getHigherOrderIndex(
 /*----------------------------------------------------------------------*
  |  returns the dimension of the element parameter space     u.may 10/07|
  *----------------------------------------------------------------------*/  
-int DRT::Utils::getDimension(
+int DRT::UTILS::getDimension(
     DRT::Element*   element)
 {
     int dim = 0;
@@ -862,7 +862,7 @@ int DRT::Utils::getDimension(
 /*----------------------------------------------------------------------*
  |  returns the dimension of the element-shape                 bos 01/08|
  *----------------------------------------------------------------------*/  
-int DRT::Utils::getDimension(DRT::Element::DiscretizationType distype)
+int DRT::UTILS::getDimension(DRT::Element::DiscretizationType distype)
 {
     int dim = 0;
     
@@ -896,7 +896,7 @@ int DRT::Utils::getDimension(DRT::Element::DiscretizationType distype)
  |  Returns the geometric center of the element in local coordinates    |     
  |                                                           a.ger 12/07|
  *----------------------------------------------------------------------*/
-std::vector<double> DRT::Utils::getLocalCenterPosition(
+std::vector<double> DRT::UTILS::getLocalCenterPosition(
         const DRT::Element::DiscretizationType   distype     ///< shape of the element
         )
 {

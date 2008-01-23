@@ -25,7 +25,7 @@ extern struct _FILES  allfiles;
 #include "ale3.H"
 #include "../drt_lib/drt_utils.H"
 
-using namespace DRT::Utils;
+using namespace DRT::UTILS;
 
 
 bool DRT::Elements::Ale3::ReadElement()

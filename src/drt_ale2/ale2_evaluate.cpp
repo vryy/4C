@@ -15,7 +15,7 @@
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 
-using namespace DRT::Utils;
+using namespace DRT::UTILS;
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -56,7 +56,7 @@ int DRT::Elements::Ale2::Evaluate(ParameterList& params,
   {
     //RefCountPtr<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
     //vector<double> my_dispnp(lm.size());
-    //DRT::Utils::ExtractMyValues(*dispnp,my_dispnp,lm);
+    //DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
     static_ke(lm,&elemat1,&elevec1,mat,params);
 
@@ -131,8 +131,8 @@ void DRT::Elements::Ale2::static_ke(vector<int>&              lm,
       const double e2 = intpoints.qxg[iquad][1];
 
       // shape functions and their derivatives
-      DRT::Utils::shape_function_2D(funct,e1,e2,distype);
-      DRT::Utils::shape_function_2D_deriv1(deriv,e1,e2,distype);
+      DRT::UTILS::shape_function_2D(funct,e1,e2,distype);
+      DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
 
       // compute jacobian matrix
 

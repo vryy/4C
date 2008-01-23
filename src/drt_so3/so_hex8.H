@@ -442,7 +442,7 @@ protected:
   \brief Create a integrator for the SoHex8 element
   
   this constructor provides Object Oriented So_integrator functionality by adapting the strictly procedural 
-  DRT::Utils::IntegrationPoints3D struct.
+  DRT::UTILS::IntegrationPoints3D struct.
   */     
   class Integrator_So_hex8 : public DRT::Elements::So_integrator
   {

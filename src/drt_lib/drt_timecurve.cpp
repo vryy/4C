@@ -62,12 +62,12 @@ extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*/
 // the static instance
 /*----------------------------------------------------------------------*/
-DRT::Utils::TimeCurveManager DRT::Utils::TimeCurveManager::instance_;
+DRT::UTILS::TimeCurveManager DRT::UTILS::TimeCurveManager::instance_;
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Utils::TimeCurveManager::ReadInput()
+void DRT::UTILS::TimeCurveManager::ReadInput()
 {
   curves_.clear();
 
@@ -233,7 +233,7 @@ void DRT::Utils::TimeCurveManager::ReadInput()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::Utils::PolygonalTimeSlice::PolygonalTimeSlice(double begin,
+DRT::UTILS::PolygonalTimeSlice::PolygonalTimeSlice(double begin,
                                             double end,
                                             double vbegin,
                                             double vend)
@@ -246,7 +246,7 @@ DRT::Utils::PolygonalTimeSlice::PolygonalTimeSlice(double begin,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::Utils::PolygonalTimeSlice::f(double t)
+double DRT::UTILS::PolygonalTimeSlice::f(double t)
 {
   dsassert(contains(t), "wrong time slice called");
   return value_begin_ + (value_end_-value_begin_)/(end()-begin()) * (t-begin());
@@ -255,7 +255,7 @@ double DRT::Utils::PolygonalTimeSlice::f(double t)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::Utils::ExplicitTimeSlice::ExplicitTimeSlice(int numex, double c1, double c2)
+DRT::UTILS::ExplicitTimeSlice::ExplicitTimeSlice(int numex, double c1, double c2)
   : TimeSlice(0.,1e100),
     numex_(numex),
     c1_(c1),
@@ -266,7 +266,7 @@ DRT::Utils::ExplicitTimeSlice::ExplicitTimeSlice(int numex, double c1, double c2
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::Utils::ExplicitTimeSlice::f(double T)
+double DRT::UTILS::ExplicitTimeSlice::f(double T)
 {
   double fac = 1.0;
 
@@ -365,7 +365,7 @@ double DRT::Utils::ExplicitTimeSlice::f(double T)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::Utils::LungTimeSlice::LungTimeSlice(double frequ, double ppeep, double phase)
+DRT::UTILS::LungTimeSlice::LungTimeSlice(double frequ, double ppeep, double phase)
   : TimeSlice(0.,1e100),
     frequ_(frequ),
     ppeep_(ppeep),
@@ -378,7 +378,7 @@ DRT::Utils::LungTimeSlice::LungTimeSlice(double frequ, double ppeep, double phas
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::Utils::LungTimeSlice::f(double t)
+double DRT::UTILS::LungTimeSlice::f(double t)
 {
   if (t <= phase_)
   {
@@ -392,7 +392,7 @@ double DRT::Utils::LungTimeSlice::f(double t)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::Utils::BloodTimeSlice::BloodTimeSlice(double period, double flowrate, int points,  std::vector<double>& ArrayLength )
+DRT::UTILS::BloodTimeSlice::BloodTimeSlice(double period, double flowrate, int points,  std::vector<double>& ArrayLength )
   : TimeSlice(0.,1e100),
     period_(period),
     flowrate_(flowrate),
@@ -404,7 +404,7 @@ DRT::Utils::BloodTimeSlice::BloodTimeSlice(double period, double flowrate, int p
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::Utils::BloodTimeSlice::f(double t)
+double DRT::UTILS::BloodTimeSlice::f(double t)
 {
 
 
@@ -451,7 +451,7 @@ fac = EvenCoefficient[0]/2;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::Utils::ExprTimeSlice::ExprTimeSlice(double begin, double end, char* buf)
+DRT::UTILS::ExprTimeSlice::ExprTimeSlice(double begin, double end, char* buf)
   : TimeSlice(begin,end),
     expr_(pss_parse(buf))
 {
@@ -460,7 +460,7 @@ DRT::Utils::ExprTimeSlice::ExprTimeSlice(double begin, double end, char* buf)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::Utils::ExprTimeSlice::~ExprTimeSlice()
+DRT::UTILS::ExprTimeSlice::~ExprTimeSlice()
 {
   pss_parse_cleanup(expr_);
 }
@@ -468,7 +468,7 @@ DRT::Utils::ExprTimeSlice::~ExprTimeSlice()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::Utils::ExprTimeSlice::f(double t)
+double DRT::UTILS::ExprTimeSlice::f(double t)
 {
   dsassert(contains(t), "wrong time slice called");
   return pss_evaluate_curve(expr_,t);
@@ -477,7 +477,7 @@ double DRT::Utils::ExprTimeSlice::f(double t)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::Utils::TimeCurve::f(double t)
+double DRT::UTILS::TimeCurve::f(double t)
 {
   if (slices_.size()==0)
     dserror("No time slices defined. Fix input.");
@@ -506,7 +506,7 @@ double DRT::Utils::TimeCurve::f(double t)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Utils::TimeCurve::AddSlice(Teuchos::RefCountPtr<TimeSlice> slice)
+void DRT::UTILS::TimeCurve::AddSlice(Teuchos::RefCountPtr<TimeSlice> slice)
 {
   // Do we need more error checking here?
   slices_.push_back(slice);
@@ -515,7 +515,7 @@ void DRT::Utils::TimeCurve::AddSlice(Teuchos::RefCountPtr<TimeSlice> slice)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Utils::PolygonalTimeSlice::Print(std::ostream& out) const
+void DRT::UTILS::PolygonalTimeSlice::Print(std::ostream& out) const
 {
   out << "    PolygonalTimeSlice(begin=" << begin()
       << ", end=" << end()
@@ -527,7 +527,7 @@ void DRT::Utils::PolygonalTimeSlice::Print(std::ostream& out) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Utils::ExplicitTimeSlice::Print(std::ostream& out) const
+void DRT::UTILS::ExplicitTimeSlice::Print(std::ostream& out) const
 {
   out << "    ExplicitTimeSlice(numex=" << numex_
       << ", c1=" << c1_
@@ -538,7 +538,7 @@ void DRT::Utils::ExplicitTimeSlice::Print(std::ostream& out) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Utils::LungTimeSlice::Print(std::ostream& out) const
+void DRT::UTILS::LungTimeSlice::Print(std::ostream& out) const
 {
   out << "    LungTimeSlice(frequ=" << frequ_
       << ", ppeep=" << ppeep_
@@ -549,7 +549,7 @@ void DRT::Utils::LungTimeSlice::Print(std::ostream& out) const
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-void DRT::Utils::BloodTimeSlice::Print(std::ostream& out) const
+void DRT::UTILS::BloodTimeSlice::Print(std::ostream& out) const
 {
   out << "   BloodTimeSlice(period=" << period_
       << ",  flowrate=" << flowrate_
@@ -559,7 +559,7 @@ void DRT::Utils::BloodTimeSlice::Print(std::ostream& out) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Utils::ExprTimeSlice::Print(std::ostream& out) const
+void DRT::UTILS::ExprTimeSlice::Print(std::ostream& out) const
 {
   out << "    ExprTimeSlice(begin=" << begin()
       << ", end=" << end()
@@ -569,7 +569,7 @@ void DRT::Utils::ExprTimeSlice::Print(std::ostream& out) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::ostream& DRT::Utils::operator<<(std::ostream& out, const DRT::Utils::TimeSlice& slice)
+std::ostream& DRT::UTILS::operator<<(std::ostream& out, const DRT::UTILS::TimeSlice& slice)
 {
   slice.Print(out);
   return out;
@@ -578,7 +578,7 @@ std::ostream& DRT::Utils::operator<<(std::ostream& out, const DRT::Utils::TimeSl
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::ostream& DRT::Utils::operator<<(std::ostream& out, const DRT::Utils::TimeCurve& curve)
+std::ostream& DRT::UTILS::operator<<(std::ostream& out, const DRT::UTILS::TimeCurve& curve)
 {
   out << "  Time Curve:\n";
   for (unsigned i=0; i<curve.slices_.size(); ++i)
@@ -591,7 +591,7 @@ std::ostream& DRT::Utils::operator<<(std::ostream& out, const DRT::Utils::TimeCu
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::ostream& DRT::Utils::operator<<(std::ostream& out, const DRT::Utils::TimeCurveManager& manager)
+std::ostream& DRT::UTILS::operator<<(std::ostream& out, const DRT::UTILS::TimeCurveManager& manager)
 {
   out << "Time Curve Manager:\n";
   for (unsigned i=0; i<manager.curves_.size(); ++i)

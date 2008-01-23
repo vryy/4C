@@ -31,7 +31,7 @@ extern "C"
 }
 
 namespace DRT {
-namespace Utils {
+namespace UTILS {
 
 class OctreeElement;
 

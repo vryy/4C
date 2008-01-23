@@ -320,7 +320,7 @@ public:
 
   bool IsAle() const { return is_ale_; }
   
-  DRT::Utils::GaussRule3D GetGaussrule() const { return gaussrule_; }
+  DRT::UTILS::GaussRule3D GetGaussrule() const { return gaussrule_; }
 
   template <DRT::Element::DiscretizationType  DISTYPE>
   bool isHigherOrderElement() const
@@ -403,7 +403,7 @@ private:
   static map<string,StabilisationAction>          stabstrtoact_;
 
   //! Gaussrule
-  DRT::Utils::GaussRule3D                         gaussrule_;
+  DRT::UTILS::GaussRule3D                         gaussrule_;
   //! flag for euler/ale net algorithm
   bool                                            is_ale_;
   //! container containing all kind of fluid3 thisandthat
@@ -689,7 +689,7 @@ void f3_calc_smag_const_LijMij_and_MijMij(
    \brief get optimal gaussrule for given discretization type
    \return enum with optimal gausrule for this element
    */
-  DRT::Utils::GaussRule3D getOptimalGaussrule(
+  DRT::UTILS::GaussRule3D getOptimalGaussrule(
     const DiscretizationType&  distype  ///< switch gausrule based on this discretization type
     );
 

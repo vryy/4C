@@ -31,7 +31,7 @@ extern "C"
 
 
 namespace DRT {
-namespace Utils {
+namespace UTILS {
 
 
   /// base of all slices of a time curve with start and end time

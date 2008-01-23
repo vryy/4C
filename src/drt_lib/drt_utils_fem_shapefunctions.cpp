@@ -32,7 +32,7 @@
 //
 // shape functions
 //
-void DRT::Utils::shape_function_3D(
+void DRT::UTILS::shape_function_3D(
         blitz::Array<double, 1>& funct,
         const double& r,
         const double& s,
@@ -253,7 +253,7 @@ void DRT::Utils::shape_function_3D(
 //
 // first natural derivative of shape functions
 //
-void DRT::Utils::shape_function_3D_deriv1(
+void DRT::UTILS::shape_function_3D_deriv1(
         blitz::Array<double, 2>& deriv1,
         const double& r,
         const double& s,
@@ -716,7 +716,7 @@ void DRT::Utils::shape_function_3D_deriv1(
 //
 // Second natural derivative of shape functions
 //
-void DRT::Utils::shape_function_3D_deriv2(
+void DRT::UTILS::shape_function_3D_deriv2(
         blitz::Array<double, 2>& deriv2,
         const double& r,
         const double& s,
@@ -1358,7 +1358,7 @@ void DRT::Utils::shape_function_3D_deriv2(
 //
 // shape functions 2D
 //
-void DRT::Utils::shape_function_2D(
+void DRT::UTILS::shape_function_2D(
         blitz::Array<double, 1>& funct,
         const double& r,
         const double& s,
@@ -1491,7 +1491,7 @@ void DRT::Utils::shape_function_2D(
 //
 // shape functions and natural derivatives
 //
-void DRT::Utils::shape_function_2D_deriv1(
+void DRT::UTILS::shape_function_2D_deriv1(
         blitz::Array<double, 2>& deriv1,
         const double& r,
         const double& s,
@@ -1692,7 +1692,7 @@ void DRT::Utils::shape_function_2D_deriv1(
 ///
 /// The second index indicates the node number
 /// the first index indicates the derivative direction
-void DRT::Utils::shape_function_2D_deriv2(
+void DRT::UTILS::shape_function_2D_deriv2(
         blitz::Array<double, 2>& deriv2,
         const double& r,
         const double& s,
@@ -1934,7 +1934,7 @@ void DRT::Utils::shape_function_2D_deriv2(
 //
 // shape functions and natural deriv1atives
 //
-void DRT::Utils::shape_function_1D(
+void DRT::UTILS::shape_function_1D(
         blitz::Array<double, 1>& funct,
         const double& r,
         const DRT::Element::DiscretizationType& distype)
@@ -1970,7 +1970,7 @@ void DRT::Utils::shape_function_1D(
 //
 // shape functions and natural deriv1atives
 //
-void DRT::Utils::shape_function_1D_deriv1(
+void DRT::UTILS::shape_function_1D_deriv1(
         blitz::Array<double, 2>& deriv1,
         const double& r,
         const DRT::Element::DiscretizationType& distype)
@@ -2007,7 +2007,7 @@ void DRT::Utils::shape_function_1D_deriv1(
 //
 // shape functions and natural derivatives
 //
-void DRT::Utils::shape_function_1D_deriv2(
+void DRT::UTILS::shape_function_1D_deriv2(
         blitz::Array<double, 2>& deriv2,
         const double& r,
         const DRT::Element::DiscretizationType& distype)
@@ -2051,7 +2051,7 @@ void DRT::Utils::shape_function_1D_deriv2(
 //
 // shape functions
 //
-void DRT::Utils::shape_function_3D(
+void DRT::UTILS::shape_function_3D(
         Epetra_SerialDenseVector& funct,
         const double& r,
         const double& s,
@@ -2067,7 +2067,7 @@ void DRT::Utils::shape_function_3D(
 //
 // first natural derivative of shape functions
 //
-void DRT::Utils::shape_function_3D_deriv1(
+void DRT::UTILS::shape_function_3D_deriv1(
         Epetra_SerialDenseMatrix& deriv1,
         const double& r,
         const double& s,
@@ -2084,7 +2084,7 @@ void DRT::Utils::shape_function_3D_deriv1(
 //
 // Second natural derivative of shape functions
 //
-void DRT::Utils::shape_function_3D_deriv2(
+void DRT::UTILS::shape_function_3D_deriv2(
         Epetra_SerialDenseMatrix& deriv2,
         const double& r,
         const double& s,
@@ -2101,7 +2101,7 @@ void DRT::Utils::shape_function_3D_deriv2(
 //
 // shape functions 2D
 //
-void DRT::Utils::shape_function_2D(
+void DRT::UTILS::shape_function_2D(
         Epetra_SerialDenseVector& funct,
         const double& r,
         const double& s,
@@ -2116,7 +2116,7 @@ void DRT::Utils::shape_function_2D(
 //
 // shape functions and natural derivatives
 //
-void DRT::Utils::shape_function_2D_deriv1(
+void DRT::UTILS::shape_function_2D_deriv1(
         Epetra_SerialDenseMatrix& deriv1,
         const double& r,
         const double& s,
@@ -2134,7 +2134,7 @@ void DRT::Utils::shape_function_2D_deriv1(
 ///
 /// The second index indicates the node number
 /// the first index indicates the derivative direction
-void DRT::Utils::shape_function_2D_deriv2(
+void DRT::UTILS::shape_function_2D_deriv2(
         Epetra_SerialDenseMatrix& deriv2,
         const double& r,
         const double& s,
@@ -2150,7 +2150,7 @@ void DRT::Utils::shape_function_2D_deriv2(
 //
 // shape functions and natural deriv1atives
 //
-void DRT::Utils::shape_function_1D(
+void DRT::UTILS::shape_function_1D(
         Epetra_SerialDenseVector& funct,
         const double& r,
         const DRT::Element::DiscretizationType& distype)
@@ -2164,7 +2164,7 @@ void DRT::Utils::shape_function_1D(
 //
 // shape functions and natural deriv1atives
 //
-void DRT::Utils::shape_function_1D_deriv1(
+void DRT::UTILS::shape_function_1D_deriv1(
         Epetra_SerialDenseMatrix& deriv1,
         const double& r,
         const DRT::Element::DiscretizationType& distype)
@@ -2179,7 +2179,7 @@ void DRT::Utils::shape_function_1D_deriv1(
 //
 // shape functions and natural derivatives
 //
-void DRT::Utils::shape_function_1D_deriv2(
+void DRT::UTILS::shape_function_1D_deriv2(
         Epetra_SerialDenseMatrix& deriv2,
         const double& r,
         const DRT::Element::DiscretizationType& distype)

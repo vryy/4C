@@ -29,7 +29,7 @@ DRT::Element(id,element_wall1,owner),
 data_(),
 material_(0),
 thickness_(0.0),
-gaussrule_(DRT::Utils::intrule2D_undefined)
+gaussrule_(DRT::UTILS::intrule2D_undefined)
 {
   lines_.resize(0);
   lineptrs_.resize(0);
@@ -133,7 +133,7 @@ void DRT::Elements::Wall1::Unpack(const vector<char>& data)
   // gaussrule_
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);
-  gaussrule_ = DRT::Utils::GaussRule2D(gausrule_integer); //explicit conversion from integer to enum
+  gaussrule_ = DRT::UTILS::GaussRule2D(gausrule_integer); //explicit conversion from integer to enum
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
@@ -218,8 +218,8 @@ void DRT::Elements::Wall1::CreateLinesTri(const int& nline,
         
         for (int inode=0;inode<nnode;inode++)
         {
-             nodeids[inode] = NodeIds()[DRT::Utils::eleNodeNumbering_tri6_lines[iline][inode]];
-             nodes[inode]   = Nodes()[DRT::Utils::eleNodeNumbering_tri6_lines[iline][inode]];
+             nodeids[inode] = NodeIds()[DRT::UTILS::eleNodeNumbering_tri6_lines[iline][inode]];
+             nodes[inode]   = Nodes()[DRT::UTILS::eleNodeNumbering_tri6_lines[iline][inode]];
         }
         lines_[iline] = rcp(new DRT::Elements::Wall1Line(iline,Owner(),nnode,nodeids,nodes,this,iline));
         lineptrs_[iline] = lines_[iline].get();
@@ -236,8 +236,8 @@ void DRT::Elements::Wall1::CreateLinesQuad(const int& nline,
         
         for (int inode=0;inode<nnode;inode++)
         {
-             nodeids[inode] = NodeIds()[DRT::Utils::eleNodeNumbering_quad9_lines[iline][inode]];
-             nodes[inode]   = Nodes()[DRT::Utils::eleNodeNumbering_quad9_lines[iline][inode]];
+             nodeids[inode] = NodeIds()[DRT::UTILS::eleNodeNumbering_quad9_lines[iline][inode]];
+             nodes[inode]   = Nodes()[DRT::UTILS::eleNodeNumbering_quad9_lines[iline][inode]];
         }
         lines_[iline] = rcp(new DRT::Elements::Wall1Line(iline,Owner(),nnode,nodeids,nodes,this,iline));
         lineptrs_[iline] = lines_[iline].get();

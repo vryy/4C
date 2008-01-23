@@ -34,7 +34,7 @@ Maintainer: Georg Bauer
 #include <blitz/array.h>
 #include <Epetra_SerialDenseSolver.h>
 
-using namespace DRT::Utils;
+using namespace DRT::UTILS;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of material laws                                              |
@@ -347,9 +347,9 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
 
         // extract local values from the global vectors
         vector<double> myvelnp(lm.size());
-        DRT::Utils::ExtractMyValues(*velnp,myvelnp,lm);
+        DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
         vector<double> myhist(lm.size());
-        DRT::Utils::ExtractMyValues(*hist,myhist,lm);
+        DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
 
         RefCountPtr<const Epetra_Vector> dispnp;
         vector<double> mydispnp;
@@ -361,12 +361,12 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
           dispnp = discretization.GetState("dispnp");
           if (dispnp==null) dserror("Cannot get state vectors 'dispnp'");
           mydispnp.resize(lm.size());
-          DRT::Utils::ExtractMyValues(*dispnp,mydispnp,lm);
+          DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
 
           gridv = discretization.GetState("gridv");
           if (gridv==null) dserror("Cannot get state vectors 'gridv'");
           mygridv.resize(lm.size());
-          DRT::Utils::ExtractMyValues(*gridv,mygridv,lm);
+          DRT::UTILS::ExtractMyValues(*gridv,mygridv,lm);
         }
 
         // create blitz objects for element arrays
@@ -488,7 +488,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
 
           // extract local values from the global vectors
           vector<double> my_vel_pre_np(lm.size());
-          DRT::Utils::ExtractMyValues(*vel_pre_np,my_vel_pre_np,lm);
+          DRT::UTILS::ExtractMyValues(*vel_pre_np,my_vel_pre_np,lm);
 
           // split "my_vel_pre_np" into velocity part "myvelnp" and pressure part "myprenp"
           const int numnode = NumNode();
@@ -529,7 +529,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
 
           // extract local values from the global vectors
           vector<double> mysol  (lm.size());
-          DRT::Utils::ExtractMyValues(*velnp,mysol,lm);
+          DRT::UTILS::ExtractMyValues(*velnp,mysol,lm);
 
           // integrate mean values
           f3_calc_means(mysol,params);
@@ -554,7 +554,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
 
         // extract local values from the global vectors
         vector<double> myvelaf(lm.size());
-        DRT::Utils::ExtractMyValues(*velaf,myvelaf,lm);
+        DRT::UTILS::ExtractMyValues(*velaf,myvelaf,lm);
 
         // create blitz objects for element arrays
         const int numnode = NumNode();
@@ -670,13 +670,13 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
 
         // extract local values from the global vectors
         vector<double> myvelnp(lm.size());
-        DRT::Utils::ExtractMyValues(*velnp,myvelnp,lm);
+        DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
 
         vector<double> myvelaf(lm.size());
-        DRT::Utils::ExtractMyValues(*velaf,myvelaf,lm);
+        DRT::UTILS::ExtractMyValues(*velaf,myvelaf,lm);
 
         vector<double> myaccam(lm.size());
-        DRT::Utils::ExtractMyValues(*accam,myaccam,lm);
+        DRT::UTILS::ExtractMyValues(*accam,myaccam,lm);
 
         // create blitz matrix objects
         const int numnode = NumNode();
@@ -995,13 +995,13 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
           
           // extract local values from the global vectors
           vector<double> myvelnp(lm.size());
-          DRT::Utils::ExtractMyValues(*velnp,myvelnp,lm);
+          DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
           
           vector<double> myvelaf(lm.size());
-          DRT::Utils::ExtractMyValues(*velaf,myvelaf,lm);
+          DRT::UTILS::ExtractMyValues(*velaf,myvelaf,lm);
           
           vector<double> myaccam(lm.size());
-          DRT::Utils::ExtractMyValues(*accam,myaccam,lm);
+          DRT::UTILS::ExtractMyValues(*accam,myaccam,lm);
           
           // create blitz matrix objects
           
@@ -1163,7 +1163,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
 
           // extract local values from the global vector
           vector<double> myvelnp(lm.size());
-          DRT::Utils::ExtractMyValues(*velnp,myvelnp,lm);
+          DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
 
           if (is_ale_)
           {
@@ -1907,14 +1907,14 @@ void DRT::Elements::Fluid3::f3_apply_box_filter(
   }
 
   // use one point gauss rule to calculate tau at element center
-  DRT::Utils::GaussRule3D integrationrule_filter=DRT::Utils::intrule_hex_1point;
+  DRT::UTILS::GaussRule3D integrationrule_filter=DRT::UTILS::intrule_hex_1point;
   switch (distype)
   {
       case DRT::Element::hex8:
-        integrationrule_filter = DRT::Utils::intrule_hex_1point;
+        integrationrule_filter = DRT::UTILS::intrule_hex_1point;
         break;
       case DRT::Element::tet4:
-        integrationrule_filter = DRT::Utils::intrule_tet_1point;
+        integrationrule_filter = DRT::UTILS::intrule_tet_1point;
         break;
       case DRT::Element::tet10:
       case DRT::Element::hex20:
@@ -1926,7 +1926,7 @@ void DRT::Elements::Fluid3::f3_apply_box_filter(
   }
 
   // gaussian points
-  const DRT::Utils::IntegrationPoints3D intpoints_onepoint(integrationrule_filter);
+  const DRT::UTILS::IntegrationPoints3D intpoints_onepoint(integrationrule_filter);
   
   // shape functions and derivs at element center
   const double e1    = intpoints_onepoint.qxg[0][0];
@@ -1934,8 +1934,8 @@ void DRT::Elements::Fluid3::f3_apply_box_filter(
   const double e3    = intpoints_onepoint.qxg[0][2];
   const double wquad = intpoints_onepoint.qwgt[0];
   
-  DRT::Utils::shape_function_3D       (funct,e1,e2,e3,distype);
-  DRT::Utils::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
+  DRT::UTILS::shape_function_3D       (funct,e1,e2,e3,distype);
+  DRT::UTILS::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
 
   // get Jacobian matrix and determinant
   xjm = blitz::sum(deriv(i,k)*xyze(j,k),k);
@@ -2138,31 +2138,31 @@ void DRT::Elements::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
   
 
   // use one point gauss rule to calculate tau at element center
-  DRT::Utils::GaussRule3D integrationrule_filter=DRT::Utils::intrule_hex_1point;
+  DRT::UTILS::GaussRule3D integrationrule_filter=DRT::UTILS::intrule_hex_1point;
   switch (distype)
   {
       case DRT::Element::hex8:
       case DRT::Element::hex20:
       case DRT::Element::hex27:
-        integrationrule_filter = DRT::Utils::intrule_hex_1point;
+        integrationrule_filter = DRT::UTILS::intrule_hex_1point;
         break;
       case DRT::Element::tet4:
       case DRT::Element::tet10:
-        integrationrule_filter = DRT::Utils::intrule_tet_1point;
+        integrationrule_filter = DRT::UTILS::intrule_tet_1point;
         break;
       default:
         dserror("invalid discretization type for fluid3");
   }
 
   // gaussian points
-  const DRT::Utils::IntegrationPoints3D intpoints_onepoint(integrationrule_filter);
+  const DRT::UTILS::IntegrationPoints3D intpoints_onepoint(integrationrule_filter);
   const double e1    = intpoints_onepoint.qxg[0][0];
   const double e2    = intpoints_onepoint.qxg[0][1];
   const double e3    = intpoints_onepoint.qxg[0][2];
   
   // shape functions and derivs at element center
-  DRT::Utils::shape_function_3D       (funct,e1,e2,e3,distype);
-  DRT::Utils::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
+  DRT::UTILS::shape_function_3D       (funct,e1,e2,e3,distype);
+  DRT::UTILS::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
   
   // get element type constant for tau
   double mk=0.0;
@@ -2411,7 +2411,7 @@ bool DRT::Elements::Fluid3::checkRewinding()
   const int NSD = 3;
   Epetra_SerialDenseMatrix    deriv(NSD, iel);
   Epetra_SerialDenseMatrix    xyze(NSD,iel);
-  DRT::Utils::shape_function_3D_deriv1(deriv,intpoints.qxg[0][0],intpoints.qxg[0][1],intpoints.qxg[0][2],distype);
+  DRT::UTILS::shape_function_3D_deriv1(deriv,intpoints.qxg[0][0],intpoints.qxg[0][1],intpoints.qxg[0][2],distype);
   // get node coordinates
   DRT::Node** nodes = this->Nodes();
   for (int inode=0; inode<iel; inode++)

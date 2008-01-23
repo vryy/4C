@@ -19,7 +19,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_utils_fem_shapefunctions.H"
 
-using namespace DRT::Utils;
+using namespace DRT::UTILS;
 
 
 /*----------------------------------------------------------------------*

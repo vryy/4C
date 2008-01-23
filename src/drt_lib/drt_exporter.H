@@ -532,7 +532,7 @@ private:
       vector<char> data;
       ParObject::ExtractfromPack(index,recvblock,data);
 
-      DRT::ParObject* o = DRT::Utils::Factory(data);
+      DRT::ParObject* o = DRT::UTILS::Factory(data);
       T* ptr = dynamic_cast<T*>(o);
       if (!ptr) dserror("typename T in template does not implement ParObject (dynamic_cast failed)");
       RefCountPtr<T> refptr = rcp(ptr);
@@ -757,7 +757,7 @@ template<typename T> void DRT::Exporter::Export(
       typename map<int,RefCountPtr<T> >::iterator curr = parobjects.find(gid);
       if (curr != parobjects.end()) continue;
       // create object and unpack
-      DRT::ParObject* object = DRT::Utils::Factory(recvbuff);
+      DRT::ParObject* object = DRT::UTILS::Factory(recvbuff);
       T* ptr = dynamic_cast<T*>(object);
       if (!ptr) dserror("typename T in template does not implement ParObject (dynamic_cast failed)");
       RefCountPtr<T> refptr = rcp(ptr);
@@ -899,7 +899,7 @@ template<typename T> void DRT::Exporter::Export(
       int gid = recvgid[j];
       ParObject::ExtractfromPack(index,recvblock,data);
 
-      DRT::ParObject* o = DRT::Utils::Factory(data);
+      DRT::ParObject* o = DRT::UTILS::Factory(data);
       T* ptr = dynamic_cast<T*>(o);
       if (!ptr) dserror("typename T in template does not implement ParObject (dynamic_cast failed)");
       RefCountPtr<T> refptr = rcp(ptr);

@@ -82,7 +82,7 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const Discretization& dis, const int 
   // do the nodes first
 
   map<int,int> nidx;
-  Utils::AllreduceEMap(nidx, *dis.NodeRowMap());
+  UTILS::AllreduceEMap(nidx, *dis.NodeRowMap());
 
   // build a redundant that holds all the node's numdof
   vector<int> sredundantnodes(dis.NumGlobalNodes());
@@ -256,7 +256,7 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const Discretization& dis, const int 
   // Now do all this fun again for the elements
 
   map<int,int> eidx;
-  Utils::AllreduceEMap(eidx, *dis.ElementRowMap());
+  UTILS::AllreduceEMap(eidx, *dis.ElementRowMap());
 
   vector<int> sredundantelements(dis.NumGlobalElements());
   fill(sredundantelements.begin(), sredundantelements.end(), 0);

@@ -33,7 +33,7 @@ EnsightWriter::EnsightWriter(
     // initialize proc0map_ correctly
     const RCP<DRT::Discretization> dis = field_->discretization();
     const Epetra_Map* noderowmap = dis->NodeRowMap();  
-    proc0map_ = DRT::Utils::AllreduceEMap(*noderowmap,0); 
+    proc0map_ = DRT::UTILS::AllreduceEMap(*noderowmap,0); 
 
     // get the number of elements for each distype (global numbers)
     numElePerDisType_ = GetNumElePerDisType(dis);
@@ -252,7 +252,7 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 
     // put all coordinate information on proc 0
     RefCountPtr<Epetra_Map> proc0map;
-    proc0map = DRT::Utils::AllreduceEMap(*nodemap,0);
+    proc0map = DRT::UTILS::AllreduceEMap(*nodemap,0);
 
     // import my new values (proc0 gets everything, other procs empty)
     Epetra_Import proc0importer(*proc0map,*nodemap);
@@ -971,7 +971,7 @@ void EnsightWriter::WriteNodalResultStep(
     //------------------------------------------------------
 
     RefCountPtr<Epetra_Map> proc0datamap;
-    proc0datamap = DRT::Utils::AllreduceEMap(*epetradatamap,0);
+    proc0datamap = DRT::UTILS::AllreduceEMap(*epetradatamap,0);
 
     // contract result values on proc0 (proc0 gets everything, other procs empty)
     Epetra_Import proc0dataimporter(*proc0datamap,*epetradatamap);
@@ -1104,7 +1104,7 @@ void EnsightWriter::WriteElementResultStep(
     //------------------------------------------------------
 
     RefCountPtr<Epetra_Map> proc0datamap;
-    proc0datamap = DRT::Utils::AllreduceEMap(*epetradatamap,0);
+    proc0datamap = DRT::UTILS::AllreduceEMap(*epetradatamap,0);
 
     // contract result values on proc0 (proc0 gets everything, other procs empty)
     Epetra_Import proc0dataimporter(*proc0datamap,*epetradatamap);

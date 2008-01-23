@@ -138,7 +138,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
   const bool higher_order_ele = ele->isHigherOrderElement(distype);
 
   // gaussian points
-  const DRT::Utils::IntegrationPoints3D intpoints(ele->gaussrule_);
+  const DRT::UTILS::IntegrationPoints3D intpoints(ele->gaussrule_);
 
   // integration loop
   for (int iquad=0; iquad<intpoints.nquad; ++iquad)
@@ -149,8 +149,8 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
     const double e3 = intpoints.qxg[iquad][2];
 
     // shape functions and their derivatives
-    DRT::Utils::shape_function_3D(funct_,e1,e2,e3,distype);
-    DRT::Utils::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
+    DRT::UTILS::shape_function_3D(funct_,e1,e2,e3,distype);
+    DRT::UTILS::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
 
     // get Jacobian matrix and determinant
     // actually compute its transpose....
@@ -200,7 +200,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
     // compute second global derivative
     if (higher_order_ele)
     {
-      DRT::Utils::shape_function_3D_deriv2(deriv2_,e1,e2,e3,distype);
+      DRT::UTILS::shape_function_3D_deriv2(deriv2_,e1,e2,e3,distype);
       gder2(ele);
 
       // calculate 2nd velocity derivatives at integration point
@@ -1771,31 +1771,31 @@ void DRT::Elements::Fluid3Impl::Caltau(
   blitz::fourthIndex l;   // Placeholder for the fourth index
 
   // use one point gauss rule to calculate tau at element center
-  DRT::Utils::GaussRule3D integrationrule_stabili=DRT::Utils::intrule3D_undefined;
+  DRT::UTILS::GaussRule3D integrationrule_stabili=DRT::UTILS::intrule3D_undefined;
   switch (distype)
   {
   case DRT::Element::hex8:
   case DRT::Element::hex20:
   case DRT::Element::hex27:
-    integrationrule_stabili = DRT::Utils::intrule_hex_1point;
+    integrationrule_stabili = DRT::UTILS::intrule_hex_1point;
     break;
   case DRT::Element::tet4:
   case DRT::Element::tet10:
-    integrationrule_stabili = DRT::Utils::intrule_tet_1point;
+    integrationrule_stabili = DRT::UTILS::intrule_tet_1point;
     break;
   case DRT::Element::wedge6:
   case DRT::Element::wedge15:
-    integrationrule_stabili = DRT::Utils::intrule_wedge_1point;
+    integrationrule_stabili = DRT::UTILS::intrule_wedge_1point;
     break;
   case DRT::Element::pyramid5:
-    integrationrule_stabili = DRT::Utils::intrule_pyramid_1point;
+    integrationrule_stabili = DRT::UTILS::intrule_pyramid_1point;
     break;
   default:
     dserror("invalid discretization type for fluid3");
   }
 
   // gaussian points
-  const DRT::Utils::IntegrationPoints3D intpoints(integrationrule_stabili);
+  const DRT::UTILS::IntegrationPoints3D intpoints(integrationrule_stabili);
 
   // shape functions and derivs at element center
   const double e1    = intpoints.qxg[0][0];
@@ -1803,8 +1803,8 @@ void DRT::Elements::Fluid3Impl::Caltau(
   const double e3    = intpoints.qxg[0][2];
   const double wquad = intpoints.qwgt[0];
 
-  DRT::Utils::shape_function_3D(funct_,e1,e2,e3,distype);
-  DRT::Utils::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
+  DRT::UTILS::shape_function_3D(funct_,e1,e2,e3,distype);
+  DRT::UTILS::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
 
   // get element type constant for tau
   double mk=0.0;
@@ -2046,14 +2046,14 @@ void DRT::Elements::Fluid3Impl::BodyForce(Fluid3* ele, const double time)
       // time factor for the intermediate step
       if(time >= 0.0)
       {
-        curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
+        curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
       }
       else
       {
 	// do not compute an "alternative" curvefac here since a negative time value
 	// indicates an error.
         dserror("Negative time value in body force calculation: time = %f",time);
-        //curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(0.0);
+        //curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(0.0);
       }
     }
     else // we do not have a timecurve --- timefactors are constant equal 1

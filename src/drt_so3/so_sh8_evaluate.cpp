@@ -89,9 +89,9 @@ int DRT::Elements::So_sh8::Evaluate(ParameterList& params,
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
-      DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
-      DRT::Utils::ExtractMyValues(*res,myres,lm);
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
       sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL);
     }
     break;
@@ -113,9 +113,9 @@ int DRT::Elements::So_sh8::Evaluate(ParameterList& params,
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
-      DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
-      DRT::Utils::ExtractMyValues(*res,myres,lm);
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
       sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL);
     }
     break;
@@ -126,10 +126,10 @@ int DRT::Elements::So_sh8::Evaluate(ParameterList& params,
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
       vector<double> mydisp(lm.size());
-      DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       Epetra_SerialDenseMatrix elestress(NUMSTR_SOH8,NUMGPT_SOH8);
       vector<double> myres(lm.size());
-      DRT::Utils::ExtractMyValues(*res,myres,lm);
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
       sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,&elestress);
       // average gp stresses to store element (center) stresses
       for (int i = 0; i < NUMSTR_SOH8; ++i) {

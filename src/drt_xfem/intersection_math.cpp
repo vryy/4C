@@ -29,7 +29,7 @@ Maintainer: Ursula Mayer
 #include <math.h>
 
 using namespace XFEM;
-using namespace DRT::Utils;
+using namespace DRT::UTILS;
 
 
 #define                 SIGN(a,b) ((b) >= 0.0 ? fabs(a) : -fabs(a))

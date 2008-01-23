@@ -104,9 +104,9 @@ int DRT::Elements::So_ctet10::Evaluate(ParameterList& params,
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
-      DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
-      DRT::Utils::ExtractMyValues(*res,myres,lm);
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
       so_ctet10_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,actmat);
     }
@@ -129,9 +129,9 @@ int DRT::Elements::So_ctet10::Evaluate(ParameterList& params,
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
-      DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
-      DRT::Utils::ExtractMyValues(*res,myres,lm);
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
       so_ctet10_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,actmat);
     }
@@ -142,7 +142,7 @@ int DRT::Elements::So_ctet10::Evaluate(ParameterList& params,
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
       vector<double> mydisp(lm.size());
-      DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
       Epetra_SerialDenseMatrix stresses(NUMGPT_SOCTET10,NUMSTR_SOCTET10);//*
       so_ctet10_stress(actmat,mydisp,&stresses); //*
@@ -197,7 +197,7 @@ int DRT::Elements::So_ctet10::EvaluateNeumann(ParameterList& params,
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
   if (curvenum>=0 && usetime)
-    curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
+    curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
   // **
   
 /* =========================*

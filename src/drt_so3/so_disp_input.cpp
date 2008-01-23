@@ -81,7 +81,7 @@ bool DRT::Elements::SoDisp::ReadElement()
     // The intention of this element is to help debugging the xfem intersection routines.
     // The element is purely displacement based and has not been tested for correct compution
     // It serves solely as higher order geometry input data to XFEm problems
-    dsassert(allowed_element, "Only quadratic order for DISP (displacement based) element.");
+    //dsassert(allowed_element, "Only quadratic order for DISP (displacement based) element.");
 
     // reduce node numbers by one
     for (int i=0; i<nnode; ++i) nodes[i]--;
@@ -108,13 +108,13 @@ bool DRT::Elements::SoDisp::ReadElement()
         switch (ngp[0])
         {
         case 1:  
-            gaussrule_ = DRT::Utils::intrule_hex_1point; 
+            gaussrule_ = DRT::UTILS::intrule_hex_1point; 
             break; 
         case 2:  
-            gaussrule_ = DRT::Utils::intrule_hex_8point; 
+            gaussrule_ = DRT::UTILS::intrule_hex_8point; 
             break;
         case 3:  
-            gaussrule_ = DRT::Utils::intrule_hex_27point; 
+            gaussrule_ = DRT::UTILS::intrule_hex_27point; 
             break;
         default:
             dserror("Reading of SOLID3 element failed: Gaussrule for hexaeder not supported!\n");
@@ -123,6 +123,7 @@ bool DRT::Elements::SoDisp::ReadElement()
     }
     case tet4: case tet10:
     {
+//        gaussrule_ = DRT::UTILS::intrule_tet_4point;
         frint("GP_TET",&ngp[0],&ierr);
         dsassert(ierr==1, "Reading of SOLID3 element failed: GP_TET\n");
 
@@ -133,21 +134,21 @@ bool DRT::Elements::SoDisp::ReadElement()
         {
         case 1:
             if (strncmp(buffer,"standard",8)==0)
-                gaussrule_ = DRT::Utils::intrule_tet_1point;
+                gaussrule_ = DRT::UTILS::intrule_tet_1point;
             else
                 dserror("Reading of SOLID3 element failed: GP_ALT: gauss-radau not possible!\n");
             break;
         case 4:
             if (strncmp(buffer,"standard",8)==0)
-                gaussrule_ = DRT::Utils::intrule_tet_4point;
+                gaussrule_ = DRT::UTILS::intrule_tet_4point;
             else if (strncmp(buffer,"gaussrad",8)==0)
-                gaussrule_ = DRT::Utils::intrule_tet_4point_alternative;
+                gaussrule_ = DRT::UTILS::intrule_tet_4point_alternative;
             else
                 dserror("Reading of SOLID3 element failed: GP_ALT\n");
             break;
         case 10:
             if (strncmp(buffer,"standard",8)==0)
-                gaussrule_ = DRT::Utils::intrule_tet_5point;
+                gaussrule_ = DRT::UTILS::intrule_tet_5point;
             else
                 dserror("Reading of SOLID3 element failed: GP_ALT: gauss-radau not possible!\n");
             break;
@@ -193,7 +194,7 @@ bool DRT::Elements::SoDisp::ReadElement()
 
     numnod_disp_ = NumNode();      // number of nodes
     numdof_disp_ = NumNode() * NODDOF_DISP;     // total dofs per element
-    const DRT::Utils::IntegrationPoints3D  intpoints = DRT::Utils::getIntegrationPoints3D(gaussrule_);
+    const DRT::UTILS::IntegrationPoints3D  intpoints = DRT::UTILS::getIntegrationPoints3D(gaussrule_);
     numgpt_disp_ = intpoints.nquad;      // total gauss points per element
 
 

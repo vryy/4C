@@ -19,7 +19,7 @@ Maintainer: Volker Gravemeier
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 
-using namespace DRT::Utils;
+using namespace DRT::UTILS;
 
 
 /*----------------------------------------------------------------------*

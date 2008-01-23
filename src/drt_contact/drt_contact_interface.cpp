@@ -276,7 +276,7 @@ void CONTACT::Interface::SetState(const string& statename, const RCP<Epetra_Vect
   		for (int j=0;j<numdof;++j)
   			lm[j]=node->Dofs()[j];
 
-  		DRT::Utils::ExtractMyValues(*global,mydisp,lm);
+  		DRT::UTILS::ExtractMyValues(*global,mydisp,lm);
   	
   		// add mydisp[2]=0 for 2D problems
   		if (mydisp.size()<3)

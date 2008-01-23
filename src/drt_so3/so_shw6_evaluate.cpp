@@ -92,8 +92,8 @@ void DRT::Elements::So_shw6::soshw6_nlnstiffmass(
   Epetra_SerialDenseMatrix* deriv_sp; //[NUMDIM_SOH8*numsp][NUMNOD_SOH8]
   // evaluate all necessary variables for ANS
   soshw6_anssetup(num_sp,num_ans,xrefe,xcurr,&deriv_sp,jac_sps,jac_cur_sps,B_ans_loc);
-  const DRT::Utils::GaussRule3D gaussrule_ = DRT::Utils::intrule_wedge_6point;
-  const DRT::Utils::IntegrationPoints3D intpoints = getIntegrationPoints3D(gaussrule_);
+  const DRT::UTILS::GaussRule3D gaussrule_ = DRT::UTILS::intrule_wedge_6point;
+  const DRT::UTILS::IntegrationPoints3D intpoints = getIntegrationPoints3D(gaussrule_);
 
   
   /* =========================================================================*/
@@ -360,7 +360,7 @@ void DRT::Elements::So_shw6::soshw6_anssetup(
     // fill up df_sp w.r.t. rst directions (NUMDIM) at each sp
     for (int i=0; i<numsp; ++i) {
         Epetra_SerialDenseMatrix deriv(NUMDIM_WEG6, NUMNOD_WEG6);
-        DRT::Utils::shape_function_3D_deriv1(deriv, r[i], s[i], t[i], wedge6);
+        DRT::UTILS::shape_function_3D_deriv1(deriv, r[i], s[i], t[i], wedge6);
         for (int inode = 0; inode < NUMNOD_WEG6; ++inode) {
           df_sp(i*NUMDIM_WEG6+0, inode) = deriv(0, inode);
           df_sp(i*NUMDIM_WEG6+1, inode) = deriv(1, inode);

@@ -7,7 +7,7 @@
 #include "../drt_lib/drt_dserror.H"
 
 
-using namespace DRT::Utils;
+using namespace DRT::UTILS;
 
 DRT::Elements::Ale3::Ale3(int id, int owner)
   : DRT::Element(id,element_ale3,owner),

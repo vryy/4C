@@ -21,7 +21,7 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/drt_element.H"
 
 using namespace XFEM;
-using namespace DRT::Utils;
+using namespace DRT::UTILS;
 
 
 static double           sqrarg;

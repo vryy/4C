@@ -37,7 +37,7 @@ const vector<double> DRT::Elements::So_hex8::soh8_ElementCenterRefeCoords()
   const DRT::Element::DiscretizationType distype = Shape();
   Epetra_SerialDenseVector funct(NUMNOD_SOH8);
   // Element midpoint at r=s=t=0.0
-  DRT::Utils::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);
+  DRT::UTILS::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);
   Epetra_SerialDenseMatrix midpoint(1,NUMDIM_SOH8);
   midpoint.Multiply('T','N',1.0,funct,xrefe,0.0);
   vector<double> centercoords(3);

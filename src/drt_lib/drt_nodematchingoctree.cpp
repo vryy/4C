@@ -40,7 +40,7 @@ Maintainer: Peter Gamnitzer
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-DRT::Utils::NodeMatchingOctree::NodeMatchingOctree(
+DRT::UTILS::NodeMatchingOctree::NodeMatchingOctree(
   const DRT::Discretization&       actdis,
   const vector <int> &             masternodeids,
   int                              maxnodeperleaf,
@@ -129,7 +129,7 @@ DRT::Utils::NodeMatchingOctree::NodeMatchingOctree(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void DRT::Utils::NodeMatchingOctree::CreateGlobalNodeMatching(
+void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
   const vector<int>&     slavenodeids,
   const vector<int>&     dofsforpbcplane,
   map<int,int>&          midtosid
@@ -248,7 +248,7 @@ void DRT::Utils::NodeMatchingOctree::CreateGlobalNodeMatching(
 
       // allocate an "empty node". Fill it with info from
       // extracted node data
-      Teuchos::RCP<DRT::ParObject> o = Teuchos::rcp(DRT::Utils::Factory(data));
+      Teuchos::RCP<DRT::ParObject> o = Teuchos::rcp(DRT::UTILS::Factory(data));
 
       // cast ParObject to Node
       DRT::Node* actnode = dynamic_cast<DRT::Node*>(o.get());
@@ -372,7 +372,7 @@ void DRT::Utils::NodeMatchingOctree::CreateGlobalNodeMatching(
 
 
 
-void DRT::Utils::NodeMatchingOctree::FindMatch(const DRT::Discretization& slavedis,
+void DRT::UTILS::NodeMatchingOctree::FindMatch(const DRT::Discretization& slavedis,
                                    const vector<int>& slavenodeids,
                                    map<int,pair<int,double> >& coupling)
 {
@@ -483,7 +483,7 @@ void DRT::Utils::NodeMatchingOctree::FindMatch(const DRT::Discretization& slaved
 
       // allocate an "empty node". Fill it with info from
       // extracted node data
-      Teuchos::RCP<DRT::ParObject> o = Teuchos::rcp(DRT::Utils::Factory(data));
+      Teuchos::RCP<DRT::ParObject> o = Teuchos::rcp(DRT::UTILS::Factory(data));
 
       // cast ParObject to Node
       DRT::Node* actnode = dynamic_cast<DRT::Node*>(o.get());
@@ -540,7 +540,7 @@ void DRT::Utils::NodeMatchingOctree::FindMatch(const DRT::Discretization& slaved
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-bool DRT::Utils::NodeMatchingOctree::SearchClosestNodeOnThisProc(
+bool DRT::UTILS::NodeMatchingOctree::SearchClosestNodeOnThisProc(
   const vector<double>& x,
   int           & idofclosestpoint,
   double        & distofclosestpoint
@@ -589,7 +589,7 @@ bool DRT::Utils::NodeMatchingOctree::SearchClosestNodeOnThisProc(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-DRT::Utils::NodeMatchingOctree::~NodeMatchingOctree()
+DRT::UTILS::NodeMatchingOctree::~NodeMatchingOctree()
 {
   return;
 }// NodeMatchingOctree::~NodeMatchingOctree
@@ -611,7 +611,7 @@ DRT::Utils::NodeMatchingOctree::~NodeMatchingOctree()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-DRT::Utils::OctreeElement::OctreeElement(
+DRT::UTILS::OctreeElement::OctreeElement(
   const DRT::Discretization&       actdis,
   vector <int> &                   nodeidstoadd,
   Epetra_SerialDenseMatrix&        boundingboxtoadd,
@@ -820,7 +820,7 @@ DRT::Utils::OctreeElement::OctreeElement(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-bool DRT::Utils::OctreeElement::IsPointInBoundingBox(
+bool DRT::UTILS::OctreeElement::IsPointInBoundingBox(
   const vector <double> &x
   )
 {
@@ -851,7 +851,7 @@ bool DRT::Utils::OctreeElement::IsPointInBoundingBox(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-RefCountPtr<DRT::Utils::OctreeElement> DRT::Utils::OctreeElement::ReturnChildContainingPoint(
+RefCountPtr<DRT::UTILS::OctreeElement> DRT::UTILS::OctreeElement::ReturnChildContainingPoint(
   const vector <double> &x
   )
 {
@@ -891,7 +891,7 @@ RefCountPtr<DRT::Utils::OctreeElement> DRT::Utils::OctreeElement::ReturnChildCon
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-bool DRT::Utils::OctreeElement::IsLeaf()
+bool DRT::UTILS::OctreeElement::IsLeaf()
 {
   bool isleaf=true;
 
@@ -915,7 +915,7 @@ bool DRT::Utils::OctreeElement::IsLeaf()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-void DRT::Utils::OctreeElement::Print(ostream& os) const
+void DRT::UTILS::OctreeElement::Print(ostream& os) const
 {
   // Print id and coordinates
   os << "Leaf in Layer " << layer_ << " Nodes ";
@@ -938,7 +938,7 @@ void DRT::Utils::OctreeElement::Print(ostream& os) const
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void DRT::Utils::OctreeElement::SearchClosestNodeInLeaf(
+void DRT::UTILS::OctreeElement::SearchClosestNodeInLeaf(
   const vector <double> & x,
   int             & idofclosestpoint,
   double          & distofclosestpoint
@@ -988,7 +988,7 @@ void DRT::Utils::OctreeElement::SearchClosestNodeInLeaf(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-DRT::Utils::OctreeElement::~OctreeElement()
+DRT::UTILS::OctreeElement::~OctreeElement()
 {
   return;
 }// ~OctreeElement()

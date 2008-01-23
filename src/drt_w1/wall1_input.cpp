@@ -144,9 +144,9 @@ bool DRT::Elements::Wall1::ReadElement()
 
 //Get gaussrule on dependance of gausspoints 
 
-DRT::Utils::GaussRule2D DRT::Elements::Wall1::getGaussrule(int* ngp)
+DRT::UTILS::GaussRule2D DRT::Elements::Wall1::getGaussrule(int* ngp)
 {
-  DRT::Utils::GaussRule2D rule = DRT::Utils::intrule2D_undefined;
+  DRT::UTILS::GaussRule2D rule = DRT::UTILS::intrule2D_undefined;
 
   switch (Shape())
   {
@@ -156,15 +156,15 @@ DRT::Utils::GaussRule2D DRT::Elements::Wall1::getGaussrule(int* ngp)
     {
        if ( (ngp[0]==1) && (ngp[1]==1) )
        {
-         rule = DRT::Utils::intrule_quad_1point;
+         rule = DRT::UTILS::intrule_quad_1point;
        }
        else if ( (ngp[0]==2) && (ngp[1]==2) )
        {
-         rule = DRT::Utils::intrule_quad_4point;
+         rule = DRT::UTILS::intrule_quad_4point;
        }
        else if ( (ngp[0]==3) && (ngp[1]==3) )
        {
-         rule = DRT::Utils::intrule_quad_9point;
+         rule = DRT::UTILS::intrule_quad_9point;
        }
        else
          dserror("Unknown number of Gauss points for quad element");  
@@ -177,7 +177,7 @@ DRT::Utils::GaussRule2D DRT::Elements::Wall1::getGaussrule(int* ngp)
         {
             case 1:                   /* constant */
             {
-                rule = DRT::Utils::intrule_tri_1point;
+                rule = DRT::UTILS::intrule_tri_1point;
                 break;
             }
             case 3:  /* quadratic - type 1 and 2*/
@@ -185,11 +185,11 @@ DRT::Utils::GaussRule2D DRT::Elements::Wall1::getGaussrule(int* ngp)
                 //  GAUSS INTEGRATION 3 SAMPLING POINTS, DEG.OF PRECISION 2 
                 if (ngp[1]-1 == 0)  // integration 1
                     {
-                    rule = DRT::Utils::intrule_tri_3point; 
+                    rule = DRT::UTILS::intrule_tri_3point; 
                     }
                 else if (ngp[1]-1 == 1)  // integration 2
                     {
-                    rule = DRT::Utils::intrule_tri_3point_on_corners; 
+                    rule = DRT::UTILS::intrule_tri_3point_on_corners; 
                     }
                 else
                     {
@@ -200,7 +200,7 @@ DRT::Utils::GaussRule2D DRT::Elements::Wall1::getGaussrule(int* ngp)
             }
             case 6: 
             {
-                rule = DRT::Utils::intrule_tri_6point;
+                rule = DRT::UTILS::intrule_tri_6point;
                 break;
             }
             default:

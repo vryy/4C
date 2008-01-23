@@ -197,7 +197,7 @@ void DRT::Element::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,tmp);
   if (tmp.size()>0)
   {
-    DRT::ParObject* o = DRT::Utils::Factory(tmp);
+    DRT::ParObject* o = DRT::UTILS::Factory(tmp);
     MAT::Material* mat = dynamic_cast<MAT::Material*>(o);
     if (mat==NULL)
       dserror("failed to unpack material");

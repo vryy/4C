@@ -584,7 +584,7 @@ void DRT::Discretization::UnPackMyElements(RefCountPtr<vector<char> > e)
   {
     vector<char> data;
     ParObject::ExtractfromPack(index,*e,data);
-    DRT::ParObject* o = DRT::Utils::Factory(data);
+    DRT::ParObject* o = DRT::UTILS::Factory(data);
     DRT::Element* ele = dynamic_cast<Element*>(o);
     if (ele == NULL)
     {
@@ -608,7 +608,7 @@ void DRT::Discretization::UnPackMyNodes(RefCountPtr<vector<char> > e)
   {
     vector<char> data;
     ParObject::ExtractfromPack(index,*e,data);
-    DRT::ParObject* o = DRT::Utils::Factory(data);
+    DRT::ParObject* o = DRT::UTILS::Factory(data);
     DRT::Node* n = dynamic_cast<Node*>(o);
     if (n == NULL)
     {
@@ -634,7 +634,7 @@ void DRT::Discretization::UnPackCondition(
   {
     vector<char> data;
     DRT::ParObject::ExtractfromPack(index,*e,data);
-    DRT::ParObject* o = DRT::Utils::Factory(data);
+    DRT::ParObject* o = DRT::UTILS::Factory(data);
     DRT::Condition* cond = dynamic_cast<DRT::Condition*>(o);
     if (cond == NULL)
     {

@@ -274,7 +274,7 @@ private:
   };
 
   //! Gaussrule
-  //DRT::Utils::GaussRule3D                         gaussrule_;
+  //DRT::UTILS::GaussRule3D                         gaussrule_;
 
   //! container containing all kind of ale3 thisandthat
   DRT::Container                                  data_;
@@ -305,7 +305,7 @@ private:
   void CreateSurfacesPyramid();
 
   // get optimal gaussrule for given discretization type
-  DRT::Utils::GaussRule3D getOptimalGaussrule(const DiscretizationType& distype);
+  DRT::UTILS::GaussRule3D getOptimalGaussrule(const DiscretizationType& distype);
 };
 
 

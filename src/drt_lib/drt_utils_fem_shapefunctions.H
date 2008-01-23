@@ -38,7 +38,7 @@ using namespace Teuchos;
 
 namespace DRT
 {
-namespace Utils
+namespace UTILS
 {
 
   /*!
@@ -221,7 +221,7 @@ namespace Utils
     const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
     );
 
-} // namespace Utils
+} // namespace UTILS
 } // namespace DRT
 
 #endif  // #ifdef DRT_UTILS_FEM_SHAPEFUNCTION

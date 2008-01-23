@@ -62,7 +62,7 @@ int DRT::Elements::Sotet10Surface::EvaluateNeumann(ParameterList&           para
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
   if (curvenum>=0 && usetime)
-    curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
+    curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
 
   // element geometry
   const int numnod = 6;

@@ -110,12 +110,12 @@ public:
   /*!
   \brief Return number of lines of this element
   */
-  virtual int NumLine() const {return DRT::Utils::getNumberOfElementLines(Shape());}
+  virtual int NumLine() const {return DRT::UTILS::getNumberOfElementLines(Shape());}
 
   /*!
   \brief Return number of surfaces of this element
   */
-  virtual int NumSurface() const {return DRT::Utils::getNumberOfElementSurfaces(Shape());}
+  virtual int NumSurface() const {return DRT::UTILS::getNumberOfElementSurfaces(Shape());}
 
   /*!
   \brief Get vector of ptrs to the lines of this element
@@ -333,7 +333,7 @@ protected:
   //! vector of lines adjacent to this element
   vector<DRT::Elements::SoDispLine*>              lineptrs_;
   //! Gaussrule
-  DRT::Utils::GaussRule3D                         gaussrule_;
+  DRT::UTILS::GaussRule3D                         gaussrule_;
   
   int numnod_disp_;      // number of nodes
   int numdof_disp_;     // total dofs per element
@@ -363,7 +363,7 @@ protected:
   \brief Create a integrator for the SoDisp element
   
   this constructor provides Object Oriented So_integrator functionality by adapting the strictly procedural 
-  DRT::Utils::IntegrationPoints3D struct.
+  DRT::UTILS::IntegrationPoints3D struct.
   */     
   class Integrator_SoDisp : public DRT::Elements::So_integrator
   {
@@ -621,7 +621,7 @@ public:
   /*!
   \brief Return number of lines of this element
   */
-  virtual int NumLine() const {return DRT::Utils::getNumberOfElementLines(Shape());}
+  virtual int NumLine() const {return DRT::UTILS::getNumberOfElementLines(Shape());}
   
   /*!
   \brief Get vector of ptrs to the lines of this element

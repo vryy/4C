@@ -34,7 +34,7 @@ int DRT::Elements::Wall1Line::EvaluateNeumann(ParameterList& params,
   RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==null) dserror("Cannot get state vector 'displacement'");
   vector<double> mydisp(lm.size());
-  DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
+  DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
   // find out whether we will use a time curve
   bool usetime = true;
@@ -47,7 +47,7 @@ int DRT::Elements::Wall1Line::EvaluateNeumann(ParameterList& params,
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
   if (curvenum>=0 && usetime)
-    curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
+    curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
 
    // set number of nodes
   const int iel   = this->NumNode();
@@ -55,8 +55,8 @@ int DRT::Elements::Wall1Line::EvaluateNeumann(ParameterList& params,
   const DiscretizationType distype = this->Shape();
   
   // gaussian points 
-  const DRT::Utils::GaussRule1D gaussrule = getOptimalGaussrule(distype); 
-  const DRT::Utils::IntegrationPoints1D  intpoints = getIntegrationPoints1D(gaussrule);
+  const DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype); 
+  const DRT::UTILS::IntegrationPoints1D  intpoints = getIntegrationPoints1D(gaussrule);
   
   // get values and switches from the condition
   const vector<int>*    onoff = condition.Get<vector<int> >("onoff");
@@ -82,8 +82,8 @@ int DRT::Elements::Wall1Line::EvaluateNeumann(ParameterList& params,
      const double e1 = intpoints.qxg[gpid];
      
   // get shape functions and derivatives in the line
-     DRT::Utils::shape_function_1D(funct,e1,distype);
-     DRT::Utils::shape_function_1D_deriv1(deriv,e1,distype);
+     DRT::UTILS::shape_function_1D(funct,e1,distype);
+     DRT::UTILS::shape_function_1D_deriv1(deriv,e1,distype);
   
   // compute infinitesimal line element dr for integration along the line
      const double dr = w1_substitution(xye,deriv,iel);
@@ -110,16 +110,16 @@ int DRT::Elements::Wall1Line::EvaluateNeumann(ParameterList& params,
 }
 
 
-DRT::Utils::GaussRule1D DRT::Elements::Wall1Line::getOptimalGaussrule(const DiscretizationType& distype)
+DRT::UTILS::GaussRule1D DRT::Elements::Wall1Line::getOptimalGaussrule(const DiscretizationType& distype)
 {
-  DRT::Utils::GaussRule1D rule = DRT::Utils::intrule1D_undefined;
+  DRT::UTILS::GaussRule1D rule = DRT::UTILS::intrule1D_undefined;
   switch (distype)
     {
     case line2:
-      rule = DRT::Utils::intrule_line_2point;
+      rule = DRT::UTILS::intrule_line_2point;
       break;
     case line3:
-      rule = DRT::Utils::intrule_line_3point;
+      rule = DRT::UTILS::intrule_line_3point;
       break;
     default: 
     dserror("unknown number of nodes for gaussrule initialization");

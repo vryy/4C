@@ -96,7 +96,7 @@ bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
     step += 1;
 
     ofstream out(filename.str().c_str());
-    ::FSI::Utils::MGS(s.getPreviousSolutionGroup(), dir, 10, out);
+    ::FSI::UTILS::MGS(s.getPreviousSolutionGroup(), dir, 10, out);
   }
 #endif
 

@@ -44,7 +44,7 @@ Maintainer: Ursula Mayer
 #endif 
 
 using namespace XFEM;
-using namespace DRT::Utils;
+using namespace DRT::UTILS;
 
 /*----------------------------------------------------------------------*
  |  MAIN:   computes the interface between the xfem          u.may 06/07|
@@ -421,7 +421,7 @@ void Intersection::unpackNodes(
         DRT::ParObject::ExtractfromPack(index, cutterDataRecv, data);
 
         // allocate a node. Fill it with info from extracted element data
-        DRT::ParObject* o = DRT::Utils::Factory(data);
+        DRT::ParObject* o = DRT::UTILS::Factory(data);
 
         // cast ParObject to node
         DRT::Node* actNode = dynamic_cast< DRT::Node* >(o);
@@ -563,7 +563,7 @@ void Intersection::getCutterElementsInParallel(
 
   				// allocate an "empty cutter element". Fill it with info from
   				// extracted element data
-  				DRT::ParObject* o = DRT::Utils::Factory(data);
+  				DRT::ParObject* o = DRT::UTILS::Factory(data);
 
   				// cast ParObject to cutter element 
   				DRT::Element* actCutter = dynamic_cast<DRT::Element*>(o);

@@ -67,14 +67,14 @@ int DRT::Elements::Soh8Surface::EvaluateNeumann(ParameterList&           params,
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
   if (curvenum>=0 && usetime)
-    curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
+    curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
   // **
 
   // element geometry update
   RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==null) dserror("Cannot get state vector 'displacement'");
   vector<double> mydisp(lm.size());
-  DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
+  DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
   const int numnod = 4;
   Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOH8);  // material coord. of element
   Epetra_SerialDenseMatrix xscurr(numnod,NUMDIM_SOH8);  // material coord. of element
@@ -248,7 +248,7 @@ int DRT::Elements::Soh8Surface::Evaluate(ParameterList& params,
 		  		RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
 		  		if (disp==null) dserror("Cannot get state vector 'displacement'");
 		  		vector<double> mydisp(lm.size());
-		  		DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
+		  		DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 		  		const int numnod = 4;
 		  		Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOH8);  // material coord. of element
 		  		Epetra_SerialDenseMatrix xscurr(numnod,NUMDIM_SOH8);  // material coord. of element
@@ -295,7 +295,7 @@ int DRT::Elements::Soh8Surface::Evaluate(ParameterList& params,
 	  		RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
 	  		if (disp==null) dserror("Cannot get state vector 'displacement'");
 	  		vector<double> mydisp(lm.size());
-	  		DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
+	  		DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 	  		const int numnod = 4;
 	  		Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOH8);  // material coord. of element
 	  		Epetra_SerialDenseMatrix xscurr(numnod,NUMDIM_SOH8);  // material coord. of element
@@ -413,7 +413,7 @@ int DRT::Elements::Soh8Surface::Evaluate(ParameterList& params,
                   RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
                   if (disp==null) dserror("Cannot get state vector 'displacement'");
                   vector<double> mydisp(lm.size());
-                  DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
+                  DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
                   const int numnod = 4;
                   Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOH8);  // material coord. of element
                   Epetra_SerialDenseMatrix xscurr(numnod,NUMDIM_SOH8);  // material coord. of element

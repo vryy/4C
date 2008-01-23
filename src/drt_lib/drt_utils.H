@@ -38,7 +38,7 @@ using namespace Teuchos;
 */
 namespace DRT
 {
-namespace Utils
+namespace UTILS
 {
 
   /*!
@@ -201,7 +201,7 @@ namespace Utils
   void AllToAllCommunication( const Epetra_Comm& comm,
                               const vector< vector<int> >& send, vector< vector<int> >& recv );
 
-} // namespace Utils
+} // namespace UTILS
 } // namespace DRT
 
 

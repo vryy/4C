@@ -17,7 +17,7 @@ Maintainer: Axel Gerstenberger
 #include "drt_dserror.H"
 
 
-DRT::Utils::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule)
+DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule)
 {
   const double Q12  = 1.0/2.0;
   const double Q14  = 1.0/4.0;
@@ -446,7 +446,7 @@ DRT::Utils::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
 }
 
 
-DRT::Utils::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule)
+DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule)
 {
   switch(gaussrule)
   {
@@ -579,7 +579,7 @@ DRT::Utils::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
 }
 
 
-DRT::Utils::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule)
+DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule)
 {
   switch(gaussrule)
   {
@@ -650,7 +650,7 @@ DRT::Utils::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
 /*----------------------------------------------------------------------*
  |  returns the elementsize in local coordinates             a.ger 11/07|
  *----------------------------------------------------------------------*/
-double DRT::Utils::getSizeInLocalCoordinates(
+double DRT::UTILS::getSizeInLocalCoordinates(
     const DRT::Element::DiscretizationType     distype)
 {
     double size = 0.0;

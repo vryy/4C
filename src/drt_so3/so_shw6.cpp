@@ -16,7 +16,7 @@ Maintainer: Moritz Frenzel
 #include "so_shw6.H"
 #include "so_weg6.H"
 
-using namespace DRT::Utils;
+using namespace DRT::UTILS;
 
 
 /*----------------------------------------------------------------------*

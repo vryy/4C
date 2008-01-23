@@ -28,7 +28,7 @@ extern "C"
 
 
 namespace DRT {
-namespace Utils {
+namespace UTILS {
 
   /// abstract interface for spatial functions
   class Function

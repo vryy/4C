@@ -150,7 +150,7 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
   Teuchos::RCP<Epetra_Map> imap = structure_->InterfaceMap();
 
   vector<int> rredundant;
-  DRT::Utils::AllreduceEMap(rredundant, *imap);
+  DRT::UTILS::AllreduceEMap(rredundant, *imap);
 
   rawGraph_ = Teuchos::rcp(new Epetra_CrsGraph(Copy,*imap,12));
   for (int i=0; i<imap->NumMyElements(); ++i)
@@ -771,7 +771,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RCP<NOX::Epetra::Int
 
       ostringstream filename;
       filename << allfiles.outputfile_kenner << "_1_" << step_ << ".dump";
-      FSI::Utils::DumpJacobian(*this, alpha, beta, soln, filename.str());
+      FSI::UTILS::DumpJacobian(*this, alpha, beta, soln, filename.str());
     }
 #endif
 
@@ -827,7 +827,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RCP<NOX::Epetra::Int
       ostringstream filename;
       filename << allfiles.outputfile_kenner << "_2_" << step_ << ".dump";
       *soln = finalSolution;
-      FSI::Utils::DumpJacobian(*this, alpha, beta, soln, filename.str());
+      FSI::UTILS::DumpJacobian(*this, alpha, beta, soln, filename.str());
     }
 #endif
 

@@ -23,7 +23,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
 
-using namespace DRT::Utils;
+using namespace DRT::UTILS;
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            g.bau 03/07|
@@ -79,7 +79,7 @@ int DRT::Elements::Fluid3Surface::Evaluate(     ParameterList&            params
         if (dispnp!=null)
         {
           mydispnp.resize(lm.size());
-          DRT::Utils::ExtractMyValues(*dispnp,mydispnp,lm);
+          DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
         }
       }
 
@@ -121,7 +121,7 @@ int DRT::Elements::Fluid3Surface::EvaluateNeumann(
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
   if (curvenum>=0 && usetime)
-    curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
+    curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
 
   // get values and switches from the condition
   const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");

@@ -255,7 +255,7 @@ public:
   //! @name Other
 
   /// set number of gauss points to element shape default
-  DRT::Utils::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype);
+  DRT::UTILS::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype);
 
   //@}
 

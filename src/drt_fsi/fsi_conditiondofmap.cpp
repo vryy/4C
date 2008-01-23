@@ -86,7 +86,7 @@ void FSI::ConditionDofMap::SetupOtherDofMap()
   std::remove_copy_if(gids,
                       gids+elements,
                       back_inserter(otherdofmapvec),
-                      FSI::Utils::MyGID(&*conddofmap_));
+                      FSI::UTILS::MyGID(&*conddofmap_));
 
   otherdofmap_ = Teuchos::rcp(new Epetra_Map(-1,otherdofmapvec.size(),&otherdofmapvec[0],0,dofmap->Comm()));
 

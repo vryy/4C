@@ -141,7 +141,7 @@ public:
 
      \return number of nodes
      */
-    inline int NumNode() const {return DRT::Utils::getNumberOfElementNodes(distype_);};
+    inline int NumNode() const {return DRT::UTILS::getNumberOfElementNodes(distype_);};
     
     /*!
      \brief returns the coordinates of the integration cell
@@ -225,7 +225,7 @@ public:
 
      \return number of nodes
      */
-    inline int NumNode() const {return DRT::Utils::getNumberOfElementNodes(distype_);};
+    inline int NumNode() const {return DRT::UTILS::getNumberOfElementNodes(distype_);};
     
     /*!
      \brief returns the coordinates of the integration cell in domain element coordinates

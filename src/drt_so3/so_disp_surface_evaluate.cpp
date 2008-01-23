@@ -20,7 +20,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
 
-using namespace DRT::Utils;
+using namespace DRT::UTILS;
 
 
 int DRT::Elements::SoDispSurface::Evaluate(     ParameterList&            params,
@@ -112,7 +112,7 @@ int DRT::Elements::SoDispSurface::EvaluateNeumann(ParameterList&           param
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
   if (curvenum>=0 && usetime)
-    curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
+    curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
   // **
 
   // element geometry update
@@ -123,7 +123,7 @@ int DRT::Elements::SoDispSurface::EvaluateNeumann(ParameterList&           param
   RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==null) dserror("Cannot get state vector 'displacement'");
   vector<double> mydisp(lm.size());
-  DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
+  DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
   
   Epetra_SerialDenseMatrix xsrefe(numnode,NUMDIM_DISP);  // material coord. of element
   Epetra_SerialDenseMatrix xscurr(numnode,NUMDIM_DISP);  // material coord. of element
@@ -137,7 +137,7 @@ int DRT::Elements::SoDispSurface::EvaluateNeumann(ParameterList&           param
     xscurr(i,2) = xsrefe(i,2) + mydisp[i*NODDOF_DISP+2];
   }
 
-  DRT::Utils::GaussRule2D gaussrule = intrule2D_undefined;
+  DRT::UTILS::GaussRule2D gaussrule = intrule2D_undefined;
   switch(distype){
   case quad4:
     gaussrule = intrule_quad_4point;
@@ -169,7 +169,7 @@ int DRT::Elements::SoDispSurface::EvaluateNeumann(ParameterList&           param
   /*----------------------------------------------------------------------*
   |               start loop over integration points                     |
   *----------------------------------------------------------------------*/
-  const DRT::Utils::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
+  const DRT::UTILS::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
   for (int gpid=0; gpid<intpoints.nquad; gpid++)
   {
     const double e0 = intpoints.qxg[gpid][0];

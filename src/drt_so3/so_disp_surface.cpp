@@ -195,8 +195,8 @@ void DRT::Elements::SoDispSurface::CreateLinesTri(const int& nline,
         
         for (int inode=0;inode<nnode;inode++)
         {
-             nodeids[inode] = NodeIds()[DRT::Utils::eleNodeNumbering_tri6_lines[iline][inode]];
-             nodes[inode]   = Nodes()[  DRT::Utils::eleNodeNumbering_tri6_lines[iline][inode]];
+             nodeids[inode] = NodeIds()[DRT::UTILS::eleNodeNumbering_tri6_lines[iline][inode]];
+             nodes[inode]   = Nodes()[  DRT::UTILS::eleNodeNumbering_tri6_lines[iline][inode]];
         }
         lines_[iline] = rcp(new DRT::Elements::SoDispLine(iline,Owner(),nnode,nodeids,nodes,this,NULL,iline));
         lineptrs_[iline] = lines_[iline].get();
@@ -213,8 +213,8 @@ void DRT::Elements::SoDispSurface::CreateLinesQuad(const int& nline,
         
         for (int inode=0;inode<nnode;inode++)
         {
-             nodeids[inode] = NodeIds()[DRT::Utils::eleNodeNumbering_quad9_lines[iline][inode]];
-             nodes[inode]   = Nodes()[  DRT::Utils::eleNodeNumbering_quad9_lines[iline][inode]];
+             nodeids[inode] = NodeIds()[DRT::UTILS::eleNodeNumbering_quad9_lines[iline][inode]];
+             nodes[inode]   = Nodes()[  DRT::UTILS::eleNodeNumbering_quad9_lines[iline][inode]];
         }
         lines_[iline] = rcp(new DRT::Elements::SoDispLine(iline,Owner(),nnode,nodeids,nodes,this,NULL,iline));
         lineptrs_[iline] = lines_[iline].get();

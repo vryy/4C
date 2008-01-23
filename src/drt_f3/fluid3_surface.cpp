@@ -19,7 +19,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 
-using namespace DRT::Utils;
+using namespace DRT::UTILS;
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 01/07|

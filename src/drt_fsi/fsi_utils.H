@@ -19,8 +19,8 @@
 
 namespace FSI
 {
-  /// FSI::Utils: Random stuff that might be helpful when dealing with FSI problems
-  namespace Utils
+  /// FSI::UTILS: Random stuff that might be helpful when dealing with FSI problems
+  namespace UTILS
   {
 
     /// return the first slot of a pair

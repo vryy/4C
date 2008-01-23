@@ -86,9 +86,9 @@ int DRT::Elements::So_weg6::Evaluate(ParameterList& params,
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
-      DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
-      DRT::Utils::ExtractMyValues(*res,myres,lm);
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
       sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1, time);
     }
     break;
@@ -110,9 +110,9 @@ int DRT::Elements::So_weg6::Evaluate(ParameterList& params,
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
-      DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
-      DRT::Utils::ExtractMyValues(*res,myres,lm);
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
       sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1, time);
     }
     break;
@@ -387,8 +387,8 @@ void DRT::Elements::So_weg6::sow6_shapederiv(
     // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
     // fill up nodal f at each gp
     // fill up df w.r.t. rst directions (NUMDIM) at each gp
-    const DRT::Utils::GaussRule3D gaussrule_ = DRT::Utils::intrule_wedge_6point;
-    const DRT::Utils::IntegrationPoints3D intpoints = getIntegrationPoints3D(gaussrule_);
+    const DRT::UTILS::GaussRule3D gaussrule_ = DRT::UTILS::intrule_wedge_6point;
+    const DRT::UTILS::IntegrationPoints3D intpoints = getIntegrationPoints3D(gaussrule_);
     for (int igp = 0; igp < intpoints.nquad; ++igp) {
       const double r = intpoints.qxg[igp][0];
       const double s = intpoints.qxg[igp][1];
@@ -396,8 +396,8 @@ void DRT::Elements::So_weg6::sow6_shapederiv(
 
       Epetra_SerialDenseVector funct(NUMNOD_WEG6);
       Epetra_SerialDenseMatrix deriv(NUMDIM_WEG6, NUMNOD_WEG6);
-      DRT::Utils::shape_function_3D(funct, r, s, t, wedge6);
-      DRT::Utils::shape_function_3D_deriv1(deriv, r, s, t, wedge6);
+      DRT::UTILS::shape_function_3D(funct, r, s, t, wedge6);
+      DRT::UTILS::shape_function_3D_deriv1(deriv, r, s, t, wedge6);
       for (int inode = 0; inode < NUMNOD_WEG6; ++inode) {
         f(inode, igp) = funct(inode);
         df(igp*NUMDIM_WEG6+0, inode) = deriv(0, inode);
@@ -417,13 +417,13 @@ void DRT::Elements::So_weg6::sow6_shapederiv(
 
 bool DRT::Elements::So_weg6::soweg6_checkRewinding()
 {
-    const DRT::Utils::IntegrationPoints3D intpoints = getIntegrationPoints3D(DRT::Utils::intrule_wedge_1point);
+    const DRT::UTILS::IntegrationPoints3D intpoints = getIntegrationPoints3D(DRT::UTILS::intrule_wedge_1point);
     const double r = intpoints.qxg[0][0];
     const double s = intpoints.qxg[0][1];
     const double t = intpoints.qxg[0][2];
 
     Epetra_SerialDenseMatrix deriv(NUMDIM_WEG6, NUMNOD_WEG6);
-    DRT::Utils::shape_function_3D_deriv1(deriv, r, s, t, wedge6);
+    DRT::UTILS::shape_function_3D_deriv1(deriv, r, s, t, wedge6);
 
     // update element geometry
     Epetra_SerialDenseMatrix xrefe(NUMNOD_WEG6,NUMDIM_WEG6);  // material coord. of element

@@ -203,7 +203,7 @@ void DRT::Discretization::EvaluateNeumann(ParameterList& params, Epetra_Vector& 
     if (curve) curvenum = (*curve)[0];
     double curvefac = 1.0;
       if (curvenum>=0 && usetime)
-        curvefac = Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
+        curvefac = UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
     for (int i=0; i<nnode; ++i)
     {
       // do only nodes in my row map
@@ -380,7 +380,7 @@ void DoDirichletCondition(DRT::Condition&      cond,
       int    curvenum = -1;
       if (curve) curvenum = (*curve)[j];
       if (curvenum>=0 && usetime)
-        curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
+        curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
       //cout << "Dirichlet value " << value << " curvefac " <<  curvefac << endl;
 
       // factor given by spatial function
@@ -481,7 +481,7 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
       if (curve) curvenum = (*curve)[0];
       double curvefac = 1.0;
       if (curvenum>=0 && usetime)
-          curvefac = Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
+          curvefac = UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
       params.set("LoadCurveFactor",curvefac);
 
       // Get ConditionID of current condition if defined and write value in parameterlist
@@ -545,7 +545,7 @@ double EvaluateFunction(DRT::Node*      node,
 		        int             index,
 			int             funct_num)
 {
-  return DRT::Utils::FunctionManager::Instance().Funct(funct_num-1).Evaluate(index,node->X());
+  return DRT::UTILS::FunctionManager::Instance().Funct(funct_num-1).Evaluate(index,node->X());
 }
 
 

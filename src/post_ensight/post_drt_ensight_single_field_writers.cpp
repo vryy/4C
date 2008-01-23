@@ -606,7 +606,7 @@ vector<double> computeScalarCellNodeValues(
     // return value
     vector<double> cellvalues;
 
-    const int nen_cell = DRT::Utils::getNumberOfElementNodes(cell.Shape());
+    const int nen_cell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
     const int numparam  = dofman.NumDofPerField(field);
 
     const int maxnod = 27;
@@ -630,7 +630,7 @@ vector<double> computeScalarCellNodeValues(
 
         // shape functions
         blitz::Array<double,1> funct(maxnod);
-        DRT::Utils::shape_function_3D(
+        DRT::UTILS::shape_function_3D(
                 funct,
                 cell.GetDomainCoord()[inen][0],
                 cell.GetDomainCoord()[inen][1],
@@ -732,7 +732,7 @@ void XFluidEnsightWriter::WriteNodalResultStep(
                 // extract local values from the global vector
                 vector<double> myvelnp(lm.size());
 
-                DRT::Utils::ExtractMyValues(*data,myvelnp,lm);
+                DRT::UTILS::ExtractMyValues(*data,myvelnp,lm);
 
                 const int numparam = eledofman.NumDofPerField(field);
                 const vector<int> dofpos = eledofman.LocalDofPosPerField(field);

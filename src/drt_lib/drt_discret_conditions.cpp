@@ -192,7 +192,7 @@ static void AssignGlobalIDs( const Epetra_Comm& comm,
 
   // Last step: Get missing ids.
   vector< vector<int> > requests;
-  DRT::Utils::AllToAllCommunication( comm, ghostelementnodes, requests );
+  DRT::UTILS::AllToAllCommunication( comm, ghostelementnodes, requests );
 
   vector< vector<int> > sendids( comm.NumProc() );
 
@@ -229,7 +229,7 @@ static void AssignGlobalIDs( const Epetra_Comm& comm,
   }
 #endif // Debug
 
-  DRT::Utils::AllToAllCommunication( comm, sendids, requests );
+  DRT::UTILS::AllToAllCommunication( comm, sendids, requests );
 
 #if 0 // Debug
   cout << "This is process " << comm.MyPID() << "." << endl;

@@ -30,7 +30,7 @@ using namespace Teuchos;
 
 namespace DRT
 {
-namespace Utils
+namespace UTILS
 {
   /*!
   \brief Fill a blitz-vector with with 3D shape function
@@ -221,7 +221,7 @@ namespace Utils
     const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
     );
 
-} // namespace Utils
+} // namespace UTILS
 } // namespace DRT
 
 #endif  // #ifdef DRT_UTILS_DGFEM_BASISFUNCTIONS

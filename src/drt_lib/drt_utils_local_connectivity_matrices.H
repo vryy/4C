@@ -38,7 +38,7 @@ using namespace Teuchos;
 
 namespace DRT
 {
-namespace Utils
+namespace UTILS
 {
 
   //! 6 Surfaces of a Hex27 element with 9 nodes per surface
@@ -396,7 +396,7 @@ namespace Utils
     const DRT::Element::DiscretizationType   distype     ///< shape of the element
     );
 
-} // namespace Utils
+} // namespace UTILS
 } // namespace DRT
 
 #endif  // #ifdef DRT_UTILS_LOCAL_CONNECTIVITY_MATRICES_H

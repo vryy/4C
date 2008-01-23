@@ -127,7 +127,7 @@ void CreateAleDiscretization()
       // not belong to this processor
       remove_copy_if(actele->NodeIds(), actele->NodeIds()+actele->NumNode(),
                      inserter(rownodeset, rownodeset.begin()),
-                     not1(FSI::Utils::MyGID(noderowmap)));
+                     not1(FSI::UTILS::MyGID(noderowmap)));
 
       copy(actele->NodeIds(), actele->NodeIds()+actele->NumNode(),
            inserter(colnodeset, colnodeset.begin()));
@@ -196,7 +196,7 @@ void CreateAleDiscretization()
     DRT::Element* fluidele = fluiddis->gElement(egid[i]);
 
     // create the ale element with the same global element id
-    RefCountPtr<DRT::Element> aleele = DRT::Utils::Factory(aletype[i], egid[i], myrank);
+    RefCountPtr<DRT::Element> aleele = DRT::UTILS::Factory(aletype[i], egid[i], myrank);
 
     // get global node ids of fluid element
     vector<int> nids;

@@ -27,7 +27,7 @@ Maintainer: Volker Gravemeier
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/convecdiffus.H"
 
-using namespace DRT::Utils;
+using namespace DRT::UTILS;
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                               vg 05/07|
@@ -67,7 +67,7 @@ int DRT::Elements::Condif2::Evaluate(ParameterList& params,
 
       // extract local values from the global vector
       vector<double> myhist(lm.size());
-      DRT::Utils::ExtractMyValues(*hist,myhist,lm);
+      DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
 
       // get control parameter
       const bool is_stationary = params.get<bool>("using stationary formulation",false);
@@ -195,8 +195,8 @@ void DRT::Elements::Condif2::condif2_sys_mat(vector<int>&              lm,
   const double e1    = intpoints_tau.qxg[0][0];
   const double e2    = intpoints_tau.qxg[0][1];
   // shape functions and their derivatives
-  DRT::Utils::shape_function_2D(funct,e1,e2,distype);
-  DRT::Utils::shape_function_2D_deriv1(deriv,e1,e2,distype);
+  DRT::UTILS::shape_function_2D(funct,e1,e2,distype);
+  DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
 
 /*------------------------------- get element type constant for tau ---*/
   switch(iel)

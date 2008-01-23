@@ -631,7 +631,7 @@ void ElementReader::Partition()
           allfiles.actrow = allfiles.numrows;
           allfiles.actplace = allfiles.input_file[allfiles.actrow] = const_cast<char*>(line.c_str());
           // let the factory create a matching empty element
-          RefCountPtr<DRT::Element> ele = DRT::Utils::Factory(eletype,elenumber,0);
+          RefCountPtr<DRT::Element> ele = DRT::UTILS::Factory(eletype,elenumber,0);
           // let this element read its input line
           ele->ReadElement();
           // add element to discretization
@@ -735,7 +735,7 @@ void ElementReader::Partition()
     // partition graph using metis
     Epetra_Vector weights(graph->RowMap(),false);
     weights.PutScalar(1.0);
-    RefCountPtr<Epetra_CrsGraph> newgraph = DRT::Utils::PartGraphUsingMetis(*graph,weights);
+    RefCountPtr<Epetra_CrsGraph> newgraph = DRT::UTILS::PartGraphUsingMetis(*graph,weights);
     graph = newgraph;
     newgraph = null;
 

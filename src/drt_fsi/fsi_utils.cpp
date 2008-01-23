@@ -34,7 +34,7 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 extern struct _FILES  allfiles;
 
 
-void FSI::Utils::DumpJacobian(NOX::Epetra::Interface::Required& interface,
+void FSI::UTILS::DumpJacobian(NOX::Epetra::Interface::Required& interface,
                               double alpha,
                               double beta,
                               Teuchos::RefCountPtr<Epetra_Vector> soln,
@@ -51,7 +51,7 @@ void FSI::Utils::DumpJacobian(NOX::Epetra::Interface::Required& interface,
   RefCountPtr<Epetra_CrsMatrix> jacobian = rcp(new Epetra_CrsMatrix(Copy, map, map.NumGlobalElements()));
 
   int nummyelements = map.NumMyElements();
-  int mypos = DRT::Utils::FindMyPos(nummyelements, map.Comm());
+  int mypos = DRT::UTILS::FindMyPos(nummyelements, map.Comm());
   double eta = 0.0;
 
   Epetra_Vector fo(*soln);

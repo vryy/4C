@@ -24,7 +24,7 @@
 //
 // 3D Legendre basis-functions
 //
-void DRT::Utils::DGFEM_BasisFunction_3D(
+void DRT::UTILS::DGFEM_BasisFunction_3D(
         blitz::Array<double, 1>& funct,
         const double& r,
         const double& s,
@@ -100,7 +100,7 @@ void DRT::Utils::DGFEM_BasisFunction_3D(
 //
 // first natural derivative of 3D Legendre basis-functions
 //
-void DRT::Utils::DGFEM_BasisFunction_3D_deriv1(
+void DRT::UTILS::DGFEM_BasisFunction_3D_deriv1(
         blitz::Array<double, 2>& deriv1,
         const double& r,
         const double& s,
@@ -186,7 +186,7 @@ void DRT::Utils::DGFEM_BasisFunction_3D_deriv1(
 //
 // second natural derivative of 3D Legendre basis-functions
 //
-void DRT::Utils::DGFEM_BasisFunction_3D_deriv2(
+void DRT::UTILS::DGFEM_BasisFunction_3D_deriv2(
         blitz::Array<double, 2>& deriv2,
         const double& r,
         const double& s,
@@ -262,7 +262,7 @@ void DRT::Utils::DGFEM_BasisFunction_3D_deriv2(
 //
 // 2D Legendre basis-functions
 //
-void DRT::Utils::DGFEM_BasisFunction_2D(
+void DRT::UTILS::DGFEM_BasisFunction_2D(
         blitz::Array<double, 1>& funct,
         const double& r,
         const double& s,
@@ -322,7 +322,7 @@ void DRT::Utils::DGFEM_BasisFunction_2D(
 //
 // first natural derivative of 2D Legendre basis-functions
 //
-void DRT::Utils::DGFEM_BasisFunction_2D_deriv1(
+void DRT::UTILS::DGFEM_BasisFunction_2D_deriv1(
         blitz::Array<double, 2>& deriv1,
         const double& r,
         const double& s,
@@ -382,7 +382,7 @@ void DRT::Utils::DGFEM_BasisFunction_2D_deriv1(
 //
 // second natural derivative of 2D Legendre basis-functions
 //
-void DRT::Utils::DGFEM_BasisFunction_2D_deriv2(
+void DRT::UTILS::DGFEM_BasisFunction_2D_deriv2(
         blitz::Array<double, 2>& deriv2,
         const double& r,
         const double& s,
@@ -435,7 +435,7 @@ void DRT::Utils::DGFEM_BasisFunction_2D_deriv2(
 //
 // 1D Legendre basis-functions
 //
-void DRT::Utils::DGFEM_BasisFunction_1D(
+void DRT::UTILS::DGFEM_BasisFunction_1D(
         blitz::Array<double, 1>& funct,
         const double& r,
         const DRT::Element::DiscretizationType& shape,
@@ -478,7 +478,7 @@ void DRT::Utils::DGFEM_BasisFunction_1D(
 //
 // first natural derivative of 1D Legendre basis-functions
 //
-void DRT::Utils::DGFEM_BasisFunction_1D_deriv1(
+void DRT::UTILS::DGFEM_BasisFunction_1D_deriv1(
         blitz::Array<double, 1>& deriv1,
         const double& r,
         const DRT::Element::DiscretizationType& shape,
@@ -520,7 +520,7 @@ void DRT::Utils::DGFEM_BasisFunction_1D_deriv1(
 //
 // second natural derivative of 1D Legendre basis-functions
 //
-void DRT::Utils::DGFEM_BasisFunction_1D_deriv2(
+void DRT::UTILS::DGFEM_BasisFunction_1D_deriv2(
         blitz::Array<double, 1>& deriv2,
         const double& r,
         const DRT::Element::DiscretizationType& shape,

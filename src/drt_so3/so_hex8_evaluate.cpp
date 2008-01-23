@@ -84,9 +84,9 @@ int DRT::Elements::So_hex8::Evaluate(ParameterList& params,
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
-      DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
-      DRT::Utils::ExtractMyValues(*res,myres,lm);
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
       soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,time);
     }
     break;
@@ -108,9 +108,9 @@ int DRT::Elements::So_hex8::Evaluate(ParameterList& params,
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
-      DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
-      DRT::Utils::ExtractMyValues(*res,myres,lm);
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
       soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,time);
     }
     break;
@@ -121,10 +121,10 @@ int DRT::Elements::So_hex8::Evaluate(ParameterList& params,
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
       vector<double> mydisp(lm.size());
-      DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       Epetra_SerialDenseMatrix elestress(NUMSTR_SOH8,NUMGPT_SOH8);
       vector<double> myres(lm.size());
-      DRT::Utils::ExtractMyValues(*res,myres,lm);
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
       soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,&elestress,time);
       // average gp stresses to store element (center) stresses
       for (int i = 0; i < NUMSTR_SOH8; ++i) {
@@ -154,9 +154,9 @@ int DRT::Elements::So_hex8::Evaluate(ParameterList& params,
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
-      DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
-      DRT::Utils::ExtractMyValues(*res,myres,lm);
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
       soh8_homog(params, mydisp, time, myres);
     }
     break;
@@ -196,7 +196,7 @@ int DRT::Elements::So_hex8::EvaluateNeumann(ParameterList& params,
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
   if (curvenum>=0 && usetime)
-    curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
+    curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
   // **
 
 /* ============================================================================*
@@ -690,13 +690,13 @@ void DRT::Elements::So_hex8::soh8_shapederiv(
 
 bool DRT::Elements::So_hex8::soh8_checkRewinding()
 {
-    const DRT::Utils::IntegrationPoints3D intpoints = getIntegrationPoints3D(DRT::Utils::intrule_hex_1point);
+    const DRT::UTILS::IntegrationPoints3D intpoints = getIntegrationPoints3D(DRT::UTILS::intrule_hex_1point);
     const double r = intpoints.qxg[0][0];
     const double s = intpoints.qxg[0][1];
     const double t = intpoints.qxg[0][2];
 
     Epetra_SerialDenseMatrix deriv(NUMDIM_SOH8, NUMNOD_SOH8);
-    DRT::Utils::shape_function_3D_deriv1(deriv, r, s, t, hex8);
+    DRT::UTILS::shape_function_3D_deriv1(deriv, r, s, t, hex8);
 
     // update element geometry
     Epetra_SerialDenseMatrix xrefe(NUMNOD_SOH8,NUMDIM_SOH8);  // material coord. of element

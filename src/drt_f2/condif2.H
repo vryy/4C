@@ -381,7 +381,7 @@ private:
                          const int&                fssgd);
 
   // set number of gauss points to element shape default
-  DRT::Utils::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype);
+  DRT::UTILS::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype);
 
   void CreateLinesTri(const int& nline,
                       const int& nnode);
@@ -709,7 +709,7 @@ private:
 		               const int iel);
 
   // Get Rule for Gaussintegration according to DRT::UTIL
-  DRT::Utils::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
+  DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
 
   // integrate shape functions over a line
   void IntegrateShapeFunction(ParameterList& params,

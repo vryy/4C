@@ -323,7 +323,7 @@ private:
   //! vector of lines adjacent to this element (wall1: 3 or 4 lines)
   vector<DRT::Elements::Wall1Line*>               lineptrs_;
   //! gaussian points
-  DRT::Utils::GaussRule2D                         gaussrule_;
+  DRT::UTILS::GaussRule2D                         gaussrule_;
   //! problem type
   DimensionalReduction                            wtype_;
   //! type of stress calculation
@@ -415,7 +415,7 @@ private:
                        const int& nnode);
   
   // set number of gauss points to element shape default
-   DRT::Utils::GaussRule2D getGaussrule(int* ngp);
+   DRT::UTILS::GaussRule2D getGaussrule(int* ngp);
   
 
 }; // class Wall1
@@ -700,7 +700,7 @@ private:
 		                  const int iel);
   
   // set number of gauss points to element shape default
-   DRT::Utils::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
+   DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
 
 }; // class Wall1Line
 

@@ -19,7 +19,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_utils.H"
 
-using namespace DRT::Utils;
+using namespace DRT::UTILS;
 
 
 /*----------------------------------------------------------------------*

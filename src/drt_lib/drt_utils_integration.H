@@ -21,7 +21,7 @@ using namespace std;
 
 namespace DRT
 {
-namespace Utils
+namespace UTILS
 {
 
 //! supported 3d gauss rules
@@ -153,7 +153,7 @@ double getSizeInLocalCoordinates(
     const DRT::Element::DiscretizationType     distype);
 
 
-} // namespace Utils
+} // namespace UTILS
 } // namespace DRT
 
 #endif // #ifndef UTILS_INTEGRATION_H

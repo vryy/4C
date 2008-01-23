@@ -185,8 +185,8 @@ DRT::Elements::So_hex8::Integrator_So_hex8::Integrator_So_hex8()
   // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
   // fill up nodal f at each gp
   // fill up df w.r.t. rst directions (NUMDIM) at each gp
-  const DRT::Utils::GaussRule3D gaussrule_ = DRT::Utils::intrule_hex_8point;
-  const DRT::Utils::IntegrationPoints3D intpoints = getIntegrationPoints3D(gaussrule_);
+  const DRT::UTILS::GaussRule3D gaussrule_ = DRT::UTILS::intrule_hex_8point;
+  const DRT::UTILS::IntegrationPoints3D intpoints = getIntegrationPoints3D(gaussrule_);
  
   for (int igp = 0; igp < intpoints.nquad; ++igp) {
     const double r = intpoints.qxg[igp][0];
@@ -195,8 +195,8 @@ DRT::Elements::So_hex8::Integrator_So_hex8::Integrator_So_hex8()
 
     shapefct_gp[igp].Size(NUMNOD_SOH8);
     deriv_gp[igp].Shape(NUMDIM_SOH8, NUMNOD_SOH8);
-    DRT::Utils::shape_function_3D(shapefct_gp[igp], r, s, t, hex8);
-    DRT::Utils::shape_function_3D_deriv1(deriv_gp[igp], r, s, t, hex8);
+    DRT::UTILS::shape_function_3D(shapefct_gp[igp], r, s, t, hex8);
+    DRT::UTILS::shape_function_3D_deriv1(deriv_gp[igp], r, s, t, hex8);
     weights[igp] = intpoints.qwgt[igp];
  }
 #endif  // #if 0 //OUR SHAPE FUNCTIONS
@@ -205,8 +205,8 @@ DRT::Elements::So_hex8::Integrator_So_hex8::Integrator_So_hex8()
   // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
   // fill up nodal f at each gp
   // fill up df w.r.t. rst directions (NUMDIM) at each gp
-  const DRT::Utils::GaussRule3D gaussrule_ = DRT::Utils::intrule_hex_8point;
-  const DRT::Utils::IntegrationPoints3D intpoints = getIntegrationPoints3D(gaussrule_);
+  const DRT::UTILS::GaussRule3D gaussrule_ = DRT::UTILS::intrule_hex_8point;
+  const DRT::UTILS::IntegrationPoints3D intpoints = getIntegrationPoints3D(gaussrule_);
  
   for (int igp = 0; igp < intpoints.nquad; ++igp) {
     const double r = intpoints.qxg[igp][0];
@@ -217,8 +217,8 @@ DRT::Elements::So_hex8::Integrator_So_hex8::Integrator_So_hex8()
     Epetra_SerialDenseVector temp_vec(NUMNOD_SOH8);
     Epetra_SerialDenseMatrix deriv_gpmy(NUMDIM_SOH8, NUMNOD_SOH8);
     Epetra_SerialDenseMatrix temp_mat(NUMDIM_SOH8, NUMNOD_SOH8);
-    DRT::Utils::shape_function_3D(shapefct_gpmy, r, s, t, hex8);
-    DRT::Utils::shape_function_3D_deriv1(deriv_gpmy, r, s, t, hex8);
+    DRT::UTILS::shape_function_3D(shapefct_gpmy, r, s, t, hex8);
+    DRT::UTILS::shape_function_3D_deriv1(deriv_gpmy, r, s, t, hex8);
     
     temp_vec+=shapefct_gp[igp];
     temp_vec.Scale(-1);
@@ -250,8 +250,8 @@ DRT::Elements::SoDisp::Integrator_SoDisp::Integrator_SoDisp(DRT::Elements::SoDis
     // fill up df w.r.t. rst directions (NUMDIM) at each gp
     // forward initialization of necessary attributes
 
-    const DRT::Utils::IntegrationPoints3D intpoints = \
-        DRT::Utils::getIntegrationPoints3D(this_element.gaussrule_);
+    const DRT::UTILS::IntegrationPoints3D intpoints = \
+        DRT::UTILS::getIntegrationPoints3D(this_element.gaussrule_);
     
     num_gp = this_element.numgpt_disp_;
     num_nodes = this_element.numnod_disp_ ;
@@ -267,8 +267,8 @@ DRT::Elements::SoDisp::Integrator_SoDisp::Integrator_SoDisp(DRT::Elements::SoDis
 
       Epetra_SerialDenseVector funct(num_nodes);
       Epetra_SerialDenseMatrix deriv(num_coords, num_nodes);
-      DRT::Utils::shape_function_3D(funct, r, s, t, distype);
-      DRT::Utils::shape_function_3D_deriv1(deriv, r, s, t, distype);
+      DRT::UTILS::shape_function_3D(funct, r, s, t, distype);
+      DRT::UTILS::shape_function_3D_deriv1(deriv, r, s, t, distype);
         
       // return adresses of just evaluated matrices
       shapefct_gp[igp] = funct;

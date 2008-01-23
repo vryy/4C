@@ -296,7 +296,7 @@ void XFEM::createDofMap(
     {
         const DRT::Element* actele = xfemdis->lColElement(i);
         const DRT::Element::DiscretizationType stressdistype = XFLUID::getStressInterpolationType3D(XFLUID::getElementFormulation(actele->Shape()));
-        const int numstressparam = DRT::Utils::getNumberOfElementNodes(stressdistype);
+        const int numstressparam = DRT::UTILS::getNumberOfElementNodes(stressdistype);
         const int element_gid = actele->Id();
         //cout << "numstressparam in createDofMaps: " << numstressparam << endl;
         for (int inen = 0; inen<numstressparam; ++inen)

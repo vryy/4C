@@ -30,12 +30,12 @@ using namespace Teuchos;
 /*----------------------------------------------------------------------*/
 // the static instance
 /*----------------------------------------------------------------------*/
-DRT::Utils::FunctionManager DRT::Utils::FunctionManager::instance_;
+DRT::UTILS::FunctionManager DRT::UTILS::FunctionManager::instance_;
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Utils::FunctionManager::ReadInput()
+void DRT::UTILS::FunctionManager::ReadInput()
 {
   functions_.clear();
 
@@ -269,7 +269,7 @@ void DRT::Utils::FunctionManager::ReadInput()
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::Utils::ExprFunction::ExprFunction()
+DRT::UTILS::ExprFunction::ExprFunction()
 {
   x_.clear();
   y_.clear();
@@ -283,7 +283,7 @@ DRT::Utils::ExprFunction::ExprFunction()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::Utils::ExprFunction::ExprFunction(char* buf,
+DRT::UTILS::ExprFunction::ExprFunction(char* buf,
                                        double x,
                                        double y,
                                        double z)
@@ -302,7 +302,7 @@ DRT::Utils::ExprFunction::ExprFunction(char* buf,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::Utils::ExprFunction::~ExprFunction()
+DRT::UTILS::ExprFunction::~ExprFunction()
 {
   for(unsigned i=0;i!=expr_.size();++i)
   {
@@ -312,7 +312,7 @@ DRT::Utils::ExprFunction::~ExprFunction()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Utils::ExprFunction::AddExpr(char* buf,
+void DRT::UTILS::ExprFunction::AddExpr(char* buf,
                                        double x,
                                        double y,
                                        double z
@@ -329,7 +329,7 @@ void DRT::Utils::ExprFunction::AddExpr(char* buf,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::Utils::ExprFunction::Evaluate(int index, const double* x)
+double DRT::UTILS::ExprFunction::Evaluate(int index, const double* x)
 {
   // single expression for all components. Reset index to 0!
   if(expr_.size()==1)
@@ -347,7 +347,7 @@ double DRT::Utils::ExprFunction::Evaluate(int index, const double* x)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::Utils::BeltramiFunction::Evaluate(int index, const double* xp)
+double DRT::UTILS::BeltramiFunction::Evaluate(int index, const double* xp)
 {
   double a = M_PI/4.0;
   double d = M_PI/2.0;
@@ -376,7 +376,7 @@ double DRT::Utils::BeltramiFunction::Evaluate(int index, const double* xp)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::Utils::KimMoinFunction::Evaluate(int index, const double* xp)
+double DRT::UTILS::KimMoinFunction::Evaluate(int index, const double* xp)
 {
   double a = 2.0;
 
@@ -396,7 +396,7 @@ double DRT::Utils::KimMoinFunction::Evaluate(int index, const double* xp)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::ostream& DRT::Utils::operator<<(std::ostream& out, const DRT::Utils::Function& funct)
+std::ostream& DRT::UTILS::operator<<(std::ostream& out, const DRT::UTILS::Function& funct)
 {
   out << "  Function:\n";
   return out;
@@ -405,7 +405,7 @@ std::ostream& DRT::Utils::operator<<(std::ostream& out, const DRT::Utils::Functi
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::ostream& DRT::Utils::operator<<(std::ostream& out, const DRT::Utils::FunctionManager& manager)
+std::ostream& DRT::UTILS::operator<<(std::ostream& out, const DRT::UTILS::FunctionManager& manager)
 {
   out << "Function Manager:\n";
   for (unsigned i=0; i<manager.functions_.size(); ++i)

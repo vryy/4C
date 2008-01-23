@@ -1685,7 +1685,7 @@ void FluidGenAlphaIntegration::SetInitialFlowField(
       {
         int gid = nodedofset[index];
 
-        double initialval=DRT::Utils::FunctionManager::Instance().Funct(startfuncno-1).Evaluate(index,lnode->X());
+        double initialval=DRT::UTILS::FunctionManager::Instance().Funct(startfuncno-1).Evaluate(index,lnode->X());
 
         velnp_->ReplaceGlobalValues(1,&initialval,&gid);
         veln_ ->ReplaceGlobalValues(1,&initialval,&gid);

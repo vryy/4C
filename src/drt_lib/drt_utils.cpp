@@ -66,7 +66,7 @@ extern "C"
 /*----------------------------------------------------------------------*
  |  allocate an instance of a specific impl. of ParObject (public) mwgee 12/06|
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
+DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
 {
   // mv ptr behind the size record
   const int* ptr = (const int*)(&data[0]);
@@ -422,7 +422,7 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  allocate an element of a specific type (public)          mwgee 03|07|
  *----------------------------------------------------------------------*/
-RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
+RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
                                               const int id,
                                               const int owner)
 {
@@ -587,7 +587,7 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int DRT::Utils::FindMyPos(int nummyelements, const Epetra_Comm& comm)
+int DRT::UTILS::FindMyPos(int nummyelements, const Epetra_Comm& comm)
 {
   const int myrank  = comm.MyPID();
   const int numproc = comm.NumProc();
@@ -605,7 +605,7 @@ int DRT::Utils::FindMyPos(int nummyelements, const Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Utils::AllreduceEMap(vector<int>& rredundant, const Epetra_Map& emap)
+void DRT::UTILS::AllreduceEMap(vector<int>& rredundant, const Epetra_Map& emap)
 {
   int mynodepos = FindMyPos(emap.NumMyElements(), emap.Comm());
 
@@ -622,7 +622,7 @@ void DRT::Utils::AllreduceEMap(vector<int>& rredundant, const Epetra_Map& emap)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Utils::AllreduceEMap(map<int,int>& idxmap, const Epetra_Map& emap)
+void DRT::UTILS::AllreduceEMap(map<int,int>& idxmap, const Epetra_Map& emap)
 {
   idxmap.clear();
 
@@ -638,7 +638,7 @@ void DRT::Utils::AllreduceEMap(map<int,int>& idxmap, const Epetra_Map& emap)
 /*----------------------------------------------------------------------*
  |  create an allreduced map on a distinct processor (public)  gjb 12/07|  
  *----------------------------------------------------------------------*/
-RCP<Epetra_Map> DRT::Utils::AllreduceEMap(const Epetra_Map& emap, const int pid)
+RCP<Epetra_Map> DRT::UTILS::AllreduceEMap(const Epetra_Map& emap, const int pid)
 {
   vector<int> rv;
   AllreduceEMap(rv,emap);
@@ -665,7 +665,7 @@ RCP<Epetra_Map> DRT::Utils::AllreduceEMap(const Epetra_Map& emap, const int pid)
 /*----------------------------------------------------------------------*
  |  partition a graph using metis  (public)                  mwgee 11/06|
  *----------------------------------------------------------------------*/
-RefCountPtr<Epetra_CrsGraph> DRT::Utils::PartGraphUsingMetis(
+RefCountPtr<Epetra_CrsGraph> DRT::UTILS::PartGraphUsingMetis(
                                              const Epetra_CrsGraph& graph,
                                              const Epetra_Vector& weights)
 {
@@ -844,7 +844,7 @@ RefCountPtr<Epetra_CrsGraph> DRT::Utils::PartGraphUsingMetis(
 /*----------------------------------------------------------------------*
  |  locally extract a subset of values  (public)            mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::Utils::ExtractMyValues(const Epetra_Vector& global,
+void DRT::UTILS::ExtractMyValues(const Epetra_Vector& global,
                                  vector<double>& local,
                                  const vector<int> lm)
 {
@@ -862,7 +862,7 @@ void DRT::Utils::ExtractMyValues(const Epetra_Vector& global,
 /*----------------------------------------------------------------------*
  |  Send and receive lists of ints.  (heiner 09/07)                     |
  *----------------------------------------------------------------------*/
-void DRT::Utils::AllToAllCommunication( const Epetra_Comm& comm,
+void DRT::UTILS::AllToAllCommunication( const Epetra_Comm& comm,
                                         const vector< vector<int> >& send,
                                         vector< vector<int> >& recv )
 {

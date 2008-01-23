@@ -39,7 +39,7 @@ int DRT::Elements::Shell8Line::EvaluateNeumann(
   RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==null) dserror("Cannot get state vector 'displacement'");
   vector<double> mydisp(lm.size());
-  DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
+  DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
   // find out whether we will use a time curve
   bool usetime = true;
@@ -52,7 +52,7 @@ int DRT::Elements::Shell8Line::EvaluateNeumann(
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
   if (curvenum>=0 && usetime)
-    curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
+    curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
 
   // init gaussian points of parent element
   S8_DATA s8data;

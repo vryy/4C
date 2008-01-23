@@ -92,14 +92,14 @@ vector<vector<double> > IntCell::ComputePhysicalCoordinates(
     vector<vector<double> > physicalCoordinates;
     
     const int nsd = 3;
-    const int nen_cell = DRT::Utils::getNumberOfElementNodes(this->Shape());
+    const int nen_cell = DRT::UTILS::getNumberOfElementNodes(this->Shape());
     
     // coordinates
     for (int inen = 0; inen < nen_cell; ++inen)
     {
         // shape functions
         Epetra_SerialDenseVector funct(27);
-        DRT::Utils::shape_function_3D(
+        DRT::UTILS::shape_function_3D(
                 funct,
                 this->GetDomainCoord()[inen][0],
                 this->GetDomainCoord()[inen][1],
@@ -197,7 +197,7 @@ vector<double> DomainIntCell::modifyGaussRule3D(
     } else {
     
         const DRT::Element::DiscretizationType celldistype = this->Shape();
-        const int numnode = DRT::Utils::getNumberOfElementNodes(celldistype);
+        const int numnode = DRT::UTILS::getNumberOfElementNodes(celldistype);
         const int nsd = 3;
     
         // get node coordinates
@@ -217,8 +217,8 @@ vector<double> DomainIntCell::modifyGaussRule3D(
         // create shape function vectors 
         blitz::Array<double,1> funct(numnode);
         blitz::Array<double,2> deriv(nsd,numnode,blitz::ColumnMajorArray<2>());
-        DRT::Utils::shape_function_3D(funct,cell_e0,cell_e1,cell_e2,celldistype);
-        DRT::Utils::shape_function_3D_deriv1(deriv,cell_e0,cell_e1,cell_e2,celldistype);
+        DRT::UTILS::shape_function_3D(funct,cell_e0,cell_e1,cell_e2,celldistype);
+        DRT::UTILS::shape_function_3D_deriv1(deriv,cell_e0,cell_e1,cell_e2,celldistype);
 
         // translate position into from cell coordinates to element coordinates
         const blitz::Array<double,1> e(blitz::sum(funct(j)*xyze_cell(i,j),j));
@@ -265,7 +265,7 @@ vector<vector<double> > DomainIntCell::GetDefaultCoordinates(
 {
     vector<vector<double> > coords;
     const int nsd = 3;
-    const int numnode = DRT::Utils::getNumberOfElementNodes(distype);
+    const int numnode = DRT::UTILS::getNumberOfElementNodes(distype);
     
     for(int j = 0; j < numnode; j++){
         vector<double> coord(nsd);
@@ -273,14 +273,14 @@ vector<vector<double> > DomainIntCell::GetDefaultCoordinates(
         case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27:
         {
             for(int k = 0; k < nsd; k++){
-                coord[k] = DRT::Utils::eleNodeNumbering_hex27_nodes_reference[j][k];
+                coord[k] = DRT::UTILS::eleNodeNumbering_hex27_nodes_reference[j][k];
                 };
             break;
         }
         case DRT::Element::tet4: case DRT::Element::tet10:
         {
             for(int k = 0; k < nsd; k++){
-                coord[k] = DRT::Utils::eleNodeNumbering_tet10_nodes_reference[j][k];
+                coord[k] = DRT::UTILS::eleNodeNumbering_tet10_nodes_reference[j][k];
                 }
             break;
         }
@@ -308,11 +308,11 @@ blitz::Array<double,1> DomainIntCell::GetPhysicalCenterPosition(DRT::Element& el
     const vector<vector<double> > physcoord = this->GetPhysicalCoord(ele);
     
     // center in local coordinates
-    const vector<double> localcenterpos = DRT::Utils::getLocalCenterPosition(this->Shape());
+    const vector<double> localcenterpos = DRT::UTILS::getLocalCenterPosition(this->Shape());
 
     // shape functions
     blitz::Array<double, 1> funct(27);
-    DRT::Utils::shape_function_3D(
+    DRT::UTILS::shape_function_3D(
             funct,
             localcenterpos[0],
             localcenterpos[1],

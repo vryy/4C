@@ -204,24 +204,24 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
   //----------------------------------------------------------------------------
 
   // use one point gauss rule to calculate tau at element center
-  DRT::Utils::GaussRule3D integrationrule_stabili=DRT::Utils::intrule3D_undefined;
+  DRT::UTILS::GaussRule3D integrationrule_stabili=DRT::UTILS::intrule3D_undefined;
   switch (distype)
   {
       case DRT::Element::hex8:
       case DRT::Element::hex20:
       case DRT::Element::hex27:
-        integrationrule_stabili = DRT::Utils::intrule_hex_1point;
+        integrationrule_stabili = DRT::UTILS::intrule_hex_1point;
         break;
       case DRT::Element::tet4:
       case DRT::Element::tet10:
-        integrationrule_stabili = DRT::Utils::intrule_tet_1point;
+        integrationrule_stabili = DRT::UTILS::intrule_tet_1point;
         break;
       default:
         dserror("invalid discretization type for fluid3");
   }
 
   // gaussian points
-  const DRT::Utils::IntegrationPoints3D intpoints_onepoint(integrationrule_stabili);
+  const DRT::UTILS::IntegrationPoints3D intpoints_onepoint(integrationrule_stabili);
   
   // shape functions and derivs at element center
   const double e1    = intpoints_onepoint.qxg[0][0];
@@ -229,8 +229,8 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
   const double e3    = intpoints_onepoint.qxg[0][2];
   const double wquad = intpoints_onepoint.qwgt[0];
   
-  DRT::Utils::shape_function_3D       (funct_,e1,e2,e3,distype);
-  DRT::Utils::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
+  DRT::UTILS::shape_function_3D       (funct_,e1,e2,e3,distype);
+  DRT::UTILS::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
   
   // get element type constant for tau
   double mk=0.0;
@@ -792,7 +792,7 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
   const bool higher_order_ele = ele->isHigherOrderElement(distype);
 
   // gaussian points
-  const DRT::Utils::IntegrationPoints3D intpoints(ele->gaussrule_);
+  const DRT::UTILS::IntegrationPoints3D intpoints(ele->gaussrule_);
 
   // remember whether the subscale quantities have been allocated an set to zero.
   if(tds == Fluid3::subscales_time_dependent)
@@ -846,11 +846,11 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
     const double e3 = intpoints.qxg[iquad][2];
 
     // get values of shape functions and derivatives in the gausspoint
-    DRT::Utils::shape_function_3D(funct_,e1,e2,e3,distype);
-    DRT::Utils::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
+    DRT::UTILS::shape_function_3D(funct_,e1,e2,e3,distype);
+    DRT::UTILS::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
     if (higher_order_ele)
     {
-      DRT::Utils::shape_function_3D_deriv2(deriv2_,e1,e2,e3,distype);
+      DRT::UTILS::shape_function_3D_deriv2(deriv2_,e1,e2,e3,distype);
     }
 
     // get transposed Jacobian matrix and determinant
@@ -4629,24 +4629,24 @@ void DRT::Elements::Fluid3GenalphaResVMM::CalcRes(
   //----------------------------------------------------------------------------
 
   // use one point gauss rule to calculate tau at element center
-  DRT::Utils::GaussRule3D integrationrule_stabili=DRT::Utils::intrule3D_undefined;
+  DRT::UTILS::GaussRule3D integrationrule_stabili=DRT::UTILS::intrule3D_undefined;
   switch (distype)
   {
       case DRT::Element::hex8:
       case DRT::Element::hex20:
       case DRT::Element::hex27:
-        integrationrule_stabili = DRT::Utils::intrule_hex_1point;
+        integrationrule_stabili = DRT::UTILS::intrule_hex_1point;
         break;
       case DRT::Element::tet4:
       case DRT::Element::tet10:
-        integrationrule_stabili = DRT::Utils::intrule_tet_1point;
+        integrationrule_stabili = DRT::UTILS::intrule_tet_1point;
         break;
       default:
         dserror("invalid discretization type for fluid3");
   }
 
   // gaussian points
-  const DRT::Utils::IntegrationPoints3D intpoints_onepoint(integrationrule_stabili);
+  const DRT::UTILS::IntegrationPoints3D intpoints_onepoint(integrationrule_stabili);
   
   // shape functions and derivs at element center
   const double e1    = intpoints_onepoint.qxg[0][0];
@@ -4654,8 +4654,8 @@ void DRT::Elements::Fluid3GenalphaResVMM::CalcRes(
   const double e3    = intpoints_onepoint.qxg[0][2];
   const double wquad = intpoints_onepoint.qwgt[0];
   
-  DRT::Utils::shape_function_3D       (funct_,e1,e2,e3,distype);
-  DRT::Utils::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
+  DRT::UTILS::shape_function_3D       (funct_,e1,e2,e3,distype);
+  DRT::UTILS::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
   
   // get element type constant for tau
   double mk=0.0;
@@ -4989,7 +4989,7 @@ void DRT::Elements::Fluid3GenalphaResVMM::CalcRes(
   const bool higher_order_ele = ele->isHigherOrderElement(distype);
 
   // gaussian points
-  const DRT::Utils::IntegrationPoints3D intpoints(ele->gaussrule_);
+  const DRT::UTILS::IntegrationPoints3D intpoints(ele->gaussrule_);
 
   // remember whether the subscale quantities have been allocated an set to zero.
   if(tds == Fluid3::subscales_time_dependent)
@@ -5040,11 +5040,11 @@ void DRT::Elements::Fluid3GenalphaResVMM::CalcRes(
     const double e3 = intpoints.qxg[iquad][2];
 
     // get values of shape functions and derivatives in the gausspoint
-    DRT::Utils::shape_function_3D(funct_,e1,e2,e3,distype);
-    DRT::Utils::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
+    DRT::UTILS::shape_function_3D(funct_,e1,e2,e3,distype);
+    DRT::UTILS::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
     if (higher_order_ele)
     {
-      DRT::Utils::shape_function_3D_deriv2(deriv2_,e1,e2,e3,distype);
+      DRT::UTILS::shape_function_3D_deriv2(deriv2_,e1,e2,e3,distype);
     }
 
     // get transposed Jacobian matrix and determinant
@@ -5723,14 +5723,14 @@ void DRT::Elements::Fluid3GenalphaResVMM::GetNodalBodyForce(Fluid3* ele, const d
       // time factor for the intermediate step
       if(time >= 0.0)
       {
-        curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
+        curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
       }
       else
       {
 	// do not compute an "alternative" curvefac here since a negative time value
 	// indicates an error.
         dserror("Negative time value in body force calculation: time = %f",time);
-        //curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(0.0);
+        //curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(0.0);
       }
     }
     else // we do not have a timecurve --- timefactors are constant equal 1

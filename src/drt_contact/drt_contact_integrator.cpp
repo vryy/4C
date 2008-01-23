@@ -34,7 +34,7 @@ ngp_(ngp)
 		{
 		case 1:
 		{
-			const DRT::Utils::IntegrationPoints1D intpoints(DRT::Utils::intrule_line_1point);
+			const DRT::UTILS::IntegrationPoints1D intpoints(DRT::UTILS::intrule_line_1point);
 			for (int i=0;i<intpoints.nquad;++i)
 			{
 				coords_[i]=intpoints.qxg[i];
@@ -44,7 +44,7 @@ ngp_(ngp)
 		}
 		case 2:
 		{
-			const DRT::Utils::IntegrationPoints1D intpoints(DRT::Utils::intrule_line_2point);
+			const DRT::UTILS::IntegrationPoints1D intpoints(DRT::UTILS::intrule_line_2point);
 			for (int i=0;i<intpoints.nquad;++i)
 			{
 				coords_[i]=intpoints.qxg[i];
@@ -54,7 +54,7 @@ ngp_(ngp)
 		}
 		case 3:
 		{
-			const DRT::Utils::IntegrationPoints1D intpoints(DRT::Utils::intrule_line_3point);
+			const DRT::UTILS::IntegrationPoints1D intpoints(DRT::UTILS::intrule_line_3point);
 			for (int i=0;i<intpoints.nquad;++i)
 			{
 				coords_[i]=intpoints.qxg[i];
@@ -64,7 +64,7 @@ ngp_(ngp)
 		}
 		case 4:
 		{
-			const DRT::Utils::IntegrationPoints1D intpoints(DRT::Utils::intrule_line_4point);
+			const DRT::UTILS::IntegrationPoints1D intpoints(DRT::UTILS::intrule_line_4point);
 			for (int i=0;i<intpoints.nquad;++i)
 			{
 				coords_[i]=intpoints.qxg[i];
@@ -74,7 +74,7 @@ ngp_(ngp)
 		}
 		case 5:
 		{
-			const DRT::Utils::IntegrationPoints1D intpoints(DRT::Utils::intrule_line_5point);
+			const DRT::UTILS::IntegrationPoints1D intpoints(DRT::UTILS::intrule_line_5point);
 			for (int i=0;i<intpoints.nquad;++i)
 			{
 				coords_[i]=intpoints.qxg[i];
