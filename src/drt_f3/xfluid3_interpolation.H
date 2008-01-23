@@ -128,7 +128,7 @@ inline DRT::Element::DiscretizationType getStressInterpolationType3D(ElementForm
             dserror("rule not defined");
     }
     return distype;
-};
+}
 
 inline ElementFormulation getElementFormulation(DRT::Element::DiscretizationType distype)
 {
@@ -157,7 +157,7 @@ inline ElementFormulation getElementFormulation(DRT::Element::DiscretizationType
         dserror("not defined!");
     }
     return form;
-};
+}
 
 }
 

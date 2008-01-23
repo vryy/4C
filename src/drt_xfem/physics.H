@@ -57,8 +57,8 @@ enum Field
 
 std::string physVarToString(const Field var);
 
-};
-};
+}
+}
 
 
 #endif  // PHYSICS_H

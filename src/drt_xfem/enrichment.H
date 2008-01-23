@@ -106,7 +106,7 @@ private:
     EnrType type_;
 }; // class Enrichment
 
-};
+}
 
 
 #endif  // #ifndef ENRICHMENT_H

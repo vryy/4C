@@ -102,7 +102,7 @@ namespace XFEM
                             const int                   order);
     
         
-};
+}
 
 
 #endif  //INTERSECTION_MATH_H_

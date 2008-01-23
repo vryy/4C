@@ -93,7 +93,7 @@ private:
 	map<int, BoundaryIntCells > elementalBoundaryIntCells_;
 };
 
-};
+}
 
 #endif  // #ifndef INTERFACE_H
 #endif  // #ifdef CCADISCRET

@@ -338,7 +338,7 @@ public:
       dserror("DISTYPE unknown!");
     }
     return hoel;
-  };
+  }
   
   //@}
 

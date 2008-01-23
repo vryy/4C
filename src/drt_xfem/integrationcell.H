@@ -272,7 +272,7 @@ private:
 typedef std::vector<XFEM::BoundaryIntCell > BoundaryIntCells;
 typedef std::set<XFEM::BoundaryIntCell > BoundaryIntCellSet;
 
-};
+}
 
 #endif  // #ifndef INTEGRATIONCELL_H
 #endif  // #ifdef CCADISCRET

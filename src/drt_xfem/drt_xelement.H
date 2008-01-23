@@ -161,7 +161,7 @@ public:
 private:
 
 }; // class XElement
-}; // namespace ELEMENTS
+} // namespace ELEMENTS
 } // namespace DRT
 
 

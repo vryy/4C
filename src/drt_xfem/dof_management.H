@@ -325,7 +325,7 @@ XFEM::AssemblyType CheckForStandardEnrichmentsOnly(
         const int*                 nodeids
         );
 
-}; // namespace XFEM
+} // namespace XFEM
 
 #endif  // #ifndef DOF_MANAGEMENT_H
 #endif  // #ifdef CCADISCRET

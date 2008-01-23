@@ -43,6 +43,6 @@ std::string XFEM::PHYSICS::physVarToString(const XFEM::PHYSICS::Field var)
         default: dserror("no string defined for Field");
     };
     return text;
-};
+}
 
 #endif  // #ifdef CCADISCRET

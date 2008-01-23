@@ -1470,7 +1470,7 @@ class Intersection
 };
 
 
-};
+}
 
 
 #endif  // #ifndef INTERSECTION_H

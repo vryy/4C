@@ -305,7 +305,7 @@ namespace XFEM
         const Epetra_SerialDenseMatrix&    XAABB
         );
     
-};
+}
 
 
 #endif  //INTERSECTION_MATH_H_

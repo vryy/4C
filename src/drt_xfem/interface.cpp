@@ -92,7 +92,7 @@ XFEM::DomainIntCells XFEM::InterfaceHandle::GetDomainIntCells(
         return cells;
     }
     return tmp->second;
-};
+}
 
 XFEM::BoundaryIntCells XFEM::InterfaceHandle::GetBoundaryIntCells(
         const int gid
@@ -106,7 +106,7 @@ XFEM::BoundaryIntCells XFEM::InterfaceHandle::GetBoundaryIntCells(
         return cells;
     }
     return tmp->second;
-};
+}
 
 bool XFEM::InterfaceHandle::PositionWithinSpecificClosedRegion(
         const blitz::Array<double,1>& actpos,
