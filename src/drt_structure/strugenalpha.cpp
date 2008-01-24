@@ -175,13 +175,7 @@ maxentriesperrow_(81)
       discret_.Evaluate(p,stiff_,mass_,fint_,null,null);
       discret_.ClearState();
 
-      //Check for Volume constraint conditions
-      vector<DRT::Condition*> volconstrcond(0);
-      discret_.GetCondition("VolumeConstraint_3D",volconstrcond);
-      if (volconstrcond.size())
-      {
-    	  ConstrMan_=rcp(new ConstrManager(discret_, dis_));
-      }
+      ConstrMan_=rcp(new ConstrManager(discret_, dis_));
 
       // Check for surface stress conditions due to interfacial phenomena
       vector<DRT::Condition*> surfstresscond(0);
@@ -1005,7 +999,7 @@ void StruGenAlpha::FullNewton()
         surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
       }
       
-      if (ConstrMan_!=Teuchos::null)
+      if (ConstrMan_->HaveConstraint())
       {
     	  ConstrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
       }
@@ -1090,8 +1084,8 @@ void StruGenAlpha::NonLinearUzawaFullNewton(int predictor)
 	  //--------------------update end configuration
 	  disn_->Update(1./(1.-alphaf),*dism_,-alphaf/(1.-alphaf));
 	  //--------------------compute volume error
-	  ConstrMan_->ComputeVolumeError(time+dt,disn_);
-	  double volnorm=ConstrMan_->GetVolumeErrorNorm();
+	  ConstrMan_->ComputeError(time+dt,disn_);
+	  double volnorm=ConstrMan_->GetErrorNorm();
 	  cout<<"Volume error for Newton solution: "<<volnorm<<endl;
 	  int numiter_uzawa=0;
 	  while (volnorm>tolvol && numiter_uzawa <= maxiterUzawa)
@@ -1106,8 +1100,8 @@ void StruGenAlpha::NonLinearUzawaFullNewton(int predictor)
 		  //--------------------update end configuration
 		  disn_->Update(1./(1.-alphaf),*dism_,-alphaf/(1.-alphaf));
 		  //--------------------compute volume error
-		  ConstrMan_->ComputeVolumeError(time+dt,disn_);
-		  volnorm=ConstrMan_->GetVolumeErrorNorm();
+		  ConstrMan_->ComputeError(time+dt,disn_);
+		  volnorm=ConstrMan_->GetErrorNorm();
 		  cout<<"Volume error for computed displacement: "<<volnorm<<endl;
 		  numiter_uzawa++;		  
 	  }	  
@@ -1158,8 +1152,8 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   double disinorm = 1.0e6;
   fresm_->Norm2(&fresmnorm);
 
-  double volnorm=ConstrMan_->GetVolumeErrorNorm();
-  int numConstrVol=ConstrMan_->GetNumberOfVolumes() ;
+  double volnorm=ConstrMan_->GetErrorNorm();
+  int numConstrVol=ConstrMan_->GetNumberOfConstraints() ;
   Epetra_Time timer(discret_.Comm());
   timer.ResetStartTime();
   bool print_unconv = true;
@@ -1228,7 +1222,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   	Epetra_SerialDenseVector vol_res(numConstrVol);
   	for (int foo = 0; foo < numConstrVol; ++foo)
   	{
-  	  vol_res[foo]=dotprod[foo]+ConstrMan_->GetVolumeError(foo);
+  	  vol_res[foo]=dotprod[foo]+ConstrMan_->GetError(foo);
   	}
   	norm_vol_uzawa=vol_res.Norm2();
   	quotient =1;
@@ -1290,7 +1284,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 	  	  Epetra_SerialDenseVector vol_res(numConstrVol);
 	  	  for (int foo = 0; foo < numConstrVol; ++foo)
 	  	  {
-	  		  vol_res[foo]=dotprod[foo]+ConstrMan_->GetVolumeError(foo);
+	  		  vol_res[foo]=dotprod[foo]+ConstrMan_->GetError(foo);
 	  	  }
 	      norm_vol_uzawa=vol_res.Norm2();
 
@@ -1402,7 +1396,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
       discret_.ClearState();
 
       ConstrMan_->StiffnessAndInternalForces(timen,disn_,fint_,stiff_);
-      volnorm=ConstrMan_->GetVolumeErrorNorm();
+      volnorm=ConstrMan_->GetErrorNorm();
       // do NOT finalize the stiffness matrix to add masses to it later
     }
 
@@ -2903,7 +2897,7 @@ void StruGenAlpha::Integrate()
   else dserror("Unknown type of predictor");
 
   //in case a volume is constrained, do full newton together with an Uzawa algorithm
-  if (ConstrMan_!=Teuchos::null)
+  if (ConstrMan_->HaveConstraint())
   {
 	  string algo = params_.get<string>("uzawa algorithm","newtonlinuzawa");
 	  ConstrMan_->ScaleLagrMult(0.0);

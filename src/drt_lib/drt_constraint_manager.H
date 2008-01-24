@@ -79,15 +79,15 @@ public:
 	  /*!
 	   \brief Return norm of difference between actual and prescribed volumes
 	  */
-	  double GetVolumeErrorNorm()
+	  double GetErrorNorm()
 	  {
-		  return volerr_->Norm2();
+		  return constrainterr_->Norm2();
 	  };
 	  	  
 	  /*!
 	  	   \brief Return number of constrained volumes
 	  */ 
-	  int GetNumberOfVolumes()
+	  int GetNumberOfConstraints()
 	  {
 		  return numConstrID_; 
 	  };
@@ -130,7 +130,7 @@ public:
 	  /*!
 	  	   \brief Return lagrange multiplier increment
 	  */
-	  	  double GetLagrIncr(int i)
+	  double GetLagrIncr(int i)
 	  {
 		  return (*lagrMultInc_)[i];
 	  };
@@ -138,14 +138,14 @@ public:
 	  /*!
 	  	  	   \brief Compute difference between current and prescribed volume at a given time and a given displacement 
 	  */
-	  void ComputeVolumeError(double time,RCP<Epetra_Vector> disp);
+	  void ComputeError(double time,RCP<Epetra_Vector> disp);
 	  
 	  /*!
 	  	   \brief Return differences between prescribed and actual value of volume number i
 	  */
-	  double GetVolumeError(int i)
+	  double GetError(int i)
 	  {
-		  return (*volerr_)[i];
+		  return (*constrainterr_)[i];
 	  }
 	  
 	  /*!
@@ -153,7 +153,7 @@ public:
 	  */
 	  RCP<Epetra_Vector> GetConstrVec()
 	  {
-		  return constrVec_;
+		  return constrVec1_;
 	  };
 	  
 	  /*!
@@ -169,12 +169,17 @@ public:
 		  return (*lagrMultVec_)[i];		  
 	  }	  
 	  
+	  bool HaveConstraint()
+	  {
+		  return haveconstraint_;
+	  }
+	  
 	  /*!
 	   \brief Return current value of volume i
 	  */
-	  double GetCurrVol(int i)
+	  double GetCurrValue(int i)
 	  {
-		  return (*actvol_)[i];
+		  return (*actvalues_)[i];
 	  }
 	  //@}
 private:
@@ -186,14 +191,16 @@ private:
 
 	  */  
 	
-	  void SynchronizeVolConstraint(ParameterList& params,
-				RCP<Epetra_SerialDenseVector>& vect);
+	  void SynchronizeConstraint(ParameterList& params,
+				RCP<Epetra_SerialDenseVector>& vect,const char* resultstr);
 	  
 	  /*!
 	      \brief Setup separate dofrowmaps for any condition ID and initialize lagrange multiplier
 
 	  */  
 	  void SetupVolDofrowmaps();
+	  
+	  void ManageIDs(ParameterList& params);
 	  //@}
 	
 private:
@@ -206,10 +213,10 @@ private:
 	
 	//! name@ Private Attributes
 	DRT::Discretization& actdisc_;	
-	RefCountPtr<Epetra_SerialDenseVector> referencevolumes_;
-	RefCountPtr<Epetra_SerialDenseVector> initialvolumes_;
-	RefCountPtr<Epetra_SerialDenseVector> actvol_;
-	RefCountPtr<Epetra_SerialDenseVector> volerr_;
+	RefCountPtr<Epetra_SerialDenseVector> referencevalues_;
+	RefCountPtr<Epetra_SerialDenseVector> initialvalues_;
+	RefCountPtr<Epetra_SerialDenseVector> actvalues_;
+	RefCountPtr<Epetra_SerialDenseVector>  constrainterr_;
 	int minConstrID_;
 	int maxConstrID_;
 	int numConstrID_;
@@ -217,10 +224,12 @@ private:
 	RefCountPtr<Epetra_SerialDenseVector> lagrMultVec_;
 	RefCountPtr<Epetra_SerialDenseVector> lagrMultInc_;
 	map<int, RCP<Epetra_Map> > voldofrowmaps_;
-	RefCountPtr<Epetra_Vector> constrVec_;
+	RefCountPtr<Epetra_Vector> constrVec1_;
+	RefCountPtr<Epetra_MultiVector> constrVec_;
+	bool haveconstraint_;
 	//@}
     
 
 }; //class
 
-#endif /*VOLUMECONSTRAINTMANAGER_H*/
+#endif /*CONSTRAINTMANAGER_H*/
