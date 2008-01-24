@@ -180,7 +180,7 @@ maxentriesperrow_(81)
       discret_.GetCondition("VolumeConstraint_3D",volconstrcond);
       if (volconstrcond.size())
       {
-    	  volConstrMan_=rcp(new VolConstrManager(discret_, dis_));
+    	  ConstrMan_=rcp(new ConstrManager(discret_, dis_));
       }
 
       // Check for surface stress conditions due to interfacial phenomena
@@ -1005,9 +1005,9 @@ void StruGenAlpha::FullNewton()
         surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
       }
       
-      if (volConstrMan_!=Teuchos::null)
+      if (ConstrMan_!=Teuchos::null)
       {
-    	  volConstrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
+    	  ConstrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
       }
       // do NOT finalize the stiffness matrix to add masses to it later
     }
@@ -1090,24 +1090,24 @@ void StruGenAlpha::NonLinearUzawaFullNewton(int predictor)
 	  //--------------------update end configuration
 	  disn_->Update(1./(1.-alphaf),*dism_,-alphaf/(1.-alphaf));
 	  //--------------------compute volume error
-	  volConstrMan_->ComputeVolumeError(time+dt,disn_);
-	  double volnorm=volConstrMan_->GetVolumeErrorNorm();
+	  ConstrMan_->ComputeVolumeError(time+dt,disn_);
+	  double volnorm=ConstrMan_->GetVolumeErrorNorm();
 	  cout<<"Volume error for Newton solution: "<<volnorm<<endl;
 	  int numiter_uzawa=0;
 	  while (volnorm>tolvol && numiter_uzawa <= maxiterUzawa)
 	  {
 		  // Lagrange multiplier is increased by Uzawa_param*VolErr
-		  volConstrMan_->UpdateLagrMult(Uzawa_param);
+		  ConstrMan_->UpdateLagrMult(Uzawa_param);
 		  // Keep new Lagrange multiplier fixed and solve for new displacements
 		  if      (predictor==1) ConstantPredictor();
 		  else if (predictor==2) ConsistentPredictor();
-		  volConstrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
+		  ConstrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
 		  FullNewton();
 		  //--------------------update end configuration
 		  disn_->Update(1./(1.-alphaf),*dism_,-alphaf/(1.-alphaf));
 		  //--------------------compute volume error
-		  volConstrMan_->ComputeVolumeError(time+dt,disn_);
-		  volnorm=volConstrMan_->GetVolumeErrorNorm();
+		  ConstrMan_->ComputeVolumeError(time+dt,disn_);
+		  volnorm=ConstrMan_->GetVolumeErrorNorm();
 		  cout<<"Volume error for computed displacement: "<<volnorm<<endl;
 		  numiter_uzawa++;		  
 	  }	  
@@ -1158,8 +1158,8 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   double disinorm = 1.0e6;
   fresm_->Norm2(&fresmnorm);
 
-  double volnorm=volConstrMan_->GetVolumeErrorNorm();
-  int numConstrVol=volConstrMan_->GetNumberOfVolumes() ;
+  double volnorm=ConstrMan_->GetVolumeErrorNorm();
+  int numConstrVol=ConstrMan_->GetNumberOfVolumes() ;
   Epetra_Time timer(discret_.Comm());
   timer.ResetStartTime();
   bool print_unconv = true;
@@ -1194,23 +1194,23 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     //counter used for adaptivity
     int count_paramadapt=1;
 
-    volConstrMan_->ScaleLagrIncr(0.0);
+    ConstrMan_->ScaleLagrIncr(0.0);
 
-    Epetra_Vector constrVecWeight(*(volConstrMan_->GetConstrVec()));
+    Epetra_Vector constrVecWeight(*(ConstrMan_->GetConstrVec()));
     Epetra_SerialDenseVector dotprod(numConstrVol);
 
     // Compute residual of the uzawa algorithm
     for (int foo = 0; foo < numConstrVol; ++foo)
   	{
-    	Epetra_Vector onlyvol_foo(volConstrMan_->GetDofMap(foo));
-      	Epetra_Vector onlydis_foo(volConstrMan_->GetDofMap(foo));
-      	Epetra_Import importer1(volConstrMan_->GetDofMap(foo),(volConstrMan_->GetConstrVec())->Map());
-      	Epetra_Import importer3(volConstrMan_->GetDofMap(foo),disi_->Map());
-	  	onlyvol_foo.Import(*(volConstrMan_->GetConstrVec()),importer1,Insert);
+    	Epetra_Vector onlyvol_foo(ConstrMan_->GetDofMap(foo));
+      	Epetra_Vector onlydis_foo(ConstrMan_->GetDofMap(foo));
+      	Epetra_Import importer1(ConstrMan_->GetDofMap(foo),(ConstrMan_->GetConstrVec())->Map());
+      	Epetra_Import importer3(ConstrMan_->GetDofMap(foo),disi_->Map());
+	  	onlyvol_foo.Import(*(ConstrMan_->GetConstrVec()),importer1,Insert);
 	  	onlydis_foo.Import(*disi_,importer3,Insert);
 	  	onlydis_foo.Dot(onlyvol_foo,&(dotprod[foo]));
-	  	onlyvol_foo.Scale(-volConstrMan_->GetLagrIncr(foo));
-	  	Epetra_Import importer2((volConstrMan_->GetConstrVec())->Map(),volConstrMan_->GetDofMap(foo));
+	  	onlyvol_foo.Scale(-ConstrMan_->GetLagrIncr(foo));
+	  	Epetra_Import importer2((ConstrMan_->GetConstrVec())->Map(),ConstrMan_->GetDofMap(foo));
 	  	constrVecWeight.Import(onlyvol_foo,importer2,Insert);
   	}
     RCP<Epetra_Vector> fresmcopy=rcp(new Epetra_Vector(*fresm_));
@@ -1228,7 +1228,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   	Epetra_SerialDenseVector vol_res(numConstrVol);
   	for (int foo = 0; foo < numConstrVol; ++foo)
   	{
-  	  vol_res[foo]=dotprod[foo]+volConstrMan_->GetVolumeError(foo);
+  	  vol_res[foo]=dotprod[foo]+ConstrMan_->GetVolumeError(foo);
   	}
   	norm_vol_uzawa=vol_res.Norm2();
   	quotient =1;
@@ -1253,27 +1253,27 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 	  	  //compute Lagrange multiplier increment
 	  	  for (int foo = 0; foo < numConstrVol; ++foo)
 	  	  {
-	  		  Epetra_Vector onlyvol_foo(volConstrMan_->GetDofMap(foo));
-	  		  Epetra_Vector onlydis_foo(volConstrMan_->GetDofMap(foo));
-	  		  Epetra_Import importer1(volConstrMan_->GetDofMap(foo),(volConstrMan_->GetConstrVec())->Map());
-	  		  onlyvol_foo.Import(*(volConstrMan_->GetConstrVec()),importer1,Insert);
+	  		  Epetra_Vector onlyvol_foo(ConstrMan_->GetDofMap(foo));
+	  		  Epetra_Vector onlydis_foo(ConstrMan_->GetDofMap(foo));
+	  		  Epetra_Import importer1(ConstrMan_->GetDofMap(foo),(ConstrMan_->GetConstrVec())->Map());
+	  		  onlyvol_foo.Import(*(ConstrMan_->GetConstrVec()),importer1,Insert);
 	  		  onlydis_foo.Import(*disi_,importer1,Insert);
 	  		  onlydis_foo.Dot(onlyvol_foo,&(dotprod[foo]));
 	  	  }
-	  	  volConstrMan_->UpdateLagrIncr(Uzawa_param, dotprod);
+	  	  ConstrMan_->UpdateLagrIncr(Uzawa_param, dotprod);
 
 	  	  //Compute residual of the uzawa algorithm
 	  	  constrVecWeight.PutScalar(0.0);
 	  	  for (int foo = 0; foo < numConstrVol; ++foo)
 	  	  {
-	  		  Epetra_Vector onlyvol_foo(volConstrMan_->GetDofMap(foo));
-	  		  Epetra_Vector onlydis_foo(volConstrMan_->GetDofMap(foo));
-		      Epetra_Import importer1(volConstrMan_->GetDofMap(foo),(volConstrMan_->GetConstrVec())->Map());
-		      Epetra_Import importer3(volConstrMan_->GetDofMap(foo),disi_->Map());
-		      onlyvol_foo.Import(*(volConstrMan_->GetConstrVec()),importer1,Insert);
-		      onlyvol_foo.Scale(-(volConstrMan_->GetLagrIncr(foo)));
+	  		  Epetra_Vector onlyvol_foo(ConstrMan_->GetDofMap(foo));
+	  		  Epetra_Vector onlydis_foo(ConstrMan_->GetDofMap(foo));
+		      Epetra_Import importer1(ConstrMan_->GetDofMap(foo),(ConstrMan_->GetConstrVec())->Map());
+		      Epetra_Import importer3(ConstrMan_->GetDofMap(foo),disi_->Map());
+		      onlyvol_foo.Import(*(ConstrMan_->GetConstrVec()),importer1,Insert);
+		      onlyvol_foo.Scale(-(ConstrMan_->GetLagrIncr(foo)));
 		      onlydis_foo.Import(*disi_,importer3,Insert);
-		      Epetra_Import importer2((volConstrMan_->GetConstrVec())->Map(),volConstrMan_->GetDofMap(foo));
+		      Epetra_Import importer2((ConstrMan_->GetConstrVec())->Map(),ConstrMan_->GetDofMap(foo));
 		      constrVecWeight.Import(onlyvol_foo,importer2,Insert);
 	  	  }
 	  	  fresmcopy->Update(1.0,constrVecWeight,1.0,*fresm_,0.0);
@@ -1290,7 +1290,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 	  	  Epetra_SerialDenseVector vol_res(numConstrVol);
 	  	  for (int foo = 0; foo < numConstrVol; ++foo)
 	  	  {
-	  		  vol_res[foo]=dotprod[foo]+volConstrMan_->GetVolumeError(foo);
+	  		  vol_res[foo]=dotprod[foo]+ConstrMan_->GetVolumeError(foo);
 	  	  }
 	      norm_vol_uzawa=vol_res.Norm2();
 
@@ -1341,7 +1341,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     }
 
     //update lagrange multiplier
-    volConstrMan_->UpdateLagrMult();
+    ConstrMan_->UpdateLagrMult();
 
     //---------------------------------- update mid and end configuration values
     // displacements
@@ -1401,8 +1401,8 @@ void StruGenAlpha::FullNewtonLinearUzawa()
       discret_.Evaluate(p,stiff_,null,fint_,null,null);
       discret_.ClearState();
 
-      volConstrMan_->StiffnessAndInternalForces(timen,disn_,fint_,stiff_);
-      volnorm=volConstrMan_->GetVolumeErrorNorm();
+      ConstrMan_->StiffnessAndInternalForces(timen,disn_,fint_,stiff_);
+      volnorm=ConstrMan_->GetVolumeErrorNorm();
       // do NOT finalize the stiffness matrix to add masses to it later
     }
 
@@ -2903,10 +2903,10 @@ void StruGenAlpha::Integrate()
   else dserror("Unknown type of predictor");
 
   //in case a volume is constrained, do full newton together with an Uzawa algorithm
-  if (volConstrMan_!=Teuchos::null)
+  if (ConstrMan_!=Teuchos::null)
   {
 	  string algo = params_.get<string>("uzawa algorithm","newtonlinuzawa");
-	  volConstrMan_->ScaleLagrMult(0.0);
+	  ConstrMan_->ScaleLagrMult(0.0);
 	  for (int i=step; i<nstep; ++i)
       {
         if      (predictor==1) ConstantPredictor();
@@ -2921,13 +2921,13 @@ void StruGenAlpha::Integrate()
         //								Until convergence Lagrange multiplier increased by Uzawa_param*(Vol_err) 
         if (algo=="newtonlinuzawa")
         {
-        	volConstrMan_->ScaleLagrMult(0.0);
-        	volConstrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
+        	ConstrMan_->ScaleLagrMult(0.0);
+        	ConstrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
         	FullNewtonLinearUzawa();
         }
         else if (algo=="augmentedlagrange")
         {
-        	volConstrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
+        	ConstrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
         	NonLinearUzawaFullNewton(predictor);
         }
         else dserror("Unknown type of algorithm to deal with volume constraint");

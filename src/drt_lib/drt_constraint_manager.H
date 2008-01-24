@@ -1,9 +1,9 @@
 /*!----------------------------------------------------------------------
-\file drt_volume_constraint_manager.H
+\file drt_constraint_manager.H
 
-\class DRT::VolConstrManager
+\class DRT::ConstrManager
 
-\brief Class controlling volume constraint and containing the necessary data
+\brief Class controlling constraints and containing the necessary data
 
 <pre>
 Maintainer: Thomas Kloeppel
@@ -14,8 +14,8 @@ Maintainer: Thomas Kloeppel
 
 *----------------------------------------------------------------------*/
 
-#ifndef DRT_VOLUME_CONSTRAINT_MANAGER_H
-#define DRT_VOLUME_CONSTRAINT_MANAGER_H
+#ifndef DRT_CONSTRAINT_MANAGER_H
+#define DRT_CONSTRAINT_MANAGER_H
 
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_Vector.h"
@@ -34,7 +34,7 @@ using namespace Teuchos;
 
 
 
-class VolConstrManager
+class ConstrManager
 {
 public:
 
@@ -49,14 +49,14 @@ public:
 
 	  */
 	
-	  VolConstrManager(DRT::Discretization& disc,
+	  ConstrManager(DRT::Discretization& disc,
 			  RCP<Epetra_Vector> disp);
 	  
 	  /*!
 	  	  \brief Destructor
 
 	 */
-	  ~VolConstrManager(){return;};
+	  ~ConstrManager(){return;};
 
 	  //@}
 	  
@@ -200,8 +200,8 @@ private:
 	
 	// don't want = operator, cctor and destructor
 	
-	VolConstrManager operator = (const VolConstrManager& old);
-	VolConstrManager(const VolConstrManager& old);    
+	ConstrManager operator = (const ConstrManager& old);
+	ConstrManager(const ConstrManager& old);    
 
 	
 	//! name@ Private Attributes
