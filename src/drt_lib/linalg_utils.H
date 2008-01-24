@@ -180,6 +180,31 @@ namespace LINALG
                 const vector<int>& lm, const vector<int>& lmowner);
 
   /*!
+  \brief Assemble a Epetra_SerialDenseMatrix into a Epetra_CrsMatrix
+
+  This is an individual call.
+  Will only assemble locally and will never do any commmunication.
+  All values that can not be assembled locally will be ignored.
+  Will use the communicator and rowmap from matrix A to determine ownerships.
+  Local matrix Aele may be \b square or \b rectangular.
+
+	This version of 'Assemble' does not work for a matrix A that is already
+	Filled()! If matrix A is not Filled(), it will be enlarged as required.
+	
+	\note The user must provide an \b additional input vector 'lmcol'
+				containing the column gids for assembly seperately!
+
+  \param A (out)         : Sparse matrix to be assembled on
+  \param Aele (in)       : dense matrix to be assembled
+  \param lmrow (in)      : vector with row gids
+  \param lmrowowner (in) : vector with owner procs of row gids
+  \param lmcol (in)      : vector with column gids
+  */
+  void Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele,
+                const vector<int>& lmrow, const vector<int>& lmrowowner,
+                const vector<int>& lmcol);
+    
+  /*!
   \brief Assemble a Epetra_SerialDenseVector into a Epetra_Vector
 
   This is an individual call.

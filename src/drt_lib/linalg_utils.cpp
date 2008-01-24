@@ -160,6 +160,57 @@ void LINALG::Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele,
 }
 
 /*----------------------------------------------------------------------*
+ |  assemble a matrix  (public)                               popp 01/08|
+ *----------------------------------------------------------------------*/
+void LINALG::Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele,
+                      const vector<int>& lmrow, const vector<int>& lmrowowner,
+                      const vector<int>& lmcol)
+{
+  const int lrowdim = (int)lmrow.size();
+  const int lcoldim = (int)lmcol.size();
+  if (lrowdim!=(int)lmrowowner.size() || lrowdim!=Aele.M() || lcoldim!=Aele.N())
+    dserror("Mismatch in dimensions");
+
+  const int myrank = A.Comm().MyPID();
+  const Epetra_Map& rowmap = A.RowMap();
+
+  // this 'Assemble' is not implemented for a Filled() matrix A
+  if (A.Filled()) dserror("Sparse matrix A is already Filled()");
+  
+  else
+  {
+    // loop rows of local matrix
+    for (int lrow=0; lrow<lrowdim; ++lrow)
+    {
+      // check ownership of row
+      if (lmrowowner[lrow] != myrank) continue;
+
+      // check whether I have that global row
+      int rgid = lmrow[lrow];
+      if (!(rowmap.MyGID(rgid))) dserror("Sparse matrix A does not have global row %d",rgid);
+
+      for (int lcol=0; lcol<lcoldim; ++lcol)
+      {
+        double val = Aele(lrow,lcol);
+        int cgid = lmcol[lcol];
+        
+        // Now that we do not rebuild the sparse mask in each step, we
+        // are bound to assemble the whole thing. Zeros included.
+        int errone = A.SumIntoGlobalValues(rgid,1,&val,&cgid);
+        if (errone>0)
+        {
+          int errtwo = A.InsertGlobalValues(rgid,1,&val,&cgid);
+          if (errtwo<0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned error code %d",errtwo);
+        }
+        else if (errone)
+          dserror("Epetra_CrsMatrix::SumIntoGlobalValues returned error code %d",errone);
+      } // for (int lcol=0; lcol<lcoldim; ++lcol)
+    } // for (int lrow=0; lrow<lrowdim; ++lrow)
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  assemble a vector  (public)                              mwgee 12/06|
  *----------------------------------------------------------------------*/
 void LINALG::Assemble(Epetra_Vector& V, const Epetra_SerialDenseVector& Vele,
