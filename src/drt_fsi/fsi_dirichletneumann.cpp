@@ -1321,7 +1321,7 @@ FSI::DirichletNeumannCoupling::StructOp(Teuchos::RCP<Epetra_Vector> iforce,
   {
     // normal structure solve
     structure_->ApplyInterfaceForces(iforce);
-    structure_->FullNewton();
+    structure_->Solve();
     return structure_->ExtractInterfaceDisplacement();
   }
 }

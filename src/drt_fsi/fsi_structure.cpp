@@ -244,6 +244,36 @@ void FSI::Structure::CalculateStiffness()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void FSI::Structure::Solve()
+{
+  std::string equil = params_->get<string>("equilibrium iteration","full newton");
+  if (equil=="full newton")
+  {
+    FullNewton();
+  }
+  else if (equil=="modified newton")
+  {
+    ModifiedNewton();
+  }
+  else if (equil=="matrixfree newton")
+  {
+    MatrixFreeNewton();
+  }
+  else if (equil=="nonlinear cg")
+  {
+    NonlinearCG();
+  }
+  else if (equil=="ptc")
+  {
+    PTC();
+  }
+  else
+    dserror("Unknown type of equilibrium iteration '%s'", equil.c_str());
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::Structure::RelaxationSolve(Teuchos::RCP<Epetra_Vector> iforce)
 {
   // -------------------------------------------------------------------

@@ -90,6 +90,9 @@ public:
   /// discretization access
   const DRT::Discretization& Discretization() const { return discret_; };
 
+  /// solve the current system
+  void Solve();
+
   /// linear structure solve with just a interface load
   /*!
     The very special solve done in steepest descent relaxation
