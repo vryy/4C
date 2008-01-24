@@ -2191,4 +2191,52 @@ void DRT::UTILS::shape_function_1D_deriv2(
   shape_function_1D_deriv2(d,r,distype);
 }
 
+//////////////////////////////////////////////////////////////////
+// versions that return the shape function and derivatives as return argument
+// allows to declare them const when they are used
+
+//
+// shape functions
+//
+blitz::Array<double, 1> DRT::UTILS::shape_function_3D(
+        const double r,
+        const double s,
+        const double t,
+        const DRT::Element::DiscretizationType distype)
+{
+  blitz::Array<double, 1> f(DRT::UTILS::getNumberOfElementNodes(distype));
+  shape_function_3D(f,r,s,t,distype);
+  return f;
+}
+
+//
+// first natural derivative of shape functions
+//
+blitz::Array<double, 2> DRT::UTILS::shape_function_3D_deriv1(
+        const double r,
+        const double s,
+        const double t,
+        const DRT::Element::DiscretizationType distype)
+{
+  blitz::Array<double, 2> d(3, DRT::UTILS::getNumberOfElementNodes(distype), blitz::ColumnMajorArray<2>());
+  shape_function_3D_deriv1(d,r,s,t,distype);
+  return d;
+}
+
+//
+// Second natural derivative of shape functions
+//
+blitz::Array<double, 2> DRT::UTILS::shape_function_3D_deriv2(
+        const double r,
+        const double s,
+        const double t,
+        const DRT::Element::DiscretizationType distype)
+{
+  blitz::Array<double, 2> d2(6, DRT::UTILS::getNumberOfElementNodes(distype), blitz::ColumnMajorArray<2>());
+  shape_function_3D_deriv2(d2,r,s,t,distype);
+  return d2;
+}
+
+
+
 #endif  // #ifdef CCADISCRET

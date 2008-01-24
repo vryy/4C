@@ -221,6 +221,42 @@ namespace UTILS
     const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
     );
 
+  /*!
+  \brief Fill a blitz-vector with with 3D shape function
+  
+  \return shape function values
+  */
+  blitz::Array<double, 1> shape_function_3D(
+    const double                            r,       ///< r coordinate
+    const double                            s,       ///< s coordinate
+    const double                            t,       ///< t coordinate
+    const DRT::Element::DiscretizationType  distype  ///< distuinguish between DiscretizationType
+    );
+
+  /*!
+  \brief Fill a blitz-matrix with with 3D first shape function derivatives
+  
+  \return shape function derivative values
+  */
+  blitz::Array<double, 2> shape_function_3D_deriv1(
+    const double                            r,       ///< r coordinate
+    const double                            s,       ///< s coordinate
+    const double                            t,       ///< t coordinate
+    const DRT::Element::DiscretizationType  distype  ///< distuinguish between DiscretizationType
+    );
+
+  /*!
+  \brief Fill a blitz-matrix with with 3D second shape function derivatives
+  
+  \return shape function derivative values
+  */
+  blitz::Array<double, 2> shape_function_3D_deriv2(
+    const double                            r,       ///< r coordinate
+    const double                            s,       ///< s coordinate
+    const double                            t,       ///< t coordinate
+    const DRT::Element::DiscretizationType  distype  ///< distuinguish between DiscretizationType
+    );
+  
 } // namespace UTILS
 } // namespace DRT
 
