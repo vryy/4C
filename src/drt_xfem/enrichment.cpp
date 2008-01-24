@@ -1,7 +1,7 @@
 /*!
 \file enrichment.cpp
 
-\brief describes the enrichment types and classes
+\brief describes the enrichment class
 
 <pre>
 Maintainer: Axel Gerstenberger

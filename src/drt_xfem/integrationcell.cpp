@@ -135,7 +135,7 @@ DomainIntCell::DomainIntCell(
         const DRT::Element::DiscretizationType distype,
         const vector< vector<double> >& domainCoordinates) :
             IntCell(distype),
-            domainCoordinates_(domainCoordinates)
+            nodalpos_xi_domain_(domainCoordinates)
 {
     return;
 }
@@ -148,7 +148,7 @@ DomainIntCell::DomainIntCell(
         const DRT::Element::DiscretizationType distype) :
             IntCell(distype)
 {
-    domainCoordinates_ = GetDefaultCoordinates(distype);
+    nodalpos_xi_domain_ = GetDefaultCoordinates(distype);
     return;
 }
         
@@ -158,7 +158,7 @@ DomainIntCell::DomainIntCell(
 DomainIntCell::DomainIntCell(
         const DomainIntCell& old) :
             IntCell(old),
-            domainCoordinates_(old.domainCoordinates_)
+            nodalpos_xi_domain_(old.nodalpos_xi_domain_)
 {
     return;   
 }
@@ -167,7 +167,7 @@ string DomainIntCell::Print() const
 {
     stringstream s;
     s << "DomainIntCell" << endl;
-    MCONST_FOREACH(vector< vector<double> >, coordinate, domainCoordinates_)
+    MCONST_FOREACH(vector< vector<double> >, coordinate, nodalpos_xi_domain_)
     {
         s << "[";
         MPFOREACH(vector<double>, val, coordinate)
@@ -204,9 +204,9 @@ vector<double> DomainIntCell::modifyGaussRule3D(
         blitz::Array<double,2> xyze_cell(nsd,numnode,blitz::ColumnMajorArray<2>());
         for (int inode=0; inode<numnode; inode++)
             {
-            xyze_cell(0,inode) = domainCoordinates_[inode][0];
-            xyze_cell(1,inode) = domainCoordinates_[inode][1];
-            xyze_cell(2,inode) = domainCoordinates_[inode][2];
+            xyze_cell(0,inode) = nodalpos_xi_domain_[inode][0];
+            xyze_cell(1,inode) = nodalpos_xi_domain_[inode][1];
+            xyze_cell(2,inode) = nodalpos_xi_domain_[inode][2];
             }    
 
         // init blitz indices
@@ -341,8 +341,8 @@ BoundaryIntCell::BoundaryIntCell(
         const vector< vector<double> >& boundaryCoordinates) :
             IntCell(distype),
             xfemConditionLabel_(xfemConditionLabel),
-            domainCoordinates_(domainCoordinates),
-            boundaryCoordinates_(boundaryCoordinates)
+            nodalpos_xi_domain_(domainCoordinates),
+            nodalpos_xi_boundary_(boundaryCoordinates)
 {
     return;
 }
@@ -354,8 +354,8 @@ BoundaryIntCell::BoundaryIntCell(
         const BoundaryIntCell& old) :
             IntCell(old),
             xfemConditionLabel_(old.xfemConditionLabel_),
-            domainCoordinates_(old.domainCoordinates_),
-            boundaryCoordinates_(old.boundaryCoordinates_)
+            nodalpos_xi_domain_(old.nodalpos_xi_domain_),
+            nodalpos_xi_boundary_(old.nodalpos_xi_boundary_)
 {
     return;   
 }
@@ -364,7 +364,7 @@ string BoundaryIntCell::Print() const
 {
     stringstream s;
     s << "BoundaryIntCell" << endl;
-    MCONST_FOREACH(vector< vector<double> >, coordinate, domainCoordinates_)
+    MCONST_FOREACH(vector< vector<double> >, coordinate, nodalpos_xi_domain_)
     {
         s << "[";
         MPFOREACH(vector<double>, val, coordinate)

@@ -14,12 +14,12 @@ Maintainer: Axel Gerstenberger
 #ifndef DOF_MANAGEMENT_H
 #define DOF_MANAGEMENT_H
 
+#include "xfem.H"
 #include "physics.H"
 #include "enrichment.H"
 #include "integrationcell.H"
 #include "interface.H"
 #include "../drt_lib/drt_discret.H"
-#include <blitz/array.h>
 
 
 using namespace std;
@@ -37,8 +37,6 @@ enum AssemblyType
     standard_assembly
 };
 
-using namespace PHYSICS;
-
 /*!
  \class FieldEnr
 
@@ -52,7 +50,7 @@ class FieldEnr
 public:
 
     explicit FieldEnr(
-            const Field physvar,
+            const PHYSICS::Field physvar,
             const Enrichment enr);
     FieldEnr(
             const FieldEnr& other);
@@ -60,7 +58,7 @@ public:
 
     string toString() const;
 
-    inline Field getField() const
+    inline PHYSICS::Field getField() const
     {
         return field_;
     };
@@ -101,7 +99,7 @@ public:
 
 private:
     // physical field variable to be enriched
-	Field field_;
+    PHYSICS::Field field_;
     // specific enrichment for this physical field
     Enrichment enr_;
 
@@ -125,6 +123,8 @@ public:
 			const map<int, const set<XFEM::FieldEnr> >&  nodalDofSet,
 		    const set<XFEM::FieldEnr>& elementDofs
 		    );
+	ElementDofManager(const ElementDofManager& old);
+	
     ~ElementDofManager();
 
     std::string toString() const;

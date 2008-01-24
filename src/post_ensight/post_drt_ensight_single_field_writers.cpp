@@ -21,7 +21,7 @@
 #include "../drt_xfem/integrationcell.H"
 #include "../drt_xfem/physics.H"
 #include "../drt_xfem/dof_management.H"
-#include "../drt_xfem/xfem.H"
+#include "../drt_xfem/enrichment_utils.H"
 
 using namespace std;
 

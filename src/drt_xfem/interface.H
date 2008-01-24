@@ -21,6 +21,8 @@ Maintainer: Axel Gerstenberger
 
 #include "integrationcell.H"
 #include "../drt_lib/drt_discret.H"
+#include "intersection.H"
+#include "../io/gmsh.H"
 
 namespace XFEM
 {

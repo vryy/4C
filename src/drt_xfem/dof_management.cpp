@@ -13,9 +13,9 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 
 #include <blitz/array.h>
-#include "integrationcell.H"
-#include "dof_management.H"
 #include "../drt_f3/xfluid3_interpolation.H"
+#include "dof_management.H"
+
 
 
 using namespace std;
@@ -24,7 +24,7 @@ using namespace std;
  |  ctor                                                        ag 11/07|
  *----------------------------------------------------------------------*/
 XFEM::FieldEnr::FieldEnr(
-        const PHYSICS::Field field,
+        const XFEM::PHYSICS::Field field,
         const Enrichment enr) :
         	field_(field), enr_(enr)
 {
@@ -142,6 +142,15 @@ XFEM::ElementDofManager::ElementDofManager(
 	return;
 }
 
+/*----------------------------------------------------------------------*
+ |  dtor                                                        ag 11/07|
+ *----------------------------------------------------------------------*/
+XFEM::ElementDofManager::ElementDofManager(const ElementDofManager& old)
+{
+    dserror("no copying");
+    return;
+}
+        
 /*----------------------------------------------------------------------*
  |  dtor                                                        ag 11/07|
  *----------------------------------------------------------------------*/

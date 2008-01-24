@@ -24,6 +24,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_xfem/xfem.H"
+#include "../drt_xfem/enrichment_utils.H"
 #include "../drt_xfem/intersection_service.H"
 #include "../drt_lib/drt_utils.H"
 #include "fluid3_stabilization.H"
@@ -451,17 +452,15 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
   template <XFEM::AssemblyType ASSTYPE>
   vector<double> modifyGaussRule3D(
           const XFEM::DomainIntCell& cell,
-          const double               cell_e0,
-          const double               cell_e1,
-          const double               cell_e2)
+          const XFEM::PosEtaDomain&  pos_eta)
   {   
       // return value
       vector<double> element_e(4);
       if (ASSTYPE == XFEM::standard_assembly) {
           // gauss coordinates of cell in element coordinates
-          element_e[0] = cell_e0;
-          element_e[1] = cell_e1;
-          element_e[2] = cell_e2;
+          element_e[0] = pos_eta(0);
+          element_e[1] = pos_eta(1);
+          element_e[2] = pos_eta(2);
           element_e[3] = 1.0;
       } else {
       
@@ -484,13 +483,11 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
           blitz::thirdIndex k;    // Placeholder for the third index
       
           // create shape function vectors 
-          blitz::Array<double,1> funct(numnode);
-          blitz::Array<double,2> deriv(nsd,numnode,blitz::ColumnMajorArray<2>());
-          DRT::UTILS::shape_function_3D(funct,cell_e0,cell_e1,cell_e2,celldistype);
-          DRT::UTILS::shape_function_3D_deriv1(deriv,cell_e0,cell_e1,cell_e2,celldistype);
+          const blitz::Array<double,1> funct(DRT::UTILS::shape_function_3D(pos_eta(0),pos_eta(1),pos_eta(2),celldistype));
+          const blitz::Array<double,2> deriv(DRT::UTILS::shape_function_3D_deriv1(pos_eta(0),pos_eta(1),pos_eta(2),celldistype));
 
           // translate position into from cell coordinates to element coordinates
-          const blitz::Array<double,1> e(blitz::sum(funct(j)*xyze_cell(i,j),j));
+          const blitz::Array<double,1> pos_xsi_domain(blitz::sum(funct(j)*xyze_cell(i,j),j));
 
 
           // get Jacobian matrix and determinant
@@ -519,10 +516,10 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
                              xjm(0,1)*xjm(1,0)*xjm(2,2);
       
     
-          // gauss coordinates of cell in element coordinates + gauss weight
-          element_e[0] = e(0);
-          element_e[1] = e(1);
-          element_e[2] = e(2);
+          // gauss coordinates of cell in element coordinates + determinante of jacobian
+          element_e[0] = pos_xsi_domain(0);
+          element_e[1] = pos_xsi_domain(1);
+          element_e[2] = pos_xsi_domain(2);
           element_e[3] = det;
       }  
       return element_e;
@@ -794,12 +791,12 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
     for (int iquad=0; iquad<intpoints.nquad; ++iquad)
     {
       // coordinates of the current integration point in cell coordinates \eta
-      const double cell_e0 = intpoints.qxg[iquad][0];
-      const double cell_e1 = intpoints.qxg[iquad][1];
-      const double cell_e2 = intpoints.qxg[iquad][2];
+      XFEM::PosEtaDomain pos_eta(3);
+      pos_eta(0) = intpoints.qxg[iquad][0];
+      pos_eta(1) = intpoints.qxg[iquad][1];
+      pos_eta(2) = intpoints.qxg[iquad][2];
 
-      //const vector<double> e = cell->modifyGaussRule3D(standard_integration, cell_e0,cell_e1,cell_e2);
-      const vector<double> e = modifyGaussRule3D<ASSTYPE>(*cell, cell_e0,cell_e1,cell_e2);
+      const vector<double> e = modifyGaussRule3D<ASSTYPE>(*cell, pos_eta);
 
       // coordinates of the current integration point in element coordinates \xi
       const double e1 = e[0];
@@ -808,23 +805,18 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
       const double detcell = e[3];
 
       // shape functions and their first derivatives
-      BlitzVec funct_(numnode);
-      BlitzMat deriv_(3,numnode,blitz::ColumnMajorArray<2>());
-      DRT::UTILS::shape_function_3D(funct_,e1,e2,e3,DISTYPE);
-      DRT::UTILS::shape_function_3D_deriv1(deriv_,e1,e2,e3,DISTYPE);
+      const BlitzVec funct_(DRT::UTILS::shape_function_3D(e1,e2,e3,DISTYPE));
+      const BlitzMat deriv_(DRT::UTILS::shape_function_3D_deriv1(e1,e2,e3,DISTYPE));
       
       BlitzVec funct_stress(DRT::UTILS::getNumberOfElementNodes(stressdistype));
       BlitzMat deriv_stress(3, DRT::UTILS::getNumberOfElementNodes(stressdistype));
       if (stressdistype != DRT::Element::dis_none)
       {
-          //funct_stress = XFLUID::elemental_shape_function_3D(e1,e2,e3,stressdistype);
-          //deriv_stress = XFLUID::elemental_shape_function_3D_deriv(e1,e2,e3,stressdistype);
-      
           DRT::UTILS::shape_function_3D(funct_stress,e1,e2,e3,stressdistype);
           DRT::UTILS::shape_function_3D_deriv1(deriv_stress,e1,e2,e3,stressdistype);
+          //cout << "funct_stress" << funct_stress << endl;
+          //cout << "deriv_stress" << deriv_stress << endl;
       }
-      //cout << "funct_stress" << funct_stress << endl;
-      //cout << "deriv_stress" << deriv_stress << endl;
 
       // position of the gausspoint in physical coordinates
       const BlitzVec gauss_pos(blitz::sum(funct_(j)*xyze_(i,j),j));

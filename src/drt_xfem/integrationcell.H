@@ -148,7 +148,7 @@ public:
 
      \return cells nodal coordinates  
      */
-    inline std::vector< std::vector<double> > GetDomainCoord() const {return domainCoordinates_;};
+    inline std::vector< std::vector<double> > GetDomainCoord() const {return nodalpos_xi_domain_;};
 
     /*!
      \brief returns the coordinates of the integration cell in physical coordinates
@@ -172,8 +172,8 @@ public:
 
 protected:
     
-    //! coordinates of the nodes in the parent volume element coordinates xi
-    std::vector< std::vector<double> > domainCoordinates_;
+    //! coordinates of the nodes in the parent domain element coordinates xi_domain
+    std::vector< std::vector<double> > nodalpos_xi_domain_;
     
 private:
     
@@ -232,7 +232,7 @@ public:
 
      \return cells nodal coordinates  
      */
-    inline std::vector< std::vector<double> > GetDomainCoord() const {return domainCoordinates_;};
+    inline std::vector< std::vector<double> > GetDomainCoord() const {return nodalpos_xi_domain_;};
     
     /*!
      \brief returns the coordinates of the integration cell in physical coordinates
@@ -249,7 +249,7 @@ public:
 
      \return cells nodal coordinates  
      */
-    inline std::vector< std::vector<double> > GetBoundaryCoord() const {return boundaryCoordinates_;};
+    inline std::vector< std::vector<double> > GetBoundaryCoord() const {return nodalpos_xi_boundary_;};
     
     std::string Print() const;
 
@@ -262,10 +262,10 @@ private:
     int surface_ele_gid_;
     
     //! coordinates of the nodes
-    std::vector< std::vector<double> > domainCoordinates_;
+    std::vector< std::vector<double> > nodalpos_xi_domain_;
     
     //! boundary coordinates of the nodes
-    std::vector< std::vector<double> > boundaryCoordinates_;
+    std::vector< std::vector<double> > nodalpos_xi_boundary_;
     
 };
 

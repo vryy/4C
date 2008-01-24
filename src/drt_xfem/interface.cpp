@@ -13,8 +13,6 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 
 #include "interface.H"
-#include "intersection.H"
-#include "../io/gmsh.H"
 
 /*----------------------------------------------------------------------*
  |  ctor                                                        ag 11/07|

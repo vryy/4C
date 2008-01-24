@@ -1,5 +1,5 @@
 /*!
-\file xfem.cpp
+\file enrichment_utils.cpp
 
 \brief describes the enrichment types and classes
 
@@ -12,13 +12,20 @@ Maintainer: Axel Gerstenberger
 */
 #ifdef CCADISCRET
 
-#include <blitz/array.h>
-#include "xfem.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_node.H"
 #include <string>
 #include <sstream>
+#include <blitz/array.h>
+#include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_discret.H"
+#include "intersection_service.H"
+#include "xfem.H"
+#include "physics.H"
+#include "enrichment_utils.H"
+#include "dof_management.H"
+#include "interface.H"
 
+
+using namespace XFEM;
 
 //
 // For a given situation compute the enriched shape functions
@@ -30,7 +37,7 @@ void XFEM::ComputeEnrichedShapefunction(
         const XFEM::PHYSICS::Field field,
         const blitz::Array<double,1>& actpos,
         const blitz::Array<double,1>& funct,
-        blitz::Array<double,1>& enr_funct
+        BlitzVec& enr_funct
         )
 {
     
