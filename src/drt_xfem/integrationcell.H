@@ -24,6 +24,8 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_utils_local_connectivity_matrices.H"
 
+typedef blitz::Array<double,1> BlitzVec; ///< a short-cut for a one-dimensional BLITZ vector
+typedef blitz::Array<double,2> BlitzMat; ///< a short-cut for a two-dimensional BLITZ matrix
 
 namespace XFEM
 {
@@ -151,6 +153,24 @@ public:
     inline std::vector< std::vector<double> > GetDomainCoord() const {return nodalpos_xi_domain_;};
 
     /*!
+     \brief returns the coordinates of the integration cell in domain element coordinates
+
+     \return cells nodal coordinates  
+     */
+    inline BlitzMat GetDomainCoordBlitz() const
+    {
+        const int numnode = this->NumNode();
+        BlitzMat positions_xi_domain(3,numnode,blitz::ColumnMajorArray<2>());
+        for (int inode=0; inode<numnode; inode++)
+        {
+            positions_xi_domain(0,inode) = this->GetDomainCoord()[inode][0];
+            positions_xi_domain(1,inode) = this->GetDomainCoord()[inode][1];
+            positions_xi_domain(2,inode) = this->GetDomainCoord()[inode][2];
+        }    
+        return positions_xi_domain;
+    }
+    
+    /*!
      \brief returns the coordinates of the integration cell in physical coordinates
 
      \return cells nodal coordinates  
@@ -233,6 +253,24 @@ public:
      \return cells nodal coordinates  
      */
     inline std::vector< std::vector<double> > GetDomainCoord() const {return nodalpos_xi_domain_;};
+    
+    /*!
+     \brief returns the coordinates of the integration cell in domain element coordinates
+
+     \return cells nodal coordinates  
+     */
+    inline BlitzMat GetDomainCoordBlitz() const
+    {
+        const int numnode = this->NumNode();
+        BlitzMat positions_xi_domain(3,numnode,blitz::ColumnMajorArray<2>());
+        for (int inode=0; inode<numnode; inode++)
+        {
+            positions_xi_domain(0,inode) = this->GetDomainCoord()[inode][0];
+            positions_xi_domain(1,inode) = this->GetDomainCoord()[inode][1];
+            positions_xi_domain(2,inode) = this->GetDomainCoord()[inode][2];
+        }    
+        return positions_xi_domain;
+    }
     
     /*!
      \brief returns the coordinates of the integration cell in physical coordinates

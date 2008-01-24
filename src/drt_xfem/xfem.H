@@ -26,8 +26,8 @@ typedef blitz::Array<double,1> BlitzVec; ///< a short-cut for a one-dimensional 
 typedef blitz::Array<double,2> BlitzMat; ///< a short-cut for a two-dimensional BLITZ matrix
 
 typedef BlitzVec PosX;             ///< position in physical coordinates (x,y,z)
-typedef BlitzVec PosXsiDomain;     ///< position in element coordinates of domain element (r,s,t)
-typedef BlitzVec PosXsiBoundary;   ///< position in element coordinates of boundary element (r,s)
+typedef BlitzVec PosXiDomain;      ///< position in element coordinates of domain element (r,s,t)
+typedef BlitzVec PosXiBoundary;    ///< position in element coordinates of boundary element (r,s)
 typedef BlitzVec PosEtaDomain;     ///< position in local coordinates of a domain integrationcell (r,s,t)
 typedef BlitzVec PosEtaBoundary;   ///< position in local coordinates of a boundary integrationcell (r,s)
 
