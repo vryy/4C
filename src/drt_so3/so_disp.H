@@ -292,10 +292,7 @@ protected:
     calc_struct_eleload,
     calc_struct_fsiload,
     calc_struct_update_istep,
-    calc_init_vol,
-    calc_Shapefunction,
-    calc_ShapeDeriv1,
-    calc_ShapeDeriv2
+    calc_init_vol
   };
 
   //! kinematic types of so_disp
@@ -714,10 +711,7 @@ private:
   //! action parameters recognized by SoDispSurface
   enum ActionType
   {
-    none,
-    calc_Shapefunction,
-    calc_ShapeDeriv1,
-    calc_ShapeDeriv2
+    none
   };
   
   //! The parent element of this surface
@@ -948,10 +942,7 @@ private:
   //! action parameters recognized by SoDispLine
   enum ActionType
   {
-     none,
-     calc_Shapefunction,
-     calc_ShapeDeriv1,
-     calc_ShapeDeriv2
+     none
   };
 
   // don't want = operator

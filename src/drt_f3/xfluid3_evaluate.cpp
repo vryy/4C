@@ -161,12 +161,6 @@ DRT::ELEMENTS::XFluid3::ActionType DRT::ELEMENTS::XFluid3::convertStringToAction
     act = XFluid3::calc_fluid_box_filter;
   else if (action == "calc_smagorinsky_const")
     act = XFluid3::calc_smagorinsky_const;
-  else if (action == "calc_Shapefunction")
-    act = XFluid3::calc_Shapefunction;
-  else if (action == "calc_ShapeDeriv1")
-    act = XFluid3::calc_ShapeDeriv1;
-  else if (action == "calc_ShapeDeriv2")
-    act = XFluid3::calc_ShapeDeriv2;
   else if (action == "store_xfem_info")
     act = XFluid3::store_xfem_info;
   else
@@ -543,15 +537,6 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           params.set("density", actmat->m.fluid->density);	  
       }
       break;
-      case calc_Shapefunction:
-        shape_function_3D(elevec1,elevec2[0],elevec2[1],elevec2[2],this->Shape());
-        break;
-      case calc_ShapeDeriv1:
-        shape_function_3D_deriv1(elemat1,elevec2[0],elevec2[1],elevec2[2],this->Shape());
-        break;
-      case calc_ShapeDeriv2:
-        shape_function_3D_deriv2(elemat2,elevec2[0],elevec2[1],elevec2[2],this->Shape());
-        break;
       case store_xfem_info:
       {
     	// get access to global dofman

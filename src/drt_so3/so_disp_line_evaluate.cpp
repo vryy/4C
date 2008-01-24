@@ -36,32 +36,11 @@ int DRT::ELEMENTS::SoDispLine::Evaluate(	ParameterList& params,
 	DRT::ELEMENTS::SoDispLine::ActionType act = SoDispLine::none;
 	string action = params.get<string>("action","none");
 	if (action == "none") dserror("No action supplied");
-	else if (action == "calc_Shapefunction")
-        act = SoDispLine::calc_Shapefunction;
-    else if (action == "calc_ShapeDeriv1")
-        act = SoDispLine::calc_ShapeDeriv1;
-    else if (action == "calc_ShapeDeriv2")
-        act = SoDispLine::calc_ShapeDeriv2;
   	else dserror("Unknown type of action for SoDisp_Line");
   	
   	const DiscretizationType distype = this->Shape();
     switch(act)
     {
-    case calc_Shapefunction:
-    {
-     	shape_function_1D(elevec1,elevec2[0],distype);
-      break;
-    }
-    case calc_ShapeDeriv1:
-    {
-    	shape_function_1D_deriv1(elemat1,elevec2[0],distype);
-     	break;
-    }
-    case calc_ShapeDeriv2:
-    {
-		shape_function_1D_deriv2(elemat2,elevec2[0],distype);
-      break;
-    }
     default:
         dserror("Unknown type of action for SoDisp_Line");
   	} // end of switch(act)

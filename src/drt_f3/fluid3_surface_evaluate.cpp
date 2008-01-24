@@ -40,12 +40,6 @@ int DRT::ELEMENTS::Fluid3Surface::Evaluate(     ParameterList&            params
     DRT::ELEMENTS::Fluid3Surface::ActionType act = Fluid3Surface::none;
     string action = params.get<string>("action","none");
     if (action == "none") dserror("No action supplied");
-    else if (action == "calc_Shapefunction")
-        act = Fluid3Surface::calc_Shapefunction;
-    else if (action == "calc_ShapeDeriv1")
-        act = Fluid3Surface::calc_ShapeDeriv1;
-    else if (action == "calc_ShapeDeriv2")
-        act = Fluid3Surface::calc_ShapeDeriv2;
     else if (action == "integrate_Shapefunction")
         act = Fluid3Surface::integrate_Shapefunction;
     else dserror("Unknown type of action for Fluid3_Surface");
@@ -53,21 +47,6 @@ int DRT::ELEMENTS::Fluid3Surface::Evaluate(     ParameterList&            params
     const DiscretizationType distype = this->Shape();
     switch(act)
     {
-    case calc_Shapefunction:
-    {
-        shape_function_2D(elevec1,elevec2[0],elevec2[1],distype);
-        break;
-    }
-    case calc_ShapeDeriv1:
-    {
-        shape_function_2D_deriv1(elemat1,elevec2[0],elevec2[1],distype);
-        break;
-    }
-    case calc_ShapeDeriv2:
-    {
-        shape_function_2D_deriv2(elemat2,elevec2[0],elevec2[1],distype);
-        break;
-    }
     case integrate_Shapefunction:
     {
       RefCountPtr<const Epetra_Vector> dispnp;

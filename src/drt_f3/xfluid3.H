@@ -358,9 +358,6 @@ private:
     calc_turbulence_statistics,
     calc_fluid_box_filter,
     calc_smagorinsky_const,
-    calc_Shapefunction,
-    calc_ShapeDeriv1,
-    calc_ShapeDeriv2,
     store_xfem_info
   };
 
@@ -1054,9 +1051,6 @@ private:
   enum ActionType
   {
     none,
-    calc_Shapefunction,
-    calc_ShapeDeriv1,
-    calc_ShapeDeriv2,
     integrate_Shapefunction
   };
 
@@ -1295,10 +1289,7 @@ private:
   //! action parameters recognized by Fluid3Line
   enum ActionType
   {
-     none,
-     calc_Shapefunction,
-     calc_ShapeDeriv1,
-     calc_ShapeDeriv2
+     none
   };
 
   // don't want = operator

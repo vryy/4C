@@ -276,12 +276,6 @@ DRT::ELEMENTS::Fluid3::ActionType DRT::ELEMENTS::Fluid3::convertStringToActionTy
     act = Fluid3::calc_fluid_box_filter;
   else if (action == "calc_smagorinsky_const")
     act = Fluid3::calc_smagorinsky_const;
-  else if (action == "calc_Shapefunction")
-    act = Fluid3::calc_Shapefunction;
-  else if (action == "calc_ShapeDeriv1")
-    act = Fluid3::calc_ShapeDeriv1;
-  else if (action == "calc_ShapeDeriv2")
-    act = Fluid3::calc_ShapeDeriv2;
   else
     dserror("Unknown type of action for Fluid3");
   return act;
@@ -1242,15 +1236,6 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           params.set("density", actmat->m.fluid->density);	  
       }
       break;
-      case calc_Shapefunction:
-        shape_function_3D(elevec1,elevec2[0],elevec2[1],elevec2[2],this->Shape());
-        break;
-      case calc_ShapeDeriv1:
-        shape_function_3D_deriv1(elemat1,elevec2[0],elevec2[1],elevec2[2],this->Shape());
-        break;
-      case calc_ShapeDeriv2:
-        shape_function_3D_deriv2(elemat2,elevec2[0],elevec2[1],elevec2[2],this->Shape());
-        break;
       default:
         dserror("Unknown type of action for Fluid3");
   } // end of switch(act)
