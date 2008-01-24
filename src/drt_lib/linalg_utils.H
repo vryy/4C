@@ -187,12 +187,29 @@ namespace LINALG
   All values that can not be assembled locally will be ignored.
   Will use the communicator from vector V to determine ownerships.
 
-  \param V (out)   : Sparse matrix to be assembled on
-  \param Vele (in) : dense matrix to be assembled
+  \param V (out)   : Vector to be assembled on
+  \param Vele (in) : dense vector to be assembled
   \param lm (in) : vector with gids
   \param lmowner (in) : vector with owner procs of gids
   */
   void Assemble(Epetra_Vector& V, const Epetra_SerialDenseVector& Vele,
+                const vector<int>& lm, const vector<int>& lmowner);
+
+  /*!
+  \brief Assemble a Epetra_SerialDenseVector into a Epetra_MultiVector
+
+  This is an individual call.
+  Will only assemble locally and will never do any commmunication.
+  All values that can not be assembled locally will be ignored.
+  Will use the communicator from vector V to determine ownerships.
+
+  \param V (out)   : Vector to be assembled on
+  \param n (in)   : column index of MultiVector to be assembled on
+  \param Vele (in) : dense vector to be assembled
+  \param lm (in) : vector with gids
+  \param lmowner (in) : vector with owner procs of gids
+  */
+  void Assemble(Epetra_MultiVector& V, const int n, const Epetra_SerialDenseVector& Vele,
                 const vector<int>& lm, const vector<int>& lmowner);
 
 

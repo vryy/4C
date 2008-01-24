@@ -184,6 +184,16 @@ void LINALG::Assemble(Epetra_Vector& V, const Epetra_SerialDenseVector& Vele,
 }
 
 /*----------------------------------------------------------------------*
+ |  assemble a vector into MultiVector (public)              mwgee 01/08|
+ *----------------------------------------------------------------------*/
+void LINALG::Assemble(Epetra_MultiVector& V, const int n, const Epetra_SerialDenseVector& Vele,
+                const vector<int>& lm, const vector<int>& lmowner)
+{
+  LINALG::Assemble(*(V(n)),Vele,lm,lmowner);
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  FillComplete a matrix  (public)                          mwgee 12/06|
  *----------------------------------------------------------------------*/
 void LINALG::Complete(Epetra_CrsMatrix& A)
