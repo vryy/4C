@@ -14,7 +14,7 @@ Maintainer: Moritz
 Here everything related with solid-shell body extrusion
 */
 /*----------------------------------------------------------------------*/
-#ifdef EXODUS
+#ifdef D_EXODUS
 #include "pre_exodus_soshextrusion.H"
 
 using namespace std;
@@ -41,6 +41,7 @@ Mesh(exofilename)
     //cout << "EntityType: " << actEntity->EntityType << endl;
     switch (actEntity->GetEntityType()){
     case Entity::elem_blk:{
+      
       cout << "I am a block" << endl;
       int blk_id = 1+actEntity->GetEntityId();
       cout << "entity id in block: " << blk_id << endl;

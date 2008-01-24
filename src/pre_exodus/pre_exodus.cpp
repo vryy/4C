@@ -19,7 +19,7 @@ or the well-known .dat file is created.
 
 */
 /*----------------------------------------------------------------------*/
-#ifdef EXODUS
+#ifdef D_EXODUS
 #ifdef CCADISCRET
 #include "pre_exodus.H"
 #include <Teuchos_RefCountPtr.hpp>
@@ -46,7 +46,7 @@ int main(
     string datfile;
     
     // related to solid shell extrusion
-    double soshthickness;
+    double soshthickness = 0.0;
     int soshnumlayer = 1;
 
     Teuchos::CommandLineProcessor My_CLP;
@@ -80,14 +80,15 @@ int main(
     }
     
     // generate solid shell extrusion based on exodus file
-    if (soshthickness){
+    if (soshthickness!=0.0){
       if (exofile=="") dserror("no exofile specified for extrusion");
       if (soshthickness < 0.0) dserror("thickness specified for solid-shell extrusion is negative");
       //Soshextrusion mysosh(exofile.c_str(),soshthickness,soshnumlayer);
       string extrudefile;
       extrudefile = "extr_" + exofile;
       Mesh mysosh(exofile.c_str());
-      mysosh.WriteMesh(extrudefile);
+      mysosh.Print(cout,true);
+      //mysosh.WriteMesh(extrudefile);
       exit(1);
     }
     

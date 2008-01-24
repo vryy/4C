@@ -14,7 +14,7 @@ Maintainer: Moritz
 Here everything related with solid-shell body extrusion
 */
 /*----------------------------------------------------------------------*/
-#ifdef EXODUS
+#ifdef D_EXODUS
 #ifndef PRE_EXODUS_SOSHEXTRUSION_H_
 #define PRE_EXODUS_SOSHEXTRUSION_H_
 
