@@ -149,7 +149,7 @@ public:
 	  }
 	  
 	  /*!
-	  	   \brief Return additional vector containing constraints
+	  	   \brief Return additional vector containing first derivatives of constraints wrt displacements
 	  */
 	  RCP<Epetra_Vector> GetConstrVec()
 	  {
@@ -160,6 +160,15 @@ public:
 	  	   \brief Add Increment to lagrange multiplier
 	  */
 	  void UpdateLagrMult();
+	  
+	  
+	  /*!
+	   \brief Return matrix containing first derivatives of constraints wrt displacements 
+	   */
+	  RCP<Epetra_MultiVector> GetConstraintMatrix()
+	  {
+		  return constrVec_;
+	  }
 	  
 	  /*!
 	  	  	   \brief Return lagrange multiplier for volume i

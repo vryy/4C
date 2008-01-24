@@ -104,8 +104,10 @@ void ConstrManager::StiffnessAndInternalForces(
     actdisc_.ClearState();
     actdisc_.SetState("displacement",disp);    
 	const Epetra_Map* dofrowmap = actdisc_.DofRowMap();
-	constrVec1_=LINALG::CreateVector(*dofrowmap,true);    
-    actdisc_.EvaluateCondition(p,stiff,fint,constrVec1_,"VolumeConstraint_3D");
+	constrVec1_=LINALG::CreateVector(*dofrowmap,true);
+	actdisc_.EvaluateCondition(p,stiff,fint,constrVec1_,"VolumeConstraint_3D");
+	constrVec_=rcp(new Epetra_MultiVector(*dofrowmap,numConstrID_));
+	//actdisc_.EvaluateCondition(p,stiff,fint,"VolumeConstraint_3D",constrVec_);
     actvalues_->Scale(0.0);
     SynchronizeConstraint(p,actvalues_,"computed volume");
     fact_=p.get("LoadCurveFactor",1.0);
