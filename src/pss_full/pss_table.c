@@ -681,6 +681,8 @@ static void map_insert_symbol(MAP* map, SYMBOL* symbol, CHAR* key)
         node->rhs->key = key;
         node->rhs->symbol = symbol;
         node->rhs->count = 1;
+	node->rhs->lhs = NULL;
+	node->rhs->rhs = NULL;
         map->count++;
         goto end;
       }
@@ -694,6 +696,8 @@ static void map_insert_symbol(MAP* map, SYMBOL* symbol, CHAR* key)
         node->lhs->key = key;
         node->lhs->symbol = symbol;
         node->lhs->count = 1;
+	node->lhs->lhs = NULL;
+	node->lhs->rhs = NULL;
         map->count++;
         goto end;
       }
