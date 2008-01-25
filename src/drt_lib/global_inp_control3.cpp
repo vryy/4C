@@ -83,55 +83,65 @@ extern struct _DESIGN *design;
 
 
 /*----------------------------------------------------------------------*
+ * Read any topology and make sure node GIDs are sorted
+ *----------------------------------------------------------------------*/
+static void input_design_read(const std::string& name,
+                              std::vector<std::vector<int> >& dobj_fenode,
+                              std::vector<int>& ndobj_fenode)
+{
+  std::map<int,std::set<int> > topology;
+
+  std::string sectionname = name + "-NODE TOPOLOGY";
+  std::string marker = std::string("--") + sectionname;
+  if (frfind(const_cast<char*>(marker.c_str())))
+  {
+    frread();
+
+    // read the whole thing
+    while (strncmp(allfiles.actplace,"------",6)!=0)
+    {
+      int dobj;
+      int ierr;
+      int nodeid;
+      frint(const_cast<char*>(name.c_str()),&dobj,&ierr);
+      if (ierr!=1)
+        dserror("Cannot read %s", sectionname.c_str());
+      frint("NODE",&nodeid,&ierr);
+      if (ierr!=1)
+        dserror("Cannot read %s", sectionname.c_str());
+      topology[dobj-1].insert(nodeid-1);
+      frread();
+    }
+
+    // copy all design object entries
+    for (std::map<int,std::set<int> >::iterator i=topology.begin();
+         i!=topology.end();
+         ++i)
+    {
+      if (i->first >= static_cast<int>(dobj_fenode.size()))
+      {
+        dserror("Illegal design object number %d in section '%s'", i->first+1, sectionname.c_str());
+      }
+
+      // this is probably obsolete
+      ndobj_fenode[i->first] = i->second.size();
+
+      // we copy from a std::set, thus the gids are sorted
+      dobj_fenode[i->first].reserve(i->second.size());
+      dobj_fenode[i->first].assign(i->second.begin(),i->second.end());
+    }
+  }
+}
+
+
+/*----------------------------------------------------------------------*
  | input of design volumes to fe-node topology            m.gee 11/06   |
  *----------------------------------------------------------------------*/
 void input_design_dvol_fenode_read(vector<vector<int> >& dvol_fenode,
                                    vector<int>& ndvol_fenode)
 {
-INT    i,ierr;
-INT    counter;
-INT    dvol;
-/*----------------------------------------------------------------------*/
-/*---------------------------------- count number of nodes on this vol */
-if (frfind("--DVOL-NODE TOPOLOGY")==0) goto end;
-frread();
-while(strncmp(allfiles.actplace,"------",6)!=0)
-{
-   frint("DVOL",&dvol,&ierr);
-   dsassert(ierr==1,"Cannot read DVOL-NODE TOPOLOGY");
-   ndvol_fenode[dvol-1]++;
-   frread();
+  input_design_read("DVOL",dvol_fenode,ndvol_fenode);
 }
-frrewind();
-for (i=0; i<(int)ndvol_fenode.size(); i++)
-   dvol_fenode[i].resize(ndvol_fenode[i]);
-/*------------------------------- find fe-nodes belonging to this dvol */
-for (i=0; i<(int)ndvol_fenode.size(); i++)
-{
-   frfind("--DVOL-NODE TOPOLOGY");
-   frread();
-   //design->dvol[i].Id=i;
-   counter=0;
-   while(strncmp(allfiles.actplace,"------",6)!=0)
-   {
-      frint("DVOL",&dvol,&ierr);
-      dsassert(ierr==1,"Cannot read DVOL-NODE TOPOLOGY");
-      if (dvol-1==i)
-      {
-         dsassert(counter<ndvol_fenode[i],"Cannot read DVOL-NODE TOPOLOGY");
-         frint("NODE",&dvol_fenode[i][counter],&ierr);
-         dsassert(ierr==1,"Cannot read DVOL-NODE TOPOLOGY");
-         dvol_fenode[i][counter]--;
-         counter++;
-      }
-      frread();
-   }
-}
-/*----------------------------------------------------------------------*/
-
-end:
-return;
-} /* end of input_design_dvol_fenode_read */
 
 
 /*----------------------------------------------------------------------*
@@ -140,50 +150,8 @@ return;
 void input_design_dsurf_fenode_read(vector<vector<int> >& dsurf_fenode,
                                      vector<int>& ndsurf_fenode)
 {
-INT    i,ierr;
-INT    counter;
-INT    dsurf;
-/*----------------------------------------------------------------------*/
-/*---------------------------------- count number of nodes on this surf */
-if (frfind("--DSURF-NODE TOPOLOGY")==0) goto end;
-frread();
-while(strncmp(allfiles.actplace,"------",6)!=0)
-{
-   frint("DSURF",&dsurf,&ierr);
-   dsassert(ierr==1,"Cannot read DSURF-NODE TOPOLOGY");
-   ndsurf_fenode[dsurf-1]++;
-   frread();
+  input_design_read("DSURF",dsurf_fenode,ndsurf_fenode);
 }
-frrewind();
-for (i=0; i<(int)ndsurf_fenode.size(); i++)
-   dsurf_fenode[i].resize(ndsurf_fenode[i]);
-/*------------------------------- find fe-nodes belonging to this dsurf */
-for (i=0; i<(int)ndsurf_fenode.size(); i++)
-{
-   frfind("--DSURF-NODE TOPOLOGY");
-   frread();
-   //design->dsurf[i].Id=i;
-   counter=0;
-   while(strncmp(allfiles.actplace,"------",6)!=0)
-   {
-      frint("DSURF",&dsurf,&ierr);
-      dsassert(ierr==1,"Cannot read DSURF-NODE TOPOLOGY");
-      if (dsurf-1==i)
-      {
-         dsassert(counter<ndsurf_fenode[i],"Cannot read DSURF-NODE TOPOLOGY");
-         frint("NODE",&(dsurf_fenode[i][counter]),&ierr);
-         dsassert(ierr==1,"Cannot read DSURF-NODE TOPOLOGY");
-         dsurf_fenode[i][counter]--;
-         counter++;
-      }
-      frread();
-   }
-}
-/*----------------------------------------------------------------------*/
-
-end:
-return;
-} /* end of input_design_dsurf_fenode_read */
 
 
 /*----------------------------------------------------------------------*
@@ -192,50 +160,9 @@ return;
 void input_design_dline_fenode_read(vector<vector<int> >& dline_fenode,
                                      vector<int>& ndline_fenode)
 {
-INT    i,ierr;
-INT    counter;
-INT    dline;
-/*----------------------------------------------------------------------*/
-/*---------------------------------- count number of nodes on this line */
-if (frfind("--DLINE-NODE TOPOLOGY")==0) goto end;
-frread();
-while(strncmp(allfiles.actplace,"------",6)!=0)
-{
-   frint("DLINE",&dline,&ierr);
-   dsassert(ierr==1,"Cannot read DLINE-NODE TOPOLOGY");
-   ndline_fenode[dline-1]++;
-   frread();
+  input_design_read("DLINE",dline_fenode,ndline_fenode);
 }
-frrewind();
-for (i=0; i<(int)ndline_fenode.size(); i++)
-   dline_fenode[i].resize(ndline_fenode[i]);
-/*------------------------------- find fe-nodes belonging to this dline */
-for (i=0; i<(int)ndline_fenode.size(); i++)
-{
-   frfind("--DLINE-NODE TOPOLOGY");
-   frread();
-   //design->dline[i].Id=i;
-   counter=0;
-   while(strncmp(allfiles.actplace,"------",6)!=0)
-   {
-      frint("DLINE",&dline,&ierr);
-      dsassert(ierr==1,"Cannot read DLINE-NODE TOPOLOGY");
-      if (dline-1==i)
-      {
-         dsassert(counter<ndline_fenode[i],"Cannot read DLINE-NODE TOPOLOGY");
-         frint("NODE",&(dline_fenode[i][counter]),&ierr);
-         dsassert(ierr==1,"Cannot read DLINE-NODE TOPOLOGY");
-         dline_fenode[i][counter]--;
-         counter++;
-      }
-      frread();
-   }
-}
-/*----------------------------------------------------------------------*/
 
-end:
-return;
-} /* end of input_design_dline_fenode_read */
 
 /*----------------------------------------------------------------------*
  | input of design nodes  to fe-node topology             m.gee 11/06   |
@@ -243,42 +170,8 @@ return;
 void input_design_dpoint_fenode_read(vector<vector<int> >& dnode_fenode,
                                      vector<int>& ndnode_fenode)
 {
-/*-------------------------------------------------------------- rewind */
-frrewind();
-/*------------------------------- find fe-nodes belonging to this dnode */
-int ierr=0;
-int found=0;
-for (int i=0; i<(int)ndnode_fenode.size(); i++)
-{
-   //design->dnode[i].Id=i;
-   if (frfind("--DNODE-NODE TOPOLOGY")==0) goto end;
-   frread();
-   while(strncmp(allfiles.actplace,"------",6)!=0)
-   {
-      int dnode=0;
-      frint("DNODE",&dnode,&ierr);
-      if (ierr==1)
-      {
-         found = 1; /*fount at least one DNODE-NODE TOPOLOGY*/
-         if (dnode==i+1)
-         {
-            ndnode_fenode[i]=1;
-            dnode_fenode[i].resize(ndnode_fenode[i]);
-            frint("NODE",&(dnode_fenode[i][0]),&ierr);
-            dnode_fenode[i][0]--;
-            goto nextdnode;
-         }
-      }
-      frread();
-   }
-   nextdnode:
-   frrewind();
+  input_design_read("DNODE",dnode_fenode,ndnode_fenode);
 }
-
-end:
-return;
-} /* end of input_design_dpoint_fenode_read */
-
 
 
 #endif  // #ifdef CCADISCRET
