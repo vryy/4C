@@ -576,6 +576,8 @@ void FSI::DirichletNeumannCoupling::SetupFluid()
   fluidtimeparams->set<int>              ("number of start steps"    ,fdyn.get<int>("NUMSTASTEPS"));
   // parameter for start algo
   fluidtimeparams->set<double>           ("start theta"              ,fdyn.get<double>("START_THETA"));
+  // parameter for start algo
+  fluidtimeparams->set<int>              ("order gridvel"            ,fdyn.get<int>("GRIDVEL"));
 
 
   // ---------------------------------------------- nonlinear iteration
@@ -705,7 +707,8 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RCP<NOX::Epetra::Int
       ;
   }
 
-  idispn_ = InterfaceDisp();
+  // get an idea of interface displacement
+  idispn_ = structure_->ExtractInterfaceDispn();
 
   Teuchos::Time timer("time step timer");
 

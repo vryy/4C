@@ -25,6 +25,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_function.H"
 
 
+
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -193,6 +194,7 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   {
     dispnp_       = LINALG::CreateVector(*dofrowmap,true);
     dispn_        = LINALG::CreateVector(*dofrowmap,true);
+    dispnm_       = LINALG::CreateVector(*dofrowmap,true);
     gridv_        = LINALG::CreateVector(*dofrowmap,true);
   }
 
@@ -1152,7 +1154,10 @@ void FluidImplicitTimeInt::TimeUpdate()
   veln_ ->Update(1.0,*velnp_,0.0);
 
   if (alefluid_)
-    dispn_->Update(1.0,*dispnp_,0.0);
+  {
+    dispnm_->Update(1.0,*dispn_,0.0);
+    dispn_ ->Update(1.0,*dispnp_,0.0);
+  }
 
   return;
 }// FluidImplicitTimeInt::TimeUpdate
@@ -1214,6 +1219,12 @@ void FluidImplicitTimeInt::Output()
         output_.WriteVector("accn", accn_);
     	output_.WriteVector("veln", veln_);
     	output_.WriteVector("velnm", velnm_);
+
+        if (alefluid_)
+	{
+          output_.WriteVector("dispn", dispn_);
+          output_.WriteVector("dispnm",dispnm_);
+	}
       }
     }
 
@@ -1227,7 +1238,11 @@ void FluidImplicitTimeInt::Output()
     //output_.WriteVector("residual", trueresidual_);
     //output_.WriteVector("domain_decomp",domain_decomp);
     if (alefluid_)
+    {
       output_.WriteVector("dispnp", dispnp_);
+      output_.WriteVector("dispn", dispn_);
+      output_.WriteVector("dispnm",dispnm_);
+    }
 
     //only perform stress calculation when output is needed
     if (writestresses_)
@@ -1352,7 +1367,57 @@ void FluidImplicitTimeInt::ReadRestart(int step)
   reader.ReadVector(veln_, "veln");
   reader.ReadVector(velnm_,"velnm");
   reader.ReadVector(accn_ ,"accn");
+
+  if (alefluid_)
+  {
+    reader.ReadVector(dispnp_,"dispnp");
+    reader.ReadVector(dispn_ , "dispn");
+    reader.ReadVector(dispnm_,"dispnm");
+  }
 }
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |                                                           chfoe 01/08|
+ -----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FluidImplicitTimeInt::UpdateGridv() 
+{
+  // get order of accuracy of grid velocity determination
+  // from input file data
+  const int order  = params_.get<int>("order gridvel");
+
+  switch (order)
+  {
+    case 1:
+      /* get gridvelocity from BE time discretisation of mesh motion:  
+           -> cheap
+           -> easy
+           -> limits FSI algorithm to first order accuracy in time 
+
+                  x^n+1 - x^n
+             uG = -----------
+                    Deta t                        */
+      gridv_->Update(1/dta_, *dispnp_, -1/dta_, *dispn_, 0.0);
+    break;
+    case 2:
+      /* get gridvelocity from BDF2 time discretisation of mesh motion:  
+           -> requires one more previous mesh position or displacemnt
+           -> somewhat more complicated
+           -> allows second order accuracy for the overall flow solution  */
+      gridv_->Update(1.5/dta_, *dispnp_, -2.0, *dispn_, 0.0);
+      gridv_->Update(0.5, *dispnm_, 1.0);
+    break;
+  }
+}
+
+
+
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

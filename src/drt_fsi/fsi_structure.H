@@ -67,6 +67,9 @@ public:
   //! @name Extract interface values
 
   /// extract displacements
+  Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispn();
+
+  /// extract displacements
   Teuchos::RCP<Epetra_Vector> ExtractInterfaceDisplacement();
 
   /// Predictor for interface displacements

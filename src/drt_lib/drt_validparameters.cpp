@@ -538,6 +538,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
   IntParameter("NUMSTASTEPS",0,"Number of Steps for Starting Scheme",&fdyn);
   IntParameter("STARTFUNCNO",-1,"Function for Initial Starting Field",&fdyn);
   IntParameter("ITEMAX",10,"max. number of nonlin. iterations",&fdyn);
+  IntParameter("GRIDVEL",1,"order of accuracy of mesh velocity determination",&fdyn);
 
   DoubleParameter("TIMESTEP",0.01,"Time increment dt",&fdyn);
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&fdyn);

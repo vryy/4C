@@ -202,11 +202,11 @@ public:
 
   double ResidualScaling() const { return density_/dta_/theta_; }
 
-  void UpdateGridv() {
-    // There are other choices how to approximate that. Which one to
-    // chose?
-    gridv_->Update(1/dta_, *dispnp_, -1/dta_, *dispn_, 0.0);
-  }
+  /*!
+  \brief determine grid velocity
+
+  */
+  void UpdateGridv();
 
   /*!
   \brief calculate lift&drag forces and angular momenta
@@ -294,8 +294,10 @@ protected:
   RefCountPtr<Epetra_Vector>    veln_;
   RefCountPtr<Epetra_Vector>    velnm_;
 
+  /// displacemets at time n+1, n and n-1
   RefCountPtr<Epetra_Vector>    dispnp_;
   RefCountPtr<Epetra_Vector>    dispn_;
+  RefCountPtr<Epetra_Vector>    dispnm_;
 
   RefCountPtr<Epetra_Vector>    gridv_;
 

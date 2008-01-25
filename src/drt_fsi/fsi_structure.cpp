@@ -79,6 +79,15 @@ void FSI::Structure::SetInterfaceMap(Teuchos::RCP<Epetra_Map> im)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::Structure::ExtractInterfaceDispn()
+{
+  Teuchos::RCP<Epetra_Vector> idis  = interface_.ExtractCondVector(dis_);
+  return idis;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::Structure::ExtractInterfaceDisplacement()
 {
   Teuchos::RCP<Epetra_Vector> idism = interface_.ExtractCondVector(dism_);
