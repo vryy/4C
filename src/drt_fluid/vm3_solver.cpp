@@ -263,7 +263,7 @@ bool VM3_Solver::Compute()
   if (!Sep_->RowMap().SameAs(Aplus_->RowMap())) dserror("rowmap not equal");
   if (!Sep_->RangeMap().SameAs(Aplus_->RangeMap())) dserror("rangemap not equal");
   if (!Sep_->DomainMap().SameAs(Aplus_->DomainMap())) dserror("domainmap not equal");
-  //if (!Sep->ColMap().SameAs(Aplus_->ColMap())) dserror("colmap not equal");
+  //if (!Sep_->ColMap().SameAs(Aplus_->ColMap())) dserror("colmap not equal");
 
   return true;
 }
