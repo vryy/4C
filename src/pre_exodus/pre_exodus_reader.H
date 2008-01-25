@@ -53,23 +53,11 @@ class SideSet;
 class Mesh
 {
 public:
-  enum EntityType
-  {
-    elem_blk,
-    node_set,
-    side_set,
-  };
   //! constructor
   Mesh(string exofilename);
   
   //! destructor
   virtual ~Mesh();
-  
-  //! get number of entities
-  int GetNumberEntities(){ return num_entities_;};
-  
-  //! get one entitiy
-  RCP<Entity> GetEntity(int EntityID){ return myEntities_[EntityID];};
   
   //! Print mesh info
   void Print(ostream& os, bool verbose = false) const;
@@ -83,26 +71,23 @@ public:
   //! Get exodus file id
   int GetExoId() const {return exoid_;}
   
-  //! Get number of Entities in Mesh 
-  int GetNumEntities() const {return num_entities_;}
-  
   //! Get ElementBlock map
   map<int,ElementBlock> GetElementBlocks() const {return elementBlocks_;}
+  
+  //! Get Number of ElementBlocks
+  int GetNumElementBlocks() const {return elementBlocks_.size();}
   
   //! Get NodeSet map
   map<int,NodeSet> GetNodeSets() const {return nodeSets_;}
   
+  //! Get Number of ElementBlocks
+  int GetNumNodeSets() const {return nodeSets_.size();}
+  
   //! Get SideSet map
   map<int,SideSet> GetSideSets() const {return sideSets_;}
   
-//  //! Get nodal coordinates
-//  int GetNodalCorrd_x() const {return x_;}
-//
-//  //! Get nodal coordinates
-//  int GetNodalCorrd_y() const {return y_;}
-//
-//  //! Get nodal coordinates
-//  int GetNodalCorrd_z() const {return z_;}
+  //! Get Number of ElementBlocks
+  int GetNumSideSets() const {return sideSets_.size();}
   
   RCP<PreNode> GetNode(int NodeID){ return myNodes_[NodeID];};
 
@@ -113,9 +98,6 @@ public:
   void WriteMesh(string newexofilename);
 
 private:
-  
-  vector<RCP<Entity> > myEntities_;
-  
   vector<RCP<PreNode> > myNodes_;
   
   map<int,ElementBlock> elementBlocks_;
@@ -130,109 +112,10 @@ private:
   int num_nodes_;
   //! number of elements
   int num_elem_;
-  //! number of element blocks
-  int num_elem_blk_;
-  //! number of node sets
-  int num_node_sets_;
-  //! number of side sets
-  int num_side_sets_;
   //! exoid
   int exoid_;
   //! title
   char title_[MAX_LINE_LENGTH+1];
-  //! number of my entities
-  int num_entities_;
-  
-
-};
-
-/*!
-\class Entity
-
-\brief Entity of mesh such as ElementBlock, NodeSet, SideSet
-
-A mesh entity stores as many properties as possible,
-such as names, number of nodes, number of elements, element types, ...
-It implements its printout.
-
-\author maf (frenzel@lnm.mw.tum.de)
-*/
-class Entity
-{
-public:
-  //! Type of entity (ElementBlock, SideSet, or NodeSet)
-  enum EntityType
-  {
-    elem_blk,
-    node_set,
-    side_set,
-  };
-    
-  //! constructor
-  Entity(int exoid, int entityID, int typeID, EntityType entitytype);
-  
-  //! destructor
-  virtual ~Entity();
-  
-  //! Set Property name, designated by ICEM to available parts
-  void SetPropertyName(string prop_name);
-  
-  //! Get element type
-  string GetElementType() const {return elem_type_;};
-  
-  //! Get element type
-  string GetEntityName() const {return entity_name_;};
-
-  //! Get num_nodes_
-  int GetNumNodes() const {return num_nodes_;};
-  
-  //! GetNumNodPerElem
-  int GetNumNodpElem() const {return num_nod_per_elem_;};
-  
-  //! GetNumEle
-  int GetNumEle() const {return num_el_in_blk_;};
-  
-  //! GetNumAttr
-  int GetNumAttr() const {return num_attr_;};
-  
-  //! GetEntityId()
-  int GetEntityId() const {return entityID_;};
-
-  //! GetEntityType()
-  EntityType GetEntityType() const {return entitytype_;};
-
-//  //! Get Element Connectivity
-//  inline const int* Cont() const {if (entity_cont_.size()) return &entity_cont_[0];
-//                                     else                return NULL;     }
-  //! Get Element Connectivity
-  vector<int>* Cont() const {return entity_cont_;}
-  //! Print entity
-  void Print(ostream& os) const;
-  
-private:
-  //! entity Type
-  EntityType entitytype_;
-  //! entity ID
-  int entityID_;
-  //! element type
-  string elem_type_;
-  //! number of elements in block
-  int num_el_in_blk_;
-  //! number of nodes per element
-  int num_nod_per_elem_;
-  //! number of attributes
-  int num_attr_;
-  //! number of nodes in entity
-  int num_nodes_;
-  //! entity name
-  string entity_name_;
-  //! entity type name
-  string entity_type_;
-  //! property name (so far provided from ICEM for NodeSets
-  string entity_prop_name_;
-  //! entity content: element connectivity for element blocks or nodes for node sets
-  vector<int>* entity_cont_;
-
 };
 
 

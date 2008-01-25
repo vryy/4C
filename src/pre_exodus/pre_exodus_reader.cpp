@@ -51,7 +51,8 @@ Mesh::Mesh(string exofilename)
   cout<<exofilename<<" was created with EXODUS II library version "<<exoversion<<endl;
 
   // read database parameters
-  error = ex_get_init (exoid_, title_, &num_dim_, &num_nodes_,&num_elem_, &num_elem_blk_, &num_node_sets_, &num_side_sets_);
+  int num_elem_blk,num_node_sets,num_side_sets;
+  error = ex_get_init (exoid_, title_, &num_dim_, &num_nodes_,&num_elem_, &num_elem_blk, &num_node_sets, &num_side_sets);
 
   // get nodal coordinates
   float x[num_nodes_];
@@ -70,24 +71,11 @@ Mesh::Mesh(string exofilename)
     myNodes_[i] = rcp(new PreNode(i,coords));
   }
 
-  // num_entities_ are all ElementBlocks, NodeSets, and SideSets together
-  num_entities_ = num_elem_blk_ + num_node_sets_ + num_side_sets_;
-
-  // allocate sufficient memory for the entities
-  myEntities_.reserve(num_entities_);
-  
-  // entitycounter counts all ElementBlocks, NodeSets, and SideSets together
-  int entitycounter = 0;
-  
-  int epropID[num_elem_blk_];
+  // Get all ElementBlocks
+  int epropID[num_elem_blk];
   error = ex_get_prop_array(exoid_, EX_ELEM_BLOCK, "ID", epropID);
-  for (int i = 0; i < num_elem_blk_; ++i) 
+  for (int i = 0; i < num_elem_blk; ++i) 
   {
-//	  //RCP<Entity> myentity = rcp(new Entity(exoid_,entitycounter,epropID[i],Entity::elem_blk));
-//	  myEntities_[entitycounter] = rcp(new Entity(exoid_,entitycounter,epropID[i],Entity::elem_blk));
-//	  //myEntities_[entitycounter]->Print(cout);
-//	  entitycounter++;
-	  
 	  // Read Element Blocks into Map
     char mychar[MAX_STR_LENGTH+1];
     int num_el_in_blk,num_nod_per_elem,num_attr;
@@ -118,15 +106,9 @@ Mesh::Mesh(string exofilename)
   
   // get all NodeSets
   map<int,NodeSet> prelimNodeSets;   // prelim due to possible prop names
-  int npropID[num_node_sets_];
+  int npropID[num_node_sets];
   error = ex_get_prop_array(exoid_, EX_NODE_SET, "ID", npropID);
-  for (int i = 0; i < num_node_sets_; ++i) {
-//    myEntities_[entitycounter] = rcp(new Entity(exoid_,entitycounter,npropID[i],Entity::node_set));
-//    //myEntities_[entitycounter]->Print(cout);
-//    //Entity myentity(exoid_,entitycounter,npropID[i],Entity::node_set);
-//    entitycounter++;
-    
-    
+  for (int i = 0; i < num_node_sets; ++i) {
     // Read NodeSet params
     int num_nodes_in_set,num_df_in_set;
     error = ex_get_node_set_param (exoid_, npropID[i], &num_nodes_in_set,&num_df_in_set);
@@ -149,7 +131,7 @@ Mesh::Mesh(string exofilename)
     prelimNodeSets.insert(std::pair<int,NodeSet>(i,actNodeSet));
   }
   
-  /* Read NodeSet property names *********************************************
+  /* Read NodeSet property names ***********************************************
    * They are assigned by ICEM and provide recognition */
   int num_props;
   float fdum;
@@ -165,7 +147,7 @@ Mesh::Mesh(string exofilename)
   error = ex_get_prop_names(exoid_,EX_NODE_SET,prop_names);
   
   // Add prop names to final Mesh NodeSet if available
-  if ((num_props-1) == num_node_sets_){
+  if ((num_props-1) == num_node_sets){
     for (int i = 1; i < num_props; ++i) {
       string propname(prop_names[i], int(MAX_STR_LENGTH));
       
@@ -182,17 +164,12 @@ Mesh::Mesh(string exofilename)
     // this is the standard case without prop names
     nodeSets_ = prelimNodeSets;
   }
+  // ***************************************************************************
   
   // get all SideSets
-  int spropID[num_side_sets_];
+  int spropID[num_side_sets];
   error = ex_get_prop_array(exoid_, EX_SIDE_SET, "ID", spropID);
-  for (int i = 0; i < num_side_sets_; ++i) {
-//    myEntities_[entitycounter] = rcp(new Entity(exoid_,entitycounter,spropID[i],Entity::side_set));
-//    //myEntities_[entitycounter]->Print(cout);
-//    //Entity myentity(exoid_,entitycounter,spropID[i],Entity::side_set);
-//    entitycounter++;
-    
-    
+  for (int i = 0; i < num_side_sets; ++i) {
     // get SideSet name
     char mychar[MAX_STR_LENGTH+1];
     error = ex_get_name (exoid_, EX_SIDE_SET, spropID[i], mychar);
@@ -203,8 +180,6 @@ Mesh::Mesh(string exofilename)
     // Add this SideSet into Mesh map
     sideSets_.insert(std::pair<int,SideSet>(i,actSideSet));
   }
-
-
   return;
 }
 
@@ -237,9 +212,9 @@ void Mesh::Print(ostream & os, bool verbose) const
   os << "Mesh consists of ";
   os << num_nodes_ << " Nodes, ";
   os << num_elem_ << " Elements, organized in " << endl;
-  os << num_elem_blk_ << " ElementBlocks, ";
-  os << num_node_sets_ << " NodeSets, ";
-  os << num_side_sets_ << " SideSets ";
+  os << GetNumElementBlocks() << " ElementBlocks, ";
+  os << GetNumNodeSets() << " NodeSets, ";
+  os << GetNumSideSets() << " SideSets ";
   os << endl << endl;
   if (verbose){
     os << "ElementBlocks" << endl;
@@ -287,13 +262,11 @@ void Mesh::WriteMesh(string newexofilename)
                      &CPU_word_size, /* CPU float word size in bytes */
                      &IO_word_size); /* I/O float word size in bytes */
   
-//  // prefer strings
-//  string title = "New Exodus Mesh";
-//  const char *titlechar;
-//  titlechar = title.c_str();
-  
+  int num_elem_blk = GetNumElementBlocks();
+  int num_node_sets = GetNumNodeSets();
+  int num_side_sets = GetNumSideSets();
   /* initialize file with parameters */
-  error = ex_put_init (exoid, title_, num_dim_, num_nodes_, num_elem_,num_elem_blk_, num_node_sets_, num_side_sets_);
+  error = ex_put_init (exoid, title_, num_dim_, num_nodes_, num_elem_,num_elem_blk, num_node_sets, num_side_sets);
   if (error!=0) dserror("error in exfile init");
   
   /* Write QA record based on original exofile */
@@ -327,7 +300,7 @@ void Mesh::WriteMesh(string newexofilename)
     z[i] = actnode->X()[2];
   }
   error = ex_put_coord (exoid, x, y, z);
-  
+  /*
   // Write mesh entities
   int eb_counter = 0;
   //int ns_counter = 0;
@@ -384,7 +357,7 @@ void Mesh::WriteMesh(string newexofilename)
     
 
   }
-  
+  */
   
   // close file
   error = ex_close (exoid);
@@ -395,132 +368,6 @@ void Mesh::WriteMesh(string newexofilename)
   
 }
 
-
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                              maf 12/07|
- *----------------------------------------------------------------------*/
-Entity::Entity(int exoid, int entityID, int typeID, EntityType entitytype)
-{
-  entityID_ = entityID;
-  int error;
-  switch (entitytype){
-  case elem_blk:
-  {
-    entitytype_ = Entity::elem_blk;
-    entity_type_ = "ElementBlock";
-    char mychar[MAX_STR_LENGTH+1];
-    error = ex_get_elem_block (exoid, typeID, mychar, &num_el_in_blk_, &num_nod_per_elem_, &num_attr_);
-    // prefer string to store element type
-    string ele_type(mychar,int (MAX_STR_LENGTH));
-    elem_type_ = ele_type;
-    
-    // get ElementBlock name
-    error = ex_get_name (exoid, EX_ELEM_BLOCK, typeID, mychar);
-    // prefer string to store name
-    string blockname(mychar,int (MAX_STR_LENGTH));
-    entity_name_ = blockname;
-    
-    // number of nodes for blocks is:
-    num_nodes_ = num_nod_per_elem_ * num_el_in_blk_;
-    // property name (not yet supported for ElementBlocks)
-    entity_prop_name_ = "None";
-    
-    // get element connectivity
-    int connect[num_nodes_];
-    (*entity_cont_).resize(num_nodes_);
-    error = ex_get_elem_conn(exoid,typeID,connect);
-    if (error != 0) dserror("exo error returned");
-    for (int i = 0; i < num_nodes_; ++i) {
-      //!TODO: Sort start id from nodes: 0 or 1
-      (*entity_cont_)[i] = connect[i];
-    }
-    break;
-  }
-  case node_set:
-  {
-    entitytype_ = Entity::node_set;
-    entity_type_ = "NodeSet";
-    int num_nodes_in_set=0, num_df_in_set=0;
-    error = ex_get_node_set_param (exoid, typeID, &num_nodes_in_set,&num_df_in_set);
-    num_nodes_ = num_nodes_in_set;
-    
-    // get NodeSet name
-    char mychar[MAX_STR_LENGTH+1];
-    error = ex_get_name (exoid, EX_NODE_SET, typeID, mychar);
-    // prefer string to store name
-    string nodesetname(mychar, int(MAX_STR_LENGTH));
-    entity_name_ = nodesetname;
-
-    // get nodes in node set
-    //int *node_set_node_list;
-    //(*entity_cont_).resize(0);
-//    entity_cont_.resize(num_nodes_);
-//    error = ex_get_node_set (exoid, typeID, node_set_node_list);
-//    if (error != 0) dserror("error reading node set");
-//    for (int i = 0; i < num_nodes_; ++i) {
-//      //!TODO: Sort start id from nodes: 0 or 1
-//      entity_cont_[i] = node_set_node_list[i];
-//    }
-
-    // set other variables to default NodeSet
-    elem_type_ = "No Element Type";
-    num_nod_per_elem_ = 0;
-    num_el_in_blk_ = 0;
-    entity_prop_name_ = "None";
-    break;
-  }
-  case side_set:
-  {
-    entitytype_ = Entity::side_set;
-    entity_type_ = "SideSet";
-    // get SideSet name
-    char mychar[MAX_STR_LENGTH+1];
-    error = ex_get_name (exoid, EX_SIDE_SET, typeID, mychar);
-    // prefer string to store name
-    string sidesetname(mychar, int(MAX_STR_LENGTH));
-    entity_name_ = sidesetname;
-    
-    // set other variables to default
-    elem_type_ = "Side Sets not yet supported";
-    entity_prop_name_ = "None";
-    (*entity_cont_).resize(0);
-    break;
-  }
-  default: cout << "EntityType not valid" << endl;
-  }
-  
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                              maf 12/07|
- *----------------------------------------------------------------------*/
-Entity::~Entity()
-{
-  return;
-}
-
-void Entity::SetPropertyName(string propname)
-{
-  entity_prop_name_ = propname;
-  return;
-}
-
-void Entity::Print(ostream& os) const
-{
-  // do not remove the .c_str() since they are needed for printing into a file stream
-  // entityID_ is raised by 1 to match matr numbering of existing exofilter
-  os << "Entity " << entityID_+1<< " is of type " << entity_type_;
-  os << " is named " << entity_name_.c_str() << endl;
-  os << "with " << num_nodes_ << " Nodes in cloud" << endl;
-  os << "Additional Info: " << endl;
-  os << "Property Name: " << entity_prop_name_.c_str() << endl;
-  os << "Element Type: " << elem_type_.c_str() << endl;
-  os << "Num Attr: " << num_attr_;
-  os << ", ele per block: " << num_el_in_blk_ << ", num per ele: " << num_nod_per_elem_ << endl << endl;
-  return;
-}
 
 ElementBlock::ElementBlock(ElementBlock::Shape Distype, map<int,vector<int> > &eleconn, string name)
 {

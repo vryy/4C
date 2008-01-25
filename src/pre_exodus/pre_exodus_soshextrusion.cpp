@@ -30,23 +30,23 @@ Mesh(exofilename)
     RCP<PreNode> actnode = GetNode(i);
     actnode->Print(cout);
   }
-  // go through all entities in Mesh
-  for (int i = 0; i < GetNumEntities(); ++i) {
-    RCP<Entity> actEntity = GetEntity(i);
-    //cout << actEntity->GetElementType() << endl;
-    cout << "NumEle: " << actEntity->GetNumEle() << endl;
-    cout << "NumNod: " << actEntity->GetNumNodes() << endl;
-    cout << "NumNodPEle: " << actEntity->GetNumNodpElem() << endl;
-    cout << "EntityID: " << actEntity->GetEntityId() << endl;
-    //cout << "EntityType: " << actEntity->EntityType << endl;
-    switch (actEntity->GetEntityType()){
-    case Entity::elem_blk:{
-      
-      cout << "I am a block" << endl;
-      int blk_id = 1+actEntity->GetEntityId();
-      cout << "entity id in block: " << blk_id << endl;
-      cout << "ExoID: " << GetExoId() << endl;
-      
+//  // go through all entities in Mesh
+//  for (int i = 0; i < GetNumEntities(); ++i) {
+//    RCP<Entity> actEntity = GetEntity(i);
+//    //cout << actEntity->GetElementType() << endl;
+//    cout << "NumEle: " << actEntity->GetNumEle() << endl;
+//    cout << "NumNod: " << actEntity->GetNumNodes() << endl;
+//    cout << "NumNodPEle: " << actEntity->GetNumNodpElem() << endl;
+//    cout << "EntityID: " << actEntity->GetEntityId() << endl;
+//    //cout << "EntityType: " << actEntity->EntityType << endl;
+//    switch (actEntity->GetEntityType()){
+//    case Entity::elem_blk:{
+//      
+//      cout << "I am a block" << endl;
+//      int blk_id = 1+actEntity->GetEntityId();
+//      cout << "entity id in block: " << blk_id << endl;
+//      cout << "ExoID: " << GetExoId() << endl;
+//      
 //      int sizeofconnect = actEntity->GetNumNodpElem()*actEntity->GetNumEle();
 //      const int* conn = actEntity->Cont();
 //      for (int i = 0; i < sizeofconnect; ++i) {
@@ -77,12 +77,12 @@ Mesh(exofilename)
 //        RCP<PreElement> safedbasele = basels[i];
 //        safedbasele->Print(cout);
 //      }
-      break;
-    }
-    default: cout << "I am not a block!" << endl;
-    }
-    
-  }
+//      break;
+//    }
+//    default: cout << "I am not a block!" << endl;
+//    }
+//    
+//  }
   
   return;
   

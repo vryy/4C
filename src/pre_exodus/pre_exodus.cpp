@@ -107,17 +107,11 @@ int main(
       ofstream defaultbc(defaultbcfilename.c_str());
       if (!defaultbc)
     	  dserror("failed to open file: %s", defaultbcfilename.c_str());
+      
+      // write mesh verbosely
+      defaultbc<<"----------- Mesh contents -----------"<<endl<<endl;
+      mymesh.Print(defaultbc, true);
 
-      // write general mesh info
-      defaultbc<<"----------- general info -----------"<<endl<<endl;
-      mymesh.Print(defaultbc);
-      // write infos of each mesh entity
-      defaultbc<<"----------- entity info  -----------"<<endl<<endl;
-      for (int i = 0; i < mymesh.GetNumberEntities(); ++i) 
-      {
-        RCP<Entity> actEntity = mymesh.GetEntity(i);
-        actEntity->Print(defaultbc);
-      }
       // show all necessary bc and element specifications (suggestion for user)     
       defaultbc<<"-----------Please specify:-----------"<<endl<<endl;
 	    defaultbc<<"\\\\SYNTAX:"<<endl;
@@ -142,7 +136,8 @@ int main(
 
       defaultbc<<"------------------------------------------------"<<endl<<endl;
       
-      for (int i = 0; i < mymesh.GetNumberEntities(); ++i) 
+      int numEntities = mymesh.GetNumElementBlocks() + mymesh.GetNumNodeSets() + mymesh.GetNumSideSets();
+      for (int i = 0; i < numEntities; ++i) 
       {    
     	  defaultbc<<"*matr"<<i+1<<"=\"\"\"\""<<endl
     	  <<"boundr_cond=\"\"\"\""<<endl
