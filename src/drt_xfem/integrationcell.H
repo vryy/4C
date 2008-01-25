@@ -289,6 +289,25 @@ public:
      */
     inline std::vector< std::vector<double> > GetBoundaryCoord() const {return nodalpos_xi_boundary_;};
     
+    /*!
+     \brief returns the coordinates of the integration cell in domain element coordinates
+
+     \return cells nodal coordinates  
+     */
+    inline BlitzMat GetBoundaryCoordBlitz() const
+    {
+        const int numnode = this->NumNode();
+        BlitzMat positions_xi_domain(2,numnode,blitz::ColumnMajorArray<2>());
+        for (int inode=0; inode<numnode; inode++)
+        {
+            positions_xi_domain(0,inode) = this->GetBoundaryCoord()[inode][0];
+            positions_xi_domain(1,inode) = this->GetBoundaryCoord()[inode][1];
+        }    
+        return positions_xi_domain;
+    }
+    
+    inline int GetSurfaceEleGid() const {return surface_ele_gid_;}
+    
     std::string Print() const;
 
 private:
