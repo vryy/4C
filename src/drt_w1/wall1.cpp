@@ -19,36 +19,44 @@ Maintainer: Markus Gitterle
 #include "../drt_lib/drt_dserror.H"
 
 
-
-
 /*----------------------------------------------------------------------*
- |  ctor (public)                                            mgit 03/07|
+ |  ctor (public)                                            mgit 01/08/|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Wall1::Wall1(int id, int owner) :
 DRT::Element(id,element_wall1,owner),
 data_(),
 material_(0),
 thickness_(0.0),
-gaussrule_(DRT::UTILS::intrule2D_undefined)
+gaussrule_(DRT::UTILS::intrule2D_undefined),
+wtype_(plane_none),
+stresstype_(w1_none),
+iseas_(false)
+
 {
+  surfaces_.resize(0);	
   lines_.resize(0);
   lineptrs_.resize(0);
-  wtype_ = plane_stress; 
+//  tsi_couptyp_ = tsi_coup_none;
   return;
 }
 
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       mgit 03/07|
+ |  copy-ctor (public)                                       mgit 01/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Wall1::Wall1(const DRT::ELEMENTS::Wall1& old) :
 DRT::Element(old),
 data_(old.data_),
 material_(old.material_),
 thickness_(old.thickness_),
-lines_(old.lines_),
-lineptrs_(old.lineptrs_),
 gaussrule_(old.gaussrule_),
-wtype_(old.wtype_)
+wtype_(old.wtype_),
+stresstype_(old.stresstype_),
+iseas_(old.iseas_),
+surfaces_(old.surfaces_),
+lines_(old.lines_),
+lineptrs_(old.lineptrs_)
+
+// tsi_couptyp_(old.tsi_couptyp_)
 {
   return;
 }
@@ -107,6 +115,13 @@ void DRT::ELEMENTS::Wall1::Pack(vector<char>& data) const
   AddtoPack(data,wtype_);
   // gaussrule_
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
+  // stresstype
+  AddtoPack(data,stresstype_);
+  // eas
+  AddtoPack(data,iseas_);
+//  //tsi
+//  AddtoPack(data,tsi_couptyp_);
+  //data
   vector<char> tmp(0);
   data_.Pack(tmp);
   AddtoPack(data,tmp);
@@ -140,6 +155,13 @@ void DRT::ELEMENTS::Wall1::Unpack(const vector<char>& data)
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);
   gaussrule_ = DRT::UTILS::GaussRule2D(gausrule_integer); //explicit conversion from integer to enum
+  // stresstype_
+  ExtractfromPack(position,data,stresstype_);
+  // iseas_
+  ExtractfromPack(position,data,iseas_);
+//  // tsi_couptype
+//  ExtractfromPack(position,data,tsi_couptyp_);
+  //data
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);

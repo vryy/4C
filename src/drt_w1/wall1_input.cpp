@@ -101,10 +101,6 @@ bool DRT::ELEMENTS::Wall1::ReadElement()
   if (ierr!=1) dserror("Reading of WALL1 element failed");
   gaussrule_ = getGaussrule(ngp); 
 
-//  // read gaussian points for triangle element
-//  frint("GP_TRI",&ngptri_,&ierr);
-//  if (ierr!=1) dserror("Reading of WALL1 element failed");
-
   //read 2D problem type
   frchk("PLANE_STRESS",&ierr);
   if (ierr==1) wtype_ = plane_stress; 
@@ -113,7 +109,32 @@ bool DRT::ELEMENTS::Wall1::ReadElement()
   
   //read model (EAS or not)
   frchk("EAS_Model",&ierr);
-  if (ierr==1) iseas_=true;
+  if (ierr==1)
+  {
+	
+	iseas_=true;
+    // EAS enhanced deformation gradient parameters
+    Epetra_SerialDenseMatrix alpha(4,1);
+
+//    alpha (0,0)=1;
+//    alpha (1,0)=2;
+//    alpha (2,0)=3;
+//    alpha (3,0)=4;
+                
+    // EAS portion of internal forces, also called enhacement vector s or Rtilde
+    Epetra_SerialDenseVector feas(4);
+    // EAS matrix K_{alpha alpha}, also called Dtilde
+    Epetra_SerialDenseMatrix invKaa(2,2);
+    // EAS matrix K_{d alpha}
+    Epetra_SerialDenseMatrix Kda(2,2);
+    
+    // save EAS data into element container easdata_
+    data_.Add("alpha",alpha);
+    data_.Add("feas",feas);
+    data_.Add("invKaa",invKaa);
+    data_.Add("Kda",Kda);
+
+  }
 
   //read lokal or global stresses
   char buffer [50];
@@ -125,18 +146,18 @@ bool DRT::ELEMENTS::Wall1::ReadElement()
      else dserror ("Reading of WALL1 element failed");
   }
 
-  //read TSI
-#if 0
-  tsi_couptyp = tsi_coup_none;  /* default */
-  char buffer[50];
-  frchar("TSI_COUPTYP",buffer,&ierr);
-  if (ierr)
-  {
-    if (strncmp(buffer,"None",4)==0) tsi_couptyp_ = tsi_coup_none;
-    if (strncmp(buffer,"Thermconf",9)==0) tsi_couptyp_ = tsi_coup_thermconf;
-    if (strncmp(buffer,"Thermcreate",11)==0) tsi_couptyp_ = tsi_coup_thermcreate;
-  }
-#endif
+//  //read TSI
+// #if 0
+//  tsi_couptyp = tsi_coup_none;  /* default */
+//  char buffer[50];
+//  frchar("TSI_COUPTYP",buffer,&ierr);
+//  if (ierr)
+//  {
+//    if (strncmp(buffer,"None",4)==0) tsi_couptyp_ = tsi_coup_none;
+//    if (strncmp(buffer,"Thermconf",9)==0) tsi_couptyp_ = tsi_coup_thermconf;
+//    if (strncmp(buffer,"Thermcreate",11)==0) tsi_couptyp_ = tsi_coup_thermcreate;
+//  }
+//#endif
         
   return true;
 } // Wall1::ReadElement()

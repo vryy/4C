@@ -301,13 +301,13 @@ private:
     w1_rs 
   };
 
-  //! couptyp for thermo-structure-interaction
-  enum ThermoStructureType
-  {
-    tsi_coup_none,
-    tsi_coup_thermconf,
-    tsi_coup_thermcreate
-  }; 
+//  //! couptyp for thermo-structure-interaction
+//  enum ThermoStructureType
+//  {
+//    tsi_coup_none,
+//    tsi_coup_thermconf,
+//    tsi_coup_thermcreate
+//  }; 
 
   //! container containing all kind of wall1 thisandthat
   DRT::Container                                  data_;      
@@ -316,12 +316,6 @@ private:
   int                                             material_; 
   //! element thickness 
   double                                          thickness_; 
-  //! vector of surfaces of this element (length 1)
-  vector<DRT::Element*>                           surfaces_;  
-  //! vector of lines adjacent to this element (wall1: 3 or 4 lines)
-  vector<RefCountPtr<DRT::ELEMENTS::Wall1Line> >  lines_;     
-  //! vector of lines adjacent to this element (wall1: 3 or 4 lines)
-  vector<DRT::ELEMENTS::Wall1Line*>               lineptrs_;
   //! gaussian points
   DRT::UTILS::GaussRule2D                         gaussrule_;
   //! problem type
@@ -330,8 +324,15 @@ private:
   StressType                                   stresstype_;
   //! eas or not
   bool                                              iseas_;
-  //! thermo-structure-interaction couptype
-  ThermoStructureType                         tsi_couptyp_;
+  //! vector of surfaces of this element (length 1)
+  vector<DRT::Element*>                           surfaces_;  
+  //! vector of lines adjacent to this element (wall1: 3 or 4 lines)
+  vector<RefCountPtr<DRT::ELEMENTS::Wall1Line> >  lines_;     
+  //! vector of lines adjacent to this element (wall1: 3 or 4 lines)
+  vector<DRT::ELEMENTS::Wall1Line*>               lineptrs_;
+
+//  //! thermo-structure-interaction couptype
+//  ThermoStructureType                         tsi_couptyp_;
   
   
   // internal calculation methods
@@ -356,7 +357,7 @@ private:
 
   void w1_jacobianmatrix(double xrefe[2][MAXNOD_WALL1], const Epetra_SerialDenseMatrix& deriv,
                          Epetra_SerialDenseMatrix& xjm,
-			 double* det,
+			              double* det,
                          const int iel);
 
   void w1_boplin(Epetra_SerialDenseMatrix& boplin,
@@ -402,7 +403,31 @@ private:
                Epetra_SerialDenseMatrix& b_cure,
                Epetra_SerialDenseVector& intforce,
                double fac,
-               int nd);				    
+               int nd);	
+  
+  void w1_eassetup(Epetra_SerialDenseMatrix& boplin0,
+		           Epetra_SerialDenseVector& F0,
+		           Epetra_SerialDenseMatrix& xjm0,
+		           double& detJ0,                      
+                   Epetra_SerialDenseMatrix& T0invT,   
+                   double xrefe[2][MAXNOD_WALL1],
+                   double xcure[2][MAXNOD_WALL1],
+                   const DRT::Element::DiscretizationType& distype);  
+
+  void w1_call_defgrad_enh(Epetra_SerialDenseMatrix& F_enh,
+  		                   Epetra_SerialDenseMatrix xjm0,
+  		                   Epetra_SerialDenseMatrix xjm,
+  		                   double detJ0,
+  		                   double det,
+  		                   Epetra_SerialDenseVector F0,
+  		                   Epetra_SerialDenseMatrix alpha,
+  		                   double e1,
+  		                   double e2); 
+  
+  void w1_call_defgrad_tot(Epetra_SerialDenseMatrix F_enh,
+  		                   Epetra_SerialDenseVector& F_tot,
+  		                   Epetra_SerialDenseVector F,
+  		                   Epetra_SerialDenseVector& strain);  
 
   // don't want = operator
   Wall1& operator = (const Wall1& old);
