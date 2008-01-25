@@ -10,7 +10,7 @@
 # Always include the flag that turns on the new discretization!
 CCADISCRET           # use new baci discretization subsystem DRT
 
-#   even though we never make mistakes debugging is an option
+# Even though we never make mistakes debugging is an option
 # DEBUG
 
 #   all possible elements
@@ -36,7 +36,7 @@ CCADISCRET           # use new baci discretization subsystem DRT
 # BINIO              # binary io
 # QHULL              # needed for XFEM simulations
 # TDS                # Fluid stabilization using time dependent subscales
-# EXODUS						 # Pre_exodus (exodusII, netcdf)
+# EXODUS             # Pre_exodus (exodusII, netcdf)
 
 #   tools
 #  =======
