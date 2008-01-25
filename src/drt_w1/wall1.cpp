@@ -33,6 +33,7 @@ gaussrule_(DRT::UTILS::intrule2D_undefined)
 {
   lines_.resize(0);
   lineptrs_.resize(0);
+  wtype_ = plane_stress; 
   return;
 }
 
@@ -46,7 +47,8 @@ material_(old.material_),
 thickness_(old.thickness_),
 lines_(old.lines_),
 lineptrs_(old.lineptrs_),
-gaussrule_(old.gaussrule_)
+gaussrule_(old.gaussrule_),
+wtype_(old.wtype_)
 {
   return;
 }
@@ -101,6 +103,8 @@ void DRT::ELEMENTS::Wall1::Pack(vector<char>& data) const
   AddtoPack(data,material_);
   //thickness
   AddtoPack(data,thickness_);
+  // plane strain or plane stress information
+  AddtoPack(data,wtype_);
   // gaussrule_
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   vector<char> tmp(0);
@@ -130,6 +134,8 @@ void DRT::ELEMENTS::Wall1::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,material_);
   // thickness_
   ExtractfromPack(position,data,thickness_);
+  // plane strain or plane stress information_
+  ExtractfromPack(position,data,wtype_);
   // gaussrule_
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);

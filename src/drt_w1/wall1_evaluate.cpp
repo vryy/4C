@@ -579,7 +579,7 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(Epetra_SerialDenseVector& strain,
       C(3,3)=e3;
       }
       break;
-      default:
+    case plane_strain:
      /*----------- material-tangente - plane strain, rotational symmetry ---*/
       {
       double c1=ym/(1.0+pv);
@@ -606,6 +606,9 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(Epetra_SerialDenseVector& strain,
       C(3,2)=c1/2;
       C(3,3)=c1/2;
       }
+      break;
+      default:
+	dserror("nonsense");
      }
   /*-------------------------- evaluate 2.PK-stresses -------------------*/
   /*------------------ Summenschleife -> += (2.PK stored as vecor) ------*/
