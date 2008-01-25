@@ -28,6 +28,7 @@ XFEM::InterfaceHandle::InterfaceHandle(
 	  XFEM::Intersection is;
 	  is.computeIntersection(xfemdis,cutterdis,elementalDomainIntCells_,elementalBoundaryIntCells_);
 	  std::cout << "numcuttedelements = " << elementalDomainIntCells_.size() << endl;
+#if 0
 	  // debug: write both meshes to file in Gmsh format
 	  std::ofstream f_system("elements_coupled_system.pos");
 	  f_system << IO::GMSH::disToString("Fluid", 0.0, xfemdis, elementalDomainIntCells_);
@@ -57,6 +58,7 @@ XFEM::InterfaceHandle::InterfaceHandle(
 	  
 	  f_system << IO::GMSH::getConfigString(3);
 	  f_system.close();
+#endif
 }
 		
 /*----------------------------------------------------------------------*
