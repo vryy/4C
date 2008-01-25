@@ -20,7 +20,6 @@ Maintainer: Volker Gravemeier
 #ifdef CCADISCRET
 
 #include "condifimplicitintegration.H"
-#include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/drt_periodicbc.H"
 
 
@@ -91,6 +90,8 @@ CondifImplicitTimeInt::CondifImplicitTimeInt(RefCountPtr<DRT::Discretization> ac
   // get a vector layout from the discretization
   // -------------------------------------------------------------------
   {
+    // gee: What's this good for in here?
+    
     // Allocate integer vectors which will hold the number of the dofs
     vector<int> phimapdata;
 
@@ -216,9 +217,9 @@ void CondifImplicitTimeInt::Integrate()
   // bound for the number of startsteps
   int    numstasteps         =params_.get<int>   ("number of start steps");
 
-  if (timealgo_==timeint_stationary)
-    // stationary case
-    this->SolveStationaryProblem();
+  
+  if (timealgo_==timeint_stationary) // stationary case
+    SolveStationaryProblem();
   else  // instationary case
   {
     // start procedure
@@ -268,7 +269,7 @@ void CondifImplicitTimeInt::TimeLoop()
     // -------------------------------------------------------------------
     //                     solve nonlinear equation
     // -------------------------------------------------------------------
-    this->Solve();
+    Solve();
 
 
     // -------------------------------------------------------------------
@@ -305,13 +306,13 @@ void CondifImplicitTimeInt::TimeLoop()
     //  phidtn_  = (phinp_-phin_) / (dt)
     //
     // -------------------------------------------------------------------
-    this->TimeUpdate();
+    TimeUpdate();
 
 
     // -------------------------------------------------------------------
     //                         output of solution
     // -------------------------------------------------------------------
-    this->Output();
+    Output();
 
 
     // -------------------------------------------------------------------
@@ -427,7 +428,7 @@ void CondifImplicitTimeInt::PrepareTimeStep()
   //                   hist_ = 4/3 phin_ - 1/3 phinm_
   //
   // -------------------------------------------------------------------
-  this->SetOldPartOfRighthandside();
+  SetOldPartOfRighthandside();
 
   // -------------------------------------------------------------------
   //         evaluate dirichlet and neumann boundary conditions
@@ -556,10 +557,10 @@ void CondifImplicitTimeInt::Solve(
         LINALG::ApplyDirichlettoSystem(sysmat_sd_,phinp_,residual_,phinp_,dirichtoggle_);
 
         // call the VM3 constructor
-        RCP<VM3_Solver> vm3_solver = rcp(new VM3_Solver::VM3_Solver(scalesep_,sysmat_sd_,sysmat_,sugrvisc_,zeros_,zeros_,zeros_,dirichtoggle_,mllist,compute) );
+        RCP<VM3_Solver> vm3_solver = rcp(new VM3_Solver(scalesep_,sysmat_sd_,sysmat_,sugrvisc_,zeros_,zeros_,zeros_,dirichtoggle_,mllist,compute) );
 
         // call the VM3 scale separator: precomputation of unscaled S^T*M*S
-        vm3_solver-> VM3_Solver::Separate(scalesep_,sysmat_sd_);
+        vm3_solver->Separate(scalesep_,sysmat_sd_);
       }
       else
       {
@@ -570,11 +571,11 @@ void CondifImplicitTimeInt::Solve(
         discret_->ClearState();
       }
       // call the VM3 constructor
-      RCP<VM3_Solver> vm3_solver = rcp(new VM3_Solver::VM3_Solver(scalesep_,sysmat_sd_,sysmat_,sugrvisc_,zeros_,zeros_,zeros_,dirichtoggle_,mllist,compute) );
+      RCP<VM3_Solver> vm3_solver = rcp(new VM3_Solver(scalesep_,sysmat_sd_,sysmat_,sugrvisc_,zeros_,zeros_,zeros_,dirichtoggle_,mllist,compute) );
 
       // call the VM3 scaling:
       // scale precomputed matrix product by subgrid-viscosity-scaling vector
-      vm3_solver->VM3_Solver::Scale(sysmat_sd_,sysmat_,sugrvisc_,zeros_,zeros_,zeros_,false );
+      vm3_solver->Scale(sysmat_sd_,sysmat_,sugrvisc_,zeros_,zeros_,zeros_,false );
     }
     else
     {
@@ -807,17 +808,21 @@ void CondifImplicitTimeInt::Output()
 #endif
 
 
-//#if 0  //DEBUG IO --- incremental solution
-      //if (myrank_==0)
-      //{
-        int rr;
-        double* data = phinp_->Values();
-        for(rr=0;rr<phinp_->MyLength();rr++)
+#if 1  //DEBUG IO --- incremental solution
+      for (int proc=0; proc<phinp_->Comm().NumProc(); ++proc)
+      {
+        if (proc==myrank_)
         {
-          printf("sol[%4d] %26.19e\n",rr,data[rr]);
+          printf("Proc %d\n",myrank_); fflush(stdout);
+          for(int rr=0;rr<phinp_->MyLength();++rr)
+          {
+            printf("sol[%4d] %26.19e\n",phinp_->Map().GID(rr),(*phinp_)[rr]);
+          }
         }
-      //}
-//#endif
+        fflush(stdout);
+        phinp_->Comm().Barrier();
+      }
+#endif
 //cout << *phinp_;
 
   return;
@@ -937,12 +942,12 @@ void CondifImplicitTimeInt::SolveStationaryProblem()
   // -------------------------------------------------------------------
   //                     solve nonlinear equation
   // -------------------------------------------------------------------
-  this->Solve(true);
+  Solve(true);
 
   // -------------------------------------------------------------------
   //                         output of solution
   // -------------------------------------------------------------------
-  this->Output();
+  Output();
 
 
   // end time measurement for timeloop
