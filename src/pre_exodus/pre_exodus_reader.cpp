@@ -257,6 +257,7 @@ void Mesh::Print(ostream & os, bool verbose) const
       it2->second.Print(os);
     }
     os << endl << "SideSets" << endl;
+    os << "Warning: SideSets are not yet fully supported by PreExodus!" << endl;
     map<int,SideSet>::const_iterator it3;
     map<int,SideSet> sideSets = GetSideSets();
     for (it3=sideSets.begin(); it3 != sideSets.end(); it3++){
@@ -535,7 +536,8 @@ ElementBlock::~ElementBlock()
 void ElementBlock::Print(ostream& os, bool verbose) const
 {
   os << "Element Block, named: " << name_ << endl
-  << "of Shape: " << ShapeToString(distype_) << endl;
+  << "of Shape: " << ShapeToString(distype_) << endl
+  << "has " << GetNumEle() << " Elements" << endl;
   if (verbose){
     map<int,vector<int> >::const_iterator it;
     for (it=eleconn_.begin(); it != eleconn_.end(); it++){
@@ -567,10 +569,12 @@ NodeSet::~NodeSet()
 void NodeSet::Print(ostream& os, bool verbose) const
 {
   os << "Node Set, named: " << name_ << endl
-  << "Property Name: " << propname_ << endl;
+  << "Property Name: " << propname_ << endl
+  << "has " << GetNumNodes() << " Nodes" << endl;
   if (verbose){
-    //!TODO:
-    os << "NodeSet verbose" << endl;
+    os << "Contains Nodes:" << endl;
+    set<int>::iterator it;
+    for (it=nodeids_.begin(); it != nodeids_.end(); it++) os << *it << ",";
   }
 }
 

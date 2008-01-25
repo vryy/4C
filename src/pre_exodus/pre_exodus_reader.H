@@ -281,6 +281,8 @@ public:
   
   ElementBlock::Shape GetShape() const {return distype_;}
   
+  int GetNumEle() const {return eleconn_.size();}
+  
   void Print(ostream& os, bool verbose=false) const;
   
 private:
@@ -302,6 +304,8 @@ public:
   set<int> GetNodeSet() const {return nodeids_;};
   
   string GetName() const {return name_;};
+  
+  inline int GetNumNodes() const {return nodeids_.size();}
   
   void Print(ostream& os, bool verbose=false) const;
 
