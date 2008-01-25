@@ -621,14 +621,14 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
     //if (domainIntCells.size() == 1)
     if (ih->ElementIntersected(ele->Id()))
     {
-        gaussrule = ele->GetGaussrule();
-    }
-    else
-    {
         // attention: don't use gausspoint rules that have gausspoints on the element boundary 
         // (so called closed rules)
         // -> enrichment values might be undefined 
         gaussrule = DRT::UTILS::intrule_tet_11point;
+    }
+    else
+    {
+        gaussrule = ele->GetGaussrule();
     }
     
     LocalAssembler<DISTYPE, ASSTYPE> assembler(dofman, estif, eforce);
