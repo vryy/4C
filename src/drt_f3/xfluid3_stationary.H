@@ -448,34 +448,31 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
   }
   
   //! map position from eta to xi space
-  template <XFEM::AssemblyType ASSTYPE>
-  XFEM::PosEtaDomain mapEtaToXi3D(
+  template<XFEM::AssemblyType ASSTYPE> XFEM::PosEtaDomain mapEtaToXi3D(
           const XFEM::DomainIntCell& cell,
           const XFEM::PosEtaDomain&  pos_eta)
   {   
-      // return value
-      BlitzVec pos_xsi_domain(3);
+      // get cell node coordinates
+      const BlitzMat xyze_cell(cell.GetDomainCoordBlitz());
+
+      // create shape function vectors 
+      const BlitzVec funct(DRT::UTILS::shape_function_3D(pos_eta(0),pos_eta(1),pos_eta(2),cell.Shape()));
+
+      // init blitz indices
+      blitz::firstIndex i;    // Placeholder for the first index
+      blitz::secondIndex j;   // Placeholder for the second index
       
-      if (ASSTYPE == XFEM::standard_assembly) {
-          // gauss coordinates of cell in element coordinates
-          pos_xsi_domain = pos_eta;
-      }
-      else
-      {
-          // get cell node coordinates
-          const BlitzMat xyze_cell(cell.GetDomainCoordBlitz());
-
-          // create shape function vectors 
-          const BlitzVec funct(DRT::UTILS::shape_function_3D(pos_eta(0),pos_eta(1),pos_eta(2),cell.Shape()));
-
-          // init blitz indices
-          blitz::firstIndex i;    // Placeholder for the first index
-          blitz::secondIndex j;   // Placeholder for the second index
-          
-          // translate position into from cell coordinates to element coordinates
-          const BlitzVec pos_xsi_domain(blitz::sum(funct(j)*xyze_cell(i,j),j));
-      }  
+      // translate position into from cell coordinates to element coordinates
+      const BlitzVec pos_xsi_domain(blitz::sum(funct(j)*xyze_cell(i,j),j));
       return pos_xsi_domain;
+  };
+  
+  //! map position from eta to xi space
+  template<> XFEM::PosEtaDomain mapEtaToXi3D<XFEM::standard_assembly>(
+          const XFEM::DomainIntCell& cell,
+          const XFEM::PosEtaDomain&  pos_eta)
+  {   
+      return pos_eta;
   };
 
   //! get determinante between eta and xi space
@@ -484,23 +481,16 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
           const XFEM::DomainIntCell& cell,
           const XFEM::PosEtaDomain&  pos_eta)
   {   
-      // return value
-      double det = -1.0;
-      if (ASSTYPE == XFEM::standard_assembly) {
-          det = 1.0;
-      }
-      else
-      {
-          // get node coordinates
-          const BlitzMat xyze_cell(cell.GetDomainCoordBlitz());
+      // get node coordinates
+      const BlitzMat xyze_cell(cell.GetDomainCoordBlitz());
 
-          // init blitz indices
-          blitz::firstIndex i;    // Placeholder for the first index
-          blitz::secondIndex j;   // Placeholder for the second index
-          blitz::thirdIndex k;    // Placeholder for the third index
-      
-          // get Jacobian matrix and determinant
-          // actually compute its transpose....
+      // init blitz indices
+      blitz::firstIndex i;    // Placeholder for the first index
+      blitz::secondIndex j;   // Placeholder for the second index
+      blitz::thirdIndex k;    // Placeholder for the third index
+  
+      // get Jacobian matrix and determinant
+      // actually compute its transpose....
       /*
         +-            -+ T      +-            -+
         | dx   dx   dx |        | dx   dy   dz |
@@ -516,18 +506,25 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
         | dr   ds   dt |        | dt   dt   dt |
         +-            -+        +-            -+
       */
-          const BlitzMat deriv(DRT::UTILS::shape_function_3D_deriv1(pos_eta(0),pos_eta(1),pos_eta(2),cell.Shape()));
-          const BlitzMat xjm(blitz::sum(deriv(i,k)*xyze_cell(j,k),k));
-          det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
-                xjm(0,1)*xjm(1,2)*xjm(2,0)+
-                xjm(0,2)*xjm(1,0)*xjm(2,1)-
-                xjm(0,2)*xjm(1,1)*xjm(2,0)-
-                xjm(0,0)*xjm(1,2)*xjm(2,1)-
-                xjm(0,1)*xjm(1,0)*xjm(2,2);
-      }  
+      const BlitzMat deriv(DRT::UTILS::shape_function_3D_deriv1(pos_eta(0),pos_eta(1),pos_eta(2),cell.Shape()));
+      const BlitzMat xjm(blitz::sum(deriv(i,k)*xyze_cell(j,k),k));
+      const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
+                         xjm(0,1)*xjm(1,2)*xjm(2,0)+
+                         xjm(0,2)*xjm(1,0)*xjm(2,1)-
+                         xjm(0,2)*xjm(1,1)*xjm(2,0)-
+                         xjm(0,0)*xjm(1,2)*xjm(2,1)-
+                         xjm(0,1)*xjm(1,0)*xjm(2,2);
+
       return det;
   };
   
+  //! get determinante between eta and xi space
+  template<> double detEtaToXi3D <XFEM::standard_assembly>(
+          const XFEM::DomainIntCell& cell,
+          const XFEM::PosEtaDomain&  pos_eta)
+  {   
+      return 1.0;
+  }
   
   template<XFEM::AssemblyType>
   int getNumParam(
@@ -1125,6 +1122,7 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
                          |              \ /   |
                           \                  /
             */
+            dserror("lala");
             assembler.template Matrix<Velx,Tauxx>(shp_dx, 2.0*fac*0.5, shp_tau);
             assembler.template Matrix<Velx,Tauxy>(shp_dy,     fac*0.5, shp_tau);
             assembler.template Matrix<Velx,Tauxz>(shp_dz,     fac*0.5, shp_tau);
