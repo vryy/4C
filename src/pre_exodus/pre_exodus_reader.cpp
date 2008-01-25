@@ -95,7 +95,9 @@ Mesh::Mesh(string exofilename)
 	  map<int,vector<int> > eleconn;
 	  for (int j = 0; j < num_el_in_blk; ++j) {
 	    vector<int> actconn;
-	    for (int k = 0; k < num_nod_per_elem; ++k) actconn.push_back(connect[j*k]);
+	    for (int k = 0; k < num_nod_per_elem; ++k){
+	      actconn.push_back(connect[k + j*num_nod_per_elem]);
+	    }
 	    eleconn.insert(std::pair<int,vector<int> >(j,actconn));
     }
 	  ElementBlock actEleBlock(StringToShape(ele_type), eleconn, blockname);
@@ -271,23 +273,27 @@ void Mesh::WriteMesh(string newexofilename)
   
   /* Write QA record based on original exofile */
   int num_qa_rec;
-  char *qa_record[MAX_STR_LENGTH+1][4];
+  char* qa_record[MAX_STR_LENGTH][4]; // should be MAX_QA_REC][4], but this is nowhere defined!;
   char *cdum;
   float fdum;
   /* read QA records */
   ex_inquire (exoid_, EX_INQ_QA, &num_qa_rec, &fdum, cdum);/* write QA records */
   for (int i=0; i<num_qa_rec; i++)
     for (int j=0; j<4; j++) qa_record[i][j] = (char *) calloc ((MAX_STR_LENGTH+1), sizeof(char));
+    //for (int j=0; j<4; j++) qa_record[i][j] = new (char)[MAX_STR_LENGTH+1];
   error = ex_get_qa (exoid_, qa_record);
   error = ex_put_qa (exoid, num_qa_rec, qa_record);
-  free(qa_record);
+  for (int i=0; i<num_qa_rec; i++)
+    for (int j=0; j<4; j++)
+      //delete [] qa_record[i][j];
+      free(qa_record[i][j]);
   
   // Write coord names based on original exofile
   char *coord_names[3];
   for (int i=0; i<num_dim_; i++) coord_names[i] = (char *) calloc ((MAX_STR_LENGTH+1), sizeof(char));
   error = ex_get_coord_names (exoid_, coord_names);
   error = ex_put_coord_names (exoid, coord_names);
-  free(coord_names);
+  for (int i=0; i<num_dim_; i++) free(coord_names[i]);
   
   // Write nodal coordinates
   float x[num_nodes_];
@@ -300,72 +306,77 @@ void Mesh::WriteMesh(string newexofilename)
     z[i] = actnode->X()[2];
   }
   error = ex_put_coord (exoid, x, y, z);
-  /*
-  // Write mesh entities
-  int eb_counter = 0;
-  //int ns_counter = 0;
-  int ss_counter = 0;
-  for (int i = 0; i < num_entities_; ++i) {
-    RCP<Entity> actEntity = GetEntity(i);
-    switch (actEntity->GetEntityType()){
-    case Entity::elem_blk:{
-      eb_counter += 1;
-      error = ex_put_elem_block(exoid,
-                                eb_counter,
-                                actEntity->GetElementType().c_str(),
-                                actEntity->GetNumEle(),
-                                actEntity->GetNumNodpElem(),
-                                actEntity->GetNumAttr());
-      if (error!=0) dserror("error writing element block");
-      
-      int* eleconn[num_nodes_];
-      //eleconn.resize(num_nodes_);
-      for (int i = 0; i < num_nodes_; ++i) {
-        (*eleconn)[i] = (*actEntity->Cont())[i];
-      }
-      //error = ex_put_elem_conn (exoid, eb_counter, actEntity->Cont());
-      error = ex_put_elem_conn (exoid, eb_counter, eleconn[0]);
-      if (error!=0) dserror("error writing element conn");
-      
-      // write block name
-      string bname = actEntity->GetEntityName();
-      const char* blockname = bname.c_str();
-      error = ex_put_name (exoid, EX_ELEM_BLOCK, eb_counter, blockname);
 
-      break;
-    }
-    case Entity::node_set:{
-//      ns_counter += 1;
-//      //actEntity->Print(cout);
-//      cout << "NS" << endl;
-//      error = ex_put_node_set_param (exoid,
-//                                     ns_counter,
-//                                     actEntity->GetNumNodes(),
-//                                     0);
-//      if (error!=0) dserror("error writing node set");
-//      error = ex_put_node_set (exoid, ns_counter, actEntity->Cont());
-      break;
-    }
-    case Entity::side_set:{
-      ss_counter += 1;
-      cout << "SS" << endl;
-      break;
-    }
-    default: dserror("unknown entity type");
-    }
-    
-    
-
+  // Write NodeSets
+  map<int,NodeSet>::const_iterator ins;
+  const map<int,NodeSet> nss = GetNodeSets();
+  for (ins=nss.begin(); ins != nss.end(); ++ins){
+    const int nsID = ins->first + 1;   // exodus starts with 1
+    const NodeSet ns = ins->second;
+    const int num_nodes_in_set = ns.GetNumNodes();
+    const string name = ns.GetName();
+    const char* nsname = name.c_str();
+    const string propname = ns.GetPropName();
+    const set<int> nodes = ns.GetNodeSet();
+    error = ex_put_node_set_param(exoid,              // of write file
+                                  nsID,               // node set id
+                                  num_nodes_in_set,
+                                  0);                 // yet no distribution factors
+    if (error!=0) dserror("error writing node set params");
+    vector<int> nodelist(num_nodes_in_set);
+    ns.FillNodelistArray(&nodelist[0]);
+//    for (int i = 0; i < num_nodes_in_set; ++i) {
+//      cout << nodelist[i] << ",";
+//    }
+//    cout <<endl;
+    error = ex_put_node_set(exoid,nsID,&nodelist[0]);
+    if (error!=0) dserror("error writing node set");
+    error = ex_put_name (exoid, EX_NODE_SET, nsID, nsname);
+    if (error!=0) dserror("error writing element block name");
   }
-  */
+  
+  // Write ElementBlocks  ******************************************************
+  map<int,ElementBlock>::const_iterator iebs;
+  const map<int,ElementBlock> ebs = GetElementBlocks();
+  for (iebs=ebs.begin(); iebs != ebs.end(); iebs++){
+    const int blockID = iebs->first + 1;  // exodus starts with 1
+    const ElementBlock eb = iebs->second;
+    const ElementBlock::Shape shape = eb.GetShape();
+    const string shapestring = ShapeToString(shape);
+    const vector<int> exampleconn = eb.GetEleNodes(0); //iebs->first);
+    const int num_nod_per_elem = exampleconn.size();
+    const int numele = eb.GetNumEle();
+    const char* elem_type = shapestring.c_str();
+    error = ex_put_elem_block(exoid,                  //of write file
+                              blockID,                //element block id 
+                              elem_type,              //its name
+                              numele,                 //number of element in block
+                              num_nod_per_elem,       //num of nodes per ele
+                              1);                     //num of attributes, not supported yet ->1
+    if (error!=0) dserror("error writing element block");
+    // Write Element Connectivity
+    vector<int> conn(num_nod_per_elem*numele);
+    eb.FillEconnArray(&conn[0]);
+//    for (int i = 0; i < num_nod_per_elem*numele; ++i) {
+//      cout << conn[i] << ",";
+//    }
+//    cout <<endl;
+    error = ex_put_elem_conn(exoid,blockID,&conn[0]);
+    if (error!=0) dserror("error writing element block conns");
+    // write block name
+    const string bname = eb.GetName();
+    const char* blockname = bname.c_str();
+    error = ex_put_name (exoid, EX_ELEM_BLOCK, blockID, blockname);
+    if (error!=0) dserror("error writing element block name");
+  }
+  // **************************************************************************
+  
+  // Write SideSets not yet supported
+  if (GetNumSideSets() > 0) cout << "Writing of SideSets not yet supported" << endl;
   
   // close file
   error = ex_close (exoid);
   if (error!=0) dserror("error closing exodus file");
-  
-  
-  
-  
 }
 
 
@@ -380,20 +391,47 @@ ElementBlock::~ElementBlock()
 {
   return;
 }
+
+vector<int> ElementBlock::GetEleNodes(int i) const
+{
+  map<int,vector<int> >::const_iterator  it = eleconn_.find(i);
+  return it->second;
+}
+
+int ElementBlock::GetEleNode(int ele, int node) const
+{
+  map<int,vector<int> >::const_iterator  it = eleconn_.find(ele);
+  if (it == eleconn_.end()) dserror("Element not found");
+  vector<int> elenodes = GetEleNodes(ele);
+  return elenodes[node];
+}
+
+void ElementBlock::FillEconnArray(int *connarray) const
+{
+  const map<int,vector<int> >::const_iterator iele;
+  int numele = eleconn_.size();
+  for (int i = 0; i < numele; ++i) {
+    vector<int> ele = GetEleNodes(i);
+    int num_nod_per_elem = ele.size();
+    for (int j = 0; j < num_nod_per_elem; ++j) {
+      connarray[i*num_nod_per_elem + j] = GetEleNode(i,j);
+    }
+  }
+}
+
+
 void ElementBlock::Print(ostream& os, bool verbose) const
 {
-  os << "Element Block, named: " << name_ << endl
+  os << "Element Block, named: " << name_.c_str() << endl
   << "of Shape: " << ShapeToString(distype_) << endl
   << "has " << GetNumEle() << " Elements" << endl;
   if (verbose){
     map<int,vector<int> >::const_iterator it;
     for (it=eleconn_.begin(); it != eleconn_.end(); it++){
       os << "Ele " << it->first << ": ";
-//      for (vector<int>::const_iterator var = it->second.begin(); var < it->second.end(); ++var) {
-//        os << it->second.at(var) << ","; 
-//      }
-      for (int i=0; i < signed(it->second.size()); i++ ){
-        os << it->second.at(i) << ",";
+      const vector<int> myconn = it->second; //GetEleNodes(int(it));
+      for (int i=0; i < signed(myconn.size()); i++ ){
+        os << myconn[i] << ",";
       }
       os << endl;
     }
@@ -415,13 +453,25 @@ NodeSet::~NodeSet()
 
 void NodeSet::Print(ostream& os, bool verbose) const
 {
-  os << "Node Set, named: " << name_ << endl
-  << "Property Name: " << propname_ << endl
+  os << "Node Set, named: " << name_.c_str() << endl
+  << "Property Name: " << propname_.c_str() << endl
   << "has " << GetNumNodes() << " Nodes" << endl;
   if (verbose){
     os << "Contains Nodes:" << endl;
     set<int>::iterator it;
     for (it=nodeids_.begin(); it != nodeids_.end(); it++) os << *it << ",";
+    os << endl;
+  }
+}
+
+void NodeSet::FillNodelistArray(int* nodelist) const
+{
+  set<int> nlist = GetNodeSet();
+  set<int>::iterator it;
+  int i=0;
+  for (it=nlist.begin(); it != nlist.end(); ++it){
+    nodelist[i] = (*it);
+    ++i;
   }
 }
 

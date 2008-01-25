@@ -88,7 +88,7 @@ int main(
       extrudefile = "extr_" + exofile;
       Mesh mysosh(exofile.c_str());
       mysosh.Print(cout,true);
-      //mysosh.WriteMesh(extrudefile);
+      mysosh.WriteMesh(extrudefile);
       exit(1);
     }
     

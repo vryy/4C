@@ -36,7 +36,6 @@ using namespace Teuchos;
 
 
 //forward declaration
-class Entity;
 class PreNode;
 class ElementBlock;
 class NodeSet;
@@ -166,6 +165,16 @@ public:
   
   int GetNumEle() const {return eleconn_.size();}
   
+  map<int,vector<int> > GetEleConn() const {return eleconn_;}
+  
+  vector<int> GetEleNodes(int i) const;
+  
+  string GetName() const {return name_;}
+  
+  int GetEleNode(int ele, int node) const;
+  
+  void FillEconnArray(int *connarray) const;
+  
   void Print(ostream& os, bool verbose=false) const;
   
 private:
@@ -188,6 +197,10 @@ public:
   
   string GetName() const {return name_;};
   
+  string GetPropName() const {return propname_;};
+  
+  void FillNodelistArray(int *nodelist) const;
+  
   inline int GetNumNodes() const {return nodeids_.size();}
   
   void Print(ostream& os, bool verbose=false) const;
@@ -203,7 +216,7 @@ class SideSet
 public:
   SideSet(string name);
   virtual ~SideSet();
-  void Print(ostream& os) const {os << "SideSet, named: " << name_ << endl;};
+  void Print(ostream& os) const {os << "SideSet, named: " << name_.c_str() << endl;};
 private:
   string name_;
 };
