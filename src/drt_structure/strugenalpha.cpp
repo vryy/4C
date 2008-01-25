@@ -277,7 +277,7 @@ void StruGenAlpha::ConstantPredictor()
   }
 
   // increment time and step
-  double timen = time += dt;
+  double timen = time + dt;
   //int istep = step + 1;
 
   //--------------------------------------------------- predicting state
@@ -392,19 +392,20 @@ void StruGenAlpha::ConstantPredictor()
 
   //------------------------------------------------ build residual norm
   double fresmnorm = 1.0;
+
+  // store norms of displacements and maximum of norms of internal,
+  // external and inertial forces if a relative convergence check
+  // is desired and we are in the first time step
+  if (time == 0. && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
+  {
+    CalcRefNorms();
+  }
+
   if (printscreen)
     fresm_->Norm2(&fresmnorm);
   if (!myrank_ && printscreen)
   {
     PrintPredictor(convcheck, fresmnorm);
-  }
-
-  // store norms of displacements and maximum of norms of internal,
-  // external and inertial forces if a relative convergence check
-  // is desired and we are in the first time step
-  if (time == 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
-  {
-    CalcRefNorms();
   }
 
   return;
@@ -415,6 +416,17 @@ void StruGenAlpha::ConstantPredictor()
  *----------------------------------------------------------------------*/
 void StruGenAlpha::MatrixFreeConstantPredictor()
 {
+  // currently no preconditioner can be used in combination with this
+  // matrix-free method
+  ParameterList& solvparams = solver_.Params();
+  string solvertype = solvparams.get("solver", "aztec");
+  if (solvertype == "aztec")
+  {
+    ParameterList& azlist = solvparams.sublist("Aztec Parameters");
+    int azprectype = azlist.get("AZ_precond", AZ_none);
+    if (azprectype != AZ_none)
+      dserror("Matrix-free Newton does not support preconditioning");
+  }
 
   // -------------------------------------------------------------------
   // get some parameters from parameter list
@@ -546,19 +558,20 @@ void StruGenAlpha::MatrixFreeConstantPredictor()
 
   //------------------------------------------------ build residual norm
   double fresmnorm = 1.0;
+
+  // store norms of displacements and maximum of norms of internal,
+  // external and inertial forces if a relative convergence check
+  // is desired and we are in the first time step
+  if (time == 0. && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
+  {
+    CalcRefNorms();
+  }
+
   if (printscreen)
     fresm_->Norm2(&fresmnorm);
   if (!myrank_ && printscreen)
   {
     PrintPredictor(convcheck, fresmnorm);
-  }
-
-  // store norms of displacements and maximum of norms of internal,
-  // external and inertial forces if a relative convergence check
-  // is desired and we are in the first time step
-  if (time == 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
-  {
-    CalcRefNorms();
   }
 
   return;
@@ -730,7 +743,7 @@ void StruGenAlpha::ConsistentPredictor()
   // store norms of displacements and maximum of norms of internal,
   // external and inertial forces if a relative convergence check
   // is desired and we are in the first time step
-  if (time == 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
+  if (time == 0. && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
   {
     CalcRefNorms();
   }
@@ -998,7 +1011,7 @@ void StruGenAlpha::FullNewton()
         p.set("surfstr_man", surf_stress_man_);
         surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
       }
-      
+
       if (ConstrMan_->HaveConstraint())
       {
     	  ConstrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
@@ -1078,8 +1091,8 @@ void StruGenAlpha::NonLinearUzawaFullNewton(int predictor)
 	  double alphaf    		= params_.get<double>("alpha f"                ,0.459);
 	  double time       	= params_.get<double>("total time"             ,0.0);
 	  double dt            	= params_.get<double>("delta time"             ,0.01);
-	  
-	  
+
+
 	  FullNewton();
 	  //--------------------update end configuration
 	  disn_->Update(1./(1.-alphaf),*dism_,-alphaf/(1.-alphaf));
@@ -1103,8 +1116,8 @@ void StruGenAlpha::NonLinearUzawaFullNewton(int predictor)
 		  ConstrMan_->ComputeError(time+dt,disn_);
 		  volnorm=ConstrMan_->GetErrorNorm();
 		  cout<<"Volume error for computed displacement: "<<volnorm<<endl;
-		  numiter_uzawa++;		  
-	  }	  
+		  numiter_uzawa++;
+	  }
 	  params_.set<int>("num iterations",numiter_uzawa+1);
 }
 
@@ -2912,7 +2925,7 @@ void StruGenAlpha::Integrate()
         // - "newtonlinuzawa": 			Potential is linearized wrt displacements and Lagrange multipliers
         //					   			Linear problem is solved with Uzawa algorithm
         // - "augmentedlagrange":		Potential is linearized wrt displacements keeping Lagrange multiplier fixed
-        //								Until convergence Lagrange multiplier increased by Uzawa_param*(Vol_err) 
+        //								Until convergence Lagrange multiplier increased by Uzawa_param*(Vol_err)
         if (algo=="newtonlinuzawa")
         {
         	ConstrMan_->ScaleLagrMult(0.0);
@@ -2952,8 +2965,9 @@ void StruGenAlpha::Integrate()
   {
     for (int i=step; i<nstep; ++i)
     {
-      MatrixFreeConstantPredictor();
-      MatrixFreeNewton();
+      dserror("Matrix-free Newton not yet implemented");
+      //MatrixFreeConstantPredictor();
+      //MatrixFreeNewton();
       UpdateandOutput();
     }
   }
@@ -2974,16 +2988,6 @@ void StruGenAlpha::Integrate()
       if      (predictor==1) ConstantPredictor();
       else if (predictor==2) ConsistentPredictor();
       PTC();
-      UpdateandOutput();
-    }
-  }
-  else if (equil=="matrixfree newton")
-  {
-    for (int i=step; i<nstep; ++i)
-    {
-      dserror("Matfree Newton not yet impl.");
-      // ConstantMatfreePredictor();
-      // MatfreeFullNewton
       UpdateandOutput();
     }
   }
@@ -3021,11 +3025,6 @@ void StruGenAlpha::IntegrateStep()
     if      (predictor==1) ConstantPredictor();
     else if (predictor==2) ConsistentPredictor();
     ModifiedNewton();
-  }
-  else if (equil=="matrixfree newton")
-  {
-    MatrixFreeConstantPredictor();
-    MatrixFreeNewton();
   }
   else if (equil=="nonlinear cg")
   {
