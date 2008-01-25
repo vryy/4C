@@ -257,6 +257,69 @@ namespace UTILS
     const DRT::Element::DiscretizationType  distype  ///< distuinguish between DiscretizationType
     );
   
+  /*!
+  \brief Fill a blitz-vector with with 2D shape function
+  
+  \return shape function values
+  */
+  blitz::Array<double, 1> shape_function_2D(
+    const double                            r,       ///< r coordinate
+    const double                            s,       ///< s coordinate
+    const DRT::Element::DiscretizationType  distype  ///< distuinguish between DiscretizationType
+    );
+
+  /*!
+  \brief Fill a blitz-matrix with with 2D first shape function derivatives
+  
+  \return shape function derivative values
+  */
+  blitz::Array<double, 2> shape_function_2D_deriv1(
+    const double                            r,       ///< r coordinate
+    const double                            s,       ///< s coordinate
+    const DRT::Element::DiscretizationType  distype  ///< distuinguish between DiscretizationType
+    );
+
+  /*!
+  \brief Fill a blitz-matrix with with 2D second shape function derivatives
+  
+  \return shape function derivative values
+  */
+  blitz::Array<double, 2> shape_function_2D_deriv2(
+    const double                            r,       ///< r coordinate
+    const double                            s,       ///< s coordinate
+    const DRT::Element::DiscretizationType  distype  ///< distuinguish between DiscretizationType
+    );
+  
+  /*!
+  \brief Fill a blitz-vector with with 1D shape function
+  
+  \return shape function values
+  */
+  blitz::Array<double, 1> shape_function_1D(
+    const double                            r,       ///< r coordinate
+    const DRT::Element::DiscretizationType  distype  ///< distuinguish between DiscretizationType
+    );
+
+  /*!
+  \brief Fill a blitz-vector with with 1D first shape function derivatives
+  
+  \return shape function derivative values
+  */
+  blitz::Array<double, 1> shape_function_1D_deriv1(
+    const double                            r,       ///< r coordinate
+    const DRT::Element::DiscretizationType  distype  ///< distuinguish between DiscretizationType
+    );
+
+  /*!
+  \brief Fill a blitz-vector with with 1D second shape function derivatives
+  
+  \return shape function derivative values
+  */
+  blitz::Array<double, 1> shape_function_1D_deriv2(
+    const double                            r,       ///< r coordinate
+    const DRT::Element::DiscretizationType  distype  ///< distuinguish between DiscretizationType
+    );
+  
 } // namespace UTILS
 } // namespace DRT
 

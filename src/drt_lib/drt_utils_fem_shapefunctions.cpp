@@ -2237,6 +2237,83 @@ blitz::Array<double, 2> DRT::UTILS::shape_function_3D_deriv2(
   return d2;
 }
 
+//
+// shape functions
+//
+blitz::Array<double, 1> DRT::UTILS::shape_function_2D(
+        const double r,
+        const double s,
+        const DRT::Element::DiscretizationType distype)
+{
+  blitz::Array<double, 1> f(DRT::UTILS::getNumberOfElementNodes(distype));
+  shape_function_2D(f,r,s,distype);
+  return f;
+}
+
+//
+// first natural derivative of shape functions
+//
+blitz::Array<double, 2> DRT::UTILS::shape_function_2D_deriv1(
+        const double r,
+        const double s,
+        const DRT::Element::DiscretizationType distype)
+{
+  blitz::Array<double, 2> d(2, DRT::UTILS::getNumberOfElementNodes(distype), blitz::ColumnMajorArray<2>());
+  shape_function_2D_deriv1(d,r,s,distype);
+  return d;
+}
+
+//
+// Second natural derivative of shape functions
+//
+blitz::Array<double, 2> DRT::UTILS::shape_function_2D_deriv2(
+        const double r,
+        const double s,
+        const DRT::Element::DiscretizationType distype)
+{
+  blitz::Array<double, 2> d2(3, DRT::UTILS::getNumberOfElementNodes(distype), blitz::ColumnMajorArray<2>());
+  shape_function_2D_deriv2(d2,r,s,distype);
+  return d2;
+}
+
+//
+// shape functions
+//
+blitz::Array<double, 1> DRT::UTILS::shape_function_1D(
+        const double r,
+        const DRT::Element::DiscretizationType distype)
+{
+  blitz::Array<double, 1> f(DRT::UTILS::getNumberOfElementNodes(distype));
+  shape_function_1D(f,r,distype);
+  return f;
+}
+
+//
+// first natural derivative of shape functions
+//
+blitz::Array<double, 1> DRT::UTILS::shape_function_1D_deriv1(
+        const double r,
+        const DRT::Element::DiscretizationType distype)
+{
+  blitz::Array<double, 2> d(1, DRT::UTILS::getNumberOfElementNodes(distype), blitz::ColumnMajorArray<2>());
+  shape_function_1D_deriv1(d,r,distype);
+  const blitz::Range _  = blitz::Range::all();
+  return d(1,_);
+}
+
+//
+// Second natural derivative of shape functions
+//
+blitz::Array<double, 1> DRT::UTILS::shape_function_1D_deriv2(
+        const double r,
+        const DRT::Element::DiscretizationType distype)
+{
+  blitz::Array<double, 2> d2(1, DRT::UTILS::getNumberOfElementNodes(distype), blitz::ColumnMajorArray<2>());
+  shape_function_1D_deriv2(d2,r,distype);
+  const blitz::Range _  = blitz::Range::all();
+  return d2(1,_);
+}
+
 
 
 #endif  // #ifdef CCADISCRET
