@@ -15,6 +15,7 @@
 #include <Epetra_CrsMatrix.h>
 
 #include "../drt_lib/drt_discret.H"
+#include "fsi_utils_mapextractor.H"
 
 
 namespace FSI
@@ -75,8 +76,8 @@ namespace FSI
       appropriate dof maps.
 
      */
-    void SetupConditionCoupling(const ConditionDofMap& master,
-                                const ConditionDofMap& slave);
+    void SetupConditionCoupling(const FSI::UTILS::MapExtractor& master,
+                                const FSI::UTILS::MapExtractor& slave);
 
     /// setup coupling of given nodes
     /*!

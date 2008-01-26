@@ -49,7 +49,8 @@ FSI::Fluid::Fluid(Teuchos::RCP<DRT::Discretization> dis,
   relax_ = LINALG::CreateVector(*dofrowmap,true);
   griddisp_ = LINALG::CreateVector(*dofrowmap,true);
 
-  interface_.SetupCondDofMap("FSICoupling");
+  interface_.Setup(DRT::UTILS::CondAnd(DRT::UTILS::ExtractorCondMaxPos(genprob.ndim),
+                                       DRT::UTILS::ExtractorCondInCondition(dis,"FSICoupling")));
 }
 
 
@@ -107,7 +108,7 @@ void FSI::Fluid::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
  *----------------------------------------------------------------------*/
 void FSI::Fluid::SetMeshMap(Teuchos::RCP<Epetra_Map> mm)
 {
-  meshmap_.SetupCondDofMap(mm);
+  meshmap_.SetupMaps(Teuchos::rcp(discret_->DofRowMap(),false),mm);
 }
 
 

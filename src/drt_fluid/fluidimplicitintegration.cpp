@@ -101,59 +101,12 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   // get a vector layout from the discretization for a vector which only
   // contains the velocity dofs and for one vector which only contains
   // pressure degrees of freedom.
-  //
-  // The maps are designed assuming that every node has pressure and
-  // velocity degrees of freedom --- this won't work for inf-sup stable
-  // elements at the moment!
   // -------------------------------------------------------------------
-  {
-    const int numdim = params_.get<int>("number of velocity degrees of freedom");
 
-    // Allocate integer vectors which will hold the dof number of the
-    // velocity or pressure dofs
-    vector<int> velmapdata;
-    vector<int> premapdata;
+  const int numdim = params_.get<int>("number of velocity degrees of freedom");
 
-    velmapdata.reserve(discret_->NumMyRowNodes()*numdim);
-    premapdata.reserve(discret_->NumMyRowNodes());
+  velpressplitter_.Setup(discret_,DRT::UTILS::ExtractorCondMaxPos(numdim));
 
-    int countveldofs = 0;
-    int countpredofs = 0;
-
-    for (int i=0; i<discret_->NumMyRowNodes(); ++i)
-    {
-      DRT::Node* node = discret_->lRowNode(i);
-      vector<int> dof = discret_->Dof(node);
-
-      int numdofs = dof.size();
-      if (numdofs==numdim+1)
-      {
-        for (int j=0; j<numdofs-1; ++j)
-        {
-	  // add this velocity dof to the velmapdata vector
-	  velmapdata.push_back(dof[j]);
-          countveldofs+=1;
-        }
-
-        // add this pressure dof to the premapdata vector
-        premapdata.push_back(dof[numdofs-1]);
-        countpredofs += 1;
-      }
-      else
-      {
-        dserror("up to now fluid expects numdim vel + one pre dofs");
-      }
-    }
-
-    // the rowmaps are generated according to the pattern provided by
-    // the data vectors
-    velrowmap_ = rcp(new Epetra_Map(-1,
-                                    velmapdata.size(),&velmapdata[0],0,
-                                    discret_->Comm()));
-    prerowmap_ = rcp(new Epetra_Map(-1,
-                                    premapdata.size(),&premapdata[0],0,
-                                    discret_->Comm()));
-  }
   // -------------------------------------------------------------------
   // get the processor ID from the communicator
   // -------------------------------------------------------------------
@@ -672,7 +625,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
         // define flag for computation of matrices (true only in first time step)
         bool compute;
 
-        if (step_ == 1) 
+        if (step_ == 1)
         {
           compute=true;
 
@@ -680,7 +633,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
           scalesep_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
 
           // create (fine-scale) subgrid-viscosity matrix
-          sysmat_sv_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_); 
+          sysmat_sv_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
 
           // call loop over elements (two matrices + subgr.-visc.-scal. vector)
           discret_->Evaluate(eleparams,sysmat_,sysmat_sv_,residual_,sugrvisc_);
@@ -759,38 +712,23 @@ void FluidImplicitTimeInt::NonlinearSolve()
     double vresnorm;
     double presnorm;
 
-    {
-      Epetra_Vector onlyvel(*velrowmap_);
-      Epetra_Import importer(*velrowmap_,residual_->Map());
+    Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractCondVector(residual_);
+    onlyvel->Norm2(&vresnorm);
 
-      int err = onlyvel.Import(*residual_,importer,Insert);
-      if (err) dserror("Import using importer returned err=%d",err);
-      onlyvel.Norm2(&vresnorm);
+    velpressplitter_.ExtractCondVector(incvel_,onlyvel);
+    onlyvel->Norm2(&incvelnorm_L2);
 
-      err = onlyvel.Import(*incvel_,importer,Insert);
-      if (err) dserror("Import using importer returned err=%d",err);
-      onlyvel.Norm2(&incvelnorm_L2);
+    velpressplitter_.ExtractCondVector(velnp_,onlyvel);
+    onlyvel->Norm2(&velnorm_L2);
 
-      err = onlyvel.Import(*velnp_,importer,Insert);
-      if (err) dserror("Import using importer returned err=%d",err);
-      onlyvel.Norm2(&velnorm_L2);
-    }
-    {
-      Epetra_Vector onlypre(*prerowmap_);
-      Epetra_Import importer(*prerowmap_,residual_->Map());
+    Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractOtherVector(residual_);
+    onlypre->Norm2(&presnorm);
 
-      int err = onlypre.Import(*residual_,importer,Insert);
-      if (err) dserror("Import using importer returned err=%d",err);
-      onlypre.Norm2(&presnorm);
+    velpressplitter_.ExtractOtherVector(incvel_,onlypre);
+    onlypre->Norm2(&incprenorm_L2);
 
-      err = onlypre.Import(*incvel_,importer,Insert);
-      if (err) dserror("Import using importer returned err=%d",err);
-      onlypre.Norm2(&incprenorm_L2);
-
-      err = onlypre.Import(*velnp_,importer,Insert);
-      if (err) dserror("Import using importer returned err=%d",err);
-      onlypre.Norm2(&prenorm_L2);
-    }
+    velpressplitter_.ExtractOtherVector(velnp_,onlypre);
+    onlypre->Norm2(&prenorm_L2);
 
     // care for the case that nothing really happens in the velocity
     // or pressure field
@@ -980,99 +918,6 @@ void FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | convergence check for nonlinear iteration                 gammi 04/07|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidImplicitTimeInt::NonlinearConvCheck(
-  bool&  stopnonliniter,
-  int    itnum         ,
-  double dtele         ,
-  double dtsolve
-  )
-{
-
-  RefCountPtr<Epetra_Vector> onlyvel_ = LINALG::CreateVector(*velrowmap_,true);
-  RefCountPtr<Epetra_Vector> onlypre_ = LINALG::CreateVector(*prerowmap_,true);
-
-  // ---------------------------------------------- nonlinear iteration
-  // maximum number of nonlinear iteration steps
-  const int     itemax    =params_.get<int>   ("max nonlin iter steps");
-
-  // ------------------------------- stop nonlinear iteration when both
-  //                                 increment-norms are below this bound
-  const double  ittol     =params_.get<double>("tolerance for nonlin iter");
-
-
-  // extract velocity and pressure increments from increment vector
-  LINALG::Export(*incvel_,*onlyvel_);
-  LINALG::Export(*incvel_,*onlypre_);
-  // calculate L2_Norm of increments
-  double incvelnorm_L2;
-  double incprenorm_L2;
-  onlyvel_->Norm2(&incvelnorm_L2);
-  onlypre_->Norm2(&incprenorm_L2);
-
-  // extract velocity and pressure solutions from solution vector
-  LINALG::Export(*velnp_,*onlyvel_);
-  LINALG::Export(*velnp_,*onlypre_);
-  // calculate L2_Norm of solution
-  double velnorm_L2;
-  double prenorm_L2;
-  onlyvel_->Norm2(&velnorm_L2);
-  onlypre_->Norm2(&prenorm_L2);
-
-  if (velnorm_L2<EPS5)
-  {
-    velnorm_L2 = 1.0;
-  }
-  if (prenorm_L2<EPS5)
-  {
-    prenorm_L2 = 1.0;
-  }
-
-  // out to screen
-  if(myrank_ == 0)
-  {
-    printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |",
-           itnum,itemax,ittol,incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-    printf(" (te=%10.3E,ts=%10.3E)\n",dtele,dtsolve);
-  }
-
-  // this is the convergence check
-  if(incvelnorm_L2/velnorm_L2 <= ittol && incprenorm_L2/prenorm_L2 <= ittol)
-  {
-    stopnonliniter=true;
-    if(myrank_ == 0)
-    {
-      printf("+------------+-------------------+--------------+--------------+ \n");
-    }
-  }
-
-  // warn if itemax is reached without convergence, but proceed to
-  // next timestep...
-  if (itnum == itemax
-      &&
-      (incvelnorm_L2/velnorm_L2 > ittol
-       ||
-       incprenorm_L2/prenorm_L2 > ittol))
-  {
-    stopnonliniter=true;
-    if(myrank_ == 0)
-    {
-      printf("+---------------------------------------------------------------+\n");
-      printf("|            >>>>>> not converged in itemax steps!              |\n");
-      printf("+---------------------------------------------------------------+\n");
-    }
-  }
-
-}// FluidImplicitTimeInt::NonlinearConvCheck
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
  | current solution becomes most recent solution of next timestep       |
  |                                                           gammi 04/07|
  *----------------------------------------------------------------------*/
@@ -1182,7 +1027,7 @@ void FluidImplicitTimeInt::Output()
 
     #if 0
     // write domain decomposition for visualization
-    const Epetra_Map* elerowmap = discret_->ElementRowMap(); 
+    const Epetra_Map* elerowmap = discret_->ElementRowMap();
     RCP<Epetra_Vector> domain_decomp = LINALG::CreateVector(*elerowmap,true);
     for (int lid=0;lid<elerowmap->NumMyElements();++lid)
     {
@@ -1386,7 +1231,7 @@ void FluidImplicitTimeInt::ReadRestart(int step)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidImplicitTimeInt::UpdateGridv() 
+void FluidImplicitTimeInt::UpdateGridv()
 {
   // get order of accuracy of grid velocity determination
   // from input file data
@@ -1395,10 +1240,10 @@ void FluidImplicitTimeInt::UpdateGridv()
   switch (order)
   {
     case 1:
-      /* get gridvelocity from BE time discretisation of mesh motion:  
+      /* get gridvelocity from BE time discretisation of mesh motion:
            -> cheap
            -> easy
-           -> limits FSI algorithm to first order accuracy in time 
+           -> limits FSI algorithm to first order accuracy in time
 
                   x^n+1 - x^n
              uG = -----------
@@ -1406,7 +1251,7 @@ void FluidImplicitTimeInt::UpdateGridv()
       gridv_->Update(1/dta_, *dispnp_, -1/dta_, *dispn_, 0.0);
     break;
     case 2:
-      /* get gridvelocity from BDF2 time discretisation of mesh motion:  
+      /* get gridvelocity from BDF2 time discretisation of mesh motion:
            -> requires one more previous mesh position or displacemnt
            -> somewhat more complicated
            -> allows second order accuracy for the overall flow solution  */

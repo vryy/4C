@@ -3,6 +3,14 @@
 #include "mfsi_fluid.H"
 
 
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MFSI::Fluid::~Fluid()
@@ -24,8 +32,8 @@ MFSI::FluidAdapter::FluidAdapter(Teuchos::RCP<DRT::Discretization> dis,
     params_(params),
     output_(output)
 {
-  interface_.SetupCondDofMap("FSICoupling");
-  interface_.SetupOtherDofMap();
+  interface_.Setup(DRT::UTILS::CondAnd(DRT::UTILS::ExtractorCondMaxPos(genprob.ndim),
+                                       DRT::UTILS::ExtractorCondInCondition(dis,"FSICoupling")));
 }
 
 
@@ -191,7 +199,7 @@ Teuchos::RCP<Epetra_Map> MFSI::FluidAdapter::PressureRowMap()
  *----------------------------------------------------------------------*/
 void MFSI::FluidAdapter::SetMeshMap(Teuchos::RCP<Epetra_Map> mm)
 {
-  meshmap_.SetupCondDofMap(mm);
+  meshmap_.SetupMaps(Teuchos::rcp(dis_->DofRowMap(),false),mm);
 }
 
 

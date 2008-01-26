@@ -122,7 +122,8 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/drt_timecurve.o \
                 src/drt_lib/drt_function.o \
                 src/drt_lib/drt_discret_evaluate.o \
-		src/drt_lib/drt_validparameters.o
+		src/drt_lib/drt_validparameters.o \
+		src/drt_lib/drt_utils_mapextractor.o
 OBJS_DRT      = \
                 src/drt_lib/drt_resulttest.o \
                 src/drt_lib/drt_init_control.o \
@@ -187,7 +188,6 @@ OBJS_DRT_FSI  = src/drt_fsi/ale_dyn.o \
                 src/drt_fsi/fsi_coupling.o \
 		src/drt_fsi/fsi_coupling_mortar.o \
                 src/drt_fsi/fsi_utils.o \
-                src/drt_fsi/fsi_conditiondofmap.o \
                 src/drt_fsi/fsi_ale_resulttest.o
 # ------------------ drt version of monolithic fluid structure interaction
 OBJS_DRT_MFSI = src/drt_mfsi/mfsi_algorithm.o \

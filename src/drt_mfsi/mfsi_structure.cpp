@@ -23,8 +23,7 @@ MFSI::StructureAdapter::StructureAdapter(Teuchos::RCP<Teuchos::ParameterList> pa
     solver_(solver),
     output_(output)
 {
-  interface_.SetupCondDofMap("FSICoupling");
-  interface_.SetupOtherDofMap();
+  interface_.Setup(DRT::UTILS::ExtractorCondInCondition(dis,"FSICoupling"));
 }
 
 

@@ -40,7 +40,6 @@ Maintainer: Ulrich Kuettler
 #include "fsi_fluid.H"
 #include "fsi_ale.H"
 
-#include "fsi_conditiondofmap.H"
 #include "fsi_coupling.H"
 #include "fsi_coupling_mortar.H"
 

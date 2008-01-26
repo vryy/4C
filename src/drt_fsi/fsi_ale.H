@@ -36,7 +36,7 @@ Maintainer: Ulrich Kuettler
 
 #include <set>
 
-#include "fsi_conditiondofmap.H"
+#include "fsi_utils_mapextractor.H"
 
 
 namespace FSI {
@@ -112,7 +112,7 @@ public:
   virtual void ReadRestart(int step) = 0;
 
   /// communication object at the interface
-  virtual const ConditionDofMap& Interface() const = 0;
+  virtual const FSI::UTILS::MapExtractor& Interface() const = 0;
 };
 
 
@@ -173,12 +173,12 @@ public:
   virtual void ReadRestart(int step);
 
   /// communication object at the interface
-  const ConditionDofMap& Interface() const { return interface_; }
+  const FSI::UTILS::MapExtractor& Interface() const { return interface_; }
 
 private:
 
   /// the interface map setup for interface <-> full translation
-  ConditionDofMap interface_;
+  FSI::UTILS::MapExtractor interface_;
 
   //! @name local copies of input parameters
   Teuchos::RCP<DRT::Discretization> discret_;

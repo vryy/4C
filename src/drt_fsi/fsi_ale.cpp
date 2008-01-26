@@ -60,10 +60,7 @@ FSI::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
   residual_       = LINALG::CreateVector(*dofrowmap,true);
   dirichtoggle_   = LINALG::CreateVector(*dofrowmap,true);
 
-  interface_.SetupCondDofMap("FSICoupling");
-
-  // needed for MFSI
-  interface_.SetupOtherDofMap();
+  interface_.Setup(DRT::UTILS::ExtractorCondInCondition(actdis,"FSICoupling"));
 
   // set fixed nodes (conditions != 0 are not supported right now)
   ParameterList eleparams;

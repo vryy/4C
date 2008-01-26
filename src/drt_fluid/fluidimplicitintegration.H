@@ -28,6 +28,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/drt_utils_mapextractor.H"
 #include "../io/io_drt.H"
 
 #include "Epetra_Vector.h"
@@ -125,17 +126,6 @@ public:
   void NonlinearSolve();
 
   /*!
-  \brief compute convergence check after a nonlinear iteration step
-
-  */
-  void NonlinearConvCheck(
-    bool&  stopnonliniter,
-    int    itnum         ,
-    double dtele         ,
-    double dtsolve
-    );
-
-  /*!
     \brief build linear system matrix and rhs
 
     Monolithic FSI needs to access the linear fluid problem.
@@ -197,8 +187,8 @@ public:
   Teuchos::RCP<Epetra_Operator> SysMat() { return sysmat_; }
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
 
-  Teuchos::RCP<Epetra_Map> VelocityRowMap() { return velrowmap_; }
-  Teuchos::RCP<Epetra_Map> PressureRowMap() { return prerowmap_; }
+  Teuchos::RCP<Epetra_Map> VelocityRowMap() { return velpressplitter_.CondDofMap(); }
+  Teuchos::RCP<Epetra_Map> PressureRowMap() { return velpressplitter_.OtherDofMap(); }
 
   double ResidualScaling() const { return density_/dta_/theta_; }
 
@@ -213,7 +203,7 @@ public:
 
   */
     void LiftDrag() const;
-  
+
   //@}
 
 protected:
@@ -306,13 +296,10 @@ protected:
   RefCountPtr<Epetra_Vector>    hist_;
 
 
-  // Vectors used for convergence check
-  // ----------------------------------
-  RefCountPtr<Epetra_Map>       velrowmap_;
-  RefCountPtr<Epetra_Map>       prerowmap_;
+  // Extractor used for convergence check
+  // ------------------------------------
 
-  RefCountPtr<Epetra_Vector>    onlyvel;
-  RefCountPtr<Epetra_Vector>    onlypre;
+  DRT::UTILS::MapExtractor      velpressplitter_;
 
 
   // time measurement

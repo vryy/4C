@@ -4,8 +4,6 @@
 #include "fsi_coupling.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
 
-#include "fsi_conditiondofmap.H"
-
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -27,8 +25,8 @@ FSI::Coupling::Coupling()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Coupling::SetupConditionCoupling(const ConditionDofMap& master,
-                                           const ConditionDofMap& slave)
+void FSI::Coupling::SetupConditionCoupling(const FSI::UTILS::MapExtractor& master,
+                                           const FSI::UTILS::MapExtractor& slave)
 {
   SetupCoupling(master.Discret(), slave.Discret(), master.Nodes(), slave.Nodes());
 

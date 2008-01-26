@@ -46,7 +46,7 @@ FSI::Structure::Structure(Teuchos::RCP<ParameterList> params,
     solver_(solver),
     output_(output)
 {
-  interface_.SetupCondDofMap("FSICoupling");
+  interface_.Setup(DRT::UTILS::ExtractorCondInCondition(dis,"FSICoupling"));
 }
 
 
