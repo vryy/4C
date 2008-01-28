@@ -451,6 +451,7 @@ void FSI::DirichletNeumannCoupling::SetupStructure()
   genalphaparams->set<int>   ("max iterations",sdyn.get<int>("MAXITER"));
   genalphaparams->set<int>   ("num iterations",-1);
   genalphaparams->set<double>("tolerance displacements",sdyn.get<double>("TOLDISP"));
+  genalphaparams->set<string>("convcheck",sdyn.get<string>("CONV_CHECK"));
 
   genalphaparams->set<bool>  ("io structural disp",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_DISP"));
   genalphaparams->set<int>   ("io disp every nstep",fsidyn.get<int>("UPRES"));
