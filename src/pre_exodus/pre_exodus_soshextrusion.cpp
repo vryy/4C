@@ -16,6 +16,8 @@ Here everything related with solid-shell body extrusion
 /*----------------------------------------------------------------------*/
 #ifdef D_EXODUS
 #include "pre_exodus_soshextrusion.H"
+#include "pre_node.H"
+#include "pre_element.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -23,78 +25,58 @@ using namespace Teuchos;
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 01/08|
  *----------------------------------------------------------------------*/
-Soshextrusion::Soshextrusion(string exofilename,double thickness,int layers) :
+EXODUS::Soshextrusion::Soshextrusion(string exofilename,double thickness,int layers) :
 Mesh(exofilename)
 {
-  for (int i = 0; i < GetNumNodes(); ++i) {
+  for (int i = 1; i <= GetNumNodes(); ++i) {
     RCP<PreNode> actnode = GetNode(i);
-    actnode->Print(cout);
+    actnode->Print(cout, true);
   }
-//  // go through all entities in Mesh
-//  for (int i = 0; i < GetNumEntities(); ++i) {
-//    RCP<Entity> actEntity = GetEntity(i);
-//    //cout << actEntity->GetElementType() << endl;
-//    cout << "NumEle: " << actEntity->GetNumEle() << endl;
-//    cout << "NumNod: " << actEntity->GetNumNodes() << endl;
-//    cout << "NumNodPEle: " << actEntity->GetNumNodpElem() << endl;
-//    cout << "EntityID: " << actEntity->GetEntityId() << endl;
-//    //cout << "EntityType: " << actEntity->EntityType << endl;
-//    switch (actEntity->GetEntityType()){
-//    case Entity::elem_blk:{
-//      
-//      cout << "I am a block" << endl;
-//      int blk_id = 1+actEntity->GetEntityId();
-//      cout << "entity id in block: " << blk_id << endl;
-//      cout << "ExoID: " << GetExoId() << endl;
-//      
-//      int sizeofconnect = actEntity->GetNumNodpElem()*actEntity->GetNumEle();
-//      const int* conn = actEntity->Cont();
-//      for (int i = 0; i < sizeofconnect; ++i) {
-//        cout << conn[i] << " , ";
-//        int inode = conn[i] - 1;
-//        RCP<PreNode> actnode = GetNode(inode);
-//        actnode->Print(cout);
-//        
-//      }
-//      cout << endl;
-//      
-//      // create base elements
-//      vector<RCP<PreElement> > basels;
-//      int numele = actEntity->GetNumEle();
-//      basels.resize(numele);
-//      for (int i  = 0; i < numele; ++i) {
-//        PreElement basele = PreElement(i,PreElement::quad4);
-//        int ids[4];
-//        ids[0] = conn[i*actEntity->GetNumNodpElem()];
-//        ids[1] = conn[i*actEntity->GetNumNodpElem()+1];
-//        ids[2] = conn[i*actEntity->GetNumNodpElem()+2];
-//        ids[3] = conn[i*actEntity->GetNumNodpElem()+3];
-//        basele.SetNodeIds(4,ids);
-//        basele.Print(cout);
-//        basels[i] = rcp(new PreElement(basele));
-//      }
-//      for (int i = 0; i < numele; ++i) {
-//        RCP<PreElement> safedbasele = basels[i];
-//        safedbasele->Print(cout);
-//      }
-//      break;
-//    }
-//    default: cout << "I am not a block!" << endl;
-//    }
-//    
-//  }
+  
+  map<int,ElementBlock> ebs = GetElementBlocks();
+  map<int,ElementBlock>::const_iterator i_ebs;
+  map<int,ElementBlock> extrudeblocks;
+  
+  // loop through all EBlocks to check for extrusion blocks
+  for (i_ebs = ebs.begin(); i_ebs != ebs.end(); ++i_ebs ){
+    bool toextrude = CheckExtrusion(i_ebs->second);
+    if (toextrude){
+      ElementBlock extrudeblock = i_ebs->second;
+      extrudeblock.Print(cout,true);
+      int numele = extrudeblock.GetNumEle();
+      //map<int,vector<int> > conn = extrudeblock.GetEleConn();
+      for (int iele = 0; iele < numele; ++iele) {
+        vector<int> actelenodes = extrudeblock.GetEleNodes(iele);
+        for (int inode = 0; inode < signed(actelenodes.size()); ++inode) {
+          RCP<PreNode> actnode = GetNode(actelenodes[inode]);
+          actnode->Print(cout);
+        }
+        
+      }
+    }
+    
+  }
   
   return;
   
 }
+
 /*----------------------------------------------------------------------*
  |  dtor (public)                                              maf 01/08|
  *----------------------------------------------------------------------*/
-Soshextrusion::~Soshextrusion()
+EXODUS::Soshextrusion::~Soshextrusion()
 {
   return;
 }
 
+bool EXODUS::Soshextrusion::CheckExtrusion(const ElementBlock eblock)
+{
+  const ElementBlock::Shape myshape = eblock.GetShape();
+  const string myname = eblock.GetName();
+  if (myshape == ElementBlock::shell4)
+    if (myname.compare(0,7,"extrude") == 0) return true;
+  return false;
+}
 
 
 #endif

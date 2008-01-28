@@ -17,6 +17,7 @@ is handed to a c++ object mesh.
 /*----------------------------------------------------------------------*/
 #ifdef D_EXODUS
 #include "pre_exodus_reader.H"
+#include "pre_node.H"
 #include <time.h>
 
 #ifdef PARALLEL
@@ -29,7 +30,7 @@ using namespace Teuchos;
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 12/07|
  *----------------------------------------------------------------------*/
-Mesh::Mesh(string exofilename)
+EXODUS::Mesh::Mesh(string exofilename)
 {
   int error;
   int CPU_word_size,IO_word_size;
@@ -61,7 +62,7 @@ Mesh::Mesh(string exofilename)
   error = ex_get_coord(exoid_,x,y,z);
   if (error != 0) dserror("exo error returned");
   
-  // create node pointer
+  // create node pointer 
   myNodes_.reserve(num_nodes_);
   for (int i = 0; i < num_nodes_; ++i) {
     double coords[3];
@@ -188,7 +189,7 @@ Mesh::Mesh(string exofilename)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                              maf 12/07|
  *----------------------------------------------------------------------*/
-Mesh::~Mesh()
+EXODUS::Mesh::~Mesh()
 {
   CloseExo();
   return;
@@ -197,7 +198,7 @@ Mesh::~Mesh()
 /*----------------------------------------------------------------------*
  |  Close corresponding Exofile(public)                        maf 12/07|
  *----------------------------------------------------------------------*/
-void Mesh::CloseExo()
+void EXODUS::Mesh::CloseExo()
 {
   // close exodus II file
   int error = ex_close(exoid_);
@@ -209,7 +210,7 @@ void Mesh::CloseExo()
 /*----------------------------------------------------------------------*
  |  Print method (public)                                      maf 12/07|
  *----------------------------------------------------------------------*/
-void Mesh::Print(ostream & os, bool verbose) const
+void EXODUS::Mesh::Print(ostream & os, bool verbose) const
 {
   os << "Mesh consists of ";
   os << num_nodes_ << " Nodes, ";
@@ -247,7 +248,7 @@ void Mesh::Print(ostream & os, bool verbose) const
 /*----------------------------------------------------------------------*
  |  Write Mesh into exodus file                                maf 01/08|
  *----------------------------------------------------------------------*/
-void Mesh::WriteMesh(string newexofilename)
+void EXODUS::Mesh::WriteMesh(string newexofilename)
 {
   //string newexofile(newexofilename);
   //newexofile += ".exo";
@@ -299,7 +300,7 @@ void Mesh::WriteMesh(string newexofilename)
   float x[num_nodes_];
   float y[num_nodes_];
   float z[num_nodes_];
-  for (int i = 0; i < num_nodes_; ++i) {
+  for (int i = 1; i <= num_nodes_; ++i) {
     RCP<PreNode> actnode = GetNode(i);
     x[i] = actnode->X()[0];
     y[i] = actnode->X()[1];
@@ -325,10 +326,6 @@ void Mesh::WriteMesh(string newexofilename)
     if (error!=0) dserror("error writing node set params");
     vector<int> nodelist(num_nodes_in_set);
     ns.FillNodelistArray(&nodelist[0]);
-//    for (int i = 0; i < num_nodes_in_set; ++i) {
-//      cout << nodelist[i] << ",";
-//    }
-//    cout <<endl;
     error = ex_put_node_set(exoid,nsID,&nodelist[0]);
     if (error!=0) dserror("error writing node set");
     error = ex_put_name (exoid, EX_NODE_SET, nsID, nsname);
@@ -357,10 +354,6 @@ void Mesh::WriteMesh(string newexofilename)
     // Write Element Connectivity
     vector<int> conn(num_nod_per_elem*numele);
     eb.FillEconnArray(&conn[0]);
-//    for (int i = 0; i < num_nod_per_elem*numele; ++i) {
-//      cout << conn[i] << ",";
-//    }
-//    cout <<endl;
     error = ex_put_elem_conn(exoid,blockID,&conn[0]);
     if (error!=0) dserror("error writing element block conns");
     // write block name
@@ -380,25 +373,25 @@ void Mesh::WriteMesh(string newexofilename)
 }
 
 
-ElementBlock::ElementBlock(ElementBlock::Shape Distype, map<int,vector<int> > &eleconn, string name)
+EXODUS::ElementBlock::ElementBlock(ElementBlock::Shape Distype, map<int,vector<int> > &eleconn, string name)
 {
   distype_ = Distype;
   eleconn_ = eleconn;
   name_ = name;
   return;
 }
-ElementBlock::~ElementBlock()
+EXODUS::ElementBlock::~ElementBlock()
 {
   return;
 }
 
-vector<int> ElementBlock::GetEleNodes(int i) const
+vector<int> EXODUS::ElementBlock::GetEleNodes(int i) const
 {
   map<int,vector<int> >::const_iterator  it = eleconn_.find(i);
   return it->second;
 }
 
-int ElementBlock::GetEleNode(int ele, int node) const
+int EXODUS::ElementBlock::GetEleNode(int ele, int node) const
 {
   map<int,vector<int> >::const_iterator  it = eleconn_.find(ele);
   if (it == eleconn_.end()) dserror("Element not found");
@@ -406,7 +399,7 @@ int ElementBlock::GetEleNode(int ele, int node) const
   return elenodes[node];
 }
 
-void ElementBlock::FillEconnArray(int *connarray) const
+void EXODUS::ElementBlock::FillEconnArray(int *connarray) const
 {
   const map<int,vector<int> >::const_iterator iele;
   int numele = eleconn_.size();
@@ -420,7 +413,7 @@ void ElementBlock::FillEconnArray(int *connarray) const
 }
 
 
-void ElementBlock::Print(ostream& os, bool verbose) const
+void EXODUS::ElementBlock::Print(ostream& os, bool verbose) const
 {
   os << "Element Block, named: " << name_.c_str() << endl
   << "of Shape: " << ShapeToString(distype_) << endl
@@ -439,19 +432,19 @@ void ElementBlock::Print(ostream& os, bool verbose) const
 }
 
 
-NodeSet::NodeSet(set<int> nodeids, string name, string propname)
+EXODUS::NodeSet::NodeSet(set<int> nodeids, string name, string propname)
 {
   nodeids_ = nodeids;
   name_ = name;
   propname_ = propname;
 }
 
-NodeSet::~NodeSet()
+EXODUS::NodeSet::~NodeSet()
 {
   return;
 }
 
-void NodeSet::Print(ostream& os, bool verbose) const
+void EXODUS::NodeSet::Print(ostream& os, bool verbose) const
 {
   os << "Node Set, named: " << name_.c_str() << endl
   << "Property Name: " << propname_.c_str() << endl
@@ -464,7 +457,7 @@ void NodeSet::Print(ostream& os, bool verbose) const
   }
 }
 
-void NodeSet::FillNodelistArray(int* nodelist) const
+void EXODUS::NodeSet::FillNodelistArray(int* nodelist) const
 {
   set<int> nlist = GetNodeSet();
   set<int>::iterator it;
@@ -476,120 +469,16 @@ void NodeSet::FillNodelistArray(int* nodelist) const
 }
 
 
-SideSet::SideSet(string name)
+EXODUS::SideSet::SideSet(string name)
 {
   name_ = name;
 }
 
-SideSet::~SideSet()
+EXODUS::SideSet::~SideSet()
 {
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  ctor (public)                                              maf 01/08|
- *----------------------------------------------------------------------*/
-PreElement::PreElement(int id, ShapeType shape)
-{
-  id_ =id;
-  shape_ = shape;
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                              maf 01/08|
- *----------------------------------------------------------------------*/
-PreElement::~PreElement()
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                         maf 01/08|
- *----------------------------------------------------------------------*/
-PreElement::PreElement(const PreElement& old)
-{
-  id_ = old.id_;
-  shape_ = old.shape_;
-  nodeid_ = old.nodeid_;
-  node_ = old.node_;
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  print element (public)                                     maf 01/08|
- *----------------------------------------------------------------------*/
-void PreElement::Print(ostream& os) const
-{
-  os << "Id: " << Id() << " Shape: " ;
-  switch (Shape()) {
-    case quad4:
-      os << "quad4 ";
-      break;
-    case tri3:
-      os << "tri3 ";
-      break;
-    default:
-      dserror("unknown PreElement shape");
-      break;
-  } 
-  const int nnode = NumNode();
-  const int* nodes = NodeIds();
-  if (nnode)
-  {
-    os << " Nodes ";
-    for (int i=0; i<nnode; ++i) os << setw(10) << nodes[i] << " ";
-  }
-  os << endl;
-}
-
-/*----------------------------------------------------------------------*
- |  set node numbers to element (public)                       maf 01/08|
- *----------------------------------------------------------------------*/
-void PreElement::SetNodeIds(const int nnode, const int* nodes)
-{
-  nodeid_.resize(nnode);
-  for (int i=0; i<nnode; ++i) nodeid_[i] = nodes[i];
-  node_.resize(0);
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                              maf 01/08|
- *----------------------------------------------------------------------*/
-PreNode::PreNode(int id, const double* coords)
-{
-  id_ =id;
-  for (int i=0; i<3; ++i) x_[i] = coords[i];
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                              maf 01/08|
- *----------------------------------------------------------------------*/
-PreNode::~PreNode()
-{
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                         maf 01/08|
- *----------------------------------------------------------------------*/
-PreNode::PreNode(const PreNode& old)
-{
-  id_ = old.id_;
-  for (int i=0; i<3; ++i) x_[i] = old.x_[i];
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  print node    (public)                                     maf 01/08|
- *----------------------------------------------------------------------*/
-void PreNode::Print(ostream& os) const
-{
-  os << "Id: " << Id() << " Coords: "
-     << X()[0] << "," << X()[1] << "," << X()[2] << endl;
-}
 
 
 #endif

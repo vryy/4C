@@ -24,7 +24,7 @@ is handed to a c++ object mesh.
 #include <vector>
 #include <Teuchos_RefCountPtr.hpp>
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_element.H"
+//include "pre_node.H"
 
 extern "C" /* stuff which is c and is accessed from c++ */
 {
@@ -34,12 +34,18 @@ extern "C" /* stuff which is c and is accessed from c++ */
 using namespace std;
 using namespace Teuchos;
 
+namespace EXODUS
+{
+
+// this minifunction maps exodus ids starting from 1 to store ids starting from 0
+inline const int eid(const int storeid) {return storeid-1;}
+
 
 //forward declaration
-class PreNode;
 class ElementBlock;
 class NodeSet;
 class SideSet;
+class PreNode;
 
 /*!
 \class Mesh
@@ -88,7 +94,7 @@ public:
   //! Get Number of ElementBlocks
   int GetNumSideSets() const {return sideSets_.size();}
   
-  RCP<PreNode> GetNode(int NodeID){ return myNodes_[NodeID];};
+  RCP<PreNode> GetNode (const int NodeID) const { const int id = eid(NodeID); return myNodes_[id];};
 
   //! Close Exodus File
   void CloseExo();
@@ -221,76 +227,6 @@ private:
   string name_;
 };
 
-class PreElement
-{
-public:
-  enum ShapeType{
-    quad4,
-    tri3,
-  };
-  PreElement(int id, ShapeType shape);
-  
-  PreElement(const PreElement& old);
-  
-  virtual ~PreElement();
-  
-  inline int Id() const {return id_; }
-  
-  inline ShapeType Shape() const {return shape_;}
-  
-  inline int NumNode() const {return nodeid_.size(); }
-  
-  inline const int* NodeIds() const {if (nodeid_.size()) return &nodeid_[0];
-                                     else                return NULL;     }
-  
-  PreNode** Nodes() { if (node_.size()) return &node_[0]; else return NULL; }
-  
-  void Print(ostream& os) const;
-  
-  void SetNodeIds(const int nnode, const int* nodes);
-  
-private:
-  int id_;
-  
-  ShapeType shape_;
-  
-  vector<int> nodeid_;
-  
-  vector<PreNode*> node_;
-  
-};
-
-class PreNode
-{
-public:
-  PreNode(int id, const double* coords);
-  
-  PreNode(const PreNode& old);
-  
-  virtual ~PreNode();
-  
-  inline int Id() const {return id_;}
-  
-  inline const double* X() const {return x_; }
-  
-  inline int NumElement() const {return element_.size(); }
-  
-  PreElement** Elements()   { if (NumElement()) return &element_[0]; else return NULL; }
-  
-  void Print(ostream& os) const;
-  
-  void AddElementPtr(PreElement* eleptr)
-  { const int size = element_.size(); element_.resize(size+1);
-    element_[size] = eleptr; return;}
-
-private:
-  int id_;
-  
-  double x_[3];
-  
-  vector<PreElement*> element_;
-  
-};
 
 inline ElementBlock::Shape StringToShape(const string shape)
 {
@@ -345,6 +281,7 @@ inline std::string ShapeToString(const ElementBlock::Shape shape)
   return "xxx";
 }
 
+} // of namespace EXODUS
 
 #endif /*PRE_EXODUS_READER_H_*/
 #endif

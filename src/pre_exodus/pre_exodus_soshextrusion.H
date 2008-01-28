@@ -33,6 +33,9 @@ extern "C" /* stuff which is c and is accessed from c++ */
 using namespace std;
 using namespace Teuchos;
 
+namespace EXODUS
+{
+
 /*!
 \class Soshextrusion
 
@@ -50,8 +53,11 @@ public:
   
   //! destructor
   virtual ~Soshextrusion();
+  
+  bool CheckExtrusion(const ElementBlock eblock);
 };
 
+} // of namepsace EXODUS
 
 #endif /*PRE_EXODUS_SOSHEXTRUSION_H_*/
 #endif /*EXODUS*/

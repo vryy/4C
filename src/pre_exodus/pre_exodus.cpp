@@ -83,17 +83,17 @@ int main(
     if (soshthickness!=0.0){
       if (exofile=="") dserror("no exofile specified for extrusion");
       if (soshthickness < 0.0) dserror("thickness specified for solid-shell extrusion is negative");
-      //Soshextrusion mysosh(exofile.c_str(),soshthickness,soshnumlayer);
+      EXODUS::Soshextrusion mysosh(exofile.c_str(),soshthickness,soshnumlayer);
       string extrudefile;
       extrudefile = "extr_" + exofile;
-      Mesh mysosh(exofile.c_str());
-      mysosh.Print(cout,true);
+      //Mesh mysosh(exofile.c_str());
+      //mysosh.Print(cout,true);
       mysosh.WriteMesh(extrudefile);
       exit(1);
     }
     
     // create mesh object based on given exodus II file
-    Mesh mymesh(exofile.c_str());
+    EXODUS::Mesh mymesh(exofile.c_str());
     // print infos to cout
     mymesh.Print(cout);
     //mymesh.CloseExo();
@@ -115,23 +115,23 @@ int main(
       // show all necessary bc and element specifications (suggestion for user)     
       defaultbc<<"-----------Please specify:-----------"<<endl<<endl;
 	    defaultbc<<"\\\\SYNTAX:"<<endl;
-      defaultbc<<"\\\\"<<"*matrID"<<"=\"<DESIGN TYPE or ELEMENT>\"\"<DESIGN-number or ELEMENT-TYPE>\""<<endl
+      defaultbc<<"\\\\"<<"matrID"<<"=\"<DESIGN TYPE or ELEMENT>\"\"<DESIGN-number or ELEMENT-TYPE>\""<<endl
       <<"\\\\"<<"boundr_cond=\"<BC TYPE>\"\"<the BC itself>\""<<endl
       <<"\\\\"<<"type=\"<ELEMENT-type>\"\"<ELEMENT-type2>\"\"<ELEMENT-type3>\""<<endl
       <<"\\\\"<<"prop=\"<element flags>\""<<endl<<endl;
       
       defaultbc<<"\\\\ For Example:"<<endl
-      <<"\\\\*matr1 =\"ELEMENT\"\"STRUCTURE\""<<endl
+      <<"\\\\matr1 =\"ELEMENT\"\"STRUCTURE\""<<endl
       <<"\\\\boundr_cond=\" \"\" \" "<<endl
       <<"\\\\type=\"STRUCTURE\"\"SOLIDSH8\"\"HEX8\" "<<endl
       <<"\\\\prop=\"MAT       1 GP 2 2 2 STRESS None KINEM Totlag  EAS sosh8 THICKDIR AUTO\" "<<endl<<endl;
-      defaultbc<<"\\\\*matr1 =\"ELEMENT\"\"FLUID\" "<<endl
+      defaultbc<<"\\\\matr1 =\"ELEMENT\"\"FLUID\" "<<endl
       <<"\\\\boundr_cond=\" \"\" \" "<<endl
       <<"\\\\type=\"FLUID\"\"FLUID3\"\"HEX8\" " <<endl
       <<"\\\\prop=\"MAT       1 NA ALE GP 2 2 2\" "<<endl<<endl;
-      defaultbc<<"\\\\*matr2 =\"DSURF\"\"1\" "<<endl
+      defaultbc<<"\\\\matr2 =\"DSURF\"\"1\" "<<endl
       << "\\\\boundr_cond=\"NEUMANN\"\"E 1 - 1  0 0 1 0 0 0 0.0 0.0 1.0 0.0 0.0 0.0 Live Mid\" "<<endl<<endl;
-      defaultbc<<"\\\\*matr6 =\"DSURF\"\"4\" "<<endl
+      defaultbc<<"\\\\matr6 =\"DSURF\"\"4\" "<<endl
       <<"\\\\boundr_cond=\"DIRICH\"\"E 4 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0\" "<<endl<<endl;
 
       defaultbc<<"------------------------------------------------"<<endl<<endl;
