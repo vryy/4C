@@ -29,7 +29,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/dof_management.H"
 #include "../io/gmsh.H"
 
-using namespace std;
+
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -133,6 +133,14 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   ComputeSingleFieldRowMaps(initialdofmanager);
 
   // -------------------------------------------------------------------
+  // get a vector layout from the discretization for a vector which only
+  // contains the velocity dofs and for one vector which only contains
+  // pressure degrees of freedom.
+  // -------------------------------------------------------------------
+
+  const int numdim = params_.get<int>("number of velocity degrees of freedom");
+  
+  // -------------------------------------------------------------------
   // get the processor ID from the communicator
   // -------------------------------------------------------------------
   myrank_  = discret_->Comm().MyPID();
@@ -172,6 +180,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   {
     dispnp_       = LINALG::CreateVector(*dofrowmap,true);
     dispn_        = LINALG::CreateVector(*dofrowmap,true);
+    dispnm_       = LINALG::CreateVector(*dofrowmap,true);
     gridv_        = LINALG::CreateVector(*dofrowmap,true);
   }
 
@@ -230,7 +239,6 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   return;
 
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
-
 
 // -------------------------------------------------------------------
 // get a vector layout from the discretization to construct matching
@@ -1006,99 +1014,6 @@ void XFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | convergence check for nonlinear iteration                 gammi 04/07|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void XFluidImplicitTimeInt::NonlinearConvCheck(
-  bool&  stopnonliniter,
-  int    itnum         ,
-  double dtele         ,
-  double dtsolve
-  )
-{
-
-  RefCountPtr<Epetra_Vector> onlyvel_ = LINALG::CreateVector(*velrowmap_,true);
-  RefCountPtr<Epetra_Vector> onlypre_ = LINALG::CreateVector(*prerowmap_,true);
-
-  // ---------------------------------------------- nonlinear iteration
-  // maximum number of nonlinear iteration steps
-  const int     itemax    =params_.get<int>   ("max nonlin iter steps");
-
-  // ------------------------------- stop nonlinear iteration when both
-  //                                 increment-norms are below this bound
-  const double  ittol     =params_.get<double>("tolerance for nonlin iter");
-
-
-  // extract velocity and pressure increments from increment vector
-  LINALG::Export(*incvel_,*onlyvel_);
-  LINALG::Export(*incvel_,*onlypre_);
-  // calculate L2_Norm of increments
-  double incvelnorm_L2;
-  double incprenorm_L2;
-  onlyvel_->Norm2(&incvelnorm_L2);
-  onlypre_->Norm2(&incprenorm_L2);
-
-  // extract velocity and pressure solutions from solution vector
-  LINALG::Export(*velnp_,*onlyvel_);
-  LINALG::Export(*velnp_,*onlypre_);
-  // calculate L2_Norm of solution
-  double velnorm_L2;
-  double prenorm_L2;
-  onlyvel_->Norm2(&velnorm_L2);
-  onlypre_->Norm2(&prenorm_L2);
-
-  if (velnorm_L2<EPS5)
-  {
-    velnorm_L2 = 1.0;
-  }
-  if (prenorm_L2<EPS5)
-  {
-    prenorm_L2 = 1.0;
-  }
-
-  // out to screen
-  if(myrank_ == 0)
-  {
-    printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |",
-           itnum,itemax,ittol,incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-    printf(" (te=%10.3E,ts=%10.3E)\n",dtele,dtsolve);
-  }
-
-  // this is the convergence check
-  if(incvelnorm_L2/velnorm_L2 <= ittol && incprenorm_L2/prenorm_L2 <= ittol)
-  {
-    stopnonliniter=true;
-    if(myrank_ == 0)
-    {
-      printf("+------------+-------------------+--------------+--------------+ \n");
-    }
-  }
-
-  // warn if itemax is reached without convergence, but proceed to
-  // next timestep...
-  if (itnum == itemax
-      &&
-      (incvelnorm_L2/velnorm_L2 > ittol
-       ||
-       incprenorm_L2/prenorm_L2 > ittol))
-  {
-    stopnonliniter=true;
-    if(myrank_ == 0)
-    {
-      printf("+---------------------------------------------------------------+\n");
-      printf("|            >>>>>> not converged in itemax steps!              |\n");
-      printf("+---------------------------------------------------------------+\n");
-    }
-  }
-
-}// FluidImplicitTimeInt::NonlinearConvCheck
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
  | current solution becomes most recent solution of next timestep       |
  |                                                           gammi 04/07|
  *----------------------------------------------------------------------*/
@@ -1180,7 +1095,10 @@ void XFluidImplicitTimeInt::TimeUpdate()
   veln_ ->Update(1.0,*velnp_,0.0);
 
   if (alefluid_)
-    dispn_->Update(1.0,*dispnp_,0.0);
+  {
+    dispnm_->Update(1.0,*dispn_,0.0);
+    dispn_ ->Update(1.0,*dispnp_,0.0);
+  }
 
   return;
 }// FluidImplicitTimeInt::TimeUpdate
@@ -1205,7 +1123,7 @@ void XFluidImplicitTimeInt::Output()
 
     #if 0
     // write domain decomposition for visualization
-    const Epetra_Map* elerowmap = discret_->ElementRowMap(); 
+    const Epetra_Map* elerowmap = discret_->ElementRowMap();
     RCP<Epetra_Vector> domain_decomp = LINALG::CreateVector(*elerowmap,true);
     for (int lid=0;lid<elerowmap->NumMyElements();++lid)
     {
@@ -1263,7 +1181,11 @@ void XFluidImplicitTimeInt::Output()
     //output_.WriteVector("residual", trueresidual_);
     //output_.WriteVector("domain_decomp",domain_decomp);
     if (alefluid_)
+    {
       output_.WriteVector("dispnp", dispnp_);
+      output_.WriteVector("dispn", dispn_);
+      output_.WriteVector("dispnm",dispnm_);
+    }
 
     //only perform stress calculation when output is needed
     if (writestresses_)
@@ -1392,7 +1314,57 @@ void XFluidImplicitTimeInt::ReadRestart(int step)
   reader.ReadVector(veln_, "veln");
   reader.ReadVector(velnm_,"velnm");
   reader.ReadVector(accn_ ,"accn");
+
+  if (alefluid_)
+  {
+    reader.ReadVector(dispnp_,"dispnp");
+    reader.ReadVector(dispn_ , "dispn");
+    reader.ReadVector(dispnm_,"dispnm");
+  }
 }
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |                                                           chfoe 01/08|
+ -----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void XFluidImplicitTimeInt::UpdateGridv()
+{
+  // get order of accuracy of grid velocity determination
+  // from input file data
+  const int order  = params_.get<int>("order gridvel");
+
+  switch (order)
+  {
+    case 1:
+      /* get gridvelocity from BE time discretisation of mesh motion:
+           -> cheap
+           -> easy
+           -> limits FSI algorithm to first order accuracy in time
+
+                  x^n+1 - x^n
+             uG = -----------
+                    Deta t                        */
+      gridv_->Update(1/dta_, *dispnp_, -1/dta_, *dispn_, 0.0);
+    break;
+    case 2:
+      /* get gridvelocity from BDF2 time discretisation of mesh motion:
+           -> requires one more previous mesh position or displacemnt
+           -> somewhat more complicated
+           -> allows second order accuracy for the overall flow solution  */
+      gridv_->Update(1.5/dta_, *dispnp_, -2.0, *dispn_, 0.0);
+      gridv_->Update(0.5, *dispnm_, 1.0);
+    break;
+  }
+}
+
+
+
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

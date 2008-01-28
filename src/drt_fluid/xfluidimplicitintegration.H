@@ -28,6 +28,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/drt_utils_mapextractor.H"
 #include "../io/io_drt.H"
 #include "../drt_xfem/dof_management.H"
 
@@ -135,17 +136,6 @@ public:
   void NonlinearSolve();
 
   /*!
-  \brief compute convergence check after a nonlinear iteration step
-
-  */
-  void NonlinearConvCheck(
-    bool&  stopnonliniter,
-    int    itnum         ,
-    double dtele         ,
-    double dtsolve
-    );
-
-  /*!
     \brief build linear system matrix and rhs
 
     Monolithic FSI needs to access the linear fluid problem.
@@ -212,18 +202,18 @@ public:
 
   double ResidualScaling() const { return density_/dta_/theta_; }
 
-  void UpdateGridv() {
-    // There are other choices how to approximate that. Which one to
-    // chose?
-    gridv_->Update(1/dta_, *dispnp_, -1/dta_, *dispn_, 0.0);
-  }
+  /*!
+  \brief determine grid velocity
+
+  */
+  void UpdateGridv();
 
   /*!
   \brief calculate lift&drag forces and angular momenta
 
   */
     void LiftDrag() const;
-  
+
   //@}
 
 protected:
@@ -306,8 +296,10 @@ protected:
   RefCountPtr<Epetra_Vector>    veln_;
   RefCountPtr<Epetra_Vector>    velnm_;
 
+  /// displacemets at time n+1, n and n-1
   RefCountPtr<Epetra_Vector>    dispnp_;
   RefCountPtr<Epetra_Vector>    dispn_;
+  RefCountPtr<Epetra_Vector>    dispnm_;
 
   RefCountPtr<Epetra_Vector>    gridv_;
 
@@ -318,6 +310,12 @@ protected:
   // solid displacement (might be moved somewhere else later)
   RefCountPtr<Epetra_Vector>    soliddispnp_;
 
+
+  // Extractor used for convergence check
+  // ------------------------------------
+
+  DRT::UTILS::MapExtractor      velpressplitter_;
+  
   // Vectors used for convergence check
   // ----------------------------------
   RefCountPtr<Epetra_Map>       velrowmap_;
