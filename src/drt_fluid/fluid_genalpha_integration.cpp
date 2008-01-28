@@ -75,7 +75,7 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   pbc.UpdateDofsForPeriodicBoundaryConditions();
 
   mapmastertoslave_ = pbc.ReturnAllCoupledNodesOnThisProc();
-  
+
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled()) discret_->FillComplete();
 
@@ -90,56 +90,10 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // get a vector layout from the discretization for a vector which only
   // contains the velocity dofs and for one vector which only contains
   // pressure degrees of freedom.
-  //
-  // The maps are designed assuming that every node has pressure and
-  // velocity degrees of freedom --- this won't work for inf-sup stable
-  // elements at the moment!
   // -------------------------------------------------------------------
-  {
-    // Define sets which will hold the dof number of the velocity or
-    // pressure dofs. Only velocity and pressure dofs owned by this
-    // processor are inserted into the map
 
-    set<int> veldofset;
-    set<int> predofset;
+  velpressplitter_.Setup(discret_,DRT::UTILS::ExtractorCondMaxPos(numdim_));
 
-    for (int i=0; i<discret_->NumMyRowNodes(); ++i)
-    {
-      DRT::Node* node = discret_->lRowNode(i);
-      vector<int> dof = discret_->Dof(node);
-
-      int numdofs=discret_->Dof(node).size();
-      if(numdofs==numdim_+1)
-      {
-        for (int j=0; j<numdofs-1; ++j)
-        {
-	  // add this velocity dof to the velocity set
- 	  veldofset.insert(dof[j]);
-        }
-
-        // add this pressure dof to the pressure set
-        predofset.insert(dof[numdofs-1]);
-      }
-      else
-      {
-        dserror("up to now fluid expects numdim vel + one pre dofs");
-      }
-    }
-
-    // these vectors now contain all velocity/pressure dofs on this
-    // processor
-    vector<int> velmapdata(veldofset.begin(),veldofset.end());
-    vector<int> premapdata(predofset.begin(),predofset.end());
-
-    // the rowmaps are generated according to the pattern provided by
-    // the data vectors
-    velrowmap_ = rcp(new Epetra_Map(-1,
-                                    velmapdata.size(),&velmapdata[0],0,
-                                    discret_->Comm()));
-    prerowmap_ = rcp(new Epetra_Map(-1,
-                                    premapdata.size(),&premapdata[0],0,
-                                    discret_->Comm()));
-  }
   // -------------------------------------------------------------------
   // get the processor ID from the communicator
   // -------------------------------------------------------------------
@@ -226,10 +180,10 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   }
 
   // -------------------------------------------------------------------
-  // get a vector layout from the discretization to construct 
+  // get a vector layout from the discretization to construct
   // -------------------------------------------------------------------
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
-  
+
   // -------------------------------------------------------------------
   // initialise vectors for dynamic Smagorinsky model
   // (the smoothed quantities)
@@ -246,7 +200,7 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
       filtered_vel_                   = rcp(new Epetra_MultiVector(*noderowmap,3,true));
       filtered_reynoldsstress_        = rcp(new Epetra_MultiVector(*noderowmap,9,true));
       filtered_modeled_subgrid_stress_= rcp(new Epetra_MultiVector(*noderowmap,9,true));
-      
+
       averaged_LijMij_                = rcp(new vector<double>);
       averaged_MijMij_                = rcp(new vector<double>);
     }
@@ -304,29 +258,29 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
   {
     /* output of time integration related data */
     {
-      cout << "Generalized Alpha parameter: alpha_F = " << alphaF_ << &endl;
-      cout << "                             alpha_M = " << alphaM_ << &endl;
-      cout << "                             gamma   = " << gamma_  << &endl <<&endl;
-      
+      cout << "Generalized Alpha parameter: alpha_F = " << alphaF_ << "\n";
+      cout << "                             alpha_M = " << alphaM_ << "\n";
+      cout << "                             gamma   = " << gamma_  << "\n" <<"\n";
+
       if(newton_ == true)
       {
-        cout << "Linearisation              : " << "Including reactive terms (Newton-like)" <<&endl;
+        cout << "Linearisation              : " << "Including reactive terms (Newton-like)" <<"\n";
       }
       else
       {
-        cout << "Linearisation              : " << "Without reactive terms (fixed-point-like)" <<&endl;
+        cout << "Linearisation              : " << "Without reactive terms (fixed-point-like)" <<"\n";
       }
-      cout << &endl;
+      cout << "\n";
     }
-    
+
     /* output of stabilisation details */
     {
       ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
-    
-      cout << "Stabilisation type         : " << stabparams->get<string>("STABTYPE") << &endl;
-      cout << "                             " << stabparams->get<string>("RVMM_TDS")<< &endl;
-      cout << &endl;
-      
+
+      cout << "Stabilisation type         : " << stabparams->get<string>("STABTYPE") << "\n";
+      cout << "                             " << stabparams->get<string>("RVMM_TDS")<< "\n";
+      cout << "\n";
+
       if(stabparams->get<string>("RVMM_TDS") == "quasistatic_subscales")
       {
         if(stabparams->get<string>("RVMM_INERTIA")=="+(sacc,v)")
@@ -334,14 +288,14 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
           dserror("The quasistatic version supports only GLS_0 or USFEM_0 type stabilisation,\nso please drop the inertia stabilisation term in this case.");
         }
       }
-      cout <<  "                             " << "INERTIA         = " << stabparams->get<string>("RVMM_INERTIA")        <<&endl;
-      cout <<  "                             " << "SUPG            = " << stabparams->get<string>("RVMM_SUPG")           <<&endl;
-      cout <<  "                             " << "PSPG            = " << stabparams->get<string>("RVMM_PSPG")           <<&endl;
-      cout <<  "                             " << "CSTAB           = " << stabparams->get<string>("RVMM_CSTAB")          <<&endl;
-      cout <<  "                             " << "VSTAB           = " << stabparams->get<string>("RVMM_VSTAB")          <<&endl;
-      cout <<  "                             " << "CROSS-STRESS    = " << stabparams->get<string>("RVMM_CROSS-STRESS")   <<&endl;
-      cout <<  "                             " << "REYNOLDS-STRESS = " << stabparams->get<string>("RVMM_REYNOLDS-STRESS")<<&endl;
-      cout << &endl;
+      cout <<  "                             " << "INERTIA         = " << stabparams->get<string>("RVMM_INERTIA")        <<"\n";
+      cout <<  "                             " << "SUPG            = " << stabparams->get<string>("RVMM_SUPG")           <<"\n";
+      cout <<  "                             " << "PSPG            = " << stabparams->get<string>("RVMM_PSPG")           <<"\n";
+      cout <<  "                             " << "CSTAB           = " << stabparams->get<string>("RVMM_CSTAB")          <<"\n";
+      cout <<  "                             " << "VSTAB           = " << stabparams->get<string>("RVMM_VSTAB")          <<"\n";
+      cout <<  "                             " << "CROSS-STRESS    = " << stabparams->get<string>("RVMM_CROSS-STRESS")   <<"\n";
+      cout <<  "                             " << "REYNOLDS-STRESS = " << stabparams->get<string>("RVMM_REYNOLDS-STRESS")<<"\n";
+      cout << "\n";
     }
 
     /* output of turbulence model if any */
@@ -353,9 +307,9 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
 
         string special_flow = modelparams->get<string>("CANONICAL_FLOW","no");
         string hom_plane    = modelparams->get<string>("CHANNEL_HOMPLANE","xz");
-        
-        cout << "Turbulence approach        : " << modelparams->get<string>("TURBULENCE_APPROACH") << &endl << &endl;
-        
+
+        cout << "Turbulence approach        : " << modelparams->get<string>("TURBULENCE_APPROACH") << "\n" << "\n";
+
         if(modelparams->get<string>("TURBULENCE_APPROACH") == "RANS")
         {
           dserror("RANS approaches not implemented yet\n");
@@ -363,8 +317,8 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
         else if(modelparams->get<string>("TURBULENCE_APPROACH") == "CLASSICAL_LES")
         {
           string physmodel = modelparams->get<string>("PHYSICAL_MODEL");
-          
-          cout << "                             " << physmodel << &endl;
+
+          cout << "                             " << physmodel << "\n";
           if (physmodel == "Smagorinsky")
           {
             cout << "                             " ;
@@ -376,11 +330,11 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
             {
               dserror("The van Driest damping is only implemented for a channel flow with wall \nnormal direction y");
             }
-            
+
             cout << "                             " ;
-            cout << "- Smagorinsky constant:   Cs   = " <<  modelparams->get<double>("C_SMAGORINSKY") << &endl;
+            cout << "- Smagorinsky constant:   Cs   = " <<  modelparams->get<double>("C_SMAGORINSKY") << "\n";
             cout << "                             " ;
-            cout << "- viscous length      :   l_tau= " <<  modelparams->get<double>("CHANNEL_L_TAU") << &endl ;
+            cout << "- viscous length      :   l_tau= " <<  modelparams->get<double>("CHANNEL_L_TAU") << "\n" ;
           }
           else if(physmodel == "Dynamic_Smagorinsky")
           {
@@ -389,10 +343,10 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
               dserror("The dynamic Smagorinsky model is only implemented for a channel flow with \nwall normal direction y");
             }
           }
-          
-          cout << &endl;
+
+          cout << "\n";
         }
-        
+
         if (special_flow == "channel_flow_of_height_2")
         {
           cout << "                             " ;
@@ -400,10 +354,10 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
           cout << "                             " ;
           cout << "The solution is averaged over the homogeneous " << hom_plane << " plane and over time.\n";
         }
-        cout << &endl;
-        cout << &endl;
+        cout << "\n";
+        cout << "\n";
 
-        
+
       }
     }
   }
@@ -482,7 +436,7 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
 
       // create the parameters for the discretization
       ParameterList eleparams;
-      
+
       // action for elements
       eleparams.set("action","time average for subscales and residual");
 
@@ -495,7 +449,7 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
       // other parameters that might be needed by the elements
       {
         ParameterList& timelist = eleparams.sublist("time integration parameters");
-        
+
         timelist.set("alpha_M",alphaM_);
         timelist.set("alpha_F",alphaF_);
         timelist.set("gamma"  ,gamma_ );
@@ -507,7 +461,7 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
       {
         eleparams.sublist("STABILIZATION")    = params_.sublist("STABILIZATION");
       }
-  
+
       // set vector values needed by elements
       discret_->ClearState();
       discret_->SetState("u and p (n+1      ,trial)",velnp_);
@@ -519,7 +473,7 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
       {
         planecoords_ = rcp( new vector<double>((turbulencestatistics_->ReturnNodePlaneCoords()).size()));
       }
-      
+
       (*planecoords_) = turbulencestatistics_->ReturnNodePlaneCoords();
 
       RefCountPtr<vector<double> > local_incrres;
@@ -602,7 +556,7 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
   tm0_ref_ = null; // end total time measurement
   if(discret_->Comm().MyPID()==0)
   {
-    cout<<endl<<endl;
+    cout<<"\n"<<"\n";
   }
   TimeMonitor::summarize();
 
@@ -649,7 +603,7 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
 
   // time measurement --- stop TimeMonitor tm9
   tm9_ref_        = null;
-  
+
   // -------------------------------------------------------------------
   // call elements to calculate residual and matrix for first iteration
   // -------------------------------------------------------------------
@@ -681,7 +635,7 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
         printf("(tf=%10.3E)",dtfilter_);
       }
     }
-    cout << &endl;
+    cout << "\n";
   }
 
   bool              stopnonliniter = false;
@@ -1003,7 +957,7 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
     // write mesh in each restart step --- the elements are required since
     // they contain history variables (the time dependent subscales)
     output_.WriteMesh(step_,time_);
-    
+
   }
 
   return;
@@ -1151,7 +1105,7 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
   global_incr_visceff_sum =  rcp(new vector<double> );
   local_visceff_sum       =  rcp(new vector<double> );
 
-  
+
   if (params_.sublist("TURBULENCE MODEL").get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
       ==
       "CLASSICAL_LES")
@@ -1176,7 +1130,7 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
       global_incr_Cs_sum->resize(planecoords_->size()-1,0.0);
 
       local_Cs_delta_sq_sum->resize      (planecoords_->size()-1,0.0);
-      global_incr_Cs_delta_sq_sum->resize(planecoords_->size()-1,0.0);     
+      global_incr_Cs_delta_sq_sum->resize(planecoords_->size()-1,0.0);
 
       local_visceff_sum->resize      (planecoords_->size()-1,0.0);
       global_incr_visceff_sum->resize(planecoords_->size()-1,0.0);
@@ -1200,7 +1154,7 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
     // define flag for computation of matrices (true only in first time step)
     bool compute;
 
-    if (step_ == 1) 
+    if (step_ == 1)
     {
       compute=true;
 
@@ -1208,7 +1162,7 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
       scalesep_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
 
       // create (fine-scale) subgrid-viscosity matrix
-      sysmat_sv_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_); 
+      sysmat_sv_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
 
       // call loop over elements (two matrices + subgr.-visc.-scal. vector)
       discret_->Evaluate(eleparams,sysmat_,sysmat_sv_,residual_,sugrvisc_);
@@ -1275,7 +1229,7 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
     turbulencestatistics_->ReplaceCsIncrement(global_incr_Cs_sum,global_incr_Cs_delta_sq_sum,global_incr_visceff_sum);
   }
 
-  
+
 #if 0  // DEBUG IO --- the whole systemmatrix
       {
 	  int rr;
@@ -1520,9 +1474,6 @@ bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(
 {
   bool stopnonliniter = false;
 
-  RefCountPtr<Epetra_Vector> onlyvel_ = LINALG::CreateVector(*velrowmap_,true);
-  RefCountPtr<Epetra_Vector> onlypre_ = LINALG::CreateVector(*prerowmap_,true);
-
   // ---------------------------------------------- nonlinear iteration
   // maximum number of nonlinear iteration steps
   int     itemax    =params_.get<int>   ("max nonlin iter steps");
@@ -1533,24 +1484,24 @@ bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(
 
 
   // extract velocity and pressure increments from increment vector
-  LINALG::Export(*increment_,*onlyvel_);
-  LINALG::Export(*increment_,*onlypre_);
+  Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractCondVector(increment_);
+  Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractOtherVector(increment_);
   // calculate L2_Norm of increments
   double incaccnorm_L2;
   double incprenorm_L2;
-  onlyvel_->Norm2(&incaccnorm_L2);
-  onlypre_->Norm2(&incprenorm_L2);
+  onlyvel->Norm2(&incaccnorm_L2);
+  onlypre->Norm2(&incprenorm_L2);
 
   double incvelnorm_L2=incaccnorm_L2*gamma_*dt_;
 
   // extract velocity and pressure solutions from solution vector
-  LINALG::Export(*velnp_,*onlyvel_);
-  LINALG::Export(*velnp_,*onlypre_);
+  onlyvel = velpressplitter_.ExtractCondVector(velnp_);
+  onlypre = velpressplitter_.ExtractOtherVector(velnp_);
   // calculate L2_Norm of solution
   double velnorm_L2;
   double prenorm_L2;
-  onlyvel_->Norm2(&velnorm_L2);
-  onlypre_->Norm2(&prenorm_L2);
+  onlyvel->Norm2(&velnorm_L2);
+  onlypre->Norm2(&prenorm_L2);
 
   if (velnorm_L2<EPS5)
   {
@@ -1562,14 +1513,14 @@ bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(
   }
 
   // extract velocity and pressure residuals from rhs vector
-  LINALG::Export(*residual_,*onlyvel_);
-  LINALG::Export(*residual_,*onlypre_);
+  onlyvel = velpressplitter_.ExtractCondVector(residual_);
+  onlypre = velpressplitter_.ExtractOtherVector(residual_);
 
   double preresnorm_L2;
-  onlypre_->Norm2(&preresnorm_L2);
+  onlypre->Norm2(&preresnorm_L2);
 
   double velresnorm_L2;
-  onlyvel_->Norm2(&velresnorm_L2);
+  onlyvel->Norm2(&velresnorm_L2);
 
   // out to screen
   if(myrank_ == 0)
@@ -1594,7 +1545,7 @@ bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(
         printf("(tf=%10.3E)",dtfilter_);
       }
     }
-    cout << &endl;
+    cout << "\n";
   }
 
   // this is the convergence check
@@ -1649,7 +1600,7 @@ void FluidGenAlphaIntegration::ReadRestart(int step)
   // read the previously written elements including the history data
   reader.ReadMesh(step_);
 
-  
+
 }
 
 
@@ -1705,21 +1656,21 @@ void FluidGenAlphaIntegration::SetInitialFlowField(
         // random noise is perc percent of the initial profile
 
         double perc = 0.1;
-        
+
         if (params_.sublist("TURBULENCE MODEL").get<string>("CANONICAL_FLOW","no")
             ==
             "channel_flow_of_height_2")
         {
           perc = params_.sublist("TURBULENCE MODEL").get<double>("CHANNEL_AMPLITUDE_INITIAL_DISTURBANCE");
         }
-        
+
         // out to screen
         if (myrank_==0)
         {
           cout << "Disturbed initial profile:   max. " << perc << "\% random perturbation\n";
-          cout << &endl << &endl;
+          cout << "\n\n";
         }
-          
+
         // loop all nodes on the processor
         for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();++lnodeid)
         {
@@ -1969,7 +1920,7 @@ void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
 
   // time measurement
   double tcpu=ds_cputime();
-  
+
   // get the dofrowmap for access of velocity dofs
   const Epetra_Map* dofrowmap       = discret_->DofRowMap();
 
@@ -1977,7 +1928,7 @@ void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
   ParameterList filterparams;
   // action for elements
   filterparams.set("action","calc_fluid_box_filter");
-  
+
   // set state vector to pass distributed vector to the element
   discret_->ClearState();
   discret_->SetState("u and p (n+alpha_F,trial)",velaf_);
@@ -1992,7 +1943,7 @@ void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
     vector<int> nodedofset = discret_->Dof(lnode);
 
     // check whether the node is on a wall, i.e. all velocity dofs
-    // are Dirichlet constrained 
+    // are Dirichlet constrained
     int is_no_slip_node =0;
     for(int index=0;index<numdim_;++index)
     {
@@ -2013,12 +1964,12 @@ void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
 
     // now check whether we have a pbc condition on this node
     vector<DRT::Condition*> mypbc;
-    
+
     lnode->GetCondition("SurfacePeriodic",mypbc);
 
     // check whether a periodic boundary condition is active on this node
     bool ispbcmaster = false;
-    
+
     if (mypbc.size()>0)
     {
       // get the list of all his slavenodes
@@ -2048,7 +1999,7 @@ void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
     if(ispbcmaster == true)
     {
       for (unsigned slavecount = 0;slavecount<mapmastertoslave_[lnode->Id()].size();++slavecount)
-      {  
+      {
         // get the corresponding slavenodes
         DRT::Node*  slavenode = discret_->gNode(mapmastertoslave_[lnode->Id()][slavecount]);
 
@@ -2103,12 +2054,12 @@ void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
     blitz::Array<double, 1> velaf_hat(ep_velaf_hat.Values(),
                                       blitz::shape(ep_velaf_hat.Length()),
                                       blitz::neverDeleteData);
-    
+
     blitz::Array<double, 2> reystress_hat(ep_reystress_hat.A(),
                                           blitz::shape(ep_reystress_hat.M(),ep_reystress_hat.N()),
                                           blitz::neverDeleteData,
                                           blitz::ColumnMajorArray<2>());
-    
+
     blitz::Array<double, 2> modeled_stress_grid_scale_hat(ep_modeled_stress_grid_scale_hat.A(),
                                                           blitz::shape(ep_modeled_stress_grid_scale_hat.M(),ep_modeled_stress_grid_scale_hat.N()),
                                                           blitz::neverDeleteData,
@@ -2122,7 +2073,7 @@ void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
     // now assemble the computed values into the global vector
     double val = 0;
     int    id  = (lnode->Id());
-    
+
     for (int idim =0;idim<3;++idim)
     {
       val = velaf_hat(idim);
@@ -2142,12 +2093,12 @@ void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
     if (ispbcmaster == true)
     {
       for (unsigned slavecount = 0;slavecount<mapmastertoslave_[lnode->Id()].size();++slavecount)
-      {  
+      {
         // get the corresponding slavenodes
         DRT::Node*  slavenode = discret_->gNode(mapmastertoslave_[lnode->Id()][slavecount]);
 
         int    slaveid  = (slavenode->Id());
-          
+
         for (int idim =0;idim<3;++idim)
         {
           val = (velaf_hat(idim));
@@ -2157,7 +2108,7 @@ void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
           {
             val = reystress_hat (idim,jdim);
             ((*filtered_reynoldsstress_ )       (3*idim+jdim))->ReplaceGlobalValues(1,&val,&slaveid);
-            
+
             val = modeled_stress_grid_scale_hat(idim,jdim);
             ((*filtered_modeled_subgrid_stress_)(3*idim+jdim))->ReplaceGlobalValues(1,&val,&slaveid);
           }
@@ -2188,19 +2139,19 @@ void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
   {
     planecoords_ = rcp( new vector<double>((turbulencestatistics_->ReturnNodePlaneCoords()).size()));
   }
-  
+
   (*planecoords_) = turbulencestatistics_->ReturnNodePlaneCoords();
 
   averaged_LijMij_->resize((*planecoords_).size()-1);
   averaged_MijMij_->resize((*planecoords_).size()-1);
-  
+
   vector<int>  count_for_average      ((*planecoords_).size()-1);
   vector<int>  local_count_for_average((*planecoords_).size()-1);
 
   vector <double> local_ele_sum_LijMij((*planecoords_).size()-1);
   vector <double> local_ele_sum_MijMij((*planecoords_).size()-1);
 
-  
+
   for (unsigned rr=0;rr<(*planecoords_).size()-1;++rr)
   {
     (*averaged_LijMij_)    [rr]=0;
@@ -2232,7 +2183,7 @@ void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
   {
     // get the element
     DRT::Element* ele = discret_->lRowElement(nele);
-    
+
     // get element location vector, dirichlet flags and ownerships
     vector<int> lm;
     vector<int> lmowner;
@@ -2276,7 +2227,7 @@ void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
     // add it up
     local_ele_sum_LijMij[nlayer] += LijMij;
     local_ele_sum_MijMij[nlayer] += MijMij;
-    
+
     local_count_for_average[nlayer]++;
   }
 
@@ -2306,7 +2257,7 @@ void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
   }
 
   dtfilter_=ds_cputime()-tcpu;
-  
+
   return;
 }
 

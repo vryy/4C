@@ -65,6 +65,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_function.H"
+#include "../drt_lib/drt_utils_mapextractor.H"
 #include "../io/io_drt.H"
 
 #include "Epetra_Vector.h"
@@ -119,9 +120,9 @@ public:
 
   o calculate and set gamma parameter for generalised alpha method
     according to the second order necessary condition
-    
+
   o Do the timeloop
-  
+
   */
   void GenAlphaIntegrateTo(
     int                endstep,
@@ -140,7 +141,7 @@ public:
   this increment.
 
   Convergence is checked by controlling residual- and increment- norms.
-  
+
   */
   void DoGenAlphaPredictorCorrectorIteration();
 
@@ -204,7 +205,7 @@ public:
 
   Has to be called every time after the values at time level np have
   been updated!
-  
+
   */
   void GenAlphaComputeIntermediateSol();
 
@@ -226,17 +227,17 @@ public:
   o Dirichlet conditions applied in here to be able to use the
     residual for the convergence check
 
-  o the true residual is store in vector force_ 
-  
+  o the true residual is store in vector force_
+
   */
   void GenAlphaAssembleResidualAndMatrix(int          itnum);
- 
+
   /*!
   \brief Solve linear problem.
 
   The counter itnum of the nonlinear iteration on input allows to
   do the solver initialisation only in the first step.
-  
+
   */
   void GenAlphaCalcIncrement(
     int          itnum
@@ -251,7 +252,7 @@ public:
         (in accnp) and velocities (in velnp)
 
      -> if we have a pressure dof, update pressure (in velnp)
-     
+
   */
   void GenAlphaNonlinearUpdate(
     );
@@ -297,11 +298,11 @@ public:
 
   //@}
 
-  
+
   //! @name methods for turbulence models (dynamic Smagorinsky)
-  
+
   void ApplyFilterForDynamicComputationOfCs();
-  
+
    //@}
 
 protected:
@@ -334,7 +335,7 @@ private:
   double                           alphaM_;
   double                           alphaF_;
 
-  // parameter for linearisation 
+  // parameter for linearisation
   bool                             newton_;
 
   // write restart every uprestart_ steps --- restartstep_ is
@@ -400,16 +401,12 @@ private:
 
   // Vectors used for convergence check
   // ----------------------------------
-  RefCountPtr<Epetra_Map>          velrowmap_;
-  RefCountPtr<Epetra_Map>          prerowmap_;
 
-  RefCountPtr<Epetra_Vector>       onlyvel;
-  RefCountPtr<Epetra_Vector>       onlypre;
-
+  DRT::UTILS::MapExtractor      velpressplitter_;
 
   // connectivity generated from periodic boundary conditions
   // --------------------------------------------------------
-  // 
+  //
   // (the connection between master and slave nodes on this proc)
   map<int,vector<int> > mapmastertoslave_;
 
