@@ -2,7 +2,7 @@
 \file fluid_dyn_nln_drt.cpp
 \brief Control routine for fluid time integration. Includes
 
-     o Singele step one-step-theta time integration
+     o Single step one-step-theta time integration
 
      o Two step BDF2 Gear's methode with one-step-theta start step
 
