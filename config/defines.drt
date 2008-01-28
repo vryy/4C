@@ -24,6 +24,7 @@ CCADISCRET           # use new baci discretization subsystem DRT
 # D_THERM3           # spatial thermal element
 # D_SOLID3           # spatial solid element
 # D_SOH8             # spatial 8-node hex element for new discretization
+# D_BEAM2            # two dimensional beam element (Bernoulli)
 
 
 #   problem types
