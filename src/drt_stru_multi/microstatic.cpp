@@ -288,12 +288,6 @@ void MicroStatic::Predictor(const Epetra_SerialDenseMatrix* defgrd)
 
   //------------------------------------------------ build residual norm
   double fresmnorm = 1.0;
-  if (printscreen)
-    fresm_->Norm2(&fresmnorm);
-  if (!myrank_ && printscreen)
-  {
-    PrintPredictor(convcheck, fresmnorm);
-  }
 
   // store norms of displacements and maximum of norms of internal,
   // external and inertial forces if a relative convergence check
@@ -301,6 +295,13 @@ void MicroStatic::Predictor(const Epetra_SerialDenseMatrix* defgrd)
   if (time == 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
   {
     CalcRefNorms();
+  }
+
+  if (printscreen)
+    fresm_->Norm2(&fresmnorm);
+  if (!myrank_ && printscreen)
+  {
+    PrintPredictor(convcheck, fresmnorm);
   }
 
   return;

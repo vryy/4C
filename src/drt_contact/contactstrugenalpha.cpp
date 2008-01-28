@@ -413,7 +413,7 @@ void ContactStruGenAlpha::ConstantPredictor()
   }
 
   // increment time and step
-  double timen = time += dt;
+  double timen = time + dt;
   //int istep = step + 1;
 
   //--------------------------------------------------- predicting state
@@ -521,12 +521,6 @@ void ContactStruGenAlpha::ConstantPredictor()
 
   //------------------------------------------------ build residual norm
   double fresmnorm = 1.0e6;
-  if (printscreen)
-    fresm_->Norm2(&fresmnorm);
-  if (!myrank_ && printscreen)
-  {
-    PrintPredictor(convcheck, fresmnorm);
-  }
 
   // store norms of displacements and maximum of norms of internal,
   // external and inertial forces if a relative convergence check
@@ -534,6 +528,13 @@ void ContactStruGenAlpha::ConstantPredictor()
   if (time == 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
   {
     CalcRefNorms();
+  }
+
+  if (printscreen)
+    fresm_->Norm2(&fresmnorm);
+  if (!myrank_ && printscreen)
+  {
+    PrintPredictor(convcheck, fresmnorm);
   }
 
   return;
