@@ -583,7 +583,7 @@ void ContactStruGenAlpha::FullNewton()
   timer.ResetStartTime();
   bool print_unconv = true;
 
-  while (Unconverged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter<=maxiter)
+  while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs

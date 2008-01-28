@@ -142,9 +142,9 @@ public:
                  Epetra_SerialDenseMatrix* cmat,
                  const Epetra_SerialDenseMatrix* F);
 
-  bool Unconverged(const string type, const double disinorm,
-                   const double resnorm, const double toldisp,
-                   const double tolres);
+  bool Converged(const string type, const double disinorm,
+                 const double resnorm, const double toldisp,
+                 const double tolres);
 
   void CalcRefNorms();
 

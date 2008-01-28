@@ -335,7 +335,7 @@ void MicroStatic::FullNewton()
   timer.ResetStartTime();
   bool print_unconv = true;
 
-  while (Unconverged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter<=maxiter)
+  while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter<=maxiter)
   {
 
     //----------------------- apply dirichlet BCs to system of equations
@@ -770,40 +770,40 @@ void MicroStatic::SetUpHomogenization()
 /*----------------------------------------------------------------------*
  |  check convergence of Newton iteration (public)              lw 12/07|
  *----------------------------------------------------------------------*/
-bool MicroStatic::Unconverged(const string type, const double disinorm,
-                              const double resnorm, const double toldisp,
-                              const double tolres)
+bool MicroStatic::Converged(const string type, const double disinorm,
+                            const double resnorm, const double toldisp,
+                            const double tolres)
 {
   if (type == "AbsRes_Or_AbsDis")
   {
-    return (disinorm>toldisp && resnorm>tolres);
+    return (disinorm<toldisp or resnorm<tolres);
   }
   else if (type == "AbsRes_And_AbsDis")
   {
-    return (disinorm>toldisp || resnorm>tolres);
+    return (disinorm<toldisp and resnorm<tolres);
   }
   else if (type == "RelRes_Or_AbsDis")
   {
     if (ref_fnorm_ == 0.) ref_fnorm_ = 1.0;
-    return (disinorm>toldisp && (resnorm/ref_fnorm_)>tolres);
+    return (disinorm<toldisp or (resnorm/ref_fnorm_)<tolres);
   }
   else if (type == "RelRes_And_AbsDis")
   {
     if (ref_fnorm_ == 0.) ref_fnorm_ = 1.0;
-    return (disinorm>toldisp || (resnorm/ref_fnorm_)>tolres);
+    return (disinorm<toldisp and (resnorm/ref_fnorm_)<tolres);
   }
   else if (type == "RelRes_Or_RelDis")
   {
     if (ref_fnorm_ == 0.) ref_fnorm_ = 1.0;
     if (ref_disnorm_ == 0.) ref_disnorm_ = 1.0;
-    return ((disinorm/ref_disnorm_)>toldisp && (resnorm/ref_fnorm_)>tolres);
+    return ((disinorm/ref_disnorm_)<toldisp or (resnorm/ref_fnorm_)<tolres);
   }
   else if (type == "RelRes_And_RelDis")
   {
     if (ref_fnorm_ == 0.) ref_fnorm_ = 1.0;
     if (ref_disnorm_ == 0.) ref_disnorm_ = 1.0;
 
-    return ((disinorm/ref_disnorm_)>toldisp || (resnorm/ref_fnorm_)>tolres);
+    return ((disinorm/ref_disnorm_)<toldisp and (resnorm/ref_fnorm_)<tolres);
   }
   else
   {

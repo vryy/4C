@@ -926,7 +926,7 @@ void StruGenAlpha::FullNewton()
   timer.ResetStartTime();
   bool print_unconv = true;
 
-  while (Unconverged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter<=maxiter)
+  while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
@@ -1173,7 +1173,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   bool print_unconv = true;
 
 
-  while (Unconverged(convcheck, disinorm, fresmnorm, volnorm, toldisp, tolres, tolvol)
+  while (!Converged(convcheck, disinorm, fresmnorm, volnorm, toldisp, tolres, tolvol)
          && numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
@@ -1529,7 +1529,7 @@ void StruGenAlpha::ModifiedNewton()
   timer.ResetStartTime();
   bool print_unconv = true;
 
-  while (Unconverged(convcheck, disinorm, fresmnorm, toldisp, tolres)  && numiter<=maxiter)
+  while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres)  && numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
     //----------------------- apply dirichlet BCs to system of equations
@@ -1699,7 +1699,7 @@ void StruGenAlpha::MatrixFreeNewton()
   timer.ResetStartTime();
   bool print_unconv = true;
 
-  while (Unconverged(convcheck, disinorm, fresmnorm, toldisp, tolres)  && numiter<=maxiter)
+  while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres)  && numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
     //----------------------- apply dirichlet BCs to system of equations
@@ -2196,7 +2196,7 @@ void StruGenAlpha::PTC()
   timer.ResetStartTime();
   bool print_unconv = true;
 
-  while (Unconverged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter<=maxiter)
+  while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter<=maxiter)
   {
     double dtim = dti0;
     dti0 = dti;
@@ -3157,39 +3157,39 @@ void StruGenAlpha::SetTimeStep(const int& stp)
 /*----------------------------------------------------------------------*
  |  check convergence of Newton iteration (public)              lw 12/07|
  *----------------------------------------------------------------------*/
-bool StruGenAlpha::Unconverged(const string type, const double disinorm,
-                               const double resnorm, const double toldisp,
-                               const double tolres)
+bool StruGenAlpha::Converged(const string type, const double disinorm,
+                             const double resnorm, const double toldisp,
+                             const double tolres)
 {
   if (type == "AbsRes_Or_AbsDis")
   {
-    return (disinorm>toldisp && resnorm>tolres);
+    return (disinorm<toldisp or resnorm<tolres);
   }
   else if (type == "AbsRes_And_AbsDis")
   {
-    return (disinorm>toldisp || resnorm>tolres);
+    return (disinorm<toldisp and resnorm<tolres);
   }
   else if (type == "RelRes_Or_AbsDis")
   {
     if (ref_fnorm_ == 0.) ref_fnorm_ = 1.0;
-    return (disinorm>toldisp && (resnorm/ref_fnorm_)>tolres);
+    return (disinorm<toldisp or (resnorm/ref_fnorm_)<tolres);
   }
   else if (type == "RelRes_And_AbsDis")
   {
     if (ref_fnorm_ == 0.) ref_fnorm_ = 1.0;
-    return (disinorm>toldisp || (resnorm/ref_fnorm_)>tolres);
+    return (disinorm<toldisp and (resnorm/ref_fnorm_)<tolres);
   }
   else if (type == "RelRes_Or_RelDis")
   {
     if (ref_fnorm_ == 0.) ref_fnorm_ = 1.0;
     if (ref_disnorm_ == 0.) ref_disnorm_ = 1.0;
-    return ((disinorm/ref_disnorm_)>toldisp && (resnorm/ref_fnorm_)>tolres);
+    return ((disinorm/ref_disnorm_)<toldisp or (resnorm/ref_fnorm_)<tolres);
   }
   else if (type == "RelRes_And_RelDis")
   {
     if (ref_fnorm_ == 0.) ref_fnorm_ = 1.0;
     if (ref_disnorm_ == 0.) ref_disnorm_ = 1.0;
-    return ((disinorm/ref_disnorm_)>toldisp || (resnorm/ref_fnorm_)>tolres);
+    return ((disinorm/ref_disnorm_)<toldisp and (resnorm/ref_fnorm_)<tolres);
   }
   else
   {
@@ -3202,12 +3202,12 @@ bool StruGenAlpha::Unconverged(const string type, const double disinorm,
  |  check convergence of Newton iteration (public)              tk 01/08|
  |  take the volume constraint into account as well                     |
  *----------------------------------------------------------------------*/
-bool StruGenAlpha::Unconverged(const string type, const double disinorm,
+bool StruGenAlpha::Converged(const string type, const double disinorm,
         const double resnorm, const double volnorm,
         const double toldisp, const double tolres,
         const double tolvol)
 {
-	return (Unconverged(type,disinorm, resnorm, toldisp,tolres)|| (volnorm>tolvol));
+	return (Converged(type,disinorm, resnorm, toldisp,tolres) and (volnorm<tolvol));
 }
 
 /*----------------------------------------------------------------------*

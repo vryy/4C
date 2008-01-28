@@ -133,7 +133,7 @@ public:
   */
   virtual void FullNewton();
 
- 
+
 
   /*!
     \brief do classical augmented lagrange for volume constraint
@@ -217,7 +217,7 @@ public:
   virtual void ReadRestart(int step);
 
   /*!
-  \brief return displacements at midpoint
+  \brief return displacement increments at midpoint
 
   */
   virtual const Epetra_Vector& Getdu() { return *disi_; }
@@ -256,24 +256,24 @@ public:
   \brief Check convergence of Newton iteration
 
   */
-  virtual bool Unconverged(const string type, const double disinorm,
-                           const double resnorm, const double toldisp,
-                           const double tolres);
+  virtual bool Converged(const string type, const double disinorm,
+                         const double resnorm, const double toldisp,
+                         const double tolres);
 
   /*!
   \brief Check convergence of Newton iteration
   */
-  virtual bool Unconverged(	const string type, const double disinorm,
-		  					const double resnorm, const double volnorm, 
-		  					const double toldisp, const double tolres,
-		  					const double tolvol);
-  
+  virtual bool Converged(const string type, const double disinorm,
+                         const double resnorm, const double volnorm,
+                         const double toldisp, const double tolres,
+                         const double tolvol);
+
   /*!
   \brief Determine reference norm of displacements and maximum of
   norms of internal, external and inertial forces
 
   */
-  
+
   virtual void CalcRefNorms();
 
   /*!
@@ -284,7 +284,7 @@ public:
                            FILE* errfile, Epetra_Time timer, int numiter,
                            int maxiter, double fresmnorm, double disinorm,
                            string convcheck);
-  
+
   /*!
     \brief Print Newton output to screen and/or error file considering volume constraints
 
@@ -379,6 +379,8 @@ protected:
 
   double                        ref_disnorm_;
   double                        ref_fnorm_;
+
+  double                        V0_;
 
   RefCountPtr<ConstrManager>   ConstrMan_;
 
