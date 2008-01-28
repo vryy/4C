@@ -223,7 +223,7 @@ void ContactStruGenAlpha::ConsistentPredictor()
   // -------------------------------------------------------------------
   double time        = params_.get<double>("total time"     ,0.0);
   double dt          = params_.get<double>("delta time"     ,0.01);
-  //int    step        = params_.get<int>   ("step"           ,0);
+  int    step        = params_.get<int>   ("step"           ,0);
   bool   damping     = params_.get<bool>  ("damping"        ,false);
   double alphaf      = params_.get<double>("alpha f"        ,0.459);
   double alpham      = params_.get<double>("alpha m"        ,0.378);
@@ -236,7 +236,7 @@ void ContactStruGenAlpha::ConsistentPredictor()
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces if a relative convergence
   // check is desired
-  if (time != 0. && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
+  if (step != 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
   {
     CalcRefNorms();
   }
@@ -370,7 +370,7 @@ void ContactStruGenAlpha::ConsistentPredictor()
   // store norms of displacements and maximum of norms of internal,
   // external and inertial forces if a relative convergence check
   // is desired and we are in the first time step
-  if (time == 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
+  if (step == 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
   {
     CalcRefNorms();
   }
@@ -397,7 +397,7 @@ void ContactStruGenAlpha::ConstantPredictor()
   // -------------------------------------------------------------------
   double time        = params_.get<double>("total time"     ,0.0);
   double dt          = params_.get<double>("delta time"     ,0.01);
-  //int    step        = params_.get<int>   ("step"           ,0);
+  int    step        = params_.get<int>   ("step"           ,0);
   bool   damping     = params_.get<bool>  ("damping"        ,false);
   double alphaf      = params_.get<double>("alpha f"        ,0.459);
   bool   printscreen = params_.get<bool>  ("print to screen",false);
@@ -407,7 +407,7 @@ void ContactStruGenAlpha::ConstantPredictor()
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces if a relative convergence
   // check is desired
-  if (time != 0. && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
+  if (step != 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
   {
     CalcRefNorms();
   }
@@ -525,7 +525,7 @@ void ContactStruGenAlpha::ConstantPredictor()
   // store norms of displacements and maximum of norms of internal,
   // external and inertial forces if a relative convergence check
   // is desired and we are in the first time step
-  if (time == 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
+  if (step == 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
   {
     CalcRefNorms();
   }
