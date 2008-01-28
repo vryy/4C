@@ -198,7 +198,7 @@ using namespace std;
 #define ParObject_So_shw6               (int)77
 #define ParObject_Soshw6Register        (int)78
 #define ParObject_AnisotropicBalzani    (int)79
-#define ParObject_Beam2					(int)80
+#define ParObject_Beam2	                (int)80
 #define ParObject_DGFluid2              (int)81
 #define ParObject_DGFluid2Register      (int)82
 #define ParObject_DGFluid2Interface 	(int)83
@@ -207,6 +207,7 @@ using namespace std;
 #define ParObject_DGFluid3Register      (int)86
 #define ParObject_DGFluid3Interface 	(int)87
 #define ParObject_DGFluid3InterfaceRegister     (int)88
+#define ParObject_Beam2Register	        (int)80
 
 /*!
 \brief DRT: namespace of the ccarat discretization module
