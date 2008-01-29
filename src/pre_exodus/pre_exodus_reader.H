@@ -45,7 +45,6 @@ inline const int eid(const int storeid) {return storeid-1;}
 class ElementBlock;
 class NodeSet;
 class SideSet;
-class PreNode;
 
 /*!
 \class Mesh
@@ -67,6 +66,9 @@ public:
   //! Print mesh info
   void Print(ostream& os, bool verbose = false) const;
   
+  //! Print Nodes and Coords
+  void PrintNodes(ostream& os, bool storeid=false) const;
+  
   //! Get numer of nodes in mesh
   int GetNumNodes() const {return num_nodes_;}
   
@@ -85,16 +87,23 @@ public:
   //! Get NodeSet map
   map<int,NodeSet> GetNodeSets() const {return nodeSets_;}
   
-  //! Get Number of ElementBlocks
+  //! Get Number of NodeSets
   int GetNumNodeSets() const {return nodeSets_.size();}
   
   //! Get SideSet map
   map<int,SideSet> GetSideSets() const {return sideSets_;}
   
-  //! Get Number of ElementBlocks
+  //! Get Number of SideSets
   int GetNumSideSets() const {return sideSets_.size();}
   
-  RCP<PreNode> GetNode (const int NodeID) const { const int id = eid(NodeID); return myNodes_[id];};
+  //! Get Node map
+  map<int,vector<double> > GetNodes() const {return nodes_;}
+  
+  //! Get one nodal coords, accessed by ExoID
+  vector<double> GetNodeExo(const int ExoNodeID) const;
+  
+  //! Get one nodal coords, accessed by MapID
+  vector<double> GetNodeMap(const int MapNodeID) const;
 
   //! Close Exodus File
   void CloseExo();
@@ -106,7 +115,7 @@ public:
   void AddElementBlock(const EXODUS::ElementBlock eblock) const;
 
 private:
-  vector<RCP<PreNode> > myNodes_;
+  map<int,vector<double> > nodes_;
   
   map<int,ElementBlock> elementBlocks_;
   

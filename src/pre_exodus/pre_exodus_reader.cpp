@@ -62,14 +62,13 @@ EXODUS::Mesh::Mesh(string exofilename)
   error = ex_get_coord(exoid_,x,y,z);
   if (error != 0) dserror("exo error returned");
   
-  // create node pointer 
-  myNodes_.reserve(num_nodes_);
+  // store nodes in map
   for (int i = 0; i < num_nodes_; ++i) {
-    double coords[3];
-    coords[0] = x[i];
-    coords[1] = y[i];
-    coords[2] = z[i];
-    myNodes_[i] = rcp(new PreNode(i,coords));
+    vector<double> coords;
+    coords.push_back(x[i]);
+    coords.push_back(y[i]);
+    coords.push_back(z[i]);
+    nodes_.insert(std::pair<int,vector<double> >(i,coords));
   }
 
   // Get all ElementBlocks
@@ -245,6 +244,34 @@ void EXODUS::Mesh::Print(ostream & os, bool verbose) const
   }
 }
 
+void EXODUS::Mesh::PrintNodes(ostream& os, bool storeid) const
+{
+  map<int,vector<double> >::const_iterator it;
+  for (it=nodes_.begin(); it != nodes_.end(); it++){
+    if (storeid) os << "MapID: " << it->first;
+    int exoid = it->first + 1;
+    os << " ExoID: " << exoid << " : ";
+    const vector<double> mycoords = it->second;
+    for (int i=0; i < signed(mycoords.size()); i++ ){
+      os << mycoords[i] << ",";
+    }
+    os << endl;
+  }
+}
+
+vector<double> EXODUS::Mesh::GetNodeExo(const int ExoNodeID) const
+{
+  int mapID = ExoNodeID - 1;
+  map<int,vector<double> >::const_iterator  it = nodes_.find(mapID);
+  return it->second;
+}
+
+vector<double> EXODUS::Mesh::GetNodeMap(const int MapNodeID) const
+{
+  map<int,vector<double> >::const_iterator  it = nodes_.find(MapNodeID);
+  return it->second;
+}
+
 /*----------------------------------------------------------------------*
  |  Write Mesh into exodus file (public)                                maf 01/08|
  *----------------------------------------------------------------------*/
@@ -300,11 +327,13 @@ void EXODUS::Mesh::WriteMesh(string newexofilename)
   float x[num_nodes_];
   float y[num_nodes_];
   float z[num_nodes_];
-  for (int i = 1; i <= num_nodes_; ++i) {
-    RCP<PreNode> actnode = GetNode(i);
-    x[i] = actnode->X()[0];
-    y[i] = actnode->X()[1];
-    z[i] = actnode->X()[2];
+  map<int,vector<double> >::const_iterator it;
+  map<int,vector<double> > nodes = GetNodes();
+  for(it=nodes.begin(); it != nodes.end(); ++it){
+    vector<double> coords = it->second;
+    x[it->first] = coords[0];
+    y[it->first] = coords[1];
+    z[it->first] = coords[2];
   }
   error = ex_put_coord (exoid, x, y, z);
 

@@ -28,10 +28,11 @@ using namespace Teuchos;
 EXODUS::Soshextrusion::Soshextrusion(string exofilename,double thickness,int layers) :
 Mesh(exofilename)
 {
-  for (int i = 1; i <= GetNumNodes(); ++i) {
-    RCP<PreNode> actnode = GetNode(i);
-    actnode->Print(cout, true);
-  }
+//  for (int i = 1; i <= GetNumNodes(); ++i) {
+//    RCP<PreNode> actnode = GetNode(i);
+//    actnode->Print(cout, true);
+//  }
+  PrintNodes(cout,true);
   
   int highestnode = GetNumNodes();
   
@@ -70,8 +71,8 @@ Mesh(exofilename)
       copyele.SetNodeIds(actelenodes.size(), &actelenodes[0]);
       //copyele.Print(cout);
       for (int inode = 0; inode < signed(actelenodes.size()); ++inode) {
-        RCP<EXODUS::PreNode> actnode = GetNode(actelenodes[inode]);
-        int newid = newelenodes[inode];
+        //RCP<EXODUS::PreNode> actnode = GetNode(actelenodes[inode]);
+        //int newid = newelenodes[inode];
         //PreNode* newnode = ExtrapolateNode(&actnode, newid);
         //actnode->Print(cout);
       }
@@ -116,11 +117,11 @@ vector<int> EXODUS::Soshextrusion::RiseNodes(const int highestnode, const vector
   return newnodes;
 }
 
-EXODUS::PreNode* EXODUS::Soshextrusion::ExtrapolateNode(PreNode& actnode, const int newid)
-{
-  EXODUS::PreNode* newnode = new PreNode(actnode);
-  return newnode;
-}
+//EXODUS::PreNode* EXODUS::Soshextrusion::ExtrapolateNode(PreNode& actnode, const int newid)
+//{
+//  EXODUS::PreNode* newnode = new PreNode(actnode);
+//  return newnode;
+//}
 
 
 #endif
