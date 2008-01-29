@@ -75,7 +75,6 @@ main is only printing the ccarat head and the finish
 ------------------------------------------------------------------------*/
 INT main(INT argc, char *argv[])
 {
-static char release[13] = "03_20050823*";
 #ifdef PARALLEL
 static char *buff,*dbuff;
 INT          buffsize=MPIBUFFSIZE;
@@ -97,27 +96,27 @@ par.nprocs=1;
 #endif
 if (par.myrank==0)
 {
-   printf("\n");
-   printf("****************************************\n");
-   printf("*                                      *\n");
-   printf("*               B A C I                *\n");
-   printf("*                                      *\n");
-   printf("*                                      *\n");
+   printf("\n"
+          "****************************************\n"
+          "*                                      *\n"
+          "*               B A C I                *\n"
+          "*                                      *\n"
+          "*                                      *\n"
+          "*            revision %5s            *\n"
 #ifdef PARALLEL
-   printf("*           parallel version           *\n");
+          "*           parallel version           *\n"
 #else
-   printf("*          sequential version          *\n");
+          "*          sequential version          *\n"
 #endif
-   printf("*                                      *\n");
-   printf("*         Release: %s        *\n",release);
-   printf("*                                      *\n");
-   printf("*  Lehrstuhl fuer Numerische Mechanik  *\n");
-   printf("*                 LNM                  *\n");
-   printf("*   Technische Universitaet Muenchen   *\n");
-   printf("*                                      *\n");
-   printf("*    (c) 2007 All Rights Reserved.     *\n");
-   printf("*                                      *\n");
-   printf("****************************************\n\n");
+          "*                                      *\n"
+          "*  Lehrstuhl fuer Numerische Mechanik  *\n"
+          "*                 LNM                  *\n"
+          "*   Technische Universitaet Muenchen   *\n"
+          "*                                      *\n"
+          "*    (c) 2007 All Rights Reserved.     *\n"
+          "*                                      *\n"
+          "****************************************\n\n",
+          CHANGEDREVISION);
 #ifdef PARALLEL
    printf("number of processors: %d\n",par.nprocs);
 #endif
