@@ -482,7 +482,7 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
       double curvefac = 1.0;
       if (curvenum>=0 && usetime)
           curvefac = UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
-      params.set("LoadCurveFactor",curvefac);
+      
 
       // Get ConditionID of current condition if defined and write value in parameterlist
       const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
@@ -492,9 +492,11 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
       }
       else 
       {
-    	  dserror("cannot use multivector version condition evaluation for conditions without ConditionID");
+    	  dserror("Cannot use multivector version condition evaluation for conditions without ConditionID");
       }
-      
+	  char factorname[30];
+	  sprintf(factorname,"LoadCurveFactor %d",(*CondIDVec)[0]);
+	  params.set(factorname,curvefac);
 
       params.set<RefCountPtr<DRT::Condition> >("condition", fool->second);
 

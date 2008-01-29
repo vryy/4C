@@ -51,7 +51,7 @@ actdisc_(discr)
 		// sum up initial values
 		initialvalues_=rcp(new Epetra_SerialDenseVector(numConstrID_));
 		initialvalues_->Scale(0.0);
-		SynchronizeConstraint(p,initialvalues_,"computed volume");
+		SynchronizeSumConstraint(p,initialvalues_,"computed volume");
 		//Initialize Lagrange Multiplicators, reference values and errors
 		lagrMultVec_=rcp(new Epetra_SerialDenseVector(numConstrID_));
 		lagrMultInc_=rcp(new Epetra_SerialDenseVector(numConstrID_));
@@ -64,7 +64,7 @@ actdisc_(discr)
 		constrainterr_=rcp(new Epetra_SerialDenseVector(numConstrID_));
 		const Epetra_Map* dofrowmap = actdisc_.DofRowMap();
 		constrVec_=rcp(new Epetra_MultiVector(*dofrowmap,numConstrID_));
-		fact_=1;
+		fact_=rcp(new Epetra_SerialDenseVector(numConstrID_));
 	}
 	return;
 }
@@ -106,13 +106,13 @@ void ConstrManager::StiffnessAndInternalForces(
 	constrVec_->PutScalar(0.0);
 	actdisc_.EvaluateCondition(p,stiff,fint,"VolumeConstraint_3D",constrVec_);
     actvalues_->Scale(0.0);
-    SynchronizeConstraint(p,actvalues_,"computed volume");
-    fact_=p.get("LoadCurveFactor",1.0);
+    SynchronizeSumConstraint(p,actvalues_,"computed volume");
+    SynchronizeMinConstraint(p,fact_,"LoadCurveFactor");
     *referencevalues_=*initialvalues_;
-    referencevalues_->Scale(fact_);
     for (int iter = 0; iter < numConstrID_; ++iter) 
     {
-	  (*constrainterr_)[iter]=(*referencevalues_)[iter]-(*actvalues_)[iter];
+    	(*referencevalues_)[iter]*=(*fact_)[iter];
+    	(*constrainterr_)[iter]=(*referencevalues_)[iter]-(*actvalues_)[iter];
     } 
     actdisc_.ClearState();
     // do NOT finalize the stiffness matrix, add mass and damping to it later	
@@ -127,7 +127,7 @@ void ConstrManager::ComputeError(double time,RCP<Epetra_Vector> disp)
     actdisc_.SetState("displacement",disp);
     actdisc_.EvaluateCondition(p,"VolumeConstraint_3D");
     actvalues_->Scale(0.0);
-    SynchronizeConstraint(p, actvalues_,"computed volume");
+    SynchronizeSumConstraint(p, actvalues_,"computed volume");
     for (int iter = 0; iter < numConstrID_; ++iter) 
     {
 	  (*constrainterr_)[iter]=(*referencevalues_)[iter]-(*actvalues_)[iter];
@@ -200,19 +200,40 @@ void ConstrManager::ManageIDs(ParameterList& params)
 /*----------------------------------------------------------------------*
  |(private)                                                 tk 11/07    |
  |small subroutine to synchronize processors after evaluating the       |
- |constraint volume                                              		|
+ |constraints by summing them up                                              		|
  *----------------------------------------------------------------------*/
-void ConstrManager::SynchronizeConstraint(ParameterList& params,
+void ConstrManager::SynchronizeSumConstraint(ParameterList& params,
 								RCP<Epetra_SerialDenseVector>& vect,
 								const char* resultstring)
 {
 	for (int i = 0; i < numConstrID_; ++i) 
 	{
-		char volname[30];	
-		sprintf(volname,"%s %d",resultstring,i+minConstrID_);
-		double currvol;
-		actdisc_.Comm().SumAll(&(params.get(volname,0.0)),&(currvol),1);
-		(*vect)[i]=currvol;
+		char valname[30];	
+		sprintf(valname,"%s %d",resultstring,i+minConstrID_);
+		double currval;
+		actdisc_.Comm().SumAll(&(params.get(valname,0.0)),&(currval),1);
+		(*vect)[i]=currval;
+	}
+	return;
+}
+
+/*----------------------------------------------------------------------*
+ |(private)                                                 tk 11/07    |
+ |small subroutine to synchronize processors after evaluating the       |
+ |constraint by finding minimum value                                              		|
+ *----------------------------------------------------------------------*/
+void ConstrManager::SynchronizeMinConstraint(ParameterList& params,
+								RCP<Epetra_SerialDenseVector>& vect,
+								const char* resultstring)
+{
+	for (int i = 0; i < numConstrID_; ++i) 
+	{
+		char valname[30];	
+		sprintf(valname,"%s %d",resultstring,i+minConstrID_);
+		double currval;
+		actdisc_.Comm().MinAll(&(params.get(valname,1.0)),&(currval),1);
+		(*vect)[i]=currval;
+		cout<<(*vect)[i]<<endl;
 	}
 	return;
 }

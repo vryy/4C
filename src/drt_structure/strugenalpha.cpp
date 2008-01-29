@@ -175,6 +175,7 @@ maxentriesperrow_(81)
       discret_.Evaluate(p,stiff_,mass_,fint_,null,null);
       discret_.ClearState();
 
+      //initialize Constraint Manager
       ConstrMan_=rcp(new ConstrManager(discret_, dis_));
 
       // Check for surface stress conditions due to interfacial phenomena

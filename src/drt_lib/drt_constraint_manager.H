@@ -204,13 +204,20 @@ private:
 	  //! name@ Private Member Functions 	
 	  //methods used by constructor and other public functions
 	  /*!
-	    \brief synchronize processors after evaluating constraint volume 
+	    \brief synchronize processors after evaluating constraints 
 
 	  */  
 	
-	  void SynchronizeConstraint(ParameterList& params,
+	  void SynchronizeSumConstraint(ParameterList& params,
 				RCP<Epetra_SerialDenseVector>& vect,const char* resultstr);
 	  
+	  /*!
+	    \brief synchronize processors after evaluating constraints 
+
+	  */  
+	
+	  void SynchronizeMinConstraint(ParameterList& params,
+				RCP<Epetra_SerialDenseVector>& vect,const char* resultstr);
 	  /*!
 	      \brief Setup separate dofrowmaps for any condition ID and initialize lagrange multiplier
 
@@ -236,7 +243,7 @@ private:
 	int minConstrID_;
 	int maxConstrID_;
 	int numConstrID_;
-	double fact_; 
+	RefCountPtr<Epetra_SerialDenseVector> fact_; 
 	RefCountPtr<Epetra_SerialDenseVector> lagrMultVec_;
 	RefCountPtr<Epetra_SerialDenseVector> lagrMultInc_;
 	map<int, RCP<Epetra_Map> > voldofrowmaps_;
