@@ -19,6 +19,8 @@ Maintainer: Peter Gamnitzer
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include <stdio.h>
+
 #include "fluidimplicitintegration.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/drt_periodicbc.H"
@@ -773,6 +775,14 @@ void FluidImplicitTimeInt::NonlinearSolve()
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
           printf(" (ts=%10.3E,te=%10.3E)\n",dtsolve,dtele);
           printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
+
+          FILE* errfile = params_.get<FILE*>("err file",NULL);
+          if (errfile!=NULL)
+          {
+            fprintf(errfile,"fluid solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
+                    itnum,itemax,ittol,vresnorm,presnorm,
+                    incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
+          }
         }
         break;
       }
@@ -798,6 +808,14 @@ void FluidImplicitTimeInt::NonlinearSolve()
         printf("+---------------------------------------------------------------+\n");
         printf("|            >>>>>> not converged in itemax steps!              |\n");
         printf("+---------------------------------------------------------------+\n");
+
+        FILE* errfile = params_.get<FILE*>("err file",NULL);
+        if (errfile!=NULL)
+        {
+          fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
+                  itnum,itemax,ittol,vresnorm,presnorm,
+                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
+        }
       }
       break;
     }

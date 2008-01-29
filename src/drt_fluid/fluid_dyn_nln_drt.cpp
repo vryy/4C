@@ -220,6 +220,8 @@ void dyn_fluid_drt()
       }
     }
 
+    fluidtimeparams.set<FILE*>("err file",allfiles.out_err);
+
     //--------------------------------------------------
     // do the time integration (start algo and standard algo)
     fluidimplicit.Integrate();

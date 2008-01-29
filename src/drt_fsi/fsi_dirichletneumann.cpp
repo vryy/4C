@@ -603,6 +603,7 @@ void FSI::DirichletNeumannCoupling::SetupFluid()
   int init = Teuchos::getIntegralValue<int>(fdyn,"INITIALFIELD");
   fluidtimeparams->set                  ("eval err for analyt sol"   ,init);
 
+  fluidtimeparams->set<FILE*>("err file",allfiles.out_err);
 
   //--------------------------------------------------
   // create all vectors and variables associated with the time
