@@ -220,11 +220,25 @@ void CONTACT::Manager::Print(ostream& os) const
 }
 
 /*----------------------------------------------------------------------*
+ |  initialize contact for next Newton step (public)          popp 01/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Manager::Initialize()
+{
+  // initialize / reset interfaces
+	for (int i=0; i<(int)interface_.size(); ++i)
+  {
+	  interface_[i]->Initialize();
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  set current deformation state (public)                    popp 11/07|
  *----------------------------------------------------------------------*/
 void CONTACT::Manager::SetState(const string& statename, const RCP<Epetra_Vector> vec)
 {
-  for (int i=0; i<(int)interface_.size(); ++i)
+  // set state on interfaces
+	for (int i=0; i<(int)interface_.size(); ++i)
   {
 	  interface_[i]->SetState(statename,vec);
   }
@@ -236,7 +250,9 @@ void CONTACT::Manager::SetState(const string& statename, const RCP<Epetra_Vector
  *----------------------------------------------------------------------*/
 void CONTACT::Manager::Evaluate()
 {
-  for (int i=0; i<(int)interface_.size(); ++i)
+  // evaluate interfaces
+	// (nodal normals, projections, Mortar integration)
+	for (int i=0; i<(int)interface_.size(); ++i)
   {
 	  interface_[i]->Evaluate();
   }

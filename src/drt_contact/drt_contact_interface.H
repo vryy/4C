@@ -279,6 +279,12 @@ public:
   virtual void FillComplete();
   
   /*!
+  \brief Initialize / reset interface for contact
+  
+  */
+  virtual void Initialize();
+  
+  /*!
   \brief Set current deformation state
     
   */

@@ -93,6 +93,12 @@ public:
   inline DRT::Discretization& Discret() const { return discret_;};
   
   /*!
+  \brief Initialize contact for next Newton step
+  
+  */
+  void Initialize();
+  
+  /*!
   \brief Set current deformation state
   
   */

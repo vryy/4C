@@ -597,10 +597,10 @@ void ContactStruGenAlpha::FullNewton()
 
     //-------------------------make contact modifications to lhs and rhs
     {
+    	contactmanager_->Initialize();
     	contactmanager_->SetState("displacement",dism_);
     	// (almost) all contact stuff is done here!
     	contactmanager_->Evaluate();
-
     }
 
     //----------------------- apply dirichlet BCs to system of equations

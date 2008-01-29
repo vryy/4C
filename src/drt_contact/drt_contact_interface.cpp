@@ -244,28 +244,72 @@ void CONTACT::Interface::FillComplete()
 }
 
 /*----------------------------------------------------------------------*
+ |  initiliaze / reset interface for contact                  popp 01/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Interface::Initialize()
+{
+	// loop over all nodes to reset normals, closestnode and Mortar maps
+	// (use fully overlapping column map)
+	for (int i=0;i<idiscret_->NumMyColNodes();++i)
+	{
+		CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(i));
+		
+		//reset nodal normal vector
+		for (int j=0;j<3;++j)
+			node->n()[j]=0.0;
+		
+		// reset closest node
+		// (FIXME: at the moment we do not need this info. in the next
+		// iteration, but it might be helpful for accelerated search!!!)
+		node->ClosestNode() = -1;
+		
+		// reset nodal Mortar maps
+		for (int j=0;j<(int)((node->GetD()).size());++j)
+			(node->GetD())[j].clear();
+		for (int j=0;j<(int)((node->GetM()).size());++j)
+		  (node->GetM())[j].clear();
+		for (int j=0;j<(int)((node->GetMmod()).size());++j)
+		  (node->GetMmod())[j].clear();
+		
+		// reset nodal weighted gap
+		node->Getg() = 0.0;
+	}
+	
+	// loop over all elements to set current element length / area
+	// and to reset contact candidates / search lists
+	// (use fully overlapping column map)
+	for (int i=0;i<idiscret_->NumMyColElements();++i)
+	{
+		CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
+		element->Area()=element->ComputeArea();
+		element->SearchElements().resize(0);
+	}
+	
+	// reset matrix containing interface contact segments (gmsh)
+	CSegs().Shape(0,0);
+	
+	return;
+}
+
+/*----------------------------------------------------------------------*
  |  set current deformation state                             popp 12/07|
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::SetState(const string& statename, const RCP<Epetra_Vector> vec)
 {
-  idiscret_->SetState(statename, vec);
+	if (statename=="displacement")
+	{
+		// set displacements in interface discretization
+		idiscret_->SetState(statename, vec);
   
-  // Get vec to full overlap
-  //Epetra_Vector global(*idiscret_->DofColMap(),false);
-  //LINALG::Export(*vec,global);
-  
-  // Alternative method to get vec to full overlap
-  RCP<const Epetra_Vector> global = idiscret_->GetState(statename);
+		// Get vec to full overlap
+		RCP<const Epetra_Vector> global = idiscret_->GetState(statename);
 
-/*#ifdef DEBUG
-  vec->Print(cout);
-  comm_.Barrier();
-  global->Print(cout);
-#endif // #ifdef DEBUG*/
-  
-  // loop over all nodes to set current displacement
-  // use fully overlapping column map to make disp. available on all procs
-  if (statename=="displacement")
+		// alternative method to get vec to full overlap
+		// Epetra_Vector global(*idiscret_->DofColMap(),false);
+		// LINALG::Export(*vec,global);
+    
+		// loop over all nodes to set current displacement
+		// (use fully overlapping column map)
   	for (int i=0;i<idiscret_->NumMyColNodes();++i)
   	{
   		CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(i));
@@ -283,43 +327,14 @@ void CONTACT::Interface::SetState(const string& statename, const RCP<Epetra_Vect
   			mydisp.resize(3);
   	
   		// set current configuration and displacement
-  		// reset nodal normal
   		for (int j=0;j<3;++j)
   		{
   			node->u()[j]=mydisp[j];
   			node->xspatial()[j]=node->X()[j]+mydisp[j];
-  			node->n()[j]=0.0;
-  		}
-  		
-  		// reset closestnode
-  		// (FIXME: at the moment we do not need this info. in the next
-  		// iteration, but it might be helpful for accelerated search!!!)
-  		node->ClosestNode() = -1;
-  		
-  		// reset nodal Mortar maps and weighted gap
-  		for (int j=0;j<(int)((node->GetD()).size());++j)
-  			(node->GetD())[j].clear();
-  		for (int j=0;j<(int)((node->GetM()).size());++j)
-  		  (node->GetM())[j].clear();
-  		for (int j=0;j<(int)((node->GetMmod()).size());++j)
-  		  (node->GetMmod())[j].clear();
-  		node->Getg() = 0.0;
+  		}	
   	}
+	}
   
-  // loop over all elements to set current area or length
-  // and to reset contact candidates (search lists)
-  // use fully overlapping column map to make areas available on all procs
-  if (statename=="displacement")
-  	for (int i=0;i<idiscret_->NumMyColElements();++i)
-  	{
-  		CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
-  		element->Area()=element->ComputeArea();
-  		element->SearchElements().resize(0);
-  	}
-  
-  // set matrix containing interface contact segments back to size zero
-  CSegs().Shape(0,0);
-
   return;
 }
 
