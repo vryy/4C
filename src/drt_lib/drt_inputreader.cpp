@@ -679,6 +679,7 @@ void ElementReader::Partition()
       fflush(stdout);
     }
 
+    nids.reserve(nodes_.size());
     copy(nodes_.begin(), nodes_.end(), back_inserter(nids));
   }
 
@@ -735,9 +736,7 @@ void ElementReader::Partition()
     // partition graph using metis
     Epetra_Vector weights(graph->RowMap(),false);
     weights.PutScalar(1.0);
-    RefCountPtr<Epetra_CrsGraph> newgraph = DRT::UTILS::PartGraphUsingMetis(*graph,weights);
-    graph = newgraph;
-    newgraph = null;
+    graph = DRT::UTILS::PartGraphUsingMetis(*graph,weights);
 
     // replace rownodes, colnodes with row and column maps from the graph
     // do stupid conversion from Epetra_BlockMap to Epetra_Map

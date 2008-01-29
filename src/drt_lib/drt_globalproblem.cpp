@@ -476,13 +476,6 @@ void DRT::Problem::InputSolverControl(std::string section, _SOLVAR* solv)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::InputDynamicControl()
-{
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void DRT::Problem::ReadFields(DRT::DatFileReader& reader)
 {
   fflush(stdout);
@@ -729,8 +722,8 @@ void DRT::Problem::ConstructInterfaces()
 		for (unsigned j=0; j<NumDis(i); ++j)
 		{
 			RefCountPtr<DRT::Discretization> actdis = Dis(i,j);
-			
-			if (actdis->RequiresInterfaces()) 
+
+			if (actdis->RequiresInterfaces())
 				actdis->ConstructInterfaces();
 		}
 	}

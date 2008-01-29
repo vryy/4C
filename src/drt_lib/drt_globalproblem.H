@@ -153,9 +153,6 @@ public:
   /// input of not mesh or time based problem data
   void InputControl();
 
-  /// input of dynamic problem data
-  void InputDynamicControl();
-
   /// setup the discretizations
   void ReadFields(DRT::DatFileReader& reader);
 
