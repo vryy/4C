@@ -1185,7 +1185,6 @@ void StruGenAlpha::FullNewtonLinearUzawa()
       LINALG::Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),*stiff_,1.0);
     }
     LINALG::Complete(*stiff_);
-
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
@@ -1198,31 +1197,19 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     double quotient;
     double norm_vol_uzawa;
     int numiter_uzawa=0;
-
     //counter used for adaptivity
     int count_paramadapt=1;
 
     ConstrMan_->ScaleLagrIncr(0.0);
 
-    Epetra_Vector constrVecWeight(*(ConstrMan_->GetConstrVec()));
-    Epetra_SerialDenseVector dotprod(numConstrVol);
+    RCP<Epetra_Vector> constrVecWeight=LINALG::CreateVector(*dofrowmap,true);
+    RCP<Epetra_SerialDenseVector> dotprod= rcp(new Epetra_SerialDenseVector(numConstrVol));
 
     // Compute residual of the uzawa algorithm
-    for (int foo = 0; foo < numConstrVol; ++foo)
-  	{
-    	Epetra_Vector onlyvol_foo(ConstrMan_->GetDofMap(foo));
-      	Epetra_Vector onlydis_foo(ConstrMan_->GetDofMap(foo));
-      	Epetra_Import importer1(ConstrMan_->GetDofMap(foo),(ConstrMan_->GetConstrVec())->Map());
-      	Epetra_Import importer3(ConstrMan_->GetDofMap(foo),disi_->Map());
-	  	onlyvol_foo.Import(*(ConstrMan_->GetConstrVec()),importer1,Insert);
-	  	onlydis_foo.Import(*disi_,importer3,Insert);
-	  	onlydis_foo.Dot(onlyvol_foo,&(dotprod[foo]));
-	  	onlyvol_foo.Scale(-ConstrMan_->GetLagrIncr(foo));
-	  	Epetra_Import importer2((ConstrMan_->GetConstrVec())->Map(),ConstrMan_->GetDofMap(foo));
-	  	constrVecWeight.Import(onlyvol_foo,importer2,Insert);
-  	}
+    
+    ConstrMan_->ComputeConstrTimesLagrIncr(constrVecWeight);
     RCP<Epetra_Vector> fresmcopy=rcp(new Epetra_Vector(*fresm_));
-  	fresmcopy->Update(1.0,constrVecWeight,1.0);
+  	fresmcopy->Update(1.0,*constrVecWeight,1.0);
   	Epetra_Vector uzawa_res(*fresmcopy);
   	(*stiff_).Multiply(false,*disi_,uzawa_res);
   	uzawa_res.Update(1.0,*fresmcopy,-1.0);
@@ -1232,11 +1219,11 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   	    uzawa_res.Multiply(1.0,*invtoggle_,rescopy,0.0);
   	}
   	uzawa_res.Norm2(&norm_uzawa);
-
   	Epetra_SerialDenseVector vol_res(numConstrVol);
+  	ConstrMan_->ComputeConstrTimesDisi(*disi_,dotprod);
   	for (int foo = 0; foo < numConstrVol; ++foo)
   	{
-  	  vol_res[foo]=dotprod[foo]+ConstrMan_->GetError(foo);
+  	  vol_res[foo]=(*dotprod)[foo]+ConstrMan_->GetError(foo);
   	}
   	norm_vol_uzawa=vol_res.Norm2();
   	quotient =1;
@@ -1259,32 +1246,12 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 	  	  }
 
 	  	  //compute Lagrange multiplier increment
-	  	  for (int foo = 0; foo < numConstrVol; ++foo)
-	  	  {
-	  		  Epetra_Vector onlyvol_foo(ConstrMan_->GetDofMap(foo));
-	  		  Epetra_Vector onlydis_foo(ConstrMan_->GetDofMap(foo));
-	  		  Epetra_Import importer1(ConstrMan_->GetDofMap(foo),(ConstrMan_->GetConstrVec())->Map());
-	  		  onlyvol_foo.Import(*(ConstrMan_->GetConstrVec()),importer1,Insert);
-	  		  onlydis_foo.Import(*disi_,importer1,Insert);
-	  		  onlydis_foo.Dot(onlyvol_foo,&(dotprod[foo]));
-	  	  }
-	  	  ConstrMan_->UpdateLagrIncr(Uzawa_param, dotprod);
+	  	  ConstrMan_->ComputeConstrTimesDisi(*disi_,dotprod);
+	  	  ConstrMan_->UpdateLagrIncr(Uzawa_param, *dotprod);
 
 	  	  //Compute residual of the uzawa algorithm
-	  	  constrVecWeight.PutScalar(0.0);
-	  	  for (int foo = 0; foo < numConstrVol; ++foo)
-	  	  {
-	  		  Epetra_Vector onlyvol_foo(ConstrMan_->GetDofMap(foo));
-	  		  Epetra_Vector onlydis_foo(ConstrMan_->GetDofMap(foo));
-		      Epetra_Import importer1(ConstrMan_->GetDofMap(foo),(ConstrMan_->GetConstrVec())->Map());
-		      Epetra_Import importer3(ConstrMan_->GetDofMap(foo),disi_->Map());
-		      onlyvol_foo.Import(*(ConstrMan_->GetConstrVec()),importer1,Insert);
-		      onlyvol_foo.Scale(-(ConstrMan_->GetLagrIncr(foo)));
-		      onlydis_foo.Import(*disi_,importer3,Insert);
-		      Epetra_Import importer2((ConstrMan_->GetConstrVec())->Map(),ConstrMan_->GetDofMap(foo));
-		      constrVecWeight.Import(onlyvol_foo,importer2,Insert);
-	  	  }
-	  	  fresmcopy->Update(1.0,constrVecWeight,1.0,*fresm_,0.0);
+	  	  ConstrMan_->ComputeConstrTimesLagrIncr(constrVecWeight);
+	  	  fresmcopy->Update(1.0,*constrVecWeight,1.0,*fresm_,0.0);
 	  	  Epetra_Vector uzawa_res(*fresmcopy);
 	  	  (*stiff_).Multiply(false,*disi_,uzawa_res);
 	  	  uzawa_res.Update(1.0,*fresmcopy,-1.0);
@@ -1296,9 +1263,10 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 	  	  norm_uzawa_alt=norm_uzawa;
 	  	  uzawa_res.Norm2(&norm_uzawa);
 	  	  Epetra_SerialDenseVector vol_res(numConstrVol);
+	  	  
 	  	  for (int foo = 0; foo < numConstrVol; ++foo)
 	  	  {
-	  		  vol_res[foo]=dotprod[foo]+ConstrMan_->GetError(foo);
+	  		  vol_res[foo]=(*dotprod)[foo]+ConstrMan_->GetError(foo);
 	  	  }
 	      norm_vol_uzawa=vol_res.Norm2();
 

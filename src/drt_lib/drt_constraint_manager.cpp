@@ -48,7 +48,6 @@ actdisc_(discr)
 	if (haveconstraint_)
 	{
 		ManageIDs(p);
-		SetupVolDofrowmaps();
 		// sum up initial values
 		initialvalues_=rcp(new Epetra_SerialDenseVector(numConstrID_));
 		initialvalues_->Scale(0.0);
@@ -64,7 +63,6 @@ actdisc_(discr)
 		actvalues_->Scale(0.0);
 		constrainterr_=rcp(new Epetra_SerialDenseVector(numConstrID_));
 		const Epetra_Map* dofrowmap = actdisc_.DofRowMap();
-		constrVec1_=LINALG::CreateVector(*dofrowmap,true);
 		constrVec_=rcp(new Epetra_MultiVector(*dofrowmap,numConstrID_));
 		fact_=1;
 	}
@@ -104,10 +102,9 @@ void ConstrManager::StiffnessAndInternalForces(
     actdisc_.ClearState();
     actdisc_.SetState("displacement",disp);    
 	const Epetra_Map* dofrowmap = actdisc_.DofRowMap();
-	constrVec1_=LINALG::CreateVector(*dofrowmap,true);
-	actdisc_.EvaluateCondition(p,stiff,fint,constrVec1_,"VolumeConstraint_3D");
 	constrVec_=rcp(new Epetra_MultiVector(*dofrowmap,numConstrID_));
-	//actdisc_.EvaluateCondition(p,stiff,fint,"VolumeConstraint_3D",constrVec_);
+	constrVec_->PutScalar(0.0);
+	actdisc_.EvaluateCondition(p,stiff,fint,"VolumeConstraint_3D",constrVec_);
     actvalues_->Scale(0.0);
     SynchronizeConstraint(p,actvalues_,"computed volume");
     fact_=p.get("LoadCurveFactor",1.0);
@@ -118,8 +115,7 @@ void ConstrManager::StiffnessAndInternalForces(
 	  (*constrainterr_)[iter]=(*referencevalues_)[iter]-(*actvalues_)[iter];
     } 
     actdisc_.ClearState();
-    // do NOT finalize the stiffness matrix, add mass and damping to it later
-		
+    // do NOT finalize the stiffness matrix, add mass and damping to it later	
 	return;
 }
 
@@ -166,6 +162,28 @@ void ConstrManager::UpdateLagrMult()
 	return;
 }
 
+void ConstrManager::ComputeConstrTimesLagrIncr(RCP<Epetra_Vector> dotprod)
+{
+	dotprod->PutScalar(0.0);
+	for (int i=0;i < numConstrID_; i++)
+	{
+		dotprod->Update(-(*lagrMultInc_)(i),*((*constrVec_)(i)),1.0);
+	}
+	return;
+}
+
+void ConstrManager::ComputeConstrTimesDisi(Epetra_Vector disi, RCP<Epetra_SerialDenseVector> dotprod)
+{
+	
+	for (int i=0; i < numConstrID_; i++)
+	{
+		double* temp;
+		disi.Dot(*((*constrVec_)(i)),temp);
+		(*dotprod)(i)=*temp;
+	}
+	return;
+}
+
 /*----------------------------------------------------------------------*
  |(private)                                                 tk 11/07    |
  |small subroutine for initialization purposes to determine ID's        |
@@ -196,53 +214,6 @@ void ConstrManager::SynchronizeConstraint(ParameterList& params,
 		actdisc_.Comm().SumAll(&(params.get(volname,0.0)),&(currvol),1);
 		(*vect)[i]=currvol;
 	}
-	return;
-}
-
-
-/*----------------------------------------------------------------------*
- |(private)                                                 tk 11/07    |
- |subroutine to setup separate dofrowmaps for any boundary condition ID |
- |and to initialize lagrange multipliers								| 
- *----------------------------------------------------------------------*/
-void ConstrManager::SetupVolDofrowmaps()
-{  
-	// Allocate integer vectors which will hold the dof number of volume constraint dof
-    map<int, vector<int> > dofdata;
-
-    for (int iter = 0; iter < numConstrID_; ++iter) 
-    {
-		(dofdata[iter]).reserve(actdisc_.NumMyRowNodes()*3);
-		
-	}
-
-    //loop over all my nodes
-    for (int i=0; i<actdisc_.NumMyRowNodes(); ++i)
-    {
-      DRT::Node* node = actdisc_.lRowNode(i);
-      //loop through the conditions and build dofdata vectors
-      DRT::Condition* cond = node->GetCondition("VolumeConstraint_3D");
-      if (cond)
-      {
-    	  const vector<int>*    CondIDVec  = cond->Get<vector<int> >("ConditionID");
-  		  int CondID=(*CondIDVec)[0];
-  		  
-  		  vector<int> dof = actdisc_.Dof(node);
-  		  int numdofs = dof.size();
-  		  for (int j=0; j<numdofs; ++j)
-  		  {
-  			  // add this dof to the dofdata vector
-  		  	  (dofdata[CondID-1]).push_back(dof[j]);
-  		  }//dof loop        	  
-      }
-    }
-    for (int voliter = 0; voliter < numConstrID_; ++voliter) 
-    {
-    	voldofrowmaps_[voliter]= rcp(new Epetra_Map(-1,
-                                    dofdata[voliter].size(),&dofdata[voliter][0],0,
-                                    actdisc_.Comm()));
-    }
-			
 	return;
 }
 

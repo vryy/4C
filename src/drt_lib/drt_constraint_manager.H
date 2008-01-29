@@ -149,14 +149,6 @@ public:
 	  }
 	  
 	  /*!
-	  	   \brief Return additional vector containing first derivatives of constraints wrt displacements
-	  */
-	  RCP<Epetra_Vector> GetConstrVec()
-	  {
-		  return constrVec1_;
-	  };
-	  
-	  /*!
 	  	   \brief Add Increment to lagrange multiplier
 	  */
 	  void UpdateLagrMult();
@@ -190,6 +182,22 @@ public:
 	  {
 		  return (*actvalues_)[i];
 	  }
+	  
+	  /*!
+	   \brief Computes inner product of constr multivector times lagrange multiplier increment 
+	   vector as required for the uzawa algorithm to compute new displacement increment 
+	   
+	   \param dotprod (out):		resulting value of B^T * Delta lambda 
+	   */
+	  void ComputeConstrTimesLagrIncr(RCP<Epetra_Vector> dotprod);
+	  
+	  /*!
+	    \brief Return inner product of constr multivector times displacement increment
+	    
+	    \param disi (in)		:		displacement increment Delta u
+	    \param dotprod (out) 	:		resulting value of B * Delta u
+	    */
+	  void ComputeConstrTimesDisi(Epetra_Vector disi,RCP<Epetra_SerialDenseVector> dotprod);
 	  //@}
 private:
 	
@@ -207,7 +215,6 @@ private:
 	      \brief Setup separate dofrowmaps for any condition ID and initialize lagrange multiplier
 
 	  */  
-	  void SetupVolDofrowmaps();
 	  
 	  void ManageIDs(ParameterList& params);
 	  //@}
@@ -225,7 +232,7 @@ private:
 	RefCountPtr<Epetra_SerialDenseVector> referencevalues_;
 	RefCountPtr<Epetra_SerialDenseVector> initialvalues_;
 	RefCountPtr<Epetra_SerialDenseVector> actvalues_;
-	RefCountPtr<Epetra_SerialDenseVector>  constrainterr_;
+	RefCountPtr<Epetra_SerialDenseVector> constrainterr_;
 	int minConstrID_;
 	int maxConstrID_;
 	int numConstrID_;
@@ -233,7 +240,6 @@ private:
 	RefCountPtr<Epetra_SerialDenseVector> lagrMultVec_;
 	RefCountPtr<Epetra_SerialDenseVector> lagrMultInc_;
 	map<int, RCP<Epetra_Map> > voldofrowmaps_;
-	RefCountPtr<Epetra_Vector> constrVec1_;
 	RefCountPtr<Epetra_MultiVector> constrVec_;
 	bool haveconstraint_;
 	//@}
