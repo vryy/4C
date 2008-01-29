@@ -49,6 +49,18 @@ inline BlitzVec toBlitzArray(const double* x)
     return blitz_x;
 }
 
+inline Epetra_SerialDenseVector toEpetraArray(const double* x)
+{
+    Epetra_SerialDenseVector epetra_x(3);
+    epetra_x(0) = x[0];
+    epetra_x(1) = x[1];
+    epetra_x(2) = x[2];
+    
+    // doesn't work... why?
+    // BlitzVec blitz_x(x, blitz::shape(3), blitz::duplicateData);
+    return epetra_x;
+}
+
 }
 
 #endif  // #ifndef XFEM_H
