@@ -283,6 +283,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
   //ParameterList& stat = list->sublist("STATIC",false,"");
 
   /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& design = list->sublist("DESIGN DESCRIPTION",false,"number of nodal clouds");
+
+  IntParameter("NDPOINT",0,"number of points",&design);
+  IntParameter("NDLINE",0,"number of line clouds",&design);
+  IntParameter("NDSURF",0,"number of surface clouds",&design);
+  IntParameter("NDVOL",0,"number of volume clouds",&design);
+
+  /*----------------------------------------------------------------------*/
   //Teuchos::ParameterList& eigen = list->sublist("EIGENVALUE ANALYSIS",false,"");
 
   /*----------------------------------------------------------------------*/

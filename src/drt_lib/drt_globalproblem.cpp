@@ -140,6 +140,7 @@ void DRT::Problem::ReadParameter(DRT::DatFileReader& reader)
   reader.ReadGidSection("--PROBLEM SIZE", *list);
   reader.ReadGidSection("--PROBLEM TYP", *list);
   reader.ReadGidSection("--IO", *list);
+  reader.ReadGidSection("--DESIGN DESCRIPTION", *list);
   //reader.ReadGidSection("--STATIC", *list);
   //reader.ReadGidSection("--EIGENVALUE ANALYSIS", *list);
   reader.ReadGidSection("--STRUCTURAL DYNAMIC", *list);
@@ -152,10 +153,7 @@ void DRT::Problem::ReadParameter(DRT::DatFileReader& reader)
   reader.ReadGidSection("--FLUID SOLVER", *list);
   reader.ReadGidSection("--STRUCT SOLVER", *list);
   reader.ReadGidSection("--ALE SOLVER", *list);
-#ifdef D_TSI
   reader.ReadGidSection("--THERMAL SOLVER", *list);
-#endif
-  //reader.ReadGidSection("--DESIGN DESCRIPTION", *list);
 
   setParameterList(list);
 }
@@ -257,10 +255,8 @@ void DRT::Problem::InputControl()
   ioflags.fluid_stress = Teuchos::getIntegralValue<int>(io,"FLUID_STRESS");
   ioflags.fluid_vis = Teuchos::getIntegralValue<int>(io,"FLUID_VIS");
   ioflags.ale_disp = Teuchos::getIntegralValue<int>(io,"ALE_DISP");
-#ifdef D_TSI
   ioflags.therm_temper = Teuchos::getIntegralValue<int>(io,"THERM_TEMPERATURE");
   ioflags.therm_heatflux = Teuchos::getIntegralValue<int>(io,"THERM_HEATFLUX");
-#endif
 
   ioflags.steps_per_file = io.get<int>("FILESTEPS");
 

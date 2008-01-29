@@ -37,17 +37,6 @@ const int numreadvalue = 6;
  *----------------------------------------------------------------------*/
 extern struct _FIELD      *field;
 
-#ifdef DEBUG
-/*!----------------------------------------------------------------------
-  \brief the tracing variable
-
-  <pre>                                                         m.gee 8/00
-  defined in pss_ds.c, declared in tracing.h
-  </pre>
- *----------------------------------------------------------------------*/
-extern struct _CCA_TRACE         trace;
-#endif
-
 /*----------------------------------------------------------------------*
   |                                                       m.gee 06/01    |
   | general problem data                                                 |
@@ -159,27 +148,16 @@ void DRT::Problem::ReadConditions()
 {
   /*---------------------------------------------- input of time curves */
   DRT::UTILS::TimeCurveManager::Instance().ReadInput();
-  //cout << DRT::TimeCurveManager::Instance();
   /*---------------------------------------- input of spatial functions */
   DRT::UTILS::FunctionManager::Instance().ReadInput();
   //------------------------------- read number of design objects we have
   // this currently serves to determine how many node sets we might have
-  int ndnode=0;
-  int ndline=0;
-  int ndsurf=0;
-  int ndvol=0;
-  int ierr=0;
-  frrewind();
-  if (frfind("--DESIGN DESCRIPTION")==0)
-    dserror("Cannot find design description");
-  frread();
-  frint("NDPOINT",&ndnode,&ierr); if (!ierr) dserror("Cannot read design");
-  frread();
-  frint("NDLINE",&ndline,&ierr);  if (!ierr) dserror("Cannot read design");
-  frread();
-  frint("NDSURF",&ndsurf,&ierr);  if (!ierr) dserror("Cannot read design");
-  frread();
-  frint("NDVOL",&ndvol,&ierr);    if (!ierr) dserror("Cannot read design");
+  const Teuchos::ParameterList& design = DesignDescriptionParams();
+  int ndnode = design.get<int>("NDPOINT");
+  int ndline = design.get<int>("NDLINE");
+  int ndsurf = design.get<int>("NDSURF");
+  int ndvol  = design.get<int>("NDVOL");
+
   frrewind();
   //--------------------------------------------- read generic node sets
   // read design nodes <-> nodes
