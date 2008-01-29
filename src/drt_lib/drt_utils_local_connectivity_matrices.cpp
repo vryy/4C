@@ -730,7 +730,7 @@ void DRT::UTILS::getLineCoordinates(
             case 3:
             {
                 coord[0] = -1.0; 
-                coord[1] = lineCoord;
+                coord[1] = -lineCoord;
                 break;
             }
             default:
