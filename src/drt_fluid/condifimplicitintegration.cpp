@@ -87,37 +87,6 @@ CondifImplicitTimeInt::CondifImplicitTimeInt(RefCountPtr<DRT::Discretization> ac
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   // -------------------------------------------------------------------
-  // get a vector layout from the discretization
-  // -------------------------------------------------------------------
-  {
-    // gee: What's this good for in here?
-    
-    // Allocate integer vectors which will hold the number of the dofs
-    vector<int> phimapdata;
-
-    phimapdata.reserve(discret_->NumMyRowNodes());
-
-    int countdofs = 0;
-    for (int i=0; i<discret_->NumMyRowNodes(); ++i)
-    {
-      DRT::Node* node = discret_->lRowNode(i);
-      vector<int> dof = discret_->Dof(node);
-
-      int numdofs = dof.size();
-      if (numdofs==1)
-      {
-         // add this dof to the premapdata vector
-        phimapdata.push_back(dof[numdofs-1]);
-        countdofs += 1;
-      }
-      else
-      {
-        dserror("condif expects one dof");
-      }
-    }
-
-  }
-  // -------------------------------------------------------------------
   // get the processor ID from the communicator
   // -------------------------------------------------------------------
   myrank_  = discret_->Comm().MyPID();
