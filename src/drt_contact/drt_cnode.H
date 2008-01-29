@@ -158,6 +158,72 @@ public:
   */
   virtual inline int& ClosestNode() { return closestnode_; }
   
+  /*!
+  brief Add a value to the 'D' map of this node
+  
+  The 'D' map is later assembled to the D matrix.
+  Note that Drows_ here is a vector.
+    
+  \param row : local dof row id to add to (rowwise)
+  \param val : value to be added
+  \param col : global dof column id of the value added
+  */
+  void AddDValue(int row, int col, double val);
+  
+  /*!
+  brief Add a value to the 'M' map of this node
+    
+  The 'M' map is later assembled to the M matrix.
+  Note that Mrows_ here is a vector.
+      
+  \param row : local dof row id to add to (rowwise)
+  \param val : value to be added
+  \param col : global dof column id of the value added
+  */
+  void AddMValue(int row, int col, double val);
+    
+  /*!
+  brief Add a value to the 'Mmod' map of this node
+     
+  The 'Mmod' map is later assembled to the M matrix.
+  Note that Mmodrows_ here is a vector.
+       
+  \param row : local dof row id to add to (rowwise)
+  \param val : value to be added
+  \param col : global dof column id of the value added
+  */
+  void AddMmodValue(int row, int col, double val);  
+
+  /*!
+  brief Add a value to the weighted gap of this node
+    
+  This value is later assembled to the weighted gap vec.
+  Note that grow_ here is a scalar.
+     
+  \param val : value to be added
+  */
+  void AddgValue(double val);
+  
+  /*!
+  \brief Return the 'D' map (vector) of this node
+  */
+  virtual inline vector<map<int,double> >& GetD() { return Drows_; }
+  
+  /*!
+  \brief Return the 'M' map (vector) of this node
+  */
+  virtual inline vector<map<int,double> >& GetM() { return Mrows_; }
+    
+  /*!
+  \brief Return the 'Mmod' map (vector) of this node
+  */
+  virtual inline vector<map<int,double> >& GetMmod() { return Mmodrows_; }
+  
+  /*!
+  \brief Return the weighted gap (scalar) of this node
+  */
+  virtual inline double& Getg() { return grow_; }
+  
   //@}
 
   //! @name Construction methods
@@ -185,15 +251,19 @@ public:
 
 protected:
 
-  bool            isslave_;      // true if cnode is on slave side of contact problem
-  int             numdof_;       // number of degrees of freedom (length of dofs_)
-  vector<int>     dofs_;         // degrees of freedom of this node
-  double          n_[3];				 // nodal normal for contact methods
-  double					xspatial_[3];	 // current configuration
-  double					u_[3];				 // current displacement
-  int							closestnode_;	 // closest node id on the other side of interface
+  bool            isslave_;        // true if cnode is on slave side of contact problem
+  int             numdof_;         // number of degrees of freedom (length of dofs_)
+  vector<int>     dofs_;           // degrees of freedom of this node
+  double          n_[3];				   // nodal normal for contact methods
+  double					xspatial_[3];	   // current configuration
+  double					u_[3];				   // current displacement
+  int							closestnode_;	   // closest node id on the other side of interface
   
-
+  vector<map<int,double> >     Drows_;   		  // nodal rows of D matrix
+  vector<map<int,double> > 		 Mrows_;   			// nodal rows of M matrix
+  vector<map<int,double> >		 Mmodrows_;   	// nodal rows of Mmod matrix
+  double											 grow_;				  // nodal entry of g vector
+  
 
 }; // class CNode
 } // namespace CONTACT

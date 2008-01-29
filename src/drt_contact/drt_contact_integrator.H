@@ -19,6 +19,7 @@ Maintainer: Alexander Popp
 #define DRT_CONTACT_INTEGRATOR_H
 
 #include "drt_celement.H"
+#include "drt_contact_interface.H"
 
 using namespace std;
 
@@ -139,6 +140,38 @@ public:
 																						double sxia, double sxib,
 																						CONTACT::CElement& mele,
 																						double mxia, double mxib);
+	
+	
+	/*!
+	\brief Assemble D contribution of current overlap into slave nodes
+	
+	*/
+	bool Assemble_D(CONTACT::Interface& inter, CONTACT::CElement& sele,
+			            Epetra_SerialDenseMatrix& D_seg);
+	
+	/*!
+	\brief Assemble M contribution of current overlap into slave nodes
+		
+	*/
+	bool Assemble_M(CONTACT::Interface& inter, CONTACT::CElement& sele,
+			            CONTACT::CElement& mele,
+			            Epetra_SerialDenseMatrix& M_seg);
+	
+	/*!
+	\brief Assemble Mmod contribution of current overlap into slave nodes
+			
+	*/
+	bool Assemble_Mmod(CONTACT::Interface& inter, CONTACT::CElement& sele,
+			               CONTACT::CElement& mele,
+			               Epetra_SerialDenseMatrix& Mmod_seg);
+	
+	/*!
+	\brief Assemble g~ contribution of current overlap into slave nodes
+			
+	*/
+	bool Assemble_g(CONTACT::Interface& inter, CONTACT::CElement& sele,
+			            Epetra_SerialDenseVector& g_seg);
+		
 		
   //@}
   		

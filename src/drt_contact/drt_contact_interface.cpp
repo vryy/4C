@@ -282,24 +282,28 @@ void CONTACT::Interface::SetState(const string& statename, const RCP<Epetra_Vect
   		if (mydisp.size()<3)
   			mydisp.resize(3);
   	
-/*#ifdef DEBUG
-  		cout << "PROC " << comm_.MyPID() << " thinks that CNode "
-  	       << node->Id() << ", owned by PROC " << node->Owner()
-  			   << ", Dofs " << lm[0] << " " << lm[1] << " " << lm[2]
-  			   << ", has the displacements): \n"
-  			   << mydisp[0] << "\t\t"
-  			   << mydisp[1] << "\t\t"
-  			   << mydisp[2] << "\n\n";
-#endif // #ifdef DEBUG*/
-  	
   		// set current configuration and displacement
-  		// reset normal and pojection point coords
+  		// reset nodal normal
   		for (int j=0;j<3;++j)
   		{
   			node->u()[j]=mydisp[j];
   			node->xspatial()[j]=node->X()[j]+mydisp[j];
   			node->n()[j]=0.0;
   		}
+  		
+  		// reset closestnode
+  		// (FIXME: at the moment we do not need this info. in the next
+  		// iteration, but it might be helpful for accelerated search!!!)
+  		node->ClosestNode() = -1;
+  		
+  		// reset nodal Mortar maps and weighted gap
+  		for (int j=0;j<(int)((node->GetD()).size());++j)
+  			(node->GetD())[j].clear();
+  		for (int j=0;j<(int)((node->GetM()).size());++j)
+  		  (node->GetM())[j].clear();
+  		for (int j=0;j<(int)((node->GetMmod()).size());++j)
+  		  (node->GetMmod())[j].clear();
+  		node->Getg() = 0.0;
   	}
   
   // loop over all elements to set current area or length
@@ -397,7 +401,7 @@ bool CONTACT::Interface::EvaluateContactSearch()
 	/* CONTACT SEARCH ALGORITHM:                                          */
 	/* The idea of the search is to reduce the number of master / slave   */
 	/* element pairs that are checked for overlap and contact by intro-   */
-	/* ducing information about proximity and history!                    */
+	/* ducing information about proximity and maybe history!              */
 	/* At the moment this is still brute force for finding the closest    */
 	/* CNode to each CNode, so it will have to replaced by a more         */
 	/* sophisticated approach in the future (bounding vol. hierarchies?)  */
@@ -906,7 +910,12 @@ bool CONTACT::Interface::EvaluateOverlap_2D(CONTACT::CElement& sele,
 	RCP<Epetra_SerialDenseMatrix> M_seg = integrator.Integrate_M(sele,sxia,sxib,mele,mxia,mxib);
 	RCP<Epetra_SerialDenseVector> g_seg = integrator.Integrate_g(sele,sxia,sxib,mele,mxia,mxib);
 	
-	// do the integration of Mmod for curved interfaces
+	// do the three assemblies into the slave nodes
+	integrator.Assemble_D(*this,sele,*D_seg);
+	integrator.Assemble_M(*this,sele,mele,*M_seg);
+	integrator.Assemble_g(*this,sele,*g_seg);
+		
+	// check for the modification of the M matrix for curved interfaces
 	// (based on the paper by M. Puso / B. Wohlmuth, IJNME, 2005)
 	bool modification = false;
 	
@@ -931,19 +940,13 @@ bool CONTACT::Interface::EvaluateOverlap_2D(CONTACT::CElement& sele,
 		}
 	}
 	
+	// integrate and assemble the modification, if necessary
 	if (modification)
 	{
 		RCP<Epetra_SerialDenseMatrix> Mmod_seg = integrator.Integrate_Mmod(sele,sxia,sxib,mele,mxia,mxib);
-		cout << *Mmod_seg << endl;
+		integrator.Assemble_Mmod(*this,sele,mele,*Mmod_seg);
 	}
 	
-/*	
-#ifdef DEBUG
-	cout << *D_seg << endl;
-	cout << *M_seg << endl;
-	cout << *g_seg << endl;
-#endif // #ifdef DEBUG
-*/
 	return true;
 }
 
@@ -970,7 +973,7 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs)
 	filename << counter_ << ".pos";
 	std::ofstream f_system(filename.str().c_str());
 	
-	// write output to temporary stringstreamg
+	// write output to temporary stringstream
 	std::stringstream gmshfilecontent;
 	gmshfilecontent << "View \" Slave and master side CElements \" {" << endl;
 		

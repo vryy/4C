@@ -26,7 +26,8 @@ DRT::Node(id,coords,owner),
 isslave_(isslave),
 numdof_(numdof),
 dofs_(dofs),
-closestnode_(-1)
+closestnode_(-1),
+grow_(0.0)
 {
   for (int i=0;i<3;++i)
   {
@@ -34,6 +35,11 @@ closestnode_(-1)
     u()[i]=0.0;
     xspatial()[i]=X()[i];
   }
+  
+  Drows_.resize(0);					// FIXME: Is this necessary???
+  Mrows_.resize(0);
+  Mmodrows_.resize(0);
+  
   return;
 }
 
@@ -45,14 +51,19 @@ DRT::Node(old),
 isslave_(old.isslave_),
 numdof_(old.numdof_),
 dofs_(old.dofs_),
-closestnode_(old.closestnode_)
+closestnode_(old.closestnode_),
+Drows_(old.Drows_),
+Mrows_(old.Mrows_),
+Mmodrows_(old.Mmodrows_),
+grow_(old.grow_)
 {
 	for (int i=0;i<3;++i)
-	  {
-	  	n()[i]=old.n_[i];
-	    u()[i]=old.u_[i];
-	    xspatial()[i]=old.xspatial_[i];
-	  }
+	{
+		n()[i]=old.n_[i];
+	  u()[i]=old.u_[i];
+	  xspatial()[i]=old.xspatial_[i];
+	}
+	
 	return;
 }
 
@@ -164,6 +175,76 @@ void CONTACT::CNode::Unpack(const vector<char>& data)
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add a value to the 'D' map                                popp 01/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::CNode::AddDValue(int row, int col, double val)
+{
+	// check if this has been called before
+	if ((int)Drows_.size()==0)
+		Drows_.resize(NumDof());
+	
+	// check row index input
+	if ((int)Drows_.size()<=row)
+		dserror("ERROR: AddDValue: tried to access invalid row index!");
+	
+	// add the pair (col,val) to the given row
+	map<int,double>& Dmap = Drows_[row];
+	Dmap[col] += val;
+		
+	return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add a value to the 'M' map                                popp 01/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::CNode::AddMValue(int row, int col, double val)
+{
+	// check if this has been called before
+	if ((int)Mrows_.size()==0)
+	  Mrows_.resize(NumDof());
+		
+	// check row index input
+	if ((int)Mrows_.size()<=row)
+		dserror("ERROR: AddMValue: tried to access invalid row index!");
+		
+	// add the pair (col,val) to the given row
+	map<int,double>& Mmap = Mrows_[row];
+	Mmap[col] += val;
+			
+	return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add a value to the 'Mmod' map                             popp 01/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::CNode::AddMmodValue(int row, int col, double val)
+{
+	// check if this has been called before
+	if ((int)Mmodrows_.size()==0)
+		Mmodrows_.resize(NumDof());
+		
+	// check row index input
+	if ((int)Mmodrows_.size()<=row)
+		dserror("ERROR: AddMmodValue: tried to access invalid row index!");
+		
+	// add the pair (col,val) to the given row
+	map<int,double>& Mmodmap = Mmodrows_[row];
+	Mmodmap[col] += val;
+			
+	return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add a value to the weighted gap                           popp 01/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::CNode::AddgValue(double val)
+{
+	// add given value to grow_
+	grow_+=val;
+	return;
 }
 
 /*----------------------------------------------------------------------*
