@@ -101,6 +101,9 @@ public:
   
   //! Write Mesh into exodus file
   void WriteMesh(string newexofilename);
+  
+  //! Add Element Block to mesh
+  void AddElementBlock(const EXODUS::ElementBlock eblock) const;
 
 private:
   vector<RCP<PreNode> > myNodes_;

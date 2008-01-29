@@ -64,17 +64,7 @@ EXODUS::PreElement::PreElement(const PreElement& old)
 void EXODUS::PreElement::Print(ostream& os) const
 {
   os << "Id: " << Id() << " Shape: " ;
-//  switch (Shape()) {
-//    case quad4:
-//      os << "quad4 ";
-//      break;
-//    case tri3:
-//      os << "tri3 ";
-//      break;
-//    default:
-//      dserror("unknown PreElement shape");
-//      break;
-//  } 
+  os << ShapeToString(distype_) << endl;
   const int nnode = NumNode();
   const int* nodes = NodeIds();
   if (nnode)

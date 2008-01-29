@@ -55,6 +55,10 @@ public:
   virtual ~Soshextrusion();
   
   bool CheckExtrusion(const ElementBlock eblock);
+  
+  vector<int> RiseNodes(const int highestnode, const vector<int> elenodes);
+  
+  PreNode* ExtrapolateNode(PreNode& actnode, const int newid);
 };
 
 } // of namepsace EXODUS

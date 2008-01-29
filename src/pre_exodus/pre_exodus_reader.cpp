@@ -246,7 +246,7 @@ void EXODUS::Mesh::Print(ostream & os, bool verbose) const
 }
 
 /*----------------------------------------------------------------------*
- |  Write Mesh into exodus file                                maf 01/08|
+ |  Write Mesh into exodus file (public)                                maf 01/08|
  *----------------------------------------------------------------------*/
 void EXODUS::Mesh::WriteMesh(string newexofilename)
 {
@@ -371,8 +371,26 @@ void EXODUS::Mesh::WriteMesh(string newexofilename)
   error = ex_close (exoid);
   if (error!=0) dserror("error closing exodus file");
 }
+/*----------------------------------------------------------------------*
+ |  Add Element Block to mesh(public)                          maf 01/08|
+ *----------------------------------------------------------------------*/
+void EXODUS::Mesh::AddElementBlock(const EXODUS::ElementBlock eblock) const
+{
+  map<int,ElementBlock> eblocks = GetElementBlocks();
+  eblocks.insert(std::pair<int,ElementBlock>(GetNumElementBlocks()+1,eblock));
+}
 
 
+/*!
+\class ElementBlock
+
+\brief ElementBlock is a set of Elements of same discretization Type
+
+A Element Block is a tiny class storing element-type, name, etc. of a ElementBlock
+It implements its printout.
+
+\author maf (frenzel@lnm.mw.tum.de)
+*/
 EXODUS::ElementBlock::ElementBlock(ElementBlock::Shape Distype, map<int,vector<int> > &eleconn, string name)
 {
   distype_ = Distype;
