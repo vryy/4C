@@ -109,6 +109,21 @@ double Enrichment::EnrValue(
         
         break;
     }
+    case XFEM::Enrichment::typeJump:
+    {
+        const int xfemcondition_label = this->XFEMConditionLabel();
+        
+        double actpos_enr_val = 0.0;
+        if (PositionWithinCondition(actpos, xfemcondition_label,cutterdis)) {
+            actpos_enr_val = -1.0;
+        } else {
+            actpos_enr_val = 1.0;
+        }
+
+        enrval = actpos_enr_val;
+        
+        break;
+    }
     default:
         dserror("unsupported enrichment!");
     }
