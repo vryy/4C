@@ -287,7 +287,7 @@ void CONTACT::CNode::BuildAveragedNormal()
 	double length = sqrt(n()[0]*n()[0]+n()[1]*n()[1]+n()[2]*n()[2]);
 	
 	if (length==0.0)
-	  cout << "ERROR: Nodal normal of length zero" << endl;
+	  dserror("ERROR: Nodal normal of length zero, node ID %i",Id());
 	else
 		for (int j=0;j<3;++j)
 			n()[j]/=length;

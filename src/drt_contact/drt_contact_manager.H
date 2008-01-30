@@ -118,8 +118,15 @@ protected:
   Manager(const Manager& old);
 
 
-  DRT::Discretization&              discret_;   // the underlying problem discretization
-  vector<RCP<CONTACT::Interface> >  interface_; // contact interfaces
+  DRT::Discretization&              discret_;       // the underlying problem discretization
+  vector<RCP<CONTACT::Interface> >  interface_; 	  // contact interfaces
+  
+  RCP<Epetra_Map>										gsnoderowmap_;  // global slave node row map (of all interfaces)
+  RCP<Epetra_Map>										gsdofrowmap_;   // global slave dof row map (of all interfaces)
+  RCP<Epetra_Map>										gmdofrowmap_;   // global master dof row map (of all interfaces)
+  RCP<Epetra_CrsMatrix>							D_;					    // global Mortar matrix D
+  RCP<Epetra_CrsMatrix>							M_;					    // global Mortar matrix M
+  RCP<Epetra_Vector>								g_;					    // global weighted gap vector g
 
 
 }; // class Manager

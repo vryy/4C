@@ -244,7 +244,7 @@ void CONTACT::Interface::FillComplete()
 }
 
 /*----------------------------------------------------------------------*
- |  initiliaze / reset interface for contact                  popp 01/08|
+ |  initialize / reset interface for contact                  popp 01/08|
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::Initialize()
 {
@@ -271,17 +271,19 @@ void CONTACT::Interface::Initialize()
 		for (int j=0;j<(int)((node->GetMmod()).size());++j)
 		  (node->GetMmod())[j].clear();
 		
+		(node->GetD()).resize(0);
+		(node->GetM()).resize(0);
+		(node->GetMmod()).resize(0);
+		
 		// reset nodal weighted gap
 		node->Getg() = 0.0;
 	}
 	
-	// loop over all elements to set current element length / area
-	// and to reset contact candidates / search lists
+	// loop over all elements to reset contact candidates / search lists
 	// (use fully overlapping column map)
 	for (int i=0;i<idiscret_->NumMyColElements();++i)
 	{
 		CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
-		element->Area()=element->ComputeArea();
 		element->SearchElements().resize(0);
 	}
 	
@@ -333,15 +335,25 @@ void CONTACT::Interface::SetState(const string& statename, const RCP<Epetra_Vect
   			node->xspatial()[j]=node->X()[j]+mydisp[j];
   		}	
   	}
+  	
+  	// loop over all elements to set current element length / area
+  	// (use fully overlapping column map)
+  	for (int i=0;i<idiscret_->NumMyColElements();++i)
+  	{
+  		CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
+  		element->Area()=element->ComputeArea();
+  	}
 	}
-  
+	
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  evaluate contact (public)                                 popp 11/07|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::Evaluate()
+void CONTACT::Interface::Evaluate(Epetra_CrsMatrix& Dglobal,
+																	Epetra_CrsMatrix& Mglobal,
+																	Epetra_Vector& gglobal)
 {
 	// interface needs to be complete
 	if (!Filled() && comm_.MyPID()==0)
@@ -381,6 +393,9 @@ void CONTACT::Interface::Evaluate()
 		if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
 		CElement* selement = static_cast<CElement*>(ele1);
 		
+		// integrate Mortar matrix D (lives on slave side only!)
+		IntegrateSlave_2D(*selement);
+		
 		// loop over the contact candidate master elements
 		// use slave element's candidate list SearchElements !!!
 		for (int j=0;j<selement->NumSearchElements();++j)
@@ -391,10 +406,14 @@ void CONTACT::Interface::Evaluate()
 			CElement* melement = static_cast<CElement*>(ele2);
 			
 			// check for element overlap and integrate the pair
-			EvaluateOverlap_2D(*selement,*melement);
+			IntegrateOverlap_2D(*selement,*melement);
 		}
 	}
 
+	// assemble Mortar matrices and weighted gap
+	Assemble(Dglobal,Mglobal,gglobal);
+	
+	
 #ifdef DEBUG
 	// Visualize node projections with gmsh
 	// currently only works for 1 processor case because of writing of output
@@ -500,10 +519,29 @@ bool CONTACT::Interface::EvaluateContactSearch()
 }
 
 /*----------------------------------------------------------------------*
+ |  Integrate Mortar matrix D on slave element (public)       popp 01/08|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Interface::IntegrateSlave_2D(CONTACT::CElement& sele)
+{
+	// create a 2D integrator instance of GP order 5
+	CONTACT::Integrator integrator(CONTACT_NGP,true);
+	double sxia = -1.0;
+	double sxib =  1.0;
+		
+	// do the integration
+	RCP<Epetra_SerialDenseMatrix> D_seg = integrator.Integrate_D(sele,sxia,sxib);
+	
+	// do the assembly into the slave nodes
+	integrator.Assemble_D(*this,sele,*D_seg);
+		
+	return true;
+}
+
+/*----------------------------------------------------------------------*
  |  Determine overlap and integrate sl/ma pair (public)       popp 01/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::Interface::EvaluateOverlap_2D(CONTACT::CElement& sele,
-																			      CONTACT::CElement& mele)
+bool CONTACT::Interface::IntegrateOverlap_2D(CONTACT::CElement& sele,
+																			       CONTACT::CElement& mele)
 {
 	//cout << "Proc " << comm_.MyPID() << " checking pair... Slave ID: "
 	//		 << sele.Id() << " Master ID: " << mele.Id() << endl;
@@ -908,8 +946,8 @@ bool CONTACT::Interface::EvaluateOverlap_2D(CONTACT::CElement& sele,
 	
 	/**********************************************************************/
 	/* INTEGRATION																									    	*/
-	/* depending on overlap, sxia, sxib, mxia and mxib 									*/
-	/* integrate the Mortar matrices D, M and the weighted gap function   */
+	/* depending on overlap, sxia, sxib, mxia and mxib 									  */
+	/* integrate the Mortar matrix M and the weighted gap function g~      */
 	/* on the overlap of the current Slave / Master CElement pair         */
 	/**********************************************************************/
 	
@@ -920,13 +958,13 @@ bool CONTACT::Interface::EvaluateOverlap_2D(CONTACT::CElement& sele,
 	// create a 2D integrator instance of GP order 5
 	CONTACT::Integrator integrator(CONTACT_NGP,true);
 	
-	// do the three integrations
-	RCP<Epetra_SerialDenseMatrix> D_seg = integrator.Integrate_D(sele,sxia,sxib);
+	// do the two integrations
+	//RCP<Epetra_SerialDenseMatrix> D_seg = integrator.Integrate_D(sele,sxia,sxib);
 	RCP<Epetra_SerialDenseMatrix> M_seg = integrator.Integrate_M(sele,sxia,sxib,mele,mxia,mxib);
 	RCP<Epetra_SerialDenseVector> g_seg = integrator.Integrate_g(sele,sxia,sxib,mele,mxia,mxib);
 	
-	// do the three assemblies into the slave nodes
-	integrator.Assemble_D(*this,sele,*D_seg);
+	// do the two assemblies into the slave nodes
+	//integrator.Assemble_D(*this,sele,*D_seg);
 	integrator.Assemble_M(*this,sele,mele,*M_seg);
 	integrator.Assemble_g(*this,sele,*g_seg);
 		
@@ -963,6 +1001,140 @@ bool CONTACT::Interface::EvaluateOverlap_2D(CONTACT::CElement& sele,
 	}
 	
 	return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Assemble Mortar matrices and weighted gap                 popp 01/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Interface::Assemble(Epetra_CrsMatrix& Dglobal,
+																	Epetra_CrsMatrix& Mglobal,
+																	Epetra_Vector& gglobal)
+{
+	// loop over proc's slave nodes of the interface for assembly
+	// use standard row map to assemble each node only once
+	for (int i=0;i<snoderowmap_->NumMyElements();++i)
+	{
+		int gid = snoderowmap_->GID(i);
+		DRT::Node* node = idiscret_->gNode(gid);
+		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+		CNode* cnode = static_cast<CNode*>(node);
+
+		if (cnode->Owner() != comm_.MyPID())
+			dserror("ERROR: Assemble: Node ownership inconsistency!");
+		
+		// do nothing for this node, if all 3 maps are empty
+		if ((cnode->GetD()).size()==0 && (cnode->GetM()).size()==0 && (cnode->GetMmod()).size()==0)
+			continue;
+		
+		//********************************************************************
+		// assemble nodal contribution to D
+		//********************************************************************
+		if ((cnode->GetD()).size()>0)
+		{
+			vector<map<int,double> > Dmap = cnode->GetD();
+			int rowsize = cnode->NumDof();
+			int colsize = (int)Dmap[0].size();
+			
+			for (int j=0;j<rowsize-1;++j)
+				if ((int)Dmap[j].size() != (int)Dmap[j+1].size())
+					dserror("ERROR: Assemble: Column dim. of nodal D-map is inconsistent!");
+			
+			Epetra_SerialDenseMatrix Dnode(rowsize,colsize);
+			vector<int> lmrow(rowsize);
+			vector<int> lmcol(colsize);
+			vector<int> lmrowowner(rowsize);
+			map<int,double>::iterator colcurr;
+				
+			for (int j=0;j<rowsize;++j)
+			{
+				int row = cnode->Dofs()[j];
+				int k = 0;
+				lmrow[j] = row;
+				lmrowowner[j] = cnode->Owner();
+				
+				for (colcurr=Dmap[j].begin();colcurr!=Dmap[j].end();++colcurr)
+				{
+					int col = colcurr->first;
+					double val = colcurr->second;
+					lmcol[k] = col;
+					
+					if (row!=col && abs(val)>1.0e-12)
+						dserror("ERROR: Assemble: D-Matrix is not diagonal!");
+				
+					Dnode(j,k)=val;
+					++k;
+				}
+				
+				if (k!=colsize)
+					dserror("ERROR: Assemble: k = %i but colsize = %i",k,colsize);
+			}
+		
+			LINALG::Assemble(Dglobal,Dnode,lmrow,lmrowowner,lmcol);
+		}
+		
+		//********************************************************************
+		// assemble nodal contribution to M
+		//********************************************************************
+		if ((cnode->GetM()).size()>0)
+		{
+			vector<map<int,double> > Mmap = cnode->GetM();
+			int rowsize = cnode->NumDof();
+			int colsize = (int)Mmap[0].size();
+			
+			for (int j=0;j<rowsize-1;++j)
+				if ((int)Mmap[j].size() != (int)Mmap[j+1].size())
+					dserror("ERROR: Assemble: Column dim. of nodal M-map is inconsistent!");
+				
+			Epetra_SerialDenseMatrix Mnode(rowsize,colsize);
+			vector<int> lmrow(rowsize);
+			vector<int> lmcol(colsize);
+			vector<int> lmrowowner(rowsize);
+			map<int,double>::iterator colcurr;
+			
+			for (int j=0;j<rowsize;++j)
+			{
+				int row = cnode->Dofs()[j];
+				int k = 0;
+				lmrow[j] = row;
+				lmrowowner[j] = cnode->Owner();
+				
+				for (colcurr=Mmap[j].begin();colcurr!=Mmap[j].end();++colcurr)
+				{
+					int col = colcurr->first;
+					double val = colcurr->second;
+					lmcol[k] = col;
+					
+					Mnode(j,k)=val;
+					++k;
+				}
+				
+				if (k!=colsize)
+					dserror("ERROR: Assemble: k = %i but colsize = %i",k,colsize);
+			}
+			
+			LINALG::Assemble(Mglobal,Mnode,lmrow,lmrowowner,lmcol);
+		}
+		
+		//********************************************************************
+		// assemble nodal weighted gap g~
+		//********************************************************************
+		if (cnode->Getg()!=0.0)
+		{
+			double gap = cnode->Getg();
+			
+			Epetra_SerialDenseVector gnode(1);
+			vector<int> lm(1);
+			vector<int> lmowner(1);
+			
+			gnode(0) = gap;
+			lm[0] = cnode->Id();
+			lmowner[0] = cnode->Owner();
+			
+			LINALG::Assemble(gglobal,gnode,lm,lmowner);
+		}
+	}
+		
+	return;
 }
 
 /*----------------------------------------------------------------------*

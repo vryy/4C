@@ -15,6 +15,7 @@ Maintainer: Michael Gee
 #include "drt_contact_manager.H"
 #include "drt_cnode.H"
 #include "drt_celement.H"
+#include "../drt_lib/linalg_utils.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
@@ -250,12 +251,43 @@ void CONTACT::Manager::SetState(const string& statename, const RCP<Epetra_Vector
  *----------------------------------------------------------------------*/
 void CONTACT::Manager::Evaluate()
 {
-  // evaluate interfaces
-	// (nodal normals, projections, Mortar integration)
+	// setup global Epetra_Maps
+	gsnoderowmap_ = rcp(new Epetra_Map(interface_[0]->SlaveRowNodes()));
+	for (int i=0;i<(int)interface_.size();++i)
+		gsnoderowmap_ = LINALG::MergeMap(*gsnoderowmap_,interface_[i]->SlaveRowNodes());
+			
+	gsdofrowmap_ = rcp(new Epetra_Map(interface_[0]->SlaveRowDofs()));
+	for (int i=0;i<(int)interface_.size();++i)
+		gsdofrowmap_ = LINALG::MergeMap(*gsdofrowmap_,interface_[i]->SlaveRowDofs());
+	
+	gmdofrowmap_ = rcp(new Epetra_Map(interface_[0]->MasterRowDofs()));
+	for (int i=0;i<(int)interface_.size();++i)
+		gmdofrowmap_ = LINALG::MergeMap(*gmdofrowmap_,interface_[i]->MasterRowDofs());
+		
+	// setup global Epetra_CrsMatrices
+	D_ = LINALG::CreateMatrix(*gsdofrowmap_,10);
+	M_ = LINALG::CreateMatrix(*gsdofrowmap_,100);
+	g_ = LINALG::CreateVector(*gsnoderowmap_,true);
+		
+	// evaluate interfaces
+	// (nodal normals, projections, Mortar integration, Mortar assembly)
 	for (int i=0; i<(int)interface_.size(); ++i)
   {
-	  interface_[i]->Evaluate();
+	  interface_[i]->Evaluate(*D_,*M_,*g_);
   }
+	
+	// FillComplete() global Mortar matrices
+	LINALG::Complete(*D_);
+	LINALG::Complete(*M_,*gmdofrowmap_,*gsdofrowmap_);
+	
+	/*
+#ifdef DEBUG
+	cout << *D_;
+	cout << *M_;
+	cout << *g_;
+#endif // #ifdef DEBUG
+	*/
+	
   return;
 }
 

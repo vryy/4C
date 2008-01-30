@@ -602,8 +602,8 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::Integrate_g(CONTACT::CElement
 
 /*----------------------------------------------------------------------*
  |  Assemble D contribution                                   popp 01/08|
- |	This method assembles the contrubution of a 1D slave / master			  |
- |  overlap pair to the D map of the adjacent slave nodes.         			|
+ |	This method assembles the contrubution of a 1D slave element        |
+ |  to the D map of the adjacent slave nodes.         			            |
  *----------------------------------------------------------------------*/
 bool CONTACT::Integrator::Assemble_D(CONTACT::Interface& inter,
 																		 CONTACT::CElement& sele,
@@ -653,8 +653,8 @@ bool CONTACT::Integrator::Assemble_D(CONTACT::Interface& inter,
 		/*
 #ifdef DEBUG
 		cout << "Node: " << snode->Id() << "  Owner: " << snode->Owner() << endl;
-		map<int, double> nodemap0 = (snode->GetM())[0];
-		map<int, double> nodemap1 = (snode->GetM())[1];
+		map<int, double> nodemap0 = (snode->GetD())[0];
+		map<int, double> nodemap1 = (snode->GetD())[1];
 		typedef map<int,double>::const_iterator CI;
 				
 		cout << "Row dof id: " << sdofs[0] << endl;;

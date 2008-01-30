@@ -294,7 +294,9 @@ public:
   \brief Evaluate contact interface
       
   */
-  virtual void Evaluate();
+  virtual void Evaluate(Epetra_CrsMatrix& Dglobal,
+  											Epetra_CrsMatrix& Mglobal,
+  											Epetra_Vector& gglobal);
   
   /*!
   \brief Search algorithm for limitation of potentially contacting slave / master pairs
@@ -303,11 +305,25 @@ public:
   virtual bool EvaluateContactSearch();
   
   /*!
+  \brief Integrate Mortar matrix D on slave element (2D)
+          
+  */
+  virtual bool IntegrateSlave_2D(CONTACT::CElement& sele);
+  
+  /*!
   \brief Determine overlap and integrate slave / master pair (2D)
         
   */
-  virtual bool EvaluateOverlap_2D(CONTACT::CElement& sele,
-  													      CONTACT::CElement& mele);
+  virtual bool IntegrateOverlap_2D(CONTACT::CElement& sele,
+  													       CONTACT::CElement& mele);
+  
+  /*!
+  \brief Assemble Mortar matrices and weighted gap
+        
+  */
+  virtual void Assemble(Epetra_CrsMatrix& Dglobal,
+  											Epetra_CrsMatrix& Mglobal,
+  											Epetra_Vector& gglobal);
   
   /*!
   \brief Visualize node normals and projections with gmsh
