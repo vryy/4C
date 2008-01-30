@@ -23,9 +23,8 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_utils_integration.H"
 #include "../drt_lib/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_utils_local_connectivity_matrices.H"
+#include "xfem.H"
 
-typedef blitz::Array<double,1> BlitzVec; ///< a short-cut for a one-dimensional BLITZ vector
-typedef blitz::Array<double,2> BlitzMat; ///< a short-cut for a two-dimensional BLITZ matrix
 
 namespace XFEM
 {

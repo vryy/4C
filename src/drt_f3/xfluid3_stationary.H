@@ -34,7 +34,6 @@ Maintainer: Axel Gerstenberger
 #include <Epetra_SerialDenseSolver.h>
 
 using namespace std;
-using namespace XFEM::PHYSICS;
 
 
 typedef blitz::Array<double,1> BlitzVec; ///< a short-cut for a one-dimensional BLITZ vector
@@ -688,6 +687,8 @@ BlitzVec computeNormalToBoundaryElement(
           bool                              cstab          ///< flag for stabilisation
     )
   {
+    using namespace XFEM::PHYSICS;
+      
     // number of nodes for element
     const int numnode = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
       
@@ -743,39 +744,58 @@ BlitzVec computeNormalToBoundaryElement(
     // We define the variables i,j,k to be indices to blitz arrays.
     // These are used for array expressions, that is matrix-vector
     // products in the following.
-
     blitz::firstIndex i;    // Placeholder for the first index
     blitz::secondIndex j;   // Placeholder for the second index
     blitz::thirdIndex k;    // Placeholder for the third index
 
-    const DRT::Element::DiscretizationType stressdistype = XFLUID::getStressInterpolationType3D(XFLUID::getElementFormulation(DISTYPE));
+    const DRT::Element::DiscretizationType stressdistype = XFLUID::getStressInterpolationType3D(DISTYPE);
     
     // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
-    const int numparamvelx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velx, numnode);
-    const int numparamvely = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Vely, numnode);
-    const int numparamvelz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velz, numnode);
-    const int numparampres = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Pres, numnode);
-    const int numparamtauxx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxx, 0);
-    const int numparamtauyy = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauyy, 0);
-    const int numparamtauzz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauzz, 0);
-    const int numparamtauxy = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxy, 0);
-    const int numparamtauxz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxz, 0);
-    const int numparamtauyz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauyz, 0);
+    const int numparamvelx = getNumParam<ASSTYPE>(dofman, Velx, numnode);
+    const int numparamvely = getNumParam<ASSTYPE>(dofman, Vely, numnode);
+    const int numparamvelz = getNumParam<ASSTYPE>(dofman, Velz, numnode);
+    const int numparampres = getNumParam<ASSTYPE>(dofman, Pres, numnode);
+    const int numparamtauxx = getNumParam<ASSTYPE>(dofman, Tauxx, 0);
+    const int numparamtauyy = getNumParam<ASSTYPE>(dofman, Tauyy, 0);
+    const int numparamtauzz = getNumParam<ASSTYPE>(dofman, Tauzz, 0);
+    const int numparamtauxy = getNumParam<ASSTYPE>(dofman, Tauxy, 0);
+    const int numparamtauxz = getNumParam<ASSTYPE>(dofman, Tauxz, 0);
+    const int numparamtauyz = getNumParam<ASSTYPE>(dofman, Tauyz, 0);
     
     dsassert((numparamvelx == numparamvely and numparamvelx == numparamvelz and numparamvelx == numparampres),
             "for now, we enrich velocity and pressure together");
+    if (ASSTYPE == XFEM::standard_assembly)
+    {
+        //cout << "standard assembly" << endl;
+        dsassert(numparamtauxx == 0, "during standard assembly, we don't want stress unknowns");
+    }
+    else
+    {
+        //cout << "xfem assembly" << endl;
+    }
     
-    const vector<int> velxdof = dofman.LocalDofPosPerField(XFEM::PHYSICS::Velx);
-    const vector<int> velydof = dofman.LocalDofPosPerField(XFEM::PHYSICS::Vely);
-    const vector<int> velzdof = dofman.LocalDofPosPerField(XFEM::PHYSICS::Velz);
-    const vector<int> presdof = dofman.LocalDofPosPerField(XFEM::PHYSICS::Pres);
-    const vector<int> tauxxdof = dofman.LocalDofPosPerField(XFEM::PHYSICS::Tauxx);
-    const vector<int> tauyydof = dofman.LocalDofPosPerField(XFEM::PHYSICS::Tauyy);
-    const vector<int> tauzzdof = dofman.LocalDofPosPerField(XFEM::PHYSICS::Tauzz);
-    const vector<int> tauxydof = dofman.LocalDofPosPerField(XFEM::PHYSICS::Tauxy);
-    const vector<int> tauxzdof = dofman.LocalDofPosPerField(XFEM::PHYSICS::Tauxz);
-    const vector<int> tauyzdof = dofman.LocalDofPosPerField(XFEM::PHYSICS::Tauyz);
+    const vector<int> velxdof = dofman.LocalDofPosPerField(Velx);
+    const vector<int> velydof = dofman.LocalDofPosPerField(Vely);
+    const vector<int> velzdof = dofman.LocalDofPosPerField(Velz);
+    const vector<int> presdof = dofman.LocalDofPosPerField(Pres);
+    const vector<int> tauxxdof = dofman.LocalDofPosPerField(Tauxx);
+    const vector<int> tauyydof = dofman.LocalDofPosPerField(Tauyy);
+    const vector<int> tauzzdof = dofman.LocalDofPosPerField(Tauzz);
+    const vector<int> tauxydof = dofman.LocalDofPosPerField(Tauxy);
+    const vector<int> tauxzdof = dofman.LocalDofPosPerField(Tauxz);
+    const vector<int> tauyzdof = dofman.LocalDofPosPerField(Tauyz);
 
+//    cout << "numparamvelx  " << numparamvelx << "  " <<  velxdof.size() << endl;
+//    cout << "numparamtauxx " << numparamtauxx << "  " <<  tauxxdof.size() << endl;
+//    cout << "numparamtauyy " << numparamtauyy << "  " <<  tauyydof.size() << endl;
+//    cout << "numparamtauzz " << numparamtauzz << "  " <<  tauzzdof.size() << endl;
+//    cout << "numparamtauxy " << numparamtauxy << "  " <<  tauxydof.size() << endl;
+//    cout << "numparamtauxz " << numparamtauxz << "  " <<  tauxzdof.size() << endl;
+//    cout << "numparamtauyz " << numparamtauyz << "  " <<  tauyzdof.size() << endl;
+//    cout << ele->NumDofPerElement() << endl;
+//    if (numparamtauxx > 0)
+//        cout << tauxxdof[0] << " " << tauxxdof[1] << " " << tauxxdof[2] << " " << tauxxdof[3] << " " << endl;
+    
     // split velocity and pressure
     blitz::Array<double, 1> eprenp(numparampres);
     blitz::Array<double, 2> evelnp(3,numparamvelx,blitz::ColumnMajorArray<2>());
@@ -833,7 +853,7 @@ BlitzVec computeNormalToBoundaryElement(
       
       BlitzVec funct_stress(DRT::UTILS::getNumberOfElementNodes(stressdistype));
       BlitzMat deriv_stress(3, DRT::UTILS::getNumberOfElementNodes(stressdistype));
-      if (stressdistype != DRT::Element::dis_none)
+      if (stressdistype != DRT::Element::dis_none and numparamtauxx > 0)
       {
           DRT::UTILS::shape_function_3D(funct_stress,posXiDomain(0),posXiDomain(1),posXiDomain(2),stressdistype);
           DRT::UTILS::shape_function_3D_deriv1(deriv_stress,posXiDomain(0),posXiDomain(1),posXiDomain(2),stressdistype);
@@ -893,7 +913,7 @@ BlitzVec computeNormalToBoundaryElement(
                   *ele,
                   ih,
                   dofman,
-                  XFEM::PHYSICS::Velx,
+                  Velx,
                   gauss_pos,
                   funct_,
                   derxy_,
@@ -902,17 +922,20 @@ BlitzVec computeNormalToBoundaryElement(
                   enr_derxy_,
                   enr_derxy2_);
           
-          // shape functions for element dofs
-          XFEM::ComputeEnrichedStressShapefunction(
-                  *ele,
-                  ih,
-                  dofman,
-                  XFEM::PHYSICS::Tauxx,
-                  gauss_pos,
-                  funct_stress,
-                  derxy_stress,
-                  enr_funct_stress,
-                  enr_derxy_stress);
+          if (stressdistype != DRT::Element::dis_none and numparamtauxx > 0)
+          {
+              // shape functions for element dofs
+              XFEM::ComputeEnrichedStressShapefunction(
+                      *ele,
+                      ih,
+                      dofman,
+                      Tauxx,
+                      gauss_pos,
+                      funct_stress,
+                      derxy_stress,
+                      enr_funct_stress,
+                      enr_derxy_stress);
+          }
       }
       else
       {
@@ -1103,7 +1126,7 @@ BlitzVec computeNormalToBoundaryElement(
       /*   /                                                \
            |  2 N_x,xx + N_x,yy + N_y,xy + N_x,zz + N_z,xz  |
          1 |                                                |
-       - - |  N_y,xx + N_x,yx + 2 N_y,yy + N_z,yz + N_y,zz  |
+         - |  N_y,xx + N_x,yx + 2 N_y,yy + N_z,yz + N_y,zz  |
          2 |                                                |
            |  N_z,xx + N_x,zx + N_y,zy + N_z,yy + 2 N_z,zz  |
            \                                                /
@@ -1210,7 +1233,6 @@ BlitzVec computeNormalToBoundaryElement(
                          |              \ /   |
                           \                  /
             */
-            dserror("lala");
             assembler.template Matrix<Velx,Tauxx>(shp_dx, 2.0*fac*0.5, shp_tau);
             assembler.template Matrix<Velx,Tauxy>(shp_dy,     fac*0.5, shp_tau);
             assembler.template Matrix<Velx,Tauxz>(shp_dz,     fac*0.5, shp_tau);
@@ -1393,8 +1415,6 @@ BlitzVec computeNormalToBoundaryElement(
 
         if(pstab)
         {
-
-
           /* pressure stabilisation: convection, convective part */
           /*
                     /                            \
@@ -1601,7 +1621,7 @@ BlitzVec computeNormalToBoundaryElement(
     
     
     
-    
+#if 0
     if (ASSTYPE == XFEM::xfem_assembly)
     {
     
@@ -1715,7 +1735,7 @@ BlitzVec computeNormalToBoundaryElement(
                   *ele,
                   ih,
                   dofman,
-                  XFEM::PHYSICS::Velx,
+                  Velx,
                   gauss_pos,
                   funct_,
                   derxy_,
@@ -1729,7 +1749,7 @@ BlitzVec computeNormalToBoundaryElement(
                   *ele,
                   ih,
                   dofman,
-                  XFEM::PHYSICS::Tauxx,
+                  Tauxx,
                   gauss_pos,
                   funct_stress,
                   derxy_stress,
@@ -2218,7 +2238,7 @@ BlitzVec computeNormalToBoundaryElement(
     } // end loop over gauss points
     } // end loop over integration cells
     } // if (ASSTYPE == XFEM::xfem_assembly)
-   
+#endif
     return;
   }
   

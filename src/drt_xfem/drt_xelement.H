@@ -25,8 +25,6 @@ Maintainer: Axel Gerstenberger
 #include "physics.H"
 #include "dof_management.H"
 
-using namespace Teuchos;
-
 class XFEM::Enrichment;
 
 /*!

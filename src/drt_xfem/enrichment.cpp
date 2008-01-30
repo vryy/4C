@@ -135,28 +135,28 @@ double Enrichment::ModifiedEnrValue(
         enrval = 1.0;
         break;
     }
-//    case XFEM::Enrichment::typeVoid:
-//    {
-//        const int xfemcondition_label = this->XFEMConditionLabel();
-//        
-//        double actpos_enr_val = 0.0;
-//        if (PositionWithinCondition(actpos, xfemcondition_label,cutterdis)) {
-//            actpos_enr_val = 0.0;
-//        } else {
-//            actpos_enr_val = 1.0;
-//        }
-//        
-//        double nodepos_enr_val = 0.0;
-//        if (PositionWithinCondition(nodalpos, xfemcondition_label,cutterdis)) {
-//            nodepos_enr_val = 0.0;
-//        } else {
-//            nodepos_enr_val = 1.0;
-//        }
-//        
-//        enrval = actpos_enr_val - nodepos_enr_val;
-//        
-//        break;
-//    }
+    case XFEM::Enrichment::typeVoid:
+    {
+        const int xfemcondition_label = this->XFEMConditionLabel();
+        
+        double actpos_enr_val = 0.0;
+        if (PositionWithinCondition(actpos, xfemcondition_label,cutterdis)) {
+            actpos_enr_val = 0.0;
+        } else {
+            actpos_enr_val = 1.0;
+        }
+        
+        double nodepos_enr_val = 0.0;
+        if (PositionWithinCondition(nodalpos, xfemcondition_label,cutterdis)) {
+            nodepos_enr_val = 0.0;
+        } else {
+            nodepos_enr_val = 1.0;
+        }
+        
+        enrval = actpos_enr_val - nodepos_enr_val;
+        
+        break;
+    }
     case XFEM::Enrichment::typeJump:
     {
         const int xfemcondition_label = this->XFEMConditionLabel();
@@ -181,7 +181,7 @@ double Enrichment::ModifiedEnrValue(
     }
     
     default:
-        dserror("unsupported enrichment!");
+        dserror("unsupported enrichment (modified)!");
     }
     return enrval;
 }

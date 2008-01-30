@@ -22,8 +22,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_discret.H"
 
 
-using namespace std;
-
 // namespace for all xfem related stuff
 namespace XFEM
 {
@@ -121,7 +119,8 @@ public:
 	explicit ElementDofManager(
 	        DRT::Element& ele,
 			const map<int, const set<XFEM::FieldEnr> >&  nodalDofSet,
-		    const set<XFEM::FieldEnr>& elementDofs
+		    const set<XFEM::FieldEnr>& elementDofs,
+		    const int numeleparam
 		    );
 	ElementDofManager(const ElementDofManager& old);
 	
@@ -173,17 +172,17 @@ public:
     /// function that returns element specific number of dofs or the given default number
     inline int NumDofPerElement() const
     {
-        return elementDofs_.size();
+        return elementDofs_.size()*numeleparam_;
     };
     
     /// return number of dofs on this element for a given field. E.g., if we have 4 nodes with 
-    /// standard x displacements at each node and 2 enriched displacements, this function will return 6
+    /// standard x displacements at each node and 2 enriched x displacements, this function will return 6
+    /// we do not distuingish between nodal and element dofs
     inline int NumDofPerField(const XFEM::PHYSICS::Field field) const
     {
     	map<XFEM::PHYSICS::Field, int>::const_iterator tmp = numParamsPerField_.find(field);
     	if (tmp == numParamsPerField_.end()){
-    		cout << XFEM::PHYSICS::physVarToString(field) << endl;
-    		dserror("field not found!");
+            //cout << XFEM::PHYSICS::physVarToString(field) << endl;
     		return 0;
     	}
         return tmp->second;
@@ -195,32 +194,11 @@ public:
     	map<XFEM::PHYSICS::Field, vector<int> >::const_iterator tmp = paramsLocalEntries_.find(field);
     	if (tmp == paramsLocalEntries_.end()){
     		//cout << XFEM::PHYSICS::physVarToString(field) << endl;
-    		//dserror("field not found!");
     		return vector<int>(0);
     	}
         return tmp->second;
     };
     
-    //! return a set with all eixting enrichments in this element
-    inline std::set<XFEM::Enrichment> getUniqueEnrichmentSet() const
-    {
-        std::set<XFEM::Enrichment> enrset;
-        //! unknowns for each global node id (gid)
-        for (std::map<int, const set<XFEM::FieldEnr> >::const_iterator fieldenrsetiter = nodalDofSet_.begin(); fieldenrsetiter != nodalDofSet_.end(); ++fieldenrsetiter) {
-            const std::set<XFEM::FieldEnr> fieldenrset = fieldenrsetiter->second;
-            for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin(); fieldenr != fieldenrset.end(); ++fieldenr) {
-                enrset.insert(fieldenr->getEnrichment());
-            }
-        }
-
-        //! unknowns for each global node id (gid)
-        std::set<XFEM::FieldEnr> elementDofs_;
-        for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = elementDofs_.begin(); fieldenr != elementDofs_.end(); ++fieldenr) {
-            enrset.insert(fieldenr->getEnrichment());
-        }
-        return enrset;
-    }
-
     inline bool operator !=(const ElementDofManager& rhs) const
     {
         // in principle, they can be only not equal, if the nodalDofSet is not equal
@@ -243,6 +221,8 @@ private:
 
 	//! unknowns for each global node id (gid)
     std::set<XFEM::FieldEnr> elementDofs_;
+    
+    int numeleparam_;
 	
 	//! number of unknowns for each global node id (gid)
 	map<int, int> nodalNumDof_;
@@ -288,11 +268,13 @@ public:
         return entry->second;
     };
     
-    const XFEM::ElementDofManager constructElementDofManager(DRT::Element& ele) const;
+    const XFEM::ElementDofManager constructElementDofManager(DRT::Element& ele, const int numeleparam) const;
     
     void checkForConsistency(
             DRT::Element& ele,
-            const XFEM::ElementDofManager& eledofman) const;
+            const XFEM::ElementDofManager& eledofman,
+            const int numeleparam
+            ) const;
     
 private:
 	// pointer to the xfem discretization of which we hold the unknowns

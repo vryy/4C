@@ -225,8 +225,10 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         const RCP<XFEM::DofManager> globaldofman = params.get< RCP< XFEM::DofManager > >("dofmanager",null);
         if (globaldofman == null) dserror("hey, you did not give me a globaldofmanager (says xfluid3 evaluate)!!!");
         
+        const int numstressparam = 4;
+        
         // check for outdated dof information
-        globaldofman->checkForConsistency((*this), eleDofManager_);
+        globaldofman->checkForConsistency((*this), eleDofManager_, numstressparam);
           
         // need current velocity and history vector
         RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velnp");
@@ -479,8 +481,10 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           const RCP<XFEM::DofManager> globaldofman = params.get< RCP< XFEM::DofManager > >("dofmanager",null);
           if (globaldofman == null) dserror("hey, you did not give me a globaldofmanager (says xfluid3 evaluate)!!!");
           
+          const int numstressparam = 4;
+          
           // check for outdated dof information
-          globaldofman->checkForConsistency((*this), eleDofManager_);
+          globaldofman->checkForConsistency((*this), eleDofManager_, numstressparam);
           
           // get access to interface information
           const RCP<XFEM::InterfaceHandle> ih = params.get< RCP< XFEM::InterfaceHandle > >("interfacehandle",null);
@@ -542,7 +546,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
     	// get access to global dofman
     	const RCP<XFEM::DofManager> globaldofman = params.get< RCP< XFEM::DofManager > >("dofmanager",null);
     	// create local copy of information about dofs
-    	eleDofManager_ = globaldofman->constructElementDofManager((*this));
+    	eleDofManager_ = globaldofman->constructElementDofManager((*this), 4);
       }
     	break;
       default:

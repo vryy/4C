@@ -57,36 +57,8 @@ inline BlitzVec ComputeEnrichmentArrayForNodalDofs(
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
         const BlitzVec& actpos
-        )
-{
-    
-    BlitzVec enrvals(numparamvelx);
-    
-    DRT::Node** const nodes = ele.Nodes();
-    
-    int dofcounter = 0;
-    for (int inode=0; inode<ele.NumNode(); inode++)
-    {
-        const DRT::Node* node = nodes[inode]; 
-        const int gid = node->Id();
-        const BlitzVec nodalpos(toBlitzArray(node->X()));
+        );
 
-        const std::set<XFEM::FieldEnr> enrfieldset = dofman.FieldEnrSetPerNode(gid);
-
-        for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
-                enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
-        {
-            if (enrfield->getField() == field)
-            {
-                const XFEM::Enrichment enr = enrfield->getEnrichment();
-                enrvals(dofcounter) = enr.ModifiedEnrValue(actpos, nodalpos, ih->cutterdis());
-                dofcounter += 1;
-            }
-        }
-    }
-    dsassert(dofcounter == dofman.NumDofPerField(field), "mismatch in information from eledofmanager!");
-    return enrvals;
-}
 
 void ComputeEnrichedShapefunction(
         DRT::Element&  ele,
@@ -113,25 +85,6 @@ void ComputeEnrichedStressShapefunction(
         BlitzVec& enr_funct,
         BlitzMat& enr_derxy
         );
-
-inline std::map<Enrichment,double> getEnrichmentValues(
-        const RCP<XFEM::InterfaceHandle>  ih,
-        const XFEM::ElementDofManager& dofman,
-        const BlitzVec& actpos
-        )
-{
-    std::map<Enrichment,double> result;
-    
-    std::set<Enrichment> enrset= dofman.getUniqueEnrichmentSet();
-    for (std::set<Enrichment>::const_iterator enr = enrset.begin(); enr != enrset.end(); ++enr)
-    {
-        std::pair<Enrichment,double> p((*enr), enr->EnrValue(actpos, ih->cutterdis()));
-        result.insert(p);
-    }
-        
-    return result;
-}
-
 
 }
 

@@ -722,8 +722,10 @@ void XFluidEnsightWriter::WriteNodalResultStep(
                 const int elegid = elementmap->GID(iele);
                 DRT::Element* const actele = dis->gElement(elegid);
 
+                const int numeleparam = 4;
+                
                 // create local copy of information about dofs
-                const XFEM::ElementDofManager eledofman = dofman->constructElementDofManager(*actele);
+                const XFEM::ElementDofManager eledofman = dofman->constructElementDofManager(*actele, numeleparam);
 
                 vector<int> lm;
                 vector<int> lmowner;

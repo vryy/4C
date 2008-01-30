@@ -26,10 +26,6 @@ using namespace std;
 using namespace XFEM::PHYSICS;
 
 
-typedef blitz::Array<double,1> BlitzVec; ///< a short-cut for a one-dimensional BLITZ vector
-typedef blitz::Array<double,2> BlitzMat; ///< a short-cut for a two-dimensional BLITZ matrix
-
-
 //! for non-xfem elements, figure out the order of unknowns per node in the array
 template <XFEM::PHYSICS::Field field> int getFieldNumber()
 {

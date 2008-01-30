@@ -21,8 +21,6 @@ Maintainer: Axel Gerstenberger
 
 #include "../drt_lib/drt_element.H"
 
-typedef blitz::Array<double,1> BlitzVec; ///< a short-cut for a one-dimensional BLITZ vector
-typedef blitz::Array<double,2> BlitzMat; ///< a short-cut for a two-dimensional BLITZ matrix
 
 namespace XFLUID
 {
@@ -72,6 +70,31 @@ enum ElementFormulation
     Pm1Q2Pm1   ///< cont. quadratic velocity, discontinous pressure and stress (P_-1)
     
 };
+
+
+/*!
+\brief Returns the distype for stress interpolation
+       for each parent element discretization type in 3d
+     
+\return distype for stress interpolation
+*/  
+inline DRT::Element::DiscretizationType getStressInterpolationType3D(DRT::Element::DiscretizationType veldistype)
+{
+    //  if interpol names a interpolation type, we can return the appropriate stress interpolation
+    DRT::Element::DiscretizationType distype = DRT::Element::dis_none;
+    switch (veldistype)
+    {
+        case DRT::Element::hex8:
+            distype = DRT::Element::tet4;
+            break;
+        case DRT::Element::hex27:
+            distype = DRT::Element::hex27;
+            break;
+        default:
+            dserror("no stressdistype defined for velocity distype");
+    }
+    return distype;
+}
 
 /*!
 \brief Returns the distype for stress interpolation
