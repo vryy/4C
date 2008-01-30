@@ -531,32 +531,6 @@ public:
 
   //@}
 
-  //! @name For the construction of interface
-  /*!
-  \brief Return number of faces connected to this element
-  
-  */
-  virtual int NumFace() const {return 0;}
-  
-  /*!
-  \brief Return primary node of a particular face
-  
-  */
-  virtual DRT::Node* FacePrimNode(const int iface) { return NULL; }
-  
-  /*!
-  \brief Return nodeids of a particular face
-  
-  */
-  virtual vector<int> FaceNodeIds(const int iface, DRT::Element::ApproachSide side) {return nodeid_;}
-    
-  /*!
-  \brief Tell the element to create a particular interface
-  */
-  virtual DRT::Element* CreateFace(const int facenumberl, const int elementidr, const int facenumberr) {return NULL;}
-  
-  //@}
-  
   //! @name Conditions
 
   /*!

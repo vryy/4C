@@ -76,11 +76,6 @@ public:
   virtual inline bool Filled() const {return filled_;}
 
   /*!
-  \brief Get flag indicating whether interfaces need to be created
-  */
-  virtual inline bool RequiresInterfaces() const {return requireinterfaces_;}
-
-  /*!
   \brief Get name of this discretization
   */
   virtual inline const string& Name() const {return name_;}
@@ -460,14 +455,6 @@ public:
   virtual int FillComplete(bool assigndegreesoffreedom=true,
                            bool initelements = true,
                            bool doboundaryconditions = true);
-
-  
-  /*!
-   \brief Construct interfaces
-  
-   More comment will follow
-  */ 
-  virtual int ConstructInterfaces();
   
   //@}
 
@@ -1339,7 +1326,6 @@ protected:
   RefCountPtr<Epetra_Comm>                      comm_;              // an Epetra_comm
   bool                                          filled_;            // flag indicating whether getOrganized has been called
   bool                                          havedof_;           // flag indicating whether degrees of freedom where assigned
-  bool                                          requireinterfaces_; // flag indicating whether this discretization requires interfaces
   
   RefCountPtr<Epetra_Map>                       dofrowmap_;         // unique row map of degrees of freedom (node and element dofs))
   RefCountPtr<Epetra_Map>                       dofcolmap_;         // unique column map of degrees of freedom (node and element dofs))

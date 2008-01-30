@@ -31,7 +31,6 @@ name_(name),
 comm_(comm),
 filled_(false),
 havedof_(false),
-requireinterfaces_(false),
 currentdofset_(0)
 {
   dofsets_.push_back(rcp(new DofSet()));
@@ -42,7 +41,6 @@ currentdofset_(0)
  *----------------------------------------------------------------------*/
 DRT::Discretization::Discretization(const DRT::Discretization& old) :
 name_(old.name_),
-requireinterfaces_(old.requireinterfaces_),
 state_(old.state_)
 {
   comm_ = rcp(old.comm_->Clone());

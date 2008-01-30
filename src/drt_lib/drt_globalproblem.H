@@ -162,9 +162,6 @@ public:
   /// input of conditions
   void ReadConditions();
 
-  /// Construct interfaces
-  void ConstructInterfaces();
-
   //@}
 
   /// @name Parameters read from file

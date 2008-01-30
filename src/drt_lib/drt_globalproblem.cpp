@@ -763,23 +763,6 @@ void DRT::Problem::ReadFields(DRT::DatFileReader& reader)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::ConstructInterfaces()
-{
-	for (unsigned i=0; i<NumFields(); ++i)
-	{
-		for (unsigned j=0; j<NumDis(i); ++j)
-		{
-			RefCountPtr<DRT::Discretization> actdis = Dis(i,j);
-
-			if (actdis->RequiresInterfaces())
-				actdis->ConstructInterfaces();
-		}
-	}
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void DRT::Problem::setParameterList(Teuchos::RCP< Teuchos::ParameterList > const &paramList)
 {
   try {
