@@ -137,9 +137,10 @@ static void input_line_LIFTDRAG(multimap<int,RefCountPtr<DRT::Condition> >& lldm
 static void input_surf_LIFTDRAG(multimap<int,RefCountPtr<DRT::Condition> >& sldmap);
 
 /*----------------------------------------------------------------------*
- | boundary surface for volume constraint                    tk 10/07   |
+ | boundary surface for volume/area constraint               tk 01/08   |
  *----------------------------------------------------------------------*/
 static void input_surf_volconstr(multimap<int,RefCountPtr<DRT::Condition> >& vcbcmap);
+static void input_surf_areaconstr(multimap<int,RefCountPtr<DRT::Condition> >& acbcmap);
 
 /*----------------------------------------------------------------------*
  | input of conditions                                    m.gee 11/06   |
@@ -301,7 +302,12 @@ void DRT::Problem::ReadConditions()
   //--------------------- read surf conditions for volume constraint
   multimap<int,RefCountPtr<DRT::Condition> > surfvolconstr;
   input_surf_volconstr(surfvolconstr);
-  setup_condition(surfvolconstr, dsurf_fenode);
+  setup_condition(surfvolconstr, dsurf_fenode);  
+  
+  //--------------------- read surf conditions for area constraint
+  multimap<int,RefCountPtr<DRT::Condition> > surfareaconstr;
+  input_surf_areaconstr(surfareaconstr);
+  setup_condition(surfareaconstr, dsurf_fenode);
 
 
   // Iterate through all discretizations and sort the appropiate condition into
@@ -2481,6 +2487,86 @@ void input_surf_volconstr(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
 
     condition->Add("ConditionID",&VolConstrID,1);
     condition->Add("curve",&VolConstrCurve,1);
+
+    //------------------------------- put condition in map of conditions
+    snmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dsurfid,condition));
+
+    //-------------------------------------------------- read the next line
+    frread();
+  } // while(strncmp(allfiles.actplace,"------",6)!=0)
+  return;
+};
+
+/*----------------------------------------------------------------------------*
+ | input of area constraint surfaces                                 tk 01/08 |
+ *----------------------------------------------------------------------------*/
+void input_surf_areaconstr(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
+{
+  /*-------------------- find the beginning of volume constraint surface */
+  if (frfind("---DESIGN SURFACE AREA CONSTRAINT 3D")==0)
+	  {
+	    return;
+	  }
+
+  frread();
+  /*--------------------- read number of design surfaces with conditions */
+  int ierr=0;
+  int ndsurf=0;
+  frint("DSURF",&ndsurf,&ierr);
+  if(ierr!=1)
+    dserror("Cannot read design-surface for area constraint 3D");
+  frread();
+
+  /*------------------------------------- start reading the design surfs */
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    /*------------------------------------------ read the design surf Id */
+    int dsurfid = -1;
+    frint("E",&dsurfid,&ierr);
+    if(ierr!=1)
+      dserror("Cannot read design-surface for area constraint 3D");
+    dsurfid--;
+
+    /*--------------------------------- move pointer behind the "-" sign */
+    char* colptr = strstr(allfiles.actplace,"-");
+    if(colptr==NULL)
+       dserror("Cannot read design-surface for area constraint 3D");
+    colptr++;
+
+    //------------------------------- define some temporary reading vectors
+    int    	AreaConstrID=strtol(colptr,&colptr,10);
+    int  	AreaConstrCurve=-1;
+
+    //---------------------------------- read the curve number or 'none'
+    char buffer[200];
+    ierr=sscanf(colptr," %s ",buffer);
+    if(ierr!=1)
+      dserror("Cannot read design-surface for area constraint 3D");
+    if (strncmp(buffer,"none",4)==0)
+    {
+       colptr = strstr(allfiles.actplace,"none");
+       if(colptr==NULL)
+         dserror("Cannot read design-surface for area constraint 3D");
+       colptr += 4;
+    }
+    else
+    {
+       ierr=sscanf(colptr," %d ",&AreaConstrCurve);
+       AreaConstrCurve--;
+       if(ierr!=1)
+         dserror("Cannot read design-surface for area constraint 3D");
+       colptr = strpbrk(colptr,"1234567890");
+       colptr++;
+    }
+
+
+    // create boundary condition
+    RefCountPtr<DRT::Condition> condition =
+           rcp(new DRT::Condition(dsurfid,DRT::Condition::AreaConstraint_3D,true,
+                                  DRT::Condition::Surface));
+
+    condition->Add("ConditionID",&AreaConstrID,1);
+    condition->Add("curve",&AreaConstrCurve,1);
 
     //------------------------------- put condition in map of conditions
     snmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dsurfid,condition));

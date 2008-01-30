@@ -104,7 +104,8 @@ public:
     FluidStressCalc,
     LineLIFTDRAG,
     SurfLIFTDRAG,
-    VolumeConstraint_3D
+    VolumeConstraint_3D,
+    AreaConstraint_3D
   };
 
   /*!

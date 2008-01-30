@@ -101,6 +101,7 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==SurfaceStress)               os << "Surface stress condition:";
   else if (Type()==MicroBoundary)               os << "Microscale boundary condition:";
   else if (Type()==VolumeConstraint_3D)         os << "Volume constraint surface boundary condition:";
+  else if (Type()==AreaConstraint_3D)			os << "Area constraint surface boundary condition:";
 
   else dserror("no output string for condition defined in DRT::Condition::Print");
   Container::Print(os);
