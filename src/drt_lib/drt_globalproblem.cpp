@@ -197,6 +197,17 @@ void DRT::Problem::InputControl()
     genprob.numaf=2;
     break;
   }
+  case prb_fsi_xfem:
+  {
+    genprob.numsf=0;
+    genprob.numff=1;
+    if (genprob.numfld==3)
+    {
+      dserror("ale support tuned of for fsi xfem problems. choose numfld = 2!");
+      genprob.numaf=2;
+    }
+    break;
+  }
   case prb_fluid:
   {
     genprob.numff=0;
@@ -262,9 +273,9 @@ void DRT::Problem::InputControl()
 
   // input of general solver data
 
-  /* for FSI */
   switch (genprob.probtyp)
   {
+  /* for FSI */
   case prb_fsi:
   {
     if (genprob.numfld!=3) dserror("numfld != 3 for FSI");
@@ -280,6 +291,20 @@ void DRT::Problem::InputControl()
 
     solv[genprob.numaf].fieldtyp = ale;
     InputSolverControl("ALE SOLVER",&(solv[genprob.numaf]));
+    break;
+  }
+  case prb_fsi_xfem:
+  {
+    if (genprob.numfld!=2) dserror("numfld != 2 for FSI XFEM problem");
+
+    solver_.resize(genprob.numfld);
+    solv = &solver_[0];
+
+    solv[genprob.numsf].fieldtyp = structure;
+    InputSolverControl("STRUCT SOLVER",&(solv[genprob.numsf]));
+
+    solv[genprob.numff].fieldtyp = fluid;
+    InputSolverControl("FLUID SOLVER",&(solv[genprob.numff]));
     break;
   }
   /* for structure */
@@ -529,6 +554,33 @@ void DRT::Problem::ReadFields(DRT::DatFileReader& reader)
 
     nodereader.Read();
     break;
+  }
+  case prb_fsi_xfem:
+  {
+    // allocate and input general old stuff....
+    dsassert(genprob.numfld==2, "numfld != 2 for fluid problem with XFEM interfaces");
+    field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
+    field[genprob.numsf].fieldtyp = structure;
+    field[genprob.numff].fieldtyp = fluid;
+
+    // obsolete
+    field[genprob.numsf].ndis = DiscretisationParams().get<int>("NUMSTRUCDIS");
+    field[genprob.numff].ndis = DiscretisationParams().get<int>("NUMFLUIDDIS");
+
+    structdis = rcp(new DRT::Discretization("Structure",reader.Comm()));
+    fluiddis = rcp(new DRT::Discretization("Fluid",reader.Comm()));
+
+    AddDis(genprob.numsf, structdis);
+    AddDis(genprob.numff, fluiddis);
+
+    DRT::NodeReader nodereader(reader, "--NODE COORDS");
+
+    nodereader.AddElementReader(rcp(new DRT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+    nodereader.AddElementReader(rcp(new DRT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+
+    nodereader.Read();
+    break;
+    
   }
   case prb_ale:
   {

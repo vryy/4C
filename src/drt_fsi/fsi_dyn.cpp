@@ -345,4 +345,37 @@ void fsi_ale_drt()
   Teuchos::TimeMonitor::summarize();
 }
 
+/*----------------------------------------------------------------------*/
+// entry point for FSI using XFEM in DRT
+/*----------------------------------------------------------------------*/
+void xfsi_drt()
+{
+#ifdef PARALLEL
+  Epetra_MpiComm comm(MPI_COMM_WORLD);
+#else
+  Epetra_SerialComm comm;
+#endif
+
+  dserror("XFEM FSI is not operational yet!");
+  
+  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+  Teuchos::RefCountPtr<FSI::DirichletNeumannCoupling> fsi = rcp(new FSI::DirichletNeumannCoupling(comm));
+
+  if (genprob.restart)
+  {
+      // read the restart information, set vectors and variables
+      fsi->ReadRestart(genprob.restart);
+  }
+
+  fsi->Timeloop(fsi);
+
+#ifdef RESULTTEST
+  DRT::ResultTestManager testmanager(comm);
+  testmanager.AddFieldTest(rcp(new FluidResultTest(fsi->FluidField())));
+  testmanager.TestAll();
+#endif
+
+  Teuchos::TimeMonitor::summarize();
+}
+
 #endif

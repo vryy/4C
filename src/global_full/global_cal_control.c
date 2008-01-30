@@ -274,6 +274,13 @@ case prb_pfsi:
   fsi_ale_drt();
 #endif
   break;
+case prb_fsi_xfem:
+#ifndef CCADISCRET
+  dserror("prb_xfsi without DRT not impl.");;
+#else
+  xfsi_drt();
+#endif
+  break;
 #endif
 
 #ifdef D_SSI

@@ -11,6 +11,9 @@ extern "C"
 /* headers and prototypes of functions also accessible from c */
 void fsi_ale_drt();
 
+/* headers and prototypes of functions also accessible from c */
+void xfsi_drt();
+
 #ifdef __cplusplus
 }
 #endif

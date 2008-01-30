@@ -16,6 +16,7 @@ Maintainer: Malte Neumann
 typedef enum _PROBLEM_TYP
 {
                        prb_fsi,          /*  fluid structure interaction problem */
+                       prb_fsi_xfem,     /*  fluid structure interaction problem including XFEM interfaces*/
                        prb_ssi,          /*  structure structure interaction problem */
                        prb_structure,    /*  structural problem */
                        prb_fluid,        /*  fluid problem */
@@ -32,7 +33,7 @@ typedef enum _PROBLEM_TYP
  * initialize static variables. Keep in sync!
  * The trailing NULL is essential for the filters to read the problem
  * type! */
-#define PROBLEMNAMES { "fsi","ssi","structure","fluid","opt","ale","tsi","fluid_pm","condif","pfsi","fsi_xfem", "struct_multi", NULL }
+#define PROBLEMNAMES { "fsi","prb_fsi_xfem","ssi","structure","fluid","opt","ale","tsi","fluid_pm","condif","pfsi","fsi_xfem", "struct_multi", NULL }
 /*----------------------------------------------------------------------*
  | TIME TYPES                                             m.gee 7/01    |
  *----------------------------------------------------------------------*/
