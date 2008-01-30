@@ -60,6 +60,14 @@ public:
   //! constructor
   Mesh(string exofilename);
   
+  //! extension constructor, adds Elementblock and nodes to a basemesh
+  Mesh(const Mesh basemesh,
+       const map<int,vector<double> >extNodes,
+       const map<int,ElementBlock> extBlocks,
+       const map<int,NodeSet> extNodesets,
+       const map<int,SideSet> extSidesets,
+       const string newtitle);
+  
   //! destructor
   virtual ~Mesh();
   
@@ -70,13 +78,19 @@ public:
   void PrintNodes(ostream& os, bool storeid=false) const;
   
   //! Get numer of nodes in mesh
-  int GetNumNodes() const {return num_nodes_;}
+  int GetNumNodes() const {return nodes_.size();}
   
   //! Get number of elements in mesh
   int GetNumEle() const {return num_elem_;}
   
+  //! Get number of dimensions
+  int GetNumDim() const {return num_dim_;}
+  
   //! Get exodus file id
   int GetExoId() const {return exoid_;}
+  
+  //! Get mesh title
+  string GetTitle() const {string title(title_,int(MAX_LINE_LENGTH+1)); return title;} 
   
   //! Get ElementBlock map
   map<int,ElementBlock> GetElementBlocks() const {return elementBlocks_;}
@@ -125,14 +139,12 @@ private:
   
   //! number of dimensions
   int num_dim_;
-  //! number of nodes
-  int num_nodes_;
   //! number of elements
   int num_elem_;
   //! exoid
   int exoid_;
   //! title
-  char title_[MAX_LINE_LENGTH+1];
+  string title_;
 };
 
 

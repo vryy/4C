@@ -52,18 +52,22 @@ EXODUS::Mesh::Mesh(string exofilename)
   cout<<exofilename<<" was created with EXODUS II library version "<<exoversion<<endl;
 
   // read database parameters
-  int num_elem_blk,num_node_sets,num_side_sets;
-  error = ex_get_init (exoid_, title_, &num_dim_, &num_nodes_,&num_elem_, &num_elem_blk, &num_node_sets, &num_side_sets);
+  int num_elem_blk,num_node_sets,num_side_sets,num_nodes;
+  char title[MAX_LINE_LENGTH+1];
+  error = ex_get_init (exoid_, title, &num_dim_, &num_nodes,&num_elem_, &num_elem_blk, &num_node_sets, &num_side_sets);
+  string stitle(title,int(MAX_LINE_LENGTH+1));
+  title_ = stitle;
+  if (num_dim_ != 3) dserror("only 3 dimensions for mesh, yet");
 
   // get nodal coordinates
-  float x[num_nodes_];
-  float y[num_nodes_];
-  float z[num_nodes_];
+  float x[num_nodes];
+  float y[num_nodes];
+  float z[num_nodes];
   error = ex_get_coord(exoid_,x,y,z);
   if (error != 0) dserror("exo error returned");
   
   // store nodes in map
-  for (int i = 0; i < num_nodes_; ++i) {
+  for (int i = 0; i < num_nodes; ++i) {
     vector<double> coords;
     coords.push_back(x[i]);
     coords.push_back(y[i]);
@@ -195,6 +199,79 @@ EXODUS::Mesh::~Mesh()
 }
 
 /*----------------------------------------------------------------------*
+ |  Extension constructor (public)                             maf 01/08|
+ *----------------------------------------------------------------------*/
+EXODUS::Mesh::Mesh(const EXODUS::Mesh basemesh,
+                   const map<int,vector<double> >extNodes,
+                   const map<int,ElementBlock> extBlocks,
+                   const map<int,NodeSet> extNodesets,
+                   const map<int,SideSet> extSidesets,
+                   const string newtitle)
+{
+  // get all data from basemesh
+  int basedim     = GetNumDim();
+  int basenumele  = GetNumEle();
+  map<int,vector<double> > baseNodes = basemesh.GetNodes();
+  map<int,ElementBlock>    baseEblocks = basemesh.GetElementBlocks();
+  map<int,NodeSet>         baseNodesets = basemesh.GetNodeSets();
+  map<int,SideSet>         baseSidesets = basemesh.GetSideSets();
+  
+  // get infos from extension
+  int extnumele = extBlocks.size();
+  
+  /********************* merge everything into new mesh ***********************/
+  title_ = newtitle;
+  num_dim_ = basedim;
+  num_elem_ = basenumele + extnumele;
+  exoid_ = basemesh.GetExoId(); //basefile still used for writing minor infos, e.g. qa record or coordnames
+  
+  // merge nodes
+  map<int,vector<double> >::const_iterator i_node;
+  for(i_node = baseNodes.begin(); i_node != baseNodes.end(); ++i_node){
+    nodes_.insert(pair<int,vector<double> >(i_node->first,i_node->second));
+  }
+  for(i_node = extNodes.begin(); i_node != extNodes.end(); ++i_node){
+    pair< map<int,vector<double> >::iterator, bool > check;
+    check = nodes_.insert(pair<int,vector<double> >(i_node->first,i_node->second));
+    if (check.second == false) dserror("Extension node already exists!");
+  }
+  
+  // merge ElementBlocks
+  map<int,ElementBlock>::const_iterator i_block;
+  for(i_block = baseEblocks.begin(); i_block != baseEblocks.end(); ++i_block){
+    elementBlocks_.insert(pair<int,ElementBlock>(i_block->first,i_block->second));
+  }
+  for(i_block = extBlocks.begin(); i_block != extBlocks.end(); ++i_block){
+    pair< map<int,ElementBlock>::iterator, bool > check;
+    check = elementBlocks_.insert(pair<int,ElementBlock>(i_block->first,i_block->second));
+    if (check.second == false) dserror("Extension ElementBlock already exists!");
+  }
+  
+  // merge NodeSets
+  map<int,NodeSet>::const_iterator i_ns;
+  for(i_ns = baseNodesets.begin(); i_ns != baseNodesets.end(); ++i_ns){
+    nodeSets_.insert(pair<int,NodeSet>(i_ns->first,i_ns->second));
+  }
+  for(i_ns = extNodesets.begin(); i_ns != extNodesets.end(); ++i_ns){
+    pair< map<int,NodeSet>::iterator, bool > check;
+    check = nodeSets_.insert(pair<int,NodeSet>(i_ns->first,i_ns->second));
+    if (check.second == false) dserror("Extension NodeSet already exists!");
+  }
+
+  // merge SideSets
+  map<int,SideSet>::const_iterator i_ss;
+  for(i_ss = baseSidesets.begin(); i_ss != baseSidesets.end(); ++i_ss){
+    sideSets_.insert(pair<int,SideSet>(i_ss->first,i_ss->second));
+  }
+  for(i_ss = extSidesets.begin(); i_ss != extSidesets.end(); ++i_ss){
+    pair< map<int,SideSet>::iterator, bool > check;
+    check = sideSets_.insert(pair<int,SideSet>(i_ss->first,i_ss->second));
+    if (check.second == false) dserror("Extension SideSet already exists!");
+  }
+}
+
+
+/*----------------------------------------------------------------------*
  |  Close corresponding Exofile(public)                        maf 12/07|
  *----------------------------------------------------------------------*/
 void EXODUS::Mesh::CloseExo()
@@ -212,7 +289,7 @@ void EXODUS::Mesh::CloseExo()
 void EXODUS::Mesh::Print(ostream & os, bool verbose) const
 {
   os << "Mesh consists of ";
-  os << num_nodes_ << " Nodes, ";
+  os << GetNumNodes() << " Nodes, ";
   os << num_elem_ << " Elements, organized in " << endl;
   os << GetNumElementBlocks() << " ElementBlocks, ";
   os << GetNumNodeSets() << " NodeSets, ";
@@ -295,8 +372,10 @@ void EXODUS::Mesh::WriteMesh(string newexofilename)
   int num_elem_blk = GetNumElementBlocks();
   int num_node_sets = GetNumNodeSets();
   int num_side_sets = GetNumSideSets();
+  int num_nodes = GetNumNodes();
   /* initialize file with parameters */
-  error = ex_put_init (exoid, title_, num_dim_, num_nodes_, num_elem_,num_elem_blk, num_node_sets, num_side_sets);
+  const char* title = title_.c_str();
+  error = ex_put_init (exoid, title, num_dim_, num_nodes, num_elem_,num_elem_blk, num_node_sets, num_side_sets);
   if (error!=0) dserror("error in exfile init");
   
   /* Write QA record based on original exofile */
@@ -324,9 +403,9 @@ void EXODUS::Mesh::WriteMesh(string newexofilename)
   for (int i=0; i<num_dim_; i++) free(coord_names[i]);
   
   // Write nodal coordinates
-  float x[num_nodes_];
-  float y[num_nodes_];
-  float z[num_nodes_];
+  float x[num_nodes];
+  float y[num_nodes];
+  float z[num_nodes];
   map<int,vector<double> >::const_iterator it;
   map<int,vector<double> > nodes = GetNodes();
   for(it=nodes.begin(); it != nodes.end(); ++it){
