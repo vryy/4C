@@ -355,6 +355,7 @@ void DRT::Problem::ReadConditions()
       register_condition("LIFTDRAG", "Surf LIFTDRAG", surfLIFTDRAG, actdis, noderowmap);
 
       register_condition("VolumeConstraint_3D","Surface Volume Constraint",surfvolconstr,actdis, noderowmap);
+      register_condition("AreaConstraint_3D","Surface Area Constraint",surfareaconstr,actdis, noderowmap);
     }
   }
 }
