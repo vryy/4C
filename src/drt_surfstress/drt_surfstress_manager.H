@@ -158,9 +158,6 @@ private:
 
   //! name@ Private Attributes
 
-  // current time
-  double time_;
-
   // current discretization
   DRT::Discretization& discret_;
 
@@ -175,6 +172,9 @@ private:
 
   // non-dimensionalized surfactant concentrations of former time step
   RefCountPtr<Epetra_Vector> con_quot_;
+
+  // current time
+  RefCountPtr<Epetra_Vector> time_;
 
   //@}
 }; //class

@@ -25,11 +25,11 @@ DRT::SurfStressManager::SurfStressManager(DRT::Discretization& discret,
                                           const Epetra_Map& surfmap):
 discret_(discret)
 {
-  time_ = 0.0;
   A_old_temp_    = rcp(new Epetra_Vector(surfmap,true));
   A_old_         = rcp(new Epetra_Vector(surfmap,true));
   con_quot_temp_ = rcp(new Epetra_Vector(surfmap,true));
   con_quot_      = rcp(new Epetra_Vector(surfmap,true));
+  time_          = rcp(new Epetra_Vector(surfmap,true));
 }
 
 /*-------------------------------------------------------------------*
@@ -92,11 +92,11 @@ void DRT::SurfStressManager::StiffnessAndInternalForces(const Epetra_SerialDense
   int LID = A_old_->Map().LID(ID);
 
   /*---------------------------------------------- update if necessary */
-  if (time != time_)
+  if (time != (*time_)[LID])
   {
     (*A_old_)[LID] = (*A_old_temp_)[LID];
     (*con_quot_)[LID] = (*con_quot_temp_)[LID];
-    time_ = time;
+    (*time_)[LID] = time;
   }
 
   /*--------------------------------------------------- initialization */
@@ -120,6 +120,8 @@ void DRT::SurfStressManager::StiffnessAndInternalForces(const Epetra_SerialDense
       gamma_calc(gamma, dgamma, (*con_quot_temp_)[LID], (*A_old_)[LID], (*A_old_temp_)[LID], dt, k1xC, k2, m1,
                m2, gamma_0, gamma_min, gamma_min_eq, con_quot_max);
     }
+    // cout << "ID: " << ID << " con_quot_old: " << (*con_quot_)[LID] << " con_quot_new: "
+    //      << (*con_quot_temp_)[LID] << " gamma: " << gamma << " dgamma: " << dgamma << endl;
   }
 
   else if (surface_flag==1)                             // SURFACE TENSION
@@ -140,7 +142,8 @@ void DRT::SurfStressManager::StiffnessAndInternalForces(const Epetra_SerialDense
   }
   if (time<100.*dt)     /* gradual application of surface stress */
   {
-    K_surf.Scale(-2*pow(time/(99.*dt), 3)+3*pow(time/(99.*dt), 2));
+    if (time<99.*dt)
+      K_surf.Scale(-2*pow(time/(98.*dt), 3)+3*pow(time/(98.*dt), 2));
   }
 
   /*------calculation of current internal force due to surface energy*/
@@ -150,7 +153,8 @@ void DRT::SurfStressManager::StiffnessAndInternalForces(const Epetra_SerialDense
   }
   if (time<100.*dt)       /* gradual application of surface stress */
   {
-    fint.Scale(-2*pow(time/(99.*dt), 3)+3*pow(time/(99.*dt), 2));
+    if (time<99.*dt)
+      fint.Scale(-2*pow(time/(98.*dt), 3)+3*pow(time/(98.*dt), 2));
   }
 
   return;
