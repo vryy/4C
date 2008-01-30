@@ -153,14 +153,6 @@ public:
     max_distype                 //  end marker. must be the last entry
   };
 
-  /*!
-   \brief Approach side for an interface
-  */
-  enum ApproachSide
-  {
-	  approachleft,
-	  approachright
-  };
   //@}
 
   //! @name Constructors and destructors and related methods
