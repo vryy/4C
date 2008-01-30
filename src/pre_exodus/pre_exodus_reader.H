@@ -251,6 +251,13 @@ private:
   string name_;
 };
 
+// Exodus NodeIds start from 1 but are stored starting from 0
+inline int ExoToStore(const int ExoID){
+  if(ExoID-1 != 0) return ExoID-1;
+  else dserror("error in NodeID: Exo or Store?");
+  return 0;
+}
+inline int StoreToExo(const int StoreID){return StoreID+1;}
 
 inline ElementBlock::Shape StringToShape(const string shape)
 {

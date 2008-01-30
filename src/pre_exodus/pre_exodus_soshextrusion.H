@@ -36,32 +36,15 @@ using namespace Teuchos;
 namespace EXODUS
 {
 
-/*!
-\class Soshextrusion
+Mesh SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness, int layers);
 
-\brief Soshextrusion handles the extrusion of a solid-shell mesh body based
-on a surface mesh
+bool CheckExtrusion(const EXODUS::ElementBlock eblock);
 
+vector<int> RiseNodeIds(const int highestnode, const vector<int> elenodes);
 
-\author maf (frenzel@lnm.mw.tum.de)
-*/
-class Soshextrusion : public Mesh
-{
-public:
-  //! constructor
-  Soshextrusion(string exofilename, double thickness, int layers);
-  
-  //! destructor
-  virtual ~Soshextrusion();
-  
-  bool CheckExtrusion(const ElementBlock eblock);
-  
-  vector<int> RiseNodes(const int highestnode, const vector<int> elenodes);
-  
-  //PreNode* ExtrapolateNode(PreNode& actnode, const int newid);
-};
+vector<double> ExtrudeNodeCoords(const vector<double> basecoords, double distance);
 
-} // of namepsace EXODUS
+} // of namespace EXODUS
 
 #endif /*PRE_EXODUS_SOSHEXTRUSION_H_*/
 #endif /*EXODUS*/

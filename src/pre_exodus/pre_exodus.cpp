@@ -79,18 +79,6 @@ int main(
       exit(1);
     }
     
-    // generate solid shell extrusion based on exodus file
-    if (soshthickness!=0.0){
-      if (exofile=="") dserror("no exofile specified for extrusion");
-      if (soshthickness < 0.0) dserror("thickness specified for solid-shell extrusion is negative");
-      EXODUS::Soshextrusion mysosh(exofile.c_str(),soshthickness,soshnumlayer);
-      string extrudefile;
-      extrudefile = "extr_" + exofile;
-      //Mesh mysosh(exofile.c_str());
-      //mysosh.Print(cout,true);
-      mysosh.WriteMesh(extrudefile);
-      exit(1);
-    }
     
     // create mesh object based on given exodus II file
     EXODUS::Mesh mymesh(exofile.c_str());
@@ -98,6 +86,20 @@ int main(
     mymesh.Print(cout);
     //mymesh.CloseExo();
 
+    // generate solid shell extrusion based on exodus file
+    if (soshthickness!=0.0){
+      if (exofile=="") dserror("no exofile specified for extrusion");
+      if (soshthickness < 0.0) dserror("thickness specified for solid-shell extrusion is negative");
+      EXODUS::Mesh mysosh = EXODUS::SolidShellExtrusion(mymesh, soshthickness, soshnumlayer);
+      string extrudefile;
+      extrudefile = "extr_" + exofile;
+      //Mesh mysosh(exofile.c_str());
+      //mysosh.Print(cout,true);
+      mysosh.WriteMesh(extrudefile);
+      exit(1);
+    }
+
+    mymesh.CloseExo();
     if (bcfile=="")
     {
       string defaultbcfilename = "default.bc";

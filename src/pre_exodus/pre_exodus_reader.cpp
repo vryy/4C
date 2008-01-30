@@ -194,7 +194,7 @@ EXODUS::Mesh::Mesh(string exofilename)
  *----------------------------------------------------------------------*/
 EXODUS::Mesh::~Mesh()
 {
-  CloseExo();
+  //CloseExo();
   return;
 }
 
@@ -209,8 +209,8 @@ EXODUS::Mesh::Mesh(const EXODUS::Mesh basemesh,
                    const string newtitle)
 {
   // get all data from basemesh
-  int basedim     = GetNumDim();
-  int basenumele  = GetNumEle();
+  int basedim     = basemesh.GetNumDim();
+  int basenumele  = basemesh.GetNumEle();
   map<int,vector<double> > baseNodes = basemesh.GetNodes();
   map<int,ElementBlock>    baseEblocks = basemesh.GetElementBlocks();
   map<int,NodeSet>         baseNodesets = basemesh.GetNodeSets();
@@ -277,7 +277,8 @@ EXODUS::Mesh::Mesh(const EXODUS::Mesh basemesh,
 void EXODUS::Mesh::CloseExo()
 {
   // close exodus II file
-  int error = ex_close(exoid_);
+  int exoid = GetExoId();
+  int error = ex_close(exoid);
   if (error < 0)
     dserror("error while closing exodus II file");
 }
