@@ -219,9 +219,12 @@ private:
 	//! unknowns for each global node id (gid)
 	std::map<int, const set<XFEM::FieldEnr> > nodalDofSet_;
 
-	//! unknowns for each global node id (gid)
+	//! unknown fields for the element
     std::set<XFEM::FieldEnr> elementDofs_;
     
+    /*! multiply the size of elementDofs_ with this number and you get the number of overall
+     * element unknowns.
+     */
     int numeleparam_;
 	
 	//! number of unknowns for each global node id (gid)
@@ -287,18 +290,6 @@ private:
 	map<int, const set<XFEM::FieldEnr> > elementalDofs_;
 	
 };
-
-typedef pair<int,FieldEnr> DofKey;
-
-// create a map that for each node (gid) and element (gid) on this processor
-void createDofMap(
-        const RefCountPtr<DRT::Discretization>    xfemdis,
-        const RefCountPtr<DRT::Discretization>    cutterdis,
-        const map<int, DomainIntCells >&          elementDomainIntCellMap,
-        map<int, const set<XFEM::FieldEnr> >&     nodalDofSetFinal,        ///< the map for nodal dofs
-        map<int, const set<XFEM::FieldEnr> >&     elementalDofsFinal       ///< the map for elemental dofs        
-);
-
 
 
 XFEM::AssemblyType CheckForStandardEnrichmentsOnly(
