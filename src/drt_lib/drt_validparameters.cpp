@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_validparameters.H
+\file drt_validparameters.cpp
 
 \brief Setup of the list of valid input parameters
 
@@ -44,7 +44,7 @@ extern "C" /* stuff which is c and is accessed from c++ */
 extern "C"
 void PrintValidParameters()
 {
-  Teuchos::RCP<const Teuchos::ParameterList> list = DRT::ValidParameters();
+  Teuchos::RCP<const Teuchos::ParameterList> list = DRT::INPUT::ValidParameters();
   list->print(std::cout,
               Teuchos::ParameterList::PrintOptions()
               .showDoc(true)
@@ -56,7 +56,7 @@ void PrintValidParameters()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::PrintDatHeader(std::ostream& stream, const Teuchos::ParameterList& list, std::string parentname, bool color)
+void DRT::INPUT::PrintDatHeader(std::ostream& stream, const Teuchos::ParameterList& list, std::string parentname, bool color)
 {
   std::string blue2light = "";
   std::string bluelight = "";
@@ -131,14 +131,14 @@ void DRT::PrintDatHeader(std::ostream& stream, const Teuchos::ParameterList& lis
 extern "C"
 void PrintDefaultDatHeader()
 {
-  Teuchos::RCP<const Teuchos::ParameterList> list = DRT::ValidParameters();
-  DRT::PrintDatHeader(std::cout,*list,"",true);
+  Teuchos::RCP<const Teuchos::ParameterList> list = DRT::INPUT::ValidParameters();
+  DRT::INPUT::PrintDatHeader(std::cout,*list,"",true);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::PrintDefaultParameters(std::ostream& stream, const Teuchos::ParameterList& list)
+void DRT::INPUT::PrintDefaultParameters(std::ostream& stream, const Teuchos::ParameterList& list)
 {
   bool hasDefault = false;
   for (Teuchos::ParameterList::ConstIterator i = list.begin();
@@ -163,10 +163,10 @@ void DRT::PrintDefaultParameters(std::ostream& stream, const Teuchos::ParameterL
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::IntParameter(std::string const &paramName,
-                          int const value,
-                          std::string const &docString,
-                          Teuchos::ParameterList *paramList)
+void DRT::INPUT::IntParameter(std::string const &paramName,
+                              int const value,
+                              std::string const &docString,
+                              Teuchos::ParameterList *paramList)
 {
   Teuchos::AnyNumberParameterEntryValidator::AcceptedTypes validator(false);
   validator.allowInt(true);
@@ -178,10 +178,10 @@ void DRT::IntParameter(std::string const &paramName,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::DoubleParameter(std::string const &paramName,
-                             double const &value,
-                             std::string const &docString,
-                             Teuchos::ParameterList *paramList)
+void DRT::INPUT::DoubleParameter(std::string const &paramName,
+                                 double const &value,
+                                 std::string const &docString,
+                                 Teuchos::ParameterList *paramList)
 {
   Teuchos::AnyNumberParameterEntryValidator::AcceptedTypes validator(false);
   validator.allowDouble(true);
@@ -194,7 +194,7 @@ void DRT::DoubleParameter(std::string const &paramName,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
+Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 {
   using Teuchos::tuple;
   using Teuchos::setStringToIntegralParameter;
@@ -282,8 +282,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
 
   IntParameter("FILESTEPS",1000,"",&io);
 
-  //ParameterList& stat = list->sublist("STATIC",false,"");
-
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& design = list->sublist("DESIGN DESCRIPTION",false,"number of nodal clouds");
 
@@ -291,6 +289,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
   IntParameter("NDLINE",0,"number of line clouds",&design);
   IntParameter("NDSURF",0,"number of surface clouds",&design);
   IntParameter("NDVOL",0,"number of volume clouds",&design);
+
+  /*----------------------------------------------------------------------*/
+  // An empty list. The actual list is arbitrary and not validated.
+  //Teuchos::ParameterList& condition =
+  list->sublist("CONDITION NAMES",false,"names of conditions from exodus file");
+
+  //ParameterList& stat = list->sublist("STATIC",false,"");
 
   /*----------------------------------------------------------------------*/
   //Teuchos::ParameterList& eigen = list->sublist("EIGENVALUE ANALYSIS",false,"");
@@ -910,7 +915,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::ValidParameters()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::SetValidSolverParameters(Teuchos::ParameterList& list)
+void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
 {
   using Teuchos::tuple;
   using Teuchos::setStringToIntegralParameter;
@@ -1138,7 +1143,7 @@ void DRT::SetValidSolverParameters(Teuchos::ParameterList& list)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::SetValidTimeAdaptivityParameters(Teuchos::ParameterList& list)
+void DRT::INPUT::SetValidTimeAdaptivityParameters(Teuchos::ParameterList& list)
 {
   using Teuchos::tuple;
   using Teuchos::setStringToIntegralParameter;

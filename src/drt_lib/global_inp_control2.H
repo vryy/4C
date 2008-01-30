@@ -51,20 +51,8 @@ using namespace std;
 using namespace Teuchos;
 
 // headers and prototypes of functions acessible from c++
-void inpnodes_ccadiscret_jumbo(RefCountPtr<DRT::Discretization>& dis,
-                               RefCountPtr<Epetra_Map>& rownodes,
-                               RefCountPtr<Epetra_Map>& colnodes,
-                               const string& searchword);
-void input_design_dpoint_fenode_read(vector<vector<int> >& dnode_fenode,
-                                     vector<int>& ndnode_fenode);
-void input_design_dline_fenode_read(vector<vector<int> >& dline_fenode,
-                                     vector<int>& ndline_fenode);
-void input_design_dsurf_fenode_read(vector<vector<int> >& dsurf_fenode,
-                                     vector<int>& ndsurf_fenode);
-void input_design_dvol_fenode_read(vector<vector<int> >& dvol_fenode,
-                                   vector<int>& ndvol_fenode);
 
-void inpfield_ccadiscret(DRT::Problem& problem, DRT::DatFileReader& reader);
+void inpfield_ccadiscret(DRT::Problem& problem, DRT::INPUT::DatFileReader& reader);
 
 string inp_micro_filename(int mypid);
 

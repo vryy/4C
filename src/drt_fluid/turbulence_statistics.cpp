@@ -23,7 +23,7 @@ o loop planes (e.g. plane coordinates)
 
 o Write statistics for the Smagorinsky "constant" Cs if a dynamic
   procedure to determine it is applied
-  
+
 Maintainer: Peter Gamnitzer
             gamnitzer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
@@ -45,7 +45,7 @@ Maintainer: Peter Gamnitzer
   o Allocate 4 distributed toggle vectors and one distributed vector
   for squares
   </pre>
-  
+
 */
 /*----------------------------------------------------------------------*/
 TurbulenceStatistics::TurbulenceStatistics(
@@ -65,7 +65,7 @@ TurbulenceStatistics::TurbulenceStatistics(
 
   // up to now, there are no records written
   countrecord_ = 0;
-  
+
   //----------------------------------------------------------------------
   // allocate some (toggle) vectors
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
@@ -79,12 +79,12 @@ TurbulenceStatistics::TurbulenceStatistics(
 
   // allocate array for bounding box
   //
-  //          |  x  |  y  |  z  
+  //          |  x  |  y  |  z
   //    ------+-----+-----+-----
   //      min |     |     |
   //    ------+-----+-----+-----
   //      max |     |     |
-  //      
+  //
   //
   boundingbox_ = rcp(new Epetra_SerialDenseMatrix(2,3));
   for (int row = 0;row<3;++row)
@@ -122,10 +122,10 @@ TurbulenceStatistics::TurbulenceStatistics(
       dserror("homogeneuous plane for channel flow was specified incorrectly.");
     }
   }
-  
+
   // get fluid viscosity from material definition
   visc_ = mat->m.fluid->viscosity;
-  
+
   // loop nodes, build set of planes accessible on this proc and
   // calculate bounding box
   for (int i=0; i<discret_->NumMyRowNodes(); ++i)
@@ -154,7 +154,7 @@ TurbulenceStatistics::TurbulenceStatistics(
     discret_->Comm().MinAll(&((*boundingbox_)(0,row)),&min,1);
     (*boundingbox_)(0,row)=min;
   }
-  
+
   // communicate maxs
   for (int row = 0;row<3;++row)
   {
@@ -172,10 +172,10 @@ TurbulenceStatistics::TurbulenceStatistics(
     int myrank  =discret_->Comm().MyPID();
 #endif
     int numprocs=discret_->Comm().NumProc();
-  
+
     vector<char> sblock;
     vector<char> rblock;
-  
+
 
 #ifdef PARALLEL
     // create an exporter for point to point comunication
@@ -186,7 +186,7 @@ TurbulenceStatistics::TurbulenceStatistics(
     {
       // export set to sendbuffer
       sblock.clear();
-    
+
       for (set<double,PlaneSortCriterion>::iterator plane=availablecoords.begin();
            plane!=availablecoords.end();
            ++plane)
@@ -196,29 +196,29 @@ TurbulenceStatistics::TurbulenceStatistics(
 #ifdef PARALLEL
       MPI_Request request;
       int         tag    =myrank;
-    
+
       int         frompid=myrank;
       int         topid  =(myrank+1)%numprocs;
-    
+
       int         length=sblock.size();
-    
+
       exporter.ISend(frompid,topid,
                      &(sblock[0]),sblock.size(),
                      tag,request);
 
       rblock.clear();
-    
+
       // receive from predecessor
       frompid=(myrank+numprocs-1)%numprocs;
       exporter.ReceiveAny(frompid,tag,rblock,length);
-    
+
       if(tag!=(myrank+numprocs-1)%numprocs)
       {
         dserror("received wrong message (ReceiveAny)");
       }
-    
+
       exporter.Wait(request);
-    
+
       {
         // for safety
         exporter.Comm().Barrier();
@@ -233,7 +233,7 @@ TurbulenceStatistics::TurbulenceStatistics(
       // Unpack received block into set of all planes.
       {
         vector<double> coordsvec;
-      
+
         coordsvec.clear();
 
         int index = 0;
@@ -253,20 +253,20 @@ TurbulenceStatistics::TurbulenceStatistics(
   {
     nodeplanes_ = rcp(new vector<double> );
 
-    
+
     for(set<double,PlaneSortCriterion>::iterator coord=availablecoords.begin();
         coord!=availablecoords.end();
         ++coord)
     {
       nodeplanes_->push_back(*coord);
     }
-    
+
     //----------------------------------------------------------------------
     // insert additional sampling planes (to show influence of quadratic
     // shape functions)
     //----------------------------------------------------------------------
     const int numsubdivisions=5;
-    
+
     for(unsigned rr =0; rr < nodeplanes_->size()-1; ++rr)
     {
       double delta = ((*nodeplanes_)[rr+1]-(*nodeplanes_)[rr])/((double) numsubdivisions);
@@ -286,7 +286,7 @@ TurbulenceStatistics::TurbulenceStatistics(
   // first order moments
   sumu_ =  rcp(new vector<double> );
   sumu_->resize(size,0.0);
-    
+
   sumv_ =  rcp(new vector<double> );
   sumv_->resize(size,0.0);
 
@@ -299,7 +299,7 @@ TurbulenceStatistics::TurbulenceStatistics(
   // now the second order moments
   sumsqu_ =  rcp(new vector<double> );
   sumsqu_->resize(size,0.0);
-    
+
   sumsqv_ =  rcp(new vector<double> );
   sumsqv_->resize(size,0.0);
 
@@ -314,7 +314,7 @@ TurbulenceStatistics::TurbulenceStatistics(
 
   sumvw_ =  rcp(new vector<double> );
   sumvw_->resize(size,0.0);
-  
+
   sumsqp_ =  rcp(new vector<double> );
   sumsqp_->resize(size,0.0);
 #if 1
@@ -324,7 +324,7 @@ TurbulenceStatistics::TurbulenceStatistics(
 // first order moments
   pointsumu_ =  rcp(new vector<double> );
   pointsumu_->resize(size,0.0);
-    
+
   pointsumv_ =  rcp(new vector<double> );
   pointsumv_->resize(size,0.0);
 
@@ -337,13 +337,13 @@ TurbulenceStatistics::TurbulenceStatistics(
   // now the second order moments
   pointsumsqu_ =  rcp(new vector<double> );
   pointsumsqu_->resize(size,0.0);
-    
+
   pointsumsqv_ =  rcp(new vector<double> );
   pointsumsqv_->resize(size,0.0);
 
   pointsumsqw_ =  rcp(new vector<double> );
   pointsumsqw_->resize(size,0.0);
-  
+
   pointsumsqp_ =  rcp(new vector<double> );
   pointsumsqp_->resize(size,0.0);
 
@@ -352,24 +352,24 @@ TurbulenceStatistics::TurbulenceStatistics(
   // means for the Smagorinsky constant
   sumCs_  =  rcp(new vector<double> );
   sumCs_->resize(nodeplanes_->size()-1,0.0);
-  
+
   incrsumCs_  =  rcp(new vector<double> );
   incrsumCs_->resize(nodeplanes_->size()-1,0.0);
 
   // means for (Cs*delta)^2
   sumCs_delta_sq_  =  rcp(new vector<double> );
   sumCs_delta_sq_->resize(nodeplanes_->size()-1,0.0);
-  
+
   incrsumCs_delta_sq_  =  rcp(new vector<double> );
   incrsumCs_delta_sq_->resize(nodeplanes_->size()-1,0.0);
 
   // means for the effective viscosity
   sumvisceff_  =  rcp(new vector<double> );
   sumvisceff_->resize(nodeplanes_->size()-1,0.0);
-  
+
   incrsumvisceff_  =  rcp(new vector<double> );
   incrsumvisceff_->resize(nodeplanes_->size()-1,0.0);
-  
+
   // means for comparison of of residual and subscale acceleration
   sumres_    =  rcp(new vector<double> );
   sumres_->resize(3*(nodeplanes_->size()-1),0.0);
@@ -379,7 +379,7 @@ TurbulenceStatistics::TurbulenceStatistics(
   sumsacc_->resize(3*(nodeplanes_->size()-1),0.0);
   sumsacc_sq_=  rcp(new vector<double> );
   sumsacc_sq_->resize(3*(nodeplanes_->size()-1),0.0);
-  
+
   // initialise output
   Teuchos::RefCountPtr<std::ofstream> log;
   Teuchos::RefCountPtr<std::ofstream> log_Cs;
@@ -389,7 +389,7 @@ TurbulenceStatistics::TurbulenceStatistics(
   {
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
     s.append(".flow_statistic");
-    
+
     log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
     (*log) << "# Flow statistics for turbulent channel flow (first an second order moments)\n\n";
 
@@ -420,15 +420,15 @@ TurbulenceStatistics::TurbulenceStatistics(
     // output of residuals and subscale quantities
     std::string s_res = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
     s_res.append(".res_statistic");
-    
+
     log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),ios::out));
     (*log_res) << "# Statistics for turbulent channel flow (residuals and subscale quantities)\n\n";
-    
+
   }
 
   // clear statistics
   this->ClearStatistics();
-  
+
   return;
 }// TurbulenceStatistics::TurbulenceStatistics
 
@@ -450,7 +450,7 @@ void TurbulenceStatistics::DoTimeSample(
   // we have an additional sample
   //----------------------------------------------------------------------
   numsamp_++;
-  
+
   //----------------------------------------------------------------------
   // meanvelnp is a refcount copy of velnp
   //----------------------------------------------------------------------
@@ -468,7 +468,7 @@ void TurbulenceStatistics::DoTimeSample(
   //----------------------------------------------------------------------
   pointsquaredvelnp_->Multiply(1.0,*velnp,*velnp,0.0);
 
-  
+
   //----------------------------------------------------------------------
   // loop planes and calculate pointwise means in each plane
   //----------------------------------------------------------------------
@@ -504,10 +504,10 @@ void TurbulenceStatistics::DoTimeSample(
         togglev_->ReplaceGlobalValues(1,&one,&(dof[1]));
         togglew_->ReplaceGlobalValues(1,&one,&(dof[2]));
         togglep_->ReplaceGlobalValues(1,&one,&(dof[3]));
- 
+
         // now check whether we have a pbc condition on this node
         vector<DRT::Condition*> mypbc;
-    
+
         node->GetCondition("SurfacePeriodic",mypbc);
 
         // yes, we have a pbc
@@ -518,10 +518,10 @@ void TurbulenceStatistics::DoTimeSample(
           unsigned ntimesmaster = 0;
           for (unsigned numcond=0;numcond<mypbc.size();++numcond)
           {
-            const vector<int>* mymasterslavetoggle
-              = mypbc[numcond]->Get<vector<int> >("Is slave periodic boundary condition");
+            const string* mymasterslavetoggle
+              = mypbc[numcond]->Get<string>("Is slave periodic boundary condition");
 
-            if(mymasterslavetoggle[0][0]==0)
+            if(*mymasterslavetoggle=="Master")
             {
               ++ntimesmaster;
             } // end is slave?
@@ -539,9 +539,9 @@ void TurbulenceStatistics::DoTimeSample(
     }
 
     int countnodesinplaneonallprocs=0;
-      
+
     discret_->Comm().SumAll(&countnodesinplane,&countnodesinplaneonallprocs,1);
-    
+
     if (countnodesinplaneonallprocs)
     {
       //----------------------------------------------------------------------
@@ -650,7 +650,7 @@ void TurbulenceStatistics::DoTimeSample(
       }
     }
   }
-  
+
   return;
 }// TurbulenceStatistics::DoTimeSample
 
@@ -665,7 +665,7 @@ void TurbulenceStatistics::EvaluateMeanValuesInPlanes()
   //----------------------------------------------------------------------
   // create the parameters for the discretization
   ParameterList eleparams;
-  
+
   // action for elements
   eleparams.set("action","calc_turbulence_statistics");
 
@@ -682,11 +682,11 @@ void TurbulenceStatistics::EvaluateMeanValuesInPlanes()
 
   // set size of vectors
   int size = sumu_->size();
-  
+
   // generate processor local result vectors
   RefCountPtr<vector<double> > locsumu =  rcp(new vector<double> );
   locsumu->resize(size,0.0);
-    
+
   RefCountPtr<vector<double> > locsumv =  rcp(new vector<double> );
   locsumv->resize(size,0.0);
 
@@ -698,7 +698,7 @@ void TurbulenceStatistics::EvaluateMeanValuesInPlanes()
 
   RefCountPtr<vector<double> > locsumsqu =  rcp(new vector<double> );
   locsumsqu->resize(size,0.0);
-    
+
   RefCountPtr<vector<double> > locsumsqv =  rcp(new vector<double> );
   locsumsqv->resize(size,0.0);
 
@@ -713,13 +713,13 @@ void TurbulenceStatistics::EvaluateMeanValuesInPlanes()
 
   RefCountPtr<vector<double> > locsumvw  =  rcp(new vector<double> );
   locsumvw->resize(size,0.0);
-  
+
   RefCountPtr<vector<double> > locsumsqp =  rcp(new vector<double> );
   locsumsqp->resize(size,0.0);
 
   RefCountPtr<vector<double> > globsumu =  rcp(new vector<double> );
   globsumu->resize(size,0.0);
-    
+
   RefCountPtr<vector<double> > globsumv =  rcp(new vector<double> );
   globsumv->resize(size,0.0);
 
@@ -731,7 +731,7 @@ void TurbulenceStatistics::EvaluateMeanValuesInPlanes()
 
   RefCountPtr<vector<double> > globsumsqu =  rcp(new vector<double> );
   globsumsqu->resize(size,0.0);
-    
+
   RefCountPtr<vector<double> > globsumsqv =  rcp(new vector<double> );
   globsumsqv->resize(size,0.0);
 
@@ -746,10 +746,10 @@ void TurbulenceStatistics::EvaluateMeanValuesInPlanes()
 
   RefCountPtr<vector<double> > globsumvw  =  rcp(new vector<double> );
   globsumvw->resize(size,0.0);
-  
+
   RefCountPtr<vector<double> > globsumsqp =  rcp(new vector<double> );
   globsumsqp->resize(size,0.0);
-  
+
   // communicate pointers to the result vectors to the element
   eleparams.set("mean velocity u"     ,locsumu);
   eleparams.set("mean velocity v"     ,locsumv);
@@ -768,10 +768,10 @@ void TurbulenceStatistics::EvaluateMeanValuesInPlanes()
   // (the number is the same for all planes, since we use a structured
   //  cartesian mesh)
   int locprocessedeles=0;
-  
+
   eleparams.set("count processed elements",&locprocessedeles);
 
-  
+
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("u and p (n+1,converged)"    ,meanvelnp_);
@@ -795,7 +795,7 @@ void TurbulenceStatistics::EvaluateMeanValuesInPlanes()
   discret_->Comm().SumAll(&((*locsumsqw)[0]),&((*globsumsqw)[0]),size);
   discret_->Comm().SumAll(&((*locsumuv)[0]) ,&((*globsumuv)[0]) ,size);
   discret_->Comm().SumAll(&((*locsumuw)[0]) ,&((*globsumuw)[0]) ,size);
-  discret_->Comm().SumAll(&((*locsumvw)[0]) ,&((*globsumvw)[0]) ,size); 
+  discret_->Comm().SumAll(&((*locsumvw)[0]) ,&((*globsumvw)[0]) ,size);
   discret_->Comm().SumAll(&((*locsumsqp)[0]),&((*globsumsqp)[0]),size);
 
 
@@ -803,10 +803,10 @@ void TurbulenceStatistics::EvaluateMeanValuesInPlanes()
   // the sums are divided by the number of elements to get the area
   // average
   //----------------------------------------------------------------------
- 
+
   discret_->Comm().SumAll(&locprocessedeles,&numele_,1);
 
-  
+
   for(unsigned i=0; i<planecoordinates_->size(); ++i)
   {
     (*sumu_)[i]  +=(*globsumu)[i];
@@ -824,7 +824,7 @@ void TurbulenceStatistics::EvaluateMeanValuesInPlanes()
   }
 
   return;
-  
+
 }// TurbulenceStatistics::EvaluateMeanValuesInPlanes()
 
 /*----------------------------------------------------------------------*
@@ -836,13 +836,13 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
   {
     dserror("No samples to do time average");
   }
-  
+
   //----------------------------------------------------------------------
   // the sums are divided by the number of samples to get the time average
   int aux = numele_*numsamp_;
   for(unsigned i=0; i<planecoordinates_->size(); ++i)
   {
-    
+
     (*sumu_)[i]   /=aux;
     (*sumv_)[i]   /=aux;
     (*sumw_)[i]   /=aux;
@@ -851,17 +851,17 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
     (*sumuv_)[i]  /=aux;
     (*sumuw_)[i]  /=aux;
     (*sumvw_)[i]  /=aux;
- 
+
     (*sumsqu_)[i] /=aux;
     (*sumsqv_)[i] /=aux;
     (*sumsqw_)[i] /=aux;
     (*sumsqp_)[i] /=aux;
-    
+
     (*pointsumu_)[i]   /=numsamp_;
     (*pointsumv_)[i]   /=numsamp_;
     (*pointsumw_)[i]   /=numsamp_;
     (*pointsump_)[i]   /=numsamp_;
- 
+
     (*pointsumsqu_)[i] /=numsamp_;
     (*pointsumsqv_)[i] /=numsamp_;
     (*pointsumsqw_)[i] /=numsamp_;
@@ -873,7 +873,7 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
   sumforcew_/=numsamp_;
 
 
-  
+
   //----------------------------------------------------------------------
   // evaluate area to calculate u_tau, l_tau (and tau_W)
   double area = 1.0;
@@ -912,7 +912,7 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
   {
     dserror("Cannot determine flow direction by traction (seems to be not unique)");
   }
-  
+
   //----------------------------------------------------------------------
   // output to log-file
   Teuchos::RefCountPtr<std::ofstream> log;
@@ -920,18 +920,18 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
   {
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
     s.append(".flow_statistic");
-    
+
     log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::app));
     (*log) << "\n\n\n";
     (*log) << "# Statistics record " << countrecord_;
     (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
-    
+
     (*log) << "# (u_tau)^2 = tau_W/rho : ";
     (*log) << "   " << setw(11) << setprecision(4) << sumforceu_/area;
     (*log) << "   " << setw(11) << setprecision(4) << sumforcev_/area;
     (*log) << "   " << setw(11) << setprecision(4) << sumforcew_/area;
     (*log) << &endl;
-    
+
     (*log) << "#     y            y+";
     (*log) << "           umean         vmean         wmean         pmean";
     (*log) << "        mean u^2      mean v^2      mean w^2";
@@ -985,7 +985,7 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
       {
         // get the outfile
         Teuchos::RefCountPtr<std::ofstream> log_Cs;
-        
+
         std::string s_smag = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
         s_smag.append(".Cs_statistic");
 
@@ -995,7 +995,7 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
         (*log_Cs) << "# Statistics record " << countrecord_;
         (*log_Cs) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
 
-        
+
         (*log_Cs) << "#     y      ";
         (*log_Cs) << "     Cs     ";
         (*log_Cs) << "   (Cs*hk)^2 ";
@@ -1013,7 +1013,7 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
       }
     }
   }
-     
+
   if (discret_->Comm().MyPID()==0)
   {
     Teuchos::RefCountPtr<std::ofstream> log_res;
@@ -1021,24 +1021,24 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
     // output of residuals and subscale quantities
     std::string s_res = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
     s_res.append(".res_statistic");
-    
+
     log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),ios::app));
 
     (*log_res) << "\n\n\n";
     (*log_res) << "# Statistics record " << countrecord_;
     (*log_res) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
-    (*log_res) << "#       y    ";  
-    (*log_res) << "    res_x  ";  
-    (*log_res) << "      res_y  ";  
+    (*log_res) << "#       y    ";
+    (*log_res) << "    res_x  ";
+    (*log_res) << "      res_y  ";
     (*log_res) << "      res_z  ";
-    (*log_res) << "     sacc_x  ";  
-    (*log_res) << "     sacc_y  ";  
+    (*log_res) << "     sacc_x  ";
+    (*log_res) << "     sacc_y  ";
     (*log_res) << "     sacc_z   ";
-    (*log_res) << "   res_sq_x  ";  
-    (*log_res) << "   res_sq_y  ";  
+    (*log_res) << "   res_sq_x  ";
+    (*log_res) << "   res_sq_y  ";
     (*log_res) << "   res_sq_z  ";
-    (*log_res) << "   sacc_sq_x ";  
-    (*log_res) << "   sacc_sq_y ";  
+    (*log_res) << "   sacc_sq_x ";
+    (*log_res) << "   sacc_sq_y ";
     (*log_res) << "   sacc_sq_z "<<&endl;
 
     (*log_res) << scientific;
@@ -1060,17 +1060,17 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
       (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_sq_)[3*rr  ]/(numele_*numsamp_) << "  ";
       (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_sq_)[3*rr+1]/(numele_*numsamp_) << "  ";
       (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_sq_)[3*rr+2]/(numele_*numsamp_) << "  ";
-      
+
       (*log_res)  << &endl;
     }
     log_res->flush();
   }
 
-  
+
   // log was written, so increase counter for records
   countrecord_++;
-  
-  return;  
+
+  return;
 
 }// TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics
 
@@ -1112,9 +1112,9 @@ void TurbulenceStatistics::ClearStatistics()
     (*pointsumsqp_)[i]=0;
 
   }
-  
+
   meanvelnp_->PutScalar(0.0);
-  
+
   // reset smapling for dynamic Smagorinsky model
   if (params_.sublist("TURBULENCE MODEL").get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
       ==
@@ -1157,11 +1157,11 @@ void TurbulenceStatistics::ClearStatistics()
     (*sumsacc_sq_)[3*rr+1]=0;
     (*sumsacc_sq_)[3*rr+2]=0;
   }
-  
- 
-  return;  
+
+
+  return;
 }// TurbulenceStatistics::ClearStatistics
-  
+
 
 
 #endif /* CCADISCRET       */

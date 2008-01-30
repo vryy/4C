@@ -49,8 +49,6 @@ using namespace Teuchos;
 namespace DRT
 {
 
-class ExporterHelper;
-
 
 /*!
 \class Exporter
@@ -69,7 +67,7 @@ implementing your own mpi stuff.
 */
 class Exporter
 {
-
+  class ExporterHelper;
 public:
 
 
@@ -451,8 +449,6 @@ private:
   vector<int>              sendsize_;
 
 
-}; // class Exporter
-
 
   /// Internal helper class for Exporter that encapsulates packing and unpacking
   /*!
@@ -650,7 +646,7 @@ private:
     map<int,vector<T> >& objects_;
   };
 
-
+}; // class Exporter
 } // namespace DRT
 
 

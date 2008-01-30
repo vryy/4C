@@ -73,7 +73,7 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
   if (comm_.MyPID()==0)
-    DRT::PrintDefaultParameters(std::cout, fsidyn);
+    DRT::INPUT::PrintDefaultParameters(std::cout, fsidyn);
 
   step_ = 0;
   time_ = 0.;
@@ -418,7 +418,7 @@ void FSI::DirichletNeumannCoupling::SetupStructure()
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
   if (comm_.MyPID()==0)
-    DRT::PrintDefaultParameters(std::cout, sdyn);
+    DRT::INPUT::PrintDefaultParameters(std::cout, sdyn);
 
   // -------------------------------------------------------------------
   // create a solver
@@ -542,7 +542,7 @@ void FSI::DirichletNeumannCoupling::SetupFluid()
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
   if (comm_.MyPID()==0)
-    DRT::PrintDefaultParameters(std::cout, fdyn);
+    DRT::INPUT::PrintDefaultParameters(std::cout, fdyn);
 
   // -------------------------------------------------------------------
   // create a solver

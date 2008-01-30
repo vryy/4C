@@ -20,22 +20,26 @@ Maintainer: Ulrich Kuettler
 
 #ifdef __cplusplus /* stuff which is c++ specific */
 
+#include <string>
+#include <iostream>
+
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
 namespace DRT {
+namespace INPUT {
 
   /// local wrapper for Teuchos::setIntParameter() that allows only integers
-  void IntParameter(std::string const &paramName,
+  void IntParameter(std::string const& paramName,
                     int const value,
-                    std::string const &docString,
-                    Teuchos::ParameterList *paramList);
+                    std::string const& docString,
+                    Teuchos::ParameterList* paramList);
 
   /// local wrapper for Teuchos::setDoubleParameter() that allows only doubles
-  void DoubleParameter(std::string const &paramName,
-                       double const &value,
-                       std::string const &docString,
-                       Teuchos::ParameterList *paramList);
+  void DoubleParameter(std::string const& paramName,
+                       double const& value,
+                       std::string const& docString,
+                       Teuchos::ParameterList* paramList);
 
   /// construct list with all parameters and documentation
   Teuchos::RCP<const Teuchos::ParameterList> ValidParameters();
@@ -48,14 +52,13 @@ namespace DRT {
 
   /// print all parameters that have a default value
   void PrintDefaultParameters(std::ostream& stream, const Teuchos::ParameterList& list);
-  
+
   /// print flag sections of dat file with given list
   void PrintDatHeader(std::ostream& stream, const Teuchos::ParameterList& list, std::string parentname="", bool color=false);
 }
+}
 
-#endif /* end of #ifdef __cplusplus */
-
-
+#endif
 
 /* headers and prototypes of functions also acessible from c */
 #ifdef __cplusplus

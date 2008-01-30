@@ -37,6 +37,10 @@ using namespace Teuchos;
 namespace DRT
 {
 
+/// Helper classes to read and validate input files
+namespace INPUT
+{
+
 
 /*----------------------------------------------------------------------*/
 /// reading, broadcasting and storing of dat file contents
@@ -116,6 +120,12 @@ public:
 
   /// convert a parameter section in GiD format in a parameter list
   bool ReadGidSection(string name, Teuchos::ParameterList& list);
+
+  /// return the content of a section
+  vector<const char*> Section(string name) const;
+
+  /// read a node-design topology section
+  void ReadDesign(const std::string& name, std::vector<std::vector<int> >& dobj_fenode) const;
 
 private:
 
@@ -206,7 +216,7 @@ public:
     \param comm (i) our communicator
     \param sectionname (i) the section that contains the element lines
    */
-  ElementReader(RefCountPtr<Discretization> dis, const DRT::DatFileReader& reader, string sectionname);
+  ElementReader(RefCountPtr<Discretization> dis, const DatFileReader& reader, string sectionname);
 
   /// give the discretization this reader fills
   RefCountPtr<Discretization> MyDis() const { return dis_; }
@@ -230,7 +240,7 @@ private:
   string name_;
 
   /// the main dat file reader
-  const DRT::DatFileReader& reader_;
+  const DatFileReader& reader_;
 
   /// my comm
   RefCountPtr<Epetra_Comm> comm_;
@@ -277,7 +287,7 @@ class NodeReader
 public:
 
   /// construct a reader that reads a given section
-  NodeReader(const DRT::DatFileReader& reader, string sectionname);
+  NodeReader(const DatFileReader& reader, string sectionname);
 
   /// add an element reader for each discretization
   /*!
@@ -315,7 +325,7 @@ private:
   RefCountPtr<DRT::Discretization> FindDisNode(int nodeid);
 
   /// the main dat file reader
-  const DRT::DatFileReader& reader_;
+  const DatFileReader& reader_;
 
   /// my comm
   RefCountPtr<Epetra_Comm> comm_;
@@ -327,6 +337,7 @@ private:
   vector<RefCountPtr<ElementReader> > ereader_;
 };
 
+}
 }
 
 #endif

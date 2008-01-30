@@ -440,9 +440,7 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
                   if (cond==null)
                     dserror("Condition not available in SoHex8Surface");
 
-                  int surfflag = cond->Getint("surface_flag");
-
-                  if (surfflag==0)     // dynamic surfactant model
+                  if (cond->Type()==DRT::Condition::Surfactant)     // dynamic surfactant model
                   {
                     double k1xC = cond->GetDouble("k1xCbulk");
                     double k2 = cond->GetDouble("k2");
@@ -451,24 +449,24 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
                     double gamma_0 = cond->GetDouble("gamma_0");
                     double gamma_min = cond->GetDouble("gamma_min");
                     double gamma_min_eq = cond->GetDouble("gamma_min_eq");
-                    double con_quot_max = cond->GetDouble("con_quot_max");
-                    double con_quot_eq = cond->GetDouble("con_quot_eq");
+                    double con_quot_max = (gamma_min_eq-gamma_min)/m2+1.;
+                    double con_quot_eq = (k1xC)/(k1xC+k2);
 
                     surfstressman->StiffnessAndInternalForces(xscurr, elevector1, elematrix1, this->Id(),
-                                                              time, dt, surfflag, 0.0, k1xC, k2, m1, m2, gamma_0,
+                                                              time, dt, 0, 0.0, k1xC, k2, m1, m2, gamma_0,
                                                               gamma_min, gamma_min_eq, con_quot_max,
                                                               con_quot_eq);
                   }
-                  else if (surfflag==1) // ideal liquid
+                  else if (cond->Type()==DRT::Condition::SurfaceTension) // ideal liquid
                   {
                     double const_gamma = cond->GetDouble("gamma");
 
                     surfstressman->StiffnessAndInternalForces(xscurr, elevector1, elematrix1, this->Id(),
-                                                              time, dt, surfflag, const_gamma, 0.0, 0.0, 0.0,
+                                                              time, dt, 1, const_gamma, 0.0, 0.0, 0.0,
                                                               0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
                   }
                   else
-                    dserror("Unknown surface flag");
+                    dserror("Unknown condition type %d",cond->Type());
 	  	}
                 break;
 

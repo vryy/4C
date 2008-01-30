@@ -98,7 +98,8 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==XFEMCoupling)                os << "XFEM Coupling condition:";
   else if (Type()==LineLIFTDRAG)                os << "Line LIFTDRAG condition:";
   else if (Type()==SurfLIFTDRAG)                os << "Surf LIFTDRAG condition:";
-  else if (Type()==SurfaceStress)               os << "Surface stress condition:";
+  else if (Type()==SurfaceTension)              os << "Surface tension condition:";
+  else if (Type()==Surfactant)                  os << "Surfactant condition:";
   else if (Type()==MicroBoundary)               os << "Microscale boundary condition:";
   else if (Type()==VolumeConstraint_3D)         os << "Volume constraint surface boundary condition:";
   else if (Type()==AreaConstraint_3D)			os << "Area constraint surface boundary condition:";

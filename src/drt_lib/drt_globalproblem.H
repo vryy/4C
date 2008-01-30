@@ -40,8 +40,10 @@ using namespace Teuchos;
 namespace DRT
 {
 
+namespace INPUT
+{
 class DatFileReader;
-
+}
 
 /// Global problem instance that keeps the discretizations
 /*!
@@ -148,19 +150,19 @@ public:
   /// @name Input
 
   /// read global parameters
-  void ReadParameter(DRT::DatFileReader& reader);
+  void ReadParameter(DRT::INPUT::DatFileReader& reader);
 
   /// input of not mesh or time based problem data
   void InputControl();
 
   /// setup the discretizations
-  void ReadFields(DRT::DatFileReader& reader);
+  void ReadFields(DRT::INPUT::DatFileReader& reader);
 
   /// input of materials
   void ReadMaterial();
 
   /// input of conditions
-  void ReadConditions();
+  void ReadConditions(const DRT::INPUT::DatFileReader& reader);
 
   //@}
 
@@ -191,6 +193,8 @@ public:
   const Teuchos::ParameterList& FluidSolverParams() const { return getParameterList()->sublist("FLUID SOLVER"); }
   const Teuchos::ParameterList& AleSolverParams() const { return getParameterList()->sublist("ALE SOLVER"); }
   const Teuchos::ParameterList& ThermalSolverParams() const { return getParameterList()->sublist("THERMAL SOLVER"); }
+
+  const Teuchos::ParameterList& ConditionNamesParams() const { return getParameterList()->sublist("CONDITION NAMES"); }
 
   //@}
 

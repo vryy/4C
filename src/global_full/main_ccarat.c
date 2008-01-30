@@ -13,6 +13,7 @@ Maintainer: Malte Neumann
 #include "../headers/standardtypes.h"
 #include <../headers/compile_settings.h>
 #include "../drt_lib/drt_validparameters.H"
+#include "../drt_lib/drt_validconditions.H"
 
 #ifdef TRAP_FE
 
@@ -172,7 +173,7 @@ else if ((argc == 2) &&
 {
   if (par.myrank==0)
   {
-    printf("\n\nValid parameters in input file\n\n");
+    printf("\n\n");
     PrintValidParameters();
     printf("\n\n");
   }
@@ -183,8 +184,9 @@ else if ((argc == 2) &&
 {
   if (par.myrank==0)
   {
-    printf("\n\nValid dat file header\n\n");
+    printf("\n\n");
     PrintDefaultDatHeader();
+    PrintConditionDatHeader();
     printf("\n\n");
   }
 }

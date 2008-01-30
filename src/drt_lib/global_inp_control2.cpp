@@ -88,16 +88,16 @@ void ntainp_ccadiscret()
   MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
   MPI_Comm_size(MPI_COMM_WORLD, &nproc);
   Epetra_MpiComm* com = new Epetra_MpiComm(MPI_COMM_WORLD);
-  RefCountPtr<Epetra_Comm> comm = rcp(com);
+  Teuchos::RCP<Epetra_Comm> comm = rcp(com);
 #else
   Epetra_SerialComm* com = new Epetra_SerialComm();
-  RefCountPtr<Epetra_Comm> comm = rcp(com);
+  Teuchos::RCP<Epetra_Comm> comm = rcp(com);
 #endif
 
   Teuchos::RCP<DRT::Problem> problem = DRT::Problem::Instance();
 
   // and now the actual reading
-  DRT::DatFileReader reader(allfiles.inputfile_name, comm);
+  DRT::INPUT::DatFileReader reader(allfiles.inputfile_name, comm);
   reader.Activate();
 
   problem->ReadParameter(reader);
@@ -124,17 +124,7 @@ void ntainp_ccadiscret()
 
   // read all types of geometry related conditions (e.g. boundary conditions)
   // Also read time and space functions and local coord systems
-  Epetra_Time time(*comm);
-  if (comm->MyPID()==0)
-  {
-    cout << "Read conditions                          in....";
-    fflush(stdout);
-  }
-  DRT::Problem::Instance()->ReadConditions();
-  if (comm->MyPID()==0)
-  {
-    cout << time.ElapsedTime() << " secs\n";
-  }
+  problem->ReadConditions(reader);
 
 #ifdef RESULTTEST
   /*---------------------------------------- input of result descriptions */

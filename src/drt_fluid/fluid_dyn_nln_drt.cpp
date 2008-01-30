@@ -122,7 +122,7 @@ void dyn_fluid_drt()
   const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
 
   if (actdis->Comm().MyPID()==0)
-    DRT::PrintDefaultParameters(std::cout, fdyn);
+    DRT::INPUT::PrintDefaultParameters(std::cout, fdyn);
 
   // -------------------------------------------------------------------
   // create a solver

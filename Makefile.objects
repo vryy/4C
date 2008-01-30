@@ -102,6 +102,7 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/drt_node.o \
                 src/drt_lib/drt_container.o \
                 src/drt_lib/drt_condition.o \
+                src/drt_lib/drt_conditiondefinition.o \
                 src/drt_lib/drt_dofset.o \
                 src/drt_lib/drt_pbcdofset.o \
                 src/drt_lib/drt_utils_integration.o \
@@ -122,13 +123,12 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/drt_function.o \
                 src/drt_lib/drt_discret_evaluate.o \
 		src/drt_lib/drt_validparameters.o \
+		src/drt_lib/drt_validconditions.o \
 		src/drt_lib/drt_utils_mapextractor.o
 OBJS_DRT      = \
                 src/drt_lib/drt_resulttest.o \
                 src/drt_lib/drt_init_control.o \
                 src/drt_lib/global_inp_control2.o \
-                src/drt_lib/global_inp_control3.o \
-                src/drt_lib/input_conditions.o \
                 src/drt_lib/linalg_mfoperator.o \
                 src/drt_lib/linalg_solver.o \
                 src/drt_lib/linalg_solver_spooles.o \

@@ -80,11 +80,13 @@ static std::string trim(const std::string& line)
 
 namespace DRT
 {
+namespace INPUT
+{
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DatFileReader::DatFileReader(string filename, RefCountPtr<Epetra_Comm> comm, int outflag)
+DatFileReader::DatFileReader(string filename, Teuchos::RCP<Epetra_Comm> comm, int outflag)
   : filename_(filename), comm_(comm), outflag_(outflag)
 {
   ReadDat();
@@ -212,6 +214,81 @@ bool DatFileReader::ReadGidSection(string name, Teuchos::ParameterList& list)
   }
 
   return true;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+vector<const char*> DatFileReader::Section(string name) const
+{
+  vector<const char*> sec;
+
+  map<string,unsigned>::const_iterator i = positions_.find(name);
+  if (i!=positions_.end())
+  {
+
+    for (unsigned pos = i->second+1;
+         pos < lines_.size();
+         ++pos)
+    {
+      const char* line = lines_[pos];
+      if (line[0]=='-' and line[1]=='-')
+      {
+        break;
+      }
+      sec.push_back(line);
+    }
+  }
+
+  return sec;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DatFileReader::ReadDesign(const std::string& name, std::vector<std::vector<int> >& dobj_fenode) const
+{
+  std::map<int,std::set<int> > topology;
+
+  std::string sectionname = name + "-NODE TOPOLOGY";
+  std::string marker = std::string("--") + sectionname;
+
+  // this is still the old fr* stuff
+  if (frfind(const_cast<char*>(marker.c_str())))
+  {
+    frread();
+
+    // read the whole thing
+    while (strncmp(allfiles.actplace,"------",6)!=0)
+    {
+      int dobj;
+      int ierr;
+      int nodeid;
+      frint(const_cast<char*>(name.c_str()),&dobj,&ierr);
+      if (ierr!=1)
+        dserror("Cannot read %s", sectionname.c_str());
+      frint("NODE",&nodeid,&ierr);
+      if (ierr!=1)
+        dserror("Cannot read %s", sectionname.c_str());
+      topology[dobj-1].insert(nodeid-1);
+      frread();
+    }
+
+    // copy all design object entries
+    for (std::map<int,std::set<int> >::iterator i=topology.begin();
+         i!=topology.end();
+         ++i)
+    {
+      if (i->first >= static_cast<int>(dobj_fenode.size()))
+      {
+        dserror("Illegal design object number %d in section '%s'", i->first+1, sectionname.c_str());
+      }
+
+      // we copy from a std::set, thus the gids are sorted
+      dobj_fenode[i->first].reserve(i->second.size());
+      dobj_fenode[i->first].assign(i->second.begin(),i->second.end());
+    }
+  }
 }
 
 
@@ -467,8 +544,8 @@ void DatFileReader::DumpInput()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ElementReader::ElementReader(RefCountPtr<Discretization> dis,
-                             const DRT::DatFileReader& reader,
+ElementReader::ElementReader(Teuchos::RCP<Discretization> dis,
+                             const DRT::INPUT::DatFileReader& reader,
                              string sectionname)
   : name_(dis->Name()),
     reader_(reader),
@@ -631,7 +708,7 @@ void ElementReader::Partition()
           allfiles.actrow = allfiles.numrows;
           allfiles.actplace = allfiles.input_file[allfiles.actrow] = const_cast<char*>(line.c_str());
           // let the factory create a matching empty element
-          RefCountPtr<DRT::Element> ele = DRT::UTILS::Factory(eletype,elenumber,0);
+          Teuchos::RCP<DRT::Element> ele = DRT::UTILS::Factory(eletype,elenumber,0);
           // let this element read its input line
           ele->ReadElement();
           // add element to discretization
@@ -707,7 +784,7 @@ void ElementReader::Partition()
 #endif
 
     // construct graph
-    RefCountPtr<Epetra_CrsGraph> graph = rcp(new Epetra_CrsGraph(Copy,*rownodes_,81,false));
+    Teuchos::RCP<Epetra_CrsGraph> graph = rcp(new Epetra_CrsGraph(Copy,*rownodes_,81,false));
     if (myrank==0)
     {
       for (list<vector<int> >::iterator i=elementnodes.begin();
@@ -809,7 +886,7 @@ void ElementReader::Complete()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-NodeReader::NodeReader(const DRT::DatFileReader& reader, string sectionname)
+NodeReader::NodeReader(const DRT::INPUT::DatFileReader& reader, string sectionname)
   : reader_(reader), comm_(reader.Comm()), sectionname_(sectionname)
 {
 }
@@ -817,7 +894,7 @@ NodeReader::NodeReader(const DRT::DatFileReader& reader, string sectionname)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-RefCountPtr<DRT::Discretization> NodeReader::FindDisNode(int nodeid)
+Teuchos::RCP<DRT::Discretization> NodeReader::FindDisNode(int nodeid)
 {
   for (unsigned i=0; i<ereader_.size(); ++i)
   {
@@ -886,7 +963,7 @@ void NodeReader::Read()
           int nodeid;
           file >> nodeid >> tmp >> coords[0] >> coords[1] >> coords[2];
           nodeid--;
-          RefCountPtr<DRT::Discretization> dis = FindDisNode(nodeid);
+          Teuchos::RCP<DRT::Discretization> dis = FindDisNode(nodeid);
           if (dis==null)
             continue;
           if (nodeid != filecount)
@@ -894,7 +971,7 @@ void NodeReader::Read()
           if (tmp!="COORD")
             dserror("failed to read node %d",nodeid);
           // create node and add to discretization
-          RefCountPtr<DRT::Node> node = rcp(new DRT::Node(nodeid,coords,myrank));
+          Teuchos::RCP<DRT::Node> node = rcp(new DRT::Node(nodeid,coords,myrank));
           dis->AddNode(node);
           ++bcount;
           if (block != nblock-1) // last block takes all the rest
@@ -938,6 +1015,7 @@ void NodeReader::Read()
   }
 }
 
+}
 }
 
 #endif

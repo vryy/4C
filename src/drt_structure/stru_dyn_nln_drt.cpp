@@ -133,7 +133,7 @@ void dyn_nlnstructural_drt()
   const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
 
   if (actdis->Comm().MyPID()==0)
-    DRT::PrintDefaultParameters(std::cout, sdyn);
+    DRT::INPUT::PrintDefaultParameters(std::cout, sdyn);
 
   // -------------------------------------------------------------------
   // create a solver

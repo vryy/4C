@@ -18,6 +18,8 @@
 
 namespace DRT
 {
+
+  /// collection of useful and important but less central stuff
   namespace UTILS
   {
 

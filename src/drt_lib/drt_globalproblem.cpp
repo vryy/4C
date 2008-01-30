@@ -18,17 +18,23 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_ParameterListExceptions.hpp>
 
+#include <Epetra_Time.h>
+
+#include "drt_conditiondefinition.H"
+#include "drt_function.H"
 #include "drt_globalproblem.H"
+#include "drt_inputreader.H"
+#include "drt_timecurve.H"
 #include "drt_utils.H"
+#include "drt_validconditions.H"
 #include "drt_validparameters.H"
 
 #ifdef PARALLEL
-#include "Epetra_MpiComm.h"
+#include <Epetra_MpiComm.h>
 #endif
 
-#include "Epetra_SerialComm.h"
+#include <Epetra_SerialComm.h>
 
-#include "drt_inputreader.H"
 
 
 /*----------------------------------------------------------------------*
@@ -132,7 +138,7 @@ void DRT::Problem::Done()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::ReadParameter(DRT::DatFileReader& reader)
+void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
 {
   RCP<ParameterList> list = rcp(new ParameterList("DAT FILE"));
 
@@ -154,6 +160,11 @@ void DRT::Problem::ReadParameter(DRT::DatFileReader& reader)
   reader.ReadGidSection("--STRUCT SOLVER", *list);
   reader.ReadGidSection("--ALE SOLVER", *list);
   reader.ReadGidSection("--THERMAL SOLVER", *list);
+
+  // a special section for condition names that contains a list of key-integer
+  // pairs but is not validated since the keys are arbitrary.
+  reader.ReadGidSection("--CONDITION NAMES", *list);
+  list->sublist("CONDITION NAMES").disableRecursiveValidation();
 
   setParameterList(list);
 }
@@ -416,6 +427,125 @@ void DRT::Problem::InputControl()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void DRT::Problem::ReadConditions(const DRT::INPUT::DatFileReader& reader)
+{
+  Epetra_Time time(*reader.Comm());
+  if (reader.Comm()->MyPID()==0)
+  {
+    std::cout << "Read conditions                          in....";
+    std::cout.flush();
+  }
+
+  /*---------------------------------------------- input of time curves */
+  DRT::UTILS::TimeCurveManager::Instance().ReadInput();
+  /*---------------------------------------- input of spatial functions */
+  DRT::UTILS::FunctionManager::Instance().ReadInput();
+  //------------------------------- read number of design objects we have
+  // this currently serves to determine how many node sets we might have
+  const Teuchos::ParameterList& design = DesignDescriptionParams();
+  int ndnode = design.get<int>("NDPOINT");
+  int ndline = design.get<int>("NDLINE");
+  int ndsurf = design.get<int>("NDSURF");
+  int ndvol  = design.get<int>("NDVOL");
+
+  //--------------------------------------------- read generic node sets
+  // read design nodes <-> nodes
+  vector<vector<int> > dnode_fenode(ndnode);
+  reader.ReadDesign("DNODE",dnode_fenode);
+
+  // read design lines <-> nodes
+  vector<vector<int> > dline_fenode(ndline);
+  reader.ReadDesign("DLINE",dline_fenode);
+
+  // read design surfaces <-> nodes
+  vector<vector<int> > dsurf_fenode(ndsurf);
+  reader.ReadDesign("DSURF",dsurf_fenode);
+
+  // read design volumes <-> nodes
+  vector<vector<int> > dvol_fenode(ndvol);
+  reader.ReadDesign("DVOL",dvol_fenode);
+
+  // create list of known conditions
+  Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > vc = DRT::INPUT::ValidConditions();
+  std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist = *vc;
+
+  // test for each condition definition (input file condition section)
+  // - read all conditions that match the definition
+  // - add the nodal clouds to the conditions
+  // - add the conditions to the appropiate discretizations
+  //
+  // Note that this will reset (un-FillComplete) the discretizations.
+
+  for (unsigned c=0; c<condlist.size(); ++c)
+  {
+    std::multimap<int,Teuchos::RCP<DRT::Condition> > cond;
+
+    // read conditions from dat file
+    condlist[c]->Read(*this,reader,cond);
+
+    // add nodes to conditions
+    multimap<int,RefCountPtr<DRT::Condition> >::const_iterator curr;
+    for (curr=cond.begin(); curr!=cond.end(); ++curr)
+    {
+      switch (curr->second->GType())
+      {
+      case Condition::Point:   curr->second->Add("Node Ids",dnode_fenode[curr->first]); break;
+      case Condition::Line:    curr->second->Add("Node Ids",dline_fenode[curr->first]); break;
+      case Condition::Surface: curr->second->Add("Node Ids",dsurf_fenode[curr->first]); break;
+      case Condition::Volume:  curr->second->Add("Node Ids",dvol_fenode [curr->first]); break;
+      default:
+        dserror("geometry type unspecified");
+      }
+
+      // Iterate through all discretizations and sort the appropiate condition
+      // into the correct discretization it applies to
+      for (unsigned i=0; i<NumFields(); ++i)
+      {
+        for (unsigned j=0; j<NumDis(i); ++j)
+        {
+          Teuchos::RCP<DRT::Discretization> actdis = Dis(i,j);
+
+          const vector<int>* nodes = curr->second->Nodes();
+          if (nodes->size()==0)
+            dserror("%s condition %d has no nodal cloud",
+                    condlist[c]->Description().c_str(),
+                    curr->second->Id());
+
+          const int firstnode = (*nodes)[0];
+          int foundit = actdis->HaveGlobalNode(firstnode);
+          int found=0;
+          actdis->Comm().SumAll(&foundit,&found,1);
+          if (found)
+            actdis->SetCondition(condlist[c]->Name(),curr->second);
+        }
+      }
+    }
+  }
+
+  // debug
+#if 0
+  for (unsigned i=0; i<NumFields(); ++i)
+  {
+    for (unsigned j=0; j<NumDis(i); ++j)
+    {
+      for (unsigned c=0; c<condlist.size(); ++c)
+      {
+        Teuchos::RCP<DRT::Discretization> actdis = Dis(i,j);
+        condlist[c]->Print(cout,&*actdis,true);
+      }
+    }
+  }
+#endif
+
+  if (reader.Comm()->MyPID()==0)
+  {
+    std::cout << time.ElapsedTime() << " secs\n";
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::Problem::InputSolverControl(std::string section, _SOLVAR* solv)
 {
   const Teuchos::ParameterList& solverparams = getParameterList()->sublist(section);
@@ -497,10 +627,8 @@ void DRT::Problem::InputSolverControl(std::string section, _SOLVAR* solv)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::ReadFields(DRT::DatFileReader& reader)
+void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 {
-  fflush(stdout);
-
   genprob.create_dis = 0;
   genprob.create_ale = 0;
   genprob.maxnode    = 0;
@@ -546,11 +674,11 @@ void DRT::Problem::ReadFields(DRT::DatFileReader& reader)
     AddDis(genprob.numff, fluiddis);
     AddDis(genprob.numaf, aledis);
 
-    DRT::NodeReader nodereader(reader, "--NODE COORDS");
+    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
 
-    nodereader.AddElementReader(rcp(new DRT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
-    nodereader.AddElementReader(rcp(new DRT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
-    nodereader.AddElementReader(rcp(new DRT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
     nodereader.Read();
     break;
@@ -573,14 +701,14 @@ void DRT::Problem::ReadFields(DRT::DatFileReader& reader)
     AddDis(genprob.numsf, structdis);
     AddDis(genprob.numff, fluiddis);
 
-    DRT::NodeReader nodereader(reader, "--NODE COORDS");
+    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
 
-    nodereader.AddElementReader(rcp(new DRT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
-    nodereader.AddElementReader(rcp(new DRT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
 
     nodereader.Read();
     break;
-    
+
   }
   case prb_ale:
   {
@@ -595,8 +723,8 @@ void DRT::Problem::ReadFields(DRT::DatFileReader& reader)
     aledis = rcp(new DRT::Discretization("Ale",reader.Comm()));
     AddDis(genprob.numaf, aledis);
 
-    DRT::NodeReader nodereader(reader, "--NODE COORDS");
-    nodereader.AddElementReader(rcp(new DRT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
+    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
     nodereader.Read();
     break;
   }
@@ -613,8 +741,8 @@ void DRT::Problem::ReadFields(DRT::DatFileReader& reader)
     fluiddis = rcp(new DRT::Discretization("Fluid",reader.Comm()));
     AddDis(genprob.numff, fluiddis);
 
-    DRT::NodeReader nodereader(reader, "--NODE COORDS");
-    nodereader.AddElementReader(rcp(new DRT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
     nodereader.Read();
     break;
   }
@@ -636,10 +764,10 @@ void DRT::Problem::ReadFields(DRT::DatFileReader& reader)
     AddDis(genprob.numsf, structdis);
     AddDis(genprob.numff, fluiddis);
 
-    DRT::NodeReader nodereader(reader, "--NODE COORDS");
+    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
 
-    nodereader.AddElementReader(rcp(new DRT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
-    nodereader.AddElementReader(rcp(new DRT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
 
     nodereader.Read();
     break;
@@ -667,8 +795,8 @@ void DRT::Problem::ReadFields(DRT::DatFileReader& reader)
     structdis = rcp(new DRT::Discretization("Structure",reader.Comm()));
     AddDis(genprob.numsf, structdis);
 
-    DRT::NodeReader nodereader(reader, "--NODE COORDS");
-    nodereader.AddElementReader(rcp(new DRT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     nodereader.Read();
     break;
   } // end of else if (genprob.probtyp==prb_structure)
@@ -688,8 +816,8 @@ void DRT::Problem::ReadFields(DRT::DatFileReader& reader)
     structdis_macro = rcp(new DRT::Discretization("Macro Structure",reader.Comm()));
     AddDis(genprob.numsf, structdis_macro);
 
-    DRT::NodeReader nodereader(reader, "--NODE COORDS");
-    nodereader.AddElementReader(rcp(new DRT::ElementReader(structdis_macro, reader, "--STRUCTURE ELEMENTS")));
+    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis_macro, reader, "--STRUCTURE ELEMENTS")));
     nodereader.Read();
 
     // read microscale fields from second inputfile
@@ -702,7 +830,7 @@ void DRT::Problem::ReadFields(DRT::DatFileReader& reader)
     if (!structdis_macro->Comm().MyPID())
         cout << "input for microscale is read from        " << micro_inputfile_name << "\n";
 
-    DRT::DatFileReader micro_reader(micro_inputfile_name, serialcomm, 1);
+    DRT::INPUT::DatFileReader micro_reader(micro_inputfile_name, serialcomm, 1);
     micro_reader.Activate();
 
     structdis_micro = rcp(new DRT::Discretization("Micro Structure", micro_reader.Comm()));
@@ -719,14 +847,14 @@ void DRT::Problem::ReadFields(DRT::DatFileReader& reader)
     micro_problem->ReadMaterial();
 
 
-    DRT::NodeReader micronodereader(micro_reader, "--NODE COORDS");
-    micronodereader.AddElementReader(rcp(new DRT::ElementReader(structdis_micro, micro_reader, "--STRUCTURE ELEMENTS")));
+    DRT::INPUT::NodeReader micronodereader(micro_reader, "--NODE COORDS");
+    micronodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis_micro, micro_reader, "--STRUCTURE ELEMENTS")));
     micronodereader.Read();
 
     // read conditions of microscale -> note that no time curves and
     // spatial functions can be read!
 
-    micro_problem->ReadConditions();
+    micro_problem->ReadConditions(micro_reader);
 
 
     // At this point, everything for the microscale is read,
@@ -789,7 +917,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::Problem::getValidParameters() co
 {
   // call the external method to get the valid parameters
   // this way the parameter configuration is separate from the source
-  return ValidParameters();
+  return DRT::INPUT::ValidParameters();
 }
 
 

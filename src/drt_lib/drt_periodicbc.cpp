@@ -135,14 +135,14 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
             = mysurfpbcs_[numcond]->Get<vector<int> >("Id of periodic boundary condition");
           if (myid[0][0] == pbcid)
           {
-            const vector<int>* mymasterslavetoggle
-              = mysurfpbcs_[numcond]->Get<vector<int> >("Is slave periodic boundary condition");
+            const string* mymasterslavetoggle
+              = mysurfpbcs_[numcond]->Get<string>("Is slave periodic boundary condition");
 
-            if(mymasterslavetoggle[0][0]==0)
+            if(*mymasterslavetoggle=="Master")
             {
               mastercond =mysurfpbcs_[numcond];
             }
-            else if (mymasterslavetoggle[0][0]==1)
+            else if (*mymasterslavetoggle=="Slave")
             {
               slavecond =mysurfpbcs_[numcond];
             }
@@ -167,9 +167,13 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
       //   slave                      master
       //
       //
-      const vector <int>* dofsforpbcplane  =
-        mastercond->Get<vector<int> >("degrees of freedom for the pbc plane");
+      const string* dofsforpbcplanename  =
+        mastercond->Get<string>("degrees of freedom for the pbc plane");
 
+      // we get one of the three strings "xy", "xz", "yz" in dofsforpbcplanename
+      vector<int> dofsforpbcplane(2);
+      dofsforpbcplane[0] = dofsforpbcplanename->c_str()[0] - 'x';
+      dofsforpbcplane[1] = dofsforpbcplanename->c_str()[1] - 'x';
 
       //--------------------------------------------------
       // get global master node Ids and global slave node Ids
@@ -198,7 +202,7 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
         midtosid,
         *masternodeids,
         *slavenodeids ,
-        *dofsforpbcplane);
+        dofsforpbcplane);
       // time measurement --- this causes the TimeMonitor tm1 to stop here
       tm1_ref_ = null;
 
@@ -453,10 +457,10 @@ void PeriodicBoundaryConditions::AddConnectivity(
           unsigned ntimesmaster = 0;
           for (unsigned numcond=0;numcond<thiscond.size();++numcond)
           {
-            const vector<int>* mymasterslavetoggle
-              = thiscond[numcond]->Get<vector<int> >("Is slave periodic boundary condition");
+            const string* mymasterslavetoggle
+              = thiscond[numcond]->Get<string>("Is slave periodic boundary condition");
 
-            if(mymasterslavetoggle[0][0]==0)
+            if(*mymasterslavetoggle=="Master")
             {
               ++ntimesmaster;
             } // end is slave?
@@ -668,10 +672,10 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
 
           for (unsigned numcond=0;numcond<thiscond.size();++numcond)
           {
-            const vector<int>* mymasterslavetoggle
-              = thiscond[numcond]->Get<vector<int> >("Is slave periodic boundary condition");
+            const string* mymasterslavetoggle
+              = thiscond[numcond]->Get<string>("Is slave periodic boundary condition");
 
-            if(mymasterslavetoggle[0][0]==1)
+            if(*mymasterslavetoggle=="Slave")
             {
               // erase the coupled nodes from the map --- they are redundant
               allcoupledrownodes_->erase(*curr);

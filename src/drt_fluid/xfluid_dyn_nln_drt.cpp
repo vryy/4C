@@ -139,8 +139,8 @@ void xdyn_fluid_drt()
   const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
   //const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
 
-if (fluiddis->Comm().MyPID()==0)
-    DRT::PrintDefaultParameters(std::cout, fdyn);
+  if (fluiddis->Comm().MyPID()==0)
+    DRT::INPUT::PrintDefaultParameters(std::cout, fdyn);
 
   // -------------------------------------------------------------------
   // create a solver
