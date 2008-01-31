@@ -46,9 +46,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   neumanncomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val",6)));
 
   // optional
-  neumanncomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("funct",6,false,false,true)));
-
-  // optional
   neumanncomponents.push_back(
     Teuchos::rcp(
       new StringConditionComponent(
@@ -62,6 +59,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
         "surface","Mid",
         Teuchos::tuple<std::string>("Mid","Top","Bot"),
         Teuchos::tuple<std::string>("mid","top","bot"))));
+
+  // optional
+  neumanncomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("funct",6,false,false,true)));
 
   Teuchos::RCP<ConditionDefinition> pointneumann =
     Teuchos::rcp(new ConditionDefinition("DESIGN POINT NEUMANN CONDITIONS",
