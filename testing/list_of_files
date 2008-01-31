@@ -125,8 +125,8 @@ Input/w1_stalin_dirich.dat                              x        x        x     
 Input/w1dyn.dat                                         x        -        x        -        -        -
 Input/contact1.dat                                      x        x        -        -        -        -
 Input/xf3_drivencavity_stat_drt.dat                     -        -        -        -        -        -
-Input/xf3_beltrami_tet4_drt.dat                         x        x        -        -        -        -
-Input/xf3_ew_Q1_27x_drt.dat                             x        x        -        -        -        -
+Input/xf3_beltrami_tet4_drt.dat                         x        -        -        -        -        -
+Input/xf3_ew_Q1_27x_drt.dat                             x        -        -        -        -        -
 Input/contact1_lin.dat                                  x        x        -        -        -        -
 Input/sohex8_disp_patchtest.dat                         x        x        -        -        -        -
 Input/sohex8_easfull_patchtest.dat                      x        x        -        -        -        -
