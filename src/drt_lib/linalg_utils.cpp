@@ -1244,26 +1244,35 @@ Epetra_Map* LINALG::SplitMap(const Epetra_Map& Amap,
 /*----------------------------------------------------------------------*
  | merge two given maps to one map                            popp 01/08|
  *----------------------------------------------------------------------*/
-RCP<Epetra_Map> LINALG::MergeMap(const Epetra_Map& map1,
-                                 const Epetra_Map& map2)
+RCP<Epetra_Map> LINALG::MergeMap(const RCP<Epetra_Map> map1,
+                                 const RCP<Epetra_Map> map2)
 {
-	if ((!map1.UniqueGIDs()) || (!map2.UniqueGIDs()))
+	// check for cases with null RCPs
+	if (map1==null && map2==null)
+		return null;
+	else if (map1==null)
+		return rcp(new Epetra_Map(*map2));
+	else if (map2==null)
+		return rcp(new Epetra_Map(*map1));
+	
+	// check for unique GIDs and for identity
+	if ((!map1->UniqueGIDs()) || (!map2->UniqueGIDs()))
 		dserror("LINALG::MergeMap: One or both input maps are not unique");
-	if (map1.SameAs(map2))
-		return rcp(new Epetra_Map(map1));
+	if (map1->SameAs(*map2))
+		return rcp(new Epetra_Map(*map1));
 	
-	vector<int> mygids(map1.NumMyElements()+map2.NumMyElements());
-	int count = map1.NumMyElements();
-	
+	vector<int> mygids(map1->NumMyElements()+map2->NumMyElements());
+	int count = map1->NumMyElements();
+
 	// get GIDs of input map1
 	for (int i=0;i<count;++i)
-		mygids[i] = map1.GID(i);
+		mygids[i] = map1->GID(i);
 	
 	// add GIDs of input map2 (only new ones)
-	for (int i=0;i<map2.NumMyElements();++i)
-		if (!map1.MyGID(map2.GID(i)))
+	for (int i=0;i<map2->NumMyElements();++i)
+		if (!map1->MyGID(map2->GID(i)))
 		{
-			mygids[count]=map2.GID(i);
+			mygids[count]=map2->GID(i);
 			++count;
 		}
 	mygids.resize(count);
@@ -1271,7 +1280,7 @@ RCP<Epetra_Map> LINALG::MergeMap(const Epetra_Map& map1,
 	// sort merged map
 	Sort(&mygids[0],(int)mygids.size(),NULL,NULL);
 	
-	return rcp(new Epetra_Map(-1,(int)mygids.size(),&mygids[0],0,map1.Comm()));
+	return rcp(new Epetra_Map(-1,(int)mygids.size(),&mygids[0],0,map1->Comm()));
 }
 
 /*----------------------------------------------------------------------*

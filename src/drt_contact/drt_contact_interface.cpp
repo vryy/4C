@@ -240,6 +240,11 @@ void CONTACT::Interface::FillComplete()
   	mdofrowmap_ = rcp(new Epetra_Map(-1,(int)mr.size(),&mr[0],0,Comm()));
   }
   
+  // FIXME - test for splitting of global matrices
+  // (as the active set strategy is not yet implemented, these are dummies)
+  // activenodes_=snoderowmap_;
+  // activedofs_=sdofrowmap_;
+  
   return;
 }
 
@@ -351,9 +356,7 @@ void CONTACT::Interface::SetState(const string& statename, const RCP<Epetra_Vect
 /*----------------------------------------------------------------------*
  |  evaluate contact (public)                                 popp 11/07|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::Evaluate(Epetra_CrsMatrix& Dglobal,
-																	Epetra_CrsMatrix& Mglobal,
-																	Epetra_Vector& gglobal)
+void CONTACT::Interface::Evaluate()
 {
 	// interface needs to be complete
 	if (!Filled() && comm_.MyPID()==0)
@@ -409,10 +412,6 @@ void CONTACT::Interface::Evaluate(Epetra_CrsMatrix& Dglobal,
 			IntegrateOverlap_2D(*selement,*melement);
 		}
 	}
-
-	// assemble Mortar matrices and weighted gap
-	Assemble(Dglobal,Mglobal,gglobal);
-	
 	
 #ifdef DEBUG
 	// Visualize node projections with gmsh
@@ -1006,9 +1005,9 @@ bool CONTACT::Interface::IntegrateOverlap_2D(CONTACT::CElement& sele,
 /*----------------------------------------------------------------------*
  |  Assemble Mortar matrices and weighted gap                 popp 01/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::Assemble(Epetra_CrsMatrix& Dglobal,
-																	Epetra_CrsMatrix& Mglobal,
-																	Epetra_Vector& gglobal)
+void CONTACT::Interface::Assemble_DMG(Epetra_CrsMatrix& Dglobal,
+																	    Epetra_CrsMatrix& Mglobal,
+																	    Epetra_Vector& gglobal)
 {
 	// loop over proc's slave nodes of the interface for assembly
 	// use standard row map to assemble each node only once
@@ -1020,15 +1019,13 @@ void CONTACT::Interface::Assemble(Epetra_CrsMatrix& Dglobal,
 		CNode* cnode = static_cast<CNode*>(node);
 
 		if (cnode->Owner() != comm_.MyPID())
-			dserror("ERROR: Assemble: Node ownership inconsistency!");
+			dserror("ERROR: Assemble_DMG: Node ownership inconsistency!");
 		
 		// do nothing for this node, if all 3 maps are empty
 		if ((cnode->GetD()).size()==0 && (cnode->GetM()).size()==0 && (cnode->GetMmod()).size()==0)
 			continue;
 		
-		//********************************************************************
-		// assemble nodal contribution to D
-		//********************************************************************
+		/**************************************************** D-matrix ******/
 		if ((cnode->GetD()).size()>0)
 		{
 			vector<map<int,double> > Dmap = cnode->GetD();
@@ -1037,7 +1034,7 @@ void CONTACT::Interface::Assemble(Epetra_CrsMatrix& Dglobal,
 			
 			for (int j=0;j<rowsize-1;++j)
 				if ((int)Dmap[j].size() != (int)Dmap[j+1].size())
-					dserror("ERROR: Assemble: Column dim. of nodal D-map is inconsistent!");
+					dserror("ERROR: Assemble_DMG: Column dim. of nodal D-map is inconsistent!");
 			
 			Epetra_SerialDenseMatrix Dnode(rowsize,colsize);
 			vector<int> lmrow(rowsize);
@@ -1059,22 +1056,20 @@ void CONTACT::Interface::Assemble(Epetra_CrsMatrix& Dglobal,
 					lmcol[k] = col;
 					
 					if (row!=col && abs(val)>1.0e-12)
-						dserror("ERROR: Assemble: D-Matrix is not diagonal!");
+						dserror("ERROR: Assemble_DMG: D-Matrix is not diagonal!");
 				
 					Dnode(j,k)=val;
 					++k;
 				}
 				
 				if (k!=colsize)
-					dserror("ERROR: Assemble: k = %i but colsize = %i",k,colsize);
+					dserror("ERROR: Assemble_DMG: k = %i but colsize = %i",k,colsize);
 			}
 		
 			LINALG::Assemble(Dglobal,Dnode,lmrow,lmrowowner,lmcol);
 		}
 		
-		//********************************************************************
-		// assemble nodal contribution to M
-		//********************************************************************
+		/**************************************************** M-matrix ******/
 		if ((cnode->GetM()).size()>0)
 		{
 			vector<map<int,double> > Mmap = cnode->GetM();
@@ -1083,7 +1078,7 @@ void CONTACT::Interface::Assemble(Epetra_CrsMatrix& Dglobal,
 			
 			for (int j=0;j<rowsize-1;++j)
 				if ((int)Mmap[j].size() != (int)Mmap[j+1].size())
-					dserror("ERROR: Assemble: Column dim. of nodal M-map is inconsistent!");
+					dserror("ERROR: Assemble_DMG: Column dim. of nodal M-map is inconsistent!");
 				
 			Epetra_SerialDenseMatrix Mnode(rowsize,colsize);
 			vector<int> lmrow(rowsize);
@@ -1109,15 +1104,13 @@ void CONTACT::Interface::Assemble(Epetra_CrsMatrix& Dglobal,
 				}
 				
 				if (k!=colsize)
-					dserror("ERROR: Assemble: k = %i but colsize = %i",k,colsize);
+					dserror("ERROR: Assemble_DMG: k = %i but colsize = %i",k,colsize);
 			}
 			
 			LINALG::Assemble(Mglobal,Mnode,lmrow,lmrowowner,lmcol);
 		}
 		
-		//********************************************************************
-		// assemble nodal weighted gap g~
-		//********************************************************************
+		/**************************************************** g-vector ******/
 		if (cnode->Getg()!=0.0)
 		{
 			double gap = cnode->Getg();
@@ -1134,6 +1127,69 @@ void CONTACT::Interface::Assemble(Epetra_CrsMatrix& Dglobal,
 		}
 	}
 		
+	return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Assemble matrices with nodal normals / tangents           popp 01/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Interface::Assemble_NT(Epetra_CrsMatrix& Nglobal,
+																	   Epetra_CrsMatrix& Tglobal)
+{
+	// loop over all active slave nodes of the interface
+	for (int i=0;i<activenodes_->NumMyElements();++i)
+	{
+	 	int gid = activenodes_->GID(i);
+	 	DRT::Node* node = idiscret_->gNode(gid);
+		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+		CNode* cnode = static_cast<CNode*>(node);
+		  	
+		if (cnode->Owner() != comm_.MyPID())
+			dserror("ERROR: Assemble_NT: Node ownership inconsistency!");
+		
+		// prepare assembly
+		int colsize = cnode->NumDof();
+		vector<int> lmrow(1);
+		vector<int> lmrowowner(1);
+		vector<int> lmcol(colsize);
+		
+		lmrow[0] = cnode->Id();
+		lmrowowner[0] = cnode->Owner();
+		
+		/**************************************************** N-matrix ******/
+		Epetra_SerialDenseMatrix Nnode(1,colsize);
+		
+		// we need D diagonal entry of this node
+		double wii = (cnode->GetD()[0])[cnode->Dofs()[0]];
+		
+		for (int j=0;j<colsize;++j)
+		{
+			lmcol[j] = cnode->Dofs()[j];
+			Nnode(0,j) = wii * cnode->n()[j];
+		}
+		
+		// assemble into matrix of normal vectors N
+		LINALG::Assemble(Nglobal,Nnode,lmrow,lmrowowner,lmcol);
+		
+		/**************************************************** T-matrix ******/
+		Epetra_SerialDenseMatrix Tnode(1,colsize);
+				
+		// we need tangent vector of this node (only 2D case so far!)
+		double tangent[3];
+		tangent[0] = -cnode->n()[1];
+		tangent[1] =  cnode->n()[0];
+		tangent[2] =  0.0;
+			
+		for (int j=0;j<colsize;++j)
+		{
+			lmcol[j] = cnode->Dofs()[j];
+			Tnode(0,j) = tangent[j];
+		}
+		
+		// assemble into matrix of normal vectors T
+		LINALG::Assemble(Tglobal,Tnode,lmrow,lmrowowner,lmcol);
+	}
+
 	return;
 }
 

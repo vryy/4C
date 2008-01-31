@@ -599,8 +599,9 @@ void ContactStruGenAlpha::FullNewton()
     {
     	contactmanager_->Initialize();
     	contactmanager_->SetState("displacement",dism_);
+    	
     	// (almost) all contact stuff is done here!
-    	contactmanager_->Evaluate();
+    	contactmanager_->Evaluate(*stiff_,*fresm_);
     }
 
     //----------------------- apply dirichlet BCs to system of equations

@@ -93,9 +93,9 @@ public:
   \brief Get row map of slave nodes (Filled()==true is prerequisite)
 
   */
-  virtual const Epetra_Map& SlaveRowNodes() const 
+  virtual const RCP<Epetra_Map> SlaveRowNodes() const 
   { 
-    if (Filled()) return *snoderowmap_;
+    if (Filled()) return snoderowmap_;
     else dserror("CONTACT::Interface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
@@ -104,9 +104,9 @@ public:
   \brief Get row map of master nodes (Filled()==true is prerequisite)
 
   */
-  virtual const Epetra_Map& MasterRowNodes() const 
+  virtual const RCP<Epetra_Map> MasterRowNodes() const 
   { 
-    if (Filled()) return *mnoderowmap_;
+    if (Filled()) return mnoderowmap_;
     else dserror("CONTACT::Interface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
@@ -115,9 +115,9 @@ public:
   \brief Get column map of slave nodes (Filled()==true is prerequisite)
 
   */
-  virtual const Epetra_Map& SlaveColNodes() const 
+  virtual const RCP<Epetra_Map> SlaveColNodes() const 
   { 
-    if (Filled()) return *snodecolmap_;
+    if (Filled()) return snodecolmap_;
     else dserror("CONTACT::Interface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
@@ -126,9 +126,9 @@ public:
   \brief Get column map of master nodes (Filled()==true is prerequisite)
 
   */
-  virtual const Epetra_Map& MasterColNodes() const 
+  virtual const RCP<Epetra_Map> MasterColNodes() const 
   { 
-    if (Filled()) return *mnodecolmap_;
+    if (Filled()) return mnodecolmap_;
     else dserror("CONTACT::Interface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
@@ -137,9 +137,9 @@ public:
   \brief Get fully overlapping column map of slave nodes (Filled()==true is prerequisite)
 
   */
-  virtual const Epetra_Map& SlaveFullNodes() const 
+  virtual const RCP<Epetra_Map> SlaveFullNodes() const 
   { 
-    if (Filled()) return *snodefullmap_;
+    if (Filled()) return snodefullmap_;
     else dserror("CONTACT::Interface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
@@ -148,9 +148,9 @@ public:
   \brief Get fully overlapping column map of master nodes (Filled()==true is prerequisite)
 
   */
-  virtual const Epetra_Map& MasterFullNodes() const 
+  virtual const RCP<Epetra_Map> MasterFullNodes() const 
   { 
-    if (Filled()) return *mnodefullmap_;
+    if (Filled()) return mnodefullmap_;
     else dserror("CONTACT::Interface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
@@ -159,9 +159,9 @@ public:
   \brief Get row map of slave elements (Filled()==true is prerequisite)
 
   */
-  virtual const Epetra_Map& SlaveRowElements() const 
+  virtual const RCP<Epetra_Map> SlaveRowElements() const 
   { 
-    if (Filled()) return *selerowmap_;
+    if (Filled()) return selerowmap_;
     else dserror("CONTACT::Interface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
@@ -170,9 +170,9 @@ public:
   \brief Get row map of master elements (Filled()==true is prerequisite)
 
   */
-  virtual const Epetra_Map& MasterRowElements() const 
+  virtual const RCP<Epetra_Map> MasterRowElements() const 
   { 
-    if (Filled()) return *melerowmap_;
+    if (Filled()) return melerowmap_;
     else dserror("CONTACT::Interface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
@@ -181,9 +181,9 @@ public:
   \brief Get column map of slave elements (Filled()==true is prerequisite)
 
   */
-  virtual const Epetra_Map& SlaveColElements() const 
+  virtual const RCP<Epetra_Map> SlaveColElements() const 
   { 
-    if (Filled()) return *selecolmap_;
+    if (Filled()) return selecolmap_;
     else dserror("CONTACT::Interface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
@@ -192,9 +192,9 @@ public:
   \brief Get column map of master elements (Filled()==true is prerequisite)
 
   */
-  virtual const Epetra_Map& MasterColElements() const 
+  virtual const RCP<Epetra_Map> MasterColElements() const 
   { 
-    if (Filled()) return *melecolmap_;
+    if (Filled()) return melecolmap_;
     else dserror("CONTACT::Interface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
@@ -203,9 +203,9 @@ public:
   \brief Get fully overlapping column map of slave elements (Filled()==true is prerequisite)
 
   */
-  virtual const Epetra_Map& SlaveFullElements() const 
+  virtual const RCP<Epetra_Map> SlaveFullElements() const 
   { 
-    if (Filled()) return *selefullmap_;
+    if (Filled()) return selefullmap_;
     else dserror("CONTACT::Interface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
@@ -214,9 +214,9 @@ public:
   \brief Get fully overlapping column map of master elements (Filled()==true is prerequisite)
 
   */
-  virtual const Epetra_Map& MasterFullElements() const 
+  virtual const RCP<Epetra_Map> MasterFullElements() const 
   { 
-    if (Filled()) return *melefullmap_;
+    if (Filled()) return melefullmap_;
     else dserror("CONTACT::Interface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
@@ -225,9 +225,9 @@ public:
   \brief Get row map of slave dofs (Filled()==true is prerequisite)
 
   */
-  virtual const Epetra_Map& SlaveRowDofs() const 
+  virtual const RCP<Epetra_Map> SlaveRowDofs() const 
   { 
-    if (Filled()) return *sdofrowmap_;
+    if (Filled()) return sdofrowmap_;
     else dserror("CONTACT::Interface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
@@ -236,13 +236,35 @@ public:
   \brief Get row map of master dofs (Filled()==true is prerequisite)
   
   */
-  virtual const Epetra_Map& MasterRowDofs() const 
+  virtual const RCP<Epetra_Map> MasterRowDofs() const 
   { 
-    if (Filled()) return *mdofrowmap_;
+    if (Filled()) return mdofrowmap_;
     else dserror("CONTACT::Interface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
-  }  
+  }
   
+  /*!
+  \brief Get row map of active nodes (Filled()==true is prerequisite)
+    
+  */
+  virtual const RCP<Epetra_Map> ActiveNodes() const 
+  { 
+    if (Filled()) return activenodes_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+  
+  /*!
+  \brief Get row map of active dofs (Filled()==true is prerequisite)
+      
+  */
+  virtual const RCP<Epetra_Map> ActiveDofs() const 
+  { 
+    if (Filled()) return activedofs_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+    
   /*!
   \brief Add a CONTACT::CNode to the interface (Filled()==true NOT prerequisite)
   
@@ -294,9 +316,7 @@ public:
   \brief Evaluate contact interface
       
   */
-  virtual void Evaluate(Epetra_CrsMatrix& Dglobal,
-  											Epetra_CrsMatrix& Mglobal,
-  											Epetra_Vector& gglobal);
+  virtual void Evaluate();
   
   /*!
   \brief Search algorithm for limitation of potentially contacting slave / master pairs
@@ -321,9 +341,16 @@ public:
   \brief Assemble Mortar matrices and weighted gap
         
   */
-  virtual void Assemble(Epetra_CrsMatrix& Dglobal,
-  											Epetra_CrsMatrix& Mglobal,
-  											Epetra_Vector& gglobal);
+  virtual void Assemble_DMG(Epetra_CrsMatrix& Dglobal,
+  											    Epetra_CrsMatrix& Mglobal,
+  											    Epetra_Vector& gglobal);
+  
+  /*!
+  \brief Assemble matrices N / T containing nodal normals / tangents
+  
+  */
+  virtual void Assemble_NT(Epetra_CrsMatrix& Nglobal,
+  												 Epetra_CrsMatrix& Tglobal);
   
   /*!
   \brief Visualize node normals and projections with gmsh
@@ -364,6 +391,9 @@ protected:
   
   RCP<Epetra_Map>               sdofrowmap_;   // row map of all slave dofs
   RCP<Epetra_Map>               mdofrowmap_;   // row map of all master dofs
+  
+  RCP<Epetra_Map>								activenodes_;  // row map of all active slave nodes
+  RCP<Epetra_Map>								activedofs_;	 // row map of all active slave dofs
   
   Epetra_SerialDenseMatrix		  contactsegs_;	 // contains coordinates of all contact segments (gmsh)
   int														counter_;			 // counts the number of calls to this interface (gmsh)

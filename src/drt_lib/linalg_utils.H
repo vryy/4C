@@ -399,15 +399,17 @@ namespace LINALG
   /*!
   \brief merges two given Epetra_Maps
 
-  merges input map1 and input map2, both of which have to be unique, but may
-  be overlapping, to a new map and returns RCP to it
+  merges input map1 and input map2 (given as RCP), both of which
+  have to be unique, but may be overlapping, to a new map and returns
+  RCP to it. The case that one or both input RCPs are null is
+  detected and handled appropriately.
 
   \param map1      : one map to be merged
   \param map2      : the other map to be merged
   \return the (sorted) merged map of input maps map1 and map2
   */
-  RCP<Epetra_Map> MergeMap(const Epetra_Map& map1,
-                           const Epetra_Map& map2);
+  RCP<Epetra_Map> MergeMap(const RCP<Epetra_Map> map1,
+                           const RCP<Epetra_Map> map2);
     
   /*!
   \brief split a vector into 2 non-overlapping pieces

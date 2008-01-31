@@ -185,6 +185,15 @@ discret_(discret)
 
   } // for (int i=0; i<(int)contactconditions.size(); ++i)
 
+  // setup global Epetra_Maps
+  // (this is done by looping over all interfaces and merging)
+  for (int i=0;i<(int)interface_.size();++i)
+  {
+  	gsnoderowmap_ = LINALG::MergeMap(gsnoderowmap_,interface_[i]->SlaveRowNodes());
+  	gsdofrowmap_ = LINALG::MergeMap(gsdofrowmap_,interface_[i]->SlaveRowDofs());
+  	gmdofrowmap_ = LINALG::MergeMap(gmdofrowmap_,interface_[i]->MasterRowDofs());
+  }
+  
   return;
 }
 
@@ -230,6 +239,19 @@ void CONTACT::Manager::Initialize()
   {
 	  interface_[i]->Initialize();
   }
+	
+	// (re)setup global Epetra_CrsMatrices and Epetra_Vectors
+	D_ = LINALG::CreateMatrix(*gsdofrowmap_,10);
+	M_ = LINALG::CreateMatrix(*gsdofrowmap_,100);
+	g_ = LINALG::CreateVector(*gsnoderowmap_,true);
+		
+	// update active global Epetra_Maps
+	for (int i=0;i<(int)interface_.size();++i)
+	{
+		gactivenodes_ = LINALG::MergeMap(gactivenodes_,interface_[i]->ActiveNodes());
+		gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs());
+	}
+	
   return;
 }
 
@@ -249,42 +271,64 @@ void CONTACT::Manager::SetState(const string& statename, const RCP<Epetra_Vector
 /*----------------------------------------------------------------------*
  |  evaluate contact (public)                                 popp 11/07|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::Evaluate()
-{
-	// setup global Epetra_Maps
-	gsnoderowmap_ = rcp(new Epetra_Map(interface_[0]->SlaveRowNodes()));
-	for (int i=0;i<(int)interface_.size();++i)
-		gsnoderowmap_ = LINALG::MergeMap(*gsnoderowmap_,interface_[i]->SlaveRowNodes());
-			
-	gsdofrowmap_ = rcp(new Epetra_Map(interface_[0]->SlaveRowDofs()));
-	for (int i=0;i<(int)interface_.size();++i)
-		gsdofrowmap_ = LINALG::MergeMap(*gsdofrowmap_,interface_[i]->SlaveRowDofs());
-	
-	gmdofrowmap_ = rcp(new Epetra_Map(interface_[0]->MasterRowDofs()));
-	for (int i=0;i<(int)interface_.size();++i)
-		gmdofrowmap_ = LINALG::MergeMap(*gmdofrowmap_,interface_[i]->MasterRowDofs());
-		
-	// setup global Epetra_CrsMatrices
-	D_ = LINALG::CreateMatrix(*gsdofrowmap_,10);
-	M_ = LINALG::CreateMatrix(*gsdofrowmap_,100);
-	g_ = LINALG::CreateVector(*gsnoderowmap_,true);
-		
-	// evaluate interfaces
-	// (nodal normals, projections, Mortar integration, Mortar assembly)
+void CONTACT::Manager::Evaluate(Epetra_CrsMatrix& Kteff,
+																Epetra_Vector& feff)
+{	
+	/**********************************************************************/
+	/* evaluate interfaces                                                */
+	/* (nodal normals, projections, Mortar integration, Mortar assembly)  */
+	/**********************************************************************/
 	for (int i=0; i<(int)interface_.size(); ++i)
   {
-	  interface_[i]->Evaluate(*D_,*M_,*g_);
+	  interface_[i]->Evaluate();
+	  interface_[i]->Assemble_DMG(*D_,*M_,*g_);
   }
 	
 	// FillComplete() global Mortar matrices
 	LINALG::Complete(*D_);
 	LINALG::Complete(*M_,*gmdofrowmap_,*gsdofrowmap_);
 	
+	/**********************************************************************/
+	/* build global matrix N with normal vectors of active nodes          */
+	/* and global matrix T with tangent vectors of active nodes           */
+	/**********************************************************************/
+	if (gactivenodes_!=null)
+	{ 
+		N_ = LINALG::CreateMatrix(*gactivenodes_,3);
+	  T_ = LINALG::CreateMatrix(*gactivenodes_,3);
+	  
+	  for (int i=0; i<(int)interface_.size(); ++i)
+	    interface_[i]->Assemble_NT(*N_,*T_);
+	  
+	  // FillComplete() global matrices N and T
+	  LINALG::Complete(*N_,*gactivedofs_,*gactivenodes_);
+	  LINALG::Complete(*T_,*gactivedofs_,*gactivenodes_);
+	}
+	
+	/**********************************************************************/
+	/* Multiply Mortar matrices: M^ = inv(D) * M                          */
+	/**********************************************************************/
+	RCP<Epetra_CrsMatrix> invD = rcp(new Epetra_CrsMatrix(*D_));
+	RCP<Epetra_Vector> diag = LINALG::CreateVector(*gsdofrowmap_,true);
+	int err = 0;
+	
+	invD->ExtractDiagonalCopy(*diag);
+	err = diag->Reciprocal(*diag);
+	if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+	err = invD->ReplaceDiagonalValues(*diag);
+	if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
+	
+	RCP<Epetra_CrsMatrix> Mbar = LINALG::MatMatMult(*invD,false,*M_,false);
+
 	/*
 #ifdef DEBUG
 	cout << *D_;
 	cout << *M_;
 	cout << *g_;
+	cout << *N_;
+	cout << *T_;
+	cout << *invD;
+	cout << *Mbar;
 #endif // #ifdef DEBUG
 	*/
 	
