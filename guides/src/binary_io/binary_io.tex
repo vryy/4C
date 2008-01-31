@@ -1,18 +1,21 @@
 \chapter{Binary IO}
 
-This section was originally written to be both: An indepth presentation
-of the new binary IO machinery and an advertisement for it. Unfortunately
-it does not explain how to add new elements. For that you will have
-to read the extensive code comments.
+This section was originally written to be both: An indepth presentation of the
+new binary IO machinery in \ccarat{} and an advertisement for
+it. Unfortunately it does not explain how to add new elements. For that you
+will have to read the extensive code comments.
 
+Note: This discussion concerns the C style binary IO implemented in
+\ccarat{}. IO in \baci{} follows the same lines, but turns out to be much
+simpler to use and extend.
 
-\subsection{The purpose of output}
+\section{The purpose of output}
 
 To be of use ccarat needs the ability to write the calculated values.
 That's obvious. The interesting values live in various places.
 
 
-\subsubsection{Node arrays}
+\subsection{Node arrays}
 
 Of course there are the node arrays. These arrays are always there,
 but their sizes and the meaning of the data inside them vary a lot.
@@ -26,7 +29,7 @@ a few of them are interessting results. The others are just working
 data.
 
 
-\subsubsection{Element data}
+\subsection{Element data}
 
 The second source of values that need to be written somewhere are
 the elements themselves. Stresses, for example, are calculated at
@@ -34,7 +37,7 @@ the element level therefore stored in element arrays. But element
 data is highly element specific. Each element is different.
 
 
-\subsubsection{Distributed Vectors}
+\subsection{Distributed Vectors}
 
 A third, less obvious, source of data are the distributed vectors
 that make up our rhs and solution vectors. These need to be stored
@@ -42,12 +45,12 @@ for restart purposes. One would not attempt to postprocess them, but
 the io system must support them nevertheless.
 
 
-\subsection{Output targets}
+\section{Output targets}
 
 The output that ccarat produces is used in many different ways.
 
 
-\subsubsection{Restart}
+\subsection{Restart}
 
 For restart it is necessary to save the current step's working data.
 There is no need to store any input, the input file will be read again
@@ -65,7 +68,7 @@ The restart system is not concerned with the meaning of the data it
 reads and writes.
 
 
-\subsubsection{GiD}
+\subsection{GiD}
 
 Talking about GiD is talking about postprocessing. We need to give
 all information to GiD that's needed to visualize the results. In
@@ -78,7 +81,7 @@ from what GiD, or any other postprocessor for that matter, expects.
 So a slight transformation has to be applied.
 
 
-\subsubsection{Plain Text}
+\subsection{Plain Text}
 
 Often people (read: developer) are interessted in the real numbers.
 So some means to output a plain text file are necessary. Transformations
@@ -86,19 +89,19 @@ are not welcome here. The plain text output has to show the real ccarat
 data structures.
 
 
-\subsubsection{Monitor}
+\subsection{Monitor}
 
 Sometimes only some selected dofs are important. We want to be able
 to watch these dofs, that is write their evolution to a separate file.
 
 
-\subsubsection{Visual}
+\subsection{Visual}
 
 There are the visual libraries that allow to visualize 2d and 3d fluid
 results. (That's nothing but a special postprocessor.)
 
 
-\subsection{State of the art}
+\section{State of the art}
 
 The old way of handling output (which is still the current way, but
 things are going to change) is to handle every special case separately.
@@ -122,7 +125,7 @@ however, is done by the first process only. Thus all results must
 be available there.
 
 
-\subsection{New Requirements}
+\section{New Requirements}
 
 But our attempt to improve ccarat's parallelization enforces a different
 style of output. We cannot write our results to plain text files anymore.
@@ -143,7 +146,7 @@ system must be as simple to enhance as possible. But nowadays we accept
 a certain complexity for the sake of efficiency.
 
 
-\subsection{The new approach}
+\section{The new approach}
 
 We want to unify the various output methods, we want ccarat to have
 one way to output data. All data is supposed to go into the same file.
@@ -174,7 +177,7 @@ files can be plain text. That's convenient because this way one can
 easily read it and see that kind of data has been written.
 
 
-\subsection{File format}
+\section{File format}
 
 During a ccarat run there are lots of results to be stored. A nonlinear
 shell problem, for example, might require to store displacements and
@@ -267,7 +270,7 @@ The control file reader and the internal representation it generates
 It might be usable in other contexts, too.
 
 
-\subsection{Implementation strategy}
+\section{Implementation strategy}
 
 For efficiency reasons we want to write in parallel, utilizing the
 magic of MPI IO. Our io module has to handle problems that are too
@@ -288,10 +291,10 @@ The details how that's done are discussed further down below. We just
 need the general picture in order to understand the following.
 
 
-\subsection{How to use the io module}
+\section{How to use the io module}
 
 
-\subsubsection{Example: Binary io in fluids}
+\subsection{Example: Binary io in fluids}
 
 To see a real working example of the binary output lets have a look
 at the fluid algorithm \texttt{fluid{\_}isi} in \texttt{fluid{\_}imp{\_}semimp.c}.
@@ -343,14 +346,14 @@ But yes, that's just the calling. You might want to enhance the io
 system. To do this a closer look is needed.
 
 
-\subsection{A closer look: Restart}
+\section{A closer look: Restart}
 
 In the io module you can find the file \texttt{io{\_}restart.c}
 that provides the two functions to write and read all information
 needed to restart a simple fluid calculation.
 
 
-\subsubsection{Writing}
+\subsection{Writing}
 
 The function \texttt{restart{\_}write{\_}bin{\_}fluiddyn} that
 writes the restart data consists basically of three parts. The first
@@ -514,7 +517,7 @@ big gap in the middle remains to be filled with advanced material.
 See below.
 
 
-\subsubsection{Reading}
+\subsection{Reading}
 
 The function \texttt{restart{\_}read{\_}bin{\_}fluiddyn} is
 very similar to its write counterpart. However, there are differences.
@@ -606,7 +609,7 @@ These peculiarities, however, can be hidden by the preprocessor so
 that we can use the same code for both versions.
 
 
-\subsubsection{Distributed Vectors}
+\subsection{Distributed Vectors}
 
 The restart functions for structure algorithms need to store distributed
 vectors additional to node and element arrays. However, that easy.
@@ -616,7 +619,7 @@ and \texttt{in{\_}node{\_}arrays} do for node arrays. There's
 no user supplied low level code needed.
 
 
-\subsubsection{Restart conclusion}
+\subsection{Restart conclusion}
 
 The \texttt{restart{\_}write{\_}{*}} and \texttt{restart{\_}read{\_}{*}}
 functions from \texttt{io{\_}restart.h} are public functions of
@@ -632,7 +635,7 @@ the main machinery and just look at how data is extracted from and
 put into elements.
 
 
-\subsubsection{Final restart remark}
+\subsection{Final restart remark}
 
 The nice thing about the new restart is that you don't need to move
 your files even when you restart many times. The restart setup will
@@ -656,7 +659,7 @@ note that it might be a bad idea to end your output names with a minus
 sign and a number.
 
 
-\subsection{Postprocessing output}
+\section{Postprocessing output}
 
 The general idea of restart is to copy data from memory to the disc
 and be able to copy it back. No transformations whatsoever are performed.
@@ -702,7 +705,7 @@ constants and corresponding low level functions. The mechanism is
 the same as explained for the restart case above.
 
 
-\subsection{Types of Elements}
+\section{Types of Elements}
 
 The function \texttt{init{\_}bin{\_}out{\_}fluid} has to figure
 out, among other things, what kind of elements there are in this discretization.
@@ -770,7 +773,7 @@ Please note that due to the flexibility of the control file it's possible
 to specify any criteria needed to distinguish an element variant.
 
 
-\subsection{Mesh Connectivity}
+\section{Mesh Connectivity}
 
 As mentioned above we have to store the element connectivity along
 with each discretization. The \texttt{init{\_}bin{\_}out{\_}field}
@@ -800,7 +803,7 @@ These function calls write the \texttt{mesh} and \texttt{coords} chunks
 we've already discussed above.
 
 
-\subsection{The communication layer}
+\section{The communication layer}
 
 The functional core of the io module is the communication layer that
 lives in \texttt{io{\_}singlefile.c}. The communication happens
@@ -812,7 +815,7 @@ data and distributes it to the processor where it is written. This
 communication process happens in a chattering style.
 
 
-\subsubsection{Chattering processors communication pattern}
+\subsection{Chattering processors communication pattern}
 
 This is a particular clever way to arrange your code when each pair
 of processors needs to exchange a different piece of information.
@@ -863,7 +866,7 @@ is handled by \texttt{MPI{\_}Sendrecv} equally well (without communication).
 No special attention is needed.
 
 
-\subsection{Module data structures}
+\section{Module data structures}
 
 The io module is split into an input and an output part. In each part
 there is a data structure hierarchy consisting of the main structure
