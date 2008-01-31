@@ -50,6 +50,12 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
     int numele = extrudeblock.GetNumEle();
     extrudeblock.Print(cout,true);
     
+    // Create Node to Element Connectivity
+    const map<int,set<int> > node_conn = NodeToEleConn(extrudeblock);
+    
+    // Create Element to Element Connectivity (sharing an edge)
+    const map<int,set<int> > ele_neighbor = EleNeighbors(extrudeblock,node_conn);
+    
     // loop through all its elements to create new connectivity
     map<int,vector<int> > newconn;
     for (int iele = 0; iele < numele; ++iele) {
@@ -117,6 +123,92 @@ vector<double> EXODUS::ExtrudeNodeCoords(const vector<double> basecoords, double
   newcoords[1] = basecoords[1];
   newcoords[2] = basecoords[2] + distance;
   return newcoords;
+}
+
+const map<int,set<int> > EXODUS::NodeToEleConn(const EXODUS::ElementBlock eblock)
+{
+  map<int,set<int> > node_conn;
+  const map<int,vector<int> > ele_conn = eblock.GetEleConn();
+  map<int,vector<int> >::const_iterator i_ele;
+  
+  // loop all elements for their nodes
+  for (i_ele = ele_conn.begin(); i_ele != ele_conn.end(); ++i_ele){
+    vector<int> elenodes = i_ele->second;
+    vector<int>::iterator i_node;
+    // loop all nodes within element
+    for (i_node = elenodes.begin(); i_node < elenodes.end(); ++i_node){
+      int nodeid = *i_node;
+      // add this ele_id into set of nodeid
+      node_conn[nodeid].insert(i_ele->first);
+    }
+  }
+  return node_conn;
+}
+
+const map<int,set<int> > EXODUS::EleNeighbors(EXODUS::ElementBlock eblock, const map<int,set<int> > node_conn)
+{
+  map<int,set<int> > eleneighbors;
+  const map<int,vector<int> > ele_conn = eblock.GetEleConn();
+  map<int,vector<int> >::const_iterator i_ele;
+
+  // loop all elements
+  for (i_ele = ele_conn.begin(); i_ele != ele_conn.end(); ++i_ele){
+    int acteleid = i_ele->first;
+    vector<int> actelenodes = i_ele->second;
+    vector<int>::iterator i_node;
+    map<int,set<int> > elepatch; // consists of all elements connected by shared nodes
+    // loop all nodes within element
+    for (i_node = actelenodes.begin(); i_node < actelenodes.end(); ++i_node){
+      int nodeid = *i_node;
+      // find all elements connected to this node
+      const set<int> eles = node_conn.find(nodeid)->second;
+      // add these eles into patch
+      elepatch[nodeid].insert(eles.begin(),eles.end());
+    }
+    
+//    // create now the much smaller node_ele_conn for this elepatch
+//    map<int,set<int> > patch_node_conn;
+//    set<int>::iterator i_patchele;
+//    // loop all patch elements for their nodes
+//    for (i_patchele = elepatch.begin(); i_patchele != elepatch.end(); ++i_patchele){
+//      vector<int> elenodes = i_patchele->second;
+//      vector<int>::iterator i_node;
+//      // loop all nodes within element
+//      for (i_node = elenodes.begin(); i_node < elenodes.end(); ++i_node){
+//        int nodeid = *i_node;
+//        // add this ele_id into set of nodeid
+//        patch_node_conn[nodeid].insert(i_patchele->first);
+//      }
+//    }
+    
+    
+    // now select those elements out of the patch which share an edge
+    for (i_node = actelenodes.begin(); i_node < actelenodes.end(); ++i_node){
+      int firstedgenode = *i_node;
+      int secedgenode;
+      // edge direction according to order in elenodes, plus last to first
+      if (i_node == (actelenodes.end()-1)) secedgenode = *actelenodes.begin();
+      else secedgenode = *(i_node + 1);
+      // find all elements connected to the first node
+      const set<int> firsteles = elepatch.find(firstedgenode)->second;
+      // loop over these elements to find the one sharing the secondedgenode
+      set<int>::const_iterator it;
+      for(it = firsteles.begin(); it != firsteles.end(); ++it){
+        const int trialele = *it;
+        vector<int> neighbornodes = ele_conn.find(trialele)->second;
+        bool found = FindinVec(secedgenode,neighbornodes);
+        if (found) {eleneighbors[acteleid].insert(trialele); break;}
+      }
+    }
+  }
+  return eleneighbors;
+}
+
+bool EXODUS::FindinVec(const int id, const vector<int> vec)
+{
+  vector<int>::const_iterator i;
+  for(i=vec.begin(); i<vec.end(); ++i) if (*i == id) return true;
+  return false;
 }
 
 

@@ -44,6 +44,12 @@ vector<int> RiseNodeIds(const int highestnode, const vector<int> elenodes);
 
 vector<double> ExtrudeNodeCoords(const vector<double> basecoords, double distance);
 
+const map<int,set<int> > NodeToEleConn(const EXODUS::ElementBlock eblock);
+
+const map<int,set<int> > EleNeighbors(const EXODUS::ElementBlock eblock, const map<int,set<int> > node_conn);
+
+bool FindinVec(const int id,vector<int> vec);
+
 } // of namespace EXODUS
 
 #endif /*PRE_EXODUS_SOSHEXTRUSION_H_*/

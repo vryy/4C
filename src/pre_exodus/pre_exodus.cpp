@@ -162,10 +162,10 @@ int main(
     	  dserror("failed to open file: %s", defaultheadfilename.c_str());
 
       // get valid input parameters
-      Teuchos::RCP<const Teuchos::ParameterList> list = DRT::ValidParameters();
+      Teuchos::RCP<const Teuchos::ParameterList> list = DRT::INPUT::ValidParameters();
 
       // write default .dat header into file 
-      DRT::PrintDatHeader(defaulthead,*list);
+      DRT::INPUT::PrintDatHeader(defaulthead,*list);
 
       // close default header file    
       if (defaulthead.is_open()) 
