@@ -83,9 +83,6 @@ using namespace DRT;
 void DRT::Problem::ReadMaterial()
 {}
 
-void DRT::Problem::ReadConditions()
-{}
-
 // another anachronism
 extern "C" void input_ReadGlobalParameterList()
 {}
