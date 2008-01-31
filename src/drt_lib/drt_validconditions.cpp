@@ -312,7 +312,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   std::vector<Teuchos::RCP<ConditionComponent> > xfemcomponents;
 
-  xfemcomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
+  xfemcomponents.push_back(Teuchos::rcp(new IntConditionComponent("label")));
 
   Teuchos::RCP<ConditionDefinition> linexfem =
     Teuchos::rcp(new ConditionDefinition("DESIGN XFEM COUPLING LINE CONDITIONS",
