@@ -37,44 +37,7 @@ void DRT::UTILS::DGFEM_BasisFunction_3D(
     case DRT::Element::hex8:
     	switch (npol)
     	{
-    	case 1:
-    		funct(0)=1.0;
-    		
-    	case 4:
-    		funct(0)=1.0;
-    		
-    		funct(1)=r;
-    		funct(2)=s;
-    		funct(3)=t;
-    		
-    	case 10:
-    		funct(0)=1.0;
-    		
-    		funct(1)=r;
-    		funct(2)=s;
-    		funct(3)=t;
-    		
-    		funct(4)=0.5*(3.0*r*r-1.0); 	//P2(r)
-    		funct(5)=r*s;					//P1(r)*P1(s)
-    		funct(6)=r*t;					//P1(r)*P1(t)
-    		funct(7)=0.5*(3.0*s*s-1.0);		//P2(s)
-    		funct(8)=s*t;					//P1(s)*P1(t)
-    		funct(9)=0.5*(3.0*t*t-1.0);		//P2(t)
-    		
     	case 20:
-    		funct(0)=1.0;
-    		
-    		funct(1)=r;
-    		funct(2)=s;
-    		funct(3)=t;
-    		
-    		funct(4)=0.5*(3.0*r*r-1.0); 	//P2(r)
-    		funct(5)=r*s;					//P1(r)*P1(s)
-    		funct(6)=r*t;					//P1(r)*P1(t)
-    		funct(7)=0.5*(3.0*s*s-1.0);		//P2(s)
-    		funct(8)=s*t;					//P1(s)*P1(t)
-    		funct(9)=0.5*(3.0*t*t-1.0);		//P2(t)
-
     		funct(10)=0.5*(5.0*r*r*r-3.0*r);		//P3(r)
     		funct(11)=0.5*(3.0*r*r-1.0)*s;			//P2(r)*P1(s)
     		funct(12)=0.5*(3.0*r*r-1.0)*t;			//P2(r)*P1(t)
@@ -85,7 +48,20 @@ void DRT::UTILS::DGFEM_BasisFunction_3D(
     		funct(17)=0.5*(3.0*s*s-1.0)*t;			//P2(s)*P1(t)
     		funct(18)=s*0.5*(3.0*t*t-1.0);			//P1(s)*P2(t)
     		funct(19)=0.5*(5.0*t*t*t-3.0*t);		//P3(t)
-
+    	case 10:
+    		funct(4)=0.5*(3.0*r*r-1.0); 	//P2(r)
+    		funct(5)=r*s;					//P1(r)*P1(s)
+    		funct(6)=r*t;					//P1(r)*P1(t)
+    		funct(7)=0.5*(3.0*s*s-1.0);		//P2(s)
+    		funct(8)=s*t;					//P1(s)*P1(t)
+    		funct(9)=0.5*(3.0*t*t-1.0);		//P2(t)
+    	case 4:
+    		funct(1)=r;
+    		funct(2)=s;
+    		funct(3)=t;
+    	case 1:
+    		funct(0)=1.0;
+    		break;
     	default:
     		dserror("Unknown number of polynomials\n");
     	}
@@ -115,44 +91,7 @@ void DRT::UTILS::DGFEM_BasisFunction_3D_deriv1(
     case DRT::Element::hex8:
     	switch (npol)
     	{
-    	case 1:
-    		//Nothing to do
-    		
-    	case 4:
-    		deriv1(0,1)=1.0;
-    		deriv1(1,2)=1.0;
-    		deriv1(2,3)=1.0;
-
-    	case 10:
-    		deriv1(0,1)=1.0;
-    		deriv1(1,2)=1.0;
-    		deriv1(2,3)=1.0;
-
-    		deriv1(0,4)=3.0*r;
-    		deriv1(0,5)=s;
-    		deriv1(1,5)=r;
-    		deriv1(0,6)=t;
-    		deriv1(2,6)=r;
-    		deriv1(1,7)=3.0*s;
-    		deriv1(1,8)=s;
-    		deriv1(2,8)=r;
-    		deriv1(2,9)=3.0*t;
-    		
     	case 20:
-    		deriv1(0,1)=1.0;
-    		deriv1(1,2)=1.0;
-    		deriv1(2,3)=1.0;
-
-    		deriv1(0,4)=3.0*r;
-    		deriv1(0,5)=s;
-    		deriv1(1,5)=r;
-    		deriv1(0,6)=t;
-    		deriv1(2,6)=r;
-    		deriv1(1,7)=3.0*s;
-    		deriv1(1,8)=s;
-    		deriv1(2,8)=r;
-    		deriv1(2,9)=3.0*t;
-
     		deriv1(0,10)=0.5*(15.0*r*r-3.0);	
     		deriv1(0,11)=3.0*r*s;
     		deriv1(1,11)=0.5*(3.0*r*r-1.0);
@@ -171,7 +110,22 @@ void DRT::UTILS::DGFEM_BasisFunction_3D_deriv1(
     		deriv1(1,18)=0.5*(3.0*t*t-1.0);
     		deriv1(2,18)=s*3.0*t;
     		deriv1(2,19)=0.5*(15.0*t*t-3.0);
-    		
+    	case 10:
+    		deriv1(0,4)=3.0*r;
+    		deriv1(0,5)=s;
+    		deriv1(1,5)=r;
+    		deriv1(0,6)=t;
+    		deriv1(2,6)=r;
+    		deriv1(1,7)=3.0*s;
+    		deriv1(1,8)=s;
+    		deriv1(2,8)=r;
+    		deriv1(2,9)=3.0*t;
+    	case 4:
+    		deriv1(0,1)=1.0;
+    		deriv1(1,2)=1.0;
+    		deriv1(2,3)=1.0;
+    	case 1:
+    		break;
     	default:
     		dserror("Unknown number of polynomials\n");
     	}
@@ -208,25 +162,7 @@ void DRT::UTILS::DGFEM_BasisFunction_3D_deriv2(
     case DRT::Element::hex8:
     	switch (npol)
     	{
-    	case 1:
-    		//Nothing to do
-    		
-    	case 4:
-    		//Nothing to do
-
-    	case 10:
-    		deriv2(drdr,4)=3.0;
-    		deriv2(dsds,7)=3.0;
-    		deriv2(dtdt,9)=3.0;
-    		
     	case 20:
-    		deriv2(drdr,4)=3.0;
-    		deriv2(drds,5)=1.0;
-    		deriv2(drdt,6)=1.0;
-    		deriv2(dsds,7)=3.0;
-    		deriv2(dsdt,8)=1.0;
-    		deriv2(dtdt,9)=3.0;
-
     		deriv2(drdr,10)=15.0*r;	
     		deriv2(drdr,11)=3.0*s;
     		deriv2(drds,11)=3.0*r;
@@ -245,7 +181,16 @@ void DRT::UTILS::DGFEM_BasisFunction_3D_deriv2(
     		deriv2(dsdt,18)=3.0*t;
     		deriv2(dtdt,18)=3.0*s;
     		deriv2(dtdt,19)=15.0*t;
-    		
+    	case 10:
+    		deriv2(drdr,4)=3.0;
+    		deriv2(drds,5)=1.0;
+    		deriv2(drdt,6)=1.0;
+    		deriv2(dsds,7)=3.0;
+    		deriv2(dsdt,8)=1.0;
+    		deriv2(dtdt,9)=3.0;
+    	case 4:
+    	case 1:
+    		break;
     	default:
     		dserror("Unknown number of polynomials\n");
     	}
@@ -274,40 +219,21 @@ void DRT::UTILS::DGFEM_BasisFunction_2D(
     case DRT::Element::quad4:
     	switch (npol)
     	{
-    	case 1:
-    		funct(0)=1.0;
-    		
-    	case 3:
-    		funct(0)=1.0;
-    		
-    		funct(1)=r;
-    		funct(2)=s;
-    		
-    	case 6:
-    		funct(0)=1.0;
-    		
-    		funct(1)=r;
-    		funct(2)=s;
-    		
-    		funct(3)=0.5*(3.0*r*r-1.0); 	//P2(r)
-    		funct(4)=r*s;					//P1(r)*P1(s)
-    		funct(5)=0.5*(3.0*s*s-1.0);		//P2(s)
-    		
     	case 10:
-    		funct(0)=1.0;
-    		
-    		funct(1)=r;
-    		funct(2)=s;
-    		
-    		funct(3)=0.5*(3.0*r*r-1.0); 	//P2(r)
-    		funct(4)=r*s;					//P1(r)*P1(s)
-    		funct(5)=0.5*(3.0*s*s-1.0);		//P2(s)
-
     		funct(6)=0.5*(5.0*r*r*r-3.0*r);		//P3(r)
     		funct(7)=0.5*(3.0*r*r-1.0)*s;		//P2(r)*P1(s)
     		funct(8)=r*0.5*(3.0*s*s-1.0);		//P1(r)*P2(s)
     		funct(9)=0.5*(5.0*s*s*s-3.0*s);		//P3(s)
-
+    	case 6:
+    		funct(3)=0.5*(3.0*r*r-1.0); 	//P2(r)
+    		funct(4)=r*s;					//P1(r)*P1(s)
+    		funct(5)=0.5*(3.0*s*s-1.0);		//P2(s)
+    	case 3:
+    		funct(1)=r;
+    		funct(2)=s;
+    	case 1:
+    		funct(0)=1.0;
+    		break;
     	default:
     		dserror("Unknown number of polynomials\n");
     	}
@@ -336,38 +262,23 @@ void DRT::UTILS::DGFEM_BasisFunction_2D_deriv1(
     case DRT::Element::quad4:
     	switch (npol)
     	{
-    	case 1:
-    		//Nothing to do
-    		
-    	case 3:
-    		deriv1(0,1)=1.0;
-    		deriv1(1,2)=1.0;
-
-    	case 6:
-    		deriv1(0,1)=1.0;
-    		deriv1(1,2)=1.0;
-
-    		deriv1(0,3)=3.0*r;
-    		deriv1(0,4)=s;
-    		deriv1(1,4)=r;
-    		deriv1(1,5)=3.0*s;
-    		
     	case 10:
-    		deriv1(0,1)=1.0;
-    		deriv1(1,2)=1.0;
-
-    		deriv1(0,3)=3.0*r;
-    		deriv1(0,4)=s;
-    		deriv1(1,4)=r;
-    		deriv1(1,5)=3.0*s;
-
     		deriv1(0,6)=0.5*(15.0*r*r-3.0);	
     		deriv1(0,7)=3.0*r*s;
     		deriv1(1,7)=0.5*(3.0*r*r-1.0);
     		deriv1(0,8)=0.5*(3.0*s*s-1.0);
     		deriv1(1,8)=r*3.0*s;
     		deriv1(1,9)=0.5*(15.0*s*s-3.0);
-    		
+    	case 6:
+    		deriv1(0,3)=3.0*r;
+    		deriv1(0,4)=s;
+    		deriv1(1,4)=r;
+    		deriv1(1,5)=3.0*s;
+    	case 3:
+    		deriv1(0,1)=1.0;
+    		deriv1(1,2)=1.0;
+    	case 1:
+    		break;
     	default:
     		dserror("Unknown number of polynomials\n");
     	}
@@ -400,27 +311,19 @@ void DRT::UTILS::DGFEM_BasisFunction_2D_deriv2(
     case DRT::Element::quad4:
     	switch (npol)
     	{
-    	case 1:
-    		//Nothing to do
-    		
-    	case 3:
-    		//Nothing to do
-
-    	case 6:
-    		deriv2(drdr,3)=3.0;
-    		deriv2(dsds,5)=3.0;
-    		
     	case 10:
-    		deriv2(drdr,3)=3.0;
-    		deriv2(dsds,5)=3.0;
-
     		deriv2(drdr,6)=15.0*r;	
     		deriv2(drdr,7)=3.0*s;
     		deriv2(drds,7)=3.0*r;
     		deriv2(dsds,8)=3.0*r;
     		deriv2(drds,8)=3.0*s;
     		deriv2(dsds,9)=15.0*s;
-    		
+    	case 6:
+    		deriv2(drdr,3)=3.0;
+    		deriv2(dsds,5)=3.0;
+    	case 3:
+    	case 1:
+    		break;
     	default:
     		dserror("Unknown number of polynomials\n");
     	}
@@ -446,24 +349,15 @@ void DRT::UTILS::DGFEM_BasisFunction_1D(
     case DRT::Element::line2:
     	switch (npol)
     	{
+    	case 4:
+    		funct(3)=0.5*(5.0*r*r*r-3.0*r);	//P3(r)
+    	case 3:
+    		funct(2)=0.5*(3.0*r*r-1.0); 	//P2(r)
+    	case 2:
+    		funct(1)=r;
     	case 1:
     		funct(0)=1.0;
-    		
-    	case 2:
-    		funct(0)=1.0;
-    		funct(1)=r;
-    		
-    	case 3:
-    		funct(0)=1.0;
-    		funct(1)=r;
-    		funct(2)=0.5*(3.0*r*r-1.0); 	//P2(r)
-    		
-    	case 4:
-    		funct(0)=1.0;
-    		funct(1)=r;
-    		funct(2)=0.5*(3.0*r*r-1.0); 	//P2(r)
-    		funct(3)=0.5*(5.0*r*r*r-3.0*r);	//P3(r)
-
+    		break;
     	default:
     		dserror("Unknown number of polynomials\n");
     	}
@@ -491,21 +385,14 @@ void DRT::UTILS::DGFEM_BasisFunction_1D_deriv1(
     case DRT::Element::line2:
     	switch (npol)
     	{
-    	case 1:
-    		//Nothing to do
-    		
+    	case 4:
+    		deriv1(3)=0.5*(15.0*r*r-3.0);
+    	case 3:
+    		deriv1(2)=3.0*r;
     	case 2:
     		deriv1(1)=1.0;
-
-    	case 3:
-    		deriv1(1)=1.0;
-    		deriv1(2)=3.0*r;
-    		
-    	case 4:
-    		deriv1(1)=1.0;
-    		deriv1(2)=3.0*r;
-    		deriv1(3)=0.5*(15.0*r*r-3.0);	
-    		
+    	case 1:
+    		break;
     	default:
     		dserror("Unknown number of polynomials\n");
     	}
@@ -533,19 +420,13 @@ void DRT::UTILS::DGFEM_BasisFunction_1D_deriv2(
     case DRT::Element::line2:
     	switch (npol)
     	{
-    	case 1:
-    		//Nothing to do
-    		
-    	case 2:
-    		//Nothing to do
-
+    	case 4:
+    		deriv2(3)=15.0*r;
     	case 3:
     		deriv2(2)=3.0;
-    		
-    	case 4:
-    		deriv2(2)=3.0;
-    		deriv2(3)=15.0*r;	
-    		
+    	case 2:
+    	case 1:
+    		break;
     	default:
     		dserror("Unknown number of polynomials\n");
     	}
