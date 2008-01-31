@@ -148,21 +148,21 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   Teuchos::RCP<ConditionDefinition> pointaledirichlet =
     Teuchos::rcp(new ConditionDefinition("DESIGN POINT ALE DIRICH CONDITIONS",
-                                         "Dirichlet",
+                                         "ALEDirichlet",
                                          "Point Dirichlet",
                                          DRT::Condition::PointDirichlet,
                                          false,
                                          DRT::Condition::Point));
   Teuchos::RCP<ConditionDefinition> linealedirichlet =
     Teuchos::rcp(new ConditionDefinition("DESIGN LINE ALE DIRICH CONDITIONS",
-                                         "Dirichlet",
+                                         "ALEDirichlet",
                                          "Line Dirichlet",
                                          DRT::Condition::LineDirichlet,
                                          false,
                                          DRT::Condition::Line));
   Teuchos::RCP<ConditionDefinition> surfaledirichlet =
     Teuchos::rcp(new ConditionDefinition("DESIGN SURF ALE DIRICH CONDITIONS",
-                                         "Dirichlet",
+                                         "ALEDirichlet",
                                          "Surface Dirichlet",
                                          DRT::Condition::SurfaceDirichlet,
                                          false,
