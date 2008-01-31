@@ -471,14 +471,6 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
 
   switch (type)
   {
-#ifdef D_BEAM2
-    case beam2:
-    {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Beam2(id,owner));
-      return ele;
-    }
-    break;
-#endif
 #ifdef D_SHELL8
     case shell8:
     {
