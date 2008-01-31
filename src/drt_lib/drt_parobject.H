@@ -207,7 +207,7 @@ using namespace std;
 #define ParObject_DGFluid3Register      (int)86
 #define ParObject_DGFluid3Interface 	(int)87
 #define ParObject_DGFluid3InterfaceRegister     (int)88
-#define ParObject_Beam2Register	        (int)80
+#define ParObject_Beam2Register	        (int)89
 
 /*!
 \brief DRT: namespace of the ccarat discretization module
