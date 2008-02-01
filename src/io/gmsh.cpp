@@ -201,8 +201,10 @@ string IO::GMSH::cellToString(const double scalar, const BoundaryIntCell& cell, 
     return pos_array_string.str();
 }
 
-string IO::GMSH::disToString(const std::string s, const double scalar, 
-        RefCountPtr<DRT::Discretization> dis)
+string IO::GMSH::disToString(
+        const std::string              s,
+        const double                   scalar, 
+        const RCP<DRT::Discretization> dis)
 {
     stringstream gmshfilecontent;
     gmshfilecontent << "View \" " << s << " Elements \" {" << endl;
@@ -215,9 +217,11 @@ string IO::GMSH::disToString(const std::string s, const double scalar,
     return gmshfilecontent.str();
 }
 
-string IO::GMSH::disToString(const std::string s, const double scalar, 
-        RefCountPtr<DRT::Discretization> dis,
-        map<int, DomainIntCells >& elementDomainIntCellsMap)
+string IO::GMSH::disToString(
+        const std::string                      s, 
+        const double                           scalar, 
+        const RefCountPtr<DRT::Discretization> dis,
+        const map<int, DomainIntCells >&       elementDomainIntCellsMap)
 {
     stringstream gmshfilecontent;
     gmshfilecontent << "View \" " << s << " Elements and Integration Cells \" {" << endl;
@@ -227,8 +231,8 @@ string IO::GMSH::disToString(const std::string s, const double scalar,
         const int id = actele->Id();
         if (elementDomainIntCellsMap.count(id))
         {
-            XFEM::DomainIntCells::const_iterator cell;
-            for(cell = elementDomainIntCellsMap[id].begin(); cell != elementDomainIntCellsMap[id].end(); ++cell )
+            const DomainIntCells cells = elementDomainIntCellsMap.find(id)->second;
+            for(XFEM::DomainIntCells::const_iterator cell = cells.begin(); cell != cells.end(); ++cell )
             {
                 gmshfilecontent << IO::GMSH::cellToString(scalar, *cell, actele) << endl;
             }

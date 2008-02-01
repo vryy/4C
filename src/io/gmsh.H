@@ -36,10 +36,13 @@ std::string cellToString(const double scalar, const XFEM::DomainIntCell& ele, DR
 
 std::string cellToString(const double scalar, const XFEM::BoundaryIntCell& ele, DRT::Element* ele);
 
-std::string disToString(const std::string s, const double scalar, RefCountPtr<DRT::Discretization> dis);
+std::string disToString(const std::string s, const double scalar, const RCP<DRT::Discretization> dis);
 
-std::string disToString(const std::string s, const double scalar, RefCountPtr<DRT::Discretization> dis,
-        map<int, XFEM::DomainIntCells >&  elementDomainIntCellsMap);
+std::string disToString(
+        const std::string                      s,
+        const double                           scalar,
+        const RCP<DRT::Discretization>         dis,
+        const map<int,XFEM::DomainIntCells >&  elementDomainIntCellsMap);
 
 std::string getConfigString(const int numview);
 
