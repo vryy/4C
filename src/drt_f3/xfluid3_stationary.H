@@ -1654,6 +1654,8 @@ BlitzVec computeNormalToBoundaryElement(
 #if 1
     if (ASSTYPE == XFEM::xfem_assembly)
     {
+        // for now, I don't try to compare to elements wiout stress unknowns, since they lock anyway
+        if (stress_unknowns_present){
     
     // loop over boundary integration cells
     for (XFEM::BoundaryIntCells::const_iterator cell = boundaryIntCells.begin(); cell < boundaryIntCells.end(); ++cell)
@@ -1671,7 +1673,8 @@ BlitzVec computeNormalToBoundaryElement(
     // get node coordinates
     //TODO: get the right element
     //const RCP<DRT::Element> boundaryele = ih->GetBoundaryEle(cell->GetSurfaceEleGid());
-    const RCP<DRT::Element> boundaryele = ih->GetBoundaryEle(1);
+    DRT::Element* boundaryele = ih->GetBoundaryEle(1);
+    cout << (*boundaryele) << endl;
     const int numnode_boundary = boundaryele->NumNode();
     BlitzMat xyze_boundary(3,numnode_boundary,blitz::ColumnMajorArray<2>());
     {
@@ -1689,22 +1692,23 @@ BlitzVec computeNormalToBoundaryElement(
     for (int iquad=0; iquad<intpoints.nquad; ++iquad)
     {
       // coordinates of the current integration point in cell coordinates \eta^\boundary
-      XFEM::PosEtaBoundary pos_eta(2);
-      pos_eta(0) = intpoints.qxg[iquad][0];
-      pos_eta(1) = intpoints.qxg[iquad][1];
-
+      XFEM::PosEtaBoundary pos_eta_boundary(2);
+      pos_eta_boundary(0) = intpoints.qxg[iquad][0];
+      pos_eta_boundary(1) = intpoints.qxg[iquad][1];
+      
+      
       // coordinates of the current integration point in element coordinates \xi
-      const XFEM::PosXiBoundary posXiBoundary(mapEtaBToXiB(*cell, pos_eta));
-      const XFEM::PosXiDomain posXiDomain(mapEtaBToXiD(*cell, pos_eta));
-      const double detcell = detEtaBToXiB(*cell, pos_eta);
+      const XFEM::PosXiBoundary posXiBoundary(mapEtaBToXiB(*cell, pos_eta_boundary));
+      const XFEM::PosXiDomain posXiDomain(mapEtaBToXiD(*cell, pos_eta_boundary));
+      const double detcell = detEtaBToXiB(*cell, pos_eta_boundary);
 
       // shape functions and their first derivatives
       const BlitzVec funct_(DRT::UTILS::shape_function_3D(posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE));
       const BlitzMat deriv_(DRT::UTILS::shape_function_3D_deriv1(posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE));
 
       // shape functions and their first derivatives
-      const BlitzVec funct_boundary(DRT::UTILS::shape_function_2D(posXiBoundary(0),posXiBoundary(1),DISTYPE));
-      const BlitzMat deriv_boundary(DRT::UTILS::shape_function_2D_deriv1(posXiBoundary(0),posXiBoundary(1),DISTYPE));
+      const BlitzVec funct_boundary(DRT::UTILS::shape_function_2D(posXiBoundary(0),posXiBoundary(1),boundaryele->Shape()));
+      const BlitzMat deriv_boundary(DRT::UTILS::shape_function_2D_deriv1(posXiBoundary(0),posXiBoundary(1),boundaryele->Shape()));
       
       BlitzVec funct_stress(DRT::UTILS::getNumberOfElementNodes(stressdistype));
       if (stressdistype != DRT::Element::dis_none)
@@ -1915,6 +1919,7 @@ BlitzVec computeNormalToBoundaryElement(
       } // end block stiffness terms
     } // end loop over gauss points
     } // end loop over boundary integration cells
+        }
     } // if (ASSTYPE == XFEM::xfem_assembly)
 #endif
     return;

@@ -23,19 +23,35 @@ XFEM::InterfaceHandle::InterfaceHandle(
 			xfemdis_(xfemdis),
 			cutterdis_(cutterdis)
 {
-	  elementalDomainIntCells_.clear();
-	  elementalBoundaryIntCells_.clear();
-	  map< int, vector< DRT::Element* > >            cutterElementMap;
-      map< int, RefCountPtr<DRT::Node> >             cutterNodeMap;
-	  XFEM::Intersection is;
-	  is.computeIntersection(
-	          xfemdis,
-	          cutterdis,
-	          elementalDomainIntCells_,
-	          elementalBoundaryIntCells_,
-	          cutterElementMap,
-	          cutterNodeMap);
-	  std::cout << "numcuttedelements = " << elementalDomainIntCells_.size() << endl;
+	elementalDomainIntCells_.clear();
+	elementalBoundaryIntCells_.clear();
+	map< int, vector< DRT::Element* > >            cutterElementMap;
+	map< int, RefCountPtr<DRT::Node> >             cutterNodeMap;
+	XFEM::Intersection is;
+	is.computeIntersection(
+	        xfemdis,
+	        cutterdis,
+	        elementalDomainIntCells_,
+	        elementalBoundaryIntCells_,
+	        cutterElementMap,
+	        cutterNodeMap);
+	std::cout << "numcuttedelements = " << elementalDomainIntCells_.size() << endl;
+  
+	boundaryElements_.clear();
+	map< int, vector< DRT::Element* > >::iterator paar;
+	for (paar = cutterElementMap.begin(); paar != cutterElementMap.end(); ++paar)
+    {
+	    std::vector< DRT::Element* > elements = paar->second;
+	    const int numele = elements.size();
+	    for (int i = 0; i < numele; ++i)
+	    //for (std::vector< DRT::Element* >::iterator eleptr = elements.begin(); eleptr != elements.end(); ++eleptr)
+        {
+	        DRT::Element* ele = elements[i];
+            const int boundary_ele_gid = ele->Id();
+            boundaryElements_.insert(make_pair(boundary_ele_gid, ele));
+        }
+    }
+	cutterNodeMap_ = cutterNodeMap;
 	  
 	  
 	  
