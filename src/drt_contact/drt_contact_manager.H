@@ -108,7 +108,7 @@ public:
   \brief Evaluate contact
     
   */
-  void Evaluate(Epetra_CrsMatrix& Kteff, Epetra_Vector& feff);
+  void Evaluate(RCP<Epetra_CrsMatrix>& Kteff, RCP<Epetra_Vector>& feff);
   
 
 protected:

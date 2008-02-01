@@ -393,7 +393,38 @@ namespace LINALG
                       RefCountPtr<Epetra_CrsMatrix>& A12,
                       RefCountPtr<Epetra_CrsMatrix>& A21,
                       RefCountPtr<Epetra_CrsMatrix>& A22);
+  
+  /*!
+  \brief split a matrix into a 2x2 block system
 
+  Splits a given matrix into a 2x2 block system. All values on entry have to be
+  Teuchos::null except the given rowmap(s) / domainmap(s) and matrix A.
+  Note that either A11rowmap or A22rowmap or both have to be nonzero!
+  Note that either A11domainmap or A22domainmap or both have to be nonzero!
+  In case both rowmaps / domainmaps are supplied they have to be an exact and
+  nonoverlapping split of A->RowMap() / A->DomainMap().
+  Matrix blocks are FillComplete() on exit.
+
+  \param A            : Matrix A on input
+  \param A11rowmap    : rowmap of A11 or null
+  \param A22rowmap    : rowmap of A22 or null
+  \param A11domainmap : domainmap of A11 or null
+  \param A22domainmap : domainmap of A22 or null
+  \param A11          : on exit matrix block A11
+  \param A12          : on exit matrix block A12
+  \param A21          : on exit matrix block A21
+  \param A22          : on exit matrix block A22
+  */
+  bool SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
+  										RCP<Epetra_Map>& A11rowmap,
+                      RCP<Epetra_Map>& A22rowmap,
+                      RCP<Epetra_Map>& A11domainmap,
+                      RCP<Epetra_Map>& A22domainmap,
+                      RCP<Epetra_CrsMatrix>& A11,
+                      RCP<Epetra_CrsMatrix>& A12,
+                      RCP<Epetra_CrsMatrix>& A21,
+                      RCP<Epetra_CrsMatrix>& A22);
+  
   /*!
   \brief split a rowmap of matrix A
 
@@ -521,26 +552,6 @@ namespace LINALG
     }
     return;
   }
-
-  /*!
-  \brief Sort data lists
-
-  This routine was taken from Knuth: Sorting and Searching. It puts the input
-  data list into a heap and then sorts it.
-
-  \param list (in/out)  : on input, values to be sorted. On output,
-                          sorted values (i.e., list[i] <= list[i+1]).
-  \param N (in)         : length of vector 'list'.
-  \param list2 (in/out) : If on input, list2 = NULL: it is unchanged on output.
-                          If on input, list2 is a list associated with 'list':
-                          on output, if list[k] on input is now element 'j',
-                          list2[j] is now list2[k].
-  \param list3 (in/out) : If on input, list3 = NULL: it is unchanged on output.
-                          If on input, list3 is a list associated with 'list':
-                          on output, if list[k] on input is now element 'j',
-                          list3[j] is now list3[k].
-  */
-  void Sort(int list[], int N, int list2[], double list3[]);
 
 } // namespace LINALG
 

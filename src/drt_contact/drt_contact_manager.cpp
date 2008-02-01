@@ -271,8 +271,8 @@ void CONTACT::Manager::SetState(const string& statename, const RCP<Epetra_Vector
 /*----------------------------------------------------------------------*
  |  evaluate contact (public)                                 popp 11/07|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::Evaluate(Epetra_CrsMatrix& Kteff,
-																Epetra_Vector& feff)
+void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
+																RCP<Epetra_Vector>& feff)
 {	
 	/**********************************************************************/
 	/* evaluate interfaces                                                */
@@ -322,6 +322,9 @@ void CONTACT::Manager::Evaluate(Epetra_CrsMatrix& Kteff,
 
 	/*
 #ifdef DEBUG
+
+	// Testing of global matrices and inverse
+	 * 
 	cout << *D_;
 	cout << *M_;
 	cout << *g_;
@@ -330,6 +333,8 @@ void CONTACT::Manager::Evaluate(Epetra_CrsMatrix& Kteff,
 	cout << *invD;
 	cout << *Mbar;
 
+	// Testing of LINALG::Transpose
+	 * 
 	cout << *M_;
 	cout << M_->RangeMap();
 	cout << M_->DomainMap();
@@ -337,9 +342,52 @@ void CONTACT::Manager::Evaluate(Epetra_CrsMatrix& Kteff,
 	cout << *transM;
 	cout << transM->RangeMap();
 	cout << transM->DomainMap();
+
+	// Testing of RemoteIDList function
+	cout << *gsnoderowmap_;
+	int PID = 0;
+	int LID = 0;
+	const int GID = 312;
+	gsnoderowmap_->RemoteIDList(1,&GID,&PID,&LID);
+	cout << "Global ID: " << GID << endl;
+	cout << "Local ID : " << LID << endl;
+	cout << "Proc ID  : " << PID << endl;
+
+	// Testing of LINALG::SplitMatrix2x2
+	RCP<Epetra_CrsMatrix> A11;
+	RCP<Epetra_CrsMatrix> A12;
+	RCP<Epetra_CrsMatrix> A21;
+	RCP<Epetra_CrsMatrix> A22;
+	RCP<Epetra_Map> testmap = null;
+	RCP<Epetra_Map> testmap2 = null;
+	RCP<Epetra_Map> full = rcp(new Epetra_Map(Kteff->DomainMap()));
+	LINALG::SplitMatrix2x2(Kteff,full,testmap,full,testmap2,A11,A12,A21,A22);
+	
+	if(Kteff->Comm().MyPID()==0)
+	{
+		cout << endl << "*****************" << endl;
+		cout << "K:   " << Kteff->NumGlobalRows() << " x " << Kteff->NumGlobalCols() << endl;
+		if (A11!=null)
+			cout << "A11: " << A11->NumGlobalRows() << " x " << A11->NumGlobalCols() << endl;
+		else
+			cout << "A11: null" << endl;
+		if (A12!=null)
+			cout << "A12: " << A12->NumGlobalRows() << " x " << A12->NumGlobalCols() << endl;
+		else
+			cout << "A11: null" << endl;
+		if (A21!=null)
+			cout << "A21: " << A21->NumGlobalRows() << " x " << A21->NumGlobalCols() << endl;
+		else
+			cout << "A21: null" << endl;
+		if (A22!=null)
+			cout << "A22: " << A22->NumGlobalRows() << " x " << A22->NumGlobalCols() << endl;
+		else
+			cout << "A22: null" << endl;
+		cout << "*****************" << endl;
+	}
 #endif // #ifdef DEBUG
 	*/
-
+	
   return;
 }
 

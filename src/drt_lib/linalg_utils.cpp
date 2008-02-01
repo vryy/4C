@@ -950,36 +950,27 @@ void LINALG::ApplyDirichlettoSystem(RefCountPtr<Epetra_CrsMatrix>&   A,
 
 
 /*----------------------------------------------------------------------*
- | split matrix into 2x2 block system with given rowmap A22rowmap  06/06|
+ | split matrix into 2x2 block system                              06/06|
  *----------------------------------------------------------------------*/
-bool LINALG::SplitMatrix2x2(RefCountPtr<Epetra_CrsMatrix> A,
-                            RefCountPtr<Epetra_Map>& A11rowmap,
-                            RefCountPtr<Epetra_Map>& A22rowmap,
-                            RefCountPtr<Epetra_CrsMatrix>& A11,
-                            RefCountPtr<Epetra_CrsMatrix>& A12,
-                            RefCountPtr<Epetra_CrsMatrix>& A21,
-                            RefCountPtr<Epetra_CrsMatrix>& A22)
+bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
+														RCP<Epetra_Map>& A11rowmap,
+														RCP<Epetra_Map>& A22rowmap,
+														RCP<Epetra_CrsMatrix>& A11,
+														RCP<Epetra_CrsMatrix>& A12,
+														RCP<Epetra_CrsMatrix>& A21,
+														RCP<Epetra_CrsMatrix>& A22)
 {
   if (A==null)
-  {
-    cout << "***ERR*** LINALG::SplitMatrix2x2_A22row_given:\n"
-         << "***ERR*** A == null on entry\n"
-         << "***ERR*** file/line: " << __FILE__ << "/" << __LINE__ << "\n";
-    exit(EXIT_FAILURE);
-  }
+    dserror("LINALG::SplitMatrix2x2: A==null on entry");
+  	
   if (A11rowmap==null && A22rowmap != null)
     A11rowmap = rcp(LINALG::SplitMap(A->RowMap(),*A22rowmap));
   else if (A11rowmap != null && A22rowmap != null);
   else if (A11rowmap != null && A22rowmap == null)
     A22rowmap = rcp(LINALG::SplitMap(A->RowMap(),*A11rowmap));
   else
-  {
-    cout << "***ERR*** LINALG::SplitMatrix2x2_A22row_given:\n"
-         << "***ERR*** Either A11rowmap OR A22rowmap or both have to be not null"
-         << "***ERR*** file/line: " << __FILE__ << "/" << __LINE__ << "\n";
-    exit(EXIT_FAILURE);
-  }
-
+  	dserror("LINALG::SplitMatrix2x2: Both A11rowmap and A22rowmap == null on entry");
+ 
   const Epetra_Comm& Comm   = A->Comm();
   const Epetra_Map&  A22map = *(A22rowmap.get());
   const Epetra_Map&  A11map = *(A11rowmap.get());
@@ -1005,12 +996,8 @@ bool LINALG::SplitMatrix2x2(RefCountPtr<Epetra_CrsMatrix> A,
       count += length;
     }
     if (count != A22map.NumGlobalElements())
-    {
-      cout << "***ERR*** LINALG::SplitMatrix2x2_A22row_given:\n"
-           << "***ERR*** mismatch in dimensions\n"
-           << "***ERR*** file/line: " << __FILE__ << "/" << __LINE__ << "\n";
-      exit(EXIT_FAILURE);
-    }
+    	dserror("LINALG::SplitMatrix2x2: mismatch in dimensions");
+    
     // create the map
     for (int i=0; i<count; ++i)
       a22gmap[a22global[i]] = 1;
@@ -1033,12 +1020,8 @@ bool LINALG::SplitMatrix2x2(RefCountPtr<Epetra_CrsMatrix> A,
       int*    cindices;
       int err = A->ExtractMyRowView(i,numentries,values,cindices);
       if (err)
-      {
-        cout << "***ERR*** LINALG::SplitMatrix2x2_A22row_given:\n"
-             << "***ERR*** A->ExtractMyRowView returned " << err << endl
-             << "***ERR*** file/line: " << __FILE__ << "/" << __LINE__ << "\n";
-        exit(EXIT_FAILURE);
-      }
+      	dserror("LINALG::SplitMatrix2x2: A->ExtractMyRowView returned &i",err);
+      
       if (numentries>(int)a22gcindices.size())
       {
         a22gcindices.resize(numentries);
@@ -1060,12 +1043,8 @@ bool LINALG::SplitMatrix2x2(RefCountPtr<Epetra_CrsMatrix> A,
       // add this filtered row to A22
       err = A22->InsertGlobalValues(grid,count,&a22values[0],&a22gcindices[0]);
       if (err<0)
-      {
-        cout << "***ERR*** LINALG::SplitMatrix2x2_A22row_given:\n"
-             << "***ERR*** A22->InsertGlobalValues returned " << err << endl
-             << "***ERR*** file/line: " << __FILE__ << "/" << __LINE__ << "\n";
-        exit(EXIT_FAILURE);
-      }
+      	dserror("LINALG::SplitMatrix2x2: A->InsertGlobalValues returned &i",err);
+       
     } //for (int i=0; i<A->NumMyRows(); ++i)
     a22gcindices.clear();
     a22values.clear();
@@ -1087,12 +1066,8 @@ bool LINALG::SplitMatrix2x2(RefCountPtr<Epetra_CrsMatrix> A,
       int*    cindices;
       int err = A->ExtractMyRowView(i,numentries,values,cindices);
       if (err)
-      {
-        cout << "***ERR*** LINALG::SplitMatrix2x2_A22row_given:\n"
-             << "***ERR*** A->ExtractMyRowView returned " << err << endl
-             << "***ERR*** file/line: " << __FILE__ << "/" << __LINE__ << "\n";
-        exit(EXIT_FAILURE);
-      }
+      	dserror("LINALG::SplitMatrix2x2: A->ExtractMyRowView returned &i",err);
+      
       if (numentries>(int)a11gcindices.size())
       {
         a11gcindices.resize(numentries);
@@ -1111,12 +1086,8 @@ bool LINALG::SplitMatrix2x2(RefCountPtr<Epetra_CrsMatrix> A,
       }
       err = A11->InsertGlobalValues(grid,count,&a11values[0],&a11gcindices[0]);
       if (err<0)
-      {
-        cout << "***ERR*** LINALG::SplitMatrix2x2_A22row_given:\n"
-             << "***ERR*** A11->InsertGlobalValues returned " << err << endl
-             << "***ERR*** file/line: " << __FILE__ << "/" << __LINE__ << "\n";
-        exit(EXIT_FAILURE);
-      }
+      	dserror("LINALG::SplitMatrix2x2: A->InsertGlobalValues returned &i",err);
+      
     } // for (int i=0; i<A->NumMyRows(); ++i)
     a11gcindices.clear();
     a11values.clear();
@@ -1138,12 +1109,8 @@ bool LINALG::SplitMatrix2x2(RefCountPtr<Epetra_CrsMatrix> A,
       int*    cindices;
       int err = A->ExtractMyRowView(i,numentries,values,cindices);
       if (err)
-      {
-        cout << "***ERR*** LINALG::SplitMatrix2x2_A22row_given:\n"
-             << "***ERR*** A->ExtractMyRowView returned " << err << endl
-             << "***ERR*** file/line: " << __FILE__ << "/" << __LINE__ << "\n";
-        exit(EXIT_FAILURE);
-      }
+      	dserror("LINALG::SplitMatrix2x2: A->ExtractMyRowView returned &i",err);
+      
       if (numentries>(int)a12gcindices.size())
       {
         a12gcindices.resize(numentries);
@@ -1162,12 +1129,8 @@ bool LINALG::SplitMatrix2x2(RefCountPtr<Epetra_CrsMatrix> A,
       }
       err = A12->InsertGlobalValues(grid,count,&a12values[0],&a12gcindices[0]);
       if (err<0)
-      {
-        cout << "***ERR*** LINALG::SplitMatrix2x2_A22row_given:\n"
-             << "***ERR*** A12->InsertGlobalValues returned " << err << endl
-             << "***ERR*** file/line: " << __FILE__ << "/" << __LINE__ << "\n";
-        exit(EXIT_FAILURE);
-      }
+      	dserror("LINALG::SplitMatrix2x2: A->InsertGlobalValues returned &i",err);
+      
     } // for (int i=0; i<A->NumMyRows(); ++i)
     a12values.clear();
     a12gcindices.clear();
@@ -1189,12 +1152,8 @@ bool LINALG::SplitMatrix2x2(RefCountPtr<Epetra_CrsMatrix> A,
       int*    cindices;
       int err = A->ExtractMyRowView(i,numentries,values,cindices);
       if (err)
-      {
-        cout << "***ERR*** LINALG::SplitMatrix2x2_A22row_given:\n"
-             << "***ERR*** A->ExtractMyRowView returned " << err << endl
-             << "***ERR*** file/line: " << __FILE__ << "/" << __LINE__ << "\n";
-        exit(EXIT_FAILURE);
-      }
+      	dserror("LINALG::SplitMatrix2x2: A->ExtractMyRowView returned &i",err);
+      
       if (numentries>(int)a21gcindices.size())
       {
         a21gcindices.resize(numentries);
@@ -1213,24 +1172,274 @@ bool LINALG::SplitMatrix2x2(RefCountPtr<Epetra_CrsMatrix> A,
       }
       err = A21->InsertGlobalValues(grid,count,&a21values[0],&a21gcindices[0]);
       if (err<0)
-      {
-        cout << "***ERR*** LINALG::SplitMatrix2x2_A22row_given:\n"
-             << "***ERR*** A12->InsertGlobalValues returned " << err << endl
-             << "***ERR*** file/line: " << __FILE__ << "/" << __LINE__ << "\n";
-        exit(EXIT_FAILURE);
-      }
+      	dserror("LINALG::SplitMatrix2x2: A->InsertGlobalValues returned &i",err);
+      
     } // for (int i=0; i<A->NumMyRows(); ++i)
     a21values.clear();
     a21gcindices.clear();
   }
   A21->FillComplete(A11map,A22map);
   A21->OptimizeStorage();
-
+  
   //-------------------------------------------------------------- tidy up
   a22gmap.clear();
   return true;
 }
 
+/*----------------------------------------------------------------------*
+ | split matrix into 2x2 block system                         popp 02/08|
+ *----------------------------------------------------------------------*/
+bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
+														RCP<Epetra_Map>& A11rowmap,
+														RCP<Epetra_Map>& A22rowmap,
+														RCP<Epetra_Map>& A11domainmap,
+														RCP<Epetra_Map>& A22domainmap,
+														RCP<Epetra_CrsMatrix>& A11,
+														RCP<Epetra_CrsMatrix>& A12,
+														RCP<Epetra_CrsMatrix>& A21,
+														RCP<Epetra_CrsMatrix>& A22)
+{
+  if (A==null)
+    dserror("LINALG::SplitMatrix2x2: A==null on entry");
+  
+  // check and complete input row maps
+  if (A11rowmap==null && A22rowmap != null)
+    A11rowmap = rcp(LINALG::SplitMap(A->RowMap(),*A22rowmap));
+  else if (A11rowmap != null && A22rowmap != null);
+  else if (A11rowmap != null && A22rowmap == null)
+    A22rowmap = rcp(LINALG::SplitMap(A->RowMap(),*A11rowmap));
+  else
+  	dserror("LINALG::SplitMatrix2x2: Both A11rowmap and A22rowmap == null on entry");
+  
+  // check and complete input domain maps
+  if (A11domainmap==null && A22domainmap != null)
+  	A11domainmap = rcp(LINALG::SplitMap(A->DomainMap(),*A22domainmap));
+  else if (A11domainmap != null && A22domainmap != null);
+  else if (A11domainmap != null && A22domainmap == null)
+    A22domainmap = rcp(LINALG::SplitMap(A->DomainMap(),*A11domainmap));
+  else
+  	dserror("LINALG::SplitMatrix2x2: Both A11domainmap and A22domainmap == null on entry");
+  
+  // local variables
+  const Epetra_Comm& Comm   = A->Comm();
+  const Epetra_Map&  A11rmap = *(A11rowmap.get());
+  const Epetra_Map&  A11dmap = *(A11domainmap.get());
+  const Epetra_Map&  A22rmap = *(A22rowmap.get());
+  const Epetra_Map&  A22dmap = *(A22domainmap.get());
+  
+  //----------------------------- create a parallel redundant map of A11domainmap
+  map<int,int> a11gmap;
+  {
+    vector<int> a11global(A11dmap.NumGlobalElements());
+    int count=0;
+    for (int proc=0; proc<Comm.NumProc(); ++proc)
+    {
+      int length = 0;
+      if (proc==Comm.MyPID())
+      {
+        for (int i=0; i<A11dmap.NumMyElements(); ++i)
+        {
+          a11global[count+length] = A11dmap.GID(i);
+          ++length;
+        }
+      }
+      Comm.Broadcast(&length,1,proc);
+      Comm.Broadcast(&a11global[count],length,proc);
+      count += length;
+    }
+    if (count != A11dmap.NumGlobalElements())
+    	dserror("LINALG::SplitMatrix2x2: mismatch in dimensions");
+    
+    // create the map
+    for (int i=0; i<count; ++i)
+      a11gmap[a11global[i]] = 1;
+    a11global.clear();
+  }
+
+  //----------------------------------------------------- create matrix A11
+  if (A11rmap.NumGlobalElements()>0 && A11dmap.NumGlobalElements()>0)
+  {
+  	A11 = rcp(new Epetra_CrsMatrix(Copy,A11rmap,100));
+  	{
+  		vector<int>    a11gcindices(100);
+  		vector<double> a11values(100);
+  		for (int i=0; i<A->NumMyRows(); ++i)
+  		{
+  			const int grid = A->GRID(i);
+  			if (A11rmap.MyGID(grid)==false) continue;
+  			int     numentries;
+  			double* values;
+  			int*    cindices;
+  			int err = A->ExtractMyRowView(i,numentries,values,cindices);
+  			if (err)
+  				dserror("LINALG::SplitMatrix2x2: A->ExtractMyRowView returned %i",err);
+      
+  			if (numentries>(int)a11gcindices.size())
+  			{
+  				a11gcindices.resize(numentries);
+  				a11values.resize(numentries);
+  			}
+  			int count=0;
+  			for (int j=0; j<numentries; ++j)
+  			{
+  				const int gcid = A->ColMap().GID(cindices[j]);
+  				// see whether we have gcid as part of a11gmap
+  				map<int,int>::iterator curr = a11gmap.find(gcid);
+  				if (curr==a11gmap.end()) continue;
+  				a11gcindices[count] = gcid;
+  				a11values[count] = values[j];
+  				++count;
+  			}
+  			err = A11->InsertGlobalValues(grid,count,&a11values[0],&a11gcindices[0]);
+  			if (err<0)
+  				dserror("LINALG::SplitMatrix2x2: A->InsertGlobalValues returned %i",err);
+      
+  		} // for (int i=0; i<A->NumMyRows(); ++i)
+  		a11gcindices.clear();
+  		a11values.clear();
+  	}
+  	LINALG::Complete(*A11,A11dmap,A11rmap);
+  }
+  
+  //--------------------------------------------------- create matrix A22
+  if (A22rmap.NumGlobalElements()>0 && A22dmap.NumGlobalElements()>0)
+  {
+	  A22 = rcp(new Epetra_CrsMatrix(Copy,A22rmap,100));
+	  {
+	    vector<int>    a22gcindices(100);
+	    vector<double> a22values(100);
+	    for (int i=0; i<A->NumMyRows(); ++i)
+	    {
+	      const int grid = A->GRID(i);
+	      if (A22rmap.MyGID(grid)==false) continue;
+	      int     numentries;
+	      double* values;
+	      int*    cindices;
+	      int err = A->ExtractMyRowView(i,numentries,values,cindices);
+	      if (err)
+	      	dserror("LINALG::SplitMatrix2x2: A->ExtractMyRowView returned %i",err);
+	      
+	      if (numentries>(int)a22gcindices.size())
+	      {
+	        a22gcindices.resize(numentries);
+	        a22values.resize(numentries);
+	      }
+	      int count=0;
+	      for (int j=0; j<numentries; ++j)
+	      {
+	        const int gcid = A->ColMap().GID(cindices[j]);
+	        // see whether we have gcid as part of a11gmap
+	        map<int,int>::iterator curr = a11gmap.find(gcid);
+	        if (curr!=a11gmap.end()) continue;
+	        a22gcindices[count] = gcid;
+	        a22values[count]    = values[j];
+	        ++count;
+	      }
+	      err = A22->InsertGlobalValues(grid,count,&a22values[0],&a22gcindices[0]);
+	      if (err<0)
+	      	dserror("LINALG::SplitMatrix2x2: A->InsertGlobalValues returned %i",err);
+	       
+	    } //for (int i=0; i<A->NumMyRows(); ++i)
+	    a22gcindices.clear();
+	    a22values.clear();
+	  }
+	  LINALG::Complete(*A22,A22dmap,A22rmap);
+  }
+
+  //---------------------------------------------------- create matrix A12
+  if (A11rmap.NumGlobalElements()>0 && A22dmap.NumGlobalElements()>0)
+  {
+	  A12 = rcp(new Epetra_CrsMatrix(Copy,A11rmap,100));
+	  {
+	    vector<int>    a12gcindices(100);
+	    vector<double> a12values(100);
+	    for (int i=0; i<A->NumMyRows(); ++i)
+	    {
+	      const int grid = A->GRID(i);
+	      if (A11rmap.MyGID(grid)==false) continue;
+	      int     numentries;
+	      double* values;
+	      int*    cindices;
+	      int err = A->ExtractMyRowView(i,numentries,values,cindices);
+	      if (err)
+	      	dserror("LINALG::SplitMatrix2x2: A->ExtractMyRowView returned %i",err);
+	      
+	      if (numentries>(int)a12gcindices.size())
+	      {
+	        a12gcindices.resize(numentries);
+	        a12values.resize(numentries);
+	      }
+	      int count=0;
+	      for (int j=0; j<numentries; ++j)
+	      {
+	        const int gcid = A->ColMap().GID(cindices[j]);
+	        // see whether we have gcid as part of a11gmap
+	        map<int,int>::iterator curr = a11gmap.find(gcid);
+	        if (curr!=a11gmap.end()) continue;
+	        a12gcindices[count] = gcid;
+	        a12values[count] = values[j];
+	        ++count;
+	      }
+	      err = A12->InsertGlobalValues(grid,count,&a12values[0],&a12gcindices[0]);
+	      if (err<0)
+	      	dserror("LINALG::SplitMatrix2x2: A->InsertGlobalValues returned %i",err);
+	      
+	    } // for (int i=0; i<A->NumMyRows(); ++i)
+	    a12values.clear();
+	    a12gcindices.clear();
+	  }
+	  LINALG::Complete(*A12,A22dmap,A11rmap);
+  }
+
+  //----------------------------------------------------------- create A21
+  if (A22rmap.NumGlobalElements()>0 && A11dmap.NumGlobalElements()>0)
+  {
+	  A21 = rcp(new Epetra_CrsMatrix(Copy,A22rmap,100));
+	  {
+	    vector<int>    a21gcindices(100);
+	    vector<double> a21values(100);
+	    for (int i=0; i<A->NumMyRows(); ++i)
+	    {
+	      const int grid = A->GRID(i);
+	      if (A22rmap.MyGID(grid)==false) continue;
+	      int     numentries;
+	      double* values;
+	      int*    cindices;
+	      int err = A->ExtractMyRowView(i,numentries,values,cindices);
+	      if (err)
+	      	dserror("LINALG::SplitMatrix2x2: A->ExtractMyRowView returned %i",err);
+	      
+	      if (numentries>(int)a21gcindices.size())
+	      {
+	        a21gcindices.resize(numentries);
+	        a21values.resize(numentries);
+	      }
+	      int count=0;
+	      for (int j=0; j<numentries; ++j)
+	      {
+	        const int gcid = A->ColMap().GID(cindices[j]);
+	        // see whether we have gcid as part of a11gmap
+	        map<int,int>::iterator curr = a11gmap.find(gcid);
+	        if (curr==a11gmap.end()) continue;
+	        a21gcindices[count] = gcid;
+	        a21values[count] = values[j];
+	        ++count;
+	      }
+	      err = A21->InsertGlobalValues(grid,count,&a21values[0],&a21gcindices[0]);
+	      if (err<0)
+	      	dserror("LINALG::SplitMatrix2x2: A->InsertGlobalValues returned %i",err);
+	      
+	    } // for (int i=0; i<A->NumMyRows(); ++i)
+	    a21values.clear();
+	    a21gcindices.clear();
+	  }
+	  LINALG::Complete(*A21,A11dmap,A22rmap);
+  }
+  
+  //-------------------------------------------------------------- tidy up
+  a11gmap.clear();
+  return true;
+}
 
 /*----------------------------------------------------------------------*
  | split a map into 2 pieces with given Agiven                     06/06|
@@ -1287,7 +1496,7 @@ RCP<Epetra_Map> LINALG::MergeMap(const Epetra_Map& map1,
 	mygids.resize(count);
 	
 	// sort merged map
-	Sort(&mygids[0],(int)mygids.size(),NULL,NULL);
+	sort(mygids.begin(),mygids.end());
 	
 	return rcp(new Epetra_Map(-1,(int)mygids.size(),&mygids[0],0,map1.Comm()));
 }
@@ -1345,226 +1554,6 @@ bool LINALG::SplitVector(const Epetra_Vector& x,
   }
 
   return true;
-}
-
-/*----------------------------------------------------------------------*
- | Sort given input data lists                                popp 01/08|
- *----------------------------------------------------------------------*/
-void LINALG::Sort(int list[], int N, int list2[], double list3[])
-{
-  // local variables
-
-  int    l, r, RR, K, j, i, flag;
-  int    RR2;
-  double RR3;
-
-  //************************ execution begins ***************************/
-  if (N <= 1) return;
-
-  l   = N / 2 + 1;
-  r   = N - 1;
-  l   = l - 1;
-  RR  = list[l - 1];
-  K   = list[l - 1];
-
-  if ((list2 != NULL) && (list3 != NULL)) {
-    RR2 = list2[l - 1];
-    RR3 = list3[l - 1];
-    while (r != 0) {
-      j = l;
-      flag = 1;
-
-      while (flag == 1) {
-        i = j;
-        j = j + j;
-
-        if (j > r + 1)
-          flag = 0;
-        else {
-          if (j < r + 1)
-            if (list[j] > list[j - 1]) j = j + 1;
-
-          if (list[j - 1] > K) {
-            list[ i - 1] = list[ j - 1];
-            list2[i - 1] = list2[j - 1];
-            list3[i - 1] = list3[j - 1];
-          }
-          else {
-            flag = 0;
-          }
-        }
-      }
-
-      list[ i - 1] = RR;
-      list2[i - 1] = RR2;
-      list3[i - 1] = RR3;
-
-      if (l == 1) {
-        RR  = list [r];
-        RR2 = list2[r];
-        RR3 = list3[r];
-
-        K = list[r];
-        list[r ] = list[0];
-        list2[r] = list2[0];
-        list3[r] = list3[0];
-        r = r - 1;
-      }
-      else {
-        l   = l - 1;
-        RR  = list[ l - 1];
-        RR2 = list2[l - 1];
-        RR3 = list3[l - 1];
-        K   = list[l - 1];
-      }
-    }
-
-    list[ 0] = RR;
-    list2[0] = RR2;
-    list3[0] = RR3;
-  }
-  else if (list2 != NULL) {
-    RR2 = list2[l - 1];
-    while (r != 0) {
-      j = l;
-      flag = 1;
-
-      while (flag == 1) {
-        i = j;
-        j = j + j;
-
-        if (j > r + 1)
-          flag = 0;
-        else {
-          if (j < r + 1)
-            if (list[j] > list[j - 1]) j = j + 1;
-
-          if (list[j - 1] > K) {
-            list[ i - 1] = list[ j - 1];
-            list2[i - 1] = list2[j - 1];
-          }
-          else {
-            flag = 0;
-          }
-        }
-      }
-
-      list[ i - 1] = RR;
-      list2[i - 1] = RR2;
-
-      if (l == 1) {
-        RR  = list [r];
-        RR2 = list2[r];
-
-        K = list[r];
-        list[r ] = list[0];
-        list2[r] = list2[0];
-        r = r - 1;
-      }
-      else {
-        l   = l - 1;
-        RR  = list[ l - 1];
-        RR2 = list2[l - 1];
-        K   = list[l - 1];
-      }
-    }
-
-    list[ 0] = RR;
-    list2[0] = RR2;
-  }
-  else if (list3 != NULL) {
-    RR3 = list3[l - 1];
-    while (r != 0) {
-      j = l;
-      flag = 1;
-
-      while (flag == 1) {
-        i = j;
-        j = j + j;
-
-        if (j > r + 1)
-          flag = 0;
-        else {
-          if (j < r + 1)
-            if (list[j] > list[j - 1]) j = j + 1;
-
-          if (list[j - 1] > K) {
-            list[ i - 1] = list[ j - 1];
-            list3[i - 1] = list3[j - 1];
-          }
-          else {
-            flag = 0;
-          }
-        }
-      }
-
-      list[ i - 1] = RR;
-      list3[i - 1] = RR3;
-
-      if (l == 1) {
-        RR  = list [r];
-        RR3 = list3[r];
-
-        K = list[r];
-        list[r ] = list[0];
-        list3[r] = list3[0];
-        r = r - 1;
-      }
-      else {
-        l   = l - 1;
-        RR  = list[ l - 1];
-        RR3 = list3[l - 1];
-        K   = list[l - 1];
-      }
-    }
-
-    list[ 0] = RR;
-    list3[0] = RR3;
-
-  }
-  else {
-    while (r != 0) {
-      j = l;
-      flag = 1;
-
-      while (flag == 1) {
-        i = j;
-        j = j + j;
-
-        if (j > r + 1)
-          flag = 0;
-        else {
-          if (j < r + 1)
-            if (list[j] > list[j - 1]) j = j + 1;
-
-          if (list[j - 1] > K) {
-            list[ i - 1] = list[ j - 1];
-          }
-          else {
-            flag = 0;
-          }
-        }
-      }
-
-      list[ i - 1] = RR;
-
-      if (l == 1) {
-        RR  = list [r];
-
-        K = list[r];
-        list[r ] = list[0];
-        r = r - 1;
-      }
-      else {
-        l   = l - 1;
-        RR  = list[ l - 1];
-        K   = list[l - 1];
-      }
-    }
-
-    list[ 0] = RR;
-  }
-
 }
 
 #endif  // #ifdef CCADISCRET
