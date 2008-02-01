@@ -93,14 +93,6 @@ public:
 	  };
 	  
 	  /*!
-	  	   \brief Return DofRowMap of volume i
-	  */
-	  Epetra_Map GetDofMap(int i)
-	  {
-		  return *(voldofrowmaps_[i]);
-	  };
-	  
-	  /*!
 	  	   \brief Scale increment of lagrange multiplier increment by a double d
 	  */
 	  void ScaleLagrIncr(double d)
@@ -246,9 +238,10 @@ private:
 	RefCountPtr<Epetra_SerialDenseVector> fact_; 
 	RefCountPtr<Epetra_SerialDenseVector> lagrMultVec_;
 	RefCountPtr<Epetra_SerialDenseVector> lagrMultInc_;
-	map<int, RCP<Epetra_Map> > voldofrowmaps_;
 	RefCountPtr<Epetra_MultiVector> constrVec_;
 	bool haveconstraint_;
+	bool havevolconstr_;
+	bool haveareaconstr_;
 	//@}
     
 

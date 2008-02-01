@@ -3297,7 +3297,7 @@ void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_uncon
 }
 
 /*------------------------------------------------------------------------------*
- |  print to screen and/or error file considering volume constraints    tk 01/08|
+ |  print to screen and/or error file considering constraints           tk 01/08|
  *------------------------------------------------------------------------------*/
 void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_unconv,
                                FILE* errfile, Epetra_Time timer, int numiter,
@@ -3323,19 +3323,19 @@ void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_uncon
     {
       if (relres)
       {
-        printf("numiter %2d scaled res-norm %10.5e absolute dis-norm %20.15E absolute vol-norm %10.5e current Uzawa parameter %10.5e\n",
+        printf("numiter %2d scaled res-norm %10.5e absolute dis-norm %20.15E absolute constr-norm %10.5e current Uzawa parameter %10.5e\n",
         		numiter+1, fresmnorm, disinorm, volnorm, UzawaPara);
         fflush(stdout);
       }
       else if (relres_reldis)
       {
-        printf("numiter %2d scaled res-norm %10.5e scaled dis-norm %20.15E absolute vol-norm %10.5e current Uzawa parameter %10.5e\n",
+        printf("numiter %2d scaled res-norm %10.5e scaled dis-norm %20.15E absolute constr_norm %10.5e current Uzawa parameter %10.5e\n",
         		numiter+1, fresmnorm, disinorm, volnorm, UzawaPara);
         fflush(stdout);
       }
       else
         {
-        printf("numiter %2d absolute res-norm %10.5e absolute dis-norm %20.15E absolute vol-norm %10.5e current Uzawa parameter %10.5e\n",
+        printf("numiter %2d absolute res-norm %10.5e absolute dis-norm %20.15E absolute constr_norm %10.5e current Uzawa parameter %10.5e\n",
         		numiter+1, fresmnorm, disinorm, volnorm, UzawaPara);
         fflush(stdout);
       }
@@ -3344,19 +3344,19 @@ void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_uncon
     {
       if (relres)
       {
-        fprintf(errfile, "numiter %2d scaled res-norm %10.5e absolute dis-norm %20.15E absolute vol-norm %10.5e current Uzawa parameter %10.5e\n",
+        fprintf(errfile, "numiter %2d scaled res-norm %10.5e absolute dis-norm %20.15E absolute constr_norm %10.5e current Uzawa parameter %10.5e\n",
         		numiter+1, fresmnorm, disinorm, volnorm, UzawaPara);
         fflush(errfile);
       }
       else if (relres_reldis)
       {
-        fprintf(errfile, "numiter %2d scaled res-norm %10.5e scaled dis-norm %20.15E absolute vol-norm %10.5e current Uzawa parameter %10.5e\n",
+        fprintf(errfile, "numiter %2d scaled res-norm %10.5e scaled dis-norm %20.15E absolute constr_norm %10.5e current Uzawa parameter %10.5e\n",
         		numiter+1, fresmnorm, disinorm, volnorm, UzawaPara);
         fflush(errfile);
       }
       else
         {
-        fprintf(errfile, "numiter %2d absolute res-norm %10.5e absolute dis-norm %20.15E absolute vol-norm %10.5e current Uzawa parameter %10.5e\n",
+        fprintf(errfile, "numiter %2d absolute res-norm %10.5e absolute dis-norm %20.15E absolute constr_norm %10.5e current Uzawa parameter %10.5e\n",
         		numiter+1, fresmnorm, disinorm, volnorm, UzawaPara);
         fflush(errfile);
       }
@@ -3368,19 +3368,19 @@ void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_uncon
 
     if (relres)
     {
-      printf("Newton iteration converged: numiter %d scaled res-norm %e absolute dis-norm %e absolute vol-norm %e time %10.5f\n",
+      printf("Newton iteration converged: numiter %d scaled res-norm %e absolute dis-norm %e absolute constr_norm %e time %10.5f\n",
              numiter,fresmnorm,disinorm, volnorm,timepernlnsolve);
       fflush(stdout);
     }
     else if (relres_reldis)
     {
-      printf("Newton iteration converged: numiter %d scaled res-norm %e scaled dis-norm %e absolute vol-norm %e time %10.5f\n",
+      printf("Newton iteration converged: numiter %d scaled res-norm %e scaled dis-norm %e absolute constr_norm %e time %10.5f\n",
              numiter,fresmnorm,disinorm, volnorm,timepernlnsolve);
       fflush(stdout);
     }
     else
     {
-      printf("Newton iteration converged: numiter %d absolute res-norm %e absolute dis-norm %e absolute vol-norm %e time %10.5f\n",
+      printf("Newton iteration converged: numiter %d absolute res-norm %e absolute dis-norm %e absolute constr_norm %e time %10.5f\n",
              numiter,fresmnorm,disinorm, volnorm,timepernlnsolve);
       fflush(stdout);
     }
