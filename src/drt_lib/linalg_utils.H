@@ -268,6 +268,16 @@ namespace LINALG
            Epetra_CrsMatrix& B, const double scalarB);
 
   /*!
+  \brief Compute transposed matrix of an Epetra_CrsMatrix explicitly
+
+  Returns RCP to the transposed matrix of the input matrix A.
+
+  \param A          (in)     : Matrix to transpose (must have Filled()==true)
+
+  */
+  RCP<Epetra_CrsMatrix> Transpose(const Epetra_CrsMatrix& A);
+    
+  /*!
   \brief Multiply a (transposed) Epetra_CrsMatrix with another (transposed): C = A(^T)*B(^T)
 
   Multiply one matrix with another. Both matrices must be completed. Sparsity
@@ -399,6 +409,19 @@ namespace LINALG
   /*!
   \brief merges two given Epetra_Maps
 
+  merges input map1 and input map2, both of which have to be unique,
+  but may be overlapping, to a new map and returns RCP to it.
+
+  \param map1      : one map to be merged
+  \param map2      : the other map to be merged
+  \return the (sorted) merged map of input maps map1 and map2
+  */
+  RCP<Epetra_Map> MergeMap(const Epetra_Map& map1,
+                           const Epetra_Map& map2);
+    
+  /*!
+  \brief merges two given Epetra_Maps
+
   merges input map1 and input map2 (given as RCP), both of which
   have to be unique, but may be overlapping, to a new map and returns
   RCP to it. The case that one or both input RCPs are null is
@@ -408,8 +431,8 @@ namespace LINALG
   \param map2      : the other map to be merged
   \return the (sorted) merged map of input maps map1 and map2
   */
-  RCP<Epetra_Map> MergeMap(const RCP<Epetra_Map> map1,
-                           const RCP<Epetra_Map> map2);
+  RCP<Epetra_Map> MergeMap(const RCP<Epetra_Map>& map1,
+                           const RCP<Epetra_Map>& map2); 
     
   /*!
   \brief split a vector into 2 non-overlapping pieces

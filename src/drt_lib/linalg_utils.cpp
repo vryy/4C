@@ -17,6 +17,7 @@ Maintainer: Michael Gee
 #include "EpetraExt_Transpose_RowMatrix.h"
 #include "EpetraExt_MatrixMatrix.h"
 #include "Epetra_SerialDenseSolver.h"
+#include "Epetra_RowMatrixTransposer.h"
 
 
 /*----------------------------------------------------------------------*
@@ -325,6 +326,22 @@ void LINALG::Add(const Epetra_CrsMatrix& A,
   }
   if( Atrans ) delete Atrans;
   return;
+}
+
+/*----------------------------------------------------------------------*
+ | Transpose matrix A                                         popp 01/08|
+ *----------------------------------------------------------------------*/
+RCP<Epetra_CrsMatrix> LINALG::Transpose(const Epetra_CrsMatrix& A)
+{
+	if (!A.Filled()) dserror("FillComplete was not called on A");
+	
+	Epetra_RowMatrixTransposer tp(&(const_cast<Epetra_CrsMatrix&>(A)));
+	Epetra_CrsMatrix* Atrans = NULL;
+	
+	int err = tp.CreateTranspose(false,Atrans);
+	if (err) dserror("ERROR: Transpose: Epetra:RowMatrixTransposer failed!");
+	
+	return rcp(new Epetra_CrsMatrix(*Atrans));
 }
 
 
@@ -1244,8 +1261,42 @@ Epetra_Map* LINALG::SplitMap(const Epetra_Map& Amap,
 /*----------------------------------------------------------------------*
  | merge two given maps to one map                            popp 01/08|
  *----------------------------------------------------------------------*/
-RCP<Epetra_Map> LINALG::MergeMap(const RCP<Epetra_Map> map1,
-                                 const RCP<Epetra_Map> map2)
+RCP<Epetra_Map> LINALG::MergeMap(const Epetra_Map& map1,
+                                 const Epetra_Map& map2)
+{
+	// check for unique GIDs and for identity
+	if ((!map1.UniqueGIDs()) || (!map2.UniqueGIDs()))
+		dserror("LINALG::MergeMap: One or both input maps are not unique");
+	if (map1.SameAs(map2))
+		return rcp(new Epetra_Map(map1));
+	
+	vector<int> mygids(map1.NumMyElements()+map2.NumMyElements());
+	int count = map1.NumMyElements();
+
+	// get GIDs of input map1
+	for (int i=0;i<count;++i)
+		mygids[i] = map1.GID(i);
+	
+	// add GIDs of input map2 (only new ones)
+	for (int i=0;i<map2.NumMyElements();++i)
+		if (!map1.MyGID(map2.GID(i)))
+		{
+			mygids[count]=map2.GID(i);
+			++count;
+		}
+	mygids.resize(count);
+	
+	// sort merged map
+	Sort(&mygids[0],(int)mygids.size(),NULL,NULL);
+	
+	return rcp(new Epetra_Map(-1,(int)mygids.size(),&mygids[0],0,map1.Comm()));
+}
+
+/*----------------------------------------------------------------------*
+ | merge two given maps to one map                            popp 01/08|
+ *----------------------------------------------------------------------*/
+RCP<Epetra_Map> LINALG::MergeMap(const RCP<Epetra_Map>& map1,
+                                 const RCP<Epetra_Map>& map2)
 {
 	// check for cases with null RCPs
 	if (map1==null && map2==null)
@@ -1255,32 +1306,8 @@ RCP<Epetra_Map> LINALG::MergeMap(const RCP<Epetra_Map> map1,
 	else if (map2==null)
 		return rcp(new Epetra_Map(*map1));
 	
-	// check for unique GIDs and for identity
-	if ((!map1->UniqueGIDs()) || (!map2->UniqueGIDs()))
-		dserror("LINALG::MergeMap: One or both input maps are not unique");
-	if (map1->SameAs(*map2))
-		return rcp(new Epetra_Map(*map1));
-	
-	vector<int> mygids(map1->NumMyElements()+map2->NumMyElements());
-	int count = map1->NumMyElements();
-
-	// get GIDs of input map1
-	for (int i=0;i<count;++i)
-		mygids[i] = map1->GID(i);
-	
-	// add GIDs of input map2 (only new ones)
-	for (int i=0;i<map2->NumMyElements();++i)
-		if (!map1->MyGID(map2->GID(i)))
-		{
-			mygids[count]=map2->GID(i);
-			++count;
-		}
-	mygids.resize(count);
-	
-	// sort merged map
-	Sort(&mygids[0],(int)mygids.size(),NULL,NULL);
-	
-	return rcp(new Epetra_Map(-1,(int)mygids.size(),&mygids[0],0,map1->Comm()));
+	// wrapped call to non-RCP version of MergeMap
+	return LINALG::MergeMap(*map1,*map2);
 }
 
 /*----------------------------------------------------------------------*

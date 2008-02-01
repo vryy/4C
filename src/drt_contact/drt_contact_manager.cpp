@@ -329,9 +329,17 @@ void CONTACT::Manager::Evaluate(Epetra_CrsMatrix& Kteff,
 	cout << *T_;
 	cout << *invD;
 	cout << *Mbar;
+
+	cout << *M_;
+	cout << M_->RangeMap();
+	cout << M_->DomainMap();
+	RCP<Epetra_CrsMatrix> transM = LINALG::Transpose(*M_);
+	cout << *transM;
+	cout << transM->RangeMap();
+	cout << transM->DomainMap();
 #endif // #ifdef DEBUG
 	*/
-	
+
   return;
 }
 
