@@ -25,9 +25,21 @@ XFEM::InterfaceHandle::InterfaceHandle(
 {
 	  elementalDomainIntCells_.clear();
 	  elementalBoundaryIntCells_.clear();
+	  map< int, vector< DRT::Element* > >            cutterElementMap;
+      map< int, RefCountPtr<DRT::Node> >             cutterNodeMap;
 	  XFEM::Intersection is;
-	  is.computeIntersection(xfemdis,cutterdis,elementalDomainIntCells_,elementalBoundaryIntCells_);
+	  is.computeIntersection(
+	          xfemdis,
+	          cutterdis,
+	          elementalDomainIntCells_,
+	          elementalBoundaryIntCells_,
+	          cutterElementMap,
+	          cutterNodeMap);
 	  std::cout << "numcuttedelements = " << elementalDomainIntCells_.size() << endl;
+	  
+	  
+	  
+	  
 #if 0
 	  // debug: write both meshes to file in Gmsh format
 	  std::ofstream f_system("elements_coupled_system.pos");

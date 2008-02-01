@@ -147,9 +147,9 @@ string IO::GMSH::cellToString(const double scalar, const DomainIntCell& cell, DR
     for (int inen = 0; inen < nen;++inen)
     {
         // print position in x-space
-        pos_array_string << scientific << cell.GetPhysicalCoord(*ele)[inen][0] << ",";
-        pos_array_string << scientific << cell.GetPhysicalCoord(*ele)[inen][1] << ",";
-        pos_array_string << scientific << cell.GetPhysicalCoord(*ele)[inen][2];
+        pos_array_string << scientific << cell.NodalPosXYZ(*ele)[inen][0] << ",";
+        pos_array_string << scientific << cell.NodalPosXYZ(*ele)[inen][1] << ",";
+        pos_array_string << scientific << cell.NodalPosXYZ(*ele)[inen][2];
         if (inen < nen-1){
             pos_array_string << ",";
         }
@@ -180,9 +180,9 @@ string IO::GMSH::cellToString(const double scalar, const BoundaryIntCell& cell, 
     for (int inen = 0; inen < nen;++inen)
     {
         // print position in x-space
-        pos_array_string << scientific << cell.GetPhysicalCoord(*ele)[inen][0] << ",";
-        pos_array_string << scientific << cell.GetPhysicalCoord(*ele)[inen][1] << ",";
-        pos_array_string << scientific << cell.GetPhysicalCoord(*ele)[inen][2];
+        pos_array_string << scientific << cell.NodalPosXYZ(*ele)[inen][0] << ",";
+        pos_array_string << scientific << cell.NodalPosXYZ(*ele)[inen][1] << ",";
+        pos_array_string << scientific << cell.NodalPosXYZ(*ele)[inen][2];
         if (inen < nen-1){
             pos_array_string << ",";
         }

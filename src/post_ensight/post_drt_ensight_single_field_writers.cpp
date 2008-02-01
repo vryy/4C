@@ -358,7 +358,7 @@ void XFluidEnsightWriter::WriteCoordinates(
                 {
                     if (cell->Shape() == distypeiter)
                     {
-                        const vector<vector<double> > xarray = cell->GetPhysicalCoord(*actele);
+                        const vector<vector<double> > xarray = cell->NodalPosXYZ(*actele);
                         int numnode = cell->NumNode();
                         if (distypeiter == DRT::Element::hex27)
                         {
@@ -623,7 +623,7 @@ vector<double> computeScalarCellNodeValues(
     // cell corner nodes
     for (int inen = 0; inen < nen_cell; ++inen)
     {
-        const vector<double> cellnodeposvector = cell.GetPhysicalCoord(ele)[inen];
+        const vector<double> cellnodeposvector = cell.NodalPosXYZ(ele)[inen];
         blitz::Array<double,1> cellnodepos(3);
         for (int isd = 0; isd < nsd; ++isd) {
             cellnodepos(isd) = cellnodeposvector[isd];
@@ -633,9 +633,9 @@ vector<double> computeScalarCellNodeValues(
         blitz::Array<double,1> funct(maxnod);
         DRT::UTILS::shape_function_3D(
                 funct,
-                cell.GetDomainCoord()[inen][0],
-                cell.GetDomainCoord()[inen][1],
-                cell.GetDomainCoord()[inen][2],
+                cell.NodalPosXiDomain()[inen][0],
+                cell.NodalPosXiDomain()[inen][1],
+                cell.NodalPosXiDomain()[inen][2],
                 ele.Shape());
 
         blitz::Array<double,1> enr_funct(numparam);

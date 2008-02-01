@@ -457,7 +457,7 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
           const XFEM::PosEtaDomain&  pos_eta)
   {   
       // get cell node coordinates
-      const BlitzMat xyze_cell(cell.GetDomainCoordBlitz());
+      const BlitzMat xyze_cell(cell.NodalPosXiDomainBlitz());
 
       // create shape function vectors 
       const BlitzVec funct(DRT::UTILS::shape_function_3D(pos_eta(0),pos_eta(1),pos_eta(2),cell.Shape()));
@@ -488,7 +488,7 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
           const XFEM::PosEtaDomain&  pos_eta)
   {   
       // get node coordinates
-      const BlitzMat xyze_cell(cell.GetDomainCoordBlitz());
+      const BlitzMat xyze_cell(cell.NodalPosXiDomainBlitz());
 
       // init blitz indices
       blitz::firstIndex i;    // Placeholder for the first index
@@ -528,7 +528,7 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
           const XFEM::PosEtaBoundary&  pos_eta)
   {   
       // get cell node coordinates
-      const BlitzMat xyze_cell(cell.GetBoundaryCoordBlitz());
+      const BlitzMat xyze_cell(cell.NodalPosXiBoundaryBlitz());
 
       // create shape function vectors 
       const BlitzVec funct(DRT::UTILS::shape_function_2D(pos_eta(0),pos_eta(1),cell.Shape()));
@@ -548,7 +548,7 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
           const XFEM::PosEtaBoundary&  pos_eta)
   {   
       // get cell node coordinates
-      const BlitzMat xyze_cell(cell.GetDomainCoordBlitz());
+      const BlitzMat xyze_cell(cell.NodalPosXiDomainBlitz());
 
       // create shape function vectors 
       const BlitzVec funct(DRT::UTILS::shape_function_2D(pos_eta(0),pos_eta(1),cell.Shape()));
@@ -570,7 +570,7 @@ double detEtaBToXiB(
         const XFEM::PosEtaDomain&  pos_eta)
 {   
     // get node coordinates
-    const BlitzMat xyze_cell(cell.GetBoundaryCoordBlitz());
+    const BlitzMat xyze_cell(cell.NodalPosXiBoundaryBlitz());
 
     // init blitz indices
     blitz::firstIndex i; // Placeholder for the first index
@@ -873,7 +873,7 @@ BlitzVec computeNormalToBoundaryElement(
       }
 
       // position of the gausspoint in physical coordinates
-      const BlitzVec gauss_pos(blitz::sum(funct_(j)*xyze_(i,j),j));
+      const BlitzVec gauss_pos_xyz(blitz::sum(funct_(j)*xyze_(i,j),j));
       
       // get transposed of the jacobian matrix d x / d \xi
       const BlitzMat xjm_(blitz::sum(deriv_(i,k)*xyze_(j,k),k));
@@ -925,7 +925,7 @@ BlitzVec computeNormalToBoundaryElement(
                   ih,
                   dofman,
                   Velx,
-                  gauss_pos,
+                  gauss_pos_xyz,
                   funct_,
                   derxy_,
                   derxy2_, 
@@ -941,7 +941,7 @@ BlitzVec computeNormalToBoundaryElement(
                       ih,
                       dofman,
                       Tauxx,
-                      gauss_pos,
+                      gauss_pos_xyz,
                       funct_stress,
                       derxy_stress,
                       enr_funct_stress,
@@ -1651,35 +1651,38 @@ BlitzVec computeNormalToBoundaryElement(
     
     
     
-#if 0
+#if 1
     if (ASSTYPE == XFEM::xfem_assembly)
     {
     
-        dserror("not ready yet");
     // loop over boundary integration cells
     for (XFEM::BoundaryIntCells::const_iterator cell = boundaryIntCells.begin(); cell < boundaryIntCells.end(); ++cell)
     {
 
     // gaussian points
-    
-    const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_tri_3point);
+    const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_tri_6point);
     
     // if cell node is on the interface, the value is not defined for a jump.
     // however, we approach the interface from one particular side and therefore,
     // -> we use the center of the cell to determine, where we come from
     //const blitz::Array<double,1> cellcenterpos(cell->GetPhysicalCenterPosition(*ele));
     
-    const RCP<DRT::Element> boundaryele = ih->GetBoundaryEle(cell->GetSurfaceEleGid());
+    
     // get node coordinates
-    DRT::Node** const nodes = boundaryele->Nodes();
+    //TODO: get the right element
+    //const RCP<DRT::Element> boundaryele = ih->GetBoundaryEle(cell->GetSurfaceEleGid());
+    const RCP<DRT::Element> boundaryele = ih->GetBoundaryEle(1);
     const int numnode_boundary = boundaryele->NumNode();
     BlitzMat xyze_boundary(3,numnode_boundary,blitz::ColumnMajorArray<2>());
-    for (int inode=0; inode<numnode_boundary; inode++)
     {
-      const double* x = nodes[inode]->X();
-      xyze_boundary(0,inode) = x[0];
-      xyze_boundary(1,inode) = x[1];
-      xyze_boundary(2,inode) = x[2];
+        DRT::Node** const nodes = boundaryele->Nodes();
+        for (int inode=0; inode<numnode_boundary; inode++)
+        {
+          const double* x = nodes[inode]->X();
+          xyze_boundary(0,inode) = x[0];
+          xyze_boundary(1,inode) = x[1];
+          xyze_boundary(2,inode) = x[2];
+        }
     }
 
     // integration loop
@@ -1704,17 +1707,14 @@ BlitzVec computeNormalToBoundaryElement(
       const BlitzMat deriv_boundary(DRT::UTILS::shape_function_2D_deriv1(posXiBoundary(0),posXiBoundary(1),DISTYPE));
       
       BlitzVec funct_stress(DRT::UTILS::getNumberOfElementNodes(stressdistype));
-      BlitzMat deriv_stress(3, DRT::UTILS::getNumberOfElementNodes(stressdistype));
       if (stressdistype != DRT::Element::dis_none)
       {
           DRT::UTILS::shape_function_3D(funct_stress,posXiDomain(0),posXiDomain(1),posXiDomain(2),stressdistype);
-          DRT::UTILS::shape_function_3D_deriv1(deriv_stress,posXiDomain(0),posXiDomain(1),posXiDomain(2),stressdistype);
           //cout << "funct_stress" << funct_stress << endl;
-          //cout << "deriv_stress" << deriv_stress << endl;
       }
 
       // position of the gausspoint in physical coordinates
-      const BlitzVec gauss_pos(blitz::sum(funct_(j)*xyze_(i,j),j));
+      const BlitzVec gauss_pos_xyz(blitz::sum(funct_(j)*xyze_(i,j),j));
       
       // get transposed of the jacobian matrix d x / d \xi
       const BlitzMat xjm_(blitz::sum(deriv_(i,k)*xyze_(j,k),k));
@@ -1736,28 +1736,12 @@ BlitzVec computeNormalToBoundaryElement(
 
       // compute global derivates
       const BlitzMat derxy_(blitz::sum(xji_(i,k)*deriv_(k,j),k));
-      const BlitzMat derxy_stress(blitz::sum(xji_(i,k)*deriv_stress(k,j),k));
-
-      // compute second global derivative
-      BlitzMat derxy2_(6,numnode_boundary,blitz::ColumnMajorArray<2>());
-      if (higher_order_ele)
-      {
-        BlitzMat deriv2_(6,numnode_boundary,blitz::ColumnMajorArray<2>());
-        DRT::UTILS::shape_function_3D_deriv2(deriv2_,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
-        derxy2_ = gder2<DISTYPE>(xjm_, derxy_, deriv2_, xyze_);
-      }
-      else
-      {
-        derxy2_ = 0.;
-      }
 
       // after this call, one should only use the enriched shape functions and derivatives!
       BlitzVec enr_funct_(numparamvelx);
       BlitzMat enr_derxy_(3,numparamvelx,blitz::ColumnMajorArray<2>());
-      BlitzMat enr_derxy2_(6,numparamvelx,blitz::ColumnMajorArray<2>());
       
       BlitzVec enr_funct_stress(numparamtauxx);
-      BlitzMat enr_derxy_stress(3,numparamtauxx,blitz::ColumnMajorArray<2>());
       if (ASSTYPE == XFEM::xfem_assembly)
       {
           // shape function for nodal dofs
@@ -1766,13 +1750,11 @@ BlitzVec computeNormalToBoundaryElement(
                   ih,
                   dofman,
                   Velx,
-                  gauss_pos,
+                  gauss_pos_xyz,
                   funct_,
                   derxy_,
-                  derxy2_, 
                   enr_funct_,
-                  enr_derxy_,
-                  enr_derxy2_);
+                  enr_derxy_);
           
           // shape functions for element dofs
           XFEM::ComputeEnrichedStressShapefunction(
@@ -1780,20 +1762,16 @@ BlitzVec computeNormalToBoundaryElement(
                   ih,
                   dofman,
                   Tauxx,
-                  gauss_pos,
+                  gauss_pos_xyz,
                   funct_stress,
-                  derxy_stress,
-                  enr_funct_stress,
-                  enr_derxy_stress);
+                  enr_funct_stress);
       }
       else
       {
           enr_funct_  = funct_;
           enr_derxy_  = derxy_;
-          enr_derxy2_ = derxy2_;
           
           enr_funct_stress  = funct_stress;
-          enr_derxy_stress  = derxy_stress;
       }
       
 //      cout << "enr_funct_stress" << enr_funct_stress << endl;
@@ -1810,20 +1788,6 @@ BlitzVec computeNormalToBoundaryElement(
       // get velocity (np,i) derivatives at integration point
       const BlitzMat vderxy_(blitz::sum(enr_derxy_(j,k)*evelnp(i,k),k));
       
-      // calculate 2nd velocity derivatives at integration point
-      BlitzMat vderxy2_(3,6,blitz::ColumnMajorArray<2>());
-      if (higher_order_ele)
-      {
-        vderxy2_ = blitz::sum(enr_derxy2_(j,k)*evelnp(i,k),k);
-      }
-      else
-      {
-        vderxy2_ = 0.;
-      }
-
-      // get pressure gradients
-      const BlitzVec gradp_(blitz::sum(enr_derxy_(i,j)*eprenp(j),j));
-
       // get pressurrrrre
       const double press = blitz::sum(enr_funct_*eprenp);
 
@@ -1833,21 +1797,6 @@ BlitzVec computeNormalToBoundaryElement(
       tau(1,0) = tau(0,1);                                  tau(1,1) = blitz::sum(enr_funct_stress(_)*etau(1,_)); tau(1,2) = blitz::sum(enr_funct_stress(_)*etau(5,_));
       tau(2,0) = tau(0,2);                                  tau(2,1) = tau(1,2);                                  tau(2,2) = blitz::sum(enr_funct_stress(_)*etau(2,_));
       
-      BlitzVec nabla_dot_tau(3);
-      nabla_dot_tau(0) = blitz::sum(enr_derxy_stress(0,_)*etau(0,_)) + blitz::sum(enr_derxy_stress(1,_)*etau(3,_)) + blitz::sum(enr_derxy_stress(2,_)*etau(4,_));
-      nabla_dot_tau(1) = blitz::sum(enr_derxy_stress(3,_)*etau(0,_)) + blitz::sum(enr_derxy_stress(1,_)*etau(1,_)) + blitz::sum(enr_derxy_stress(2,_)*etau(5,_));
-      nabla_dot_tau(2) = blitz::sum(enr_derxy_stress(0,_)*etau(4,_)) + blitz::sum(enr_derxy_stress(1,_)*etau(5,_)) + blitz::sum(enr_derxy_stress(2,_)*etau(2,_));
-      
-      BlitzMat eps(3,3);
-      for (int m = 0; m < 3; ++m)
-      {
-          for (int n = 0; n < 3; ++n)
-          {
-              eps(m,n) = 0.5*(vderxy_(m,n) + vderxy_(n,m));
-          }
-      }
-      const BlitzMat epstau(tau*reciproke_visc);
-//      
 //      if (ele->Id() == 0)
 //      {
 //          cout << endl;
@@ -1856,150 +1805,14 @@ BlitzVec computeNormalToBoundaryElement(
 //          cout << "pressure = " << press << endl;
 //      }
 
-
-      // get bodyforce in gausspoint
-      BlitzVec bodyforce_(3);
-      bodyforce_ = 0.0;
-  //    if ( not (XFEM::PositionWithinCondition(cellcenterpos, 1, ih->cutterdis())))
-  //    {
-  //        bodyforce_(1) = 1.0;
-  //    }
-      //////////////////////////////////////////BlitzVec bodyforce_(blitz::sum(enr_edeadng_(i,j)*enr_funct_(j),j));
-
       // perform integration for entire matrix and rhs
-
-      // get velocity norm
-      const double vel_norm = sqrt(blitz::sum(velint_*velint_));
-
-      // normed velocity at element centre
-      BlitzVec velino_(3);
-      if (vel_norm>=1e-6)
-      {
-        velino_ = velint_/vel_norm;
-      }
-      else
-      {
-        velino_ = 0.;
-        velino_(0) = 1;
-      }
-
-      // get streamlength
-      const double val = blitz::sum(blitz::abs(blitz::sum(velino_(j)*derxy_(j,i),j)));
-      const double strle = 2.0/val;
-
-      // calculate tau
-      // stabilization parameters for stationary case
-
-      // compute tau_Mu
-      BlitzVec tau_stab(3);
-      const double re_tau_mu = mk * vel_norm * strle / (2.0 * visc);   /* convective : viscous forces */
-      const double xi_tau_mu = DMAX(re_tau_mu, 1.0);
-      tau_stab(0) = (DSQR(strle)*mk)/(4.0*visc*xi_tau_mu);
-
-      // compute tau_Mp
-      const double re_tau_mp = mk * vel_norm * hk / (2.0 * visc);      /* convective : viscous forces */
-      const double xi_tau_mp = DMAX(re_tau_mp,1.0);
-      tau_stab(1) = (DSQR(hk)*mk)/(4.0*visc*xi_tau_mp);
-
-      // compute tau_C
-      const double xi_tau_c = DMIN(re_tau_mp, 1.0);
-      tau_stab(2) = 0.5*vel_norm*hk*xi_tau_c;
-      
-      // stabilisation parameter
-      const double tau_M  = tau_stab(0)*fac;
-      const double tau_Mp = tau_stab(1)*fac;
-      const double tau_C  = tau_stab(2)*fac;
-
       // create vievs on the shape function arrays for easy handling in the assembly process
       const BlitzVec shp(enr_funct_);
       const BlitzVec shp_dx(enr_derxy_(0,_));
       const BlitzVec shp_dy(enr_derxy_(1,_));
       const BlitzVec shp_dz(enr_derxy_(2,_));
-      const BlitzVec shp_dxdx(enr_derxy2_(0,_)); const BlitzVec shp_dxdy(enr_derxy2_(3,_)); const BlitzVec shp_dxdz(enr_derxy2_(4,_));
-      const BlitzVec shp_dydx(shp_dxdy);         const BlitzVec shp_dydy(enr_derxy2_(1,_)); const BlitzVec shp_dydz(enr_derxy2_(5,_));
-      const BlitzVec shp_dzdx(shp_dxdz);         const BlitzVec shp_dzdy(shp_dydz);         const BlitzVec shp_dzdz(enr_derxy2_(2,_));
       
       const BlitzVec shp_tau(enr_funct_stress);
-      const BlitzVec shp_tau_dx(enr_derxy_stress(0,_));
-      const BlitzVec shp_tau_dy(enr_derxy_stress(1,_));
-      const BlitzVec shp_tau_dz(enr_derxy_stress(2,_));
-
-      /*------------------------- evaluate rhs vector at integration point ---*/
-      //   rhsint_ = histvec_(i) + bodyforce_(i);
-      // histvec is always zero in stationary case (!):
-      const BlitzVec rhsint_(bodyforce_(i));
-
-      /*----------------- get numerical representation of single operators ---*/
-
-      /* Convective term  u_old * grad u_old: */
-      const BlitzVec conv_old_(blitz::sum(vderxy_(i, j)*velint_(j), j));
-      
-      BlitzVec res_old(3);
-      if (not stress_unknowns_present)
-      {
-          /* Viscous term  div epsilon(u_old) */
-          BlitzVec visc_old_(3);
-          visc_old_(0) = vderxy2_(0,0) + 0.5 * (vderxy2_(0,1) + vderxy2_(1,3) + vderxy2_(0,2) + vderxy2_(2,4));
-          visc_old_(1) = vderxy2_(1,1) + 0.5 * (vderxy2_(1,0) + vderxy2_(0,3) + vderxy2_(1,2) + vderxy2_(2,5));
-          visc_old_(2) = vderxy2_(2,2) + 0.5 * (vderxy2_(2,0) + vderxy2_(0,4) + vderxy2_(2,1) + vderxy2_(1,5));
-          
-          // evaluate residual once for all stabilisation right hand sides
-          res_old = -rhsint_+(conv_old_+gradp_-2.0*visc*visc_old_);
-      }
-      else
-      {
-          /* Viscous term  div epsilon(u_old) */
-          res_old = -rhsint_+(conv_old_+gradp_-nabla_dot_tau);
-      }
-      
-      /* Reactive term  u:  funct */
-      /* linearise convective term */
-
-      /*--- convective part u_old * grad (funct) --------------------------*/
-      /* u_old_x * N,x  +  u_old_y * N,y + u_old_z * N,z
-         with  N .. form function matrix                                   */
-      const BlitzVec enr_conv_c_(blitz::sum(enr_derxy_(j,i)*velint_(j), j));
-
-  //    /*--- convective grid part u_G * grad (funct) -----------------------*/
-  //    /* u_old_x * N,x  +  u_old_y * N,y   with  N .. form function matrix */
-  //    enr_conv_g_ = 0.0;
-
-
-      /*--- reactive part funct * grad (u_old) ----------------------------*/
-      /* /                                     \
-         |  u_old_x,x   u_old_x,y   u_old x,z  |
-         |                                     |
-         |  u_old_y,x   u_old_y,y   u_old_y,z  | * N
-         |                                     |
-         |  u_old_z,x   u_old_z,y   u_old_z,z  |
-         \                                     /
-         with  N .. form function matrix                                   */
-      const blitz::Array<double,3> enr_conv_r_(vderxy_(i, j)*shp(k));
-
-      /*--- viscous term  - grad * epsilon(u): ----------------------------*/
-      /*   /                                                \
-           |  2 N_x,xx + N_x,yy + N_y,xy + N_x,zz + N_z,xz  |
-         1 |                                                |
-       - - |  N_y,xx + N_x,yx + 2 N_y,yy + N_z,yz + N_y,zz  |
-         2 |                                                |
-           |  N_z,xx + N_x,zx + N_y,zy + N_z,yy + 2 N_z,zz  |
-           \                                                /
-
-           with N_x .. x-line of N
-           N_y .. y-line of N                                             */
-      blitz::Array<double,3> enr_viscs2_(3,3,numparamvelx,blitz::ColumnMajorArray<3>());
-      enr_viscs2_(0,0,_) = 0.5 * (2.0 * shp_dxdx + shp_dydy + shp_dzdz);
-      enr_viscs2_(0,1,_) = 0.5 *  shp_dxdy;
-      enr_viscs2_(0,2,_) = 0.5 *  shp_dxdz;
-      enr_viscs2_(1,0,_) = 0.5 *  shp_dydx;
-      enr_viscs2_(1,1,_) = 0.5 * (shp_dxdx + 2.0 * shp_dydy + shp_dzdz);
-      enr_viscs2_(1,2,_) = 0.5 *  shp_dydz;
-      enr_viscs2_(2,0,_) = 0.5 *  shp_dzdx;
-      enr_viscs2_(2,1,_) = 0.5 *  shp_dzdy;
-      enr_viscs2_(2,2,_) = 0.5 * (shp_dxdx + shp_dydy + 2.0 * shp_dzdz);
-
-      /* pressure gradient term derxy, funct without or with integration   *
-       * by parts, respectively                                            */
 
       /*--------------------------------- now build single stiffness terms ---*/
       {
@@ -2007,266 +1820,101 @@ BlitzVec computeNormalToBoundaryElement(
         //----------------------------------------------------------------------
         //                            GALERKIN PART
 
-        /* convection, convective part */
-        /*
-                     /                       \
-                    |  / n+1       \          |
-                    | | u   o nabla | Du , v  |
-                    |  \ (i)       /          |
-                     \                       /
-        */
-        assembler.template Matrix<Velx,Velx>(shp, fac, enr_conv_c_);
-        assembler.template Matrix<Vely,Vely>(shp, fac, enr_conv_c_);
-        assembler.template Matrix<Velz,Velz>(shp, fac, enr_conv_c_);
-
-        /* convection */
-        assembler.template Vector<Velx>(enr_conv_r_(0, 0, _), -fac*velint_(0));
-        assembler.template Vector<Velx>(enr_conv_r_(0, 1, _), -fac*velint_(1));
-        assembler.template Vector<Velx>(enr_conv_r_(0, 2, _), -fac*velint_(2));
-
-        assembler.template Vector<Vely>(enr_conv_r_(1, 0, _), -fac*velint_(0));
-        assembler.template Vector<Vely>(enr_conv_r_(1, 1, _), -fac*velint_(1));
-        assembler.template Vector<Vely>(enr_conv_r_(1, 2, _), -fac*velint_(2));
-
-        assembler.template Vector<Velz>(enr_conv_r_(2, 0, _), -fac*velint_(0));
-        assembler.template Vector<Velz>(enr_conv_r_(2, 1, _), -fac*velint_(1));
-        assembler.template Vector<Velz>(enr_conv_r_(2, 2, _), -fac*velint_(2));
-
-        /* Viskositaetsterm */
-        if (not stress_unknowns_present)
-        {
-            /*
-                          /                        \
-                         |       /  \         / \   |
-                         |  tau | Du | , eps | v |  |
-                         |       \  /         \ /   |
-                          \                        /
-            */
-            assembler.template Matrix<Velx,Velx>(shp_dx, 2.0*visc*fac, shp_dx);
-            assembler.template Matrix<Velx,Velx>(shp_dy,     visc*fac, shp_dy);
-            assembler.template Matrix<Velx,Velx>(shp_dz,     visc*fac, shp_dz);
-            assembler.template Matrix<Velx,Vely>(shp_dy,     visc*fac, shp_dx);
-            assembler.template Matrix<Velx,Velz>(shp_dz,     visc*fac, shp_dx);
-
-            assembler.template Matrix<Vely,Velx>(shp_dx,     visc*fac, shp_dy);
-            assembler.template Matrix<Vely,Vely>(shp_dx,     visc*fac, shp_dx);
-            assembler.template Matrix<Vely,Vely>(shp_dy, 2.0*visc*fac, shp_dy);
-            assembler.template Matrix<Vely,Vely>(shp_dz,     visc*fac, shp_dz);
-            assembler.template Matrix<Vely,Velz>(shp_dz,     visc*fac, shp_dy);
-
-            assembler.template Matrix<Velz,Velx>(shp_dx,     visc*fac, shp_dz);
-            assembler.template Matrix<Velz,Vely>(shp_dy,     visc*fac, shp_dz);
-            assembler.template Matrix<Velz,Velz>(shp_dx,     visc*fac, shp_dx);
-            assembler.template Matrix<Velz,Velz>(shp_dy,     visc*fac, shp_dy);
-            assembler.template Matrix<Velz,Velz>(shp_dz, 2.0*visc*fac, shp_dz);
-            
-            assembler.template Vector<Velx>(shp_dx, -2.0*visc*fac*vderxy_(0, 0));
-            assembler.template Vector<Velx>(shp_dy,     -visc*fac*vderxy_(0, 1));
-            assembler.template Vector<Velx>(shp_dy,     -visc*fac*vderxy_(1, 0));
-            assembler.template Vector<Velx>(shp_dz,     -visc*fac*vderxy_(0, 2));
-            assembler.template Vector<Velx>(shp_dz,     -visc*fac*vderxy_(2, 0));
-
-            assembler.template Vector<Vely>(shp_dx,     -visc*fac*vderxy_(1, 0));
-            assembler.template Vector<Vely>(shp_dx,     -visc*fac*vderxy_(0, 1));
-            assembler.template Vector<Vely>(shp_dy, -2.0*visc*fac*vderxy_(1, 1));
-            assembler.template Vector<Vely>(shp_dz,     -visc*fac*vderxy_(1, 2));
-            assembler.template Vector<Vely>(shp_dz,     -visc*fac*vderxy_(2, 1));
-
-            assembler.template Vector<Velz>(shp_dx,     -visc*fac*vderxy_(2, 0));
-            assembler.template Vector<Velz>(shp_dx,     -visc*fac*vderxy_(0, 2));
-            assembler.template Vector<Velz>(shp_dy,     -visc*fac*vderxy_(2, 1));
-            assembler.template Vector<Velz>(shp_dy,     -visc*fac*vderxy_(1, 2));
-            assembler.template Vector<Velz>(shp_dz, -2.0*visc*fac*vderxy_(2, 2));
-        }
-        else
-        {
-            /*
-                          /                  \
-                         |              / \   |
-                         |  Dtau , eps | v |  |
-                         |              \ /   |
-                          \                  /
-            */
-            assembler.template Matrix<Velx,Tauxx>(shp_dx, 2.0*fac*0.5, shp_tau);
-            assembler.template Matrix<Velx,Tauxy>(shp_dy,     fac*0.5, shp_tau);
-            assembler.template Matrix<Velx,Tauxz>(shp_dz,     fac*0.5, shp_tau);
-            assembler.template Matrix<Velx,Tauyx>(shp_dy,     fac*0.5, shp_tau);
-            assembler.template Matrix<Velx,Tauzx>(shp_dz,     fac*0.5, shp_tau);
-
-            assembler.template Matrix<Vely,Tauxy>(shp_dx,     fac*0.5, shp_tau);
-            assembler.template Matrix<Vely,Tauyx>(shp_dx,     fac*0.5, shp_tau);
-            assembler.template Matrix<Vely,Tauyy>(shp_dy, 2.0*fac*0.5, shp_tau);
-            assembler.template Matrix<Vely,Tauyz>(shp_dz,     fac*0.5, shp_tau);
-            assembler.template Matrix<Vely,Tauzy>(shp_dz,     fac*0.5, shp_tau);
-
-            assembler.template Matrix<Velz,Tauxz>(shp_dx,     fac*0.5, shp_tau);
-            assembler.template Matrix<Velz,Tauyz>(shp_dy,     fac*0.5, shp_tau);
-            assembler.template Matrix<Velz,Tauzx>(shp_dx,     fac*0.5, shp_tau);
-            assembler.template Matrix<Velz,Tauzy>(shp_dy,     fac*0.5, shp_tau);
-            assembler.template Matrix<Velz,Tauzz>(shp_dz, 2.0*fac*0.5, shp_tau);
-            
-            assembler.template Vector<Velx>(shp_dx, -2.0*fac*0.5*tau(0, 0));
-            assembler.template Vector<Velx>(shp_dy,     -fac*0.5*tau(0, 1));
-            assembler.template Vector<Velx>(shp_dy,     -fac*0.5*tau(1, 0));
-            assembler.template Vector<Velx>(shp_dz,     -fac*0.5*tau(0, 2));
-            assembler.template Vector<Velx>(shp_dz,     -fac*0.5*tau(2, 0));
-
-            assembler.template Vector<Vely>(shp_dx,     -fac*0.5*tau(1, 0));
-            assembler.template Vector<Vely>(shp_dx,     -fac*0.5*tau(0, 1));
-            assembler.template Vector<Vely>(shp_dy, -2.0*fac*0.5*tau(1, 1));
-            assembler.template Vector<Vely>(shp_dz,     -fac*0.5*tau(1, 2));
-            assembler.template Vector<Vely>(shp_dz,     -fac*0.5*tau(2, 1));
-
-            assembler.template Vector<Velz>(shp_dx,     -fac*0.5*tau(2, 0));
-            assembler.template Vector<Velz>(shp_dx,     -fac*0.5*tau(0, 2));
-            assembler.template Vector<Velz>(shp_dy,     -fac*0.5*tau(2, 1));
-            assembler.template Vector<Velz>(shp_dy,     -fac*0.5*tau(1, 2));
-            assembler.template Vector<Velz>(shp_dz, -2.0*fac*0.5*tau(2, 2));
-        }
-
-
-        /* Druckterm */
-        /*
-                        /                \
-                       |                  |
-                       |  Dp , nabla o v  |
-                       |                  |
-                        \                /
-        */
-        assembler.template Matrix<Velx,Pres>(shp_dx, -fac, shp);
-        assembler.template Matrix<Vely,Pres>(shp_dy, -fac, shp);
-        assembler.template Matrix<Velz,Pres>(shp_dz, -fac, shp);
-        
-        assembler.template Vector<Velx>(shp_dx, press*fac);
-        assembler.template Vector<Vely>(shp_dy, press*fac);
-        assembler.template Vector<Velz>(shp_dz, press*fac);
-
-
-        /* Divergenzfreiheit - continuity equation*/
-        /*
-                       /                \
-                      |                  |
-                      | nabla o Du  , q  |
-                      |                  |
-                       \                /
-        */
-        assembler.template Matrix<Pres,Velx>(shp, fac, shp_dx);
-        assembler.template Matrix<Pres,Vely>(shp, fac, shp_dy);
-        assembler.template Matrix<Pres,Velz>(shp, fac, shp_dz);
-        
-        assembler.template Vector<Pres>(enr_conv_r_(0, 0, _), -fac);
-        assembler.template Vector<Pres>(enr_conv_r_(1, 1, _), -fac);
-        assembler.template Vector<Pres>(enr_conv_r_(2, 2, _), -fac);
-        
-//        if (stress_unknowns_present)
-//        {
-//            /* Divergenzfreiheit - continuity equation*/
-//            /*
-//                           /                       
-//                          |                         |
-//                          | trace (eps(Dtau))  , q  |
-//                          |                         |
-//                           \                       /
-//            */
-//            assembler.template Matrix<Pres,Tauxx>(shp, 0.5*reciproke_visc*fac, shp_tau);
-//            assembler.template Matrix<Pres,Tauyy>(shp, 0.5*reciproke_visc*fac, shp_tau);
-//            assembler.template Matrix<Pres,Tauzz>(shp, 0.5*reciproke_visc*fac, shp_tau);
-//            
-//            assembler.template Vector<Pres>(shp, -0.5*reciproke_visc*fac*tau(0,0));
-//            assembler.template Vector<Pres>(shp, -0.5*reciproke_visc*fac*tau(1,1));
-//            assembler.template Vector<Pres>(shp, -0.5*reciproke_visc*fac*tau(2,2));
-//        }
-        
-
-        
-
-        // source term of the right hand side
-        assembler.template Vector<Velx>(shp, fac*rhsint_(0));
-        assembler.template Vector<Vely>(shp, fac*rhsint_(1));
-        assembler.template Vector<Velz>(shp, fac*rhsint_(2));
-
-
-        // Hellinger-Reissner terms
         if (stress_unknowns_present)
         {
-            /* quadratic part */
             /*
-                           /                     \
-                          |                       |
-                          | eps(Dtau)  , virt tau |
-                          |                       |
-                           \                     /
+                           /                    \
+                          |                      |
+                        - | Du  , (virt tau) * n |
+                          |                      |
+                           \                    /
             */
-            //cout << "HR: quadratic part" << endl;
-            assembler.template Matrix<Tauxx,Tauxx>(shp_tau, -0.5*reciproke_visc*fac, shp_tau);
-            assembler.template Matrix<Tauxy,Tauxy>(shp_tau, -0.5*reciproke_visc*fac, shp_tau);
-            assembler.template Matrix<Tauxz,Tauxz>(shp_tau, -0.5*reciproke_visc*fac, shp_tau);
-            assembler.template Matrix<Tauyx,Tauyx>(shp_tau, -0.5*reciproke_visc*fac, shp_tau);
-            assembler.template Matrix<Tauyy,Tauyy>(shp_tau, -0.5*reciproke_visc*fac, shp_tau);
-            assembler.template Matrix<Tauyz,Tauyz>(shp_tau, -0.5*reciproke_visc*fac, shp_tau);
-            assembler.template Matrix<Tauzx,Tauzx>(shp_tau, -0.5*reciproke_visc*fac, shp_tau);
-            assembler.template Matrix<Tauzy,Tauzy>(shp_tau, -0.5*reciproke_visc*fac, shp_tau);
-            assembler.template Matrix<Tauzz,Tauzz>(shp_tau, -0.5*reciproke_visc*fac, shp_tau);
-
-            assembler.template Vector<Tauxx>(shp_tau, 0.5*reciproke_visc*fac*tau(0,0));
-            assembler.template Vector<Tauxy>(shp_tau, 0.5*reciproke_visc*fac*tau(0,1));
-            assembler.template Vector<Tauxz>(shp_tau, 0.5*reciproke_visc*fac*tau(0,2));
-            assembler.template Vector<Tauyx>(shp_tau, 0.5*reciproke_visc*fac*tau(1,0));
-            assembler.template Vector<Tauyy>(shp_tau, 0.5*reciproke_visc*fac*tau(1,1));
-            assembler.template Vector<Tauyz>(shp_tau, 0.5*reciproke_visc*fac*tau(1,2));
-            assembler.template Vector<Tauzx>(shp_tau, 0.5*reciproke_visc*fac*tau(2,0));
-            assembler.template Vector<Tauzy>(shp_tau, 0.5*reciproke_visc*fac*tau(2,1));
-            assembler.template Vector<Tauzz>(shp_tau, 0.5*reciproke_visc*fac*tau(2,2));
-
-            /* rectangular part */
+            assembler.template Matrix<Tauxx,Velx>(shp_tau, -fac*normalvec(0), shp);
+            assembler.template Matrix<Tauxy,Velx>(shp_tau, -fac*normalvec(1), shp);
+            assembler.template Matrix<Tauxz,Velx>(shp_tau, -fac*normalvec(2), shp);
+            
+            assembler.template Matrix<Tauyx,Vely>(shp_tau, -fac*normalvec(0), shp);
+            assembler.template Matrix<Tauyy,Vely>(shp_tau, -fac*normalvec(1), shp);
+            assembler.template Matrix<Tauyz,Vely>(shp_tau, -fac*normalvec(2), shp);
+            
+            assembler.template Matrix<Tauzx,Velz>(shp_tau, -fac*normalvec(0), shp);
+            assembler.template Matrix<Tauzy,Velz>(shp_tau, -fac*normalvec(1), shp);
+            assembler.template Matrix<Tauzz,Velz>(shp_tau, -fac*normalvec(2), shp);
+            
+            assembler.template Vector<Tauxx>(shp_tau, fac*normalvec(0)*velint_(0));
+            assembler.template Vector<Tauxy>(shp_tau, fac*normalvec(1)*velint_(0));
+            assembler.template Vector<Tauxz>(shp_tau, fac*normalvec(2)*velint_(0));
+            
+            assembler.template Vector<Tauyx>(shp_tau, fac*normalvec(0)*velint_(1));
+            assembler.template Vector<Tauyy>(shp_tau, fac*normalvec(1)*velint_(1));
+            assembler.template Vector<Tauyz>(shp_tau, fac*normalvec(2)*velint_(1));
+            
+            assembler.template Vector<Tauzx>(shp_tau, fac*normalvec(0)*velint_(2));
+            assembler.template Vector<Tauzy>(shp_tau, fac*normalvec(1)*velint_(2));
+            assembler.template Vector<Tauzz>(shp_tau, fac*normalvec(2)*velint_(2));
+            
             /*
-                           /                   \
-                          |                     |
-                          | eps(Du)  , virt tau |
-                          |                     |
-                           \                   /
+                           /                \
+                          |                  |
+                          | Du  , (virt p) n |
+                          |                  |
+                           \                /
             */
-            //cout << "HR: rectangular part" << endl;
-            assembler.template Matrix<Tauxx,Velx>(shp_tau, 2.0*fac*0.5, shp_dx);
-            assembler.template Matrix<Tauxy,Velx>(shp_tau,     fac*0.5, shp_dy);
-            assembler.template Matrix<Tauxy,Vely>(shp_tau,     fac*0.5, shp_dx);
-            assembler.template Matrix<Tauxz,Velx>(shp_tau,     fac*0.5, shp_dz);
-            assembler.template Matrix<Tauxz,Velz>(shp_tau,     fac*0.5, shp_dx);
+            assembler.template Matrix<Pres,Velx>(shp, fac*normalvec(0), shp);
+            assembler.template Matrix<Pres,Vely>(shp, fac*normalvec(1), shp);
+            assembler.template Matrix<Pres,Velz>(shp, fac*normalvec(2), shp);
             
-            assembler.template Matrix<Tauyx,Velx>(shp_tau,     fac*0.5, shp_dy);
-            assembler.template Matrix<Tauyx,Vely>(shp_tau,     fac*0.5, shp_dx);
-            assembler.template Matrix<Tauyy,Vely>(shp_tau, 2.0*fac*0.5, shp_dy);
-            assembler.template Matrix<Tauyz,Velz>(shp_tau,     fac*0.5, shp_dz);
-            assembler.template Matrix<Tauyz,Vely>(shp_tau,     fac*0.5, shp_dx);
+            const double u_times_n = blitz::sum(normalvec(i)*velint_(i));
+            assembler.template Vector<Pres>(shp, -fac*u_times_n);            
             
-            assembler.template Matrix<Tauzx,Velx>(shp_tau,     fac*0.5, shp_dz);
-            assembler.template Matrix<Tauzx,Velz>(shp_tau,     fac*0.5, shp_dx);
-            assembler.template Matrix<Tauzy,Vely>(shp_tau,     fac*0.5, shp_dz);
-            assembler.template Matrix<Tauzy,Velz>(shp_tau,     fac*0.5, shp_dy);
-            assembler.template Matrix<Tauzz,Velz>(shp_tau, 2.0*fac*0.5, shp_dz);
+            
+            
+            // symmetric part from partial integration of stress term
+            /*
+                           /            \
+                          |              |
+                        - | tau * n  , v |
+                          |              |
+                           \            /
+            */
+            assembler.template Matrix<Velx,Tauxx>(shp, -fac*normalvec(0), shp_tau);
+            assembler.template Matrix<Velx,Tauxy>(shp, -fac*normalvec(1), shp_tau);
+            assembler.template Matrix<Velx,Tauxz>(shp, -fac*normalvec(2), shp_tau);
+            
+            assembler.template Matrix<Vely,Tauyx>(shp, -fac*normalvec(0), shp_tau);
+            assembler.template Matrix<Vely,Tauyy>(shp, -fac*normalvec(1), shp_tau);
+            assembler.template Matrix<Vely,Tauyz>(shp, -fac*normalvec(2), shp_tau);
+            
+            assembler.template Matrix<Velz,Tauzx>(shp, -fac*normalvec(0), shp_tau);
+            assembler.template Matrix<Velz,Tauzy>(shp, -fac*normalvec(1), shp_tau);
+            assembler.template Matrix<Velz,Tauzz>(shp, -fac*normalvec(2), shp_tau);
+            
+            const BlitzVec tau_times_n(blitz::sum(tau(i,j)*normalvec(j),j));
+            assembler.template Vector<Velx>(shp, fac*tau_times_n(0));
+            assembler.template Vector<Vely>(shp, fac*tau_times_n(1));
+            assembler.template Vector<Velz>(shp, fac*tau_times_n(2));
+            
+            /*
+                           /         \
+                          |           |
+                          | Dp n  , v |
+                          |           |
+                           \         /
+            */
+            assembler.template Matrix<Velx,Pres>(shp, fac*normalvec(0), shp);
+            assembler.template Matrix<Vely,Pres>(shp, fac*normalvec(1), shp);
+            assembler.template Matrix<Velz,Pres>(shp, fac*normalvec(2), shp);
+            
+            assembler.template Vector<Velx>(shp, -fac*normalvec(0)*press);
+            assembler.template Vector<Vely>(shp, -fac*normalvec(1)*press);
+            assembler.template Vector<Velz>(shp, -fac*normalvec(2)*press);  
+            
 
-            assembler.template Vector<Tauxx>(shp_tau, -2.0*fac*0.5*vderxy_(0, 0));
-            assembler.template Vector<Tauxy>(shp_tau,     -fac*0.5*vderxy_(0, 1));
-            assembler.template Vector<Tauxy>(shp_tau,     -fac*0.5*vderxy_(1, 0));
-            assembler.template Vector<Tauxz>(shp_tau,     -fac*0.5*vderxy_(0, 2));
-            assembler.template Vector<Tauxz>(shp_tau,     -fac*0.5*vderxy_(2, 0));
-
-            assembler.template Vector<Tauyx>(shp_tau,     -fac*0.5*vderxy_(1, 0));
-            assembler.template Vector<Tauyx>(shp_tau,     -fac*0.5*vderxy_(0, 1));
-            assembler.template Vector<Tauyy>(shp_tau, -2.0*fac*0.5*vderxy_(1, 1));
-            assembler.template Vector<Tauyz>(shp_tau,     -fac*0.5*vderxy_(1, 2));
-            assembler.template Vector<Tauyz>(shp_tau,     -fac*0.5*vderxy_(2, 1));
-
-            assembler.template Vector<Tauzx>(shp_tau,     -fac*0.5*vderxy_(2, 0));
-            assembler.template Vector<Tauzx>(shp_tau,     -fac*0.5*vderxy_(0, 2));
-            assembler.template Vector<Tauzy>(shp_tau,     -fac*0.5*vderxy_(2, 1));
-            assembler.template Vector<Tauzy>(shp_tau,     -fac*0.5*vderxy_(1, 2));
-            assembler.template Vector<Tauzz>(shp_tau, -2.0*fac*0.5*vderxy_(2, 2));
         }
 
       } // end block stiffness terms
     } // end loop over gauss points
-    } // end loop over integration cells
+    } // end loop over boundary integration cells
     } // if (ASSTYPE == XFEM::xfem_assembly)
 #endif
     return;

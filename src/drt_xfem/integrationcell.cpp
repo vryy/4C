@@ -60,7 +60,7 @@ IntCell::~IntCell()
 //
 //  get coordinates
 //
-vector< vector<double> > IntCell::GetDomainCoord() const
+vector< vector<double> > IntCell::NodalPosXiDomain() const
 {
     dserror("no default implementation is given");
     vector<vector<double> > dummy;
@@ -70,7 +70,7 @@ vector< vector<double> > IntCell::GetDomainCoord() const
 //
 //  get coordinates in physical space
 //
-vector< vector<double> > IntCell::GetPhysicalCoord(DRT::Element& ele) const
+vector< vector<double> > IntCell::NodalPosXYZ(DRT::Element& ele) const
 {
     dserror("no default implementation is given");
     vector<vector<double> > dummy;
@@ -101,9 +101,9 @@ vector<vector<double> > IntCell::ComputePhysicalCoordinates(
         Epetra_SerialDenseVector funct(27);
         DRT::UTILS::shape_function_3D(
                 funct,
-                this->GetDomainCoord()[inen][0],
-                this->GetDomainCoord()[inen][1],
-                this->GetDomainCoord()[inen][2],
+                this->NodalPosXiDomain()[inen][0],
+                this->NodalPosXiDomain()[inen][1],
+                this->NodalPosXiDomain()[inen][2],
                 ele.Shape());
     
         //interpolate position to x-space
@@ -305,7 +305,7 @@ blitz::Array<double,1> DomainIntCell::GetPhysicalCenterPosition(DRT::Element& el
     x_interpol = 0.0;
 
     // physical positions of cell nodes
-    const vector<vector<double> > physcoord = this->GetPhysicalCoord(ele);
+    const vector<vector<double> > physcoord = this->NodalPosXYZ(ele);
     
     // center in local coordinates
     const vector<double> localcenterpos = DRT::UTILS::getLocalCenterPosition(this->Shape());
@@ -335,12 +335,12 @@ blitz::Array<double,1> DomainIntCell::GetPhysicalCenterPosition(DRT::Element& el
 //  ctor
 //
 BoundaryIntCell::BoundaryIntCell(
-        const DRT::Element::DiscretizationType distype,
-        const int xfemConditionLabel,
-        const vector< vector<double> >& domainCoordinates,
-        const vector< vector<double> >& boundaryCoordinates) :
+        const DRT::Element::DiscretizationType    distype,
+        const int                                 surface_ele_gid,
+        const vector< vector<double> >&           domainCoordinates,
+        const vector< vector<double> >&           boundaryCoordinates) :
             IntCell(distype),
-            xfemConditionLabel_(xfemConditionLabel),
+            surface_ele_gid_(surface_ele_gid),
             nodalpos_xi_domain_(domainCoordinates),
             nodalpos_xi_boundary_(boundaryCoordinates)
 {
@@ -353,7 +353,7 @@ BoundaryIntCell::BoundaryIntCell(
 BoundaryIntCell::BoundaryIntCell(
         const BoundaryIntCell& old) :
             IntCell(old),
-            xfemConditionLabel_(old.xfemConditionLabel_),
+            surface_ele_gid_(old.surface_ele_gid_),
             nodalpos_xi_domain_(old.nodalpos_xi_domain_),
             nodalpos_xi_boundary_(old.nodalpos_xi_boundary_)
 {

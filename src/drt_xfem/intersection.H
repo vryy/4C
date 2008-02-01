@@ -88,10 +88,12 @@ class Intersection
         \param boundaryintcells     (out)   : list of boundaryintegrationcells for each intersected element
         */            
         void computeIntersection(   
-            const RefCountPtr<DRT::Discretization>        	xfemdis, 
-            const RefCountPtr<DRT::Discretization>        	cutterdis, 
-            map< int, DomainIntCells >&						domainintcells,
-            map< int, BoundaryIntCells >& 					boundaryintcells
+            const RCP<DRT::Discretization>         xfemdis, 
+            const RCP<DRT::Discretization>         cutterdis, 
+            map< int, DomainIntCells >&			   domainintcells,
+            map< int, BoundaryIntCells >& 		   boundaryintcells,
+            map< int, vector< DRT::Element* > >&   cutterElementMap,  ///< int is the xfem element global id
+            map< int, RCP<DRT::Node> >&            cutterNodeMap      ///< int is the xfem element global id
             );
 		
         

@@ -55,16 +55,21 @@ using namespace DRT::UTILS;
 void Intersection::computeIntersection( const RefCountPtr<DRT::Discretization>  xfemdis,
                                         const RefCountPtr<DRT::Discretization>  cutterdis,  
                                         map< int, DomainIntCells >&   			domainintcells,
-                                        map< int, BoundaryIntCells >&   		boundaryintcells)
+                                        map< int, BoundaryIntCells >&   		boundaryintcells,
+                                        map< int, vector< DRT::Element* > >&    cutterElementMap,  ///< int is the xfem element global id
+                                        map< int, RefCountPtr<DRT::Node> >&     cutterNodeMap      ///< int is the xfem element global id
+                                        )
 {
     
 	
     bool xfemIntersection; 
     double t_start, t_end;
     vector< DRT::Condition * >      		xfemConditions;
-    map< int, vector< DRT::Element* > >     cutterElementMap;
     DRT::Element*                   		xfemElement;
     vector< DRT::Element* > 				cutterElements;
+    
+    cutterElementMap.clear();
+    cutterNodeMap.clear();
 
     countMissedPoints_ = 0;
     
@@ -75,7 +80,6 @@ void Intersection::computeIntersection( const RefCountPtr<DRT::Discretization>  
 	const int cmyrank = cutterdis->Comm().MyPID();
 	const int xnumproc = xfemdis->Comm().NumProc();
 	const int cnumproc = cutterdis->Comm().NumProc();
-	map< int, RefCountPtr<DRT::Node> >  cutterNodeMap;
 	map< int, set<int> > xfemCutterIdMap;
 	vector< int > conditionEleCount;
 	
@@ -243,6 +247,14 @@ void Intersection::computeIntersection( const RefCountPtr<DRT::Discretization>  
     cout << endl;
     cout << endl;
   
+}
+
+void getCutterElementPlusNodes(
+        map< int, vector< DRT::Element* > >& cutterElementMap,
+        map< int, RefCountPtr<DRT::Node> >&  cutterNodeMap
+        )
+{
+    
 }
 
 
@@ -2235,7 +2247,8 @@ void Intersection::recoverCurvedInterface(
             	for(int jj=0; jj < 3; jj++)
             		printf("boundary = %f\n",boundaryCoord[ii][jj]);
             	*/
-            listBoundaryICPerElement.push_back(BoundaryIntCell(DRT::Element::tri6, 1, domainCoord, boundaryCoord));        
+            const int ele_gid = 1;
+            listBoundaryICPerElement.push_back(BoundaryIntCell(DRT::Element::tri6, ele_gid, domainCoord, boundaryCoord));        
          
         }
         
@@ -4086,12 +4099,12 @@ void Intersection::debugDomainIntCells(	map< int, DomainIntCells >&	domainintcel
 			{
 				cout << "IC " << j << ":  " << endl;
 				cout << endl;	
-				for(unsigned int k = 0; k < iter->second[j].GetDomainCoord().size(); k++)
+				for(unsigned int k = 0; k < iter->second[j].NodalPosXiDomain().size(); k++)
 				{
 					//cout << k << "\t";
-					for(unsigned int m = 0; m < iter->second[j].GetDomainCoord()[k].size(); m++)
+					for(unsigned int m = 0; m < iter->second[j].NodalPosXiDomain()[k].size(); m++)
 					{
-						cout << iter->second[j].GetDomainCoord()[k][m] << "\t";	
+						cout << iter->second[j].NodalPosXiDomain()[k][m] << "\t";	
 					}
 					cout << endl;  
 				}

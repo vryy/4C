@@ -108,7 +108,9 @@ private:
 	map<int, BoundaryIntCells > elementalBoundaryIntCells_;
 	
 	// list of boundary elements that intersect volume elements on this processor
+	// first integer is the global ele id
 	map<int, RCP<DRT::Element> > boundaryElements_;
+
 };
 
 }
