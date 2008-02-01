@@ -89,7 +89,7 @@ int DRT::ELEMENTS::Soh8Surface::EvaluateNeumann(ParameterList&           params,
   }
 
   /*
-  ** Here, we integrate a 4-node surface with 2x2 Gauss Points
+  ** Here, we integrate a 4-node surface with 2xs(1,0) Gauss Points
   */
   const int ngp = 4;
 
@@ -219,8 +219,6 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
         Epetra_SerialDenseVector& elevector3)
 {
 	const DiscretizationType distype = this->Shape();
-	if (distype!=quad4)
-		dserror("Volume Constraint online works for quad4 surfaces!");
 
 	// start with "none"
 	DRT::ELEMENTS::Soh8Surface::ActionType act = Soh8Surface::none;
@@ -230,8 +228,10 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
 	if (action == "none") dserror("No action supplied");
 	else if (action=="calc_struct_constrvol")    act = Soh8Surface::calc_struct_constrvol;
 	else if (action=="calc_struct_volconstrstiff") act= Soh8Surface::calc_struct_volconstrstiff;
-        else if (action=="calc_init_vol") act= Soh8Surface::calc_init_vol;
-        else if (action=="calc_surfstress_stiff") act= Soh8Surface::calc_surfstress_stiff;
+	else if (action=="calc_struct_constrarea")		act=Soh8Surface::calc_struct_constrarea;
+	else if (action=="calc_struct_areaconstrstiff") act=Soh8Surface::calc_struct_areaconstrstiff;
+    else if (action=="calc_init_vol") act= Soh8Surface::calc_init_vol;
+    else if (action=="calc_surfstress_stiff") act= Soh8Surface::calc_surfstress_stiff;
 	else dserror("Unknown type of action for Soh8Surface");
 	//create communicator
 	const Epetra_Comm& Comm = discretization.Comm();
@@ -241,6 +241,8 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
 	  	//just compute the enclosed volume (e.g. for initialization)
 	  	case calc_struct_constrvol:
 	  	{
+	  		if (distype!=quad4)
+	  				dserror("Volume Constraint online works for quad4 surfaces!");
 	  		//We are not interested in volume of ghosted elements
 	  		if(Comm.MyPID()==this->Owner())
 	  		{
@@ -291,6 +293,8 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
 	  	break;
 	  	case calc_struct_volconstrstiff:
 	  	{
+	  		if (distype!=quad4)
+	  				dserror("Volume Constraint online works for quad4 surfaces!");
 	  		// element geometry update
 	  		RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
 	  		if (disp==null) dserror("Cannot get state vector 'displacement'");
@@ -323,9 +327,9 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
 	  		const int minID =params.get("MinID",0);
 	  		//update corresponding column in "constraint" matrix
 	  		elevector2=elevector1;
-	  		//elevector2.Scale(1.0);
-	  		elevector1.Scale((*lambdav)[ID-minID]);
-	  		elematrix1.Scale((*lambdav)[ID-minID]);
+	  		elevector2.Scale(1);
+	  		elevector1.Scale(1*(*lambdav)[ID-minID]);
+	  		elematrix1.Scale(1*(*lambdav)[ID-minID]);
 	  		//call submethod for volume evaluation
 	  		if(Comm.MyPID()==this->Owner())
 	  		{
@@ -340,7 +344,7 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
 	  	}
 
 	  	break;
-                case calc_init_vol:
+        case calc_init_vol:
                 {
                   // the reference volume of the RVE (including inner
                   // holes) is calculated by evaluating the following
@@ -406,7 +410,7 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
                 }
                 break;
 
-                case calc_surfstress_stiff:
+        case calc_surfstress_stiff:
 	  	{
                   // element geometry update
 
@@ -468,9 +472,92 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
                   else
                     dserror("Unknown condition type %d",cond->Type());
 	  	}
-                break;
+        break;
+        //compute the area (e.g. for initialization)
+        case calc_struct_constrarea:
+        {
+	  		if (distype!=quad4)
+	  				dserror("Area Constraint online works for quad4 surfaces!");
+	  		//We are not interested in volume of ghosted elements
+	  		if(Comm.MyPID()==this->Owner())
+	  		{
+		  		// element geometry update
+		  		RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+		  		if (disp==null) dserror("Cannot get state vector 'displacement'");
+		  		vector<double> mydisp(lm.size());
+		  		DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+		  		const int numnod = 4;
+		  		Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOH8);  // material coord. of element
+		  		Epetra_SerialDenseMatrix xscurr(numnod,NUMDIM_SOH8);  // material coord. of element
+		  		for (int i=0; i<numnod; ++i){
+		  			xsrefe(i,0) = Nodes()[i]->X()[0];
+		  			xsrefe(i,1) = Nodes()[i]->X()[1];
+		  			xsrefe(i,2) = Nodes()[i]->X()[2];
 
-	  	default:
+		  			xscurr(i,0) = xsrefe(i,0) + mydisp[i*NODDOF_SOH8+0];
+		  			xscurr(i,1) = xsrefe(i,1) + mydisp[i*NODDOF_SOH8+1];
+		  			xscurr(i,2) = xsrefe(i,2) + mydisp[i*NODDOF_SOH8+2];
+		  		}
+		  		//call submethod
+		  		
+		  		double areaele=0.0;
+                const int ngp = 4;
+
+                // gauss parameters
+                const double gpweight = 1.0;
+                const double gploc    = 1.0/sqrt(3.0);
+                Epetra_SerialDenseMatrix gpcoord (ngp,2);
+                gpcoord(0,0) = - gploc;
+                gpcoord(0,1) = - gploc;
+                gpcoord(1,0) =   gploc;
+                gpcoord(1,1) = - gploc;
+                gpcoord(2,0) = - gploc;
+                gpcoord(2,1) =   gploc;
+                gpcoord(3,0) =   gploc;
+                gpcoord(3,1) =   gploc;
+
+                for (int gpid = 0; gpid < 4; ++gpid) {    // loop over intergration points
+                  vector<double> funct(ngp);              // 4 shape function values
+                  double drs;                             // surface area factor
+                  vector<double> normal(NUMDIM_SOH8);
+                  
+                  soh8_surface_integ(&funct,&drs,&normal,&xscurr,gpcoord(gpid,0),gpcoord(gpid,1));
+                  
+                  double fac = gpweight * drs;
+                  areaele += fac;
+                  
+                }	
+
+		  		// get RIGHT volume out of parameterlist and maximum ConditionID
+		  		char areaname[30];
+		  		const int ID =params.get("ConditionID",-1);
+		  		const int maxID=params.get("MaxID",0);
+		  		const int minID=params.get("MinID",1000000);
+		  		if (ID<0)
+		  		{
+		  			dserror("Condition ID for area constraint missing!");
+		  		}
+		  		if (maxID<ID)
+		  		{
+		  			params.set("MaxID",ID);
+		  		}
+		  		if (minID>ID)
+		  		{
+		  			params.set("MinID",ID);
+		  		}
+		  		sprintf(areaname,"computed area %d",ID);
+		  		double areacond = params.get(areaname,0.0);
+		  		//update area in parameter list
+		  		params.set(areaname, areacond+areaele);
+	  		}
+       	
+        }
+        break;
+        case calc_struct_areaconstrstiff:
+        {
+        	dserror("Element routines for area constraint not implemented yet!");               	
+        }
+        default:
 	  		dserror("Unimplemented type of action for Soh8Surface");
 
 	}

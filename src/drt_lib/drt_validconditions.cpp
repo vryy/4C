@@ -479,6 +479,36 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   areaconstraint->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
 
   condlist.push_back(areaconstraint);
+  
+  /*--------------------------------------------------------------------*/
+  // volume monitor
+
+  Teuchos::RCP<ConditionDefinition> volumemonitor =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE VOLUME MONITOR 3D",
+                                         "VolumeMonitor_3D",
+                                         "Surface Volume Monitor",
+                                         DRT::Condition::VolumeMonitor_3D,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  volumemonitor->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+
+  condlist.push_back(volumemonitor);
+
+  /*--------------------------------------------------------------------*/
+  // area constraint
+
+  Teuchos::RCP<ConditionDefinition> areamonitor =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE AREA MONITOR 3D",
+                                         "AreaMonitor_3D",
+                                         "Surface Area Monitor",
+                                         DRT::Condition::AreaMonitor_3D,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  areamonitor->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+  
+  condlist.push_back(areamonitor);
 
   return vc;
 }

@@ -106,7 +106,9 @@ public:
     LineLIFTDRAG,
     SurfLIFTDRAG,
     VolumeConstraint_3D,
-    AreaConstraint_3D
+    AreaConstraint_3D,
+    VolumeMonitor_3D,
+    AreaMonitor_3D
   };
 
   /*!

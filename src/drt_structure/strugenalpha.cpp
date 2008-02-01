@@ -1100,10 +1100,10 @@ void StruGenAlpha::NonLinearUzawaFullNewton(int predictor)
 	  disn_->Update(1./(1.-alphaf),*dism_,-alphaf/(1.-alphaf));
 	  //--------------------compute volume error
 	  ConstrMan_->ComputeError(time+dt,disn_);
-	  double volnorm=ConstrMan_->GetErrorNorm();
-	  cout<<"Volume error for Newton solution: "<<volnorm<<endl;
+	  double constrnorm=ConstrMan_->GetErrorNorm();
+	  cout<<"Constraint error for Newton solution: "<<constrnorm<<endl;
 	  int numiter_uzawa=0;
-	  while (volnorm>tolvol && numiter_uzawa <= maxiterUzawa)
+	  while (constrnorm>tolvol && numiter_uzawa <= maxiterUzawa)
 	  {
 		  // Lagrange multiplier is increased by Uzawa_param*VolErr
 		  ConstrMan_->UpdateLagrMult(Uzawa_param);
@@ -1116,8 +1116,8 @@ void StruGenAlpha::NonLinearUzawaFullNewton(int predictor)
 		  disn_->Update(1./(1.-alphaf),*dism_,-alphaf/(1.-alphaf));
 		  //--------------------compute volume error
 		  ConstrMan_->ComputeError(time+dt,disn_);
-		  volnorm=ConstrMan_->GetErrorNorm();
-		  cout<<"Volume error for computed displacement: "<<volnorm<<endl;
+		  constrnorm=ConstrMan_->GetErrorNorm();
+		  cout<<"Constraint error for computed displacement: "<<constrnorm<<endl;
 		  numiter_uzawa++;
 	  }
 	  params_.set<int>("num iterations",numiter_uzawa+1);
@@ -1167,14 +1167,14 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   double disinorm = 1.0e6;
   fresm_->Norm2(&fresmnorm);
 
-  double volnorm=ConstrMan_->GetErrorNorm();
+  double constrnorm=ConstrMan_->GetErrorNorm();
   int numConstrVol=ConstrMan_->GetNumberOfConstraints() ;
   Epetra_Time timer(discret_.Comm());
   timer.ResetStartTime();
   bool print_unconv = true;
 
 
-  while (!Converged(convcheck, disinorm, fresmnorm, volnorm, toldisp, tolres, tolvol)
+  while (!Converged(convcheck, disinorm, fresmnorm, constrnorm, toldisp, tolres, tolvol)
          && numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
@@ -1314,7 +1314,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 
     if (!myrank_)
     {
-    	cout<<"Uzawa steps"<<numiter_uzawa<<endl;
+    	cout<<"Uzawa steps "<<numiter_uzawa<<endl;
     }
 
     //update lagrange multiplier
@@ -1379,7 +1379,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
       discret_.ClearState();
 
       ConstrMan_->StiffnessAndInternalForces(timen,disn_,fint_,stiff_);
-      volnorm=ConstrMan_->GetErrorNorm();
+      constrnorm=ConstrMan_->GetErrorNorm();
       // do NOT finalize the stiffness matrix to add masses to it later
     }
 
@@ -1415,7 +1415,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     if (!myrank_ && (printscreen || printerr))
     {
       PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
-                  fresmnorm,disinorm,convcheck,volnorm, Uzawa_param);
+                  fresmnorm,disinorm,convcheck,constrnorm, Uzawa_param);
     }
 
     //--------------------------------- increment equilibrium loop index
@@ -1435,7 +1435,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
      if (!myrank_ && printscreen)
      {
        PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
-                   fresmnorm,disinorm,convcheck,volnorm, Uzawa_param);
+                   fresmnorm,disinorm,convcheck,constrnorm, Uzawa_param);
      }
   }
 
@@ -3172,11 +3172,11 @@ bool StruGenAlpha::Converged(const string type, const double disinorm,
  |  take the volume constraint into account as well                     |
  *----------------------------------------------------------------------*/
 bool StruGenAlpha::Converged(const string type, const double disinorm,
-        const double resnorm, const double volnorm,
+        const double resnorm, const double constrnorm,
         const double toldisp, const double tolres,
         const double tolvol)
 {
-	return (Converged(type,disinorm, resnorm, toldisp,tolres) and (volnorm<tolvol));
+	return (Converged(type,disinorm, resnorm, toldisp,tolres) and (constrnorm<tolvol));
 }
 
 /*----------------------------------------------------------------------*
@@ -3273,6 +3273,11 @@ void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_uncon
   }
   else
   {
+	if (ConstrMan_->HaveMonitor())
+	{
+	  ConstrMan_->ComputeMonitorValues(dism_);
+	  ConstrMan_->PrintMonitorValues(); 	  
+	}
     double timepernlnsolve = timer.ElapsedTime();
 
     if (relres)
@@ -3302,11 +3307,12 @@ void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_uncon
 void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_unconv,
                                FILE* errfile, Epetra_Time timer, int numiter,
                                int maxiter, double fresmnorm, double disinorm,
-                               string convcheck, double volnorm, double UzawaPara)
+                               string convcheck, double constrnorm, double UzawaPara)
 {
   bool relres        = (convcheck == "RelRes_And_AbsDis" || convcheck == "RelRes_Or_AbsDis");
   bool relres_reldis = (convcheck == "RelRes_And_RelDis" || convcheck == "RelRes_Or_RelDis");
 
+ 
   if (relres)
   {
     fresmnorm /= ref_fnorm_;
@@ -3321,22 +3327,23 @@ void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_uncon
   {
     if (printscreen)
     {
+      
       if (relres)
       {
         printf("numiter %2d scaled res-norm %10.5e absolute dis-norm %20.15E absolute constr-norm %10.5e current Uzawa parameter %10.5e\n",
-        		numiter+1, fresmnorm, disinorm, volnorm, UzawaPara);
+        		numiter+1, fresmnorm, disinorm, constrnorm, UzawaPara);
         fflush(stdout);
       }
       else if (relres_reldis)
       {
         printf("numiter %2d scaled res-norm %10.5e scaled dis-norm %20.15E absolute constr_norm %10.5e current Uzawa parameter %10.5e\n",
-        		numiter+1, fresmnorm, disinorm, volnorm, UzawaPara);
+        		numiter+1, fresmnorm, disinorm, constrnorm, UzawaPara);
         fflush(stdout);
       }
       else
         {
         printf("numiter %2d absolute res-norm %10.5e absolute dis-norm %20.15E absolute constr_norm %10.5e current Uzawa parameter %10.5e\n",
-        		numiter+1, fresmnorm, disinorm, volnorm, UzawaPara);
+        		numiter+1, fresmnorm, disinorm, constrnorm, UzawaPara);
         fflush(stdout);
       }
     }
@@ -3345,43 +3352,48 @@ void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_uncon
       if (relres)
       {
         fprintf(errfile, "numiter %2d scaled res-norm %10.5e absolute dis-norm %20.15E absolute constr_norm %10.5e current Uzawa parameter %10.5e\n",
-        		numiter+1, fresmnorm, disinorm, volnorm, UzawaPara);
+        		numiter+1, fresmnorm, disinorm, constrnorm, UzawaPara);
         fflush(errfile);
       }
       else if (relres_reldis)
       {
         fprintf(errfile, "numiter %2d scaled res-norm %10.5e scaled dis-norm %20.15E absolute constr_norm %10.5e current Uzawa parameter %10.5e\n",
-        		numiter+1, fresmnorm, disinorm, volnorm, UzawaPara);
+        		numiter+1, fresmnorm, disinorm, constrnorm, UzawaPara);
         fflush(errfile);
       }
       else
         {
         fprintf(errfile, "numiter %2d absolute res-norm %10.5e absolute dis-norm %20.15E absolute constr_norm %10.5e current Uzawa parameter %10.5e\n",
-        		numiter+1, fresmnorm, disinorm, volnorm, UzawaPara);
+        		numiter+1, fresmnorm, disinorm, constrnorm, UzawaPara);
         fflush(errfile);
       }
     }
   }
   else
   {
+	if (ConstrMan_->HaveMonitor())
+	{
+	  ConstrMan_->ComputeMonitorValues(disn_);
+	  ConstrMan_->PrintMonitorValues(); 	  
+	}
     double timepernlnsolve = timer.ElapsedTime();
 
     if (relres)
     {
       printf("Newton iteration converged: numiter %d scaled res-norm %e absolute dis-norm %e absolute constr_norm %e time %10.5f\n",
-             numiter,fresmnorm,disinorm, volnorm,timepernlnsolve);
+             numiter,fresmnorm,disinorm, constrnorm,timepernlnsolve);
       fflush(stdout);
     }
     else if (relres_reldis)
     {
       printf("Newton iteration converged: numiter %d scaled res-norm %e scaled dis-norm %e absolute constr_norm %e time %10.5f\n",
-             numiter,fresmnorm,disinorm, volnorm,timepernlnsolve);
+             numiter,fresmnorm,disinorm, constrnorm,timepernlnsolve);
       fflush(stdout);
     }
     else
     {
       printf("Newton iteration converged: numiter %d absolute res-norm %e absolute dis-norm %e absolute constr_norm %e time %10.5f\n",
-             numiter,fresmnorm,disinorm, volnorm,timepernlnsolve);
+             numiter,fresmnorm,disinorm, constrnorm,timepernlnsolve);
       fflush(stdout);
     }
   }
@@ -3449,7 +3461,8 @@ void StruGenAlpha::PrintPTC(bool printscreen, bool printerr, bool print_unconv,
   }
   else
   {
-    double timepernlnsolve = timer.ElapsedTime();
+
+	double timepernlnsolve = timer.ElapsedTime();
 
     if (relres)
     {

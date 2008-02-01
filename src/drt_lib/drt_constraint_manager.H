@@ -56,7 +56,10 @@ public:
 	  	  \brief Destructor
 
 	 */
-	  ~ConstrManager(){return;};
+	  ~ConstrManager()
+	  {
+		return;
+	 };
 
 	  //@}
 	  
@@ -152,7 +155,7 @@ public:
 	  RCP<Epetra_MultiVector> GetConstraintMatrix()
 	  {
 		  return constrVec_;
-	  }
+	  };
 	  
 	  /*!
 	  	  	   \brief Return lagrange multiplier for volume i
@@ -160,12 +163,22 @@ public:
 	  double GetLagrMult(int i)
 	  {
 		  return (*lagrMultVec_)[i];		  
-	  }	  
+	  };	  
 	  
+	  /*!
+	   \brief Return if there are constraints  
+	  */
 	  bool HaveConstraint()
 	  {
 		  return haveconstraint_;
-	  }
+	  };
+	  /*!
+	  	   \brief Return if there are monitors
+	  */
+	  bool HaveMonitor()
+	  {
+		  return havemonitor_;
+	  };
 	  
 	  /*!
 	   \brief Return current value of volume i
@@ -173,7 +186,7 @@ public:
 	  double GetCurrValue(int i)
 	  {
 		  return (*actvalues_)[i];
-	  }
+	  };
 	  
 	  /*!
 	   \brief Computes inner product of constr multivector times lagrange multiplier increment 
@@ -190,6 +203,13 @@ public:
 	    \param dotprod (out) 	:		resulting value of B * Delta u
 	    */
 	  void ComputeConstrTimesDisi(Epetra_Vector disi,RCP<Epetra_SerialDenseVector> dotprod);
+	  
+	  /*
+	       \brief Print out the values of current monitor values
+	   */
+	  void PrintMonitorValues();
+	  
+	  void ComputeMonitorValues(RCP<Epetra_Vector> disp);
 	  //@}
 private:
 	
@@ -201,7 +221,7 @@ private:
 	  */  
 	
 	  void SynchronizeSumConstraint(ParameterList& params,
-				RCP<Epetra_SerialDenseVector>& vect,const char* resultstr);
+				RCP<Epetra_SerialDenseVector>& vect,const char* resultstr, const int numID, const int minID);
 	  
 	  /*!
 	    \brief synchronize processors after evaluating constraints 
@@ -215,7 +235,7 @@ private:
 
 	  */  
 	  
-	  void ManageIDs(ParameterList& params);
+	  void ManageIDs(ParameterList& params,int& minID, int& maxID, int& numID);
 	  //@}
 	
 private:
@@ -232,9 +252,13 @@ private:
 	RefCountPtr<Epetra_SerialDenseVector> initialvalues_;
 	RefCountPtr<Epetra_SerialDenseVector> actvalues_;
 	RefCountPtr<Epetra_SerialDenseVector> constrainterr_;
+	RefCountPtr<Epetra_SerialDenseVector> monitorvalues_;
 	int minConstrID_;
 	int maxConstrID_;
 	int numConstrID_;
+	int numMonitorID_;
+	int maxMonitorID_;
+	int minMonitorID_;
 	RefCountPtr<Epetra_SerialDenseVector> fact_; 
 	RefCountPtr<Epetra_SerialDenseVector> lagrMultVec_;
 	RefCountPtr<Epetra_SerialDenseVector> lagrMultInc_;
@@ -242,6 +266,9 @@ private:
 	bool haveconstraint_;
 	bool havevolconstr_;
 	bool haveareaconstr_;
+	bool havemonitor_;
+	bool haveareamonitor_;
+	bool havevolmonitor_;
 	//@}
     
 
