@@ -38,13 +38,13 @@ namespace XFEM
  * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
  */
 void ComputeEnrichedShapefunction(
-        DRT::Element&  ele,
+        DRT::Element&                     ele,
         const RCP<XFEM::InterfaceHandle>  ih,
-        const XFEM::ElementDofManager& dofman,
-        const XFEM::PHYSICS::Field field,
-        const BlitzVec& actpos,
-        const BlitzVec& funct,
-        BlitzVec& enr_funct
+        const XFEM::ElementDofManager&    dofman,
+        const XFEM::PHYSICS::Field        field,
+        const BlitzVec&                   actpos,      ///< Position in physical coordinates
+        const BlitzVec&                   funct,
+        BlitzVec&                         enr_funct
         );
 
 void ComputeEnrichedShapefunction(
@@ -52,13 +52,35 @@ void ComputeEnrichedShapefunction(
         const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
-        const BlitzVec& actpos,
+        const BlitzVec& actpos,                   ///< Position in physical coordinates
+        const BlitzVec& funct,
+        const BlitzMat& derxy,
+        BlitzVec& enr_funct,
+        BlitzMat& enr_derxy
+        );
+
+void ComputeEnrichedShapefunction(
+        DRT::Element&  ele,
+        const RCP<XFEM::InterfaceHandle>  ih,
+        const XFEM::ElementDofManager& dofman,
+        const XFEM::PHYSICS::Field field,
+        const BlitzVec& actpos,                   ///< Position in physical coordinates
         const BlitzVec& funct,
         const BlitzMat& derxy,
         const BlitzMat& derxy2,
         BlitzVec& enr_funct,
         BlitzMat& enr_derxy,
         BlitzMat& enr_derxy2
+        );
+
+void ComputeEnrichedStressShapefunction(
+        DRT::Element&  ele,
+        const RCP<XFEM::InterfaceHandle>  ih,
+        const XFEM::ElementDofManager& dofman,
+        const XFEM::PHYSICS::Field field,
+        const BlitzVec& actpos,
+        const BlitzVec& funct,
+        BlitzVec& enr_funct
         );
 
 void ComputeEnrichedStressShapefunction(
