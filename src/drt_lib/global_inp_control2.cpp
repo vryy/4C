@@ -28,13 +28,6 @@ Maintainer: Michael Gee
 #include "drt_inputreader.H"
 
 
-
-/*----------------------------------------------------------------------*
-  |                                                       m.gee 06/01    |
-  | vector of numfld FIELDs, defined in global_control.c                 |
- *----------------------------------------------------------------------*/
-extern struct _FIELD      *field;
-
 /*----------------------------------------------------------------------*
   |                                                       m.gee 06/01    |
   | general problem data                                                 |
@@ -42,12 +35,6 @@ extern struct _FIELD      *field;
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | structure of flags to control output                                 |
- | defined in out_global.c                                              |
- *----------------------------------------------------------------------*/
-extern struct _IO_FLAGS     ioflags;
 
 /*!----------------------------------------------------------------------
   \brief file pointers
@@ -60,20 +47,6 @@ extern struct _IO_FLAGS     ioflags;
  *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
 
-/*!----------------------------------------------------------------------
-\brief ranks and communicators
-
-<pre>                                                         m.gee 8/00
-This structure struct _PAR par; is defined in main_ccarat.c
-and the type is in partition.h
-</pre>
-
-*----------------------------------------------------------------------*/
- extern struct _PAR   par;
-
-
- extern struct _MATERIAL *mat;
-
 
 /*----------------------------------------------------------------------*
   | input of control, element and load information         m.gee 10/06  |
@@ -83,10 +56,6 @@ and the type is in partition.h
 void ntainp_ccadiscret()
 {
 #ifdef PARALLEL
-  int myrank = 0;
-  int nproc  = 1;
-  MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-  MPI_Comm_size(MPI_COMM_WORLD, &nproc);
   Epetra_MpiComm* com = new Epetra_MpiComm(MPI_COMM_WORLD);
   Teuchos::RCP<Epetra_Comm> comm = rcp(com);
 #else

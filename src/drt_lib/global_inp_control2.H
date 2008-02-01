@@ -52,8 +52,6 @@ using namespace Teuchos;
 
 // headers and prototypes of functions acessible from c++
 
-void inpfield_ccadiscret(DRT::Problem& problem, DRT::INPUT::DatFileReader& reader);
-
 string inp_micro_filename(int mypid);
 
 #endif /* end of #ifdef __cplusplus */
