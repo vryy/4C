@@ -15,12 +15,9 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 
 #include <blitz/array.h>
-#include "dof_management.H"
-#include "xfem.H"
 #include "xdofmapcreation.H"
 
 using namespace std;
-
 
 
 /*----------------------------------------------------------------------*
@@ -29,14 +26,14 @@ using namespace std;
 void XFEM::createDofMap(
         const RCP<DRT::Discretization>            xfemdis,
         const RCP<DRT::Discretization>            cutterdis,
-        const map<int, XFEM::DomainIntCells >&    elementDomainIntCellMap,
-        map<int, const set<XFEM::FieldEnr> >&     nodalDofSetFinal,
-        map<int, const set<XFEM::FieldEnr> >&     elementalDofsFinal
+        const std::map<int, XFEM::DomainIntCells >&    elementDomainIntCellMap,
+        std::map<int, const set<XFEM::FieldEnr> >&     nodalDofSetFinal,
+        std::map<int, const set<XFEM::FieldEnr> >&     elementalDofsFinal
         )
 {
     // temporary assembly
-    map<int, set<XFEM::FieldEnr> >  nodalDofSet;
-    map<int, set<XFEM::FieldEnr> >  elementalDofs;
+    std::map<int, set<XFEM::FieldEnr> >  nodalDofSet;
+    std::map<int, set<XFEM::FieldEnr> >  elementalDofs;
     
 //    // loop my row nodes and add standard degrees of freedom to nodes
 //    for (int i=0; i<xfemdis->NumMyColNodes(); ++i)
@@ -52,44 +49,6 @@ void XFEM::createDofMap(
 //        nodalDofSet[gid].insert(XFEM::FieldEnr(PHYSICS::Pres, enr_std));
 //    };
     
-//    const int standard_label = 0;
-//    const XFEM::Enrichment enr_std(standard_label, XFEM::Enrichment::typeStandard);
-//    for (int i=0; i<xfemdis->NumMyColElements(); ++i)
-//    {
-//        DRT::Element* actele = xfemdis->lColElement(i);
-//        if ( not (elementDomainIntCellMap.count(actele->Id()) >= 1))
-//        {
-//            const int* nodeidptrs = actele->NodeIds();
-//            const Epetra_SerialDenseVector nodalpos = toEpetraArray(actele->Nodes()[0]->X());
-//            
-//            const bool in_solid = XFEM::PositionWithinDiscretization(cutterdis, nodalpos);
-//            
-//            if (not in_solid)
-//            {
-//                for (int inen = 0; inen<actele->NumNode(); ++inen)
-//                {
-//                    const int node_gid = nodeidptrs[inen];
-//                    nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velx, enr_std));
-//                    nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Vely, enr_std));
-//                    nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velz, enr_std));
-//                    nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Pres, enr_std));
-//                };
-//            }
-////             // add continuous stress unknowns
-////                const int numstressparam = XFLUID::getNumberOfStressDofs(actele->Shape());
-////                const int element_gid = actele->Id();
-////                for (int inen = 0; inen<numstressparam; ++inen)
-////                {
-////                    elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Tauxx, voidenr));
-////                    elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Tauyy, voidenr));
-////                    elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Tauzz, voidenr));
-////                    elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Tauxy, voidenr));
-////                    elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Tauxz, voidenr));
-////                    elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Tauyz, voidenr));
-////                }
-//        }
-//    };
-    
     // loop xfem conditions and add appropriate enrichments
     vector< DRT::Condition * >              xfemConditions;
     cutterdis->GetCondition ("XFEMCoupling", xfemConditions);
@@ -102,7 +61,6 @@ void XFEM::createDofMap(
         cout << "condition with label = " << label << endl;
     
         // for surface 1, loop my col elements and add void enrichments to each elements member nodes
-        const XFEM::Enrichment jumpenr(label, XFEM::Enrichment::typeJump);
         const XFEM::Enrichment voidenr(label, XFEM::Enrichment::typeVoid);
         for (int i=0; i<xfemdis->NumMyColElements(); ++i)
         {
@@ -117,10 +75,6 @@ void XFEM::createDofMap(
                 for (int inen = 0; inen<nen; ++inen)
                 {
                     const int node_gid = nodeidptrs[inen];
-//                    nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velx, jumpenr));
-//                    nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Vely, jumpenr));
-//                    nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velz, jumpenr));
-//                    nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Pres, jumpenr));
                     nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velx, voidenr));
                     nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Vely, voidenr));
                     nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velz, voidenr));
@@ -128,6 +82,7 @@ void XFEM::createDofMap(
                 };
                 // add discontinuous stress unknowns
                 // the number of each of these parameters will be determined later
+                // by using a discretization type and appropriate shape functions
                 elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Tauxx, voidenr));
                 elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Tauyy, voidenr));
                 elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Tauzz, voidenr));
@@ -181,7 +136,7 @@ void XFEM::createDofMap(
                     }
                 };
 
-                // add continuous stress unknowns
+//                // add continuous stress unknowns
 //                const int element_gid = actele->Id();
 //                elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Tauxx, enr_std));
 //                elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Tauyy, enr_std));
@@ -192,44 +147,7 @@ void XFEM::createDofMap(
             }
         }
     };
-//    if (stress_unknowns_used)
-//    {
-//        cout << (elementalDofs[0].size() / 6) << " continuous stress unknown(s) applied to " << elementalDofs.size() << " elements." << endl;
-////        const set<XFEM::FieldEnr> fieldset = elementalDofs[0];
-////        for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldset.begin(); fieldenr != fieldset.end(); ++fieldenr)
-////        {
-////            cout << fieldenr->toString() << endl;
-////        }
-//    }
 
-//    for (vector< DRT::Condition * >::const_iterator condition_iter = xfemConditions.begin(); condition_iter != xfemConditions.end(); ++condition_iter)
-//    {
-//        const DRT::Condition * condition = *condition_iter;
-//        const int label = condition->Getint("label");
-//        cout << "condition with label = " << label << endl;
-//    
-//        // for surface 1, loop my col elements and add void enrichments to each elements member nodes
-//        const XFEM::Enrichment jumpenr(label, XFEM::Enrichment::typeJump);
-//        const XFEM::Enrichment voidenr(label, XFEM::Enrichment::typeVoid);
-//        for (int i=0; i<xfemdis->NumMyColElements(); ++i)
-//        {
-//            const DRT::Element* actele = xfemdis->lColElement(i);
-//            if (elementDomainIntCellMap.count(actele->Id()) >= 1)
-//            {
-//                const int nen = actele->NumNode();
-//                //const int* nodeidptrs = actele->NodeIds();
-//                for (int inen = 0; inen<nen; ++inen)
-//                {
-////                    const int node_gid = nodeidptrs[inen];
-////                    nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velx, jumpenr));
-////                    nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Vely, jumpenr));
-////                    nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velz, jumpenr));
-////                    nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Pres, jumpenr));
-//                };
-//            }
-//        };
-//    };
-    
     // create const sets from standard sets, so the sets cannot be accidentily changed
     // could be removed later, if this is a performance bottleneck
     for ( std::map<int, std::set<XFEM::FieldEnr> >::const_iterator oneset = nodalDofSet.begin(); oneset != nodalDofSet.end(); ++oneset )

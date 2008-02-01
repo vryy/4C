@@ -21,6 +21,7 @@ Maintainer: Axel Gerstenberger
 #include "xfluid3.H"
 #include "xfluid3_impl.H"
 #include "xfluid3_stationary.H"
+#include "xfluid3_interpolation.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
@@ -225,10 +226,8 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         const RCP<XFEM::DofManager> globaldofman = params.get< RCP< XFEM::DofManager > >("dofmanager",null);
         if (globaldofman == null) dserror("hey, you did not give me a globaldofmanager (says xfluid3 evaluate)!!!");
         
-        const int numstressparam = 4;
-        
         // check for outdated dof information
-        globaldofman->checkForConsistency((*this), eleDofManager_, numstressparam);
+        globaldofman->checkForConsistency((*this), eleDofManager_);
           
         // need current velocity and history vector
         RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velnp");
@@ -476,19 +475,19 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       break;
       case calc_fluid_stationary_systemmat_and_residual:
       {
+          //cout << endl << "Processing element with GiD id = " << (this->Id()+1) <<":" << endl;
+          
           // first task is to compare that the dofs fit to the current state of the dofmanager
           // get access to global dofman
           const RCP<XFEM::DofManager> globaldofman = params.get< RCP< XFEM::DofManager > >("dofmanager",null);
           if (globaldofman == null) dserror("hey, you did not give me a globaldofmanager (says xfluid3 evaluate)!!!");
           
-          const int numstressparam = 4;
-          
           // check for outdated dof information
-          globaldofman->checkForConsistency((*this), eleDofManager_, numstressparam);
+          globaldofman->checkForConsistency((*this), eleDofManager_);
           
           // get access to interface information
           const RCP<XFEM::InterfaceHandle> ih = params.get< RCP< XFEM::InterfaceHandle > >("interfacehandle",null);
-          dsassert(ih!=null, "you did not give the InterfaceHandle");
+          dsassert(ih!=null, "hey, you did not give the InterfaceHandle");
           
           // need current velocity/pressure 
           RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velnp");
@@ -498,10 +497,17 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           // extract local values from the global vector
           vector<double> locval(lm.size());
           DRT::UTILS::ExtractMyValues(*velnp,locval,lm);
-          
           //cout << "number of unknowns (node + element): " << lm.size() << endl;
           //cout << "number of unknowns (node):  " << (eleDofManager_.NumDofPerField(XFEM::PHYSICS::Velx)*4) << endl;
           //cout << "number of unknowns (tauxx): " << (eleDofManager_.NumDofPerField(XFEM::PHYSICS::Tauxx)) << endl;
+          //cout << "NumDofPerNode(0) " << this->NumDofPerNode(*(this->Nodes()[0])) << endl;
+          //cout << "NumDofPerNode(1) " << this->NumDofPerNode(*(this->Nodes()[1])) << endl;
+          //cout << "NumDofPerNode(2) " << this->NumDofPerNode(*(this->Nodes()[2])) << endl;
+          //cout << "NumDofPerElement " << this->NumDofPerElement() << endl;
+          
+          // do no calculation, if not needed
+          if (lm.size() == 0)
+              break;
 
           if (is_ale_)
           {
@@ -539,16 +545,20 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           // This is a very poor way to transport the density to the
           // outside world. Is there a better one?
           params.set("density", actmat->m.fluid->density);	  
+          break;
       }
-      break;
       case store_xfem_info:
       {
     	// get access to global dofman
     	const RCP<XFEM::DofManager> globaldofman = params.get< RCP< XFEM::DofManager > >("dofmanager",null);
+    	
+    	const DRT::Element::DiscretizationType stressdistype = XFLUID::getStressInterpolationType3D(this->Shape());
+    	const int numvirtualnodes = DRT::UTILS::getNumberOfElementNodes(stressdistype);
+    	
     	// create local copy of information about dofs
-    	eleDofManager_ = globaldofman->constructElementDofManager((*this), 4);
-      }
+    	eleDofManager_ = globaldofman->constructElementDofManager((*this), numvirtualnodes);
     	break;
+      }
       default:
         dserror("Unknown type of action for XFluid3");
   } // end of switch(act)

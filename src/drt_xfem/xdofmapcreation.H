@@ -18,11 +18,10 @@ Maintainer: Axel Gerstenberger
 #ifndef XDOFMAPCREATION_H
 #define XDOFMAPCREATION_H
 
+#include "Teuchos_RefCountPtr.hpp"
 #include "xfem.H"
-//#include "physics.H"
-//#include "enrichment.H"
 #include "integrationcell.H"
-//#include "interface.H"
+#include "dof_management.H"
 #include "../drt_lib/drt_discret.H"
 
 
@@ -33,11 +32,11 @@ namespace XFEM
 // create a map that for each node (gid) and element (gid) on this processor
 // this is fluid specific and should somehow be generalized
 void createDofMap(
-        const RefCountPtr<DRT::Discretization>    xfemdis,
-        const RefCountPtr<DRT::Discretization>    cutterdis,
-        const map<int, DomainIntCells >&          elementDomainIntCellMap,
-        map<int, const set<XFEM::FieldEnr> >&     nodalDofSetFinal,        ///< the map for nodal dofs
-        map<int, const set<XFEM::FieldEnr> >&     elementalDofsFinal       ///< the map for elemental dofs        
+        const RCP<DRT::Discretization>                    xfemdis,
+        const RCP<DRT::Discretization>                    cutterdis,
+        const std::map<int, DomainIntCells >&             elementDomainIntCellMap,
+        std::map<int, const std::set<XFEM::FieldEnr> >&   nodalDofSetFinal,        ///< the map for nodal dofs
+        std::map<int, const std::set<XFEM::FieldEnr> >&   elementalDofsFinal       ///< the map for elemental dofs        
 );
 
 } // namespace XFEM

@@ -47,6 +47,8 @@ class FieldEnr
 {
 public:
 
+    explicit FieldEnr();
+    
     explicit FieldEnr(
             const PHYSICS::Field physvar,
             const Enrichment enr);
@@ -172,7 +174,13 @@ public:
     /// function that returns element specific number of dofs or the given default number
     inline int NumDofPerElement() const
     {
-        return elementDofs_.size()*numeleparam_;
+        return elementDofs_.size()*numVirtualNodes_;
+    };
+    
+    /// function that returns element specific number of dofs or the given default number
+    inline int NumVirtualNodes() const
+    {
+        return numVirtualNodes_;
     };
     
     /// return number of dofs on this element for a given field. E.g., if we have 4 nodes with 
@@ -225,7 +233,7 @@ private:
     /*! multiply the size of elementDofs_ with this number and you get the number of overall
      * element unknowns.
      */
-    int numeleparam_;
+    int numVirtualNodes_;
 	
 	//! number of unknowns for each global node id (gid)
 	map<int, int> nodalNumDof_;
@@ -248,7 +256,7 @@ private:
 class DofManager
 {
 public:
-
+    explicit DofManager();
 	explicit DofManager(const RCP<XFEM::InterfaceHandle> ih);
 	explicit DofManager(const XFEM::DofManager& dofman);
     ~DofManager();
@@ -257,7 +265,15 @@ public:
 
     inline const std::set<FieldEnr> getNodeDofSet(const int gid) const
     {
-        return nodalDofSet_.find(gid)->second;
+        std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator entry = nodalDofSet_.find(gid);
+        if (entry == nodalDofSet_.end())
+            if (entry == nodalDofSet_.end())
+            {
+                std::set<XFEM::FieldEnr> v;
+                v.clear();
+                return v;
+            }
+            return entry->second;
     };
     
     inline const std::set<XFEM::FieldEnr> getElementDofs(const int gid) const
@@ -266,6 +282,7 @@ public:
         if (entry == elementalDofs_.end())
         {
             std::set<XFEM::FieldEnr> v;
+            v.clear();
             return v;
         }
         return entry->second;
@@ -275,8 +292,7 @@ public:
     
     void checkForConsistency(
             DRT::Element& ele,
-            const XFEM::ElementDofManager& eledofman,
-            const int numeleparam
+            const XFEM::ElementDofManager& eledofman
             ) const;
     
 private:
@@ -284,9 +300,13 @@ private:
 	RefCountPtr<DRT::Discretization> xfemdis_;
 	
 	// unknowns for each global node id (gid) on this processor
+	// if it does not contain the key, the number of unknowns is supposed to be zero
+	// meaning, the the dofmanager will not crash but give back an empty set of unknowns
+	// see also getNodeDofSet()
 	map<int, const set<XFEM::FieldEnr> > nodalDofSet_;
 	
 	// unknowns for each global element id (gid) on this processor
+	// same as above, see getElementDofs()
 	map<int, const set<XFEM::FieldEnr> > elementalDofs_;
 	
 };

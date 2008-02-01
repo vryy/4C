@@ -23,6 +23,17 @@ Maintainer: Axel Gerstenberger
 using namespace XFEM;
 
 /*----------------------------------------------------------------------*
+ |  default ctor (public)                                    mwgee 11/06|
+ *----------------------------------------------------------------------*/
+Enrichment::Enrichment() :
+            xfemconditionlabel_(-1),
+            type_(typeUndefined)
+{
+    dserror("Enrichment() -> please don't call me!");
+    return;
+}
+
+/*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
 Enrichment::Enrichment(

@@ -47,19 +47,6 @@ void ComputeEnrichedShapefunction(
         BlitzVec& enr_funct
         );
 
-//
-// For a given situation compute the enrichement values
-// 
-inline BlitzVec ComputeEnrichmentArrayForNodalDofs(
-        DRT::Element&  ele,
-        const int numparamvelx,
-        const RCP<XFEM::InterfaceHandle>  ih,
-        const XFEM::ElementDofManager& dofman,
-        const XFEM::PHYSICS::Field field,
-        const BlitzVec& actpos
-        );
-
-
 void ComputeEnrichedShapefunction(
         DRT::Element&  ele,
         const RCP<XFEM::InterfaceHandle>  ih,

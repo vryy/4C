@@ -38,12 +38,15 @@ public:
     // the enrichment function is evaluated
     enum EnrType
     {
+        typeUndefined,
         typeStandard,
         typeJump,
         typeVoid
     };
     
-    Enrichment(
+    explicit Enrichment();
+    
+    explicit Enrichment(
             const int xfemconditionlabel,
             const EnrType type);
     Enrichment(

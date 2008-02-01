@@ -22,6 +22,7 @@
 #include "../drt_xfem/physics.H"
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/enrichment_utils.H"
+#include "../drt_f3/xfluid3_interpolation.H" // obviosly, this is fluid element specific and needs more generalization
 
 using namespace std;
 
@@ -722,7 +723,8 @@ void XFluidEnsightWriter::WriteNodalResultStep(
                 const int elegid = elementmap->GID(iele);
                 DRT::Element* const actele = dis->gElement(elegid);
 
-                const int numeleparam = 4;
+                const DRT::Element::DiscretizationType stressdistype = XFLUID::getStressInterpolationType3D(actele->Shape());
+                const int numeleparam = DRT::UTILS::getNumberOfElementNodes(stressdistype);
                 
                 // create local copy of information about dofs
                 const XFEM::ElementDofManager eledofman = dofman->constructElementDofManager(*actele, numeleparam);

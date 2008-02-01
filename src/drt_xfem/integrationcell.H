@@ -105,7 +105,7 @@ public:
      \param distype          : distype of the integration cell
      \param coordinates      : coordinates of the integrationcell in parent element coordinates
      */
-    DomainIntCell(
+    explicit DomainIntCell(
             const DRT::Element::DiscretizationType distype,
             const std::vector< std::vector<double> >& domainCoordinates);
 
@@ -118,7 +118,7 @@ public:
 
      \param distype          : distype of the parent elementintegration cell
      */
-    DomainIntCell(
+    explicit DomainIntCell(
             const DRT::Element::DiscretizationType distype);
     
     

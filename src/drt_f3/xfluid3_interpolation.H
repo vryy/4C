@@ -80,12 +80,11 @@ enum ElementFormulation
 */  
 inline DRT::Element::DiscretizationType getStressInterpolationType3D(DRT::Element::DiscretizationType veldistype)
 {
-    //  if interpol names a interpolation type, we can return the appropriate stress interpolation
     DRT::Element::DiscretizationType distype = DRT::Element::dis_none;
     switch (veldistype)
     {
         case DRT::Element::hex8:
-            distype = DRT::Element::tet4;
+            distype = DRT::Element::hex8;
             break;
         case DRT::Element::hex27:
             distype = DRT::Element::hex27;

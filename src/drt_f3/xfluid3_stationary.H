@@ -19,6 +19,7 @@ Maintainer: Axel Gerstenberger
 #ifndef XFLUID3_STATIONARY_H
 #define XFLUID3_STATIONARY_H
 
+#include <math.h>
 #include "xfluid3.H"
 #include <blitz/array.h>
 #include "../drt_mat/newtonianfluid.H"
@@ -34,6 +35,7 @@ Maintainer: Axel Gerstenberger
 #include <Epetra_SerialDenseSolver.h>
 
 using namespace std;
+using namespace XFEM::PHYSICS;
 
 
 typedef blitz::Array<double,1> BlitzVec; ///< a short-cut for a one-dimensional BLITZ vector
@@ -652,7 +654,7 @@ BlitzVec computeNormalToBoundaryElement(
    */
   BlitzMat Inverse(const BlitzMat& xjm_, const double det)
   {
-      BlitzMat xji_(3,3);
+      BlitzMat xji_(3,3,blitz::ColumnMajorArray<2>());
       xji_(0,0) = (  xjm_(1,1)*xjm_(2,2) - xjm_(2,1)*xjm_(1,2))/det;
       xji_(1,0) = (- xjm_(1,0)*xjm_(2,2) + xjm_(2,0)*xjm_(1,2))/det;
       xji_(2,0) = (  xjm_(1,0)*xjm_(2,1) - xjm_(2,0)*xjm_(1,1))/det;
@@ -687,8 +689,6 @@ BlitzVec computeNormalToBoundaryElement(
           bool                              cstab          ///< flag for stabilisation
     )
   {
-    using namespace XFEM::PHYSICS;
-      
     // number of nodes for element
     const int numnode = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
       
@@ -750,29 +750,34 @@ BlitzVec computeNormalToBoundaryElement(
 
     const DRT::Element::DiscretizationType stressdistype = XFLUID::getStressInterpolationType3D(DISTYPE);
     
+    // figure out whether we have stress unknowns at all
+    const bool stress_unknowns_present = (getNumParam<ASSTYPE>(dofman, Tauxx, 0) > 0);
+//    const bool velocity_unknowns_present = (getNumParam<ASSTYPE>(dofman, Velx, 1) > 0);
+//    const bool pressure_unknowns_present = (getNumParam<ASSTYPE>(dofman, Pres, 1) > 0);
+//    cout << endl;
+//    if (ASSTYPE == XFEM::standard_assembly)
+//        cout << "standard assembly" << endl;
+//    else
+//        cout << "xfem assembly" << endl;
+//            
+//    cout << "stress unknowns present  : " << stress_unknowns_present << endl;
+//    cout << "velocity unknowns present: " << velocity_unknowns_present << endl;
+//    cout << "pressure unknowns present: " << pressure_unknowns_present << endl;
+    
+    
     // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
     const int numparamvelx = getNumParam<ASSTYPE>(dofman, Velx, numnode);
     const int numparamvely = getNumParam<ASSTYPE>(dofman, Vely, numnode);
     const int numparamvelz = getNumParam<ASSTYPE>(dofman, Velz, numnode);
     const int numparampres = getNumParam<ASSTYPE>(dofman, Pres, numnode);
-    const int numparamtauxx = getNumParam<ASSTYPE>(dofman, Tauxx, 0);
-    const int numparamtauyy = getNumParam<ASSTYPE>(dofman, Tauyy, 0);
-    const int numparamtauzz = getNumParam<ASSTYPE>(dofman, Tauzz, 0);
-    const int numparamtauxy = getNumParam<ASSTYPE>(dofman, Tauxy, 0);
-    const int numparamtauxz = getNumParam<ASSTYPE>(dofman, Tauxz, 0);
-    const int numparamtauyz = getNumParam<ASSTYPE>(dofman, Tauyz, 0);
+    const int numparamtauxx = getNumParam<ASSTYPE>(dofman, Tauxx, 1);
+    const int numparamtauyy = getNumParam<ASSTYPE>(dofman, Tauyy, 1);
+    const int numparamtauzz = getNumParam<ASSTYPE>(dofman, Tauzz, 1);
+    const int numparamtauxy = getNumParam<ASSTYPE>(dofman, Tauxy, 1);
+    const int numparamtauxz = getNumParam<ASSTYPE>(dofman, Tauxz, 1);
+    const int numparamtauyz = getNumParam<ASSTYPE>(dofman, Tauyz, 1);
     
-    dsassert((numparamvelx == numparamvely and numparamvelx == numparamvelz and numparamvelx == numparampres),
-            "for now, we enrich velocity and pressure together");
-    if (ASSTYPE == XFEM::standard_assembly)
-    {
-        //cout << "standard assembly" << endl;
-        dsassert(numparamtauxx == 0, "during standard assembly, we don't want stress unknowns");
-    }
-    else
-    {
-        //cout << "xfem assembly" << endl;
-    }
+
     
     const vector<int> velxdof = dofman.LocalDofPosPerField(Velx);
     const vector<int> velydof = dofman.LocalDofPosPerField(Vely);
@@ -792,9 +797,12 @@ BlitzVec computeNormalToBoundaryElement(
 //    cout << "numparamtauxy " << numparamtauxy << "  " <<  tauxydof.size() << endl;
 //    cout << "numparamtauxz " << numparamtauxz << "  " <<  tauxzdof.size() << endl;
 //    cout << "numparamtauyz " << numparamtauyz << "  " <<  tauyzdof.size() << endl;
-//    cout << ele->NumDofPerElement() << endl;
+
 //    if (numparamtauxx > 0)
 //        cout << tauxxdof[0] << " " << tauxxdof[1] << " " << tauxxdof[2] << " " << tauxxdof[3] << " " << endl;
+
+    //    if (numparamvelx != numparamvely or numparamvelx != numparamvelz or numparamvelx != numparampres)
+    //        dserror("for now, we enrich velocity and pressure together");
     
     // split velocity and pressure
     blitz::Array<double, 1> eprenp(numparampres);
@@ -805,12 +813,15 @@ BlitzVec computeNormalToBoundaryElement(
     for (int iparam=0; iparam<numparamvely; ++iparam)   evelnp(1,iparam) = locval[velydof[iparam]];
     for (int iparam=0; iparam<numparamvelz; ++iparam)   evelnp(2,iparam) = locval[velzdof[iparam]];
     for (int iparam=0; iparam<numparampres; ++iparam)   eprenp(iparam) = locval[presdof[iparam]];
-    for (int iparam=0; iparam<numparamtauxx; ++iparam)   etau(0,iparam) = locval[tauxxdof[iparam]];
-    for (int iparam=0; iparam<numparamtauyy; ++iparam)   etau(1,iparam) = locval[tauyydof[iparam]];
-    for (int iparam=0; iparam<numparamtauzz; ++iparam)   etau(2,iparam) = locval[tauzzdof[iparam]];
-    for (int iparam=0; iparam<numparamtauxy; ++iparam)   etau(3,iparam) = locval[tauxydof[iparam]];
-    for (int iparam=0; iparam<numparamtauxz; ++iparam)   etau(4,iparam) = locval[tauxzdof[iparam]];
-    for (int iparam=0; iparam<numparamtauyz; ++iparam)   etau(5,iparam) = locval[tauyzdof[iparam]];
+    if (stress_unknowns_present)
+    {
+        for (int iparam=0; iparam<numparamtauxx; ++iparam)   etau(0,iparam) = locval[tauxxdof[iparam]];
+        for (int iparam=0; iparam<numparamtauyy; ++iparam)   etau(1,iparam) = locval[tauyydof[iparam]];
+        for (int iparam=0; iparam<numparamtauzz; ++iparam)   etau(2,iparam) = locval[tauzzdof[iparam]];
+        for (int iparam=0; iparam<numparamtauxy; ++iparam)   etau(3,iparam) = locval[tauxydof[iparam]];
+        for (int iparam=0; iparam<numparamtauxz; ++iparam)   etau(4,iparam) = locval[tauxzdof[iparam]];
+        for (int iparam=0; iparam<numparamtauyz; ++iparam)   etau(5,iparam) = locval[tauyzdof[iparam]];
+    }
     
     
     
@@ -853,7 +864,7 @@ BlitzVec computeNormalToBoundaryElement(
       
       BlitzVec funct_stress(DRT::UTILS::getNumberOfElementNodes(stressdistype));
       BlitzMat deriv_stress(3, DRT::UTILS::getNumberOfElementNodes(stressdistype));
-      if (stressdistype != DRT::Element::dis_none and numparamtauxx > 0)
+      if (stress_unknowns_present)
       {
           DRT::UTILS::shape_function_3D(funct_stress,posXiDomain(0),posXiDomain(1),posXiDomain(2),stressdistype);
           DRT::UTILS::shape_function_3D_deriv1(deriv_stress,posXiDomain(0),posXiDomain(1),posXiDomain(2),stressdistype);
@@ -922,7 +933,7 @@ BlitzVec computeNormalToBoundaryElement(
                   enr_derxy_,
                   enr_derxy2_);
           
-          if (stressdistype != DRT::Element::dis_none and numparamtauxx > 0)
+          if (stress_unknowns_present)
           {
               // shape functions for element dofs
               XFEM::ComputeEnrichedStressShapefunction(
@@ -946,6 +957,24 @@ BlitzVec computeNormalToBoundaryElement(
           enr_funct_stress  = funct_stress;
           enr_derxy_stress  = derxy_stress;
       }
+//      cout << "enr_funct_:\n";
+//      cout << enr_funct_  << endl;
+//      cout << "evelnp:\n";
+//      cout << evelnp << endl;
+      
+      // create vievs on the shape function arrays for easy handling in the assembly process
+      const BlitzVec shp(enr_funct_);
+      const BlitzVec shp_dx(enr_derxy_(0,_));
+      const BlitzVec shp_dy(enr_derxy_(1,_));
+      const BlitzVec shp_dz(enr_derxy_(2,_));
+      const BlitzVec shp_dxdx(enr_derxy2_(0,_)); const BlitzVec shp_dxdy(enr_derxy2_(3,_)); const BlitzVec shp_dxdz(enr_derxy2_(4,_));
+      const BlitzVec shp_dydx(shp_dxdy);         const BlitzVec shp_dydy(enr_derxy2_(1,_)); const BlitzVec shp_dydz(enr_derxy2_(5,_));
+      const BlitzVec shp_dzdx(shp_dxdz);         const BlitzVec shp_dzdy(shp_dydz);         const BlitzVec shp_dzdz(enr_derxy2_(2,_));
+      
+      const BlitzVec shp_tau(enr_funct_stress);
+      const BlitzVec shp_tau_dx(enr_derxy_stress(0,_));
+      const BlitzVec shp_tau_dy(enr_derxy_stress(1,_));
+      const BlitzVec shp_tau_dz(enr_derxy_stress(2,_));
       
 //      cout << "enr_funct_stress" << enr_funct_stress << endl;
 //      cout << "enr_derxy_stress" << enr_derxy_stress << endl;
@@ -975,23 +1004,23 @@ BlitzVec computeNormalToBoundaryElement(
 
       // get viscous stress unknowns
       BlitzMat tau(3,3,blitz::ColumnMajorArray<2>());
-      tau(0,0) = blitz::sum(enr_funct_stress(_)*etau(0,_)); tau(0,1) = blitz::sum(enr_funct_stress(_)*etau(3,_)); tau(0,2) = blitz::sum(enr_funct_stress(_)*etau(4,_));
-      tau(1,0) = tau(0,1);                                  tau(1,1) = blitz::sum(enr_funct_stress(_)*etau(1,_)); tau(1,2) = blitz::sum(enr_funct_stress(_)*etau(5,_));
-      tau(2,0) = tau(0,2);                                  tau(2,1) = tau(1,2);                                  tau(2,2) = blitz::sum(enr_funct_stress(_)*etau(2,_));
+      if (stress_unknowns_present)
+      {
+          tau(0,0) = blitz::sum(enr_funct_stress(_)*etau(0,_)); tau(0,1) = blitz::sum(enr_funct_stress(_)*etau(3,_)); tau(0,2) = blitz::sum(enr_funct_stress(_)*etau(4,_));
+          tau(1,0) = tau(0,1);                                  tau(1,1) = blitz::sum(enr_funct_stress(_)*etau(1,_)); tau(1,2) = blitz::sum(enr_funct_stress(_)*etau(5,_));
+          tau(2,0) = tau(0,2);                                  tau(2,1) = tau(1,2);                                  tau(2,2) = blitz::sum(enr_funct_stress(_)*etau(2,_));
+      }
       
       BlitzVec nabla_dot_tau(3);
-      nabla_dot_tau(0) = blitz::sum(enr_derxy_stress(0,_)*etau(0,_)) + blitz::sum(enr_derxy_stress(1,_)*etau(3,_)) + blitz::sum(enr_derxy_stress(2,_)*etau(4,_));
-      nabla_dot_tau(1) = blitz::sum(enr_derxy_stress(3,_)*etau(0,_)) + blitz::sum(enr_derxy_stress(1,_)*etau(1,_)) + blitz::sum(enr_derxy_stress(2,_)*etau(5,_));
-      nabla_dot_tau(2) = blitz::sum(enr_derxy_stress(0,_)*etau(4,_)) + blitz::sum(enr_derxy_stress(1,_)*etau(5,_)) + blitz::sum(enr_derxy_stress(2,_)*etau(2,_));
+      if (stress_unknowns_present)
+      {
+          nabla_dot_tau(0) = blitz::sum(enr_derxy_stress(0,_)*etau(0,_)) + blitz::sum(enr_derxy_stress(1,_)*etau(3,_)) + blitz::sum(enr_derxy_stress(2,_)*etau(4,_));
+          nabla_dot_tau(1) = blitz::sum(enr_derxy_stress(0,_)*etau(3,_)) + blitz::sum(enr_derxy_stress(1,_)*etau(1,_)) + blitz::sum(enr_derxy_stress(2,_)*etau(5,_));
+          nabla_dot_tau(2) = blitz::sum(enr_derxy_stress(0,_)*etau(4,_)) + blitz::sum(enr_derxy_stress(1,_)*etau(5,_)) + blitz::sum(enr_derxy_stress(2,_)*etau(2,_));
+      }
       
-//      BlitzMat eps(3,3);
-//      for (int m = 0; m < 3; ++m)
-//      {
-//          for (int n = 0; n < 3; ++n)
-//          {
-//              eps(m,n) = 0.5*(vderxy_(m,n) + vderxy_(n,m));
-//          }
-//      }
+      
+//      const BlitzMat eps(0.5*(vderxy_(i,j) + vderxy_(j,i));
 //      const BlitzMat epstau(tau*reciproke_visc);
 //      
 //      if (ele->Id() == 0)
@@ -1037,38 +1066,23 @@ BlitzVec computeNormalToBoundaryElement(
       // stabilization parameters for stationary case
 
       // compute tau_Mu
-      BlitzVec tau_stab(3);
       const double re_tau_mu = mk * vel_norm * strle / (2.0 * visc);   /* convective : viscous forces */
       const double xi_tau_mu = DMAX(re_tau_mu, 1.0);
-      tau_stab(0) = (DSQR(strle)*mk)/(4.0*visc*xi_tau_mu);
+      const double tau_stab_0 = (DSQR(strle)*mk)/(4.0*visc*xi_tau_mu);
 
       // compute tau_Mp
       const double re_tau_mp = mk * vel_norm * hk / (2.0 * visc);      /* convective : viscous forces */
       const double xi_tau_mp = DMAX(re_tau_mp,1.0);
-      tau_stab(1) = (DSQR(hk)*mk)/(4.0*visc*xi_tau_mp);
+      const double tau_stab_1 = (DSQR(hk)*mk)/(4.0*visc*xi_tau_mp);
 
       // compute tau_C
       const double xi_tau_c = DMIN(re_tau_mp, 1.0);
-      tau_stab(2) = 0.5*vel_norm*hk*xi_tau_c;
+      const double tau_stab_2 = 0.5*vel_norm*hk*xi_tau_c;
       
       // stabilisation parameter
-      const double tau_M  = tau_stab(0)*fac;
-      const double tau_Mp = tau_stab(1)*fac;
-      const double tau_C  = tau_stab(2)*fac;
-
-      // create vievs on the shape function arrays for easy handling in the assembly process
-      const BlitzVec shp(enr_funct_);
-      const BlitzVec shp_dx(enr_derxy_(0,_));
-      const BlitzVec shp_dy(enr_derxy_(1,_));
-      const BlitzVec shp_dz(enr_derxy_(2,_));
-      const BlitzVec shp_dxdx(enr_derxy2_(0,_)); const BlitzVec shp_dxdy(enr_derxy2_(3,_)); const BlitzVec shp_dxdz(enr_derxy2_(4,_));
-      const BlitzVec shp_dydx(shp_dxdy);         const BlitzVec shp_dydy(enr_derxy2_(1,_)); const BlitzVec shp_dydz(enr_derxy2_(5,_));
-      const BlitzVec shp_dzdx(shp_dxdz);         const BlitzVec shp_dzdy(shp_dydz);         const BlitzVec shp_dzdz(enr_derxy2_(2,_));
-      
-      const BlitzVec shp_tau(enr_funct_stress);
-      const BlitzVec shp_tau_dx(enr_derxy_stress(0,_));
-      const BlitzVec shp_tau_dy(enr_derxy_stress(1,_));
-      const BlitzVec shp_tau_dz(enr_derxy_stress(2,_));
+      const double tau_M  = tau_stab_0*fac;
+      const double tau_Mp = tau_stab_1*fac;
+      const double tau_C  = tau_stab_2*fac;
 
       /*------------------------- evaluate rhs vector at integration point ---*/
       //   rhsint_ = histvec_(i) + bodyforce_(i);
@@ -1081,7 +1095,7 @@ BlitzVec computeNormalToBoundaryElement(
       const BlitzVec conv_old_(blitz::sum(vderxy_(i, j)*velint_(j), j));
       
       BlitzVec res_old(3);
-      if (numparamtauxx == 0)
+      if (not stress_unknowns_present)
       {
           /* Viscous term  div epsilon(u_old) */
           BlitzVec visc_old_(3);
@@ -1179,7 +1193,7 @@ BlitzVec computeNormalToBoundaryElement(
         assembler.template Vector<Velz>(enr_conv_r_(2, 2, _), -fac*velint_(2));
 
         /* Viskositaetsterm */
-        if (numparamtauxx == 0)
+        if (not stress_unknowns_present)
         {
             /*
                           /                        \
@@ -1304,24 +1318,40 @@ BlitzVec computeNormalToBoundaryElement(
         assembler.template Vector<Pres>(enr_conv_r_(1, 1, _), -fac);
         assembler.template Vector<Pres>(enr_conv_r_(2, 2, _), -fac);
         
-//        if (numparamtauxx != 0)
-//        {
+        if (stress_unknowns_present)
+        {
+            /* Divergenzfreiheit - continuity equation*/
+            /*
+                           /                       \
+                          |                         |
+                          | trace (eps(Dtau))  , q  |
+                          |                         |
+                           \                       /
+            */
+            assembler.template Matrix<Pres,Tauxx>(shp, 0.5*reciproke_visc*fac, shp_tau);
+            assembler.template Matrix<Pres,Tauyy>(shp, 0.5*reciproke_visc*fac, shp_tau);
+            assembler.template Matrix<Pres,Tauzz>(shp, 0.5*reciproke_visc*fac, shp_tau);
+            
+            assembler.template Vector<Pres>(shp, -0.5*reciproke_visc*fac*tau(0,0));
+            assembler.template Vector<Pres>(shp, -0.5*reciproke_visc*fac*tau(1,1));
+            assembler.template Vector<Pres>(shp, -0.5*reciproke_visc*fac*tau(2,2));
+//            
 //            /* Divergenzfreiheit - continuity equation*/
 //            /*
-//                           /                       
+//                           /                       \ 
 //                          |                         |
-//                          | trace (eps(Dtau))  , q  |
+//                          | p, trace (eps(Dtau))    |
 //                          |                         |
 //                           \                       /
 //            */
-//            assembler.template Matrix<Pres,Tauxx>(shp, 0.5*reciproke_visc*fac, shp_tau);
-//            assembler.template Matrix<Pres,Tauyy>(shp, 0.5*reciproke_visc*fac, shp_tau);
-//            assembler.template Matrix<Pres,Tauzz>(shp, 0.5*reciproke_visc*fac, shp_tau);
+//            assembler.template Matrix<Tauxx,Pres>(shp_tau, 0.5*reciproke_visc*fac, shp);
+//            assembler.template Matrix<Tauyy,Pres>(shp_tau, 0.5*reciproke_visc*fac, shp);
+//            assembler.template Matrix<Tauzz,Pres>(shp_tau, 0.5*reciproke_visc*fac, shp);
 //            
-//            assembler.template Vector<Pres>(shp, -0.5*reciproke_visc*fac*tau(0,0));
-//            assembler.template Vector<Pres>(shp, -0.5*reciproke_visc*fac*tau(1,1));
-//            assembler.template Vector<Pres>(shp, -0.5*reciproke_visc*fac*tau(2,2));
-//        }
+//            assembler.template Vector<Tauxx>(shp, -0.5*reciproke_visc*fac*press);
+//            assembler.template Vector<Tauyy>(shp, -0.5*reciproke_visc*fac*press);
+//            assembler.template Vector<Tauzz>(shp, -0.5*reciproke_visc*fac*press);
+        }
         
 
         
@@ -1333,7 +1363,7 @@ BlitzVec computeNormalToBoundaryElement(
 
 
         // Hellinger-Reissner terms
-        if (numparamtauxx != 0)
+        if (stress_unknowns_present)
         {
             /* quadratic part */
             /*
@@ -1428,7 +1458,7 @@ BlitzVec computeNormalToBoundaryElement(
           assembler.template Matrix<Pres,Velz>(shp_dz, tau_Mp, enr_conv_c_);
 
           /* pressure stabilisation: viscosity (-L_visc_u) */
-          if (numparamtauxx == 0)
+          if (not stress_unknowns_present)
           {
               /*
                        /                              \
@@ -1518,7 +1548,7 @@ BlitzVec computeNormalToBoundaryElement(
             assembler.template Matrix<Velz,Pres>(enr_conv_c_, tau_M, shp_dz);
 
             /* supg stabilisation: viscous part  (-L_visc_u) */
-            if (numparamtauxx == 0)
+            if (not stress_unknowns_present)
             {
                 /*
                       /                                        \
@@ -1905,7 +1935,7 @@ BlitzVec computeNormalToBoundaryElement(
       const BlitzVec conv_old_(blitz::sum(vderxy_(i, j)*velint_(j), j));
       
       BlitzVec res_old(3);
-      if (numparamtauxx == 0)
+      if (not stress_unknowns_present)
       {
           /* Viscous term  div epsilon(u_old) */
           BlitzVec visc_old_(3);
@@ -2003,7 +2033,7 @@ BlitzVec computeNormalToBoundaryElement(
         assembler.template Vector<Velz>(enr_conv_r_(2, 2, _), -fac*velint_(2));
 
         /* Viskositaetsterm */
-        if (numparamtauxx == 0)
+        if (not stress_unknowns_present)
         {
             /*
                           /                        \
@@ -2128,7 +2158,7 @@ BlitzVec computeNormalToBoundaryElement(
         assembler.template Vector<Pres>(enr_conv_r_(1, 1, _), -fac);
         assembler.template Vector<Pres>(enr_conv_r_(2, 2, _), -fac);
         
-//        if (numparamtauxx != 0)
+//        if (stress_unknowns_present)
 //        {
 //            /* Divergenzfreiheit - continuity equation*/
 //            /*
@@ -2157,7 +2187,7 @@ BlitzVec computeNormalToBoundaryElement(
 
 
         // Hellinger-Reissner terms
-        if (numparamtauxx != 0)
+        if (stress_unknowns_present)
         {
             /* quadratic part */
             /*

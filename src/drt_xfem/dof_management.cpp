@@ -16,10 +16,22 @@ Maintainer: Axel Gerstenberger
 #include "dof_management.H"
 #include "xfem.H"
 #include "xdofmapcreation.H"
+#include "../io/gmsh.H"
 
 
 
 using namespace std;
+
+/*----------------------------------------------------------------------*
+ |  default ctor                                                ag 11/07|
+ *----------------------------------------------------------------------*/
+XFEM::FieldEnr::FieldEnr() :
+            field_(XFEM::PHYSICS::undefinedField),
+            enr_(Enrichment())
+{
+    dserror("FieldEnr() -> please don't call me!");
+    return;
+}
 
 /*----------------------------------------------------------------------*
  |  ctor                                                        ag 11/07|
@@ -67,9 +79,12 @@ string XFEM::FieldEnr::toString() const
 
 
 /*----------------------------------------------------------------------*
- |  ctor                                                        ag 11/07|
+ |  default ctor                                                ag 11/07|
  *----------------------------------------------------------------------*/
-XFEM::ElementDofManager::ElementDofManager()
+XFEM::ElementDofManager::ElementDofManager() :
+    nodalDofSet_(),
+    elementDofs_(),
+    numVirtualNodes_(0)
 {
 	return;
 }
@@ -85,7 +100,7 @@ XFEM::ElementDofManager::ElementDofManager(
 		) :
 			nodalDofSet_(nodalDofSet),
 			elementDofs_(elementDofs),
-			numeleparam_(numeleparam)
+			numVirtualNodes_(numeleparam)
 {
 	// count number of dofs for each node
 	map<int, const set<XFEM::FieldEnr> >::const_iterator tmp;
@@ -135,7 +150,7 @@ XFEM::ElementDofManager::ElementDofManager(
 	    }
 	}
 	// loop now over element dofs
-	// for that we have to loop over the "virtual element nodes" asanstz function
+	// for that we have to loop over the "virtual element nodes" ansatz function
 	for (int i = 0; i < numeleparam; ++i)
     {
 	    for (std::set<XFEM::FieldEnr>::const_iterator enrfield = elementDofs.begin(); enrfield != elementDofs.end(); ++enrfield)
@@ -151,7 +166,7 @@ XFEM::ElementDofManager::ElementDofManager(
 }
 
 /*----------------------------------------------------------------------*
- |  dtor                                                        ag 11/07|
+ |  ctor                                                        ag 11/07|
  *----------------------------------------------------------------------*/
 XFEM::ElementDofManager::ElementDofManager(const ElementDofManager& old)
 {
@@ -200,6 +215,187 @@ XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih) :
     XFEM::createDofMap(
             ih->xfemdis(), ih->cutterdis(), ih->elementalDomainIntCells(),
             nodalDofSet_, elementalDofs_);
+    
+    std::ofstream f_system("numdof_coupled_system.pos");
+    //f_system << IO::GMSH::disToString("Fluid", 0.0, ih->xfemdis(), ih->elementalDomainIntCells());
+    f_system << IO::GMSH::disToString("Solid", 1.0, ih->cutterdis());
+    {
+        // draw elements with associated gid
+        stringstream gmshfilecontent;
+        gmshfilecontent << "View \" " << "Element->Id() \" {" << endl;
+        for (int i=0; i<ih->xfemdis()->NumMyColElements(); ++i)
+        {
+            DRT::Element* actele = ih->xfemdis()->lColElement(i);
+            gmshfilecontent << IO::GMSH::elementToString(double(actele->Id()), actele);
+        };
+        gmshfilecontent << "};" << endl;
+        f_system << gmshfilecontent.str();
+    }
+    {
+        stringstream gmshfilecontent;
+        gmshfilecontent << "View \" " << " Stress unknowns in element \" {" << endl;
+        for (int i=0; i<ih->xfemdis()->NumMyColElements(); ++i)
+        {
+            DRT::Element* actele = ih->xfemdis()->lColElement(i);
+            const int ele_gid = actele->Id();
+            double val = 0.0;
+            std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = elementalDofs_.find(ele_gid);
+            
+            if (blub != elementalDofs_.end())
+            {
+                const set<XFEM::FieldEnr> schnapp = blub->second;
+                val = schnapp.size();
+                gmshfilecontent << IO::GMSH::elementToString(val, actele);
+            }
+            
+        };
+        gmshfilecontent << "};" << endl;
+        f_system << gmshfilecontent.str();
+    }
+    {
+        stringstream gmshfilecontent;
+        gmshfilecontent << "View \" " << "NumDof per node \" {" << endl;
+        for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
+        {
+            //DRT::Element* actele = ih->xfemdis()->lColElement(i);
+            DRT::Node* actnode = ih->xfemdis()->lColNode(i);
+            const blitz::Array<double,1> pos(toBlitzArray(actnode->X()));
+            const int node_gid = actnode->Id();
+            
+            double val = 0.0;
+            std::map<int, const set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(node_gid);
+            
+            if (blub != nodalDofSet_.end())
+            {
+                const set<XFEM::FieldEnr> schnapp = blub->second;
+                val = schnapp.size();
+            
+
+            gmshfilecontent << "SP(";
+            gmshfilecontent << scientific << pos(0) << ",";
+            gmshfilecontent << scientific << pos(1) << ",";
+            gmshfilecontent << scientific << pos(2);
+            gmshfilecontent << "){";
+            gmshfilecontent << val << "};" << endl;
+            }
+        };
+        gmshfilecontent << "};" << endl;
+        f_system << gmshfilecontent.str();
+    }
+    
+    {
+        stringstream gmshfilecontent;
+        gmshfilecontent << "View \" " << "NumDof Jump enriched nodes \" {" << endl;
+        for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
+        {
+            DRT::Node* actnode = ih->xfemdis()->lColNode(i);
+            const blitz::Array<double,1> pos(toBlitzArray(actnode->X()));
+            const int node_gid = actnode->Id();
+            
+            double val = 0.0;
+            std::map<int, const set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(node_gid);
+            if (blub != nodalDofSet_.end())
+            {
+                const std::set<XFEM::FieldEnr> fields = blub->second;
+                for (std::set<XFEM::FieldEnr>::const_iterator f = fields.begin(); f != fields.end(); ++f)
+                {
+                    if ((f->getEnrichment().Type()) == XFEM::Enrichment::typeJump)
+                    {
+                        val = val+1.0;
+                    }
+                }
+                if (val > 0.5)
+                {
+                    gmshfilecontent << "SP(";
+                    gmshfilecontent << scientific << pos(0) << ",";
+                    gmshfilecontent << scientific << pos(1) << ",";
+                    gmshfilecontent << scientific << pos(2);
+                    gmshfilecontent << "){";
+                    gmshfilecontent << val << "};" << endl;
+                }
+            }
+        };
+        gmshfilecontent << "};" << endl;
+        f_system << gmshfilecontent.str();
+    }
+    
+    {
+        stringstream gmshfilecontent;
+        gmshfilecontent << "View \" " << "NumDof" << " standard enriched nodes \" {" << endl;
+        for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
+        {
+            DRT::Node* actnode = ih->xfemdis()->lColNode(i);
+            const blitz::Array<double,1> pos(toBlitzArray(actnode->X()));
+            const int node_gid = actnode->Id();
+            
+            double val = 0.0;
+            std::map<int, const set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(node_gid);
+            if (blub != nodalDofSet_.end())
+            {
+                const std::set<XFEM::FieldEnr> fields = blub->second;
+                for (std::set<XFEM::FieldEnr>::const_iterator f = fields.begin(); f != fields.end(); ++f)
+                {
+                    if ((f->getEnrichment().Type()) == XFEM::Enrichment::typeStandard)
+                    {
+                        val = val+1.0;
+                    }
+                }
+                if (val > 0.5)
+                {
+                    gmshfilecontent << "SP(";
+                    gmshfilecontent << scientific << pos(0) << ",";
+                    gmshfilecontent << scientific << pos(1) << ",";
+                    gmshfilecontent << scientific << pos(2);
+                    gmshfilecontent << "){";
+                    gmshfilecontent << val << "};" << endl;
+                }
+            }
+        };
+        gmshfilecontent << "};" << endl;
+        f_system << gmshfilecontent.str();
+    }
+    
+    {
+        stringstream gmshfilecontent;
+        gmshfilecontent << "View \" " << "NumDof" << " Void enriched nodes \" {" << endl;
+        for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
+        {
+            DRT::Node* actnode = ih->xfemdis()->lColNode(i);
+            const blitz::Array<double,1> pos(toBlitzArray(actnode->X()));
+            const int node_gid = actnode->Id();
+            
+            double val = 0.0;
+            std::map<int, const set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(node_gid);
+            if (blub != nodalDofSet_.end())
+            {
+                const std::set<XFEM::FieldEnr> fields = blub->second;
+                for (std::set<XFEM::FieldEnr>::const_iterator f = fields.begin(); f != fields.end(); ++f)
+                {
+                    if ((f->getEnrichment().Type()) == XFEM::Enrichment::typeVoid)
+                    {
+                        val = val+1.0;
+                    }
+                }
+                if (val > 0.5)
+                {
+                    gmshfilecontent << "SP(";
+                    gmshfilecontent << scientific << pos(0) << ",";
+                    gmshfilecontent << scientific << pos(1) << ",";
+                    gmshfilecontent << scientific << pos(2);
+                    gmshfilecontent << "){";
+                    gmshfilecontent << val << "};" << endl;
+                }
+            }
+        };
+        gmshfilecontent << "};" << endl;
+        f_system << gmshfilecontent.str();
+    }
+    
+    
+    //f_system << IO::GMSH::getConfigString(2);
+    f_system.close();
+    
+    
 }
 
 /*----------------------------------------------------------------------*
@@ -239,14 +435,17 @@ string XFEM::DofManager::toString() const
 /*----------------------------------------------------------------------*
  |  construct element dof manager                               ag 11/07|
  *----------------------------------------------------------------------*/
-const XFEM::ElementDofManager XFEM::DofManager::constructElementDofManager(DRT::Element& ele, const int numeleparam) const
+const XFEM::ElementDofManager XFEM::DofManager::constructElementDofManager(
+        DRT::Element&  ele,
+        const int      numeleparam
+        ) const
 {
     // create a list with number of dofs per local node 
     const int numnode = ele.NumNode();
     const int* nodegids = ele.NodeIds();
     
     // nodal dofs for ele
-    map<int, const set <XFEM::FieldEnr> > nodaldofset; 
+    std::map<int, const set <XFEM::FieldEnr> > nodaldofset;
     for (int inode = 0; inode < numnode; ++inode) {
         const int gid = nodegids[inode];
         nodaldofset.insert(std::pair<int, const set<XFEM::FieldEnr> >(gid,this->getNodeDofSet(gid)));
@@ -256,7 +455,7 @@ const XFEM::ElementDofManager XFEM::DofManager::constructElementDofManager(DRT::
     const std::set<XFEM::FieldEnr> elementdofs = this->getElementDofs(ele.Id());
     
     // create a local dofmanager
-    XFEM::ElementDofManager eleDofManager = XFEM::ElementDofManager(ele, nodaldofset, elementdofs, numeleparam);
+    XFEM::ElementDofManager eleDofManager(ele, nodaldofset, elementdofs, numeleparam);
 
     return eleDofManager;
 }
@@ -266,12 +465,11 @@ const XFEM::ElementDofManager XFEM::DofManager::constructElementDofManager(DRT::
  *----------------------------------------------------------------------*/
 void XFEM::DofManager::checkForConsistency(
         DRT::Element& ele,
-        const XFEM::ElementDofManager& stored_eledofman,
-        const int numeleparam
+        const XFEM::ElementDofManager& stored_eledofman
         ) const
 {
     // create local copy of current information about dofs
-    const XFEM::ElementDofManager current_eledofman = this->constructElementDofManager(ele, numeleparam);
+    XFEM::ElementDofManager current_eledofman = this->constructElementDofManager(ele, stored_eledofman.NumVirtualNodes());
     
     // compare with given and report error  
     if (current_eledofman != stored_eledofman)
