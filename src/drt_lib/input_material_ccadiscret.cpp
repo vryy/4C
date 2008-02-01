@@ -62,7 +62,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       localmat.mattyp = m_fluid;
       localmat.m.fluid = new _FLUID();
       frdouble("VISCOSITY",&(localmat.m.fluid->viscosity),&ierr);
+      if (localmat.m.fluid->viscosity <= 0.0) dserror("MAT_fluid: viscosity is not positive: %f",localmat.m.fluid->viscosity);
       frdouble("DENS"  ,&(localmat.m.fluid->density)  ,&ierr);
+      if (localmat.m.fluid->density <= 0.0) dserror("MAT_fluid: density is not positive: %f",localmat.m.fluid->density);    
       frdouble("GAMMA",&(localmat.m.fluid->gamma)  ,&ierr);
    }
    frchk("MAT_condif",&ierr);
