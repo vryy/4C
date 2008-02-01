@@ -278,11 +278,11 @@ private:
   virtual void Solve_aztec(const bool reset);
   
   //! a communicator
-  const Epetra_Comm&                comm_;    
+  const Epetra_Comm&        comm_;    
   //! parameter list
   RCP<ParameterList>        params_;  
   //! file to write output to (proc 0 only, can be NULL on input)
-  FILE*                             outfile_; 
+  FILE*                     outfile_; 
   //! system of equations
   RCP<Epetra_Operator>      A_;       
   //! modified system of equations

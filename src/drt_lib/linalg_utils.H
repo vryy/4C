@@ -254,7 +254,8 @@ namespace LINALG
   Add one matrix to another. the matrix B to be added to must not be
   completed. Sparsity patterns of A and B need not match and A and B can be
   nonsymmetric in value and pattern.
-  Range, Row and Domain maps of A(^T) and B have to match.
+  Row map of A has to be a processor-local subset of the row map of B.
+
 
   Note that this is a true parallel add, even in the transposed case!
 
