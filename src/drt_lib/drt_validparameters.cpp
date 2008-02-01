@@ -529,7 +529,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "30_degree",
                                  "60_degree",
                                  "min60_degree",
-                                 "No"
+                                 "zero"
                                  ),
                                tuple<int>(0,1,2,3,4,5),
                                &fdyn);

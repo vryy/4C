@@ -48,7 +48,7 @@ int DRT::ELEMENTS::Condif2::Evaluate(ParameterList& params,
   if (action == "none") dserror("No action supplied");
   else if (action == "calc_condif_systemmat_and_residual")
   	act = Condif2::calc_condif_systemmat_and_residual;
-  else dserror("Unknown type of action for Condif2");
+  else dserror("Unknown type of action for Condif2: %s", action.c_str());
 
   // get the material
   RefCountPtr<MAT::Material> mat = Material();
