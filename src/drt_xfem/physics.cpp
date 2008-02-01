@@ -1,7 +1,7 @@
 /*!
 \file physics.cpp
 
-\brief 
+\brief contains information about physical fields
 
 <pre>
 Maintainer: Axel Gerstenberger
