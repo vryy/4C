@@ -40,15 +40,18 @@ Mesh SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness, int layers);
 
 bool CheckExtrusion(const EXODUS::ElementBlock eblock);
 
-vector<int> RiseNodeIds(const int highestnode, const vector<int> elenodes);
+vector<int> RiseNodeIds(int highestid, map<int,int> pair, const vector<int> elenodes);
 
 vector<double> ExtrudeNodeCoords(const vector<double> basecoords, double distance);
 
 const map<int,set<int> > NodeToEleConn(const EXODUS::ElementBlock eblock);
 
-const map<int,set<int> > EleNeighbors(const EXODUS::ElementBlock eblock, const map<int,set<int> > node_conn);
+const map<int,vector<int> > EleNeighbors(const EXODUS::ElementBlock eblock, const map<int,set<int> > node_conn);
 
 bool FindinVec(const int id,vector<int> vec);
+
+void PrintMap(ostream& os,const map<int,vector<int> > mymap);
+void PrintMap(ostream& os,const map<int,set<int> > mymap);
 
 } // of namespace EXODUS
 
