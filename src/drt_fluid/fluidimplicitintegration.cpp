@@ -192,15 +192,28 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   }
 
   // -------------------------------------------------------------------
+  // initialize turbulence-statistics evaluation
+  // -------------------------------------------------------------------
+  if (params_.sublist("TURBULENCE MODEL").get<string>("CANONICAL_FLOW","no")
+      == "lid_driven_cavity")
+  {
+    turbulencestatistics_ldc_=rcp(new TurbulenceStatisticsLdc(discret_,params_));
+    samstart_  = turbmodelparams->get<int>("SAMPLING_START",1);
+    samstop_   = turbmodelparams->get<int>("SAMPLING_STOP",1);
+    dumperiod_ = turbmodelparams->get<int>("DUMPING_PERIOD",1);
+  }
+
+  // -------------------------------------------------------------------
   // create timers and time monitor
   // -------------------------------------------------------------------
-  timedyntot_     = TimeMonitor::getNewTimer("dynamic routine total"     );
-  timedyninit_    = TimeMonitor::getNewTimer(" + initial phase"          );
-  timedynloop_    = TimeMonitor::getNewTimer(" + time loop"              );
-  timenlnloop_    = TimeMonitor::getNewTimer("   + nonlinear iteration"  );
-  timeeleloop_    = TimeMonitor::getNewTimer("      + element calls"     );
-  timeapplydirich_= TimeMonitor::getNewTimer("      + apply dirich cond.");
-  timesolver_     = TimeMonitor::getNewTimer("      + solver calls"      );
+  timedyntot_     = TimeMonitor::getNewTimer("dynamic routine total"        );
+  timedyninit_    = TimeMonitor::getNewTimer(" + initial phase"             );
+  timedynloop_    = TimeMonitor::getNewTimer(" + time loop"                 );
+  timenlnloop_    = TimeMonitor::getNewTimer("   + nonlinear iteration"     );
+  timeeleloop_    = TimeMonitor::getNewTimer("      + element calls"        );
+  timeapplydirich_= TimeMonitor::getNewTimer("      + apply dirich cond."   );
+  timesolver_     = TimeMonitor::getNewTimer("      + solver calls"         );
+  timeout_        = TimeMonitor::getNewTimer("      + output and statistics");
 
   return;
 
@@ -319,6 +332,19 @@ void FluidImplicitTimeInt::TimeLoop()
     // -------------------------------------------------------------------
     this->TimeUpdate();
 
+    // time measurement --- start TimeMonitor tm8
+    tm7_ref_ = rcp(new TimeMonitor(*timeout_ ));
+
+    // -------------------------------------------------------------------
+    // add calculated velocity to mean value calculation
+    // -------------------------------------------------------------------
+    if(params_.sublist("TURBULENCE MODEL").get<string>("CANONICAL_FLOW","no")
+       ==
+       "lid_driven_cavity" && step_>=samstart_ && step_<=samstop_)
+    {
+      turbulencestatistics_ldc_->DoTimeSample(velnp_);
+   }
+
     // -------------------------------------------------------------------
     // evaluate error for test flows with analytical solutions
     // -------------------------------------------------------------------
@@ -328,6 +354,9 @@ void FluidImplicitTimeInt::TimeLoop()
     //                         output of solution
     // -------------------------------------------------------------------
     this->Output();
+
+    // time measurement --- stop TimeMonitor tm8
+    tm7_ref_ = null;
 
     // -------------------------------------------------------------------
     //                    calculate lift'n'drag forces
@@ -1058,38 +1087,39 @@ void FluidImplicitTimeInt::Output()
     #endif
 
   if (writestep_ == upres_)  //write solution
+  {
+    writestep_= 0;
+
+    output_.NewStep    (step_,time_);
+    output_.WriteVector("velnp", velnp_);
+    //output_.WriteVector("residual", trueresidual_);
+    //output_.WriteVector("domain_decomp",domain_decomp);
+    if (alefluid_)
+      output_.WriteVector("dispnp", dispnp_);
+
+    //only perform stress calculation when output is needed
+    if (writestresses_)
     {
-      writestep_= 0;
+     RefCountPtr<Epetra_Vector> traction = CalcStresses();
+     output_.WriteVector("traction",traction);
+    }
 
-      output_.NewStep    (step_,time_);
-      output_.WriteVector("velnp", velnp_);
-      //output_.WriteVector("residual", trueresidual_);
-      //output_.WriteVector("domain_decomp",domain_decomp);
+    if (restartstep_ == uprestart_) //add restart data
+    {
+      restartstep_ = 0;
+
+      output_.WriteVector("accn", accn_);
+      output_.WriteVector("veln", veln_);
+      output_.WriteVector("velnm", velnm_);
+
       if (alefluid_)
-        output_.WriteVector("dispnp", dispnp_);
-
-      //only perform stress calculation when output is needed
-      if (writestresses_)
       {
-       RefCountPtr<Epetra_Vector> traction = CalcStresses();
-       output_.WriteVector("traction",traction);
-      }
-
-      if (restartstep_ == uprestart_) //add restart data
-      {
-        restartstep_ = 0;
-
-        output_.WriteVector("accn", accn_);
-    	output_.WriteVector("veln", veln_);
-    	output_.WriteVector("velnm", velnm_);
-
-        if (alefluid_)
-	{
-          output_.WriteVector("dispn", dispn_);
-          output_.WriteVector("dispnm",dispnm_);
-	}
+        output_.WriteVector("dispn", dispn_);
+        output_.WriteVector("dispnm",dispnm_);
       }
     }
+
+  }
 
   // write restart also when uprestart_ is not a integer multiple of upres_
   if ((restartstep_ == uprestart_) && (writestep_ > 0))
@@ -1119,6 +1149,16 @@ void FluidImplicitTimeInt::Output()
     output_.WriteVector("velnm", velnm_);
   }
 
+  // dumping of turbulence statistics
+  if((params_.sublist("TURBULENCE MODEL")).get<string>("CANONICAL_FLOW","no") == "lid_driven_cavity" && step_>=samstart_ && step_<=samstop_)
+  {
+    int samstep = step_-samstart_+1;
+    double dsamstep=samstep;
+    double ddumperiod=dumperiod_;
+
+    if (fmod(dsamstep,ddumperiod)==0)
+      turbulencestatistics_ldc_->DumpStatistics(step_);
+  }
 
 #if 0  // DEBUG IO --- the whole systemmatrix
       {

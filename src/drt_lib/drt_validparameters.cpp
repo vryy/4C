@@ -734,11 +734,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Sampling is different for different canonical flows \n--- so specify what kind of flow you've got",
                                tuple<std::string>(
                                  "no",
-                                 "channel_flow_of_height_2"),
+                                 "channel_flow_of_height_2",
+                                 "lid_driven_cavity"),
                                tuple<std::string>(
                                  "The flow is not further specified, so spatial averaging \nand hence the standard sampling procedure is not possible",
-                                 "For this flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow."),
-                               tuple<int>(0,1),
+                                 "For this flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.",
+                                 "For this flow, all statistical data are evaluated on the center lines of the xy-midplane, averaged only over time."),
+                               tuple<int>(0,1,2),
                                &fdyn_turbu);
 
   setStringToIntegralParameter("CHANNEL_HOMPLANE",
@@ -758,6 +760,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("CHANNEL_L_TAU",0.0,"Used for normalisation of the wall normal distance in the Van \nDriest Damping function. May be taken from the output of \nthe apply_mesh_stretching.pl preprocessing script.",&fdyn_turbu);
 
   DoubleParameter("CHANNEL_AMPLITUDE_INITIAL_DISTURBANCE",0.1,"Max. amplitude of the random disturbance in percent of the initial value in mean flow direction.",&fdyn_turbu);
+
+  IntParameter("SAMPLING_START",1,"Time step after when sampling shall be started",&fdyn_turbu);
+  IntParameter("SAMPLING_STOP",1,"Time step when sampling shall be stopped",&fdyn_turbu);
+  IntParameter("DUMPING_PERIOD",1,"Period of time steps after which statistical data shall be dumped",&fdyn_turbu);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& adyn = list->sublist("ALE DYNAMIC",false,"");
