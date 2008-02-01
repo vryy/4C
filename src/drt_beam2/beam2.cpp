@@ -31,8 +31,11 @@ cross_section_(0),
 cross_section_corr_(0),
 moment_inertia_(0),
 length_ref_(0),
+//since lines_ is a vector it calls its constructor automatically -> 
+//no initialization of lines_ necessary here
+
 //note: for corotational approach integration for Neumann conditions only
-//hence enough to integrate 3rd order polynomials exactly 
+//hence enough to integrate 3rd order polynomials exactly
 gaussrule_(DRT::UTILS::intrule_line_2point)
 {
   return;
@@ -48,6 +51,7 @@ cross_section_(old.cross_section_),
 cross_section_corr_(old.cross_section_corr_),
 moment_inertia_(old.moment_inertia_),
 length_ref_(old.length_ref_),
+lines_(old.lines_),
 gaussrule_(old.gaussrule_)
 {
   return;
@@ -109,7 +113,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Beam2::Shape() const
 void DRT::ELEMENTS::Beam2::Pack(vector<char>& data) const
 {
   data.resize(0);
-  
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -169,11 +173,11 @@ void DRT::ELEMENTS::Beam2::Unpack(const vector<char>& data)
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
-  
+
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
-} 
+}
 
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                          cyron 01/08|
@@ -226,7 +230,7 @@ DRT::ELEMENTS::Beam2Register* DRT::ELEMENTS::Beam2Register::Clone() const
 void DRT::ELEMENTS::Beam2Register::Pack(vector<char>& data) const
 {
   data.resize(0);
-  
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -234,7 +238,7 @@ void DRT::ELEMENTS::Beam2Register::Pack(vector<char>& data) const
   vector<char> basedata(0);
   ElementRegister::Pack(basedata);
   AddtoPack(data,basedata);
-  
+
   return;
 }
 
@@ -253,11 +257,11 @@ void DRT::ELEMENTS::Beam2Register::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   ElementRegister::Unpack(basedata);
-  
+
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
-} 
+}
 
 
 /*----------------------------------------------------------------------*

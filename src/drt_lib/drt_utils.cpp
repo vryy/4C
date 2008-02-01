@@ -36,6 +36,7 @@ extern "C"
 #include "drt_node.H"
 #include "drt_dofset.H"
 #include "drt_discret.H"
+#include "../drt_beam2/beam2.H"
 #include "../drt_s8/shell8.H"
 #include "../drt_f2/fluid2.H"
 #include "../drt_f2/condif2.H"
@@ -101,6 +102,23 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       dserror("DRT::Element is pure virtual, cannot create instance");
     }
     break;
+#ifdef D_BEAM2
+    case ParObject_Beam2:
+    {
+      DRT::ELEMENTS::Beam2* object = new DRT::ELEMENTS::Beam2(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_Beam2Register:
+    {
+      DRT::ELEMENTS::Beam2Register* object =
+                      new DRT::ELEMENTS::Beam2Register(DRT::Element::element_beam2);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+#endif 
 #ifdef D_SHELL8
     case ParObject_Shell8:
     {
@@ -471,6 +489,14 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
 
   switch (type)
   {
+#ifdef D_BEAM2
+    case beam2:
+    {
+      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Beam2(id,owner));
+      return ele;
+    }
+    break;
+#endif 
 #ifdef D_SHELL8
     case shell8:
     {

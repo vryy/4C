@@ -26,6 +26,7 @@ Maintainer: Christian Cyron
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
+#include "Epetra_Vector.h"
 using namespace std;
 using namespace Teuchos;
 #include "../drt_lib/drt_element.H"
@@ -38,14 +39,8 @@ using namespace Teuchos;
 #include "../drt_lib/drt_utils.H"
 
 
-// element constants
-#ifndef MAXNOD_BEAM2
-#define MAXNOD_BEAM2 (2)  /* maximum of element nodes: 2 */
-#endif
-
 // forward declarations
 struct _MATERIAL;
-
 
 /*!
 \brief DRT: namespace of the ccarat discretization module

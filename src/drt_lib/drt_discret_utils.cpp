@@ -58,6 +58,10 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   DRT::Element* ele = lRowElement(0);
   switch (ele->Type())
   {
+    case DRT::Element::element_beam2:
+      numdf = 3;
+      dimns = 2;
+    break;
     case DRT::Element::element_shell8:
       numdf = 6;
       dimns = 6;
@@ -281,6 +285,47 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
       } // for (int j=0; j<actnode->Dof().NumDof(); ++j)
     } // for (int i=0; i<NumMyRowNodes(); ++i)
   } // else if (ele->Type() == DRT::Element::element_wall1)
+  
+  
+   //there are three rigid body modes for beam2
+  
+    else if (ele->Type() == DRT::Element::element_beam2)
+  {
+    for (int i=0; i<NumMyRowNodes(); ++i)
+    {
+      DRT::Node* actnode = lRowNode(i);
+      const double* x = actnode->X();
+      vector<int> dofs = Dof(actnode);
+      for (unsigned j=0; j<dofs.size(); ++j)
+      {
+        const int dof = dofs[j];
+        const int lid = rowmap->LID(dof);
+        if (lid<0) dserror("Cannot find dof");
+        switch (j) // j is degree of freedom
+        {
+        case 0:
+          mode[0][lid] = 1.0;
+          mode[1][lid] = 0.0;
+          mode[2][lid] = 0.0;
+        break;
+        case 1:
+          mode[0][lid] = 0.0;
+          mode[1][lid] = 1.0;
+          mode[2][lid] = 0.0;
+        break;
+        case 2:
+          mode[0][lid] = 0.0;
+          mode[1][lid] = 0.0;
+          mode[2][lid] = 1.0;
+        break;
+        default:
+          dserror("Only dofs 0 - 2 supported");
+        break;
+        } // switch (j)
+      } // for (int j=0; j<actnode->Dof().NumDof(); ++j)
+    } // for (int i=0; i<NumMyRowNodes(); ++i)
+  } // else if (ele->Type() == DRT::Element::element_beam2)
+
 
 
   /* the rigid body modes for fluids are:
