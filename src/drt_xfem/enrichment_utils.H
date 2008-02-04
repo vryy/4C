@@ -43,6 +43,7 @@ void ComputeEnrichedShapefunction(
         const XFEM::ElementDofManager&    dofman,
         const XFEM::PHYSICS::Field        field,
         const BlitzVec&                   actpos,      ///< Position in physical coordinates
+        const XFEM::Enrichment::ApproachFrom approachdirection,
         const BlitzVec&                   funct,
         BlitzVec&                         enr_funct
         );
@@ -53,6 +54,7 @@ void ComputeEnrichedShapefunction(
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
         const BlitzVec& actpos,                   ///< Position in physical coordinates
+        const XFEM::Enrichment::ApproachFrom approachdirection,
         const BlitzVec& funct,
         const BlitzMat& derxy,
         BlitzVec& enr_funct,
@@ -65,6 +67,7 @@ void ComputeEnrichedShapefunction(
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
         const BlitzVec& actpos,                   ///< Position in physical coordinates
+        const XFEM::Enrichment::ApproachFrom approachdirection,
         const BlitzVec& funct,
         const BlitzMat& derxy,
         const BlitzMat& derxy2,
@@ -79,6 +82,7 @@ void ComputeEnrichedStressShapefunction(
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
         const BlitzVec& actpos,
+        const XFEM::Enrichment::ApproachFrom approachdirection,
         const BlitzVec& funct,
         BlitzVec& enr_funct
         );
@@ -89,6 +93,7 @@ void ComputeEnrichedStressShapefunction(
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
         const BlitzVec& actpos,
+        const XFEM::Enrichment::ApproachFrom approachdirection,
         const BlitzVec& funct,
         const BlitzMat& derxy,
         BlitzVec& enr_funct,

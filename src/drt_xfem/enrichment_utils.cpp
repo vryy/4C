@@ -36,6 +36,7 @@ void XFEM::ComputeEnrichedShapefunction(
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
         const blitz::Array<double,1>& actpos,
+        const XFEM::Enrichment::ApproachFrom approachdirection,
         const blitz::Array<double,1>& funct,
         BlitzVec& enr_funct
         )
@@ -58,7 +59,7 @@ void XFEM::ComputeEnrichedShapefunction(
             {
                 const XFEM::Enrichment enr = enrfield->getEnrichment();
                 //const double enrval = enr.ModifiedEnrValue(actpos, nodalpos, ih->cutterdis());
-                const double enrval = enr.EnrValue(actpos, ih->cutterdis());
+                const double enrval = enr.EnrValue(actpos, ih->cutterdis(), approachdirection);
                 enr_funct(dofcounter) = funct(inode) * enrval;
                 dofcounter += 1;
             }
@@ -76,6 +77,7 @@ void XFEM::ComputeEnrichedShapefunction(
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
         const blitz::Array<double,1>& actpos,
+        const XFEM::Enrichment::ApproachFrom approachdirection,
         const blitz::Array<double,1>& funct,
         const blitz::Array<double,2>& derxy,
         blitz::Array<double,1>& enr_funct,
@@ -101,7 +103,7 @@ void XFEM::ComputeEnrichedShapefunction(
             {
                 const XFEM::Enrichment enr = enrfield->getEnrichment();
                 //const double enrval = enr.ModifiedEnrValue(actpos, nodalpos, ih->cutterdis());
-                const double enrval = enr.EnrValue(actpos, ih->cutterdis());
+                const double enrval = enr.EnrValue(actpos, ih->cutterdis(), approachdirection);
                 enr_funct(dofcounter) = funct(inode) * enrval;
                 enr_derxy(_,dofcounter) = derxy(_,inode) * enrval;
                 dofcounter += 1;
@@ -119,6 +121,7 @@ void XFEM::ComputeEnrichedShapefunction(
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
         const blitz::Array<double,1>& actpos,
+        const XFEM::Enrichment::ApproachFrom approachdirection,
         const blitz::Array<double,1>& funct,
         const blitz::Array<double,2>& derxy,
         const blitz::Array<double,2>& derxy2,
@@ -146,7 +149,7 @@ void XFEM::ComputeEnrichedShapefunction(
             {
                 const XFEM::Enrichment enr = enrfield->getEnrichment();
                 //const double enrval = enr.ModifiedEnrValue(actpos, nodalpos, ih->cutterdis());
-                const double enrval = enr.EnrValue(actpos, ih->cutterdis());
+                const double enrval = enr.EnrValue(actpos, ih->cutterdis(), approachdirection);
                 enr_funct(dofcounter) = funct(inode) * enrval;
                 enr_derxy(_,dofcounter) = derxy(_,inode) * enrval;
                 enr_derxy2(_,dofcounter) = derxy2(_,inode) * enrval;
@@ -166,6 +169,7 @@ void XFEM::ComputeEnrichedStressShapefunction(
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
         const blitz::Array<double,1>& actpos,
+        const XFEM::Enrichment::ApproachFrom approachdirection,
         const blitz::Array<double,1>& funct,
         blitz::Array<double,1>& enr_funct
         )
@@ -182,7 +186,7 @@ void XFEM::ComputeEnrichedStressShapefunction(
             if (enrfield->getField() == field)
             {
                 const XFEM::Enrichment enr = enrfield->getEnrichment();
-                const double enrval = enr.EnrValue(actpos, ih->cutterdis());
+                const double enrval = enr.EnrValue(actpos, ih->cutterdis(), approachdirection);
                 enr_funct(dofcounter) = funct(inode) * enrval;
                 dofcounter += 1;                
             }
@@ -199,6 +203,7 @@ void XFEM::ComputeEnrichedStressShapefunction(
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
         const blitz::Array<double,1>& actpos,
+        const XFEM::Enrichment::ApproachFrom approachdirection,
         const blitz::Array<double,1>& funct,
         const blitz::Array<double,2>& derxy,
         blitz::Array<double,1>& enr_funct,
@@ -217,7 +222,7 @@ void XFEM::ComputeEnrichedStressShapefunction(
             if (enrfield->getField() == field)
             {
                 const XFEM::Enrichment enr = enrfield->getEnrichment();
-                const double enrval = enr.EnrValue(actpos, ih->cutterdis());
+                const double enrval = enr.EnrValue(actpos, ih->cutterdis(), approachdirection);
                 enr_funct(dofcounter) = funct(inode) * enrval;
                 enr_derxy(_,dofcounter) = derxy(_,inode) * enrval;
                 dofcounter += 1;                

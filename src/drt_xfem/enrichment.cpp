@@ -93,7 +93,8 @@ std::string Enrichment::enrTypeToString(const EnrType type) const
  *----------------------------------------------------------------------*/
 double Enrichment::EnrValue(
         const blitz::Array<double,1>& actpos,
-        const RCP<DRT::Discretization>& cutterdis
+        const RCP<DRT::Discretization>& cutterdis,
+        const XFEM::Enrichment::ApproachFrom approachdirection
         ) const
 {
     // return value
@@ -107,32 +108,63 @@ double Enrichment::EnrValue(
     }
     case XFEM::Enrichment::typeVoid:
     {
-        const int xfemcondition_label = this->XFEMConditionLabel();
-        
-        double actpos_enr_val = 0.0;
-        if (PositionWithinCondition(actpos, xfemcondition_label,cutterdis)) {
-            actpos_enr_val = 0.0;
-        } else {
-            actpos_enr_val = 1.0;
+        switch (approachdirection)
+        {
+        case approachFromPlus:
+        {
+            enrval = 1.0;
+            break;
         }
-
-        enrval = actpos_enr_val;
+        case approachFromMinus:
+        {
+            enrval = 0.0;
+            break;
+        }
+        case approachUnknown:
+        {
+            const int xfemcondition_label = this->XFEMConditionLabel();
+            double actpos_enr_val = 0.0;
+            if (PositionWithinCondition(actpos, xfemcondition_label,cutterdis)) {
+                actpos_enr_val = 0.0;
+            } else {
+                actpos_enr_val = 1.0;
+            }
+            enrval = actpos_enr_val;
+            break;
+        }
+        }
         
         break;
     }
     case XFEM::Enrichment::typeJump:
     {
-        const int xfemcondition_label = this->XFEMConditionLabel();
-        
-        double actpos_enr_val = 0.0;
-        if (PositionWithinCondition(actpos, xfemcondition_label,cutterdis)) {
-            actpos_enr_val = -1.0;
-        } else {
-            actpos_enr_val = 1.0;
+        switch (approachdirection)
+        {
+        case approachFromPlus:
+        {
+            enrval = 1.0;
+            break;
         }
-
-        enrval = actpos_enr_val;
-        
+        case approachFromMinus:
+        {
+            enrval = -1.0;
+            break;
+        }
+        case approachUnknown:
+        {
+            const int xfemcondition_label = this->XFEMConditionLabel();
+            
+            double actpos_enr_val = 0.0;
+            if (PositionWithinCondition(actpos, xfemcondition_label,cutterdis)) {
+                actpos_enr_val = -1.0;
+            } else {
+                actpos_enr_val = 1.0;
+            }
+    
+            enrval = actpos_enr_val;
+            break;
+        }
+        }
         break;
     }
     default:
@@ -149,9 +181,11 @@ double Enrichment::EnrValue(
 double Enrichment::ModifiedEnrValue(
         const blitz::Array<double,1>& actpos,
         const blitz::Array<double,1>& nodalpos,
-        const RCP<DRT::Discretization>& cutterdis
+        const RCP<DRT::Discretization>& cutterdis,
+        const XFEM::Enrichment::ApproachFrom approachdirection
         ) const
 {
+    dserror("needs update for the approach variable");
     // return value
     double enrval = 1.0;
     

@@ -34,14 +34,27 @@ class Enrichment
 {
 public:
 
-    // Various kinds of enrichments, which differ in the way,
-    // the enrichment function is evaluated
+    /*! Various kinds of enrichments, which differ in the way,
+     *  the enrichment function is evaluated
+     */
     enum EnrType
     {
         typeUndefined,
         typeStandard,
         typeJump,
         typeVoid
+    };
+    
+    /*!
+     * we want to be able to say, wether we approach froma particular side towards the discontinuity
+     * this makes sense for jump or kink enrichments,
+     * boundary layers or similar things might not need this
+     */
+    enum ApproachFrom
+    {
+        approachUnknown,
+        approachFromPlus,
+        approachFromMinus
     };
     
     explicit Enrichment();
@@ -93,12 +106,14 @@ public:
     double ModifiedEnrValue(
             const blitz::Array<double,1>& actpos,
             const blitz::Array<double,1>& nodalpos,
-            const RCP<DRT::Discretization>& cutterdis
+            const RCP<DRT::Discretization>& cutterdis,
+            const XFEM::Enrichment::ApproachFrom approachdirection
             ) const;
 
     double EnrValue(
             const blitz::Array<double,1>& actpos,
-            const RCP<DRT::Discretization>& cutterdis
+            const RCP<DRT::Discretization>& cutterdis,
+            const XFEM::Enrichment::ApproachFrom approachdirection
             ) const;
     
 private:

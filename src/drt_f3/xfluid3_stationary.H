@@ -542,12 +542,12 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
       return pos_xsi_boundary;
   };
   
-  //! map position from eta^\boundary to xi^\boundary space
-  XFEM::PosXiBoundary mapEtaBToXiD(
+  //! map position from eta^\boundary to xi^\domain space
+  XFEM::PosXiDomain mapEtaBToXiD(
           const XFEM::BoundaryIntCell& cell,
           const XFEM::PosEtaBoundary&  pos_eta)
   {   
-      // get cell node coordinates
+      // get cell node coordinates in xi_domain
       const BlitzMat xyze_cell(cell.NodalPosXiDomainBlitz());
 
       // create shape function vectors 
@@ -564,7 +564,7 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
 
   
   
-//! get determinante between eta and xi space
+//! get determinante between eta^\boundary and xi^\boundary space
 double detEtaBToXiB(
         const XFEM::BoundaryIntCell& cell,
         const XFEM::PosEtaDomain&  pos_eta)
@@ -926,6 +926,7 @@ BlitzVec computeNormalToBoundaryElement(
                   dofman,
                   Velx,
                   gauss_pos_xyz,
+                  XFEM::Enrichment::approachUnknown,
                   funct_,
                   derxy_,
                   derxy2_, 
@@ -942,6 +943,7 @@ BlitzVec computeNormalToBoundaryElement(
                       dofman,
                       Tauxx,
                       gauss_pos_xyz,
+                      XFEM::Enrichment::approachUnknown,
                       funct_stress,
                       derxy_stress,
                       enr_funct_stress,
@@ -1651,7 +1653,7 @@ BlitzVec computeNormalToBoundaryElement(
     
     
     
-#if 1
+#if 0
     if (ASSTYPE == XFEM::xfem_assembly)
     {
         // for now, I don't try to compare to elements wiout stress unknowns, since they lock anyway
@@ -1673,7 +1675,7 @@ BlitzVec computeNormalToBoundaryElement(
     // get node coordinates
     //TODO: get the right element
     //const RCP<DRT::Element> boundaryele = ih->GetBoundaryEle(cell->GetSurfaceEleGid());
-    DRT::Element* boundaryele = ih->GetBoundaryEle(1);
+    DRT::Element* boundaryele = ih->GetBoundaryEle(0);
     cout << (*boundaryele) << endl;
     const int numnode_boundary = boundaryele->NumNode();
     BlitzMat xyze_boundary(3,numnode_boundary,blitz::ColumnMajorArray<2>());
@@ -1755,6 +1757,7 @@ BlitzVec computeNormalToBoundaryElement(
                   dofman,
                   Velx,
                   gauss_pos_xyz,
+                  XFEM::Enrichment::approachFromPlus,
                   funct_,
                   derxy_,
                   enr_funct_,
@@ -1767,6 +1770,7 @@ BlitzVec computeNormalToBoundaryElement(
                   dofman,
                   Tauxx,
                   gauss_pos_xyz,
+                  XFEM::Enrichment::approachFromPlus,
                   funct_stress,
                   enr_funct_stress);
       }
