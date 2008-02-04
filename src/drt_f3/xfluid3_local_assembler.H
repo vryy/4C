@@ -207,56 +207,6 @@ private:
     BlitzVec& eforce_;
 };
 
-
-//void MatrixFast(
-//        const XFEM::ElementDofManager&    dofman,
-//        blitz::Array<double,2>&           estif,
-//        const XFEM::PHYSICS::Field&       testfield,
-//        const XFEM::PHYSICS::Field&       trialfield,
-//        const blitz::Array<double,2>&     shapeprod
-//        )
-//{
-//    const vector<int> testdof  = dofman.LocalDofPosPerField(testfield);
-//    const vector<int> trialdof = dofman.LocalDofPosPerField(trialfield);
-//    
-//    const int numparamtest  = testdof.size();
-//    const int numparamtrial = trialdof.size();
-//
-//    for (int ui=0; ui<numparamtrial; ++ui)
-//    {
-//        const int trialpos = trialdof[ui];
-//
-//        for (int vi=0; vi<numparamtest; ++vi)
-//        {
-//            const int testpos = testdof[vi];
-//
-//            estif(testpos, trialpos) += shapeprod(vi, ui) ;
-//        }
-//    }
-//}
-
-//void integrateVectorBlock(
-//        const XFEM::ElementDofManager&    dofman,
-//        blitz::Array<double,1>&           eforce,
-//        const XFEM::PHYSICS::Field&       testfield,
-//        const blitz::Array<double,1>&     testshape
-//        )
-//{
-//
-//    const vector<int> testdof  = dofman.LocalDofPosPerField(testfield);
-//    
-//    const int numparamtest = testdof.size();
-//
-//    for (int vi=0; vi<numparamtest; ++vi)
-//    {
-//        const int testpos = testdof[vi];
-//
-//        eforce(testpos) += testshape(vi);
-//    }
-//}
-
-
-
   
 #endif
 
