@@ -295,6 +295,10 @@ const int iel = NumNode();
 //coordinates in reference and current configuration of all the nodes in two dimensions stored in 3 x iel matrices
 LINALG::SerialDenseMatrix xrefe;
 LINALG::SerialDenseMatrix x_curr;
+
+xrefe.Shape(3,2);
+x_curr.Shape(3,2);
+
 //young's modulus
 double ym = 0;
 //shear modulus
@@ -310,8 +314,10 @@ LINALG::SerialDenseVector z_curr;
 LINALG::SerialDenseVector r_curr;
 LINALG::SerialDenseMatrix B_curr;
 
+z_curr.Size(6);
+r_curr.Size(6);
+B_curr.Shape(3,6);
 
-  
 for (int k=0; k<iel; ++k)
   {
 
@@ -324,9 +330,7 @@ for (int k=0; k<iel; ++k)
     x_curr(2,k) = xrefe(2,k) + disp[k*numdf+2];
 
   }
-  
-  
-  
+   
  //assignment of material parameters; only St.Venant material is accepted for this beam ----------------------
   switch(currmat->mattyp)
     {
@@ -341,8 +345,6 @@ for (int k=0; k<iel; ++k)
       dserror("unknown or improper type of material law");
     }
     
- 
-  
   // calculation of local geometrically important matrices and vectors; notation according to Crisfield-------
   
   length_curr = pow( pow(x_curr(0,1)-x_curr(0,0),2) + pow(x_curr(1,1)-x_curr(1,0),2) , 0.5 );
@@ -354,6 +356,8 @@ for (int k=0; k<iel; ++k)
     
   //calculation of local internal forces
   LINALG::SerialDenseVector force_loc;
+  
+  force_loc.Size(3);
   
   //local internal axial force
   force_loc(1) = ym*cross_section_*(length_curr - length_ref_)/length_ref_;
@@ -382,6 +386,8 @@ for (int k=0; k<iel; ++k)
   
   //adding geometric stiffness by shear force
   LINALG::SerialDenseMatrix aux_Q;
+  aux_Q.Shape(6,6);
+  
   double aux_Q_fac = force_loc(3)*length_ref_ / pow(length_curr,2);
   
   for(int id_lin=0; id_lin<5; id_lin++)
@@ -394,6 +400,8 @@ for (int k=0; k<iel; ++k)
   
   //adding geometric stiffness by axial force
   LINALG::SerialDenseMatrix aux_N;
+  aux_N.Shape(6,6);
+  
   double aux_N_fac = force_loc(1)/length_curr;
   
   for(int id_lin=0; id_lin<5; id_lin++)
@@ -408,8 +416,8 @@ for (int k=0; k<iel; ++k)
   
   //the following code lines are based on the assumption that massmatrix is a 6x6 matrix filled with zeros
   #ifdef DEBUG
-  dsassert(massmatrix.M()==6,"wrong mass matrix input in beam2_evaluate, function b2_nlnstiffmass");
-  dsassert(massmatrix.N()==6,"wrong mass matrix input in beam2_evaluate, function b2_nlnstiffmass");
+  dsassert(massmatrix.M()==6,"wrong mass matrix input");
+  dsassert(massmatrix.N()==6,"wrong mass matrix input");
   for(int i=0; i<5; i++)
   	for(int j=0; j<5; j++)
   	dsassert(massmatrix(i,j)==0,"wrong mass matrix input in beam2_evaluate, function b2_nlnstiffmass"); 

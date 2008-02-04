@@ -68,8 +68,8 @@ bool DRT::ELEMENTS::Beam2::ReadElement()
 
   // read number of material model and assing young's modulus to ym
   // note: ym is the only material parameter necessary for Bernoulli beams
-  int material = 0;
-  frint("MAT",&material,&ierr);
+  material_ = 0;
+  frint("MAT",&material_,&ierr);
   if (ierr!=1) dserror("Reading of Beam2 element failed");
 
 
