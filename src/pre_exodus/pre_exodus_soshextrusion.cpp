@@ -28,8 +28,8 @@ using namespace Teuchos;
 EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness, int layers)
 {
   int highestnid = basemesh.GetNumNodes() +1;
-  map<int,vector<double> > newnodes;
-  int highestele = basemesh.GetNumEle();
+  map<int,vector<double> > newnodes;          // here the new nodes ar stored
+  map<int,EXODUS::ElementBlock> neweblocks;   // here the new EBlocks are stores
   int highestblock = basemesh.GetNumElementBlocks();
   map<int,EXODUS::ElementBlock> ebs = basemesh.GetElementBlocks();
   map<int,EXODUS::ElementBlock>::const_iterator i_ebs;
@@ -40,14 +40,11 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
     bool toextrude = CheckExtrusion(i_ebs->second);
     if (toextrude) extrudeblocks.insert(pair<int,ElementBlock>(i_ebs->first,i_ebs->second));
   }
-  // create new Element Block map
-  map<int,EXODUS::ElementBlock> neweblocks;
   
   // loop all existing extrudeblocks
   for (i_ebs = extrudeblocks.begin(); i_ebs != extrudeblocks.end(); ++i_ebs){
     // get existing eblock
     EXODUS::ElementBlock extrudeblock = i_ebs->second;
-    int numele = extrudeblock.GetNumEle();
     extrudeblock.Print(cout);
     
     // Create Node to Element Connectivity
@@ -57,23 +54,26 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
     const map<int,vector<int> > ele_neighbor = EleNeighbors(extrudeblock,node_conn);
     PrintMap(cout,ele_neighbor);
     
-//    // Create new elements based on the basemesh connectivity
-//    map<int,vector<int> > newelecon = CopyConnectedMesh(highestnode,
-//                                highestele,basenodes,extrudeblock,ele_neighbor);
-    
     // loop through all its elements to create new connectivity  ***************
     map<int,vector<int> > newconn;
+    int newele = 0;
     map<int,int> node_pair; // stores new node id with base node id
     
-    // here we store a potential set of eles still to extrude
+    // set of elements already done
+    set<int> doneles;
+    set<int>::iterator i_doneles;
+    
+   // here we store a potential set of eles still to extrude
     set<int> todo_eles;
     set<int>::iterator i_todo_eles;
     todo_eles.insert(0); // lets insert the very first one for a start
     
-    // for the first element we set up the whole
+    // for the first element we set up everything *****************************
     vector<int> actelenodes = extrudeblock.GetEleNodes(0);
     vector<int>::const_iterator i_node;
     int newid;
+    // create a new element
+    vector<int> newelenodes(actelenodes.size());
     for (i_node=actelenodes.begin(); i_node < actelenodes.end(); ++i_node){
       newid = highestnid; ++ highestnid;
       
@@ -87,79 +87,175 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
       
       // put new node into map of OldNodeToNewNode
       node_pair.insert(std::pair<int,int>(*i_node,newid));
+      // insert node into element
+      newelenodes.push_back(newid);
     }    
+    doneles.insert(0);    // the first element is done ************************
+    // insert new element into new connectivity
+    newconn.insert(pair<int,vector<int> >(newele,newelenodes));
+    PrintVec(cout,newelenodes);
+    newelenodes.clear();
+    ++ newele;
     
-    map<int,bool> doneles;
-    doneles.insert(pair<int,bool>(0,true));
+    // debug
+    PrintMap(cout,newconn);
     
-    while (todo_eles.size() > 0){
-    //for (int iele = 0; iele < numele; ++iele) {
+    while (todo_eles.size() > 0){ // start of going through ele neighbors///////
       
       // find an actele still to do
       i_todo_eles=todo_eles.begin();
-      
-      // start algo of finding edge neighbors
-      // ***********************************
-      // **********************************
       
       int actele = *i_todo_eles;
       // get nodes of actual element
       vector<int> actelenodes = extrudeblock.GetEleNodes(actele);
       
-      /* get new nodes for "copy" element.
-       * Here, checking of already copied nodes happens and the corresp map is filled */
-      //vector<int> newelenodes_base = RiseNodeIds(highestnid,node_pair,actelenodes);
-      vector<int> newelenodes(actelenodes.size());
-      map<int,int>::iterator it;
-      vector<int>::const_iterator i_node;
-      for (i_node=actelenodes.begin(); i_node < actelenodes.end(); ++i_node){
-        // check whether this node has not been done
-        if (node_pair.find(*i_node)==node_pair.end()){
-          newid = highestnid; ++ highestnid;
-          
-          // place new node at new position
-          vector<double> actcoords = basemesh.GetNodeExo(*i_node); //curr position
-          // calculate new position
-          const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness);
-          int newExoNid = ExoToStore(newid);
-          // put new coords into newnode map
-          newnodes.insert(pair<int,vector<double> >(newExoNid,newcoords));
-          
-          // put new node into map of OldNodeToNewNode
-          node_pair.insert(std::pair<int,int>(*i_node,newid));
-          
-        } else newid = node_pair.find(*i_node)->second;
-        // insert node into element
-        newelenodes.push_back(newid);
-      }
+      // get edge neighbors
+      vector<int> actneighbors = ele_neighbor.at(actele);
       
+      vector<int>::const_iterator i_nbr;
+      int edge = 0; // edge counter
+      for (i_nbr = actneighbors.begin(); i_nbr < actneighbors.end(); ++ i_nbr){
+        int actneighbor = *i_nbr;
+        // check for undone neighbor
+        i_doneles = doneles.find(actneighbor);
+        if (i_doneles != doneles.end()){  // lets extrude **********************
+          
+          // get nodepair of actual edge
+          int firstedgenode = actelenodes.at(edge);
+          int secedgenode;
+          // switch in case of last to first node edge
+          if (edge == signed(actelenodes.size())) secedgenode = actelenodes.at(0);
+          else secedgenode = actelenodes.at(edge+1);
+          ++ edge;
+          
+          // create a new element
+          vector<int> newelenodes(actelenodes.size());
+          
+          /* the new elements orientation is opposite the current one
+           * therefore the first node is secedgenode */
+          
+          // check if new node already exists
+          if (node_pair.find(secedgenode)==node_pair.end()){
+            // lets create a new node
+            newid = highestnid; ++ highestnid;
+            // place new node at new position
+            vector<double> actcoords = basemesh.GetNodeExo(secedgenode); //curr position
+            // calculate new position
+            const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness);
+            int newExoNid = ExoToStore(newid);
+            // put new coords into newnode map
+            newnodes.insert(pair<int,vector<double> >(newExoNid,newcoords));
+            
+            // put new node into map of OldNodeToNewNode
+            node_pair.insert(std::pair<int,int>(secedgenode,newid));
+            
+          } else newid = node_pair.find(secedgenode)->second;
+          
+          // insert node into element
+          newelenodes.push_back(newid);
+          
+          /* the new elements orientation is opposite the current one
+           * therefore the second node is firstedgenode */
+          
+          // check if new node already exists
+          if (node_pair.find(firstedgenode)==node_pair.end()){
+            // lets create a new node
+            newid = highestnid; ++ highestnid;
+            // place new node at new position
+            vector<double> actcoords = basemesh.GetNodeExo(firstedgenode); //curr position
+            // calculate new position
+            const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness);
+            int newExoNid = ExoToStore(newid);
+            // put new coords into newnode map
+            newnodes.insert(pair<int,vector<double> >(newExoNid,newcoords));
+            
+            // put new node into map of OldNodeToNewNode
+            node_pair.insert(std::pair<int,int>(firstedgenode,newid));
+            
+          } else newid = node_pair.find(firstedgenode)->second;
+          
+          // insert node into element
+          newelenodes.push_back(newid);
+          
+          /* the new elements orientation is opposite the current one
+           * therefore the remaining nodes are gained from the neighbor ele */
+          
+          vector<int> actnbrnodes = extrudeblock.GetEleNodes(actneighbor);
+          int thirdnode = FindEdgeNeighbor(actnbrnodes,firstedgenode,secedgenode);
+          
+          // check if new node already exists
+          if (node_pair.find(thirdnode)==node_pair.end()){
+            // lets create a new node
+            newid = highestnid; ++ highestnid;
+            // place new node at new position
+            vector<double> actcoords = basemesh.GetNodeExo(thirdnode); //curr position
+            // calculate new position
+            const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness);
+            int newExoNid = ExoToStore(newid);
+            // put new coords into newnode map
+            newnodes.insert(pair<int,vector<double> >(newExoNid,newcoords));
+            
+            // put new node into map of OldNodeToNewNode
+            node_pair.insert(std::pair<int,int>(thirdnode,newid));
+            
+          } else newid = node_pair.find(thirdnode)->second;
+          
+          // insert node into element
+          newelenodes.push_back(newid);
+         
+          if (actelenodes.size() > 3){ // in case of not being a tri3
+            
+            /* the new elements orientation is opposite the current one
+             * therefore the remaining nodes are gained from the neighbor ele */
+            
+            int fourthnode = FindEdgeNeighbor(actnbrnodes,thirdnode,firstedgenode);
+            
+            // check if new node already exists
+            if (node_pair.find(fourthnode)==node_pair.end()){
+              // lets create a new node
+              newid = highestnid; ++ highestnid;
+              // place new node at new position
+              vector<double> actcoords = basemesh.GetNodeExo(fourthnode); //curr position
+              // calculate new position
+              const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness);
+              int newExoNid = ExoToStore(newid);
+              // put new coords into newnode map
+              newnodes.insert(pair<int,vector<double> >(newExoNid,newcoords));
+              
+              // put new node into map of OldNodeToNewNode
+              node_pair.insert(std::pair<int,int>(fourthnode,newid));
+              
+            } else newid = node_pair.find(fourthnode)->second;
+            
+            // insert node into element
+            newelenodes.push_back(newid);
+          }
+          
+          // insert actneighbor element into new connectivity map
+          newconn.insert(pair<int,vector<int> >(newele,newelenodes));
+          newelenodes.clear();
+          ++ newele;
+          
+          // insert actneighbor into done elements
+          doneles.insert(actneighbor);
+          
+          // neighbor eles are possible next "center" eles
+          todo_eles.insert(actneighbor);  
+          
+        }// end of if undone->extrude this neighbor, next neighbor *************
+        
+      }// end of this "center" - element ///////////////////////////////////////
       
-//      for (int inode = 0; inode < signed(actelenodes.size()); ++inode) {
-//        vector<double> actcoords = basemesh.GetNodeExo(actelenodes[inode]);
-//        const int newnodeid = ExoToStore(newelenodes_base.at(inode));
-//        newnodes.insert(pair<int,vector<double> >(newnodeid,actcoords));
-//      }
-//      //highestnode += actelenodes.size();
-//      //vector<int> newelenodes_ext = RiseNodeIds(highestnode,actelenodes);
-//      for (int inode = 0; inode < signed(actelenodes.size()); ++inode) {
-//        vector<double> actcoords = basemesh.GetNodeExo(actelenodes[inode]);
-//        const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness);
-//        const int newnodeid = ExoToStore(newelenodes_ext.at(inode));
-//        newnodes.insert(pair<int,vector<double> >(newnodeid,newcoords));
-//      }
-//      highestnode += actelenodes.size();
-//      vector<int> newhex8 = newelenodes_base;
-//      newhex8.insert(newhex8.end(),newelenodes_ext.begin(),newelenodes_ext.end());
-//      newconn.insert(pair<int,vector<int> >(iele+highestele, newhex8));
-    }
-    // *************************************************************************
+    }// end of extruding all elements in block
     
-    string newname = "anotherblock";
-    EXODUS::ElementBlock neweblock(ElementBlock::hex8,newconn,newname);
-    neweblock.Print(cout, true);
+    // create new Element Block
+    std::ostringstream blockname;
+    blockname << "extrude" << i_ebs->first;
+    EXODUS::ElementBlock neweblock(ElementBlock::shell4,newconn,blockname.str());
     int newblockID = highestblock + i_ebs->first;
     neweblocks.insert(pair<int,EXODUS::ElementBlock>(newblockID,neweblock));
-  }
+    
+  } // end of extruding elementblocks
   
   string newtitle = "extrusion";
   map<int,EXODUS::NodeSet> emptynodeset;
@@ -254,14 +350,52 @@ const map<int,vector<int> > EXODUS::EleNeighbors(EXODUS::ElementBlock eblock, co
       else secedgenode = *(i_node + 1);
       // find all elements connected to the first node
       const set<int> firsteles = elepatch.find(firstedgenode)->second;
-      // loop over these elements to find the one sharing the secondedgenode
-      set<int>::const_iterator it;
-      for(it = firsteles.begin(); it != firsteles.end(); ++it){
-        const int trialele = *it;
-        if (trialele != acteleid){
-          vector<int> neighbornodes = ele_conn.find(trialele)->second;
-          bool found = FindinVec(secedgenode,neighbornodes);
-          if (found) {eleneighbors[acteleid].push_back(trialele); break;}
+      int numnbr = firsteles.size();
+      switch (numnbr){
+        case 0: dserror ("node without element?? Impossible!"); break;
+        case 1:{ // node is at "free" corner of eblock
+          vector<int> noneighbors(4,-1);
+          eleneighbors.insert(pair<int,vector<int> >(acteleid,noneighbors));
+          break; 
+        }
+        case 2:{ // node is at "free" edge of eblock
+          vector<int> one_neighbor(4,-1);
+          int trialele = *(firsteles.begin());
+          if (trialele == acteleid) trialele = *(firsteles.end());
+          //one_neighbor[i_node] = trialele;
+          eleneighbors.insert(pair<int,vector<int> >(acteleid,one_neighbor));
+          break;
+        }
+        case 3:{ // node is at "free" inner corner (konkav edge) of eblock
+          vector<int> one_neighbor(4,-1);
+          set<int>::const_iterator it;
+          for(it = firsteles.begin(); it != firsteles.end(); ++it){
+            const int trialele = *it;
+            if (trialele != acteleid){
+              vector<int> neighbornodes = ele_conn.find(trialele)->second;
+              bool found = FindinVec(secedgenode,neighbornodes);
+              if (found) {
+                //one_neighbor[i_node] = trialele;
+                eleneighbors.insert(pair<int,vector<int> >(acteleid,one_neighbor));
+              }
+            }
+          }
+          break;
+        }
+        default:{ // standard case: the element has 4 neighbors
+          // loop over these elements to find the one sharing the secondedgenode
+          set<int>::const_iterator it;
+          for(it = firsteles.begin(); it != firsteles.end(); ++it){
+            const int trialele = *it;
+            if (trialele != acteleid){
+              vector<int> neighbornodes = ele_conn.find(trialele)->second;
+              bool found = FindinVec(secedgenode,neighbornodes);
+              if (found) {
+                eleneighbors[acteleid].push_back(trialele);
+                break;
+              }
+            }
+          }
         }
       }
     }
@@ -274,6 +408,29 @@ bool EXODUS::FindinVec(const int id, const vector<int> vec)
   vector<int>::const_iterator i;
   for(i=vec.begin(); i<vec.end(); ++i) if (*i == id) return true;
   return false;
+}
+
+int EXODUS::FindEdgeNeighbor(const vector<int> nodes, const int actnode, const int wrong_dir_node)
+{
+  // special case of very first node
+  if (nodes.at(0) == actnode){
+    if (nodes.at(1) == wrong_dir_node) return nodes.at(nodes.size());
+    else return nodes.at(1); 
+  }
+  // special case of very last node
+  if (nodes.at(nodes.size()) == actnode){
+    if (nodes.at(0) == wrong_dir_node) return nodes.at(nodes.size()-1);
+    else return nodes.at(0);
+  }
+  // case of somewhere in between
+  vector<int>::const_iterator i;
+  for(i=nodes.begin(); i<nodes.end(); ++i){
+    if (*i == actnode){
+      if (*(i+1) == wrong_dir_node) return *(i-1);
+      else return *(i+1);
+    }
+  }
+  return 0; // never reached!
 }
 
 void EXODUS::PrintMap(ostream& os,const map<int,vector<int> > mymap)
@@ -304,6 +461,25 @@ void EXODUS::PrintMap(ostream& os,const map<int,set<int> > mymap)
       }
       os << endl;
   }
+}
+
+void EXODUS::PrintVec(ostream& os, const vector<int> actvec)
+{
+  vector<int>::const_iterator i;
+  for (i=actvec.begin(); i<actvec.end(); ++i) {
+    os << *i << ",";
+  }
+  os << endl;
+}
+
+void EXODUS::PrintSet(ostream& os, const set<int> actset)
+{
+  set<int>::iterator i;
+  for (i=actset.begin(); i != actset.end(); ++i) {
+    os << *i << ",";
+  }
+  os << endl;
+  
 }
 
 

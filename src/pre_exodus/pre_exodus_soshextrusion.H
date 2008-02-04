@@ -50,8 +50,12 @@ const map<int,vector<int> > EleNeighbors(const EXODUS::ElementBlock eblock, cons
 
 bool FindinVec(const int id,vector<int> vec);
 
+int FindEdgeNeighbor(const vector<int> nodes, const int actnode, const int wrong_dir_node);
+
 void PrintMap(ostream& os,const map<int,vector<int> > mymap);
 void PrintMap(ostream& os,const map<int,set<int> > mymap);
+void PrintVec(ostream& os, const vector<int> actvec);
+void PrintSet(ostream& os, const set<int> actset);
 
 } // of namespace EXODUS
 
