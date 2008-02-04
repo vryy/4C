@@ -177,7 +177,47 @@ StruGenAlpha(params,dis,solver,output,false)
     //discret_.SetState("velocity",vel_); // not used at the moment
     discret_.Evaluate(p,stiff_,mass_,fint_,null,null);
     discret_.ClearState();
+    
+    //initialize Constraint Manager
+    ConstrMan_=rcp(new ConstrManager(discret_, dis_));
+    // Check for surface stress conditions due to interfacial phenomena
+    vector<DRT::Condition*> surfstresscond(0);
+    discret_.GetCondition("SurfaceStress",surfstresscond);
+    if (surfstresscond.size())
+    {
+      // Determine local number of associated surface elements
+      int localnumsurf=0;
+      for (unsigned i=0;i<surfstresscond.size();++i)
+      {
+        localnumsurf+=surfstresscond[i]->Geometry().size();
+      }
+
+      // Create a map of the associated surface elements
+      // This is needed because the SurfStressManager creates
+      // several vectors containing history variables of the
+      // corresponding surface elements. These vectors need to be
+      // distributed over the processors in the same way as the
+      // surface elements are.
+
+      int localsurf[localnumsurf];
+      int count=0;
+      for (unsigned i=0;i<surfstresscond.size();++i)
+      {
+        for (map<int,RefCountPtr<DRT::Element> >::iterator iter=surfstresscond[i]->Geometry().begin();
+             iter!=surfstresscond[i]->Geometry().end();++iter)
+        {
+          localsurf[count]=iter->first;
+          count++;
+        }
+      }
+      Epetra_Map surfmap(-1, localnumsurf, localsurf, 0, discret_.Comm());
+
+      int numsurf;
+      discret_.Comm().SumAll(&localnumsurf, &numsurf, 1);
+      surf_stress_man_=rcp(new DRT::SurfStressManager(discret_, numsurf, surfmap));
+    }
   }
+  
   // close mass matrix
   LINALG::Complete(*mass_);
   maxentriesperrow_ = mass_->MaxNumEntries();
