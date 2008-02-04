@@ -213,6 +213,13 @@ void DRT::ELEMENTS::Beam2::b2_local_aux(LINALG::SerialDenseMatrix& B_curr,
                     			const double& length_curr)
 
 {
+	//this function expects x 3x2 matrix x_curr for 3 DOF of 2 beam2 nodes
+	#ifdef DEBUG
+	dsassert(x_curr.M()==3,"improper dimension of x_curr");
+	dsassert(x_curr.N()==2,"improper dimension of x_curr");
+	#endif // #ifdef DEBUG
+
+
   // beta is the rotation angle out of x-axis in a x-y-plane
   double cos_beta = (x_curr(0,1)-x_curr(0,0))/length_curr;
   double sin_beta = (x_curr(1,1)-x_curr(1,0))/length_curr;
@@ -230,11 +237,11 @@ void DRT::ELEMENTS::Beam2::b2_local_aux(LINALG::SerialDenseMatrix& B_curr,
    /*then we take into consideration that we have to add 2n*pi to beta in order to get a realistic difference/
    / beta - teta1, where teta1 = x_curr(0,3); note that between diff_n1, diff_n2, diff_n3 there is such a great/
    / difference that it's no problem to lose the round off in the following cast operation */
-   int teta1 = static_cast<int>( 360*x_curr(0,3)/(2*PI) );
+   int teta1 = static_cast<int>( 360*x_curr(2,0)/(2*PI) );
    double n_aux = teta1 % 360;
-   double diff_n1 = abs( beta + (n_aux-1) * 2 * PI - x_curr(0,3) );
-   double diff_n2 = abs( beta + n_aux * 2 * PI - x_curr(0,3) );
-   double diff_n3 = abs( beta + (n_aux+1) * 2 * PI - x_curr(0,3) );
+   double diff_n1 = abs( beta + (n_aux-1) * 2 * PI - x_curr(2,0) );
+   double diff_n2 = abs( beta + n_aux * 2 * PI - x_curr(2,0) );
+   double diff_n3 = abs( beta + (n_aux+1) * 2 * PI - x_curr(2,0) );
    beta = beta + n_aux * 2 * PI;
    if (diff_n1 < diff_n2 && diff_n1 < diff_n3)
    	beta = beta + (n_aux-1) * 2 * PI;
@@ -313,10 +320,13 @@ double beta;
 LINALG::SerialDenseVector z_curr;
 LINALG::SerialDenseVector r_curr;
 LINALG::SerialDenseMatrix B_curr;
+//auxiliary matrix storing the product of constitutive matrix C and B_curr
+LINALG::SerialDenseMatrix aux_CB;
 
 z_curr.Size(6);
 r_curr.Size(6);
 B_curr.Shape(3,6);
+aux_CB.Shape(3,6);
 
 for (int k=0; k<iel; ++k)
   {
@@ -360,56 +370,42 @@ for (int k=0; k<iel; ++k)
   force_loc.Size(3);
   
   //local internal axial force
-  force_loc(1) = ym*cross_section_*(length_curr - length_ref_)/length_ref_;
+  force_loc(0) = ym*cross_section_*(length_curr - length_ref_)/length_ref_;
   
   //local internal bending moment
-  force_loc(2) = ym*moment_inertia_*(x_curr(3,1)-x_curr(3,0))/length_ref_;
+  force_loc(1) = ym*moment_inertia_*(x_curr(2,1)-x_curr(2,0))/length_ref_;
   
   //local internal shear force
-  force_loc(3) = sm*cross_section_corr_*( (x_curr(3,1)+x_curr(3,0))/2 - beta);
-  
-  
+  force_loc(2) = sm*cross_section_corr_*( (x_curr(2,1)+x_curr(2,0))/2 - beta);
   
   
   //calculating tangential stiffness matrix in global coordinates---------------------------------------------
   
   //linear elastic part including rotation
-  stiffmatrix = B_curr; 
+  
   for(int id_col=0; id_col<5; id_col++)
-        	B_curr(0,id_col)=B_curr(0,id_col) * (ym*cross_section_/length_ref_);
-  for(int id_col=0; id_col<5; id_col++)
-        	B_curr(1,id_col)=B_curr(1,id_col) * (ym*moment_inertia_/length_ref_);
-  for(int id_col=0; id_col<5; id_col++)
-        	B_curr(2,id_col)=B_curr(2,id_col) * (sm*cross_section_corr_/length_ref_);
+  {
+	  aux_CB(0,id_col) = B_curr(0,id_col) * (ym*cross_section_/length_ref_);
+	  aux_CB(1,id_col) = B_curr(1,id_col) * (ym*moment_inertia_/length_ref_);
+	  aux_CB(2,id_col) = B_curr(2,id_col) * (sm*cross_section_corr_/length_ref_);
+  }
   
-  stiffmatrix.Multiply('T','N',1, &B_curr, &stiffmatrix,0);
+  stiffmatrix.Multiply('T','N',1,B_curr,aux_CB,0);
   
-  //adding geometric stiffness by shear force
-  LINALG::SerialDenseMatrix aux_Q;
-  aux_Q.Shape(6,6);
-  
-  double aux_Q_fac = force_loc(3)*length_ref_ / pow(length_curr,2);
-  
+  //adding geometric stiffness by shear force 
+  double aux_Q_fac = force_loc(2)*length_ref_ / pow(length_curr,2);
   for(int id_lin=0; id_lin<5; id_lin++)
   	for(int id_col=0; id_col<5; id_col++)
-  		aux_Q(id_lin,id_col) = aux_Q_fac * r_curr(id_lin) * z_curr(id_col);
+  	{
+  		stiffmatrix(id_lin,id_col) += aux_Q_fac * r_curr(id_lin) * z_curr(id_col);
+  		stiffmatrix(id_lin,id_col) += aux_Q_fac * r_curr(id_col) * z_curr(id_lin);
+  	}
   
-  stiffmatrix += aux_Q;
-  aux_Q.SetUseTranspose(true);
-  stiffmatrix += aux_Q;
-  
-  //adding geometric stiffness by axial force
-  LINALG::SerialDenseMatrix aux_N;
-  aux_N.Shape(6,6);
-  
-  double aux_N_fac = force_loc(1)/length_curr;
-  
+  //adding geometric stiffness by axial force 
+  double aux_N_fac = force_loc(1)/length_curr; 
   for(int id_lin=0; id_lin<5; id_lin++)
   	for(int id_col=0; id_col<5; id_col++)
-  		aux_N(id_lin,id_col) = aux_N_fac * z_curr(id_lin) * z_curr(id_col);
-  
-  stiffmatrix += aux_N;
-  
+  		stiffmatrix(id_lin,id_col) += aux_N_fac * z_curr(id_lin) * z_curr(id_col);
   
   
   //calculating mass matrix (lcoal version = global version)--------------------------------------------------
@@ -434,13 +430,10 @@ for (int k=0; k<iel; ++k)
   }
   
   
-  
-  //calculation of global internal forces---------------------------------------------------------------------
-  B_curr.Multiply('T',force_loc,B_curr); 
-  dsassert(B_curr.N()==1,"Error in beam2_evaluate.cpp, line 417 - B_curr should be a vector now");
-  for(int i=0; i<2; i++)
-  	force(i) = B_curr(i,1);
-  
+  //calculation of global internal forces from force = B_transposed*force_loc---------------------------------- 
+  for(int id_col=0; id_col<5; id_col++)
+	  for(int id_lin=0; id_lin<2; id_lin++)
+    	force(id_col) = B_curr(id_lin,id_col)*force_loc(id_lin);
   
   return;
 } // DRT::ELEMENTS::Beam2::b2_nlnstiffmass(
