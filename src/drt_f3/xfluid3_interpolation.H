@@ -83,6 +83,9 @@ inline DRT::Element::DiscretizationType getStressInterpolationType3D(DRT::Elemen
     DRT::Element::DiscretizationType distype = DRT::Element::dis_none;
     switch (veldistype)
     {
+        case DRT::Element::tet4:
+            distype = DRT::Element::point1;
+            break;
         case DRT::Element::hex8:
             distype = DRT::Element::hex8;
             break;
