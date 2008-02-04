@@ -60,7 +60,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   {
     case DRT::Element::element_beam2:
       numdf = 3;
-      dimns = 2;
+      dimns = 3;
     break;
     case DRT::Element::element_shell8:
       numdf = 6;
