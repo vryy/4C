@@ -290,9 +290,6 @@ private:
   //! moment of inertia of area
   double                                             moment_inertia_;
   
-   //! length of beam in refenrece configuration
-  double                                             length_ref_;
-  
    //! vector of lines of this element (length 1)
   vector<DRT::Element*>                           lines_; 
  
@@ -310,7 +307,8 @@ private:
                     LINALG::SerialDenseVector& z_curr,
                     double& beta,
                     const LINALG::SerialDenseMatrix& x_curr,
-                    const double& length_curr);
+                    const double& length_curr,
+                    const double& length_refe);
 
   //calculation of nonlinear stiffness and mass matrix
   void b2_nlnstiffmass(vector<double>&           disp, 

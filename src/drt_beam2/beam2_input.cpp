@@ -66,6 +66,7 @@ bool DRT::ELEMENTS::Beam2::ReadElement()
   SetNodeIds(nnode,nodes);
 
 
+
   // read number of material model and assing young's modulus to ym
   // note: ym is the only material parameter necessary for Bernoulli beams
   material_ = 0;

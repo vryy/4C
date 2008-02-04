@@ -30,7 +30,6 @@ material_(0),
 cross_section_(0),
 cross_section_corr_(0),
 moment_inertia_(0),
-length_ref_(0),
 //since lines_ is a vector it calls its constructor automatically -> 
 //no initialization of lines_ necessary here
 
@@ -50,7 +49,6 @@ material_(old.material_),
 cross_section_(old.cross_section_),
 cross_section_corr_(old.cross_section_corr_),
 moment_inertia_(old.moment_inertia_),
-length_ref_(old.length_ref_),
 lines_(old.lines_),
 gaussrule_(old.gaussrule_)
 {
@@ -129,8 +127,6 @@ void DRT::ELEMENTS::Beam2::Pack(vector<char>& data) const
   AddtoPack(data,cross_section_corr_);
   //moment of inertia of area
   AddtoPack(data,moment_inertia_);
-  //beam length in reference configuration
-  AddtoPack(data,length_ref_);
   // gaussrule_
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   vector<char> tmp(0);
@@ -164,8 +160,6 @@ void DRT::ELEMENTS::Beam2::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,cross_section_corr_);
   //moment of inertia of area
   ExtractfromPack(position,data,moment_inertia_);
-  //beam length in reference configuration
-  ExtractfromPack(position,data,length_ref_);
   // gaussrule_
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);
@@ -287,8 +281,6 @@ int DRT::ELEMENTS::Beam2Register::Initialize(DRT::Discretization& dis)
 {
   return 0;
 }
-
-
 
 
 #endif  // #ifdef CCADISCRET

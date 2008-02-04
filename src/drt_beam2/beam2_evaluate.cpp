@@ -64,8 +64,7 @@ int DRT::ELEMENTS::Beam2::Evaluate(ParameterList& params,
 
   // get the material law
   MATERIAL* currmat = &(mat[material_-1]);
-  
-  
+   
   switch(act)
   {
     /*in case that only linear stiffness matrix is required b2_nlstiffmass is called with zero dispalcement and 
@@ -126,7 +125,7 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
                                            DRT::Condition&           condition,
                                            vector<int>&              lm,
                                            Epetra_SerialDenseVector& elevec1)
-{
+{		
   RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==null) dserror("Cannot get state vector 'displacement'");
   vector<double> mydisp(lm.size());
@@ -144,10 +143,15 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
   double curvefac = 1.0;
   if (curvenum>=0 && usetime)
     curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+  
+  //reference length calculated from nodal data
+  double x_sqdist_ref = pow( Nodes()[1]->X()[0] - Nodes()[0]->X()[0],2 );
+  double y_sqdist_ref = pow( Nodes()[1]->X()[1] - Nodes()[0]->X()[1],2 );
+  double length_refe = pow( x_sqdist_ref + y_sqdist_ref ,0.5 );
 
   
   //jacobian determinant
-  double det = length_ref_/2;
+  double det = length_refe/2;
 
 
   // no. of nodes on this element
@@ -208,9 +212,10 @@ return 0;
 void DRT::ELEMENTS::Beam2::b2_local_aux(LINALG::SerialDenseMatrix& B_curr,
                     			LINALG::SerialDenseVector& r_curr,
                     			LINALG::SerialDenseVector& z_curr,
-                                        double& beta,
+                                double& beta,
                     			const LINALG::SerialDenseMatrix& x_curr,
-                    			const double& length_curr)
+                    			const double& length_curr,
+                    			const double& length_refe)
 
 {
 	//this function expects x 3x2 matrix x_curr for 3 DOF of 2 beam2 nodes
@@ -279,7 +284,7 @@ void DRT::ELEMENTS::Beam2::b2_local_aux(LINALG::SerialDenseMatrix& B_curr,
         		B_curr(1,id_col) = 0;
         }
         	
-  	B_curr(2,id_col) = B_curr(1,id_col) * (length_ref_ / 2) - (length_ref_ / length_curr) * z_curr[id_col];
+  	B_curr(2,id_col) = B_curr(1,id_col) * (length_refe / 2) - (length_refe / length_curr) * z_curr[id_col];
   }
 
   return;
@@ -294,16 +299,13 @@ void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( vector<double>&           disp,
                                             Epetra_SerialDenseVector& force,
                                             struct _MATERIAL*         currmat)
 {
-   
-//calculating refenrence configuration xrefe and current configuration x_curr---------------------------------- 
-// no. of nodes on this element
 const int numdf = 3;
 const int iel = NumNode();
 //coordinates in reference and current configuration of all the nodes in two dimensions stored in 3 x iel matrices
-LINALG::SerialDenseMatrix xrefe;
+LINALG::SerialDenseMatrix x_refe;
 LINALG::SerialDenseMatrix x_curr;
 
-xrefe.Shape(3,2);
+x_refe.Shape(3,2);
 x_curr.Shape(3,2);
 
 //young's modulus
@@ -314,6 +316,8 @@ double sm = 0;
 double density = 0;
 //current length of beam in physical space
 double length_curr = 0;
+//length of beam in reference configuration
+double length_refe = 0;
 //current angle between x-axis and beam in physical space
 double beta;
 //some geometric auxiliary variables according to Crisfield, Vol. 1
@@ -328,16 +332,17 @@ r_curr.Size(6);
 B_curr.Shape(3,6);
 aux_CB.Shape(3,6);
 
+//calculating refenrence configuration x_refe and current configuration x_curr
 for (int k=0; k<iel; ++k)
   {
 
-    xrefe(0,k) = Nodes()[k]->X()[0];
-    xrefe(1,k) = Nodes()[k]->X()[1];
-    xrefe(2,k) = Nodes()[k]->X()[2];
+    x_refe(0,k) = Nodes()[k]->X()[0];
+    x_refe(1,k) = Nodes()[k]->X()[1];
+    x_refe(2,k) = Nodes()[k]->X()[2];
 
-    x_curr(0,k) = xrefe(0,k) + disp[k*numdf+0];
-    x_curr(1,k) = xrefe(1,k) + disp[k*numdf+1];
-    x_curr(2,k) = xrefe(2,k) + disp[k*numdf+2];
+    x_curr(0,k) = x_refe(0,k) + disp[k*numdf+0];
+    x_curr(1,k) = x_refe(1,k) + disp[k*numdf+1];
+    x_curr(2,k) = x_refe(2,k) + disp[k*numdf+2];
 
   }
    
@@ -356,12 +361,13 @@ for (int k=0; k<iel; ++k)
     }
     
   // calculation of local geometrically important matrices and vectors; notation according to Crisfield-------
-  
+  //current length
   length_curr = pow( pow(x_curr(0,1)-x_curr(0,0),2) + pow(x_curr(1,1)-x_curr(1,0),2) , 0.5 );
-  
+  //length in reference configuration
+  length_refe  = pow( pow(x_refe(0,1)-x_refe(0,0),2) + pow(x_refe(1,1)-x_refe(1,0),2) , 0.5 );
   
   //calculation of local geometrically important matrices and vectors
-  b2_local_aux(B_curr, r_curr, z_curr, beta, x_curr, length_curr);
+  b2_local_aux(B_curr, r_curr, z_curr, beta, x_curr, length_curr, length_refe);
   
     
   //calculation of local internal forces
@@ -370,10 +376,10 @@ for (int k=0; k<iel; ++k)
   force_loc.Size(3);
   
   //local internal axial force
-  force_loc(0) = ym*cross_section_*(length_curr - length_ref_)/length_ref_;
+  force_loc(0) = ym*cross_section_*(length_curr - length_refe)/length_refe;
   
   //local internal bending moment
-  force_loc(1) = ym*moment_inertia_*(x_curr(2,1)-x_curr(2,0))/length_ref_;
+  force_loc(1) = ym*moment_inertia_*(x_curr(2,1)-x_curr(2,0))/length_refe;
   
   //local internal shear force
   force_loc(2) = sm*cross_section_corr_*( (x_curr(2,1)+x_curr(2,0))/2 - beta);
@@ -385,15 +391,15 @@ for (int k=0; k<iel; ++k)
   
   for(int id_col=0; id_col<5; id_col++)
   {
-	  aux_CB(0,id_col) = B_curr(0,id_col) * (ym*cross_section_/length_ref_);
-	  aux_CB(1,id_col) = B_curr(1,id_col) * (ym*moment_inertia_/length_ref_);
-	  aux_CB(2,id_col) = B_curr(2,id_col) * (sm*cross_section_corr_/length_ref_);
+	  aux_CB(0,id_col) = B_curr(0,id_col) * (ym*cross_section_/length_refe);
+	  aux_CB(1,id_col) = B_curr(1,id_col) * (ym*moment_inertia_/length_refe);
+	  aux_CB(2,id_col) = B_curr(2,id_col) * (sm*cross_section_corr_/length_refe);
   }
   
   stiffmatrix.Multiply('T','N',1,B_curr,aux_CB,0);
   
   //adding geometric stiffness by shear force 
-  double aux_Q_fac = force_loc(2)*length_ref_ / pow(length_curr,2);
+  double aux_Q_fac = force_loc(2)*length_refe / pow(length_curr,2);
   for(int id_lin=0; id_lin<5; id_lin++)
   	for(int id_col=0; id_col<5; id_col++)
   	{
@@ -420,7 +426,7 @@ for (int k=0; k<iel; ++k)
   #endif // #ifdef DEBUG
   
   //assignment of massmatrix by means of auxiliary diagonal matrix aux_E stored as an array
-  double aux_E[3]={density*length_ref_*cross_section_/6,density*length_ref_*cross_section_/6,density*length_ref_*moment_inertia_/6};
+  double aux_E[3]={density*length_refe*cross_section_/6,density*length_refe*cross_section_/6,density*length_refe*moment_inertia_/6};
   for(int id=0; id<2; id++)
   {
   	massmatrix(id,id) = 2*aux_E[id];
@@ -435,6 +441,7 @@ for (int k=0; k<iel; ++k)
 	  for(int id_lin=0; id_lin<2; id_lin++)
     	force(id_col) = B_curr(id_lin,id_col)*force_loc(id_lin);
   
+  std::cout << "!!!!!!!!!!!";
   return;
 } // DRT::ELEMENTS::Beam2::b2_nlnstiffmass(
 
