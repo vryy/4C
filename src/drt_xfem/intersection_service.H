@@ -190,7 +190,7 @@ namespace XFEM
            The nonlinear system of equation is solved with help of the Newton-method.
 
     \param element              (in)        : element 
-    \param x                    (in)        : node in current coordinates
+    \param x                    (in)        : node in current coordinates (x, y, z)
     \param xsi                  (inout)     : node in element coordinates
     */  
     bool checkPositionWithinElement(    
@@ -266,6 +266,46 @@ namespace XFEM
         const Epetra_SerialDenseVector&     x,
         DRT::Element*                       element
         );  
+    
+    
+    /*!
+   	\brief checks if a position in current coordinates lies within a certain surfaceElement           
+          The nonlinear system of equation is solved with help of the Newton-method.
+
+   	\param surfaceElement       (in)        : surfaceElement 
+   	\param x                    (in)        : node in current coordinates (x, y, z)
+   	\param xsi                  (inout)     : node in element coordinates
+     */  
+    bool checkPositionWithinSurfaceElement(
+        DRT::Element*                       	surfaceElement,
+        const Epetra_SerialDenseVector&     	x,
+        Epetra_SerialDenseVector&           	xsi,
+        double&									distance
+        );
+    
+    
+    void updateJacobianForMap3To2(   
+        blitz::Array<double, 2>& 		Jacobi,
+        const blitz::Array<double, 1>&	xsi,
+        DRT::Element*               	surfaceElement
+        );      
+    
+   
+    void updateFForMap3To2(   
+        blitz::Array<double, 1>& 		F,
+        const blitz::Array<double, 1>&	xsi,
+        const blitz::Array<double, 1>&	x,
+        DRT::Element*               	surfaceElement
+        );
+    
+    
+    void updateAForMap3To2(   
+    	blitz::Array<double, 2>& 	A,
+    	const blitz::Array<double, 2>& 	Jacobi,
+    	const blitz::Array<double, 1>& 	F,
+        const blitz::Array<double, 1>&	xsi,
+        DRT::Element*               surfaceElement
+        );   
     
     
     /*!

@@ -476,6 +476,7 @@ bool XFEM::PositionWithinCondition(
 }
 
 
+
 /*----------------------------------------------------------------------*
  |  CLI:    updates the Jacobi matrix for the computation    u.may 06/07|
  |          if a node is in a given element                             |
@@ -525,6 +526,7 @@ void XFEM::updateAForNWE(
 }
 
 
+ 
 /*----------------------------------------------------------------------*
  |  CLI:    updates the rhs for the computation if a         u.may 06/07|
  |          node is in a given element                                  |
@@ -571,6 +573,204 @@ void XFEM::updateRHSForNWE(
       
     for(int i=0; i<dim; i++)
         b[i] += x[i];
+}
+
+
+/*----------------------------------------------------------------------*
+ |  RQI:    checks if a given point in the 3-dim physical    u.may 01/08|
+ |          space lies on a given surface element                       |
+ | 			if no the method returns the absolut distance to the 		|
+ |			nearest point on the surface element					    |
+ |			if in addition the nearest point does not lie on the 		|
+ |			surface element the returned distance is set to -1      	|                        
+ *----------------------------------------------------------------------*/
+bool XFEM::checkPositionWithinSurfaceElement(
+    DRT::Element*                       	surfaceElement,
+    const Epetra_SerialDenseVector&     	x,
+    Epetra_SerialDenseVector&           	xsi,
+    double&									distance
+   	)
+{
+
+	bool nodeWithinElement = true;
+    int iter = 0;
+    const int maxiter = 20;
+    double residual = 1.0;
+    
+    blitz::firstIndex i;    // Placeholder for the first blitz array index
+    blitz::secondIndex j;   // Placeholder for the second blitz array index
+    
+    blitz::Array<double, 1> blitz_x(	x.Values(),
+                               			blitz::shape(x.Length()),
+                               			blitz::neverDeleteData);
+                               			
+  	blitz::Array<double, 1> blitz_xsi(	xsi.Values(),
+   										blitz::shape(xsi.Length()),
+   										blitz::neverDeleteData);				
+  	blitz_xsi = 0;
+   										
+  	blitz::Array<double, 1> F(3);				F = 0;
+  	blitz::Array<double, 1> dx(2);				dx = 0;
+  	
+  	blitz::Array<double, 2> A(2,2,blitz::ColumnMajorArray<2>());			
+  	blitz::Array<double, 2> Jacobi(3,2,blitz::ColumnMajorArray<2>());
+  
+    
+    distance = -1.0;
+    
+	// compute Jacobi, f and b
+	updateJacobianForMap3To2(Jacobi, blitz_xsi, surfaceElement);  
+	updateFForMap3To2(F, blitz_xsi, blitz_x, surfaceElement);  
+	blitz::Array<double, 1> b(blitz::sum(-Jacobi(j,i)*F(j),j));
+           
+  	while(residual > TOL14)
+    {   
+        
+  		updateAForMap3To2(A, Jacobi, F, blitz_xsi, surfaceElement);
+  	
+        if(!gaussEliminationEpetra(A, b, dx))
+        {
+            nodeWithinElement = false;
+            break;
+        }   
+           
+        blitz_xsi = blitz_xsi + dx;
+        
+        updateJacobianForMap3To2(Jacobi, blitz_xsi, surfaceElement);  
+		updateFForMap3To2(F, blitz_xsi, blitz_x, surfaceElement);  
+   		b =  blitz::sum(-Jacobi(j,i)*F(j),j);
+   	 
+        residual = sqrt(b(0)*b(0)+b(1)*b(1));
+        iter++; 
+        
+        if(iter >= maxiter)
+        {   
+            nodeWithinElement = false;
+            break;
+        }   
+    }
+  
+    //printf("iter = %d\n", iter);
+    //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0],xsi[1],xsi[2], residual, TOL14);
+    
+	for(int i=0; i<2; i++)
+   		if( (fabs(xsi[i])-1.0) > TOL7)     
+        {    
+            nodeWithinElement = false;
+            break;
+        }
+        
+	blitz::Array<double, 1> diff(3);
+	blitz::Array<double, 1> x_surface_phys(3); x_surface_phys = 0;
+	diff = blitz_x - x_surface_phys;
+    distance = sqrt(diff(0)*diff(0) + diff(1)*diff(1) + diff(2)*diff(2));
+    
+    
+	return nodeWithinElement;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  RQI:    updates the Jacobian for the computation         u.may 01/08|
+ |          whether a point in the 3-dim physical space lies            |
+ | 			on a surface element 										|                 
+ *----------------------------------------------------------------------*/
+void XFEM::updateJacobianForMap3To2(   
+    blitz::Array<double, 2>& 		Jacobi,
+    const blitz::Array<double, 1>&	xsi,
+    DRT::Element*               	surfaceElement)                                                  
+{   
+    const int numNodes = surfaceElement->NumNode();
+    blitz::Array<double,2> deriv1(2, numNodes, blitz::ColumnMajorArray<2>());
+    
+    Jacobi = 0;
+   
+	shape_function_2D_deriv1(deriv1, xsi(0), xsi(1), surfaceElement->Shape());
+   
+    for(int inode=0; inode<numNodes; inode++) 
+    {
+        const double* x = surfaceElement->Nodes()[inode]->X();
+        for(int isd=0; isd<3; isd++)
+        {
+            const double nodalCoord = x[isd];
+            for(int jsd=0; jsd<2; jsd++)
+            	Jacobi(isd, jsd) += nodalCoord * deriv1(jsd,inode);
+      
+        }
+    }  
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  RQI:    updates the system of nonlinear equations        u.may 01/08|
+ |          for the computation, whether a point in the 3-dim physical 	|
+ |			space lies on a surface element 							|                 
+ *----------------------------------------------------------------------*/
+void XFEM::updateFForMap3To2(   
+    blitz::Array<double, 1>& 		F,
+    const blitz::Array<double, 1>&	xsi,
+    const blitz::Array<double, 1>&	x,
+    DRT::Element*               	surfaceElement)                                                  
+{   
+    const int numNodes = surfaceElement->NumNode();
+    blitz::Array<double,1> funct(numNodes);
+    
+    F = 0;
+   
+	shape_function_2D(funct, xsi(0), xsi(1), surfaceElement->Shape());
+   
+    for(int inode=0; inode<numNodes; inode++) 
+    {
+        const double* coord = surfaceElement->Nodes()[inode]->X();
+        for(int isd=0; isd<3; ++isd)
+     		F(isd) += coord[isd] * funct(inode);
+    }   
+    
+    F -= x;
+}
+
+
+
+
+
+/*----------------------------------------------------------------------*
+ |  RQI:    updates the system matrix			             u.may 01/08|
+ |          for the computation, whether a point in the 3-dim physical 	|
+ |			space lies on a surface element 							|                 
+ *----------------------------------------------------------------------*/
+void XFEM::updateAForMap3To2(   
+    blitz::Array<double, 2>& 		A,
+    const blitz::Array<double, 2>& 	Jacobi,
+    const blitz::Array<double, 1>& 	F,
+    const blitz::Array<double, 1>&	xsi,
+    DRT::Element*               	surfaceElement)                                                  
+{   
+    const int numNodes = surfaceElement->NumNode();
+    blitz::firstIndex i;    // Placeholder for the first blitz array index
+    blitz::secondIndex j;   // Placeholder for the second blitz array index
+    blitz::thirdIndex k;    // Placeholder for the third blitz array index
+    
+    blitz::Array<double,2> deriv2(3, numNodes, blitz::ColumnMajorArray<2>());
+	blitz::Array<double, 3> tensor3Ord(3,2,2, blitz::ColumnMajorArray<3>());		
+    tensor3Ord = 0;
+    
+	shape_function_2D_deriv2(deriv2, xsi(0), xsi(1), surfaceElement->Shape());
+   
+	for(int inode=0; inode<numNodes; inode++) 	
+	{
+		const double* x = surfaceElement->Nodes()[inode]->X();
+		for(int isd=0; isd<3; ++isd)
+		{
+			const double nodalCoord = x[isd];
+			for(int jsd=0; jsd<2; ++jsd)
+				for(int ksd=0; ksd<2; ++ksd)
+					tensor3Ord(isd, jsd, ksd) += nodalCoord * deriv2(jsd,inode);
+		}
+	}
+	
+	A = blitz::sum(Jacobi(k,i) * Jacobi(k,j), k) + blitz::sum(F(k)*tensor3Ord(k,i,j),k);
 }
 
 

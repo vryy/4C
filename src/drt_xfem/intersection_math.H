@@ -19,6 +19,7 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_utils_local_connectivity_matrices.H"
 #include "../drt_lib/drt_element.H"
+#include "Epetra_SerialDenseSolver.h"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Teuchos_RefCountPtr.hpp"
@@ -101,7 +102,13 @@ namespace XFEM
                             const int                   dim,
                             const int                   order);
     
-        
+    
+    bool gaussEliminationEpetra(
+    	blitz::Array<double, 2>& 		A,
+    	blitz::Array<double, 1>&		b,
+    	blitz::Array<double, 1>&		x
+    	);
+    
 }
 
 

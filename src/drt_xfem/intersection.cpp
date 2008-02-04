@@ -270,7 +270,7 @@ void Intersection::initializeIntersection(
 
 
 
-/*----------------------------------------------------------------------*
+/*----------------------------------------*
  |  INIT:   initializes the private members of the           u.may 08/07|
  |          current xfem element                                        |
  *----------------------------------------------------------------------*/
@@ -3780,16 +3780,33 @@ void Intersection::addCellsToBoundaryIntCellsMap(
     for(int k = 0; k < 3; k++)
         trinodes[k] = out.pointlist[out.trifacelist[trifaceIndex*3+cornerIndex]*3+k];
   
+    elementToCurrentCoordinates(xfemElement, trinodes);
     domainCoord.push_back(trinodes);
     
-
-    elementToCurrentCoordinates(xfemElement, trinodes);
     //for(int i = 0; i < 3; i++)
     	//printf("phys coord = %f\n", trinodes[i] );
-    currentToElementCoordinates(intersectingCutterElements_[faceMarker], trinodes);
-    trinodes[2] = 0.0;
+    //currentToElementCoordinates(intersectingCutterElements_[faceMarker], trinodes);
+    
+    double dummy = 0.0;
+    Epetra_SerialDenseVector xsi(3);
+    Epetra_SerialDenseVector x(3);
+    for(int i = 0; i < 3; i++)
+    	x[i] = trinodes[i]; 
+    
     //for(int i = 0; i < 3; i++)
-      //  printf("ele coord = %f\n", trinodes[i] );
+    //        printf("phys coord = %f\t", trinodes[i] );
+    
+    //printf("hello1\n");
+    checkPositionWithinSurfaceElement(intersectingCutterElements_[faceMarker], x, xsi, dummy);
+    //printf("hello2\n");
+    trinodes[0] = xsi[0];
+    trinodes[1] = xsi[1];
+    trinodes[2] = 0.0;
+    
+    //for(int i = 0; i < 3; i++)
+    //    printf("ele coord = %f\t", trinodes[i] );
+    
+    // printf("\n");
     boundaryCoord.push_back(trinodes);
     
     // store higher order node
