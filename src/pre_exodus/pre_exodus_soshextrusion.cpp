@@ -73,7 +73,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
     vector<int>::const_iterator i_node;
     int newid;
     // create a new element
-    vector<int> newelenodes(actelenodes.size());
+    vector<int> newelenodes;
     for (i_node=actelenodes.begin(); i_node < actelenodes.end(); ++i_node){
       newid = highestnid; ++ highestnid;
       
@@ -97,15 +97,16 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
     newelenodes.clear();
     ++ newele;
     
-    // debug
-    PrintMap(cout,newconn);
     
     while (todo_eles.size() > 0){ // start of going through ele neighbors///////
       
       // find an actele still to do
+      PrintSet(cout,todo_eles);
       i_todo_eles=todo_eles.begin();
-      
       int actele = *i_todo_eles;
+      // delete actele from todo_eles list
+      todo_eles.erase(i_todo_eles);
+      
       // get nodes of actual element
       vector<int> actelenodes = extrudeblock.GetEleNodes(actele);
       
@@ -118,7 +119,8 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
         int actneighbor = *i_nbr;
         // check for undone neighbor
         i_doneles = doneles.find(actneighbor);
-        if (i_doneles != doneles.end()){  // lets extrude **********************
+        if ((actneighbor != -1) && (i_doneles == doneles.end())){
+          // lets extrude *****************************************************
           
           // get nodepair of actual edge
           int firstedgenode = actelenodes.at(edge);
@@ -126,10 +128,9 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
           // switch in case of last to first node edge
           if (edge == signed(actelenodes.size())) secedgenode = actelenodes.at(0);
           else secedgenode = actelenodes.at(edge+1);
-          ++ edge;
           
           // create a new element
-          vector<int> newelenodes(actelenodes.size());
+          vector<int> newelenodes;
           
           /* the new elements orientation is opposite the current one
            * therefore the first node is secedgenode */
@@ -207,7 +208,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
             
             /* the new elements orientation is opposite the current one
              * therefore the remaining nodes are gained from the neighbor ele */
-            
+
             int fourthnode = FindEdgeNeighbor(actnbrnodes,thirdnode,firstedgenode);
             
             // check if new node already exists
@@ -243,11 +244,14 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
           todo_eles.insert(actneighbor);  
           
         }// end of if undone->extrude this neighbor, next neighbor *************
+        ++ edge; // next element edge
         
       }// end of this "center" - element ///////////////////////////////////////
       
     }// end of extruding all elements in block
-    
+    // debug
+    PrintMap(cout,newconn);
+   
     // create new Element Block
     std::ostringstream blockname;
     blockname << "extrude" << i_ebs->first;
@@ -340,7 +344,11 @@ const map<int,vector<int> > EXODUS::EleNeighbors(EXODUS::ElementBlock eblock, co
       // add these eles into patch
       elepatch[nodeid].insert(eles.begin(),eles.end());
     }
-     
+    
+    // default case: no neighbors at any edge
+    vector<int> defaultnbrs(actelenodes.size(),-1);
+    eleneighbors.insert(pair<int,vector<int> >(acteleid,defaultnbrs));
+    int edgeid = 0;
     // now select those elements out of the patch which share an edge
     for (i_node = actelenodes.begin(); i_node < actelenodes.end(); ++i_node){
       int firstedgenode = *i_node;
@@ -350,56 +358,22 @@ const map<int,vector<int> > EXODUS::EleNeighbors(EXODUS::ElementBlock eblock, co
       else secedgenode = *(i_node + 1);
       // find all elements connected to the first node
       const set<int> firsteles = elepatch.find(firstedgenode)->second;
-      int numnbr = firsteles.size();
-      switch (numnbr){
-        case 0: dserror ("node without element?? Impossible!"); break;
-        case 1:{ // node is at "free" corner of eblock
-          vector<int> noneighbors(4,-1);
-          eleneighbors.insert(pair<int,vector<int> >(acteleid,noneighbors));
-          break; 
-        }
-        case 2:{ // node is at "free" edge of eblock
-          vector<int> one_neighbor(4,-1);
-          int trialele = *(firsteles.begin());
-          if (trialele == acteleid) trialele = *(firsteles.end());
-          //one_neighbor[i_node] = trialele;
-          eleneighbors.insert(pair<int,vector<int> >(acteleid,one_neighbor));
-          break;
-        }
-        case 3:{ // node is at "free" inner corner (konkav edge) of eblock
-          vector<int> one_neighbor(4,-1);
-          set<int>::const_iterator it;
-          for(it = firsteles.begin(); it != firsteles.end(); ++it){
-            const int trialele = *it;
-            if (trialele != acteleid){
-              vector<int> neighbornodes = ele_conn.find(trialele)->second;
-              bool found = FindinVec(secedgenode,neighbornodes);
-              if (found) {
-                //one_neighbor[i_node] = trialele;
-                eleneighbors.insert(pair<int,vector<int> >(acteleid,one_neighbor));
-              }
-            }
-          }
-          break;
-        }
-        default:{ // standard case: the element has 4 neighbors
-          // loop over these elements to find the one sharing the secondedgenode
-          set<int>::const_iterator it;
-          for(it = firsteles.begin(); it != firsteles.end(); ++it){
-            const int trialele = *it;
-            if (trialele != acteleid){
-              vector<int> neighbornodes = ele_conn.find(trialele)->second;
-              bool found = FindinVec(secedgenode,neighbornodes);
-              if (found) {
-                eleneighbors[acteleid].push_back(trialele);
-                break;
-              }
-            }
+      // loop over these elements to find the one sharing the secondedgenode
+      set<int>::const_iterator it;
+      for(it = firsteles.begin(); it != firsteles.end(); ++it){
+        const int trialele = *it;
+        if (trialele != acteleid){
+          vector<int> neighbornodes = ele_conn.find(trialele)->second;
+          bool found = FindinVec(secedgenode,neighbornodes);
+          if (found) {
+            eleneighbors[acteleid].at(edgeid) = trialele;
+            break;
           }
         }
       }
-    }
-  }
+      edgeid ++;
+    } // end of loop i_nodes
+  } // end of loop all elements
   return eleneighbors;
 }
 
@@ -418,8 +392,8 @@ int EXODUS::FindEdgeNeighbor(const vector<int> nodes, const int actnode, const i
     else return nodes.at(1); 
   }
   // special case of very last node
-  if (nodes.at(nodes.size()) == actnode){
-    if (nodes.at(0) == wrong_dir_node) return nodes.at(nodes.size()-1);
+  if (nodes.back() == actnode){
+    if (nodes.at(0) == wrong_dir_node) return nodes.at(nodes.size()-2);
     else return nodes.at(0);
   }
   // case of somewhere in between

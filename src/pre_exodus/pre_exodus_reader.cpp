@@ -216,13 +216,14 @@ EXODUS::Mesh::Mesh(const EXODUS::Mesh basemesh,
   map<int,NodeSet>         baseNodesets = basemesh.GetNodeSets();
   map<int,SideSet>         baseSidesets = basemesh.GetSideSets();
   
-  // get infos from extension
-  int extnumele = extBlocks.size();
+//  // get infos from extension
+//  int extnumele = extBlocks.size();
   
   /********************* merge everything into new mesh ***********************/
   title_ = newtitle;
   num_dim_ = basedim;
-  num_elem_ = basenumele + extnumele;
+  int total_num_elem = basenumele;
+//  num_elem_ = basenumele; // + extnumele;
   exoid_ = basemesh.GetExoId(); //basefile still used for writing minor infos, e.g. qa record or coordnames
   
   // merge nodes
@@ -245,7 +246,9 @@ EXODUS::Mesh::Mesh(const EXODUS::Mesh basemesh,
     pair< map<int,ElementBlock>::iterator, bool > check;
     check = elementBlocks_.insert(pair<int,ElementBlock>(i_block->first,i_block->second));
     if (check.second == false) dserror("Extension ElementBlock already exists!");
+    else total_num_elem += i_block->second.GetNumEle();
   }
+  num_elem_ = total_num_elem;
   
   // merge NodeSets
   map<int,NodeSet>::const_iterator i_ns;
