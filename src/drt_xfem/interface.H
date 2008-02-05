@@ -107,8 +107,9 @@ private:
 	//! integration cells for boundary
 	map<int, BoundaryIntCells > elementalBoundaryIntCells_;
 	
-	//! list of boundary elements that intersect volume elements on this processor
-	//! first integer is the global surface ele id
+	/*! list of boundary elements that intersect volume elements on this processor
+	 *  first integer is the global surface ele id to allow easy access
+	 */
 	map<int, DRT::Element* > boundaryElements_;
 	
 	//! store all additional nodes for the cutter elements that are not already on this proc
