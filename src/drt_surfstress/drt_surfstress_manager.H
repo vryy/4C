@@ -65,6 +65,7 @@ public:
     \brief Routine to calculate additional internal forces and
     stiffnesses due to interfacial phenomena
 
+    \param curvenum (in): number of time curve
     \param xs (in): current nodal positions
     \param fint (out): element internal force vector
     \param stiff (out): element stiffness matrix
@@ -83,7 +84,8 @@ public:
     \param con_quot_max (in) maximum surfactant concentration
     \param con_quot_eq (in) equilibrium surfactant concentration
   */
-  void StiffnessAndInternalForces(const Epetra_SerialDenseMatrix& xs,
+  void StiffnessAndInternalForces(const int curvenum,
+                                  const Epetra_SerialDenseMatrix& xs,
                                   Epetra_SerialDenseVector& fint,
                                   Epetra_SerialDenseMatrix& stiff,
                                   const int ID,

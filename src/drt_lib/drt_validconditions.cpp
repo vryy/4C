@@ -349,6 +349,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          true,
                                          DRT::Condition::Surface));
 
+  surftension->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
   AddNamedReal(surftension,"gamma");
 
   condlist.push_back(surftension);
@@ -364,6 +365,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          true,
                                          DRT::Condition::Surface));
 
+  surfactant->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
   AddNamedReal(surfactant,"k1xCbulk");
   AddNamedReal(surfactant,"k2");
   AddNamedReal(surfactant,"m1");
@@ -479,7 +481,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   areaconstraint->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
 
   condlist.push_back(areaconstraint);
-  
+
   /*--------------------------------------------------------------------*/
   // volume monitor
 
@@ -507,7 +509,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          DRT::Condition::Surface));
 
   areamonitor->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
-  
+
   condlist.push_back(areamonitor);
 
   return vc;

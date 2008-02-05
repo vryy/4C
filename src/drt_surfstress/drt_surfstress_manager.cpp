@@ -16,6 +16,7 @@ Maintainer: Lena Wiechert
 
 #include "drt_surfstress_manager.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/drt_timecurve.H"
 
 /*-------------------------------------------------------------------*
  |  ctor (public)                                            lw 12/07|
@@ -67,7 +68,8 @@ void DRT::SurfStressManager::EvaluateSurfStress(ParameterList& p,
 | on element level                                                   |
 *--------------------------------------------------------------------*/
 
-void DRT::SurfStressManager::StiffnessAndInternalForces(const Epetra_SerialDenseMatrix& xs,
+void DRT::SurfStressManager::StiffnessAndInternalForces(const int curvenum,
+                                                        const Epetra_SerialDenseMatrix& xs,
                                                         Epetra_SerialDenseVector& fint,
                                                         Epetra_SerialDenseMatrix& K_surf,
                                                         const int ID,
@@ -88,27 +90,38 @@ void DRT::SurfStressManager::StiffnessAndInternalForces(const Epetra_SerialDense
   Epetra_SerialDenseVector Adiff(12);
   Epetra_SerialDenseMatrix Adiff2(12,12);
   double gamma, dgamma;
+  FILE *gammafile;
 
-  int LID = A_old_->Map().LID(ID);
+  int LID = time_->Map().LID(ID);
 
-  /*---------------------------------------------- update if necessary */
-  if (time != (*time_)[LID])
-  {
-    (*A_old_)[LID] = (*A_old_temp_)[LID];
-    (*con_quot_)[LID] = (*con_quot_temp_)[LID];
-    (*time_)[LID] = time;
-  }
-
-  /*--------------------------------------------------- initialization */
-  (*A_old_temp_)[LID] = 0.0;
-  (*con_quot_temp_)[LID] = 0.0;
-  soh8_surface_calc(xs, (*A_old_temp_)[LID], Adiff, Adiff2);
+  double t_end = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).end();
 
   if (surface_flag==0)                                   // SURFACTANT
   {
+    /*--------------------------------------------- update if necessary */
+    if (time != (*time_)[LID])
+    {
+      (*A_old_)[LID] = (*A_old_temp_)[LID];
+      (*con_quot_)[LID] = (*con_quot_temp_)[LID];
+      (*time_)[LID] = time;
+
+//       if (ID==0)
+//       {
+//         gammafile=fopen("gamma_A.gp", "a");
+//         fprintf(gammafile, "%.4lf \t %.4lf \n", (*A_old_)[LID], (*con_quot_)[LID]);
+//         fclose(gammafile);
+//       }
+    }
+
+    /*------------------------------------------------- initialization */
+    (*A_old_temp_)[LID] = 0.0;
+    (*con_quot_temp_)[LID] = 0.0;
+    soh8_surface_calc(xs, (*A_old_temp_)[LID], Adiff, Adiff2);
+
     /*-----------calculation of current surface stress and its partial
      *-----------------derivative with respect to the interfacial area */
-    if (time<100.*dt)         /* gradual application of surface stress */
+
+    if (time <= t_end)         /* gradual application of surface stress */
     {
       gamma = gamma_0-m1*con_quot_eq;
       (*con_quot_temp_)[LID] = con_quot_eq;
@@ -117,15 +130,19 @@ void DRT::SurfStressManager::StiffnessAndInternalForces(const Epetra_SerialDense
     else
     {
       (*con_quot_temp_)[LID] = (*con_quot_)[LID];
-      gamma_calc(gamma, dgamma, (*con_quot_temp_)[LID], (*A_old_)[LID], (*A_old_temp_)[LID], dt, k1xC, k2, m1,
-               m2, gamma_0, gamma_min, gamma_min_eq, con_quot_max);
+      gamma_calc(gamma, dgamma, (*con_quot_temp_)[LID], (*A_old_)[LID],
+                 (*A_old_temp_)[LID], dt, k1xC, k2, m1, m2, gamma_0,
+                 gamma_min, gamma_min_eq, con_quot_max);
     }
-    // cout << "ID: " << ID << " con_quot_old: " << (*con_quot_)[LID] << " con_quot_new: "
-    //      << (*con_quot_temp_)[LID] << " gamma: " << gamma << " dgamma: " << dgamma << endl;
   }
 
   else if (surface_flag==1)                             // SURFACE TENSION
   {
+    if (time != (*time_)[LID])
+    {
+     (*time_)[LID] = time;
+    }
+
     gamma = const_gamma;
     dgamma = 0.;
   }
@@ -133,28 +150,24 @@ void DRT::SurfStressManager::StiffnessAndInternalForces(const Epetra_SerialDense
   else
     dserror("Surface flag not implemented");
 
+  double curvefac = 1.;
+
+  /*------------gradual application of surface stresses via time curve*/
+  if (time <= t_end)
+    curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+
   for (int i=0;i<12;i++)
   {
     for (int j=0;j<12;j++)
     {
-      K_surf(i,j) = dgamma*Adiff[i]*Adiff[j]+gamma*Adiff2(i,j);
+      K_surf(i,j) = (dgamma*Adiff[i]*Adiff[j]+gamma*Adiff2(i,j))*curvefac;
     }
-  }
-  if (time<100.*dt)     /* gradual application of surface stress */
-  {
-    if (time<99.*dt)
-      K_surf.Scale(-2*pow(time/(98.*dt), 3)+3*pow(time/(98.*dt), 2));
   }
 
   /*------calculation of current internal force due to surface energy*/
   for (int i=0;i<12;i++)
   {
-    fint[i] = gamma*Adiff[i];
-  }
-  if (time<100.*dt)       /* gradual application of surface stress */
-  {
-    if (time<99.*dt)
-      fint.Scale(-2*pow(time/(98.*dt), 3)+3*pow(time/(98.*dt), 2));
+    fint[i] = gamma*Adiff[i]*curvefac;
   }
 
   return;

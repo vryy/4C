@@ -230,8 +230,8 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
 	else if (action=="calc_struct_volconstrstiff") act= Soh8Surface::calc_struct_volconstrstiff;
 	else if (action=="calc_struct_constrarea")		act=Soh8Surface::calc_struct_constrarea;
 	else if (action=="calc_struct_areaconstrstiff") act=Soh8Surface::calc_struct_areaconstrstiff;
-    else if (action=="calc_init_vol") act= Soh8Surface::calc_init_vol;
-    else if (action=="calc_surfstress_stiff") act= Soh8Surface::calc_surfstress_stiff;
+        else if (action=="calc_init_vol") act= Soh8Surface::calc_init_vol;
+        else if (action=="calc_surfstress_stiff") act= Soh8Surface::calc_surfstress_stiff;
 	else dserror("Unknown type of action for Soh8Surface");
 	//create communicator
 	const Epetra_Comm& Comm = discretization.Comm();
@@ -381,7 +381,7 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
                   gpcoord(3,0) =   gploc;
                   gpcoord(3,1) =   gploc;
 
-                  for (int gpid = 0; gpid < 4; ++gpid) {    // loop over intergration points
+                  for (int gpid = 0; gpid < 4; ++gpid) {    // loop over integration points
                     vector<double> funct(ngp);              // 4 shape function values
                     double drs;                             // surface area factor
                     vector<double> normal(NUMDIM_SOH8);
@@ -410,7 +410,7 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
                 }
                 break;
 
-        case calc_surfstress_stiff:
+                case calc_surfstress_stiff:
 	  	{
                   // element geometry update
 
@@ -446,6 +446,7 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
 
                   if (cond->Type()==DRT::Condition::Surfactant)     // dynamic surfactant model
                   {
+                    int curvenum = cond->Getint("curve");
                     double k1xC = cond->GetDouble("k1xCbulk");
                     double k2 = cond->GetDouble("k2");
                     double m1 = cond->GetDouble("m1");
@@ -456,16 +457,17 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
                     double con_quot_max = (gamma_min_eq-gamma_min)/m2+1.;
                     double con_quot_eq = (k1xC)/(k1xC+k2);
 
-                    surfstressman->StiffnessAndInternalForces(xscurr, elevector1, elematrix1, this->Id(),
+                    surfstressman->StiffnessAndInternalForces(curvenum, xscurr, elevector1, elematrix1, this->Id(),
                                                               time, dt, 0, 0.0, k1xC, k2, m1, m2, gamma_0,
                                                               gamma_min, gamma_min_eq, con_quot_max,
                                                               con_quot_eq);
                   }
                   else if (cond->Type()==DRT::Condition::SurfaceTension) // ideal liquid
                   {
+                    int curvenum = cond->Getint("curve");
                     double const_gamma = cond->GetDouble("gamma");
 
-                    surfstressman->StiffnessAndInternalForces(xscurr, elevector1, elematrix1, this->Id(),
+                    surfstressman->StiffnessAndInternalForces(curvenum, xscurr, elevector1, elematrix1, this->Id(),
                                                               time, dt, 1, const_gamma, 0.0, 0.0, 0.0,
                                                               0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
                   }
@@ -499,7 +501,7 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
 		  			xscurr(i,2) = xsrefe(i,2) + mydisp[i*NODDOF_SOH8+2];
 		  		}
 		  		//call submethod
-		  		
+
 		  		double areaele=0.0;
                 const int ngp = 4;
 
@@ -520,13 +522,13 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
                   vector<double> funct(ngp);              // 4 shape function values
                   double drs;                             // surface area factor
                   vector<double> normal(NUMDIM_SOH8);
-                  
+
                   soh8_surface_integ(&funct,&drs,&normal,&xscurr,gpcoord(gpid,0),gpcoord(gpid,1));
-                  
+
                   double fac = gpweight * drs;
                   areaele += fac;
-                  
-                }	
+
+                }
 
 		  		// get RIGHT volume out of parameterlist and maximum ConditionID
 		  		char areaname[30];
@@ -550,12 +552,12 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
 		  		//update area in parameter list
 		  		params.set(areaname, areacond+areaele);
 	  		}
-       	
+
         }
         break;
         case calc_struct_areaconstrstiff:
         {
-        	dserror("Element routines for area constraint not implemented yet!");               	
+        	dserror("Element routines for area constraint not implemented yet!");
         }
         default:
 	  		dserror("Unimplemented type of action for Soh8Surface");

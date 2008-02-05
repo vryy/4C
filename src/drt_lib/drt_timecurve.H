@@ -224,6 +224,9 @@ namespace UTILS {
      */
     double f(double t);
 
+    // return the end time of the last time slice of this curve
+    double end() {return slices_[slices_.size()-1]->end();}
+
   private:
 
     /// add a new time slice at the and of this curve
