@@ -45,19 +45,18 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
   for (i_ebs = extrudeblocks.begin(); i_ebs != extrudeblocks.end(); ++i_ebs){
     // get existing eblock
     EXODUS::ElementBlock extrudeblock = i_ebs->second;
-    extrudeblock.Print(cout);
+    //extrudeblock.Print(cout);
     
     // Create Node to Element Connectivity
     const map<int,set<int> > node_conn = NodeToEleConn(extrudeblock);
     
     // Create Element to Element Connectivity (sharing an edge)
     const map<int,vector<int> > ele_neighbor = EleNeighbors(extrudeblock,node_conn);
-    PrintMap(cout,ele_neighbor);
     
     // loop through all its elements to create new connectivity  ***************
     map<int,vector<int> > newconn;
     int newele = 0;
-    map<int,int> node_pair; // stores new node id with base node id
+    map<int,vector<int> > node_pair; // stores new node id with base node id
     
     // set of elements already done
     set<int> doneles;
@@ -70,38 +69,65 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
     
     // for the first element we set up everything *****************************
     vector<int> actelenodes = extrudeblock.GetEleNodes(0);
+    int nod_per_basele = actelenodes.size();
     vector<int>::const_iterator i_node;
     int newid;
     // create a new element
     vector<int> newelenodes;
+    // create a vector of nodes for each layer which will form layered eles
+    vector<vector<int> > layer_nodes(layers+1);
     for (i_node=actelenodes.begin(); i_node < actelenodes.end(); ++i_node){
-      newid = highestnid; ++ highestnid;
+      newid = highestnid; ++ highestnid; // here just raise for each basenode
       
       // place new node at new position
       vector<double> actcoords = basemesh.GetNodeExo(*i_node); //curr position
-      // calculate new position
-      const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness);
+      // new base position equals actele (matching mesh!)
+      const vector<double> newcoords = actcoords;
       int newExoNid = ExoToStore(newid);
       // put new coords into newnode map
       newnodes.insert(pair<int,vector<double> >(newExoNid,newcoords));
       
       // put new node into map of OldNodeToNewNode
-      node_pair.insert(std::pair<int,int>(*i_node,newid));
-      // insert node into element
-      newelenodes.push_back(newid);
+      vector<int> newids(1,newid);
+      node_pair.insert(std::pair<int,vector<int> >(*i_node,newids));
+      // insert node into base layer
+      layer_nodes[0].push_back(newid);
+      
+      // create layers at this node location
+      for (int i_layer = 1; i_layer <= layers; ++i_layer) {
+        const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness, i_layer);
+        //newid += i_layer*nod_per_basele;
+        // numbering of new ids nodewise not layerwise as may be expected
+        newid = highestnid; ++ highestnid; 
+        int newExoNid = ExoToStore(newid);
+        // put new coords into newnode map
+        newnodes.insert(pair<int,vector<double> >(newExoNid,newcoords));
+        // put new node into map of OldNodeToNewNode
+        node_pair[*i_node].push_back(newid);
+        // finally store this node where it will be connected to an ele
+        layer_nodes[i_layer].push_back(newid);
+      }
     }    
-    doneles.insert(0);    // the first element is done ************************
-    // insert new element into new connectivity
-    newconn.insert(pair<int,vector<int> >(newele,newelenodes));
-    PrintVec(cout,newelenodes);
-    newelenodes.clear();
-    ++ newele;
+    //highestnid += nod_per_basele*(layers); // correct to account for layers
     
+    doneles.insert(0);    // the first element is done ************************
+    // form every new layer element
+    for (int i_layer = 0; i_layer < layers; ++i_layer){
+      vector<int> basenodes = layer_nodes[i_layer];
+      vector<int> ceilnodes = layer_nodes[i_layer+1];
+      newelenodes.insert(newelenodes.begin(),basenodes.begin(),basenodes.end());
+      newelenodes.insert(newelenodes.end(),ceilnodes.begin(),ceilnodes.end());
+      // insert new element into new connectivity
+      newconn.insert(pair<int,vector<int> >(newele,newelenodes));
+      ++ newele;
+      newelenodes.clear();
+      layer_nodes.clear();
+    }
+     
     
     while (todo_eles.size() > 0){ // start of going through ele neighbors///////
       
       // find an actele still to do
-      PrintSet(cout,todo_eles);
       i_todo_eles=todo_eles.begin();
       int actele = *i_todo_eles;
       // delete actele from todo_eles list
@@ -129,11 +155,11 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
           if (edge == signed(actelenodes.size())) secedgenode = actelenodes.at(0);
           else secedgenode = actelenodes.at(edge+1);
           
-          // create a new element
-          vector<int> newelenodes;
+          // create a vector of nodes for each layer which will form layered eles
+          vector<vector<int> > layer_nodes(layers+1);
           
           /* the new elements orientation is opposite the current one
-           * therefore the first node is secedgenode */
+           * therefore the FIRST node is secedgenode */
           
           // check if new node already exists
           if (node_pair.find(secedgenode)==node_pair.end()){
@@ -141,22 +167,43 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
             newid = highestnid; ++ highestnid;
             // place new node at new position
             vector<double> actcoords = basemesh.GetNodeExo(secedgenode); //curr position
-            // calculate new position
-            const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness);
+            // new base position equals actele (matching mesh!)
+            const vector<double> newcoords = actcoords;
             int newExoNid = ExoToStore(newid);
             // put new coords into newnode map
             newnodes.insert(pair<int,vector<double> >(newExoNid,newcoords));
             
             // put new node into map of OldNodeToNewNode
-            node_pair.insert(std::pair<int,int>(secedgenode,newid));
+            vector<int> newids(1,newid);
+            node_pair.insert(std::pair<int,vector<int> >(secedgenode,newids));
             
-          } else newid = node_pair.find(secedgenode)->second;
-          
-          // insert node into element
-          newelenodes.push_back(newid);
+            // insert node into base layer
+            layer_nodes[0].push_back(newid);
+
+            // create layers at this node location
+            for (int i_layer = 1; i_layer <= layers; ++i_layer) {
+              const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness, i_layer);
+              newid = highestnid; ++ highestnid;
+              int newExoNid = ExoToStore(newid);
+              // put new coords into newnode map
+              newnodes.insert(pair<int,vector<double> >(newExoNid,newcoords));
+              
+              // put new node into map of OldNodeToNewNode
+              node_pair[secedgenode].push_back(newid);
+              // finally store this node where it will be connected to an ele
+              layer_nodes[i_layer].push_back(newid);
+            }
+            
+          } else {
+            for (int i_layer = 0; i_layer <= layers; ++i_layer) {
+              newid = node_pair.find(secedgenode)->second[i_layer];
+              // finally store this node where it will be connected to an ele
+              layer_nodes[i_layer].push_back(newid);
+            }
+          }
           
           /* the new elements orientation is opposite the current one
-           * therefore the second node is firstedgenode */
+           * therefore the SECOND node is firstedgenode */
           
           // check if new node already exists
           if (node_pair.find(firstedgenode)==node_pair.end()){
@@ -164,22 +211,42 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
             newid = highestnid; ++ highestnid;
             // place new node at new position
             vector<double> actcoords = basemesh.GetNodeExo(firstedgenode); //curr position
-            // calculate new position
-            const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness);
+            // new base position equals actele (matching mesh!)
+            const vector<double> newcoords = actcoords;
             int newExoNid = ExoToStore(newid);
             // put new coords into newnode map
             newnodes.insert(pair<int,vector<double> >(newExoNid,newcoords));
             
             // put new node into map of OldNodeToNewNode
-            node_pair.insert(std::pair<int,int>(firstedgenode,newid));
+            vector<int> newids(1,newid);
+            node_pair.insert(std::pair<int,vector<int> >(firstedgenode,newids));
             
-          } else newid = node_pair.find(firstedgenode)->second;
-          
-          // insert node into element
-          newelenodes.push_back(newid);
+            // insert node into base layer
+            layer_nodes[0].push_back(newid);
+
+            // create layers at this node location
+            for (int i_layer = 1; i_layer <= layers; ++i_layer) {
+              const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness, i_layer);
+              newid = highestnid; ++ highestnid;
+              int newExoNid = ExoToStore(newid);
+              // put new coords into newnode map
+              newnodes.insert(pair<int,vector<double> >(newExoNid,newcoords));
+              
+              // put new node into map of OldNodeToNewNode
+              node_pair[firstedgenode].push_back(newid);
+              // finally store this node where it will be connected to an ele
+              layer_nodes[i_layer].push_back(newid);
+            }
+          } else {
+            for (int i_layer = 0; i_layer <= layers; ++i_layer) {
+              newid = node_pair.find(firstedgenode)->second[i_layer];
+              // finally store this node where it will be connected to an ele
+              layer_nodes[i_layer].push_back(newid);
+            }
+          }
           
           /* the new elements orientation is opposite the current one
-           * therefore the remaining nodes are gained from the neighbor ele */
+           * therefore the THIRD node is gained from the neighbor ele */
           
           vector<int> actnbrnodes = extrudeblock.GetEleNodes(actneighbor);
           int thirdnode = FindEdgeNeighbor(actnbrnodes,firstedgenode,secedgenode);
@@ -190,24 +257,44 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
             newid = highestnid; ++ highestnid;
             // place new node at new position
             vector<double> actcoords = basemesh.GetNodeExo(thirdnode); //curr position
-            // calculate new position
-            const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness);
+            // new base position equals actele (matching mesh!)
+            const vector<double> newcoords = actcoords;
             int newExoNid = ExoToStore(newid);
             // put new coords into newnode map
             newnodes.insert(pair<int,vector<double> >(newExoNid,newcoords));
             
             // put new node into map of OldNodeToNewNode
-            node_pair.insert(std::pair<int,int>(thirdnode,newid));
+            vector<int> newids(1,newid);
+            node_pair.insert(std::pair<int,vector<int> >(thirdnode,newids));
             
-          } else newid = node_pair.find(thirdnode)->second;
+            // insert node into base layer
+            layer_nodes[0].push_back(newid);
+
+            // create layers at this node location
+            for (int i_layer = 1; i_layer <= layers; ++i_layer) {
+              const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness, i_layer);
+              newid = highestnid; ++ highestnid;
+              int newExoNid = ExoToStore(newid);
+              // put new coords into newnode map
+              newnodes.insert(pair<int,vector<double> >(newExoNid,newcoords));
+              
+              // put new node into map of OldNodeToNewNode
+              node_pair[thirdnode].push_back(newid);
+              // finally store this node where it will be connected to an ele
+              layer_nodes[i_layer].push_back(newid);
+            }
+          } else {
+            for (int i_layer = 0; i_layer <= layers; ++i_layer) {
+              newid = node_pair.find(thirdnode)->second[i_layer];
+              // finally store this node where it will be connected to an ele
+              layer_nodes[i_layer].push_back(newid);
+            }
+          }
           
-          // insert node into element
-          newelenodes.push_back(newid);
-         
           if (actelenodes.size() > 3){ // in case of not being a tri3
             
             /* the new elements orientation is opposite the current one
-             * therefore the remaining nodes are gained from the neighbor ele */
+             * therefore the FOURTH node is gained from the neighbor ele */
 
             int fourthnode = FindEdgeNeighbor(actnbrnodes,thirdnode,firstedgenode);
             
@@ -217,26 +304,54 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
               newid = highestnid; ++ highestnid;
               // place new node at new position
               vector<double> actcoords = basemesh.GetNodeExo(fourthnode); //curr position
-              // calculate new position
-              const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness);
+              // new base position equals actele (matching mesh!)
+              const vector<double> newcoords = actcoords;
               int newExoNid = ExoToStore(newid);
               // put new coords into newnode map
               newnodes.insert(pair<int,vector<double> >(newExoNid,newcoords));
               
               // put new node into map of OldNodeToNewNode
-              node_pair.insert(std::pair<int,int>(fourthnode,newid));
+              vector<int> newids(1,newid);
+              node_pair.insert(std::pair<int,vector<int> >(fourthnode,newids));
               
-            } else newid = node_pair.find(fourthnode)->second;
-            
-            // insert node into element
-            newelenodes.push_back(newid);
+              // insert node into base layer
+              layer_nodes[0].push_back(newid);
+              
+              // create layers at this node location
+              for (int i_layer = 1; i_layer <= layers; ++i_layer) {
+                const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness, i_layer);
+                newid = highestnid; ++ highestnid;
+                int newExoNid = ExoToStore(newid);
+                // put new coords into newnode map
+                newnodes.insert(pair<int,vector<double> >(newExoNid,newcoords));
+                
+                // put new node into map of OldNodeToNewNode
+                node_pair[fourthnode].push_back(newid);
+                // finally store this node where it will be connected to an ele
+                layer_nodes[i_layer].push_back(newid);
+              }
+            } else {
+              for (int i_layer = 0; i_layer <= layers; ++i_layer) {
+                newid = node_pair.find(fourthnode)->second[i_layer];
+                // finally store this node where it will be connected to an ele
+                layer_nodes[i_layer].push_back(newid);
+              }
+            }
+          } // end of 4-node case
+          
+          // form every new layer element
+          for (int i_layer = 0; i_layer < layers; ++i_layer){
+            vector<int> basenodes = layer_nodes[i_layer];
+            vector<int> ceilnodes = layer_nodes[i_layer+1];
+            newelenodes.insert(newelenodes.begin(),basenodes.begin(),basenodes.end());
+            newelenodes.insert(newelenodes.end(),ceilnodes.begin(),ceilnodes.end());
+            // insert new element into new connectivity
+            newconn.insert(pair<int,vector<int> >(newele,newelenodes));
+            ++ newele;
+            newelenodes.clear();
+            layer_nodes.clear();
           }
-          
-          // insert actneighbor element into new connectivity map
-          newconn.insert(pair<int,vector<int> >(newele,newelenodes));
-          newelenodes.clear();
-          ++ newele;
-          
+
           // insert actneighbor into done elements
           doneles.insert(actneighbor);
           
@@ -249,13 +364,11 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
       }// end of this "center" - element ///////////////////////////////////////
       
     }// end of extruding all elements in block
-    // debug
-    PrintMap(cout,newconn);
    
     // create new Element Block
     std::ostringstream blockname;
     blockname << "extrude" << i_ebs->first;
-    EXODUS::ElementBlock neweblock(ElementBlock::shell4,newconn,blockname.str());
+    EXODUS::ElementBlock neweblock(ElementBlock::hex8,newconn,blockname.str());
     int newblockID = highestblock + i_ebs->first;
     neweblocks.insert(pair<int,EXODUS::ElementBlock>(newblockID,neweblock));
     
@@ -295,12 +408,12 @@ vector<int> EXODUS::RiseNodeIds(int highestid, map<int,int> pair, const vector<i
   return newnodes;
 }
 
-vector<double> EXODUS::ExtrudeNodeCoords(const vector<double> basecoords, double distance)
+vector<double> EXODUS::ExtrudeNodeCoords(const vector<double> basecoords, const double distance, const int layer)
 {
   vector<double> newcoords(3);
   newcoords[0] = basecoords[0];
   newcoords[1] = basecoords[1];
-  newcoords[2] = basecoords[2] + distance;
+  newcoords[2] = basecoords[2] + layer*distance;
   return newcoords;
 }
 

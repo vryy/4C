@@ -42,7 +42,7 @@ bool CheckExtrusion(const EXODUS::ElementBlock eblock);
 
 vector<int> RiseNodeIds(int highestid, map<int,int> pair, const vector<int> elenodes);
 
-vector<double> ExtrudeNodeCoords(const vector<double> basecoords, double distance);
+vector<double> ExtrudeNodeCoords(const vector<double> basecoords, const double distance, const int layer);
 
 const map<int,set<int> > NodeToEleConn(const EXODUS::ElementBlock eblock);
 
