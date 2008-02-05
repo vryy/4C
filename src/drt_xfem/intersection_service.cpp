@@ -222,6 +222,357 @@ bool XFEM::checkIfLineElement(
 }
 
 
+
+/*----------------------------------------------------------------------*
+ | GM:      transforms a node in element coordinates       u.may 07/07|
+ |          into current coordinates                                    |
+ *----------------------------------------------------------------------*/  
+void XFEM::elementToCurrentCoordinates(   
+    DRT::Element* element, 
+    Epetra_SerialDenseVector& xsi) 
+{
+    const int numNodes = element->NumNode();
+    Epetra_SerialDenseVector funct(numNodes);
+    
+    switch(getDimension(element))
+    {
+        case 1:
+        {
+            shape_function_1D(funct, xsi[0], element->Shape());
+            break;
+        }
+        case 2:
+        {
+            shape_function_2D(funct, xsi[0], xsi[1], element->Shape());
+            break;
+        }
+        case 3:
+        {
+            shape_function_3D(funct, xsi[0], xsi[1], xsi[2], element->Shape());
+            break;
+        }
+        default:
+            dserror("dimension of the element is not correct");
+    }          
+        
+    xsi.Scale(0.0);
+    
+    for(int i=0; i<numNodes; i++)
+    {
+        DRT::Node* node = element->Nodes()[i];
+        for(int j=0; j<3; j++)
+            xsi[j] += node->X()[j] * funct(i);
+    }
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | GM:      transforms a node in element coordinates       u.may 07/07|
+ |          into current coordinates                                    |
+ *----------------------------------------------------------------------*/  
+blitz::Array<double, 1> XFEM::elementToCurrentCoordinates(   
+    DRT::Element* element, 
+    blitz::Array<double, 1>& eleCoord) 
+{
+    const int numNodes = element->NumNode();
+    blitz::Array<double,1> funct(numNodes);
+    blitz::Array<double,1> physCoord(numNodes);
+    
+    switch(getDimension(element))
+    {
+        case 1:
+        {
+            shape_function_1D(funct,eleCoord(0), element->Shape());
+            break;
+        }
+        case 2:
+        {
+            shape_function_2D(funct, eleCoord(0), eleCoord(1), element->Shape());
+            break;
+        }
+        case 3:
+        {
+            shape_function_3D(funct, eleCoord(0), eleCoord(1), eleCoord(2), element->Shape());
+            break;
+        }
+        default:
+            dserror("dimension of the element is not correct");
+    }          
+        
+    physCoord = 0;
+    
+    for(int i=0; i<numNodes; i++)
+    {
+        DRT::Node* node = element->Nodes()[i];
+        for(int j=0; j<3; j++)
+        	physCoord(j) += node->X()[j] * funct(i);
+    }
+    
+    return physCoord;
+}
+
+
+/*----------------------------------------------------------------------*
+ | GM:      transforms a node in element coordinates       u.may 07/07|
+ |          into current coordinates                                    |
+ *----------------------------------------------------------------------*/  
+void XFEM::elementToCurrentCoordinates(   
+    DRT::Element* 	element, 
+    vector<double>& xsi) 
+{
+	const int dim = getDimension(element);
+    const int numNodes = element->NumNode();
+    Epetra_SerialDenseVector funct(numNodes);
+    
+    switch(dim)
+    {
+        case 1:
+        {
+            shape_function_1D(funct, xsi[0], element->Shape());
+            break;
+        }
+        case 2:
+        {
+            shape_function_2D(funct, xsi[0], xsi[1], element->Shape());
+            break;
+        }
+        case 3:
+        {
+            shape_function_3D(funct, xsi[0], xsi[1], xsi[2], element->Shape());
+            break;
+        }
+        default:
+            dserror("dimension of the element is not correct");
+    }          
+        
+    for(int i = 0; i<3; i++)
+    	xsi[i] = 0.0;
+    
+    for(int i=0; i<numNodes; i++)
+    {
+        DRT::Node* node = element->Nodes()[i];
+        for(int j=0; j<3; j++)
+            xsi[j] += node->X()[j] * funct(i);
+    }
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | GM:      transforms a node in element coordinates       u.may 07/07|
+ |          into current coordinates                                    |
+ *----------------------------------------------------------------------*/  
+void XFEM::elementToCurrentCoordinates(   
+    DRT::Element*                               surfaceElement, 
+    Epetra_SerialDenseVector&                   xsi,
+    const vector<Epetra_SerialDenseVector>&     surfaceNodes)
+{
+    const int numNodes = surfaceElement->NumNode();
+    vector<int> actParams(1,0);
+    Epetra_SerialDenseVector funct(numNodes);
+  
+    shape_function_2D(funct, xsi[0], xsi[1], surfaceElement->Shape());
+       
+    xsi.Scale(0.0); 
+    for(int i=0; i<numNodes; i++)     
+        for(int j=0; j<3; j++)
+            xsi[j] += surfaceNodes[i][j] * funct(i);
+    
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | GM:      transforms a node in element coordinates       u.may 07/07|
+ |          into current coordinates                                    |
+ *----------------------------------------------------------------------*/  
+void XFEM::elementToCurrentCoordinates(  
+    Epetra_SerialDenseVector&                   xsi,
+    const vector<Epetra_SerialDenseVector>&     plane) 
+{
+    const int numNodes = 4;
+    Epetra_SerialDenseVector funct(numNodes);
+    
+    shape_function_2D(funct, xsi[0], xsi[1], DRT::Element::quad4);
+    
+    xsi.Scale(0.0);
+    for(int i=0; i<numNodes; i++)
+        for(int j=0; j<3; j++)   
+            xsi[j] += plane[i][j] * funct(i);
+    
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | GM:  transforms a node in current coordinates            u.may 07/07 |
+ |      into element coordinates                                        |
+ *----------------------------------------------------------------------*/  
+void XFEM::currentToElementCoordinates(   
+    DRT::Element*               element, 
+    Epetra_SerialDenseVector&   xsi) 
+{
+    
+    Epetra_SerialDenseVector x(3);
+    
+    x = xsi;
+    xsi.Scale(0.0);
+    
+    checkPositionWithinElement(element, x, xsi);
+   
+    // rounding 1 and -1 to be exact for the CDT
+    for(int j = 0; j < 3; j++)
+    {
+        if( fabs((fabs(xsi[j])-1.0)) < TOL7 &&  xsi[j] < 0)    xsi[j] = -1.0;
+        if( fabs((fabs(xsi[j])-1.0)) < TOL7 &&  xsi[j] > 0)    xsi[j] =  1.0;      
+    }  
+}     
+
+
+
+/*----------------------------------------------------------------------*
+ | GM:  transforms a node in current coordinates            u.may 12/07 |
+ |      into element coordinates  (vector<double>)                      |
+ *----------------------------------------------------------------------*/  
+void XFEM::currentToElementCoordinates(   
+    DRT::Element*               element, 
+    vector<double>&   			xsiVector) 
+{
+    
+	int dim = getDimension(element);
+    Epetra_SerialDenseVector x(dim);
+    Epetra_SerialDenseVector xsi(dim);
+    
+    for(int i = 0; i < dim; i++)
+    	x[i] = xsiVector[i];
+  
+    checkPositionWithinElement(element, x, xsi);
+   
+    // rounding 1 and -1 to be exact for the CDT
+    for(int j = 0; j < dim; j++)
+    {
+        if( fabs((fabs(xsi[j])-1.0)) < TOL7 &&  xsi[j] < 0)    xsi[j] = -1.0;
+        if( fabs((fabs(xsi[j])-1.0)) < TOL7 &&  xsi[j] > 0)    xsi[j] =  1.0;      
+    } 
+    
+    for(int i = 0; i < dim; i++)
+    	xsiVector[i] = xsi[i];
+}     
+
+
+
+/*----------------------------------------------------------------------*
+ |  GM:     compares two nodes                               u.may 06/07|
+ |          overloaded method:                                          |
+ |          double*  and  double*                                       |
+ *----------------------------------------------------------------------*/  
+bool XFEM::comparePoints(    
+    const double*     point1,
+    const double*     point2,
+    const int         length) 
+{   
+    bool equal = true;
+             
+    for(int i = 0; i < length; i++)
+        if(fabs(point1[i] - point2[i]) > TOL7)
+        {
+            equal = false;
+            break;
+        }
+  
+    return equal;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  GM:     compares two nodes                               u.may 06/07|
+ |          overloaded method:  vector<double>  and double*             |
+ *----------------------------------------------------------------------*/  
+bool XFEM::comparePoints(   
+    const vector<double>&     point1,
+    const double*             point2) 
+{   
+    bool equal = true;
+        
+    for(unsigned int i = 0; i < point1.size() ; i++)
+        if(fabs(point1[i] - point2[i]) > TOL7)
+        {
+            equal = false;
+            break;
+        }
+    
+    return equal;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  GM:     compares two nodes                               u.may 06/07|
+ |          overloaded method:  vector<double>  and  vector<double>     |
+ *----------------------------------------------------------------------*/  
+bool XFEM::comparePoints(   
+    const vector<double>& point1,
+    const vector<double>& point2) 
+{   
+    bool equal = true;
+    
+    for(unsigned int i = 0; i < point1.size() ; i++)
+        if(fabs(point1[i] - point2[i]) > TOL7)
+        {
+            equal = false;
+            break;
+        }
+  
+    return equal;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  GM:     compares two nodes                               u.may 06/07|
+ |          overloaded method:  DRT::Node*  and  DRT::Node*             |
+ *----------------------------------------------------------------------*/  
+bool XFEM::comparePoints( 
+    const DRT::Node*     point1,
+    const DRT::Node*     point2)
+{
+    bool equal = true;
+             
+    for(unsigned int i = 0; i < 3 ; i++)
+        if(fabs(point1->X()[i] - point2->X()[i]) > TOL7)
+        {
+            equal = false;
+            break;
+        }
+  
+    return equal;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  GM:     compares two nodes                               u.may 06/07|
+ |          overloaded method:                                          |
+ |          Epetra_SerialDenseVector  and  Epetra_SerialDenseVector     |
+ *----------------------------------------------------------------------*/  
+bool XFEM::comparePoints(    
+    const Epetra_SerialDenseVector&     point1,
+    const Epetra_SerialDenseVector&     point2) 
+{   
+    bool equal = true;
+    
+    for(int i = 0; i < point1.Length() ; i++)
+        if(fabs(point1[i] - point2[i]) > TOL7)
+        {
+            equal = false;
+            break;
+        }
+  
+    return equal;
+}
+
+
 /*----------------------------------------------------------------------*
  |  ICS:    checks if a position is within an XAABB          u.may 06/07|
  *----------------------------------------------------------------------*/
@@ -576,6 +927,37 @@ void XFEM::updateRHSForNWE(
 }
 
 
+
+/*----------------------------------------------------------------------*
+ |  RQI:    searches the nearest point on a surface          u.may 02/08|
+ |          element for a given point in physical coordinates           |
+ *----------------------------------------------------------------------*/
+bool XFEM::searchForNearestPointOnSurface(
+    DRT::Element*                       	surfaceElement,
+    const blitz::Array<double, 1>&     		physCoord,
+    blitz::Array<double, 1>&           		eleCoord,
+    blitz::Array<double, 1>&           		normal,
+    double&									distance)
+{
+	
+	bool pointWithinElement = false;
+	distance = -1.0;
+	normal = 0;
+	 
+	if(checkPositionWithinSurfaceElement(surfaceElement, physCoord, eleCoord))
+	{
+		const blitz::Array<double, 1> x_surface_phys = elementToCurrentCoordinates(surfaceElement, eleCoord);
+		normal = x_surface_phys - physCoord;
+		distance = sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2));
+		    
+		pointWithinElement = true;
+	}
+
+	return pointWithinElement;
+}
+
+
+
 /*----------------------------------------------------------------------*
  |  RQI:    checks if a given point in the 3-dim physical    u.may 01/08|
  |          space lies on a given surface element                       |
@@ -586,12 +968,10 @@ void XFEM::updateRHSForNWE(
  *----------------------------------------------------------------------*/
 bool XFEM::checkPositionWithinSurfaceElement(
     DRT::Element*                       	surfaceElement,
-    const Epetra_SerialDenseVector&     	x,
-    Epetra_SerialDenseVector&           	xsi,
-    double&									distance
+    const blitz::Array<double, 1>&     		physCoord,
+    blitz::Array<double, 1>&           		eleCoord
    	)
 {
-
 	bool nodeWithinElement = true;
     int iter = 0;
     const int maxiter = 20;
@@ -599,34 +979,24 @@ bool XFEM::checkPositionWithinSurfaceElement(
     
     blitz::firstIndex i;    // Placeholder for the first blitz array index
     blitz::secondIndex j;   // Placeholder for the second blitz array index
-    
-    blitz::Array<double, 1> blitz_x(	x.Values(),
-                               			blitz::shape(x.Length()),
-                               			blitz::neverDeleteData);
-                               			
-  	blitz::Array<double, 1> blitz_xsi(	xsi.Values(),
-   										blitz::shape(xsi.Length()),
-   										blitz::neverDeleteData);				
-  	blitz_xsi = 0;
-   										
+   								
   	blitz::Array<double, 1> F(3);				F = 0;
   	blitz::Array<double, 1> dx(2);				dx = 0;
   	
   	blitz::Array<double, 2> A(2,2,blitz::ColumnMajorArray<2>());			
   	blitz::Array<double, 2> Jacobi(3,2,blitz::ColumnMajorArray<2>());
   
-    
-    distance = -1.0;
-    
-	// compute Jacobi, f and b
-	updateJacobianForMap3To2(Jacobi, blitz_xsi, surfaceElement);  
-	updateFForMap3To2(F, blitz_xsi, blitz_x, surfaceElement);  
+  	eleCoord = 0;
+  	
+	// compute Jacobian, f and b
+	updateJacobianForMap3To2(Jacobi, eleCoord, surfaceElement);  
+	updateFForMap3To2(F, eleCoord, physCoord, surfaceElement);  
 	blitz::Array<double, 1> b(blitz::sum(-Jacobi(j,i)*F(j),j));
            
   	while(residual > TOL14)
     {   
-        
-  		updateAForMap3To2(A, Jacobi, F, blitz_xsi, surfaceElement);
+        // compute system matrix A
+  		updateAForMap3To2(A, Jacobi, F, eleCoord, surfaceElement);
   	
         if(!gaussEliminationEpetra(A, b, dx))
         {
@@ -634,10 +1004,10 @@ bool XFEM::checkPositionWithinSurfaceElement(
             break;
         }   
            
-        blitz_xsi = blitz_xsi + dx;
+        eleCoord = eleCoord + dx;
         
-        updateJacobianForMap3To2(Jacobi, blitz_xsi, surfaceElement);  
-		updateFForMap3To2(F, blitz_xsi, blitz_x, surfaceElement);  
+        updateJacobianForMap3To2(Jacobi, eleCoord, surfaceElement);  
+		updateFForMap3To2(F, eleCoord, physCoord, surfaceElement);  
    		b =  blitz::sum(-Jacobi(j,i)*F(j),j);
    	 
         residual = sqrt(b(0)*b(0)+b(1)*b(1));
@@ -654,17 +1024,11 @@ bool XFEM::checkPositionWithinSurfaceElement(
     //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0],xsi[1],xsi[2], residual, TOL14);
     
 	for(int i=0; i<2; i++)
-   		if( (fabs(xsi[i])-1.0) > TOL7)     
+   		if( (fabs(eleCoord(i))-1.0) > TOL7)     
         {    
             nodeWithinElement = false;
             break;
         }
-        
-	blitz::Array<double, 1> diff(3);
-	blitz::Array<double, 1> x_surface_phys(3); x_surface_phys = 0;
-	diff = blitz_x - x_surface_phys;
-    distance = sqrt(diff(0)*diff(0) + diff(1)*diff(1) + diff(2)*diff(2));
-    
     
 	return nodeWithinElement;
 }
@@ -733,8 +1097,6 @@ void XFEM::updateFForMap3To2(
 
 
 
-
-
 /*----------------------------------------------------------------------*
  |  RQI:    updates the system matrix			             u.may 01/08|
  |          for the computation, whether a point in the 3-dim physical 	|
@@ -772,6 +1134,7 @@ void XFEM::updateAForMap3To2(
 	
 	A = blitz::sum(Jacobi(k,i) * Jacobi(k,j), k) + blitz::sum(F(k)*tensor3Ord(k,i,j),k);
 }
+
 
 
 /*----------------------------------------------------------------------*

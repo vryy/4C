@@ -562,6 +562,10 @@ else
 
 
 
+/*----------------------------------------------------------------------*
+ |  ML:     solves a linear system of equation               u.may 02/08|
+ |          with help of a Gaussian Elimination provide by Epetra       |
+ *----------------------------------------------------------------------*/
 bool XFEM::gaussEliminationEpetra(
 	blitz::Array<double, 2>& 	A,
 	blitz::Array<double, 1>&	b,
@@ -570,16 +574,11 @@ bool XFEM::gaussEliminationEpetra(
 	
 	bool solution = true;
 	int dim = 2;
-	
-	x = 0;
+
 	// view on hopefullx column major blitz arrays
 	Epetra_SerialDenseMatrix A_Epetra(Copy, A.data(), A.columns(), A.rows(), A.columns());
 	Epetra_SerialDenseVector b_Epetra(Copy, b.data(), b.rows());
-	Epetra_SerialDenseVector x_Epetra(2); //(View, x.data(), x.rows());
-	
-
-	//for(int i = 0; i < dim; i++)
-	//	printf("X0 = %f, x_epetra0 = %f\n", x(i), x_Epetra(i));
+	Epetra_SerialDenseVector x_Epetra(2); 
 	
 	Epetra_SerialDenseSolver ge;
 	ge.SetMatrix(A_Epetra);

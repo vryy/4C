@@ -33,6 +33,7 @@ namespace XFEM
     //! tolerance 1e-7 
     const double                 TOL7 = 1e-7;
 
+    
     /*!
     \brief Returns the sum of two Epetra_SerialDenseVectors
 
@@ -44,7 +45,7 @@ namespace XFEM
         const Epetra_SerialDenseVector&   v1,
         const Epetra_SerialDenseVector&   v2
         );      
-    
+       
     
     /*!
     \brief Returns the sum of two vector<double>
@@ -120,7 +121,6 @@ namespace XFEM
         );
 
     
-    
     /*!
     \brief checks if element is a volume element
 
@@ -154,7 +154,175 @@ namespace XFEM
         );
     
     
+    /*!
+    \brief transforms a point in element coordinates to a point
+           in current coordinates with respect to a given element
+
+    \param element          (in)        : element
+    \param xsi              (in/out)    : vector of element coordinates/
+                                          vector of current coordinates
+    */
+    void elementToCurrentCoordinates( 
+        DRT::Element*               element, 
+        Epetra_SerialDenseVector&   xsi
+        ); 
     
+    
+    /*!
+    \brief transforms a point in element coordinates to a point
+           in current coordinates with respect to a given element
+
+    \param element          (in)        : element
+    \param eleCoord         (in)    	: vector of element coordinates
+    \return                               vector of current coordinates
+    */
+    blitz::Array<double, 1> elementToCurrentCoordinates(   
+        DRT::Element* element, 
+        blitz::Array<double, 1>& eleCoord
+        );
+
+
+    /*!
+    \brief transforms a point in element coordinates to a point
+           in current coordinates with respect to a given surfaceElement
+           based on given nodal coordinates
+
+    \param surfacElement    (in)        : surfaceElement
+    \param xsi              (in/out)    : vector of element coordinates/
+                                          vector of current coordinates
+    \param surfaceNodes     (in)        : nodal coordinates of the surface element
+    */
+    void elementToCurrentCoordinates(   
+        DRT::Element*                               surfaceElement, 
+        Epetra_SerialDenseVector&                   xsi,
+        const vector <Epetra_SerialDenseVector>&    surfaceNodes
+        ); 
+
+    
+    /*!
+    \brief transforms a point in element coordinates to a point
+           in current coordinates with respect to a given plane
+           based on given nodal coordinates
+
+    \param xsi          (in/out)    : vector of element coordinates/
+                                      vector of current coordinates
+    \param plane        (in)        : quad4 surface element
+    */
+    void elementToCurrentCoordinates(  
+        Epetra_SerialDenseVector&                   xsi,
+        const vector<Epetra_SerialDenseVector>&     plane
+        );
+
+
+    /*!
+    \brief transforms a point in current coordinates to a point
+           in element coordinates with respect to a given element
+
+    \param element          (in)        : element
+    \param xsi              (in/out)    : vector of current coordinates/
+                                          vector of element coordinates
+    */
+    void currentToElementCoordinates( 
+        DRT::Element*               element,                     
+        Epetra_SerialDenseVector&   xsi
+        );
+
+    
+    /*!
+   	\brief transforms a point in current coordinates to a point
+           in element coordinates with respect to a given element
+        
+    \param element          (in)        : element
+    \param xsi              (in/out)    : vector of current coordinates/
+                                          vector of element coordinates
+    */
+    void currentToElementCoordinates(   
+    	DRT::Element*               element, 
+    	vector<double>&   			xsiVector
+      	);
+
+    
+    /*!
+   	\brief transforms a point in current coordinates to a point
+           in element coordinates with respect to a given element
+        
+    \param element          (in)        : element
+    \param xsi              (in/out)    : vector of current coordinates/
+                                          vector of element coordinates
+    */
+    void elementToCurrentCoordinates(   
+        DRT::Element* 	element, 
+        vector<double>& xsi
+        );
+    
+    
+    /*!
+     \brief compares two points (overloaded method)
+ 
+     \param point1       (in)    : first point   (vector<double>)
+     \param point2       (in)    : second point  (double*)
+     \return true if both points equal each other, false otherwise
+     */
+     bool comparePoints( 
+         const vector<double>&     point1,
+         const double*             point2
+         );
+  
+              
+     /*!
+     \brief compares two points (overloaded method)
+ 
+     \param point1       (in)    : first point   (double*)
+     \param point2       (in)    : second point  (double*)
+     \param lenght       (in)    : length of arrays
+     \return true if both points equal each other, false otherwise
+     */
+     bool comparePoints( 
+         const double*     point1,
+         const double*     point2,
+         const int         length
+         ); 
+  
+                                     
+     /*!
+     \brief compares two points (overloaded method)
+ 
+     \param point1       (in)    : first point   (vector<double>)
+     \param point2       (in)    : second point  (vector<double>)
+     \return true if both points equal each other, false otherwise
+     */                    
+     bool comparePoints( 
+         const vector<double>&     point1,
+         const vector<double>&     point2
+         );
+  
+                             
+     /*!
+     \brief compares two points (overloaded method)
+ 
+     \param point1       (in)    : first point   (Epetra_SerialDenseVector)
+     \param point2       (in)    : second point  (Epetra_SerialDenseVector)
+     \return true if both points equal each other, false otherwise
+     */                      
+     bool comparePoints( 
+         const Epetra_SerialDenseVector&     point1,
+         const Epetra_SerialDenseVector&     point2
+         );
+         
+    
+     /*!
+     \brief compares two points (overloaded method)
+ 
+     \param point1       (in)    : first point   (DRT::Node*)
+     \param point2       (in)    : second point  (DRT::Node*)
+     \return true if both points equal each other, false otherwise
+     */                      
+     bool comparePoints( 
+    	const DRT::Node*     point1,
+    	const DRT::Node*     point2
+       	);
+  
+     
     /*!
     \brief Checks if a node is within an 
            extended axis-aligned bounding box (XAABB)
@@ -199,6 +367,7 @@ namespace XFEM
         Epetra_SerialDenseVector&           xsi
         );
     
+    
     /*!
     \brief checks if a position in current coordinates lies within a certain element           
            The nonlinear system of equation is solved with help of the Newton-method.
@@ -211,6 +380,7 @@ namespace XFEM
         const Epetra_SerialDenseVector&     x
         );   
     
+    
     /*!
     \brief checks if a position in current coordinates lies within a certain element           
            The nonlinear system of equation is solved with help of the Newton-method.
@@ -222,6 +392,7 @@ namespace XFEM
         RCP<DRT::Discretization>            dis,
         const Epetra_SerialDenseVector&     x);
     
+    
     /*!
     \brief checks if a position in current coordinates lies within a certain element           
            The nonlinear system of equation is solved with help of the Newton-method.
@@ -231,6 +402,7 @@ namespace XFEM
             const int                         xfem_condition_label, 
             RCP<DRT::Discretization>          cutterdis              ///< mesh
         );
+    
     
     /*!
     \brief updates the system matrix at the corresponding element coordinates for the 
@@ -269,21 +441,52 @@ namespace XFEM
     
     
     /*!
-   	\brief checks if a position in current coordinates lies within a certain surfaceElement           
-          The nonlinear system of equation is solved with help of the Newton-method.
+    \brief 	finds the nearest point for a given point on a surface element
+    		the element coordinates of this point are stored in eleCoord, the normal
+    		point from the given point to the nearest point on the surface,
+    		distance returns the absolut length of the normal. 
+     		If the computed point lies outside the element , the distance which is retuned equals -1
+     		and the normal is set to zero.
 
-   	\param surfaceElement       (in)        : surfaceElement 
-   	\param x                    (in)        : node in current coordinates (x, y, z)
-   	\param xsi                  (inout)     : node in element coordinates
-     */  
-    bool checkPositionWithinSurfaceElement(
-        DRT::Element*                       	surfaceElement,
-        const Epetra_SerialDenseVector&     	x,
-        Epetra_SerialDenseVector&           	xsi,
-        double&									distance
+    \param surfaceElement   	(in)       : surface element
+    \param physCoord          	(out)      : physical coordinates      
+    \param eleCoord          	(in)       : element coordinates
+    \param normal             	(in)       : normal point from a given point to the surface point
+    \param distance           	(in)       : length of the normal
+    */         
+    bool searchForNearestPointOnSurface(
+    	DRT::Element*                       	surfaceElement,
+    	const blitz::Array<double, 1>&     		physCoord,
+    	blitz::Array<double, 1>&           		eleCoord,
+    	blitz::Array<double, 1>&           		normal,
+    	double&									distance
         );
     
     
+    /*!
+   	\brief checks if a position in current coordinates lies within a certain surfaceElement           
+          The nonlinear system of equation is solved with help of the Newton-method.
+
+   	\param surfaceElement 		(in)        : surfaceElement 
+   	\param physCoord           	(in)        : node in physical coordinates (x, y, z)
+   	\param eleCoord            	(out)     	: node in element coordinates
+   	\return									true if point lies on the surface element, false otherwise
+    */  
+    bool checkPositionWithinSurfaceElement(
+        DRT::Element*                       	surfaceElement,
+        const blitz::Array<double, 1>&     		physCoord,
+        blitz::Array<double, 1>&           		eleCoord
+        );
+    
+    
+    /*!
+    \brief 	updates the 3x2 Jacobian matrix for the computation of the
+    		surface element coordinates for a point in physical coordinates
+
+    \param Jacobi   			(out)       : Jacobian matrix
+    \param xsi          		(in)      	: element coordinates      
+    \param surface element		(in)       	: surface element
+    */         
     void updateJacobianForMap3To2(   
         blitz::Array<double, 2>& 		Jacobi,
         const blitz::Array<double, 1>&	xsi,
@@ -291,6 +494,15 @@ namespace XFEM
         );      
     
    
+    /*!
+    \brief 	updates the nonlinear equations for the computation of the
+    		surface element coordinates for a surface point in physical coordinates
+
+    \param F   				(out)       : nonlinear equations
+    \param xsi          	(in)      	: element coordinates    
+    \param x         		(in)      	: physical coordinates      
+    \param surface element	(in)       	: surface element
+    */    
     void updateFForMap3To2(   
         blitz::Array<double, 1>& 		F,
         const blitz::Array<double, 1>&	xsi,
@@ -299,12 +511,22 @@ namespace XFEM
         );
     
     
+    /*!
+    \brief 	updates the nonlinear equations for the computation of the
+    		surface element coordinates for a surface point in physical coordinates
+
+    \param A  				(out)       : system matrix
+    \param Jacobi          	(in)      	: Jacobian matrix
+    \param F         		(in)      	: nonlinear equations  
+    \param xsi         		(in)      	: element coordinates      
+    \param surface element	(in)       	: surface element
+    */    
     void updateAForMap3To2(   
-    	blitz::Array<double, 2>& 	A,
+    	blitz::Array<double, 2>& 		A,
     	const blitz::Array<double, 2>& 	Jacobi,
     	const blitz::Array<double, 1>& 	F,
         const blitz::Array<double, 1>&	xsi,
-        DRT::Element*               surfaceElement
+        DRT::Element*               	surfaceElement
         );   
     
     

@@ -658,310 +658,6 @@ void Intersection::getCutterElementsInParallel(
 #endif
 
 
-/*----------------------------------------------------------------------*
- | GM:      transforms a node in element coordinates       u.may 07/07|
- |          into current coordinates                                    |
- *----------------------------------------------------------------------*/  
-void Intersection::elementToCurrentCoordinates(   
-    DRT::Element* element, 
-    Epetra_SerialDenseVector& xsi) const
-{
-    const int numNodes = element->NumNode();
-    Epetra_SerialDenseVector funct(numNodes);
-    
-    switch(getDimension(element))
-    {
-        case 1:
-        {
-            shape_function_1D(funct, xsi[0], element->Shape());
-            break;
-        }
-        case 2:
-        {
-            shape_function_2D(funct, xsi[0], xsi[1], element->Shape());
-            break;
-        }
-        case 3:
-        {
-            shape_function_3D(funct, xsi[0], xsi[1], xsi[2], element->Shape());
-            break;
-        }
-        default:
-            dserror("dimension of the element is not correct");
-    }          
-        
-    xsi.Scale(0.0);
-    
-    for(int i=0; i<numNodes; i++)
-    {
-        DRT::Node* node = element->Nodes()[i];
-        for(int j=0; j<3; j++)
-            xsi[j] += node->X()[j] * funct(i);
-    }
-}
-
-
-
-/*----------------------------------------------------------------------*
- | GM:      transforms a node in element coordinates       u.may 07/07|
- |          into current coordinates                                    |
- *----------------------------------------------------------------------*/  
-void Intersection::elementToCurrentCoordinates(   
-    DRT::Element* 	element, 
-    vector<double>& xsi) const
-{
-	const int dim = getDimension(element);
-    const int numNodes = element->NumNode();
-    Epetra_SerialDenseVector funct(numNodes);
-    
-    switch(dim)
-    {
-        case 1:
-        {
-            shape_function_1D(funct, xsi[0], element->Shape());
-            break;
-        }
-        case 2:
-        {
-            shape_function_2D(funct, xsi[0], xsi[1], element->Shape());
-            break;
-        }
-        case 3:
-        {
-            shape_function_3D(funct, xsi[0], xsi[1], xsi[2], element->Shape());
-            break;
-        }
-        default:
-            dserror("dimension of the element is not correct");
-    }          
-        
-    for(int i = 0; i<dim; i++)
-    	xsi[i] = 0.0;
-    
-    for(int i=0; i<numNodes; i++)
-    {
-        DRT::Node* node = element->Nodes()[i];
-        for(int j=0; j<dim; j++)
-            xsi[j] += node->X()[j] * funct(i);
-    }
-}
-
-
-
-/*----------------------------------------------------------------------*
- | GM:      transforms a node in element coordinates       u.may 07/07|
- |          into current coordinates                                    |
- *----------------------------------------------------------------------*/  
-void Intersection::elementToCurrentCoordinates(   
-    DRT::Element*                               surfaceElement, 
-    Epetra_SerialDenseVector&                   xsi,
-    const vector<Epetra_SerialDenseVector>&     surfaceNodes) const
-{
-    const int numNodes = surfaceElement->NumNode();
-    vector<int> actParams(1,0);
-    Epetra_SerialDenseVector funct(numNodes);
-  
-    shape_function_2D(funct, xsi[0], xsi[1], surfaceElement->Shape());
-       
-    xsi.Scale(0.0); 
-    for(int i=0; i<numNodes; i++)     
-        for(int j=0; j<3; j++)
-            xsi[j] += surfaceNodes[i][j] * funct(i);
-    
-}
-
-
-
-/*----------------------------------------------------------------------*
- | GM:      transforms a node in element coordinates       u.may 07/07|
- |          into current coordinates                                    |
- *----------------------------------------------------------------------*/  
-void Intersection::elementToCurrentCoordinates(  
-    Epetra_SerialDenseVector&                   xsi,
-    const vector<Epetra_SerialDenseVector>&     plane) const
-{
-    const int numNodes = 4;
-    Epetra_SerialDenseVector funct(numNodes);
-    
-    shape_function_2D(funct, xsi[0], xsi[1], DRT::Element::quad4);
-    
-    xsi.Scale(0.0);
-    for(int i=0; i<numNodes; i++)
-        for(int j=0; j<3; j++)   
-            xsi[j] += plane[i][j] * funct(i);
-    
-}
-
-
-
-/*----------------------------------------------------------------------*
- | GM:  transforms a node in current coordinates            u.may 07/07 |
- |      into element coordinates                                        |
- *----------------------------------------------------------------------*/  
-void Intersection::currentToElementCoordinates(   
-    DRT::Element*               element, 
-    Epetra_SerialDenseVector&   xsi) const
-{
-    
-    Epetra_SerialDenseVector x(3);
-    
-    x = xsi;
-    xsi.Scale(0.0);
-    
-    checkPositionWithinElement(element, x, xsi);
-   
-    // rounding 1 and -1 to be exact for the CDT
-    for(int j = 0; j < 3; j++)
-    {
-        if( fabs((fabs(xsi[j])-1.0)) < TOL7 &&  xsi[j] < 0)    xsi[j] = -1.0;
-        if( fabs((fabs(xsi[j])-1.0)) < TOL7 &&  xsi[j] > 0)    xsi[j] =  1.0;      
-    }  
-}     
-
-
-
-/*----------------------------------------------------------------------*
- | GM:  transforms a node in current coordinates            u.may 12/07 |
- |      into element coordinates  (vector<double>)                      |
- *----------------------------------------------------------------------*/  
-void Intersection::currentToElementCoordinates(   
-    DRT::Element*               element, 
-    vector<double>&   			xsiVector) const
-{
-    
-	int dim = getDimension(element);
-    Epetra_SerialDenseVector x(dim);
-    Epetra_SerialDenseVector xsi(dim);
-    
-    for(int i = 0; i < dim; i++)
-    	x[i] = xsiVector[i];
-  
-    checkPositionWithinElement(element, x, xsi);
-   
-    // rounding 1 and -1 to be exact for the CDT
-    for(int j = 0; j < dim; j++)
-    {
-        if( fabs((fabs(xsi[j])-1.0)) < TOL7 &&  xsi[j] < 0)    xsi[j] = -1.0;
-        if( fabs((fabs(xsi[j])-1.0)) < TOL7 &&  xsi[j] > 0)    xsi[j] =  1.0;      
-    } 
-    
-    for(int i = 0; i < dim; i++)
-    	xsiVector[i] = xsi[i];
-}     
-
-
-
-/*----------------------------------------------------------------------*
- |  GM:     compares two nodes                               u.may 06/07|
- |          overloaded method:                                          |
- |          double*  and  double*                                       |
- *----------------------------------------------------------------------*/  
-bool Intersection::comparePoints(    
-    const double*     point1,
-    const double*     point2,
-    const int         length) const
-{   
-    bool equal = true;
-             
-    for(int i = 0; i < length; i++)
-        if(fabs(point1[i] - point2[i]) > TOL7)
-        {
-            equal = false;
-            break;
-        }
-  
-    return equal;
-}
-
-
-
-/*----------------------------------------------------------------------*
- |  GM:     compares two nodes                               u.may 06/07|
- |          overloaded method:  vector<double>  and double*             |
- *----------------------------------------------------------------------*/  
-bool Intersection::comparePoints(   
-    const vector<double>&     point1,
-    const double*             point2) const
-{   
-    bool equal = true;
-        
-    for(unsigned int i = 0; i < point1.size() ; i++)
-        if(fabs(point1[i] - point2[i]) > TOL7)
-        {
-            equal = false;
-            break;
-        }
-    
-    return equal;
-}
-
-
-
-/*----------------------------------------------------------------------*
- |  GM:     compares two nodes                               u.may 06/07|
- |          overloaded method:  vector<double>  and  vector<double>     |
- *----------------------------------------------------------------------*/  
-bool Intersection::comparePoints(   
-    const vector<double>& point1,
-    const vector<double>& point2) const
-{   
-    bool equal = true;
-    
-    for(unsigned int i = 0; i < point1.size() ; i++)
-        if(fabs(point1[i] - point2[i]) > TOL7)
-        {
-            equal = false;
-            break;
-        }
-  
-    return equal;
-}
-
-
-
-/*----------------------------------------------------------------------*
- |  GM:     compares two nodes                               u.may 06/07|
- |          overloaded method:  DRT::Node*  and  DRT::Node*             |
- *----------------------------------------------------------------------*/  
-bool Intersection::comparePoints( 
-    const DRT::Node*     point1,
-    const DRT::Node*     point2) const
-{
-    bool equal = true;
-             
-    for(unsigned int i = 0; i < 3 ; i++)
-        if(fabs(point1->X()[i] - point2->X()[i]) > TOL7)
-        {
-            equal = false;
-            break;
-        }
-  
-    return equal;
-}
-
-
-
-/*----------------------------------------------------------------------*
- |  GM:     compares two nodes                               u.may 06/07|
- |          overloaded method:                                          |
- |          Epetra_SerialDenseVector  and  Epetra_SerialDenseVector     |
- *----------------------------------------------------------------------*/  
-bool Intersection::comparePoints(    
-    const Epetra_SerialDenseVector&     point1,
-    const Epetra_SerialDenseVector&     point2) const
-{   
-    bool equal = true;
-    
-    for(int i = 0; i < point1.Length() ; i++)
-        if(fabs(point1[i] - point2[i]) > TOL7)
-        {
-            equal = false;
-            break;
-        }
-  
-    return equal;
-}
-
 
 
 /*----------------------------------------------------------------------*
@@ -3775,56 +3471,50 @@ void Intersection::addCellsToBoundaryIntCellsMap(
 {                
 	
     vector<double> trinodes(3);
+    blitz::Array<double, 1> eleCoord(3);
+    blitz::Array<double, 1> physCoord(3);
     
     // store corner node
     for(int k = 0; k < 3; k++)
-        trinodes[k] = out.pointlist[out.trifacelist[trifaceIndex*3+cornerIndex]*3+k];
+    	eleCoord(k) = out.pointlist[out.trifacelist[trifaceIndex*3+cornerIndex]*3+k];
   
-    elementToCurrentCoordinates(xfemElement, trinodes);
+    
+    physCoord = elementToCurrentCoordinates(xfemElement, eleCoord);
+    trinodes[0] = physCoord(0);
+    trinodes[1] = physCoord(1);
+    trinodes[2] = physCoord(2);
+    
     domainCoord.push_back(trinodes);
     
-    //for(int i = 0; i < 3; i++)
-    	//printf("phys coord = %f\n", trinodes[i] );
-    //currentToElementCoordinates(intersectingCutterElements_[faceMarker], trinodes);
+    // elecoord = boundary elecoord
+    checkPositionWithinSurfaceElement(intersectingCutterElements_[faceMarker], physCoord, eleCoord);
     
-    double dummy = 0.0;
-    Epetra_SerialDenseVector xsi(3);
-    Epetra_SerialDenseVector x(3);
-    for(int i = 0; i < 3; i++)
-    	x[i] = trinodes[i]; 
     
-    //for(int i = 0; i < 3; i++)
-    //        printf("phys coord = %f\t", trinodes[i] );
-    
-    //printf("hello1\n");
-    checkPositionWithinSurfaceElement(intersectingCutterElements_[faceMarker], x, xsi, dummy);
-    //printf("hello2\n");
-    trinodes[0] = xsi[0];
-    trinodes[1] = xsi[1];
+    trinodes[0] = eleCoord(0);
+    trinodes[1] = eleCoord(1);
     trinodes[2] = 0.0;
     
-    //for(int i = 0; i < 3; i++)
-    //    printf("ele coord = %f\t", trinodes[i] );
-    
-    // printf("\n");
     boundaryCoord.push_back(trinodes);
     
     // store higher order node
     for(int k = 0; k < 3; k++)
-        trinodes[k] = out.pointlist[globalHigherOrderIndex*3+k];
+    	eleCoord(k) = out.pointlist[globalHigherOrderIndex*3+k];
  
+    
+    physCoord = elementToCurrentCoordinates(xfemElement, eleCoord);
+    trinodes[0] = physCoord(0);
+    trinodes[1] = physCoord(1);
+    trinodes[2] = physCoord(2);
     domainCoord.push_back(trinodes); 
     
-    elementToCurrentCoordinates(xfemElement, trinodes);
+    // elecoord = boundary elecoord
+    checkPositionWithinSurfaceElement(intersectingCutterElements_[faceMarker], physCoord, eleCoord);
     
-    //for(int i = 0; i < 3; i++)
-      //  	printf("phys coord = %f\n", trinodes[i] );
     
-    currentToElementCoordinates(intersectingCutterElements_[faceMarker], trinodes);
+    trinodes[0] = eleCoord(0);
+    trinodes[1] = eleCoord(1);
     trinodes[2] = 0.0;
-    //for(int i = 0; i < 3; i++)
-     //       printf("ele coord = %f\n", trinodes[i] );
-   
+    
     boundaryCoord.push_back(trinodes);
 }
 

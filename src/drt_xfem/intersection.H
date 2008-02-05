@@ -181,7 +181,6 @@ class Intersection
             DRT::Element*   xfemElement
             );
             
-            
         /*!
         \brief initializes the private members of the cutter element
     
@@ -190,96 +189,7 @@ class Intersection
         void initializeCutter(  
             DRT::Element* cutterElement
             );
-           		
-        
-        /*!
-        \brief transforms a point in element coordinates to a point
-               in current coordinates with respect to a given element
-    
-        \param element          (in)        : element
-        \param xsi              (in/out)    : vector of element coordinates/
-                                              vector of current coordinates
-        */
-        void elementToCurrentCoordinates( 
-            DRT::Element*               element, 
-            Epetra_SerialDenseVector&   xsi
-            ) const;
- 
- 
-        /*!
-        \brief transforms a point in element coordinates to a point
-               in current coordinates with respect to a given surfaceElement
-               based on given nodal coordinates
-    
-        \param surfacElement    (in)        : surfaceElement
-        \param xsi              (in/out)    : vector of element coordinates/
-                                              vector of current coordinates
-        \param surfaceNodes     (in)        : nodal coordinates of the surface element
-        */
-        void elementToCurrentCoordinates(   
-            DRT::Element*                               surfaceElement, 
-            Epetra_SerialDenseVector&                   xsi,
-            const vector <Epetra_SerialDenseVector>&    surfaceNodes
-            ) const;
-    
-        
-        /*!
-        \brief transforms a point in element coordinates to a point
-               in current coordinates with respect to a given plane
-               based on given nodal coordinates
-    
-        \param xsi          (in/out)    : vector of element coordinates/
-                                          vector of current coordinates
-        \param plane        (in)        : quad4 surface element
-        */
-        void elementToCurrentCoordinates(  
-            Epetra_SerialDenseVector&                   xsi,
-            const vector<Epetra_SerialDenseVector>&     plane
-            ) const;
-
-
-        /*!
-        \brief transforms a point in current coordinates to a point
-               in element coordinates with respect to a given element
-    
-        \param element          (in)        : element
-        \param xsi              (in/out)    : vector of current coordinates/
-                                              vector of element coordinates
-        */
-        void currentToElementCoordinates( 
-            DRT::Element*               element,                     
-            Epetra_SerialDenseVector&   xsi
-            ) const;
- 
-        
-        /*!
-       	\brief transforms a point in current coordinates to a point
-               in element coordinates with respect to a given element
-            
-        \param element          (in)        : element
-        \param xsi              (in/out)    : vector of current coordinates/
-                                              vector of element coordinates
-        */
-        void currentToElementCoordinates(   
-        	DRT::Element*               element, 
-        	vector<double>&   			xsiVector
-          	) const;
-    
-        
-        /*!
-       	\brief transforms a point in current coordinates to a point
-               in element coordinates with respect to a given element
-            
-        \param element          (in)        : element
-        \param xsi              (in/out)    : vector of current coordinates/
-                                              vector of element coordinates
-        */
-        void elementToCurrentCoordinates(   
-            DRT::Element* 	element, 
-            vector<double>& xsi
-            ) const;
-        
-        
+          
         /*!
         \brief computes a global numbering for cutter elements, which are boundary
                elements with xfem conditions
@@ -352,73 +262,6 @@ class Intersection
 		   	const RefCountPtr<DRT::Discretization>& cutterdis  
 		   	);
     
-  
-        /*!
-        \brief compares two points (overloaded method)
-    
-        \param point1       (in)    : first point   (vector<double>)
-        \param point2       (in)    : second point  (double*)
-        \return true if both points equal each other, false otherwise
-        */
-        bool comparePoints( 
-            const vector<double>&     point1,
-            const double*             point2
-            ) const;
- 
-             
-        /*!
-        \brief compares two points (overloaded method)
-    
-        \param point1       (in)    : first point   (double*)
-        \param point2       (in)    : second point  (double*)
-        \param lenght       (in)    : length of arrays
-        \return true if both points equal each other, false otherwise
-        */
-        bool comparePoints( 
-            const double*     point1,
-            const double*     point2,
-            const int         length
-            ) const; 
- 
-                                    
-        /*!
-        \brief compares two points (overloaded method)
-    
-        \param point1       (in)    : first point   (vector<double>)
-        \param point2       (in)    : second point  (vector<double>)
-        \return true if both points equal each other, false otherwise
-        */                    
-        bool comparePoints( 
-            const vector<double>&     point1,
-            const vector<double>&     point2
-            ) const;
- 
-                            
-        /*!
-        \brief compares two points (overloaded method)
-    
-        \param point1       (in)    : first point   (Epetra_SerialDenseVector)
-        \param point2       (in)    : second point  (Epetra_SerialDenseVector)
-        \return true if both points equal each other, false otherwise
-        */                      
-        bool comparePoints( 
-            const Epetra_SerialDenseVector&     point1,
-            const Epetra_SerialDenseVector&     point2
-            ) const;
-            
-       
-        /*!
-        \brief compares two points (overloaded method)
-    
-        \param point1       (in)    : first point   (DRT::Node*)
-        \param point2       (in)    : second point  (DRT::Node*)
-        \return true if both points equal each other, false otherwise
-        */                      
-        bool comparePoints( 
-            const DRT::Node*     point1,
-            const DRT::Node*     point2
-            ) const;
- 
         
         /*!
         \brief collects points belonging to an interface lying inside xfem elements         
