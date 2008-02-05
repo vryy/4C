@@ -588,13 +588,13 @@ void TurbulenceStatisticsLdc::DumpStatistics(int step)
       (*log) << "   " << setw(11) << setprecision(4) << x1v;
       (*log) << "   " << setw(11) << setprecision(4) << x1w;
       (*log) << "   " << setw(11) << setprecision(4) << x1p;
-      (*log) << "   " << setw(11) << setprecision(4) << x1urms;
-      (*log) << "   " << setw(11) << setprecision(4) << x1vrms;
-      (*log) << "   " << setw(11) << setprecision(4) << x1wrms;
-      (*log) << "   " << setw(11) << setprecision(4) << x1uv;
-      (*log) << "   " << setw(11) << setprecision(4) << x1uw;
-      (*log) << "   " << setw(11) << setprecision(4) << x1vw;
-      (*log) << "   " << setw(11) << setprecision(4) << x1prms;
+      (*log) << "   " << setw(11) << setprecision(4) << 10*x1urms;
+      (*log) << "   " << setw(11) << setprecision(4) << 10*x1vrms;
+      (*log) << "   " << setw(11) << setprecision(4) << 10*x1wrms;
+      (*log) << "   " << setw(11) << setprecision(4) << 500*x1uv;
+      (*log) << "   " << setw(11) << setprecision(4) << 500*x1uw;
+      (*log) << "   " << setw(11) << setprecision(4) << 500*x1vw;
+      (*log) << "   " << setw(11) << setprecision(4) << 10*x1prms;
       (*log) << "   \n";
     }
 
@@ -625,13 +625,13 @@ void TurbulenceStatisticsLdc::DumpStatistics(int step)
       (*log) << "   " << setw(11) << setprecision(4) << x2v;
       (*log) << "   " << setw(11) << setprecision(4) << x2w;
       (*log) << "   " << setw(11) << setprecision(4) << x2p;
-      (*log) << "   " << setw(11) << setprecision(4) << x2urms;
-      (*log) << "   " << setw(11) << setprecision(4) << x2vrms;
-      (*log) << "   " << setw(11) << setprecision(4) << x2wrms;
-      (*log) << "   " << setw(11) << setprecision(4) << x2uv;
-      (*log) << "   " << setw(11) << setprecision(4) << x2uw;
-      (*log) << "   " << setw(11) << setprecision(4) << x2vw;
-      (*log) << "   " << setw(11) << setprecision(4) << x2prms;
+      (*log) << "   " << setw(11) << setprecision(4) << 10*x2urms;
+      (*log) << "   " << setw(11) << setprecision(4) << 10*x2vrms;
+      (*log) << "   " << setw(11) << setprecision(4) << 10*x2wrms;
+      (*log) << "   " << setw(11) << setprecision(4) << 500*x2uv;
+      (*log) << "   " << setw(11) << setprecision(4) << 500*x2uw;
+      (*log) << "   " << setw(11) << setprecision(4) << 500*x2vw;
+      (*log) << "   " << setw(11) << setprecision(4) << 10*x2prms;
       (*log) << "   \n";
     }
     log->flush();
