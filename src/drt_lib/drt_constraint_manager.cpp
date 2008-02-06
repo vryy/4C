@@ -259,9 +259,9 @@ void ConstrManager::ComputeConstrTimesDisi(Epetra_Vector disi, RCP<Epetra_Serial
 	
 	for (int i=0; i < numConstrID_; i++)
 	{
-		double* temp;
-		disi.Dot(*((*constrVec_)(i)),temp);
-		(*dotprod)(i)=*temp;
+		double temp;
+		disi.Dot(*((*constrVec_)(i)),&temp);
+		(*dotprod)(i)=temp;
 	}
 	return;
 }

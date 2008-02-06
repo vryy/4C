@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file drt_constraint_manager.H
 
-\class DRT::ConstrManager
+\class ConstrManager
 
 \brief Class controlling constraints and containing the necessary data
 
