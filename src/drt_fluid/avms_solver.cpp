@@ -135,6 +135,16 @@ bool AVMS_Solver::Compute(RCP<Epetra_CrsMatrix> Aforfine,
   }
 #endif
   
+/*
+  {
+    const int length = Aforcoarse->RowMap().NumMyElements();
+    for (int i=0; i<nsdim; ++i)
+      for (int j=0; j<length; ++j)
+        if (dbct[j] == 1.0)
+          nullspace[i*length+j] = 0.0;
+  }
+*/
+  
   // get plain aggregation Ptent and Rtent
   RCP<Epetra_CrsMatrix>   Ptent;
   RCP<Epetra_MultiVector> nextNS;
