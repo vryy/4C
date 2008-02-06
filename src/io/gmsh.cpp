@@ -24,6 +24,126 @@ Maintainer: Axel Gerstenberger
 using namespace std;
 using namespace XFEM;
 
+
+
+string IO::GMSH::CoordinatesToString(
+        const vector<vector<double> > coord,
+        const DRT::Element::DiscretizationType distype)
+{
+    stringstream pos_array_string;
+    
+    const int numnode = distypeToGmshNumNode(distype);
+    
+    // coordinates
+    pos_array_string << "(";
+    for (int inen = 0; inen < numnode;++inen)
+    {
+        // print position in x-space
+        pos_array_string << scientific << coord[inen][0] << ",";
+        pos_array_string << scientific << coord[inen][1] << ",";
+        pos_array_string << scientific << coord[inen][2];
+        if (inen < numnode-1){
+            pos_array_string << ",";
+        }
+    };
+    pos_array_string << ")";
+    return pos_array_string.str();
+}
+
+string IO::GMSH::CoordinatesToString(
+        const blitz::Array<double,2> coord,
+        const DRT::Element::DiscretizationType distype)
+{
+    stringstream pos_array_string;
+    
+    const int numnode = distypeToGmshNumNode(distype);
+    
+    // coordinates
+    pos_array_string << "(";
+    for (int inen = 0; inen < numnode;++inen)
+    {
+        // print position in x-space
+        pos_array_string << scientific << coord(0,inen) << ",";
+        pos_array_string << scientific << coord(1,inen) << ",";
+        pos_array_string << scientific << coord(2,inen);
+        if (inen < numnode-1){
+            pos_array_string << ",";
+        }
+    };
+    pos_array_string << ")";
+    return pos_array_string.str();
+}
+
+string IO::GMSH::ScalarToString(
+        const double                           scalar,
+        const DRT::Element::DiscretizationType distype)
+{
+    stringstream pos_array_string;
+    
+    const int numnode = distypeToGmshNumNode(distype);
+    
+    // values
+    pos_array_string << "{";
+    for (int i = 0; i<numnode;++i)
+    {
+        pos_array_string << scientific << scalar;
+        if (i < numnode-1){
+            pos_array_string << ",";
+        }
+    };
+    pos_array_string << "};";
+    return pos_array_string.str();
+}
+
+string IO::GMSH::ScalarFieldToString(
+        const vector<double>                           scalarfield,
+        const DRT::Element::DiscretizationType distype)
+{
+    stringstream pos_array_string;
+    
+    const int numnode = distypeToGmshNumNode(distype);
+    
+    // values
+    pos_array_string << "{";
+    for (int i = 0; i<numnode;++i)
+    {
+        pos_array_string << scientific << scalarfield[i];
+        if (i < numnode-1){
+            pos_array_string << ",";
+        }
+    };
+    pos_array_string << "};";
+    return pos_array_string.str();
+}
+
+string IO::GMSH::VectorFieldToString(
+        const vector<vector<double> >           vectorfield,
+        const DRT::Element::DiscretizationType  distype)
+{
+    stringstream pos_array_string;
+    
+    const int numnode = distypeToGmshNumNode(distype);
+    const int numcomp = 3;
+    
+    // values
+    pos_array_string << "{";
+    for (int i = 0; i<numnode;++i)
+    {
+        for (int component = 0; component < numcomp; ++component) {
+          pos_array_string << scientific << vectorfield[i][component];
+          if (component < numcomp-1) pos_array_string << ",";
+        }
+        if (i < numnode-1){
+            pos_array_string << ",";
+        }
+    };
+    pos_array_string << "};";
+    return pos_array_string.str();
+}
+
+
+
+
 string IO::GMSH::elementToString(const double scalar, DRT::Element* ele)
 {
     DRT::Node** nodes = ele->Nodes();
@@ -46,15 +166,8 @@ string IO::GMSH::elementToString(const double scalar, DRT::Element* ele)
     };
     pos_array_string << ")";
     // values
-    pos_array_string << "{";
-    for (int i = 0; i<numnode;++i)
-    {
-        pos_array_string << scientific << scalar;
-        if (i < numnode-1){
-            pos_array_string << ",";
-        }
-    };
-    pos_array_string << "};";
+    pos_array_string << ScalarToString(scalar, distype);
+
     return pos_array_string.str();
 }
 
@@ -83,15 +196,7 @@ string IO::GMSH::elementToString(const vector<double> scalarfield, DRT::Element*
     };
     pos_array_string << ")";
     // values
-    pos_array_string << "{";
-    for (int i = 0; i<numnode;++i)
-    {
-        pos_array_string << scientific << scalarfield[i];
-        if (i < numnode-1){
-            pos_array_string << ",";
-        }
-    };
-    pos_array_string << "};";
+    pos_array_string << ScalarFieldToString(scalarfield, distype);
     return pos_array_string.str();
 }
 
@@ -101,7 +206,6 @@ string IO::GMSH::elementToString(const vector<vector<double> > vectorfield, DRT:
     
     const DRT::Element::DiscretizationType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);
-    const int numcomp=3;
     
     if ((unsigned int)vectorfield.size() != (unsigned int)numnode) dserror("Size mismatch: No of Nodes vs Size of Vectorfield");
     if ((unsigned int)vectorfield[0].size() != 3) dserror("Size mismatch: Vector of Vectorfield must have length 3");
@@ -121,85 +225,27 @@ string IO::GMSH::elementToString(const vector<vector<double> > vectorfield, DRT:
     };
     pos_array_string << ")";
     // values
-    pos_array_string << "{";
-    for (int i = 0; i<numnode;++i)
-    {
-        for (int component = 0; component < numcomp; ++component) {
-          pos_array_string << scientific << vectorfield[i][component];
-          if (component < numcomp-1) pos_array_string << ",";
-        }
-        if (i < numnode-1){
-            pos_array_string << ",";
-        }
-    };
-    pos_array_string << "};";
+    pos_array_string << VectorFieldToString(vectorfield, distype);
+    
     return pos_array_string.str();
 }
 
-string IO::GMSH::cellToString(const double scalar, const DomainIntCell& cell, DRT::Element* ele)
+string IO::GMSH::cellToString(
+        const std::vector<std::vector<double> > coord,
+        const double                            scalar,
+        const DRT::Element::DiscretizationType  distype)
 {
     stringstream pos_array_string;
-    pos_array_string << "SS(";
     
-    const int nen = 4;
+    pos_array_string << "S" << distypeToGmshElementHeader(distype);
     
     // coordinates
-    for (int inen = 0; inen < nen;++inen)
-    {
-        // print position in x-space
-        pos_array_string << scientific << cell.NodalPosXYZ(*ele)[inen][0] << ",";
-        pos_array_string << scientific << cell.NodalPosXYZ(*ele)[inen][1] << ",";
-        pos_array_string << scientific << cell.NodalPosXYZ(*ele)[inen][2];
-        if (inen < nen-1){
-            pos_array_string << ",";
-        }
-    };
-    pos_array_string << ")";
+    pos_array_string << CoordinatesToString(coord, distype);
     // values
-    pos_array_string << "{";
-    for (int i = 0; i<nen;++i)
-    {
-        pos_array_string << scientific << scalar;
-        if (i < nen-1){
-            pos_array_string << ",";
-        }
-    };
-    pos_array_string << "};";
+    pos_array_string << ScalarToString(scalar, distype);
     return pos_array_string.str();
 }
 
-string IO::GMSH::cellToString(const double scalar, const BoundaryIntCell& cell, DRT::Element* ele)
-{
-    stringstream pos_array_string;
-    pos_array_string << "SS2(";
-    //pos_array_string << "SS(";
-    
-    const int nen = 10;
-    
-    // coordinates
-    for (int inen = 0; inen < nen;++inen)
-    {
-        // print position in x-space
-        pos_array_string << scientific << cell.NodalPosXYZ(*ele)[inen][0] << ",";
-        pos_array_string << scientific << cell.NodalPosXYZ(*ele)[inen][1] << ",";
-        pos_array_string << scientific << cell.NodalPosXYZ(*ele)[inen][2];
-        if (inen < nen-1){
-            pos_array_string << ",";
-        }
-    };
-    pos_array_string << ")";
-    // values
-    pos_array_string << "{";
-    for (int i = 0; i<nen;++i)
-    {
-        pos_array_string << scientific << scalar;
-        if (i < nen-1){
-            pos_array_string << ",";
-        }
-    };
-    pos_array_string << "};";
-    return pos_array_string.str();
-}
 
 string IO::GMSH::disToString(
         const std::string              s,
@@ -234,7 +280,7 @@ string IO::GMSH::disToString(
             const DomainIntCells cells = elementDomainIntCellsMap.find(id)->second;
             for(XFEM::DomainIntCells::const_iterator cell = cells.begin(); cell != cells.end(); ++cell )
             {
-                gmshfilecontent << IO::GMSH::cellToString(scalar, *cell, actele) << endl;
+                gmshfilecontent << IO::GMSH::cellToString(cell->NodalPosXYZ(*actele), scalar, cell->Shape()) << endl;
             }
         }
         else

@@ -28,13 +28,31 @@ namespace IO
 namespace GMSH
 {
 
+std::string CoordinatesToString(
+        const std::vector<std::vector<double> > coord,
+        const DRT::Element::DiscretizationType  distype);
+std::string CoordinatesToString(
+        const blitz::Array<double,2>           coord,
+        const DRT::Element::DiscretizationType distype);
+
+std::string ScalarToString(
+        const double                           scalar,
+        const DRT::Element::DiscretizationType distype);
+std::string ScalarFieldToString(
+        const vector<double>                   scalarfield,
+        const DRT::Element::DiscretizationType distype);
+std::string VectorFieldToString(
+        const vector<vector<double> >          vectorfield,
+        const DRT::Element::DiscretizationType distype);
+
 std::string elementToString(const double scalar, DRT::Element* ele);
 std::string elementToString(const vector<double> scalarfield, DRT::Element* ele);
 std::string elementToString(const vector<vector<double> > vectorfield, DRT::Element* ele);
 
-std::string cellToString(const double scalar, const XFEM::DomainIntCell& ele, DRT::Element* ele);
-
-std::string cellToString(const double scalar, const XFEM::BoundaryIntCell& ele, DRT::Element* ele);
+std::string cellToString(
+        const std::vector<std::vector<double> > coord,
+        const double                            scalar,
+        const DRT::Element::DiscretizationType  distype);
 
 std::string disToString(const std::string s, const double scalar, const RCP<DRT::Discretization> dis);
 

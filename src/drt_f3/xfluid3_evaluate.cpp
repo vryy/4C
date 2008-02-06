@@ -538,7 +538,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
                   eleDofManager_, NumNode(), NodeIds());
           
           // calculate element coefficient matrix and rhs
-          callSysmat(assembly_type,
+          XFLUID::callSysmat(assembly_type,
                   this, ih, eleDofManager_, locval, estif, eforce,
                   actmat, pseudotime, newton, pstab, supg, vstab, cstab);
 
