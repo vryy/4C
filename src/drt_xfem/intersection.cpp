@@ -1888,8 +1888,6 @@ void Intersection::recoverCurvedInterface(
     BoundaryIntCells                     			listBoundaryICPerElement;
     
     
-    std::vector< std::vector<double> > domainCoord;
-    std::vector< std::vector<double> > boundaryCoord;
     // list of point markers , if already visited = 1 , if not = 0
     int* visitedPointIndexList = new int[out.numberofpoints];      
     for(int i = 0; i<out.numberofpoints; i++)
@@ -1902,8 +1900,8 @@ void Intersection::recoverCurvedInterface(
     {
         // run over all faces not lying in on of the xfem element planes
         int faceMarker = out.trifacemarkerlist[i] - facetMarkerOffset_;
-        domainCoord.clear();
-        boundaryCoord.clear();
+        std::vector< std::vector<double> > domainCoord(6, std::vector<double>(3,0.0));
+        std::vector< std::vector<double> > boundaryCoord(6, std::vector<double>(3,0.0));
                 	
         if(faceMarker > -1)
         {        
@@ -3474,48 +3472,64 @@ void Intersection::addCellsToBoundaryIntCellsMap(
     blitz::Array<double, 1> eleCoord(3);
     blitz::Array<double, 1> physCoord(3);
     
+    
+  
+    printf("i length = %d\n", domainCoord.size());
+    printf("j length = %d\n", domainCoord[0].size());
+    for(int i = 0; i < 6; i++)
+    	for(int j = 0; j < 3; j++)
+    		printf("vector = %f\n ", domainCoord[i][j]);
+    
+    
     // store corner node
     for(int k = 0; k < 3; k++)
-    	eleCoord(k) = out.pointlist[out.trifacelist[trifaceIndex*3+cornerIndex]*3+k];
+    	eleCoord(k) = out.pointlist[(out.trifacelist[trifaceIndex*3+cornerIndex])*3+k];
   
+    domainCoord[cornerIndex][0] = eleCoord(0);
+    domainCoord[cornerIndex][1] = eleCoord(1);
+    domainCoord[cornerIndex][2] = eleCoord(2);
     
     physCoord = elementToCurrentCoordinates(xfemElement, eleCoord);
-    trinodes[0] = physCoord(0);
-    trinodes[1] = physCoord(1);
-    trinodes[2] = physCoord(2);
     
-    domainCoord.push_back(trinodes);
+    //domainCoord.push_back(trinodes);
     
     // elecoord = boundary elecoord
     checkPositionWithinSurfaceElement(intersectingCutterElements_[faceMarker], physCoord, eleCoord);
     
+    cout << "physcood = " << physCoord << "    ";
+    cout << "elecood = " << eleCoord << endl;
+    cout << "cornerIndex = " << cornerIndex << endl;
+    boundaryCoord[cornerIndex][0] = eleCoord(0);
+    boundaryCoord[cornerIndex][1] = eleCoord(1);
+    boundaryCoord[cornerIndex][2] = 0.0;
     
-    trinodes[0] = eleCoord(0);
-    trinodes[1] = eleCoord(1);
-    trinodes[2] = 0.0;
-    
-    boundaryCoord.push_back(trinodes);
+    //boundaryCoord.push_back(trinodes);
     
     // store higher order node
     for(int k = 0; k < 3; k++)
     	eleCoord(k) = out.pointlist[globalHigherOrderIndex*3+k];
  
     
+    
+    domainCoord[cornerIndex+3][0] = eleCoord(0);
+    domainCoord[cornerIndex+3][1] = eleCoord(1);
+    domainCoord[cornerIndex+3][2] = eleCoord(2);
+    
     physCoord = elementToCurrentCoordinates(xfemElement, eleCoord);
-    trinodes[0] = physCoord(0);
-    trinodes[1] = physCoord(1);
-    trinodes[2] = physCoord(2);
-    domainCoord.push_back(trinodes); 
+    
+    //domainCoord.push_back(trinodes); 
     
     // elecoord = boundary elecoord
     checkPositionWithinSurfaceElement(intersectingCutterElements_[faceMarker], physCoord, eleCoord);
     
+    cout << "physcood = " << physCoord << "    ";
+    cout << "elecood = " << eleCoord << endl;
     
-    trinodes[0] = eleCoord(0);
-    trinodes[1] = eleCoord(1);
-    trinodes[2] = 0.0;
+    boundaryCoord[cornerIndex+3][0] = eleCoord(0);
+    boundaryCoord[cornerIndex+3][1] = eleCoord(1);
+    boundaryCoord[cornerIndex+3][2] = 0.0;
     
-    boundaryCoord.push_back(trinodes);
+    //boundaryCoord.push_back(trinodes);
 }
 
 
