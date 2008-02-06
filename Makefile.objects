@@ -167,7 +167,8 @@ OBJS_DRT_FLUID= src/drt_fluid/fluid_dyn_nln_drt.o \
                 src/drt_fluid/turbulence_statistics_ldc.o \
 		src/drt_fluid/fluidresulttest.o \
 		src/drt_fluid/xfluidresulttest.o \
-		src/drt_fluid/vm3_solver.o
+		src/drt_fluid/vm3_solver.o \
+		src/drt_fluid/avms_solver.o
 # ----------------------------- drt version of fluid structure interaction
 OBJS_DRT_FSI  = src/drt_fsi/ale_dyn.o \
                 src/drt_fsi/fsi_ale.o \
