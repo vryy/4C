@@ -18,6 +18,8 @@ Maintainer: Peter Gamnitzer
 #include "drt_discret.H"
 #include "drt_utils.H"
 
+#include "linalg_utils.H"
+
 #include "../headers/define_sizes.h"
 
 
@@ -82,7 +84,7 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const Discretization& dis, const int 
   // do the nodes first
 
   map<int,int> nidx;
-  UTILS::AllreduceEMap(nidx, *dis.NodeRowMap());
+  LINALG::AllreduceEMap(nidx, *dis.NodeRowMap());
 
   // build a redundant that holds all the node's numdof
   vector<int> sredundantnodes(dis.NumGlobalNodes());
@@ -256,7 +258,7 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const Discretization& dis, const int 
   // Now do all this fun again for the elements
 
   map<int,int> eidx;
-  UTILS::AllreduceEMap(eidx, *dis.ElementRowMap());
+  LINALG::AllreduceEMap(eidx, *dis.ElementRowMap());
 
   vector<int> sredundantelements(dis.NumGlobalElements());
   fill(sredundantelements.begin(), sredundantelements.end(), 0);

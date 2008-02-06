@@ -88,86 +88,6 @@ namespace UTILS
   RefCountPtr<Epetra_CrsGraph> PartGraphUsingMetis(const Epetra_CrsGraph& graph,
                                                    const Epetra_Vector& weights);
 
-  /// Create an allreduced vector of gids from the given Epetra_Map
-  /*!
-    We have nodes and elements with unique but otherwise arbitrary
-    global ids. On rare occations, however, we need to allreduce a
-    particular map to one or more processors. This is a building block
-    for such occations. We allreduce the gids of the given Epetra_Map
-    into a vector ordered by processor number.
-
-    It is assumed that the given map does not overlap!
-
-    \note You are not supposed to use redundant vectors in normal
-    situations. If you happen to need this method you are probably
-    about to do something illegal.
-
-    \param rredundant (o) redundant vector of global ids
-    \param emap (i) distributed Epetra_Map
-
-    \author u.kue
-    \date 05/07
-   */
-  void AllreduceEMap(vector<int>& rredundant, const Epetra_Map& emap);
-
-  /// Create an allreduced gid to index map from the given Epetra_Map
-  /*!
-    We have nodes and elements with unique but otherwise arbitrary
-    global ids. But unfortunately we need an allreduced vector of dof
-    numbers during the dof assignment phase. In order to use such a
-    vector we need to map from global ids to vector indexes. Here we
-    provide that map.
-
-    \note You are not supposed to use redundant vectors in normal
-    situations. If you happen to need this method you are probably
-    about to do something illegal.
-
-    \param idxmap (o) map from global ids to (redundant) vector indexes
-    \param emap (i) distributed Epetra_Map
-
-    \author u.kue
-    \date 05/07
-   */
-  void AllreduceEMap(map<int,int>& idxmap, const Epetra_Map& emap);
-
-  /// Create an allreduced gid to index map from the given Epetra_Map 
-  /// on a distinct processor, all other procs create empty maps instead.
-  /*!
-    This method is currently used within the parallel post_drt_ensight 
-    filter in order to import all values stored in a distributed Epetra_Vector 
-    to processor 0 for writing them into file. 
-
-    \note see also documentation for the usual AllreduceEMap methods
-
-    \param emap (i) any distributed Epetra_Map
-    \param pid (i)  processor id where you want to have the allreduced map
-    				exclusively
-    \author gjb
-    \date 11/07
-   */
-  RCP<Epetra_Map> AllreduceEMap(const Epetra_Map& emap, const int pid); 
-  
-  /// find position of my map elements in a consecutive vector
-  /*!
-    The idea is to put the entries of a given map into a redundant
-    vector, ordered by processor number. The map is assumed to be
-    nonoverlapping. Here we figure out the index of our first entry in
-    that vector.
-
-    \note You are not supposed to use redundant vectors in normal
-    situations. If you happen to need this method you are probably
-    about to do something illegal.
-
-    \param nummyelements (i) number of elements on this proc
-    \param comm (i) communicator
-
-    \return vector position of first entry on each processor
-
-    \author u.kue
-    \date 05/07
-   */
-  int FindMyPos(int nummyelements, const Epetra_Comm& comm);
-
   /*!
   \brief Locally extract a subset of values from an Epetra_Vector
 
@@ -182,24 +102,6 @@ namespace UTILS
                       determines number of values to be extracted.
   */
   void ExtractMyValues(const Epetra_Vector& global, vector<double>& local, const vector<int> lm);
-
-  /// Communication between all pairs of processes, with distinct data for each.
-  /*!
-    Sends a different vector<int> to each processes. The size of each vector may
-    be different, zero-length vectors are allowed.
-    Communication is implemented with the MPI function MPI_Alltoallv.
-
-    \param comm (i) communicator
-    \param send (i) vector of length comm.NumProc(), j-th element to be send to
-    j-th processor.
-    \param recv (o) vector of length comm.NumProc(), j-th element received from
-    j-th processor.
-
-    \author h.kue
-    \date 09/07
-   */
-  void AllToAllCommunication( const Epetra_Comm& comm,
-                              const vector< vector<int> >& send, vector< vector<int> >& recv );
 
 } // namespace UTILS
 } // namespace DRT

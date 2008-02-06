@@ -32,6 +32,8 @@ extern "C"
 #include <numeric>
 #include <vector>
 
+#include "linalg_utils.H"
+
 #include "drt_utils.H"
 #include "drt_node.H"
 #include "drt_dofset.H"
@@ -118,7 +120,7 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       return object;
     }
     break;
-#endif 
+#endif
 #ifdef D_SHELL8
     case ParObject_Shell8:
     {
@@ -496,7 +498,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
       return ele;
     }
     break;
-#endif 
+#endif
 #ifdef D_SHELL8
     case shell8:
     {
@@ -613,83 +615,6 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-int DRT::UTILS::FindMyPos(int nummyelements, const Epetra_Comm& comm)
-{
-  const int myrank  = comm.MyPID();
-  const int numproc = comm.NumProc();
-
-  vector<int> snum(numproc);
-  vector<int> rnum(numproc);
-  fill(snum.begin(), snum.end(), 0);
-  snum[myrank] = nummyelements;
-
-  comm.SumAll(&snum[0],&rnum[0],numproc);
-
-  return std::accumulate(&rnum[0], &rnum[myrank], 0);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::UTILS::AllreduceEMap(vector<int>& rredundant, const Epetra_Map& emap)
-{
-  int mynodepos = FindMyPos(emap.NumMyElements(), emap.Comm());
-
-  vector<int> sredundant(emap.NumGlobalElements());
-  fill(sredundant.begin(), sredundant.end(), 0);
-
-  int* gids = emap.MyGlobalElements();
-  copy(gids, gids+emap.NumMyElements(), &sredundant[mynodepos]);
-
-  rredundant.resize(emap.NumGlobalElements());
-  emap.Comm().SumAll(&sredundant[0], &rredundant[0], emap.NumGlobalElements());
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::UTILS::AllreduceEMap(map<int,int>& idxmap, const Epetra_Map& emap)
-{
-  idxmap.clear();
-
-  vector<int> rredundant(emap.NumGlobalElements());
-  AllreduceEMap(rredundant, emap);
-
-  for (unsigned i=0; i<rredundant.size(); ++i)
-  {
-    idxmap[rredundant[i]] = i;
-  }
-}
-
-/*----------------------------------------------------------------------*
- |  create an allreduced map on a distinct processor (public)  gjb 12/07|  
- *----------------------------------------------------------------------*/
-RCP<Epetra_Map> DRT::UTILS::AllreduceEMap(const Epetra_Map& emap, const int pid)
-{
-  vector<int> rv;
-  AllreduceEMap(rv,emap);
-  RefCountPtr<Epetra_Map> rmap;
-
-  if (emap.Comm().MyPID()==pid)
-  {
-	  rmap = rcp(new Epetra_Map(-1,rv.size(),&rv[0],0,emap.Comm()));
-	  // check the map
-	  dsassert(rmap->NumMyElements() == rmap->NumGlobalElements(),
-	  			  "Processor with pid does not get all map elements");
-  }
-  else
-  {
-	  rv.clear();
-	  rmap = rcp(new Epetra_Map(-1,0,NULL,0,emap.Comm()));
-	  // check the map
-	  dsassert(rmap->NumMyElements() == 0,
-	  			  "At least one proc will keep a map element");
-  }
-  return rmap;
-}
-
 /*----------------------------------------------------------------------*
  |  partition a graph using metis  (public)                  mwgee 11/06|
  *----------------------------------------------------------------------*/
@@ -722,7 +647,7 @@ RefCountPtr<Epetra_CrsGraph> DRT::UTILS::PartGraphUsingMetis(
   // them. So we have to keep rowrecv until the redistributed map is
   // build.
   vector<int> rowrecv(rowmap.NumGlobalElements());
-  AllreduceEMap(rowrecv, rowmap);
+  LINALG::AllreduceEMap(rowrecv, rowmap);
   Epetra_Map tmap(rowmap.NumGlobalElements(),
                   (myrank == workrank) ? (int)rowrecv.size() : 0,
                   &rowrecv[0],
@@ -885,95 +810,6 @@ void DRT::UTILS::ExtractMyValues(const Epetra_Vector& global,
     local[i] = global[lid];
   }
   return;
-}
-
-/*----------------------------------------------------------------------*
- |  Send and receive lists of ints.  (heiner 09/07)                     |
- *----------------------------------------------------------------------*/
-void DRT::UTILS::AllToAllCommunication( const Epetra_Comm& comm,
-                                        const vector< vector<int> >& send,
-                                        vector< vector<int> >& recv )
-{
-#ifndef PARALLEL
-
-  dsassert(send.size()==1, "there has to be just one entry for sending");
-
-  // make a copy
-  recv.clear();
-  recv.push_back(send[0]);
-
-#else
-
-  if (comm.NumProc()==1)
-  {
-    dsassert(send.size()==1, "there has to be just one entry for sending");
-
-    // make a copy
-    recv.clear();
-    recv.push_back(send[0]);
-  }
-  else
-  {
-    const Epetra_MpiComm& mpicomm = dynamic_cast<const Epetra_MpiComm&>(comm);
-
-    vector<int> sendbuf;
-    vector<int> sendcounts;
-    sendcounts.reserve( comm.NumProc() );
-    vector<int> sdispls;
-    sdispls.reserve( comm.NumProc() );
-
-    int displacement = 0;
-    sdispls.push_back( 0 );
-    for ( vector< vector<int> >::const_iterator iter = send.begin();
-          iter != send.end(); ++iter )
-    {
-        sendbuf.insert( sendbuf.end(), iter->begin(), iter->end() );
-        sendcounts.push_back( iter->size() );
-        displacement += iter->size();
-        sdispls.push_back( displacement );
-    }
-
-    vector<int> recvcounts( comm.NumProc() );
-
-    // initial communication: Request. Send and receive the number of
-    // ints we communicate with each process.
-
-    int status = MPI_Alltoall( &sendcounts[0], 1, MPI_INT,
-                               &recvcounts[0], 1, MPI_INT, mpicomm.GetMpiComm() );
-
-    if ( status != MPI_SUCCESS )
-        dserror( "MPI_Alltoall returned status=%d", status );
-
-    vector<int> rdispls;
-    rdispls.reserve( comm.NumProc() );
-
-    displacement = 0;
-    rdispls.push_back( 0 );
-    for ( vector<int>::const_iterator iter = recvcounts.begin();
-          iter != recvcounts.end(); ++iter )
-    {
-        displacement += *iter;
-        rdispls.push_back( displacement );
-    }
-
-    vector<int> recvbuf( rdispls.back() );
-
-    // transmit communication: Send and get the data.
-
-    status = MPI_Alltoallv ( &sendbuf[0], &sendcounts[0], &sdispls[0], MPI_INT,
-                             &recvbuf[0], &recvcounts[0], &rdispls[0], MPI_INT,
-                             mpicomm.GetMpiComm() );
-    if ( status != MPI_SUCCESS )
-        dserror( "MPI_Alltoallv returned status=%d", status );
-
-    recv.clear();
-    for ( int proc = 0; proc < comm.NumProc(); ++proc )
-    {
-        recv.push_back( vector<int>( &recvbuf[rdispls[proc]], &recvbuf[rdispls[proc+1]] ) );
-    }
-  }
-
-#endif // PARALLEL
 }
 
 #endif  // #ifdef CCADISCRET

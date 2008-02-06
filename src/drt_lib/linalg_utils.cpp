@@ -12,6 +12,10 @@ Maintainer: Michael Gee
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include <algorithm>
+#include <numeric>
+#include <vector>
+
 #include "linalg_utils.H"
 #include "drt_dserror.H"
 #include "EpetraExt_Transpose_RowMatrix.h"
@@ -177,7 +181,7 @@ void LINALG::Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele,
 
   // this 'Assemble' is not implemented for a Filled() matrix A
   if (A.Filled()) dserror("Sparse matrix A is already Filled()");
-  
+
   else
   {
     // loop rows of local matrix
@@ -194,7 +198,7 @@ void LINALG::Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele,
       {
         double val = Aele(lrow,lcol);
         int cgid = lmcol[lcol];
-        
+
         // Now that we do not rebuild the sparse mask in each step, we
         // are bound to assemble the whole thing. Zeros included.
         int errone = A.SumIntoGlobalValues(rgid,1,&val,&cgid);
@@ -334,12 +338,12 @@ RCP<Epetra_CrsMatrix> LINALG::Transpose(const Epetra_CrsMatrix& A)
   if (!A.Filled()) dserror("FillComplete was not called on A");
 
   if (!A.Filled()) dserror("FillComplete was not called on A");
-  	
+
   EpetraExt::RowMatrix_Transpose* Atrans =
   		new EpetraExt::RowMatrix_Transpose(false,NULL,false);
   Epetra_CrsMatrix* Aprime =
   		&(dynamic_cast<Epetra_CrsMatrix&>(((*Atrans)(const_cast<Epetra_CrsMatrix&>(A)))));
-  	
+
   return rcp(new Epetra_CrsMatrix(*Aprime));
 }
 
@@ -972,7 +976,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
 {
   if (A==null)
     dserror("LINALG::SplitMatrix2x2: A==null on entry");
-  	
+
   if (A11rowmap==null && A22rowmap != null)
     A11rowmap = rcp(LINALG::SplitMap(A->RowMap(),*A22rowmap));
   else if (A11rowmap != null && A22rowmap != null);
@@ -980,7 +984,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
     A22rowmap = rcp(LINALG::SplitMap(A->RowMap(),*A11rowmap));
   else
   	dserror("LINALG::SplitMatrix2x2: Both A11rowmap and A22rowmap == null on entry");
- 
+
   const Epetra_Comm& Comm   = A->Comm();
   const Epetra_Map&  A22map = *(A22rowmap.get());
   const Epetra_Map&  A11map = *(A11rowmap.get());
@@ -1007,7 +1011,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
     }
     if (count != A22map.NumGlobalElements())
     	dserror("LINALG::SplitMatrix2x2: mismatch in dimensions");
-    
+
     // create the map
     for (int i=0; i<count; ++i)
       a22gmap[a22global[i]] = 1;
@@ -1031,7 +1035,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
       int err = A->ExtractMyRowView(i,numentries,values,cindices);
       if (err)
       	dserror("LINALG::SplitMatrix2x2: A->ExtractMyRowView returned &i",err);
-      
+
       if (numentries>(int)a22gcindices.size())
       {
         a22gcindices.resize(numentries);
@@ -1054,7 +1058,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
       err = A22->InsertGlobalValues(grid,count,&a22values[0],&a22gcindices[0]);
       if (err<0)
       	dserror("LINALG::SplitMatrix2x2: A->InsertGlobalValues returned &i",err);
-       
+
     } //for (int i=0; i<A->NumMyRows(); ++i)
     a22gcindices.clear();
     a22values.clear();
@@ -1077,7 +1081,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
       int err = A->ExtractMyRowView(i,numentries,values,cindices);
       if (err)
       	dserror("LINALG::SplitMatrix2x2: A->ExtractMyRowView returned &i",err);
-      
+
       if (numentries>(int)a11gcindices.size())
       {
         a11gcindices.resize(numentries);
@@ -1097,7 +1101,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
       err = A11->InsertGlobalValues(grid,count,&a11values[0],&a11gcindices[0]);
       if (err<0)
       	dserror("LINALG::SplitMatrix2x2: A->InsertGlobalValues returned &i",err);
-      
+
     } // for (int i=0; i<A->NumMyRows(); ++i)
     a11gcindices.clear();
     a11values.clear();
@@ -1120,7 +1124,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
       int err = A->ExtractMyRowView(i,numentries,values,cindices);
       if (err)
       	dserror("LINALG::SplitMatrix2x2: A->ExtractMyRowView returned &i",err);
-      
+
       if (numentries>(int)a12gcindices.size())
       {
         a12gcindices.resize(numentries);
@@ -1140,7 +1144,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
       err = A12->InsertGlobalValues(grid,count,&a12values[0],&a12gcindices[0]);
       if (err<0)
       	dserror("LINALG::SplitMatrix2x2: A->InsertGlobalValues returned &i",err);
-      
+
     } // for (int i=0; i<A->NumMyRows(); ++i)
     a12values.clear();
     a12gcindices.clear();
@@ -1163,7 +1167,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
       int err = A->ExtractMyRowView(i,numentries,values,cindices);
       if (err)
       	dserror("LINALG::SplitMatrix2x2: A->ExtractMyRowView returned &i",err);
-      
+
       if (numentries>(int)a21gcindices.size())
       {
         a21gcindices.resize(numentries);
@@ -1183,14 +1187,14 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
       err = A21->InsertGlobalValues(grid,count,&a21values[0],&a21gcindices[0]);
       if (err<0)
       	dserror("LINALG::SplitMatrix2x2: A->InsertGlobalValues returned &i",err);
-      
+
     } // for (int i=0; i<A->NumMyRows(); ++i)
     a21values.clear();
     a21gcindices.clear();
   }
   A21->FillComplete(A11map,A22map);
   A21->OptimizeStorage();
-  
+
   //-------------------------------------------------------------- tidy up
   a22gmap.clear();
   return true;
@@ -1211,7 +1215,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
 {
   if (A==null)
     dserror("LINALG::SplitMatrix2x2: A==null on entry");
-  
+
   // check and complete input row maps
   if (A11rowmap==null && A22rowmap != null)
     A11rowmap = rcp(LINALG::SplitMap(A->RowMap(),*A22rowmap));
@@ -1220,7 +1224,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
     A22rowmap = rcp(LINALG::SplitMap(A->RowMap(),*A11rowmap));
   else
   	dserror("LINALG::SplitMatrix2x2: Both A11rowmap and A22rowmap == null on entry");
-  
+
   // check and complete input domain maps
   if (A11domainmap==null && A22domainmap != null)
   	A11domainmap = rcp(LINALG::SplitMap(A->DomainMap(),*A22domainmap));
@@ -1229,14 +1233,14 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
     A22domainmap = rcp(LINALG::SplitMap(A->DomainMap(),*A11domainmap));
   else
   	dserror("LINALG::SplitMatrix2x2: Both A11domainmap and A22domainmap == null on entry");
-  
+
   // local variables
   const Epetra_Comm& Comm   = A->Comm();
   const Epetra_Map&  A11rmap = *(A11rowmap.get());
   const Epetra_Map&  A11dmap = *(A11domainmap.get());
   const Epetra_Map&  A22rmap = *(A22rowmap.get());
   const Epetra_Map&  A22dmap = *(A22domainmap.get());
-  
+
   //----------------------------- create a parallel redundant map of A11domainmap
   map<int,int> a11gmap;
   {
@@ -1259,7 +1263,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
     }
     if (count != A11dmap.NumGlobalElements())
     	dserror("LINALG::SplitMatrix2x2: mismatch in dimensions");
-    
+
     // create the map
     for (int i=0; i<count; ++i)
       a11gmap[a11global[i]] = 1;
@@ -1283,7 +1287,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
   			int err = A->ExtractMyRowView(i,numentries,values,cindices);
   			if (err)
   				dserror("LINALG::SplitMatrix2x2: A->ExtractMyRowView returned %i",err);
-      
+
   			if (numentries>(int)a11gcindices.size())
   			{
   				a11gcindices.resize(numentries);
@@ -1303,14 +1307,14 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
   			err = A11->InsertGlobalValues(grid,count,&a11values[0],&a11gcindices[0]);
   			if (err<0)
   				dserror("LINALG::SplitMatrix2x2: A->InsertGlobalValues returned %i",err);
-      
+
   		} // for (int i=0; i<A->NumMyRows(); ++i)
   		a11gcindices.clear();
   		a11values.clear();
   	}
   	LINALG::Complete(*A11,A11dmap,A11rmap);
   }
-  
+
   //--------------------------------------------------- create matrix A22
   if (A22rmap.NumGlobalElements()>0 && A22dmap.NumGlobalElements()>0)
   {
@@ -1328,7 +1332,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
 	      int err = A->ExtractMyRowView(i,numentries,values,cindices);
 	      if (err)
 	      	dserror("LINALG::SplitMatrix2x2: A->ExtractMyRowView returned %i",err);
-	      
+
 	      if (numentries>(int)a22gcindices.size())
 	      {
 	        a22gcindices.resize(numentries);
@@ -1348,7 +1352,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
 	      err = A22->InsertGlobalValues(grid,count,&a22values[0],&a22gcindices[0]);
 	      if (err<0)
 	      	dserror("LINALG::SplitMatrix2x2: A->InsertGlobalValues returned %i",err);
-	       
+
 	    } //for (int i=0; i<A->NumMyRows(); ++i)
 	    a22gcindices.clear();
 	    a22values.clear();
@@ -1373,7 +1377,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
 	      int err = A->ExtractMyRowView(i,numentries,values,cindices);
 	      if (err)
 	      	dserror("LINALG::SplitMatrix2x2: A->ExtractMyRowView returned %i",err);
-	      
+
 	      if (numentries>(int)a12gcindices.size())
 	      {
 	        a12gcindices.resize(numentries);
@@ -1393,7 +1397,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
 	      err = A12->InsertGlobalValues(grid,count,&a12values[0],&a12gcindices[0]);
 	      if (err<0)
 	      	dserror("LINALG::SplitMatrix2x2: A->InsertGlobalValues returned %i",err);
-	      
+
 	    } // for (int i=0; i<A->NumMyRows(); ++i)
 	    a12values.clear();
 	    a12gcindices.clear();
@@ -1418,7 +1422,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
 	      int err = A->ExtractMyRowView(i,numentries,values,cindices);
 	      if (err)
 	      	dserror("LINALG::SplitMatrix2x2: A->ExtractMyRowView returned %i",err);
-	      
+
 	      if (numentries>(int)a21gcindices.size())
 	      {
 	        a21gcindices.resize(numentries);
@@ -1438,14 +1442,14 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
 	      err = A21->InsertGlobalValues(grid,count,&a21values[0],&a21gcindices[0]);
 	      if (err<0)
 	      	dserror("LINALG::SplitMatrix2x2: A->InsertGlobalValues returned %i",err);
-	      
+
 	    } // for (int i=0; i<A->NumMyRows(); ++i)
 	    a21values.clear();
 	    a21gcindices.clear();
 	  }
 	  LINALG::Complete(*A21,A11dmap,A22rmap);
   }
-  
+
   //-------------------------------------------------------------- tidy up
   a11gmap.clear();
   return true;
@@ -1507,7 +1511,7 @@ RCP<Epetra_Map> LINALG::MergeMap(const Epetra_Map& map1,
 
 	// sort merged map
 	sort(mygids.begin(),mygids.end());
-	
+
 	return rcp(new Epetra_Map(-1,(int)mygids.size(),&mygids[0],0,map1.Comm()));
 }
 
@@ -1564,6 +1568,173 @@ bool LINALG::SplitVector(const Epetra_Vector& x,
   }
 
   return true;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+int LINALG::FindMyPos(int nummyelements, const Epetra_Comm& comm)
+{
+  const int myrank  = comm.MyPID();
+  const int numproc = comm.NumProc();
+
+  vector<int> snum(numproc);
+  vector<int> rnum(numproc);
+  fill(snum.begin(), snum.end(), 0);
+  snum[myrank] = nummyelements;
+
+  comm.SumAll(&snum[0],&rnum[0],numproc);
+
+  return std::accumulate(&rnum[0], &rnum[myrank], 0);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void LINALG::AllreduceEMap(vector<int>& rredundant, const Epetra_Map& emap)
+{
+  int mynodepos = FindMyPos(emap.NumMyElements(), emap.Comm());
+
+  vector<int> sredundant(emap.NumGlobalElements());
+  fill(sredundant.begin(), sredundant.end(), 0);
+
+  int* gids = emap.MyGlobalElements();
+  copy(gids, gids+emap.NumMyElements(), &sredundant[mynodepos]);
+
+  rredundant.resize(emap.NumGlobalElements());
+  emap.Comm().SumAll(&sredundant[0], &rredundant[0], emap.NumGlobalElements());
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void LINALG::AllreduceEMap(map<int,int>& idxmap, const Epetra_Map& emap)
+{
+  idxmap.clear();
+
+  vector<int> rredundant(emap.NumGlobalElements());
+  AllreduceEMap(rredundant, emap);
+
+  for (unsigned i=0; i<rredundant.size(); ++i)
+  {
+    idxmap[rredundant[i]] = i;
+  }
+}
+
+/*----------------------------------------------------------------------*
+ |  create an allreduced map on a distinct processor (public)  gjb 12/07|
+ *----------------------------------------------------------------------*/
+RCP<Epetra_Map> LINALG::AllreduceEMap(const Epetra_Map& emap, const int pid)
+{
+  vector<int> rv;
+  AllreduceEMap(rv,emap);
+  RefCountPtr<Epetra_Map> rmap;
+
+  if (emap.Comm().MyPID()==pid)
+  {
+	  rmap = rcp(new Epetra_Map(-1,rv.size(),&rv[0],0,emap.Comm()));
+	  // check the map
+	  dsassert(rmap->NumMyElements() == rmap->NumGlobalElements(),
+	  			  "Processor with pid does not get all map elements");
+  }
+  else
+  {
+	  rv.clear();
+	  rmap = rcp(new Epetra_Map(-1,0,NULL,0,emap.Comm()));
+	  // check the map
+	  dsassert(rmap->NumMyElements() == 0,
+	  			  "At least one proc will keep a map element");
+  }
+  return rmap;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Send and receive lists of ints.  (heiner 09/07)                     |
+ *----------------------------------------------------------------------*/
+void LINALG::AllToAllCommunication( const Epetra_Comm& comm,
+                                    const vector< vector<int> >& send,
+                                    vector< vector<int> >& recv )
+{
+#ifndef PARALLEL
+
+  dsassert(send.size()==1, "there has to be just one entry for sending");
+
+  // make a copy
+  recv.clear();
+  recv.push_back(send[0]);
+
+#else
+
+  if (comm.NumProc()==1)
+  {
+    dsassert(send.size()==1, "there has to be just one entry for sending");
+
+    // make a copy
+    recv.clear();
+    recv.push_back(send[0]);
+  }
+  else
+  {
+    const Epetra_MpiComm& mpicomm = dynamic_cast<const Epetra_MpiComm&>(comm);
+
+    vector<int> sendbuf;
+    vector<int> sendcounts;
+    sendcounts.reserve( comm.NumProc() );
+    vector<int> sdispls;
+    sdispls.reserve( comm.NumProc() );
+
+    int displacement = 0;
+    sdispls.push_back( 0 );
+    for ( vector< vector<int> >::const_iterator iter = send.begin();
+          iter != send.end(); ++iter )
+    {
+        sendbuf.insert( sendbuf.end(), iter->begin(), iter->end() );
+        sendcounts.push_back( iter->size() );
+        displacement += iter->size();
+        sdispls.push_back( displacement );
+    }
+
+    vector<int> recvcounts( comm.NumProc() );
+
+    // initial communication: Request. Send and receive the number of
+    // ints we communicate with each process.
+
+    int status = MPI_Alltoall( &sendcounts[0], 1, MPI_INT,
+                               &recvcounts[0], 1, MPI_INT, mpicomm.GetMpiComm() );
+
+    if ( status != MPI_SUCCESS )
+        dserror( "MPI_Alltoall returned status=%d", status );
+
+    vector<int> rdispls;
+    rdispls.reserve( comm.NumProc() );
+
+    displacement = 0;
+    rdispls.push_back( 0 );
+    for ( vector<int>::const_iterator iter = recvcounts.begin();
+          iter != recvcounts.end(); ++iter )
+    {
+        displacement += *iter;
+        rdispls.push_back( displacement );
+    }
+
+    vector<int> recvbuf( rdispls.back() );
+
+    // transmit communication: Send and get the data.
+
+    status = MPI_Alltoallv ( &sendbuf[0], &sendcounts[0], &sdispls[0], MPI_INT,
+                             &recvbuf[0], &recvcounts[0], &rdispls[0], MPI_INT,
+                             mpicomm.GetMpiComm() );
+    if ( status != MPI_SUCCESS )
+        dserror( "MPI_Alltoallv returned status=%d", status );
+
+    recv.clear();
+    for ( int proc = 0; proc < comm.NumProc(); ++proc )
+    {
+        recv.push_back( vector<int>( &recvbuf[rdispls[proc]], &recvbuf[rdispls[proc+1]] ) );
+    }
+  }
+
+#endif // PARALLEL
 }
 
 #endif  // #ifdef CCADISCRET

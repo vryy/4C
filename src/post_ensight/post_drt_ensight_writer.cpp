@@ -32,8 +32,8 @@ EnsightWriter::EnsightWriter(
 {
     // initialize proc0map_ correctly
     const RCP<DRT::Discretization> dis = field_->discretization();
-    const Epetra_Map* noderowmap = dis->NodeRowMap();  
-    proc0map_ = DRT::UTILS::AllreduceEMap(*noderowmap,0); 
+    const Epetra_Map* noderowmap = dis->NodeRowMap();
+    proc0map_ = LINALG::AllreduceEMap(*noderowmap,0);
 
     // get the number of elements for each distype (global numbers)
     numElePerDisType_ = GetNumElePerDisType(dis);
@@ -252,7 +252,7 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 
     // put all coordinate information on proc 0
     RefCountPtr<Epetra_Map> proc0map;
-    proc0map = DRT::UTILS::AllreduceEMap(*nodemap,0);
+    proc0map = LINALG::AllreduceEMap(*nodemap,0);
 
     // import my new values (proc0 gets everything, other procs empty)
     Epetra_Import proc0importer(*proc0map,*nodemap);
@@ -610,10 +610,10 @@ EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
 
 #else
 
-    // in parallel case we have to provide the ele gids located on other procs as well 
+    // in parallel case we have to provide the ele gids located on other procs as well
     EleGidPerDisType globaleleGidPerDisType;
-    NumElePerDisType::const_iterator iterator;   
-    
+    NumElePerDisType::const_iterator iterator;
+
     for (iterator=numElePerDisType_.begin(); iterator != numElePerDisType_.end(); ++iterator)
     {
     // wait for all procs before communication is started
@@ -971,7 +971,7 @@ void EnsightWriter::WriteNodalResultStep(
     //------------------------------------------------------
 
     RefCountPtr<Epetra_Map> proc0datamap;
-    proc0datamap = DRT::UTILS::AllreduceEMap(*epetradatamap,0);
+    proc0datamap = LINALG::AllreduceEMap(*epetradatamap,0);
 
     // contract result values on proc0 (proc0 gets everything, other procs empty)
     Epetra_Import proc0dataimporter(*proc0datamap,*epetradatamap);
@@ -1085,8 +1085,8 @@ void EnsightWriter::WriteElementResultStep(
     Write(file, "description");
     Write(file, "part");
     Write(file, field_->field_pos()+1);
- 
-    // read the results    
+
+    // read the results
     const RefCountPtr<Epetra_MultiVector> data = result.read_multi_result(groupname);
     const Epetra_BlockMap& datamap = data->Map();
     const int numcol = data->NumVectors();
@@ -1098,13 +1098,13 @@ void EnsightWriter::WriteElementResultStep(
             datamap.MyGlobalElements(),
             0,
             datamap.Comm()));
-    
+
     //------------------------------------------------------
     // each processor provides its result values for proc 0
     //------------------------------------------------------
 
     RefCountPtr<Epetra_Map> proc0datamap;
-    proc0datamap = DRT::UTILS::AllreduceEMap(*epetradatamap,0);
+    proc0datamap = LINALG::AllreduceEMap(*epetradatamap,0);
 
     // contract result values on proc0 (proc0 gets everything, other procs empty)
     Epetra_Import proc0dataimporter(*proc0datamap,*epetradatamap);
@@ -1148,7 +1148,7 @@ void EnsightWriter::WriteElementResultStep(
     				// extract element global id
     				const int gid = actelegids[iele];
     				// get the dof local id w.r.t. the finaldatamap
-    				//int lid = datamap.LID(gid);    				
+    				//int lid = datamap.LID(gid);
     				int lid = finaldatamap.LID(gid);
     				if (lid > -1)
     				{

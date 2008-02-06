@@ -6,6 +6,7 @@
 
 #include "fsi_utils.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/linalg_utils.H"
 
 #include <Epetra_CrsMatrix.h>
 #include <EpetraExt_RowMatrixOut.h>
@@ -51,7 +52,7 @@ void FSI::UTILS::DumpJacobian(NOX::Epetra::Interface::Required& interface,
   RefCountPtr<Epetra_CrsMatrix> jacobian = rcp(new Epetra_CrsMatrix(Copy, map, map.NumGlobalElements()));
 
   int nummyelements = map.NumMyElements();
-  int mypos = DRT::UTILS::FindMyPos(nummyelements, map.Comm());
+  int mypos = LINALG::FindMyPos(nummyelements, map.Comm());
   double eta = 0.0;
 
   Epetra_Vector fo(*soln);

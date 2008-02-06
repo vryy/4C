@@ -17,6 +17,7 @@ Maintainer: Michael Gee
 #include "drt_dserror.H"
 
 #include "drt_utils.H"
+#include "linalg_utils.H"
 
 #include <numeric>
 #include <algorithm>
@@ -192,7 +193,7 @@ static void AssignGlobalIDs( const Epetra_Comm& comm,
 
   // Last step: Get missing ids.
   vector< vector<int> > requests;
-  DRT::UTILS::AllToAllCommunication( comm, ghostelementnodes, requests );
+  LINALG::AllToAllCommunication( comm, ghostelementnodes, requests );
 
   vector< vector<int> > sendids( comm.NumProc() );
 
@@ -229,7 +230,7 @@ static void AssignGlobalIDs( const Epetra_Comm& comm,
   }
 #endif // Debug
 
-  DRT::UTILS::AllToAllCommunication( comm, sendids, requests );
+  LINALG::AllToAllCommunication( comm, sendids, requests );
 
 #if 0 // Debug
   cout << "This is process " << comm.MyPID() << "." << endl;
