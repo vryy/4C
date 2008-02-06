@@ -11,6 +11,54 @@
 #include <Epetra_Comm.h>
 #include <Teuchos_RCP.hpp>
 
+
+/*
+
+- Koennten wir Epetra_Operator implementieren?
+  Was ist, wenn jemand sowas wie matrixfree operator an die Loeser geben will?
+
+- Platin-style-doxygen Dokumentation notwendig (inkl aller Parameter und 
+  Beschreibung, wie das mit der Maske und den Dirichlet-RBs en detail funktioniert)
+  
+- Umbenennungen: SparseMatrix BaseSparseMatrix BlockSparseMatrix etc.
+                 mask_ ->graph_
+                 realdirichlet -> irgendwas mit Aussagekraft
+                 
+- support          A*x
+                   A*B
+                   A*B*C
+                   Transpose
+                   Split (the old way)
+                   MergeIntoOne (fuer die Loeser)?
+                   
+- move LINALG functions to class wherever reasonable, remove
+  respective LINALG functions.
+                   
+- change remaining LINALG functions to directly support these new classes
+
+- be much more explicit on treatment of mask, how do I get rid of it if I don't want it?
+  How can I explicitly flag the behavior I want
+  Be very explicit on whether to use old mask or not
+  Do not mix notion of how to handle Dirichlet with notion of how to handle graph
+  (the first is a consequence of the second, isn't it?)
+  
+- ColBlock method is spooky
+
+- For keeping learning curves up and tribute to (important) simplicity:
+  Absolutely no templates here
+  
+- Absolutely no mixing of DRT objects and LINALG algebra objects, 
+  which means if you want to have a condition-style system matrix, you can have 
+  it in your own sandbox, but not in LINALG (and can not make it be specially
+  supported by DRT::Discretization etc.)
+  
+- give excessive seminar on it so everybody understands it, answer all
+  questions by young chair-members in the following.
+  (I'm drowning in questions about all sorts of stuff)  
+
+*/
+
+
 namespace LINALG
 {
 
