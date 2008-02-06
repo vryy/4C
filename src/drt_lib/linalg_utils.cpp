@@ -327,19 +327,20 @@ void LINALG::Add(const Epetra_CrsMatrix& A,
 }
 
 /*----------------------------------------------------------------------*
- | Transpose matrix A                                         popp 01/08|
+ | Transpose matrix A                                         popp 02/08|
  *----------------------------------------------------------------------*/
 RCP<Epetra_CrsMatrix> LINALG::Transpose(const Epetra_CrsMatrix& A)
 {
   if (!A.Filled()) dserror("FillComplete was not called on A");
 
-  Epetra_RowMatrixTransposer tp(&(const_cast<Epetra_CrsMatrix&>(A)));
-  Epetra_CrsMatrix* Atrans = NULL;
-
-  int err = tp.CreateTranspose(false,Atrans);
-  if (err) dserror("ERROR: Transpose: Epetra:RowMatrixTransposer failed!");
-
-  return rcp(new Epetra_CrsMatrix(*Atrans));
+  if (!A.Filled()) dserror("FillComplete was not called on A");
+  	
+  EpetraExt::RowMatrix_Transpose* Atrans =
+  		new EpetraExt::RowMatrix_Transpose(false,NULL,false);
+  Epetra_CrsMatrix* Aprime =
+  		&(dynamic_cast<Epetra_CrsMatrix&>(((*Atrans)(const_cast<Epetra_CrsMatrix&>(A)))));
+  	
+  return rcp(new Epetra_CrsMatrix(*Aprime));
 }
 
 /*----------------------------------------------------------------------*
