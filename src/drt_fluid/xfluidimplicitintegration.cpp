@@ -19,6 +19,8 @@ Maintainer: Axel Gerstenberger
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include <stdio.h>
+
 #include "xfluidimplicitintegration.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/drt_periodicbc.H"
@@ -228,13 +230,14 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // -------------------------------------------------------------------
   // create timers and time monitor
   // -------------------------------------------------------------------
-  timedyntot_     = TimeMonitor::getNewTimer("dynamic routine total"     );
-  timedyninit_    = TimeMonitor::getNewTimer(" + initial phase"          );
-  timedynloop_    = TimeMonitor::getNewTimer(" + time loop"              );
-  timenlnloop_    = TimeMonitor::getNewTimer("   + nonlinear iteration"  );
-  timeeleloop_    = TimeMonitor::getNewTimer("      + element calls"     );
-  timeapplydirich_= TimeMonitor::getNewTimer("      + apply dirich cond.");
-  timesolver_     = TimeMonitor::getNewTimer("      + solver calls"      );
+  timedyntot_     = TimeMonitor::getNewTimer("dynamic routine total"        );
+  timedyninit_    = TimeMonitor::getNewTimer(" + initial phase"             );
+  timedynloop_    = TimeMonitor::getNewTimer(" + time loop"                 );
+  timenlnloop_    = TimeMonitor::getNewTimer("   + nonlinear iteration"     );
+  timeeleloop_    = TimeMonitor::getNewTimer("      + element calls"        );
+  timeapplydirich_= TimeMonitor::getNewTimer("      + apply dirich cond."   );
+  timesolver_     = TimeMonitor::getNewTimer("      + solver calls"         );
+  timeout_        = TimeMonitor::getNewTimer("      + output and statistics");
 
   return;
 
@@ -410,6 +413,9 @@ void XFluidImplicitTimeInt::TimeLoop()
     // -------------------------------------------------------------------
     this->TimeUpdate();
 
+    // time measurement --- start TimeMonitor tm8
+    tm7_ref_ = rcp(new TimeMonitor(*timeout_ ));
+
     // -------------------------------------------------------------------
     // evaluate error for test flows with analytical solutions
     // -------------------------------------------------------------------
@@ -419,6 +425,9 @@ void XFluidImplicitTimeInt::TimeLoop()
     //                         output of solution
     // -------------------------------------------------------------------
     this->Output();
+
+    // time measurement --- stop TimeMonitor tm8
+    tm7_ref_ = null;
 
     // -------------------------------------------------------------------
     //                    calculate lift'n'drag forces
@@ -894,6 +903,14 @@ void XFluidImplicitTimeInt::NonlinearSolve()
         printf("+---------------------------------------------------------------+\n");
         printf("|            >>>>>> not converged in itemax steps!              |\n");
         printf("+---------------------------------------------------------------+\n");
+
+        FILE* errfile = params_.get<FILE*>("err file",NULL);
+        if (errfile!=NULL)
+        {
+          fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
+                  itnum,itemax,ittol,vresnorm,presnorm,
+                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
+        }
       }
       break;
     }
@@ -1136,40 +1153,48 @@ void XFluidImplicitTimeInt::Output()
     #endif
 
   if (writestep_ == upres_)  //write solution
+  {
+    writestep_= 0;
+
+    output_.NewStep    (step_,time_);
+    output_.WriteVector("velnp", velnp_);
+    //output_.WriteVector("residual", trueresidual_);
+    //output_.WriteVector("domain_decomp",domain_decomp);
+    if (alefluid_)
+      output_.WriteVector("dispnp", dispnp_);
+
+    //only perform stress calculation when output is needed
+    if (writestresses_)
     {
-      writestep_= 0;
+     RefCountPtr<Epetra_Vector> traction = CalcStresses();
+     output_.WriteVector("traction",traction);
+    }
 
-      output_.NewStep    (step_,time_);
-      output_.WriteVector("velnp", velnp_);
-      //output_.WriteVector("residual", trueresidual_);
-      //output_.WriteVector("domain_decomp",domain_decomp);
+    if (restartstep_ == uprestart_) //add restart data
+    {
+      restartstep_ = 0;
+
+      output_.WriteVector("accn", accn_);
+      output_.WriteVector("veln", veln_);
+      output_.WriteVector("velnm", velnm_);
+
       if (alefluid_)
-        output_.WriteVector("dispnp", dispnp_);
-
-      //only perform stress calculation when output is needed
-      if (writestresses_)
       {
-       RefCountPtr<Epetra_Vector> traction = CalcStresses();
-       output_.WriteVector("traction",traction);
-      }
-
-      if (restartstep_ == uprestart_) //add restart data
-      {
-        restartstep_ = 0;
-
-        output_.WriteVector("accn", accn_);
-    	output_.WriteVector("veln", veln_);
-    	output_.WriteVector("velnm", velnm_);
-      }
-      
-      // solid
-      if (cutterdiscret_->NumGlobalElements() > 0)
-      {
-          solidoutput_.NewStep    (step_,time_);
-          soliddispnp_->PutScalar(0.0);
-          solidoutput_.WriteVector("soliddispnp", soliddispnp_);
+        output_.WriteVector("dispn", dispn_);
+        output_.WriteVector("dispnm",dispnm_);
       }
     }
+      
+      
+    // solid
+    if (cutterdiscret_->NumGlobalElements() > 0)
+    {
+        solidoutput_.NewStep    (step_,time_);
+        soliddispnp_->PutScalar(0.0);
+        solidoutput_.WriteVector("soliddispnp", soliddispnp_);
+    }
+
+  }
 
   // write restart also when uprestart_ is not a integer multiple of upres_
   if ((restartstep_ == uprestart_) && (writestep_ > 0))

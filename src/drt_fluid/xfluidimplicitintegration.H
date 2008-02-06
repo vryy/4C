@@ -252,6 +252,11 @@ protected:
   double dtp_;
   double theta_;
 
+  /// parameters for sampling/dumping period
+  int samstart_;
+  int samstop_;
+  int dumperiod_;
+
   /// (fine-scale) subgrid-viscosity flag and Smagorinsky model parameter
   int fssgv_;
   double Cs_fs_;
@@ -334,6 +339,7 @@ protected:
   RefCountPtr<Time> timeeleloop_    ;
   RefCountPtr<Time> timeapplydirich_;
   RefCountPtr<Time> timesolver_     ;
+  RefCountPtr<Time> timeout_        ;
 
   RefCountPtr<TimeMonitor> tm0_ref_ ;
   RefCountPtr<TimeMonitor> tm1_ref_ ;
@@ -342,6 +348,7 @@ protected:
   RefCountPtr<TimeMonitor> tm4_ref_ ;
   RefCountPtr<TimeMonitor> tm5_ref_ ;
   RefCountPtr<TimeMonitor> tm6_ref_ ;
+  RefCountPtr<TimeMonitor> tm7_ref_ ;
 
   /// density extracted from element material
   double density_;

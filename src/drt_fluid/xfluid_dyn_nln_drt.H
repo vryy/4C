@@ -19,6 +19,7 @@ Maintainer: Axel Gerstenberger
 </pre>
 
 *----------------------------------------------------------------------*/
+
 #ifdef CCADISCRET
 
 #ifndef XFLUID_DYN_NLN_DRT_H
