@@ -244,9 +244,25 @@ namespace LINALG
   void Complete(Epetra_CrsMatrix& A);
 
   /*!
-  \brief Call FillComplete on a Epetra_CrsMatrix (for rectangular/square matrices)
+  \brief Call FillComplete on a Epetra_CrsMatrix (for square matrices only!)
+
+  This is the RCP wrapper of the above method.
+  */
+  inline void Complete(RCP<Epetra_CrsMatrix> A)
+  { LINALG::Complete(*A); return; }
+
+  /*!
+  \brief Call FillComplete on a Epetra_CrsMatrix (for rectangular and square matrices)
   */
   void Complete(Epetra_CrsMatrix& A, const Epetra_Map& domainmap, const Epetra_Map& rangemap);
+
+  /*!
+  \brief Call FillComplete on a Epetra_CrsMatrix (for rectangular and square matrices)
+
+  This is the RCP wrapper of the above method.
+  */
+  inline void Complete(RCP<Epetra_CrsMatrix> A, const Epetra_Map& domainmap, const Epetra_Map& rangemap)
+  { LINALG::Complete(*A,domainmap,rangemap); return; }
 
   /*!
   \brief Add a (transposed) Epetra_CrsMatrix to another: B = B*scalarB + A(^T)*scalarA
@@ -269,6 +285,28 @@ namespace LINALG
            Epetra_CrsMatrix& B, const double scalarB);
 
   /*!
+  \brief Add a (transposed) Epetra_CrsMatrix to another: B = B*scalarB + A(^T)*scalarA
+
+  Add one matrix to another. the matrix B to be added to must not be
+  completed. Sparsity patterns of A and B need not match and A and B can be
+  nonsymmetric in value and pattern.
+  Row map of A has to be a processor-local subset of the row map of B.
+
+
+  Note that this is a true parallel add, even in the transposed case!
+  This is the RCP wrapper of the above method.
+
+  \param A          (in)     : Matrix to add to B (must have Filled()==true)
+  \param transposeA (in)     : flag indicating whether transposed of A should be used
+  \param scalarA    (in)     : scaling factor for A
+  \param B          (in/out) : Matrix to be added to (must have Filled()==false)
+  \param scalarB    (in)     : scaling factor for B
+  */
+  inline void Add(const RCP<Epetra_CrsMatrix> A, const bool transposeA, const double scalarA,
+           RCP<Epetra_CrsMatrix> B, const double scalarB)
+  { LINALG::Add(*A,transposeA,scalarA,*B,scalarB); return; }
+
+  /*!
   \brief Compute transposed matrix of an Epetra_CrsMatrix explicitly
 
   Returns RCP to the transposed matrix of the input matrix A.
@@ -278,6 +316,18 @@ namespace LINALG
   */
   RCP<Epetra_CrsMatrix> Transpose(const Epetra_CrsMatrix& A);
     
+  /*!
+  \brief Compute transposed matrix of an Epetra_CrsMatrix explicitly
+
+  Returns RCP to the transposed matrix of the input matrix A.
+  This is the RCP wrapper of the above method.
+
+  \param A          (in)     : Matrix to transpose (must have Filled()==true)
+
+  */
+  inline RCP<Epetra_CrsMatrix> Transpose(const RCP<Epetra_CrsMatrix> A)
+  { return LINALG::Transpose(*A); }
+
   /*!
   \brief Multiply a (transposed) Epetra_CrsMatrix with another (transposed): C = A(^T)*B(^T)
 
@@ -290,10 +340,71 @@ namespace LINALG
   \param transA     (in)     : flag indicating whether transposed of A should be used
   \param B          (in)     : Matrix to multiply with A (must have Filled()==true)
   \param transB     (in)     : flag indicating whether transposed of B should be used
-  \param C          (out)    : Matrix product C
+  \return Matrix product A(^T)*B(^T)
   */
-  RCP<Epetra_CrsMatrix> MatMatMult(const Epetra_CrsMatrix& A, bool transA,
-                                   const Epetra_CrsMatrix& B, bool transB);
+  RCP<Epetra_CrsMatrix> Multiply(const Epetra_CrsMatrix& A, bool transA,
+                                 const Epetra_CrsMatrix& B, bool transB);
+
+  /*!
+  \brief Multiply a (transposed) Epetra_CrsMatrix with another (transposed): C = A(^T)*B(^T)
+
+  Multiply one matrix with another. Both matrices must be completed. Sparsity
+  Respective Range, Row and Domain maps of A(^T) and B(^T) have to match.
+
+  Note that this is a true parallel multiplication, even in the transposed case!
+  This is the RCP wrapper of the above method.
+
+  \param A          (in)     : Matrix to multiply with B (must have Filled()==true)
+  \param transA     (in)     : flag indicating whether transposed of A should be used
+  \param B          (in)     : Matrix to multiply with A (must have Filled()==true)
+  \param transB     (in)     : flag indicating whether transposed of B should be used
+  \return Matrix product A(^T)*B(^T)
+  */
+  inline RCP<Epetra_CrsMatrix> Multiply(const RCP<Epetra_CrsMatrix>& A, bool transA,
+                                        const RCP<Epetra_CrsMatrix>& B, bool transB)
+  { return Multiply(*A,transA,*B,transB); }
+
+  /*!
+  \brief Triple matrix product: D = A(^T)*B(^T)*C(^T)
+
+  Multiply one matrix with another. All input matrices must be completed. Sparsity
+  Respective Range, Row and Domain maps of A(^T) and B(^T) C(^T) have to match.
+
+  Note that this is a true parallel multiplication, even in the transposed case!
+
+  \param A          (in)     : Matrix to multiply with B (must have Filled()==true)
+  \param transA     (in)     : flag indicating whether transposed of A should be used
+  \param B          (in)     : Matrix to multiply with C (must have Filled()==true)
+  \param transB     (in)     : flag indicating whether transposed of B should be used
+  \param C          (in)     : Matrix C (must have Filled()==true)
+  \param transC     (in)     : flag indicating whether transposed of C should be used
+  \return Matrix product A(^T)*B(^T)*C(^T)
+  */
+  RCP<Epetra_CrsMatrix> Multiply(const Epetra_CrsMatrix& A, bool transA,
+                                 const Epetra_CrsMatrix& B, bool transB,
+                                 const Epetra_CrsMatrix& C, bool transC);
+
+  /*!
+  \brief Triple matrix product: D = A(^T)*B(^T)*C(^T)
+
+  Multiply one matrix with another. All input matrices must be completed. Sparsity
+  Respective Range, Row and Domain maps of A(^T) and B(^T) C(^T) have to match.
+
+  Note that this is a true parallel multiplication, even in the transposed case!
+  This is the RCP wrapper of the above method.
+
+  \param A          (in)     : Matrix to multiply with B (must have Filled()==true)
+  \param transA     (in)     : flag indicating whether transposed of A should be used
+  \param B          (in)     : Matrix to multiply with C (must have Filled()==true)
+  \param transB     (in)     : flag indicating whether transposed of B should be used
+  \param C          (in)     : Matrix C (must have Filled()==true)
+  \param transC     (in)     : flag indicating whether transposed of C should be used
+  \return Matrix product A(^T)*B(^T)*C(^T)
+  */
+  inline RCP<Epetra_CrsMatrix> Multiply(const RCP<Epetra_CrsMatrix>& A, bool transA,
+                                        const RCP<Epetra_CrsMatrix>& B, bool transB,
+                                        const RCP<Epetra_CrsMatrix>& C, bool transC)
+  { return Multiply(*A,transA,*B,transB,*C,transC); }
 
   /*!
   \brief Apply dirichlet boundary condition to a linear system of equations

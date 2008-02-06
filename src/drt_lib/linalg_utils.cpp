@@ -251,7 +251,6 @@ void LINALG::Assemble(Epetra_MultiVector& V, const int n, const Epetra_SerialDen
 void LINALG::Complete(Epetra_CrsMatrix& A)
 {
   if (A.Filled()) return;
-
   int err = A.FillComplete(A.OperatorDomainMap(),A.OperatorRangeMap(),true);
   if (err) dserror("Epetra_CrsMatrix::FillComplete(domain,range) returned err=%d",err);
   return;
@@ -263,7 +262,6 @@ void LINALG::Complete(Epetra_CrsMatrix& A)
 void  LINALG::Complete(Epetra_CrsMatrix& A, const Epetra_Map& domainmap, const Epetra_Map& rangemap)
 {
   if (A.Filled()) return;
-
   int err = A.FillComplete(domainmap,rangemap,true);
   if (err) dserror("Epetra_CrsMatrix::FillComplete(domain,range) returned err=%d",err);
   return;
@@ -333,15 +331,49 @@ void LINALG::Add(const Epetra_CrsMatrix& A,
  *----------------------------------------------------------------------*/
 RCP<Epetra_CrsMatrix> LINALG::Transpose(const Epetra_CrsMatrix& A)
 {
-	if (!A.Filled()) dserror("FillComplete was not called on A");
-	
-	Epetra_RowMatrixTransposer tp(&(const_cast<Epetra_CrsMatrix&>(A)));
-	Epetra_CrsMatrix* Atrans = NULL;
-	
-	int err = tp.CreateTranspose(false,Atrans);
-	if (err) dserror("ERROR: Transpose: Epetra:RowMatrixTransposer failed!");
-	
-	return rcp(new Epetra_CrsMatrix(*Atrans));
+  if (!A.Filled()) dserror("FillComplete was not called on A");
+
+  Epetra_RowMatrixTransposer tp(&(const_cast<Epetra_CrsMatrix&>(A)));
+  Epetra_CrsMatrix* Atrans = NULL;
+
+  int err = tp.CreateTranspose(false,Atrans);
+  if (err) dserror("ERROR: Transpose: Epetra:RowMatrixTransposer failed!");
+
+  return rcp(new Epetra_CrsMatrix(*Atrans));
+}
+
+/*----------------------------------------------------------------------*
+ | Multiply matrices A*B                                     mwgee 01/06|
+ *----------------------------------------------------------------------*/
+RCP<Epetra_CrsMatrix> LINALG::Multiply(const Epetra_CrsMatrix& A, bool transA,
+                                       const Epetra_CrsMatrix& B, bool transB)
+{
+  // make sure FillComplete was called on the matrices
+  if (!A.Filled()) dserror("A has to be FillComplete");
+  if (!B.Filled()) dserror("B has to be FillComplete");
+
+  // create resultmatrix with correct rowmap
+  Epetra_CrsMatrix* C = NULL;
+  if (!transA)
+    C = new Epetra_CrsMatrix(Copy,A.OperatorRangeMap(),20,false);
+  else
+    C = new Epetra_CrsMatrix(Copy,A.OperatorDomainMap(),20,false);
+
+  int err = EpetraExt::MatrixMatrix::Multiply(A,transA,B,transB,*C);
+  if (err) dserror("EpetraExt::MatrixMatrix::Multiply returned err = &d",err);
+
+  return rcp(C);
+}
+
+/*----------------------------------------------------------------------*
+ | Multiply matrices A*B                                     mwgee 02/08|
+ *----------------------------------------------------------------------*/
+RCP<Epetra_CrsMatrix> LINALG::Multiply(const Epetra_CrsMatrix& A, bool transA,
+                                       const Epetra_CrsMatrix& B, bool transB,
+                                       const Epetra_CrsMatrix& C, bool transC)
+{
+  RCP<Epetra_CrsMatrix> tmp = LINALG::Multiply(B,transB,C,transC);
+  return LINALG::Multiply(A,transA,*tmp,false);
 }
 
 
@@ -360,29 +392,6 @@ extern "C"
   void dsytri(char *uplo, int *n, double *a, int *lda, int *ipiv, double *work, int *info);
   void dgetrf(int *m,int *n, double *a, int *lda, int *ipiv, int* info);
   void dgetri(int *n, double *a, int *lda, int *ipiv, double *work, int *lwork, int *info);
-}
-
-/*----------------------------------------------------------------------*
- | Multiply matrices A*B                                     mwgee 01/06|
- *----------------------------------------------------------------------*/
-RCP<Epetra_CrsMatrix> LINALG::MatMatMult(const Epetra_CrsMatrix& A, bool transA,
-                                         const Epetra_CrsMatrix& B, bool transB)
-{
-  // make sure FillComplete was called on the matrices
-  if (!A.Filled()) dserror("A has to be FillComplete");
-  if (!B.Filled()) dserror("B has to be FillComplete");
-
-  // create resultmatrix with correct rowmap
-  Epetra_CrsMatrix* C = NULL;
-  if (!transA)
-    C = new Epetra_CrsMatrix(Copy,A.OperatorRangeMap(),20,false);
-  else
-    C = new Epetra_CrsMatrix(Copy,A.OperatorDomainMap(),20,false);
-
-  int err = EpetraExt::MatrixMatrix::Multiply(A,transA,B,transB,*C);
-  if (err) dserror("EpetraExt::MatrixMatrix::Multiply returned err = &d",err);
-
-  return rcp(C);
 }
 
 /*----------------------------------------------------------------------*
@@ -1473,28 +1482,28 @@ Epetra_Map* LINALG::SplitMap(const Epetra_Map& Amap,
 RCP<Epetra_Map> LINALG::MergeMap(const Epetra_Map& map1,
                                  const Epetra_Map& map2)
 {
-	// check for unique GIDs and for identity
-	if ((!map1.UniqueGIDs()) || (!map2.UniqueGIDs()))
-		dserror("LINALG::MergeMap: One or both input maps are not unique");
-	if (map1.SameAs(map2))
-		return rcp(new Epetra_Map(map1));
-	
-	vector<int> mygids(map1.NumMyElements()+map2.NumMyElements());
-	int count = map1.NumMyElements();
+  // check for unique GIDs and for identity
+  if ((!map1.UniqueGIDs()) || (!map2.UniqueGIDs()))
+    dserror("LINALG::MergeMap: One or both input maps are not unique");
+  if (map1.SameAs(map2))
+    return rcp(new Epetra_Map(map1));
 
-	// get GIDs of input map1
-	for (int i=0;i<count;++i)
-		mygids[i] = map1.GID(i);
-	
-	// add GIDs of input map2 (only new ones)
-	for (int i=0;i<map2.NumMyElements();++i)
-		if (!map1.MyGID(map2.GID(i)))
-		{
-			mygids[count]=map2.GID(i);
-			++count;
-		}
-	mygids.resize(count);
-	
+  vector<int> mygids(map1.NumMyElements()+map2.NumMyElements());
+  int count = map1.NumMyElements();
+
+  // get GIDs of input map1
+  for (int i=0;i<count;++i)
+    mygids[i] = map1.GID(i);
+
+  // add GIDs of input map2 (only new ones)
+  for (int i=0;i<map2.NumMyElements();++i)
+    if (!map1.MyGID(map2.GID(i)))
+    {
+      mygids[count]=map2.GID(i);
+      ++count;
+    }
+  mygids.resize(count);
+
 	// sort merged map
 	sort(mygids.begin(),mygids.end());
 	
@@ -1507,16 +1516,16 @@ RCP<Epetra_Map> LINALG::MergeMap(const Epetra_Map& map1,
 RCP<Epetra_Map> LINALG::MergeMap(const RCP<Epetra_Map>& map1,
                                  const RCP<Epetra_Map>& map2)
 {
-	// check for cases with null RCPs
-	if (map1==null && map2==null)
-		return null;
-	else if (map1==null)
-		return rcp(new Epetra_Map(*map2));
-	else if (map2==null)
-		return rcp(new Epetra_Map(*map1));
-	
-	// wrapped call to non-RCP version of MergeMap
-	return LINALG::MergeMap(*map1,*map2);
+  // check for cases with null RCPs
+  if (map1==null && map2==null)
+    return null;
+  else if (map1==null)
+    return rcp(new Epetra_Map(*map2));
+  else if (map2==null)
+    return rcp(new Epetra_Map(*map1));
+
+  // wrapped call to non-RCP version of MergeMap
+  return LINALG::MergeMap(*map1,*map2);
 }
 
 /*----------------------------------------------------------------------*
