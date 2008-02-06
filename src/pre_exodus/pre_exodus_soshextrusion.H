@@ -44,13 +44,25 @@ vector<int> RiseNodeIds(int highestid, map<int,int> pair, const vector<int> elen
 
 vector<double> ExtrudeNodeCoords(const vector<double> basecoords, const double distance, const int layer);
 
+void NodeToAvgNormal(map<int,vector<double> >& node_normal,const vector<int> elenodes,
+    const map<int,set<int> >& elepatch,
+    const EXODUS::ElementBlock& eblock, const EXODUS::Mesh& basemesh);
+
+vector<double> AverageNormal(const vector<double> normal, const vector<vector<double> > nbr_normals);
+
+vector<double> Normal(int head1, int origin, int head2, const EXODUS::Mesh& basemesh);
+
+vector<double> CheckNormal(const vector<double> refn,const vector<double> checkn);
+
 const map<int,set<int> > NodeToEleConn(const EXODUS::ElementBlock eblock);
 
-const map<int,vector<int> > EleNeighbors(const EXODUS::ElementBlock eblock, const map<int,set<int> > node_conn);
+const map<int,vector<int> > EleNeighbors(const EXODUS::ElementBlock eblock, const map<int,set<int> >& node_conn, const EXODUS::Mesh& basemesh);
 
 bool FindinVec(const int id,vector<int> vec);
 
 int FindEdgeNeighbor(const vector<int> nodes, const int actnode, const int wrong_dir_node);
+
+vector<int> FindNodeNeighbors(const vector<int> nodes, const int centernode);
 
 void PrintMap(ostream& os,const map<int,vector<int> > mymap);
 void PrintMap(ostream& os,const map<int,set<int> > mymap);
