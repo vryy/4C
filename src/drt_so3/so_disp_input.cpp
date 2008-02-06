@@ -47,6 +47,7 @@ bool DRT::ELEMENTS::SoDisp::ReadElement()
     gid2distype["HEX27"] = hex27;
     gid2distype["TET4"]  = tet4;
     gid2distype["TET10"] = tet10;
+    gid2distype["PYRAMID5"] = pyramid5;
 
     typedef map<DiscretizationType, int> DisType2NumNodes;
     DisType2NumNodes distype2NumNodes;
@@ -55,6 +56,7 @@ bool DRT::ELEMENTS::SoDisp::ReadElement()
     distype2NumNodes[hex27] = 27;
     distype2NumNodes[tet4]  = 4;
     distype2NumNodes[tet10] = 10;
+    distype2NumNodes[pyramid5] = 5;
     
     // read element's nodes
     int   ierr = 0;
@@ -76,6 +78,8 @@ bool DRT::ELEMENTS::SoDisp::ReadElement()
             break;
         }
     }
+    
+    cout << "reading " << DRT::DistypeToString(distype) << endl;
     
     const bool allowed_element = (distype == hex27) || (distype == hex20) || (distype == tet10) || (distype == wedge15);
     // The intention of this element is to help debugging the xfem intersection routines.
@@ -118,6 +122,23 @@ bool DRT::ELEMENTS::SoDisp::ReadElement()
             break;
         default:
             dserror("Reading of SOLID3 element failed: Gaussrule for hexaeder not supported!\n");
+        }
+        break;
+    }
+    case pyramid5:
+    {
+        frint_n("GP_PYRAMID",ngp,1,&ierr);
+        dsassert(ierr==1, "Reading of SOLID3 element failed: GP_PYRAMID\n");
+        switch (ngp[0])
+        {
+        case 1:  
+            gaussrule_ = DRT::UTILS::intrule_pyramid_1point; 
+            break; 
+        case 8:  
+            gaussrule_ = DRT::UTILS::intrule_pyramid_8point; 
+            break;
+        default:
+            dserror("Reading of SOLID3 element failed: Gaussrule for pyramid not supported!\n");
         }
         break;
     }

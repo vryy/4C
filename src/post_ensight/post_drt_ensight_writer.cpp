@@ -317,7 +317,7 @@ void EnsightWriter::WriteCells(
 
         if (myrank_ == 0)
         {
-            cout << "writing "<< iter->second<< " "<< DistypeToString(distypeiter) << " element(s) as "
+            cout << "writing "<< iter->second<< " "<< DRT::DistypeToString(distypeiter) << " element(s) as "
             << ne << " " << ensightCellType << " ensight cell(s)..." << endl;
             Write(geofile, ensightCellType);
             Write(geofile, ne);
@@ -1369,37 +1369,5 @@ string EnsightWriter::GetFileSectionStringFromFilesets(
     }
     return s.str();
 }
-
-/*!
- * \brief translate to string for screen output
- */
-std::string DistypeToString(const DRT::Element::DiscretizationType distype)
-{
-    string s = "";
-    switch (distype)
-    {
-    case DRT::Element::quad4:      s = "quad4";  break;
-    case DRT::Element::quad8:      s = "quad8";  break;
-    case DRT::Element::quad9:      s = "quad9";  break;
-    case DRT::Element::tri3:       s = "tri3";  break;
-    case DRT::Element::tri6:       s = "tri6";  break;
-    case DRT::Element::hex8:       s = "hex8";  break;
-    case DRT::Element::hex20:      s = "hex20";  break;
-    case DRT::Element::hex27:      s = "hex27";  break;
-    case DRT::Element::tet4:       s = "tet4";  break;
-    case DRT::Element::tet10:      s = "tet10";  break;
-    case DRT::Element::ctet10:     s = "ctet10";  break;
-    case DRT::Element::wedge6:     s = "wedge6";  break;
-    case DRT::Element::wedge15:    s = "wedge15";  break;
-    case DRT::Element::pyramid5:   s = "pyramid5";  break;
-    case DRT::Element::line2:      s = "line2";  break;
-    case DRT::Element::line3:      s = "line3";  break;
-    case DRT::Element::point1:     s = "point1";  break;
-    default:
-        dserror("no string for this distype defined!");
-    };
-    return s;
-};
-
 
 #endif
