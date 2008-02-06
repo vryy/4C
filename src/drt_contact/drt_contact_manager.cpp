@@ -329,7 +329,7 @@ void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
 	if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
 	
 	// do the multiplication M^ = inv(D) * M
-	RCP<Epetra_CrsMatrix> Mbar = LINALG::MatMatMult(*invD,false,*M_,false);
+	RCP<Epetra_CrsMatrix> Mbar = LINALG::Multiply(invD,false,M_,false);
 	
 	/**********************************************************************/
 	/* Split Kteff into 3x3 block matrix                                  */
@@ -428,7 +428,7 @@ void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
 	// Ksm: add Kss*T(Mbar)
 	RCP<Epetra_CrsMatrix> Ksm_mod = LINALG::CreateMatrix(Ksm->RowMap(),100);
 	LINALG::Add(*Ksm,false,1.0,*Ksm_mod,1.0);
-	mod = LINALG::MatMatMult(*Kss,false,*Mbar,false);
+	mod = LINALG::Multiply(Kss,false,Mbar,false);
 	LINALG::Add(*mod,false,1.0,*Ksm_mod,1.0);
 	LINALG::Complete(*Ksm_mod,Ksm->DomainMap(),Ksm->RowMap());
 
@@ -438,26 +438,26 @@ void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
 	// Kms: add T(Mbar)*Kss
 	RCP<Epetra_CrsMatrix> Kms_mod = LINALG::CreateMatrix(Kms->RowMap(),100);
 	LINALG::Add(*Kms,false,1.0,*Kms_mod,1.0);
-	mod = LINALG::MatMatMult(*Mbar,true,*Kss,false);
+	mod = LINALG::Multiply(Mbar,true,Kss,false);
 	LINALG::Add(*mod,false,1.0,*Kms_mod,1.0);
 	LINALG::Complete(*Kms_mod,Kms->DomainMap(),Kms->RowMap());
 	
 	// Kmm: add Kms*T(Mbar) + T(Mbar)*Ksm + T(Mbar)*Kss*Mbar
 	RCP<Epetra_CrsMatrix> Kmm_mod = LINALG::CreateMatrix(Kmm->RowMap(),100);
 	LINALG::Add(*Kmm,false,1.0,*Kmm_mod,1.0);
-	mod = LINALG::MatMatMult(*Kms,false,*Mbar,false);
+	mod = LINALG::Multiply(Kms,false,Mbar,false);
 	LINALG::Add(*mod,false,1.0,*Kmm_mod,1.0);
-	mod = LINALG::MatMatMult(*Mbar,true,*Ksm,false);
+	mod = LINALG::Multiply(Mbar,true,Ksm,false);
 	LINALG::Add(*mod,false,1.0,*Kmm_mod,1.0);
-	mod = LINALG::MatMatMult(*Mbar,true,*Kss,false);
-	mod = LINALG::MatMatMult(*mod,false,*Mbar,false);
+	mod = LINALG::Multiply(Mbar,true,Kss,false);
+	mod = LINALG::Multiply(mod,false,Mbar,false);
 	LINALG::Add(*mod,false,1.0,*Kmm_mod,1.0);
 	LINALG::Complete(*Kmm_mod,Kmm->DomainMap(),Kmm->RowMap());
 	
 	// Kmn: add T(Mbar)*Ksn
 	RCP<Epetra_CrsMatrix> Kmn_mod = LINALG::CreateMatrix(Kmn->RowMap(),100);
 	LINALG::Add(*Kmn,false,1.0,*Kmn_mod,1.0);	
-	mod = LINALG::MatMatMult(*Mbar,true,*Ksn,false);
+	mod = LINALG::Multiply(Mbar,true,Ksn,false);
 	LINALG::Add(*mod,false,1.0,*Kmn_mod,1.0);
 	LINALG::Complete(*Kmn_mod,Kmn->DomainMap(),Kmn->RowMap());
 	
@@ -467,7 +467,7 @@ void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
 	// Knm: add Kns*Mbar
 	RCP<Epetra_CrsMatrix> Knm_mod = LINALG::CreateMatrix(Knm->RowMap(),100);
 	LINALG::Add(*Knm,false,1.0,*Knm_mod,1.0);
-	mod = LINALG::MatMatMult(*Kns,false,*Mbar,false);
+	mod = LINALG::Multiply(Kns,false,Mbar,false);
 	LINALG::Add(*mod,false,1.0,*Knm_mod,1.0);
 	LINALG::Complete(*Knm_mod,Knm->DomainMap(),Knm->RowMap());
 	
@@ -610,12 +610,12 @@ void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
 	
 	if(gactivedofs_->NumGlobalElements())
 	{
-		TKan_mod = LINALG::MatMatMult(*T_,false,*Kan_mod,false);
-		TKam_mod = LINALG::MatMatMult(*T_,false,*Kam_mod,false);
-		TKaa_mod = LINALG::MatMatMult(*T_,false,*Kaa_mod,false);
+		TKan_mod = LINALG::Multiply(T_,false,Kan_mod,false);
+		TKam_mod = LINALG::Multiply(T_,false,Kam_mod,false);
+		TKaa_mod = LINALG::Multiply(T_,false,Kaa_mod,false);
 		
 		if (gidofs->NumGlobalElements())
-			TKai_mod = LINALG::MatMatMult(*T_,false,*Kai_mod,false);
+			TKai_mod = LINALG::Multiply(T_,false,Kai_mod,false);
 		
 		Tfa_mod = rcp(new Epetra_Vector(T_->RowMap()));
 		T_->Multiply(false,*fa_mod,*Tfa_mod);
