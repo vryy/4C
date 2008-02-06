@@ -42,8 +42,8 @@ void VM3_Solver::Separate(RefCountPtr<Epetra_CrsMatrix>& Sep,
                           RefCountPtr<Epetra_CrsMatrix>& Aplus)
 {
   // pre- and post-multiply M by scale-separating operator matrix Sep
-  Aplus_ = LINALG::MatMatMult(*Aplus_,false,*Sep_,false);
-  Aplus_ = LINALG::MatMatMult(*Sep_,true,*Aplus_,false);
+  Aplus_ = LINALG::Multiply(Aplus_,false,Sep_,false);
+  Aplus_ = LINALG::Multiply(Sep_,true,Aplus_,false);
 
   return;
 }
