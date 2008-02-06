@@ -557,7 +557,6 @@ void FSI::DirichletNeumannCoupling::SetupFluid()
   // create a fluid nonlinear time integrator
   // -------------------------------------------------------------------
   RCP<ParameterList> fluidtimeparams = rcp(new ParameterList());
-  Fluid::SetDefaults(*fluidtimeparams);
 
   FLUID_TIMEINTTYPE iop = Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(fdyn,"TIMEINTEGR");
 

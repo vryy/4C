@@ -1,12 +1,17 @@
 /*!----------------------------------------------------------------------
 \file condif_drt.cpp
-\brief Control routine for convection-diffusion time integration. Includes
+\brief Main control routine for all (in)stationary convect.-diff. solvers,
 
-     o Singele step one-step-theta time integration
+     including instationary solvers based on
 
-     o Two step BDF2 Gear's methode with one-step-theta start step
+     o one-step-theta time-integration scheme
 
+     o two-step BDF2 time-integration scheme 
+       (with potential one-step-theta start algorithm)
 
+     o generalized-alpha time-integration scheme
+
+     and stationary solver.
 
 <pre>
 Maintainer: Volker Gravemeier
@@ -33,6 +38,7 @@ Maintainer: Volker Gravemeier
 #include "condifimplicitintegration.H"
 #include "condif_genalpha_integration.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_validparameters.H"
 
 
 /*----------------------------------------------------------------------*
@@ -82,11 +88,12 @@ extern struct _CURVE *curve;
 
 
 /*----------------------------------------------------------------------*
- * Time integration loop for convection-diffusion problems
+ * Main control routine for convection-diffusion incl. various solvers:
  *
- *        o One-step-theta
- *        o BDF2
- *        o Generalized-alpha
+ *        o instationary one-step-theta
+ *        o instationary BDF2
+ *        o instationary generalized-alpha
+ *        o stationary
  *
  *----------------------------------------------------------------------*/
 void dyn_condif_drt()
@@ -103,7 +110,6 @@ void dyn_condif_drt()
   // -------------------------------------------------------------------
   if (!actdis->Filled()) actdis->FillComplete();
 
-
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
@@ -118,6 +124,9 @@ void dyn_condif_drt()
   const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
   const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
 
+  if (actdis->Comm().MyPID()==0)
+    DRT::INPUT::PrintDefaultParameters(std::cout, fdyn);
+
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
@@ -126,115 +135,108 @@ void dyn_condif_drt()
   solver.TranslateSolverParameters(*solveparams,actsolv);
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
 
+  // -------------------------------------------------------------------
+  // set parameters in list required for all schemes
+  // -------------------------------------------------------------------
+  ParameterList condiftimeparams;
+
+  // -----------------------------------------------------velocity field
+  condiftimeparams.set<int>              ("condif velocity field"     ,Teuchos::getIntegralValue<int>(fdyn,"CD_VELOCITY"));
+
+  // -------------------------------------------------- time integration
+  // the default time step size
+  condiftimeparams.set<double>           ("time step size"           ,fdyn.get<double>("TIMESTEP"));
+  // maximum simulation time
+  condiftimeparams.set<double>           ("total time"               ,fdyn.get<double>("MAXTIME"));
+  // maximum number of timesteps
+  condiftimeparams.set<int>              ("max number timesteps"     ,fdyn.get<int>("NUMSTEP"));
+
+  // ----------------------------------------------- restart and output
+  // restart
+  condiftimeparams.set                  ("write restart every"       ,fdyn.get<int>("RESTARTEVRY"));
+  // solution output
+  condiftimeparams.set                  ("write solution every"      ,fdyn.get<int>("UPRES"));
+
+  // ---------------------------------(fine-scale) subgrid diffusivity?
+  condiftimeparams.set<int>              ("fs subgrid viscosity"   ,Teuchos::getIntegralValue<int>(fdyn,"SUBGRIDVISC"));
+
+
+  // -------------------------------------------------------------------
+  // additional parameters and algorithm call depending on respective
+  // time-integration (or stationary) scheme
+  // -------------------------------------------------------------------
   FLUID_TIMEINTTYPE iop = Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(fdyn,"TIMEINTEGR");
   if(iop == timeint_stationary or
      iop == timeint_one_step_theta or
      iop == timeint_bdf2
     )
   {
-    // -------------------------------------------------------------------
-    // create a convection-diffusion one-step-theta/BDF2 time integrator
-    // -------------------------------------------------------------------
-    ParameterList condiftimeparams;
-    CondifImplicitTimeInt::SetDefaults(condiftimeparams);
-
-    // the default time step size
-    condiftimeparams.set<double>           ("time step size"           ,fdyn.get<double>("TIMESTEP"));
-    // max. sim. time
-    condiftimeparams.set<double>           ("total time"               ,fdyn.get<double>("MAXTIME"));
-    // parameter for time-integration
+    // -----------------------------------------------------------------
+    // set additional parameters in list for OST/BDF2/stationary scheme
+    // -----------------------------------------------------------------
+    // type of time-integration (or stationary) scheme
+    condiftimeparams.set<FLUID_TIMEINTTYPE>("time int algo",iop);
+    // parameter theta for time-integration schemes
     condiftimeparams.set<double>           ("theta"                    ,fdyn.get<double>("THETA"));
-    // which kind of time-integration
-    condiftimeparams.set<FLUID_TIMEINTTYPE>("time int algo"            ,iop);
-    // bound for the number of timesteps
-    condiftimeparams.set<int>              ("max number timesteps"     ,fdyn.get<int>("NUMSTEP"));
-    // number of steps with start algorithm
+    // number of steps for potential start algorithm
     condiftimeparams.set<int>              ("number of start steps"    ,fdyn.get<int>("NUMSTASTEPS"));
-    // parameter for start algo
+    // parameter theta for potential start algorithm
     condiftimeparams.set<double>           ("start theta"              ,fdyn.get<double>("START_THETA"));
-    // restart
-    condiftimeparams.set                  ("write restart every"       ,fdyn.get<int>("RESTARTEVRY"));
-    // solution output
-    condiftimeparams.set                  ("write solution every"      ,fdyn.get<int>("UPRES"));
 
-    //--------------------------------------------------
-    // velocity field
-    condiftimeparams.set<int>              ("condif velocity field"     ,Teuchos::getIntegralValue<int>(fdyn,"CD_VELOCITY"));
-    // (fine-scale) subgrid diffusivity?
-    condiftimeparams.set<int>              ("fs subgrid viscosity"   ,Teuchos::getIntegralValue<int>(fdyn,"SUBGRIDVISC"));
-
-    //--------------------------------------------------
+    //------------------------------------------------------------------
     // create all vectors and variables associated with the time
     // integration (call the constructor)
+    //------------------------------------------------------------------
     CondifImplicitTimeInt condifimplicit(actdis,
-                                        solver,
-                                        condiftimeparams,
-                                        output);
+                                         solver,
+                                         condiftimeparams,
+                                         output);
 
-    //--------------------------------------------------
+    // initial field from restart
     if (probtype.get<int>("RESTART"))
     {
       // read the restart information, set vectors and variables
       condifimplicit.ReadRestart(probtype.get<int>("RESTART"));
     }
 
-    //--------------------------------------------------
-    // do the time integration (start algo and standard algo)
+    // call time-integration (or stationary) scheme
     condifimplicit.Integrate();
 
   }
   else if (iop == timeint_gen_alpha)
   {
-
     // -------------------------------------------------------------------
-    // create a convection-diffusion generalized-alpha time integrator
+    // set additional parameters in list for generalized-alpha scheme
     // -------------------------------------------------------------------
-    // ------------------ set the parameter list
-    ParameterList condiftimeparams;
-
-    // the default time step size
-    condiftimeparams.set<double>           ("time step size"           ,fdyn.get<double>("TIMESTEP"));
-    // max. sim. time
-    condiftimeparams.set<double>           ("total time"               ,fdyn.get<double>("MAXTIME"));
-    // parameters for time-integration
+    // parameter alpha_M for for generalized-alpha scheme
     condiftimeparams.set<double>           ("alpha_M"                  ,fdyn.get<double>("ALPHA_M"));
-    // parameters for time-integration
+    // parameter alpha_F for for generalized-alpha scheme
     condiftimeparams.set<double>           ("alpha_F"                  ,fdyn.get<double>("ALPHA_F"));
-    condiftimeparams.set<int>              ("max number timesteps"     ,fdyn.get<int>("NUMSTEP"));
-    // restart
-    condiftimeparams.set                  ("write restart every"       ,fdyn.get<int>("RESTARTEVRY"));
-    // solution output
-    condiftimeparams.set                  ("write solution every"      ,fdyn.get<int>("UPRES"));
 
-    //--------------------------------------------------
-    // velocity field
-    condiftimeparams.set<int>              ("condif velocity field"     ,Teuchos::getIntegralValue<int>(fdyn,"CD_VELOCITY"));
-    // discontinuity capturing?
-    condiftimeparams.set<int>              ("discontinuity capturing"   ,Teuchos::getIntegralValue<int>(fdyn,"DISC_CAPT"));
-
-    //--------------------------------------------------
+    //------------------------------------------------------------------
     // create all vectors and variables associated with the time
     // integration (call the constructor)
+    //------------------------------------------------------------------
     CondifGenAlphaIntegration genalphaint(actdis,
                                           solver,
                                           condiftimeparams,
                                           output);
 
 
-    //------------- initialize the field from input or restart
+    // initial field from restart
     if (probtype.get<int>("RESTART"))
     {
       // read the restart information, set vectors and variables
       genalphaint.ReadRestart(genprob.restart);
     }
 
-    //------------------------- do timeintegration till maxtime
+    // call generalized-alpha time-integration scheme
     genalphaint.GenAlphaIntegrateTo(fdyn.get<int>("NUMSTEP"),fdyn.get<double>("MAXTIME"));
 
   }
   else
   {
-    dserror("Unknown time type for drt_condif");
+    dserror("Unknown solver type for drt_condif");
   }
 
   //---------- this is the end. Beautiful friend. My only friend, The end.
@@ -243,7 +245,5 @@ void dyn_condif_drt()
   return;
 
 } // end of dyn_condif_drt()
-
-
 
 #endif  // #ifdef CCADISCRET

@@ -3,20 +3,8 @@
 
 \class CondifGenAlphaIntegration
 
-\brief Generalized-alpha time integration scheme for convection-diffusion
-problems.
-
-Based on the method described in:
-
-<pre>
-  |    "A generalized-alpha method for integrating the filtered
-  |     Navier-Stokes equations with a stabilized finite element method"
-  |
-  |    K.E. Jansen, C. Whiting and G.M. Hulbert
-  |
-  |    Computer Methods in Applied Mechanics and Engineering
-</pre>
-
+\brief Associated with control routine for con.-diff. instationary solver
+       based on generalized-alpha time-integration scheme
 
 <pre>
 Maintainer: Volker Gravemeier

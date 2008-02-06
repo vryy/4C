@@ -169,7 +169,9 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // (fine-scale) subgrid viscosity?
   fssgv_ = params_.get<int>("fs subgrid viscosity",0);
 
+  // -------------------------------------------------------------------
   // necessary only for the VM3 approach
+  // -------------------------------------------------------------------
   if (fssgv_ > 0)
   {
     // initialize (fine-scale) subgrid-viscosity system matrix

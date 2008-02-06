@@ -1,10 +1,7 @@
 /*!----------------------------------------------------------------------
 \file condif_genalpha_integration.cpp
-
-\brief Time integration according to dis. C. Whiting
-
-
-
+\brief Control routine for convection-diffusion instationary solver
+       based on generalized-alpha time-integration scheme
 
 <pre>
 Maintainer: Volker Gravemeier

@@ -1,12 +1,17 @@
 /*!----------------------------------------------------------------------
 \file fluid_dyn_nln_drt.cpp
-\brief Control routine for fluid time integration. Includes
+\brief Main control routine for all fluid (in)stationary solvers,
 
-     o Single step one-step-theta time integration
+     including instationary solvers based on
 
-     o Two step BDF2 Gear's methode with one-step-theta start step
+     o one-step-theta time-integration scheme
 
+     o two-step BDF2 time-integration scheme 
+       (with potential one-step-theta start algorithm)
 
+     o generalized-alpha time-integration scheme
+
+     and stationary solver.
 
 <pre>
 Maintainer: Peter Gamnitzer
@@ -84,10 +89,12 @@ extern struct _CURVE *curve;
 
 
 /*----------------------------------------------------------------------*
- * Time integration loop for fluid.
+ * Main control routine for fluid including various solvers:
  *
- *        o One-step-theta
- *        o BDF2
+ *        o instationary one-step-theta
+ *        o instationary BDF2
+ *        o instationary generalized-alpha
+ *        o stationary
  *
  *----------------------------------------------------------------------*/
 void dyn_fluid_drt()
@@ -103,7 +110,6 @@ void dyn_fluid_drt()
   // set degrees of freedom in the discretization
   // -------------------------------------------------------------------
   if (!actdis->Filled()) actdis->FillComplete();
-
 
   // -------------------------------------------------------------------
   // context for output and restart
@@ -132,79 +138,91 @@ void dyn_fluid_drt()
   solver.TranslateSolverParameters(*solveparams,actsolv);
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
 
+  // -------------------------------------------------------------------
+  // set parameters in list required for all schemes
+  // -------------------------------------------------------------------
+  ParameterList fluidtimeparams;
+
+  // -------------------------------------- number of degrees of freedom
+  // number of degrees of freedom
+  fluidtimeparams.set<int>              ("number of velocity degrees of freedom" ,probsize.get<int>("DIM"));
+
+  // -------------------------------------------------- time integration
+  // the default time step size
+  fluidtimeparams.set<double>           ("time step size"           ,fdyn.get<double>("TIMESTEP"));
+  // maximum simulation time
+  fluidtimeparams.set<double>           ("total time"               ,fdyn.get<double>("MAXTIME"));
+  // maximum number of timesteps
+  fluidtimeparams.set<int>              ("max number timesteps"     ,fdyn.get<int>("NUMSTEP"));
+
+  // ---------------------------------------------- nonlinear iteration
+  // set linearisation scheme
+  fluidtimeparams.set<bool>("Use reaction terms for linearisation",
+                           Teuchos::getIntegralValue<int>(fdyn,"NONLINITER")==2);
+  // maximum number of nonlinear iteration steps
+  fluidtimeparams.set<int>             ("max nonlin iter steps"     ,fdyn.get<int>("ITEMAX"));
+  // stop nonlinear iteration when both incr-norms are below this bound
+  fluidtimeparams.set<double>          ("tolerance for nonlin iter" ,fdyn.get<double>("CONVTOL"));
+
+  // ----------------------------------------------- restart and output
+  // restart
+  fluidtimeparams.set                  ("write restart every"       ,fdyn.get<int>("RESTARTEVRY"));
+  // solution output
+  fluidtimeparams.set                  ("write solution every"      ,fdyn.get<int>("UPRES"));
+  // flag for writing stresses
+  fluidtimeparams.set                  ("write stresses"            ,Teuchos::getIntegralValue<int>(ioflags,"FLUID_STRESS"));
+
+  // -----------evaluate error for test flows with analytical solutions
+  int init = Teuchos::getIntegralValue<int>(fdyn,"INITIALFIELD");
+  fluidtimeparams.set                  ("eval err for analyt sol"   ,init);
+
+  // -----------------------------------(fine-scale) subgrid viscosity?
+  fluidtimeparams.set<int>              ("fs subgrid viscosity"   ,Teuchos::getIntegralValue<int>(fdyn,"SUBGRIDVISC"));
+
+  // -----------------------sublist containing stabilization parameters
+  fluidtimeparams.sublist("STABILIZATION")=fdyn.sublist("STABILIZATION");
+
+  // --------------------------sublist containing turbulence parameters
+  {
+    fluidtimeparams.sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
+
+    fluidtimeparams.sublist("TURBULENCE MODEL").set<string>("statistics outfile",allfiles.outputfile_kenner);
+  }
+
+  // -------------------------------------------------------------------
+  // additional parameters and algorithm call depending on respective
+  // time-integration (or stationary) scheme
+  // -------------------------------------------------------------------
   FLUID_TIMEINTTYPE iop = Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(fdyn,"TIMEINTEGR");
   if(iop == timeint_stationary or
      iop == timeint_one_step_theta or
      iop == timeint_bdf2
     )
   {
-    // -------------------------------------------------------------------
-    // create a fluid nonlinear time integrator
-    // -------------------------------------------------------------------
-    ParameterList fluidtimeparams;
-    FluidImplicitTimeInt::SetDefaults(fluidtimeparams);
-
-    // number of degrees of freedom
-    fluidtimeparams.set<int>              ("number of velocity degrees of freedom" ,probsize.get<int>("DIM"));
-    // the default time step size
-    fluidtimeparams.set<double>           ("time step size"           ,fdyn.get<double>("TIMESTEP"));
-    // max. sim. time
-    fluidtimeparams.set<double>           ("total time"               ,fdyn.get<double>("MAXTIME"));
-    // parameter for time-integration
+    // -----------------------------------------------------------------
+    // set additional parameters in list for OST/BDF2/stationary scheme
+    // -----------------------------------------------------------------
+    // type of time-integration (or stationary) scheme
+    fluidtimeparams.set<FLUID_TIMEINTTYPE>("time int algo",iop);
+    // parameter theta for time-integration schemes
     fluidtimeparams.set<double>           ("theta"                    ,fdyn.get<double>("THETA"));
-    // which kind of time-integration
-    fluidtimeparams.set<FLUID_TIMEINTTYPE>("time int algo"            ,iop);
-    // bound for the number of timesteps
-    fluidtimeparams.set<int>              ("max number timesteps"     ,fdyn.get<int>("NUMSTEP"));
-    // number of steps with start algorithm
+    // number of steps for potential start algorithm
     fluidtimeparams.set<int>              ("number of start steps"    ,fdyn.get<int>("NUMSTASTEPS"));
-    // parameter for start algo
+    // parameter theta for potential start algorithm
     fluidtimeparams.set<double>           ("start theta"              ,fdyn.get<double>("START_THETA"));
 
-
-    // ---------------------------------------------- nonlinear iteration
-    // set linearisation scheme
-    fluidtimeparams.set<bool>("Use reaction terms for linearisation",
-                              Teuchos::getIntegralValue<int>(fdyn,"NONLINITER")==2);
-    // maximum number of nonlinear iteration steps
-    fluidtimeparams.set<int>             ("max nonlin iter steps"     ,fdyn.get<int>("ITEMAX"));
-    // stop nonlinear iteration when both incr-norms are below this bound
-    fluidtimeparams.set<double>          ("tolerance for nonlin iter" ,fdyn.get<double>("CONVTOL"));
-
-    // ----------------------------------------------- restart and output
-    // restart
-    fluidtimeparams.set                  ("write restart every"       ,fdyn.get<int>("RESTARTEVRY"));
-    // solution output
-    fluidtimeparams.set                  ("write solution every"      ,fdyn.get<int>("UPRES"));
-    // flag for writing stresses
-    fluidtimeparams.set                  ("write stresses"            ,Teuchos::getIntegralValue<int>(ioflags,"FLUID_STRESS"));
-
-    //--------------------------------------------------
-    // evaluate error for test flows with analytical solutions
-    int init = Teuchos::getIntegralValue<int>(fdyn,"INITIALFIELD");
-    fluidtimeparams.set                  ("eval err for analyt sol"   ,init);
-
-    // (fine-scale) subgrid viscosity?
-    fluidtimeparams.set<int>              ("fs subgrid viscosity"   ,Teuchos::getIntegralValue<int>(fdyn,"SUBGRIDVISC"));
-
-    // hand down the TURBULENCE MODEL parameters to the fluid algorithm
-    {
-      fluidtimeparams.sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
-
-      fluidtimeparams.sublist("TURBULENCE MODEL").set<string>("statistics outfile",allfiles.outputfile_kenner);
-    }
-
-    //--------------------------------------------------
+    //------------------------------------------------------------------
     // create all vectors and variables associated with the time
-    // integration (call the constructor)
+    // integration (call the constructor);
     // the only parameter from the list required here is the number of
     // velocity degrees of freedom
+    //------------------------------------------------------------------
     FluidImplicitTimeInt fluidimplicit(actdis,
                                        solver,
                                        fluidtimeparams,
                                        output);
 
-    //--------------------------------------------------
+    // initial field from restart or calculated by given function
     if (probtype.get<int>("RESTART"))
     {
       // read the restart information, set vectors and variables
@@ -212,7 +230,7 @@ void dyn_fluid_drt()
     }
     else
     {
-      // set initial field for analytical test problems etc
+      // set initial field by given function
       if(init>0)
       {
         int startfuncno = fdyn.get<int>("STARTFUNCNO");
@@ -226,14 +244,10 @@ void dyn_fluid_drt()
 
     fluidtimeparams.set<FILE*>("err file",allfiles.out_err);
 
-    //--------------------------------------------------
-    // do the time integration (start algo and standard algo)
+    // call time-integration (or stationary) scheme
     fluidimplicit.Integrate();
 
-
-
-    //--------------------------------------------------
-    // do the result test
+    // do result test if required
 #ifdef RESULTTEST
     DRT::ResultTestManager testmanager(actdis->Comm());
     testmanager.AddFieldTest(rcp(new FluidResultTest(fluidimplicit)));
@@ -243,69 +257,26 @@ void dyn_fluid_drt()
   else if (iop == timeint_gen_alpha)
   {
     // -------------------------------------------------------------------
-    // create a generalised alpha time integrator for fluid problems
+    // set additional parameters in list for generalized-alpha scheme
     // -------------------------------------------------------------------
-    // ------------------ set the parameter list
-    ParameterList fluidtimeparams;
-
-    // number of degrees of freedom
-    fluidtimeparams.set<int>              ("number of velocity degrees of freedom" ,probsize.get<int>("DIM"));
-    // the default time step size
-    fluidtimeparams.set<double>           ("time step size"           ,fdyn.get<double>("TIMESTEP"));
-    // max. sim. time
-    fluidtimeparams.set<double>           ("total time"               ,fdyn.get<double>("MAXTIME"));
-    // parameters for time-integration
+    // parameter alpha_M for for generalized-alpha scheme
     fluidtimeparams.set<double>           ("alpha_M"                  ,fdyn.get<double>("ALPHA_M"));
-    // parameters for time-integration
+    // parameter alpha_F for for generalized-alpha scheme
     fluidtimeparams.set<double>           ("alpha_F"                  ,fdyn.get<double>("ALPHA_F"));
-    // bound for the number of timesteps
-    fluidtimeparams.set<int>              ("max number timesteps"     ,fdyn.get<int>("NUMSTEP"));
 
-    // ---------------------------------------------- nonlinear iteration
-    //     // set linearisation scheme
-    fluidtimeparams.set<bool>("Use reaction terms for linearisation",
-                              Teuchos::getIntegralValue<int>(fdyn,"NONLINITER")==2);
-    // maximum number of nonlinear iteration steps
-    fluidtimeparams.set<int>             ("max nonlin iter steps"     ,fdyn.get<int>("ITEMAX"));
-    // stop nonlinear iteration when both incr-norms are below this bound
-    fluidtimeparams.set<double>          ("tolerance for nonlin iter" ,fdyn.get<double>("CONVTOL"));
-
-    // ----------------------------------------------- restart and output
-    fluidtimeparams.set                  ("write restart every"       ,fdyn.get<int>("RESTARTEVRY"));
-    // solution output
-    fluidtimeparams.set                  ("write solution every"      ,fdyn.get<int>("UPRES"));
-    // flag for writing stresses
-    fluidtimeparams.set                  ("write stresses"            ,Teuchos::getIntegralValue<int>(ioflags,"FLUID_STRESS"));
-
-    //------------evaluate error for test flows with analytical solutions
-    int init = Teuchos::getIntegralValue<int>(fdyn,"INITIALFIELD");
-    fluidtimeparams.set                  ("eval err for analyt sol"   ,init);
-
-    // (fine-scale) subgrid viscosity?
-    fluidtimeparams.set<int>              ("fs subgrid viscosity"   ,Teuchos::getIntegralValue<int>(fdyn,"SUBGRIDVISC"));
-
-    // hand down the STABILIZATION parameters to the fluid algorithm
-    fluidtimeparams.sublist("STABILIZATION")=fdyn.sublist("STABILIZATION");
-
-    // hand down the TURBULENCE MODEL parameters to the fluid algorithm
-    {
-      fluidtimeparams.sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
-
-      fluidtimeparams.sublist("TURBULENCE MODEL").set<string>("statistics outfile",allfiles.outputfile_kenner);
-    }
-
-    //--------------------------------------------------
+    //------------------------------------------------------------------
     // create all vectors and variables associated with the time
-    // integration (call the constructor)
+    // integration (call the constructor);
     // the only parameter from the list required here is the number of
     // velocity degrees of freedom
+    //------------------------------------------------------------------
     FluidGenAlphaIntegration genalphaint(actdis,
                                          solver,
                                          fluidtimeparams,
                                          output);
 
 
-    //------------- initialise the field from input or restart
+    // initial field from restart or calculated by given function
     if (probtype.get<int>("RESTART"))
     {
       // read the restart information, set vectors and variables
@@ -313,7 +284,7 @@ void dyn_fluid_drt()
     }
     else
     {
-      // set initial field for analytical test problems etc
+      // set initial field by given function
       if(init>0)
       {
         int startfuncno = fdyn.get<int>("STARTFUNCNO");
@@ -325,11 +296,10 @@ void dyn_fluid_drt()
       }
     }
 
-    //------------------------- do timeintegration till maxtime
+    // call generalized-alpha time-integration scheme
     genalphaint.GenAlphaIntegrateTo(fdyn.get<int>("NUMSTEP"),fdyn.get<double>("MAXTIME"));
 
-    //--------------------------------------------------
-    // do the result test
+    // do result test if required
 #ifdef RESULTTEST
     DRT::ResultTestManager testmanager(actdis->Comm());
     testmanager.AddFieldTest(rcp(new FluidResultTest(genalphaint)));
@@ -339,7 +309,7 @@ void dyn_fluid_drt()
   }
   else
   {
-    dserror("Unknown time type for drt fluid");
+    dserror("Unknown solver type for drt_fluid");
   }
 
   //---------- this is the end. Beautiful friend. My only friend, The end.

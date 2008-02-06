@@ -239,7 +239,6 @@ void MFSI::Algorithm::SetupFluid()
   // create a fluid nonlinear time integrator
   // -------------------------------------------------------------------
   RefCountPtr<ParameterList> fluidtimeparams = rcp(new ParameterList());
-  FluidImplicitTimeInt::SetDefaults(*fluidtimeparams);
 
   FLUID_TIMEINTTYPE iop = Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(fdyn,"TIMEINTEGR");
 

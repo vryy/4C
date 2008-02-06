@@ -1,13 +1,15 @@
 /*!----------------------------------------------------------------------
 \file fluidimplicitintegration.cpp
-\brief Control routine for fluid time integration. Includes
+\brief Control routine for fluid (in)stationary solvers,
 
-     o Single step one-step-theta time integration
+     including instationary solvers based on
 
-     o Two step BDF2 Gear's methode (with optional one-step-theta
-                                     start step)
+     o one-step-theta time-integration scheme
 
+     o two-step BDF2 time-integration scheme 
+       (with potential one-step-theta start algorithm)
 
+     and stationary solver.
 
 <pre>
 Maintainer: Peter Gamnitzer
@@ -1528,50 +1530,6 @@ void FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
   }
   return;
 } // end EvaluateErrorComparedToAnalyticalSol
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- |  set default parameter list (static/public)               gammi 04/07|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidImplicitTimeInt::SetDefaults(ParameterList& params)
-{
-  // number of degrees of freedom
-  // if this one is not set afterwards, the algo hopefully crashes
-  params.set<int> ("number of velocity degrees of freedom" ,-1);
-
-  // evaluate error compared to analytical solution
-  params.set<int>("eval err for analyt sol",0);
-
-  // -------------------------------------------------- time integration
-  // timestepsize
-  params.set<double>           ("time step size"           ,0.01);
-  // max. sim. time
-  params.set<double>           ("total time"               ,0.0);
-  // parameter for time-integration
-  params.set<double>           ("theta"                    ,0.6667);
-  // which kind of time-integration
-  params.set<FLUID_TIMEINTTYPE>("time int algo"            ,timeint_one_step_theta);
-  // bound for the number of timesteps
-  params.set<int>              ("max number timesteps"     ,0);
-  // number of steps with start algorithm
-  params.set<int>              ("number of start steps"    ,0);
-  // parameter for start algo
-  params.set<double>           ("start theta"              ,0.6667);
-
-  // ---------------------------------------------- nonlinear iteration
-  // maximum number of nonlinear iteration steps
-  params.set<int>             ("max nonlin iter steps"     ,5);
-  // stop nonlinear iteration when both incr-norms are below this bound
-  params.set<double>          ("tolerance for nonlin iter" ,1E-6);
-
-  return;
-}
-
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

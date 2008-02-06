@@ -1,8 +1,15 @@
 /*!----------------------------------------------------------------------
 \file
-\brief Control routine for convection-diffusion time integration. 
-       Associated with condifimplicitintegration.cpp
+\brief Associated with control routine for con.-diff.(in)stat. solvers,
 
+     including instationary solvers based on
+
+     o one-step-theta time-integration scheme
+
+     o two-step BDF2 time-integration scheme 
+       (with potential one-step-theta start algorithm)
+
+     and stationary solver.
 
 <pre>
 Maintainer: Volker Gravemeier
@@ -78,14 +85,6 @@ public:
   */
   virtual ~CondifImplicitTimeInt();
 
-
-
-
-  /*!
-  \brief Create default parameter list
-
-  */
-  static void SetDefaults(ParameterList& params);
 
   /*!
   \brief Set the part of the righthandside belonging to the last

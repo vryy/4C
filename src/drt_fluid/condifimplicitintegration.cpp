@@ -1,13 +1,15 @@
 /*!----------------------------------------------------------------------
 \file condifimplicitintegration.cpp
-\brief Control routine for convection-diffusion time integration. Includes
+\brief Control routine for convection-diffusion (in)stationary solvers,
 
-     o Single step one-step-theta time integration
+     including instationary solvers based on
 
-     o Two step BDF2 Gear's methode (with optional one-step-theta
-                                     start step)
+     o one-step-theta time-integration scheme
 
+     o two-step BDF2 time-integration scheme 
+       (with potential one-step-theta start algorithm)
 
+     and stationary solver.
 
 <pre>
 Maintainer: Volker Gravemeier
@@ -818,38 +820,6 @@ void CondifImplicitTimeInt::ReadRestart(int step)
   reader.ReadVector(phinm_,"phinm");
   reader.ReadVector(phidtn_, "phidtn");
 }
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- |  set default parameter list (static/public)                  vg 05/07|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void CondifImplicitTimeInt::SetDefaults(ParameterList& params)
-{
-  // number of degrees of freedom
-  // -------------------------------------------------- time integration
-  // timestepsize
-  params.set<double>           ("time step size"           ,0.01);
-  // max. sim. time
-  params.set<double>           ("total time"               ,0.0);
-  // parameter for time-integration
-  params.set<double>           ("theta"                    ,0.6667);
-  // which kind of time-integration
-  params.set<FLUID_TIMEINTTYPE>("time int algo"            ,timeint_one_step_theta);
-  // bound for the number of timesteps
-  params.set<int>              ("max number timesteps"     ,0);
-  // number of steps with start algorithm
-  params.set<int>              ("number of start steps"    ,0);
-  // parameter for start algo
-  params.set<double>           ("start theta"              ,0.6667);
-
-  return;
-}
-
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

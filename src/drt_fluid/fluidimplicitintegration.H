@@ -1,8 +1,15 @@
 /*!----------------------------------------------------------------------
 \file fluidimplicitintegration.H
-\brief Control routine for fluid time integration. Associated with
-       fluidimplicitintegration.cpp
+\brief Associated with control routine for fluid (in)stationary solvers,
 
+     including instationary solvers based on
+
+     o one-step-theta time-integration scheme
+
+     o two-step BDF2 time-integration scheme 
+       (with potential one-step-theta start algorithm)
+
+     and stationary solver.
 
 <pre>
 Maintainer: Peter Gamnitzer
@@ -79,12 +86,6 @@ public:
   */
   virtual ~FluidImplicitTimeInt();
 
-
-  /*!
-  \brief Create default parameter list
-
-  */
-  static void SetDefaults(ParameterList& params);
 
   /*!
   \brief do explicit predictor step to start nonlinear iteration from
