@@ -107,9 +107,10 @@ actdisc_(discr)
 		ManageIDs(p1,minMonitorID_,maxMonitorID_,numMonitorID_);
 		// sum up initial values
 		monitorvalues_=rcp(new Epetra_SerialDenseVector(numMonitorID_));
-		monitorvalues_->Scale(0.0);
-		SynchronizeSumConstraint(p1,monitorvalues_,"computed volume",numMonitorID_,minMonitorID_);
-		SynchronizeSumConstraint(p1,monitorvalues_,"computed area",numMonitorID_,minMonitorID_);
+		initialmonvalues_=rcp(new Epetra_SerialDenseVector(numMonitorID_));
+		initialmonvalues_->Scale(0.0);
+		SynchronizeSumConstraint(p1,initialmonvalues_,"computed volume",numMonitorID_,minMonitorID_);
+		SynchronizeSumConstraint(p1,initialmonvalues_,"computed area",numMonitorID_,minMonitorID_);
 	}
 	return;
 }
@@ -290,7 +291,8 @@ void ConstrManager::PrintMonitorValues()
 {
 	for (int i = 0; i < numMonitorID_; ++i) 
 	{
-		printf("Monitor value %2d: %10.5e\n",i+minMonitorID_,(*monitorvalues_)[i]);
+		printf("Monitor value %2d: %10.5e (%5.2f%% of initial value)\n",i+minMonitorID_,(*monitorvalues_)[i],((*monitorvalues_)[i])*100/((*initialmonvalues_)[i]));
+		
 	}
 	
 	return;

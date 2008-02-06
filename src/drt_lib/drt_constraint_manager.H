@@ -253,6 +253,7 @@ private:
 	RefCountPtr<Epetra_SerialDenseVector> actvalues_;
 	RefCountPtr<Epetra_SerialDenseVector> constrainterr_;
 	RefCountPtr<Epetra_SerialDenseVector> monitorvalues_;
+	RefCountPtr<Epetra_SerialDenseVector> initialmonvalues_;
 	int minConstrID_;
 	int maxConstrID_;
 	int numConstrID_;
