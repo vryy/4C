@@ -3474,11 +3474,11 @@ void Intersection::addCellsToBoundaryIntCellsMap(
     
     
   
-    printf("i length = %d\n", domainCoord.size());
-    printf("j length = %d\n", domainCoord[0].size());
-    for(int i = 0; i < 6; i++)
-    	for(int j = 0; j < 3; j++)
-    		printf("vector = %f\n ", domainCoord[i][j]);
+//    printf("i length = %d\n", domainCoord.size());
+//    printf("j length = %d\n", domainCoord[0].size());
+//    for(int i = 0; i < 6; i++)
+//    	for(int j = 0; j < 3; j++)
+//    		printf("vector = %f\n ", domainCoord[i][j]);
     
     
     // store corner node
@@ -3496,9 +3496,9 @@ void Intersection::addCellsToBoundaryIntCellsMap(
     // elecoord = boundary elecoord
     checkPositionWithinSurfaceElement(intersectingCutterElements_[faceMarker], physCoord, eleCoord);
     
-    cout << "physcood = " << physCoord << "    ";
-    cout << "elecood = " << eleCoord << endl;
-    cout << "cornerIndex = " << cornerIndex << endl;
+//    cout << "physcood = " << physCoord << "    ";
+//    cout << "elecood = " << eleCoord << endl;
+//    cout << "cornerIndex = " << cornerIndex << endl;
     boundaryCoord[cornerIndex][0] = eleCoord(0);
     boundaryCoord[cornerIndex][1] = eleCoord(1);
     boundaryCoord[cornerIndex][2] = 0.0;
@@ -3522,8 +3522,8 @@ void Intersection::addCellsToBoundaryIntCellsMap(
     // elecoord = boundary elecoord
     checkPositionWithinSurfaceElement(intersectingCutterElements_[faceMarker], physCoord, eleCoord);
     
-    cout << "physcood = " << physCoord << "    ";
-    cout << "elecood = " << eleCoord << endl;
+//    cout << "physcood = " << physCoord << "    ";
+//    cout << "elecood = " << eleCoord << endl;
     
     boundaryCoord[cornerIndex+3][0] = eleCoord(0);
     boundaryCoord[cornerIndex+3][1] = eleCoord(1);
