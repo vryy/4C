@@ -242,8 +242,8 @@ void CONTACT::Interface::FillComplete()
   
   // FIXME - test for splitting of global matrices
   // (as the active set strategy is not yet implemented, these are dummies)
-  // activenodes_=snoderowmap_;
-  // activedofs_=sdofrowmap_;
+  activenodes_=snoderowmap_;
+  activedofs_=sdofrowmap_;
   
   return;
 }
@@ -1136,6 +1136,10 @@ void CONTACT::Interface::Assemble_DMG(Epetra_CrsMatrix& Dglobal,
 void CONTACT::Interface::Assemble_NT(Epetra_CrsMatrix& Nglobal,
 																	   Epetra_CrsMatrix& Tglobal)
 {
+	// nothing to do if no active nodes
+	if (activenodes_==null)
+		return;
+	
 	// loop over all active slave nodes of the interface
 	for (int i=0;i<activenodes_->NumMyElements();++i)
 	{

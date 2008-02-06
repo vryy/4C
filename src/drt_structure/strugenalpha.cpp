@@ -15,15 +15,13 @@ Maintainer: Michael Gee
 #include "strugenalpha.H"
 #include "iostream"
 
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 03/07|
  *----------------------------------------------------------------------*/
 StruGenAlpha::StruGenAlpha(ParameterList& params,
                            DRT::Discretization& dis,
                            LINALG::Solver& solver,
-                           IO::DiscretizationWriter& output,
-                           bool init) :
+                           IO::DiscretizationWriter& output) :
 params_(params),
 discret_(dis),
 solver_(solver),
@@ -31,220 +29,217 @@ output_(output),
 myrank_(discret_.Comm().MyPID()),
 maxentriesperrow_(81)
 {
-  if (init)
+  // -------------------------------------------------------------------
+  // get some parameters from parameter list
+  // -------------------------------------------------------------------
+  double time    = params_.get<double>("total time"      ,0.0);
+  double dt      = params_.get<double>("delta time"      ,0.01);
+  bool damping   = params_.get<bool>  ("damping"         ,false);
+  double kdamp   = params_.get<double>("damping factor K",0.0);
+  double mdamp   = params_.get<double>("damping factor M",0.0);
+  int step       = params_.get<int>   ("step"            ,0);
+  bool outerr    = params_.get<bool>  ("print to err"    ,false);
+  FILE* errfile  = params_.get<FILE*> ("err file"        ,NULL);
+  if (!errfile) outerr = false;
+
+  // -------------------------------------------------------------------
+  // get a vector layout from the discretization to construct matching
+  // vectors and matrices
+  // -------------------------------------------------------------------
+  if (!discret_.Filled()) discret_.FillComplete();
+  const Epetra_Map* dofrowmap = discret_.DofRowMap();
+
+  // -------------------------------------------------------------------
+  // create empty matrices
+  // -------------------------------------------------------------------
+  stiff_ = LINALG::CreateMatrix(*dofrowmap,81);
+  mass_  = LINALG::CreateMatrix(*dofrowmap,81);
+  if (damping) damp_ = LINALG::CreateMatrix(*dofrowmap,81);
+
+  // -------------------------------------------------------------------
+  // create empty vectors
+  // -------------------------------------------------------------------
+  // a zero vector of full length
+  zeros_ = LINALG::CreateVector(*dofrowmap,true);
+  // vector of full length; for each component
+  //                /  1   i-th DOF is supported, ie Dirichlet BC
+  //    vector_i =  <
+  //                \  0   i-th DOF is free
+  dirichtoggle_ = LINALG::CreateVector(*dofrowmap,true);
+  // opposite of dirichtoggle vector, ie for each component
+  //                /  0   i-th DOF is supported, ie Dirichlet BC
+  //    vector_i =  <
+  //                \  1   i-th DOF is free
+  invtoggle_ = LINALG::CreateVector(*dofrowmap,false);
+
+  // displacements D_{n} at last time
+  dis_ = LINALG::CreateVector(*dofrowmap,true);
+  // velocities V_{n} at last time
+  vel_ = LINALG::CreateVector(*dofrowmap,true);
+  // accelerations A_{n} at last time
+  acc_ = LINALG::CreateVector(*dofrowmap,true);
+
+  // displacements D_{n+1} at new time
+  disn_ = LINALG::CreateVector(*dofrowmap,true);
+  // velocities V_{n+1} at new time
+  veln_ = LINALG::CreateVector(*dofrowmap,true);
+  // accelerations A_{n+1} at new time
+  accn_ = LINALG::CreateVector(*dofrowmap,true);
+
+  // mid-displacements D_{n+1-alpha_f}
+  dism_ = LINALG::CreateVector(*dofrowmap,true);
+  // mid-velocities V_{n+1-alpha_f}
+  velm_ = LINALG::CreateVector(*dofrowmap,true);
+  // mid-accelerations A_{n+1-alpha_m}
+  accm_ = LINALG::CreateVector(*dofrowmap,true);
+
+  // iterative displacement increments IncD_{n+1}
+  // also known as residual displacements
+  disi_ = LINALG::CreateVector(*dofrowmap,true);
+
+  // internal force vector F_int at different times
+  fint_ = LINALG::CreateVector(*dofrowmap,true);
+  // inertial force vector F_inert at different times
+  finert_ = LINALG::CreateVector(*dofrowmap,true);
+  // viscous force vector F_visc at different times
+  fvisc_ = LINALG::CreateVector(*dofrowmap,true);
+  // external force vector F_ext at last times
+  fext_ = LINALG::CreateVector(*dofrowmap,true);
+  // external mid-force vector F_{ext;n+1-alpha_f}
+  fextm_ = LINALG::CreateVector(*dofrowmap,true);
+  // external force vector F_{n+1} at new time
+  fextn_ = LINALG::CreateVector(*dofrowmap,true);
+
+  // dynamic force residual at mid-time R_{n+1-alpha}
+  // also known as out-of-balance-force
+  fresm_ = LINALG::CreateVector(*dofrowmap,false);
+
+  //-------------------------------------------- calculate external forces
   {
-    // -------------------------------------------------------------------
-    // get some parameters from parameter list
-    // -------------------------------------------------------------------
-    double time    = params_.get<double>("total time"      ,0.0);
-    double dt      = params_.get<double>("delta time"      ,0.01);
-    bool damping   = params_.get<bool>  ("damping"         ,false);
-    double kdamp   = params_.get<double>("damping factor K",0.0);
-    double mdamp   = params_.get<double>("damping factor M",0.0);
-    int step       = params_.get<int>   ("step"            ,0);
-    bool outerr    = params_.get<bool>  ("print to err"    ,false);
-    FILE* errfile  = params_.get<FILE*> ("err file"        ,NULL);
-    if (!errfile) outerr = false;
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_eleload");
+    // choose what to assemble
+    p.set("assemble matrix 1",false);
+    p.set("assemble matrix 2",false);
+    p.set("assemble vector 1",true);
+    p.set("assemble vector 2",false);
+    p.set("assemble vector 3",false);
+    // other parameters needed by the elements
+    p.set("total time",time);
+    p.set("delta time",dt);
 
-    // -------------------------------------------------------------------
-    // get a vector layout from the discretization to construct matching
-    // vectors and matrices
-    // -------------------------------------------------------------------
-    if (!discret_.Filled()) discret_.FillComplete();
-    const Epetra_Map* dofrowmap = discret_.DofRowMap();
+    // set vector values needed by elements
+    discret_.ClearState();
+    discret_.SetState("displacement",dis_);
+    // predicted dirichlet values
+    // dis then also holds prescribed new dirichlet displacements
+    discret_.EvaluateDirichlet(p,*dis_,*dirichtoggle_);
+    discret_.ClearState();
+    discret_.SetState("displacement",dis_);
+    // predicted rhs
+    discret_.EvaluateNeumann(p,*fext_);
+    discret_.ClearState();
+  }
 
-    // -------------------------------------------------------------------
-    // create empty matrices
-    // -------------------------------------------------------------------
-    stiff_ = LINALG::CreateMatrix(*dofrowmap,81);
-    mass_  = LINALG::CreateMatrix(*dofrowmap,81);
-    if (damping) damp_ = LINALG::CreateMatrix(*dofrowmap,81);
+  //----------------------- compute an inverse of the dirichtoggle vector
+  invtoggle_->PutScalar(1.0);
+  invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
 
-    // -------------------------------------------------------------------
-    // create empty vectors
-    // -------------------------------------------------------------------
-    // a zero vector of full length
-    zeros_ = LINALG::CreateVector(*dofrowmap,true);
-    // vector of full length; for each component
-    //                /  1   i-th DOF is supported, ie Dirichlet BC
-    //    vector_i =  <
-    //                \  0   i-th DOF is free
-    dirichtoggle_ = LINALG::CreateVector(*dofrowmap,true);
-    // opposite of dirichtoggle vector, ie for each component
-    //                /  0   i-th DOF is supported, ie Dirichlet BC
-    //    vector_i =  <
-    //                \  1   i-th DOF is free
-    invtoggle_ = LINALG::CreateVector(*dofrowmap,false);
+  // -------------------------------------------------------------------
+  // call elements to calculate stiffness and mass
+  // -------------------------------------------------------------------
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_nlnstiffmass");
+    // choose what to assemble
+    p.set("assemble matrix 1",true);
+    p.set("assemble matrix 2",true);
+    p.set("assemble vector 1",true);
+    p.set("assemble vector 2",false);
+    p.set("assemble vector 3",false);
+    // other parameters that might be needed by the elements
+    p.set("total time",time);
+    p.set("delta time",dt);
+    // set vector values needed by elements
+    discret_.ClearState();
+    discret_.SetState("residual displacement",zeros_);
+    discret_.SetState("displacement",dis_);
+    //discret_.SetState("velocity",vel_); // not used at the moment
+    discret_.Evaluate(p,stiff_,mass_,fint_,null,null);
+    discret_.ClearState();
 
-    // displacements D_{n} at last time
-    dis_ = LINALG::CreateVector(*dofrowmap,true);
-    // velocities V_{n} at last time
-    vel_ = LINALG::CreateVector(*dofrowmap,true);
-    // accelerations A_{n} at last time
-    acc_ = LINALG::CreateVector(*dofrowmap,true);
+    //initialize Constraint Manager
+    ConstrMan_=rcp(new ConstrManager(discret_, dis_));
 
-    // displacements D_{n+1} at new time
-    disn_ = LINALG::CreateVector(*dofrowmap,true);
-    // velocities V_{n+1} at new time
-    veln_ = LINALG::CreateVector(*dofrowmap,true);
-    // accelerations A_{n+1} at new time
-    accn_ = LINALG::CreateVector(*dofrowmap,true);
-
-    // mid-displacements D_{n+1-alpha_f}
-    dism_ = LINALG::CreateVector(*dofrowmap,true);
-    // mid-velocities V_{n+1-alpha_f}
-    velm_ = LINALG::CreateVector(*dofrowmap,true);
-    // mid-accelerations A_{n+1-alpha_m}
-    accm_ = LINALG::CreateVector(*dofrowmap,true);
-
-    // iterative displacement increments IncD_{n+1}
-    // also known as residual displacements
-    disi_ = LINALG::CreateVector(*dofrowmap,true);
-
-    // internal force vector F_int at different times
-    fint_ = LINALG::CreateVector(*dofrowmap,true);
-    // inertial force vector F_inert at different times
-    finert_ = LINALG::CreateVector(*dofrowmap,true);
-    // viscous force vector F_visc at different times
-    fvisc_ = LINALG::CreateVector(*dofrowmap,true);
-    // external force vector F_ext at last times
-    fext_ = LINALG::CreateVector(*dofrowmap,true);
-    // external mid-force vector F_{ext;n+1-alpha_f}
-    fextm_ = LINALG::CreateVector(*dofrowmap,true);
-    // external force vector F_{n+1} at new time
-    fextn_ = LINALG::CreateVector(*dofrowmap,true);
-
-    // dynamic force residual at mid-time R_{n+1-alpha}
-    // also known as out-of-balance-force
-    fresm_ = LINALG::CreateVector(*dofrowmap,false);
-
-    //-------------------------------------------- calculate external forces
+    // Check for surface stress conditions due to interfacial phenomena
+    vector<DRT::Condition*> surfstresscond(0);
+    discret_.GetCondition("SurfaceStress",surfstresscond);
+    if (surfstresscond.size())
     {
-      ParameterList p;
-      // action for elements
-      p.set("action","calc_struct_eleload");
-      // choose what to assemble
-      p.set("assemble matrix 1",false);
-      p.set("assemble matrix 2",false);
-      p.set("assemble vector 1",true);
-      p.set("assemble vector 2",false);
-      p.set("assemble vector 3",false);
-      // other parameters needed by the elements
-      p.set("total time",time);
-      p.set("delta time",dt);
-
-      // set vector values needed by elements
-      discret_.ClearState();
-      discret_.SetState("displacement",dis_);
-      // predicted dirichlet values
-      // dis then also holds prescribed new dirichlet displacements
-      discret_.EvaluateDirichlet(p,*dis_,*dirichtoggle_);
-      discret_.ClearState();
-      discret_.SetState("displacement",dis_);
-      // predicted rhs
-      discret_.EvaluateNeumann(p,*fext_);
-      discret_.ClearState();
-    }
-
-    //----------------------- compute an inverse of the dirichtoggle vector
-    invtoggle_->PutScalar(1.0);
-    invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
-
-    // -------------------------------------------------------------------
-    // call elements to calculate stiffness and mass
-    // -------------------------------------------------------------------
-    {
-      // create the parameters for the discretization
-      ParameterList p;
-      // action for elements
-      p.set("action","calc_struct_nlnstiffmass");
-      // choose what to assemble
-      p.set("assemble matrix 1",true);
-      p.set("assemble matrix 2",true);
-      p.set("assemble vector 1",true);
-      p.set("assemble vector 2",false);
-      p.set("assemble vector 3",false);
-      // other parameters that might be needed by the elements
-      p.set("total time",time);
-      p.set("delta time",dt);
-      // set vector values needed by elements
-      discret_.ClearState();
-      discret_.SetState("residual displacement",zeros_);
-      discret_.SetState("displacement",dis_);
-      //discret_.SetState("velocity",vel_); // not used at the moment
-      discret_.Evaluate(p,stiff_,mass_,fint_,null,null);
-      discret_.ClearState();
-
-      //initialize Constraint Manager
-      ConstrMan_=rcp(new ConstrManager(discret_, dis_));
-
-      // Check for surface stress conditions due to interfacial phenomena
-      vector<DRT::Condition*> surfstresscond(0);
-      discret_.GetCondition("SurfaceStress",surfstresscond);
-      if (surfstresscond.size())
+      // Determine local number of associated surface elements
+      int localnumsurf=0;
+      for (unsigned i=0;i<surfstresscond.size();++i)
       {
-        // Determine local number of associated surface elements
-        int localnumsurf=0;
-        for (unsigned i=0;i<surfstresscond.size();++i)
-        {
-          localnumsurf+=surfstresscond[i]->Geometry().size();
-        }
-
-        // Create a map of the associated surface elements
-        // This is needed because the SurfStressManager creates
-        // several vectors containing history variables of the
-        // corresponding surface elements. These vectors need to be
-        // distributed over the processors in the same way as the
-        // surface elements are.
-
-        int localsurf[localnumsurf];
-        int count=0;
-        for (unsigned i=0;i<surfstresscond.size();++i)
-        {
-          for (map<int,RefCountPtr<DRT::Element> >::iterator iter=surfstresscond[i]->Geometry().begin();
-               iter!=surfstresscond[i]->Geometry().end();++iter)
-          {
-            localsurf[count]=iter->first;
-            count++;
-          }
-        }
-        Epetra_Map surfmap(-1, localnumsurf, localsurf, 0, discret_.Comm());
-
-        int numsurf;
-        discret_.Comm().SumAll(&localnumsurf, &numsurf, 1);
-        surf_stress_man_=rcp(new DRT::SurfStressManager(discret_, numsurf, surfmap));
+        localnumsurf+=surfstresscond[i]->Geometry().size();
       }
+
+      // Create a map of the associated surface elements
+      // This is needed because the SurfStressManager creates
+      // several vectors containing history variables of the
+      // corresponding surface elements. These vectors need to be
+      // distributed over the processors in the same way as the
+      // surface elements are.
+
+      int localsurf[localnumsurf];
+      int count=0;
+      for (unsigned i=0;i<surfstresscond.size();++i)
+      {
+        for (map<int,RefCountPtr<DRT::Element> >::iterator iter=surfstresscond[i]->Geometry().begin();
+             iter!=surfstresscond[i]->Geometry().end();++iter)
+        {
+          localsurf[count]=iter->first;
+          count++;
+        }
+      }
+      Epetra_Map surfmap(-1, localnumsurf, localsurf, 0, discret_.Comm());
+
+      int numsurf;
+      discret_.Comm().SumAll(&localnumsurf, &numsurf, 1);
+      surf_stress_man_=rcp(new DRT::SurfStressManager(discret_, numsurf, surfmap));
     }
+  }
 
-    // close mass matrix
-    LINALG::Complete(*mass_);
-    maxentriesperrow_ = mass_->MaxNumEntries();
+  // close mass matrix
+  LINALG::Complete(*mass_);
+  maxentriesperrow_ = mass_->MaxNumEntries();
 
-    // build damping matrix if desired
-    if (damping)
-    {
-      LINALG::Complete(*stiff_);
-      LINALG::Add(*stiff_,false,kdamp,*damp_,0.0);
-      LINALG::Add(*mass_,false,mdamp,*damp_,1.0);
-      LINALG::Complete(*damp_);
-      stiff_ = null;
-    }
+  // build damping matrix if desired
+  if (damping)
+  {
+    LINALG::Complete(*stiff_);
+    LINALG::Add(*stiff_,false,kdamp,*damp_,0.0);
+    LINALG::Add(*mass_,false,mdamp,*damp_,1.0);
+    LINALG::Complete(*damp_);
+    stiff_ = null;
+  }
 
-    //--------------------------- calculate consistent initial accelerations
-    {
-      RefCountPtr<Epetra_Vector> rhs = LINALG::CreateVector(*dofrowmap,true);
-      if (damping) damp_->Multiply(false,*vel_,*rhs);
-      rhs->Update(-1.0,*fint_,1.0,*fext_,-1.0);
-      Epetra_Vector rhscopy(*rhs);
-      rhs->Multiply(1.0,*invtoggle_,rhscopy,0.0);
-      solver.Solve(mass_,acc_,rhs,true,true);
-    }
+  //--------------------------- calculate consistent initial accelerations
+  {
+    RefCountPtr<Epetra_Vector> rhs = LINALG::CreateVector(*dofrowmap,true);
+    if (damping) damp_->Multiply(false,*vel_,*rhs);
+    rhs->Update(-1.0,*fint_,1.0,*fext_,-1.0);
+    Epetra_Vector rhscopy(*rhs);
+    rhs->Multiply(1.0,*invtoggle_,rhscopy,0.0);
+    solver.Solve(mass_,acc_,rhs,true,true);
+  }
 
-    //------------------------------------------------------ time step index
-    step = 0;
-    params_.set<int>("step",step);
+  //------------------------------------------------------ time step index
+  step = 0;
+  params_.set<int>("step",step);
 
-  } // end of if (init)
   return;
 } // StruGenAlpha::StruGenAlpha
 

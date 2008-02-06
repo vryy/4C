@@ -240,7 +240,7 @@ void CONTACT::Manager::Initialize()
 	  interface_[i]->Initialize();
   }
 	
-	// (re)setup global Epetra_CrsMatrices and Epetra_Vectors
+	// (re)setup global Mortar Epetra_CrsMatrices and Epetra_Vectors
 	D_ = LINALG::CreateMatrix(*gsdofrowmap_,10);
 	M_ = LINALG::CreateMatrix(*gsdofrowmap_,100);
 	g_ = LINALG::CreateVector(*gsnoderowmap_,true);
@@ -251,6 +251,17 @@ void CONTACT::Manager::Initialize()
 		gactivenodes_ = LINALG::MergeMap(gactivenodes_,interface_[i]->ActiveNodes());
 		gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs());
 	}
+	
+	// create empty maps, if active set = null
+	if (gactivenodes_==null)
+	{
+		gactivenodes_ = rcp(new Epetra_Map(0,0,Comm()));
+		gactivedofs_ = rcp(new Epetra_Map(0,0,Comm()));
+	}
+	
+	// (re)setup global normal and tangent matrices
+	N_ = LINALG::CreateMatrix(*gactivenodes_,3);
+	T_ = LINALG::CreateMatrix(*gactivenodes_,3);
 	
   return;
 }
@@ -292,18 +303,12 @@ void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
 	/* build global matrix N with normal vectors of active nodes          */
 	/* and global matrix T with tangent vectors of active nodes           */
 	/**********************************************************************/
-	if (gactivenodes_!=null)
-	{ 
-		N_ = LINALG::CreateMatrix(*gactivenodes_,3);
-	  T_ = LINALG::CreateMatrix(*gactivenodes_,3);
+	for (int i=0; i<(int)interface_.size(); ++i)
+	  interface_[i]->Assemble_NT(*N_,*T_);
 	  
-	  for (int i=0; i<(int)interface_.size(); ++i)
-	    interface_[i]->Assemble_NT(*N_,*T_);
-	  
-	  // FillComplete() global matrices N and T
-	  LINALG::Complete(*N_,*gactivedofs_,*gactivenodes_);
-	  LINALG::Complete(*T_,*gactivedofs_,*gactivenodes_);
-	}
+	// FillComplete() global matrices N and T
+	LINALG::Complete(*N_,*gactivedofs_,*gactivenodes_);
+	LINALG::Complete(*T_,*gactivedofs_,*gactivenodes_);
 	
 	/**********************************************************************/
 	/* Multiply Mortar matrices: M^ = inv(D) * M                          */
@@ -312,12 +317,18 @@ void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
 	RCP<Epetra_Vector> diag = LINALG::CreateVector(*gsdofrowmap_,true);
 	int err = 0;
 	
+	// extract diagonal of invD into diag
 	invD->ExtractDiagonalCopy(*diag);
+	
+	// scalar inversion of diagonal values
 	err = diag->Reciprocal(*diag);
 	if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+	
+	// re-insert inverted diagonal into invD
 	err = invD->ReplaceDiagonalValues(*diag);
 	if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
 	
+	// do the multiplication M^ = inv(D) * M
 	RCP<Epetra_CrsMatrix> Mbar = LINALG::MatMatMult(*invD,false,*M_,false);
 	
 	/**********************************************************************/
@@ -327,6 +338,7 @@ void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
 	RCP<Epetra_CrsMatrix> Kss, Ksm, Ksn, Kms, Kmm, Kmn, Kns, Knm, Knn;
 	
 	// temporarily we need the blocks K_sm_sm, K_sm_n, K_n_sm
+	// (FIXME: because a direct SplitMatrix3x3 is still missing!) 
 	RCP<Epetra_CrsMatrix> Ksmsm, Ksmn, Knsm;
 	
 	// we also need the combined sm rowmap
@@ -336,20 +348,19 @@ void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
 	RCP<Epetra_Map> gndofs;
 	
 	// some temporary RCPs
-	RCP<Epetra_Map> tempmap = null;
-	RCP<Epetra_CrsMatrix> tempmtx1 = null;
-	RCP<Epetra_CrsMatrix> tempmtx2 = null;
+	RCP<Epetra_Map> tempmap;
+	RCP<Epetra_CrsMatrix> tempmtx;
 	
 	// split into slave/master part + structure part
 	LINALG::SplitMatrix2x2(Kteff,gsmdofs,gndofs,Ksmsm,Ksmn,Knsm,Knn);
 	
 	// further splits into slave part + master part
 	LINALG::SplitMatrix2x2(Ksmsm,gsdofrowmap_,gmdofrowmap_,Kss,Ksm,Kms,Kmm);
-	LINALG::SplitMatrix2x2(Ksmn,gsdofrowmap_,gmdofrowmap_,gndofs,tempmap,Ksn,tempmtx1,Kmn,tempmtx2);
-	LINALG::SplitMatrix2x2(Knsm,gndofs,tempmap,gsdofrowmap_,gmdofrowmap_,Kns,Knm,tempmtx1,tempmtx2);
+	LINALG::SplitMatrix2x2(Ksmn,gsdofrowmap_,gmdofrowmap_,gndofs,tempmap,Ksn,tempmtx,Kmn,tempmtx);
+	LINALG::SplitMatrix2x2(Knsm,gndofs,tempmap,gsdofrowmap_,gmdofrowmap_,Kns,Knm,tempmtx,tempmtx);
 	
 	// output for checking everything
-	if(Kteff->Comm().MyPID()==0)
+	if(Comm().MyPID()==0)
 	{
 		cout << endl << "*****************" << endl;
 		cout << "K:   " << Kteff->NumGlobalRows() << " x " << Kteff->NumGlobalCols() << endl;
@@ -395,7 +406,7 @@ void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
 	RCP<Epetra_Vector> fn = rcp(f3);
 	
 	// output for checking everything
-	if(feff->Comm().MyPID()==0)
+	if(Comm().MyPID()==0)
 	{
 		cout << endl << "**********" << endl;
 		cout << "f:  " << feff->GlobalLength() << endl;
@@ -408,7 +419,7 @@ void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
 	/**********************************************************************/
 	/* Apply basis transformation to K                                    */
 	/**********************************************************************/
-	// define temporaray RCP mod
+	// define temporary RCP mod
 	RCP<Epetra_CrsMatrix> mod;
 	
 	// Kss: nothing to do
@@ -464,7 +475,7 @@ void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
 	RCP<Epetra_CrsMatrix> Knn_mod = Knn;
 	
 	// output for checking everything
-	if(Kteff->Comm().MyPID()==0)
+	if(Comm().MyPID()==0)
 	{
 		cout << endl << "*****************" << endl;
 		cout << "K_mod:   " << Kteff->NumGlobalRows() << " x " << Kteff->NumGlobalCols() << endl;
@@ -496,14 +507,15 @@ void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
 	RCP<Epetra_Vector> fs_mod = fs;
 	
 	// fm: add T(Mbar)*fs
-	RCP<Epetra_Vector> fm_mod = fm;
+	RCP<Epetra_Vector> fm_mod = rcp(new Epetra_Vector(*gmdofrowmap_));
 	Mbar->Multiply(true,*fs,*fm_mod);
-
+	fm_mod->Update(1.0,*fm,1.0);
+	
 	// fn: nothing to be done
 	RCP<Epetra_Vector> fn_mod = fn;
 	
 	// output for checking everything
-	if(feff->Comm().MyPID()==0)
+	if(Comm().MyPID()==0)
 	{
 		cout << endl << "**********" << endl;
 		cout << "f_mod:  " << feff->GlobalLength() << endl;
@@ -513,66 +525,179 @@ void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
 		cout << "**********" << endl;
 	}
 	
-	//exit(0);
-	/*
-#ifdef DEBUG
-
-	// Testing of global matrices and inverse
-	 * 
-	cout << *D_;
-	cout << *M_;
-	cout << *g_;
-	cout << *N_;
-	cout << *T_;
-	cout << *invD;
-	cout << *Mbar;
-
-	// Testing of LINALG::Transpose
-	 * 
-	cout << *M_;
-	cout << M_->RangeMap();
-	cout << M_->DomainMap();
-	RCP<Epetra_CrsMatrix> transM = LINALG::Transpose(*M_);
-	cout << *transM;
-	cout << transM->RangeMap();
-	cout << transM->DomainMap();
-
-	// Testing of RemoteIDList function
-	cout << *gsnoderowmap_;
-	int PID = 0;
-	int LID = 0;
-	const int GID = 312;
-	gsnoderowmap_->RemoteIDList(1,&GID,&PID,&LID);
-	cout << "Global ID: " << GID << endl;
-	cout << "Local ID : " << LID << endl;
-	cout << "Proc ID  : " << PID << endl;
-
-	// Testing of LINALG::SplitMatrix2x2
-	RCP<Epetra_CrsMatrix> A11;
-	RCP<Epetra_CrsMatrix> A12;
-	RCP<Epetra_CrsMatrix> A21;
-	RCP<Epetra_CrsMatrix> A22;
-	RCP<Epetra_Map> testmap = null;
-	RCP<Epetra_Map> testmap2 = null;
-	RCP<Epetra_Map> full = rcp(new Epetra_Map(Kteff->DomainMap()));
-	LINALG::SplitMatrix2x2(Kteff,full,testmap,full,testmap2,A11,A12,A21,A22);
+	/**********************************************************************/
+	/* Split slave quantities into active / inactive                      */
+	/**********************************************************************/
+	// we want to split Kss_mod into 2 groups a,i = 4 blocks
+	RCP<Epetra_CrsMatrix> Kaa_mod, Kai_mod, Kia_mod, Kii_mod;
 	
-	if(Kteff->Comm().MyPID()==0)
+	// we want to split Ksn_mod / Ksm_mod into 2 groups a,i = 2 blocks
+	RCP<Epetra_CrsMatrix> Kan_mod, Kin_mod, Kam_mod, Kim_mod;
+		
+	// we will get the i rowmap as a by-product
+	RCP<Epetra_Map> gidofs;
+		
+	// do the splitting
+	LINALG::SplitMatrix2x2(Kss_mod,gactivedofs_,gidofs,gactivedofs_,gidofs,Kaa_mod,Kai_mod,Kia_mod,Kii_mod);
+	LINALG::SplitMatrix2x2(Ksn_mod,gactivedofs_,gidofs,gndofs,tempmap,Kan_mod,tempmtx,Kin_mod,tempmtx);
+	LINALG::SplitMatrix2x2(Ksm_mod,gactivedofs_,gidofs,gmdofrowmap_,tempmap,Kam_mod,tempmtx,Kim_mod,tempmtx);
+	
+	// output for checking everything
+	if(Comm().MyPID()==0)
 	{
 		cout << endl << "*****************" << endl;
-		cout << "K:   " << Kteff->NumGlobalRows() << " x " << Kteff->NumGlobalCols() << endl;
-		if (A11!=null) cout << "A11: " << A11->NumGlobalRows() << " x " << A11->NumGlobalCols() << endl;
-		else cout << "A11: null" << endl;
-		if (A12!=null) cout << "A12: " << A12->NumGlobalRows() << " x " << A12->NumGlobalCols() << endl;
-		else cout << "A11: null" << endl;
-		if (A21!=null) cout << "A21: " << A21->NumGlobalRows() << " x " << A21->NumGlobalCols() << endl;
-		else cout << "A21: null" << endl;
-		if (A22!=null) cout << "A22: " << A22->NumGlobalRows() << " x " << A22->NumGlobalCols() << endl;
-		else cout << "A22: null" << endl;
+		cout << "Kss_mod: " << Kss_mod->NumGlobalRows() << " x " << Kss_mod->NumGlobalCols() << endl;
+		if (Kaa_mod!=null) cout << "Kaa_mod: " << Kaa_mod->NumGlobalRows() << " x " << Kaa_mod->NumGlobalCols() << endl;
+		else cout << "Kaa_mod: null" << endl;
+		if (Kai_mod!=null) cout << "Kai_mod: " << Kai_mod->NumGlobalRows() << " x " << Kai_mod->NumGlobalCols() << endl;
+		else cout << "Kai_mod: null" << endl;
+		if (Kia_mod!=null) cout << "Kia_mod: " << Kia_mod->NumGlobalRows() << " x " << Kia_mod->NumGlobalCols() << endl;
+		else cout << "Kia_mod: null" << endl;
+		if (Kii_mod!=null) cout << "Kii_mod: " << Kii_mod->NumGlobalRows() << " x " << Kii_mod->NumGlobalCols() << endl;
+		else cout << "Kii_mod: null" << endl;
+		cout << "*****************" << endl;
+		
+		cout << endl << "*****************" << endl;
+		cout << "Ksn_mod: " << Ksn_mod->NumGlobalRows() << " x " << Ksn_mod->NumGlobalCols() << endl;
+		if (Kan_mod!=null) cout << "Kan_mod: " << Kan_mod->NumGlobalRows() << " x " << Kan_mod->NumGlobalCols() << endl;
+		else cout << "Kan_mod: null" << endl;
+		if (Kin_mod!=null) cout << "Kin_mod: " << Kin_mod->NumGlobalRows() << " x " << Kin_mod->NumGlobalCols() << endl;
+		else cout << "Kin_mod: null" << endl;
+		cout << "*****************" << endl;
+		
+		cout << endl << "*****************" << endl;
+		cout << "Ksm_mod: " << Ksm_mod->NumGlobalRows() << " x " << Ksm_mod->NumGlobalCols() << endl;
+		if (Kam_mod!=null) cout << "Kam_mod: " << Kam_mod->NumGlobalRows() << " x " << Kam_mod->NumGlobalCols() << endl;
+		else cout << "Kam_mod: null" << endl;
+		if (Kim_mod!=null) cout << "Kim_mod: " << Kim_mod->NumGlobalRows() << " x " << Kim_mod->NumGlobalCols() << endl;
+		else cout << "Kim_mod: null" << endl;
 		cout << "*****************" << endl;
 	}
-#endif // #ifdef DEBUG
+	
+	// we want to split fs_mod into 2 groups a,i
+	RCP<Epetra_Vector> fa_mod, fi_mod;
+	
+	// do the vector splitting s -> a+i
+	if (!gidofs->NumGlobalElements())
+		fa_mod = rcp(new Epetra_Vector(*fs_mod));
+	else if (!gactivedofs_->NumGlobalElements())
+		fi_mod = rcp(new Epetra_Vector(*fs_mod));
+	else
+	{
+		Epetra_Vector* f4 = NULL;
+		Epetra_Vector* f5 = NULL;
+		LINALG::SplitVector(*fs_mod,*gactivedofs_,f4,*gidofs,f5);
+		RCP<Epetra_Vector> fa_mod = rcp(f4);
+		RCP<Epetra_Vector> fi_mod = rcp(f5);
+	}
+	
+	// output for checking everything
+	if(Comm().MyPID()==0)
+	{
+		cout << endl << "**********" << endl;
+		if (fs_mod!=null) cout << "fs_mod: " << fs_mod->GlobalLength() << endl;
+		else cout << "fs_mod: null" << endl;
+		if (fa_mod!=null) cout << "fa_mod: " << fa_mod->GlobalLength() << endl;
+		else cout << "fa_mod: null" << endl;
+		if (fi_mod!=null) cout << "fi_mod: " << fi_mod->GlobalLength() << endl;
+		else cout << "fi_mod: null" << endl;
+		cout << "**********" << endl;
+	}
+	
+	// do the multiplications with T-matrix
+	RCP<Epetra_CrsMatrix> TKan_mod, TKam_mod, TKai_mod, TKaa_mod;
+	RCP<Epetra_Vector> Tfa_mod;
+	
+	if(gactivedofs_->NumGlobalElements())
+	{
+		TKan_mod = LINALG::MatMatMult(*T_,false,*Kan_mod,false);
+		TKam_mod = LINALG::MatMatMult(*T_,false,*Kam_mod,false);
+		TKaa_mod = LINALG::MatMatMult(*T_,false,*Kaa_mod,false);
+		
+		if (gidofs->NumGlobalElements())
+			TKai_mod = LINALG::MatMatMult(*T_,false,*Kai_mod,false);
+		
+		Tfa_mod = rcp(new Epetra_Vector(T_->RowMap()));
+		T_->Multiply(false,*fa_mod,*Tfa_mod);
+	}
+	
+	// output for checking everything
+	if(Comm().MyPID()==0)
+	{
+		cout << endl << "*****************" << endl;
+		if (TKan_mod!=null) cout << "TKan_mod: " << TKan_mod->NumGlobalRows() << " x " << TKan_mod->NumGlobalCols() << endl;
+		else cout << "TKan_mod: null" << endl;
+		if (TKam_mod!=null) cout << "TKam_mod: " << TKam_mod->NumGlobalRows() << " x " << TKam_mod->NumGlobalCols() << endl;
+		else cout << "TKam_mod: null" << endl;
+		if (TKai_mod!=null) cout << "TKai_mod: " << TKai_mod->NumGlobalRows() << " x " << TKai_mod->NumGlobalCols() << endl;
+		else cout << "TKai_mod: null" << endl;
+		if (TKaa_mod!=null) cout << "TKaa_mod: " << TKaa_mod->NumGlobalRows() << " x " << TKaa_mod->NumGlobalCols() << endl;
+		else cout << "TKaa_mod: null" << endl;
+		cout << "*****************" << endl;
+		
+		cout << endl << "**********" << endl;
+		if (Tfa_mod!=null) cout << "Tfa_mod: " << Tfa_mod->GlobalLength() << endl;
+		else cout << "Tfa_mod: null" << endl;
+		cout << "**********" << endl;
+	}
+	
+	/**********************************************************************/
+	/* Global setup of Kteff_new, feff_new (including contact)            */
+	/**********************************************************************/
+	RCP<Epetra_CrsMatrix> Kteff_new = LINALG::CreateMatrix(*(discret_.DofRowMap()),81);
+	RCP<Epetra_Vector> feff_new = LINALG::CreateVector(*(discret_.DofRowMap()));
+	
+	// add n / m submatrices to Kteff_new
+	LINALG::Add(*Knn_mod,false,1.0,*Kteff_new,1.0);
+	LINALG::Add(*Knm_mod,false,1.0,*Kteff_new,1.0);
+	LINALG::Add(*Kmn_mod,false,1.0,*Kteff_new,1.0);
+	LINALG::Add(*Kmm_mod,false,1.0,*Kteff_new,1.0);
+	
+	// add a / i submatrices to Kteff_new, if existing
+	if (Kns_mod!=null) LINALG::Add(*Kns_mod,false,1.0,*Kteff_new,1.0);
+	if (Kms_mod!=null) LINALG::Add(*Kms_mod,false,1.0,*Kteff_new,1.0);
+	if (Kin_mod!=null) LINALG::Add(*Kin_mod,false,1.0,*Kteff_new,1.0);
+	if (Kim_mod!=null) LINALG::Add(*Kim_mod,false,1.0,*Kteff_new,1.0);
+	if (Kii_mod!=null) LINALG::Add(*Kii_mod,false,1.0,*Kteff_new,1.0);
+	if (Kia_mod!=null) LINALG::Add(*Kia_mod,false,1.0,*Kteff_new,1.0);
+	
+	// add matrix of normals to Kteff_new
+	//LINALG::Add(*N_,false,1.0,*Kteff_new,1.0);
+	/*
+	// add submatrices with tangents to Kteff_new, if existing
+	if (TKan_mod!=null) LINALG::Add(*TKan_mod,false,1.0,*Kteff_new,1.0);
+	if (TKam_mod!=null) LINALG::Add(*TKam_mod,false,1.0,*Kteff_new,1.0);
+	if (TKai_mod!=null) LINALG::Add(*TKai_mod,false,1.0,*Kteff_new,1.0);
+	if (TKaa_mod!=null) LINALG::Add(*TKaa_mod,false,1.0,*Kteff_new,1.0);
 	*/
+	// FillComplete Kteff_new (square)
+	LINALG::Complete(*Kteff_new);
+	
+	// add n / m subvectors to feff_new
+	RCP<Epetra_Vector> fn_mod_exp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
+	RCP<Epetra_Vector> fm_mod_exp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
+	LINALG::Export(*fn_mod,*fn_mod_exp);
+	LINALG::Export(*fm_mod,*fm_mod_exp);
+	feff_new->Update(1.0,*fn_mod_exp,1.0,*fm_mod_exp,1.0);
+	
+	// add i / Ta subvectors to feff_new, if existing
+	RCP<Epetra_Vector> fi_mod_exp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
+	RCP<Epetra_Vector> Tfa_mod_exp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
+	if (fi_mod!=null) LINALG::Export(*fi_mod,*fi_mod_exp);
+	if (Tfa_mod!=null) LINALG::Export(*Tfa_mod,*Tfa_mod_exp);
+	feff_new->Update(1.0,*fi_mod_exp,1.0,*Tfa_mod_exp,1.0);
+	
+	// add weighted gap vector to feff_new, if existing
+	RCP<Epetra_Vector> g_exp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
+	if (g_->GlobalLength()) LINALG::Export(*g_,*g_exp);
+	feff_new->Update(1.0,*g_exp,1.0);
+	
+	/**********************************************************************/
+	/* Replace Kteff and feff by Kteff_new and feff_new                   */
+	/**********************************************************************/
+	//Kteff = Kteff_new;
+	//feff = feff_new;
+	//exit(0);
 	
   return;
 }
