@@ -17,13 +17,12 @@ MFSI::StructureAdapter::StructureAdapter(Teuchos::RCP<Teuchos::ParameterList> pa
                                          Teuchos::RCP<LINALG::Solver> solver,
                                          Teuchos::RCP<IO::DiscretizationWriter> output)
   : structure_(*params, *dis, *solver, *output),
-    interface_(dis),
     dis_(dis),
     params_(params),
     solver_(solver),
     output_(output)
 {
-  interface_.Setup(DRT::UTILS::ExtractorCondInCondition(dis,"FSICoupling"));
+  FSI::UTILS::SetupInterfaceExtractor(*dis,"FSICoupling",interface_);
 }
 
 

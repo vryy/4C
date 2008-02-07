@@ -546,8 +546,8 @@ namespace LINALG
   \param Agiven    : on entry submap that is given and part of Amap
   \return the remainder map of Amap that is not overlapping with Agiven
   */
-  Epetra_Map* SplitMap(const Epetra_Map& Amap,
-                       const Epetra_Map& Agiven);
+  Teuchos::RCP<Epetra_Map> SplitMap(const Epetra_Map& Amap,
+                                    const Epetra_Map& Agiven);
 
   /*!
   \brief merges two given Epetra_Maps

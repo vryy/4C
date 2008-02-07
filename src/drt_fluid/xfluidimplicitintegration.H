@@ -28,7 +28,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/drt_utils_mapextractor.H"
+#include "../drt_lib/linalg_mapextractor.H"
 #include "../io/io_drt.H"
 #include "../drt_xfem/dof_management.H"
 
@@ -89,11 +89,11 @@ public:
   static void SetDefaults(ParameterList& params);
 
   /*!
-  \brief Create single field rowmaps used for error control of iteration 
+  \brief Create single field rowmaps used for error control of iteration
 
   */
   void ComputeSingleFieldRowMaps(RCP<XFEM::DofManager> dofman);
-  
+
   /*!
   \brief do explicit predictor step to start nonlinear iteration from
          a better initial value
@@ -319,8 +319,8 @@ protected:
   // Extractor used for convergence check
   // ------------------------------------
 
-  DRT::UTILS::MapExtractor      velpressplitter_;
-  
+  LINALG::MapExtractor      velpressplitter_;
+
   // Vectors used for convergence check
   // ----------------------------------
   RefCountPtr<Epetra_Map>       velrowmap_;

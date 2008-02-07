@@ -1,6 +1,9 @@
 
 #ifdef CCADISCRET
 
+#include <map>
+#include <set>
+#include <string>
 #include <vector>
 #include <algorithm>
 
@@ -34,7 +37,91 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
 
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::UTILS::SetupInterfaceExtractor(const DRT::Discretization& dis,
+                                         std::string condname,
+                                         LINALG::MapExtractor& extractor)
+{
+  std::set<int> conddofset;
+  std::set<int> otherdofset;
+
+  std::vector<DRT::Condition*> conds;
+  dis.GetCondition(condname, conds);
+
+  int numrownodes = dis.NumMyRowNodes();
+  for (int i=0; i<numrownodes; ++i)
+  {
+    DRT::Node* node = dis.lRowNode(i);
+
+    // test if node is covered by condition
+    bool conditioned = false;
+    for (unsigned j=0; j<conds.size(); ++j)
+    {
+      const vector<int>* n = conds[j]->Nodes();
+
+      // DRT::Condition nodes are ordered by design! So we can perform a
+      // binary search here.
+      if (std::binary_search(n->begin(), n->end(), node->Id()))
+      {
+        conditioned = true;
+        break;
+      }
+    }
+
+    std::vector<int> dof = dis.Dof(node);
+    for (unsigned j=0; j<dof.size(); ++j)
+    {
+      // test for condition coverage and dof position
+      if (conditioned and j<static_cast<unsigned>(genprob.ndim))
+      {
+        conddofset.insert(dof[j]);
+      }
+      else
+      {
+        otherdofset.insert(dof[j]);
+      }
+    }
+  }
+
+  std::vector<int> conddofmapvec;
+  conddofmapvec.reserve(conddofset.size());
+  conddofmapvec.assign(conddofset.begin(), conddofset.end());
+  conddofset.clear();
+  Teuchos::RCP<Epetra_Map> conddofmap =
+    Teuchos::rcp(new Epetra_Map(-1,
+                                conddofmapvec.size(),
+                                &conddofmapvec[0],
+                                0,
+                                dis.Comm()));
+  conddofmapvec.clear();
+
+  std::vector<int> otherdofmapvec;
+  otherdofmapvec.reserve(otherdofset.size());
+  otherdofmapvec.assign(otherdofset.begin(), otherdofset.end());
+  otherdofset.clear();
+  Teuchos::RCP<Epetra_Map> otherdofmap =
+    Teuchos::rcp(new Epetra_Map(-1,
+                                otherdofmapvec.size(),
+                                &otherdofmapvec[0],
+                                0,
+                                dis.Comm()));
+  otherdofmapvec.clear();
+
+  extractor.Setup(*dis.DofRowMap(),conddofmap,otherdofmap);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FSI::UTILS::DumpJacobian(NOX::Epetra::Interface::Required& interface,
                               double alpha,
                               double beta,

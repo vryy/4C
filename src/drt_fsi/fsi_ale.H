@@ -36,7 +36,7 @@ Maintainer: Ulrich Kuettler
 
 #include <set>
 
-#include "fsi_utils_mapextractor.H"
+#include "fsi_utils.H"
 
 
 namespace FSI {
@@ -112,7 +112,7 @@ public:
   virtual void ReadRestart(int step) = 0;
 
   /// communication object at the interface
-  virtual const FSI::UTILS::MapExtractor& Interface() const = 0;
+  virtual const LINALG::MapExtractor& Interface() const = 0;
 };
 
 
@@ -173,12 +173,12 @@ public:
   virtual void ReadRestart(int step);
 
   /// communication object at the interface
-  const FSI::UTILS::MapExtractor& Interface() const { return interface_; }
+  const LINALG::MapExtractor& Interface() const { return interface_; }
 
 private:
 
   /// the interface map setup for interface <-> full translation
-  FSI::UTILS::MapExtractor interface_;
+  LINALG::MapExtractor interface_;
 
   //! @name local copies of input parameters
   Teuchos::RCP<DRT::Discretization> discret_;

@@ -95,11 +95,17 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
   if (Teuchos::getIntegralValue<int>(fsidyn,"COUPMETHOD"))
   {
     matchingnodes_ = true;
-    coupsf_.SetupConditionCoupling(structure_->Interface(),
-                                   fluid_->Interface());
+    coupsf_.SetupConditionCoupling(structure_->Discretization(),
+                                   structure_->Interface(),
+                                   fluid_->Discretization(),
+                                   fluid_->Interface(),
+                                   "FSICoupling");
 
-    coupsa_.SetupConditionCoupling(structure_->Interface(),
-                                   ale_->Interface());
+    coupsa_.SetupConditionCoupling(structure_->Discretization(),
+                                   structure_->Interface(),
+                                   *ale_->Discretization(),
+                                   ale_->Interface(),
+                                   "FSICoupling");
 
     // In the following we assume that both couplings find the same dof
     // map at the structural side. This enables us to use just one
@@ -125,8 +131,11 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
 
     // This is cheating. We setup the coupling of interface dofs between fluid
     // and ale. But we use the variable from the matching version.
-    coupsa_.SetupConditionCoupling(fluid_->Interface(),
-                                   ale_->Interface());
+    coupsa_.SetupConditionCoupling(fluid_->Discretization(),
+                                   fluid_->Interface(),
+                                   *ale_->Discretization(),
+                                   ale_->Interface(),
+                                   "FSICoupling");
 
     // init transfer from interface to field
     structure_->SetInterfaceMap(coupsfm_.MasterDofMap());

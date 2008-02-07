@@ -27,7 +27,7 @@ Maintainer: Ulrich Kuettler
 
 #include "../drt_structure/strugenalpha.H"
 
-#include "../drt_fsi/fsi_utils_mapextractor.H"
+#include "../drt_fsi/fsi_utils.H"
 
 
 namespace MFSI {
@@ -77,7 +77,7 @@ namespace MFSI {
     virtual Teuchos::RCP<Epetra_Map> InnerDisplacementRowMap() = 0;
 
     /// communication object at the interface
-    virtual const FSI::UTILS::MapExtractor& Interface() const = 0;
+    virtual const LINALG::MapExtractor& Interface() const = 0;
 
     virtual const Epetra_Map& DomainMap() = 0;
   };
@@ -114,11 +114,11 @@ namespace MFSI {
     void Output();
 
     void SetInterfaceMap(Teuchos::RCP<Epetra_Map> im);
-    Teuchos::RCP<Epetra_Map> InterfaceMap() { return interface_.CondDofMap(); }
-    Teuchos::RCP<Epetra_Map> InnerDisplacementRowMap() { return interface_.OtherDofMap(); }
+    Teuchos::RCP<Epetra_Map> InterfaceMap() { return interface_.CondMap(); }
+    Teuchos::RCP<Epetra_Map> InnerDisplacementRowMap() { return interface_.OtherMap(); }
 
     /// communication object at the interface
-    virtual const FSI::UTILS::MapExtractor& Interface() const { return interface_; }
+    virtual const LINALG::MapExtractor& Interface() const { return interface_; }
 
     virtual const Epetra_Map& DomainMap();
 
@@ -128,7 +128,7 @@ namespace MFSI {
     StruGenAlpha structure_;
 
     /// the interface map setup for interface <-> full translation
-    FSI::UTILS::MapExtractor interface_;
+    LINALG::MapExtractor interface_;
 
     //! @name local copies of input parameters
 

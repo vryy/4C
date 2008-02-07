@@ -25,15 +25,12 @@ MFSI::FluidAdapter::FluidAdapter(Teuchos::RCP<DRT::Discretization> dis,
                                  Teuchos::RCP<ParameterList> params,
                                  Teuchos::RCP<IO::DiscretizationWriter> output)
   : fluid_(dis, *solver, *params, *output, true),
-    interface_(dis),
-    meshmap_(dis),
     dis_(dis),
     solver_(solver),
     params_(params),
     output_(output)
 {
-  interface_.Setup(DRT::UTILS::CondAnd(DRT::UTILS::ExtractorCondMaxPos(genprob.ndim),
-                                       DRT::UTILS::ExtractorCondInCondition(dis,"FSICoupling")));
+  FSI::UTILS::SetupInterfaceExtractor(*dis,"FSICoupling",interface_);
 }
 
 
@@ -161,7 +158,7 @@ void MFSI::FluidAdapter::SetInterfaceMap(Teuchos::RefCountPtr<Epetra_Map> im)
   for (int i=0; i<numvelids; ++i)
   {
     int gid = velmap->GID(i);
-    if (not interface_.CondDofMap()->MyGID(gid) and (*dirichtoggle)[fullmap->LID(gid)]==0.)
+    if (not interface_.CondMap()->MyGID(gid) and (*dirichtoggle)[fullmap->LID(gid)]==0.)
     {
       velids.push_back(gid);
     }
@@ -175,7 +172,7 @@ void MFSI::FluidAdapter::SetInterfaceMap(Teuchos::RefCountPtr<Epetra_Map> im)
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> MFSI::FluidAdapter::InterfaceMap()
 {
-  return interface_.CondDofMap();
+  return interface_.CondMap();
 }
 
 
@@ -199,7 +196,7 @@ Teuchos::RCP<Epetra_Map> MFSI::FluidAdapter::PressureRowMap()
  *----------------------------------------------------------------------*/
 void MFSI::FluidAdapter::SetMeshMap(Teuchos::RCP<Epetra_Map> mm)
 {
-  meshmap_.SetupMaps(Teuchos::rcp(dis_->DofRowMap(),false),mm);
+  meshmap_.Setup(*dis_->DofRowMap(),mm,LINALG::SplitMap(*dis_->DofRowMap(),*mm));
 }
 
 

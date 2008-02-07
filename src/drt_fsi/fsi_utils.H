@@ -15,6 +15,7 @@
 #include <Teuchos_RefCountPtr.hpp>
 
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/linalg_mapextractor.H"
 
 
 namespace FSI
@@ -75,6 +76,10 @@ namespace FSI
                       Teuchos::RefCountPtr<Epetra_Vector> soln,
                       std::string filename);
 
+    ///
+    void SetupInterfaceExtractor(const DRT::Discretization& dis,
+                                 std::string condname,
+                                 LINALG::MapExtractor& extractor);
   }
 }
 

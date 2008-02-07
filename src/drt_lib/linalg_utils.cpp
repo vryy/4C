@@ -967,21 +967,21 @@ void LINALG::ApplyDirichlettoSystem(RefCountPtr<Epetra_CrsMatrix>&   A,
  | split matrix into 2x2 block system                              06/06|
  *----------------------------------------------------------------------*/
 bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
-														RCP<Epetra_Map>& A11rowmap,
-														RCP<Epetra_Map>& A22rowmap,
-														RCP<Epetra_CrsMatrix>& A11,
-														RCP<Epetra_CrsMatrix>& A12,
-														RCP<Epetra_CrsMatrix>& A21,
-														RCP<Epetra_CrsMatrix>& A22)
+                            RCP<Epetra_Map>& A11rowmap,
+                            RCP<Epetra_Map>& A22rowmap,
+                            RCP<Epetra_CrsMatrix>& A11,
+                            RCP<Epetra_CrsMatrix>& A12,
+                            RCP<Epetra_CrsMatrix>& A21,
+                            RCP<Epetra_CrsMatrix>& A22)
 {
   if (A==null)
     dserror("LINALG::SplitMatrix2x2: A==null on entry");
 
   if (A11rowmap==null && A22rowmap != null)
-    A11rowmap = rcp(LINALG::SplitMap(A->RowMap(),*A22rowmap));
+    A11rowmap = LINALG::SplitMap(A->RowMap(),*A22rowmap);
   else if (A11rowmap != null && A22rowmap != null);
   else if (A11rowmap != null && A22rowmap == null)
-    A22rowmap = rcp(LINALG::SplitMap(A->RowMap(),*A11rowmap));
+    A22rowmap = LINALG::SplitMap(A->RowMap(),*A11rowmap);
   else
   	dserror("LINALG::SplitMatrix2x2: Both A11rowmap and A22rowmap == null on entry");
 
@@ -1204,33 +1204,33 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
  | split matrix into 2x2 block system                         popp 02/08|
  *----------------------------------------------------------------------*/
 bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
-														RCP<Epetra_Map>& A11rowmap,
-														RCP<Epetra_Map>& A22rowmap,
-														RCP<Epetra_Map>& A11domainmap,
-														RCP<Epetra_Map>& A22domainmap,
-														RCP<Epetra_CrsMatrix>& A11,
-														RCP<Epetra_CrsMatrix>& A12,
-														RCP<Epetra_CrsMatrix>& A21,
-														RCP<Epetra_CrsMatrix>& A22)
+                            RCP<Epetra_Map>& A11rowmap,
+                            RCP<Epetra_Map>& A22rowmap,
+                            RCP<Epetra_Map>& A11domainmap,
+                            RCP<Epetra_Map>& A22domainmap,
+                            RCP<Epetra_CrsMatrix>& A11,
+                            RCP<Epetra_CrsMatrix>& A12,
+                            RCP<Epetra_CrsMatrix>& A21,
+                            RCP<Epetra_CrsMatrix>& A22)
 {
   if (A==null)
     dserror("LINALG::SplitMatrix2x2: A==null on entry");
 
   // check and complete input row maps
   if (A11rowmap==null && A22rowmap != null)
-    A11rowmap = rcp(LINALG::SplitMap(A->RowMap(),*A22rowmap));
+    A11rowmap = LINALG::SplitMap(A->RowMap(),*A22rowmap);
   else if (A11rowmap != null && A22rowmap != null);
   else if (A11rowmap != null && A22rowmap == null)
-    A22rowmap = rcp(LINALG::SplitMap(A->RowMap(),*A11rowmap));
+    A22rowmap = LINALG::SplitMap(A->RowMap(),*A11rowmap);
   else
   	dserror("LINALG::SplitMatrix2x2: Both A11rowmap and A22rowmap == null on entry");
 
   // check and complete input domain maps
   if (A11domainmap==null && A22domainmap != null)
-  	A11domainmap = rcp(LINALG::SplitMap(A->DomainMap(),*A22domainmap));
+  	A11domainmap = LINALG::SplitMap(A->DomainMap(),*A22domainmap);
   else if (A11domainmap != null && A22domainmap != null);
   else if (A11domainmap != null && A22domainmap == null)
-    A22domainmap = rcp(LINALG::SplitMap(A->DomainMap(),*A11domainmap));
+    A22domainmap = LINALG::SplitMap(A->DomainMap(),*A11domainmap);
   else
   	dserror("LINALG::SplitMatrix2x2: Both A11domainmap and A22domainmap == null on entry");
 
@@ -1458,8 +1458,8 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
 /*----------------------------------------------------------------------*
  | split a map into 2 pieces with given Agiven                     06/06|
  *----------------------------------------------------------------------*/
-Epetra_Map* LINALG::SplitMap(const Epetra_Map& Amap,
-                             const Epetra_Map& Agiven)
+Teuchos::RCP<Epetra_Map> LINALG::SplitMap(const Epetra_Map& Amap,
+                                          const Epetra_Map& Agiven)
 {
   const Epetra_Comm& Comm = Amap.Comm();
   const Epetra_Map&  Ag = Agiven;
@@ -1476,10 +1476,11 @@ Epetra_Map* LINALG::SplitMap(const Epetra_Map& Amap,
   myaugids.resize(count);
   int gcount;
   Comm.SumAll(&count,&gcount,1);
-  Epetra_Map* Aunknown = new Epetra_Map(gcount,count,&myaugids[0],0,Comm);
+  Teuchos::RCP<Epetra_Map> Aunknown = Teuchos::rcp(new Epetra_Map(gcount,count,&myaugids[0],0,Comm));
   myaugids.clear();
   return Aunknown;
 }
+
 
 /*----------------------------------------------------------------------*
  | merge two given maps to one map                            popp 01/08|

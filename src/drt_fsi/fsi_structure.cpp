@@ -41,12 +41,11 @@ FSI::Structure::Structure(Teuchos::RCP<ParameterList> params,
                           Teuchos::RCP<IO::DiscretizationWriter> output)
 
   : StruGenAlpha(*params, *dis, *solver, *output),
-    interface_(dis),
     params_(params),
     solver_(solver),
     output_(output)
 {
-  interface_.Setup(DRT::UTILS::ExtractorCondInCondition(dis,"FSICoupling"));
+  FSI::UTILS::SetupInterfaceExtractor(*dis,"FSICoupling",interface_);
 }
 
 

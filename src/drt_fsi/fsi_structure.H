@@ -23,7 +23,7 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>
 
-#include "fsi_utils_mapextractor.H"
+#include "fsi_utils.H"
 
 
 namespace FSI
@@ -59,7 +59,7 @@ public:
   //! @name Interface Map
   //! the map of all interface dofs will be set from the outside
 
-  Teuchos::RCP<const Epetra_Map> InterfaceMap() { return interface_.CondDofMap(); }
+  Teuchos::RCP<const Epetra_Map> InterfaceMap() { return interface_.CondMap(); }
   void SetInterfaceMap(Teuchos::RCP<Epetra_Map> im);
 
   //@}
@@ -106,7 +106,7 @@ public:
   Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> iforce);
 
   /// communication object at the interface
-  const FSI::UTILS::MapExtractor& Interface() const { return interface_; }
+  const LINALG::MapExtractor& Interface() const { return interface_; }
 
 private:
 
@@ -114,7 +114,7 @@ private:
   void CalculateStiffness();
 
   /// the interface map setup for interface <-> full translation
-  FSI::UTILS::MapExtractor interface_;
+  LINALG::MapExtractor interface_;
 
   /// copy of external forces needed to reapply the interface forces
   Teuchos::RCP<Epetra_Vector> fextncopy_;

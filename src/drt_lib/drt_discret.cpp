@@ -383,7 +383,7 @@ void DRT::Discretization::Print(ostream& os) const
     if (proc==Comm().MyPID())
     {
       int numcond = condition_.size();
-      if (numcond) 
+      if (numcond)
         os << "-------------------------- Proc " << proc << " :\n";
       if (numcond)
       {
@@ -415,7 +415,7 @@ void DRT::Discretization::ReplaceDofSet(RefCountPtr<DofSet> newdofset)
 /*----------------------------------------------------------------------*
  |  get dof row map (public)                                 mwgee 12/06|
  *----------------------------------------------------------------------*/
-const Epetra_Map* DRT::Discretization::DofRowMap()
+const Epetra_Map* DRT::Discretization::DofRowMap() const
 {
   if (!Filled()) dserror("FillComplete was not called on this discretization");
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() not called on this discretization");
@@ -427,7 +427,7 @@ const Epetra_Map* DRT::Discretization::DofRowMap()
 /*----------------------------------------------------------------------*
  |  get dof column map (public)                              mwgee 12/06|
  *----------------------------------------------------------------------*/
-const Epetra_Map* DRT::Discretization::DofColMap()
+const Epetra_Map* DRT::Discretization::DofColMap() const
 {
   if (!Filled()) dserror("FillComplete was not called on this discretization");
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() not called on this discretization");
@@ -557,7 +557,7 @@ RefCountPtr<vector<char> > DRT::Discretization::PackCondition(const string condn
   // get boundary conditions
   vector<DRT::Condition*> cond;
   GetCondition(condname,cond);
-  
+
   RefCountPtr<vector<char> > block = rcp(new vector<char>);
   for (vector<DRT::Condition*>::const_iterator i = cond.begin();
        i!=cond.end();

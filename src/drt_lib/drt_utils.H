@@ -32,6 +32,12 @@ Maintainer: Michael Gee
 using namespace std;
 using namespace Teuchos;
 
+namespace LINALG
+{
+  class MapExtractor;
+}
+
+
 /*!
 \brief DRT: namespace of the ccarat discretization module
 
@@ -102,6 +108,41 @@ namespace UTILS
                       determines number of values to be extracted.
   */
   void ExtractMyValues(const Epetra_Vector& global, vector<double>& local, const vector<int> lm);
+
+  /// find all local nodes from discretization marked with condition
+  /*!
+
+    Loop all conditions of the given discretization, find the ones with the
+    specified name and collect the locally owned node ids in the suppied
+    set. The nodes vector is unique and ordered on output.
+
+    \param dis : (in) Discretization
+    \param condname : (in) name of condition in question
+    \param nodes : (out) empty set on input, filled with nodal gids of local nodes
+
+    \author u.kue
+    \date 06/07
+   */
+  void FindConditionedNodes(const DRT::Discretization& dis,
+                            std::string condname,
+                            std::vector<int>& nodes);
+
+  /// Split dof row map of discretization into velocity and pressure maps
+  /*!
+
+    We assume that each nodes possesses ndim velocity dofs and (optionally)
+    one pressure dof. The dof row map is thus split in two.
+
+    \param dis : (in) Discretization
+    \param ndim : (in) dimensions of problem (2 or 3)
+    \param extractor : (out) ready made map splitter
+
+    \author u.kue
+    \date 02/08
+   */
+  void SetupFluidSplit(const DRT::Discretization& dis,
+                       int ndim,
+                       LINALG::MapExtractor& extractor);
 
 } // namespace UTILS
 } // namespace DRT

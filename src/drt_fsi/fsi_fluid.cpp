@@ -33,8 +33,6 @@ FSI::Fluid::Fluid(Teuchos::RCP<DRT::Discretization> dis,
                   Teuchos::RCP<ParameterList> params,
                   Teuchos::RCP<IO::DiscretizationWriter> output)
   : FluidImplicitTimeInt(dis,*solver,*params,*output,true),
-    interface_(dis),
-    meshmap_(dis),
     solver_(solver),
     params_(params),
     output_(output)
@@ -49,8 +47,7 @@ FSI::Fluid::Fluid(Teuchos::RCP<DRT::Discretization> dis,
   relax_ = LINALG::CreateVector(*dofrowmap,true);
   griddisp_ = LINALG::CreateVector(*dofrowmap,true);
 
-  interface_.Setup(DRT::UTILS::CondAnd(DRT::UTILS::ExtractorCondMaxPos(genprob.ndim),
-                                       DRT::UTILS::ExtractorCondInCondition(dis,"FSICoupling")));
+  FSI::UTILS::SetupInterfaceExtractor(*dis,"FSICoupling",interface_);
 }
 
 
@@ -108,7 +105,7 @@ void FSI::Fluid::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
  *----------------------------------------------------------------------*/
 void FSI::Fluid::SetMeshMap(Teuchos::RCP<Epetra_Map> mm)
 {
-  meshmap_.SetupMaps(Teuchos::rcp(discret_->DofRowMap(),false),mm);
+  meshmap_.Setup(*discret_->DofRowMap(),mm,LINALG::SplitMap(*discret_->DofRowMap(),*mm));
 }
 
 

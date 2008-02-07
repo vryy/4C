@@ -183,7 +183,7 @@ public:
   - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
 
   */
-  virtual const Epetra_Map* DofRowMap();
+  virtual const Epetra_Map* DofRowMap() const;
 
   /*!
   \brief Get degree of freedom column map (Filled()==true prerequisite)
@@ -195,7 +195,7 @@ public:
   - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
 
   */
-  virtual const Epetra_Map* DofColMap();
+  virtual const Epetra_Map* DofColMap() const;
 
   /*!
   \brief Get map associated with the distribution of the ownership of nodes
@@ -442,8 +442,8 @@ public:
   \param initelements (in) : if true, build element register classes and call Initialize()
                              on each type of finite element present
   \param doboundaryconditions (in) : if true, build geometry of boundary conditions
-                                     present.                                                                    
-  
+                                     present.
+
   \note In order to receive a fully functional discretization, this method must be called
         with all parameters set to true (the default). The parameters though can be
         used to turn off specific tasks to allow for more flexibility in the
@@ -455,7 +455,7 @@ public:
   virtual int FillComplete(bool assigndegreesoffreedom=true,
                            bool initelements = true,
                            bool doboundaryconditions = true);
-  
+
   //@}
 
   //! @name Boundary condition construction methods
@@ -994,15 +994,15 @@ public:
   This method considers all conditions in condition_ with the names
   matching the user-provided string condstring.
   Calls more general EvaluateCondition method, see below.
- 
+
   \param params (in):        List of parameters for use at element level
   \param systemvector (out): Vector to assemble BCs to.
                              The vector is NOT initialized to zero by this method.
-  */								 
+  */
   virtual void EvaluateCondition(ParameterList& params,
 		                 RefCountPtr<Epetra_Vector> systemvector1,
 				 const string& condstring);
- 
+
   /*!
   \brief Evaluate a specified condition
 
@@ -1010,24 +1010,24 @@ public:
   This method considers all conditions in condition_ with the names
   matching the user-provided string condstring.
   Calls more general EvaluateCondition method, see below.
- 
-  \param params (in):        List of parameters for use at element level  
-  \param condstring (in):	   Name of condition to be evaluated          
-  */								 
+
+  \param params (in):        List of parameters for use at element level
+  \param condstring (in):	   Name of condition to be evaluated
+  */
   virtual void EvaluateCondition(ParameterList& params,
 				 const string& condstring);
-  
+
   /*
   \brief Evaluate a specific condition
 
-  Loop all conditions attached to the discretization and evaluate them.  
+  Loop all conditions attached to the discretization and evaluate them.
   This method considers all conditions in condition_ with the names
   matching the user-provided string condstring.
   It takes a current time from the parameter list params named "total time"
   and evaluates the appropiate time curves at that time for each
   Neumann condition separately. If "total time" is not included
   in the parameters, no time curves are used.
-   
+
     \param params (in):        List of parameters for use at element level
     \param systemmatrix1 (out): Sparse matrix that may be changed by
                                assembly of boundary element contributions.
@@ -1037,29 +1037,29 @@ public:
                                The vector is NOT initialized to zero by this method.
     \param systemvector2 (out):Vector to assemble BCs to.
                                The vector is NOT initialized to zero by this method.
-    \param condstring (in):	   Name of condition to be evaluated          
-    */					
-  
+    \param condstring (in):	   Name of condition to be evaluated
+    */
+
  virtual void EvaluateCondition(ParameterList& params,
 			RefCountPtr<Epetra_CrsMatrix> systemmatrix1,
 			RefCountPtr<Epetra_Vector> systemvector1,
 			RefCountPtr<Epetra_Vector> systemvector2,
 		    const string& condstring);
- 
+
  /*
    \brief Evaluate a specific condition
 
-   Loop all conditions attached to the discretization and evaluate them.  
+   Loop all conditions attached to the discretization and evaluate them.
    This method considers all conditions in condition_ with the names
    matching the user-provided string condstring.
-   To be suitable for general constraint conditions, systemvector2 can be a 
+   To be suitable for general constraint conditions, systemvector2 can be a
    multivector. The unique parameter "ConditionID" is used to determine in which column
    the vector is to be assembled into.
    It takes a current time from the parameter list params named "total time"
    and evaluates the appropiate time curves at that time for each
    Neumann condition separately. If "total time" is not included
    in the parameters, no time curves are used.
-    
+
      \param params (in):        List of parameters for use at element level
      \param systemmatrix1 (out): Sparse matrix that may be changed by
                                 assembly of boundary element contributions.
@@ -1068,16 +1068,16 @@ public:
      \param systemvector1 (out):Vector to assemble BCs to.
                                 The vector is NOT initialized to zero by this method.
      \param systemmultvect(out):MultiVector to assemble BCs to.
-                                The vector is NOT initialized to zero by this method.    
-     \param condstring (in):	Name of condition to be evaluated               
-     */					
-   
+                                The vector is NOT initialized to zero by this method.
+     \param condstring (in):	Name of condition to be evaluated
+     */
+
   virtual void EvaluateCondition(ParameterList& params,
  			RefCountPtr<Epetra_CrsMatrix> systemmatrix1,
  			RefCountPtr<Epetra_Vector> systemvector1,
  		    const string& condstring,
  		    RefCountPtr<Epetra_MultiVector> systemmultvect);
- 
+
   /*!
   \brief Compute the nullspace of the discretization
 
@@ -1129,7 +1129,7 @@ public:
   RefCountPtr<vector<char> > PackCondition(
           const string condname     ///< name of condition as it is used in GetCondition() or SetCondition()
           ) const;
-  
+
   /*!
     \brief Unpack element buffer and create local elements.
 
@@ -1153,7 +1153,7 @@ public:
     \note Sets Filled()=false
    */
   void UnPackMyNodes(RefCountPtr<vector<char> > e);
-  
+
   /*!
     \brief Unpack one condition.
 
@@ -1326,7 +1326,7 @@ protected:
   RefCountPtr<Epetra_Comm>                      comm_;              // an Epetra_comm
   bool                                          filled_;            // flag indicating whether getOrganized has been called
   bool                                          havedof_;           // flag indicating whether degrees of freedom where assigned
-  
+
   RefCountPtr<Epetra_Map>                       dofrowmap_;         // unique row map of degrees of freedom (node and element dofs))
   RefCountPtr<Epetra_Map>                       dofcolmap_;         // unique column map of degrees of freedom (node and element dofs))
 

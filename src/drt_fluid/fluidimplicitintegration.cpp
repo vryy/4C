@@ -6,7 +6,7 @@
 
      o one-step-theta time-integration scheme
 
-     o two-step BDF2 time-integration scheme 
+     o two-step BDF2 time-integration scheme
        (with potential one-step-theta start algorithm)
 
      and stationary solver.
@@ -109,7 +109,7 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
 
   const int numdim = params_.get<int>("number of velocity degrees of freedom");
 
-  velpressplitter_.Setup(discret_,DRT::UTILS::ExtractorCondMaxPos(numdim));
+  DRT::UTILS::SetupFluidSplit(*discret_,numdim,velpressplitter_);
 
   // -------------------------------------------------------------------
   // get the processor ID from the communicator

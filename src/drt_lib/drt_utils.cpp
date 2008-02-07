@@ -33,6 +33,7 @@ extern "C"
 #include <vector>
 
 #include "linalg_utils.H"
+#include "linalg_mapextractor.H"
 
 #include "drt_utils.H"
 #include "drt_node.H"
@@ -811,5 +812,89 @@ void DRT::UTILS::ExtractMyValues(const Epetra_Vector& global,
   }
   return;
 }
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis, std::string condname, std::vector<int>& nodes)
+{
+  std::set<int> nodeset;
+  int myrank = dis.Comm().MyPID();
+  std::vector<DRT::Condition*> conds;
+  dis.GetCondition(condname, conds);
+  for (unsigned i=0; i<conds.size(); ++i)
+  {
+    const std::vector<int>* n = conds[i]->Nodes();
+    for (unsigned j=0; j<n->size(); ++j)
+    {
+      int gid = (*n)[j];
+      if (dis.HaveGlobalNode(gid) and dis.gNode(gid)->Owner()==myrank)
+      {
+        nodeset.insert(gid);
+      }
+    }
+  }
+
+  nodes.reserve(nodeset.size());
+  nodes.assign(nodeset.begin(),nodeset.end());
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::UTILS::SetupFluidSplit(const DRT::Discretization& dis,
+                                 int ndim,
+                                 LINALG::MapExtractor& extractor)
+{
+  std::set<int> conddofset;
+  std::set<int> otherdofset;
+
+  int numrownodes = dis.NumMyRowNodes();
+  for (int i=0; i<numrownodes; ++i)
+  {
+    DRT::Node* node = dis.lRowNode(i);
+
+    std::vector<int> dof = dis.Dof(node);
+    for (unsigned j=0; j<dof.size(); ++j)
+    {
+      // test for dof position
+      if (j<static_cast<unsigned>(ndim))
+      {
+        conddofset.insert(dof[j]);
+      }
+      else
+      {
+        otherdofset.insert(dof[j]);
+      }
+    }
+  }
+
+  std::vector<int> conddofmapvec;
+  conddofmapvec.reserve(conddofset.size());
+  conddofmapvec.assign(conddofset.begin(), conddofset.end());
+  conddofset.clear();
+  Teuchos::RCP<Epetra_Map> conddofmap =
+    Teuchos::rcp(new Epetra_Map(-1,
+                                conddofmapvec.size(),
+                                &conddofmapvec[0],
+                                0,
+                                dis.Comm()));
+  conddofmapvec.clear();
+
+  std::vector<int> otherdofmapvec;
+  otherdofmapvec.reserve(otherdofset.size());
+  otherdofmapvec.assign(otherdofset.begin(), otherdofset.end());
+  otherdofset.clear();
+  Teuchos::RCP<Epetra_Map> otherdofmap =
+    Teuchos::rcp(new Epetra_Map(-1,
+                                otherdofmapvec.size(),
+                                &otherdofmapvec[0],
+                                0,
+                                dis.Comm()));
+  otherdofmapvec.clear();
+
+  extractor.Setup(*dis.DofRowMap(),conddofmap,otherdofmap);
+}
+
 
 #endif  // #ifdef CCADISCRET

@@ -37,8 +37,7 @@ FSI::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
                           Teuchos::RCP<ParameterList> params,
                           Teuchos::RCP<IO::DiscretizationWriter> output,
                           bool dirichletcond)
-  : interface_(actdis),
-    discret_(actdis),
+  : discret_(actdis),
     solver_ (solver),
     params_ (params),
     output_ (output),
@@ -60,7 +59,7 @@ FSI::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
   residual_       = LINALG::CreateVector(*dofrowmap,true);
   dirichtoggle_   = LINALG::CreateVector(*dofrowmap,true);
 
-  interface_.Setup(DRT::UTILS::ExtractorCondInCondition(actdis,"FSICoupling"));
+  FSI::UTILS::SetupInterfaceExtractor(*actdis,"FSICoupling",interface_);
 
   // set fixed nodes (conditions != 0 are not supported right now)
   ParameterList eleparams;
@@ -72,7 +71,7 @@ FSI::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
   {
     // for partitioned FSI the interface becames a Dirichlet boundary
 
-    Teuchos::RCP<Epetra_Vector> idisp = LINALG::CreateVector(*interface_.CondDofMap(),false);
+    Teuchos::RCP<Epetra_Vector> idisp = LINALG::CreateVector(*interface_.CondMap(),false);
     idisp->PutScalar(1.0);
     interface_.InsertCondVector(idisp,dirichtoggle_);
   }

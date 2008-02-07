@@ -27,7 +27,7 @@ Maintainer: Ulrich Kuettler
 
 #include "../drt_fluid/fluidimplicitintegration.H"
 
-#include "../drt_fsi/fsi_utils_mapextractor.H"
+#include "../drt_fsi/fsi_utils.H"
 
 
 namespace MFSI {
@@ -81,7 +81,7 @@ namespace MFSI {
     virtual double ResidualScaling() = 0;
 
     /// communication object at the interface
-    virtual const FSI::UTILS::MapExtractor& Interface() const = 0;
+    virtual const LINALG::MapExtractor& Interface() const = 0;
   };
 
 
@@ -124,7 +124,7 @@ namespace MFSI {
     virtual double ResidualScaling();
 
     /// communication object at the interface
-    virtual const FSI::UTILS::MapExtractor& Interface() const { return interface_; }
+    virtual const LINALG::MapExtractor& Interface() const { return interface_; }
 
   private:
 
@@ -132,10 +132,10 @@ namespace MFSI {
     FluidImplicitTimeInt fluid_;
 
     /// the interface map setup for interface <-> full translation
-    FSI::UTILS::MapExtractor interface_;
+    LINALG::MapExtractor interface_;
 
     /// ALE dof map
-    FSI::UTILS::MapExtractor meshmap_;
+    LINALG::MapExtractor meshmap_;
 
     //! @name local copies of input parameters
     Teuchos::RCP<DRT::Discretization> dis_;

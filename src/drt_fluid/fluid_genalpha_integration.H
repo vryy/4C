@@ -65,7 +65,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_function.H"
-#include "../drt_lib/drt_utils_mapextractor.H"
+#include "../drt_lib/linalg_mapextractor.H"
 #include "../io/io_drt.H"
 
 #include "Epetra_Vector.h"
@@ -402,7 +402,7 @@ private:
   // Vectors used for convergence check
   // ----------------------------------
 
-  DRT::UTILS::MapExtractor      velpressplitter_;
+  LINALG::MapExtractor      velpressplitter_;
 
   // connectivity generated from periodic boundary conditions
   // --------------------------------------------------------

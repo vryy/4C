@@ -23,7 +23,7 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>
 
-#include "fsi_utils_mapextractor.H"
+#include "fsi_utils.H"
 
 
 namespace FSI
@@ -117,15 +117,15 @@ public:
   //@}
 
   /// communication object at the interface
-  const FSI::UTILS::MapExtractor& Interface() const { return interface_; }
+  const LINALG::MapExtractor& Interface() const { return interface_; }
 
 private:
 
   /// the interface map setup for interface <-> full translation
-  FSI::UTILS::MapExtractor interface_;
+  LINALG::MapExtractor interface_;
 
   /// ALE dof map
-  FSI::UTILS::MapExtractor meshmap_;
+  LINALG::MapExtractor meshmap_;
 
   /// local variable for relaxation calculation
   Teuchos::RCP<Epetra_Vector> relax_;

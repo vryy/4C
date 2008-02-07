@@ -92,7 +92,7 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // pressure degrees of freedom.
   // -------------------------------------------------------------------
 
-  velpressplitter_.Setup(discret_,DRT::UTILS::ExtractorCondMaxPos(numdim_));
+  DRT::UTILS::SetupFluidSplit(*discret_,numdim_,velpressplitter_);
 
   // -------------------------------------------------------------------
   // get the processor ID from the communicator

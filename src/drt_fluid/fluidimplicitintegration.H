@@ -6,7 +6,7 @@
 
      o one-step-theta time-integration scheme
 
-     o two-step BDF2 time-integration scheme 
+     o two-step BDF2 time-integration scheme
        (with potential one-step-theta start algorithm)
 
      and stationary solver.
@@ -37,7 +37,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/drt_utils_mapextractor.H"
+#include "../drt_lib/linalg_mapextractor.H"
 #include "../io/io_drt.H"
 
 #include "Epetra_Vector.h"
@@ -190,8 +190,8 @@ public:
   Teuchos::RCP<Epetra_Operator> SysMat() { return sysmat_; }
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
 
-  Teuchos::RCP<Epetra_Map> VelocityRowMap() { return velpressplitter_.CondDofMap(); }
-  Teuchos::RCP<Epetra_Map> PressureRowMap() { return velpressplitter_.OtherDofMap(); }
+  Teuchos::RCP<Epetra_Map> VelocityRowMap() { return velpressplitter_.CondMap(); }
+  Teuchos::RCP<Epetra_Map> PressureRowMap() { return velpressplitter_.OtherMap(); }
 
   double ResidualScaling() const { return density_/dta_/theta_; }
 
@@ -310,7 +310,7 @@ protected:
   // Extractor used for convergence check
   // ------------------------------------
 
-  DRT::UTILS::MapExtractor      velpressplitter_;
+  LINALG::MapExtractor      velpressplitter_;
 
 
   // time measurement

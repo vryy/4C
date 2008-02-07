@@ -25,15 +25,22 @@ FSI::Coupling::Coupling()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Coupling::SetupConditionCoupling(const FSI::UTILS::MapExtractor& master,
-                                           const FSI::UTILS::MapExtractor& slave)
+void FSI::Coupling::SetupConditionCoupling(const DRT::Discretization& masterdis,
+                                           const LINALG::MapExtractor& master,
+                                           const DRT::Discretization& slavedis,
+                                           const LINALG::MapExtractor& slave,
+                                           std::string condname)
 {
-  SetupCoupling(master.Discret(), slave.Discret(), master.Nodes(), slave.Nodes());
+  std::vector<int> masternodes;
+  DRT::UTILS::FindConditionedNodes(masterdis,condname,masternodes);
+  std::vector<int> slavenodes;
+  DRT::UTILS::FindConditionedNodes(slavedis,condname,slavenodes);
+  SetupCoupling(masterdis, slavedis, masternodes, slavenodes);
 
   // test for completeness
-  if (static_cast<int>(master.Nodes().size())*genprob.ndim != masterdofmap_->NumMyElements())
+  if (static_cast<int>(masternodes.size())*genprob.ndim != masterdofmap_->NumMyElements())
     dserror("failed to setup master nodes properly");
-  if (static_cast<int>(slave.Nodes().size())*genprob.ndim != slavedofmap_->NumMyElements())
+  if (static_cast<int>(slavenodes.size())*genprob.ndim != slavedofmap_->NumMyElements())
     dserror("failed to setup slave nodes properly");
 
   // Now swap in the maps we already had.
@@ -44,16 +51,16 @@ void FSI::Coupling::SetupConditionCoupling(const FSI::UTILS::MapExtractor& maste
   // The point is to make sure there is only one map for each
   // interface.
 
-  if (not masterdofmap_->SameAs(*master.CondDofMap()))
+  if (not masterdofmap_->SameAs(*master.CondMap()))
     dserror("master dof map mismatch");
 
-  if (not slavedofmap_->SameAs(*slave.CondDofMap()))
+  if (not slavedofmap_->SameAs(*slave.CondMap()))
     dserror("master dof map mismatch");
 
-  masterdofmap_ = master.CondDofMap();
+  masterdofmap_ = master.CondMap();
   masterexport_ = rcp(new Epetra_Export(*permmasterdofmap_, *masterdofmap_));
 
-  slavedofmap_ = slave.CondDofMap();
+  slavedofmap_ = slave.CondMap();
   slaveexport_ = rcp(new Epetra_Export(*permslavedofmap_, *slavedofmap_));
 }
 
