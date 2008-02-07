@@ -815,6 +815,35 @@ void EnsightWriter::WriteResult(
     }
         break;
 
+    case elementdof:
+    {
+        if (myrank_==0)
+            cout<<"writing element based field "<<name<<endl;
+        // store information for later case file creation
+        variableresulttypemap_[name] = "element";
+
+        WriteElementDOFResultStep(file, result, resultfilepos, groupname, name, numdf, from);
+        // how many bits are necessary per time step (we assume a fixed size)?
+        if (myrank_==0)
+        {
+        	stepsize = ((int) file.tellp())-startfilepos;
+        	if (stepsize <= 0) dserror("found invalid step size for result file");
+        }
+        else
+        	stepsize = 1; //use dummy value on other procs
+
+        while (result.next_result())
+        {
+            const int indexsize = 80+2*sizeof(int)+(file.tellp()/stepsize+2)*sizeof(long);
+            if (static_cast<long unsigned int>(file.tellp())+stepsize+indexsize>= FILE_SIZE_LIMIT_)
+            {
+                FileSwitcher(file, multiple_files, filesetmap_, resultfilepos, stepsize, name, filename);
+            }
+            WriteElementDOFResultStep(file, result, resultfilepos, groupname, name, numdf, from);
+        }
+    }
+        break;
+        
     case elementbased:
     {
         if (myrank_==0)
@@ -847,6 +876,8 @@ void EnsightWriter::WriteResult(
     case no_restype:
     case max_restype:
         dserror("found invalid result type");
+    default:
+    	dserror("Invalid output type in WriteResult");
     } // end of switch(restype)
 
     // store information for later case file creation
@@ -1050,6 +1081,174 @@ void EnsightWriter::WriteNodalResultStep(
             Write<float>(file, 0.);
         }
     }
+
+    Write(file, "END TIME STEP");
+    return;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/*!
+ \brief Write element dof values for one timestep
+
+ Each element has to have the same number of dofs.
+ */
+void EnsightWriter::WriteElementDOFResultStep(
+        ofstream& file,
+        PostResult& result,
+        map<string, vector<ofstream::pos_type> >& resultfilepos,
+        const string groupname,
+        const string name,
+        const int numdof,
+        const int from
+        ) const
+{
+    //-------------------------------------------
+    // write some key words and read result data
+    //-------------------------------------------
+
+    vector<ofstream::pos_type>& filepos = resultfilepos[name];
+    Write(file, "BEGIN TIME STEP");
+    filepos.push_back(file.tellp());
+    Write(file, "description");
+    Write(file, "part");
+    Write(file, field_->field_pos()+1);
+
+    const RefCountPtr<DRT::Discretization> dis = field_->discretization();
+    const Epetra_Map* elementmap = dis->ElementRowMap(); //local node row map
+
+    const RefCountPtr<Epetra_Vector> data = result.read_result(groupname);
+    const Epetra_BlockMap& datamap = data->Map();
+
+    // do stupid conversion into Epetra map
+    RefCountPtr<Epetra_Map> epetradatamap;
+    epetradatamap = rcp(new Epetra_Map(datamap.NumGlobalElements(),
+            datamap.NumMyElements(),
+            datamap.MyGlobalElements(),
+            0,
+            datamap.Comm()));
+#if 0
+    if (epetradatamap->PointSameAs(*proc0map_))
+        cout<<"INFO: proc0map and epetradatamap are identical."<<endl;
+    // check if the data is distributed over several processors
+    bool isdistributed = (data->DistributedGlobal());
+#endif
+
+    //------------------------------------------------------
+    // each processor provides its result values for proc 0
+    //------------------------------------------------------
+
+    RefCountPtr<Epetra_Map> proc0datamap;
+    proc0datamap = LINALG::AllreduceEMap(*epetradatamap,0);
+
+    // contract result values on proc0 (proc0 gets everything, other procs empty)
+    Epetra_Import proc0dataimporter(*proc0datamap,*epetradatamap);
+    RefCountPtr<Epetra_Vector> proc0data = rcp(new Epetra_Vector(*proc0datamap));
+    int err = proc0data->Import(*data,proc0dataimporter,Insert);
+    if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
+
+    const Epetra_BlockMap& finaldatamap = proc0data->Map();
+
+    //------------------------------------------------------------------
+    // each processor provides its dof global id information for proc 0
+    //------------------------------------------------------------------
+
+    RefCountPtr<Epetra_MultiVector> dofgidperelementlid = rcp(new Epetra_MultiVector(*elementmap,numdof));
+    dofgidperelementlid->PutScalar(-1.0);
+
+    const int nummyelem = elementmap->NumMyElements();
+    for (int idof=0; idof<numdof; ++idof)
+    {
+        for (int ielem=0; ielem<nummyelem; ielem++)
+        {
+            DRT::Element* n = dis->lRowElement(ielem);
+            const double dofgid = (double) dis->Dof(n, from + idof);
+            if (dofgid > -1.0)
+            {
+                dofgidperelementlid->ReplaceMyValue(ielem, idof, dofgid);
+            }
+            else
+            {
+                dserror("Error while creating Epetra_MultiVector dofgidperlocalnodeid");
+            }
+        }
+    }
+
+    // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
+    RefCountPtr<Epetra_MultiVector> dofgidperelementlid_proc0 = rcp(new Epetra_MultiVector(*proc0map_,numdof));
+    Epetra_Import proc0dofimporter(*proc0map_,*elementmap);
+    err = dofgidperelementlid_proc0->Import(*dofgidperelementlid,proc0dofimporter,Insert);
+    if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
+
+    const int numglobelem = elementmap->NumGlobalElements();
+    
+    //-------------------------
+    // specify the element type
+    //-------------------------
+    // loop over the different element types present
+    EleGidPerDisType::const_iterator iter;
+    for (iter=eleGidPerDisType_.begin(); iter != eleGidPerDisType_.end(); ++iter)
+    {
+    	const string ensighteleString = GetEnsightString(iter->first);
+    	const int numelepertype = (iter->second).size();
+    	vector<int> actelegids(numelepertype);
+    	actelegids = iter->second;
+    	// write element type
+    	Write(file, ensighteleString);
+
+        //---------------
+        // write results
+        //---------------
+        if (myrank_==0)
+        {
+        	if (eleGidPerDisType_.empty()==true) dserror("no element types available");
+        }
+    	
+        if (myrank_==0) // ensures pointer dofgids is valid
+        {
+        	double* dofgids = (dofgidperelementlid_proc0->Values()); // columnwise data storage
+        	for (int idof=0; idof<numdof; ++idof)
+        	{
+        		for (int ielem=0; ielem<numelepertype; ielem++) // inode == lid of node because we use proc0map_
+        		{
+        			// local storage position of desired dof gid
+        			const int doflid = ielem + (idof*numglobelem);
+        			// get the dof global id
+        			const int actdofgid = (int) (dofgids[doflid]);
+        			dsassert(actdofgid>= 0, "error while getting dof global id");
+        			// get the dof local id w.r.t. the finaldatamap
+        			int lid = finaldatamap.LID(actdofgid);
+        			if (lid > -1)
+        			{
+        				Write(file, static_cast<float>((*proc0data)[lid]));
+        			}
+        			else
+        				dserror("recieved illegal dof local id: %d", lid);
+        		}
+            }
+        }// for idf
+
+        // 2 component vectors in a 3d problem require a row of zeros.
+        // do we really need this?
+        if (numdof==2)
+        {
+            for (int ielem=0; ielem<numelepertype; ielem++)
+            {
+                Write<float>(file, 0.);
+            }
+        }
+        
+    } // eledistype
+
 
     Write(file, "END TIME STEP");
     return;

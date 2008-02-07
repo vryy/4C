@@ -51,6 +51,15 @@ void FluidEnsightWriter::WriteAllResults(
     WriteElementResults(field);
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DGFEMFluidEnsightWriter::WriteAllResults(
+        PostField* field)
+{
+    EnsightWriter::WriteResult("velnp", "velocity", elementdof, field->problem()->num_dim());
+    EnsightWriter::WriteResult("velnp", "pressure", elementdof, 1, field->problem()->num_dim());
+    WriteElementResults(field);
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

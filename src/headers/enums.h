@@ -21,6 +21,7 @@ typedef enum _PROBLEM_TYP
                        prb_structure,    /*  structural problem */
                        prb_fluid,        /*  fluid problem */
                        prb_fluid_xfem,   /*  fluid problem including XFEM interfaces */
+                       prb_fluid_dgfem,  /*  fluid problem including XFEM interfaces */
                        prb_opt,          /*  structural optimization  problem */
                        prb_ale,          /*  pure ale problem */
                        prb_tsi,          /*  thermal structure interaction */
