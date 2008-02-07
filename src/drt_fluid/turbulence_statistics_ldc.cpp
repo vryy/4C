@@ -574,27 +574,27 @@ void TurbulenceStatisticsLdc::DumpStatistics(int step)
       double x1w    = (*x1sumw_)[i]/numsamp_;
       double x1p    = (*x1sump_)[i]/numsamp_;
 
-      double x1urms = sqrt((*x1sumsqu_)[i]/numsamp_-x1u*x1u);
-      double x1vrms = sqrt((*x1sumsqv_)[i]/numsamp_-x1v*x1v);
-      double x1wrms = sqrt((*x1sumsqw_)[i]/numsamp_-x1w*x1w);
-      double x1prms = sqrt((*x1sumsqp_)[i]/numsamp_-x1p*x1p);
+      double x1urms = 10*sqrt((*x1sumsqu_)[i]/numsamp_-x1u*x1u);
+      double x1vrms = 10*sqrt((*x1sumsqv_)[i]/numsamp_-x1v*x1v);
+      double x1wrms = 10*sqrt((*x1sumsqw_)[i]/numsamp_-x1w*x1w);
+      double x1prms = 10*sqrt((*x1sumsqp_)[i]/numsamp_-x1p*x1p);
 
-      double x1uv   = (*x1sumuv_)[i]/numsamp_-x1u*x1v;
-      double x1uw   = (*x1sumuw_)[i]/numsamp_-x1u*x1w;
-      double x1vw   = (*x1sumvw_)[i]/numsamp_-x1v*x1w;
+      double x1uv   = 500*((*x1sumuv_)[i]/numsamp_-x1u*x1v);
+      double x1uw   = 500*((*x1sumuw_)[i]/numsamp_-x1u*x1w);
+      double x1vw   = 500*((*x1sumvw_)[i]/numsamp_-x1v*x1w);
 
       (*log) <<  " "  << setw(11) << setprecision(4) << (*x1coordinates_)[i];
       (*log) << "   " << setw(11) << setprecision(4) << x1u;
       (*log) << "   " << setw(11) << setprecision(4) << x1v;
       (*log) << "   " << setw(11) << setprecision(4) << x1w;
       (*log) << "   " << setw(11) << setprecision(4) << x1p;
-      (*log) << "   " << setw(11) << setprecision(4) << 10*x1urms;
-      (*log) << "   " << setw(11) << setprecision(4) << 10*x1vrms;
-      (*log) << "   " << setw(11) << setprecision(4) << 10*x1wrms;
-      (*log) << "   " << setw(11) << setprecision(4) << 500*x1uv;
-      (*log) << "   " << setw(11) << setprecision(4) << 500*x1uw;
-      (*log) << "   " << setw(11) << setprecision(4) << 500*x1vw;
-      (*log) << "   " << setw(11) << setprecision(4) << 10*x1prms;
+      (*log) << "   " << setw(11) << setprecision(4) << x1urms;
+      (*log) << "   " << setw(11) << setprecision(4) << x1vrms;
+      (*log) << "   " << setw(11) << setprecision(4) << x1wrms;
+      (*log) << "   " << setw(11) << setprecision(4) << x1uv;
+      (*log) << "   " << setw(11) << setprecision(4) << x1uw;
+      (*log) << "   " << setw(11) << setprecision(4) << x1vw;
+      (*log) << "   " << setw(11) << setprecision(4) << x1prms;
       (*log) << "   \n";
     }
 
@@ -611,27 +611,27 @@ void TurbulenceStatisticsLdc::DumpStatistics(int step)
       double x2w    = (*x2sumw_)[i]/numsamp_;
       double x2p    = (*x2sump_)[i]/numsamp_;
 
-      double x2urms = sqrt((*x2sumsqu_)[i]/numsamp_-x2u*x2u);
-      double x2vrms = sqrt((*x2sumsqv_)[i]/numsamp_-x2v*x2v);
-      double x2wrms = sqrt((*x2sumsqw_)[i]/numsamp_-x2w*x2w);
-      double x2prms = sqrt((*x2sumsqp_)[i]/numsamp_-x2p*x2p);
+      double x2urms = 10*sqrt((*x2sumsqu_)[i]/numsamp_-x2u*x2u);
+      double x2vrms = 10*sqrt((*x2sumsqv_)[i]/numsamp_-x2v*x2v);
+      double x2wrms = 10*sqrt((*x2sumsqw_)[i]/numsamp_-x2w*x2w);
+      double x2prms = 10*sqrt((*x2sumsqp_)[i]/numsamp_-x2p*x2p);
 
-      double x2uv   = (*x2sumuv_)[i]/numsamp_-x2u*x2v;
-      double x2uw   = (*x2sumuw_)[i]/numsamp_-x2u*x2w;
-      double x2vw   = (*x2sumvw_)[i]/numsamp_-x2v*x2w;
+      double x2uv   = 500*((*x2sumuv_)[i]/numsamp_-x2u*x2v);
+      double x2uw   = 500*((*x2sumuw_)[i]/numsamp_-x2u*x2w);
+      double x2vw   = 500*((*x2sumvw_)[i]/numsamp_-x2v*x2w);
 
       (*log) <<  " "  << setw(11) << setprecision(4) << (*x2coordinates_)[i];
       (*log) << "   " << setw(11) << setprecision(4) << x2u;
       (*log) << "   " << setw(11) << setprecision(4) << x2v;
       (*log) << "   " << setw(11) << setprecision(4) << x2w;
       (*log) << "   " << setw(11) << setprecision(4) << x2p;
-      (*log) << "   " << setw(11) << setprecision(4) << 10*x2urms;
-      (*log) << "   " << setw(11) << setprecision(4) << 10*x2vrms;
-      (*log) << "   " << setw(11) << setprecision(4) << 10*x2wrms;
-      (*log) << "   " << setw(11) << setprecision(4) << 500*x2uv;
-      (*log) << "   " << setw(11) << setprecision(4) << 500*x2uw;
-      (*log) << "   " << setw(11) << setprecision(4) << 500*x2vw;
-      (*log) << "   " << setw(11) << setprecision(4) << 10*x2prms;
+      (*log) << "   " << setw(11) << setprecision(4) << x2urms;
+      (*log) << "   " << setw(11) << setprecision(4) << x2vrms;
+      (*log) << "   " << setw(11) << setprecision(4) << x2wrms;
+      (*log) << "   " << setw(11) << setprecision(4) << x2uv;
+      (*log) << "   " << setw(11) << setprecision(4) << x2uw;
+      (*log) << "   " << setw(11) << setprecision(4) << x2vw;
+      (*log) << "   " << setw(11) << setprecision(4) << x2prms;
       (*log) << "   \n";
     }
     log->flush();
