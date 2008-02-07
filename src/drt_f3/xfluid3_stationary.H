@@ -1203,29 +1203,29 @@ void Sysmat(
                               |                         |
                                \                       /
                 */
-                assembler.template Matrix<Pres,Tauxx>(shp, 0.5*reciproke_visc*fac, shp_tau);
-                assembler.template Matrix<Pres,Tauyy>(shp, 0.5*reciproke_visc*fac, shp_tau);
-                assembler.template Matrix<Pres,Tauzz>(shp, 0.5*reciproke_visc*fac, shp_tau);
+                assembler.template Matrix<Pres,Tauxx>(shp, -0.5*reciproke_visc*fac, shp_tau);
+                assembler.template Matrix<Pres,Tauyy>(shp, -0.5*reciproke_visc*fac, shp_tau);
+                assembler.template Matrix<Pres,Tauzz>(shp, -0.5*reciproke_visc*fac, shp_tau);
                 
-                assembler.template Vector<Pres>(shp, -0.5*reciproke_visc*fac*tau(0,0));
-                assembler.template Vector<Pres>(shp, -0.5*reciproke_visc*fac*tau(1,1));
-                assembler.template Vector<Pres>(shp, -0.5*reciproke_visc*fac*tau(2,2));
-    //            
-    //            /* Divergenzfreiheit - continuity equation*/
-    //            /*
-    //                           /                       \ 
-    //                          |                         |
-    //                          | p, trace (eps(Dtau))    |
-    //                          |                         |
-    //                           \                       /
-    //            */
-    //            assembler.template Matrix<Tauxx,Pres>(shp_tau, 0.5*reciproke_visc*fac, shp);
-    //            assembler.template Matrix<Tauyy,Pres>(shp_tau, 0.5*reciproke_visc*fac, shp);
-    //            assembler.template Matrix<Tauzz,Pres>(shp_tau, 0.5*reciproke_visc*fac, shp);
-    //            
-    //            assembler.template Vector<Tauxx>(shp, -0.5*reciproke_visc*fac*press);
-    //            assembler.template Vector<Tauyy>(shp, -0.5*reciproke_visc*fac*press);
-    //            assembler.template Vector<Tauzz>(shp, -0.5*reciproke_visc*fac*press);
+                assembler.template Vector<Pres>(shp, 0.5*reciproke_visc*fac*tau(0,0));
+                assembler.template Vector<Pres>(shp, 0.5*reciproke_visc*fac*tau(1,1));
+                assembler.template Vector<Pres>(shp, 0.5*reciproke_visc*fac*tau(2,2));
+                
+                /* Divergenzfreiheit - continuity equation*/
+                /*
+                               /                       \ 
+                              |                         |
+                              | p, trace (eps(Dtau))    |
+                              |                         |
+                               \                       /
+                */
+//                assembler.template Matrix<Tauxx,Pres>(shp_tau, 0.5*reciproke_visc*fac, shp);
+//                assembler.template Matrix<Tauyy,Pres>(shp_tau, 0.5*reciproke_visc*fac, shp); 
+//                assembler.template Matrix<Tauzz,Pres>(shp_tau, 0.5*reciproke_visc*fac, shp);
+//                
+//                assembler.template Vector<Tauxx>(shp, -0.5*reciproke_visc*fac*press);
+//                assembler.template Vector<Tauyy>(shp, -0.5*reciproke_visc*fac*press);
+//                assembler.template Vector<Tauzz>(shp, -0.5*reciproke_visc*fac*press);
             }
             
     
