@@ -42,17 +42,23 @@ bool CheckExtrusion(const EXODUS::ElementBlock eblock);
 
 vector<int> RiseNodeIds(int highestid, map<int,int> pair, const vector<int> elenodes);
 
-vector<double> ExtrudeNodeCoords(const vector<double> basecoords, const double distance, const int layer);
+vector<double> ExtrudeNodeCoords(const vector<double> basecoords, const double distance,
+    const int layer, const int numlayers, const vector<double> normal);
 
-void NodeToAvgNormal(map<int,vector<double> >& node_normal,const vector<int> elenodes,
-    const map<int,set<int> >& elepatch,
+//void NodeToAvgNormal(map<int,vector<double> >& node_normal,const vector<int> elenodes,
+//    const map<int,set<int> >& elepatch,
+//    const EXODUS::ElementBlock& eblock, const EXODUS::Mesh& basemesh);
+vector<double> NodeToAvgNormal(const int node,const vector<int> elenodes,const vector<double> refnormdir,
+    const map<int,set<int> >& nodetoele,
     const EXODUS::ElementBlock& eblock, const EXODUS::Mesh& basemesh);
 
 vector<double> AverageNormal(const vector<double> normal, const vector<vector<double> > nbr_normals);
 
 vector<double> Normal(int head1, int origin, int head2, const EXODUS::Mesh& basemesh);
 
-vector<double> CheckNormal(const vector<double> refn,const vector<double> checkn);
+void CheckNormDir(vector<double> checkn,const vector<double> refn);
+
+vector<double> MeanVec(const vector<vector<double> > baseVecs);
 
 const map<int,set<int> > NodeToEleConn(const EXODUS::ElementBlock eblock);
 
@@ -65,8 +71,10 @@ int FindEdgeNeighbor(const vector<int> nodes, const int actnode, const int wrong
 vector<int> FindNodeNeighbors(const vector<int> nodes, const int centernode);
 
 void PrintMap(ostream& os,const map<int,vector<int> > mymap);
+void PrintMap(ostream& os, const map<int,vector<double> >mymap);
 void PrintMap(ostream& os,const map<int,set<int> > mymap);
 void PrintVec(ostream& os, const vector<int> actvec);
+void PrintVec(ostream& os, const vector<double> actvec);
 void PrintSet(ostream& os, const set<int> actset);
 
 } // of namespace EXODUS

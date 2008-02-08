@@ -89,7 +89,7 @@ int main(
     // generate solid shell extrusion based on exodus file
     if (soshthickness!=0.0){
       if (exofile=="") dserror("no exofile specified for extrusion");
-      if (soshthickness < 0.0) dserror("thickness specified for solid-shell extrusion is negative");
+      //if (soshthickness < 0.0) dserror("thickness specified for solid-shell extrusion is negative");
       EXODUS::Mesh mysosh = EXODUS::SolidShellExtrusion(mymesh, soshthickness, soshnumlayer);
       string extrudefile;
       extrudefile = "extr_" + exofile;

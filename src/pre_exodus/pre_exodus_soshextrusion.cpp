@@ -45,6 +45,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
   for (i_ebs = extrudeblocks.begin(); i_ebs != extrudeblocks.end(); ++i_ebs){
     // get existing eblock
     EXODUS::ElementBlock extrudeblock = i_ebs->second;
+    const map<int,vector<int> > ele_conn = extrudeblock.GetEleConn();
     //extrudeblock.Print(cout);
     
     // Create Node to Element Connectivity
@@ -71,10 +72,22 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
     vector<int> actelenodes = extrudeblock.GetEleNodes(0);
     vector<int>::const_iterator i_node;
     int newid;
+    
+    // store one mean element normal to define and check for "outside"-direction
+    //map<int,vector<double> > ele_normals;
+    // store average node normals for each node
+    map<int,vector<double> > node_normals;
+    
+    // calculate the normal at the first node which defines the "outside" dir
+    vector<int> myNodeNbrs = FindNodeNeighbors(actelenodes,actelenodes.front());
+    vector<double> first_normal = Normal(myNodeNbrs[1],actelenodes.front(),myNodeNbrs[0],basemesh);
+    
     // create a new element
     vector<int> newelenodes;
     // create a vector of nodes for each layer which will form layered eles
     vector<vector<int> > layer_nodes(layers+1);
+    // store all of elements node normals
+    //vector<vector<double> > ele_nodenormals;
     for (i_node=actelenodes.begin(); i_node < actelenodes.end(); ++i_node){
       newid = highestnid; ++ highestnid; // here just raise for each basenode
       
@@ -93,11 +106,13 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
       layer_nodes[0].push_back(newid);
       
       // calculate extruding direction
-      //NodeToAvgNormal(node_normal,actelenodes,elepatch,eblock,basemesh);
+      vector<double> normal = NodeToAvgNormal(*i_node,actelenodes,first_normal,node_conn,extrudeblock,basemesh);
+      node_normals.insert(pair<int,vector<double> >(*i_node,normal));
+      //ele_nodenormals.push_back(normal);
       
       // create layers at this node location
       for (int i_layer = 1; i_layer <= layers; ++i_layer) {
-        const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness, i_layer);
+        const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness, i_layer, layers, normal);
         //newid += i_layer*nod_per_basele;
         // numbering of new ids nodewise not layerwise as may be expected
         newid = highestnid; ++ highestnid; 
@@ -112,6 +127,9 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
     }    
     //highestnid += nod_per_basele*(layers); // correct to account for layers
     
+    // Ele Normal of first ele is mean of node normals
+    //ele_normals.insert(pair<int,vector<double> >(0,MeanVec(ele_nodenormals)));
+    
     doneles.insert(0);    // the first element is done ************************
     // form every new layer element
     for (int i_layer = 0; i_layer < layers; ++i_layer){
@@ -123,8 +141,8 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
       newconn.insert(pair<int,vector<int> >(newele,newelenodes));
       ++ newele;
       newelenodes.clear();
-      layer_nodes.clear();
     }
+    layer_nodes.clear();
      
     
     while (todo_eles.size() > 0){ // start of going through ele neighbors///////
@@ -141,6 +159,9 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
       // get edge neighbors
       vector<int> actneighbors = ele_neighbor.at(actele);
       
+      // get elenormal as reference direction for neighbors
+      //vector<double> ele_normal = ele_normals.find(actele);
+      
       vector<int>::const_iterator i_nbr;
       unsigned int edge = 0; // edge counter
       for (i_nbr = actneighbors.begin(); i_nbr < actneighbors.end(); ++ i_nbr){
@@ -148,13 +169,14 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
         // check for undone neighbor
         i_doneles = doneles.find(actneighbor);
         if ((actneighbor != -1) && (i_doneles == doneles.end())){
+          vector<int> actneighbornodes = ele_conn.find(actneighbor)->second;
           // lets extrude *****************************************************
           
           // get nodepair of actual edge
           int firstedgenode = actelenodes.at(edge);
           int secedgenode;
           // switch in case of last to first node edge
-          if (edge == actelenodes.size()) secedgenode = actelenodes.at(0);
+          if (edge == actelenodes.size()-1) secedgenode = actelenodes.at(0);
           else secedgenode = actelenodes.at(edge+1);
           
           // create a vector of nodes for each layer which will form layered eles
@@ -181,10 +203,16 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
             
             // insert node into base layer
             layer_nodes[0].push_back(newid);
+            
+            // get reference direction for new avg normal here firstedgenode
+            vector<double> refnormal = node_normals.find(firstedgenode)->second;
+            // calculate extruding direction
+            vector<double> normal = NodeToAvgNormal(secedgenode,actneighbornodes,refnormal,node_conn,extrudeblock,basemesh);
+            node_normals.insert(pair<int,vector<double> >(secedgenode,normal));
 
             // create layers at this node location
             for (int i_layer = 1; i_layer <= layers; ++i_layer) {
-              const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness, i_layer);
+              const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness, i_layer, layers, normal);
               newid = highestnid; ++ highestnid;
               int newExoNid = ExoToStore(newid);
               // put new coords into newnode map
@@ -226,9 +254,15 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
             // insert node into base layer
             layer_nodes[0].push_back(newid);
 
+            // get reference direction for new avg normal here secedgenode
+            vector<double> refnormal = node_normals.find(secedgenode)->second;
+            // calculate extruding direction
+            vector<double> normal = NodeToAvgNormal(firstedgenode,actneighbornodes,refnormal,node_conn,extrudeblock,basemesh);
+            node_normals.insert(pair<int,vector<double> >(firstedgenode,normal));
+
             // create layers at this node location
             for (int i_layer = 1; i_layer <= layers; ++i_layer) {
-              const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness, i_layer);
+              const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness, i_layer, layers, normal);
               newid = highestnid; ++ highestnid;
               int newExoNid = ExoToStore(newid);
               // put new coords into newnode map
@@ -272,9 +306,15 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
             // insert node into base layer
             layer_nodes[0].push_back(newid);
 
+            // get reference direction for new avg normal here firstedgenode
+            vector<double> refnormal = node_normals.find(firstedgenode)->second;
+            // calculate extruding direction
+            vector<double> normal = NodeToAvgNormal(thirdnode,actneighbornodes,refnormal,node_conn,extrudeblock,basemesh);
+            node_normals.insert(pair<int,vector<double> >(thirdnode,normal));
+
             // create layers at this node location
             for (int i_layer = 1; i_layer <= layers; ++i_layer) {
-              const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness, i_layer);
+              const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness, i_layer, layers, normal);
               newid = highestnid; ++ highestnid;
               int newExoNid = ExoToStore(newid);
               // put new coords into newnode map
@@ -319,9 +359,15 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
               // insert node into base layer
               layer_nodes[0].push_back(newid);
               
+              // get reference direction for new avg normal here firstedgenode
+              vector<double> refnormal = node_normals.find(thirdnode)->second;
+              // calculate extruding direction
+              vector<double> normal = NodeToAvgNormal(fourthnode,actneighbornodes,refnormal,node_conn,extrudeblock,basemesh);
+              node_normals.insert(pair<int,vector<double> >(fourthnode,normal));
+
               // create layers at this node location
               for (int i_layer = 1; i_layer <= layers; ++i_layer) {
-                const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness, i_layer);
+                const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness, i_layer, layers, normal);
                 newid = highestnid; ++ highestnid;
                 int newExoNid = ExoToStore(newid);
                 // put new coords into newnode map
@@ -351,8 +397,8 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
             newconn.insert(pair<int,vector<int> >(newele,newelenodes));
             ++ newele;
             newelenodes.clear();
-            layer_nodes.clear();
           }
+          layer_nodes.clear();
 
           // insert actneighbor into done elements
           doneles.insert(actneighbor);
@@ -367,6 +413,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
       
     }// end of extruding all elements in block
    
+    //PrintMap(cout,node_normals);
     // create new Element Block
     std::ostringstream blockname;
     blockname << "extrude" << i_ebs->first;
@@ -410,12 +457,16 @@ vector<int> EXODUS::RiseNodeIds(int highestid, map<int,int> pair, const vector<i
   return newnodes;
 }
 
-vector<double> EXODUS::ExtrudeNodeCoords(const vector<double> basecoords, const double distance, const int layer)
+vector<double> EXODUS::ExtrudeNodeCoords(const vector<double> basecoords,
+    const double distance, const int layer, const int numlayers, const vector<double> normal)
 {
   vector<double> newcoords(3);
-  newcoords[0] = basecoords[0];
-  newcoords[1] = basecoords[1];
-  newcoords[2] = basecoords[2] + layer*distance;
+  
+  double actdistance = layer * distance/numlayers; 
+  
+  newcoords[0] = basecoords[0] + actdistance*normal.at(0);
+  newcoords[1] = basecoords[1] + actdistance*normal.at(1);
+  newcoords[2] = basecoords[2] + actdistance*normal.at(2);
   return newcoords;
 }
 
@@ -446,9 +497,6 @@ const map<int,vector<int> > EXODUS::EleNeighbors(EXODUS::ElementBlock eblock, co
   const map<int,vector<int> > ele_conn = eblock.GetEleConn();
   map<int,vector<int> >::const_iterator i_ele;
 
-  // Create Node to average normal map
-  map<int,vector<double> > node_normal;
-  
   // loop all elements
   for (i_ele = ele_conn.begin(); i_ele != ele_conn.end(); ++i_ele){
     int acteleid = i_ele->first;
@@ -464,9 +512,6 @@ const map<int,vector<int> > EXODUS::EleNeighbors(EXODUS::ElementBlock eblock, co
       elepatch[nodeid].insert(eles.begin(),eles.end());
     }
 
-    NodeToAvgNormal(node_normal,actelenodes,elepatch,eblock,basemesh);
-    
-    
     // default case: no neighbors at any edge
     vector<int> defaultnbrs(actelenodes.size(),-1);
     eleneighbors.insert(pair<int,vector<int> >(acteleid,defaultnbrs));
@@ -499,46 +544,39 @@ const map<int,vector<int> > EXODUS::EleNeighbors(EXODUS::ElementBlock eblock, co
   return eleneighbors;
 }
 
-void EXODUS::NodeToAvgNormal(map<int,vector<double> >& node_normal,
+vector<double> EXODUS::NodeToAvgNormal(const int node,
                              const vector<int> elenodes,
-                             const map<int,set<int> >& elepatch,
+                             const vector<double> refnormdir,
+                             const map<int,set<int> >& nodetoele,
                              const EXODUS::ElementBlock& eblock,
                              const EXODUS::Mesh& basemesh)
 {
-  //map<int,vector<double> > node_normal;
-  
-  // loop every element node
-  vector<int>::const_iterator i_node;
-  int inode = 0;
-  for (i_node = elenodes.begin(); i_node < elenodes.end(); ++i_node){
-    int node = *i_node;
     vector<int> myNodeNbrs = FindNodeNeighbors(elenodes,node);
     
     // calculate normal at node
-    vector<double> normal = Normal(myNodeNbrs[0],node,myNodeNbrs[1],basemesh);
+    vector<double> normal = Normal(myNodeNbrs[1],node,myNodeNbrs[0],basemesh);
+    CheckNormDir(normal,refnormdir);
     
     // look at neighbors
     vector<vector<double> > nbr_normals;
-    set<int> nbreles = elepatch.find(inode)->second;
-    set<int>::iterator i_nbr;
+    const set<int> nbreles = nodetoele.find(node)->second;
+    set<int>::const_iterator i_nbr;
     for (i_nbr=nbreles.begin(); i_nbr !=nbreles.end(); ++i_nbr){
       int nbr = *i_nbr;
       vector<int> nbrele = eblock.GetEleNodes(nbr);
-      vector<int> n_nbrs = FindNodeNeighbors(nbrele,node);
-      vector<double> nbr_normal = Normal(n_nbrs[0],node,n_nbrs[1],basemesh);
-      // check whether nbr_normal points into approx same dir
-      vector<double> corrnbr_normal = CheckNormal(normal,nbr_normal);
-      nbr_normals.push_back(corrnbr_normal);
+      if (nbrele != elenodes){ // otherwise it's me, not a neighbor!
+        vector<int> n_nbrs = FindNodeNeighbors(nbrele,node);
+        vector<double> nbr_normal = Normal(n_nbrs[1],node,n_nbrs[0],basemesh);
+        // check whether nbr_normal points into approx same dir
+        CheckNormDir(nbr_normal,refnormdir);
+        nbr_normals.push_back(nbr_normal);
+      }
     }
     
     // average node normal with all neighbors
     vector<double> myavgnormal = AverageNormal(normal,nbr_normals);
     
-    // insert into map
-    node_normal.insert(pair<int,vector<double> >(node,myavgnormal));
-    
-    ++ inode;
-  }
+  return myavgnormal;
 }
 
 vector<double> EXODUS::AverageNormal(const vector<double> n, const vector<vector<double> > nbr_ns)
@@ -555,7 +593,7 @@ vector<double> EXODUS::AverageNormal(const vector<double> n, const vector<vector
   
   for(i_nbr=nbr_ns.begin(); i_nbr < nbr_ns.end(); ++i_nbr){
     // cross-product with next neighbor normal
-    vector<double> cross;
+    vector<double> cross(3);
     vector<double> nbr_n = *i_nbr;
     cross[0] =    avgn[1]*nbr_n[2] - avgn[2]*nbr_n[1];
     cross[1] = - (avgn[0]*nbr_n[2] - avgn[2]*nbr_n[0]);
@@ -588,6 +626,12 @@ vector<double> EXODUS::AverageNormal(const vector<double> n, const vector<vector
     }
   } // average with next neighbor
   
+  // unit length:
+  double length = sqrt(avgn[0]*avgn[0] + avgn[1]*avgn[1] + avgn[2]*avgn[2]);
+  avgn[0] = avgn[0]/length;
+  avgn[1] = avgn[1]/length;
+  avgn[2] = avgn[2]/length;
+  
   return avgn;
 }
 
@@ -602,7 +646,7 @@ vector<double> EXODUS::Normal(int head1, int origin, int head2,const EXODUS::Mes
   normal[1] = - ((h1[0]-o[0])*(h2[2]-o[2]) - (h1[2]-o[2])*(h2[0]-o[0]));
   normal[2] =   ((h1[0]-o[0])*(h2[1]-o[1]) - (h1[1]-o[1])*(h2[0]-o[0]));
   
-  double length = normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2];
+  double length = sqrt(normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2]);
   normal[0] = normal[0]/length;
   normal[1] = normal[1]/length;
   normal[2] = normal[2]/length;
@@ -610,10 +654,29 @@ vector<double> EXODUS::Normal(int head1, int origin, int head2,const EXODUS::Mes
   return normal;
 }
 
-vector<double> EXODUS::CheckNormal(const vector<double> refn,const vector<double> checkn)
+void EXODUS::CheckNormDir(vector<double> checkn,const vector<double> refn)
 {
-  vector<double> corrn = checkn;
-  return corrn;
+  // compute scalar product of the two normals
+  double scp = checkn[0]*refn.at(0) + checkn[1]*refn.at(1) + checkn[2]*refn.at(2);
+  if (scp<0){
+    checkn[0] = -checkn[0]; checkn[1] = -checkn[1]; checkn[2] = -checkn[2];
+  }
+}
+
+vector<double> EXODUS::MeanVec(const vector<vector<double> >baseVecs)
+{
+  if (baseVecs.size() == 0) dserror("baseVecs empty -> div by 0");
+  vector<double> mean;
+  vector<vector<double> >::const_iterator i_vec;
+  //vector<double>::const_iterator i;
+  for(i_vec=baseVecs.begin(); i_vec < baseVecs.end(); ++i_vec){
+    const vector<double> vec = *i_vec;
+    for(unsigned int i=0 ; i < vec.size(); ++i){
+      mean[i] += vec.at(i);
+    }
+  }
+  for(unsigned int i=0 ; i < mean.size(); ++i) mean[i] = mean[i] / baseVecs.size();
+  return mean;
 }
 
 bool EXODUS::FindinVec(const int id, const vector<int> vec)
@@ -648,14 +711,14 @@ int EXODUS::FindEdgeNeighbor(const vector<int> nodes, const int actnode, const i
 
 vector<int> EXODUS::FindNodeNeighbors(const vector<int> nodes,const int actnode)
 {
-  vector<int> neighbors;
+  vector<int> neighbors(2);
   // special case of very first node
   if (nodes.at(0) == actnode) {
     neighbors[0] = nodes.back();
     neighbors[1] = nodes.at(1);
   } else if (nodes.back() == actnode) {
-    neighbors[0] = nodes.back();
-    neighbors[1] = nodes.at(nodes.size()-2);
+    neighbors[0] = nodes.at(nodes.size()-2);
+    neighbors[1] = nodes.front();
   } else {
     // case of somewhere in between
     vector<int>::const_iterator i;
@@ -699,9 +762,33 @@ void EXODUS::PrintMap(ostream& os,const map<int,set<int> > mymap)
   }
 }
 
+void EXODUS::PrintMap(ostream& os,const map<int,vector<double> > mymap)
+{
+  map<int,vector<double> >::const_iterator iter;
+  for(iter = mymap.begin(); iter != mymap.end(); ++iter)
+  {
+      os << iter->first << ": ";
+      vector<double> actvec = iter->second;
+      vector<double>::iterator i;
+      for (i=actvec.begin(); i<actvec.end(); ++i) {
+        os << *i << ",";
+      }
+      os << endl;
+  }
+}
+
 void EXODUS::PrintVec(ostream& os, const vector<int> actvec)
 {
   vector<int>::const_iterator i;
+  for (i=actvec.begin(); i<actvec.end(); ++i) {
+    os << *i << ",";
+  }
+  os << endl;
+}
+
+void EXODUS::PrintVec(ostream& os, const vector<double> actvec)
+{
+  vector<double>::const_iterator i;
   for (i=actvec.begin(); i<actvec.end(); ++i) {
     os << *i << ",";
   }
