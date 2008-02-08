@@ -417,7 +417,14 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
     // create new Element Block
     std::ostringstream blockname;
     blockname << "extrude" << i_ebs->first;
-    EXODUS::ElementBlock neweblock(ElementBlock::hex8,newconn,blockname.str());
+    ElementBlock::Shape newshape;
+    switch (extrudeblock.GetShape()) {
+      case ElementBlock::shell4: newshape = ElementBlock::hex8; break;
+      case ElementBlock::tri3: newshape = ElementBlock::wedge6; break;
+      default: dserror("unrecognized EBlock Shape"); break;
+    }
+
+    EXODUS::ElementBlock neweblock(newshape,newconn,blockname.str());
     int newblockID = highestblock + i_ebs->first;
     neweblocks.insert(pair<int,EXODUS::ElementBlock>(newblockID,neweblock));
     
@@ -437,8 +444,9 @@ bool EXODUS::CheckExtrusion(const EXODUS::ElementBlock eblock)
 {
   const EXODUS::ElementBlock::Shape myshape = eblock.GetShape();
   const string myname = eblock.GetName();
-  if (myshape == EXODUS::ElementBlock::shell4)
-    if (myname.compare(0,7,"extrude") == 0) return true;
+  if (myname.compare(0,7,"extrude") == 0)
+    if ((myshape == EXODUS::ElementBlock::shell4)
+    || (myshape == EXODUS::ElementBlock::tri3)) return true;
   return false;
 }
 
