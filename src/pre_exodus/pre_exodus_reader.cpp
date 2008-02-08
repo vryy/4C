@@ -181,7 +181,25 @@ EXODUS::Mesh::Mesh(string exofilename)
     error = ex_get_name (exoid_, EX_SIDE_SET, spropID[i], mychar);
     // prefer string to store name
     string sidesetname(mychar, int(MAX_STR_LENGTH));
-    SideSet actSideSet(sidesetname);
+
+    // Read SideSet params
+    int num_side_in_set,num_dist_fact_in_set;
+    error = ex_get_side_set_param (exoid_, spropID[i], &num_side_in_set,&num_dist_fact_in_set);
+    
+    // get SideSet
+    int side_set_elem_list[num_side_in_set];
+    int side_set_side_list[num_side_in_set];
+    error = ex_get_side_set (exoid_, spropID[i], side_set_elem_list,side_set_side_list);
+    if (error != 0) dserror("error reading side set");
+    map<int,vector<int> > sides_in_set;
+    for (int j = 0; j < num_side_in_set; ++j){
+      vector<int> side(2); // first entry is element, second side
+      side[0] = side_set_elem_list[j];
+      side[1] = side_set_side_list[j];
+      sides_in_set.insert(pair<int,vector<int> >(j,side));
+    }
+    
+    SideSet actSideSet(sides_in_set,sidesetname);
     
     // Add this SideSet into Mesh map
     sideSets_.insert(std::pair<int,SideSet>(i,actSideSet));
@@ -351,6 +369,13 @@ vector<double> EXODUS::Mesh::GetNodeMap(const int MapNodeID) const
 {
   map<int,vector<double> >::const_iterator  it = nodes_.find(MapNodeID);
   return it->second;
+}
+
+map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset) const
+{
+  map<int,vector<int> > conn;
+  
+  return conn;
 }
 
 /*----------------------------------------------------------------------*
@@ -599,16 +624,27 @@ void EXODUS::NodeSet::FillNodelistArray(int* nodelist) const
 }
 
 
-EXODUS::SideSet::SideSet(string name)
+EXODUS::SideSet::SideSet(map<int,vector<int> >sides, string name)
 {
+  sides_ = sides;
   name_ = name;
+}
+
+void EXODUS::SideSet::Print(ostream& os, bool verbose) const{
+  os << "SideSet, named: " << name_.c_str() << endl
+  << "has " << GetNumSides() << " Sides" << endl;
+  map<int,vector<int> >::const_iterator it;
+  for (it=sides_.begin(); it != sides_.end(); it++){
+    os << "Side " << it->first << ": ";
+    os << "Ele: " << it->second.at(0) << ", Side: " << it->second.at(1) << endl;
+    os << endl;
+  }
 }
 
 EXODUS::SideSet::~SideSet()
 {
   return;
 }
-
 
 
 #endif

@@ -110,6 +110,9 @@ public:
   //! Get Number of SideSets
   int GetNumSideSets() const {return sideSets_.size();}
   
+  //! Get Side Set Connectivity with Global Nodes
+  map<int,vector<int> > GetSideSetConn(const SideSet sideset) const;
+  
   //! Get Node map
   map<int,vector<double> > GetNodes() const {return nodes_;}
   
@@ -244,10 +247,16 @@ private:
 class SideSet
 {
 public:
-  SideSet(string name);
+  SideSet(map<int,vector<int> >sides,string name);
+  
   virtual ~SideSet();
-  void Print(ostream& os) const {os << "SideSet, named: " << name_.c_str() << endl;};
+  
+  inline int GetNumSides() const {return sides_.size();}
+  
+  void Print(ostream& os, bool verbose=false) const;
+  
 private:
+  map<int,vector<int> > sides_;
   string name_;
 };
 
