@@ -147,6 +147,11 @@ void dyn_fluid_drt()
   // number of degrees of freedom
   fluidtimeparams.set<int>              ("number of velocity degrees of freedom" ,probsize.get<int>("DIM"));
 
+  // ------------------------------------------------ basic scheme, i.e.
+  // --------------------- solving nonlinear or linearised flow equation
+  fluidtimeparams.set<int>("type of nonlinear solve" ,
+					 Teuchos::getIntegralValue<int>(fdyn,"DYNAMICTYP"));
+
   // -------------------------------------------------- time integration
   // the default time step size
   fluidtimeparams.set<double>           ("time step size"           ,fdyn.get<double>("TIMESTEP"));

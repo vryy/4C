@@ -538,9 +538,10 @@ typedef enum _SSI_MESH
 typedef enum _FLUID_DYNTYPE
 {
   dyntyp_nln_time_int=0,
-  dyntyp_pm_discont=1,
-  dyntyp_pm_cont=2,
-  dyntyp_pm_cont_laplace=3,
+  dyntyp_lin_time_int=1,
+  dyntyp_pm_discont=2,
+  dyntyp_pm_cont=3,
+  dyntyp_pm_cont_laplace=4,
 } FLUID_DYNTYPE;
 
 

@@ -129,6 +129,12 @@ public:
   void NonlinearSolve();
 
   /*!
+  \brief solve linearised fluid
+
+  */
+  void LinearSolve();
+
+  /*!
     \brief build linear system matrix and rhs
 
     Monolithic FSI needs to access the linear fluid problem.
@@ -280,6 +286,9 @@ protected:
   RefCountPtr<Epetra_Vector>    residual_sv_;
   RefCountPtr<Epetra_Vector>    sugrvisc_;
 
+  /// rhs: right hand side vector for linearised flow solution
+  RefCountPtr<Epetra_Vector>    rhs_;
+
   /// true (rescaled) residual vector without zeros at dirichlet positions
   RefCountPtr<Epetra_Vector>    trueresidual_;
 
@@ -319,6 +328,7 @@ protected:
   RefCountPtr<Time> timedyninit_    ;
   RefCountPtr<Time> timedynloop_    ;
   RefCountPtr<Time> timenlnloop_    ;
+  RefCountPtr<Time> timelinloop_    ;
   RefCountPtr<Time> timeeleloop_    ;
   RefCountPtr<Time> timeapplydirich_;
   RefCountPtr<Time> timesolver_     ;

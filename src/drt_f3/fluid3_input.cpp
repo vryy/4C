@@ -175,7 +175,7 @@ bool DRT::ELEMENTS::Fluid3::ReadElement()
             gaussrule_ = intrule_wedge_9point;
             break;
         default:
-            dserror("Reading of FLUID3 element failed: Gaussrule for wedge  not supported!\n");
+            dserror("Reading of FLUID3 element failed: Gaussrule for wedge not supported!\n");
         }
         break;
     }

@@ -407,8 +407,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   setStringToIntegralParameter("DYNAMICTYP","Nlin_Time_Int",
                                "Nonlinear Time Integraton Scheme",
-                               tuple<std::string>("Nlin_Time_Int"),
-                               tuple<int>(dyntyp_nln_time_int),
+                               tuple<std::string>(
+				 "Nlin_Time_Int",
+                                 "Lin_Time_Int"
+                                 ),
+                               tuple<int>(
+				dyntyp_nln_time_int,
+                                dyntyp_lin_time_int
+                                ),
                                &fdyn);
 
   setStringToIntegralParameter("TIMEINTEGR","One_Step_Theta",

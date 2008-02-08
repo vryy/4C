@@ -2003,7 +2003,8 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
 }
 
 
-
+/* If you make changes in this method please consider also changes in
+   DRT::ELEMENTS::Fluid3lin_Impl::BodyForce() in fluid3_lin_impl.cpp */
 /*----------------------------------------------------------------------*
  |  get the body force in the nodes of the element (private) gammi 04/07|
  |  the Neumann condition associated with the nodes is stored in the    |
@@ -2084,6 +2085,8 @@ void DRT::ELEMENTS::Fluid3Impl::BodyForce(Fluid3* ele, const double time)
 }
 
 
+/* If you make changes in this method please consider also changes in
+   DRT::ELEMENTS::Fluid3lin_Impl::gder2() in fluid3_lin_impl.cpp */
 /*----------------------------------------------------------------------*
  |  calculate second global derivatives w.r.t. x,y,z at point r,s,t
  |                                            (private)      gammi 07/07

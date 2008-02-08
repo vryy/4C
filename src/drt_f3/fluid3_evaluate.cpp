@@ -20,6 +20,7 @@ Maintainer: Georg Bauer
 
 #include "fluid3.H"
 #include "fluid3_impl.H"
+#include "fluid3_lin_impl.H"
 #include "fluid3_genalpha_resVMM.H"
 #include "fluid3_stationary.H"
 
@@ -251,6 +252,73 @@ DRT::ELEMENTS::Fluid3Stationary* DRT::ELEMENTS::Fluid3::StationaryImpl()
   return NULL;
 }
 
+DRT::ELEMENTS::Fluid3lin_Impl* DRT::ELEMENTS::Fluid3::F3linImpl()
+{
+  switch (NumNode())
+  {
+  case 8:
+  {
+    static Fluid3lin_Impl* f8;
+    if (f8==NULL)
+      f8 = new Fluid3lin_Impl(8);
+    return f8;
+  }
+  case 20:
+  {
+    static Fluid3lin_Impl* f20;
+    if (f20==NULL)
+      f20 = new Fluid3lin_Impl(20);
+    return f20;
+  }
+  case 27:
+  {
+    static Fluid3lin_Impl* f27;
+    if (f27==NULL)
+      f27 = new Fluid3lin_Impl(27);
+    return f27;
+  }
+  case 4:
+  {
+    static Fluid3lin_Impl* f4;
+    if (f4==NULL)
+      f4 = new Fluid3lin_Impl(4);
+    return f4;
+  }
+  case 10:
+  {
+    static Fluid3lin_Impl* f10;
+    if (f10==NULL)
+      f10 = new Fluid3lin_Impl(10);
+    return f10;
+  }
+  case 6:
+  {
+    static Fluid3lin_Impl* f6;
+    if (f6==NULL)
+      f6 = new Fluid3lin_Impl(6);
+    return f6;
+  }
+  case 15:
+  {
+    static Fluid3lin_Impl* f15;
+    if (f15==NULL)
+      f15 = new Fluid3lin_Impl(15);
+    return f15;
+  }
+  case 5:
+  {
+    static Fluid3lin_Impl* f5;
+    if (f5==NULL)
+      f5 = new Fluid3lin_Impl(5);
+    return f5;
+  }
+
+  default:
+    dserror("node number %d not supported", NumNode());
+  }
+  return NULL;
+}
+
 // converts a string into an Action for this element
 DRT::ELEMENTS::Fluid3::ActionType DRT::ELEMENTS::Fluid3::convertStringToActionType(
               const string& action) const
@@ -260,6 +328,8 @@ DRT::ELEMENTS::Fluid3::ActionType DRT::ELEMENTS::Fluid3::convertStringToActionTy
   DRT::ELEMENTS::Fluid3::ActionType act = Fluid3::none;
   if (action == "calc_fluid_systemmat_and_residual")
     act = Fluid3::calc_fluid_systemmat_and_residual;
+  else if (action == "calc_linear_fluid")
+    act = Fluid3::calc_linear_fluid;
   else if (action == "calc_fluid_genalpha_sysmat_and_residual")
     act = Fluid3::calc_fluid_genalpha_sysmat_and_residual;
   else if (action == "time update for subscales")
@@ -468,6 +538,73 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         // outside world. Is there a better one?
         params.set("density", actmat->m.fluid->density);
 
+      }
+      break;
+      case calc_linear_fluid:
+      {
+        // need current velocity and history vector
+        RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velnp");
+        RefCountPtr<const Epetra_Vector> hist  = discretization.GetState("hist");
+        if (velnp==null || hist==null)
+          dserror("Cannot get state vectors 'velnp' and/or 'hist'");
+
+        // extract local values from the global vectors
+        vector<double> myvelnp(lm.size());
+        DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
+        vector<double> myhist(lm.size());
+        DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
+
+        RefCountPtr<const Epetra_Vector> dispnp;
+        vector<double> mydispnp;
+
+        // create blitz objects for element arrays
+        const int numnode = NumNode();
+        blitz::Array<double, 1> eprenp(numnode);
+        blitz::Array<double, 2> evelnp(3,numnode,blitz::ColumnMajorArray<2>());
+        blitz::Array<double, 2> evhist(3,numnode,blitz::ColumnMajorArray<2>());
+
+        // split velocity and pressure, insert into element arrays
+        for (int i=0;i<numnode;++i)
+        {
+          evelnp(0,i) = myvelnp[0+(i*4)];
+          evelnp(1,i) = myvelnp[1+(i*4)];
+          evelnp(2,i) = myvelnp[2+(i*4)];
+
+          eprenp(i) = myvelnp[3+(i*4)];
+
+          // the history vector contains the information of time step t_n (mass rhs!)
+          evhist(0,i) = myhist[0+(i*4)];
+          evhist(1,i) = myhist[1+(i*4)];
+          evhist(2,i) = myhist[2+(i*4)];
+        }
+
+        // get control parameter
+        const double time = params.get<double>("total time",-1.0);
+
+        // One-step-Theta: timefac = theta*dt
+        // BDF2:           timefac = 2/3 * dt
+        const double timefac = params.get<double>("thsl",-1.0);
+        if (timefac < 0.0) dserror("No thsl supplied");
+
+        // wrap epetra serial dense objects in blitz objects
+        blitz::Array<double, 2> estif(elemat1.A(),
+                                      blitz::shape(elemat1.M(),elemat1.N()),
+                                      blitz::neverDeleteData,
+                                      blitz::ColumnMajorArray<2>());
+        blitz::Array<double, 1> eforce(elevec1.Values(),
+                                       blitz::shape(elevec1.Length()),
+                                       blitz::neverDeleteData);
+
+        // calculate element coefficient matrix and rhs     
+        F3linImpl()->Sysmat(this,
+			    evelnp,
+			    eprenp,
+			    evhist,
+			    estif,
+			    eforce,
+			    actmat,
+			    time,
+			    timefac);
       }
       break;
       case calc_fluid_beltrami_error:

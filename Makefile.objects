@@ -240,6 +240,7 @@ OBJS_INPUT_CPP= src/input_full/input_parameterlist.o
 # -------------------------------------------------- drt version of fluid3
 OBJS_DRT_F3_LIB = src/drt_f3/fluid3.o \
                   src/drt_f3/fluid3_impl.o \
+                  src/drt_f3/fluid3_lin_impl.o \
                   src/drt_f3/fluid3_genalpha_resVMM.o \
                   src/drt_f3/fluid3_stationary.o \
                   src/drt_f3/fluid3_line.o \

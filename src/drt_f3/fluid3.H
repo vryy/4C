@@ -51,6 +51,7 @@ namespace ELEMENTS
 class Fluid3Surface;
 class Fluid3Line;
 class Fluid3Impl;
+class Fluid3lin_Impl;
 class Fluid3GenalphaResVMM;
 class Fluid3Stationary;
 class Fluid3Register;
@@ -71,6 +72,7 @@ public:
   friend class Fluid3Surface;
   friend class Fluid3Line;
   friend class Fluid3Impl;
+  friend class Fluid3lin_Impl;
   friend class Fluid3GenalphaResVMM;
   friend class Fluid3Stationary;  
 
@@ -331,6 +333,7 @@ private:
   {
     none,
     calc_fluid_systemmat_and_residual,
+    calc_linear_fluid,
     calc_fluid_genalpha_sysmat_and_residual,
     calc_fluid_genalpha_update_for_subscales,
     calc_fluid_genalpha_average_for_subscales_and_residual,
@@ -683,6 +686,9 @@ void f3_calc_smag_const_LijMij_and_MijMij(
 
   /// Internal implementation class for specific fluid element
   Fluid3Impl* Impl();
+
+  /// Internal implementation class for linearised fluid element
+  Fluid3lin_Impl* F3linImpl();
 
   /// Residual based genalpha implementation class for fluid element
   Fluid3GenalphaResVMM* GenalphaResVMM();
