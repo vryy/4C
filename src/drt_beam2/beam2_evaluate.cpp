@@ -266,26 +266,19 @@ void DRT::ELEMENTS::Beam2::b2_local_aux(LINALG::SerialDenseMatrix& B_curr,
   z_curr[3] = -sin_beta;
   z_curr[4] = cos_beta;
   z_curr[5] = 0;
-  
-  for(int id_col=0; id_col<6; id_col++)
-  	B_curr(0,id_col) = r_curr[id_col];
     
   //assigning values to each element of the B_curr matrix 
-  B_curr.Reshape(3,6);   
+  B_curr.Shape(3,6);
+  
   for(int id_col=0; id_col<6; id_col++)
-  {
- 	if (id_col == 2) 
-        	B_curr(1,id_col) = -1;
-        else
-        {
-         	if (id_col == 5) 
-        		B_curr(1,id_col) = 1;
-        	else
-        		B_curr(1,id_col) = 0;
-        }
-        	
-  	B_curr(2,id_col) = B_curr(1,id_col) * (length_refe / 2) - (length_refe / length_curr) * z_curr[id_col];
-  }
+  	{
+	  B_curr(0,id_col) = r_curr[id_col];
+	  B_curr(2,id_col) = (length_refe / length_curr) * z_curr[id_col];
+	  if (id_col == 2 || id_col ==5)
+	    		B_curr(2,id_col) = B_curr(2,id_col) + (length_refe / 2);
+  	}
+    B_curr(1,2) = 1;
+    B_curr(1,5) = -1;
 
   return;
 } /* DRT::ELEMENTS::Beam2::b2_local_aux */
@@ -369,7 +362,6 @@ for (int k=0; k<iel; ++k)
   //calculation of local geometrically important matrices and vectors
   b2_local_aux(B_curr, r_curr, z_curr, beta, x_curr, length_curr, length_refe);
   
-    
   //calculation of local internal forces
   LINALG::SerialDenseVector force_loc;
   
@@ -379,23 +371,23 @@ for (int k=0; k<iel; ++k)
   force_loc(0) = ym*cross_section_*(length_curr - length_refe)/length_refe;
   
   //local internal bending moment
-  force_loc(1) = ym*moment_inertia_*(x_curr(2,1)-x_curr(2,0))/length_refe;
+  force_loc(1) = -ym*moment_inertia_*(x_curr(2,1)-x_curr(2,0))/length_refe;
   
   //local internal shear force
-  force_loc(2) = sm*cross_section_corr_*( (x_curr(2,1)+x_curr(2,0))/2 - beta);
+  force_loc(2) = -sm*cross_section_corr_*( (x_curr(2,1)+x_curr(2,0))/2 - beta);
   
   
   //calculating tangential stiffness matrix in global coordinates---------------------------------------------
   
   //linear elastic part including rotation
   
-  for(int id_col=0; id_col<5; id_col++)
+  for(int id_col=0; id_col<6; id_col++)
   {
 	  aux_CB(0,id_col) = B_curr(0,id_col) * (ym*cross_section_/length_refe);
 	  aux_CB(1,id_col) = B_curr(1,id_col) * (ym*moment_inertia_/length_refe);
 	  aux_CB(2,id_col) = B_curr(2,id_col) * (sm*cross_section_corr_/length_refe);
   }
-  
+   
   stiffmatrix.Multiply('T','N',1,B_curr,aux_CB,0);
   
   //adding geometric stiffness by shear force 
@@ -441,7 +433,6 @@ for (int k=0; k<iel; ++k)
 	  for(int id_lin=0; id_lin<2; id_lin++)
     	force(id_col) = B_curr(id_lin,id_col)*force_loc(id_lin);
   
-  std::cout << "!!!!!!!!!!!";
   return;
 } // DRT::ELEMENTS::Beam2::b2_nlnstiffmass(
 
