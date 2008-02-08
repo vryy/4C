@@ -77,6 +77,8 @@ void EnsightWriter::WriteFiles()
     //  write geometry file          //
     ///////////////////////////////////
     const string geofilename = filename_ + "_"+ field_->name() + ".geo";
+    const size_t found_path = geofilename.find_last_of("/\\");
+    const string geofilename_nopath = geofilename.substr(found_path+1);
     WriteGeoFile(geofilename);
     vector<int> filesteps;
     filesteps.push_back(1);
@@ -122,7 +124,7 @@ void EnsightWriter::WriteFiles()
         casefile << "# created using post_drt_ensight\n"<< "FORMAT\n\n"<< "type:\tensight gold\n";
 
         casefile << "\nGEOMETRY\n\n";
-        casefile << "model:\t"<<timesetnumbermap_["geo"]<<"\t"<<filesetnumbermap_["geo"]<<"\t"<< geofilename<< "\n";
+        casefile << "model:\t"<<timesetnumbermap_["geo"]<<"\t"<<filesetnumbermap_["geo"]<<"\t"<< geofilename_nopath<< "\n";
 
         casefile << "\nVARIABLE\n\n";
         casefile << GetVariableSection(filesetmap_, variablenumdfmap_, variablefilenamemap_);
@@ -1435,6 +1437,10 @@ string EnsightWriter::GetVariableSection(
         const string key = variable->first;
         const int numdf = variable->second;
         const string filename = variablefilenamemap[key];
+        
+        // Get rid of path
+        const size_t found_path = filename.find_last_of("/\\");
+        const string filename_nopath = filename.substr(found_path+1);
 
         map<string,int>::const_iterator entry1 = filesetnumbermap_.find(key);
         if (entry1 == filesetnumbermap_.end())
@@ -1449,13 +1455,12 @@ string EnsightWriter::GetVariableSection(
         string filename_for_casefile;
         if (numsubfilesteps > 1)
         {
-            filename_for_casefile = filename + "***";
+            filename_for_casefile = filename_nopath + "***";
         }
         else
         {
-            filename_for_casefile = filename;
+            filename_for_casefile = filename_nopath;
         }
-
         str << GetVariableEntryForCaseFile(numdf, setnumber, key, filename_for_casefile);
     }
 
