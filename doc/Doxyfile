@@ -468,6 +468,7 @@ INPUT                  = index.doc \
                          ../src/drt_f2 \
                          ../src/drt_f3 \
                          ../src/drt_so3 \
+                         ../src/drt_beam2 \
                          ../src/io \
                          ../src/drt_fsi \
                          ../src/drt_mfsi \
@@ -1045,6 +1046,7 @@ PREDEFINED             = CCADISCRET \
                          TRILINOS_PACKAGE \
                          QHULL \
                          D_SHELL8 \
+                         D_BEAM2 \
                          D_ALE \
                          D_FLUID2 \
                          D_FLUID3 \
