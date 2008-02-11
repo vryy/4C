@@ -257,38 +257,6 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_Operator>  Operator,
   return;
 }
 
-#if 0
-/*----------------------------------------------------------------------*
- |  solve vm3 (public)                                     vgravem 06/07|
- *----------------------------------------------------------------------*/
-void LINALG::Solver::Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
-                           RefCountPtr<Epetra_CrsMatrix> matrix2,
-                           RefCountPtr<Epetra_Vector>    x,
-                           RefCountPtr<Epetra_Vector>    b,
-                           bool refactor,
-                           bool reset)
-{
-  // reset data flags
-  if (reset)
-  {
-    Reset();
-    refactor = true;
-  }
-
-  // extract the ML parameters and build system of equations
-  ParameterList&  mllist = Params().sublist("ML Parameters");
-  RCP<VM3_Solver> vm3_solver = rcp(new VM3_Solver::VM3_Solver(matrix, matrix2, mllist,true) );
-
-  // Apply the solver.
-  vm3_solver->VM3_Solver::Solve(*b,*x, Params());
-
-  ncall_++;
-
-  return;
-}
-#endif
-
-
 /*----------------------------------------------------------------------*
  |  solve (protected)                                        mwgee 02/07|
  *----------------------------------------------------------------------*/
@@ -661,6 +629,7 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
     params.set("solver","lapack");
     params.set("symmetric",false);
   break;
+#if 0
   case vm3://=========================================================== VM3
   {
     params.set("solver","vm3");
@@ -793,6 +762,7 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
     mllist.set<double*>("null space: vectors",NULL);
   }
   break;
+#endif
   case aztec_msr://================================================= AztecOO
   {
     params.set("solver","aztec");

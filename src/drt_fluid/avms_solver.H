@@ -1,9 +1,10 @@
 /*!----------------------------------------------------------------------
 \file avms_solver.H
 
-\class VM3_Solver
+\class AVMS_Solver
 
-\brief An algebraic variational multiscale solver and method
+\brief An algebraic variational multiscale solver and method 
+       with extended matrix system
 
 <pre>
 Maintainer: Michael Gee
@@ -55,6 +56,7 @@ using namespace MLAPI;
 \class AVMS_Solver
 
 \brief An algebraic variational multiscale solver and method
+       with extended matrix system
 
 The AVMS (formerly VM3) method class. It takes 2 matrices upon construction:
 Aforfine is a fine resolved scale system that includes stabilization to 
@@ -105,6 +107,7 @@ public:
   */
   explicit AVMS_Solver(RCP<Epetra_CrsMatrix> Aforfine,
                        RCP<Epetra_CrsMatrix> Aforcoarse,
+                       const RCP<Epetra_Vector> dbctoggle,
                        ParameterList& mlparams);
 
   /*!
@@ -138,6 +141,7 @@ private:
   ParameterList&         mlparams_;  // ML parameter list
   RCP<Epetra_CrsMatrix>  Acombined_; // input matrix without fine-scale term
   RCP<Epetra_CrsMatrix>  P_;         // prolongation from algerbaic coarse level to this level
+  const RCP<Epetra_Vector>& dbctoggle_;  // DBC toggle vector
 
 }; // AVMS_Solver
 

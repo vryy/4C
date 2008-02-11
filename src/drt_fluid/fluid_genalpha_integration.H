@@ -102,10 +102,10 @@ public:
   o generate maps to split velocity and pressure dofs
 
   */
-  FluidGenAlphaIntegration(RefCountPtr<DRT::Discretization> actdis,
-                           LINALG::Solver&                  solver,
-                           ParameterList&                   params,
-                           IO::DiscretizationWriter&        output);
+  FluidGenAlphaIntegration(RCP<DRT::Discretization>  actdis,
+                           LINALG::Solver&           solver,
+                           ParameterList&            params,
+                           IO::DiscretizationWriter& output);
 
    /*!
   \brief Destructor
@@ -309,7 +309,7 @@ protected:
 
 private:
   // input arguments
-  RefCountPtr<DRT::Discretization> discret_;
+  RCP<DRT::Discretization> discret_;
   LINALG::Solver&                  solver_;
   ParameterList&                   params_;
   IO::DiscretizationWriter&        output_;
@@ -345,58 +345,62 @@ private:
   int                              writestep_;
   int                              upres_;
 
-  // (fine-scale) subgrid-viscosity flag
+  // fine-scale subgrid-viscosity flag
   int                              fssgv_;
 
   // turbulence statistics
-  RefCountPtr<TurbulenceStatistics> turbulencestatistics_;
+  RCP<TurbulenceStatistics> turbulencestatistics_;
 
-  // system matrices: standard (stabilized) matrix and (fine-scale)
-  // subgrid-viscosity matrix
-  RefCountPtr<Epetra_CrsMatrix>    sysmat_;
-  RefCountPtr<Epetra_CrsMatrix>    sysmat_sv_;
+  // (standard) system matrix
+  RCP<Epetra_CrsMatrix>    sysmat_;
 
-  // scale-separation matrix for VM3-based solution approach
-  RefCountPtr<Epetra_CrsMatrix>    scalesep_;
-
-  // rhs: standard (stabilized) residual vector (rhs for the incremental form),
-  // (fine-scale) subgrid-viscosity residual and scaling vector
-  RefCountPtr<Epetra_Vector>       residual_;
-  RefCountPtr<Epetra_Vector>       residual_sv_;
-  RefCountPtr<Epetra_Vector>       sugrvisc_;
+  // (standard) residual vector (rhs for the incremental form),
+  RCP<Epetra_Vector>       residual_;
 
   // the force vector is a copy of the residual without dirichlet
   // forces applied
-  RefCountPtr<Epetra_Vector>       force_;
+  RCP<Epetra_Vector>       force_;
 
   // Nonlinear iteration increment vector contains accleeration
   // and pressure increment
-  RefCountPtr<Epetra_Vector>       increment_;
+  RCP<Epetra_Vector>       increment_;
 
 
   // toggle vector indicating which dofs have Dirichlet BCs
-  RefCountPtr<Epetra_Vector>       dirichtoggle_;
+  RCP<Epetra_Vector>       dirichtoggle_;
 
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
-  RefCountPtr<Epetra_Vector>       zeros_;
+  RCP<Epetra_Vector>       zeros_;
 
   // the vector containing body and surface forces
-  RefCountPtr<Epetra_Vector>       neumann_loads_;
+  RCP<Epetra_Vector>       neumann_loads_;
 
   // acceleration and pressure at time n+1, n and intermediate time step n+alpha_M
   // in all acc vectors, every component associated to a pressure dof is
   // completely meaningless --- the Navier Stokes equations are a differential
   // algebraic equation, there's no evolution equation for the pressure!
-  RefCountPtr<Epetra_Vector>       accnp_;
-  RefCountPtr<Epetra_Vector>       accn_;
-  RefCountPtr<Epetra_Vector>       accam_;
+  RCP<Epetra_Vector>       accnp_;
+  RCP<Epetra_Vector>       accn_;
+  RCP<Epetra_Vector>       accam_;
 
   // velocities and pressures at time n+1, n and intermediate time step n+alpha_F
   // in velaf_, every component associated to a pressure dof is completely
   // meaningless since the pressure is treated implicitly.
-  RefCountPtr<Epetra_Vector>       velnp_;
-  RefCountPtr<Epetra_Vector>       veln_;
-  RefCountPtr<Epetra_Vector>       velaf_;
+  RCP<Epetra_Vector>       velnp_;
+  RCP<Epetra_Vector>       veln_;
+  RCP<Epetra_Vector>       velaf_;
+
+  // vm3 solver
+  RCP<VM3_Solver> vm3_solver_;
+
+  // only necessary for vm3 solver: fine-scale subgrid-viscosity matrix
+  RCP<Epetra_CrsMatrix> sysmat_sv_;
+
+  // only necessary for vm3 solver: fine-scale subgrid-viscosity residual vector
+  RCP<Epetra_Vector>    residual_sv_;
+
+  // only necessary for vm3 solver: subgrid-viscosity-scaling vector
+  RCP<Epetra_Vector>    sugrvisc_;
 
 
   // Vectors used for convergence check
@@ -412,39 +416,39 @@ private:
 
   // Vectors used for filtering (for dynamic Smagorinsky model)
   // --------------------------
-  RefCountPtr<Epetra_MultiVector>  filtered_vel_;
-  RefCountPtr<Epetra_MultiVector>  filtered_reynoldsstress_;
-  RefCountPtr<Epetra_MultiVector>  filtered_modeled_subgrid_stress_;
-  RefCountPtr<Epetra_MultiVector>  col_filtered_vel_;
-  RefCountPtr<Epetra_MultiVector>  col_filtered_reynoldsstress_;
-  RefCountPtr<Epetra_MultiVector>  col_filtered_modeled_subgrid_stress_;
+  RCP<Epetra_MultiVector>  filtered_vel_;
+  RCP<Epetra_MultiVector>  filtered_reynoldsstress_;
+  RCP<Epetra_MultiVector>  filtered_modeled_subgrid_stress_;
+  RCP<Epetra_MultiVector>  col_filtered_vel_;
+  RCP<Epetra_MultiVector>  col_filtered_reynoldsstress_;
+  RCP<Epetra_MultiVector>  col_filtered_modeled_subgrid_stress_;
 
-  RefCountPtr<vector<double> >     averaged_LijMij_;
-  RefCountPtr<vector<double> >     averaged_MijMij_;
-  RefCountPtr<vector<double> >     planecoords_;
+  RCP<vector<double> >     averaged_LijMij_;
+  RCP<vector<double> >     averaged_MijMij_;
+  RCP<vector<double> >     planecoords_;
   // time measurement
   // ----------------
-  RefCountPtr<Time> timedyntot_     ;
-  RefCountPtr<Time> timedyninit_    ;
-  RefCountPtr<Time> timedynloop_    ;
-  RefCountPtr<Time> timenlnloop_    ;
-  RefCountPtr<Time> timeeleloop_    ;
-  RefCountPtr<Time> timeevaldirich_ ;
-  RefCountPtr<Time> timeapplydirich_;
-  RefCountPtr<Time> timesolver_     ;
-  RefCountPtr<Time> timeout_        ;
-  RefCountPtr<Time> timenonlinup_   ;
+  RCP<Time> timedyntot_     ;
+  RCP<Time> timedyninit_    ;
+  RCP<Time> timedynloop_    ;
+  RCP<Time> timenlnloop_    ;
+  RCP<Time> timeeleloop_    ;
+  RCP<Time> timeevaldirich_ ;
+  RCP<Time> timeapplydirich_;
+  RCP<Time> timesolver_     ;
+  RCP<Time> timeout_        ;
+  RCP<Time> timenonlinup_   ;
 
-  RefCountPtr<TimeMonitor> tm0_ref_ ;
-  RefCountPtr<TimeMonitor> tm1_ref_ ;
-  RefCountPtr<TimeMonitor> tm2_ref_ ;
-  RefCountPtr<TimeMonitor> tm3_ref_ ;
-  RefCountPtr<TimeMonitor> tm4_ref_ ;
-  RefCountPtr<TimeMonitor> tm5_ref_ ;
-  RefCountPtr<TimeMonitor> tm6_ref_ ;
-  RefCountPtr<TimeMonitor> tm7_ref_ ;
-  RefCountPtr<TimeMonitor> tm8_ref_ ;
-  RefCountPtr<TimeMonitor> tm9_ref_ ;
+  RCP<TimeMonitor> tm0_ref_ ;
+  RCP<TimeMonitor> tm1_ref_ ;
+  RCP<TimeMonitor> tm2_ref_ ;
+  RCP<TimeMonitor> tm3_ref_ ;
+  RCP<TimeMonitor> tm4_ref_ ;
+  RCP<TimeMonitor> tm5_ref_ ;
+  RCP<TimeMonitor> tm6_ref_ ;
+  RCP<TimeMonitor> tm7_ref_ ;
+  RCP<TimeMonitor> tm8_ref_ ;
+  RCP<TimeMonitor> tm9_ref_ ;
 
   double                   dtele_;
   double                   dtsolve_;

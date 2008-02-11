@@ -46,6 +46,8 @@ Maintainer: Volker Gravemeier
 #include <iostream>
 #include <Teuchos_TimeMonitor.hpp>
 
+#include "avms_solver.H"
+
 
 extern "C" /* stuff which is c and is accessed from c++ */
 {
@@ -73,10 +75,10 @@ public:
   \brief Standard Constructor
 
   */
-  CondifImplicitTimeInt(RefCountPtr<DRT::Discretization> dis,
-                        LINALG::Solver&                  solver,
-                        ParameterList&                   params,
-                        IO::DiscretizationWriter&        output);
+  CondifImplicitTimeInt(RCP<DRT::Discretization>  dis,
+                        LINALG::Solver&           solver,
+                        ParameterList&            params,
+                        IO::DiscretizationWriter& output);
 
 
   /*!
@@ -141,12 +143,12 @@ protected:
   CondifImplicitTimeInt operator = (const CondifImplicitTimeInt& old);
   CondifImplicitTimeInt (const CondifImplicitTimeInt& old);
 
-  RefCountPtr<DRT::Discretization> discret_;
-  LINALG::Solver&               solver_;
-  ParameterList&                params_;
-  IO::DiscretizationWriter&     output_;
-  int                           myrank_;
-  int                           maxentriesperrow_;
+  RCP<DRT::Discretization>   discret_;
+  LINALG::Solver&            solver_;
+  ParameterList&             params_;
+  IO::DiscretizationWriter&  output_;
+  int                        myrank_;
+  int                        maxentriesperrow_;
 
   double time_;
   int step_;
@@ -165,58 +167,64 @@ protected:
   double theta_;
 
   int cdvel_;
+
+  /// fine-scale subgrid-viscosity flag
   int fssgd_;
 
-  /// system matrices: standard (stabilized) matrix and (fine-scale)
-  /// subgrid-diffusivity matrix
-  RefCountPtr<Epetra_CrsMatrix> sysmat_;
-  RefCountPtr<Epetra_CrsMatrix> sysmat_sd_;
-
-  /// scale-separation matrix for VM3-based solution approach
-  RefCountPtr<Epetra_CrsMatrix> scalesep_;
+  /// (standard) system matrix
+  RCP<Epetra_CrsMatrix> sysmat_;
 
   /// toggle vector indicating which dofs have Dirichlet BCs
-  RefCountPtr<Epetra_Vector>    dirichtoggle_;
+  RCP<Epetra_Vector>    dirichtoggle_;
 
-  RefCountPtr<Epetra_Vector>    invtoggle_;
+  RCP<Epetra_Vector>    invtoggle_;
 
   /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
-  RefCountPtr<Epetra_Vector>    zeros_;
+  RCP<Epetra_Vector>    zeros_;
 
   /// the vector containing body and surface forces
-  RefCountPtr<Epetra_Vector>    neumann_loads_;
+  RCP<Epetra_Vector>    neumann_loads_;
 
   /// The residual vector
-  RefCountPtr<Epetra_Vector>    residual_;
-  RefCountPtr<Epetra_Vector>    sugrvisc_;
+  RCP<Epetra_Vector>    residual_;
 
   /// time derivatives of phi at time n and n-1
-  RefCountPtr<Epetra_Vector>    phidtn_;
-  RefCountPtr<Epetra_Vector>    phidtnm_;
+  RCP<Epetra_Vector>    phidtn_;
+  RCP<Epetra_Vector>    phidtnm_;
   /// phi at time n+1, n and n-1
-  RefCountPtr<Epetra_Vector>    phinp_;
-  RefCountPtr<Epetra_Vector>    phin_;
-  RefCountPtr<Epetra_Vector>    phinm_;
-  // histvector --- a linear combination of phinm, phin (BDF)
-  //                or phin, phidtn (One-Step-Theta)
-  RefCountPtr<Epetra_Vector>    hist_;
+  RCP<Epetra_Vector>    phinp_;
+  RCP<Epetra_Vector>    phin_;
+  RCP<Epetra_Vector>    phinm_;
+  /// histvector --- a linear combination of phinm, phin (BDF)
+  ///                or phin, phidtn (One-Step-Theta)
+  RCP<Epetra_Vector>    hist_;
+
+  /// vm3 and avms solver
+  RCP<VM3_Solver> vm3_solver_;
+  RCP<AVMS_Solver> avms_solver_;
+
+  /// only necessary for vm3 solver: fine-scale subgrid-diffusivity matrix
+  RCP<Epetra_CrsMatrix> sysmat_sd_;
+
+  /// only necessary for vm3 solver: subgrid-viscosity-scaling vector
+  RCP<Epetra_Vector>    sugrvisc_;
 
 
   // time measurement
   // ----------------
-  RefCountPtr<Time> timedyntot_     ;
-  RefCountPtr<Time> timedyninit_    ;
-  RefCountPtr<Time> timedynloop_    ;
-  RefCountPtr<Time> timeeleloop_    ;
-  RefCountPtr<Time> timeapplydirich_;
-  RefCountPtr<Time> timesolver_     ;
+  RCP<Time> timedyntot_     ;
+  RCP<Time> timedyninit_    ;
+  RCP<Time> timedynloop_    ;
+  RCP<Time> timeeleloop_    ;
+  RCP<Time> timeapplydirich_;
+  RCP<Time> timesolver_     ;
 
-  RefCountPtr<TimeMonitor> tm0_ref_ ;
-  RefCountPtr<TimeMonitor> tm1_ref_ ;
-  RefCountPtr<TimeMonitor> tm2_ref_ ;
-  RefCountPtr<TimeMonitor> tm3_ref_ ;
-  RefCountPtr<TimeMonitor> tm4_ref_ ;
-  RefCountPtr<TimeMonitor> tm5_ref_ ;
+  RCP<TimeMonitor> tm0_ref_ ;
+  RCP<TimeMonitor> tm1_ref_ ;
+  RCP<TimeMonitor> tm2_ref_ ;
+  RCP<TimeMonitor> tm3_ref_ ;
+  RCP<TimeMonitor> tm4_ref_ ;
+  RCP<TimeMonitor> tm5_ref_ ;
 
 }; // class CondifImplicitTimeInt
 

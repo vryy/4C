@@ -145,12 +145,8 @@ CondifImplicitTimeInt::CondifImplicitTimeInt(RefCountPtr<DRT::Discretization> ac
   // The residual vector --- more or less the rhs
   residual_     = LINALG::CreateVector(*dofrowmap,true);
 
-  // necessary only for the VM3 approach
-  if (fssgd_ > 0)
-  {
-    // initialize (fine-scale) diffusivity matrix
-    sysmat_sd_ = null;
-  }
+  // necessary only for the VM3 approach: initialize subgrid-diffusivity matrix
+  if (fssgd_ > 0) sysmat_sd_ = null;
 
   // -------------------------------------------------------------------
   // create timers and time monitor
@@ -188,7 +184,6 @@ void CondifImplicitTimeInt::Integrate()
   // bound for the number of startsteps
   int    numstasteps         =params_.get<int>   ("number of start steps");
 
-  
   if (timealgo_==timeint_stationary) // stationary case
     SolveStationaryProblem();
   else  // instationary case
@@ -495,59 +490,63 @@ void CondifImplicitTimeInt::Solve(
     discret_->SetState("phinp",phinp_);
     discret_->SetState("hist"  ,hist_ );
 
-    // decide whether VM3-based solution approach or standard approach
+#if 0
+    // AVMS solver: VM3 solution approach with extended matrix system
+    // (may replace direct algebraic VM3 solution approach)
+    // begin first encapsulation of AVMS solution approach
+    if (fssgd_ > 0)
+    {
+      // create all-scale subgrid-diffusivity matrix
+      sysmat_sd_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_); 
+
+      // call loop over elements (two matrices)
+      discret_->Evaluate(eleparams,sysmat_,sysmat_sd_,residual_);
+      discret_->ClearState();
+    }
+    // end first encapsulation of AVMS solution approach
+#endif
+    // direct algebraic VM3 solution approach
+    // begin encapsulation of direct algebraic VM3 solution approach
     if (fssgd_ > 0)
     {
       // extract the ML parameters
       ParameterList&  mllist = solver_.Params().sublist("ML Parameters");
 
       // subgrid-viscosity-scaling vector
-      sugrvisc_     = LINALG::CreateVector(*dofrowmap,true);
+      sugrvisc_ = LINALG::CreateVector(*dofrowmap,true);
 
-      // define flag for computation of matrices (true only in first time step)
-      bool compute;
-
-      if (step_ == 1) 
+      if (step_ == 1)
       {
-        compute=true;
-
-        // create scale-separation matrix
-        scalesep_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
-
-        // create (fine-scale) subgrid-diffusivity matrix
+        // create normalized all-scale subgrid-diffusivity matrix
         sysmat_sd_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_); 
 
         // call loop over elements (two matrices + subgr.-visc.-scal. vector)
         discret_->Evaluate(eleparams,sysmat_,sysmat_sd_,residual_,sugrvisc_);
         discret_->ClearState();
 
-        // finalize the (fine-scale) subgrid-diffusivity matrix
+        // finalize the normalized all-scale subgrid-diffusivity matrix
         LINALG::Complete(*sysmat_sd_);
 
-        // apply DBC to (fine-scale) subgrid-diffusivity matrix
+        // apply DBC to normalized all-scale subgrid-diffusivity matrix
         LINALG::ApplyDirichlettoSystem(sysmat_sd_,phinp_,residual_,phinp_,dirichtoggle_);
 
         // call the VM3 constructor
-        RCP<VM3_Solver> vm3_solver = rcp(new VM3_Solver(scalesep_,sysmat_sd_,sysmat_,sugrvisc_,zeros_,zeros_,zeros_,dirichtoggle_,mllist,compute) );
-
-        // call the VM3 scale separator: precomputation of unscaled S^T*M*S
-        vm3_solver->Separate(scalesep_,sysmat_sd_);
+        vm3_solver_ = rcp(new VM3_Solver(sysmat_sd_,dirichtoggle_,mllist,true) );
       }
       else
       {
-        compute=false;
-
         // call loop over elements (one matrix + subgr.-visc.-scal. vector)
         discret_->Evaluate(eleparams,sysmat_,residual_,sugrvisc_);
         discret_->ClearState();
       }
-      // call the VM3 constructor
-      RCP<VM3_Solver> vm3_solver = rcp(new VM3_Solver(scalesep_,sysmat_sd_,sysmat_,sugrvisc_,zeros_,zeros_,zeros_,dirichtoggle_,mllist,compute) );
+      // check whether VM3 solver exists
+      if (vm3_solver_ == null) dserror("vm3_solver not allocated");
 
       // call the VM3 scaling:
       // scale precomputed matrix product by subgrid-viscosity-scaling vector
-      vm3_solver->Scale(sysmat_sd_,sysmat_,sugrvisc_,zeros_,zeros_,zeros_,false );
+      vm3_solver_->Scale(sysmat_sd_,sysmat_,zeros_,zeros_,sugrvisc_,zeros_,false );
     }
+    // end encapsulation of direct algebraic VM3 solution approach
     else
     {
       // call standard loop over elements
@@ -582,6 +581,33 @@ void CondifImplicitTimeInt::Solve(
     // get cpu time
     tcpu=ds_cputime();
 
+#if 0
+    // AVMS solver: VM3 solution approach with extended matrix system
+    // (may replace direct algebraic VM3 solution approach)
+    // begin second encapsulation of AVMS solution approach
+    if (fssgd_ > 0)
+    {
+      // add standard matrix to subgrid-diffusivity matrix: fine-scale matrix
+      LINALG::Add(sysmat_,false,1.0,sysmat_sd_,1.0);
+
+      // finalize fine-scale matrix
+      LINALG::Complete(*sysmat_sd_);
+
+      // apply DBC to fine-scale matrix
+      LINALG::ApplyDirichlettoSystem(sysmat_sd_,phinp_,residual_,phinp_,dirichtoggle_);
+
+      // extract the ML parameters
+      ParameterList&  mllist = solver_.Params().sublist("ML Parameters");
+
+      // call the AVMS constructor
+      avms_solver_ = rcp(new AVMS_Solver(sysmat_sd_,sysmat_,dirichtoggle_,mllist) );
+
+      // Apply the AVMS solver
+      avms_solver_->Solve(*residual_,*phinp_,solver_.Params());
+    }
+    else
+    // end second encapsulation of AVMS solution approach
+#endif
     solver_.Solve(sysmat_,phinp_,residual_,true,true); 
 
     // end time measurement for solver call

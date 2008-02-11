@@ -1,22 +1,42 @@
+/*!----------------------------------------------------------------------
+\file vm3_solver.H
+
+\class VM3_Solver
+
+\brief A direct algebraic VM3 approach
+
+Scales are separated via plain aggregation. A fine-scale 
+subgrid-viscosity matrix in the form
+                 M_fssv = S^T * M_sv * S
+is created, using an all-scale subgrid-viscosity matrix M_sv and a
+scale-separation matrix S.
+
+To (substantially) reduce computational cost, the matrix M_fssv is
+initially (i.e., in the first timestep) generated in a normalized form
+(i.e., based on a virtual subgrid-viscosity "1"). In each further
+timestep, a subgrid-viscosity-scaling vector is generated containing 
+the "real" subgrid viscosity for each (velocity) degree of freedom, and
+the normalized matrix M_fssv is left- and right-scaled by the square-root 
+values of that vector.
+
+<pre>
+Maintainer: Volker Gravemeier
+            vgravem@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15245
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifndef VM3_SOLVER_H
 #define VM3_SOLVER_H
 
 #ifdef CCADISCRET
 
-#include <ctime>
-#include <iostream>
-#include <vector>
-
 // Trilinos includes
-#include <Epetra_CrsMatrix.h>
-#ifdef EPETRA_MPI
-#include <Epetra_MpiComm.h>
-#else
-#include <Epetra_SerialComm.h>
-#endif
-
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
+#include "Epetra_IntVector.h"
+#include "Epetra_CrsMatrix.h"
 
 #include "ml_common.h"
 #include "ml_include.h"
@@ -59,23 +79,19 @@ class  VM3_Solver
 {
 public:
 
-  // @{ \name Constructors and destructors
-
-
   /*!
-  \brief ctor
+  \brief Constructor of the VM3_Solver class
+
+   \param Msv (In)       : normalized all-scale subgrid-viscosity matrix
+   \param dbctoggle (In) : DBC toggle vector
+   \param mlparams (In)  : ML parameter list
+   \param compute (In)   : flag for call to computing routine
 
   */
-  explicit VM3_Solver( RefCountPtr<Epetra_CrsMatrix>& Sep,
-                       RefCountPtr<Epetra_CrsMatrix>& Aplus,
-                       RefCountPtr<Epetra_CrsMatrix>& A,
-                       RefCountPtr<Epetra_Vector>& sugrvisc,
-                       RefCountPtr<Epetra_Vector>& rplus,
-                       RefCountPtr<Epetra_Vector>& r,
-                       RefCountPtr<Epetra_Vector>& sol,
-                       const RefCountPtr<Epetra_Vector> dbctoggle,
-                       ParameterList& mlparams,
-                       bool compute);
+  explicit VM3_Solver(RCP<Epetra_CrsMatrix> Msv,
+                      const RCP<Epetra_Vector> dbctoggle,
+                      ParameterList& mlparams,
+                      bool compute);
 
   /*!
   \brief Destroys an instance of this class
@@ -85,112 +101,28 @@ public:
   */
   virtual ~VM3_Solver() {}
 
-  //@}
-  // @{ \name Query methods
-
-  /*!
-  \brief get Comm of this class
-
-  Derived from Epetra_Operator, returns ref to the Epetra_Comm of this class
-
-  */
-  const Epetra_Comm & Comm() const {return(A_->Comm());}
-
-
-  //@}
-  // @{ \name Apply methods
-
-
-  /*!
-  \brief routine for generating the scale-separation matrix S
-
-   (will only be called in the first timestep) 
-
-  */
-  bool Compute();
-
-  /*!
-  \brief scale-separating routine
-
-   precomputation of unscaled S^T*M*S
-   (called in the first timestep)
-
-   \param Sep  (In)       : scale-separation matrix
-   \param Aplus (In/Out)  : (fine-scale) subgrid-viscosity matrix
-
-  */
-   void Separate(RefCountPtr<Epetra_CrsMatrix>& Sep,
-                 RefCountPtr<Epetra_CrsMatrix>& Aplus);
-
   /*!
   \brief scaling routine
 
    scale precomput. matrix product by subgrid-viscosity-scaling vector
    (called in every timestep)
 
-   \param Aplus (In)      : (fine-scale) subgrid-viscosity matrix
-   \param A (In/Out)      : complete system matrix
+   \param Msv (Out)       : fine-scale subgrid-viscosity matrix
+   \param K (In/Out)      : (complete) system matrix
+   \param r (In/Out)      : (complete) rhs vector
+   \param rplus (In)      : fine-scale subgrid-viscosity rhs vector
    \param sugrvisc (In)   : subgrid-viscosity-scaling vector
-   \param rplus (In)      : (fine-scale) subgrid-viscosity rhs vector
-   \param r (In/Out)      : complete rhs vector
    \param sol (In)        : current solution vector
    \param increm (In)     : flag for incremental formulation
 
   */
-   void Scale(RefCountPtr<Epetra_CrsMatrix>& Aplus,
-              RefCountPtr<Epetra_CrsMatrix>& A,
-              RefCountPtr<Epetra_Vector>& sugrvisc,
-              RefCountPtr<Epetra_Vector>& rplus,
-              RefCountPtr<Epetra_Vector>& r,
-              RefCountPtr<Epetra_Vector>& sol,
+   void Scale(RCP<Epetra_CrsMatrix>& Msv,
+              RCP<Epetra_CrsMatrix>& K,
+              RCP<Epetra_Vector>& r,
+              RCP<Epetra_Vector>& rplus,
+              RCP<Epetra_Vector>& sugrvisc,
+              RCP<Epetra_Vector>& sol,
               bool increm);
-
-  /*!
-  \brief Add a Epetra_CrsMatrix to another, where the first one is vector-scaled: B = B + A*V
-
-  Add one matrix to another. the matrix B to be added to must not be
-  completed. Sparsity patterns of A and B need not match and A and B can be
-  nonsymmetric in value and pattern.
-  Range, Row and Domain maps of A and B have to match.
-
-  Note that this is a true parallel add!
-
-  \param A          (in)     : Matrix to add to B (must have Filled()==true)
-  \param V          (in)     : scaling vector for A
-  \param B          (in/out) : Matrix to be added to (must have Filled()==false)
-  */
-  void AddVecScal(const Epetra_CrsMatrix& A, const Epetra_Vector& V,
-                        Epetra_CrsMatrix& B);
-
-  /*!
-  \brief Add a Epetra_CrsMatrix to another, where the first one is vector-scaled: B = B + A*V and calculate right hand side by multiplying vector-scaled (A*V) with solution vector S: R = (A*V)*S
-
-  Add one matrix to another. the matrix B to be added to must not be
-  completed. Sparsity patterns of A and B need not match and A and B can be
-  nonsymmetric in value and pattern.
-  Range, Row and Domain maps of A and B have to match.
-
-  Note that this is a true parallel add!
-
-  \param A          (in)     : Matrix to add to B (must have Filled()==true)
-  \param S          (in)     : solution vector
-  \param V          (in)     : scaling vector for A
-  \param B          (in/out) : Matrix to be added to (must have Filled()==false)
-  \param R          (out)    : right-hand-side vector
-  */
-  void AddVecScalMult(const Epetra_CrsMatrix& A, const Epetra_Vector& S,
-                      const Epetra_Vector& V, Epetra_CrsMatrix& B, Epetra_Vector& R);
-
-  /*!
-  \brief Calculate right hand side by multiplying vector-scaled (A*V) with solution vector S: R = (A*V)*S
-
-  \param A          (in)     : Matrix A
-  \param S          (in)     : solution vector
-  \param V          (in)     : scaling vector for A
-  \param R          (out)    : right-hand-side vector
-  */
-  void VecScalMult(const Epetra_CrsMatrix& A, const Epetra_Vector& S,
-                   const Epetra_Vector& V, Epetra_Vector& R);
 
 
 private:
@@ -201,15 +133,17 @@ private:
 
   bool compute_;  // flag whether scale-separation matrix should be computed
 
-  ParameterList& mlparams_;    // ML parameter list
+  /*!
+  \brief routine for generating the scale-separation matrix S
+         and precomputing the unscaled matrix S^T*M*S
+         (only called in the first timestep)
 
-  RCP<Epetra_CrsMatrix>& Sep_;       // scale-separation matrix
-  RCP<Epetra_CrsMatrix>& Aplus_;     // (fine-scale) subgrid-viscosity matrix
-  RCP<Epetra_CrsMatrix>& A_;         // complete system matrix
-  RCP<Epetra_Vector>& sugrvisc_;     // subgrid-viscosity-scaling vector
-  RCP<Epetra_Vector>& rplus_;        // (fine-scale) subgrid-viscosity rhs vector
-  RCP<Epetra_Vector>& r_;            // complete rhs vector
-  RCP<Epetra_Vector>& sol_;          // current solution vector
+  */
+  bool Compute(RCP<Epetra_CrsMatrix> Msv);
+
+  ParameterList& mlparams_; // ML parameter list
+
+  RCP<Epetra_CrsMatrix> Mnsv_; // normalized fine-scale subgrid-viscosity matrix
 
   const RCP<Epetra_Vector>& dbctoggle_;  // DBC toggle vector
 
