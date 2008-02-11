@@ -218,6 +218,7 @@ void DRT::ELEMENTS::Fluid3lin_Impl::Sysmat(Fluid3* ele,
     // integration factors and coefficients of single terms
     const double timetauM   = timefac * tau_M;
     const double timetauMp  = timefac * tau_Mp;
+    const double timetau_C  = timefac * tau_C;
 
     const double ttimetauM  = timefac * timetauM;
     const double ttimetauMp = timefac * timetauMp;
@@ -293,9 +294,10 @@ void DRT::ELEMENTS::Fluid3lin_Impl::Sysmat(Fluid3* ele,
                     |  u_old  o  grad u , v  |
                      \                      /
 	*/
-	estif(vi*4, ui*4)         += timefacfac*funct_(vi)*conv_(ui) ;
-	estif(vi*4 + 1, ui*4 + 1) += timefacfac*funct_(vi)*conv_(ui) ;
-	estif(vi*4 + 2, ui*4 + 2) += timefacfac*funct_(vi)*conv_(ui) ;
+        aux = timefacfac*funct_(vi)*conv_(ui);
+	estif(vi*4, ui*4)         += aux;
+	estif(vi*4 + 1, ui*4 + 1) += aux;
+	estif(vi*4 + 2, ui*4 + 2) += aux;
 
 	/* convection, correction part for linearisation*/
 	/*
@@ -314,30 +316,32 @@ void DRT::ELEMENTS::Fluid3lin_Impl::Sysmat(Fluid3* ele,
                        |  eps(u) , eps(v)  |
                         \                 /
 	*/
-	estif(vi*4, ui*4)         += visc*timefacfac*( 2.0*derxy_(0, ui)*derxy_(0, vi)
-						      +derxy_(1, ui)*derxy_(1, vi)
-						      +derxy_(2, ui)*derxy_(2, vi)) ;
-	estif(vi*4, ui*4 + 1)     += visc*timefacfac*derxy_(0, ui)*derxy_(1, vi) ;
-	estif(vi*4, ui*4 + 2)     += visc*timefacfac*derxy_(0, ui)*derxy_(2, vi) ;
-	estif(vi*4 + 1, ui*4)     += visc*timefacfac*derxy_(0, vi)*derxy_(1, ui) ;
-	estif(vi*4 + 1, ui*4 + 1) += visc*timefacfac*( derxy_(0, ui)*derxy_(0, vi)
-						      +2.0*derxy_(1, ui)*derxy_(1, vi)
-						      +derxy_(2, ui)*derxy_(2, vi)) ;
-	estif(vi*4 + 1, ui*4 + 2) += visc*timefacfac*derxy_(1, ui)*derxy_(2, vi) ;
-	estif(vi*4 + 2, ui*4)     += visc*timefacfac*derxy_(0, vi)*derxy_(2, ui) ;
-	estif(vi*4 + 2, ui*4 + 1) += visc*timefacfac*derxy_(1, vi)*derxy_(2, ui) ;
-	estif(vi*4 + 2, ui*4 + 2) += visc*timefacfac*( derxy_(0, ui)*derxy_(0, vi)
-						      +derxy_(1, ui)*derxy_(1, vi)
-						      +2.0*derxy_(2, ui)*derxy_(2, vi)) ;
+        aux = visc*timefacfac;
+	estif(vi*4, ui*4)         += aux * ( 2.0*derxy_(0, ui)*derxy_(0, vi)
+					    +derxy_(1, ui)*derxy_(1, vi)
+					    +derxy_(2, ui)*derxy_(2, vi)) ;
+	estif(vi*4, ui*4 + 1)     += aux * derxy_(0, ui)*derxy_(1, vi) ;
+	estif(vi*4, ui*4 + 2)     += aux * derxy_(0, ui)*derxy_(2, vi) ;
+	estif(vi*4 + 1, ui*4)     += aux * derxy_(0, vi)*derxy_(1, ui) ;
+	estif(vi*4 + 1, ui*4 + 1) += aux * ( derxy_(0, ui)*derxy_(0, vi)
+					    +2.0*derxy_(1, ui)*derxy_(1, vi)
+					    +derxy_(2, ui)*derxy_(2, vi)) ;
+	estif(vi*4 + 1, ui*4 + 2) += aux * derxy_(1, ui)*derxy_(2, vi) ;
+	estif(vi*4 + 2, ui*4)     += aux * derxy_(0, vi)*derxy_(2, ui) ;
+	estif(vi*4 + 2, ui*4 + 1) += aux * derxy_(1, vi)*derxy_(2, ui) ;
+	estif(vi*4 + 2, ui*4 + 2) += aux * ( derxy_(0, ui)*derxy_(0, vi)
+					    +derxy_(1, ui)*derxy_(1, vi)
+					    +2.0*derxy_(2, ui)*derxy_(2, vi)) ;
 	/* Druckterm */
 	/*
                           /           \
                          |  p , div v  |
                           \           /
 	*/
-	estif(vi*4, ui*4 + 3)     += -(timefacfac*funct_(ui)*derxy_(0, vi)) ;
-	estif(vi*4 + 1, ui*4 + 3) += -(timefacfac*funct_(ui)*derxy_(1, vi)) ;
-	estif(vi*4 + 2, ui*4 + 3) += -(timefacfac*funct_(ui)*derxy_(2, vi)) ;
+        aux = timefacfac*funct_(ui);
+	estif(vi*4, ui*4 + 3)     -= aux * derxy_(0, vi);
+	estif(vi*4 + 1, ui*4 + 3) -= aux * derxy_(1, vi);
+	estif(vi*4 + 2, ui*4 + 3) -= aux * derxy_(2, vi);
 
 	/* Divergenzfreiheit */
 	/*
@@ -345,58 +349,26 @@ void DRT::ELEMENTS::Fluid3lin_Impl::Sysmat(Fluid3* ele,
                         | div u , q  |
                          \          /
 	*/
-	estif(vi*4 + 3, ui*4)     += timefacfac*funct_(vi)*derxy_(0, ui) ;
-	estif(vi*4 + 3, ui*4 + 1) += timefacfac*funct_(vi)*derxy_(1, ui) ;
-	estif(vi*4 + 3, ui*4 + 2) += timefacfac*funct_(vi)*derxy_(2, ui) ;
-
-        }
-      }
-
-    /*------------------------------------ now build single rhs terms ---*/
-
-    //----------------------------------------------------------------------
-    //                            GALERKIN PART
-    // if speed has to be optimised further we can do something here by
-    // solving the flow equations totally rather than incrementally
-
-    // be aware that velint_ contains the last, i.e. previous time step velocity
-    for (int vi=0; vi<iel_; ++vi)
-    {
-      // source term of the right hand side
-      eforce(vi*4)     += fac*funct_(vi)*rhsint_(0) ;
-      eforce(vi*4 + 1) += fac*funct_(vi)*rhsint_(1) ;
-      eforce(vi*4 + 2) += fac*funct_(vi)*rhsint_(2) ;
-    } // vi
+        aux = timefacfac*funct_(vi);
+	estif(vi*4 + 3, ui*4)     += aux * derxy_(0, ui) ;
+	estif(vi*4 + 3, ui*4 + 1) += aux * derxy_(1, ui) ;
+	estif(vi*4 + 3, ui*4 + 2) += aux * derxy_(2, ui) ;
 
 
-    //----------------------------------------------------------------------
-    //                 PRESSURE STABILISATION PART
+	//-----------------------------------------------------------------
+	//                           STABILISATION PART
 
-    for (int ui=0; ui<iel_; ++ui)
-    {
-      for (int vi=0; vi<iel_; ++vi)
-      {
-	/* pressure stabilisation: inertia */
-	/*
-                        /            \
-                       |  u , grad q  |
-                        \            /
-	*/
-
-	estif(vi*4 + 3, ui*4)     += timetauMp*funct_(ui)*derxy_(0, vi) ;
-	estif(vi*4 + 3, ui*4 + 1) += timetauMp*funct_(ui)*derxy_(1, vi) ;
-	estif(vi*4 + 3, ui*4 + 2) += timetauMp*funct_(ui)*derxy_(2, vi) ;
-
+	/* pressure stabilisation: inertia PLUS */
 	/* pressure stabilisation: convection, convective part */
 	/*
-                      /                           \
-                     |  u_old  o  grad u , grad q  |
-                      \                           /
+                        /            \     /                           \
+                       |  u , grad q  | + |  u_old  o  grad u , grad q  |
+                        \            /     \                           /
 	*/
-	estif(vi*4 + 3, ui*4)     += ttimetauMp*conv_(ui)*derxy_(0, vi) ;
-	estif(vi*4 + 3, ui*4 + 1) += ttimetauMp*conv_(ui)*derxy_(1, vi) ;
-	estif(vi*4 + 3, ui*4 + 2) += ttimetauMp*conv_(ui)*derxy_(2, vi) ;
-
+	aux = timetauMp*funct_(ui) + ttimetauMp*conv_(ui);
+	estif(vi*4 + 3, ui*4)     += aux * derxy_(0, vi) ;
+	estif(vi*4 + 3, ui*4 + 1) += aux * derxy_(1, vi) ;
+	estif(vi*4 + 3, ui*4 + 2) += aux * derxy_(2, vi) ;
 
 	/* pressure stabilisation: viscosity (-L_visc_u) */
 	/*
@@ -404,15 +376,16 @@ void DRT::ELEMENTS::Fluid3lin_Impl::Sysmat(Fluid3* ele,
                     |  div eps(u) , grad q  |
                      \                     /
 	*/
-	estif(vi*4 + 3, ui*4)     += 2.0*visc*ttimetauMp*( derxy_(0, vi)*viscs2_(0, 0, ui)
-							  +derxy_(1, vi)*viscs2_(0, 1, ui)
-							  +derxy_(2, vi)*viscs2_(0, 2, ui));
-	estif(vi*4 + 3, ui*4 + 1) += 2.0*visc*ttimetauMp*( derxy_(0, vi)*viscs2_(0, 1, ui)
-							  +derxy_(1, vi)*viscs2_(1, 1, ui)
-							  +derxy_(2, vi)*viscs2_(1, 2, ui));
-	estif(vi*4 + 3, ui*4 + 2) += 2.0*visc*ttimetauMp*( derxy_(0, vi)*viscs2_(0, 2, ui)
-							  +derxy_(1, vi)*viscs2_(1, 2, ui)
-							  +derxy_(2, vi)*viscs2_(2, 2, ui));
+	aux = 2.0*visc*ttimetauMp;
+	estif(vi*4 + 3, ui*4)     += aux*( derxy_(0, vi)*viscs2_(0, 0, ui)
+					   +derxy_(1, vi)*viscs2_(0, 1, ui)
+					   +derxy_(2, vi)*viscs2_(0, 2, ui));
+	estif(vi*4 + 3, ui*4 + 1) += aux*( derxy_(0, vi)*viscs2_(0, 1, ui)
+					   +derxy_(1, vi)*viscs2_(1, 1, ui)
+					   +derxy_(2, vi)*viscs2_(1, 2, ui));
+	estif(vi*4 + 3, ui*4 + 2) += aux*( derxy_(0, vi)*viscs2_(0, 2, ui)
+					   +derxy_(1, vi)*viscs2_(1, 2, ui)
+					   +derxy_(2, vi)*viscs2_(2, 2, ui));
 
 	/* pressure stabilisation: pressure( L_pres_p) */
 	/*
@@ -423,45 +396,21 @@ void DRT::ELEMENTS::Fluid3lin_Impl::Sysmat(Fluid3* ele,
 	estif(vi*4 + 3, ui*4 + 3) += ttimetauMp*( derxy_(0, ui)*derxy_(0, vi)
 						 +derxy_(1, ui)*derxy_(1, vi)
 						 +derxy_(2, ui)*derxy_(2, vi));
-      } // vi
-    } // ui
 
-    for (int vi=0; vi<iel_; ++vi)
-    {
-      // pressure stabilisation
-      eforce(vi*4 + 3) += timetauMp*( rhsint_(0)*derxy_(0, vi)
-				     +rhsint_(1)*derxy_(1, vi)
-				     +rhsint_(2)*derxy_(2, vi)) ;
-    }
+	//----------------------------------------------------------------
 
-    //----------------------------------------------------------------------
-    //                     SUPG STABILISATION PART
-
-    for (int ui=0; ui<iel_; ++ui)
-    {
-      for (int vi=0; vi<iel_; ++vi)
-      {
-	/* supg stabilisation: inertia  */
-	/*
-                      /                     \
-                     |  u ,  u_old  grad  v  |
-                      \                     /
-	*/
-	estif(vi*4, ui*4)         += timetauM*funct_(ui)*conv_(vi);
-	estif(vi*4 + 1, ui*4 + 1) += timetauM*funct_(ui)*conv_(vi);
-	estif(vi*4 + 2, ui*4 + 2) += timetauM*funct_(ui)*conv_(vi);
-
+	/* supg stabilisation: inertia  PLUS */
 	/* supg stabilisation: convective part ( L_conv_u) */
 
 	/*
-                 /                                        \
-                |   u_old  o  grad u ,  u_old  o  grad  v  |
-                 \                                        /
+                      /                     \     /                                        \
+                     |  u ,  u_old  grad  v  | + |   u_old  o  grad u ,  u_old  o  grad  v  |
+                      \                     /     \                                        /
 	*/
-
-	estif(vi*4, ui*4)         += ttimetauM*conv_(ui)*conv_(vi) ;
-	estif(vi*4 + 1, ui*4 + 1) += ttimetauM*conv_(ui)*conv_(vi) ;
-	estif(vi*4 + 2, ui*4 + 2) += ttimetauM*conv_(ui)*conv_(vi) ;
+        aux = timetauM*funct_(ui)*conv_(vi) + ttimetauM*conv_(ui)*conv_(vi);
+	estif(vi*4, ui*4)         += aux;
+	estif(vi*4 + 1, ui*4 + 1) += aux;
+	estif(vi*4 + 2, ui*4 + 2) += aux;
 
 	/* supg stabilisation: viscous part  (-L_visc_u) */
 	/*
@@ -469,15 +418,16 @@ void DRT::ELEMENTS::Fluid3lin_Impl::Sysmat(Fluid3* ele,
                  |  div eps(u),  u_old  o  grad v  |
                   \                               /
 	*/
-	estif(vi*4, ui*4)         += 2.0*visc*ttimetauM*conv_(vi)*viscs2_(0, 0, ui) ;
-	estif(vi*4, ui*4 + 1)     += 2.0*visc*ttimetauM*conv_(vi)*viscs2_(0, 1, ui) ;
-	estif(vi*4, ui*4 + 2)     += 2.0*visc*ttimetauM*conv_(vi)*viscs2_(0, 2, ui) ;
-	estif(vi*4 + 1, ui*4)     += 2.0*visc*ttimetauM*conv_(vi)*viscs2_(0, 1, ui) ;
-	estif(vi*4 + 1, ui*4 + 1) += 2.0*visc*ttimetauM*conv_(vi)*viscs2_(1, 1, ui) ;
-	estif(vi*4 + 1, ui*4 + 2) += 2.0*visc*ttimetauM*conv_(vi)*viscs2_(1, 2, ui) ;
-	estif(vi*4 + 2, ui*4)     += 2.0*visc*ttimetauM*conv_(vi)*viscs2_(0, 2, ui) ;
-	estif(vi*4 + 2, ui*4 + 1) += 2.0*visc*ttimetauM*conv_(vi)*viscs2_(1, 2, ui) ;
-	estif(vi*4 + 2, ui*4 + 2) += 2.0*visc*ttimetauM*conv_(vi)*viscs2_(2, 2, ui) ;
+	aux = 2.0*visc*ttimetauM*conv_(vi);
+	estif(vi*4, ui*4)         += aux*viscs2_(0, 0, ui) ;
+	estif(vi*4, ui*4 + 1)     += aux*viscs2_(0, 1, ui) ;
+	estif(vi*4, ui*4 + 2)     += aux*viscs2_(0, 2, ui) ;
+	estif(vi*4 + 1, ui*4)     += aux*viscs2_(0, 1, ui) ;
+	estif(vi*4 + 1, ui*4 + 1) += aux*viscs2_(1, 1, ui) ;
+	estif(vi*4 + 1, ui*4 + 2) += aux*viscs2_(1, 2, ui) ;
+	estif(vi*4 + 2, ui*4)     += aux*viscs2_(0, 2, ui) ;
+	estif(vi*4 + 2, ui*4 + 1) += aux*viscs2_(1, 2, ui) ;
+	estif(vi*4 + 2, ui*4 + 2) += aux*viscs2_(2, 2, ui) ;
 	
 	/* supg stabilisation: pressure part  ( L_pres_p) */
 	/*
@@ -485,30 +435,13 @@ void DRT::ELEMENTS::Fluid3lin_Impl::Sysmat(Fluid3* ele,
                      |  grad p ,  u_old  o  grad v  |
                       \                            /
 	*/
-	estif(vi*4, ui*4 + 3)     += ttimetauM*conv_(vi)*derxy_(0, ui) ;
-	estif(vi*4 + 1, ui*4 + 3) += ttimetauM*conv_(vi)*derxy_(1, ui) ;
-	estif(vi*4 + 2, ui*4 + 3) += ttimetauM*conv_(vi)*derxy_(2, ui) ;
+	aux = ttimetauM*conv_(vi);
+	estif(vi*4, ui*4 + 3)     += aux*derxy_(0, ui) ;
+	estif(vi*4 + 1, ui*4 + 3) += aux*derxy_(1, ui) ;
+	estif(vi*4 + 2, ui*4 + 3) += aux*derxy_(2, ui) ;
 
-      } // vi
-    } // ui
+	//----------------------------------------------------------------
 
-    for (int vi=0; vi<iel_; ++vi)
-    {
-      // supg stabilisation
-      eforce(vi*4)     += timetauM*conv_(vi)*rhsint_(0) ;
-      eforce(vi*4 + 1) += timetauM*conv_(vi)*rhsint_(1) ;
-      eforce(vi*4 + 2) += timetauM*conv_(vi)*rhsint_(2) ;
-    }
-
-    //----------------------------------------------------------------------
-    //                     STABILISATION, CONTINUITY PART
-
-    const double timetau_C = timefac*tau_C;
-
-    for (int ui=0; ui<iel_; ++ui)
-    {
-      for (int vi=0; vi<iel_; ++vi)
-      {
 	/* continuity stabilisation */
 	/*
                        /              \
@@ -524,9 +457,35 @@ void DRT::ELEMENTS::Fluid3lin_Impl::Sysmat(Fluid3* ele,
 	estif(vi*4 + 2, ui*4)     += timetau_C*derxy_(0, ui)*derxy_(2, vi);
 	estif(vi*4 + 2, ui*4 + 1) += timetau_C*derxy_(1, ui)*derxy_(2, vi);
 	estif(vi*4 + 2, ui*4 + 2) += timetau_C*derxy_(2, ui)*derxy_(2, vi);
+        }
       }
-    }
 
+    /*------------------------------------ now build single rhs terms ---*/
+    for (int vi=0; vi<iel_; ++vi)
+    {
+      double aux;
+      //-------------------------------------------------------------------
+      //                            GALERKIN PART
+
+      // source term of the right hand side
+      aux = fac*funct_(vi);
+      eforce(vi*4)     += aux*rhsint_(0) ;
+      eforce(vi*4 + 1) += aux*rhsint_(1) ;
+      eforce(vi*4 + 2) += aux*rhsint_(2) ;
+
+      //-------------------------------------------------------------------
+      //                           STABILISATION PART
+
+      // pressure stabilisation
+      eforce(vi*4 + 3) += timetauMp*( rhsint_(0)*derxy_(0, vi)
+				     +rhsint_(1)*derxy_(1, vi)
+				     +rhsint_(2)*derxy_(2, vi)) ;
+      // supg stabilisation
+      aux =  timetauM*conv_(vi);
+      eforce(vi*4)     += aux*rhsint_(0) ;
+      eforce(vi*4 + 1) += aux*rhsint_(1) ;
+      eforce(vi*4 + 2) += aux*rhsint_(2) ;
+    } // vi
   }
 }
 
