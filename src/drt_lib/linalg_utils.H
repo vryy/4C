@@ -37,6 +37,41 @@ using namespace Teuchos;
 */
 namespace LINALG
 {
+
+  /// return the first slot of a pair
+  /*!
+    To be used with stl algorithms.
+
+    This should be part of stl but is not. So we define our own version.
+  */
+  template <typename pair_type>
+  struct select1st: public std::unary_function<const pair_type &,
+                                               const typename pair_type::first_type &>
+  {
+    const typename pair_type::first_type &operator()(const pair_type &v) const
+    {
+      return v.first;
+    }
+  };
+
+
+  /// return the second slot of a pair
+  /*!
+    To be used with stl algorithms.
+
+    This should be part of stl but is not. So we define our own version.
+  */
+  template <typename pair_type>
+  struct select2nd: public std::unary_function<const pair_type &,
+                                               const typename pair_type::second_type &>
+  {
+    const typename pair_type::second_type &operator()(const pair_type &v) const
+    {
+      return v.second;
+    }
+  };
+
+
   /*!
   \brief Create a new Epetra_CrsMatrix and return RefcountPtr to it
 
@@ -527,7 +562,7 @@ namespace LINALG
   \param A22          : on exit matrix block A22
   */
   bool SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
-  										RCP<Epetra_Map>& A11rowmap,
+                      RCP<Epetra_Map>& A11rowmap,
                       RCP<Epetra_Map>& A22rowmap,
                       RCP<Epetra_Map>& A11domainmap,
                       RCP<Epetra_Map>& A22domainmap,

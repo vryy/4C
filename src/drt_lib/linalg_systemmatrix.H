@@ -11,29 +11,30 @@
 #include <Epetra_Comm.h>
 #include <Teuchos_RCP.hpp>
 
+#include "linalg_mapextractor.H"
 
 /*
 
 - Koennten wir Epetra_Operator implementieren?
   Was ist, wenn jemand sowas wie matrixfree operator an die Loeser geben will?
 
-- Platin-style-doxygen Dokumentation notwendig (inkl aller Parameter und 
+- Platin-style-doxygen Dokumentation notwendig (inkl aller Parameter und
   Beschreibung, wie das mit der Maske und den Dirichlet-RBs en detail funktioniert)
-  
+
 - Umbenennungen: SparseMatrix BaseSparseMatrix BlockSparseMatrix etc.
                  mask_ ->graph_
                  realdirichlet -> irgendwas mit Aussagekraft
-                 
+
 - support          A*x
                    A*B
                    A*B*C
                    Transpose
                    Split (the old way)
                    MergeIntoOne (fuer die Loeser)?
-                   
+
 - move LINALG functions to class wherever reasonable, remove
   respective LINALG functions.
-                   
+
 - change remaining LINALG functions to directly support these new classes
 
 - be much more explicit on treatment of mask, how do I get rid of it if I don't want it?
@@ -41,20 +42,20 @@
   Be very explicit on whether to use old mask or not
   Do not mix notion of how to handle Dirichlet with notion of how to handle graph
   (the first is a consequence of the second, isn't it?)
-  
+
 - ColBlock method is spooky
 
 - For keeping learning curves up and tribute to (important) simplicity:
   Absolutely no templates here
-  
-- Absolutely no mixing of DRT objects and LINALG algebra objects, 
-  which means if you want to have a condition-style system matrix, you can have 
+
+- Absolutely no mixing of DRT objects and LINALG algebra objects,
+  which means if you want to have a condition-style system matrix, you can have
   it in your own sandbox, but not in LINALG (and can not make it be specially
   supported by DRT::Discretization etc.)
-  
+
 - give excessive seminar on it so everybody understands it, answer all
   questions by young chair-members in the following.
-  (I'm drowning in questions about all sorts of stuff)  
+  (I'm drowning in questions about all sorts of stuff)
 
 */
 
@@ -62,14 +63,49 @@
 namespace LINALG
 {
 
-  ///
-  class SystemMatrix
+  /// Linear operator interface enhanced for use in FE simulations
+  /*!
+
+    The point in FE simulations is that you have to assemble (element)
+    contributions to the global matrix, apply Dirichlet conditions in some way
+    and finally solve the completed system of equations.
+
+    Here we have an interface that has different implementations. The obvious
+    one is the SparseMatrix, a single Epetra_CrsMatrix in a box, another one
+    is BlockSparseMatrix, a block matrix build from a list of SparseMatrix.
+
+    \author u.kue
+    \date 02/08
+   */
+  class SparseOperator : public Epetra_Operator
   {
   public:
-    virtual ~SystemMatrix();
 
+    /// set matrix to zero
     virtual void Zero() = 0;
 
+    /// Assemble a Epetra_SerialDenseMatrix into a matrix
+    /*!
+
+    This is an individual call.  Will only assemble locally and will never
+    do any commmunication.  All values that cannot be assembled locally will
+    be ignored.  Will use the communicator and rowmap from matrix to
+    determine ownerships.  Local matrix Aele has to be square.
+
+    If matrix is Filled(), it stays so and you can only assemble to places
+    already masked. An attempt to assemble into a non-existing place is a
+    grave mistake.
+
+    If matrix is not Filled(), the matrix is enlarged as required.
+
+    \note Assembling to a non-Filled() matrix is much more expensive than to
+    a Filled() matrix. If the sparse mask does not change it pays to keep
+    the matrix around and assemble into the Filled() matrix.
+
+    \param Aele (in) : dense matrix to be assembled
+    \param lm (in) : vector with gids
+    \param lmowner (in) : vector with owner procs of gids
+    */
     virtual void Assemble(const Epetra_SerialDenseMatrix& Aele,
                           const std::vector<int>& lm,
                           const std::vector<int>& lmowner)
@@ -77,39 +113,130 @@ namespace LINALG
       Assemble(Aele,lm,lmowner,lm);
     }
 
+    /// Assemble a Epetra_SerialDenseMatrix into a matrix
+    /*!
+
+      This is an individual call.
+      Will only assemble locally and will never do any commmunication.
+      All values that can not be assembled locally will be ignored.
+      Will use the communicator and rowmap from matrix A to determine ownerships.
+      Local matrix Aele may be \b square or \b rectangular.
+
+      If matrix is Filled(), it stays so and you can only assemble to places
+      already masked. An attempt to assemble into a non-existing place is a
+      grave mistake.
+
+      If matrix is not Filled(), the matrix is enlarged as required.
+
+      \note Assembling to a non-Filled() matrix is much more expensive than to
+      a Filled() matrix. If the sparse mask does not change it pays to keep
+      the matrix around and assemble into the Filled() matrix.
+
+      \note The user must provide an \b additional input vector 'lmcol'
+      containing the column gids for assembly seperately!
+
+      \param Aele (in)       : dense matrix to be assembled
+      \param lmrow (in)      : vector with row gids
+      \param lmrowowner (in) : vector with owner procs of row gids
+      \param lmcol (in)      : vector with column gids
+    */
     virtual void Assemble(const Epetra_SerialDenseMatrix& Aele,
                           const std::vector<int>& lmrow,
                           const std::vector<int>& lmrowowner,
                           const std::vector<int>& lmcol) = 0;
 
+    /// Call FillComplete on a matrix (for square matrices only!)
     virtual void Complete() = 0;
+
+    /// Call FillComplete on a matrix (for rectangular and square matrices)
     virtual void Complete(const Epetra_Map& domainmap, const Epetra_Map& rangemap) = 0;
 
+    /// Apply dirichlet boundary condition to a matrix
     virtual void ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle) = 0;
   };
 
 
-  ///
-  class SingleSystemMatrix : public SystemMatrix
+  /// A single sparse matrix enhanced with features for FE simulations
+  /*!
+
+    A single sparse matrix. Internally we have an Epetra_CrsMatrix. So we have
+    all the glory of a fully parallel and fast sparse matrix. The added value
+    is twofold. For one thing there are the FE specific operations. Assemble()
+    adds an (element) matrix to the (global) sparse matrix and
+    ApplyDirichlet() modifies the matrix to contain just ones on Dirichlet
+    rows (the columns in other rows are not touched, so the matrix becomes
+    unsymmetric).
+
+    The second gain are the different states this matrix can be in. You can
+    set explicitdirichlet==true in order to modify the matrix graph in each
+    ApplyDirichlet() call to contain just the diagonal entries on those rows
+    -- this essentially copies the matrix. (ML gains a lot from completely
+    Dirichlet-constrained rows.) With explicitdirichlet==false the matrix
+    graph is not touched, instead the Dirichlet rows are filled with zeros.
+
+    With savegraph==true you specify that you want to keep the original matrix
+    graph before you apply Dirichlet conditions. This way you can call Zero()
+    and get an already Filled() matrix. You cannot alter its graph afterwards,
+    but Assemble() is much faster if you matrix is already Filled(). Of course
+    you can always Reset() you matrix, that is throw away the matrix graph and
+    start anew with an empty matrix.
+
+    \author u.kue
+    \date 02/08
+   */
+  class SparseMatrix : public SparseOperator
   {
   public:
-    explicit SingleSystemMatrix(bool realdirichlet=true);
-    ~SingleSystemMatrix();
 
-    void Setup(const Epetra_Map& rowmap, const int npr);
+    /// construction of sparse matrix
+    /*!
+      \param explicitdirichlet Whether ApplyDirichlet() should modify the graph
+      \param savegraph Whether to save the graph for future assemblies
+     */
+    explicit SparseMatrix(bool explicitdirichlet=true, bool savegraph=true);
 
-    Teuchos::RCP<Epetra_CrsMatrix>& Matrix() { return sysmat_; }
+    /// construction of sparse matrix
+    SparseMatrix(const Epetra_Map& rowmap, const int npr, bool explicitdirichlet=true, bool savegraph=true);
 
+    /// construction of sparse matrix
+    SparseMatrix(const Epetra_CrsMatrix& matrix, bool explicitdirichlet, bool savegraph);
+
+    /// Destructor
+    ~SparseMatrix();
+
+    /// If FillComplete() has been called, this query returns true, otherwise it returns false.
     bool Filled() const { return sysmat_->Filled(); }
+
+    /// Returns the Epetra_Map object associated with the rows of this matrix.
     const Epetra_Map& RowMap() const { return sysmat_->RowMap(); }
+
+    /// Returns the Epetra_Map object that describes the set of column-indices that appear in each processor's locally owned matrix rows.
     const Epetra_Map& ColMap() const { return sysmat_->ColMap(); }
 
+    /// Returns the Epetra_Map object associated with the domain of this matrix operator.
+    const Epetra_Map& DomainMap() const { return sysmat_->DomainMap(); }
+
+    /// Returns the Epetra_Map object associated with the range of this matrix operator.
+    const Epetra_Map& RangeMap() const { return sysmat_->RangeMap(); }
+
+    /// return the internal Epetra_CrsMatrix (you should not need this!)
+    Teuchos::RCP<Epetra_CrsMatrix>& Matrix() { return sysmat_; }
+
+    /// setup the matrix from a given row map and a (guessed) number of entries per row
+    void Setup(const Epetra_Map& rowmap, const int npr);
+
+    /// set all matrix entries to zero
     void Zero();
+
+    /// throw away the matrix and its graph and start anew
+    void Reset();
+
     void Assemble(const Epetra_SerialDenseMatrix& Aele,
                   const std::vector<int>& lmrow,
                   const std::vector<int>& lmrowowner,
                   const std::vector<int>& lmcol);
 
+    /// single value assemble used by BlockSparseMatrix
     void Assemble(double val, int rgid, int cgid);
 
     void Complete();
@@ -117,25 +244,141 @@ namespace LINALG
 
     void ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle);
 
+    /** \name Attribute set methods */
+    //@{
+
+    /// If set true, transpose of this operator will be applied.
+    virtual int SetUseTranspose(bool UseTranspose);
+
+    //@}
+
+    /** \name Mathematical functions */
+    //@{
+
+    /// Returns the result of a Epetra_Operator applied to a Epetra_MultiVector X in Y.
+    virtual int Apply(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+
+    /// Returns the result of a Epetra_Operator inverse applied to an Epetra_MultiVector X in Y.
+    virtual int ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+
+    /// Returns the infinity norm of the global matrix.
+    virtual double NormInf() const;
+
+    //@}
+
+    /** \name Attribute access functions */
+    //@{
+
+    /// Returns a character string describing the operator.
+    virtual const char* Label() const;
+
+    /// Returns the current UseTranspose setting.
+    virtual bool UseTranspose() const;
+
+    /// Returns true if the this object can provide an approximate Inf-norm, false otherwise.
+    virtual bool HasNormInf() const;
+
+    /// Returns a pointer to the Epetra_Comm communicator associated with this operator.
+    virtual const Epetra_Comm& Comm() const;
+
+    /// Returns the Epetra_Map object associated with the domain of this operator.
+    virtual const Epetra_Map& OperatorDomainMap() const;
+
+    /// Returns the Epetra_Map object associated with the range of this operator.
+    virtual const Epetra_Map& OperatorRangeMap() const;
+
+    //@}
+
+    /** \name Computational methods */
+    //@{
+
+    /// Returns the result of a matrix multiplied by a Epetra_Vector x in y.
+    int Multiply(bool TransA, const Epetra_Vector &x, Epetra_Vector &y) const;
+
+    //@}
+
+    /** \name Utility functions */
+    //@{
+
+    /// Compute transposed matrix explicitly
+    /*!
+      \note This is an expensive operation!
+     */
+    Teuchos::RCP<SparseMatrix> Transpose();
+
+    /// Add a (transposed) Epetra_CrsMatrix to another: B = B*scalarB + A(^T)*scalarA
+    /*!
+
+    Add one matrix to another. the matrix B to be added to must not be
+    completed. Sparsity patterns of A and B need not match and A and B can be
+    nonsymmetric in value and pattern.  Row map of A has to be a
+    processor-local subset of the row map of B.
+
+    \note This is a true parallel add, even in the transposed case!
+
+    \param A          (in)     : Matrix to add to B (must have Filled()==true)
+    \param transposeA (in)     : flag indicating whether transposed of A should be used
+    \param scalarA    (in)     : scaling factor for A
+    \param scalarB    (in)     : scaling factor for B
+    */
+    void Add(const SparseMatrix& A,
+             const bool transposeA,
+             const double scalarA,
+             const double scalarB);
+
+    /// Multiply a (transposed) matrix with me (transposed): C = A(^T)*B(^T)
+    /*!
+      Multiply one matrix with another. Both matrices must be completed. Sparsity
+      Respective Range, Row and Domain maps of A(^T) and B(^T) have to match.
+
+      \note This is a true parallel multiplication, even in the transposed case!
+
+      \param A          (in)     : Matrix to multiply with B (must have Filled()==true)
+      \param transA     (in)     : flag indicating whether transposed of A should be used
+      \param transB     (in)     : flag indicating whether transposed of B should be used
+      \return Matrix product A(^T)*B(^T)
+    */
+    Teuchos::RCP<SparseMatrix> Multiply(const SparseMatrix& A, bool transA, bool transB);
+
+    //@}
+
   private:
+
+    /// internal epetra matrix
     Teuchos::RCP<Epetra_CrsMatrix> sysmat_;
-    bool realdirichlet_;
-    Teuchos::RCP<Epetra_CrsGraph> mask_;
+
+    /// whether to modify the matrix graph on apply Dirichlet
+    bool explicitdirichlet_;
+
+    /// whether to save the graph and assemble to a filled matrix next time
+    bool savegraph_;
+
+    /// saved graph (if any)
+    Teuchos::RCP<Epetra_CrsGraph> graph_;
   };
 
 
-  ///
-  class BlockSystemMatrixBase : public SystemMatrix
+  /// Internal base class of BlockSparseMatrix that contains the non-template stuff
+  /*!
+
+    This is where the bookkeeping of thr BlockSparseMatrix happens. we use two
+    MultiMapExtractor objects to store the FullRangeMap() and the
+    FullDomainMap() along with their many partial RangeMap() and
+    DomainMap(). Most of the required SparseOperator methods can simply
+    implemented in terms of the matrix blocks.
+
+    \author u.kue
+    \date 02/08
+  */
+  class BlockSparseMatrixBase : public SparseOperator
   {
   public:
-    BlockSystemMatrixBase(const Epetra_Map& fullrangemap,
-                          const Epetra_Map& fulldomainmap,
-                          int rows,
-                          int cols,
-                          std::vector<Epetra_Map> rangemaps,
-                          std::vector<Epetra_Map> domainmaps);
+    BlockSparseMatrixBase(const MultiMapExtractor& domainmaps,
+                          const MultiMapExtractor& rangemaps);
 
-    SingleSystemMatrix& Matrix(int r, int c) { return blocks_[r*cols_+c]; }
+    const SparseMatrix& Matrix(int r, int c) const { return blocks_[r*Cols()+c]; }
+
+    SparseMatrix& Matrix(int r, int c) { return blocks_[r*Cols()+c]; }
 
     void Zero();
     void Complete();
@@ -143,65 +386,158 @@ namespace LINALG
 
     bool Filled() const;
 
-    int Rows() const { return rows_; }
-    int Cols() const { return cols_; }
+    int Rows() const { return rangemaps_.NumMaps(); }
+    int Cols() const { return domainmaps_.NumMaps(); }
 
-    Epetra_Map& RangeMap(int r) { return rangemaps_[r]; }
-    Epetra_Map& DomainMap(int r) { return domainmaps_[r]; }
+    Epetra_Map& RangeMap(int r) const { return *rangemaps_.Map(r); }
+    Epetra_Map& DomainMap(int r) const { return *domainmaps_.Map(r); }
 
-    Epetra_Map& FullRangeMap() { return fullrangemap_; }
-    Epetra_Map& FullDomainMap() { return fulldomainmap_; }
+    Epetra_Map& FullRangeMap() const { return *rangemaps_.FullMap(); }
+    Epetra_Map& FullDomainMap() const { return *domainmaps_.FullMap(); }
+
+    void ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle);
+
+
+    /** \name Attribute set methods */
+    //@{
+
+    /// If set true, transpose of this operator will be applied.
+    virtual int SetUseTranspose(bool UseTranspose);
+
+    //@}
+
+    /** \name Mathematical functions */
+    //@{
+
+    /// Returns the result of a Epetra_Operator applied to a Epetra_MultiVector X in Y.
+    virtual int Apply(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+
+    /// Returns the result of a Epetra_Operator inverse applied to an Epetra_MultiVector X in Y.
+    virtual int ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+
+    /// Returns the infinity norm of the global matrix.
+    virtual double NormInf() const;
+
+    //@}
+
+    /** \name Attribute access functions */
+    //@{
+
+    /// Returns a character string describing the operator.
+    virtual const char* Label() const;
+
+    /// Returns the current UseTranspose setting.
+    virtual bool UseTranspose() const;
+
+    /// Returns true if the this object can provide an approximate Inf-norm, false otherwise.
+    virtual bool HasNormInf() const;
+
+    /// Returns a pointer to the Epetra_Comm communicator associated with this operator.
+    virtual const Epetra_Comm& Comm() const;
+
+    /// Returns the Epetra_Map object associated with the domain of this operator.
+    virtual const Epetra_Map& OperatorDomainMap() const;
+
+    /// Returns the Epetra_Map object associated with the range of this operator.
+    virtual const Epetra_Map& OperatorRangeMap() const;
+
+    //@}
 
   private:
-    Epetra_Map fullrangemap_;
-    Epetra_Map fulldomainmap_;
-    int rows_;
-    int cols_;
-    std::vector<Epetra_Map> rangemaps_;
-    std::vector<Epetra_Map> domainmaps_;
-    std::vector<SingleSystemMatrix> blocks_;
+
+    /// the full domain map together with all partial domain maps
+    MultiMapExtractor domainmaps_;
+
+    /// the full range map together with all partial range maps
+    MultiMapExtractor rangemaps_;
+
+    /// row major matrix block storage
+    std::vector<SparseMatrix> blocks_;
   };
 
 
-  ///
-  template <class Condition>
-  class BlockSystemMatrix : public BlockSystemMatrixBase,
-                            public Condition
+  /// Block matrix consisting of SparseMatrix blocks
+  /*!
+
+    There are strange algorithms that need to split a large sparse matrix into
+    blocks. Such things happen, e.g., in FSI calculations with internal and
+    interface splits, in fluid projection preconditioners or in contact
+    simulations with slave and master sides. Unfortunatelly spliting a huge
+    sparse matrix in (possibly) many blocks is nontrivial and expensive. So
+    the idea here is to assemble into a block matrix in the first place.
+
+    The difficulty with this approach is the handling of ghost entries in a
+    parallel matrix. It is hard (expensive) to figure out to which column
+    block each particular ghost entry belongs. That is why this class is
+    templated with a Strategy. There is a default implementation for this
+    template parameter DefaultBlockMatrixStrategy, that handles the most
+    general case. That is DefaultBlockMatrixStrategy finds the right column
+    block be heavy communication. But if there is some knowledge available in
+    a particular case, it is easy to implement a specify Strategy that does
+    not need to communicate that much.
+
+    \author u.kue
+    \date 02/08
+  */
+  template <class Strategy>
+  class BlockSparseMatrix : public BlockSparseMatrixBase,
+                            public Strategy
   {
   public:
-    BlockSystemMatrix(int rows,
-                      int cols,
-                      std::vector<Epetra_Map> rowmaps,
-                      std::vector<Epetra_Map> colmaps);
+    BlockSparseMatrix(const MultiMapExtractor& domainmaps,
+                      const MultiMapExtractor& rangemaps);
 
     void Assemble(const Epetra_SerialDenseMatrix& Aele,
                   const std::vector<int>& lmrow,
                   const std::vector<int>& lmrowowner,
                   const std::vector<int>& lmcol);
 
-    void ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle);
-
     void Complete();
   };
 
 
-  ///
-  class DefaultBlockMatrixCondition
+  /// default strategy implementation for block matrix
+  /*!
+
+    This default implementation solves the ghost entry problem by remembering
+    all ghost entries during the assembly in a private map. Afterwards
+    Complete() needs to be called that finds the appropiate block for each
+    ghost entry by communication an finally assembles these entries.
+
+    This is the most general, most expensive implementation. You are
+    encouraged to provide your own Strategy implementation if you know your
+    specific block structure.
+
+    \author u.kue
+    \date 02/08
+   */
+  class DefaultBlockMatrixStrategy
   {
   public:
-    explicit DefaultBlockMatrixCondition(BlockSystemMatrixBase* mat);
 
+    /// construct with a block matrix base
+    explicit DefaultBlockMatrixStrategy(BlockSparseMatrixBase* mat);
+
+    /// find row block to a given row gid
     int RowBlock(int lrow, int rgid);
+
+    /// find column block to a given column gid
     int ColBlock(int rblock, int lcol, int cgid);
 
+    /// assemble into the given block
     void Assemble(double val,
                   int lrow, int rgid, int rblock,
                   int lcol, int cgid, int cblock);
 
+    /// assemble the remaining ghost entries
     void Complete();
 
   private:
-    BlockSystemMatrixBase* mat_;
+
+    /// my block matrix base
+    BlockSparseMatrixBase* mat_;
+
+    /// all ghost entries stored by row,column
     std::map<int,std::map<int,double> > ghost_;
   };
 }
@@ -209,21 +545,19 @@ namespace LINALG
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <class Condition>
-LINALG::BlockSystemMatrix<Condition>::BlockSystemMatrix(int rows,
-                                                        int cols,
-                                                        std::vector<Epetra_Map> rowmaps,
-                                                        std::vector<Epetra_Map> colmaps)
-  : BlockSystemMatrixBase(rows,cols,rowmaps,colmaps),
-    Condition(this)
+template <class Strategy>
+LINALG::BlockSparseMatrix<Strategy>::BlockSparseMatrix(const MultiMapExtractor& domainmaps,
+                                                       const MultiMapExtractor& rangemaps)
+  : BlockSparseMatrixBase(domainmaps,rangemaps),
+    Strategy(this)
 {
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <class Condition>
-void LINALG::BlockSystemMatrix<Condition>::Assemble(const Epetra_SerialDenseMatrix& Aele,
+template <class Strategy>
+void LINALG::BlockSparseMatrix<Strategy>::Assemble(const Epetra_SerialDenseMatrix& Aele,
                                                     const std::vector<int>& lmrow,
                                                     const std::vector<int>& lmrowowner,
                                                     const std::vector<int>& lmcol)
@@ -231,7 +565,7 @@ void LINALG::BlockSystemMatrix<Condition>::Assemble(const Epetra_SerialDenseMatr
   const int lrowdim = (int)lmrow.size();
   const int lcoldim = (int)lmcol.size();
 
-  const int myrank = fullrangemap_.Comm().MyPID();
+  const int myrank = Comm().MyPID();
 
   // loop rows of local matrix
   for (int lrow=0; lrow<lrowdim; ++lrow)
@@ -258,19 +592,11 @@ void LINALG::BlockSystemMatrix<Condition>::Assemble(const Epetra_SerialDenseMatr
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <class Condition>
-void LINALG::BlockSystemMatrix<Condition>::Complete()
+template <class Strategy>
+void LINALG::BlockSparseMatrix<Strategy>::Complete()
 {
-  Condition::Complete();
-  BlockSystemMatrixBase::Complete();
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <class Condition>
-void LINALG::BlockSystemMatrix<Condition>::ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle)
-{
+  Strategy::Complete();
+  BlockSparseMatrixBase::Complete();
 }
 
 

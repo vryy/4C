@@ -124,6 +124,7 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
 		src/drt_lib/drt_validparameters.o \
 		src/drt_lib/drt_validconditions.o \
 		src/drt_lib/linalg_mapextractor.o \
+		src/drt_lib/linalg_systemmatrix.o \
 		src/drt_lib/drt_constraint_manager.o
 OBJS_DRT      = \
                 src/drt_lib/drt_resulttest.o \

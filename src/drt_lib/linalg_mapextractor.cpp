@@ -49,19 +49,29 @@ void LINALG::MultiMapExtractor::Setup(const Epetra_Map& fullmap, const std::vect
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> LINALG::MultiMapExtractor::ExtractVector(Teuchos::RCP<const Epetra_Vector> full, int i) const
+Teuchos::RCP<Epetra_Vector> LINALG::MultiMapExtractor::ExtractVector(const Epetra_Vector& full, int i) const
 {
   Teuchos::RefCountPtr<Epetra_Vector> vec = Teuchos::rcp(new Epetra_Vector(*maps_[i]));
-  ExtractVector(full,i,vec);
+  ExtractVector(full,i,*vec);
   return vec;
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void LINALG::MultiMapExtractor::ExtractVector(Teuchos::RCP<const Epetra_Vector> full, int i, Teuchos::RCP<Epetra_Vector> cond) const
+Teuchos::RCP<Epetra_MultiVector> LINALG::MultiMapExtractor::ExtractVector(const Epetra_MultiVector& full, int i) const
 {
-  int err = cond->Import(*full,*importer_[i],Insert);
+  Teuchos::RefCountPtr<Epetra_MultiVector> vec = Teuchos::rcp(new Epetra_MultiVector(*maps_[i],full.NumVectors()));
+  ExtractVector(full,i,*vec);
+  return vec;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void LINALG::MultiMapExtractor::ExtractVector(const Epetra_MultiVector& full, int i, Epetra_MultiVector& cond) const
+{
+  int err = cond.Import(full,*importer_[i],Insert);
   if (err)
     dserror("Import using importer returned err=%d",err);
 }
@@ -69,19 +79,29 @@ void LINALG::MultiMapExtractor::ExtractVector(Teuchos::RCP<const Epetra_Vector> 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> LINALG::MultiMapExtractor::InsertVector(Teuchos::RCP<const Epetra_Vector> cond, int i) const
+Teuchos::RCP<Epetra_Vector> LINALG::MultiMapExtractor::InsertVector(const Epetra_Vector& cond, int i) const
 {
   Teuchos::RCP<Epetra_Vector> full = Teuchos::rcp(new Epetra_Vector(*fullmap_));
-  InsertVector(cond,i,full);
+  InsertVector(cond,i,*full);
   return full;
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void LINALG::MultiMapExtractor::InsertVector(Teuchos::RCP<const Epetra_Vector> cond, int i, Teuchos::RCP<Epetra_Vector> full) const
+Teuchos::RCP<Epetra_MultiVector> LINALG::MultiMapExtractor::InsertVector(const Epetra_MultiVector& cond, int i) const
 {
-  int err = full->Export(*cond,*importer_[i],Insert);
+  Teuchos::RCP<Epetra_MultiVector> full = Teuchos::rcp(new Epetra_MultiVector(*fullmap_,cond.NumVectors()));
+  InsertVector(cond,i,*full);
+  return full;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void LINALG::MultiMapExtractor::InsertVector(const Epetra_MultiVector& cond, int i, Epetra_MultiVector& full) const
+{
+  int err = full.Export(cond,*importer_[i],Insert);
   if (err)
     dserror("Export using importer returned err=%d",err);
 }
