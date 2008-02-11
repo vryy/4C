@@ -24,6 +24,7 @@ Maintainer: Lena Wiechert
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_surfstress/drt_surfstress_manager.H"
 
 #include "Epetra_Vector.h"
 #include "Epetra_Operator.h"
@@ -161,6 +162,8 @@ protected:
   // don't want = operator and cctor
   MicroStatic operator = (const MicroStatic& old);
   MicroStatic(const MicroStatic& old);
+
+  RefCountPtr<DRT::SurfStressManager>   surf_stress_man_;
 
   RefCountPtr<ParameterList>                 params_;
   RefCountPtr<DRT::Discretization>           discret_;

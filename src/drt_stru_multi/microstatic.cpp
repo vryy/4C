@@ -197,6 +197,43 @@ solver_(solver)
   if (density_ == 0.0)
     dserror("Density determined from homogenization procedure equals zero!");
 
+  // Check for surface stress conditions due to interfacial phenomena
+  vector<DRT::Condition*> surfstresscond(0);
+  discret_->GetCondition("SurfaceStress",surfstresscond);
+  if (surfstresscond.size())
+  {
+    // Determine local number of associated surface elements
+    int localnumsurf=0;
+    for (unsigned i=0;i<surfstresscond.size();++i)
+    {
+      localnumsurf+=surfstresscond[i]->Geometry().size();
+    }
+
+    // Create a map of the associated surface elements
+    // This is needed because the SurfStressManager creates
+    // several vectors containing history variables of the
+    // corresponding surface elements. These vectors need to be
+    // distributed over the processors in the same way as the
+    // surface elements are.
+
+    int localsurf[localnumsurf];
+    int count=0;
+    for (unsigned i=0;i<surfstresscond.size();++i)
+    {
+      for (map<int,RefCountPtr<DRT::Element> >::iterator iter=surfstresscond[i]->Geometry().begin();
+           iter!=surfstresscond[i]->Geometry().end();++iter)
+      {
+        localsurf[count]=iter->first;
+        count++;
+      }
+    }
+    Epetra_Map surfmap(-1, localnumsurf, localsurf, 0, discret_->Comm());
+
+    int numsurf;
+    discret_->Comm().SumAll(&localnumsurf, &numsurf, 1);
+    surf_stress_man_=rcp(new DRT::SurfStressManager(*discret_, numsurf, surfmap));
+  }
+
   return;
 } // MicroStatic::MicroStatic
 
@@ -264,6 +301,13 @@ void MicroStatic::Predictor(const Epetra_SerialDenseMatrix* defgrd)
     fint_->PutScalar(0.0);  // initialise internal force vector
     discret_->Evaluate(p,stiff_,null,fint_,null,null);
     discret_->ClearState();
+
+    if (surf_stress_man_!=null)
+    {
+      p.set("surfstr_man", surf_stress_man_);
+      surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
+    }
+
     // complete stiffness matrix
     LINALG::Complete(*stiff_);
   }
@@ -297,12 +341,12 @@ void MicroStatic::Predictor(const Epetra_SerialDenseMatrix* defgrd)
     CalcRefNorms();
   }
 
-  if (printscreen)
-    fresm_->Norm2(&fresmnorm);
-  if (!myrank_ && printscreen)
-  {
-    PrintPredictor(convcheck, fresmnorm);
-  }
+//   if (printscreen)
+//     fresm_->Norm2(&fresmnorm);
+//   if (!myrank_ && printscreen)
+//   {
+//     PrintPredictor(convcheck, fresmnorm);
+//   }
 
   return;
 } // MicroStatic::Predictor()
@@ -380,7 +424,14 @@ void MicroStatic::FullNewton()
       fint_->PutScalar(0.0);  // initialise internal force vector
       discret_->Evaluate(p,stiff_,null,fint_,null,null);
       discret_->ClearState();
+
+      if (surf_stress_man_!=null)
+      {
+        p.set("surfstr_man", surf_stress_man_);
+        surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
+      }
     }
+
     // complete stiffness matrix
     LINALG::Complete(*stiff_);
 
@@ -404,11 +455,11 @@ void MicroStatic::FullNewton()
     fresm_->Norm2(&fresmnorm);
 
     // a short message
-    if (!myrank_ && printscreen)
-    {
-      PrintNewton(printscreen,print_unconv,timer,numiter,maxiter,
-                  fresmnorm,disinorm,convcheck);
-    }
+//     if (!myrank_ && printscreen)
+//     {
+//       PrintNewton(printscreen,print_unconv,timer,numiter,maxiter,
+//                   fresmnorm,disinorm,convcheck);
+//     }
 
     //--------------------------------- increment equilibrium loop index
     ++numiter;
@@ -423,11 +474,11 @@ void MicroStatic::FullNewton()
   }
   else
   {
-     if (!myrank_ && printscreen)
-     {
-       PrintNewton(printscreen,print_unconv,timer,numiter,maxiter,
-                   fresmnorm,disinorm,convcheck);
-     }
+//      if (!myrank_ && printscreen)
+//      {
+//        PrintNewton(printscreen,print_unconv,timer,numiter,maxiter,
+//                    fresmnorm,disinorm,convcheck);
+//      }
   }
 
   params_->set<int>("num iterations",numiter);
