@@ -117,8 +117,12 @@ XFEM::DomainIntCells XFEM::InterfaceHandle::GetDomainIntCells(
         // create default set with one dummy DomainIntCell of proper size
         XFEM::DomainIntCells cells;
         cells.push_back(XFEM::DomainIntCell(distype));
+        // avoid empty vector
+        dsassert(cells.empty() == false, "this is a bug!");
         return cells;
     }
+    // avoid empty vector
+    dsassert(tmp->second.empty() == false, "this is a bug!");
     return tmp->second;
 }
 
