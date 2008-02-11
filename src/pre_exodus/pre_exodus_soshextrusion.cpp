@@ -34,12 +34,27 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
   map<int,EXODUS::ElementBlock> ebs = basemesh.GetElementBlocks();
   map<int,EXODUS::ElementBlock>::const_iterator i_ebs;
   map<int,EXODUS::ElementBlock> extrudeblocks;
-  
+
+  map<int,EXODUS::SideSet> sss = basemesh.GetSideSets();
+  map<int,EXODUS::SideSet>::const_iterator i_sss;
+  map<int,EXODUS::SideSet> extrudesidesets;
+
   // loop through all EBlocks to check for extrusion blocks
   for (i_ebs = ebs.begin(); i_ebs != ebs.end(); ++i_ebs ){
     bool toextrude = CheckExtrusion(i_ebs->second);
     if (toextrude) extrudeblocks.insert(pair<int,ElementBlock>(i_ebs->first,i_ebs->second));
   }
+  
+  // loop through all SideSets to check for extrusion
+  for (i_sss = sss.begin(); i_sss != sss.end(); ++i_sss ){
+    bool toextrude = CheckExtrusion(i_sss->second);
+    if (toextrude) extrudesidesets.insert(pair<int,SideSet>(i_sss->first,i_sss->second));
+  }
+
+  for (i_sss = extrudesidesets.begin(); i_sss != extrudesidesets.end(); ++i_sss ){
+    map<int,vector<int> > sideconn = basemesh.GetSideSetConn(i_sss->second);
+  }
+
   
   // loop all existing extrudeblocks
   for (i_ebs = extrudeblocks.begin(); i_ebs != extrudeblocks.end(); ++i_ebs){
@@ -449,6 +464,13 @@ bool EXODUS::CheckExtrusion(const EXODUS::ElementBlock eblock)
     || (myshape == EXODUS::ElementBlock::tri3)) return true;
   return false;
 }
+bool EXODUS::CheckExtrusion(const EXODUS::SideSet sideset)
+{
+  const string myname = sideset.GetName();
+  if (myname.compare(0,7,"extrude") == 0) return true;
+  return false;
+}
+
 
 vector<int> EXODUS::RiseNodeIds(int highestid, map<int,int> pair, const vector<int> elenodes)
 {
@@ -740,78 +762,6 @@ vector<int> EXODUS::FindNodeNeighbors(const vector<int> nodes,const int actnode)
   return neighbors;
 }
 
-void EXODUS::PrintMap(ostream& os,const map<int,vector<int> > mymap)
-{
-  map<int,vector<int> >::const_iterator iter;
-  for(iter = mymap.begin(); iter != mymap.end(); ++iter)
-  {
-      os << iter->first << ": ";
-      vector<int> actvec = iter->second;
-      vector<int>::iterator i;
-      for (i=actvec.begin(); i<actvec.end(); ++i) {
-        os << *i << ",";
-      }
-      os << endl;
-  }
-}
-
-void EXODUS::PrintMap(ostream& os,const map<int,set<int> > mymap)
-{
-  map<int,set<int> >::const_iterator iter;
-  for(iter = mymap.begin(); iter != mymap.end(); ++iter)
-  {
-      os << iter->first << ": ";
-      set<int> actset = iter->second;
-      set<int>::iterator i;
-      for (i=actset.begin(); i != actset.end(); ++i) {
-        os << *i << ",";
-      }
-      os << endl;
-  }
-}
-
-void EXODUS::PrintMap(ostream& os,const map<int,vector<double> > mymap)
-{
-  map<int,vector<double> >::const_iterator iter;
-  for(iter = mymap.begin(); iter != mymap.end(); ++iter)
-  {
-      os << iter->first << ": ";
-      vector<double> actvec = iter->second;
-      vector<double>::iterator i;
-      for (i=actvec.begin(); i<actvec.end(); ++i) {
-        os << *i << ",";
-      }
-      os << endl;
-  }
-}
-
-void EXODUS::PrintVec(ostream& os, const vector<int> actvec)
-{
-  vector<int>::const_iterator i;
-  for (i=actvec.begin(); i<actvec.end(); ++i) {
-    os << *i << ",";
-  }
-  os << endl;
-}
-
-void EXODUS::PrintVec(ostream& os, const vector<double> actvec)
-{
-  vector<double>::const_iterator i;
-  for (i=actvec.begin(); i<actvec.end(); ++i) {
-    os << *i << ",";
-  }
-  os << endl;
-}
-
-void EXODUS::PrintSet(ostream& os, const set<int> actset)
-{
-  set<int>::iterator i;
-  for (i=actset.begin(); i != actset.end(); ++i) {
-    os << *i << ",";
-  }
-  os << endl;
-  
-}
 
 
 #endif

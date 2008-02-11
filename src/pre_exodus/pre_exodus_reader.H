@@ -24,6 +24,7 @@ is handed to a c++ object mesh.
 #include <vector>
 #include <Teuchos_RefCountPtr.hpp>
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_element.H"
 //include "pre_node.H"
 
 extern "C" /* stuff which is c and is accessed from c++ */
@@ -253,6 +254,10 @@ public:
   
   inline int GetNumSides() const {return sides_.size();}
   
+  string GetName() const {return name_;}
+  
+  map<int,vector<int> > GetSideSet() const {return sides_;}
+
   void Print(ostream& os, bool verbose=false) const;
   
 private:
@@ -320,6 +325,42 @@ inline std::string ShapeToString(const ElementBlock::Shape shape)
   }
   return "xxx";
 }
+
+inline DRT::Element::DiscretizationType PreShapeToDrt(const ElementBlock::Shape shape)
+{
+  switch (shape){
+  case ElementBlock::point1:   return DRT::Element::point1; break;
+  case ElementBlock::quad4:    return DRT::Element::quad4;  break;
+  case ElementBlock::quad8:    return DRT::Element::quad8;  break;
+  case ElementBlock::quad9:    return DRT::Element::quad9;  break;
+  case ElementBlock::shell4:   return DRT::Element::quad4;  break;
+  case ElementBlock::shell8:   return DRT::Element::quad8;  break;
+  case ElementBlock::shell9:   return DRT::Element::quad9;  break;
+  case ElementBlock::tri3:     return DRT::Element::tri3;   break;
+  case ElementBlock::tri6:     return DRT::Element::tri6;   break;
+  case ElementBlock::hex8:     return DRT::Element::hex8;   break;
+  case ElementBlock::hex20:    return DRT::Element::hex20;  break;
+  case ElementBlock::hex27:    return DRT::Element::hex27;  break;
+  case ElementBlock::tet4:     return DRT::Element::tet4;   break;
+  case ElementBlock::tet10:    return DRT::Element::tet10;  break;
+  case ElementBlock::wedge6:   return DRT::Element::wedge6; break;
+  case ElementBlock::wedge15:  return DRT::Element::wedge15;break;
+  case ElementBlock::pyramid5: return DRT::Element::pyramid5;break;
+  case ElementBlock::bar2:     return DRT::Element::line2;   break;
+  case ElementBlock::bar3:     return DRT::Element::line3;   break;
+  default: dserror("Unknown ElementBlock::Shape"); 
+  }
+  return DRT::Element::max_distype;
+  
+}
+
+void PrintMap(ostream& os,const map<int,vector<int> > mymap);
+void PrintMap(ostream& os, const map<int,vector<double> >mymap);
+void PrintMap(ostream& os,const map<int,set<int> > mymap);
+void PrintVec(ostream& os, const vector<int> actvec);
+void PrintVec(ostream& os, const vector<double> actvec);
+void PrintSet(ostream& os, const set<int> actset);
+
 
 } // of namespace EXODUS
 

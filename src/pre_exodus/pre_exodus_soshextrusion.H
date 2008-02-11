@@ -39,6 +39,7 @@ namespace EXODUS
 Mesh SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness, int layers);
 
 bool CheckExtrusion(const EXODUS::ElementBlock eblock);
+bool CheckExtrusion(const EXODUS::SideSet sideset);
 
 vector<int> RiseNodeIds(int highestid, map<int,int> pair, const vector<int> elenodes);
 
@@ -70,12 +71,6 @@ int FindEdgeNeighbor(const vector<int> nodes, const int actnode, const int wrong
 
 vector<int> FindNodeNeighbors(const vector<int> nodes, const int centernode);
 
-void PrintMap(ostream& os,const map<int,vector<int> > mymap);
-void PrintMap(ostream& os, const map<int,vector<double> >mymap);
-void PrintMap(ostream& os,const map<int,set<int> > mymap);
-void PrintVec(ostream& os, const vector<int> actvec);
-void PrintVec(ostream& os, const vector<double> actvec);
-void PrintSet(ostream& os, const set<int> actset);
 
 } // of namespace EXODUS
 

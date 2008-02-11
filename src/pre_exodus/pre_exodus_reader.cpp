@@ -19,6 +19,7 @@ is handed to a c++ object mesh.
 #include "pre_exodus_reader.H"
 #include "pre_node.H"
 #include <time.h>
+#include "../drt_lib/drt_utils_local_connectivity_matrices.H"
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -374,7 +375,63 @@ vector<double> EXODUS::Mesh::GetNodeMap(const int MapNodeID) const
 map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset) const
 {
   map<int,vector<int> > conn;
+  map <int,vector<int> > mysides = sideset.GetSideSet();
+  map<int,vector<int> >::iterator i_side;
   
+  map<int,EXODUS::ElementBlock> ebs = GetElementBlocks();
+  map<int,EXODUS::ElementBlock>::const_iterator i_ebs;
+//  /* SideSet refers to GLOBAL element number counting over ALL Eblocks
+//   * Thus we create here a temporal copy of one large EBlock
+//   * consisting of all Eblocks. The excessive memory is gratefully accepted,
+//   * optimization is a future task. */
+//  map<int,vector<int> > global_eleconn;
+//  vector<int> dummyvec(0,0);  // ExodusIDs start from 1 so we insert a dummy
+//  global_eleconn.insert(pair<int,vector<int> >(0,dummyvec));
+//  int start = 1; // ExodusIDs start from 1
+//  
+//  // loop all EBlocks to get their conns
+//  for (i_ebs = ebs.begin(); i_ebs != ebs.end(); ++i_ebs ){
+//    EXODUS::ElementBlock acteblock = i_ebs->second;
+//    map<int,vector<int> > actconn = acteblock.GetEleConn();
+//    map<int,vector<int> >::const_iterator i_ele;
+//    for (i_ele = actconn.begin(); i_ele != actconn.end(); ++ i_ele){
+//      int eID = start + i_ele->first;
+//      global_eleconn.insert(pair<int,vector<int> >(eID,i_ele->second));
+//    }
+//    start += acteblock.GetNumEle();
+//  }
+//  //PrintMap(cout,global_eleconn);
+  
+  // Range Vector for global eleID identification in SideSet
+  vector<int> glob_eb_erange(1,0);
+  for (i_ebs = ebs.begin(); i_ebs != ebs.end(); ++i_ebs ){
+    glob_eb_erange.push_back(i_ebs->second.GetNumEle());
+  }
+  
+  // fill SideSet Connectivity
+  for (i_side = mysides.begin(); i_side != mysides.end(); ++i_side){
+    int actele = i_side->second.at(0) -1;   //ExoIds start from 1, but we from 0
+    int actface = i_side->second.at(1) -1;  //ExoIds start from 1, but we from 0
+    // find actual EBlock where actele lies in
+    int actebid;
+    for(unsigned int i=0; i<glob_eb_erange.size(); ++i) 
+      if (actele <= glob_eb_erange[i]) actebid = i-1;
+    EXODUS::ElementBlock acteb = ebs.find(actebid)->second;
+    EXODUS::ElementBlock::Shape actshape = acteb.GetShape();
+    map<int,vector<int> > acteconn = acteb.GetEleConn();
+    // get act parent ele from actual Side
+    int parent_ele_id = actele - glob_eb_erange[actebid]; 
+    vector<int> parent_ele = acteconn.find(parent_ele_id)->second;
+    // Face to ElementNode Map
+    vector<int> childmap = DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape))[actface];
+    // child gets its node ids
+    vector<int> child;
+    for(unsigned int j=0; j<childmap.size(); ++j)
+      child.push_back(parent_ele[childmap[j]]);
+    // insert child into SideSet Connectivity
+    conn.insert(pair<int,vector<int> >(i_side->first,child));
+  }
+
   return conn;
 }
 
@@ -637,7 +694,6 @@ void EXODUS::SideSet::Print(ostream& os, bool verbose) const{
   for (it=sides_.begin(); it != sides_.end(); it++){
     os << "Side " << it->first << ": ";
     os << "Ele: " << it->second.at(0) << ", Side: " << it->second.at(1) << endl;
-    os << endl;
   }
 }
 
@@ -646,5 +702,77 @@ EXODUS::SideSet::~SideSet()
   return;
 }
 
+void EXODUS::PrintMap(ostream& os,const map<int,vector<int> > mymap)
+{
+  map<int,vector<int> >::const_iterator iter;
+  for(iter = mymap.begin(); iter != mymap.end(); ++iter)
+  {
+      os << iter->first << ": ";
+      vector<int> actvec = iter->second;
+      vector<int>::iterator i;
+      for (i=actvec.begin(); i<actvec.end(); ++i) {
+        os << *i << ",";
+      }
+      os << endl;
+  }
+}
+
+void EXODUS::PrintMap(ostream& os,const map<int,set<int> > mymap)
+{
+  map<int,set<int> >::const_iterator iter;
+  for(iter = mymap.begin(); iter != mymap.end(); ++iter)
+  {
+      os << iter->first << ": ";
+      set<int> actset = iter->second;
+      set<int>::iterator i;
+      for (i=actset.begin(); i != actset.end(); ++i) {
+        os << *i << ",";
+      }
+      os << endl;
+  }
+}
+
+void EXODUS::PrintMap(ostream& os,const map<int,vector<double> > mymap)
+{
+  map<int,vector<double> >::const_iterator iter;
+  for(iter = mymap.begin(); iter != mymap.end(); ++iter)
+  {
+      os << iter->first << ": ";
+      vector<double> actvec = iter->second;
+      vector<double>::iterator i;
+      for (i=actvec.begin(); i<actvec.end(); ++i) {
+        os << *i << ",";
+      }
+      os << endl;
+  }
+}
+
+void EXODUS::PrintVec(ostream& os, const vector<int> actvec)
+{
+  vector<int>::const_iterator i;
+  for (i=actvec.begin(); i<actvec.end(); ++i) {
+    os << *i << ",";
+  }
+  os << endl;
+}
+
+void EXODUS::PrintVec(ostream& os, const vector<double> actvec)
+{
+  vector<double>::const_iterator i;
+  for (i=actvec.begin(); i<actvec.end(); ++i) {
+    os << *i << ",";
+  }
+  os << endl;
+}
+
+void EXODUS::PrintSet(ostream& os, const set<int> actset)
+{
+  set<int>::iterator i;
+  for (i=actset.begin(); i != actset.end(); ++i) {
+    os << *i << ",";
+  }
+  os << endl;
+  
+}
 
 #endif
