@@ -127,6 +127,8 @@ protected:
   
   RCP<Epetra_Map>										gactivenodes_;  // global active slave node row map (of all interfaces)
   RCP<Epetra_Map>										gactivedofs_;   // global active slave dof row map (of all interfaces)
+  RCP<Epetra_Map>										gactiveN_;      // global row map of matrix N (of all interfaces)
+  RCP<Epetra_Map>										gactiveT_;      // global row map of matrix T (of all interfaces)
   
   RCP<Epetra_CrsMatrix>							D_;					    // global Mortar matrix D
   RCP<Epetra_CrsMatrix>							M_;					    // global Mortar matrix M

@@ -239,17 +239,20 @@ void CONTACT::Manager::Initialize()
   {
 	  interface_[i]->Initialize();
   }
-	
-	// (re)setup global Mortar Epetra_CrsMatrices and Epetra_Vectors
-	D_ = LINALG::CreateMatrix(*gsdofrowmap_,10);
-	M_ = LINALG::CreateMatrix(*gsdofrowmap_,100);
-	g_ = LINALG::CreateVector(*gsnoderowmap_,true);
 		
+	// (re)setup active global Epetra_Maps
+	gactivenodes_ = null;
+	gactivedofs_ = null;
+	gactiveN_ = null;
+	gactiveT_ = null;
+	
 	// update active global Epetra_Maps
 	for (int i=0;i<(int)interface_.size();++i)
 	{
 		gactivenodes_ = LINALG::MergeMap(gactivenodes_,interface_[i]->ActiveNodes());
 		gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs());
+		gactiveN_ = LINALG::MergeMap(gactiveN_,interface_[i]->ActiveNDofs());;
+		gactiveT_ = LINALG::MergeMap(gactiveT_,interface_[i]->ActiveTDofs());;
 	}
 	
 	// create empty maps, if active set = null
@@ -257,11 +260,18 @@ void CONTACT::Manager::Initialize()
 	{
 		gactivenodes_ = rcp(new Epetra_Map(0,0,Comm()));
 		gactivedofs_ = rcp(new Epetra_Map(0,0,Comm()));
+		gactiveN_ = rcp(new Epetra_Map(0,0,Comm()));
+		gactiveT_ = rcp(new Epetra_Map(0,0,Comm()));
 	}
 	
+	// (re)setup global Mortar Epetra_CrsMatrices and Epetra_Vectors
+	D_ = LINALG::CreateMatrix(*gsdofrowmap_,10);
+	M_ = LINALG::CreateMatrix(*gsdofrowmap_,100);
+	g_ = LINALG::CreateVector(*gsnoderowmap_,true);
+		
 	// (re)setup global normal and tangent matrices
-	N_ = LINALG::CreateMatrix(*gactivenodes_,3);
-	T_ = LINALG::CreateMatrix(*gactivenodes_,3);
+	N_ = LINALG::CreateMatrix(*gactiveN_,3);
+	T_ = LINALG::CreateMatrix(*gactiveT_,3);
 	
   return;
 }
@@ -294,10 +304,18 @@ void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
 	  interface_[i]->Evaluate();
 	  interface_[i]->Assemble_DMG(*D_,*M_,*g_);
   }
-	
+
 	// FillComplete() global Mortar matrices
-	LINALG::Complete(*D_);
-	LINALG::Complete(*M_,*gmdofrowmap_,*gsdofrowmap_);
+	LINALG::Complete(D_);
+	LINALG::Complete(M_,*gmdofrowmap_,*gsdofrowmap_);
+	
+	// export weighted gap vector to gactiveN-map
+	RCP<Epetra_Vector> g_act = LINALG::CreateVector(*gactivenodes_,true);
+	if (g_act->GlobalLength())
+	{
+		LINALG::Export(*g_,*g_act);
+		g_act->ReplaceMap(*gactiveN_);
+	}
 	
 	/**********************************************************************/
 	/* build global matrix N with normal vectors of active nodes          */
@@ -307,8 +325,8 @@ void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
 	  interface_[i]->Assemble_NT(*N_,*T_);
 	  
 	// FillComplete() global matrices N and T
-	LINALG::Complete(*N_,*gactivedofs_,*gactivenodes_);
-	LINALG::Complete(*T_,*gactivedofs_,*gactivenodes_);
+	LINALG::Complete(N_,*gactivedofs_,*gactiveN_);
+	LINALG::Complete(T_,*gactivedofs_,*gactiveT_);
 	
 	/**********************************************************************/
 	/* Multiply Mortar matrices: M^ = inv(D) * M                          */
@@ -427,49 +445,48 @@ void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
 	
 	// Ksm: add Kss*T(Mbar)
 	RCP<Epetra_CrsMatrix> Ksm_mod = LINALG::CreateMatrix(Ksm->RowMap(),100);
-	LINALG::Add(*Ksm,false,1.0,*Ksm_mod,1.0);
+	LINALG::Add(Ksm,false,1.0,Ksm_mod,1.0);
 	mod = LINALG::Multiply(Kss,false,Mbar,false);
-	LINALG::Add(*mod,false,1.0,*Ksm_mod,1.0);
-	LINALG::Complete(*Ksm_mod,Ksm->DomainMap(),Ksm->RowMap());
+	LINALG::Add(mod,false,1.0,Ksm_mod,1.0);
+	LINALG::Complete(Ksm_mod,Ksm->DomainMap(),Ksm->RowMap());
 
 	// Ksn: nothing to do
 	RCP<Epetra_CrsMatrix> Ksn_mod = Ksn;
 	
 	// Kms: add T(Mbar)*Kss
 	RCP<Epetra_CrsMatrix> Kms_mod = LINALG::CreateMatrix(Kms->RowMap(),100);
-	LINALG::Add(*Kms,false,1.0,*Kms_mod,1.0);
+	LINALG::Add(Kms,false,1.0,Kms_mod,1.0);
 	mod = LINALG::Multiply(Mbar,true,Kss,false);
-	LINALG::Add(*mod,false,1.0,*Kms_mod,1.0);
-	LINALG::Complete(*Kms_mod,Kms->DomainMap(),Kms->RowMap());
+	LINALG::Add(mod,false,1.0,Kms_mod,1.0);
+	LINALG::Complete(Kms_mod,Kms->DomainMap(),Kms->RowMap());
 	
 	// Kmm: add Kms*T(Mbar) + T(Mbar)*Ksm + T(Mbar)*Kss*Mbar
 	RCP<Epetra_CrsMatrix> Kmm_mod = LINALG::CreateMatrix(Kmm->RowMap(),100);
-	LINALG::Add(*Kmm,false,1.0,*Kmm_mod,1.0);
+	LINALG::Add(Kmm,false,1.0,Kmm_mod,1.0);
 	mod = LINALG::Multiply(Kms,false,Mbar,false);
-	LINALG::Add(*mod,false,1.0,*Kmm_mod,1.0);
+	LINALG::Add(mod,false,1.0,Kmm_mod,1.0);
 	mod = LINALG::Multiply(Mbar,true,Ksm,false);
-	LINALG::Add(*mod,false,1.0,*Kmm_mod,1.0);
-	mod = LINALG::Multiply(Mbar,true,Kss,false);
-	mod = LINALG::Multiply(mod,false,Mbar,false);
-	LINALG::Add(*mod,false,1.0,*Kmm_mod,1.0);
+	LINALG::Add(mod,false,1.0,Kmm_mod,1.0);
+	mod = LINALG::Multiply(Mbar,true,Kss,false,Mbar,false);
+	LINALG::Add(mod,false,1.0,Kmm_mod,1.0);
 	LINALG::Complete(*Kmm_mod,Kmm->DomainMap(),Kmm->RowMap());
 	
 	// Kmn: add T(Mbar)*Ksn
 	RCP<Epetra_CrsMatrix> Kmn_mod = LINALG::CreateMatrix(Kmn->RowMap(),100);
-	LINALG::Add(*Kmn,false,1.0,*Kmn_mod,1.0);	
+	LINALG::Add(Kmn,false,1.0,Kmn_mod,1.0);	
 	mod = LINALG::Multiply(Mbar,true,Ksn,false);
-	LINALG::Add(*mod,false,1.0,*Kmn_mod,1.0);
-	LINALG::Complete(*Kmn_mod,Kmn->DomainMap(),Kmn->RowMap());
+	LINALG::Add(mod,false,1.0,Kmn_mod,1.0);
+	LINALG::Complete(Kmn_mod,Kmn->DomainMap(),Kmn->RowMap());
 	
 	// Kns: nothing to do
 	RCP<Epetra_CrsMatrix> Kns_mod = Kns;
 	
 	// Knm: add Kns*Mbar
 	RCP<Epetra_CrsMatrix> Knm_mod = LINALG::CreateMatrix(Knm->RowMap(),100);
-	LINALG::Add(*Knm,false,1.0,*Knm_mod,1.0);
+	LINALG::Add(Knm,false,1.0,Knm_mod,1.0);
 	mod = LINALG::Multiply(Kns,false,Mbar,false);
-	LINALG::Add(*mod,false,1.0,*Knm_mod,1.0);
-	LINALG::Complete(*Knm_mod,Knm->DomainMap(),Knm->RowMap());
+	LINALG::Add(mod,false,1.0,Knm_mod,1.0);
+	LINALG::Complete(Knm_mod,Knm->DomainMap(),Knm->RowMap());
 	
 	// Knn: nothing to do
 	RCP<Epetra_CrsMatrix> Knn_mod = Knn;
@@ -648,30 +665,30 @@ void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
 	RCP<Epetra_Vector> feff_new = LINALG::CreateVector(*(discret_.DofRowMap()));
 	
 	// add n / m submatrices to Kteff_new
-	LINALG::Add(*Knn_mod,false,1.0,*Kteff_new,1.0);
-	LINALG::Add(*Knm_mod,false,1.0,*Kteff_new,1.0);
-	LINALG::Add(*Kmn_mod,false,1.0,*Kteff_new,1.0);
-	LINALG::Add(*Kmm_mod,false,1.0,*Kteff_new,1.0);
+	LINALG::Add(Knn_mod,false,1.0,Kteff_new,1.0);
+	LINALG::Add(Knm_mod,false,1.0,Kteff_new,1.0);
+	LINALG::Add(Kmn_mod,false,1.0,Kteff_new,1.0);
+	LINALG::Add(Kmm_mod,false,1.0,Kteff_new,1.0);
 	
 	// add a / i submatrices to Kteff_new, if existing
-	if (Kns_mod!=null) LINALG::Add(*Kns_mod,false,1.0,*Kteff_new,1.0);
-	if (Kms_mod!=null) LINALG::Add(*Kms_mod,false,1.0,*Kteff_new,1.0);
-	if (Kin_mod!=null) LINALG::Add(*Kin_mod,false,1.0,*Kteff_new,1.0);
-	if (Kim_mod!=null) LINALG::Add(*Kim_mod,false,1.0,*Kteff_new,1.0);
-	if (Kii_mod!=null) LINALG::Add(*Kii_mod,false,1.0,*Kteff_new,1.0);
-	if (Kia_mod!=null) LINALG::Add(*Kia_mod,false,1.0,*Kteff_new,1.0);
+	if (Kns_mod!=null) LINALG::Add(Kns_mod,false,1.0,Kteff_new,1.0);
+	if (Kms_mod!=null) LINALG::Add(Kms_mod,false,1.0,Kteff_new,1.0);
+	if (Kin_mod!=null) LINALG::Add(Kin_mod,false,1.0,Kteff_new,1.0);
+	if (Kim_mod!=null) LINALG::Add(Kim_mod,false,1.0,Kteff_new,1.0);
+	if (Kii_mod!=null) LINALG::Add(Kii_mod,false,1.0,Kteff_new,1.0);
+	if (Kia_mod!=null) LINALG::Add(Kia_mod,false,1.0,Kteff_new,1.0);
 	
 	// add matrix of normals to Kteff_new
-	//LINALG::Add(*N_,false,1.0,*Kteff_new,1.0);
-	/*
+	LINALG::Add(N_,false,1.0,Kteff_new,1.0);
+
 	// add submatrices with tangents to Kteff_new, if existing
-	if (TKan_mod!=null) LINALG::Add(*TKan_mod,false,1.0,*Kteff_new,1.0);
-	if (TKam_mod!=null) LINALG::Add(*TKam_mod,false,1.0,*Kteff_new,1.0);
-	if (TKai_mod!=null) LINALG::Add(*TKai_mod,false,1.0,*Kteff_new,1.0);
-	if (TKaa_mod!=null) LINALG::Add(*TKaa_mod,false,1.0,*Kteff_new,1.0);
-	*/
+	if (TKan_mod!=null) LINALG::Add(TKan_mod,false,1.0,Kteff_new,1.0);
+	if (TKam_mod!=null) LINALG::Add(TKam_mod,false,1.0,Kteff_new,1.0);
+	if (TKai_mod!=null) LINALG::Add(TKai_mod,false,1.0,Kteff_new,1.0);
+	if (TKaa_mod!=null) LINALG::Add(TKaa_mod,false,1.0,Kteff_new,1.0);
+	
 	// FillComplete Kteff_new (square)
-	LINALG::Complete(*Kteff_new);
+	LINALG::Complete(Kteff_new);
 	
 	// add n / m subvectors to feff_new
 	RCP<Epetra_Vector> fn_mod_exp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
@@ -689,14 +706,14 @@ void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
 	
 	// add weighted gap vector to feff_new, if existing
 	RCP<Epetra_Vector> g_exp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
-	if (g_->GlobalLength()) LINALG::Export(*g_,*g_exp);
+	if (g_act->GlobalLength()) LINALG::Export(*g_act,*g_exp);
 	feff_new->Update(1.0,*g_exp,1.0);
 	
 	/**********************************************************************/
 	/* Replace Kteff and feff by Kteff_new and feff_new                   */
 	/**********************************************************************/
-	//Kteff = Kteff_new;
-	//feff = feff_new;
+	Kteff = Kteff_new;
+	feff = feff_new;
 	//exit(0);
 	
   return;

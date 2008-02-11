@@ -240,11 +240,6 @@ void CONTACT::Interface::FillComplete()
   	mdofrowmap_ = rcp(new Epetra_Map(-1,(int)mr.size(),&mr[0],0,Comm()));
   }
   
-  // FIXME - test for splitting of global matrices
-  // (as the active set strategy is not yet implemented, these are dummies)
-  activenodes_=snoderowmap_;
-  activedofs_=sdofrowmap_;
-  
   return;
 }
 
@@ -295,7 +290,87 @@ void CONTACT::Interface::Initialize()
 	// reset matrix containing interface contact segments (gmsh)
 	CSegs().Shape(0,0);
 	
+	// FIXME - test for splitting of global matrices
+	// (as the active set strategy is not yet implemented, these are dummies)
+	//activenodes_=snoderowmap_;
+	//activedofs_=sdofrowmap_;
+	SplitActiveDofs(activeN_,activeT_);
+	
+	  
 	return;
+}
+
+/*----------------------------------------------------------------------*
+ |  split actove dofs into Ndofs and Tdofs                    popp 02/08|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Interface::SplitActiveDofs(RCP<Epetra_Map>& Nmap,
+																				 RCP<Epetra_Map>& Tmap)
+{
+	// get out of here if active set is empty
+	if (activenodes_==null)
+	{
+		Nmap = rcp(new Epetra_Map(0,0,Comm()));
+		Tmap = rcp(new Epetra_Map(0,0,Comm()));
+		return true;
+	}
+		
+	else if (activenodes_->NumGlobalElements()==0)
+	{
+		Nmap = rcp(new Epetra_Map(0,0,Comm()));
+		Tmap = rcp(new Epetra_Map(0,0,Comm()));
+		return true;
+	}
+	
+	// define local variables
+	int countN=0;
+	int countT=0;
+	vector<int> myNgids(activenodes_->NumMyElements());
+	vector<int> myTgids(activenodes_->NumMyElements());
+	
+	// dimension check
+	double dimcheck =(activedofs_->NumGlobalElements())/(activenodes_->NumGlobalElements());
+	if (dimcheck!=2.0 && dimcheck!=3.0)
+		dserror("ERROR: SplitActiveDofs: Nodes <-> Dofs dimension mismatch!");
+	
+	// loop over all active row nodes
+	for (int i=0;i<activenodes_->NumMyElements();++i)
+	{
+		int gid = activenodes_->GID(i);
+		DRT::Node* node = idiscret_->gNode(gid);
+		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+		CNode* cnode = static_cast<CNode*>(node);
+		const int numdof = cnode->NumDof();
+		
+		// add first dof to Nmap
+		myNgids[countN] = cnode->Dofs()[0];
+		++countN;
+		
+		// add remaining dofs to Tmap
+		for (int j=1;j<numdof;++j)
+		{
+			myTgids[countT] = cnode->Dofs()[j];
+			++countT;
+		}
+	}
+	
+	// resize the temporary vectors
+	myNgids.resize(countN);
+	myTgids.resize(countT);
+	
+	// communicate countN and countT among procs
+	int gcountN, gcountT;
+	Comm().SumAll(&countN,&gcountN,1);
+	Comm().SumAll(&countT,&gcountT,1);
+	
+	// check global dimensions
+	if ((gcountN+gcountT)!=activedofs_->NumGlobalElements())
+		dserror("ERROR: SplitActiveDofs: Splitting went wrong!");
+	
+	// create Nmap and Tmap objects
+	Nmap = rcp(new Epetra_Map(gcountN,countN,&myNgids[0],0,Comm()));
+	Tmap = rcp(new Epetra_Map(gcountT,countT,&myTgids[0],0,Comm()));
+
+	return true;
 }
 
 /*----------------------------------------------------------------------*
@@ -1110,6 +1185,47 @@ void CONTACT::Interface::Assemble_DMG(Epetra_CrsMatrix& Dglobal,
 			LINALG::Assemble(Mglobal,Mnode,lmrow,lmrowowner,lmcol);
 		}
 		
+		/************************************************* Mmod-matrix ******/
+		if ((cnode->GetMmod()).size()>0)
+		{
+			vector<map<int,double> > Mmap = cnode->GetMmod();
+			int rowsize = cnode->NumDof();
+			int colsize = (int)Mmap[0].size();
+			
+			for (int j=0;j<rowsize-1;++j)
+				if ((int)Mmap[j].size() != (int)Mmap[j+1].size())
+					dserror("ERROR: Assemble_DMG: Column dim. of nodal Mmod-map is inconsistent!");
+				
+			Epetra_SerialDenseMatrix Mnode(rowsize,colsize);
+			vector<int> lmrow(rowsize);
+			vector<int> lmcol(colsize);
+			vector<int> lmrowowner(rowsize);
+			map<int,double>::iterator colcurr;
+			
+			for (int j=0;j<rowsize;++j)
+			{
+				int row = cnode->Dofs()[j];
+				int k = 0;
+				lmrow[j] = row;
+				lmrowowner[j] = cnode->Owner();
+				
+				for (colcurr=Mmap[j].begin();colcurr!=Mmap[j].end();++colcurr)
+				{
+					int col = colcurr->first;
+					double val = colcurr->second;
+					lmcol[k] = col;
+					
+					Mnode(j,k)=val;
+					++k;
+				}
+				
+				if (k!=colsize)
+					dserror("ERROR: Assemble_DMG: k = %i but colsize = %i",k,colsize);
+			}
+			
+			LINALG::Assemble(Mglobal,Mnode,lmrow,lmrowowner,lmcol);
+		}
+		
 		/**************************************************** g-vector ******/
 		if (cnode->Getg()!=0.0)
 		{
@@ -1151,14 +1267,21 @@ void CONTACT::Interface::Assemble_NT(Epetra_CrsMatrix& Nglobal,
 		if (cnode->Owner() != comm_.MyPID())
 			dserror("ERROR: Assemble_NT: Node ownership inconsistency!");
 		
-		// prepare assembly
+		// prepare assembly (only 2D so far !!!!)
 		int colsize = cnode->NumDof();
-		vector<int> lmrow(1);
-		vector<int> lmrowowner(1);
+		vector<int> lmrowN(1);
+		vector<int> lmrowT(1);
+		vector<int> lmrowownerN(1);
+		vector<int> lmrowownerT(1);
 		vector<int> lmcol(colsize);
 		
-		lmrow[0] = cnode->Id();
-		lmrowowner[0] = cnode->Owner();
+		lmrowN[0] = activeN_->GID(i);
+		lmrowownerN[0] = cnode->Owner();
+		lmrowT[0] = activeT_->GID(i);
+		lmrowownerT[0] = cnode->Owner();
+		
+		if (colsize==3)
+			dserror("ERROR: Assemble_NT: 3D case not yet implemented!");
 		
 		/**************************************************** N-matrix ******/
 		Epetra_SerialDenseMatrix Nnode(1,colsize);
@@ -1173,7 +1296,7 @@ void CONTACT::Interface::Assemble_NT(Epetra_CrsMatrix& Nglobal,
 		}
 		
 		// assemble into matrix of normal vectors N
-		LINALG::Assemble(Nglobal,Nnode,lmrow,lmrowowner,lmcol);
+		LINALG::Assemble(Nglobal,Nnode,lmrowN,lmrowownerN,lmcol);
 		
 		/**************************************************** T-matrix ******/
 		Epetra_SerialDenseMatrix Tnode(1,colsize);
@@ -1191,7 +1314,7 @@ void CONTACT::Interface::Assemble_NT(Epetra_CrsMatrix& Nglobal,
 		}
 		
 		// assemble into matrix of normal vectors T
-		LINALG::Assemble(Tglobal,Tnode,lmrow,lmrowowner,lmcol);
+		LINALG::Assemble(Tglobal,Tnode,lmrowT,lmrowownerT,lmcol);
 	}
 
 	return;

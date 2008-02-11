@@ -264,6 +264,28 @@ public:
     else dserror("CONTACT::Interface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
+  
+  /*!
+  \brief Get row map of matrix N (Filled()==true is prerequisite)
+      
+  */
+  virtual const RCP<Epetra_Map> ActiveNDofs() const 
+  { 
+    if (Filled()) return activeN_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+    
+  /*!
+  \brief Get row map of matrix T (Filled()==true is prerequisite)
+      
+  */
+  virtual const RCP<Epetra_Map> ActiveTDofs() const 
+  { 
+    if (Filled()) return activeT_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
     
   /*!
   \brief Add a CONTACT::CNode to the interface (Filled()==true NOT prerequisite)
@@ -305,6 +327,12 @@ public:
   
   */
   virtual void Initialize();
+  
+  /*!
+  \brief Split active dofs into N- and T-part
+  
+  */
+  virtual bool SplitActiveDofs(RCP<Epetra_Map>& Nmap, RCP<Epetra_Map>& Tmap);
   
   /*!
   \brief Set current deformation state
@@ -394,6 +422,8 @@ protected:
   
   RCP<Epetra_Map>								activenodes_;  // row map of all active slave nodes
   RCP<Epetra_Map>								activedofs_;	 // row map of all active slave dofs
+  RCP<Epetra_Map>								activeN_;			 // row map of global N-matrix
+  RCP<Epetra_Map>								activeT_;			 // row map of global T-matrix
   
   Epetra_SerialDenseMatrix		  contactsegs_;	 // contains coordinates of all contact segments (gmsh)
   int														counter_;			 // counts the number of calls to this interface (gmsh)
