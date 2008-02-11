@@ -836,6 +836,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     structdis_micro = rcp(new DRT::Discretization("Micro Structure", micro_reader.Comm()));
     micro_problem->AddDis(genprob.numsf, structdis_micro);
 
+    micro_problem->ReadParameter(micro_reader);
+
     // read materials of microscale
     // CAUTION: materials for microscale can not be read until
     // micro_reader is activated, since else materials will again be
@@ -855,7 +857,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     // spatial functions can be read!
 
     micro_problem->ReadConditions(micro_reader);
-
 
     // At this point, everything for the microscale is read,
     // subsequent reading is only for macroscale
