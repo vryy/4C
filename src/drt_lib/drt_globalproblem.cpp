@@ -825,7 +825,18 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     RefCountPtr<DRT::Problem> micro_problem = DRT::Problem::Instance(1);
     RefCountPtr<Epetra_SerialComm> serialcomm = rcp(new Epetra_SerialComm());
 
-    char *micro_inputfile_name = mat->m.struct_multiscale->micro_inputfile_name;
+    string micro_inputfile_name = mat->m.struct_multiscale->micro_inputfile_name;
+
+    if (micro_inputfile_name[0]!='/')
+    {
+      string filename = reader.MyInputfileName();
+      string::size_type pos = filename.rfind('/');
+      if (pos!=string::npos)
+      {
+        string path = filename.substr(0,pos+1);
+        micro_inputfile_name.insert(micro_inputfile_name.begin(), path.begin(), path.end());
+      }
+    }
 
     if (!structdis_macro->Comm().MyPID())
         cout << "input for microscale is read from        " << micro_inputfile_name << "\n";
