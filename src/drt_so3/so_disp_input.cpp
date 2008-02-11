@@ -79,7 +79,7 @@ bool DRT::ELEMENTS::SoDisp::ReadElement()
         }
     }
     
-    cout << "reading " << DRT::DistypeToString(distype) << endl;
+    //cout << "reading " << DRT::DistypeToString(distype) << endl;
     
     const bool allowed_element = (distype == hex27) || (distype == hex20) || (distype == tet10) || (distype == wedge15);
     // The intention of this element is to help debugging the xfem intersection routines.
