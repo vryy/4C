@@ -38,7 +38,6 @@ int DRT::ELEMENTS::XFluid3Line::Evaluate(   ParameterList& params,
 	if (action == "none") dserror("No action supplied");
   	else dserror("Unknown type of action for XFluid3_Line");
   	
-  	const DiscretizationType distype = this->Shape();
     switch(act)
     {
     default:
