@@ -55,13 +55,16 @@ void CheckNormDir(vector<double> checkn,const vector<double> refn);
 
 vector<double> MeanVec(const vector<vector<double> > baseVecs);
 
-const map<int,set<int> > NodeToEleConn(const EXODUS::ElementBlock eblock);
 const map<int,set<int> > NodeToEleConn(const map<int,vector<int> > ele_conn);
 
-const map<int,vector<int> > EleNeighbors(const EXODUS::ElementBlock eblock, const map<int,set<int> >& node_conn);
 const map<int,vector<int> > EleNeighbors(const map<int,vector<int> >ele_conn, const map<int,set<int> >& node_conn);
 
+const set<int> FreeEdgeNodes(const map<int,vector<int> >& ele_conn, const map<int,vector<int> >& ele_nbrs);
+
+set<int> FreeFaceNodes(const set<int>& freedgenodes, const map<int,vector<int> >& nodepair);
+
 bool FindinVec(const int id,vector<int> vec);
+int  FindPosinVec(const int id,vector<int> vec);
 
 int FindEdgeNeighbor(const vector<int> nodes, const int actnode, const int wrong_dir_node);
 

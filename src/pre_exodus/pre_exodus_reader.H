@@ -257,6 +257,8 @@ public:
   string GetName() const {return name_;}
   
   map<int,vector<int> > GetSideSet() const {return sides_;}
+  
+  void FillSideLists(int* elemlist, int* sidelist) const;
 
   void Print(ostream& os, bool verbose=false) const;
   

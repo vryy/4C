@@ -483,7 +483,7 @@ void EXODUS::Mesh::WriteMesh(string newexofilename)
   }
   error = ex_put_coord (exoid, x, y, z);
 
-  // Write NodeSets
+  // Write NodeSets ************************************************************
   map<int,NodeSet>::const_iterator ins;
   const map<int,NodeSet> nss = GetNodeSets();
   for (ins=nss.begin(); ins != nss.end(); ++ins){
@@ -504,7 +504,7 @@ void EXODUS::Mesh::WriteMesh(string newexofilename)
     error = ex_put_node_set(exoid,nsID,&nodelist[0]);
     if (error!=0) dserror("error writing node set");
     error = ex_put_name (exoid, EX_NODE_SET, nsID, nsname);
-    if (error!=0) dserror("error writing element block name");
+    if (error!=0) dserror("error writing node set name");
   }
   
   // Write ElementBlocks  ******************************************************
@@ -537,10 +537,31 @@ void EXODUS::Mesh::WriteMesh(string newexofilename)
     error = ex_put_name (exoid, EX_ELEM_BLOCK, blockID, blockname);
     if (error!=0) dserror("error writing element block name");
   }
-  // **************************************************************************
   
-  // Write SideSets not yet supported
-  if (GetNumSideSets() > 0) cout << "Writing of SideSets not yet supported" << endl;
+  // Write SideSets ************************************************************
+  map<int,SideSet>::const_iterator iss;
+  const map<int,SideSet> sss = GetSideSets();
+  for (iss=sss.begin(); iss != sss.end(); ++iss){
+    const int ssID = iss->first + 1;   // exodus starts with 1
+    const SideSet ss = iss->second;
+    const int num_side_in_set = ss.GetNumSides();
+    const string name = ss.GetName();
+    const char* ssname = name.c_str();
+    error = ex_put_side_set_param(exoid,              // of write file
+                                  ssID,               // side set id
+                                  num_side_in_set,
+                                  0);                 // yet no distribution factors
+    if (error!=0) dserror("error writing side set params");
+    vector<int> side_set_elem_list(num_side_in_set);
+    vector<int> side_set_side_list(num_side_in_set);
+    ss.FillSideLists(&side_set_elem_list[0],&side_set_side_list[0]);
+    error = ex_put_side_set(exoid,ssID,&side_set_elem_list[0],&side_set_side_list[0]);
+    if (error!=0) dserror("error writing side set");
+    error = ex_put_name (exoid, EX_SIDE_SET, ssID, ssname);
+    if (error!=0) dserror("error writing sideset name");
+  }
+  
+  // ***************************************************************************
   
   // close file
   error = ex_close (exoid);
@@ -666,6 +687,18 @@ EXODUS::SideSet::SideSet(map<int,vector<int> >sides, string name)
 {
   sides_ = sides;
   name_ = name;
+}
+
+void EXODUS::SideSet::FillSideLists(int* elemlist, int* sidelist) const
+{
+  map<int,vector<int> > sides = GetSideSet();
+  map<int,vector<int> >::iterator it;
+  int i=0;
+  for (it=sides.begin(); it != sides.end(); ++it){
+    elemlist[i] = it->second[0];
+    sidelist[i] = it->second[1];
+    ++i;
+  }
 }
 
 void EXODUS::SideSet::Print(ostream& os, bool verbose) const{

@@ -29,8 +29,10 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
 {
   int highestnid = basemesh.GetNumNodes() +1;
   map<int,vector<double> > newnodes;          // here the new nodes ar stored
-  map<int,EXODUS::ElementBlock> neweblocks;   // here the new EBlocks are stores
+  map<int,EXODUS::ElementBlock> neweblocks;   // here the new EBlocks are stored
+  map<int,EXODUS::NodeSet> newnodesets;       // here the new NS are stored
   int highestblock = basemesh.GetNumElementBlocks();
+  int highestns = basemesh.GetNumNodeSets();
   map<int,EXODUS::ElementBlock> ebs = basemesh.GetElementBlocks();
   map<int,EXODUS::ElementBlock>::const_iterator i_ebs;
 
@@ -78,7 +80,10 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
     
     // Create Element to Element Connectivity (sharing an edge)
     const map<int,vector<int> > ele_neighbor = EleNeighbors(ele_conn,node_conn);
-    
+
+    // fill set of "free" edge nodes, i.e. nodes with no ele edge neighbor
+    const set<int> free_edge_nodes = FreeEdgeNodes(ele_conn,ele_neighbor);
+
     // loop through all its elements to create new connectivity  ***************
     map<int,vector<int> > newconn;
     int newele = 0;
@@ -478,14 +483,20 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
     }
     default: dserror("unrecognized extrude type");
     }
+    
+    // create new NodeSet with all nodes at newly created "free" faces
+    set<int> free_nodes = FreeFaceNodes(free_edge_nodes,node_pair);
+    string nodesetname = "extruded_surface";
+    EXODUS::NodeSet newnodeset(free_nodes,nodesetname,nodesetname);
+    newnodesets.insert(pair<int,EXODUS::NodeSet>(highestns,newnodeset));
+    highestns ++;
 
   } // end of extruding 
   
   string newtitle = "extrusion";
-  map<int,EXODUS::NodeSet> emptynodeset;
   map<int,EXODUS::SideSet> emptysideset;
 
-  EXODUS::Mesh extruded_mesh(basemesh,newnodes,neweblocks,emptynodeset,emptysideset,newtitle);
+  EXODUS::Mesh extruded_mesh(basemesh,newnodes,neweblocks,newnodesets,emptysideset,newtitle);
   
   return extruded_mesh;
 }
@@ -521,26 +532,6 @@ vector<double> EXODUS::ExtrudeNodeCoords(const vector<double> basecoords,
   return newcoords;
 }
 
-const map<int,set<int> > EXODUS::NodeToEleConn(const EXODUS::ElementBlock eblock)
-{
-  map<int,set<int> > node_conn;
-  const map<int,vector<int> > ele_conn = eblock.GetEleConn();
-  map<int,vector<int> >::const_iterator i_ele;
-  
-  // loop all elements for their nodes
-  for (i_ele = ele_conn.begin(); i_ele != ele_conn.end(); ++i_ele){
-    vector<int> elenodes = i_ele->second;
-    vector<int>::iterator i_node;
-    // loop all nodes within element
-    for (i_node = elenodes.begin(); i_node < elenodes.end(); ++i_node){
-      int nodeid = *i_node;
-      // add this ele_id into set of nodeid
-      node_conn[nodeid].insert(i_ele->first);
-    }
-  }
-  return node_conn;
-}
-
 const map<int,set<int> > EXODUS::NodeToEleConn(const map<int,vector<int> > ele_conn)
 {
   map<int,set<int> > node_conn;
@@ -560,12 +551,11 @@ const map<int,set<int> > EXODUS::NodeToEleConn(const map<int,vector<int> > ele_c
   return node_conn;
 }
 
-const map<int,vector<int> > EXODUS::EleNeighbors(EXODUS::ElementBlock eblock, const map<int,set<int> >& node_conn)
+const map<int,vector<int> > EXODUS::EleNeighbors(const map<int,vector<int> >ele_conn, const map<int,set<int> >& node_conn)
 {
   map<int,vector<int> > eleneighbors;
-  const map<int,vector<int> > ele_conn = eblock.GetEleConn();
   map<int,vector<int> >::const_iterator i_ele;
-
+  
   // loop all elements
   for (i_ele = ele_conn.begin(); i_ele != ele_conn.end(); ++i_ele){
     int acteleid = i_ele->first;
@@ -613,56 +603,38 @@ const map<int,vector<int> > EXODUS::EleNeighbors(EXODUS::ElementBlock eblock, co
   return eleneighbors;
 }
 
-const map<int,vector<int> > EXODUS::EleNeighbors(const map<int,vector<int> >ele_conn, const map<int,set<int> >& node_conn)
+const set<int> EXODUS::FreeEdgeNodes(const map<int,vector<int> >& ele_conn, const map<int,vector<int> >& ele_nbrs)
 {
-  map<int,vector<int> > eleneighbors;
+  set<int> freenodes;
   map<int,vector<int> >::const_iterator i_ele;
-
-  // loop all elements
-  for (i_ele = ele_conn.begin(); i_ele != ele_conn.end(); ++i_ele){
-    int acteleid = i_ele->first;
-    vector<int> actelenodes = i_ele->second;
-    vector<int>::iterator i_node;
-    map<int,set<int> > elepatch; // consists of all elements connected by shared nodes
-    // loop all nodes within element
-    for (i_node = actelenodes.begin(); i_node < actelenodes.end(); ++i_node){
-      int nodeid = *i_node;
-      // find all elements connected to this node
-      const set<int> eles = node_conn.find(nodeid)->second;
-      // add these eles into patch
-      elepatch[nodeid].insert(eles.begin(),eles.end());
+  for(i_ele = ele_nbrs.begin(); i_ele != ele_nbrs.end(); ++i_ele){
+    vector<int> actnbrs = i_ele->second;
+    // a free edge is a -1 in ele_nbrs
+    bool free_edge = FindinVec(-1,actnbrs);
+    if (free_edge){
+      unsigned int pos = FindPosinVec(-1,actnbrs);
+      int actele = i_ele->first;
+      const vector<int> actelenodes = ele_conn.find(actele)->second;
+      // insert pos-node (edgeID is related to first edge node)
+      freenodes.insert(actelenodes.at(pos));
+      // insert second edge node (check if pos is last edge)
+      if (pos == actelenodes.size()-1) freenodes.insert(actelenodes.at(0));
+      else freenodes.insert(actelenodes.at(pos+1));
     }
+  }
+  
+  return freenodes;
+}
 
-    // default case: no neighbors at any edge
-    vector<int> defaultnbrs(actelenodes.size(),-1);
-    eleneighbors.insert(pair<int,vector<int> >(acteleid,defaultnbrs));
-    int edgeid = 0;
-    // now select those elements out of the patch which share an edge
-    for (i_node = actelenodes.begin(); i_node < actelenodes.end(); ++i_node){
-      int firstedgenode = *i_node;
-      int secedgenode;
-      // edge direction according to order in elenodes, plus last to first
-      if (i_node == (actelenodes.end()-1)) secedgenode = *actelenodes.begin();
-      else secedgenode = *(i_node + 1);
-      // find all elements connected to the first node
-      const set<int> firsteles = elepatch.find(firstedgenode)->second;
-      // loop over these elements to find the one sharing the secondedgenode
-      set<int>::const_iterator it;
-      for(it = firsteles.begin(); it != firsteles.end(); ++it){
-        const int trialele = *it;
-        if (trialele != acteleid){
-          vector<int> neighbornodes = ele_conn.find(trialele)->second;
-          bool found = FindinVec(secedgenode,neighbornodes);
-          if (found) {
-            eleneighbors[acteleid].at(edgeid) = trialele;
-            break;
-          }
-        }
-      }
-      edgeid ++;
-    } // end of loop i_nodes
-  } // end of loop all elements
-  return eleneighbors;
+set<int> EXODUS::FreeFaceNodes(const set<int>& freedgenodes, const map<int,vector<int> >& nodepair)
+{
+  set<int> freefacenodes;
+  set<int>::const_iterator it;
+  for (it=freedgenodes.begin(); it != freedgenodes.end(); ++it){
+    vector<int> facenodes = nodepair.find(*it)->second;
+    for(unsigned int i=0; i<facenodes.size(); ++i) freefacenodes.insert(facenodes[i]);
+  }
+  return freefacenodes;
 }
 
 vector<double> EXODUS::NodeToAvgNormal(const int node,
@@ -805,6 +777,12 @@ bool EXODUS::FindinVec(const int id, const vector<int> vec)
   vector<int>::const_iterator i;
   for(i=vec.begin(); i<vec.end(); ++i) if (*i == id) return true;
   return false;
+}
+
+int EXODUS::FindPosinVec(const int id, const vector<int> vec)
+{
+  for(unsigned int i=0; i<vec.size(); ++i) if (vec.at(i) == id) return i;
+  return -1;
 }
 
 int EXODUS::FindEdgeNeighbor(const vector<int> nodes, const int actnode, const int wrong_dir_node)
