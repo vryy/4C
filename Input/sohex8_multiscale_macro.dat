@@ -674,8 +674,8 @@ MAT       1 MAT_Struct_Multiscale MICROFILE sohex8_multiscale_micro.dat
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC t/1.5 t1 0. t2 1.5
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 8 POSITION sol(1,1) NAME x VALUE 2.28360E-02 TOLERANCE 1e-9
-STRUCTURE DIS 1 NODE 8 POSITION sol(1,2) NAME y VALUE 2.28360E-02 TOLERANCE 1e-9
-STRUCTURE DIS 1 NODE 8 POSITION sol(1,3) NAME z VALUE -9.38820E-02 TOLERANCE 1e-9
+STRUCTURE DIS 1 NODE 8 POSITION sol(1,1) NAME x VALUE 2.28360E-02 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 8 POSITION sol(1,2) NAME y VALUE 2.28360E-02 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 8 POSITION sol(1,3) NAME z VALUE -9.38820E-02 TOLERANCE 1e-8
 ---------------------------------------------------------------END
 // END
