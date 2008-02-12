@@ -21,10 +21,14 @@ namespace XFEM
 namespace PHYSICS
 {
 
-///
-/// unique name of a physical field / primary unknown,
-///
-/// Note: the order they appear here determines the order in the unknown vectors!!!
+/*!
+ * \brief unique name of a physical field / primary unknown
+ * 
+ * If one has, for instance pressure at nodes AND element level, one has to define to distinct names for that purpose
+ * like Pres and PresEle
+ *
+ * Note: the order they appear here determines the order in the unknown vectors!!!
+ */
 enum Field
 {
     undefinedField,     ///< default vaue if nothing particular is defined
@@ -36,6 +40,7 @@ enum Field
     Velz,               ///< z velocity
     Temp,               ///< temperature
     Pres,               ///< pressure
+    PresEle,            ///< pressure on element level
     ConcentrationH2O,   ///< concentration of H2O
     ConcentrationNO2,   ///< concentration of NO2
     LMPLambdax,         ///< Lagrange multiplier unknown in x-direction
