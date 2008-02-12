@@ -110,6 +110,18 @@ public:
   */
   void Evaluate(RCP<Epetra_CrsMatrix>& Kteff, RCP<Epetra_Vector>& feff);
   
+  /*!
+  \brief Transform displacement increment vector
+  
+  During the setup of the global tangent stiffness the so-called basis
+  transformation introduced the incremental jump of displacements
+  [d] = d_slave - inv(D) * M * d_master into the vector of unknowns
+  instead of the incremental slave displacments. This step  is reversed
+  here by recovering the incremental slave displacements.
+  
+  */
+  void RecoverDisp(RCP<Epetra_Vector>& disi);
+  
 
 protected:
 
@@ -132,6 +144,7 @@ protected:
   
   RCP<Epetra_CrsMatrix>							D_;					    // global Mortar matrix D
   RCP<Epetra_CrsMatrix>							M_;					    // global Mortar matrix M
+  RCP<Epetra_CrsMatrix>							Mbar_;					// product of global Mortar matrices inv(D)*M
   RCP<Epetra_Vector>								g_;					    // global weighted gap vector g
   
   RCP<Epetra_CrsMatrix>							N_;							// global Matrix N of active node normals

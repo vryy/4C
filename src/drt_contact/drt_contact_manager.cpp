@@ -16,6 +16,7 @@ Maintainer: Michael Gee
 #include "drt_cnode.H"
 #include "drt_celement.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/linalg_solver.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
@@ -265,9 +266,10 @@ void CONTACT::Manager::Initialize()
 	}
 	
 	// (re)setup global Mortar Epetra_CrsMatrices and Epetra_Vectors
-	D_ = LINALG::CreateMatrix(*gsdofrowmap_,10);
-	M_ = LINALG::CreateMatrix(*gsdofrowmap_,100);
-	g_ = LINALG::CreateVector(*gsnoderowmap_,true);
+	D_    = LINALG::CreateMatrix(*gsdofrowmap_,10);
+	M_    = LINALG::CreateMatrix(*gsdofrowmap_,100);
+	Mbar_ = LINALG::CreateMatrix(*gsdofrowmap_,100);
+	g_    = LINALG::CreateVector(*gsnoderowmap_,true);
 		
 	// (re)setup global normal and tangent matrices
 	N_ = LINALG::CreateMatrix(*gactiveN_,3);
@@ -347,7 +349,7 @@ void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
 	if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
 	
 	// do the multiplication M^ = inv(D) * M
-	RCP<Epetra_CrsMatrix> Mbar = LINALG::Multiply(invD,false,M_,false);
+	Mbar_ = LINALG::Multiply(invD,false,M_,false);
 	
 	/**********************************************************************/
 	/* Split Kteff into 3x3 block matrix                                  */
@@ -446,7 +448,7 @@ void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
 	// Ksm: add Kss*T(Mbar)
 	RCP<Epetra_CrsMatrix> Ksm_mod = LINALG::CreateMatrix(Ksm->RowMap(),100);
 	LINALG::Add(Ksm,false,1.0,Ksm_mod,1.0);
-	mod = LINALG::Multiply(Kss,false,Mbar,false);
+	mod = LINALG::Multiply(Kss,false,Mbar_,false);
 	LINALG::Add(mod,false,1.0,Ksm_mod,1.0);
 	LINALG::Complete(Ksm_mod,Ksm->DomainMap(),Ksm->RowMap());
 
@@ -456,25 +458,25 @@ void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
 	// Kms: add T(Mbar)*Kss
 	RCP<Epetra_CrsMatrix> Kms_mod = LINALG::CreateMatrix(Kms->RowMap(),100);
 	LINALG::Add(Kms,false,1.0,Kms_mod,1.0);
-	mod = LINALG::Multiply(Mbar,true,Kss,false);
+	mod = LINALG::Multiply(Mbar_,true,Kss,false);
 	LINALG::Add(mod,false,1.0,Kms_mod,1.0);
 	LINALG::Complete(Kms_mod,Kms->DomainMap(),Kms->RowMap());
 	
 	// Kmm: add Kms*T(Mbar) + T(Mbar)*Ksm + T(Mbar)*Kss*Mbar
 	RCP<Epetra_CrsMatrix> Kmm_mod = LINALG::CreateMatrix(Kmm->RowMap(),100);
 	LINALG::Add(Kmm,false,1.0,Kmm_mod,1.0);
-	mod = LINALG::Multiply(Kms,false,Mbar,false);
+	mod = LINALG::Multiply(Kms,false,Mbar_,false);
 	LINALG::Add(mod,false,1.0,Kmm_mod,1.0);
-	mod = LINALG::Multiply(Mbar,true,Ksm,false);
+	mod = LINALG::Multiply(Mbar_,true,Ksm,false);
 	LINALG::Add(mod,false,1.0,Kmm_mod,1.0);
-	mod = LINALG::Multiply(Mbar,true,Kss,false,Mbar,false);
+	mod = LINALG::Multiply(Mbar_,true,Kss,false,Mbar_,false);
 	LINALG::Add(mod,false,1.0,Kmm_mod,1.0);
 	LINALG::Complete(*Kmm_mod,Kmm->DomainMap(),Kmm->RowMap());
 	
 	// Kmn: add T(Mbar)*Ksn
 	RCP<Epetra_CrsMatrix> Kmn_mod = LINALG::CreateMatrix(Kmn->RowMap(),100);
 	LINALG::Add(Kmn,false,1.0,Kmn_mod,1.0);	
-	mod = LINALG::Multiply(Mbar,true,Ksn,false);
+	mod = LINALG::Multiply(Mbar_,true,Ksn,false);
 	LINALG::Add(mod,false,1.0,Kmn_mod,1.0);
 	LINALG::Complete(Kmn_mod,Kmn->DomainMap(),Kmn->RowMap());
 	
@@ -484,7 +486,7 @@ void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
 	// Knm: add Kns*Mbar
 	RCP<Epetra_CrsMatrix> Knm_mod = LINALG::CreateMatrix(Knm->RowMap(),100);
 	LINALG::Add(Knm,false,1.0,Knm_mod,1.0);
-	mod = LINALG::Multiply(Kns,false,Mbar,false);
+	mod = LINALG::Multiply(Kns,false,Mbar_,false);
 	LINALG::Add(mod,false,1.0,Knm_mod,1.0);
 	LINALG::Complete(Knm_mod,Knm->DomainMap(),Knm->RowMap());
 	
@@ -525,7 +527,7 @@ void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
 	
 	// fm: add T(Mbar)*fs
 	RCP<Epetra_Vector> fm_mod = rcp(new Epetra_Vector(*gmdofrowmap_));
-	Mbar->Multiply(true,*fs,*fm_mod);
+	Mbar_->Multiply(true,*fs,*fm_mod);
 	fm_mod->Update(1.0,*fm,1.0);
 	
 	// fn: nothing to be done
@@ -714,9 +716,30 @@ void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
 	/**********************************************************************/
 	Kteff = Kteff_new;
 	feff = feff_new;
+	LINALG::PrintSparsityToPostscript(*Kteff);
 	//exit(0);
 	
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Transform displacement increment vector (public)          popp 02/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Manager::RecoverDisp(RCP<Epetra_Vector>& disi)
+{	
+	// extract master displacements from disi
+	RCP<Epetra_Vector> disi_m = rcp(new Epetra_Vector(*gmdofrowmap_));
+	LINALG::Export(*disi,*disi_m);
+	
+	// recover slave displacement increments
+	RCP<Epetra_Vector> mod = rcp(new Epetra_Vector(Mbar_->RowMap()));
+	Mbar_->Multiply(false,*disi_m,*mod);
+	
+	RCP<Epetra_Vector> mod_exp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
+	LINALG::Export(*mod,*mod_exp);
+	disi->Update(1.0,*mod_exp,1.0);
+	
+	return;
 }
 
 #endif  // #ifdef CCADISCRET

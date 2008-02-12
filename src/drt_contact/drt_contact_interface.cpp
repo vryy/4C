@@ -490,13 +490,9 @@ void CONTACT::Interface::Evaluate()
 	
 #ifdef DEBUG
 	// Visualize node projections with gmsh
-	// currently only works for 1 processor case because of writing of output
-	if (comm_.NumProc()==1)
-		VisualizeGmsh(CSegs());
+	VisualizeGmsh(CSegs());
 #endif // #ifdef DEBUG
 	
-	// Exit 0 - Debug
-	// exit(0);
   return;
 }
 
@@ -978,39 +974,35 @@ bool CONTACT::Interface::IntegrateOverlap_2D(CONTACT::CElement& sele,
 		//cout << "mxia: " << mxia << " mxib: " << mxib << endl;
 		
 		// prepare gmsh visualization
-		// currently only works for 1 processor case because of writing of output
-		if (comm_.NumProc()==1)
-		{
-			double sxia_loc[2] = {sxia, 0.0};
-			double sxib_loc[2] = {sxib, 0.0};
-			double mxia_loc[2] = {mxia, 0.0};
-			double mxib_loc[2] = {mxib, 0.0};
-		
-			double sxia_glob[3] = {0.0, 0.0, 0.0};
-			double sxib_glob[3] = {0.0, 0.0, 0.0};
-			double mxia_glob[3] = {0.0, 0.0, 0.0};
-			double mxib_glob[3] = {0.0, 0.0, 0.0};
-		
-			sele.LocalToGlobal(sxia_loc,sxia_glob,true);
-			sele.LocalToGlobal(sxib_loc,sxib_glob,true);
-			mele.LocalToGlobal(mxia_loc,mxia_glob,true);
-			mele.LocalToGlobal(mxib_loc,mxib_glob,true);
-		
-			Epetra_SerialDenseMatrix& segs = CSegs();
-			segs.Reshape(segs.M()+1,12);
-			segs(segs.M()-1,0)  = sxia_glob[0];
-			segs(segs.M()-1,1)  = sxia_glob[1];
-			segs(segs.M()-1,2)  = sxia_glob[2];
-			segs(segs.M()-1,3)  = mxib_glob[0];
-			segs(segs.M()-1,4)  = mxib_glob[1];
-			segs(segs.M()-1,5)  = mxib_glob[2];
-			segs(segs.M()-1,6)  = mxia_glob[0];
-			segs(segs.M()-1,7)  = mxia_glob[1];
-			segs(segs.M()-1,8)  = mxia_glob[2];
-			segs(segs.M()-1,9)  = sxib_glob[0];
-			segs(segs.M()-1,10) = sxib_glob[1];
-			segs(segs.M()-1,11) = sxib_glob[2];
-		}
+		double sxia_loc[2] = {sxia, 0.0};
+		double sxib_loc[2] = {sxib, 0.0};
+		double mxia_loc[2] = {mxia, 0.0};
+		double mxib_loc[2] = {mxib, 0.0};
+	
+		double sxia_glob[3] = {0.0, 0.0, 0.0};
+		double sxib_glob[3] = {0.0, 0.0, 0.0};
+		double mxia_glob[3] = {0.0, 0.0, 0.0};
+		double mxib_glob[3] = {0.0, 0.0, 0.0};
+	
+		sele.LocalToGlobal(sxia_loc,sxia_glob,true);
+		sele.LocalToGlobal(sxib_loc,sxib_glob,true);
+		mele.LocalToGlobal(mxia_loc,mxia_glob,true);
+		mele.LocalToGlobal(mxib_loc,mxib_glob,true);
+	
+		Epetra_SerialDenseMatrix& segs = CSegs();
+		segs.Reshape(segs.M()+1,12);
+		segs(segs.M()-1,0)  = sxia_glob[0];
+		segs(segs.M()-1,1)  = sxia_glob[1];
+		segs(segs.M()-1,2)  = sxia_glob[2];
+		segs(segs.M()-1,3)  = mxib_glob[0];
+		segs(segs.M()-1,4)  = mxib_glob[1];
+		segs(segs.M()-1,5)  = mxib_glob[2];
+		segs(segs.M()-1,6)  = mxia_glob[0];
+		segs(segs.M()-1,7)  = mxia_glob[1];
+		segs(segs.M()-1,8)  = mxia_glob[2];
+		segs(segs.M()-1,9)  = sxib_glob[0];
+		segs(segs.M()-1,10) = sxib_glob[1];
+		segs(segs.M()-1,11) = sxib_glob[2];
 	}
 	else
 	{
@@ -1341,97 +1333,109 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs)
 		filename << 0;
 		
 	filename << counter_ << ".pos";
-	std::ofstream f_system(filename.str().c_str());
 	
-	// write output to temporary stringstream
-	std::stringstream gmshfilecontent;
-	gmshfilecontent << "View \" Slave and master side CElements \" {" << endl;
-		
-	// plot elements
-	for (int i=0; i<idiscret_->NumMyColElements(); ++i)
+	// do output to file in c-style
+	FILE* fp = NULL;
+	
+	for (int proc=0;proc<comm_.NumProc();++proc)
 	{
-		CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
-		int nnodes = element->NumNode();
-		LINALG::SerialDenseMatrix coord(3,nnodes);
-		double area = element->Area();
-		
-		// 2D linear case (2noded line elements)
-		if (element->Shape()==DRT::Element::line2)
+		if (proc==comm_.MyPID())
 		{
-			coord = element->GetNodalCoords();
+			// open file (overwrite if proc==0, else append)
+			if (proc==0) fp = fopen(filename.str().c_str(), "w");
+			else fp = fopen(filename.str().c_str(), "a");
+				
+			// write output to temporary stringstream
+			std::stringstream gmshfilecontent;
+			if (proc==0) gmshfilecontent << "View \" Slave and master side CElements \" {" << endl;
+				
+			// plot elements
+			for (int i=0; i<idiscret_->NumMyRowElements(); ++i)
+			{
+				CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lRowElement(i));
+				int nnodes = element->NumNode();
+				LINALG::SerialDenseMatrix coord(3,nnodes);
+				double area = element->Area();
+				
+				// 2D linear case (2noded line elements)
+				if (element->Shape()==DRT::Element::line2)
+				{
+					coord = element->GetNodalCoords();
+					
+					gmshfilecontent << "SL(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+									            << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+									            << coord(2,1) << ")";
+					gmshfilecontent << "{" << scientific << area << "," << area << "};" << endl;
+				}
+				
+				// 2D quadratic case (3noded line elements)
+				if (element->Shape()==DRT::Element::line3)
+				{
+					coord = element->GetNodalCoords();
+					
+					gmshfilecontent << "SL2(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+									            << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+									            << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
+									            << coord(2,2) << ")";
+					gmshfilecontent << "{" << scientific << area << "," << area << "," << area << "};" << endl;
+				}
+			}
+				
+			// plot normal vectors
+			for (int i=0; i<snodecolmap_->NumMyElements(); ++i)
+			{
+				int gid = snodecolmap_->GID(i);
+				DRT::Node* node = idiscret_->gNode(gid);
+				if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+				CNode* cnode = static_cast<CNode*>(node);
+				if (!cnode) dserror("ERROR: Static Cast to CNode* failed");
+				
+			 	double nc[3];
+			 	double nn[3];
+			 	
+			 	for (int j=0;j<3;++j)
+			 	{
+			 		nc[j]=cnode->xspatial()[j];
+			 		nn[j]=3*cnode->n()[j]; // 2.9 because of gmsh color bar (3 procs(
+			 	}
+			 	
+			 	gmshfilecontent << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
+			 	gmshfilecontent << "{" << scientific << nn[0] << "," << nn[1] << "," << nn[2] << "};" << endl;
+			}
+				
+			// plot contact segments (slave and master projections)
+			if (csegs.M()!=0)
+			{
+				for (int i=0; i<csegs.M(); ++i)
+				{
+					gmshfilecontent << "SQ(" << scientific << csegs(i,0) << "," << csegs(i,1) << ","
+																	 << csegs(i,2) << "," << csegs(i,3) << "," << csegs(i,4) << ","
+																	 << csegs(i,5) << "," << csegs(i,6) << "," << csegs(i,7) << ","
+																	 << csegs(i,8) << "," << csegs(i,9) << "," << csegs(i,10) << ","
+																	 << csegs(i,11) << ")";
+					gmshfilecontent << "{" << scientific << proc << "," << proc << "," << proc << "," << proc << "};" << endl; 
+				
+					gmshfilecontent << "SL(" << scientific << csegs(i,0) << "," << csegs(i,1) << ","
+													<< csegs(i,2) << "," << csegs(i,3) << "," << csegs(i,4) << ","
+													<< csegs(i,5) << ")";
+					gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl; 
+				
+					gmshfilecontent << "SL(" << scientific << csegs(i,6) << "," << csegs(i,7) << ","
+													<< csegs(i,8) << "," << csegs(i,9) << "," << csegs(i,10) << ","
+													<< csegs(i,11) << ")";
+					gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
+				}
+			}
 			
-			gmshfilecontent << "SL(" << scientific << coord(0,0) << "," << coord(1,0) << ","
-							            << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
-							            << coord(2,1) << ")";
-			gmshfilecontent << "{" << scientific << area << "," << area << "};" << endl;
-		}
-		
-		// 2D quadratic case (3noded line elements)
-		if (element->Shape()==DRT::Element::line3)
-		{
-			coord = element->GetNodalCoords();
+			if (proc==comm_.NumProc()-1) gmshfilecontent << "};" << endl;
 			
-			gmshfilecontent << "SL2(" << scientific << coord(0,0) << "," << coord(1,0) << ","
-							            << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
-							            << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
-							            << coord(2,2) << ")";
-			gmshfilecontent << "{" << scientific << area << "," << area << "," << area << "};" << endl;
+			// move everything to gmsh post-processing file and close it
+			fprintf(fp,gmshfilecontent.str().c_str());
+			fclose(fp);
 		}
+		comm_.Barrier();
 	}
-		
-	// plot normal vectors
-	for (int i=0; i<snodecolmap_->NumMyElements(); ++i)
-	{
-		int gid = snodecolmap_->GID(i);
-		DRT::Node* node = idiscret_->gNode(gid);
-		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-		CNode* cnode = static_cast<CNode*>(node);
-		if (!cnode) dserror("ERROR: Static Cast to CNode* failed");
-		
-	 	double nc[3];
-	 	double nn[3];
-	 	
-	 	for (int j=0;j<3;++j)
-	 	{
-	 		nc[j]=cnode->xspatial()[j];
-	 		nn[j]=100*cnode->n()[j];
-	 	}
-	 	
-	 	gmshfilecontent << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
-	 	gmshfilecontent << "{" << scientific << nn[0] << "," << nn[1] << "," << nn[2] << "};" << endl;
-	}
-		
-	// plot contact segments (slave and master projections)
-	if (csegs.M()!=0)
-	{
-		double sf = 100/csegs.M();
-		for (int i=0; i<csegs.M(); ++i)
-		{
-			gmshfilecontent << "SQ(" << scientific << csegs(i,0) << "," << csegs(i,1) << ","
-															 << csegs(i,2) << "," << csegs(i,3) << "," << csegs(i,4) << ","
-															 << csegs(i,5) << "," << csegs(i,6) << "," << csegs(i,7) << ","
-															 << csegs(i,8) << "," << csegs(i,9) << "," << csegs(i,10) << ","
-															 << csegs(i,11) << ")";
-			gmshfilecontent << "{" << scientific << i*sf << "," << i*sf << "," << i*sf << "," << i*sf << "};" << endl; 
-		
-			gmshfilecontent << "SL(" << scientific << csegs(i,0) << "," << csegs(i,1) << ","
-											<< csegs(i,2) << "," << csegs(i,3) << "," << csegs(i,4) << ","
-											<< csegs(i,5) << ")";
-			gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl; 
-		
-			gmshfilecontent << "SL(" << scientific << csegs(i,6) << "," << csegs(i,7) << ","
-											<< csegs(i,8) << "," << csegs(i,9) << "," << csegs(i,10) << ","
-											<< csegs(i,11) << ")";
-			gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
-		}
-	}
-	
-	gmshfilecontent << "};" << endl;
-	
-	// move everything to gmsh post-processing file and close it
-	f_system << gmshfilecontent.str();
-	f_system.close();
-	
+			
 	return;
 }
 

@@ -442,6 +442,11 @@ void ContactStruGenAlpha::FullNewton()
       solver_.Solve(stiff_,disi_,fresm_,true,false);
     stiff_ = null;
 
+    //------------------------------------ transform disi due to contact
+    {
+    	contactmanager_->RecoverDisp(disi_);
+    }
+    
     //---------------------------------- update mid configuration values
     // displacements
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
