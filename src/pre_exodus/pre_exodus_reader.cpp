@@ -380,27 +380,6 @@ map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset) const
   
   map<int,EXODUS::ElementBlock> ebs = GetElementBlocks();
   map<int,EXODUS::ElementBlock>::const_iterator i_ebs;
-//  /* SideSet refers to GLOBAL element number counting over ALL Eblocks
-//   * Thus we create here a temporal copy of one large EBlock
-//   * consisting of all Eblocks. The excessive memory is gratefully accepted,
-//   * optimization is a future task. */
-//  map<int,vector<int> > global_eleconn;
-//  vector<int> dummyvec(0,0);  // ExodusIDs start from 1 so we insert a dummy
-//  global_eleconn.insert(pair<int,vector<int> >(0,dummyvec));
-//  int start = 1; // ExodusIDs start from 1
-//  
-//  // loop all EBlocks to get their conns
-//  for (i_ebs = ebs.begin(); i_ebs != ebs.end(); ++i_ebs ){
-//    EXODUS::ElementBlock acteblock = i_ebs->second;
-//    map<int,vector<int> > actconn = acteblock.GetEleConn();
-//    map<int,vector<int> >::const_iterator i_ele;
-//    for (i_ele = actconn.begin(); i_ele != actconn.end(); ++ i_ele){
-//      int eID = start + i_ele->first;
-//      global_eleconn.insert(pair<int,vector<int> >(eID,i_ele->second));
-//    }
-//    start += acteblock.GetNumEle();
-//  }
-//  //PrintMap(cout,global_eleconn);
   
   // Range Vector for global eleID identification in SideSet
   vector<int> glob_eb_erange(1,0);
@@ -423,6 +402,8 @@ map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset) const
     int parent_ele_id = actele - glob_eb_erange[actebid]; 
     vector<int> parent_ele = acteconn.find(parent_ele_id)->second;
     // Face to ElementNode Map
+    //// **** temporary hex map due to conflicts between side numbering exo<->baci
+    if (actshape==ElementBlock::hex8) actface = HexSideNumberExoToBaci(actface);
     vector<int> childmap = DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape))[actface];
     // child gets its node ids
     vector<int> child;
@@ -774,5 +755,12 @@ void EXODUS::PrintSet(ostream& os, const set<int> actset)
   os << endl;
   
 }
+
+int EXODUS::HexSideNumberExoToBaci(const int exoface)
+{
+  const int map[6] = {1,2,3,4,0,5};
+  return map[exoface];
+}
+
 
 #endif

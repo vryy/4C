@@ -33,41 +33,56 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
   int highestblock = basemesh.GetNumElementBlocks();
   map<int,EXODUS::ElementBlock> ebs = basemesh.GetElementBlocks();
   map<int,EXODUS::ElementBlock>::const_iterator i_ebs;
-  map<int,EXODUS::ElementBlock> extrudeblocks;
+  //map<int,EXODUS::ElementBlock> extrudeblocks;
 
   map<int,EXODUS::SideSet> sss = basemesh.GetSideSets();
   map<int,EXODUS::SideSet>::const_iterator i_sss;
-  map<int,EXODUS::SideSet> extrudesidesets;
+  //map<int,EXODUS::SideSet> extrudesidesets;
 
+  /* Extrusion is always based on a connectivity map*/
+  // map of connectivity maps to be extruded
+  map<int,map<int,vector<int> > > extrusion_conns;
+  map<int,map<int,vector<int> > >::const_iterator i_extr;
+  int extrusioncounter = 0;
+  //enum ExtrusionType{eblock,sideset};
+  map<int,ExtrusionType> extrusion_types;
+  map<int,ExtrusionType>::const_iterator i_exty;
+  
   // loop through all EBlocks to check for extrusion blocks
   for (i_ebs = ebs.begin(); i_ebs != ebs.end(); ++i_ebs ){
     bool toextrude = CheckExtrusion(i_ebs->second);
-    if (toextrude) extrudeblocks.insert(pair<int,ElementBlock>(i_ebs->first,i_ebs->second));
+    if (toextrude){
+      //extrudeblocks.insert(pair<int,ElementBlock>(i_ebs->first,i_ebs->second));
+      extrusion_conns.insert(pair<int,map<int,vector<int> > >(extrusioncounter,i_ebs->second.GetEleConn()));
+      extrusion_types.insert(pair<int,ExtrusionType>(extrusioncounter,eblock));
+      extrusioncounter ++;
+    }
   }
   
   // loop through all SideSets to check for extrusion
   for (i_sss = sss.begin(); i_sss != sss.end(); ++i_sss ){
     bool toextrude = CheckExtrusion(i_sss->second);
-    if (toextrude) extrudesidesets.insert(pair<int,SideSet>(i_sss->first,i_sss->second));
+    if (toextrude){
+      //extrudesidesets.insert(pair<int,SideSet>(i_sss->first,i_sss->second));
+      extrusion_conns.insert(pair<int,map<int,vector<int> > >(extrusioncounter,basemesh.GetSideSetConn(i_sss->second)));
+      extrusion_types.insert(pair<int,ExtrusionType>(extrusioncounter,sideset));
+      extrusioncounter ++;
+    }
   }
+  
 
-  for (i_sss = extrudesidesets.begin(); i_sss != extrudesidesets.end(); ++i_sss ){
-    map<int,vector<int> > sideconn = basemesh.GetSideSetConn(i_sss->second);
-  }
 
   
-  // loop all existing extrudeblocks
-  for (i_ebs = extrudeblocks.begin(); i_ebs != extrudeblocks.end(); ++i_ebs){
-    // get existing eblock
-    EXODUS::ElementBlock extrudeblock = i_ebs->second;
-    const map<int,vector<int> > ele_conn = extrudeblock.GetEleConn();
-    //extrudeblock.Print(cout);
+  // loop all existing extrude connectivities
+  for (i_extr = extrusion_conns.begin(); i_extr != extrusion_conns.end(); ++i_extr){
+    // get connectivity
+    const map<int,vector<int> > ele_conn = i_extr->second;
     
     // Create Node to Element Connectivity
-    const map<int,set<int> > node_conn = NodeToEleConn(extrudeblock);
+    const map<int,set<int> > node_conn = NodeToEleConn(ele_conn);
     
     // Create Element to Element Connectivity (sharing an edge)
-    const map<int,vector<int> > ele_neighbor = EleNeighbors(extrudeblock,node_conn,basemesh);
+    const map<int,vector<int> > ele_neighbor = EleNeighbors(ele_conn,node_conn);
     
     // loop through all its elements to create new connectivity  ***************
     map<int,vector<int> > newconn;
@@ -84,7 +99,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
     todo_eles.insert(0); // lets insert the very first one for a start
     
     // for the first element we set up everything *****************************
-    vector<int> actelenodes = extrudeblock.GetEleNodes(0);
+    vector<int> actelenodes = ele_conn.find(0)->second;
     vector<int>::const_iterator i_node;
     int newid;
     
@@ -121,7 +136,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
       layer_nodes[0].push_back(newid);
       
       // calculate extruding direction
-      vector<double> normal = NodeToAvgNormal(*i_node,actelenodes,first_normal,node_conn,extrudeblock,basemesh);
+      vector<double> normal = NodeToAvgNormal(*i_node,actelenodes,first_normal,node_conn,ele_conn,basemesh);
       node_normals.insert(pair<int,vector<double> >(*i_node,normal));
       //ele_nodenormals.push_back(normal);
       
@@ -169,7 +184,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
       todo_eles.erase(i_todo_eles);
       
       // get nodes of actual element
-      vector<int> actelenodes = extrudeblock.GetEleNodes(actele);
+      vector<int> actelenodes = ele_conn.find(actele)->second;
       
       // get edge neighbors
       vector<int> actneighbors = ele_neighbor.at(actele);
@@ -222,7 +237,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
             // get reference direction for new avg normal here firstedgenode
             vector<double> refnormal = node_normals.find(firstedgenode)->second;
             // calculate extruding direction
-            vector<double> normal = NodeToAvgNormal(secedgenode,actneighbornodes,refnormal,node_conn,extrudeblock,basemesh);
+            vector<double> normal = NodeToAvgNormal(secedgenode,actneighbornodes,refnormal,node_conn,ele_conn,basemesh);
             node_normals.insert(pair<int,vector<double> >(secedgenode,normal));
 
             // create layers at this node location
@@ -272,7 +287,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
             // get reference direction for new avg normal here secedgenode
             vector<double> refnormal = node_normals.find(secedgenode)->second;
             // calculate extruding direction
-            vector<double> normal = NodeToAvgNormal(firstedgenode,actneighbornodes,refnormal,node_conn,extrudeblock,basemesh);
+            vector<double> normal = NodeToAvgNormal(firstedgenode,actneighbornodes,refnormal,node_conn,ele_conn,basemesh);
             node_normals.insert(pair<int,vector<double> >(firstedgenode,normal));
 
             // create layers at this node location
@@ -299,7 +314,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
           /* the new elements orientation is opposite the current one
            * therefore the THIRD node is gained from the neighbor ele */
           
-          vector<int> actnbrnodes = extrudeblock.GetEleNodes(actneighbor);
+          vector<int> actnbrnodes = ele_conn.find(actneighbor)->second;
           int thirdnode = FindEdgeNeighbor(actnbrnodes,firstedgenode,secedgenode);
           
           // check if new node already exists
@@ -324,7 +339,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
             // get reference direction for new avg normal here firstedgenode
             vector<double> refnormal = node_normals.find(firstedgenode)->second;
             // calculate extruding direction
-            vector<double> normal = NodeToAvgNormal(thirdnode,actneighbornodes,refnormal,node_conn,extrudeblock,basemesh);
+            vector<double> normal = NodeToAvgNormal(thirdnode,actneighbornodes,refnormal,node_conn,ele_conn,basemesh);
             node_normals.insert(pair<int,vector<double> >(thirdnode,normal));
 
             // create layers at this node location
@@ -377,7 +392,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
               // get reference direction for new avg normal here firstedgenode
               vector<double> refnormal = node_normals.find(thirdnode)->second;
               // calculate extruding direction
-              vector<double> normal = NodeToAvgNormal(fourthnode,actneighbornodes,refnormal,node_conn,extrudeblock,basemesh);
+              vector<double> normal = NodeToAvgNormal(fourthnode,actneighbornodes,refnormal,node_conn,ele_conn,basemesh);
               node_normals.insert(pair<int,vector<double> >(fourthnode,normal));
 
               // create layers at this node location
@@ -426,24 +441,62 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
         
       }// end of this "center" - element ///////////////////////////////////////
       
-    }// end of extruding all elements in block
+    }// end of extruding all elements in connectivity
    
     //PrintMap(cout,node_normals);
-    // create new Element Block
+    // create new Element Blocks
     std::ostringstream blockname;
-    blockname << "extrude" << i_ebs->first;
+    blockname << "extrude" << i_extr->first;
     ElementBlock::Shape newshape;
-    switch (extrudeblock.GetShape()) {
-      case ElementBlock::shell4: newshape = ElementBlock::hex8; break;
-      case ElementBlock::tri3: newshape = ElementBlock::wedge6; break;
-      default: dserror("unrecognized EBlock Shape"); break;
+    switch(extrusion_types.find(i_extr->first)->second){
+    case eblock:{ // Eblocks have only one type of eles
+      int numnodes = newconn.find(0)->second.size();
+      if (numnodes == 6) newshape = ElementBlock::wedge6;
+      else if (numnodes == 8) newshape = ElementBlock::hex8;
+      else dserror("Number of basenodes for extrusion not supported");
+      EXODUS::ElementBlock neweblock(newshape,newconn,blockname.str());
+      neweblocks.insert(pair<int,EXODUS::ElementBlock>(highestblock,neweblock));
+      highestblock ++;
+      break;
+    }
+    case sideset:{ // SideSets can have different types of eles and have to be checked individually
+      map<int,vector<int> >::const_iterator i_ele;
+      map<int,vector<int> > hexconn;
+      int hexcounter = 0;
+      map<int,vector<int> > wegconn;
+      int wegcounter = 0;
+      for (i_ele = newconn.begin(); i_ele != newconn.end(); ++i_ele){
+        int numnodes = i_ele->second.size();
+        if (numnodes == 8){
+          hexconn.insert(pair<int,vector<int> >(hexcounter,i_ele->second));
+          hexcounter ++;
+        }
+        else if (numnodes == 6){
+          wegconn.insert(pair<int,vector<int> >(wegcounter,i_ele->second));
+          wegcounter ++;
+        }
+        else dserror("Number of basenodes for extrusion not supported");
+      }
+      if (hexcounter>0){
+        std::ostringstream hexblockname;
+        hexblockname << blockname.str() << "h";
+        EXODUS::ElementBlock neweblock(ElementBlock::hex8,hexconn,hexblockname.str());
+        neweblocks.insert(pair<int,EXODUS::ElementBlock>(highestblock,neweblock));
+        highestblock ++;
+      }
+      if (wegcounter>0){
+        std::ostringstream wegblockname;
+        wegblockname << blockname.str() << "w";
+        EXODUS::ElementBlock neweblock(ElementBlock::wedge6,wegconn,wegblockname.str());
+        neweblocks.insert(pair<int,EXODUS::ElementBlock>(highestblock,neweblock));
+        highestblock ++;
+      }
+      break;
+    }
+    default: dserror("unrecognized extrude type");
     }
 
-    EXODUS::ElementBlock neweblock(newshape,newconn,blockname.str());
-    int newblockID = highestblock + i_ebs->first;
-    neweblocks.insert(pair<int,EXODUS::ElementBlock>(newblockID,neweblock));
-    
-  } // end of extruding elementblocks
+  } // end of extruding 
   
   string newtitle = "extrusion";
   map<int,EXODUS::NodeSet> emptynodeset;
@@ -520,11 +573,81 @@ const map<int,set<int> > EXODUS::NodeToEleConn(const EXODUS::ElementBlock eblock
   return node_conn;
 }
 
-const map<int,vector<int> > EXODUS::EleNeighbors(EXODUS::ElementBlock eblock, const map<int,set<int> >& node_conn,
-    const EXODUS::Mesh& basemesh)
+const map<int,set<int> > EXODUS::NodeToEleConn(const map<int,vector<int> > ele_conn)
+{
+  map<int,set<int> > node_conn;
+  map<int,vector<int> >::const_iterator i_ele;
+  
+  // loop all elements for their nodes
+  for (i_ele = ele_conn.begin(); i_ele != ele_conn.end(); ++i_ele){
+    vector<int> elenodes = i_ele->second;
+    vector<int>::iterator i_node;
+    // loop all nodes within element
+    for (i_node = elenodes.begin(); i_node < elenodes.end(); ++i_node){
+      int nodeid = *i_node;
+      // add this ele_id into set of nodeid
+      node_conn[nodeid].insert(i_ele->first);
+    }
+  }
+  return node_conn;
+}
+
+const map<int,vector<int> > EXODUS::EleNeighbors(EXODUS::ElementBlock eblock, const map<int,set<int> >& node_conn)
 {
   map<int,vector<int> > eleneighbors;
   const map<int,vector<int> > ele_conn = eblock.GetEleConn();
+  map<int,vector<int> >::const_iterator i_ele;
+
+  // loop all elements
+  for (i_ele = ele_conn.begin(); i_ele != ele_conn.end(); ++i_ele){
+    int acteleid = i_ele->first;
+    vector<int> actelenodes = i_ele->second;
+    vector<int>::iterator i_node;
+    map<int,set<int> > elepatch; // consists of all elements connected by shared nodes
+    // loop all nodes within element
+    for (i_node = actelenodes.begin(); i_node < actelenodes.end(); ++i_node){
+      int nodeid = *i_node;
+      // find all elements connected to this node
+      const set<int> eles = node_conn.find(nodeid)->second;
+      // add these eles into patch
+      elepatch[nodeid].insert(eles.begin(),eles.end());
+    }
+
+    // default case: no neighbors at any edge
+    vector<int> defaultnbrs(actelenodes.size(),-1);
+    eleneighbors.insert(pair<int,vector<int> >(acteleid,defaultnbrs));
+    int edgeid = 0;
+    // now select those elements out of the patch which share an edge
+    for (i_node = actelenodes.begin(); i_node < actelenodes.end(); ++i_node){
+      int firstedgenode = *i_node;
+      int secedgenode;
+      // edge direction according to order in elenodes, plus last to first
+      if (i_node == (actelenodes.end()-1)) secedgenode = *actelenodes.begin();
+      else secedgenode = *(i_node + 1);
+      // find all elements connected to the first node
+      const set<int> firsteles = elepatch.find(firstedgenode)->second;
+      // loop over these elements to find the one sharing the secondedgenode
+      set<int>::const_iterator it;
+      for(it = firsteles.begin(); it != firsteles.end(); ++it){
+        const int trialele = *it;
+        if (trialele != acteleid){
+          vector<int> neighbornodes = ele_conn.find(trialele)->second;
+          bool found = FindinVec(secedgenode,neighbornodes);
+          if (found) {
+            eleneighbors[acteleid].at(edgeid) = trialele;
+            break;
+          }
+        }
+      }
+      edgeid ++;
+    } // end of loop i_nodes
+  } // end of loop all elements
+  return eleneighbors;
+}
+
+const map<int,vector<int> > EXODUS::EleNeighbors(const map<int,vector<int> >ele_conn, const map<int,set<int> >& node_conn)
+{
+  map<int,vector<int> > eleneighbors;
   map<int,vector<int> >::const_iterator i_ele;
 
   // loop all elements
@@ -578,7 +701,7 @@ vector<double> EXODUS::NodeToAvgNormal(const int node,
                              const vector<int> elenodes,
                              const vector<double> refnormdir,
                              const map<int,set<int> >& nodetoele,
-                             const EXODUS::ElementBlock& eblock,
+                             const map<int,vector<int> >& ele_conn,
                              const EXODUS::Mesh& basemesh)
 {
     vector<int> myNodeNbrs = FindNodeNeighbors(elenodes,node);
@@ -593,7 +716,7 @@ vector<double> EXODUS::NodeToAvgNormal(const int node,
     set<int>::const_iterator i_nbr;
     for (i_nbr=nbreles.begin(); i_nbr !=nbreles.end(); ++i_nbr){
       int nbr = *i_nbr;
-      vector<int> nbrele = eblock.GetEleNodes(nbr);
+      vector<int> nbrele = ele_conn.find(nbr)->second;
       if (nbrele != elenodes){ // otherwise it's me, not a neighbor!
         vector<int> n_nbrs = FindNodeNeighbors(nbrele,node);
         vector<double> nbr_normal = Normal(n_nbrs[1],node,n_nbrs[0],basemesh);

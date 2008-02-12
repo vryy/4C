@@ -50,8 +50,7 @@ vector<double> ExtrudeNodeCoords(const vector<double> basecoords, const double d
 //    const map<int,set<int> >& elepatch,
 //    const EXODUS::ElementBlock& eblock, const EXODUS::Mesh& basemesh);
 vector<double> NodeToAvgNormal(const int node,const vector<int> elenodes,const vector<double> refnormdir,
-    const map<int,set<int> >& nodetoele,
-    const EXODUS::ElementBlock& eblock, const EXODUS::Mesh& basemesh);
+    const map<int,set<int> >& nodetoele, const map<int,vector<int> >& ele_conn, const EXODUS::Mesh& basemesh);
 
 vector<double> AverageNormal(const vector<double> normal, const vector<vector<double> > nbr_normals);
 
@@ -62,8 +61,10 @@ void CheckNormDir(vector<double> checkn,const vector<double> refn);
 vector<double> MeanVec(const vector<vector<double> > baseVecs);
 
 const map<int,set<int> > NodeToEleConn(const EXODUS::ElementBlock eblock);
+const map<int,set<int> > NodeToEleConn(const map<int,vector<int> > ele_conn);
 
-const map<int,vector<int> > EleNeighbors(const EXODUS::ElementBlock eblock, const map<int,set<int> >& node_conn, const EXODUS::Mesh& basemesh);
+const map<int,vector<int> > EleNeighbors(const EXODUS::ElementBlock eblock, const map<int,set<int> >& node_conn);
+const map<int,vector<int> > EleNeighbors(const map<int,vector<int> >ele_conn, const map<int,set<int> >& node_conn);
 
 bool FindinVec(const int id,vector<int> vec);
 
@@ -71,6 +72,7 @@ int FindEdgeNeighbor(const vector<int> nodes, const int actnode, const int wrong
 
 vector<int> FindNodeNeighbors(const vector<int> nodes, const int centernode);
 
+enum ExtrusionType{eblock,sideset};
 
 } // of namespace EXODUS
 

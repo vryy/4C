@@ -18,8 +18,8 @@ written by: Alexander Volf
 #if defined D_SOH8 || D_SOTET
 #ifdef CCADISCRET
 
-#ifndef SO3_H_
-#define SO3_H_
+#ifndef SO_INTEGRATOR_H_
+#define SO_INTEGRATOR_H_
 
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_Vector.h"
@@ -193,6 +193,6 @@ NOTE: X stands for the number of NODES (and shape functions) in a element
 long double det_volf(Epetra_SerialDenseMatrix& in_matrix);
 
 
-#endif  // #ifndef SO_TET10_H_
+#endif  // #ifndef SO_INTEGRATOR
 #endif  // #ifdef  CCADISCRET
 #endif  // #if D_SOTET

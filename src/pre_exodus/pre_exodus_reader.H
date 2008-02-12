@@ -264,6 +264,8 @@ private:
   map<int,vector<int> > sides_;
   string name_;
 };
+// *********** end of classes
+
 
 // Exodus NodeIds start from 1 but are stored starting from 0
 inline int ExoToStore(const int ExoID){
@@ -288,6 +290,7 @@ inline ElementBlock::Shape StringToShape(const string shape)
   else if (shape.compare(0,5,"HEX20")== 0)    return ElementBlock::hex20;
   else if (shape.compare(0,5,"HEX27")== 0)    return ElementBlock::hex27;
   else if (shape.compare(0,4,"TET4")== 0)     return ElementBlock::tet4;
+  else if (shape.compare(0,6,"TETRA4")== 0)   return ElementBlock::tet4;
   else if (shape.compare(0,5,"TET10")== 0)    return ElementBlock::tet10;
   else if (shape.compare(0,6,"WEDGE6")== 0)   return ElementBlock::wedge6;
   else if (shape.compare(0,7,"WEDGE15")== 0)  return ElementBlock::wedge15;
@@ -295,7 +298,8 @@ inline ElementBlock::Shape StringToShape(const string shape)
   else if (shape.compare(0,4,"BAR2")== 0)     return ElementBlock::bar2;
   else if (shape.compare(0,4,"BAR3")== 0)     return ElementBlock::bar3;
   else{
-    dserror("Unknown Exodus Element Shape Name"); return ElementBlock::dis_none;
+    cout << "Unknown Exodus Element Shape Name: " << shape.c_str();
+    dserror("Unknown Exodus Element Shape Name!"); return ElementBlock::dis_none;
   }
 }
 
@@ -314,7 +318,7 @@ inline std::string ShapeToString(const ElementBlock::Shape shape)
   case ElementBlock::hex8:     return "HEX8";   break;
   case ElementBlock::hex20:    return "HEX20";  break;
   case ElementBlock::hex27:    return "HEX27";  break;
-  case ElementBlock::tet4:     return "HEX27";  break;
+  case ElementBlock::tet4:     return "TET4";   break;
   case ElementBlock::tet10:    return "TET10";  break;
   case ElementBlock::wedge6:   return "WEDGE6"; break;
   case ElementBlock::wedge15:  return "WEDGE15";break;
@@ -361,6 +365,8 @@ void PrintVec(ostream& os, const vector<int> actvec);
 void PrintVec(ostream& os, const vector<double> actvec);
 void PrintSet(ostream& os, const set<int> actset);
 
+
+int HexSideNumberExoToBaci(const int exoface);
 
 } // of namespace EXODUS
 
