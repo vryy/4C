@@ -72,6 +72,12 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     break;
     case DRT::Element::element_sosh8:
     case DRT::Element::element_so_hex8:
+    case DRT::Element::element_so_tet4:
+    case DRT::Element::element_so_tet10:
+    case DRT::Element::element_so_ctet10:
+    case DRT::Element::element_so_weg6:
+    case DRT::Element::element_sodisp:
+    case DRT::Element::element_so_shw6:
       numdf = 3;
       dimns = 6;
     break;
@@ -179,8 +185,14 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   // works straight for bricks as well
   if (ele->Type() == DRT::Element::element_shell8 ||
       ele->Type() == DRT::Element::element_ale3 ||
-      ele->Type() == DRT::Element::element_so_hex8 || 
-      ele->Type() == DRT::Element::element_sosh8)
+      ele->Type() == DRT::Element::element_so_hex8 ||
+      ele->Type() == DRT::Element::element_sosh8 ||
+      ele->Type() == DRT::Element::element_so_tet4 ||
+      ele->Type() == DRT::Element::element_so_tet10 ||
+      ele->Type() == DRT::Element::element_so_ctet10 ||
+      ele->Type() == DRT::Element::element_so_weg6 ||
+      ele->Type() == DRT::Element::element_sodisp ||
+      ele->Type() == DRT::Element::element_so_shw6)
   {
     for (int i=0; i<NumMyRowNodes(); ++i)
     {
@@ -285,10 +297,10 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
       } // for (int j=0; j<actnode->Dof().NumDof(); ++j)
     } // for (int i=0; i<NumMyRowNodes(); ++i)
   } // else if (ele->Type() == DRT::Element::element_wall1)
-  
-  
+
+
    //there are three rigid body modes for beam2
-  
+
     else if (ele->Type() == DRT::Element::element_beam2)
   {
     for (int i=0; i<NumMyRowNodes(); ++i)
