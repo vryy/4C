@@ -100,6 +100,7 @@ int DRT::ELEMENTS::Beam2::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
+	      
       b2_nlnstiffmass(mydisp,elemat1,elemat2,elevec1,currmat);
     }
     break;
@@ -243,7 +244,7 @@ void DRT::ELEMENTS::Beam2::b2_local_aux(LINALG::SerialDenseMatrix& B_curr,
    / beta - teta1, where teta1 = x_curr(0,3); note that between diff_n1, diff_n2, diff_n3 there is such a great/
    / difference that it's no problem to lose the round off in the following cast operation */
    int teta1 = static_cast<int>( 360*x_curr(2,0)/(2*PI) );
-   double n_aux = teta1 % 360;
+   double n_aux = ( teta1 - (teta1 % 360) )/360;
    double diff_n1 = abs( beta + (n_aux-1) * 2 * PI - x_curr(2,0) );
    double diff_n2 = abs( beta + n_aux * 2 * PI - x_curr(2,0) );
    double diff_n3 = abs( beta + (n_aux+1) * 2 * PI - x_curr(2,0) );
@@ -275,7 +276,7 @@ void DRT::ELEMENTS::Beam2::b2_local_aux(LINALG::SerialDenseMatrix& B_curr,
 	  B_curr(0,id_col) = r_curr[id_col];
 	  B_curr(2,id_col) = (length_refe / length_curr) * z_curr[id_col];
 	  if (id_col == 2 || id_col ==5)
-	    		B_curr(2,id_col) = B_curr(2,id_col) + (length_refe / 2);
+	    		B_curr(2,id_col) = B_curr(2,id_col) - (length_refe / 2);
   	}
     B_curr(1,2) = 1;
     B_curr(1,5) = -1;
@@ -375,8 +376,8 @@ for (int k=0; k<iel; ++k)
   
   //local internal shear force
   force_loc(2) = -sm*cross_section_corr_*( (x_curr(2,1)+x_curr(2,0))/2 - beta);
-  
-  
+ 
+
   //calculating tangential stiffness matrix in global coordinates---------------------------------------------
   
   //linear elastic part including rotation
@@ -389,11 +390,11 @@ for (int k=0; k<iel; ++k)
   }
    
   stiffmatrix.Multiply('T','N',1,B_curr,aux_CB,0);
-  
+
   //adding geometric stiffness by shear force 
   double aux_Q_fac = force_loc(2)*length_refe / pow(length_curr,2);
-  for(int id_lin=0; id_lin<5; id_lin++)
-  	for(int id_col=0; id_col<5; id_col++)
+  for(int id_lin=0; id_lin<6; id_lin++)
+  	for(int id_col=0; id_col<6; id_col++)
   	{
   		stiffmatrix(id_lin,id_col) += aux_Q_fac * r_curr(id_lin) * z_curr(id_col);
   		stiffmatrix(id_lin,id_col) += aux_Q_fac * r_curr(id_col) * z_curr(id_lin);
@@ -401,25 +402,24 @@ for (int k=0; k<iel; ++k)
   
   //adding geometric stiffness by axial force 
   double aux_N_fac = force_loc(1)/length_curr; 
-  for(int id_lin=0; id_lin<5; id_lin++)
-  	for(int id_col=0; id_col<5; id_col++)
+  for(int id_lin=0; id_lin<6; id_lin++)
+  	for(int id_col=0; id_col<6; id_col++)
   		stiffmatrix(id_lin,id_col) += aux_N_fac * z_curr(id_lin) * z_curr(id_col);
-  
-  
+
   //calculating mass matrix (lcoal version = global version)--------------------------------------------------
   
   //the following code lines are based on the assumption that massmatrix is a 6x6 matrix filled with zeros
   #ifdef DEBUG
   dsassert(massmatrix.M()==6,"wrong mass matrix input");
   dsassert(massmatrix.N()==6,"wrong mass matrix input");
-  for(int i=0; i<5; i++)
-  	for(int j=0; j<5; j++)
+  for(int i=0; i<6; i++)
+  	for(int j=0; j<6; j++)
   	dsassert(massmatrix(i,j)==0,"wrong mass matrix input in beam2_evaluate, function b2_nlnstiffmass"); 
   #endif // #ifdef DEBUG
   
   //assignment of massmatrix by means of auxiliary diagonal matrix aux_E stored as an array
   double aux_E[3]={density*length_refe*cross_section_/6,density*length_refe*cross_section_/6,density*length_refe*moment_inertia_/6};
-  for(int id=0; id<2; id++)
+  for(int id=0; id<3; id++)
   {
   	massmatrix(id,id) = 2*aux_E[id];
         massmatrix(id+3,id+3) = 2*aux_E[id];
@@ -429,10 +429,10 @@ for (int k=0; k<iel; ++k)
   
   
   //calculation of global internal forces from force = B_transposed*force_loc---------------------------------- 
-  for(int id_col=0; id_col<5; id_col++)
-	  for(int id_lin=0; id_lin<2; id_lin++)
-    	force(id_col) = B_curr(id_lin,id_col)*force_loc(id_lin);
-  
+  for(int id_col=0; id_col<6; id_col++)
+	  for(int id_lin=0; id_lin<3; id_lin++)
+    	force(id_col) += B_curr(id_lin,id_col)*force_loc(id_lin);
+
   return;
 } // DRT::ELEMENTS::Beam2::b2_nlnstiffmass(
 
