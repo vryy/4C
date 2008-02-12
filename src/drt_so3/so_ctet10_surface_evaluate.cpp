@@ -37,8 +37,8 @@ int DRT::ELEMENTS::Soctet10Surface::EvaluateNeumann(ParameterList&           par
                                                 vector<int>&             lm,
                                                 Epetra_SerialDenseVector& elevec1)
 {
-  //cout << "DRT::ELEMENTS::Soctet10Surface::EvaluateNeumann" << endl;
-  //getchar();
+  /*cout << "DRT::ELEMENTS::Soctet10Surface::EvaluateNeumann" << endl;
+  getchar();*/
   // OBSOLETE!!! needs change
   Epetra_SerialDenseMatrix* shapefct;
   Epetra_SerialDenseVector* weights;  //[NUMGPT_SOTET10_FACE]
@@ -66,9 +66,9 @@ int DRT::ELEMENTS::Soctet10Surface::EvaluateNeumann(ParameterList&           par
   const int numnod = 6;
   Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOCTET10);  // material coord. of element
   for (int i=0; i<numnod; i++){
-    xsrefe(i,0) = Nodes()[i]->X()[0];
-    xsrefe(i,1) = Nodes()[i]->X()[1];
-    xsrefe(i,2) = Nodes()[i]->X()[2];
+    xsrefe(i,0) = Nodes()[i]->X()[0] -Nodes()[0]->X()[0];
+    xsrefe(i,1) = Nodes()[i]->X()[1] -Nodes()[0]->X()[1];
+    xsrefe(i,2) = Nodes()[i]->X()[2] -Nodes()[0]->X()[2];
   }
 
   SUB_STRUCTURE_SURF sub(xsrefe);

@@ -146,7 +146,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_stress(struct _MATERIAL* material,
     cout << "deriv_gp\n" << deriv_gp;
     #endif //VERBOSE_OUTPUT
 
-    N_XYZ.Multiply('N','N',1.0,(tet10_dis.deriv_gp),partials,0.0); //N_XYZ = N_xsi_k*partials
+    N_XYZ.Multiply('N','N',1.0,(tet10_dis.deriv_gp)[gp],partials,0.0); //N_XYZ = N_xsi_k*partials
       
     /* structure of N_XYZ:
     **             [   dN_1     dN_1     dN_1   ]

@@ -246,6 +246,7 @@ int DRT::ELEMENTS::So_tet10::EvaluateNeumann(ParameterList& params,
 } // DRT::ELEMENTS::So_tet10::EvaluateNeumann
 
 
+
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                            vlf 06/07 |
  *----------------------------------------------------------------------*/
@@ -280,6 +281,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
     **             [   |     |     |   ]
     **             [  x_10  y_10  z_10 ]
     */
+  Epetra_SerialDenseMatrix xdisp(NUMNOD_SOTET10,NUMDIM_SOTET10);  // current  coord. of element
   
   for (int i=0; i<NUMNOD_SOTET10; ++i){
     xrefe(i,0) = Nodes()[i]->X()[0];
@@ -289,6 +291,10 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
     xcurr(i,0) = xrefe(i,0) + disp[i*NODDOF_SOTET10+0];
     xcurr(i,1) = xrefe(i,1) + disp[i*NODDOF_SOTET10+1];
     xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_SOTET10+2];
+    
+    xdisp(i,0) = disp[i*NODDOF_SOTET10+0];
+    xdisp(i,1) = disp[i*NODDOF_SOTET10+1];
+    xdisp(i,2) = disp[i*NODDOF_SOTET10+2];
   }
  
  
@@ -423,7 +429,10 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
     */
 
     Epetra_SerialDenseMatrix defgrd(NUMDIM_SOTET10,NUMDIM_SOTET10);
-    defgrd.Multiply('T','N',1.0,xcurr,N_XYZ,0.0);
+    defgrd.Multiply('T','N',1.0,xdisp,N_XYZ,0.0);
+    defgrd(0,0)+=1;
+    defgrd(1,1)+=1;
+    defgrd(2,2)+=1;
     
     #ifdef VERBOSE_OUTPUT
 	cout << "defgr\n " << defgrd;
@@ -486,26 +495,18 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
     cout << N_XYZ;
     #endif //VERBOSE_OUTPUT
     
-    for (int i=0; i<NUMNOD_SOTET10; i++) {
-      bop(0,NODDOF_SOTET10*i+0) = defgrd(0,0)*N_XYZ(i,0);
-      bop(0,NODDOF_SOTET10*i+1) = defgrd(1,0)*N_XYZ(i,0);
-      bop(0,NODDOF_SOTET10*i+2) = defgrd(2,0)*N_XYZ(i,0);
-      bop(1,NODDOF_SOTET10*i+0) = defgrd(0,1)*N_XYZ(i,1);
-      bop(1,NODDOF_SOTET10*i+1) = defgrd(1,1)*N_XYZ(i,1);
-      bop(1,NODDOF_SOTET10*i+2) = defgrd(2,1)*N_XYZ(i,1);
-      bop(2,NODDOF_SOTET10*i+0) = defgrd(0,2)*N_XYZ(i,2);
-      bop(2,NODDOF_SOTET10*i+1) = defgrd(1,2)*N_XYZ(i,2);
-      bop(2,NODDOF_SOTET10*i+2) = defgrd(2,2)*N_XYZ(i,2);
-      /* ~~~ */
-      bop(3,NODDOF_SOTET10*i+0) = defgrd(0,0)*N_XYZ(i,1) + defgrd(0,1)*N_XYZ(i,0);
-      bop(3,NODDOF_SOTET10*i+1) = defgrd(1,0)*N_XYZ(i,1) + defgrd(1,1)*N_XYZ(i,0);
-      bop(3,NODDOF_SOTET10*i+2) = defgrd(2,0)*N_XYZ(i,1) + defgrd(2,1)*N_XYZ(i,0);
-      bop(4,NODDOF_SOTET10*i+0) = defgrd(0,1)*N_XYZ(i,2) + defgrd(0,2)*N_XYZ(i,1);
-      bop(4,NODDOF_SOTET10*i+1) = defgrd(1,1)*N_XYZ(i,2) + defgrd(1,2)*N_XYZ(i,1);
-      bop(4,NODDOF_SOTET10*i+2) = defgrd(2,1)*N_XYZ(i,2) + defgrd(2,2)*N_XYZ(i,1);
-      bop(5,NODDOF_SOTET10*i+0) = defgrd(0,2)*N_XYZ(i,0) + defgrd(0,0)*N_XYZ(i,2);
-      bop(5,NODDOF_SOTET10*i+1) = defgrd(1,2)*N_XYZ(i,0) + defgrd(1,0)*N_XYZ(i,2);
-      bop(5,NODDOF_SOTET10*i+2) = defgrd(2,2)*N_XYZ(i,0) + defgrd(2,0)*N_XYZ(i,2);
+    for (int numnode=0; numnode<NUMNOD_SOTET10; numnode++) {
+    	for (int numdof=0; numdof<NODDOF_SOTET10; numdof++) {
+      	bop(0,NODDOF_SOTET10*numnode+numdof) = defgrd(numdof,0)*N_XYZ(numnode,0);
+      	bop(1,NODDOF_SOTET10*numnode+numdof) = defgrd(numdof,1)*N_XYZ(numnode,1);
+      	bop(2,NODDOF_SOTET10*numnode+numdof) = defgrd(numdof,2)*N_XYZ(numnode,2);
+      	bop(3,NODDOF_SOTET10*numnode+numdof) = defgrd(numdof,0)*N_XYZ(numnode,1) + \
+      			    						   defgrd(numdof,1)*N_XYZ(numnode,0);
+      	bop(4,NODDOF_SOTET10*numnode+numdof) = defgrd(numdof,1)*N_XYZ(numnode,2) + \
+      										   defgrd(numdof,2)*N_XYZ(numnode,1);
+      	bop(5,NODDOF_SOTET10*numnode+numdof) = defgrd(numdof,2)*N_XYZ(numnode,0) + \
+      										   defgrd(numdof,0)*N_XYZ(numnode,2);
+    	}
     }
     
   	#ifdef VERBOSE_OUTPUT
@@ -529,7 +530,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
 
     // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
     (*force).Multiply('T','N',detJ * tet10_dis.weights[gp],bop,stress,1.0);
-	//cout << (*force);
+	
     // integrate `elastic' and `initial-displacement' stiffness matrix
     // keu = keu + (B^T . C . B) * detJ * w(gp)
     Epetra_SerialDenseMatrix cb(NUMSTR_SOTET10,NUMDOF_SOTET10);

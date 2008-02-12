@@ -22,8 +22,6 @@ written by: Alexander Volf
 #define SO_TET4_H_
 
 
-
-
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_Vector.h"
 #include "Epetra_SerialDenseVector.h"

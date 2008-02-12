@@ -42,8 +42,7 @@ written by: Alexander Volf
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_integrator::~So_integrator()
 {
-	delete[] shapefct_gp;
-	delete[] deriv_gp;	
+	return;
 }
 
 #endif
@@ -58,8 +57,8 @@ DRT::ELEMENTS::So_hex8::Integrator_So_hex8::Integrator_So_hex8()
     num_gp = NUMGPT_SOH8;
     num_nodes = NUMNOD_SOH8 ;
     num_coords = 3;
-    shapefct_gp = new Epetra_SerialDenseVector[NUMGPT_SOH8];
-    deriv_gp    = new Epetra_SerialDenseMatrix[NUMGPT_SOH8];
+    shapefct_gp.resize(NUMGPT_SOH8);
+    deriv_gp.resize(NUMGPT_SOH8);
     weights.Size(NUMGPT_SOH8);
     
 #if 1 //OUR SHAPE FUNCTIONS
@@ -256,8 +255,8 @@ DRT::ELEMENTS::SoDisp::Integrator_SoDisp::Integrator_SoDisp(DRT::ELEMENTS::SoDis
     num_gp = this_element.numgpt_disp_;
     num_nodes = this_element.numnod_disp_ ;
     num_coords = 3;
-    shapefct_gp = new Epetra_SerialDenseVector[num_gp];
-    deriv_gp    = new Epetra_SerialDenseMatrix[num_gp];
+    shapefct_gp.resize(num_gp);
+    deriv_gp.resize(num_gp);
     weights.Size(this_element.numgpt_disp_);
     
     for (int igp = 0; igp < intpoints.nquad; ++igp) {
@@ -288,8 +287,8 @@ DRT::ELEMENTS::Integrator_tet4_1point::Integrator_tet4_1point(void)
   num_gp = NUMGPT_SOTET4;
   num_nodes = NUMNOD_SOTET4;
   num_coords = NUMCOORD_SOTET4;
-  shapefct_gp = new Epetra_SerialDenseVector[NUMGPT_SOTET4];
-  deriv_gp    = new Epetra_SerialDenseMatrix[NUMGPT_SOTET4];
+  shapefct_gp.resize(NUMGPT_SOTET4);
+  deriv_gp.resize(NUMGPT_SOTET4);
   weights.Size(num_gp);
   
   //Quadrature rule from Carlos A. Felippa: Adv. FEM  §16.4 
@@ -302,6 +301,68 @@ DRT::ELEMENTS::Integrator_tet4_1point::Integrator_tet4_1point(void)
   const double xsi4[NUMGPT_SOTET4] = {gploc_alpha};
   const double w[NUMGPT_SOTET4]    = {gpw};
 	
+   // fill up nodal f at each gp 
+  for (int gp=0; gp<num_gp; gp++) {
+      (shapefct_gp[gp]).Size(num_nodes);
+      (shapefct_gp[gp])[0] = xsi1[gp];
+      (shapefct_gp[gp])[1] = xsi2[gp];
+      (shapefct_gp[gp])[2] = xsi3[gp];
+      (shapefct_gp[gp])[3] = xsi4[gp];
+      weights[gp] = w[gp]; 	// just for clarity how to get weight factors    
+  }
+ 
+  // fill up df xsi1, xsi2, xsi3, xsi4 directions (NUMDIM) at each gp
+  for (int gp=0; gp<num_gp; gp++) {
+  	(deriv_gp[gp]).Shape(num_nodes,num_coords);
+  	
+  	// deriv_gp wrt to xsi1 "(0,..)" for each node(0..9) at each gp [i]
+	(deriv_gp[gp])(0,0) = 1;
+	(deriv_gp[gp])(1,0) = 0;
+    (deriv_gp[gp])(2,0) = 0;
+    (deriv_gp[gp])(3,0) = 0;
+    
+    // deriv_gp wrt to xsi2 "(1,..)" for each node(0..9) at each gp [gp]
+    (deriv_gp[gp])(0,1) = 0;
+    (deriv_gp[gp])(1,1) = 1;
+    (deriv_gp[gp])(2,1) = 0;
+    (deriv_gp[gp])(3,1) = 0;
+     	
+    // deriv_gp wrt to xsi3 "(2,..)" for each node(0..9) at each gp [gp]
+    (deriv_gp[gp])(0,2) = 0;
+    (deriv_gp[gp])(1,2) = 0;
+    (deriv_gp[gp])(2,2) = 1;
+    (deriv_gp[gp])(3,2) = 0;
+      
+    // deriv_gp wrt to xsi4 "(2,..)" for each node(0..9) at each gp [gp]
+    (deriv_gp[gp])(0,3) = 0;
+    (deriv_gp[gp])(1,3) = 0;
+    (deriv_gp[gp])(2,3) = 0;
+    (deriv_gp[gp])(3,3) = 1;
+  }
+}
+
+DRT::ELEMENTS::Integrator_tet4_4point::Integrator_tet4_4point(void)
+{
+  // forward initialization of necessary attributes
+  num_gp = 4;
+  num_nodes = 4;
+  num_coords = 4;
+  shapefct_gp.resize(num_gp);
+  deriv_gp.resize(num_gp);
+  weights.Size(num_gp);
+  
+ //Quadrature rule from Carlos A. Felippa: Adv. FEM  §16.4 
+  double gploc_alpha    = (5.0 + 3.0*sqrt(5.0))/20.0;    // gp sampling point value for quadr. fct
+  double gploc_beta     = (5.0 - sqrt(5.0))/20.0;
+  double gpw      = 0.25;              // weight at every gp for linear fct
+ 
+  // (xsi1, xsi2, xsi3 ,xsi4) gp-locations of fully integrated linear 10-node Tet
+  const double xsi1[4] = {gploc_alpha, gploc_beta , gploc_beta , gploc_beta };
+  const double xsi2[4] = {gploc_beta , gploc_alpha, gploc_beta , gploc_beta };
+  const double xsi3[4] = {gploc_beta , gploc_beta , gploc_alpha, gploc_beta };
+  const double xsi4[4] = {gploc_beta , gploc_beta , gploc_beta , gploc_alpha};
+  const double w[4]    = {   gpw,   gpw,   gpw,   gpw};
+  
    // fill up nodal f at each gp 
   for (int gp=0; gp<num_gp; gp++) {
       (shapefct_gp[gp]).Size(num_nodes);
@@ -355,8 +416,8 @@ DRT::ELEMENTS::Integrator_tet10_4point::Integrator_tet10_4point(void)
   num_gp = NUMGPT_SOTET10;
   num_nodes = NUMNOD_SOTET10 ;
   num_coords = NUMCOORD_SOTET10;
-  shapefct_gp = new Epetra_SerialDenseVector[4];
-  deriv_gp    = new Epetra_SerialDenseMatrix[4];
+  shapefct_gp.resize(4);
+  deriv_gp.resize(4);
   weights.Size(num_gp);
 
   //Quadrature rule from Carlos A. Felippa: Adv. FEM  §16.4 
@@ -457,8 +518,8 @@ DRT::ELEMENTS::Integrator_tet10_14point::Integrator_tet10_14point(void)
   num_gp = number_gp;
   num_nodes = NUMNOD_SOTET10 ;
   num_coords = NUMCOORD_SOTET10;
-  shapefct_gp = new Epetra_SerialDenseVector[number_gp];
-  deriv_gp    = new Epetra_SerialDenseMatrix[number_gp];
+  shapefct_gp.resize(number_gp);
+  deriv_gp.resize(number_gp);
   weights.Size(number_gp);
 
 /*	14-point  Quadrature rule from Carlos A. Felippa: Adv. FEM  §17.4 
@@ -592,8 +653,8 @@ DRT::ELEMENTS::Integrator_tri3_1point::Integrator_tri3_1point(void)
   num_gp = number_gp;
   num_nodes = NUMNOD_SOTET4 ;
   num_coords = NUMCOORD_SOTET4;
-  shapefct_gp = new Epetra_SerialDenseVector[number_gp];
-  deriv_gp    = new Epetra_SerialDenseMatrix[number_gp];
+  shapefct_gp.resize(number_gp);
+  deriv_gp.resize(number_gp);
   weights.Size(number_gp);
 
  //Quadrature rule from Carlos A. Felippa: Adv. FEM  §17 

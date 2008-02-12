@@ -70,6 +70,8 @@ void DRT::ELEMENTS::So_ctet10::so_ctet10_stress(struct _MATERIAL* material,
     **             [   |     |     |   ]
     **             [  x_10  y_10  z_10 ]
     */   
+    
+  Epetra_SerialDenseMatrix xdisp(NUMNOD_SOCTET10,NUMDIM_SOCTET10);  // current  coord. of element
   for (int i=0; i<NUMNOD_SOCTET10; ++i){
     xrefe(i,0) = Nodes()[i]->X()[0] - Nodes()[0]->X()[0];
     xrefe(i,1) = Nodes()[i]->X()[1] - Nodes()[0]->X()[1];
@@ -78,6 +80,10 @@ void DRT::ELEMENTS::So_ctet10::so_ctet10_stress(struct _MATERIAL* material,
     xcurr(i,0) = xrefe(i,0) + disp[i*NODDOF_SOCTET10+0];
     xcurr(i,1) = xrefe(i,1) + disp[i*NODDOF_SOCTET10+1];
     xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_SOCTET10+2];
+    
+    xdisp(i,0) = disp[i*NODDOF_SOCTET10+0];
+    xdisp(i,1) = disp[i*NODDOF_SOCTET10+1];
+    xdisp(i,2) = disp[i*NODDOF_SOCTET10+2];
   }
  
   //create the midpoint of the tetrahedron as the 11th node of the element 
@@ -130,7 +136,10 @@ void DRT::ELEMENTS::So_ctet10::so_ctet10_stress(struct _MATERIAL* material,
     */
 
     Epetra_SerialDenseMatrix defgrd(NUMDIM_SOCTET10,NUMDIM_SOCTET10);
-    defgrd.Multiply('T','N',1.0,xcurr,L_aj_int.deriv_gp[gp],0.0);
+    defgrd.Multiply('T','N',1.0,xdisp,L_aj_int.deriv_gp[gp],0.0);
+    defgrd(0,0)+=1;
+    defgrd(1,1)+=1;
+    defgrd(2,2)+=1;
     
     #ifdef VERBOSE_OUTPUT
 	cout << "defgr\n " << defgrd;

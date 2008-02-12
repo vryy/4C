@@ -255,6 +255,7 @@ int DRT::ELEMENTS::So_ctet10::EvaluateNeumann(ParameterList& params,
 } // DRT::ELEMENTS::So_ctet10::EvaluateNeumann
 
 
+
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                            vlf 06/07 |
  *----------------------------------------------------------------------*/
@@ -286,6 +287,8 @@ void DRT::ELEMENTS::So_ctet10::so_ctet10_nlnstiffmass(
     **             [   |     |     |   ]
     **             [  x_10  y_10  z_10 ]
     */   
+    
+  Epetra_SerialDenseMatrix xdisp(NUMNOD_SOCTET10,NUMDIM_SOCTET10);  // current  coord. of element
   for (int i=0; i<NUMNOD_SOCTET10; ++i){
     xrefe(i,0) = Nodes()[i]->X()[0] - Nodes()[0]->X()[0];
     xrefe(i,1) = Nodes()[i]->X()[1] - Nodes()[0]->X()[1];
@@ -294,6 +297,10 @@ void DRT::ELEMENTS::So_ctet10::so_ctet10_nlnstiffmass(
     xcurr(i,0) = xrefe(i,0) + disp[i*NODDOF_SOCTET10+0];
     xcurr(i,1) = xrefe(i,1) + disp[i*NODDOF_SOCTET10+1];
     xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_SOCTET10+2];
+    
+    xdisp(i,0) = disp[i*NODDOF_SOCTET10+0];
+    xdisp(i,1) = disp[i*NODDOF_SOCTET10+1];
+    xdisp(i,2) = disp[i*NODDOF_SOCTET10+2];
   }
  
   //create the midpoint of the tetrahedron as the 11th node of the element 
@@ -343,11 +350,19 @@ void DRT::ELEMENTS::So_ctet10::so_ctet10_nlnstiffmass(
     **             [  ------   ------   ------  ]
     **             [    dZ       dZ       dZ    ]
     */
+    
+    /* Here additionally a decompostion of F = L_XYZ^T * (xrefe + (x)disp)
+     * Knowing that L_XYZ^T * xrefe = diag(1,1,1) ,
+     * we can ensure F = diag(1,1,1) if disp = 0 
+     */
 
     Epetra_SerialDenseMatrix defgrd(NUMDIM_SOCTET10,NUMDIM_SOCTET10);
-    defgrd.Multiply('T','N',1.0,xcurr,L_aj_int.deriv_gp[gp],0.0);
     
-    //cout << L_aj_int.deriv_gp [gp];
+    defgrd.Multiply('T','N',1.0,xdisp,L_aj_int.deriv_gp[gp],0.0);
+    defgrd(0,0)+=1;
+    defgrd(1,1)+=1;
+    defgrd(2,2)+=1;
+    
     
     #ifdef VERBOSE_OUTPUT
 	cout << "defgr\n " << defgrd;
@@ -410,35 +425,18 @@ void DRT::ELEMENTS::So_ctet10::so_ctet10_nlnstiffmass(
     cout << N_XYZ;
     #endif //VERBOSE_OUTPUT
     
-    for (int i=0; i<NUMNOD_SOCTET10; i++) {
-      bop(0,NODDOF_SOCTET10*i+0) = defgrd(0,0)*L_aj_int.deriv_gp[gp](i,0);
-      bop(0,NODDOF_SOCTET10*i+1) = defgrd(1,0)*L_aj_int.deriv_gp[gp](i,0);
-      bop(0,NODDOF_SOCTET10*i+2) = defgrd(2,0)*L_aj_int.deriv_gp[gp](i,0);
-      bop(1,NODDOF_SOCTET10*i+0) = defgrd(0,1)*L_aj_int.deriv_gp[gp](i,1);
-      bop(1,NODDOF_SOCTET10*i+1) = defgrd(1,1)*L_aj_int.deriv_gp[gp](i,1);
-      bop(1,NODDOF_SOCTET10*i+2) = defgrd(2,1)*L_aj_int.deriv_gp[gp](i,1);
-      bop(2,NODDOF_SOCTET10*i+0) = defgrd(0,2)*L_aj_int.deriv_gp[gp](i,2);
-      bop(2,NODDOF_SOCTET10*i+1) = defgrd(1,2)*L_aj_int.deriv_gp[gp](i,2);
-      bop(2,NODDOF_SOCTET10*i+2) = defgrd(2,2)*L_aj_int.deriv_gp[gp](i,2);
-      /* ~~~ */
-      bop(3,NODDOF_SOCTET10*i+0) = defgrd(0,0)*L_aj_int.deriv_gp[gp](i,1) +\
-                                   defgrd(0,1)*L_aj_int.deriv_gp[gp](i,0);
-      bop(3,NODDOF_SOCTET10*i+1) = defgrd(1,0)*L_aj_int.deriv_gp[gp](i,1) +\
-                                   defgrd(1,1)*L_aj_int.deriv_gp[gp](i,0);
-      bop(3,NODDOF_SOCTET10*i+2) = defgrd(2,0)*L_aj_int.deriv_gp[gp](i,1) +\
-                                   defgrd(2,1)*L_aj_int.deriv_gp[gp](i,0);
-      bop(4,NODDOF_SOCTET10*i+0) = defgrd(0,1)*L_aj_int.deriv_gp[gp](i,2) +\
-                                   defgrd(0,2)*L_aj_int.deriv_gp[gp](i,1);
-      bop(4,NODDOF_SOCTET10*i+1) = defgrd(1,1)*L_aj_int.deriv_gp[gp](i,2) +\
-                                   defgrd(1,2)*L_aj_int.deriv_gp[gp](i,1);
-      bop(4,NODDOF_SOCTET10*i+2) = defgrd(2,1)*L_aj_int.deriv_gp[gp](i,2) +\
-                                   defgrd(2,2)*L_aj_int.deriv_gp[gp](i,1);
-      bop(5,NODDOF_SOCTET10*i+0) = defgrd(0,2)*L_aj_int.deriv_gp[gp](i,0) +\
-                                   defgrd(0,0)*L_aj_int.deriv_gp[gp](i,2);
-      bop(5,NODDOF_SOCTET10*i+1) = defgrd(1,2)*L_aj_int.deriv_gp[gp](i,0) +\
-                                   defgrd(1,0)*L_aj_int.deriv_gp[gp](i,2);
-      bop(5,NODDOF_SOCTET10*i+2) = defgrd(2,2)*L_aj_int.deriv_gp[gp](i,0) +\
-                                   defgrd(2,0)*L_aj_int.deriv_gp[gp](i,2);
+    for (int numnode=0; numnode<NUMNOD_SOTET10; numnode++) {
+    	for (int numdof=0; numdof<NODDOF_SOTET10; numdof++) {
+      	bop(0,NODDOF_SOTET10*numnode+numdof) = defgrd(numdof,0)*L_aj_int.deriv_gp[gp](numnode,0);
+      	bop(1,NODDOF_SOTET10*numnode+numdof) = defgrd(numdof,1)*L_aj_int.deriv_gp[gp](numnode,1);
+      	bop(2,NODDOF_SOTET10*numnode+numdof) = defgrd(numdof,2)*L_aj_int.deriv_gp[gp](numnode,2);
+      	bop(3,NODDOF_SOTET10*numnode+numdof) = defgrd(numdof,0)*L_aj_int.deriv_gp[gp](numnode,1) + \
+      			    						   defgrd(numdof,1)*L_aj_int.deriv_gp[gp](numnode,0);
+      	bop(4,NODDOF_SOTET10*numnode+numdof) = defgrd(numdof,1)*L_aj_int.deriv_gp[gp](numnode,2) + \
+      										   defgrd(numdof,2)*L_aj_int.deriv_gp[gp](numnode,1);
+      	bop(5,NODDOF_SOTET10*numnode+numdof) = defgrd(numdof,2)*L_aj_int.deriv_gp[gp](numnode,0) + \
+      										   defgrd(numdof,0)*L_aj_int.deriv_gp[gp](numnode,2);
+    	}
     }
     
   	#ifdef VERBOSE_OUTPUT
@@ -462,7 +460,7 @@ void DRT::ELEMENTS::So_ctet10::so_ctet10_nlnstiffmass(
     // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
 	/**UNCOMMENT NEXT LINE FOR NONLINEAR KINEMATICS	**/   
     (*force).Multiply('T','N', L_aj_int.weights(gp) ,bop,stress,1.0);
-	
+    
     // integrate `elastic' and `initial-displacement' stiffness matrix
     // keu = keu + (B^T . C . B) * detJ * w(gp)
     Epetra_SerialDenseMatrix cb(NUMSTR_SOCTET10,NUMDOF_SOCTET10);
@@ -615,7 +613,7 @@ void DRT::ELEMENTS::So_ctet10::TET4_SUB::integrate(
     Epetra_SerialDenseMatrix& in_Naj)
 
 {
-	const static DRT::ELEMENTS::Integrator_tet4_1point tet4_lin_int;
+	const DRT::ELEMENTS::Integrator_tet4_1point tet4_lin_int;
 	//set gp = 0 because Tet4_integrator_4point has only one gp, so gp loop is obsolete
 	
 	const int gp = 0;
@@ -754,9 +752,9 @@ DRT::ELEMENTS::So_ctet10::Tet10c_integrator_5point::Tet10c_integrator_5point(SUB
   num_gp = 5;
   num_nodes = 10;
   num_coords = NUMCOORD_SOCTET10;
-  shapefct_gp = new Epetra_SerialDenseVector[NUMGPT_SOCTET10];
+  shapefct_gp.resize(NUMGPT_SOCTET10);
   //deriv_gp    = new Epetra_SerialDenseMatrix[NUMGPT_SOTET4];
-  deriv_gp = new Epetra_SerialDenseMatrix[NUMGPT_SOCTET10];
+  deriv_gp.resize(NUMGPT_SOCTET10);
   weights.Size(num_gp);
   
   //guadrature rule from M. Ortiz Tetrahedral composite finite elements
@@ -800,8 +798,8 @@ DRT::ELEMENTS::So_ctet10::L_AJ_integrator::L_AJ_integrator(SUB_STRUCTURE& sub_st
 	num_gp      = 5;
     num_nodes   = 10;
     num_coords  =  3; //here dervatives N_,X instead of N_,xi are used
-    shapefct_gp = new Epetra_SerialDenseVector[NUMGPT_SOCTET10];
-    deriv_gp = new Epetra_SerialDenseMatrix[NUMGPT_SOCTET10];
+    shapefct_gp.resize(NUMGPT_SOCTET10);
+    deriv_gp.resize(NUMGPT_SOCTET10);
     weights.Size(NUMGPT_SOCTET10);
 	
 	Tet10c_integrator_5point Mbc_integrator(sub_struct);

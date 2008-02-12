@@ -51,7 +51,7 @@ void DRT::ELEMENTS::So_hex8::soh8_stress(vector<double>& disp,
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
 ** ============================================================================*/
-   const static DRT::ELEMENTS::So_hex8::Integrator_So_hex8 int_hex8;
+   static DRT::ELEMENTS::So_hex8::Integrator_So_hex8 int_hex8;
 /* ============================================================================*/
 
   // update element geometry

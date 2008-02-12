@@ -264,7 +264,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
 ** =============================================================================*/
    const static DRT::ELEMENTS::Integrator_tet4_1point tet4_dis;
 /* ============================================================================*/
-
+  double density;
   // update element geometry
   Epetra_SerialDenseMatrix xrefe(NUMNOD_SOTET4,NUMDIM_SOTET4);  // material coord. of element
   /* structure of xrefe:
@@ -280,6 +280,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
     **             [   |     |     |   ]
     **             [  x_4   y_4   z_4  ]
     */   
+  Epetra_SerialDenseMatrix xdisp(NUMNOD_SOTET4,NUMDIM_SOTET4); // current  displacements of element
   for (int i=0; i<NUMNOD_SOTET4; ++i){
     xrefe(i,0) = Nodes()[i]->X()[0];
     xrefe(i,1) = Nodes()[i]->X()[1];
@@ -288,6 +289,10 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
     xcurr(i,0) = xrefe(i,0) + disp[i*NODDOF_SOTET4+0];
     xcurr(i,1) = xrefe(i,1) + disp[i*NODDOF_SOTET4+1];
     xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_SOTET4+2];
+    
+    xdisp(i,0) = disp[i*NODDOF_SOTET4+0];
+    xdisp(i,1) = disp[i*NODDOF_SOTET4+1];
+    xdisp(i,2) = disp[i*NODDOF_SOTET4+2];
   }
  
  
@@ -421,7 +426,12 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
     */
 
     Epetra_SerialDenseMatrix defgrd(NUMDIM_SOTET4,NUMDIM_SOTET4);
-    defgrd.Multiply('T','N',1.0,xcurr,N_XYZ,0.0);
+    defgrd.Multiply('T','N',1.0,xdisp,N_XYZ,0.0);
+    defgrd(0,0)+=1;
+    defgrd(1,1)+=1;
+    defgrd(2,2)+=1;
+    
+    //defgrd.Multiply('T','N',1.0,xcurr,N_XYZ,0.0);
     
     #ifdef VERBOSE_OUTPUT
 	cout << "defgr\n " << defgrd;
@@ -518,7 +528,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
 
     Epetra_SerialDenseMatrix cmat(NUMSTR_SOTET4,NUMSTR_SOTET4);
     Epetra_SerialDenseVector stress(NUMSTR_SOTET4);
-    double density;
+    
     so_tet4_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp);
 	#ifdef VERBOSE_OUTPUT    
     cout << "material input\n";
@@ -550,25 +560,30 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
         (*stiffmatrix)(NUMDIM_SOTET4*inod+1,NUMDIM_SOTET4*jnod+1) += bopstrbop;
         (*stiffmatrix)(NUMDIM_SOTET4*inod+2,NUMDIM_SOTET4*jnod+2) += bopstrbop;
       }
-    } // end of intergrate `geometric' stiffness ******************************
-	
-	//MASS matrix is yet to be implemented!!!!
-    if (massmatrix != NULL){ // evaluate mass matrix +++++++++++++++++++++++++
-      //integrate concistent mass matrix
-      for (int inod=0; inod<NUMNOD_SOTET4; ++inod) {
+    } // end of intergrate `geometric' stiffness *******************************
+   /* =========================================================================*/
+  }/* ==================================================== end of Loop over GP */
+   /* =========================================================================*/
+   
+   
+  // static integrator created in any case to safe "if-case" 
+  const static DRT::ELEMENTS::Integrator_tet4_4point tet4_mass;
+  if (massmatrix != NULL){ // evaluate mass matrix +++++++++++++++++++++++++
+    //consistent mass matrix evaluated using a 4-point rule
+    for (int gp=0; gp<tet4_mass.num_gp; gp++) {
+      for (int inod=0; inod<NUMNOD_SOTET4; ++inod){
         for (int jnod=0; jnod<NUMNOD_SOTET4; ++jnod) {
-          double massfactor = (tet4_dis.shapefct_gp[gp])(inod) * density * (tet4_dis.shapefct_gp[gp])(jnod)
-                            * detJ * (tet4_dis.weights)(gp);     // intermediate factor
+          double massfactor = (tet4_mass.shapefct_gp[gp])(inod) * density *\
+                              (tet4_mass.shapefct_gp[gp])(jnod) * detJ *\
+                              (tet4_mass.weights)(gp);     // intermediate factor
           (*massmatrix)(NUMDIM_SOTET4*inod+0,NUMDIM_SOTET4*jnod+0) += massfactor;
           (*massmatrix)(NUMDIM_SOTET4*inod+1,NUMDIM_SOTET4*jnod+1) += massfactor;
           (*massmatrix)(NUMDIM_SOTET4*inod+2,NUMDIM_SOTET4*jnod+2) += massfactor;
         }
       }
-    } // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
+    } 
+  }// end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
     
-   /* =========================================================================*/
-  }/* ==================================================== end of Loop over GP */
-   /* =========================================================================*/  
   #ifdef VERBOSE_OUTPUT    
   cout << (*stiffmatrix);
   #endif //VERBOSE_OUTPUT

@@ -24,7 +24,8 @@ Maintainer: Moritz Frenzel
 #ifdef D_SOH8
 #ifdef CCADISCRET
 
-
+#ifndef SO_SH8_H
+#define SO_SH8_H 
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_Vector.h"
 #include "Epetra_SerialDenseVector.h"
@@ -358,6 +359,6 @@ public:
 } // namespace DRT
 
 
-
+#endif  // #ifndef SO_SH8_H
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOH8

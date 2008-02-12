@@ -41,14 +41,9 @@ Mesh SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness, int layers);
 bool CheckExtrusion(const EXODUS::ElementBlock eblock);
 bool CheckExtrusion(const EXODUS::SideSet sideset);
 
-vector<int> RiseNodeIds(int highestid, map<int,int> pair, const vector<int> elenodes);
-
 vector<double> ExtrudeNodeCoords(const vector<double> basecoords, const double distance,
     const int layer, const int numlayers, const vector<double> normal);
 
-//void NodeToAvgNormal(map<int,vector<double> >& node_normal,const vector<int> elenodes,
-//    const map<int,set<int> >& elepatch,
-//    const EXODUS::ElementBlock& eblock, const EXODUS::Mesh& basemesh);
 vector<double> NodeToAvgNormal(const int node,const vector<int> elenodes,const vector<double> refnormdir,
     const map<int,set<int> >& nodetoele, const map<int,vector<int> >& ele_conn, const EXODUS::Mesh& basemesh);
 
