@@ -39,6 +39,9 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_mapextractor.H"
 #include "../io/io_drt.H"
+#include "drt_periodicbc.H"
+#include "../drt_lib/drt_nodematchingoctree.H"
+#include "../drt_lib/drt_function.H"
 
 #include "Epetra_Vector.h"
 #include "Epetra_Operator.h"

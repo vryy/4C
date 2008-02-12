@@ -15,21 +15,13 @@ Maintainer: Peter Gamnitzer
 #ifdef CCADISCRET
 
 #include "drt_pbcdofset.H"
-#include "drt_discret.H"
-#include "drt_utils.H"
-
-#include "linalg_utils.H"
-
-#include "../headers/define_sizes.h"
-
-
 
 
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 05/07|
  *----------------------------------------------------------------------*/
-DRT::PBCDofSet::PBCDofSet(RefCountPtr<map<int,vector<int> > >  couplednodes)
+PBCDofSet::PBCDofSet(RefCountPtr<map<int,vector<int> > >  couplednodes)
 {
   perbndcouples_=couplednodes;
   return;
@@ -39,7 +31,7 @@ DRT::PBCDofSet::PBCDofSet(RefCountPtr<map<int,vector<int> > >  couplednodes)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            gammi 05/07|
  *----------------------------------------------------------------------*/
-DRT::PBCDofSet::~PBCDofSet()
+PBCDofSet::~PBCDofSet()
 {
   return;
 }
@@ -49,7 +41,7 @@ DRT::PBCDofSet::~PBCDofSet()
  |  this function is a specialisation of the AssignDegreesOfFreedom of  |
  |  the base class DofSet                                               |
  *----------------------------------------------------------------------*/
-int DRT::PBCDofSet::AssignDegreesOfFreedom(const Discretization& dis, const int start)
+int PBCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const int start)
 {
   if (!dis.Filled()) dserror("discretization Filled()==false");
   if (!dis.NodeRowMap()->UniqueGIDs()) dserror("Nodal row map is not unique");

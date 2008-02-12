@@ -17,10 +17,10 @@ Maintainer: Peter Gamnitzer
 #define PERIODICBC_H
 
 #include "Teuchos_RefCountPtr.hpp"
-#include "drt_discret.H"
-#include "drt_dofset.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_dofset.H"
 #include "drt_pbcdofset.H"
-#include "drt_nodematchingoctree.H"
+#include "../drt_lib/drt_nodematchingoctree.H"
 #include <Teuchos_TimeMonitor.hpp>
 
 using namespace Teuchos;

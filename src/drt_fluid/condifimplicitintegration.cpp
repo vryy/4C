@@ -22,7 +22,7 @@ Maintainer: Volker Gravemeier
 #ifdef CCADISCRET
 
 #include "condifimplicitintegration.H"
-#include "../drt_lib/drt_periodicbc.H"
+#include "drt_periodicbc.H"
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

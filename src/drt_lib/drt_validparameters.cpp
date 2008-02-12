@@ -461,13 +461,22 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "No",
                                  "L_infinity_norm",
                                  "L_1_norm",
-                                 "L_2_norm"
+                                 "L_2_norm",
+                                 "L_2_norm_without_residual_at_itemax"
+                                 ),
+                               tuple<std::string>(
+                                 "do not check for convergence (ccarat)",
+                                 "use max norm (ccarat)",
+                                 "use abs. norm (ccarat)",
+                                 "compute L2 errors of increments (reltive) and residuals (absolute)",
+                                 "same as L_2_norm, only no residual norm is computed if itemax is reached (speedup for turbulence calculations, startup phase)"
                                  ),
                                tuple<int>(
                                  FLUID_DYNAMIC::fncc_no,
                                  FLUID_DYNAMIC::fncc_Linf,
                                  FLUID_DYNAMIC::fncc_L1,
-                                 FLUID_DYNAMIC::fncc_L2
+                                 FLUID_DYNAMIC::fncc_L2,
+                                 FLUID_DYNAMIC::fncc_L2_wo_res
                                  ),
                                &fdyn);
   setStringToIntegralParameter("STEADYCHECK","L_2_norm",
@@ -614,10 +623,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &fdyn_stab);
 
   setStringToIntegralParameter("RVMM_SUPG",
-                               "off",
+                               "convective_off",
                                "This flag (de)activates streamline upwinding for residual based stabilization.",
                                tuple<std::string>(
-                                 "off",
+                                 "convective_off",
                                  "-(svel|(u_o_nabla)_v)"),
                                tuple<std::string>(
                                  "No streamline upwinding",
@@ -626,10 +635,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &fdyn_stab);
 
   setStringToIntegralParameter("RVMM_PSPG",
-                               "off",
+                               "pstab_off",
                                "For residual based stabilization, this flag (de)activates the pressure \nstabilization.",
                                tuple<std::string>(
-                                 "off",
+                                 "pstab_off",
                                  "-(svel|nabla_q)"),
                                tuple<std::string>(
                                  "No pressure stabilization --- inf-sup stable elements are mandatory.",
@@ -638,10 +647,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &fdyn_stab);
 
   setStringToIntegralParameter("RVMM_VSTAB",
-                               "off",
+                               "viscous_off",
                                "For residual based stabilization, this flag (de)activates the viscous \nstabilization GLS+/- type.",
                                tuple<std::string>(
-                                 "off",
+                                 "viscous_off",
                                  "-2*nu*(svel|nabla_o_eps(v))",
                                  "+2*nu*(svel|nabla_o_eps(v))",
                                  "-2*nu*(svel|nabla_o_eps(v))_[RHS]",
@@ -658,10 +667,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &fdyn_stab);
 
   setStringToIntegralParameter("RVMM_CROSS-STRESS",
-                               "off",
+                               "cross_off",
                                "For residual based stabilization, this flag (de)activates the cross\nstress term which might be useful for turbulence modelling.",
                                tuple<std::string>(
-                                 "off",
+                                 "cross_off",
                                  "+((svel_o_nabla)_u|v)",
                                  "+((svel_o_nabla)_u|v)_[RHS]"
                                  ),
@@ -674,10 +683,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &fdyn_stab);
 
   setStringToIntegralParameter("RVMM_REYNOLDS-STRESS",
-                               "off",
+                               "reynolds_off",
                                "For residual based stabilization, this flag (de)activates the reynolds\nstress term which might be useful for turbulence modelling. A major\nimpact is only expected for high Reynolds number flows",
                                tuple<std::string>(
-                                 "off",
+                                 "reynolds_off",
                                  "-(svel|(svel_o_grad)_v)_[RHS]"
                                  ),
                                tuple<std::string>(
@@ -688,10 +697,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &fdyn_stab);
 
   setStringToIntegralParameter("RVMM_CSTAB",
-                               "off",
+                               "cstab_off",
                                "For residual based stabilization, this flag (de)activates the least \nsquares stabilization of the continuity equation.",
                                tuple<std::string>(
-                                 "off",
+                                 "cstab_off",
                                  "-(spre|nabla_o_v)",
                                  "-(spre|nabla_o_v)_(td)"),
                                tuple<std::string>(

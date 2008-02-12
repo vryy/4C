@@ -22,6 +22,10 @@ Maintainer: Peter Gamnitzer
 #include "fluid3.H"
 #include <blitz/array.h>
 
+#ifdef PERF
+#include <Teuchos_TimeMonitor.hpp>
+#endif
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -212,7 +216,23 @@ namespace DRT
                   double&                                               Cs_delta_sq,
                   double&                                               visceff,
                   const double                                          l_tau,
-                  const bool                                            compute_elemat);
+#ifdef PERF
+                  RefCountPtr<Time>                                     timeelederxy2    ,
+                  RefCountPtr<Time>                                     timeelederxy     ,
+                  RefCountPtr<Time>                                     timeeletau       ,
+                  RefCountPtr<Time>                                     timeelegalerkin  ,
+                  RefCountPtr<Time>                                     timeelepspg      ,
+                  RefCountPtr<Time>                                     timeelesupg      ,
+                  RefCountPtr<Time>                                     timeelecstab     ,
+                  RefCountPtr<Time>                                     timeelevstab     ,
+                  RefCountPtr<Time>                                     timeelecrossrey  ,  
+                  RefCountPtr<Time>                                     timeeleintertogp ,
+                  RefCountPtr<Time>                                     timeeleseteledata,
+                  RefCountPtr<Time>                                     timeeletdextras  ,
+   
+#endif
+                  const bool                                            compute_elemat
+        );
 
 
 

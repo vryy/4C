@@ -856,7 +856,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
 
     // create a new dofset specialisation for periodic boundary conditions
 
-    discret_->ReplaceDofSet(rcp(new DRT::PBCDofSet(allcoupledcolnodes_)));
+    discret_->ReplaceDofSet(rcp(new PBCDofSet(allcoupledcolnodes_)));
 
     //--------------------------------------------------
     // redistribute the nodes

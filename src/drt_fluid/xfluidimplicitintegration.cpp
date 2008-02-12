@@ -23,7 +23,7 @@ Maintainer: Axel Gerstenberger
 
 #include "xfluidimplicitintegration.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
-#include "../drt_lib/drt_periodicbc.H"
+#include "drt_periodicbc.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_xfem/intersection.H"
 #include "../drt_xfem/interface.H"

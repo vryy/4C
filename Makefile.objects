@@ -103,7 +103,6 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/drt_condition.o \
                 src/drt_lib/drt_conditiondefinition.o \
                 src/drt_lib/drt_dofset.o \
-                src/drt_lib/drt_pbcdofset.o \
                 src/drt_lib/drt_utils_integration.o \
                 src/drt_lib/drt_utils_dgfem_basisfunctions.o \
                 src/drt_lib/drt_utils_fem_shapefunctions.o \
@@ -117,7 +116,6 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/linalg_serialdensevector.o \
                 src/drt_lib/distribute_grids.o \
 		src/drt_lib/drt_nodematchingoctree.o \
-		src/drt_lib/drt_periodicbc.o \
                 src/drt_lib/drt_timecurve.o \
                 src/drt_lib/drt_function.o \
                 src/drt_lib/drt_discret_evaluate.o \
@@ -165,6 +163,8 @@ OBJS_DRT_FLUID= src/drt_fluid/fluid_dyn_nln_drt.o \
                 src/drt_fluid/condifimplicitintegration.o \
                 src/drt_fluid/condif_genalpha_integration.o \
                 src/drt_fluid/turbulence_statistics.o \
+		src/drt_fluid/drt_periodicbc.o \
+                src/drt_fluid/drt_pbcdofset.o \
                 src/drt_fluid/turbulence_statistics_ldc.o \
 		src/drt_fluid/fluidresulttest.o \
 		src/drt_fluid/xfluidresulttest.o \

@@ -30,20 +30,24 @@ Maintainer: Peter Gamnitzer
 
 using namespace std;
 
-#include "drt_dserror.H"
-#include "drt_dofset.H"
-#include "drt_discret.H"
-#include "drt_element.H"
-#include "drt_node.H"
+#include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_dofset.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_element.H"
+#include "../drt_lib/drt_node.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_utils.H"
+
+#include "../drt_lib/linalg_utils.H"
+
+#include "../headers/define_sizes.h"
 
 /*!
 \brief DRT: namespace of the ccarat discretization module
 
 */
-namespace DRT
-{
 
-class Discretization;
+class DRT::Discretization;
 
 
 /*!
@@ -53,7 +57,7 @@ class Discretization;
 
 \author gammi
 */
-class PBCDofSet: public DofSet
+class PBCDofSet: public DRT::DofSet
 {
 public:
 
@@ -108,7 +112,7 @@ public:
   \return int highest dof number assigned up to now
   
   */
-  virtual int AssignDegreesOfFreedom(const Discretization& dis, const int start);
+  virtual int AssignDegreesOfFreedom(const DRT::Discretization& dis, const int start);
 
   //@}
 
@@ -117,7 +121,6 @@ protected:
   //!\brief master and slave node connectivity for periodic boundary conditions
   RefCountPtr<map<int,vector<int> > >           perbndcouples_;   
 }; // class PBCDofSet
-} // namespace DRT
 
 
 

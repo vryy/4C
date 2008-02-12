@@ -139,6 +139,8 @@ enum {
       fncc_no,       /*!< no convergence check                          */
       fncc_L1,       /*!< converg. check with L1 norm                   */
       fncc_L2,       /*!< converg. check with L2 norm                   */
+      fncc_L2_wo_res,/*!< converg. check with L2 norm, no computation
+                      *   of residual norm if itmax is reached          */
       fncc_Linf      /*!< converg. check with L-inf. norm               */
      } itnorm;       /*!< norm for conv. check d. nonlin. iteration     */
 INT    itemax;       /*!< number of nonlin. iterations                  */

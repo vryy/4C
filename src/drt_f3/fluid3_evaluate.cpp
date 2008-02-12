@@ -781,6 +781,20 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
       break;
       case calc_fluid_genalpha_sysmat_and_residual:
       {
+#ifdef PERF
+        // --------------------------------------------------
+        // extended time measurement
+        RefCountPtr<Time> timeelegetvelnp   = params.get<RefCountPtr<Time>  >("get global vectors an set node values");
+        RefCountPtr<Time> timeeleinitsmag   = params.get<RefCountPtr<Time>  >("initialise Smagorinsky model");
+        RefCountPtr<Time> timeeleinitstab   = params.get<RefCountPtr<Time>  >("initialise stabilization flags");
+        RefCountPtr<Time> timeelesysmat     = params.get<RefCountPtr<Time>  >("complete call to sysmat");
+#endif     
+
+
+#ifdef PERF
+        RefCountPtr<TimeMonitor> timeelegetvelnp_ref = rcp(new TimeMonitor(*timeelegetvelnp)); 
+#endif     
+        
         // --------------------------------------------------
         // extract velocities, pressure and accelerations from the
         // global distributed vectors
@@ -837,6 +851,11 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           eaccam(2,i) = myaccam[2+(i*4)];
         }
 
+
+#ifdef PERF
+        timeelegetvelnp_ref = null;
+#endif     
+        
         // --------------------------------------------------
         // set parameters for time integration
         ParameterList& timelist = params.sublist("time integration parameters");
@@ -855,6 +874,10 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         // get flag for (fine-scale) subgrid viscosity (1=yes, 0=no)
         const int fssgv = params.get<int>("fs subgrid viscosity",0);
 
+#ifdef PERF
+        RefCountPtr<TimeMonitor> timeeleinitstab_ref = rcp(new TimeMonitor(*timeeleinitstab)); 
+#endif     
+        
         // --------------------------------------------------
         // set parameters for stabilisation
         ParameterList& stablist = params.sublist("STABILIZATION");
@@ -866,22 +889,22 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           stabstrtoact_["time_dependent_subscales"         ]=subscales_time_dependent;
           stabstrtoact_["drop"                             ]=inertia_stab_drop;
           stabstrtoact_["+(sacc|v)"                        ]=inertia_stab_keep;
-          stabstrtoact_["off"                              ]=pstab_assume_inf_sup_stable;
+          stabstrtoact_["pstab_off"                        ]=pstab_assume_inf_sup_stable;
           stabstrtoact_["-(svel|nabla_q)"                  ]=pstab_use_pspg;
-          stabstrtoact_["off"                              ]=convective_stab_none;
+          stabstrtoact_["convective_off"                   ]=convective_stab_none;
           stabstrtoact_["-(svel|(u_o_nabla)_v)"            ]=convective_stab_supg;
-          stabstrtoact_["off"                              ]=viscous_stab_none;
+          stabstrtoact_["viscous_off"                      ]=viscous_stab_none;
           stabstrtoact_["+2*nu*(svel|nabla_o_eps(v))"      ]=viscous_stab_gls;
           stabstrtoact_["+2*nu*(svel|nabla_o_eps(v))_[RHS]"]=viscous_stab_gls_only_rhs;
           stabstrtoact_["-2*nu*(svel|nabla_o_eps(v))"      ]=viscous_stab_agls;
           stabstrtoact_["-2*nu*(svel|nabla_o_eps(v))_[RHS]"]=viscous_stab_agls_only_rhs;
           stabstrtoact_["-(spre|nabla_o_v)"                ]=continuity_stab_yes;
-          stabstrtoact_["off"                              ]=continuity_stab_none;
+          stabstrtoact_["cstab_off"                        ]=continuity_stab_none;
           stabstrtoact_["+((svel_o_nabla)_u|v)"            ]=cross_stress_stab;
           stabstrtoact_["+((svel_o_nabla)_u|v)_[RHS]"      ]=cross_stress_stab_only_rhs;
-          stabstrtoact_["off"                              ]=cross_stress_stab_none;
+          stabstrtoact_["cross_off"                        ]=cross_stress_stab_none;
           stabstrtoact_["-(svel|(svel_o_grad)_v)_[RHS]"    ]=reynolds_stress_stab_only_rhs;
-          stabstrtoact_["off"                              ]=reynolds_stress_stab_none;
+          stabstrtoact_["reynolds_off"                     ]=reynolds_stress_stab_none;
         }
 
         StabilisationAction tds      = ConvertStringToStabAction(stablist.get<string>("RVMM_TDS"));
@@ -893,6 +916,14 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         StabilisationAction cross    = ConvertStringToStabAction(stablist.get<string>("RVMM_CROSS-STRESS"));
         StabilisationAction reynolds = ConvertStringToStabAction(stablist.get<string>("RVMM_REYNOLDS-STRESS"));
 
+#ifdef PERF
+        timeeleinitstab_ref = null; 
+#endif
+
+#ifdef PERF
+        RefCountPtr<TimeMonitor> timeeleinitsmag_ref = rcp(new TimeMonitor(*timeeleinitsmag)); 
+#endif     
+                
         // --------------------------------------------------
         // set parameters for turbulence model
         ParameterList& turbmodelparams    = params.sublist("TURBULENCE MODEL");
@@ -1004,10 +1035,38 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           }
         }
 
+
+#ifdef PERF
+        timeeleinitsmag_ref = null; 
+#endif     
+                
+        
         // --------------------------------------------------
         // specify what to compute
         const bool compute_elemat = params.get<bool>("compute element matrix");
 
+        
+#ifdef PERF
+        // --------------------------------------------------
+        // extended time measurement
+        RefCountPtr<Time> timeelederxy2    = params.get<RefCountPtr<Time>  >("time used for second derivatives");
+        RefCountPtr<Time> timeelederxy     = params.get<RefCountPtr<Time>  >("time used for secondfirst");
+        RefCountPtr<Time> timeeletau       = params.get<RefCountPtr<Time>  >("time used for computation of tau");
+        RefCountPtr<Time> timeelegalerkin  = params.get<RefCountPtr<Time>  >("time used for galerkin loops");
+        RefCountPtr<Time> timeelepspg      = params.get<RefCountPtr<Time>  >("time used for pspg loop");
+        RefCountPtr<Time> timeelesupg      = params.get<RefCountPtr<Time>  >("time used for supg loop");
+        RefCountPtr<Time> timeelecstab     = params.get<RefCountPtr<Time>  >("time used for cstab loop");
+        RefCountPtr<Time> timeelevstab     = params.get<RefCountPtr<Time>  >("time used for vstab loop");
+        RefCountPtr<Time> timeelecrossrey  = params.get<RefCountPtr<Time>  >("time used for cross and reynolds loop");
+        RefCountPtr<Time> timeeleintertogp = params.get<RefCountPtr<Time>  >("time used to interpolate to gauss points");
+        RefCountPtr<Time> timeeleseteledata= params.get<RefCountPtr<Time>  >("set basic element data");
+        RefCountPtr<Time> timeeletdextras  = params.get<RefCountPtr<Time>  >("time dependent fine scale specials");
+#endif
+
+   
+#ifdef PERF
+        RefCountPtr<TimeMonitor> timeelesysmat_ref = rcp(new TimeMonitor(*timeelesysmat)); 
+#endif          
         // --------------------------------------------------
         // calculate element coefficient matrix
         GenalphaResVMM()->Sysmat(this,
@@ -1041,10 +1100,32 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
                                  Cs_delta_sq,
                                  visceff,
                                  l_tau,
+#ifdef PERF
+                                 timeelederxy2   ,
+                                 timeelederxy    ,
+                                 timeeletau      ,
+                                 timeelegalerkin ,
+                                 timeelepspg     ,
+                                 timeelesupg     ,
+                                 timeelecstab    ,
+                                 timeelevstab    ,
+                                 timeelecrossrey ,  
+                                 timeeleintertogp,
+                                 timeeleseteledata,
+                                 timeeletdextras  ,
+
+#endif                                 
                                  compute_elemat
           );
+#ifdef PERF
+        timeelesysmat_ref = null;
+#endif          
 
-
+        
+#ifdef PERF
+        timeeleinitsmag_ref = rcp(new TimeMonitor(*timeeleinitsmag)); 
+#endif
+        
         if (turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
         {
           string& physical_turbulence_model = turbmodelparams.get<string>("PHYSICAL_MODEL");
@@ -1065,6 +1146,10 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
             }
           }
         }
+
+#ifdef PERF
+        timeeleinitsmag_ref = null; 
+#endif        
       }
       break;
       case calc_fluid_genalpha_update_for_subscales:

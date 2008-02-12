@@ -50,7 +50,7 @@ Maintainer: Peter Gamnitzer
 #define FLUID_GENALPHA_INTEGRATION_H
 
 #include "../drt_lib/drt_nodematchingoctree.H"
-#include "../drt_lib/drt_periodicbc.H"
+#include "drt_periodicbc.H"
 #include "turbulence_statistics.H"
 
 #ifdef PARALLEL
@@ -193,6 +193,16 @@ public:
   void GenAlphaOutput();
 
 
+  /*!
+  \brief Do console output
+
+  */
+
+  void GenAlphaEchoToScreen(
+    const string& what_to_print
+    );
+
+
   //@}
 
 
@@ -230,7 +240,7 @@ public:
   o the true residual is store in vector force_
 
   */
-  void GenAlphaAssembleResidualAndMatrix(int          itnum);
+  void GenAlphaAssembleResidualAndMatrix();
 
   /*!
   \brief Solve linear problem.
@@ -239,9 +249,7 @@ public:
   do the solver initialisation only in the first step.
 
   */
-  void GenAlphaCalcIncrement(
-    int          itnum
-    );
+  void GenAlphaCalcIncrement();
 
   /*!
   \brief update the current acceleration, velocity and pressure (*np)
@@ -254,16 +262,13 @@ public:
      -> if we have a pressure dof, update pressure (in velnp)
 
   */
-  void GenAlphaNonlinearUpdate(
-    );
+  void GenAlphaNonlinearUpdate();
 
   /*!
   \brief check for convergence of nonlinear iteration
 
   */
-  bool GenAlphaNonlinearConvergenceCheck(
-    int          itnum
-    );
+  bool GenAlphaNonlinearConvergenceCheck();
 
   //@}
 
@@ -323,6 +328,10 @@ private:
   // matrix layout
   int                              maxentriesperrow_;
 
+  // max. simulation time and max. number of steps
+  int                              endstep_;
+  double                           endtime_;
+  
   // current time and step
   double                           time_;
   int                              step_;
@@ -338,6 +347,22 @@ private:
   // parameter for linearisation
   bool                             newton_;
 
+  // parameters governing the nonlinear iteration
+  int                              itenum_;
+  int                              itemax_;
+  double                           ittol_;
+
+  // this variables are storing error norms 
+  double                           L2preresnorm_;
+  double                           L2velresnorm_;
+  double                           L2incvelnorm_;
+  double                           L2incprenorm_;
+
+  // skip the last element call (computation of residual) if
+  // itemax_ is reached in order to get some speedup for turbulence
+  // calculations 
+  bool                             skiplastelecall_;
+  
   // write restart every uprestart_ steps --- restartstep_ is
   // the counter used for this purpose
   int                              restartstep_;
@@ -428,16 +453,18 @@ private:
   RCP<vector<double> >     planecoords_;
   // time measurement
   // ----------------
-  RCP<Time> timedyntot_     ;
-  RCP<Time> timedyninit_    ;
-  RCP<Time> timedynloop_    ;
-  RCP<Time> timenlnloop_    ;
-  RCP<Time> timeeleloop_    ;
-  RCP<Time> timeevaldirich_ ;
-  RCP<Time> timeapplydirich_;
-  RCP<Time> timesolver_     ;
-  RCP<Time> timeout_        ;
-  RCP<Time> timenonlinup_   ;
+  RCP<Time> timedyntot_         ;
+  RCP<Time> timedyninit_        ;
+  RCP<Time> timedynloop_        ;
+  RCP<Time> timenlnloop_        ;
+  RCP<Time> timeeleloop_        ;
+  RCP<Time> timeevaldirich_     ;
+  RCP<Time> timeapplydirich_    ;
+  RCP<Time> timesolver_         ;
+  RCP<Time> timeout_            ;
+  RCP<Time> timenonlinup_       ;
+  RCP<Time> timesparsitypattern_;
+
 
   RCP<TimeMonitor> tm0_ref_ ;
   RCP<TimeMonitor> tm1_ref_ ;
@@ -450,11 +477,35 @@ private:
   RCP<TimeMonitor> tm8_ref_ ;
   RCP<TimeMonitor> tm9_ref_ ;
 
+#ifdef PERF
+  RefCountPtr<Time>        timeeleassemble_      ;
+  RefCountPtr<Time>        timeelegetdoflocation_; 
+
+  RefCountPtr<Time>        timeelederxy2_    ;
+  RefCountPtr<Time>        timeelederxy_     ;
+  RefCountPtr<Time>        timeeletau_       ;
+  RefCountPtr<Time>        timeelegalerkin_  ;
+  RefCountPtr<Time>        timeelepspg_      ;
+  RefCountPtr<Time>        timeelesupg_      ;
+  RefCountPtr<Time>        timeelecstab_     ;
+  RefCountPtr<Time>        timeelevstab_     ;
+  RefCountPtr<Time>        timeelecrossrey_  ;
+  RefCountPtr<Time>        timeeleintertogp_ ;
+  RefCountPtr<Time>        timeeleseteledata_;
+  RefCountPtr<Time>        timeeletdextras_  ;
+
+  RefCountPtr<Time>        timeelegetvelnp_  ;
+  RefCountPtr<Time>        timeeleinitsmag_  ;
+  RefCountPtr<Time>        timeeleinitstab_  ;
+  RefCountPtr<Time>        timeelesysmat_    ;
+#endif
+  
   double                   dtele_;
   double                   dtsolve_;
   double                   dtfilter_;
-};
 
+
+};
 
 
 

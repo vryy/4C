@@ -15,6 +15,9 @@ Maintainer: Ulrich Kuettler
 
 #ifdef CCADISCRET
 
+#ifndef DRT_FUNCTION_H
+#define DRT_FUNCTION_H
+
 #include <iostream>
 #include <vector>
 #include <Teuchos_RefCountPtr.hpp>
@@ -130,5 +133,7 @@ namespace UTILS {
   };
 }
 }
+
+#endif
 
 #endif

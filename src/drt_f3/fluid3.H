@@ -26,6 +26,10 @@ Maintainer: Georg Bauer
 #define DRT_FLUID3_H
 
 
+#ifdef PERF
+#include <Teuchos_TimeMonitor.hpp>
+#endif
+
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_Vector.h"
 using namespace std;

@@ -168,7 +168,9 @@ void dyn_fluid_drt()
   fluidtimeparams.set<int>             ("max nonlin iter steps"     ,fdyn.get<int>("ITEMAX"));
   // stop nonlinear iteration when both incr-norms are below this bound
   fluidtimeparams.set<double>          ("tolerance for nonlin iter" ,fdyn.get<double>("CONVTOL"));
-
+  // set convergence check
+  fluidtimeparams.set<string>          ("CONVCHECK"  ,fdyn.get<string>("CONVCHECK"));
+  
   // ----------------------------------------------- restart and output
   // restart
   fluidtimeparams.set                  ("write restart every"       ,fdyn.get<int>("RESTARTEVRY"));
@@ -269,7 +271,6 @@ void dyn_fluid_drt()
     // parameter alpha_F for for generalized-alpha scheme
     fluidtimeparams.set<double>           ("alpha_F"                  ,fdyn.get<double>("ALPHA_F"));
 
-    //------------------------------------------------------------------
     // create all vectors and variables associated with the time
     // integration (call the constructor);
     // the only parameter from the list required here is the number of

@@ -122,9 +122,26 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   double&                                               Cs_delta_sq,
   double&                                               visceff,
   const double                                          l_tau,
+#ifdef PERF
+  RefCountPtr<Time>                                     timeelederxy2    ,
+  RefCountPtr<Time>                                     timeelederxy     ,
+  RefCountPtr<Time>                                     timeeletau       ,
+  RefCountPtr<Time>                                     timeelegalerkin  ,
+  RefCountPtr<Time>                                     timeelepspg      ,
+  RefCountPtr<Time>                                     timeelesupg      ,
+  RefCountPtr<Time>                                     timeelecstab     ,
+  RefCountPtr<Time>                                     timeelevstab     ,
+  RefCountPtr<Time>                                     timeelecrossrey  ,
+  RefCountPtr<Time>                                     timeeleintertogp ,
+  RefCountPtr<Time>                                     timeeleseteledata,
+  RefCountPtr<Time>                                     timeeletdextras  ,
+#endif  
   const bool                                            compute_elemat
   )
 {
+#ifdef PERF
+    RefCountPtr<TimeMonitor> timeeleseteledata_ref = rcp(new TimeMonitor(*timeeleseteledata));
+#endif                                                                  
   //------------------------------------------------------------------
   //                     BLITZ CONFIGURATION
   //------------------------------------------------------------------
@@ -194,6 +211,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   {
     aglsfac = -1.0;
   }
+#ifdef PERF
+  timeeleseteledata_ref = null;
+#endif                                                                  
 
   //----------------------------------------------------------------------------
   //            STABILIZATION PARAMETER, SMAGORINSKY MODEL
@@ -202,6 +222,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   // This has to be done before anything else is calculated because we use 
   // the same arrays internally.
   //----------------------------------------------------------------------------
+#ifdef PERF
+    RefCountPtr<TimeMonitor> timeeletau_ref = rcp(new TimeMonitor(*timeeletau));
+#endif
 
   // use one point gauss rule to calculate tau at element center
   DRT::UTILS::GaussRule3D integrationrule_stabili=DRT::UTILS::intrule3D_undefined;
@@ -291,7 +314,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
           Do one LU factorisation, everything else is backward substitution!
 
   */
-  
+#if 0
   {
     // LAPACK solver
     Epetra_LAPACK          solver;
@@ -318,12 +341,26 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     // the input with the result
     derxy_ =deriv_.copy();
     solver.GETRS('N',3,iel_,factorU.data(),3,&(pivot[0]),derxy_.data(),3,&ierr);
-    
     if (ierr!=0)
     {
       dserror("Unable to perform backward substitution after factorisation of jacobian");
     }
   }
+#else
+  // inverse of jacobian
+  xji_(0,0) = (  xjm_(1,1)*xjm_(2,2) - xjm_(2,1)*xjm_(1,2))/det;
+  xji_(1,0) = (- xjm_(1,0)*xjm_(2,2) + xjm_(2,0)*xjm_(1,2))/det;
+  xji_(2,0) = (  xjm_(1,0)*xjm_(2,1) - xjm_(2,0)*xjm_(1,1))/det;
+  xji_(0,1) = (- xjm_(0,1)*xjm_(2,2) + xjm_(2,1)*xjm_(0,2))/det;
+  xji_(1,1) = (  xjm_(0,0)*xjm_(2,2) - xjm_(2,0)*xjm_(0,2))/det;
+  xji_(2,1) = (- xjm_(0,0)*xjm_(2,1) + xjm_(2,0)*xjm_(0,1))/det;
+  xji_(0,2) = (  xjm_(0,1)*xjm_(1,2) - xjm_(1,1)*xjm_(0,2))/det;
+  xji_(1,2) = (- xjm_(0,0)*xjm_(1,2) + xjm_(1,0)*xjm_(0,2))/det;
+  xji_(2,2) = (  xjm_(0,0)*xjm_(1,1) - xjm_(1,0)*xjm_(0,1))/det;
+  
+  // compute global derivates
+  derxy_ = blitz::sum(xji_(i,k)*deriv_(k,j),k);
+#endif
   
   // get velocities (n+alpha_F,i) at integration point
   //
@@ -781,6 +818,10 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     vart_ = Cs_fs * Cs_fs * hk * hk * rateofstrain;
   }
 
+#ifdef PERF
+  timeeletau_ref=null;
+#endif
+  
   //----------------------------------------------------------------------------
   // 
   //    From here onwards, we are working on the gausspoints of the element
@@ -793,7 +834,11 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 
   // gaussian points
   const DRT::UTILS::IntegrationPoints3D intpoints(ele->gaussrule_);
-
+  
+#ifdef PERF
+  RefCountPtr<TimeMonitor> timeeletdextras_ref = rcp(new TimeMonitor(*timeeletdextras));
+#endif
+    
   // remember whether the subscale quantities have been allocated an set to zero.
   if(tds == Fluid3::subscales_time_dependent)
   {
@@ -830,6 +875,12 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   blitz::Array<double,1> spren (ele->sub_pre_old_);
   blitz::Array<double,1> sprenp(ele->sub_pre_    );
 
+  
+#ifdef PERF
+  timeeletdextras_ref = null;
+#endif
+
+  
   // just define certain constants for conveniance
   const double afgdt  = alphaF * gamma * dt;
 
@@ -845,6 +896,10 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     const double e2 = intpoints.qxg[iquad][1];
     const double e3 = intpoints.qxg[iquad][2];
 
+#ifdef PERF
+    RefCountPtr<TimeMonitor> timeelederxy_ref = rcp(new TimeMonitor(*timeelederxy));
+#endif
+    
     // get values of shape functions and derivatives in the gausspoint
     DRT::UTILS::shape_function_3D(funct_,e1,e2,e3,distype);
     DRT::UTILS::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
@@ -926,7 +981,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
      Do one LU factorisation, everything else is backward substitution!
 
      */
-
+#if 0
     {
       // LAPACK solver
       Epetra_LAPACK          solver;
@@ -959,11 +1014,34 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
         dserror("Unable to perform backward substitution after factorisation of jacobian");
       }
     }
+#else
+    // inverse of jacobian
+    xji_(0,0) = (  xjm_(1,1)*xjm_(2,2) - xjm_(2,1)*xjm_(1,2))/det;
+    xji_(1,0) = (- xjm_(1,0)*xjm_(2,2) + xjm_(2,0)*xjm_(1,2))/det;
+    xji_(2,0) = (  xjm_(1,0)*xjm_(2,1) - xjm_(2,0)*xjm_(1,1))/det;
+    xji_(0,1) = (- xjm_(0,1)*xjm_(2,2) + xjm_(2,1)*xjm_(0,2))/det;
+    xji_(1,1) = (  xjm_(0,0)*xjm_(2,2) - xjm_(2,0)*xjm_(0,2))/det;
+    xji_(2,1) = (- xjm_(0,0)*xjm_(2,1) + xjm_(2,0)*xjm_(0,1))/det;
+    xji_(0,2) = (  xjm_(0,1)*xjm_(1,2) - xjm_(1,1)*xjm_(0,2))/det;
+    xji_(1,2) = (- xjm_(0,0)*xjm_(1,2) + xjm_(1,0)*xjm_(0,2))/det;
+    xji_(2,2) = (  xjm_(0,0)*xjm_(1,1) - xjm_(1,0)*xjm_(0,1))/det;
+    
+    // compute global derivates
+    derxy_ = blitz::sum(xji_(i,k)*deriv_(k,j),k);
+#endif
+    
+#ifdef PERF
+    timeelederxy_ref=null;
+#endif
 
     //--------------------------------------------------------------
     //             compute second global derivative
     //--------------------------------------------------------------
-
+    
+#ifdef PERF
+    RefCountPtr<TimeMonitor> timeelederxy2_ref = rcp(new TimeMonitor(*timeelederxy2));
+#endif
+    
     /*----------------------------------------------------------------------*
      |  calculate second global derivatives w.r.t. x,y,z at point r,s,t
      |                                            (private)      gammi 07/07
@@ -1284,10 +1362,18 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
       derxy2_  = 0.;
     }
 
+#ifdef PERF
+    timeelederxy2_ref = null;
+#endif
+    
     //--------------------------------------------------------------
     //            interpolate nodal values to gausspoint
     //--------------------------------------------------------------
-
+    
+#ifdef PERF
+    RefCountPtr<TimeMonitor> timeeleintertogp_ref = rcp(new TimeMonitor(*timeeleintertogp));
+#endif
+    
     // get intermediate accelerations (n+alpha_M,i) at integration point
     //
     //                 +-----
@@ -1312,37 +1398,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     //
     velintaf_    = blitz::sum(funct_(j)*evelaf(i,j),j);
 
-    // get velocity (n+alpha_F,i) derivatives at integration point
-    //
-    //       n+af      +-----  dN (x)
-    //   dvel    (x)    \        k         n+af
-    //   ----------- =   +     ------ * vel
-    //       dx         /        dx        k
-    //         j       +-----      j
-    //                 node k
-    //
-    // j : direction of derivative x/y/z
-    //
-    vderxyaf_ = blitz::sum(derxy_(j,k)*evelaf(i,k),k);
-
-    // calculate 2nd velocity derivatives at integration point, time(n+alpha_F)
-    //
-    //    2   n+af       +-----   dN (x)
-    //   d vel    (x)     \         k          n+af
-    //   ------------  =   +     -------- * vel
-    //    dx  dx          /      dx  dx        k
-    //      j1  j2       +-----    j1  j2
-    //                   node k
-    //
-    // j=(j1,j2) : direction of derivative x/y/z
-    if(higher_order_ele)
-    {
-      vderxy2af_ = blitz::sum(derxy2_(j,k)*evelaf(i,k),k);
-    }
-    else
-    {
-      vderxy2af_ = 0.;
-    }
 
     // get bodyforce in gausspoint, time (n+alpha_F)
     //
@@ -1365,17 +1420,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     //                node j
     //
     velintnp_    = blitz::sum(funct_(j)*evelnp(i,j),j);
-
-    // get velocity (n+1,i) derivatives at integration point
-    //
-    //       n+1      +-----  dN (x)
-    //   dvel   (x)    \        k         n+1
-    //   ---------- =   +     ------ * vel
-    //       dx        /        dx        k
-    //         j      +-----      j
-    //                node k
-    //
-    vderxynp_ = blitz::sum(derxy_(j,k)*evelnp(i,k),k);
 
     // get pressure (n+1,i) at integration point
     //
@@ -1401,12 +1445,56 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     //
     pderxynp_ = blitz::sum(derxy_(i,j)*eprenp(j),j);
 
+    
+    // get velocity (n+alpha_F,i) derivatives at integration point
+    //
+    //       n+af      +-----  dN (x)
+    //   dvel    (x)    \        k         n+af
+    //   ----------- =   +     ------ * vel
+    //       dx         /        dx        k
+    //         j       +-----      j
+    //                 node k
+    //
+    // j : direction of derivative x/y/z
+    //
+    vderxyaf_ = blitz::sum(derxy_(j,k)*evelaf(i,k),k);
 
+
+    // get velocity (n+1,i) derivatives at integration point
+    //
+    //       n+1      +-----  dN (x)
+    //   dvel   (x)    \        k         n+1
+    //   ---------- =   +     ------ * vel
+    //       dx        /        dx        k
+    //         j      +-----      j
+    //                node k
+    //
+    vderxynp_ = blitz::sum(derxy_(j,k)*evelnp(i,k),k);
+    
     /*--- convective part u_old * grad (funct) --------------------------*/
     /* u_old_x * N,x  +  u_old_y * N,y + u_old_z * N,z
        with  N .. form function matrix                                   */
     conv_c_af_  = blitz::sum(derxy_(j,i)*velintaf_(j), j);
 
+    // calculate 2nd velocity derivatives at integration point, time(n+alpha_F)
+    //
+    //    2   n+af       +-----   dN (x)
+    //   d vel    (x)     \         k          n+af
+    //   ------------  =   +     -------- * vel
+    //    dx  dx          /      dx  dx        k
+    //      j1  j2       +-----    j1  j2
+    //                   node k
+    //
+    // j=(j1,j2) : direction of derivative x/y/z
+    if(higher_order_ele)
+    {
+      vderxy2af_ = blitz::sum(derxy2_(j,k)*evelaf(i,k),k);
+    }
+    else
+    {
+      vderxy2af_ = 0.;
+    }
+    
     /*--- reactive part funct * grad (u_old) ----------------------------*/
     /*        /                                     \
               |  u_old_x,x   u_old_x,y   u_old x,z  |
@@ -1455,6 +1543,23 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                                                   effective viscosity! */
     resM_ = accintam_ + convaf_old_ - 2*visceff*viscaf_old_ + pderxynp_ - bodyforceaf_;
 
+  
+    /*
+      This is the operator
+
+                  /               \
+                 | resM    o nabla |
+                  \    (i)        /
+
+      required for the cross and reynolds stress calculation
+                  
+    */
+    conv_resM_ =  blitz::sum(resM_(j)*derxy_(j,i),j);
+      
+#ifdef PERF
+    timeeleintertogp_ref = null;
+#endif
+      
     //--------------------------------------------------------------
     //--------------------------------------------------------------
     //--------------------------------------------------------------
@@ -1471,6 +1576,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
       const double tauM   = tau_(0);
       const double tauC   = tau_(2);
 
+#ifdef PERF
+      timeeletdextras_ref = rcp(new TimeMonitor(*timeeletdextras));
+#endif
 
       // update estimates for the subscale quantities
 
@@ -1524,7 +1632,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                        -
                        (gamma*dt*tauM)                    *resM_(_)
                       )*facMtau;
-
+      
       /*-------------------------------------------------------------------*
        *                                                                   *
        *               update of intermediate quantities                   *
@@ -1569,7 +1677,12 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
       */
         
       convsubaf_old_ = blitz::sum(vderxyaf_(i, j)*svelaf_(j), j);
-     
+
+#ifdef PERF
+      timeeletdextras_ref = null;
+#endif
+
+      
       //--------------------------------------------------------------
       //--------------------------------------------------------------
       //
@@ -1579,6 +1692,10 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
       //--------------------------------------------------------------
       if(compute_elemat)
       {
+#ifdef PERF
+        RefCountPtr<TimeMonitor> timeelegalerkin_ref = rcp(new TimeMonitor(*timeelegalerkin));
+#endif
+
         //---------------------------------------------------------------
         //
         //   GALERKIN PART 1 AND SUBSCALE ACCELERATION STABILISATION
@@ -1880,6 +1997,10 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 
         if(pspg == Fluid3::pstab_use_pspg)
         {
+#ifdef PERF
+          RefCountPtr<TimeMonitor> timeelepspg_ref = rcp(new TimeMonitor(*timeelepspg));
+#endif
+          
           //---------------------------------------------------------------
           //
           //                     STABILISATION PART
@@ -2049,10 +2170,19 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
               } // end loop rows (test functions for matrix)
             } // end loop columns (solution for matrix, test function for vector)
           }// end if pspg and newton
+
+#ifdef PERF
+          timeelepspg_ref = null;
+#endif
+
         } // end pressure stabilisation
 
         if(supg == Fluid3::convective_stab_supg)
         {
+#ifdef PERF
+          RefCountPtr<TimeMonitor> timeelesupg_ref = rcp(new TimeMonitor(*timeelesupg));
+#endif          
+         
           const double fac_alphaM_afgdt_tauM_facMtau            = fac*alphaM*afgdt*facMtau*tauM;
           const double fac_afgdt_tauM_afgdt_facMtau             = fac*afgdt*afgdt*facMtau*tauM;
           const double fac_afgdt_tauM_facMtau                   = fac*afgdt*tauM*facMtau;
@@ -2335,10 +2465,18 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
               } // end loop rows (test functions for matrix)
             } // end loop columns (solution for matrix, test function for vector)
           } // end if newton and supg
+#ifdef PERF
+          timeelesupg_ref = null;
+#endif          
+
         } // end supg stabilisation
 
         if(agls == Fluid3::viscous_stab_agls || agls == Fluid3::viscous_stab_gls)
         {
+#ifdef PERF
+          RefCountPtr<TimeMonitor> timeelevstab_ref = rcp(new TimeMonitor(*timeelevstab));
+#endif          
+  
           const double fac_alphaM_two_visc_afgdt_tauM_facMtau         = aglsfac*fac*alphaM*2.0*visc*afgdt*tauM*facMtau;
           const double fac_afgdt_two_visc_afgdt_tauM_facMtau          = aglsfac*fac*afgdt*2.0*visc*afgdt*tauM*facMtau;
           const double fac_afgdt_four_visceff_visc_afgdt_tauM_facMtau = aglsfac*fac*afgdt*4.0*visceff*visc*afgdt*tauM*facMtau;
@@ -2598,10 +2736,18 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
             } // end loop columns (solution for matrix, test function for vector)
 
           } // end if (a)gls and newton
+
+#ifdef PERF
+          timeelevstab_ref = null;
+#endif          
         } // end (a)gls stabilisation
 
         if(cstab == Fluid3::continuity_stab_yes)
-         {
+        {
+#ifdef PERF
+          RefCountPtr<TimeMonitor> timeelecstab_ref = rcp(new TimeMonitor(*timeelecstab));
+#endif          
+          
           const double fac_gamma_dt_tauC = fac*gamma*dt*tauC;
 
           for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
@@ -2628,9 +2774,15 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
               elemat(vi*4 + 2, ui*4 + 2) += fac_gamma_dt_tauC*derxy_(2,ui)*derxy_(2,vi) ;
             } // end loop rows vi (test functions for matrix)
           } // end loop columns ui (solution for matrix, test function for vector)
+#ifdef PERF
+          timeelecstab_ref = null;
+#endif          
         } // end cstab
         else if(cstab == Fluid3::continuity_stab_td)
         {
+#ifdef PERF
+          RefCountPtr<TimeMonitor> timeelecstab_ref = rcp(new TimeMonitor(*timeelecstab));
+#endif          
           //---------------------------------------------------------------
           //
           //                     STABILISATION PART
@@ -2668,12 +2820,17 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
             } // end loop rows (test functions for matrix)
           } // end loop rows (solution for matrix, test function for vector)
 
-
+#ifdef PERF
+          timeelecstab_ref = null;
+#endif          
         }
         // end continuity stabilisation
 
         if(cross == Fluid3::cross_stress_stab)
         {
+#ifdef PERF
+          RefCountPtr<TimeMonitor> timeelecrossrey_ref = rcp(new TimeMonitor(*timeelecrossrey));
+#endif          
           //---------------------------------------------------------------
           //
           //                     STABILISATION PART
@@ -2701,6 +2858,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
               elemat(vi*4 + 2, ui*4 + 2) += fac*afgdt*conv_subaf_(ui)*funct_(vi) ;
             } // end loop rows (test functions for matrix)
           } // end loop columns (solution for matrix, test function for vector)
+#ifdef PERF
+          timeelecrossrey_ref = null;
+#endif          
         } // end cross
       } // end if compute_elemat
 
@@ -2711,6 +2871,10 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
       //
       //---------------------------------------------------------------
       //---------------------------------------------------------------
+#ifdef PERF
+      RefCountPtr<TimeMonitor> timeelegalerkin_ref = rcp(new TimeMonitor(*timeelegalerkin));
+#endif
+
       if(inertia == Fluid3::inertia_stab_keep)
       {
 
@@ -2993,9 +3157,18 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
           
         } // end loop rows (solution for matrix, test function for vector)
       }
+#ifdef PERF
+      timeelegalerkin_ref = null;
+#endif
+
+      
 
       if(pspg == Fluid3::pstab_use_pspg)
       {
+#ifdef PERF
+          RefCountPtr<TimeMonitor> timeelepspg_ref = rcp(new TimeMonitor(*timeelepspg));
+#endif
+       
         const double fac_svelnpx                      = fac*svelnp(0,iquad);
         const double fac_svelnpy                      = fac*svelnp(1,iquad);
         const double fac_svelnpz                      = fac*svelnp(2,iquad);
@@ -3020,10 +3193,17 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
           elevec[ui*4 + 3] += fac_svelnpx*derxy_(0,ui)+fac_svelnpy*derxy_(1,ui)+fac_svelnpz*derxy_(2,ui);
 
         } // end loop rows (solution for matrix, test function for vector)
+
+#ifdef PERF
+          timeelepspg_ref = null;
+#endif
       }
 
       if(supg == Fluid3::convective_stab_supg)
       {
+#ifdef PERF
+        RefCountPtr<TimeMonitor> timeelesupg_ref = rcp(new TimeMonitor(*timeelesupg));
+#endif          
 
         for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
         {
@@ -3047,10 +3227,18 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
           elevec[ui*4 + 2] += fac*conv_c_af_(ui)*svelaf_(2);
 
         } // end loop rows (solution for matrix, test function for vector)
+#ifdef PERF
+        timeelesupg_ref = null;
+#endif          
+
       }
 
       if (agls != Fluid3::viscous_stab_none)
       {
+#ifdef PERF
+        RefCountPtr<TimeMonitor> timeelevstab_ref = rcp(new TimeMonitor(*timeelevstab));
+#endif          
+        
         const double fac_two_visc_svelaf_x = aglsfac*fac*2.0*visc*svelaf_(0);
         const double fac_two_visc_svelaf_y = aglsfac*fac*2.0*visc*svelaf_(1);
         const double fac_two_visc_svelaf_z = aglsfac*fac*2.0*visc*svelaf_(2);
@@ -3091,11 +3279,17 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                               fac_two_visc_svelaf_z*viscs2_(2, 2, ui) ;
           
         } // end loop rows (solution for matrix, test function for vector)
+#ifdef PERF
+        timeelevstab_ref = null;
+#endif          
       } // endif (a)gls
       
       if(cstab == Fluid3::continuity_stab_yes)
       {
-       const double fac_tauC = fac*tauC;
+#ifdef PERF
+        RefCountPtr<TimeMonitor> timeelecstab_ref = rcp(new TimeMonitor(*timeelecstab));
+#endif          
+        const double fac_tauC = fac*tauC;
         for (int ui=0; ui<iel_; ++ui) // loop rows  (test functions)
         {
           /* factor: +tauC
@@ -3111,9 +3305,15 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
           elevec[ui*4 + 1] -= fac_tauC*divunp*derxy_(1,ui) ;
           elevec[ui*4 + 2] -= fac_tauC*divunp*derxy_(2,ui) ;
         } // end loop rows
+#ifdef PERF
+        timeelecstab_ref = null;
+#endif          
       }
       else if (cstab == Fluid3::continuity_stab_td)
       {
+#ifdef PERF
+        RefCountPtr<TimeMonitor> timeelecstab_ref = rcp(new TimeMonitor(*timeelecstab));
+#endif          
         const double fac_sprenp                       = fac*sprenp(iquad);
 
         for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
@@ -3138,10 +3338,16 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
           elevec[ui*4 + 1] += fac_sprenp*derxy_(1,ui) ;
           elevec[ui*4 + 2] += fac_sprenp*derxy_(2,ui) ;
         } // end loop rows (solution for matrix, test function for vector)
+#ifdef PERF
+        timeelecstab_ref = null;
+#endif          
       }
 
       if(cross == Fluid3::cross_stress_stab_only_rhs || cross == Fluid3::cross_stress_stab)
       {
+#ifdef PERF
+        RefCountPtr<TimeMonitor> timeelecrossrey_ref = rcp(new TimeMonitor(*timeelecrossrey));
+#endif          
         //---------------------------------------------------------------
         //
         //                     STABILISATION PART
@@ -3162,10 +3368,16 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
           elevec[ui*4 + 1] -= fac*convsubaf_old_(1)*funct_(ui);
           elevec[ui*4 + 2] -= fac*convsubaf_old_(2)*funct_(ui);
         }
+#ifdef PERF
+          timeelecrossrey_ref = null;
+#endif          
       }
 
       if(reynolds == Fluid3::reynolds_stress_stab_only_rhs)
       {
+#ifdef PERF
+        RefCountPtr<TimeMonitor> timeelecrossrey_ref = rcp(new TimeMonitor(*timeelecrossrey));
+#endif  
         //---------------------------------------------------------------
         //
         //                     STABILISATION PART
@@ -3201,6 +3413,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                                    svelaf_(2)*derxy_(2,ui))*svelaf_(2);
 
         } // end loop rows (solution for matrix, test function for vector)
+#ifdef PERF
+      timeelecrossrey_ref = null;
+#endif          
       }
     }
 //--------------------------------------------------------------
@@ -3224,19 +3439,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
       //const double vartfac = vart_*fac*afgdt;
       const double vartfac = fac*afgdt;
 
-      /*
-        This is the operator
-
-                  /               \
-                 | resM    o nabla |
-                  \    (i)        /
-
-                  required for the cross and reynolds stress calculation
-
-      */
-
-      conv_resM_ =  blitz::sum(resM_(j)*derxy_(j,i),j);
-
       //--------------------------------------------------------------
       //--------------------------------------------------------------
       //
@@ -3246,16 +3448,21 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
       //--------------------------------------------------------------
       if(compute_elemat)
       {
+
         //---------------------------------------------------------------
         //
         //                       GALERKIN PART
         //
         //---------------------------------------------------------------
         {
-          const double fac_alphaM     = fac*alphaM;
-          const double fac_afgdt      = fac*afgdt;
+#ifdef PERF
+          RefCountPtr<TimeMonitor> timeelegalerkin_ref = rcp(new TimeMonitor(*timeelegalerkin));
+#endif
+          
+          const double fac_alphaM        = fac*alphaM;
+          const double fac_afgdt         = fac*afgdt;
           const double fac_visceff_afgdt = fac*visceff*afgdt;
-          const double fac_gamma_dt   = fac*gamma*dt;
+          const double fac_gamma_dt      = fac*gamma*dt;
           for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
           {
             for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
@@ -3388,10 +3595,17 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
               } // end loop rows (test functions for matrix)
             } // end loop rows (solution for matrix, test function for vector)
           }
+
+#ifdef PERF
+          timeelegalerkin_ref = null;
+#endif
         }
 
         if(pspg == Fluid3::pstab_use_pspg)
         {
+#ifdef PERF
+          RefCountPtr<TimeMonitor> timeelepspg_ref = rcp(new TimeMonitor(*timeelepspg));
+#endif
           const double fac_alphaM_tauMp         = fac*alphaM*tauMp;
           const double fac_afgdt_tauMp          = fac*afgdt*tauMp;
           const double fac_two_visceff_afgdt_tauMp = fac*2.0*visceff*afgdt*tauMp;
@@ -3522,10 +3736,16 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
               } // end loop rows (test functions for matrix)
             } // end loop rows (solution for matrix, test function for vector)
           }
+#ifdef PERF
+          timeelepspg_ref = null;
+#endif
         }
 
         if(supg == Fluid3::convective_stab_supg)
         {
+#ifdef PERF
+          RefCountPtr<TimeMonitor> timeelesupg_ref = rcp(new TimeMonitor(*timeelesupg));
+#endif          
           const double fac_alphaM_tauM            = fac*tauM*alphaM;
           const double fac_afgdt_tauM             = fac*tauM*afgdt;
           const double fac_two_visceff_afgdt_tauM = fac*tauM*afgdt*2.0*visceff;
@@ -3790,10 +4010,16 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
               } // end loop rows (test functions for matrix)
             } // end loop rows (solution for matrix, test function for vector)
           }
+#ifdef PERF
+          timeelesupg_ref = null;
+#endif          
         }
 
         if(agls == Fluid3::viscous_stab_gls || agls == Fluid3::viscous_stab_agls)
         {
+#ifdef PERF
+          RefCountPtr<TimeMonitor> timeelevstab_ref = rcp(new TimeMonitor(*timeelevstab));
+#endif          
           const double fac_two_visc_tauMp             = aglsfac*fac*2.0*visc*tauMp;
           const double fac_two_visc_afgdt_tauMp       = aglsfac*fac*2.0*visc*afgdt*tauMp;
           const double fac_two_visc_alphaM_tauMp      = aglsfac*fac*2.0*visc*alphaM*tauMp;
@@ -4019,10 +4245,17 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
               } // end loop rows (test functions for matrix)
             } // end loop columns (solution for matrix, test function for vector)
           }
+#ifdef PERF
+          timeelevstab_ref = null;
+#endif          
         } // endif (a)gls
 
         if(cstab == Fluid3::continuity_stab_yes)
         {
+#ifdef PERF
+          RefCountPtr<TimeMonitor> timeelecstab_ref = rcp(new TimeMonitor(*timeelecstab));
+#endif          
+          
           const double fac_gamma_dt_tauC = fac*gamma*dt*tauC;
 
           for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
@@ -4049,10 +4282,16 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
               elemat(vi*4 + 2, ui*4 + 2) += fac_gamma_dt_tauC*derxy_(2,ui)*derxy_(2,vi) ;
             } // end loop rows vi (test functions for matrix)
           } // end loop columns ui (solution for matrix, test function for vector)
+#ifdef PERF
+          timeelecstab_ref = null;
+#endif          
         } // end cstab
 
         if(cross == Fluid3::cross_stress_stab)
         {
+#ifdef PERF
+          RefCountPtr<TimeMonitor> timeelecrossrey_ref = rcp(new TimeMonitor(*timeelecrossrey));
+#endif          
           //---------------------------------------------------------------
           //
           //                     STABILISATION PART
@@ -4080,6 +4319,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
               elemat(vi*4 + 2, ui*4 + 2) -= fac*afgdt*tauM*conv_resM_(ui)*funct_(vi) ;
             } // end loop rows (test functions for matrix)
           } // end loop columns (solution for matrix, test function for vector)
+#ifdef PERF
+          timeelecrossrey_ref = null;
+#endif          
         } // end cross
       } // end if compute_elemat
 
@@ -4138,123 +4380,129 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
       //---------------------------------------------------------------
       //---------------------------------------------------------------
 
-      for (int ui=0; ui<iel_; ++ui) // loop rows  (test functions)
-      {
-        /* inertia terms */
 
-        /*  factor: +1
+      {
+#ifdef PERF
+        RefCountPtr<TimeMonitor> timeelegalerkin_ref = rcp(new TimeMonitor(*timeelegalerkin));
+#endif
+      
+        for (int ui=0; ui<iel_; ++ui) // loop rows  (test functions)
+        {
+          /* inertia terms */
+          
+          /*  factor: +1
 
                /             \
               |     n+am      |
               |  acc     , v  |
               |               |
                \             /
-        */
+          */
+          
+          elevec[ui*4    ] -= fac*funct_(ui)*accintam_(0) ;
+          elevec[ui*4 + 1] -= fac*funct_(ui)*accintam_(1) ;
+          elevec[ui*4 + 2] -= fac*funct_(ui)*accintam_(2) ;
+          
+          /* convection */
 
-        elevec[ui*4    ] -= fac*funct_(ui)*accintam_(0) ;
-        elevec[ui*4 + 1] -= fac*funct_(ui)*accintam_(1) ;
-        elevec[ui*4 + 2] -= fac*funct_(ui)*accintam_(2) ;
-
-        /* convection */
-
-        /*  factor: +1
+          /*  factor: +1
 
                /                             \
               |  / n+af       \    n+af       |
               | | u    o nabla |  u      , v  |
               |  \            /               |
                \                             /
-        */
+          */
 
-        elevec[ui*4    ] -= fac*(velintaf_(0)*conv_r_af_(0,0,ui)
-                                 +
-                                 velintaf_(1)*conv_r_af_(0,1,ui)
-                                 +
-                                 velintaf_(2)*conv_r_af_(0,2,ui)) ;
-        elevec[ui*4 + 1] -= fac*(velintaf_(0)*conv_r_af_(1,0,ui)
-                                 +
-                                 velintaf_(1)*conv_r_af_(1,1,ui)
-                                 +
-                                 velintaf_(2)*conv_r_af_(1,2,ui)) ;
-        elevec[ui*4 + 2] -= fac*(velintaf_(0)*conv_r_af_(2,0,ui)
-                                 +
-                                 velintaf_(1)*conv_r_af_(2,1,ui)
-                                 +
-                                 velintaf_(2)*conv_r_af_(2,2,ui)) ;
+          elevec[ui*4    ] -= fac*(velintaf_(0)*conv_r_af_(0,0,ui)
+                                   +
+                                   velintaf_(1)*conv_r_af_(0,1,ui)
+                                   +
+                                   velintaf_(2)*conv_r_af_(0,2,ui)) ;
+          elevec[ui*4 + 1] -= fac*(velintaf_(0)*conv_r_af_(1,0,ui)
+                                   +
+                                   velintaf_(1)*conv_r_af_(1,1,ui)
+                                   +
+                                   velintaf_(2)*conv_r_af_(1,2,ui)) ;
+          elevec[ui*4 + 2] -= fac*(velintaf_(0)*conv_r_af_(2,0,ui)
+                                   +
+                                   velintaf_(1)*conv_r_af_(2,1,ui)
+                                   +
+                                   velintaf_(2)*conv_r_af_(2,2,ui)) ;
 
-        /* pressure */
-
-        /*  factor: -1
-
+          /* pressure */
+          
+          /*  factor: -1
+              
                /                  \
               |   n+1              |
               |  p    , nabla o v  |
               |                    |
                \                  /
-        */
-
-        elevec[ui*4    ] += fac*prenp_*derxy_(0,ui) ;
-        elevec[ui*4 + 1] += fac*prenp_*derxy_(1,ui) ;
-        elevec[ui*4 + 2] += fac*prenp_*derxy_(2,ui) ;
-
-        /* viscous term */
-
-        /*  factor: +2*nu
-
+          */
+          
+          elevec[ui*4    ] += fac*prenp_*derxy_(0,ui) ;
+          elevec[ui*4 + 1] += fac*prenp_*derxy_(1,ui) ;
+          elevec[ui*4 + 2] += fac*prenp_*derxy_(2,ui) ;
+          
+          /* viscous term */
+          
+          /*  factor: +2*nu
+              
                /                            \
               |       / n+af \         / \   |
               |  eps | u      | , eps | v |  |
               |       \      /         \ /   |
                \                            /
-        */
+          */
 
-        elevec[ui*4    ] -= visceff*fac*
-                            (derxy_(0,ui)*vderxyaf_(0,0)*2.0
-                             +
-                             derxy_(1,ui)*vderxyaf_(0,1)
-                             +
-                             derxy_(1,ui)*vderxyaf_(1,0)
-                             +
-                             derxy_(2,ui)*vderxyaf_(0,2)
-                             +
-                             derxy_(2,ui)*vderxyaf_(2,0)) ;
-        elevec[ui*4 + 1] -= visceff*fac*
-                            (derxy_(0,ui)*vderxyaf_(0,1)
-                             +
-                             derxy_(0,ui)*vderxyaf_(1,0)
-                             +
-                             derxy_(1,ui)*vderxyaf_(1,1)*2.0
-                             +
-                             derxy_(2,ui)*vderxyaf_(1,2)
-                             +
-                             derxy_(2,ui)*vderxyaf_(2,1)) ;
-        elevec[ui*4 + 2] -= visceff*fac*
-                            (derxy_(0,ui)*vderxyaf_(0,2)
-                             +
-                             derxy_(0,ui)*vderxyaf_(2,0)
-                             +
-                             derxy_(1,ui)*vderxyaf_(1,2)
-                             +
-                             derxy_(1,ui)*vderxyaf_(2,1)
-                             +
-                             derxy_(2,ui)*vderxyaf_(2,2)*2.0) ;
-
-        /* body force (dead load...) */
-
-        /*  factor: -1
+          elevec[ui*4    ] -= visceff*fac*
+                              (derxy_(0,ui)*vderxyaf_(0,0)*2.0
+                               +
+                               derxy_(1,ui)*vderxyaf_(0,1)
+                               +
+                               derxy_(1,ui)*vderxyaf_(1,0)
+                               +
+                               derxy_(2,ui)*vderxyaf_(0,2)
+                               +
+                               derxy_(2,ui)*vderxyaf_(2,0)) ;
+          elevec[ui*4 + 1] -= visceff*fac*
+                              (derxy_(0,ui)*vderxyaf_(0,1)
+                               +
+                               derxy_(0,ui)*vderxyaf_(1,0)
+                               +
+                               derxy_(1,ui)*vderxyaf_(1,1)*2.0
+                               +
+                               derxy_(2,ui)*vderxyaf_(1,2)
+                               +
+                               derxy_(2,ui)*vderxyaf_(2,1)) ;
+          elevec[ui*4 + 2] -= visceff*fac*
+                              (derxy_(0,ui)*vderxyaf_(0,2)
+                               +
+                               derxy_(0,ui)*vderxyaf_(2,0)
+                               +
+                               derxy_(1,ui)*vderxyaf_(1,2)
+                               +
+                               derxy_(1,ui)*vderxyaf_(2,1)
+                               +
+                               derxy_(2,ui)*vderxyaf_(2,2)*2.0) ;
+          
+          /* body force (dead load...) */
+          
+          /*  factor: -1
 
                /           \
               |   n+af      |
               |  f     , v  |
               |             |
                \           /
-        */
-
-        elevec[ui*4    ] += fac*funct_(ui)*edeadaf_(0);
-        elevec[ui*4 + 1] += fac*funct_(ui)*edeadaf_(1);
-        elevec[ui*4 + 2] += fac*funct_(ui)*edeadaf_(2);
-
-        /* continuity equation */
+          */
+          
+          elevec[ui*4    ] += fac*funct_(ui)*edeadaf_(0);
+          elevec[ui*4 + 1] += fac*funct_(ui)*edeadaf_(1);
+          elevec[ui*4 + 2] += fac*funct_(ui)*edeadaf_(2);
+          
+          /* continuity equation */
 
         /*  factor: +1
 
@@ -4265,12 +4513,22 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                \                /
         */
 
-        elevec[ui*4 + 3] -= fac*funct_(ui)*divunp;
+          elevec[ui*4 + 3] -= fac*funct_(ui)*divunp;
 
-      } // end loop rows
+        } // end loop rows
 
+
+#ifdef PERF
+        timeelegalerkin_ref = null;
+#endif
+      }
+        
       if(pspg == Fluid3::pstab_use_pspg)
       {
+#ifdef PERF
+        RefCountPtr<TimeMonitor> timeelepspg_ref = rcp(new TimeMonitor(*timeelepspg));
+#endif
+   
         const double fac_tauMp = fac*tauMp;
 
         for (int ui=0; ui<iel_; ++ui) // loop rows  (test functions)
@@ -4328,10 +4586,18 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                                +
                                derxy_(2,ui)*resM_(2));
         } // end loop rows
+
+#ifdef PERF
+        timeelepspg_ref = null;
+#endif
       }
 
       if(supg == Fluid3::convective_stab_supg)
       {
+#ifdef PERF
+        RefCountPtr<TimeMonitor> timeelesupg_ref = rcp(new TimeMonitor(*timeelesupg));
+#endif          
+
         const double fac_tauM = fac*tauM;
 
         for (int ui=0; ui<iel_; ++ui) // loop rows  (test functions)
@@ -4388,10 +4654,18 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
           elevec[ui*4 + 2] -= fac_tauM*conv_c_af_(ui)*resM_(2) ;
 
         } // end loop rows
+#ifdef PERF
+        timeelesupg_ref = null;
+#endif          
+
       }
 
       if(agls != Fluid3::viscous_stab_none)
       {
+#ifdef PERF
+        RefCountPtr<TimeMonitor> timeelevstab_ref = rcp(new TimeMonitor(*timeelevstab));
+#endif          
+
         const double fac_two_visc_tauMp = aglsfac * fac*2.0*visc*tauMp;
 
         for (int ui=0; ui<iel_; ++ui) // loop rows  (test functions)
@@ -4460,10 +4734,18 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                                +
                                resM_(2)*viscs2_(2, 2, ui)) ;
         } // end loop rows ui
+#ifdef PERF
+        timeelevstab_ref = null;
+#endif          
       } // endif (a)gls
 
       if(cstab == Fluid3::continuity_stab_yes)
       {
+#ifdef PERF
+        RefCountPtr<TimeMonitor> timeelecstab_ref = rcp(new TimeMonitor(*timeelecstab));
+#endif
+
+        
         const double fac_tauC = fac*tauC;
         for (int ui=0; ui<iel_; ++ui) // loop rows  (test functions)
         {
@@ -4480,10 +4762,19 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
           elevec[ui*4 + 1] -= fac_tauC*divunp*derxy_(1,ui) ;
           elevec[ui*4 + 2] -= fac_tauC*divunp*derxy_(2,ui) ;
         } // end loop rows
+
+#ifdef PERF
+        timeelecstab_ref = null;
+#endif
+
       } // end cstab
 
       if(cross == Fluid3::cross_stress_stab_only_rhs || cross == Fluid3::cross_stress_stab)
       {
+#ifdef PERF
+        RefCountPtr<TimeMonitor> timeelecrossrey_ref = rcp(new TimeMonitor(*timeelecrossrey));
+#endif          
+        
         const double fac_tauM = fac*tauM;
         for (int ui=0; ui<iel_; ++ui) // loop rows  (test functions)
         {
@@ -4513,10 +4804,18 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                                         resM_(2)*vderxyaf_(2,2))*funct_(ui);
 
         } // end loop rows
+#ifdef PERF
+        timeelecrossrey_ref = null;
+#endif          
+
       }
 
       if(reynolds == Fluid3::reynolds_stress_stab_only_rhs)
       {
+#ifdef PERF
+        RefCountPtr<TimeMonitor> timeelecrossrey_ref = rcp(new TimeMonitor(*timeelecrossrey));
+#endif          
+        
         const double fac_tauM_tauM = fac*tauM*tauM;
         for (int ui=0; ui<iel_; ++ui) // loop rows  (test functions)
         {
@@ -4532,17 +4831,17 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
           elevec[ui*4 + 1] += fac_tauM_tauM*conv_resM_(ui)*resM_(1);
           elevec[ui*4 + 2] += fac_tauM_tauM*conv_resM_(ui)*resM_(2);
         } // end loop rows
+#ifdef PERF
+        timeelecrossrey_ref = null;
+#endif          
       }
-
-
     }
   } // end loop iquad
   return;
 }
 
-//@=
-  // this is just for comparison of dynamic/quasistatic subscales --- NOT for
-  // the comparison with physical turbulence models (Smagorinsky etc.)
+// this is just for comparison of dynamic/quasistatic subscales --- NOT for
+// the comparison with physical turbulence models (Smagorinsky etc.)
 
 void DRT::ELEMENTS::Fluid3GenalphaResVMM::CalcRes(
   Fluid3*                                               ele,
@@ -5091,10 +5390,11 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::CalcRes(
     {
       dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %lf", ele->Id(), det);
     }
-
+    
     //--------------------------------------------------------------
     //             compute global first derivates
     //--------------------------------------------------------------
+                                                
     /*
       Use the Jacobian and the known derivatives in element coordinate
       directions on the right hand side to compute the derivatives in
@@ -5116,7 +5416,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::CalcRes(
 
      Do one LU factorisation, everything else is backward substitution!
 
-     */
+    */
 
     {
       // LAPACK solver
@@ -5150,7 +5450,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::CalcRes(
         dserror("Unable to perform backward substitution after factorisation of jacobian");
       }
     }
-
+    
+    
     //--------------------------------------------------------------
     //             compute second global derivative
     //--------------------------------------------------------------

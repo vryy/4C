@@ -19,7 +19,7 @@ Maintainer: Volker Gravemeier
 #define CONDIF_GENALPHA_INTEGRATION_H
 
 #include "../drt_lib/drt_nodematchingoctree.H"
-#include "../drt_lib/drt_periodicbc.H"
+#include "drt_periodicbc.H"
 
 #ifdef PARALLEL
 #include "Epetra_MpiComm.h"

@@ -28,7 +28,7 @@ Maintainer: Ulrich Kuettler
 #if 1
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_periodicbc.H"
+#include "../drt_fluid/drt_periodicbc.H"
 #endif
 
 extern "C" {
