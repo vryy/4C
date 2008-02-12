@@ -51,7 +51,7 @@ class DRT::Discretization;
 
 
 /*!
-\class DRT::PBCDofSet
+\class PBCDofSet
 
 \brief A set of degrees of freedom
 
