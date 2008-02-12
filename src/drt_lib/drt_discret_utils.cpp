@@ -306,12 +306,12 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
         case 0:
           mode[0][lid] = 1.0;
           mode[1][lid] = 0.0;
-          mode[2][lid] = 0.0;
+          mode[2][lid] = -x[1] + x0[1];
         break;
         case 1:
           mode[0][lid] = 0.0;
           mode[1][lid] = 1.0;
-          mode[2][lid] = 0.0;
+          mode[2][lid] = x[0] - x0[0];
         break;
         case 2:
           mode[0][lid] = 0.0;
