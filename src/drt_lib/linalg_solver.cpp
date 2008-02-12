@@ -845,7 +845,7 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
     //------------------------------------- set other aztec parameters
     azlist.set("AZ_kspace",azvar->azsub);
     azlist.set("AZ_max_iter",azvar->aziter);
-    azlist.set("AZ_overlap",0);
+    azlist.set("AZ_overlap",azvar->azoverlap);
     azlist.set("AZ_type_overlap",AZ_symmetric);
     azlist.set("AZ_poly_ord",azvar->azpoly);
     if (!azvar->azoutput)
@@ -964,9 +964,10 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
         break;
         case 4:
         {
-          mllist.set("smoother: type "+(string)levelstr                    ,"IFPACK");
-          mllist.set("smoother: ifpack type "+(string)levelstr             ,"ILU");
-          mllist.set("smoother: ifpack overlap "+(string)levelstr          ,0);
+          mllist.set("smoother: type "+(string)levelstr,"ILU");
+          mllist.set("smoother: ifpack type "+(string)levelstr,"ILU");
+          mllist.set("smoother: ifpack overlap "+(string)levelstr,azvar->azoverlap);
+          mllist.set<double>("smoother: ifpack level-of-fill",(double)azvar->mlsmotimes[i]);
           ParameterList& ifpacklist = mllist.sublist("smoother: ifpack list");
           ifpacklist.set<int>("fact: level-of-fill",azvar->mlsmotimes[i]);
           ifpacklist.set("schwarz: reordering type","rcm");
