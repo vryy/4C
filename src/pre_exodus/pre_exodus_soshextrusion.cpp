@@ -609,17 +609,21 @@ const set<int> EXODUS::FreeEdgeNodes(const map<int,vector<int> >& ele_conn, cons
   map<int,vector<int> >::const_iterator i_ele;
   for(i_ele = ele_nbrs.begin(); i_ele != ele_nbrs.end(); ++i_ele){
     vector<int> actnbrs = i_ele->second;
+    
     // a free edge is a -1 in ele_nbrs
     bool free_edge = FindinVec(-1,actnbrs);
     if (free_edge){
-      unsigned int pos = FindPosinVec(-1,actnbrs);
-      int actele = i_ele->first;
-      const vector<int> actelenodes = ele_conn.find(actele)->second;
-      // insert pos-node (edgeID is related to first edge node)
-      freenodes.insert(actelenodes.at(pos));
-      // insert second edge node (check if pos is last edge)
-      if (pos == actelenodes.size()-1) freenodes.insert(actelenodes.at(0));
-      else freenodes.insert(actelenodes.at(pos+1));
+      for (unsigned int i=0; i < actnbrs.size(); ++i){
+        if (actnbrs[i] == -1){
+          int actele = i_ele->first;
+          const vector<int> actelenodes = ele_conn.find(actele)->second;
+          // insert pos-node (edgeID is related to first edge node)
+          freenodes.insert(actelenodes.at(i));
+          // insert second edge node (check if pos is last edge)
+          if (i == actelenodes.size()-1) freenodes.insert(actelenodes.at(0));
+          else freenodes.insert(actelenodes.at(i+1));
+          }
+      }
     }
   }
   
