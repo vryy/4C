@@ -39,6 +39,30 @@ LINALG::SparseMatrix::SparseMatrix(const Epetra_CrsMatrix& matrix, bool explicit
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+LINALG::SparseMatrix::SparseMatrix(Teuchos::RCP<Epetra_CrsMatrix> matrix, bool explicitdirichlet, bool savegraph)
+  : sysmat_(matrix),
+    explicitdirichlet_(explicitdirichlet),
+    savegraph_(savegraph)
+{
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+LINALG::SparseMatrix::SparseMatrix(const SparseMatrix& mat)
+  : explicitdirichlet_(mat.explicitdirichlet_),
+    savegraph_(mat.savegraph_)
+{
+  if (mat.sysmat_!=Teuchos::null)
+    sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(*mat.sysmat_));
+
+  if (mat.graph_!=Teuchos::null)
+    graph_ = Teuchos::rcp(new Epetra_CrsGraph(*mat.graph_));
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 LINALG::SparseMatrix::~SparseMatrix()
 {
 }
@@ -321,14 +345,6 @@ int LINALG::SparseMatrix::ApplyInverse(const Epetra_MultiVector &X, Epetra_Multi
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double LINALG::SparseMatrix::NormInf() const
-{
-  return sysmat_->NormInf();
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 const char* LINALG::SparseMatrix::Label() const
 {
   return sysmat_->Label();
@@ -377,9 +393,97 @@ const Epetra_Map& LINALG::SparseMatrix::OperatorRangeMap() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+int LINALG::SparseMatrix::MaxNumEntries() const
+{
+  return sysmat_->MaxNumEntries();
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+double LINALG::SparseMatrix::NormInf() const
+{
+  return sysmat_->NormInf();
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+double LINALG::SparseMatrix::NormOne() const
+{
+  return sysmat_->NormOne();
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+double LINALG::SparseMatrix::NormFrobenius() const
+{
+  return sysmat_->NormFrobenius();
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 int LINALG::SparseMatrix::Multiply(bool TransA, const Epetra_Vector &x, Epetra_Vector &y) const
 {
   return sysmat_->Multiply(TransA,x,y);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int LINALG::SparseMatrix::Multiply(bool TransA, const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
+{
+  return sysmat_->Multiply(TransA,X,Y);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int LINALG::SparseMatrix::LeftScale(const Epetra_Vector &x)
+{
+  return sysmat_->LeftScale(x);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int LINALG::SparseMatrix::RightScale(const Epetra_Vector &x)
+{
+  return sysmat_->RightScale(x);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int LINALG::SparseMatrix::PutScalar(double ScalarConstant)
+{
+  return sysmat_->PutScalar(ScalarConstant);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int LINALG::SparseMatrix::Scale(double ScalarConstant)
+{
+  return sysmat_->Scale(ScalarConstant);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int LINALG::SparseMatrix::ReplaceDiagonalValues(const Epetra_Vector &Diagonal)
+{
+  return sysmat_->ReplaceDiagonalValues(Diagonal);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int LINALG::SparseMatrix::ExtractDiagonalCopy(Epetra_Vector &Diagonal) const
+{
+  return sysmat_->ExtractDiagonalCopy(Diagonal);
 }
 
 
@@ -455,22 +559,23 @@ void LINALG::SparseMatrix::Add(const LINALG::SparseMatrix& A,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> LINALG::SparseMatrix::Multiply(const LINALG::SparseMatrix& A,
-                                                                  bool transA,
-                                                                  bool transB)
+Teuchos::RCP<LINALG::SparseMatrix> LINALG::Multiply(const LINALG::SparseMatrix& A,
+                                                    bool transA,
+                                                    const LINALG::SparseMatrix& B,
+                                                    bool transB)
 {
   // make sure FillComplete was called on the matrices
   if (!A.Filled()) dserror("A has to be FillComplete");
-  if (!Filled()) dserror("B has to be FillComplete");
+  if (!B.Filled()) dserror("B has to be FillComplete");
 
   // create resultmatrix with correct rowmap
   Teuchos::RCP<LINALG::SparseMatrix> C;
   if (!transA)
-    C = Teuchos::rcp(new SparseMatrix(A.RangeMap(),20,explicitdirichlet_,savegraph_));
+    C = Teuchos::rcp(new SparseMatrix(A.RangeMap(),20,A.explicitdirichlet_,A.savegraph_));
   else
-    C = Teuchos::rcp(new SparseMatrix(A.DomainMap(),20,explicitdirichlet_,savegraph_));
+    C = Teuchos::rcp(new SparseMatrix(A.DomainMap(),20,A.explicitdirichlet_,A.savegraph_));
 
-  int err = EpetraExt::MatrixMatrix::Multiply(*A.sysmat_,transA,*sysmat_,transB,*C->sysmat_);
+  int err = EpetraExt::MatrixMatrix::Multiply(*A.sysmat_,transA,*B.sysmat_,transB,*C->sysmat_);
   if (err) dserror("EpetraExt::MatrixMatrix::Multiply returned err = &d",err);
 
   return C;
@@ -697,7 +802,7 @@ int LINALG::DefaultBlockMatrixStrategy::ColBlock(int rblock, int lcol, int cgid)
     }
 
     // otherwise we can get just the non-ghost entries right now
-    else if (matrix.RowMap().MyGID(cgid))
+    else if (matrix.DomainMap().MyGID(cgid))
     {
       return cblock;
     }

@@ -81,6 +81,16 @@ namespace LINALG
   {
   public:
 
+    /// return the internal Epetra_Operator
+    /*!
+      By default the SparseOperator is its own Epetra_Operator. However
+      subclasses might have a better connection to Epetra.
+
+      \warning Only low level solver routines are interested in the internal
+      Epetra_Operator.
+     */
+    virtual Teuchos::RCP<Epetra_Operator> EpetraOperator() { return Teuchos::rcp(this,false); }
+
     /// set matrix to zero
     virtual void Zero() = 0;
 
@@ -153,6 +163,7 @@ namespace LINALG
 
     /// Apply dirichlet boundary condition to a matrix
     virtual void ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle) = 0;
+
   };
 
 
@@ -199,28 +210,42 @@ namespace LINALG
     SparseMatrix(const Epetra_Map& rowmap, const int npr, bool explicitdirichlet=true, bool savegraph=true);
 
     /// construction of sparse matrix
-    SparseMatrix(const Epetra_CrsMatrix& matrix, bool explicitdirichlet, bool savegraph);
+    /*!
+      Implicit construction from a Epetra_CrsMatrix
+
+      Makes a copy of the Epetra_CrsMatrix.
+     */
+    explicit SparseMatrix(const Epetra_CrsMatrix& matrix, bool explicitdirichlet=true, bool savegraph=true);
+
+    /// construction of sparse matrix
+    /*!
+      Implicit construction from a Epetra_CrsMatrix
+
+      Does not make a copy of the Epetra_CrsMatrix.
+     */
+    explicit SparseMatrix(Teuchos::RCP<Epetra_CrsMatrix> matrix, bool explicitdirichlet=true, bool savegraph=true);
+
+    /// copy constructor
+    SparseMatrix(const SparseMatrix& mat);
 
     /// Destructor
     ~SparseMatrix();
 
-    /// If FillComplete() has been called, this query returns true, otherwise it returns false.
-    bool Filled() const { return sysmat_->Filled(); }
+    /// return the internal Epetra_Operator
+    /*!
+      The internal Epetra_Operator here is the internal Epetra_CrsMatrix. This
+      way the solver can down-cast to Epetra_CrsMatrix and access the matrix
+      rows directly.
 
-    /// Returns the Epetra_Map object associated with the rows of this matrix.
-    const Epetra_Map& RowMap() const { return sysmat_->RowMap(); }
-
-    /// Returns the Epetra_Map object that describes the set of column-indices that appear in each processor's locally owned matrix rows.
-    const Epetra_Map& ColMap() const { return sysmat_->ColMap(); }
-
-    /// Returns the Epetra_Map object associated with the domain of this matrix operator.
-    const Epetra_Map& DomainMap() const { return sysmat_->DomainMap(); }
-
-    /// Returns the Epetra_Map object associated with the range of this matrix operator.
-    const Epetra_Map& RangeMap() const { return sysmat_->RangeMap(); }
+      \note This method is here for performance reasons.
+     */
+    virtual Teuchos::RCP<Epetra_Operator> EpetraOperator() { return sysmat_; }
 
     /// return the internal Epetra_CrsMatrix (you should not need this!)
     Teuchos::RCP<Epetra_CrsMatrix>& Matrix() { return sysmat_; }
+
+    /** \name FE methods */
+    //@{
 
     /// setup the matrix from a given row map and a (guessed) number of entries per row
     void Setup(const Epetra_Map& rowmap, const int npr);
@@ -230,6 +255,13 @@ namespace LINALG
 
     /// throw away the matrix and its graph and start anew
     void Reset();
+
+    virtual void Assemble(const Epetra_SerialDenseMatrix& Aele,
+                          const std::vector<int>& lm,
+                          const std::vector<int>& lmowner)
+    {
+      Assemble(Aele,lm,lmowner,lm);
+    }
 
     void Assemble(const Epetra_SerialDenseMatrix& Aele,
                   const std::vector<int>& lmrow,
@@ -243,6 +275,16 @@ namespace LINALG
     void Complete(const Epetra_Map& domainmap, const Epetra_Map& rangemap);
 
     void ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle);
+
+    //@}
+
+    /** \name Matrix Properties Query Methods */
+    //@{
+
+    /// If FillComplete() has been called, this query returns true, otherwise it returns false.
+    bool Filled() const { return sysmat_->Filled(); }
+
+    //@}
 
     /** \name Attribute set methods */
     //@{
@@ -262,12 +304,33 @@ namespace LINALG
     virtual int ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
 
     /// Returns the infinity norm of the global matrix.
-    virtual double NormInf() const;
+    double NormInf() const;
+
+    /// Returns the one norm of the global matrix.
+    double NormOne() const;
+
+    /// Returns the frobenius norm of the global matrix.
+    double NormFrobenius() const;
 
     //@}
 
     /** \name Attribute access functions */
     //@{
+
+    /// Returns the maximum number of nonzero entries across all rows on this processor.
+    int MaxNumEntries() const;
+
+    /// Returns the Epetra_Map object associated with the rows of this matrix.
+    const Epetra_Map& RowMap() const { return sysmat_->RowMap(); }
+
+    /// Returns the Epetra_Map object that describes the set of column-indices that appear in each processor's locally owned matrix rows.
+    const Epetra_Map& ColMap() const { return sysmat_->ColMap(); }
+
+    /// Returns the Epetra_Map object associated with the domain of this matrix operator.
+    const Epetra_Map& DomainMap() const { return sysmat_->DomainMap(); }
+
+    /// Returns the Epetra_Map object associated with the range of this matrix operator.
+    const Epetra_Map& RangeMap() const { return sysmat_->RangeMap(); }
 
     /// Returns a character string describing the operator.
     virtual const char* Label() const;
@@ -294,6 +357,37 @@ namespace LINALG
 
     /// Returns the result of a matrix multiplied by a Epetra_Vector x in y.
     int Multiply(bool TransA, const Epetra_Vector &x, Epetra_Vector &y) const;
+
+    /// Returns the result of a Epetra_CrsMatrix multiplied by a Epetra_MultiVector X in Y.
+    int Multiply(bool TransA, const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+
+    /// Scales the Epetra_CrsMatrix on the left with a Epetra_Vector x.
+    int LeftScale(const Epetra_Vector &x);
+
+    /// Scales the Epetra_CrsMatrix on the right with a Epetra_Vector x.
+    int RightScale(const Epetra_Vector &x);
+
+    //@}
+
+    /** \name Insertion/Replace/SumInto methods */
+    //@{
+
+    /// Initialize all values in the matrix with constant value.
+    int PutScalar(double ScalarConstant);
+
+    /// Multiply all values in the matrix by a constant value (in place: A <- ScalarConstant * A).
+    int Scale(double ScalarConstant);
+
+    /// Replaces diagonal values of the matrix with those in the user-provided vector.
+    int ReplaceDiagonalValues(const Epetra_Vector &Diagonal);
+
+    //@}
+
+    /** \name Extraction methods */
+    //@{
+
+    /// Returns a copy of the main diagonal in a user-provided vector.
+    int ExtractDiagonalCopy(Epetra_Vector &Diagonal) const;
 
     //@}
 
@@ -335,10 +429,11 @@ namespace LINALG
 
       \param A          (in)     : Matrix to multiply with B (must have Filled()==true)
       \param transA     (in)     : flag indicating whether transposed of A should be used
+      \param B          (in)     : Matrix to multiply with A (must have Filled()==true)
       \param transB     (in)     : flag indicating whether transposed of B should be used
       \return Matrix product A(^T)*B(^T)
     */
-    Teuchos::RCP<SparseMatrix> Multiply(const SparseMatrix& A, bool transA, bool transB);
+    friend Teuchos::RCP<SparseMatrix> LINALG::Multiply(const SparseMatrix& A, bool transA, const SparseMatrix& B, bool transB);
 
     //@}
 
@@ -357,6 +452,8 @@ namespace LINALG
     Teuchos::RCP<Epetra_CrsGraph> graph_;
   };
 
+
+  Teuchos::RCP<SparseMatrix> Multiply(const SparseMatrix& A, bool transA, const SparseMatrix& B, bool transB);
 
   /// Internal base class of BlockSparseMatrix that contains the non-template stuff
   /*!
