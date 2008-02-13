@@ -1,3 +1,4 @@
+#ifdef CCADISCRET
 
 #include "inv_analysis.H"
 #include <ctime>
@@ -442,7 +443,4 @@ void Inv_analysis::calculate_new_parameters(){
 }
 
 
-
-
-
-
+#endif
