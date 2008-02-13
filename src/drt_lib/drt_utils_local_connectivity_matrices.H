@@ -376,7 +376,7 @@ namespace UTILS
             
   */   
   int getDimension(
-    DRT::Element*   element     ///< element
+    const DRT::Element*   element     ///< element
     );
   
   /*!

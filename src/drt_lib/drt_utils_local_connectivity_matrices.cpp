@@ -829,7 +829,7 @@ int DRT::UTILS::getHigherOrderIndex(
  |  returns the dimension of the element parameter space     u.may 10/07|
  *----------------------------------------------------------------------*/  
 int DRT::UTILS::getDimension(
-    DRT::Element*   element)
+    const DRT::Element*   element)
 {
     int dim = 0;
     DRT::Element::DiscretizationType distype = element->Shape();
