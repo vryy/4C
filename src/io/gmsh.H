@@ -45,9 +45,9 @@ std::string VectorFieldToString(
         const vector<vector<double> >          vectorfield,
         const DRT::Element::DiscretizationType distype);
 
-std::string elementToString(const double scalar, DRT::Element* ele);
-std::string elementToString(const vector<double> scalarfield, DRT::Element* ele);
-std::string elementToString(const vector<vector<double> > vectorfield, DRT::Element* ele);
+std::string elementToString(const double scalar, const DRT::Element* ele);
+std::string elementToString(const vector<double> scalarfield, const DRT::Element* ele);
+std::string elementToString(const vector<vector<double> > vectorfield, const DRT::Element* ele);
 
 std::string cellToString(
         const std::vector<std::vector<double> > coord,
