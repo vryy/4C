@@ -338,11 +338,12 @@ RCP<Epetra_CrsMatrix> LINALG::Transpose(const Epetra_CrsMatrix& A)
 
   if (!A.Filled()) dserror("FillComplete was not called on A");
 
-  EpetraExt::RowMatrix_Transpose* Atrans =
-  		new EpetraExt::RowMatrix_Transpose(false,NULL,false);
+  RCP<EpetraExt::RowMatrix_Transpose> Atrans =
+  		rcp(new EpetraExt::RowMatrix_Transpose(false,NULL,false));
   Epetra_CrsMatrix* Aprime =
   		&(dynamic_cast<Epetra_CrsMatrix&>(((*Atrans)(const_cast<Epetra_CrsMatrix&>(A)))));
 
+  
   return rcp(new Epetra_CrsMatrix(*Aprime));
 }
 
