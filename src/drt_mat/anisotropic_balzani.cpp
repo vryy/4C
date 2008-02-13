@@ -16,12 +16,10 @@ Maintainer: Moritz Frenzel
 #include <Epetra_SerialDenseMatrix.h>
 #include <Epetra_SerialDenseVector.h>
 #include "Epetra_SerialDenseSolver.h"
-#include "../drt_lib/linalg_utils.H"
 #include "anisotropic_balzani.H"
 
 extern struct _MATERIAL *mat;
 
-using namespace LINALG; // our linear algebra
 
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)     maf 07/07|

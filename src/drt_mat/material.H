@@ -71,7 +71,57 @@ public:
   static Teuchos::RefCountPtr<Material> Factory(int matnum);
 };
 
-}
+  /*!
+  \brief Multiply two 2nd order tensors A x B and add the result to a
+   4th order symmetric material tensor in matrix notation
+
+  \param C (in/out): Material tangent matrix to be modified
+  \param AB (in)   : Scalar to multiply with A x B
+  \param A (in)    : Dense matrix (3 by 3) as 2nd order tensor A
+  \param B (in)    : Dense matrix (3 by 3) as 2nd order tensor B
+  \param ScalarThis(in): Scalar to multiply with C before adding A x B
+  */
+  void ElastSymTensorMultiply(Epetra_SerialDenseMatrix& C,
+                                   const double ScalarAB,
+                                   const Epetra_SerialDenseMatrix& A,
+                                   const Epetra_SerialDenseMatrix& B,
+                                   const double ScalarThis);
+
+  /*!
+  \brief Multiply two 2nd order tensors (A x B + B x A) and add the result to a
+   4th order symmetric material tensor in matrix notation
+
+  \param C (in/out): Material tangent matrix to be modified
+  \param AB (in)   : Scalar to multiply with (A x B + B x A)
+  \param A (in)    : Dense matrix (3 by 3) as 2nd order tensor A
+  \param B (in)    : Dense matrix (3 by 3) as 2nd order tensor B
+  \param ScalarThis(in): Scalar to multiply with C before adding (A x B + B x A)
+  */
+  void ElastSymTensorMultiplyAddSym(Epetra_SerialDenseMatrix& C,
+                                   const double ScalarAB,
+                                   const Epetra_SerialDenseMatrix& A,
+                                   const Epetra_SerialDenseMatrix& B,
+                                   const double ScalarThis);
+
+  /*!
+  \brief Multiply two 2nd order tensors A o B and add the result to a
+   4th order symmetric material tensor in matrix notation
+
+  \param C (in/out): Material tangent matrix to be modified
+  \param AB (in)   : Scalar to multiply with A o B
+  \param A (in)    : Dense matrix (3 by 3) as 2nd order tensor A
+  \param B (in)    : Dense matrix (3 by 3) as 2nd order tensor B
+  \param ScalarThis(in): Scalar to multiply with C before adding A o B
+  */
+  void ElastSymTensor_o_Multiply(Epetra_SerialDenseMatrix& C,
+                                   const double ScalarAB,
+                                   const Epetra_SerialDenseMatrix& A,
+                                   const Epetra_SerialDenseMatrix& B,
+                                   const double ScalarThis);
+
+
+
+} // namespace MAT
 
 #endif
 #endif
