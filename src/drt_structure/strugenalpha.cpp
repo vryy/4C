@@ -1072,7 +1072,7 @@ void StruGenAlpha::NonLinearUzawaFullNewton(int predictor)
 {
 	  int  maxiterUzawa   	= params_.get<int>   ("uzawa maxiter"         ,50);
 	  double Uzawa_param	= params_.get<double>("uzawa parameter",1);
-	  double tolvol    		= params_.get<double>("tolerance volume"     ,1.0e-07);
+	  double tolconstr    	= params_.get<double>("tolerance volume"     ,1.0e-07);
 	  double alphaf    		= params_.get<double>("alpha f"                ,0.459);
 	  double time       	= params_.get<double>("total time"             ,0.0);
 	  double dt            	= params_.get<double>("delta time"             ,0.01);
@@ -1081,12 +1081,12 @@ void StruGenAlpha::NonLinearUzawaFullNewton(int predictor)
 	  FullNewton();
 	  //--------------------update end configuration
 	  disn_->Update(1./(1.-alphaf),*dism_,-alphaf/(1.-alphaf));
-	  //--------------------compute volume error
+	  //--------------------compute constraint error
 	  ConstrMan_->ComputeError(time+dt,disn_);
 	  double constrnorm=ConstrMan_->GetErrorNorm();
 	  cout<<"Constraint error for Newton solution: "<<constrnorm<<endl;
 	  int numiter_uzawa=0;
-	  while (constrnorm>tolvol && numiter_uzawa <= maxiterUzawa)
+	  while (constrnorm>tolconstr && numiter_uzawa <= maxiterUzawa)
 	  {
 		  // Lagrange multiplier is increased by Uzawa_param*VolErr
 		  ConstrMan_->UpdateLagrMult(Uzawa_param);
@@ -1128,7 +1128,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   string convcheck = params_.get<string>("convcheck"              ,"AbsRes_Or_AbsDis");
   double toldisp   = params_.get<double>("tolerance displacements",1.0e-07);
   double tolres    = params_.get<double>("tolerance residual"     ,1.0e-07);
-  double tolvol    = params_.get<double>("tolerance volume"     ,1.0e-07);
+  double tolconstr    = params_.get<double>("tolerance volume"     ,1.0e-07);
   bool printscreen = params_.get<bool>  ("print to screen",true);
   bool printerr    = params_.get<bool>  ("print to err",false);
   int  maxiterUzawa   = params_.get<int>   ("uzawa maxiter"         ,50);
@@ -1157,7 +1157,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   bool print_unconv = true;
 
 
-  while (!Converged(convcheck, disinorm, fresmnorm, constrnorm, toldisp, tolres, tolvol)
+  while (!Converged(convcheck, disinorm, fresmnorm, constrnorm, toldisp, tolres, tolconstr)
          && numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
@@ -1213,7 +1213,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   	quotient =1;
     //Solve one iteration step with augmented lagrange
   	//Since we calculate displacement norm as well, at least one step has to be taken
-    while (((norm_uzawa > tolres/10||norm_vol_uzawa>tolvol/10)
+    while (((norm_uzawa > tolres/10||norm_vol_uzawa>tolconstr/10)
     		&& numiter_uzawa < maxiterUzawa)||numiter_uzawa<1)
     {
 
@@ -2844,7 +2844,7 @@ void StruGenAlpha::Integrate()
   else if (pred=="consistent") predictor = 2;
   else dserror("Unknown type of predictor");
 
-  //in case a volume is constrained, do full newton together with an Uzawa algorithm
+  //in case a constraint is defined, use defined algorithm
   if (ConstrMan_->HaveConstraint())
   {
 	  string algo = params_.get<string>("uzawa algorithm","newtonlinuzawa");
@@ -2853,7 +2853,7 @@ void StruGenAlpha::Integrate()
       {
         if      (predictor==1) ConstantPredictor();
         else if (predictor==2) ConsistentPredictor();
-        //Does predicted displacement satisfy volume constraint?
+        //Does predicted displacement satisfy constraint?
         double time          = params_.get<double>("total time"             ,0.0);
         double dt            = params_.get<double>("delta time"             ,0.01);
         // what algorithm is used?
@@ -2872,7 +2872,7 @@ void StruGenAlpha::Integrate()
         	ConstrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
         	NonLinearUzawaFullNewton(predictor);
         }
-        else dserror("Unknown type of algorithm to deal with volume constraint");
+        else dserror("Unknown type of algorithm to deal with constraints");
         UpdateandOutput();
       }
   }
@@ -3134,14 +3134,14 @@ bool StruGenAlpha::Converged(const string type, const double disinorm,
 
 /*----------------------------------------------------------------------*
  |  check convergence of Newton iteration (public)              tk 01/08|
- |  take the volume constraint into account as well                     |
+ |  take the constraints into account as well                     |
  *----------------------------------------------------------------------*/
 bool StruGenAlpha::Converged(const string type, const double disinorm,
         const double resnorm, const double constrnorm,
         const double toldisp, const double tolres,
-        const double tolvol)
+        const double tolconstr)
 {
-	return (Converged(type,disinorm, resnorm, toldisp,tolres) and (constrnorm<tolvol));
+	return (Converged(type,disinorm, resnorm, toldisp,tolres) and (constrnorm<tolconstr));
 }
 
 /*----------------------------------------------------------------------*

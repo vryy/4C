@@ -350,8 +350,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("TOLRES",1.0E-08,
                   "tolerance in the residual norm for the newton iteration",
                   &sdyn);
-  DoubleParameter("TOLVOL",1.0E-08,
-                    "tolerance in the volume error norm for the newton iteration",
+  DoubleParameter("TOLCONSTR",1.0E-08,
+                    "tolerance in the constr error norm for the newton iteration",
                     &sdyn);
   IntParameter("MAXITER",50,
                "maximum number of iterations allowed for newton iteration before failure",
