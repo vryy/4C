@@ -77,7 +77,7 @@ public:
 
      \return cells nodal coordinates  
      */
-    virtual std::vector< std::vector<double> > NodalPosXYZ(DRT::Element& ele) const;
+    virtual std::vector< std::vector<double> > NodalPosXYZ(const DRT::Element& ele) const;
     
     virtual std::string Print() const;
 
@@ -87,7 +87,7 @@ protected:
     DRT::Element::DiscretizationType distype_;
 
     vector<vector<double> > ComputePhysicalCoordinates(
-            DRT::Element&  ele) const;
+            const DRT::Element&  ele) const;
 };
 
 
@@ -174,7 +174,7 @@ public:
 
      \return cells nodal coordinates  
      */
-    inline std::vector< std::vector<double> > NodalPosXYZ(DRT::Element& ele) const
+    inline std::vector< std::vector<double> > NodalPosXYZ(const DRT::Element& ele) const
     {
         return ComputePhysicalCoordinates(ele);
     };
@@ -187,7 +187,7 @@ public:
     
     virtual std::string Print() const;
     
-    blitz::Array<double,1> GetPhysicalCenterPosition(DRT::Element& ele) const;
+    blitz::Array<double,1> GetPhysicalCenterPosition(const DRT::Element& ele) const;
 
 protected:
     
@@ -251,7 +251,7 @@ public:
 
      \return cells nodal coordinates  
      */
-    inline std::vector< std::vector<double> > NodalPosXYZ(DRT::Element& ele) const
+    inline std::vector< std::vector<double> > NodalPosXYZ(const DRT::Element& ele) const
     {
         return ComputePhysicalCoordinates(ele);
     };

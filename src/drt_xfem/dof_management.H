@@ -119,7 +119,7 @@ public:
 	explicit ElementDofManager();
 	
 	explicit ElementDofManager(
-	        DRT::Element& ele,
+	        const DRT::Element& ele,
 			const map<int, const set<XFEM::FieldEnr> >&  nodalDofSet,
 		    const set<XFEM::FieldEnr>& elementDofs,
 		    const int numeleparam
@@ -288,10 +288,12 @@ public:
         return entry->second;
     };
     
-    const XFEM::ElementDofManager constructElementDofManager(DRT::Element& ele, const int numeleparam) const;
+    const XFEM::ElementDofManager constructElementDofManager(
+            const DRT::Element& ele,
+            const int numeleparam) const;
     
     void checkForConsistency(
-            DRT::Element& ele,
+            const DRT::Element& ele,
             const XFEM::ElementDofManager& eledofman
             ) const;
     

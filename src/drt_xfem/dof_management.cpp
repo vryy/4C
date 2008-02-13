@@ -93,7 +93,7 @@ XFEM::ElementDofManager::ElementDofManager() :
  |  ctor                                                        ag 11/07|
  *----------------------------------------------------------------------*/
 XFEM::ElementDofManager::ElementDofManager(
-        DRT::Element& ele,
+        const DRT::Element& ele,
 		const map<int, const set<XFEM::FieldEnr> >& nodalDofSet,
         const set<XFEM::FieldEnr>& elementDofs,
         const int numeleparam
@@ -132,7 +132,7 @@ XFEM::ElementDofManager::ElementDofManager(
 	// count number of parameters per field
 	// define local position of unknown by looping first over nodes and then over its unknowns!
 	int counter = 0;
-	DRT::Node** const nodes = ele.Nodes();
+	const DRT::Node** const nodes = ele.Nodes();
 	for (int inode=0; inode<ele.NumNode(); inode++)
 	{
 	    const int gid = nodes[inode]->Id();
@@ -436,7 +436,7 @@ string XFEM::DofManager::toString() const
  |  construct element dof manager                               ag 11/07|
  *----------------------------------------------------------------------*/
 const XFEM::ElementDofManager XFEM::DofManager::constructElementDofManager(
-        DRT::Element&  ele,
+        const DRT::Element&  ele,
         const int      numeleparam
         ) const
 {
@@ -464,7 +464,7 @@ const XFEM::ElementDofManager XFEM::DofManager::constructElementDofManager(
  |  sanity check                                                ag 11/07|
  *----------------------------------------------------------------------*/
 void XFEM::DofManager::checkForConsistency(
-        DRT::Element& ele,
+        const DRT::Element& ele,
         const XFEM::ElementDofManager& stored_eledofman
         ) const
 {

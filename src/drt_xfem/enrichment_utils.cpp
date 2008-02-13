@@ -31,7 +31,7 @@ using namespace XFEM;
 // For a given situation compute the enriched shape functions
 // 
 void XFEM::ComputeEnrichedShapefunction(
-        DRT::Element&  ele,
+        const DRT::Element&  ele,
         const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
@@ -42,7 +42,7 @@ void XFEM::ComputeEnrichedShapefunction(
         )
 {
     
-    DRT::Node** const nodes = ele.Nodes();
+    const DRT::Node** const nodes = ele.Nodes();
     
     int dofcounter = 0;
     for (int inode=0; inode<ele.NumNode(); inode++)
@@ -72,7 +72,7 @@ void XFEM::ComputeEnrichedShapefunction(
 // For a given situation compute the enriched shape functions
 // 
 void XFEM::ComputeEnrichedShapefunction(
-        DRT::Element&  ele,
+        const DRT::Element&  ele,
         const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
@@ -86,7 +86,7 @@ void XFEM::ComputeEnrichedShapefunction(
 {
     blitz::Range _  = blitz::Range::all();
     
-    DRT::Node** const nodes = ele.Nodes();
+    const DRT::Node** const nodes = ele.Nodes();
     
     int dofcounter = 0;
     for (int inode=0; inode<ele.NumNode(); inode++)
@@ -116,7 +116,7 @@ void XFEM::ComputeEnrichedShapefunction(
 // For a given situation compute the enriched shape functions
 // 
 void XFEM::ComputeEnrichedShapefunction(
-        DRT::Element&  ele,
+        const DRT::Element&  ele,
         const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
@@ -132,7 +132,7 @@ void XFEM::ComputeEnrichedShapefunction(
 {
     blitz::Range _  = blitz::Range::all();
     
-    DRT::Node** const nodes = ele.Nodes();
+    const DRT::Node** const nodes = ele.Nodes();
     
     int dofcounter = 0;
     for (int inode=0; inode<ele.NumNode(); inode++)
@@ -164,7 +164,7 @@ void XFEM::ComputeEnrichedShapefunction(
 // For a given situation compute the enriched shape functions
 // 
 void XFEM::ComputeEnrichedStressShapefunction(
-        DRT::Element&  ele,
+        const DRT::Element&  ele,
         const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
@@ -198,7 +198,7 @@ void XFEM::ComputeEnrichedStressShapefunction(
 // For a given situation compute the enriched shape functions
 // 
 void XFEM::ComputeEnrichedStressShapefunction(
-        DRT::Element&  ele,
+        const DRT::Element&  ele,
         const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,

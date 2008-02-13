@@ -70,7 +70,7 @@ vector< vector<double> > IntCell::NodalPosXiDomain() const
 //
 //  get coordinates in physical space
 //
-vector< vector<double> > IntCell::NodalPosXYZ(DRT::Element& ele) const
+vector< vector<double> > IntCell::NodalPosXYZ(const DRT::Element& ele) const
 {
     dserror("no default implementation is given");
     vector<vector<double> > dummy;
@@ -87,7 +87,7 @@ std::string IntCell::Print() const
 
 
 vector<vector<double> > IntCell::ComputePhysicalCoordinates(
-        DRT::Element&  ele) const
+        const DRT::Element&  ele) const
 {
     vector<vector<double> > physicalCoordinates;
     
@@ -112,7 +112,7 @@ vector<vector<double> > IntCell::ComputePhysicalCoordinates(
             x_interpol[isd] = 0.0;
         }
         
-        DRT::Node** nodes = ele.Nodes();
+        const DRT::Node** nodes = ele.Nodes();
         
         for (int inenparent = 0; inenparent < ele.NumNode();++inenparent)
         {
@@ -295,7 +295,7 @@ vector<vector<double> > DomainIntCell::GetDefaultCoordinates(
 //
 // return the center of the cell in physical coordinates
 //
-blitz::Array<double,1> DomainIntCell::GetPhysicalCenterPosition(DRT::Element& ele) const
+blitz::Array<double,1> DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) const
 {
     // number of space dimensions
     const int nsd = 3;

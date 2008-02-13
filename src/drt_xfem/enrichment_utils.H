@@ -38,7 +38,7 @@ namespace XFEM
  * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
  */
 void ComputeEnrichedShapefunction(
-        DRT::Element&                     ele,
+        const DRT::Element&                     ele,
         const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager&    dofman,
         const XFEM::PHYSICS::Field        field,
@@ -49,7 +49,7 @@ void ComputeEnrichedShapefunction(
         );
 
 void ComputeEnrichedShapefunction(
-        DRT::Element&  ele,
+        const DRT::Element&  ele,
         const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
@@ -62,7 +62,7 @@ void ComputeEnrichedShapefunction(
         );
 
 void ComputeEnrichedShapefunction(
-        DRT::Element&  ele,
+        const DRT::Element&  ele,
         const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
@@ -77,7 +77,7 @@ void ComputeEnrichedShapefunction(
         );
 
 void ComputeEnrichedStressShapefunction(
-        DRT::Element&  ele,
+        const DRT::Element&  ele,
         const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
@@ -88,7 +88,7 @@ void ComputeEnrichedStressShapefunction(
         );
 
 void ComputeEnrichedStressShapefunction(
-        DRT::Element&  ele,
+        const DRT::Element&  ele,
         const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
