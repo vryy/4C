@@ -166,7 +166,9 @@ void LINALG::SparseMatrix::Assemble(const Epetra_SerialDenseMatrix& Aele,
 
       // check whether I have that global row
       int rgid = lmrow[lrow];
+#ifdef DEBUG
       if (!(rowmap.MyGID(rgid))) dserror("Sparse matrix A does not have global row %d",rgid);
+#endif
 
       for (int lcol=0; lcol<lcoldim; ++lcol)
       {
