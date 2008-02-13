@@ -284,11 +284,11 @@ void LINALG::Add(const Epetra_CrsMatrix& A,
   if (!A.Filled()) dserror("FillComplete was not called on A");
   if (B.Filled()) dserror("FillComplete was called on B before");
 
-  Epetra_CrsMatrix*               Aprime = NULL;
-  EpetraExt::RowMatrix_Transpose* Atrans = NULL;
+  Epetra_CrsMatrix* Aprime = NULL;
+  RCP<EpetraExt::RowMatrix_Transpose> Atrans = null;
   if (transposeA)
   {
-    Atrans = new EpetraExt::RowMatrix_Transpose(false,NULL,false);
+    Atrans = rcp(new EpetraExt::RowMatrix_Transpose(false,NULL,false));
     Aprime = &(dynamic_cast<Epetra_CrsMatrix&>(((*Atrans)(const_cast<Epetra_CrsMatrix&>(A)))));
   }
   else
@@ -326,7 +326,6 @@ void LINALG::Add(const Epetra_CrsMatrix& A,
       }
     }
   }
-  if( Atrans ) delete Atrans;
   return;
 }
 
