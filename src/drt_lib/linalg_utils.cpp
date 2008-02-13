@@ -732,10 +732,10 @@ void LINALG::NonSymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)
 /*----------------------------------------------------------------------*
  |  Apply dirichlet conditions  (public)                     mwgee 02/07|
  *----------------------------------------------------------------------*/
-void LINALG::ApplyDirichlettoSystem(RefCountPtr<Epetra_Vector>&      x,
-                                    RefCountPtr<Epetra_Vector>&      b,
-                                    const RefCountPtr<Epetra_Vector> dbcval,
-                                    const RefCountPtr<Epetra_Vector> dbctoggle)
+void LINALG::ApplyDirichlettoSystem(RCP<Epetra_Vector>&      x,
+                                    RCP<Epetra_Vector>&      b,
+                                    const RCP<Epetra_Vector> dbcval,
+                                    const RCP<Epetra_Vector> dbctoggle)
 {
   const Epetra_Vector& dbct = *dbctoggle;
   if (x != null && b != null)
@@ -758,11 +758,11 @@ void LINALG::ApplyDirichlettoSystem(RefCountPtr<Epetra_Vector>&      x,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::ApplyDirichlettoSystem(RCP<LINALG::SparseOperator>      A,
-                                    RefCountPtr<Epetra_Vector>&      x,
-                                    RefCountPtr<Epetra_Vector>&      b,
-                                    const RefCountPtr<Epetra_Vector> dbcval,
-                                    const RefCountPtr<Epetra_Vector> dbctoggle)
+void LINALG::ApplyDirichlettoSystem(RCP<LINALG::SparseOperator> A,
+                                    RCP<Epetra_Vector>&         x,
+                                    RCP<Epetra_Vector>&         b,
+                                    const RCP<Epetra_Vector>    dbcval,
+                                    const RCP<Epetra_Vector>    dbctoggle)
 {
   A->ApplyDirichlet(dbctoggle);
   ApplyDirichlettoSystem(x,b,dbcval,dbctoggle);
