@@ -276,25 +276,28 @@ private:
   };
   
   //! container containing all kind of beam2 thisandthat
-  DRT::Container                                  data_;  
+  DRT::Container data_;  
   
    //! number of the material law
-  int                                             material_;     
+  int material_;     
   
   //! cross section area
-  double                                             cross_section_;
+  double cross_section_;
   
    //! cross section area including shear corretion factor
-  double                                             cross_section_corr_;
+  double cross_section_corr_;
   
   //! moment of inertia of area
-  double                                             moment_inertia_;
+  double moment_inertia_;
+  
+  //! flag determining if consistent or lumped mass matrix
+  int lumped_flag_;
   
    //! vector of lines of this element (length 1)
-  vector<DRT::Element*>                           lines_; 
+  vector<DRT::Element*> lines_; 
  
   //! gaussrule_ will be initialized automatically to a 2 point integration rule 
-  DRT::UTILS::GaussRule1D                         gaussrule_;
+  DRT::UTILS::GaussRule1D gaussrule_;
 
 
   

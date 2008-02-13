@@ -89,6 +89,12 @@ bool DRT::ELEMENTS::Beam2::ReadElement()
   moment_inertia_ = 1.0;
   frdouble("INERMOM",&moment_inertia_,&ierr);
   if (ierr!=1) dserror("Reading of Beam2 element failed");
+  
+  // element can use consistent or lumped mass matrix (the latter one assumes
+  // the moment of inertia of the cross section to be approximately zero)
+  lumped_flag_ = 0;
+  frint("LUMPED",&lumped_flag_,&ierr);
+  if (ierr!=1) dserror("Reading of Beam2 element failed");
 
 
   return true;

@@ -404,10 +404,14 @@ for (int k=0; k<iel; ++k)
   double aux_N_fac = force_loc(1)/length_curr; 
   for(int id_lin=0; id_lin<6; id_lin++)
   	for(int id_col=0; id_col<6; id_col++)
-  		stiffmatrix(id_lin,id_col) += aux_N_fac * z_curr(id_lin) * z_curr(id_col);
-
-  //calculating mass matrix (lcoal version = global version)--------------------------------------------------
+  		stiffmatrix(id_lin,id_col) += aux_N_fac * z_curr(id_lin) * z_curr(id_col);  
   
+  //calculation of global internal forces from force = B_transposed*force_loc---------------------------------- 
+  for(int id_col=0; id_col<6; id_col++)
+	  for(int id_lin=0; id_lin<3; id_lin++)
+    	force(id_col) += B_curr(id_lin,id_col)*force_loc(id_lin);
+  
+  //calculating mass matrix (lcoal version = global version)-------------------------------------------------- 
   //the following code lines are based on the assumption that massmatrix is a 6x6 matrix filled with zeros
   #ifdef DEBUG
   dsassert(massmatrix.M()==6,"wrong mass matrix input");
@@ -417,24 +421,36 @@ for (int k=0; k<iel; ++k)
   	dsassert(massmatrix(i,j)==0,"wrong mass matrix input in beam2_evaluate, function b2_nlnstiffmass"); 
   #endif // #ifdef DEBUG
   
-  //assignment of massmatrix by means of auxiliary diagonal matrix aux_E stored as an array
-  double aux_E[3]={density*length_refe*cross_section_/6,density*length_refe*cross_section_/6,density*length_refe*moment_inertia_/6};
-  for(int id=0; id<3; id++)
+  
+  //if lumped_flag == 0 a consistent mass Timoshenko beam mass matrix is applied
+  if (lumped_flag_ == 0)
   {
-  	massmatrix(id,id) = 2*aux_E[id];
-        massmatrix(id+3,id+3) = 2*aux_E[id];
-        massmatrix(id,id+3) = aux_E[id];
-        massmatrix(id+3,id) = aux_E[id];
+	  //assignment of massmatrix by means of auxiliary diagonal matrix aux_E stored as an array
+	  double aux_E[3]={density*length_refe*cross_section_/6,density*length_refe*cross_section_/6,density*length_refe*moment_inertia_/6};
+	  for(int id=0; id<3; id++)
+	  {
+	  	massmatrix(id,id) = 2*aux_E[id];
+	        massmatrix(id+3,id+3) = 2*aux_E[id];
+	        massmatrix(id,id+3) = aux_E[id];
+	        massmatrix(id+3,id) = aux_E[id];
+	  }
   }
+  /*if lumped_flag == 1 a lumped mass matrix is applied where the cross sectional moment of inertia is
+   * assumed to be approximately zero so that the 3,3 and 5,5 element are both zero */
   
-  
-  //calculation of global internal forces from force = B_transposed*force_loc---------------------------------- 
-  for(int id_col=0; id_col<6; id_col++)
-	  for(int id_lin=0; id_lin<3; id_lin++)
-    	force(id_col) += B_curr(id_lin,id_col)*force_loc(id_lin);
+  else if (lumped_flag_ == 1)
+  {
+ 	 massmatrix.Shape(6,6);
+ 	 massmatrix(0,0) = density*length_refe*cross_section_/2;
+ 	 massmatrix(1,1) = density*length_refe*cross_section_/2;
+ 	 massmatrix(3,3) = density*length_refe*cross_section_/2;
+ 	 massmatrix(4,4) = density*length_refe*cross_section_/2;
+   }
+  else
+	  dserror("improper value of variable lumped_flag_");
 
   return;
 } // DRT::ELEMENTS::Beam2::b2_nlnstiffmass(
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_WALL1
+#endif  // #ifdef D_BEAM2
