@@ -1048,14 +1048,6 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
 }
 
 
-/*----------------------------------------------------------------------*
- | print sparsity pattern to postscript file                       02/08|
- *----------------------------------------------------------------------*/
-void LINALG::PrintSparsityToPostscript(const Epetra_RowMatrix& A)
-{
-  Ifpack_PrintSparsity(A);
-  return;
-}
 
 
 #endif  // #ifdef CCADISCRET

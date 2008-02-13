@@ -26,6 +26,7 @@ Maintainer: Michael Gee
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_LAPACK.h"
 #include "Teuchos_RefCountPtr.hpp"
+#include "Ifpack_AdditiveSchwarz.h"
 #include "drt_exporter.H"
 
 using namespace std;
@@ -582,6 +583,16 @@ namespace LINALG
                    Epetra_Vector*&   x1,
                    const Epetra_Map& x2map,
                    Epetra_Vector*&   x2);
+
+  /*!
+  \brief Print sparsity pattern of a matrix to postscript file
+  
+  creates a file Epetra::Matrix.ps in current directory where the exact
+  name of file depends on the exact type of class.
+  
+  \note works in parallel and serial!
+  */
+  void PrintSparsityToPostscript(const Epetra_RowMatrix& A);
 
   /*!
   \brief Gather information of type vector<T> on a subset of processors

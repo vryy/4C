@@ -1379,6 +1379,17 @@ bool LINALG::SplitVector(const Epetra_Vector& x,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void LINALG::PrintSparsityToPostscript(const Epetra_RowMatrix& A)
+{
+  Ifpack_PrintSparsity(A);
+  return;
+}
+
+
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 int LINALG::FindMyPos(int nummyelements, const Epetra_Comm& comm)
 {
   const int myrank  = comm.MyPID();
