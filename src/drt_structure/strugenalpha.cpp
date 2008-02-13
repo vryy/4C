@@ -1072,7 +1072,7 @@ void StruGenAlpha::NonLinearUzawaFullNewton(int predictor)
 {
 	  int  maxiterUzawa   	= params_.get<int>   ("uzawa maxiter"         ,50);
 	  double Uzawa_param	= params_.get<double>("uzawa parameter",1);
-	  double tolconstr    	= params_.get<double>("tolerance volume"     ,1.0e-07);
+	  double tolconstr    	= params_.get<double>("tolerance constraint"     ,1.0e-07);
 	  double alphaf    		= params_.get<double>("alpha f"                ,0.459);
 	  double time       	= params_.get<double>("total time"             ,0.0);
 	  double dt            	= params_.get<double>("delta time"             ,0.01);
@@ -1088,7 +1088,7 @@ void StruGenAlpha::NonLinearUzawaFullNewton(int predictor)
 	  int numiter_uzawa=0;
 	  while (constrnorm>tolconstr && numiter_uzawa <= maxiterUzawa)
 	  {
-		  // Lagrange multiplier is increased by Uzawa_param*VolErr
+		  // Lagrange multiplier is increased by Uzawa_param*ConstrErr
 		  ConstrMan_->UpdateLagrMult(Uzawa_param);
 		  // Keep new Lagrange multiplier fixed and solve for new displacements
 		  if      (predictor==1) ConstantPredictor();
@@ -1097,7 +1097,7 @@ void StruGenAlpha::NonLinearUzawaFullNewton(int predictor)
 		  FullNewton();
 		  //--------------------update end configuration
 		  disn_->Update(1./(1.-alphaf),*dism_,-alphaf/(1.-alphaf));
-		  //--------------------compute volume error
+		  //--------------------compute constraint error
 		  ConstrMan_->ComputeError(time+dt,disn_);
 		  constrnorm=ConstrMan_->GetErrorNorm();
 		  cout<<"Constraint error for computed displacement: "<<constrnorm<<endl;
@@ -1108,7 +1108,7 @@ void StruGenAlpha::NonLinearUzawaFullNewton(int predictor)
 
 /*----------------------------------------------------------------------*
  |  							                            	tk 11/07|
- | Newton iteration respecting volume constraint.						|
+ | Newton iteration respecting constraints.						|
  | Uzawa algorithm is used to deal with lagrange multipliers			|
  *----------------------------------------------------------------------*/
 void StruGenAlpha::FullNewtonLinearUzawa()
@@ -1128,7 +1128,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   string convcheck = params_.get<string>("convcheck"              ,"AbsRes_Or_AbsDis");
   double toldisp   = params_.get<double>("tolerance displacements",1.0e-07);
   double tolres    = params_.get<double>("tolerance residual"     ,1.0e-07);
-  double tolconstr    = params_.get<double>("tolerance volume"     ,1.0e-07);
+  double tolconstr    = params_.get<double>("tolerance constraint"     ,1.0e-07);
   bool printscreen = params_.get<bool>  ("print to screen",true);
   bool printerr    = params_.get<bool>  ("print to err",false);
   int  maxiterUzawa   = params_.get<int>   ("uzawa maxiter"         ,50);
