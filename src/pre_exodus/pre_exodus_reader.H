@@ -288,14 +288,18 @@ inline ElementBlock::Shape StringToShape(const string shape)
   else if (shape.compare(0,6,"SHELL9")== 0)   return ElementBlock::shell9;
   else if (shape.compare(0,4,"TRI3")== 0)     return ElementBlock::tri3;
   else if (shape.compare(0,4,"TRI6")== 0)     return ElementBlock::tri6;
+  else if (shape.compare(0,3,"HEX")== 0)      return ElementBlock::hex8;
   else if (shape.compare(0,4,"HEX8")== 0)     return ElementBlock::hex8;
   else if (shape.compare(0,5,"HEX20")== 0)    return ElementBlock::hex20;
   else if (shape.compare(0,5,"HEX27")== 0)    return ElementBlock::hex27;
+  else if (shape.compare(0,5,"TETRA")== 0)    return ElementBlock::tet4;
   else if (shape.compare(0,4,"TET4")== 0)     return ElementBlock::tet4;
   else if (shape.compare(0,6,"TETRA4")== 0)   return ElementBlock::tet4;
   else if (shape.compare(0,5,"TET10")== 0)    return ElementBlock::tet10;
+  else if (shape.compare(0,5,"WEDGE")== 0)    return ElementBlock::wedge6;
   else if (shape.compare(0,6,"WEDGE6")== 0)   return ElementBlock::wedge6;
   else if (shape.compare(0,7,"WEDGE15")== 0)  return ElementBlock::wedge15;
+  else if (shape.compare(0,7,"PYRAMID")== 0)  return ElementBlock::pyramid5;
   else if (shape.compare(0,8,"PYRAMID5")== 0) return ElementBlock::pyramid5;
   else if (shape.compare(0,4,"BAR2")== 0)     return ElementBlock::bar2;
   else if (shape.compare(0,4,"BAR3")== 0)     return ElementBlock::bar3;
@@ -369,6 +373,7 @@ void PrintSet(ostream& os, const set<int> actset);
 
 
 int HexSideNumberExoToBaci(const int exoface);
+int PyrSideNumberExoToBACI(const int exoface);
 
 } // of namespace EXODUS
 

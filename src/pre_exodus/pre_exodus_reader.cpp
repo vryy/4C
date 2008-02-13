@@ -374,6 +374,8 @@ vector<double> EXODUS::Mesh::GetNodeMap(const int MapNodeID) const
 
 map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset) const
 {
+  cout << "Computing SideSet Connectivity... " << endl;
+  fflush(stdout);
   map<int,vector<int> > conn;
   map <int,vector<int> > mysides = sideset.GetSideSet();
   map<int,vector<int> >::iterator i_side;
@@ -383,18 +385,21 @@ map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset) const
   
   // Range Vector for global eleID identification in SideSet
   vector<int> glob_eb_erange(1,0);
+  int rangebreak = 0;
   for (i_ebs = ebs.begin(); i_ebs != ebs.end(); ++i_ebs ){
-    glob_eb_erange.push_back(i_ebs->second.GetNumEle());
+    rangebreak += i_ebs->second.GetNumEle();
+    glob_eb_erange.push_back(rangebreak);
   }
   
   // fill SideSet Connectivity
+  int perc = 1;
   for (i_side = mysides.begin(); i_side != mysides.end(); ++i_side){
     int actele = i_side->second.at(0) -1;   //ExoIds start from 1, but we from 0
     int actface = i_side->second.at(1) -1;  //ExoIds start from 1, but we from 0
     // find actual EBlock where actele lies in
     int actebid;
     for(unsigned int i=0; i<glob_eb_erange.size(); ++i) 
-      if (actele <= glob_eb_erange[i]) actebid = i-1;
+      if (actele <= glob_eb_erange[i]){ actebid = i-1; break;}
     EXODUS::ElementBlock acteb = ebs.find(actebid)->second;
     EXODUS::ElementBlock::Shape actshape = acteb.GetShape();
     map<int,vector<int> > acteconn = acteb.GetEleConn();
@@ -411,7 +416,15 @@ map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset) const
       child.push_back(parent_ele[childmap[j]]);
     // insert child into SideSet Connectivity
     conn.insert(pair<int,vector<int> >(i_side->first,child));
+    // progress output
+    if (abs(signed(i_side->first)/signed(mysides.size()) - (perc * signed(mysides.size())/10)) < 1e-5){
+      cout << perc*10 << " percent of " << mysides.size() << " Sides done" << endl;
+      perc ++;
+      fflush(stdout);
+    }
   }
+  cout << "...done " << endl;
+  fflush(stdout);
 
   return conn;
 }
@@ -792,6 +805,12 @@ void EXODUS::PrintSet(ostream& os, const set<int> actset)
 int EXODUS::HexSideNumberExoToBaci(const int exoface)
 {
   const int map[6] = {1,2,3,4,0,5};
+  return map[exoface];
+}
+
+int EXODUS::PyrSideNumberExoToBACI(const int exoface)
+{
+  const int map[5] = {1,2,3,4,0};
   return map[exoface];
 }
 

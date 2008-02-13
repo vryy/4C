@@ -514,8 +514,9 @@ bool EXODUS::CheckExtrusion(const EXODUS::ElementBlock eblock)
 bool EXODUS::CheckExtrusion(const EXODUS::SideSet sideset)
 {
   const string myname = sideset.GetName();
-  if (myname.compare(0,7,"extrude") == 0) return true;
-  return false;
+  //if (myname.compare(0,7,"extrude") == 0)
+    return true;
+  //return false;
 }
 
 

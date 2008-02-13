@@ -104,6 +104,10 @@ namespace UTILS
           {2, 5, 11},
           {0, 3, 9}};
 
+  //! Rectangular surface of pyramid5
+  const int eleNodeNumbering_pyramid5_quadsurfaces[1][4]= {
+          {0, 1, 2, 3}};
+  
   //! Triangular surfaces of pyramid5
   const int eleNodeNumbering_pyramid5_trisurfaces[4][3]={
     {0,1,4},

@@ -238,6 +238,56 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
             }
             break;
         }
+        case DRT::Element::wedge6:
+        {
+            // quad surfaces first
+            nSurf = 3;
+            nNode = 4;
+            
+            vector<int> submapq(nNode, 0);
+            for(int i = 0; i < nSurf; i++)
+            {
+                map.push_back(submapq);
+                for(int j = 0; j < nNode; j++)
+                    map[i][j] = eleNodeNumbering_wedge15_quadsurfaces[i][j];
+            }
+            nSurf = 2;
+            nNode = 3;
+            
+            vector<int> submapt(nNode, 0);
+            for(int i = 0; i < nSurf; i++)
+            {
+                map.push_back(submapt);
+                for(int j = 0; j < nNode; j++)
+                    map[i][j] = eleNodeNumbering_wedge15_trisurfaces[i][j];
+            }
+            break;
+        }
+        case DRT::Element::pyramid5:
+        {
+          // quad surfaces first
+          nSurf = 1;
+          nNode = 4;
+          
+          vector<int> submapq(nNode, 0);
+          for(int i = 0; i < nSurf; i++)
+          {
+              map.push_back(submapq);
+              for(int j = 0; j < nNode; j++)
+                  map[i][j] = eleNodeNumbering_pyramid5_quadsurfaces[i][j];
+          }
+          nSurf = 4;
+          nNode = 3;
+          
+          vector<int> submapt(nNode, 0);
+          for(int i = 0; i < nSurf; i++)
+          {
+              map.push_back(submapt);
+              for(int j = 0; j < nNode; j++)
+                  map[i][j] = eleNodeNumbering_pyramid5_trisurfaces[i][j];
+          }
+          break;
+        }
         default: 
             dserror("discretizationtype is not yet implemented"); 
     }
