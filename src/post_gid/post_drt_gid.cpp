@@ -67,6 +67,41 @@ void write_vector_result(string result_name, PostField* field, PostResult* resul
   GiD_EndResult();
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void write_multivector_result(string result_name, PostField* field, PostResult* result)
+{
+  CHAR* componentnames[] = { "S_xx", "S_yy", "S_zz", "S_xy", "S_yz", "S_xz"};
+
+  //double time = map_read_real(result->group(), "time");
+  int step = map_read_int(result->group(), "step");
+
+  ostringstream buf;
+  buf << fieldnames[field->type()] << "_" << result_name;
+
+  RefCountPtr<Epetra_MultiVector> data = result->read_multi_result(result_name);
+  const Epetra_BlockMap& datamap = data->Map();
+  GiD_BeginResult(const_cast<char*>(buf.str().c_str()), "ccarat", step, GiD_Matrix,
+                  GiD_OnNodes, NULL, NULL, 6,
+                  componentnames);
+
+  double v[6];
+
+  for (int k = 0; k < field->num_nodes(); ++k)
+  {
+    DRT::Node* n = field->discretization()->lRowNode(k);
+    for (int i = 0; i < 6; ++i)
+    {
+      // The order of the result vector is defined by the map. It is
+      // NOT ordered by global dof numbers.
+      // If this turns out to be too slow, we have to change it.
+      v[i] = (*((*data)(i)))[datamap.LID(k)];
+    }
+    GiD_Write3DMatrix(n->Id()+1,v[0],v[1],v[2],v[3],v[4],v[5]);
+  }
+  GiD_EndResult();
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -118,7 +153,7 @@ void write_mesh(PostProblem* problem, int disnum)
     GiD_EndElements();
     GiD_EndMesh();
     break;
-    
+
   case DRT::Element::line2:
     GiD_BeginGaussPoint("line2", GiD_Linear, "line2", 2, 0, 1);
     GiD_EndGaussPoint();
@@ -150,7 +185,7 @@ void write_mesh(PostProblem* problem, int disnum)
     GiD_EndElements();
     GiD_EndMesh();
     break;
-    
+
   case DRT::Element::hex27:
     // Gid output for so_hex27
     GiD_BeginGaussPoint("so_hex27", GiD_Hexahedra, "so_hex27", 27, 0, 1);
@@ -423,6 +458,10 @@ int main(int argc, char** argv)
       if (map_has_map(result.group(), "acceleration"))
       {
         write_vector_result("acceleration", field, &result);
+      }
+      if (map_has_map(result.group(), "nodal_stresses_xyz"))
+      {
+        write_multivector_result("nodal_stresses_xyz", field, &result);
       }
     }
   }

@@ -228,17 +228,17 @@ public:
   The element fills the provided map with key names of
   visualization data the element wants to visualize AT THE CENTER
   of the element geometry. The values is supposed to be dimension of the
-  data to be visualized. It can either be 1 (scalar), 3 (vector), 6 (sym. tensor) 
+  data to be visualized. It can either be 1 (scalar), 3 (vector), 6 (sym. tensor)
   or 9 (nonsym. tensor)
-  
+
   Example:
   \code
     // Name of data is 'Owner', dimension is 1 (scalar value)
-    names.insert(pair<string,int>("Owner",1));  
+    names.insert(pair<string,int>("Owner",1));
     // Name of data is 'StressesXYZ', dimension is 6 (sym. tensor value)
-    names.insert(pair<string,int>("StressesXYZ",6));  
-  \endcode  
-  
+    names.insert(pair<string,int>("StressesXYZ",6));
+  \endcode
+
   \param names (out): On return, the derived class has filled names with
                       key names of data it wants to visualize and with int dimensions
                       of that data.
@@ -249,17 +249,17 @@ public:
   \brief Query data to be visualized using BINIO of a given name
 
   The method is supposed to call this base method to visualize the owner of
-  the element. 
-  If the derived method recognizes a supported data name, it shall fill it 
+  the element.
+  If the derived method recognizes a supported data name, it shall fill it
   with corresponding data.
   If it does NOT recognizes the name, it shall do nothing.
-  
+
   \warning The method must not change size of data
-  
+
   \param name (in):   Name of data that is currently processed for visualization
   \param data (out):  data to be filled by element if element recognizes the name
   */
-  virtual void VisData(const string& name, vector<double>& data); 
+  virtual void VisData(const string& name, vector<double>& data);
 
   //@}
 
@@ -431,19 +431,22 @@ protected:
                                  Epetra_SerialDenseMatrix* stiffmatrix,
                                  Epetra_SerialDenseMatrix* massmatrix,
                                  Epetra_SerialDenseVector* force,
-                                 Epetra_SerialDenseMatrix* elestress,
+                                 Epetra_SerialDenseMatrix* stresses,
                                  const double              time);
 
   void soh8_stress(vector<double>& mydisp,
                    Epetra_SerialDenseMatrix* stresses,
                    const double time);
-                   
+
+  void soh8_expol(Epetra_SerialDenseMatrix& stresses,
+                  Epetra_SerialDenseMatrix& nodalstresses);
+
   /*!
   \brief Create a integrator for the SoHex8 element
-  
-  this constructor provides Object Oriented So_integrator functionality by adapting the strictly procedural 
+
+  this constructor provides Object Oriented So_integrator functionality by adapting the strictly procedural
   DRT::UTILS::IntegrationPoints3D struct.
-  */     
+  */
   class Integrator_So_hex8 : public DRT::ELEMENTS::So_integrator
   {
   	public:
@@ -782,10 +785,10 @@ protected:
 	    calc_struct_constrvol,
 	    calc_struct_volconstrstiff,
 	    calc_struct_constrarea,
-        calc_init_vol,
-        calc_surfstress_stiff,
-        calc_struct_areaconstrstiff,
-        calc_struct_monitarea
+            calc_init_vol,
+            calc_surfstress_stiff,
+            calc_struct_areaconstrstiff,
+            calc_struct_monitarea
 	  };
 
 
@@ -808,7 +811,7 @@ private:
 
   void ComputeVolconstrVolDeriv(Epetra_SerialDenseMatrix xscurr,
 		  Epetra_SerialDenseVector& elevector1);
-  
+
 
   void soh8_surface_integ(
       vector<double>* funct,                 // (o) shape functions

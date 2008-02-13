@@ -115,24 +115,44 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
     }
     break;
 
-    // evaluate stresses
+    // evaluate stresses at nodes
     case calc_struct_stress: {
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      Epetra_SerialDenseMatrix elestress(NUMSTR_SOH8,NUMGPT_SOH8);
+      Epetra_SerialDenseMatrix stresses(NUMGPT_SOH8,NUMSTR_SOH8);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,&elestress,time);
-      // average gp stresses to store element (center) stresses
-      for (int i = 0; i < NUMSTR_SOH8; ++i) {
-        for (int j = 0; j < NUMGPT_SOH8; ++j) {
-          stresses_[i] += 0.125 * elestress(i,j);
-        }
+      soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stresses,time);
+
+      // extrapolate stresses at Gauss points to nodes
+      Epetra_SerialDenseMatrix nodalstresses(NUMNOD_SOH8,NUMSTR_SOH8);
+      soh8_expol(stresses,nodalstresses);
+
+      // average nodal stresses between elements
+      // -> divide by number of adjacent elements
+      vector<int> numadjele(NUMNOD_SOH8);
+
+      for (int i=0;i<NUMNOD_SOH8;++i)
+      {
+        DRT::Node* node=Nodes()[i];
+        numadjele[i]=node->NumElement();
       }
-      //soh8_stress(mydisp,&stresses, time);
+
+      for (int i=0;i<NUMNOD_SOH8;++i)
+      {
+        elevec1(3*i)=nodalstresses(i,0)/numadjele[i];
+        elevec1(3*i+1)=nodalstresses(i,1)/numadjele[i];
+        elevec1(3*i+2)=nodalstresses(i,2)/numadjele[i];
+      }
+      for (int i=0;i<NUMNOD_SOH8;++i)
+      {
+        elevec2(3*i)=nodalstresses(i,3)/numadjele[i];
+        elevec2(3*i+1)=nodalstresses(i,4)/numadjele[i];
+        elevec2(3*i+2)=nodalstresses(i,5)/numadjele[i];
+      }
     }
     break;
 
@@ -254,7 +274,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       Epetra_SerialDenseMatrix* stiffmatrix,    // element stiffness matrix
       Epetra_SerialDenseMatrix* massmatrix,     // element mass matrix
       Epetra_SerialDenseVector* force,          // element internal force vector
-      Epetra_SerialDenseMatrix* elestress,      // element stresses
+      Epetra_SerialDenseMatrix* stresses,       // stresses at GP
       const double              time)           // current absolute time
 {
 /* ============================================================================*
@@ -276,7 +296,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     xrefe(i,1) = Nodes()[i]->X()[1];
     xrefe(i,2) = Nodes()[i]->X()[2];
     #endif
-    
+
     xcurr(i,0) = xrefe(i,0) + disp[i*NODDOF_SOH8+0];
     xcurr(i,1) = xrefe(i,1) + disp[i*NODDOF_SOH8+1];
     xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_SOH8+2];
@@ -365,7 +385,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
                - jac(0,0) * jac(1,2) * jac(2,1)
                - jac(0,1) * jac(1,0) * jac(2,2)
                - jac(0,2) * jac(1,1) * jac(2,0);
-    #else 
+    #else
     double detJ= (long double)jac(0,0) * (long double)jac(1,1) * (long double)jac(2,2)
                + (long double)jac(0,1) * (long double)jac(1,2) * (long double)jac(2,0)
                + (long double)jac(0,2) * (long double)jac(1,0) * (long double)jac(2,1)
@@ -373,7 +393,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
                - (long double)jac(0,1) * (long double)jac(1,0) * (long double)jac(2,2)
                - (long double)jac(0,2) * (long double)jac(1,1) * (long double)jac(2,0);
     #endif
-    
+
     if (detJ == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
 
@@ -385,7 +405,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     Epetra_SerialDenseSolver solve_for_inverseJac;  // solve A.X=B
     solve_for_inverseJac.SetMatrix(jac);            // set A=jac
     /* (unfortunately) we need a redundant copy of derivatives matrix
-     *  as the solver factorisation changes it */ 
+     *  as the solver factorisation changes it */
     Epetra_SerialDenseMatrix temp_deriv(int_hex8.deriv_gp[gp]);
     solve_for_inverseJac.SetVectors(N_XYZ,temp_deriv);// set X=N_XYZ, B=deriv_gp
     solve_for_inverseJac.FactorWithEquilibration(true);
@@ -393,11 +413,11 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     int err2 = solve_for_inverseJac.Factor();
     int err = solve_for_inverseJac.Solve();         // N_XYZ = J^-1.N_rst
     if ((err != 0) && (err2!=0)) dserror("Inversion of Jacobian failed");
-	
+
 	/*cout << deriv_gp;
     cout << int_hex8.deriv_gp[gp];
     getchar();*/
-    
+
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
     Epetra_SerialDenseMatrix defgrd(NUMDIM_SOH8,NUMDIM_SOH8);
     defgrd.Multiply('T','T',1.0,xcurr,N_XYZ,1.0);
@@ -497,11 +517,11 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     const int ele_ID = Id();
     soh8_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp, ele_ID, time);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
-    
+
     // return gp stresses
-    if (elestress != NULL){
+    if (stresses != NULL){
       for (int i = 0; i < NUMSTR_SOH8; ++i) {
-        (*elestress)(i,gp) = stress(i);
+        (*stresses)(gp,i) = stress(i);
       }
     }
 
@@ -515,47 +535,54 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
 //    //cout << endl << "Delta E: " << DE;
 //    //cout << endl << "Delta S: " << DS;
 
-    // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
-    (*force).Multiply('T','N',detJ * int_hex8.weights(gp),bop,stress,1.0);
-
-    // integrate `elastic' and `initial-displacement' stiffness matrix
-    // keu = keu + (B^T . C . B) * detJ * w(gp)
-    Epetra_SerialDenseMatrix cb(NUMSTR_SOH8,NUMDOF_SOH8);
-    cb.Multiply('N','N',1.0,cmat,bop,1.0);          // temporary C . B
-    (*stiffmatrix).Multiply('T','N',detJ * int_hex8.weights(gp),bop,cb,1.0);
-
-    // integrate `geometric' stiffness matrix and add to keu *****************
-    Epetra_SerialDenseVector sfac(stress); // auxiliary integrated stress
-    sfac.Scale(detJ * int_hex8.weights(gp));     // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
-    vector<double> SmB_L(NUMDIM_SOH8);     // intermediate Sm.B_L
-    // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
-    for (int inod=0; inod<NUMNOD_SOH8; ++inod){
-      SmB_L[0] = sfac(0) * N_XYZ(0,inod) + sfac(3) * N_XYZ(1,inod) + sfac(5) * N_XYZ(2,inod);
-      SmB_L[1] = sfac(3) * N_XYZ(0,inod) + sfac(1) * N_XYZ(1,inod) + sfac(4) * N_XYZ(2,inod);
-      SmB_L[2] = sfac(5) * N_XYZ(0,inod) + sfac(4) * N_XYZ(1,inod) + sfac(2) * N_XYZ(2,inod);
-      for (int jnod=0; jnod<NUMNOD_SOH8; ++jnod){
-        double bopstrbop = 0.0;            // intermediate value
-        for (int idim=0; idim<NUMDIM_SOH8; ++idim) bopstrbop += N_XYZ(idim,jnod) * SmB_L[idim];
-        (*stiffmatrix)(NUMDIM_SOH8*inod+0,NUMDIM_SOH8*jnod+0) += bopstrbop;
-        (*stiffmatrix)(NUMDIM_SOH8*inod+1,NUMDIM_SOH8*jnod+1) += bopstrbop;
-        (*stiffmatrix)(NUMDIM_SOH8*inod+2,NUMDIM_SOH8*jnod+2) += bopstrbop;
+    if (force != NULL || stiffmatrix != NULL){
+      if (force != NULL) {
+        // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
+        (*force).Multiply('T','N',detJ * int_hex8.weights(gp),bop,stress,1.0);
       }
-    } // end of integrate `geometric' stiffness ******************************
 
-    // EAS technology: integrate matrices --------------------------------- EAS
-    if (eastype_ != soh8_easnone) {
-      double integrationfactor = detJ * int_hex8.weights(gp);
-      // integrate Kaa: Kaa += (M^T . cmat . M) * detJ * w(gp)
-      Epetra_SerialDenseMatrix cM(NUMSTR_SOH8,neas_); // temporary c . M
-      cM.Multiply('N','N',1.0,cmat,M,0.0);
-      Kaa.Multiply('T','N',integrationfactor,M,cM,1.0);
+      Epetra_SerialDenseMatrix cb(NUMSTR_SOH8,NUMDOF_SOH8);
+      cb.Multiply('N','N',1.0,cmat,bop,1.0);          // temporary C . Bl
 
-      // integrate Kda: Kda += (M^T . cmat . B) * detJ * w(gp)
-      Kda.Multiply('T','N',integrationfactor,M,cb,1.0);
+      if (stiffmatrix != NULL) {
+        // integrate `elastic' and `initial-displacement' stiffness matrix
+        // keu = keu + (B^T . C . B) * detJ * w(gp)
+        (*stiffmatrix).Multiply('T','N',detJ * int_hex8.weights(gp),bop,cb,1.0);
 
-      // integrate feas: feas += (M^T . sigma) * detJ *wp(gp)
-      feas.Multiply('T','N',integrationfactor,M,stress,1.0);
-    } // ------------------------------------------------------------------ EAS
+        // integrate `geometric' stiffness matrix and add to keu *****************
+        Epetra_SerialDenseVector sfac(stress); // auxiliary integrated stress
+        sfac.Scale(detJ * int_hex8.weights(gp));     // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
+        vector<double> SmB_L(NUMDIM_SOH8);     // intermediate Sm.B_L
+        // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
+        for (int inod=0; inod<NUMNOD_SOH8; ++inod){
+          SmB_L[0] = sfac(0) * N_XYZ(0,inod) + sfac(3) * N_XYZ(1,inod) + sfac(5) * N_XYZ(2,inod);
+          SmB_L[1] = sfac(3) * N_XYZ(0,inod) + sfac(1) * N_XYZ(1,inod) + sfac(4) * N_XYZ(2,inod);
+          SmB_L[2] = sfac(5) * N_XYZ(0,inod) + sfac(4) * N_XYZ(1,inod) + sfac(2) * N_XYZ(2,inod);
+          for (int jnod=0; jnod<NUMNOD_SOH8; ++jnod){
+            double bopstrbop = 0.0;            // intermediate value
+            for (int idim=0; idim<NUMDIM_SOH8; ++idim) bopstrbop += N_XYZ(idim,jnod) * SmB_L[idim];
+            (*stiffmatrix)(NUMDIM_SOH8*inod+0,NUMDIM_SOH8*jnod+0) += bopstrbop;
+            (*stiffmatrix)(NUMDIM_SOH8*inod+1,NUMDIM_SOH8*jnod+1) += bopstrbop;
+            (*stiffmatrix)(NUMDIM_SOH8*inod+2,NUMDIM_SOH8*jnod+2) += bopstrbop;
+          }
+        } // end of integrate `geometric' stiffness******************************
+      }
+
+      // EAS technology: integrate matrices --------------------------------- EAS
+      if (eastype_ != soh8_easnone) {
+        double integrationfactor = detJ * int_hex8.weights(gp);
+        // integrate Kaa: Kaa += (M^T . cmat . M) * detJ * w(gp)
+        Epetra_SerialDenseMatrix cM(NUMSTR_SOH8,neas_); // temporary c . M
+        cM.Multiply('N','N',1.0,cmat,M,0.0);
+        Kaa.Multiply('T','N',integrationfactor,M,cM,1.0);
+
+        // integrate Kda: Kda += (M^T . cmat . B) * detJ * w(gp)
+        Kda.Multiply('T','N',integrationfactor,M,cb,1.0);
+
+        // integrate feas: feas += (M^T . sigma) * detJ *wp(gp)
+        feas.Multiply('T','N',integrationfactor,M,stress,1.0);
+      } // ---------------------------------------------------------------- EAS
+    }
 
     if (massmatrix != NULL){ // evaluate mass matrix +++++++++++++++++++++++++
       // integrate concistent mass matrix
@@ -573,32 +600,40 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
   }/* ==================================================== end of Loop over GP */
    /* =========================================================================*/
 
-  // EAS technology: ------------------------------------------------------ EAS
-  // subtract EAS matrices from disp-based Kdd to "soften" element
-  if (eastype_ != soh8_easnone) {
-    // we need the inverse of Kaa
-    Epetra_SerialDenseSolver solve_for_inverseKaa;
-    solve_for_inverseKaa.SetMatrix(Kaa);
-    solve_for_inverseKaa.Invert();
+  if (force != NULL || stiffmatrix != NULL) {
+    // EAS technology: ------------------------------------------------------ EAS
+    // subtract EAS matrices from disp-based Kdd to "soften" element
+    if (eastype_ != soh8_easnone) {
+      // we need the inverse of Kaa
+      Epetra_SerialDenseSolver solve_for_inverseKaa;
+      solve_for_inverseKaa.SetMatrix(Kaa);
+      solve_for_inverseKaa.Invert();
 
-    Epetra_SerialDenseMatrix KdaKaa(NUMDOF_SOH8,neas_); // temporary Kda.Kaa^{-1}
-    KdaKaa.Multiply('T','N',1.0,Kda,Kaa,1.0);
+      Epetra_SerialDenseMatrix KdaKaa(NUMDOF_SOH8,neas_); // temporary Kda.Kaa^{-1}
+      KdaKaa.Multiply('T','N',1.0,Kda,Kaa,1.0);
 
-    // EAS-stiffness matrix is: Kdd - Kda^T . Kaa^-1 . Kda
-    (*stiffmatrix).Multiply('N','N',-1.0,KdaKaa,Kda,1.0);
+      if (stiffmatrix != NULL) {
+        // EAS-stiffness matrix is: Kdd - Kda^T . Kaa^-1 . Kda
+        (*stiffmatrix).Multiply('N','N',-1.0,KdaKaa,Kda,1.0);
+      }
 
-    // EAS-internal force is: fint - Kda^T . Kaa^-1 . feas
-    (*force).Multiply('N','N',-1.0,KdaKaa,feas,1.0);
+      if (force != NULL) {
+        // EAS-internal force is: fint - Kda^T . Kaa^-1 . feas
+        (*force).Multiply('N','N',-1.0,KdaKaa,feas,1.0);
+      }
 
-    // store current EAS data in history
-    for (int i=0; i<neas_; ++i)
-    {
-      for (int j=0; j<neas_; ++j) (*oldKaainv)(i,j) = Kaa(i,j);
-      for (int j=0; j<NUMDOF_SOH8; ++j) (*oldKda)(i,j) = Kda(i,j);
-      (*oldfeas)(i,0) = feas(i);
+      // store current EAS data in history
+      for (int i=0; i<neas_; ++i)
+      {
+        for (int j=0; j<neas_; ++j) (*oldKaainv)(i,j) = Kaa(i,j);
+        for (int j=0; j<NUMDOF_SOH8; ++j) (*oldKda)(i,j) = Kda(i,j);
+        (*oldfeas)(i,0) = feas(i);
+      }
+    } // -------------------------------------------------------------------- EAS
+    if (stiffmatrix != NULL){
+      SymmetriseMatrix(*stiffmatrix);
     }
-  } // -------------------------------------------------------------------- EAS
-  SymmetriseMatrix(*stiffmatrix);
+  }
   return;
 } // DRT::ELEMENTS::Shell8::s8_nlnstiffmass
 

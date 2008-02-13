@@ -145,6 +145,11 @@ public:
   */
   virtual void WriteVector(const string name, Teuchos::RCP<Epetra_MultiVector> vec, bool nodevector=true);
 
+  //! write stress multivector
+  virtual void WriteStressVector(const string name,
+                                 Teuchos::RCP<Epetra_Vector> normalstresses,
+                                 Teuchos::RCP<Epetra_Vector> shearstresses);
+
   //! write a condition identified by its name
   virtual void WriteCondition(const string condname) const;
 

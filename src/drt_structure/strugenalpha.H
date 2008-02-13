@@ -223,6 +223,18 @@ public:
   virtual const Epetra_Vector& Getdu() { return *disi_; }
 
   /*!
+  \brief return displacements at midpoint
+
+  */
+  virtual const Epetra_Vector& Getdm() { return *dism_; }
+
+  /*!
+  \brief return residual vector at midpoint
+
+  */
+  virtual const Epetra_Vector& Getfresm() { return *fresm_; }
+
+  /*!
   \brief return rowmap
 
   */
@@ -376,6 +388,8 @@ protected:
   RefCountPtr<Epetra_Vector>    fextm_;
   RefCountPtr<Epetra_Vector>    fextn_;
   RefCountPtr<Epetra_Vector>    fresm_;
+  RefCountPtr<Epetra_Vector>    normal_stresses_;
+  RefCountPtr<Epetra_Vector>    shear_stresses_;
 
   double                        ref_disnorm_;
   double                        ref_fnorm_;

@@ -114,6 +114,11 @@ maxentriesperrow_(81)
   // also known as out-of-balance-force
   fresm_ = LINALG::CreateVector(*dofrowmap,false);
 
+  //vector containing nodal normal stresses
+  normal_stresses_ = LINALG::CreateVector(*dofrowmap,true);
+  //vector containing nodal shear stresses
+  shear_stresses_ = LINALG::CreateVector(*dofrowmap,true);
+
   //-------------------------------------------- calculate external forces
   {
     ParameterList p;
@@ -264,7 +269,7 @@ void StruGenAlpha::ConstantPredictor()
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces if a relative convergence
   // check is desired
-  if (step != 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
+  if (step != 0 and (convcheck != "AbsRes_And_AbsDis" or convcheck != "AbsRes_Or_AbsDis"))
   {
     CalcRefNorms();
   }
@@ -389,14 +394,14 @@ void StruGenAlpha::ConstantPredictor()
   // store norms of displacements and maximum of norms of internal,
   // external and inertial forces if a relative convergence check
   // is desired and we are in the first time step
-  if (step == 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
+  if (step == 0 and (convcheck != "AbsRes_And_AbsDis" or convcheck != "AbsRes_Or_AbsDis"))
   {
     CalcRefNorms();
   }
 
   if (printscreen)
     fresm_->Norm2(&fresmnorm);
-  if (!myrank_ && printscreen)
+  if (!myrank_ and printscreen)
   {
     PrintPredictor(convcheck, fresmnorm);
   }
@@ -435,7 +440,7 @@ void StruGenAlpha::MatrixFreeConstantPredictor()
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces if a relative convergence
   // check is desired
-  if (step != 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
+  if (step != 0 and (convcheck != "AbsRes_And_AbsDis" or convcheck != "AbsRes_Or_AbsDis"))
   {
     CalcRefNorms();
   }
@@ -555,14 +560,14 @@ void StruGenAlpha::MatrixFreeConstantPredictor()
   // store norms of displacements and maximum of norms of internal,
   // external and inertial forces if a relative convergence check
   // is desired and we are in the first time step
-  if (step == 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
+  if (step == 0 and (convcheck != "AbsRes_And_AbsDis" or convcheck != "AbsRes_Or_AbsDis"))
   {
     CalcRefNorms();
   }
 
   if (printscreen)
     fresm_->Norm2(&fresmnorm);
-  if (!myrank_ && printscreen)
+  if (!myrank_ and printscreen)
   {
     PrintPredictor(convcheck, fresmnorm);
   }
@@ -593,7 +598,7 @@ void StruGenAlpha::ConsistentPredictor()
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces if a relative convergence
   // check is desired
-  if (step != 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
+  if (step != 0 and (convcheck != "AbsRes_And_AbsDis" or convcheck != "AbsRes_Or_AbsDis"))
   {
     CalcRefNorms();
   }
@@ -735,14 +740,14 @@ void StruGenAlpha::ConsistentPredictor()
   // store norms of displacements and maximum of norms of internal,
   // external and inertial forces if a relative convergence check
   // is desired and we are in the first time step
-  if (step == 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
+  if (step == 0 and (convcheck != "AbsRes_And_AbsDis" or convcheck != "AbsRes_Or_AbsDis"))
   {
     CalcRefNorms();
   }
 
   if (printscreen)
     fresm_->Norm2(&fresmnorm);
-  if (!myrank_ && printscreen)
+  if (!myrank_ and printscreen)
   {
     PrintPredictor(convcheck, fresmnorm);
   }
@@ -914,7 +919,7 @@ void StruGenAlpha::FullNewton()
   timer.ResetStartTime();
   bool print_unconv = true;
 
-  while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter<=maxiter)
+  while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) and numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
@@ -1036,7 +1041,7 @@ void StruGenAlpha::FullNewton()
     fresm_->Norm2(&fresmnorm);
 
     // a short message
-    if (!myrank_ && (printscreen || printerr))
+    if (!myrank_ and (printscreen or printerr))
     {
       PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
                   fresmnorm,disinorm,convcheck);
@@ -1056,7 +1061,7 @@ void StruGenAlpha::FullNewton()
   }
   else
   {
-     if (!myrank_ && printscreen)
+     if (!myrank_ and printscreen)
      {
        PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
                    fresmnorm,disinorm,convcheck);
@@ -1086,7 +1091,7 @@ void StruGenAlpha::NonLinearUzawaFullNewton(int predictor)
 	  double constrnorm=ConstrMan_->GetErrorNorm();
 	  cout<<"Constraint error for Newton solution: "<<constrnorm<<endl;
 	  int numiter_uzawa=0;
-	  while (constrnorm>tolconstr && numiter_uzawa <= maxiterUzawa)
+	  while (constrnorm>tolconstr and numiter_uzawa <= maxiterUzawa)
 	  {
 		  // Lagrange multiplier is increased by Uzawa_param*ConstrErr
 		  ConstrMan_->UpdateLagrMult(Uzawa_param);
@@ -1158,7 +1163,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 
 
   while (!Converged(convcheck, disinorm, fresmnorm, constrnorm, toldisp, tolres, tolconstr)
-         && numiter<=maxiter)
+         and numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
@@ -1213,14 +1218,14 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   	quotient =1;
     //Solve one iteration step with augmented lagrange
   	//Since we calculate displacement norm as well, at least one step has to be taken
-    while (((norm_uzawa > tolres/10||norm_vol_uzawa>tolconstr/10)
-    		&& numiter_uzawa < maxiterUzawa)||numiter_uzawa<1)
+    while (((norm_uzawa > tolres/10 or norm_vol_uzawa>tolconstr/10)
+    		and numiter_uzawa < maxiterUzawa) or numiter_uzawa<1)
     {
 
 	  	  LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresmcopy,zeros_,dirichtoggle_);
 	  	  // solve for disi
 	  	  // Solve K . IncD = -R  ===>  IncD_{n+1}
-	  	  if (numiter_uzawa==0&&numiter==0)
+	  	  if (numiter_uzawa==0 and numiter==0)
 	  	  {
                     solver_.Solve(stiff_->Matrix(),disi_,fresmcopy,true,true);
 	  	  }
@@ -1395,7 +1400,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     fresm_->Norm2(&fresmnorm);
 
     // a short message
-    if (!myrank_ && (printscreen || printerr))
+    if (!myrank_ and (printscreen or printerr))
     {
       PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
                   fresmnorm,disinorm,convcheck,constrnorm, Uzawa_param);
@@ -1415,7 +1420,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   }
   else
   {
-     if (!myrank_ && printscreen)
+     if (!myrank_ and printscreen)
      {
        PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
                    fresmnorm,disinorm,convcheck,constrnorm, Uzawa_param);
@@ -1478,7 +1483,7 @@ void StruGenAlpha::ModifiedNewton()
   timer.ResetStartTime();
   bool print_unconv = true;
 
-  while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres)  && numiter<=maxiter)
+  while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres)  and numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
     //----------------------- apply dirichlet BCs to system of equations
@@ -1575,7 +1580,7 @@ void StruGenAlpha::ModifiedNewton()
 
     fresm_->Norm2(&fresmnorm);
     // a short message
-    if (!myrank_ && (printscreen || printerr))
+    if (!myrank_ and (printscreen or printerr))
     {
       PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
                   fresmnorm,disinorm,convcheck);
@@ -1594,7 +1599,7 @@ void StruGenAlpha::ModifiedNewton()
   }
   else
   {
-     if (!myrank_ && printscreen)
+     if (!myrank_ and printscreen)
      {
        PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
                    fresmnorm,disinorm,convcheck);
@@ -1633,11 +1638,27 @@ void StruGenAlpha::MatrixFreeNewton()
   if (!errfile) printerr = false;
   //const Epetra_Map* dofrowmap = discret_.DofRowMap();
 
-  int numiter=0;
-  //---------------------------------------------- build effective lhs
-  LINALG::ApplyDirichlettoSystem(disi_,fresm_,zeros_,dirichtoggle_);
+//   int numiter=0;
+//   //---------------------------------------------- build effective lhs
+//   LINALG::ApplyDirichlettoSystem(disi_,fresm_,zeros_,dirichtoggle_);
+
+//   //=================================================== equilibrium loop
+//   double fresmnorm = 1.0e6;
+//   double disinorm = 1.0e6;
+//   fresm_->Norm2(&fresmnorm);
+//   Epetra_Time timer(discret_.Comm());
+//   timer.ResetStartTime();
+//   bool print_unconv = true;
+
+  // check whether we have a stiffness matrix, that is not filled yet
+  // and mass and damping are present          -------------------> test only !!!!!!!!!!!!!!
+  if (stiff_->Filled()) dserror("stiffness matrix may not be filled here");
+  if (!mass_->Filled()) dserror("mass matrix must be filled here");
+  if (damping)
+    if (!damp_->Filled()) dserror("damping matrix must be filled here");
 
   //=================================================== equilibrium loop
+  int numiter=0;
   double fresmnorm = 1.0e6;
   double disinorm = 1.0e6;
   fresm_->Norm2(&fresmnorm);
@@ -1645,11 +1666,21 @@ void StruGenAlpha::MatrixFreeNewton()
   timer.ResetStartTime();
   bool print_unconv = true;
 
-  while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres)  && numiter<=maxiter)
+  while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres)  and numiter<=maxiter)
   {
+
+    // (using matrix stiff_ as effective matrix) ----------> test only!!!!!!!
+    stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
+    if (damping)
+    {
+      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+    }
+    stiff_->Complete();
+
     //------------------------------------------- effective rhs is fresm
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
+    LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
 
     //----------------------------------------- build MatrixFreeOperator
     RCP<Epetra_Operator> mfop = rcp(new LINALG::MatrixFreeOperator(*this, stiff_));
@@ -1666,31 +1697,31 @@ void StruGenAlpha::MatrixFreeNewton()
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
     dism_->Update(1.-alphaf,*disi_,1.0);
     // velocities
-#ifndef STRUGENALPHA_INCRUPDT
+//#ifndef STRUGENALPHA_INCRUPDT
     // iterative
     // V_{n+1-alpha_f} := V_{n+1-alpha_f}
     //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
-    velm_->Update((1.-alphaf)*gamma/(beta*dt),*disi_,1.0);
-#else
+//    velm_->Update((1.-alphaf)*gamma/(beta*dt),*disi_,1.0);
+//#else
     // incremental (required for constant predictor)
     velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
     velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
                   (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
                   gamma/(beta*dt));
-#endif
+//#endif
     // accelerations
-#ifndef STRUGENALPHA_INCRUPDT
+//#ifndef STRUGENALPHA_INCRUPDT
     // iterative
     // A_{n+1-alpha_m} := A_{n+1-alpha_m}
     //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
-    accm_->Update((1.-alpham)/(beta*dt*dt),*disi_,1.0);
-#else
+//    accm_->Update((1.-alpham)/(beta*dt*dt),*disi_,1.0);
+//#else
     // incremental (required for constant predictor)
     accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
     accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
                   (2.*beta-1.+alpham)/(2.*beta),*acc_,
                   (1.-alpham)/((1.-alphaf)*beta*dt*dt));
-#endif
+//#endif
 
     //----------------------------------------- compute internal forces
     {
@@ -1713,8 +1744,24 @@ void StruGenAlpha::MatrixFreeNewton()
       discret_.SetState("displacement",dism_);
       //discret_.SetState("velocity",velm_); // not used at the moment
       fint_->PutScalar(0.0);  // initialise internal force vector
-      discret_.Evaluate(p,null,null,fint_,null,null);
+      //discret_.Evaluate(p,null,null,fint_,null,null);
+      discret_.Evaluate(p,stiff_,null,fint_,null,null);
       discret_.ClearState();
+
+//       if surface stress etc should be incorporated, be sure that
+//       they are also incorporated in computeFmatrixfree!!!!!!!!
+//
+//       if (surf_stress_man_!=null)
+//       {
+//         p.set("surfstr_man", surf_stress_man_);
+//         surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
+//       }
+
+//       if (ConstrMan_->HaveConstraint())
+//       {
+//     	  ConstrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
+//       }
+      // do NOT finalize the stiffness matrix to add masses to it later
     }
 
     //------------------------------------------ compute residual forces
@@ -1745,7 +1792,7 @@ void StruGenAlpha::MatrixFreeNewton()
 
     fresm_->Norm2(&fresmnorm);
     // a short message
-    if (!myrank_ && (printscreen || printerr))
+    if (!myrank_ and (printscreen or printerr))
     {
       PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
                   fresmnorm,disinorm,convcheck);
@@ -1764,12 +1811,14 @@ void StruGenAlpha::MatrixFreeNewton()
   }
   else
   {
-     if (!myrank_ && printscreen)
+     if (!myrank_ and printscreen)
      {
        PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
                    fresmnorm,disinorm,convcheck);
      }
   }
+
+  params_.set<int>("num iterations",numiter);
 
   return;
 } // StruGenAlpha::MatrixFreeNewton()
@@ -1933,7 +1982,7 @@ void StruGenAlpha::NonlinearCG()
     double t1 = timer.ElapsedTime();
 
     // get status and print output message
-    if (outlevel && myrank_==0)
+    if (outlevel and myrank_==0)
     {
       printf("NOX/ML :============solve time incl. setup : %15.4f sec\n",t1-t0);
       double appltime = fineinterface_->getsumtime();
@@ -2040,7 +2089,7 @@ void StruGenAlpha::NonlinearCG()
   if (status != NOX::StatusTest::Converged) converged = false;
 
   // get status and print output message
-  if (outlevel && myrank_==0)
+  if (outlevel and myrank_==0)
   {
     printf("NOX/ML :============solve time incl. setup : %15.4f sec\n",t1-t0);
     double appltime = fineinterface_->getsumtime();
@@ -2134,7 +2183,7 @@ void StruGenAlpha::PTC()
   timer.ResetStartTime();
   bool print_unconv = true;
 
-  while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter<=maxiter)
+  while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) and numiter<=maxiter)
   {
     double dtim = dti0;
     dti0 = dti;
@@ -2260,7 +2309,7 @@ void StruGenAlpha::PTC()
 
     fresm_->Norm2(&fresmnorm);
     // a short message
-    if (!myrank_ && (printscreen || printerr))
+    if (!myrank_ and (printscreen or printerr))
     {
       PrintPTC(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
                   fresmnorm,disinorm,convcheck,dti);
@@ -2310,7 +2359,7 @@ void StruGenAlpha::PTC()
   }
   else
   {
-     if (!myrank_ && printscreen)
+     if (!myrank_ and printscreen)
      {
        PrintPTC(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
                    fresmnorm,disinorm,convcheck,dti);
@@ -2443,7 +2492,7 @@ void StruGenAlpha::computeF(const Epetra_Vector& x, Epetra_Vector& F)
 
 
 /*----------------------------------------------------------------------*
- |  compute residual to given state x (public)                  lw 10/07|
+ |  compute residual to given state dism_+x (public)            lw 10/07|
  |  in this routine, none of the state vectors is changed               |
  |  -> necessary in case of matrix-free methods where the residual is   |
  |  evaluated also for pertubations                                     |
@@ -2480,35 +2529,33 @@ void StruGenAlpha::computeFmatrixfree(const Epetra_Vector& x, Epetra_Vector& F)
     dism->Update(1.-alphaf,*disi,1.0,*dism_,0.0);
 
 
-    // V_{n+1-alpha_f} := V_{n+1-alpha_f}
-    //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
-    //velm->Update((1.-alphaf)*gamma/(beta*dt),*disi,1.0,*velm_,0.0);
-
     // velocities
+#ifndef STRUGENALPHA_INCRUPDT
     // iterative
     // V_{n+1-alpha_f} := V_{n+1-alpha_f}
     //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
+    velm->Update((1.-alphaf)*gamma/(beta*dt),*disi,1.0,*velm_,0.0);
+#else
     // incremental (required for constant predictor)
     velm->Update(1.0,*dism,-1.0,*dis_,0.0);
     velm->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
                   (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
                   gamma/(beta*dt));
-
-
-    // A_{n+1-alpha_m} := A_{n+1-alpha_m}
-    //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
-    //accm->Update((1.-alpham)/(beta*dt*dt),*disi,1.0,*accm_,0.0);
+#endif
 
     // accelerations
+#ifndef STRUGENALPHA_INCRUPDT
     // iterative
     // A_{n+1-alpha_m} := A_{n+1-alpha_m}
     //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
+    accm->Update((1.-alpham)/(beta*dt*dt),*disi,1.0,*accm_,0.0);
+#else
     // incremental (required for constant predictor)
     accm->Update(1.0,*dism,-1.0,*dis_,0.0);
     accm->Update(-(1.-alpham)/(beta*dt),*vel_,
                   (2.*beta-1.+alpham)/(2.*beta),*acc_,
                   (1.-alpham)/((1.-alphaf)*beta*dt*dt));
-
+#endif
 
     //----------------------------------------- compute internal forces
     {
@@ -2713,7 +2760,7 @@ void StruGenAlpha::UpdateandOutput()
 
   //------------------------------------------------- write restart step
   bool isdatawritten = false;
-  if (writeresevry && istep%writeresevry==0)
+  if (writeresevry and istep%writeresevry==0)
   {
     output_.WriteMesh(istep,timen);
     output_.NewStep(istep, timen);
@@ -2723,12 +2770,12 @@ void StruGenAlpha::UpdateandOutput()
     output_.WriteVector("fexternal",fext_);
     isdatawritten = true;
 
-    if (discret_.Comm().MyPID()==0 && printscreen)
+    if (discret_.Comm().MyPID()==0 and printscreen)
     {
       cout << "====== Restart written in step " << istep << endl;
       fflush(stdout);
     }
-    if (errfile && printerr)
+    if (errfile and printerr)
     {
       fprintf(errfile,"====== Restart written in step %d\n",istep);
       fflush(errfile);
@@ -2736,7 +2783,7 @@ void StruGenAlpha::UpdateandOutput()
   }
 
   //----------------------------------------------------- output results
-  if (iodisp && updevrydisp && istep%updevrydisp==0 && !isdatawritten)
+  if (iodisp and updevrydisp and istep%updevrydisp==0 and !isdatawritten)
   {
     output_.NewStep(istep, timen);
     output_.WriteVector("displacement",dis_);
@@ -2746,18 +2793,12 @@ void StruGenAlpha::UpdateandOutput()
   }
 
   //------------------------------------- do stress calculation and output
-  if (updevrystress && !(istep%updevrystress) && iostress)
+  if (updevrystress and !(istep%updevrystress) and iostress)
   {
     // create the parameters for the discretization
     ParameterList p;
     // action for elements
     p.set("action","calc_struct_stress");
-    // choose what to assemble
-    p.set("assemble matrix 1",false);
-    p.set("assemble matrix 2",false);
-    p.set("assemble vector 1",false);
-    p.set("assemble vector 2",false);
-    p.set("assemble vector 3",false);
     // other parameters that might be needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
@@ -2765,10 +2806,14 @@ void StruGenAlpha::UpdateandOutput()
     discret_.ClearState();
     discret_.SetState("residual displacement",zeros_);
     discret_.SetState("displacement",dis_);
-    discret_.Evaluate(p,null,null,null,null,null);
+    normal_stresses_->PutScalar(0.0);  // initialise normal stress vector
+    shear_stresses_->PutScalar(0.0);  // initialise shear stress vector
+    discret_.Evaluate(p,null,null,normal_stresses_,shear_stresses_,null);
     discret_.ClearState();
     if (!isdatawritten) output_.NewStep(istep, timen);
-    output_.WriteElementData();
+    //output_.WriteElementData();
+    output_.WriteStressVector("nodal_stresses_xyz", normal_stresses_, shear_stresses_);
+    isdatawritten = true;
   }
 
   //---------------------------------------------------------- print out
@@ -2900,9 +2945,9 @@ void StruGenAlpha::Integrate()
   {
     for (int i=step; i<nstep; ++i)
     {
-      dserror("Matrix-free Newton not yet implemented");
-      //MatrixFreeConstantPredictor();
-      //MatrixFreeNewton();
+      //dserror("Matrix-free Newton not yet implemented");
+      MatrixFreeConstantPredictor();
+      MatrixFreeNewton();
       UpdateandOutput();
     }
   }
@@ -3184,8 +3229,8 @@ void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_uncon
                                int maxiter, double fresmnorm, double disinorm,
                                string convcheck)
 {
-  bool relres        = (convcheck == "RelRes_And_AbsDis" || convcheck == "RelRes_Or_AbsDis");
-  bool relres_reldis = (convcheck == "RelRes_And_RelDis" || convcheck == "RelRes_Or_RelDis");
+  bool relres        = (convcheck == "RelRes_And_AbsDis" or convcheck == "RelRes_Or_AbsDis");
+  bool relres_reldis = (convcheck == "RelRes_And_RelDis" or convcheck == "RelRes_Or_RelDis");
 
   if (relres)
   {
@@ -3274,8 +3319,8 @@ void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_uncon
                                int maxiter, double fresmnorm, double disinorm,
                                string convcheck, double constrnorm, double UzawaPara)
 {
-  bool relres        = (convcheck == "RelRes_And_AbsDis" || convcheck == "RelRes_Or_AbsDis");
-  bool relres_reldis = (convcheck == "RelRes_And_RelDis" || convcheck == "RelRes_Or_RelDis");
+  bool relres        = (convcheck == "RelRes_And_AbsDis" or convcheck == "RelRes_Or_AbsDis");
+  bool relres_reldis = (convcheck == "RelRes_And_RelDis" or convcheck == "RelRes_Or_RelDis");
 
 
   if (relres)
@@ -3372,8 +3417,8 @@ void StruGenAlpha::PrintPTC(bool printscreen, bool printerr, bool print_unconv,
                                int maxiter, double fresmnorm, double disinorm,
                                string convcheck, double dti)
 {
-  bool relres        = (convcheck == "RelRes_And_AbsDis" || convcheck == "RelRes_Or_AbsDis");
-  bool relres_reldis = (convcheck == "RelRes_And_RelDis" || convcheck == "RelRes_Or_RelDis");
+  bool relres        = (convcheck == "RelRes_And_AbsDis" or convcheck == "RelRes_Or_AbsDis");
+  bool relres_reldis = (convcheck == "RelRes_And_RelDis" or convcheck == "RelRes_Or_RelDis");
 
   if (relres)
   {
@@ -3456,7 +3501,7 @@ void StruGenAlpha::PrintPTC(bool printscreen, bool printerr, bool print_unconv,
  *----------------------------------------------------------------------*/
 void StruGenAlpha::PrintPredictor(string convcheck, double fresmnorm)
 {
-  if (convcheck != "AbsRes_And_AbsDis" && convcheck != "AbsRes_Or_AbsDis")
+  if (convcheck != "AbsRes_And_AbsDis" and convcheck != "AbsRes_Or_AbsDis")
   {
     fresmnorm /= ref_fnorm_;
     cout << "Predictor scaled res-norm " << fresmnorm << endl;

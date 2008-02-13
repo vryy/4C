@@ -176,6 +176,72 @@ void DRT::ELEMENTS::So_hex8::Print(ostream& os) const
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  extrapolation of quantities at the GPs to the nodes      lw 02/08   |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex8::soh8_expol(Epetra_SerialDenseMatrix& stresses,
+                                        Epetra_SerialDenseMatrix& nodalstresses)
+{
+  static Epetra_SerialDenseMatrix expol(NUMNOD_SOH8,NUMGPT_SOH8);
+  static bool isfilled;
+
+  if (isfilled==true)
+  {
+    nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
+  }
+  else
+  {
+    double sq3=sqrt(3);
+    expol(0,0)=1.25+0.75*sq3;
+    expol(0,1)=-0.25-0.25*sq3;
+    expol(0,2)=-0.25+0.25*sq3;
+    expol(0,3)=-0.25-0.25*sq3;
+    expol(0,4)=-0.25-0.25*sq3;
+    expol(0,5)=-0.25+0.25*sq3;
+    expol(0,6)=1.25-0.75*sq3;
+    expol(0,7)=-0.25+0.25*sq3;
+    expol(1,1)=1.25+0.75*sq3;
+    expol(1,2)=-0.25-0.25*sq3;
+    expol(1,3)=-0.25+0.25*sq3;
+    expol(1,4)=-0.25+0.25*sq3;
+    expol(1,5)=-0.25-0.25*sq3;
+    expol(1,6)=-0.25+0.25*sq3;
+    expol(1,7)=1.25-0.75*sq3;
+    expol(2,2)=1.25+0.75*sq3;
+    expol(2,3)=-0.25-0.25*sq3;
+    expol(2,4)=1.25-0.75*sq3;
+    expol(2,5)=-0.25+0.25*sq3;
+    expol(2,6)=-0.25-0.25*sq3;
+    expol(2,7)=-0.25+0.25*sq3;
+    expol(3,3)=1.25+0.75*sq3;
+    expol(3,4)=-0.25+0.25*sq3;
+    expol(3,5)=1.25-0.75*sq3;
+    expol(3,6)=-0.25+0.25*sq3;
+    expol(3,7)=-0.25-0.25*sq3;
+    expol(4,4)=1.25+0.75*sq3;
+    expol(4,5)=-0.25-0.25*sq3;
+    expol(4,6)=-0.25+0.25*sq3;
+    expol(4,7)=-0.25-0.25*sq3;
+    expol(5,5)=1.25+0.75*sq3;
+    expol(5,6)=-0.25-0.25*sq3;
+    expol(5,7)=-0.25+0.25*sq3;
+    expol(6,6)=1.25+0.75*sq3;
+    expol(6,7)=-0.25-0.25*sq3;
+    expol(7,7)=1.25+0.75*sq3;
+
+    for (int i=0;i<NUMNOD_SOH8;++i)
+    {
+      for (int j=0;j<i;++j)
+      {
+        expol(i,j)=expol(j,i);
+      }
+    }
+
+    nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
+  }
+}
+
 /*----------------------------------------------------------------------*
  |  allocate and return So_hex8Register (public)                maf 04/07|
  *----------------------------------------------------------------------*/
@@ -233,7 +299,7 @@ DRT::Element** DRT::ELEMENTS::So_hex8::Volumes()
  *----------------------------------------------------------------------*/
 DRT::Element** DRT::ELEMENTS::So_hex8::Surfaces()
 {
-  
+
   const int nsurf = NumSurface();
   surfaces_.resize(nsurf);
   surfaceptrs_.resize(nsurf);
@@ -431,15 +497,15 @@ void DRT::ELEMENTS::So_hex8::VisNames(map<string,int>& names)
 {
   // Put the owner of this element into the file (use base class method for this)
   DRT::Element::VisNames(names);
-  
-  // stress vector (Voigt) at element center 
+
+  // stress vector (Voigt) at element center
   string stressname = "StressCxyz";
   names[stressname] = 6;
-  
+
   // element fiber direction vector
   string fibervecname = "FiberVec";
   names[fibervecname] = 3;
-  
+
   return;
 }
 
@@ -450,19 +516,19 @@ void DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   DRT::Element::VisData(name,data);
-  
+
   // these are the names so_hex8 recognizes, do nothing for everything else
   if (name != "StressCxyz" &&
       name != "FiberVec") return;
-  
+
   // check sizes
   if ((name == "StressCxyz") && ((int)data.size()!=6)) dserror("StressCxyz size mismatch");
   if ((name == "FiberVec") && ((int)data.size()!=3)) dserror("FiberVec size mismatch ");
-  
+
   // see whether we have data
 //  if (!stresses_) return; // no stresses present, do nothing
 //  if (!fiberdirection_) return; // no fiber vector present, do nothing
-  
+
   if (name == "StressCxyz"){
     data = stresses_;
   }
@@ -470,7 +536,7 @@ void DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
     data = fiberdirection_;
   }
   else dserror("weirdo impossible case????");
-  
+
   return;
 }
 
