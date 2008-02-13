@@ -31,6 +31,7 @@ extern "C"
 #include <algorithm>
 #include <numeric>
 #include <vector>
+#include <blitz/array.h>
 
 #include "linalg_utils.H"
 #include "linalg_mapextractor.H"
@@ -896,5 +897,26 @@ void DRT::UTILS::SetupFluidSplit(const DRT::Discretization& dis,
   extractor.Setup(*dis.DofRowMap(),conddofmap,otherdofmap);
 }
 
+
+blitz::Array<double,2> DRT::UTILS::PositionArray(
+        const DRT::Element* ele
+        )
+{
+    const int numnode = ele->NumNode();
+    blitz::Array<double,2> xyze(3,numnode,blitz::ColumnMajorArray<2>());
+    const Node** nodes = ele->Nodes();
+    if (nodes == NULL)
+    {
+        dserror("element has no nodal pointers, so getting a position array doesn't make sense!");
+    }
+    for (int inode=0; inode<numnode; inode++)
+    {
+        const double* x = nodes[inode]->X();
+        xyze(0,inode) = x[0];
+        xyze(1,inode) = x[1];
+        xyze(2,inode) = x[2];
+    }
+    return xyze;
+}
 
 #endif  // #ifdef CCADISCRET

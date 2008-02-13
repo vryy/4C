@@ -15,6 +15,7 @@ Maintainer: Michael Gee
 #define UTILS_H
 
 
+#include <blitz/array.h>
 #include "Epetra_Comm.h"
 #include "Epetra_Map.h"
 #include "Epetra_CrsGraph.h"
@@ -144,6 +145,22 @@ namespace UTILS
   void SetupFluidSplit(const DRT::Discretization& dis,
                        int ndim,
                        LINALG::MapExtractor& extractor);
+  
+  /*!
+   * a common task is to get an array of the positions of all nodes of this element
+   * 
+   * this function does just that, so we don't have the associated loop repeated too often
+   * 
+   * Note: return value optimization avoids copying the array
+   * 
+   * \return Array with 3 dimensional position of all element nodes in the coordinate system of the nodes
+   * 
+   * \author a.ger
+   * \date 02/08
+   */
+  blitz::Array<double,2> PositionArray(
+          const DRT::Element* ele           ///< pointer to element, whose nodes we evaluate for their position
+          );
 
 } // namespace UTILS
 } // namespace DRT
