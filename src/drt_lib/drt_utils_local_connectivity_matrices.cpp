@@ -862,7 +862,7 @@ int DRT::UTILS::getDimension(
 /*----------------------------------------------------------------------*
  |  returns the dimension of the element-shape                 bos 01/08|
  *----------------------------------------------------------------------*/  
-int DRT::UTILS::getDimension(DRT::Element::DiscretizationType distype)
+int DRT::UTILS::getDimension(const DRT::Element::DiscretizationType distype)
 {
     int dim = 0;
     

@@ -384,7 +384,7 @@ namespace UTILS
             
   */   
   int getDimension(
-		  DRT::Element::DiscretizationType distype///< element-discretization type
+		  const DRT::Element::DiscretizationType distype///< element-discretization type
     );
 
     
