@@ -40,7 +40,7 @@ TRILINOS_LIB="\
 	-lepetra \
 	-lteuchos \
 	-lrtop"
-TRILINOS_FILTER_LIB="-laztecoo -lteuchos -lepetraext -lepetra"
+TRILINOS_FILTER_LIB=$TRILINOS_LIB
 
 # aztec
 AZTEC_INC=""
