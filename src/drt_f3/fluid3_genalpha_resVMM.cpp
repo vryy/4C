@@ -113,7 +113,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   const enum Fluid3::StabilisationAction                inertia,
   const enum Fluid3::StabilisationAction                pspg,
   const enum Fluid3::StabilisationAction                supg,
-  const enum Fluid3::StabilisationAction                agls,
+  const enum Fluid3::StabilisationAction                vstab,
   const enum Fluid3::StabilisationAction                cstab,
   const enum Fluid3::StabilisationAction                cross,
   const enum Fluid3::StabilisationAction                reynolds,
@@ -201,15 +201,15 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   // dead load in element nodes
   GetNodalBodyForce(ele,timealphaF);
 
-  // in case of viscous stabilisation decide whether to use gls or agls
-  double aglsfac= 0.0;
-  if (agls == Fluid3::viscous_stab_agls || agls == Fluid3::viscous_stab_agls_only_rhs)
+  // in case of viscous stabilization decide whether to use GLS or USFEM
+  double vstabfac= 0.0;
+  if (vstab == Fluid3::viscous_stab_usfem || vstab == Fluid3::viscous_stab_usfem_only_rhs)
   {
-    aglsfac =  1.0;
+    vstabfac =  1.0;
   }
-  else if(agls == Fluid3::viscous_stab_gls || agls == Fluid3::viscous_stab_gls_only_rhs)
+  else if(vstab == Fluid3::viscous_stab_gls || vstab == Fluid3::viscous_stab_gls_only_rhs)
   {
-    aglsfac = -1.0;
+    vstabfac = -1.0;
   }
 #ifdef PERF
   timeeleseteledata_ref = null;
@@ -2471,16 +2471,16 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 
         } // end supg stabilisation
 
-        if(agls == Fluid3::viscous_stab_agls || agls == Fluid3::viscous_stab_gls)
+        if(vstab == Fluid3::viscous_stab_usfem || vstab == Fluid3::viscous_stab_gls)
         {
 #ifdef PERF
           RefCountPtr<TimeMonitor> timeelevstab_ref = rcp(new TimeMonitor(*timeelevstab));
 #endif          
   
-          const double fac_alphaM_two_visc_afgdt_tauM_facMtau         = aglsfac*fac*alphaM*2.0*visc*afgdt*tauM*facMtau;
-          const double fac_afgdt_two_visc_afgdt_tauM_facMtau          = aglsfac*fac*afgdt*2.0*visc*afgdt*tauM*facMtau;
-          const double fac_afgdt_four_visceff_visc_afgdt_tauM_facMtau = aglsfac*fac*afgdt*4.0*visceff*visc*afgdt*tauM*facMtau;
-          const double fac_two_visc_afgdt_tauM_facMtau                = aglsfac*fac*2.0*visc*afgdt*tauM*facMtau;
+          const double fac_alphaM_two_visc_afgdt_tauM_facMtau         = vstabfac*fac*alphaM*2.0*visc*afgdt*tauM*facMtau;
+          const double fac_afgdt_two_visc_afgdt_tauM_facMtau          = vstabfac*fac*afgdt*2.0*visc*afgdt*tauM*facMtau;
+          const double fac_afgdt_four_visceff_visc_afgdt_tauM_facMtau = vstabfac*fac*afgdt*4.0*visceff*visc*afgdt*tauM*facMtau;
+          const double fac_two_visc_afgdt_tauM_facMtau                = vstabfac*fac*2.0*visc*afgdt*tauM*facMtau;
 
           //---------------------------------------------------------------
           //
@@ -3233,15 +3233,15 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 
       }
 
-      if (agls != Fluid3::viscous_stab_none)
+      if (vstab != Fluid3::viscous_stab_none)
       {
 #ifdef PERF
         RefCountPtr<TimeMonitor> timeelevstab_ref = rcp(new TimeMonitor(*timeelevstab));
 #endif          
         
-        const double fac_two_visc_svelaf_x = aglsfac*fac*2.0*visc*svelaf_(0);
-        const double fac_two_visc_svelaf_y = aglsfac*fac*2.0*visc*svelaf_(1);
-        const double fac_two_visc_svelaf_z = aglsfac*fac*2.0*visc*svelaf_(2);
+        const double fac_two_visc_svelaf_x = vstabfac*fac*2.0*visc*svelaf_(0);
+        const double fac_two_visc_svelaf_y = vstabfac*fac*2.0*visc*svelaf_(1);
+        const double fac_two_visc_svelaf_z = vstabfac*fac*2.0*visc*svelaf_(2);
 
         for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
         {
@@ -4015,15 +4015,15 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 #endif          
         }
 
-        if(agls == Fluid3::viscous_stab_gls || agls == Fluid3::viscous_stab_agls)
+        if(vstab == Fluid3::viscous_stab_gls || vstab == Fluid3::viscous_stab_usfem)
         {
 #ifdef PERF
           RefCountPtr<TimeMonitor> timeelevstab_ref = rcp(new TimeMonitor(*timeelevstab));
 #endif          
-          const double fac_two_visc_tauMp             = aglsfac*fac*2.0*visc*tauMp;
-          const double fac_two_visc_afgdt_tauMp       = aglsfac*fac*2.0*visc*afgdt*tauMp;
-          const double fac_two_visc_alphaM_tauMp      = aglsfac*fac*2.0*visc*alphaM*tauMp;
-          const double fac_four_visceff_visc_afgdt_tauMp = aglsfac*fac*4.0*visceff*visc*afgdt*tauMp;
+          const double fac_two_visc_tauMp             = vstabfac*fac*2.0*visc*tauMp;
+          const double fac_two_visc_afgdt_tauMp       = vstabfac*fac*2.0*visc*afgdt*tauMp;
+          const double fac_two_visc_alphaM_tauMp      = vstabfac*fac*2.0*visc*alphaM*tauMp;
+          const double fac_four_visceff_visc_afgdt_tauMp = vstabfac*fac*4.0*visceff*visc*afgdt*tauMp;
 
           for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
           {
@@ -4660,13 +4660,13 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 
       }
 
-      if(agls != Fluid3::viscous_stab_none)
+      if(vstab != Fluid3::viscous_stab_none)
       {
 #ifdef PERF
         RefCountPtr<TimeMonitor> timeelevstab_ref = rcp(new TimeMonitor(*timeelevstab));
 #endif          
 
-        const double fac_two_visc_tauMp = aglsfac * fac*2.0*visc*tauMp;
+        const double fac_two_visc_tauMp = vstabfac * fac*2.0*visc*tauMp;
 
         for (int ui=0; ui<iel_; ++ui) // loop rows  (test functions)
         {

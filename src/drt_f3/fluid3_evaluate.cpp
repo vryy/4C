@@ -319,7 +319,9 @@ DRT::ELEMENTS::Fluid3lin_Impl* DRT::ELEMENTS::Fluid3::F3linImpl()
   return NULL;
 }
 
-// converts a string into an Action for this element
+/*---------------------------------------------------------------------*
+|  converts a string into an Action for this element                   |
+*----------------------------------------------------------------------*/
 DRT::ELEMENTS::Fluid3::ActionType DRT::ELEMENTS::Fluid3::convertStringToActionType(
               const string& action) const
 {
@@ -476,14 +478,36 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
 
         const bool newton = params.get<bool>("include reactive terms for linearisation",false);
 
-        // the stabilisation scheme is hardcoded up to now --- maybe it's worth taking
-        // this into the input or to choose a standard implementation and drop all ifs
-        // on the element level -- if so, I would recommend to drop vstab...
-        
-        const bool pstab  = true;
-        const bool supg   = true;
-        const bool vstab  = true;
-        const bool cstab  = true;
+        // set parameters for stabilization
+        ParameterList& stablist = params.sublist("STABILIZATION");
+
+        // if not available, define map from string to action
+        if(stabstrtoact_.empty())
+        {
+          stabstrtoact_["no_pspg"        ]=pstab_assume_inf_sup_stable;
+          stabstrtoact_["yes_pspg"       ]=pstab_use_pspg;
+          stabstrtoact_["no_supg"        ]=convective_stab_none;
+          stabstrtoact_["yes_supg"       ]=convective_stab_supg;
+          stabstrtoact_["no_vstab"       ]=viscous_stab_none;
+          stabstrtoact_["vstab_gls"      ]=viscous_stab_gls;
+          stabstrtoact_["vstab_gls_rhs"  ]=viscous_stab_gls_only_rhs;
+          stabstrtoact_["vstab_usfem"    ]=viscous_stab_usfem;
+          stabstrtoact_["vstab_usfem_rhs"]=viscous_stab_usfem_only_rhs;
+          stabstrtoact_["no_cstab"       ]=continuity_stab_none;
+          stabstrtoact_["cstab_qs"       ]=continuity_stab_yes;
+          stabstrtoact_["no_cross"       ]=cross_stress_stab_none;
+          stabstrtoact_["cross_complete" ]=cross_stress_stab;
+          stabstrtoact_["cross_rhs"      ]=cross_stress_stab_only_rhs;
+          stabstrtoact_["no_reynolds"    ]=reynolds_stress_stab_none;
+          stabstrtoact_["reynolds_rhs"   ]=reynolds_stress_stab_only_rhs;
+        }
+
+        StabilisationAction pspg     = ConvertStringToStabAction(stablist.get<string>("PSPG"));
+        StabilisationAction supg     = ConvertStringToStabAction(stablist.get<string>("SUPG"));
+        StabilisationAction vstab    = ConvertStringToStabAction(stablist.get<string>("VSTAB"));
+        StabilisationAction cstab    = ConvertStringToStabAction(stablist.get<string>("CSTAB"));
+        StabilisationAction cross    = ConvertStringToStabAction(stablist.get<string>("CROSS-STRESS"));
+        StabilisationAction reynolds = ConvertStringToStabAction(stablist.get<string>("REYNOLDS-STRESS"));
 
         // One-step-Theta: timefac = theta*dt
         // BDF2:           timefac = 2/3 * dt
@@ -528,10 +552,12 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
                        timefac,
                        newton,
                        fssgv,
-                       pstab,
+                       pspg,
                        supg,
                        vstab,
                        cstab,
+                       cross,
+                       reynolds,
                        Cs_fs);
 
         // This is a very poor way to transport the density to the
@@ -885,36 +911,37 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         // if not available, define map from string to action
         if(stabstrtoact_.empty())
         {
-          stabstrtoact_["quasistatic_subscales"            ]=subscales_quasistatic;
-          stabstrtoact_["time_dependent_subscales"         ]=subscales_time_dependent;
-          stabstrtoact_["drop"                             ]=inertia_stab_drop;
-          stabstrtoact_["+(sacc|v)"                        ]=inertia_stab_keep;
-          stabstrtoact_["pstab_off"                        ]=pstab_assume_inf_sup_stable;
-          stabstrtoact_["-(svel|nabla_q)"                  ]=pstab_use_pspg;
-          stabstrtoact_["convective_off"                   ]=convective_stab_none;
-          stabstrtoact_["-(svel|(u_o_nabla)_v)"            ]=convective_stab_supg;
-          stabstrtoact_["viscous_off"                      ]=viscous_stab_none;
-          stabstrtoact_["+2*nu*(svel|nabla_o_eps(v))"      ]=viscous_stab_gls;
-          stabstrtoact_["+2*nu*(svel|nabla_o_eps(v))_[RHS]"]=viscous_stab_gls_only_rhs;
-          stabstrtoact_["-2*nu*(svel|nabla_o_eps(v))"      ]=viscous_stab_agls;
-          stabstrtoact_["-2*nu*(svel|nabla_o_eps(v))_[RHS]"]=viscous_stab_agls_only_rhs;
-          stabstrtoact_["-(spre|nabla_o_v)"                ]=continuity_stab_yes;
-          stabstrtoact_["cstab_off"                        ]=continuity_stab_none;
-          stabstrtoact_["+((svel_o_nabla)_u|v)"            ]=cross_stress_stab;
-          stabstrtoact_["+((svel_o_nabla)_u|v)_[RHS]"      ]=cross_stress_stab_only_rhs;
-          stabstrtoact_["cross_off"                        ]=cross_stress_stab_none;
-          stabstrtoact_["-(svel|(svel_o_grad)_v)_[RHS]"    ]=reynolds_stress_stab_only_rhs;
-          stabstrtoact_["reynolds_off"                     ]=reynolds_stress_stab_none;
+          stabstrtoact_["quasistatic"    ]=subscales_quasistatic;
+          stabstrtoact_["time_dependent" ]=subscales_time_dependent;
+          stabstrtoact_["no_transient"   ]=inertia_stab_drop;
+          stabstrtoact_["yes_transient"  ]=inertia_stab_keep;
+          stabstrtoact_["no_pspg"        ]=pstab_assume_inf_sup_stable;
+          stabstrtoact_["yes_pspg"       ]=pstab_use_pspg;
+          stabstrtoact_["no_supg"        ]=convective_stab_none;
+          stabstrtoact_["yes_supg"       ]=convective_stab_supg;
+          stabstrtoact_["no_vstab"       ]=viscous_stab_none;
+          stabstrtoact_["vstab_gls"      ]=viscous_stab_gls;
+          stabstrtoact_["vstab_gls_rhs"  ]=viscous_stab_gls_only_rhs;
+          stabstrtoact_["vstab_usfem"    ]=viscous_stab_usfem;
+          stabstrtoact_["vstab_usfem_rhs"]=viscous_stab_usfem_only_rhs;
+          stabstrtoact_["no_ctab"        ]=continuity_stab_none;
+          stabstrtoact_["cstab_qs"       ]=continuity_stab_yes;
+          stabstrtoact_["cstab_td"       ]=continuity_stab_td;
+          stabstrtoact_["no_cross"       ]=cross_stress_stab_none;
+          stabstrtoact_["cross_complete" ]=cross_stress_stab;
+          stabstrtoact_["cross_rhs"      ]=cross_stress_stab_only_rhs;
+          stabstrtoact_["no_reynolds"    ]=reynolds_stress_stab_none;
+          stabstrtoact_["reynolds_rhs"   ]=reynolds_stress_stab_only_rhs;
         }
 
-        StabilisationAction tds      = ConvertStringToStabAction(stablist.get<string>("RVMM_TDS"));
-        StabilisationAction inertia  = ConvertStringToStabAction(stablist.get<string>("RVMM_INERTIA"));
-        StabilisationAction pspg     = ConvertStringToStabAction(stablist.get<string>("RVMM_PSPG"));
-        StabilisationAction supg     = ConvertStringToStabAction(stablist.get<string>("RVMM_SUPG"));
-        StabilisationAction vstab    = ConvertStringToStabAction(stablist.get<string>("RVMM_VSTAB"));
-        StabilisationAction cstab    = ConvertStringToStabAction(stablist.get<string>("RVMM_CSTAB"));
-        StabilisationAction cross    = ConvertStringToStabAction(stablist.get<string>("RVMM_CROSS-STRESS"));
-        StabilisationAction reynolds = ConvertStringToStabAction(stablist.get<string>("RVMM_REYNOLDS-STRESS"));
+        StabilisationAction tds      = ConvertStringToStabAction(stablist.get<string>("TDS"));
+        StabilisationAction inertia  = ConvertStringToStabAction(stablist.get<string>("TRANSIENT"));
+        StabilisationAction pspg     = ConvertStringToStabAction(stablist.get<string>("PSPG"));
+        StabilisationAction supg     = ConvertStringToStabAction(stablist.get<string>("SUPG"));
+        StabilisationAction vstab    = ConvertStringToStabAction(stablist.get<string>("VSTAB"));
+        StabilisationAction cstab    = ConvertStringToStabAction(stablist.get<string>("CSTAB"));
+        StabilisationAction cross    = ConvertStringToStabAction(stablist.get<string>("CROSS-STRESS"));
+        StabilisationAction reynolds = ConvertStringToStabAction(stablist.get<string>("REYNOLDS-STRESS"));
 
 #ifdef PERF
         timeeleinitstab_ref = null; 
@@ -1265,30 +1292,30 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           // if not available, define map from string to action
           if(stabstrtoact_.empty())
           {
-            stabstrtoact_["quasistatic_subscales"            ]=subscales_quasistatic;
-            stabstrtoact_["time_dependent_subscales"         ]=subscales_time_dependent;
-            stabstrtoact_["drop"                             ]=inertia_stab_drop;
-            stabstrtoact_["+(sacc|v)"                        ]=inertia_stab_keep;
-            stabstrtoact_["off"                              ]=pstab_assume_inf_sup_stable;
-            stabstrtoact_["-(svel|nabla_q)"                  ]=pstab_use_pspg;
-            stabstrtoact_["off"                              ]=convective_stab_none;
-            stabstrtoact_["-(svel|(u_o_nabla)_v)"            ]=convective_stab_supg;
-            stabstrtoact_["off"                              ]=viscous_stab_none;
-            stabstrtoact_["+2*nu*(svel|nabla_o_eps(v))"      ]=viscous_stab_gls;
-            stabstrtoact_["+2*nu*(svel|nabla_o_eps(v))_[RHS]"]=viscous_stab_gls_only_rhs;
-            stabstrtoact_["-2*nu*(svel|nabla_o_eps(v))"      ]=viscous_stab_agls;
-            stabstrtoact_["-2*nu*(svel|nabla_o_eps(v))_[RHS]"]=viscous_stab_agls_only_rhs;
-            stabstrtoact_["-(spre|nabla_o_v)"                ]=continuity_stab_yes;
-            stabstrtoact_["-(spre|nabla_o_v)_(td)"           ]=continuity_stab_td;
-            stabstrtoact_["off"                              ]=continuity_stab_none;
-            stabstrtoact_["+((svel_o_nabla)_u|v)"            ]=cross_stress_stab;
-            stabstrtoact_["+((svel_o_nabla)_u|v)_[RHS]"      ]=cross_stress_stab_only_rhs;
-            stabstrtoact_["off"                              ]=cross_stress_stab_none;
-            stabstrtoact_["-(svel|(svel_o_grad)_v)_[RHS]"    ]=reynolds_stress_stab_only_rhs;
-            stabstrtoact_["off"                              ]=reynolds_stress_stab_none;
+            stabstrtoact_["quasistatic"    ]=subscales_quasistatic;
+            stabstrtoact_["time_dependent" ]=subscales_time_dependent;
+            stabstrtoact_["no_transient"   ]=inertia_stab_drop;
+            stabstrtoact_["yes_transient"  ]=inertia_stab_keep;
+            stabstrtoact_["no_pspg"        ]=pstab_assume_inf_sup_stable;
+            stabstrtoact_["yes_pspg"       ]=pstab_use_pspg;
+            stabstrtoact_["no_supg"        ]=convective_stab_none;
+            stabstrtoact_["yes_supg"       ]=convective_stab_supg;
+            stabstrtoact_["no_vstab"       ]=viscous_stab_none;
+            stabstrtoact_["vstab_gls"      ]=viscous_stab_gls;
+            stabstrtoact_["vstab_gls_rhs"  ]=viscous_stab_gls_only_rhs;
+            stabstrtoact_["vstab_usfem"    ]=viscous_stab_usfem;
+            stabstrtoact_["vstab_usfem_rhs"]=viscous_stab_usfem_only_rhs;
+            stabstrtoact_["no_cstab"       ]=continuity_stab_none;
+            stabstrtoact_["cstab_qs"       ]=continuity_stab_yes;
+            stabstrtoact_["cstab_td"       ]=continuity_stab_td;
+            stabstrtoact_["no_cross"       ]=cross_stress_stab_none;
+            stabstrtoact_["cross_complete" ]=cross_stress_stab;
+            stabstrtoact_["cross_rhs"      ]=cross_stress_stab_only_rhs;
+            stabstrtoact_["no_reynolds"    ]=reynolds_stress_stab_none;
+            stabstrtoact_["reynolds_rhs"   ]=reynolds_stress_stab_only_rhs;
           }
           
-          StabilisationAction tds      = ConvertStringToStabAction(stablist.get<string>("RVMM_TDS"));
+          StabilisationAction tds      = ConvertStringToStabAction(stablist.get<string>("TDS"));
           
           blitz::Array<double, 1>  mean_res(3);
           blitz::Array<double, 1>  mean_sacc(3);
@@ -1408,10 +1435,38 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         	  dserror("no value for total (pseudo-)time in the parameter list");
 
           const bool newton = params.get<bool>("include reactive terms for linearisation",false);
-          const bool pstab  =true;
-          const bool supg   =true;
-          const bool vstab  =false;  // viscous stabilisation part switched off !!
-          const bool cstab  =true;        
+
+          // --------------------------------------------------
+          // set parameters for stabilisation
+          ParameterList& stablist = params.sublist("STABILIZATION");
+
+          // if not available, define map from string to action
+          if(stabstrtoact_.empty())
+          {
+            stabstrtoact_["no_pspg"        ]=pstab_assume_inf_sup_stable;
+            stabstrtoact_["yes_pspg"       ]=pstab_use_pspg;
+            stabstrtoact_["no_supg"        ]=convective_stab_none;
+            stabstrtoact_["yes_supg"       ]=convective_stab_supg;
+            stabstrtoact_["no_vstab"       ]=viscous_stab_none;
+            stabstrtoact_["vstab_gls"      ]=viscous_stab_gls;
+            stabstrtoact_["vstab_gls_rhs"  ]=viscous_stab_gls_only_rhs;
+            stabstrtoact_["vstab_usfem"    ]=viscous_stab_usfem;
+            stabstrtoact_["vstab_usfem_rhs"]=viscous_stab_usfem_only_rhs;
+            stabstrtoact_["no_cstab"       ]=continuity_stab_none;
+            stabstrtoact_["cstab_qs"       ]=continuity_stab_yes;
+            stabstrtoact_["no_cross"       ]=cross_stress_stab_none;
+            stabstrtoact_["cross_complete" ]=cross_stress_stab;
+            stabstrtoact_["cross_rhs"      ]=cross_stress_stab_only_rhs;
+            stabstrtoact_["no_reynolds"    ]=reynolds_stress_stab_none;
+            stabstrtoact_["reynolds_rhs"   ]=reynolds_stress_stab_only_rhs;
+          }
+
+          StabilisationAction pspg     = ConvertStringToStabAction(stablist.get<string>("PSPG"));
+          StabilisationAction supg     = ConvertStringToStabAction(stablist.get<string>("SUPG"));
+          StabilisationAction vstab    = ConvertStringToStabAction(stablist.get<string>("VSTAB"));
+          StabilisationAction cstab    = ConvertStringToStabAction(stablist.get<string>("CSTAB"));
+          StabilisationAction cross    = ConvertStringToStabAction(stablist.get<string>("CROSS-STRESS"));
+          StabilisationAction reynolds = ConvertStringToStabAction(stablist.get<string>("REYNOLDS-STRESS"));
 
           // get flag for (fine-scale) subgrid viscosity (1=yes, 0=no)
           const int fssgv = params.get<int>("fs subgrid viscosity",0);
@@ -1447,10 +1502,12 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
                                    pseudotime,
                                    newton,
                                    fssgv,
-                                   pstab,
+                                   pspg,
                                    supg,
                                    vstab,
                                    cstab,
+                                   cross,
+                                   reynolds,
                                    Cs_fs);
 
           // This is a very poor way to transport the density to the

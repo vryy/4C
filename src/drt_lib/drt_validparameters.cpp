@@ -592,127 +592,128 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   // this parameter seperates stabilized from unstabilized methods
   setStringToIntegralParameter("STABTYPE",
-                               "no_stabilization",
+                               "residual_based",
                                "Apply (un)stabilized fluid formulation",
                                tuple<std::string>(
                                  "no_stabilization",
-                                 "residual_based_VMM"),
+                                 "residual_based"),
                                tuple<std::string>(
-                                 "Do not use any stabilization --- this only makes sense for inf-sup stable elements!",
-                                 "Use a residual based stabilisation like SUPG, GLS or more general a stabilization \nbased on the concept of the residual based variational multiscale method...\nExpecting additional input.")  ,
+                                 "Do not use any stabilization -> inf-sup stable elements!",
+                                 "Use a residual-based stabilization or, more generally, a stabilization \nbased on the concept of the residual-based variational multiscale method...\nExpecting additional input")  ,
                                tuple<int>(0,1),
                                &fdyn_stab);
 
   // the following parameters are necessary only if a residual based stabilized method is applied
-  setStringToIntegralParameter("RVMM_TDS",
-                               "quasistatic_subscales",
-                               "Flag to allow time dependency of subscales for residual based stabilization.",
+  setStringToIntegralParameter("TDS",
+                               "quasistatic",
+                               "Flag to allow time dependency of subscales for residual-based stabilization.",
                                tuple<std::string>(
-                                 "quasistatic_subscales",
-                                 "time_dependent_subscales"),
+                                 "quasistatic",
+                                 "time_dependent"),
                                tuple<std::string>(
-                                 "Use a residual based stabilization assuming subscales to adjust instantaniously\nto the large scale residual",
-                                 "Residual based stabilization including time evolution equations for subscales"),
+                                 "Use a quasi-static residual-based stabilization (standard case)",
+                                 "Residual-based stabilization including time evolution equations for subscales"),
                                tuple<int>(0,1),
                                &fdyn_stab);
 
-  setStringToIntegralParameter("RVMM_INERTIA",
-                               "drop",
-                               "Specify how to treat the time derivative stabilization term for a residual based stabilized method.",
+  setStringToIntegralParameter("TRANSIENT",
+                               "no_transient",
+                               "Specify how to treat the transient term.",
                                tuple<std::string>(
-                                 "drop",
-                                 "+(sacc|v)"),
+                                 "no_transient",
+                                 "yes_transient"),
                                tuple<std::string>(
-                                 "Do something like GLS_0 or USFEM_0 (recommended for quasistatic subscales)",
-                                 "Use a stabilization term related to the inertia term in the equations,\nrecommended for the usage of time dependent subscales."),
+                                 "Do not use transient term (currently only opportunity for quasistatic stabilization)",
+                                 "Use transient term (recommended for time dependent subscales)"),
                                tuple<int>(0,1),
                                &fdyn_stab);
 
-  setStringToIntegralParameter("RVMM_SUPG",
-                               "convective_off",
-                               "This flag (de)activates streamline upwinding for residual based stabilization.",
+  setStringToIntegralParameter("PSPG",
+                               "yes_pspg",
+                               "Flag to (de)activate PSPG.",
                                tuple<std::string>(
-                                 "convective_off",
-                                 "-(svel|(u_o_nabla)_v)"),
+                                 "no_pspg",
+                                 "yes_pspg"),
                                tuple<std::string>(
-                                 "No streamline upwinding",
-                                 "Streamline upwinding as common for SUPG stabilization."),
+                                 "No PSPG -> inf-sup-stable elements mandatory",
+                                 "Use PSPG -> allowing for equal-order interpolation"),
                                tuple<int>(0,1),
                                &fdyn_stab);
 
-  setStringToIntegralParameter("RVMM_PSPG",
-                               "pstab_off",
-                               "For residual based stabilization, this flag (de)activates the pressure \nstabilization.",
+  setStringToIntegralParameter("SUPG",
+                               "yes_supg",
+                               "Flag to (de)activate SUPG.",
                                tuple<std::string>(
-                                 "pstab_off",
-                                 "-(svel|nabla_q)"),
+                                 "no_supg",
+                                 "yes_supg"),
                                tuple<std::string>(
-                                 "No pressure stabilization --- inf-sup stable elements are mandatory.",
-                                 "Pressure stabilization allowing equal order interpolation."),
+                                 "No SUPG",
+                                 "Use SUPG."),
                                tuple<int>(0,1),
                                &fdyn_stab);
 
-  setStringToIntegralParameter("RVMM_VSTAB",
-                               "viscous_off",
-                               "For residual based stabilization, this flag (de)activates the viscous \nstabilization GLS+/- type.",
+  setStringToIntegralParameter("VSTAB",
+                               "no_vstab",
+                               "Flag to (de)activate viscous term in residual-based stabilization.",
                                tuple<std::string>(
-                                 "viscous_off",
-                                 "-2*nu*(svel|nabla_o_eps(v))",
-                                 "+2*nu*(svel|nabla_o_eps(v))",
-                                 "-2*nu*(svel|nabla_o_eps(v))_[RHS]",
-                                 "+2*nu*(svel|nabla_o_eps(v))_[RHS]"
+                                 "no_vstab",
+                                 "vstab_gls",
+                                 "vstab_gls_rhs",
+                                 "vstab_usfem",
+                                 "vstab_usfem_rhs"
                                  ),
                                tuple<std::string>(
-                                 "No viscous stabilisation.",
-                                 "Viscous stabilization of USFEM type.",
-                                 "Viscous stabilization of GLS type.",
-                                 "Viscous stabilization of USFEM type, included only on the right hand side.",
-                                 "Viscous stabilization of GLS type, included only on the right hand side."
+                                 "No viscous term in stabilization",
+                                 "Viscous stabilization of GLS type",
+                                 "Viscous stabilization of GLS type, included only on the right hand side",
+                                 "Viscous stabilization of USFEM type",
+                                 "Viscous stabilization of USFEM type, included only on the right hand side"
                                  ),
                                tuple<int>(0,1,2,3,4),
                                &fdyn_stab);
 
-  setStringToIntegralParameter("RVMM_CROSS-STRESS",
-                               "cross_off",
-                               "For residual based stabilization, this flag (de)activates the cross\nstress term which might be useful for turbulence modelling.",
+  setStringToIntegralParameter("CSTAB",
+                               "cstab_qs",
+                               "Flag to (de)activate least-squares stabilization of continuity equation.",
                                tuple<std::string>(
-                                 "cross_off",
-                                 "+((svel_o_nabla)_u|v)",
-                                 "+((svel_o_nabla)_u|v)_[RHS]"
+                                 "no_cstab",
+                                 "cstab_qs",
+                                 "cstab_td"),
+                               tuple<std::string>(
+                                 "No continuity stabilization",
+                                 "Quasistatic continuity stabilization",
+                                 "Time-dependent generalization of continuity stabilization"),
+                               tuple<int>(0,1,2),
+                               &fdyn_stab);
+
+  setStringToIntegralParameter("CROSS-STRESS",
+                               "no_cross",
+                               "Flag to (de)activate cross-stress term -> residual-based VMM.",
+                               tuple<std::string>(
+                                 "no_cross",
+                                 "cross_complete",
+                                 "cross_rhs"
                                  ),
                                tuple<std::string>(
-                                 "Neglects the cross stress term.",
-                                 "Include the cross stress term with a linearization of the convective part.",
-                                 "Include the cross stress term , but only explicitly on the right hand side."
+                                 "No cross-stress term",
+                                 "Include the cross-stress term with a linearization of the convective part",
+                                 "Include cross-stress term, but only explicitly on right hand side"
                                  ),
                                tuple<int>(0,1,2),
                                &fdyn_stab);
 
-  setStringToIntegralParameter("RVMM_REYNOLDS-STRESS",
-                               "reynolds_off",
-                               "For residual based stabilization, this flag (de)activates the reynolds\nstress term which might be useful for turbulence modelling. A major\nimpact is only expected for high Reynolds number flows",
+  setStringToIntegralParameter("REYNOLDS-STRESS",
+                               "no_reynolds",
+                               "Flag to (de)activate Reynolds-stress term -> residual-based VMM.",
                                tuple<std::string>(
-                                 "reynolds_off",
-                                 "-(svel|(svel_o_grad)_v)_[RHS]"
+                                 "no_reynolds",
+                                 "reynolds_rhs"
                                  ),
                                tuple<std::string>(
-                                 "Neglects the reynolds stress term.",
-                                 "Include the reynolds stress term, but only explicitly on the right hand side."
+                                 "No Reynolds-stress term",
+                                 "Include Reynolds-stress term explicitly on right hand side"
                                  ),
                                tuple<int>(0,1),
-                               &fdyn_stab);
-
-  setStringToIntegralParameter("RVMM_CSTAB",
-                               "cstab_off",
-                               "For residual based stabilization, this flag (de)activates the least \nsquares stabilization of the continuity equation.",
-                               tuple<std::string>(
-                                 "cstab_off",
-                                 "-(spre|nabla_o_v)",
-                                 "-(spre|nabla_o_v)_(td)"),
-                               tuple<std::string>(
-                                 "Omit least squares stabilization of continuity equation.",
-                                 "Take least squares stabilization of continuity equation into account.\nThis means additional, artificial diffusion for the equation, \nbut will be very useful to keep solutions stable at higher Reynolds numbers.","time dependent generalization of continuity stabilization"),
-                               tuple<int>(0,1,2),
                                &fdyn_stab);
 
   /*----------------------------------------------------------------------*/

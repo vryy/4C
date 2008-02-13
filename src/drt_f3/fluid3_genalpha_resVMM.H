@@ -173,7 +173,7 @@ namespace DRT
         \param inertia         (i) flag for use of subscale accelerations for stabilisation (only for tds==true)
         \param pspg            (i) flag for use of nabla q testfunctions 
         \param supg            (i) flag for use of (u o nabla) v testfunctions 
-        \param agls            (i) flag for use of 2 * nu * grad o eps(v) testfunctions
+        \param vstab            (i) flag for use of 2 * nu * grad o eps(v) testfunctions
         \param cross           (i) flag to add (u,(u_sub o nabla) v) to right hand side
         \param reynolds        (i) flag to add (u_sub,(u_sub o nabla) v) to right hand side
         \param turb_mod_action (i) action flag for the application of a turbulence model
@@ -207,7 +207,7 @@ namespace DRT
                   const enum Fluid3::StabilisationAction                inertia,
                   const enum Fluid3::StabilisationAction                pspg,
                   const enum Fluid3::StabilisationAction                supg,
-                  const enum Fluid3::StabilisationAction                agls,
+                  const enum Fluid3::StabilisationAction                vstab,
                   const enum Fluid3::StabilisationAction                cstab,
                   const enum Fluid3::StabilisationAction                cross,
                   const enum Fluid3::StabilisationAction                reynolds,

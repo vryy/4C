@@ -62,21 +62,19 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   // -------------------------------------------------------------------
   // get the basic parameters first
   // -------------------------------------------------------------------
-
-  // bound for the number of timesteps
-  stepmax_                   =params_.get<int>   ("max number timesteps");
-  // max. sim. time
-  maxtime_                   =params_.get<double>("total time");
-
-  // parameter for time-integration
-  theta_                     =params_.get<double>("theta");
-  // which kind of time-integration
-  timealgo_                  =params_.get<FLUID_TIMEINTTYPE>("time int algo");
-
-  // parameter for linearisation scheme (fixed point like or newton like)
-  newton_ = params_.get<bool>("Use reaction terms for linearisation",false);
-
+  // type of time-integration
+  timealgo_ = params_.get<FLUID_TIMEINTTYPE>("time int algo");
+  // time-step size
   dtp_ = dta_ = params_.get<double>("time step size");
+  // maximum number of timesteps
+  stepmax_  = params_.get<int>   ("max number timesteps");
+  // maximum simulation time
+  maxtime_  = params_.get<double>("total time");
+  // parameter theta for time-integration schemes
+  theta_    = params_.get<double>("theta");
+
+  // parameter for linearization scheme (fixed-point-like or Newton)
+  newton_ = params_.get<bool>("Use reaction terms for linearisation",false);
 
   // (fine-scale) subgrid viscosity?
   fssgv_ = params_.get<int>("fs subgrid viscosity",0);
@@ -185,16 +183,6 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   // Nonlinear iteration increment vector
   incvel_       = LINALG::CreateVector(*dofrowmap,true);
 
-  // necessary only for the VM3 approach
-  if (fssgv_ > 0)
-  {
-    // initialize subgrid-viscosity matrix
-    sysmat_sv_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
-
-    // residual vector containing (fine-scale) subgrid-viscosity residual
-    residual_sv_  = LINALG::CreateVector(*dofrowmap,true);
-  }
-
   // -------------------------------------------------------------------
   // initialize turbulence-statistics evaluation
   // -------------------------------------------------------------------
@@ -205,6 +193,18 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
     samstart_  = turbmodelparams->get<int>("SAMPLING_START",1);
     samstop_   = turbmodelparams->get<int>("SAMPLING_STOP",1);
     dumperiod_ = turbmodelparams->get<int>("DUMPING_PERIOD",1);
+  }
+
+  // -------------------------------------------------------------------
+  // necessary only for the VM3 approach
+  // -------------------------------------------------------------------
+  if (fssgv_ > 0)
+  {
+    // initialize subgrid-viscosity matrix
+    sysmat_sv_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
+
+    // residual vector containing (fine-scale) subgrid-viscosity residual
+    residual_sv_  = LINALG::CreateVector(*dofrowmap,true);
   }
 
   // -------------------------------------------------------------------
@@ -245,6 +245,32 @@ void FluidImplicitTimeInt::Integrate()
 
   // bound for the number of startsteps
   int    numstasteps         =params_.get<int>   ("number of start steps");
+
+  // output of stabilization details
+  if (myrank_==0)
+  {
+    ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
+
+    cout << "Stabilization type         : " << stabparams->get<string>("STABTYPE") << "\n";
+    cout << "                             " << stabparams->get<string>("TDS")<< "\n";
+    cout << "\n";
+
+    if(stabparams->get<string>("TDS") == "quasistatic")
+    {
+      if(stabparams->get<string>("TRANSIENT")=="yes_transient")
+      {
+        dserror("The quasistatic version cof the residual-based stabilization currently does not support the incorporation of the transient term.");
+        }
+    }
+    cout <<  "                             " << "TRANSIENT       = " << stabparams->get<string>("TRANSIENT")      <<"\n";
+    cout <<  "                             " << "SUPG            = " << stabparams->get<string>("SUPG")           <<"\n";
+    cout <<  "                             " << "PSPG            = " << stabparams->get<string>("PSPG")           <<"\n";
+    cout <<  "                             " << "VSTAB           = " << stabparams->get<string>("VSTAB")          <<"\n";
+    cout <<  "                             " << "CSTAB           = " << stabparams->get<string>("CSTAB")          <<"\n";
+    cout <<  "                             " << "CROSS-STRESS    = " << stabparams->get<string>("CROSS-STRESS")   <<"\n";
+    cout <<  "                             " << "REYNOLDS-STRESS = " << stabparams->get<string>("REYNOLDS-STRESS")<<"\n";
+    cout << "\n";
+  }
 
   if (timealgo_==timeint_stationary)
     // stationary case
@@ -374,7 +400,7 @@ void FluidImplicitTimeInt::TimeLoop()
        "lid_driven_cavity" && step_>=samstart_ && step_<=samstop_)
     {
       turbulencestatistics_ldc_->DoTimeSample(velnp_);
-   }
+    }
 
     // -------------------------------------------------------------------
     // evaluate error for test flows with analytical solutions
@@ -664,6 +690,11 @@ void FluidImplicitTimeInt::NonlinearSolve()
       eleparams.set("fs subgrid viscosity",fssgv_);
       eleparams.set("fs Smagorinsky parameter",Cs_fs_);
       eleparams.set("include reactive terms for linearisation",newton_);
+
+      // parameters for stabilization
+      {
+        eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
+      }
 
       // set vector values needed by elements
       discret_->ClearState();

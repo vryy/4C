@@ -49,16 +49,16 @@ MAXTIME      1000.0
 TIMESTEP     0.1
 ALPHA_M      0.833333333333330
 ALPHA_F      0.666666666666660
----------------------------------------FLUID DYNAMIC/STABILIZATION
-STABTYPE              residual_based_VMM
-RVMM_TDS              time_dependent_subscales
-RVMM_INERTIA          drop
-RVMM_SUPG             -(svel|(u_o_nabla)_v)
-RVMM_PSPG             -(svel|nabla_q)
-RVMM_VSTAB            -2*nu*(svel|nabla_o_eps(v))
-RVMM_CROSS-STRESS     +((svel_o_nabla)_u|v)_[RHS]
-RVMM_REYNOLDS-STRESS  -(svel|(svel_o_grad)_v)_[RHS]
-RVMM_CSTAB            -(spre|nabla_o_v)
+------------------------------------FLUID DYNAMIC/STABILIZATION
+STABTYPE              residual_based
+TDS                   time_dependent
+TRANSIENT             no_transient
+SUPG                  yes_supg
+PSPG                  yes_pspg
+VSTAB                 vstab_usfem
+CSTAB                 cstab_qs
+CROSS-STRESS          cross_rhs
+REYNOLDS-STRESS       reynolds_rhs
 ------------------------------------------------------FLUID SOLVER
 //SOLVER         Aztec_MSR          // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 SOLVER         Aztec_MSR

@@ -46,6 +46,16 @@ CONVTOL      1.0E-6
 STARTINGALGO One_Step_Theta
 NUMSTASTEPS  0
 INITIALFIELD zero_field
+------------------------------------FLUID DYNAMIC/STABILIZATION
+STABTYPE              residual_based
+TDS                   quasistatic
+TRANSIENT             no_transient
+SUPG                  yes_supg
+PSPG                  yes_pspg
+VSTAB                 vstab_gls
+CSTAB                 cstab_qs
+CROSS-STRESS          no_cross
+REYNOLDS-STRESS       no_reynolds
 ------------------------------------------------------FLUID SOLVER
 //SOLVER         UMFPACK
 SOLVER         Aztec_MSR

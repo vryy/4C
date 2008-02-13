@@ -90,28 +90,36 @@ namespace ELEMENTS
       \param time     (i) current simulation time
       \param timefac  (i) time discretization factor
       \param fssgv    (i) flag for type of fine-scale subgrid viscosity
+      \param pspg     (i) boolean flag for stabilisation 
+      \param supg     (i) boolean flag for stabilisation
+      \param vstab    (i) boolean flag for stabilisation
+      \param cstab    (i) boolean flag for stabilisation
+      \param cross    (i) boolean flag for stabilisation
+      \param reynolds (i) boolean flag for stabilisation
       \param Cs_fs    (i) Smagorinsky model param. for fine-scale subgrid viscosity
       */
     void Sysmat(Fluid3* ele,
-                const blitz::Array<double,2>&     evelnp,
-                const blitz::Array<double,1>&     eprenp,
-                const blitz::Array<double,2>&     evhist,
-                const blitz::Array<double,2>&     edispnp,
-                const blitz::Array<double,2>&     egridv,
-                blitz::Array<double,2>&           estif,
-                blitz::Array<double,2>&           esv,
-                blitz::Array<double,1>&           eforce,
-                blitz::Array<double,1>&           sugrvisc,
-                struct _MATERIAL*       material,
-                double                  time,
-                double                  timefac,
-                bool                    newton,
-                int                     fssgv,
-                bool                    pstab,
-                bool                    supg,
-                bool                    vstab,
-                bool                    cstab,
-                double                  Cs_fs);
+                const blitz::Array<double,2>&            evelnp,
+                const blitz::Array<double,1>&            eprenp,
+                const blitz::Array<double,2>&            evhist,
+                const blitz::Array<double,2>&            edispnp,
+                const blitz::Array<double,2>&            egridv,
+                blitz::Array<double,2>&                  estif,
+                blitz::Array<double,2>&                  esv,
+                blitz::Array<double,1>&                  eforce,
+                blitz::Array<double,1>&                  sugrvisc,
+                struct _MATERIAL*                        material,
+                double                                   time,
+                double                                   timefac,
+                bool                                     newton,
+                int                                      fssgv,
+                const enum Fluid3::StabilisationAction   pspg,
+                const enum Fluid3::StabilisationAction   supg,
+                const enum Fluid3::StabilisationAction   vstab,
+                const enum Fluid3::StabilisationAction   cstab,
+                const enum Fluid3::StabilisationAction   cross,
+                const enum Fluid3::StabilisationAction   reynolds,
+                double                                   Cs_fs);
 
   private:
 
@@ -167,6 +175,7 @@ namespace ELEMENTS
     blitz::Array<double,1> conv_old_;
     blitz::Array<double,1> visc_old_;
     blitz::Array<double,1> res_old_;
+    blitz::Array<double,1> conv_resM_;
     blitz::Array<double,2> xder2_;
     blitz::Array<int,1> numepn_;
   };
