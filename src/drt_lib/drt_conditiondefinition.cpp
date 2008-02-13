@@ -1,6 +1,7 @@
 #ifdef CCADISCRET
 
 #include <algorithm>
+#include <iterator>
 
 #include "drt_conditiondefinition.H"
 #include "drt_colors.H"
@@ -12,6 +13,19 @@
 DRT::INPUT::ConditionComponent::ConditionComponent(std::string name)
   : name_(name)
 {
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<std::stringstream> DRT::INPUT::ConditionComponent::PushBack(std::string token, Teuchos::RCP<std::stringstream> stream)
+{
+  Teuchos::RCP<std::stringstream> out = Teuchos::rcp(new std::stringstream());
+  (*out) << token << " ";
+  std::copy(std::istream_iterator<std::string>(*stream),
+            std::istream_iterator<std::string>(),
+            std::ostream_iterator<std::string>(*out," "));
+  return out;
 }
 
 
@@ -57,11 +71,12 @@ void DRT::INPUT::StringConditionComponent::Print(std::ostream& stream, const Con
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::INPUT::StringConditionComponent::Read(std::istringstream& condline,
-                                                Teuchos::RCP<DRT::Condition> condition)
+Teuchos::RCP<std::stringstream> DRT::INPUT::StringConditionComponent::Read(DRT::INPUT::ConditionDefinition* def,
+                                                                           Teuchos::RCP<std::stringstream> condline,
+                                                                           Teuchos::RCP<DRT::Condition> condition)
 {
   std::string value;
-  condline >> value;
+  (*condline) >> value;
 
   if (value=="")
     value = defaultvalue_;
@@ -71,13 +86,17 @@ void DRT::INPUT::StringConditionComponent::Read(std::istringstream& condline,
   {
     if (optional_)
     {
+      condline = PushBack(value,condline);
       i = std::find(datfilevalues_.begin(),datfilevalues_.end(),defaultvalue_);
     }
     else
-      dserror("unrecognized string '%s'",value.c_str());
+      dserror("unrecognized string '%s' while reading variable '%s' in '%s'",
+              value.c_str(),Name().c_str(),def->SectionName().c_str());
   }
   unsigned pos = &*i - &datfilevalues_[0];
   condition->Add(Name(),condvalues_[pos]);
+
+  return condline;
 }
 
 
@@ -107,12 +126,16 @@ void DRT::INPUT::SeparatorConditionComponent::Print(std::ostream& stream, const 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::INPUT::SeparatorConditionComponent::Read(std::istringstream& condline, Teuchos::RCP<DRT::Condition> condition)
+Teuchos::RCP<std::stringstream> DRT::INPUT::SeparatorConditionComponent::Read(DRT::INPUT::ConditionDefinition* def,
+                                                                              Teuchos::RCP<std::stringstream> condline,
+                                                                              Teuchos::RCP<DRT::Condition> condition)
 {
   std::string sep;
-  condline >> sep;
+  (*condline) >> sep;
   if (sep!=separator_)
-    dserror("word '%s' expected but found '%s'",separator_.c_str(),sep.c_str());
+    dserror("word '%s' expected but found '%s' while reading '%s'",
+            separator_.c_str(),sep.c_str(),def->SectionName().c_str());
+  return condline;
 }
 
 
@@ -155,11 +178,12 @@ void DRT::INPUT::IntConditionComponent::Print(std::ostream& stream, const DRT::C
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::INPUT::IntConditionComponent::Read(std::istringstream& condline,
-                                             Teuchos::RCP<DRT::Condition> condition)
+Teuchos::RCP<std::stringstream> DRT::INPUT::IntConditionComponent::Read(DRT::INPUT::ConditionDefinition* def,
+                                                                        Teuchos::RCP<std::stringstream> condline,
+                                                                        Teuchos::RCP<DRT::Condition> condition)
 {
   std::string number;
-  condline >> number;
+  (*condline) >> number;
 
   int n;
   if (noneallowed_ and number=="none")
@@ -171,7 +195,8 @@ void DRT::INPUT::IntConditionComponent::Read(std::istringstream& condline,
     char* ptr;
     n = strtol(number.c_str(),&ptr,10);
     if (ptr==number.c_str())
-      dserror("failed to read number '%s'",number.c_str());
+      dserror("failed to read number '%s' while reading variable '%s' in '%s'",
+              number.c_str(),Name().c_str(),def->SectionName().c_str());
   }
   if (fortranstyle_)
   {
@@ -179,6 +204,7 @@ void DRT::INPUT::IntConditionComponent::Read(std::istringstream& condline,
       n -= 1;
   }
   condition->Add(Name(),n);
+  return condline;
 }
 
 
@@ -237,15 +263,16 @@ void DRT::INPUT::IntVectorConditionComponent::Print(std::ostream& stream, const 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::INPUT::IntVectorConditionComponent::Read(std::istringstream& condline,
-                                                   Teuchos::RCP<DRT::Condition> condition)
+Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorConditionComponent::Read(DRT::INPUT::ConditionDefinition* def,
+                                                                              Teuchos::RCP<std::stringstream> condline,
+                                                                              Teuchos::RCP<DRT::Condition> condition)
 {
   std::vector<int> numbers(length_,0);
 
   for (int i=0; i<length_; ++i)
   {
     std::string number;
-    condline >> number;
+    (*condline) >> number;
 
     int n;
     if (noneallowed_ and number=="none")
@@ -261,9 +288,11 @@ void DRT::INPUT::IntVectorConditionComponent::Read(std::istringstream& condline,
         if (optional_ and i==0)
         {
           // failed to read the numbers, fall back to default values
+          condline = PushBack(number,condline);
           break;
         }
-        dserror("failed to read number '%s'",number.c_str());
+        dserror("failed to read number '%s' while reading variable '%s' in '%s'",
+                number.c_str(),Name().c_str(),def->SectionName().c_str());
       }
     }
     if (fortranstyle_)
@@ -274,6 +303,7 @@ void DRT::INPUT::IntVectorConditionComponent::Read(std::istringstream& condline,
     numbers[i] = n;
   }
   condition->Add(Name(),numbers);
+  return condline;
 }
 
 
@@ -303,12 +333,14 @@ void DRT::INPUT::RealConditionComponent::Print(std::ostream& stream, const DRT::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::INPUT::RealConditionComponent::Read(std::istringstream& condline,
-                                              Teuchos::RCP<DRT::Condition> condition)
+Teuchos::RCP<std::stringstream> DRT::INPUT::RealConditionComponent::Read(DRT::INPUT::ConditionDefinition* def,
+                                                                         Teuchos::RCP<std::stringstream> condline,
+                                                                         Teuchos::RCP<DRT::Condition> condition)
 {
   double number = 0;
-  condline >> number;
+  (*condline) >> number;
   condition->Add(Name(),number);
+  return condline;
 }
 
 
@@ -341,18 +373,20 @@ void DRT::INPUT::RealVectorConditionComponent::Print(std::ostream& stream, const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::INPUT::RealVectorConditionComponent::Read(std::istringstream& condline,
-                                                    Teuchos::RCP<DRT::Condition> condition)
+Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorConditionComponent::Read(DRT::INPUT::ConditionDefinition* def,
+                                                                               Teuchos::RCP<std::stringstream> condline,
+                                                                               Teuchos::RCP<DRT::Condition> condition)
 {
   std::vector<double> numbers(length_);
 
   for (int i=0; i<length_; ++i)
   {
     double number = 0;
-    condline >> number;
+    (*condline) >> number;
     numbers[i] = number;
   }
   condition->Add(Name(),numbers);
+  return condline;
 }
 
 
@@ -394,7 +428,7 @@ void DRT::INPUT::ConditionDefinition::Read(const Problem& problem,
 
   if (section.size()>0)
   {
-    std::istringstream line(section[0]);
+    std::stringstream line(section[0]);
     std::string dobj;
     int condcount;
     line >> dobj;
@@ -413,12 +447,14 @@ void DRT::INPUT::ConditionDefinition::Read(const Problem& problem,
 
     if (not success)
     {
-      dserror("expected design object type but got '%s'", dobj.c_str());
+      dserror("expected design object type but got '%s' in '%s'",
+              dobj.c_str(),sectionname_.c_str());
     }
 
     if (condcount != static_cast<int>(section.size()-1))
     {
-      dserror("Got %d condition lines but expect %d",section.size()-1,condcount);
+      dserror("Got %d condition lines but expect %d in '%s'",
+              section.size()-1,condcount,sectionname_.c_str());
     }
 
     const Teuchos::ParameterList& conditionnames = problem.ConditionNamesParams();
@@ -427,15 +463,15 @@ void DRT::INPUT::ConditionDefinition::Read(const Problem& problem,
          i!=section.end();
          ++i)
     {
-      std::istringstream condline(*i);
+      Teuchos::RCP<std::stringstream> condline = Teuchos::rcp(new std::stringstream(*i));
 
       std::string E;
       std::string number;
       std::string minus;
 
-      condline >> E >> number >> minus;
-      if (not condline or E!="E" or minus!="-")
-        dserror("invalid condition line");
+      (*condline) >> E >> number >> minus;
+      if (not (*condline) or E!="E" or minus!="-")
+        dserror("invalid condition line in '%s'",sectionname_.c_str());
 
       int dobjid = -1;
       if (conditionnames.isParameter(number))
@@ -445,7 +481,8 @@ void DRT::INPUT::ConditionDefinition::Read(const Problem& problem,
         char* ptr;
         dobjid = strtol(number.c_str(),&ptr,10);
         if (ptr==number.c_str())
-          dserror("failed to read design object number '%s'",number.c_str());
+          dserror("failed to read design object number '%s' in '%s'",
+                  number.c_str(),sectionname_.c_str());
         dobjid -= 1;
       }
 
@@ -456,7 +493,7 @@ void DRT::INPUT::ConditionDefinition::Read(const Problem& problem,
 
       for (unsigned j=0; j<inputline_.size(); ++j)
       {
-        inputline_[j]->Read(condline,condition);
+        condline = inputline_[j]->Read(this,condline,condition);
       }
 
       //------------------------------- put condition in map of conditions

@@ -21,6 +21,8 @@ namespace DRT
 namespace INPUT
 {
 
+  class ConditionDefinition;
+
   /// pure virtual base class for all condition line parts
   /*!
 
@@ -58,11 +60,17 @@ namespace INPUT
     virtual void Print(std::ostream& stream, const DRT::Condition* cond) = 0;
 
     /// read my part of an input line and put it into the condition
-    virtual void Read(std::istringstream& condline,
-                      Teuchos::RCP<DRT::Condition> condition) = 0;
+    virtual Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
+                                                 Teuchos::RCP<std::stringstream> condline,
+                                                 Teuchos::RCP<DRT::Condition> condition) = 0;
 
     /// the name of my variable inside a condition
     std::string Name() const { return name_; }
+
+  protected:
+
+    /// push back token into stream so that it can be read again
+    Teuchos::RCP<std::stringstream> PushBack(std::string token, Teuchos::RCP<std::stringstream> stream);
 
   private:
 
@@ -89,8 +97,9 @@ namespace INPUT
 
     virtual void DefaultLine(std::ostream& stream);
     virtual void Print(std::ostream& stream, const DRT::Condition* cond);
-    virtual void Read(std::istringstream& condline,
-                      Teuchos::RCP<DRT::Condition> condition);
+    virtual Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
+                                                 Teuchos::RCP<std::stringstream> condline,
+                                                 Teuchos::RCP<DRT::Condition> condition);
 
   private:
     std::string defaultvalue_;
@@ -122,8 +131,9 @@ namespace INPUT
 
     virtual void DefaultLine(std::ostream& stream);
     virtual void Print(std::ostream& stream, const DRT::Condition* cond);
-    virtual void Read(std::istringstream& condline,
-                      Teuchos::RCP<DRT::Condition> condition);
+    virtual Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
+                                                 Teuchos::RCP<std::stringstream> condline,
+                                                 Teuchos::RCP<DRT::Condition> condition);
 
   private:
     std::string separator_;
@@ -148,8 +158,9 @@ namespace INPUT
     explicit IntConditionComponent(std::string name, bool fortranstyle=false, bool noneallowed=false);
     virtual void DefaultLine(std::ostream& stream);
     virtual void Print(std::ostream& stream, const DRT::Condition* cond);
-    virtual void Read(std::istringstream& condline,
-                      Teuchos::RCP<DRT::Condition> condition);
+    virtual Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
+                                                 Teuchos::RCP<std::stringstream> condline,
+                                                 Teuchos::RCP<DRT::Condition> condition);
 
   private:
     bool fortranstyle_;
@@ -179,8 +190,9 @@ namespace INPUT
                                 bool optional=false);
     virtual void DefaultLine(std::ostream& stream);
     virtual void Print(std::ostream& stream, const DRT::Condition* cond);
-    virtual void Read(std::istringstream& condline,
-                      Teuchos::RCP<DRT::Condition> condition);
+    virtual Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
+                                                 Teuchos::RCP<std::stringstream> condline,
+                                                 Teuchos::RCP<DRT::Condition> condition);
 
   private:
     int length_;
@@ -203,8 +215,9 @@ namespace INPUT
     RealConditionComponent(std::string name);
     virtual void DefaultLine(std::ostream& stream);
     virtual void Print(std::ostream& stream, const DRT::Condition* cond);
-    virtual void Read(std::istringstream& condline,
-                      Teuchos::RCP<DRT::Condition> condition);
+    virtual Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
+                                                 Teuchos::RCP<std::stringstream> condline,
+                                                 Teuchos::RCP<DRT::Condition> condition);
   };
 
 
@@ -221,8 +234,9 @@ namespace INPUT
     RealVectorConditionComponent(std::string name, int length);
     virtual void DefaultLine(std::ostream& stream);
     virtual void Print(std::ostream& stream, const DRT::Condition* cond);
-    virtual void Read(std::istringstream& condline,
-                      Teuchos::RCP<DRT::Condition> condition);
+    virtual Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
+                                                 Teuchos::RCP<std::stringstream> condline,
+                                                 Teuchos::RCP<DRT::Condition> condition);
 
   private:
     int length_;
@@ -290,6 +304,9 @@ namespace INPUT
 
     /// print my dat file section and possible conditions from the Discretization
     std::ostream& Print(std::ostream& stream, const Discretization* dis=NULL, bool color=false);
+
+    /// name of my section in input file
+    std::string SectionName() const { return sectionname_; }
 
     /// my condition name
     std::string Name() const { return conditionname_; }
