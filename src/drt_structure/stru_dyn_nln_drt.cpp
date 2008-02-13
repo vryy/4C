@@ -30,6 +30,8 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
 
+#include "../drt_inv_analysis/inv_analysis.H"
+
 /*----------------------------------------------------------------------*
   |                                                       m.gee 06/01    |
   | vector of numfld FIELDs, defined in global_control.c                 |
@@ -193,6 +195,8 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<bool>  ("print to screen",true);
       genalphaparams.set<bool>  ("print to err",true);
       genalphaparams.set<FILE*> ("err file",allfiles.out_err);
+      
+      genalphaparams.set<bool>  ("inv_analysis",Teuchos::getIntegralValue<int>(sdyn,"INV_ANALYSIS"));
 
       switch (Teuchos::getIntegralValue<int>(sdyn,"NLNSOL"))
       {
@@ -235,9 +239,13 @@ void dyn_nlnstructural_drt()
 
       // create the time integrator
       bool contact = genalphaparams.get("contact",false);
+      bool inv_analysis = genalphaparams.get("inv_analysis",false);   
       RCP<StruGenAlpha> tintegrator = null;
-      if (!contact) tintegrator = rcp(new StruGenAlpha(genalphaparams,*actdis,solver,output));
-      else          tintegrator = rcp(new ContactStruGenAlpha(genalphaparams,*actdis,solver,output));
+      if (!contact && !inv_analysis) tintegrator = rcp(new StruGenAlpha(genalphaparams,*actdis,solver,output));
+      else      {
+        if (!inv_analysis) tintegrator = rcp(new ContactStruGenAlpha(genalphaparams,*actdis,solver,output));
+        else tintegrator = rcp(new Inv_analysis(genalphaparams,*actdis,solver,output));
+      }      
 
       // do restart if demanded from input file
       // note that this changes time and step in genalphaparams

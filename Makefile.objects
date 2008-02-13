@@ -1108,7 +1108,6 @@ OBJS_INTERSECTION = src/drt_xfem/predicates.o \
 #               time adaptivity
 OBJS_DRT_TIMADA = src/drt_timada/timeadaptivity.o \
                   src/drt_timada/ta_zienkiewiczxie.o
+#               inverse analysis
+OBJS_INV_ANALYSIS = src/drt_inv_analysis/inv_analysis.o 
 
-			
-				
-			

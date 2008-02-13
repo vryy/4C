@@ -400,6 +400,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    STRUCT_DYNAMIC::nonlinuzawa),
                                  &sdyn);
 
+  // Inverse Analysis
+  setStringToIntegralParameter("INV_ANALYSIS","No",
+                               "determines the material parameter for the hyperpolyconvex material",
+                               yesnotuple,yesnovalue,
+                               &sdyn);
+  
   SetValidTimeAdaptivityParameters(sdyn);
 
   /*----------------------------------------------------------------------*/
