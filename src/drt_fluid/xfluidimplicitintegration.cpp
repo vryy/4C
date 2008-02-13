@@ -124,6 +124,8 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // ensure that degrees of freedom in the discretization have been set
   discret_->FillComplete();
   
+  discret_->ComputeNullSpaceIfNecessary(solver_.Params());
+  
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
@@ -682,6 +684,11 @@ void XFluidImplicitTimeInt::NonlinearSolve()
       discret_->Evaluate(eleparams,null,null,null,null,null);
   }
   
+  
+  // ensure that degrees of freedom in the discretization have been set
+  //discret_->FillComplete(); ????
+    
+  discret_->ComputeNullSpaceIfNecessary(solver_.Params()); 
   
   if (myrank_ == 0)
   {
