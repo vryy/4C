@@ -258,7 +258,7 @@ XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih) :
         for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
         {
             //DRT::Element* actele = ih->xfemdis()->lColElement(i);
-            DRT::Node* actnode = ih->xfemdis()->lColNode(i);
+            const DRT::Node* actnode = ih->xfemdis()->lColNode(i);
             const blitz::Array<double,1> pos(toBlitzArray(actnode->X()));
             const int node_gid = actnode->Id();
             
@@ -288,7 +288,7 @@ XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih) :
         gmshfilecontent << "View \" " << "NumDof Jump enriched nodes \" {" << endl;
         for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
         {
-            DRT::Node* actnode = ih->xfemdis()->lColNode(i);
+            const DRT::Node* actnode = ih->xfemdis()->lColNode(i);
             const blitz::Array<double,1> pos(toBlitzArray(actnode->X()));
             const int node_gid = actnode->Id();
             
@@ -324,7 +324,7 @@ XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih) :
         gmshfilecontent << "View \" " << "NumDof" << " standard enriched nodes \" {" << endl;
         for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
         {
-            DRT::Node* actnode = ih->xfemdis()->lColNode(i);
+            const DRT::Node* actnode = ih->xfemdis()->lColNode(i);
             const blitz::Array<double,1> pos(toBlitzArray(actnode->X()));
             const int node_gid = actnode->Id();
             
@@ -360,7 +360,7 @@ XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih) :
         gmshfilecontent << "View \" " << "NumDof" << " Void enriched nodes \" {" << endl;
         for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
         {
-            DRT::Node* actnode = ih->xfemdis()->lColNode(i);
+            const DRT::Node* actnode = ih->xfemdis()->lColNode(i);
             const blitz::Array<double,1> pos(toBlitzArray(actnode->X()));
             const int node_gid = actnode->Id();
             

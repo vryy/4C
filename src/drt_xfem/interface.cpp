@@ -18,15 +18,15 @@ Maintainer: Axel Gerstenberger
  |  ctor                                                        ag 11/07|
  *----------------------------------------------------------------------*/
 XFEM::InterfaceHandle::InterfaceHandle(
-		const RefCountPtr<DRT::Discretization>        xfemdis, 
-		const RefCountPtr<DRT::Discretization>        cutterdis) :
+		const RCP<DRT::Discretization>        xfemdis, 
+		const RCP<DRT::Discretization>        cutterdis) :
 			xfemdis_(xfemdis),
 			cutterdis_(cutterdis)
 {
 	elementalDomainIntCells_.clear();
 	elementalBoundaryIntCells_.clear();
 	map< int, vector< DRT::Element* > >            cutterElementMap;
-	map< int, RefCountPtr<DRT::Node> >             cutterNodeMap;
+	map< int, RCP<DRT::Node> >             cutterNodeMap;
 	XFEM::Intersection is;
 	is.computeIntersection(
 	        xfemdis,

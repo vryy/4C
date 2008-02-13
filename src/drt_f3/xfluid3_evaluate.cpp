@@ -211,7 +211,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
   const DRT::ELEMENTS::XFluid3::ActionType act = convertStringToActionType(action);
 
   // get the material
-  RefCountPtr<MAT::Material> mat = Material();
+  RCP<MAT::Material> mat = Material();
   if (mat->MaterialType()!=m_fluid)
     dserror("newtonian fluid material expected but got type %d", mat->MaterialType());
 
@@ -230,8 +230,8 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         globaldofman->checkForConsistency((*this), eleDofManager_);
           
         // need current velocity and history vector
-        RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velnp");
-        RefCountPtr<const Epetra_Vector> hist  = discretization.GetState("hist");
+        RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
+        RCP<const Epetra_Vector> hist  = discretization.GetState("hist");
         if (velnp==null || hist==null)
           dserror("Cannot get state vectors 'velnp' and/or 'hist'");
 
@@ -241,9 +241,9 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         vector<double> myhist(lm.size());
         DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
 
-        RefCountPtr<const Epetra_Vector> dispnp;
+        RCP<const Epetra_Vector> dispnp;
         vector<double> mydispnp;
-        RefCountPtr<const Epetra_Vector> gridv;
+        RCP<const Epetra_Vector> gridv;
         vector<double> mygridv;
 
         if (is_ale_)
@@ -384,7 +384,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         {
 
           // need current velocity and history vector
-          RefCountPtr<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (converged)");
+          RCP<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (converged)");
           if (vel_pre_np==null) dserror("Cannot get state vectors 'velnp'");
 
           // extract local values from the global vectors
@@ -419,7 +419,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           // extract velocities and pressure from the global distributed vectors
 
           // velocity and pressure values (n+1)
-          RefCountPtr<const Epetra_Vector> velnp
+          RCP<const Epetra_Vector> velnp
             = discretization.GetState("u and p (n+1,converged)");
 
 
@@ -490,7 +490,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           dsassert(ih!=null, "hey, you did not give the InterfaceHandle");
           
           // need current velocity/pressure 
-          RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velnp");
+          RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
           if (velnp==null)
             dserror("Cannot get state vector 'velnp'");
 
@@ -903,21 +903,21 @@ void DRT::ELEMENTS::XFluid3::f3_calc_means(
 
   // the vector planes contains the coordinates of the homogeneous planes (in
   // wall normal direction)
-  RefCountPtr<vector<double> > planes = params.get<RefCountPtr<vector<double> > >("coordinate vector for hom. planes");
+  RCP<vector<double> > planes = params.get<RCP<vector<double> > >("coordinate vector for hom. planes");
 
   // get the pointers to the solution vectors
-  RefCountPtr<vector<double> > sumu   = params.get<RefCountPtr<vector<double> > >("mean velocity u");
-  RefCountPtr<vector<double> > sumv   = params.get<RefCountPtr<vector<double> > >("mean velocity v");
-  RefCountPtr<vector<double> > sumw   = params.get<RefCountPtr<vector<double> > >("mean velocity w");
-  RefCountPtr<vector<double> > sump   = params.get<RefCountPtr<vector<double> > >("mean pressure p");
+  RCP<vector<double> > sumu   = params.get<RCP<vector<double> > >("mean velocity u");
+  RCP<vector<double> > sumv   = params.get<RCP<vector<double> > >("mean velocity v");
+  RCP<vector<double> > sumw   = params.get<RCP<vector<double> > >("mean velocity w");
+  RCP<vector<double> > sump   = params.get<RCP<vector<double> > >("mean pressure p");
 
-  RefCountPtr<vector<double> > sumsqu = params.get<RefCountPtr<vector<double> > >("mean value u^2");
-  RefCountPtr<vector<double> > sumsqv = params.get<RefCountPtr<vector<double> > >("mean value v^2");
-  RefCountPtr<vector<double> > sumsqw = params.get<RefCountPtr<vector<double> > >("mean value w^2");
-  RefCountPtr<vector<double> > sumuv  = params.get<RefCountPtr<vector<double> > >("mean value uv");
-  RefCountPtr<vector<double> > sumuw  = params.get<RefCountPtr<vector<double> > >("mean value uw");
-  RefCountPtr<vector<double> > sumvw  = params.get<RefCountPtr<vector<double> > >("mean value vw");
-  RefCountPtr<vector<double> > sumsqp = params.get<RefCountPtr<vector<double> > >("mean value p^2");
+  RCP<vector<double> > sumsqu = params.get<RCP<vector<double> > >("mean value u^2");
+  RCP<vector<double> > sumsqv = params.get<RCP<vector<double> > >("mean value v^2");
+  RCP<vector<double> > sumsqw = params.get<RCP<vector<double> > >("mean value w^2");
+  RCP<vector<double> > sumuv  = params.get<RCP<vector<double> > >("mean value uv");
+  RCP<vector<double> > sumuw  = params.get<RCP<vector<double> > >("mean value uw");
+  RCP<vector<double> > sumvw  = params.get<RCP<vector<double> > >("mean value vw");
+  RCP<vector<double> > sumsqp = params.get<RCP<vector<double> > >("mean value p^2");
 
 
   // get node coordinates of element
@@ -1690,7 +1690,7 @@ bool DRT::ELEMENTS::XFluid3::isHigherOrderElement(
 //
 // check for element rewinding based on Jacobian determinant
 //
-bool DRT::ELEMENTS::XFluid3::checkRewinding()
+bool DRT::ELEMENTS::XFluid3::checkRewinding() const
 {
   const DiscretizationType distype = this->Shape();
   const int iel = NumNode();
@@ -1721,7 +1721,7 @@ bool DRT::ELEMENTS::XFluid3::checkRewinding()
   Epetra_SerialDenseMatrix    xyze(NSD,iel);
   DRT::UTILS::shape_function_3D_deriv1(deriv,intpoints.qxg[0][0],intpoints.qxg[0][1],intpoints.qxg[0][2],distype);
   // get node coordinates
-  DRT::Node** nodes = this->Nodes();
+  const DRT::Node** nodes = this->Nodes();
   for (int inode=0; inode<iel; inode++)
   {
     const double* x = nodes[inode]->X();

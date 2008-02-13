@@ -221,7 +221,7 @@ public:
   an DRT::ElementRegister. This method allocates and returns
   an instance of a matching DRT::ElementRegister.
   */
-  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
+  virtual RCP<DRT::ElementRegister> ElementRegister() const;
 
   //@}
 
@@ -410,11 +410,11 @@ private:
   vector<DRT::Element*>                           volume_;
 
   //! vector of surfaces adjacent to this element (fluid3: 4 or 6 surfaces)
-  vector<RefCountPtr<DRT::ELEMENTS::XFluid3Surface> > surfaces_;
+  vector<RCP<DRT::ELEMENTS::XFluid3Surface> > surfaces_;
   //! vector of surfaces adjacent to this element (fluid3: 4 or 6 surfaces)
   vector<DRT::ELEMENTS::XFluid3Surface*>              surfaceptrs_;
   //! vector of lines adjacent to this element
-  vector<RefCountPtr<DRT::ELEMENTS::XFluid3Line> > lines_;
+  vector<RCP<DRT::ELEMENTS::XFluid3Line> > lines_;
   //! vector of lines adjacent to this element
   vector<DRT::ELEMENTS::XFluid3Line*>              lineptrs_;
   
@@ -717,7 +717,7 @@ protected:
    * based on negative Jacobian determinant.
    * \return boolean rewind or not rewind
    */
-  bool checkRewinding();
+  bool checkRewinding() const;
 
 }; // class Fluid3
 
@@ -976,7 +976,7 @@ public:
   an DRT::ElementRegister. This method allocates and returns
   an instance of a matching DRT::ElementRegister.
   */
-  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const { return null; }
+  virtual RCP<DRT::ElementRegister> ElementRegister() const { return null; }
 
   //@}
 
@@ -1062,7 +1062,7 @@ private:
   //! The local surface number of this surface w.r.t to the parent_ element
   const int                    lsurface_;
   //! vector of lines adjacent to this element
-  vector<RefCountPtr<DRT::ELEMENTS::XFluid3Line> > lines_;
+  vector<RCP<DRT::ELEMENTS::XFluid3Line> > lines_;
   //! vector of lines adjacent to this element
   vector<DRT::ELEMENTS::XFluid3Line*>              lineptrs_;
 
@@ -1220,7 +1220,7 @@ public:
   an DRT::ElementRegister. This method allocates and returns
   an instance of a matching DRT::ElementRegister.
   */
-  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const { return null; }
+  virtual RCP<DRT::ElementRegister> ElementRegister() const { return null; }
 
   //! @name Evaluation
 

@@ -415,10 +415,10 @@ namespace XFEM
     \param element           (in)       : element 
     */                                                                                                      
     void updateAForNWE( 
-        const int                   dim,
-        Epetra_SerialDenseMatrix&   A,
-        Epetra_SerialDenseVector&   xsi,
-        const DRT::Element*         element
+        const int                         dim,
+        Epetra_SerialDenseMatrix&         A,
+        const Epetra_SerialDenseVector&   xsi,
+        const DRT::Element*               element
         );
     
       
@@ -435,7 +435,7 @@ namespace XFEM
     void updateRHSForNWE(  
         const int                           dim, 
         Epetra_SerialDenseVector&           b,
-        Epetra_SerialDenseVector&           xsi,
+        const Epetra_SerialDenseVector&     xsi,
         const Epetra_SerialDenseVector&     x,
         const DRT::Element*                 element
         );  
@@ -534,7 +534,7 @@ namespace XFEM
     \brief Computes a rough overestimating extended  
            axis-aligned bounding box for an element (XAABB)
 
-    \param  element          (in)      : element (DRT::Element*)
+    \param  element          (in)      : element
     \return extended axis-aligned bounding box  (XAABB) for an element
     */
     Epetra_SerialDenseMatrix computeFastXAABB( 

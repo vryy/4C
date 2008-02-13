@@ -167,7 +167,7 @@ class Intersection
         \param xfemdis   (in) : xfem discretization
         */
         void initializeIntersection(
-            const RefCountPtr<DRT::Discretization>  xfemdis
+            const RCP<DRT::Discretization>  xfemdis
             );
         
         /*!
@@ -199,7 +199,7 @@ class Intersection
         \param conditionEleCount    (out)   : global element counter
         */
     	void adjustCutterElementNumbering( 
-			const RefCountPtr<DRT::Discretization>& 	cutterdis,  
+			const RCP<DRT::Discretization>& 	cutterdis,  
 			vector< DRT::Condition * >&   				xfemConditions,
 			vector<int>& 								conditionEleCount
 			) const;
@@ -216,7 +216,7 @@ class Intersection
         \param cutterDataSend       (out)       : cutter data
         */
         void packData(
-            const RefCountPtr<DRT::Discretization>      cutterdis,
+            const RCP<DRT::Discretization>      cutterdis,
             vector<int>&                                conditionSend, 
             vector<int>&                                lengthSend, 
             int&                                        nodeSetSizeSend,  
@@ -237,7 +237,7 @@ class Intersection
             int                                     index, 
             vector<char>&                           cutterDataRecv, 
             vector<int>&                            nodeVectorRecv, 
-            map< int, RefCountPtr<DRT::Node> >&     nodeMap 
+            map< int, RCP<DRT::Node> >&     nodeMap 
             ) const;
     
     
@@ -256,10 +256,10 @@ class Intersection
 			vector< DRT::Condition * >&      		xfemConditions,
 			vector<int>&							conditionEleCount, 
 			map< int, vector< DRT::Element* > >&   	cutterElementMap,
-			map< int, RefCountPtr<DRT::Node> >&  	cutterNodeMap,
+			map< int, RCP<DRT::Node> >&  	cutterNodeMap,
 			map< int, set<int> >& 					xfemCutterIdMap,
-			const RefCountPtr<DRT::Discretization>& xfemdis,
-		   	const RefCountPtr<DRT::Discretization>& cutterdis  
+			const RCP<DRT::Discretization>& xfemdis,
+		   	const RCP<DRT::Discretization>& cutterdis  
 		   	);
     
         
@@ -294,8 +294,9 @@ class Intersection
         \return true if the node is lying on a boundary false otherwise
         */  
         bool checkIfOnBoundary(   
-            Epetra_SerialDenseVector&       xsi, 
-            InterfacePoint&                 ip);
+            const Epetra_SerialDenseVector&       xsi,
+            InterfacePoint&                 ip
+            ) const;
         
               
         /*!
@@ -316,7 +317,7 @@ class Intersection
             const int                       lineId,
             const bool                      lines,
             bool&                           xfemIntersection
-            );
+            ) const;
         
          
         /*!
@@ -343,7 +344,7 @@ class Intersection
             const Epetra_SerialDenseVector& loLimit,
             std::vector<InterfacePoint>&    interfacePoints,
             const bool                      lines
-            );
+            ) const;
         
               
         /*!
@@ -439,7 +440,7 @@ class Intersection
             const int                      	surfaceId,
             const int                       lineId,
             const bool 					    lines
-            );
+            ) const;
 			
             
         /*!
@@ -546,7 +547,7 @@ class Intersection
         */                                 
         InterfacePoint computeMidpoint( 
             const vector<InterfacePoint>&     interfacePoints
-            );       
+            ) const;       
             
                              
         /*!
@@ -649,7 +650,7 @@ class Intersection
             Epetra_SerialDenseVector&         oppositePoint,
             const DRT::Element*               xfemElement, 
             const tetgenio&                   out
-            );   
+            ) const;   
     
     
         /*!
@@ -675,21 +676,21 @@ class Intersection
                 specified by the line index
     
         \param steinerIndex             (in)     :   index of the Steiner point
-        \param lineIndex                (in)     :   line index
+        \param lineIndex                (in)     :   line index ??????
         \param cutterIndex              (in)     :   index of the cutter element
         \param edgePoint                (in)     :   point lying on the same edge as the Steiner point  
         \param oppositePoint            (in)     :   point lying opposite on the edge of the Steiner point 
         \param adjacentFacesList        (in)     :   list of adjacent faces 
         \param xfemElement              (in)     :   xfem element  
-        \param out                      (in)     :   output data structure of TetGen
+        \param out                      (in/out) :   output data structure of TetGen
         */     
         void liftSteinerPointOnEdge(
-            int                         steinerIndex,
+            const int                         steinerIndex,
             int                         lineIndex,
-            int                         cutterIndex,   
+            const int                         cutterIndex,   
             Epetra_SerialDenseVector&   edgePoint,
             Epetra_SerialDenseVector&   oppositePoint,
-            vector< vector <int> >&     adjacentFacesList,
+            const vector< vector <int> >&     adjacentFacesList,
             const DRT::Element*         xfemElement, 
             tetgenio&                   out
             );
@@ -702,7 +703,7 @@ class Intersection
         \param adjacentFacesList        (in)     :   list of adjacent faces 
         \param adjacentFacemarkerList   (in)     :   list of adjacent face marker
         \param xfemElement              (in)     :   xfem element  
-        \param out                      (in)     :   output data structure of TetGen
+        \param out                      (in/out) :   output data structure of TetGen
         */       
         void liftSteinerPointOnBoundary( 
                 const int                         steinerIndex, 
@@ -786,10 +787,10 @@ class Intersection
         \return vector of point indices
         */         
         vector<int> getPointIndices(
-            tetgenio&   out, 
-            int         trifaceIndex, 
-            int         steinerPointIndex
-            ) const;
+                const tetgenio&   out, 
+                const int         trifaceIndex, 
+                const int         steinerPointIndex
+                ) const;
             
               
         /*!
@@ -847,7 +848,7 @@ class Intersection
         */                         
         void updateRHSForRCINormal( 
             Epetra_SerialDenseVector&                   b,
-            Epetra_SerialDenseVector&                   xsi,    
+            const Epetra_SerialDenseVector&             xsi,    
             const vector<Epetra_SerialDenseVector>&     normal,
             const DRT::Element*                         surfaceElement,
             const bool                                  onBoundary
@@ -907,7 +908,7 @@ class Intersection
         */                       
         void updateRHSForRCIPlane( 
             Epetra_SerialDenseVector&                   b,
-            Epetra_SerialDenseVector&                   xsi,    
+            const Epetra_SerialDenseVector&             xsi,    
             const vector <Epetra_SerialDenseVector>&    plane,
             const DRT::Element*                         lineElement
             ) const;
@@ -1121,7 +1122,7 @@ class Intersection
             const DRT::Element*                         surfaceElement, 
             const DRT::Element*                         xfemElement, 
             tetgenio&                                   out
-            );
+            ) const;
         
         
         /*!
@@ -1297,7 +1298,7 @@ class Intersection
         	) const;
        
        void debugXFEMConditions(
-       	const RefCountPtr<DRT::Discretization>  cutterdis
+       	const RCP<DRT::Discretization>  cutterdis
        	) const;
        
        void debugIntersection(

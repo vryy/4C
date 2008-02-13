@@ -234,7 +234,7 @@ void DRT::ELEMENTS::XFluid3::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  allocate and return Fluid3Register (public)              mwgee 12/06|
  *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::XFluid3::ElementRegister() const
+RCP<DRT::ElementRegister> DRT::ELEMENTS::XFluid3::ElementRegister() const
 {
   return rcp(new DRT::ELEMENTS::XFluid3Register(Type()));
 }

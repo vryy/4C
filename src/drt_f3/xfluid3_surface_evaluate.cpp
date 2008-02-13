@@ -49,7 +49,7 @@ int DRT::ELEMENTS::XFluid3Surface::Evaluate(    ParameterList&            params
     {
     case integrate_Shapefunction:
     {
-      RefCountPtr<const Epetra_Vector> dispnp;
+      RCP<const Epetra_Vector> dispnp;
       vector<double> mydispnp;
 
       dispnp = discretization.GetState("dispnp");

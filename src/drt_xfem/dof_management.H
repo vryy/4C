@@ -299,7 +299,7 @@ public:
     
 private:
 	// pointer to the xfem discretization of which we hold the unknowns
-	RefCountPtr<DRT::Discretization> xfemdis_;
+	RCP<DRT::Discretization> xfemdis_;
 	
 	// unknowns for each global node id (gid) on this processor
 	// if it does not contain the key, the number of unknowns is supposed to be zero

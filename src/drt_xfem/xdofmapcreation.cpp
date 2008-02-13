@@ -98,7 +98,7 @@ void XFEM::createDofMap(
     const XFEM::Enrichment enr_std(standard_label, XFEM::Enrichment::typeStandard);
     for (int i=0; i<xfemdis->NumMyColElements(); ++i)
     {
-        DRT::Element* actele = xfemdis->lColElement(i);
+        const DRT::Element* actele = xfemdis->lColElement(i);
         if ( not (elementDomainIntCellMap.count(actele->Id()) >= 1))
         {
             const int* nodeidptrs = actele->NodeIds();

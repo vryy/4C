@@ -833,10 +833,10 @@ bool XFEM::PositionWithinCondition(
  |          if a node is in a given element                             |
  *----------------------------------------------------------------------*/
 void XFEM::updateAForNWE(   
-    const int                   dim,
-    Epetra_SerialDenseMatrix&   A,
-    Epetra_SerialDenseVector&   xsi,
-    const DRT::Element*         element)                                                  
+    const int                         dim,
+    Epetra_SerialDenseMatrix&         A,
+    const Epetra_SerialDenseVector&   xsi,
+    const DRT::Element*               element)                                                  
 {   
     const int numNodes = element->NumNode();
     blitz::Array<double,2> deriv1(dim, numNodes, blitz::ColumnMajorArray<2>());
@@ -885,7 +885,7 @@ void XFEM::updateAForNWE(
 void XFEM::updateRHSForNWE( 
     const int                           dim,
     Epetra_SerialDenseVector&           b,
-    Epetra_SerialDenseVector&           xsi,
+    const Epetra_SerialDenseVector&     xsi,
     const Epetra_SerialDenseVector&     x,
     const DRT::Element*                 element)                                                  
 {
