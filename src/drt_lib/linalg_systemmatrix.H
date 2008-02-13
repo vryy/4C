@@ -53,7 +53,7 @@
   it in your own sandbox, but not in LINALG (and can not make it be specially
   supported by DRT::Discretization etc.)
 
-- give excessive seminar on it so everybody understands it, answer all
+- give excessive seminar on all this so everybody understands it, answer all
   questions by young chair-members in the following.
   (I'm drowning in questions about all sorts of stuff)
 
@@ -188,7 +188,7 @@ namespace LINALG
     With savegraph==true you specify that you want to keep the original matrix
     graph before you apply Dirichlet conditions. This way you can call Zero()
     and get an already Filled() matrix. You cannot alter its graph afterwards,
-    but Assemble() is much faster if you matrix is already Filled(). Of course
+    but Assemble() is much faster if your matrix is already Filled(). Of course
     you can always Reset() you matrix, that is throw away the matrix graph and
     start anew with an empty matrix.
 
@@ -234,7 +234,7 @@ namespace LINALG
     SparseMatrix(const SparseMatrix& mat);
 
     /// Destructor
-    ~SparseMatrix();
+    virtual ~SparseMatrix();
 
     /// return the internal Epetra_Operator
     /*!
