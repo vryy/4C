@@ -207,7 +207,7 @@ void FSI::Structure::CalculateStiffness()
   //------------- eval fint at interpolated state, eval stiffness matrix
   {
     // zero out stiffness
-    stiff_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+    stiff_->Zero();
     // create the parameters for the discretization
     ParameterList p;
     // action for elements
@@ -308,10 +308,10 @@ Teuchos::RCP<Epetra_Vector> FSI::Structure::RelaxationSolve(Teuchos::RCP<Epetra_
   //------------------------------------------- effective rhs is fresm
   //---------------------------------------------- build effective lhs
   // (using matrix stiff_ as effective matrix)
-  LINALG::Add(*mass_,false,(1.-alpham)/(beta*dt*dt),*stiff_,1.-alphaf);
+  stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
   if (damping)
-    LINALG::Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),*stiff_,1.0);
-  LINALG::Complete(*stiff_);
+    stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+  stiff_->Complete();
 
   //----------------------- apply dirichlet BCs to system of equations
   disi_->PutScalar(0.0);  // Useful? depends on solver and more
@@ -319,8 +319,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Structure::RelaxationSolve(Teuchos::RCP<Epetra_
 
   //--------------------------------------------------- solve for disi
   // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
-  solver_->Solve(stiff_,disi_,fextm_,true,true);
-  stiff_ = null;
+  solver_->Solve(stiff_->Matrix(),disi_,fextm_,true,true);
 
   // we are just interested in the incremental interface displacements
   Teuchos::RCP<Epetra_Vector> idisi = interface_.ExtractCondVector(disi_);

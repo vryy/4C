@@ -37,6 +37,7 @@ using namespace Teuchos;
 */
 namespace LINALG
 {
+  class SparseOperator;
 
   /// return the first slot of a pair
   /*!
@@ -185,34 +186,6 @@ namespace LINALG
   \param dim (in) :  Dimension of matrix
   */
   void NonSymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim);
-
-  /*!
-  \brief Assemble a Epetra_SerialDenseMatrix into a Epetra_CrsMatrix
-
-  This is an individual call.
-  Will only assemble locally and will never do any commmunication.
-  All values that can not be assembled locally will be ignored.
-  Will use the communicator and rowmap from matrix A to determine ownerships.
-  Local matrix Aele has to be square.
-
-  If matrix A is Filled(), it stays so and you can only assemble to
-  places already masked. An attempt to assemble into a non-existing
-  place is a grave mistake.
-
-  If matrix A is not Filled(), the matrix is enlarged as required.
-
-  \note Assembling to a non-Filled() matrix is much more expensive
-        than to a Filled() matrix. If the sparse mask
-        does not change it pays to keep the matrix around and assemble
-        into the Filled() matrix.
-
-  \param A (out)   : Sparse matrix to be assembled on
-  \param Aele (in) : dense matrix to be assembled
-  \param lm (in) : vector with gids
-  \param lmowner (in) : vector with owner procs of gids
-  */
-  void Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele,
-                const vector<int>& lm, const vector<int>& lmowner);
 
   /*!
   \brief Assemble a Epetra_SerialDenseMatrix into a Epetra_CrsMatrix
@@ -481,21 +454,10 @@ namespace LINALG
   \param dbctoggle (in)     : vector holding 1.0 where dirichlet should be applied
                               and 0.0 everywhere else
   */
-  void ApplyDirichlettoSystem(RefCountPtr<Epetra_CrsMatrix>&   A,
+  void ApplyDirichlettoSystem(RCP<SparseOperator>              A,
                               RefCountPtr<Epetra_Vector>&      x,
                               RefCountPtr<Epetra_Vector>&      b,
                               const RefCountPtr<Epetra_Vector> dbcval,
-                              const RefCountPtr<Epetra_Vector> dbctoggle);
-
-  /*!
-  \brief Apply dirichlet boundary condition to a linear system of equations
-
-
-  \param A         (in/out) : Matrix to of Ax=b
-  \param dbctoggle (in)     : vector holding 1.0 where dirichlet should be applied
-                              and 0.0 everywhere else
-  */
-  void ApplyDirichlettoSystem(RefCountPtr<Epetra_CrsMatrix>&   A,
                               const RefCountPtr<Epetra_Vector> dbctoggle);
 
   /*!

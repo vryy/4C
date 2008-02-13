@@ -20,8 +20,8 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               vg 06/07|
  *----------------------------------------------------------------------*/
-AVMS_Solver::AVMS_Solver(RCP<Epetra_CrsMatrix> Aforfine,
-                         RCP<Epetra_CrsMatrix> Aforcoarse,
+AVMS_Solver::AVMS_Solver(RCP<LINALG::SparseMatrix> Aforfine,
+                         RCP<LINALG::SparseMatrix> Aforcoarse,
                          const RCP<Epetra_Vector> dbctoggle,
                          ParameterList& mlparams) :
 mlparams_(mlparams),
@@ -42,8 +42,8 @@ AVMS_Solver::~AVMS_Solver()
 /*----------------------------------------------------------------------*
  |  compute the preconditioner (private)                       gee 02/08|
  *----------------------------------------------------------------------*/
-bool AVMS_Solver::Compute(RCP<Epetra_CrsMatrix> Aforfine,
-                          RCP<Epetra_CrsMatrix> Aforcoarse)
+bool AVMS_Solver::Compute(RCP<LINALG::SparseMatrix> Aforfine,
+                          RCP<LINALG::SparseMatrix> Aforcoarse)
 {
   // this is important to have!!!
   MLAPI::Init();
@@ -65,22 +65,23 @@ bool AVMS_Solver::Compute(RCP<Epetra_CrsMatrix> Aforfine,
   }
 
   // get plain aggregation Ptent and Rtent
-  RCP<Epetra_CrsMatrix>   Ptent;
+  RCP<Epetra_CrsMatrix>   crsPtent;
   RCP<Epetra_MultiVector> nextNS;
   int offset = Aforcoarse->RangeMap().MaxAllGID() + 1;
-  GetPtent(*Aforcoarse,mlparams_,nullspace,Ptent,nextNS,offset);
+  GetPtent(*Aforcoarse->Matrix(),mlparams_,nullspace,crsPtent,nextNS,offset);
+  RCP<LINALG::SparseMatrix> Ptent = Teuchos::rcp(new LINALG::SparseMatrix(crsPtent));
 
   // make K12 = P^T A
-  RCP<Epetra_CrsMatrix> K12 = LINALG::Multiply(Ptent,true,Aforcoarse,false);
+  RCP<LINALG::SparseMatrix> K12 = LINALG::Multiply(*Ptent,true,*Aforcoarse,false);
 
   // make K21 = A P
-  RCP<Epetra_CrsMatrix> K21 = LINALG::Multiply(Aforcoarse,false,Ptent,false); 
+  RCP<LINALG::SparseMatrix> K21 = LINALG::Multiply(*Aforcoarse,false,*Ptent,false);
 
   // get coarse grid matrix K11 = R ( K+M ) P = R K21
-  RCP<Epetra_CrsMatrix> K11 = LINALG::Multiply(Ptent,true,K21,false);
+  RCP<LINALG::SparseMatrix> K11 = LINALG::Multiply(*Ptent,true,*K21,false);
 
   // rename Aplus_ into K22 for now
-  RCP<Epetra_CrsMatrix> K22 = Aforfine;
+  RCP<LINALG::SparseMatrix> K22 = Aforfine;
 
   // merge maps of fine and coarse to build complete system
   int length = K22->RangeMap().NumMyElements() + K11->RangeMap().NumMyElements();
@@ -94,19 +95,16 @@ bool AVMS_Solver::Compute(RCP<Epetra_CrsMatrix> Aforfine,
   Epetra_Map kmap(-1,length,&kgid[0],0,K22->Comm());
 
   // create combined matrix and fill it
-  Acombined_ = LINALG::CreateMatrix(kmap,K22->MaxNumEntries());
-  LINALG::Add(*K22,false,1.0,*Acombined_,0.0);
-  LINALG::Add(*K11,false,1.0,*Acombined_,1.0);
-  LINALG::Add(*K12,false,1.0,*Acombined_,1.0);
-  LINALG::Add(*K21,false,1.0,*Acombined_,1.0);
-  int err = Acombined_->FillComplete(kmap,kmap);
-  if (err) dserror("Epetra_CrsMatrix::FillComplete returned %d",err);
-  err = Acombined_->OptimizeStorage();
-  if (err) dserror("Epetra_CrsMatrix::OptimizaStorage returned %d",err);
+  Acombined_ = Teuchos::rcp(new LINALG::SparseMatrix(kmap,K22->MaxNumEntries()));
+  Acombined_->Add(*K22,false,1.0,0.0);
+  Acombined_->Add(*K11,false,1.0,1.0);
+  Acombined_->Add(*K12,false,1.0,1.0);
+  Acombined_->Add(*K21,false,1.0,1.0);
+  Acombined_->Complete(kmap,kmap);
 
-  // finally, we have to fix the nullspace in the parameter list to 
+  // finally, we have to fix the nullspace in the parameter list to
   // match the combined matrix dimension
-  if (nextNS->NumVectors() != nsdim) 
+  if (nextNS->NumVectors() != nsdim)
     dserror("Nullspace dimension mismatch between coarse and fine");
   RCP<vector<double> > newnullsp = rcp(new vector<double>(nsdim*kmap.NumMyElements()));
   count=0;
@@ -130,7 +128,7 @@ bool AVMS_Solver::Compute(RCP<Epetra_CrsMatrix> Aforfine,
 /*----------------------------------------------------------------------*
  |  multigrid solver for AVMS                                  gee 02/08|
  *----------------------------------------------------------------------*/
-int AVMS_Solver::Solve(const Epetra_Vector& B, Epetra_Vector& X, 
+int AVMS_Solver::Solve(const Epetra_Vector& B, Epetra_Vector& X,
                        ParameterList& params)
 {
   // create combined vectors and export fine level guess and rhs to them
@@ -149,20 +147,20 @@ int AVMS_Solver::Solve(const Epetra_Vector& B, Epetra_Vector& X,
   LINALG::Export(*xc,*x);
   LINALG::Export(*bc,*b);
   bc = null;
-  
+
   // call solver
   {
     RCP<ParameterList> rcpparams = rcp( new ParameterList(params));
     LINALG::Solver solver(rcpparams,Acombined_->Comm(),NULL);
-    solver.Solve(Acombined_,x,b,true,true);
+    solver.Solve(Acombined_->Matrix(),x,b,true,true);
     b = null;
   }
-  
+
   // export coarse part of solution to coarse vector and fine part to fine vector
   LINALG::Export(*x,*xc);
   LINALG::Export(*x,X);
   x = null;
-  
+
   // prolongate coarse part and add to fine part
   RCP<Epetra_Vector> xfine = LINALG::CreateVector(P_->RangeMap(),false);
   P_->Multiply(false,*xc,*xfine);

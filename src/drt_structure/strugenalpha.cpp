@@ -52,9 +52,9 @@ maxentriesperrow_(81)
   // -------------------------------------------------------------------
   // create empty matrices
   // -------------------------------------------------------------------
-  stiff_ = LINALG::CreateMatrix(*dofrowmap,81);
-  mass_  = LINALG::CreateMatrix(*dofrowmap,81);
-  if (damping) damp_ = LINALG::CreateMatrix(*dofrowmap,81);
+  stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,false));
+  mass_  = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,true));
+  if (damping) damp_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,true));
 
   // -------------------------------------------------------------------
   // create empty vectors
@@ -213,17 +213,15 @@ maxentriesperrow_(81)
   }
 
   // close mass matrix
-  LINALG::Complete(*mass_);
-  maxentriesperrow_ = mass_->MaxNumEntries();
+  mass_->Complete();
 
   // build damping matrix if desired
   if (damping)
   {
-    LINALG::Complete(*stiff_);
-    LINALG::Add(*stiff_,false,kdamp,*damp_,0.0);
-    LINALG::Add(*mass_,false,mdamp,*damp_,1.0);
-    LINALG::Complete(*damp_);
-    stiff_ = null;
+    stiff_->Complete();
+    damp_->Add(*stiff_,false,kdamp,0.0);
+    damp_->Add(*mass_,false,mdamp,1.0);
+    damp_->Complete();
   }
 
   //--------------------------- calculate consistent initial accelerations
@@ -233,7 +231,7 @@ maxentriesperrow_(81)
     rhs->Update(-1.0,*fint_,1.0,*fext_,-1.0);
     Epetra_Vector rhscopy(*rhs);
     rhs->Multiply(1.0,*invtoggle_,rhscopy,0.0);
-    solver.Solve(mass_,acc_,rhs,true,true);
+    solver.Solve(mass_->Matrix(),acc_,rhs,true,true);
   }
 
   //------------------------------------------------------ time step index
@@ -262,7 +260,6 @@ void StruGenAlpha::ConstantPredictor()
   double alphaf      = params_.get<double>("alpha f"        ,0.459);
   bool   printscreen = params_.get<bool>  ("print to screen",false);
   string convcheck   = params_.get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
-  const Epetra_Map* dofrowmap = discret_.DofRowMap();
 
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces if a relative convergence
@@ -329,7 +326,7 @@ void StruGenAlpha::ConstantPredictor()
   //------------- eval fint at interpolated state, eval stiffness matrix
   {
     // zero out stiffness
-    stiff_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+    stiff_->Zero();
     // create the parameters for the discretization
     ParameterList p;
     // action for elements
@@ -434,7 +431,6 @@ void StruGenAlpha::MatrixFreeConstantPredictor()
   double alphaf      = params_.get<double>("alpha f"        ,0.459);
   bool   printscreen = params_.get<bool>  ("print to screen",false);
   string convcheck   = params_.get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
-  const Epetra_Map* dofrowmap = discret_.DofRowMap();
 
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces if a relative convergence
@@ -500,7 +496,7 @@ void StruGenAlpha::MatrixFreeConstantPredictor()
 
   //------------------------------------ eval fint at interpolated state
   {
-    stiff_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);  // test only!
+    stiff_->Zero();
 
     // create the parameters for the discretization
     ParameterList p;
@@ -525,7 +521,7 @@ void StruGenAlpha::MatrixFreeConstantPredictor()
 //     discret_.Evaluate(p,null,null,fint_,null,null);
     discret_.Evaluate(p,stiff_,null,fint_,null,null);          // test only!
     discret_.ClearState();
-    LINALG::Complete(*stiff_);                                 // test only!
+    stiff_->Complete();                                 // test only!
   }
 
   //-------------------------------------------- compute residual forces
@@ -593,7 +589,6 @@ void StruGenAlpha::ConsistentPredictor()
   double gamma       = params_.get<double>("gamma"          ,0.581);
   bool   printscreen = params_.get<bool>  ("print to screen",false);
   string convcheck   = params_.get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
-  const Epetra_Map* dofrowmap = discret_.DofRowMap();
 
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces if a relative convergence
@@ -677,7 +672,7 @@ void StruGenAlpha::ConsistentPredictor()
   //------------- eval fint at interpolated state, eval stiffness matrix
   {
     // zero out stiffness
-    stiff_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+    stiff_->Zero();
     // create the parameters for the discretization
     ParameterList p;
     // action for elements
@@ -772,8 +767,6 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
   double alpham    = params_.get<double>("alpha m"                ,0.378);
   double alphaf    = params_.get<double>("alpha f"                ,0.459);
 
-  const Epetra_Map* dofrowmap = discret_.DofRowMap();
-
   // On the first call in a time step we have to have
   // disp==Teuchos::null. Then we just finished one of our predictors,
   // than contains the element loop, so we can fast forward and finish
@@ -818,7 +811,7 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
     //---------------------------- compute internal forces and stiffness
     {
       // zero out stiffness
-      stiff_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+      stiff_->Zero();
       // create the parameters for the discretization
       ParameterList p;
       // action for elements
@@ -867,12 +860,12 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
   //------------------------------------------- effective rhs is fresm
   //---------------------------------------------- build effective lhs
   // (using matrix stiff_ as effective matrix)
-  LINALG::Add(*mass_,false,(1.-alpham)/(beta*dt*dt),*stiff_,1.-alphaf);
+  stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
   if (damping)
   {
-    LINALG::Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),*stiff_,1.0);
+    stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
   }
-  LINALG::Complete(*stiff_);
+  stiff_->Complete();
 
   //----------------------- apply dirichlet BCs to system of equations
   disi_->PutScalar(0.0);  // Useful? depends on solver and more
@@ -904,7 +897,6 @@ void StruGenAlpha::FullNewton()
   bool printerr    = params_.get<bool>  ("print to err",false);
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
   if (!errfile) printerr = false;
-  const Epetra_Map* dofrowmap = discret_.DofRowMap();
 
   // check whether we have a stiffness matrix, that is not filled yet
   // and mass and damping are present
@@ -927,12 +919,12 @@ void StruGenAlpha::FullNewton()
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
-    LINALG::Add(*mass_,false,(1.-alpham)/(beta*dt*dt),*stiff_,1.-alphaf);
+    stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
     if (damping)
     {
-      LINALG::Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),*stiff_,1.0);
+      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
     }
-    LINALG::Complete(*stiff_);
+    stiff_->Complete();
 
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
@@ -941,10 +933,9 @@ void StruGenAlpha::FullNewton()
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
     if (!numiter)
-      solver_.Solve(stiff_,disi_,fresm_,true,true);
+      solver_.Solve(stiff_->Matrix(),disi_,fresm_,true,true);
     else
-      solver_.Solve(stiff_,disi_,fresm_,true,false);
-    stiff_ = null;
+      solver_.Solve(stiff_->Matrix(),disi_,fresm_,true,false);
 
     //---------------------------------- update mid configuration values
     // displacements
@@ -980,7 +971,7 @@ void StruGenAlpha::FullNewton()
     //---------------------------- compute internal forces and stiffness
     {
       // zero out stiffness
-      stiff_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+      stiff_->Zero();
       // create the parameters for the discretization
       ParameterList p;
       // action for elements
@@ -1073,9 +1064,6 @@ void StruGenAlpha::FullNewton()
   }
 
   params_.set<int>("num iterations",numiter);
-
-  //-------------------------------------- don't need this at the moment
-  stiff_ = null;
 
   return;
 } // StruGenAlpha::FullNewton()
@@ -1175,12 +1163,12 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
-    LINALG::Add(*mass_,false,(1.-alpham)/(beta*dt*dt),*stiff_,1.-alphaf);
+    stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
     if (damping)
     {
-      LINALG::Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),*stiff_,1.0);
+      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
     }
-    LINALG::Complete(*stiff_);
+    stiff_->Complete();
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
@@ -1202,7 +1190,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     RCP<Epetra_SerialDenseVector> dotprod= rcp(new Epetra_SerialDenseVector(numConstrVol));
 
     // Compute residual of the uzawa algorithm
-    
+
     ConstrMan_->ComputeConstrTimesLagrIncr(constrVecWeight);
     RCP<Epetra_Vector> fresmcopy=rcp(new Epetra_Vector(*fresm_));
   	fresmcopy->Update(1.0,*constrVecWeight,1.0);
@@ -1234,11 +1222,11 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 	  	  // Solve K . IncD = -R  ===>  IncD_{n+1}
 	  	  if (numiter_uzawa==0&&numiter==0)
 	  	  {
-	  		  solver_.Solve(stiff_,disi_,fresmcopy,true,true);
+                    solver_.Solve(stiff_->Matrix(),disi_,fresmcopy,true,true);
 	  	  }
 	  	  else
 	  	  {
-	  		  solver_.Solve(stiff_,disi_,fresmcopy,true,false);
+                    solver_.Solve(stiff_->Matrix(),disi_,fresmcopy,true,false);
 	  	  }
 
 	  	  //compute Lagrange multiplier increment
@@ -1259,7 +1247,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 	  	  norm_uzawa_alt=norm_uzawa;
 	  	  uzawa_res.Norm2(&norm_uzawa);
 	  	  Epetra_SerialDenseVector vol_res(numConstrVol);
-	  	  
+
 	  	  for (int foo = 0; foo < numConstrVol; ++foo)
 	  	  {
 	  		  vol_res[foo]=(*dotprod)[foo]+ConstrMan_->GetError(foo);
@@ -1350,7 +1338,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     //---------------------------- compute internal forces and stiffness
     {
       // zero out stiffness
-      stiff_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+      stiff_->Zero();
       // create the parameters for the discretization
       ParameterList p;
       // action for elements
@@ -1437,9 +1425,6 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   params_.set<int>("num iterations",numiter);
   params_.set<double>("uzawa parameter",Uzawa_param);
 
-  //-------------------------------------- don't need this at the moment
-  stiff_ = null;
-
   return;
 } // StruGenAlpha::FullNewtonUzawa()
 
@@ -1479,10 +1464,10 @@ void StruGenAlpha::ModifiedNewton()
   int numiter=0;
   //---------------------------------------------- build effective lhs
   // (using matrix stiff_ as effective matrix)
-  LINALG::Add(*mass_,false,(1.-alpham)/(beta*dt*dt),*stiff_,1.-alphaf);
+  stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
   if (damping)
-    LINALG::Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),*stiff_,1.0);
-  LINALG::Complete(*stiff_);
+    stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+  stiff_->Complete();
   LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
 
   //=================================================== equilibrium loop
@@ -1502,9 +1487,9 @@ void StruGenAlpha::ModifiedNewton()
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
     if (!numiter)
-      solver_.Solve(stiff_,disi_,fresm_,true,true);
+      solver_.Solve(stiff_->Matrix(),disi_,fresm_,true,true);
     else
-      solver_.Solve(stiff_,disi_,fresm_,false,false);
+      solver_.Solve(stiff_->Matrix(),disi_,fresm_,false,false);
 
     //---------------------------------- update mid configuration values
     // displacements
@@ -1617,9 +1602,6 @@ void StruGenAlpha::ModifiedNewton()
   }
 
   params_.set<int>("num iterations",numiter);
-
-  //-------------------------------------- don't need this at the moment
-  stiff_ = null;
 
   return;
 } // StruGenAlpha::ModifiedNewton()
@@ -1788,9 +1770,6 @@ void StruGenAlpha::MatrixFreeNewton()
                    fresmnorm,disinorm,convcheck);
      }
   }
-
-  //-------------------------------------- don't need this at the moment
-  stiff_ = null;
 
   return;
 } // StruGenAlpha::MatrixFreeNewton()
@@ -1993,7 +1972,6 @@ void StruGenAlpha::NonlinearCG()
   dserror("Please verify that incremental update is not needed here!");
 #endif
 
-    stiff_ = null;
     return;
   }
 #endif
@@ -2104,9 +2082,6 @@ void StruGenAlpha::NonlinearCG()
   dserror("Please verify that incremental update is not needed here!");
 #endif
 
-  //-------------------------------------- don't need this anymore
-  stiff_ = null;
-
   return;
 } // StruGenAlpha::NonlinearCG()
 
@@ -2134,7 +2109,6 @@ void StruGenAlpha::PTC()
   bool printerr    = params_.get<bool>  ("print to err",false);
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
   if (!errfile) printerr = false;
-  const Epetra_Map* dofrowmap = discret_.DofRowMap();
 
   // check whether we have a stiffness matrix, that is not filled yet
   // and mass and damping are present
@@ -2169,10 +2143,10 @@ void StruGenAlpha::PTC()
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
-    LINALG::Add(*mass_,false,(1.-alpham)/(beta*dt*dt),*stiff_,1.-alphaf);
+    stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
     if (damping)
-      LINALG::Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),*stiff_,1.0);
-    LINALG::Complete(*stiff_);
+      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+    stiff_->Complete();
 
     //------------------------------- do ptc modification to effective LHS
     {
@@ -2191,10 +2165,9 @@ void StruGenAlpha::PTC()
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
     if (!numiter)
-      solver_.Solve(stiff_,disi_,fresm_,true,true);
+      solver_.Solve(stiff_->Matrix(),disi_,fresm_,true,true);
     else
-      solver_.Solve(stiff_,disi_,fresm_,true,false);
-    stiff_ = null;
+      solver_.Solve(stiff_->Matrix(),disi_,fresm_,true,false);
 
     //---------------------------------- update mid configuration values
     // displacements
@@ -2230,7 +2203,7 @@ void StruGenAlpha::PTC()
     //---------------------------- compute internal forces and stiffness
     {
       // zero out stiffness
-      stiff_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+      stiff_->Zero();
       // create the parameters for the discretization
       ParameterList p;
       // action for elements
@@ -2345,9 +2318,6 @@ void StruGenAlpha::PTC()
   }
 
   params_.set<int>("num iterations",numiter);
-
-  //-------------------------------------- don't need this at the moment
-  stiff_ = null;
 
   return;
 } // StruGenAlpha::PTC()
@@ -2633,7 +2603,7 @@ void StruGenAlpha::computeJacobian(const Epetra_Vector& x)
     //------------------------------------------------ compute stiffness
     {
       // zero out stiffness
-      stiff_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+      stiff_->Zero();
       // create the parameters for the discretization
       ParameterList p;
       // action for elements
@@ -2659,10 +2629,10 @@ void StruGenAlpha::computeJacobian(const Epetra_Vector& x)
 
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
-    LINALG::Add(*mass_,false,(1.-alpham)/(beta*dt*dt),*stiff_,1.-alphaf);
+    stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
     if (damping)
-      LINALG::Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),*stiff_,1.0);
-    LINALG::Complete(*stiff_);
+      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+    stiff_->Complete();
     LINALG::ApplyDirichlettoSystem(stiff_,
                                    disi,
                                    fresm_,
@@ -3271,7 +3241,7 @@ void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_uncon
 	if (ConstrMan_->HaveMonitor())
 	{
 	  ConstrMan_->ComputeMonitorValues(dism_);
-	  ConstrMan_->PrintMonitorValues(); 	  
+	  ConstrMan_->PrintMonitorValues();
 	}
     double timepernlnsolve = timer.ElapsedTime();
 
@@ -3307,7 +3277,7 @@ void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_uncon
   bool relres        = (convcheck == "RelRes_And_AbsDis" || convcheck == "RelRes_Or_AbsDis");
   bool relres_reldis = (convcheck == "RelRes_And_RelDis" || convcheck == "RelRes_Or_RelDis");
 
- 
+
   if (relres)
   {
     fresmnorm /= ref_fnorm_;
@@ -3322,7 +3292,7 @@ void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_uncon
   {
     if (printscreen)
     {
-      
+
       if (relres)
       {
         printf("numiter %2d scaled res-norm %10.5e absolute dis-norm %20.15E absolute constr-norm %10.5e current Uzawa parameter %10.5e\n",
@@ -3369,7 +3339,7 @@ void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_uncon
 	if (ConstrMan_->HaveMonitor())
 	{
 	  ConstrMan_->ComputeMonitorValues(disn_);
-	  ConstrMan_->PrintMonitorValues(); 	  
+	  ConstrMan_->PrintMonitorValues();
 	}
     double timepernlnsolve = timer.ElapsedTime();
 

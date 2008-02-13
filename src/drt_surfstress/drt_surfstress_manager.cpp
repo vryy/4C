@@ -43,7 +43,7 @@ discret_(discret)
 void DRT::SurfStressManager::EvaluateSurfStress(ParameterList& p,
                                                 RefCountPtr<Epetra_Vector> disp,
                                                 RefCountPtr<Epetra_Vector> fint,
-                                                RefCountPtr<Epetra_CrsMatrix> stiff)
+                                                RefCountPtr<LINALG::SparseMatrix> stiff)
 {
     // action for elements
     p.set("action","calc_surfstress_stiff");

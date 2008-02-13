@@ -126,10 +126,9 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   // nodes with 4 dofs each. (27*4=108)
   // We do not need the exact number here, just for performance reasons
   // a 'good' estimate
-  maxentriesperrow_ = 108;
 
   // initialize standard (stabilized) system matrix
-  sysmat_ = null;
+  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
 
   // -------------------------------------------------------------------
   // create empty vectors
@@ -190,7 +189,7 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   if (fssgv_ > 0)
   {
     // initialize subgrid-viscosity matrix
-    sysmat_sv_ = null;
+    sysmat_sv_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
 
     // residual vector containing (fine-scale) subgrid-viscosity residual
     residual_sv_  = LINALG::CreateVector(*dofrowmap,true);
@@ -302,7 +301,7 @@ void FluidImplicitTimeInt::TimeLoop()
       dserror("no ALE possible with linearised fluid");
     if (fssgv_)
       dserror("no fine scale solution implemented with linearised fluid");
-    /* additionally it remains to mention that for the linearised 
+    /* additionally it remains to mention that for the linearised
        fluid the stbilisation is hard coded to be SUPG/PSPG */
   }
 
@@ -645,7 +644,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
       // get cpu time
       tcpu=ds_cputime();
 
-      sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+      sysmat_->Zero();
 
       // add Neumann loads
       residual_->Update(1.0,*neumann_loads_,0.0);
@@ -688,14 +687,14 @@ void FluidImplicitTimeInt::NonlinearSolve()
         if (step_ == 1)
         {
           // create subgrid-viscosity matrix
-          sysmat_sv_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+          sysmat_sv_->Zero();
 
           // call loop over elements (two matrices + subgr.-visc.-scal. vector)
           discret_->Evaluate(eleparams,sysmat_,sysmat_sv_,residual_,sugrvisc_);
           discret_->ClearState();
 
           // finalize the normalized all-scale subgrid-viscosity matrix
-          LINALG::Complete(*sysmat_sv_);
+          sysmat_sv_->Complete();
 
           // apply DBC to normalized all-scale subgrid-viscosity matrix
           LINALG::ApplyDirichlettoSystem(sysmat_sv_,incvel_,residual_sv_,zeros_,dirichtoggle_);
@@ -706,7 +705,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
         else
         {
           // call loop over elements (one matrix + subgr.-visc.-scal. vector)
-          discret_->Evaluate(eleparams,sysmat_,residual_,sugrvisc_);
+          discret_->Evaluate(eleparams,sysmat_,null,residual_,sugrvisc_);
           discret_->ClearState();
         }
         // check whether VM3 solver exists
@@ -727,8 +726,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
       density = eleparams.get("density", 0.0);
 
       // finalize the complete matrix
-      LINALG::Complete(*sysmat_);
-      maxentriesperrow_ = sysmat_->MaxNumEntries();
+      sysmat_->Complete();
 
       // end time measurement for element call
       tm3_ref_=null;
@@ -885,7 +883,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
       // get cpu time
       tcpu=ds_cputime();
 
-      solver_.Solve(sysmat_,incvel_,residual_,true,itnum==1);
+      solver_.Solve(sysmat_->Matrix(),incvel_,residual_,true,itnum==1);
 
       // end time measurement for application of dirichlet conditions
       tm5_ref_=null;
@@ -916,7 +914,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*
-This fluid implementation is designed to be quick(er) but has a couple of 
+This fluid implementation is designed to be quick(er) but has a couple of
 drawbacks:
 - currently it is incapable of ALE fluid solutions
 - the order of accuracy in time is fixed to 1, i.e. some more steps may be required
@@ -928,7 +926,6 @@ void FluidImplicitTimeInt::LinearSolve()
   // start time measurement for nonlinear iteration
   tm6_ref_ = rcp(new TimeMonitor(*timelinloop_));
 
-  const Epetra_Map* dofrowmap       = discret_->DofRowMap();
   double            dtsolve = 0;
   double            dtele   = 0;
   double            tcpu;
@@ -942,13 +939,13 @@ void FluidImplicitTimeInt::LinearSolve()
   // -------------------------------------------------------------------
   // call elements to calculate system matrix
   // -------------------------------------------------------------------
-  
+
   // start time measurement for element call
   tm3_ref_ = rcp(new TimeMonitor(*timeeleloop_));
   // get cpu time
   tcpu=ds_cputime();
 
-  sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+  sysmat_->Zero();
 
   // add Neumann loads
   rhs_->Update(1.0,*neumann_loads_,0.0);
@@ -978,42 +975,41 @@ void FluidImplicitTimeInt::LinearSolve()
   density = eleparams.get("density", 0.0);
 
   // finalize the complete matrix
-  LINALG::Complete(*sysmat_);
-  maxentriesperrow_ = sysmat_->MaxNumEntries();
+  sysmat_->Complete();
 
   // end time measurement for element call
   tm3_ref_=null;
   dtele=ds_cputime()-tcpu;
-  
+
   //--------- Apply dirichlet boundary conditions to system of equations
   //          residual velocities (and pressures) are supposed to be zero at
   //          boundary conditions
   //velnp_->PutScalar(0.0);
-  
+
   // start time measurement for application of dirichlet conditions
   tm4_ref_ = rcp(new TimeMonitor(*timeapplydirich_));
 
   LINALG::ApplyDirichlettoSystem(sysmat_,velnp_,rhs_,velnp_,dirichtoggle_);
-  
+
   // end time measurement for application of dirichlet conditions
   tm4_ref_=null;
 
   //-------solve for total new velocities and pressures
-  
+
   // start time measurement for solver call
   tm5_ref_ = rcp(new TimeMonitor(*timesolver_));
   // get cpu time
   tcpu=ds_cputime();
 
-  /* possibly we could accelerate it if the reset variable 
+  /* possibly we could accelerate it if the reset variable
      is true only every fifth step, i.e. set the last argument to false
      for 4 of 5 timesteps or so. */
-  solver_.Solve(sysmat_,velnp_,rhs_,true,true);
-  
+  solver_.Solve(sysmat_->Matrix(),velnp_,rhs_,true,true);
+
   // end time measurement for application of solver call
   tm5_ref_=null;
   dtsolve=ds_cputime()-tcpu;
-  
+
   // end time measurement for linear fluid solve
   tm6_ref_ = null;
 
@@ -1035,8 +1031,7 @@ void FluidImplicitTimeInt::LinearSolve()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 {
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+  sysmat_->Zero();
 
   // set the new solution we just got
   if (vel!=Teuchos::null)
@@ -1081,8 +1076,7 @@ void FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   density_ = eleparams.get("density", 0.0);
 
   // finalize the system matrix
-  LINALG::Complete(*sysmat_);
-  maxentriesperrow_ = sysmat_->MaxNumEntries();
+  sysmat_->Complete();
 
   trueresidual_->Update(density_/dta_/theta_,*residual_,0.0);
 

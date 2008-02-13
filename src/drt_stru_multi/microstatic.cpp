@@ -64,7 +64,7 @@ solver_(solver)
   // -------------------------------------------------------------------
   // create empty matrices
   // -------------------------------------------------------------------
-  stiff_ = LINALG::CreateMatrix(*dofrowmap,81);
+  stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,false));
 
   // -------------------------------------------------------------------
   // create empty vectors
@@ -137,7 +137,6 @@ solver_(solver)
     discret_->Evaluate(p,stiff_,null,fint_,null,null);
     discret_->ClearState();
   }
-  maxentriesperrow_ = stiff_->MaxNumEntries();
 
   //------------------------------------------------------ time step index
   istep = 0;
@@ -253,7 +252,6 @@ void MicroStatic::Predictor(const Epetra_SerialDenseMatrix* defgrd)
   double dt          = params_->get<double>("delta time"     ,0.01);
   string convcheck   = params_->get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
   bool   printscreen = params_->get<bool>  ("print to screen",false);
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces if a relative convergence
@@ -279,7 +277,7 @@ void MicroStatic::Predictor(const Epetra_SerialDenseMatrix* defgrd)
   //------------- eval fint at interpolated state, eval stiffness matrix
   {
     // zero out stiffness
-    stiff_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+    stiff_->Zero();
     // create the parameters for the discretization
     ParameterList p;
     // action for elements
@@ -309,7 +307,7 @@ void MicroStatic::Predictor(const Epetra_SerialDenseMatrix* defgrd)
     }
 
     // complete stiffness matrix
-    LINALG::Complete(*stiff_);
+    stiff_->Complete();
   }
 
   //-------------------------------------------- compute residual forces
@@ -368,7 +366,6 @@ void MicroStatic::FullNewton()
   double tolres    = params_->get<double>("tolerance residual"     ,1.0e-07);
   bool printscreen = params_->get<bool>  ("print to screen",true);
   //double toldisp = 1.0e-08;
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   //=================================================== equilibrium loop
   int numiter=0;
@@ -390,10 +387,9 @@ void MicroStatic::FullNewton()
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
     if (!numiter)
-      solver_->Solve(stiff_,disi_,fresm_,true,true);
+      solver_->Solve(stiff_->Matrix(),disi_,fresm_,true,true);
     else
-      solver_->Solve(stiff_,disi_,fresm_,true,false);
-    stiff_ = null;
+      solver_->Solve(stiff_->Matrix(),disi_,fresm_,true,false);
 
     //---------------------------------- update mid configuration values
     // displacements
@@ -403,7 +399,7 @@ void MicroStatic::FullNewton()
     //---------------------------- compute internal forces and stiffness
     {
       // zero out stiffness
-      stiff_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+      stiff_->Zero();
       // create the parameters for the discretization
       ParameterList p;
       // action for elements
@@ -433,7 +429,7 @@ void MicroStatic::FullNewton()
     }
 
     // complete stiffness matrix
-    LINALG::Complete(*stiff_);
+    stiff_->Complete();
 
     //------------------------------------------ compute residual forces
     // add static mid-balance
@@ -482,8 +478,6 @@ void MicroStatic::FullNewton()
   }
 
   params_->set<int>("num iterations",numiter);
-
-  //stiff_ = null;   -> microscale needs this for homogenization purposes
 
   return;
 } // MicroStatic::FullNewton()
@@ -1228,17 +1222,13 @@ void MicroStatic::StaticHomogenization(Epetra_SerialDenseVector* stress,
 
   Epetra_Vector x(*dofrowmap);
   Epetra_Vector y(*dofrowmap);
-  stiff_dirich_ = stiff_; // now stiff_dirich_ points to the 'original'
-                          // stiffness matrix of the system.
-                          // after having applied the Dirichlet conditions
-                          // stiff_dirich_ still points to the 'original'
-                          // stiffness whereas the rcp of stiff_ is
-                          // assigned to a modified matrix
-  RCP<Epetra_Vector>tmp=null;
 
-  LINALG::ApplyDirichlettoSystem(stiff_,tmp,tmp,zeros_,dirichtoggle_);
+  // make a copy
+  stiff_dirich_ = Teuchos::rcp(new LINALG::SparseMatrix(*stiff_));
 
-  Epetra_LinearProblem linprob(&(*stiff_), &x, &y);
+  stiff_->ApplyDirichlet(dirichtoggle_);
+
+  Epetra_LinearProblem linprob(&(*stiff_->Matrix()), &x, &y);
   int error=linprob.CheckInput();
   if (error)
     dserror("Input for linear problem inconsistent");
@@ -1269,10 +1259,6 @@ void MicroStatic::StaticHomogenization(Epetra_SerialDenseVector* stress,
   // Piola-Kirchhoff stresses to Green-Lagrange strains.
 
   ConvertMat(cmatpf, F_inv, *stress, *cmat);
-
-  // after having all homogenization stuff done, we now really don't need stiff_ anymore
-
-  stiff_ = null;
 
   // homogenized density was already determined in the constructor
 

@@ -6,7 +6,7 @@
 
      o one-step-theta time-integration scheme
 
-     o two-step BDF2 time-integration scheme 
+     o two-step BDF2 time-integration scheme
        (with potential one-step-theta start algorithm)
 
      and stationary solver.
@@ -35,6 +35,7 @@ Maintainer: Volker Gravemeier
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/linalg_systemmatrix.H"
 #include "../io/io_drt.H"
 
 #include "Epetra_Vector.h"
@@ -148,7 +149,6 @@ protected:
   ParameterList&             params_;
   IO::DiscretizationWriter&  output_;
   int                        myrank_;
-  int                        maxentriesperrow_;
 
   double time_;
   int step_;
@@ -172,7 +172,7 @@ protected:
   int fssgd_;
 
   /// (standard) system matrix
-  RCP<Epetra_CrsMatrix> sysmat_;
+  RCP<LINALG::SparseMatrix> sysmat_;
 
   /// toggle vector indicating which dofs have Dirichlet BCs
   RCP<Epetra_Vector>    dirichtoggle_;
@@ -204,7 +204,7 @@ protected:
   RCP<AVMS_Solver> avms_solver_;
 
   /// only necessary for vm3 solver: fine-scale subgrid-diffusivity matrix
-  RCP<Epetra_CrsMatrix> sysmat_sd_;
+  RCP<LINALG::SparseMatrix> sysmat_sd_;
 
   /// only necessary for vm3 solver: subgrid-viscosity-scaling vector
   RCP<Epetra_Vector>    sugrvisc_;

@@ -17,6 +17,7 @@ Maintainer: Michael Gee
 #include <vector>
 
 #include "linalg_utils.H"
+#include "linalg_systemmatrix.H"
 #include "drt_dserror.H"
 #include "EpetraExt_Transpose_RowMatrix.h"
 #include "EpetraExt_MatrixMatrix.h"
@@ -88,81 +89,6 @@ void LINALG::Export(const Epetra_MultiVector& source, Epetra_MultiVector& target
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  assemble a matrix  (public)                              mwgee 12/06|
- *----------------------------------------------------------------------*/
-void LINALG::Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele,
-                      const vector<int>& lm, const vector<int>& lmowner)
-{
-  const int ldim = (int)lm.size();
-  if (ldim!=(int)lmowner.size() || ldim!=Aele.M() || ldim!=Aele.N())
-    dserror("Mismatch in dimensions");
-
-  const int myrank = A.Comm().MyPID();
-  const Epetra_Map& rowmap = A.RowMap();
-  const Epetra_Map& colmap = A.ColMap();
-
-  if (A.Filled())
-  {
-    // loop rows of local matrix
-    for (int lrow=0; lrow<ldim; ++lrow)
-    {
-      // check ownership of row
-      if (lmowner[lrow] != myrank) continue;
-
-      // check whether I have that global row
-      int rgid = lm[lrow];
-      int rlid = rowmap.LID(rgid);
-#ifdef DEBUG
-      if (rlid<0) dserror("Sparse matrix A does not have global row %d",rgid);
-#endif
-
-      for (int lcol=0; lcol<ldim; ++lcol)
-      {
-        double val = Aele(lrow,lcol);
-        int cgid = lm[lcol];
-        int clid = colmap.LID(cgid);
-#ifdef DEBUG
-        if (clid<0) dserror("Sparse matrix A does not have global column %d",cgid);
-#endif
-        int errone = A.SumIntoMyValues(rlid,1,&val,&clid);
-        if (errone)
-          dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d",errone);
-      } // for (int lcol=0; lcol<ldim; ++lcol)
-    } // for (int lrow=0; lrow<ldim; ++lrow)
-  }
-  else
-  {
-    // loop rows of local matrix
-    for (int lrow=0; lrow<ldim; ++lrow)
-    {
-      // check ownership of row
-      if (lmowner[lrow] != myrank) continue;
-
-      // check whether I have that global row
-      int rgid = lm[lrow];
-      if (!(rowmap.MyGID(rgid))) dserror("Sparse matrix A does not have global row %d",rgid);
-
-      for (int lcol=0; lcol<ldim; ++lcol)
-      {
-        double val = Aele(lrow,lcol);
-        // Now that we do not rebuild the sparse mask in each step, we
-        // are bound to assemble the whole thing. Zeros included.
-        //if (abs(val)==0) continue; // do not assemble zeros
-        int    cgid = lm[lcol];
-        int errone = A.SumIntoGlobalValues(rgid,1,&val,&cgid);
-        if (errone>0)
-        {
-          int errtwo = A.InsertGlobalValues(rgid,1,&val,&cgid);
-          if (errtwo<0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned error code %d",errtwo);
-        }
-        else if (errone)
-          dserror("Epetra_CrsMatrix::SumIntoGlobalValues returned error code %d",errone);
-      } // for (int lcol=0; lcol<ldim; ++lcol)
-    } // for (int lrow=0; lrow<ldim; ++lrow)
-  }
-  return;
-}
 
 /*----------------------------------------------------------------------*
  |  assemble a matrix  (public)                               popp 01/08|
@@ -788,7 +714,6 @@ void LINALG::ElastSymTensor_o_Multiply(Epetra_SerialDenseMatrix& C,
 /*----------------------------------------------------------------------*
 | invert a dense nonsymmetric matrix (public)       g.bau 03/07|
 *----------------------------------------------------------------------*/
-#include <Epetra_SerialDenseSolver.h>
 void LINALG::NonSymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)
 {
   if (A.M() != A.N()) dserror("Matrix is not square");
@@ -807,39 +732,11 @@ void LINALG::NonSymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)
 /*----------------------------------------------------------------------*
  |  Apply dirichlet conditions  (public)                     mwgee 02/07|
  *----------------------------------------------------------------------*/
-void LINALG::ApplyDirichlettoSystem(RefCountPtr<Epetra_CrsMatrix>&   A,
-                                    const RefCountPtr<Epetra_Vector> dbctoggle)
-{
-  RefCountPtr<Epetra_Vector> dummy = null;
-  ApplyDirichlettoSystem(A,dummy,dummy,dummy,dbctoggle);
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Apply dirichlet conditions  (public)                     mwgee 02/07|
- *----------------------------------------------------------------------*/
 void LINALG::ApplyDirichlettoSystem(RefCountPtr<Epetra_Vector>&      x,
                                     RefCountPtr<Epetra_Vector>&      b,
                                     const RefCountPtr<Epetra_Vector> dbcval,
                                     const RefCountPtr<Epetra_Vector> dbctoggle)
 {
-  RefCountPtr<Epetra_CrsMatrix> dummy = null;
-  ApplyDirichlettoSystem(dummy,x,b,dbcval,dbctoggle);
-  return;
-}
-
-#if 1
-// The old version that modifies the sparse mask.
-
-/*----------------------------------------------------------------------*
- |  Apply dirichlet conditions  (public)                     mwgee 02/07|
- *----------------------------------------------------------------------*/
-void LINALG::ApplyDirichlettoSystem(RefCountPtr<Epetra_CrsMatrix>&   A,
-                                    RefCountPtr<Epetra_Vector>&      x,
-                                    RefCountPtr<Epetra_Vector>&      b,
-                                    const RefCountPtr<Epetra_Vector> dbcval,
-                                    const RefCountPtr<Epetra_Vector> dbctoggle)
-{
   const Epetra_Vector& dbct = *dbctoggle;
   if (x != null && b != null)
   {
@@ -855,112 +752,21 @@ void LINALG::ApplyDirichlettoSystem(RefCountPtr<Epetra_CrsMatrix>&   A,
         B[i] = dbcv[i];
       }
   }
-
-  if (A != null)
-  {
-    // allocate a new matrix and copy all rows that are not dirichlet
-    const Epetra_Map& rowmap = A->RowMap();
-    const int nummyrows     = A->NumMyRows();
-    const int maxnumentries = A->MaxNumEntries();
-    RefCountPtr<Epetra_CrsMatrix> Anew = LINALG::CreateMatrix(rowmap,maxnumentries);
-    vector<int> indices(maxnumentries,0);
-    vector<double> values(maxnumentries,0.0);
-    for (int i=0; i<nummyrows; ++i)
-    {
-      int row = A->GRID(i);
-      if (dbct[i]!=1.0)
-      {
-        int numentries;
-        int err = A->ExtractGlobalRowCopy(row,maxnumentries,numentries,&values[0],&indices[0]);
-#ifdef DEBUG
-        if (err) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d",err);
-#endif
-        err = Anew->InsertGlobalValues(row,numentries,&values[0],&indices[0]);
-#ifdef DEBUG
-        if (err<0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d",err);
-#endif
-      }
-      else
-      {
-        double one = 1.0;
-        int err = Anew->InsertGlobalValues(row,1,&one,&row);
-#ifdef DEBUG
-        if (err<0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d",err);
-#endif
-      }
-    }
-    LINALG::Complete(*Anew);
-    A = Anew;
-  }
-
   return;
 }
 
-#else
 
 /*----------------------------------------------------------------------*
- |  Apply dirichlet conditions  (public)                      ukue 02/07|
  *----------------------------------------------------------------------*/
-void LINALG::ApplyDirichlettoSystem(RefCountPtr<Epetra_CrsMatrix>&   A,
+void LINALG::ApplyDirichlettoSystem(RCP<LINALG::SparseOperator>      A,
                                     RefCountPtr<Epetra_Vector>&      x,
                                     RefCountPtr<Epetra_Vector>&      b,
                                     const RefCountPtr<Epetra_Vector> dbcval,
                                     const RefCountPtr<Epetra_Vector> dbctoggle)
 {
-
-  const Epetra_Vector& dbct = *dbctoggle;
-  if (x != null && b != null)
-  {
-    Epetra_Vector&       X    = *x;
-    Epetra_Vector&       B    = *b;
-    const Epetra_Vector& dbcv = *dbcval;
-    // set the prescribed value in x and b
-    const int mylength = dbcv.MyLength();
-    for (int i=0; i<mylength; ++i)
-      if (dbct[i]==1.0)
-      {
-        X[i] = dbcv[i];
-        B[i] = dbcv[i];
-      }
-  }
-
-  if (A != null)
-  {
-    const int nummyrows     = A->NumMyRows();
-    for (int i=0; i<nummyrows; ++i)
-    {
-      //int row = A->GRID(i);
-      if (dbct[i]!=1.0)
-      {
-        // nothing to do
-      }
-      else
-      {
-        int *indexOffset;
-        int *indices;
-        double *values;
-        int err = A->ExtractCrsDataPointers(indexOffset, indices, values);
-#ifdef DEBUG
-        if (err) dserror("Epetra_CrsMatrix::ExtractCrsDataPointers returned err=%d",err);
-#endif
-        // zero row
-        memset(&values[indexOffset[i]], 0,
-               (indexOffset[i+1]-indexOffset[i])*sizeof(double));
-
-        double one = 1.0;
-        err = A->SumIntoMyValues(i,1,&one,&i);
-#ifdef DEBUG
-        if (err<0) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d",err);
-#endif
-      }
-    }
-  }
-
-  return;
+  A->ApplyDirichlet(dbctoggle);
+  ApplyDirichlettoSystem(x,b,dbcval,dbctoggle);
 }
-
-#endif
-
 
 
 /*----------------------------------------------------------------------*

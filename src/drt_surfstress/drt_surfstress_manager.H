@@ -18,10 +18,11 @@ Maintainer: Lena Wiechert
 #ifndef SURFSTRESS_MANAGER_H
 #define SURFSTRESS_MANAGER_H
 
-#include "Teuchos_RefCountPtr.hpp"
-#include "Epetra_Vector.h"
+#include <Teuchos_RefCountPtr.hpp>
+#include <Epetra_Vector.h>
 
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_ParameterList.hpp>
+#include "../drt_lib/linalg_systemmatrix.H"
 #include "../drt_lib/drt_discret.H"
 
 
@@ -59,7 +60,7 @@ public:
   void EvaluateSurfStress(ParameterList& p,
                           RefCountPtr<Epetra_Vector> disp,
                           RefCountPtr<Epetra_Vector> fint,
-                          RefCountPtr<Epetra_CrsMatrix> stiff);
+                          RefCountPtr<LINALG::SparseMatrix> stiff);
 
   /*!
     \brief Routine to calculate additional internal forces and

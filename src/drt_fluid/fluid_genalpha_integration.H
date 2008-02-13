@@ -66,6 +66,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_lib/linalg_mapextractor.H"
+#include "../drt_lib/linalg_systemmatrix.H"
 #include "../io/io_drt.H"
 
 #include "Epetra_Vector.h"
@@ -325,13 +326,10 @@ private:
   // parallelism
   int                              myrank_;
 
-  // matrix layout
-  int                              maxentriesperrow_;
-
   // max. simulation time and max. number of steps
   int                              endstep_;
   double                           endtime_;
-  
+
   // current time and step
   double                           time_;
   int                              step_;
@@ -352,7 +350,7 @@ private:
   int                              itemax_;
   double                           ittol_;
 
-  // this variables are storing error norms 
+  // this variables are storing error norms
   double                           L2preresnorm_;
   double                           L2velresnorm_;
   double                           L2incvelnorm_;
@@ -360,9 +358,9 @@ private:
 
   // skip the last element call (computation of residual) if
   // itemax_ is reached in order to get some speedup for turbulence
-  // calculations 
+  // calculations
   bool                             skiplastelecall_;
-  
+
   // write restart every uprestart_ steps --- restartstep_ is
   // the counter used for this purpose
   int                              restartstep_;
@@ -377,7 +375,7 @@ private:
   RCP<TurbulenceStatistics> turbulencestatistics_;
 
   // (standard) system matrix
-  RCP<Epetra_CrsMatrix>    sysmat_;
+  RCP<LINALG::SparseMatrix>    sysmat_;
 
   // (standard) residual vector (rhs for the incremental form),
   RCP<Epetra_Vector>       residual_;
@@ -419,7 +417,7 @@ private:
   RCP<VM3_Solver> vm3_solver_;
 
   // only necessary for vm3 solver: fine-scale subgrid-viscosity matrix
-  RCP<Epetra_CrsMatrix> sysmat_sv_;
+  RCP<LINALG::SparseMatrix> sysmat_sv_;
 
   // only necessary for vm3 solver: fine-scale subgrid-viscosity residual vector
   RCP<Epetra_Vector>    residual_sv_;
@@ -479,7 +477,7 @@ private:
 
 #ifdef PERF
   RefCountPtr<Time>        timeeleassemble_      ;
-  RefCountPtr<Time>        timeelegetdoflocation_; 
+  RefCountPtr<Time>        timeelegetdoflocation_;
 
   RefCountPtr<Time>        timeelederxy2_    ;
   RefCountPtr<Time>        timeelederxy_     ;
@@ -499,7 +497,7 @@ private:
   RefCountPtr<Time>        timeeleinitstab_  ;
   RefCountPtr<Time>        timeelesysmat_    ;
 #endif
-  
+
   double                   dtele_;
   double                   dtsolve_;
   double                   dtfilter_;

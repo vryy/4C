@@ -192,6 +192,11 @@ namespace LINALG
     you can always Reset() you matrix, that is throw away the matrix graph and
     start anew with an empty matrix.
 
+    \note A large part of the SparseMatrix interface consists of methods from
+    the internal Epetra_CrsMatrix. If there are methods in Epetra_CrsMatrix
+    and not in SparseMatrix that you would like to call (for legitimate
+    reasons!) please add them to the SparseMatrix.
+
     \author u.kue
     \date 02/08
    */
@@ -204,10 +209,10 @@ namespace LINALG
       \param explicitdirichlet Whether ApplyDirichlet() should modify the graph
       \param savegraph Whether to save the graph for future assemblies
      */
-    explicit SparseMatrix(bool explicitdirichlet=true, bool savegraph=true);
+    explicit SparseMatrix(bool explicitdirichlet=true, bool savegraph=false);
 
     /// construction of sparse matrix
-    SparseMatrix(const Epetra_Map& rowmap, const int npr, bool explicitdirichlet=true, bool savegraph=true);
+    SparseMatrix(const Epetra_Map& rowmap, const int npr, bool explicitdirichlet=true, bool savegraph=false);
 
     /// construction of sparse matrix
     /*!
@@ -215,7 +220,7 @@ namespace LINALG
 
       Makes a copy of the Epetra_CrsMatrix.
      */
-    explicit SparseMatrix(const Epetra_CrsMatrix& matrix, bool explicitdirichlet=true, bool savegraph=true);
+    explicit SparseMatrix(const Epetra_CrsMatrix& matrix, bool explicitdirichlet=true, bool savegraph=false);
 
     /// construction of sparse matrix
     /*!
@@ -223,7 +228,7 @@ namespace LINALG
 
       Does not make a copy of the Epetra_CrsMatrix.
      */
-    explicit SparseMatrix(Teuchos::RCP<Epetra_CrsMatrix> matrix, bool explicitdirichlet=true, bool savegraph=true);
+    explicit SparseMatrix(Teuchos::RCP<Epetra_CrsMatrix> matrix, bool explicitdirichlet=true, bool savegraph=false);
 
     /// copy constructor
     SparseMatrix(const SparseMatrix& mat);
@@ -613,7 +618,7 @@ namespace LINALG
   public:
 
     /// construct with a block matrix base
-    explicit DefaultBlockMatrixStrategy(BlockSparseMatrixBase* mat);
+    explicit DefaultBlockMatrixStrategy(BlockSparseMatrixBase& mat);
 
     /// find row block to a given row gid
     int RowBlock(int lrow, int rgid);
@@ -632,7 +637,7 @@ namespace LINALG
   private:
 
     /// my block matrix base
-    BlockSparseMatrixBase* mat_;
+    BlockSparseMatrixBase& mat_;
 
     /// all ghost entries stored by row,column
     std::map<int,std::map<int,double> > ghost_;
@@ -646,7 +651,7 @@ template <class Strategy>
 LINALG::BlockSparseMatrix<Strategy>::BlockSparseMatrix(const MultiMapExtractor& domainmaps,
                                                        const MultiMapExtractor& rangemaps)
   : BlockSparseMatrixBase(domainmaps,rangemaps),
-    Strategy(this)
+    Strategy(*this)
 {
 }
 

@@ -5,7 +5,7 @@
 
 \brief A direct algebraic VM3 approach
 
-Scales are separated via plain aggregation. A fine-scale 
+Scales are separated via plain aggregation. A fine-scale
 subgrid-viscosity matrix in the form
                  M_fssv = S^T * M_sv * S
 is created, using an all-scale subgrid-viscosity matrix M_sv and a
@@ -14,9 +14,9 @@ scale-separation matrix S.
 To (substantially) reduce computational cost, the matrix M_fssv is
 initially (i.e., in the first timestep) generated in a normalized form
 (i.e., based on a virtual subgrid-viscosity "1"). In each further
-timestep, a subgrid-viscosity-scaling vector is generated containing 
+timestep, a subgrid-viscosity-scaling vector is generated containing
 the "real" subgrid viscosity for each (velocity) degree of freedom, and
-the normalized matrix M_fssv is left- and right-scaled by the square-root 
+the normalized matrix M_fssv is left- and right-scaled by the square-root
 values of that vector.
 
 <pre>
@@ -33,32 +33,33 @@ Maintainer: Volker Gravemeier
 #ifdef CCADISCRET
 
 // Trilinos includes
-#include "Teuchos_RCP.hpp"
-#include "Teuchos_ParameterList.hpp"
-#include "Epetra_IntVector.h"
-#include "Epetra_CrsMatrix.h"
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
+#include <Epetra_IntVector.h>
+#include <Epetra_CrsMatrix.h>
 
-#include "ml_common.h"
-#include "ml_include.h"
-#include "ml_epetra_utils.h"
-#include "ml_epetra.h"
-#include "ml_epetra_operator.h"
-#include "ml_MultiLevelPreconditioner.h"
-#include "ml_agg_genP.h"
-#include "ml_operator.h"
-#include "MLAPI_Error.h"
-#include "MLAPI_CompObject.h"
-#include "MLAPI_TimeObject.h"
-#include "MLAPI_Operator.h"
-#include "MLAPI_Operator_Utils.h"
-#include "MLAPI_MultiVector.h"
-#include "MLAPI_InverseOperator.h"
-#include "MLAPI_Expressions.h"
-#include "MLAPI_BaseOperator.h"
-#include "MLAPI_Workspace.h"
-#include "MLAPI_Aggregation.h"
-#include "MLAPI_Eig.h"
+#include <ml_common.h>
+#include <ml_include.h>
+#include <ml_epetra_utils.h>
+#include <ml_epetra.h>
+#include <ml_epetra_operator.h>
+#include <ml_MultiLevelPreconditioner.h>
+#include <ml_agg_genP.h>
+#include <ml_operator.h>
+#include <MLAPI_Error.h>
+#include <MLAPI_CompObject.h>
+#include <MLAPI_TimeObject.h>
+#include <MLAPI_Operator.h>
+#include <MLAPI_Operator_Utils.h>
+#include <MLAPI_MultiVector.h>
+#include <MLAPI_InverseOperator.h>
+#include <MLAPI_Expressions.h>
+#include <MLAPI_BaseOperator.h>
+#include <MLAPI_Workspace.h>
+#include <MLAPI_Aggregation.h>
+#include <MLAPI_Eig.h>
 
+#include "../drt_lib/linalg_systemmatrix.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -88,7 +89,7 @@ public:
    \param compute (In)   : flag for call to computing routine
 
   */
-  explicit VM3_Solver(RCP<Epetra_CrsMatrix> Msv,
+  explicit VM3_Solver(RCP<LINALG::SparseMatrix> Msv,
                       const RCP<Epetra_Vector> dbctoggle,
                       ParameterList& mlparams,
                       bool compute);
@@ -116,8 +117,8 @@ public:
    \param increm (In)     : flag for incremental formulation
 
   */
-   void Scale(RCP<Epetra_CrsMatrix>& Msv,
-              RCP<Epetra_CrsMatrix>& K,
+   void Scale(RCP<LINALG::SparseMatrix>& Msv,
+              RCP<LINALG::SparseMatrix>& K,
               RCP<Epetra_Vector>& r,
               RCP<Epetra_Vector>& rplus,
               RCP<Epetra_Vector>& sugrvisc,
@@ -139,11 +140,11 @@ private:
          (only called in the first timestep)
 
   */
-  bool Compute(RCP<Epetra_CrsMatrix> Msv);
+  bool Compute(RCP<LINALG::SparseMatrix> Msv);
 
   ParameterList& mlparams_; // ML parameter list
 
-  RCP<Epetra_CrsMatrix> Mnsv_; // normalized fine-scale subgrid-viscosity matrix
+  RCP<LINALG::SparseMatrix> Mnsv_; // normalized fine-scale subgrid-viscosity matrix
 
   const RCP<Epetra_Vector>& dbctoggle_;  // DBC toggle vector
 

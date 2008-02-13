@@ -24,6 +24,8 @@
 // Teuchos
 #include "Teuchos_RefCountPtr.hpp"
 
+#include "../drt_lib/linalg_systemmatrix.H"
+
 //#include "strugenalpha.H"
 
 // ---------- Forward Declarations ----------
@@ -44,7 +46,7 @@ class MatrixFreeOperator : public virtual Epetra_Operator
 {
 public:
 
-  explicit MatrixFreeOperator(StruGenAlpha& integrator, RCP<Epetra_CrsMatrix> stiff);
+  explicit MatrixFreeOperator(StruGenAlpha& integrator, RCP<LINALG::SparseMatrix> stiff);
 
   //! Destroys the operator.
   /*!
@@ -124,7 +126,7 @@ private:
   StruGenAlpha&                                        integrator_;
   Epetra_Vector                                                du_;
   Epetra_Vector                                                 F_;
-  RCP<Epetra_CrsMatrix>                                     stiff_;
+  RCP<LINALG::SparseMatrix>                                 stiff_;
   const Epetra_Map*                                           map_;
 
 }; // class JFNK_Operator

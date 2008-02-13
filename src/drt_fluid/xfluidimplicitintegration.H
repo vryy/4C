@@ -29,6 +29,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_mapextractor.H"
+#include "../drt_lib/linalg_systemmatrix.H"
 #include "../io/io_drt.H"
 #include "../drt_xfem/dof_management.H"
 
@@ -229,7 +230,6 @@ protected:
   IO::DiscretizationWriter&         output_;
   IO::DiscretizationWriter&         solidoutput_;
   int                           myrank_;
-  int                           maxentriesperrow_;
   bool                          alefluid_;
 
   double time_;
@@ -263,11 +263,11 @@ protected:
 
   /// system matrices: standard (stabilized) matrix and (fine-scale)
   /// subgrid-viscosity matrix
-  RefCountPtr<Epetra_CrsMatrix> sysmat_;
-  RefCountPtr<Epetra_CrsMatrix> sysmat_sv_;
+  RefCountPtr<LINALG::SparseMatrix> sysmat_;
+  RefCountPtr<LINALG::SparseMatrix> sysmat_sv_;
 
   /// scale-separation matrix for VM3-based solution approach
-  RefCountPtr<Epetra_CrsMatrix> scalesep_;
+  RefCountPtr<LINALG::SparseMatrix> scalesep_;
 
   /// toggle vector indicating which dofs have Dirichlet BCs
   RefCountPtr<Epetra_Vector>    dirichtoggle_;

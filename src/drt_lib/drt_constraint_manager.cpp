@@ -32,12 +32,12 @@ actdisc_(discr)
 	vector<DRT::Condition*> constrcond(0);
 	actdisc_.GetCondition("VolumeConstraint_3D",constrcond);
 	// Keep ParameterList p alive during initialization, so global information
-	// over IDs as well as element results stored here can be used after all 
+	// over IDs as well as element results stored here can be used after all
 	// constraints are evaluated
 	ParameterList p;
 	//Deal with volume constraints
 	if (constrcond.size())
-	{	
+	{
 		p.set("action","calc_struct_constrvol");
 		actdisc_.SetState("displacement",disp);
 		actdisc_.EvaluateCondition(p,"VolumeConstraint_3D");
@@ -47,7 +47,7 @@ actdisc_(discr)
 	actdisc_.GetCondition("AreaConstraint_3D",constrcond);
 	//Deal with area constraints
 	if (constrcond.size())
-	{	
+	{
 		p.set("action","calc_struct_constrarea");
 		actdisc_.SetState("displacement",disp);
 		actdisc_.EvaluateCondition(p,"AreaConstraint_3D");
@@ -85,7 +85,7 @@ actdisc_(discr)
 	actdisc_.GetCondition("VolumeMonitor_3D",constrcond);
 	ParameterList p1;
 	if (constrcond.size())
-	{	
+	{
 		p1.set("action","calc_struct_constrvol");
 		actdisc_.SetState("displacement",disp);
 		actdisc_.EvaluateCondition(p1,"VolumeMonitor_3D");
@@ -95,7 +95,7 @@ actdisc_(discr)
 	actdisc_.GetCondition("AreaMonitor_3D",constrcond);
 	//Deal with area Monitors
 	if (constrcond.size())
-	{	
+	{
 		p1.set("action","calc_struct_constrarea");
 		actdisc_.SetState("displacement",disp);
 		actdisc_.EvaluateCondition(p1,"AreaMonitor_3D");
@@ -122,21 +122,21 @@ actdisc_(discr)
 *-----------------------------------------------------------------------*/
 
 void ConstrManager::StiffnessAndInternalForces(
-		const double time, 
+		const double time,
 		RCP<Epetra_Vector> disp,
 		RefCountPtr<Epetra_Vector> fint,
-		RefCountPtr<Epetra_CrsMatrix> stiff)
+		RefCountPtr<LINALG::SparseMatrix> stiff)
 {
 	// create the parameters for the discretization
 	ParameterList p;
-	actvalues_->Scale(0.0);	 
+	actvalues_->Scale(0.0);
 	const Epetra_Map* dofrowmap = actdisc_.DofRowMap();
 	constrVec_=rcp(new Epetra_MultiVector(*dofrowmap,numConstrID_));
 	constrVec_->PutScalar(0.0);
 	//Deal with volume constraints
 	if (havevolconstr_)
-	{	
-		//Evaluate volume at predicted ENDpoint D_{n+1} 
+	{
+		//Evaluate volume at predicted ENDpoint D_{n+1}
 		// action for elements
 		p.set("action","calc_struct_volconstrstiff");
 	    // choose what to assemble
@@ -159,8 +159,8 @@ void ConstrManager::StiffnessAndInternalForces(
 	}
 	//Deal with volume constraints
 	if (haveareaconstr_)
-	{	
-		//Evaluate volume at predicted ENDpoint D_{n+1} 
+	{
+		//Evaluate volume at predicted ENDpoint D_{n+1}
 		// action for elements
 		p.set("action","calc_struct_areaconstrstiff");
 	    // choose what to assemble
@@ -177,19 +177,19 @@ void ConstrManager::StiffnessAndInternalForces(
 	    p.set("LagrMultVector",lagrMultVec_);
 	    // set vector values needed by elements
 	    actdisc_.ClearState();
-	    actdisc_.SetState("displacement",disp);   
+	    actdisc_.SetState("displacement",disp);
 		actdisc_.EvaluateCondition(p,stiff,fint,"AreaConstraint_3D",constrVec_);
 		SynchronizeSumConstraint(p,actvalues_,"computed area",numConstrID_,minConstrID_);
-	}   
+	}
     SynchronizeMinConstraint(p,fact_,"LoadCurveFactor");
     *referencevalues_=*initialvalues_;
-    for (int iter = 0; iter < numConstrID_; ++iter) 
+    for (int iter = 0; iter < numConstrID_; ++iter)
     {
     	(*referencevalues_)[iter]*=(*fact_)[iter];
     	(*constrainterr_)[iter]=(*referencevalues_)[iter]-(*actvalues_)[iter];
-    } 
+    }
     actdisc_.ClearState();
-    // do NOT finalize the stiffness matrix, add mass and damping to it later	
+    // do NOT finalize the stiffness matrix, add mass and damping to it later
 	return;
 }
 
@@ -205,19 +205,19 @@ void ConstrManager::ComputeError(double time,RCP<Epetra_Vector> disp)
         actdisc_.EvaluateCondition(p,"VolumeConstraint_3D");
         SynchronizeSumConstraint(p, actvalues_,"computed volume",numConstrID_,minConstrID_);
     }
-    if(haveareaconstr_)    
+    if(haveareaconstr_)
     {
     	p.set("action","calc_struct_constrarea");
         actdisc_.EvaluateCondition(p,"AreaConstraint_3D");
         SynchronizeSumConstraint(p, actvalues_,"computed area",numConstrID_,minConstrID_);
     }
-    for (int iter = 0; iter < numConstrID_; ++iter) 
+    for (int iter = 0; iter < numConstrID_; ++iter)
     {
 	  (*constrainterr_)[iter]=(*referencevalues_)[iter]-(*actvalues_)[iter];
     }
     return;
 }
-		
+
 void ConstrManager::UpdateLagrIncr(double factor, Epetra_SerialDenseVector vect)
 {
 	for (int i=0;i < numConstrID_; i++)
@@ -233,7 +233,7 @@ void ConstrManager::UpdateLagrMult(double factor)
 	{
 		(*lagrMultVec_)[i]+=factor*(*constrainterr_)[i] ;
 	}
-	return;	
+	return;
 }
 
 void ConstrManager::UpdateLagrMult()
@@ -257,7 +257,7 @@ void ConstrManager::ComputeConstrTimesLagrIncr(RCP<Epetra_Vector> dotprod)
 
 void ConstrManager::ComputeConstrTimesDisi(Epetra_Vector disi, RCP<Epetra_SerialDenseVector> dotprod)
 {
-	
+
 	for (int i=0; i < numConstrID_; i++)
 	{
 		double temp;
@@ -278,7 +278,7 @@ void ConstrManager::ComputeMonitorValues(RCP<Epetra_Vector> disp)
         actdisc_.EvaluateCondition(p,"VolumeMonitor_3D");
         SynchronizeSumConstraint(p, monitorvalues_,"computed volume",numMonitorID_,minMonitorID_);
     }
-    if(haveareamonitor_)    
+    if(haveareamonitor_)
     {
     	p.set("action","calc_struct_constrarea");
         actdisc_.EvaluateCondition(p,"AreaMonitor_3D");
@@ -289,12 +289,12 @@ void ConstrManager::ComputeMonitorValues(RCP<Epetra_Vector> disp)
 
 void ConstrManager::PrintMonitorValues()
 {
-	for (int i = 0; i < numMonitorID_; ++i) 
+	for (int i = 0; i < numMonitorID_; ++i)
 	{
 		printf("Monitor value %2d: %10.5e (%5.2f%% of initial value)\n",i+minMonitorID_,(*monitorvalues_)[i],((*monitorvalues_)[i])*100/((*initialmonvalues_)[i]));
-		
+
 	}
-	
+
 	return;
 }
 
@@ -306,7 +306,7 @@ void ConstrManager::ManageIDs(ParameterList& params, int& minID, int& maxID, int
 {
 	actdisc_.Comm().MaxAll(&(params.get("MaxID",0)),&maxID,1);
 	actdisc_.Comm().MinAll(&(params.get("MinID",100000)),&minID,1);
-	numID=1+maxID-minID;	
+	numID=1+maxID-minID;
 	return;
 }
 
@@ -319,9 +319,9 @@ void ConstrManager::SynchronizeSumConstraint(ParameterList& params,
 								RCP<Epetra_SerialDenseVector>& vect,
 								const char* resultstring, const int numID, const int minID)
 {
-	for (int i = 0; i < numID; ++i) 
+	for (int i = 0; i < numID; ++i)
 	{
-		char valname[30];	
+		char valname[30];
 		sprintf(valname,"%s %d",resultstring,i+minID);
 		double currval=0.0;
 		actdisc_.Comm().SumAll(&(params.get(valname,0.0)),&(currval),1);
@@ -339,9 +339,9 @@ void ConstrManager::SynchronizeMinConstraint(ParameterList& params,
 								RCP<Epetra_SerialDenseVector>& vect,
 								const char* resultstring)
 {
-	for (int i = 0; i < numConstrID_; ++i) 
+	for (int i = 0; i < numConstrID_; ++i)
 	{
-		char valname[30];	
+		char valname[30];
 		sprintf(valname,"%s %d",resultstring,i+minConstrID_);
 		double currval=1;
 		actdisc_.Comm().MinAll(&(params.get(valname,1.0)),&(currval),1);

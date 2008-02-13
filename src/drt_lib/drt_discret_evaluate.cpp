@@ -17,9 +17,9 @@ Maintainer: Michael Gee
 #include "drt_timecurve.H"
 #include "drt_function.H"
 #include "linalg_utils.H"
+#include "linalg_systemmatrix.H"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
-
 
 
 
@@ -27,40 +27,22 @@ Maintainer: Michael Gee
  |  evaluate (public)                                        mwgee 12/06|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::Evaluate(
-                              ParameterList&                params,
-                              RefCountPtr<Epetra_CrsMatrix> systemmatrix1,
-                              RefCountPtr<Epetra_CrsMatrix> systemmatrix2,
-                              RefCountPtr<Epetra_Vector>    systemvector1,
-                              RefCountPtr<Epetra_Vector>    systemvector2,
-                              RefCountPtr<Epetra_Vector>    systemvector3)
+                              Teuchos::ParameterList&        params,
+                              Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+                              Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+                              Teuchos::RCP<Epetra_Vector>    systemvector1,
+                              Teuchos::RCP<Epetra_Vector>    systemvector2,
+                              Teuchos::RCP<Epetra_Vector>    systemvector3)
 {
   if (!Filled()) dserror("FillComplete() was not called");
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
 
   // see what we have for input
-  bool havesysmatrix1 = false;
-  bool havesysmatrix2 = false;
-  bool havesysvector1 = false;
-  bool havesysvector2 = false;
-  bool havesysvector3 = false;
-  if (systemmatrix1!=null) havesysmatrix1 = true;
-  if (systemmatrix2!=null) havesysmatrix2 = true;
-  if (systemvector1!=null) havesysvector1 = true;
-  if (systemvector2!=null) havesysvector2 = true;
-  if (systemvector3!=null) havesysvector3 = true;
-
-  // see what we want to assemble (default is no assembly)
-  const bool assemblemat1 = params.get("assemble matrix 1",false);
-  const bool assemblemat2 = params.get("assemble matrix 2",false);
-  const bool assemblevec1 = params.get("assemble vector 1",false);
-  const bool assemblevec2 = params.get("assemble vector 2",false);
-  const bool assemblevec3 = params.get("assemble vector 3",false);
-  // check whether we have system matrices and vectors supplied to do this
-  if (assemblemat1 && !havesysmatrix1) dserror("Do not have system matrix 1 for assembly");
-  if (assemblemat2 && !havesysmatrix2) dserror("Do not have system matrix 2 for assembly");
-  if (assemblevec1 && !havesysvector1) dserror("Do not have system vector 1 for assembly");
-  if (assemblevec2 && !havesysvector2) dserror("Do not have system vector 2 for assembly");
-  if (assemblevec3 && !havesysvector3) dserror("Do not have system vector 3 for assembly");
+  bool assemblemat1 = systemmatrix1!=Teuchos::null;
+  bool assemblemat2 = systemmatrix2!=Teuchos::null;
+  bool assemblevec1 = systemvector1!=Teuchos::null;
+  bool assemblevec2 = systemvector2!=Teuchos::null;
+  bool assemblevec3 = systemvector3!=Teuchos::null;
 
   // define element matrices and vectors
   Epetra_SerialDenseMatrix elematrix1;
@@ -94,12 +76,11 @@ void DRT::Discretization::Evaluate(
                                elevector1,elevector2,elevector3);
     if (err) dserror("Proc %d: Element %d returned err=%d",Comm().MyPID(),actele->Id(),err);
 
-    if (assemblemat1) LINALG::Assemble(*systemmatrix1,elematrix1,lm,lmowner);
-    if (assemblemat2) LINALG::Assemble(*systemmatrix2,elematrix2,lm,lmowner);
+    if (assemblemat1) systemmatrix1->Assemble(elematrix1,lm,lmowner);
+    if (assemblemat2) systemmatrix2->Assemble(elematrix2,lm,lmowner);
     if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
     if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner);
     if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,lm,lmowner);
-
 
   } // for (int i=0; i<numcolele; ++i)
   return;
@@ -107,69 +88,15 @@ void DRT::Discretization::Evaluate(
 
 
 /*----------------------------------------------------------------------*
- |  evaluate (public)                                        u.kue 06/07|
+ |  evaluate (public)                                        u.kue 01/08|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::Evaluate(ParameterList&                params,
-                                   RefCountPtr<Epetra_CrsMatrix> systemmatrix,
-                                   RefCountPtr<Epetra_Vector>    systemvector)
+void DRT::Discretization::Evaluate(Teuchos::ParameterList&        params,
+                                   Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+                                   Teuchos::RCP<Epetra_Vector>    systemvector)
 {
-  params.set("assemble matrix 1",true);
-  params.set("assemble matrix 2",false);
-  params.set("assemble vector 1",true);
-  params.set("assemble vector 2",false);
-  params.set("assemble vector 3",false);
-  Evaluate(params, systemmatrix, null, systemvector, null, null);
+  Evaluate(params, systemmatrix, Teuchos::null, systemvector);
 }
 
-/*----------------------------------------------------------------------*
- |  evaluate (public)                                           vg 08/07|
- *----------------------------------------------------------------------*/
-void DRT::Discretization::Evaluate(ParameterList&                params,
-                                   RefCountPtr<Epetra_CrsMatrix> systemmatrix,
-                                   RefCountPtr<Epetra_CrsMatrix> systemmatrix2,
-                                   RefCountPtr<Epetra_Vector>    systemvector)
-{
-  params.set("assemble matrix 1",true);
-  params.set("assemble matrix 2",true);
-  params.set("assemble vector 1",true);
-  params.set("assemble vector 2",false);
-  params.set("assemble vector 3",false);
-  Evaluate(params, systemmatrix, systemmatrix2, systemvector, null, null);
-}
-
-
-/*----------------------------------------------------------------------*
- |  evaluate (public)                                           vg 12/07|
- *----------------------------------------------------------------------*/
-void DRT::Discretization::Evaluate(ParameterList&                params,
-                                   RefCountPtr<Epetra_CrsMatrix> systemmatrix,
-                                   RefCountPtr<Epetra_Vector>    systemvector,
-                                   RefCountPtr<Epetra_Vector>    systemvector2)
-{
-  params.set("assemble matrix 1",true);
-  params.set("assemble matrix 2",false);
-  params.set("assemble vector 1",true);
-  params.set("assemble vector 2",true);
-  params.set("assemble vector 3",false);
-  Evaluate(params, systemmatrix, null, systemvector, systemvector2, null);
-}
-
-/*----------------------------------------------------------------------*
- |  evaluate (public)                                           vg 11/07|
- *----------------------------------------------------------------------*/
-void DRT::Discretization::Evaluate(ParameterList&                params,
-                                   RefCountPtr<Epetra_CrsMatrix> systemmatrix,
-                                   RefCountPtr<Epetra_CrsMatrix> systemmatrix2,
-                                   RefCountPtr<Epetra_Vector>    systemvector,
-                                   RefCountPtr<Epetra_Vector>    systemvector2)
-{
-  params.set("assemble matrix 1",true);
-  params.set("assemble matrix 2",true);
-  params.set("assemble vector 1",true);
-  params.set("assemble vector 2",true);
-  params.set("assemble vector 3",false);
-  Evaluate(params, systemmatrix, systemmatrix2, systemvector, systemvector2, null);
-}
 
 /*----------------------------------------------------------------------*
  |  evaluate Neumann conditions (public)                     mwgee 12/06|
@@ -441,11 +368,12 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
 	return;
 }
 
+
 /*----------------------------------------------------------------------*
  |  evaluate a condition (public)                               tk 07/07|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::EvaluateCondition(ParameterList& params,
-                                            RefCountPtr<Epetra_CrsMatrix> systemmatrix1,
+                                             RefCountPtr<LINALG::SparseOperator> systemmatrix1,
                                             RefCountPtr<Epetra_Vector> systemvector1,
                                             const string& condstring,
                                             RefCountPtr<Epetra_MultiVector> systemmultvect)
@@ -460,11 +388,15 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
 
   multimap<string,RefCountPtr<Condition> >::iterator fool;
 
+  const bool assemblemat1 = systemmatrix1!=Teuchos::null;
+  const bool assemblevec1 = systemvector1!=Teuchos::null;
+  const bool assemblevec2 = systemmultvect!=Teuchos::null;
+
   //-----------------------------------------------------------------------
   // loop through conditions and evaluate them iff they match the criterion
   //-----------------------------------------------------------------------
   for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
-   {
+  {
     if (fool->first == condstring)
     {
       DRT::Condition& cond = *(fool->second);
@@ -481,29 +413,23 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
       if (curve) curvenum = (*curve)[0];
       double curvefac = 1.0;
       if (curvenum>=0 && usetime)
-          curvefac = UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
-      
+        curvefac = UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
 
       // Get ConditionID of current condition if defined and write value in parameterlist
       const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
       if (CondIDVec)
       {
-        params.set("ConditionID",(*CondIDVec)[0]);     
+        params.set("ConditionID",(*CondIDVec)[0]);
       }
-      else 
+      else
       {
-    	  dserror("Cannot use multivector version condition evaluation for conditions without ConditionID");
+        dserror("Cannot use multivector version condition evaluation for conditions without ConditionID");
       }
-	  char factorname[30];
-	  sprintf(factorname,"LoadCurveFactor %d",(*CondIDVec)[0]);
-	  params.set(factorname,curvefac);
+      char factorname[30];
+      sprintf(factorname,"LoadCurveFactor %d",(*CondIDVec)[0]);
+      params.set(factorname,curvefac);
 
       params.set<RefCountPtr<DRT::Condition> >("condition", fool->second);
-
-      const bool assemblemat1 = params.get("assemble matrix 1",false);
-      const bool assemblevec1 = params.get("assemble vector 1",false);
-      const bool assemblevec2 = params.get("assemble vector 2",false);
-
 
       // define element matrices and vectors
       Epetra_SerialDenseMatrix elematrix1;
@@ -530,29 +456,30 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
 
         // call the element specific evaluate method
         int err = curr->second->Evaluate(params,*this,lm,elematrix1,elematrix2,
-                               elevector1,elevector2,elevector3);
+                                         elevector1,elevector2,elevector3);
         if (err) dserror("error while evaluating elements");
 
         // assembly
-        if (assemblemat1) LINALG::Assemble(*systemmatrix1,elematrix1,lm,lmowner);
+        if (assemblemat1) systemmatrix1->Assemble(elematrix1,lm,lmowner);
         if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
-        if (assemblevec2) 
+        if (assemblevec2)
         {
-        	int minID=params.get("MinID",0);
-        	LINALG::Assemble(*systemmultvect,(*CondIDVec)[0]-minID,elevector2,lm,lmowner);
+          int minID=params.get("MinID",0);
+          LINALG::Assemble(*systemmultvect,(*CondIDVec)[0]-minID,elevector2,lm,lmowner);
         }
       }
     }
-   } //for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
+  } //for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
 
   return;
 } // end of DRT::Discretization::EvaluateCondition
+
 
 /*----------------------------------------------------------------------*
  |  evaluate a condition (public)                               tk 07/07|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::EvaluateCondition(ParameterList& params,
-                                            RefCountPtr<Epetra_CrsMatrix> systemmatrix1,
+                                            RefCountPtr<LINALG::SparseOperator> systemmatrix1,
                                             RefCountPtr<Epetra_Vector> systemvector1,
                                             RefCountPtr<Epetra_Vector> systemvector2,
                                             const string& condstring)
@@ -567,11 +494,15 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
 
   multimap<string,RefCountPtr<Condition> >::iterator fool;
 
+  const bool assemblemat1 = systemmatrix1!=Teuchos::null;
+  const bool assemblevec1 = systemvector1!=Teuchos::null;
+  const bool assemblevec2 = systemvector2!=Teuchos::null;
+
   //-----------------------------------------------------------------------
   // loop through conditions and evaluate them iff they match the criterion
   //-----------------------------------------------------------------------
   for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
-   {
+  {
     if (fool->first == condstring)
     {
       DRT::Condition& cond = *(fool->second);
@@ -588,7 +519,7 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
       if (curve) curvenum = (*curve)[0];
       double curvefac = 1.0;
       if (curvenum>=0 && usetime)
-          curvefac = UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+        curvefac = UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
       params.set("LoadCurveFactor",curvefac);
 
       // Get ConditionID of current condition if defined and write value in parameterlist
@@ -599,10 +530,6 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
       }
 
       params.set<RefCountPtr<DRT::Condition> >("condition", fool->second);
-
-      const bool assemblemat1 = params.get("assemble matrix 1",false);
-      const bool assemblevec1 = params.get("assemble vector 1",false);
-      const bool assemblevec2 = params.get("assemble vector 2",false);
 
       // define element matrices and vectors
       Epetra_SerialDenseMatrix elematrix1;
@@ -629,19 +556,20 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
 
         // call the element specific evaluate method
         int err = curr->second->Evaluate(params,*this,lm,elematrix1,elematrix2,
-                               elevector1,elevector2,elevector3);
+                                         elevector1,elevector2,elevector3);
         if (err) dserror("error while evaluating elements");
 
         // assembly
-        if (assemblemat1) LINALG::Assemble(*systemmatrix1,elematrix1,lm,lmowner);
+        if (assemblemat1) systemmatrix1->Assemble(elematrix1,lm,lmowner);
         if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
         if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner);
       }
     }
-   } //for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
+  } //for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
 
   return;
 } // end of DRT::Discretization::EvaluateCondition
+
 
 /*----------------------------------------------------------------------*
  |  evaluate spatial function (public)                       g.bau 03/07|

@@ -29,6 +29,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/linalg_systemmatrix.H"
 #include "../io/io_drt.H"
 
 #include <NOX_Epetra_Interface_Jacobian.H>
@@ -162,7 +163,7 @@ public:
   virtual Teuchos::RCP<const Epetra_Map> DofRowMap()
     { return Teuchos::rcp(discret_->DofRowMap(),false); }
   virtual Teuchos::RCP<Epetra_Operator> SysMat()
-    { return sysmat_; }
+    { return sysmat_->EpetraOperator(); }
   virtual Teuchos::RCP<DRT::Discretization> Discretization()
     { return discret_; }
   virtual Teuchos::RCP<Epetra_Vector> StructCondRHS();
@@ -194,9 +195,7 @@ private:
   double maxtime_;
   double dt_;
 
-  int maxentriesperrow_;
-
-  Teuchos::RCP<Epetra_CrsMatrix> sysmat_;
+  Teuchos::RCP<LINALG::SparseMatrix> sysmat_;
 
   Teuchos::RCP<Epetra_Vector>    dirichtoggle_;
   //Teuchos::RCP<Epetra_Vector>    zeros_;

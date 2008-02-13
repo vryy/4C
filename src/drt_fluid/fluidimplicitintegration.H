@@ -38,6 +38,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_mapextractor.H"
+#include "../drt_lib/linalg_systemmatrix.H"
 #include "../io/io_drt.H"
 #include "drt_periodicbc.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
@@ -196,7 +197,7 @@ public:
   Teuchos::RCP<Epetra_Vector> Dirichlet() { return dirichtoggle_; }
   Teuchos::RCP<Epetra_Vector> Dispnp() { return dispnp_; }
   Teuchos::RCP<Epetra_Vector> Dispn() { return dispn_; }
-  Teuchos::RCP<Epetra_Operator> SysMat() { return sysmat_; }
+  Teuchos::RCP<Epetra_Operator> SysMat() { return sysmat_->EpetraOperator(); }
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
 
   Teuchos::RCP<Epetra_Map> VelocityRowMap() { return velpressplitter_.CondMap(); }
@@ -229,7 +230,6 @@ protected:
   ParameterList&                params_;
   IO::DiscretizationWriter&         output_;
   int                           myrank_;
-  int                           maxentriesperrow_;
   bool                          alefluid_;
 
   double time_;
@@ -262,7 +262,7 @@ protected:
   double Cs_fs_;
 
   /// (standard) system matrix
-  RCP<Epetra_CrsMatrix> sysmat_;
+  RCP<LINALG::SparseMatrix> sysmat_;
 
   /// toggle vector indicating which dofs have Dirichlet BCs
   RCP<Epetra_Vector>    dirichtoggle_;
@@ -311,7 +311,7 @@ protected:
   RCP<VM3_Solver> vm3_solver_;
 
   /// only necessary for vm3 solver: fine-scale subgrid-viscosity matrix
-  RCP<Epetra_CrsMatrix> sysmat_sv_;
+  RCP<LINALG::SparseMatrix> sysmat_sv_;
 
   /// only necessary for vm3 solver: fine-scale subgrid-viscosity residual vector
   RCP<Epetra_Vector>    residual_sv_;

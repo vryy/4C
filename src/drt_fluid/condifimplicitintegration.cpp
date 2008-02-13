@@ -6,7 +6,7 @@
 
      o one-step-theta time-integration scheme
 
-     o two-step BDF2 time-integration scheme 
+     o two-step BDF2 time-integration scheme
        (with potential one-step-theta start algorithm)
 
      and stationary solver.
@@ -78,7 +78,7 @@ CondifImplicitTimeInt::CondifImplicitTimeInt(RefCountPtr<DRT::Discretization> ac
   // -------------------------------------------------------------------
   PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(discret_);
   pbc.UpdateDofsForPeriodicBoundaryConditions();
-  
+
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled()) discret_->FillComplete();
   // -------------------------------------------------------------------
@@ -103,10 +103,9 @@ CondifImplicitTimeInt::CondifImplicitTimeInt(RefCountPtr<DRT::Discretization> ac
   // nodes with 1 dof each.
   // We do not need the exact number here, just for performance reasons
   // a 'good' estimate
-  maxentriesperrow_ = 27;
 
   // initialize standard (stabilized) system matrix
-  sysmat_ = null;
+  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27));
 
   // -------------------------------------------------------------------
   // create empty vectors
@@ -146,7 +145,8 @@ CondifImplicitTimeInt::CondifImplicitTimeInt(RefCountPtr<DRT::Discretization> ac
   residual_     = LINALG::CreateVector(*dofrowmap,true);
 
   // necessary only for the VM3 approach: initialize subgrid-diffusivity matrix
-  if (fssgd_ > 0) sysmat_sd_ = null;
+  if (fssgd_ > 0)
+    sysmat_sd_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27));
 
   // -------------------------------------------------------------------
   // create timers and time monitor
@@ -467,7 +467,7 @@ void CondifImplicitTimeInt::Solve(
     // get cpu time
     tcpu=ds_cputime();
 
-    sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+    sysmat_->Zero();
 
       // add Neumann loads
     residual_->Update(1.0,*neumann_loads_,0.0);
@@ -497,7 +497,7 @@ void CondifImplicitTimeInt::Solve(
     if (fssgd_ > 0)
     {
       // create all-scale subgrid-diffusivity matrix
-      sysmat_sd_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_); 
+      sysmat_sd_->Zero();
 
       // call loop over elements (two matrices)
       discret_->Evaluate(eleparams,sysmat_,sysmat_sd_,residual_);
@@ -518,14 +518,14 @@ void CondifImplicitTimeInt::Solve(
       if (step_ == 1)
       {
         // create normalized all-scale subgrid-diffusivity matrix
-        sysmat_sd_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_); 
+        sysmat_sd_->Zero();
 
         // call loop over elements (two matrices + subgr.-visc.-scal. vector)
         discret_->Evaluate(eleparams,sysmat_,sysmat_sd_,residual_,sugrvisc_);
         discret_->ClearState();
 
         // finalize the normalized all-scale subgrid-diffusivity matrix
-        LINALG::Complete(*sysmat_sd_);
+        sysmat_sd_->Complete();
 
         // apply DBC to normalized all-scale subgrid-diffusivity matrix
         LINALG::ApplyDirichlettoSystem(sysmat_sd_,phinp_,residual_,phinp_,dirichtoggle_);
@@ -536,7 +536,7 @@ void CondifImplicitTimeInt::Solve(
       else
       {
         // call loop over elements (one matrix + subgr.-visc.-scal. vector)
-        discret_->Evaluate(eleparams,sysmat_,residual_,sugrvisc_);
+        discret_->Evaluate(eleparams,sysmat_,null,residual_,sugrvisc_);
         discret_->ClearState();
       }
       // check whether VM3 solver exists
@@ -555,14 +555,14 @@ void CondifImplicitTimeInt::Solve(
     }
 
     // finalize the complete matrix
-    LINALG::Complete(*sysmat_);
+    sysmat_->Complete();
 
     // end time measurement for element call
     tm3_ref_=null;
     dtele=ds_cputime()-tcpu;
   }
 
-  // Apply dirichlet boundary conditions to standard (stabilized) and complete 
+  // Apply dirichlet boundary conditions to standard (stabilized) and complete
   // system matrix
   {
     // start time measurement for application of dirichlet conditions
@@ -588,13 +588,13 @@ void CondifImplicitTimeInt::Solve(
     if (fssgd_ > 0)
     {
       // add standard matrix to subgrid-diffusivity matrix: fine-scale matrix
-      LINALG::Add(sysmat_,false,1.0,sysmat_sd_,1.0);
+      sysmat_sd_->Add(*sysmat_,false,1.0,1.0);
 
       // finalize fine-scale matrix
-      LINALG::Complete(*sysmat_sd_);
+      sysmat_sd_->Complete();
 
       // apply DBC to fine-scale matrix
-      LINALG::ApplyDirichlettoSystem(sysmat_sd_,phinp_,residual_,phinp_,dirichtoggle_);
+      LINALG::ApplyDirichlettoSystem(*sysmat_sd_,phinp_,residual_,phinp_,dirichtoggle_);
 
       // extract the ML parameters
       ParameterList&  mllist = solver_.Params().sublist("ML Parameters");
@@ -608,7 +608,7 @@ void CondifImplicitTimeInt::Solve(
     else
     // end second encapsulation of AVMS solution approach
 #endif
-    solver_.Solve(sysmat_,phinp_,residual_,true,true); 
+      solver_.Solve(sysmat_->Matrix(),phinp_,residual_,true,true);
 
     // end time measurement for solver call
     tm5_ref_=null;
@@ -647,7 +647,7 @@ void CondifImplicitTimeInt::TimeUpdate()
   }
   else
   {
-    // prev. time derivative of phi becomes (n-1)-time derivative of phi 
+    // prev. time derivative of phi becomes (n-1)-time derivative of phi
     // of next time step
     phidtnm_->Update(1.0,*phidtn_,0.0);
 

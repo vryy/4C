@@ -23,6 +23,7 @@ Maintainer: Moritz Frenzel
 #include "stru_static_drt.H"
 #include "../io/io_drt.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/linalg_systemmatrix.H"
 #include "stru_resulttest.H"
 
 
@@ -117,7 +118,7 @@ void stru_static_drt()
   // -------------------------------------------------------------------
   // `81' is an initial guess for the bandwidth of the matrices
   // A better guess will be determined later.
-  RefCountPtr<Epetra_CrsMatrix> stiff_mat = LINALG::CreateMatrix(*dofrowmap,81);
+  RefCountPtr<LINALG::SparseMatrix> stiff_mat = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81));
 
   // -------------------------------------------------------------------
   // create empty vectors
@@ -315,7 +316,7 @@ void stru_static_drt()
     // and apply new displacements at DBCs
     {
       // destroy and create new matrix
-      stiff_mat = LINALG::CreateMatrix(*dofrowmap,81);
+      stiff_mat->Zero();
       // create the parameters for the discretization
       ParameterList params;
       // action for elements
@@ -368,8 +369,7 @@ void stru_static_drt()
       actdis->ClearState();
       }
     // complete stiffness matrix
-    LINALG::Complete(*stiff_mat);
-    const int maxentriesperrow = stiff_mat->MaxNumEntries();
+    stiff_mat->Complete();
 
     double stiffnorm;
     stiffnorm = stiff_mat->NormFrobenius();
@@ -414,11 +414,11 @@ void stru_static_drt()
 	      	// Solve K . IncD = -R  ===>  IncD_{n+1}
 	      	if (numiter==0)
 	      	{
-	        	solver.Solve(stiff_mat,disi,fresm,true,true);
+                  solver.Solve(stiff_mat->Matrix(),disi,fresm,true,true);
 	      	}
 	      	else
 	      	{
-	        	solver.Solve(stiff_mat,disi,fresm,true,false);
+                  solver.Solve(stiff_mat->Matrix(),disi,fresm,true,false);
 	      	}
       }
       else
@@ -451,7 +451,7 @@ void stru_static_drt()
 	        RCP<Epetra_Vector> fresmcopy=rcp(new Epetra_Vector(*fresm));
 	      	fresmcopy->Update(1.0,constrVecWeight,1.0);
 	      	Epetra_Vector uzawa_res(*fresmcopy);
-	      	(*stiff_mat).Multiply(false,*disi,uzawa_res);
+	      	stiff_mat->Multiply(false,*disi,uzawa_res);
 	      	uzawa_res.Update(1.0,*fresmcopy,-1.0);
 	      	// blank residual DOFs which are on Dirichlet BC
 	      	{
@@ -478,11 +478,11 @@ void stru_static_drt()
 	      	  // Solve K . IncD = -R  ===>  IncD_{n+1}
 	      	  if (numiter_uzawa==0&&numiter==0)
 	      	  {
-	      		  solver.Solve(stiff_mat,disi,fresmcopy,true,true);
+                    solver.Solve(stiff_mat->Matrix(),disi,fresmcopy,true,true);
 	      	  }
 	      	  else
 	      	  {
-	      		  solver.Solve(stiff_mat,disi,fresmcopy,true,false);
+                    solver.Solve(stiff_mat->Matrix(),disi,fresmcopy,true,false);
 	      	  }
 
 	      	  //compute lagrange multiplier increments
@@ -515,7 +515,7 @@ void stru_static_drt()
 	      	  }
 	      	  fresmcopy->Update(1.0,constrVecWeight,1.0,*fresm,0.0);
 	      	  Epetra_Vector uzawa_res(*fresmcopy);
-	      	  (*stiff_mat).Multiply(false,*disi,uzawa_res);
+	      	  stiff_mat->Multiply(false,*disi,uzawa_res);
 	      	  uzawa_res.Update(1.0,*fresmcopy,-1.0);
 	      	  // blank residual DOFs which are on Dirichlet BC
 	      	  {
@@ -551,7 +551,7 @@ void stru_static_drt()
       // compute internal forces and stiffness at current iterate numiter
       {
         // zero out stiffness
-        stiff_mat = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow);
+        stiff_mat->Zero();
         // create the parameters for the discretization
         ParameterList params;
         // action for elements
@@ -594,7 +594,7 @@ void stru_static_drt()
         actdis->ClearState();
       }
       // complete stiffness matrix
-      LINALG::Complete(*stiff_mat);
+      stiff_mat->Complete();
 
       // evaluate new residual fresm at current iterate numiter
       // R{istep,numiter} = F_int{istep,numiter} - F_ext{istep}
@@ -723,8 +723,8 @@ void stru_static_drt()
       output.WriteElementData();
     }
 
-//    
-//    
+//
+//
 //    ofstream f_system("stresses.gmsh");
 //    stringstream gmshfilecontent;
 //    gmshfilecontent << "View \" Solid Elements stresses \" {" << endl;
@@ -754,7 +754,7 @@ void stru_static_drt()
       fflush(stdout);
       fflush(errfile);
     }
- 
+
   }  //=============================================end time/loadstep loop
 
   // Structure Resulttests

@@ -57,7 +57,6 @@ void ContactStruGenAlpha::ConsistentPredictor()
   double gamma       = params_.get<double>("gamma"          ,0.581);
   bool   printscreen = params_.get<bool>  ("print to screen",false);
   string convcheck   = params_.get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
-  const Epetra_Map* dofrowmap = discret_.DofRowMap();
 
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces if a relative convergence
@@ -140,7 +139,7 @@ void ContactStruGenAlpha::ConsistentPredictor()
   //------------- eval fint at interpolated state, eval stiffness matrix
   {
     // zero out stiffness
-    stiff_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+    stiff_->Zero();
     // create the parameters for the discretization
     ParameterList p;
     // action for elements
@@ -228,7 +227,6 @@ void ContactStruGenAlpha::ConstantPredictor()
   double alphaf      = params_.get<double>("alpha f"        ,0.459);
   bool   printscreen = params_.get<bool>  ("print to screen",false);
   string convcheck   = params_.get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
-  const Epetra_Map* dofrowmap = discret_.DofRowMap();
 
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces if a relative convergence
@@ -295,7 +293,7 @@ void ContactStruGenAlpha::ConstantPredictor()
   //------------- eval fint at interpolated state, eval stiffness matrix
   {
     // zero out stiffness
-    stiff_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+    stiff_->Zero();
     // create the parameters for the discretization
     ParameterList p;
     // action for elements
@@ -391,7 +389,6 @@ void ContactStruGenAlpha::FullNewton()
   bool printerr    = params_.get<bool>  ("print to err",false);
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
   if (!errfile) printerr = false;
-  const Epetra_Map* dofrowmap = discret_.DofRowMap();
 
   // check whether we have a stiffness matrix, that is not filled yet
   // and mass and damping are present
@@ -414,20 +411,20 @@ void ContactStruGenAlpha::FullNewton()
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
-    LINALG::Add(*mass_,false,(1.-alpham)/(beta*dt*dt),*stiff_,1.-alphaf);
+    stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
     if (damping)
     {
-      LINALG::Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),*stiff_,1.0);
+      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
     }
-    LINALG::Complete(*stiff_);
+    stiff_->Complete();
 
     //-------------------------make contact modifications to lhs and rhs
     {
     	contactmanager_->Initialize();
     	contactmanager_->SetState("displacement",dism_);
-    	
+
     	// (almost) all contact stuff is done here!
-    	contactmanager_->Evaluate(stiff_,fresm_);
+    	contactmanager_->Evaluate(stiff_->Matrix(),fresm_);
     }
 
     //----------------------- apply dirichlet BCs to system of equations
@@ -437,16 +434,15 @@ void ContactStruGenAlpha::FullNewton()
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
     if (!numiter)
-      solver_.Solve(stiff_,disi_,fresm_,true,true);
+      solver_.Solve(stiff_->Matrix(),disi_,fresm_,true,true);
     else
-      solver_.Solve(stiff_,disi_,fresm_,true,false);
-    stiff_ = null;
+      solver_.Solve(stiff_->Matrix(),disi_,fresm_,true,false);
 
     //------------------------------------ transform disi due to contact
     {
     	contactmanager_->RecoverDisp(disi_);
     }
-    
+
     //---------------------------------- update mid configuration values
     // displacements
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
@@ -481,7 +477,7 @@ void ContactStruGenAlpha::FullNewton()
     //---------------------------- compute internal forces and stiffness
     {
       // zero out stiffness
-      stiff_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+      stiff_->Zero();
       // create the parameters for the discretization
       ParameterList p;
       // action for elements
@@ -563,9 +559,6 @@ void ContactStruGenAlpha::FullNewton()
   }
 
   params_.set<int>("num iterations",numiter);
-
-  //-------------------------------------- don't need this at the moment
-  stiff_ = null;
 
   return;
 } // ContactStruGenAlpha::FullNewton()

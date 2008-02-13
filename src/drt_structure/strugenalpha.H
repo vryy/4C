@@ -25,6 +25,7 @@ Maintainer: Michael Gee
 #include "../io/io_drt.H"
 #include "../drt_contact/drt_contact_manager.H"
 #include "../drt_lib/linalg_mfoperator.H"
+#include "../drt_lib/linalg_systemmatrix.H"
 #include "../drt_lib/drt_constraint_manager.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
 
@@ -329,7 +330,7 @@ public:
   Teuchos::RCP<Epetra_Vector> Residual() { return fresm_; }
   Teuchos::RCP<Epetra_Vector> Dispm() { return dism_; }
   Teuchos::RCP<Epetra_Vector> Disp() { return dis_; }
-  Teuchos::RCP<Epetra_Operator> SysMat() { return stiff_; }
+  Teuchos::RCP<Epetra_Operator> SysMat() { return stiff_->EpetraOperator(); }
   Teuchos::RCP<Epetra_Vector> Dirichlet() { return dirichtoggle_; }
   Teuchos::RCP<DRT::Discretization> Discretization() { return Teuchos::rcp(&discret_,false); }
   double DispIncrFactor() { return 1./(1.-params_.get<double>("alpha f",0.459)); }
@@ -351,9 +352,9 @@ protected:
   int                           myrank_;
   int                           maxentriesperrow_;
 
-  RefCountPtr<Epetra_CrsMatrix> stiff_;
-  RefCountPtr<Epetra_CrsMatrix> mass_;
-  RefCountPtr<Epetra_CrsMatrix> damp_;
+  RefCountPtr<LINALG::SparseMatrix> stiff_;
+  RefCountPtr<LINALG::SparseMatrix> mass_;
+  RefCountPtr<LINALG::SparseMatrix> damp_;
 
   RefCountPtr<Epetra_Vector>    dirichtoggle_;
   RefCountPtr<Epetra_Vector>    invtoggle_;
@@ -488,7 +489,7 @@ public:
   virtual Epetra_CrsMatrix* getJacobian()
   {
     if (integrator_.stiff_==null) dserror("integrator_.stiff_ = null!");
-    return integrator_.stiff_.get();
+    return &*integrator_.stiff_->Matrix();
   }
 
   /*!
@@ -498,7 +499,7 @@ public:
   virtual const Epetra_CrsGraph* getGraph()
   {
     if (integrator_.stiff_==null) dserror("integrator_.stiff_ = null!");
-    return &(integrator_.stiff_->Graph());
+    return &(integrator_.stiff_->Matrix()->Graph());
   }
 
   /*!
@@ -508,7 +509,7 @@ public:
   virtual const Epetra_CrsGraph* getModifiedGraph()
   {
     if (integrator_.stiff_==null) dserror("integrator_.stiff_ = null!");
-    return &(integrator_.stiff_->Graph());
+    return &(integrator_.stiff_->Matrix()->Graph());
   }
 
   /*!

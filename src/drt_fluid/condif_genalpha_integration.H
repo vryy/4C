@@ -32,6 +32,7 @@ Maintainer: Volker Gravemeier
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/linalg_systemmatrix.H"
 #include "../drt_lib/drt_function.H"
 #include "../io/io_drt.H"
 
@@ -200,9 +201,6 @@ private:
   // parallelism
   int                              myrank_;
 
-  // matrix layout
-  int                              maxentriesperrow_;
-
   // current time and step
   double                           time_;
   int                              step_;
@@ -224,8 +222,8 @@ private:
 
   // system matrices: standard (stabilized) matrix and complete system matrix
   // including discontinuity-capturing (artificial diffusivity) matrix
-  RefCountPtr<Epetra_CrsMatrix> sysmat_;
-  RefCountPtr<Epetra_CrsMatrix> sysmat_dc_;
+  RefCountPtr<LINALG::SparseMatrix> sysmat_;
+  RefCountPtr<LINALG::SparseMatrix> sysmat_dc_;
 
   // The residual vector --- more or less the rhs for the incremental
   // formulation!!!

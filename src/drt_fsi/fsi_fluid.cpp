@@ -147,8 +147,6 @@ Teuchos::RCP<Epetra_Vector> FSI::Fluid::RelaxationSolve(Teuchos::RCP<Epetra_Vect
   // a real nightmare.
   //
 
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
   relax_->PutScalar(0.0);
   interface_.InsertCondVector(ivel,relax_);
 
@@ -159,7 +157,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Fluid::RelaxationSolve(Teuchos::RCP<Epetra_Vect
   // dirichtoggle_ has already been set up
 
   // zero out the stiffness matrix
-  sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+  sysmat_->Zero();
 
   // zero out residual, no neumann bc
   residual_->PutScalar(0.0);
@@ -188,7 +186,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Fluid::RelaxationSolve(Teuchos::RCP<Epetra_Vect
   discret_->ClearState();
 
   // finalize the system matrix
-  LINALG::Complete(*sysmat_);
+  sysmat_->Complete();
 
   // No, we do not want to have any rhs. There cannot be any.
   residual_->PutScalar(0.0);
@@ -200,12 +198,12 @@ Teuchos::RCP<Epetra_Vector> FSI::Fluid::RelaxationSolve(Teuchos::RCP<Epetra_Vect
   LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,relax_,dirichtoggle_);
 
   //-------solve for residual displacements to correct incremental displacements
-  solver_->Solve(sysmat_,incvel_,residual_,true,true);
+  solver_->Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,true);
 
   // and now we need the reaction forces
 
   // zero out the stiffness matrix
-  sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+  sysmat_->Zero();
 
   // zero out residual, no neumann bc
   residual_->PutScalar(0.0);
@@ -239,7 +237,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Fluid::RelaxationSolve(Teuchos::RCP<Epetra_Vect
 //     cout << "==> residual norm = " << norm << " <==\n";
 
   // finalize the system matrix
-  LINALG::Complete(*sysmat_);
+  sysmat_->Complete();
 
   if (sysmat_->Apply(*incvel_, *trueresidual_)!=0)
     dserror("sysmat_->Apply() failed");

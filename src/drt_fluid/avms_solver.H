@@ -3,7 +3,7 @@
 
 \class AVMS_Solver
 
-\brief An algebraic variational multiscale solver and method 
+\brief An algebraic variational multiscale solver and method
        with extended matrix system
 
 <pre>
@@ -46,6 +46,7 @@ Maintainer: Michael Gee
 #include "MLAPI_Aggregation.h"
 #include "MLAPI_Eig.h"
 
+#include "../drt_lib/linalg_systemmatrix.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -59,7 +60,7 @@ using namespace MLAPI;
        with extended matrix system
 
 The AVMS (formerly VM3) method class. It takes 2 matrices upon construction:
-Aforfine is a fine resolved scale system that includes stabilization to 
+Aforfine is a fine resolved scale system that includes stabilization to
 be present on the fine resolved scales.
 Aforcoarse is a fine resolved scale system that includes stabilization that
 is supposd to be present on the algebraic coarse resolved scale system as well.
@@ -105,8 +106,8 @@ public:
                           (which exludes some of the stabilization present in Aforfine)
   \param mlparams (in/out): valid ML parameter list, the nullspace is altered by this class
   */
-  explicit AVMS_Solver(RCP<Epetra_CrsMatrix> Aforfine,
-                       RCP<Epetra_CrsMatrix> Aforcoarse,
+  explicit AVMS_Solver(RCP<LINALG::SparseMatrix> Aforfine,
+                       RCP<LINALG::SparseMatrix> Aforcoarse,
                        const RCP<Epetra_Vector> dbctoggle,
                        ParameterList& mlparams);
 
@@ -135,12 +136,12 @@ private:
   \brief Compute the avms setup
 
   */
-  bool Compute(RCP<Epetra_CrsMatrix> Aforfine,
-               RCP<Epetra_CrsMatrix> Aforcoarse);
+  bool Compute(RCP<LINALG::SparseMatrix> Aforfine,
+               RCP<LINALG::SparseMatrix> Aforcoarse);
 
   ParameterList&         mlparams_;  // ML parameter list
-  RCP<Epetra_CrsMatrix>  Acombined_; // input matrix without fine-scale term
-  RCP<Epetra_CrsMatrix>  P_;         // prolongation from algerbaic coarse level to this level
+  RCP<LINALG::SparseMatrix>  Acombined_; // input matrix without fine-scale term
+  RCP<LINALG::SparseMatrix>  P_;         // prolongation from algerbaic coarse level to this level
   const RCP<Epetra_Vector>& dbctoggle_;  // DBC toggle vector
 
 }; // AVMS_Solver

@@ -29,6 +29,13 @@ using namespace Teuchos;
 #include "drt_dofset.H"
 #include "drt_dserror.H"
 
+
+namespace LINALG
+{
+  class SparseOperator;
+}
+
+
 /*!
 \brief DRT: namespace of the ccarat discretization module
 
@@ -747,16 +754,8 @@ public:
   \brief Call elements to evaluate
 
   Call element routines to perform integration and return element contributions to
-  system vectors and matrices. Type of action taken by the elements and type of
-  assembly is controlled by the params parameter.<br>
-  Parameters that control assembly are:<br>
-  \code
-  params.set("assemble matrix 1",true); // values true or false
-  params.set("assemble matrix 2",true); // values true or false
-  params.set("assemble vector 1",true); // values true or false
-  params.set("assemble vector 2",true); // values true or false
-  params.set("assemble vector 3",true); // values true or false
-  \endcode
+  system vectors and matrices. Type of action taken by the elements is
+  controlled by the params parameter.<br>
   Parameters that control element behavior are:<br>
   \code
   params.set("action","<element_action>"); // <element_action> somthing that elements understand
@@ -797,15 +796,13 @@ public:
                                  Vector will NOT be initialized to zero by
                                  the underlying assembly methods that add element
                                  contributions.
-
-
   */
-  virtual void Evaluate(ParameterList&                params,
-                        RefCountPtr<Epetra_CrsMatrix> systemmatrix1,
-                        RefCountPtr<Epetra_CrsMatrix> systemmatrix2,
-                        RefCountPtr<Epetra_Vector>    systemvector1,
-                        RefCountPtr<Epetra_Vector>    systemvector2,
-                        RefCountPtr<Epetra_Vector>    systemvector3);
+  virtual void Evaluate(Teuchos::ParameterList&        params,
+                        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1=Teuchos::null,
+                        Teuchos::RCP<LINALG::SparseOperator> systemmatrix2=Teuchos::null,
+                        Teuchos::RCP<Epetra_Vector>    systemvector1=Teuchos::null,
+                        Teuchos::RCP<Epetra_Vector>    systemvector2=Teuchos::null,
+                        Teuchos::RCP<Epetra_Vector>    systemvector3=Teuchos::null);
 
 
   /// Call elements to evaluate
@@ -828,108 +825,9 @@ public:
                                 the underlying assembly methods that add element
                                 contributions.
    */
-  void Evaluate(ParameterList&                params,
-                RefCountPtr<Epetra_CrsMatrix> systemmatrix,
-                RefCountPtr<Epetra_Vector>    systemvector);
-
-
-  /// Call elements to evaluate
-  /*!
-    Abbreviated Evaluate() call that always assembles TWO matrices and
-    one vector. No need to set assemble instructions to the
-    ParameterList.
-
-    \param params (in): Parameter list past to the elements containing
-                        commands and parameters for the elements and
-                        containing assembly intructions
-    \param systemmatrix (out) : Sparse matrix that may be filled by
-                                assembly of element contributions.
-                                May not be Teuchos::null.
-                                Matrix must be systemmatrix->Filled()==false on input.
-    \param systemmatrix2 (out) : Sparse matrix that may be filled by
-                                 assembly of element contributions.
-                                 May not be Teuchos::null.
-                                 Matrix must be systemmatrix->Filled()==false on input.
-    \param systemvector (out) : Distributed vector that may be filled by
-                                assembly of element contributions.
-                                May not be Teuchos::null.
-                                Vector will NOT be initialized to zero by
-                                the underlying assembly methods that add element
-                                contributions.
-   */
-  void Evaluate(ParameterList&                params,
-                RefCountPtr<Epetra_CrsMatrix> systemmatrix,
-                RefCountPtr<Epetra_CrsMatrix> systemmatrix2,
-                RefCountPtr<Epetra_Vector>    systemvector);
-
-
-  /// Call elements to evaluate
-  /*!
-    Abbreviated Evaluate() call that always assembles one matrix and
-    TWO vectors. No need to set assemble instructions to the
-    ParameterList.
-
-    \param params (in): Parameter list past to the elements containing
-                        commands and parameters for the elements and
-                        containing assembly intructions
-    \param systemmatrix (out) : Sparse matrix that may be filled by
-                                assembly of element contributions.
-                                May not be Teuchos::null.
-                                Matrix must be systemmatrix->Filled()==false on input.
-    \param systemvector (out) : Distributed vector that may be filled by
-                                assembly of element contributions.
-                                May not be Teuchos::null.
-                                Vector will NOT be initialized to zero by
-                                the underlying assembly methods that add element
-                                contributions.
-    \param systemvector2 (out) : Distributed vector that may be filled by
-                                 assembly of element contributions.
-                                 May not be Teuchos::null.
-                                 Vector will NOT be initialized to zero by
-                                 the underlying assembly methods that add element
-                                 contributions.
-   */
-  void Evaluate(ParameterList&                params,
-                RefCountPtr<Epetra_CrsMatrix> systemmatrix,
-                RefCountPtr<Epetra_Vector>    systemvector,
-                RefCountPtr<Epetra_Vector>    systemvector2);
-
-
-  /// Call elements to evaluate
-  /*!
-    Abbreviated Evaluate() call that always assembles TWO matrices and
-    TWO vectors. No need to set assemble instructions to the
-    ParameterList.
-
-    \param params (in): Parameter list past to the elements containing
-                        commands and parameters for the elements and
-                        containing assembly intructions
-    \param systemmatrix (out) : Sparse matrix that may be filled by
-                                assembly of element contributions.
-                                May not be Teuchos::null.
-                                Matrix must be systemmatrix->Filled()==false on input.
-    \param systemmatrix2 (out) : Sparse matrix that may be filled by
-                                 assembly of element contributions.
-                                 May not be Teuchos::null.
-                                 Matrix must be systemmatrix->Filled()==false on input.
-    \param systemvector (out) : Distributed vector that may be filled by
-                                assembly of element contributions.
-                                May not be Teuchos::null.
-                                Vector will NOT be initialized to zero by
-                                the underlying assembly methods that add element
-                                contributions.
-    \param systemvector2 (out) : Distributed vector that may be filled by
-                                 assembly of element contributions.
-                                 May not be Teuchos::null.
-                                 Vector will NOT be initialized to zero by
-                                 the underlying assembly methods that add element
-                                 contributions.
-   */
-  void Evaluate(ParameterList&                params,
-                RefCountPtr<Epetra_CrsMatrix> systemmatrix,
-                RefCountPtr<Epetra_CrsMatrix> systemmatrix2,
-                RefCountPtr<Epetra_Vector>    systemvector,
-                RefCountPtr<Epetra_Vector>    systemvector2);
+  void Evaluate(Teuchos::ParameterList&        params,
+                Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+                Teuchos::RCP<Epetra_Vector>    systemvector);
 
 
   /*!
@@ -1041,10 +939,11 @@ public:
     */
 
  virtual void EvaluateCondition(ParameterList& params,
-			RefCountPtr<Epetra_CrsMatrix> systemmatrix1,
-			RefCountPtr<Epetra_Vector> systemvector1,
-			RefCountPtr<Epetra_Vector> systemvector2,
-		    const string& condstring);
+                                RefCountPtr<LINALG::SparseOperator> systemmatrix1,
+                                RefCountPtr<Epetra_Vector> systemvector1,
+                                RefCountPtr<Epetra_Vector> systemvector2,
+                                const string& condstring);
+
 
  /*
    \brief Evaluate a specific condition
@@ -1073,10 +972,11 @@ public:
      */
 
   virtual void EvaluateCondition(ParameterList& params,
- 			RefCountPtr<Epetra_CrsMatrix> systemmatrix1,
+                                 RefCountPtr<LINALG::SparseOperator> systemmatrix1,
  			RefCountPtr<Epetra_Vector> systemvector1,
  		    const string& condstring,
  		    RefCountPtr<Epetra_MultiVector> systemmultvect);
+
 
   /*!
   \brief Compute the nullspace of the discretization

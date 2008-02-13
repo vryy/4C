@@ -107,7 +107,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 
   // apply enrichments
   RCP<XFEM::DofManager> initialdofmanager = rcp(new XFEM::DofManager(ih));
-  
+
   // tell elements about the dofs and the integration
   {
 	  ParameterList eleparams;
@@ -120,10 +120,10 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 	  eleparams.set("assemble vector 3",false);
 	  discret_->Evaluate(eleparams,null,null,null,null,null);
   }
-  
+
   // ensure that degrees of freedom in the discretization have been set
   discret_->FillComplete();
-  
+
   discret_->ComputeNullSpaceIfNecessary(solver_.Params());
   
   // -------------------------------------------------------------------
@@ -133,7 +133,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // -------------------------------------------------------------------
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
   const Epetra_Map* soliddofrowmap = cutterdiscret_->DofRowMap();
-  
+
   ComputeSingleFieldRowMaps(initialdofmanager);
 
   // -------------------------------------------------------------------
@@ -143,7 +143,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // -------------------------------------------------------------------
 
   const int numdim = params_.get<int>("number of velocity degrees of freedom");
-  
+
   // -------------------------------------------------------------------
   // get the processor ID from the communicator
   // -------------------------------------------------------------------
@@ -159,10 +159,9 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // nodes with 4 dofs each. (27*4=108)
   // We do not need the exact number here, just for performance reasons
   // a 'good' estimate
-  maxentriesperrow_ = 108;
 
   // initialize standard (stabilized) system matrix
-  sysmat_ = null;
+  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
 
   // -------------------------------------------------------------------
   // create empty vectors
@@ -220,7 +219,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   if (fssgv_ > 0)
   {
     // initialize (fine-scale) subgrid-viscosity system matrix
-    sysmat_sv_ = null;
+    sysmat_sv_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
 
     // residual vector containing (fine-scale) subgrid-viscosity residual
     residual_sv_  = LINALG::CreateVector(*dofrowmap,true);
@@ -228,7 +227,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 
   // solid displacement
   soliddispnp_       = LINALG::CreateVector(*soliddofrowmap,true);
-  
+
   // -------------------------------------------------------------------
   // create timers and time monitor
   // -------------------------------------------------------------------
@@ -261,7 +260,7 @@ void XFluidImplicitTimeInt::ComputeSingleFieldRowMaps(RCP<XFEM::DofManager> dofm
 	// velocity degrees of freedom --- this won't work for inf-sup stable
 	// elements at the moment!
 	// -------------------------------------------------------------------
-	
+
 	// Allocate integer vectors which will hold the dof number of the
 	// velocity or pressure dofs
 	vector<int> velmapdata;
@@ -278,7 +277,7 @@ void XFluidImplicitTimeInt::ComputeSingleFieldRowMaps(RCP<XFEM::DofManager> dofm
 		for (enrvar = enrvarset.begin(); enrvar != enrvarset.end(); ++enrvar) {
 			switch (enrvar->getField()) {
 				case XFEM::PHYSICS::Velx:
-				case XFEM::PHYSICS::Vely: 
+				case XFEM::PHYSICS::Vely:
 				case XFEM::PHYSICS::Velz:
 					velmapdata.push_back(dof[countdof]);
 					break;
@@ -301,8 +300,8 @@ void XFluidImplicitTimeInt::ComputeSingleFieldRowMaps(RCP<XFEM::DofManager> dofm
 			premapdata.size(),&premapdata[0],0,
 			discret_->Comm()));
 }
-		
-		
+
+
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -667,10 +666,10 @@ void XFluidImplicitTimeInt::NonlinearSolve()
 
   // compute Intersection
   RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(discret_,cutterdiscret_));
-  
+
   // apply enrichments
   RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih));
-  
+
   // tell elements about the dofs and the integration
   {
       ParameterList eleparams;
@@ -683,8 +682,8 @@ void XFluidImplicitTimeInt::NonlinearSolve()
       eleparams.set("assemble vector 3",false);
       discret_->Evaluate(eleparams,null,null,null,null,null);
   }
-  
-  
+
+
   // ensure that degrees of freedom in the discretization have been set
   //discret_->FillComplete(); ????
     
@@ -711,7 +710,7 @@ void XFluidImplicitTimeInt::NonlinearSolve()
       // get cpu time
       tcpu=ds_cputime();
 
-      sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+      sysmat_->Zero();
 
       // add Neumann loads
       residual_->Update(1.0,*neumann_loads_,0.0);
@@ -745,7 +744,7 @@ void XFluidImplicitTimeInt::NonlinearSolve()
       // give elements (read-) access to the interfacehandle and dofmanager
       eleparams.set("interfacehandle",ih);
       eleparams.set("dofmanager",dofmanager);
-      
+
       // call loop over elements
       discret_->Evaluate(eleparams,sysmat_,residual_);
 
@@ -754,8 +753,7 @@ void XFluidImplicitTimeInt::NonlinearSolve()
       density = eleparams.get("density", 0.0);
 
       // finalize the complete matrix
-      LINALG::Complete(*sysmat_);
-      maxentriesperrow_ = sysmat_->MaxNumEntries();
+      sysmat_->Complete();
 
       // end time measurement for element call
       tm3_ref_=null;
@@ -815,7 +813,7 @@ void XFluidImplicitTimeInt::NonlinearSolve()
       if (err) dserror("Import using importer returned err=%d",err);
       onlypre.Norm2(&prenorm_L2);
     }
-    
+
     double incfullnorm_L2;
     double fullnorm_L2;
     double fullresnorm;
@@ -943,7 +941,7 @@ void XFluidImplicitTimeInt::NonlinearSolve()
       // get cpu time
       tcpu=ds_cputime();
 
-      solver_.Solve(sysmat_,incvel_,residual_,true,itnum==1);
+      solver_.Solve(sysmat_->Matrix(),incvel_,residual_,true,itnum==1);
 
       // end time measurement for application of dirichlet conditions
       tm5_ref_=null;
@@ -975,8 +973,7 @@ void XFluidImplicitTimeInt::NonlinearSolve()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void XFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 {
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+  sysmat_->Zero();
 
   // set the new solution we just got
   if (vel!=Teuchos::null)
@@ -1021,8 +1018,7 @@ void XFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   density_ = eleparams.get("density", 0.0);
 
   // finalize the system matrix
-  LINALG::Complete(*sysmat_);
-  maxentriesperrow_ = sysmat_->MaxNumEntries();
+  sysmat_->Complete();
 
   trueresidual_->Update(density_/dta_/theta_,*residual_,0.0);
 
@@ -1191,8 +1187,8 @@ void XFluidImplicitTimeInt::Output()
         output_.WriteVector("dispnm",dispnm_);
       }
     }
-      
-      
+
+
     // solid
     if (cutterdiscret_->NumGlobalElements() > 0)
     {
@@ -1229,7 +1225,7 @@ void XFluidImplicitTimeInt::Output()
     output_.WriteVector("accn", accn_);
     output_.WriteVector("veln", veln_);
     output_.WriteVector("velnm", velnm_);
-    
+
     solidoutput_.NewStep    (step_,time_);
     soliddispnp_->PutScalar(0.0);
     solidoutput_.WriteVector("soliddispnp", soliddispnp_);

@@ -17,16 +17,17 @@ Maintainer: Thomas Kloeppel
 #ifndef DRT_CONSTRAINT_MANAGER_H
 #define DRT_CONSTRAINT_MANAGER_H
 
-#include "Teuchos_RefCountPtr.hpp"
-#include "Epetra_Vector.h"
-#include "Epetra_Operator.h"
-#include "Epetra_RowMatrix.h"
+#include <Teuchos_RefCountPtr.hpp>
+#include <Epetra_Vector.h>
+#include <Epetra_Operator.h>
+#include <Epetra_RowMatrix.h>
 
 
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_ParameterList.hpp>
 #include "./drt_discret.H"
 #include "./linalg_solver.H"
 #include "./linalg_utils.H"
+#include "linalg_systemmatrix.H"
 
 
 using namespace std;
@@ -43,15 +44,15 @@ public:
 
 	  /*!
 	  \brief Standard Constructor
-	  
+
 	  \param disc (in): Discretization
-	  \param disp (in): current displacement to compute initial constraint volume 
+	  \param disp (in): current displacement to compute initial constraint volume
 
 	  */
-	
+
 	  ConstrManager(DRT::Discretization& disc,
 			  RCP<Epetra_Vector> disp);
-	  
+
 	  /*!
 	  	  \brief Destructor
 
@@ -62,23 +63,23 @@ public:
 	 };
 
 	  //@}
-	  
+
 	  //! @name Public Member Functions
 	  /*!
 	    \brief Change stiffness matrix and force vector according to the volume constraint.
-	    Values of lagrange multiplier are taken from intern variable. 
+	    Values of lagrange multiplier are taken from intern variable.
 	    Difference between current and prescribed volume is calculated and stored as well.
-	    
+
 	    \param time (in):        time at end of time step
 	    \param disp (in):        Displacement at end of time step
 	    \param fint (in/out):	 Vector of internal forces
 	    \param stiff (in/out):   Stiffness matrix
-	  */  
-	  void StiffnessAndInternalForces(const double time, 
+	  */
+	  void StiffnessAndInternalForces(const double time,
 			  RCP<Epetra_Vector> disp,
 			  RefCountPtr<Epetra_Vector> fint,
-			  RefCountPtr<Epetra_CrsMatrix> stiff);
-	  
+                                          RefCountPtr<LINALG::SparseMatrix> stiff);
+
 	  /*!
 	   \brief Return norm of difference between actual and prescribed volumes
 	  */
@@ -86,15 +87,15 @@ public:
 	  {
 		  return constrainterr_->Norm2();
 	  };
-	  	  
+
 	  /*!
 	  	   \brief Return number of constrained volumes
-	  */ 
+	  */
 	  int GetNumberOfConstraints()
 	  {
-		  return numConstrID_; 
+		  return numConstrID_;
 	  };
-	  
+
 	  /*!
 	  	   \brief Scale increment of lagrange multiplier increment by a double d
 	  */
@@ -103,7 +104,7 @@ public:
 		  lagrMultInc_->Scale(d);
 		  return;
 	  };
-	  
+
 	  /*!
 	  	  	   \brief Scale lagrange multiplier increment by a double d
 	  */
@@ -112,15 +113,15 @@ public:
 	  		  lagrMultVec_->Scale(d);
 	  		  return;
 	  	  };
-  
+
 	  /*!
 	  	   \brief Update increment of lagrange multiplier Delta lambda_{n+1}=Delta lambda_{n}+factor*(vect+volerr)
 	  */
 	  void UpdateLagrIncr(double factor, Epetra_SerialDenseVector vect);
-	  
+
 	  /*!
 	  	   \brief Update lagrange multiplier lambda_{n+1}=lambda_{n}+factor*(volerr)
-	  */	  
+	  */
 	  void UpdateLagrMult(double factor);
 	  /*!
 	  	   \brief Return lagrange multiplier increment
@@ -129,12 +130,12 @@ public:
 	  {
 		  return (*lagrMultInc_)[i];
 	  };
-	  
+
 	  /*!
-	  	  	   \brief Compute difference between current and prescribed volume at a given time and a given displacement 
+	  	  	   \brief Compute difference between current and prescribed volume at a given time and a given displacement
 	  */
 	  void ComputeError(double time,RCP<Epetra_Vector> disp);
-	  
+
 	  /*!
 	  	   \brief Return differences between prescribed and actual value of volume number i
 	  */
@@ -142,31 +143,31 @@ public:
 	  {
 		  return (*constrainterr_)[i];
 	  }
-	  
+
 	  /*!
 	  	   \brief Add Increment to lagrange multiplier
 	  */
 	  void UpdateLagrMult();
-	  
-	  
+
+
 	  /*!
-	   \brief Return matrix containing first derivatives of constraints wrt displacements 
+	   \brief Return matrix containing first derivatives of constraints wrt displacements
 	   */
 	  RCP<Epetra_MultiVector> GetConstraintMatrix()
 	  {
 		  return constrVec_;
 	  };
-	  
+
 	  /*!
 	  	  	   \brief Return lagrange multiplier for volume i
 	  */
 	  double GetLagrMult(int i)
 	  {
-		  return (*lagrMultVec_)[i];		  
-	  };	  
-	  
+		  return (*lagrMultVec_)[i];
+	  };
+
 	  /*!
-	   \brief Return if there are constraints  
+	   \brief Return if there are constraints
 	  */
 	  bool HaveConstraint()
 	  {
@@ -179,7 +180,7 @@ public:
 	  {
 		  return havemonitor_;
 	  };
-	  
+
 	  /*!
 	   \brief Return current value of volume i
 	  */
@@ -187,67 +188,67 @@ public:
 	  {
 		  return (*actvalues_)[i];
 	  };
-	  
+
 	  /*!
-	   \brief Computes inner product of constr multivector times lagrange multiplier increment 
-	   vector as required for the uzawa algorithm to compute new displacement increment 
-	   
-	   \param dotprod (out):		resulting value of B^T * Delta lambda 
+	   \brief Computes inner product of constr multivector times lagrange multiplier increment
+	   vector as required for the uzawa algorithm to compute new displacement increment
+
+	   \param dotprod (out):		resulting value of B^T * Delta lambda
 	   */
 	  void ComputeConstrTimesLagrIncr(RCP<Epetra_Vector> dotprod);
-	  
+
 	  /*!
 	    \brief Return inner product of constr multivector times displacement increment
-	    
+
 	    \param disi (in)		:		displacement increment Delta u
 	    \param dotprod (out) 	:		resulting value of B * Delta u
 	    */
 	  void ComputeConstrTimesDisi(Epetra_Vector disi,RCP<Epetra_SerialDenseVector> dotprod);
-	  
+
 	  /*
 	       \brief Print out the values of current monitor values
 	   */
 	  void PrintMonitorValues();
-	  
+
 	  void ComputeMonitorValues(RCP<Epetra_Vector> disp);
 	  //@}
 private:
-	
-	  //! name@ Private Member Functions 	
+
+	  //! name@ Private Member Functions
 	  //methods used by constructor and other public functions
 	  /*!
-	    \brief synchronize processors after evaluating constraints 
+	    \brief synchronize processors after evaluating constraints
 
-	  */  
-	
+	  */
+
 	  void SynchronizeSumConstraint(ParameterList& params,
 				RCP<Epetra_SerialDenseVector>& vect,const char* resultstr, const int numID, const int minID);
-	  
-	  /*!
-	    \brief synchronize processors after evaluating constraints 
 
-	  */  
-	
+	  /*!
+	    \brief synchronize processors after evaluating constraints
+
+	  */
+
 	  void SynchronizeMinConstraint(ParameterList& params,
 				RCP<Epetra_SerialDenseVector>& vect,const char* resultstr);
 	  /*!
 	      \brief Setup separate dofrowmaps for any condition ID and initialize lagrange multiplier
 
-	  */  
-	  
+	  */
+
 	  void ManageIDs(ParameterList& params,int& minID, int& maxID, int& numID);
 	  //@}
-	
-private:
-	
-	// don't want = operator, cctor and destructor
-	
-	ConstrManager operator = (const ConstrManager& old);
-	ConstrManager(const ConstrManager& old);    
 
-	
+private:
+
+	// don't want = operator, cctor and destructor
+
+	ConstrManager operator = (const ConstrManager& old);
+	ConstrManager(const ConstrManager& old);
+
+
 	//! name@ Private Attributes
-	DRT::Discretization& actdisc_;	
+	DRT::Discretization& actdisc_;
 	RefCountPtr<Epetra_SerialDenseVector> referencevalues_;
 	RefCountPtr<Epetra_SerialDenseVector> initialvalues_;
 	RefCountPtr<Epetra_SerialDenseVector> actvalues_;
@@ -260,7 +261,7 @@ private:
 	int numMonitorID_;
 	int maxMonitorID_;
 	int minMonitorID_;
-	RefCountPtr<Epetra_SerialDenseVector> fact_; 
+	RefCountPtr<Epetra_SerialDenseVector> fact_;
 	RefCountPtr<Epetra_SerialDenseVector> lagrMultVec_;
 	RefCountPtr<Epetra_SerialDenseVector> lagrMultInc_;
 	RefCountPtr<Epetra_MultiVector> constrVec_;
@@ -271,7 +272,7 @@ private:
 	bool haveareamonitor_;
 	bool havevolmonitor_;
 	//@}
-    
+
 
 }; //class
 

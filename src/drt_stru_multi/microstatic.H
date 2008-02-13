@@ -24,6 +24,7 @@ Maintainer: Lena Wiechert
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/linalg_systemmatrix.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
 
 #include "Epetra_Vector.h"
@@ -174,8 +175,8 @@ protected:
   double                        ref_fnorm_;
   double                        ref_disnorm_;
 
-  RefCountPtr<Epetra_CrsMatrix> stiff_;
-  RefCountPtr<Epetra_CrsMatrix> stiff_dirich_;
+  RefCountPtr<LINALG::SparseMatrix> stiff_;
+  RefCountPtr<LINALG::SparseMatrix> stiff_dirich_;
 
   RefCountPtr<Epetra_Vector>    dirichtoggle_;
   RefCountPtr<Epetra_Vector>    invtoggle_;

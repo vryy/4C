@@ -43,7 +43,6 @@ FSI::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
     output_ (output),
     step_(0),
     time_(0.0),
-    maxentriesperrow_(81),
     sysmat_(null),
     restartstep_(0),
     uprestart_(params->get("write restart every", -1))
@@ -77,6 +76,7 @@ FSI::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
   }
 
   // build linear matrix once and for all
+  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,false,true));
   EvaluateElements();
   LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,dirichtoggle_);
 }
@@ -113,7 +113,7 @@ void FSI::AleLinear::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp)
  *----------------------------------------------------------------------*/
 void FSI::AleLinear::Solve()
 {
-  solver_->Solve(sysmat_,dispnp_,residual_,true);
+  solver_->Solve(sysmat_->Matrix(),dispnp_,residual_,true);
 }
 
 
@@ -165,17 +165,7 @@ void FSI::AleLinear::Integrate()
  *----------------------------------------------------------------------*/
 void FSI::AleLinear::EvaluateElements()
 {
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-#if 1
-  sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
-#else
-  // zero out the stiffness matrix
-  if (sysmat_==Teuchos::null)
-    sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
-  else
-    sysmat_->PutScalar(0.);
-#endif
+  sysmat_->Zero();
 
   // zero out residual
   residual_->PutScalar(0.0);
@@ -195,8 +185,7 @@ void FSI::AleLinear::EvaluateElements()
   discret_->Evaluate(eleparams,sysmat_,residual_);
   discret_->ClearState();
 
-  LINALG::Complete(*sysmat_);
-  maxentriesperrow_ = sysmat_->MaxNumEntries();
+  sysmat_->Complete();
 }
 
 

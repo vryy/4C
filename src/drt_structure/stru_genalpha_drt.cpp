@@ -120,14 +120,14 @@ void stru_genalpha_drt()
   // -------------------------------------------------------------------
   // `81' is an initial guess for the bandwidth of the matrices
   // A better guess will be determined later.
-  RefCountPtr<Epetra_CrsMatrix> stiff_mat = LINALG::CreateMatrix(*dofrowmap,81);
-  RefCountPtr<Epetra_CrsMatrix> mass_mat  = LINALG::CreateMatrix(*dofrowmap,81);
-  RefCountPtr<Epetra_CrsMatrix> damp_mat  = null;
+  RefCountPtr<LINALG::SparseMatrix> stiff_mat = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81));
+  RefCountPtr<LINALG::SparseMatrix> mass_mat  = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81));
+  RefCountPtr<LINALG::SparseMatrix> damp_mat  = null;
   bool damping = false;
   if (sdyn.get<int>("DAMPING")==1)
   {
     damping = true;
-    damp_mat = LINALG::CreateMatrix(*dofrowmap,81);
+    damp_mat = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81));
   }
 
   // -------------------------------------------------------------------
@@ -241,17 +241,15 @@ void stru_genalpha_drt()
   }
 
   // complete stiffness and mass matrix
-  LINALG::Complete(*stiff_mat);
-  LINALG::Complete(*mass_mat);
-  const int maxentriesperrow = stiff_mat->MaxNumEntries();
+  stiff_mat->Complete();
+  mass_mat->Complete();
 
   // build damping matrix if neccessary
   if (damping)
   {
-    LINALG::Add(*stiff_mat,false,sdyn.get<double>("K_DAMP"),*damp_mat,0.0);
-    LINALG::Add(*mass_mat ,false,sdyn.get<double>("M_DAMP"),*damp_mat,1.0);
-    LINALG::Complete(*damp_mat);
-    stiff_mat = null;
+    damp_mat->Add(*stiff_mat,false,sdyn.get<double>("K_DAMP"),0.0);
+    damp_mat->Add(*mass_mat ,false,sdyn.get<double>("M_DAMP"),1.0);
+    damp_mat->Complete();
   }
 
   //--------------------------- calculate consistent initial accelerations
@@ -261,7 +259,7 @@ void stru_genalpha_drt()
     rhs->Update(-1.0,*fint,1.0,*fext,-1.0);
     Epetra_Vector rhscopy(*rhs);
     rhs->Multiply(1.0,*invtoggle,rhscopy,0.0);
-    solver.Solve(mass_mat,acc,rhs,true,true);
+    solver.Solve(mass_mat->Matrix(),acc,rhs,true,true);
   }
 
   //------------------------------------------ time integration parameters
@@ -365,7 +363,7 @@ void stru_genalpha_drt()
     //------------- eval fint at interpolated state, eval stiffness matrix
     {
       // zero out stiffness
-      stiff_mat = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow);
+      stiff_mat->Zero();
       // create the parameters for the discretization
       ParameterList params;
       // action for elements
@@ -427,10 +425,10 @@ void stru_genalpha_drt()
       //------------------------------------------- effective rhs is fresm
       //---------------------------------------------- build effective lhs
       // (using matrix stiff_mat as effective matrix)
-      LINALG::Add(*mass_mat,false,(1.-alpham)/(beta*dt*dt),*stiff_mat,1.-alphaf);
+      stiff_mat->Add(*mass_mat,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
       if (damping)
-        LINALG::Add(*damp_mat,false,(1.-alphaf)*gamma/(beta*dt),*stiff_mat,1.0);
-      LINALG::Complete(*stiff_mat);
+        stiff_mat->Add(*damp_mat,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+      stiff_mat->Complete();
 
       //----------------------- apply dirichlet BCs to system of equations
       fresm->Scale(-1.0);  // delete this by building fresm with other sign
@@ -441,11 +439,11 @@ void stru_genalpha_drt()
       // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
       if (numiter==0)
       {
-        solver.Solve(stiff_mat,disi,fresm,true,true);
+        solver.Solve(stiff_mat->Matrix(),disi,fresm,true,true);
       }
       else
       {
-        solver.Solve(stiff_mat,disi,fresm,true,false);
+        solver.Solve(stiff_mat->Matrix(),disi,fresm,true,false);
       }
 
       //---------------------------------- update mid configuration values
@@ -461,7 +459,7 @@ void stru_genalpha_drt()
       //---------------------------- compute internal forces and stiffness
       {
         // zero out stiffness
-        stiff_mat = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow);
+        stiff_mat->Zero();
         // create the parameters for the discretization
         ParameterList params;
         // action for elements

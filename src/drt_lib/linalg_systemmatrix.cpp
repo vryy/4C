@@ -347,7 +347,7 @@ int LINALG::SparseMatrix::ApplyInverse(const Epetra_MultiVector &X, Epetra_Multi
  *----------------------------------------------------------------------*/
 const char* LINALG::SparseMatrix::Label() const
 {
-  return sysmat_->Label();
+  return "LINALG::SparseMatrix";
 }
 
 
@@ -761,7 +761,7 @@ const Epetra_Map& LINALG::BlockSparseMatrixBase::OperatorRangeMap() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-LINALG::DefaultBlockMatrixStrategy::DefaultBlockMatrixStrategy(BlockSparseMatrixBase* mat)
+LINALG::DefaultBlockMatrixStrategy::DefaultBlockMatrixStrategy(BlockSparseMatrixBase& mat)
   : mat_(mat)
 {
 }
@@ -771,10 +771,10 @@ LINALG::DefaultBlockMatrixStrategy::DefaultBlockMatrixStrategy(BlockSparseMatrix
  *----------------------------------------------------------------------*/
 int LINALG::DefaultBlockMatrixStrategy::RowBlock(int lrow, int rgid)
 {
-  int rows = mat_->Rows();
+  int rows = mat_.Rows();
   for (int rblock=0; rblock<rows; ++rblock)
   {
-    if (mat_->RangeMap(rblock).MyGID(rgid))
+    if (mat_.RangeMap(rblock).MyGID(rgid))
     {
       return rblock;
     }
@@ -787,10 +787,10 @@ int LINALG::DefaultBlockMatrixStrategy::RowBlock(int lrow, int rgid)
  *----------------------------------------------------------------------*/
 int LINALG::DefaultBlockMatrixStrategy::ColBlock(int rblock, int lcol, int cgid)
 {
-  int cols = mat_->Cols();
+  int cols = mat_.Cols();
   for (int cblock = 0; cblock<cols; ++cblock)
   {
-    SparseMatrix& matrix = mat_->Matrix(rblock,cblock);
+    SparseMatrix& matrix = mat_.Matrix(rblock,cblock);
 
     // If we have a filled matrix we know the column map already.
     if (matrix.Filled())
@@ -827,7 +827,7 @@ void LINALG::DefaultBlockMatrixStrategy::Assemble(double val,
 
   if (cblock>-1)
   {
-    SparseMatrix& matrix = mat_->Matrix(rblock,cblock);
+    SparseMatrix& matrix = mat_.Matrix(rblock,cblock);
     matrix.Assemble(val,rgid,cgid);
   }
   else
@@ -842,7 +842,7 @@ void LINALG::DefaultBlockMatrixStrategy::Assemble(double val,
  *----------------------------------------------------------------------*/
 void LINALG::DefaultBlockMatrixStrategy::Complete()
 {
-  if (mat_->Filled())
+  if (mat_.Filled())
   {
     if (ghost_.size()!=0)
     {
@@ -853,15 +853,15 @@ void LINALG::DefaultBlockMatrixStrategy::Complete()
 
   // finish ghost entries
 
-  int rows = mat_->Rows();
-  int cols = mat_->Cols();
+  int rows = mat_.Rows();
+  int cols = mat_.Cols();
 
   std::set<int> cgids;
 
   // get the list of all ghost entries gids
   for (int rblock=0; rblock<rows; ++rblock)
   {
-    const Epetra_Map& rowmap = mat_->RangeMap(rblock);
+    const Epetra_Map& rowmap = mat_.RangeMap(rblock);
 
     for (int rlid=0; rlid<rowmap.NumMyElements(); ++rlid)
     {
@@ -884,14 +884,14 @@ void LINALG::DefaultBlockMatrixStrategy::Complete()
   std::vector<int> cpidlist(cgidlist.size());
   std::vector<int> clidlist(cgidlist.size());
 
-  int err = mat_->FullDomainMap().RemoteIDList(cgidlist.size(),&cgidlist[0],&cpidlist[0],&clidlist[0]);
+  int err = mat_.FullDomainMap().RemoteIDList(cgidlist.size(),&cgidlist[0],&cpidlist[0],&clidlist[0]);
   if (err!=0)
     dserror("RemoteIDList failed");
 
   // never mind the lids
   clidlist.clear();
 
-  const Epetra_Comm& comm = mat_->FullRangeMap().Comm();
+  const Epetra_Comm& comm = mat_.FullRangeMap().Comm();
   const int numproc = comm.NumProc();
 
   // Send the ghost gids to their respective processor to ask for the domain
@@ -922,7 +922,7 @@ void LINALG::DefaultBlockMatrixStrategy::Complete()
       for (int cblock=0; cblock<cols; ++cblock)
       {
         // assume row and range equal domain
-        const Epetra_Map& domainmap = mat_->DomainMap(cblock);
+        const Epetra_Map& domainmap = mat_.DomainMap(cblock);
         if (domainmap.MyGID(gid))
         {
           block[proc].push_back(cblock);
@@ -990,7 +990,7 @@ void LINALG::DefaultBlockMatrixStrategy::Complete()
       int cblock = ghostmap[cgid];
       double val = icol->second;
 
-      SparseMatrix& matrix = mat_->Matrix(rblock,cblock);
+      SparseMatrix& matrix = mat_.Matrix(rblock,cblock);
       matrix.Assemble(val,rgid,cgid);
     }
   }

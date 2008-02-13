@@ -96,12 +96,11 @@ CondifGenAlphaIntegration::CondifGenAlphaIntegration(
   // nodes with 1 dof each.
   // We do not need the exact number here, just for performance reasons
   // a 'good' estimate
-  maxentriesperrow_ = 27;
 
   // initialize standard (stabilized) system matrix
-  sysmat_ = null;
+  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27,false,true));
   // initialize standard (stabilized) + discontinuity-capturing system matrix
-  sysmat_dc_ = null;
+  sysmat_dc_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27,false,true));
 
   // -------------------------------------------------------------------
   // create empty vectors
@@ -443,7 +442,7 @@ void CondifGenAlphaIntegration::DoGenAlphaPredictorCorrector(
   tcpu=ds_cputime();
 
   increment_->PutScalar(0.0);
-  solver_.Solve(sysmat_,increment_,residual_,true,true);
+  solver_.Solve(sysmat_->Matrix(),increment_,residual_,true,true);
 
   // end time measurement for solver call
   tm5_ref_=null;
@@ -506,18 +505,11 @@ void CondifGenAlphaIntegration::GenAlphaComputeIntermediateSol()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void CondifGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
 {
-  const Epetra_Map* dofrowmap       = discret_->DofRowMap();
-
   // -------------------------------------------------------------------
   // call elements to calculate residual and matrix
   // -------------------------------------------------------------------
   // zero out the stiffness matrix
-  // we keep the sparsity pattern throughout the calculation for
-  // performance reasons
-  //if (sysmat_==null)
-    sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
-  //else
-  //sysmat_->PutScalar(0.0);
+  sysmat_->Zero();
 
   // zero out residual
   residual_->PutScalar(0.0);
@@ -612,8 +604,7 @@ void CondifGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   *force_=Epetra_Vector(*residual_);
 
   // finalize the system matrix
-  LINALG::Complete(*sysmat_);
-  maxentriesperrow_ = sysmat_->MaxNumEntries();
+  sysmat_->Complete();
 
   // -------------------------------------------------------------------
   // Apply dirichlet boundary conditions to system of equations residual
@@ -623,10 +614,8 @@ void CondifGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   tm4_ref_ = rcp(new TimeMonitor(*timeapplydirich_));
 
   zeros_->PutScalar(0.0);
-  {
-    LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,
-                                   zeros_,dirichtoggle_);
-  }
+  LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,
+                                 zeros_,dirichtoggle_);
 
   // end time measurement for application of dirichlet conditions
   tm4_ref_=null;
