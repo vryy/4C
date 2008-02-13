@@ -605,7 +605,7 @@ void XFluidEnsightWriter::WriteResult(
 
 
 vector<double> computeScalarCellNodeValues(
-        DRT::Element&  ele,
+        const DRT::Element&  ele,
         const RCP<XFEM::InterfaceHandle>&  ih,
         const XFEM::ElementDofManager& dofman,
         const XFEM::DomainIntCell& cell,
