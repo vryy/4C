@@ -22,6 +22,7 @@ Maintainer: Ursula Mayer
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Teuchos_RefCountPtr.hpp"
+#include "xfem.H"
 
 
 namespace XFEM
@@ -163,7 +164,7 @@ namespace XFEM
                                           vector of current coordinates
     */
     void elementToCurrentCoordinates( 
-        DRT::Element*               element, 
+        const DRT::Element*         element, 
         Epetra_SerialDenseVector&   xsi
         ); 
     
@@ -177,8 +178,8 @@ namespace XFEM
     \return                               vector of current coordinates
     */
     blitz::Array<double, 1> elementToCurrentCoordinates(   
-        DRT::Element* element, 
-        blitz::Array<double, 1>& eleCoord
+        const DRT::Element* element, 
+        const blitz::Array<double, 1>& eleCoord
         );
 
 
@@ -193,7 +194,7 @@ namespace XFEM
     \param surfaceNodes     (in)        : nodal coordinates of the surface element
     */
     void elementToCurrentCoordinates(   
-        DRT::Element*                               surfaceElement, 
+        const DRT::Element*                         surfaceElement, 
         Epetra_SerialDenseVector&                   xsi,
         const vector <Epetra_SerialDenseVector>&    surfaceNodes
         ); 
@@ -223,7 +224,7 @@ namespace XFEM
                                           vector of element coordinates
     */
     void currentToElementCoordinates( 
-        DRT::Element*               element,                     
+        const DRT::Element*         element,                     
         Epetra_SerialDenseVector&   xsi
         );
 
@@ -237,7 +238,7 @@ namespace XFEM
                                           vector of element coordinates
     */
     void currentToElementCoordinates(   
-    	DRT::Element*               element, 
+    	const DRT::Element*         element, 
     	vector<double>&   			xsiVector
       	);
 
@@ -251,7 +252,7 @@ namespace XFEM
                                           vector of element coordinates
     */
     void elementToCurrentCoordinates(   
-        DRT::Element* 	element, 
+        const DRT::Element* 	element, 
         vector<double>& xsi
         );
     
@@ -362,7 +363,7 @@ namespace XFEM
     \param xsi                  (inout)     : node in element coordinates
     */  
     bool checkPositionWithinElement(    
-        DRT::Element*                       element,
+        const DRT::Element*                 element,
         const Epetra_SerialDenseVector&     x,
         Epetra_SerialDenseVector&           xsi
         );
@@ -376,7 +377,7 @@ namespace XFEM
     \param x                    (in)        : node in current coordinates
     */  
     bool checkPositionWithinElement(    
-        DRT::Element*                       element,
+        const DRT::Element*                 element,
         const Epetra_SerialDenseVector&     x
         );   
     
@@ -417,7 +418,7 @@ namespace XFEM
         const int                   dim,
         Epetra_SerialDenseMatrix&   A,
         Epetra_SerialDenseVector&   xsi,
-        DRT::Element*               element
+        const DRT::Element*         element
         );
     
       
@@ -436,7 +437,7 @@ namespace XFEM
         Epetra_SerialDenseVector&           b,
         Epetra_SerialDenseVector&           xsi,
         const Epetra_SerialDenseVector&     x,
-        DRT::Element*                       element
+        const DRT::Element*                 element
         );  
     
     
@@ -455,7 +456,7 @@ namespace XFEM
     \param distance           	(in)       : length of the normal
     */         
     bool searchForNearestPointOnSurface(
-    	DRT::Element*                       	surfaceElement,
+    	const DRT::Element*                   	surfaceElement,
     	const blitz::Array<double, 1>&     		physCoord,
     	blitz::Array<double, 1>&           		eleCoord,
     	blitz::Array<double, 1>&           		normal,
@@ -473,7 +474,7 @@ namespace XFEM
    	\return									true if point lies on the surface element, false otherwise
     */  
     bool checkPositionWithinSurfaceElement(
-        DRT::Element*                       	surfaceElement,
+        const DRT::Element*                   	surfaceElement,
         const blitz::Array<double, 1>&     		physCoord,
         blitz::Array<double, 1>&           		eleCoord
         );
@@ -483,14 +484,14 @@ namespace XFEM
     \brief 	updates the 3x2 Jacobian matrix for the computation of the
     		surface element coordinates for a point in physical coordinates
 
-    \param Jacobi   			(out)       : Jacobian matrix
     \param xsi          		(in)      	: element coordinates      
     \param surface element		(in)       	: surface element
+    
+    \return Jacobian matrix
     */         
-    void updateJacobianForMap3To2(   
-        blitz::Array<double, 2>& 		Jacobi,
+    blitz::Array<double, 2> updateJacobianForMap3To2(   
         const blitz::Array<double, 1>&	xsi,
-        DRT::Element*               	surfaceElement
+        const DRT::Element*            	surfaceElement
         );      
     
    
@@ -503,11 +504,10 @@ namespace XFEM
     \param x         		(in)      	: physical coordinates      
     \param surface element	(in)       	: surface element
     */    
-    void updateFForMap3To2(   
-        blitz::Array<double, 1>& 		F,
+    BlitzVec updateFForMap3To2(   
         const blitz::Array<double, 1>&	xsi,
         const blitz::Array<double, 1>&	x,
-        DRT::Element*               	surfaceElement
+        const DRT::Element*            	surfaceElement
         );
     
     
@@ -526,7 +526,7 @@ namespace XFEM
     	const blitz::Array<double, 2>& 	Jacobi,
     	const blitz::Array<double, 1>& 	F,
         const blitz::Array<double, 1>&	xsi,
-        DRT::Element*               	surfaceElement
+        const DRT::Element*            	surfaceElement
         );   
     
     
@@ -538,7 +538,7 @@ namespace XFEM
     \return extended axis-aligned bounding box  (XAABB) for an element
     */
     Epetra_SerialDenseMatrix computeFastXAABB( 
-        DRT::Element*   element
+        const DRT::Element*   element
         );
     
                                             

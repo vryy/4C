@@ -550,7 +550,7 @@ int getNumParam<XFEM::standard_assembly>(
     Calculate inverse of a matrix
 
    */
-BlitzMat Inverse(const BlitzMat& xjm_, const double det)
+BlitzMat Inverse3x3(const BlitzMat& xjm_, const double det)
 {
     BlitzMat xji_(3,3,blitz::ColumnMajorArray<2>());
     xji_(0,0) = (  xjm_(1,1)*xjm_(2,2) - xjm_(2,1)*xjm_(1,2))/det;
@@ -571,7 +571,7 @@ BlitzMat Inverse(const BlitzMat& xjm_, const double det)
 template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE>
 void Sysmat(
-        DRT::ELEMENTS::XFluid3*           ele,           ///< the element those matrix is calculated
+        const DRT::ELEMENTS::XFluid3*     ele,           ///< the element those matrix is calculated
         const RCP<XFEM::InterfaceHandle>  ih,            ///< connection to the interface handler
         const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
         const std::vector<double>&        locval,        ///< nodal unknowns at n+1, i
@@ -590,15 +590,7 @@ void Sysmat(
     const int numnode = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
       
     // get node coordinates
-    DRT::Node** const nodes = ele->Nodes();
-    BlitzMat xyze_(3,numnode,blitz::ColumnMajorArray<2>());
-    for (int inode=0; inode<numnode; inode++)
-    {
-        const double* x = nodes[inode]->X();
-        xyze_(0,inode) = x[0];
-        xyze_(1,inode) = x[1];
-        xyze_(2,inode) = x[2];
-    }
+    const BlitzMat xyze_(DRT::UTILS::PositionArray(ele));
 
     // dead load in element nodes
     //////////////////////////////////////////////////// , BlitzMat edeadng_(BodyForce(ele->Nodes(),pseudotime));
@@ -770,7 +762,7 @@ void Sysmat(
             }
 
             // inverse of jacobian
-            const BlitzMat xji_(Inverse(xjm_, det));
+            const BlitzMat xji_(Inverse3x3(xjm_, det));
 
             // compute global derivates
             const BlitzMat derxy_(blitz::sum(xji_(i,k)*deriv_(k,j),k));
@@ -1614,18 +1606,10 @@ void Sysmat(
         // get node coordinates
         //TODO: get the right element
         //const RCP<DRT::Element> boundaryele = ih->GetBoundaryEle(cell->GetSurfaceEleGid());
-        DRT::Element* boundaryele = ih->GetBoundaryEle(0);
+        const DRT::Element* boundaryele = ih->GetBoundaryEle(0);
         //cout << (*boundaryele) << endl;
-        const int numnode_boundary = boundaryele->NumNode();
-        BlitzMat xyze_boundary(3,numnode_boundary,blitz::ColumnMajorArray<2>());
-        DRT::Node** const nodes = boundaryele->Nodes();
-        for (int inode=0; inode<numnode_boundary; inode++)
-        {
-            const double* x = nodes[inode]->X();
-            xyze_boundary(0,inode) = x[0];
-            xyze_boundary(1,inode) = x[1];
-            xyze_boundary(2,inode) = x[2];
-        }
+        
+        const BlitzMat xyze_boundary(DRT::UTILS::PositionArray(boundaryele));
 
         // integration loop
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
@@ -1653,13 +1637,11 @@ void Sysmat(
             // position of the gausspoint in physical coordinates
             const BlitzVec gauss_pos_xyz(blitz::sum(funct_boundary(j)*xyze_boundary(i,j),j));
       
-            // get transposed of the jacobian matrix d x / d \xi
-            //const BlitzMat xjm_(blitz::sum(deriv_(i,k)*xyze_(j,k),k));
+            // get jacobian matrix d x / d \xi
             const BlitzMat metric = computeMetricTensor(xyze_boundary,deriv_boundary);
             
             const double detmetric = sqrt(metric(0,0)*metric(1,1) - metric(0,1)*metric(1,0));
             const double fac = intpoints.qwgt[iquad]*detmetric*detcell;
-            //cout << "fac " << fac << endl;
 
             if (detmetric < 0.0)
             {
@@ -1680,49 +1662,45 @@ void Sysmat(
                     XFEM::Enrichment::approachFromPlus,
                     funct_,
                     enr_funct_);
-      
-            if (stress_unknowns_present)
-            {
-                // shape functions for element dofs
-                XFEM::ComputeEnrichedStressShapefunction(
-                        *ele,
-                        ih,
-                        dofman,
-                        Tauxx,
-                        gauss_pos_xyz,
-                        XFEM::Enrichment::approachFromPlus,
-                        funct_stress,
-                        enr_funct_stress);
-            }
+
+            // shape functions for element dofs
+            XFEM::ComputeEnrichedStressShapefunction(
+                    *ele,
+                    ih,
+                    dofman,
+                    Tauxx,
+                    gauss_pos_xyz,
+                    XFEM::Enrichment::approachFromPlus,
+                    funct_stress,
+                    enr_funct_stress);
                 
-            // get normal vector (in x coordinates) to surface element at integration point
-            const BlitzVec normalvec(computeNormalToBoundaryElement(deriv_boundary, xyze_boundary, posXiBoundary(0), posXiBoundary(1)));
-      
-            // get velocities (n+g,i) at integration point
-            const BlitzVec velint_(blitz::sum(enr_funct_(j)*evelnp(i,j),j));
-      
-            // get pressurrrrre
-            const double press = blitz::sum(enr_funct_*eprenp);
-
-            // get viscous stress unknowns
-            BlitzMat tau(3,3,blitz::ColumnMajorArray<2>());
-            tau(0,0) = blitz::sum(enr_funct_stress(_)*etau(0,_)); tau(0,1) = blitz::sum(enr_funct_stress(_)*etau(3,_)); tau(0,2) = blitz::sum(enr_funct_stress(_)*etau(4,_));
-            tau(1,0) = tau(0,1);                                  tau(1,1) = blitz::sum(enr_funct_stress(_)*etau(1,_)); tau(1,2) = blitz::sum(enr_funct_stress(_)*etau(5,_));
-            tau(2,0) = tau(0,2);                                  tau(2,1) = tau(1,2);                                  tau(2,2) = blitz::sum(enr_funct_stress(_)*etau(2,_));
-
             // perform integration for entire matrix and rhs
             // create vievs on the shape function arrays for easy handling in the assembly process
             const BlitzVec shp(enr_funct_);
             const BlitzVec shp_tau(enr_funct_stress);
+            
+            // get normal vector (in x coordinates) to surface element at integration point
+            const BlitzVec normalvec(computeNormalToBoundaryElement(deriv_boundary, xyze_boundary, posXiBoundary(0), posXiBoundary(1)));
+      
+            // get velocities (n+g,i) at integration point
+            const BlitzVec velint_(blitz::sum(shp(j)*evelnp(i,j),j));
+
+            // get viscous stress unknowns
+            BlitzMat tau(3,3,blitz::ColumnMajorArray<2>());
+            tau(0,0) = blitz::sum(shp_tau(_)*etau(0,_)); tau(0,1) = blitz::sum(shp_tau(_)*etau(3,_)); tau(0,2) = blitz::sum(shp_tau(_)*etau(4,_));
+            tau(1,0) = tau(0,1);                         tau(1,1) = blitz::sum(shp_tau(_)*etau(1,_)); tau(1,2) = blitz::sum(shp_tau(_)*etau(5,_));
+            tau(2,0) = tau(0,2);                         tau(2,1) = tau(1,2);                         tau(2,2) = blitz::sum(shp_tau(_)*etau(2,_));
+
+
 
             /*--------------------------------- now build single stiffness terms ---*/
 
             /*
-                           /                    \
-                          |                      |
-                          | Du  , (virt tau) * n |
-                          |                      |
-                           \                    /
+                           /                   \
+                          |                     |
+                          | (virt tau) * n , Du |
+                          |                     |
+                           \                   /
             */
             // i = x
             assembler.template Matrix<Tauxx,Velx>(shp_tau, fac*normalvec(0), shp);
@@ -1750,29 +1728,13 @@ void Sysmat(
             assembler.template Vector<Tauzy>(shp_tau, -fac*normalvec(1)*velint_(2));
             assembler.template Vector<Tauzz>(shp_tau, -fac*normalvec(2)*velint_(2));
             
-            /*
-                           /                \
-                          |                  |
-                        - | Du  , (virt p) n |
-                          |                  |
-                           \                /
-            */
-            assembler.template Matrix<Pres,Velx>(shp, -fac*normalvec(0), shp);
-            assembler.template Matrix<Pres,Vely>(shp, -fac*normalvec(1), shp);
-            assembler.template Matrix<Pres,Velz>(shp, -fac*normalvec(2), shp);
-            
-            const double u_times_n = blitz::sum(normalvec(i)*velint_(i));
-            assembler.template Vector<Pres>(shp, fac*u_times_n);            
-            
-            
-            
             // symmetric part from partial integration of stress term
             /*
-                           /            \
-                          |              |
-                        - | tau * n  , v |
-                          |              |
-                           \            /
+                           /           \
+                          |             |
+                        - | v , tau * n |
+                          |             |
+                           \           /
             */
             assembler.template Matrix<Velx,Tauxx>(shp, fac*normalvec(0), shp_tau);
             assembler.template Matrix<Velx,Tauxy>(shp, fac*normalvec(1), shp_tau);
@@ -1791,20 +1753,20 @@ void Sysmat(
             assembler.template Vector<Vely>(shp, -fac*tau_times_n(1));
             assembler.template Vector<Velz>(shp, -fac*tau_times_n(2));
             
-            /*
-                           /         \
-                          |           |
-                          | Dp n  , v |
-                          |           |
-                           \         /
-            */
-            assembler.template Matrix<Velx,Pres>(shp, -fac*normalvec(0), shp);
-            assembler.template Matrix<Vely,Pres>(shp, -fac*normalvec(1), shp);
-            assembler.template Matrix<Velz,Pres>(shp, -fac*normalvec(2), shp);
-            
-            assembler.template Vector<Velx>(shp, fac*normalvec(0)*press);
-            assembler.template Vector<Vely>(shp, fac*normalvec(1)*press);
-            assembler.template Vector<Velz>(shp, fac*normalvec(2)*press);  
+//            /*
+//                           /         \
+//                          |           |
+//                          | v , Dp n  |
+//                          |           |
+//                           \         /
+//            */
+//            assembler.template Matrix<Velx,Pres>(shp, -fac*normalvec(0), shp);
+//            assembler.template Matrix<Vely,Pres>(shp, -fac*normalvec(1), shp);
+//            assembler.template Matrix<Velz,Pres>(shp, -fac*normalvec(2), shp);
+//            
+//            assembler.template Vector<Velx>(shp, fac*normalvec(0)*press);
+//            assembler.template Vector<Vely>(shp, fac*normalvec(1)*press);
+//            assembler.template Vector<Velz>(shp, fac*normalvec(2)*press);  
 
         } // end loop over gauss points
     } // end loop over boundary integration cells
@@ -1814,8 +1776,8 @@ void Sysmat(
 }
   
 void callSysmat(
-        XFEM::AssemblyType assembly_type,
-        DRT::ELEMENTS::XFluid3* ele,
+        const XFEM::AssemblyType assembly_type,
+        const DRT::ELEMENTS::XFluid3* ele,
         const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager&    eleDofManager,
         const std::vector<double>&        locval,

@@ -228,7 +228,7 @@ bool XFEM::checkIfLineElement(
  |          into current coordinates                                    |
  *----------------------------------------------------------------------*/  
 void XFEM::elementToCurrentCoordinates(   
-    DRT::Element* element, 
+    const DRT::Element* element,
     Epetra_SerialDenseVector& xsi) 
 {
     const int numNodes = element->NumNode();
@@ -259,7 +259,7 @@ void XFEM::elementToCurrentCoordinates(
     
     for(int i=0; i<numNodes; i++)
     {
-        DRT::Node* node = element->Nodes()[i];
+        const DRT::Node* node = element->Nodes()[i];
         for(int j=0; j<3; j++)
             xsi[j] += node->X()[j] * funct(i);
     }
@@ -272,8 +272,8 @@ void XFEM::elementToCurrentCoordinates(
  |          into current coordinates                                    |
  *----------------------------------------------------------------------*/  
 blitz::Array<double, 1> XFEM::elementToCurrentCoordinates(   
-    DRT::Element* element, 
-    blitz::Array<double, 1>& eleCoord) 
+    const DRT::Element* element,
+    const blitz::Array<double, 1>& eleCoord) 
 {
     const int numNodes = element->NumNode();
     blitz::Array<double,1> funct(numNodes);
@@ -304,7 +304,7 @@ blitz::Array<double, 1> XFEM::elementToCurrentCoordinates(
     
     for(int i=0; i<numNodes; i++)
     {
-        DRT::Node* node = element->Nodes()[i];
+        const DRT::Node* node = element->Nodes()[i];
         for(int j=0; j<3; j++)
         	physCoord(j) += node->X()[j] * funct(i);
     }
@@ -318,7 +318,7 @@ blitz::Array<double, 1> XFEM::elementToCurrentCoordinates(
  |          into current coordinates                                    |
  *----------------------------------------------------------------------*/  
 void XFEM::elementToCurrentCoordinates(   
-    DRT::Element* 	element, 
+    const DRT::Element* 	element, 
     vector<double>& xsi) 
 {
 	const int dim = getDimension(element);
@@ -351,7 +351,7 @@ void XFEM::elementToCurrentCoordinates(
     
     for(int i=0; i<numNodes; i++)
     {
-        DRT::Node* node = element->Nodes()[i];
+        const DRT::Node* node = element->Nodes()[i];
         for(int j=0; j<3; j++)
             xsi[j] += node->X()[j] * funct(i);
     }
@@ -364,7 +364,7 @@ void XFEM::elementToCurrentCoordinates(
  |          into current coordinates                                    |
  *----------------------------------------------------------------------*/  
 void XFEM::elementToCurrentCoordinates(   
-    DRT::Element*                               surfaceElement, 
+    const DRT::Element*                         surfaceElement, 
     Epetra_SerialDenseVector&                   xsi,
     const vector<Epetra_SerialDenseVector>&     surfaceNodes)
 {
@@ -410,7 +410,7 @@ void XFEM::elementToCurrentCoordinates(
  |      into element coordinates                                        |
  *----------------------------------------------------------------------*/  
 void XFEM::currentToElementCoordinates(   
-    DRT::Element*               element, 
+    const DRT::Element*               element, 
     Epetra_SerialDenseVector&   xsi) 
 {
     
@@ -436,7 +436,7 @@ void XFEM::currentToElementCoordinates(
  |      into element coordinates  (vector<double>)                      |
  *----------------------------------------------------------------------*/  
 void XFEM::currentToElementCoordinates(   
-    DRT::Element*               element, 
+    const DRT::Element*               element, 
     vector<double>&   			xsiVector) 
 {
     
@@ -649,7 +649,7 @@ bool XFEM::isLineWithinXAABB(
  |  CLI:    checks if a position is within a given element   u.may 06/07|   
  *----------------------------------------------------------------------*/
 bool XFEM::checkPositionWithinElement(  
-    DRT::Element*                       element,
+    const DRT::Element*                       element,
     const Epetra_SerialDenseVector&     x)
 {
 
@@ -706,7 +706,7 @@ bool XFEM::checkPositionWithinElement(
  |  CLI:    checks if a node is within a given element       u.may 06/07|   
  *----------------------------------------------------------------------*/
 bool XFEM::checkPositionWithinElement(  
-    DRT::Element*                       element,
+    const DRT::Element*                       element,
     const Epetra_SerialDenseVector&     x,
     Epetra_SerialDenseVector&           xsi)
 {
@@ -773,7 +773,7 @@ bool XFEM::PositionWithinDiscretization(
     // loop all elements on this processor
     for (int i=0; i<dis->NumMyRowElements(); ++i)
     {
-        DRT::Element* ele = dis->lRowElement(i);
+        const DRT::Element* ele = dis->lRowElement(i);
         if (isPositionWithinXAABB(x, computeFastXAABB(ele)))
         {
             nodeWithinMesh = checkPositionWithinElement(ele, x);
@@ -810,7 +810,7 @@ bool XFEM::PositionWithinCondition(
     // loop all elements on this processor
     for (int i=0; i<cutterdis->NumMyRowElements(); ++i)
     {
-        DRT::Element* ele = cutterdis->lRowElement(i);
+        const DRT::Element* ele = cutterdis->lRowElement(i);
         if (isPositionWithinXAABB(x, computeFastXAABB(ele)))
         {
             nodeWithinMesh = checkPositionWithinElement(ele, x);
@@ -836,7 +836,7 @@ void XFEM::updateAForNWE(
     const int                   dim,
     Epetra_SerialDenseMatrix&   A,
     Epetra_SerialDenseVector&   xsi,
-    DRT::Element*               element)                                                  
+    const DRT::Element*         element)                                                  
 {   
     const int numNodes = element->NumNode();
     blitz::Array<double,2> deriv1(dim, numNodes, blitz::ColumnMajorArray<2>());
@@ -887,7 +887,7 @@ void XFEM::updateRHSForNWE(
     Epetra_SerialDenseVector&           b,
     Epetra_SerialDenseVector&           xsi,
     const Epetra_SerialDenseVector&     x,
-    DRT::Element*                       element)                                                  
+    const DRT::Element*                 element)                                                  
 {
     const int numNodes = element->NumNode();
     blitz::Array<double,1> funct(numNodes);
@@ -933,7 +933,7 @@ void XFEM::updateRHSForNWE(
  |          element for a given point in physical coordinates           |
  *----------------------------------------------------------------------*/
 bool XFEM::searchForNearestPointOnSurface(
-    DRT::Element*                       	surfaceElement,
+    const DRT::Element*                   	surfaceElement,
     const blitz::Array<double, 1>&     		physCoord,
     blitz::Array<double, 1>&           		eleCoord,
     blitz::Array<double, 1>&           		normal,
@@ -967,57 +967,48 @@ bool XFEM::searchForNearestPointOnSurface(
  |			surface element the returned distance is set to -1      	|                        
  *----------------------------------------------------------------------*/
 bool XFEM::checkPositionWithinSurfaceElement(
-    DRT::Element*                       	surfaceElement,
+    const DRT::Element*                   	surfaceElement,
     const blitz::Array<double, 1>&     		physCoord,
     blitz::Array<double, 1>&           		eleCoord
    	)
 {
 	bool nodeWithinElement = true;
-    int iter = 0;
-    const int maxiter = 20;
-    double residual = 1.0;
     
     blitz::firstIndex i;    // Placeholder for the first blitz array index
     blitz::secondIndex j;   // Placeholder for the second blitz array index
    								
-  	blitz::Array<double, 1> F(3);				F = 0;
-  	blitz::Array<double, 1> dx(2);				dx = 0;
-  	
-  	blitz::Array<double, 2> A(2,2,blitz::ColumnMajorArray<2>());			
-  	blitz::Array<double, 2> Jacobi(3,2,blitz::ColumnMajorArray<2>());
-  
   	eleCoord = 0;
-  	
-	// compute Jacobian, f and b
-	updateJacobianForMap3To2(Jacobi, eleCoord, surfaceElement);  
-	updateFForMap3To2(F, eleCoord, physCoord, surfaceElement);  
-	blitz::Array<double, 1> b(blitz::sum(-Jacobi(j,i)*F(j),j));
-           
-  	while(residual > TOL14)
+  	const int maxiter = 20;
+  	int iter = 0;
+  	while(iter < maxiter)
     {   
+  	    iter++;
+  	    
+        // compute Jacobian, f and b
+  	    const BlitzMat Jacobi(updateJacobianForMap3To2(eleCoord, surfaceElement));
+        const BlitzVec F(updateFForMap3To2(eleCoord, physCoord, surfaceElement));
+        BlitzVec b(blitz::sum(-Jacobi(j,i)*F(j),j));
+     
+        const double residual = sqrt(b(0)*b(0)+b(1)*b(1));
+        if (residual < TOL14)
+        {   
+            nodeWithinElement = true;
+            break;
+        }  
+  	    
         // compute system matrix A
+        blitz::Array<double, 2> A(2,2,blitz::ColumnMajorArray<2>());
   		updateAForMap3To2(A, Jacobi, F, eleCoord, surfaceElement);
   	
+  		blitz::Array<double, 1> dx(2);
+  		dx = 0;
         if(!gaussEliminationEpetra(A, b, dx))
         {
             nodeWithinElement = false;
             break;
         }   
            
-        eleCoord = eleCoord + dx;
-        
-        updateJacobianForMap3To2(Jacobi, eleCoord, surfaceElement);  
-		updateFForMap3To2(F, eleCoord, physCoord, surfaceElement);  
-   		b =  blitz::sum(-Jacobi(j,i)*F(j),j);
-   	 
-        residual = sqrt(b(0)*b(0)+b(1)*b(1));
-        iter++; 
-        
-        if(iter >= maxiter)
-        {   
-            nodeWithinElement = false;
-            break;
-        }   
+        eleCoord += dx;
     }
   
     //printf("iter = %d\n", iter);
@@ -1040,29 +1031,27 @@ bool XFEM::checkPositionWithinSurfaceElement(
  |          whether a point in the 3-dim physical space lies            |
  | 			on a surface element 										|                 
  *----------------------------------------------------------------------*/
-void XFEM::updateJacobianForMap3To2(   
-    blitz::Array<double, 2>& 		Jacobi,
-    const blitz::Array<double, 1>&	xsi,
-    DRT::Element*               	surfaceElement)                                                  
+BlitzMat XFEM::updateJacobianForMap3To2(   
+    const BlitzVec&	                xsi,
+    const DRT::Element*             surfaceElement)                                                  
 {   
-    const int numNodes = surfaceElement->NumNode();
-    blitz::Array<double,2> deriv1(2, numNodes, blitz::ColumnMajorArray<2>());
-    
+    BlitzMat Jacobi(3,2,blitz::ColumnMajorArray<2>());
     Jacobi = 0;
-   
-	shape_function_2D_deriv1(deriv1, xsi(0), xsi(1), surfaceElement->Shape());
-   
+    
+    const int numNodes = surfaceElement->NumNode();
+    const BlitzMat deriv1(shape_function_2D_deriv1(xsi(0), xsi(1), surfaceElement->Shape()));
     for(int inode=0; inode<numNodes; inode++) 
     {
         const double* x = surfaceElement->Nodes()[inode]->X();
         for(int isd=0; isd<3; isd++)
         {
-            const double nodalCoord = x[isd];
             for(int jsd=0; jsd<2; jsd++)
-            	Jacobi(isd, jsd) += nodalCoord * deriv1(jsd,inode);
-      
+            {
+            	Jacobi(isd, jsd) += x[isd] * deriv1(jsd,inode);
+            }
         }
-    }  
+    } 
+    return Jacobi;
 }
 
 
@@ -1072,19 +1061,16 @@ void XFEM::updateJacobianForMap3To2(
  |          for the computation, whether a point in the 3-dim physical 	|
  |			space lies on a surface element 							|                 
  *----------------------------------------------------------------------*/
-void XFEM::updateFForMap3To2(   
-    blitz::Array<double, 1>& 		F,
-    const blitz::Array<double, 1>&	xsi,
-    const blitz::Array<double, 1>&	x,
-    DRT::Element*               	surfaceElement)                                                  
+BlitzVec XFEM::updateFForMap3To2(   
+        const BlitzVec&	    xsi,
+        const BlitzVec&	    x,
+        const DRT::Element* surfaceElement)                                                  
 {   
-    const int numNodes = surfaceElement->NumNode();
-    blitz::Array<double,1> funct(numNodes);
-    
+    BlitzVec F(3);
     F = 0;
-   
-	shape_function_2D(funct, xsi(0), xsi(1), surfaceElement->Shape());
-   
+    
+    const int numNodes = surfaceElement->NumNode();
+    const BlitzVec funct(shape_function_2D(xsi(0), xsi(1), surfaceElement->Shape()));
     for(int inode=0; inode<numNodes; inode++) 
     {
         const double* coord = surfaceElement->Nodes()[inode]->X();
@@ -1093,6 +1079,7 @@ void XFEM::updateFForMap3To2(
     }   
     
     F -= x;
+    return F;
 }
 
 
@@ -1107,18 +1094,16 @@ void XFEM::updateAForMap3To2(
     const blitz::Array<double, 2>& 	Jacobi,
     const blitz::Array<double, 1>& 	F,
     const blitz::Array<double, 1>&	xsi,
-    DRT::Element*               	surfaceElement)                                                  
+    const DRT::Element*          	surfaceElement)                                                  
 {   
     const int numNodes = surfaceElement->NumNode();
     blitz::firstIndex i;    // Placeholder for the first blitz array index
     blitz::secondIndex j;   // Placeholder for the second blitz array index
     blitz::thirdIndex k;    // Placeholder for the third blitz array index
     
-    blitz::Array<double,2> deriv2(3, numNodes, blitz::ColumnMajorArray<2>());
+    const BlitzMat deriv2(shape_function_2D_deriv2(xsi(0), xsi(1), surfaceElement->Shape()));
 	blitz::Array<double, 3> tensor3Ord(3,2,2, blitz::ColumnMajorArray<3>());		
     tensor3Ord = 0;
-    
-	shape_function_2D_deriv2(deriv2, xsi(0), xsi(1), surfaceElement->Shape());
    
 	for(int inode=0; inode<numNodes; inode++) 	
 	{
@@ -1142,13 +1127,13 @@ void XFEM::updateAForMap3To2(
  |          XAABB for a given element                                   |
  *----------------------------------------------------------------------*/
 Epetra_SerialDenseMatrix XFEM::computeFastXAABB( 
-    DRT::Element* element)
+    const DRT::Element* element)
 {
     double  maxDistance;
     const int nsd = 3;
     Epetra_SerialDenseMatrix XAABB(nsd, 2);
     
-    DRT::Node* node = element->Nodes()[0];
+    const DRT::Node* node = element->Nodes()[0];
     for(int dim=0; dim<nsd; dim++)
     {
         XAABB(dim, 0) = node->X()[dim] - TOL7;
@@ -1157,7 +1142,7 @@ Epetra_SerialDenseMatrix XFEM::computeFastXAABB(
     
     for(int i=1; i<element->NumNode(); i++)
     {
-        DRT::Node* nodeEle = element->Nodes()[i];
+        const DRT::Node* nodeEle = element->Nodes()[i];
         for(int dim=0; dim<nsd; dim++)
         {
             XAABB(dim, 0) = std::min( XAABB(dim, 0), nodeEle->X()[dim] - TOL7);
