@@ -716,7 +716,7 @@ void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
 	/**********************************************************************/
 	Kteff = Kteff_new;
 	feff = feff_new;
-	LINALG::PrintSparsityToPostscript(*Kteff);
+	//LINALG::PrintSparsityToPostscript(*Kteff);
 	//exit(0);
 	
   return;
