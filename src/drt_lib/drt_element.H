@@ -293,8 +293,29 @@ public:
   \return Ptr to pointers to nodes of the element in local nodal ordering.
           Returns NULL if pointers to not exist.
   */
-  virtual Node** Nodes()
+  virtual inline Node** Nodes()
   { if (node_.size()) return &node_[0]; else return NULL; }
+  
+  
+  // mgee: change to this (as const and !const):
+  //virtual inline vector<DRT::Node*>& Nodes()
+  //{ return node_; }
+
+  /*!
+  \brief Get const vector of ptrs to nodes
+
+  \warning The pointers to the nodes are build in
+           DRT::Discretization::FillComplete. A standalone
+           element that has not been added to a discretization
+           (or the discretization has not been called FillComplete)
+           does not have pointers to nodes. In this case, the method returns
+           NULL.
+  \return Ptr to pointers to nodes of the element in local nodal ordering.
+          Returns NULL if pointers to not exist.
+  */
+  virtual inline const Node** Nodes() const
+  { if (node_.size()) return (const DRT::Node**)(&node_[0]); else return NULL; }
+
 
   /*!
   \brief Get vector of ptrs to the lines of this element
