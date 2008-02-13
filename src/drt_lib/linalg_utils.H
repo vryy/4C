@@ -38,6 +38,7 @@ using namespace Teuchos;
 */
 namespace LINALG
 {
+  // forward declaration
   class SparseOperator;
 
   /// return the first slot of a pair
@@ -124,54 +125,6 @@ namespace LINALG
   */
   void SymmetricEigen(Epetra_SerialDenseMatrix& A,
                       Epetra_SerialDenseVector& L,const int dim, const char eigv='N');
-
-  /*!
-  \brief Multiply two 2nd order tensors A x B and add the result to a
-   4th order symmetric material tensor in matrix notation
-
-  \param C (in/out): Material tangent matrix to be modified
-  \param AB (in)   : Scalar to multiply with A x B
-  \param A (in)    : Dense matrix (3 by 3) as 2nd order tensor A
-  \param B (in)    : Dense matrix (3 by 3) as 2nd order tensor B
-  \param ScalarThis(in): Scalar to multiply with C before adding A x B
-  */
-  void ElastSymTensorMultiply(Epetra_SerialDenseMatrix& C,
-                                   const double ScalarAB,
-                                   const Epetra_SerialDenseMatrix& A,
-                                   const Epetra_SerialDenseMatrix& B,
-                                   const double ScalarThis);
-
-  /*!
-  \brief Multiply two 2nd order tensors (A x B + B x A) and add the result to a
-   4th order symmetric material tensor in matrix notation
-
-  \param C (in/out): Material tangent matrix to be modified
-  \param AB (in)   : Scalar to multiply with (A x B + B x A)
-  \param A (in)    : Dense matrix (3 by 3) as 2nd order tensor A
-  \param B (in)    : Dense matrix (3 by 3) as 2nd order tensor B
-  \param ScalarThis(in): Scalar to multiply with C before adding (A x B + B x A)
-  */
-  void ElastSymTensorMultiplyAddSym(Epetra_SerialDenseMatrix& C,
-                                   const double ScalarAB,
-                                   const Epetra_SerialDenseMatrix& A,
-                                   const Epetra_SerialDenseMatrix& B,
-                                   const double ScalarThis);
-
-  /*!
-  \brief Multiply two 2nd order tensors A o B and add the result to a
-   4th order symmetric material tensor in matrix notation
-
-  \param C (in/out): Material tangent matrix to be modified
-  \param AB (in)   : Scalar to multiply with A o B
-  \param A (in)    : Dense matrix (3 by 3) as 2nd order tensor A
-  \param B (in)    : Dense matrix (3 by 3) as 2nd order tensor B
-  \param ScalarThis(in): Scalar to multiply with C before adding A o B
-  */
-  void ElastSymTensor_o_Multiply(Epetra_SerialDenseMatrix& C,
-                                   const double ScalarAB,
-                                   const Epetra_SerialDenseMatrix& A,
-                                   const Epetra_SerialDenseMatrix& B,
-                                   const double ScalarThis);
   /*!
   \brief Invert a symmetric dim*dim square matrix
 
@@ -311,8 +264,11 @@ namespace LINALG
   \param B          (in/out) : Matrix to be added to (must have Filled()==false)
   \param scalarB    (in)     : scaling factor for B
   */
-  inline void Add(const RCP<Epetra_CrsMatrix> A, const bool transposeA, const double scalarA,
-           RCP<Epetra_CrsMatrix> B, const double scalarB)
+  inline void Add(const RCP<Epetra_CrsMatrix> A, 
+                  const bool transposeA, 
+                  const double scalarA,
+                  RCP<Epetra_CrsMatrix> B, 
+                  const double scalarB)
   { LINALG::Add(*A,transposeA,scalarA,*B,scalarB); return; }
 
   /*!
@@ -456,10 +412,10 @@ namespace LINALG
                               and 0.0 everywhere else
   */
   void ApplyDirichlettoSystem(RCP<SparseOperator>              A,
-                              RefCountPtr<Epetra_Vector>&      x,
-                              RefCountPtr<Epetra_Vector>&      b,
-                              const RefCountPtr<Epetra_Vector> dbcval,
-                              const RefCountPtr<Epetra_Vector> dbctoggle);
+                              RCP<Epetra_Vector>&      x,
+                              RCP<Epetra_Vector>&      b,
+                              const RCP<Epetra_Vector> dbcval,
+                              const RCP<Epetra_Vector> dbctoggle);
 
   /*!
   \brief Apply dirichlet boundary condition to a linear system of equations
@@ -471,10 +427,10 @@ namespace LINALG
   \param dbctoggle (in)     : vector holding 1.0 where dirichlet should be applied
                               and 0.0 everywhere else
   */
-  void ApplyDirichlettoSystem(RefCountPtr<Epetra_Vector>&      x,
-                              RefCountPtr<Epetra_Vector>&      b,
-                              const RefCountPtr<Epetra_Vector> dbcval,
-                              const RefCountPtr<Epetra_Vector> dbctoggle);
+  void ApplyDirichlettoSystem(RCP<Epetra_Vector>&      x,
+                              RCP<Epetra_Vector>&      b,
+                              const RCP<Epetra_Vector> dbcval,
+                              const RCP<Epetra_Vector> dbctoggle);
 
 
   /*!
@@ -495,13 +451,13 @@ namespace LINALG
   \param A21       : on exit matrix block A21
   \param A22       : on exit matrix block A22
   */
-  bool SplitMatrix2x2(RefCountPtr<Epetra_CrsMatrix> A,
-                      RefCountPtr<Epetra_Map>& A11rowmap,
-                      RefCountPtr<Epetra_Map>& A22rowmap,
-                      RefCountPtr<Epetra_CrsMatrix>& A11,
-                      RefCountPtr<Epetra_CrsMatrix>& A12,
-                      RefCountPtr<Epetra_CrsMatrix>& A21,
-                      RefCountPtr<Epetra_CrsMatrix>& A22);
+  bool SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
+                      RCP<Epetra_Map>& A11rowmap,
+                      RCP<Epetra_Map>& A22rowmap,
+                      RCP<Epetra_CrsMatrix>& A11,
+                      RCP<Epetra_CrsMatrix>& A12,
+                      RCP<Epetra_CrsMatrix>& A21,
+                      RCP<Epetra_CrsMatrix>& A22);
 
   /*!
   \brief split a matrix into a 2x2 block system
