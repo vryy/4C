@@ -43,8 +43,8 @@ Maintainer: Axel Gerstenberger
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 XFluidImplicitTimeInt::XFluidImplicitTimeInt(
-		RefCountPtr<DRT::Discretization> fluiddis,
-		RefCountPtr<DRT::Discretization> cutterdis,
+		RCP<DRT::Discretization> fluiddis,
+		RCP<DRT::Discretization> cutterdis,
 		LINALG::Solver&       solver,
 		ParameterList&        params,
 		IO::DiscretizationWriter& output,
@@ -1169,7 +1169,7 @@ void XFluidImplicitTimeInt::Output()
     //only perform stress calculation when output is needed
     if (writestresses_)
     {
-     RefCountPtr<Epetra_Vector> traction = CalcStresses();
+     RCP<Epetra_Vector> traction = CalcStresses();
      output_.WriteVector("traction",traction);
     }
 
@@ -1218,7 +1218,7 @@ void XFluidImplicitTimeInt::Output()
     //only perform stress calculation when output is needed
     if (writestresses_)
     {
-     RefCountPtr<Epetra_Vector> traction = CalcStresses();
+     RCP<Epetra_Vector> traction = CalcStresses();
      output_.WriteVector("traction",traction);
     }
 
@@ -1756,7 +1756,7 @@ void XFluidImplicitTimeInt::SolveStationaryProblem()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-RefCountPtr<Epetra_Vector> XFluidImplicitTimeInt::CalcStresses()
+RCP<Epetra_Vector> XFluidImplicitTimeInt::CalcStresses()
 {
      ParameterList eleparams;
      // set action for elements
@@ -1768,7 +1768,7 @@ RefCountPtr<Epetra_Vector> XFluidImplicitTimeInt::CalcStresses()
      const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
      // create vector (+ initialization with zeros)
-     RefCountPtr<Epetra_Vector> integratedshapefunc = LINALG::CreateVector(*dofrowmap,true);
+     RCP<Epetra_Vector> integratedshapefunc = LINALG::CreateVector(*dofrowmap,true);
 
      // call loop over elements to evaluate the condition
      discret_->ClearState();

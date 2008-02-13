@@ -67,8 +67,8 @@ public:
 
   */
   XFluidImplicitTimeInt(
-		  RefCountPtr<DRT::Discretization> dis,
-		  RefCountPtr<DRT::Discretization> cutterdis,
+		  RCP<DRT::Discretization> dis,
+		  RCP<DRT::Discretization> cutterdis,
 		  LINALG::Solver&       solver,
 		  ParameterList&        params,
 		  IO::DiscretizationWriter& fluidoutput,
@@ -178,7 +178,7 @@ public:
   \brief calculate stresses
 
   */
-  RefCountPtr<Epetra_Vector> CalcStresses();
+  RCP<Epetra_Vector> CalcStresses();
 
   /*!
   \brief read restart data
@@ -223,8 +223,8 @@ protected:
   XFluidImplicitTimeInt operator = (const XFluidImplicitTimeInt& old);
   XFluidImplicitTimeInt (const XFluidImplicitTimeInt& old);
 
-  RefCountPtr<DRT::Discretization> discret_;
-  RefCountPtr<DRT::Discretization> cutterdiscret_;
+  RCP<DRT::Discretization> discret_;
+  RCP<DRT::Discretization> cutterdiscret_;
   LINALG::Solver&               solver_;
   ParameterList&                params_;
   IO::DiscretizationWriter&         output_;
@@ -263,57 +263,57 @@ protected:
 
   /// system matrices: standard (stabilized) matrix and (fine-scale)
   /// subgrid-viscosity matrix
-  RefCountPtr<LINALG::SparseMatrix> sysmat_;
-  RefCountPtr<LINALG::SparseMatrix> sysmat_sv_;
+  RCP<LINALG::SparseMatrix> sysmat_;
+  RCP<LINALG::SparseMatrix> sysmat_sv_;
 
   /// scale-separation matrix for VM3-based solution approach
-  RefCountPtr<LINALG::SparseMatrix> scalesep_;
+  RCP<LINALG::SparseMatrix> scalesep_;
 
   /// toggle vector indicating which dofs have Dirichlet BCs
-  RefCountPtr<Epetra_Vector>    dirichtoggle_;
+  RCP<Epetra_Vector>    dirichtoggle_;
 
-  RefCountPtr<Epetra_Vector>    invtoggle_;
+  RCP<Epetra_Vector>    invtoggle_;
 
   /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
-  RefCountPtr<Epetra_Vector>    zeros_;
+  RCP<Epetra_Vector>    zeros_;
 
   /// the vector containing body and surface forces
-  RefCountPtr<Epetra_Vector>    neumann_loads_;
+  RCP<Epetra_Vector>    neumann_loads_;
 
   /// rhs: standard (stabilized) residual vector (rhs for the incremental form),
   /// (fine-scale) subgrid-viscosity residual and scaling vector
-  RefCountPtr<Epetra_Vector>    residual_;
-  RefCountPtr<Epetra_Vector>    residual_sv_;
-  RefCountPtr<Epetra_Vector>    sugrvisc_;
+  RCP<Epetra_Vector>    residual_;
+  RCP<Epetra_Vector>    residual_sv_;
+  RCP<Epetra_Vector>    sugrvisc_;
 
   /// true (rescaled) residual vector without zeros at dirichlet positions
-  RefCountPtr<Epetra_Vector>    trueresidual_;
+  RCP<Epetra_Vector>    trueresidual_;
 
   /// Nonlinear iteration increment vector
-  RefCountPtr<Epetra_Vector>    incvel_;
+  RCP<Epetra_Vector>    incvel_;
 
   /// accelerations at time n and n-1
-  RefCountPtr<Epetra_Vector>    accn_;
-  RefCountPtr<Epetra_Vector>    accnm_;
+  RCP<Epetra_Vector>    accn_;
+  RCP<Epetra_Vector>    accnm_;
 
   /// velocities and pressures at time n+1, n and n-1
-  RefCountPtr<Epetra_Vector>    velnp_;
-  RefCountPtr<Epetra_Vector>    veln_;
-  RefCountPtr<Epetra_Vector>    velnm_;
+  RCP<Epetra_Vector>    velnp_;
+  RCP<Epetra_Vector>    veln_;
+  RCP<Epetra_Vector>    velnm_;
 
   /// displacemets at time n+1, n and n-1
-  RefCountPtr<Epetra_Vector>    dispnp_;
-  RefCountPtr<Epetra_Vector>    dispn_;
-  RefCountPtr<Epetra_Vector>    dispnm_;
+  RCP<Epetra_Vector>    dispnp_;
+  RCP<Epetra_Vector>    dispn_;
+  RCP<Epetra_Vector>    dispnm_;
 
-  RefCountPtr<Epetra_Vector>    gridv_;
+  RCP<Epetra_Vector>    gridv_;
 
   // histvector --- a linear combination of velnm, veln (BDF)
   //                or veln, accn (One-Step-Theta)
-  RefCountPtr<Epetra_Vector>    hist_;
+  RCP<Epetra_Vector>    hist_;
 
   // solid displacement (might be moved somewhere else later)
-  RefCountPtr<Epetra_Vector>    soliddispnp_;
+  RCP<Epetra_Vector>    soliddispnp_;
 
 
   // Extractor used for convergence check
@@ -323,32 +323,32 @@ protected:
 
   // Vectors used for convergence check
   // ----------------------------------
-  RefCountPtr<Epetra_Map>       velrowmap_;
-  RefCountPtr<Epetra_Map>       prerowmap_;
+  RCP<Epetra_Map>       velrowmap_;
+  RCP<Epetra_Map>       prerowmap_;
 
-  RefCountPtr<Epetra_Vector>    onlyvel;
-  RefCountPtr<Epetra_Vector>    onlypre;
+  RCP<Epetra_Vector>    onlyvel;
+  RCP<Epetra_Vector>    onlypre;
 
 
   // time measurement
   // ----------------
-  RefCountPtr<Time> timedyntot_     ;
-  RefCountPtr<Time> timedyninit_    ;
-  RefCountPtr<Time> timedynloop_    ;
-  RefCountPtr<Time> timenlnloop_    ;
-  RefCountPtr<Time> timeeleloop_    ;
-  RefCountPtr<Time> timeapplydirich_;
-  RefCountPtr<Time> timesolver_     ;
-  RefCountPtr<Time> timeout_        ;
+  RCP<Time> timedyntot_     ;
+  RCP<Time> timedyninit_    ;
+  RCP<Time> timedynloop_    ;
+  RCP<Time> timenlnloop_    ;
+  RCP<Time> timeeleloop_    ;
+  RCP<Time> timeapplydirich_;
+  RCP<Time> timesolver_     ;
+  RCP<Time> timeout_        ;
 
-  RefCountPtr<TimeMonitor> tm0_ref_ ;
-  RefCountPtr<TimeMonitor> tm1_ref_ ;
-  RefCountPtr<TimeMonitor> tm2_ref_ ;
-  RefCountPtr<TimeMonitor> tm3_ref_ ;
-  RefCountPtr<TimeMonitor> tm4_ref_ ;
-  RefCountPtr<TimeMonitor> tm5_ref_ ;
-  RefCountPtr<TimeMonitor> tm6_ref_ ;
-  RefCountPtr<TimeMonitor> tm7_ref_ ;
+  RCP<TimeMonitor> tm0_ref_ ;
+  RCP<TimeMonitor> tm1_ref_ ;
+  RCP<TimeMonitor> tm2_ref_ ;
+  RCP<TimeMonitor> tm3_ref_ ;
+  RCP<TimeMonitor> tm4_ref_ ;
+  RCP<TimeMonitor> tm5_ref_ ;
+  RCP<TimeMonitor> tm6_ref_ ;
+  RCP<TimeMonitor> tm7_ref_ ;
 
   /// density extracted from element material
   double density_;
