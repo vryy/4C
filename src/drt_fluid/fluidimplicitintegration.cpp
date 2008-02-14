@@ -290,7 +290,7 @@ void FluidImplicitTimeInt::Integrate()
     }
 
     // continue with the final time integration
-    this->TimeLoop();
+    TimeLoop();
   }
 
   // print the results of time measurements
@@ -341,13 +341,13 @@ void FluidImplicitTimeInt::TimeLoop()
       // -----------------------------------------------------------------
       //                     solve nonlinear equation
       // -----------------------------------------------------------------
-      this->NonlinearSolve();
+      NonlinearSolve();
       break;
     case 1:
       // -----------------------------------------------------------------
       //                     solve linearised equation
       // -----------------------------------------------------------------
-      this->LinearSolve();
+      LinearSolve();
       break;
     default:
       dserror("Type of dynamics unknown!!");
@@ -387,7 +387,7 @@ void FluidImplicitTimeInt::TimeLoop()
     //  accn_  = (velnp_-veln_) / (dt)
     //
     // -------------------------------------------------------------------
-    this->TimeUpdate();
+    TimeUpdate();
 
     // time measurement --- start TimeMonitor tm8
     tm7_ref_ = rcp(new TimeMonitor(*timeout_ ));
@@ -405,12 +405,12 @@ void FluidImplicitTimeInt::TimeLoop()
     // -------------------------------------------------------------------
     // evaluate error for test flows with analytical solutions
     // -------------------------------------------------------------------
-    this->EvaluateErrorComparedToAnalyticalSol();
+    EvaluateErrorComparedToAnalyticalSol();
 
     // -------------------------------------------------------------------
     //                         output of solution
     // -------------------------------------------------------------------
-    this->Output();
+    Output();
 
     // time measurement --- stop TimeMonitor tm8
     tm7_ref_ = null;
@@ -418,7 +418,7 @@ void FluidImplicitTimeInt::TimeLoop()
     // -------------------------------------------------------------------
     //                    calculate lift'n'drag forces
     // -------------------------------------------------------------------
-    this->LiftDrag();
+    LiftDrag();
 
     // -------------------------------------------------------------------
     //                       update time step sizes
@@ -434,7 +434,7 @@ void FluidImplicitTimeInt::TimeLoop()
   tm2_ref_ = null;
 
   return;
-} // FluidImplicitTimeInt::TimeIntegrateFromTo
+} // FluidImplicitTimeInt::TimeLoop
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
