@@ -320,7 +320,7 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
     /*   /                                                \
          |  2 N_x,xx + N_x,yy + N_y,xy + N_x,zz + N_z,xz  |
        1 |                                                |
-     - - |  N_y,xx + N_x,yx + 2 N_y,yy + N_z,yz + N_y,zz  |
+       - |  N_y,xx + N_x,yx + 2 N_y,yy + N_z,yz + N_y,zz  |
        2 |                                                |
          |  N_z,xx + N_x,zx + N_y,zy + N_z,yy + 2 N_z,zz  |
          \                                                /
@@ -328,15 +328,15 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
          with N_x .. x-line of N
          N_y .. y-line of N                                             */
 
-    viscs2_(0,0,_) = - 0.5 * (2.0 * derxy2_(0,_) + derxy2_(1,_) + derxy2_(2,_));
-    viscs2_(0,1,_) = - 0.5 *  derxy2_(3,_);
-    viscs2_(0,2,_) = - 0.5 *  derxy2_(4,_);
-    viscs2_(1,0,_) = - 0.5 *  derxy2_(3,_);
-    viscs2_(1,1,_) = - 0.5 * (derxy2_(0,_) + 2.0 * derxy2_(1,_) + derxy2_(2,_));
-    viscs2_(1,2,_) = - 0.5 *  derxy2_(5,_);
-    viscs2_(2,0,_) = - 0.5 *  derxy2_(4,_);
-    viscs2_(2,1,_) = - 0.5 *  derxy2_(5,_);
-    viscs2_(2,2,_) = - 0.5 * (derxy2_(0,_) + derxy2_(1,_) + 2.0 * derxy2_(2,_));
+    viscs2_(0,0,_) = 0.5 * (2.0 * derxy2_(0,_) + derxy2_(1,_) + derxy2_(2,_));
+    viscs2_(0,1,_) = 0.5 *  derxy2_(3,_);
+    viscs2_(0,2,_) = 0.5 *  derxy2_(4,_);
+    viscs2_(1,0,_) = 0.5 *  derxy2_(3,_);
+    viscs2_(1,1,_) = 0.5 * (derxy2_(0,_) + 2.0 * derxy2_(1,_) + derxy2_(2,_));
+    viscs2_(1,2,_) = 0.5 *  derxy2_(5,_);
+    viscs2_(2,0,_) = 0.5 *  derxy2_(4,_);
+    viscs2_(2,1,_) = 0.5 *  derxy2_(5,_);
+    viscs2_(2,2,_) = 0.5 * (derxy2_(0,_) + derxy2_(1,_) + 2.0 * derxy2_(2,_));
 
     /* pressure gradient term derxy, funct without or with integration   *
      * by parts, respectively                                            */
