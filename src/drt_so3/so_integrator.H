@@ -18,8 +18,8 @@ written by: Alexander Volf
 #if defined D_SOH8 || D_SOTET
 #ifdef CCADISCRET
 
-#ifndef SO_INTEGRATOR_H_
-#define SO_INTEGRATOR_H_
+#ifndef SO_INTEGRATOR_H
+#define SO_INTEGRATOR_H
 
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_Vector.h"
