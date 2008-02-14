@@ -946,17 +946,17 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
                     |               \  /             |
                      \                              /
             */
-            estif(vi*4 + 3, ui*4)     += 2.0*visc*ttimetauMp*(derxy_(0, vi)*viscs2_(0, 0, ui)
+            estif(vi*4 + 3, ui*4)     -= 2.0*visc*ttimetauMp*(derxy_(0, vi)*viscs2_(0, 0, ui)
                                                               +
                                                               derxy_(1, vi)*viscs2_(0, 1, ui)
                                                               +
                                                               derxy_(2, vi)*viscs2_(0, 2, ui)) ;
-            estif(vi*4 + 3, ui*4 + 1) += 2.0*visc*ttimetauMp*(derxy_(0, vi)*viscs2_(0, 1, ui)
+            estif(vi*4 + 3, ui*4 + 1) -= 2.0*visc*ttimetauMp*(derxy_(0, vi)*viscs2_(0, 1, ui)
                                                               +
                                                               derxy_(1, vi)*viscs2_(1, 1, ui)
                                                               +
                                                               derxy_(2, vi)*viscs2_(1, 2, ui)) ;
-            estif(vi*4 + 3, ui*4 + 2) += 2.0*visc*ttimetauMp*(derxy_(0, vi)*viscs2_(0, 2, ui)
+            estif(vi*4 + 3, ui*4 + 2) -= 2.0*visc*ttimetauMp*(derxy_(0, vi)*viscs2_(0, 2, ui)
                                                               +
                                                               derxy_(1, vi)*viscs2_(1, 2, ui)
                                                               +
@@ -1107,15 +1107,15 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
                  |               \  /    \ (i)        /     |
                   \                                        /
             */
-            estif(vi*4, ui*4)         += 2.0*visc*ttimetauM*conv_c_(vi)*viscs2_(0, 0, ui) ;
-            estif(vi*4, ui*4 + 1)     += 2.0*visc*ttimetauM*conv_c_(vi)*viscs2_(0, 1, ui) ;
-            estif(vi*4, ui*4 + 2)     += 2.0*visc*ttimetauM*conv_c_(vi)*viscs2_(0, 2, ui) ;
-            estif(vi*4 + 1, ui*4)     += 2.0*visc*ttimetauM*conv_c_(vi)*viscs2_(0, 1, ui) ;
-            estif(vi*4 + 1, ui*4 + 1) += 2.0*visc*ttimetauM*conv_c_(vi)*viscs2_(1, 1, ui) ;
-            estif(vi*4 + 1, ui*4 + 2) += 2.0*visc*ttimetauM*conv_c_(vi)*viscs2_(1, 2, ui) ;
-            estif(vi*4 + 2, ui*4)     += 2.0*visc*ttimetauM*conv_c_(vi)*viscs2_(0, 2, ui) ;
-            estif(vi*4 + 2, ui*4 + 1) += 2.0*visc*ttimetauM*conv_c_(vi)*viscs2_(1, 2, ui) ;
-            estif(vi*4 + 2, ui*4 + 2) += 2.0*visc*ttimetauM*conv_c_(vi)*viscs2_(2, 2, ui) ;
+            estif(vi*4, ui*4)         -= 2.0*visc*ttimetauM*conv_c_(vi)*viscs2_(0, 0, ui) ;
+            estif(vi*4, ui*4 + 1)     -= 2.0*visc*ttimetauM*conv_c_(vi)*viscs2_(0, 1, ui) ;
+            estif(vi*4, ui*4 + 2)     -= 2.0*visc*ttimetauM*conv_c_(vi)*viscs2_(0, 2, ui) ;
+            estif(vi*4 + 1, ui*4)     -= 2.0*visc*ttimetauM*conv_c_(vi)*viscs2_(0, 1, ui) ;
+            estif(vi*4 + 1, ui*4 + 1) -= 2.0*visc*ttimetauM*conv_c_(vi)*viscs2_(1, 1, ui) ;
+            estif(vi*4 + 1, ui*4 + 2) -= 2.0*visc*ttimetauM*conv_c_(vi)*viscs2_(1, 2, ui) ;
+            estif(vi*4 + 2, ui*4)     -= 2.0*visc*ttimetauM*conv_c_(vi)*viscs2_(0, 2, ui) ;
+            estif(vi*4 + 2, ui*4 + 1) -= 2.0*visc*ttimetauM*conv_c_(vi)*viscs2_(1, 2, ui) ;
+            estif(vi*4 + 2, ui*4 + 2) -= 2.0*visc*ttimetauM*conv_c_(vi)*viscs2_(2, 2, ui) ;
 
 
           } // vi
@@ -1177,15 +1177,15 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
                  |               \  /    \ G        /     |
                   \                                      /
               */
-              estif(vi*4, ui*4)         += 2.0*visc*ttimetauM*viscs2_(0, 0, ui)*conv_g_(vi) ;
-              estif(vi*4, ui*4 + 1)     += 2.0*visc*ttimetauM*viscs2_(0, 1, ui)*conv_g_(vi) ;
-              estif(vi*4, ui*4 + 2)     += 2.0*visc*ttimetauM*viscs2_(0, 2, ui)*conv_g_(vi) ;
-              estif(vi*4 + 1, ui*4)     += 2.0*visc*ttimetauM*viscs2_(0, 1, ui)*conv_g_(vi) ;
-              estif(vi*4 + 1, ui*4 + 1) += 2.0*visc*ttimetauM*viscs2_(1, 1, ui)*conv_g_(vi) ;
-              estif(vi*4 + 1, ui*4 + 2) += 2.0*visc*ttimetauM*viscs2_(1, 2, ui)*conv_g_(vi) ;
-              estif(vi*4 + 2, ui*4)     += 2.0*visc*ttimetauM*viscs2_(0, 2, ui)*conv_g_(vi) ;
-              estif(vi*4 + 2, ui*4 + 1) += 2.0*visc*ttimetauM*viscs2_(1, 2, ui)*conv_g_(vi) ;
-              estif(vi*4 + 2, ui*4 + 2) += 2.0*visc*ttimetauM*viscs2_(2, 2, ui)*conv_g_(vi) ;
+              estif(vi*4, ui*4)         -= 2.0*visc*ttimetauM*viscs2_(0, 0, ui)*conv_g_(vi) ;
+              estif(vi*4, ui*4 + 1)     -= 2.0*visc*ttimetauM*viscs2_(0, 1, ui)*conv_g_(vi) ;
+              estif(vi*4, ui*4 + 2)     -= 2.0*visc*ttimetauM*viscs2_(0, 2, ui)*conv_g_(vi) ;
+              estif(vi*4 + 1, ui*4)     -= 2.0*visc*ttimetauM*viscs2_(0, 1, ui)*conv_g_(vi) ;
+              estif(vi*4 + 1, ui*4 + 1) -= 2.0*visc*ttimetauM*viscs2_(1, 1, ui)*conv_g_(vi) ;
+              estif(vi*4 + 1, ui*4 + 2) -= 2.0*visc*ttimetauM*viscs2_(1, 2, ui)*conv_g_(vi) ;
+              estif(vi*4 + 2, ui*4)     -= 2.0*visc*ttimetauM*viscs2_(0, 2, ui)*conv_g_(vi) ;
+              estif(vi*4 + 2, ui*4 + 1) -= 2.0*visc*ttimetauM*viscs2_(1, 2, ui)*conv_g_(vi) ;
+              estif(vi*4 + 2, ui*4 + 2) -= 2.0*visc*ttimetauM*viscs2_(2, 2, ui)*conv_g_(vi) ;
 
               /*
 
@@ -1401,15 +1401,15 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
                      |               \ (i) /    \          /     |
                       \                                         /
               */
-              estif(vi*4, ui*4)         += -2.0*visc*ttimetauM*funct_(ui)*visc_old_(0)*derxy_(0, vi) ;
-              estif(vi*4, ui*4 + 1)     += -2.0*visc*ttimetauM*funct_(ui)*visc_old_(0)*derxy_(1, vi) ;
-              estif(vi*4, ui*4 + 2)     += -2.0*visc*ttimetauM*funct_(ui)*visc_old_(0)*derxy_(2, vi) ;
-              estif(vi*4 + 1, ui*4)     += -2.0*visc*ttimetauM*funct_(ui)*visc_old_(1)*derxy_(0, vi) ;
-              estif(vi*4 + 1, ui*4 + 1) += -2.0*visc*ttimetauM*funct_(ui)*visc_old_(1)*derxy_(1, vi) ;
-              estif(vi*4 + 1, ui*4 + 2) += -2.0*visc*ttimetauM*funct_(ui)*visc_old_(1)*derxy_(2, vi) ;
-              estif(vi*4 + 2, ui*4)     += -2.0*visc*ttimetauM*funct_(ui)*visc_old_(2)*derxy_(0, vi) ;
-              estif(vi*4 + 2, ui*4 + 1) += -2.0*visc*ttimetauM*funct_(ui)*visc_old_(2)*derxy_(1, vi) ;
-              estif(vi*4 + 2, ui*4 + 2) += -2.0*visc*ttimetauM*funct_(ui)*visc_old_(2)*derxy_(2, vi) ;
+              estif(vi*4, ui*4)         -= 2.0*visc*ttimetauM*funct_(ui)*visc_old_(0)*derxy_(0, vi) ;
+              estif(vi*4, ui*4 + 1)     -= 2.0*visc*ttimetauM*funct_(ui)*visc_old_(0)*derxy_(1, vi) ;
+              estif(vi*4, ui*4 + 2)     -= 2.0*visc*ttimetauM*funct_(ui)*visc_old_(0)*derxy_(2, vi) ;
+              estif(vi*4 + 1, ui*4)     -= 2.0*visc*ttimetauM*funct_(ui)*visc_old_(1)*derxy_(0, vi) ;
+              estif(vi*4 + 1, ui*4 + 1) -= 2.0*visc*ttimetauM*funct_(ui)*visc_old_(1)*derxy_(1, vi) ;
+              estif(vi*4 + 1, ui*4 + 2) -= 2.0*visc*ttimetauM*funct_(ui)*visc_old_(1)*derxy_(2, vi) ;
+              estif(vi*4 + 2, ui*4)     -= 2.0*visc*ttimetauM*funct_(ui)*visc_old_(2)*derxy_(0, vi) ;
+              estif(vi*4 + 2, ui*4 + 1) -= 2.0*visc*ttimetauM*funct_(ui)*visc_old_(2)*derxy_(1, vi) ;
+              estif(vi*4 + 2, ui*4 + 2) -= 2.0*visc*ttimetauM*funct_(ui)*visc_old_(2)*derxy_(2, vi) ;
 
 
               /* supg stabilisation: bodyforce part, linearisation of test function */
@@ -1678,17 +1678,17 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
         {
 
           /* viscous stabilisation */
-          eforce(vi*4)     += -two_visc_timefac*(res_old_(0)*viscs2_(0, 0, vi)
+          eforce(vi*4)     -= two_visc_timefac*(res_old_(0)*viscs2_(0, 0, vi)
                                                    +
                                                    res_old_(1)*viscs2_(0, 1, vi)
                                                    +
                                                    res_old_(2)*viscs2_(0, 2, vi)) ;
-          eforce(vi*4 + 1) += -two_visc_timefac*(res_old_(0)*viscs2_(0, 1, vi)
+          eforce(vi*4 + 1) -= two_visc_timefac*(res_old_(0)*viscs2_(0, 1, vi)
                                                    +
                                                    res_old_(1)*viscs2_(1, 1, vi)
                                                    +
                                                    res_old_(2)*viscs2_(1, 2, vi)) ;
-          eforce(vi*4 + 2) += -two_visc_timefac*(res_old_(0)*viscs2_(0, 2, vi)
+          eforce(vi*4 + 2) -= two_visc_timefac*(res_old_(0)*viscs2_(0, 2, vi)
                                                    +
                                                    res_old_(1)*viscs2_(1, 2, vi)
                                                    +
