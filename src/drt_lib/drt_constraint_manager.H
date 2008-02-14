@@ -46,8 +46,7 @@ public:
 	  \brief Standard Constructor
 
 	  \param disc (in): Discretization
-	  \param disp (in): current displacement to compute initial constraint volume
-
+	  \param disp (in): current displacement to compute initial constraints
 	  */
 
 	  ConstrManager(DRT::Discretization& disc,
@@ -66,9 +65,9 @@ public:
 
 	  //! @name Public Member Functions
 	  /*!
-	    \brief Change stiffness matrix and force vector according to the volume constraint.
+	    \brief Change stiffness matrix and force vector according to the constraints.
 	    Values of lagrange multiplier are taken from intern variable.
-	    Difference between current and prescribed volume is calculated and stored as well.
+	    Difference between current and prescribed values is calculated and stored as well.
 
 	    \param time (in):        time at end of time step
 	    \param disp (in):        Displacement at end of time step
@@ -81,7 +80,7 @@ public:
                                           RefCountPtr<LINALG::SparseMatrix> stiff);
 
 	  /*!
-	   \brief Return norm of difference between actual and prescribed volumes
+	   \brief Return norm of difference between actual and constraint values
 	  */
 	  double GetErrorNorm()
 	  {
@@ -89,7 +88,7 @@ public:
 	  };
 
 	  /*!
-	  	   \brief Return number of constrained volumes
+	  	   \brief Return number of constraints
 	  */
 	  int GetNumberOfConstraints()
 	  {
@@ -106,7 +105,7 @@ public:
 	  };
 
 	  /*!
-	  	  	   \brief Scale lagrange multiplier increment by a double d
+	  	  	   \brief Scale lagrange multiplier by a double d
 	  */
 	  void ScaleLagrMult(double d)
 	  	  {
@@ -132,12 +131,12 @@ public:
 	  };
 
 	  /*!
-	  	  	   \brief Compute difference between current and prescribed volume at a given time and a given displacement
+	  	   \brief Compute difference between current and prescribed values at a given time and a given displacement
 	  */
 	  void ComputeError(double time,RCP<Epetra_Vector> disp);
 
 	  /*!
-	  	   \brief Return differences between prescribed and actual value of volume number i
+	  	   \brief Return differences between prescribed and actual value of constraint number i
 	  */
 	  double GetError(int i)
 	  {
@@ -159,7 +158,7 @@ public:
 	  };
 
 	  /*!
-	  	  	   \brief Return lagrange multiplier for volume i
+	  	  	   \brief Return lagrange multiplier for constraint i
 	  */
 	  double GetLagrMult(int i)
 	  {
@@ -190,7 +189,7 @@ public:
 	  };
 
 	  /*!
-	   \brief Computes inner product of constr multivector times lagrange multiplier increment
+	   \brief Computes inner product of constraint multivector times lagrange multiplier increment
 	   vector as required for the uzawa algorithm to compute new displacement increment
 
 	   \param dotprod (out):		resulting value of B^T * Delta lambda
@@ -198,7 +197,7 @@ public:
 	  void ComputeConstrTimesLagrIncr(RCP<Epetra_Vector> dotprod);
 
 	  /*!
-	    \brief Return inner product of constr multivector times displacement increment
+	    \brief Return inner product of constraint multivector times displacement increment
 
 	    \param disi (in)		:		displacement increment Delta u
 	    \param dotprod (out) 	:		resulting value of B * Delta u
@@ -210,6 +209,9 @@ public:
 	   */
 	  void PrintMonitorValues();
 
+	  /*
+	     \brief Compute values described by a monitor boundary condition
+	  */
 	  void ComputeMonitorValues(RCP<Epetra_Vector> disp);
 	  //@}
 private:
@@ -217,25 +219,24 @@ private:
 	  //! name@ Private Member Functions
 	  //methods used by constructor and other public functions
 	  /*!
-	    \brief synchronize processors after evaluating constraints
-
+	    \brief synchronize processors after evaluating constraints by summing up values returned by elements
+	    over all processors
 	  */
 
 	  void SynchronizeSumConstraint(ParameterList& params,
 				RCP<Epetra_SerialDenseVector>& vect,const char* resultstr, const int numID, const int minID);
 
 	  /*!
-	    \brief synchronize processors after evaluating constraints
-
+	    \brief synchronize processors after evaluating constraints by minimizing values returned woith a parameterlist
+	    over all processors
 	  */
 
 	  void SynchronizeMinConstraint(ParameterList& params,
 				RCP<Epetra_SerialDenseVector>& vect,const char* resultstr);
+	  
 	  /*!
-	      \brief Setup separate dofrowmaps for any condition ID and initialize lagrange multiplier
-
+	      \brief Setup number of constraint ID's by evaluating the parameterlist returned by elements 
 	  */
-
 	  void ManageIDs(ParameterList& params,int& minID, int& maxID, int& numID);
 	  //@}
 

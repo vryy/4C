@@ -1156,7 +1156,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   fresm_->Norm2(&fresmnorm);
 
   double constrnorm=ConstrMan_->GetErrorNorm();
-  int numConstrVol=ConstrMan_->GetNumberOfConstraints() ;
+  int numConstr=ConstrMan_->GetNumberOfConstraints() ;
   Epetra_Time timer(discret_.Comm());
   timer.ResetStartTime();
   bool print_unconv = true;
@@ -1184,7 +1184,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     double norm_uzawa;
     double norm_uzawa_alt;
     double quotient;
-    double norm_vol_uzawa;
+    double norm_constr_uzawa;
     int numiter_uzawa=0;
     //counter used for adaptivity
     int count_paramadapt=1;
@@ -1192,7 +1192,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     ConstrMan_->ScaleLagrIncr(0.0);
 
     RCP<Epetra_Vector> constrVecWeight=LINALG::CreateVector(*dofrowmap,true);
-    RCP<Epetra_SerialDenseVector> dotprod= rcp(new Epetra_SerialDenseVector(numConstrVol));
+    RCP<Epetra_SerialDenseVector> dotprod= rcp(new Epetra_SerialDenseVector(numConstr));
 
     // Compute residual of the uzawa algorithm
 
@@ -1208,17 +1208,17 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   	    uzawa_res.Multiply(1.0,*invtoggle_,rescopy,0.0);
   	}
   	uzawa_res.Norm2(&norm_uzawa);
-  	Epetra_SerialDenseVector vol_res(numConstrVol);
+  	Epetra_SerialDenseVector constr_res(numConstr);
   	ConstrMan_->ComputeConstrTimesDisi(*disi_,dotprod);
-  	for (int foo = 0; foo < numConstrVol; ++foo)
+  	for (int foo = 0; foo < numConstr; ++foo)
   	{
-  	  vol_res[foo]=(*dotprod)[foo]+ConstrMan_->GetError(foo);
+  	  constr_res[foo]=(*dotprod)[foo]+ConstrMan_->GetError(foo);
   	}
-  	norm_vol_uzawa=vol_res.Norm2();
+  	norm_constr_uzawa=constr_res.Norm2();
   	quotient =1;
     //Solve one iteration step with augmented lagrange
   	//Since we calculate displacement norm as well, at least one step has to be taken
-    while (((norm_uzawa > tolres/10 or norm_vol_uzawa>tolconstr/10)
+    while (((norm_uzawa > tolres/10 or norm_constr_uzawa>tolconstr/10)
     		and numiter_uzawa < maxiterUzawa) or numiter_uzawa<1)
     {
 
@@ -1251,13 +1251,13 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 	  	  }
 	  	  norm_uzawa_alt=norm_uzawa;
 	  	  uzawa_res.Norm2(&norm_uzawa);
-	  	  Epetra_SerialDenseVector vol_res(numConstrVol);
+	  	  Epetra_SerialDenseVector constr_res(numConstr);
 
-	  	  for (int foo = 0; foo < numConstrVol; ++foo)
+	  	  for (int foo = 0; foo < numConstr; ++foo)
 	  	  {
-	  		  vol_res[foo]=(*dotprod)[foo]+ConstrMan_->GetError(foo);
+	  		  constr_res[foo]=(*dotprod)[foo]+ConstrMan_->GetError(foo);
 	  	  }
-	      norm_vol_uzawa=vol_res.Norm2();
+	      norm_constr_uzawa=constr_res.Norm2();
 
 	      //-------------Adapt Uzawa parameter--------------
 	      // For a constant parameter the quotient of two successive residual norms

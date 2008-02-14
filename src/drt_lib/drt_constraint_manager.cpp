@@ -117,7 +117,7 @@ actdisc_(discr)
 
 /*----------------------------------------------------------------------*
 |(public)														tk 11/07|
-|Compute difference between current volume and prescribed volume.  		|
+|Compute difference between current and prescribed values.		  		|
 |Change Stiffnessmatrix and internal force vector						|
 *-----------------------------------------------------------------------*/
 
@@ -193,6 +193,10 @@ void ConstrManager::StiffnessAndInternalForces(
 	return;
 }
 
+/*----------------------------------------------------------------------*
+|(public)														tk 01/08|
+|Compute difference between current and prescribed values.		  		|
+*-----------------------------------------------------------------------*/
 void ConstrManager::ComputeError(double time,RCP<Epetra_Vector> disp)
 {
 	actvalues_->Scale(0.0);
@@ -218,6 +222,10 @@ void ConstrManager::ComputeError(double time,RCP<Epetra_Vector> disp)
     return;
 }
 
+/*----------------------------------------------------------------------*
+|(public)														tk 01/08|
+|Update Lagrange increment according to linear uzawa algorithm.  		|
+*-----------------------------------------------------------------------*/
 void ConstrManager::UpdateLagrIncr(double factor, Epetra_SerialDenseVector vect)
 {
 	for (int i=0;i < numConstrID_; i++)
@@ -226,7 +234,10 @@ void ConstrManager::UpdateLagrIncr(double factor, Epetra_SerialDenseVector vect)
 	}
 	return;
 }
-
+/*----------------------------------------------------------------------*
+|(public)														tk 01/08|
+|Add scaled error of constraint to Lagrange multiplier.					|
+*-----------------------------------------------------------------------*/
 void ConstrManager::UpdateLagrMult(double factor)
 {
 	for (int i=0;i < numConstrID_; i++)
@@ -236,6 +247,10 @@ void ConstrManager::UpdateLagrMult(double factor)
 	return;
 }
 
+/*----------------------------------------------------------------------*
+|(public)														tk 01/08|
+|Add Lagrange increment to Lagrange multiplier.					  		|
+*-----------------------------------------------------------------------*/
 void ConstrManager::UpdateLagrMult()
 {
 	for (int i=0;i < numConstrID_; i++)
@@ -245,6 +260,11 @@ void ConstrManager::UpdateLagrMult()
 	return;
 }
 
+/*----------------------------------------------------------------------*
+|(public)														tk 01/08|
+|Compute matrix-vector-product of matrix of constraint conditions with	|
+|lagrange increment as needed for uzawa algorithm						|
+*-----------------------------------------------------------------------*/
 void ConstrManager::ComputeConstrTimesLagrIncr(RCP<Epetra_Vector> dotprod)
 {
 	dotprod->PutScalar(0.0);
@@ -255,6 +275,11 @@ void ConstrManager::ComputeConstrTimesLagrIncr(RCP<Epetra_Vector> dotprod)
 	return;
 }
 
+/*--------------------------------------------------------------------------*
+|(public)														tk 01/08	|
+|Compute matrix-vector-product of matrix of constraint conditions with		|
+|displacement increment as needed to compute residual of uzawa algorithm	|
+*---------------------------------------------------------------------------*/
 void ConstrManager::ComputeConstrTimesDisi(Epetra_Vector disi, RCP<Epetra_SerialDenseVector> dotprod)
 {
 
@@ -267,6 +292,10 @@ void ConstrManager::ComputeConstrTimesDisi(Epetra_Vector disi, RCP<Epetra_Serial
 	return;
 }
 
+/*----------------------------------------------------------------------*
+|(public)														tk 01/08|
+|Compute values defined to keep	track of.								|
+*-----------------------------------------------------------------------*/
 void ConstrManager::ComputeMonitorValues(RCP<Epetra_Vector> disp)
 {
 	monitorvalues_->Scale(0.0);
@@ -286,7 +315,10 @@ void ConstrManager::ComputeMonitorValues(RCP<Epetra_Vector> disp)
     }
 	return;
 }
-
+/*----------------------------------------------------------------------*
+|(public)														tk 01/08|
+|Print monitored values													|
+*-----------------------------------------------------------------------*/
 void ConstrManager::PrintMonitorValues()
 {
 	for (int i = 0; i < numMonitorID_; ++i)
