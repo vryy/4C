@@ -139,6 +139,17 @@ void dyn_fluid_drt()
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
 
   // -------------------------------------------------------------------
+  // create a second solver for SIMPLER preconditioner if chosen from input
+  // -------------------------------------------------------------------
+  if (getIntegralValue<int>(fdyn,"SIMPLER"))
+  {
+    ParameterList& p = solveparams->sublist("SIMPLER");
+    RCP<ParameterList> params = rcp(&p,false);
+    LINALG::Solver s(params,actdis->Comm(),allfiles.out_err);
+    s.TranslateSolverParameters(*params,&solv[genprob.numfld]);
+  }
+
+  // -------------------------------------------------------------------
   // set parameters in list required for all schemes
   // -------------------------------------------------------------------
   ParameterList fluidtimeparams;
