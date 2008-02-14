@@ -418,7 +418,13 @@ void FluidImplicitTimeInt::TimeLoop()
     // -------------------------------------------------------------------
     //                    calculate lift'n'drag forces
     // -------------------------------------------------------------------
-    LiftDrag();
+    int liftdrag = params_.get<int>("liftdrag");
+  
+    if(liftdrag == 0); // do nothing, we don't want lift & drag
+    if(liftdrag == 1)
+      dserror("lift & drag evaluation by stresses is not implemented. Go for nodeforce instead");
+    if(liftdrag == 2)
+      LiftDrag();
 
     // -------------------------------------------------------------------
     //                       update time step sizes
