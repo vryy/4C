@@ -2234,62 +2234,62 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
         ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
 
         // general
-        cout << "Stabilisation type         : ";
+        cout << "Stabilization type         : ";
         cout << stabparams->get<string>("STABTYPE");
         cout << &endl;
 
-        // time dependent fine scales
+        // time-dependent subgrid scales
         cout << "                             ";
-        cout << stabparams->get<string>("RVMM_TDS")<< &endl;
+        cout << stabparams->get<string>("TDS")<< &endl;
         cout << &endl;
 
-        // inertia term with consistency check for quasistatic subscales
-        if(stabparams->get<string>("RVMM_TDS") == "quasistatic_subscales")
+        // transient term with consistency check for quasistatic subgrid scales
+        if(stabparams->get<string>("TDS") == "quasistatic")
         {
-          if(stabparams->get<string>("RVMM_INERTIA")=="+(sacc,v)")
+          if(stabparams->get<string>("TRANSIENT")=="yes_transient")
           {
-            dserror("The quasistatic version supports only GLS_0 or USFEM_0 type stabilisation,\nso please drop the inertia stabilisation term in this case.");
+            dserror("The quasistatic version of the residual-based stabilization currently does not support the incorporation of the transient term.");
           }
         }
         cout << "                             ";
-        cout << "INERTIA         = ";
-        cout << stabparams->get<string>("RVMM_INERTIA");
+        cout << "TRANSIENT         = ";
+        cout << stabparams->get<string>("TRANSIENT");
         cout << &endl;
 
-        // supg stabilisation?
+        // supg stabilization?
         cout <<  "                             ";
         cout << "SUPG            = ";
-        cout << stabparams->get<string>("RVMM_SUPG")           ;
+        cout << stabparams->get<string>("SUPG")           ;
         cout << &endl;
 
-        // pspg stabilisation?
+        // pspg stabilization?
         cout <<  "                             ";
         cout << "PSPG            = ";
-        cout << stabparams->get<string>("RVMM_PSPG")           ;
+        cout << stabparams->get<string>("PSPG")           ;
         cout << &endl;
 
-        // least squares continuity stabilisation?
-        cout <<  "                             ";
-        cout << "CSTAB           = ";
-        cout << stabparams->get<string>("RVMM_CSTAB")          ;
-        cout << &endl;
-
-        // viscous stabilisation?
+        // viscous stabilization?
         cout <<  "                             ";
         cout << "VSTAB           = ";
-        cout << stabparams->get<string>("RVMM_VSTAB")          ;
+        cout << stabparams->get<string>("VSTAB")          ;
+        cout << &endl;
+
+        // least-squares continuity stabilization?
+        cout <<  "                             ";
+        cout << "CSTAB           = ";
+        cout << stabparams->get<string>("CSTAB")          ;
         cout << &endl;
 
         // resvmm turbulence modeling, cross-stress part?
         cout <<  "                             ";
         cout << "CROSS-STRESS    = ";
-        cout << stabparams->get<string>("RVMM_CROSS-STRESS")   ;
+        cout << stabparams->get<string>("CROSS-STRESS")   ;
         cout << &endl;
 
-        // resvmm turbulence modeling, reynolds-stress part?
+        // resvmm turbulence modeling, Reynolds-stress part?
         cout <<  "                             ";
         cout << "REYNOLDS-STRESS = ";
-        cout << stabparams->get<string>("RVMM_REYNOLDS-STRESS");
+        cout << stabparams->get<string>("REYNOLDS-STRESS");
         cout << &endl;
         cout << &endl;
       }

@@ -259,8 +259,8 @@ void FluidImplicitTimeInt::Integrate()
     {
       if(stabparams->get<string>("TRANSIENT")=="yes_transient")
       {
-        dserror("The quasistatic version cof the residual-based stabilization currently does not support the incorporation of the transient term.");
-        }
+        dserror("The quasistatic version of the residual-based stabilization currently does not support the incorporation of the transient term.");
+      }
     }
     cout <<  "                             " << "TRANSIENT       = " << stabparams->get<string>("TRANSIENT")      <<"\n";
     cout <<  "                             " << "SUPG            = " << stabparams->get<string>("SUPG")           <<"\n";
