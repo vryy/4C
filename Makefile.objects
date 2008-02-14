@@ -1102,7 +1102,6 @@ OBJS_INTERSECTION = src/drt_xfem/predicates.o \
                     src/drt_xfem/intersection.o \
                     src/drt_xfem/interface.o \
                     src/drt_xfem/enrichment_utils.o \
-                    src/drt_xfem/drt_xelement.o \
                     src/drt_xfem/xdofmapcreation.o
 #               time adaptivity
 OBJS_DRT_TIMADA = src/drt_timada/timeadaptivity.o \
