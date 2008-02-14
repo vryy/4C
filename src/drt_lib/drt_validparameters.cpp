@@ -516,7 +516,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &fdyn);
 
   setStringToIntegralParameter("LIFTDRAG","No",
-                               "Calculate lift and drag forces along specified lines",
+                               "Calculate lift and drag forces along specified boundary",
                                tuple<std::string>(
                                  "No",
                                  "no",
