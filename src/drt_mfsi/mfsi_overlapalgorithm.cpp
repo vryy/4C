@@ -387,6 +387,8 @@ void MFSI::OverlapAlgorithm::SetupSysMat(Thyra::DefaultBlockedLinearOp<double>& 
 
   Teuchos::RCP<Epetra_CrsMatrix> s = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(StructureField()->SysMat());
 
+  //LINALG::PrintSparsityToPostscript(*s);
+
   // split fluid matrix
 
   Teuchos::RCP<Epetra_CrsMatrix> fii;
@@ -498,10 +500,16 @@ void MFSI::OverlapAlgorithm::AddFluidInterface(double scale,
       if (iter==permfluidstructcolmap_.end())
         dserror("gid %d not found", perm_gid);
       int index = iter->second;
-      double value = Values[j]*scale;
-      err = s->SumIntoGlobalValues(structgid, 1, &value, &index);
-      if (err)
-        dserror("SumIntoGlobalValues error: %d", err);
+
+      // There might be zeros on Dirichlet lines that are not included in the
+      // structure matrix graph. Ignore them.
+      if (Values[j]!=0)
+      {
+        double value = Values[j]*scale;
+        err = s->SumIntoGlobalValues(structgid, 1, &value, &index);
+        if (err)
+          dserror("SumIntoGlobalValues error: %d", err);
+      }
     }
   }
 }
