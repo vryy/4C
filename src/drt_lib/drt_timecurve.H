@@ -23,12 +23,12 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_RefCountPtr.hpp>
 
 #include "drt_dserror.H"
+#include "drt_parser.H"
 
 extern "C"
 {
 #include "../pss_full/pss_parser.h"
 }
-
 
 namespace DRT {
 namespace UTILS {
@@ -197,6 +197,9 @@ namespace UTILS {
 
     /// expression syntax tree
     _ST_NODE* expr_;
+
+    /// parsed expression as syntax tree
+    DRT::Parser<double> parexpr_;
   };
 
 
@@ -288,8 +291,8 @@ namespace UTILS {
     friend std::ostream& operator<<(std::ostream& out, const TimeCurveManager& manager);
   };
 
-}
-}
+}  // end namespace UTILS
+}  // end namespace DRT
 
-#endif
-#endif
+#endif  // DRT_TIMECURVE_H
+#endif  // CCADISCRET

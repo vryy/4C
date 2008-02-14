@@ -22,9 +22,9 @@ Maintainer: Ulrich Kuettler
 #include <cstdlib>
 #include <iostream>
 
+#include "drt_parser.H"
 #include "drt_timecurve.H"
 #include "drt_dserror.H"
-
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -406,13 +406,11 @@ DRT::UTILS::BloodTimeSlice::BloodTimeSlice(double period, double flowrate, int p
 /*----------------------------------------------------------------------*/
 double DRT::UTILS::BloodTimeSlice::f(double t)
 {
-
-
   const int DataLength=points_;
  //  double EvenCoefficient[DataLength/2]={0};
-//   double OddCoefficient[DataLength/2]={0};
-//   double SampleNumber[DataLength]={0};
-   double EvenCoefficient[31]={0};
+ //  double OddCoefficient[DataLength/2]={0};
+ //  double SampleNumber[DataLength]={0};
+  double EvenCoefficient[31]={0};
   double OddCoefficient[31]={0};
   double SampleNumber[60]={0};
   double fac;
@@ -420,27 +418,35 @@ double DRT::UTILS::BloodTimeSlice::f(double t)
 
   // printf("%d\n",DataLength);
 
-  for (int p=0;p<DataLength;p++){
+  for (int p=0; p<DataLength; p++)
+  {
     SampleNumber[p]=ArrayLength_[p]*flowrate_;
-      }
+  }
 
-  for (int p=0; p<=DataLength/2; p++){
-   EvenCoefficient[p] = 0;
-   OddCoefficient[p] = 0;
+  for (int p=0; p<=DataLength/2; p++)
+  {
+    EvenCoefficient[p] = 0;
+    OddCoefficient[p] = 0;
 
-   for (int num=0; num<=DataLength-1; num++){
-     EvenCoefficient[p] = EvenCoefficient[p]+2/C*SampleNumber[num]*cos(2*PI*p*(num+1)/C);
-     OddCoefficient[p] = OddCoefficient[p]+2/C*SampleNumber[num]*sin(2*PI*p*(num+1)/C);
-   }
-   //  printf("%3d : % f  % f\n", p, EvenCoefficient[p], OddCoefficient[p]);
- }
+    for (int num=0; num<=DataLength-1; num++)
+    {
+      EvenCoefficient[p] = EvenCoefficient[p]
+                         + 2/C*SampleNumber[num]*cos(2*PI*p*(num+1)/C);
+      OddCoefficient[p] = OddCoefficient[p]
+                        + 2/C*SampleNumber[num]*sin(2*PI*p*(num+1)/C);
+    }
+    //  printf("%3d : % f  % f\n", p, EvenCoefficient[p], OddCoefficient[p]);
+  }
 
-EvenCoefficient[DataLength/2] = EvenCoefficient[DataLength/2]/2;
-OddCoefficient[DataLength/2] = 0;
-fac = EvenCoefficient[0]/2;
+  EvenCoefficient[DataLength/2] = EvenCoefficient[DataLength/2]/2;
+  OddCoefficient[DataLength/2] = 0;
+  fac = EvenCoefficient[0]/2;
 
-  for (int h=1; h<=DataLength/2; h++){
-    fac = fac+EvenCoefficient[h]*cos(2*PI*h*t/period_)+OddCoefficient[h]*sin(2*PI*h*t/period_);
+  for (int h=1; h<=DataLength/2; h++)
+  {
+    fac = fac
+        + EvenCoefficient[h]*cos(2*PI*h*t/period_)
+        + OddCoefficient[h]*sin(2*PI*h*t/period_);
   }
 
   return fac;
@@ -448,12 +454,12 @@ fac = EvenCoefficient[0]/2;
 
 
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 DRT::UTILS::ExprTimeSlice::ExprTimeSlice(double begin, double end, char* buf)
   : TimeSlice(begin,end),
-    expr_(pss_parse(buf))
+    expr_(pss_parse(buf)),
+    parexpr_(DRT::Parser<double>(string(buf)))
 {
 }
 
@@ -463,6 +469,7 @@ DRT::UTILS::ExprTimeSlice::ExprTimeSlice(double begin, double end, char* buf)
 DRT::UTILS::ExprTimeSlice::~ExprTimeSlice()
 {
   pss_parse_cleanup(expr_);
+  pexpr_.~Parser();
 }
 
 
@@ -471,6 +478,8 @@ DRT::UTILS::ExprTimeSlice::~ExprTimeSlice()
 double DRT::UTILS::ExprTimeSlice::f(double t)
 {
   dsassert(contains(t), "wrong time slice called");
+  //cout << "old style " << pss_evaluate_curve(expr_,t)
+  //     << ", new style " << parexpr_.EvaluateCurve(t) << endl;
   return pss_evaluate_curve(expr_,t);
 }
 
