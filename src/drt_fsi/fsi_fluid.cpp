@@ -198,7 +198,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Fluid::RelaxationSolve(Teuchos::RCP<Epetra_Vect
   LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,relax_,dirichtoggle_);
 
   //-------solve for residual displacements to correct incremental displacements
-  solver_->Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,true);
+  solver_->Solve(sysmat_->Matrix(),incvel_,residual_,true,true);
 
   // and now we need the reaction forces
 
