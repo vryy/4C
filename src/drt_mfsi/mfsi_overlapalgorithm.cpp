@@ -420,7 +420,7 @@ void MFSI::OverlapAlgorithm::SetupSysMat(Thyra::DefaultBlockedLinearOp<double>& 
   // transform fluid interface matrix to structure interface and add it to
   // structure matrix
 
-  AddFluidInterface(scale*Dt(),fgg,s);
+  AddFluidInterface(scale/Dt(),fgg,s);
 
   // build block matrix
 
@@ -441,7 +441,7 @@ void MFSI::OverlapAlgorithm::SetupSysMat(Thyra::DefaultBlockedLinearOp<double>& 
   mat.setBlock(1,0,Thyra::nonconstEpetraLinearOp(ConvertFigColmap(fig,
                                                                   fluidstructcolmap_,
                                                                   s->DomainMap(),
-                                                                  Dt())));
+                                                                  1./Dt())));
 
   mat.setBlock(1,1,Thyra::nonconstEpetraLinearOp(fii));
 
