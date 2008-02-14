@@ -522,9 +522,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "no",
                                  "Yes",
                                  "yes",
-                                 "Stress",
-                                 "STRESS",
-                                 "stress",
                                  "Nodeforce",
                                  "NODEFORCE",
                                  "nodeforce"
@@ -532,11 +529,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(
                                  FLUID_DYNAMIC::ld_none,
                                  FLUID_DYNAMIC::ld_none,
-                                 FLUID_DYNAMIC::ld_stress,
-                                 FLUID_DYNAMIC::ld_stress,
-                                 FLUID_DYNAMIC::ld_stress,
-                                 FLUID_DYNAMIC::ld_stress,
-                                 FLUID_DYNAMIC::ld_stress,
+                                 FLUID_DYNAMIC::ld_nodeforce,
+                                 FLUID_DYNAMIC::ld_nodeforce,
                                  FLUID_DYNAMIC::ld_nodeforce,
                                  FLUID_DYNAMIC::ld_nodeforce,
                                  FLUID_DYNAMIC::ld_nodeforce
