@@ -469,7 +469,6 @@ DRT::UTILS::ExprTimeSlice::ExprTimeSlice(double begin, double end, char* buf)
 DRT::UTILS::ExprTimeSlice::~ExprTimeSlice()
 {
   pss_parse_cleanup(expr_);
-  pexpr_.~Parser();
 }
 
 
