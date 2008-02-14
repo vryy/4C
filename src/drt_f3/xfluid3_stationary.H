@@ -615,7 +615,7 @@ void Sysmat(
         gaussrule = ele->GetGaussrule();
     }
     
-    LocalAssembler<DISTYPE, ASSTYPE> assembler(dofman, estif, eforce);
+    const LocalAssembler<DISTYPE, ASSTYPE> assembler(dofman, estif, eforce);
     
     blitz::Range _  = blitz::Range::all();
     

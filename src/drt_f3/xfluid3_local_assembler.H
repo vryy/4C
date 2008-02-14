@@ -55,7 +55,7 @@ class LocalAssembler
 {
 public:
     
-    LocalAssembler(
+    explicit LocalAssembler(
             const XFEM::ElementDofManager&    dofman,
             BlitzMat& estif,
             BlitzVec& eforce
@@ -142,7 +142,7 @@ class LocalAssembler<DISTYPE, XFEM::standard_assembly>
 {
 public:
     
-    LocalAssembler(
+    explicit LocalAssembler(
             const XFEM::ElementDofManager&    dofman,
             BlitzMat&                         estif,
             BlitzVec&                         eforce
