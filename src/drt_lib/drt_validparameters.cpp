@@ -776,7 +776,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   DoubleParameter("CHANNEL_L_TAU",0.0,"Used for normalisation of the wall normal distance in the Van \nDriest Damping function. May be taken from the output of \nthe apply_mesh_stretching.pl preprocessing script.",&fdyn_turbu);
 
-  DoubleParameter("CHANNEL_AMPLITUDE_INITIAL_DISTURBANCE",0.1,"Max. amplitude of the random disturbance in percent of the initial value in mean flow direction.",&fdyn_turbu);
+  DoubleParameter("CHAN_AMPL_INIT_DIST",0.1,"Max. amplitude of the random disturbance in percent of the initial value in mean flow direction.",&fdyn_turbu);
 
   IntParameter("SAMPLING_START",1,"Time step after when sampling shall be started",&fdyn_turbu);
   IntParameter("SAMPLING_STOP",1,"Time step when sampling shall be stopped",&fdyn_turbu);

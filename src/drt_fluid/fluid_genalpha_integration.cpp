@@ -1572,7 +1572,7 @@ void FluidGenAlphaIntegration::SetInitialFlowField(
             ==
             "channel_flow_of_height_2")
         {
-          perc = params_.sublist("TURBULENCE MODEL").get<double>("CHANNEL_AMPLITUDE_INITIAL_DISTURBANCE");
+          perc = params_.sublist("TURBULENCE MODEL").get<double>("CHAN_AMPL_INIT_DIST");
         }
 
         // out to screen
