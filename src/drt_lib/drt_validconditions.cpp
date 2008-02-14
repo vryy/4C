@@ -424,7 +424,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   std::vector<Teuchos::RCP<ConditionComponent> > liftdragcomponents;
 
   liftdragcomponents.push_back(Teuchos::rcp(new IntConditionComponent("label")));
-  liftdragcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("centerCoord",3)));
+  liftdragcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("centerCoord",3)));
 
   Teuchos::RCP<ConditionDefinition> lineliftdrag =
     Teuchos::rcp(new ConditionDefinition("DESIGN FLUID LINE LIFT&DRAG",
