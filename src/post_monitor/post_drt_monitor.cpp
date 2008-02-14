@@ -173,7 +173,8 @@ void MonWriter::WriteMonFile(PostProblem& problem, string& infieldtype, int node
     outfile << "# control information: nodal coordinates   ";
     outfile << "x = " << mynode->X()[0] << "    ";
     outfile << "y = " << mynode->X()[1] << "    ";
-    outfile << "z = " << mynode->X()[2] << "\n";
+    if (dim > 2) outfile << "z = " << mynode->X()[2];
+    outfile << "\n";
     outfile << "#\n";
 
     WriteTableHead(outfile,dim);
@@ -380,7 +381,7 @@ void StructMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::ve
   outfile << "   " << result.step() << "    " << result.time() << "  ";
 
   // do output for velocity and pressure
-  for(unsigned i=0; i < gdof.size()-1; ++i)
+  for(unsigned i=0; i < gdof.size(); ++i)
   {
     int lid = dispmap.LID(gdof[i]);
     outfile << (*resvec)[lid] << "   ";
@@ -391,7 +392,7 @@ void StructMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::ve
   const Epetra_BlockMap& velmap = resvec->Map();
 
   // do output for velocity
-  for(unsigned i=0; i < gdof.size()-1; ++i)
+  for(unsigned i=0; i < gdof.size(); ++i)
   {
     int lid = velmap.LID(gdof[i]);
     outfile << (*resvec)[lid] << "   ";
@@ -401,8 +402,8 @@ void StructMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::ve
   resvec = result.read_result("acceleration");
   const Epetra_BlockMap& accmap = resvec->Map();
 
-  // do output for velocity
-  for(unsigned i=0; i < gdof.size()-1; ++i)
+  // do output for acceleration
+  for(unsigned i=0; i < gdof.size(); ++i)
   {
     int lid = accmap.LID(gdof[i]);
     outfile << (*resvec)[lid] << "   ";
