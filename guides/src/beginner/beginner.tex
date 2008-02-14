@@ -742,7 +742,6 @@ called your output file base name \texttt{xxx}, you execute
 ./post_drt_gid --file="xxx"
 \end{verbatim}
 
-
 \subsubsection{post\_drt\_ensight}
 generate ensight (paraview) input files of \baci{} data: For
 instance, if you
@@ -1018,6 +1017,41 @@ After you setup a project like shown above start your xemacs and choose
 going to take a while. After that you can jump around in \ccarat{}
 just like you did in the small \texttt{xref} tutorial. Cool! And it
 helps a lot!
+
+\subsubsection{post\_drt\_monitor}
+
+This filter \texttt{post\_drt\_monitor} is used to extract the behaviour of a
+single node by writing a 
+text file \texttt{xxx.mon} which contains a table like
+for example
+\begin{verbatim}
+# structure problem, writing nodal data of node 1
+# control information: nodal coordinates   x = 1    y = 0    z = 0
+#
+# step   time     d_x      d_y      v_x      v_y
+   1    0.05  0.00615565   0.246226   9.84904   
+   2    0.1  0.0244717   0.486418   -0.24137   
+   3    0.15  0.0544966   0.714575   9.36765   
+\end{verbatim}
+This file can be readily digested by many plotting applications:
+\emph{GNUplot} is perfectly suitable.
+
+The filter is applied by
+executing for instance
+\begin{verbatim}
+./post_drt_monitor --field="structure" --node=1 --file="xxx"
+\end{verbatim}
+
+You can get all options by asking for \texttt{--help}, i.e.\@
+\begin{verbatim}
+./post_drt_monitor --help
+\end{verbatim}
+
+
+The filter is build by running a 
+\begin{verbatim}
+make post_drt_monitor
+\end{verbatim}
 
 
 \subsubsection{emacs}

@@ -237,7 +237,7 @@ echo -e $global_report_dependency >> Makefile
 
 echo -e "\\t"$execute_command$global_report >> Makefile
 echo -e "\\t"$execute_command$global_report >> Makefile
-echo -e "\\tmv "$latex_wd/$global_report".pdf reports" >> Makefile
+echo -e "\\tmv "$latex_wd/$global_report".pdf reports/$global_report.pdf" >> Makefile
 
 # make target for the clean up option
 

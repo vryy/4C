@@ -3205,9 +3205,9 @@ void StruGenAlpha::CalcRefNorms()
   bool damping   = params_.get<bool>  ("damping",false);
 
   double fintnorm, fextnorm, finertnorm;
-  fint_->Norm2(&fintnorm);
-  fextm_->Norm2(&fextnorm);
-  finert_->Norm2(&finertnorm);
+  fint_->Norm2(&fintnorm);  // norm of the internal forces
+  fextm_->Norm2(&fextnorm);  // norm of the external forces
+  finert_->Norm2(&finertnorm);  // norm of the inertial forces
 
   if (damping)
   {
