@@ -422,7 +422,7 @@ void FluidImplicitTimeInt::TimeLoop()
   
     if(liftdrag == 0); // do nothing, we don't want lift & drag
     if(liftdrag == 1)
-      dserror("lift & drag evaluation by stresses is not implemented. Go for nodeforce instead");
+      dserror("how did you manage to get here???");
     if(liftdrag == 2)
       LiftDrag();
 
