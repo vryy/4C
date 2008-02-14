@@ -52,7 +52,7 @@ TDS                   quasistatic
 TRANSIENT             no_transient
 SUPG                  yes_supg
 PSPG                  yes_pspg
-VSTAB                 vstab_gls
+VSTAB                 vstab_usfem
 CSTAB                 cstab_qs
 CROSS-STRESS          no_cross
 REYNOLDS-STRESS       no_reynolds
