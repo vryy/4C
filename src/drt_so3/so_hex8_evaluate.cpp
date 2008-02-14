@@ -117,41 +117,40 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
 
     // evaluate stresses at nodes
     case calc_struct_stress: {
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null) dserror("Cannot get state vectors 'displacement'");
-      vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      Epetra_SerialDenseMatrix stresses(NUMGPT_SOH8,NUMSTR_SOH8);
-      vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stresses,time);
+      if (stresstype_==soh8_stress_ndxyz) {
+        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+        RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+        if (disp==null) dserror("Cannot get state vectors 'displacement'");
+        vector<double> mydisp(lm.size());
+        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+        Epetra_SerialDenseMatrix stresses(NUMGPT_SOH8,NUMSTR_SOH8);
+        vector<double> myres(lm.size());
+        DRT::UTILS::ExtractMyValues(*res,myres,lm);
+        soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stresses,time);
 
-      // extrapolate stresses at Gauss points to nodes
-      Epetra_SerialDenseMatrix nodalstresses(NUMNOD_SOH8,NUMSTR_SOH8);
-      soh8_expol(stresses,nodalstresses);
+        // extrapolate stresses at Gauss points to nodes
+        Epetra_SerialDenseMatrix nodalstresses(NUMNOD_SOH8,NUMSTR_SOH8);
+        soh8_expol(stresses,nodalstresses);
 
-      // average nodal stresses between elements
-      // -> divide by number of adjacent elements
-      vector<int> numadjele(NUMNOD_SOH8);
+        // average nodal stresses between elements
+        // -> divide by number of adjacent elements
+        vector<int> numadjele(NUMNOD_SOH8);
 
-      for (int i=0;i<NUMNOD_SOH8;++i)
-      {
-        DRT::Node* node=Nodes()[i];
-        numadjele[i]=node->NumElement();
-      }
+        for (int i=0;i<NUMNOD_SOH8;++i){
+          DRT::Node* node=Nodes()[i];
+          numadjele[i]=node->NumElement();
+        }
 
-      for (int i=0;i<NUMNOD_SOH8;++i)
-      {
-        elevec1(3*i)=nodalstresses(i,0)/numadjele[i];
-        elevec1(3*i+1)=nodalstresses(i,1)/numadjele[i];
-        elevec1(3*i+2)=nodalstresses(i,2)/numadjele[i];
-      }
-      for (int i=0;i<NUMNOD_SOH8;++i)
-      {
-        elevec2(3*i)=nodalstresses(i,3)/numadjele[i];
-        elevec2(3*i+1)=nodalstresses(i,4)/numadjele[i];
-        elevec2(3*i+2)=nodalstresses(i,5)/numadjele[i];
+        for (int i=0;i<NUMNOD_SOH8;++i){
+          elevec1(3*i)=nodalstresses(i,0)/numadjele[i];
+          elevec1(3*i+1)=nodalstresses(i,1)/numadjele[i];
+          elevec1(3*i+2)=nodalstresses(i,2)/numadjele[i];
+        }
+        for (int i=0;i<NUMNOD_SOH8;++i){
+          elevec2(3*i)=nodalstresses(i,3)/numadjele[i];
+          elevec2(3*i+1)=nodalstresses(i,4)/numadjele[i];
+          elevec2(3*i+2)=nodalstresses(i,5)/numadjele[i];
+        }
       }
     }
     break;

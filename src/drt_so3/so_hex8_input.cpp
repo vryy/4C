@@ -87,6 +87,23 @@ bool DRT::ELEMENTS::So_hex8::ReadElement()
    else dserror("Reading of SO_HEX8 element failed");
   }
 
+  // read stress evaluation/output type
+  frchar("STRESS",buffer,&ierr);
+  if (ierr!=1) dserror("reading of SO_HEX8 stress failed");
+  if (strncmp(buffer,"none",4)==0) stresstype_= soh8_stress_none;
+  else if (strncmp(buffer,"Gpxyz",5)==0) stresstype_= soh8_stress_gpxyz;
+  else if (strncmp(buffer,"Gprst",5)==0) stresstype_= soh8_stress_gprst;
+  else if (strncmp(buffer,"Gp123",5)==0) stresstype_= soh8_stress_gp123;
+  else if (strncmp(buffer,"Ndxyz",5)==0) stresstype_= soh8_stress_ndxyz;
+  else if (strncmp(buffer,"Ndrst",5)==0) stresstype_= soh8_stress_ndrst;
+  else if (strncmp(buffer,"Nd123",5)==0) stresstype_= soh8_stress_nd123;
+  else if (strncmp(buffer,"Cxyz",5)==0) stresstype_= soh8_stress_cxyz;
+  // set default: no stresses
+  else stresstype_= soh8_stress_none;
+
+  if (stresstype_ != soh8_stress_none && stresstype_ != soh8_stress_ndxyz)
+    dserror("Requested stress output not (yet) implemented");
+
   // read EAS technology flag
   eastype_ = soh8_easnone;     // default: no EAS
   frchar("EAS",buffer,&ierr);
@@ -107,23 +124,6 @@ bool DRT::ELEMENTS::So_hex8::ReadElement()
     else if (strncmp(buffer,"none",4)==0) eastype_ = soh8_easnone;
     else dserror("Reading of SO_HEX8 EAS technology failed");
   }
-
-  // read stress evaluation/output type
-  frchar("STRESS",buffer,&ierr);
-  if (ierr!=1) dserror("reading of SO_HEX8 stress failed");
-  if (strncmp(buffer,"none",4)==0)  stresstype_= soh8_stress_none;
-  if (strncmp(buffer,"Gpxyz",5)==0) stresstype_= soh8_stress_gpxyz;
-  if (strncmp(buffer,"Gprst",5)==0) stresstype_= soh8_stress_gprst;
-  if (strncmp(buffer,"Gp123",5)==0) stresstype_= soh8_stress_gp123;
-  if (strncmp(buffer,"Ndxyz",5)==0) stresstype_= soh8_stress_ndxyz;
-  if (strncmp(buffer,"Ndrst",5)==0) stresstype_= soh8_stress_ndrst;
-  if (strncmp(buffer,"Nd123",5)==0) stresstype_= soh8_stress_nd123;
-  if (strncmp(buffer,"Cxyz",5)==0) stresstype_= soh8_stress_cxyz;
-  // set default: no stresses
-  else stresstype_= soh8_stress_none;
-
-  if (stresstype_ != soh8_stress_none && stresstype_ != soh8_stress_ndxyz)
-    dserror("Requested stress output not (yet) implemented");
 
   // Initialize elestress
   stresses_.resize(6);
