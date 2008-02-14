@@ -157,6 +157,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--FSI DYNAMIC", *list);
 
   reader.ReadGidSection("--FLUID SOLVER", *list);
+  reader.ReadGidSection("--FLUID PRESSURE SOLVER", *list);
   reader.ReadGidSection("--STRUCT SOLVER", *list);
   reader.ReadGidSection("--ALE SOLVER", *list);
   reader.ReadGidSection("--THERMAL SOLVER", *list);
@@ -344,6 +345,17 @@ void DRT::Problem::InputControl()
       solv[genprob.numaf].fieldtyp = ale;
       InputSolverControl("ALE SOLVER",&(solv[genprob.numaf]));
     }
+    
+    // additional pressure solver for SIMPLE(R)
+    const ParameterList& fluiddyn = FluidDynamicParams();
+    int simple = getIntegralValue<int>(fluiddyn,"SIMPLER");
+    if (simple)
+    {
+      solver_.resize(genprob.numfld+1);
+      solv = &solver_[0];
+      InputSolverControl("FLUID PRESSURE SOLVER",&(solv[genprob.numfld]));
+    }
+    
     break;
   }
   case prb_fluid_xfem:

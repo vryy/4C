@@ -564,6 +564,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1,2),
                                &fdyn);
 
+  setStringToIntegralParameter("SIMPLER","no","Switch on SIMPLE family of solvers, needs additional FLUID PRESSURE SOLVER block!",yesnotuple,yesnovalue,&fdyn);
+
   IntParameter("UPPSS",1,"Increment for visualisation (unused)",&fdyn);
   IntParameter("UPOUT",1,"Increment for writing solution to output file",&fdyn);
   IntParameter("UPRES",1,"Increment for writing solution",&fdyn);
@@ -575,7 +577,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("STARTFUNCNO",-1,"Function for Initial Starting Field",&fdyn);
   IntParameter("ITEMAX",10,"max. number of nonlin. iterations",&fdyn);
   IntParameter("GRIDVEL",1,"order of accuracy of mesh velocity determination",&fdyn);
-
   DoubleParameter("TIMESTEP",0.01,"Time increment dt",&fdyn);
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&fdyn);
   DoubleParameter("ALPHA_M",1.0,"Time integration factor",&fdyn);
@@ -924,6 +925,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fluidsolver = list->sublist("FLUID SOLVER",false,"");
   SetValidSolverParameters(fluidsolver);
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& fluidpsolver = list->sublist("FLUID PRESSURE SOLVER",false,"pressure solver parameters for SIMPLE preconditioning");
+  SetValidSolverParameters(fluidpsolver);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& structsolver = list->sublist("STRUCT SOLVER",false,"");
