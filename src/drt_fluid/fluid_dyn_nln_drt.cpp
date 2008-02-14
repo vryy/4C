@@ -178,6 +178,8 @@ void dyn_fluid_drt()
   fluidtimeparams.set                  ("write solution every"      ,fdyn.get<int>("UPRES"));
   // flag for writing stresses
   fluidtimeparams.set                  ("write stresses"            ,Teuchos::getIntegralValue<int>(ioflags,"FLUID_STRESS"));
+  // ---------------------------------------------------- lift and drag
+  fluidtimeparams.set<int>("liftdrag",Teuchos::getIntegralValue<int>(fdyn,"LIFTDRAG"));
 
   // -----------evaluate error for test flows with analytical solutions
   int init = Teuchos::getIntegralValue<int>(fdyn,"INITIALFIELD");
