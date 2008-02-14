@@ -52,9 +52,17 @@ Teuchos::RCP<Epetra_Vector> MFSI::FluidAdapter::RHS()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> MFSI::FluidAdapter::Vel()
+Teuchos::RCP<Epetra_Vector> MFSI::FluidAdapter::Velnp()
 {
-  return fluid_.Vel();
+  return fluid_.Velnp();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> MFSI::FluidAdapter::Veln()
+{
+  return fluid_.Veln();
 }
 
 
@@ -87,7 +95,7 @@ Teuchos::RCP<DRT::Discretization> MFSI::FluidAdapter::Discretization()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> MFSI::FluidAdapter::StructCondRHS()
 {
-  return interface_.ExtractCondVector(Vel());
+  return interface_.ExtractCondVector(Velnp());
 }
 
 
@@ -114,7 +122,7 @@ void MFSI::FluidAdapter::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   if (vel!=Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> incvel = Teuchos::rcp(new Epetra_Vector(*vel));
-    incvel->Update(-1.0,*fluid_.Vel(),1.0);
+    incvel->Update(-1.0,*fluid_.Velnp(),1.0);
     fluid_.Evaluate(incvel);
   }
   else

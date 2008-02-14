@@ -193,7 +193,8 @@ public:
 
   Teuchos::RCP<Epetra_Vector> InitialGuess() { return incvel_; }
   Teuchos::RCP<Epetra_Vector> Residual() { return residual_; }
-  Teuchos::RCP<Epetra_Vector> Vel() { return velnp_; }
+  Teuchos::RCP<Epetra_Vector> Velnp() { return velnp_; }
+  Teuchos::RCP<Epetra_Vector> Veln() { return veln_; }
   Teuchos::RCP<Epetra_Vector> Dirichlet() { return dirichtoggle_; }
   Teuchos::RCP<Epetra_Vector> Dispnp() { return dispnp_; }
   Teuchos::RCP<Epetra_Vector> Dispn() { return dispn_; }

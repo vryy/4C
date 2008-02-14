@@ -258,6 +258,8 @@ void MFSI::Algorithm::SetupFluid()
   fluidtimeparams->set<int>              ("number of start steps"    ,fdyn.get<int>("NUMSTASTEPS"));
   // parameter for start algo
   fluidtimeparams->set<double>           ("start theta"              ,fdyn.get<double>("START_THETA"));
+  // parameter for grid velocity interpolation
+  fluidtimeparams->set<int>              ("order gridvel"            ,fdyn.get<int>("GRIDVEL"));
 
 
   // ---------------------------------------------- nonlinear iteration

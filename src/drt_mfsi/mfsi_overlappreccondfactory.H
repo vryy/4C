@@ -14,6 +14,25 @@
 namespace MFSI
 {
 
+  /// factory class that constructs a block Gauss-Seidel preconditioner for
+  /// monolithic FSI
+  /*!
+
+    This class knows the linear solvers to be used for the three fields and
+    knows how to construct a preconditioner from that solvers. This
+    preconditioner is actually pretty simple. It consists of an object of the
+    Thyra::DefaultPreconditioner class that gets initialized with an
+    appropiate linear operator. This linear operator in turn defines the
+    action of the preconditioner.
+
+    There are classes in Thyra to compose such a linear operator from matrix
+    operations. However, as we want a block Gauss-Seidel preconditioner here,
+    a preconditioner that solves linear systems with variable rhs, we use our
+    own linear operator OverlappingPCOperator.
+
+    \author u.kue
+    \date 01/08
+   */
   class OverlappingPCFactory : public Thyra::PreconditionerFactoryBase<double>
   {
   public:
@@ -23,7 +42,6 @@ namespace MFSI
 
     OverlappingPCFactory(
       Teuchos::RCP<const Thyra::LinearOpWithSolveFactoryBase<double> > const&  structure,
-      //Teuchos::RCP<const Thyra::LinearOpWithSolveFactoryBase<double> > const&  interface,
       Teuchos::RCP<const Thyra::LinearOpWithSolveFactoryBase<double> > const&  fluid,
       Teuchos::RCP<const Thyra::LinearOpWithSolveFactoryBase<double> > const&  ale
       );
@@ -72,7 +90,6 @@ namespace MFSI
   private:
 
     Teuchos::RCP<const Thyra::LinearOpWithSolveFactoryBase<double> > structure_;
-    //Teuchos::RCP<const Thyra::LinearOpWithSolveFactoryBase<double> > interface_;
     Teuchos::RCP<const Thyra::LinearOpWithSolveFactoryBase<double> > fluid_;
     Teuchos::RCP<const Thyra::LinearOpWithSolveFactoryBase<double> > ale_;
   };

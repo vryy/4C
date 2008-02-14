@@ -223,7 +223,7 @@ MFSI::OverlapAlgorithm::OverlapAlgorithm(Epetra_Comm& comm)
     dserror("failed to split ale matrix");
   }
 
-  aig_ = this->ConvertFigColmap(aig,alestructcolmap_,StructureField()->DomainMap());
+  aig_ = this->ConvertFigColmap(aig,alestructcolmap_,StructureField()->DomainMap(),1.);
   aii_ = aii;
 }
 
@@ -326,19 +326,29 @@ void MFSI::OverlapAlgorithm::ExtractFieldVectors(Teuchos::RCP<const Thyra::Defau
 {
   Teuchos::TimeMonitor monitor(*exctracttimer_);
 
+  // We have overlap at the interface. Thus we need the interface part of the
+  // structure vector and append it to the fluid and ale vector. (With the
+  // right translation.)
+
   sx = Thyra::get_Epetra_Vector(*StructureField()->DofRowMap(), x->getVectorBlock(0));
   Teuchos::RCP<const Epetra_Vector> scx = StructureField()->Interface().ExtractCondVector(sx);
 
   // process fluid unknowns
-  Teuchos::RCP<const Epetra_Vector> fox = Thyra::get_Epetra_Vector(*FluidField()->Interface().OtherMap(), x->getVectorBlock(1));
+  Teuchos::RCP<const Epetra_Vector> fox = Thyra::get_Epetra_Vector(*FluidField()->Interface().OtherMap(),
+                                                                   x->getVectorBlock(1));
   Teuchos::RCP<Epetra_Vector> fcx = StructToFluid(scx);
 
   // get interface displacement at t(n)
   Teuchos::RCP<Epetra_Vector> dispn = StructureField()->Disp();
   dispn = StructureField()->Interface().ExtractCondVector(dispn);
 
-  // We convert Delta d to Delta u here.
-  fcx->Update(-1./Dt(),*StructToFluid(dispn),1./Dt());
+  // get interface velocity at t(n)
+  Teuchos::RCP<Epetra_Vector> veln = FluidField()->Veln();
+  veln = FluidField()->Interface().ExtractCondVector(veln);
+
+  // We convert Delta d(n+1,i+1) to Delta u(n+1,i+1) here.
+  //fcx->Update(-1./Dt(),*StructToFluid(dispn),1./Dt());
+  fcx->Update(-1.,*veln,1./Dt());
 
   Teuchos::RCP<Epetra_Vector> f = FluidField()->Interface().InsertOtherVector(fox);
   FluidField()->Interface().InsertCondVector(fcx, f);
@@ -346,7 +356,8 @@ void MFSI::OverlapAlgorithm::ExtractFieldVectors(Teuchos::RCP<const Thyra::Defau
 
   // process ale unknowns
 
-  Teuchos::RCP<const Epetra_Vector> aox = Thyra::get_Epetra_Vector(*AleField()->Interface().OtherMap(), x->getVectorBlock(2));
+  Teuchos::RCP<const Epetra_Vector> aox = Thyra::get_Epetra_Vector(*AleField()->Interface().OtherMap(),
+                                                                   x->getVectorBlock(2));
   Teuchos::RCP<Epetra_Vector> acx = StructToAle(scx);
 
   // Here we have to add the current structural interface displacement because
@@ -407,7 +418,7 @@ void MFSI::OverlapAlgorithm::SetupSysMat(Thyra::DefaultBlockedLinearOp<double>& 
   // transform fluid interface matrix to structure interface and add it to
   // structure matrix
 
-  AddFluidInterface(scale,fgg,s);
+  AddFluidInterface(scale*Dt(),fgg,s);
 
   // build block matrix
 
@@ -427,7 +438,8 @@ void MFSI::OverlapAlgorithm::SetupSysMat(Thyra::DefaultBlockedLinearOp<double>& 
 //   mat.setBlock(2,1,nonconstCouplingOp(fig,Teuchos::rcp(&coupsf,false)));
   mat.setBlock(1,0,Thyra::nonconstEpetraLinearOp(ConvertFigColmap(fig,
                                                                   fluidstructcolmap_,
-                                                                  s->DomainMap())));
+                                                                  s->DomainMap(),
+                                                                  Dt())));
 
   mat.setBlock(1,1,Thyra::nonconstEpetraLinearOp(fii));
 
@@ -500,7 +512,8 @@ void MFSI::OverlapAlgorithm::AddFluidInterface(double scale,
 Teuchos::RCP<Epetra_CrsMatrix>
 MFSI::OverlapAlgorithm::ConvertFigColmap(Teuchos::RCP<Epetra_CrsMatrix> fig,
                                          const std::map<int,int>& convcolmap,
-                                         const Epetra_Map& domainmap) const
+                                         const Epetra_Map& domainmap,
+                                         double scale) const
 {
   Teuchos::TimeMonitor monitor(*figcolmaptimer_);
 
@@ -535,6 +548,7 @@ MFSI::OverlapAlgorithm::ConvertFigColmap(Teuchos::RCP<Epetra_CrsMatrix> fig,
   }
 
   convfig->FillComplete(domainmap,rowmap);
+  convfig->Scale(scale);
 
   return convfig;
 }

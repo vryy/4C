@@ -54,7 +54,8 @@ namespace MFSI {
 
     virtual Teuchos::RCP<Epetra_Vector> InitialGuess() = 0;
     virtual Teuchos::RCP<Epetra_Vector> RHS() = 0;
-    virtual Teuchos::RCP<Epetra_Vector> Vel() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> Velnp() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> Veln() = 0;
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap() = 0;
     virtual Teuchos::RCP<Epetra_Operator> SysMat() = 0;
     virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
@@ -96,7 +97,8 @@ namespace MFSI {
 
     virtual Teuchos::RCP<Epetra_Vector> InitialGuess();
     virtual Teuchos::RCP<Epetra_Vector> RHS();
-    virtual Teuchos::RCP<Epetra_Vector> Vel();
+    virtual Teuchos::RCP<Epetra_Vector> Velnp();
+    virtual Teuchos::RCP<Epetra_Vector> Veln();
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap();
     virtual Teuchos::RCP<Epetra_Operator> SysMat();
     virtual Teuchos::RCP<DRT::Discretization> Discretization();

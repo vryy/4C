@@ -11,10 +11,26 @@
 namespace MFSI
 {
 
+  /// internal predictor operator for overlapping monolithic FSI
+  /*!
+
+    This is a block Gauss-Seidel preconditioner operator that works on the
+    lower triangle of a given 3x3 FSI block matrix. The magic happens in
+    apply().
+
+    To the outside world this is a simple linear operator. Internally the
+    linear structure, fluid and ale fields are solved, with structure rhs on
+    both fluid and ale fields. Thus the coupling from structure to fluid is
+    taken into account, whereas the fluid to structure coupling is neglected.
+
+    \author u.kue
+    \date 01/08
+   */
   class OverlappingPCOperator : public Thyra::LinearOpBase<double,double>
   {
   public:
 
+    /// constructor with field solver objects and 3x3 block matrix
     OverlappingPCOperator(
       Teuchos::RCP<const Thyra::LinearOpWithSolveFactoryBase<double> > structure_lows,
       Teuchos::RCP<const Thyra::LinearOpWithSolveFactoryBase<double> > fluid_lows,
