@@ -156,6 +156,11 @@ void stru_static_drt()
   // also known at out-of-balance-force
   RefCountPtr<Epetra_Vector> fresm = LINALG::CreateVector(*dofrowmap,false);
 
+  // nodal normal stresses
+  RefCountPtr<Epetra_Vector> normal_stresses = LINALG::CreateVector(*dofrowmap,true);
+  // nodal shear stresses
+  RefCountPtr<Epetra_Vector> shear_stresses = LINALG::CreateVector(*dofrowmap,true);
+
   if (statvar->nr_controltyp != control_load) dserror("Only load control implemented");
 
   /*
@@ -279,25 +284,21 @@ void stru_static_drt()
   if (!mod_stress && ioflags.struct_stress==1)
   {
     // create the parameters for the discretization
-    ParameterList params;
+    ParameterList p;
     // action for elements
-    params.set("action","calc_struct_stress");
-    // choose what to assemble
-    params.set("assemble matrix 1",false);
-    params.set("assemble matrix 2",false);
-    params.set("assemble vector 1",false);
-    params.set("assemble vector 2",false);
-    params.set("assemble vector 3",false);
+    p.set("action","calc_struct_stress");
     // other parameters that might be needed by the elements
-    params.set("total time",timen);
-    params.set("delta time",dt);
+    p.set("total time",timen);
+    p.set("delta time",dt);
     // set vector values needed by elements
     actdis->ClearState();
-    actdis->SetState("residual displacement",disi);
+    actdis->SetState("residual displacement",zeros);
     actdis->SetState("displacement",dis);
-    actdis->Evaluate(params,null,null,null,null,null);
+    normal_stresses->PutScalar(0.0);  // initialise normal stress vector
+    shear_stresses->PutScalar(0.0);  // initialise shear stress vector
+    actdis->Evaluate(p,null,null,normal_stresses,shear_stresses,null);
     actdis->ClearState();
-    output.WriteElementData();
+    output.WriteStressVector("nodal_stresses_xyz", normal_stresses, shear_stresses);
   }
   //---------------------------------------------end of output initial state
 
@@ -701,26 +702,23 @@ void stru_static_drt()
     if (!mod_stress && ioflags.struct_stress==1)
     {
       // create the parameters for the discretization
-      ParameterList params;
+      ParameterList p;
       // action for elements
-      params.set("action","calc_struct_stress");
-      // choose what to assemble
-      params.set("assemble matrix 1",false);
-      params.set("assemble matrix 2",false);
-      params.set("assemble vector 1",false);
-      params.set("assemble vector 2",false);
-      params.set("assemble vector 3",false);
+      p.set("action","calc_struct_stress");
       // other parameters that might be needed by the elements
-      params.set("total time",timen);
-      params.set("delta time",dt);
+      p.set("total time",timen);
+      p.set("delta time",dt);
       // set vector values needed by elements
       actdis->ClearState();
-      actdis->SetState("residual displacement",disi);
+      actdis->SetState("residual displacement",zeros);
       actdis->SetState("displacement",dis);
-      actdis->Evaluate(params,null,null,null,null,null);
+      normal_stresses->PutScalar(0.0);  // initialise normal stress vector
+      shear_stresses->PutScalar(0.0);  // initialise shear stress vector
+      actdis->Evaluate(p,null,null,normal_stresses,shear_stresses,null);
       actdis->ClearState();
       if (!isdatawritten) output.NewStep(istep, timen);
-      output.WriteElementData();
+      output.WriteStressVector("nodal_stresses_xyz", normal_stresses, shear_stresses);
+      isdatawritten = true;
     }
 
 //
