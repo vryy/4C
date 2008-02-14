@@ -48,8 +48,8 @@ public:
     RCP<DRT::Discretization> cutterdis() const {return cutterdis_;};
     
     // ok, we copy the whole thing, this can be more elegant later on or not used at all
-    map<int,DomainIntCells> elementalDomainIntCells() const {return elementalDomainIntCells_;};
-    map<int,BoundaryIntCells> elementalBoundaryIntCells() const {return elementalBoundaryIntCells_;};
+    std::map<int,DomainIntCells> elementalDomainIntCells() const {return elementalDomainIntCells_;};
+    std::map<int,BoundaryIntCells> elementalBoundaryIntCells() const {return elementalBoundaryIntCells_;};
 
     // return list of integrationcells, however the list can be empty -> always terminates
     DomainIntCells GetDomainIntCells(
@@ -61,7 +61,7 @@ public:
             const int gid
             ) const;
     
-//    inline set<int> getSetOfIntersectedElementIds() const
+//    set<int> getSetOfIntersectedElementIds() const
 //    {
 //        set<int> eleidset;
 //        map<int,DomainIntCells>::const_iterator tmp;

@@ -63,7 +63,7 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
   const int numnode = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
   // check whether all nodes have a unique VolumeNeumann condition
   int nodecount = 0;
-  for (int inode=0;inode<numnode;inode++)
+  for (int inode=0;inode<numnode;++inode)
   {
     nodes[inode]->GetCondition("VolumeNeumann",myneumcond);
 
@@ -110,7 +110,7 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
     }
 
     // set this condition to the edeadng array
-    for (int jnode=0; jnode<numnode; jnode++)
+    for (int jnode=0; jnode<numnode; ++jnode)
     {
       nodes[jnode]->GetCondition("VolumeNeumann",myneumcond);
 
@@ -118,7 +118,7 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
       const vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
       const vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
 
-      for(int isd=0;isd<3;isd++)
+      for(int isd=0;isd<3;++isd)
       {
         edeadng_(isd,jnode) = (*onoff)[isd]*(*val)[isd]*curvefac;
       }
@@ -247,60 +247,60 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
    *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType DISTYPE>
 BlitzMat gder2(
-        const BlitzMat& xjm_,
-        const BlitzMat& derxy_,
-        const BlitzMat& deriv2_,
-        const BlitzMat& xyze_)
+        const BlitzMat& xjm,
+        const BlitzMat& derxy,
+        const BlitzMat& deriv2,
+        const BlitzMat& xyze)
 {
     blitz::firstIndex i;    // Placeholder for the first index
     blitz::secondIndex j;   // Placeholder for the second index
     blitz::thirdIndex k;    // Placeholder for the third index
 
     // initialize and zero out everything
-    Epetra_SerialDenseMatrix bm(6,6);
+    static Epetra_SerialDenseMatrix bm(6,6);
 
     // calculate elements of jacobian_bar matrix
-    bm(0,0) = xjm_(0,0)*xjm_(0,0);
-    bm(1,0) = xjm_(1,0)*xjm_(1,0);
-    bm(2,0) = xjm_(2,0)*xjm_(2,0);
-    bm(3,0) = xjm_(0,0)*xjm_(1,0);
-    bm(4,0) = xjm_(0,0)*xjm_(2,0);
-    bm(5,0) = xjm_(2,0)*xjm_(1,0);
+    bm(0,0) = xjm(0,0)*xjm(0,0);
+    bm(1,0) = xjm(1,0)*xjm(1,0);
+    bm(2,0) = xjm(2,0)*xjm(2,0);
+    bm(3,0) = xjm(0,0)*xjm(1,0);
+    bm(4,0) = xjm(0,0)*xjm(2,0);
+    bm(5,0) = xjm(2,0)*xjm(1,0);
 
-    bm(0,1) = xjm_(0,1)*xjm_(0,1);
-    bm(1,1) = xjm_(1,1)*xjm_(1,1);
-    bm(2,1) = xjm_(2,1)*xjm_(2,1);
-    bm(3,1) = xjm_(0,1)*xjm_(1,1);
-    bm(4,1) = xjm_(0,1)*xjm_(2,1);
-    bm(5,1) = xjm_(2,1)*xjm_(1,1);
+    bm(0,1) = xjm(0,1)*xjm(0,1);
+    bm(1,1) = xjm(1,1)*xjm(1,1);
+    bm(2,1) = xjm(2,1)*xjm(2,1);
+    bm(3,1) = xjm(0,1)*xjm(1,1);
+    bm(4,1) = xjm(0,1)*xjm(2,1);
+    bm(5,1) = xjm(2,1)*xjm(1,1);
 
-    bm(0,2) = xjm_(0,2)*xjm_(0,2);
-    bm(1,2) = xjm_(1,2)*xjm_(1,2);
-    bm(2,2) = xjm_(2,2)*xjm_(2,2);
-    bm(3,2) = xjm_(0,2)*xjm_(1,2);
-    bm(4,2) = xjm_(0,2)*xjm_(2,2);
-    bm(5,2) = xjm_(2,2)*xjm_(1,2);
+    bm(0,2) = xjm(0,2)*xjm(0,2);
+    bm(1,2) = xjm(1,2)*xjm(1,2);
+    bm(2,2) = xjm(2,2)*xjm(2,2);
+    bm(3,2) = xjm(0,2)*xjm(1,2);
+    bm(4,2) = xjm(0,2)*xjm(2,2);
+    bm(5,2) = xjm(2,2)*xjm(1,2);
 
-    bm(0,3) = 2.*xjm_(0,0)*xjm_(0,1);
-    bm(1,3) = 2.*xjm_(1,0)*xjm_(1,1);
-    bm(2,3) = 2.*xjm_(2,0)*xjm_(2,1);
-    bm(3,3) = xjm_(0,0)*xjm_(1,1)+xjm_(1,0)*xjm_(0,1);
-    bm(4,3) = xjm_(0,0)*xjm_(2,1)+xjm_(2,0)*xjm_(0,1);
-    bm(5,3) = xjm_(1,0)*xjm_(2,1)+xjm_(2,0)*xjm_(1,1);
+    bm(0,3) = 2.*xjm(0,0)*xjm(0,1);
+    bm(1,3) = 2.*xjm(1,0)*xjm(1,1);
+    bm(2,3) = 2.*xjm(2,0)*xjm(2,1);
+    bm(3,3) = xjm(0,0)*xjm(1,1)+xjm(1,0)*xjm(0,1);
+    bm(4,3) = xjm(0,0)*xjm(2,1)+xjm(2,0)*xjm(0,1);
+    bm(5,3) = xjm(1,0)*xjm(2,1)+xjm(2,0)*xjm(1,1);
 
-    bm(0,4) = 2.*xjm_(0,0)*xjm_(0,2);
-    bm(1,4) = 2.*xjm_(1,0)*xjm_(1,2);
-    bm(2,4) = 2.*xjm_(2,0)*xjm_(2,2);
-    bm(3,4) = xjm_(0,0)*xjm_(1,2)+xjm_(1,0)*xjm_(0,2);
-    bm(4,4) = xjm_(0,0)*xjm_(2,2)+xjm_(2,0)*xjm_(0,2);
-    bm(5,4) = xjm_(1,0)*xjm_(2,2)+xjm_(2,0)*xjm_(1,2);
+    bm(0,4) = 2.*xjm(0,0)*xjm(0,2);
+    bm(1,4) = 2.*xjm(1,0)*xjm(1,2);
+    bm(2,4) = 2.*xjm(2,0)*xjm(2,2);
+    bm(3,4) = xjm(0,0)*xjm(1,2)+xjm(1,0)*xjm(0,2);
+    bm(4,4) = xjm(0,0)*xjm(2,2)+xjm(2,0)*xjm(0,2);
+    bm(5,4) = xjm(1,0)*xjm(2,2)+xjm(2,0)*xjm(1,2);
 
-    bm(0,5) = 2.*xjm_(0,1)*xjm_(0,2);
-    bm(1,5) = 2.*xjm_(1,1)*xjm_(1,2);
-    bm(2,5) = 2.*xjm_(2,1)*xjm_(2,2);
-    bm(3,5) = xjm_(0,1)*xjm_(1,2)+xjm_(1,1)*xjm_(0,2);
-    bm(4,5) = xjm_(0,1)*xjm_(2,2)+xjm_(2,1)*xjm_(0,2);
-    bm(5,5) = xjm_(1,1)*xjm_(2,2)+xjm_(2,1)*xjm_(1,2);
+    bm(0,5) = 2.*xjm(0,1)*xjm(0,2);
+    bm(1,5) = 2.*xjm(1,1)*xjm(1,2);
+    bm(2,5) = 2.*xjm(2,1)*xjm(2,2);
+    bm(3,5) = xjm(0,1)*xjm(1,2)+xjm(1,1)*xjm(0,2);
+    bm(4,5) = xjm(0,1)*xjm(2,2)+xjm(2,1)*xjm(0,2);
+    bm(5,5) = xjm(1,1)*xjm(2,2)+xjm(2,1)*xjm(1,2);
 
     /*------------------ determine 2nd derivatives of coord.-functions */
 
@@ -354,7 +354,7 @@ BlitzMat gder2(
     |
     */
 
-    const BlitzMat xder2_(blitz::sum(deriv2_(i,k)*xyze_(j,k),k));
+    const BlitzMat xder2(blitz::sum(deriv2(i,k)*xyze(j,k),k));
 
     /*
     |        0...iel-1             0 1 2
@@ -375,7 +375,7 @@ BlitzMat gder2(
     |       chainrulerhs          xder2
     */
 
-    BlitzMat derxy2_(deriv2_-blitz::sum(xder2_(i,k)*derxy_(k,j),k));
+    BlitzMat derxy2_(deriv2 - blitz::sum(xder2(i,k)*derxy(k,j),k));
 
     /*
     |        0...iel-1            0...iel-1         0...iel-1
@@ -455,8 +455,8 @@ BlitzMat gder2(
 
 //! calculate element metric tensor in gausspoint (r,s)
 BlitzMat computeMetricTensor(
-        const BlitzMat xs,                    ///< element nodal coordinates in x space
-        const BlitzMat deriv                  ///< shape functions derivative with respect to r and s
+        const BlitzMat& xs,                    ///< element nodal coordinates in x space
+        const BlitzMat& deriv                  ///< shape functions derivative with respect to r and s
         )
 {
     // init blitz indices
@@ -465,7 +465,8 @@ BlitzMat computeMetricTensor(
     blitz::thirdIndex k;    // Placeholder for the third index
       
     // compute dXYZ / drs
-    const BlitzMat dxyzdrs(blitz::sum(deriv(i,k)*xs(j,k),k));
+    static BlitzMat dxyzdrs(2,3);
+    dxyzdrs = blitz::sum(deriv(i,k)*xs(j,k),k);
 
     /* compute covariant metric tensor G for surface element
     **                        | g11   g12 |
@@ -477,17 +478,15 @@ BlitzMat computeMetricTensor(
     ** g11 = ---- o ----    g12 = ---- o ----    g22 = ---- o ----
     **        dr     dr            dr     ds            ds     ds
     */
-    const BlitzMat metrictensor(blitz::sum(dxyzdrs(i,k)*dxyzdrs(j,k),k));
-
-    return metrictensor;
+    return BlitzMat(blitz::sum(dxyzdrs(i,k)*dxyzdrs(j,k),k));
 }
 
 
 
 //! calculate element normal in gausspoint (r,s)
 BlitzVec computeNormalToBoundaryElement(
-        const BlitzMat deriv,                  ///< shape functions derivative
-        const BlitzMat xs,                     ///< element nodal coordinates in x space
+        const BlitzMat& deriv,                  ///< shape functions derivative
+        const BlitzMat& xs,                     ///< element nodal coordinates in x space
         const double r,                        ///< coord in r-direction
         const double s                         ///< coord in s-direction
         )
@@ -497,8 +496,9 @@ BlitzVec computeNormalToBoundaryElement(
     blitz::secondIndex j;   // Placeholder for the second index
     blitz::thirdIndex k;    // Placeholder for the third index
       
-    // compute dXYZ / drs
-    const BlitzMat dxyzdrs(blitz::sum(deriv(i,k)*xs(j,k),k));
+    // compute dXYZ / drs (Transposed)
+    static BlitzMat dxyzdrs(2,3);
+    dxyzdrs = blitz::sum(deriv(i,k)*xs(j,k),k);
 
     /* compute covariant metric tensor G for surface element
     **                        | g11   g12 |
@@ -510,20 +510,19 @@ BlitzVec computeNormalToBoundaryElement(
     ** g11 = ---- o ----    g12 = ---- o ----    g22 = ---- o ----
     **        dr     dr            dr     ds            ds     ds
     */
-    const BlitzMat metrictensor(blitz::sum(dxyzdrs(i,k)*dxyzdrs(j,k),k));
+    static BlitzMat metrictensor(2,2);
+    metrictensor = blitz::sum(dxyzdrs(i,k)*dxyzdrs(j,k),k);
     
-    BlitzVec unrm(3);
+    static BlitzVec unrm(3);
     unrm(0) = dxyzdrs(0,1) * dxyzdrs(1,2) - dxyzdrs(0,2) * dxyzdrs(1,1);
     unrm(1) = dxyzdrs(0,2) * dxyzdrs(1,0) - dxyzdrs(0,0) * dxyzdrs(1,2);
     unrm(2) = dxyzdrs(0,0) * dxyzdrs(1,1) - dxyzdrs(0,1) * dxyzdrs(1,0);
     
     // scale
-    const double length = sqrt(unrm(0)*unrm(0) + unrm(1)*unrm(1) + unrm(2)*unrm(2));
-    
-    BlitzVec unit_normal(3);
-    unit_normal = 1.0/length * unrm;
+    const double inv_length = 1.0 / sqrt(unrm(0)*unrm(0) + unrm(1)*unrm(1) + unrm(2)*unrm(2));
 
-    return unit_normal;
+    // return unit vector
+    return BlitzVec(inv_length * unrm);
 }
   
   
@@ -533,7 +532,7 @@ template<XFEM::AssemblyType>
 int getNumParam(
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field     field,
-        int numnode)
+        const int numnode)
 {
     return dofman.NumDofPerField(field);
 }
@@ -541,7 +540,7 @@ template<>
 int getNumParam<XFEM::standard_assembly>(
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field     field,
-        int numnode)
+        const int numnode)
 {
     return numnode;
 }
@@ -552,7 +551,7 @@ int getNumParam<XFEM::standard_assembly>(
    */
 BlitzMat Inverse3x3(const BlitzMat& xjm_, const double det)
 {
-    BlitzMat xji_(3,3,blitz::ColumnMajorArray<2>());
+    static BlitzMat xji_(3,3,blitz::ColumnMajorArray<2>());
     xji_(0,0) = (  xjm_(1,1)*xjm_(2,2) - xjm_(2,1)*xjm_(1,2))/det;
     xji_(1,0) = (- xjm_(1,0)*xjm_(2,2) + xjm_(2,0)*xjm_(1,2))/det;
     xji_(2,0) = (  xjm_(1,0)*xjm_(2,1) - xjm_(2,0)*xjm_(1,1))/det;
@@ -578,19 +577,19 @@ void Sysmat(
         BlitzMat&                         estif,         ///< element matrix to calculate
         BlitzVec&                         eforce,        ///< element rhs to calculate
         struct _MATERIAL*                 material,      ///< fluid material
-        double                            pseudotime,    ///< current simulation pseudotime
-        bool                              newton,        ///< full Newton or fixed-point-like
-        bool                              pstab,         ///< flag for stabilisation
-        bool                              supg,          ///< flag for stabilisation
-        bool                              vstab,         ///< flag for stabilisation
-        bool                              cstab          ///< flag for stabilisation
+        const double                      pseudotime,    ///< current simulation pseudotime
+        const bool                        newton,        ///< full Newton or fixed-point-like
+        const bool                        pstab,         ///< flag for stabilisation
+        const bool                        supg,          ///< flag for stabilisation
+        const bool                        vstab,         ///< flag for stabilisation
+        const bool                        cstab          ///< flag for stabilisation
         )
 {
     // number of nodes for element
     const int numnode = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
       
-    // get node coordinates
-    const BlitzMat xyze_(DRT::UTILS::PositionArray(ele));
+    // get node coordinates of the current element
+    const BlitzMat xyze(DRT::UTILS::PositionArray(ele));
 
     // dead load in element nodes
     //////////////////////////////////////////////////// , BlitzMat edeadng_(BodyForce(ele->Nodes(),pseudotime));
@@ -599,7 +598,6 @@ void Sysmat(
     // check here, if we really have a fluid !!
     dsassert(material->mattyp == m_fluid, "Material law is not of type m_fluid.");
     const double visc = material->m.fluid->viscosity;
-    const double reciproke_visc = 1.0 / visc;
 
     // flag for higher order elements
     const bool higher_order_ele = ele->isHigherOrderElement<DISTYPE>();
@@ -619,7 +617,7 @@ void Sysmat(
     
     LocalAssembler<DISTYPE, ASSTYPE> assembler(dofman, estif, eforce);
     
-    const blitz::Range _  = blitz::Range::all();
+    blitz::Range _  = blitz::Range::all();
     
     // We define the variables i,j,k to be indices to blitz arrays.
     // These are used for array expressions, that is matrix-vector
@@ -628,7 +626,7 @@ void Sysmat(
     blitz::secondIndex j;   // Placeholder for the second index
     blitz::thirdIndex k;    // Placeholder for the third index
 
-    const DRT::Element::DiscretizationType stressdistype = XFLUID::getStressInterpolationType3D(DISTYPE);
+    const DRT::Element::DiscretizationType stressdistype = XFLUID::getStressInterpolationType3D<DISTYPE>();
     
     // figure out whether we have stress unknowns at all
     const bool stress_unknowns_present = (getNumParam<ASSTYPE>(dofman, Tauxx, 0) > 0);
@@ -650,6 +648,8 @@ void Sysmat(
     const int numparamvely = getNumParam<ASSTYPE>(dofman, Vely, numnode);
     const int numparamvelz = getNumParam<ASSTYPE>(dofman, Velz, numnode);
     const int numparampres = getNumParam<ASSTYPE>(dofman, Pres, numnode);
+    // put one here to create arrays of size 1, since they are not needed anyway
+    // in the xfem assembly, the numparam is determined by the dofmanager
     const int numparamtauxx = getNumParam<ASSTYPE>(dofman, Tauxx, 1);
     const int numparamtauyy = getNumParam<ASSTYPE>(dofman, Tauyy, 1);
     const int numparamtauzz = getNumParam<ASSTYPE>(dofman, Tauzz, 1);
@@ -657,37 +657,15 @@ void Sysmat(
     const int numparamtauxz = getNumParam<ASSTYPE>(dofman, Tauxz, 1);
     const int numparamtauyz = getNumParam<ASSTYPE>(dofman, Tauyz, 1);
     
-
-    
-    const vector<int> velxdof = dofman.LocalDofPosPerField(Velx);
-    const vector<int> velydof = dofman.LocalDofPosPerField(Vely);
-    const vector<int> velzdof = dofman.LocalDofPosPerField(Velz);
-    const vector<int> presdof = dofman.LocalDofPosPerField(Pres);
-    const vector<int> tauxxdof = dofman.LocalDofPosPerField(Tauxx);
-    const vector<int> tauyydof = dofman.LocalDofPosPerField(Tauyy);
-    const vector<int> tauzzdof = dofman.LocalDofPosPerField(Tauzz);
-    const vector<int> tauxydof = dofman.LocalDofPosPerField(Tauxy);
-    const vector<int> tauxzdof = dofman.LocalDofPosPerField(Tauxz);
-    const vector<int> tauyzdof = dofman.LocalDofPosPerField(Tauyz);
-
-//    cout << "numparamvelx  " << numparamvelx << "  " <<  velxdof.size() << endl;
-//    cout << "numparamtauxx " << numparamtauxx << "  " <<  tauxxdof.size() << endl;
-//    cout << "numparamtauyy " << numparamtauyy << "  " <<  tauyydof.size() << endl;
-//    cout << "numparamtauzz " << numparamtauzz << "  " <<  tauzzdof.size() << endl;
-//    cout << "numparamtauxy " << numparamtauxy << "  " <<  tauxydof.size() << endl;
-//    cout << "numparamtauxz " << numparamtauxz << "  " <<  tauxzdof.size() << endl;
-//    cout << "numparamtauyz " << numparamtauyz << "  " <<  tauyzdof.size() << endl;
-
-//    if (numparamtauxx > 0)
-//        cout << tauxxdof[0] << " " << tauxxdof[1] << " " << tauxxdof[2] << " " << tauxxdof[3] << " " << endl;
-
-    //    if (numparamvelx != numparamvely or numparamvelx != numparamvelz or numparamvelx != numparampres)
-    //        dserror("for now, we enrich velocity and pressure together");
-    
     // split velocity and pressure (and stress)
-    blitz::Array<double, 1> eprenp(numparampres);
-    blitz::Array<double, 2> evelnp(3,numparamvelx,blitz::ColumnMajorArray<2>());
-    blitz::Array<double, 2> etau(6,numparamtauxx,blitz::ColumnMajorArray<2>());
+    BlitzVec eprenp(numparampres);
+    BlitzMat evelnp(3,numparamvelx,blitz::ColumnMajorArray<2>());
+    BlitzMat etau(6,numparamtauxx,blitz::ColumnMajorArray<2>());
+    
+    const vector<int> velxdof(dofman.LocalDofPosPerField(Velx));
+    const vector<int> velydof(dofman.LocalDofPosPerField(Vely));
+    const vector<int> velzdof(dofman.LocalDofPosPerField(Velz));
+    const vector<int> presdof(dofman.LocalDofPosPerField(Pres));
     
     for (int iparam=0; iparam<numparamvelx; ++iparam)   evelnp(0,iparam) = locval[velxdof[iparam]];
     for (int iparam=0; iparam<numparamvely; ++iparam)   evelnp(1,iparam) = locval[velydof[iparam]];
@@ -695,6 +673,12 @@ void Sysmat(
     for (int iparam=0; iparam<numparampres; ++iparam)   eprenp(iparam) = locval[presdof[iparam]];
     if (stress_unknowns_present)
     {
+        const vector<int> tauxxdof(dofman.LocalDofPosPerField(Tauxx));
+        const vector<int> tauyydof(dofman.LocalDofPosPerField(Tauyy));
+        const vector<int> tauzzdof(dofman.LocalDofPosPerField(Tauzz));
+        const vector<int> tauxydof(dofman.LocalDofPosPerField(Tauxy));
+        const vector<int> tauxzdof(dofman.LocalDofPosPerField(Tauxz));
+        const vector<int> tauyzdof(dofman.LocalDofPosPerField(Tauyz));
         for (int iparam=0; iparam<numparamtauxx; ++iparam)   etau(0,iparam) = locval[tauxxdof[iparam]];
         for (int iparam=0; iparam<numparamtauyy; ++iparam)   etau(1,iparam) = locval[tauyydof[iparam]];
         for (int iparam=0; iparam<numparamtauzz; ++iparam)   etau(2,iparam) = locval[tauzzdof[iparam]];
@@ -704,11 +688,11 @@ void Sysmat(
     }
     
     // stabilization parameter
-    const double hk = XFLUID::HK<DISTYPE>(evelnp,visc,xyze_);
+    const double hk = XFLUID::HK<DISTYPE>(evelnp,visc,xyze);
     const double mk = XFLUID::MK<DISTYPE>();
     
     // information about domain integration cells
-    const XFEM::DomainIntCells   domainIntCells   = ih->GetDomainIntCells(ele->Id(),DISTYPE);
+    const XFEM::DomainIntCells  domainIntCells(ih->GetDomainIntCells(ele->Id(),DISTYPE));
     // loop over integration cells
     for (XFEM::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
     {
@@ -720,7 +704,7 @@ void Sysmat(
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
         {
             // coordinates of the current integration point in cell coordinates \eta
-            XFEM::PosEtaDomain pos_eta(3);
+            static XFEM::PosEtaDomain pos_eta(3);
             pos_eta(0) = intpoints.qxg[iquad][0];
             pos_eta(1) = intpoints.qxg[iquad][1];
             pos_eta(2) = intpoints.qxg[iquad][2];
@@ -730,11 +714,11 @@ void Sysmat(
             const double detcell = XFEM::detEtaToXi3D<ASSTYPE>(*cell, pos_eta);
             
             // shape functions and their first derivatives
-            const BlitzVec funct_(DRT::UTILS::shape_function_3D(posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE));
-            const BlitzMat deriv_(DRT::UTILS::shape_function_3D_deriv1(posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE));
+            const BlitzVec funct(DRT::UTILS::shape_function_3D<DISTYPE>(posXiDomain(0),posXiDomain(1),posXiDomain(2)));
+            const BlitzMat deriv(DRT::UTILS::shape_function_3D_deriv1<DISTYPE>(posXiDomain(0),posXiDomain(1),posXiDomain(2)));
       
-            BlitzVec funct_stress(DRT::UTILS::getNumberOfElementNodes(stressdistype));
-            BlitzMat deriv_stress(3, DRT::UTILS::getNumberOfElementNodes(stressdistype));
+            static BlitzVec funct_stress(DRT::UTILS::getNumberOfElementNodes(stressdistype));
+            static BlitzMat deriv_stress(3, DRT::UTILS::getNumberOfElementNodes(stressdistype));
             if (stress_unknowns_present)
             {
                 DRT::UTILS::shape_function_3D(funct_stress,posXiDomain(0),posXiDomain(1),posXiDomain(2),stressdistype);
@@ -744,16 +728,16 @@ void Sysmat(
             }
 
             // position of the gausspoint in physical coordinates
-            const BlitzVec gauss_pos_xyz(blitz::sum(funct_(j)*xyze_(i,j),j));
+            const BlitzVec gauss_pos_xyz(blitz::sum(funct(j)*xyze(i,j),j));
       
             // get transposed of the jacobian matrix d x / d \xi
-            const BlitzMat xjm_(blitz::sum(deriv_(i,k)*xyze_(j,k),k));
-            const double det = xjm_(0,0)*xjm_(1,1)*xjm_(2,2)+
-                               xjm_(0,1)*xjm_(1,2)*xjm_(2,0)+
-                               xjm_(0,2)*xjm_(1,0)*xjm_(2,1)-
-                               xjm_(0,2)*xjm_(1,1)*xjm_(2,0)-
-                               xjm_(0,0)*xjm_(1,2)*xjm_(2,1)-
-                               xjm_(0,1)*xjm_(1,0)*xjm_(2,2);
+            const BlitzMat xjm(blitz::sum(deriv(i,k)*xyze(j,k),k));
+            const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
+                               xjm(0,1)*xjm(1,2)*xjm(2,0)+
+                               xjm(0,2)*xjm(1,0)*xjm(2,1)-
+                               xjm(0,2)*xjm(1,1)*xjm(2,0)-
+                               xjm(0,0)*xjm(1,2)*xjm(2,1)-
+                               xjm(0,1)*xjm(1,0)*xjm(2,2);
             const double fac = intpoints.qwgt[iquad]*det*detcell;
 
             if (det < 0.0)
@@ -762,29 +746,28 @@ void Sysmat(
             }
 
             // inverse of jacobian
-            const BlitzMat xji_(Inverse3x3(xjm_, det));
+            const BlitzMat xji(Inverse3x3(xjm, det));
 
             // compute global derivates
-            const BlitzMat derxy_(blitz::sum(xji_(i,k)*deriv_(k,j),k));
-            const BlitzMat derxy_stress(blitz::sum(xji_(i,k)*deriv_stress(k,j),k));
+            const BlitzMat derxy(blitz::sum(xji(i,k)*deriv(k,j),k));
+            const BlitzMat derxy_stress(blitz::sum(xji(i,k)*deriv_stress(k,j),k));
 
             // compute second global derivative
-            BlitzMat derxy2_(6,numnode,blitz::ColumnMajorArray<2>());
+            static BlitzMat derxy2(6,numnode,blitz::ColumnMajorArray<2>());
             if (higher_order_ele)
             {
-                BlitzMat deriv2_(6,numnode,blitz::ColumnMajorArray<2>());
-                DRT::UTILS::shape_function_3D_deriv2(deriv2_,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
-                derxy2_ = gder2<DISTYPE>(xjm_, derxy_, deriv2_, xyze_);
+                const BlitzMat deriv2(DRT::UTILS::shape_function_3D_deriv2<DISTYPE>(posXiDomain(0),posXiDomain(1),posXiDomain(2)));
+                derxy2 = gder2<DISTYPE>(xjm, derxy, deriv2, xyze);
             }
             else
             {
-                derxy2_ = 0.;
+                derxy2 = 0.;
             }
 
             // after this call, one should only use the enriched shape functions and derivatives!
-            BlitzVec enr_funct_(numparamvelx);
-            BlitzMat enr_derxy_(3,numparamvelx,blitz::ColumnMajorArray<2>());
-            BlitzMat enr_derxy2_(6,numparamvelx,blitz::ColumnMajorArray<2>());
+            BlitzVec enr_funct(numparamvelx);
+            BlitzMat enr_derxy(3,numparamvelx,blitz::ColumnMajorArray<2>());
+            BlitzMat enr_derxy2(6,numparamvelx,blitz::ColumnMajorArray<2>());
       
             BlitzVec enr_funct_stress(numparamtauxx);
             BlitzMat enr_derxy_stress(3,numparamtauxx,blitz::ColumnMajorArray<2>());
@@ -798,12 +781,12 @@ void Sysmat(
                         Velx,
                         gauss_pos_xyz,
                         XFEM::Enrichment::approachUnknown,
-                        funct_,
-                        derxy_,
-                        derxy2_, 
-                        enr_funct_,
-                        enr_derxy_,
-                        enr_derxy2_);
+                        funct,
+                        derxy,
+                        derxy2, 
+                        enr_funct,
+                        enr_derxy,
+                        enr_derxy2);
           
                 if (stress_unknowns_present)
                 {
@@ -823,22 +806,22 @@ void Sysmat(
             }
             else
             {
-                enr_funct_  = funct_;
-                enr_derxy_  = derxy_;
-                enr_derxy2_ = derxy2_;
+                enr_funct.reference(funct);
+                enr_derxy.reference(derxy);
+                enr_derxy2.reference(derxy2);
           
-                enr_funct_stress  = funct_stress;
-                enr_derxy_stress  = derxy_stress;
+                enr_funct_stress.reference(funct_stress);
+                enr_derxy_stress.reference(derxy_stress);
             }
       
-            // create vievs on the shape function arrays for easy handling in the assembly process
-            const BlitzVec shp(enr_funct_);
-            const BlitzVec shp_dx(enr_derxy_(0,_));
-            const BlitzVec shp_dy(enr_derxy_(1,_));
-            const BlitzVec shp_dz(enr_derxy_(2,_));
-            const BlitzVec shp_dxdx(enr_derxy2_(0,_)); const BlitzVec shp_dxdy(enr_derxy2_(3,_)); const BlitzVec shp_dxdz(enr_derxy2_(4,_));
-            const BlitzVec shp_dydx(shp_dxdy);         const BlitzVec shp_dydy(enr_derxy2_(1,_)); const BlitzVec shp_dydz(enr_derxy2_(5,_));
-            const BlitzVec shp_dzdx(shp_dxdz);         const BlitzVec shp_dzdy(shp_dydz);         const BlitzVec shp_dzdz(enr_derxy2_(2,_));
+            // create views on the shape function arrays for easy handling in the assembly process
+            const BlitzVec shp(enr_funct);
+            const BlitzVec shp_dx(enr_derxy(0,_));
+            const BlitzVec shp_dy(enr_derxy(1,_));
+            const BlitzVec shp_dz(enr_derxy(2,_));
+            const BlitzVec shp_dxdx(enr_derxy2(0,_)); const BlitzVec shp_dxdy(enr_derxy2(3,_)); const BlitzVec shp_dxdz(enr_derxy2(4,_));
+            const BlitzVec shp_dydx(shp_dxdy);        const BlitzVec shp_dydy(enr_derxy2(1,_)); const BlitzVec shp_dydz(enr_derxy2(5,_));
+            const BlitzVec shp_dzdx(shp_dxdz);        const BlitzVec shp_dzdy(shp_dydz);        const BlitzVec shp_dzdz(enr_derxy2(2,_));
             
             const BlitzVec shp_tau(enr_funct_stress);
             const BlitzVec shp_tau_dx(enr_derxy_stress(0,_));
@@ -846,30 +829,30 @@ void Sysmat(
             const BlitzVec shp_tau_dz(enr_derxy_stress(2,_));
       
             // get velocities (n+g,i) at integration point
-            const BlitzVec velint_(blitz::sum(enr_funct_(j)*evelnp(i,j),j));
+            const BlitzVec velint(blitz::sum(enr_funct(j)*evelnp(i,j),j));
 
             // get velocity (np,i) derivatives at integration point
-            const BlitzMat vderxy_(blitz::sum(enr_derxy_(j,k)*evelnp(i,k),k));
+            const BlitzMat vderxy(blitz::sum(enr_derxy(j,k)*evelnp(i,k),k));
       
             // calculate 2nd velocity derivatives at integration point
-            BlitzMat vderxy2_(3,6,blitz::ColumnMajorArray<2>());
+            static BlitzMat vderxy2(3,6,blitz::ColumnMajorArray<2>());
             if (higher_order_ele)
             {
-                vderxy2_ = blitz::sum(enr_derxy2_(j,k)*evelnp(i,k),k);
+                vderxy2 = blitz::sum(enr_derxy2(j,k)*evelnp(i,k),k);
             }
             else
             {
-                vderxy2_ = 0.;
+                vderxy2 = 0.;
             }
 
             // get pressure gradients
-            const BlitzVec gradp_(blitz::sum(enr_derxy_(i,j)*eprenp(j),j));
+            const BlitzVec gradp(blitz::sum(enr_derxy(i,j)*eprenp(j),j));
     
             // get pressure
-            const double press = blitz::sum(enr_funct_*eprenp);
+            const double press(blitz::sum(enr_funct*eprenp));
     
             // get viscous stress unknowns
-            BlitzMat tau(3,3,blitz::ColumnMajorArray<2>());
+            static BlitzMat tau(3,3,blitz::ColumnMajorArray<2>());
             if (stress_unknowns_present)
             {
                 tau(0,0) = blitz::sum(shp_tau(_)*etau(0,_)); tau(0,1) = blitz::sum(shp_tau(_)*etau(3,_)); tau(0,2) = blitz::sum(shp_tau(_)*etau(4,_));
@@ -901,29 +884,29 @@ void Sysmat(
 
             
             // get bodyforce in gausspoint
-            BlitzVec bodyforce_(3);
-            bodyforce_ = 0.0;
+            static BlitzVec bodyforce(3);
+            bodyforce = 0.0;
             //////////////////////////////////////////BlitzVec bodyforce_(blitz::sum(enr_edeadng_(i,j)*enr_funct_(j),j));
 
             
 
             // get velocity norm
-            const double vel_norm = sqrt(blitz::sum(velint_*velint_));
+            const double vel_norm = sqrt(blitz::sum(velint*velint));
 
             // normed velocity at element centre
-            BlitzVec velino_(3);
+            static BlitzVec velino(3);
             if (vel_norm>=1e-6)
             {
-                velino_ = velint_/vel_norm;
+                velino = velint/vel_norm;
             }
             else
             {
-                velino_ = 0.;
-                velino_(0) = 1;
+                velino = 0.;
+                velino(0) = 1;
             }
 
             // get streamlength
-            const double val = blitz::sum(blitz::abs(blitz::sum(velino_(j)*derxy_(j,i),j)));
+            const double val = blitz::sum(blitz::abs(blitz::sum(velino(j)*derxy(j,i),j)));
             const double strle = 2.0/val;
 
             // calculate tau: stabilization parameters for stationary case
@@ -950,21 +933,21 @@ void Sysmat(
             /*------------------------- evaluate rhs vector at integration point ---*/
             //   rhsint_ = histvec_(i) + bodyforce_(i);
             // histvec is always zero in stationary case (!):
-            const BlitzVec rhsint_(bodyforce_(i));
+            const BlitzVec rhsint(bodyforce(i));
 
             /*----------------- get numerical representation of single operators ---*/
 
             /* Convective term  u_old * grad u_old: */
-            const BlitzVec conv_old_(blitz::sum(vderxy_(i, j)*velint_(j), j));
+            const BlitzVec conv_old(blitz::sum(vderxy(i, j)*velint(j), j));
             
             /* Viscous term  div epsilon(u_old) */
-            BlitzVec visc_old_(3);
-            visc_old_(0) = vderxy2_(0,0) + 0.5 * (vderxy2_(0,1) + vderxy2_(1,3) + vderxy2_(0,2) + vderxy2_(2,4));
-            visc_old_(1) = vderxy2_(1,1) + 0.5 * (vderxy2_(1,0) + vderxy2_(0,3) + vderxy2_(1,2) + vderxy2_(2,5));
-            visc_old_(2) = vderxy2_(2,2) + 0.5 * (vderxy2_(2,0) + vderxy2_(0,4) + vderxy2_(2,1) + vderxy2_(1,5));
+            static BlitzVec visc_old(3);
+            visc_old(0) = vderxy2(0,0) + 0.5 * (vderxy2(0,1) + vderxy2(1,3) + vderxy2(0,2) + vderxy2(2,4));
+            visc_old(1) = vderxy2(1,1) + 0.5 * (vderxy2(1,0) + vderxy2(0,3) + vderxy2(1,2) + vderxy2(2,5));
+            visc_old(2) = vderxy2(2,2) + 0.5 * (vderxy2(2,0) + vderxy2(0,4) + vderxy2(2,1) + vderxy2(1,5));
             
             // evaluate residual once for all stabilisation right hand sides
-            BlitzVec res_old(-rhsint_+(conv_old_+gradp_-2.0*visc*visc_old_));
+            const BlitzVec res_old(-rhsint+(conv_old+gradp-2.0*visc*visc_old));
       
             /* Reactive term  u:  funct */
             /* linearise convective term */
@@ -972,7 +955,7 @@ void Sysmat(
             /*--- convective part u_old * grad (funct) --------------------------*/
             /* u_old_x * N,x  +  u_old_y * N,y + u_old_z * N,z
              with  N .. form function matrix                                   */
-            const BlitzVec enr_conv_c_(blitz::sum(enr_derxy_(j,i)*velint_(j), j));
+            const BlitzVec enr_conv_c_(blitz::sum(enr_derxy(j,i)*velint(j), j));
 
 //              /*--- convective grid part u_G * grad (funct) -----------------------*/
 //              /* u_old_x * N,x  +  u_old_y * N,y   with  N .. form function matrix */
@@ -990,7 +973,7 @@ void Sysmat(
     
                with N_x .. x-line of N
                N_y .. y-line of N                                             */
-            blitz::Array<double,3> enr_viscs2_(3,3,numparamvelx,blitz::ColumnMajorArray<3>());
+            static blitz::Array<double,3> enr_viscs2_(3,3,numparamvelx,blitz::ColumnMajorArray<3>());
             enr_viscs2_(0,0,_) = 0.5 * (2.0 * shp_dxdx + shp_dydy + shp_dzdz);
             enr_viscs2_(0,1,_) = 0.5 *  shp_dxdy;
             enr_viscs2_(0,2,_) = 0.5 *  shp_dxdz;
@@ -1019,17 +1002,15 @@ void Sysmat(
             assembler.template Matrix<Vely,Vely>(shp, fac, enr_conv_c_);
             assembler.template Matrix<Velz,Velz>(shp, fac, enr_conv_c_);
             
-            assembler.template Vector<Velx>(shp, -fac*velint_(0)*vderxy_(0,0));
-            assembler.template Vector<Velx>(shp, -fac*velint_(1)*vderxy_(0,1));
-            assembler.template Vector<Velx>(shp, -fac*velint_(2)*vderxy_(0,2));
-            
-            assembler.template Vector<Vely>(shp, -fac*velint_(0)*vderxy_(1,0));
-            assembler.template Vector<Vely>(shp, -fac*velint_(1)*vderxy_(1,1));
-            assembler.template Vector<Vely>(shp, -fac*velint_(2)*vderxy_(1,2));
-            
-            assembler.template Vector<Velz>(shp, -fac*velint_(0)*vderxy_(2,0));
-            assembler.template Vector<Velz>(shp, -fac*velint_(1)*vderxy_(2,1));
-            assembler.template Vector<Velz>(shp, -fac*velint_(2)*vderxy_(2,2));
+            assembler.template Vector<Velx>(shp, -fac*(velint(0)*vderxy(0,0)
+                                                      +velint(1)*vderxy(0,1)
+                                                      +velint(2)*vderxy(0,2)));
+            assembler.template Vector<Vely>(shp, -fac*(velint(0)*vderxy(1,0)
+                                                      +velint(1)*vderxy(1,1)
+                                                      +velint(2)*vderxy(1,2)));
+            assembler.template Vector<Velz>(shp, -fac*(velint(0)*vderxy(2,0)
+                                                      +velint(1)*vderxy(2,1)
+                                                      +velint(2)*vderxy(2,2)));
             
             if (newton)
             {
@@ -1041,15 +1022,15 @@ void Sysmat(
                       |      \          /   (i)   |
                        \                         /
                 */
-                assembler.template Matrix<Velx,Velx>(shp, fac*vderxy_(0,0), shp);
-                assembler.template Matrix<Velx,Vely>(shp, fac*vderxy_(0,1), shp);
-                assembler.template Matrix<Velx,Velz>(shp, fac*vderxy_(0,2), shp);
-                assembler.template Matrix<Vely,Velx>(shp, fac*vderxy_(1,0), shp);
-                assembler.template Matrix<Vely,Vely>(shp, fac*vderxy_(1,1), shp);
-                assembler.template Matrix<Vely,Velz>(shp, fac*vderxy_(1,2), shp);
-                assembler.template Matrix<Velz,Velx>(shp, fac*vderxy_(2,0), shp);
-                assembler.template Matrix<Velz,Vely>(shp, fac*vderxy_(2,1), shp);
-                assembler.template Matrix<Velz,Velz>(shp, fac*vderxy_(2,2), shp);
+                assembler.template Matrix<Velx,Velx>(shp, fac*vderxy(0,0), shp);
+                assembler.template Matrix<Velx,Vely>(shp, fac*vderxy(0,1), shp);
+                assembler.template Matrix<Velx,Velz>(shp, fac*vderxy(0,2), shp);
+                assembler.template Matrix<Vely,Velx>(shp, fac*vderxy(1,0), shp);
+                assembler.template Matrix<Vely,Vely>(shp, fac*vderxy(1,1), shp);
+                assembler.template Matrix<Vely,Velz>(shp, fac*vderxy(1,2), shp);
+                assembler.template Matrix<Velz,Velx>(shp, fac*vderxy(2,0), shp);
+                assembler.template Matrix<Velz,Vely>(shp, fac*vderxy(2,1), shp);
+                assembler.template Matrix<Velz,Velz>(shp, fac*vderxy(2,2), shp);
             }
             
             /* Viskositaetsterm */
@@ -1078,23 +1059,17 @@ void Sysmat(
             assembler.template Matrix<Velz,Velz>(shp_dy,     visc*fac, shp_dy);
             assembler.template Matrix<Velz,Velz>(shp_dz, 2.0*visc*fac, shp_dz);
             
-            assembler.template Vector<Velx>(shp_dx, -2.0*visc*fac*vderxy_(0, 0));
-            assembler.template Vector<Velx>(shp_dy,     -visc*fac*vderxy_(0, 1));
-            assembler.template Vector<Velx>(shp_dy,     -visc*fac*vderxy_(1, 0));
-            assembler.template Vector<Velx>(shp_dz,     -visc*fac*vderxy_(0, 2));
-            assembler.template Vector<Velx>(shp_dz,     -visc*fac*vderxy_(2, 0));
+            assembler.template Vector<Velx>(shp_dx,     -visc*fac*(vderxy(0, 0) + vderxy(0, 0)));
+            assembler.template Vector<Velx>(shp_dy,     -visc*fac*(vderxy(0, 1) + vderxy(1, 0)));
+            assembler.template Vector<Velx>(shp_dz,     -visc*fac*(vderxy(0, 2) + vderxy(2, 0)));
             
-            assembler.template Vector<Vely>(shp_dx,     -visc*fac*vderxy_(1, 0));
-            assembler.template Vector<Vely>(shp_dx,     -visc*fac*vderxy_(0, 1));
-            assembler.template Vector<Vely>(shp_dy, -2.0*visc*fac*vderxy_(1, 1));
-            assembler.template Vector<Vely>(shp_dz,     -visc*fac*vderxy_(1, 2));
-            assembler.template Vector<Vely>(shp_dz,     -visc*fac*vderxy_(2, 1));
+            assembler.template Vector<Vely>(shp_dx,     -visc*fac*(vderxy(1, 0) + vderxy(0, 1)));
+            assembler.template Vector<Vely>(shp_dy,     -visc*fac*(vderxy(1, 1) + vderxy(1, 1)));
+            assembler.template Vector<Vely>(shp_dz,     -visc*fac*(vderxy(1, 2) + vderxy(2, 1)));
             
-            assembler.template Vector<Velz>(shp_dx,     -visc*fac*vderxy_(2, 0));
-            assembler.template Vector<Velz>(shp_dx,     -visc*fac*vderxy_(0, 2));
-            assembler.template Vector<Velz>(shp_dy,     -visc*fac*vderxy_(2, 1));
-            assembler.template Vector<Velz>(shp_dy,     -visc*fac*vderxy_(1, 2));
-            assembler.template Vector<Velz>(shp_dz, -2.0*visc*fac*vderxy_(2, 2));
+            assembler.template Vector<Velz>(shp_dx,     -visc*fac*(vderxy(2, 0) + vderxy(0, 2)));
+            assembler.template Vector<Velz>(shp_dy,     -visc*fac*(vderxy(2, 1) + vderxy(1, 2)));
+            assembler.template Vector<Velz>(shp_dz,     -visc*fac*(vderxy(2, 2) + vderxy(2, 2)));
             
             /* Druckterm */
             /*
@@ -1124,19 +1099,20 @@ void Sysmat(
             assembler.template Matrix<Pres,Vely>(shp, fac, shp_dy);
             assembler.template Matrix<Pres,Velz>(shp, fac, shp_dz);
             
-            assembler.template Vector<Pres>(shp, -fac*vderxy_(0,0));
-            assembler.template Vector<Pres>(shp, -fac*vderxy_(1,1));
-            assembler.template Vector<Pres>(shp, -fac*vderxy_(2,2));
+            assembler.template Vector<Pres>(shp, -fac*vderxy(0,0));
+            assembler.template Vector<Pres>(shp, -fac*vderxy(1,1));
+            assembler.template Vector<Pres>(shp, -fac*vderxy(2,2));
             
             // source term of the right hand side
-            assembler.template Vector<Velx>(shp, fac*rhsint_(0));
-            assembler.template Vector<Vely>(shp, fac*rhsint_(1));
-            assembler.template Vector<Velz>(shp, fac*rhsint_(2));
+            assembler.template Vector<Velx>(shp, fac*rhsint(0));
+            assembler.template Vector<Vely>(shp, fac*rhsint(1));
+            assembler.template Vector<Velz>(shp, fac*rhsint(2));
             
             
             // Hellinger-Reissner terms
             if (stress_unknowns_present)
             {
+                const double reciproke_visc = 1.0 / visc;
                 /* quadratic part */
                 /*
                                /                    \
@@ -1191,23 +1167,23 @@ void Sysmat(
                 assembler.template Matrix<Tauzy,Velz>(shp_tau,     fac*0.5, shp_dy);
                 assembler.template Matrix<Tauzz,Velz>(shp_tau, 2.0*fac*0.5, shp_dz);
                 
-                assembler.template Vector<Tauxx>(shp_tau, -2.0*fac*0.5*vderxy_(0, 0));
-                assembler.template Vector<Tauxy>(shp_tau, -    fac*0.5*vderxy_(0, 1));
-                assembler.template Vector<Tauxy>(shp_tau, -    fac*0.5*vderxy_(1, 0));
-                assembler.template Vector<Tauxz>(shp_tau, -    fac*0.5*vderxy_(0, 2));
-                assembler.template Vector<Tauxz>(shp_tau, -    fac*0.5*vderxy_(2, 0));
+                assembler.template Vector<Tauxx>(shp_tau, -2.0*fac*0.5*vderxy(0, 0));
+                assembler.template Vector<Tauxy>(shp_tau, -    fac*0.5*vderxy(0, 1));
+                assembler.template Vector<Tauxy>(shp_tau, -    fac*0.5*vderxy(1, 0));
+                assembler.template Vector<Tauxz>(shp_tau, -    fac*0.5*vderxy(0, 2));
+                assembler.template Vector<Tauxz>(shp_tau, -    fac*0.5*vderxy(2, 0));
                 
-                assembler.template Vector<Tauyx>(shp_tau, -    fac*0.5*vderxy_(1, 0));
-                assembler.template Vector<Tauyx>(shp_tau, -    fac*0.5*vderxy_(0, 1));
-                assembler.template Vector<Tauyy>(shp_tau, -2.0*fac*0.5*vderxy_(1, 1));
-                assembler.template Vector<Tauyz>(shp_tau, -    fac*0.5*vderxy_(1, 2));
-                assembler.template Vector<Tauyz>(shp_tau, -    fac*0.5*vderxy_(2, 1));
+                assembler.template Vector<Tauyx>(shp_tau, -    fac*0.5*vderxy(1, 0));
+                assembler.template Vector<Tauyx>(shp_tau, -    fac*0.5*vderxy(0, 1));
+                assembler.template Vector<Tauyy>(shp_tau, -2.0*fac*0.5*vderxy(1, 1));
+                assembler.template Vector<Tauyz>(shp_tau, -    fac*0.5*vderxy(1, 2));
+                assembler.template Vector<Tauyz>(shp_tau, -    fac*0.5*vderxy(2, 1));
                 
-                assembler.template Vector<Tauzx>(shp_tau, -    fac*0.5*vderxy_(2, 0));
-                assembler.template Vector<Tauzx>(shp_tau, -    fac*0.5*vderxy_(0, 2));
-                assembler.template Vector<Tauzy>(shp_tau, -    fac*0.5*vderxy_(2, 1));
-                assembler.template Vector<Tauzy>(shp_tau, -    fac*0.5*vderxy_(1, 2));
-                assembler.template Vector<Tauzz>(shp_tau, -2.0*fac*0.5*vderxy_(2, 2));
+                assembler.template Vector<Tauzx>(shp_tau, -    fac*0.5*vderxy(2, 0));
+                assembler.template Vector<Tauzx>(shp_tau, -    fac*0.5*vderxy(0, 2));
+                assembler.template Vector<Tauzy>(shp_tau, -    fac*0.5*vderxy(2, 1));
+                assembler.template Vector<Tauzy>(shp_tau, -    fac*0.5*vderxy(1, 2));
+                assembler.template Vector<Tauzz>(shp_tau, -2.0*fac*0.5*vderxy(2, 2));
                 
                 /*
                                /              \
@@ -1250,17 +1226,17 @@ void Sysmat(
                          |           \          /   (i)  |
                           \                             /
                     */
-                    assembler.template Matrix<Pres,Velx>(shp_dx, tau_Mp*vderxy_(0,0), shp);
-                    assembler.template Matrix<Pres,Velx>(shp_dy, tau_Mp*vderxy_(1,0), shp);
-                    assembler.template Matrix<Pres,Velx>(shp_dz, tau_Mp*vderxy_(2,0), shp);
+                    assembler.template Matrix<Pres,Velx>(shp_dx, tau_Mp*vderxy(0,0), shp);
+                    assembler.template Matrix<Pres,Velx>(shp_dy, tau_Mp*vderxy(1,0), shp);
+                    assembler.template Matrix<Pres,Velx>(shp_dz, tau_Mp*vderxy(2,0), shp);
                     
-                    assembler.template Matrix<Pres,Vely>(shp_dx, tau_Mp*vderxy_(0,1), shp);
-                    assembler.template Matrix<Pres,Vely>(shp_dy, tau_Mp*vderxy_(1,1), shp);
-                    assembler.template Matrix<Pres,Vely>(shp_dz, tau_Mp*vderxy_(2,1), shp);
+                    assembler.template Matrix<Pres,Vely>(shp_dx, tau_Mp*vderxy(0,1), shp);
+                    assembler.template Matrix<Pres,Vely>(shp_dy, tau_Mp*vderxy(1,1), shp);
+                    assembler.template Matrix<Pres,Vely>(shp_dz, tau_Mp*vderxy(2,1), shp);
                     
-                    assembler.template Matrix<Pres,Velz>(shp_dx, tau_Mp*vderxy_(0,2), shp);
-                    assembler.template Matrix<Pres,Velz>(shp_dy, tau_Mp*vderxy_(1,2), shp);
-                    assembler.template Matrix<Pres,Velz>(shp_dz, tau_Mp*vderxy_(2,2), shp);
+                    assembler.template Matrix<Pres,Velz>(shp_dx, tau_Mp*vderxy(0,2), shp);
+                    assembler.template Matrix<Pres,Velz>(shp_dy, tau_Mp*vderxy(1,2), shp);
+                    assembler.template Matrix<Pres,Velz>(shp_dz, tau_Mp*vderxy(2,2), shp);
                 }
                 
 //                assembler.template Vector<Pres>(shp_dx, -tau_Mp*conv_old_(0));
@@ -1369,17 +1345,17 @@ void Sysmat(
                               |    \          /   (i)    \ (i)        /     |
                                \                                           /
                     */
-                    assembler.template Matrix<Velx,Velx>(enr_conv_c_, tau_M*vderxy_(0,0), shp);
-                    assembler.template Matrix<Velx,Vely>(enr_conv_c_, tau_M*vderxy_(0,1), shp);
-                    assembler.template Matrix<Velx,Velz>(enr_conv_c_, tau_M*vderxy_(0,2), shp);
+                    assembler.template Matrix<Velx,Velx>(enr_conv_c_, tau_M*vderxy(0,0), shp);
+                    assembler.template Matrix<Velx,Vely>(enr_conv_c_, tau_M*vderxy(0,1), shp);
+                    assembler.template Matrix<Velx,Velz>(enr_conv_c_, tau_M*vderxy(0,2), shp);
                     
-                    assembler.template Matrix<Vely,Velx>(enr_conv_c_, tau_M*vderxy_(1,0), shp);
-                    assembler.template Matrix<Vely,Vely>(enr_conv_c_, tau_M*vderxy_(1,1), shp);                    
-                    assembler.template Matrix<Vely,Velz>(enr_conv_c_, tau_M*vderxy_(1,2), shp);                    
+                    assembler.template Matrix<Vely,Velx>(enr_conv_c_, tau_M*vderxy(1,0), shp);
+                    assembler.template Matrix<Vely,Vely>(enr_conv_c_, tau_M*vderxy(1,1), shp);                    
+                    assembler.template Matrix<Vely,Velz>(enr_conv_c_, tau_M*vderxy(1,2), shp);                    
 
-                    assembler.template Matrix<Velz,Velx>(enr_conv_c_, tau_M*vderxy_(2,0), shp);
-                    assembler.template Matrix<Velz,Vely>(enr_conv_c_, tau_M*vderxy_(2,1), shp);
-                    assembler.template Matrix<Velz,Velz>(enr_conv_c_, tau_M*vderxy_(2,2), shp);
+                    assembler.template Matrix<Velz,Velx>(enr_conv_c_, tau_M*vderxy(2,0), shp);
+                    assembler.template Matrix<Velz,Vely>(enr_conv_c_, tau_M*vderxy(2,1), shp);
+                    assembler.template Matrix<Velz,Velz>(enr_conv_c_, tau_M*vderxy(2,2), shp);
                     
                     /*
                              /                                           \
@@ -1388,43 +1364,43 @@ void Sysmat(
                             |    \ (i)        /   (i)    \          /     |
                              \                                           /
                     */
-                    assembler.template Matrix<Velx,Velx>(shp_dx, tau_M*velint_(0)*vderxy_(0,0), shp);
-                    assembler.template Matrix<Velx,Velx>(shp_dx, tau_M*velint_(1)*vderxy_(0,1), shp);
-                    assembler.template Matrix<Velx,Velx>(shp_dx, tau_M*velint_(2)*vderxy_(0,2), shp);
+                    assembler.template Matrix<Velx,Velx>(shp_dx, tau_M*(velint(0)*vderxy(0,0) + velint(1)*vderxy(0,1)) + velint(2)*vderxy(0,2), shp);
+//                    assembler.template Matrix<Velx,Velx>(shp_dx, tau_M*velint_(1)*vderxy_(0,1), shp);
+//                    assembler.template Matrix<Velx,Velx>(shp_dx, tau_M*velint_(2)*vderxy_(0,2), shp);
                     
-                    assembler.template Matrix<Velx,Vely>(shp_dy, tau_M*velint_(0)*vderxy_(0,0), shp);
-                    assembler.template Matrix<Velx,Vely>(shp_dy, tau_M*velint_(1)*vderxy_(0,1), shp);
-                    assembler.template Matrix<Velx,Vely>(shp_dy, tau_M*velint_(2)*vderxy_(0,2), shp);                        
+                    assembler.template Matrix<Velx,Vely>(shp_dy, tau_M*velint(0)*vderxy(0,0), shp);
+                    assembler.template Matrix<Velx,Vely>(shp_dy, tau_M*velint(1)*vderxy(0,1), shp);
+                    assembler.template Matrix<Velx,Vely>(shp_dy, tau_M*velint(2)*vderxy(0,2), shp);                        
                     
-                    assembler.template Matrix<Velx,Velz>(shp_dz, tau_M*velint_(0)*vderxy_(0,0), shp);
-                    assembler.template Matrix<Velx,Velz>(shp_dz, tau_M*velint_(1)*vderxy_(0,1), shp);
-                    assembler.template Matrix<Velx,Velz>(shp_dz, tau_M*velint_(2)*vderxy_(0,2), shp); 
-                    
-                    
-                    assembler.template Matrix<Vely,Velx>(shp_dx, tau_M*velint_(0)*vderxy_(1,0), shp);
-                    assembler.template Matrix<Vely,Velx>(shp_dx, tau_M*velint_(1)*vderxy_(1,1), shp);
-                    assembler.template Matrix<Vely,Velx>(shp_dx, tau_M*velint_(2)*vderxy_(1,2), shp);
-                    
-                    assembler.template Matrix<Vely,Vely>(shp_dy, tau_M*velint_(0)*vderxy_(1,0), shp);
-                    assembler.template Matrix<Vely,Vely>(shp_dy, tau_M*velint_(1)*vderxy_(1,1), shp);
-                    assembler.template Matrix<Vely,Vely>(shp_dy, tau_M*velint_(2)*vderxy_(1,2), shp);
-                    
-                    assembler.template Matrix<Vely,Velz>(shp_dz, tau_M*velint_(0)*vderxy_(1,0), shp);
-                    assembler.template Matrix<Vely,Velz>(shp_dz, tau_M*velint_(1)*vderxy_(1,1), shp);
-                    assembler.template Matrix<Vely,Velz>(shp_dz, tau_M*velint_(2)*vderxy_(1,2), shp);
+                    assembler.template Matrix<Velx,Velz>(shp_dz, tau_M*velint(0)*vderxy(0,0), shp);
+                    assembler.template Matrix<Velx,Velz>(shp_dz, tau_M*velint(1)*vderxy(0,1), shp);
+                    assembler.template Matrix<Velx,Velz>(shp_dz, tau_M*velint(2)*vderxy(0,2), shp); 
                     
                     
-                    assembler.template Matrix<Velz,Velx>(shp_dx, tau_M*velint_(0)*vderxy_(2,0), shp);
-                    assembler.template Matrix<Velz,Velx>(shp_dx, tau_M*velint_(1)*vderxy_(2,1), shp);
-                    assembler.template Matrix<Velz,Velx>(shp_dx, tau_M*velint_(2)*vderxy_(2,2), shp);
+                    assembler.template Matrix<Vely,Velx>(shp_dx, tau_M*velint(0)*vderxy(1,0), shp);
+                    assembler.template Matrix<Vely,Velx>(shp_dx, tau_M*velint(1)*vderxy(1,1), shp);
+                    assembler.template Matrix<Vely,Velx>(shp_dx, tau_M*velint(2)*vderxy(1,2), shp);
                     
-                    assembler.template Matrix<Velz,Vely>(shp_dy, tau_M*velint_(0)*vderxy_(2,0), shp);
-                    assembler.template Matrix<Velz,Vely>(shp_dy, tau_M*velint_(1)*vderxy_(2,1), shp);
-                    assembler.template Matrix<Velz,Vely>(shp_dy, tau_M*velint_(2)*vderxy_(2,2), shp);
+                    assembler.template Matrix<Vely,Vely>(shp_dy, tau_M*velint(0)*vderxy(1,0), shp);
+                    assembler.template Matrix<Vely,Vely>(shp_dy, tau_M*velint(1)*vderxy(1,1), shp);
+                    assembler.template Matrix<Vely,Vely>(shp_dy, tau_M*velint(2)*vderxy(1,2), shp);
                     
-                    assembler.template Matrix<Velz,Velz>(shp_dz, tau_M*velint_(0)*vderxy_(2,0), shp);
-                    assembler.template Matrix<Velz,Velz>(shp_dz, tau_M*velint_(1)*vderxy_(2,1), shp);
-                    assembler.template Matrix<Velz,Velz>(shp_dz, tau_M*velint_(2)*vderxy_(2,2), shp);
+                    assembler.template Matrix<Vely,Velz>(shp_dz, tau_M*velint(0)*vderxy(1,0), shp);
+                    assembler.template Matrix<Vely,Velz>(shp_dz, tau_M*velint(1)*vderxy(1,1), shp);
+                    assembler.template Matrix<Vely,Velz>(shp_dz, tau_M*velint(2)*vderxy(1,2), shp);
+                    
+                    
+                    assembler.template Matrix<Velz,Velx>(shp_dx, tau_M*velint(0)*vderxy(2,0), shp);
+                    assembler.template Matrix<Velz,Velx>(shp_dx, tau_M*velint(1)*vderxy(2,1), shp);
+                    assembler.template Matrix<Velz,Velx>(shp_dx, tau_M*velint(2)*vderxy(2,2), shp);
+                    
+                    assembler.template Matrix<Velz,Vely>(shp_dy, tau_M*velint(0)*vderxy(2,0), shp);
+                    assembler.template Matrix<Velz,Vely>(shp_dy, tau_M*velint(1)*vderxy(2,1), shp);
+                    assembler.template Matrix<Velz,Vely>(shp_dy, tau_M*velint(2)*vderxy(2,2), shp);
+                    
+                    assembler.template Matrix<Velz,Velz>(shp_dz, tau_M*velint(0)*vderxy(2,0), shp);
+                    assembler.template Matrix<Velz,Velz>(shp_dz, tau_M*velint(1)*vderxy(2,1), shp);
+                    assembler.template Matrix<Velz,Velz>(shp_dz, tau_M*velint(2)*vderxy(2,2), shp);
 
 
                     /* supg stabilisation: pressure part, linearisation of test function  ( L_pres_p) */
@@ -1435,17 +1411,17 @@ void Sysmat(
                                    |         (i)    \          /     |
                                     \                               /
                     */
-                    assembler.template Matrix<Velx,Velx>(shp_dx, tau_M*gradp_(0), shp);
-                    assembler.template Matrix<Velx,Vely>(shp_dy, tau_M*gradp_(0), shp);
-                    assembler.template Matrix<Velx,Velz>(shp_dz, tau_M*gradp_(0), shp);
+                    assembler.template Matrix<Velx,Velx>(shp_dx, tau_M*gradp(0), shp);
+                    assembler.template Matrix<Velx,Vely>(shp_dy, tau_M*gradp(0), shp);
+                    assembler.template Matrix<Velx,Velz>(shp_dz, tau_M*gradp(0), shp);
 
-                    assembler.template Matrix<Vely,Velx>(shp_dx, tau_M*gradp_(1), shp);
-                    assembler.template Matrix<Vely,Vely>(shp_dy, tau_M*gradp_(1), shp);
-                    assembler.template Matrix<Vely,Velz>(shp_dz, tau_M*gradp_(1), shp);
+                    assembler.template Matrix<Vely,Velx>(shp_dx, tau_M*gradp(1), shp);
+                    assembler.template Matrix<Vely,Vely>(shp_dy, tau_M*gradp(1), shp);
+                    assembler.template Matrix<Vely,Velz>(shp_dz, tau_M*gradp(1), shp);
                         
-                    assembler.template Matrix<Velz,Velx>(shp_dx, tau_M*gradp_(2), shp);
-                    assembler.template Matrix<Velz,Vely>(shp_dy, tau_M*gradp_(2), shp);
-                    assembler.template Matrix<Velz,Velz>(shp_dz, tau_M*gradp_(2), shp);
+                    assembler.template Matrix<Velz,Velx>(shp_dx, tau_M*gradp(2), shp);
+                    assembler.template Matrix<Velz,Vely>(shp_dy, tau_M*gradp(2), shp);
+                    assembler.template Matrix<Velz,Velz>(shp_dz, tau_M*gradp(2), shp);
 
 
                       /* supg stabilisation: viscous part, linearisation of test function  (-L_visc_u) */
@@ -1456,17 +1432,17 @@ void Sysmat(
                              |               \ (i) /    \          /     |
                               \                                         /
                       */
-                    assembler.template Matrix<Velx,Velx>(shp_dx, -2.0*visc*tau_M*visc_old_(0), shp);
-                    assembler.template Matrix<Velx,Vely>(shp_dy, -2.0*visc*tau_M*visc_old_(0), shp);
-                    assembler.template Matrix<Velx,Velz>(shp_dz, -2.0*visc*tau_M*visc_old_(0), shp);
+                    assembler.template Matrix<Velx,Velx>(shp_dx, -2.0*visc*tau_M*visc_old(0), shp);
+                    assembler.template Matrix<Velx,Vely>(shp_dy, -2.0*visc*tau_M*visc_old(0), shp);
+                    assembler.template Matrix<Velx,Velz>(shp_dz, -2.0*visc*tau_M*visc_old(0), shp);
 
-                    assembler.template Matrix<Vely,Velx>(shp_dx, -2.0*visc*tau_M*visc_old_(1), shp);
-                    assembler.template Matrix<Vely,Vely>(shp_dy, -2.0*visc*tau_M*visc_old_(1), shp);
-                    assembler.template Matrix<Vely,Velz>(shp_dz, -2.0*visc*tau_M*visc_old_(1), shp);
+                    assembler.template Matrix<Vely,Velx>(shp_dx, -2.0*visc*tau_M*visc_old(1), shp);
+                    assembler.template Matrix<Vely,Vely>(shp_dy, -2.0*visc*tau_M*visc_old(1), shp);
+                    assembler.template Matrix<Vely,Velz>(shp_dz, -2.0*visc*tau_M*visc_old(1), shp);
                         
-                    assembler.template Matrix<Velz,Velx>(shp_dx, -2.0*visc*tau_M*visc_old_(2), shp);
-                    assembler.template Matrix<Velz,Vely>(shp_dy, -2.0*visc*tau_M*visc_old_(2), shp);
-                    assembler.template Matrix<Velz,Velz>(shp_dz, -2.0*visc*tau_M*visc_old_(2), shp);
+                    assembler.template Matrix<Velz,Velx>(shp_dx, -2.0*visc*tau_M*visc_old(2), shp);
+                    assembler.template Matrix<Velz,Vely>(shp_dy, -2.0*visc*tau_M*visc_old(2), shp);
+                    assembler.template Matrix<Velz,Velz>(shp_dz, -2.0*visc*tau_M*visc_old(2), shp);
 
                     /* supg stabilisation: bodyforce part, linearisation of test function */
 
@@ -1478,17 +1454,17 @@ void Sysmat(
                                   \                             /
 
                     */
-                    assembler.template Matrix<Velx,Velx>(shp_dx, -tau_M*rhsint_(0), shp);
-                    assembler.template Matrix<Velx,Vely>(shp_dy, -tau_M*rhsint_(0), shp);
-                    assembler.template Matrix<Velx,Velz>(shp_dz, -tau_M*rhsint_(0), shp);
+                    assembler.template Matrix<Velx,Velx>(shp_dx, -tau_M*rhsint(0), shp);
+                    assembler.template Matrix<Velx,Vely>(shp_dy, -tau_M*rhsint(0), shp);
+                    assembler.template Matrix<Velx,Velz>(shp_dz, -tau_M*rhsint(0), shp);
                     
-                    assembler.template Matrix<Vely,Velx>(shp_dx, -tau_M*rhsint_(1), shp);
-                    assembler.template Matrix<Vely,Vely>(shp_dy, -tau_M*rhsint_(1), shp);
-                    assembler.template Matrix<Vely,Velz>(shp_dz, -tau_M*rhsint_(1), shp);
+                    assembler.template Matrix<Vely,Velx>(shp_dx, -tau_M*rhsint(1), shp);
+                    assembler.template Matrix<Vely,Vely>(shp_dy, -tau_M*rhsint(1), shp);
+                    assembler.template Matrix<Vely,Velz>(shp_dz, -tau_M*rhsint(1), shp);
                     
-                    assembler.template Matrix<Velz,Velx>(shp_dx, -tau_M*rhsint_(2), shp);
-                    assembler.template Matrix<Velz,Vely>(shp_dy, -tau_M*rhsint_(2), shp);
-                    assembler.template Matrix<Velz,Velz>(shp_dz, -tau_M*rhsint_(2), shp);
+                    assembler.template Matrix<Velz,Velx>(shp_dx, -tau_M*rhsint(2), shp);
+                    assembler.template Matrix<Velz,Vely>(shp_dy, -tau_M*rhsint(2), shp);
+                    assembler.template Matrix<Velz,Velz>(shp_dz, -tau_M*rhsint(2), shp);
                 } // if newton
                 
                 // supg stabilisation
@@ -1533,7 +1509,7 @@ void Sysmat(
                 assembler.template Matrix<Velz,Vely>(shp_dz, tau_C, shp_dy);
                 assembler.template Matrix<Velz,Velz>(shp_dz, tau_C, shp_dz);
                 
-                const double tau_C_divunp = tau_C*(vderxy_(0, 0)+vderxy_(1, 1)+vderxy_(2, 2));
+                const double tau_C_divunp = tau_C*(vderxy(0, 0)+vderxy(1, 1)+vderxy(2, 2));
                 assembler.template Vector<Velx>(shp_dx, -tau_C_divunp);
                 assembler.template Vector<Vely>(shp_dy, -tau_C_divunp);
                 assembler.template Vector<Velz>(shp_dz, -tau_C_divunp);
@@ -1784,12 +1760,12 @@ void callSysmat(
         blitz::Array<double,2>&           estif,
         blitz::Array<double,1>&           eforce,
         struct _MATERIAL*       material,
-        double                  pseudotime,
-        bool                    newton ,
-        bool                    pstab  ,
-        bool                    supg   ,
-        bool                    vstab  ,
-        bool                    cstab
+        const double                  pseudotime,
+        const bool                    newton ,
+        const bool                    pstab  ,
+        const bool                    supg   ,
+        const bool                    vstab  ,
+        const bool                    cstab
         )
 {
     using DRT::Element;
@@ -1817,29 +1793,29 @@ void callSysmat(
                 dserror("not templated yet");
         };
     }
-    else
-    {
-        switch (ele->Shape())
-        {
-            case DRT::Element::hex8:
-                Sysmat<DRT::Element::hex8,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, locval, estif, eforce,
-                        material, pseudotime, newton, pstab, supg, vstab, cstab);
-                break;
-            case DRT::Element::hex20:
-                Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, locval, estif, eforce,
-                        material, pseudotime, newton, pstab, supg, vstab, cstab);
-                break;
-            case DRT::Element::hex27:
-                Sysmat<DRT::Element::hex27,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, locval, estif, eforce,
-                        material, pseudotime, newton, pstab, supg, vstab, cstab);
-                break;
-            default:
-                dserror("not templated yet");
-        };
-    }
+//    else
+//    {
+//        switch (ele->Shape())
+//        {
+//            case DRT::Element::hex8:
+//                Sysmat<DRT::Element::hex8,XFEM::xfem_assembly>(
+//                        ele, ih, eleDofManager, locval, estif, eforce,
+//                        material, pseudotime, newton, pstab, supg, vstab, cstab);
+//                break;
+//            case DRT::Element::hex20:
+//                Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
+//                        ele, ih, eleDofManager, locval, estif, eforce,
+//                        material, pseudotime, newton, pstab, supg, vstab, cstab);
+//                break;
+//            case DRT::Element::hex27:
+//                Sysmat<DRT::Element::hex27,XFEM::xfem_assembly>(
+//                        ele, ih, eleDofManager, locval, estif, eforce,
+//                        material, pseudotime, newton, pstab, supg, vstab, cstab);
+//                break;
+//            default:
+//                dserror("not templated yet");
+//        };
+//    }
 }
 } // end namespace XFLUID
 

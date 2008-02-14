@@ -26,6 +26,10 @@ Maintainer: Axel Gerstenberger
 #define DRT_XFLUID3_H
 
 
+#ifdef PERF
+#include <Teuchos_TimeMonitor.hpp>
+#endif
+
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_Vector.h"
 using namespace std;
@@ -350,6 +354,7 @@ private:
   {
     none,
     calc_fluid_systemmat_and_residual,
+    calc_linear_fluid,
     calc_fluid_genalpha_sysmat_and_residual,
     calc_fluid_genalpha_update_for_subscales,
     calc_fluid_genalpha_average_for_subscales_and_residual,
@@ -376,10 +381,11 @@ private:
     viscous_stab_none,
     viscous_stab_gls,
     viscous_stab_gls_only_rhs,
-    viscous_stab_agls,
-    viscous_stab_agls_only_rhs,
+    viscous_stab_usfem,
+    viscous_stab_usfem_only_rhs,
     continuity_stab_none,
     continuity_stab_yes,
+    continuity_stab_td,
     cross_stress_stab_none,
     cross_stress_stab,
     cross_stress_stab_only_rhs,
@@ -1091,10 +1097,10 @@ private:
   \param elevec1 (out)      : vector to be filled by element. If NULL on input,
   */
 
-  virtual void IntegrateShapeFunction(ParameterList&         params,
-                                  DRT::Discretization&       discretization,
-                                  vector<int>&               lm,
-                                  Epetra_SerialDenseVector&  elevec1,
+  virtual void IntegrateShapeFunction(ParameterList& 		 params,
+                          	      DRT::Discretization&       discretization,
+                          	      vector<int>&               lm,
+                          	      Epetra_SerialDenseVector&  elevec1,
                                       const std::vector<double>& edispnp);
 
 

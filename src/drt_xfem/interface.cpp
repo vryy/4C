@@ -109,7 +109,7 @@ std::string XFEM::InterfaceHandle::toString() const
 XFEM::DomainIntCells XFEM::InterfaceHandle::GetDomainIntCells(
         const int gid,
         const DRT::Element::DiscretizationType distype
-        )const
+        ) const
 {
     std::map<int,DomainIntCells>::const_iterator tmp = elementalDomainIntCells_.find(gid);
     if (tmp == elementalDomainIntCells_.end())
@@ -134,8 +134,7 @@ XFEM::BoundaryIntCells XFEM::InterfaceHandle::GetBoundaryIntCells(
     if (tmp == elementalBoundaryIntCells_.end())
     {   
         // return empty list
-        const XFEM::BoundaryIntCells cells;
-        return cells;
+        return XFEM::BoundaryIntCells();
     }
     return tmp->second;
 }

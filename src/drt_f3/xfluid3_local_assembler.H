@@ -49,8 +49,6 @@ template <> XFEM::PHYSICS::Field mangle<XFEM::PHYSICS::Tauzx>() {return XFEM::PH
 template <> XFEM::PHYSICS::Field mangle<XFEM::PHYSICS::Tauzy>() {return XFEM::PHYSICS::Tauyz;};
 
 
-//TODO  allow fixed size array for estiff und eforce, if standard_assembly
-
 template <DRT::Element::DiscretizationType DISTYPE, 
           XFEM::AssemblyType ASSEMBLYTYPE>
 class LocalAssembler
@@ -78,7 +76,7 @@ public:
     //! assemble one expression for the element stiffness matrix for a given test and trial field
     template <XFEM::PHYSICS::Field testfield,
               XFEM::PHYSICS::Field trialfield>
-    inline void Matrix(
+    void Matrix(
             const BlitzVec&     testshape,
             const double        fac,
             const BlitzVec&     trialshape
@@ -115,7 +113,7 @@ public:
     
     //! assemble one expression for the element rhs for a given test field
     template <XFEM::PHYSICS::Field testfield>
-    inline void Vector(
+    void Vector(
             const BlitzVec&     testshape,
             const double        fac
             ) const
@@ -164,7 +162,7 @@ public:
     //! assemble one expression for the element stiffness matrix for a given test and trial field
     template <XFEM::PHYSICS::Field testfield,
               XFEM::PHYSICS::Field trialfield>
-    inline void Matrix(
+    void Matrix(
             const BlitzVec&     testshape,
             const double        fac,
             const BlitzVec&     trialshape
@@ -174,17 +172,18 @@ public:
         for (int ui=0; ui<numparam; ++ui)
         {
             const int trialpos = 4*ui + getFieldNumber<trialfield>();
+            const double multiply = fac*trialshape(ui);
             for (int vi=0; vi<numparam; ++vi)
             {
                 const int testpos = 4*vi + getFieldNumber<testfield>();
-                estif_(testpos, trialpos) += fac*testshape(vi)*trialshape(ui) ;
+                estif_(testpos, trialpos) += testshape(vi)*multiply ;
             }
         }
     };
     
     //! assemble one expression for the element rhs for a given test field
     template <XFEM::PHYSICS::Field testfield>
-    inline void Vector(
+    void Vector(
             const BlitzVec&     testshape,
             const double        fac
             ) const

@@ -92,7 +92,7 @@ template<DRT::Element::DiscretizationType DISTYPE>
 double HK(
         const BlitzMat&                         evelnp,
         const double                            visc,
-        const BlitzMat&                         xyze_
+        const BlitzMat&                         xyze
   )
 {
   blitz::firstIndex i;    // Placeholder for the first index
@@ -112,12 +112,12 @@ double HK(
   const double e3    = intpoints.qxg[0][2];
   const double wquad = intpoints.qwgt[0];
 
-  const int iel_ = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
-  BlitzMat deriv_(3,iel_,blitz::ColumnMajorArray<2>());
+  const int numnode = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
+  BlitzMat deriv_(3,numnode,blitz::ColumnMajorArray<2>());
   DRT::UTILS::shape_function_3D_deriv1(deriv_,e1,e2,e3,DISTYPE);
 
   // get Jacobian matrix and determinant
-  const blitz::Array<double,2> xjm_(blitz::sum(deriv_(i,k)*xyze_(j,k),k));
+  const blitz::Array<double,2> xjm_(blitz::sum(deriv_(i,k)*xyze(j,k),k));
   const double det = xjm_(0,0)*xjm_(1,1)*xjm_(2,2)+
                      xjm_(0,1)*xjm_(1,2)*xjm_(2,0)+
                      xjm_(0,2)*xjm_(1,0)*xjm_(2,1)-
@@ -141,7 +141,7 @@ BlitzVec CalTauStationary(
   const BlitzMat&                         evelnp,
   const double                            visc,
   const int                               fssgv,
-  const BlitzMat&                         xyze_
+  const BlitzMat&                         xyze
   )
 {
   
@@ -164,9 +164,9 @@ BlitzVec CalTauStationary(
   const double e3    = intpoints.qxg[0][2];
   const double wquad = intpoints.qwgt[0];
 
-  const int iel_ = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
-  BlitzVec funct_(iel_);
-  BlitzMat deriv_(3,iel_,blitz::ColumnMajorArray<2>());
+  const int numnode = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
+  BlitzVec funct_(numnode);
+  BlitzMat deriv_(3,numnode,blitz::ColumnMajorArray<2>());
   DRT::UTILS::shape_function_3D(funct_,e1,e2,e3,DISTYPE);
   DRT::UTILS::shape_function_3D_deriv1(deriv_,e1,e2,e3,DISTYPE);
 
@@ -177,50 +177,50 @@ BlitzVec CalTauStationary(
   const BlitzVec velint_(blitz::sum(funct_(j)*evelnp(i,j),j));
 
   // get Jacobian matrix and determinant
-  const BlitzMat xjm_(blitz::sum(deriv_(i,k)*xyze_(j,k),k));
-  const double det = xjm_(0,0)*xjm_(1,1)*xjm_(2,2)+
-                     xjm_(0,1)*xjm_(1,2)*xjm_(2,0)+
-                     xjm_(0,2)*xjm_(1,0)*xjm_(2,1)-
-                     xjm_(0,2)*xjm_(1,1)*xjm_(2,0)-
-                     xjm_(0,0)*xjm_(1,2)*xjm_(2,1)-
-                     xjm_(0,1)*xjm_(1,0)*xjm_(2,2);
+  const BlitzMat xjm(blitz::sum(deriv_(i,k)*xyze(j,k),k));
+  const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
+                     xjm(0,1)*xjm(1,2)*xjm(2,0)+
+                     xjm(0,2)*xjm(1,0)*xjm(2,1)-
+                     xjm(0,2)*xjm(1,1)*xjm(2,0)-
+                     xjm(0,0)*xjm(1,2)*xjm(2,1)-
+                     xjm(0,1)*xjm(1,0)*xjm(2,2);
   const double vol = wquad*det;
 
   // get element length for tau_Mp/tau_C: volume-equival. diameter/sqrt(3)
   const double hk = pow((6.*vol/PI),(1.0/3.0))/sqrt(3.0);
 
   // inverse of jacobian
-  BlitzMat xji_(3,3);
-  xji_(0,0) = (  xjm_(1,1)*xjm_(2,2) - xjm_(2,1)*xjm_(1,2))/det;
-  xji_(1,0) = (- xjm_(1,0)*xjm_(2,2) + xjm_(2,0)*xjm_(1,2))/det;
-  xji_(2,0) = (  xjm_(1,0)*xjm_(2,1) - xjm_(2,0)*xjm_(1,1))/det;
-  xji_(0,1) = (- xjm_(0,1)*xjm_(2,2) + xjm_(2,1)*xjm_(0,2))/det;
-  xji_(1,1) = (  xjm_(0,0)*xjm_(2,2) - xjm_(2,0)*xjm_(0,2))/det;
-  xji_(2,1) = (- xjm_(0,0)*xjm_(2,1) + xjm_(2,0)*xjm_(0,1))/det;
-  xji_(0,2) = (  xjm_(0,1)*xjm_(1,2) - xjm_(1,1)*xjm_(0,2))/det;
-  xji_(1,2) = (- xjm_(0,0)*xjm_(1,2) + xjm_(1,0)*xjm_(0,2))/det;
-  xji_(2,2) = (  xjm_(0,0)*xjm_(1,1) - xjm_(1,0)*xjm_(0,1))/det;
+  static BlitzMat xji(3,3);
+  xji(0,0) = (  xjm(1,1)*xjm(2,2) - xjm(2,1)*xjm(1,2))/det;
+  xji(1,0) = (- xjm(1,0)*xjm(2,2) + xjm(2,0)*xjm(1,2))/det;
+  xji(2,0) = (  xjm(1,0)*xjm(2,1) - xjm(2,0)*xjm(1,1))/det;
+  xji(0,1) = (- xjm(0,1)*xjm(2,2) + xjm(2,1)*xjm(0,2))/det;
+  xji(1,1) = (  xjm(0,0)*xjm(2,2) - xjm(2,0)*xjm(0,2))/det;
+  xji(2,1) = (- xjm(0,0)*xjm(2,1) + xjm(2,0)*xjm(0,1))/det;
+  xji(0,2) = (  xjm(0,1)*xjm(1,2) - xjm(1,1)*xjm(0,2))/det;
+  xji(1,2) = (- xjm(0,0)*xjm(1,2) + xjm(1,0)*xjm(0,2))/det;
+  xji(2,2) = (  xjm(0,0)*xjm(1,1) - xjm(1,0)*xjm(0,1))/det;
 
   // compute global derivates
-  const BlitzMat derxy_(blitz::sum(xji_(i,k)*deriv_(k,j),k));
+  const BlitzMat derxy_(blitz::sum(xji(i,k)*deriv_(k,j),k));
 
   // get velocity norm
   const double vel_norm = sqrt(blitz::sum(velint_*velint_));
 
   // normed velocity at element centre
-  BlitzVec velino_(3);
+  static BlitzVec velino(3);
   if (vel_norm>=1e-6)
   {
-    velino_ = velint_/vel_norm;
+    velino = velint_/vel_norm;
   }
   else
   {
-    velino_ = 0.;
-    velino_(0) = 1;
+    velino = 0.;
+    velino(0) = 1;
   }
 
   // get streamlength
-  const double val = blitz::sum(blitz::abs(blitz::sum(velino_(j)*derxy_(j,i),j)));
+  const double val = blitz::sum(blitz::abs(blitz::sum(velino(j)*derxy_(j,i),j)));
   const double strle = 2.0/val;
 
   // calculate tau

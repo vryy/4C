@@ -77,8 +77,9 @@ namespace XFLUID
        for each parent element discretization type in 3d
      
 \return distype for stress interpolation
-*/  
-inline DRT::Element::DiscretizationType getStressInterpolationType3D(DRT::Element::DiscretizationType veldistype)
+*/
+template <DRT::Element::DiscretizationType veldistype>
+inline DRT::Element::DiscretizationType getStressInterpolationType3D()
 {
     DRT::Element::DiscretizationType distype = DRT::Element::dis_none;
     switch (veldistype)
@@ -94,6 +95,36 @@ inline DRT::Element::DiscretizationType getStressInterpolationType3D(DRT::Elemen
             break;
         case DRT::Element::hex27:
             distype = DRT::Element::hex27;
+            break;
+        default:
+            dserror("no stressdistype defined for velocity distype");
+    }
+    return distype;
+}
+
+
+/*!
+\brief Returns the distype for stress interpolation
+       for each parent element discretization type in 3d
+     
+\return distype for stress interpolation
+*/  
+inline DRT::Element::DiscretizationType getStressInterpolationType3D(DRT::Element::DiscretizationType veldistype)
+{
+    DRT::Element::DiscretizationType distype = DRT::Element::dis_none;
+    switch (veldistype)
+    {
+        case DRT::Element::tet4:
+            distype = getStressInterpolationType3D<DRT::Element::tet4>();
+            break;
+        case DRT::Element::hex8:
+            distype = getStressInterpolationType3D<DRT::Element::hex8>();
+            break;
+        case DRT::Element::hex20:
+            distype = getStressInterpolationType3D<DRT::Element::hex20>();
+            break;
+        case DRT::Element::hex27:
+            distype = getStressInterpolationType3D<DRT::Element::hex27>();
             break;
         default:
             dserror("no stressdistype defined for velocity distype");

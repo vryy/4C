@@ -70,7 +70,7 @@ XFEM::FieldEnr::~FieldEnr()
 string XFEM::FieldEnr::toString() const
 {
     stringstream s;
-    s << "Enriched Field: " << PHYSICS::physVarToString(this->field_) << ", Enrichment: " << enr_.toString();
+    s << "Enriched Field: " << PHYSICS::physVarToString(field_) << ", Enrichment: " << enr_.toString();
     return s.str();
 }
 
@@ -133,7 +133,7 @@ XFEM::ElementDofManager::ElementDofManager(
 	// define local position of unknown by looping first over nodes and then over its unknowns!
 	int counter = 0;
 	const DRT::Node** const nodes = ele.Nodes();
-	for (int inode=0; inode<ele.NumNode(); inode++)
+	for (int inode=0; inode<ele.NumNode(); ++inode)
 	{
 	    const int gid = nodes[inode]->Id();
 	    map<int, const set <XFEM::FieldEnr> >::const_iterator entry = nodalDofSet_.find(gid);
@@ -448,7 +448,7 @@ const XFEM::ElementDofManager XFEM::DofManager::constructElementDofManager(
     std::map<int, const set <XFEM::FieldEnr> > nodaldofset;
     for (int inode = 0; inode < numnode; ++inode) {
         const int gid = nodegids[inode];
-        nodaldofset.insert(std::pair<int, const set<XFEM::FieldEnr> >(gid,this->getNodeDofSet(gid)));
+        nodaldofset.insert(make_pair(gid,this->getNodeDofSet(gid)));
     }
 
     // element dofs for ele

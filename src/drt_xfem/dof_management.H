@@ -58,17 +58,17 @@ public:
 
     string toString() const;
 
-    inline PHYSICS::Field getField() const
+    PHYSICS::Field getField() const
     {
         return field_;
     };
 
-    inline Enrichment getEnrichment() const
+    Enrichment getEnrichment() const
     {
         return enr_;
     };
     
-    inline bool operator <(const FieldEnr& rhs) const
+    bool operator <(const FieldEnr& rhs) const
     {
         if (getField() < rhs.getField())
             return true;
@@ -83,7 +83,7 @@ public:
         }
     }
     
-    inline bool operator ==(const FieldEnr& rhs) const
+    bool operator ==(const FieldEnr& rhs) const
     {
         if (getField() == rhs.getField() and getEnrichment() == rhs.getEnrichment())
             return true;
@@ -91,7 +91,7 @@ public:
             return false;
     }
     
-    inline bool operator !=(const FieldEnr& rhs) const
+    bool operator !=(const FieldEnr& rhs) const
     {
         return (!(*this == rhs));
     }
@@ -139,27 +139,25 @@ public:
      * \return set with enriched fields
      * 
      */
-    inline set<FieldEnr> FieldEnrSetPerNode(const int gid) const
+    std::set<FieldEnr> FieldEnrSetPerNode(const int gid) const
     {
-        //TODO: return proper default set given as second argument
     	map<int, const set<FieldEnr> >::const_iterator tmp = nodalDofSet_.find(gid);
     	if (tmp == nodalDofSet_.end()){
     	    cout << gid << endl;
     	    // let this always be here so we can recognize errors early
     	    dserror("FieldEnrSetPerNode: global node id not found!");
-    	    set<FieldEnr> emptyset;
-    	    return emptyset;
+    	    return std::set<FieldEnr>();
     	}
         return tmp->second;
     };
     
-    inline set<FieldEnr> FieldEnrSetPerElement() const
+    std::set<FieldEnr> FieldEnrSetPerElement() const
     {
         return elementDofs_;
     };
     
     //! function that returns node specific number of dofs or the given default number
-    inline int NumDofPerNode(
+    int NumDofPerNode(
             const int gid,            /// global node id
             const int defaultnumdof   /// default number of degrees of freedom to be returned
             ) const
@@ -172,13 +170,13 @@ public:
     };
     
     /// function that returns element specific number of dofs or the given default number
-    inline int NumDofPerElement() const
+    int NumDofPerElement() const
     {
         return elementDofs_.size()*numVirtualNodes_;
     };
     
     /// function that returns element specific number of dofs or the given default number
-    inline int NumVirtualNodes() const
+    int NumVirtualNodes() const
     {
         return numVirtualNodes_;
     };
@@ -186,7 +184,7 @@ public:
     /// return number of dofs on this element for a given field. E.g., if we have 4 nodes with 
     /// standard x displacements at each node and 2 enriched x displacements, this function will return 6
     /// we do not distuingish between nodal and element dofs
-    inline int NumDofPerField(const XFEM::PHYSICS::Field field) const
+    int NumDofPerField(const XFEM::PHYSICS::Field field) const
     {
     	map<XFEM::PHYSICS::Field, int>::const_iterator tmp = numParamsPerField_.find(field);
     	if (tmp == numParamsPerField_.end()){
@@ -197,9 +195,9 @@ public:
     };
     
     /// return a list of local positions in a array of dofs
-    vector<int> LocalDofPosPerField(const XFEM::PHYSICS::Field field) const
+    std::vector<int> LocalDofPosPerField(const XFEM::PHYSICS::Field field) const
     {
-    	map<XFEM::PHYSICS::Field, vector<int> >::const_iterator tmp = paramsLocalEntries_.find(field);
+    	std::map<XFEM::PHYSICS::Field, vector<int> >::const_iterator tmp = paramsLocalEntries_.find(field);
     	if (tmp == paramsLocalEntries_.end()){
     		//cout << XFEM::PHYSICS::physVarToString(field) << endl;
     		return vector<int>(0);
@@ -207,7 +205,7 @@ public:
         return tmp->second;
     };
     
-    inline bool operator !=(const ElementDofManager& rhs) const
+    bool operator !=(const ElementDofManager& rhs) const
     {
         // in principle, they can be only not equal, if the nodalDofSet is not equal
         // everything else is derived from that in the constructor
@@ -236,13 +234,13 @@ private:
     int numVirtualNodes_;
 	
 	//! number of unknowns for each global node id (gid)
-	map<int, int> nodalNumDof_;
+	std::map<int, int> nodalNumDof_;
 	
 	//! number of parameters for each field
-	map<XFEM::PHYSICS::Field, int> numParamsPerField_;
+	std::map<XFEM::PHYSICS::Field, int> numParamsPerField_;
 	
 	//! local (elemental) dofpos
-	map<XFEM::PHYSICS::Field, vector<int> > paramsLocalEntries_;
+	std::map<XFEM::PHYSICS::Field, std::vector<int> > paramsLocalEntries_;
 };
 
 
@@ -263,27 +261,23 @@ public:
 
     string toString() const;
 
-    inline const std::set<FieldEnr> getNodeDofSet(const int gid) const
+    const std::set<FieldEnr> getNodeDofSet(const int gid) const
     {
         std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator entry = nodalDofSet_.find(gid);
         if (entry == nodalDofSet_.end())
             if (entry == nodalDofSet_.end())
             {
-                std::set<XFEM::FieldEnr> v;
-                v.clear();
-                return v;
+                return std::set<XFEM::FieldEnr>();
             }
             return entry->second;
     };
     
-    inline const std::set<XFEM::FieldEnr> getElementDofs(const int gid) const
+    const std::set<XFEM::FieldEnr> getElementDofs(const int gid) const
     {
         std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator entry = elementalDofs_.find(gid);
         if (entry == elementalDofs_.end())
         {
-            std::set<XFEM::FieldEnr> v;
-            v.clear();
-            return v;
+            return std::set<XFEM::FieldEnr>();
         }
         return entry->second;
     };

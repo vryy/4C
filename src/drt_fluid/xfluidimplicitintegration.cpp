@@ -2,12 +2,14 @@
 \file xfluidimplicitintegration.cpp
 \brief Control routine for fluid time integration. Includes
 
-     o Single step one-step-theta time integration
+     including instationary solvers based on
 
-     o Two step BDF2 Gear's methode (with optional one-step-theta
-                                     start step)
+     o one-step-theta time-integration scheme
 
+     o two-step BDF2 time-integration scheme
+       (with potential one-step-theta start algorithm)
 
+     and stationary solver.
 
 <pre>
 Maintainer: Axel Gerstenberger
@@ -212,13 +214,16 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   residual_     = LINALG::CreateVector(*dofrowmap,true);
   trueresidual_ = LINALG::CreateVector(*dofrowmap,true);
 
+  // right hand side vector for linearised solution;
+  rhs_ = LINALG::CreateVector(*dofrowmap,true);
+
   // Nonlinear iteration increment vector
   incvel_       = LINALG::CreateVector(*dofrowmap,true);
 
   // necessary only for the VM3 approach
   if (fssgv_ > 0)
   {
-    // initialize (fine-scale) subgrid-viscosity system matrix
+    // initialize subgrid-viscosity matrix
     sysmat_sv_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
 
     // residual vector containing (fine-scale) subgrid-viscosity residual
@@ -235,6 +240,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   timedyninit_    = TimeMonitor::getNewTimer(" + initial phase"             );
   timedynloop_    = TimeMonitor::getNewTimer(" + time loop"                 );
   timenlnloop_    = TimeMonitor::getNewTimer("   + nonlinear iteration"     );
+  timelinloop_    = TimeMonitor::getNewTimer("   + linear fluid solve"      );
   timeeleloop_    = TimeMonitor::getNewTimer("      + element calls"        );
   timeapplydirich_= TimeMonitor::getNewTimer("      + apply dirich cond."   );
   timesolver_     = TimeMonitor::getNewTimer("      + solver calls"         );
@@ -369,14 +375,40 @@ void XFluidImplicitTimeInt::TimeLoop()
   // start time measurement for timeloop
   tm2_ref_ = rcp(new TimeMonitor(*timedynloop_));
 
+  // how do we want to solve or fluid equations?
+  int dyntype    =params_.get<int>   ("type of nonlinear solve");
+
+  if (dyntype==1)
+  {
+    if (alefluid_)
+      dserror("no ALE possible with linearised fluid");
+    if (fssgv_)
+      dserror("no fine scale solution implemented with linearised fluid");
+    /* additionally it remains to mention that for the linearised
+       fluid the stbilisation is hard coded to be SUPG/PSPG */
+  }
+
   while (step_<stepmax_ and time_<maxtime_)
   {
     PrepareTimeStep();
 
-    // -------------------------------------------------------------------
-    //                     solve nonlinear equation
-    // -------------------------------------------------------------------
-    this->NonlinearSolve();
+    switch (dyntype)
+    {
+    case 0:
+      // -----------------------------------------------------------------
+      //                     solve nonlinear equation
+      // -----------------------------------------------------------------
+      this->NonlinearSolve();
+      break;
+    case 1:
+      // -----------------------------------------------------------------
+      //                     solve linearised equation
+      // -----------------------------------------------------------------
+      this->LinearSolve();
+      break;
+    default:
+      dserror("Type of dynamics unknown!!");
+    }
 
     // -------------------------------------------------------------------
     //                         update solution
@@ -417,6 +449,8 @@ void XFluidImplicitTimeInt::TimeLoop()
     // time measurement --- start TimeMonitor tm8
     tm7_ref_ = rcp(new TimeMonitor(*timeout_ ));
 
+    // -------------------------------------------------------------------
+    // add calculated velocity to mean value calculation
     // -------------------------------------------------------------------
     // evaluate error for test flows with analytical solutions
     // -------------------------------------------------------------------
@@ -960,6 +994,122 @@ void XFluidImplicitTimeInt::NonlinearSolve()
 
   return;
 } // FluidImplicitTimeInt::NonlinearSolve
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | the time step of a linearised fluid                      chfoe 02/08 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*
+This fluid implementation is designed to be quick(er) but has a couple of
+drawbacks:
+- currently it is incapable of ALE fluid solutions
+- the order of accuracy in time is fixed to 1, i.e. some more steps may be required
+- some effort has to be made if correct nodal forces are required as this
+  implementation does a total solve rather than an incremental one.
+*/
+void XFluidImplicitTimeInt::LinearSolve()
+{
+  // start time measurement for nonlinear iteration
+  tm6_ref_ = rcp(new TimeMonitor(*timelinloop_));
+
+  double            dtsolve = 0;
+  double            dtele   = 0;
+  double            tcpu;
+
+  if (myrank_ == 0)
+    cout << "solution of linearised fluid   ";
+
+  // what is this meant for???
+  double density = 1;
+
+  // -------------------------------------------------------------------
+  // call elements to calculate system matrix
+  // -------------------------------------------------------------------
+
+  // start time measurement for element call
+  tm3_ref_ = rcp(new TimeMonitor(*timeeleloop_));
+  // get cpu time
+  tcpu=ds_cputime();
+
+  sysmat_->Zero();
+
+  // add Neumann loads
+  rhs_->Update(1.0,*neumann_loads_,0.0);
+
+  // create the parameters for the discretization
+  ParameterList eleparams;
+
+  // action for elements
+  if (timealgo_==timeint_stationary)
+    dserror("no stationary solution with linearised fluid!!!");
+  else
+    eleparams.set("action","calc_linear_fluid");
+
+  // other parameters that might be needed by the elements
+  eleparams.set("total time",time_);
+  eleparams.set("thsl",theta_*dta_);
+
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("velnp",velnp_);
+  discret_->SetState("hist"  ,hist_ );
+
+  // call standard loop over linear elements
+  discret_->Evaluate(eleparams,sysmat_,rhs_);
+  discret_->ClearState();
+
+  density = eleparams.get("density", 0.0);
+
+  // finalize the complete matrix
+  sysmat_->Complete();
+
+  // end time measurement for element call
+  tm3_ref_=null;
+  dtele=ds_cputime()-tcpu;
+
+  //--------- Apply dirichlet boundary conditions to system of equations
+  //          residual velocities (and pressures) are supposed to be zero at
+  //          boundary conditions
+  //velnp_->PutScalar(0.0);
+
+  // start time measurement for application of dirichlet conditions
+  tm4_ref_ = rcp(new TimeMonitor(*timeapplydirich_));
+
+  LINALG::ApplyDirichlettoSystem(sysmat_,velnp_,rhs_,velnp_,dirichtoggle_);
+
+  // end time measurement for application of dirichlet conditions
+  tm4_ref_=null;
+
+  //-------solve for total new velocities and pressures
+
+  // start time measurement for solver call
+  tm5_ref_ = rcp(new TimeMonitor(*timesolver_));
+  // get cpu time
+  tcpu=ds_cputime();
+
+  /* possibly we could accelerate it if the reset variable
+     is true only every fifth step, i.e. set the last argument to false
+     for 4 of 5 timesteps or so. */
+  solver_.Solve(sysmat_->Matrix(),velnp_,rhs_,true,true);
+
+  // end time measurement for application of solver call
+  tm5_ref_=null;
+  dtsolve=ds_cputime()-tcpu;
+
+  // end time measurement for linear fluid solve
+  tm6_ref_ = null;
+
+  if (myrank_ == 0)
+    cout << "te=" << dtele << ", ts=" << dtsolve << "\n\n" ;
+
+  return;
+} // FluidImplicitTimeInt::LinearSolve
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1605,50 +1755,6 @@ void XFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- |  set default parameter list (static/public)               gammi 04/07|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void XFluidImplicitTimeInt::SetDefaults(ParameterList& params)
-{
-  // number of degrees of freedom
-  // if this one is not set afterwards, the algo hopefully crashes
-  params.set<int> ("number of velocity degrees of freedom" ,-1);
-
-  // evaluate error compared to analytical solution
-  params.set<int>("eval err for analyt sol",0);
-
-  // -------------------------------------------------- time integration
-  // timestepsize
-  params.set<double>           ("time step size"           ,0.01);
-  // max. sim. time
-  params.set<double>           ("total time"               ,0.0);
-  // parameter for time-integration
-  params.set<double>           ("theta"                    ,0.6667);
-  // which kind of time-integration
-  params.set<FLUID_TIMEINTTYPE>("time int algo"            ,timeint_one_step_theta);
-  // bound for the number of timesteps
-  params.set<int>              ("max number timesteps"     ,0);
-  // number of steps with start algorithm
-  params.set<int>              ("number of start steps"    ,0);
-  // parameter for start algo
-  params.set<double>           ("start theta"              ,0.6667);
-
-  // ---------------------------------------------- nonlinear iteration
-  // maximum number of nonlinear iteration steps
-  params.set<int>             ("max nonlin iter steps"     ,5);
-  // stop nonlinear iteration when both incr-norms are below this bound
-  params.set<double>          ("tolerance for nonlin iter" ,1E-6);
-
-  return;
-}
-
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
  | solve stationary fluid problem   			               gjb 10/07|
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1705,7 +1811,7 @@ void XFluidImplicitTimeInt::SolveStationaryProblem()
 	     eleparams.set("total time",time_);
 	     eleparams.set("delta time",dta_);
 	     eleparams.set("thsl",1.0); // no timefac in stationary case
-         eleparams.set("fs subgrid viscosity",fssgv_);
+	     eleparams.set("fs subgrid viscosity",fssgv_);
 
 	     // set vector values needed by elements
 	     discret_->ClearState();

@@ -24,12 +24,12 @@ using namespace XFEM;
 using namespace DRT::UTILS;
 
 
-static double           sqrarg;
-#define                 SQR(a) ((sqrarg=(a)) == 0.0 ? 0.0 : sqrarg*sqrarg)
-//inline double SQR(double sqrarg)
-//{
-//    return ((sqrarg) == 0.0 ? 0.0 : sqrarg*sqrarg);
-//}
+//static double           sqrarg;
+//#define                 SQR(a) ((sqrarg=(a)) == 0.0 ? 0.0 : sqrarg*sqrarg)
+double SQR(double sqrarg)
+{
+    return ((sqrarg) == 0.0 ? 0.0 : sqrarg*sqrarg);
+}
 
 
 /*----------------------------------------------------------------------*
@@ -43,7 +43,7 @@ Epetra_SerialDenseVector XFEM::addTwoVectors(
     
     dsassert(v1.Length() == v2.Length(), "both vectors need to have the same size\n"); 
 
-    for(int i = 0; i < v1.Length(); i++)
+    for(int i = 0; i < v1.Length(); ++i)
         vResult[i] = v1[i] + v2[i];
  
     return vResult;
@@ -62,7 +62,7 @@ vector<double> XFEM::addTwoVectors(
     
     dsassert(v1.size() == v2.size(), "both vectors need to have the same size\n");
 
-    for(unsigned int i = 0; i < v1.size(); i++)
+    for(unsigned int i = 0; i < v1.size(); ++i)
         vResult[i] = v1[i] + v2[i];
  
     return vResult;

@@ -45,7 +45,7 @@ void XFEM::ComputeEnrichedShapefunction(
     const DRT::Node** const nodes = ele.Nodes();
     
     int dofcounter = 0;
-    for (int inode=0; inode<ele.NumNode(); inode++)
+    for (int inode=0; inode<ele.NumNode(); ++inode)
     {
         const int gid = nodes[inode]->Id();
         const blitz::Array<double,1> nodalpos(toBlitzArray(nodes[inode]->X()));
@@ -89,7 +89,7 @@ void XFEM::ComputeEnrichedShapefunction(
     const DRT::Node** const nodes = ele.Nodes();
     
     int dofcounter = 0;
-    for (int inode=0; inode<ele.NumNode(); inode++)
+    for (int inode=0; inode<ele.NumNode(); ++inode)
     {
         const int gid = nodes[inode]->Id();
         const blitz::Array<double,1> nodalpos(toBlitzArray(nodes[inode]->X()));
@@ -135,7 +135,7 @@ void XFEM::ComputeEnrichedShapefunction(
     const DRT::Node** const nodes = ele.Nodes();
     
     int dofcounter = 0;
-    for (int inode=0; inode<ele.NumNode(); inode++)
+    for (int inode=0; inode<ele.NumNode(); ++inode)
     {
         const int gid = nodes[inode]->Id();
         const blitz::Array<double,1> nodalpos(toBlitzArray(nodes[inode]->X()));

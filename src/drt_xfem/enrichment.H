@@ -70,17 +70,17 @@ public:
 
     std::string enrTypeToString(const EnrType type) const;
     
-    inline int XFEMConditionLabel() const
+    int XFEMConditionLabel() const
     {
         return xfemconditionlabel_;
     };
     
-    inline EnrType Type() const
+    EnrType Type() const
     {
         return type_;
     };
 
-    inline bool operator ==(const Enrichment& rhs) const
+    bool operator ==(const Enrichment& rhs) const
     {
         if (XFEMConditionLabel() == rhs.XFEMConditionLabel() and Type() == rhs.Type())
             return true;
@@ -88,7 +88,7 @@ public:
             return false;
     };
     
-    inline bool operator <(const Enrichment& rhs) const
+    bool operator <(const Enrichment& rhs) const
     {
         if (XFEMConditionLabel() < rhs.XFEMConditionLabel())
             return true;

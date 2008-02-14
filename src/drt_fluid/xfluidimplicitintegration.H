@@ -17,6 +17,8 @@ Maintainer: Axel Gerstenberger
 #ifndef XFLUIDIMPLICITINTEGRATION_H
 #define XFLUIDIMPLICITINTEGRATION_H
 
+#include "turbulence_statistics_ldc.H"
+
 #ifdef PARALLEL
 #include "Epetra_MpiComm.h"
 #else
@@ -31,6 +33,9 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/linalg_mapextractor.H"
 #include "../drt_lib/linalg_systemmatrix.H"
 #include "../io/io_drt.H"
+#include "drt_periodicbc.H"
+#include "../drt_lib/drt_nodematchingoctree.H"
+#include "../drt_lib/drt_function.H"
 #include "../drt_xfem/dof_management.H"
 
 #include "Epetra_Vector.h"
@@ -80,19 +85,8 @@ public:
   \brief Destructor
 
   */
-  virtual ~XFluidImplicitTimeInt();
+  ~XFluidImplicitTimeInt();
 
-
-  /*!
-  \brief Create default parameter list
-
-  */
-  static void SetDefaults(ParameterList& params);
-
-  /*!
-  \brief Create single field rowmaps used for error control of iteration
-
-  */
   void ComputeSingleFieldRowMaps(RCP<XFEM::DofManager> dofman);
 
   /*!
@@ -135,6 +129,12 @@ public:
 
   */
   void NonlinearSolve();
+
+  /*!
+  \brief solve linearised fluid
+
+  */
+  void LinearSolve();
 
   /*!
     \brief build linear system matrix and rhs
@@ -195,7 +195,7 @@ public:
   Teuchos::RCP<Epetra_Vector> Dirichlet() { return dirichtoggle_; }
   Teuchos::RCP<Epetra_Vector> Dispnp() { return dispnp_; }
   Teuchos::RCP<Epetra_Vector> Dispn() { return dispn_; }
-  Teuchos::RCP<Epetra_Operator> SysMat() { return sysmat_; }
+  Teuchos::RCP<Epetra_Operator> SysMat() { return sysmat_->EpetraOperator(); }
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
 
   Teuchos::RCP<Epetra_Map> VelocityRowMap() { return velrowmap_; }
@@ -257,17 +257,12 @@ protected:
   int samstop_;
   int dumperiod_;
 
-  /// (fine-scale) subgrid-viscosity flag and Smagorinsky model parameter
+  /// fine-scale subgrid-viscosity flag and Smagorinsky model parameter
   int fssgv_;
   double Cs_fs_;
 
-  /// system matrices: standard (stabilized) matrix and (fine-scale)
-  /// subgrid-viscosity matrix
+  /// (standard) system matrix
   RCP<LINALG::SparseMatrix> sysmat_;
-  RCP<LINALG::SparseMatrix> sysmat_sv_;
-
-  /// scale-separation matrix for VM3-based solution approach
-  RCP<LINALG::SparseMatrix> scalesep_;
 
   /// toggle vector indicating which dofs have Dirichlet BCs
   RCP<Epetra_Vector>    dirichtoggle_;
@@ -280,11 +275,11 @@ protected:
   /// the vector containing body and surface forces
   RCP<Epetra_Vector>    neumann_loads_;
 
-  /// rhs: standard (stabilized) residual vector (rhs for the incremental form),
-  /// (fine-scale) subgrid-viscosity residual and scaling vector
+  /// (standard) residual vector (rhs for the incremental form),
   RCP<Epetra_Vector>    residual_;
-  RCP<Epetra_Vector>    residual_sv_;
-  RCP<Epetra_Vector>    sugrvisc_;
+
+  /// rhs: right hand side vector for linearised flow solution
+  RefCountPtr<Epetra_Vector>    rhs_;
 
   /// true (rescaled) residual vector without zeros at dirichlet positions
   RCP<Epetra_Vector>    trueresidual_;
@@ -308,12 +303,24 @@ protected:
 
   RCP<Epetra_Vector>    gridv_;
 
-  // histvector --- a linear combination of velnm, veln (BDF)
-  //                or veln, accn (One-Step-Theta)
+  /// histvector --- a linear combination of velnm, veln (BDF)
+  ///                or veln, accn (One-Step-Theta)
   RCP<Epetra_Vector>    hist_;
 
   // solid displacement (might be moved somewhere else later)
   RCP<Epetra_Vector>    soliddispnp_;
+
+  /// only necessary for vm3 solver: fine-scale subgrid-viscosity matrix
+  RCP<LINALG::SparseMatrix> sysmat_sv_;
+
+  /// only necessary for vm3 solver: fine-scale subgrid-viscosity residual vector
+  RCP<Epetra_Vector>    residual_sv_;
+
+  /// only necessary for vm3 solver: subgrid-viscosity-scaling vector
+  RCP<Epetra_Vector>    sugrvisc_;
+
+  /// turbulence statistics
+  RCP<TurbulenceStatisticsLdc> turbulencestatistics_ldc_;
 
 
   // Extractor used for convergence check
@@ -336,6 +343,7 @@ protected:
   RCP<Time> timedyninit_    ;
   RCP<Time> timedynloop_    ;
   RCP<Time> timenlnloop_    ;
+  RCP<Time> timelinloop_    ;
   RCP<Time> timeeleloop_    ;
   RCP<Time> timeapplydirich_;
   RCP<Time> timesolver_     ;

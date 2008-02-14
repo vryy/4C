@@ -78,7 +78,7 @@ vector< vector<double> > IntCell::NodalPosXYZ(const DRT::Element& ele) const
 }
 
 //
-// virtual Print method
+// Print method
 //
 std::string IntCell::Print() const
 {
@@ -93,6 +93,7 @@ vector<vector<double> > IntCell::ComputePhysicalCoordinates(
     
     const int nsd = 3;
     const int nen_cell = DRT::UTILS::getNumberOfElementNodes(this->Shape());
+    physicalCoordinates.reserve(nen_cell);
     
     // coordinates
     for (int inen = 0; inen < nen_cell; ++inen)
@@ -146,9 +147,9 @@ DomainIntCell::DomainIntCell(
 //
 DomainIntCell::DomainIntCell(
         const DRT::Element::DiscretizationType distype) :
-            IntCell(distype)
+            IntCell(distype),
+            nodalpos_xi_domain_(GetDefaultCoordinates(distype))
 {
-    nodalpos_xi_domain_ = GetDefaultCoordinates(distype);
     return;
 }
         
@@ -202,12 +203,12 @@ vector<double> DomainIntCell::modifyGaussRule3D(
     
         // get node coordinates
         blitz::Array<double,2> xyze_cell(nsd,numnode,blitz::ColumnMajorArray<2>());
-        for (int inode=0; inode<numnode; inode++)
-            {
+        for (int inode=0; inode<numnode; ++inode)
+        {
             xyze_cell(0,inode) = nodalpos_xi_domain_[inode][0];
             xyze_cell(1,inode) = nodalpos_xi_domain_[inode][1];
             xyze_cell(2,inode) = nodalpos_xi_domain_[inode][2];
-            }    
+        }    
 
         // init blitz indices
         blitz::firstIndex i;    // Placeholder for the first index
@@ -267,19 +268,19 @@ vector<vector<double> > DomainIntCell::GetDefaultCoordinates(
     const int nsd = 3;
     const int numnode = DRT::UTILS::getNumberOfElementNodes(distype);
     
-    for(int j = 0; j < numnode; j++){
+    for(int j = 0; j < numnode; ++j){
         vector<double> coord(nsd);
         switch (distype){
         case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27:
         {
-            for(int k = 0; k < nsd; k++){
+            for(int k = 0; k < nsd; ++k){
                 coord[k] = DRT::UTILS::eleNodeNumbering_hex27_nodes_reference[j][k];
                 };
             break;
         }
         case DRT::Element::tet4: case DRT::Element::tet10:
         {
-            for(int k = 0; k < nsd; k++){
+            for(int k = 0; k < nsd; ++k){
                 coord[k] = DRT::UTILS::eleNodeNumbering_tet10_nodes_reference[j][k];
                 }
             break;
