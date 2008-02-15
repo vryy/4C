@@ -213,7 +213,16 @@ void LINALG::SparseMatrix::Assemble(double val, int rgid, int cgid)
  *----------------------------------------------------------------------*/
 void LINALG::SparseMatrix::Complete()
 {
-  Complete(sysmat_->OperatorDomainMap(),sysmat_->OperatorRangeMap());
+  if (sysmat_->Filled()) return;
+
+  int err = sysmat_->FillComplete(true);
+  if (err) dserror("Epetra_CrsMatrix::FillComplete() returned err=%d",err);
+
+  // keep mask for further use
+  if (savegraph_ and graph_==Teuchos::null)
+  {
+    graph_ = Teuchos::rcp(new Epetra_CrsGraph(sysmat_->Graph()));
+  }
 }
 
 
@@ -609,8 +618,13 @@ void LINALG::BlockSparseMatrixBase::Zero()
  *----------------------------------------------------------------------*/
 void LINALG::BlockSparseMatrixBase::Complete()
 {
-  for (unsigned i=0; i<blocks_.size(); ++i)
-    blocks_[i].Complete();
+  for (int r=0; r<Rows(); ++r)
+  {
+    for (int c=0; c<Cols(); ++c)
+    {
+      Matrix(r,c).Complete(DomainMap(c),RangeMap(r));
+    }
+  }
 }
 
 
