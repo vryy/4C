@@ -18,7 +18,9 @@ is handed to a c++ object mesh.
 #ifdef D_EXODUS
 #include "pre_exodus_reader.H"
 #include "pre_node.H"
-#include <time.h>
+#include "Epetra_SerialComm.h"
+#include "Epetra_Time.h"
+#include "Teuchos_TimeMonitor.hpp"
 #include "../drt_lib/drt_utils_local_connectivity_matrices.H"
 
 #ifdef PARALLEL
@@ -376,6 +378,20 @@ map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset) const
 {
   cout << "Computing SideSet Connectivity... " << endl;
   fflush(stdout);
+  
+  Epetra_SerialComm Comm;
+  Epetra_Time time(Comm);
+  RCP<Time> timetot;
+  timetot= TimeMonitor::getNewTimer("Side Set Connect total");
+  RCP<Time> time1 = TimeMonitor::getNewTimer("One Side Set");
+  RCP<Time> time2 = TimeMonitor::getNewTimer("Get one Element Block");
+  RCP<Time> time3 = TimeMonitor::getNewTimer("Get Ele Conn");
+  RCP<Time> time4 = TimeMonitor::getNewTimer("Get one Ele");
+  RCP<Time> time5 = TimeMonitor::getNewTimer("Build one Side Conn");
+  RCP<Time> time6 = TimeMonitor::getNewTimer("One Side Set");
+  RCP<Time> time7 = TimeMonitor::getNewTimer("Get all Eblocks and Econns");
+  RCP<TimeMonitor> tm_total = rcp(new TimeMonitor(*timetot));
+
   map<int,vector<int> > conn;
   map <int,vector<int> > mysides = sideset.GetSideSet();
   map<int,vector<int> >::iterator i_side;
@@ -386,47 +402,131 @@ map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset) const
   // Range Vector for global eleID identification in SideSet
   vector<int> glob_eb_erange(1,0);
   int rangebreak = 0;
+  // Also we once get all EBlocks and EConns to enable quick access
+  vector<EXODUS::ElementBlock> eblocks;
+  vector<map<int,vector<int> > > econns;
+  RCP<TimeMonitor> tm7 = rcp(new TimeMonitor(*time7));
   for (i_ebs = ebs.begin(); i_ebs != ebs.end(); ++i_ebs ){
     rangebreak += i_ebs->second.GetNumEle();
     glob_eb_erange.push_back(rangebreak);
+    eblocks.push_back(i_ebs->second);
+    econns.push_back(i_ebs->second.GetEleConn());
   }
+  tm7 = null;
   
   // fill SideSet Connectivity
-  int perc = 1;
+  //int perc = 1;
+  int tetc=0,hexc=0,pyrc=0,wedgc=0;
   for (i_side = mysides.begin(); i_side != mysides.end(); ++i_side){
+    RCP<TimeMonitor> tm1 = rcp(new TimeMonitor(*time1));
     int actele = i_side->second.at(0) -1;   //ExoIds start from 1, but we from 0
     int actface = i_side->second.at(1) -1;  //ExoIds start from 1, but we from 0
     // find actual EBlock where actele lies in
     int actebid;
     for(unsigned int i=0; i<glob_eb_erange.size(); ++i) 
-      if (actele <= glob_eb_erange[i]){ actebid = i-1; break;}
-    EXODUS::ElementBlock acteb = ebs.find(actebid)->second;
-    EXODUS::ElementBlock::Shape actshape = acteb.GetShape();
-    map<int,vector<int> > acteconn = acteb.GetEleConn();
+      if (actele < glob_eb_erange[i]){ actebid = i-1; break;}
+    RCP<TimeMonitor> tm2 = rcp(new TimeMonitor(*time2));
+    //EXODUS::ElementBlock acteb = ebs.find(actebid)->second;
+    tm2 = null;
+    //EXODUS::ElementBlock::Shape actshape = acteb.GetShape();
+    EXODUS::ElementBlock::Shape actshape = eblocks[actebid].GetShape();
+    RCP<TimeMonitor> tm3 = rcp(new TimeMonitor(*time3));
+    //map<int,vector<int> > acteconn = acteb.GetEleConn();
+    tm3 = null;
     // get act parent ele from actual Side
     int parent_ele_id = actele - glob_eb_erange[actebid]; 
-    vector<int> parent_ele = acteconn.find(parent_ele_id)->second;
+    RCP<TimeMonitor> tm4 = rcp(new TimeMonitor(*time4));
+    //vector<int> parent_ele = acteconn.find(parent_ele_id)->second;
+    vector<int> parent_ele = econns[actebid].find(parent_ele_id)->second;
+    tm4 = null;
     // Face to ElementNode Map
     //// **** temporary hex map due to conflicts between side numbering exo<->baci
-    if (actshape==ElementBlock::hex8) actface = HexSideNumberExoToBaci(actface);
+    RCP<TimeMonitor> tm5 = rcp(new TimeMonitor(*time5));
+    switch (actshape){
+    case ElementBlock::tet4: {actface = actface; tetc++; break;}
+    case ElementBlock::hex8: {actface = HexSideNumberExoToBaci(actface); hexc++; break;}
+    case ElementBlock::pyramid5: {
+//      vector<vector<int> > test = DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape));
+//      for(unsigned int j=0; j<test.size(); ++j) PrintVec(cout,test[j]);
+      actface = PyrSideNumberExoToBaci(actface); pyrc++; break;}
+    case ElementBlock::wedge6: {
+//      vector<vector<int> > test = DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape));
+//      for(unsigned int j=0; j<test.size(); ++j) PrintVec(cout,test[j]);
+      actface = actface; wedgc++; break;
+      }
+    default: {cout << ShapeToString(actshape) << ":" << endl; dserror("Parent Element Type not supported");}
+    }
     vector<int> childmap = DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape))[actface];
     // child gets its node ids
     vector<int> child;
     for(unsigned int j=0; j<childmap.size(); ++j)
       child.push_back(parent_ele[childmap[j]]);
+//    PrintVec(cout,childmap);
+//    PrintVec(cout,child);
+    // some checking
+    if ((child.size() != 3) && (child.size() != 4)){
+      PrintVec(cout,child);
+      PrintVec(cout,childmap);
+      PrintVec(cout,parent_ele);
+      cout << ShapeToString(actshape) << ",Face: " << actface << ",childsize:" << child.size() << endl;
+      dserror("Child Ele error");
+    }
     // insert child into SideSet Connectivity
     conn.insert(pair<int,vector<int> >(i_side->first,child));
-    // progress output
-    if (abs(signed(i_side->first)/signed(mysides.size()) - (perc * signed(mysides.size())/10)) < 1e-5){
-      cout << perc*10 << " percent of " << mysides.size() << " Sides done" << endl;
-      perc ++;
-      fflush(stdout);
-    }
+    tm5 = null;
+    
+//    // progress output
+//    tm1 = null;
+//    if (signed(i_side->first) == perc * signed(mysides.size())/100){
+//      TimeMonitor::summarize();
+//      cout << perc << " % of " << mysides.size() << " Sides done" << endl;
+//      perc ++;
+//      fflush(stdout);
+//    }
   }
-  cout << "...done " << endl;
+  tm_total = null;
+//  TimeMonitor::summarize();
+  cout << "...done" << endl;
   fflush(stdout);
 
   return conn;
+}
+
+vector<EXODUS::ElementBlock> EXODUS::Mesh::SideSetToEBlocks(const EXODUS::SideSet& sideset, const map<int,vector<int> >& sideconn) const
+{
+  vector<ElementBlock> eblocks;
+  //map<int,vector<int> > sideconn = sideset.GetSideSet();
+  map<int,vector<int> >::const_iterator i_ele;
+  map<int,vector<int> > quadconn;
+  int quadcounter = 0;
+  map<int,vector<int> > triconn;
+  int tricounter = 0;
+  for (i_ele = sideconn.begin(); i_ele != sideconn.end(); ++i_ele){
+    int numnodes = i_ele->second.size();
+    if (numnodes == 4){
+      quadconn.insert(pair<int,vector<int> >(quadcounter,i_ele->second));
+      quadcounter ++;
+    }
+    else if (numnodes == 3){
+      triconn.insert(pair<int,vector<int> >(tricounter,i_ele->second));
+      tricounter ++;
+    }
+    else dserror("Number of basenodes for conversion from SideSet to EBlock not supported");
+  }
+  if (quadcounter>0){
+    std::ostringstream quadblockname;
+    quadblockname << sideset.GetName() << "quad";
+    EXODUS::ElementBlock neweblock(ElementBlock::quad4,quadconn,quadblockname.str());
+    eblocks.push_back(neweblock);
+  }
+  if (tricounter>0){
+    std::ostringstream triblockname;
+    triblockname << sideset.GetName() << "tri";
+    EXODUS::ElementBlock neweblock(ElementBlock::tri3,triconn,triblockname.str());
+    eblocks.push_back(neweblock);
+  }
+  
+  return eblocks;
 }
 
 /*----------------------------------------------------------------------*
@@ -808,7 +908,7 @@ int EXODUS::HexSideNumberExoToBaci(const int exoface)
   return map[exoface];
 }
 
-int EXODUS::PyrSideNumberExoToBACI(const int exoface)
+int EXODUS::PyrSideNumberExoToBaci(const int exoface)
 {
   const int map[5] = {1,2,3,4,0};
   return map[exoface];

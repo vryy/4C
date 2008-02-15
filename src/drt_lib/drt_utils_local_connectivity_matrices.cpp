@@ -241,25 +241,25 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
         case DRT::Element::wedge6:
         {
             // quad surfaces first
-            nSurf = 3;
+            int nqSurf = 3;
             nNode = 4;
             
             vector<int> submapq(nNode, 0);
-            for(int i = 0; i < nSurf; i++)
+            for(int i = 0; i < nqSurf; i++)
             {
                 map.push_back(submapq);
                 for(int j = 0; j < nNode; j++)
                     map[i][j] = eleNodeNumbering_wedge15_quadsurfaces[i][j];
             }
-            nSurf = 2;
+            int ntSurf = 2;
             nNode = 3;
             
             vector<int> submapt(nNode, 0);
-            for(int i = 0; i < nSurf; i++)
+            for(int i = 0; i < ntSurf; i++)
             {
                 map.push_back(submapt);
                 for(int j = 0; j < nNode; j++)
-                    map[i][j] = eleNodeNumbering_wedge15_trisurfaces[i][j];
+                    map[i+nqSurf][j] = eleNodeNumbering_wedge15_trisurfaces[i][j];
             }
             break;
         }
@@ -284,7 +284,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
           {
               map.push_back(submapt);
               for(int j = 0; j < nNode; j++)
-                  map[i][j] = eleNodeNumbering_pyramid5_trisurfaces[i][j];
+                  map[i+1][j] = eleNodeNumbering_pyramid5_trisurfaces[i][j];
           }
           break;
         }

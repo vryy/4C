@@ -114,6 +114,9 @@ public:
   //! Get Side Set Connectivity with Global Nodes
   map<int,vector<int> > GetSideSetConn(const SideSet sideset) const;
   
+  //! Transform SideSet into ElementBlock
+  vector<ElementBlock> SideSetToEBlocks(const SideSet& sideset, const map<int,vector<int> >& sidesetconn) const;
+  
   //! Get Node map
   map<int,vector<double> > GetNodes() const {return nodes_;}
   
@@ -373,7 +376,7 @@ void PrintSet(ostream& os, const set<int> actset);
 
 
 int HexSideNumberExoToBaci(const int exoface);
-int PyrSideNumberExoToBACI(const int exoface);
+int PyrSideNumberExoToBaci(const int exoface);
 
 } // of namespace EXODUS
 

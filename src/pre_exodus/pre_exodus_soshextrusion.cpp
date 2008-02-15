@@ -61,14 +61,20 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
   for (i_sss = sss.begin(); i_sss != sss.end(); ++i_sss ){
     bool toextrude = CheckExtrusion(i_sss->second);
     if (toextrude){
-      extrusion_conns.insert(pair<int,map<int,vector<int> > >(extrusioncounter,basemesh.GetSideSetConn(i_sss->second)));
+      map<int,vector<int> > sidesetconn = basemesh.GetSideSetConn(i_sss->second);
+      extrusion_conns.insert(pair<int,map<int,vector<int> > >(extrusioncounter,sidesetconn));
+      //extrusion_conns.insert(pair<int,map<int,vector<int> > >(extrusioncounter,basemesh.GetSideSetConn(i_sss->second)));
       extrusion_types.insert(pair<int,ExtrusionType>(extrusioncounter,sideset));
       extrusioncounter ++;
+      // testing
+      vector<EXODUS::ElementBlock> sideblocks = basemesh.SideSetToEBlocks(i_sss->second,sidesetconn);
+      neweblocks.insert(pair<int,EXODUS::ElementBlock>(highestblock,sideblocks[0]));
+      highestblock ++;
+      neweblocks.insert(pair<int,EXODUS::ElementBlock>(highestblock,sideblocks[1]));
+      highestblock ++;
     }
   }
   
-
-
   
   // loop all existing extrude connectivities
   for (i_extr = extrusion_conns.begin(); i_extr != extrusion_conns.end(); ++i_extr){
@@ -151,6 +157,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
         layer_nodes[i_layer].push_back(newid);
       }
     }    
+    //PrintMap(cout,node_pair);
     
     doneles.insert(0);    // the first element is done ************************
     // form every new layer element
@@ -219,6 +226,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
             // put new node into map of OldNodeToNewNode
             vector<int> newids(1,newid);
             node_pair.insert(std::pair<int,vector<int> >(secedgenode,newids));
+            //PrintMap(cout,node_pair);
             
             // insert node into base layer
             layer_nodes[0].push_back(newid);
@@ -269,6 +277,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
             // put new node into map of OldNodeToNewNode
             vector<int> newids(1,newid);
             node_pair.insert(std::pair<int,vector<int> >(firstedgenode,newids));
+            //PrintMap(cout,node_pair);
             
             // insert node into base layer
             layer_nodes[0].push_back(newid);
@@ -321,6 +330,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
             // put new node into map of OldNodeToNewNode
             vector<int> newids(1,newid);
             node_pair.insert(std::pair<int,vector<int> >(thirdnode,newids));
+            //PrintMap(cout,node_pair);
             
             // insert node into base layer
             layer_nodes[0].push_back(newid);
@@ -352,7 +362,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
             }
           }
           
-          if (actelenodes.size() > 3){ // in case of not being a tri3
+          if (actnbrnodes.size() > 3){ // in case of neighbor not being a tri3
             
             /* the new elements orientation is opposite the current one
              * therefore the FOURTH node is gained from the neighbor ele */
@@ -374,6 +384,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
               // put new node into map of OldNodeToNewNode
               vector<int> newids(1,newid);
               node_pair.insert(std::pair<int,vector<int> >(fourthnode,newids));
+              //PrintMap(cout,node_pair);
               
               // insert node into base layer
               layer_nodes[0].push_back(newid);
@@ -467,14 +478,14 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
       }
       if (hexcounter>0){
         std::ostringstream hexblockname;
-        hexblockname << blockname.str() << "h";
+        //hexblockname << blockname.str() << "h";
         EXODUS::ElementBlock neweblock(ElementBlock::hex8,hexconn,hexblockname.str());
         neweblocks.insert(pair<int,EXODUS::ElementBlock>(highestblock,neweblock));
         highestblock ++;
       }
       if (wegcounter>0){
         std::ostringstream wegblockname;
-        wegblockname << blockname.str() << "w";
+        //wegblockname << blockname.str() << "w";
         EXODUS::ElementBlock neweblock(ElementBlock::wedge6,wegconn,wegblockname.str());
         neweblocks.insert(pair<int,EXODUS::ElementBlock>(highestblock,neweblock));
         highestblock ++;
@@ -483,6 +494,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
     }
     default: dserror("unrecognized extrude type");
     }
+    //PrintMap(cout,node_pair);
     
     // create new NodeSet with all nodes at newly created "free" faces
     set<int> free_nodes = FreeFaceNodes(free_edge_nodes,node_pair);
@@ -495,9 +507,11 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
   
   string newtitle = "extrusion";
   map<int,EXODUS::SideSet> emptysideset;
+  
+  cout << "Extrusion done" << endl;
 
   EXODUS::Mesh extruded_mesh(basemesh,newnodes,neweblocks,newnodesets,emptysideset,newtitle);
-  
+ 
   return extruded_mesh;
 }
 
@@ -635,6 +649,7 @@ set<int> EXODUS::FreeFaceNodes(const set<int>& freedgenodes, const map<int,vecto
 {
   set<int> freefacenodes;
   set<int>::const_iterator it;
+  //cout << freedgenodes.size() << " zu " << nodepair.size() << endl;
   for (it=freedgenodes.begin(); it != freedgenodes.end(); ++it){
     vector<int> facenodes = nodepair.find(*it)->second;
     for(unsigned int i=0; i<facenodes.size(); ++i) freefacenodes.insert(facenodes[i]);
@@ -794,7 +809,7 @@ int EXODUS::FindEdgeNeighbor(const vector<int> nodes, const int actnode, const i
 {
   // special case of very first node
   if (nodes.at(0) == actnode){
-    if (nodes.at(1) == wrong_dir_node) return nodes.at(nodes.size());
+    if (nodes.at(1) == wrong_dir_node) return nodes.back();
     else return nodes.at(1); 
   }   else if (nodes.back() == actnode){
     // special case of very last node
