@@ -617,7 +617,7 @@ void Sysmat(
     
     const LocalAssembler<DISTYPE, ASSTYPE> assembler(dofman, estif, eforce);
     
-    blitz::Range _  = blitz::Range::all();
+    const blitz::Range _  = blitz::Range::all();
     
     // We define the variables i,j,k to be indices to blitz arrays.
     // These are used for array expressions, that is matrix-vector
@@ -1793,29 +1793,29 @@ void callSysmat(
                 dserror("not templated yet");
         };
     }
-//    else
-//    {
-//        switch (ele->Shape())
-//        {
-//            case DRT::Element::hex8:
-//                Sysmat<DRT::Element::hex8,XFEM::xfem_assembly>(
-//                        ele, ih, eleDofManager, locval, estif, eforce,
-//                        material, pseudotime, newton, pstab, supg, vstab, cstab);
-//                break;
-//            case DRT::Element::hex20:
-//                Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
-//                        ele, ih, eleDofManager, locval, estif, eforce,
-//                        material, pseudotime, newton, pstab, supg, vstab, cstab);
-//                break;
-//            case DRT::Element::hex27:
-//                Sysmat<DRT::Element::hex27,XFEM::xfem_assembly>(
-//                        ele, ih, eleDofManager, locval, estif, eforce,
-//                        material, pseudotime, newton, pstab, supg, vstab, cstab);
-//                break;
-//            default:
-//                dserror("not templated yet");
-//        };
-//    }
+    else
+    {
+        switch (ele->Shape())
+        {
+            case DRT::Element::hex8:
+                Sysmat<DRT::Element::hex8,XFEM::xfem_assembly>(
+                        ele, ih, eleDofManager, locval, estif, eforce,
+                        material, pseudotime, newton, pstab, supg, vstab, cstab);
+                break;
+            case DRT::Element::hex20:
+                Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
+                        ele, ih, eleDofManager, locval, estif, eforce,
+                        material, pseudotime, newton, pstab, supg, vstab, cstab);
+                break;
+            case DRT::Element::hex27:
+                Sysmat<DRT::Element::hex27,XFEM::xfem_assembly>(
+                        ele, ih, eleDofManager, locval, estif, eforce,
+                        material, pseudotime, newton, pstab, supg, vstab, cstab);
+                break;
+            default:
+                dserror("not templated yet");
+        };
+    }
 }
 } // end namespace XFLUID
 
