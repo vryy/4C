@@ -80,30 +80,33 @@ EXODUS::Mesh::Mesh(string exofilename)
 
   // Get all ElementBlocks
   int epropID[num_elem_blk];
+  int ebids[num_elem_blk];
+  error = ex_get_elem_blk_ids(exoid_,ebids);
   error = ex_get_prop_array(exoid_, EX_ELEM_BLOCK, "ID", epropID);
   for (int i = 0; i < num_elem_blk; ++i) 
   {
 	  // Read Element Blocks into Map
     char mychar[MAX_STR_LENGTH+1];
     int num_el_in_blk,num_nod_per_elem,num_attr;
-    error = ex_get_elem_block (exoid_, epropID[i], mychar, &num_el_in_blk, &num_nod_per_elem, &num_attr);
+    //error = ex_get_elem_block (exoid_, epropID[i], mychar, &num_el_in_blk, &num_nod_per_elem, &num_attr);
+    error = ex_get_elem_block (exoid_, ebids[i], mychar, &num_el_in_blk, &num_nod_per_elem, &num_attr);
     // prefer string to store element type
     string ele_type(mychar,int (MAX_STR_LENGTH));
     
     // get ElementBlock name
-    error = ex_get_name (exoid_, EX_ELEM_BLOCK, epropID[i], mychar);
+    error = ex_get_name (exoid_, EX_ELEM_BLOCK, ebids[i], mychar);
     // prefer string to store name
     string blockname(mychar,int (MAX_STR_LENGTH));
     
     // get element connectivity
-    int connect[num_nod_per_elem*num_el_in_blk];
-    error = ex_get_elem_conn(exoid_,epropID[i],connect);
+    vector<int> allconn(num_nod_per_elem*num_el_in_blk);
+    error = ex_get_elem_conn(exoid_,ebids[i],&allconn[0]);
     if (error != 0) dserror("exo error returned");
 	  map<int,vector<int> > eleconn;
 	  for (int j = 0; j < num_el_in_blk; ++j) {
 	    vector<int> actconn;
 	    for (int k = 0; k < num_nod_per_elem; ++k){
-	      actconn.push_back(connect[k + j*num_nod_per_elem]);
+        actconn.push_back(allconn[k + j*num_nod_per_elem]);
 	    }
 	    eleconn.insert(std::pair<int,vector<int> >(j,actconn));
     }
@@ -376,7 +379,7 @@ vector<double> EXODUS::Mesh::GetNodeMap(const int MapNodeID) const
 
 map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset) const
 {
-  cout << "Computing SideSet Connectivity... " << endl;
+  cout << "Creating SideSet Connectivity... " << endl;
   fflush(stdout);
   
   Epetra_SerialComm Comm;
@@ -534,6 +537,7 @@ vector<EXODUS::ElementBlock> EXODUS::Mesh::SideSetToEBlocks(const EXODUS::SideSe
  *----------------------------------------------------------------------*/
 void EXODUS::Mesh::WriteMesh(string newexofilename)
 {
+  cout << "Writing Mesh into: " << newexofilename.c_str() << endl;
   //string newexofile(newexofilename);
   //newexofile += ".exo";
   const char *newexofilechar;
@@ -583,18 +587,17 @@ void EXODUS::Mesh::WriteMesh(string newexofilename)
   for (int i=0; i<num_dim_; i++) free(coord_names[i]);
   
   // Write nodal coordinates
-  float x[num_nodes];
-  float y[num_nodes];
-  float z[num_nodes];
+  vector<float> xc(num_nodes);
+  vector<float> yc(num_nodes);
+  vector<float> zc(num_nodes);
   map<int,vector<double> >::const_iterator it;
   map<int,vector<double> > nodes = GetNodes();
   for(it=nodes.begin(); it != nodes.end(); ++it){
-    vector<double> coords = it->second;
-    x[it->first] = coords[0];
-    y[it->first] = coords[1];
-    z[it->first] = coords[2];
+    xc[it->first] = it->second[0];
+    yc[it->first] = it->second[1];
+    zc[it->first] = it->second[2];
   }
-  error = ex_put_coord (exoid, x, y, z);
+  error = ex_put_coord (exoid, &xc[0], &yc[0], &zc[0]);
 
   // Write NodeSets ************************************************************
   map<int,NodeSet>::const_iterator ins;
@@ -679,6 +682,7 @@ void EXODUS::Mesh::WriteMesh(string newexofilename)
   // close file
   error = ex_close (exoid);
   if (error!=0) dserror("error closing exodus file");
+  cout << ".. finished" << endl;
 }
 /*----------------------------------------------------------------------*
  |  Add Element Block to mesh(public)                          maf 01/08|

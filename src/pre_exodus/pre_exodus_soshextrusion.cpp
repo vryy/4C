@@ -77,6 +77,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
   
   
   // loop all existing extrude connectivities
+  cout << "Extruding surfaces..." << endl;
   for (i_extr = extrusion_conns.begin(); i_extr != extrusion_conns.end(); ++i_extr){
     // get connectivity
     const map<int,vector<int> > ele_conn = i_extr->second;
@@ -508,7 +509,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
   string newtitle = "extrusion";
   map<int,EXODUS::SideSet> emptysideset;
   
-  cout << "Extrusion done" << endl;
+  cout << "...done" << endl;
 
   EXODUS::Mesh extruded_mesh(basemesh,newnodes,neweblocks,newnodesets,emptysideset,newtitle);
  
