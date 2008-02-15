@@ -290,7 +290,7 @@ void MFSI::Algorithm::SetupFluid()
   // integration (call the constructor)
   // the only parameter from the list required here is the number of
   // velocity degrees of freedom
-  fluid_ = rcp(new FluidAdapter(actdis, solver, fluidtimeparams, output));
+  fluid_ = rcp(new FSI::FluidAdapter(actdis, solver, fluidtimeparams, output));
 }
 
 

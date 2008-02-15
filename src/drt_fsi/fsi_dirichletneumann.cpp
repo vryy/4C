@@ -85,7 +85,7 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
     matchingnodes_ = true;
     coupsf_.SetupConditionCoupling(StructureField().Discretization(),
                                    StructureField().Interface(),
-                                   FluidField().Discretization(),
+                                   *FluidField().Discretization(),
                                    FluidField().Interface(),
                                    "FSICoupling");
 
@@ -114,12 +114,12 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
   {
     matchingnodes_ = false;
     coupsfm_.Setup( StructureField().Discretization(),
-                    FluidField().Discretization(),
+                    *FluidField().Discretization(),
                     comm );
 
     // This is cheating. We setup the coupling of interface dofs between fluid
     // and ale. But we use the variable from the matching version.
-    coupsa_.SetupConditionCoupling(FluidField().Discretization(),
+    coupsa_.SetupConditionCoupling(*FluidField().Discretization(),
                                    FluidField().Interface(),
                                    *AleField().Discretization(),
                                    AleField().Interface(),
@@ -132,10 +132,10 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
   }
 
   // the fluid-ale coupling always matches
-  const Epetra_Map* fluidnodemap = FluidField().Discretization().NodeRowMap();
+  const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
   const Epetra_Map* alenodemap   = AleField().Discretization()->NodeRowMap();
 
-  coupfa_.SetupCoupling(FluidField().Discretization(),
+  coupfa_.SetupCoupling(*FluidField().Discretization(),
                         *AleField().Discretization(),
                         *fluidnodemap,
                         *alenodemap);

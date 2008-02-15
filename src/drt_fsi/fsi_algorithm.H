@@ -27,6 +27,8 @@ Maintainer: Ulrich Kuettler
 #include "fsi_fluid.H"
 #include "fsi_ale.H"
 
+//#include "../drt_mfsi/mfsi_structure.H"
+
 
 namespace FSI
 {

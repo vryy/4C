@@ -419,7 +419,7 @@ void FluidImplicitTimeInt::TimeLoop()
     //                    calculate lift'n'drag forces
     // -------------------------------------------------------------------
     int liftdrag = params_.get<int>("liftdrag");
-  
+
     if(liftdrag == 0); // do nothing, we don't want lift & drag
     if(liftdrag == 1)
       dserror("how did you manage to get here???");
@@ -2014,6 +2014,137 @@ void FluidImplicitTimeInt::LiftDrag() const
     }
   }
 }//FluidImplicitTimeInt::LiftDrag
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FluidImplicitTimeInt::IntegrateInterfaceShape(std::string condname)
+{
+  ParameterList eleparams;
+  // set action for elements
+  eleparams.set("action","integrate_Shapefunction");
+
+  // get a vector layout from the discretization to construct matching
+  // vectors and matrices
+  //                 local <-> global dof numbering
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+  // create vector (+ initialization with zeros)
+  Teuchos::RCP<Epetra_Vector> integratedshapefunc = LINALG::CreateVector(*dofrowmap,true);
+
+  // call loop over elements
+  discret_->ClearState();
+  discret_->SetState("dispnp", dispnp_);
+  discret_->EvaluateCondition(eleparams,integratedshapefunc,condname);
+  discret_->ClearState();
+
+  return integratedshapefunc;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax)
+{
+  //
+  // This method is really stupid, but simple. We calculate the fluid
+  // elements twice here. First because we need the global matrix to
+  // do a linear solve. We do not have any RHS other than the one from
+  // the Dirichlet condition at the FSI interface.
+  //
+  // After that we recalculate the matrix so that we can get the
+  // reaction forces at the FSI interface easily.
+  //
+  // We do more work that required, but we do not need any special
+  // element code to perform the steepest descent calculation. This is
+  // quite a benefit as the special code in the old discretization was
+  // a real nightmare.
+  //
+
+  //relax_->PutScalar(0.0);
+  //interface_.InsertCondVector(ivel,relax_);
+
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  Teuchos::RCP<Epetra_Vector> griddisp = LINALG::CreateVector(*dofrowmap,true);
+
+  // set the grid displacement independent of the trial value at the
+  // interface
+  griddisp->Update(1., *dispnp_, -1., *dispn_, 0.);
+
+  // dirichtoggle_ has already been set up
+
+  // zero out the stiffness matrix
+  sysmat_->Zero();
+
+  // zero out residual, no neumann bc
+  residual_->PutScalar(0.0);
+
+  ParameterList eleparams;
+  eleparams.set("action","calc_fluid_systemmat_and_residual");
+  eleparams.set("total time",time_);
+  eleparams.set("thsl",theta_*dta_);
+  eleparams.set("using stationary formulation",false);
+  eleparams.set("include reactive terms for linearisation",newton_);
+
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("velnp",velnp_);
+  discret_->SetState("hist"  ,zeros_);
+  discret_->SetState("dispnp", griddisp);
+  discret_->SetState("gridv", gridv_);
+
+  // call loop over elements
+  discret_->Evaluate(eleparams,sysmat_,residual_);
+  discret_->ClearState();
+
+  // finalize the system matrix
+  sysmat_->Complete();
+
+  // No, we do not want to have any rhs. There cannot be any.
+  residual_->PutScalar(0.0);
+
+  //--------- Apply dirichlet boundary conditions to system of equations
+  //          residual discplacements are supposed to be zero at
+  //          boundary conditions
+  incvel_->PutScalar(0.0);
+  LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,relax,dirichtoggle_);
+
+  //-------solve for residual displacements to correct incremental displacements
+  solver_.Solve(sysmat_->Matrix(),incvel_,residual_,true,true);
+
+  // and now we need the reaction forces
+
+  // zero out the stiffness matrix
+  sysmat_->Zero();
+
+  // zero out residual, no neumann bc
+  residual_->PutScalar(0.0);
+
+  eleparams.set("action","calc_fluid_systemmat_and_residual");
+  eleparams.set("thsl",theta_*dta_);
+  eleparams.set("using stationary formulation",false);
+
+  // set vector values needed by elements
+  discret_->ClearState();
+  //discret_->SetState("velnp",incvel_);
+  discret_->SetState("velnp",velnp_);
+  discret_->SetState("hist"  ,zeros_);
+  discret_->SetState("dispnp", griddisp);
+  discret_->SetState("gridv", gridv_);
+
+  // call loop over elements
+  discret_->Evaluate(eleparams,sysmat_,residual_);
+  discret_->ClearState();
+
+  double density = eleparams.get("density", 0.0);
+
+  // finalize the system matrix
+  sysmat_->Complete();
+
+  if (sysmat_->Apply(*incvel_, *trueresidual_)!=0)
+    dserror("sysmat_->Apply() failed");
+  trueresidual_->Scale(-density/dta_/theta_);
+}
 
 
 

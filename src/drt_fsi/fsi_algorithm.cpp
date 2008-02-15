@@ -73,8 +73,8 @@ void FSI::Algorithm::ReadRestart(int step)
   FluidField().ReadRestart(step);
   AleField().ReadRestart(step);
 
-  time_ = FluidField().time();
-  step_ = FluidField().step();
+  time_ = FluidField().Time();
+  step_ = FluidField().Step();
 }
 
 
@@ -300,7 +300,7 @@ void FSI::Algorithm::SetupFluid()
   // integration (call the constructor)
   // the only parameter from the list required here is the number of
   // velocity degrees of freedom
-  fluid_ = rcp(new Fluid(actdis, solver, fluidtimeparams, output));
+  fluid_ = rcp(new FluidAdapter(actdis, solver, fluidtimeparams, output));
 }
 
 
@@ -383,7 +383,7 @@ void FSI::Algorithm::PrepareTimeStep()
 void FSI::Algorithm::Update()
 {
   StructureField().UpdateandOutput();
-  FluidField().    TimeUpdate();
+  FluidField().    Update();
   AleField().      Update();
 }
 

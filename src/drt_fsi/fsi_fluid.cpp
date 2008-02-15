@@ -1,21 +1,7 @@
-/*----------------------------------------------------------------------*/
-/*!
-\file
-
-\brief Solve FSI problems using a Dirichlet-Neumann partitioning approach
-
-<pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
-*/
-/*----------------------------------------------------------------------*/
-
 #ifdef CCADISCRET
 
 #include "fsi_fluid.H"
+
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -25,251 +11,339 @@ Maintainer: Ulrich Kuettler
 extern struct _GENPROB     genprob;
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+FSI::Fluid::~Fluid()
+{
+}
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-FSI::Fluid::Fluid(Teuchos::RCP<DRT::Discretization> dis,
-                  Teuchos::RCP<LINALG::Solver> solver,
-                  Teuchos::RCP<ParameterList> params,
-                  Teuchos::RCP<IO::DiscretizationWriter> output)
-  : FluidImplicitTimeInt(dis,*solver,*params,*output,true),
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+FSI::FluidAdapter::FluidAdapter(Teuchos::RCP<DRT::Discretization> dis,
+                                 Teuchos::RCP<LINALG::Solver> solver,
+                                 Teuchos::RCP<ParameterList> params,
+                                 Teuchos::RCP<IO::DiscretizationWriter> output)
+  : fluid_(dis, *solver, *params, *output, true),
+    dis_(dis),
     solver_(solver),
     params_(params),
     output_(output)
 {
-  stepmax_    = params_->get<int>   ("max number timesteps");
-  maxtime_    = params_->get<double>("total time");
-  theta_      = params_->get<double>("theta");
-  timealgo_   = params_->get<FLUID_TIMEINTTYPE>("time int algo");
-  dtp_ = dta_ = params_->get<double>("time step size");
-
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  relax_ = LINALG::CreateVector(*dofrowmap,true);
-  griddisp_ = LINALG::CreateVector(*dofrowmap,true);
-
   FSI::UTILS::SetupInterfaceExtractor(*dis,"FSICoupling",interface_);
 }
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int FSI::Fluid::Itemax() const
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::FluidAdapter::InitialGuess()
 {
-  return params_->get<int>("max nonlin iter steps");
+  return fluid_.InitialGuess();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::FluidAdapter::RHS()
+{
+  return fluid_.Residual();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::FluidAdapter::Velnp()
+{
+  return fluid_.Velnp();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::FluidAdapter::Veln()
+{
+  return fluid_.Veln();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> FSI::FluidAdapter::DofRowMap()
+{
+  const Epetra_Map* dofrowmap = dis_->DofRowMap();
+  return Teuchos::rcp(dofrowmap, false);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Operator> FSI::FluidAdapter::SysMat()
+{
+  return fluid_.SysMat();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Discretization> FSI::FluidAdapter::Discretization()
+{
+  return fluid_.Discretization();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::FluidAdapter::StructCondRHS()
+{
+  return interface_.ExtractCondVector(Velnp());
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidAdapter::PrepareTimeStep()
+{
+  fluid_.PrepareTimeStep();
+
+  // we add the whole fluid mesh displacement later on?
+  //fluid_.Dispnp()->PutScalar(0.);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidAdapter::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
+{
+  // Yes, this is complicated. But we have to be very careful
+  // here. The field solver always expects an increment only. And
+  // there are Dirichlet conditions that need to be preserved. So take
+  // the sum of increments we get from NOX and apply the latest
+  // increment only.
+  if (vel!=Teuchos::null)
+  {
+    Teuchos::RCP<Epetra_Vector> incvel = Teuchos::rcp(new Epetra_Vector(*vel));
+    incvel->Update(-1.0,*fluid_.Velnp(),1.0);
+    fluid_.Evaluate(incvel);
+  }
+  else
+  {
+    fluid_.Evaluate(Teuchos::null);
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidAdapter::Update()
+{
+  fluid_.TimeUpdate();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidAdapter::Output()
+{
+  fluid_.Output();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidAdapter::NonlinearSolve()
+{
+  fluid_.NonlinearSolve();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidAdapter::SetInterfaceMap(Teuchos::RefCountPtr<Epetra_Map> im)
+{
+  // build inner velocity map
+  // dofs at the interface are excluded
+  // we use only velocity dofs and only those without Dirichlet constraint
+
+  Teuchos::RCP<Epetra_Map> velmap = fluid_.VelocityRowMap();
+  Teuchos::RCP<Epetra_Vector> dirichtoggle = fluid_.Dirichlet();
+  Teuchos::RCP<const Epetra_Map> fullmap = DofRowMap();
+
+  int numvelids = velmap->NumMyElements();
+  std::vector<int> velids;
+  velids.reserve(numvelids);
+  for (int i=0; i<numvelids; ++i)
+  {
+    int gid = velmap->GID(i);
+    if (not interface_.CondMap()->MyGID(gid) and (*dirichtoggle)[fullmap->LID(gid)]==0.)
+    {
+      velids.push_back(gid);
+    }
+  }
+
+  innervelmap_ = Teuchos::rcp(new Epetra_Map(-1,velids.size(), &velids[0], 0, velmap->Comm()));
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Map> FSI::FluidAdapter::InterfaceMap()
+{
+  return interface_.CondMap();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Map> FSI::FluidAdapter::InnerVelocityRowMap()
+{
+  return innervelmap_;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Map> FSI::FluidAdapter::PressureRowMap()
+{
+  return fluid_.PressureRowMap();
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::Fluid::SetItemax(int itemax)
+void FSI::FluidAdapter::SetMeshMap(Teuchos::RCP<Epetra_Map> mm)
 {
-  params_->set<int>("max nonlin iter steps", itemax);
+  meshmap_.Setup(*dis_->DofRowMap(),mm,LINALG::SplitMap(*dis_->DofRowMap(),*mm));
 }
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void FSI::Fluid::SetInterfaceMap(Teuchos::RCP<Epetra_Map> im)
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double FSI::FluidAdapter::ResidualScaling()
 {
+  return fluid_.ResidualScaling();
 }
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Fluid::ExtractInterfaceForces()
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidAdapter::ReadRestart(int step)
 {
-  return interface_.ExtractCondVector(trueresidual_);
+  fluid_.ReadRestart(step);
 }
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void FSI::Fluid::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double FSI::FluidAdapter::Time()
 {
-  interface_.InsertCondVector(ivel,velnp_);
+  return fluid_.Time();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+int FSI::FluidAdapter::Step()
+{
+  return fluid_.Step();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidAdapter::LiftDrag()
+{
+  fluid_.LiftDrag();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::FluidAdapter::ExtractInterfaceForces()
+{
+  return interface_.ExtractCondVector(fluid_.TrueResidual());
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidAdapter::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
+{
+  interface_.InsertCondVector(ivel,fluid_.Velnp());
 
   // mark all interface velocities as dirichlet values
   // this is very easy, but there are two dangers:
   // - We change ivel here. It must not be used afterwards.
   // - The algorithm must support the sudden change of dirichtoggle_
   ivel->PutScalar(1.0);
-  interface_.InsertCondVector(ivel,dirichtoggle_);
+  interface_.InsertCondVector(ivel,fluid_.Dirichlet());
 
   //----------------------- compute an inverse of the dirichtoggle vector
-  invtoggle_->PutScalar(1.0);
-  invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
+  fluid_.InvDirichlet()->PutScalar(1.0);
+  fluid_.InvDirichlet()->Update(-1.0,*fluid_.Dirichlet(),1.0);
 }
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void FSI::Fluid::SetMeshMap(Teuchos::RCP<Epetra_Map> mm)
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidAdapter::ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp)
 {
-  meshmap_.Setup(*discret_->DofRowMap(),mm,LINALG::SplitMap(*discret_->DofRowMap(),*mm));
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void FSI::Fluid::ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp)
-{
-  meshmap_.InsertCondVector(fluiddisp,dispnp_);
+  meshmap_.InsertCondVector(fluiddisp,fluid_.Dispnp());
 
   // new grid velocity
-  UpdateGridv();
+  fluid_.UpdateGridv();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidAdapter::ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel)
+{
+  meshmap_.InsertCondVector(gridvel,fluid_.GridVel());
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+int FSI::FluidAdapter::Itemax() const
+{
+  return fluid_.Itemax();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidAdapter::SetItemax(int itemax)
+{
+  fluid_.SetItemax(itemax);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::FluidAdapter::IntegrateInterfaceShape()
+{
+  return interface_.ExtractCondVector(fluid_.IntegrateInterfaceShape("FSICoupling"));
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::Fluid::ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel)
+Teuchos::RCP<Epetra_Vector> FSI::FluidAdapter::RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel)
 {
-  meshmap_.InsertCondVector(gridvel,gridv_);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Fluid::RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel)
-{
-  //
-  // This method is really stupid, but simple. We calculate the fluid
-  // elements twice here. First because we need the global matrix to
-  // do a linear solve. We do not have any RHS other than the one from
-  // the Dirichlet condition at the FSI interface.
-  //
-  // After that we recalculate the matrix so that we can get the
-  // reaction forces at the FSI interface easily.
-  //
-  // We do more work that required, but we do not need any special
-  // element code to perform the steepest descent calculation. This is
-  // quite a benefit as the special code in the old discretization was
-  // a real nightmare.
-  //
-
-  relax_->PutScalar(0.0);
-  interface_.InsertCondVector(ivel,relax_);
-
-  // set the grid displacement independent of the trial value at the
-  // interface
-  griddisp_->Update(1., *dispnp_, -1., *dispn_, 0.);
-
-  // dirichtoggle_ has already been set up
-
-  // zero out the stiffness matrix
-  sysmat_->Zero();
-
-  // zero out residual, no neumann bc
-  residual_->PutScalar(0.0);
-
-  ParameterList eleparams;
-  eleparams.set("action","calc_fluid_systemmat_and_residual");
-  eleparams.set("total time",time_);
-  eleparams.set("thsl",theta_*dta_);
-  eleparams.set("using stationary formulation",false);
-  eleparams.set("include reactive terms for linearisation",newton_);
-
-  // set vector values needed by elements
-  discret_->ClearState();
-  discret_->SetState("velnp",velnp_);
-  discret_->SetState("hist"  ,zeros_);
-#if 0
-  discret_->SetState("dispnp", zeros_);
-  discret_->SetState("gridv", zeros_);
-#else
-  discret_->SetState("dispnp", griddisp_);
-  discret_->SetState("gridv", gridv_);
-#endif
-
-  // call loop over elements
-  discret_->Evaluate(eleparams,sysmat_,residual_);
-  discret_->ClearState();
-
-  // finalize the system matrix
-  sysmat_->Complete();
-
-  // No, we do not want to have any rhs. There cannot be any.
-  residual_->PutScalar(0.0);
-
-  //--------- Apply dirichlet boundary conditions to system of equations
-  //          residual discplacements are supposed to be zero at
-  //          boundary conditions
-  incvel_->PutScalar(0.0);
-  LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,relax_,dirichtoggle_);
-
-  //-------solve for residual displacements to correct incremental displacements
-  solver_->Solve(sysmat_->Matrix(),incvel_,residual_,true,true);
-
-  // and now we need the reaction forces
-
-  // zero out the stiffness matrix
-  sysmat_->Zero();
-
-  // zero out residual, no neumann bc
-  residual_->PutScalar(0.0);
-
-  eleparams.set("action","calc_fluid_systemmat_and_residual");
-  eleparams.set("thsl",theta_*dta_);
-  eleparams.set("using stationary formulation",false);
-
-  // set vector values needed by elements
-  discret_->ClearState();
-  //discret_->SetState("velnp",incvel_);
-  discret_->SetState("velnp",velnp_);
-  discret_->SetState("hist"  ,zeros_);
-#if 0
-  discret_->SetState("dispnp", zeros_);
-  discret_->SetState("gridv", zeros_);
-#else
-  discret_->SetState("dispnp", griddisp_);
-  discret_->SetState("gridv", gridv_);
-#endif
-
-  // call loop over elements
-  discret_->Evaluate(eleparams,sysmat_,residual_);
-  discret_->ClearState();
-
-  double density = eleparams.get("density", 0.0);
-
-//   double norm;
-//   trueresidual_->Norm2(&norm);
-//   if (trueresidual_->Map().Comm().MyPID()==0)
-//     cout << "==> residual norm = " << norm << " <==\n";
-
-  // finalize the system matrix
-  sysmat_->Complete();
-
-  if (sysmat_->Apply(*incvel_, *trueresidual_)!=0)
-    dserror("sysmat_->Apply() failed");
-  trueresidual_->Scale(-density/dta_/theta_);
-
+  const Epetra_Map* dofrowmap = Discretization()->DofRowMap();
+  Teuchos::RCP<Epetra_Vector> relax = LINALG::CreateVector(*dofrowmap,true);
+  interface_.InsertCondVector(ivel,relax);
+  fluid_.LinearRelaxationSolve(relax);
   return ExtractInterfaceForces();
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Fluid::IntegrateInterfaceShape()
+Teuchos::RCP<DRT::ResultTest> FSI::FluidAdapter::CreateFieldTest()
 {
-  ParameterList eleparams;
-  // set action for elements
-  eleparams.set("action","integrate_Shapefunction");
-
-  // get a vector layout from the discretization to construct matching
-  // vectors and matrices
-  //                 local <-> global dof numbering
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-  // create vector (+ initialization with zeros)
-  Teuchos::RCP<Epetra_Vector> integratedshapefunc = LINALG::CreateVector(*dofrowmap,true);
-
-  // call loop over elements
-  discret_->ClearState();
-  discret_->SetState("dispnp", dispnp_);
-  discret_->EvaluateCondition(eleparams,integratedshapefunc,"FSICoupling");
-  discret_->ClearState();
-
-  return interface_.ExtractCondVector(integratedshapefunc);
+  return Teuchos::rcp(new FluidResultTest(fluid_));
 }
+
 
 #endif

@@ -331,7 +331,7 @@ void fsi_ale_drt()
 
 #ifdef RESULTTEST
     DRT::ResultTestManager testmanager(comm);
-    testmanager.AddFieldTest(rcp(new FluidResultTest(fsi->FluidField())));
+    testmanager.AddFieldTest(fsi->FluidField().CreateFieldTest());
     testmanager.TestAll();
 #endif
   }
@@ -357,7 +357,7 @@ void xfsi_drt()
 #endif
 
   dserror("XFEM FSI is not operational yet!");
-  
+
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   Teuchos::RefCountPtr<FSI::DirichletNeumannCoupling> fsi = rcp(new FSI::DirichletNeumannCoupling(comm));
 
@@ -371,7 +371,7 @@ void xfsi_drt()
 
 #ifdef RESULTTEST
   DRT::ResultTestManager testmanager(comm);
-  testmanager.AddFieldTest(rcp(new FluidResultTest(fsi->FluidField())));
+  testmanager.AddFieldTest(fsi->FluidField().CreateFieldTest());
   testmanager.TestAll();
 #endif
 
