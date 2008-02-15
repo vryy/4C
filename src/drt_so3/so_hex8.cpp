@@ -531,6 +531,7 @@ void DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
 //  if (!fiberdirection_) return; // no fiber vector present, do nothing
 
   if (name == "StressCxyz"){
+    data.assign(data.size(), 0.);
     for (int i = 0; i < NUMSTR_SOH8; ++i) {
       for (int j = 0; j < NUMGPT_SOH8; ++j) {
         data[i] += 0.125 * stresses_(j,i);
