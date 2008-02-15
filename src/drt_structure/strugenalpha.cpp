@@ -114,11 +114,6 @@ maxentriesperrow_(81)
   // also known as out-of-balance-force
   fresm_ = LINALG::CreateVector(*dofrowmap,false);
 
-  //vector containing nodal normal stresses
-  normal_stresses_ = LINALG::CreateVector(*dofrowmap,true);
-  //vector containing nodal shear stresses
-  shear_stresses_ = LINALG::CreateVector(*dofrowmap,true);
-
   //-------------------------------------------- calculate external forces
   {
     ParameterList p;
@@ -2746,16 +2741,28 @@ void StruGenAlpha::UpdateandOutput()
     ParameterList p;
     // action for elements
     p.set("action","calc_struct_update_istep");
-    // choose what to assemble
-    p.set("assemble matrix 1",false);
-    p.set("assemble matrix 2",false);
-    p.set("assemble vector 1",false);
-    p.set("assemble vector 2",false);
-    p.set("assemble vector 3",false);
     // other parameters that might be needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
     discret_.Evaluate(p,null,null,null,null,null);
+  }
+
+  //------------------------------------- do stress calculation
+  if (updevrystress and !(istep%updevrystress) and iostress)
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_stress");
+    // other parameters that might be needed by the elements
+    p.set("total time",timen);
+    p.set("delta time",dt);
+    // set vector values needed by elements
+    discret_.ClearState();
+    discret_.SetState("residual displacement",zeros_);
+    discret_.SetState("displacement",dis_);
+    discret_.Evaluate(p,null,null,null,null,null);
+    discret_.ClearState();
   }
 
   //------------------------------------------------- write restart step
@@ -2792,28 +2799,27 @@ void StruGenAlpha::UpdateandOutput()
     isdatawritten = true;
   }
 
-  //------------------------------------- do stress calculation and output
+  //---------------------------------------------------- output stresses
   if (updevrystress and !(istep%updevrystress) and iostress)
   {
-    // create the parameters for the discretization
-    ParameterList p;
-    // action for elements
-    p.set("action","calc_struct_stress");
-    // other parameters that might be needed by the elements
-    p.set("total time",timen);
-    p.set("delta time",dt);
-    // set vector values needed by elements
-    discret_.ClearState();
-    discret_.SetState("residual displacement",zeros_);
-    discret_.SetState("displacement",dis_);
-    normal_stresses_->PutScalar(0.0);  // initialise normal stress vector
-    shear_stresses_->PutScalar(0.0);  // initialise shear stress vector
-    discret_.Evaluate(p,null,null,normal_stresses_,shear_stresses_,null);
-    discret_.ClearState();
     if (!isdatawritten) output_.NewStep(istep, timen);
-    //output_.WriteElementData();
-    output_.WriteStressVector("nodal_stresses_xyz", normal_stresses_, shear_stresses_);
     isdatawritten = true;
+    output_.WriteElementData();
+
+    if (0)
+    {
+      // create the parameters for the discretization
+      ParameterList p;
+      // action for elements
+      p.set("action","calc_struct_stress_nodal");
+      RefCountPtr<Epetra_Vector> normal_stresses = LINALG::CreateVector(*(discret_.DofRowMap()),true);
+      RefCountPtr<Epetra_Vector> shear_stresses = LINALG::CreateVector(*(discret_.DofRowMap()),true);
+      discret_.Evaluate(p,null,null,normal_stresses,shear_stresses,null);
+      discret_.ClearState();
+      if (!isdatawritten) output_.NewStep(istep, timen);
+      output_.WriteStressVector("nodal_stresses_xyz", normal_stresses, shear_stresses);
+      isdatawritten = true;
+    }
   }
 
   //---------------------------------------------------------- print out

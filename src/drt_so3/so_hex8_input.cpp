@@ -126,7 +126,7 @@ bool DRT::ELEMENTS::So_hex8::ReadElement()
   }
 
   // Initialize elestress
-  stresses_.resize(6);
+  //stresses_.resize(6);
 
   //Initialize fiber vector
   fiberdirection_.resize(3);

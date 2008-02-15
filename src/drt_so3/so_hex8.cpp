@@ -31,6 +31,7 @@ data_()
   surfaceptrs_.resize(0);
   lines_.resize(0);
   lineptrs_.resize(0);
+  stresses_.Shape(NUMGPT_SOH8,NUMSTR_SOH8);
   return;
 }
 
@@ -530,7 +531,12 @@ void DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
 //  if (!fiberdirection_) return; // no fiber vector present, do nothing
 
   if (name == "StressCxyz"){
-    data = stresses_;
+    for (int i = 0; i < NUMSTR_SOH8; ++i) {
+      for (int j = 0; j < NUMGPT_SOH8; ++j) {
+        data[i] += 0.125 * stresses_(j,i);
+      }
+    }
+//     data = stresses_;
   }
   else if (name == "FiberVec"){
     data = fiberdirection_;

@@ -127,16 +127,17 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList& params,
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      Epetra_SerialDenseMatrix elestress(NUMSTR_SOH8,NUMGPT_SOH8);
+      // Epetra_SerialDenseMatrix elestress(NUMSTR_SOH8,NUMGPT_SOH8);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,&elestress);
+      sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,&stresses_);
       // average gp stresses to store element (center) stresses
-      for (int i = 0; i < NUMSTR_SOH8; ++i) {
-        for (int j = 0; j < NUMGPT_SOH8; ++j) {
-          stresses_[i] += 0.125 * elestress(i,j);
-        }
-      }
+      // -> moved this to VisData
+//       for (int i = 0; i < NUMSTR_SOH8; ++i) {
+//         for (int j = 0; j < NUMGPT_SOH8; ++j) {
+//           stresses_[i] += 0.125 * elestress(i,j);
+//         }
+//       }
     }
     break;
 
@@ -582,11 +583,11 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
     //SymmetricEigen(KdaTKaaKda,L6,NUMDOF_SOH8,'N');
     //cout << setprecision(16) << KdaTKaaKda;
     //cout << "eigen(KEAS): " << L6;
-    
+
     // EAS-stiffness matrix is: Kdd - Kda^T . Kaa^-1 . Kda
     (*stiffmatrix).Multiply('N','N',-1.0,KdaTKaa,Kda,1.0);
     //cout << setprecision(16) << *stiffmatrix;
-    
+
     // EAS-internal force is: fint - Kda^T . Kaa^-1 . feas
     (*force).Multiply('N','N',-1.0,KdaTKaa,feas,1.0);
 
@@ -603,12 +604,12 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
 //  Epetra_SerialDenseVector L5(NUMDOF_SOH8);
 //  SymmetricEigen(*stiffmatrix,L5,NUMDOF_SOH8,'N');
 //  cout << "eigen(K): " << L5;
-  
+
 //  SymmetriseMatrix(KdaTKaaKda);
 //  Epetra_SerialDenseVector L16(NUMDOF_SOH8);
 //  Epetra_SerialDenseMatrix newstiff2(newstiff);
 //  cout << "newstiff2"<<setprecision(16) << newstiff2;
-// 
+//
 //  SymmetricEigen(newstiff,L16,NUMDOF_SOH8,'N');
 //  cout << "eigen(newstiffpreEAS): " << L16;
 //  double normKeas = KdaTKaaKda.NormOne();
@@ -621,7 +622,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
 //  Epetra_SerialDenseVector L26(NUMDOF_SOH8);
 //  SymmetricEigen(newstiff2,L26,NUMDOF_SOH8,'N');
 //  cout << "eigen(newstiff2): " << L26;
-  
+
   return;
 } // DRT::ELEMENTS::Shell8::s8_nlnstiffmass
 
@@ -776,7 +777,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_evaluateT(const Epetra_SerialDenseMatrix jac,
   TinvT(3,0) = 2 * jac(0,0) * jac(1,0);
   TinvT(4,0) = 2 * jac(1,0) * jac(2,0);
   TinvT(5,0) = 2 * jac(0,0) * jac(2,0);
-  
+
   TinvT(0,1) = jac(0,1) * jac(0,1);
   TinvT(1,1) = jac(1,1) * jac(1,1);
   TinvT(2,1) = jac(2,1) * jac(2,1);
@@ -790,7 +791,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_evaluateT(const Epetra_SerialDenseMatrix jac,
   TinvT(3,2) = 2 * jac(0,2) * jac(1,2);
   TinvT(4,2) = 2 * jac(1,2) * jac(2,2);
   TinvT(5,2) = 2 * jac(0,2) * jac(2,2);
-  
+
   TinvT(0,3) = jac(0,0) * jac(0,1);
   TinvT(1,3) = jac(1,0) * jac(1,1);
   TinvT(2,3) = jac(2,0) * jac(2,1);
@@ -805,7 +806,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_evaluateT(const Epetra_SerialDenseMatrix jac,
   TinvT(3,4) = jac(0,1) * jac(1,2) + jac(1,1) * jac(0,2);
   TinvT(4,4) = jac(1,1) * jac(2,2) + jac(2,1) * jac(1,2);
   TinvT(5,4) = jac(0,1) * jac(2,2) + jac(2,1) * jac(0,2);
-  
+
   TinvT(0,5) = jac(0,0) * jac(0,2);
   TinvT(1,5) = jac(1,0) * jac(1,2);
   TinvT(2,5) = jac(2,0) * jac(2,2);
@@ -816,7 +817,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_evaluateT(const Epetra_SerialDenseMatrix jac,
   // now evaluate T^{-T} with solver
   Epetra_SerialDenseSolver solve_for_inverseT;
   solve_for_inverseT.SetMatrix(TinvT);
-  int err2 = solve_for_inverseT.Factor();        
+  int err2 = solve_for_inverseT.Factor();
   int err = solve_for_inverseT.Invert();
   if ((err != 0) && (err2!=0)) dserror("Inversion of Tinv (Jacobian) failed");
   return;
@@ -837,7 +838,7 @@ int DRT::ELEMENTS::Sosh8Register::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->Type() != DRT::Element::element_sosh8) continue;
     DRT::ELEMENTS::So_sh8* actele = dynamic_cast<DRT::ELEMENTS::So_sh8*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_sh8* failed");
-    
+
     if (!actele->nodes_rearranged_) {
       // check for automatic definition of thickness direction
       if (actele->thickdir_ == DRT::ELEMENTS::So_sh8::autoj) {

@@ -60,7 +60,7 @@ bool DRT::ELEMENTS::So_sh8::ReadElement()
   }
 
   SetNodeIds(nnode,nodes);
-  
+
 
   // read number of material model
   int material = 0;
@@ -145,8 +145,8 @@ bool DRT::ELEMENTS::So_sh8::ReadElement()
   else stresstype_= soh8_stress_none;
 
   // Initialize elestress
-  stresses_.resize(6);
-  
+  // stresses_.resize(6);
+
   return true;
 } // So_sh8::ReadElement()
 

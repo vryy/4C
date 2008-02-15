@@ -115,6 +115,12 @@ class DiscretizationWriter
 {
 public:
 
+  enum VectorType {
+    dofvector,
+    nodevector,
+    elementvector
+  };
+
   /// Writer constructor always needs a discretization
   explicit DiscretizationWriter(Teuchos::RCP<DRT::Discretization> dis, int probnum=0);
 
@@ -143,7 +149,7 @@ public:
     \param vec  : the result data vector
     \param nodevector : whether this vector has a row dof map (nodevector==true) or a row element map.
   */
-  virtual void WriteVector(const string name, Teuchos::RCP<Epetra_MultiVector> vec, bool nodevector=true);
+  virtual void WriteVector(const string name, Teuchos::RCP<Epetra_MultiVector> vec, VectorType vt=dofvector);
 
   //! write stress multivector
   virtual void WriteStressVector(const string name,

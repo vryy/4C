@@ -644,7 +644,9 @@ void IO::DiscretizationWriter::NewStep(const int step, const double time)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteVector(const string name, Teuchos::RCP<Epetra_MultiVector> vec, bool nodevector)
+void IO::DiscretizationWriter::WriteVector(const string name,
+                                           Teuchos::RCP<Epetra_MultiVector> vec,
+                                           IO::DiscretizationWriter::VectorType vt)
 {
 #ifdef BINIO
 
@@ -702,10 +704,20 @@ void IO::DiscretizationWriter::WriteVector(const string name, Teuchos::RCP<Epetr
   if (dis_->Comm().MyPID() == 0)
   {
     std::string vectortype;
-    if (nodevector)
+    switch (vt)
+    {
+    case dofvector:
+      vectortype = "dof";
+      break;
+    case nodevector:
       vectortype = "node";
-    else
+      break;
+    case elementvector:
       vectortype = "element";
+      break;
+    default:
+      dserror("unknown vector type %d", vt);
+    }
     fprintf(cf_,
             "    %s:\n"
             "        type = \"%s\"\n"
@@ -749,7 +761,7 @@ void IO::DiscretizationWriter::WriteStressVector(const string name,
     (*((*stresses)(5)))[i] = (*shearstresses)[3*i+2];
   }
 
-  WriteVector(name, stresses);
+  WriteVector(name, stresses, nodevector);
 }
 
 
@@ -917,7 +929,7 @@ void IO::DiscretizationWriter::WriteElementData()
       for (int j=0; j<dimension; ++j) (*sysdata(j))[i] = eledata[j];
     }
 
-    WriteVector(fool->first, Teuchos::rcp(&sysdata,false), false);
+    WriteVector(fool->first, Teuchos::rcp(&sysdata,false), IO::DiscretizationWriter::elementvector);
 
   } // for (fool = names.begin(); fool!= names.end(); ++fool)
 

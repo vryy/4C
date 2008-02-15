@@ -348,6 +348,7 @@ protected:
     calc_struct_linstiffmass,
     calc_struct_nlnstiffmass,
     calc_struct_stress,
+    calc_struct_stress_nodal,
     calc_struct_eleload,
     calc_struct_fsiload,
     calc_struct_update_istep,
@@ -408,7 +409,9 @@ protected:
   //! vector of lines adjacent to this element
   vector<DRT::ELEMENTS::Soh8Line*>              lineptrs_;
   //! vector of element stress tensor in Voigt notation
-  vector<double>                                stresses_;
+  //vector<double>                                stresses_;
+  //! matrix containing gauss point stresses
+  Epetra_SerialDenseMatrix                        stresses_;
 
   //! some distypes need rewinding of NodeIds due to bad input from mesher
   //! flag to rewind this element, must be availabale for friend class fluid3register
