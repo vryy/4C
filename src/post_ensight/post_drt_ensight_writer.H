@@ -63,9 +63,10 @@ typedef map<DRT::Element::DiscretizationType, vector<int> > EleGidPerDisType;
 enum ResultType
 {
   no_restype,          		// unknown result type
+  dofbased,                     // dof-based result values
   nodebased,           		// node-based result values
   elementbased,      		// element-based result values
-  elementdof,     		    // element degree of freedom values
+  elementdof,     		// element degree of freedom values
   max_restype          		// end marker. must be the last entry
 };
 
@@ -172,7 +173,7 @@ protected:
     	    const vector<int>& nodevector,
             const RefCountPtr<Epetra_Map> proc0map
             ) const;
-    void WriteNodalResultStep(
+    void WriteDofResultStep(
             ofstream& file,
             PostResult& result,
             map<string, vector<ofstream::pos_type> >& resultfilepos,
@@ -180,6 +181,13 @@ protected:
             const string name,
             const int numdf,
             const int from) const;
+    void WriteNodalResultStep(
+            ofstream& file,
+            PostResult& result,
+            map<string, vector<ofstream::pos_type> >& resultfilepos,
+            const string groupname,
+            const string name,
+            const int numdf) const;
     void WriteElementDOFResultStep(
             ofstream& file,
             PostResult& result,
