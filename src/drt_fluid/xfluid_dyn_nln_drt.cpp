@@ -26,7 +26,7 @@ Maintainer: Axel Gerstenberger
 #include <ctime>
 #include <cstdlib>
 #include <iostream>
-#include <set>
+
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -157,6 +157,17 @@ void xdyn_fluid_drt()
   fluiddis->ComputeNullSpaceIfNecessary(*solveparams);
 
   // -------------------------------------------------------------------
+  // create a second solver for SIMPLER preconditioner if chosen from input
+  // -------------------------------------------------------------------
+  if (getIntegralValue<int>(fdyn,"SIMPLER"))
+  {
+    ParameterList& p = solveparams->sublist("SIMPLER");
+    RCP<ParameterList> params = rcp(&p,false);
+    LINALG::Solver s(params,fluiddis->Comm(),allfiles.out_err);
+    s.TranslateSolverParameters(*params,&solv[genprob.numfld]);
+  }
+
+  // -------------------------------------------------------------------
   // set parameters in list required for all schemes
   // -------------------------------------------------------------------
   ParameterList fluidtimeparams;
@@ -164,6 +175,11 @@ void xdyn_fluid_drt()
   // -------------------------------------- number of degrees of freedom
   // number of degrees of freedom
   fluidtimeparams.set<int>              ("number of velocity degrees of freedom" ,probsize.get<int>("DIM"));
+
+  // ------------------------------------------------ basic scheme, i.e.
+  // --------------------- solving nonlinear or linearised flow equation
+  fluidtimeparams.set<int>("type of nonlinear solve" ,
+					 Teuchos::getIntegralValue<int>(fdyn,"DYNAMICTYP"));
 
   // -------------------------------------------------- time integration
   // the default time step size
@@ -181,7 +197,9 @@ void xdyn_fluid_drt()
   fluidtimeparams.set<int>             ("max nonlin iter steps"     ,fdyn.get<int>("ITEMAX"));
   // stop nonlinear iteration when both incr-norms are below this bound
   fluidtimeparams.set<double>          ("tolerance for nonlin iter" ,fdyn.get<double>("CONVTOL"));
-
+  // set convergence check
+  fluidtimeparams.set<string>          ("CONVCHECK"  ,fdyn.get<string>("CONVCHECK"));
+  
   // ----------------------------------------------- restart and output
   // restart
   fluidtimeparams.set                  ("write restart every"       ,fdyn.get<int>("RESTARTEVRY"));
@@ -189,6 +207,8 @@ void xdyn_fluid_drt()
   fluidtimeparams.set                  ("write solution every"      ,fdyn.get<int>("UPRES"));
   // flag for writing stresses
   fluidtimeparams.set                  ("write stresses"            ,Teuchos::getIntegralValue<int>(ioflags,"FLUID_STRESS"));
+  // ---------------------------------------------------- lift and drag
+  fluidtimeparams.set<int>("liftdrag",Teuchos::getIntegralValue<int>(fdyn,"LIFTDRAG"));
 
   // -----------evaluate error for test flows with analytical solutions
   int init = Teuchos::getIntegralValue<int>(fdyn,"INITIALFIELD");
@@ -282,7 +302,7 @@ void xdyn_fluid_drt()
   }
 
   //---------- this is the end. Beautiful friend. My only friend, The end.
-  // thanks to RCP<> we do not need to delete anything here!
+  // thanks to RefCountPtr<> we do not need to delete anything here!
 
   return;
 

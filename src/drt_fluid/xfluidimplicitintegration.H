@@ -1,8 +1,15 @@
 /*!----------------------------------------------------------------------
-\file xfluidimplicitintegration.H
-\brief Control routine for fluid time integration. Associated with
-       fluidimplicitintegration.cpp
+\file fluidimplicitintegration.H
+\brief Associated with control routine for fluid (in)stationary solvers,
 
+     including instationary solvers based on
+
+     o one-step-theta time-integration scheme
+
+     o two-step BDF2 time-integration scheme
+       (with potential one-step-theta start algorithm)
+
+     and stationary solver.
 
 <pre>
 Maintainer: Axel Gerstenberger
@@ -191,7 +198,8 @@ public:
 
   Teuchos::RCP<Epetra_Vector> InitialGuess() { return incvel_; }
   Teuchos::RCP<Epetra_Vector> Residual() { return residual_; }
-  Teuchos::RCP<Epetra_Vector> Vel() { return velnp_; }
+  Teuchos::RCP<Epetra_Vector> Velnp() { return velnp_; }
+  Teuchos::RCP<Epetra_Vector> Veln() { return veln_; }
   Teuchos::RCP<Epetra_Vector> Dirichlet() { return dirichtoggle_; }
   Teuchos::RCP<Epetra_Vector> Dispnp() { return dispnp_; }
   Teuchos::RCP<Epetra_Vector> Dispn() { return dispn_; }
@@ -306,6 +314,9 @@ protected:
   /// histvector --- a linear combination of velnm, veln (BDF)
   ///                or veln, accn (One-Step-Theta)
   RCP<Epetra_Vector>    hist_;
+
+  /// vm3 solver
+  RCP<VM3_Solver> vm3_solver_;
 
   // solid displacement (might be moved somewhere else later)
   RCP<Epetra_Vector>    soliddispnp_;
