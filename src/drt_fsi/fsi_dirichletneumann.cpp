@@ -67,26 +67,14 @@ extern struct _IO_FLAGS     ioflags;
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
-  : comm_(comm),
+  : Algorithm(comm),
     counter_(7)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
-  if (comm_.MyPID()==0)
-    DRT::INPUT::PrintDefaultParameters(std::cout, fsidyn);
-
-  step_ = 0;
-  time_ = 0.;
-  dt_ = fsidyn.get<double>("TIMESTEP");
-  nstep_ = fsidyn.get<int>("NUMSTEP");
-  maxtime_ = fsidyn.get<double>("MAXTIME");
   displacementcoupling_ = fsidyn.get<std::string>("COUPVARIABLE") == "Displacement";
 
   SetDefaultParameters(fsidyn,noxparameterlist);
-
-  SetupStructure();
-  SetupFluid();
-  SetupAle();
 
   //cout << structure_->Discretization();
   //cout << fluid_->Discretization();
@@ -95,16 +83,16 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
   if (Teuchos::getIntegralValue<int>(fsidyn,"COUPMETHOD"))
   {
     matchingnodes_ = true;
-    coupsf_.SetupConditionCoupling(structure_->Discretization(),
-                                   structure_->Interface(),
-                                   fluid_->Discretization(),
-                                   fluid_->Interface(),
+    coupsf_.SetupConditionCoupling(StructureField().Discretization(),
+                                   StructureField().Interface(),
+                                   FluidField().Discretization(),
+                                   FluidField().Interface(),
                                    "FSICoupling");
 
-    coupsa_.SetupConditionCoupling(structure_->Discretization(),
-                                   structure_->Interface(),
-                                   *ale_->Discretization(),
-                                   ale_->Interface(),
+    coupsa_.SetupConditionCoupling(StructureField().Discretization(),
+                                   StructureField().Interface(),
+                                   *AleField().Discretization(),
+                                   AleField().Interface(),
                                    "FSICoupling");
 
     // In the following we assume that both couplings find the same dof
@@ -118,45 +106,45 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
       dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
 
     // init transfer from interface to field
-    structure_->SetInterfaceMap(coupsf_.MasterDofMap());
-    fluid_    ->SetInterfaceMap(coupsf_.SlaveDofMap());
-    ale_      ->SetInterfaceMap(coupsa_.SlaveDofMap());
+    StructureField().SetInterfaceMap(coupsf_.MasterDofMap());
+    FluidField().    SetInterfaceMap(coupsf_.SlaveDofMap());
+    AleField().      SetInterfaceMap(coupsa_.SlaveDofMap());
   }
   else
   {
     matchingnodes_ = false;
-    coupsfm_.Setup( structure_->Discretization(),
-                    fluid_->Discretization(),
+    coupsfm_.Setup( StructureField().Discretization(),
+                    FluidField().Discretization(),
                     comm );
 
     // This is cheating. We setup the coupling of interface dofs between fluid
     // and ale. But we use the variable from the matching version.
-    coupsa_.SetupConditionCoupling(fluid_->Discretization(),
-                                   fluid_->Interface(),
-                                   *ale_->Discretization(),
-                                   ale_->Interface(),
+    coupsa_.SetupConditionCoupling(FluidField().Discretization(),
+                                   FluidField().Interface(),
+                                   *AleField().Discretization(),
+                                   AleField().Interface(),
                                    "FSICoupling");
 
     // init transfer from interface to field
-    structure_->SetInterfaceMap(coupsfm_.MasterDofMap());
-    fluid_    ->SetInterfaceMap(coupsfm_.SlaveDofMap());
-    ale_      ->SetInterfaceMap(coupsa_.SlaveDofMap());
+    StructureField().SetInterfaceMap(coupsfm_.MasterDofMap());
+    FluidField().    SetInterfaceMap(coupsfm_.SlaveDofMap());
+    AleField().      SetInterfaceMap(coupsa_.SlaveDofMap());
   }
 
   // the fluid-ale coupling always matches
-  const Epetra_Map* fluidnodemap = fluid_->Discretization().NodeRowMap();
-  const Epetra_Map* alenodemap   = ale_->Discretization()->NodeRowMap();
+  const Epetra_Map* fluidnodemap = FluidField().Discretization().NodeRowMap();
+  const Epetra_Map* alenodemap   = AleField().Discretization()->NodeRowMap();
 
-  coupfa_.SetupCoupling(fluid_->Discretization(),
-                        *ale_->Discretization(),
+  coupfa_.SetupCoupling(FluidField().Discretization(),
+                        *AleField().Discretization(),
                         *fluidnodemap,
                         *alenodemap);
 
-  fluid_->SetMeshMap(coupfa_.MasterDofMap());
+  FluidField().SetMeshMap(coupfa_.MasterDofMap());
 
 #if 0
   // create connection graph of interface elements
-  Teuchos::RCP<Epetra_Map> imap = structure_->InterfaceMap();
+  Teuchos::RCP<Epetra_Map> imap = StructureField().InterfaceMap();
 
   vector<int> rredundant;
   DRT::UTILS::AllreduceEMap(rredundant, *imap);
@@ -200,7 +188,7 @@ void FSI::DirichletNeumannCoupling::SetDefaultParameters(const Teuchos::Paramete
   case fsi_iter_stagg_fixed_rel_param:
   {
     // fixed-point solver with fixed relaxation parameter
-    method_ = "ITERATIVE STAGGERED SCHEME WITH FIXED RELAXATION PARAMETER";
+    SetMethod("ITERATIVE STAGGERED SCHEME WITH FIXED RELAXATION PARAMETER");
 
     nlParams.set("Jacobian", "None");
 
@@ -219,7 +207,7 @@ void FSI::DirichletNeumannCoupling::SetDefaultParameters(const Teuchos::Paramete
   case fsi_iter_stagg_AITKEN_rel_param:
   {
     // fixed-point solver with Aitken relaxation parameter
-    method_ = "ITERATIVE STAGGERED SCHEME WITH RELAXATION PARAMETER VIA AITKEN ITERATION";
+    SetMethod("ITERATIVE STAGGERED SCHEME WITH RELAXATION PARAMETER VIA AITKEN ITERATION");
 
     nlParams.set("Jacobian", "None");
 
@@ -239,7 +227,7 @@ void FSI::DirichletNeumannCoupling::SetDefaultParameters(const Teuchos::Paramete
   case fsi_iter_stagg_steep_desc:
   {
     // fixed-point solver with steepest descent relaxation parameter
-    method_ = "ITERATIVE STAGGERED SCHEME WITH RELAXATION PARAMETER VIA STEEPEST DESCENT METHOD";
+    SetMethod("ITERATIVE STAGGERED SCHEME WITH RELAXATION PARAMETER VIA STEEPEST DESCENT METHOD");
 
     nlParams.set("Jacobian", "None");
 
@@ -258,7 +246,7 @@ void FSI::DirichletNeumannCoupling::SetDefaultParameters(const Teuchos::Paramete
   {
     // nonlinear CG solver (pretty much steepest descent with finite
     // difference Jacobian)
-    method_ = "ITERATIVE STAGGERED SCHEME WITH NONLINEAR CG SOLVER";
+    SetMethod("ITERATIVE STAGGERED SCHEME WITH NONLINEAR CG SOLVER");
 
     nlParams.set("Jacobian", "None");
     dirParams.set("Method", "NonlinearCG");
@@ -268,7 +256,7 @@ void FSI::DirichletNeumannCoupling::SetDefaultParameters(const Teuchos::Paramete
   case fsi_iter_stagg_MFNK_FD:
   {
     // matrix free Newton Krylov with finite difference Jacobian
-    method_ = "MATRIX FREE NEWTON KRYLOV SOLVER BASED ON FINITE DIFFERENCES";
+    SetMethod("MATRIX FREE NEWTON KRYLOV SOLVER BASED ON FINITE DIFFERENCES");
 
     nlParams.set("Jacobian", "Matrix Free");
 
@@ -284,7 +272,7 @@ void FSI::DirichletNeumannCoupling::SetDefaultParameters(const Teuchos::Paramete
   case fsi_iter_stagg_MFNK_FSI:
   {
     // matrix free Newton Krylov with FSI specific Jacobian
-    method_ = "MATRIX FREE NEWTON KRYLOV SOLVER BASED ON FSI SPECIFIC JACOBIAN APPROXIMATION";
+    SetMethod("MATRIX FREE NEWTON KRYLOV SOLVER BASED ON FSI SPECIFIC JACOBIAN APPROXIMATION");
 
     nlParams.set("Jacobian", "FSI Matrix Free");
 
@@ -295,7 +283,7 @@ void FSI::DirichletNeumannCoupling::SetDefaultParameters(const Teuchos::Paramete
   case fsi_iter_stagg_MPE:
   {
     // minimal polynomial extrapolation
-    method_ = "ITERATIVE STAGGERED SCHEME WITH MINIMAL POLYNOMIAL EXTRAPOLATION";
+    SetMethod("ITERATIVE STAGGERED SCHEME WITH MINIMAL POLYNOMIAL EXTRAPOLATION");
 
     nlParams.set("Jacobian", "None");
     dirParams.set("Method","User Defined");
@@ -319,7 +307,7 @@ void FSI::DirichletNeumannCoupling::SetDefaultParameters(const Teuchos::Paramete
   case fsi_iter_stagg_RRE:
   {
     // reduced rank extrapolation
-    method_ = "ITERATIVE STAGGERED SCHEME WITH REDUCED RANK EXTRAPOLATION";
+    SetMethod("ITERATIVE STAGGERED SCHEME WITH REDUCED RANK EXTRAPOLATION");
 
     nlParams.set("Jacobian", "None");
     dirParams.set("Method","User Defined");
@@ -349,7 +337,7 @@ void FSI::DirichletNeumannCoupling::SetDefaultParameters(const Teuchos::Paramete
   case fsi_basic_sequ_stagg:
   {
     // sequential coupling (no iteration!)
-    method_ = "BASIC SEQUENTIAL STAGGERED SCHEME";
+    SetMethod("BASIC SEQUENTIAL STAGGERED SCHEME");
 
     nlParams.set("Jacobian", "None");
     nlParams.set("Max Iterations", 1.);
@@ -370,7 +358,7 @@ void FSI::DirichletNeumannCoupling::SetDefaultParameters(const Teuchos::Paramete
   }
 
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
-  printParams.set("MyPID", comm_.MyPID());
+  printParams.set("MyPID", Comm().MyPID());
 
   // set default output flag to no output
   // The field solver will output a lot, anyway.
@@ -380,296 +368,6 @@ void FSI::DirichletNeumannCoupling::SetDefaultParameters(const Teuchos::Paramete
                   ::NOX::Utils::OuterIterationStatusTest
     );
 
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FSI::DirichletNeumannCoupling::ReadRestart(int step)
-{
-  structure_->ReadRestart(step);
-  fluid_->ReadRestart(step);
-  ale_->ReadRestart(step);
-
-  time_ = fluid_->time();
-  step_ = fluid_->step();
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FSI::DirichletNeumannCoupling::SetupStructure()
-{
-  // -------------------------------------------------------------------
-  // access the discretization
-  // -------------------------------------------------------------------
-  RCP<DRT::Discretization> actdis = null;
-  actdis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
-
-  // set degrees of freedom in the discretization
-  if (!actdis->Filled()) actdis->FillComplete();
-
-  // -------------------------------------------------------------------
-  // context for output and restart
-  // -------------------------------------------------------------------
-  RCP<IO::DiscretizationWriter> output =
-    rcp(new IO::DiscretizationWriter(actdis));
-  output->WriteMesh(0,0.0);
-
-  // -------------------------------------------------------------------
-  // set some pointers and variables
-  // -------------------------------------------------------------------
-  SOLVAR*         actsolv  = &solv[genprob.numsf];
-
-  const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
-  const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
-  const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-
-  if (comm_.MyPID()==0)
-    DRT::INPUT::PrintDefaultParameters(std::cout, sdyn);
-
-  // -------------------------------------------------------------------
-  // create a solver
-  // -------------------------------------------------------------------
-  RCP<ParameterList> solveparams = rcp(new ParameterList());
-  RCP<LINALG::Solver> solver =
-    rcp(new LINALG::Solver(solveparams,actdis->Comm(),allfiles.out_err));
-  solver->TranslateSolverParameters(*solveparams,actsolv);
-  actdis->ComputeNullSpaceIfNecessary(*solveparams);
-
-  // -------------------------------------------------------------------
-  // create a generalized alpha time integrator
-  // -------------------------------------------------------------------
-  RCP<ParameterList> genalphaparams = rcp(new ParameterList());
-  Structure::SetDefaults(*genalphaparams);
-
-  genalphaparams->set<bool>  ("damping",Teuchos::getIntegralValue<int>(sdyn,"DAMPING"));
-  genalphaparams->set<double>("damping factor K",sdyn.get<double>("K_DAMP"));
-  genalphaparams->set<double>("damping factor M",sdyn.get<double>("M_DAMP"));
-
-  genalphaparams->set<double>("beta",sdyn.get<double>("BETA"));
-  genalphaparams->set<double>("gamma",sdyn.get<double>("GAMMA"));
-  genalphaparams->set<double>("alpha m",sdyn.get<double>("ALPHA_M"));
-  genalphaparams->set<double>("alpha f",sdyn.get<double>("ALPHA_F"));
-
-  genalphaparams->set<double>("total time",0.0);
-  genalphaparams->set<double>("delta time",fsidyn.get<double>("TIMESTEP"));
-  genalphaparams->set<int>   ("step",0);
-  genalphaparams->set<int>   ("nstep",fsidyn.get<int>("NUMSTEP"));
-  genalphaparams->set<int>   ("max iterations",sdyn.get<int>("MAXITER"));
-  genalphaparams->set<int>   ("num iterations",-1);
-  genalphaparams->set<double>("tolerance displacements",sdyn.get<double>("TOLDISP"));
-  genalphaparams->set<string>("convcheck",sdyn.get<string>("CONV_CHECK"));
-
-  genalphaparams->set<bool>  ("io structural disp",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_DISP"));
-  genalphaparams->set<int>   ("io disp every nstep",fsidyn.get<int>("UPRES"));
-  genalphaparams->set<bool>  ("io structural stress",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_STRESS"));
-  genalphaparams->set<int>   ("io stress every nstep",sdyn.get<int>("RESEVRYSTRS"));
-
-  genalphaparams->set<int>   ("restart",probtype.get<int>("RESTART"));
-  genalphaparams->set<int>   ("write restart every",fsidyn.get<int>("RESTARTEVRY"));
-
-  genalphaparams->set<bool>  ("print to screen",true);
-  genalphaparams->set<bool>  ("print to err",true);
-  genalphaparams->set<FILE*> ("err file",allfiles.out_err);
-
-  switch (Teuchos::getIntegralValue<int>(sdyn,"NLNSOL"))
-  {
-  case STRUCT_DYNAMIC::fullnewton:
-    genalphaparams->set<string>("equilibrium iteration","full newton");
-    break;
-  case STRUCT_DYNAMIC::modnewton:
-    genalphaparams->set<string>("equilibrium iteration","modified newton");
-    break;
-  case STRUCT_DYNAMIC::matfreenewton:
-    genalphaparams->set<string>("equilibrium iteration","matrixfree newton");
-    break;
-  case STRUCT_DYNAMIC::nlncg:
-    genalphaparams->set<string>("equilibrium iteration","nonlinear cg");
-    break;
-  case STRUCT_DYNAMIC::ptc:
-    genalphaparams->set<string>("equilibrium iteration","ptc");
-    break;
-  default:
-    genalphaparams->set<string>("equilibrium iteration","full newton");
-    break;
-  }
-
-  // set predictor (takes values "constant" "consistent")
-  switch (Teuchos::getIntegralValue<int>(sdyn,"PREDICT"))
-  {
-  case STRUCT_DYNAMIC::pred_vague:
-    dserror("You have to define the predictor");
-    break;
-  case STRUCT_DYNAMIC::pred_constdis:
-    genalphaparams->set<string>("predictor","consistent");
-    break;
-  case STRUCT_DYNAMIC::pred_constdisvelacc:
-    genalphaparams->set<string>("predictor","constant");
-    break;
-  default:
-    dserror("Cannot cope with choice of predictor");
-    break;
-  }
-
-  structure_ = rcp(new Structure(genalphaparams,actdis,solver,output));
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FSI::DirichletNeumannCoupling::SetupFluid()
-{
-  // -------------------------------------------------------------------
-  // access the discretization
-  // -------------------------------------------------------------------
-  RCP<DRT::Discretization> actdis = null;
-  actdis = DRT::Problem::Instance()->Dis(genprob.numff,0);
-
-  // -------------------------------------------------------------------
-  // set degrees of freedom in the discretization
-  // -------------------------------------------------------------------
-  if (!actdis->Filled()) actdis->FillComplete();
-
-  // -------------------------------------------------------------------
-  // context for output and restart
-  // -------------------------------------------------------------------
-  RCP<IO::DiscretizationWriter> output =
-    rcp(new IO::DiscretizationWriter(actdis));
-  output->WriteMesh(0,0.0);
-
-  // -------------------------------------------------------------------
-  // set some pointers and variables
-  // -------------------------------------------------------------------
-  SOLVAR        *actsolv  = &solv[genprob.numff];
-
-  //const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
-  const Teuchos::ParameterList& probsize = DRT::Problem::Instance()->ProblemSizeParams();
-  const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
-  const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-
-  if (comm_.MyPID()==0)
-    DRT::INPUT::PrintDefaultParameters(std::cout, fdyn);
-
-  // -------------------------------------------------------------------
-  // create a solver
-  // -------------------------------------------------------------------
-  RCP<ParameterList> solveparams = rcp(new ParameterList());
-  RCP<LINALG::Solver> solver =
-    rcp(new LINALG::Solver(solveparams,actdis->Comm(),allfiles.out_err));
-  solver->TranslateSolverParameters(*solveparams,actsolv);
-  actdis->ComputeNullSpaceIfNecessary(*solveparams);
-
-  // -------------------------------------------------------------------
-  // create a fluid nonlinear time integrator
-  // -------------------------------------------------------------------
-  RCP<ParameterList> fluidtimeparams = rcp(new ParameterList());
-
-  FLUID_TIMEINTTYPE iop = Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(fdyn,"TIMEINTEGR");
-
-  // number of degrees of freedom
-  fluidtimeparams->set<int>              ("number of velocity degrees of freedom" ,probsize.get<int>("DIM"));
-  // the default time step size
-  fluidtimeparams->set<double>           ("time step size"           ,fsidyn.get<double>("TIMESTEP"));
-  // max. sim. time
-  fluidtimeparams->set<double>           ("total time"               ,fsidyn.get<double>("MAXTIME"));
-  // parameter for time-integration
-  fluidtimeparams->set<double>           ("theta"                    ,fdyn.get<double>("THETA"));
-  // which kind of time-integration
-  fluidtimeparams->set<FLUID_TIMEINTTYPE>("time int algo"            ,iop);
-  // bound for the number of timesteps
-  fluidtimeparams->set<int>              ("max number timesteps"     ,fsidyn.get<int>("NUMSTEP"));
-  // number of steps with start algorithm
-  fluidtimeparams->set<int>              ("number of start steps"    ,fdyn.get<int>("NUMSTASTEPS"));
-  // parameter for start algo
-  fluidtimeparams->set<double>           ("start theta"              ,fdyn.get<double>("START_THETA"));
-  // parameter for grid velocity interpolation
-  fluidtimeparams->set<int>              ("order gridvel"            ,fdyn.get<int>("GRIDVEL"));
-
-
-  // ---------------------------------------------- nonlinear iteration
-  // set linearisation scheme
-  fluidtimeparams->set<bool>("Use reaction terms for linearisation",
-                            Teuchos::getIntegralValue<int>(fdyn,"NONLINITER")==2);
-  // maximum number of nonlinear iteration steps
-  fluidtimeparams->set<int>             ("max nonlin iter steps"     ,fdyn.get<int>("ITEMAX"));
-  // stop nonlinear iteration when both incr-norms are below this bound
-  fluidtimeparams->set<double>          ("tolerance for nonlin iter" ,fdyn.get<double>("CONVTOL"));
-
-  // ----------------------------------------------- restart and output
-  // restart
-  fluidtimeparams->set                 ("write restart every"       ,fsidyn.get<int>("RESTARTEVRY"));
-  // solution output
-  fluidtimeparams->set                 ("write solution every"      ,fsidyn.get<int>("UPRES"));
-  // flag for writing stresses
-  fluidtimeparams->set                 ("write stresses"            ,Teuchos::getIntegralValue<int>(ioflags,"FLUID_STRESS"));
-
-  //--------------------------------------------------
-  // evaluate error for test flows with analytical solutions
-  int init = Teuchos::getIntegralValue<int>(fdyn,"INITIALFIELD");
-  fluidtimeparams->set                  ("eval err for analyt sol"   ,init);
-
-  fluidtimeparams->set<FILE*>("err file",allfiles.out_err);
-
-  //--------------------------------------------------
-  // create all vectors and variables associated with the time
-  // integration (call the constructor)
-  // the only parameter from the list required here is the number of
-  // velocity degrees of freedom
-  fluid_ = rcp(new Fluid(actdis, solver, fluidtimeparams, output));
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FSI::DirichletNeumannCoupling::SetupAle()
-{
-  // -------------------------------------------------------------------
-  // access the discretization
-  // -------------------------------------------------------------------
-  RCP<DRT::Discretization> actdis = null;
-  actdis = DRT::Problem::Instance()->Dis(genprob.numaf,0);
-
-  // -------------------------------------------------------------------
-  // set degrees of freedom in the discretization
-  // -------------------------------------------------------------------
-  if (!actdis->Filled()) actdis->FillComplete();
-
-  // -------------------------------------------------------------------
-  // context for output and restart
-  // -------------------------------------------------------------------
-  RCP<IO::DiscretizationWriter> output =
-    rcp(new IO::DiscretizationWriter(actdis));
-  output->WriteMesh(0,0.0);
-
-  // -------------------------------------------------------------------
-  // set some pointers and variables
-  // -------------------------------------------------------------------
-  SOLVAR        *actsolv  = &solv[genprob.numaf];
-
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-
-  // -------------------------------------------------------------------
-  // create a solver
-  // -------------------------------------------------------------------
-  RCP<ParameterList> solveparams = rcp(new ParameterList());
-  RCP<LINALG::Solver> solver =
-    rcp(new LINALG::Solver(solveparams,actdis->Comm(),allfiles.out_err));
-  solver->TranslateSolverParameters(*solveparams,actsolv);
-  actdis->ComputeNullSpaceIfNecessary(*solveparams);
-
-  RCP<ParameterList> params = rcp(new ParameterList());
-  params->set<int>("numstep",    fsidyn.get<int>("NUMSTEP"));
-  params->set<double>("maxtime", fsidyn.get<double>("MAXTIME"));
-  params->set<double>("dt",      fsidyn.get<double>("TIMESTEP"));
-
-  // ----------------------------------------------- restart and output
-  // restart
-  params->set<int>("write restart every", fsidyn.get<int>("RESTARTEVRY"));
-
-  ale_ = rcp(new AleLinear(actdis, solver, params, output));
 }
 
 
@@ -701,12 +399,12 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RCP<NOX::Epetra::Int
   // log solver iterations
 
   Teuchos::RCP<std::ofstream> log;
-  if (comm_.MyPID()==0)
+  if (Comm().MyPID()==0)
   {
     std::string s = allfiles.outputfile_kenner;
     s.append(".iteration");
     log = Teuchos::rcp(new std::ofstream(s.c_str()));
-    (*log) << "# num procs      = " << comm_.NumProc() << "\n"
+    (*log) << "# num procs      = " << Comm().NumProc() << "\n"
            << "# Method         = " << nlParams.sublist("Direction").get("Method","Newton") << "\n"
            << "# Jacobian       = " << nlParams.get("Jacobian", "None") << "\n"
            << "# Preconditioner = " << nlParams.get("Preconditioner","None") << "\n"
@@ -718,13 +416,13 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RCP<NOX::Epetra::Int
   }
 
   // get an idea of interface displacement
-  idispn_ = structure_->ExtractInterfaceDispn();
+  idispn_ = StructureField().ExtractInterfaceDispn();
 
   Teuchos::Time timer("time step timer");
 
   // ==================================================================
 
-  while (step_ < nstep_ and time_ <= maxtime_)
+  while (NotFinished())
   {
     // Increment all field counters and predict field values whenever
     // appropriate.
@@ -747,7 +445,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RCP<NOX::Epetra::Int
     if (displacementcoupling_)
     {
       // predict displacement
-      soln = structure_->PredictInterfaceDisplacement();
+      soln = StructureField().PredictInterfaceDisplacement();
     }
     else
     {
@@ -794,7 +492,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RCP<NOX::Epetra::Int
     // sometimes we might want to do it again
     if (status != NOX::StatusTest::Converged and secondsolver)
     {
-      if (comm_.MyPID()==0)
+      if (Comm().MyPID()==0)
         utils_->out() << YELLOW "second solver" END_COLOR << endl;
 
       // Get the Epetra_Vector with the final solution from the solver
@@ -822,7 +520,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RCP<NOX::Epetra::Int
     }
 
     if (status != NOX::StatusTest::Converged)
-      if (comm_.MyPID()==0)
+      if (Comm().MyPID()==0)
         utils_->out() << RED "Nonlinear solver failed to converge!" END_COLOR << endl;
 
     // Get the Epetra_Vector with the final solution from the solver
@@ -853,7 +551,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RCP<NOX::Epetra::Int
 
     // Output the parameter list
     if (utils_->isPrintType(NOX::Utils::Parameters))
-      if (step_==1 and comm_.MyPID()==0)
+      if (Step()==1 and Comm().MyPID()==0)
       {
         utils_->out() << endl
                       << "Final Parameters" << endl
@@ -867,9 +565,9 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RCP<NOX::Epetra::Int
     // stop time measurement
     timemonitor = Teuchos::null;
 
-    if (comm_.MyPID()==0)
+    if (Comm().MyPID()==0)
     {
-      (*log) << step_
+      (*log) << Step()
              << " " << timer.totalElapsedTime()
              << " " << nlParams.sublist("Output").get("Nonlinear Iterations",0)
              << " " << nlParams.sublist("Output").get("2-Norm of Residual", 0.)
@@ -1012,7 +710,7 @@ FSI::DirichletNeumannCoupling::CreateLinearSystem(ParameterList& nlParams,
       // method.
       if (dirParams.get("Method","Newton")!="User Defined")
       {
-        if (comm_.MyPID()==0)
+        if (Comm().MyPID()==0)
           utils->out() << RED "Warning: No Jacobian for solver " << dirParams.get("Method","Newton") << END_COLOR "\n";
       }
       linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams, interface, noxSoln));
@@ -1032,7 +730,7 @@ FSI::DirichletNeumannCoupling::CreateLinearSystem(ParameterList& nlParams,
   {
     if (lsParams.get("Preconditioner", "None")=="None")
     {
-      if (comm_.MyPID()==0)
+      if (Comm().MyPID()==0)
         utils->out() << RED "Warning: Preconditioner turned off in linear solver settings." END_COLOR "\n";
     }
 
@@ -1105,7 +803,7 @@ FSI::DirichletNeumannCoupling::CreateStatusTest(ParameterList& nlParams,
 Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::InterfaceDisp()
 {
   // extract displacements
-  return structure_->ExtractInterfaceDisplacement();
+  return StructureField().ExtractInterfaceDisplacement();
 }
 
 
@@ -1114,7 +812,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::InterfaceDisp()
 Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::InterfaceForce()
 {
   // extract forces
-  return FluidToStruct(fluid_->ExtractInterfaceForces());
+  return FluidToStruct(FluidField().ExtractInterfaceForces());
 }
 
 
@@ -1127,7 +825,7 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
   Epetra_Time timer(x.Comm());
   double startTime = timer.WallTime();
 
-  if (comm_.MyPID()==0)
+  if (Comm().MyPID()==0)
   {
     utils_->out() << "\n "
                   << YELLOW_LIGHT << "FSI residual calculation" << END_COLOR
@@ -1146,7 +844,7 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
   {
 #if 0
     if (fillFlag!=User)
-  if (comm_.NumProc()==1)
+  if (Comm().NumProc()==1)
   {
     static int in_counter;
     std::ostringstream filename;
@@ -1174,7 +872,7 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
     Teuchos::RCP<Epetra_Vector> idispnp = StructOp(iforce, fillFlag);
 
 #if 0
-  if (comm_.NumProc()==1)
+  if (Comm().NumProc()==1)
   {
     static int f_counter;
     std::ostringstream filename;
@@ -1195,7 +893,7 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
 
 #if 0
     if (fillFlag!=User)
-  if (comm_.NumProc()==1)
+  if (Comm().NumProc()==1)
   {
     static int f_counter;
     std::ostringstream filename;
@@ -1220,7 +918,7 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
   F.Update(1.0, *idispnp, -1.0, *idispn, 0.0);
 
 #if 0
-  if (comm_.NumProc()==1)
+  if (Comm().NumProc()==1)
   {
     static int out_counter;
     std::ostringstream filename;
@@ -1251,7 +949,7 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
   }
 
   double endTime = timer.WallTime();
-  if (comm_.MyPID()==0)
+  if (Comm().MyPID()==0)
     utils_->out() << "\nTime for residual calculation: " << endTime-startTime << "\n\n";
   return true;
 }
@@ -1263,7 +961,7 @@ Teuchos::RCP<Epetra_Vector>
 FSI::DirichletNeumannCoupling::FluidOp(Teuchos::RCP<Epetra_Vector> idisp,
                                        const FillType fillFlag)
 {
-  if (comm_.MyPID()==0 and utils_->isPrintType(NOX::Utils::OuterIteration))
+  if (Comm().MyPID()==0 and utils_->isPrintType(NOX::Utils::OuterIteration))
     utils_->out() << "\nFluid operator\n";
 
   if (fillFlag==User)
@@ -1275,43 +973,43 @@ FSI::DirichletNeumannCoupling::FluidOp(Teuchos::RCP<Epetra_Vector> idisp,
     // trial vector only.
 
     // grid velocity
-    ale_->ApplyInterfaceDisplacements(StructToAle(idisp));
-    ale_->Solve();
-    Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(ale_->ExtractDisplacement());
-    fluiddisp->Scale(1./dt_);
+    AleField().ApplyInterfaceDisplacements(StructToAle(idisp));
+    AleField().Solve();
+    Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(AleField().ExtractDisplacement());
+    fluiddisp->Scale(1./Dt());
 
-    fluid_->ApplyMeshVelocity(fluiddisp);
+    FluidField().ApplyMeshVelocity(fluiddisp);
 
     // grid position is done inside RelaxationSolve
 
     // the displacement -> velocity conversion at the interface
     Teuchos::RCP<Epetra_Vector> ivel = rcp(new Epetra_Vector(*idisp));
-    ivel->Scale(1./dt_);
+    ivel->Scale(1./Dt());
 
-    return FluidToStruct(fluid_->RelaxationSolve(StructToFluid(ivel)));
+    return FluidToStruct(FluidField().RelaxationSolve(StructToFluid(ivel)));
   }
   else
   {
     // normal fluid solve
 
-    ale_->ApplyInterfaceDisplacements(StructToAle(idisp));
-    ale_->Solve();
+    AleField().ApplyInterfaceDisplacements(StructToAle(idisp));
+    AleField().Solve();
 
     // the displacement -> velocity conversion at the interface
     Teuchos::RCP<Epetra_Vector> ivel = InterfaceVelocity(idisp);
-    Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(ale_->ExtractDisplacement());
+    Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(AleField().ExtractDisplacement());
 
-    fluid_->ApplyInterfaceVelocities(StructToFluid(ivel));
-    fluid_->ApplyMeshDisplacement(fluiddisp);
+    FluidField().ApplyInterfaceVelocities(StructToFluid(ivel));
+    FluidField().ApplyMeshDisplacement(fluiddisp);
 
-    int itemax = fluid_->Itemax();
+    int itemax = FluidField().Itemax();
     if (fillFlag==MF_Res and mfresitemax_ > 0)
-      fluid_->SetItemax(mfresitemax_ + 1);
+      FluidField().SetItemax(mfresitemax_ + 1);
 
-    fluid_->NonlinearSolve();
-    fluid_->SetItemax(itemax);
+    FluidField().NonlinearSolve();
+    FluidField().SetItemax(itemax);
 
-    return FluidToStruct(fluid_->ExtractInterfaceForces());
+    return FluidToStruct(FluidField().ExtractInterfaceForces());
   }
 }
 
@@ -1322,20 +1020,20 @@ Teuchos::RCP<Epetra_Vector>
 FSI::DirichletNeumannCoupling::StructOp(Teuchos::RCP<Epetra_Vector> iforce,
                                         const FillType fillFlag)
 {
-  if (comm_.MyPID()==0 and utils_->isPrintType(NOX::Utils::OuterIteration))
+  if (Comm().MyPID()==0 and utils_->isPrintType(NOX::Utils::OuterIteration))
     utils_->out() << "\nStructural operator\n";
 
   if (fillFlag==User)
   {
     // SD relaxation calculation
-    return structure_->RelaxationSolve(iforce);
+    return StructureField().RelaxationSolve(iforce);
   }
   else
   {
     // normal structure solve
-    structure_->ApplyInterfaceForces(iforce);
-    structure_->Solve();
-    return structure_->ExtractInterfaceDisplacement();
+    StructureField().ApplyInterfaceForces(iforce);
+    StructureField().Solve();
+    return StructureField().ExtractInterfaceDisplacement();
   }
 }
 
@@ -1346,7 +1044,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::InterfaceVelocity(Teu
 {
   Teuchos::RCP<Epetra_Vector> ivel = rcp(new Epetra_Vector(*idispn_));
   ivel->Update(1.0, *idispnp, -1.0);
-  ivel->Scale(1./dt_);
+  ivel->Scale(1./Dt());
   return ivel;
 }
 
@@ -1394,7 +1092,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::FluidToStruct(Teuchos
   else
   {
     // Translate consistent nodal forces to interface loads
-    Teuchos::RCP<Epetra_Vector> ishape = fluid_->IntegrateInterfaceShape();
+    Teuchos::RCP<Epetra_Vector> ishape = FluidField().IntegrateInterfaceShape();
     Teuchos::RCP<Epetra_Vector> iforce = rcp(new Epetra_Vector(iv->Map()));
 
     if ( iforce->ReciprocalMultiply( 1.0, *ishape, *iv, 0.0 ) )
@@ -1410,49 +1108,6 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::FluidToStruct(Teuchos
 Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::AleToFluid(Teuchos::RCP<Epetra_Vector> iv)
 {
   return coupfa_.SlaveToMaster(iv);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FSI::DirichletNeumannCoupling::PrepareTimeStep()
-{
-  step_ += 1;
-  time_ += dt_;
-
-  if (comm_.MyPID()==0)
-    utils_->out() << "\n"
-                  << method_ << "\n"
-                  << "TIME:  " << utils_->sciformat(time_) << "/" << utils_->sciformat(maxtime_)
-                  << "     DT = " << utils_->sciformat(dt_)
-                  << "     STEP = " YELLOW_LIGHT << setw(4) << step_ << END_COLOR "/" << setw(4) << nstep_
-                  << "\n"
-                  << NOX::Utils::fill(82)
-                  << "\n\n";
-
-  structure_->PrepareTimeStep();
-  fluid_->    PrepareTimeStep();
-  ale_->      PrepareTimeStep();
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FSI::DirichletNeumannCoupling::Update()
-{
-  structure_->UpdateandOutput();
-  fluid_    ->TimeUpdate();
-  ale_      ->Update();
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FSI::DirichletNeumannCoupling::Output()
-{
-  fluid_->Output();
-  ale_  ->Output();
-  fluid_->LiftDrag();
 }
 
 

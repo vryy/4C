@@ -177,6 +177,7 @@ OBJS_DRT_FSI  = src/drt_fsi/ale_dyn.o \
                 src/drt_fsi/fsi_dyn.o \
                 src/drt_fsi/fsi_fluid.o \
                 src/drt_fsi/fsi_structure.o \
+                src/drt_fsi/fsi_algorithm.o \
                 src/drt_fsi/fsi_dirichletneumann.o \
 		src/drt_fsi/fsi_nox_fixpoint.o \
 		src/drt_fsi/fsi_nox_aitken.o \

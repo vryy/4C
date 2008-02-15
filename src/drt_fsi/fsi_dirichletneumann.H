@@ -36,10 +36,7 @@ Maintainer: Ulrich Kuettler
 
 #include <vector>
 
-#include "fsi_structure.H"
-#include "fsi_fluid.H"
-#include "fsi_ale.H"
-
+#include "fsi_algorithm.H"
 #include "fsi_coupling.H"
 #include "fsi_coupling_mortar.H"
 
@@ -104,30 +101,19 @@ namespace FSI {
   \author u.kue
   \date 06/07
  */
-class DirichletNeumannCoupling : public NOX::Epetra::Interface::Required
+class DirichletNeumannCoupling : public Algorithm,
+                                 public NOX::Epetra::Interface::Required
 {
 public:
 
   /// setup FSI algorithm
   DirichletNeumannCoupling(Epetra_Comm& comm);
 
-  /// read restart data
-  void ReadRestart(int step);
-
   /// outer level FSI time loop
   void Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
 
   /// compute FSI interface residuum S^{-1}(F(d)) - d
   bool computeF(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag);
-
-  /// structural field solver
-  Structure& StructureField() { return *structure_; }
-
-  /// fluid field solver
-  Fluid& FluidField() { return *fluid_; }
-
-  /// ale field solver
-  Ale& AleField() { return *ale_; }
 
 private:
 
@@ -164,38 +150,8 @@ private:
   /// current interface forces
   Teuchos::RCP<Epetra_Vector> InterfaceForce();
 
-  /// setup structure algorithm
-  void SetupStructure();
-
-  /// setup fluid algorithm
-  void SetupFluid();
-
-  /// setup ale algorithm
-  void SetupAle();
-
-  /// start a new time step
-  void PrepareTimeStep();
-
-  /// take current results for converged and save for next time step
-  void Update();
-
-  /// write output
-  void Output();
-
   /// setup list with default parameters
   void SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
-
-  /// comunication (mainly for screen output)
-  Epetra_Comm& comm_;
-
-  /// structural field solver
-  RCP<Structure> structure_;
-
-  /// fluid field solver
-  RCP<Fluid>     fluid_;
-
-  /// ale field solver
-  RCP<Ale>       ale_;
 
   /// coupling of structure and fluid at the interface
   Coupling               coupsf_;
@@ -239,15 +195,7 @@ private:
   /// parameters handed in to NOX
   Teuchos::ParameterList noxparameterlist;
 
-  int step_;
-  int nstep_;
-  double time_;
-  double maxtime_;
-  double dt_;
   int mfresitemax_;
-
-  /// method name prepared for output
-  std::string method_;
 
   /// nodes at the fluid-structure interface match
   bool matchingnodes_;
