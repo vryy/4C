@@ -763,7 +763,7 @@ void EnsightWriter::WriteResult(const string groupname,
 {
   PostResult result = PostResult(field_);
   result.next_result();
-  if (!map_has_map(result.group(), const_cast<char*>(groupname.c_str())))
+  if (!map_has_map(result.group(), groupname.c_str()))
     return;
 
   // new for file continuation

@@ -183,18 +183,18 @@ INT map_find_map(MAP* map, CHAR* key, MAP** dir);
 
 /* Find the last symbols value. The value has to be of the given
  * type. Calls dserror on failture. */
-CHAR* map_read_string(MAP* map, CHAR* key);
-INT map_read_int(MAP* map, CHAR* key);
-DOUBLE map_read_real(MAP* map, CHAR* key);
-MAP* map_read_map(MAP* map, CHAR* key);
+CHAR* map_read_string(const MAP* map, const CHAR* key);
+INT map_read_int(const MAP* map, const CHAR* key);
+DOUBLE map_read_real(const MAP* map, const CHAR* key);
+MAP* map_read_map(const MAP* map, const CHAR* key);
 
 
 /* Tell whether there is a symbol with given key and value. Only the
  * last symbol with that key is checked. */
-INT map_has_string(MAP* map, CHAR* key, CHAR* value);
-INT map_has_int(MAP* map, CHAR* key, INT value);
-INT map_has_real(MAP* map, CHAR* key, DOUBLE value);
-INT map_has_map(MAP* map, CHAR* key);
+INT map_has_string(const MAP* map, const CHAR* key, const CHAR* value);
+INT map_has_int(const MAP* map, const CHAR* key, const INT value);
+INT map_has_real(const MAP* map, const CHAR* key, const DOUBLE value);
+INT map_has_map(const MAP* map, const CHAR* key);
 
 
 /* Insert a new symbol. */

@@ -254,7 +254,7 @@ void DatFileReader::ReadDesign(const std::string& name, std::vector<std::vector<
   std::string marker = std::string("--") + sectionname;
 
   // this is still the old fr* stuff
-  if (frfind(const_cast<char*>(marker.c_str())))
+  if (frfind(marker.c_str()))
   {
     frread();
 
@@ -264,7 +264,7 @@ void DatFileReader::ReadDesign(const std::string& name, std::vector<std::vector<
       int dobj;
       int ierr;
       int nodeid;
-      frint(const_cast<char*>(name.c_str()),&dobj,&ierr);
+      frint(name.c_str(),&dobj,&ierr);
       if (ierr!=1)
         dserror("Cannot read %s", sectionname.c_str());
       frint("NODE",&nodeid,&ierr);

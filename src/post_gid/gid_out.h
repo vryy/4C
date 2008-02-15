@@ -218,7 +218,7 @@ typedef enum { GiD_OnNodes, GiD_OnGaussPoints } GiD_ResultLocation;
  *  done implicitly.
  */
 
-int GiD_BeginResult(char * Result, char * Analysis, double step,
+int GiD_BeginResult(const char * Result, char * Analysis, double step,
 		    GiD_ResultType Type, GiD_ResultLocation Where,
 		    char * GaussPointsName, char * RangeTable,
 		    int compc, char * compv[]);

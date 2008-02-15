@@ -461,7 +461,7 @@ void frrewind(void);
  |                       terminates programm if not found               |
  *----------------------------------------------------------------------*/
 INT frfind(
-    char      string[]);
+    const char      string[]);
 
 /*----------------------------------------------------------------------*
  |                                                        m.gee 8/00    |
@@ -492,7 +492,7 @@ void frint_n(
  | ierr=1 integer read                                                  |
  *----------------------------------------------------------------------*/
 void frint(
-    char      string[],
+    const char      string[],
     INT      *var,
     INT      *ierr);
 
@@ -503,7 +503,7 @@ void frint(
  | ierr=1 DOUBLE  read                                                  |
  *----------------------------------------------------------------------*/
 void frdouble_n(
-    char      string[],
+    const char      string[],
     DOUBLE   *var,
     INT       num,
     INT      *ierr);
@@ -515,7 +515,7 @@ void frdouble_n(
  | ierr=1 DOUBLE  read                                                  |
  *----------------------------------------------------------------------*/
 void frdouble(
-    char       string[],
+    const char       string[],
     DOUBLE    *var,
     INT       *ierr);
 
@@ -527,7 +527,7 @@ void frdouble(
  | ierr=1 char string read                                 m.gee 8/00   |
  *----------------------------------------------------------------------*/
 void frchar(
-    char       string[],
+    const char       string[],
     char      *var,
     INT       *ierr);
 
@@ -546,7 +546,7 @@ void frchk(
  *----------------------------------------------------------------------*/
 void frend(void);
 
-void frword(char string[],char *var, INT *ierr);
+void frword(const char string[],char *var, INT *ierr);
 
 /* Compare two words */
 INT frwordcmp(CHAR* p1, CHAR* p2);

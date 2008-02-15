@@ -76,7 +76,7 @@ void DRT::UTILS::TimeCurveManager::ReadInput()
   {
     ostringstream curve;
     curve << "--CURVE" << i;
-    if (frfind(const_cast<char*>(curve.str().c_str()))==1)
+    if (frfind(curve.str().c_str())==1)
     {
       frread();
       int ierr;

@@ -415,7 +415,7 @@ If string is not found it returns 0 otherwise 1.
 \return INT
 
 ------------------------------------------------------------------------*/
-INT frfind(char string[])
+INT frfind(const char string[])
 {
 char message[100];
 INT  i=0;
@@ -544,7 +544,7 @@ Searches for the keyword and reads the first thing consisting of -1234567890 beh
 \sa frdouble_n() , frint_n() , frdouble() , frchar()
 
 ------------------------------------------------------------------------*/
-void frint(char string[],INT *var, INT *ierr)
+void frint(const char string[],INT *var, INT *ierr)
 {
 char message[100];
 INT  i=0;
@@ -596,7 +596,7 @@ All values to be read must then be continous
 \sa frdouble() , frint_n() , frint() , frchar()
 
 ------------------------------------------------------------------------*/
-void frdouble_n(char string[],DOUBLE *var,INT num, INT *ierr)
+void frdouble_n(const char string[],DOUBLE *var,INT num, INT *ierr)
 {
 INT  i;
 char *foundit = NULL;
@@ -642,7 +642,7 @@ Searches for the keyword and reads the first thing consisting of -.1234567890 be
 \sa frdouble_n() , frint_n() , frint() , frchar()
 
 ------------------------------------------------------------------------*/
-void frdouble(char string[],DOUBLE *var, INT *ierr)
+void frdouble(const char string[],DOUBLE *var, INT *ierr)
 {
 char *foundit = NULL;
 char *end;
@@ -688,7 +688,7 @@ to hold the string
 \sa frdouble_n() , frint_n() , frint()
 
 ------------------------------------------------------------------------*/
-void frchar(char string[],char *var, INT *ierr)
+void frchar(const char string[],char *var, INT *ierr)
 {
 char *foundit = NULL;
 
@@ -738,7 +738,7 @@ the line or be preceded by a whitespace, too.
 \sa frdouble_n() , frint_n() , frint() , frchar()
 
 ------------------------------------------------------------------------*/
-void frword(char string[],char *var, INT *ierr)
+void frword(const char string[],char *var, INT *ierr)
 {
   char *foundit = NULL;
 
@@ -783,7 +783,7 @@ checks for a keyword in actual line of input_file
 \sa frdouble_n() , frint_n() , frint() , frchar()
 
 ------------------------------------------------------------------------*/
-void frchk(const char string[], INT *ierr)
+void frchk(const const char string[], INT *ierr)
 {
 char *foundit = NULL;
 

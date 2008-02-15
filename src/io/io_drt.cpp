@@ -116,7 +116,7 @@ IO::DiscretizationReader::DiscretizationReader(Teuchos::RCP<DRT::Discretization>
 void IO::DiscretizationReader::ReadVector(Teuchos::RCP<Epetra_Vector> vec, string name)
 {
 #ifdef BINIO
-  MAP* result = map_read_map(restart_step_, const_cast<char*>(name.c_str()));
+  MAP* result = map_read_map(restart_step_, name.c_str());
   int columns;
   if (map_find_int(result,"columns",&columns))
   {
@@ -133,7 +133,7 @@ void IO::DiscretizationReader::ReadVector(Teuchos::RCP<Epetra_Vector> vec, strin
 void IO::DiscretizationReader::ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> vec, string name)
 {
 #ifdef BINIO
-  MAP* result = map_read_map(restart_step_, const_cast<char*>(name.c_str()));
+  MAP* result = map_read_map(restart_step_, name.c_str());
   string id_path = map_read_string(result, "ids");
   string value_path = map_read_string(result, "values");
   int columns;
@@ -179,7 +179,7 @@ void IO::DiscretizationReader::ReadMesh(int step)
 /*----------------------------------------------------------------------*/
 int IO::DiscretizationReader::ReadInt(string name)
 {
-  return map_read_int(restart_step_, const_cast<char*>(name.c_str()));
+  return map_read_int(restart_step_, name.c_str());
 }
 
 
@@ -187,7 +187,7 @@ int IO::DiscretizationReader::ReadInt(string name)
 /*----------------------------------------------------------------------*/
 double IO::DiscretizationReader::ReadDouble(string name)
 {
-  return map_read_real(restart_step_, const_cast<char*>(name.c_str()));
+  return map_read_real(restart_step_, name.c_str());
 }
 
 

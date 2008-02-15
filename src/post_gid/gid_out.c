@@ -872,7 +872,7 @@ int GiD_WriteMaxRange( double min, char * name )
  *  Begin Result Block
  */
 
-int GiD_BeginResult(char * Result, char * Analysis, double step,
+int GiD_BeginResult(const char * Result, char * Analysis, double step,
 		    GiD_ResultType Type, GiD_ResultLocation Where,
 		    char * GaussPointsName, char * RangeTable,
 		    int compc, char * compv[])

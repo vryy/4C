@@ -939,7 +939,7 @@ void PostResult::open_result_files(MAP* field_info)
  *----------------------------------------------------------------------*/
 RefCountPtr<Epetra_Vector> PostResult::read_result(const string name)
 {
-  MAP* result = map_read_map(group_, const_cast<char*>(name.c_str()));
+  MAP* result = map_read_map(group_, name.c_str());
   int columns;
   if (map_find_int(result,"columns",&columns))
   {
@@ -956,7 +956,7 @@ RefCountPtr<Epetra_Vector> PostResult::read_result(const string name)
 RefCountPtr<Epetra_MultiVector> PostResult::read_multi_result(const string name)
 {
   RefCountPtr<Epetra_Comm> comm = field_->problem()->comm();
-  MAP* result = map_read_map(group_, const_cast<char*>(name.c_str()));
+  MAP* result = map_read_map(group_, name.c_str());
   string id_path = map_read_string(result, "ids");
   string value_path = map_read_string(result, "values");
   int columns;

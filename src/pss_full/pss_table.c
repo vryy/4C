@@ -406,7 +406,7 @@ INT map_find_map(MAP* map, CHAR* key, MAP** dir)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-CHAR* map_read_string(MAP* map, CHAR* key)
+CHAR* map_read_string(const MAP* map, const CHAR* key)
 {
   CHAR* string;
 #ifdef DEBUG
@@ -434,7 +434,7 @@ CHAR* map_read_string(MAP* map, CHAR* key)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-INT map_read_int(MAP* map, CHAR* key)
+INT map_read_int(const MAP* map, const CHAR* key)
 {
   INT integer;
 #ifdef DEBUG
@@ -462,7 +462,7 @@ INT map_read_int(MAP* map, CHAR* key)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-DOUBLE map_read_real(MAP* map, CHAR* key)
+DOUBLE map_read_real(const MAP* map, const CHAR* key)
 {
   DOUBLE real;
 #ifdef DEBUG
@@ -490,7 +490,7 @@ DOUBLE map_read_real(MAP* map, CHAR* key)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-MAP* map_read_map(MAP* map, CHAR* key)
+MAP* map_read_map(const MAP* map, const CHAR* key)
 {
   MAP* dir;
 #ifdef DEBUG
@@ -516,7 +516,7 @@ MAP* map_read_map(MAP* map, CHAR* key)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-INT map_has_string(MAP* map, CHAR* key, CHAR* value)
+INT map_has_string(const MAP* map, const CHAR* key, const CHAR* value)
 {
   SYMBOL* symbol;
   CHAR* string;
@@ -552,7 +552,7 @@ INT map_has_string(MAP* map, CHAR* key, CHAR* value)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-INT map_has_int(MAP* map, CHAR* key, INT value)
+INT map_has_int(const MAP* map, const CHAR* key, const INT value)
 {
   SYMBOL* symbol;
   INT integer;
@@ -588,7 +588,7 @@ INT map_has_int(MAP* map, CHAR* key, INT value)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-INT map_has_real(MAP* map, CHAR* key, DOUBLE value)
+INT map_has_real(const MAP* map, const CHAR* key, const DOUBLE value)
 {
   SYMBOL* symbol;
   DOUBLE real;
@@ -626,7 +626,7 @@ INT map_has_real(MAP* map, CHAR* key, DOUBLE value)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-INT map_has_map(MAP* map, CHAR* key)
+INT map_has_map(const MAP* map, const CHAR* key)
 {
   SYMBOL* symbol;
   INT ret;

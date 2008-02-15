@@ -44,7 +44,7 @@ void DRT::UTILS::FunctionManager::ReadInput()
   {
     ostringstream curve;
     curve << "--FUNCT" << i;
-    if (frfind(const_cast<char*>(curve.str().c_str()))==1)
+    if (frfind(curve.str().c_str())==1)
     {
       frread();
       int ierr;
