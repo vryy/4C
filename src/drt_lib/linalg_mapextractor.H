@@ -81,33 +81,67 @@ namespace LINALG
     //@{
 
     /// extract a partial vector from a full vector
-    Teuchos::RCP<Epetra_Vector> ExtractVector(const Epetra_Vector& full, int i) const;
+    /*!
+      \param full vector on the full map
+      \param block block number of vector to extract
+     */
+    Teuchos::RCP<Epetra_Vector> ExtractVector(const Epetra_Vector& full, int block) const;
 
     /// extract a partial vector from a full vector
-    Teuchos::RCP<Epetra_MultiVector> ExtractVector(const Epetra_MultiVector& full, int i) const;
+    /*!
+      \param full vector on the full map
+      \param block block number of vector to extract
+     */
+    Teuchos::RCP<Epetra_MultiVector> ExtractVector(const Epetra_MultiVector& full, int block) const;
 
     /// extract a partial vector from a full vector
-    Teuchos::RCP<Epetra_Vector> ExtractVector(Teuchos::RCP<Epetra_Vector> full, int i) const
-    { return ExtractVector(*full,i); }
+    /*!
+      \param full vector on the full map
+      \param block block number of vector to extract
+     */
+    Teuchos::RCP<Epetra_Vector> ExtractVector(Teuchos::RCP<Epetra_Vector> full, int block) const
+    { return ExtractVector(*full,block); }
 
     /// extract a partial vector from a full vector
-    Teuchos::RCP<Epetra_MultiVector> ExtractVector(Teuchos::RCP<Epetra_MultiVector> full, int i) const
-    { return ExtractVector(*full,i); }
+    /*!
+      \param full vector on the full map
+      \param block block number of vector to extract
+     */
+    Teuchos::RCP<Epetra_MultiVector> ExtractVector(Teuchos::RCP<Epetra_MultiVector> full, int block) const
+    { return ExtractVector(*full,block); }
 
     /// extract a partial vector from a full vector
-    Teuchos::RCP<Epetra_Vector> ExtractVector(Teuchos::RCP<const Epetra_Vector> full, int i) const
-    { return ExtractVector(*full,i); }
+    /*!
+      \param full vector on the full map
+      \param block block number of vector to extract
+     */
+    Teuchos::RCP<Epetra_Vector> ExtractVector(Teuchos::RCP<const Epetra_Vector> full, int block) const
+    { return ExtractVector(*full,block); }
 
     /// extract a partial vector from a full vector
-    Teuchos::RCP<Epetra_MultiVector> ExtractVector(Teuchos::RCP<const Epetra_MultiVector> full, int i) const
-    { return ExtractVector(*full,i); }
+    /*!
+      \param full vector on the full map
+      \param block block number of vector to extract
+     */
+    Teuchos::RCP<Epetra_MultiVector> ExtractVector(Teuchos::RCP<const Epetra_MultiVector> full, int block) const
+    { return ExtractVector(*full,block); }
 
     /// extract a partial vector from a full vector
-    void ExtractVector(const Epetra_MultiVector& full, int i, Epetra_MultiVector& cond) const;
+    /*!
+      \param full vector on the full map
+      \param block block number of vector to extract
+      \param partial partial vector to fill
+     */
+    void ExtractVector(const Epetra_MultiVector& full, int block, Epetra_MultiVector& partial) const;
 
     /// extract a partial vector from a full vector
-    void ExtractVector(Teuchos::RCP<const Epetra_Vector> full, int i, Teuchos::RCP<Epetra_Vector> cond) const
-    { ExtractVector(*full,i,*cond); }
+    /*!
+      \param full vector on the full map
+      \param block block number of vector to extract
+      \param partial partial vector to fill
+     */
+    void ExtractVector(Teuchos::RCP<const Epetra_Vector> full, int block, Teuchos::RCP<Epetra_Vector> partial) const
+    { ExtractVector(*full,block,*partial); }
 
     //@}
 
@@ -115,33 +149,67 @@ namespace LINALG
     //@{
 
     /// Put a partial vector into a full vector
-    Teuchos::RCP<Epetra_Vector> InsertVector(const Epetra_Vector& cond, int i) const;
+    /*!
+      \param partial vector to copy into full vector
+      \param block block number of partial vector
+     */
+    Teuchos::RCP<Epetra_Vector> InsertVector(const Epetra_Vector& partial, int block) const;
 
     /// Put a partial vector into a full vector
-    Teuchos::RCP<Epetra_MultiVector> InsertVector(const Epetra_MultiVector& cond, int i) const;
+    /*!
+      \param partial vector to copy into full vector
+      \param block block number of partial vector
+     */
+    Teuchos::RCP<Epetra_MultiVector> InsertVector(const Epetra_MultiVector& partial, int block) const;
 
     /// Put a partial vector into a full vector
-    Teuchos::RCP<Epetra_Vector> InsertVector(Teuchos::RCP<const Epetra_Vector> cond, int i) const
-    { return InsertVector(*cond,i); }
+    /*!
+      \param partial vector to copy into full vector
+      \param block block number of partial vector
+     */
+    Teuchos::RCP<Epetra_Vector> InsertVector(Teuchos::RCP<const Epetra_Vector> partial, int block) const
+    { return InsertVector(*partial,block); }
 
     /// Put a partial vector into a full vector
-    Teuchos::RCP<Epetra_MultiVector> InsertVector(Teuchos::RCP<const Epetra_MultiVector> cond, int i) const
-    { return InsertVector(*cond,i); }
+    /*!
+      \param partial vector to copy into full vector
+      \param block block number of partial vector
+     */
+    Teuchos::RCP<Epetra_MultiVector> InsertVector(Teuchos::RCP<const Epetra_MultiVector> partial, int block) const
+    { return InsertVector(*partial,block); }
 
     /// Put a partial vector into a full vector
-    Teuchos::RCP<Epetra_Vector> InsertVector(Teuchos::RCP<Epetra_Vector> cond, int i) const
-    { return InsertVector(*cond,i); }
+    /*!
+      \param partial vector to copy into full vector
+      \param block block number of partial vector
+     */
+    Teuchos::RCP<Epetra_Vector> InsertVector(Teuchos::RCP<Epetra_Vector> partial, int block) const
+    { return InsertVector(*partial,block); }
 
     /// Put a partial vector into a full vector
-    Teuchos::RCP<Epetra_MultiVector> InsertVector(Teuchos::RCP<Epetra_MultiVector> cond, int i) const
-    { return InsertVector(*cond,i); }
+    /*!
+      \param partial vector to copy into full vector
+      \param block block number of partial vector
+     */
+    Teuchos::RCP<Epetra_MultiVector> InsertVector(Teuchos::RCP<Epetra_MultiVector> partial, int block) const
+    { return InsertVector(*partial,block); }
 
     /// Put a partial vector into a full vector
-    void InsertVector(const Epetra_MultiVector& cond, int i, Epetra_MultiVector& full) const;
+    /*!
+      \param partial vector to copy into full vector
+      \param block block number of partial vector
+      \param full vector to copy into
+     */
+    void InsertVector(const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full) const;
 
     /// Put a partial vector into a full vector
-    void InsertVector(Teuchos::RCP<const Epetra_Vector> cond, int i, Teuchos::RCP<Epetra_Vector> full) const
-    { InsertVector(*cond,i,*full); }
+    /*!
+      \param partial vector to copy into full vector
+      \param block block number of partial vector
+      \param full vector to copy into
+     */
+    void InsertVector(Teuchos::RCP<const Epetra_Vector> partial, int block, Teuchos::RCP<Epetra_Vector> full) const
+    { InsertVector(*partial,block,*full); }
 
     //@}
 
