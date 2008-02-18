@@ -60,6 +60,25 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
 {
 
   // -------------------------------------------------------------------
+  // create timers and time monitor
+  // -------------------------------------------------------------------
+  timetotal_    = TimeMonitor::getNewTimer("dynamic routine total"            );
+  timeinit_     = TimeMonitor::getNewTimer(" + initialization"                );
+  timetimeloop_ = TimeMonitor::getNewTimer(" + time loop"                     );
+  timenlnitlin_ = TimeMonitor::getNewTimer("   + nonlin. iteration/lin. solve");
+  timeelement_  = TimeMonitor::getNewTimer("      + element calls"            );
+  timeavm3_     = TimeMonitor::getNewTimer("           + avm3"                );
+  timeapplydbc_ = TimeMonitor::getNewTimer("      + apply DBC"                );
+  timesolver_   = TimeMonitor::getNewTimer("      + solver calls"             );
+  timeout_      = TimeMonitor::getNewTimer("      + output and statistics"    );
+
+  // time measurement: total --- start TimeMonitor tm0
+  tm0_ref_        = rcp(new TimeMonitor(*timetotal_ ));
+
+  // time measurement: initialization --- start TimeMonitor tm7
+  tm1_ref_        = rcp(new TimeMonitor(*timeinit_ ));
+
+  // -------------------------------------------------------------------
   // get the basic parameters first
   // -------------------------------------------------------------------
   // type of time-integration
@@ -207,18 +226,8 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
     residual_sv_  = LINALG::CreateVector(*dofrowmap,true);
   }
 
-  // -------------------------------------------------------------------
-  // create timers and time monitor
-  // -------------------------------------------------------------------
-  timedyntot_     = TimeMonitor::getNewTimer("dynamic routine total"        );
-  timedyninit_    = TimeMonitor::getNewTimer(" + initial phase"             );
-  timedynloop_    = TimeMonitor::getNewTimer(" + time loop"                 );
-  timenlnloop_    = TimeMonitor::getNewTimer("   + nonlinear iteration"     );
-  timelinloop_    = TimeMonitor::getNewTimer("   + linear fluid solve"      );
-  timeeleloop_    = TimeMonitor::getNewTimer("      + element calls"        );
-  timeapplydirich_= TimeMonitor::getNewTimer("      + apply dirich cond."   );
-  timesolver_     = TimeMonitor::getNewTimer("      + solver calls"         );
-  timeout_        = TimeMonitor::getNewTimer("      + output and statistics");
+  // end time measurement for initialization
+  tm1_ref_ = null;
 
   return;
 
@@ -240,9 +249,6 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FluidImplicitTimeInt::Integrate()
 {
-  // time measurement --- start TimeMonitor tm0 and tm1
-  tm0_ref_        = rcp(new TimeMonitor(*timedyntot_ ));
-
   // bound for the number of startsteps
   int    numstasteps         =params_.get<int>   ("number of start steps");
 
@@ -274,7 +280,7 @@ void FluidImplicitTimeInt::Integrate()
 
   if (timealgo_==timeint_stationary)
     // stationary case
-    this->SolveStationaryProblem();
+    SolveStationaryProblem();
 
   else  // instationary case
   {
@@ -293,9 +299,10 @@ void FluidImplicitTimeInt::Integrate()
     TimeLoop();
   }
 
-  // print the results of time measurements
+  // end total time measurement
+  tm0_ref_ = null; 
 
-  tm0_ref_ = null; // end total time measurement
+  // print the results of time measurements
   //cout<<endl<<endl;
   TimeMonitor::summarize();
 
@@ -315,8 +322,8 @@ void FluidImplicitTimeInt::Integrate()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FluidImplicitTimeInt::TimeLoop()
 {
-  // start time measurement for timeloop
-  tm2_ref_ = rcp(new TimeMonitor(*timedynloop_));
+  // time measurement: time loop --- start TimeMonitor tm2
+  tm2_ref_ = rcp(new TimeMonitor(*timetimeloop_));
 
   // how do we want to solve or fluid equations?
   int dyntype    =params_.get<int>   ("type of nonlinear solve");
@@ -389,8 +396,8 @@ void FluidImplicitTimeInt::TimeLoop()
     // -------------------------------------------------------------------
     TimeUpdate();
 
-    // time measurement --- start TimeMonitor tm8
-    tm7_ref_ = rcp(new TimeMonitor(*timeout_ ));
+    // time measurement: output and statistics --- start TimeMonitor tm8
+    tm8_ref_ = rcp(new TimeMonitor(*timeout_ ));
 
     // -------------------------------------------------------------------
     // add calculated velocity to mean value calculation
@@ -412,14 +419,14 @@ void FluidImplicitTimeInt::TimeLoop()
     // -------------------------------------------------------------------
     Output();
 
-    // time measurement --- stop TimeMonitor tm8
-    tm7_ref_ = null;
+    // end time measurement for output and statistics
+    tm8_ref_ = null;
 
     // -------------------------------------------------------------------
     //                    calculate lift'n'drag forces
     // -------------------------------------------------------------------
     int liftdrag = params_.get<int>("liftdrag");
-
+  
     if(liftdrag == 0); // do nothing, we don't want lift & drag
     if(liftdrag == 1)
       dserror("how did you manage to get here???");
@@ -565,7 +572,7 @@ void FluidImplicitTimeInt::PrepareTimeStep()
   //                   hist_ = 4/3 veln_ - 1/3 velnm_
   //
   // -------------------------------------------------------------------
-  this->SetOldPartOfRighthandside();
+  SetOldPartOfRighthandside();
 
   // -------------------------------------------------------------------
   //                     do explicit predictor step
@@ -579,7 +586,7 @@ void FluidImplicitTimeInt::PrepareTimeStep()
   // -------------------------------------------------------------------
   if (step_>1)
   {
-    this->ExplicitPredictor();
+    ExplicitPredictor();
   }
 
   // -------------------------------------------------------------------
@@ -635,8 +642,8 @@ void FluidImplicitTimeInt::PrepareTimeStep()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FluidImplicitTimeInt::NonlinearSolve()
 {
-  // start time measurement for nonlinear iteration
-  tm6_ref_ = rcp(new TimeMonitor(*timenlnloop_));
+  // time measurement: nonlinear iteration --- start TimeMonitor tm3
+  tm3_ref_ = rcp(new TimeMonitor(*timenlnitlin_));
 
   const Epetra_Map* dofrowmap       = discret_->DofRowMap();
 
@@ -648,12 +655,9 @@ void FluidImplicitTimeInt::NonlinearSolve()
   //                                 increment-norms are below this bound
   const double  ittol     =params_.get<double>("tolerance for nonlin iter");
 
-  int               itnum         = 0;
+  int               itnum = 0;
   bool              stopnonliniter = false;
-
-  double            dtsolve = 0;
-  double            dtele   = 0;
-  double            tcpu   ;
+  double            tcpu;
 
   if (myrank_ == 0)
   {
@@ -671,8 +675,8 @@ void FluidImplicitTimeInt::NonlinearSolve()
     // call elements to calculate system matrix
     // -------------------------------------------------------------------
     {
-      // start time measurement for element call
-      tm3_ref_ = rcp(new TimeMonitor(*timeeleloop_));
+      // time measurement: element --- start TimeMonitor tm4
+      tm4_ref_ = rcp(new TimeMonitor(*timeelement_));
       // get cpu time
       tcpu=ds_cputime();
 
@@ -726,9 +730,15 @@ void FluidImplicitTimeInt::NonlinearSolve()
           // create subgrid-viscosity matrix
           sysmat_sv_->Zero();
 
+          // end time measurement for avm3
+          //tm5_ref_=null;
+
           // call loop over elements (two matrices + subgr.-visc.-scal. vector)
           discret_->Evaluate(eleparams,sysmat_,sysmat_sv_,residual_,sugrvisc_);
           discret_->ClearState();
+
+          // time measurement: avm3 --- start TimeMonitor tm5
+          //tm5_ref_ = rcp(new TimeMonitor(*timeavm3_));
 
           // finalize the normalized all-scale subgrid-viscosity matrix
           sysmat_sv_->Complete();
@@ -741,17 +751,29 @@ void FluidImplicitTimeInt::NonlinearSolve()
         }
         else
         {
+          // end time measurement for avm3
+          //tm5_ref_=null;
+
           // call loop over elements (one matrix + subgr.-visc.-scal. vector)
           discret_->Evaluate(eleparams,sysmat_,null,residual_,sugrvisc_);
           discret_->ClearState();
+
+          // time measurement: avm3 --- start TimeMonitor tm5
+          //tm5_ref_ = rcp(new TimeMonitor(*timeavm3_));
         }
         // check whether VM3 solver exists
         if (vm3_solver_ == null) dserror("vm3_solver not allocated");
 
         residual_sv_->PutScalar(0.0);
+        // time measurement: avm3 --- start TimeMonitor tm5
+        tm5_ref_ = rcp(new TimeMonitor(*timeavm3_));
+
         // call the VM3 scaling:
         // scale precomputed matrix product by subgrid-viscosity-scaling vector
         vm3_solver_->Scale(sysmat_sv_,sysmat_,residual_,residual_sv_,sugrvisc_,velnp_,true);
+
+        // end time measurement for avm3
+        tm5_ref_=null;
       }
       else
       {
@@ -765,9 +787,9 @@ void FluidImplicitTimeInt::NonlinearSolve()
       // finalize the complete matrix
       sysmat_->Complete();
 
-      // end time measurement for element call
-      tm3_ref_=null;
-      dtele=ds_cputime()-tcpu;
+      // end time measurement for element
+      tm4_ref_=null;
+      dtele_=ds_cputime()-tcpu;
     }
 
     // How to extract the density from the fluid material?
@@ -832,7 +854,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
       {
         printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |      --      |      --      |",
                itnum,itemax,ittol,vresnorm,presnorm);
-        printf(" (      --     ,te=%10.3E)\n",dtele);
+        printf(" (      --     ,te=%10.3E)\n",dtele_);
       }
     }
     /* ordinary case later iteration steps:
@@ -852,7 +874,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
                  itnum,itemax,ittol,vresnorm,presnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-          printf(" (ts=%10.3E,te=%10.3E)\n",dtsolve,dtele);
+          printf(" (ts=%10.3E,te=%10.3E)\n",dtsolve_,dtele_);
           printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
 
           FILE* errfile = params_.get<FILE*>("err file",NULL);
@@ -871,7 +893,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
                  itnum,itemax,ittol,vresnorm,presnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-          printf(" (ts=%10.3E,te=%10.3E)\n",dtsolve,dtele);
+          printf(" (ts=%10.3E,te=%10.3E)\n",dtsolve_,dtele_);
         }
     }
 
@@ -904,38 +926,38 @@ void FluidImplicitTimeInt::NonlinearSolve()
     //          boundary conditions
     incvel_->PutScalar(0.0);
     {
-      // start time measurement for application of dirichlet conditions
-      tm4_ref_ = rcp(new TimeMonitor(*timeapplydirich_));
+      // time measurement: application of dbc --- start TimeMonitor tm6
+      tm6_ref_ = rcp(new TimeMonitor(*timeapplydbc_));
 
       LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,dirichtoggle_);
 
-      // end time measurement for application of dirichlet conditions
-      tm4_ref_=null;
+      // end time measurement for application of dbc
+      tm6_ref_=null;
     }
 
     //-------solve for residual displacements to correct incremental displacements
     {
-      // start time measurement for solver call
-      tm5_ref_ = rcp(new TimeMonitor(*timesolver_));
+      // time measurement: solver --- start TimeMonitor tm7
+      tm7_ref_ = rcp(new TimeMonitor(*timesolver_));
       // get cpu time
       tcpu=ds_cputime();
 
-      solver_.Solve(sysmat_->EpetraMatrix(),incvel_,residual_,true,itnum==1);
+      solver_.Solve(sysmat_->Matrix(),incvel_,residual_,true,itnum==1);
 
-      // end time measurement for application of dirichlet conditions
-      tm5_ref_=null;
-      dtsolve=ds_cputime()-tcpu;
+      // end time measurement for solver
+      tm7_ref_=null;
+      dtsolve_=ds_cputime()-tcpu;
     }
 
     //------------------------------------------------ update (u,p) trial
     velnp_->Update(1.0,*incvel_,1.0);
 
     //------------------------------------------------- check convergence
-    //this->NonlinearConvCheck(stopnonliniter,itnum,dtele,dtsolve);
+    //NonlinearConvCheck(stopnonliniter,itnum,dtele_,dtsolve_);
   }
 
   // end time measurement for nonlinear iteration
-  tm6_ref_ = null;
+  tm3_ref_ = null;
 
   return;
 } // FluidImplicitTimeInt::NonlinearSolve
@@ -960,12 +982,10 @@ drawbacks:
 */
 void FluidImplicitTimeInt::LinearSolve()
 {
-  // start time measurement for nonlinear iteration
-  tm6_ref_ = rcp(new TimeMonitor(*timelinloop_));
+  // time measurement: linearised fluid --- start TimeMonitor tm3
+  tm3_ref_ = rcp(new TimeMonitor(*timenlnitlin_));
 
-  double            dtsolve = 0;
-  double            dtele   = 0;
-  double            tcpu;
+  double tcpu;
 
   if (myrank_ == 0)
     cout << "solution of linearised fluid   ";
@@ -977,8 +997,8 @@ void FluidImplicitTimeInt::LinearSolve()
   // call elements to calculate system matrix
   // -------------------------------------------------------------------
 
-  // start time measurement for element call
-  tm3_ref_ = rcp(new TimeMonitor(*timeeleloop_));
+  // time measurement: element --- start TimeMonitor tm4
+  tm4_ref_ = rcp(new TimeMonitor(*timeelement_));
   // get cpu time
   tcpu=ds_cputime();
 
@@ -1014,44 +1034,44 @@ void FluidImplicitTimeInt::LinearSolve()
   // finalize the complete matrix
   sysmat_->Complete();
 
-  // end time measurement for element call
-  tm3_ref_=null;
-  dtele=ds_cputime()-tcpu;
+  // end time measurement for element
+  tm4_ref_=null;
+  dtele_=ds_cputime()-tcpu;
 
   //--------- Apply dirichlet boundary conditions to system of equations
   //          residual velocities (and pressures) are supposed to be zero at
   //          boundary conditions
   //velnp_->PutScalar(0.0);
 
-  // start time measurement for application of dirichlet conditions
-  tm4_ref_ = rcp(new TimeMonitor(*timeapplydirich_));
+  // time measurement: application of dbc --- start TimeMonitor tm6
+  tm6_ref_ = rcp(new TimeMonitor(*timeapplydbc_));
 
   LINALG::ApplyDirichlettoSystem(sysmat_,velnp_,rhs_,velnp_,dirichtoggle_);
 
-  // end time measurement for application of dirichlet conditions
-  tm4_ref_=null;
+  // end time measurement for application of dbc
+  tm6_ref_=null;
 
   //-------solve for total new velocities and pressures
 
-  // start time measurement for solver call
-  tm5_ref_ = rcp(new TimeMonitor(*timesolver_));
+  // time measurement: solver --- start TimeMonitor tm7
+  tm7_ref_ = rcp(new TimeMonitor(*timesolver_));
   // get cpu time
   tcpu=ds_cputime();
 
   /* possibly we could accelerate it if the reset variable
      is true only every fifth step, i.e. set the last argument to false
      for 4 of 5 timesteps or so. */
-  solver_.Solve(sysmat_->EpetraMatrix(),velnp_,rhs_,true,true);
+  solver_.Solve(sysmat_->Matrix(),velnp_,rhs_,true,true);
 
-  // end time measurement for application of solver call
-  tm5_ref_=null;
-  dtsolve=ds_cputime()-tcpu;
+  // end time measurement for solver
+  tm7_ref_=null;
+  dtsolve_=ds_cputime()-tcpu;
 
-  // end time measurement for linear fluid solve
-  tm6_ref_ = null;
+  // end time measurement for linearised fluid
+  tm3_ref_ = null;
 
   if (myrank_ == 0)
-    cout << "te=" << dtele << ", ts=" << dtsolve << "\n\n" ;
+    cout << "te=" << dtele_ << ", ts=" << dtsolve_ << "\n\n" ;
 
   return;
 } // FluidImplicitTimeInt::LinearSolve
@@ -1704,8 +1724,8 @@ void FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FluidImplicitTimeInt::SolveStationaryProblem()
 {
-  // start time measurement for timeloop
-  tm2_ref_ = rcp(new TimeMonitor(*timedynloop_));
+  // time measurement: time loop (stationary) --- start TimeMonitor tm2
+  tm2_ref_ = rcp(new TimeMonitor(*timetimeloop_));
 
   // set theta to one in order to avoid misuse
   theta_ = 1.0;
@@ -1778,17 +1798,17 @@ void FluidImplicitTimeInt::SolveStationaryProblem()
     // -------------------------------------------------------------------
     //                     solve nonlinear equation system
     // -------------------------------------------------------------------
-    this->NonlinearSolve();
+    NonlinearSolve();
 
 
     // -------------------------------------------------------------------
     //                         output of solution
     // -------------------------------------------------------------------
-    this->Output();
+    Output();
 
   } // end of time loop
 
-  // end time measurement for timeloop
+  // end time measurement for time loop (stationary)
   tm2_ref_ = null;
 
   return;
@@ -2014,137 +2034,6 @@ void FluidImplicitTimeInt::LiftDrag() const
     }
   }
 }//FluidImplicitTimeInt::LiftDrag
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FluidImplicitTimeInt::IntegrateInterfaceShape(std::string condname)
-{
-  ParameterList eleparams;
-  // set action for elements
-  eleparams.set("action","integrate_Shapefunction");
-
-  // get a vector layout from the discretization to construct matching
-  // vectors and matrices
-  //                 local <-> global dof numbering
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-  // create vector (+ initialization with zeros)
-  Teuchos::RCP<Epetra_Vector> integratedshapefunc = LINALG::CreateVector(*dofrowmap,true);
-
-  // call loop over elements
-  discret_->ClearState();
-  discret_->SetState("dispnp", dispnp_);
-  discret_->EvaluateCondition(eleparams,integratedshapefunc,condname);
-  discret_->ClearState();
-
-  return integratedshapefunc;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax)
-{
-  //
-  // This method is really stupid, but simple. We calculate the fluid
-  // elements twice here. First because we need the global matrix to
-  // do a linear solve. We do not have any RHS other than the one from
-  // the Dirichlet condition at the FSI interface.
-  //
-  // After that we recalculate the matrix so that we can get the
-  // reaction forces at the FSI interface easily.
-  //
-  // We do more work that required, but we do not need any special
-  // element code to perform the steepest descent calculation. This is
-  // quite a benefit as the special code in the old discretization was
-  // a real nightmare.
-  //
-
-  //relax_->PutScalar(0.0);
-  //interface_.InsertCondVector(ivel,relax_);
-
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  Teuchos::RCP<Epetra_Vector> griddisp = LINALG::CreateVector(*dofrowmap,true);
-
-  // set the grid displacement independent of the trial value at the
-  // interface
-  griddisp->Update(1., *dispnp_, -1., *dispn_, 0.);
-
-  // dirichtoggle_ has already been set up
-
-  // zero out the stiffness matrix
-  sysmat_->Zero();
-
-  // zero out residual, no neumann bc
-  residual_->PutScalar(0.0);
-
-  ParameterList eleparams;
-  eleparams.set("action","calc_fluid_systemmat_and_residual");
-  eleparams.set("total time",time_);
-  eleparams.set("thsl",theta_*dta_);
-  eleparams.set("using stationary formulation",false);
-  eleparams.set("include reactive terms for linearisation",newton_);
-
-  // set vector values needed by elements
-  discret_->ClearState();
-  discret_->SetState("velnp",velnp_);
-  discret_->SetState("hist"  ,zeros_);
-  discret_->SetState("dispnp", griddisp);
-  discret_->SetState("gridv", gridv_);
-
-  // call loop over elements
-  discret_->Evaluate(eleparams,sysmat_,residual_);
-  discret_->ClearState();
-
-  // finalize the system matrix
-  sysmat_->Complete();
-
-  // No, we do not want to have any rhs. There cannot be any.
-  residual_->PutScalar(0.0);
-
-  //--------- Apply dirichlet boundary conditions to system of equations
-  //          residual discplacements are supposed to be zero at
-  //          boundary conditions
-  incvel_->PutScalar(0.0);
-  LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,relax,dirichtoggle_);
-
-  //-------solve for residual displacements to correct incremental displacements
-  solver_.Solve(sysmat_->EpetraMatrix(),incvel_,residual_,true,true);
-
-  // and now we need the reaction forces
-
-  // zero out the stiffness matrix
-  sysmat_->Zero();
-
-  // zero out residual, no neumann bc
-  residual_->PutScalar(0.0);
-
-  eleparams.set("action","calc_fluid_systemmat_and_residual");
-  eleparams.set("thsl",theta_*dta_);
-  eleparams.set("using stationary formulation",false);
-
-  // set vector values needed by elements
-  discret_->ClearState();
-  //discret_->SetState("velnp",incvel_);
-  discret_->SetState("velnp",velnp_);
-  discret_->SetState("hist"  ,zeros_);
-  discret_->SetState("dispnp", griddisp);
-  discret_->SetState("gridv", gridv_);
-
-  // call loop over elements
-  discret_->Evaluate(eleparams,sysmat_,residual_);
-  discret_->ClearState();
-
-  double density = eleparams.get("density", 0.0);
-
-  // finalize the system matrix
-  sysmat_->Complete();
-
-  if (sysmat_->Apply(*incvel_, *trueresidual_)!=0)
-    dserror("sysmat_->Apply() failed");
-  trueresidual_->Scale(-density/dta_/theta_);
-}
 
 
 

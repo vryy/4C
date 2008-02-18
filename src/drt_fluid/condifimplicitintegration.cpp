@@ -52,6 +52,23 @@ CondifImplicitTimeInt::CondifImplicitTimeInt(RefCountPtr<DRT::Discretization> ac
 {
 
   // -------------------------------------------------------------------
+  // create timers and time monitor
+  // -------------------------------------------------------------------
+  timetotal_    = TimeMonitor::getNewTimer("dynamic routine total");
+  timeinit_     = TimeMonitor::getNewTimer(" + initialization"    );
+  timetimeloop_ = TimeMonitor::getNewTimer(" + time loop"         );
+  timeelement_  = TimeMonitor::getNewTimer("      + element calls");
+  timeavm3_     = TimeMonitor::getNewTimer("           + avm3"    );
+  timeapplydbc_ = TimeMonitor::getNewTimer("      + apply DBC"    );
+  timesolver_   = TimeMonitor::getNewTimer("      + solver calls" );
+
+  // time measurement: total --- start TimeMonitor tm0
+  tm0_ref_        = rcp(new TimeMonitor(*timetotal_ ));
+
+  // time measurement: initialization --- start TimeMonitor tm7
+  tm1_ref_        = rcp(new TimeMonitor(*timeinit_ ));
+
+  // -------------------------------------------------------------------
   // get the basic parameters first
   // -------------------------------------------------------------------
 
@@ -148,15 +165,8 @@ CondifImplicitTimeInt::CondifImplicitTimeInt(RefCountPtr<DRT::Discretization> ac
   if (fssgd_ > 0)
     sysmat_sd_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27));
 
-  // -------------------------------------------------------------------
-  // create timers and time monitor
-  // -------------------------------------------------------------------
-  timedyntot_     = TimeMonitor::getNewTimer("dynamic routine total"     );
-  timedyninit_    = TimeMonitor::getNewTimer(" + initial phase"          );
-  timedynloop_    = TimeMonitor::getNewTimer(" + time loop"              );
-  timeeleloop_    = TimeMonitor::getNewTimer("      + element calls"     );
-  timeapplydirich_= TimeMonitor::getNewTimer("      + apply dirich cond.");
-  timesolver_     = TimeMonitor::getNewTimer("      + solver calls"      );
+  // end time measurement for initialization
+  tm1_ref_ = null;
 
   return;
 
@@ -178,9 +188,6 @@ CondifImplicitTimeInt::CondifImplicitTimeInt(RefCountPtr<DRT::Discretization> ac
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void CondifImplicitTimeInt::Integrate()
 {
-  // time measurement --- start TimeMonitor tm0 and tm1
-  tm0_ref_        = rcp(new TimeMonitor(*timedyntot_ ));
-
   // bound for the number of startsteps
   int    numstasteps         =params_.get<int>   ("number of start steps");
 
@@ -200,13 +207,14 @@ void CondifImplicitTimeInt::Integrate()
     }
 
     // continue with the final time integration
-    this->TimeLoop();
+    TimeLoop();
   }
 
-  // print the results of time measurements
+  // end total time measurement
+  tm0_ref_ = null; 
 
-  tm0_ref_ = null; // end total time measurement
-  cout<<endl<<endl;
+  // print the results of time measurements
+  //cout<<endl<<endl;
   TimeMonitor::summarize();
 
   return;
@@ -225,8 +233,8 @@ void CondifImplicitTimeInt::Integrate()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void CondifImplicitTimeInt::TimeLoop()
 {
-  // start time measurement for timeloop
-  tm2_ref_ = rcp(new TimeMonitor(*timedynloop_));
+  // time measurement: time loop --- start TimeMonitor tm2
+  tm2_ref_ = rcp(new TimeMonitor(*timetimeloop_));
 
   while (step_<stepmax_ and time_<maxtime_)
   {
@@ -452,18 +460,15 @@ void CondifImplicitTimeInt::Solve(
   bool is_stat //if true, stationary formulations are used in the element
   )
 {
-  const Epetra_Map* dofrowmap       = discret_->DofRowMap();
-
-  double            dtsolve = 0;
-  double            dtele   = 0;
-  double            tcpu   ;
+  double tcpu;
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   // -------------------------------------------------------------------
   // call elements to calculate system matrix
   // -------------------------------------------------------------------
   {
-    // start time measurement for element call
-    tm3_ref_ = rcp(new TimeMonitor(*timeeleloop_));
+    // time measurement: element --- start TimeMonitor tm3
+    tm3_ref_ = rcp(new TimeMonitor(*timeelement_));
     // get cpu time
     tcpu=ds_cputime();
 
@@ -509,6 +514,9 @@ void CondifImplicitTimeInt::Solve(
     // begin encapsulation of direct algebraic VM3 solution approach
     if (fssgd_ > 0)
     {
+      // time measurement: avm3 --- start TimeMonitor tm4
+      tm4_ref_ = rcp(new TimeMonitor(*timeavm3_));
+
       // extract the ML parameters
       ParameterList&  mllist = solver_.Params().sublist("ML Parameters");
 
@@ -520,9 +528,15 @@ void CondifImplicitTimeInt::Solve(
         // create normalized all-scale subgrid-diffusivity matrix
         sysmat_sd_->Zero();
 
+        // end time measurement for avm3 evaluation
+        tm4_ref_=null;
+
         // call loop over elements (two matrices + subgr.-visc.-scal. vector)
         discret_->Evaluate(eleparams,sysmat_,sysmat_sd_,residual_,sugrvisc_);
         discret_->ClearState();
+
+        // time measurement: avm3 --- start TimeMonitor tm4
+        tm4_ref_ = rcp(new TimeMonitor(*timeavm3_));
 
         // finalize the normalized all-scale subgrid-diffusivity matrix
         sysmat_sd_->Complete();
@@ -535,9 +549,15 @@ void CondifImplicitTimeInt::Solve(
       }
       else
       {
+        // end time measurement for avm3 evaluation
+        tm4_ref_=null;
+
         // call loop over elements (one matrix + subgr.-visc.-scal. vector)
         discret_->Evaluate(eleparams,sysmat_,null,residual_,sugrvisc_);
         discret_->ClearState();
+
+        // time measurement: avm3 --- start TimeMonitor tm4
+        tm4_ref_ = rcp(new TimeMonitor(*timeavm3_));
       }
       // check whether VM3 solver exists
       if (vm3_solver_ == null) dserror("vm3_solver not allocated");
@@ -545,6 +565,9 @@ void CondifImplicitTimeInt::Solve(
       // call the VM3 scaling:
       // scale precomputed matrix product by subgrid-viscosity-scaling vector
       vm3_solver_->Scale(sysmat_sd_,sysmat_,zeros_,zeros_,sugrvisc_,zeros_,false );
+
+      // end time measurement for avm3 evaluation
+      tm4_ref_=null;
     }
     // end encapsulation of direct algebraic VM3 solution approach
     else
@@ -557,27 +580,26 @@ void CondifImplicitTimeInt::Solve(
     // finalize the complete matrix
     sysmat_->Complete();
 
-    // end time measurement for element call
+    // end time measurement for element
     tm3_ref_=null;
-    dtele=ds_cputime()-tcpu;
+    dtele_=ds_cputime()-tcpu;
   }
 
-  // Apply dirichlet boundary conditions to standard (stabilized) and complete
-  // system matrix
+  // Apply dirichlet boundary conditions to system matrix
   {
-    // start time measurement for application of dirichlet conditions
-    tm4_ref_ = rcp(new TimeMonitor(*timeapplydirich_));
+    // time measurement: application of dbc --- start TimeMonitor tm5
+    tm5_ref_ = rcp(new TimeMonitor(*timeapplydbc_));
 
     LINALG::ApplyDirichlettoSystem(sysmat_,phinp_,residual_,phinp_,dirichtoggle_);
 
-    // end time measurement for application of dirichlet conditions
-    tm4_ref_=null;
+    // end time measurement for application of dbc
+    tm5_ref_=null;
   }
 
   //-------solve
   {
-    // start time measurement for solver call
-    tm5_ref_ = rcp(new TimeMonitor(*timesolver_));
+    // time measurement: solver --- start TimeMonitor tm6
+    tm6_ref_ = rcp(new TimeMonitor(*timesolver_));
     // get cpu time
     tcpu=ds_cputime();
 
@@ -610,9 +632,9 @@ void CondifImplicitTimeInt::Solve(
 #endif
       solver_.Solve(sysmat_->EpetraMatrix(),phinp_,residual_,true,true);
 
-    // end time measurement for solver call
-    tm5_ref_=null;
-    dtsolve=ds_cputime()-tcpu;
+    // end time measurement for solver
+    tm6_ref_=null;
+    dtsolve_=ds_cputime()-tcpu;
   }
 
   return;
@@ -858,8 +880,8 @@ void CondifImplicitTimeInt::ReadRestart(int step)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void CondifImplicitTimeInt::SolveStationaryProblem()
 {
-  // start time measurement for stationary solver
-  tm2_ref_ = rcp(new TimeMonitor(*timedynloop_));
+  // time measurement: time loop (stationary) --- start TimeMonitor tm2
+  tm2_ref_ = rcp(new TimeMonitor(*timetimeloop_));
 
   // -------------------------------------------------------------------
   //                         out to screen
@@ -915,7 +937,7 @@ void CondifImplicitTimeInt::SolveStationaryProblem()
   Output();
 
 
-  // end time measurement for timeloop
+  // end time measurement for time loop (stationary)
   tm2_ref_ = null;
 
   return;

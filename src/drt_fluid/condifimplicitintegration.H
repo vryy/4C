@@ -212,12 +212,13 @@ protected:
 
   // time measurement
   // ----------------
-  RCP<Time> timedyntot_     ;
-  RCP<Time> timedyninit_    ;
-  RCP<Time> timedynloop_    ;
-  RCP<Time> timeeleloop_    ;
-  RCP<Time> timeapplydirich_;
-  RCP<Time> timesolver_     ;
+  RCP<Teuchos::Time> timetotal_   ;
+  RCP<Teuchos::Time> timeinit_    ;
+  RCP<Teuchos::Time> timetimeloop_;
+  RCP<Teuchos::Time> timeelement_ ;
+  RCP<Teuchos::Time> timeavm3_    ;
+  RCP<Teuchos::Time> timeapplydbc_;
+  RCP<Teuchos::Time> timesolver_  ;
 
   RCP<TimeMonitor> tm0_ref_ ;
   RCP<TimeMonitor> tm1_ref_ ;
@@ -225,6 +226,10 @@ protected:
   RCP<TimeMonitor> tm3_ref_ ;
   RCP<TimeMonitor> tm4_ref_ ;
   RCP<TimeMonitor> tm5_ref_ ;
+  RCP<TimeMonitor> tm6_ref_ ;
+
+  double dtele_;
+  double dtsolve_;
 
 }; // class CondifImplicitTimeInt
 
