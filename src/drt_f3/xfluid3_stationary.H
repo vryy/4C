@@ -1580,10 +1580,10 @@ void Sysmat(
         // get node coordinates
         //TODO: get the right element
         //const RCP<DRT::Element> boundaryele = ih->GetBoundaryEle(cell->GetSurfaceEleGid());
-        const DRT::Element* boundaryele = ih->GetBoundaryEle(0);
+        const RCP<DRT::Element> boundaryele = ih->GetBoundaryEle(0);
         //cout << (*boundaryele) << endl;
         
-        const BlitzMat xyze_boundary(DRT::UTILS::PositionArray(boundaryele));
+        const BlitzMat xyze_boundary(DRT::UTILS::PositionArray(boundaryele.get()));
 
         // integration loop
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)

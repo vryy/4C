@@ -81,15 +81,15 @@ public:
             const int element_gid
             ) const;
     
-    DRT::Element* GetBoundaryEle(
+    RCP<DRT::Element> GetBoundaryEle(
             const int element_gid
             ) const
     {
-        map<int, DRT::Element* >::const_iterator tmp = boundaryElements_.find(element_gid);
+        map<int, RCP<DRT::Element> >::const_iterator tmp = boundaryElements_.find(element_gid);
         if (tmp == boundaryElements_.end()){
             cout << element_gid << endl;
             dserror("GetBoundaryEle: no copy of boundary element with id = %d found on this proc!", element_gid);
-            return NULL;
+            return null;
         }
         return tmp->second;
     }
@@ -110,7 +110,7 @@ private:
 	/*! list of boundary elements that intersect volume elements on this processor
 	 *  first integer is the global surface ele id to allow easy access
 	 */
-	map<int, DRT::Element* > boundaryElements_;
+	map<int, RCP<DRT::Element> > boundaryElements_;
 	
 	//! store all additional nodes for the cutter elements that are not already on this proc
 	map< int, RCP<DRT::Node> > cutterNodeMap_;
