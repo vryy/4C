@@ -10,20 +10,13 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-LINALG::SparseMatrix::SparseMatrix(bool explicitdirichlet, bool savegraph)
-  : explicitdirichlet_(explicitdirichlet),
-    savegraph_(savegraph)
-{
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 LINALG::SparseMatrix::SparseMatrix(const Epetra_Map& rowmap, const int npr, bool explicitdirichlet, bool savegraph)
   : explicitdirichlet_(explicitdirichlet),
     savegraph_(savegraph)
 {
-  Setup(rowmap,npr);
+  if (!rowmap.UniqueGIDs())
+    dserror("Row map is not unique");
+  sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,npr,false));
 }
 
 
@@ -69,7 +62,9 @@ LINALG::SparseMatrix::SparseMatrix(const Epetra_Vector& diag, bool explicitdiric
   int length = diag.Map().NumMyElements();
   Epetra_Map map(-1,length,diag.Map().MyGlobalElements(),
                  diag.Map().IndexBase(),diag.Comm());
-  Setup(map,1);
+  if (!map.UniqueGIDs())
+    dserror("Row map is not unique");
+  sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,map,1,true));
   for (int i=0; i<length; ++i)
   {
     int gid = diag.Map().GID(i);
@@ -86,11 +81,22 @@ LINALG::SparseMatrix::~SparseMatrix()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::Setup(const Epetra_Map& rowmap, const int npr)
+LINALG::SparseMatrix& LINALG::SparseMatrix::operator=(const SparseMatrix& mat)
 {
-  if (!rowmap.UniqueGIDs())
-    dserror("Row map is not unique");
-  sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,npr,false));
+  explicitdirichlet_ = mat.explicitdirichlet_;
+  savegraph_ = mat.savegraph_;
+
+  if (mat.sysmat_!=Teuchos::null)
+    sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(*mat.sysmat_));
+  else
+    sysmat_ = Teuchos::null;
+
+  if (mat.graph_!=Teuchos::null)
+    graph_ = Teuchos::rcp(new Epetra_CrsGraph(*mat.graph_));
+  else
+    graph_ = Teuchos::null;
+
+  return *this;
 }
 
 
@@ -756,7 +762,7 @@ void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const LINALG::SparseMatrix& mat)
+ostream& LINALG::operator << (ostream& os, const LINALG::SparseMatrix& mat)
 {
   os << *(const_cast<LINALG::SparseMatrix&>(mat).EpetraMatrix());
   return os;
@@ -791,12 +797,23 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::Multiply(const LINALG::SparseMatrix& 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 LINALG::BlockSparseMatrixBase::BlockSparseMatrixBase(const MultiMapExtractor& domainmaps,
-                                                     const MultiMapExtractor& rangemaps)
-
+                                                     const MultiMapExtractor& rangemaps,
+                                                     int npr,
+                                                     bool explicitdirichlet,
+                                                     bool savegraph)
   : domainmaps_(domainmaps),
     rangemaps_(rangemaps)
 {
-  blocks_.resize(Rows()*Cols());
+  blocks_.reserve(Rows()*Cols());
+
+  // add sparse matrices in row,column order
+  for (int r=0; r<Rows(); ++r)
+  {
+    for (int c=0; c<Cols(); ++c)
+    {
+      blocks_.push_back(SparseMatrix(RangeMap(r),npr,explicitdirichlet,savegraph));
+    }
+  }
 }
 
 

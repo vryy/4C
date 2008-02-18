@@ -165,13 +165,6 @@ namespace LINALG
   public:
 
     /// construction of sparse matrix
-    /*!
-      \param explicitdirichlet Whether ApplyDirichlet() should modify the graph
-      \param savegraph Whether to save the graph for future assemblies
-     */
-    explicit SparseMatrix(bool explicitdirichlet=true, bool savegraph=false);
-
-    /// construction of sparse matrix
     SparseMatrix(const Epetra_Map& rowmap, const int npr, bool explicitdirichlet=true, bool savegraph=false);
 
     /// construction of sparse matrix
@@ -205,6 +198,9 @@ namespace LINALG
     /// Destructor
     virtual ~SparseMatrix();
 
+    /// assignment operator
+    SparseMatrix& operator=(const SparseMatrix& mat);
+
     /// return the internal Epetra_Operator
     /*!
       The internal Epetra_Operator here is the internal Epetra_CrsMatrix. This
@@ -220,9 +216,6 @@ namespace LINALG
 
     /** \name FE methods */
     //@{
-
-    /// setup the matrix from a given row map and a (guessed) number of entries per row
-    void Setup(const Epetra_Map& rowmap, const int npr);
 
     /// set all matrix entries to zero
     void Zero();
@@ -255,7 +248,7 @@ namespace LINALG
     /** \name Matrix Properties Query Methods */
     //@{
 
-    /// If FillComplete() has been called, this query returns true, otherwise it returns false.
+    /// If Complete() has been called, this query returns true, otherwise it returns false.
     bool Filled() const { return sysmat_->Filled(); }
 
     //@}
@@ -400,7 +393,7 @@ namespace LINALG
       Respective Range, Row and Domain maps of A(^T) and B(^T) have to match.
 
       \note This is a true parallel multiplication, even in the transposed case.
-      
+
       \note Does not call complete on C upon exit.
 
       \param A              (in)     : Matrix to multiply with B (must have Filled()==true)
@@ -410,7 +403,7 @@ namespace LINALG
       \param completeoutput (in)     : flag indicating whether Complete(...) shall be called on C upon output
       \return Matrix product A(^T)*B(^T)
     */
-    friend Teuchos::RCP<SparseMatrix> LINALG::Multiply(const SparseMatrix& A, bool transA, 
+    friend Teuchos::RCP<SparseMatrix> LINALG::Multiply(const SparseMatrix& A, bool transA,
                                                        const SparseMatrix& B, bool transB,
                                                        bool completeoutput = true);
 
@@ -453,17 +446,17 @@ namespace LINALG
   };
 
 
-  Teuchos::RCP<SparseMatrix> Multiply(const SparseMatrix& A, bool transA, 
+  Teuchos::RCP<SparseMatrix> Multiply(const SparseMatrix& A, bool transA,
                                       const SparseMatrix& B, bool transB,
                                       bool completeoutput);
 
   /// Internal base class of BlockSparseMatrix that contains the non-template stuff
   /*!
 
-    This is where the bookkeeping of thr BlockSparseMatrix happens. we use two
+    This is where the bookkeeping of the BlockSparseMatrix happens. We use two
     MultiMapExtractor objects to store the FullRangeMap() and the
     FullDomainMap() along with their many partial RangeMap() and
-    DomainMap(). Most of the required SparseOperator methods can simply
+    DomainMap(). Most of the required SparseOperator methods can simply be
     implemented in terms of the matrix blocks.
 
     \author u.kue
@@ -472,36 +465,79 @@ namespace LINALG
   class BlockSparseMatrixBase : public SparseOperator
   {
   public:
+
+    /// constructor
+    /*!
+      \param domainmaps domain maps for all blocks
+      \param rangemaps range maps for all blocks
+      \param npr estimated number of entries per row in each block
+      \param explicitdirichlet whether to remove Dirichlet zeros from the
+      matrix graphs in each block
+      \param savegraph whether to save the matrix graphs of each block and
+      recreate filled matrices the next time
+     */
     BlockSparseMatrixBase(const MultiMapExtractor& domainmaps,
-                          const MultiMapExtractor& rangemaps);
+                          const MultiMapExtractor& rangemaps,
+                          int npr,
+                          bool explicitdirichlet=true,
+                          bool savegraph=false);
 
     virtual ~BlockSparseMatrixBase() {}
+
+    /** \name Block matrix access */
+    //@{
 
     const SparseMatrix& Matrix(int r, int c) const { return blocks_[r*Cols()+c]; }
 
     SparseMatrix& Matrix(int r, int c) { return blocks_[r*Cols()+c]; }
 
-    inline const SparseMatrix& operator()(int r, int c) const { return Matrix(r,c);}
+    inline const SparseMatrix& operator()(int r, int c) const { return Matrix(r,c); }
 
-    inline SparseMatrix& operator()(int r, int c) { return Matrix(r,c);}
+    inline SparseMatrix& operator()(int r, int c) { return Matrix(r,c); }
+
+    //@}
+
+    /** \name FE methods */
+    //@{
 
     void Zero();
     void Complete();
     void Complete(const Epetra_Map& domainmap, const Epetra_Map& rangemap);
 
-    bool Filled() const;
-
-    int Rows() const { return rangemaps_.NumMaps(); }
-    int Cols() const { return domainmaps_.NumMaps(); }
-
-    Epetra_Map& RangeMap(int r) const { return *rangemaps_.Map(r); }
-    Epetra_Map& DomainMap(int r) const { return *domainmaps_.Map(r); }
-
-    Epetra_Map& FullRangeMap() const { return *rangemaps_.FullMap(); }
-    Epetra_Map& FullDomainMap() const { return *domainmaps_.FullMap(); }
-
     void ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle);
 
+    //@}
+
+    /** \name Matrix Properties Query Methods */
+    //@{
+
+    /// If Complete() has been called, this query returns true, otherwise it returns false.
+    bool Filled() const;
+
+    //@}
+
+    /** \name Block maps */
+    //@{
+
+    /// number of row blocks
+    int Rows() const { return rangemaps_.NumMaps(); }
+
+    /// number of column blocks
+    int Cols() const { return domainmaps_.NumMaps(); }
+
+    /// range map for given row block
+    Epetra_Map& RangeMap(int r) const { return *rangemaps_.Map(r); }
+
+    /// domain map for given column block
+    Epetra_Map& DomainMap(int r) const { return *domainmaps_.Map(r); }
+
+    /// total matrix range map with all blocks
+    Epetra_Map& FullRangeMap() const { return *rangemaps_.FullMap(); }
+
+    /// total matrix domain map with all blocks
+    Epetra_Map& FullDomainMap() const { return *domainmaps_.FullMap(); }
+
+    //@}
 
     /** \name Attribute set methods */
     //@{
@@ -590,7 +626,8 @@ namespace LINALG
   {
   public:
     BlockSparseMatrix(const MultiMapExtractor& domainmaps,
-                      const MultiMapExtractor& rangemaps);
+                      const MultiMapExtractor& rangemaps,
+                      int npr=81);
 
     void Assemble(const Epetra_SerialDenseMatrix& Aele,
                   const std::vector<int>& lmrow,
@@ -645,13 +682,13 @@ namespace LINALG
     /// all ghost entries stored by row,column
     std::map<int,std::map<int,double> > ghost_;
   };
-} // end of namespace LINALG
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 ostream& operator << (ostream& os, const LINALG::SparseMatrix& mat);
 ostream& operator << (ostream& os, const LINALG::BlockSparseMatrixBase& mat);
+
+} // end of namespace LINALG
 
 
 /*----------------------------------------------------------------------*
@@ -660,16 +697,11 @@ template <class Strategy> Teuchos::RCP<LINALG::BlockSparseMatrix<Strategy> >
 LINALG::SparseMatrix::Split(const MultiMapExtractor& domainmaps,
                             const MultiMapExtractor& rangemaps)
 {
-  Teuchos::RCP<BlockSparseMatrix<Strategy> > blockA =
-    rcp(new LINALG::BlockSparseMatrix<Strategy>(domainmaps,rangemaps));
-
   if (domainmaps.NumMaps()==2 && rangemaps.NumMaps()==2)
   {
     const int npr = EpetraMatrix()->MaxNumEntries();
-    (*blockA)(0,0).Setup(*rangemaps.Map(0),npr);
-    (*blockA)(0,1).Setup(*rangemaps.Map(0),npr);
-    (*blockA)(1,0).Setup(*rangemaps.Map(1),npr);
-    (*blockA)(1,1).Setup(*rangemaps.Map(1),npr);
+    Teuchos::RCP<BlockSparseMatrix<Strategy> > blockA =
+      rcp(new LINALG::BlockSparseMatrix<Strategy>(domainmaps,rangemaps,npr));
     this->Split2x2(*blockA);
     return blockA;
   }
@@ -683,8 +715,9 @@ LINALG::SparseMatrix::Split(const MultiMapExtractor& domainmaps,
  *----------------------------------------------------------------------*/
 template <class Strategy>
 LINALG::BlockSparseMatrix<Strategy>::BlockSparseMatrix(const MultiMapExtractor& domainmaps,
-                                                       const MultiMapExtractor& rangemaps)
-  : BlockSparseMatrixBase(domainmaps,rangemaps),
+                                                       const MultiMapExtractor& rangemaps,
+                                                       int npr)
+  : BlockSparseMatrixBase(domainmaps,rangemaps,npr),
     // this was necessary, otherwise ambigous with copy constructor of Strategy
     Strategy((LINALG::BlockSparseMatrixBase&)(*this))
 {
