@@ -67,14 +67,16 @@ TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
   x3max_ = -10e+19;
 
   //----------------------------------------------------------------------
-  // create sets of coordinates for centerlines in x1- and x2-direction
+  // create sets of coordinates for centerlines in x1-, x2- and x3-direction
   //----------------------------------------------------------------------
   x1coordinates_ = rcp(new vector<double> );
   x2coordinates_ = rcp(new vector<double> );
+  x3coordinates_ = rcp(new vector<double> );
 
   // the criterion allows differences in coordinates by 1e-9
   set<double,LineSortCriterion> x1avcoords;
   set<double,LineSortCriterion> x2avcoords;
+  set<double,LineSortCriterion> x3avcoords;
 
   // loop nodes, build sets of centerlines accessible on this proc and
   // calculate extension of cavity in x3-direction
@@ -83,6 +85,7 @@ TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
     DRT::Node* node = discret_->lRowNode(i);
     x1avcoords.insert(node->X()[0]);
     x2avcoords.insert(node->X()[1]);
+    x3avcoords.insert(node->X()[2]);
 
     if (x3min_>node->X()[2])
     {
@@ -104,8 +107,8 @@ TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
   x3max_=max;
 
   //--------------------------------------------------------------------
-  // round robin loop to communicate coordinates in x1- and x2-direction
-  // to all procs
+  // round robin loop to communicate coordinates in x1-, x2- and x3-
+  // direction to all procs
   //--------------------------------------------------------------------
   {
 #ifdef PARALLEL
@@ -250,14 +253,80 @@ TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
         }
       }
     }
+
+    // third, communicate coordinates in x3-direction
+    for (int np=0;np<numprocs;++np)
+    {
+      // export set to sendbuffer
+      sblock.clear();
+
+      for (set<double,LineSortCriterion>::iterator x3line=x3avcoords.begin();
+           x3line!=x3avcoords.end();
+           ++x3line)
+      {
+        DRT::ParObject::AddtoPack(sblock,*x3line);
+      }
+#ifdef PARALLEL
+      MPI_Request request;
+      int         tag    =myrank;
+
+      int         frompid=myrank;
+      int         topid  =(myrank+1)%numprocs;
+
+      int         length=sblock.size();
+
+      exporter.ISend(frompid,topid,
+                     &(sblock[0]),sblock.size(),
+                     tag,request);
+
+      rblock.clear();
+
+      // receive from predecessor
+      frompid=(myrank+numprocs-1)%numprocs;
+      exporter.ReceiveAny(frompid,tag,rblock,length);
+
+      if(tag!=(myrank+numprocs-1)%numprocs)
+      {
+        dserror("received wrong message (ReceiveAny)");
+      }
+
+      exporter.Wait(request);
+
+      {
+        // for safety
+        exporter.Comm().Barrier();
+      }
+#else
+      // dummy communication
+      rblock.clear();
+      rblock=sblock;
+#endif
+
+      //--------------------------------------------------
+      // Unpack received block into set of all planes.
+      {
+        vector<double> coordsvec;
+
+        coordsvec.clear();
+
+        int index = 0;
+        while (index < (int)rblock.size())
+        {
+          double onecoord;
+          DRT::ParObject::ExtractfromPack(index,rblock,onecoord);
+          x3avcoords.insert(onecoord);
+        }
+      }
+    }
   }
 
   //----------------------------------------------------------------------
-  // push coordinates in x1- and x2-direction in a vector
+  // push coordinates in x1-, x2- and x3-direction in a vector
   //----------------------------------------------------------------------
   {
     x1coordinates_ = rcp(new vector<double> );
     x2coordinates_ = rcp(new vector<double> );
+    x3coordinates_ = rcp(new vector<double> );
 
     for(set<double,LineSortCriterion>::iterator coord1=x1avcoords.begin();
         coord1!=x1avcoords.end();
@@ -272,6 +341,13 @@ TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
     {
       x2coordinates_->push_back(*coord2);
     }
+
+    for(set<double,LineSortCriterion>::iterator coord3=x3avcoords.begin();
+        coord3!=x3avcoords.end();
+        ++coord3)
+    {
+      x3coordinates_->push_back(*coord3);
+    }
   }
 
   //----------------------------------------------------------------------
@@ -279,63 +355,86 @@ TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
   //----------------------------------------------------------------------
   int size1 = x1coordinates_->size();
   int size2 = x2coordinates_->size();
+  int size3 = x3coordinates_->size();
 
   // first-order moments
   x1sumu_ =  rcp(new vector<double> );
   x1sumu_->resize(size1,0.0);
   x2sumu_ =  rcp(new vector<double> );
   x2sumu_->resize(size2,0.0);
+  x3sumu_ =  rcp(new vector<double> );
+  x3sumu_->resize(size3,0.0);
 
   x1sumv_ =  rcp(new vector<double> );
   x1sumv_->resize(size1,0.0);
   x2sumv_ =  rcp(new vector<double> );
   x2sumv_->resize(size2,0.0);
+  x3sumv_ =  rcp(new vector<double> );
+  x3sumv_->resize(size3,0.0);
 
   x1sumw_ =  rcp(new vector<double> );
   x1sumw_->resize(size1,0.0);
   x2sumw_ =  rcp(new vector<double> );
   x2sumw_->resize(size2,0.0);
+  x3sumw_ =  rcp(new vector<double> );
+  x3sumw_->resize(size3,0.0);
 
   x1sump_ =  rcp(new vector<double> );
   x1sump_->resize(size1,0.0);
   x2sump_ =  rcp(new vector<double> );
   x2sump_->resize(size2,0.0);
+  x3sump_ =  rcp(new vector<double> );
+  x3sump_->resize(size3,0.0);
 
   // second-order moments
   x1sumsqu_ =  rcp(new vector<double> );
   x1sumsqu_->resize(size1,0.0);
   x2sumsqu_ =  rcp(new vector<double> );
   x2sumsqu_->resize(size2,0.0);
+  x3sumsqu_ =  rcp(new vector<double> );
+  x3sumsqu_->resize(size3,0.0);
 
   x1sumsqv_ =  rcp(new vector<double> );
   x1sumsqv_->resize(size1,0.0);
   x2sumsqv_ =  rcp(new vector<double> );
   x2sumsqv_->resize(size2,0.0);
+  x3sumsqv_ =  rcp(new vector<double> );
+  x3sumsqv_->resize(size3,0.0);
 
   x1sumsqw_ =  rcp(new vector<double> );
   x1sumsqw_->resize(size1,0.0);
   x2sumsqw_ =  rcp(new vector<double> );
   x2sumsqw_->resize(size2,0.0);
+  x3sumsqw_ =  rcp(new vector<double> );
+  x3sumsqw_->resize(size3,0.0);
 
   x1sumuv_ =  rcp(new vector<double> );
   x1sumuv_->resize(size1,0.0);
   x2sumuv_ =  rcp(new vector<double> );
   x2sumuv_->resize(size2,0.0);
+  x3sumuv_ =  rcp(new vector<double> );
+  x3sumuv_->resize(size3,0.0);
 
   x1sumuw_ =  rcp(new vector<double> );
   x1sumuw_->resize(size1,0.0);
   x2sumuw_ =  rcp(new vector<double> );
   x2sumuw_->resize(size2,0.0);
+  x3sumuw_ =  rcp(new vector<double> );
+  x3sumuw_->resize(size3,0.0);
 
   x1sumvw_ =  rcp(new vector<double> );
   x1sumvw_->resize(size1,0.0);
   x2sumvw_ =  rcp(new vector<double> );
   x2sumvw_->resize(size2,0.0);
+  x3sumvw_ =  rcp(new vector<double> );
+  x3sumvw_->resize(size3,0.0);
 
   x1sumsqp_ =  rcp(new vector<double> );
   x1sumsqp_->resize(size1,0.0);
   x2sumsqp_ =  rcp(new vector<double> );
   x2sumsqp_->resize(size2,0.0);
+  x3sumsqp_ =  rcp(new vector<double> );
+  x3sumsqp_->resize(size3,0.0);
 
   // clear statistics
   this->ClearStatistics();
@@ -539,6 +638,94 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
 
   }
 
+  int x3nodnum = 0;
+  //----------------------------------------------------------------------
+  // loop nodes on centerline in x3-direction and calculate pointwise means
+  //----------------------------------------------------------------------
+  for (vector<double>::iterator x3line=x3coordinates_->begin();
+       x3line!=x3coordinates_->end();
+       ++x3line)
+  {
+
+    // toggle vectors are one in the position of a dof for this line,
+    // else 0
+    toggleu_->PutScalar(0.0);
+    togglev_->PutScalar(0.0);
+    togglew_->PutScalar(0.0);
+    togglep_->PutScalar(0.0);
+
+    // count the number of nodes contributing to this nodal value on x3-centerline
+    int countnodes=0;
+
+    for (int nn=0; nn<discret_->NumMyRowNodes(); ++nn)
+    {
+      DRT::Node* node = discret_->lRowNode(nn);
+
+      // this node belongs to the centerline in x3-direction
+      if ((node->X()[2]<(*x3line+2e-9) && node->X()[2]>(*x3line-2e-9)) &&
+          (node->X()[0]<(0.5+2e-9) && node->X()[0]>(0.5-2e-9)) &&
+          (node->X()[1]<(0.5+2e-9) && node->X()[1]>(0.5-2e-9)))
+      {
+        vector<int> dof = discret_->Dof(node);
+        double      one = 1.0;
+
+        toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
+        togglev_->ReplaceGlobalValues(1,&one,&(dof[1]));
+        togglew_->ReplaceGlobalValues(1,&one,&(dof[2]));
+        togglep_->ReplaceGlobalValues(1,&one,&(dof[3]));
+
+        countnodes++;
+      }
+    }
+
+    int countnodesonallprocs=0;
+
+    discret_->Comm().SumAll(&countnodes,&countnodesonallprocs,1);
+
+    if (countnodesonallprocs)
+    {
+      //----------------------------------------------------------------------
+      // get values for velocity and pressure on this centerline
+      //----------------------------------------------------------------------
+      double u;
+      double v;
+      double w;
+      double p;
+      velnp->Dot(*toggleu_,&u);
+      velnp->Dot(*togglev_,&v);
+      velnp->Dot(*togglew_,&w);
+      velnp->Dot(*togglep_,&p);
+
+      //----------------------------------------------------------------------
+      // calculate spatial means for velocity and pressure on this centerline
+      // (if more than one node contributing to this centerline node)
+      //----------------------------------------------------------------------
+      double usm=u/countnodesonallprocs;
+      double vsm=v/countnodesonallprocs;
+      double wsm=w/countnodesonallprocs;
+      double psm=p/countnodesonallprocs;
+
+      //----------------------------------------------------------------------
+      // add spatial mean values to statistical sample
+      //----------------------------------------------------------------------
+      (*x3sumu_)[x3nodnum]+=usm;
+      (*x3sumv_)[x3nodnum]+=vsm;
+      (*x3sumw_)[x3nodnum]+=wsm;
+      (*x3sump_)[x3nodnum]+=psm;
+
+      (*x3sumsqu_)[x3nodnum]+=usm*usm;
+      (*x3sumsqv_)[x3nodnum]+=vsm*vsm;
+      (*x3sumsqw_)[x3nodnum]+=wsm*wsm;
+      (*x3sumsqp_)[x3nodnum]+=psm*psm;
+
+      (*x3sumuv_)[x3nodnum]+=usm*vsm;
+      (*x3sumuw_)[x3nodnum]+=usm*wsm;
+      (*x3sumvw_)[x3nodnum]+=vsm*wsm;
+    }
+    x3nodnum++;
+
+  }
+
   return;
 }// TurbulenceStatisticsLdc::DoTimeSample
 
@@ -563,8 +750,8 @@ void TurbulenceStatisticsLdc::DumpStatistics(int step)
 
     (*log) << "#     x1";
     (*log) << "           umean         vmean         wmean         pmean";
-    (*log) << "           urms          vrms          wrms";
-    (*log) << "           u'v'          u'w'          v'w'          prms   \n";
+    (*log) << "         urms          vrms          wrms";
+    (*log) << "        u'v'          u'w'          v'w'          prms   \n";
 
     (*log) << scientific;
     for(unsigned i=0; i<x1coordinates_->size(); ++i)
@@ -574,11 +761,13 @@ void TurbulenceStatisticsLdc::DumpStatistics(int step)
       double x1w    = (*x1sumw_)[i]/numsamp_;
       double x1p    = (*x1sump_)[i]/numsamp_;
 
+      // factor 10 for better depiction
       double x1urms = 10*sqrt((*x1sumsqu_)[i]/numsamp_-x1u*x1u);
       double x1vrms = 10*sqrt((*x1sumsqv_)[i]/numsamp_-x1v*x1v);
       double x1wrms = 10*sqrt((*x1sumsqw_)[i]/numsamp_-x1w*x1w);
       double x1prms = 10*sqrt((*x1sumsqp_)[i]/numsamp_-x1p*x1p);
 
+      // factor 500 for better depiction
       double x1uv   = 500*((*x1sumuv_)[i]/numsamp_-x1u*x1v);
       double x1uw   = 500*((*x1sumuw_)[i]/numsamp_-x1u*x1w);
       double x1vw   = 500*((*x1sumvw_)[i]/numsamp_-x1v*x1w);
@@ -600,8 +789,8 @@ void TurbulenceStatisticsLdc::DumpStatistics(int step)
 
     (*log) << "#     x2";
     (*log) << "           umean         vmean         wmean         pmean";
-    (*log) << "           urms          vrms          wrms";
-    (*log) << "           u'v'          u'w'          v'w'          prms   \n";
+    (*log) << "         urms          vrms          wrms";
+    (*log) << "        u'v'          u'w'          v'w'          prms   \n";
 
     (*log) << scientific;
     for(unsigned i=0; i<x2coordinates_->size(); ++i)
@@ -611,11 +800,13 @@ void TurbulenceStatisticsLdc::DumpStatistics(int step)
       double x2w    = (*x2sumw_)[i]/numsamp_;
       double x2p    = (*x2sump_)[i]/numsamp_;
 
+      // factor 10 for better depiction
       double x2urms = 10*sqrt((*x2sumsqu_)[i]/numsamp_-x2u*x2u);
       double x2vrms = 10*sqrt((*x2sumsqv_)[i]/numsamp_-x2v*x2v);
       double x2wrms = 10*sqrt((*x2sumsqw_)[i]/numsamp_-x2w*x2w);
       double x2prms = 10*sqrt((*x2sumsqp_)[i]/numsamp_-x2p*x2p);
 
+      // factor 500 for better depiction
       double x2uv   = 500*((*x2sumuv_)[i]/numsamp_-x2u*x2v);
       double x2uw   = 500*((*x2sumuw_)[i]/numsamp_-x2u*x2w);
       double x2vw   = 500*((*x2sumvw_)[i]/numsamp_-x2v*x2w);
@@ -632,6 +823,45 @@ void TurbulenceStatisticsLdc::DumpStatistics(int step)
       (*log) << "   " << setw(11) << setprecision(4) << x2uw;
       (*log) << "   " << setw(11) << setprecision(4) << x2vw;
       (*log) << "   " << setw(11) << setprecision(4) << x2prms;
+      (*log) << "   \n";
+    }
+
+    (*log) << "#     x3";
+    (*log) << "           umean         vmean         wmean         pmean";
+    (*log) << "         urms          vrms          wrms";
+    (*log) << "        u'v'          u'w'          v'w'          prms   \n";
+
+    (*log) << scientific;
+    for(unsigned i=0; i<x3coordinates_->size(); ++i)
+    {
+      double x3u    = (*x3sumu_)[i]/numsamp_;
+      double x3v    = (*x3sumv_)[i]/numsamp_;
+      double x3w    = (*x3sumw_)[i]/numsamp_;
+      double x3p    = (*x3sump_)[i]/numsamp_;
+
+      // factor 10 for better depiction
+      double x3urms = 10*sqrt((*x3sumsqu_)[i]/numsamp_-x3u*x3u);
+      double x3vrms = 10*sqrt((*x3sumsqv_)[i]/numsamp_-x3v*x3v);
+      double x3wrms = 10*sqrt((*x3sumsqw_)[i]/numsamp_-x3w*x3w);
+      double x3prms = 10*sqrt((*x3sumsqp_)[i]/numsamp_-x3p*x3p);
+
+      // factor 500 for better depiction
+      double x3uv   = 500*((*x3sumuv_)[i]/numsamp_-x3u*x3v);
+      double x3uw   = 500*((*x3sumuw_)[i]/numsamp_-x3u*x3w);
+      double x3vw   = 500*((*x3sumvw_)[i]/numsamp_-x3v*x3w);
+
+      (*log) <<  " "  << setw(11) << setprecision(4) << (*x3coordinates_)[i];
+      (*log) << "   " << setw(11) << setprecision(4) << x3u;
+      (*log) << "   " << setw(11) << setprecision(4) << x3v;
+      (*log) << "   " << setw(11) << setprecision(4) << x3w;
+      (*log) << "   " << setw(11) << setprecision(4) << x3p;
+      (*log) << "   " << setw(11) << setprecision(4) << x3urms;
+      (*log) << "   " << setw(11) << setprecision(4) << x3vrms;
+      (*log) << "   " << setw(11) << setprecision(4) << x3wrms;
+      (*log) << "   " << setw(11) << setprecision(4) << x3uv;
+      (*log) << "   " << setw(11) << setprecision(4) << x3uw;
+      (*log) << "   " << setw(11) << setprecision(4) << x3vw;
+      (*log) << "   " << setw(11) << setprecision(4) << x3prms;
       (*log) << "   \n";
     }
     log->flush();
@@ -679,6 +909,22 @@ void TurbulenceStatisticsLdc::ClearStatistics()
     (*x2sumuw_)[i] =0;
     (*x2sumvw_)[i] =0;
     (*x2sumsqp_)[i]=0;
+  }
+
+  for(unsigned i=0; i<x3coordinates_->size(); ++i)
+  {
+    (*x3sumu_)[i]=0;
+    (*x3sumv_)[i]=0;
+    (*x3sumw_)[i]=0;
+    (*x3sump_)[i]=0;
+
+    (*x3sumsqu_)[i]=0;
+    (*x3sumsqv_)[i]=0;
+    (*x3sumsqw_)[i]=0;
+    (*x3sumuv_)[i] =0;
+    (*x3sumuw_)[i] =0;
+    (*x3sumvw_)[i] =0;
+    (*x3sumsqp_)[i]=0;
   }
 
   return;

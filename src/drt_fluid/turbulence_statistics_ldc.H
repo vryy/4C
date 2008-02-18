@@ -5,7 +5,7 @@
 
 
 <pre>
-o Create sets for centerlines in x1- and x2-direction
+o Create sets for centerlines in x1-, x2- and x3-direction
   (Construction based on a round robin communication pattern)
 
 o loop nodes closest to centerlines
@@ -65,7 +65,7 @@ public:
   \brief Standard Constructor (public)
 
   <pre>
-  o Create sets for centerlines in x1- and x2-direction
+  o Create sets for centerlines in x1-, x2- and x3-direction
 
   o Allocate distributed vector for squares
   </pre>
@@ -152,44 +152,56 @@ private:
   RefCountPtr<Epetra_Vector>       togglew_;
   RefCountPtr<Epetra_Vector>       togglep_;
 
-  //! the coordinates of the centerlines in x1- and x2-direction
+  //! the coordinates of the centerlines in x1-, x2- and x3-direction
   RefCountPtr<vector<double> >     x1coordinates_;
   RefCountPtr<vector<double> >     x2coordinates_;
+  RefCountPtr<vector<double> >     x3coordinates_;
 
-  //! sum over u (over the centerlines in x1- and x2-direction)
+  //! sum over u (over the centerlines in x1-, x2- and x3-direction)
   RefCountPtr<vector<double> >     x1sumu_;
   RefCountPtr<vector<double> >     x2sumu_;
-  //! sum over v (over the centerlines in x1- and x2-direction)
+  RefCountPtr<vector<double> >     x3sumu_;
+  //! sum over v (over the centerlines in x1-, x2- and x3-direction)
   RefCountPtr<vector<double> >     x1sumv_;
   RefCountPtr<vector<double> >     x2sumv_;
-  //! sum over w (over the centerlines in x1- and x2-direction)
+  RefCountPtr<vector<double> >     x3sumv_;
+  //! sum over w (over the centerlines in x1-, x2- and x3-direction)
   RefCountPtr<vector<double> >     x1sumw_; 
   RefCountPtr<vector<double> >     x2sumw_;
-  //! sum over p (over the centerlines in x1- and x2-direction)
+  RefCountPtr<vector<double> >     x3sumw_;
+  //! sum over p (over the centerlines in x1-, x2- and x3-direction)
   RefCountPtr<vector<double> >     x1sump_;
   RefCountPtr<vector<double> >     x2sump_;
+  RefCountPtr<vector<double> >     x3sump_;
 
-  //! sum over u^2 (over the centerlines in x1- and x2-direction)
+  //! sum over u^2 (over the centerlines in x1-, x2- and x3-direction)
   RefCountPtr<vector<double> >     x1sumsqu_;
   RefCountPtr<vector<double> >     x2sumsqu_;
-  //! sum over v^2 (over the centerlines in x1- and x2-direction)
+  RefCountPtr<vector<double> >     x3sumsqu_;
+  //! sum over v^2 (over the centerlines in x1-, x2- and x3-direction)
   RefCountPtr<vector<double> >     x1sumsqv_;
   RefCountPtr<vector<double> >     x2sumsqv_;
-  //! sum over w^2 (over the centerlines in x1- and x2-direction)
+  RefCountPtr<vector<double> >     x3sumsqv_;
+  //! sum over w^2 (over the centerlines in x1-, x2- and x3-direction)
   RefCountPtr<vector<double> >     x1sumsqw_;
   RefCountPtr<vector<double> >     x2sumsqw_;
-  //! sum over uv (over the centerlines in x1- and x2-direction)
+  RefCountPtr<vector<double> >     x3sumsqw_;
+  //! sum over uv (over the centerlines in x1-, x2- and x3-direction)
   RefCountPtr<vector<double> >     x1sumuv_;
   RefCountPtr<vector<double> >     x2sumuv_;
-  //! sum over uw (over the centerlines in x1- and x2-direction)
+  RefCountPtr<vector<double> >     x3sumuv_;
+  //! sum over uw (over the centerlines in x1-, x2- and x3-direction)
   RefCountPtr<vector<double> >     x1sumuw_;
   RefCountPtr<vector<double> >     x2sumuw_;
-  //! sum over vw (over the centerlines in x1- and x2-direction)
+  RefCountPtr<vector<double> >     x3sumuw_;
+  //! sum over vw (over the centerlines in x1-, x2- and x3-direction)
   RefCountPtr<vector<double> >     x1sumvw_;
   RefCountPtr<vector<double> >     x2sumvw_;
-  //! sum over p^2 (over the centerlines in x1- and x2-direction)
+  RefCountPtr<vector<double> >     x3sumvw_;
+  //! sum over p^2 (over the centerlines in x1-, x2- and x3-direction)
   RefCountPtr<vector<double> >     x1sumsqp_;
   RefCountPtr<vector<double> >     x2sumsqp_;
+  RefCountPtr<vector<double> >     x3sumsqp_;
 
 };
 
