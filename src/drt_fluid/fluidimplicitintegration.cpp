@@ -920,7 +920,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
       // get cpu time
       tcpu=ds_cputime();
 
-      solver_.Solve(sysmat_->Matrix(),incvel_,residual_,true,itnum==1);
+      solver_.Solve(sysmat_->EpetraMatrix(),incvel_,residual_,true,itnum==1);
 
       // end time measurement for application of dirichlet conditions
       tm5_ref_=null;
@@ -1041,7 +1041,7 @@ void FluidImplicitTimeInt::LinearSolve()
   /* possibly we could accelerate it if the reset variable
      is true only every fifth step, i.e. set the last argument to false
      for 4 of 5 timesteps or so. */
-  solver_.Solve(sysmat_->Matrix(),velnp_,rhs_,true,true);
+  solver_.Solve(sysmat_->EpetraMatrix(),velnp_,rhs_,true,true);
 
   // end time measurement for application of solver call
   tm5_ref_=null;
@@ -2110,7 +2110,7 @@ void FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> rel
   LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,relax,dirichtoggle_);
 
   //-------solve for residual displacements to correct incremental displacements
-  solver_.Solve(sysmat_->Matrix(),incvel_,residual_,true,true);
+  solver_.Solve(sysmat_->EpetraMatrix(),incvel_,residual_,true,true);
 
   // and now we need the reaction forces
 

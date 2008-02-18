@@ -14,51 +14,6 @@
 #include "linalg_mapextractor.H"
 #include "drt_dserror.H"
 
-/*
-
-- Koennten wir Epetra_Operator implementieren?
-  Was ist, wenn jemand sowas wie matrixfree operator an die Loeser geben will?
-
-- Platin-style-doxygen Dokumentation notwendig (inkl aller Parameter und
-  Beschreibung, wie das mit der Maske und den Dirichlet-RBs en detail funktioniert)
-
-- Umbenennungen: SparseMatrix BaseSparseMatrix BlockSparseMatrix etc.
-                 mask_ ->graph_
-                 realdirichlet -> irgendwas mit Aussagekraft
-
-- support          A*x
-                   A*B
-                   A*B*C
-                   Transpose
-                   Split (the old way)
-                   MergeIntoOne (fuer die Loeser)?
-
-- move LINALG functions to class wherever reasonable, remove
-  respective LINALG functions.
-
-- change remaining LINALG functions to directly support these new classes
-
-- be much more explicit on treatment of mask, how do I get rid of it if I don't want it?
-  How can I explicitly flag the behavior I want
-  Be very explicit on whether to use old mask or not
-  Do not mix notion of how to handle Dirichlet with notion of how to handle graph
-  (the first is a consequence of the second, isn't it?)
-
-- ColBlock method is spooky
-
-- For keeping learning curves up and tribute to (important) simplicity:
-  Absolutely no templates here
-
-- Absolutely no mixing of DRT objects and LINALG algebra objects,
-  which means if you want to have a condition-style system matrix, you can have
-  it in your own sandbox, but not in LINALG (and can not make it be specially
-  supported by DRT::Discretization etc.)
-
-- give excessive seminar on all this so everybody understands it, answer all
-  questions by young chair-members in the following.
-  (I'm drowning in questions about all sorts of stuff)
-
-*/
 
 
 namespace LINALG
@@ -66,7 +21,7 @@ namespace LINALG
   // forward delcarations:
   class BlockSparseMatrixBase;
   template <class Strategy> class BlockSparseMatrix;
-  
+
 
   /// Linear operator interface enhanced for use in FE simulations
   /*!
@@ -252,7 +207,7 @@ namespace LINALG
     virtual Teuchos::RCP<Epetra_Operator> EpetraOperator() { return sysmat_; }
 
     /// return the internal Epetra_CrsMatrix (you should not need this!)
-    Teuchos::RCP<Epetra_CrsMatrix>& Matrix() { return sysmat_; }
+    Teuchos::RCP<Epetra_CrsMatrix>& EpetraMatrix() { return sysmat_; }
 
     /** \name FE methods */
     //@{
@@ -449,21 +404,21 @@ namespace LINALG
     /*!
       Split given matrix 'this' into 2x2 block matrix and
       return result as templated BlockSparseMatrix.
-      The MultiMapExtractor's provided have to be 2 and 2 maps, 
+      The MultiMapExtractor's provided have to be 2 and 2 maps,
       otherwise this method will throw an error.
-    
+
       \note This is an expensive operation!
-      
+
       \note This method will NOT call Complete() on the output
             BlockSparseMatrix.
      */
-    template <class Strategy> Teuchos::RCP<LINALG::BlockSparseMatrix<Strategy> > 
+    template <class Strategy> Teuchos::RCP<LINALG::BlockSparseMatrix<Strategy> >
       Split(const MultiMapExtractor& domainmaps,const MultiMapExtractor& rangemaps);
 
     //@}
 
   private:
-  
+
     /// Split matrix in 2x2 blocks, where main diagonal blocks have to be square
     /*!
        Used by public Split, does not call Complete() on output matrix.
@@ -511,7 +466,7 @@ namespace LINALG
     SparseMatrix& Matrix(int r, int c) { return blocks_[r*Cols()+c]; }
 
     inline const SparseMatrix& operator()(int r, int c) const { return Matrix(r,c);}
-    
+
     inline SparseMatrix& operator()(int r, int c) { return Matrix(r,c);}
 
     void Zero();
@@ -667,7 +622,7 @@ namespace LINALG
     void Complete();
 
   private:
-  
+
     /// my block matrix base
     BlockSparseMatrixBase& mat_;
 
@@ -689,12 +644,12 @@ template <class Strategy> Teuchos::RCP<LINALG::BlockSparseMatrix<Strategy> >
 LINALG::SparseMatrix::Split(const MultiMapExtractor& domainmaps,
                             const MultiMapExtractor& rangemaps)
 {
-  Teuchos::RCP<BlockSparseMatrix<Strategy> > blockA = 
+  Teuchos::RCP<BlockSparseMatrix<Strategy> > blockA =
     rcp(new LINALG::BlockSparseMatrix<Strategy>(domainmaps,rangemaps));
-    
+
   if (domainmaps.NumMaps()==2 && rangemaps.NumMaps()==2)
   {
-    const int npr = Matrix()->MaxNumEntries();
+    const int npr = EpetraMatrix()->MaxNumEntries();
     (*blockA)(0,0).Setup(*rangemaps.Map(0),npr);
     (*blockA)(0,1).Setup(*rangemaps.Map(0),npr);
     (*blockA)(1,0).Setup(*rangemaps.Map(1),npr);
@@ -702,9 +657,9 @@ LINALG::SparseMatrix::Split(const MultiMapExtractor& domainmaps,
     this->Split2x2(*blockA);
     return blockA;
   }
-  else 
+  else
     dserror("Currently can only split in 2x2");
-    
+
   return Teuchos::null;
 }
 
@@ -715,7 +670,7 @@ LINALG::BlockSparseMatrix<Strategy>::BlockSparseMatrix(const MultiMapExtractor& 
                                                        const MultiMapExtractor& rangemaps)
   : BlockSparseMatrixBase(domainmaps,rangemaps),
     // this was necessary, otherwise ambigous with copy constructor of Strategy
-    Strategy((LINALG::BlockSparseMatrixBase&)(*this)) 
+    Strategy((LINALG::BlockSparseMatrixBase&)(*this))
 {
 }
 
@@ -752,7 +707,7 @@ void LINALG::BlockSparseMatrix<Strategy>::Assemble(const Epetra_SerialDenseMatri
       double val = Aele(lrow,lcol);
       int cgid = lmcol[lcol];
       int cblock = strategy->ColBlock(rblock,lcol,cgid);
-      
+
       strategy->Assemble(val,lrow,rgid,rblock,lcol,cgid,cblock);
     }
   }

@@ -501,7 +501,7 @@ public:
   virtual Epetra_CrsMatrix* getJacobian()
   {
     if (integrator_.stiff_==null) dserror("integrator_.stiff_ = null!");
-    return &*integrator_.stiff_->Matrix();
+    return &*integrator_.stiff_->EpetraMatrix();
   }
 
   /*!
@@ -511,7 +511,7 @@ public:
   virtual const Epetra_CrsGraph* getGraph()
   {
     if (integrator_.stiff_==null) dserror("integrator_.stiff_ = null!");
-    return &(integrator_.stiff_->Matrix()->Graph());
+    return &(integrator_.stiff_->EpetraMatrix()->Graph());
   }
 
   /*!
@@ -521,7 +521,7 @@ public:
   virtual const Epetra_CrsGraph* getModifiedGraph()
   {
     if (integrator_.stiff_==null) dserror("integrator_.stiff_ = null!");
-    return &(integrator_.stiff_->Matrix()->Graph());
+    return &(integrator_.stiff_->EpetraMatrix()->Graph());
   }
 
   /*!

@@ -387,9 +387,9 @@ void MicroStatic::FullNewton()
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
     if (!numiter)
-      solver_->Solve(stiff_->Matrix(),disi_,fresm_,true,true);
+      solver_->Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,true);
     else
-      solver_->Solve(stiff_->Matrix(),disi_,fresm_,true,false);
+      solver_->Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,false);
 
     //---------------------------------- update mid configuration values
     // displacements
@@ -1228,7 +1228,7 @@ void MicroStatic::StaticHomogenization(Epetra_SerialDenseVector* stress,
 
   stiff_->ApplyDirichlet(dirichtoggle_);
 
-  Epetra_LinearProblem linprob(&(*stiff_->Matrix()), &x, &y);
+  Epetra_LinearProblem linprob(&(*stiff_->EpetraMatrix()), &x, &y);
   int error=linprob.CheckInput();
   if (error)
     dserror("Input for linear problem inconsistent");

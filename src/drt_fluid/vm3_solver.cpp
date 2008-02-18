@@ -74,7 +74,7 @@ bool VM3_Solver::Compute(RCP<LINALG::SparseMatrix> Msv)
 
   // get plain aggregation Ptent
   RCP<Epetra_CrsMatrix> crsPtent;
-  GetPtent(*Msv->Matrix(),mlparams_,nullspace,crsPtent);
+  GetPtent(*Msv->EpetraMatrix(),mlparams_,nullspace,crsPtent);
   LINALG::SparseMatrix Ptent(crsPtent);
 
   // compute scale-separation matrix: S = I - (Ptent*Ptent^T)

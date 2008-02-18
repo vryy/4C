@@ -319,7 +319,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Structure::RelaxationSolve(Teuchos::RCP<Epetra_
 
   //--------------------------------------------------- solve for disi
   // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
-  solver_->Solve(stiff_->Matrix(),disi_,fextm_,true,true);
+  solver_->Solve(stiff_->EpetraMatrix(),disi_,fextm_,true,true);
 
   // we are just interested in the incremental interface displacements
   Teuchos::RCP<Epetra_Vector> idisi = interface_.ExtractCondVector(disi_);

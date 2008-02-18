@@ -1294,7 +1294,7 @@ void FluidGenAlphaIntegration::GenAlphaCalcIncrement()
     initsolver = true;
   }
   increment_->PutScalar(0.0);
-  solver_.Solve(sysmat_->Matrix(),increment_,residual_,true,initsolver);
+  solver_.Solve(sysmat_->EpetraMatrix(),increment_,residual_,true,initsolver);
 
   return;
 } // FluidGenAlphaIntegration::GenAlphaCalcIncrement

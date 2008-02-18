@@ -608,7 +608,7 @@ void CondifImplicitTimeInt::Solve(
     else
     // end second encapsulation of AVMS solution approach
 #endif
-      solver_.Solve(sysmat_->Matrix(),phinp_,residual_,true,true);
+      solver_.Solve(sysmat_->EpetraMatrix(),phinp_,residual_,true,true);
 
     // end time measurement for solver call
     tm5_ref_=null;

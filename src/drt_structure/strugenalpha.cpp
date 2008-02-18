@@ -231,7 +231,7 @@ maxentriesperrow_(81)
     rhs->Update(-1.0,*fint_,1.0,*fext_,-1.0);
     Epetra_Vector rhscopy(*rhs);
     rhs->Multiply(1.0,*invtoggle_,rhscopy,0.0);
-    solver.Solve(mass_->Matrix(),acc_,rhs,true,true);
+    solver.Solve(mass_->EpetraMatrix(),acc_,rhs,true,true);
   }
 
   //------------------------------------------------------ time step index
@@ -933,9 +933,9 @@ void StruGenAlpha::FullNewton()
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
     if (!numiter)
-      solver_.Solve(stiff_->Matrix(),disi_,fresm_,true,true);
+      solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,true);
     else
-      solver_.Solve(stiff_->Matrix(),disi_,fresm_,true,false);
+      solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,false);
 
     //---------------------------------- update mid configuration values
     // displacements
@@ -1222,11 +1222,11 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 	  	  // Solve K . IncD = -R  ===>  IncD_{n+1}
 	  	  if (numiter_uzawa==0 and numiter==0)
 	  	  {
-                    solver_.Solve(stiff_->Matrix(),disi_,fresmcopy,true,true);
+                    solver_.Solve(stiff_->EpetraMatrix(),disi_,fresmcopy,true,true);
 	  	  }
 	  	  else
 	  	  {
-                    solver_.Solve(stiff_->Matrix(),disi_,fresmcopy,true,false);
+                    solver_.Solve(stiff_->EpetraMatrix(),disi_,fresmcopy,true,false);
 	  	  }
 
 	  	  //compute Lagrange multiplier increment
@@ -1487,9 +1487,9 @@ void StruGenAlpha::ModifiedNewton()
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
     if (!numiter)
-      solver_.Solve(stiff_->Matrix(),disi_,fresm_,true,true);
+      solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,true);
     else
-      solver_.Solve(stiff_->Matrix(),disi_,fresm_,false,false);
+      solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,false,false);
 
     //---------------------------------- update mid configuration values
     // displacements
@@ -2209,9 +2209,9 @@ void StruGenAlpha::PTC()
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
     if (!numiter)
-      solver_.Solve(stiff_->Matrix(),disi_,fresm_,true,true);
+      solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,true);
     else
-      solver_.Solve(stiff_->Matrix(),disi_,fresm_,true,false);
+      solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,false);
 
     //---------------------------------- update mid configuration values
     // displacements

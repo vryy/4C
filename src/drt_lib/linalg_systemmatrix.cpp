@@ -574,11 +574,11 @@ void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase)
 {
   if (Abase.Rows() != 2 || Abase.Cols() != 2) dserror("Can only split in 2x2 system");
   if (!Filled()) dserror("SparsMatrix must be filled");
-  Teuchos::RCP<Epetra_CrsMatrix> A   = Matrix();
-  Teuchos::RCP<Epetra_CrsMatrix> A11 = Abase(0,0).Matrix();
-  Teuchos::RCP<Epetra_CrsMatrix> A12 = Abase(0,1).Matrix();
-  Teuchos::RCP<Epetra_CrsMatrix> A21 = Abase(1,0).Matrix();
-  Teuchos::RCP<Epetra_CrsMatrix> A22 = Abase(1,1).Matrix();
+  Teuchos::RCP<Epetra_CrsMatrix> A   = EpetraMatrix();
+  Teuchos::RCP<Epetra_CrsMatrix> A11 = Abase(0,0).EpetraMatrix();
+  Teuchos::RCP<Epetra_CrsMatrix> A12 = Abase(0,1).EpetraMatrix();
+  Teuchos::RCP<Epetra_CrsMatrix> A21 = Abase(1,0).EpetraMatrix();
+  Teuchos::RCP<Epetra_CrsMatrix> A22 = Abase(1,1).EpetraMatrix();
   if (A11->Filled() || A12->Filled() || A21->Filled() || A22->Filled())
     dserror("Block matrix may not be filled on input");
   const Epetra_Comm& Comm    = Abase.Comm();
@@ -586,7 +586,7 @@ void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase)
   const Epetra_Map&  A11dmap = A11->DomainMap();
   const Epetra_Map&  A22rmap = A22->RangeMap();
   const Epetra_Map&  A22dmap = A22->DomainMap();
-  
+
   //----------------------------- create a parallel redundant map of A11domainmap
   map<int,int> a11gmap;
   {
@@ -615,7 +615,7 @@ void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase)
       a11gmap[a11global[i]] = 1;
     a11global.clear();
   }
-  
+
   vector<int>    gcindices(A->MaxNumEntries());
   vector<double> gvalues(A->MaxNumEntries());
 
@@ -645,10 +645,10 @@ void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase)
         }
         err = A11->InsertGlobalValues(grid,count,&gvalues[0],&gcindices[0]);
         if (err<0) dserror("SparseMatrix::Split2x2: A->InsertGlobalValues returned %i",err);
-      } 
+      }
     }
   }
-  
+
   //--------------------------------------------------- create matrix A22
   if (A22rmap.NumGlobalElements()>0 && A22dmap.NumGlobalElements()>0)
   {
@@ -676,7 +676,7 @@ void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase)
       if (err<0) dserror("SparseMatrix::Split2x2: A->InsertGlobalValues returned %i",err);
     }
   }
-    
+
 
   //---------------------------------------------------- create matrix A12
   if (A11rmap.NumGlobalElements()>0 && A22dmap.NumGlobalElements()>0)
@@ -736,13 +736,13 @@ void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase)
 
   // Do not complete BlockMatrix
   return;
-}                  
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 ostream& operator << (ostream& os, const LINALG::SparseMatrix& mat)
 {
-  os << *(const_cast<LINALG::SparseMatrix&>(mat).Matrix());
+  os << *(const_cast<LINALG::SparseMatrix&>(mat).EpetraMatrix());
   return os;
 }
 
@@ -960,7 +960,7 @@ ostream& operator << (ostream& os, const LINALG::BlockSparseMatrixBase& mat)
   for (int i=0; i<mat.Rows(); ++i)
     for (int j=0; j<mat.Cols(); ++j)
     {
-      if (mat.Comm().MyPID()==0) 
+      if (mat.Comm().MyPID()==0)
         os << "====================================Matrix block (" << i << "," << j << "):" << endl;
       fflush(stdout);
       os << mat(i,j);

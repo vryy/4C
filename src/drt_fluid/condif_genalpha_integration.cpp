@@ -442,7 +442,7 @@ void CondifGenAlphaIntegration::DoGenAlphaPredictorCorrector(
   tcpu=ds_cputime();
 
   increment_->PutScalar(0.0);
-  solver_.Solve(sysmat_->Matrix(),increment_,residual_,true,true);
+  solver_.Solve(sysmat_->EpetraMatrix(),increment_,residual_,true,true);
 
   // end time measurement for solver call
   tm5_ref_=null;

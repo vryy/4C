@@ -431,11 +431,11 @@ void stru_static_drt()
 	      	// Solve K . IncD = -R  ===>  IncD_{n+1}
 	      	if (numiter==0)
 	      	{
-                  solver.Solve(stiff_mat->Matrix(),disi,fresm,true,true);
+                  solver.Solve(stiff_mat->EpetraMatrix(),disi,fresm,true,true);
 	      	}
 	      	else
 	      	{
-                  solver.Solve(stiff_mat->Matrix(),disi,fresm,true,false);
+                  solver.Solve(stiff_mat->EpetraMatrix(),disi,fresm,true,false);
 	      	}
       }
       else
@@ -495,11 +495,11 @@ void stru_static_drt()
 	      	  // Solve K . IncD = -R  ===>  IncD_{n+1}
 	      	  if (numiter_uzawa==0&&numiter==0)
 	      	  {
-                    solver.Solve(stiff_mat->Matrix(),disi,fresmcopy,true,true);
+                    solver.Solve(stiff_mat->EpetraMatrix(),disi,fresmcopy,true,true);
 	      	  }
 	      	  else
 	      	  {
-                    solver.Solve(stiff_mat->Matrix(),disi,fresmcopy,true,false);
+                    solver.Solve(stiff_mat->EpetraMatrix(),disi,fresmcopy,true,false);
 	      	  }
 
 	      	  //compute lagrange multiplier increments

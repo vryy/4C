@@ -259,7 +259,7 @@ void stru_genalpha_drt()
     rhs->Update(-1.0,*fint,1.0,*fext,-1.0);
     Epetra_Vector rhscopy(*rhs);
     rhs->Multiply(1.0,*invtoggle,rhscopy,0.0);
-    solver.Solve(mass_mat->Matrix(),acc,rhs,true,true);
+    solver.Solve(mass_mat->EpetraMatrix(),acc,rhs,true,true);
   }
 
   //------------------------------------------ time integration parameters
@@ -439,11 +439,11 @@ void stru_genalpha_drt()
       // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
       if (numiter==0)
       {
-        solver.Solve(stiff_mat->Matrix(),disi,fresm,true,true);
+        solver.Solve(stiff_mat->EpetraMatrix(),disi,fresm,true,true);
       }
       else
       {
-        solver.Solve(stiff_mat->Matrix(),disi,fresm,true,false);
+        solver.Solve(stiff_mat->EpetraMatrix(),disi,fresm,true,false);
       }
 
       //---------------------------------- update mid configuration values

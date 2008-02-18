@@ -424,7 +424,7 @@ void ContactStruGenAlpha::FullNewton()
     	contactmanager_->SetState("displacement",dism_);
 
     	// (almost) all contact stuff is done here!
-    	contactmanager_->Evaluate(stiff_->Matrix(),fresm_);
+    	contactmanager_->Evaluate(stiff_->EpetraMatrix(),fresm_);
     }
 
     //----------------------- apply dirichlet BCs to system of equations
@@ -434,9 +434,9 @@ void ContactStruGenAlpha::FullNewton()
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
     if (!numiter)
-      solver_.Solve(stiff_->Matrix(),disi_,fresm_,true,true);
+      solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,true);
     else
-      solver_.Solve(stiff_->Matrix(),disi_,fresm_,true,false);
+      solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,false);
 
     //------------------------------------ transform disi due to contact
     {

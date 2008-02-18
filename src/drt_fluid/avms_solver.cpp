@@ -68,7 +68,7 @@ bool AVMS_Solver::Compute(RCP<LINALG::SparseMatrix> Aforfine,
   RCP<Epetra_CrsMatrix>   crsPtent;
   RCP<Epetra_MultiVector> nextNS;
   int offset = Aforcoarse->RangeMap().MaxAllGID() + 1;
-  GetPtent(*Aforcoarse->Matrix(),mlparams_,nullspace,crsPtent,nextNS,offset);
+  GetPtent(*Aforcoarse->EpetraMatrix(),mlparams_,nullspace,crsPtent,nextNS,offset);
   RCP<LINALG::SparseMatrix> Ptent = Teuchos::rcp(new LINALG::SparseMatrix(crsPtent));
 
   // make K12 = P^T A
@@ -152,7 +152,7 @@ int AVMS_Solver::Solve(const Epetra_Vector& B, Epetra_Vector& X,
   {
     RCP<ParameterList> rcpparams = rcp( new ParameterList(params));
     LINALG::Solver solver(rcpparams,Acombined_->Comm(),NULL);
-    solver.Solve(Acombined_->Matrix(),x,b,true,true);
+    solver.Solve(Acombined_->EpetraMatrix(),x,b,true,true);
     b = null;
   }
 
