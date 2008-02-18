@@ -17,7 +17,6 @@ Maintainer: Ulrich Kuettler
 #define FLUIDRESULTTEST_H
 
 #ifdef CCADISCRET
-#ifdef RESULTTEST
 
 #include "../drt_lib/drt_resulttest.H"
 #include "fluidimplicitintegration.H"
@@ -64,7 +63,6 @@ private:
 };
 
 
-#endif
 #endif /* CCADISCRET       */
 
 #endif

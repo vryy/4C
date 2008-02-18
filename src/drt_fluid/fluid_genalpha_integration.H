@@ -84,9 +84,7 @@ using namespace Teuchos;
 
 class FluidGenAlphaIntegration
 {
-#ifdef RESULTTEST
   friend class FluidResultTest;
-#endif
 
 public:
 

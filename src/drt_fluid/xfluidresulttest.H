@@ -17,7 +17,6 @@ Maintainer: Axel Gerstenberger
 #define XFLUIDRESULTTEST_H
 
 #ifdef CCADISCRET
-#ifdef RESULTTEST
 
 #include "../drt_lib/drt_resulttest.H"
 #include "xfluidimplicitintegration.H"
@@ -58,7 +57,6 @@ private:
 };
 
 
-#endif
 #endif /* CCADISCRET       */
 
 #endif

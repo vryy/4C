@@ -17,7 +17,6 @@ Maintainer: Ulrich Kuettler
 #define DRT_RESULTTEST_H
 
 #ifdef CCADISCRET
-#ifdef RESULTTEST
 
 #include <Epetra_Comm.h>
 #include <Teuchos_RefCountPtr.hpp>
@@ -54,10 +53,10 @@ namespace DRT
   class ResultTest
   {
   public:
-    
+
     /// not yet doxumented
     ResultTest();
-    
+
     /// not yet doxumented
     virtual ~ResultTest();
 
@@ -118,7 +117,6 @@ namespace DRT
 
 }
 
-#endif
 #endif /* CCADISCRET       */
 
 #endif

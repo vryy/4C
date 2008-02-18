@@ -1,6 +1,5 @@
 
 #ifdef CCADISCRET
-#ifdef RESULTTEST
 
 #include "drt_resulttest.H"
 
@@ -184,5 +183,4 @@ void ResultTestManager::TestAll()
 }
 
 
-#endif
 #endif /* CCADISCRET       */

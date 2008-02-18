@@ -14,7 +14,6 @@ Maintainer: Axel Gerstenberger
 /*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
-#ifdef RESULTTEST
 
 #include <string>
 
@@ -65,7 +64,7 @@ void XFluidResultTest::TestNode(RESULTDESCR* res, int& nerr, int& test_count)
 
     const Epetra_BlockMap& velnpmap = mysol_->Map();
 
-    
+
     // TODO: use the Dofmanager here
     const string position = res->position;
     if (position=="velx")
@@ -114,5 +113,4 @@ bool XFluidResultTest::Match(RESULTDESCR* res)
 }
 
 
-#endif
 #endif /* CCADISCRET       */

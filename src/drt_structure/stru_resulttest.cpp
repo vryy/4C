@@ -14,7 +14,6 @@ Maintainer: Moritz Frenzel
 /*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
-#ifdef RESULTTEST
 
 #include <string>
 
@@ -73,13 +72,13 @@ void StruResultTest::TestNode(_RESULTDESCR* res, int& nerr, int& test_count)
     const Epetra_BlockMap& velnpmap = mysol_->Map();
 
     string position = res->position;
-    
+
     //verbose output
     cout << "TESTING STRUCTURE RESULTS with StruResultTest::TestNode(..)" << endl;
-    
+
     if (position=="dispx")
     {
-      result = (*mysol_)[velnpmap.LID(stru_dis_->Dof(actnode,0))];      
+      result = (*mysol_)[velnpmap.LID(stru_dis_->Dof(actnode,0))];
     }
   	else if (position=="dispy")
     {
@@ -97,7 +96,7 @@ void StruResultTest::TestNode(_RESULTDESCR* res, int& nerr, int& test_count)
 	//verbose output
     cout.precision(18);
 	  cout << "RESULT IS " << result << endl;
-    
+
     nerr += CompareValues(result, res);
     test_count++;
   }
@@ -108,11 +107,10 @@ void StruResultTest::TestNode(_RESULTDESCR* res, int& nerr, int& test_count)
 /*----------------------------------------------------------------------*/
 bool StruResultTest::Match(_RESULTDESCR* res)
 {
-  /* res.field is a enum of type _FIELDTYP and can be found in headers/enums.h 
+  /* res.field is a enum of type _FIELDTYP and can be found in headers/enums.h
    */
   return res->field==structure;
 }
 
 
-#endif
 #endif /* CCADISCRET       */

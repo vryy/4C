@@ -67,9 +67,7 @@ using namespace Teuchos;
 */
 class XFluidImplicitTimeInt
 {
-#ifdef RESULTTEST
   friend class XFluidResultTest;
-#endif
 
 public:
 

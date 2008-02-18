@@ -14,7 +14,6 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
-#ifdef RESULTTEST
 
 #include <string>
 
@@ -124,5 +123,4 @@ bool FluidResultTest::Match(RESULTDESCR* res)
 }
 
 
-#endif
 #endif /* CCADISCRET       */

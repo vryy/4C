@@ -123,9 +123,7 @@ public:
  */
 class AleLinear : public Ale
 {
-#ifdef RESULTTEST
   friend class AleResultTest;
-#endif
 
 public:
 

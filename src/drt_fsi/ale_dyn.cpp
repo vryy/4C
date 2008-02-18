@@ -110,12 +110,10 @@ void dyn_ale_drt()
 
   ale.Integrate();
 
-#ifdef RESULTTEST
   // do the result test
   DRT::ResultTestManager testmanager(actdis->Comm());
   testmanager.AddFieldTest(rcp(new FSI::AleResultTest(ale)));
   testmanager.TestAll();
-#endif
 }
 
 

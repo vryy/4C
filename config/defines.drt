@@ -40,7 +40,6 @@ CCADISCRET           # use new baci discretization subsystem DRT
 
 #   tools
 #  =======
-# RESULTTEST         # result testing
 # PERF               # detailed time measurement (overhead!!!)
 
 #   fancy stuff

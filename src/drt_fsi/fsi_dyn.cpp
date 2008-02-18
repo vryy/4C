@@ -329,11 +329,9 @@ void fsi_ale_drt()
 
     fsi->Timeloop(fsi);
 
-#ifdef RESULTTEST
     DRT::ResultTestManager testmanager(comm);
     testmanager.AddFieldTest(fsi->FluidField().CreateFieldTest());
     testmanager.TestAll();
-#endif
   }
   else
   {
@@ -369,11 +367,9 @@ void xfsi_drt()
 
   fsi->Timeloop(fsi);
 
-#ifdef RESULTTEST
   DRT::ResultTestManager testmanager(comm);
   testmanager.AddFieldTest(fsi->FluidField().CreateFieldTest());
   testmanager.TestAll();
-#endif
 
   Teuchos::TimeMonitor::summarize();
 }

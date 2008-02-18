@@ -6,7 +6,7 @@
 
      o one-step-theta time-integration scheme
 
-     o two-step BDF2 time-integration scheme 
+     o two-step BDF2 time-integration scheme
        (with potential one-step-theta start algorithm)
 
      o generalized-alpha time-integration scheme
@@ -181,7 +181,7 @@ void dyn_fluid_drt()
   fluidtimeparams.set<double>          ("tolerance for nonlin iter" ,fdyn.get<double>("CONVTOL"));
   // set convergence check
   fluidtimeparams.set<string>          ("CONVCHECK"  ,fdyn.get<string>("CONVCHECK"));
-  
+
   // ----------------------------------------------- restart and output
   // restart
   fluidtimeparams.set                  ("write restart every"       ,fdyn.get<int>("RESTARTEVRY"));
@@ -268,11 +268,9 @@ void dyn_fluid_drt()
     fluidimplicit.Integrate();
 
     // do result test if required
-#ifdef RESULTTEST
     DRT::ResultTestManager testmanager(actdis->Comm());
     testmanager.AddFieldTest(rcp(new FluidResultTest(fluidimplicit)));
     testmanager.TestAll();
-#endif
   }
   else if (iop == timeint_gen_alpha)
   {
@@ -319,11 +317,9 @@ void dyn_fluid_drt()
     genalphaint.GenAlphaIntegrateTo(fdyn.get<int>("NUMSTEP"),fdyn.get<double>("MAXTIME"));
 
     // do result test if required
-#ifdef RESULTTEST
     DRT::ResultTestManager testmanager(actdis->Comm());
     testmanager.AddFieldTest(rcp(new FluidResultTest(genalphaint)));
     testmanager.TestAll();
-#endif
 
   }
   else

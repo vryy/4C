@@ -95,10 +95,8 @@ void ntainp_ccadiscret()
   // Also read time and space functions and local coord systems
   problem->ReadConditions(reader);
 
-#ifdef RESULTTEST
   /*---------------------------------------- input of result descriptions */
   inp_resultdescr();
-#endif
 
   // all reading is done at this point!
 
