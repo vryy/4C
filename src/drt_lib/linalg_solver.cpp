@@ -20,6 +20,7 @@ Maintainer: Michael Gee
 
 #include "linalg_solver.H"
 #include "linalg_mlapi_operator.H"
+#include "simpler_operator.H"
 
 extern "C"
 {
@@ -383,16 +384,33 @@ void LINALG::Solver::Solve_aztec(const bool reset)
   if (create && doml)
   {
     ParameterList&  mllist = Params().sublist("ML Parameters");
-    // create a copy of the scaled matrix
-    // so we can reuse the preconditioner several times
-    Pmatrix_ = rcp(new Epetra_CrsMatrix(*A));
     // see whether we use standard ml or our own mlapi operator
-    bool domlapioperator = mllist.get<bool>("LINALG::AMG_Operator",false);
+    const bool domlapioperator = mllist.get<bool>("LINALG::AMG_Operator",false);
+    // see whether we have a SIMPLER sublist
+    const bool dosimpler = Params().isSublist("SIMPLER");
     if (domlapioperator)
+    {
+      // create a copy of the scaled matrix
+      // so we can reuse the preconditioner several times
+      Pmatrix_ = rcp(new Epetra_CrsMatrix(*A));
       P_ = rcp(new LINALG::AMG_Operator(Pmatrix_,mllist,true));
+    }
+    else if (dosimpler)
+    {
+      // SIMPLER does not need copy of preconditioning matrix to live
+      RCP<Epetra_CrsMatrix> rcpA = rcp(A,false);
+      P_ = rcp(new LINALG::SIMPLER_Operator(rcpA,Params(),Params().sublist("SIMPLER")));
+      Pmatrix_ = null;
+    }
     else
+    {
+      // create a copy of the scaled matrix
+      // so we can reuse the preconditioner several times
+      Pmatrix_ = rcp(new Epetra_CrsMatrix(*A));
       P_ = rcp(new ML_Epetra::MultiLevelPreconditioner(*Pmatrix_,mllist,true));
+      // for debugging ML
       //dynamic_cast<ML_Epetra::MultiLevelPreconditioner&>(*P_).PrintUnused(0);
+    }
   }
 
   if (doifpack || doml)
