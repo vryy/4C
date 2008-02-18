@@ -190,6 +190,15 @@ namespace LINALG
      */
     explicit SparseMatrix(Teuchos::RCP<Epetra_CrsMatrix> matrix, bool explicitdirichlet=true, bool savegraph=false);
 
+    /// construction of a diagonal matrix from a vector
+    /*!
+      Creates diagonal matrix with range and domain map euqal to vector map.
+      Sets diagonal values from vector and does NOT call Complete() on matrix
+
+      Does not make a copy of the Epetra_CrsMatrix.
+     */
+    explicit SparseMatrix(const Epetra_Vector& diag, bool explicitdirichlet=true, bool savegraph=false);
+
     /// copy constructor
     SparseMatrix(const SparseMatrix& mat);
 
@@ -390,7 +399,9 @@ namespace LINALG
       Multiply one matrix with another. Both matrices must be completed. Sparsity
       Respective Range, Row and Domain maps of A(^T) and B(^T) have to match.
 
-      \note This is a true parallel multiplication, even in the transposed case!
+      \note This is a true parallel multiplication, even in the transposed case.
+      
+      \note Does not call complete on C upon exit.
 
       \param A          (in)     : Matrix to multiply with B (must have Filled()==true)
       \param transA     (in)     : flag indicating whether transposed of A should be used

@@ -60,6 +60,22 @@ LINALG::SparseMatrix::SparseMatrix(const SparseMatrix& mat)
     graph_ = Teuchos::rcp(new Epetra_CrsGraph(*mat.graph_));
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+LINALG::SparseMatrix::SparseMatrix(const Epetra_Vector& diag, bool explicitdirichlet, bool savegraph)
+  : explicitdirichlet_(explicitdirichlet),
+    savegraph_(savegraph)
+{
+  int length = diag.Map().NumMyElements();
+  Epetra_Map map(-1,length,diag.Map().MyGlobalElements(),
+                 diag.Map().IndexBase(),diag.Comm());
+  Setup(map,1);
+  for (int i=0; i<length; ++i)
+  {
+    int gid = diag.Map().GID(i);
+    Assemble(diag[i],gid,gid);
+  }
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
