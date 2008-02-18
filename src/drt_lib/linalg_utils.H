@@ -305,10 +305,13 @@ namespace LINALG
   \param transA     (in)     : flag indicating whether transposed of A should be used
   \param B          (in)     : Matrix to multiply with A (must have Filled()==true)
   \param transB     (in)     : flag indicating whether transposed of B should be used
+  \param complete   (in)     : flag indicating whether FillComplete should be called on C upon exit,
+                               (defaults to true)
   \return Matrix product A(^T)*B(^T)
   */
   RCP<Epetra_CrsMatrix> Multiply(const Epetra_CrsMatrix& A, bool transA,
-                                 const Epetra_CrsMatrix& B, bool transB);
+                                 const Epetra_CrsMatrix& B, bool transB,
+                                 bool complete = true);
 
   /*!
   \brief Multiply a (transposed) Epetra_CrsMatrix with another (transposed): C = A(^T)*B(^T)
@@ -323,11 +326,14 @@ namespace LINALG
   \param transA     (in)     : flag indicating whether transposed of A should be used
   \param B          (in)     : Matrix to multiply with A (must have Filled()==true)
   \param transB     (in)     : flag indicating whether transposed of B should be used
+  \param complete   (in)     : flag indicating whether FillComplete should be called on C upon exit,
+                               (defaults to true)
   \return Matrix product A(^T)*B(^T)
   */
   inline RCP<Epetra_CrsMatrix> Multiply(const RCP<Epetra_CrsMatrix>& A, bool transA,
-                                        const RCP<Epetra_CrsMatrix>& B, bool transB)
-  { return Multiply(*A,transA,*B,transB); }
+                                        const RCP<Epetra_CrsMatrix>& B, bool transB,
+                                        bool complete = true)
+  { return Multiply(*A,transA,*B,transB,complete); }
 
   /*!
   \brief Triple matrix product: D = A(^T)*B(^T)*C(^T)
@@ -343,11 +349,14 @@ namespace LINALG
   \param transB     (in)     : flag indicating whether transposed of B should be used
   \param C          (in)     : Matrix C (must have Filled()==true)
   \param transC     (in)     : flag indicating whether transposed of C should be used
+  \param complete   (in)     : flag indicating whether FillComplete should be called on C upon exit,
+                               (defaults to true)
   \return Matrix product A(^T)*B(^T)*C(^T)
   */
   RCP<Epetra_CrsMatrix> Multiply(const Epetra_CrsMatrix& A, bool transA,
                                  const Epetra_CrsMatrix& B, bool transB,
-                                 const Epetra_CrsMatrix& C, bool transC);
+                                 const Epetra_CrsMatrix& C, bool transC,
+                                 bool complete = true);
 
   /*!
   \brief Triple matrix product: D = A(^T)*B(^T)*C(^T)
@@ -364,12 +373,15 @@ namespace LINALG
   \param transB     (in)     : flag indicating whether transposed of B should be used
   \param C          (in)     : Matrix C (must have Filled()==true)
   \param transC     (in)     : flag indicating whether transposed of C should be used
+  \param complete   (in)     : flag indicating whether FillComplete should be called on C upon exit,
+                               (defaults to true)
   \return Matrix product A(^T)*B(^T)*C(^T)
   */
   inline RCP<Epetra_CrsMatrix> Multiply(const RCP<Epetra_CrsMatrix>& A, bool transA,
                                         const RCP<Epetra_CrsMatrix>& B, bool transB,
-                                        const RCP<Epetra_CrsMatrix>& C, bool transC)
-  { return Multiply(*A,transA,*B,transB,*C,transC); }
+                                        const RCP<Epetra_CrsMatrix>& C, bool transC,
+                                        bool complete = true)
+  { return Multiply(*A,transA,*B,transB,*C,transC,complete); }
 
   /*!
   \brief Apply dirichlet boundary condition to a linear system of equations

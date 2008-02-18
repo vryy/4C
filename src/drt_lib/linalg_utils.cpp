@@ -277,7 +277,8 @@ RCP<Epetra_CrsMatrix> LINALG::Transpose(const Epetra_CrsMatrix& A)
  | Multiply matrices A*B                                     mwgee 01/06|
  *----------------------------------------------------------------------*/
 RCP<Epetra_CrsMatrix> LINALG::Multiply(const Epetra_CrsMatrix& A, bool transA,
-                                       const Epetra_CrsMatrix& B, bool transB)
+                                       const Epetra_CrsMatrix& B, bool transB,
+                                       bool complete)
 {
   // make sure FillComplete was called on the matrices
   if (!A.Filled()) dserror("A has to be FillComplete");
@@ -290,7 +291,7 @@ RCP<Epetra_CrsMatrix> LINALG::Multiply(const Epetra_CrsMatrix& A, bool transA,
   else
     C = new Epetra_CrsMatrix(Copy,A.OperatorDomainMap(),20,false);
 
-  int err = EpetraExt::MatrixMatrix::Multiply(A,transA,B,transB,*C);
+  int err = EpetraExt::MatrixMatrix::Multiply(A,transA,B,transB,*C,complete);
   if (err) dserror("EpetraExt::MatrixMatrix::Multiply returned err = &d",err);
 
   return rcp(C);
@@ -301,10 +302,11 @@ RCP<Epetra_CrsMatrix> LINALG::Multiply(const Epetra_CrsMatrix& A, bool transA,
  *----------------------------------------------------------------------*/
 RCP<Epetra_CrsMatrix> LINALG::Multiply(const Epetra_CrsMatrix& A, bool transA,
                                        const Epetra_CrsMatrix& B, bool transB,
-                                       const Epetra_CrsMatrix& C, bool transC)
+                                       const Epetra_CrsMatrix& C, bool transC,
+                                       bool complete)
 {
-  RCP<Epetra_CrsMatrix> tmp = LINALG::Multiply(B,transB,C,transC);
-  return LINALG::Multiply(A,transA,*tmp,false);
+  RCP<Epetra_CrsMatrix> tmp = LINALG::Multiply(B,transB,C,transC,true);
+  return LINALG::Multiply(A,transA,*tmp,false,complete);
 }
 
 

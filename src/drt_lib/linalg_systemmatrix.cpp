@@ -767,7 +767,8 @@ ostream& operator << (ostream& os, const LINALG::SparseMatrix& mat)
 Teuchos::RCP<LINALG::SparseMatrix> LINALG::Multiply(const LINALG::SparseMatrix& A,
                                                     bool transA,
                                                     const LINALG::SparseMatrix& B,
-                                                    bool transB)
+                                                    bool transB,
+                                                    bool completeoutput)
 {
   // make sure FillComplete was called on the matrices
   if (!A.Filled()) dserror("A has to be FillComplete");
@@ -780,7 +781,7 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::Multiply(const LINALG::SparseMatrix& 
   else
     C = Teuchos::rcp(new SparseMatrix(A.DomainMap(),20,A.explicitdirichlet_,A.savegraph_));
 
-  int err = EpetraExt::MatrixMatrix::Multiply(*A.sysmat_,transA,*B.sysmat_,transB,*C->sysmat_);
+  int err = EpetraExt::MatrixMatrix::Multiply(*A.sysmat_,transA,*B.sysmat_,transB,*C->sysmat_,completeoutput);
   if (err) dserror("EpetraExt::MatrixMatrix::Multiply returned err = &d",err);
 
   return C;

@@ -374,13 +374,13 @@ namespace LINALG
      */
     Teuchos::RCP<SparseMatrix> Transpose();
 
-    /// Add a (transposed) Epetra_CrsMatrix to another: B = B*scalarB + A(^T)*scalarA
+    /// Add a (transposed) Epetra_CrsMatrix to another: (*this) = (*this)*scalarB + A(^T)*scalarA
     /*!
 
-    Add one matrix to another. the matrix B to be added to must not be
-    completed. Sparsity patterns of A and B need not match and A and B can be
+    Add one matrix to another. the matrix (*this) to be added to must not be
+    completed. Sparsity patterns of A and (*this) need not match and A and (*this) can be
     nonsymmetric in value and pattern.  Row map of A has to be a
-    processor-local subset of the row map of B.
+    processor-local subset of the row map of (*this).
 
     \note This is a true parallel add, even in the transposed case!
 
@@ -403,13 +403,16 @@ namespace LINALG
       
       \note Does not call complete on C upon exit.
 
-      \param A          (in)     : Matrix to multiply with B (must have Filled()==true)
-      \param transA     (in)     : flag indicating whether transposed of A should be used
-      \param B          (in)     : Matrix to multiply with A (must have Filled()==true)
-      \param transB     (in)     : flag indicating whether transposed of B should be used
+      \param A              (in)     : Matrix to multiply with B (must have Filled()==true)
+      \param transA         (in)     : flag indicating whether transposed of A should be used
+      \param B              (in)     : Matrix to multiply with A (must have Filled()==true)
+      \param transB         (in)     : flag indicating whether transposed of B should be used
+      \param completeoutput (in)     : flag indicating whether Complete(...) shall be called on C upon output
       \return Matrix product A(^T)*B(^T)
     */
-    friend Teuchos::RCP<SparseMatrix> LINALG::Multiply(const SparseMatrix& A, bool transA, const SparseMatrix& B, bool transB);
+    friend Teuchos::RCP<SparseMatrix> LINALG::Multiply(const SparseMatrix& A, bool transA, 
+                                                       const SparseMatrix& B, bool transB,
+                                                       bool completeoutput = true);
 
     /// Split matrix in either 2x2 or 3x3 blocks
     /*!
@@ -450,7 +453,9 @@ namespace LINALG
   };
 
 
-  Teuchos::RCP<SparseMatrix> Multiply(const SparseMatrix& A, bool transA, const SparseMatrix& B, bool transB);
+  Teuchos::RCP<SparseMatrix> Multiply(const SparseMatrix& A, bool transA, 
+                                      const SparseMatrix& B, bool transB,
+                                      bool completeoutput);
 
   /// Internal base class of BlockSparseMatrix that contains the non-template stuff
   /*!
