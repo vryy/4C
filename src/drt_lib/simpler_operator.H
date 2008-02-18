@@ -28,6 +28,8 @@ Maintainer: Michael Gee
 #include "drt_dserror.H"
 #include "linalg_mapextractor.H"
 #include "linalg_systemmatrix.H"
+#include "linalg_solver.H"
+#include "linalg_utils.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -59,7 +61,8 @@ public:
   */
   explicit SIMPLER_Operator(RCP<Epetra_CrsMatrix> A,
                             const ParameterList& velocitylist,
-                            const ParameterList& pressurelist);
+                            const ParameterList& pressurelist,
+                            FILE* outfile = NULL);
 
   /*!
   \brief Destructor
@@ -165,10 +168,22 @@ private:
   */
   void Setup(RCP<Epetra_CrsMatrix> A);
 
+  /*!
+  \brief do one sweep of simple preconditioning
+  */
+  void Simple(Epetra_Vector& vx, Epetra_Vector& px, Epetra_Vector& vb, Epetra_Vector& pb) const;
+
+  FILE*                                               outfile_;// error file to write output to or NULL
   ParameterList                                       vlist_;  // list for velocity solver
   ParameterList                                       plist_;  // list for pressure solver
   MultiMapExtractor                                   mmex_;   // a  multimapetxractor to handle extracts
   RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy> > A_;      // 2x2 block matrix
+  RCP<Epetra_Vector>                                  vx_;     // velocity solution
+  RCP<Epetra_Vector>                                  px_;     // pressure solution
+  RCP<Epetra_Vector>                                  vb_;     // velocity rhs
+  RCP<Epetra_Vector>                                  pb_;     // pressure rhs
+  RCP<LINALG::Solver>                                 vsolver_;// velocity solver
+  RCP<LINALG::Solver>                                 psolver_;// pressure solver
 
 }; // class  SIMPLER_Operator : public virtual Epetra_Operator
 }  // namespace LINALG

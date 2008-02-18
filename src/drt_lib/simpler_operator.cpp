@@ -22,8 +22,10 @@ Maintainer: Michael Gee
  *----------------------------------------------------------------------*/
 LINALG::SIMPLER_Operator::SIMPLER_Operator(RCP<Epetra_CrsMatrix> A,
                                            const ParameterList& velocitylist,
-                                           const ParameterList& pressurelist) 
-  : vlist_(velocitylist),
+                                           const ParameterList& pressurelist,
+                                           FILE* outfile) 
+  : outfile_(outfile),
+    vlist_(velocitylist),
     plist_(pressurelist)
 {
   // remove the SIMPLER sublist from the vlist_, 
@@ -43,14 +45,25 @@ LINALG::SIMPLER_Operator::SIMPLER_Operator(RCP<Epetra_CrsMatrix> A,
 int LINALG::SIMPLER_Operator::ApplyInverse(const Epetra_MultiVector& X, 
                                            Epetra_MultiVector& Y) const
 {
-  // do not do anything for testing
-  Y.Update(1.0,X,0.0);
-  return 0;
-
-  // wrap incoming and outgoing vectors as MLAPI::MultiVector
   // note: Aztec might pass X and Y as physically identical objects, 
-  // so we deep copy here
+  // so we better deep copy here
   
+  // do not do anything for testing
+  //Y.Update(1.0,X,0.0);
+  //return 0;
+
+  // extract initial guess and rhs for velocity and pressure
+  mmex_.ExtractVector(X,0,*vb_);
+  mmex_.ExtractVector(Y,0,*vx_);
+  mmex_.ExtractVector(X,1,*pb_);
+  mmex_.ExtractVector(Y,1,*px_);
+  
+  // do one sweep of simple preconditioning
+  Simple(*vx_,*px_,*vb_,*pb_);  
+  
+  // insert solution for velocity and pressure
+  mmex_.InsertVector(*vx_,0,Y);
+  mmex_.InsertVector(*px_,1,Y);
   
   return 0;
 } 
@@ -107,7 +120,6 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_CrsMatrix> A)
     }
     vlist_.sublist("ML Parameters").set("null space: vectors",&((*newns)[0]));
     vlist_.sublist("ML Parameters").set<RCP<vector<double> > >("nullspace",newns);
-    cout << "vlist_" << vlist_;
   }
   if (pisml)
   {
@@ -117,14 +129,34 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_CrsMatrix> A)
     RCP<vector<double> > newns = rcp(new vector<double>(plength,1.0));
     plist_.sublist("ML Parameters").set("null space: vectors",&((*newns)[0]));
     plist_.sublist("ML Parameters").set<RCP<vector<double> > >("nullspace",newns);
-    cout << "plist_" << plist_;
   }
   
   // Allocate solver for pressure and velocity
+  {
+    RCP<ParameterList> vrcplist = rcp(&vlist_,false);
+    vsolver_ = rcp(new LINALG::Solver(vrcplist,A_->Comm(),outfile_));
+    RCP<ParameterList> prcplist = rcp(&plist_,false);
+    psolver_ = rcp(new LINALG::Solver(prcplist,A_->Comm(),outfile_));
+  }
   
+  // Allocate velocity and pressure solution and rhs vectors
+  vx_ = LINALG::CreateVector(*mmex_.Map(0),false);
+  vb_ = LINALG::CreateVector(*mmex_.Map(0),false);
+  px_ = LINALG::CreateVector(*mmex_.Map(1),false);
+  pb_ = LINALG::CreateVector(*mmex_.Map(1),false);
   
   return;
 } 
 
+
+/*----------------------------------------------------------------------*
+ |  (private)                                                mwgee 02/08|
+ *----------------------------------------------------------------------*/
+void LINALG::SIMPLER_Operator::Simple(Epetra_Vector& vx, Epetra_Vector& px, 
+                                      Epetra_Vector& vb, Epetra_Vector& pb) const
+{
+  
+  return;
+}                                      
 
 #endif  // #ifdef CCADISCRET
