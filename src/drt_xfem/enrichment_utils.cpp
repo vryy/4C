@@ -84,7 +84,7 @@ void XFEM::ComputeEnrichedShapefunction(
         blitz::Array<double,2>& enr_derxy
         )
 {
-    blitz::Range _  = blitz::Range::all();
+    const blitz::Range _  = blitz::Range::all();
     
     const DRT::Node** const nodes = ele.Nodes();
     
@@ -130,7 +130,7 @@ void XFEM::ComputeEnrichedShapefunction(
         blitz::Array<double,2>& enr_derxy2
         )
 {
-    blitz::Range _  = blitz::Range::all();
+    const blitz::Range _  = blitz::Range::all();
     
     const DRT::Node** const nodes = ele.Nodes();
     
@@ -174,7 +174,7 @@ void XFEM::ComputeEnrichedStressShapefunction(
         blitz::Array<double,1>& enr_funct
         )
 {
-    blitz::Range _  = blitz::Range::all();
+    const blitz::Range _  = blitz::Range::all();
     
     int dofcounter = 0;
     for (int inode = 0; inode < dofman.NumVirtualNodes(); ++inode)
@@ -210,7 +210,7 @@ void XFEM::ComputeEnrichedStressShapefunction(
         blitz::Array<double,2>& enr_derxy
         )
 {
-    blitz::Range _  = blitz::Range::all();
+    const blitz::Range _  = blitz::Range::all();
     
     int dofcounter = 0;
     for (int inode = 0; inode < dofman.NumVirtualNodes(); ++inode)
