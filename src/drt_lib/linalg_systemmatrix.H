@@ -12,6 +12,7 @@
 #include <Teuchos_RCP.hpp>
 
 #include "linalg_mapextractor.H"
+#include "drt_dserror.H"
 
 /*
 
@@ -62,6 +63,10 @@
 
 namespace LINALG
 {
+  // forward delcarations:
+  class BlockSparseMatrixBase;
+  template <class Strategy> class BlockSparseMatrix;
+  
 
   /// Linear operator interface enhanced for use in FE simulations
   /*!
@@ -440,9 +445,30 @@ namespace LINALG
     */
     friend Teuchos::RCP<SparseMatrix> LINALG::Multiply(const SparseMatrix& A, bool transA, const SparseMatrix& B, bool transB);
 
+    /// Split matrix in either 2x2 or 3x3 blocks
+    /*!
+      Split given matrix 'this' into 2x2 block matrix and
+      return result as templated BlockSparseMatrix.
+      The MultiMapExtractor's provided have to be 2 and 2 maps, 
+      otherwise this method will throw an error.
+    
+      \note This is an expensive operation!
+      
+      \note This method will NOT call Complete() on the output
+            BlockSparseMatrix.
+     */
+    template <class Strategy> Teuchos::RCP<LINALG::BlockSparseMatrix<Strategy> > 
+      Split(const MultiMapExtractor& domainmaps,const MultiMapExtractor& rangemaps);
+
     //@}
 
   private:
+  
+    /// Split matrix in 2x2 blocks, where main diagonal blocks have to be square
+    /*!
+       Used by public Split, does not call Complete() on output matrix.
+     */
+    void Split2x2(BlockSparseMatrixBase& Abase);
 
     /// internal epetra matrix
     Teuchos::RCP<Epetra_CrsMatrix> sysmat_;
@@ -478,9 +504,15 @@ namespace LINALG
     BlockSparseMatrixBase(const MultiMapExtractor& domainmaps,
                           const MultiMapExtractor& rangemaps);
 
+    virtual ~BlockSparseMatrixBase() {}
+
     const SparseMatrix& Matrix(int r, int c) const { return blocks_[r*Cols()+c]; }
 
     SparseMatrix& Matrix(int r, int c) { return blocks_[r*Cols()+c]; }
+
+    inline const SparseMatrix& operator()(int r, int c) const { return Matrix(r,c);}
+    
+    inline SparseMatrix& operator()(int r, int c) { return Matrix(r,c);}
 
     void Zero();
     void Complete();
@@ -635,7 +667,7 @@ namespace LINALG
     void Complete();
 
   private:
-
+  
     /// my block matrix base
     BlockSparseMatrixBase& mat_;
 
@@ -647,13 +679,40 @@ namespace LINALG
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+template <class Strategy> Teuchos::RCP<LINALG::BlockSparseMatrix<Strategy> >
+LINALG::SparseMatrix::Split(const MultiMapExtractor& domainmaps,
+                            const MultiMapExtractor& rangemaps)
+{
+  Teuchos::RCP<BlockSparseMatrix<Strategy> > blockA = 
+    rcp(new LINALG::BlockSparseMatrix<Strategy>(domainmaps,rangemaps));
+    
+  if (domainmaps.NumMaps()==2 && rangemaps.NumMaps()==2)
+  {
+    const int npr = Matrix()->MaxNumEntries();
+    (*blockA)(0,0).Setup(*rangemaps.Map(0),npr);
+    (*blockA)(0,1).Setup(*rangemaps.Map(0),npr);
+    (*blockA)(1,0).Setup(*rangemaps.Map(1),npr);
+    (*blockA)(1,1).Setup(*rangemaps.Map(1),npr);
+    this->Split2x2(*blockA);
+    return blockA;
+  }
+  else 
+    dserror("Currently can only split in 2x2");
+    
+  return Teuchos::null;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <class Strategy>
 LINALG::BlockSparseMatrix<Strategy>::BlockSparseMatrix(const MultiMapExtractor& domainmaps,
                                                        const MultiMapExtractor& rangemaps)
   : BlockSparseMatrixBase(domainmaps,rangemaps),
-    Strategy(*this)
+    // this was necessary, otherwise ambigous with copy constructor of Strategy
+    Strategy((LINALG::BlockSparseMatrixBase&)(*this)) 
 {
 }
+
 
 
 /*----------------------------------------------------------------------*
@@ -668,6 +727,8 @@ void LINALG::BlockSparseMatrix<Strategy>::Assemble(const Epetra_SerialDenseMatri
   const int lcoldim = (int)lmcol.size();
 
   const int myrank = Comm().MyPID();
+  // neccessary for compilation with suse gcc  4.1.0
+  Strategy* strategy = (Strategy*)this;
 
   // loop rows of local matrix
   for (int lrow=0; lrow<lrowdim; ++lrow)
@@ -678,15 +739,15 @@ void LINALG::BlockSparseMatrix<Strategy>::Assemble(const Epetra_SerialDenseMatri
       continue;
 
     int rgid = lmrow[lrow];
-    int rblock = this->RowBlock(lrow,rgid);
+    int rblock = strategy->RowBlock(lrow,rgid);
 
     for (int lcol=0; lcol<lcoldim; ++lcol)
     {
       double val = Aele(lrow,lcol);
       int cgid = lmcol[lcol];
-      int cblock = this->ColBlock(rblock,lcol,cgid);
-
-      this->Assemble(val,lrow,rgid,rblock,lcol,cgid,cblock);
+      int cblock = strategy->ColBlock(rblock,lcol,cgid);
+      
+      strategy->Assemble(val,lrow,rgid,rblock,lcol,cgid,cblock);
     }
   }
 }
