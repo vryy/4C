@@ -266,6 +266,9 @@ protected:
 
   FLUID_TIMEINTTYPE timealgo_;
 
+  /// density extracted from element material
+  double density_;
+
   //! use (or not) linearisation of reactive terms on the element
   bool newton_;
 
@@ -369,15 +372,15 @@ protected:
 
   // time measurement
   // ----------------
-  RCP<Teuchos::Time> timedyntot_     ;
-  RCP<Teuchos::Time> timedyninit_    ;
-  RCP<Teuchos::Time> timedynloop_    ;
-  RCP<Teuchos::Time> timenlnloop_    ;
-  RCP<Teuchos::Time> timelinloop_    ;
-  RCP<Teuchos::Time> timeeleloop_    ;
-  RCP<Teuchos::Time> timeapplydirich_;
-  RCP<Teuchos::Time> timesolver_     ;
-  RCP<Teuchos::Time> timeout_        ;
+  RCP<Teuchos::Time> timetotal_   ;
+  RCP<Teuchos::Time> timeinit_    ;
+  RCP<Teuchos::Time> timetimeloop_;
+  RCP<Teuchos::Time> timenlnitlin_;
+  RCP<Teuchos::Time> timeelement_ ;
+  RCP<Teuchos::Time> timeavm3_    ;
+  RCP<Teuchos::Time> timeapplydbc_;
+  RCP<Teuchos::Time> timesolver_  ;
+  RCP<Teuchos::Time> timeout_     ;
 
   RCP<TimeMonitor> tm0_ref_ ;
   RCP<TimeMonitor> tm1_ref_ ;
@@ -387,9 +390,10 @@ protected:
   RCP<TimeMonitor> tm5_ref_ ;
   RCP<TimeMonitor> tm6_ref_ ;
   RCP<TimeMonitor> tm7_ref_ ;
+  RCP<TimeMonitor> tm8_ref_ ;
 
-  /// density extracted from element material
-  double density_;
+  double dtele_;
+  double dtsolve_;
 
 }; // class FluidImplicitTimeInt
 
