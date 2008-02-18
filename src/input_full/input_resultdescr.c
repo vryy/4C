@@ -13,7 +13,6 @@ Maintainer: Ulrich Kuettler
 \date 06/04
 
 */
-#ifdef RESULTTEST
 
 #include "../headers/standardtypes.h"
 
@@ -166,5 +165,3 @@ end:
 #endif
   return;
 }
-
-#endif

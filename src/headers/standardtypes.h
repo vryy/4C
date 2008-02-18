@@ -306,10 +306,8 @@ typedef struct _GENPROB
   INT               multisc_struct;/* flag is structural multiscale analysis -> Andrea Hund */
 
 
-#ifdef RESULTTEST
   INT               numresults;    /* number of known results waiting to
                                     * be compared to the calculated ones. */
-#endif
 
   INT               micro_nele;     /* number of elements in microstructure */
   INT               micro_nnode;    /* number of nodes in microstructure */
@@ -397,8 +395,6 @@ typedef struct _INTERFACES
 
 #endif
 
-#ifdef RESULTTEST
-
 /*
  * The results we expect. For testing.
  * Each record describes one value and where to find it.
@@ -424,8 +420,6 @@ typedef struct _RESULTDESCR
   DOUBLE value;                 /* the expected value  */
   DOUBLE tolerance;             /* an exceptable tolerance */
 } RESULTDESCR;
-
-#endif
 
 /*----------------------------------------------------------------------*
  | Prototypes                                            m.gee 06/01    |
