@@ -38,7 +38,7 @@ undetected.
 */
 
 #ifndef CCADISCRET
-#ifdef RESULTTEST
+
 #include "../headers/standardtypes.h"
 #include "../axishell/axishell.h"
 #include "../shell9/shell9.h"
@@ -104,6 +104,7 @@ extern struct _PARTITION  *partition;
  */
 struct _RESULTDESCR      *resultdescr;
 
+#ifdef RESULTTEST
 
 /*----------------------------------------------------------------------*/
 /*!
