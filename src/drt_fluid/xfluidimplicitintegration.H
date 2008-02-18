@@ -198,9 +198,12 @@ public:
 
   Teuchos::RCP<Epetra_Vector> InitialGuess() { return incvel_; }
   Teuchos::RCP<Epetra_Vector> Residual() { return residual_; }
+  Teuchos::RCP<Epetra_Vector> TrueResidual() { return trueresidual_; }
   Teuchos::RCP<Epetra_Vector> Velnp() { return velnp_; }
   Teuchos::RCP<Epetra_Vector> Veln() { return veln_; }
+  Teuchos::RCP<Epetra_Vector> GridVel() { return gridv_; }
   Teuchos::RCP<Epetra_Vector> Dirichlet() { return dirichtoggle_; }
+  Teuchos::RCP<Epetra_Vector> InvDirichlet() { return invtoggle_; }
   Teuchos::RCP<Epetra_Vector> Dispnp() { return dispnp_; }
   Teuchos::RCP<Epetra_Vector> Dispn() { return dispn_; }
   Teuchos::RCP<Epetra_Operator> SysMat() { return sysmat_->EpetraOperator(); }
@@ -210,6 +213,12 @@ public:
   Teuchos::RCP<Epetra_Map> PressureRowMap() { return prerowmap_; }
 
   double ResidualScaling() const { return density_/dta_/theta_; }
+
+  double Time() const { return time_; }
+  int Step() const { return step_; }
+
+  int Itemax() const { return params_.get<int>("max nonlin iter steps"); }
+  void SetItemax(int itemax) { params_.set<int>("max nonlin iter steps", itemax); }
 
   /*!
   \brief determine grid velocity
@@ -221,9 +230,21 @@ public:
   \brief calculate lift&drag forces and angular momenta
 
   */
-    void LiftDrag() const;
+  void LiftDrag() const;
 
   //@}
+
+  /// integrate shape functions at nodes marked by condition
+  /*!
+    Needed for Mortar coupling at the FSI interface
+   */
+  Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape(std::string condname);
+
+  /// linear solve with prescribed dirichlet conditions and without history
+  /*!
+    This is the linear solve as needed for steepest descent FSI.
+   */
+  void LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax);
 
 protected:
 
@@ -350,15 +371,15 @@ protected:
 
   // time measurement
   // ----------------
-  RCP<Time> timedyntot_     ;
-  RCP<Time> timedyninit_    ;
-  RCP<Time> timedynloop_    ;
-  RCP<Time> timenlnloop_    ;
-  RCP<Time> timelinloop_    ;
-  RCP<Time> timeeleloop_    ;
-  RCP<Time> timeapplydirich_;
-  RCP<Time> timesolver_     ;
-  RCP<Time> timeout_        ;
+  RCP<Teuchos::Time> timedyntot_     ;
+  RCP<Teuchos::Time> timedyninit_    ;
+  RCP<Teuchos::Time> timedynloop_    ;
+  RCP<Teuchos::Time> timenlnloop_    ;
+  RCP<Teuchos::Time> timelinloop_    ;
+  RCP<Teuchos::Time> timeeleloop_    ;
+  RCP<Teuchos::Time> timeapplydirich_;
+  RCP<Teuchos::Time> timesolver_     ;
+  RCP<Teuchos::Time> timeout_        ;
 
   RCP<TimeMonitor> tm0_ref_ ;
   RCP<TimeMonitor> tm1_ref_ ;
