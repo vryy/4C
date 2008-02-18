@@ -103,10 +103,13 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
     // here we store a potential set of eles still to extrude
     set<int> todo_eles;
     set<int>::iterator i_todo_eles;
-    todo_eles.insert(0); // lets insert the very first one for a start
+    
+    // define starte ele
+    int startele = 0;
+    todo_eles.insert(startele); // lets insert the very first one for a start
     
     // for the first element we set up everything *****************************
-    vector<int> actelenodes = ele_conn.find(0)->second;
+    vector<int> actelenodes = ele_conn.find(startele)->second;
     vector<int>::const_iterator i_node;
     int newid;
     
@@ -116,6 +119,8 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
     // calculate the normal at the first node which defines the "outside" dir
     vector<int> myNodeNbrs = FindNodeNeighbors(actelenodes,actelenodes.front());
     vector<double> first_normal = Normal(myNodeNbrs[1],actelenodes.front(),myNodeNbrs[0],basemesh);
+
+    //EXODUS::PlotStartEleGmsh(startele,actelenodes,basemesh,actelenodes.front(),first_normal);
     
     // create a new element
     vector<int> newelenodes;
@@ -158,9 +163,8 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
         layer_nodes[i_layer].push_back(newid);
       }
     }    
-    //PrintMap(cout,node_pair);
     
-    doneles.insert(0);    // the first element is done ************************
+    doneles.insert(startele); // the first element is done ************************
     // form every new layer element
     for (int i_layer = 0; i_layer < layers; ++i_layer){
       vector<int> basenodes = layer_nodes[i_layer];
@@ -227,7 +231,6 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
             // put new node into map of OldNodeToNewNode
             vector<int> newids(1,newid);
             node_pair.insert(std::pair<int,vector<int> >(secedgenode,newids));
-            //PrintMap(cout,node_pair);
             
             // insert node into base layer
             layer_nodes[0].push_back(newid);
@@ -251,7 +254,6 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
               // finally store this node where it will be connected to an ele
               layer_nodes[i_layer].push_back(newid);
             }
-            
           } else {
             for (int i_layer = 0; i_layer <= layers; ++i_layer) {
               newid = node_pair.find(secedgenode)->second[i_layer];
@@ -278,7 +280,6 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
             // put new node into map of OldNodeToNewNode
             vector<int> newids(1,newid);
             node_pair.insert(std::pair<int,vector<int> >(firstedgenode,newids));
-            //PrintMap(cout,node_pair);
             
             // insert node into base layer
             layer_nodes[0].push_back(newid);
@@ -331,7 +332,6 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
             // put new node into map of OldNodeToNewNode
             vector<int> newids(1,newid);
             node_pair.insert(std::pair<int,vector<int> >(thirdnode,newids));
-            //PrintMap(cout,node_pair);
             
             // insert node into base layer
             layer_nodes[0].push_back(newid);
@@ -355,6 +355,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
               // finally store this node where it will be connected to an ele
               layer_nodes[i_layer].push_back(newid);
             }
+            //EXODUS::PlotEleNbrs(actelenodes,actneighbors,ele_conn,basemesh,thirdnode,normal,node_conn);
           } else {
             for (int i_layer = 0; i_layer <= layers; ++i_layer) {
               newid = node_pair.find(thirdnode)->second[i_layer];
@@ -385,7 +386,6 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
               // put new node into map of OldNodeToNewNode
               vector<int> newids(1,newid);
               node_pair.insert(std::pair<int,vector<int> >(fourthnode,newids));
-              //PrintMap(cout,node_pair);
               
               // insert node into base layer
               layer_nodes[0].push_back(newid);
@@ -442,6 +442,8 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
         
       }// end of this "center" - element ///////////////////////////////////////
       
+      //PlotEleConnGmsh(newconn,newnodes);
+      
     }// end of extruding all elements in connectivity
    
     // create new Element Blocks
@@ -495,7 +497,6 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
     }
     default: dserror("unrecognized extrude type");
     }
-    //PrintMap(cout,node_pair);
     
     // create new NodeSet with all nodes at newly created "free" faces
     set<int> free_nodes = FreeFaceNodes(free_edge_nodes,node_pair);
@@ -702,43 +703,75 @@ vector<double> EXODUS::AverageNormal(const vector<double> n, const vector<vector
   vector<double> avgn = n;
   vector<vector<double> >::const_iterator i_nbr;
   
-  // define lower bound for (nearly) parallel normals
-  const double para = 1.0e-12;
+//  // define lower bound for (nearly) parallel normals
+//  const double para = 1.0e-12;
+//  
+//  for(i_nbr=nbr_ns.begin(); i_nbr < nbr_ns.end(); ++i_nbr){
+//    // cross-product with next neighbor normal
+//    vector<double> cross(3);
+//    vector<double> nbr_n = *i_nbr;
+//    cross[0] =    avgn[1]*nbr_n[2] - avgn[2]*nbr_n[1];
+//    cross[1] = - (avgn[0]*nbr_n[2] - avgn[2]*nbr_n[0]);
+//    cross[2] =    avgn[0]*nbr_n[1] - avgn[1]*nbr_n[0];
+//    double crosslength = cross[0]*cross[0] + cross[1]*cross[1] + cross[2]*cross[2];
+//    
+//    if (crosslength<para){
+//    // if almost parallel do the easy way: average = mean
+//      avgn[0] = 0.5 * (avgn[0] + nbr_n[0]);
+//      avgn[1] = 0.5 * (avgn[1] + nbr_n[1]);
+//      avgn[2] = 0.5 * (avgn[2] + nbr_n[2]);
+//      avgn[0] += nbr_n[0];
+//      avgn[1] += nbr_n[1];
+//      avgn[2] += nbr_n[2];
+//     
+//    } else {
+//    // do the Bischoff-Way:
+//      // left length
+//      double leftl = avgn[0]*avgn[0] + avgn[1]*avgn[1] + avgn[2]*avgn[2];
+//      // right length
+//      double rightl = nbr_n[0]*nbr_n[0] + nbr_n[1]*nbr_n[1] + nbr_n[2]*nbr_n[2];
+//      // mean
+//      avgn[0] = 0.5 * (avgn[0] + nbr_n[0]);
+//      avgn[1] = 0.5 * (avgn[1] + nbr_n[1]);
+//      avgn[2] = 0.5 * (avgn[2] + nbr_n[2]);
+//      // mean length
+//      double avgl = avgn[0]*avgn[0] + avgn[1]*avgn[1] + avgn[2]*avgn[2];
+//      // scale by mean of left and right normal
+//      avgn[0] = avgn[0] * 0.5*(leftl+rightl)/avgl;
+//      avgn[1] = avgn[1] * 0.5*(leftl+rightl)/avgl;
+//      avgn[2] = avgn[2] * 0.5*(leftl+rightl)/avgl;
+//    }
+//  } // average with next neighbor
   
+  
+  // new version: order-independent of normals, but without "parallel-check"
+  double meanlength = avgn[0]*avgn[0] + avgn[1]*avgn[1] + avgn[2]*avgn[2];
   for(i_nbr=nbr_ns.begin(); i_nbr < nbr_ns.end(); ++i_nbr){
-    // cross-product with next neighbor normal
-    vector<double> cross(3);
     vector<double> nbr_n = *i_nbr;
-    cross[0] =    avgn[1]*nbr_n[2] - avgn[2]*nbr_n[1];
-    cross[1] = - (avgn[0]*nbr_n[2] - avgn[2]*nbr_n[0]);
-    cross[2] =    avgn[0]*nbr_n[1] - avgn[1]*nbr_n[0];
-    double crosslength = cross[0]*cross[0] + cross[1]*cross[1] + cross[2]*cross[2];
     
-    
-    if (crosslength<para){
-    // if almost parallel do the easy way: average = mean
-      avgn[0] = 0.5 * (avgn[0] + nbr_n[0]);
-      avgn[1] = 0.5 * (avgn[1] + nbr_n[1]);
-      avgn[2] = 0.5 * (avgn[2] + nbr_n[2]);
-     
-    } else {
-    // do the Bischoff-Way:
-      // left length
-      double leftl = avgn[0]*avgn[0] + avgn[1]*avgn[1] + avgn[2]*avgn[2];
-      // right length
-      double rightl = nbr_n[0]*nbr_n[0] + nbr_n[1]*nbr_n[1] + nbr_n[2]*nbr_n[2];
-      // mean
-      avgn[0] = 0.5 * (avgn[0] + nbr_n[0]);
-      avgn[1] = 0.5 * (avgn[1] + nbr_n[1]);
-      avgn[2] = 0.5 * (avgn[2] + nbr_n[2]);
-      // mean length
-      double avgl = avgn[0]*avgn[0] + avgn[1]*avgn[1] + avgn[2]*avgn[2];
-      // scale by mean of left and right normal
-      avgn[0] = avgn[0] * 0.5*(leftl+rightl)/avgl;
-      avgn[1] = avgn[1] * 0.5*(leftl+rightl)/avgl;
-      avgn[2] = avgn[2] * 0.5*(leftl+rightl)/avgl;
-    }
-  } // average with next neighbor
+    // sum a^i: 
+    avgn[0] += nbr_n[0];
+    avgn[1] += nbr_n[1];
+    avgn[2] += nbr_n[2];
+    // sum |a^i|
+    meanlength += nbr_n[0]*nbr_n[0] + nbr_n[1]*nbr_n[1] + nbr_n[2]*nbr_n[2];
+  }
+  
+  // a^m = 1/n * sum a^i
+  avgn[0] = avgn[0] / nbr_ns.size();
+  avgn[1] = avgn[1] / nbr_ns.size();
+  avgn[2] = avgn[2] / nbr_ns.size();
+  
+  // meanlength = 1/n * sum a^i
+  meanlength = meanlength / nbr_ns.size();
+  
+  // |a^m|
+  double am_length = avgn[0]*avgn[0] + avgn[1]*avgn[1] + avgn[2]*avgn[2];
+  
+  // a^m in Bischoff-Style (Diss. S. 129 Fig. 8.2(b)
+  avgn[0] = avgn[0] * meanlength/am_length;
+  avgn[1] = avgn[1] * meanlength/am_length;
+  avgn[2] = avgn[2] * meanlength/am_length;
   
   // unit length:
   double length = sqrt(avgn[0]*avgn[0] + avgn[1]*avgn[1] + avgn[2]*avgn[2]);
@@ -852,6 +885,166 @@ vector<int> EXODUS::FindNodeNeighbors(const vector<int> nodes,const int actnode)
   return neighbors;
 }
 
+void EXODUS::PlotStartEleGmsh(const int eleid, const vector<int> elenodes,
+    const EXODUS::Mesh& basemesh, const int nodeid, const vector<double> normal)
+{
+  ofstream f_system("startele.gmsh");
+  stringstream gmshfilecontent;
+  gmshfilecontent << "View \" Start Element \" {" << endl;
+  int numnodes = elenodes.size();
+  if (numnodes==3){
+    gmshfilecontent << "ST(" <<  
+    basemesh.GetNodeExo(elenodes.at(0))[0] << "," <<
+    basemesh.GetNodeExo(elenodes.at(0))[1] << "," <<
+    basemesh.GetNodeExo(elenodes.at(0))[2] << "," <<
+    basemesh.GetNodeExo(elenodes.at(1))[0] << "," <<
+    basemesh.GetNodeExo(elenodes.at(1))[1] << "," <<
+    basemesh.GetNodeExo(elenodes.at(1))[2] << "," <<
+    basemesh.GetNodeExo(elenodes.at(2))[0] << "," <<
+    basemesh.GetNodeExo(elenodes.at(2))[1] << "," <<
+    basemesh.GetNodeExo(elenodes.at(2))[2] << ")" <<
+    "{" << eleid << "," << eleid << "," << eleid << "};" << endl;
+  } else if (numnodes==4){
+    gmshfilecontent << "SQ(" <<  
+    basemesh.GetNodeExo(elenodes.at(0))[0] << "," <<
+    basemesh.GetNodeExo(elenodes.at(0))[1] << "," <<
+    basemesh.GetNodeExo(elenodes.at(0))[2] << "," <<
+    basemesh.GetNodeExo(elenodes.at(1))[0] << "," <<
+    basemesh.GetNodeExo(elenodes.at(1))[1] << "," <<
+    basemesh.GetNodeExo(elenodes.at(1))[2] << "," <<
+    basemesh.GetNodeExo(elenodes.at(2))[0] << "," <<
+    basemesh.GetNodeExo(elenodes.at(2))[1] << "," <<
+    basemesh.GetNodeExo(elenodes.at(2))[2] << "," <<
+    basemesh.GetNodeExo(elenodes.at(3))[0] << "," <<
+    basemesh.GetNodeExo(elenodes.at(3))[1] << "," <<
+    basemesh.GetNodeExo(elenodes.at(3))[2] << ")" <<
+    "{" << eleid << "," << eleid << "," << eleid << "," << eleid << "};" << endl;
+  } else dserror("numnodes not supported");
+  gmshfilecontent << "};" << endl;
+  gmshfilecontent <<"View \" Normal \" {" << endl;
+  gmshfilecontent << "VP(" <<
+  basemesh.GetNodeExo(nodeid)[0] << "," <<
+  basemesh.GetNodeExo(nodeid)[1] << "," <<
+  basemesh.GetNodeExo(nodeid)[2] << ")" <<
+  "{" << normal.at(0) << "," << normal.at(1) << "," << normal.at(2) << "};" << endl;
+  gmshfilecontent << "};" << endl;
+  f_system << gmshfilecontent.str();
+  f_system.close();
+
+}
+
+void EXODUS::PlotEleNbrs(const vector<int> centerele,const vector<int> nbrs, const map<int,vector<int> >& baseconn,
+    const EXODUS::Mesh& basemesh,const int nodeid, const vector<double> normal, const map<int,set<int> >& node_conn)
+{
+  PrintVec(cout,centerele);
+  PrintVec(cout,nbrs);
+  set<int> patchnodes;
+  ofstream f_system("neighbors.gmsh");
+  stringstream gmshfilecontent;
+  gmshfilecontent << "View \" Neighbors \" {" << endl;
+  int numnodes = centerele.size();
+  if (numnodes==3) gmshfilecontent << "ST(";
+  else if (numnodes==4) gmshfilecontent << "SQ(";
+  for(unsigned int i=0; i<centerele.size(); ++i){
+    // node map starts with 0 but exodus with 1!
+    gmshfilecontent << basemesh.GetNodeExo(centerele.at(i))[0] << ",";
+    gmshfilecontent << basemesh.GetNodeExo(centerele.at(i))[1] << ",";
+    gmshfilecontent << basemesh.GetNodeExo(centerele.at(i))[2];
+    if (i==(centerele.size()-1)) gmshfilecontent << ")";
+    else gmshfilecontent << ",";
+  }
+  gmshfilecontent << "{";
+  for(unsigned int i=0; i<(centerele.size()-1); ++i) gmshfilecontent << -1 << ",";
+  gmshfilecontent << -1 << "};" << endl;
+  vector<int>::const_iterator i_nbr;
+  for(unsigned int i_nbr = 0; i_nbr < nbrs.size(); ++i_nbr){
+    int eleid = nbrs.at(i_nbr);
+    const vector<int> elenodes = baseconn.find(eleid)->second;
+    PrintVec(cout,elenodes);
+    int numnodes = elenodes.size();
+    if (numnodes==3) gmshfilecontent << "ST(";
+    else if (numnodes==4) gmshfilecontent << "SQ(";
+    for(unsigned int i=0; i<elenodes.size(); ++i){
+      patchnodes.insert(elenodes.at(i));
+      gmshfilecontent << basemesh.GetNodeExo(elenodes.at(i))[0] << ",";
+      gmshfilecontent << basemesh.GetNodeExo(elenodes.at(i))[1] << ",";
+      gmshfilecontent << basemesh.GetNodeExo(elenodes.at(i))[2];
+      if (i==(elenodes.size()-1)) gmshfilecontent << ")";
+      else gmshfilecontent << ",";
+    }
+    gmshfilecontent << "{";
+    for(unsigned int i=0; i<(elenodes.size()-1); ++i) gmshfilecontent << i_nbr << ",";
+    gmshfilecontent << i_nbr << "};" << endl;
+  }
+  set<int>::iterator it;
+  set<int>::iterator it2;
+  set<int> patcheles;
+  for (it = patchnodes.begin(); it != patchnodes.end(); ++it){
+    set<int> eles = node_conn.find(*it)->second;
+    for (it2 = eles.begin(); it2 != eles.end(); ++it2) patcheles.insert(*it2);
+  }
+  for(it = patcheles.begin(); it != patcheles.end(); ++it){
+    const vector<int> elenodes = baseconn.find(*it)->second;
+    int numnodes = elenodes.size();
+    if (numnodes==3) gmshfilecontent << "ST(";
+    else if (numnodes==4) gmshfilecontent << "SQ(";
+    for(unsigned int i=0; i<elenodes.size(); ++i){
+      gmshfilecontent << basemesh.GetNodeExo(elenodes.at(i))[0] << ",";
+      gmshfilecontent << basemesh.GetNodeExo(elenodes.at(i))[1] << ",";
+      gmshfilecontent << basemesh.GetNodeExo(elenodes.at(i))[2];
+      if (i==(elenodes.size()-1)) gmshfilecontent << ")";
+      else gmshfilecontent << ",";
+    }
+    gmshfilecontent << "{";
+    for(unsigned int i=0; i<(elenodes.size()-1); ++i) gmshfilecontent << -5 << ",";
+    gmshfilecontent << -5 << "};" << endl;
+  }
+  
+  
+  gmshfilecontent << "};" << endl;
+  gmshfilecontent <<"View \" Normal \" {" << endl;
+  gmshfilecontent << "VP(" <<
+  basemesh.GetNodeExo(nodeid)[0] << "," <<
+  basemesh.GetNodeExo(nodeid)[1] << "," <<
+  basemesh.GetNodeExo(nodeid)[2] << ")" <<
+  "{" << normal.at(0) << "," << normal.at(1) << "," << normal.at(2) << "};" << endl;
+  gmshfilecontent << "};" << endl;
+  f_system << gmshfilecontent.str();
+  f_system.close();
+  
+}
+
+
+void EXODUS::PlotEleConnGmsh(const map<int,vector<int> >& conn, const map<int,vector<double> >& nodes)
+{
+  ofstream f_system("extrusionmesh.gmsh");
+  stringstream gmshfilecontent;
+  gmshfilecontent << "View \" Extrusion \" {" << endl;
+  map<int,vector<int> >::const_iterator it;
+  PrintMap(cout,conn);
+  PrintMap(cout,nodes);
+  for(it = conn.begin(); it != conn.end(); ++it){
+    int eleid = it->first;
+    const vector<int> elenodes = it->second;
+    int numnodes = elenodes.size();
+    if (numnodes==6) gmshfilecontent << "SI(";
+    else if (numnodes==8) gmshfilecontent << "SH(";
+    for(unsigned int i=0; i<elenodes.size(); ++i){
+      // node map starts with 0 but exodus with 1!
+      gmshfilecontent << nodes.find(elenodes.at(i)-1)->second[0] << ",";
+      gmshfilecontent << nodes.find(elenodes.at(i)-1)->second[1] << ",";
+      gmshfilecontent << nodes.find(elenodes.at(i)-1)->second[2];
+      if (i==(elenodes.size()-1)) gmshfilecontent << ")";
+      else gmshfilecontent << ",";
+    }
+    gmshfilecontent << "{";
+    for(unsigned int i=0; i<(elenodes.size()-1); ++i) gmshfilecontent << eleid << ",";
+    gmshfilecontent << eleid << "};" << endl;
+  }
+  gmshfilecontent << "};" << endl;
+  f_system << gmshfilecontent.str();
+  f_system.close();
+}
 
 
 #endif

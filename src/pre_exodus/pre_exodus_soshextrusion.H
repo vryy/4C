@@ -72,6 +72,14 @@ vector<int> FindNodeNeighbors(const vector<int> nodes, const int centernode);
 
 enum ExtrusionType{eblock,sideset};
 
+void PlotStartEleGmsh(const int eleid, const vector<int> elenodes, 
+    const EXODUS::Mesh& basemesh, const int nodeid, const vector<double> normal);
+
+void PlotEleNbrs(const vector<int> centerele,const vector<int> nbrs, const map<int,vector<int> >& baseconn,
+    const EXODUS::Mesh& basemesh, const int nodeid, const vector<double> normal, const map<int,set<int> >& node_conn);
+
+void PlotEleConnGmsh(const map<int,vector<int> >& conn, const map<int,vector<double> >& nodes);
+
 } // of namespace EXODUS
 
 #endif /*PRE_EXODUS_SOSHEXTRUSION_H_*/
