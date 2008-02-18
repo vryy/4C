@@ -267,6 +267,13 @@ void FSI::DirichletNeumannCoupling::SetDefaultParameters(const Teuchos::Paramete
 
     lineSearchParams.set("Method", "Full Step");
     lineSearchParams.sublist("Full Step").set("Full Step", 1.0);
+
+    Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
+    Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
+    Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
+
+    lsParams.set("Tolerance", 0.1);
+
     break;
   }
   case fsi_iter_stagg_MFNK_FSI:
