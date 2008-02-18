@@ -77,7 +77,7 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
     }
   }
 
-  BlitzMat edeadng_(3,numnode,blitz::ColumnMajorArray<2>());
+  BlitzMat edeadng_(3,numnode);
   if (nodecount == numnode)
   {
     // find out whether we will use a (pseudo-)time curve
@@ -659,8 +659,8 @@ void Sysmat(
     
     // split velocity and pressure (and stress)
     BlitzVec eprenp(numparampres);
-    BlitzMat evelnp(3,numparamvelx,blitz::ColumnMajorArray<2>());
-    BlitzMat etau(6,numparamtauxx,blitz::ColumnMajorArray<2>());
+    BlitzMat evelnp(3,numparamvelx);
+    BlitzMat etau(6,numparamtauxx);
     
     const vector<int> velxdof(dofman.LocalDofPosPerField(Velx));
     const vector<int> velydof(dofman.LocalDofPosPerField(Vely));
@@ -753,7 +753,7 @@ void Sysmat(
             const BlitzMat derxy_stress(blitz::sum(xji(i,k)*deriv_stress(k,j),k));
 
             // compute second global derivative
-            static BlitzMat derxy2(6,numnode,blitz::ColumnMajorArray<2>());
+            static BlitzMat derxy2(6,numnode);
             if (higher_order_ele)
             {
                 const BlitzMat deriv2(DRT::UTILS::shape_function_3D_deriv2<DISTYPE>(posXiDomain(0),posXiDomain(1),posXiDomain(2)));
@@ -766,11 +766,11 @@ void Sysmat(
 
             // after this call, one should only use the enriched shape functions and derivatives!
             BlitzVec enr_funct(numparamvelx);
-            BlitzMat enr_derxy(3,numparamvelx,blitz::ColumnMajorArray<2>());
-            BlitzMat enr_derxy2(6,numparamvelx,blitz::ColumnMajorArray<2>());
+            BlitzMat enr_derxy(3,numparamvelx);
+            BlitzMat enr_derxy2(6,numparamvelx);
       
             BlitzVec enr_funct_stress(numparamtauxx);
-            BlitzMat enr_derxy_stress(3,numparamtauxx,blitz::ColumnMajorArray<2>());
+            BlitzMat enr_derxy_stress(3,numparamtauxx);
             if (ASSTYPE == XFEM::xfem_assembly)
             {
                 // shape function for nodal dofs
@@ -835,7 +835,7 @@ void Sysmat(
             const BlitzMat vderxy(blitz::sum(enr_derxy(j,k)*evelnp(i,k),k));
       
             // calculate 2nd velocity derivatives at integration point
-            static BlitzMat vderxy2(3,6,blitz::ColumnMajorArray<2>());
+            static BlitzMat vderxy2(3,6);
             if (higher_order_ele)
             {
                 vderxy2 = blitz::sum(enr_derxy2(j,k)*evelnp(i,k),k);
@@ -852,7 +852,7 @@ void Sysmat(
             const double press(blitz::sum(enr_funct*eprenp));
     
             // get viscous stress unknowns
-            static BlitzMat tau(3,3,blitz::ColumnMajorArray<2>());
+            static BlitzMat tau(3,3);
             if (stress_unknowns_present)
             {
                 tau(0,0) = blitz::sum(shp_tau(_)*etau(0,_)); tau(0,1) = blitz::sum(shp_tau(_)*etau(3,_)); tau(0,2) = blitz::sum(shp_tau(_)*etau(4,_));
@@ -973,7 +973,7 @@ void Sysmat(
     
                with N_x .. x-line of N
                N_y .. y-line of N                                             */
-            static blitz::Array<double,3> enr_viscs2_(3,3,numparamvelx,blitz::ColumnMajorArray<3>());
+            static blitz::Array<double,3> enr_viscs2_(3,3,numparamvelx);
             enr_viscs2_(0,0,_) = 0.5 * (2.0 * shp_dxdx + shp_dydy + shp_dzdz);
             enr_viscs2_(0,1,_) = 0.5 *  shp_dxdy;
             enr_viscs2_(0,2,_) = 0.5 *  shp_dxdz;
@@ -1480,6 +1480,41 @@ void Sysmat(
         } // end loop over gauss points
     } // end loop over integration cells
     
+
+//    // print discontinous  stress
+//    if (stress_unknowns_present)
+//    {
+//        std::ofstream filename;
+//        filename << "discontinous_stress_" << ele->Id() << ".pos"
+//        std::ofstream f_system(filename.c_str());
+//        {
+//            // draw elements with associated gid
+//            stringstream gmshfilecontent;
+//            gmshfilecontent << "View \" " << "stress of Element " << (ele->Id()+1) << " \" {" << endl;
+//            XFEM::DomainIntCells::const_iterator cell;
+//            for (cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
+//            {
+//                //gmshfilecontent << IO::GMSH::cellToString(cell->NodalPosXYZ(*ele), 0.0, cell->Shape()) << endl;
+//                gmshfilecontent << IO::GMSH::cellToString(cell->NodalPosXiDomain(), 0.0, cell->Shape()) << endl;
+//            };
+//            gmshfilecontent << "};" << endl;
+//            f_system << gmshfilecontent.str();
+//        }
+//        {
+//            // draw elements with associated gid
+//            stringstream gmshfilecontent;
+//            gmshfilecontent << "View \" " << "BoundaryIntegrationCells \" {" << endl;
+//            XFEM::BoundaryIntCells::const_iterator cell;
+//            for (cell = boundaryIntCells.begin(); cell != boundaryIntCells.end(); ++cell)
+//            {
+//                //gmshfilecontent << IO::GMSH::cellToString(cell->NodalPosXYZ(*ele), 0.0, cell->Shape()) << endl;
+//                gmshfilecontent << IO::GMSH::cellToString(cell->NodalPosXiDomain(), 0.0, cell->Shape()) << endl;
+//            };
+//            gmshfilecontent << "};" << endl;
+//            f_system << gmshfilecontent.str();
+//        }
+//        f_system.close();
+//    }
     
     
     //if (false)
@@ -1625,7 +1660,7 @@ void Sysmat(
             const BlitzVec velint_(blitz::sum(shp(j)*evelnp(i,j),j));
 
             // get viscous stress unknowns
-            BlitzMat tau(3,3,blitz::ColumnMajorArray<2>());
+            BlitzMat tau(3,3);
             tau(0,0) = blitz::sum(shp_tau(_)*etau(0,_)); tau(0,1) = blitz::sum(shp_tau(_)*etau(3,_)); tau(0,2) = blitz::sum(shp_tau(_)*etau(4,_));
             tau(1,0) = tau(0,1);                         tau(1,1) = blitz::sum(shp_tau(_)*etau(1,_)); tau(1,2) = blitz::sum(shp_tau(_)*etau(5,_));
             tau(2,0) = tau(0,2);                         tau(2,1) = tau(1,2);                         tau(2,2) = blitz::sum(shp_tau(_)*etau(2,_));
