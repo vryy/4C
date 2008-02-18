@@ -92,7 +92,9 @@ public:
   */
   ~XFluidImplicitTimeInt();
 
-  void ComputeSingleFieldRowMaps(RCP<XFEM::DofManager> dofman);
+  void SetupXFluidSplit(
+          RCP<XFEM::DofManager> dofman,
+          LINALG::MapExtractor& extractor);
 
   /*!
   \brief do explicit predictor step to start nonlinear iteration from
@@ -207,8 +209,8 @@ public:
   Teuchos::RCP<Epetra_Operator> SysMat() { return sysmat_->EpetraOperator(); }
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
 
-  Teuchos::RCP<Epetra_Map> VelocityRowMap() { return velrowmap_; }
-  Teuchos::RCP<Epetra_Map> PressureRowMap() { return prerowmap_; }
+  Teuchos::RCP<Epetra_Map> VelocityRowMap() { return velpressplitter_.CondMap(); }
+  Teuchos::RCP<Epetra_Map> PressureRowMap() { return velpressplitter_.OtherMap(); }
 
   double ResidualScaling() const { return density_/dta_/theta_; }
 
@@ -360,14 +362,6 @@ protected:
   // ------------------------------------
 
   LINALG::MapExtractor      velpressplitter_;
-
-  // Vectors used for convergence check
-  // ----------------------------------
-  RCP<Epetra_Map>       velrowmap_;
-  RCP<Epetra_Map>       prerowmap_;
-
-  RCP<Epetra_Vector>    onlyvel;
-  RCP<Epetra_Vector>    onlypre;
 
 
   // time measurement

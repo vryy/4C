@@ -30,6 +30,8 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/intersection.H"
 #include "../drt_xfem/interface.H"
 #include "../drt_xfem/dof_management.H"
+#include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/linalg_mapextractor.H"
 
 
 
@@ -151,15 +153,13 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
   const Epetra_Map* soliddofrowmap = cutterdiscret_->DofRowMap();
 
-  ComputeSingleFieldRowMaps(initialdofmanager);
-
   // -------------------------------------------------------------------
   // get a vector layout from the discretization for a vector which only
   // contains the velocity dofs and for one vector which only contains
   // pressure degrees of freedom.
   // -------------------------------------------------------------------
 
-  const int numdim = params_.get<int>("number of velocity degrees of freedom");
+  SetupXFluidSplit(initialdofmanager,velpressplitter_);
 
   // -------------------------------------------------------------------
   // get the processor ID from the communicator
@@ -274,7 +274,9 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 // vectors and matrices
 //                 local <-> global dof numbering
 // -------------------------------------------------------------------
-void XFluidImplicitTimeInt::ComputeSingleFieldRowMaps(RCP<XFEM::DofManager> dofman)
+void XFluidImplicitTimeInt::SetupXFluidSplit(
+        RCP<XFEM::DofManager> dofman,
+        LINALG::MapExtractor& extractor)
 {
 	// -------------------------------------------------------------------
 	// get a vector layout from the discretization for a vector which only
@@ -318,12 +320,15 @@ void XFluidImplicitTimeInt::ComputeSingleFieldRowMaps(RCP<XFEM::DofManager> dofm
 
 	// the rowmaps are generated according to the pattern provided by
 	// the data vectors
-	velrowmap_ = rcp(new Epetra_Map(-1,
+	RCP<Epetra_Map> velrowmap = rcp(new Epetra_Map(-1,
 			velmapdata.size(),&velmapdata[0],0,
 			discret_->Comm()));
-	prerowmap_ = rcp(new Epetra_Map(-1,
+	RCP<Epetra_Map> prerowmap = rcp(new Epetra_Map(-1,
 			premapdata.size(),&premapdata[0],0,
 			discret_->Comm()));
+	
+	const Epetra_Map* map = discret_->DofRowMap();
+	extractor.Setup(*map, velrowmap, prerowmap);
 }
 
 
@@ -933,47 +938,34 @@ void XFluidImplicitTimeInt::NonlinearSolve()
     double incvelnorm_L2;
     double velnorm_L2;
     double vresnorm;
-    {
-      Epetra_Vector onlyvel(*velrowmap_);
-      Epetra_Import importer(*velrowmap_,residual_->Map());
+    
+    Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractCondVector(residual_);
+    onlyvel->Norm2(&vresnorm);
 
-      int err = onlyvel.Import(*residual_,importer,Insert);
-      if (err) dserror("Import using importer returned err=%d",err);
-      onlyvel.Norm2(&vresnorm);
+    velpressplitter_.ExtractCondVector(incvel_,onlyvel);
+    onlyvel->Norm2(&incvelnorm_L2);
 
-      err = onlyvel.Import(*incvel_,importer,Insert);
-      if (err) dserror("Import using importer returned err=%d",err);
-      onlyvel.Norm2(&incvelnorm_L2);
-
-      err = onlyvel.Import(*velnp_,importer,Insert);
-      if (err) dserror("Import using importer returned err=%d",err);
-      onlyvel.Norm2(&velnorm_L2);
-    }
+    velpressplitter_.ExtractCondVector(velnp_,onlyvel);
+    onlyvel->Norm2(&velnorm_L2);
 
     double incprenorm_L2;
     double prenorm_L2;
     double presnorm;
-    {
-      Epetra_Vector onlypre(*prerowmap_);
-      Epetra_Import importer(*prerowmap_,residual_->Map());
+    
+    Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractOtherVector(residual_);
+    onlypre->Norm2(&presnorm);
 
-      int err = onlypre.Import(*residual_,importer,Insert);
-      if (err) dserror("Import using importer returned err=%d",err);
-      onlypre.Norm2(&presnorm);
+    velpressplitter_.ExtractOtherVector(incvel_,onlypre);
+    onlypre->Norm2(&incprenorm_L2);
 
-      err = onlypre.Import(*incvel_,importer,Insert);
-      if (err) dserror("Import using importer returned err=%d",err);
-      onlypre.Norm2(&incprenorm_L2);
-
-      err = onlypre.Import(*velnp_,importer,Insert);
-      if (err) dserror("Import using importer returned err=%d",err);
-      onlypre.Norm2(&prenorm_L2);
-    }
+    velpressplitter_.ExtractOtherVector(velnp_,onlypre);
+    onlypre->Norm2(&prenorm_L2);
+    
 
     double incfullnorm_L2;
     double fullnorm_L2;
     double fullresnorm;
-    {
+    
       Epetra_Vector full(*dofrowmap);
       Epetra_Import importer(*dofrowmap,residual_->Map());
 
@@ -988,7 +980,7 @@ void XFluidImplicitTimeInt::NonlinearSolve()
       err = full.Import(*velnp_,importer,Insert);
       if (err) dserror("Import using importer returned err=%d",err);
       full.Norm2(&fullnorm_L2);
-    }
+    
 
     // care for the case that nothing really happens in the velocity
     // or pressure field
