@@ -399,7 +399,10 @@ void LINALG::Solver::Solve_aztec(const bool reset)
     {
       // SIMPLER does not need copy of preconditioning matrix to live
       RCP<Epetra_CrsMatrix> rcpA = rcp(A,false);
-      P_ = rcp(new LINALG::SIMPLER_Operator(rcpA,Params(),Params().sublist("SIMPLER")));
+      P_ = rcp(new LINALG::SIMPLER_Operator(rcpA,
+                                            Params(),
+                                            Params().sublist("SIMPLER")),
+                                            outfile_);
       Pmatrix_ = null;
     }
     else
