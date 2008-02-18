@@ -225,8 +225,6 @@ public:
   */
   void LiftDrag() const;
 
-  //@}
-
   /// integrate shape functions at nodes marked by condition
   /*!
     Needed for Mortar coupling at the FSI interface
@@ -238,6 +236,8 @@ public:
     This is the linear solve as needed for steepest descent FSI.
    */
   void LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax);
+
+  //@}
 
 protected:
 

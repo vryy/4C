@@ -115,7 +115,7 @@ namespace LINALG
                           const std::vector<int>& lmrowowner,
                           const std::vector<int>& lmcol) = 0;
 
-    /// Call FillComplete on a matrix (for square matrices only!)
+    /// Call FillComplete on a matrix
     virtual void Complete() = 0;
 
     /// Call FillComplete on a matrix (for rectangular and square matrices)

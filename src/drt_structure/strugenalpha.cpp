@@ -750,6 +750,119 @@ void StruGenAlpha::ConsistentPredictor()
   return;
 } // StruGenAlpha::ConsistentPredictor()
 
+
+/*----------------------------------------------------------------------*
+ |  setup equilibrium with additional external forces        u.kue 02/08|
+ *----------------------------------------------------------------------*/
+void StruGenAlpha::ApplyExternalForce(const LINALG::MapExtractor& extractor,
+                                      Teuchos::RCP<Epetra_Vector> iforce)
+{
+  // -------------------------------------------------------------------
+  // get some parameters from parameter list
+  // -------------------------------------------------------------------
+  double time        = params_.get<double>("total time"     ,0.0);
+  double dt          = params_.get<double>("delta time"     ,0.01);
+  int    step        = params_.get<int>   ("step"           ,0);
+  bool   damping     = params_.get<bool>  ("damping"        ,false);
+  double alphaf      = params_.get<double>("alpha f"        ,0.459);
+  //double alpham      = params_.get<double>("alpha m"        ,0.378);
+  //double beta        = params_.get<double>("beta"           ,0.292);
+  //double gamma       = params_.get<double>("gamma"          ,0.581);
+  bool   printscreen = params_.get<bool>  ("print to screen",false);
+  string convcheck   = params_.get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
+
+  // increment time and step
+  double timen = time + dt;
+
+  // Copy iforce to fextn_ but leave all values not in iforce alone.
+  extractor.InsertCondVector(iforce,fextn_);
+
+  //------------------------------- compute interpolated external forces
+  // external mid-forces F_{ext;n+1-alpha_f} (fextm)
+  //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1}
+  //                         + alpha_f * F_{ext;n}
+  fextm_->Update(1.-alphaf,*fextn_,alphaf,*fext_,0.0);
+
+  //------------- eval fint at interpolated state, eval stiffness matrix
+  {
+    // zero out stiffness
+    stiff_->Zero();
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_nlnstiff");
+    // choose what to assemble
+    p.set("assemble matrix 1",true);
+    p.set("assemble matrix 2",false);
+    p.set("assemble vector 1",true);
+    p.set("assemble vector 2",false);
+    p.set("assemble vector 3",false);
+    // other parameters that might be needed by the elements
+    p.set("total time",timen);
+    p.set("delta time",dt);
+    // set vector values needed by elements
+    discret_.ClearState();
+    discret_.SetState("residual displacement",disi_);
+    discret_.SetState("displacement",dism_);
+    //discret_.SetState("velocity",velm_); // not used at the moment
+    fint_->PutScalar(0.0);  // initialise internal force vector
+    discret_.Evaluate(p,stiff_,null,fint_,null,null);
+    discret_.ClearState();
+
+    if (surf_stress_man_!=null)
+    {
+      p.set("surfstr_man", surf_stress_man_);
+      surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
+    }
+
+    // do NOT finalize the stiffness matrix, add mass and damping to it later
+  }
+
+  //-------------------------------------------- compute residual forces
+  // Res = M . A_{n+1-alpha_m}
+  //     + C . V_{n+1-alpha_f}
+  //     + F_int(D_{n+1-alpha_f})
+  //     - F_{ext;n+1-alpha_f}
+  // add mid-inertial force
+  mass_->Multiply(false,*accm_,*finert_);
+  fresm_->Update(1.0,*finert_,0.0);
+  // add mid-viscous damping force
+  if (damping)
+  {
+    //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
+    damp_->Multiply(false,*velm_,*fvisc_);
+    fresm_->Update(1.0,*fvisc_,1.0);
+  }
+
+  // add static mid-balance
+  fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+
+  // blank residual at DOFs on Dirichlet BC
+  {
+    Epetra_Vector fresmcopy(*fresm_);
+    fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
+  }
+
+  //------------------------------------------------ build residual norm
+  double fresmnorm = 1.0;
+
+  // store norms of displacements and maximum of norms of internal,
+  // external and inertial forces if a relative convergence check
+  // is desired and we are in the first time step
+  if (step == 0 and (convcheck != "AbsRes_And_AbsDis" or convcheck != "AbsRes_Or_AbsDis"))
+  {
+    CalcRefNorms();
+  }
+
+  if (printscreen)
+    fresm_->Norm2(&fresmnorm);
+  if (!myrank_ and printscreen)
+  {
+    PrintPredictor(convcheck, fresmnorm);
+  }
+}
+
+
 /*----------------------------------------------------------------------*
  |  build linear system matrix and rhs (public)              u.kue 03/07|
  *----------------------------------------------------------------------*/
@@ -1072,8 +1185,8 @@ void StruGenAlpha::NonLinearUzawaFullNewton(int predictor)
 {
 	  int  maxiterUzawa   	= params_.get<int>   ("uzawa maxiter"         ,50);
 	  double Uzawa_param	= params_.get<double>("uzawa parameter",1);
-	  double tolconstr    	= params_.get<double>("tolerance constraint"     ,1.0e-07);
-	  double alphaf    		= params_.get<double>("alpha f"                ,0.459);
+	  double tolconstr    	= params_.get<double>("tolerance constraint"   ,1.0e-07);
+	  double alphaf    	= params_.get<double>("alpha f"                ,0.459);
 	  double time       	= params_.get<double>("total time"             ,0.0);
 	  double dt            	= params_.get<double>("delta time"             ,0.01);
 
@@ -1107,9 +1220,9 @@ void StruGenAlpha::NonLinearUzawaFullNewton(int predictor)
 }
 
 /*----------------------------------------------------------------------*
- |  							                            	tk 11/07|
- | Newton iteration respecting constraints.						|
- | Uzawa algorithm is used to deal with lagrange multipliers			|
+ |				                            	tk 11/07|
+ | Newton iteration respecting constraints.				|
+ | Uzawa algorithm is used to deal with lagrange multipliers		|
  *----------------------------------------------------------------------*/
 void StruGenAlpha::FullNewtonLinearUzawa()
 {
@@ -3518,5 +3631,92 @@ void StruGenAlpha::PrintPredictor(string convcheck, double fresmnorm)
   }
   fflush(stdout);
 }
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> StruGenAlpha::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax)
+{
+  // -------------------------------------------------------------------
+  // get some parameters from parameter list
+  // -------------------------------------------------------------------
+  double time      = params_.get<double>("total time",0.0);
+  double dt        = params_.get<double>("delta time"             ,0.01);
+  double timen     = time + dt;  // t_{n+1}
+  const Epetra_Map* dofrowmap = discret_.DofRowMap();
+  bool   damping   = params_.get<bool>  ("damping"                ,false);
+  double beta      = params_.get<double>("beta"                   ,0.292);
+  double gamma     = params_.get<double>("gamma"                  ,0.581);
+  double alpham    = params_.get<double>("alpha m"                ,0.378);
+  double alphaf    = params_.get<double>("alpha f"                ,0.459);
+
+  // we start from zero
+  fextm_->Update(1.-alphaf,*relax,0.0);
+
+  // This (re)creates the stiffness matrix at the current
+  // configuration.
+  //------------- eval fint at interpolated state, eval stiffness matrix
+  {
+    // zero out stiffness
+    stiff_->Zero();
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_nlnstiff");
+    // other parameters that might be needed by the elements
+    p.set("total time",timen);
+    p.set("delta time",dt);
+    // set vector values needed by elements
+    discret_.ClearState();
+    discret_.SetState("residual displacement",disi_);
+    discret_.SetState("displacement",dism_);
+    //discret_.SetState("velocity",velm_); // not used at the moment
+    fint_->PutScalar(0.0);  // initialise internal force vector
+    discret_.Evaluate(p,stiff_,fint_);
+    discret_.ClearState();
+    // do NOT finalize the stiffness matrix, add mass and damping to it later
+  }
+
+  //-------------------------------------------- compute residual forces
+  // Res = M . A_{n+1-alpha_m}
+  //     + C . V_{n+1-alpha_f}
+  //     + F_int(D_{n+1-alpha_f})
+  //     - F_{ext;n+1-alpha_f}
+  // add mid-inertial force
+  mass_->Multiply(false,*accm_,*fresm_);
+  // add mid-viscous damping force
+  if (damping)
+  {
+      RCP<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
+      damp_->Multiply(false,*velm_,*fviscm);
+      fresm_->Update(1.0,*fviscm,1.0);
+  }
+
+  // add static mid-balance
+  fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+
+  // blank residual at DOFs on Dirichlet BC
+  Epetra_Vector fresmcopy(*fresm_);
+  fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
+
+  //------------------------------------------- effective rhs is fresm
+  //---------------------------------------------- build effective lhs
+  // (using matrix stiff_ as effective matrix)
+  stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
+  if (damping)
+    stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+  stiff_->Complete();
+
+  //----------------------- apply dirichlet BCs to system of equations
+  disi_->PutScalar(0.0);  // Useful? depends on solver and more
+  LINALG::ApplyDirichlettoSystem(stiff_,disi_,fextm_,zeros_,dirichtoggle_);
+
+  //--------------------------------------------------- solve for disi
+  // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
+  solver_.Solve(stiff_->EpetraMatrix(),disi_,fextm_,true,true);
+
+  return disi_;
+}
+
 
 #endif  // #ifdef CCADISCRET

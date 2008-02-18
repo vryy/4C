@@ -36,10 +36,10 @@ Maintainer: Ulrich Kuettler
 #include <NOX_Thyra_Group.H>
 #include <NOX_Thyra_Vector.H>
 
-#include "mfsi_structure.H"
 #include "mfsi_coupling.H"
 #include "mfsi_debug.H"
 
+#include "../drt_fsi/fsi_structure.H"
 #include "../drt_fsi/fsi_fluid.H"
 #include "../drt_fsi/fsi_ale.H"
 
@@ -157,9 +157,9 @@ namespace MFSI
 
     Teuchos::RefCountPtr<NOX::Utils> Utils() const { return utils_; }
 
-    Teuchos::RCP<Structure>  StructureField() const { return structure_; }
-    Teuchos::RCP<FSI::Fluid> FluidField()     const { return fluid_; }
-    Teuchos::RCP<FSI::Ale>   AleField()       const { return ale_; }
+    Teuchos::RCP<FSI::Structure> StructureField() const { return structure_; }
+    Teuchos::RCP<FSI::Fluid>     FluidField()     const { return fluid_; }
+    Teuchos::RCP<FSI::Ale>       AleField()       const { return ale_; }
 
     Teuchos::RCP<Thyra::DefaultProductVectorSpace<double> > DofRowMap() const { return dofrowmap_; }
     void SetDofRowMap(Teuchos::RCP<Thyra::DefaultProductVectorSpace<double> > drm) { dofrowmap_ = drm; }
@@ -256,13 +256,13 @@ namespace MFSI
     //@}
 
     /// structural field solver
-    Teuchos::RCP<Structure>  structure_;
+    Teuchos::RCP<FSI::Structure> structure_;
 
     /// fluid field solver
-    Teuchos::RCP<FSI::Fluid> fluid_;
+    Teuchos::RCP<FSI::Fluid>     fluid_;
 
     /// ale field solver
-    Teuchos::RCP<FSI::Ale>   ale_;
+    Teuchos::RCP<FSI::Ale>       ale_;
 
     /// output utilities
     Teuchos::RefCountPtr<NOX::Utils> utils_;

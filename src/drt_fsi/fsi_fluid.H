@@ -89,7 +89,6 @@ namespace FSI {
     virtual void NonlinearSolve() = 0;
 
     /// the interface map contains all velocity dofs at the interface
-    virtual void SetInterfaceMap(Teuchos::RefCountPtr<Epetra_Map> im) = 0;
     virtual Teuchos::RCP<Epetra_Map> InterfaceMap() = 0;
     virtual Teuchos::RCP<Epetra_Map> InnerVelocityRowMap() = 0;
     virtual Teuchos::RCP<Epetra_Map> PressureRowMap() = 0;
@@ -178,7 +177,6 @@ namespace FSI {
     virtual void NonlinearSolve();
 
     /// the interface map contains all velocity dofs at the interface
-    virtual void SetInterfaceMap(Teuchos::RefCountPtr<Epetra_Map> im);
     virtual Teuchos::RCP<Epetra_Map> InterfaceMap();
     virtual Teuchos::RCP<Epetra_Map> InnerVelocityRowMap();
     virtual Teuchos::RCP<Epetra_Map> PressureRowMap();

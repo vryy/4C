@@ -191,13 +191,6 @@ void FSI::AleLinear::EvaluateElements()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::AleLinear::SetInterfaceMap(Teuchos::RCP<Epetra_Map> im)
-{
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void FSI::AleLinear::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp)
 {
   interface_.InsertCondVector(idisp,dispnp_);

@@ -197,7 +197,6 @@ OBJS_DRT_FSI  = src/drt_fsi/ale_dyn.o \
 OBJS_DRT_MFSI = src/drt_mfsi/mfsi_algorithm.o \
 		src/drt_mfsi/mfsi_lagrangealgorithm.o \
 		src/drt_mfsi/mfsi_overlapalgorithm.o \
-		src/drt_mfsi/mfsi_structure.o \
 		src/drt_mfsi/mfsi_nox_thyra_group.o \
 		src/drt_mfsi/mfsi_preconditionerfactory.o \
 		src/drt_mfsi/mfsi_overlappreccondfactory.o \

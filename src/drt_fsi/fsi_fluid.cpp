@@ -31,6 +31,28 @@ FSI::FluidAdapter::FluidAdapter(Teuchos::RCP<DRT::Discretization> dis,
     output_(output)
 {
   FSI::UTILS::SetupInterfaceExtractor(*dis,"FSICoupling",interface_);
+
+  // build inner velocity map
+  // dofs at the interface are excluded
+  // we use only velocity dofs and only those without Dirichlet constraint
+
+  Teuchos::RCP<Epetra_Map> velmap = fluid_.VelocityRowMap();
+  Teuchos::RCP<Epetra_Vector> dirichtoggle = fluid_.Dirichlet();
+  Teuchos::RCP<const Epetra_Map> fullmap = DofRowMap();
+
+  int numvelids = velmap->NumMyElements();
+  std::vector<int> velids;
+  velids.reserve(numvelids);
+  for (int i=0; i<numvelids; ++i)
+  {
+    int gid = velmap->GID(i);
+    if (not interface_.CondMap()->MyGID(gid) and (*dirichtoggle)[fullmap->LID(gid)]==0.)
+    {
+      velids.push_back(gid);
+    }
+  }
+
+  innervelmap_ = Teuchos::rcp(new Epetra_Map(-1,velids.size(), &velids[0], 0, velmap->Comm()));
 }
 
 
@@ -153,34 +175,6 @@ void FSI::FluidAdapter::Output()
 void FSI::FluidAdapter::NonlinearSolve()
 {
   fluid_.NonlinearSolve();
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FSI::FluidAdapter::SetInterfaceMap(Teuchos::RefCountPtr<Epetra_Map> im)
-{
-  // build inner velocity map
-  // dofs at the interface are excluded
-  // we use only velocity dofs and only those without Dirichlet constraint
-
-  Teuchos::RCP<Epetra_Map> velmap = fluid_.VelocityRowMap();
-  Teuchos::RCP<Epetra_Vector> dirichtoggle = fluid_.Dirichlet();
-  Teuchos::RCP<const Epetra_Map> fullmap = DofRowMap();
-
-  int numvelids = velmap->NumMyElements();
-  std::vector<int> velids;
-  velids.reserve(numvelids);
-  for (int i=0; i<numvelids; ++i)
-  {
-    int gid = velmap->GID(i);
-    if (not interface_.CondMap()->MyGID(gid) and (*dirichtoggle)[fullmap->LID(gid)]==0.)
-    {
-      velids.push_back(gid);
-    }
-  }
-
-  innervelmap_ = Teuchos::rcp(new Epetra_Map(-1,velids.size(), &velids[0], 0, velmap->Comm()));
 }
 
 

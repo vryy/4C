@@ -76,13 +76,6 @@ public:
   /// write output
   virtual void Output() = 0;
 
-  //! @name Interface Map
-
-  /// the map of all interface dofs will be set from the outside
-  virtual void SetInterfaceMap(Teuchos::RCP<Epetra_Map> im) = 0;
-
-  //@}
-
   //! @name Apply interface displacements
 
   /// displacements at the interface are prescribed

@@ -187,7 +187,7 @@ void MFSI::Algorithm::SetupStructure()
   // takes values "full newton" , "modified newton" , "nonlinear cg"
   genalphaparams->set<string>("equilibrium iteration","full newton");
 
-  structure_ = rcp(new StructureAdapter(genalphaparams,actdis,solver,output));
+  structure_ = rcp(new FSI::StructureAdapter(genalphaparams,actdis,solver,output));
 }
 
 

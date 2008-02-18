@@ -1,8 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file
+\file fsi_structure.H
 
-\brief Solve FSI problems using a Dirichlet-Neumann partitioning approach
+\brief Structure field adapter
 
 <pre>
 Maintainer: Ulrich Kuettler
@@ -15,117 +15,207 @@ Maintainer: Ulrich Kuettler
 
 #ifdef CCADISCRET
 
-#ifndef FSI_STRUCTURE_H
-#define FSI_STRUCTURE_H
+#ifndef MFSI_STRUCTURE_H
+#define MFSI_STRUCTURE_H
+
+#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_ParameterList.hpp>
+
+#include <Epetra_Vector.h>
+#include <Epetra_Map.h>
+#include <Epetra_Operator.h>
 
 #include "../drt_structure/strugenalpha.H"
-
-#include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
 
 #include "fsi_utils.H"
 
 
-namespace FSI
-{
+namespace FSI {
 
-/// Structural dynamics algorithm enhanced for FSI
-/*!
-  Dirichlet-Neumann FSI needs to apply interface forces to the
-  structure and takes interface displacements after the structural
-  solve. The coupling algorithm is implemented in
-  DirichletNeumannCoupling.
+  /// general structural field interface
+  /*!
 
-  \note the coupling of this class to its base StruGenAlpha is really
-  close. You have to understand StruGenAlpha before you look here.
+  The point is to keep FSI as far apart from our field solvers as
+  possible. Each structure field solver we want to use should get its own
+  subclass of this. The FSI algorithm should be able to extract all the
+  information from the structure field it needs using this interface.
+
+  \warning A cleanup is needed badly.
 
   \author u.kue
-  \date 10/07
- */
-class Structure : public StruGenAlpha
-{
-public:
-  Structure(Teuchos::RCP<ParameterList> params,
-            Teuchos::RCP<DRT::Discretization> dis,
-            Teuchos::RCP<LINALG::Solver> solver,
-            Teuchos::RCP<IO::DiscretizationWriter> output);
+  \date 11/07
+  */
+  class Structure
+  {
+  public:
 
-  /// announce a new time step to the solver
-  /*!
-    Start the time step by a predictor call.
-   */
-  void PrepareTimeStep();
+    virtual ~Structure();
 
-  //! @name Interface Map
-  //! the map of all interface dofs will be set from the outside
+    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> RHS() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> Dispnp() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> Disp() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> Dispm() = 0;
+    virtual Teuchos::RCP<const Epetra_Map> DofRowMap() = 0;
+    virtual Teuchos::RCP<Epetra_Operator> SysMat() = 0;
+    virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
+    virtual double DispIncrFactor() = 0;
 
-  Teuchos::RCP<const Epetra_Map> InterfaceMap() { return interface_.CondMap(); }
-  void SetInterfaceMap(Teuchos::RCP<Epetra_Map> im);
+    virtual Teuchos::RCP<Epetra_Vector> FluidCondRHS() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> MeshCondRHS() = 0;
 
-  //@}
+    virtual void PrepareTimeStep() = 0;
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disp) = 0;
+    virtual void Update() = 0;
+    virtual void Output() = 0;
 
-  //! @name Extract interface values
+    virtual Teuchos::RCP<Epetra_Map> InterfaceMap() = 0;
+    virtual Teuchos::RCP<Epetra_Map> InnerDisplacementRowMap() = 0;
 
-  /// extract displacements
-  Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispn();
+    /// communication object at the interface
+    virtual const LINALG::MapExtractor& Interface() const = 0;
 
-  /// extract displacements
-  Teuchos::RCP<Epetra_Vector> ExtractInterfaceDisplacement();
+    virtual const Epetra_Map& DomainMap() = 0;
 
-  /// Predictor for interface displacements
-  Teuchos::RCP<Epetra_Vector> PredictInterfaceDisplacement();
+    virtual void ReadRestart(int step) = 0;
 
-  //@}
+    virtual void UpdateandOutput() = 0;
 
-  //! @name Apply interface forces
+    virtual void Solve() = 0;
 
-  /// apply interface forces to structural solver
-  /*!
-    This prepares a new solve of the structural field within one time
-    step. The middle values are newly created.
+    /// linear structure solve with just a interface load
+    /*!
+      The very special solve done in steepest descent relaxation
+      calculation (and matrix free Newton Krylov).
 
-    \note This is not yet the most efficient implementation.
-   */
-  void ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce);
+      \note Can only be called after a valid structural solve.
+    */
+    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> iforce) = 0;
 
-  //@}
+    //! @name Extract interface values
 
-  /// discretization access
-  const DRT::Discretization& Discretization() const { return discret_; };
+    /// extract displacements
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispn() = 0;
 
-  /// solve the current system
-  void Solve();
+    /// extract displacements
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDisplacement() = 0;
 
-  /// linear structure solve with just a interface load
-  /*!
-    The very special solve done in steepest descent relaxation
-    calculation (and matrix free Newton Krylov).
+    /// Predictor for interface displacements
+    virtual Teuchos::RCP<Epetra_Vector> PredictInterfaceDisplacement() = 0;
 
-    \note Can only be called after a valid structural solve.
-   */
-  Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> iforce);
+    //@}
 
-  /// communication object at the interface
-  const LINALG::MapExtractor& Interface() const { return interface_; }
+    //! @name Apply interface forces
 
-private:
+    /// apply interface forces to structural solver
+    /*!
+      This prepares a new solve of the structural field within one time
+      step. The middle values are newly created.
 
-  /// element call and effective stiffness calculation
-  void CalculateStiffness();
+      \note This is not yet the most efficient implementation.
+    */
+    virtual void ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce) = 0;
 
-  /// the interface map setup for interface <-> full translation
-  LINALG::MapExtractor interface_;
+    //@}
+  };
 
-  /// copy of external forces needed to reapply the interface forces
-  Teuchos::RCP<Epetra_Vector> fextncopy_;
 
-  //! @name local copies of input parameters
-  Teuchos::RCP<ParameterList> params_;
-  Teuchos::RCP<LINALG::Solver> solver_;
-  Teuchos::RCP<IO::DiscretizationWriter> output_;
-  //@}
-};
+  /// adapter to generalized alpha algorithm
+  class StructureAdapter : public Structure
+  {
+  public:
 
+    StructureAdapter(Teuchos::RCP<Teuchos::ParameterList> params,
+                     Teuchos::RCP<DRT::Discretization> dis,
+                     Teuchos::RCP<LINALG::Solver> solver,
+                     Teuchos::RCP<IO::DiscretizationWriter> output);
+
+    Teuchos::RCP<const Epetra_Vector> InitialGuess();
+    Teuchos::RCP<Epetra_Vector> RHS();
+    Teuchos::RCP<Epetra_Vector> Dispnp();
+    Teuchos::RCP<Epetra_Vector> Disp();
+    Teuchos::RCP<Epetra_Vector> Dispm();
+    Teuchos::RCP<const Epetra_Map> DofRowMap();
+    Teuchos::RCP<Epetra_Operator> SysMat();
+    Teuchos::RCP<DRT::Discretization> Discretization();
+    double DispIncrFactor();
+
+    virtual Teuchos::RCP<Epetra_Vector> FluidCondRHS();
+    virtual Teuchos::RCP<Epetra_Vector> MeshCondRHS();
+
+    //Teuchos::RCP<Epetra_Vector> InterfaceDispn();
+
+    void PrepareTimeStep();
+    void Evaluate(Teuchos::RCP<const Epetra_Vector> disp);
+    void Update();
+    void Output();
+
+    Teuchos::RCP<Epetra_Map> InterfaceMap() { return interface_.CondMap(); }
+    Teuchos::RCP<Epetra_Map> InnerDisplacementRowMap() { return interface_.OtherMap(); }
+
+    /// communication object at the interface
+    virtual const LINALG::MapExtractor& Interface() const { return interface_; }
+
+    virtual const Epetra_Map& DomainMap();
+
+    virtual void ReadRestart(int step);
+
+    virtual void UpdateandOutput();
+
+    virtual void Solve();
+
+    /// linear structure solve with just a interface load
+    /*!
+      The very special solve done in steepest descent relaxation
+      calculation (and matrix free Newton Krylov).
+
+      \note Can only be called after a valid structural solve.
+    */
+    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> iforce);
+
+    //! @name Extract interface values
+
+    /// extract displacements
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispn();
+
+    /// extract displacements
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDisplacement();
+
+    /// Predictor for interface displacements
+    virtual Teuchos::RCP<Epetra_Vector> PredictInterfaceDisplacement();
+
+    //@}
+
+    //! @name Apply interface forces
+
+    /// apply interface forces to structural solver
+    /*!
+      This prepares a new solve of the structural field within one time
+      step. The middle values are newly created.
+
+      \note This is not yet the most efficient implementation.
+    */
+    virtual void ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce);
+
+    //@}
+
+  private:
+
+    /// the actual structure algorithm
+    StruGenAlpha structure_;
+
+    /// the interface map setup for interface <-> full translation
+    LINALG::MapExtractor interface_;
+
+    //! @name local copies of input parameters
+
+    Teuchos::RCP<DRT::Discretization> dis_;
+    Teuchos::RCP<Teuchos::ParameterList> params_;
+    Teuchos::RCP<LINALG::Solver> solver_;
+    Teuchos::RCP<IO::DiscretizationWriter> output_;
+
+    //@}
+  };
 }
 
 #endif

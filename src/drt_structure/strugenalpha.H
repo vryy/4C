@@ -340,14 +340,27 @@ public:
   /// monolithic FSI needs to access the linear structure problem
 
   Teuchos::RCP<Epetra_Vector> Residual() { return fresm_; }
+  Teuchos::RCP<Epetra_Vector> Dispn() { return disn_; }
   Teuchos::RCP<Epetra_Vector> Dispm() { return dism_; }
   Teuchos::RCP<Epetra_Vector> Disp() { return dis_; }
+  Teuchos::RCP<Epetra_Vector> Vel() { return vel_; }
+  Teuchos::RCP<Epetra_Vector> Acc() { return acc_; }
   Teuchos::RCP<Epetra_Operator> SysMat() { return stiff_->EpetraOperator(); }
   Teuchos::RCP<Epetra_Vector> Dirichlet() { return dirichtoggle_; }
   Teuchos::RCP<DRT::Discretization> Discretization() { return Teuchos::rcp(&discret_,false); }
   double DispIncrFactor() { return 1./(1.-params_.get<double>("alpha f",0.459)); }
   double AlphaF() { return params_.get<double>("alpha f",0.459); }
   const Epetra_Map& DomainMap() { return mass_->DomainMap(); }
+
+  /// linear solve with prescribed loads and without history
+  /*!
+    This is the linear solve as needed for steepest descent FSI.
+   */
+  Teuchos::RCP<Epetra_Vector> LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax);
+
+  /// setup equilibrium with additional external forces
+  void ApplyExternalForce(const LINALG::MapExtractor& extractor,
+                          Teuchos::RCP<Epetra_Vector> iforce);
 
   //@}
 

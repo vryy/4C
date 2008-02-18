@@ -83,13 +83,13 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
   if (Teuchos::getIntegralValue<int>(fsidyn,"COUPMETHOD"))
   {
     matchingnodes_ = true;
-    coupsf_.SetupConditionCoupling(StructureField().Discretization(),
+    coupsf_.SetupConditionCoupling(*StructureField().Discretization(),
                                    StructureField().Interface(),
                                    *FluidField().Discretization(),
                                    FluidField().Interface(),
                                    "FSICoupling");
 
-    coupsa_.SetupConditionCoupling(StructureField().Discretization(),
+    coupsa_.SetupConditionCoupling(*StructureField().Discretization(),
                                    StructureField().Interface(),
                                    *AleField().Discretization(),
                                    AleField().Interface(),
@@ -106,14 +106,14 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
       dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
 
     // init transfer from interface to field
-    StructureField().SetInterfaceMap(coupsf_.MasterDofMap());
-    FluidField().    SetInterfaceMap(coupsf_.SlaveDofMap());
-    AleField().      SetInterfaceMap(coupsa_.SlaveDofMap());
+    //StructureField().SetInterfaceMap(coupsf_.MasterDofMap());
+    //FluidField().    SetInterfaceMap(coupsf_.SlaveDofMap());
+    //AleField().      SetInterfaceMap(coupsa_.SlaveDofMap());
   }
   else
   {
     matchingnodes_ = false;
-    coupsfm_.Setup( StructureField().Discretization(),
+    coupsfm_.Setup( *StructureField().Discretization(),
                     *FluidField().Discretization(),
                     comm );
 
@@ -126,9 +126,9 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
                                    "FSICoupling");
 
     // init transfer from interface to field
-    StructureField().SetInterfaceMap(coupsfm_.MasterDofMap());
-    FluidField().    SetInterfaceMap(coupsfm_.SlaveDofMap());
-    AleField().      SetInterfaceMap(coupsa_.SlaveDofMap());
+    //StructureField().SetInterfaceMap(coupsfm_.MasterDofMap());
+    //FluidField().    SetInterfaceMap(coupsfm_.SlaveDofMap());
+    //AleField().      SetInterfaceMap(coupsa_.SlaveDofMap());
   }
 
   // the fluid-ale coupling always matches

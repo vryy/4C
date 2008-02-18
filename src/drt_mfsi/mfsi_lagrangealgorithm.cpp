@@ -159,9 +159,9 @@ MFSI::LagrangeAlgorithm::LagrangeAlgorithm(Epetra_Comm& comm)
     dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
 
   // init transfer from interface to field
-  StructureField()->SetInterfaceMap(coupsf.MasterDofMap());
-  FluidField()    ->SetInterfaceMap(coupsf.SlaveDofMap());
-  AleField()      ->SetInterfaceMap(coupsa.SlaveDofMap());
+  //StructureField()->SetInterfaceMap(coupsf.MasterDofMap());
+  //FluidField()    ->SetInterfaceMap(coupsf.SlaveDofMap());
+  //AleField()      ->SetInterfaceMap(coupsa.SlaveDofMap());
 
   ifstruct_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->InterfaceMap()));
   iastruct_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->InterfaceMap()));

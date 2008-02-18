@@ -124,7 +124,7 @@ void FSI::Algorithm::SetupStructure()
   // create a generalized alpha time integrator
   // -------------------------------------------------------------------
   RCP<ParameterList> genalphaparams = rcp(new ParameterList());
-  Structure::SetDefaults(*genalphaparams);
+  StruGenAlpha::SetDefaults(*genalphaparams);
 
   genalphaparams->set<bool>  ("damping",Teuchos::getIntegralValue<int>(sdyn,"DAMPING"));
   genalphaparams->set<double>("damping factor K",sdyn.get<double>("K_DAMP"));
@@ -195,7 +195,7 @@ void FSI::Algorithm::SetupStructure()
     break;
   }
 
-  structure_ = rcp(new Structure(genalphaparams,actdis,solver,output));
+  structure_ = rcp(new StructureAdapter(genalphaparams,actdis,solver,output));
 }
 
 

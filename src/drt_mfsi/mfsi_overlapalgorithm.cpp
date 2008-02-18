@@ -137,9 +137,9 @@ MFSI::OverlapAlgorithm::OverlapAlgorithm(Epetra_Comm& comm)
     dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
 
   // init transfer from interface to field
-  StructureField()->SetInterfaceMap(coupsf.MasterDofMap());
-  FluidField()    ->SetInterfaceMap(coupsf.SlaveDofMap());
-  AleField()      ->SetInterfaceMap(coupsa.SlaveDofMap());
+  //StructureField()->SetInterfaceMap(coupsf.MasterDofMap());
+  //FluidField()    ->SetInterfaceMap(coupsf.SlaveDofMap());
+  //AleField()      ->SetInterfaceMap(coupsa.SlaveDofMap());
 
   // the fluid-ale coupling always matches
   const Epetra_Map* fluidnodemap = FluidField()->Discretization()->NodeRowMap();
