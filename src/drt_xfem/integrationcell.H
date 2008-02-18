@@ -29,6 +29,55 @@ Maintainer: Axel Gerstenberger
 namespace XFEM
 {
 
+
+template<class Cell>
+vector<vector<double> > ComputePhysicalCoordinates(
+        const DRT::Element&  ele,
+        const Cell& cell
+        )
+{
+    vector<vector<double> > physicalCoordinates;
+    
+    const int nsd = 3;
+    const int nen_cell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
+    physicalCoordinates.reserve(nen_cell);
+    
+    // coordinates
+    for (int inen = 0; inen < nen_cell; ++inen)
+    {
+        // shape functions
+        Epetra_SerialDenseVector funct(27);
+        DRT::UTILS::shape_function_3D(
+                funct,
+                cell.NodalPosXiDomain()[inen][0],
+                cell.NodalPosXiDomain()[inen][1],
+                cell.NodalPosXiDomain()[inen][2],
+                ele.Shape());
+    
+        //interpolate position to x-space
+        vector<double> x_interpol(nsd);
+        for (int isd=0;isd < nsd;++isd ){
+            x_interpol[isd] = 0.0;
+        }
+        
+        const DRT::Node** nodes = ele.Nodes();
+        
+        for (int inenparent = 0; inenparent < ele.NumNode();++inenparent)
+        {
+            const double* pos = nodes[inenparent]->X();
+            for (int isd=0;isd < nsd;++isd )
+            {
+                x_interpol[isd] += pos[isd] * funct(inenparent);
+            }
+        }
+        // store position
+        physicalCoordinates.push_back(x_interpol);
+    };
+    return physicalCoordinates;
+}
+
+
+
 /*
  * \brief An integration cell is used for specialized element integration routines 
  */
@@ -65,29 +114,12 @@ public:
      */
     DRT::Element::DiscretizationType Shape() const {return distype_;};
     
-    /*!
-     \brief returns the coordinates of the integration cell
-
-     \return cells nodal coordinates  
-     */
-    std::vector< std::vector<double> > NodalPosXiDomain() const;
-    
-    /*!
-     \brief returns the coordinates of the integration cell in physical coordinates
-
-     \return cells nodal coordinates  
-     */
-    std::vector< std::vector<double> > NodalPosXYZ(const DRT::Element& ele) const;
-    
     std::string Print() const;
 
 protected:
 
     //! shape
     DRT::Element::DiscretizationType distype_;
-
-    vector<vector<double> > ComputePhysicalCoordinates(
-            const DRT::Element&  ele) const;
     
 private:
     
@@ -180,7 +212,7 @@ public:
      */
     std::vector< std::vector<double> > NodalPosXYZ(const DRT::Element& ele) const
     {
-        return ComputePhysicalCoordinates(ele);
+        return ComputePhysicalCoordinates<DomainIntCell>(ele, (*this));
     };
     
     vector<double> modifyGaussRule3D(
@@ -191,7 +223,7 @@ public:
     
     std::string Print() const;
     
-    blitz::Array<double,1> GetPhysicalCenterPosition(const DRT::Element& ele) const;
+    BlitzVec GetPhysicalCenterPosition(const DRT::Element& ele) const;
 
 protected:
     
@@ -259,7 +291,7 @@ public:
      */
     std::vector< std::vector<double> > NodalPosXYZ(const DRT::Element& ele) const
     {
-        return ComputePhysicalCoordinates(ele);
+        return ComputePhysicalCoordinates<BoundaryIntCell>(ele, (*this));
     };
     
     /*!

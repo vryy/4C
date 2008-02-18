@@ -234,7 +234,7 @@ void XFEM::elementToCurrentCoordinates(
     const int numNodes = element->NumNode();
     Epetra_SerialDenseVector funct(numNodes);
     
-    switch(getDimension(element))
+    switch(getDimension(element->Shape()))
     {
         case 1:
         {
@@ -271,15 +271,15 @@ void XFEM::elementToCurrentCoordinates(
  | GM:      transforms a node in element coordinates       u.may 07/07|
  |          into current coordinates                                    |
  *----------------------------------------------------------------------*/  
-blitz::Array<double, 1> XFEM::elementToCurrentCoordinates(   
-    const DRT::Element* element,
-    const blitz::Array<double, 1>& eleCoord) 
+BlitzVec XFEM::elementToCurrentCoordinates(   
+        const DRT::Element* element,
+        const BlitzVec&     eleCoord) 
 {
     const int numNodes = element->NumNode();
-    blitz::Array<double,1> funct(numNodes);
-    blitz::Array<double,1> physCoord(numNodes);
+    BlitzVec funct(numNodes);
+    BlitzVec physCoord(numNodes);
     
-    switch(getDimension(element))
+    switch(getDimension(element->Shape()))
     {
         case 1:
         {
@@ -321,7 +321,7 @@ void XFEM::elementToCurrentCoordinates(
     const DRT::Element* 	element, 
     vector<double>& xsi) 
 {
-	const int dim = getDimension(element);
+	const int dim = getDimension(element->Shape());
     const int numNodes = element->NumNode();
     Epetra_SerialDenseVector funct(numNodes);
     
@@ -387,21 +387,21 @@ void XFEM::elementToCurrentCoordinates(
  | GM:      transforms a node in element coordinates       u.may 07/07|
  |          into current coordinates                                    |
  *----------------------------------------------------------------------*/  
-void XFEM::elementToCurrentCoordinates(  
-    Epetra_SerialDenseVector&                   xsi,
-    const vector<Epetra_SerialDenseVector>&     plane) 
-{
-    const int numNodes = 4;
-    Epetra_SerialDenseVector funct(numNodes);
-    
-    shape_function_2D(funct, xsi[0], xsi[1], DRT::Element::quad4);
-    
-    xsi.Scale(0.0);
-    for(int i=0; i<numNodes; i++)
-        for(int j=0; j<3; j++)   
-            xsi[j] += plane[i][j] * funct(i);
-    
-}
+//void XFEM::elementToCurrentCoordinates(  
+//    Epetra_SerialDenseVector&                   xsi,
+//    const vector<Epetra_SerialDenseVector>&     plane) 
+//{
+//    const int numNodes = 4;
+//    Epetra_SerialDenseVector funct(numNodes);
+//    
+//    shape_function_2D(funct, xsi[0], xsi[1], DRT::Element::quad4);
+//    
+//    xsi.Scale(0.0);
+//    for(int i=0; i<numNodes; i++)
+//        for(int j=0; j<3; j++)   
+//            xsi[j] += plane[i][j] * funct(i);
+//    
+//}
 
 
 
@@ -419,7 +419,7 @@ void XFEM::currentToElementCoordinates(
     x = xsi;
     xsi.Scale(0.0);
     
-    checkPositionWithinElement(element, x, xsi);
+    currentToElementCoordinates(element, x, xsi);
    
     // rounding 1 and -1 to be exact for the CDT
     for(int j = 0; j < 3; j++)
@@ -440,14 +440,14 @@ void XFEM::currentToElementCoordinates(
     vector<double>&   			xsiVector) 
 {
     
-	int dim = getDimension(element);
+	const int dim = getDimension(element->Shape());
     Epetra_SerialDenseVector x(dim);
     Epetra_SerialDenseVector xsi(dim);
     
     for(int i = 0; i < dim; i++)
     	x[i] = xsiVector[i];
   
-    checkPositionWithinElement(element, x, xsi);
+    currentToElementCoordinates(element, x, xsi);
    
     // rounding 1 and -1 to be exact for the CDT
     for(int j = 0; j < dim; j++)
@@ -461,6 +461,54 @@ void XFEM::currentToElementCoordinates(
 }     
 
 
+/*----------------------------------------------------------------------*
+ | GM:  transforms a node in current coordinates            u.may 12/07 |
+ |      into element coordinates                                        | 
+ *----------------------------------------------------------------------*/
+void XFEM::currentToElementCoordinates(  
+    const DRT::Element*                       element,
+    const Epetra_SerialDenseVector&     x,
+    Epetra_SerialDenseVector&           xsi)
+{
+    bool nodeWithinElement = true;
+    int iter = 0;
+    const int dim = getDimension(element->Shape());
+    const int maxiter = 20;
+    double residual = 1.0;
+    
+    Epetra_SerialDenseMatrix A(dim,dim);
+    Epetra_SerialDenseVector b(dim);
+    Epetra_SerialDenseVector dx(dim);
+    
+    xsi.Scale(0.0);
+            
+    updateRHSForNWE( dim, b, xsi, x, element);
+   
+    while(residual > TOL14)
+    {   
+        updateAForNWE( dim, A, xsi, element);
+   
+        if(!gaussElimination(A, b, dx, true, dim, 1))
+        {
+            nodeWithinElement = false;
+            break;
+        }   
+        
+        xsi = addTwoVectors(xsi,dx);
+        updateRHSForNWE(dim, b, xsi, x, element);
+        residual = b.Norm2();
+        iter++; 
+        
+        if(iter >= maxiter)
+        {   
+            nodeWithinElement = false;
+            break;
+        }   
+    }
+    
+    //printf("iter = %d\n", iter);
+    //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0],xsi[1],xsi[2], residual, TOL14);
+}
 
 /*----------------------------------------------------------------------*
  |  GM:     compares two nodes                               u.may 06/07|
@@ -649,13 +697,13 @@ bool XFEM::isLineWithinXAABB(
  |  CLI:    checks if a position is within a given element   u.may 06/07|   
  *----------------------------------------------------------------------*/
 bool XFEM::checkPositionWithinElement(  
-    const DRT::Element*                       element,
+    const DRT::Element*                 element,
     const Epetra_SerialDenseVector&     x)
 {
 
     bool nodeWithinElement = true;
     int iter = 0;
-    const int dim = getDimension(element);
+    const int dim = getDimension(element->Shape());
     const int maxiter = 20;
     double residual = 1.0;
     
@@ -691,71 +739,13 @@ bool XFEM::checkPositionWithinElement(
     //printf("iter = %d\n", iter);
     //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0],xsi[1],xsi[2], residual, TOL14);
     
-    for(int i=0; i<dim; i++)
-        if( (fabs(xsi[i])-1.0) > TOL7)     
-        {    
-            nodeWithinElement = false;
-            break;
-        }
-        
-    return nodeWithinElement;
-}
-
-
-/*----------------------------------------------------------------------*
- |  CLI:    checks if a node is within a given element       u.may 06/07|   
- *----------------------------------------------------------------------*/
-bool XFEM::checkPositionWithinElement(  
-    const DRT::Element*                       element,
-    const Epetra_SerialDenseVector&     x,
-    Epetra_SerialDenseVector&           xsi)
-{
-
-    bool nodeWithinElement = true;
-    int iter = 0;
-    const int dim = getDimension(element);
-    const int maxiter = 20;
-    double residual = 1.0;
-    
-    Epetra_SerialDenseMatrix A(dim,dim);
-    Epetra_SerialDenseVector b(dim);
-    Epetra_SerialDenseVector dx(dim);
-    
-    xsi.Scale(0.0);
-            
-    updateRHSForNWE( dim, b, xsi, x, element);
-   
-    while(residual > TOL14)
-    {   
-        updateAForNWE( dim, A, xsi, element);
-   
-        if(!gaussElimination(A, b, dx, true, dim, 1))
-        {
-            nodeWithinElement = false;
-            break;
-        }   
-        
-        xsi = addTwoVectors(xsi,dx);
-        updateRHSForNWE(dim, b, xsi, x, element);
-        residual = b.Norm2();
-        iter++; 
-        
-        if(iter >= maxiter)
-        {   
-            nodeWithinElement = false;
-            break;
-        }   
-    }
-    
-    //printf("iter = %d\n", iter);
-    //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0],xsi[1],xsi[2], residual, TOL14);
-    
-    for(int i=0; i<dim; i++)
-        if( (fabs(xsi[i])-1.0) > TOL7)     
-        {    
-            nodeWithinElement = false;
-            break;
-        }
+    nodeWithinElement = checkPositionWithinElementParameterSpace(xsi,element->Shape());
+//    for(int i=0; i<dim; i++)
+//        if( (fabs(xsi[i])-1.0) > TOL7)     
+//        {    
+//            nodeWithinElement = false;
+//            break;
+//        }
         
     return nodeWithinElement;
 }
@@ -765,7 +755,7 @@ bool XFEM::checkPositionWithinElement(
  |  CLI:    checks if a position is within a given mesh      a.ger 12/07|   
  *----------------------------------------------------------------------*/
 bool XFEM::PositionWithinDiscretization(  
-    RCP<DRT::Discretization>            dis,
+    const RCP<DRT::Discretization>      dis,
     const Epetra_SerialDenseVector&     x)
 {
     bool nodeWithinMesh = false;
@@ -795,7 +785,7 @@ bool XFEM::PositionWithinDiscretization(
 bool XFEM::PositionWithinCondition(
         const blitz::Array<double,1>&       x_in,
         const int                           xfem_condition_label, 
-        RCP<DRT::Discretization>            cutterdis
+        const RCP<DRT::Discretization>      cutterdis
     )
 {
     const int nsd = 3;
@@ -934,23 +924,23 @@ void XFEM::updateRHSForNWE(
  *----------------------------------------------------------------------*/
 bool XFEM::searchForNearestPointOnSurface(
     const DRT::Element*                   	surfaceElement,
-    const blitz::Array<double, 1>&     		physCoord,
-    blitz::Array<double, 1>&           		eleCoord,
-    blitz::Array<double, 1>&           		normal,
+    const BlitzVec&     	            	physCoord,
+    BlitzVec&                       		eleCoord,
+    BlitzVec&           	              	normal,
     double&									distance)
 {
-	
-	bool pointWithinElement = false;
 	distance = -1.0;
 	normal = 0;
-	 
-	if(checkPositionWithinSurfaceElement(surfaceElement, physCoord, eleCoord))
+	
+	eleCoord = CurrentToSurfaceElementCoordinates(surfaceElement, physCoord);
+	
+	const bool pointWithinElement = checkPositionWithinElementParameterSpace(eleCoord, surfaceElement->Shape());
+	
+	if(pointWithinElement)
 	{
-		const blitz::Array<double, 1> x_surface_phys = elementToCurrentCoordinates(surfaceElement, eleCoord);
+		const BlitzVec x_surface_phys = elementToCurrentCoordinates(surfaceElement, eleCoord);
 		normal = x_surface_phys - physCoord;
 		distance = sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2));
-		    
-		pointWithinElement = true;
 	}
 
 	return pointWithinElement;
@@ -959,25 +949,22 @@ bool XFEM::searchForNearestPointOnSurface(
 
 
 /*----------------------------------------------------------------------*
- |  RQI:    checks if a given point in the 3-dim physical    u.may 01/08|
- |          space lies on a given surface element                       |
- | 			if no the method returns the absolut distance to the 		|
- |			nearest point on the surface element					    |
- |			if in addition the nearest point does not lie on the 		|
- |			surface element the returned distance is set to -1      	|                        
+ |  RQI:    compute element coordinates from a given point              |
+ |          in the 3-dim physical space lies on a given surface element |
  *----------------------------------------------------------------------*/
-bool XFEM::checkPositionWithinSurfaceElement(
-    const DRT::Element*                   	surfaceElement,
-    const blitz::Array<double, 1>&     		physCoord,
-    blitz::Array<double, 1>&           		eleCoord
-   	)
+BlitzVec XFEM::CurrentToSurfaceElementCoordinates(
+        const DRT::Element*        	surfaceElement,
+        const BlitzVec&     		physCoord
+   	    )
 {
 	bool nodeWithinElement = true;
+    
+    BlitzVec eleCoord(2);
+    eleCoord = 0.0;
     
     blitz::firstIndex i;    // Placeholder for the first blitz array index
     blitz::secondIndex j;   // Placeholder for the second blitz array index
    								
-  	eleCoord = 0;
   	const int maxiter = 20;
   	int iter = 0;
   	while(iter < maxiter)
@@ -997,10 +984,10 @@ bool XFEM::checkPositionWithinSurfaceElement(
         }  
   	    
         // compute system matrix A
-        blitz::Array<double, 2> A(2,2,blitz::ColumnMajorArray<2>());
+        BlitzMat A(2,2,blitz::ColumnMajorArray<2>());
   		updateAForMap3To2(A, Jacobi, F, eleCoord, surfaceElement);
   	
-  		blitz::Array<double, 1> dx(2);
+  		BlitzVec dx(2);
   		dx = 0;
         if(!gaussEliminationEpetra(A, b, dx))
         {
@@ -1013,18 +1000,72 @@ bool XFEM::checkPositionWithinSurfaceElement(
   
     //printf("iter = %d\n", iter);
     //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0],xsi[1],xsi[2], residual, TOL14);
+	return eleCoord;
+}
+
+
+/*
+ * checks if a position in element coordinates lies within a certain surfaceElement
+ */  
+bool XFEM::checkPositionWithinElementParameterSpace(
+        const BlitzVec                         eleCoord,
+        const DRT::Element::DiscretizationType distype
+        )
+{
+    if (distype != DRT::Element::line2 and
+            distype != DRT::Element::line3 and
+            distype != DRT::Element::quad4 and 
+            distype != DRT::Element::quad8 and 
+            distype != DRT::Element::quad9 and
+            distype != DRT::Element::hex8 and
+            distype != DRT::Element::hex20 and 
+            distype != DRT::Element::hex27)
+        dserror("function only defined for rectangular element types at the moment");
     
-	for(int i=0; i<2; i++)
-   		if( (fabs(eleCoord(i))-1.0) > TOL7)     
+    bool nodeWithinElement = true;
+    
+    // loop over r and s (local coordinates)
+    for(int i=0; i<DRT::UTILS::getDimension(distype); i++)
+        if( (fabs(eleCoord(i))-1.0) > TOL7)     
         {    
             nodeWithinElement = false;
             break;
         }
     
-	return nodeWithinElement;
+    return nodeWithinElement;
 }
 
 
+/*
+ * checks if a position in element coordinates lies within a certain surfaceElement
+ */  
+bool XFEM::checkPositionWithinElementParameterSpace(
+        const Epetra_SerialDenseVector         eleCoord,
+        const DRT::Element::DiscretizationType distype
+        )
+{
+    if (distype != DRT::Element::line2 and
+            distype != DRT::Element::line3 and
+            distype != DRT::Element::quad4 and 
+            distype != DRT::Element::quad8 and 
+            distype != DRT::Element::quad9 and
+            distype != DRT::Element::hex8 and
+            distype != DRT::Element::hex20 and 
+            distype != DRT::Element::hex27)
+        dserror("function only defined for rectangular element types at the moment");
+    
+    bool nodeWithinElement = true;
+    
+    // loop over r and s (local coordinates)
+    for(int i=0; i<DRT::UTILS::getDimension(distype); i++)
+        if( (fabs(eleCoord[i])-1.0) > TOL7)     
+        {    
+            nodeWithinElement = false;
+            break;
+        }
+    
+    return nodeWithinElement;
+}
 
 /*----------------------------------------------------------------------*
  |  RQI:    updates the Jacobian for the computation         u.may 01/08|
@@ -1090,11 +1131,12 @@ BlitzVec XFEM::updateFForMap3To2(
  |			space lies on a surface element 							|                 
  *----------------------------------------------------------------------*/
 void XFEM::updateAForMap3To2(   
-    blitz::Array<double, 2>& 		A,
-    const blitz::Array<double, 2>& 	Jacobi,
-    const blitz::Array<double, 1>& 	F,
-    const blitz::Array<double, 1>&	xsi,
-    const DRT::Element*          	surfaceElement)                                                  
+        BlitzMat& 		            A,
+        const BlitzMat& 	        Jacobi,
+        const BlitzVec&             F,
+        const BlitzVec&	            xsi,
+        const DRT::Element*         surfaceElement
+        )                                                  
 {   
     const int numNodes = surfaceElement->NumNode();
     blitz::firstIndex i;    // Placeholder for the first blitz array index

@@ -46,7 +46,7 @@ XFEM::InterfaceHandle::InterfaceHandle(
 	    for (int i = 0; i < numele; ++i)
 	    //for (std::vector< DRT::Element* >::iterator eleptr = elements.begin(); eleptr != elements.end(); ++eleptr)
         {
-	        RCP<DRT::Element> ele = rcp(elements[i]);
+	        DRT::Element* ele = elements[i];
             const int boundary_ele_gid = ele->Id();
             boundaryElements_.insert(make_pair(boundary_ele_gid, ele));
         }

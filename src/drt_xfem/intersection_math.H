@@ -114,9 +114,9 @@ namespace XFEM
    \return true if matrix is not singular, false if matrix is singular
    */
     bool gaussEliminationEpetra(
-    	blitz::Array<double, 2>& 		A,
-    	blitz::Array<double, 1>&		b,
-    	blitz::Array<double, 1>&		x
+    	BlitzMat& 		A,
+    	BlitzVec&		b,
+    	BlitzVec&		x
     	);
     
 }

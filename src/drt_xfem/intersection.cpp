@@ -72,7 +72,7 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
     countMissedPoints_ = 0;
     
     const double t_start = ds_cputime();
-    initializeIntersection(xfemdis);
+    //initializeIntersection(xfemdis);
     
 #ifdef PARALLEL
 	const int cmyrank = cutterdis->Comm().MyPID();
@@ -104,15 +104,15 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
         DRT::Element* xfemElement = xfemdis->lColElement(k);
         initializeXFEM(k, xfemElement);  
         
-        Epetra_SerialDenseMatrix xfemXAABB = computeFastXAABB(xfemElement);
+        const Epetra_SerialDenseMatrix xfemXAABB = computeFastXAABB(xfemElement);
             
         startPointList();
         
         //printf("size of xfem condition = %d\n", c);
         for(unsigned int i=0; i<xfemConditions.size(); i++)
         {
-            map< int, RCP<DRT::Element > >  geometryMap = xfemConditions[i]->Geometry();
-            map<int, RCP<DRT::Element > >::iterator iterGeo;   
+            const map<int, RCP<DRT::Element > > geometryMap = xfemConditions[i]->Geometry();
+            map<int, RCP<DRT::Element > >::const_iterator iterGeo;   
             //if(geometryMap.size()==0)   printf("geometry does not obtain elements\n");
           	//printf("size of %d.geometry map = %d\n",i, geometryMap.size());
          
@@ -121,9 +121,9 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
                 DRT::Element*  cutterElement = iterGeo->second.get();
                 if(cutterElement == NULL) dserror("geometry does not obtain elements");
             	
-                Epetra_SerialDenseMatrix    cutterXAABB = computeFastXAABB(cutterElement);   
+                const Epetra_SerialDenseMatrix    cutterXAABB = computeFastXAABB(cutterElement);   
                   
-                bool intersected = intersectionOfXAABB(cutterXAABB, xfemXAABB);   
+                const bool intersected = intersectionOfXAABB(cutterXAABB, xfemXAABB);   
               
                 if(intersected) 
                 {
@@ -188,7 +188,7 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
             
             if(cutterElements[i] == NULL) dserror("cutter element is null\n");
            
-            initializeCutter(cutterElements[i]); 
+//            initializeCutter(cutterElements[i]); 
 
             // collect internal points
             for(int m=0; m<cutterElements[i]->NumLine() ; m++)                    
@@ -260,15 +260,15 @@ void getCutterElementPlusNodes(
  |  INIT:   initializes the intersection computation         u.may 12/07|
  |                                                                      |
  *----------------------------------------------------------------------*/
-void Intersection::initializeIntersection(
-    const RCP<DRT::Discretization>  xfemdis)
-{
-    xfemOldDistype_ = xfemdis->lColElement(0)->Shape();
-}
+//void Intersection::initializeIntersection(
+//    const RCP<DRT::Discretization>  xfemdis)
+//{
+//    xfemOldDistype_ = xfemdis->lColElement(0)->Shape();
+//}
 
 
 
-/*----------------------------------------*
+/*----------------------------------------------------------------------*
  |  INIT:   initializes the private members of the           u.may 08/07|
  |          current xfem element                                        |
  *----------------------------------------------------------------------*/
@@ -276,28 +276,24 @@ void Intersection::initializeXFEM(
     const int             xfemId,
     const DRT::Element*   xfemElement)
 { 
-    xfemDistype_ = xfemElement->Shape();
- 
+    //xfemDistype_ = xfemElement->Shape();
+    const DRT::Element::DiscretizationType xfemDistype = xfemElement->Shape();
+    
     // TODO: check for paralleilzation
     //if(xfemOldDistype_ != xfemDistype_ || xfemId == 0) 
     //{   
         numXFEMSurfaces_ = xfemElement->NumSurface(); 
-        numXFEMLines_ = xfemElement->NumLine(); 
+//        numXFEMLines_ = xfemElement->NumLine(); 
        
-        numXFEMCornerNodes_  = getNumberOfElementCornerNodes(xfemDistype_);
+        numXFEMCornerNodes_  = getNumberOfElementCornerNodes(xfemDistype);
         
-        eleLinesSurfaces_.clear();
-        eleNodesSurfaces_.clear();
-        eleNumberingSurfaces_.clear();
-        eleRefCoordinates_.clear(); 
-        
-        eleLinesSurfaces_ = getEleNodeNumbering_lines_surfaces(xfemDistype_);
-        eleNodesSurfaces_ = getEleNodeNumbering_nodes_surfaces(xfemDistype_);
-        eleNumberingSurfaces_ = getEleNodeNumberingSurfaces(xfemDistype_);
-        eleRefCoordinates_ = getEleNodeNumbering_nodes_reference(xfemDistype_);
+        eleLinesSurfaces_ = getEleNodeNumbering_lines_surfaces(xfemDistype);
+        eleNodesSurfaces_ = getEleNodeNumbering_nodes_surfaces(xfemDistype);
+        eleNumberingSurfaces_ = getEleNodeNumberingSurfaces(xfemDistype);
+        eleRefCoordinates_ = getEleNodeNumbering_nodes_reference(xfemDistype);
     //}
     
-    xfemOldDistype_ = xfemElement->Shape();
+    //xfemOldDistype_ = xfemElement->Shape();
     
     pointList_.clear();
     segmentList_.clear();                 
@@ -317,11 +313,11 @@ void Intersection::initializeXFEM(
  |  INIT:   initializes the private members of the           u.may 08/07|
  |          current cutter element                                      |
  *----------------------------------------------------------------------*/
-void Intersection::initializeCutter(  
-    const DRT::Element* cutterElement)
-{  
-    cutterDistype_ = cutterElement->Shape();
-}
+//void Intersection::initializeCutter(  
+//    const DRT::Element* cutterElement)
+//{  
+//    cutterDistype_ = cutterElement->Shape();
+//}
 
 
 #ifdef PARALLEL
@@ -449,7 +445,7 @@ void Intersection::unpackNodes(
  |              each processor   										|
  *----------------------------------------------------------------------*/
 void Intersection::getCutterElementsInParallel(	
-	vector< DRT::Condition * >&      		xfemConditions,
+	const vector< DRT::Condition * >&       xfemConditions,
 	vector<int>&							conditionEleCount, 
 	map< int, vector< DRT::Element* > >&   	cutterElementMap,
 	map< int, RCP<DRT::Node> >&  	cutterNodeMap,
@@ -589,17 +585,17 @@ void Intersection::getCutterElementsInParallel(
 						break;
 					}
 				
-                int actCutterId = actCutter->Id() + cutterIdAdd;
+                const int actCutterId = actCutter->Id() + cutterIdAdd;
   				count++;
   				
-  				Epetra_SerialDenseMatrix    cutterXAABB = computeFastXAABB(actCutter);	
+  				const Epetra_SerialDenseMatrix    cutterXAABB = computeFastXAABB(actCutter);
                 
   				for(int k = 0; k < xfemdis->NumMyColElements(); k++)
     			{      
-        			DRT::Element* xfemElement = xfemdis->lColElement(k);
-       				initializeXFEM(k, xfemElement);    
-  					Epetra_SerialDenseMatrix    xfemXAABB    = computeFastXAABB(xfemElement);                               
-            		bool intersected = intersectionOfXAABB(cutterXAABB, xfemXAABB);    
+        			const DRT::Element* xfemElement = xfemdis->lColElement(k);
+       				initializeXFEM(k, xfemElement);
+  					const Epetra_SerialDenseMatrix    xfemXAABB = computeFastXAABB(xfemElement);
+            		const bool intersected = intersectionOfXAABB(cutterXAABB, xfemXAABB);
             		//debugXAABBIntersection( cutterXAABB, xfemXAABB, actCutter, xfemElement, i, k);
                      
             		if(intersected)
@@ -630,7 +626,7 @@ void Intersection::getCutterElementsInParallel(
            				
            					for(int inode = 0; inode < actCutter->NumNode(); inode++ )
            					{
-           						int nodeId =  actCutter->Nodes()[inode]->Id();
+           						const int nodeId =  actCutter->Nodes()[inode]->Id();
            						if(cutterNodeIdSet.find(nodeId) == cutterNodeIdSet.end())
            						{
            							cutterNodeIdSet.insert(nodeId);
@@ -677,7 +673,8 @@ bool Intersection::collectInternalPoints(
     x[1] = node->X()[1];
     x[2] = node->X()[2];
     
-    bool nodeWithinElement = checkPositionWithinElement(xfemElement, x, xsi);
+    currentToElementCoordinates(xfemElement, x, xsi);
+    const bool nodeWithinElement = checkPositionWithinElementParameterSpace(xsi, xfemElement->Shape());
     // debugNodeWithinElement(xfemElement,node, xsi, elemId ,nodeId, nodeWithinElement);  
     
     if(nodeWithinElement)
@@ -688,7 +685,7 @@ bool Intersection::collectInternalPoints(
         numInternalPoints_++;
         
         // check if node lies on the boundary of the xfem element
-        if(checkIfOnBoundary(xsi, ip))  numBoundaryPoints_++;
+        if(checkIfOnBoundary(xfemElement->Shape(), xsi, ip))  numBoundaryPoints_++;
                                    
         // intersection coordinates in the surface 
         // element element coordinate system
@@ -708,13 +705,14 @@ bool Intersection::collectInternalPoints(
  |  CLI:    checks if a node that lies within an element     u.may 06/07|
  |          lies on one of its surfaces or nodes                        |                                           
  *----------------------------------------------------------------------*/
-bool Intersection::checkIfOnBoundary( 
-        const Epetra_SerialDenseVector&   xsi,    
-        InterfacePoint&                   ip
+bool Intersection::checkIfOnBoundary(
+        const DRT::Element::DiscretizationType  xfemDistype,
+        const Epetra_SerialDenseVector&         xsi,    
+        InterfacePoint&                         ip
         ) const
 {
     bool onSurface = false;
-    const int count = getSurfaces(xsi, ip.surfaces, xfemDistype_);
+    const int count = getSurfaces(xsi, ip.surfaces, xfemDistype);
         
     // point lies on one surface
     if(count == 1)
@@ -1571,15 +1569,15 @@ void Intersection::computeCDT(
  
     
     //Debug
-    vector<int> elementIds;
-    for(int i = 388; i<389; i++)
-        elementIds.push_back(i);
+//    vector<int> elementIds;
+//    for(int i = 388; i<389; i++)
+//        elementIds.push_back(i);
     
     //debugTetgenOutput(in, out, element, elementIds);
     //printTetViewOutputPLC( element, element->Id(), in);
     
     // recover curved interface for higher order meshes
-    bool curvedInterface = true;
+    const bool curvedInterface = true;
     if(curvedInterface)
         recoverCurvedInterface(element, boundaryintcells, out);
  
@@ -1596,7 +1594,7 @@ void Intersection::computeCDT(
 
 /*----------------------------------------------------------------------*
  |  CDT:    fills the point list with the corner points      u.may 06/07|
- |          in element coordinates of the xfem element                |
+ |          in element coordinates of the xfem element                  |
  *----------------------------------------------------------------------*/  
 void Intersection::startPointList(
     )
@@ -1781,13 +1779,11 @@ void Intersection::storeSurfacePoints(
 void Intersection::storeSegments(   
     const vector<int>&              positions)
 {
-    int pos1 = 0;
-    int pos2 = 0;
     
     for(unsigned int i = 0; i < positions.size(); i++ )
     {
-        pos1 = positions[i];
-        
+        const int pos1 = positions[i];
+        int pos2 = 0;
         if(pos1 ==  positions[positions.size()-1])
             pos2 = positions[0]; 
         else
@@ -1904,13 +1900,13 @@ void Intersection::recoverCurvedInterface(
     for(int i=0; i<out.numberoftrifaces; i++)
     {
         // run over all faces not lying in on of the xfem element planes
-        int faceMarker = out.trifacemarkerlist[i] - facetMarkerOffset_;
+        const int faceMarker = out.trifacemarkerlist[i] - facetMarkerOffset_;
         std::vector< std::vector<double> > domainCoord(6, std::vector<double>(3,0.0));
         std::vector< std::vector<double> > boundaryCoord(6, std::vector<double>(3,0.0));
                 	
         if(faceMarker > -1)
         {        
-            int tetIndex = out.adjtetlist[i*2];
+            const int tetIndex = out.adjtetlist[i*2];
             //printf("tetIndex = %d\n", tetIndex); 
 
             getTetrahedronInformation(tetIndex, i, tetraCornerIndices, order, out );
@@ -2030,13 +2026,13 @@ void Intersection::locateSteinerPoints(
         {  
             for (int j = 0; j < 3; j++)
             {
-                int pointIndex = out.trifacelist[i*3+j];
+                const int pointIndex = out.trifacelist[i*3+j];
                 
                 // check if point is a Steiner point
                 if(out.pointmarkerlist[pointIndex] != 2 && out.pointmarkerlist[pointIndex] != 3 )
                 {
                     bool alreadyInList = false;
-                    vector<int> pointIndices = getPointIndices(out, i, j);
+                    const vector<int> pointIndices = getPointIndices(out, i, j);
                     
                     for(unsigned int k = 0; k < adjacentFacesList.size(); k++)
                         if(adjacentFacesList[k][0] == pointIndex)
@@ -2096,9 +2092,11 @@ int Intersection::decideSteinerCase(
         x[k]   = out.pointlist[pointIndex*3 + k];
    
     InterfacePoint emptyIp;
-    checkPositionWithinElement(xfemElement, x, xsi);
-    if(checkIfOnBoundary(xsi, emptyIp))     out.pointmarkerlist[pointIndex] = 3;    // on xfem boundary  
-    else                                    out.pointmarkerlist[pointIndex] = 2;    // not on xfem boundary
+    currentToElementCoordinates(xfemElement, x, xsi);
+    if(checkIfOnBoundary(xfemElement-> Shape(), xsi, emptyIp))
+        out.pointmarkerlist[pointIndex] = 3;    // on xfem boundary  
+    else
+        out.pointmarkerlist[pointIndex] = 2;    // not on xfem boundary
     
    
     for(unsigned int j = 0; j < adjacentFacemarkerList[steinerIndex].size(); j++ )
@@ -2754,7 +2752,7 @@ bool Intersection::computeRecoveryPlane(
         int&                                        lineIndex,
         Epetra_SerialDenseVector&                   xsi,
         const vector<Epetra_SerialDenseVector>&     plane,
-        const DRT::Element*                         surfaceElement
+        DRT::Element*                               surfaceElement
         ) const
 {
     bool    intersection = true;
@@ -3351,7 +3349,7 @@ bool Intersection::findCommonCutterLine(
  *----------------------------------------------------------------------*/   
 int Intersection::findIntersectingSurfaceEdge(
         const DRT::Element*                       xfemElement,
-        const DRT::Element*                       cutterElement,
+        DRT::Element*                             cutterElement,
         const Epetra_SerialDenseVector&           edgeNode1,
         const Epetra_SerialDenseVector&           edgeNode2) const
 {
@@ -3381,8 +3379,11 @@ int Intersection::findIntersectingSurfaceEdge(
         Epetra_SerialDenseVector xsi2(1);
         const DRT::Element*  lineElement = cutterElement->Lines()[i];
         
-        const bool check1 = checkPositionWithinElement( lineElement, x1, xsi1);
-        const bool check2 = checkPositionWithinElement( lineElement, x2, xsi2);
+        currentToElementCoordinates( lineElement, x1, xsi1);
+        currentToElementCoordinates( lineElement, x2, xsi2);
+        
+        const bool check1 = checkPositionWithinElementParameterSpace( xsi1, lineElement->Shape());
+        const bool check2 = checkPositionWithinElementParameterSpace( xsi2, lineElement->Shape());
         if( check1  &&  check2 )
         {   
             lineIndex = i;  //countIndex;
@@ -3411,7 +3412,7 @@ void Intersection::storeHigherOrderNode(
     const int                                   globalHigherOrderIndex,
     const int                                   lineIndex, 
     Epetra_SerialDenseVector&                   xsi, 
-    const DRT::Element*                         surfaceElement, 
+    DRT::Element*                               surfaceElement, 
     const DRT::Element*                         xfemElement, 
     tetgenio&                                   out
     ) const
@@ -3484,14 +3485,10 @@ void Intersection::addCellsToBoundaryIntCellsMap(
     std::vector< std::vector<double> >&   	domainCoord, 
     std::vector< std::vector<double> >&   	boundaryCoord, 
     const DRT::Element*						xfemElement,
-    tetgenio&                   			out) const
+    const tetgenio&               			out) const
 {                
 	
-    vector<double> trinodes(3);
-    blitz::Array<double, 1> eleCoord(3);
-    blitz::Array<double, 1> physCoord(3);
-    
-    
+    //vector<double> trinodes(3);
   
 //    printf("i length = %d\n", domainCoord.size());
 //    printf("j length = %d\n", domainCoord[0].size());
@@ -3501,54 +3498,58 @@ void Intersection::addCellsToBoundaryIntCellsMap(
     
     
     // store corner node
+    {
+    BlitzVec eleCoordDomainCorner(3);
     for(int k = 0; k < 3; k++)
-    	eleCoord(k) = out.pointlist[(out.trifacelist[trifaceIndex*3+cornerIndex])*3+k];
+        eleCoordDomainCorner(k) = out.pointlist[(out.trifacelist[trifaceIndex*3+cornerIndex])*3+k];
   
-    domainCoord[cornerIndex][0] = eleCoord(0);
-    domainCoord[cornerIndex][1] = eleCoord(1);
-    domainCoord[cornerIndex][2] = eleCoord(2);
+    domainCoord[cornerIndex][0] = eleCoordDomainCorner(0);
+    domainCoord[cornerIndex][1] = eleCoordDomainCorner(1);
+    domainCoord[cornerIndex][2] = eleCoordDomainCorner(2);
     
-    physCoord = elementToCurrentCoordinates(xfemElement, eleCoord);
+    const BlitzVec physCoordCorner = elementToCurrentCoordinates(xfemElement, eleCoordDomainCorner);
     
     //domainCoord.push_back(trinodes);
     
-    // elecoord = boundary elecoord
-    checkPositionWithinSurfaceElement(intersectingCutterElements_[faceMarker], physCoord, eleCoord);
+    const BlitzVec eleCoordBoundaryCorner = CurrentToSurfaceElementCoordinates(intersectingCutterElements_[faceMarker], physCoordCorner);
     
 //    cout << "physcood = " << physCoord << "    ";
 //    cout << "elecood = " << eleCoord << endl;
 //    cout << "cornerIndex = " << cornerIndex << endl;
-    boundaryCoord[cornerIndex][0] = eleCoord(0);
-    boundaryCoord[cornerIndex][1] = eleCoord(1);
+    boundaryCoord[cornerIndex][0] = eleCoordBoundaryCorner(0);
+    boundaryCoord[cornerIndex][1] = eleCoordBoundaryCorner(1);
     boundaryCoord[cornerIndex][2] = 0.0;
     
     //boundaryCoord.push_back(trinodes);
+    }
     
+    {
     // store higher order node
+    BlitzVec eleCoordDomaninHO(3);
     for(int k = 0; k < 3; k++)
-    	eleCoord(k) = out.pointlist[globalHigherOrderIndex*3+k];
+        eleCoordDomaninHO(k) = out.pointlist[globalHigherOrderIndex*3+k];
  
     
     
-    domainCoord[cornerIndex+3][0] = eleCoord(0);
-    domainCoord[cornerIndex+3][1] = eleCoord(1);
-    domainCoord[cornerIndex+3][2] = eleCoord(2);
+    domainCoord[cornerIndex+3][0] = eleCoordDomaninHO(0);
+    domainCoord[cornerIndex+3][1] = eleCoordDomaninHO(1);
+    domainCoord[cornerIndex+3][2] = eleCoordDomaninHO(2);
     
-    physCoord = elementToCurrentCoordinates(xfemElement, eleCoord);
+    const BlitzVec physCoordHO = elementToCurrentCoordinates(xfemElement, eleCoordDomaninHO);
     
     //domainCoord.push_back(trinodes); 
     
-    // elecoord = boundary elecoord
-    checkPositionWithinSurfaceElement(intersectingCutterElements_[faceMarker], physCoord, eleCoord);
+    const BlitzVec eleCoordBoundaryHO = CurrentToSurfaceElementCoordinates(intersectingCutterElements_[faceMarker], physCoordHO);
     
 //    cout << "physcood = " << physCoord << "    ";
 //    cout << "elecood = " << eleCoord << endl;
     
-    boundaryCoord[cornerIndex+3][0] = eleCoord(0);
-    boundaryCoord[cornerIndex+3][1] = eleCoord(1);
+    boundaryCoord[cornerIndex+3][0] = eleCoordBoundaryHO(0);
+    boundaryCoord[cornerIndex+3][1] = eleCoordBoundaryHO(1);
     boundaryCoord[cornerIndex+3][2] = 0.0;
     
     //boundaryCoord.push_back(trinodes);
+    }
 }
 
 

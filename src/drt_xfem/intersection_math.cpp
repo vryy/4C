@@ -567,9 +567,9 @@ else
  |          with help of a Gaussian Elimination provide by Epetra       |
  *----------------------------------------------------------------------*/
 bool XFEM::gaussEliminationEpetra(
-	blitz::Array<double, 2>& 	A,
-	blitz::Array<double, 1>&	b,
-	blitz::Array<double, 1>&	x)
+        BlitzMat& 	A,
+        BlitzVec&	b,
+        BlitzVec&	x)
 {
 	
 	bool solution = true;

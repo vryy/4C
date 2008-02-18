@@ -77,7 +77,7 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
     }
   }
 
-  BlitzMat edeadng_(3,numnode);
+  BlitzMat edeadng_(3,numnode,blitz::ColumnMajorArray<2>());
   if (nodecount == numnode)
   {
     // find out whether we will use a (pseudo-)time curve
@@ -659,8 +659,8 @@ void Sysmat(
     
     // split velocity and pressure (and stress)
     BlitzVec eprenp(numparampres);
-    BlitzMat evelnp(3,numparamvelx);
-    BlitzMat etau(6,numparamtauxx);
+    BlitzMat evelnp(3,numparamvelx,blitz::ColumnMajorArray<2>());
+    BlitzMat etau(6,numparamtauxx,blitz::ColumnMajorArray<2>());
     
     const vector<int> velxdof(dofman.LocalDofPosPerField(Velx));
     const vector<int> velydof(dofman.LocalDofPosPerField(Vely));
@@ -718,7 +718,7 @@ void Sysmat(
             const BlitzMat deriv(DRT::UTILS::shape_function_3D_deriv1<DISTYPE>(posXiDomain(0),posXiDomain(1),posXiDomain(2)));
       
             static BlitzVec funct_stress(DRT::UTILS::getNumberOfElementNodes(stressdistype));
-            static BlitzMat deriv_stress(3, DRT::UTILS::getNumberOfElementNodes(stressdistype));
+            static BlitzMat deriv_stress(3, DRT::UTILS::getNumberOfElementNodes(stressdistype),blitz::ColumnMajorArray<2>());
             if (stress_unknowns_present)
             {
                 DRT::UTILS::shape_function_3D(funct_stress,posXiDomain(0),posXiDomain(1),posXiDomain(2),stressdistype);
@@ -753,7 +753,7 @@ void Sysmat(
             const BlitzMat derxy_stress(blitz::sum(xji(i,k)*deriv_stress(k,j),k));
 
             // compute second global derivative
-            static BlitzMat derxy2(6,numnode);
+            static BlitzMat derxy2(6,numnode,blitz::ColumnMajorArray<2>());
             if (higher_order_ele)
             {
                 const BlitzMat deriv2(DRT::UTILS::shape_function_3D_deriv2<DISTYPE>(posXiDomain(0),posXiDomain(1),posXiDomain(2)));
@@ -766,11 +766,11 @@ void Sysmat(
 
             // after this call, one should only use the enriched shape functions and derivatives!
             BlitzVec enr_funct(numparamvelx);
-            BlitzMat enr_derxy(3,numparamvelx);
-            BlitzMat enr_derxy2(6,numparamvelx);
+            BlitzMat enr_derxy(3,numparamvelx,blitz::ColumnMajorArray<2>());
+            BlitzMat enr_derxy2(6,numparamvelx,blitz::ColumnMajorArray<2>());
       
             BlitzVec enr_funct_stress(numparamtauxx);
-            BlitzMat enr_derxy_stress(3,numparamtauxx);
+            BlitzMat enr_derxy_stress(3,numparamtauxx,blitz::ColumnMajorArray<2>());
             if (ASSTYPE == XFEM::xfem_assembly)
             {
                 // shape function for nodal dofs
@@ -1580,10 +1580,10 @@ void Sysmat(
         // get node coordinates
         //TODO: get the right element
         //const RCP<DRT::Element> boundaryele = ih->GetBoundaryEle(cell->GetSurfaceEleGid());
-        const RCP<DRT::Element> boundaryele = ih->GetBoundaryEle(0);
+        const DRT::Element* boundaryele = ih->GetBoundaryEle(0);
         //cout << (*boundaryele) << endl;
         
-        const BlitzMat xyze_boundary(DRT::UTILS::PositionArray(boundaryele.get()));
+        const BlitzMat xyze_boundary(DRT::UTILS::PositionArray(boundaryele));
 
         // integration loop
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)

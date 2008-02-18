@@ -103,20 +103,20 @@ class Intersection
         //! offset in facet marker list
         static const int                    facetMarkerOffset_ = 11;
               
-        //! discretization type of the xfem element
-        DRT::Element::DiscretizationType    xfemDistype_;      
-        
-        //! discretization type of the previously handled xfem element
-        DRT::Element::DiscretizationType    xfemOldDistype_;      
-        
-        //! discretization type of the cutter element
-        DRT::Element::DiscretizationType    cutterDistype_;
+//        //! discretization type of the xfem element
+//        DRT::Element::DiscretizationType    xfemDistype_;      
+//        
+//        //! discretization type of the previously handled xfem element
+//        DRT::Element::DiscretizationType    xfemOldDistype_;      
+//        
+//        //! discretization type of the cutter element
+//        DRT::Element::DiscretizationType    cutterDistype_;
             
         //! number of surfaces of the xfem element
         int                                 numXFEMSurfaces_;       
         
-        //! number of lines of the xfem element
-        int                                 numXFEMLines_;
+//        //! number of lines of the xfem element
+//        int                                 numXFEMLines_;
             
         //! number of corner nodes of the xfem element
         int                                 numXFEMCornerNodes_;
@@ -161,14 +161,14 @@ class Intersection
         vector<int>                         faceMarker_; 
         
         
-        /*!
-        \brief initializes the the intersection computation
-    
-        \param xfemdis   (in) : xfem discretization
-        */
-        void initializeIntersection(
-            const RCP<DRT::Discretization>  xfemdis
-            );
+//        /*!
+//        \brief initializes the the intersection computation
+//    
+//        \param xfemdis   (in) : xfem discretization
+//        */
+//        void initializeIntersection(
+//            const RCP<DRT::Discretization>  xfemdis
+//            );
         
         /*!
         \brief initializes the private members of the xfem element
@@ -181,14 +181,14 @@ class Intersection
             const DRT::Element*   xfemElement
             );
             
-        /*!
-        \brief initializes the private members of the cutter element
-    
-        \param cutterElement   (in) : cutter element
-        */
-        void initializeCutter(  
-            const DRT::Element* cutterElement
-            );
+//        /*!
+//        \brief initializes the private members of the cutter element
+//    
+//        \param cutterElement   (in) : cutter element
+//        */
+//        void initializeCutter(  
+//            const DRT::Element* cutterElement
+//            );
           
         /*!
         \brief computes a global numbering for cutter elements, which are boundary
@@ -253,7 +253,7 @@ class Intersection
         \param cutterdis            (in)        : cutter discretization
         */
     	void getCutterElementsInParallel(	
-			vector< DRT::Condition * >&      		xfemConditions,
+			const vector< DRT::Condition * >&   	xfemConditions,
 			vector<int>&							conditionEleCount, 
 			map< int, vector< DRT::Element* > >&   	cutterElementMap,
 			map< int, RCP<DRT::Node> >&  	cutterNodeMap,
@@ -293,10 +293,11 @@ class Intersection
         \param ip                   (in)        : interface point
         \return true if the node is lying on a boundary false otherwise
         */  
-        bool checkIfOnBoundary(   
-            const Epetra_SerialDenseVector&       xsi,
-            InterfacePoint&                 ip
-            ) const;
+        bool checkIfOnBoundary(
+                const DRT::Element::DiscretizationType  xfemDistype, ///< shape of the volume element
+                const Epetra_SerialDenseVector&         xsi,
+                InterfacePoint&                         ip
+                ) const;
         
               
         /*!
@@ -871,7 +872,7 @@ class Intersection
             int&                                        lineIndex,
             Epetra_SerialDenseVector&                   xsi,
             const vector<Epetra_SerialDenseVector>&     plane,
-            const DRT::Element*                         surfaceElement
+            DRT::Element*                               surfaceElement
             ) const;
             
          
@@ -1095,7 +1096,7 @@ class Intersection
         */             
         int findIntersectingSurfaceEdge(
             const DRT::Element*                       xfemElement,
-            const DRT::Element*                       cutterElement,
+            DRT::Element*                             cutterElement,
             const Epetra_SerialDenseVector&           edgeNode1,
             const Epetra_SerialDenseVector&           edgeNode2
             ) const;
@@ -1119,7 +1120,7 @@ class Intersection
             const int                                   globalHigherOrderIndex,
             const int                                   lineIndex, 
             Epetra_SerialDenseVector&                   xsi,
-            const DRT::Element*                         surfaceElement, 
+            DRT::Element*                               surfaceElement, 
             const DRT::Element*                         xfemElement, 
             tetgenio&                                   out
             ) const;
@@ -1159,7 +1160,7 @@ class Intersection
 		    std::vector< std::vector<double> >&   	domainCoord, 
 		    std::vector< std::vector<double> >&   	boundaryCoord, 
 		    const DRT::Element*				        xfemElement,
-		    tetgenio&                   			out
+		    const tetgenio&                			out
             ) const;
             
                     

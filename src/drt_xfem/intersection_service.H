@@ -177,9 +177,9 @@ namespace XFEM
     \param eleCoord         (in)    	: vector of element coordinates
     \return                               vector of current coordinates
     */
-    blitz::Array<double, 1> elementToCurrentCoordinates(   
-        const DRT::Element* element, 
-        const blitz::Array<double, 1>& eleCoord
+    BlitzVec elementToCurrentCoordinates(   
+        const DRT::Element*  element, 
+        const BlitzVec&      eleCoord
         );
 
 
@@ -209,10 +209,10 @@ namespace XFEM
                                       vector of current coordinates
     \param plane        (in)        : quad4 surface element
     */
-    void elementToCurrentCoordinates(  
-        Epetra_SerialDenseVector&                   xsi,
-        const vector<Epetra_SerialDenseVector>&     plane
-        );
+//    void elementToCurrentCoordinates(  
+//        Epetra_SerialDenseVector&                   xsi,
+//        const vector<Epetra_SerialDenseVector>&     plane
+//        );
 
 
     /*!
@@ -242,6 +242,22 @@ namespace XFEM
     	vector<double>&   			xsiVector
       	);
 
+    
+    /*!
+    \brief transforms a point in current coordinates to a point
+           in element coordinates with respect to a given element       
+           The nonlinear system of equation is solved with help of the Newton-method.
+
+    \param element              (in)        : element 
+    \param x                    (in)        : node in current coordinates (x, y, z)
+    \param xsi                  (inout)     : node in element coordinates
+    */  
+    void currentToElementCoordinates(    
+        const DRT::Element*                 element,
+        const Epetra_SerialDenseVector&     x,
+        Epetra_SerialDenseVector&           xsi
+        );
+    
     
     /*!
    	\brief transforms a point in current coordinates to a point
@@ -359,21 +375,6 @@ namespace XFEM
            The nonlinear system of equation is solved with help of the Newton-method.
 
     \param element              (in)        : element 
-    \param x                    (in)        : node in current coordinates (x, y, z)
-    \param xsi                  (inout)     : node in element coordinates
-    */  
-    bool checkPositionWithinElement(    
-        const DRT::Element*                 element,
-        const Epetra_SerialDenseVector&     x,
-        Epetra_SerialDenseVector&           xsi
-        );
-    
-    
-    /*!
-    \brief checks if a position in current coordinates lies within a certain element           
-           The nonlinear system of equation is solved with help of the Newton-method.
-
-    \param element              (in)        : element 
     \param x                    (in)        : node in current coordinates
     */  
     bool checkPositionWithinElement(    
@@ -390,7 +391,7 @@ namespace XFEM
     \param x                    (in)        : node in current coordinates
     */  
     bool PositionWithinDiscretization(  
-        RCP<DRT::Discretization>            dis,
+        const RCP<DRT::Discretization>      dis,
         const Epetra_SerialDenseVector&     x);
     
     
@@ -401,7 +402,7 @@ namespace XFEM
     bool PositionWithinCondition(
             const blitz::Array<double,1>&     x,                     ///< node in current coordinates
             const int                         xfem_condition_label, 
-            RCP<DRT::Discretization>          cutterdis              ///< mesh
+            const RCP<DRT::Discretization>    cutterdis              ///< mesh
         );
     
     
@@ -457,9 +458,9 @@ namespace XFEM
     */         
     bool searchForNearestPointOnSurface(
     	const DRT::Element*                   	surfaceElement,
-    	const blitz::Array<double, 1>&     		physCoord,
-    	blitz::Array<double, 1>&           		eleCoord,
-    	blitz::Array<double, 1>&           		normal,
+    	const BlitzVec&                         physCoord,
+    	BlitzVec&                               eleCoord,
+    	BlitzVec&           	                normal,
     	double&									distance
         );
     
@@ -470,14 +471,34 @@ namespace XFEM
 
    	\param surfaceElement 		(in)        : surfaceElement 
    	\param physCoord           	(in)        : node in physical coordinates (x, y, z)
-   	\param eleCoord            	(out)     	: node in element coordinates
-   	\return									true if point lies on the surface element, false otherwise
+   	\return									  node in element coordinates (r, s)
     */  
-    bool checkPositionWithinSurfaceElement(
-        const DRT::Element*                   	surfaceElement,
-        const blitz::Array<double, 1>&     		physCoord,
-        blitz::Array<double, 1>&           		eleCoord
+    BlitzVec CurrentToSurfaceElementCoordinates(
+        const DRT::Element*      surfaceElement,
+        const BlitzVec&          physCoord
         );
+    
+    
+    /*!
+    \brief checks if a position in element coordinates lies within a certain Element parameter space
+
+    \return  true if point lies on the surface element, false otherwise
+    */  
+    bool checkPositionWithinElementParameterSpace(
+            const BlitzVec                         eleCoord, ///< position in element coordinates
+            const DRT::Element::DiscretizationType distype   ///< shape of the surface element
+            );
+   
+    
+    /*!
+    \brief checks if a position in element coordinates lies within a certain Element parameter space
+
+    \return  true if point lies on the surface element, false otherwise
+    */  
+    bool checkPositionWithinElementParameterSpace(
+            const Epetra_SerialDenseVector         eleCoord, ///< position in element coordinates
+            const DRT::Element::DiscretizationType distype   ///< shape of the surface element
+            );
     
     
     /*!
@@ -489,8 +510,8 @@ namespace XFEM
     
     \return Jacobian matrix
     */         
-    blitz::Array<double, 2> updateJacobianForMap3To2(   
-        const blitz::Array<double, 1>&	xsi,
+    BlitzMat updateJacobianForMap3To2(   
+        const BlitzVec&	xsi,
         const DRT::Element*            	surfaceElement
         );      
     
@@ -505,8 +526,8 @@ namespace XFEM
     \param surface element	(in)       	: surface element
     */    
     BlitzVec updateFForMap3To2(   
-        const blitz::Array<double, 1>&	xsi,
-        const blitz::Array<double, 1>&	x,
+        const BlitzVec&                 xsi,
+        const BlitzVec&	                x,
         const DRT::Element*            	surfaceElement
         );
     
@@ -522,10 +543,10 @@ namespace XFEM
     \param surface element	(in)       	: surface element
     */    
     void updateAForMap3To2(   
-    	blitz::Array<double, 2>& 		A,
-    	const blitz::Array<double, 2>& 	Jacobi,
-    	const blitz::Array<double, 1>& 	F,
-        const blitz::Array<double, 1>&	xsi,
+    	BlitzMat& 		                A,
+    	const BlitzMat& 	            Jacobi,
+    	const BlitzVec& 	            F,
+        const BlitzVec&	                xsi,
         const DRT::Element*            	surfaceElement
         );   
     

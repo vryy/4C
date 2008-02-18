@@ -57,25 +57,25 @@ IntCell::~IntCell()
   return;
 }
 
-//
-//  get coordinates
-//
-vector< vector<double> > IntCell::NodalPosXiDomain() const
-{
-    dserror("no default implementation is given");
-    vector<vector<double> > dummy;
-    return dummy;
-}
+////
+////  get coordinates
+////
+//vector< vector<double> > IntCell::NodalPosXiDomain() const
+//{
+//    dserror("no default implementation is given");
+//    vector<vector<double> > dummy;
+//    return dummy;
+//}
 
-//
-//  get coordinates in physical space
-//
-vector< vector<double> > IntCell::NodalPosXYZ(const DRT::Element& ele) const
-{
-    dserror("no default implementation is given");
-    vector<vector<double> > dummy;
-    return dummy;
-}
+////
+////  get coordinates in physical space
+////
+//vector< vector<double> > IntCell::NodalPosXYZ(const DRT::Element& ele) const
+//{
+//    dserror("no default implementation is given");
+//    vector<vector<double> > dummy;
+//    return dummy;
+//}
 
 //
 // Print method
@@ -85,49 +85,6 @@ std::string IntCell::Print() const
   return "";
 }
 
-
-vector<vector<double> > IntCell::ComputePhysicalCoordinates(
-        const DRT::Element&  ele) const
-{
-    vector<vector<double> > physicalCoordinates;
-    
-    const int nsd = 3;
-    const int nen_cell = DRT::UTILS::getNumberOfElementNodes(this->Shape());
-    physicalCoordinates.reserve(nen_cell);
-    
-    // coordinates
-    for (int inen = 0; inen < nen_cell; ++inen)
-    {
-        // shape functions
-        Epetra_SerialDenseVector funct(27);
-        DRT::UTILS::shape_function_3D(
-                funct,
-                this->NodalPosXiDomain()[inen][0],
-                this->NodalPosXiDomain()[inen][1],
-                this->NodalPosXiDomain()[inen][2],
-                ele.Shape());
-    
-        //interpolate position to x-space
-        vector<double> x_interpol(nsd);
-        for (int isd=0;isd < nsd;++isd ){
-            x_interpol[isd] = 0.0;
-        }
-        
-        const DRT::Node** nodes = ele.Nodes();
-        
-        for (int inenparent = 0; inenparent < ele.NumNode();++inenparent)
-        {
-            const double* pos = nodes[inenparent]->X();
-            for (int isd=0;isd < nsd;++isd )
-            {
-                x_interpol[isd] += pos[isd] * funct(inenparent);
-            }
-        }
-        // store position
-        physicalCoordinates.push_back(x_interpol);
-    };
-    return physicalCoordinates;
-}
 
 //
 //  ctor
@@ -302,7 +259,7 @@ blitz::Array<double,1> DomainIntCell::GetPhysicalCenterPosition(const DRT::Eleme
     const int nsd = 3;
     
     //interpolate position to x-space
-    blitz::Array<double, 1> x_interpol(nsd);
+    BlitzVec x_interpol(nsd);
     x_interpol = 0.0;
 
     // physical positions of cell nodes
@@ -312,7 +269,7 @@ blitz::Array<double,1> DomainIntCell::GetPhysicalCenterPosition(const DRT::Eleme
     const vector<double> localcenterpos = DRT::UTILS::getLocalCenterPosition(this->Shape());
 
     // shape functions
-    blitz::Array<double, 1> funct(27);
+    BlitzVec funct(27);
     DRT::UTILS::shape_function_3D(
             funct,
             localcenterpos[0],
