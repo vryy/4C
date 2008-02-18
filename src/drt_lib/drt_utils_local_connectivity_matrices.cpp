@@ -881,32 +881,7 @@ int DRT::UTILS::getHigherOrderIndex(
 int DRT::UTILS::getDimension(
     const DRT::Element*   element)
 {
-    int dim = 0;
-    DRT::Element::DiscretizationType distype = element->Shape();
-    
-    switch(distype)
-    {
-        case DRT::Element::line2 :  case DRT::Element::line3 :
-        {
-            dim = 1;      
-            break;
-        }
-        case DRT::Element::quad4 : case DRT::Element::quad8 : case DRT::Element::quad9 :
-        case DRT::Element::tri3 : case DRT::Element::tri6 :
-        {
-            dim = 2;   
-            break;
-        }
-        case DRT::Element::hex8 : case DRT::Element::hex20 : case DRT::Element::hex27 :
-        case DRT::Element::tet4 : case DRT::Element::tet10 :
-        {
-            dim = 3;      
-            break;
-        }   
-        default:
-            dserror("discretization type is not yet implemented");
-    }
-    return dim;
+    return getDimension(element->Shape());
 }
 
 /*----------------------------------------------------------------------*
