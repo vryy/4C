@@ -674,7 +674,13 @@ namespace LINALG
     /// all ghost entries stored by row,column
     std::map<int,std::map<int,double> > ghost_;
   };
-}
+} // end of namespace LINALG
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+ostream& operator << (ostream& os, const LINALG::SparseMatrix& mat);
+ostream& operator << (ostream& os, const LINALG::BlockSparseMatrixBase& mat);
 
 
 /*----------------------------------------------------------------------*

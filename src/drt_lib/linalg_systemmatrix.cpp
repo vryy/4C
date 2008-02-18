@@ -520,11 +520,11 @@ void LINALG::SparseMatrix::Add(const LINALG::SparseMatrix& A,
   if (!A.Filled()) dserror("FillComplete was not called on A");
   if (Filled()) dserror("FillComplete was called on me before");
 
-  Epetra_CrsMatrix*               Aprime = NULL;
-  EpetraExt::RowMatrix_Transpose* Atrans = NULL;
+  Epetra_CrsMatrix* Aprime = NULL;
+  RCP<EpetraExt::RowMatrix_Transpose> Atrans;
   if (transposeA)
   {
-    Atrans = new EpetraExt::RowMatrix_Transpose(false,NULL,false);
+    Atrans = rcp(new EpetraExt::RowMatrix_Transpose(false,NULL,false));
     Aprime = &(dynamic_cast<Epetra_CrsMatrix&>(((*Atrans)(const_cast<Epetra_CrsMatrix&>(*A.sysmat_)))));
   }
   else
@@ -564,7 +564,6 @@ void LINALG::SparseMatrix::Add(const LINALG::SparseMatrix& A,
       }
     }
   }
-  if (Atrans) delete Atrans;
 }
 
 
@@ -739,7 +738,13 @@ void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase)
   return;
 }                  
 
-
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+ostream& operator << (ostream& os, const LINALG::SparseMatrix& mat)
+{
+  os << *(const_cast<LINALG::SparseMatrix&>(mat).Matrix());
+  return os;
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -947,6 +952,21 @@ const Epetra_Map& LINALG::BlockSparseMatrixBase::OperatorRangeMap() const
   return FullRangeMap();
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+ostream& operator << (ostream& os, const LINALG::BlockSparseMatrixBase& mat)
+{
+  for (int i=0; i<mat.Rows(); ++i)
+    for (int j=0; j<mat.Cols(); ++j)
+    {
+      if (mat.Comm().MyPID()==0) 
+        os << "====================================Matrix block (" << i << "," << j << "):" << endl;
+      fflush(stdout);
+      os << mat(i,j);
+    }
+  return os;
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
