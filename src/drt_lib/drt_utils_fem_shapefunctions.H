@@ -306,7 +306,7 @@ namespace UTILS
   
   \return shape function derivative values
   */
-  blitz::Array<double, 1> shape_function_1D_deriv1(
+  blitz::Array<double, 2> shape_function_1D_deriv1(
     const double                            r,       ///< r coordinate
     const DRT::Element::DiscretizationType  distype  ///< distuinguish between DiscretizationType
     );
@@ -316,7 +316,7 @@ namespace UTILS
   
   \return shape function derivative values
   */
-  blitz::Array<double, 1> shape_function_1D_deriv2(
+  blitz::Array<double, 2> shape_function_1D_deriv2(
     const double                            r,       ///< r coordinate
     const DRT::Element::DiscretizationType  distype  ///< distuinguish between DiscretizationType
     );

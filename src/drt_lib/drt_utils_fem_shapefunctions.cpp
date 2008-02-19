@@ -1980,20 +1980,20 @@ void DRT::UTILS::shape_function_1D_deriv1(
     {
     case DRT::Element::point1:
     {
-        deriv1(0, dr) = 0.0;
+        deriv1(dr, 0) = 0.0;
         break;
     }
     case DRT::Element::line2:
     {
-        deriv1(0, dr)= -0.5;
-        deriv1(1, dr)= 0.5;
+        deriv1(dr, 0)= -0.5;
+        deriv1(dr, 1)= 0.5;
         break;
     }
     case DRT::Element::line3:
     {
-        deriv1(0, dr)= r - 0.5;
-        deriv1(1, dr)= r + 0.5;
-        deriv1(2, dr)= -2.0*r;
+        deriv1(dr, 0)= r - 0.5;
+        deriv1(dr, 1)= r + 0.5;
+        deriv1(dr, 2)= -2.0*r;
         break;
     }
     default:
@@ -2017,20 +2017,20 @@ void DRT::UTILS::shape_function_1D_deriv2(
     {
     case DRT::Element::point1:
     {
-        deriv2(0, drdr)= 0.0;
+        deriv2(drdr, 0)= 0.0;
         break;
     }
     case DRT::Element::line2:
     {
-        deriv2(0, drdr)= 0.0;
-        deriv2(1, drdr)= 0.0;
+        deriv2(drdr, 0)= 0.0;
+        deriv2(drdr, 1)= 0.0;
         break;
     }
     case DRT::Element::line3:
     {
-        deriv2(0, drdr)= 1.0;
-        deriv2(1, drdr)= 1.0;
-        deriv2(2, drdr)= -2.0;
+        deriv2(drdr, 0)= 1.0;
+        deriv2(drdr, 1)= 1.0;
+        deriv2(drdr, 2)= -2.0;
         break;
     }
     default:
@@ -2291,27 +2291,25 @@ blitz::Array<double, 1> DRT::UTILS::shape_function_1D(
 //
 // first natural derivative of shape functions
 //
-blitz::Array<double, 1> DRT::UTILS::shape_function_1D_deriv1(
+blitz::Array<double, 2> DRT::UTILS::shape_function_1D_deriv1(
         const double r,
         const DRT::Element::DiscretizationType distype)
 {
   blitz::Array<double, 2> d(1, DRT::UTILS::getNumberOfElementNodes(distype), blitz::ColumnMajorArray<2>());
   shape_function_1D_deriv1(d,r,distype);
-  const blitz::Range _  = blitz::Range::all();
-  return d(1,_);
+  return d;
 }
 
 //
 // Second natural derivative of shape functions
 //
-blitz::Array<double, 1> DRT::UTILS::shape_function_1D_deriv2(
+blitz::Array<double, 2> DRT::UTILS::shape_function_1D_deriv2(
         const double r,
         const DRT::Element::DiscretizationType distype)
 {
   blitz::Array<double, 2> d2(1, DRT::UTILS::getNumberOfElementNodes(distype), blitz::ColumnMajorArray<2>());
   shape_function_1D_deriv2(d2,r,distype);
-  const blitz::Range _  = blitz::Range::all();
-  return d2(1,_);
+  return d2;
 }
 
 

@@ -120,7 +120,7 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
 
   // allocate vector for shape functions and for derivatives
   Epetra_SerialDenseVector   funct(iel);
-  Epetra_SerialDenseMatrix    deriv(iel,1);
+  Epetra_SerialDenseMatrix   deriv(1, iel);
 
   // node coordinates
   Epetra_SerialDenseMatrix xye(2,iel);
@@ -217,7 +217,7 @@ double  DRT::ELEMENTS::Fluid2Line::f2_substitution(
   // compute derivative of parametrization
   double dr = 0.0;
   Epetra_SerialDenseVector der_par (iel);
-  der_par.Multiply('N','N',1.0,xye,deriv,0.0);
+  der_par.Multiply('N','T',1.0,xye,deriv,0.0);
   dr=der_par.Norm2();
   return dr;
 }
@@ -253,7 +253,7 @@ void DRT::ELEMENTS::Fluid2Line::IntegrateShapeFunction(ParameterList& params,
 
   // allocate vector for shape functions and for derivatives
   Epetra_SerialDenseVector   funct(iel);
-  Epetra_SerialDenseMatrix    deriv(iel,1);
+  Epetra_SerialDenseMatrix   deriv(1,iel);
 
   // node coordinates
   Epetra_SerialDenseMatrix 	xye(2,iel);

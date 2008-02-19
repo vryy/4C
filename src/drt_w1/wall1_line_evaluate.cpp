@@ -64,7 +64,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
    
   // allocate vector for shape functions and for derivatives
   Epetra_SerialDenseVector    funct(iel);
-  Epetra_SerialDenseMatrix    deriv(iel,1);
+  Epetra_SerialDenseMatrix    deriv(1,iel);
   
   // node coordinates
   Epetra_SerialDenseMatrix xye(2,iel);
@@ -158,7 +158,7 @@ double  DRT::ELEMENTS::Wall1Line::w1_substitution(const Epetra_SerialDenseMatrix
 // compute derivative of parametrization
 double dr = 0.0;
 Epetra_SerialDenseMatrix der_par (1,2);
-int err = der_par.Multiply('T','T',1.0,deriv,xye,0.0);
+int err = der_par.Multiply('N','T',1.0,deriv,xye,0.0);
 if (err!=0)
 	dserror("Multiply failed");
 dr=sqrt(der_par(0,0)*der_par(0,0)+der_par(0,1)*der_par(0,1));
