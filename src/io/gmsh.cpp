@@ -27,7 +27,7 @@ using namespace XFEM;
 
 
 string IO::GMSH::CoordinatesToString(
-        const vector<vector<double> > coord,
+        const vector<vector<double> >& coord,
         const DRT::Element::DiscretizationType distype)
 {
     stringstream pos_array_string;
@@ -51,7 +51,7 @@ string IO::GMSH::CoordinatesToString(
 }
 
 string IO::GMSH::CoordinatesToString(
-        const blitz::Array<double,2> coord,
+        const blitz::Array<double,2>&          coord,
         const DRT::Element::DiscretizationType distype)
 {
     stringstream pos_array_string;
@@ -96,7 +96,7 @@ string IO::GMSH::ScalarToString(
 }
 
 string IO::GMSH::ScalarFieldToString(
-        const vector<double>                           scalarfield,
+        const vector<double>&                  scalarfield,
         const DRT::Element::DiscretizationType distype)
 {
     stringstream pos_array_string;
@@ -117,7 +117,7 @@ string IO::GMSH::ScalarFieldToString(
 }
 
 string IO::GMSH::VectorFieldToString(
-        const vector<vector<double> >           vectorfield,
+        const vector<vector<double> >&          vectorfield,
         const DRT::Element::DiscretizationType  distype)
 {
     stringstream pos_array_string;
@@ -144,7 +144,9 @@ string IO::GMSH::VectorFieldToString(
 
 
 
-string IO::GMSH::elementToString(const double scalar, const DRT::Element* ele)
+string IO::GMSH::elementToString(
+        const double scalar,
+        const DRT::Element* ele)
 {
     const DRT::Node** nodes = ele->Nodes();
     
@@ -172,7 +174,9 @@ string IO::GMSH::elementToString(const double scalar, const DRT::Element* ele)
 }
 
 
-string IO::GMSH::elementToString(const vector<double> scalarfield, const DRT::Element* ele)
+string IO::GMSH::elementToString(
+        const vector<double>& scalarfield,
+        const DRT::Element* ele)
 {
     const DRT::Node** nodes = ele->Nodes();
     
@@ -200,7 +204,9 @@ string IO::GMSH::elementToString(const vector<double> scalarfield, const DRT::El
     return pos_array_string.str();
 }
 
-string IO::GMSH::elementToString(const vector<vector<double> > vectorfield, const DRT::Element* ele)
+string IO::GMSH::elementToString(
+        const vector<vector<double> >& vectorfield,
+        const DRT::Element*            ele)
 {
     const DRT::Node** nodes = ele->Nodes();
     
@@ -231,7 +237,7 @@ string IO::GMSH::elementToString(const vector<vector<double> > vectorfield, cons
 }
 
 string IO::GMSH::cellToString(
-        const std::vector<std::vector<double> > coord,
+        const blitz::Array<double,2>&           coord,
         const double                            scalar,
         const DRT::Element::DiscretizationType  distype)
 {
@@ -248,7 +254,7 @@ string IO::GMSH::cellToString(
 
 
 string IO::GMSH::disToString(
-        const std::string              s,
+        const std::string&             s,
         const double                   scalar, 
         const RCP<DRT::Discretization> dis)
 {
@@ -264,7 +270,7 @@ string IO::GMSH::disToString(
 }
 
 string IO::GMSH::disToString(
-        const std::string                      s, 
+        const std::string&                     s, 
         const double                           scalar, 
         const RefCountPtr<DRT::Discretization> dis,
         const map<int, DomainIntCells >&       elementDomainIntCellsMap)
