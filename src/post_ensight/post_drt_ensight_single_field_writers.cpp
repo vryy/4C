@@ -625,9 +625,10 @@ vector<double> computeScalarCellNodeValues(
   const blitz::Array<double,1> cellcenterpos(cell.GetPhysicalCenterPosition(ele));
 
   // cell corner nodes
+  const vector<vector<double> > cellnodeposvectors = cell.NodalPosXYZ(ele);
   for (int inen = 0; inen < nen_cell; ++inen)
   {
-    const vector<double> cellnodeposvector = cell.NodalPosXYZ(ele)[inen];
+    const vector<double> cellnodeposvector = cellnodeposvectors[inen];
     blitz::Array<double,1> cellnodepos(3);
     for (int isd = 0; isd < nsd; ++isd) {
       cellnodepos(isd) = cellnodeposvector[isd];
