@@ -57,7 +57,16 @@ enum Field
     Tauyz,              ///< fluid deviatoric stress
     Tauzx,              ///< fluid deviatoric stress
     Tauzy,              ///< fluid deviatoric stress
-    Tauzz              ///< fluid deviatoric stress
+    Tauzz,              ///< fluid deviatoric stress
+    Sigmaxx,            ///< stress
+    Sigmaxy,            ///< stress
+    Sigmaxz,            ///< stress
+    Sigmayx,            ///< stress
+    Sigmayy,            ///< stress
+    Sigmayz,            ///< stress
+    Sigmazx,            ///< stress
+    Sigmazy,            ///< stress
+    Sigmazz             ///< stress
 };
 
 std::string physVarToString(const Field var);

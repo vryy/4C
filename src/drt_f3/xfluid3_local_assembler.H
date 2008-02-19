@@ -44,9 +44,9 @@ XFEM::PHYSICS::Field mangle()
 {
     return FIELD;
 }; 
-template <> XFEM::PHYSICS::Field mangle<XFEM::PHYSICS::Tauyx>() {return XFEM::PHYSICS::Tauxy;};
-template <> XFEM::PHYSICS::Field mangle<XFEM::PHYSICS::Tauzx>() {return XFEM::PHYSICS::Tauxz;};
-template <> XFEM::PHYSICS::Field mangle<XFEM::PHYSICS::Tauzy>() {return XFEM::PHYSICS::Tauyz;};
+template <> XFEM::PHYSICS::Field mangle<XFEM::PHYSICS::Sigmayx>() {return XFEM::PHYSICS::Sigmaxy;};
+template <> XFEM::PHYSICS::Field mangle<XFEM::PHYSICS::Sigmazx>() {return XFEM::PHYSICS::Sigmaxz;};
+template <> XFEM::PHYSICS::Field mangle<XFEM::PHYSICS::Sigmazy>() {return XFEM::PHYSICS::Sigmayz;};
 
 
 template <DRT::Element::DiscretizationType DISTYPE, 
