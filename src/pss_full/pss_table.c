@@ -267,7 +267,7 @@ end:
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-SYMBOL* map_find_symbol(MAP* map, CHAR* key)
+SYMBOL* map_find_symbol(const MAP* map, const CHAR* key)
 {
   MAP_NODE* node;
   SYMBOL* symbol = NULL;
@@ -296,7 +296,7 @@ SYMBOL* map_find_symbol(MAP* map, CHAR* key)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-INT map_find_string(MAP* map, CHAR* key, CHAR** string)
+INT map_find_string(const MAP* map, const CHAR* key, CHAR** string)
 {
   SYMBOL* symbol;
   INT ret;
@@ -323,7 +323,7 @@ INT map_find_string(MAP* map, CHAR* key, CHAR** string)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-INT map_find_int(MAP* map, CHAR* key, INT* integer)
+INT map_find_int(const MAP* map, const CHAR* key, INT* integer)
 {
   SYMBOL* symbol;
   INT ret;
@@ -350,7 +350,7 @@ INT map_find_int(MAP* map, CHAR* key, INT* integer)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-INT map_find_real(MAP* map, CHAR* key, DOUBLE* real)
+INT map_find_real(const MAP* map, const CHAR* key, DOUBLE* real)
 {
   SYMBOL* symbol;
   INT ret;
@@ -377,7 +377,7 @@ INT map_find_real(MAP* map, CHAR* key, DOUBLE* real)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-INT map_find_map(MAP* map, CHAR* key, MAP** dir)
+INT map_find_map(const MAP* map, const CHAR* key, MAP** dir)
 {
   SYMBOL* symbol;
   INT ret;
@@ -1074,7 +1074,7 @@ void map_prepend_symbols(MAP* map, CHAR* key, SYMBOL* symbol, INT count)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-INT symbol_is_string(SYMBOL* symbol)
+INT symbol_is_string(const SYMBOL* symbol)
 {
   return (symbol != NULL) && (symbol->type == sym_string);
 }
@@ -1088,7 +1088,7 @@ INT symbol_is_string(SYMBOL* symbol)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-INT symbol_is_int(SYMBOL* symbol)
+INT symbol_is_int(const SYMBOL* symbol)
 {
   return (symbol != NULL) && (symbol->type == sym_int);
 }
@@ -1102,7 +1102,7 @@ INT symbol_is_int(SYMBOL* symbol)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-INT symbol_is_real(SYMBOL* symbol)
+INT symbol_is_real(const SYMBOL* symbol)
 {
   return (symbol != NULL) && (symbol->type == sym_real);
 }
@@ -1116,7 +1116,7 @@ INT symbol_is_real(SYMBOL* symbol)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-INT symbol_is_map(SYMBOL* symbol)
+INT symbol_is_map(const SYMBOL* symbol)
 {
   return (symbol != NULL) && (symbol->type == sym_map);
 }
@@ -1131,7 +1131,7 @@ INT symbol_is_map(SYMBOL* symbol)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-INT symbol_get_string(SYMBOL* symbol, CHAR** string)
+INT symbol_get_string(const SYMBOL* symbol, CHAR** string)
 {
   INT ret;
 
@@ -1162,7 +1162,7 @@ INT symbol_get_string(SYMBOL* symbol, CHAR** string)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-INT symbol_get_int(SYMBOL* symbol, INT* integer)
+INT symbol_get_int(const SYMBOL* symbol, INT* integer)
 {
   INT ret;
 
@@ -1193,7 +1193,7 @@ INT symbol_get_int(SYMBOL* symbol, INT* integer)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-INT symbol_get_real(SYMBOL* symbol, DOUBLE* real)
+INT symbol_get_real(const SYMBOL* symbol, DOUBLE* real)
 {
   INT ret;
 
@@ -1223,7 +1223,7 @@ INT symbol_get_real(SYMBOL* symbol, DOUBLE* real)
   \date 08/06
  */
 /*----------------------------------------------------------------------*/
-INT symbol_get_real_as_float(SYMBOL* symbol, float* real)
+INT symbol_get_real_as_float(const SYMBOL* symbol, float* real)
 {
   INT ret;
 
@@ -1254,7 +1254,7 @@ INT symbol_get_real_as_float(SYMBOL* symbol, float* real)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-INT symbol_get_map(SYMBOL* symbol, MAP** map)
+INT symbol_get_map(const SYMBOL* symbol, MAP** map)
 {
   INT ret;
 
@@ -1285,7 +1285,7 @@ INT symbol_get_map(SYMBOL* symbol, MAP** map)
   \date 09/04
 */
 /*----------------------------------------------------------------------*/
-CHAR* symbol_string(SYMBOL* symbol)
+CHAR* symbol_string(const SYMBOL* symbol)
 {
   CHAR* ret=NULL;
 #ifdef DEBUG
@@ -1314,7 +1314,7 @@ CHAR* symbol_string(SYMBOL* symbol)
   \date 09/04
 */
 /*----------------------------------------------------------------------*/
-INT symbol_int(SYMBOL* symbol)
+INT symbol_int(const SYMBOL* symbol)
 {
   INT ret=0;
 #ifdef DEBUG
@@ -1343,7 +1343,7 @@ INT symbol_int(SYMBOL* symbol)
   \date 09/04
 */
 /*----------------------------------------------------------------------*/
-DOUBLE symbol_real(SYMBOL* symbol)
+DOUBLE symbol_real(const SYMBOL* symbol)
 {
   DOUBLE ret=0.0;
 #ifdef DEBUG
@@ -1372,7 +1372,7 @@ DOUBLE symbol_real(SYMBOL* symbol)
   \date 09/04
 */
 /*----------------------------------------------------------------------*/
-MAP* symbol_map(SYMBOL* symbol)
+MAP* symbol_map(const SYMBOL* symbol)
 {
   MAP* ret=NULL;
 #ifdef DEBUG

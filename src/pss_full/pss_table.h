@@ -170,15 +170,15 @@ void destroy_map(MAP* map);
 
 /* Find the first symbol with the given key. Use this if you have to
  * travel all symbols with that key. */
-SYMBOL* map_find_symbol(MAP* map, CHAR* key);
+SYMBOL* map_find_symbol(const MAP* map, const CHAR* key);
 
 
 /* Find the last symbols value. The value has to be of the given
  * type. Returns false on failture. */
-INT map_find_string(MAP* map, CHAR* key, CHAR** string);
-INT map_find_int(MAP* map, CHAR* key, INT* integer);
-INT map_find_real(MAP* map, CHAR* key, DOUBLE* real);
-INT map_find_map(MAP* map, CHAR* key, MAP** dir);
+INT map_find_string(const MAP* map, const CHAR* key, CHAR** string);
+INT map_find_int(const MAP* map, const CHAR* key, INT* integer);
+INT map_find_real(const MAP* map, const CHAR* key, DOUBLE* real);
+INT map_find_map(const MAP* map, const CHAR* key, MAP** dir);
 
 
 /* Find the last symbols value. The value has to be of the given
@@ -224,25 +224,25 @@ void map_prepend_symbols(MAP* map, CHAR* key, SYMBOL* symbol, INT count);
 
 
 /* Tell whether this symbol has the given type. */
-INT symbol_is_string(SYMBOL* symbol);
-INT symbol_is_int(SYMBOL* symbol);
-INT symbol_is_real(SYMBOL* symbol);
-INT symbol_is_map(SYMBOL* symbol);
+INT symbol_is_string(const SYMBOL* symbol);
+INT symbol_is_int(const SYMBOL* symbol);
+INT symbol_is_real(const SYMBOL* symbol);
+INT symbol_is_map(const SYMBOL* symbol);
 
 
 /* Extract the value of this symbol. Returns false on failture. */
-INT symbol_get_string(SYMBOL* symbol, CHAR** string);
-INT symbol_get_int(SYMBOL* symbol, INT* integer);
-INT symbol_get_real(SYMBOL* symbol, DOUBLE* real);
-INT symbol_get_real_as_float(SYMBOL* symbol, float* real);
-INT symbol_get_map(SYMBOL* symbol, MAP** map);
+INT symbol_get_string(const SYMBOL* symbol, CHAR** string);
+INT symbol_get_int(const SYMBOL* symbol, INT* integer);
+INT symbol_get_real(const SYMBOL* symbol, DOUBLE* real);
+INT symbol_get_real_as_float(const SYMBOL* symbol, float* real);
+INT symbol_get_map(const SYMBOL* symbol, MAP** map);
 
 
-/* Extract the value of this symbol. Call dserror on failture. */
-CHAR* symbol_string(SYMBOL* symbol);
-INT symbol_int(SYMBOL* symbol);
-DOUBLE symbol_real(SYMBOL* symbol);
-MAP* symbol_map(SYMBOL* symbol);
+/* Extract the value of this symbol. Call dserror on failure. */
+CHAR* symbol_string(const SYMBOL* symbol);
+INT symbol_int(const SYMBOL* symbol);
+DOUBLE symbol_real(const SYMBOL* symbol);
+MAP* symbol_map(const SYMBOL* symbol);
 
 
 /* Write the map to file f in a readable way. */
