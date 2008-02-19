@@ -20,6 +20,7 @@ Maintainer: Axel Gerstenberger
 #include <string>
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_node.H"
+#include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_utils_integration.H"
 #include "../drt_lib/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_utils_local_connectivity_matrices.H"
@@ -29,49 +30,54 @@ Maintainer: Axel Gerstenberger
 namespace XFEM
 {
 
+//! little helper function
+inline BlitzMat ConvertPosArrayToBlitz(
+        const vector<vector<double> >&         pos_array,
+        const DRT::Element::DiscretizationType distype,
+        const int                              dim
+        )
+{
+    const int numnode = DRT::UTILS::getNumberOfElementNodes(distype);
+    BlitzMat pos_array_blitz(dim,numnode,blitz::ColumnMajorArray<2>());
+    for (int inode=0; inode<numnode; ++inode)
+    {
+        for (int isd=0; isd<dim; ++isd)
+        {
+            pos_array_blitz(isd,inode) = pos_array[inode][isd];
+        }
+    }    
+    return pos_array_blitz;
+}
+
 
 template<class Cell>
-vector<vector<double> > ComputePhysicalCoordinates(
+BlitzMat ComputePhysicalCoordinates(
         const DRT::Element&  ele,
         const Cell& cell
         )
 {
-    vector<vector<double> > physicalCoordinates;
+    const BlitzMat eleCoord(DRT::UTILS::PositionArrayBlitz(&ele));
+    const BlitzMat nodalPosXiDomain(cell.NodalPosXiDomainBlitz());
     
-    const int nsd = 3;
     const int nen_cell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
-    physicalCoordinates.reserve(nen_cell);
     
-    // coordinates
+    // return value
+    BlitzMat physicalCoordinates(3, nen_cell);
+    physicalCoordinates = 0.0;
+    // for each cell node, compute physical position
     for (int inen = 0; inen < nen_cell; ++inen)
     {
         // shape functions
-        Epetra_SerialDenseVector funct(27);
-        DRT::UTILS::shape_function_3D(
-                funct,
-                cell.NodalPosXiDomain()[inen][0],
-                cell.NodalPosXiDomain()[inen][1],
-                cell.NodalPosXiDomain()[inen][2],
-                ele.Shape());
-    
-        //interpolate position to x-space
-        vector<double> x_interpol(nsd);
-        for (int isd=0;isd < nsd;++isd ){
-            x_interpol[isd] = 0.0;
-        }
-        
-        const DRT::Node** nodes = ele.Nodes();
-        
-        for (int inenparent = 0; inenparent < ele.NumNode();++inenparent)
-        {
-            const double* pos = nodes[inenparent]->X();
-            for (int isd=0;isd < nsd;++isd )
-            {
-                x_interpol[isd] += pos[isd] * funct(inenparent);
-            }
-        }
-        // store position
-        physicalCoordinates.push_back(x_interpol);
+        BlitzVec funct(DRT::UTILS::shape_function_3D(
+                nodalPosXiDomain(0, inen),
+                nodalPosXiDomain(1, inen),
+                nodalPosXiDomain(2, inen),
+                ele.Shape()));
+
+        blitz::firstIndex i;    // Placeholder for the first index
+        blitz::secondIndex j;   // Placeholder for the second index
+        const blitz::Range _  = blitz::Range::all();
+        physicalCoordinates(_,inen) = blitz::sum(eleCoord(i, j) * funct(j),j);
     };
     return physicalCoordinates;
 }
@@ -143,7 +149,7 @@ public:
      */
     explicit DomainIntCell(
             const DRT::Element::DiscretizationType distype,
-            const std::vector< std::vector<double> >& domainCoordinates);
+            const vector<vector<double> >& domainCoordinates);
 
     /*!
      \brief Standard Constructor for dummy integration cell
@@ -185,32 +191,21 @@ public:
 
      \return cells nodal coordinates  
      */
-    std::vector< std::vector<double> > NodalPosXiDomain() const {return nodalpos_xi_domain_;};
+    vector<vector<double> > NodalPosXiDomain() const {return nodalpos_xi_domain_;};
 
     /*!
      \brief returns the coordinates of the integration cell in domain element coordinates
 
      \return cells nodal coordinates  
      */
-    BlitzMat NodalPosXiDomainBlitz() const
-    {
-        const int numnode = this->NumNode();
-        BlitzMat positions_xi_domain(3,numnode,blitz::ColumnMajorArray<2>());
-        for (int inode=0; inode<numnode; ++inode)
-        {
-            positions_xi_domain(0,inode) = this->NodalPosXiDomain()[inode][0];
-            positions_xi_domain(1,inode) = this->NodalPosXiDomain()[inode][1];
-            positions_xi_domain(2,inode) = this->NodalPosXiDomain()[inode][2];
-        }    
-        return positions_xi_domain;
-    }
+    BlitzMat NodalPosXiDomainBlitz() const {return nodalpos_xi_domain_blitz_;};
     
     /*!
      \brief returns the coordinates of the integration cell in physical coordinates
 
      \return cells nodal coordinates  
      */
-    std::vector< std::vector<double> > NodalPosXYZ(const DRT::Element& ele) const
+    BlitzMat NodalPosXYZ(const DRT::Element& ele) const
     {
         return ComputePhysicalCoordinates<DomainIntCell>(ele, (*this));
     };
@@ -228,7 +223,10 @@ public:
 protected:
     
     //! coordinates of the nodes in the parent domain element coordinates xi_domain
-    std::vector< std::vector<double> > nodalpos_xi_domain_;
+    vector<vector<double> > nodalpos_xi_domain_;
+    
+    //! coordinates of the nodes in the parent domain element coordinates xi_domain
+    BlitzMat nodalpos_xi_domain_blitz_;
     
 private:
     
@@ -259,8 +257,8 @@ public:
     explicit BoundaryIntCell(
             const DRT::Element::DiscretizationType    distype,
             const int                                 surface_ele_gid,
-            const std::vector< std::vector<double> >& domainCoordinates,
-            const std::vector< std::vector<double> >& boundaryCoordinates);
+            const vector<vector<double> >&            domainCoordinates,
+            const vector<vector<double> >&            boundaryCoordinates);
 
     /*!
      \brief Copy Constructor
@@ -289,7 +287,7 @@ public:
 
      \return cells nodal coordinates  
      */
-    std::vector< std::vector<double> > NodalPosXYZ(const DRT::Element& ele) const
+    BlitzMat NodalPosXYZ(const DRT::Element& ele) const
     {
         return ComputePhysicalCoordinates<BoundaryIntCell>(ele, (*this));
     };
@@ -299,49 +297,28 @@ public:
 
      \return cells nodal coordinates  
      */
-    std::vector< std::vector<double> > NodalPosXiDomain() const {return nodalpos_xi_domain_;};
+    vector<vector<double> > NodalPosXiDomain() const {return nodalpos_xi_domain_;};
     
     /*!
      \brief returns the coordinates of the integration cell in domain element coordinates
 
      \return cells nodal coordinates  
      */
-    BlitzMat NodalPosXiDomainBlitz() const
-    {
-        const int numnode = this->NumNode();
-        BlitzMat positions_xi_domain(3,numnode,blitz::ColumnMajorArray<2>());
-        for (int inode=0; inode<numnode; ++inode)
-        {
-            positions_xi_domain(0,inode) = this->NodalPosXiDomain()[inode][0];
-            positions_xi_domain(1,inode) = this->NodalPosXiDomain()[inode][1];
-            positions_xi_domain(2,inode) = this->NodalPosXiDomain()[inode][2];
-        }    
-        return positions_xi_domain;
-    }
+    BlitzMat NodalPosXiDomainBlitz() const {return nodalpos_xi_domain_blitz_;};
     
     /*!
      \brief returns the coordinates of the integration cell in surface element coordinates
 
      \return cells nodal coordinates  
      */
-    std::vector< std::vector<double> > NodalPosXiBoundary() const {return nodalpos_xi_boundary_;};
+    vector<vector<double> > NodalPosXiBoundary() const {return nodalpos_xi_boundary_;};
     
     /*!
      \brief returns the coordinates of the integration cell in domain element coordinates
 
      \return cells nodal coordinates  
      */
-    BlitzMat NodalPosXiBoundaryBlitz() const
-    {
-        const int numnode = this->NumNode();
-        BlitzMat positions_xi_domain(2,numnode,blitz::ColumnMajorArray<2>());
-        for (int inode=0; inode<numnode; ++inode)
-        {
-            positions_xi_domain(0,inode) = this->NodalPosXiBoundary()[inode][0];
-            positions_xi_domain(1,inode) = this->NodalPosXiBoundary()[inode][1];
-        }    
-        return positions_xi_domain;
-    }
+    BlitzMat NodalPosXiBoundaryBlitz() const {return nodalpos_xi_boundary_blitz_;};
     
     int GetSurfaceEleGid() const {return surface_ele_gid_;}
     
@@ -355,10 +332,16 @@ private:
     int surface_ele_gid_;
     
     //! coordinates of the nodes
-    std::vector< std::vector<double> > nodalpos_xi_domain_;
+    vector<vector<double> > nodalpos_xi_domain_;
     
     //! boundary coordinates of the nodes
-    std::vector< std::vector<double> > nodalpos_xi_boundary_;
+    vector<vector<double> > nodalpos_xi_boundary_;
+    
+    //! coordinates of the nodes
+    BlitzMat nodalpos_xi_domain_blitz_;
+    
+    //! boundary coordinates of the nodes
+    BlitzMat nodalpos_xi_boundary_blitz_;
     
 };
 

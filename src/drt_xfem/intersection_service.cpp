@@ -54,19 +54,19 @@ Epetra_SerialDenseVector XFEM::addTwoVectors(
 /*----------------------------------------------------------------------*
  |  ML:     adds two vector<double>                          u.may 06/07|
  *----------------------------------------------------------------------*/
-vector<double> XFEM::addTwoVectors(
-    const vector<double>&   v1,
-    const vector<double>&   v2)
-{   
-    vector<double> vResult(v1.size());
-    
-    dsassert(v1.size() == v2.size(), "both vectors need to have the same size\n");
-
-    for(unsigned int i = 0; i < v1.size(); ++i)
-        vResult[i] = v1[i] + v2[i];
- 
-    return vResult;
-}
+//vector<double> XFEM::addTwoVectors(
+//    const vector<double>&   v1,
+//    const vector<double>&   v2)
+//{   
+//    vector<double> vResult(v1.size());
+//    
+//    dsassert(v1.size() == v2.size(), "both vectors need to have the same size\n");
+//
+//    for(unsigned int i = 0; i < v1.size(); ++i)
+//        vResult[i] = v1[i] + v2[i];
+// 
+//    return vResult;
+//}
     
     
 
@@ -97,20 +97,20 @@ Epetra_SerialDenseVector XFEM::subtractsTwoVectors(
  |  ML :    subtracts one vector<double> from another        u.may 06/07|
  |          vector<double> . The result is stored in v1.                |
  *----------------------------------------------------------------------*/
-vector<double> XFEM::subtractsTwoVectors(   
-    const vector <double>& v1,
-    const vector <double>& v2)
-{   
-    vector <double>  vResult(v1.size());
-    
-    if(v1.size() != v2.size())
-        dserror("both vectors need to have the same size\n"); 
-
-    for(unsigned int i = 0; i < v1.size(); i++)
-        vResult[i] = v1[i] - v2[i];
- 
-    return vResult;
-}
+//vector<double> XFEM::subtractsTwoVectors(   
+//    const vector <double>& v1,
+//    const vector <double>& v2)
+//{   
+//    vector <double>  vResult(v1.size());
+//    
+//    if(v1.size() != v2.size())
+//        dserror("both vectors need to have the same size\n"); 
+//
+//    for(unsigned int i = 0; i < v1.size(); i++)
+//        vResult[i] = v1[i] - v2[i];
+// 
+//    return vResult;
+//}
 
 
 
@@ -162,64 +162,64 @@ double XFEM::pythagoras(
 }
 
 
-/*----------------------------------------------------------------------*
- |  GM:     checks if a certain element is a                 u.may 06/07|
- |          volume  element with help of the discretization type        |
- *----------------------------------------------------------------------*/  
-bool XFEM::checkIfVolumeElement(
-        const DRT::Element::DiscretizationType distype)
-{
-    bool isVolume = false;
-    
-    if( distype == DRT::Element::hex8  ||
-        distype == DRT::Element::hex20 ||
-        distype == DRT::Element::hex27 ||
-        distype == DRT::Element::tet4  ||
-        distype == DRT::Element::tet10  )
-    {
-        isVolume = true;        
-    }
-    return isVolume;
-}
+///*----------------------------------------------------------------------*
+// |  GM:     checks if a certain element is a                 u.may 06/07|
+// |          volume  element with help of the discretization type        |
+// *----------------------------------------------------------------------*/  
+//bool XFEM::checkIfVolumeElement(
+//        const DRT::Element::DiscretizationType distype)
+//{
+//    bool isVolume = false;
+//    
+//    if( distype == DRT::Element::hex8  ||
+//        distype == DRT::Element::hex20 ||
+//        distype == DRT::Element::hex27 ||
+//        distype == DRT::Element::tet4  ||
+//        distype == DRT::Element::tet10  )
+//    {
+//        isVolume = true;        
+//    }
+//    return isVolume;
+//}
 
 
-/*----------------------------------------------------------------------*
- |  GM:     checks if a certain element is a                 u.may 06/07|
- |          with help of the discretization type                        |
- *----------------------------------------------------------------------*/  
-bool XFEM::checkIfSurfaceElement(
-        const DRT::Element::DiscretizationType distype)
-{
-    bool isSurface = false;
-    
-    if( distype == DRT::Element::quad4 ||
-        distype == DRT::Element::quad8 ||
-        distype == DRT::Element::quad9 ||
-        distype == DRT::Element::tri3  ||
-        distype == DRT::Element::tri6  )
-    {
-        isSurface = true;       
-    }
-    return isSurface;
-}
+///*----------------------------------------------------------------------*
+// |  GM:     checks if a certain element is a                 u.may 06/07|
+// |          with help of the discretization type                        |
+// *----------------------------------------------------------------------*/  
+//bool XFEM::checkIfSurfaceElement(
+//        const DRT::Element::DiscretizationType distype)
+//{
+//    bool isSurface = false;
+//    
+//    if( distype == DRT::Element::quad4 ||
+//        distype == DRT::Element::quad8 ||
+//        distype == DRT::Element::quad9 ||
+//        distype == DRT::Element::tri3  ||
+//        distype == DRT::Element::tri6  )
+//    {
+//        isSurface = true;       
+//    }
+//    return isSurface;
+//}
 
 
-/*----------------------------------------------------------------------*
- |  GM:     checks if a certain element is a                 u.may 06/07|
- |          line element with help of the discretization type           |
- *----------------------------------------------------------------------*/  
-bool XFEM::checkIfLineElement(
-        const DRT::Element::DiscretizationType distype)
-{
-    bool isLine = false;
-    
-    if( distype == DRT::Element::line2 ||
-        distype == DRT::Element::line3 )
-    {
-        isLine = true;      
-    }
-    return isLine;
-}
+///*----------------------------------------------------------------------*
+// |  GM:     checks if a certain element is a                 u.may 06/07|
+// |          line element with help of the discretization type           |
+// *----------------------------------------------------------------------*/  
+//bool XFEM::checkIfLineElement(
+//        const DRT::Element::DiscretizationType distype)
+//{
+//    bool isLine = false;
+//    
+//    if( distype == DRT::Element::line2 ||
+//        distype == DRT::Element::line3 )
+//    {
+//        isLine = true;      
+//    }
+//    return isLine;
+//}
 
 
 
@@ -369,7 +369,7 @@ void XFEM::elementToCurrentCoordinates(
     const vector<Epetra_SerialDenseVector>&     surfaceNodes)
 {
     const int numNodes = surfaceElement->NumNode();
-    vector<int> actParams(1,0);
+    //vector<int> actParams(1,0);
     Epetra_SerialDenseVector funct(numNodes);
   
     shape_function_2D(funct, xsi[0], xsi[1], surfaceElement->Shape());
@@ -461,18 +461,146 @@ void XFEM::currentToElementCoordinates(
 }     
 
 
-/*----------------------------------------------------------------------*
- | GM:  transforms a node in current coordinates            u.may 12/07 |
- |      into element coordinates                                        | 
- *----------------------------------------------------------------------*/
-void XFEM::currentToElementCoordinates(  
-    const DRT::Element*                       element,
+/*!
+\brief updates the system matrix at the corresponding element coordinates for the 
+       computation if a node in current coordinates lies within an element 
+
+\param dim               (in)       : dimension of the problem
+\param A                 (out)      : system matrix
+\param xsi               (in)       : vector of element coordinates
+\param element           (in)       : element 
+*/  
+template <DRT::Element::DiscretizationType DISTYPE>
+void updateAForNWE(   
+    Epetra_SerialDenseMatrix&           A,
+    const Epetra_SerialDenseVector&     xsi,
+    const BlitzMat&                     xyze
+    )                                                  
+{   
+    const int numNodes = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
+    const int dim = DRT::UTILS::getDimension<DISTYPE>();
+    blitz::Array<double,2> deriv1(dim, numNodes, blitz::ColumnMajorArray<2>());
+    
+    switch(dim)
+    {
+        case 1:
+        {
+            shape_function_1D_deriv1(deriv1, xsi[0], DISTYPE);
+            break;
+        }
+        case 2:
+        {
+            shape_function_2D_deriv1(deriv1, xsi[0], xsi[1], DISTYPE);
+            break;
+        }
+        case 3:
+        {
+            shape_function_3D_deriv1(deriv1, xsi[0], xsi[1], xsi[2], DISTYPE);
+            break;
+        }
+        default:
+            dserror("dimension of the element is not correct");
+    }
+
+//    blitz::Array<double,2> ABlitz(A.A(),
+//                              blitz::shape(A.M(),A.N()),
+//                              blitz::neverDeleteData,
+//                              blitz::ColumnMajorArray<2>());
+//    
+//    ABlitz = 0.0;
+//    
+//    blitz::firstIndex i;    // Placeholder for the first index
+//    blitz::secondIndex j;   // Placeholder for the second index
+//    blitz::thirdIndex inode;   // Placeholder for the second index
+//    ABlitz = blitz::sum(xyze(i,inode) * deriv1(j,inode),inode);
+    
+    A.Scale(0.0);
+    for(int inode=0; inode<numNodes; inode++) 
+    {
+        for(int isd=0; isd<dim; ++isd)
+        {
+            for(int jsd=0; jsd<dim; ++jsd)
+                A[isd][jsd] += xyze(isd,inode) * deriv1(jsd,inode);
+        }
+    }      
+}
+
+
+
+/*!
+\brief updates the rhs at the corresponding element coordinates for the 
+       computation whether a node in current coordinates lies within an element 
+
+\param dim               (in)       : dimension of the problem
+\param b                 (out)      : right-hand-side       
+\param xsi               (in)       : vector of element coordinates
+\param x                 (in)       : node in current coordinates
+\param element           (in)       : element
+*/
+template <DRT::Element::DiscretizationType DISTYPE>
+void updateRHSForNWE( 
+    Epetra_SerialDenseVector&           b,
+    const Epetra_SerialDenseVector&     xsi,
+    const Epetra_SerialDenseVector&     x,
+    const BlitzMat&                     xyze)                                                  
+{
+    const int numNodes = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
+    const int dim = DRT::UTILS::getDimension<DISTYPE>();
+    blitz::Array<double,1> funct(numNodes);
+    
+    switch(dim)
+    {
+        case 1:
+        {
+            shape_function_1D(funct, xsi[0], DISTYPE);
+            break;
+        }
+        case 2:
+        {
+            shape_function_2D(funct, xsi[0], xsi[1], DISTYPE);
+            break;
+        }
+        case 3:
+        {
+            shape_function_3D(funct, xsi[0], xsi[1], xsi[2], DISTYPE);
+            break;
+        }
+        default:
+            dserror("dimension of the element is not correct");
+    }
+    
+    b.Scale(0.0);
+    for(int inode=0; inode<numNodes; inode++)
+    {
+        for(int isd=0; isd<dim; isd++)
+            b[isd] -= xyze(isd,inode) * funct(inode);
+    }
+      
+    for(int isd=0; isd<dim; isd++)
+        b[isd] += x[isd];
+}
+
+
+/*!
+\brief transforms a point in current coordinates to a point
+       in element coordinates with respect to a given element       
+       The nonlinear system of equation is solved with help of the Newton-method.
+       Fast templated version
+
+\param element              (in)        : element 
+\param x                    (in)        : node in current coordinates (x, y, z)
+\param xsi                  (inout)     : node in element coordinates
+*/  
+template <DRT::Element::DiscretizationType DISTYPE>
+bool currentToElementCoordinatesT(  
+    const DRT::Element*                 element,
     const Epetra_SerialDenseVector&     x,
     Epetra_SerialDenseVector&           xsi)
 {
+    dsassert(element->Shape() == DISTYPE, "this is a bug bycalling the wrong instance of this templated function!");
     bool nodeWithinElement = true;
     int iter = 0;
-    const int dim = getDimension(element->Shape());
+    const int dim = DRT::UTILS::getDimension<DISTYPE>();
     const int maxiter = 20;
     double residual = 1.0;
     
@@ -480,13 +608,15 @@ void XFEM::currentToElementCoordinates(
     Epetra_SerialDenseVector b(dim);
     Epetra_SerialDenseVector dx(dim);
     
+    BlitzMat xyze(PositionArrayBlitz(element));
+    
     xsi.Scale(0.0);
             
-    updateRHSForNWE( dim, b, xsi, x, element);
+    updateRHSForNWE<DISTYPE>(b, xsi, x, xyze);
    
     while(residual > TOL14)
     {   
-        updateAForNWE( dim, A, xsi, element);
+        updateAForNWE<DISTYPE>( A, xsi, xyze);
    
         if(!gaussElimination(A, b, dx, true, dim, 1))
         {
@@ -494,8 +624,9 @@ void XFEM::currentToElementCoordinates(
             break;
         }   
         
-        xsi = addTwoVectors(xsi,dx);
-        updateRHSForNWE(dim, b, xsi, x, element);
+        //xsi = addTwoVectors(xsi,dx);
+        xsi += dx;
+        updateRHSForNWE<DISTYPE>(b, xsi, x, xyze);
         residual = b.Norm2();
         iter++; 
         
@@ -505,9 +636,43 @@ void XFEM::currentToElementCoordinates(
             break;
         }   
     }
-    
+    return nodeWithinElement;
+};
+
+/*----------------------------------------------------------------------*
+ | GM:  transforms a node in current coordinates            u.may 12/07 |
+ |      into element coordinates                                        | 
+ *----------------------------------------------------------------------*/
+bool XFEM::currentToElementCoordinates(  
+    const DRT::Element*                 element,
+    const Epetra_SerialDenseVector&     x,
+    Epetra_SerialDenseVector&           xsi)
+{
+    bool nodeWithinElement = false;
+    switch (element->Shape())
+    {
+    case DRT::Element::hex8:
+        nodeWithinElement = currentToElementCoordinatesT<DRT::Element::hex8>(element, x, xsi);
+        break;
+    case DRT::Element::hex20:
+        nodeWithinElement = currentToElementCoordinatesT<DRT::Element::hex20>(element, x, xsi);
+        break;
+    case DRT::Element::hex27:
+        nodeWithinElement = currentToElementCoordinatesT<DRT::Element::hex27>(element, x, xsi);
+        break;
+    case DRT::Element::line2:
+        nodeWithinElement = currentToElementCoordinatesT<DRT::Element::line2>(element, x, xsi);
+        break;
+    case DRT::Element::line3:
+        nodeWithinElement = currentToElementCoordinatesT<DRT::Element::line3>(element, x, xsi);
+        break;
+    default:
+        dserror("add your distype to this switch!");
+        nodeWithinElement = false;
+    }   
     //printf("iter = %d\n", iter);
     //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0],xsi[1],xsi[2], residual, TOL14);
+    return nodeWithinElement;
 }
 
 /*----------------------------------------------------------------------*
@@ -700,42 +865,10 @@ bool XFEM::checkPositionWithinElement(
     const DRT::Element*                 element,
     const Epetra_SerialDenseVector&     x)
 {
-
-    bool nodeWithinElement = true;
-    int iter = 0;
-    const int dim = getDimension(element->Shape());
-    const int maxiter = 20;
-    double residual = 1.0;
-    
-    Epetra_SerialDenseMatrix A(dim,dim);
-    Epetra_SerialDenseVector b(dim);
-    Epetra_SerialDenseVector dx(dim);
-    Epetra_SerialDenseVector xsi(dim);
+    Epetra_SerialDenseVector xsi(getDimension(element->Shape()));
+    xsi.Scale(0.0);
             
-    updateRHSForNWE( dim, b, xsi, x, element);
-   
-    while(residual > TOL14)
-    {   
-        updateAForNWE( dim, A, xsi, element);
-   
-        if(!gaussElimination(A, b, dx, true, dim, 1))
-        {
-            nodeWithinElement = false;
-            break;
-        }   
-        
-        xsi = addTwoVectors(xsi,dx);
-        updateRHSForNWE(dim, b, xsi, x, element);
-        residual = b.Norm2();
-        iter++; 
-        
-        if(iter >= maxiter)
-        {   
-            nodeWithinElement = false;
-            break;
-        }   
-    }
-    
+    bool nodeWithinElement = currentToElementCoordinates(element, x, xsi);
     //printf("iter = %d\n", iter);
     //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0],xsi[1],xsi[2], residual, TOL14);
     
@@ -815,107 +948,6 @@ bool XFEM::PositionWithinCondition(
 #endif
     return nodeWithinMesh;
 }
-
-
-
-/*----------------------------------------------------------------------*
- |  CLI:    updates the Jacobi matrix for the computation    u.may 06/07|
- |          if a node is in a given element                             |
- *----------------------------------------------------------------------*/
-void XFEM::updateAForNWE(   
-    const int                         dim,
-    Epetra_SerialDenseMatrix&         A,
-    const Epetra_SerialDenseVector&   xsi,
-    const DRT::Element*               element)                                                  
-{   
-    const int numNodes = element->NumNode();
-    blitz::Array<double,2> deriv1(dim, numNodes, blitz::ColumnMajorArray<2>());
-    
-    A.Scale(0.0);
-   
-    switch(dim)
-    {
-        case 1:
-        {
-            shape_function_1D_deriv1(deriv1, xsi[0], element->Shape());
-            break;
-        }
-        case 2:
-        {
-            shape_function_2D_deriv1(deriv1, xsi[0], xsi[1], element->Shape());
-            break;
-        }
-        case 3:
-        {
-            shape_function_3D_deriv1(deriv1, xsi[0], xsi[1], xsi[2], element->Shape());
-            break;
-        }
-        default:
-            dserror("dimension of the element is not correct");
-    }
-    
-    for(int inode=0; inode<numNodes; inode++) 
-    {
-        const double* x = element->Nodes()[inode]->X();
-        for(int isd=0; isd<dim; ++isd)
-        {
-            const double nodalCoord = x[isd];
-            for(int jsd=0; jsd<dim; ++jsd)
-                A[isd][jsd] += nodalCoord * deriv1(jsd,inode);
-        }
-    }      
-}
-
-
- 
-/*----------------------------------------------------------------------*
- |  CLI:    updates the rhs for the computation if a         u.may 06/07|
- |          node is in a given element                                  |
- *----------------------------------------------------------------------*/
-void XFEM::updateRHSForNWE( 
-    const int                           dim,
-    Epetra_SerialDenseVector&           b,
-    const Epetra_SerialDenseVector&     xsi,
-    const Epetra_SerialDenseVector&     x,
-    const DRT::Element*                 element)                                                  
-{
-    const int numNodes = element->NumNode();
-    blitz::Array<double,1> funct(numNodes);
-      
-    b.Scale(0.0);
-     
-    switch(dim)
-    {
-        case 1:
-        {
-            shape_function_1D(funct, xsi[0], element->Shape());
-            break;
-        }
-        case 2:
-        {
-            shape_function_2D(funct, xsi[0], xsi[1], element->Shape());
-            break;
-        }
-        case 3:
-        {
-            shape_function_3D(funct, xsi[0], xsi[1], xsi[2], element->Shape());
-            break;
-        }
-        default:
-            dserror("dimension of the element is not correct");
-    }
-    
-    for(int j=0; j<numNodes; j++)
-    {
-        const double* x = element->Nodes()[j]->X();
-        for(int i=0; i<dim; i++)
-            b[i] -= x[i] * funct(j);
-    }
-      
-    for(int i=0; i<dim; i++)
-        b[i] += x[i];
-}
-
 
 
 /*----------------------------------------------------------------------*

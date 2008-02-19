@@ -1481,42 +1481,6 @@ void Sysmat(
     } // end loop over integration cells
     
 
-//    // print discontinous  stress
-//    if (stress_unknowns_present)
-//    {
-//        std::ofstream filename;
-//        filename << "discontinous_stress_" << ele->Id() << ".pos"
-//        std::ofstream f_system(filename.c_str());
-//        {
-//            // draw elements with associated gid
-//            stringstream gmshfilecontent;
-//            gmshfilecontent << "View \" " << "stress of Element " << (ele->Id()+1) << " \" {" << endl;
-//            XFEM::DomainIntCells::const_iterator cell;
-//            for (cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
-//            {
-//                //gmshfilecontent << IO::GMSH::cellToString(cell->NodalPosXYZ(*ele), 0.0, cell->Shape()) << endl;
-//                gmshfilecontent << IO::GMSH::cellToString(cell->NodalPosXiDomain(), 0.0, cell->Shape()) << endl;
-//            };
-//            gmshfilecontent << "};" << endl;
-//            f_system << gmshfilecontent.str();
-//        }
-//        {
-//            // draw elements with associated gid
-//            stringstream gmshfilecontent;
-//            gmshfilecontent << "View \" " << "BoundaryIntegrationCells \" {" << endl;
-//            XFEM::BoundaryIntCells::const_iterator cell;
-//            for (cell = boundaryIntCells.begin(); cell != boundaryIntCells.end(); ++cell)
-//            {
-//                //gmshfilecontent << IO::GMSH::cellToString(cell->NodalPosXYZ(*ele), 0.0, cell->Shape()) << endl;
-//                gmshfilecontent << IO::GMSH::cellToString(cell->NodalPosXiDomain(), 0.0, cell->Shape()) << endl;
-//            };
-//            gmshfilecontent << "};" << endl;
-//            f_system << gmshfilecontent.str();
-//        }
-//        f_system.close();
-//    }
-    
-    
     //if (false)
     if (ASSTYPE == XFEM::xfem_assembly)
     {
@@ -1544,7 +1508,7 @@ void Sysmat(
             for (cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
             {
                 //gmshfilecontent << IO::GMSH::cellToString(cell->NodalPosXYZ(*ele), 0.0, cell->Shape()) << endl;
-                gmshfilecontent << IO::GMSH::cellToString(cell->NodalPosXiDomain(), 0.0, cell->Shape()) << endl;
+                gmshfilecontent << IO::GMSH::cellToString(cell->NodalPosXiDomainBlitz(), 0.0, cell->Shape()) << endl;
             };
             gmshfilecontent << "};" << endl;
             f_system << gmshfilecontent.str();
@@ -1557,7 +1521,7 @@ void Sysmat(
             for (cell = boundaryIntCells.begin(); cell != boundaryIntCells.end(); ++cell)
             {
                 //gmshfilecontent << IO::GMSH::cellToString(cell->NodalPosXYZ(*ele), 0.0, cell->Shape()) << endl;
-                gmshfilecontent << IO::GMSH::cellToString(cell->NodalPosXiDomain(), 0.0, cell->Shape()) << endl;
+                gmshfilecontent << IO::GMSH::cellToString(cell->NodalPosXiDomainBlitz(), 0.0, cell->Shape()) << endl;
             };
             gmshfilecontent << "};" << endl;
             f_system << gmshfilecontent.str();

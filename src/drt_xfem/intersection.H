@@ -1157,8 +1157,8 @@ class Intersection
         	const int                         		cornerIndex, 
         	const int                         		globalHigherOrderIndex, 
         	const int                         		faceMarker, 
-		    std::vector< std::vector<double> >&   	domainCoord, 
-		    std::vector< std::vector<double> >&   	boundaryCoord, 
+		    vector<vector<double> >&                domainCoord, 
+		    vector<vector<double> >&                boundaryCoord, 
 		    const DRT::Element*				        xfemElement,
 		    const tetgenio&                			out
             ) const;

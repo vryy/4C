@@ -772,7 +772,7 @@ bool Intersection::collectIntersectionPoints(
        // extend for triangle
     }
     
-    bool intersected = computeCurveSurfaceIntersection(surfaceElement, lineElement, xsi, upLimit, loLimit);
+    const bool intersected = computeCurveSurfaceIntersection(surfaceElement, lineElement, xsi, upLimit, loLimit);
                                         
     if(intersected) 
         addIntersectionPoint( surfaceElement, lineElement, xsi, upLimit, loLimit, 
@@ -822,12 +822,14 @@ bool Intersection::computeCurveSurfaceIntersection(
                 intersection = false;
                 break;
             } 
-            for(int i = 0; i < 3; i++)  dx[i] = 0.0;
+            //for(int i = 0; i < 3; i++)  dx[i] = 0.0;
+            dx.Scale(0.0);
             iter++;
             printf("SINGULAR\n");
         }
         
-        xsi = addTwoVectors(xsi,dx); 
+        //xsi = addTwoVectors(xsi,dx);
+        xsi += dx;
         updateRHSForCSI( b, xsi, surfaceElement, lineElement);
         residual = b.Norm2(); 
         iter++;
@@ -877,11 +879,13 @@ bool Intersection::computeSingularCSI(
         if(solveLinearSystemWithSVD(A, b, dx, 3))
         {
             singular = false;
-            xsi = addTwoVectors(xsi,dx); 
+            //xsi = addTwoVectors(xsi,dx);
+            xsi += dx;
             break;
         }
         
-        xsi = addTwoVectors(xsi,dx); 
+        //xsi = addTwoVectors(xsi,dx); 
+        xsi += dx;
         updateRHSForCSI( b, xsi, surfaceElement, lineElement);
         residual = b.Norm2(); 
         iter++;
@@ -909,16 +913,16 @@ void Intersection::updateAForCSI(  	Epetra_SerialDenseMatrix&         A,
 	const int numNodesSurface = surfaceElement->NumNode();
    	const int numNodesLine = lineElement->NumNode();
    	
-   	blitz::Array<double,2> surfaceDeriv1(2, numNodesSurface, blitz::ColumnMajorArray<2>());
-   	blitz::Array<double,2> lineDeriv1(1, numNodesLine, blitz::ColumnMajorArray<2>());
+   	//blitz::Array<double,2> surfaceDeriv1(2, numNodesSurface, blitz::ColumnMajorArray<2>());
+   	//blitz::Array<double,2> lineDeriv1(1, numNodesLine, blitz::ColumnMajorArray<2>());
    	
 	//Epetra_SerialDenseMatrix surfaceDeriv1(2,numNodesSurface);
 	//Epetra_SerialDenseMatrix lineDeriv1(1,numNodesLine);
     
     A.Scale(0.0);
   
-    shape_function_2D_deriv1(surfaceDeriv1, xsi[0], xsi[1], surfaceElement->Shape()); 
-       	
+    const BlitzMat surfaceDeriv1(shape_function_2D_deriv1(xsi[0], xsi[1], surfaceElement->Shape())); 
+    //shape_function_2D_deriv1(surfaceDeriv1, xsi[0], xsi[1], surfaceElement->Shape()); 
     for(int inode=0; inode<numNodesSurface; inode++)
     {
         const double* x = surfaceElement->Nodes()[inode] ->X();
@@ -929,8 +933,8 @@ void Intersection::updateAForCSI(  	Epetra_SerialDenseMatrix&         A,
 		}
     }	
    
-    shape_function_1D_deriv1(lineDeriv1, xsi[2], lineElement->Shape()); 
-
+    const BlitzMat lineDeriv1(shape_function_1D_deriv1(xsi[2], lineElement->Shape()));
+    //shape_function_1D_deriv1(lineDeriv1, xsi[2], lineElement->Shape()); 
     for(int inode=0; inode<numNodesLine; inode++)
     {   
         const double* x = lineElement->Nodes()[inode]->X();
@@ -1901,8 +1905,8 @@ void Intersection::recoverCurvedInterface(
     {
         // run over all faces not lying in on of the xfem element planes
         const int faceMarker = out.trifacemarkerlist[i] - facetMarkerOffset_;
-        std::vector< std::vector<double> > domainCoord(6, std::vector<double>(3,0.0));
-        std::vector< std::vector<double> > boundaryCoord(6, std::vector<double>(3,0.0));
+        vector<vector<double> > domainCoord(6, std::vector<double>(3,0.0));
+        vector<vector<double> > boundaryCoord(6, std::vector<double>(3,0.0));
                 	
         if(faceMarker > -1)
         {        
@@ -2595,7 +2599,8 @@ bool Intersection::computeRecoveryNormal(
             break;  
         }
         
-        xsi = addTwoVectors(xsi,dx);
+        //xsi = addTwoVectors(xsi,dx);
+        xsi += dx;
         //printf("dx0 = %20.16f\t, dx1 = %20.16f\t, dx2 = %20.16f\n", dx[0], dx[1], dx[2]);
         if(iter >= maxiter)
         {   
@@ -2802,7 +2807,8 @@ bool Intersection::computeRecoveryPlane(
                 break;
             }       
         
-            xsi = addTwoVectors(xsi, dx);
+            //xsi = addTwoVectors(xsi, dx);
+            xsi += dx;
   
             updateRHSForRCIPlane( b, xsi, plane, lineElement);
             residual = b.Norm2(); 
@@ -3482,8 +3488,8 @@ void Intersection::addCellsToBoundaryIntCellsMap(
     const int                         		cornerIndex, 
     const int                         		globalHigherOrderIndex, 
     const int                         		faceMarker, 
-    std::vector< std::vector<double> >&   	domainCoord, 
-    std::vector< std::vector<double> >&   	boundaryCoord, 
+    vector<vector<double> >&                domainCoord, 
+    vector<vector<double> >&                boundaryCoord, 
     const DRT::Element*						xfemElement,
     const tetgenio&               			out) const
 {                
@@ -3990,7 +3996,7 @@ void Intersection::debugXFEMConditions(
 	
 	for(unsigned int i=0; i<xfemConditions.size(); i++)
     {
-        map< int, RCP<DRT::Element > >  geometryMap = xfemConditions[i]->Geometry();
+        map<int, RCP<DRT::Element > >  geometryMap = xfemConditions[i]->Geometry();
         map<int, RCP<DRT::Element > >::iterator iterGeo;   
         //if(geometryMap.size()==0)   printf("geometry does not obtain elements\n");
       	//printf("size of %d.geometry map = %d\n",i, geometryMap.size());

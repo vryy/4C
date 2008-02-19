@@ -55,10 +55,10 @@ namespace XFEM
     \param v2 (in) :    arbitrary vector<double>
     \return sum of two vector<double>
     */
-    vector<double> addTwoVectors(   
-        const vector<double>&   v1,
-        const vector<double>&   v2
-        );
+//    vector<double> addTwoVectors(   
+//        const vector<double>&   v1,
+//        const vector<double>&   v2
+//        );
     
                                           
     /*!
@@ -70,31 +70,31 @@ namespace XFEM
     Epetra_SerialDenseVector subtractsTwoVectors(   
         const Epetra_SerialDenseVector&   v1,
         const Epetra_SerialDenseVector&   v2
-        );       
+        );
     
-                                        
+    
     /*!
     \brief Returns the difference of two vector<double> v1 - v2
     \param v1 (in) : arbitrary vector<double>       
     \param v2 (in) : arbitrary vector<double>
     \return difference of two vector<double> v1 - v2
     */
-    vector<double> subtractsTwoVectors( 
-        const vector <double>&   v1,
-        const vector <double>&   v2
-        );
+//    vector<double> subtractsTwoVectors(
+//        const vector <double>&   v1,
+//        const vector <double>&   v2
+//        );
     
-             
+    
     /*!
     \brief computes the cross product of two Epetra_SerialDenseVectors a x b
     \param a (in) : arbitrary Epetra_SerialDenseVector     
     \param b (in) : arbitrary Epetra_SerialDenseVector
     \return cross product of two Epetra_SerialDenseVectors a x b
     */
-    Epetra_SerialDenseVector computeCrossProduct(   
+    Epetra_SerialDenseVector computeCrossProduct(
         const Epetra_SerialDenseVector& a,
         const Epetra_SerialDenseVector& b
-        );   
+        );
     
      
     /*!
@@ -102,11 +102,11 @@ namespace XFEM
     \param v (in) : Epetra_SerialDenseVector
     \return normalized Epetra_SerialDenseVector 
     */   
-    void normalizeVector(   
+    void normalizeVector(
         Epetra_SerialDenseVector&     v
         );
-
-
+    
+    
     /*!
     \brief  computes the Theorem of Pythagoras
             (a^2 + b^2)^(1/2)
@@ -120,39 +120,39 @@ namespace XFEM
         const double  a, 
         const double  b
         );
-
-    
-    /*!
-    \brief checks if element is a volume element
-
-    \param element       (in)    : element
-    \return true if it is a volume element, false otherwise
-    */      
-    bool checkIfVolumeElement(
-            const DRT::Element::DiscretizationType distype
-        );
     
     
-    /*!
-    \brief checks if element is a surface element
-
-    \param element       (in)    : element
-    \return true if it is a surface element, false otherwise
-    */     
-    bool checkIfSurfaceElement(
-            const DRT::Element::DiscretizationType distype
-        );
+//    /*!
+//    \brief checks if element is a volume element
+//    
+//    \param element       (in)    : element
+//    \return true if it is a volume element, false otherwise
+//    */      
+//    bool checkIfVolumeElement(
+//            const DRT::Element::DiscretizationType distype
+//        );
     
     
-    /*!
-    \brief checks if element is a line element
-
-    \param element       (in)    : element
-    \return true if it is a line element, false otherwise
-    */     
-    bool checkIfLineElement(
-            const DRT::Element::DiscretizationType distype
-        );
+//    /*!
+//    \brief checks if element is a surface element
+//    
+//    \param element       (in)    : element
+//    \return true if it is a surface element, false otherwise
+//    */     
+//    bool checkIfSurfaceElement(
+//            const DRT::Element::DiscretizationType distype
+//        );
+    
+    
+//    /*!
+//    \brief checks if element is a line element
+//
+//    \param element       (in)    : element
+//    \return true if it is a line element, false otherwise
+//    */     
+//    bool checkIfLineElement(
+//            const DRT::Element::DiscretizationType distype
+//        );
     
     
     /*!
@@ -204,7 +204,7 @@ namespace XFEM
     \brief transforms a point in element coordinates to a point
            in current coordinates with respect to a given plane
            based on given nodal coordinates
-
+    
     \param xsi          (in/out)    : vector of element coordinates/
                                       vector of current coordinates
     \param plane        (in)        : quad4 surface element
@@ -213,8 +213,8 @@ namespace XFEM
 //        Epetra_SerialDenseVector&                   xsi,
 //        const vector<Epetra_SerialDenseVector>&     plane
 //        );
-
-
+    
+    
     /*!
     \brief transforms a point in current coordinates to a point
            in element coordinates with respect to a given element
@@ -223,11 +223,11 @@ namespace XFEM
     \param xsi              (in/out)    : vector of current coordinates/
                                           vector of element coordinates
     */
-    void currentToElementCoordinates( 
-        const DRT::Element*         element,                     
-        Epetra_SerialDenseVector&   xsi
-        );
-
+    void currentToElementCoordinates(
+            const DRT::Element*         element,
+            Epetra_SerialDenseVector&   xsi
+            );
+    
     
     /*!
    	\brief transforms a point in current coordinates to a point
@@ -237,11 +237,11 @@ namespace XFEM
     \param xsi              (in/out)    : vector of current coordinates/
                                           vector of element coordinates
     */
-    void currentToElementCoordinates(   
-    	const DRT::Element*         element, 
-    	vector<double>&   			xsiVector
-      	);
-
+    void currentToElementCoordinates(
+            const DRT::Element*         element, 
+            vector<double>&             xsiVector
+          );
+    
     
     /*!
     \brief transforms a point in current coordinates to a point
@@ -251,8 +251,9 @@ namespace XFEM
     \param element              (in)        : element 
     \param x                    (in)        : node in current coordinates (x, y, z)
     \param xsi                  (inout)     : node in element coordinates
+    \return bool, indicates, whether positions was found within element coordinates
     */  
-    void currentToElementCoordinates(    
+    bool currentToElementCoordinates(
         const DRT::Element*                 element,
         const Epetra_SerialDenseVector&     x,
         Epetra_SerialDenseVector&           xsi
@@ -267,8 +268,8 @@ namespace XFEM
     \param xsi              (in/out)    : vector of current coordinates/
                                           vector of element coordinates
     */
-    void elementToCurrentCoordinates(   
-        const DRT::Element* 	element, 
+    void elementToCurrentCoordinates(
+        const DRT::Element*     element,
         vector<double>& xsi
         );
     
@@ -284,8 +285,8 @@ namespace XFEM
          const vector<double>&     point1,
          const double*             point2
          );
-  
-              
+     
+     
      /*!
      \brief compares two points (overloaded method)
  
@@ -298,12 +299,12 @@ namespace XFEM
          const double*     point1,
          const double*     point2,
          const int         length
-         ); 
-  
-                                     
+         );
+     
+     
      /*!
      \brief compares two points (overloaded method)
- 
+     
      \param point1       (in)    : first point   (vector<double>)
      \param point2       (in)    : second point  (vector<double>)
      \return true if both points equal each other, false otherwise
@@ -312,33 +313,33 @@ namespace XFEM
          const vector<double>&     point1,
          const vector<double>&     point2
          );
-  
-                             
+     
+     
      /*!
      \brief compares two points (overloaded method)
  
      \param point1       (in)    : first point   (Epetra_SerialDenseVector)
      \param point2       (in)    : second point  (Epetra_SerialDenseVector)
      \return true if both points equal each other, false otherwise
-     */                      
-     bool comparePoints( 
-         const Epetra_SerialDenseVector&     point1,
-         const Epetra_SerialDenseVector&     point2
-         );
-         
-    
+     */
+     bool comparePoints(
+             const Epetra_SerialDenseVector&     point1,
+             const Epetra_SerialDenseVector&     point2
+             );
+     
+     
      /*!
      \brief compares two points (overloaded method)
  
      \param point1       (in)    : first point   (DRT::Node*)
      \param point2       (in)    : second point  (DRT::Node*)
      \return true if both points equal each other, false otherwise
-     */                      
+     */
      bool comparePoints( 
-    	const DRT::Node*     point1,
-    	const DRT::Node*     point2
-       	);
-  
+             const DRT::Node*     point1,
+             const DRT::Node*     point2
+             );
+     
      
     /*!
     \brief Checks if a node is within an 
@@ -348,10 +349,10 @@ namespace XFEM
     \param XAABB (in)       : extended axis-aligned bouning box
     \return true if node is within the XAABB or false otherwise
     */
-    bool isPositionWithinXAABB(  
-        const Epetra_SerialDenseVector&    pos,
-        const Epetra_SerialDenseMatrix&    XAABB
-        );
+    bool isPositionWithinXAABB(
+            const Epetra_SerialDenseVector&    pos,
+            const Epetra_SerialDenseMatrix&    XAABB
+            );
     
     
     /*!
@@ -363,17 +364,17 @@ namespace XFEM
     \param XAABB (in)       : extended axis-aligned bouning box
     \return true if node is within the XAABB or false otherwise
     */
-    bool isLineWithinXAABB(    
-        const Epetra_SerialDenseVector&    pos1,
-        const Epetra_SerialDenseVector&    pos2,
-        const Epetra_SerialDenseMatrix&    XAABB
-        );
-        
+    bool isLineWithinXAABB(
+            const Epetra_SerialDenseVector&    pos1,
+            const Epetra_SerialDenseVector&    pos2,
+            const Epetra_SerialDenseMatrix&    XAABB
+            );
+    
     
     /*!
     \brief checks if a position in current coordinates lies within a certain element           
            The nonlinear system of equation is solved with help of the Newton-method.
-
+    
     \param element              (in)        : element 
     \param x                    (in)        : node in current coordinates
     */  
@@ -407,71 +408,35 @@ namespace XFEM
     
     
     /*!
-    \brief updates the system matrix at the corresponding element coordinates for the 
-           computation if a node in current coordinates lies within an element 
+    \brief  finds the nearest point for a given point on a surface element
+            the element coordinates of this point are stored in eleCoord, the normal
+            point from the given point to the nearest point on the surface,
+            distance returns the absolut length of the normal. 
+            If the computed point lies outside the element , the distance which is retuned equals -1
+            and the normal is set to zero.
 
-    \param dim               (in)       : dimension of the problem
-    \param A                 (out)      : system matrix
-    \param xsi               (in)       : vector of element coordinates
-    \param element           (in)       : element 
-    */                                                                                                      
-    void updateAForNWE( 
-        const int                         dim,
-        Epetra_SerialDenseMatrix&         A,
-        const Epetra_SerialDenseVector&   xsi,
-        const DRT::Element*               element
-        );
-    
-      
-    /*!
-    \brief updates the rhs at the corresponding element coordinates for the 
-           computation whether a node in current coordinates lies within an element 
-
-    \param dim               (in)       : dimension of the problem
-    \param b                 (out)      : right-hand-side       
-    \param xsi               (in)       : vector of element coordinates
-    \param x                 (in)       : node in current coordinates
-    \param element           (in)       : element
-    */                               
-    void updateRHSForNWE(  
-        const int                           dim, 
-        Epetra_SerialDenseVector&           b,
-        const Epetra_SerialDenseVector&     xsi,
-        const Epetra_SerialDenseVector&     x,
-        const DRT::Element*                 element
-        );  
-    
-    
-    /*!
-    \brief 	finds the nearest point for a given point on a surface element
-    		the element coordinates of this point are stored in eleCoord, the normal
-    		point from the given point to the nearest point on the surface,
-    		distance returns the absolut length of the normal. 
-     		If the computed point lies outside the element , the distance which is retuned equals -1
-     		and the normal is set to zero.
-
-    \param surfaceElement   	(in)       : surface element
-    \param physCoord          	(out)      : physical coordinates      
-    \param eleCoord          	(in)       : element coordinates
-    \param normal             	(in)       : normal point from a given point to the surface point
-    \param distance           	(in)       : length of the normal
+    \param surfaceElement       (in)       : surface element
+    \param physCoord            (out)      : physical coordinates      
+    \param eleCoord             (in)       : element coordinates
+    \param normal               (in)       : normal point from a given point to the surface point
+    \param distance             (in)       : length of the normal
     */         
     bool searchForNearestPointOnSurface(
-    	const DRT::Element*                   	surfaceElement,
-    	const BlitzVec&                         physCoord,
-    	BlitzVec&                               eleCoord,
-    	BlitzVec&           	                normal,
-    	double&									distance
-        );
+            const DRT::Element*                     surfaceElement,
+            const BlitzVec&                         physCoord,
+            BlitzVec&                               eleCoord,
+            BlitzVec&                               normal,
+            double&                                 distance
+            );
     
     
     /*!
-   	\brief checks if a position in current coordinates lies within a certain surfaceElement           
+       \brief checks if a position in current coordinates lies within a certain surfaceElement           
           The nonlinear system of equation is solved with help of the Newton-method.
-
-   	\param surfaceElement 		(in)        : surfaceElement 
-   	\param physCoord           	(in)        : node in physical coordinates (x, y, z)
-   	\return									  node in element coordinates (r, s)
+    
+       \param surfaceElement   (in)        : surfaceElement 
+       \param physCoord           	(in)        : node in physical coordinates (x, y, z)
+       \return									  node in element coordinates (r, s)
     */  
     BlitzVec CurrentToSurfaceElementCoordinates(
         const DRT::Element*      surfaceElement,
@@ -488,7 +453,7 @@ namespace XFEM
             const BlitzVec                         eleCoord, ///< position in element coordinates
             const DRT::Element::DiscretizationType distype   ///< shape of the surface element
             );
-   
+    
     
     /*!
     \brief checks if a position in element coordinates lies within a certain Element parameter space
@@ -505,8 +470,8 @@ namespace XFEM
     \brief 	updates the 3x2 Jacobian matrix for the computation of the
     		surface element coordinates for a point in physical coordinates
 
-    \param xsi          		(in)      	: element coordinates      
-    \param surface element		(in)       	: surface element
+    \param xsi          		(in)          : element coordinates      
+    \param surface element		(in)        : surface element
     
     \return Jacobian matrix
     */         
@@ -543,12 +508,12 @@ namespace XFEM
     \param surface element	(in)       	: surface element
     */    
     void updateAForMap3To2(   
-    	BlitzMat& 		                A,
-    	const BlitzMat& 	            Jacobi,
-    	const BlitzVec& 	            F,
-        const BlitzVec&	                xsi,
-        const DRT::Element*            	surfaceElement
-        );   
+            BlitzMat&                       A,
+            const BlitzMat&                 Jacobi,
+            const BlitzVec&                 F,
+            const BlitzVec&                 xsi,
+            const DRT::Element*             surfaceElement
+            );
     
     
     /*!
@@ -559,10 +524,10 @@ namespace XFEM
     \return extended axis-aligned bounding box  (XAABB) for an element
     */
     Epetra_SerialDenseMatrix computeFastXAABB( 
-        const DRT::Element*   element
-        );
+            const DRT::Element*   element
+            );
     
-                                            
+    
     /*!
     \brief checks if two extended axis aligned bounding boxes intersect
 
@@ -570,10 +535,10 @@ namespace XFEM
     \param xfemXAABB   (in)         : XAABB of the xfem element
     \return true if the XAABB's intersect or false otherwise
     */
-    bool intersectionOfXAABB(    
-        const Epetra_SerialDenseMatrix&    cutterXAABB,
-        const Epetra_SerialDenseMatrix&    xfemXAABB
-        );
+    bool intersectionOfXAABB(
+            const Epetra_SerialDenseMatrix&    cutterXAABB,
+            const Epetra_SerialDenseMatrix&    xfemXAABB
+            );
     
     
     /*!
@@ -583,10 +548,10 @@ namespace XFEM
     \param XAABB   (in)         : XAABB of the xfem element
     \return true if the position is within the XAABB, false otherwise
     */
-    bool PositionInXAABB(    
-        const Epetra_SerialDenseVector&    pos,
-        const Epetra_SerialDenseMatrix&    XAABB
-        );
+    bool PositionInXAABB(
+            const Epetra_SerialDenseVector&    pos,
+            const Epetra_SerialDenseMatrix&    XAABB
+            );
     
 }
 

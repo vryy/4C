@@ -93,7 +93,8 @@ DomainIntCell::DomainIntCell(
         const DRT::Element::DiscretizationType distype,
         const vector< vector<double> >& domainCoordinates) :
             IntCell(distype),
-            nodalpos_xi_domain_(domainCoordinates)
+            nodalpos_xi_domain_(domainCoordinates),
+            nodalpos_xi_domain_blitz_(ConvertPosArrayToBlitz(domainCoordinates, distype, 3))
 {
     return;
 }
@@ -105,7 +106,8 @@ DomainIntCell::DomainIntCell(
 DomainIntCell::DomainIntCell(
         const DRT::Element::DiscretizationType distype) :
             IntCell(distype),
-            nodalpos_xi_domain_(GetDefaultCoordinates(distype))
+            nodalpos_xi_domain_(GetDefaultCoordinates(distype)),
+            nodalpos_xi_domain_blitz_(ConvertPosArrayToBlitz(GetDefaultCoordinates(distype), distype, 3))
 {
     return;
 }
@@ -116,7 +118,8 @@ DomainIntCell::DomainIntCell(
 DomainIntCell::DomainIntCell(
         const DomainIntCell& old) :
             IntCell(old),
-            nodalpos_xi_domain_(old.nodalpos_xi_domain_)
+            nodalpos_xi_domain_(old.nodalpos_xi_domain_),
+            nodalpos_xi_domain_blitz_(old.nodalpos_xi_domain_blitz_)
 {
     return;   
 }
@@ -253,35 +256,32 @@ vector<vector<double> > DomainIntCell::GetDefaultCoordinates(
 //
 // return the center of the cell in physical coordinates
 //
-blitz::Array<double,1> DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) const
+BlitzVec DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) const
 {
     // number of space dimensions
     const int nsd = 3;
     
-    //interpolate position to x-space
-    BlitzVec x_interpol(nsd);
-    x_interpol = 0.0;
-
     // physical positions of cell nodes
-    const vector<vector<double> > physcoord = this->NodalPosXYZ(ele);
+    const BlitzMat physcoord = this->NodalPosXYZ(ele);
     
     // center in local coordinates
     const vector<double> localcenterpos = DRT::UTILS::getLocalCenterPosition(this->Shape());
 
     // shape functions
-    BlitzVec funct(27);
-    DRT::UTILS::shape_function_3D(
-            funct,
+    const BlitzVec funct(DRT::UTILS::shape_function_3D(
             localcenterpos[0],
             localcenterpos[1],
             localcenterpos[2],
-            this->Shape());
+            this->Shape()));
     
+    //interpolate position to x-space
+    BlitzVec x_interpol(nsd);
+    x_interpol = 0.0;
     for (int inen = 0; inen < this->NumNode();++inen)
     {
         for (int isd=0;isd < nsd;++isd )
         {
-            x_interpol(isd) += physcoord[inen][isd] * funct(inen);
+            x_interpol(isd) += physcoord(isd,inen) * funct(inen);
         }
     }
     // return position
@@ -300,7 +300,9 @@ BoundaryIntCell::BoundaryIntCell(
             IntCell(distype),
             surface_ele_gid_(surface_ele_gid),
             nodalpos_xi_domain_(domainCoordinates),
-            nodalpos_xi_boundary_(boundaryCoordinates)
+            nodalpos_xi_boundary_(boundaryCoordinates),
+            nodalpos_xi_domain_blitz_(ConvertPosArrayToBlitz(domainCoordinates, distype, 3)),
+            nodalpos_xi_boundary_blitz_(ConvertPosArrayToBlitz(boundaryCoordinates, distype, 2))
 {
     return;
 }
@@ -313,7 +315,9 @@ BoundaryIntCell::BoundaryIntCell(
             IntCell(old),
             surface_ele_gid_(old.surface_ele_gid_),
             nodalpos_xi_domain_(old.nodalpos_xi_domain_),
-            nodalpos_xi_boundary_(old.nodalpos_xi_boundary_)
+            nodalpos_xi_boundary_(old.nodalpos_xi_boundary_),
+            nodalpos_xi_domain_blitz_(old.nodalpos_xi_domain_blitz_),
+            nodalpos_xi_boundary_blitz_(old.nodalpos_xi_boundary_blitz_)
 {
     return;   
 }

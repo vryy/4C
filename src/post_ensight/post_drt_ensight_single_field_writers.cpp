@@ -356,13 +356,13 @@ for (int isd = 0; isd < nsd; ++isd)
     for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
     {
       const int elegid = elementmap->GID(iele);
-      DRT::Element* const actele = dis->gElement(elegid);
+      const DRT::Element* const actele = dis->gElement(elegid);
       const XFEM::DomainIntCells domainintcells = ih->GetDomainIntCells(elegid, actele->Shape());
       for (XFEM::DomainIntCells::const_iterator cell = domainintcells.begin(); cell != domainintcells.end(); ++cell)
       {
         if (cell->Shape() == distypeiter)
         {
-          const vector<vector<double> > xarray = cell->NodalPosXYZ(*actele);
+          const blitz::Array<double,2> xarray = cell->NodalPosXYZ(*actele);
           int numnode = cell->NumNode();
           if (distypeiter == DRT::Element::hex27)
           {
@@ -370,7 +370,7 @@ for (int isd = 0; isd < nsd; ++isd)
           }
           for (int inen = 0; inen < numnode; ++inen)
           {
-            Write(geofile, static_cast<float>(xarray[inen][isd]));
+            Write(geofile, static_cast<float>(xarray(isd,inen)));
           }
         }
       }
@@ -608,16 +608,15 @@ vector<double> computeScalarCellNodeValues(
   const blitz::Array<double,1> elementvalues
   )
 {
-  // return value
-  vector<double> cellvalues;
-
   const int nen_cell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
   const int numparam  = dofman.NumDofPerField(field);
-
-  const int maxnod = 27;
-  const int nsd = 3;
-
-  blitz::Range _  = blitz::Range::all();
+  
+  const blitz::Array<double,2> nodalPosXiDomain(cell.NodalPosXiDomainBlitz());
+  
+  // return value
+  vector<double> cellvalues(nen_cell);
+  
+  //const blitz::Range _  = blitz::Range::all();
 
   // if cell node is on the interface, the value is not defined for a jump.
   // however, we approach the interface from one particular side and therefore,
@@ -625,31 +624,22 @@ vector<double> computeScalarCellNodeValues(
   const blitz::Array<double,1> cellcenterpos(cell.GetPhysicalCenterPosition(ele));
 
   // cell corner nodes
-  const vector<vector<double> > cellnodeposvectors = cell.NodalPosXYZ(ele);
+  //const blitz::Array<double,2> cellnodeposvectors = cell.NodalPosXYZ(ele);
   for (int inen = 0; inen < nen_cell; ++inen)
   {
-    const vector<double> cellnodeposvector = cellnodeposvectors[inen];
-    blitz::Array<double,1> cellnodepos(3);
-    for (int isd = 0; isd < nsd; ++isd) {
-      cellnodepos(isd) = cellnodeposvector[isd];
-    }
+    //const blitz::Array<double,1> cellnodepos = cellnodeposvectors(_,inen);
 
     // shape functions
-    blitz::Array<double,1> funct(maxnod);
-    DRT::UTILS::shape_function_3D(
-      funct,
-      cell.NodalPosXiDomain()[inen][0],
-      cell.NodalPosXiDomain()[inen][1],
-      cell.NodalPosXiDomain()[inen][2],
-      ele.Shape());
+    const blitz::Array<double,1> funct(DRT::UTILS::shape_function_3D(
+      nodalPosXiDomain(0,inen),
+      nodalPosXiDomain(1,inen),
+      nodalPosXiDomain(2,inen),
+      ele.Shape()));
 
     blitz::Array<double,1> enr_funct(numparam);
     XFEM::ComputeEnrichedShapefunction(ele, ih, dofman, field, cellcenterpos, XFEM::Enrichment::approachUnknown, funct, enr_funct);
     // interpolate value
-    const double x = blitz::sum(elementvalues * enr_funct);
-
-    // store position
-    cellvalues.push_back(x);
+    cellvalues[inen] = blitz::sum(elementvalues * enr_funct);
   }
   return cellvalues;
 }
