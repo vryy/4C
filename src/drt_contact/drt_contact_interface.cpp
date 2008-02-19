@@ -276,7 +276,10 @@ void CONTACT::Interface::Initialize()
 		(node->GetMmod()).resize(0);
 		
 		// reset nodal weighted gap
-		node->Getg() = 0.0;
+		node->Getg() = 1.0e12;
+		
+		// reset feasible projection status
+		node->HasProj() = false;
 	}
 	
 	// loop over all elements to reset contact candidates / search lists
@@ -294,83 +297,10 @@ void CONTACT::Interface::Initialize()
 	// (as the active set strategy is not yet implemented, these are dummies)
 	//activenodes_=snoderowmap_;
 	//activedofs_=sdofrowmap_;
-	SplitActiveDofs(activeN_,activeT_);
+	//SplitActiveDofs();
 	
 	  
 	return;
-}
-
-/*----------------------------------------------------------------------*
- |  split actove dofs into Ndofs and Tdofs                    popp 02/08|
- *----------------------------------------------------------------------*/
-bool CONTACT::Interface::SplitActiveDofs(RCP<Epetra_Map>& Nmap,
-																				 RCP<Epetra_Map>& Tmap)
-{
-	// get out of here if active set is empty
-	if (activenodes_==null)
-	{
-		Nmap = rcp(new Epetra_Map(0,0,Comm()));
-		Tmap = rcp(new Epetra_Map(0,0,Comm()));
-		return true;
-	}
-		
-	else if (activenodes_->NumGlobalElements()==0)
-	{
-		Nmap = rcp(new Epetra_Map(0,0,Comm()));
-		Tmap = rcp(new Epetra_Map(0,0,Comm()));
-		return true;
-	}
-	
-	// define local variables
-	int countN=0;
-	int countT=0;
-	vector<int> myNgids(activenodes_->NumMyElements());
-	vector<int> myTgids(activenodes_->NumMyElements());
-	
-	// dimension check
-	double dimcheck =(activedofs_->NumGlobalElements())/(activenodes_->NumGlobalElements());
-	if (dimcheck!=2.0 && dimcheck!=3.0)
-		dserror("ERROR: SplitActiveDofs: Nodes <-> Dofs dimension mismatch!");
-	
-	// loop over all active row nodes
-	for (int i=0;i<activenodes_->NumMyElements();++i)
-	{
-		int gid = activenodes_->GID(i);
-		DRT::Node* node = idiscret_->gNode(gid);
-		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-		CNode* cnode = static_cast<CNode*>(node);
-		const int numdof = cnode->NumDof();
-		
-		// add first dof to Nmap
-		myNgids[countN] = cnode->Dofs()[0];
-		++countN;
-		
-		// add remaining dofs to Tmap
-		for (int j=1;j<numdof;++j)
-		{
-			myTgids[countT] = cnode->Dofs()[j];
-			++countT;
-		}
-	}
-	
-	// resize the temporary vectors
-	myNgids.resize(countN);
-	myTgids.resize(countT);
-	
-	// communicate countN and countT among procs
-	int gcountN, gcountT;
-	Comm().SumAll(&countN,&gcountN,1);
-	Comm().SumAll(&countT,&gcountT,1);
-	
-	// check global dimensions
-	if ((gcountN+gcountT)!=activedofs_->NumGlobalElements())
-		dserror("ERROR: SplitActiveDofs: Splitting went wrong!");
-	
-	// create Nmap and Tmap objects
-	Nmap = rcp(new Epetra_Map(gcountN,countN,&myNgids[0],0,Comm()));
-	Tmap = rcp(new Epetra_Map(gcountT,countT,&myTgids[0],0,Comm()));
-
-	return true;
 }
 
 /*----------------------------------------------------------------------*
@@ -490,7 +420,7 @@ void CONTACT::Interface::Evaluate()
 	
 #ifdef DEBUG
 	// Visualize node projections with gmsh
-	VisualizeGmsh(CSegs());
+	//VisualizeGmsh(CSegs());
 #endif // #ifdef DEBUG
 	
   return;
@@ -641,7 +571,7 @@ bool CONTACT::Interface::IntegrateOverlap_2D(CONTACT::CElement& sele,
 		
 	// project slave nodes onto master element
 	vector<double> sprojxi(sele.NumNode());
-	for (int i=0;i<2;++i)
+	for (int i=0;i<sele.NumNode();++i)
 	{
 		CONTACT::CNode* snode = static_cast<CONTACT::CNode*>(mysnodes[i]);
 		double xi[2] = {0.0, 0.0};
@@ -653,8 +583,11 @@ bool CONTACT::Interface::IntegrateOverlap_2D(CONTACT::CElement& sele,
 		// cases due to round-off error and iteration tolerances later!
 		if ((-1.0-CONTACT_PROJTOL<=sprojxi[i]) && (sprojxi[i]<=1.0+CONTACT_PROJTOL))
 		{
+			// for element overlap only the outer nodes are of interest
 			if (i==0) s0_hasproj=true;
 			if (i==1) s1_hasproj=true;
+			// nevertheless we need the inner node projection status later (weighted gap)
+			snode->HasProj()=true;
 		}		
 	}
 	
@@ -1072,8 +1005,8 @@ bool CONTACT::Interface::IntegrateOverlap_2D(CONTACT::CElement& sele,
 /*----------------------------------------------------------------------*
  |  Assemble Mortar matrices and weighted gap                 popp 01/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::Assemble_DMG(Epetra_CrsMatrix& Dglobal,
-																	    Epetra_CrsMatrix& Mglobal,
+void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& Dglobal,
+																			LINALG::SparseMatrix& Mglobal,
 																	    Epetra_Vector& gglobal)
 {
 	// loop over proc's slave nodes of the interface for assembly
@@ -1086,7 +1019,7 @@ void CONTACT::Interface::Assemble_DMG(Epetra_CrsMatrix& Dglobal,
 		CNode* cnode = static_cast<CNode*>(node);
 
 		if (cnode->Owner() != comm_.MyPID())
-			dserror("ERROR: Assemble_DMG: Node ownership inconsistency!");
+			dserror("ERROR: AssembleDMG: Node ownership inconsistency!");
 		
 		// do nothing for this node, if all 3 maps are empty
 		if ((cnode->GetD()).size()==0 && (cnode->GetM()).size()==0 && (cnode->GetMmod()).size()==0)
@@ -1101,7 +1034,7 @@ void CONTACT::Interface::Assemble_DMG(Epetra_CrsMatrix& Dglobal,
 			
 			for (int j=0;j<rowsize-1;++j)
 				if ((int)Dmap[j].size() != (int)Dmap[j+1].size())
-					dserror("ERROR: Assemble_DMG: Column dim. of nodal D-map is inconsistent!");
+					dserror("ERROR: AssembleDMG: Column dim. of nodal D-map is inconsistent!");
 			
 			Epetra_SerialDenseMatrix Dnode(rowsize,colsize);
 			vector<int> lmrow(rowsize);
@@ -1123,17 +1056,17 @@ void CONTACT::Interface::Assemble_DMG(Epetra_CrsMatrix& Dglobal,
 					lmcol[k] = col;
 					
 					if (row!=col && abs(val)>1.0e-12)
-						dserror("ERROR: Assemble_DMG: D-Matrix is not diagonal!");
+						dserror("ERROR: AssembleDMG: D-Matrix is not diagonal!");
 				
 					Dnode(j,k)=val;
 					++k;
 				}
 				
 				if (k!=colsize)
-					dserror("ERROR: Assemble_DMG: k = %i but colsize = %i",k,colsize);
+					dserror("ERROR: AssembleDMG: k = %i but colsize = %i",k,colsize);
 			}
 		
-			LINALG::Assemble(Dglobal,Dnode,lmrow,lmrowowner,lmcol);
+			Dglobal.Assemble(Dnode,lmrow,lmrowowner,lmcol);
 		}
 		
 		/**************************************************** M-matrix ******/
@@ -1145,7 +1078,7 @@ void CONTACT::Interface::Assemble_DMG(Epetra_CrsMatrix& Dglobal,
 			
 			for (int j=0;j<rowsize-1;++j)
 				if ((int)Mmap[j].size() != (int)Mmap[j+1].size())
-					dserror("ERROR: Assemble_DMG: Column dim. of nodal M-map is inconsistent!");
+					dserror("ERROR: AssembleDMG: Column dim. of nodal M-map is inconsistent!");
 				
 			Epetra_SerialDenseMatrix Mnode(rowsize,colsize);
 			vector<int> lmrow(rowsize);
@@ -1171,10 +1104,10 @@ void CONTACT::Interface::Assemble_DMG(Epetra_CrsMatrix& Dglobal,
 				}
 				
 				if (k!=colsize)
-					dserror("ERROR: Assemble_DMG: k = %i but colsize = %i",k,colsize);
+					dserror("ERROR: AssembleDMG: k = %i but colsize = %i",k,colsize);
 			}
 			
-			LINALG::Assemble(Mglobal,Mnode,lmrow,lmrowowner,lmcol);
+			Mglobal.Assemble(Mnode,lmrow,lmrowowner,lmcol);
 		}
 		
 		/************************************************* Mmod-matrix ******/
@@ -1186,7 +1119,7 @@ void CONTACT::Interface::Assemble_DMG(Epetra_CrsMatrix& Dglobal,
 			
 			for (int j=0;j<rowsize-1;++j)
 				if ((int)Mmap[j].size() != (int)Mmap[j+1].size())
-					dserror("ERROR: Assemble_DMG: Column dim. of nodal Mmod-map is inconsistent!");
+					dserror("ERROR: AssembleDMG: Column dim. of nodal Mmod-map is inconsistent!");
 				
 			Epetra_SerialDenseMatrix Mnode(rowsize,colsize);
 			vector<int> lmrow(rowsize);
@@ -1212,16 +1145,22 @@ void CONTACT::Interface::Assemble_DMG(Epetra_CrsMatrix& Dglobal,
 				}
 				
 				if (k!=colsize)
-					dserror("ERROR: Assemble_DMG: k = %i but colsize = %i",k,colsize);
+					dserror("ERROR: AssembleDMG: k = %i but colsize = %i",k,colsize);
 			}
 			
-			LINALG::Assemble(Mglobal,Mnode,lmrow,lmrowowner,lmcol);
+			Mglobal.Assemble(Mnode,lmrow,lmrowowner,lmcol);
 		}
 		
 		/**************************************************** g-vector ******/
 		if (cnode->Getg()!=0.0)
 		{
 			double gap = cnode->Getg();
+			
+			// check if this node has a feasible projection
+			// else, it cannot be in contact and weighted gap should be positive
+			// (otherwise wrong results possible for g~ because of non-positivity
+			// of dual shape functions!!!)
+			if (!cnode->HasProj()) gap = 1.0e12;
 			
 			Epetra_SerialDenseVector gnode(1);
 			vector<int> lm(1);
@@ -1241,8 +1180,8 @@ void CONTACT::Interface::Assemble_DMG(Epetra_CrsMatrix& Dglobal,
 /*----------------------------------------------------------------------*
  |  Assemble matrices with nodal normals / tangents           popp 01/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::Assemble_NT(Epetra_CrsMatrix& Nglobal,
-																	   Epetra_CrsMatrix& Tglobal)
+void CONTACT::Interface::AssembleNT(LINALG::SparseMatrix& Nglobal,
+																		 LINALG::SparseMatrix& Tglobal)
 {
 	// nothing to do if no active nodes
 	if (activenodes_==null)
@@ -1257,7 +1196,7 @@ void CONTACT::Interface::Assemble_NT(Epetra_CrsMatrix& Nglobal,
 		CNode* cnode = static_cast<CNode*>(node);
 		  	
 		if (cnode->Owner() != comm_.MyPID())
-			dserror("ERROR: Assemble_NT: Node ownership inconsistency!");
+			dserror("ERROR: AssembleNT: Node ownership inconsistency!");
 		
 		// prepare assembly (only 2D so far !!!!)
 		int colsize = cnode->NumDof();
@@ -1267,13 +1206,13 @@ void CONTACT::Interface::Assemble_NT(Epetra_CrsMatrix& Nglobal,
 		vector<int> lmrowownerT(1);
 		vector<int> lmcol(colsize);
 		
-		lmrowN[0] = activeN_->GID(i);
+		lmrowN[0] = activen_->GID(i);
 		lmrowownerN[0] = cnode->Owner();
-		lmrowT[0] = activeT_->GID(i);
+		lmrowT[0] = activet_->GID(i);
 		lmrowownerT[0] = cnode->Owner();
 		
 		if (colsize==3)
-			dserror("ERROR: Assemble_NT: 3D case not yet implemented!");
+			dserror("ERROR: AssembleNT: 3D case not yet implemented!");
 		
 		/**************************************************** N-matrix ******/
 		Epetra_SerialDenseMatrix Nnode(1,colsize);
@@ -1288,7 +1227,7 @@ void CONTACT::Interface::Assemble_NT(Epetra_CrsMatrix& Nglobal,
 		}
 		
 		// assemble into matrix of normal vectors N
-		LINALG::Assemble(Nglobal,Nnode,lmrowN,lmrowownerN,lmcol);
+		Nglobal.Assemble(Nnode,lmrowN,lmrowownerN,lmcol);
 		
 		/**************************************************** T-matrix ******/
 		Epetra_SerialDenseMatrix Tnode(1,colsize);
@@ -1306,10 +1245,137 @@ void CONTACT::Interface::Assemble_NT(Epetra_CrsMatrix& Nglobal,
 		}
 		
 		// assemble into matrix of normal vectors T
-		LINALG::Assemble(Tglobal,Tnode,lmrowT,lmrowownerT,lmcol);
+		Tglobal.Assemble(Tnode,lmrowT,lmrowownerT,lmcol);
 	}
 
 	return;
+}
+
+/*----------------------------------------------------------------------*
+ |  build active set (nodes / dofs)                           popp 02/08|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Interface::BuildActiveSet()
+{
+	// define local variables
+	int countnodes = 0;
+	int countdofs = 0;
+	vector<int> mynodegids(snoderowmap_->NumMyElements());
+	vector<int> mydofgids(sdofrowmap_->NumMyElements());
+	
+	// loop over all slave nodes
+	for (int i=0;i<snoderowmap_->NumMyElements();++i)
+	{
+		int gid = snoderowmap_->GID(i);
+		DRT::Node* node = idiscret_->gNode(gid);
+		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+		CNode* cnode = static_cast<CNode*>(node);
+		const int numdof = cnode->NumDof();
+		
+		// add node / dofs to temporary map IF active
+		if (cnode->Active())
+		{
+			mynodegids[countnodes] = cnode->Id();
+			++countnodes;
+			
+			for (int j=0;j<numdof;++j)
+			{
+				mydofgids[countdofs] = cnode->Dofs()[j];
+				++countdofs;
+			}
+		}
+	}
+	
+	// resize the temporary vectors
+	mynodegids.resize(countnodes);
+	mydofgids.resize(countdofs);
+	
+	// communicate countnodes and countdofs among procs
+	int gcountnodes, gcountdofs;
+	Comm().SumAll(&countnodes,&gcountnodes,1);
+	Comm().SumAll(&countdofs,&gcountdofs,1);
+	
+	// create active node map and active dof map
+	RCP<Epetra_Map> test1 = rcp(new Epetra_Map(gcountnodes,countnodes,&mynodegids[0],0,Comm()));
+	RCP<Epetra_Map> test2 = rcp(new Epetra_Map(gcountdofs,countdofs,&mydofgids[0],0,Comm()));
+	
+	activenodes_=test1;
+	activedofs_=test2;
+	
+	SplitActiveDofs();
+	
+	return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  split active dofs into Ndofs and Tdofs                    popp 02/08|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Interface::SplitActiveDofs()
+{
+	// get out of here if active set is empty
+	if (activenodes_==null)
+	{
+		activen_ = rcp(new Epetra_Map(0,0,Comm()));
+		activet_ = rcp(new Epetra_Map(0,0,Comm()));
+		return true;
+	}
+		
+	else if (activenodes_->NumGlobalElements()==0)
+	{
+		activen_ = rcp(new Epetra_Map(0,0,Comm()));
+		activet_ = rcp(new Epetra_Map(0,0,Comm()));
+		return true;
+	}
+	
+	// define local variables
+	int countN=0;
+	int countT=0;
+	vector<int> myNgids(activenodes_->NumMyElements());
+	vector<int> myTgids(activenodes_->NumMyElements());
+	
+	// dimension check
+	double dimcheck =(activedofs_->NumGlobalElements())/(activenodes_->NumGlobalElements());
+	if (dimcheck!=2.0 && dimcheck!=3.0)
+		dserror("ERROR: SplitActiveDofs: Nodes <-> Dofs dimension mismatch!");
+	
+	// loop over all active row nodes
+	for (int i=0;i<activenodes_->NumMyElements();++i)
+	{
+		int gid = activenodes_->GID(i);
+		DRT::Node* node = idiscret_->gNode(gid);
+		if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+		CNode* cnode = static_cast<CNode*>(node);
+		const int numdof = cnode->NumDof();
+		
+		// add first dof to Nmap
+		myNgids[countN] = cnode->Dofs()[0];
+		++countN;
+		
+		// add remaining dofs to Tmap
+		for (int j=1;j<numdof;++j)
+		{
+			myTgids[countT] = cnode->Dofs()[j];
+			++countT;
+		}
+	}
+	
+	// resize the temporary vectors
+	myNgids.resize(countN);
+	myTgids.resize(countT);
+	
+	// communicate countN and countT among procs
+	int gcountN, gcountT;
+	Comm().SumAll(&countN,&gcountN,1);
+	Comm().SumAll(&countT,&gcountT,1);
+	
+	// check global dimensions
+	if ((gcountN+gcountT)!=activedofs_->NumGlobalElements())
+		dserror("ERROR: SplitActiveDofs: Splitting went wrong!");
+	
+	// create Nmap and Tmap objects
+	activen_ = rcp(new Epetra_Map(gcountN,countN,&myNgids[0],0,Comm()));
+	activet_ = rcp(new Epetra_Map(gcountT,countT,&myTgids[0],0,Comm()));
+
+	return true;
 }
 
 /*----------------------------------------------------------------------*

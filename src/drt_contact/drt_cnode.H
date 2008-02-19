@@ -159,6 +159,16 @@ public:
   virtual inline int& ClosestNode() { return closestnode_; }
   
   /*!
+  \brief Return projection status of this node (slave nodes only)
+  */
+  virtual inline bool& HasProj() { return hasproj_; }
+    
+  /*!
+  \brief Return contact status of this node (active=true)
+  */
+  virtual inline bool& Active() { return active_; }
+  
+  /*!
   brief Add a value to the 'D' map of this node
   
   The 'D' map is later assembled to the D matrix.
@@ -258,6 +268,8 @@ protected:
   double					xspatial_[3];	   // current configuration
   double					u_[3];				   // current displacement
   int							closestnode_;	   // closest node id on the other side of interface
+  bool						hasproj_;				 // true if feasible projection within search set (slave nodes only)
+  bool					  active_;				 // true if cnode is in contact (active set strategy)
   
   vector<map<int,double> >     Drows_;   		  // nodal rows of D matrix
   vector<map<int,double> > 		 Mrows_;   			// nodal rows of M matrix

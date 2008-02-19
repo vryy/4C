@@ -175,7 +175,7 @@ void ContactStruGenAlpha::ConsistentPredictor()
   // add mid-viscous damping force
   if (damping)
   {
-    //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
+    //RCP<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
     damp_->Multiply(false,*velm_,*fvisc_);
     fresm_->Update(1.0,*fvisc_,1.0);
   }
@@ -329,7 +329,7 @@ void ContactStruGenAlpha::ConstantPredictor()
   // add mid-viscous damping force
   if (damping)
   {
-      //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
+      //RCP<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
       damp_->Multiply(false,*velm_,*fvisc_);
       fresm_->Update(1.0,*fvisc_,1.0);
   }
@@ -408,23 +408,23 @@ void ContactStruGenAlpha::FullNewton()
 
   while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter<=maxiter)
   {
-    //------------------------------------------- effective rhs is fresm
+  	//------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
-    stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
-    if (damping)
-    {
-      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
-    }
-    stiff_->Complete();
-
+  	stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
+  	if (damping)
+  	{
+  		stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+  	}
+  	stiff_->Complete();
+  	
     //-------------------------make contact modifications to lhs and rhs
-    {
+  	{
     	contactmanager_->Initialize();
     	contactmanager_->SetState("displacement",dism_);
-
+    	
     	// (almost) all contact stuff is done here!
-    	contactmanager_->Evaluate(stiff_->EpetraMatrix(),fresm_);
+    	contactmanager_->Evaluate(stiff_,fresm_);
     }
 
     //----------------------- apply dirichlet BCs to system of equations
@@ -441,8 +441,11 @@ void ContactStruGenAlpha::FullNewton()
     //------------------------------------ transform disi due to contact
     {
     	contactmanager_->RecoverDisp(disi_);
+    	
+    	//fresm_->Norm2(&fresmnorm);
+    	//cout << fresmnorm << endl;
     }
-
+   
     //---------------------------------- update mid configuration values
     // displacements
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
@@ -506,6 +509,7 @@ void ContactStruGenAlpha::FullNewton()
     // Res = M . A_{n+1-alpha_m}
     //     + C . V_{n+1-alpha_f}
     //     + F_int(D_{n+1-alpha_f})
+    // 		 + F_c(D_{n+1-alpha_f})
     //     - F_{ext;n+1-alpha_f}
     // add inertia mid-forces
     mass_->Multiply(false,*accm_,*finert_);
@@ -513,23 +517,33 @@ void ContactStruGenAlpha::FullNewton()
     // add viscous mid-forces
     if (damping)
     {
-      //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
+      //RCP<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
       damp_->Multiply(false,*velm_,*fvisc_);
       fresm_->Update(1.0,*fvisc_,1.0);
     }
+    
     // add static mid-balance
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+        
     // blank residual DOFs that are on Dirichlet BC
     {
       Epetra_Vector fresmcopy(*fresm_);
       fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
     }
-
+    
+    // add contact forces
+    RCP<Epetra_Vector> fc = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
+    contactmanager_->ContactForces(fc);
+    fresm_->Update(-1.0,*fc,1.0);
+   
     //---------------------------------------------- build residual norm
     disi_->Norm2(&disinorm);
 
     fresm_->Norm2(&fresmnorm);
-
+    
+    //remove contact forces from equilibrium again
+    fresm_->Update(1.0,*fc,1.0);
+    
     // a short message
     if (!myrank_ && (printscreen || printerr))
     {
@@ -719,7 +733,7 @@ void ContactStruGenAlpha::UpdateandOutput()
 
 
 /*----------------------------------------------------------------------*
- |  integrate in time          (static/public)               mwgee 03/07|
+ |  integrate in time          (static/public)               popp  02/08|
  *----------------------------------------------------------------------*/
 void ContactStruGenAlpha::Integrate()
 {
@@ -740,10 +754,15 @@ void ContactStruGenAlpha::Integrate()
   {
     for (int i=step; i<nstep; ++i)
     {
-      if      (predictor==1) ConstantPredictor();
-      else if (predictor==2) ConsistentPredictor();
-      FullNewton();
-      UpdateandOutput();
+    	contactmanager_->ActiveSetConverged() = false;
+    	while (contactmanager_->ActiveSetConverged()==false)
+      {
+    		if      (predictor==1) ConstantPredictor();
+    		else if (predictor==2) ConsistentPredictor();
+    		FullNewton();
+    		contactmanager_->UpdateActiveSet();
+      }
+    	UpdateandOutput();
     }
   }
   else dserror("Unknown type of equilibrium iteration");
@@ -758,7 +777,7 @@ void ContactStruGenAlpha::Integrate()
  *----------------------------------------------------------------------*/
 void ContactStruGenAlpha::ReadRestart(int step)
 {
-  RefCountPtr<DRT::Discretization> rcpdiscret = rcp(&discret_);
+  RCP<DRT::Discretization> rcpdiscret = rcp(&discret_);
   rcpdiscret.release();
   IO::DiscretizationReader reader(rcpdiscret,step);
   double time  = reader.ReadDouble("time");

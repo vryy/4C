@@ -21,6 +21,7 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_discret.H"
 #include "drt_cnode.H"
 #include "drt_celement.H"
+#include "../drt_lib/linalg_systemmatrix.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -271,7 +272,7 @@ public:
   */
   virtual const RCP<Epetra_Map> ActiveNDofs() const 
   { 
-    if (Filled()) return activeN_;
+    if (Filled()) return activen_;
     else dserror("CONTACT::Interface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
@@ -282,7 +283,7 @@ public:
   */
   virtual const RCP<Epetra_Map> ActiveTDofs() const 
   { 
-    if (Filled()) return activeT_;
+    if (Filled()) return activet_;
     else dserror("CONTACT::Interface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
@@ -329,12 +330,6 @@ public:
   virtual void Initialize();
   
   /*!
-  \brief Split active dofs into N- and T-part
-  
-  */
-  virtual bool SplitActiveDofs(RCP<Epetra_Map>& Nmap, RCP<Epetra_Map>& Tmap);
-  
-  /*!
   \brief Set current deformation state
     
   */
@@ -369,16 +364,28 @@ public:
   \brief Assemble Mortar matrices and weighted gap
         
   */
-  virtual void Assemble_DMG(Epetra_CrsMatrix& Dglobal,
-  											    Epetra_CrsMatrix& Mglobal,
+  virtual void AssembleDMG(LINALG::SparseMatrix& Dglobal,
+  													LINALG::SparseMatrix& Mglobal,
   											    Epetra_Vector& gglobal);
   
   /*!
   \brief Assemble matrices N / T containing nodal normals / tangents
   
   */
-  virtual void Assemble_NT(Epetra_CrsMatrix& Nglobal,
-  												 Epetra_CrsMatrix& Tglobal);
+  virtual void AssembleNT(LINALG::SparseMatrix& Nglobal,
+  												 LINALG::SparseMatrix& Tglobal);
+  
+  /*!
+  \brief Build active set (nodes / dofs) of this interface
+      
+  */
+  virtual bool BuildActiveSet();
+    
+  /*!
+  \brief Split active dofs into N- and T-part
+    
+  */
+  virtual bool SplitActiveDofs();
   
   /*!
   \brief Visualize node normals and projections with gmsh
@@ -422,8 +429,8 @@ protected:
   
   RCP<Epetra_Map>								activenodes_;  // row map of all active slave nodes
   RCP<Epetra_Map>								activedofs_;	 // row map of all active slave dofs
-  RCP<Epetra_Map>								activeN_;			 // row map of global N-matrix
-  RCP<Epetra_Map>								activeT_;			 // row map of global T-matrix
+  RCP<Epetra_Map>								activen_;			 // row map of global N-matrix
+  RCP<Epetra_Map>								activet_;			 // row map of global T-matrix
   
   Epetra_SerialDenseMatrix		  contactsegs_;	 // contains coordinates of all contact segments (gmsh)
   int														counter_;			 // counts the number of calls to this interface (gmsh)

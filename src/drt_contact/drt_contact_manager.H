@@ -20,7 +20,7 @@ Maintainer: Michael Gee
 #include "Teuchos_RefCountPtr.hpp"
 #include "../drt_lib/drt_discret.H"
 #include "drt_contact_interface.H"
-
+#include "../drt_lib/linalg_systemmatrix.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -108,7 +108,7 @@ public:
   \brief Evaluate contact
     
   */
-  void Evaluate(RCP<Epetra_CrsMatrix>& Kteff, RCP<Epetra_Vector>& feff);
+  void Evaluate(RCP<LINALG::SparseMatrix>& Kteff, RCP<Epetra_Vector>& feff);
   
   /*!
   \brief Transform displacement increment vector
@@ -116,11 +116,37 @@ public:
   During the setup of the global tangent stiffness the so-called basis
   transformation introduced the incremental jump of displacements
   [d] = d_slave - inv(D) * M * d_master into the vector of unknowns
-  instead of the incremental slave displacments. This step  is reversed
-  here by recovering the incremental slave displacements.
+  instead of the incremental slave displacments. This step is reversed
+  here by recovering the incremental slave displacements. But as we
+  still need the incremental jump for the active set strategy, it is
+  extracted at the beginning and stored in incrjump_
   
   */
   void RecoverDisp(RCP<Epetra_Vector>& disi);
+  
+  /*!
+  \brief Update active set and check for convergence
+  
+  In this function we loop over all interfaces and then over all
+  slave nodes to check, whether the assumption of them being active
+  or inactive respectively has been correct. If a single node changes
+  state, the active set is adapted accordingly and the convegence
+  flag is kept on false -> another Newton iteration!
+  
+  */
+  void UpdateActiveSet();
+  
+  /*!
+  \brief Return convergence status of active set loop
+  
+  */
+  inline bool& ActiveSetConverged() { return activesetconv_; }
+  
+  /*!
+  \brief Compute contact force vector
+    
+  */
+  void ContactForces(RCP<Epetra_Vector>& fc);
   
 
 protected:
@@ -130,25 +156,31 @@ protected:
   Manager(const Manager& old);
 
 
-  DRT::Discretization&              discret_;       // the underlying problem discretization
-  vector<RCP<CONTACT::Interface> >  interface_; 	  // contact interfaces
+  DRT::Discretization&              discret_;        // the underlying problem discretization
+  vector<RCP<CONTACT::Interface> >  interface_; 	   // contact interfaces
   
-  RCP<Epetra_Map>										gsnoderowmap_;  // global slave node row map (of all interfaces)
-  RCP<Epetra_Map>										gsdofrowmap_;   // global slave dof row map (of all interfaces)
-  RCP<Epetra_Map>										gmdofrowmap_;   // global master dof row map (of all interfaces)
+  RCP<Epetra_Map>										gsnoderowmap_;   // global slave node row map (of all interfaces)
+  RCP<Epetra_Map>										gsdofrowmap_;    // global slave dof row map (of all interfaces)
+  RCP<Epetra_Map>										gmdofrowmap_;    // global master dof row map (of all interfaces)
+  RCP<Epetra_Map>										gndofrowmap_;    // global internal dof row map
   
-  RCP<Epetra_Map>										gactivenodes_;  // global active slave node row map (of all interfaces)
-  RCP<Epetra_Map>										gactivedofs_;   // global active slave dof row map (of all interfaces)
-  RCP<Epetra_Map>										gactiveN_;      // global row map of matrix N (of all interfaces)
-  RCP<Epetra_Map>										gactiveT_;      // global row map of matrix T (of all interfaces)
+  RCP<Epetra_Map>										gactivenodes_;   // global active slave node row map (of all interfaces)
+  RCP<Epetra_Map>										gactivedofs_;    // global active slave dof row map (of all interfaces)
+  RCP<Epetra_Map>										gactiven_;       // global row map of matrix N (of all interfaces)
+  RCP<Epetra_Map>										gactivet_;       // global row map of matrix T (of all interfaces)
+  bool															activesetconv_;  // convergence flag for active set
   
-  RCP<Epetra_CrsMatrix>							D_;					    // global Mortar matrix D
-  RCP<Epetra_CrsMatrix>							M_;					    // global Mortar matrix M
-  RCP<Epetra_CrsMatrix>							Mbar_;					// product of global Mortar matrices inv(D)*M
-  RCP<Epetra_Vector>								g_;					    // global weighted gap vector g
+  RCP<LINALG::SparseMatrix>					dmatrix_;				 // global Mortar matrix D
+  RCP<LINALG::SparseMatrix>					mmatrix_;				 // global Mortar matrix M
+  RCP<LINALG::SparseMatrix>					mhatmatrix_;		 // product of global Mortar matrices inv(D)*M
+  RCP<Epetra_Vector>      					g_;					     // global weighted gap vector g
   
-  RCP<Epetra_CrsMatrix>							N_;							// global Matrix N of active node normals
-  RCP<Epetra_CrsMatrix>							T_;							// global Matrix T of active node tangents
+  RCP<LINALG::SparseMatrix>					nmatrix_;				 // global Matrix N of active node normals
+  RCP<LINALG::SparseMatrix>					tmatrix_;				 // global Matrix T of active node tangents
+  
+  RCP<Epetra_Vector>								z_;							 // vector of current Lagrange multipliers
+  RCP<Epetra_Vector>								zold_;					 // vector of last time step Lagrange multipliers
+  RCP<Epetra_Vector>								incrjump_;		   // incremental displacement jump (slave dofs)
 
 
 }; // class Manager

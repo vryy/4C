@@ -52,8 +52,8 @@ RESEVRYDISP  1
 RESEVRYSTRS  1
 RESTARTEVRY  10
 NLNSOL       fullnewton // fullnewton modnewton matfreenewton nlncg ptc
-TIMESTEP     0.02 
-NUMSTEP      40
+TIMESTEP     0.03 
+NUMSTEP      200
 MAXTIME      6.0
 BETA         0.25 
 GAMMA        0.5 
@@ -62,6 +62,8 @@ ALPHA_F      0.5
 DAMPING      Yes 
 M_DAMP       0.00001 
 K_DAMP       0.00001
+CONV_CHECK   AbsRes_And_AbsDis
+TOLRES		 1.0E-06
 TOLDISP      1.0E-06
 MAXITER      50
 CONTACT      1

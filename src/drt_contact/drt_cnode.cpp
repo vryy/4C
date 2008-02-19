@@ -27,7 +27,9 @@ isslave_(isslave),
 numdof_(numdof),
 dofs_(dofs),
 closestnode_(-1),
-grow_(0.0)
+hasproj_(false),
+active_(false),
+grow_(1.0e12)
 {
   for (int i=0;i<3;++i)
   {
@@ -35,11 +37,7 @@ grow_(0.0)
     u()[i]=0.0;
     xspatial()[i]=X()[i];
   }
-  
-  Drows_.resize(0);					// FIXME: Is this necessary???
-  Mrows_.resize(0);
-  Mmodrows_.resize(0);
-  
+   
   return;
 }
 
@@ -52,6 +50,8 @@ isslave_(old.isslave_),
 numdof_(old.numdof_),
 dofs_(old.dofs_),
 closestnode_(old.closestnode_),
+hasproj_(old.hasproj_),
+active_(old.active_),
 Drows_(old.Drows_),
 Mrows_(old.Mrows_),
 Mmodrows_(old.Mmodrows_),
@@ -137,7 +137,11 @@ void CONTACT::CNode::Pack(vector<char>& data) const
   AddtoPack(data,u_,3);
   // add closestnode_
   AddtoPack(data,closestnode_);
-  
+  // add hasproj_
+  AddtoPack(data,hasproj_);
+  // add active_
+  AddtoPack(data,active_);
+    
   return;
 }
 
@@ -171,6 +175,10 @@ void CONTACT::CNode::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,u_,3);
   // closestnode_
   ExtractfromPack(position,data,closestnode_);
+  // hasproj_
+  ExtractfromPack(position,data,hasproj_);
+  // active_
+  ExtractfromPack(position,data,active_);
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -242,6 +250,9 @@ void CONTACT::CNode::AddMmodValue(int row, int col, double val)
  *----------------------------------------------------------------------*/
 void CONTACT::CNode::AddgValue(double val)
 {
+	// initialize if called for the first time
+	if (grow_==1.0e12) grow_=0;
+	
 	// add given value to grow_
 	grow_+=val;
 	return;
@@ -324,7 +335,7 @@ CONTACT::CNode* CONTACT::CNode::FindClosestNode(const RCP<DRT::Discretization> i
 		
 		// build distance between the two nodes
 		double dist = 0.0;
-		const double* p1 = this->xspatial();
+		const double* p1 = xspatial();
 		const double* p2 = cnode->xspatial();
 		
 		for (int j=0;j<3;++j)

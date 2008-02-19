@@ -72,8 +72,8 @@ bool CONTACT::Projector::Project_NodalNormal(CONTACT::CNode& node,
 			// This iteration sometimes diverges, when the projection is far off.
 			// These cases are harmless, as these nodes then do not participate in
 			// the overlap detection anyway!
-			cout << "***WARNING*** Project_NodalNormal:" << " Newton unconverged for NodeID "
-					 << node.Id() << " and CElementID " << ele.Id() << endl;	
+			//cout << "***WARNING*** Project_NodalNormal:" << " Newton unconverged for NodeID "
+			//		 << node.Id() << " and CElementID " << ele.Id() << endl;	
 		}
 		
 		// no outward projection w.r.t to slave found		
@@ -87,8 +87,8 @@ bool CONTACT::Projector::Project_NodalNormal(CONTACT::CNode& node,
 				xi[0] = 9999.99;
 			
 				// At the moment we give a warning here, just to check!!!
-				cout << "***WARNING*** Project_NodalNormal:" << " Inward projection for NodeID "
-					 	<< node.Id() << " and CElementID " << ele.Id() << endl;	
+				//cout << "***WARNING*** Project_NodalNormal:" << " Inward projection for NodeID "
+				//	 	<< node.Id() << " and CElementID " << ele.Id() << endl;	
 			}
 		}
 /*		
@@ -167,8 +167,8 @@ bool CONTACT::Projector::Project_ElementNormal(CONTACT::CNode& node,
 			// This iteration sometimes diverges, when the projection is far off.
 			// These cases are harmless, as these nodes then do not participate in
 			// the overlap detection anyway!
-			cout << "***WARNING*** Project_ElementNormal:" << " Newton unconverged for NodeID "
-					 << node.Id() << " and CElementID " << ele.Id() << endl;
+			//cout << "***WARNING*** Project_ElementNormal:" << " Newton unconverged for NodeID "
+			//		 << node.Id() << " and CElementID " << ele.Id() << endl;
 		}
 		
 		// no outward projection w.r.t to slave found
@@ -182,8 +182,8 @@ bool CONTACT::Projector::Project_ElementNormal(CONTACT::CNode& node,
 				xi[0] = 9999.99;
 			
 				// At the moment we give a warning here, just to check!!!
-				cout << "***WARNING*** Project_ElementNormal:" << " Inward projection for NodeID "
-					 	 << node.Id() << " and CElementID " << ele.Id() << endl;	
+				//cout << "***WARNING*** Project_ElementNormal:" << " Inward projection for NodeID "
+				//	 	 << node.Id() << " and CElementID " << ele.Id() << endl;	
 			}
 		}
 /*		

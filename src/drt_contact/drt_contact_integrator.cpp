@@ -559,6 +559,8 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::Integrate_g(CONTACT::CElement
 		
 		// normalize interpolated GP normal back to length 1.0 !!!
 		double length = sqrt(gpn[0]*gpn[0]+gpn[1]*gpn[1]+gpn[2]*gpn[2]);
+		if (length<1.0e-12) dserror("ERROR: Integrate_g: Divide by zero!");
+		
 		for (int i=0;i<3;++i)
 			gpn[i]/=length;
 		
@@ -575,8 +577,11 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::Integrate_g(CONTACT::CElement
 		double gap = 0.0;
 		for (int i=0;i<3;++i)
 			gap+=(mgpx[i]-sgpx[i])*gpn[i];
-				
-		gap = sqrt(gap);
+		
+		//if (gap<=0)
+		//	gap = -sqrt(-gap);
+		//else
+		//	gap = sqrt(gap);
 		
 #ifdef DEBUG
 		//cout << "GP gap: " << gap << endl;

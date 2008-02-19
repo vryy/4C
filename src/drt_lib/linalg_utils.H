@@ -28,6 +28,7 @@ Maintainer: Michael Gee
 #include "Teuchos_RefCountPtr.hpp"
 #include "Ifpack_AdditiveSchwarz.h"
 #include "drt_exporter.H"
+#include "linalg_systemmatrix.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -492,15 +493,15 @@ namespace LINALG
   \param A21          : on exit matrix block A21
   \param A22          : on exit matrix block A22
   */
-  bool SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
+  bool SplitMatrix2x2(RCP<LINALG::SparseMatrix> A,
                       RCP<Epetra_Map>& A11rowmap,
                       RCP<Epetra_Map>& A22rowmap,
                       RCP<Epetra_Map>& A11domainmap,
                       RCP<Epetra_Map>& A22domainmap,
-                      RCP<Epetra_CrsMatrix>& A11,
-                      RCP<Epetra_CrsMatrix>& A12,
-                      RCP<Epetra_CrsMatrix>& A21,
-                      RCP<Epetra_CrsMatrix>& A22);
+                      RCP<LINALG::SparseMatrix>& A11,
+                      RCP<LINALG::SparseMatrix>& A12,
+                      RCP<LINALG::SparseMatrix>& A21,
+                      RCP<LINALG::SparseMatrix>& A22);
 
   /*!
   \brief split a rowmap of matrix A
@@ -544,13 +545,13 @@ namespace LINALG
                            const RCP<Epetra_Map>& map2);
 
   /*!
-  \brief split a vector into 2 non-overlapping pieces
+  \brief split a vector into 2 non-overlapping pieces (RCP version)
   */
   bool SplitVector(const Epetra_Vector& x,
                    const Epetra_Map& x1map,
-                   Epetra_Vector*&   x1,
+                   RCP<Epetra_Vector>&   x1,
                    const Epetra_Map& x2map,
-                   Epetra_Vector*&   x2);
+                   RCP<Epetra_Vector>&   x2);
 
   /*!
   \brief Print sparsity pattern of a matrix to postscript file

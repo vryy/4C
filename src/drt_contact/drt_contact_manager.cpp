@@ -18,11 +18,14 @@ Maintainer: Michael Gee
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_solver.H"
 
+//#define DIMOUTPUT
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
 CONTACT::Manager::Manager(DRT::Discretization& discret) :
-discret_(discret)
+discret_(discret),
+activesetconv_(false)
 {
   if (!Discret().Filled()) dserror("Discretization is not fillcomplete");
 
@@ -195,6 +198,19 @@ discret_(discret)
   	gmdofrowmap_ = LINALG::MergeMap(gmdofrowmap_,interface_[i]->MasterRowDofs());
   }
   
+  gndofrowmap_ = LINALG::SplitMap(*(discret_.DofRowMap()),*gsdofrowmap_);
+  gndofrowmap_ = LINALG::SplitMap(*gndofrowmap_,*gmdofrowmap_);
+  
+  // setup global active node/dof maps
+  gactivenodes_ = rcp(new Epetra_Map(0,0,Comm()));
+  gactivedofs_ = rcp(new Epetra_Map(0,0,Comm()));
+  gactiven_ = rcp(new Epetra_Map(0,0,Comm()));
+  gactivet_ = rcp(new Epetra_Map(0,0,Comm()));
+  
+  // setup Lagrange muliplier vectors
+  zold_       = rcp(new Epetra_Vector(*gsdofrowmap_));
+  z_          = rcp(new Epetra_Vector(*gsdofrowmap_));
+  		
   return;
 }
 
@@ -241,39 +257,15 @@ void CONTACT::Manager::Initialize()
 	  interface_[i]->Initialize();
   }
 		
-	// (re)setup active global Epetra_Maps
-	gactivenodes_ = null;
-	gactivedofs_ = null;
-	gactiveN_ = null;
-	gactiveT_ = null;
-	
-	// update active global Epetra_Maps
-	for (int i=0;i<(int)interface_.size();++i)
-	{
-		gactivenodes_ = LINALG::MergeMap(gactivenodes_,interface_[i]->ActiveNodes());
-		gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs());
-		gactiveN_ = LINALG::MergeMap(gactiveN_,interface_[i]->ActiveNDofs());;
-		gactiveT_ = LINALG::MergeMap(gactiveT_,interface_[i]->ActiveTDofs());;
-	}
-	
-	// create empty maps, if active set = null
-	if (gactivenodes_==null)
-	{
-		gactivenodes_ = rcp(new Epetra_Map(0,0,Comm()));
-		gactivedofs_ = rcp(new Epetra_Map(0,0,Comm()));
-		gactiveN_ = rcp(new Epetra_Map(0,0,Comm()));
-		gactiveT_ = rcp(new Epetra_Map(0,0,Comm()));
-	}
-	
-	// (re)setup global Mortar Epetra_CrsMatrices and Epetra_Vectors
-	D_    = LINALG::CreateMatrix(*gsdofrowmap_,10);
-	M_    = LINALG::CreateMatrix(*gsdofrowmap_,100);
-	Mbar_ = LINALG::CreateMatrix(*gsdofrowmap_,100);
+	// (re)setup global Mortar LINALG::SparseMatrices and Epetra_Vectors
+	dmatrix_    = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+	mmatrix_    = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
+	mhatmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
 	g_    = LINALG::CreateVector(*gsnoderowmap_,true);
 		
 	// (re)setup global normal and tangent matrices
-	N_ = LINALG::CreateMatrix(*gactiveN_,3);
-	T_ = LINALG::CreateMatrix(*gactiveT_,3);
+	nmatrix_ = rcp(new LINALG::SparseMatrix(*gactiven_,3));
+	tmatrix_ = rcp(new LINALG::SparseMatrix(*gactivet_,3));
 	
   return;
 }
@@ -294,7 +286,7 @@ void CONTACT::Manager::SetState(const string& statename, const RCP<Epetra_Vector
 /*----------------------------------------------------------------------*
  |  evaluate contact (public)                                 popp 11/07|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
+void CONTACT::Manager::Evaluate(RCP<LINALG::SparseMatrix>& Kteff,
 																RCP<Epetra_Vector>& feff)
 {	
 	/**********************************************************************/
@@ -304,19 +296,19 @@ void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
 	for (int i=0; i<(int)interface_.size(); ++i)
   {
 	  interface_[i]->Evaluate();
-	  interface_[i]->Assemble_DMG(*D_,*M_,*g_);
+	  interface_[i]->AssembleDMG(*dmatrix_,*mmatrix_,*g_);
   }
-
+	
 	// FillComplete() global Mortar matrices
-	LINALG::Complete(D_);
-	LINALG::Complete(M_,*gmdofrowmap_,*gsdofrowmap_);
+	dmatrix_->Complete();
+	mmatrix_->Complete(*gmdofrowmap_,*gsdofrowmap_);
 	
 	// export weighted gap vector to gactiveN-map
-	RCP<Epetra_Vector> g_act = LINALG::CreateVector(*gactivenodes_,true);
-	if (g_act->GlobalLength())
+	RCP<Epetra_Vector> gact = LINALG::CreateVector(*gactivenodes_,true);
+	if (gact->GlobalLength())
 	{
-		LINALG::Export(*g_,*g_act);
-		g_act->ReplaceMap(*gactiveN_);
+		LINALG::Export(*g_,*gact);
+		gact->ReplaceMap(*gactiven_);
 	}
 	
 	/**********************************************************************/
@@ -324,16 +316,16 @@ void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
 	/* and global matrix T with tangent vectors of active nodes           */
 	/**********************************************************************/
 	for (int i=0; i<(int)interface_.size(); ++i)
-	  interface_[i]->Assemble_NT(*N_,*T_);
+	  interface_[i]->AssembleNT(*nmatrix_,*tmatrix_);
 	  
 	// FillComplete() global matrices N and T
-	LINALG::Complete(N_,*gactivedofs_,*gactiveN_);
-	LINALG::Complete(T_,*gactivedofs_,*gactiveT_);
+	nmatrix_->Complete(*gactivedofs_,*gactiven_);
+	tmatrix_->Complete(*gactivedofs_,*gactivet_);
 	
 	/**********************************************************************/
 	/* Multiply Mortar matrices: M^ = inv(D) * M                          */
 	/**********************************************************************/
-	RCP<Epetra_CrsMatrix> invD = rcp(new Epetra_CrsMatrix(*D_));
+	RCP<LINALG::SparseMatrix> invD = rcp(new LINALG::SparseMatrix(*dmatrix_));
 	RCP<Epetra_Vector> diag = LINALG::CreateVector(*gsdofrowmap_,true);
 	int err = 0;
 	
@@ -349,83 +341,76 @@ void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
 	if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
 	
 	// do the multiplication M^ = inv(D) * M
-	Mbar_ = LINALG::Multiply(invD,false,M_,false);
+	mhatmatrix_ = LINALG::Multiply(*invD,false,*mmatrix_,false);
 	
 	/**********************************************************************/
 	/* Split Kteff into 3x3 block matrix                                  */
 	/**********************************************************************/
 	// we want to split K into 3 groups s,m,n = 9 blocks
-	RCP<Epetra_CrsMatrix> Kss, Ksm, Ksn, Kms, Kmm, Kmn, Kns, Knm, Knn;
+	RCP<LINALG::SparseMatrix> Kss, Ksm, Ksn, Kms, Kmm, Kmn, Kns, Knm, Knn;
 	
 	// temporarily we need the blocks K_sm_sm, K_sm_n, K_n_sm
 	// (FIXME: because a direct SplitMatrix3x3 is still missing!) 
-	RCP<Epetra_CrsMatrix> Ksmsm, Ksmn, Knsm;
+	RCP<LINALG::SparseMatrix> Ksmsm, Ksmn, Knsm;
 	
 	// we also need the combined sm rowmap
 	RCP<Epetra_Map> gsmdofs = LINALG::MergeMap(gsdofrowmap_,gmdofrowmap_);
 	
-	// we will get the n rowmap as a by-product
-	RCP<Epetra_Map> gndofs;
-	
 	// some temporary RCPs
 	RCP<Epetra_Map> tempmap;
-	RCP<Epetra_CrsMatrix> tempmtx;
+	RCP<LINALG::SparseMatrix> tempmtx;
 	
 	// split into slave/master part + structure part
-	LINALG::SplitMatrix2x2(Kteff,gsmdofs,gndofs,Ksmsm,Ksmn,Knsm,Knn);
+	LINALG::SplitMatrix2x2(Kteff,gsmdofs,gndofrowmap_,gsmdofs,gndofrowmap_,Ksmsm,Ksmn,Knsm,Knn);
 	
 	// further splits into slave part + master part
-	LINALG::SplitMatrix2x2(Ksmsm,gsdofrowmap_,gmdofrowmap_,Kss,Ksm,Kms,Kmm);
-	LINALG::SplitMatrix2x2(Ksmn,gsdofrowmap_,gmdofrowmap_,gndofs,tempmap,Ksn,tempmtx,Kmn,tempmtx);
-	LINALG::SplitMatrix2x2(Knsm,gndofs,tempmap,gsdofrowmap_,gmdofrowmap_,Kns,Knm,tempmtx,tempmtx);
+	LINALG::SplitMatrix2x2(Ksmsm,gsdofrowmap_,gmdofrowmap_,gsdofrowmap_,gmdofrowmap_,Kss,Ksm,Kms,Kmm);
+	LINALG::SplitMatrix2x2(Ksmn,gsdofrowmap_,gmdofrowmap_,gndofrowmap_,tempmap,Ksn,tempmtx,Kmn,tempmtx);
+	LINALG::SplitMatrix2x2(Knsm,gndofrowmap_,tempmap,gsdofrowmap_,gmdofrowmap_,Kns,Knm,tempmtx,tempmtx);
 	
 	// output for checking everything
+#ifdef DIMOUTPUT
 	if(Comm().MyPID()==0)
 	{
 		cout << endl << "*****************" << endl;
-		cout << "K:   " << Kteff->NumGlobalRows() << " x " << Kteff->NumGlobalCols() << endl;
-		if (Kss!=null) cout << "Kss: " << Kss->NumGlobalRows() << " x " << Kss->NumGlobalCols() << endl;
+		cout << "K:   " << Kteff->EpetraMatrix()->NumGlobalRows() << " x " << Kteff->EpetraMatrix()->NumGlobalCols() << endl;
+		if (Kss!=null) cout << "Kss: " << Kss->EpetraMatrix()->NumGlobalRows() << " x " << Kss->EpetraMatrix()->NumGlobalCols() << endl;
 		else cout << "Kss: null" << endl;
-		if (Ksm!=null) cout << "Ksm: " << Ksm->NumGlobalRows() << " x " << Ksm->NumGlobalCols() << endl;
+		if (Ksm!=null) cout << "Ksm: " << Ksm->EpetraMatrix()->NumGlobalRows() << " x " << Ksm->EpetraMatrix()->NumGlobalCols() << endl;
 		else cout << "Ksm: null" << endl;
-		if (Ksn!=null) cout << "Ksn: " << Ksn->NumGlobalRows() << " x " << Ksn->NumGlobalCols() << endl;
+		if (Ksn!=null) cout << "Ksn: " << Ksn->EpetraMatrix()->NumGlobalRows() << " x " << Ksn->EpetraMatrix()->NumGlobalCols() << endl;
 		else cout << "Ksn: null" << endl;
-		if (Kms!=null) cout << "Kms: " << Kms->NumGlobalRows() << " x " << Kms->NumGlobalCols() << endl;
+		if (Kms!=null) cout << "Kms: " << Kms->EpetraMatrix()->NumGlobalRows() << " x " << Kms->EpetraMatrix()->NumGlobalCols() << endl;
 		else cout << "Kms: null" << endl;
-		if (Kmm!=null) cout << "Kmm: " << Kmm->NumGlobalRows() << " x " << Kmm->NumGlobalCols() << endl;
+		if (Kmm!=null) cout << "Kmm: " << Kmm->EpetraMatrix()->NumGlobalRows() << " x " << Kmm->EpetraMatrix()->NumGlobalCols() << endl;
 		else cout << "Kmm: null" << endl;
-		if (Kmn!=null) cout << "Kmn: " << Kmn->NumGlobalRows() << " x " << Kmn->NumGlobalCols() << endl;
+		if (Kmn!=null) cout << "Kmn: " << Kmn->EpetraMatrix()->NumGlobalRows() << " x " << Kmn->EpetraMatrix()->NumGlobalCols() << endl;
 		else cout << "Kmn: null" << endl;
-		if (Kns!=null) cout << "Kns: " << Kns->NumGlobalRows() << " x " << Kns->NumGlobalCols() << endl;
+		if (Kns!=null) cout << "Kns: " << Kns->EpetraMatrix()->NumGlobalRows() << " x " << Kns->EpetraMatrix()->NumGlobalCols() << endl;
 		else cout << "Kns: null" << endl;
-		if (Knm!=null) cout << "Knm: " << Knm->NumGlobalRows() << " x " << Knm->NumGlobalCols() << endl;
+		if (Knm!=null) cout << "Knm: " << Knm->EpetraMatrix()->NumGlobalRows() << " x " << Knm->EpetraMatrix()->NumGlobalCols() << endl;
 		else cout << "Knm: null" << endl;
-		if (Knn!=null) cout << "Knn: " << Knn->NumGlobalRows() << " x " << Knn->NumGlobalCols() << endl;
+		if (Knn!=null) cout << "Knn: " << Knn->EpetraMatrix()->NumGlobalRows() << " x " << Knn->EpetraMatrix()->NumGlobalCols() << endl;
 		else cout << "Knn: null" << endl;
 		cout << "*****************" << endl;
 	}
+#endif // #ifdef DIMOUTPUT
 	
 	/**********************************************************************/
 	/* Split feff into 3 subvectors                                       */
 	/**********************************************************************/
 	// we want to split f into 3 groups s.m,n
-	Epetra_Vector* f1 = NULL;
-	Epetra_Vector* f2 = NULL;
-	Epetra_Vector* f3 = NULL;
+	RCP<Epetra_Vector> fs, fm, fn;
 	
 	// temporarily we need the group sm
-	Epetra_Vector* f12 = NULL;
+	RCP<Epetra_Vector> fsm;
 	
 	// do the vector splitting smn -> sm+n -> s+m+n
-	LINALG::SplitVector(*feff,*gsmdofs,f12,*gndofs,f3);
-	LINALG::SplitVector(*f12,*gsdofrowmap_,f1,*gmdofrowmap_,f2);
-	
-	// wrap subvectors into RCPs
-	RCP<Epetra_Vector> fs = rcp(f1);
-	RCP<Epetra_Vector> fm = rcp(f2);
-	RCP<Epetra_Vector> fn = rcp(f3);
+	LINALG::SplitVector(*feff,*gsmdofs,fsm,*gndofrowmap_,fn);
+	LINALG::SplitVector(*fsm,*gsdofrowmap_,fs,*gmdofrowmap_,fm);
 	
 	// output for checking everything
+#ifdef DIMOUTPUT
 	if(Comm().MyPID()==0)
 	{
 		cout << endl << "**********" << endl;
@@ -435,290 +420,303 @@ void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
 		cout << "fn: " << fn->GlobalLength() << endl;
 		cout << "**********" << endl;
 	}
+#endif // #ifdef DIMOUTPUT
 	
 	/**********************************************************************/
 	/* Apply basis transformation to K                                    */
 	/**********************************************************************/
 	// define temporary RCP mod
-	RCP<Epetra_CrsMatrix> mod;
+	RCP<LINALG::SparseMatrix> mod;
 	
 	// Kss: nothing to do
-	RCP<Epetra_CrsMatrix> Kss_mod = Kss;
+	RCP<LINALG::SparseMatrix> Kssmod = Kss;
 	
 	// Ksm: add Kss*T(Mbar)
-	RCP<Epetra_CrsMatrix> Ksm_mod = LINALG::CreateMatrix(Ksm->RowMap(),100);
-	LINALG::Add(Ksm,false,1.0,Ksm_mod,1.0);
-	mod = LINALG::Multiply(Kss,false,Mbar_,false);
-	LINALG::Add(mod,false,1.0,Ksm_mod,1.0);
-	LINALG::Complete(Ksm_mod,Ksm->DomainMap(),Ksm->RowMap());
+	RCP<LINALG::SparseMatrix> Ksmmod = rcp(new LINALG::SparseMatrix(Ksm->RowMap(),100));
+	Ksmmod->Add(*Ksm,false,1.0,1.0);
+	mod = LINALG::Multiply(*Kss,false,*mhatmatrix_,false);
+	Ksmmod->Add(*mod,false,1.0,1.0);
+	Ksmmod->Complete(Ksm->DomainMap(),Ksm->RowMap());
 
 	// Ksn: nothing to do
-	RCP<Epetra_CrsMatrix> Ksn_mod = Ksn;
+	RCP<LINALG::SparseMatrix> Ksnmod = Ksn;
 	
 	// Kms: add T(Mbar)*Kss
-	RCP<Epetra_CrsMatrix> Kms_mod = LINALG::CreateMatrix(Kms->RowMap(),100);
-	LINALG::Add(Kms,false,1.0,Kms_mod,1.0);
-	mod = LINALG::Multiply(Mbar_,true,Kss,false);
-	LINALG::Add(mod,false,1.0,Kms_mod,1.0);
-	LINALG::Complete(Kms_mod,Kms->DomainMap(),Kms->RowMap());
+	RCP<LINALG::SparseMatrix> Kmsmod = rcp(new LINALG::SparseMatrix(Kms->RowMap(),100));
+	Kmsmod->Add(*Kms,false,1.0,1.0);
+	mod = LINALG::Multiply(*mhatmatrix_,true,*Kss,false);
+	Kmsmod->Add(*mod,false,1.0,1.0);
+	Kmsmod->Complete(Kms->DomainMap(),Kms->RowMap());
 	
 	// Kmm: add Kms*T(Mbar) + T(Mbar)*Ksm + T(Mbar)*Kss*Mbar
-	RCP<Epetra_CrsMatrix> Kmm_mod = LINALG::CreateMatrix(Kmm->RowMap(),100);
-	LINALG::Add(Kmm,false,1.0,Kmm_mod,1.0);
-	mod = LINALG::Multiply(Kms,false,Mbar_,false);
-	LINALG::Add(mod,false,1.0,Kmm_mod,1.0);
-	mod = LINALG::Multiply(Mbar_,true,Ksm,false);
-	LINALG::Add(mod,false,1.0,Kmm_mod,1.0);
-	mod = LINALG::Multiply(Mbar_,true,Kss,false,Mbar_,false);
-	LINALG::Add(mod,false,1.0,Kmm_mod,1.0);
-	LINALG::Complete(*Kmm_mod,Kmm->DomainMap(),Kmm->RowMap());
+	RCP<LINALG::SparseMatrix> Kmmmod = rcp(new LINALG::SparseMatrix(Kmm->RowMap(),100));
+	Kmmmod->Add(*Kmm,false,1.0,1.0);
+	mod = LINALG::Multiply(*Kms,false,*mhatmatrix_,false);
+	Kmmmod->Add(*mod,false,1.0,1.0);
+	mod = LINALG::Multiply(*mhatmatrix_,true,*Ksm,false);
+	Kmmmod->Add(*mod,false,1.0,1.0);
+	mod = LINALG::Multiply(*mhatmatrix_,true,*Kss,false);
+	mod = LINALG::Multiply(*mod,false,*mhatmatrix_,false);
+	Kmmmod->Add(*mod,false,1.0,1.0);
+	Kmmmod->Complete(Kmm->DomainMap(),Kmm->RowMap());
 	
 	// Kmn: add T(Mbar)*Ksn
-	RCP<Epetra_CrsMatrix> Kmn_mod = LINALG::CreateMatrix(Kmn->RowMap(),100);
-	LINALG::Add(Kmn,false,1.0,Kmn_mod,1.0);	
-	mod = LINALG::Multiply(Mbar_,true,Ksn,false);
-	LINALG::Add(mod,false,1.0,Kmn_mod,1.0);
-	LINALG::Complete(Kmn_mod,Kmn->DomainMap(),Kmn->RowMap());
+	RCP<LINALG::SparseMatrix> Kmnmod = rcp(new LINALG::SparseMatrix(Kmn->RowMap(),100));
+	Kmnmod->Add(*Kmn,false,1.0,1.0);	
+	mod = LINALG::Multiply(*mhatmatrix_,true,*Ksn,false);
+	Kmnmod->Add(*mod,false,1.0,1.0);
+	Kmnmod->Complete(Kmn->DomainMap(),Kmn->RowMap());
 	
 	// Kns: nothing to do
-	RCP<Epetra_CrsMatrix> Kns_mod = Kns;
+	RCP<LINALG::SparseMatrix> Knsmod = Kns;
 	
 	// Knm: add Kns*Mbar
-	RCP<Epetra_CrsMatrix> Knm_mod = LINALG::CreateMatrix(Knm->RowMap(),100);
-	LINALG::Add(Knm,false,1.0,Knm_mod,1.0);
-	mod = LINALG::Multiply(Kns,false,Mbar_,false);
-	LINALG::Add(mod,false,1.0,Knm_mod,1.0);
-	LINALG::Complete(Knm_mod,Knm->DomainMap(),Knm->RowMap());
+	RCP<LINALG::SparseMatrix> Knmmod = rcp(new LINALG::SparseMatrix(Knm->RowMap(),100));
+	Knmmod->Add(*Knm,false,1.0,1.0);
+	mod = LINALG::Multiply(*Kns,false,*mhatmatrix_,false);
+	Knmmod->Add(*mod,false,1.0,1.0);
+	Knmmod->Complete(Knm->DomainMap(),Knm->RowMap());
 	
 	// Knn: nothing to do
-	RCP<Epetra_CrsMatrix> Knn_mod = Knn;
+	RCP<LINALG::SparseMatrix> Knnmod = Knn;
 	
 	// output for checking everything
+#ifdef DIMOUTPUT
 	if(Comm().MyPID()==0)
 	{
 		cout << endl << "*****************" << endl;
-		cout << "K_mod:   " << Kteff->NumGlobalRows() << " x " << Kteff->NumGlobalCols() << endl;
-		if (Kss_mod!=null) cout << "Kss_mod: " << Kss_mod->NumGlobalRows() << " x " << Kss_mod->NumGlobalCols() << endl;
-		else cout << "Kss_mod: null" << endl;
-		if (Ksm_mod!=null) cout << "Ksm_mod: " << Ksm_mod->NumGlobalRows() << " x " << Ksm_mod->NumGlobalCols() << endl;
-		else cout << "Ksm_mod: null" << endl;
-		if (Ksn_mod!=null) cout << "Ksn_mod: " << Ksn_mod->NumGlobalRows() << " x " << Ksn_mod->NumGlobalCols() << endl;
-		else cout << "Ksn_mod: null" << endl;
-		if (Kms_mod!=null) cout << "Kms_mod: " << Kms_mod->NumGlobalRows() << " x " << Kms_mod->NumGlobalCols() << endl;
-		else cout << "Kms_mod: null" << endl;
-		if (Kmm_mod!=null) cout << "Kmm_mod: " << Kmm_mod->NumGlobalRows() << " x " << Kmm_mod->NumGlobalCols() << endl;
-		else cout << "Kmm_mod: null" << endl;
-		if (Kmn_mod!=null) cout << "Kmn_mod: " << Kmn_mod->NumGlobalRows() << " x " << Kmn_mod->NumGlobalCols() << endl;
-		else cout << "Kmn_mod: null" << endl;
-		if (Kns_mod!=null) cout << "Kns_mod: " << Kns_mod->NumGlobalRows() << " x " << Kns_mod->NumGlobalCols() << endl;
-		else cout << "Kns_mod: null" << endl;
-		if (Knm_mod!=null) cout << "Knm_mod: " << Knm_mod->NumGlobalRows() << " x " << Knm_mod->NumGlobalCols() << endl;
-		else cout << "Knm_mod: null" << endl;
-		if (Knn_mod!=null) cout << "Knn_mod: " << Knn_mod->NumGlobalRows() << " x " << Knn_mod->NumGlobalCols() << endl;
-		else cout << "Knn_mod: null" << endl;
+		cout << "Kmod:   " << Kteff->EpetraMatrix()->NumGlobalRows() << " x " << Kteff->EpetraMatrix()->NumGlobalCols() << endl;
+		if (Kssmod!=null) cout << "Kssmod: " << Kssmod->EpetraMatrix()->NumGlobalRows() << " x " << Kssmod->EpetraMatrix()->NumGlobalCols() << endl;
+		else cout << "Kssmod: null" << endl;
+		if (Ksmmod!=null) cout << "Ksmmod: " << Ksmmod->EpetraMatrix()->NumGlobalRows() << " x " << Ksmmod->EpetraMatrix()->NumGlobalCols() << endl;
+		else cout << "Ksmmod: null" << endl;
+		if (Ksnmod!=null) cout << "Ksnmod: " << Ksnmod->EpetraMatrix()->NumGlobalRows() << " x " << Ksnmod->EpetraMatrix()->NumGlobalCols() << endl;
+		else cout << "Ksnmod: null" << endl;
+		if (Kmsmod!=null) cout << "Kmsmod: " << Kmsmod->EpetraMatrix()->NumGlobalRows() << " x " << Kmsmod->EpetraMatrix()->NumGlobalCols() << endl;
+		else cout << "Kmsmod: null" << endl;
+		if (Kmmmod!=null) cout << "Kmmmod: " << Kmmmod->EpetraMatrix()->NumGlobalRows() << " x " << Kmmmod->EpetraMatrix()->NumGlobalCols() << endl;
+		else cout << "Kmmmod: null" << endl;
+		if (Kmnmod!=null) cout << "Kmnmod: " << Kmnmod->EpetraMatrix()->NumGlobalRows() << " x " << Kmnmod->EpetraMatrix()->NumGlobalCols() << endl;
+		else cout << "Kmnmod: null" << endl;
+		if (Knsmod!=null) cout << "Knsmod: " << Knsmod->EpetraMatrix()->NumGlobalRows() << " x " << Knsmod->EpetraMatrix()->NumGlobalCols() << endl;
+		else cout << "Knsmod: null" << endl;
+		if (Knmmod!=null) cout << "Knmmod: " << Knmmod->EpetraMatrix()->NumGlobalRows() << " x " << Knmmod->EpetraMatrix()->NumGlobalCols() << endl;
+		else cout << "Knmmod: null" << endl;
+		if (Knnmod!=null) cout << "Knnmod: " << Knnmod->EpetraMatrix()->NumGlobalRows() << " x " << Knnmod->EpetraMatrix()->NumGlobalCols() << endl;
+		else cout << "Knnmod: null" << endl;
 		cout << "*****************" << endl;
 	}
+#endif // #ifdef DIMOUTPUT
 	
 	/**********************************************************************/
 	/* Apply basis transformation to f                                    */
 	/**********************************************************************/
 	// fs: nothing to be done
-	RCP<Epetra_Vector> fs_mod = fs;
+	RCP<Epetra_Vector> fsmod = fs;
 	
 	// fm: add T(Mbar)*fs
-	RCP<Epetra_Vector> fm_mod = rcp(new Epetra_Vector(*gmdofrowmap_));
-	Mbar_->Multiply(true,*fs,*fm_mod);
-	fm_mod->Update(1.0,*fm,1.0);
+	RCP<Epetra_Vector> fmmod = rcp(new Epetra_Vector(*gmdofrowmap_));
+	mhatmatrix_->Multiply(true,*fs,*fmmod);
+	fmmod->Update(1.0,*fm,1.0);
 	
 	// fn: nothing to be done
-	RCP<Epetra_Vector> fn_mod = fn;
+	RCP<Epetra_Vector> fnmod = fn;
 	
 	// output for checking everything
+#ifdef DIMOUTPUT
 	if(Comm().MyPID()==0)
 	{
 		cout << endl << "**********" << endl;
-		cout << "f_mod:  " << feff->GlobalLength() << endl;
-		cout << "fs_mod: " << fs_mod->GlobalLength() << endl;
-		cout << "fm_mod: " << fm_mod->GlobalLength() << endl;
-		cout << "fn_mod: " << fn_mod->GlobalLength() << endl;
+		cout << "fmod:  " << feff->GlobalLength() << endl;
+		cout << "fsmod: " << fsmod->GlobalLength() << endl;
+		cout << "fmmod: " << fmmod->GlobalLength() << endl;
+		cout << "fnmod: " << fnmod->GlobalLength() << endl;
 		cout << "**********" << endl;
 	}
+#endif // #ifdef DIMOUTPUT
 	
 	/**********************************************************************/
 	/* Split slave quantities into active / inactive                      */
 	/**********************************************************************/
-	// we want to split Kss_mod into 2 groups a,i = 4 blocks
-	RCP<Epetra_CrsMatrix> Kaa_mod, Kai_mod, Kia_mod, Kii_mod;
+	// we want to split Kssmod into 2 groups a,i = 4 blocks
+	RCP<LINALG::SparseMatrix> Kaamod, Kaimod, Kiamod, Kiimod;
 	
-	// we want to split Ksn_mod / Ksm_mod into 2 groups a,i = 2 blocks
-	RCP<Epetra_CrsMatrix> Kan_mod, Kin_mod, Kam_mod, Kim_mod;
+	// we want to split Ksnmod / Ksmmod into 2 groups a,i = 2 blocks
+	RCP<LINALG::SparseMatrix> Kanmod, Kinmod, Kammod, Kimmod;
 		
 	// we will get the i rowmap as a by-product
 	RCP<Epetra_Map> gidofs;
 		
 	// do the splitting
-	LINALG::SplitMatrix2x2(Kss_mod,gactivedofs_,gidofs,gactivedofs_,gidofs,Kaa_mod,Kai_mod,Kia_mod,Kii_mod);
-	LINALG::SplitMatrix2x2(Ksn_mod,gactivedofs_,gidofs,gndofs,tempmap,Kan_mod,tempmtx,Kin_mod,tempmtx);
-	LINALG::SplitMatrix2x2(Ksm_mod,gactivedofs_,gidofs,gmdofrowmap_,tempmap,Kam_mod,tempmtx,Kim_mod,tempmtx);
+	LINALG::SplitMatrix2x2(Kssmod,gactivedofs_,gidofs,gactivedofs_,gidofs,Kaamod,Kaimod,Kiamod,Kiimod);
+	LINALG::SplitMatrix2x2(Ksnmod,gactivedofs_,gidofs,gndofrowmap_,tempmap,Kanmod,tempmtx,Kinmod,tempmtx);
+	LINALG::SplitMatrix2x2(Ksmmod,gactivedofs_,gidofs,gmdofrowmap_,tempmap,Kammod,tempmtx,Kimmod,tempmtx);
 	
 	// output for checking everything
+#ifdef DIMOUTPUT
 	if(Comm().MyPID()==0)
 	{
 		cout << endl << "*****************" << endl;
-		cout << "Kss_mod: " << Kss_mod->NumGlobalRows() << " x " << Kss_mod->NumGlobalCols() << endl;
-		if (Kaa_mod!=null) cout << "Kaa_mod: " << Kaa_mod->NumGlobalRows() << " x " << Kaa_mod->NumGlobalCols() << endl;
-		else cout << "Kaa_mod: null" << endl;
-		if (Kai_mod!=null) cout << "Kai_mod: " << Kai_mod->NumGlobalRows() << " x " << Kai_mod->NumGlobalCols() << endl;
-		else cout << "Kai_mod: null" << endl;
-		if (Kia_mod!=null) cout << "Kia_mod: " << Kia_mod->NumGlobalRows() << " x " << Kia_mod->NumGlobalCols() << endl;
-		else cout << "Kia_mod: null" << endl;
-		if (Kii_mod!=null) cout << "Kii_mod: " << Kii_mod->NumGlobalRows() << " x " << Kii_mod->NumGlobalCols() << endl;
-		else cout << "Kii_mod: null" << endl;
+		cout << "Kssmod: " << Kssmod->EpetraMatrix()->NumGlobalRows() << " x " << Kssmod->EpetraMatrix()->NumGlobalCols() << endl;
+		if (Kaamod!=null) cout << "Kaamod: " << Kaamod->EpetraMatrix()->NumGlobalRows() << " x " << Kaamod->EpetraMatrix()->NumGlobalCols() << endl;
+		else cout << "Kaamod: null" << endl;
+		if (Kaimod!=null) cout << "Kaimod: " << Kaimod->EpetraMatrix()->NumGlobalRows() << " x " << Kaimod->EpetraMatrix()->NumGlobalCols() << endl;
+		else cout << "Kaimod: null" << endl;
+		if (Kiamod!=null) cout << "Kiamod: " << Kiamod->EpetraMatrix()->NumGlobalRows() << " x " << Kiamod->EpetraMatrix()->NumGlobalCols() << endl;
+		else cout << "Kiamod: null" << endl;
+		if (Kiimod!=null) cout << "Kiimod: " << Kiimod->EpetraMatrix()->NumGlobalRows() << " x " << Kiimod->EpetraMatrix()->NumGlobalCols() << endl;
+		else cout << "Kiimod: null" << endl;
 		cout << "*****************" << endl;
 		
 		cout << endl << "*****************" << endl;
-		cout << "Ksn_mod: " << Ksn_mod->NumGlobalRows() << " x " << Ksn_mod->NumGlobalCols() << endl;
-		if (Kan_mod!=null) cout << "Kan_mod: " << Kan_mod->NumGlobalRows() << " x " << Kan_mod->NumGlobalCols() << endl;
-		else cout << "Kan_mod: null" << endl;
-		if (Kin_mod!=null) cout << "Kin_mod: " << Kin_mod->NumGlobalRows() << " x " << Kin_mod->NumGlobalCols() << endl;
-		else cout << "Kin_mod: null" << endl;
+		cout << "Ksnmod: " << Ksnmod->EpetraMatrix()->NumGlobalRows() << " x " << Ksnmod->EpetraMatrix()->NumGlobalCols() << endl;
+		if (Kanmod!=null) cout << "Kanmod: " << Kanmod->EpetraMatrix()->NumGlobalRows() << " x " << Kanmod->EpetraMatrix()->NumGlobalCols() << endl;
+		else cout << "Kanmod: null" << endl;
+		if (Kinmod!=null) cout << "Kinmod: " << Kinmod->EpetraMatrix()->NumGlobalRows() << " x " << Kinmod->EpetraMatrix()->NumGlobalCols() << endl;
+		else cout << "Kinmod: null" << endl;
 		cout << "*****************" << endl;
 		
 		cout << endl << "*****************" << endl;
-		cout << "Ksm_mod: " << Ksm_mod->NumGlobalRows() << " x " << Ksm_mod->NumGlobalCols() << endl;
-		if (Kam_mod!=null) cout << "Kam_mod: " << Kam_mod->NumGlobalRows() << " x " << Kam_mod->NumGlobalCols() << endl;
-		else cout << "Kam_mod: null" << endl;
-		if (Kim_mod!=null) cout << "Kim_mod: " << Kim_mod->NumGlobalRows() << " x " << Kim_mod->NumGlobalCols() << endl;
-		else cout << "Kim_mod: null" << endl;
+		cout << "Ksmmod: " << Ksmmod->EpetraMatrix()->NumGlobalRows() << " x " << Ksmmod->EpetraMatrix()->NumGlobalCols() << endl;
+		if (Kammod!=null) cout << "Kammod: " << Kammod->EpetraMatrix()->NumGlobalRows() << " x " << Kammod->EpetraMatrix()->NumGlobalCols() << endl;
+		else cout << "Kammod: null" << endl;
+		if (Kimmod!=null) cout << "Kimmod: " << Kimmod->EpetraMatrix()->NumGlobalRows() << " x " << Kimmod->EpetraMatrix()->NumGlobalCols() << endl;
+		else cout << "Kimmod: null" << endl;
 		cout << "*****************" << endl;
 	}
+#endif // #ifdef DIMOUTPUT
 	
-	// we want to split fs_mod into 2 groups a,i
-	RCP<Epetra_Vector> fa_mod, fi_mod;
+	// we want to split fsmod into 2 groups a,i
+	RCP<Epetra_Vector> famod, fimod;
 	
 	// do the vector splitting s -> a+i
 	if (!gidofs->NumGlobalElements())
-		fa_mod = rcp(new Epetra_Vector(*fs_mod));
+		famod = rcp(new Epetra_Vector(*fsmod));
 	else if (!gactivedofs_->NumGlobalElements())
-		fi_mod = rcp(new Epetra_Vector(*fs_mod));
+		fimod = rcp(new Epetra_Vector(*fsmod));
 	else
 	{
-		Epetra_Vector* f4 = NULL;
-		Epetra_Vector* f5 = NULL;
-		LINALG::SplitVector(*fs_mod,*gactivedofs_,f4,*gidofs,f5);
-		RCP<Epetra_Vector> fa_mod = rcp(f4);
-		RCP<Epetra_Vector> fi_mod = rcp(f5);
+		LINALG::SplitVector(*fsmod,*gactivedofs_,famod,*gidofs,fimod);
 	}
 	
 	// output for checking everything
+#ifdef DIMOUTPUT
 	if(Comm().MyPID()==0)
 	{
 		cout << endl << "**********" << endl;
-		if (fs_mod!=null) cout << "fs_mod: " << fs_mod->GlobalLength() << endl;
-		else cout << "fs_mod: null" << endl;
-		if (fa_mod!=null) cout << "fa_mod: " << fa_mod->GlobalLength() << endl;
-		else cout << "fa_mod: null" << endl;
-		if (fi_mod!=null) cout << "fi_mod: " << fi_mod->GlobalLength() << endl;
-		else cout << "fi_mod: null" << endl;
+		if (fsmod!=null) cout << "fsmod: " << fsmod->GlobalLength() << endl;
+		else cout << "fsmod: null" << endl;
+		if (famod!=null) cout << "famod: " << famod->GlobalLength() << endl;
+		else cout << "famod: null" << endl;
+		if (fimod!=null) cout << "fimod: " << fimod->GlobalLength() << endl;
+		else cout << "fimod: null" << endl;
 		cout << "**********" << endl;
 	}
+#endif // #ifdef DIMOUTPUT
 	
 	// do the multiplications with T-matrix
-	RCP<Epetra_CrsMatrix> TKan_mod, TKam_mod, TKai_mod, TKaa_mod;
-	RCP<Epetra_Vector> Tfa_mod;
+	RCP<LINALG::SparseMatrix> TKanmod, TKammod, TKaimod, TKaamod;
+	RCP<Epetra_Vector> Tfamod;
 	
 	if(gactivedofs_->NumGlobalElements())
 	{
-		TKan_mod = LINALG::Multiply(T_,false,Kan_mod,false);
-		TKam_mod = LINALG::Multiply(T_,false,Kam_mod,false);
-		TKaa_mod = LINALG::Multiply(T_,false,Kaa_mod,false);
+		TKanmod = LINALG::Multiply(*tmatrix_,false,*Kanmod,false);
+		TKammod = LINALG::Multiply(*tmatrix_,false,*Kammod,false);
+		TKaamod = LINALG::Multiply(*tmatrix_,false,*Kaamod,false);
 		
 		if (gidofs->NumGlobalElements())
-			TKai_mod = LINALG::Multiply(T_,false,Kai_mod,false);
+			TKaimod = LINALG::Multiply(*tmatrix_,false,*Kaimod,false);
 		
-		Tfa_mod = rcp(new Epetra_Vector(T_->RowMap()));
-		T_->Multiply(false,*fa_mod,*Tfa_mod);
+		Tfamod = rcp(new Epetra_Vector(tmatrix_->RowMap()));
+		tmatrix_->Multiply(false,*famod,*Tfamod);
 	}
 	
 	// output for checking everything
+#ifdef DIMOUTPUT
 	if(Comm().MyPID()==0)
 	{
 		cout << endl << "*****************" << endl;
-		if (TKan_mod!=null) cout << "TKan_mod: " << TKan_mod->NumGlobalRows() << " x " << TKan_mod->NumGlobalCols() << endl;
-		else cout << "TKan_mod: null" << endl;
-		if (TKam_mod!=null) cout << "TKam_mod: " << TKam_mod->NumGlobalRows() << " x " << TKam_mod->NumGlobalCols() << endl;
-		else cout << "TKam_mod: null" << endl;
-		if (TKai_mod!=null) cout << "TKai_mod: " << TKai_mod->NumGlobalRows() << " x " << TKai_mod->NumGlobalCols() << endl;
-		else cout << "TKai_mod: null" << endl;
-		if (TKaa_mod!=null) cout << "TKaa_mod: " << TKaa_mod->NumGlobalRows() << " x " << TKaa_mod->NumGlobalCols() << endl;
-		else cout << "TKaa_mod: null" << endl;
+		if (TKanmod!=null) cout << "TKanmod: " << TKanmod->EpetraMatrix()->NumGlobalRows() << " x " << TKanmod->EpetraMatrix()->NumGlobalCols() << endl;
+		else cout << "TKanmod: null" << endl;
+		if (TKammod!=null) cout << "TKammod: " << TKammod->EpetraMatrix()->NumGlobalRows() << " x " << TKammod->EpetraMatrix()->NumGlobalCols() << endl;
+		else cout << "TKammod: null" << endl;
+		if (TKaimod!=null) cout << "TKaimod: " << TKaimod->EpetraMatrix()->NumGlobalRows() << " x " << TKaimod->EpetraMatrix()->NumGlobalCols() << endl;
+		else cout << "TKaimod: null" << endl;
+		if (TKaamod!=null) cout << "TKaamod: " << TKaamod->EpetraMatrix()->NumGlobalRows() << " x " << TKaamod->EpetraMatrix()->NumGlobalCols() << endl;
+		else cout << "TKaamod: null" << endl;
 		cout << "*****************" << endl;
 		
 		cout << endl << "**********" << endl;
-		if (Tfa_mod!=null) cout << "Tfa_mod: " << Tfa_mod->GlobalLength() << endl;
-		else cout << "Tfa_mod: null" << endl;
+		if (Tfamod!=null) cout << "Tfamod: " << Tfamod->GlobalLength() << endl;
+		else cout << "Tfamod: null" << endl;
 		cout << "**********" << endl;
 	}
+#endif // #ifdef DIMOUTPUT
 	
 	/**********************************************************************/
-	/* Global setup of Kteff_new, feff_new (including contact)            */
+	/* Global setup of Kteffnew, feffnew (including contact)            */
 	/**********************************************************************/
-	RCP<Epetra_CrsMatrix> Kteff_new = LINALG::CreateMatrix(*(discret_.DofRowMap()),81);
-	RCP<Epetra_Vector> feff_new = LINALG::CreateVector(*(discret_.DofRowMap()));
+	RCP<LINALG::SparseMatrix> Kteffnew = rcp(new LINALG::SparseMatrix(*(discret_.DofRowMap()),81));
+	RCP<Epetra_Vector> feffnew = LINALG::CreateVector(*(discret_.DofRowMap()));
 	
-	// add n / m submatrices to Kteff_new
-	LINALG::Add(Knn_mod,false,1.0,Kteff_new,1.0);
-	LINALG::Add(Knm_mod,false,1.0,Kteff_new,1.0);
-	LINALG::Add(Kmn_mod,false,1.0,Kteff_new,1.0);
-	LINALG::Add(Kmm_mod,false,1.0,Kteff_new,1.0);
+	// add n / m submatrices to Kteffnew
+	Kteffnew->Add(*Knnmod,false,1.0,1.0);
+	Kteffnew->Add(*Knmmod,false,1.0,1.0);
+	Kteffnew->Add(*Kmnmod,false,1.0,1.0);
+	Kteffnew->Add(*Kmmmod,false,1.0,1.0);
 	
-	// add a / i submatrices to Kteff_new, if existing
-	if (Kns_mod!=null) LINALG::Add(Kns_mod,false,1.0,Kteff_new,1.0);
-	if (Kms_mod!=null) LINALG::Add(Kms_mod,false,1.0,Kteff_new,1.0);
-	if (Kin_mod!=null) LINALG::Add(Kin_mod,false,1.0,Kteff_new,1.0);
-	if (Kim_mod!=null) LINALG::Add(Kim_mod,false,1.0,Kteff_new,1.0);
-	if (Kii_mod!=null) LINALG::Add(Kii_mod,false,1.0,Kteff_new,1.0);
-	if (Kia_mod!=null) LINALG::Add(Kia_mod,false,1.0,Kteff_new,1.0);
+	// add a / i submatrices to Kteffnew, if existing
+	if (Knsmod!=null) Kteffnew->Add(*Knsmod,false,1.0,1.0);
+	if (Kmsmod!=null) Kteffnew->Add(*Kmsmod,false,1.0,1.0);
+	if (Kinmod!=null) Kteffnew->Add(*Kinmod,false,1.0,1.0);
+	if (Kimmod!=null) Kteffnew->Add(*Kimmod,false,1.0,1.0);
+	if (Kiimod!=null) Kteffnew->Add(*Kiimod,false,1.0,1.0);
+	if (Kiamod!=null) Kteffnew->Add(*Kiamod,false,1.0,1.0);
 	
-	// add matrix of normals to Kteff_new
-	LINALG::Add(N_,false,1.0,Kteff_new,1.0);
+	// add matrix of normals to Kteffnew
+	Kteffnew->Add(*nmatrix_,false,1.0,1.0);
 
-	// add submatrices with tangents to Kteff_new, if existing
-	if (TKan_mod!=null) LINALG::Add(TKan_mod,false,1.0,Kteff_new,1.0);
-	if (TKam_mod!=null) LINALG::Add(TKam_mod,false,1.0,Kteff_new,1.0);
-	if (TKai_mod!=null) LINALG::Add(TKai_mod,false,1.0,Kteff_new,1.0);
-	if (TKaa_mod!=null) LINALG::Add(TKaa_mod,false,1.0,Kteff_new,1.0);
+	// add submatrices with tangents to Kteffnew, if existing
+	if (TKanmod!=null) Kteffnew->Add(*TKanmod,false,1.0,1.0);
+	if (TKammod!=null) Kteffnew->Add(*TKammod,false,1.0,1.0);
+	if (TKaimod!=null) Kteffnew->Add(*TKaimod,false,1.0,1.0);
+	if (TKaamod!=null) Kteffnew->Add(*TKaamod,false,1.0,1.0);
 	
-	// FillComplete Kteff_new (square)
-	LINALG::Complete(Kteff_new);
+	// FillComplete Kteffnew (square)
+	Kteffnew->Complete();
 	
-	// add n / m subvectors to feff_new
-	RCP<Epetra_Vector> fn_mod_exp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
-	RCP<Epetra_Vector> fm_mod_exp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
-	LINALG::Export(*fn_mod,*fn_mod_exp);
-	LINALG::Export(*fm_mod,*fm_mod_exp);
-	feff_new->Update(1.0,*fn_mod_exp,1.0,*fm_mod_exp,1.0);
+	// add n / m subvectors to feffnew
+	RCP<Epetra_Vector> fnmodexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
+	RCP<Epetra_Vector> fmmodexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
+	LINALG::Export(*fnmod,*fnmodexp);
+	LINALG::Export(*fmmod,*fmmodexp);
+	feffnew->Update(1.0,*fnmodexp,1.0,*fmmodexp,1.0);
 	
-	// add i / Ta subvectors to feff_new, if existing
-	RCP<Epetra_Vector> fi_mod_exp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
-	RCP<Epetra_Vector> Tfa_mod_exp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
-	if (fi_mod!=null) LINALG::Export(*fi_mod,*fi_mod_exp);
-	if (Tfa_mod!=null) LINALG::Export(*Tfa_mod,*Tfa_mod_exp);
-	feff_new->Update(1.0,*fi_mod_exp,1.0,*Tfa_mod_exp,1.0);
+	// add i / Ta subvectors to feffnew, if existing
+	RCP<Epetra_Vector> fimodexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
+	RCP<Epetra_Vector> Tfamodexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
+	if (fimod!=null) LINALG::Export(*fimod,*fimodexp);
+	if (Tfamod!=null) LINALG::Export(*Tfamod,*Tfamodexp);
+	feffnew->Update(1.0,*fimodexp,1.0,*Tfamodexp,1.0);
 	
-	// add weighted gap vector to feff_new, if existing
-	RCP<Epetra_Vector> g_exp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
-	if (g_act->GlobalLength()) LINALG::Export(*g_act,*g_exp);
-	feff_new->Update(1.0,*g_exp,1.0);
+	// add weighted gap vector to feffnew, if existing
+	RCP<Epetra_Vector> gexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
+	if (gact->GlobalLength()) LINALG::Export(*gact,*gexp);
+	feffnew->Update(1.0,*gexp,1.0);
 	
 	/**********************************************************************/
-	/* Replace Kteff and feff by Kteff_new and feff_new                   */
+	/* Replace Kteff and feff by Kteffnew and feffnew                   */
 	/**********************************************************************/
-	Kteff = Kteff_new;
-	feff = feff_new;
-	//LINALG::PrintSparsityToPostscript(*Kteff);
+	Kteff = Kteffnew;
+	feff = feffnew;
+	LINALG::PrintSparsityToPostscript(*(Kteff->EpetraMatrix()));
 	//exit(0);
 	
+	/**********************************************************************/
+	/* Update Lagrange multipliers                                        */
+	/**********************************************************************/
+	invD->Multiply(false,*fsmod,*z_);
+
   return;
 }
 
@@ -727,18 +725,161 @@ void CONTACT::Manager::Evaluate(RCP<Epetra_CrsMatrix>& Kteff,
  *----------------------------------------------------------------------*/
 void CONTACT::Manager::RecoverDisp(RCP<Epetra_Vector>& disi)
 {	
+	// extract incremental jump from disi (for active set)
+	incrjump_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+	LINALG::Export(*disi,*incrjump_);
+	
 	// extract master displacements from disi
-	RCP<Epetra_Vector> disi_m = rcp(new Epetra_Vector(*gmdofrowmap_));
-	LINALG::Export(*disi,*disi_m);
+	RCP<Epetra_Vector> disim = rcp(new Epetra_Vector(*gmdofrowmap_));
+	LINALG::Export(*disi,*disim);
 	
 	// recover slave displacement increments
-	RCP<Epetra_Vector> mod = rcp(new Epetra_Vector(Mbar_->RowMap()));
-	Mbar_->Multiply(false,*disi_m,*mod);
+	RCP<Epetra_Vector> mod = rcp(new Epetra_Vector(mhatmatrix_->RowMap()));
+	mhatmatrix_->Multiply(false,*disim,*mod);
 	
-	RCP<Epetra_Vector> mod_exp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
-	LINALG::Export(*mod,*mod_exp);
-	disi->Update(1.0,*mod_exp,1.0);
+	RCP<Epetra_Vector> modexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
+	LINALG::Export(*mod,*modexp);
+	disi->Update(1.0,*modexp,1.0);
 	
+	return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Update active set and check for convergence (public)      popp 02/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Manager::UpdateActiveSet()
+{
+	// assume that active set has converged and check for opposite
+	activesetconv_=true;
+	
+	for (int i=0; i<(int)interface_.size(); ++i)
+	{
+		if (i>0) dserror("ERROR: UpdateActiveSet: Not implemented yet for multiple interfaces!");
+		for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
+		{
+			int gid = interface_[i]->SlaveRowNodes()->GID(j);
+			DRT::Node* node = interface_[i]->Discret().gNode(gid);
+			if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+			CNode* cnode = static_cast<CNode*>(node);
+			
+			// check nodes of inactive set
+			if (cnode->Active()==false)
+			{
+				double wii = (cnode->GetD()[0])[cnode->Dofs()[0]];
+				double nincr = 0.0;
+				for (int k=0;k<3;++k)
+					nincr += wii * cnode->n()[k] * (*incrjump_)[incrjump_->Map().LID(2*gid)+k];
+				double wgap = (*g_)[g_->Map().LID(gid)];
+				
+				if (cnode->n()[2] != 0.0) dserror("ERROR: UpdateActiveSet: Not yet implemented for 3D!");
+				
+				// check for penetration
+				if (nincr>wgap)
+				{
+					cnode->Active() = true;
+					activesetconv_ = false;
+				}
+				
+				//cout << "INACTIVE: " << i << " " << j << " " << gid << " " << nincr << " " << (*g_)[g_->Map().LID(gid)] << " " << cnode->HasProj() << endl;
+			}
+			
+			// check nodes of active set
+			else
+			{
+				double nz = 0.0;
+				double nzold = 0.0;
+				for (int k=0;k<3;++k)
+				{
+					nz += cnode->n()[k] * (*z_)[z_->Map().LID(2*gid)+k];
+					nzold += cnode->n()[k] * (*zold_)[zold_->Map().LID(2*gid)+k];
+				}
+				// check for tensile contact forces
+				if ((0.5*nz+0.5*nzold)<0)
+				{
+					cnode->Active() = false;
+					activesetconv_ = false;
+				}
+				
+				//cout << "ACTIVE: " << i << " " << j << " " << gid << " " << nz << " " << nzold << " " << 0.5*nz+0.5*nzold << " " << cnode->Getg() << endl;	
+			}
+			
+		}
+  }
+
+	// broadcast convergence flag among processors
+	int convcheck = 0;
+	int localcheck = activesetconv_;
+	Comm().SumAll(&localcheck,&convcheck,1);
+	if (convcheck!=Comm().NumProc())
+		activesetconv_=false;
+	
+	if (Comm().MyPID()==0 && activesetconv_==false)
+		cout << "ACTIVE SET NOT CONVERGED - REPEAT TIME STEP................." << endl;
+	else if (Comm().MyPID()==0 && activesetconv_==true)
+		cout << "ACTIVE SET CONVERGED................." << endl;
+	
+	// (re)setup active global Epetra_Maps
+	gactivenodes_ = null;
+	gactivedofs_ = null;
+	gactiven_ = null;
+	gactivet_ = null;
+	
+	// update active sets of all interfaces
+	for (int i=0;i<(int)interface_.size();++i)
+	{
+		interface_[i]->BuildActiveSet();
+		gactivenodes_ = LINALG::MergeMap(gactivenodes_,interface_[i]->ActiveNodes());
+		gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs());
+		gactiven_ = LINALG::MergeMap(gactiven_,interface_[i]->ActiveNDofs());;
+		gactivet_ = LINALG::MergeMap(gactivet_,interface_[i]->ActiveTDofs());;
+	}
+	
+	// create empty maps, if active set = null
+	if (gactivenodes_==null)
+	{
+		gactivenodes_ = rcp(new Epetra_Map(0,0,Comm()));
+		gactivedofs_ = rcp(new Epetra_Map(0,0,Comm()));
+		gactiven_ = rcp(new Epetra_Map(0,0,Comm()));
+		gactivet_ = rcp(new Epetra_Map(0,0,Comm()));
+	}
+	
+	// store zold_ Lagrange multipliers if active set converged
+	if (activesetconv_) zold_=rcp(new Epetra_Vector(*z_));
+	
+	if (activesetconv_)
+		for (int i=0;i<(int)interface_.size();++i)
+			interface_[i]->VisualizeGmsh(interface_[i]->CSegs());
+	
+	return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Compute contact forces (public)                           popp 02/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Manager::ContactForces(RCP<Epetra_Vector>& fc)
+{
+	// residuum check
+	RCP<Epetra_Vector> testvec1 = rcp(new Epetra_Vector(dmatrix_->RowMap()));
+	RCP<Epetra_Vector> testvec2 = rcp(new Epetra_Vector(mmatrix_->DomainMap()));
+	dmatrix_->Multiply(false,*z_,*testvec1);
+	mmatrix_->Multiply(true,*z_,*testvec2);
+	
+	RCP<Epetra_Vector> vec1 = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
+	RCP<Epetra_Vector> vec2 = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
+	LINALG::Export(*testvec1,*vec1);
+	LINALG::Export(*testvec2,*vec2);
+	
+	fc->Update(1.0,*vec1,0.0);
+	fc->Update(-1.0,*vec2,1.0);
+	
+	double testres1 = 0.0;
+	double testres2 = 0.0;
+	double fcnorm = 0.0;
+	testvec1->Norm2(&testres1);
+	testvec2->Norm2(&testres2);
+	fc->Norm2(&fcnorm);
+	//cout << testres1 << " " << testres2 << " " << fcnorm << endl;
+		
 	return;
 }
 

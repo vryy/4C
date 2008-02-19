@@ -123,7 +123,7 @@ public:
    dummy base class here.
 
   */
-  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const
+  virtual RCP<DRT::ElementRegister> ElementRegister() const
   { return rcp(new DRT::ElementRegister(Type())); }
 
   //@}
