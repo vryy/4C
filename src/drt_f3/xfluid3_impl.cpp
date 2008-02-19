@@ -163,18 +163,20 @@ void DRT::ELEMENTS::XFluid3Impl::Sysmat(XFluid3* ele,
   for (int iquad=0; iquad<intpoints.nquad; ++iquad)
   {
     // coordinates of the current integration point in cell coordinates \eta
-    const double cell_e0 = intpoints.qxg[iquad][0];
-    const double cell_e1 = intpoints.qxg[iquad][1];
-    const double cell_e2 = intpoints.qxg[iquad][2];
+//    const double cell_e0 = intpoints.qxg[iquad][0];
+//    const double cell_e1 = intpoints.qxg[iquad][1];
+//    const double cell_e2 = intpoints.qxg[iquad][2];
     
-    const vector<double> e = cell->modifyGaussRule3D(standard_integration,cell_e0,cell_e1,cell_e2);
 
+    
     // coordinates of the current integration point in element coordinates \xi
-    const double e1 = e[0];
-    const double e2 = e[1];
-    const double e3 = e[2];
-    const double detcell = e[3];
+    const double e1 = 0.0;//e[0];
+    const double e2 = 0.0;//e[1];
+    const double e3 = 0.0;//e[2];
+    const double detcell = 0.0;//e[3];
 
+    dserror("not done yet!");
+    
     // shape functions and their derivatives
     DRT::UTILS::shape_function_3D(funct_,e1,e2,e3,distype);
     DRT::UTILS::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
