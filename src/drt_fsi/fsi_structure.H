@@ -40,8 +40,38 @@ namespace FSI {
   subclass of this. The FSI algorithm should be able to extract all the
   information from the structure field it needs using this interface.
 
-  \warning A cleanup is needed badly.
+  All FSI algorithms use this adapter to communicate with the structural
+  field. There are different ways to use this adapter.
 
+  In all cases you need to tell the structural algorithm about your time
+  step. Therefore PrepareTimeStep(), Update() and Output() must be called at
+  the appropriate position in the FSI algorithm.
+
+  <h3>Dirichlet-Neumann coupled FSI</h3>
+
+  A good starting displacement can be guessed with PredictInterfaceDispnp().
+
+  Dirichlet-Neumann coupled FSI will need to Solve() the nonlinear
+  structural problem for each time step after the fluid forces have been
+  applied (ApplyInterfaceForces()). Solve() will be called many times for each
+  time step until the interface equilibrium is reached. The structural
+  algorithm has to preserve its state until Update() is called.
+
+  After each Solve() you get the interface forces by ExtractInterfaceDispnp().
+
+  A Dirichlet-Neumann FSI with steepest descent relaxation or matrix free
+  Newton Krylov will want to solve the structural problem linearly without
+  history and prescribed interface forces: RelaxationSolve().
+
+  <h3>Monolithic FSI</h3>
+
+  Monolithic FSI is based on Evaluate() of elements. This results in a new
+  RHS() and a new SysMat(). Together with the InitialGuess() these form the
+  building blocks for a block based Newton's method.
+
+  \warning Further cleanup is still needed.
+
+  \sa Fluid, Ale
   \author u.kue
   \date 11/07
   */
@@ -49,38 +79,90 @@ namespace FSI {
   {
   public:
 
+    /// virtual to get polymorph destruction
     virtual ~Structure();
 
+    //! @name Vector access
+
+    /// initial guess of Newton's method
     virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() const = 0;
+
+    /// rhs of Newton's method
     virtual Teuchos::RCP<const Epetra_Vector> RHS() const = 0;
+
+    /// unknown displacements at t(n+1)
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp() const = 0;
-    virtual Teuchos::RCP<const Epetra_Vector> Disp() const = 0;
-    virtual Teuchos::RCP<const Epetra_Vector> Dispm() const = 0;
+
+    /// unknown displacements at t(n)
+    virtual Teuchos::RCP<const Epetra_Vector> Dispn() const = 0;
+
+    /// unknown displacements at t(n-1)
+    virtual Teuchos::RCP<const Epetra_Vector> Dispnm() const = 0;
+
+    //@}
+
+    //! @name Misc
+
+    /// dof map of vector of unknowns
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const = 0;
+
+    /// domain map of system matrix (do we really need this?)
+    virtual const Epetra_Map& DomainMap() = 0;
+
+    /// direct access to system matrix
     virtual Teuchos::RCP<Epetra_Operator> SysMat() const = 0;
+
+    /// direct access to discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
+
+    /// scaling factor for Lagrangian MFSI coupling (unused)
     virtual double DispIncrFactor() = 0;
 
-    virtual Teuchos::RCP<Epetra_Vector> FluidCondRHS() const = 0;
-    virtual Teuchos::RCP<Epetra_Vector> MeshCondRHS() const = 0;
+    /// structure part of the rhs to enforce coupling condition at the interface
+    /*!
+      structure part of
+      \f$ \mathbf{u}^{n+1}_{\Gamma} \Delta t = \mathbf{d}^{n+1}_{\Gamma} - \mathbf{d}^{n}_{\Gamma} \f$
+    */
+    //virtual Teuchos::RCP<Epetra_Vector> FluidCondRHS() const = 0;
 
-    virtual void PrepareTimeStep() = 0;
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disp) const = 0;
-    virtual void Update() = 0;
-    virtual void Output() = 0;
 
-    virtual Teuchos::RCP<Epetra_Map> InterfaceMap() const = 0;
-    virtual Teuchos::RCP<Epetra_Map> InnerDisplacementRowMap() = 0;
+    /// structure part of the rhs to enforce structure -- mesh coupling at the interface
+    /*!
+      \f$ \mathbf{d}^{G,n+1}_{\Gamma} = \mathbf{d}^{n+1}_{\Gamma} \f$
+    */
+    //virtual Teuchos::RCP<Epetra_Vector> MeshCondRHS() const = 0;
 
     /// communication object at the interface
     virtual const LINALG::MapExtractor& Interface() const = 0;
 
-    virtual const Epetra_Map& DomainMap() = 0;
+    //@}
 
+    //! @name Time step helpers
+
+    /// start new time step
+    virtual void PrepareTimeStep() = 0;
+
+    /// evaluate elements with given displacement
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disp) const = 0;
+
+    /// update at time step end
+    virtual void Update() = 0;
+
+    /// output results
+    virtual void Output() = 0;
+
+    /// read restart information for given time step
     virtual void ReadRestart(int step) = 0;
 
-    virtual void UpdateandOutput() = 0;
+    //@}
 
+    //! @name Solver calls
+
+    /// nonlinear solve
+    /*!
+      Do the nonlinear solve for the time step. All boundary conditions have
+      been set.
+     */
     virtual void Solve() = 0;
 
     /// linear structure solve with just a interface load
@@ -92,16 +174,18 @@ namespace FSI {
     */
     virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> iforce) = 0;
 
+    //@}
+
     //! @name Extract interface values
 
     /// extract displacements
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispn() = 0;
 
     /// extract displacements
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDisplacement() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispnp() = 0;
 
     /// Predictor for interface displacements
-    virtual Teuchos::RCP<Epetra_Vector> PredictInterfaceDisplacement() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> PredictInterfaceDispnp() = 0;
 
     //@}
 
@@ -133,15 +217,15 @@ namespace FSI {
     Teuchos::RCP<const Epetra_Vector> InitialGuess() const;
     Teuchos::RCP<const Epetra_Vector> RHS() const;
     Teuchos::RCP<const Epetra_Vector> Dispnp() const;
-    Teuchos::RCP<const Epetra_Vector> Disp() const;
-    Teuchos::RCP<const Epetra_Vector> Dispm() const;
+    Teuchos::RCP<const Epetra_Vector> Dispn() const;
+    Teuchos::RCP<const Epetra_Vector> Dispnm() const;
     Teuchos::RCP<const Epetra_Map> DofRowMap() const;
     Teuchos::RCP<Epetra_Operator> SysMat() const;
     Teuchos::RCP<DRT::Discretization> Discretization();
     double DispIncrFactor();
 
-    virtual Teuchos::RCP<Epetra_Vector> FluidCondRHS() const;
-    virtual Teuchos::RCP<Epetra_Vector> MeshCondRHS() const;
+    //virtual Teuchos::RCP<Epetra_Vector> FluidCondRHS() const;
+    //virtual Teuchos::RCP<Epetra_Vector> MeshCondRHS() const;
 
     //Teuchos::RCP<Epetra_Vector> InterfaceDispn();
 
@@ -150,17 +234,12 @@ namespace FSI {
     void Update();
     void Output();
 
-    Teuchos::RCP<Epetra_Map> InterfaceMap() const { return interface_.CondMap(); }
-    Teuchos::RCP<Epetra_Map> InnerDisplacementRowMap() { return interface_.OtherMap(); }
-
     /// communication object at the interface
     virtual const LINALG::MapExtractor& Interface() const { return interface_; }
 
     virtual const Epetra_Map& DomainMap();
 
     virtual void ReadRestart(int step);
-
-    virtual void UpdateandOutput();
 
     virtual void Solve();
 
@@ -179,10 +258,10 @@ namespace FSI {
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispn();
 
     /// extract displacements
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDisplacement();
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispnp();
 
     /// Predictor for interface displacements
-    virtual Teuchos::RCP<Epetra_Vector> PredictInterfaceDisplacement();
+    virtual Teuchos::RCP<Epetra_Vector> PredictInterfaceDispnp();
 
     //@}
 

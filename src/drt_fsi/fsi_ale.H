@@ -48,18 +48,28 @@ namespace FSI {
   An abstract base class meant to be derived for each ALE
   implementation we want to support.
 
-  \note The fluid and structure implementations do not use such a
-  class (yet). This is because we reuse the normal implementations
-  here and do not support the exchange for another field
-  implementation. Maybe we need this in the future, however.
+  The purpose of the ALE field is to take an interface displacement and to
+  return the deformed interface. All in all pretty simple.
 
-  The purpose of the ALE field is to take an interface isplacement and
-  to return the deformed interface. All in all pretty simple.
+  \warning Further cleanup is still needed.
+
+  \sa Structure, Fluid
+  \author u.kue
+  \date 11/07
  */
 class Ale
 {
 public:
   virtual ~Ale() {}
+
+  //! @name Apply interface displacements
+
+  /// displacements at the interface are prescribed
+  virtual void ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp) = 0;
+
+  //@}
+
+  //! @name Time step helpers
 
   /// start a new time step
   virtual void PrepareTimeStep() = 0;
@@ -67,19 +77,21 @@ public:
   /// calculate linear system
   virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp) const = 0;
 
-  /// solve this time step with currently applied interface displacements
-  virtual void Solve() = 0;
-
   /// take the current solution to be the final one for this time step
   virtual void Update() = 0;
 
   /// write output
   virtual void Output() = 0;
 
-  //! @name Apply interface displacements
+  /// read restart for given step
+  virtual void ReadRestart(int step) = 0;
 
-  /// displacements at the interface are prescribed
-  virtual void ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp) = 0;
+  //@}
+
+  //! @name Solver calls
+
+  /// solve this time step with currently applied interface displacements
+  virtual void Solve() = 0;
 
   //@}
 
@@ -90,23 +102,36 @@ public:
 
   //@}
 
-  //! @name access functions for monolithic FSI
+  //! @name Vector access
 
+  /// initial guess of Newton's method
   virtual Teuchos::RCP<Epetra_Vector> InitialGuess() = 0;
+
+  /// rhs of Newton's method
   virtual Teuchos::RCP<Epetra_Vector> RHS() const = 0;
+
+  /// unknown velocities (and pressures) at t(n+1)
   virtual Teuchos::RCP<Epetra_Vector> Disp() = 0;
-  virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const = 0;
-  virtual Teuchos::RCP<Epetra_Operator> SysMat() const = 0;
-  virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
-  virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const = 0;
 
   //@}
 
-  /// read restart for given step
-  virtual void ReadRestart(int step) = 0;
+  //! @name Misc
+
+  /// dof map of vector of unknowns
+  virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const = 0;
+
+  /// direct access to system matrix
+  virtual Teuchos::RCP<Epetra_Operator> SysMat() const = 0;
+
+  /// direct access to discretization
+  virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
+
+  //virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const = 0;
 
   /// communication object at the interface
   virtual const LINALG::MapExtractor& Interface() const = 0;
+
+  //@}
 };
 
 
@@ -157,7 +182,7 @@ public:
     { return sysmat_->EpetraOperator(); }
   virtual Teuchos::RCP<DRT::Discretization> Discretization()
     { return discret_; }
-  virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const;
+  //virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const;
 
   //@}
 

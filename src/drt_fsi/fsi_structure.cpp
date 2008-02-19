@@ -51,15 +51,15 @@ Teuchos::RCP<const Epetra_Vector> FSI::StructureAdapter::RHS() const
 Teuchos::RCP<const Epetra_Vector> FSI::StructureAdapter::Dispnp() const
 {
   double alphaf = structure_.AlphaF();
-  Teuchos::RCP<Epetra_Vector> dispnp = Teuchos::rcp(new Epetra_Vector(*Disp()));
-  dispnp->Update(1./(1.-alphaf),*Dispm(),-alphaf/(1.-alphaf));
+  Teuchos::RCP<Epetra_Vector> dispnp = Teuchos::rcp(new Epetra_Vector(*Dispn()));
+  dispnp->Update(1./(1.-alphaf),*Dispnm(),-alphaf/(1.-alphaf));
   return dispnp;
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> FSI::StructureAdapter::Disp() const
+Teuchos::RCP<const Epetra_Vector> FSI::StructureAdapter::Dispn() const
 {
   return structure_.Disp();
 }
@@ -67,7 +67,7 @@ Teuchos::RCP<const Epetra_Vector> FSI::StructureAdapter::Disp() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> FSI::StructureAdapter::Dispm() const
+Teuchos::RCP<const Epetra_Vector> FSI::StructureAdapter::Dispnm() const
 {
   return structure_.Dispm();
 }
@@ -108,38 +108,38 @@ double FSI::StructureAdapter::DispIncrFactor()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::StructureAdapter::FluidCondRHS() const
-{
-  // structure part of the rhs to enforce
-  // u(n+1) dt = d(n+1) - d(n)
+// Teuchos::RCP<Epetra_Vector> FSI::StructureAdapter::FluidCondRHS() const
+// {
+//   // structure part of the rhs to enforce
+//   // u(n+1) dt = d(n+1) - d(n)
 
-  // extrapolate d(n+1) at the interface and substract d(n)
+//   // extrapolate d(n+1) at the interface and substract d(n)
 
-  Teuchos::RCP<Epetra_Vector> idism = interface_.ExtractCondVector(structure_.Dispm());
-  Teuchos::RCP<Epetra_Vector> idis  = interface_.ExtractCondVector(structure_.Disp ());
+//   Teuchos::RCP<Epetra_Vector> idism = interface_.ExtractCondVector(structure_.Dispm());
+//   Teuchos::RCP<Epetra_Vector> idis  = interface_.ExtractCondVector(structure_.Disp ());
 
-  double alphaf = structure_.AlphaF();
-  idis->Update(1./(1.-alphaf), *idism, -alphaf/(1.-alphaf)-1.);
-  return idis;
-}
+//   double alphaf = structure_.AlphaF();
+//   idis->Update(1./(1.-alphaf), *idism, -alphaf/(1.-alphaf)-1.);
+//   return idis;
+// }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::StructureAdapter::MeshCondRHS() const
-{
-  // structure part of the rhs to enforce
-  // d(G,n+1) = d(n+1)
+// Teuchos::RCP<Epetra_Vector> FSI::StructureAdapter::MeshCondRHS() const
+// {
+//   // structure part of the rhs to enforce
+//   // d(G,n+1) = d(n+1)
 
-  // extrapolate d(n+1) at the interface
+//   // extrapolate d(n+1) at the interface
 
-  Teuchos::RCP<Epetra_Vector> idism = interface_.ExtractCondVector(structure_.Dispm());
-  Teuchos::RCP<Epetra_Vector> idis  = interface_.ExtractCondVector(structure_.Disp ());
+//   Teuchos::RCP<Epetra_Vector> idism = interface_.ExtractCondVector(structure_.Dispm());
+//   Teuchos::RCP<Epetra_Vector> idis  = interface_.ExtractCondVector(structure_.Disp ());
 
-  double alphaf = structure_.AlphaF();
-  idis->Update(1./(1.-alphaf), *idism, -alphaf/(1.-alphaf));
-  return idis;
-}
+//   double alphaf = structure_.AlphaF();
+//   idis->Update(1./(1.-alphaf), *idism, -alphaf/(1.-alphaf));
+//   return idis;
+// }
 
 
 /*----------------------------------------------------------------------*/
@@ -219,14 +219,6 @@ void FSI::StructureAdapter::ReadRestart(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::StructureAdapter::UpdateandOutput()
-{
-  structure_.UpdateandOutput();
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void FSI::StructureAdapter::Solve()
 {
   std::string equil = params_->get<string>("equilibrium iteration","full newton");
@@ -279,7 +271,7 @@ Teuchos::RCP<Epetra_Vector> FSI::StructureAdapter::ExtractInterfaceDispn()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::StructureAdapter::ExtractInterfaceDisplacement()
+Teuchos::RCP<Epetra_Vector> FSI::StructureAdapter::ExtractInterfaceDispnp()
 {
   Teuchos::RCP<Epetra_Vector> idism = interface_.ExtractCondVector(structure_.Dispm());
   Teuchos::RCP<Epetra_Vector> idis  = interface_.ExtractCondVector(structure_.Disp());
@@ -293,7 +285,7 @@ Teuchos::RCP<Epetra_Vector> FSI::StructureAdapter::ExtractInterfaceDisplacement(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::StructureAdapter::PredictInterfaceDisplacement()
+Teuchos::RCP<Epetra_Vector> FSI::StructureAdapter::PredictInterfaceDispnp()
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 

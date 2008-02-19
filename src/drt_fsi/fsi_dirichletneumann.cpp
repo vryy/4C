@@ -74,7 +74,7 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
 
   displacementcoupling_ = fsidyn.get<std::string>("COUPVARIABLE") == "Displacement";
 
-  SetDefaultParameters(fsidyn,noxparameterlist);
+  SetDefaultParameters(fsidyn,noxparameterlist_);
 
   //cout << structure_->Discretization();
   //cout << fluid_->Discretization();
@@ -289,6 +289,13 @@ void FSI::DirichletNeumannCoupling::SetDefaultParameters(const Teuchos::Paramete
 
     lineSearchParams.set("Method", "Full Step");
     lineSearchParams.sublist("Full Step").set("Full Step", 1.0);
+
+    Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
+    Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
+    Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
+
+    lsParams.set("Tolerance", 0.1);
+
     break;
   }
   case fsi_iter_stagg_MPE:
@@ -392,7 +399,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RCP<NOX::Epetra::Int
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
   // Get the top level parameter list
-  Teuchos::ParameterList& nlParams = noxparameterlist;
+  Teuchos::ParameterList& nlParams = noxparameterlist_;
 
   // sublists
 
@@ -456,7 +463,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RCP<NOX::Epetra::Int
     if (displacementcoupling_)
     {
       // predict displacement
-      soln = StructureField().PredictInterfaceDisplacement();
+      soln = StructureField().PredictInterfaceDispnp();
     }
     else
     {
@@ -814,7 +821,7 @@ FSI::DirichletNeumannCoupling::CreateStatusTest(ParameterList& nlParams,
 Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::InterfaceDisp()
 {
   // extract displacements
-  return StructureField().ExtractInterfaceDisplacement();
+  return StructureField().ExtractInterfaceDispnp();
 }
 
 
@@ -1044,7 +1051,7 @@ FSI::DirichletNeumannCoupling::StructOp(Teuchos::RCP<Epetra_Vector> iforce,
     // normal structure solve
     StructureField().ApplyInterfaceForces(iforce);
     StructureField().Solve();
-    return StructureField().ExtractInterfaceDisplacement();
+    return StructureField().ExtractInterfaceDispnp();
   }
 }
 

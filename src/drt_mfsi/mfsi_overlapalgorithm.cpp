@@ -339,7 +339,7 @@ void MFSI::OverlapAlgorithm::ExtractFieldVectors(Teuchos::RCP<const Thyra::Defau
   Teuchos::RCP<Epetra_Vector> fcx = StructToFluid(scx);
 
   // get interface displacement at t(n)
-  Teuchos::RCP<Epetra_Vector> dispn = StructureField().Interface().ExtractCondVector(StructureField().Disp());
+  Teuchos::RCP<Epetra_Vector> dispn = StructureField().Interface().ExtractCondVector(StructureField().Dispn());
 
   // get interface velocity at t(n)
   Teuchos::RCP<Epetra_Vector> veln = FluidField().Interface().ExtractCondVector(FluidField().Veln());

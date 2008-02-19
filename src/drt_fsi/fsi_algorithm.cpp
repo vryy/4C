@@ -391,7 +391,7 @@ void FSI::Algorithm::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void FSI::Algorithm::Update()
 {
-  StructureField().UpdateandOutput();
+  StructureField().Update();
   FluidField().    Update();
   AleField().      Update();
 }
@@ -401,8 +401,9 @@ void FSI::Algorithm::Update()
 /*----------------------------------------------------------------------*/
 void FSI::Algorithm::Output()
 {
-  FluidField().Output();
-  AleField().  Output();
+  StructureField().Output();
+  FluidField().    Output();
+  AleField().      Output();
 
   FluidField().LiftDrag();
 }

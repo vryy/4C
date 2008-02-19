@@ -212,10 +212,10 @@ Teuchos::RCP<Epetra_Vector> FSI::AleLinear::ExtractDisplacement() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::AleLinear::StructCondRHS() const
-{
-  return interface_.ExtractCondVector(dispnp_);
-}
+// Teuchos::RCP<Epetra_Vector> FSI::AleLinear::StructCondRHS() const
+// {
+//   return interface_.ExtractCondVector(dispnp_);
+// }
 
 
 /*----------------------------------------------------------------------*

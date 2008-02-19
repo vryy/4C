@@ -163,8 +163,8 @@ MFSI::LagrangeAlgorithm::LagrangeAlgorithm(Epetra_Comm& comm)
   //FluidField()    ->SetInterfaceMap(coupsf.SlaveDofMap());
   //AleField()      ->SetInterfaceMap(coupsa.SlaveDofMap());
 
-  ifstruct_ = Teuchos::rcp(new Epetra_Vector(*StructureField().InterfaceMap()));
-  iastruct_ = Teuchos::rcp(new Epetra_Vector(*StructureField().InterfaceMap()));
+  ifstruct_ = Teuchos::rcp(new Epetra_Vector(*StructureField().Interface().CondMap()));
+  iastruct_ = Teuchos::rcp(new Epetra_Vector(*StructureField().Interface().CondMap()));
 
   // the fluid-ale coupling always matches
   const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
@@ -234,7 +234,7 @@ MFSI::LagrangeAlgorithm::LagrangeAlgorithm(Epetra_Comm& comm)
   alesolverfactory_ = Teuchos::rcp(new Thyra::AmesosLinearOpWithSolveFactory(Thyra::Amesos::KLU));
 #endif
 
-  sfidentity_ = Teuchos::rcp(new Thyra::DefaultIdentityLinearOp<double>(Thyra::create_VectorSpace(StructureField().InterfaceMap())));
+  sfidentity_ = Teuchos::rcp(new Thyra::DefaultIdentityLinearOp<double>(Thyra::create_VectorSpace(StructureField().Interface().CondMap())));
 
   //Thyra::ConstLinearOperator<double> sfihandle = sfidentity;
 
@@ -266,10 +266,10 @@ void MFSI::LagrangeAlgorithm::InitialGuess(Thyra::DefaultProductVector<double>& 
   Teuchos::RCP< const Thyra::VectorBase< double > > aig = Thyra::create_Vector(AleField().InitialGuess(), amap_);
 
   Teuchos::RCP< const Thyra::VectorBase< double > > sfig =
-    Thyra::create_Vector(ifstruct_, Thyra::create_VectorSpace(StructureField().InterfaceMap()));
+    Thyra::create_Vector(ifstruct_, Thyra::create_VectorSpace(StructureField().Interface().CondMap()));
 
   Teuchos::RCP< const Thyra::VectorBase< double > > saig =
-    Thyra::create_Vector(iastruct_, Thyra::create_VectorSpace(StructureField().InterfaceMap()));
+    Thyra::create_Vector(iastruct_, Thyra::create_VectorSpace(StructureField().Interface().CondMap()));
 
   int numBlocks = 5;
   std::vector<Teuchos::RCP<const Thyra::VectorBase<double> > > vec(numBlocks);
@@ -307,12 +307,12 @@ void MFSI::LagrangeAlgorithm::SetupRHS(Thyra::DefaultProductVector<double> &f) c
   Teuchos::RCP< Epetra_Vector > ifstruct = StructureField().FluidCondRHS();
   ifstruct->Update(1.0*Dt(),*FluidToStruct(FluidField().StructCondRHS()),-1.0);
   Teuchos::RCP< Thyra::VectorBase< double > > sfrhs =
-    Thyra::create_Vector(ifstruct, Thyra::create_VectorSpace(StructureField().InterfaceMap()));
+    Thyra::create_Vector(ifstruct, Thyra::create_VectorSpace(StructureField().Interface().CondMap()));
 
   Teuchos::RCP< Epetra_Vector > iastruct = StructureField().MeshCondRHS();
   iastruct->Update(1.0,*AleToStruct(AleField().StructCondRHS()),-1.0);
   Teuchos::RCP< Thyra::VectorBase< double > > sarhs =
-    Thyra::create_Vector(iastruct, Thyra::create_VectorSpace(StructureField().InterfaceMap()));
+    Thyra::create_Vector(iastruct, Thyra::create_VectorSpace(StructureField().Interface().CondMap()));
 
   // create block vector
   int numBlocks = 5;
@@ -400,7 +400,7 @@ MFSI::LagrangeAlgorithm::CreateStatusTest(Teuchos::ParameterList& nlParams,
     Teuchos::rcp(new PartialNormF("displacement",
                                   0,
                                   *StructureField().DofRowMap(),
-                                  *StructureField().InnerDisplacementRowMap(),
+                                  *StructureField().Interface().OtherMap(),
                                   nlParams.get("Norm abs disp", 1.0e-6),
                                   PartialNormF::Scaled));
   converged->addStatusTest(structureDisp);

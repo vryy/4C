@@ -58,8 +58,9 @@ namespace FSI {
 
   - Monolithic (Newton with overlapping blocks and block preconditioning)
 
-  \warning A cleanup is needed badly.
+  \warning Further cleanup is still needed.
 
+  \sa Structure, Ale
   \author u.kue
   \date 11/07
   */
@@ -70,27 +71,83 @@ namespace FSI {
     /// virtual destructor to get polymorph destruction
     virtual ~Fluid();
 
+    //! @name Vector access
+
+    /// initial guess of Newton's method
     virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() const = 0;
+
+    /// rhs of Newton's method
     virtual Teuchos::RCP<const Epetra_Vector> RHS() const = 0;
+
+    /// unknown velocities (and pressures) at t(n+1)
     virtual Teuchos::RCP<const Epetra_Vector> Velnp() const = 0;
+
+    /// unknown velocities (and pressures) at t(n)
     virtual Teuchos::RCP<const Epetra_Vector> Veln() const = 0;
+
+    //@}
+
+    //! @name Misc
+
+    /// dof map of vector of unknowns
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const = 0;
+
+    /// direct access to system matrix
     virtual Teuchos::RCP<Epetra_Operator> SysMat() const = 0;
+
+    /// direct access to discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
 
-    virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const = 0;
+    //virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const = 0;
 
+    //@}
+
+    //! @name Time step helpers
+
+    /// start new time step
     virtual void PrepareTimeStep() = 0;
+
+    /// evaluate elements with given displacement
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel) const = 0;
+
+    /// update at time step end
     virtual void Update() = 0;
+
+    /// output results
     virtual void Output() = 0;
 
-    /// solve the nonlinear problem
+    /// read restart information for given time step
+    virtual void ReadRestart(int step) = 0;
+
+    /// current time value
+    virtual double Time() = 0;
+
+    /// current time step
+    virtual int Step() = 0;
+
+    /// calculation (and output) of lift&drag
+    virtual void LiftDrag() = 0;
+
+    //@}
+
+    //! @name Solver calls
+
+    /// nonlinear solve
+    /*!
+      Do the nonlinear solve for the time step. All boundary conditions have
+      been set.
+     */
     virtual void NonlinearSolve() = 0;
 
-    /// the interface map contains all velocity dofs at the interface
-    virtual Teuchos::RCP<Epetra_Map> InterfaceMap() = 0;
+    /// linear fluid solve with just a interface load
+    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel) = 0;
+
+    //@}
+
+    ///
     virtual Teuchos::RCP<Epetra_Map> InnerVelocityRowMap() = 0;
+
+    ///
     virtual Teuchos::RCP<Epetra_Map> PressureRowMap() = 0;
 
     /// the mesh map contains all velocity dofs that are covered by an ALE node
@@ -100,11 +157,6 @@ namespace FSI {
 
     /// communication object at the interface
     virtual const LINALG::MapExtractor& Interface() const = 0;
-
-    virtual void ReadRestart(int step) = 0;
-    virtual double Time() = 0;
-    virtual int Step() = 0;
-    virtual void LiftDrag() = 0;
 
     //! @name Extract interface forces
 
@@ -142,9 +194,6 @@ namespace FSI {
     /// integrate FSI interface shape functions
     virtual Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape() = 0;
 
-    /// linear fluid solve with just a interface load
-    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel) = 0;
-
     /// create result test for encapulated fluid algorithm
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;
   };
@@ -167,7 +216,7 @@ namespace FSI {
     virtual Teuchos::RCP<Epetra_Operator> SysMat() const;
     virtual Teuchos::RCP<DRT::Discretization> Discretization();
 
-    virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const;
+    //virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const;
 
     virtual void PrepareTimeStep();
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel) const;
@@ -177,7 +226,6 @@ namespace FSI {
     virtual void NonlinearSolve();
 
     /// the interface map contains all velocity dofs at the interface
-    virtual Teuchos::RCP<Epetra_Map> InterfaceMap();
     virtual Teuchos::RCP<Epetra_Map> InnerVelocityRowMap();
     virtual Teuchos::RCP<Epetra_Map> PressureRowMap();
 

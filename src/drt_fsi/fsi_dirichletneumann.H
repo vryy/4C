@@ -190,7 +190,7 @@ private:
   Teuchos::RCP<NOX::Utils> utils_;
 
   /// parameters handed in to NOX
-  Teuchos::ParameterList noxparameterlist;
+  Teuchos::ParameterList noxparameterlist_;
 
   int mfresitemax_;
 

@@ -115,10 +115,10 @@ Teuchos::RCP<DRT::Discretization> FSI::FluidAdapter::Discretization()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::FluidAdapter::StructCondRHS() const
-{
-  return interface_.ExtractCondVector(Velnp());
-}
+// Teuchos::RCP<Epetra_Vector> FSI::FluidAdapter::StructCondRHS() const
+// {
+//   return interface_.ExtractCondVector(Velnp());
+// }
 
 
 /*----------------------------------------------------------------------*/
@@ -175,14 +175,6 @@ void FSI::FluidAdapter::Output()
 void FSI::FluidAdapter::NonlinearSolve()
 {
   fluid_.NonlinearSolve();
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> FSI::FluidAdapter::InterfaceMap()
-{
-  return interface_.CondMap();
 }
 
 
