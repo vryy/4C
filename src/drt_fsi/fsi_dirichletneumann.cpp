@@ -80,35 +80,39 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
   //cout << fluid_->Discretization();
   //cout << ale_->Discretization();
 
+  FSI::Coupling& coupsf = StructureFluidCoupling();
+  FSI::Coupling& coupsa = StructureAleCoupling();
+  FSI::Coupling& coupfa = FluidAleCoupling();
+
   if (Teuchos::getIntegralValue<int>(fsidyn,"COUPMETHOD"))
   {
     matchingnodes_ = true;
-    coupsf_.SetupConditionCoupling(*StructureField().Discretization(),
-                                   StructureField().Interface(),
-                                   *FluidField().Discretization(),
-                                   FluidField().Interface(),
-                                   "FSICoupling");
+    coupsf.SetupConditionCoupling(*StructureField().Discretization(),
+                                  StructureField().Interface(),
+                                  *FluidField().Discretization(),
+                                  FluidField().Interface(),
+                                  "FSICoupling");
 
-    coupsa_.SetupConditionCoupling(*StructureField().Discretization(),
-                                   StructureField().Interface(),
-                                   *AleField().Discretization(),
-                                   AleField().Interface(),
-                                   "FSICoupling");
+    coupsa.SetupConditionCoupling(*StructureField().Discretization(),
+                                  StructureField().Interface(),
+                                  *AleField().Discretization(),
+                                  AleField().Interface(),
+                                  "FSICoupling");
 
     // In the following we assume that both couplings find the same dof
     // map at the structural side. This enables us to use just one
     // interface dof map for all fields and have just one transfer
     // operator from the interface map to the full field map.
-    if (not coupsf_.MasterDofMap()->SameAs(*coupsa_.MasterDofMap()))
+    if (not coupsf.MasterDofMap()->SameAs(*coupsa.MasterDofMap()))
       dserror("structure interface dof maps do not match");
 
-    if (coupsf_.MasterDofMap()->NumGlobalElements()==0)
+    if (coupsf.MasterDofMap()->NumGlobalElements()==0)
       dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
 
     // init transfer from interface to field
-    //StructureField().SetInterfaceMap(coupsf_.MasterDofMap());
-    //FluidField().    SetInterfaceMap(coupsf_.SlaveDofMap());
-    //AleField().      SetInterfaceMap(coupsa_.SlaveDofMap());
+    //StructureField().SetInterfaceMap(coupsf.MasterDofMap());
+    //FluidField().    SetInterfaceMap(coupsf.SlaveDofMap());
+    //AleField().      SetInterfaceMap(coupsa.SlaveDofMap());
   }
   else
   {
@@ -119,7 +123,7 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
 
     // This is cheating. We setup the coupling of interface dofs between fluid
     // and ale. But we use the variable from the matching version.
-    coupsa_.SetupConditionCoupling(*FluidField().Discretization(),
+    coupsa.SetupConditionCoupling(*FluidField().Discretization(),
                                    FluidField().Interface(),
                                    *AleField().Discretization(),
                                    AleField().Interface(),
@@ -128,19 +132,19 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
     // init transfer from interface to field
     //StructureField().SetInterfaceMap(coupsfm_.MasterDofMap());
     //FluidField().    SetInterfaceMap(coupsfm_.SlaveDofMap());
-    //AleField().      SetInterfaceMap(coupsa_.SlaveDofMap());
+    //AleField().      SetInterfaceMap(coupsa.SlaveDofMap());
   }
 
   // the fluid-ale coupling always matches
   const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
   const Epetra_Map* alenodemap   = AleField().Discretization()->NodeRowMap();
 
-  coupfa_.SetupCoupling(*FluidField().Discretization(),
+  coupfa.SetupCoupling(*FluidField().Discretization(),
                         *AleField().Discretization(),
                         *fluidnodemap,
                         *alenodemap);
 
-  FluidField().SetMeshMap(coupfa_.MasterDofMap());
+  FluidField().SetMeshMap(coupfa.MasterDofMap());
 
 #if 0
   // create connection graph of interface elements
@@ -1060,15 +1064,16 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::InterfaceVelocity(Teu
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::StructToAle(Teuchos::RCP<Epetra_Vector> iv)
 {
+  FSI::Coupling& coupsa = StructureAleCoupling();
   if (matchingnodes_)
   {
-    return coupsa_.MasterToSlave(iv);
+    return coupsa.MasterToSlave(iv);
   }
   else
   {
     // We cannot go from structure to ale directly. So go via the fluid field.
     Teuchos::RCP<Epetra_Vector> fdisp = coupsfm_.MasterToSlave(iv);
-    return coupsa_.MasterToSlave(fdisp);
+    return coupsa.MasterToSlave(fdisp);
   }
 }
 
@@ -1077,9 +1082,10 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::StructToAle(Teuchos::
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::StructToFluid(Teuchos::RCP<Epetra_Vector> iv)
 {
+  FSI::Coupling& coupsf = StructureFluidCoupling();
   if (matchingnodes_)
   {
-    return coupsf_.MasterToSlave(iv);
+    return coupsf.MasterToSlave(iv);
   }
   else
   {
@@ -1092,9 +1098,10 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::StructToFluid(Teuchos
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::FluidToStruct(Teuchos::RCP<Epetra_Vector> iv)
 {
+  FSI::Coupling& coupsf = StructureFluidCoupling();
   if (matchingnodes_)
   {
-    return coupsf_.SlaveToMaster(iv);
+    return coupsf.SlaveToMaster(iv);
   }
   else
   {
@@ -1114,7 +1121,8 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::FluidToStruct(Teuchos
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::AleToFluid(Teuchos::RCP<Epetra_Vector> iv)
 {
-  return coupfa_.SlaveToMaster(iv);
+  FSI::Coupling& coupfa = FluidAleCoupling();
+  return coupfa.SlaveToMaster(iv);
 }
 
 

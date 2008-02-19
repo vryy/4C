@@ -93,7 +93,7 @@ void FSI::AleLinear::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::AleLinear::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp)
+void FSI::AleLinear::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp) const
 {
   // We save the current solution here. This will not change the
   // result of our element call, but the next time somebody asks us we
@@ -202,7 +202,7 @@ void FSI::AleLinear::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idi
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::AleLinear::ExtractDisplacement()
+Teuchos::RCP<Epetra_Vector> FSI::AleLinear::ExtractDisplacement() const
 {
   // We know that the ale dofs are coupled with their original map. So
   // we just return them here.
@@ -212,7 +212,7 @@ Teuchos::RCP<Epetra_Vector> FSI::AleLinear::ExtractDisplacement()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::AleLinear::StructCondRHS()
+Teuchos::RCP<Epetra_Vector> FSI::AleLinear::StructCondRHS() const
 {
   return interface_.ExtractCondVector(dispnp_);
 }

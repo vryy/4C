@@ -16,8 +16,8 @@ MFSI::CouplingOperator::CouplingOperator()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MFSI::CouplingOperator::CouplingOperator(const Teuchos::RCP<Epetra_Operator> &op,
-                                         Teuchos::RCP<const Coupling> domaincoup,
-                                         Teuchos::RCP<const Coupling> rangecoup)
+                                         Teuchos::RCP<const FSI::Coupling> domaincoup,
+                                         Teuchos::RCP<const FSI::Coupling> rangecoup)
 {
   initialize(op,domaincoup,rangecoup);
 }
@@ -26,8 +26,8 @@ MFSI::CouplingOperator::CouplingOperator(const Teuchos::RCP<Epetra_Operator> &op
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MFSI::CouplingOperator::initialize(const Teuchos::RCP<Epetra_Operator> &op,
-                                        Teuchos::RCP<const Coupling> domaincoup,
-                                        Teuchos::RCP<const Coupling> rangecoup)
+                                        Teuchos::RCP<const FSI::Coupling> domaincoup,
+                                        Teuchos::RCP<const FSI::Coupling> rangecoup)
 {
   op_ = Thyra::nonconstEpetraLinearOp(op);
   domaincoup_ = domaincoup;

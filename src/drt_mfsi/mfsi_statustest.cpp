@@ -272,7 +272,7 @@ MFSI::InterfaceNormF::InterfaceNormF(double structfac,
                                      double fluidfac,
                                      const Epetra_Map &fluidblockmap,
                                      const Epetra_Map &fluidinterfacemap,
-                                     const Coupling& coupsf,
+                                     const FSI::Coupling& coupsf,
                                      double tolerance,
                                      ScaleType stype)
   : GenericNormF("FSI interface",tolerance,stype),

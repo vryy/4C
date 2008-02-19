@@ -26,7 +26,7 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_Import.h>
 #include <Epetra_Vector.h>
 
-#include "mfsi_coupling.H"
+#include "../drt_fsi/fsi_coupling.H"
 
 
 namespace MFSI
@@ -195,7 +195,7 @@ namespace MFSI
                    double fluidfac,
                    const Epetra_Map &fluidblockmap,
                    const Epetra_Map &fluidinterfacemap,
-                   const Coupling& coupsf,
+                   const FSI::Coupling& coupsf,
                    double tolerance,
                    ScaleType stype = Scaled);
 
@@ -213,7 +213,7 @@ namespace MFSI
     const Epetra_Map &fluidblockmap_;
     const Epetra_Map &fluidinterfacemap_;
 
-    const Coupling& coupsf_;
+    const FSI::Coupling& coupsf_;
 
     Teuchos::RCP<Epetra_Import> structextractor_;
     Teuchos::RCP<Epetra_Import> fluidextractor_;

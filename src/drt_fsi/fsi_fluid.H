@@ -70,18 +70,18 @@ namespace FSI {
     /// virtual destructor to get polymorph destruction
     virtual ~Fluid();
 
-    virtual Teuchos::RCP<Epetra_Vector> InitialGuess() = 0;
-    virtual Teuchos::RCP<Epetra_Vector> RHS() = 0;
-    virtual Teuchos::RCP<Epetra_Vector> Velnp() = 0;
-    virtual Teuchos::RCP<Epetra_Vector> Veln() = 0;
-    virtual Teuchos::RCP<const Epetra_Map> DofRowMap() = 0;
-    virtual Teuchos::RCP<Epetra_Operator> SysMat() = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> RHS() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> Velnp() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> Veln() const = 0;
+    virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const = 0;
+    virtual Teuchos::RCP<Epetra_Operator> SysMat() const = 0;
     virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
 
-    virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const = 0;
 
     virtual void PrepareTimeStep() = 0;
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel) = 0;
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel) const = 0;
     virtual void Update() = 0;
     virtual void Output() = 0;
 
@@ -96,7 +96,7 @@ namespace FSI {
     /// the mesh map contains all velocity dofs that are covered by an ALE node
     virtual void SetMeshMap(Teuchos::RCP<Epetra_Map> mm) = 0;
 
-    virtual double ResidualScaling() = 0;
+    virtual double ResidualScaling() const = 0;
 
     /// communication object at the interface
     virtual const LINALG::MapExtractor& Interface() const = 0;
@@ -123,10 +123,10 @@ namespace FSI {
     //! @name Extract mesh values
 
     /// tell the mesh displacement to the fluid solver
-    virtual void ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp) = 0;
+    virtual void ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp) const = 0;
 
     /// tell the mesh velocity to the fluid solver
-    virtual void ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel) = 0;
+    virtual void ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel) const = 0;
 
     //@}
 
@@ -159,18 +159,18 @@ namespace FSI {
                  Teuchos::RCP<ParameterList> params,
                  Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    virtual Teuchos::RCP<Epetra_Vector> InitialGuess();
-    virtual Teuchos::RCP<Epetra_Vector> RHS();
-    virtual Teuchos::RCP<Epetra_Vector> Velnp();
-    virtual Teuchos::RCP<Epetra_Vector> Veln();
-    virtual Teuchos::RCP<const Epetra_Map> DofRowMap();
-    virtual Teuchos::RCP<Epetra_Operator> SysMat();
+    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() const;
+    virtual Teuchos::RCP<const Epetra_Vector> RHS() const;
+    virtual Teuchos::RCP<const Epetra_Vector> Velnp() const;
+    virtual Teuchos::RCP<const Epetra_Vector> Veln() const;
+    virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const;
+    virtual Teuchos::RCP<Epetra_Operator> SysMat() const;
     virtual Teuchos::RCP<DRT::Discretization> Discretization();
 
-    virtual Teuchos::RCP<Epetra_Vector> StructCondRHS();
+    virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const;
 
     virtual void PrepareTimeStep();
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel);
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel) const;
     virtual void Update();
     virtual void Output();
 
@@ -185,7 +185,7 @@ namespace FSI {
     virtual void SetMeshMap(Teuchos::RCP<Epetra_Map> mm);
 
     /// scaling factor needed to convert the residual to real forces
-    virtual double ResidualScaling();
+    virtual double ResidualScaling() const;
 
     /// communication object at the interface
     virtual const LINALG::MapExtractor& Interface() const { return interface_; }
@@ -197,8 +197,8 @@ namespace FSI {
 
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
     virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel);
-    virtual void ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp);
-    virtual void ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel);
+    virtual void ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp) const;
+    virtual void ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel) const;
 
     virtual int Itemax() const;
     virtual void SetItemax(int itemax);
@@ -219,7 +219,7 @@ namespace FSI {
   private:
 
     /// the actual fluid algorithm
-    FluidImplicitTimeInt fluid_;
+    mutable FluidImplicitTimeInt fluid_;
 
     /// the interface map setup for interface <-> full translation
     LINALG::MapExtractor interface_;

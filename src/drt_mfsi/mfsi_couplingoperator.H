@@ -7,7 +7,7 @@
 #include <Thyra_SingleScalarEuclideanLinearOpBase.hpp>
 #include <Thyra_EpetraLinearOp.hpp>
 
-#include "mfsi_coupling.H"
+#include "../drt_fsi/fsi_coupling.H"
 
 namespace MFSI
 {
@@ -29,8 +29,8 @@ namespace MFSI
     CouplingOperator();
 
     CouplingOperator(const Teuchos::RCP<Epetra_Operator> &op,
-                     Teuchos::RCP<const Coupling> domaincoup=Teuchos::null,
-                     Teuchos::RCP<const Coupling> rangecoup=Teuchos::null);
+                     Teuchos::RCP<const FSI::Coupling> domaincoup=Teuchos::null,
+                     Teuchos::RCP<const FSI::Coupling> rangecoup=Teuchos::null);
 
     /** \brief Initialize
      *
@@ -49,8 +49,8 @@ namespace MFSI
      * </ul>
      */
     void initialize(const Teuchos::RCP<Epetra_Operator> &op,
-                    Teuchos::RCP<const Coupling> domaincoup=Teuchos::null,
-                    Teuchos::RCP<const Coupling> rangecoup=Teuchos::null);
+                    Teuchos::RCP<const FSI::Coupling> domaincoup=Teuchos::null,
+                    Teuchos::RCP<const FSI::Coupling> rangecoup=Teuchos::null);
 
     /** \brief Set to uninitialized and optionally return the current state.
      *
@@ -134,10 +134,10 @@ namespace MFSI
     Teuchos::RCP<Thyra::EpetraLinearOp> op_;
 
     ///
-    Teuchos::RCP<const Coupling> domaincoup_;
+    Teuchos::RCP<const FSI::Coupling> domaincoup_;
 
     ///
-    Teuchos::RCP<const Coupling> rangecoup_;
+    Teuchos::RCP<const FSI::Coupling> rangecoup_;
 
     ///
     Teuchos::RCP<const Thyra::ScalarProdVectorSpaceBase<Scalar> > domainspace_;
@@ -156,8 +156,8 @@ namespace MFSI
   Teuchos::RCP<CouplingOperator>
   nonconstCouplingOp(
     const Teuchos::RCP<Epetra_Operator> &op,
-    Teuchos::RCP<const Coupling> domaincoup=Teuchos::null,
-    Teuchos::RCP<const Coupling> rangecoup=Teuchos::null
+    Teuchos::RCP<const FSI::Coupling> domaincoup=Teuchos::null,
+    Teuchos::RCP<const FSI::Coupling> rangecoup=Teuchos::null
     )
   {
     return Teuchos::rcp(new CouplingOperator(op,domaincoup,rangecoup));

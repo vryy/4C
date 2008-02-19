@@ -26,6 +26,7 @@ Maintainer: Ulrich Kuettler
 #include "fsi_structure.H"
 #include "fsi_fluid.H"
 #include "fsi_ale.H"
+#include "fsi_coupling.H"
 
 
 namespace FSI
@@ -62,12 +63,15 @@ namespace FSI
 
     /// structural field solver
     Structure& StructureField() { return *structure_; }
+    const Structure& StructureField() const { return *structure_; }
 
     /// fluid field solver
     Fluid& FluidField() { return *fluid_; }
+    const Fluid& FluidField() const { return *fluid_; }
 
     /// ale field solver
     Ale& AleField() { return *ale_; }
+    const Ale& AleField() const { return *ale_; }
 
   protected:
 
@@ -96,6 +100,30 @@ namespace FSI
 
     //@}
 
+    //! @name Transfer helpers
+
+    virtual Teuchos::RCP<Epetra_Vector> StructToAle(Teuchos::RCP<Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> AleToStruct(Teuchos::RCP<Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> AleToFluid(Teuchos::RCP<Epetra_Vector> iv) const;
+
+    virtual Teuchos::RCP<Epetra_Vector> StructToAle(Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> AleToStruct(Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> AleToFluid(Teuchos::RCP<const Epetra_Vector> iv) const;
+
+    //@}
+
+    Coupling& StructureFluidCoupling() { return coupsf_; }
+    Coupling& StructureAleCoupling()   { return coupsa_; }
+    Coupling& FluidAleCoupling()       { return coupfa_; }
+
+    const Coupling& StructureFluidCoupling() const { return coupsf_; }
+    const Coupling& StructureAleCoupling()   const { return coupsa_; }
+    const Coupling& FluidAleCoupling()       const { return coupfa_; }
+
   private:
 
     /// setup structure algorithm
@@ -106,6 +134,15 @@ namespace FSI
 
     /// setup ale algorithm
     void SetupAle();
+
+    /// coupling of structure and fluid at the interface
+    Coupling               coupsf_;
+
+    /// coupling of structure and ale at the interface
+    Coupling               coupsa_;
+
+    /// coupling of fluid and ale
+    Coupling               coupfa_;
 
     /// structural field solver
     Teuchos::RCP<Structure> structure_;

@@ -31,7 +31,7 @@ FSI::StructureAdapter::StructureAdapter(Teuchos::RCP<Teuchos::ParameterList> par
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> FSI::StructureAdapter::InitialGuess()
+Teuchos::RCP<const Epetra_Vector> FSI::StructureAdapter::InitialGuess() const
 {
   return Teuchos::rcp(&structure_.Getdu(),false);
   //return structure_.Dispm();
@@ -40,7 +40,7 @@ Teuchos::RCP<const Epetra_Vector> FSI::StructureAdapter::InitialGuess()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::StructureAdapter::RHS()
+Teuchos::RCP<const Epetra_Vector> FSI::StructureAdapter::RHS() const
 {
   return structure_.Residual();
 }
@@ -48,7 +48,7 @@ Teuchos::RCP<Epetra_Vector> FSI::StructureAdapter::RHS()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::StructureAdapter::Dispnp()
+Teuchos::RCP<const Epetra_Vector> FSI::StructureAdapter::Dispnp() const
 {
   double alphaf = structure_.AlphaF();
   Teuchos::RCP<Epetra_Vector> dispnp = Teuchos::rcp(new Epetra_Vector(*Disp()));
@@ -59,7 +59,7 @@ Teuchos::RCP<Epetra_Vector> FSI::StructureAdapter::Dispnp()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::StructureAdapter::Disp()
+Teuchos::RCP<const Epetra_Vector> FSI::StructureAdapter::Disp() const
 {
   return structure_.Disp();
 }
@@ -67,7 +67,7 @@ Teuchos::RCP<Epetra_Vector> FSI::StructureAdapter::Disp()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::StructureAdapter::Dispm()
+Teuchos::RCP<const Epetra_Vector> FSI::StructureAdapter::Dispm() const
 {
   return structure_.Dispm();
 }
@@ -75,7 +75,7 @@ Teuchos::RCP<Epetra_Vector> FSI::StructureAdapter::Dispm()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> FSI::StructureAdapter::DofRowMap()
+Teuchos::RCP<const Epetra_Map> FSI::StructureAdapter::DofRowMap() const
 {
   const Epetra_Map* dofrowmap = dis_->DofRowMap();
   return Teuchos::rcp(dofrowmap, false);
@@ -84,7 +84,7 @@ Teuchos::RCP<const Epetra_Map> FSI::StructureAdapter::DofRowMap()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Operator> FSI::StructureAdapter::SysMat()
+Teuchos::RCP<Epetra_Operator> FSI::StructureAdapter::SysMat() const
 {
   return structure_.SysMat();
 }
@@ -108,7 +108,7 @@ double FSI::StructureAdapter::DispIncrFactor()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::StructureAdapter::FluidCondRHS()
+Teuchos::RCP<Epetra_Vector> FSI::StructureAdapter::FluidCondRHS() const
 {
   // structure part of the rhs to enforce
   // u(n+1) dt = d(n+1) - d(n)
@@ -126,7 +126,7 @@ Teuchos::RCP<Epetra_Vector> FSI::StructureAdapter::FluidCondRHS()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::StructureAdapter::MeshCondRHS()
+Teuchos::RCP<Epetra_Vector> FSI::StructureAdapter::MeshCondRHS() const
 {
   // structure part of the rhs to enforce
   // d(G,n+1) = d(n+1)
@@ -165,7 +165,7 @@ void FSI::StructureAdapter::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::StructureAdapter::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
+void FSI::StructureAdapter::Evaluate(Teuchos::RCP<const Epetra_Vector> disp) const
 {
   // Yes, this is complicated. But we have to be very careful
   // here. The field solver always expects an increment only. And

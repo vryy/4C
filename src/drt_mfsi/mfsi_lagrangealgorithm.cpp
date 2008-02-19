@@ -101,16 +101,16 @@ MFSI::LagrangeAlgorithm::LagrangeAlgorithm(Epetra_Comm& comm)
 {
   // right now we use matching meshes at the interface
 
-  Coupling& coupsf = StructureFluidCoupling();
-  Coupling& coupsa = StructureAleCoupling();
-  Coupling& coupfa = FluidAleCoupling();
+  FSI::Coupling& coupsf = StructureFluidCoupling();
+  FSI::Coupling& coupsa = StructureAleCoupling();
+  FSI::Coupling& coupfa = FluidAleCoupling();
 
   // structure to fluid
 
-  coupsf.SetupConditionCoupling(*StructureField()->Discretization(),
-                                StructureField()->Interface(),
-                                *FluidField()->Discretization(),
-                                FluidField()->Interface(),
+  coupsf.SetupConditionCoupling(*StructureField().Discretization(),
+                                StructureField().Interface(),
+                                *FluidField().Discretization(),
+                                FluidField().Interface(),
                                 "FSICoupling");
 
   // setup the very simple structure to fluid coupling
@@ -120,31 +120,31 @@ MFSI::LagrangeAlgorithm::LagrangeAlgorithm(Epetra_Comm& comm)
   //
   // du(n+1)*dt = 1/(1-alpha_f)*dd(n+m)
 
-  coupsf.SetupCouplingMatrices(*StructureField()->Discretization()->DofRowMap(),
-                               *FluidField()->Discretization()->DofRowMap());
+  coupsf.SetupCouplingMatrices(*StructureField().Discretization()->DofRowMap(),
+                               *FluidField().Discretization()->DofRowMap());
 
-//   coupsf.MasterToMasterMat()->Scale(StructureField()->DispIncrFactor());
-//   coupsf.MasterToMasterMatTrans()->Scale(StructureField()->DispIncrFactor());
+//   coupsf.MasterToMasterMat()->Scale(StructureField().DispIncrFactor());
+//   coupsf.MasterToMasterMatTrans()->Scale(StructureField().DispIncrFactor());
   coupsf.SlaveToMasterMat()->Scale(-Dt());
   coupsf.SlaveToMasterMatTrans()->Scale(-Dt());
 
   // structure to ale
 
-  coupsa.SetupConditionCoupling(*StructureField()->Discretization(),
-                                StructureField()->Interface(),
-                                *AleField()->Discretization(),
-                                AleField()->Interface(),
+  coupsa.SetupConditionCoupling(*StructureField().Discretization(),
+                                StructureField().Interface(),
+                                *AleField().Discretization(),
+                                AleField().Interface(),
                                 "FSICoupling");
 
   // setup structure to ale coupling
   //
   // dd(G,n+1) = 1/(1-alpha_f)*dd(n+m)
 
-  coupsa.SetupCouplingMatrices(*StructureField()->Discretization()->DofRowMap(),
-                                *AleField()->Discretization()->DofRowMap());
+  coupsa.SetupCouplingMatrices(*StructureField().Discretization()->DofRowMap(),
+                                *AleField().Discretization()->DofRowMap());
 
-//   coupsa.MasterToMasterMat()->Scale(StructureField()->DispIncrFactor());
-//   coupsa.MasterToMasterMatTrans()->Scale(StructureField()->DispIncrFactor());
+//   coupsa.MasterToMasterMat()->Scale(StructureField().DispIncrFactor());
+//   coupsa.MasterToMasterMatTrans()->Scale(StructureField().DispIncrFactor());
   coupsa.SlaveToMasterMat()->Scale(-1.);
   coupsa.SlaveToMasterMatTrans()->Scale(-1.);
 
@@ -159,28 +159,28 @@ MFSI::LagrangeAlgorithm::LagrangeAlgorithm(Epetra_Comm& comm)
     dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
 
   // init transfer from interface to field
-  //StructureField()->SetInterfaceMap(coupsf.MasterDofMap());
+  //StructureField().SetInterfaceMap(coupsf.MasterDofMap());
   //FluidField()    ->SetInterfaceMap(coupsf.SlaveDofMap());
   //AleField()      ->SetInterfaceMap(coupsa.SlaveDofMap());
 
-  ifstruct_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->InterfaceMap()));
-  iastruct_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->InterfaceMap()));
+  ifstruct_ = Teuchos::rcp(new Epetra_Vector(*StructureField().InterfaceMap()));
+  iastruct_ = Teuchos::rcp(new Epetra_Vector(*StructureField().InterfaceMap()));
 
   // the fluid-ale coupling always matches
-  const Epetra_Map* fluidnodemap = FluidField()->Discretization()->NodeRowMap();
-  const Epetra_Map* alenodemap   = AleField()->Discretization()->NodeRowMap();
+  const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
+  const Epetra_Map* alenodemap   = AleField().Discretization()->NodeRowMap();
 
-  coupfa.SetupCoupling(*FluidField()->Discretization(),
-                        *AleField()->Discretization(),
-                        *fluidnodemap,
-                        *alenodemap);
+  coupfa.SetupCoupling(*FluidField().Discretization(),
+                       *AleField().Discretization(),
+                       *fluidnodemap,
+                       *alenodemap);
 
-  FluidField()->SetMeshMap(coupfa.MasterDofMap());
+  FluidField().SetMeshMap(coupfa.MasterDofMap());
 
   // create Thyra vector spaces from Epetra maps for all fields
-  smap_ = Thyra::create_VectorSpace(StructureField()->DofRowMap());
-  fmap_ = Thyra::create_VectorSpace(FluidField()->DofRowMap());
-  amap_ = Thyra::create_VectorSpace(AleField()->DofRowMap());
+  smap_ = Thyra::create_VectorSpace(StructureField().DofRowMap());
+  fmap_ = Thyra::create_VectorSpace(FluidField().DofRowMap());
+  amap_ = Thyra::create_VectorSpace(AleField().DofRowMap());
 
   sfmap_ = Thyra::create_VectorSpace(coupsf.MasterDofMap());
 
@@ -234,7 +234,7 @@ MFSI::LagrangeAlgorithm::LagrangeAlgorithm(Epetra_Comm& comm)
   alesolverfactory_ = Teuchos::rcp(new Thyra::AmesosLinearOpWithSolveFactory(Thyra::Amesos::KLU));
 #endif
 
-  sfidentity_ = Teuchos::rcp(new Thyra::DefaultIdentityLinearOp<double>(Thyra::create_VectorSpace(StructureField()->InterfaceMap())));
+  sfidentity_ = Teuchos::rcp(new Thyra::DefaultIdentityLinearOp<double>(Thyra::create_VectorSpace(StructureField().InterfaceMap())));
 
   //Thyra::ConstLinearOperator<double> sfihandle = sfidentity;
 
@@ -261,15 +261,15 @@ void MFSI::LagrangeAlgorithm::InitialGuess(Thyra::DefaultProductVector<double>& 
 {
   // the linear field systems must be setup before the initial guess
   // is known
-  Teuchos::RCP< const Thyra::VectorBase< double > > sig = Thyra::create_Vector(StructureField()->InitialGuess(), smap_);
-  Teuchos::RCP< const Thyra::VectorBase< double > > fig = Thyra::create_Vector(FluidField()->InitialGuess(), fmap_);
-  Teuchos::RCP< const Thyra::VectorBase< double > > aig = Thyra::create_Vector(AleField()->InitialGuess(), amap_);
+  Teuchos::RCP< const Thyra::VectorBase< double > > sig = Thyra::create_Vector(StructureField().InitialGuess(), smap_);
+  Teuchos::RCP< const Thyra::VectorBase< double > > fig = Thyra::create_Vector(FluidField().InitialGuess(), fmap_);
+  Teuchos::RCP< const Thyra::VectorBase< double > > aig = Thyra::create_Vector(AleField().InitialGuess(), amap_);
 
   Teuchos::RCP< const Thyra::VectorBase< double > > sfig =
-    Thyra::create_Vector(ifstruct_, Thyra::create_VectorSpace(StructureField()->InterfaceMap()));
+    Thyra::create_Vector(ifstruct_, Thyra::create_VectorSpace(StructureField().InterfaceMap()));
 
   Teuchos::RCP< const Thyra::VectorBase< double > > saig =
-    Thyra::create_Vector(iastruct_, Thyra::create_VectorSpace(StructureField()->InterfaceMap()));
+    Thyra::create_Vector(iastruct_, Thyra::create_VectorSpace(StructureField().InterfaceMap()));
 
   int numBlocks = 5;
   std::vector<Teuchos::RCP<const Thyra::VectorBase<double> > > vec(numBlocks);
@@ -289,13 +289,13 @@ void MFSI::LagrangeAlgorithm::SetupRHS(Thyra::DefaultProductVector<double> &f) c
   // Extract RHS and put it into f
 
   // make a local copy so that we can modify the rhs vectors
-  Teuchos::RCP<Epetra_Vector> sv = rcp(new Epetra_Vector(*StructureField()->RHS()));
-  Teuchos::RCP<Epetra_Vector> fv = rcp(new Epetra_Vector(*FluidField()->RHS()));
-  Teuchos::RCP<Epetra_Vector> av = rcp(new Epetra_Vector(*AleField()->RHS()));
+  Teuchos::RCP<Epetra_Vector> sv = rcp(new Epetra_Vector(*StructureField().RHS()));
+  Teuchos::RCP<Epetra_Vector> fv = rcp(new Epetra_Vector(*FluidField().RHS()));
+  Teuchos::RCP<Epetra_Vector> av = rcp(new Epetra_Vector(*AleField().RHS()));
 
-//   debug_.DumpVector("sf",*StructureField()->Discretization(),*sv);
-//   debug_.DumpVector("ff",*FluidField()->Discretization(),*fv);
-//   debug_.DumpVector("af",*AleField()->Discretization(),*av);
+//   debug_.DumpVector("sf",*StructureField().Discretization(),*sv);
+//   debug_.DumpVector("ff",*FluidField().Discretization(),*fv);
+//   debug_.DumpVector("af",*AleField().Discretization(),*av);
 
   // wrap epetra vectors in thyra
   Teuchos::RCP< Thyra::VectorBase< double > > srhs = Thyra::create_Vector(sv, smap_);
@@ -304,15 +304,15 @@ void MFSI::LagrangeAlgorithm::SetupRHS(Thyra::DefaultProductVector<double> &f) c
 
   // We couple absolute vectors, no increments. So we have a nonzero rhs.
 
-  Teuchos::RCP< Epetra_Vector > ifstruct = StructureField()->FluidCondRHS();
-  ifstruct->Update(1.0*Dt(),*FluidToStruct(FluidField()->StructCondRHS()),-1.0);
+  Teuchos::RCP< Epetra_Vector > ifstruct = StructureField().FluidCondRHS();
+  ifstruct->Update(1.0*Dt(),*FluidToStruct(FluidField().StructCondRHS()),-1.0);
   Teuchos::RCP< Thyra::VectorBase< double > > sfrhs =
-    Thyra::create_Vector(ifstruct, Thyra::create_VectorSpace(StructureField()->InterfaceMap()));
+    Thyra::create_Vector(ifstruct, Thyra::create_VectorSpace(StructureField().InterfaceMap()));
 
-  Teuchos::RCP< Epetra_Vector > iastruct = StructureField()->MeshCondRHS();
-  iastruct->Update(1.0,*AleToStruct(AleField()->StructCondRHS()),-1.0);
+  Teuchos::RCP< Epetra_Vector > iastruct = StructureField().MeshCondRHS();
+  iastruct->Update(1.0,*AleToStruct(AleField().StructCondRHS()),-1.0);
   Teuchos::RCP< Thyra::VectorBase< double > > sarhs =
-    Thyra::create_Vector(iastruct, Thyra::create_VectorSpace(StructureField()->InterfaceMap()));
+    Thyra::create_Vector(iastruct, Thyra::create_VectorSpace(StructureField().InterfaceMap()));
 
   // create block vector
   int numBlocks = 5;
@@ -335,17 +335,17 @@ void MFSI::LagrangeAlgorithm::SetupSysMat(Thyra::DefaultBlockedLinearOp<double>&
 {
   // extract Jacobian matrices and put them into composite system
   // matrix W
-  Teuchos::RCP<Thyra::LinearOpBase<double> > smat = Teuchos::rcp(new Thyra::EpetraLinearOp(StructureField()->SysMat()));
-  Teuchos::RCP<Thyra::LinearOpBase<double> > fmat = Teuchos::rcp(new Thyra::EpetraLinearOp(FluidField()->SysMat()));
-  Teuchos::RCP<Thyra::LinearOpBase<double> > amat = Teuchos::rcp(new Thyra::EpetraLinearOp(AleField()->SysMat()));
+  Teuchos::RCP<Thyra::LinearOpBase<double> > smat = Teuchos::rcp(new Thyra::EpetraLinearOp(StructureField().SysMat()));
+  Teuchos::RCP<Thyra::LinearOpBase<double> > fmat = Teuchos::rcp(new Thyra::EpetraLinearOp(FluidField().SysMat()));
+  Teuchos::RCP<Thyra::LinearOpBase<double> > amat = Teuchos::rcp(new Thyra::EpetraLinearOp(AleField().SysMat()));
 
   mat.beginBlockFill(DofRowMap(), DofRowMap());
   mat.setBlock(0,0,smat);
   mat.setBlock(1,1,fmat);
   mat.setBlock(2,2,amat);
 
-  const Coupling& coupsf = StructureFluidCoupling();
-  const Coupling& coupsa = StructureAleCoupling();
+  const FSI::Coupling& coupsf = StructureFluidCoupling();
+  const FSI::Coupling& coupsa = StructureAleCoupling();
 
   // structure to fluid coupling
   mat.setBlock(3,0,Teuchos::rcp(new Thyra::EpetraLinearOp(coupsf.MasterToMasterMat())));
@@ -373,9 +373,9 @@ void MFSI::LagrangeAlgorithm::ExtractFieldVectors(Teuchos::RCP<const Thyra::Defa
                                                   Teuchos::RCP<const Epetra_Vector>& fx,
                                                   Teuchos::RCP<const Epetra_Vector>& ax) const
 {
-  sx = Thyra::get_Epetra_Vector(*StructureField()->DofRowMap(), x->getVectorBlock(0));
-  fx = Thyra::get_Epetra_Vector(*FluidField()    ->DofRowMap(), x->getVectorBlock(1));
-  ax = Thyra::get_Epetra_Vector(*AleField()      ->DofRowMap(), x->getVectorBlock(2));
+  sx = Thyra::get_Epetra_Vector(*StructureField().DofRowMap(), x->getVectorBlock(0));
+  fx = Thyra::get_Epetra_Vector(*FluidField()    .DofRowMap(), x->getVectorBlock(1));
+  ax = Thyra::get_Epetra_Vector(*AleField()      .DofRowMap(), x->getVectorBlock(2));
 }
 
 
@@ -399,8 +399,8 @@ MFSI::LagrangeAlgorithm::CreateStatusTest(Teuchos::ParameterList& nlParams,
   Teuchos::RCP<PartialNormF> structureDisp =
     Teuchos::rcp(new PartialNormF("displacement",
                                   0,
-                                  *StructureField()->DofRowMap(),
-                                  *StructureField()->InnerDisplacementRowMap(),
+                                  *StructureField().DofRowMap(),
+                                  *StructureField().InnerDisplacementRowMap(),
                                   nlParams.get("Norm abs disp", 1.0e-6),
                                   PartialNormF::Scaled));
   converged->addStatusTest(structureDisp);
@@ -408,8 +408,8 @@ MFSI::LagrangeAlgorithm::CreateStatusTest(Teuchos::ParameterList& nlParams,
   Teuchos::RCP<PartialNormF> innerFluidVel =
     Teuchos::rcp(new PartialNormF("velocity",
                                   1,
-                                  *FluidField()->DofRowMap(),
-                                  *FluidField()->InnerVelocityRowMap(),
+                                  *FluidField().DofRowMap(),
+                                  *FluidField().InnerVelocityRowMap(),
                                   nlParams.get("Norm abs vel", 1.0e-6),
                                   PartialNormF::Scaled));
   converged->addStatusTest(innerFluidVel);
@@ -417,20 +417,20 @@ MFSI::LagrangeAlgorithm::CreateStatusTest(Teuchos::ParameterList& nlParams,
   Teuchos::RCP<PartialNormF> fluidPress =
     Teuchos::rcp(new PartialNormF("pressure",
                                   1,
-                                  *FluidField()->DofRowMap(),
-                                  *FluidField()->PressureRowMap(),
+                                  *FluidField().DofRowMap(),
+                                  *FluidField().PressureRowMap(),
                                   nlParams.get("Norm abs pres", 1.0e-6),
                                   PartialNormF::Scaled));
   converged->addStatusTest(fluidPress);
 
-  const Coupling& coupsf = StructureFluidCoupling();
+  const FSI::Coupling& coupsf = StructureFluidCoupling();
 
   Teuchos::RCP<InterfaceNormF> interface =
     Teuchos::rcp(new InterfaceNormF(1.,
-                                    *StructureField()->DofRowMap(),
+                                    *StructureField().DofRowMap(),
                                     *coupsf.MasterDofMap(),
-                                    FluidField()->ResidualScaling(),
-                                    *FluidField()->DofRowMap(),
+                                    FluidField().ResidualScaling(),
+                                    *FluidField().DofRowMap(),
                                     *coupsf.SlaveDofMap(),
                                     coupsf,
                                     nlParams.get("Norm abs interface", 1.0e-6),

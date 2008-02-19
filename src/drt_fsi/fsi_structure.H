@@ -51,25 +51,25 @@ namespace FSI {
 
     virtual ~Structure();
 
-    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() = 0;
-    virtual Teuchos::RCP<Epetra_Vector> RHS() = 0;
-    virtual Teuchos::RCP<Epetra_Vector> Dispnp() = 0;
-    virtual Teuchos::RCP<Epetra_Vector> Disp() = 0;
-    virtual Teuchos::RCP<Epetra_Vector> Dispm() = 0;
-    virtual Teuchos::RCP<const Epetra_Map> DofRowMap() = 0;
-    virtual Teuchos::RCP<Epetra_Operator> SysMat() = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> RHS() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> Dispnp() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> Disp() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> Dispm() const = 0;
+    virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const = 0;
+    virtual Teuchos::RCP<Epetra_Operator> SysMat() const = 0;
     virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
     virtual double DispIncrFactor() = 0;
 
-    virtual Teuchos::RCP<Epetra_Vector> FluidCondRHS() = 0;
-    virtual Teuchos::RCP<Epetra_Vector> MeshCondRHS() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> FluidCondRHS() const = 0;
+    virtual Teuchos::RCP<Epetra_Vector> MeshCondRHS() const = 0;
 
     virtual void PrepareTimeStep() = 0;
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disp) = 0;
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disp) const = 0;
     virtual void Update() = 0;
     virtual void Output() = 0;
 
-    virtual Teuchos::RCP<Epetra_Map> InterfaceMap() = 0;
+    virtual Teuchos::RCP<Epetra_Map> InterfaceMap() const = 0;
     virtual Teuchos::RCP<Epetra_Map> InnerDisplacementRowMap() = 0;
 
     /// communication object at the interface
@@ -130,27 +130,27 @@ namespace FSI {
                      Teuchos::RCP<LINALG::Solver> solver,
                      Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    Teuchos::RCP<const Epetra_Vector> InitialGuess();
-    Teuchos::RCP<Epetra_Vector> RHS();
-    Teuchos::RCP<Epetra_Vector> Dispnp();
-    Teuchos::RCP<Epetra_Vector> Disp();
-    Teuchos::RCP<Epetra_Vector> Dispm();
-    Teuchos::RCP<const Epetra_Map> DofRowMap();
-    Teuchos::RCP<Epetra_Operator> SysMat();
+    Teuchos::RCP<const Epetra_Vector> InitialGuess() const;
+    Teuchos::RCP<const Epetra_Vector> RHS() const;
+    Teuchos::RCP<const Epetra_Vector> Dispnp() const;
+    Teuchos::RCP<const Epetra_Vector> Disp() const;
+    Teuchos::RCP<const Epetra_Vector> Dispm() const;
+    Teuchos::RCP<const Epetra_Map> DofRowMap() const;
+    Teuchos::RCP<Epetra_Operator> SysMat() const;
     Teuchos::RCP<DRT::Discretization> Discretization();
     double DispIncrFactor();
 
-    virtual Teuchos::RCP<Epetra_Vector> FluidCondRHS();
-    virtual Teuchos::RCP<Epetra_Vector> MeshCondRHS();
+    virtual Teuchos::RCP<Epetra_Vector> FluidCondRHS() const;
+    virtual Teuchos::RCP<Epetra_Vector> MeshCondRHS() const;
 
     //Teuchos::RCP<Epetra_Vector> InterfaceDispn();
 
     void PrepareTimeStep();
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> disp);
+    void Evaluate(Teuchos::RCP<const Epetra_Vector> disp) const;
     void Update();
     void Output();
 
-    Teuchos::RCP<Epetra_Map> InterfaceMap() { return interface_.CondMap(); }
+    Teuchos::RCP<Epetra_Map> InterfaceMap() const { return interface_.CondMap(); }
     Teuchos::RCP<Epetra_Map> InnerDisplacementRowMap() { return interface_.OtherMap(); }
 
     /// communication object at the interface
@@ -202,7 +202,7 @@ namespace FSI {
   private:
 
     /// the actual structure algorithm
-    StruGenAlpha structure_;
+    mutable StruGenAlpha structure_;
 
     /// the interface map setup for interface <-> full translation
     LINALG::MapExtractor interface_;

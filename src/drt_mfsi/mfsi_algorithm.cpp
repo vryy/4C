@@ -84,263 +84,14 @@ extern Teuchos::RCP<Teuchos::ParameterList> globalparameterlist;
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MFSI::Algorithm::Algorithm(Epetra_Comm& comm)
-  : comm_(comm)
+  : FSI::Algorithm(comm)
 {
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-
-  step_ = 0;
-  time_ = 0.;
-  dt_ = fsidyn.get<double>("TIMESTEP");
-  nstep_ = fsidyn.get<int>("NUMSTEP");
-  maxtime_ = fsidyn.get<double>("MAXTIME");
-
-  SetupStructure();
-  SetupFluid();
-  SetupAle();
-
   // Create the system matrix. Right now it is empty. It is filled in
   // create_W_op().
   mat_ = Teuchos::rcp(new Thyra::DefaultBlockedLinearOp<double>());
 
   //--------------------------------------------------
   evaluatetimer_ = Teuchos::TimeMonitor::getNewTimer("MFSI::Algorithm::evalModelImpl");
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MFSI::Algorithm::SetupStructure()
-{
-  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("MFSI::Algorithm::SetupStructure");
-  Teuchos::TimeMonitor monitor(*t);
-
-  // -------------------------------------------------------------------
-  // access the discretization
-  // -------------------------------------------------------------------
-  RefCountPtr<DRT::Discretization> actdis = null;
-  actdis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
-
-  // set degrees of freedom in the discretization
-  if (!actdis->Filled()) actdis->FillComplete();
-
-  // -------------------------------------------------------------------
-  // context for output and restart
-  // -------------------------------------------------------------------
-  RefCountPtr<IO::DiscretizationWriter> output =
-    rcp(new IO::DiscretizationWriter(actdis));
-  output->WriteMesh(0,0.0);
-
-  // -------------------------------------------------------------------
-  // set some pointers and variables
-  // -------------------------------------------------------------------
-  SOLVAR*         actsolv  = &solv[genprob.numsf];
-
-  const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
-  const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
-  const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-
-  // -------------------------------------------------------------------
-  // create a solver
-  // -------------------------------------------------------------------
-  RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
-  RefCountPtr<LINALG::Solver> solver =
-    rcp(new LINALG::Solver(solveparams,actdis->Comm(),allfiles.out_err));
-  solver->TranslateSolverParameters(*solveparams,actsolv);
-  actdis->ComputeNullSpaceIfNecessary(*solveparams);
-
-  // -------------------------------------------------------------------
-  // create a generalized alpha time integrator
-  // -------------------------------------------------------------------
-  RefCountPtr<ParameterList> genalphaparams = rcp(new ParameterList());
-  StruGenAlpha::SetDefaults(*genalphaparams);
-
-  genalphaparams->set<bool>  ("damping",Teuchos::getIntegralValue<int>(sdyn,"DAMPING"));
-  genalphaparams->set<double>("damping factor K",sdyn.get<double>("K_DAMP"));
-  genalphaparams->set<double>("damping factor M",sdyn.get<double>("M_DAMP"));
-
-  genalphaparams->set<double>("beta",sdyn.get<double>("BETA"));
-  genalphaparams->set<double>("gamma",sdyn.get<double>("GAMMA"));
-  genalphaparams->set<double>("alpha m",sdyn.get<double>("ALPHA_M"));
-  genalphaparams->set<double>("alpha f",sdyn.get<double>("ALPHA_F"));
-
-  genalphaparams->set<double>("total time",0.0);
-  genalphaparams->set<double>("delta time",fsidyn.get<double>("TIMESTEP"));
-  genalphaparams->set<int>   ("step",0);
-  genalphaparams->set<int>   ("nstep",fsidyn.get<int>("NUMSTEP"));
-  genalphaparams->set<int>   ("max iterations",sdyn.get<int>("MAXITER"));
-  genalphaparams->set<int>   ("num iterations",-1);
-  genalphaparams->set<double>("tolerance displacements",sdyn.get<double>("TOLDISP"));
-
-  genalphaparams->set<bool>  ("io structural disp",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_DISP"));
-  genalphaparams->set<int>   ("io disp every nstep",fsidyn.get<int>("UPRES"));
-  genalphaparams->set<bool>  ("io structural stress",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_STRESS"));
-  genalphaparams->set<int>   ("io stress every nstep",sdyn.get<int>("RESEVRYSTRS"));
-
-  genalphaparams->set<int>   ("restart",probtype.get<int>("RESTART"));
-  genalphaparams->set<int>   ("write restart every",fsidyn.get<int>("RESTARTEVRY"));
-
-  genalphaparams->set<bool>  ("print to screen",true);
-  genalphaparams->set<bool>  ("print to err",true);
-  genalphaparams->set<FILE*> ("err file",allfiles.out_err);
-
-  // takes values "full newton" , "modified newton" , "nonlinear cg"
-  genalphaparams->set<string>("equilibrium iteration","full newton");
-
-  structure_ = rcp(new FSI::StructureAdapter(genalphaparams,actdis,solver,output));
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MFSI::Algorithm::SetupFluid()
-{
-  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("MFSI::Algorithm::SetupFluid");
-  Teuchos::TimeMonitor monitor(*t);
-
-  // -------------------------------------------------------------------
-  // access the discretization
-  // -------------------------------------------------------------------
-  Teuchos::RCP<DRT::Discretization> actdis = null;
-  actdis = DRT::Problem::Instance()->Dis(genprob.numff,0);
-
-  // -------------------------------------------------------------------
-  // set degrees of freedom in the discretization
-  // -------------------------------------------------------------------
-  if (!actdis->Filled()) actdis->FillComplete();
-
-  // -------------------------------------------------------------------
-  // context for output and restart
-  // -------------------------------------------------------------------
-  RefCountPtr<IO::DiscretizationWriter> output =
-    rcp(new IO::DiscretizationWriter(actdis));
-  output->WriteMesh(0,0.0);
-
-  // -------------------------------------------------------------------
-  // set some pointers and variables
-  // -------------------------------------------------------------------
-  SOLVAR        *actsolv  = &solv[genprob.numff];
-
-  const Teuchos::ParameterList& probsize = DRT::Problem::Instance()->ProblemSizeParams();
-  const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
-  const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-
-  // -------------------------------------------------------------------
-  // create a solver
-  // -------------------------------------------------------------------
-  RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
-  RefCountPtr<LINALG::Solver> solver =
-    rcp(new LINALG::Solver(solveparams,actdis->Comm(),allfiles.out_err));
-  solver->TranslateSolverParameters(*solveparams,actsolv);
-  actdis->ComputeNullSpaceIfNecessary(*solveparams);
-
-  // -------------------------------------------------------------------
-  // create a fluid nonlinear time integrator
-  // -------------------------------------------------------------------
-  RefCountPtr<ParameterList> fluidtimeparams = rcp(new ParameterList());
-
-  FLUID_TIMEINTTYPE iop = Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(fdyn,"TIMEINTEGR");
-
-  // number of degrees of freedom
-  fluidtimeparams->set<int>              ("number of velocity degrees of freedom" ,probsize.get<int>("DIM"));
-  // the default time step size
-  fluidtimeparams->set<double>           ("time step size"           ,fsidyn.get<double>("TIMESTEP"));
-  // max. sim. time
-  fluidtimeparams->set<double>           ("total time"               ,fsidyn.get<double>("MAXTIME"));
-  // parameter for time-integration
-  fluidtimeparams->set<double>           ("theta"                    ,fdyn.get<double>("THETA"));
-  // which kind of time-integration
-  fluidtimeparams->set<FLUID_TIMEINTTYPE>("time int algo"            ,iop);
-  // bound for the number of timesteps
-  fluidtimeparams->set<int>              ("max number timesteps"     ,fsidyn.get<int>("NUMSTEP"));
-  // number of steps with start algorithm
-  fluidtimeparams->set<int>              ("number of start steps"    ,fdyn.get<int>("NUMSTASTEPS"));
-  // parameter for start algo
-  fluidtimeparams->set<double>           ("start theta"              ,fdyn.get<double>("START_THETA"));
-  // parameter for grid velocity interpolation
-  fluidtimeparams->set<int>              ("order gridvel"            ,fdyn.get<int>("GRIDVEL"));
-
-
-  // ---------------------------------------------- nonlinear iteration
-  // set linearisation scheme
-  fluidtimeparams->set<bool>("Use reaction terms for linearisation",
-                            Teuchos::getIntegralValue<int>(fdyn,"NONLINITER")==2);
-  // maximum number of nonlinear iteration steps
-  fluidtimeparams->set<int>             ("max nonlin iter steps"     ,fdyn.get<int>("ITEMAX"));
-  // stop nonlinear iteration when both incr-norms are below this bound
-  fluidtimeparams->set<double>          ("tolerance for nonlin iter" ,fdyn.get<double>("CONVTOL"));
-
-  // ----------------------------------------------- restart and output
-  // restart
-  fluidtimeparams->set                 ("write restart every"       ,fsidyn.get<int>("RESTARTEVRY"));
-  // solution output
-  fluidtimeparams->set                 ("write solution every"      ,fsidyn.get<int>("UPRES"));
-  // flag for writing stresses
-  fluidtimeparams->set                 ("write stresses"            ,Teuchos::getIntegralValue<int>(ioflags,"FLUID_STRESS"));
-
-  //--------------------------------------------------
-  // evaluate error for test flows with analytical solutions
-  int init = Teuchos::getIntegralValue<int>(fdyn,"INITIALFIELD");
-  fluidtimeparams->set                  ("eval err for analyt sol"   ,init);
-
-
-  //--------------------------------------------------
-  // create all vectors and variables associated with the time
-  // integration (call the constructor)
-  // the only parameter from the list required here is the number of
-  // velocity degrees of freedom
-  fluid_ = rcp(new FSI::FluidAdapter(actdis, solver, fluidtimeparams, output));
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MFSI::Algorithm::SetupAle()
-{
-  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("MFSI::Algorithm::SetupAle");
-  Teuchos::TimeMonitor monitor(*t);
-
-  // -------------------------------------------------------------------
-  // access the discretization
-  // -------------------------------------------------------------------
-  Teuchos::RCP<DRT::Discretization> actdis = null;
-  actdis = DRT::Problem::Instance()->Dis(genprob.numaf,0);
-
-  // -------------------------------------------------------------------
-  // set degrees of freedom in the discretization
-  // -------------------------------------------------------------------
-  if (!actdis->Filled()) actdis->FillComplete();
-
-  // -------------------------------------------------------------------
-  // context for output and restart
-  // -------------------------------------------------------------------
-  RefCountPtr<IO::DiscretizationWriter> output =
-    rcp(new IO::DiscretizationWriter(actdis));
-  output->WriteMesh(0,0.0);
-
-  // -------------------------------------------------------------------
-  // set some pointers and variables
-  // -------------------------------------------------------------------
-  SOLVAR        *actsolv  = &solv[genprob.numaf];
-
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-
-  // -------------------------------------------------------------------
-  // create a solver
-  // -------------------------------------------------------------------
-  RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
-  RefCountPtr<LINALG::Solver> solver =
-    rcp(new LINALG::Solver(solveparams,actdis->Comm(),allfiles.out_err));
-  solver->TranslateSolverParameters(*solveparams,actsolv);
-  actdis->ComputeNullSpaceIfNecessary(*solveparams);
-
-  RefCountPtr<ParameterList> params = rcp(new ParameterList());
-  params->set<int>("numstep",    fsidyn.get<int>("NUMSTEP"));
-  params->set<double>("maxtime", fsidyn.get<double>("MAXTIME"));
-  params->set<double>("dt",      fsidyn.get<double>("TIMESTEP"));
-
-  ale_ = rcp(new FSI::AleLinear(actdis, solver, params, output, false));
 }
 
 
@@ -537,36 +288,36 @@ void MFSI::Algorithm::Evaluate(Teuchos::RCP<const Thyra::DefaultProductVector<do
       ExtractFieldVectors(x,sx,fx,ax);
 
       // debug
-      debug_.DumpVector("sx",*StructureField()->Discretization(),*sx);
-      debug_.DumpVector("fx",*FluidField()->Discretization(),*fx);
-      debug_.DumpVector("ax",*AleField()->Discretization(),*ax);
+      //debug_.DumpVector("sx",*StructureField()->Discretization(),*sx);
+      //debug_.DumpVector("fx",*FluidField()->Discretization(),*fx);
+      //debug_.DumpVector("ax",*AleField()->Discretization(),*ax);
 
       // Call all elements and assemble rhs and matrices
       // We only need the rhs here because NOX will ask for the rhs
       // only. But the Jacobian is stored internally and will be returnd
       // later on without looking at x again!
-      StructureField()->Evaluate(sx);
-      AleField()      ->Evaluate(ax);
+      StructureField().Evaluate(sx);
+      AleField()      .Evaluate(ax);
 
       // transfer the current ale mesh positions to the fluid field
-      Teuchos::RefCountPtr<Epetra_Vector> fluiddisp = AleToFluid(AleField()->ExtractDisplacement());
-      FluidField()->ApplyMeshDisplacement(fluiddisp);
+      Teuchos::RefCountPtr<Epetra_Vector> fluiddisp = AleToFluid(AleField().ExtractDisplacement());
+      FluidField().ApplyMeshDisplacement(fluiddisp);
 
-      FluidField()    ->Evaluate(fx);
+      FluidField()    .Evaluate(fx);
     }
   }
   else
   {
     Utils()->out() << YELLOW_LIGHT "element call at current x" END_COLOR << endl;
 
-    StructureField()->Evaluate(Teuchos::null);
-    AleField()      ->Evaluate(Teuchos::null);
+    StructureField().Evaluate(Teuchos::null);
+    AleField()      .Evaluate(Teuchos::null);
 
     // transfer the current ale mesh positions to the fluid field
-    Teuchos::RefCountPtr<Epetra_Vector> fluiddisp = AleToFluid(AleField()->ExtractDisplacement());
-    FluidField()->ApplyMeshDisplacement(fluiddisp);
+    Teuchos::RefCountPtr<Epetra_Vector> fluiddisp = AleToFluid(AleField().ExtractDisplacement());
+    FluidField().ApplyMeshDisplacement(fluiddisp);
 
-    FluidField()    ->Evaluate(Teuchos::null);
+    FluidField().Evaluate(Teuchos::null);
   }
 
   //debug.DumpVector("sres",*StructureField()->Discretization(),*StructureField()->RHS());
@@ -587,123 +338,6 @@ Teuchos::RCP<const Thyra::VectorSpaceBase<double> > MFSI::Algorithm::get_x_space
 Teuchos::RCP<const Thyra::VectorSpaceBase<double> > MFSI::Algorithm::get_f_space() const
 {
   return dofrowmap_;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MFSI::Algorithm::PrepareTimeStep()
-{
-  step_ += 1;
-  time_ += dt_;
-
-  structure_->PrepareTimeStep();
-  fluid_->    PrepareTimeStep();
-  ale_->      PrepareTimeStep();
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MFSI::Algorithm::Update()
-{
-  // Just go on. Tell each field to update itself. The fields already
-  // have all the information they need because each residual
-  // evaluation updates the current variable in each field.
-
-  structure_->Update();
-  fluid_    ->Update();
-  ale_      ->Update();
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MFSI::Algorithm::Output()
-{
-  structure_->Output();
-  fluid_    ->Output();
-  ale_      ->Output();
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> MFSI::Algorithm::StructToAle(Teuchos::RCP<Epetra_Vector> iv) const
-{
-  return coupsa_.MasterToSlave(iv);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> MFSI::Algorithm::AleToStruct(Teuchos::RCP<Epetra_Vector> iv) const
-{
-  return coupsa_.SlaveToMaster(iv);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> MFSI::Algorithm::StructToFluid(Teuchos::RCP<Epetra_Vector> iv) const
-{
-  return coupsf_.MasterToSlave(iv);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> MFSI::Algorithm::FluidToStruct(Teuchos::RCP<Epetra_Vector> iv) const
-{
-  return coupsf_.SlaveToMaster(iv);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> MFSI::Algorithm::AleToFluid(Teuchos::RCP<Epetra_Vector> iv) const
-{
-  return coupfa_.SlaveToMaster(iv);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> MFSI::Algorithm::StructToAle(Teuchos::RCP<const Epetra_Vector> iv) const
-{
-  return coupsa_.MasterToSlave(iv);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> MFSI::Algorithm::AleToStruct(Teuchos::RCP<const Epetra_Vector> iv) const
-{
-  return coupsa_.SlaveToMaster(iv);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> MFSI::Algorithm::StructToFluid(Teuchos::RCP<const Epetra_Vector> iv) const
-{
-  return coupsf_.MasterToSlave(iv);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> MFSI::Algorithm::FluidToStruct(Teuchos::RCP<const Epetra_Vector> iv) const
-{
-  return coupsf_.SlaveToMaster(iv);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> MFSI::Algorithm::AleToFluid(Teuchos::RCP<const Epetra_Vector> iv) const
-{
-  return coupfa_.SlaveToMaster(iv);
 }
 
 

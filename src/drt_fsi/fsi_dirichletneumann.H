@@ -115,6 +115,17 @@ public:
   /// compute FSI interface residuum S^{-1}(F(d)) - d
   bool computeF(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag);
 
+protected:
+
+  //! @name Transfer helpers
+
+  Teuchos::RCP<Epetra_Vector> StructToAle(Teuchos::RCP<Epetra_Vector> iv);
+  Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv);
+  Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<Epetra_Vector> iv);
+  Teuchos::RCP<Epetra_Vector> AleToFluid(Teuchos::RCP<Epetra_Vector> iv);
+
+  //@}
+
 private:
 
   ///
@@ -126,7 +137,7 @@ private:
 
   ///
   Teuchos::RCP<NOX::StatusTest::Combo> CreateStatusTest(ParameterList& nlParams,
-                                                                Teuchos::RCP<NOX::Epetra::Group> grp);
+                                                        Teuchos::RCP<NOX::Epetra::Group> grp);
 
   /// interface fluid operator
   Teuchos::RCP<Epetra_Vector> FluidOp(Teuchos::RCP<Epetra_Vector> idisp,
@@ -139,11 +150,6 @@ private:
   /// interface velocity calculation given the interface displacements
   Teuchos::RCP<Epetra_Vector> InterfaceVelocity(Teuchos::RCP<Epetra_Vector> idispnp);
 
-  Teuchos::RCP<Epetra_Vector> StructToAle(Teuchos::RCP<Epetra_Vector> iv);
-  Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv);
-  Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<Epetra_Vector> iv);
-  Teuchos::RCP<Epetra_Vector> AleToFluid(Teuchos::RCP<Epetra_Vector> iv);
-
   /// current interface displacements
   Teuchos::RCP<Epetra_Vector> InterfaceDisp();
 
@@ -152,15 +158,6 @@ private:
 
   /// setup list with default parameters
   void SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
-
-  /// coupling of structure and fluid at the interface
-  Coupling               coupsf_;
-
-  /// coupling of structure and ale at the interface
-  Coupling               coupsa_;
-
-  /// coupling of fluid and ale
-  Coupling               coupfa_;
 
   /// coupling of structure and fluid at the interface, with mortar. Experimental!
   CouplingMortar         coupsfm_;

@@ -58,7 +58,7 @@ FSI::FluidAdapter::FluidAdapter(Teuchos::RCP<DRT::Discretization> dis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::FluidAdapter::InitialGuess()
+Teuchos::RCP<const Epetra_Vector> FSI::FluidAdapter::InitialGuess() const
 {
   return fluid_.InitialGuess();
 }
@@ -66,7 +66,7 @@ Teuchos::RCP<Epetra_Vector> FSI::FluidAdapter::InitialGuess()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::FluidAdapter::RHS()
+Teuchos::RCP<const Epetra_Vector> FSI::FluidAdapter::RHS() const
 {
   return fluid_.Residual();
 }
@@ -74,7 +74,7 @@ Teuchos::RCP<Epetra_Vector> FSI::FluidAdapter::RHS()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::FluidAdapter::Velnp()
+Teuchos::RCP<const Epetra_Vector> FSI::FluidAdapter::Velnp() const
 {
   return fluid_.Velnp();
 }
@@ -82,7 +82,7 @@ Teuchos::RCP<Epetra_Vector> FSI::FluidAdapter::Velnp()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::FluidAdapter::Veln()
+Teuchos::RCP<const Epetra_Vector> FSI::FluidAdapter::Veln() const
 {
   return fluid_.Veln();
 }
@@ -90,7 +90,7 @@ Teuchos::RCP<Epetra_Vector> FSI::FluidAdapter::Veln()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> FSI::FluidAdapter::DofRowMap()
+Teuchos::RCP<const Epetra_Map> FSI::FluidAdapter::DofRowMap() const
 {
   const Epetra_Map* dofrowmap = dis_->DofRowMap();
   return Teuchos::rcp(dofrowmap, false);
@@ -99,7 +99,7 @@ Teuchos::RCP<const Epetra_Map> FSI::FluidAdapter::DofRowMap()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Operator> FSI::FluidAdapter::SysMat()
+Teuchos::RCP<Epetra_Operator> FSI::FluidAdapter::SysMat() const
 {
   return fluid_.SysMat();
 }
@@ -115,7 +115,7 @@ Teuchos::RCP<DRT::Discretization> FSI::FluidAdapter::Discretization()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::FluidAdapter::StructCondRHS()
+Teuchos::RCP<Epetra_Vector> FSI::FluidAdapter::StructCondRHS() const
 {
   return interface_.ExtractCondVector(Velnp());
 }
@@ -134,7 +134,7 @@ void FSI::FluidAdapter::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidAdapter::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
+void FSI::FluidAdapter::Evaluate(Teuchos::RCP<const Epetra_Vector> vel) const
 {
   // Yes, this is complicated. But we have to be very careful
   // here. The field solver always expects an increment only. And
@@ -212,7 +212,7 @@ void FSI::FluidAdapter::SetMeshMap(Teuchos::RCP<Epetra_Map> mm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double FSI::FluidAdapter::ResidualScaling()
+double FSI::FluidAdapter::ResidualScaling() const
 {
   return fluid_.ResidualScaling();
 }
@@ -279,7 +279,7 @@ void FSI::FluidAdapter::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ive
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidAdapter::ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp)
+void FSI::FluidAdapter::ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp) const
 {
   meshmap_.InsertCondVector(fluiddisp,fluid_.Dispnp());
 
@@ -290,7 +290,7 @@ void FSI::FluidAdapter::ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluidd
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidAdapter::ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel)
+void FSI::FluidAdapter::ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel) const
 {
   meshmap_.InsertCondVector(gridvel,fluid_.GridVel());
 }

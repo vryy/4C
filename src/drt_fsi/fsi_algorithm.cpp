@@ -82,6 +82,9 @@ void FSI::Algorithm::ReadRestart(int step)
 /*----------------------------------------------------------------------*/
 void FSI::Algorithm::SetupStructure()
 {
+  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("FSI::Algorithm::SetupStructure");
+  Teuchos::TimeMonitor monitor(*t);
+
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
@@ -203,6 +206,9 @@ void FSI::Algorithm::SetupStructure()
 /*----------------------------------------------------------------------*/
 void FSI::Algorithm::SetupFluid()
 {
+  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("FSI::Algorithm::SetupFluid");
+  Teuchos::TimeMonitor monitor(*t);
+
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
@@ -308,6 +314,9 @@ void FSI::Algorithm::SetupFluid()
 /*----------------------------------------------------------------------*/
 void FSI::Algorithm::SetupAle()
 {
+  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("FSI::Algorithm::SetupAle");
+  Teuchos::TimeMonitor monitor(*t);
+
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
@@ -398,5 +407,84 @@ void FSI::Algorithm::Output()
   FluidField().LiftDrag();
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::Algorithm::StructToAle(Teuchos::RCP<Epetra_Vector> iv) const
+{
+  return coupsa_.MasterToSlave(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::Algorithm::AleToStruct(Teuchos::RCP<Epetra_Vector> iv) const
+{
+  return coupsa_.SlaveToMaster(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::Algorithm::StructToFluid(Teuchos::RCP<Epetra_Vector> iv) const
+{
+  return coupsf_.MasterToSlave(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::Algorithm::FluidToStruct(Teuchos::RCP<Epetra_Vector> iv) const
+{
+  return coupsf_.SlaveToMaster(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::Algorithm::AleToFluid(Teuchos::RCP<Epetra_Vector> iv) const
+{
+  return coupfa_.SlaveToMaster(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::Algorithm::StructToAle(Teuchos::RCP<const Epetra_Vector> iv) const
+{
+  return coupsa_.MasterToSlave(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::Algorithm::AleToStruct(Teuchos::RCP<const Epetra_Vector> iv) const
+{
+  return coupsa_.SlaveToMaster(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::Algorithm::StructToFluid(Teuchos::RCP<const Epetra_Vector> iv) const
+{
+  return coupsf_.MasterToSlave(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::Algorithm::FluidToStruct(Teuchos::RCP<const Epetra_Vector> iv) const
+{
+  return coupsf_.SlaveToMaster(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::Algorithm::AleToFluid(Teuchos::RCP<const Epetra_Vector> iv) const
+{
+  return coupfa_.SlaveToMaster(iv);
+}
 
 #endif

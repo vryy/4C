@@ -65,7 +65,7 @@ public:
   virtual void PrepareTimeStep() = 0;
 
   /// calculate linear system
-  virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp) = 0;
+  virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp) const = 0;
 
   /// solve this time step with currently applied interface displacements
   virtual void Solve() = 0;
@@ -86,19 +86,19 @@ public:
   //! @name Extract displacement
 
   /// the whole displacement field is extracted here
-  virtual Teuchos::RCP<Epetra_Vector> ExtractDisplacement() = 0;
+  virtual Teuchos::RCP<Epetra_Vector> ExtractDisplacement() const = 0;
 
   //@}
 
   //! @name access functions for monolithic FSI
 
   virtual Teuchos::RCP<Epetra_Vector> InitialGuess() = 0;
-  virtual Teuchos::RCP<Epetra_Vector> RHS() = 0;
+  virtual Teuchos::RCP<Epetra_Vector> RHS() const = 0;
   virtual Teuchos::RCP<Epetra_Vector> Disp() = 0;
-  virtual Teuchos::RCP<const Epetra_Map> DofRowMap() = 0;
-  virtual Teuchos::RCP<Epetra_Operator> SysMat() = 0;
+  virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const = 0;
+  virtual Teuchos::RCP<Epetra_Operator> SysMat() const = 0;
   virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
-  virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() = 0;
+  virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const = 0;
 
   //@}
 
@@ -131,7 +131,7 @@ public:
 
   //! @name Algorithm core methods
   virtual void PrepareTimeStep();
-  virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp);
+  virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp) const;
   virtual void Solve();
   virtual void Update();
   virtual void Output();
@@ -141,23 +141,23 @@ public:
 
   void ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp);
 
-  virtual Teuchos::RCP<Epetra_Vector> ExtractDisplacement();
+  virtual Teuchos::RCP<Epetra_Vector> ExtractDisplacement() const;
 
   //! @name access functions for monolithic FSI
 
   virtual Teuchos::RCP<Epetra_Vector> InitialGuess()
     { return residual_; }
-  virtual Teuchos::RCP<Epetra_Vector> RHS()
+  virtual Teuchos::RCP<Epetra_Vector> RHS() const
     { return residual_; }
   virtual Teuchos::RCP<Epetra_Vector> Disp()
     { return dispnp_; }
-  virtual Teuchos::RCP<const Epetra_Map> DofRowMap()
+  virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const
     { return Teuchos::rcp(discret_->DofRowMap(),false); }
-  virtual Teuchos::RCP<Epetra_Operator> SysMat()
+  virtual Teuchos::RCP<Epetra_Operator> SysMat() const
     { return sysmat_->EpetraOperator(); }
   virtual Teuchos::RCP<DRT::Discretization> Discretization()
     { return discret_; }
-  virtual Teuchos::RCP<Epetra_Vector> StructCondRHS();
+  virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const;
 
   //@}
 

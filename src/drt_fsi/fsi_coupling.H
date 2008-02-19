@@ -196,6 +196,14 @@ namespace FSI
 
     //@}
 
+    /// create coupling matrices for Lagrangian coupling conditions
+    void SetupCouplingMatrices(const Epetra_Map& masterdomainmap, const Epetra_Map& slavedomainmap);
+
+    Teuchos::RCP<Epetra_CrsMatrix> MasterToMasterMat() const { return matmm_; }
+    Teuchos::RCP<Epetra_CrsMatrix> SlaveToMasterMat() const { return matsm_; }
+    Teuchos::RCP<Epetra_CrsMatrix> MasterToMasterMatTrans() const { return matmm_trans_; }
+    Teuchos::RCP<Epetra_CrsMatrix> SlaveToMasterMatTrans() const { return matsm_trans_; }
+
   private:
 
     /// do the actual matching of the master <-> slave pairs
@@ -254,6 +262,16 @@ namespace FSI
 
     /// permuted slave dof map to slave dof map exporter
     Teuchos::RCP<Epetra_Export> slaveexport_;
+
+    //@}
+
+    /** \name coupling matrices for Lagrangian multiplier coupling */
+    //@{
+
+    Teuchos::RCP<Epetra_CrsMatrix> matmm_;
+    Teuchos::RCP<Epetra_CrsMatrix> matsm_;
+    Teuchos::RCP<Epetra_CrsMatrix> matmm_trans_;
+    Teuchos::RCP<Epetra_CrsMatrix> matsm_trans_;
 
     //@}
   };

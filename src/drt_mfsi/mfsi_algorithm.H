@@ -36,12 +36,13 @@ Maintainer: Ulrich Kuettler
 #include <NOX_Thyra_Group.H>
 #include <NOX_Thyra_Vector.H>
 
-#include "mfsi_coupling.H"
+#include "../drt_fsi/fsi_coupling.H"
 #include "mfsi_debug.H"
 
 #include "../drt_fsi/fsi_structure.H"
 #include "../drt_fsi/fsi_fluid.H"
 #include "../drt_fsi/fsi_ale.H"
+#include "../drt_fsi/fsi_algorithm.H"
 
 
 /// monolithic FSI
@@ -69,7 +70,8 @@ namespace MFSI
   \author u.kue
   \date 12/07
   */
-  class Algorithm : public Thyra::StateFuncModelEvaluatorBase<double>
+  class Algorithm : public FSI::Algorithm,
+                    public Thyra::StateFuncModelEvaluatorBase<double>
   {
   public:
     Algorithm(Epetra_Comm& comm);
@@ -151,15 +153,7 @@ namespace MFSI
 
     //! @name Access methods for subclasses
 
-    Epetra_Comm& Comm() { return comm_; }
-    double Dt() const { return dt_; }
-    int Step() const { return step_; }
-
     Teuchos::RefCountPtr<NOX::Utils> Utils() const { return utils_; }
-
-    Teuchos::RCP<FSI::Structure> StructureField() const { return structure_; }
-    Teuchos::RCP<FSI::Fluid>     FluidField()     const { return fluid_; }
-    Teuchos::RCP<FSI::Ale>       AleField()       const { return ale_; }
 
     Teuchos::RCP<Thyra::DefaultProductVectorSpace<double> > DofRowMap() const { return dofrowmap_; }
     void SetDofRowMap(Teuchos::RCP<Thyra::DefaultProductVectorSpace<double> > drm) { dofrowmap_ = drm; }
@@ -172,68 +166,7 @@ namespace MFSI
 
     //@}
 
-    //! @name Time loop building blocks
-
-    /// tests if there are more time steps to do
-    bool NotFinished() { return step_ < nstep_ and time_ <= maxtime_; }
-
-    /// start a new time step
-    void PrepareTimeStep();
-
-    /// take current results for converged and save for next time step
-    void Update();
-
-    /// write output
-    void Output();
-
-    //@}
-
-    //! @name Transfer helpers
-
-    Teuchos::RCP<Epetra_Vector> StructToAle(Teuchos::RCP<Epetra_Vector> iv) const;
-    Teuchos::RCP<Epetra_Vector> AleToStruct(Teuchos::RCP<Epetra_Vector> iv) const;
-    Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv) const;
-    Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<Epetra_Vector> iv) const;
-    Teuchos::RCP<Epetra_Vector> AleToFluid(Teuchos::RCP<Epetra_Vector> iv) const;
-
-    Teuchos::RCP<Epetra_Vector> StructToAle(Teuchos::RCP<const Epetra_Vector> iv) const;
-    Teuchos::RCP<Epetra_Vector> AleToStruct(Teuchos::RCP<const Epetra_Vector> iv) const;
-    Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<const Epetra_Vector> iv) const;
-    Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<const Epetra_Vector> iv) const;
-    Teuchos::RCP<Epetra_Vector> AleToFluid(Teuchos::RCP<const Epetra_Vector> iv) const;
-
-    //@}
-
-    Coupling& StructureFluidCoupling() { return coupsf_; }
-    Coupling& StructureAleCoupling()   { return coupsa_; }
-    Coupling& FluidAleCoupling()       { return coupfa_; }
-
-    const Coupling& StructureFluidCoupling() const { return coupsf_; }
-    const Coupling& StructureAleCoupling()   const { return coupsa_; }
-    const Coupling& FluidAleCoupling()       const { return coupfa_; }
-
   private:
-
-    /// setup structure algorithm
-    void SetupStructure();
-
-    /// setup fluid algorithm
-    void SetupFluid();
-
-    /// setup ale algorithm
-    void SetupAle();
-
-    /// communication (mainly for screen output)
-    Epetra_Comm& comm_;
-
-    /// coupling of structure and fluid at the interface
-    Coupling               coupsf_;
-
-    /// coupling of structure and ale at the interface
-    Coupling               coupsa_;
-
-    /// coupling of fluid and ale
-    Coupling               coupfa_;
 
     //! @name global system
 
@@ -255,25 +188,10 @@ namespace MFSI
 
     //@}
 
-    /// structural field solver
-    Teuchos::RCP<FSI::Structure> structure_;
-
-    /// fluid field solver
-    Teuchos::RCP<FSI::Fluid>     fluid_;
-
-    /// ale field solver
-    Teuchos::RCP<FSI::Ale>       ale_;
-
     /// output utilities
     Teuchos::RefCountPtr<NOX::Utils> utils_;
 
     //! @name Time step valiables
-    /// guess what
-    int step_;
-    int nstep_;
-    double time_;
-    double maxtime_;
-    double dt_;
     int nlnstep_;
     //@}
 
