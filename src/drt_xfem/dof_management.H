@@ -206,6 +206,12 @@ public:
         return tmp->second;
     };
     
+    //! return unique enrichments for this proc
+    std::set<XFEM::Enrichment> getUniqueEnrichments() const
+    {
+        return unique_enrichments_;
+    }
+    
     bool operator !=(const ElementDofManager& rhs) const
     {
         // in principle, they can be only not equal, if the nodalDofSet is not equal
@@ -242,6 +248,9 @@ private:
     
     //! local (elemental) dofpos
     std::map<XFEM::PHYSICS::Field, std::vector<int> > paramsLocalEntries_;
+    
+    //! set of all enrichments that are available on this proc.
+    std::set<XFEM::Enrichment> unique_enrichments_;
 };
 
 
@@ -292,6 +301,12 @@ public:
             const XFEM::ElementDofManager& eledofman
             ) const;
     
+    //! return unique enrichments for this proc
+    std::set<XFEM::Enrichment> getUniqueEnrichments() const
+    {
+        return unique_enrichments_;
+    }
+    
 private:
     // pointer to the xfem discretization of which we hold the unknowns
     RCP<DRT::Discretization> xfemdis_;
@@ -305,6 +320,9 @@ private:
     // unknowns for each global element id (gid) on this processor
     // same as above, see getElementDofs()
     map<int, const set<XFEM::FieldEnr> > elementalDofs_;
+    
+    //! set of all enrichments that are available on this proc.
+    std::set<XFEM::Enrichment> unique_enrichments_;
     
 };
 

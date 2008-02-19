@@ -128,7 +128,7 @@ XFEM::ElementDofManager::ElementDofManager(
     }
     
     
-    
+    unique_enrichments_.clear();
     // count number of parameters per field
     // define local position of unknown by looping first over nodes and then over its unknowns!
     int counter = 0;
@@ -146,6 +146,7 @@ XFEM::ElementDofManager::ElementDofManager(
             const XFEM::PHYSICS::Field field = enrfield->getField();
             numParamsPerField_[field] += 1;
             paramsLocalEntries_[field].push_back(counter);
+            unique_enrichments_.insert(enrfield->getEnrichment());
             counter++;
         }
     }
@@ -158,6 +159,7 @@ XFEM::ElementDofManager::ElementDofManager(
             const XFEM::PHYSICS::Field field = enrfield->getField();
             numParamsPerField_[field] += 1;
             paramsLocalEntries_[field].push_back(counter);
+            unique_enrichments_.insert(enrfield->getEnrichment());
             counter++;
         }
     }
@@ -215,6 +217,36 @@ XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih) :
     XFEM::createDofMap(
             ih->xfemdis(), ih->cutterdis(), ih->elementalDomainIntCells(),
             nodalDofSet_, elementalDofs_);
+    
+    unique_enrichments_.clear();
+    for (map<int, const set<XFEM::FieldEnr> >::const_iterator fieldenriter=nodalDofSet_.begin();
+            fieldenriter!=nodalDofSet_.end(); ++fieldenriter)
+    {
+        const std::set<XFEM::FieldEnr> enrfieldset = fieldenriter->second;
+        for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
+                enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
+        {
+            unique_enrichments_.insert(enrfield->getEnrichment());
+        }
+    }
+    for (map<int, const set<XFEM::FieldEnr> >::const_iterator fieldenriter=elementalDofs_.begin();
+            fieldenriter!=elementalDofs_.end(); ++fieldenriter)
+    {
+        const std::set<XFEM::FieldEnr> enrfieldset = fieldenriter->second;
+        for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
+                enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
+        {
+            unique_enrichments_.insert(enrfield->getEnrichment());
+        }
+    }
+    cout << " Enrichments available:" << endl;
+    for (std::set<XFEM::Enrichment>::const_iterator enr =
+        unique_enrichments_.begin(); enr != unique_enrichments_.end(); ++enr)
+    {
+        cout << "  - " << enr->toString() << endl;
+    }
+    
+    
     
     std::ofstream f_system("numdof_coupled_system.pos");
     //f_system << IO::GMSH::disToString("Fluid", 0.0, ih->xfemdis(), ih->elementalDomainIntCells());
