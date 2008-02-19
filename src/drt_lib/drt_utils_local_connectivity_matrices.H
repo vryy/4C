@@ -245,6 +245,8 @@ namespace UTILS
      {
      case DRT::Element::dis_none:     return 0;    break;
      case DRT::Element::point1:       return 1;    break;
+     case DRT::Element::line2:        return 2;    break;
+     case DRT::Element::line3:        return 3;    break;
      case DRT::Element::tri3:         return 3;    break;
      case DRT::Element::tri6:         return 6;    break;
      case DRT::Element::hex8:         return 8;    break;
