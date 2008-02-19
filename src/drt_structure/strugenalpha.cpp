@@ -1115,7 +1115,7 @@ void StruGenAlpha::FullNewton()
 
       if (ConstrMan_->HaveConstraint())
       {
-    	  ConstrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
+          ConstrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
       }
       // do NOT finalize the stiffness matrix to add masses to it later
     }
@@ -1183,46 +1183,46 @@ void StruGenAlpha::FullNewton()
 
 void StruGenAlpha::NonLinearUzawaFullNewton(int predictor)
 {
-	  int  maxiterUzawa   	= params_.get<int>   ("uzawa maxiter"         ,50);
-	  double Uzawa_param	= params_.get<double>("uzawa parameter",1);
-	  double tolconstr    	= params_.get<double>("tolerance constraint"   ,1.0e-07);
-	  double alphaf    	= params_.get<double>("alpha f"                ,0.459);
-	  double time       	= params_.get<double>("total time"             ,0.0);
-	  double dt            	= params_.get<double>("delta time"             ,0.01);
+    int  maxiterUzawa       = params_.get<int>   ("uzawa maxiter"         ,50);
+    double Uzawa_param    = params_.get<double>("uzawa parameter",1);
+    double tolconstr        = params_.get<double>("tolerance constraint"   ,1.0e-07);
+    double alphaf        = params_.get<double>("alpha f"                ,0.459);
+    double time           = params_.get<double>("total time"             ,0.0);
+    double dt                = params_.get<double>("delta time"             ,0.01);
 
 
-	  FullNewton();
-	  //--------------------update end configuration
-	  disn_->Update(1./(1.-alphaf),*dism_,-alphaf/(1.-alphaf));
-	  //--------------------compute constraint error
-	  ConstrMan_->ComputeError(time+dt,disn_);
-	  double constrnorm=ConstrMan_->GetErrorNorm();
-	  cout<<"Constraint error for Newton solution: "<<constrnorm<<endl;
-	  int numiter_uzawa=0;
-	  while (constrnorm>tolconstr and numiter_uzawa <= maxiterUzawa)
-	  {
-		  // Lagrange multiplier is increased by Uzawa_param*ConstrErr
-		  ConstrMan_->UpdateLagrMult(Uzawa_param);
-		  // Keep new Lagrange multiplier fixed and solve for new displacements
-		  if      (predictor==1) ConstantPredictor();
-		  else if (predictor==2) ConsistentPredictor();
-		  ConstrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
-		  FullNewton();
-		  //--------------------update end configuration
-		  disn_->Update(1./(1.-alphaf),*dism_,-alphaf/(1.-alphaf));
-		  //--------------------compute constraint error
-		  ConstrMan_->ComputeError(time+dt,disn_);
-		  constrnorm=ConstrMan_->GetErrorNorm();
-		  cout<<"Constraint error for computed displacement: "<<constrnorm<<endl;
-		  numiter_uzawa++;
-	  }
-	  params_.set<int>("num iterations",numiter_uzawa+1);
+    FullNewton();
+    //--------------------update end configuration
+    disn_->Update(1./(1.-alphaf),*dism_,-alphaf/(1.-alphaf));
+    //--------------------compute constraint error
+    ConstrMan_->ComputeError(time+dt,disn_);
+    double constrnorm=ConstrMan_->GetErrorNorm();
+    cout<<"Constraint error for Newton solution: "<<constrnorm<<endl;
+    int numiter_uzawa=0;
+    while (constrnorm>tolconstr and numiter_uzawa <= maxiterUzawa)
+    {
+        // Lagrange multiplier is increased by Uzawa_param*ConstrErr
+        ConstrMan_->UpdateLagrMult(Uzawa_param);
+        // Keep new Lagrange multiplier fixed and solve for new displacements
+        if      (predictor==1) ConstantPredictor();
+        else if (predictor==2) ConsistentPredictor();
+        ConstrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
+        FullNewton();
+        //--------------------update end configuration
+        disn_->Update(1./(1.-alphaf),*dism_,-alphaf/(1.-alphaf));
+        //--------------------compute constraint error
+        ConstrMan_->ComputeError(time+dt,disn_);
+        constrnorm=ConstrMan_->GetErrorNorm();
+        cout<<"Constraint error for computed displacement: "<<constrnorm<<endl;
+        numiter_uzawa++;
+    }
+    params_.set<int>("num iterations",numiter_uzawa+1);
 }
 
 /*----------------------------------------------------------------------*
- |				                            	tk 11/07|
- | Newton iteration respecting constraints.				|
- | Uzawa algorithm is used to deal with lagrange multipliers		|
+ |                                                              tk 11/07|
+ | Newton iteration respecting constraints.                             |
+ | Uzawa algorithm is used to deal with lagrange multipliers            |
  *----------------------------------------------------------------------*/
 void StruGenAlpha::FullNewtonLinearUzawa()
 {
@@ -1255,7 +1255,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   if (stiff_->Filled()) dserror("stiffness matrix may not be filled here");
   if (!mass_->Filled()) dserror("mass matrix must be filled here");
   if (damping)
-    if (!damp_->Filled()) dserror("damping matrix must be filled here");
+  if (!damp_->Filled()) dserror("damping matrix must be filled here");
 
   //=================================================== equilibrium loop
   int numiter=0;
@@ -1286,7 +1286,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
 
-  	//===================================================uzawa loop
+    //===================================================uzawa loop
     // For every iteration step an uzawa algorithm is used to solve the linear system.
     //Preparation of uzawa method to solve the linear system.
     double norm_uzawa;
@@ -1306,111 +1306,110 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 
     ConstrMan_->ComputeConstrTimesLagrIncr(constrVecWeight);
     RCP<Epetra_Vector> fresmcopy=rcp(new Epetra_Vector(*fresm_));
-  	fresmcopy->Update(1.0,*constrVecWeight,1.0);
-  	Epetra_Vector uzawa_res(*fresmcopy);
-  	(*stiff_).Multiply(false,*disi_,uzawa_res);
-  	uzawa_res.Update(1.0,*fresmcopy,-1.0);
-  	// blank residual DOFs which are on Dirichlet BC
-  	{
-  	    Epetra_Vector rescopy(uzawa_res);
-  	    uzawa_res.Multiply(1.0,*invtoggle_,rescopy,0.0);
-  	}
-  	uzawa_res.Norm2(&norm_uzawa);
-  	Epetra_SerialDenseVector constr_res(numConstr);
-  	ConstrMan_->ComputeConstrTimesDisi(*disi_,dotprod);
-  	for (int foo = 0; foo < numConstr; ++foo)
-  	{
-  	  constr_res[foo]=(*dotprod)[foo]+ConstrMan_->GetError(foo);
-  	}
-  	norm_constr_uzawa=constr_res.Norm2();
-  	quotient =1;
+    fresmcopy->Update(1.0,*constrVecWeight,1.0);
+    Epetra_Vector uzawa_res(*fresmcopy);
+    (*stiff_).Multiply(false,*disi_,uzawa_res);
+    uzawa_res.Update(1.0,*fresmcopy,-1.0);
+    // blank residual DOFs which are on Dirichlet BC
+    {
+        Epetra_Vector rescopy(uzawa_res);
+        uzawa_res.Multiply(1.0,*invtoggle_,rescopy,0.0);
+    }
+    uzawa_res.Norm2(&norm_uzawa);
+    Epetra_SerialDenseVector constr_res(numConstr);
+    ConstrMan_->ComputeConstrTimesDisi(*disi_,dotprod);
+    for (int foo = 0; foo < numConstr; ++foo)
+    {
+        constr_res[foo]=(*dotprod)[foo]+ConstrMan_->GetError(foo);
+    }
+    norm_constr_uzawa=constr_res.Norm2();
+    quotient =1;
     //Solve one iteration step with augmented lagrange
-  	//Since we calculate displacement norm as well, at least one step has to be taken
+    //Since we calculate displacement norm as well, at least one step has to be taken
     while (((norm_uzawa > tolres/10 or norm_constr_uzawa>tolconstr/10)
-    		and numiter_uzawa < maxiterUzawa) or numiter_uzawa<1)
+            and numiter_uzawa < maxiterUzawa) or numiter_uzawa<1)
     {
 
-	  	  LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresmcopy,zeros_,dirichtoggle_);
-	  	  // solve for disi
-	  	  // Solve K . IncD = -R  ===>  IncD_{n+1}
-	  	  if (numiter_uzawa==0 and numiter==0)
-	  	  {
-                    solver_.Solve(stiff_->EpetraMatrix(),disi_,fresmcopy,true,true);
-	  	  }
-	  	  else
-	  	  {
-                    solver_.Solve(stiff_->EpetraMatrix(),disi_,fresmcopy,true,false);
-	  	  }
+        LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresmcopy,zeros_,dirichtoggle_);
+        // solve for disi
+        // Solve K . IncD = -R  ===>  IncD_{n+1}
+        if (numiter_uzawa==0 and numiter==0)
+        {
+            solver_.Solve(stiff_->EpetraMatrix(),disi_,fresmcopy,true,true);
+        }
+        else
+        {
+            solver_.Solve(stiff_->EpetraMatrix(),disi_,fresmcopy,true,false);
+        }
 
-	  	  //compute Lagrange multiplier increment
-	  	  ConstrMan_->ComputeConstrTimesDisi(*disi_,dotprod);
-	  	  ConstrMan_->UpdateLagrIncr(Uzawa_param, *dotprod);
+        //compute Lagrange multiplier increment
+        ConstrMan_->ComputeConstrTimesDisi(*disi_,dotprod);
+        ConstrMan_->UpdateLagrIncr(Uzawa_param, *dotprod);
 
-	  	  //Compute residual of the uzawa algorithm
-	  	  ConstrMan_->ComputeConstrTimesLagrIncr(constrVecWeight);
-	  	  fresmcopy->Update(1.0,*constrVecWeight,1.0,*fresm_,0.0);
-	  	  Epetra_Vector uzawa_res(*fresmcopy);
-	  	  (*stiff_).Multiply(false,*disi_,uzawa_res);
-	  	  uzawa_res.Update(1.0,*fresmcopy,-1.0);
-	  	  // blank residual DOFs which are on Dirichlet BC
-	  	  {
-	  	      Epetra_Vector rescopy(uzawa_res);
-	  		  uzawa_res.Multiply(1.0,*invtoggle_,rescopy,0.0);
-	  	  }
-	  	  norm_uzawa_alt=norm_uzawa;
-	  	  uzawa_res.Norm2(&norm_uzawa);
-	  	  Epetra_SerialDenseVector constr_res(numConstr);
+        //Compute residual of the uzawa algorithm
+        ConstrMan_->ComputeConstrTimesLagrIncr(constrVecWeight);
+        fresmcopy->Update(1.0,*constrVecWeight,1.0,*fresm_,0.0);
+        Epetra_Vector uzawa_res(*fresmcopy);
+        (*stiff_).Multiply(false,*disi_,uzawa_res);
+        uzawa_res.Update(1.0,*fresmcopy,-1.0);
+        // blank residual DOFs which are on Dirichlet BC
+        {
+            Epetra_Vector rescopy(uzawa_res);
+            uzawa_res.Multiply(1.0,*invtoggle_,rescopy,0.0);
+        }
+        norm_uzawa_alt=norm_uzawa;
+        uzawa_res.Norm2(&norm_uzawa);
+        Epetra_SerialDenseVector constr_res(numConstr);
 
-	  	  for (int foo = 0; foo < numConstr; ++foo)
-	  	  {
-	  		  constr_res[foo]=(*dotprod)[foo]+ConstrMan_->GetError(foo);
-	  	  }
-	      norm_constr_uzawa=constr_res.Norm2();
+        for (int foo = 0; foo < numConstr; ++foo)
+        {
+            constr_res[foo]=(*dotprod)[foo]+ConstrMan_->GetError(foo);
+        }
+        norm_constr_uzawa=constr_res.Norm2();
 
-	      //-------------Adapt Uzawa parameter--------------
-	      // For a constant parameter the quotient of two successive residual norms
-	      // stays constant during the computation. So this quotient seems to be a good
-	      // measure for the parameter choice
+        //-------------Adapt Uzawa parameter--------------
+        // For a constant parameter the quotient of two successive residual norms
+        // stays constant during the computation. So this quotient seems to be a good
+        // measure for the parameter choice
 
-	      // Adaptivity only takes place every second step. Otherwise the quotient is not significant.
-	      if (count_paramadapt>=2)
-	      {
-	    	  double quotient_neu=norm_uzawa/norm_uzawa_alt;
-	    	  // In case of divergence the parameter must be choosen too high
-	    	  if (quotient_neu>1)
-	    	  {
-	    			Uzawa_param=Uzawa_param/2.;
-	    			count_paramadapt=0;
-	    			quotient=1;
-	    	  }
-	    	  else
-	    	  {
-	    		  // In case the newly computed quotient is better than the one obtained from the
-	    		  // previous parameter, the parameter is increased by a factor (1+quotient_neu)
-	    		  if (quotient>quotient_neu)
-	    		  {
-	    			  Uzawa_param=Uzawa_param*(1+quotient_neu);
-	    			  quotient=quotient_neu;
-	    			  count_paramadapt=0;
-	    		  }
-	    		  // In case the newly computed quotient is worse than the one obtained from the
-	    		  // previous parameter, the parameter is decreased by a factor 1/(1+quotient_neu)
-	    		  else
-	    		  {
-	    			  Uzawa_param=Uzawa_param/(1+quotient_neu);
-	    			  quotient=quotient_neu;
-	    			  count_paramadapt=0;
-	    		  }
-	    	  }
-	      }
-	      count_paramadapt++;
-
-	  	  numiter_uzawa++;
+        // Adaptivity only takes place every second step. Otherwise the quotient is not significant.
+        if (count_paramadapt>=2)
+        {
+            double quotient_neu=norm_uzawa/norm_uzawa_alt;
+            // In case of divergence the parameter must be choosen too high
+            if (quotient_neu>1)
+            {
+                Uzawa_param=Uzawa_param/2.;
+                count_paramadapt=0;
+                quotient=1;
+            }
+            else
+            {
+                // In case the newly computed quotient is better than the one obtained from the
+                // previous parameter, the parameter is increased by a factor (1+quotient_neu)
+                if (quotient>quotient_neu)
+                {
+                    Uzawa_param=Uzawa_param*(1+quotient_neu);
+                    quotient=quotient_neu;
+                    count_paramadapt=0;
+                }
+                // In case the newly computed quotient is worse than the one obtained from the
+                // previous parameter, the parameter is decreased by a factor 1/(1+quotient_neu)
+                else
+                {
+                    Uzawa_param=Uzawa_param/(1+quotient_neu);
+                    quotient=quotient_neu;
+                    count_paramadapt=0;
+                }
+            }
+        }
+        count_paramadapt++;
+        numiter_uzawa++;
     } //Uzawa loop
 
     if (!myrank_)
     {
-    	cout<<"Uzawa steps "<<numiter_uzawa<<endl;
+        cout<<"Uzawa steps "<<numiter_uzawa<<endl;
     }
 
     //update lagrange multiplier
@@ -1517,6 +1516,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     //--------------------------------- increment equilibrium loop index
     ++numiter;
 
+   
   }
   //=================================================================== end equilibrium loop
   print_unconv = false;
@@ -1540,6 +1540,8 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 
   return;
 } // StruGenAlpha::FullNewtonUzawa()
+
+
 
 /*----------------------------------------------------------------------*
  |  do modified Newton iteration (public)                    mwgee 03/07|
@@ -3460,19 +3462,19 @@ void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_uncon
       if (relres)
       {
         printf("numiter %2d scaled res-norm %10.5e absolute dis-norm %20.15E absolute constr-norm %10.5e current Uzawa parameter %10.5e\n",
-        		numiter+1, fresmnorm, disinorm, constrnorm, UzawaPara);
+                numiter+1, fresmnorm, disinorm, constrnorm, UzawaPara);
         fflush(stdout);
       }
       else if (relres_reldis)
       {
         printf("numiter %2d scaled res-norm %10.5e scaled dis-norm %20.15E absolute constr_norm %10.5e current Uzawa parameter %10.5e\n",
-        		numiter+1, fresmnorm, disinorm, constrnorm, UzawaPara);
+                numiter+1, fresmnorm, disinorm, constrnorm, UzawaPara);
         fflush(stdout);
       }
       else
         {
         printf("numiter %2d absolute res-norm %10.5e absolute dis-norm %20.15E absolute constr_norm %10.5e current Uzawa parameter %10.5e\n",
-        		numiter+1, fresmnorm, disinorm, constrnorm, UzawaPara);
+                numiter+1, fresmnorm, disinorm, constrnorm, UzawaPara);
         fflush(stdout);
       }
     }
@@ -3481,31 +3483,31 @@ void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_uncon
       if (relres)
       {
         fprintf(errfile, "numiter %2d scaled res-norm %10.5e absolute dis-norm %20.15E absolute constr_norm %10.5e current Uzawa parameter %10.5e\n",
-        		numiter+1, fresmnorm, disinorm, constrnorm, UzawaPara);
+                numiter+1, fresmnorm, disinorm, constrnorm, UzawaPara);
         fflush(errfile);
       }
       else if (relres_reldis)
       {
         fprintf(errfile, "numiter %2d scaled res-norm %10.5e scaled dis-norm %20.15E absolute constr_norm %10.5e current Uzawa parameter %10.5e\n",
-        		numiter+1, fresmnorm, disinorm, constrnorm, UzawaPara);
+                numiter+1, fresmnorm, disinorm, constrnorm, UzawaPara);
         fflush(errfile);
       }
       else
         {
         fprintf(errfile, "numiter %2d absolute res-norm %10.5e absolute dis-norm %20.15E absolute constr_norm %10.5e current Uzawa parameter %10.5e\n",
-        		numiter+1, fresmnorm, disinorm, constrnorm, UzawaPara);
+                numiter+1, fresmnorm, disinorm, constrnorm, UzawaPara);
         fflush(errfile);
       }
     }
   }
   else
   {
-	if (ConstrMan_->HaveMonitor())
-	{
-	  ConstrMan_->ComputeMonitorValues(disn_);
-	  ConstrMan_->PrintMonitorValues();
-	}
-    double timepernlnsolve = timer.ElapsedTime();
+      if (ConstrMan_->HaveMonitor())
+      {
+          ConstrMan_->ComputeMonitorValues(disn_);
+          ConstrMan_->PrintMonitorValues();
+      }
+      double timepernlnsolve = timer.ElapsedTime();
 
     if (relres)
     {
