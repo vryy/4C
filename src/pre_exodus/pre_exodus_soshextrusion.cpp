@@ -25,7 +25,7 @@ using namespace Teuchos;
 
 
 /* Method to extrude a surface to become a volumetric body */
-EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness, int layers)
+EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness, int layers, int seedid, int gmsh)
 {
   int highestnid = basemesh.GetNumNodes() +1;
   map<int,vector<double> > newnodes;          // here the new nodes ar stored
@@ -106,9 +106,16 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
     vector<int> todo_eles;
     int todo_counter = 0;
     
-    
     // define starte ele
     int startele = 0;
+    
+    // do check for normal direction at nodes, so far by scalar product
+    // if false just the node numbering decides which is the extruding direction
+    bool normcheck = true;
+    if (seedid == -1) normcheck = false;
+    else if (unsigned(seedid) > ele_conn.size()) dserror("SeedID out of range!");
+    else startele = seedid;
+    
     //todo_eles.insert(startele); // lets insert the very first one for a start
     todo_eles.push_back(startele);
     
@@ -149,7 +156,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
       layer_nodes[0].push_back(newid);
       
       // calculate extruding direction
-      vector<double> normal = NodeToAvgNormal(*i_node,actelenodes,first_normal,node_conn,ele_conn,basemesh);
+      vector<double> normal = NodeToAvgNormal(*i_node,actelenodes,first_normal,node_conn,ele_conn,basemesh,normcheck);
       node_normals.insert(pair<int,vector<double> >(*i_node,normal));
       //ele_nodenormals.push_back(normal);
       
@@ -220,102 +227,22 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
           vector<vector<int> > layer_nodes(layers+1);
           
           /* the new elements orientation is opposite the current one
-           * therefore the FIRST node is secedgenode */
-          
-          // check if new node already exists
-          if (node_pair.find(secedgenode)==node_pair.end()){
-            // lets create a new node
-            newid = highestnid; ++ highestnid;
-            // place new node at new position
-            vector<double> actcoords = basemesh.GetNodeExo(secedgenode); //curr position
-            // new base position equals actele (matching mesh!)
-            const vector<double> newcoords = actcoords;
-            int newExoNid = ExoToStore(newid);
-            // put new coords into newnode map
-            newnodes.insert(pair<int,vector<double> >(newExoNid,newcoords));
-            
-            // put new node into map of OldNodeToNewNode
-            vector<int> newids(1,newid);
-            node_pair.insert(std::pair<int,vector<int> >(secedgenode,newids));
-            
-            // insert node into base layer
-            layer_nodes[0].push_back(newid);
-            
-            // get reference direction for new avg normal here firstedgenode
-            vector<double> refnormal = node_normals.find(firstedgenode)->second;
-            // calculate extruding direction
-            vector<double> normal = NodeToAvgNormal(secedgenode,actneighbornodes,refnormal,node_conn,ele_conn,basemesh);
-            node_normals.insert(pair<int,vector<double> >(secedgenode,normal));
-
-            // create layers at this node location
-            for (int i_layer = 1; i_layer <= layers; ++i_layer) {
-              const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness, i_layer, layers, normal);
-              newid = highestnid; ++ highestnid;
-              int newExoNid = ExoToStore(newid);
-              // put new coords into newnode map
-              newnodes.insert(pair<int,vector<double> >(newExoNid,newcoords));
-              
-              // put new node into map of OldNodeToNewNode
-              node_pair[secedgenode].push_back(newid);
-              // finally store this node where it will be connected to an ele
-              layer_nodes[i_layer].push_back(newid);
-            }
-          } else {
-            for (int i_layer = 0; i_layer <= layers; ++i_layer) {
-              newid = node_pair.find(secedgenode)->second[i_layer];
-              // finally store this node where it will be connected to an ele
-              layer_nodes[i_layer].push_back(newid);
-            }
+           * therefore the FIRST node is secedgenode and it does exist */
+          for (int i_layer = 0; i_layer <= layers; ++i_layer) {
+            newid = node_pair.find(secedgenode)->second[i_layer];
+            // finally store this node where it will be connected to an ele
+            layer_nodes[i_layer].push_back(newid);
           }
+          
           
           /* the new elements orientation is opposite the current one
-           * therefore the SECOND node is firstedgenode */
-          
-          // check if new node already exists
-          if (node_pair.find(firstedgenode)==node_pair.end()){
-            // lets create a new node
-            newid = highestnid; ++ highestnid;
-            // place new node at new position
-            vector<double> actcoords = basemesh.GetNodeExo(firstedgenode); //curr position
-            // new base position equals actele (matching mesh!)
-            const vector<double> newcoords = actcoords;
-            int newExoNid = ExoToStore(newid);
-            // put new coords into newnode map
-            newnodes.insert(pair<int,vector<double> >(newExoNid,newcoords));
-            
-            // put new node into map of OldNodeToNewNode
-            vector<int> newids(1,newid);
-            node_pair.insert(std::pair<int,vector<int> >(firstedgenode,newids));
-            
-            // insert node into base layer
-            layer_nodes[0].push_back(newid);
-
-            // get reference direction for new avg normal here secedgenode
-            vector<double> refnormal = node_normals.find(secedgenode)->second;
-            // calculate extruding direction
-            vector<double> normal = NodeToAvgNormal(firstedgenode,actneighbornodes,refnormal,node_conn,ele_conn,basemesh);
-            node_normals.insert(pair<int,vector<double> >(firstedgenode,normal));
-
-            // create layers at this node location
-            for (int i_layer = 1; i_layer <= layers; ++i_layer) {
-              const vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness, i_layer, layers, normal);
-              newid = highestnid; ++ highestnid;
-              int newExoNid = ExoToStore(newid);
-              // put new coords into newnode map
-              newnodes.insert(pair<int,vector<double> >(newExoNid,newcoords));
-              
-              // put new node into map of OldNodeToNewNode
-              node_pair[firstedgenode].push_back(newid);
-              // finally store this node where it will be connected to an ele
-              layer_nodes[i_layer].push_back(newid);
-            }
-          } else {
-            for (int i_layer = 0; i_layer <= layers; ++i_layer) {
-              newid = node_pair.find(firstedgenode)->second[i_layer];
-              // finally store this node where it will be connected to an ele
-              layer_nodes[i_layer].push_back(newid);
-            }
+           * therefore the SECOND node is firstedgenode and it also does exist */
+          for (int i_layer = 0; i_layer <= layers; ++i_layer) {
+            newid = node_pair.find(firstedgenode)->second[i_layer];
+            // finally store this node where it will be connected to an ele
+            layer_nodes[i_layer].push_back(newid);
           }
+          
           
           /* the new elements orientation is opposite the current one
            * therefore the THIRD node is gained from the neighbor ele */
@@ -345,7 +272,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
             // get reference direction for new avg normal here firstedgenode
             vector<double> refnormal = node_normals.find(firstedgenode)->second;
             // calculate extruding direction
-            vector<double> normal = NodeToAvgNormal(thirdnode,actneighbornodes,refnormal,node_conn,ele_conn,basemesh);
+            vector<double> normal = NodeToAvgNormal(thirdnode,actneighbornodes,refnormal,node_conn,ele_conn,basemesh,normcheck);
             node_normals.insert(pair<int,vector<double> >(thirdnode,normal));
 
             // create layers at this node location
@@ -397,9 +324,9 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
               layer_nodes[0].push_back(newid);
               
               // get reference direction for new avg normal here firstedgenode
-              vector<double> refnormal = node_normals.find(thirdnode)->second;
+              vector<double> refnormal = node_normals.find(secedgenode)->second;
               // calculate extruding direction
-              vector<double> normal = NodeToAvgNormal(fourthnode,actneighbornodes,refnormal,node_conn,ele_conn,basemesh);
+              vector<double> normal = NodeToAvgNormal(fourthnode,actneighbornodes,refnormal,node_conn,ele_conn,basemesh,normcheck);
               node_normals.insert(pair<int,vector<double> >(fourthnode,normal));
 
               // create layers at this node location
@@ -450,10 +377,11 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
       }// end of this "center" - element ///////////////////////////////////////
       todo_counter ++;
       
-      //PlotEleConnGmsh(newconn,newnodes);
+      if (gmsh == todo_counter) PlotEleConnGmsh(newconn,newnodes);
       
     }// end of extruding all elements in connectivity
-    PlotEleConnGmsh(newconn,newnodes);
+    
+    if (gmsh == 0) PlotEleConnGmsh(newconn,newnodes);
     
     // create new Element Blocks
     std::ostringstream blockname;
@@ -673,13 +601,14 @@ vector<double> EXODUS::NodeToAvgNormal(const int node,
                              const vector<double> refnormdir,
                              const map<int,set<int> >& nodetoele,
                              const map<int,vector<int> >& ele_conn,
-                             const EXODUS::Mesh& basemesh)
+                             const EXODUS::Mesh& basemesh,
+                             bool check_norm_scalarproduct)
 {
     vector<int> myNodeNbrs = FindNodeNeighbors(elenodes,node);
     
     // calculate normal at node
     vector<double> normal = Normal(myNodeNbrs[1],node,myNodeNbrs[0],basemesh);
-    CheckNormDir(normal,refnormdir);
+    if (check_norm_scalarproduct) CheckNormDir(normal,refnormdir);
     
     // look at neighbors
     vector<vector<double> > nbr_normals;
@@ -699,7 +628,7 @@ vector<double> EXODUS::NodeToAvgNormal(const int node,
     
     // average node normal with all neighbors
     vector<double> myavgnormal = AverageNormal(normal,nbr_normals);
-    CheckNormDir(myavgnormal,refnormdir);
+    if (check_norm_scalarproduct) CheckNormDir(myavgnormal,refnormdir);
   return myavgnormal;
 }
 

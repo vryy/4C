@@ -36,7 +36,7 @@ using namespace Teuchos;
 namespace EXODUS
 {
 
-Mesh SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness, int layers);
+Mesh SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness, int layers, int seedid, int gmsh);
 
 bool CheckExtrusion(const EXODUS::ElementBlock eblock);
 bool CheckExtrusion(const EXODUS::SideSet sideset);
@@ -45,7 +45,8 @@ vector<double> ExtrudeNodeCoords(const vector<double> basecoords, const double d
     const int layer, const int numlayers, const vector<double> normal);
 
 vector<double> NodeToAvgNormal(const int node,const vector<int> elenodes,const vector<double> refnormdir,
-    const map<int,set<int> >& nodetoele, const map<int,vector<int> >& ele_conn, const EXODUS::Mesh& basemesh);
+    const map<int,set<int> >& nodetoele, const map<int,vector<int> >& ele_conn, const EXODUS::Mesh& basemesh,
+    bool check_norm_scalarproduct = true);
 
 vector<double> AverageNormal(const vector<double> normal, const vector<vector<double> > nbr_normals);
 
