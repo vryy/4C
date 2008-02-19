@@ -498,12 +498,6 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           vector<double> locval(lm.size());
           DRT::UTILS::ExtractMyValues(*velnp,locval,lm);
           //cout << "number of unknowns (node + element): " << lm.size() << endl;
-          //cout << "number of unknowns (node):  " << (eleDofManager_.NumDofPerField(XFEM::PHYSICS::Velx)*4) << endl;
-          //cout << "number of unknowns (tauxx): " << (eleDofManager_.NumDofPerField(XFEM::PHYSICS::Tauxx)) << endl;
-          //cout << "NumDofPerNode(0) " << this->NumDofPerNode(*(this->Nodes()[0])) << endl;
-          //cout << "NumDofPerNode(1) " << this->NumDofPerNode(*(this->Nodes()[1])) << endl;
-          //cout << "NumDofPerNode(2) " << this->NumDofPerNode(*(this->Nodes()[2])) << endl;
-          //cout << "NumDofPerElement " << this->NumDofPerElement() << endl;
           
           // do no calculation, if not needed
           if (lm.size() == 0)
