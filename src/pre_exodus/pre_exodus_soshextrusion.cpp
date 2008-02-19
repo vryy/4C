@@ -101,12 +101,16 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
     set<int>::iterator i_doneles;
     
     // here we store a potential set of eles still to extrude
-    set<int> todo_eles;
-    set<int>::iterator i_todo_eles;
+    //set<int> todo_eles;
+    //set<int>::iterator i_todo_eles;
+    vector<int> todo_eles;
+    int todo_counter = 0;
+    
     
     // define starte ele
     int startele = 0;
-    todo_eles.insert(startele); // lets insert the very first one for a start
+    //todo_eles.insert(startele); // lets insert the very first one for a start
+    todo_eles.push_back(startele);
     
     // for the first element we set up everything *****************************
     vector<int> actelenodes = ele_conn.find(startele)->second;
@@ -179,13 +183,15 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
     layer_nodes.clear();
      
     
-    while (todo_eles.size() > 0){ // start of going through ele neighbors///////
-      
+    //while (todo_eles.size() > 0){ // start of going through ele neighbors///////
+    while (doneles.size() < ele_conn.size()){
+    
       // find an actele still to do
-      i_todo_eles=todo_eles.begin();
-      int actele = *i_todo_eles;
+      //i_todo_eles=todo_eles.begin();
+      //int actele = *i_todo_eles;
       // delete actele from todo_eles list
-      todo_eles.erase(i_todo_eles);
+      //todo_eles.erase(i_todo_eles);
+      int actele = todo_eles[todo_counter];
       
       // get nodes of actual element
       vector<int> actelenodes = ele_conn.find(actele)->second;
@@ -355,7 +361,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
               // finally store this node where it will be connected to an ele
               layer_nodes[i_layer].push_back(newid);
             }
-            //EXODUS::PlotEleNbrs(actelenodes,actneighbors,ele_conn,basemesh,thirdnode,normal,node_conn);
+            //EXODUS::PlotEleNbrs(actelenodes,actneighbors,ele_conn,basemesh,thirdnode,normal,node_conn,node_normals);
           } else {
             for (int i_layer = 0; i_layer <= layers; ++i_layer) {
               newid = node_pair.find(thirdnode)->second[i_layer];
@@ -435,17 +441,20 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
           doneles.insert(actneighbor);
           
           // neighbor eles are possible next "center" eles
-          todo_eles.insert(actneighbor);  
+          //todo_eles.insert(actneighbor);
+          todo_eles.push_back(actneighbor);
           
         }// end of if undone->extrude this neighbor, next neighbor *************
         ++ edge; // next element edge
         
       }// end of this "center" - element ///////////////////////////////////////
+      todo_counter ++;
       
       //PlotEleConnGmsh(newconn,newnodes);
       
     }// end of extruding all elements in connectivity
-   
+    PlotEleConnGmsh(newconn,newnodes);
+    
     // create new Element Blocks
     std::ostringstream blockname;
     blockname << "extrude" << i_extr->first;
@@ -683,14 +692,14 @@ vector<double> EXODUS::NodeToAvgNormal(const int node,
         vector<int> n_nbrs = FindNodeNeighbors(nbrele,node);
         vector<double> nbr_normal = Normal(n_nbrs[1],node,n_nbrs[0],basemesh);
         // check whether nbr_normal points into approx same dir
-        CheckNormDir(nbr_normal,refnormdir);
+        //CheckNormDir(nbr_normal,refnormdir);
         nbr_normals.push_back(nbr_normal);
       }
     }
     
     // average node normal with all neighbors
     vector<double> myavgnormal = AverageNormal(normal,nbr_normals);
-    
+    CheckNormDir(myavgnormal,refnormdir);
   return myavgnormal;
 }
 
@@ -801,7 +810,7 @@ vector<double> EXODUS::Normal(int head1, int origin, int head2,const EXODUS::Mes
   return normal;
 }
 
-void EXODUS::CheckNormDir(vector<double> checkn,const vector<double> refn)
+void EXODUS::CheckNormDir(vector<double>& checkn,const vector<double> refn)
 {
   // compute scalar product of the two normals
   double scp = checkn[0]*refn.at(0) + checkn[1]*refn.at(1) + checkn[2]*refn.at(2);
@@ -934,7 +943,8 @@ void EXODUS::PlotStartEleGmsh(const int eleid, const vector<int> elenodes,
 }
 
 void EXODUS::PlotEleNbrs(const vector<int> centerele,const vector<int> nbrs, const map<int,vector<int> >& baseconn,
-    const EXODUS::Mesh& basemesh,const int nodeid, const vector<double> normal, const map<int,set<int> >& node_conn)
+    const EXODUS::Mesh& basemesh,const int nodeid, const vector<double> normal, const map<int,set<int> >& node_conn,
+    const map<int,vector<double> >avg_nn)
 {
   PrintVec(cout,centerele);
   PrintVec(cout,nbrs);
@@ -1002,6 +1012,21 @@ void EXODUS::PlotEleNbrs(const vector<int> centerele,const vector<int> nbrs, con
   
   
   gmshfilecontent << "};" << endl;
+  gmshfilecontent <<"View \" Avg Normals \" {" << endl;
+  // plot avg node normals
+  for (it = patchnodes.begin(); it != patchnodes.end(); ++it){
+    if (avg_nn.find(*it) != avg_nn.end()){
+      gmshfilecontent << "VP(" <<
+      basemesh.GetNodeExo(*it)[0] << "," <<
+      basemesh.GetNodeExo(*it)[1] << "," <<
+      basemesh.GetNodeExo(*it)[2] << ")";
+      vector<double> actn = avg_nn.find(*it)->second;
+      gmshfilecontent << "{" << actn[0] << "," << actn[1] << "," << actn[2] << "};" << endl;
+    }
+  }
+  gmshfilecontent << "};" << endl;
+ 
+  gmshfilecontent << "};" << endl;
   gmshfilecontent <<"View \" Normal \" {" << endl;
   gmshfilecontent << "VP(" <<
   basemesh.GetNodeExo(nodeid)[0] << "," <<
@@ -1021,8 +1046,6 @@ void EXODUS::PlotEleConnGmsh(const map<int,vector<int> >& conn, const map<int,ve
   stringstream gmshfilecontent;
   gmshfilecontent << "View \" Extrusion \" {" << endl;
   map<int,vector<int> >::const_iterator it;
-  PrintMap(cout,conn);
-  PrintMap(cout,nodes);
   for(it = conn.begin(); it != conn.end(); ++it){
     int eleid = it->first;
     const vector<int> elenodes = it->second;

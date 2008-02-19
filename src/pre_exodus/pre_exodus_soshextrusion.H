@@ -51,7 +51,7 @@ vector<double> AverageNormal(const vector<double> normal, const vector<vector<do
 
 vector<double> Normal(int head1, int origin, int head2, const EXODUS::Mesh& basemesh);
 
-void CheckNormDir(vector<double> checkn,const vector<double> refn);
+void CheckNormDir(vector<double>& checkn,const vector<double> refn);
 
 vector<double> MeanVec(const vector<vector<double> > baseVecs);
 
@@ -76,7 +76,8 @@ void PlotStartEleGmsh(const int eleid, const vector<int> elenodes,
     const EXODUS::Mesh& basemesh, const int nodeid, const vector<double> normal);
 
 void PlotEleNbrs(const vector<int> centerele,const vector<int> nbrs, const map<int,vector<int> >& baseconn,
-    const EXODUS::Mesh& basemesh, const int nodeid, const vector<double> normal, const map<int,set<int> >& node_conn);
+    const EXODUS::Mesh& basemesh, const int nodeid, const vector<double> normal,
+    const map<int,set<int> >& node_conn, const map<int,vector<double> >avg_nn);
 
 void PlotEleConnGmsh(const map<int,vector<int> >& conn, const map<int,vector<double> >& nodes);
 
