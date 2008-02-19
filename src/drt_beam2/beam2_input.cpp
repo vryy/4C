@@ -28,6 +28,7 @@ extern struct _MATERIAL  *mat;
 extern "C"
 {
 #include "../headers/standardtypes.h"
+	
 /*!----------------------------------------------------------------------
   \brief file pointers
 
@@ -65,38 +66,39 @@ bool DRT::ELEMENTS::Beam2::ReadElement()
 
   SetNodeIds(nnode,nodes);
 
-
-
-  // read number of material model and assing young's modulus to ym
-  // note: ym is the only material parameter necessary for Bernoulli beams
+  // read material parameters using structure _MATERIAL which is defined by inclusion of
+  // "../drt_lib/drt_timecurve.H"
   material_ = 0;
   frint("MAT",&material_,&ierr);
   if (ierr!=1) dserror("Reading of Beam2 element failed");
 
-
   // read beam cross section
-  cross_section_ = 1.0;
-  frdouble("CROSS",&cross_section_,&ierr);
+  crosssec_ = 1.0;
+  frdouble("CROSS",&crosssec_,&ierr);
   if (ierr!=1) dserror("Reading of Beam2 element failed");
 
    // read beam cross section
   double shear_correction = 0.0;
   frdouble("SHEARCORR",&shear_correction,&ierr);
   if (ierr!=1) dserror("Reading of Beam2 element failed");
-  cross_section_corr_ = cross_section_ * shear_correction;
+  crosssecshear_ = crosssec_ * shear_correction;
 
   // read beam moment of inertia of area
-  moment_inertia_ = 1.0;
-  frdouble("INERMOM",&moment_inertia_,&ierr);
+  mominer_ = 1.0;
+  frdouble("INERMOM",&mominer_,&ierr);
   if (ierr!=1) dserror("Reading of Beam2 element failed");
   
   // element can use consistent or lumped mass matrix (the latter one assumes
   // the moment of inertia of the cross section to be approximately zero)
-  lumped_flag_ = 0;
-  frint("LUMPED",&lumped_flag_,&ierr);
+  lumpedflag_ = 0;
+  frint("LUMPED",&lumpedflag_,&ierr);
   if (ierr!=1) dserror("Reading of Beam2 element failed");
-
-
+   
+  // reading thermal energy kT responsible for statistical thermodynamical forces
+    thermalenergy_ = 0;
+    frdouble("THERMEN",&thermalenergy_,&ierr);
+    if (ierr!=1) dserror("Reading of Beam2 element failed"); 
+   
   return true;
 } // Beam2::ReadElement()
 

@@ -19,7 +19,6 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            cyron 01/08|
  *----------------------------------------------------------------------*/
@@ -27,10 +26,11 @@ DRT::ELEMENTS::Beam2::Beam2(int id, int owner) :
 DRT::Element(id,element_beam2,owner),
 data_(),
 material_(0),
-cross_section_(0),
-cross_section_corr_(0),
-moment_inertia_(0),
-lumped_flag_(0),
+crosssec_(0),
+crosssecshear_(0),
+mominer_(0),
+lumpedflag_(0),
+thermalenergy_(0),
 //since lines_ is a vector it calls its constructor automatically -> 
 //no initialization of lines_ necessary here
 
@@ -47,10 +47,11 @@ DRT::ELEMENTS::Beam2::Beam2(const DRT::ELEMENTS::Beam2& old) :
 DRT::Element(old),
 data_(old.data_),
 material_(old.material_),
-cross_section_(old.cross_section_),
-cross_section_corr_(old.cross_section_corr_),
-moment_inertia_(old.moment_inertia_),
-lumped_flag_(old.lumped_flag_),
+crosssec_(old.crosssec_),
+crosssecshear_(old.crosssecshear_),
+mominer_(old.mominer_),
+lumpedflag_(old.lumpedflag_),
+thermalenergy_(old.thermalenergy_),
 lines_(old.lines_),
 gaussrule_(old.gaussrule_)
 {
@@ -121,16 +122,18 @@ void DRT::ELEMENTS::Beam2::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
-  //material
+  //material type
   AddtoPack(data,material_);
   //cross section
-  AddtoPack(data,cross_section_);
+  AddtoPack(data,crosssec_);
    //cross section with shear correction
-  AddtoPack(data,cross_section_corr_);
+  AddtoPack(data,crosssecshear_);
   //moment of inertia of area
-  AddtoPack(data,moment_inertia_);
+  AddtoPack(data,mominer_);
   //flag determining if consistent or lumped mass matrix
-   AddtoPack(data,lumped_flag_);
+  AddtoPack(data,lumpedflag_);
+  //thermal energy responsible for statistical forces
+  AddtoPack(data,thermalenergy_);
   // gaussrule_
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   vector<char> tmp(0);
@@ -156,16 +159,18 @@ void DRT::ELEMENTS::Beam2::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  //material
+  //material type
   ExtractfromPack(position,data,material_);
   //cross section
-  ExtractfromPack(position,data,cross_section_);
+  ExtractfromPack(position,data,crosssec_);
   //cross section with shear correction
-  ExtractfromPack(position,data,cross_section_corr_);
+  ExtractfromPack(position,data,crosssecshear_);
   //moment of inertia of area
-  ExtractfromPack(position,data,moment_inertia_);
+  ExtractfromPack(position,data,mominer_);
   //flag determining if consistent or lumped mass matrix
-   ExtractfromPack(position,data,lumped_flag_);
+  ExtractfromPack(position,data,lumpedflag_);
+  //thermal energy responsible for statistical forces
+  ExtractfromPack(position,data,thermalenergy_);
   // gaussrule_
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);
@@ -284,8 +289,8 @@ void DRT::ELEMENTS::Beam2Register::Print(ostream& os) const
 
 
 int DRT::ELEMENTS::Beam2Register::Initialize(DRT::Discretization& dis)
-{
-  return 0;
+{	
+	 return 0;
 }
 
 

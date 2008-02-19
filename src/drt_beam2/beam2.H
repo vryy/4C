@@ -37,6 +37,8 @@ using namespace Teuchos;
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_utils.H"
+//including random number library of blitz for statistical forces
+#include <random/normal.h>
 
 
 // forward declarations
@@ -278,20 +280,23 @@ private:
   //! container containing all kind of beam2 thisandthat
   DRT::Container data_;  
   
-   //! number of the material law
-  int material_;     
+  //! material type
+  int material_;
   
   //! cross section area
-  double cross_section_;
+  double crosssec_;
   
    //! cross section area including shear corretion factor
-  double cross_section_corr_;
+  double crosssecshear_;
   
   //! moment of inertia of area
-  double moment_inertia_;
+  double mominer_;
   
   //! flag determining if consistent or lumped mass matrix
-  int lumped_flag_;
+  int lumpedflag_;
+  
+  //! thermal energy responsible for statistical forces
+  double thermalenergy_;
   
    //! vector of lines of this element (length 1)
   vector<DRT::Element*> lines_; 
@@ -317,8 +322,7 @@ private:
   void b2_nlnstiffmass(vector<double>&           disp, 
                        Epetra_SerialDenseMatrix& stiffmatrix,
                        Epetra_SerialDenseMatrix& massmatrix,
-                       Epetra_SerialDenseVector& force,
-                       struct _MATERIAL* currmat);
+                       Epetra_SerialDenseVector& force);
 			    
 
   // don't want = operator
@@ -348,6 +352,9 @@ ostream& operator << (ostream& os, const DRT::Element& ele);
 class Beam2Register : public DRT::ElementRegister
 {
 public:
+	
+  //! @name Friends
+  friend class Beam2;
 
   //! @name Constructors and destructors and related methods
 
