@@ -37,9 +37,9 @@ class InterfaceHandle
 {
 public:
 
-	explicit InterfaceHandle(
-			const RCP<DRT::Discretization>        xfemdis, 
-			const RCP<DRT::Discretization>        cutterdis);
+    explicit InterfaceHandle(
+            const RCP<DRT::Discretization>        xfemdis, 
+            const RCP<DRT::Discretization>        cutterdis);
     ~InterfaceHandle();
 
     string toString() const;
@@ -95,25 +95,25 @@ public:
     }
     
 private:
-	//! intersected domain
+    //! intersected domain
     RCP<DRT::Discretization> xfemdis_;
-	
-	//! domain that intersects the xfemdis_
-	RCP<DRT::Discretization> cutterdis_;
-	
-	//! integration cells for domain
-	map<int, DomainIntCells > elementalDomainIntCells_;
-	
-	//! integration cells for boundary
-	map<int, BoundaryIntCells > elementalBoundaryIntCells_;
-	
-	/*! list of boundary elements that intersect volume elements on this processor
-	 *  first integer is the global surface ele id to allow easy access
-	 */
-	map<int, DRT::Element* > boundaryElements_;
-	
-	//! store all additional nodes for the cutter elements that are not already on this proc
-	map< int, RCP<DRT::Node> > cutterNodeMap_;
+    
+    //! domain that intersects the xfemdis_
+    RCP<DRT::Discretization> cutterdis_;
+    
+    //! integration cells for domain
+    map<int, DomainIntCells > elementalDomainIntCells_;
+    
+    //! integration cells for boundary
+    map<int, BoundaryIntCells > elementalBoundaryIntCells_;
+    
+    /*! list of boundary elements that intersect volume elements on this processor
+     *  first integer is the global surface ele id to allow easy access
+     */
+    map<int, DRT::Element* > boundaryElements_;
+    
+    //! store all additional nodes for the cutter elements that are not already on this proc
+    map< int, RCP<DRT::Node> > cutterNodeMap_;
 
 };
 

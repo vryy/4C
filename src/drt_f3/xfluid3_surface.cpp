@@ -38,7 +38,7 @@ parent_(parent),
 lsurface_(lsurface)
 {
   lines_.resize(0);
-  lineptrs_.resize(0);	
+  lineptrs_.resize(0);
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
   return;

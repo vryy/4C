@@ -126,13 +126,14 @@ public:
   \brief Return number of surfaces of this element
   */
   virtual int NumSurface() const
-  {if (NumNode()==8 || NumNode()==20 || NumNode()==27) return 6;
-    else if (NumNode()==4 || NumNode()==10) return 4;
-   else if (NumNode()==6 || NumNode()==15 || NumNode()==5) return 5;
-   else {
-   	dserror("Could not determine number of surfaces");
-   	return -1;
-	}
+  { if (NumNode()==8 || NumNode()==20 || NumNode()==27) return 6;
+      else if (NumNode()==4 || NumNode()==10) return 4;
+      else if (NumNode()==6 || NumNode()==15 || NumNode()==5) return 5;
+      else
+      {
+          dserror("Could not determine number of surfaces");
+          return -1;
+      }
   }
 
   /*!
@@ -461,7 +462,7 @@ private:
     vector<double>&       myvelnp,
     vector<double>&       myprenp,
     struct _MATERIAL*     material,
-    ParameterList&    	  params
+    ParameterList&        params
     );
 
   /*!
@@ -567,8 +568,8 @@ private:
    */
 
   void f3_calc_means(
-    vector<double>&           vel  ,
-    ParameterList& 	      params
+    vector<double>&         vel,
+    ParameterList&          params
     );
 
   /*!
@@ -1097,11 +1098,12 @@ private:
   \param elevec1 (out)      : vector to be filled by element. If NULL on input,
   */
 
-  virtual void IntegrateShapeFunction(ParameterList& 		 params,
-                          	      DRT::Discretization&       discretization,
-                          	      vector<int>&               lm,
-                          	      Epetra_SerialDenseVector&  elevec1,
-                                      const std::vector<double>& edispnp);
+  virtual void IntegrateShapeFunction(
+          ParameterList&                params,
+          DRT::Discretization&          discretization,
+          vector<int>&                  lm,
+          Epetra_SerialDenseVector&     elevec1,
+          const std::vector<double>&    edispnp);
 
 
 }; // class Fluid3Surface
@@ -1124,7 +1126,7 @@ public:
   \param lline: the local line number of this line w.r.t. the parent element
   */
 
-  XFluid3Line(   int id,
+  XFluid3Line(  int id,
                 int owner,
                 int nnode,
                 const int* nodeids,

@@ -24,11 +24,11 @@ Maintainer: Axel Gerstenberger
 
 
 DRT::ELEMENTS::XFluid3Impl::XFluid3Impl(
-		const int iel,
-		const int numparamvelx,
-		const int numparamvely,
-		const int numparamvelz,
-		const int numparampres)
+        const int iel,
+        const int numparamvelx,
+        const int numparamvely,
+        const int numparamvelz,
+        const int numparampres)
   : iel_(iel),
     vart_(),
     xyze_(3,iel_,blitz::ColumnMajorArray<2>()),
@@ -67,25 +67,25 @@ DRT::ELEMENTS::XFluid3Impl::XFluid3Impl(
  |  calculate system matrix and rhs (private)                g.bau 03/07|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::XFluid3Impl::Sysmat(XFluid3* ele,
-									   const XFEM::DomainIntCells&   domainIntCells,
-									   const XFEM::BoundaryIntCells& boundaryIntCells,
-                                       const blitz::Array<double,2>&     evelnp,
-                                       const blitz::Array<double,1>&     eprenp,
-                                       const blitz::Array<double,2>&     evhist,
-                                       const blitz::Array<double,2>&     edispnp,
-                                       const blitz::Array<double,2>&     egridv,
-                                       blitz::Array<double,2>&           estif,
-                                       blitz::Array<double,2>&           esv,
-                                       blitz::Array<double,1>&           eforce,
-                                       struct _MATERIAL*       material,
-                                       double                  time,
-                                       double                  timefac,
-                                       bool                    newton ,
-                                       int                     fssgv ,
-                                       bool                    pstab  ,
-                                       bool                    supg   ,
-                                       bool                    vstab  ,
-                                       bool                    cstab
+        const XFEM::DomainIntCells&   domainIntCells,
+        const XFEM::BoundaryIntCells& boundaryIntCells,
+        const blitz::Array<double,2>&     evelnp,
+        const blitz::Array<double,1>&     eprenp,
+        const blitz::Array<double,2>&     evhist,
+        const blitz::Array<double,2>&     edispnp,
+        const blitz::Array<double,2>&     egridv,
+        blitz::Array<double,2>&           estif,
+        blitz::Array<double,2>&           esv,
+        blitz::Array<double,1>&           eforce,
+        struct _MATERIAL*       material,
+        double                  time,
+        double                  timefac,
+        bool                    newton,
+        int                     fssgv,
+        bool                    pstab,
+        bool                    supg,
+        bool                    vstab,
+        bool                    cstab
   )
 {
 
@@ -2071,10 +2071,10 @@ void DRT::ELEMENTS::XFluid3Impl::BodyForce(XFluid3* ele, const double time)
       }
       else
       {
-	// do not compute an "alternative" curvefac here since a negative time value
-	// indicates an error.
-        dserror("Negative time value in body force calculation: time = %f",time);
-        //curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(0.0);
+          // do not compute an "alternative" curvefac here since a negative time value
+          // indicates an error.
+          dserror("Negative time value in body force calculation: time = %f",time);
+          //curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(0.0);
       }
     }
     else // we do not have a timecurve --- timefactors are constant equal 1

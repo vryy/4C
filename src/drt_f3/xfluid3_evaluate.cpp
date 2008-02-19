@@ -505,13 +505,13 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
           if (is_ale_)
           {
-        	  dserror("No ALE support within stationary fluid solver.");
+              dserror("No ALE support within stationary fluid solver.");
           }
           
           // get control parameter
           const double pseudotime = params.get<double>("total time",-1.0);
           if (pseudotime < 0.0)
-        	  dserror("no value for total (pseudo-)time in the parameter list");
+              dserror("no value for total (pseudo-)time in the parameter list");
 
           const bool newton = params.get<bool>("include reactive terms for linearisation",false);
           const bool pstab  = true;
@@ -538,20 +538,20 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
           // This is a very poor way to transport the density to the
           // outside world. Is there a better one?
-          params.set("density", actmat->m.fluid->density);	  
+          params.set("density", actmat->m.fluid->density);
           break;
       }
       case store_xfem_info:
       {
-    	// get access to global dofman
-    	const RCP<XFEM::DofManager> globaldofman = params.get< RCP< XFEM::DofManager > >("dofmanager",null);
-    	
-    	const DRT::Element::DiscretizationType stressdistype = XFLUID::getStressInterpolationType3D(this->Shape());
-    	const int numvirtualnodes = DRT::UTILS::getNumberOfElementNodes(stressdistype);
-    	
-    	// create local copy of information about dofs
-    	eleDofManager_ = globaldofman->constructElementDofManager((*this), numvirtualnodes);
-    	break;
+          // get access to global dofman
+          const RCP<XFEM::DofManager> globaldofman = params.get< RCP< XFEM::DofManager > >("dofmanager",null);
+          
+          const DRT::Element::DiscretizationType stressdistype = XFLUID::getStressInterpolationType3D(this->Shape());
+          const int numvirtualnodes = DRT::UTILS::getNumberOfElementNodes(stressdistype);
+          
+          // create local copy of information about dofs
+          eleDofManager_ = globaldofman->constructElementDofManager((*this), numvirtualnodes);
+          break;
       }
       default:
         dserror("Unknown type of action for XFluid3");
@@ -609,7 +609,7 @@ void DRT::ELEMENTS::XFluid3::f3_int_beltrami_err(
   vector<double>&           evelnp,
   vector<double>&           eprenp,
   struct _MATERIAL*         material,
-  ParameterList& 	    params
+  ParameterList&            params
   )
 {
   const int NSD = 3;
@@ -881,8 +881,8 @@ void DRT::ELEMENTS::XFluid3::f3_int_beltrami_err(
  |
  *---------------------------------------------------------------------*/
 void DRT::ELEMENTS::XFluid3::f3_calc_means(
-  vector<double>&           sol  ,
-  ParameterList& 	    params
+  vector<double>&           sol,
+  ParameterList&            params
   )
 {
 

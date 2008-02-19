@@ -105,19 +105,19 @@ namespace XFEM
     
   
    /*!
-   \brief 	computes a Gaussian elimination for a linear system of equations
-   			with help of a Epetra_SerialDenseSolver
+   \brief computes a Gaussian elimination for a linear system of equations
+               with help of a Epetra_SerialDenseSolver
 
-   \param A        	(in)    : system matrix
-   \param b        	(in)    : right-hand-side
-   \param x       	(out)   : solution vector
+   \param A            (in)    : system matrix
+   \param b            (in)    : right-hand-side
+   \param x            (out)   : solution vector
    \return true if matrix is not singular, false if matrix is singular
    */
     bool gaussEliminationEpetra(
-    	BlitzMat& 		A,
-    	BlitzVec&		b,
-    	BlitzVec&		x
-    	);
+        BlitzMat&           A,
+        BlitzVec&           b,
+        BlitzVec&           x
+        );
     
 }
 

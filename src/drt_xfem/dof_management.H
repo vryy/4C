@@ -116,20 +116,20 @@ class ElementDofManager
 {
 public:
 
-	explicit ElementDofManager();
-	
-	explicit ElementDofManager(
-	        const DRT::Element& ele,
-			const map<int, const set<XFEM::FieldEnr> >&  nodalDofSet,
-		    const set<XFEM::FieldEnr>& elementDofs,
-		    const int numeleparam
-		    );
-	ElementDofManager(const ElementDofManager& old);
-	
+    explicit ElementDofManager();
+    
+    explicit ElementDofManager(
+            const DRT::Element& ele,
+            const map<int, const set<XFEM::FieldEnr> >&  nodalDofSet,
+            const set<XFEM::FieldEnr>& elementDofs,
+            const int numeleparam
+            );
+    ElementDofManager(const ElementDofManager& old);
+    
     ~ElementDofManager();
-
+    
     std::string toString() const;
-
+    
     /*!
      * \brief get a set with the enriched fields on this node
      * 
@@ -141,13 +141,13 @@ public:
      */
     std::set<FieldEnr> FieldEnrSetPerNode(const int gid) const
     {
-    	map<int, const set<FieldEnr> >::const_iterator tmp = nodalDofSet_.find(gid);
-    	if (tmp == nodalDofSet_.end()){
-    	    cout << gid << endl;
-    	    // let this always be here so we can recognize errors early
-    	    dserror("FieldEnrSetPerNode: global node id not found!");
-    	    return std::set<FieldEnr>();
-    	}
+        map<int, const set<FieldEnr> >::const_iterator tmp = nodalDofSet_.find(gid);
+        if (tmp == nodalDofSet_.end()){
+            cout << gid << endl;
+            // let this always be here so we can recognize errors early
+            dserror("FieldEnrSetPerNode: global node id not found!");
+            return std::set<FieldEnr>();
+        }
         return tmp->second;
     };
     
@@ -162,10 +162,11 @@ public:
             const int defaultnumdof   /// default number of degrees of freedom to be returned
             ) const
     {
-    	map<int,int>::const_iterator tmp = nodalNumDof_.find(gid);
-    	if (tmp == nodalNumDof_.end()){
-    		return defaultnumdof;
-    	}
+        map<int,int>::const_iterator tmp = nodalNumDof_.find(gid);
+        if (tmp == nodalNumDof_.end())
+        {
+            return defaultnumdof;
+        }
         return tmp->second;
     };
     
@@ -186,22 +187,22 @@ public:
     /// we do not distuingish between nodal and element dofs
     int NumDofPerField(const XFEM::PHYSICS::Field field) const
     {
-    	map<XFEM::PHYSICS::Field, int>::const_iterator tmp = numParamsPerField_.find(field);
-    	if (tmp == numParamsPerField_.end()){
+        map<XFEM::PHYSICS::Field, int>::const_iterator tmp = numParamsPerField_.find(field);
+        if (tmp == numParamsPerField_.end()){
             //cout << XFEM::PHYSICS::physVarToString(field) << endl;
-    		return 0;
-    	}
+            return 0;
+        }
         return tmp->second;
     };
     
     /// return a list of local positions in a array of dofs
     std::vector<int> LocalDofPosPerField(const XFEM::PHYSICS::Field field) const
     {
-    	std::map<XFEM::PHYSICS::Field, vector<int> >::const_iterator tmp = paramsLocalEntries_.find(field);
-    	if (tmp == paramsLocalEntries_.end()){
-    		//cout << XFEM::PHYSICS::physVarToString(field) << endl;
-    		return vector<int>(0);
-    	}
+        std::map<XFEM::PHYSICS::Field, vector<int> >::const_iterator tmp = paramsLocalEntries_.find(field);
+        if (tmp == paramsLocalEntries_.end()){
+            //cout << XFEM::PHYSICS::physVarToString(field) << endl;
+            return vector<int>(0);
+        }
         return tmp->second;
     };
     
@@ -222,25 +223,25 @@ public:
     };
             
 private:
-	//! unknowns for each global node id (gid)
-	std::map<int, const set<XFEM::FieldEnr> > nodalDofSet_;
+    //! unknowns for each global node id (gid)
+    std::map<int, const set<XFEM::FieldEnr> > nodalDofSet_;
 
-	//! unknown fields for the element
+    //! unknown fields for the element
     std::set<XFEM::FieldEnr> elementDofs_;
     
     /*! multiply the size of elementDofs_ with this number and you get the number of overall
      * element unknowns.
      */
     int numVirtualNodes_;
-	
-	//! number of unknowns for each global node id (gid)
-	std::map<int, int> nodalNumDof_;
-	
-	//! number of parameters for each field
-	std::map<XFEM::PHYSICS::Field, int> numParamsPerField_;
-	
-	//! local (elemental) dofpos
-	std::map<XFEM::PHYSICS::Field, std::vector<int> > paramsLocalEntries_;
+    
+    //! number of unknowns for each global node id (gid)
+    std::map<int, int> nodalNumDof_;
+    
+    //! number of parameters for each field
+    std::map<XFEM::PHYSICS::Field, int> numParamsPerField_;
+    
+    //! local (elemental) dofpos
+    std::map<XFEM::PHYSICS::Field, std::vector<int> > paramsLocalEntries_;
 };
 
 
@@ -255,8 +256,8 @@ class DofManager
 {
 public:
     explicit DofManager();
-	explicit DofManager(const RCP<XFEM::InterfaceHandle> ih);
-	explicit DofManager(const XFEM::DofManager& dofman);
+    explicit DofManager(const RCP<XFEM::InterfaceHandle> ih);
+    explicit DofManager(const XFEM::DofManager& dofman);
     ~DofManager();
 
     string toString() const;
@@ -292,19 +293,19 @@ public:
             ) const;
     
 private:
-	// pointer to the xfem discretization of which we hold the unknowns
-	RCP<DRT::Discretization> xfemdis_;
-	
-	// unknowns for each global node id (gid) on this processor
-	// if it does not contain the key, the number of unknowns is supposed to be zero
-	// meaning, the the dofmanager will not crash but give back an empty set of unknowns
-	// see also getNodeDofSet()
-	map<int, const set<XFEM::FieldEnr> > nodalDofSet_;
-	
-	// unknowns for each global element id (gid) on this processor
-	// same as above, see getElementDofs()
-	map<int, const set<XFEM::FieldEnr> > elementalDofs_;
-	
+    // pointer to the xfem discretization of which we hold the unknowns
+    RCP<DRT::Discretization> xfemdis_;
+    
+    // unknowns for each global node id (gid) on this processor
+    // if it does not contain the key, the number of unknowns is supposed to be zero
+    // meaning, the the dofmanager will not crash but give back an empty set of unknowns
+    // see also getNodeDofSet()
+    map<int, const set<XFEM::FieldEnr> > nodalDofSet_;
+    
+    // unknowns for each global element id (gid) on this processor
+    // same as above, see getElementDofs()
+    map<int, const set<XFEM::FieldEnr> > elementalDofs_;
+    
 };
 
 

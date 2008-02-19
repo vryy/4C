@@ -127,13 +127,13 @@ int DRT::ELEMENTS::XFluid3Surface::EvaluateNeumann(
 
   // allocate vector for shape functions and matrix for derivatives
   Epetra_SerialDenseVector  funct       (iel);
-  Epetra_SerialDenseMatrix 	deriv       (2,iel);
+  Epetra_SerialDenseMatrix  deriv       (2,iel);
 
   // node coordinates
   Epetra_SerialDenseMatrix      xyze        (3,iel);
 
   // the metric tensor and the area of an infintesimal surface element
-  Epetra_SerialDenseMatrix 	metrictensor(2,2);
+  Epetra_SerialDenseMatrix  metrictensor(2,2);
   double                        drs;
 
   // get node coordinates
@@ -233,7 +233,7 @@ void  DRT::ELEMENTS::XFluid3Surface::f3_metric_tensor_for_surface(
   |      | | | | 2           | | | | | 1        | | | | .
   |      +-+-+-+             +-+-+-+-+          +-+-+-+
   |                                             | | | | iel-1
-  |		     	      	     	        +-+-+-+
+  |                                             +-+-+-+
   |
   |       dxyzdrs             deriv              xyze^T
   |

@@ -70,11 +70,11 @@ namespace ELEMENTS
   public:
     /// Constructor with number of nodes
     explicit XFluid3Impl(
-    		int iel,
-    		int numparamvelx,
-    		int numparamvely,
-    		int numparamvelz,
-    		int numparampres);
+            int iel,
+            int numparamvelx,
+            int numparamvely,
+            int numparamvelz,
+            int numparampres);
 
     /// calculating element matrix and rhs
     /*!
@@ -97,13 +97,13 @@ namespace ELEMENTS
       \param fssgv    (i) flag for type of fine-scale subgrid viscosity
      */
     void Sysmat(
-    		XFluid3* ele,
-    		const XFEM::DomainIntCells&       domainIntCells,   ///< integration cells used for exact integration of discontinuities
+            XFluid3* ele,
+            const XFEM::DomainIntCells&       domainIntCells,   ///< integration cells used for exact integration of discontinuities
             const XFEM::BoundaryIntCells&     boundaryIntCells, ///< facets used for integrating the surface forces
             const blitz::Array<double,2>&     evelnp,
-			const blitz::Array<double,1>&     eprenp,
-			const blitz::Array<double,2>&     evhist,
-			const blitz::Array<double,2>&     edispnp,
+            const blitz::Array<double,1>&     eprenp,
+            const blitz::Array<double,2>&     evhist,
+            const blitz::Array<double,2>&     edispnp,
             const blitz::Array<double,2>&     egridv,
             blitz::Array<double,2>&           estif,
             blitz::Array<double,2>&           esv,
