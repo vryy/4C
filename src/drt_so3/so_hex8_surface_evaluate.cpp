@@ -218,133 +218,135 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
         Epetra_SerialDenseVector& elevector2,
         Epetra_SerialDenseVector& elevector3)
 {
-	const DiscretizationType distype = this->Shape();
+  const DiscretizationType distype = this->Shape();
 
-	// start with "none"
-	DRT::ELEMENTS::Soh8Surface::ActionType act = Soh8Surface::none;
+  // start with "none"
+  DRT::ELEMENTS::Soh8Surface::ActionType act = Soh8Surface::none;
 
-	// get the required action
-	string action = params.get<string>("action","none");
-	if (action == "none") dserror("No action supplied");
-	else if (action=="calc_struct_constrvol")    act = Soh8Surface::calc_struct_constrvol;
-	else if (action=="calc_struct_volconstrstiff") act= Soh8Surface::calc_struct_volconstrstiff;
-	else if (action=="calc_struct_constrarea")		act=Soh8Surface::calc_struct_constrarea;
-	else if (action=="calc_struct_areaconstrstiff") act=Soh8Surface::calc_struct_areaconstrstiff;
-        else if (action=="calc_init_vol") act= Soh8Surface::calc_init_vol;
-        else if (action=="calc_surfstress_stiff") act= Soh8Surface::calc_surfstress_stiff;
-	else dserror("Unknown type of action for Soh8Surface");
-	//create communicator
-	const Epetra_Comm& Comm = discretization.Comm();
-	// what the element has to do
-	switch(act)
-	{
-	  	//just compute the enclosed volume (e.g. for initialization)
-	  	case calc_struct_constrvol:
-	  	{
-	  		if (distype!=quad4)
-	  				dserror("Volume Constraint online works for quad4 surfaces!");
-	  		//We are not interested in volume of ghosted elements
-	  		if(Comm.MyPID()==this->Owner())
-	  		{
-		  		// element geometry update
-		  		RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-		  		if (disp==null) dserror("Cannot get state vector 'displacement'");
-		  		vector<double> mydisp(lm.size());
-		  		DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-		  		const int numnod = 4;
-		  		Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOH8);  // material coord. of element
-		  		Epetra_SerialDenseMatrix xscurr(numnod,NUMDIM_SOH8);  // material coord. of element
-		  		for (int i=0; i<numnod; ++i){
-		  			xsrefe(i,0) = Nodes()[i]->X()[0];
-		  			xsrefe(i,1) = Nodes()[i]->X()[1];
-		  			xsrefe(i,2) = Nodes()[i]->X()[2];
+  // get the required action
+  string action = params.get<string>("action","none");
+  if (action == "none") dserror("No action supplied");
+  else if (action=="calc_struct_constrvol")    act = Soh8Surface::calc_struct_constrvol;
+  else if (action=="calc_struct_volconstrstiff") act= Soh8Surface::calc_struct_volconstrstiff;
+  else if (action=="calc_struct_constrarea")		act=Soh8Surface::calc_struct_constrarea;
+  else if (action=="calc_struct_areaconstrstiff") act=Soh8Surface::calc_struct_areaconstrstiff;
+  else if (action=="calc_init_vol") act= Soh8Surface::calc_init_vol;
+  else if (action=="calc_surfstress_stiff") act= Soh8Surface::calc_surfstress_stiff;
+  else dserror("Unknown type of action for Soh8Surface");
+  //create communicator
+  const Epetra_Comm& Comm = discretization.Comm();
+  // what the element has to do
+  switch(act)
+  {
+      //just compute the enclosed volume (e.g. for initialization)
+      case calc_struct_constrvol:
+      {
+        if (distype!=quad4)
+          dserror("Volume Constraint online works for quad4 surfaces!");
+        //We are not interested in volume of ghosted elements
+        if(Comm.MyPID()==this->Owner())
+        {
+          // element geometry update
+          RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+          if (disp==null) dserror("Cannot get state vector 'displacement'");
+          vector<double> mydisp(lm.size());
+          DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+          const int numnod = 4;
+          Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOH8);  // material coord. of element
+          Epetra_SerialDenseMatrix xscurr(numnod,NUMDIM_SOH8);  // material coord. of element
+          for (int i=0; i<numnod; ++i)
+          {
+            xsrefe(i,0) = Nodes()[i]->X()[0];
+            xsrefe(i,1) = Nodes()[i]->X()[1];
+            xsrefe(i,2) = Nodes()[i]->X()[2];
 
-		  			xscurr(i,0) = xsrefe(i,0) + mydisp[i*NODDOF_SOH8+0];
-		  			xscurr(i,1) = xsrefe(i,1) + mydisp[i*NODDOF_SOH8+1];
-		  			xscurr(i,2) = xsrefe(i,2) + mydisp[i*NODDOF_SOH8+2];
-		  		}
-		  		//call submethod
-		  		double volumeele =	ComputeConstrVols(xscurr);
+            xscurr(i,0) = xsrefe(i,0) + mydisp[i*NODDOF_SOH8+0];
+            xscurr(i,1) = xsrefe(i,1) + mydisp[i*NODDOF_SOH8+1];
+            xscurr(i,2) = xsrefe(i,2) + mydisp[i*NODDOF_SOH8+2];
+          }
+          //call submethod
+          double volumeele =	ComputeConstrVols(xscurr);
 
-		  		// get RIGHT volume out of parameterlist and maximum ConditionID
-		  		char volname[30];
-		  		const int ID =params.get("ConditionID",-1);
-		  		const int maxID=params.get("MaxID",0);
-		  		const int minID=params.get("MinID",1000000);
-		  		if (ID<0)
-		  		{
-		  			dserror("Condition ID for volume constraint missing!");
-		  		}
-		  		if (maxID<ID)
-		  		{
-		  			params.set("MaxID",ID);
-		  		}
-		  		if (minID>ID)
-		  		{
-		  			params.set("MinID",ID);
-		  		}
-		  		sprintf(volname,"computed volume %d",ID);
-		  		double volumecond = params.get(volname,0.0);
-		  		//update volume in parameter list
-		  		params.set(volname, volumecond+volumeele);
-	  		}
+          // get RIGHT volume out of parameterlist and maximum ConditionID
+          char volname[30];
+          const int ID =params.get("ConditionID",-1);
+          const int maxID=params.get("MaxID",0);
+          const int minID=params.get("MinID",1000000);
+          if (ID<0)
+          {
+            dserror("Condition ID for volume constraint missing!");
+          }
+          if (maxID<ID)
+          {
+            params.set("MaxID",ID);
+          }
+          if (minID>ID)
+          {
+            params.set("MinID",ID);
+          }
+          sprintf(volname,"computed volume %d",ID);
+          double volumecond = params.get(volname,0.0);
+          //update volume in parameter list
+          params.set(volname, volumecond+volumeele);
+        }
 
-	  	}
-	  	break;
-	  	case calc_struct_volconstrstiff:
-	  	{
-	  		if (distype!=quad4)
-	  				dserror("Volume Constraint online works for quad4 surfaces!");
-	  		// element geometry update
-	  		RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-	  		if (disp==null) dserror("Cannot get state vector 'displacement'");
-	  		vector<double> mydisp(lm.size());
-	  		DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-	  		const int numnod = 4;
-	  		Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOH8);  // material coord. of element
-	  		Epetra_SerialDenseMatrix xscurr(numnod,NUMDIM_SOH8);  // material coord. of element
-	  		for (int i=0; i<numnod; ++i){
-	  			xsrefe(i,0) = Nodes()[i]->X()[0];
-	  			xsrefe(i,1) = Nodes()[i]->X()[1];
-	  			xsrefe(i,2) = Nodes()[i]->X()[2];
+      }
+      break;
+      case calc_struct_volconstrstiff:
+      {
+        if (distype!=quad4)
+          dserror("Volume Constraint online works for quad4 surfaces!");
+        // element geometry update
+        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+        if (disp==null) dserror("Cannot get state vector 'displacement'");
+        vector<double> mydisp(lm.size());
+        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+        const int numnod = 4;
+        Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOH8);  // material coord. of element
+        Epetra_SerialDenseMatrix xscurr(numnod,NUMDIM_SOH8);  // material coord. of element
+        for (int i=0; i<numnod; ++i)
+        {
+          xsrefe(i,0) = Nodes()[i]->X()[0];
+          xsrefe(i,1) = Nodes()[i]->X()[1];
+          xsrefe(i,2) = Nodes()[i]->X()[2];
 
-	  			xscurr(i,0) = xsrefe(i,0) + mydisp[i*NODDOF_SOH8+0];
-	  			xscurr(i,1) = xsrefe(i,1) + mydisp[i*NODDOF_SOH8+1];
-	  			xscurr(i,2) = xsrefe(i,2) + mydisp[i*NODDOF_SOH8+2];
-	  		}
-	  		//call submethods
-	  		ComputeVolconstrStiff(xscurr,elematrix1);
-	  		ComputeVolconstrVolDeriv(xscurr,elevector1);
-	  		//apply the right lagrange multiplier and right signs to matrix and vectors
-	  		const int ID =params.get("ConditionID",-1);
-	  		int numID=params.get("NumberofID",0);
-	  		RefCountPtr<Epetra_SerialDenseVector> lambdav=rcp(new Epetra_SerialDenseVector(numID));
-	  		lambdav= params.get("LagrMultVector",lambdav);
-	  		if (ID<0)
-	  		{
-	  			dserror("Condition ID for volume constraint missing!");
-	  		}
-	  		const int minID =params.get("MinID",0);
-	  		//update corresponding column in "constraint" matrix
-	  		elevector2=elevector1;
-	  		elevector2.Scale(1);
-	  		elevector1.Scale(1*(*lambdav)[ID-minID]);
-	  		elematrix1.Scale(1*(*lambdav)[ID-minID]);
-	  		//call submethod for volume evaluation
-	  		if(Comm.MyPID()==this->Owner())
-	  		{
-	  			double volumeele =	ComputeConstrVols(xscurr);
-	  			// get RIGHT volume out of parameterlist and maximum ConditionID
-	  			char volname[30];
-	  			sprintf(volname,"computed volume %d",ID);
-	  			double volumecond = params.get(volname,0.0);
-	  			//update volume in parameter list
-	  			params.set(volname, volumecond+volumeele);
-	  		}
-	  	}
+          xscurr(i,0) = xsrefe(i,0) + mydisp[i*NODDOF_SOH8+0];
+          xscurr(i,1) = xsrefe(i,1) + mydisp[i*NODDOF_SOH8+1];
+          xscurr(i,2) = xsrefe(i,2) + mydisp[i*NODDOF_SOH8+2];
+        }
+        //call submethods
+        ComputeVolconstrStiff(xscurr,elematrix1);
+        ComputeVolconstrVolDeriv(xscurr,elevector1);
+        //apply the right lagrange multiplier and right signs to matrix and vectors
+        const int ID =params.get("ConditionID",-1);
+        int numID=params.get("NumberofID",0);
+        RefCountPtr<Epetra_SerialDenseVector> lambdav=rcp(new Epetra_SerialDenseVector(numID));
+        lambdav= params.get("LagrMultVector",lambdav);
+        if (ID<0)
+        {
+          dserror("Condition ID for volume constraint missing!");
+        }
+        const int minID =params.get("MinID",0);
+        //update corresponding column in "constraint" matrix
+        elevector2=elevector1;
+        elevector2.Scale(1);
+        elevector1.Scale(1*(*lambdav)[ID-minID]);
+        elematrix1.Scale(1*(*lambdav)[ID-minID]);
+        //call submethod for volume evaluation
+        if(Comm.MyPID()==this->Owner())
+        {
+          double volumeele =	ComputeConstrVols(xscurr);
+          // get RIGHT volume out of parameterlist and maximum ConditionID
+          char volname[30];
+          sprintf(volname,"computed volume %d",ID);
+          double volumecond = params.get(volname,0.0);
+          //update volume in parameter list
+          params.set(volname, volumecond+volumeele);
+        }
+      }
 
-	  	break;
-        case calc_init_vol:
+      break;
+      case calc_init_vol:
                 {
                   // the reference volume of the RVE (including inner
                   // holes) is calculated by evaluating the following
@@ -473,98 +475,97 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
                   }
                   else
                     dserror("Unknown condition type %d",cond->Type());
-	  	}
+        }
         break;
         //compute the area (e.g. for initialization)
         case calc_struct_constrarea:
         {
-	  		if (distype!=quad4)
-	  				dserror("Area Constraint online works for quad4 surfaces!");
-	  		//We are not interested in volume of ghosted elements
-	  		if(Comm.MyPID()==this->Owner())
-	  		{
-		  		// element geometry update
-		  		RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-		  		if (disp==null) dserror("Cannot get state vector 'displacement'");
-		  		vector<double> mydisp(lm.size());
-		  		DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-		  		const int numnod = 4;
-		  		Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOH8);  // material coord. of element
-		  		Epetra_SerialDenseMatrix xscurr(numnod,NUMDIM_SOH8);  // material coord. of element
-		  		for (int i=0; i<numnod; ++i){
-		  			xsrefe(i,0) = Nodes()[i]->X()[0];
-		  			xsrefe(i,1) = Nodes()[i]->X()[1];
-		  			xsrefe(i,2) = Nodes()[i]->X()[2];
+          if (distype!=quad4)
+            dserror("Area Constraint online works for quad4 surfaces!");
+          //We are not interested in volume of ghosted elements
+          if(Comm.MyPID()==this->Owner())
+          {
+            // element geometry update
+            RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+            if (disp==null) dserror("Cannot get state vector 'displacement'");
+            vector<double> mydisp(lm.size());
+            DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+            const int numnod = 4;
+            Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOH8);  // material coord. of element
+            Epetra_SerialDenseMatrix xscurr(numnod,NUMDIM_SOH8);  // material coord. of element
+            for (int i=0; i<numnod; ++i){
+              xsrefe(i,0) = Nodes()[i]->X()[0];
+              xsrefe(i,1) = Nodes()[i]->X()[1];
+              xsrefe(i,2) = Nodes()[i]->X()[2];
 
-		  			xscurr(i,0) = xsrefe(i,0) + mydisp[i*NODDOF_SOH8+0];
-		  			xscurr(i,1) = xsrefe(i,1) + mydisp[i*NODDOF_SOH8+1];
-		  			xscurr(i,2) = xsrefe(i,2) + mydisp[i*NODDOF_SOH8+2];
-		  		}
-		  		//call submethod
+              xscurr(i,0) = xsrefe(i,0) + mydisp[i*NODDOF_SOH8+0];
+              xscurr(i,1) = xsrefe(i,1) + mydisp[i*NODDOF_SOH8+1];
+              xscurr(i,2) = xsrefe(i,2) + mydisp[i*NODDOF_SOH8+2];
+            }
+            
+            double areaele=0.0;
+            const int ngp = 4;
 
-		  		double areaele=0.0;
-                const int ngp = 4;
+            // gauss parameters
+            const double gpweight = 1.0;
+            const double gploc    = 1.0/sqrt(3.0);
+            Epetra_SerialDenseMatrix gpcoord (ngp,2);
+            gpcoord(0,0) = - gploc;
+            gpcoord(0,1) = - gploc;
+            gpcoord(1,0) =   gploc;
+            gpcoord(1,1) = - gploc;
+            gpcoord(2,0) = - gploc;
+            gpcoord(2,1) =   gploc;
+            gpcoord(3,0) =   gploc;
+            gpcoord(3,1) =   gploc;
 
-                // gauss parameters
-                const double gpweight = 1.0;
-                const double gploc    = 1.0/sqrt(3.0);
-                Epetra_SerialDenseMatrix gpcoord (ngp,2);
-                gpcoord(0,0) = - gploc;
-                gpcoord(0,1) = - gploc;
-                gpcoord(1,0) =   gploc;
-                gpcoord(1,1) = - gploc;
-                gpcoord(2,0) = - gploc;
-                gpcoord(2,1) =   gploc;
-                gpcoord(3,0) =   gploc;
-                gpcoord(3,1) =   gploc;
+            for (int gpid = 0; gpid < 4; ++gpid) {    // loop over intergration points
+              vector<double> funct(ngp);              // 4 shape function values
+              double drs;                             // surface area factor
+              vector<double> normal(NUMDIM_SOH8);
 
-                for (int gpid = 0; gpid < 4; ++gpid) {    // loop over intergration points
-                  vector<double> funct(ngp);              // 4 shape function values
-                  double drs;                             // surface area factor
-                  vector<double> normal(NUMDIM_SOH8);
+              soh8_surface_integ(&funct,&drs,&normal,&xscurr,gpcoord(gpid,0),gpcoord(gpid,1));
 
-                  soh8_surface_integ(&funct,&drs,&normal,&xscurr,gpcoord(gpid,0),gpcoord(gpid,1));
+              double fac = gpweight * drs;
+              areaele += fac;
 
-                  double fac = gpweight * drs;
-                  areaele += fac;
+            }
 
-                }
-
-		  		// get RIGHT volume out of parameterlist and maximum ConditionID
-		  		char areaname[30];
-		  		const int ID =params.get("ConditionID",-1);
-		  		const int maxID=params.get("MaxID",0);
-		  		const int minID=params.get("MinID",1000000);
-		  		if (ID<0)
-		  		{
-		  			dserror("Condition ID for area constraint missing!");
-		  		}
-		  		if (maxID<ID)
-		  		{
-		  			params.set("MaxID",ID);
-		  		}
-		  		if (minID>ID)
-		  		{
-		  			params.set("MinID",ID);
-		  		}
-		  		sprintf(areaname,"computed area %d",ID);
-		  		double areacond = params.get(areaname,0.0);
-		  		//update area in parameter list
-		  		params.set(areaname, areacond+areaele);
-	  		}
+            // get RIGHT volume out of parameterlist and maximum ConditionID
+            char areaname[30];
+            const int ID =params.get("ConditionID",-1);
+            const int maxID=params.get("MaxID",0);
+            const int minID=params.get("MinID",1000000);
+            if (ID<0)
+            {
+              dserror("Condition ID for area constraint missing!");
+            }
+            if (maxID<ID)
+            {
+              params.set("MaxID",ID);
+            }
+            if (minID>ID)
+            {
+              params.set("MinID",ID);
+            }
+            sprintf(areaname,"computed area %d",ID);
+            double areacond = params.get(areaname,0.0);
+            //update area in parameter list
+            params.set(areaname, areacond+areaele);
+          }
 
         }
         break;
         case calc_struct_areaconstrstiff:
         {
-        	dserror("Element routines for area constraint not implemented yet!");
+          dserror("Element routines for area constraint not implemented yet!");
         }
         default:
-	  		dserror("Unimplemented type of action for Soh8Surface");
+          dserror("Unimplemented type of action for Soh8Surface");
 
-	}
-	return 0;
-}
+  }
+  return 0;
+  }
 
 /*----------------------------------------------------------------------*
  * Compute Volume between surface and xy-plane.                 tk 10/07*
@@ -572,50 +573,50 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
  * ---------------------------------------------------------------------*/
 double DRT::ELEMENTS::Soh8Surface::ComputeConstrVols(Epetra_SerialDenseMatrix xc)
 {
-	double volume =0;
-	//Formula for volume computation based on calculation of Ulrich done
-	//within the old code
-	volume =-(1.0/12.0)*(2*xc(0,0)*xc(1,1)*xc(0,2) -
-			2*xc(1,0)*xc(0,1)*xc(0,2) +
-			2*xc(0,0)*xc(1,1)*xc(1,2) -
-			2*xc(1,0)*xc(0,1)*xc(1,2) +
-			xc(0,0)*xc(1,1)*xc(2,2) -
-			2*xc(0,0)*xc(0,2)*xc(3,1) -
-			xc(0,0)*xc(2,1)*xc(1,2) -
-			xc(1,0)*xc(0,1)*xc(2,2) +
-			xc(1,0)*xc(0,2)*xc(2,1) +
-			xc(0,1)*xc(2,0)*xc(1,2) +
-			2*xc(0,1)*xc(0,2)*xc(3,0) -
-			xc(2,0)*xc(1,1)*xc(0,2) +
-			xc(0,0)*xc(1,1)*xc(3,2) -
-			xc(0,0)*xc(1,2)*xc(3,1) -
-			xc(1,0)*xc(0,1)*xc(3,2) +
-			xc(1,0)*xc(0,2)*xc(3,1) +
-			2*xc(1,0)*xc(2,1)*xc(1,2) +
-			xc(0,1)*xc(3,0)*xc(1,2) -
-			2*xc(2,0)*xc(1,1)*xc(1,2) -
-			xc(1,1)*xc(0,2)*xc(3,0) +
-			xc(0,0)*xc(2,1)*xc(3,2) -
-			xc(0,0)*xc(3,1)*xc(2,2) +
-			2*xc(1,0)*xc(2,1)*xc(2,2) -
-			xc(0,1)*xc(2,0)*xc(3,2) +
-			xc(0,1)*xc(3,0)*xc(2,2) -
-			2*xc(2,0)*xc(1,1)*xc(2,2) +
-			xc(2,0)*xc(0,2)*xc(3,1) -
-			xc(0,2)*xc(3,0)*xc(2,1) -
-			2*xc(0,0)*xc(3,1)*xc(3,2) +
-			xc(1,0)*xc(2,1)*xc(3,2) -
-			xc(1,0)*xc(3,1)*xc(2,2) +
-			2*xc(0,1)*xc(3,0)*xc(3,2) -
-			xc(2,0)*xc(1,1)*xc(3,2) +
-			xc(2,0)*xc(1,2)*xc(3,1) +
-			xc(1,1)*xc(3,0)*xc(2,2) -
-			xc(3,0)*xc(2,1)*xc(1,2) +
-			2*xc(2,0)*xc(3,1)*xc(2,2) -
-			2*xc(3,0)*xc(2,1)*xc(2,2) +
-			2*xc(2,0)*xc(3,1)*xc(3,2) -
-			2*xc(3,0)*xc(2,1)*xc(3,2));
-	return volume;
+  double volume =0;
+  //Formula for volume computation based on calculation of Ulrich done
+  //within the old code
+  volume =-(1.0/12.0)*(2*xc(0,0)*xc(1,1)*xc(0,2) -
+      2*xc(1,0)*xc(0,1)*xc(0,2) +
+      2*xc(0,0)*xc(1,1)*xc(1,2) -
+      2*xc(1,0)*xc(0,1)*xc(1,2) +
+      xc(0,0)*xc(1,1)*xc(2,2) -
+      2*xc(0,0)*xc(0,2)*xc(3,1) -
+      xc(0,0)*xc(2,1)*xc(1,2) -
+      xc(1,0)*xc(0,1)*xc(2,2) +
+      xc(1,0)*xc(0,2)*xc(2,1) +
+      xc(0,1)*xc(2,0)*xc(1,2) +
+      2*xc(0,1)*xc(0,2)*xc(3,0) -
+      xc(2,0)*xc(1,1)*xc(0,2) +
+      xc(0,0)*xc(1,1)*xc(3,2) -
+      xc(0,0)*xc(1,2)*xc(3,1) -
+      xc(1,0)*xc(0,1)*xc(3,2) +
+      xc(1,0)*xc(0,2)*xc(3,1) +
+      2*xc(1,0)*xc(2,1)*xc(1,2) +
+      xc(0,1)*xc(3,0)*xc(1,2) -
+      2*xc(2,0)*xc(1,1)*xc(1,2) -
+      xc(1,1)*xc(0,2)*xc(3,0) +
+      xc(0,0)*xc(2,1)*xc(3,2) -
+      xc(0,0)*xc(3,1)*xc(2,2) +
+      2*xc(1,0)*xc(2,1)*xc(2,2) -
+      xc(0,1)*xc(2,0)*xc(3,2) +
+      xc(0,1)*xc(3,0)*xc(2,2) -
+      2*xc(2,0)*xc(1,1)*xc(2,2) +
+      xc(2,0)*xc(0,2)*xc(3,1) -
+      xc(0,2)*xc(3,0)*xc(2,1) -
+      2*xc(0,0)*xc(3,1)*xc(3,2) +
+      xc(1,0)*xc(2,1)*xc(3,2) -
+      xc(1,0)*xc(3,1)*xc(2,2) +
+      2*xc(0,1)*xc(3,0)*xc(3,2) -
+      xc(2,0)*xc(1,1)*xc(3,2) +
+      xc(2,0)*xc(1,2)*xc(3,1) +
+      xc(1,1)*xc(3,0)*xc(2,2) -
+      xc(3,0)*xc(2,1)*xc(1,2) +
+      2*xc(2,0)*xc(3,1)*xc(2,2) -
+      2*xc(3,0)*xc(2,1)*xc(2,2) +
+      2*xc(2,0)*xc(3,1)*xc(3,2) -
+      2*xc(3,0)*xc(2,1)*xc(3,2));
+  return volume;
 }
 
 /*----------------------------------------------------------------------*
@@ -623,10 +624,10 @@ double DRT::ELEMENTS::Soh8Surface::ComputeConstrVols(Epetra_SerialDenseMatrix xc
  * Second derivatives of volume with respect to the displacements       *
  * ---------------------------------------------------------------------*/
 void DRT::ELEMENTS::Soh8Surface::ComputeVolconstrStiff(Epetra_SerialDenseMatrix xc,
-		  Epetra_SerialDenseMatrix& elematrix)
+    Epetra_SerialDenseMatrix& elematrix)
 {
-	//Second derivatives of volume with respect to the displacements.
-	//Only suitable for quad4 surfaces, since based on a symbolic calculation with mupad
+  //Second derivatives of volume with respect to the displacements.
+  //Only suitable for quad4 surfaces, since based on a symbolic calculation with mupad
     elematrix(0,0) = 0.0 ;
     elematrix(0,1) = 0.0 ;
     elematrix(0,2) = xc(1,1)*(1.0/6.0) - xc(3,1)*(1.0/6.0) ;
@@ -786,62 +787,62 @@ void DRT::ELEMENTS::Soh8Surface::ComputeVolconstrStiff(Epetra_SerialDenseMatrix 
 }
 
 /*----------------------------------------------------------------------*
- * Compute derivative of volume									tk 10/07*
- * with respect to the displacements							        *
+ * Compute derivative of volume                                 tk 10/07*
+ * with respect to the displacements                                    *
  * ---------------------------------------------------------------------*/
 void DRT::ELEMENTS::Soh8Surface::ComputeVolconstrVolDeriv(Epetra_SerialDenseMatrix xc,
-		Epetra_SerialDenseVector& elevector)
+    Epetra_SerialDenseVector& elevector)
 {
-	//implementation based on symbolic calculation with mupad
+  //implementation based on symbolic calculation with mupad
     elevector[0] = (1.0/6.0)*xc(1,1)*xc(0,2) + (1.0/6.0)*xc(1,1)*xc(1,2) + (1.0/12.0)*xc(1,1)*xc(2,2) -
-    			   (1.0/6.0)*xc(0,2)*xc(3,1) - (1.0/12.0)*xc(2,1)*xc(1,2) + (1.0/12.0)*xc(1,1)*xc(3,2) -
-    			   (1.0/12.0)*xc(1,2)*xc(3,1) + (1.0/12.0)*xc(2,1)*xc(3,2) - (1.0/12.0)*xc(3,1)*xc(2,2) -
-    			   (1.0/6.0)*xc(3,1)*xc(3,2) ;
+             (1.0/6.0)*xc(0,2)*xc(3,1) - (1.0/12.0)*xc(2,1)*xc(1,2) + (1.0/12.0)*xc(1,1)*xc(3,2) -
+             (1.0/12.0)*xc(1,2)*xc(3,1) + (1.0/12.0)*xc(2,1)*xc(3,2) - (1.0/12.0)*xc(3,1)*xc(2,2) -
+             (1.0/6.0)*xc(3,1)*xc(3,2) ;
     elevector[1] = (-1.0/6.0)*xc(1,0)*xc(0,2) - (1.0/6.0)*xc(1,0)*xc(1,2) - (1.0/12.0)*xc(1,0)*xc(2,2) +
-    			   (1.0/12.0)*xc(2,0)*xc(1,2) + (1.0/6.0)*xc(0,2)*xc(3,0) - (1.0/12.0)*xc(1,0)*xc(3,2) +
-    			   (1.0/12.0)*xc(3,0)*xc(1,2) - (1.0/12.0)*xc(2,0)*xc(3,2) + (1.0/12.0)*xc(3,0)*xc(2,2) +
-    			   (1.0/6.0)*xc(3,0)*xc(3,2) ;
+             (1.0/12.0)*xc(2,0)*xc(1,2) + (1.0/6.0)*xc(0,2)*xc(3,0) - (1.0/12.0)*xc(1,0)*xc(3,2) +
+             (1.0/12.0)*xc(3,0)*xc(1,2) - (1.0/12.0)*xc(2,0)*xc(3,2) + (1.0/12.0)*xc(3,0)*xc(2,2) +
+             (1.0/6.0)*xc(3,0)*xc(3,2) ;
     elevector[2] = (1.0/6.0)*xc(0,0)*xc(1,1) - (1.0/6.0)*xc(1,0)*xc(0,1) - (1.0/6.0)*xc(0,0)*xc(3,1) +
-    		       (1.0/12.0)*xc(1,0)*xc(2,1) + (1.0/6.0)*xc(0,1)*xc(3,0) - (1.0/12.0)*xc(2,0)*xc(1,1) +
-    		       (1.0/12.0)*xc(1,0)*xc(3,1) - (1.0/12.0)*xc(1,1)*xc(3,0) + (1.0/12.0)*xc(2,0)*xc(3,1) -
-    		       (1.0/12.0)*xc(3,0)*xc(2,1) ;
+             (1.0/12.0)*xc(1,0)*xc(2,1) + (1.0/6.0)*xc(0,1)*xc(3,0) - (1.0/12.0)*xc(2,0)*xc(1,1) +
+             (1.0/12.0)*xc(1,0)*xc(3,1) - (1.0/12.0)*xc(1,1)*xc(3,0) + (1.0/12.0)*xc(2,0)*xc(3,1) -
+             (1.0/12.0)*xc(3,0)*xc(2,1) ;
     elevector[3] = (-1.0/6.0)*xc(0,1)*xc(0,2) - (1.0/6.0)*xc(0,1)*xc(1,2) - (1.0/12.0)*xc(0,1)*xc(2,2) +
-    			   (1.0/12.0)*xc(0,2)*xc(2,1) - (1.0/12.0)*xc(0,1)*xc(3,2) + (1.0/12.0)*xc(0,2)*xc(3,1) +
-    			   (1.0/6.0)*xc(2,1)*xc(1,2) + (1.0/6.0)*xc(2,1)*xc(2,2) + (1.0/12.0)*xc(2,1)*xc(3,2) -
-    			   (1.0/12.0)*xc(3,1)*xc(2,2) ;
+             (1.0/12.0)*xc(0,2)*xc(2,1) - (1.0/12.0)*xc(0,1)*xc(3,2) + (1.0/12.0)*xc(0,2)*xc(3,1) +
+             (1.0/6.0)*xc(2,1)*xc(1,2) + (1.0/6.0)*xc(2,1)*xc(2,2) + (1.0/12.0)*xc(2,1)*xc(3,2) -
+             (1.0/12.0)*xc(3,1)*xc(2,2) ;
     elevector[4] = (1.0/6.0)*xc(0,0)*xc(0,2) + (1.0/6.0)*xc(0,0)*xc(1,2) + (1.0/12.0)*xc(0,0)*xc(2,2) -
-    			   (1.0/12.0)*xc(2,0)*xc(0,2) + (1.0/12.0)*xc(0,0)*xc(3,2) - (1.0/6.0)*xc(2,0)*xc(1,2) -
-    			   (1.0/12.0)*xc(0,2)*xc(3,0) - (1.0/6.0)*xc(2,0)*xc(2,2) - (1.0/12.0)*xc(2,0)*xc(3,2) +
-    			   (1.0/12.0)*xc(3,0)*xc(2,2) ;
+             (1.0/12.0)*xc(2,0)*xc(0,2) + (1.0/12.0)*xc(0,0)*xc(3,2) - (1.0/6.0)*xc(2,0)*xc(1,2) -
+             (1.0/12.0)*xc(0,2)*xc(3,0) - (1.0/6.0)*xc(2,0)*xc(2,2) - (1.0/12.0)*xc(2,0)*xc(3,2) +
+             (1.0/12.0)*xc(3,0)*xc(2,2) ;
     elevector[5] = (1.0/6.0)*xc(0,0)*xc(1,1) - (1.0/6.0)*xc(1,0)*xc(0,1) - (1.0/12.0)*xc(0,0)*xc(2,1) +
-    			   (1.0/12.0)*xc(0,1)*xc(2,0) - (1.0/12.0)*xc(0,0)*xc(3,1) + (1.0/6.0)*xc(1,0)*xc(2,1) +
-    			   (1.0/12.0)*xc(0,1)*xc(3,0) - (1.0/6.0)*xc(2,0)*xc(1,1) + (1.0/12.0)*xc(2,0)*xc(3,1) -
-    			   (1.0/12.0)*xc(3,0)*xc(2,1) ;
+             (1.0/12.0)*xc(0,1)*xc(2,0) - (1.0/12.0)*xc(0,0)*xc(3,1) + (1.0/6.0)*xc(1,0)*xc(2,1) +
+             (1.0/12.0)*xc(0,1)*xc(3,0) - (1.0/6.0)*xc(2,0)*xc(1,1) + (1.0/12.0)*xc(2,0)*xc(3,1) -
+             (1.0/12.0)*xc(3,0)*xc(2,1) ;
     elevector[6] = (1.0/12.0)*xc(0,1)*xc(1,2) - (1.0/12.0)*xc(1,1)*xc(0,2) - (1.0/6.0)*xc(1,1)*xc(1,2) -
-    			   (1.0/12.0)*xc(0,1)*xc(3,2) - (1.0/6.0)*xc(1,1)*xc(2,2) + (1.0/12.0)*xc(0,2)*xc(3,1) -
-    			   (1.0/12.0)*xc(1,1)*xc(3,2) + (1.0/12.0)*xc(1,2)*xc(3,1) + (1.0/6.0)*xc(3,1)*xc(2,2) +
-    			   (1.0/6.0)*xc(3,1)*xc(3,2) ;
+             (1.0/12.0)*xc(0,1)*xc(3,2) - (1.0/6.0)*xc(1,1)*xc(2,2) + (1.0/12.0)*xc(0,2)*xc(3,1) -
+             (1.0/12.0)*xc(1,1)*xc(3,2) + (1.0/12.0)*xc(1,2)*xc(3,1) + (1.0/6.0)*xc(3,1)*xc(2,2) +
+             (1.0/6.0)*xc(3,1)*xc(3,2) ;
     elevector[7] = (-1.0/12.0)*xc(0,0)*xc(1,2) + (1.0/12.0)*xc(1,0)*xc(0,2) + (1.0/6.0)*xc(1,0)*xc(1,2) +
-    			   (1.0/12.0)*xc(0,0)*xc(3,2) + (1.0/6.0)*xc(1,0)*xc(2,2) - (1.0/12.0)*xc(0,2)*xc(3,0) +
-    			   (1.0/12.0)*xc(1,0)*xc(3,2) - (1.0/12.0)*xc(3,0)*xc(1,2) - (1.0/6.0)*xc(3,0)*xc(2,2) -
-    			   (1.0/6.0)*xc(3,0)*xc(3,2) ;
+             (1.0/12.0)*xc(0,0)*xc(3,2) + (1.0/6.0)*xc(1,0)*xc(2,2) - (1.0/12.0)*xc(0,2)*xc(3,0) +
+             (1.0/12.0)*xc(1,0)*xc(3,2) - (1.0/12.0)*xc(3,0)*xc(1,2) - (1.0/6.0)*xc(3,0)*xc(2,2) -
+             (1.0/6.0)*xc(3,0)*xc(3,2) ;
     elevector[8] = (1.0/12.0)*xc(0,0)*xc(1,1) - (1.0/12.0)*xc(1,0)*xc(0,1) - (1.0/12.0)*xc(0,0)*xc(3,1) +
-    			   (1.0/6.0)*xc(1,0)*xc(2,1) + (1.0/12.0)*xc(0,1)*xc(3,0) - (1.0/6.0)*xc(2,0)*xc(1,1) -
-    			   (1.0/12.0)*xc(1,0)*xc(3,1) + (1.0/12.0)*xc(1,1)*xc(3,0) + (1.0/6.0)*xc(2,0)*xc(3,1) -
-    			   (1.0/6.0)*xc(3,0)*xc(2,1) ;
+             (1.0/6.0)*xc(1,0)*xc(2,1) + (1.0/12.0)*xc(0,1)*xc(3,0) - (1.0/6.0)*xc(2,0)*xc(1,1) -
+             (1.0/12.0)*xc(1,0)*xc(3,1) + (1.0/12.0)*xc(1,1)*xc(3,0) + (1.0/6.0)*xc(2,0)*xc(3,1) -
+             (1.0/6.0)*xc(3,0)*xc(2,1) ;
     elevector[9] = (1.0/6.0)*xc(0,1)*xc(0,2) + (1.0/12.0)*xc(0,1)*xc(1,2) - (1.0/12.0)*xc(1,1)*xc(0,2) +
-    			   (1.0/12.0)*xc(0,1)*xc(2,2) - (1.0/12.0)*xc(0,2)*xc(2,1) + (1.0/6.0)*xc(0,1)*xc(3,2) +
-    			   (1.0/12.0)*xc(1,1)*xc(2,2) - (1.0/12.0)*xc(2,1)*xc(1,2) - (1.0/6.0)*xc(2,1)*xc(2,2) -
-    			   (1.0/6.0)*xc(2,1)*xc(3,2) ;
+             (1.0/12.0)*xc(0,1)*xc(2,2) - (1.0/12.0)*xc(0,2)*xc(2,1) + (1.0/6.0)*xc(0,1)*xc(3,2) +
+             (1.0/12.0)*xc(1,1)*xc(2,2) - (1.0/12.0)*xc(2,1)*xc(1,2) - (1.0/6.0)*xc(2,1)*xc(2,2) -
+             (1.0/6.0)*xc(2,1)*xc(3,2) ;
     elevector[10] = (-1.0/6.0)*xc(0,0)*xc(0,2) - (1.0/12.0)*xc(0,0)*xc(1,2) + (1.0/12.0)*xc(1,0)*xc(0,2) -
-    				(1.0/12.0)*xc(0,0)*xc(2,2) + (1.0/12.0)*xc(2,0)*xc(0,2) - (1.0/6.0)*xc(0,0)*xc(3,2) -
-    				(1.0/12.0)*xc(1,0)*xc(2,2) + (1.0/12.0)*xc(2,0)*xc(1,2) + (1.0/6.0)*xc(2,0)*xc(2,2) +
-    				(1.0/6.0)*xc(2,0)*xc(3,2) ;
+            (1.0/12.0)*xc(0,0)*xc(2,2) + (1.0/12.0)*xc(2,0)*xc(0,2) - (1.0/6.0)*xc(0,0)*xc(3,2) -
+            (1.0/12.0)*xc(1,0)*xc(2,2) + (1.0/12.0)*xc(2,0)*xc(1,2) + (1.0/6.0)*xc(2,0)*xc(2,2) +
+            (1.0/6.0)*xc(2,0)*xc(3,2) ;
     elevector[11] = (1.0/12.0)*xc(0,0)*xc(1,1) - (1.0/12.0)*xc(1,0)*xc(0,1) + (1.0/12.0)*xc(0,0)*xc(2,1) -
-    				(1.0/12.0)*xc(0,1)*xc(2,0) - (1.0/6.0)*xc(0,0)*xc(3,1) + (1.0/12.0)*xc(1,0)*xc(2,1) +
-    				(1.0/6.0)*xc(0,1)*xc(3,0) - (1.0/12.0)*xc(2,0)*xc(1,1) + (1.0/6.0)*xc(2,0)*xc(3,1) -
-    				(1.0/6.0)*xc(3,0)*xc(2,1) ;
-	return;
+            (1.0/12.0)*xc(0,1)*xc(2,0) - (1.0/6.0)*xc(0,0)*xc(3,1) + (1.0/12.0)*xc(1,0)*xc(2,1) +
+            (1.0/6.0)*xc(0,1)*xc(3,0) - (1.0/12.0)*xc(2,0)*xc(1,1) + (1.0/6.0)*xc(2,0)*xc(3,1) -
+            (1.0/6.0)*xc(3,0)*xc(2,1) ;
+    return;
 }
 
 #endif  // #ifdef CCADISCRET
