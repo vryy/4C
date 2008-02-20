@@ -89,6 +89,27 @@ namespace INPUT
   class StringConditionComponent : public ConditionComponent
   {
   public:
+
+    /// construct condition component that reads and writes a string variable
+    /*!
+      A string is read from the input file and (another one is) stored in
+      the DRT::Condition.
+
+      It might be a good idea to store the same string in the Condition that
+      is read from the dat file. You don't have to. You can make things as
+      confusing as you want.
+
+      An optional StringConditionComponent will not complain if does not find
+      one of the admissible strings but set the default value instead.
+
+      There is a 1:1 correspondance between datfilevalues and condvalues.
+
+      \param name Name of the corresponding variable in the DRT::Condition
+      \param defaultvalue Default value of this variable
+      \param datfilevalues Possible values in the dat file
+      \param condvalues Corresponding values stored in the DRT::Condition
+      \param optional Whether this string is optional in the dat file
+    */
     StringConditionComponent(std::string name,
                              std::string defaultvalue,
                              const Teuchos::Array<std::string>& datfilevalues,
@@ -127,6 +148,8 @@ namespace INPUT
   class SeparatorConditionComponent : public ConditionComponent
   {
   public:
+
+    /// constuct a separator component that does read a string without setting a variable
     SeparatorConditionComponent(std::string separator);
 
     virtual void DefaultLine(std::ostream& stream);
@@ -155,6 +178,15 @@ namespace INPUT
   class IntConditionComponent : public ConditionComponent
   {
   public:
+
+    /// constuct a condition component that reads a int variable
+    /*!
+      A int value is expected in the dat file.
+
+      \param name variable name in DRT::Condition
+      \param fortranstyle whether to substract 1 from the value read
+      \param noneallowed whether "none" is a legal value (meaning -1)
+     */
     explicit IntConditionComponent(std::string name, bool fortranstyle=false, bool noneallowed=false);
     virtual void DefaultLine(std::ostream& stream);
     virtual void Print(std::ostream& stream, const DRT::Condition* cond);
@@ -183,6 +215,17 @@ namespace INPUT
   class IntVectorConditionComponent : public ConditionComponent
   {
   public:
+
+    /// constuct a condition component that reads a vector of int variables
+    /*!
+      A number of int values are expected in the dat file.
+
+      \param name variable name in DRT::Condition
+      \param length number of int values expected
+      \param fortranstyle whether to substract 1 from the value read
+      \param noneallowed whether "none" is a legal value (meaning -1)
+      \param optional whether this condition component can be skipped
+     */
     IntVectorConditionComponent(std::string name,
                                 int length,
                                 bool fortranstyle=false,
@@ -212,6 +255,13 @@ namespace INPUT
   class RealConditionComponent : public ConditionComponent
   {
   public:
+
+    /// constuct a condition component that reads a double variable
+    /*!
+      A double value is expected in the dat file.
+
+      \param name variable name in DRT::Condition
+     */
     RealConditionComponent(std::string name);
     virtual void DefaultLine(std::ostream& stream);
     virtual void Print(std::ostream& stream, const DRT::Condition* cond);
@@ -231,6 +281,14 @@ namespace INPUT
   class RealVectorConditionComponent : public ConditionComponent
   {
   public:
+
+    /// constuct a condition component that reads a vector of double variables
+    /*!
+      A number of double values are expected in the dat file.
+
+      \param name variable name in DRT::Condition
+      \param length number of double values expected
+     */
     RealVectorConditionComponent(std::string name, int length);
     virtual void DefaultLine(std::ostream& stream);
     virtual void Print(std::ostream& stream, const DRT::Condition* cond);
