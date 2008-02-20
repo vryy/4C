@@ -109,6 +109,16 @@ void LINALG::MultiMapExtractor::InsertVector(const Epetra_MultiVector& partial, 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void LINALG::MultiMapExtractor::AddVector(const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full, double scale) const
+{
+  Teuchos::RCP<Epetra_MultiVector> v = ExtractVector(full, block);
+  v->Update(scale,partial,1.0);
+  InsertVector(*v,block,full);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 LINALG::MapExtractor::MapExtractor()
 {
 }
@@ -195,5 +205,22 @@ void LINALG::MapExtractor::InsertOtherVector(Teuchos::RCP<const Epetra_Vector> o
 {
   InsertVector(other,0,full);
 }
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void LINALG::MapExtractor::AddCondVector(Teuchos::RCP<const Epetra_Vector> cond, Teuchos::RCP<Epetra_Vector> full) const
+{
+  AddVector(cond,1,full);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void LINALG::MapExtractor::AddOtherVector(Teuchos::RCP<const Epetra_Vector> other, Teuchos::RCP<Epetra_Vector> full) const
+{
+  AddVector(other,0,full);
+}
+
 
 #endif

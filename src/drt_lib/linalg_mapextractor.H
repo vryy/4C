@@ -213,6 +213,30 @@ namespace LINALG
 
     //@}
 
+    /** \name Add from full dof vector */
+    //@{
+
+    /// Put a partial vector into a full vector
+    /*!
+      \param partial vector to copy into full vector
+      \param block block number of partial vector
+      \param full vector to copy into
+      \param scale scaling factor for partial vector
+     */
+    void AddVector(const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full, double scale=1.0) const;
+
+    /// Put a partial vector into a full vector
+    /*!
+      \param partial vector to copy into full vector
+      \param block block number of partial vector
+      \param full vector to copy into
+      \param scale scaling factor for partial vector
+     */
+    void AddVector(Teuchos::RCP<const Epetra_Vector> partial, int block, Teuchos::RCP<Epetra_Vector> full, double scale=1.0) const
+    { AddVector(*partial,block,*full,scale); }
+
+    //@}
+
   private:
 
     /// the full row map
@@ -310,6 +334,17 @@ namespace LINALG
 
     /// Put an other dof vector into a full row vector
     void InsertOtherVector(Teuchos::RCP<const Epetra_Vector> other, Teuchos::RCP<Epetra_Vector> full) const;
+
+    //@}
+
+    /** \name Add from full dof vector */
+    //@{
+
+    /// Put a condition dof vector into a full row vector
+    void AddCondVector(Teuchos::RCP<const Epetra_Vector> cond, Teuchos::RCP<Epetra_Vector> full) const;
+
+    /// Put an other dof vector into a full row vector
+    void AddOtherVector(Teuchos::RCP<const Epetra_Vector> other, Teuchos::RCP<Epetra_Vector> full) const;
 
     //@}
 

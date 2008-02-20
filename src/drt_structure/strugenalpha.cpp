@@ -774,8 +774,25 @@ void StruGenAlpha::ApplyExternalForce(const LINALG::MapExtractor& extractor,
   // increment time and step
   double timen = time + dt;
 
-  // Copy iforce to fextn_ but leave all values not in iforce alone.
-  extractor.InsertCondVector(iforce,fextn_);
+  // get new external force vector
+  {
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_eleload");
+    // other parameters needed by the elements
+    p.set("total time",timen);
+    p.set("delta time",dt);
+    // set vector values needed by elements
+    discret_.ClearState();
+    discret_.SetState("displacement",disn_);
+    fextn_->PutScalar(0.0);  // initialize external force vector (load vect)
+    discret_.EvaluateNeumann(p,*fextn_);
+    discret_.ClearState();
+  }
+
+  // Add iforce to fextn_
+  // there might already be (body) forces at the interface nodes
+  extractor.AddCondVector(iforce,fextn_);
 
   //------------------------------- compute interpolated external forces
   // external mid-forces F_{ext;n+1-alpha_f} (fextm)
@@ -1516,7 +1533,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     //--------------------------------- increment equilibrium loop index
     ++numiter;
 
-   
+
   }
   //=================================================================== end equilibrium loop
   print_unconv = false;
