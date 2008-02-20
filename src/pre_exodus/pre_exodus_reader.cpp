@@ -63,10 +63,10 @@ EXODUS::Mesh::Mesh(string exofilename)
   if (num_dim_ != 3) dserror("only 3 dimensions for mesh, yet");
 
   // get nodal coordinates
-  float x[num_nodes];
-  float y[num_nodes];
-  float z[num_nodes];
-  error = ex_get_coord(exoid_,x,y,z);
+  vector<float> x(num_nodes);
+  vector<float> y(num_nodes);
+  vector<float> z(num_nodes);
+  error = ex_get_coord(exoid_,&x[0],&y[0],&z[0]);
   if (error != 0) dserror("exo error returned");
   
   // store nodes in map
