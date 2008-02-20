@@ -441,6 +441,9 @@ namespace LINALG
     /// whether to save the graph and assemble to a filled matrix next time
     bool savegraph_;
 
+    /// (estimated) maximum number of entries per row
+    int maxnumentries_;
+
     /// saved graph (if any)
     Teuchos::RCP<Epetra_CrsGraph> graph_;
   };
@@ -602,7 +605,7 @@ namespace LINALG
 
     There are strange algorithms that need to split a large sparse matrix into
     blocks. Such things happen, e.g., in FSI calculations with internal and
-    interface splits, in fluid projection preconditioners or in CONTACT
+    interface splits, in fluid projection preconditioners or in contact
     simulations with slave and master sides. Unfortunatelly spliting a huge
     sparse matrix in (possibly) many blocks is nontrivial and expensive. So
     the idea here is to assemble into a block matrix in the first place.

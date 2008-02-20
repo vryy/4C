@@ -12,7 +12,8 @@
  *----------------------------------------------------------------------*/
 LINALG::SparseMatrix::SparseMatrix(const Epetra_Map& rowmap, const int npr, bool explicitdirichlet, bool savegraph)
   : explicitdirichlet_(explicitdirichlet),
-    savegraph_(savegraph)
+    savegraph_(savegraph),
+    maxnumentries_(npr)
 {
   if (!rowmap.UniqueGIDs())
     dserror("Row map is not unique");
@@ -24,7 +25,8 @@ LINALG::SparseMatrix::SparseMatrix(const Epetra_Map& rowmap, const int npr, bool
  *----------------------------------------------------------------------*/
 LINALG::SparseMatrix::SparseMatrix(const Epetra_CrsMatrix& matrix, bool explicitdirichlet, bool savegraph)
   : explicitdirichlet_(explicitdirichlet),
-    savegraph_(savegraph)
+    savegraph_(savegraph),
+    maxnumentries_(matrix.MaxNumEntries())
 {
   sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(matrix));
 }
@@ -35,7 +37,8 @@ LINALG::SparseMatrix::SparseMatrix(const Epetra_CrsMatrix& matrix, bool explicit
 LINALG::SparseMatrix::SparseMatrix(Teuchos::RCP<Epetra_CrsMatrix> matrix, bool explicitdirichlet, bool savegraph)
   : sysmat_(matrix),
     explicitdirichlet_(explicitdirichlet),
-    savegraph_(savegraph)
+    savegraph_(savegraph),
+    maxnumentries_(0)
 {
 }
 
@@ -44,25 +47,19 @@ LINALG::SparseMatrix::SparseMatrix(Teuchos::RCP<Epetra_CrsMatrix> matrix, bool e
  *----------------------------------------------------------------------*/
 LINALG::SparseMatrix::SparseMatrix(const SparseMatrix& mat)
   : explicitdirichlet_(mat.explicitdirichlet_),
-    savegraph_(mat.savegraph_)
+    savegraph_(mat.savegraph_),
+    maxnumentries_(0)
 {
-  if (mat.sysmat_!=Teuchos::null)
-  {
-    if (mat.Filled())
-      sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(*mat.sysmat_));
-    else
-      sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,mat.RowMap(),81,false));
-  }
-  
-  if (mat.graph_!=Teuchos::null)
-    graph_ = Teuchos::rcp(new Epetra_CrsGraph(*mat.graph_));
+  // We do not care for exception proved code, so this is ok.
+  *this = mat;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 LINALG::SparseMatrix::SparseMatrix(const Epetra_Vector& diag, bool explicitdirichlet, bool savegraph)
   : explicitdirichlet_(explicitdirichlet),
-    savegraph_(savegraph)
+    savegraph_(savegraph),
+    maxnumentries_(1)
 {
   int length = diag.Map().NumMyElements();
   Epetra_Map map(-1,length,diag.Map().MyGlobalElements(),
@@ -91,10 +88,25 @@ LINALG::SparseMatrix& LINALG::SparseMatrix::operator=(const SparseMatrix& mat)
   explicitdirichlet_ = mat.explicitdirichlet_;
   savegraph_ = mat.savegraph_;
 
-  if (mat.sysmat_!=Teuchos::null)
+  if (not mat.Filled())
+  {
+    // No communication. If just one processor fails, MPI will stop the other
+    // ones as well.
+    int nonzeros = mat.sysmat_->NumMyNonzeros();
+    if (nonzeros>0)
+      dserror("cannot copy non-filled matrix");
+  }
+
+  if (mat.Filled())
+  {
+    maxnumentries_ = mat.MaxNumEntries();
     sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(*mat.sysmat_));
+  }
   else
-    sysmat_ = Teuchos::null;
+  {
+    maxnumentries_ = mat.maxnumentries_;
+    sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,mat.RowMap(),maxnumentries_,false));
+  }
 
   if (mat.graph_!=Teuchos::null)
     graph_ = Teuchos::rcp(new Epetra_CrsGraph(*mat.graph_));
@@ -113,8 +125,7 @@ void LINALG::SparseMatrix::Zero()
   if (graph_==Teuchos::null)
   {
     const Epetra_Map& rowmap = sysmat_->RowMap();
-    int mne = sysmat_->MaxNumEntries();
-    sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,mne,false));
+    sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,maxnumentries_,false));
   }
   else
   {
@@ -131,8 +142,7 @@ void LINALG::SparseMatrix::Zero()
 void LINALG::SparseMatrix::Reset()
 {
   Epetra_Map rowmap = sysmat_->RowMap();
-  int maxnumentries = sysmat_->MaxNumEntries();
-  sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,maxnumentries,false));
+  sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,maxnumentries_,false));
   graph_ = Teuchos::null;
 }
 
@@ -245,6 +255,8 @@ void LINALG::SparseMatrix::Complete()
   int err = sysmat_->FillComplete(true);
   if (err) dserror("Epetra_CrsMatrix::FillComplete() returned err=%d",err);
 
+  maxnumentries_ = sysmat_->MaxNumEntries();
+
   // keep mask for further use
   if (savegraph_ and graph_==Teuchos::null)
   {
@@ -262,6 +274,8 @@ void  LINALG::SparseMatrix::Complete(const Epetra_Map& domainmap, const Epetra_M
 
   int err = sysmat_->FillComplete(domainmap,rangemap,true);
   if (err) dserror("Epetra_CrsMatrix::FillComplete(domain,range) returned err=%d",err);
+
+  maxnumentries_ = sysmat_->MaxNumEntries();
 
   // keep mask for further use
   if (savegraph_ and graph_==Teuchos::null)
