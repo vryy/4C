@@ -209,16 +209,22 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
 		      dserror("unknown or improper type of material law");
 		 }	
 	  
-	  double gamma = params.get<double>("damping factor M",0.0) * crosssec_ * density;
+	  //calculating diagonal entry of damping matrix
+	  double gamma = params.get<double>("damping factor M",0.0) * crosssec_ * density * length_refe;  
 	  
+	  //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
 	  double stand_dev = pow(2 * thermalenergy_ * gamma / params.get<double>("delta time",0.01),0.5);
-	  using namespace ranlib;
-	  Normal<double> normalGen(0,1);
 	  
-	  elevec1[0] += stand_dev * normalGen.random() / Nodes()[0]->NumElement();  
-	  elevec1[1] += stand_dev * normalGen.random() / Nodes()[0]->NumElement();
-  	  elevec1[3] += stand_dev * normalGen.random() / Nodes()[1]->NumElement();
-  	  elevec1[4] += stand_dev * normalGen.random() / Nodes()[1]->NumElement(); 	  	  
+	  //using Blitz namespace for random number generation
+	  using namespace ranlib;
+	  //creating a random generator object which creates random numbers with mean = 0 and variance = 1
+	  Normal<double> normalGen(0,1);
+
+	  //adding statistical forces accounting for connectivity of nodes
+	  elevec1[0] += stand_dev * normalGen.random() / sqrt( Nodes()[0]->NumElement() );  
+	  elevec1[1] += stand_dev * normalGen.random() / sqrt( Nodes()[0]->NumElement() );
+  	  elevec1[3] += stand_dev * normalGen.random() / sqrt( Nodes()[1]->NumElement() );
+  	  elevec1[4] += stand_dev * normalGen.random() / sqrt( Nodes()[1]->NumElement() ); 	  	  
   } 
 
 return 0;
