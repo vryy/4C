@@ -248,16 +248,9 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   }
 
   // -------------------------------------------------------------------
-  // necessary only for the VM3 approach
+  // necessary only for the VM3 approach: fine-scale solution vector
   // -------------------------------------------------------------------
-  if (fssgv_ > 0)
-  {
-    // initialize subgrid-viscosity matrix
-    sysmat_sv_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
-
-    // residual vector containing (fine-scale) subgrid-viscosity residual
-    residual_sv_  = LINALG::CreateVector(*dofrowmap,true);
-  }
+  if (fssgv_ > 0) fsvelnp_ = LINALG::CreateVector(*dofrowmap,true);
 
   // solid displacement
   soliddispnp_       = LINALG::CreateVector(*soliddofrowmap,true);
@@ -845,7 +838,9 @@ void XFluidImplicitTimeInt::NonlinearSolve()
       eleparams.set("interfacehandle",ih);
       eleparams.set("dofmanager",dofmanager);
 
+      //----------------------------------------------------------------------
       // decide whether VM3-based solution approach or standard approach
+      //----------------------------------------------------------------------
       if (fssgv_ > 0)
       {
         // time measurement: avm3 --- start TimeMonitor tm5
@@ -854,62 +849,50 @@ void XFluidImplicitTimeInt::NonlinearSolve()
         // extract the ML parameters
         ParameterList&  mllist = solver_.Params().sublist("ML Parameters");
 
-        // subgrid-viscosity-scaling vector
-        sugrvisc_     = LINALG::CreateVector(*dofrowmap,true);
-
-        if (step_ == 1)
+        // call the VM3 constructor (only in the first time step)
+        if (step_ == 1) 
         {
-          // create subgrid-viscosity matrix
-          sysmat_sv_->Zero();
+          // zero fine-scale vector
+          fsvelnp_->PutScalar(0.0);
 
-          // end time measurement for avm3
-          tm5_ref_=null;
+          // set fine-scale vector
+          discret_->SetState("fsvelnp",fsvelnp_);
 
-          // call loop over elements (two matrices + subgr.-visc.-scal. vector)
-          discret_->Evaluate(eleparams,sysmat_,sysmat_sv_,residual_,sugrvisc_);
-          discret_->ClearState();
+          // element evaluation for getting system matrix
+          discret_->Evaluate(eleparams,sysmat_,residual_);
 
-          // time measurement: avm3 --- start TimeMonitor tm5
-          tm5_ref_ = rcp(new TimeMonitor(*timeavm3_));
+          // complete system matrix
+          sysmat_->Complete();
 
-          // finalize the normalized all-scale subgrid-viscosity matrix
-          sysmat_sv_->Complete();
+          // apply DBC to system matrix
+          LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,dirichtoggle_);
 
-          // apply DBC to normalized all-scale subgrid-viscosity matrix
-          LINALG::ApplyDirichlettoSystem(sysmat_sv_,incvel_,residual_sv_,zeros_,dirichtoggle_);
+          // call VM3 constructor with system matrix
+          vm3_solver_ = rcp(new VM3_Solver(sysmat_,dirichtoggle_,mllist,true,true) );
 
-          // call the VM3 constructor
-          vm3_solver_ = rcp(new VM3_Solver(sysmat_sv_,dirichtoggle_,mllist,true) );
+          // zero system matrix again
+          sysmat_->Zero();
+
+          // add Neumann loads again
+          residual_->Update(1.0,*neumann_loads_,0.0);
         }
-        else
-        {
-          // end time measurement for avm3
-          tm5_ref_=null;
 
-          // call loop over elements (one matrix + subgr.-visc.-scal. vector)
-          discret_->Evaluate(eleparams,sysmat_,null,residual_,sugrvisc_);
-          discret_->ClearState();
-
-          // time measurement: avm3 --- start TimeMonitor tm5
-          tm5_ref_ = rcp(new TimeMonitor(*timeavm3_));
-        }
         // check whether VM3 solver exists
         if (vm3_solver_ == null) dserror("vm3_solver not allocated");
 
-        residual_sv_->PutScalar(0.0);
-        // call the VM3 scaling:
-        // scale precomputed matrix product by subgrid-viscosity-scaling vector
-        vm3_solver_->Scale(sysmat_sv_,sysmat_,residual_,residual_sv_,sugrvisc_,velnp_,true);
+        // call the VM3 scale separation to get fine-scale part of solution
+        vm3_solver_->Separate(fsvelnp_,velnp_);
+
+        // set fine-scale vector
+        discret_->SetState("fsvelnp",fsvelnp_);
 
         // end time measurement for avm3
         tm5_ref_=null;
       }
-      else
-      {
-        // call standard loop over elements
-        discret_->Evaluate(eleparams,sysmat_,residual_);
-        discret_->ClearState();
-      }
+
+      // call standard loop over elements
+      discret_->Evaluate(eleparams,sysmat_,residual_);
+      discret_->ClearState();
 
       density = eleparams.get("density", 0.0);
 

@@ -63,9 +63,11 @@ DRT::ELEMENTS::Fluid3GenalphaResVMM::Fluid3GenalphaResVMM(int iel)
     accintam_     (  3                                                   ),
     velintnp_     (  3                                                   ),
     velintaf_     (  3                                                   ),
+    fsvelintaf_   (  3                                                   ),
     pderxynp_     (  3                                                   ),
     vderxynp_     (  3   ,     3            ,blitz::ColumnMajorArray<2>()),
     vderxyaf_     (  3   ,     3            ,blitz::ColumnMajorArray<2>()),
+    fsvderxyaf_   (  3   ,     3            ,blitz::ColumnMajorArray<2>()),
     vderxy2af_    (  3   ,     6            ,blitz::ColumnMajorArray<2>()),
     bodyforceaf_  (  3                                                   ),
     conv_c_af_    (                     iel_                             ),
@@ -80,8 +82,7 @@ DRT::ELEMENTS::Fluid3GenalphaResVMM::Fluid3GenalphaResVMM(int iel)
     viscaf_old_   (3),
     resM_         (3),
     conv_resM_    (                      iel_),
-    conv_subaf_   (                      iel_),
-    numepn_       (                      iel_)
+    conv_subaf_   (                      iel_)
 {
 }
 
@@ -93,13 +94,12 @@ DRT::ELEMENTS::Fluid3GenalphaResVMM::Fluid3GenalphaResVMM(int iel)
 void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   Fluid3*                                               ele,
   Epetra_SerialDenseMatrix&                             elemat,
-  Epetra_SerialDenseMatrix&                             esv,
   Epetra_SerialDenseVector&                             elevec,
-  Epetra_SerialDenseVector&                             sugrvisc,
   const blitz::Array<double,2>&                         evelnp,
   const blitz::Array<double,1>&                         eprenp,
   const blitz::Array<double,2>&                         eaccam,
   const blitz::Array<double,2>&                         evelaf,
+  const blitz::Array<double,2>&                         fsevelaf,
   const struct _MATERIAL*                               material,
   const double                                          alphaM,
   const double                                          alphaF,
@@ -188,8 +188,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     xyze_(0,inode) = x[0];
     xyze_(1,inode) = x[1];
     xyze_(2,inode) = x[2];
-
-    numepn_(inode) = nodes[inode]->NumElement();
   }
 
   // add displacement, when fluid nodes move in the ALE case
@@ -768,15 +766,28 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   }
 
   /*------------------------------------------- compute subgrid viscosity ---*/
-  if (fssgv == 1)
+  if (fssgv == 1 || fssgv == 2)
   {
+    double fsvel_normaf = 0.0;
+    if (fssgv == 2)
+    {
+      // get fine-scale velocities at element center
+      fsvelintaf_ = blitz::sum(funct_(j)*fsevelaf(i,j),j);
+
+      // get fine-scale velocity norm
+      fsvel_normaf = sqrt(blitz::sum(fsvelintaf_*fsvelintaf_));
+    }
+    // get all-scale velocity norm
+    else fsvel_normaf = vel_normaf;
+
     /*----------------------------- compute artificial subgrid viscosity ---*/
-    const double re = mk * vel_normaf * hk / visc;  /* convective:viscous forces */
+    const double re = mk * fsvel_normaf * hk / visc; /* convective : viscous forces */
     const double xi = DMAX(re,1.0);
 
-    vart_ = (DSQR(hk)*mk*DSQR(vel_normaf))/(2.0*visc*xi);
+    vart_ = (DSQR(hk)*mk*DSQR(fsvel_normaf))/(2.0*visc*xi);
+
   }
-  else if (fssgv == 2)
+  else if (fssgv == 3 || fssgv == 4)
   {
     //
     // SMAGORINSKY MODEL
@@ -793,8 +804,12 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 
     double rateofstrain = 0.0;
     {
+      // get fine-scale or all-scale velocity (np,i) derivatives at element center
+      if (fssgv == 4) fsvderxyaf_ = blitz::sum(derxy_(j,k)*fsevelaf(i,k),k);
+      else            fsvderxyaf_ = vderxyaf_;
+
       blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());
-      epsilon = 0.5 * ( vderxyaf_(i,j) + vderxyaf_(j,i) );
+      epsilon = 0.5 * ( fsvderxyaf_(i,j) + fsvderxyaf_(j,i) );
 
       for(int rr=0;rr<3;rr++)
       {
@@ -1458,6 +1473,20 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     // j : direction of derivative x/y/z
     //
     vderxyaf_ = blitz::sum(derxy_(j,k)*evelaf(i,k),k);
+
+    // get fine-scale velocity (n+alpha_F,i) derivatives at integration point
+    //
+    //       n+af      +-----  dN (x)
+    //   dfsvel  (x)    \        k           n+af
+    //   ----------- =   +     ------ * fsvel
+    //       dx         /        dx          k
+    //         j       +-----      j
+    //                 node k
+    //
+    // j : direction of derivative x/y/z
+    //
+    if (fssgv > 0) fsvderxyaf_ = blitz::sum(derxy_(j,k)*fsevelaf(i,k),k);
+    else           fsvderxyaf_ = 0.;
 
 
     // get velocity (n+1,i) derivatives at integration point
@@ -3436,8 +3465,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
       const double tauC   = tau_(2);
 
       // subgrid-viscosity factor
-      //const double vartfac = vart_*fac*afgdt;
-      const double vartfac = fac*afgdt;
+      const double vartfac = vart_*fac*afgdt;
 
       //--------------------------------------------------------------
       //--------------------------------------------------------------
@@ -4325,53 +4353,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
         } // end cross
       } // end if compute_elemat
 
-      /* compute fine-scale subgrid-viscosity term */
-      if(fssgv > 0)
-      {
-        for (int ui=0; ui<iel_; ++ui)
-        {
-          for (int vi=0; vi<iel_; ++vi)
-          {
-          /* subgrid-viscosity term */
-          /*
-                        /                        \
-                       |       /  \         / \   |
-              nu_art * |  eps | Du | , eps | v |  |
-                       |       \  /         \ /   |
-                        \                        /
-          */
-          esv(vi*4, ui*4)         += vartfac*(2.0*derxy_(0, ui)*derxy_(0, vi)
-                                                        +
-                                                        derxy_(1, ui)*derxy_(1, vi)
-                                                        +
-                                                        derxy_(2, ui)*derxy_(2, vi)) ;
-          esv(vi*4, ui*4 + 1)     += vartfac*derxy_(0, ui)*derxy_(1, vi) ;
-          esv(vi*4, ui*4 + 2)     += vartfac*derxy_(0, ui)*derxy_(2, vi) ;
-          esv(vi*4 + 1, ui*4)     += vartfac*derxy_(0, vi)*derxy_(1, ui) ;
-          esv(vi*4 + 1, ui*4 + 1) += vartfac*(derxy_(0, ui)*derxy_(0, vi)
-                                                        +
-                                                        2.0*derxy_(1, ui)*derxy_(1, vi)
-                                                        +
-                                                        derxy_(2, ui)*derxy_(2, vi)) ;
-          esv(vi*4 + 1, ui*4 + 2) += vartfac*derxy_(1, ui)*derxy_(2, vi) ;
-          esv(vi*4 + 2, ui*4)     += vartfac*derxy_(0, vi)*derxy_(2, ui) ;
-          esv(vi*4 + 2, ui*4 + 1) += vartfac*derxy_(1, vi)*derxy_(2, ui) ;
-          esv(vi*4 + 2, ui*4 + 2) += vartfac*(derxy_(0, ui)*derxy_(0, vi)
-                                                        +
-                                                        derxy_(1, ui)*derxy_(1, vi)
-                                                        +
-                                                        2.0*derxy_(2, ui)*derxy_(2, vi)) ;
-
-          /* subgrid-viscosity-scaling vector */
-          const double meanvart = vart_/numepn_(vi);
-          sugrvisc(vi*4)   = meanvart;
-          sugrvisc(vi*4+1) = meanvart;
-          sugrvisc(vi*4+2) = meanvart;
-
-          }
-        }
-      } // end if fssgv
-
       //---------------------------------------------------------------
       //---------------------------------------------------------------
       //
@@ -4834,6 +4815,39 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 #ifdef PERF
         timeelecrossrey_ref = null;
 #endif          
+      }
+
+      if(fssgv > 0)
+      {
+        //----------------------------------------------------------------------
+        //     FINE-SCALE SUBGRID-VISCOSITY TERM (ON RIGHT HAND SIDE)
+
+        for (int ui=0; ui<iel_; ++ui)
+        {
+          /* fine-scale subgrid-viscosity term on right hand side */
+          /*
+                                  /                              \
+                         n+af    |       /    n+af\         / \   |
+             - nu_art(fsu    ) * |  eps | Dfsu     | , eps | v |  |
+                                 |       \        /         \ /   |
+                                  \                              /
+          */
+          elevec[ui*4    ] -= vartfac*(2.0*derxy_(0, ui)*fsvderxyaf_(0, 0)
+                                      +    derxy_(1, ui)*fsvderxyaf_(0, 1)
+                                      +    derxy_(1, ui)*fsvderxyaf_(1, 0)
+                                      +    derxy_(2, ui)*fsvderxyaf_(0, 2)
+                                      +    derxy_(2, ui)*fsvderxyaf_(2, 0)) ;
+          elevec[ui*4 + 1] -= vartfac*(    derxy_(0, ui)*fsvderxyaf_(0, 1)
+                                      +    derxy_(0, ui)*fsvderxyaf_(1, 0)
+                                      +2.0*derxy_(1, ui)*fsvderxyaf_(1, 1)
+                                      +    derxy_(2, ui)*fsvderxyaf_(1, 2)
+                                      +    derxy_(2, ui)*fsvderxyaf_(2, 1)) ;
+          elevec[ui*4 + 2] -= vartfac*(    derxy_(0, ui)*fsvderxyaf_(0, 2)
+                                      +    derxy_(0, ui)*fsvderxyaf_(2, 0)
+                                      +    derxy_(1, ui)*fsvderxyaf_(1, 2)
+                                      +    derxy_(1, ui)*fsvderxyaf_(2, 1)
+                                      +2.0*derxy_(2, ui)*fsvderxyaf_(2, 2)) ;
+        }
       }
     }
   } // end loop iquad

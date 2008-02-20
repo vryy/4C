@@ -79,12 +79,12 @@ namespace ELEMENTS
 
       \param ele     (i) the element those matrix is calculated
       \param evelnp  (i) nodal velocities at n+1
+      \param fsevelnp (i) fine-scale nodal velocities at n+1
       \param eprenp  (i) nodal pressure
       \param evhist  (i) rhs from beginning of time step
       \param edispnp (i) nodal displacements (on moving mesh)
       \param egridv  (i) grid velocity (on moving mesh)
       \param estif   (o) element matrix to calculate
-      \param esv     (o) fine-scale subgrid-viscosity element matrix
       \param eforce  (o) element rhs to calculate
       \param material (i) fluid material
       \param time     (i) current simulation time
@@ -100,14 +100,13 @@ namespace ELEMENTS
       */
     void Sysmat(Fluid3* ele,
                 const blitz::Array<double,2>&            evelnp,
+                const blitz::Array<double,2>&            fsevelnp,
                 const blitz::Array<double,1>&            eprenp,
                 const blitz::Array<double,2>&            evhist,
                 const blitz::Array<double,2>&            edispnp,
                 const blitz::Array<double,2>&            egridv,
                 blitz::Array<double,2>&                  estif,
-                blitz::Array<double,2>&                  esv,
                 blitz::Array<double,1>&                  eforce,
-                blitz::Array<double,1>&                  sugrvisc,
                 struct _MATERIAL*                        material,
                 double                                   time,
                 double                                   timefac,
@@ -129,6 +128,7 @@ namespace ELEMENTS
     void Caltau(
       Fluid3* ele,
       const blitz::Array<double,2>&           evelnp,
+      const blitz::Array<double,2>&           fsevelnp,
       const DRT::Element::DiscretizationType  distype,
       const double                            visc,
       const double                            timefac,
@@ -156,6 +156,7 @@ namespace ELEMENTS
     blitz::Array<double,2> xjm_;
     blitz::Array<double,2> xji_;
     blitz::Array<double,2> vderxy_;
+    blitz::Array<double,2> fsvderxy_;
     blitz::Array<double,1> pderxy_;
     blitz::Array<double,2> vderxy2_;
     blitz::Array<double,2> derxy_;
@@ -164,6 +165,7 @@ namespace ELEMENTS
     blitz::Array<double,1> histvec_;
     blitz::Array<double,1> velino_;
     blitz::Array<double,1> velint_;
+    blitz::Array<double,1> fsvelint_;
     blitz::Array<double,1> gridvelint_;
     blitz::Array<double,1> gradp_;
     blitz::Array<double,1> tau_;
@@ -177,7 +179,6 @@ namespace ELEMENTS
     blitz::Array<double,1> res_old_;
     blitz::Array<double,1> conv_resM_;
     blitz::Array<double,2> xder2_;
-    blitz::Array<int,1> numepn_;
   };
 
 }

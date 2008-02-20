@@ -412,16 +412,10 @@ private:
   RCP<Epetra_Vector>       velaf_;
 
   // vm3 solver
-  RCP<VM3_Solver> vm3_solver_;
+  RCP<VM3_Solver>       vm3_solver_;
 
-  // only necessary for vm3 solver: fine-scale subgrid-viscosity matrix
-  RCP<LINALG::SparseMatrix> sysmat_sv_;
-
-  // only necessary for vm3 solver: fine-scale subgrid-viscosity residual vector
-  RCP<Epetra_Vector>    residual_sv_;
-
-  // only necessary for vm3 solver: subgrid-viscosity-scaling vector
-  RCP<Epetra_Vector>    sugrvisc_;
+  // only necessary for vm3 solver: fine-scale solution vector
+  RCP<Epetra_Vector>    fsvelaf_;
 
 
   // Vectors used for convergence check

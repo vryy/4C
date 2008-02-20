@@ -339,20 +339,14 @@ protected:
   ///                or veln, accn (One-Step-Theta)
   RCP<Epetra_Vector>    hist_;
 
-  /// vm3 solver
-  RCP<VM3_Solver> vm3_solver_;
-
   // solid displacement (might be moved somewhere else later)
   RCP<Epetra_Vector>    soliddispnp_;
 
-  /// only necessary for vm3 solver: fine-scale subgrid-viscosity matrix
-  RCP<LINALG::SparseMatrix> sysmat_sv_;
+  /// vm3 solver
+  RCP<VM3_Solver>       vm3_solver_;
 
-  /// only necessary for vm3 solver: fine-scale subgrid-viscosity residual vector
-  RCP<Epetra_Vector>    residual_sv_;
-
-  /// only necessary for vm3 solver: subgrid-viscosity-scaling vector
-  RCP<Epetra_Vector>    sugrvisc_;
+  /// only necessary for vm3 solver: fine-scale solution vector
+  RCP<Epetra_Vector>    fsvelnp_;
 
   /// turbulence statistics
   RCP<TurbulenceStatisticsLdc> turbulencestatistics_ldc_;

@@ -157,6 +157,7 @@ namespace DRT
         \param estif           (o) element matrix to calculate
         \param eforce          (o) element rhs to calculate
         \param evelnp          (i) nodal velocities at n+1
+        \param fsevelnp        (i) fine-scale nodal velocities at n+1
         \param eprenp          (i) nodal pressure
         \param eaccam          (i) nodal accelerations at n+alphaM
         \param evelaf          (i) nodal velocities at n+alphaF
@@ -187,13 +188,12 @@ namespace DRT
       */
       void Sysmat(Fluid3*                                               ele,
                   Epetra_SerialDenseMatrix&                             elemat,
-                  Epetra_SerialDenseMatrix&                             esv,
                   Epetra_SerialDenseVector&                             elevec,
-                  Epetra_SerialDenseVector&                             sugrvisc,
                   const blitz::Array<double,2>&                         evelnp,
                   const blitz::Array<double,1>&                         eprenp,
                   const blitz::Array<double,2>&                         eaccam,
                   const blitz::Array<double,2>&                         evelaf,
+                  const blitz::Array<double,2>&                         fsevelaf,
                   const struct _MATERIAL*                               material,
                   const double                                          alphaM,
                   const double                                          alphaF,
@@ -312,12 +312,16 @@ namespace DRT
       blitz::Array<double,1> velintnp_;
       //! velocity in gausspoint, time n+af
       blitz::Array<double,1> velintaf_;
+      //! fine-scale velocity in gausspoint, time n+af
+      blitz::Array<double,1> fsvelintaf_;
       //! pressure gradient in gausspoint, time n+1
       blitz::Array<double,1> pderxynp_;
       //! velocity derivatives in gausspoint, time n+1
       blitz::Array<double,2> vderxynp_;
       //! velocity derivatives in gausspoint, time n+af
       blitz::Array<double,2> vderxyaf_;
+      //! fine-scale velocity derivatives in gausspoint, time n+af
+      blitz::Array<double,2> fsvderxyaf_;
       //! second derivatives of velocity in gausspoint, time n+af
       blitz::Array<double,2> vderxy2af_;
       //! value of body force interpolated to the gauss point, time n+af
@@ -372,9 +376,6 @@ namespace DRT
                    | u      o nabla |
                     \   (i)        /
       */
-
-      //! the number of elements per node, required for fine-scale subgrid viscosity
-      blitz::Array<int,1> numepn_;
 
       //! the element volume, used to define element length
       double                  vol_;

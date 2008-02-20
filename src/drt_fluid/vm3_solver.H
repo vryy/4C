@@ -83,16 +83,18 @@ public:
   /*!
   \brief Constructor of the VM3_Solver class
 
-   \param Msv (In)       : normalized all-scale subgrid-viscosity matrix
+   \param A (In)         : system matrix
    \param dbctoggle (In) : DBC toggle vector
    \param mlparams (In)  : ML parameter list
    \param compute (In)   : flag for call to computing routine
+   \param increm (In)    : flag for incremental formulation
 
   */
-  explicit VM3_Solver(RCP<LINALG::SparseMatrix> Msv,
+  explicit VM3_Solver(RCP<LINALG::SparseMatrix> A,
                       const RCP<Epetra_Vector> dbctoggle,
                       ParameterList& mlparams,
-                      bool compute);
+                      bool compute,
+                      bool increm);
 
   /*!
   \brief Destroys an instance of this class
@@ -101,6 +103,18 @@ public:
 
   */
   virtual ~VM3_Solver() {}
+
+  /*!
+  \brief sscale separation routine
+
+   get fine-scale part from a vector (called in every timestep)
+
+   \param fsvec (Out)    : fine-scale part of vector
+   \param vec (In)        : vector (current solution vector)
+
+  */
+   void Separate(RCP<Epetra_Vector>& fsvec,
+                 RCP<Epetra_Vector>& vec);
 
   /*!
   \brief scaling routine
@@ -132,6 +146,7 @@ private:
   VM3_Solver(VM3_Solver& old);
   VM3_Solver operator = (const VM3_Solver& old);
 
+  bool increm_;   // flag whether incremental formulation or not
   bool compute_;  // flag whether scale-separation matrix should be computed
 
   /*!
@@ -140,10 +155,11 @@ private:
          (only called in the first timestep)
 
   */
-  bool Compute(RCP<LINALG::SparseMatrix> Msv);
+  bool Compute(RCP<LINALG::SparseMatrix> A);
 
   ParameterList& mlparams_; // ML parameter list
 
+  RCP<LINALG::SparseMatrix> Sep_; // scale-separation matrix
   RCP<LINALG::SparseMatrix> Mnsv_; // normalized fine-scale subgrid-viscosity matrix
 
   const RCP<Epetra_Vector>& dbctoggle_;  // DBC toggle vector

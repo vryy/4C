@@ -74,9 +74,9 @@ namespace ELEMENTS
 
       \param ele     		(i) the element those matrix is calculated
       \param evelnp  		(i) nodal velocities at n+1
+      \param fsevelnp           (i) fine-scale nodal velocities at n+1
       \param eprenp  		(i) nodal pressure
       \param estif   		(o) element matrix to calculate
-      \param esv                (o) fine-scale subgrid-viscosity element matrix
       \param eforce  		(o) element rhs to calculate
       \param material 		(i) fluid material
       \param pseudotime     (i) current simulation pseudotime
@@ -91,11 +91,10 @@ namespace ELEMENTS
      */
     void Sysmat(Fluid3* ele,
                 const blitz::Array<double,2>&            evelnp,
+                const blitz::Array<double,2>&            fsevelnp,
                 const blitz::Array<double,1>&            eprenp,
                 blitz::Array<double,2>&                  estif,
-                blitz::Array<double,2>&                  esv,
                 blitz::Array<double,1>&                  eforce,
-                blitz::Array<double,1>&                  sugrvisc,
                 struct _MATERIAL*                        material,
                 double                                   pseudotime,
                 bool                                     newton,
@@ -116,6 +115,7 @@ namespace ELEMENTS
     void CalTauStationary(
       Fluid3* ele,
       const blitz::Array<double,2>&           evelnp,
+      const blitz::Array<double,2>&           fsevelnp,
       const DRT::Element::DiscretizationType  distype,
       const double                            visc,
       const int                               fssgv,
@@ -141,7 +141,8 @@ namespace ELEMENTS
     blitz::Array<double,2> deriv2_;    /// second shape derivatives with respect to \xi
     blitz::Array<double,2> xjm_;       /// transposed of the jacobian matrix d x / d \xi
     blitz::Array<double,2> xji_;       /// inverse of the jacobian matrix
-    blitz::Array<double,2> vderxy_;    /// velocity vector derivative with respect to x
+    blitz::Array<double,2> vderxy_;    /// velocity vector derivative
+    blitz::Array<double,2> fsvderxy_;  /// fine-scale velocity vector derivative
     blitz::Array<double,1> pderxy_;    /// pressure derivative with respect to x
     blitz::Array<double,2> vderxy2_;   /// second derivatives of the velocity vector
     blitz::Array<double,2> derxy_;     /// shape derivative with respect to x
@@ -149,6 +150,7 @@ namespace ELEMENTS
     blitz::Array<double,1> bodyforce_; /// volumetric load at gausspoint
     blitz::Array<double,1> velino_;
     blitz::Array<double,1> velint_;    /// velocity
+    blitz::Array<double,1> fsvelint_;  /// fine-scale velocity
     blitz::Array<double,1> gradp_;     /// pressure gradient
     blitz::Array<double,1> tau_;       /// tau_Mu, tau_Mp, tau_C
     blitz::Array<double,3> viscs2_;    /// viscous term including 2nd derivatives
@@ -161,7 +163,6 @@ namespace ELEMENTS
     blitz::Array<double,1> res_old_;
     blitz::Array<double,1> conv_resM_;
     blitz::Array<double,2> xder2_;
-    blitz::Array<int,1> numepn_;
   };
 
 }

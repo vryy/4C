@@ -517,6 +517,34 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         // get flag for (fine-scale) subgrid viscosity (1=yes, 0=no)
         const int fssgv = params.get<int>("fs subgrid viscosity",0);
 
+        // get fine-scale velocity
+        RCP<const Epetra_Vector> fsvelnp;
+        blitz::Array<double, 2> fsevelnp(3,numnode,blitz::ColumnMajorArray<2>());
+        if (fssgv > 0)
+        {
+          fsvelnp = discretization.GetState("fsvelnp");
+          if (fsvelnp==null) dserror("Cannot get state vector 'fsvelnp'");
+          vector<double> myfsvelnp(lm.size());
+          DRT::UTILS::ExtractMyValues(*fsvelnp,myfsvelnp,lm);
+
+          // get fine-scale velocity and insert into element arrays
+          for (int i=0;i<numnode;++i)
+          {
+            fsevelnp(0,i) = myfsvelnp[0+(i*4)];
+            fsevelnp(1,i) = myfsvelnp[1+(i*4)];
+            fsevelnp(2,i) = myfsvelnp[2+(i*4)];
+          }
+        }
+        else
+        {
+          for (int i=0;i<numnode;++i)
+          {
+            fsevelnp(0,i) = 0.0;
+            fsevelnp(1,i) = 0.0;
+            fsevelnp(2,i) = 0.0;
+          }
+        }
+
         // get Smagorinsky model parameter for fine-scale subgrid viscosity
         const double Cs_fs = params.get<double>("fs Smagorinsky parameter",0.0);
 
@@ -539,14 +567,13 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix and rhs     
         Impl()->Sysmat(this,
                        evelnp,
+                       fsevelnp,
                        eprenp,
                        evhist,
                        edispnp,
                        egridv,
                        estif,
-                       esv,
                        eforce,
-                       sugrvisc,
                        actmat,
                        time,
                        timefac,
@@ -900,6 +927,34 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         // get flag for (fine-scale) subgrid viscosity (1=yes, 0=no)
         const int fssgv = params.get<int>("fs subgrid viscosity",0);
 
+        // get fine-scale velocity
+        RCP<const Epetra_Vector> fsvelaf;
+        blitz::Array<double, 2> fsevelaf(3,numnode,blitz::ColumnMajorArray<2>());
+        if (fssgv > 0)
+        {
+          fsvelaf = discretization.GetState("fsvelaf");
+          if (fsvelaf==null) dserror("Cannot get state vector 'fsvelaf'");
+          vector<double> myfsvelaf(lm.size());
+          DRT::UTILS::ExtractMyValues(*fsvelaf,myfsvelaf,lm);
+
+          // get fine-scale velocity and insert into element arrays
+          for (int i=0;i<numnode;++i)
+          {
+            fsevelaf(0,i) = myfsvelaf[0+(i*4)];
+            fsevelaf(1,i) = myfsvelaf[1+(i*4)];
+            fsevelaf(2,i) = myfsvelaf[2+(i*4)];
+          }
+        }
+        else
+        {
+          for (int i=0;i<numnode;++i)
+          {
+            fsevelaf(0,i) = 0.0;
+            fsevelaf(1,i) = 0.0;
+            fsevelaf(2,i) = 0.0;
+          }
+        }
+
 #ifdef PERF
         RefCountPtr<TimeMonitor> timeeleinitstab_ref = rcp(new TimeMonitor(*timeeleinitstab)); 
 #endif     
@@ -1098,13 +1153,12 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix
         GenalphaResVMM()->Sysmat(this,
                                  elemat1,
-                                 elemat2,
                                  elevec1,
-                                 elevec2,
                                  evelnp,
                                  eprenp,
                                  eaccam,
                                  evelaf,
+                                 fsevelaf,
                                  actmat,
                                  alphaM,
                                  alphaF,
@@ -1471,6 +1525,34 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           // get flag for (fine-scale) subgrid viscosity (1=yes, 0=no)
           const int fssgv = params.get<int>("fs subgrid viscosity",0);
 
+          // get fine-scale velocity
+          RCP<const Epetra_Vector> fsvelnp;
+          blitz::Array<double, 2> fsevelnp(3,numnode,blitz::ColumnMajorArray<2>());
+          if (fssgv > 0)
+          {
+            fsvelnp = discretization.GetState("fsvelnp");
+            if (fsvelnp==null) dserror("Cannot get state vector 'fsvelnp'");
+            vector<double> myfsvelnp(lm.size());
+            DRT::UTILS::ExtractMyValues(*fsvelnp,myfsvelnp,lm);
+
+            // get fine-scale velocity and insert into element arrays
+            for (int i=0;i<numnode;++i)
+            {
+              fsevelnp(0,i) = myfsvelnp[0+(i*4)];
+              fsevelnp(1,i) = myfsvelnp[1+(i*4)];
+              fsevelnp(2,i) = myfsvelnp[2+(i*4)];
+            }
+          }
+          else
+          {
+            for (int i=0;i<numnode;++i)
+            {
+              fsevelnp(0,i) = 0.0;
+              fsevelnp(1,i) = 0.0;
+              fsevelnp(2,i) = 0.0;
+            }
+          }
+
           // get Smagorinsky model parameter for fine-scale subgrid viscosity
           const double Cs_fs = params.get<double>("fs Smagorinsky parameter",0.0);
 
@@ -1493,11 +1575,10 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           // calculate element coefficient matrix and rhs         
           StationaryImpl()->Sysmat(this,
                                    evelnp,
+                                   fsevelnp,
                                    eprenp,
                                    estif,
-                                   esv,
                                    eforce,
-                                   sugrvisc,
                                    actmat,
                                    pseudotime,
                                    newton,

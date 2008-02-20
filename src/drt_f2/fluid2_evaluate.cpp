@@ -60,7 +60,7 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
   else dserror("Unknown type of action for Fluid2");
 
   // get the material
-  RefCountPtr<MAT::Material> mat = Material();
+  RCP<MAT::Material> mat = Material();
   if (mat->MaterialType()!=m_fluid)
     dserror("newtonian fluid material expected but got type %d", mat->MaterialType());
 
@@ -78,8 +78,8 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
     case calc_fluid_systemmat_and_residual:
     {
       // need current velocity and history vector
-      RefCountPtr<const Epetra_Vector> vel_pre_np = discretization.GetState("velnp");
-      RefCountPtr<const Epetra_Vector> hist = discretization.GetState("hist");
+      RCP<const Epetra_Vector> vel_pre_np = discretization.GetState("velnp");
+      RCP<const Epetra_Vector> hist = discretization.GetState("hist");
       if (vel_pre_np==null || hist==null) dserror("Cannot get state vectors 'velnp' and/or 'hist'");
 
       // extract local values from the global vectors
@@ -88,9 +88,9 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
       vector<double> myhist(lm.size());
       DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
 
-      RefCountPtr<const Epetra_Vector> dispnp;
+      RCP<const Epetra_Vector> dispnp;
       vector<double> mydispnp;
-      RefCountPtr<const Epetra_Vector> gridv;
+      RCP<const Epetra_Vector> gridv;
       vector<double> mygridv;
 
       if (is_ale_)
@@ -136,14 +136,40 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
         if (timefac < 0.0) dserror("No thsl supplied");
       }
 
-      // get flag for (fine-scale) subgrid viscosity (1=yes, 0=no)
+      // get flag for fine-scale subgrid viscosity (1=yes, 0=no)
       const int fssgv = params.get<int>("fs subgrid viscosity",0);
 
       // get Smagorinsky model parameter
       const double Cs = params.get<double>("fs Smagorinsky parameter",0.0);
 
+      // get fine-scale velocity
+      RCP<const Epetra_Vector> fsvelprenp;
+      vector<double> myfsvelnp(2*numnode);
+      if (fssgv > 0)
+      {
+        fsvelprenp = discretization.GetState("fsvelnp");
+        if (fsvelprenp==null) dserror("Cannot get state vector 'fsvelnp'");
+        vector<double> myfsvelprenp(lm.size());
+        DRT::UTILS::ExtractMyValues(*fsvelprenp,myfsvelprenp,lm);
+
+        // get from "my_vel_pre_np_fs" only velocity part "myvelnp_fs"
+        for (int i=0;i<numnode;++i)
+        {
+          myfsvelnp[0+(i*2)]=myfsvelprenp[0+(i*3)];
+          myfsvelnp[1+(i*2)]=myfsvelprenp[1+(i*3)];
+        }
+      }
+      else
+      {
+        for (int i=0;i<numnode;++i)
+        {
+          myfsvelnp[0+(i*2)]=0.0;
+          myfsvelnp[1+(i*2)]=0.0;
+        }
+      }
+
       // calculate element coefficient matrix and rhs
-      f2_sys_mat(lm,myvelnp,myprenp,myvhist,mydispnp,mygridv,&elemat1,&elemat2,&elevec1,elevec2,actmat,time,timefac,fssgv,Cs,is_stationary);
+      f2_sys_mat(lm,myvelnp,myfsvelnp,myprenp,myvhist,mydispnp,mygridv,&elemat1,&elevec1,actmat,time,timefac,fssgv,Cs,is_stationary);
 
       // This is a very poor way to transport the density to the
       // outside world. Is there a better one?
@@ -212,14 +238,13 @@ int DRT::ELEMENTS::Fluid2::EvaluateNeumann(ParameterList& params,
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Fluid2::f2_sys_mat(vector<int>&              lm,
                                        vector<double>&           evelnp,
-				       vector<double>&           eprenp,
+                                       vector<double>&           fsevelnp,
+                                       vector<double>&           eprenp,
                                        vector<double>&           evhist,
                                        vector<double>&           edispnp,
                                        vector<double>&           egridv,
                                        Epetra_SerialDenseMatrix* sys_mat,
-                                       Epetra_SerialDenseMatrix* sys_mat_sv,
                                        Epetra_SerialDenseVector* residual,
-                                       Epetra_SerialDenseVector& sugrvisc,
                                        struct _MATERIAL*         material,
                                        double                    time,
                                        double                    timefac,
@@ -267,6 +292,7 @@ void DRT::ELEMENTS::Fluid2::f2_sys_mat(vector<int>&              lm,
   Epetra_SerialDenseMatrix 	deriv2(3,iel);
   static Epetra_SerialDenseMatrix 	xjm(2,2);
   static Epetra_SerialDenseMatrix 	vderxy(2,2);
+  static Epetra_SerialDenseMatrix 	fsvderxy(2,2);
   static vector<double> 	pderxy(2);
   static Epetra_SerialDenseMatrix 	vderxy2(2,3);
   Epetra_SerialDenseMatrix 	derxy(2,iel);
@@ -278,10 +304,11 @@ void DRT::ELEMENTS::Fluid2::f2_sys_mat(vector<int>&              lm,
   //Epetra_SerialDenseMatrix 	wa1(100,100);  // working matrix used as dummy
   static vector<double>    	histvec(2); /* history data at integration point      */
   double         		hk;         /* element length for calculation of tau  */
-  double         		vel_norm, pe, re, xi1, xi2, xi;
+  double         		vel_norm, fsvel_norm, pe, re, xi1, xi2, xi;
   vector<double>         	velino(2); /* normed velocity at element centre */
   double         		mk=0.0;
   static vector<double>         velint(2);
+  static vector<double>         fsvelint(2);
   static vector<double>         tau(3); // stab parameters
   double                        vart; // artificial subgrid viscosity
 
@@ -422,15 +449,33 @@ void DRT::ELEMENTS::Fluid2::f2_sys_mat(vector<int>&              lm,
   /*------------------------------------ compute subgrid viscosity nu_art ---*/
   if (fssgv > 0)
   {
-    if (fssgv == 1)
+    if (fssgv == 1 || fssgv == 2)
     {
+      if (fssgv == 2)
+      {
+        /*--------------------- get fine-scale velocities at element center ---*/
+        for (int i=0;i<2;i++)
+        {
+          fsvelint[i]=0.0;
+          for (int j=0;j<iel;j++)
+          {
+            fsvelint[i] += funct[j]*fsevelnp[i+(2*j)];
+          }
+        } //end loop over i
+
+        /*----------------------------------------  get fine-scale vel_norm ---*/
+        fsvel_norm = sqrt(DSQR(fsvelint[0]) + DSQR(fsvelint[1]));
+      }
+      /*-----------------------------------------  get all-scale vel_norm ---*/
+      else fsvel_norm = vel_norm;
+
       /*----------------------- compute artificial subgrid viscosity nu_art ---*/
-      re = mk * vel_norm * hk / visc;     /* convective : viscous forces */
+      re = mk * fsvel_norm * hk / visc;     /* convective : viscous forces */
       xi = DMAX(re,1.0);
 
-      vart = (DSQR(hk)*mk*DSQR(vel_norm))/(2.0*visc*xi);
+      vart = (DSQR(hk)*mk*DSQR(fsvel_norm))/(2.0*visc*xi);
     }
-    else if (fssgv == 2)
+    else if (fssgv == 3 || fssgv == 4)
     {
       //
       // SMAGORINSKY MODEL
@@ -450,18 +495,34 @@ void DRT::ELEMENTS::Fluid2::f2_sys_mat(vector<int>&              lm,
         /*---------------------------------------- compute global derivates */
         f2_gder(derxy,deriv,xjm,det,iel);
 
-        /*-------------- get velocity (np,i) derivatives at element center */
-        // expression for f2_vder(vderxy,derxy,evelnp,iel);
-        for (int i=0;i<2;i++)
+        if (fssgv == 4)
         {
-          vderxy(0,i)=0.0;
-          vderxy(1,i)=0.0;
-          for (int j=0;j<iel;j++)
+          /*---- get fine-scale velocity (np,i) derivatives at element center */
+          for (int i=0;i<2;i++)
           {
-            vderxy(0,i) += derxy(i,j)*evelnp[0+(2*j)];
-            vderxy(1,i) += derxy(i,j)*evelnp[1+(2*j)];
-          } /* end of loop over j */
-        } /* end of loop over i */
+            fsvderxy(0,i)=0.0;
+            fsvderxy(1,i)=0.0;
+            for (int j=0;j<iel;j++)
+            {
+              fsvderxy(0,i) += derxy(i,j)*fsevelnp[0+(2*j)];
+              fsvderxy(1,i) += derxy(i,j)*fsevelnp[1+(2*j)];
+            } /* end of loop over j */
+          } /* end of loop over i */
+        }
+        else
+        {
+          /*---- get all-scale velocity (np,i) derivatives at element center */
+          for (int i=0;i<2;i++)
+          {
+            fsvderxy(0,i)=0.0;
+            fsvderxy(1,i)=0.0;
+            for (int j=0;j<iel;j++)
+            {
+              fsvderxy(0,i) += derxy(i,j)*evelnp[0+(2*j)];
+              fsvderxy(1,i) += derxy(i,j)*evelnp[1+(2*j)];
+            } /* end of loop over j */
+          } /* end of loop over i */
+        }
 
         Epetra_SerialDenseMatrix  epsilon(2,2);
 
@@ -470,7 +531,7 @@ void DRT::ELEMENTS::Fluid2::f2_sys_mat(vector<int>&              lm,
         {
           for (int j=0;j<2;j++)
           {
-            epsilon(i,j) = 0.5 * ( vderxy(i,j) + vderxy(j,i) );
+            epsilon(i,j) = 0.5 * ( fsvderxy(i,j) + fsvderxy(j,i) );
           } /* end of loop over j */
         } /* end of loop over i */
 
@@ -495,12 +556,6 @@ void DRT::ELEMENTS::Fluid2::f2_sys_mat(vector<int>&              lm,
 
       vart = Cs * Cs * hk * hk * rateofstrain;
 
-    }
-
-    for (int vi=0; vi<iel; ++vi)
-    {
-      sugrvisc(vi*3)   = vart/Nodes()[vi]->NumElement();
-      sugrvisc(vi*3+1) = vart/Nodes()[vi]->NumElement();
     }
   }
 
@@ -598,6 +653,21 @@ void DRT::ELEMENTS::Fluid2::f2_sys_mat(vector<int>&              lm,
         } /* end of loop over j */
       } /* end of loop over i */
 
+      /*----------- get fine-scale velocity (np,i) deriv. at int. point */
+      for (int i=0;i<2;i++)
+      {
+        fsvderxy(0,i)=0.0;
+        fsvderxy(1,i)=0.0;
+        if (fssgv > 0)
+        {
+          for (int j=0;j<iel;j++)
+          {
+            fsvderxy(0,i) += derxy(i,j)*fsevelnp[0+(2*j)];
+            fsvderxy(1,i) += derxy(i,j)*fsevelnp[1+(2*j)];
+          } /* end of loop over j */
+        }
+      } /* end of loop over i */
+
       /*--------------------- get grid velocity at integration point ---*/
       if (is_ale_)
       {
@@ -644,17 +714,17 @@ void DRT::ELEMENTS::Fluid2::f2_sys_mat(vector<int>&              lm,
 
       // perform integration for entire matrix and rhs
       if(is_stationary==false)
-        f2_calmat(*sys_mat,*sys_mat_sv,*residual,
+        f2_calmat(*sys_mat,*residual,
                   velint,histvec,gridvelint,press,
-                  vderxy,vderxy2,gradp,
+                  vderxy,fsvderxy,vderxy2,gradp,
                   funct,tau,vart,
                   derxy,derxy2,edeadng,
                   fac,visc,iel,fssgv,
                   timefac);
       else
-        f2_calmat_stationary(*sys_mat,*sys_mat_sv,*residual,
+        f2_calmat_stationary(*sys_mat,*residual,
                              velint,histvec,gridvelint,press,
-                             vderxy,vderxy2,gradp,
+                             vderxy,fsvderxy,vderxy2,gradp,
                              funct,tau,vart,
                              derxy,derxy2,edeadng,
                              fac,visc,iel,fssgv);
@@ -1165,6 +1235,7 @@ for further comments see comment lines within code.
 \param  *histvec    DOUBLE        (i)   rhs at INT point
 \param  *gridvint   DOUBLE        (i)   gridvel at INT point
 \param **vderxy     DOUBLE        (i)   global vel derivatives
+\param **fsvderxy   DOUBLE        (i)   global fine-scale vel derivatives
 \param  *vderxy2    DOUBLE        (i)   2nd global vel derivatives
 \param  *funct      DOUBLE        (i)   nat. shape funcs
 \param **derxy      DOUBLE        (i)   global coord. deriv
@@ -1180,13 +1251,13 @@ for further comments see comment lines within code.
 
 void DRT::ELEMENTS::Fluid2::f2_calmat(
     Epetra_SerialDenseMatrix& estif,
-    Epetra_SerialDenseMatrix& esv,
     Epetra_SerialDenseVector& eforce,
     vector<double>&           velint,
     vector<double>&           histvec,
     vector<double>&           gridvint,
     double&   	              press,
     Epetra_SerialDenseMatrix& vderxy,
+    Epetra_SerialDenseMatrix& fsvderxy,
     Epetra_SerialDenseMatrix& vderxy2,
     vector<double>&           gradp,
     Epetra_SerialDenseVector& funct,
@@ -1313,6 +1384,10 @@ void DRT::ELEMENTS::Fluid2::f2_calmat(
 
   } // end of loop over nodes of element
 
+// parameter for artificial subgrid viscosity
+double vartfac=0.0; 
+if (fssgv > 0) vartfac = vart*timefacfac;
+
 /*--------------------------------- now build single stiffness terms ---*/
 
 #define estif_(i,j)    estif(i,j)
@@ -1333,6 +1408,9 @@ void DRT::ELEMENTS::Fluid2::f2_calmat(
 #define gradp_(j)      gradp[j]
 #define nu_            visc
 #define thsl           timefac
+#define vartfac        vartfac
+#define fssgv          fssgv
+#define fsvderxy_(i,j) fsvderxy(i,j)
 
   /* This code is generated using MuPAD. Ask me for the MuPAD. u.kue */
 
@@ -1370,27 +1448,9 @@ void DRT::ELEMENTS::Fluid2::f2_calmat(
 #undef rhsint_
 #undef nu_
 #undef thsl
-
-if (fssgv > 0)
-{
-  // parameter for artificial subgrid viscosity
-  const double vartfac = timefacfac;
-  //const double vartfac = vart*timefacfac;
-  const double taumfac = 0.0;
-  //double taumfac;
-  //if (fssgv == 1) taumfac = tau[0]*timefac*timefacfac;
-  //else taumfac=0.0;
-
-  #define esv_(i,j)    esv(i,j)
-  #define derxy_(i,j)  derxy(i,j)
-  #define conv_c_(j)   conv_c[j]
-
-  #include "fluid2_vart.cpp"
-
-  #undef esv_
-  #undef derxy_
-  #undef conv_c_
-}
+#undef vartfac
+#undef fssgv
+#undef fsvderxy_
 
   return;
 } // end of DRT:ELEMENTS:Fluid2:f2_calmat
@@ -1398,13 +1458,13 @@ if (fssgv > 0)
 
 void DRT::ELEMENTS::Fluid2::f2_calmat_stationary(
     Epetra_SerialDenseMatrix& estif,
-    Epetra_SerialDenseMatrix& esv,
     Epetra_SerialDenseVector& eforce,
     vector<double>&           velint,
     vector<double>&           histvec,
     vector<double>&           gridvint,
     double&   	              press,
     Epetra_SerialDenseMatrix& vderxy,
+    Epetra_SerialDenseMatrix& fsvderxy,
     Epetra_SerialDenseMatrix& vderxy2,
     vector<double>&           gradp,
     Epetra_SerialDenseVector& funct,
@@ -1525,6 +1585,10 @@ for (int i=0; i<iel; i++) /* loop over nodes of element */
 
 } // end of loop over nodes of element
 
+// parameter for artificial subgrid viscosity
+double vartfac=0.0; 
+if (fssgv > 0) vartfac = vart*fac;
+
 /*--------------------------------- now build single stiffness terms ---*/
 
 #define estif_(i,j)    estif(i,j)
@@ -1545,6 +1609,9 @@ for (int i=0; i<iel; i++) /* loop over nodes of element */
 #define gradp_(j)      gradp[j]
 #define nu_            visc
 #define thsl           timefac
+#define vartfac        vartfac
+#define fssgv          fssgv
+#define fsvderxy_(i,j) fsvderxy(i,j)
 
   /* This code is generated using MuPAD. Ask me for the MuPAD. u.kue */
 
@@ -1571,27 +1638,9 @@ for (int i=0; i<iel; i++) /* loop over nodes of element */
 #undef rhsint_
 #undef nu_
 #undef thsl
-
-if (fssgv > 0)
-{
-  // parameter for artificial subgrid viscosity
-  const double vartfac = fac;
-  //const double vartfac = vart*fac;
-  const double taumfac = 0.0;
-  //double taumfac;
-  //if (fssgv == 1) taumfac = tau[0]*fac;
-  //else taumfac=0.0;
-
-  #define esv_(i,j)    esv(i,j)
-  #define derxy_(i,j)  derxy(i,j)
-  #define conv_c_(j)   conv_c[j]
-
-  #include "fluid2_vart.cpp"
-
-  #undef esv_
-  #undef derxy_
-  #undef conv_c_
-}
+#undef vartfac
+#undef fssgv
+#undef fsvderxy_
 
 return;
 } // end of DRT:ELEMENTS:Fluid2:f2_calmat_stationary

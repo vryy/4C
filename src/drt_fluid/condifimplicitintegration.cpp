@@ -545,7 +545,7 @@ void CondifImplicitTimeInt::Solve(
         LINALG::ApplyDirichlettoSystem(sysmat_sd_,phinp_,residual_,phinp_,dirichtoggle_);
 
         // call the VM3 constructor
-        vm3_solver_ = rcp(new VM3_Solver(sysmat_sd_,dirichtoggle_,mllist,true) );
+        vm3_solver_ = rcp(new VM3_Solver(sysmat_sd_,dirichtoggle_,mllist,true,false) );
       }
       else
       {

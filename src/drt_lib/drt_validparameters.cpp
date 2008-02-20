@@ -552,10 +552,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter("SUBGRIDVISC","No","subgrid viscosity",
                                tuple<std::string>(
                                  "No",
-                                 "artificial",
-                                 "Smagorinsky"
+                                 "artificial_all",
+                                 "artificial_small",
+                                 "Smagorinsky_all",
+                                 "Smagorinsky_small"
                                  ),
-                               tuple<int>(0,1,2),
+                               tuple<int>(0,1,2,3,4),
                                &fdyn);
 
   setStringToIntegralParameter("SIMPLER","no","Switch on SIMPLE family of solvers, needs additional FLUID PRESSURE SOLVER block!",yesnotuple,yesnovalue,&fdyn);

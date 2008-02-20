@@ -34,6 +34,7 @@ DRT::ELEMENTS::Fluid3Impl::Fluid3Impl(int iel)
     xjm_(3,3,blitz::ColumnMajorArray<2>()),
     xji_(3,3,blitz::ColumnMajorArray<2>()),
     vderxy_(3,3,blitz::ColumnMajorArray<2>()),
+    fsvderxy_(3,3,blitz::ColumnMajorArray<2>()),
     pderxy_(3),
     vderxy2_(3,6,blitz::ColumnMajorArray<2>()),
     derxy_(3,iel_,blitz::ColumnMajorArray<2>()),
@@ -42,6 +43,7 @@ DRT::ELEMENTS::Fluid3Impl::Fluid3Impl(int iel)
     histvec_(3),
     velino_(3),
     velint_(3),
+    fsvelint_(3),
     gridvelint_(3),
     gradp_(3),
     tau_(3),
@@ -54,8 +56,7 @@ DRT::ELEMENTS::Fluid3Impl::Fluid3Impl(int iel)
     visc_old_(3),
     res_old_(3),
     conv_resM_(iel_),
-    xder2_(6,3,blitz::ColumnMajorArray<2>()),
-    numepn_(iel_)
+    xder2_(6,3,blitz::ColumnMajorArray<2>())
 {
 }
 
@@ -66,14 +67,13 @@ DRT::ELEMENTS::Fluid3Impl::Fluid3Impl(int iel)
 void DRT::ELEMENTS::Fluid3Impl::Sysmat(
   Fluid3*                                 ele,
   const blitz::Array<double,2>&           evelnp,
+  const blitz::Array<double,2>&           fsevelnp,
   const blitz::Array<double,1>&           eprenp,
   const blitz::Array<double,2>&           evhist,
   const blitz::Array<double,2>&           edispnp,
   const blitz::Array<double,2>&           egridv,
   blitz::Array<double,2>&                 estif,
-  blitz::Array<double,2>&                 esv,
   blitz::Array<double,1>&                 eforce,
-  blitz::Array<double,1>&                 sugrvisc,
   struct _MATERIAL*                       material,
   double                                  time,
   double                                  timefac,
@@ -99,8 +99,6 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
     xyze_(0,inode) = x[0];
     xyze_(1,inode) = x[1];
     xyze_(2,inode) = x[2];
-
-    numepn_(inode) = nodes[inode]->NumElement();
   }
 
   // add displacement, when fluid nodes move in the ALE case
@@ -135,7 +133,7 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
   // stabilization parameter
   // This has to be done before anything else is calculated because
   // we use the same arrays internally.
-  Caltau(ele,evelnp,distype,visc,timefac,fssgv,Cs_fs);
+  Caltau(ele,evelnp,fsevelnp,distype,visc,timefac,fssgv,Cs_fs);
 
   // in case of viscous stabilization decide whether to use GLS or USFEM
   double vstabfac= 0.0;
@@ -235,6 +233,10 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
     // get velocity (np,i) derivatives at integration point
     vderxy_ = blitz::sum(derxy_(j,k)*evelnp(i,k),k);
 
+    // get fine-scale velocity (np,i) derivatives at integration point
+    if (fssgv > 0) fsvderxy_ = blitz::sum(derxy_(j,k)*fsevelnp(i,k),k);
+    else           fsvderxy_ = 0.;
+
     // get grid velocity at integration point
     if (ele->is_ale_)
     {
@@ -269,8 +271,7 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
     const double timefacfac = timefac * fac;
 
     // subgrid-viscosity factor
-    //const double vartfac = vart_*timefacfac;
-    const double vartfac = timefacfac;
+    const double vartfac = vart_*timefacfac;
 
     /*------------------------- evaluate rhs vector at integration point ---*/
     // no switch here at the moment w.r.t. is_ale
@@ -1813,47 +1814,34 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
 
       if(fssgv > 0)
       {
-        for (int ui=0; ui<iel_; ++ui)
+        //----------------------------------------------------------------------
+        //     FINE-SCALE SUBGRID-VISCOSITY TERM (ON RIGHT HAND SIDE)
+
+        for (int vi=0; vi<iel_; ++vi)
         {
-          for (int vi=0; vi<iel_; ++vi)
-          {
-          /* subgrid-viscosity term */
+          /* fine-scale subgrid-viscosity term on right hand side */
           /*
-                        /                        \
-                       |       /  \         / \   |
-              nu_art * |  eps | Du | , eps | v |  |
-                       |       \  /         \ /   |
-                        \                        /
+                              /                          \
+                             |       /    \         / \   |
+             - nu_art(fsu) * |  eps | Dfsu | , eps | v |  |
+                             |       \    /         \ /   |
+                              \                          /
           */
-          esv(vi*4, ui*4)         += vartfac*(2.0*derxy_(0, ui)*derxy_(0, vi)
-                                                        +
-                                                        derxy_(1, ui)*derxy_(1, vi)
-                                                        +
-                                                        derxy_(2, ui)*derxy_(2, vi)) ;
-          esv(vi*4, ui*4 + 1)     += vartfac*derxy_(0, ui)*derxy_(1, vi) ;
-          esv(vi*4, ui*4 + 2)     += vartfac*derxy_(0, ui)*derxy_(2, vi) ;
-          esv(vi*4 + 1, ui*4)     += vartfac*derxy_(0, vi)*derxy_(1, ui) ;
-          esv(vi*4 + 1, ui*4 + 1) += vartfac*(derxy_(0, ui)*derxy_(0, vi)
-                                                        +
-                                                        2.0*derxy_(1, ui)*derxy_(1, vi)
-                                                        +
-                                                        derxy_(2, ui)*derxy_(2, vi)) ;
-          esv(vi*4 + 1, ui*4 + 2) += vartfac*derxy_(1, ui)*derxy_(2, vi) ;
-          esv(vi*4 + 2, ui*4)     += vartfac*derxy_(0, vi)*derxy_(2, ui) ;
-          esv(vi*4 + 2, ui*4 + 1) += vartfac*derxy_(1, vi)*derxy_(2, ui) ;
-          esv(vi*4 + 2, ui*4 + 2) += vartfac*(derxy_(0, ui)*derxy_(0, vi)
-                                                        +
-                                                        derxy_(1, ui)*derxy_(1, vi)
-                                                        +
-                                                        2.0*derxy_(2, ui)*derxy_(2, vi)) ;
-
-          /* subgrid-viscosity-scaling vector */
-          const double meanvart = vart_/numepn_(vi);
-          sugrvisc(vi*4)   = meanvart;
-          sugrvisc(vi*4+1) = meanvart;
-          sugrvisc(vi*4+2) = meanvart;
-
-          }
+          eforce(vi*4)     -= vartfac*(2.0*derxy_(0, vi)*fsvderxy_(0, 0)
+                                      +    derxy_(1, vi)*fsvderxy_(0, 1)
+                                      +    derxy_(1, vi)*fsvderxy_(1, 0)
+                                      +    derxy_(2, vi)*fsvderxy_(0, 2)
+                                      +    derxy_(2, vi)*fsvderxy_(2, 0)) ;
+          eforce(vi*4 + 1) -= vartfac*(    derxy_(0, vi)*fsvderxy_(0, 1)
+                                      +    derxy_(0, vi)*fsvderxy_(1, 0)
+                                      +2.0*derxy_(1, vi)*fsvderxy_(1, 1)
+                                      +    derxy_(2, vi)*fsvderxy_(1, 2)
+                                      +    derxy_(2, vi)*fsvderxy_(2, 1)) ;
+          eforce(vi*4 + 2) -= vartfac*(    derxy_(0, vi)*fsvderxy_(0, 2)
+                                      +    derxy_(0, vi)*fsvderxy_(2, 0)
+                                      +    derxy_(1, vi)*fsvderxy_(1, 2)
+                                      +    derxy_(1, vi)*fsvderxy_(2, 1)
+                                      +2.0*derxy_(2, vi)*fsvderxy_(2, 2)) ;
         }
       }
     }
@@ -1868,6 +1856,7 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
 void DRT::ELEMENTS::Fluid3Impl::Caltau(
   Fluid3* ele,
   const blitz::Array<double,2>&           evelnp,
+  const blitz::Array<double,2>&           fsevelnp,
   const DRT::Element::DiscretizationType  distype,
   const double                            visc,
   const double                            timefac,
@@ -2057,16 +2046,28 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
     tau_(2) = vel_norm * hk * 0.5 * xi_tau_c /timefac;
 
   /*------------------------------------------- compute subgrid viscosity ---*/
-  if (fssgv == 1)
+  if (fssgv == 1 || fssgv == 2)
   {
+    double fsvel_norm = 0.0;
+    if (fssgv == 2)
+    {
+      // get fine-scale velocities at element center
+      fsvelint_ = blitz::sum(funct_(j)*fsevelnp(i,j),j);
+
+      // get fine-scale velocity norm
+      fsvel_norm = sqrt(blitz::sum(fsvelint_*fsvelint_));
+    }
+    // get all-scale velocity norm
+    else fsvel_norm = vel_norm;
+
     /*----------------------------- compute artificial subgrid viscosity ---*/
-    const double re = 2.0 * re_convect;  /* convective : viscous forces */
+    const double re = mk * fsvel_norm * hk / visc; /* convective : viscous forces */
     const double xi = DMAX(re,1.0);
 
-    vart_ = (DSQR(hk)*mk*DSQR(vel_norm))/(2.0*visc*xi);
+    vart_ = (DSQR(hk)*mk*DSQR(fsvel_norm))/(2.0*visc*xi);
 
   }
-  else if (fssgv == 2)
+  else if (fssgv == 3 || fssgv == 4)
   {
     //
     // SMAGORINSKY MODEL
@@ -2083,11 +2084,12 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
 
     double rateofstrain = 0.0;
     {
-      // get velocity (np,i) derivatives at element center
-      vderxy_ = blitz::sum(derxy_(j,k)*evelnp(i,k),k);
+      // get fine-scale or all-scale velocity (np,i) derivatives at element center
+      if (fssgv == 4) fsvderxy_ = blitz::sum(derxy_(j,k)*fsevelnp(i,k),k);
+      else            fsvderxy_ = blitz::sum(derxy_(j,k)*evelnp(i,k),k);
 
       blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());
-      epsilon = 0.5 * ( vderxy_(i,j) + vderxy_(j,i) );
+      epsilon = 0.5 * ( fsvderxy_(i,j) + fsvderxy_(j,i) );
 
       for(int rr=0;rr<3;rr++)
       {
