@@ -169,21 +169,38 @@ private:
   void Setup(RCP<Epetra_CrsMatrix> A);
 
   /*!
-  \brief do one sweep of simple preconditioning
+  \brief do one sweep of simple or simplec preconditioning
   */
-  void Simple(Epetra_Vector& vx, Epetra_Vector& px, Epetra_Vector& vb, Epetra_Vector& pb) const;
+  void Simple(RCP<Epetra_Vector> vx, RCP<Epetra_Vector> px, 
+              RCP<Epetra_Vector> vb, RCP<Epetra_Vector> pb) const;
 
-  FILE*                                               outfile_;// error file to write output to or NULL
-  ParameterList                                       vlist_;  // list for velocity solver
-  ParameterList                                       plist_;  // list for pressure solver
-  MultiMapExtractor                                   mmex_;   // a  multimapetxractor to handle extracts
-  RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy> > A_;      // 2x2 block matrix
-  RCP<Epetra_Vector>                                  vx_;     // velocity solution
-  RCP<Epetra_Vector>                                  px_;     // pressure solution
-  RCP<Epetra_Vector>                                  vb_;     // velocity rhs
-  RCP<Epetra_Vector>                                  pb_;     // pressure rhs
-  RCP<LINALG::Solver>                                 vsolver_;// velocity solver
-  RCP<LINALG::Solver>                                 psolver_;// pressure solver
+  /*!
+  \brief do one sweep of simpler preconditioning
+  */
+  void Simpler(RCP<Epetra_Vector> vx, RCP<Epetra_Vector> px, 
+              RCP<Epetra_Vector> vb, RCP<Epetra_Vector> pb) const;
+
+  FILE*                                               outfile_; // error file to write output to or NULL
+  ParameterList                                       vlist_;   // list for velocity solver
+  ParameterList                                       plist_;   // list for pressure solver
+  double                                              alpha_;   // pressure damping \in (0,1]
+  
+  MultiMapExtractor                                   mmex_;    // a  multimapetxractor to handle extracts
+  RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy> > A_;       // 2x2 block matrix
+  RCP<SparseMatrix>                                   diagAinv_;// inverse of main diagonal of A(0,0)
+  RCP<SparseMatrix>                                   S_;       // Approximate Schur complement on the pressure space
+
+  RCP<Epetra_Vector>                                  vx_;      // velocity solution
+  RCP<Epetra_Vector>                                  px_;      // pressure solution
+  RCP<Epetra_Vector>                                  vb_;      // velocity rhs
+  RCP<Epetra_Vector>                                  pb_;      // pressure rhs
+  RCP<Epetra_Vector>                                  vwork1_;   // working vector velocity dimension
+  RCP<Epetra_Vector>                                  vwork2_;   // working vector velocity dimension
+  RCP<Epetra_Vector>                                  pwork1_;  // working vector pressure dimension
+  RCP<Epetra_Vector>                                  pwork2_;  // working vector pressure dimension
+
+  RCP<LINALG::Solver>                                 vsolver_; // velocity solver
+  RCP<LINALG::Solver>                                 psolver_; // pressure solver
 
 }; // class  SIMPLER_Operator : public virtual Epetra_Operator
 }  // namespace LINALG
