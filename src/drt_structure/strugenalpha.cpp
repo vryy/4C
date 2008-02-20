@@ -1198,6 +1198,9 @@ void StruGenAlpha::FullNewton()
   return;
 } // StruGenAlpha::FullNewton()
 
+/*----------------------------------------------------------------------*
+ |  do Uzawa iteration (public)                                         |
+ *----------------------------------------------------------------------*/
 void StruGenAlpha::NonLinearUzawaFullNewton(int predictor)
 {
     int  maxiterUzawa       = params_.get<int>   ("uzawa maxiter"         ,50);
