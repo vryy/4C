@@ -356,8 +356,8 @@ void LINALG::Solver::Solve_aztec(const bool reset)
       RCP<Epetra_CrsMatrix> rcpA = rcp(A,false);
       P_ = rcp(new LINALG::SIMPLER_Operator(rcpA,
                                             Params(),
-                                            Params().sublist("SIMPLER")),
-                                            outfile_);
+                                            Params().sublist("SIMPLER"),
+                                            outfile_));
       Pmatrix_ = null;
     }
     else
