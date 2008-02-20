@@ -783,6 +783,8 @@ void ElementReader::Partition()
     }
 #endif
 
+#ifdef WE_DO_NOT_HAVE_MUCH_MEMORY_BUT_A_LOT_OF_TIME
+
     // construct graph
     Teuchos::RCP<Epetra_CrsGraph> graph = rcp(new Epetra_CrsGraph(Copy,*rownodes_,81,false));
     if (myrank==0)
@@ -803,6 +805,64 @@ void ElementReader::Partition()
         }
       }
     }
+
+#else
+
+    // No need to test for myrank==0 as elementnodes is filled on proc 0 only.
+
+    // build the graph ourselves
+    vector<set<int> > localgraph(rownodes_->NumMyElements());
+    for (list<vector<int> >::iterator i=elementnodes.begin();
+         i!=elementnodes.end();
+         ++i)
+    {
+      // get the node ids of this element
+      int  numnode = static_cast<int>(i->size());
+      int* nodeids = &(*i)[0];
+
+      // loop nodes and add this topology to the row in the graph of every node
+      for (int n=0; n<numnode; ++n)
+      {
+        int nodelid = rownodes_->LID(nodeids[n]);
+        copy(nodeids,
+             nodeids+numnode,
+             inserter(localgraph[nodelid],
+                      localgraph[nodelid].begin()));
+      }
+    }
+
+    elementnodes.clear();
+
+    // fill exact entries per row vector
+    // this will really speed things up for long lines
+    vector<int> entriesperrow;
+    entriesperrow.reserve(rownodes_->NumMyElements());
+
+    transform(localgraph.begin(),
+              localgraph.end(),
+              back_inserter(entriesperrow),
+              mem_fun_ref(&set<int>::size));
+
+    // construct graph
+    Teuchos::RCP<Epetra_CrsGraph> graph = rcp(new Epetra_CrsGraph(Copy,*rownodes_,&entriesperrow[0],false));
+
+    entriesperrow.clear();
+
+    for (unsigned i = 0; i<localgraph.size(); ++i)
+    {
+      set<int>& rowset = localgraph[i];
+      vector<int> row;
+      row.reserve(rowset.size());
+      row.assign(rowset.begin(),rowset.end());
+      rowset.clear();
+
+      int err = graph->InsertGlobalIndices(rownodes_->GID(i),row.size(),&row[0]);
+      if (err<0) dserror("graph->InsertGlobalIndices returned %d",err);
+    }
+
+    localgraph.clear();
+
+#endif
 
     elementnodes.clear();
 
