@@ -495,6 +495,162 @@ map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset) const
   return conn;
 }
 
+map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset, bool checkoutside) const
+{
+  cout << "Creating SideSet Connectivity with outside-check... " << endl;
+  fflush(stdout);
+  
+  Epetra_SerialComm Comm;
+  Epetra_Time time(Comm);
+  RCP<Time> timetot;
+  timetot= TimeMonitor::getNewTimer("Side Set Connect total");
+  RCP<Time> time1 = TimeMonitor::getNewTimer("One Side Set");
+  RCP<TimeMonitor> tm_total = rcp(new TimeMonitor(*timetot));
+
+  map<int,vector<int> > conn;
+  map <int,vector<int> > mysides = sideset.GetSideSet();
+  map<int,vector<int> >::iterator i_side;
+  
+  map<int,EXODUS::ElementBlock> ebs = GetElementBlocks();
+  map<int,EXODUS::ElementBlock>::const_iterator i_ebs;
+  
+  // Range Vector for global eleID identification in SideSet
+  vector<int> glob_eb_erange(1,0);
+  int rangebreak = 0;
+  // Also we once get all EBlocks and EConns to enable quick access
+  vector<EXODUS::ElementBlock> eblocks;
+  vector<map<int,vector<int> > > econns;
+  for (i_ebs = ebs.begin(); i_ebs != ebs.end(); ++i_ebs ){
+    rangebreak += i_ebs->second.GetNumEle();
+    glob_eb_erange.push_back(rangebreak);
+    eblocks.push_back(i_ebs->second);
+    econns.push_back(i_ebs->second.GetEleConn());
+  }
+  
+  // fill SideSet Connectivity
+  int tetc=0,hexc=0,pyrc=0,wedgc=0;
+  for (i_side = mysides.begin(); i_side != mysides.end(); ++i_side){
+    RCP<TimeMonitor> tm1 = rcp(new TimeMonitor(*time1));
+    int actele = i_side->second.at(0) -1;   //ExoIds start from 1, but we from 0
+    int actface = i_side->second.at(1) -1;  //ExoIds start from 1, but we from 0
+    // find actual EBlock where actele lies in
+    int actebid;
+    for(unsigned int i=0; i<glob_eb_erange.size(); ++i) 
+      if (actele < glob_eb_erange[i]){ actebid = i-1; break;}
+    EXODUS::ElementBlock::Shape actshape = eblocks[actebid].GetShape();
+    
+    // get act parent ele from actual Side
+    int parent_ele_id = actele - glob_eb_erange[actebid]; 
+    vector<int> parent_ele = econns[actebid].find(parent_ele_id)->second;
+    
+    // Face to ElementNode Map
+    //// **** temporary hex map due to conflicts between side numbering exo<->baci
+    switch (actshape){
+    case ElementBlock::tet4: {actface = actface; tetc++; break;}
+    case ElementBlock::hex8: {actface = HexSideNumberExoToBaci(actface); hexc++; break;}
+    case ElementBlock::pyramid5: {actface = PyrSideNumberExoToBaci(actface); pyrc++; break;}
+    case ElementBlock::wedge6: {actface = actface; wedgc++; break;}
+    default: {cout << ShapeToString(actshape) << ":" << endl; dserror("Parent Element Type not supported");}
+    }
+    vector<int> childmap = DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape))[actface];
+    
+    vector<int> child;
+    if(checkoutside) child = OutsideOrientedSide(parent_ele,childmap);
+    else for(unsigned int j=0; j<childmap.size(); ++j) child.push_back(parent_ele[childmap[j]]);
+    
+    // some checking
+    if ((child.size() != 3) && (child.size() != 4)){
+      PrintVec(cout,child);
+      PrintVec(cout,childmap);
+      PrintVec(cout,parent_ele);
+      cout << ShapeToString(actshape) << ",Face: " << actface << ",childsize:" << child.size() << endl;
+      dserror("Child Ele error");
+    }
+    
+    // insert child into SideSet Connectivity
+    conn.insert(pair<int,vector<int> >(i_side->first,child));
+    tm1 = null;    
+  }
+  tm_total = null;
+  //  TimeMonitor::summarize();
+  cout << "...done" << endl;
+  fflush(stdout);
+
+  return conn;
+}
+
+vector<int> EXODUS::Mesh::OutsideOrientedSide(const vector<int> parentele, const vector<int> sidemap) const
+{
+  // first guess of child 
+  vector<int> child;
+  // set simplifies later inverse search
+  set<int> childset;
+  for(unsigned int j=0; j<sidemap.size(); ++j){
+    child.push_back(parentele[sidemap[j]]);
+    childset.insert(parentele[sidemap[j]]);
+  }
+  
+  // set of parentele for later inverse search
+  set<int> parentset;
+  for(unsigned int i=0; i<parentele.size(); ++i)
+    parentset.insert(parentele.at(i));
+  
+  // find parentele node not within side
+  int insidenode;
+  set<int>::iterator it;
+  for(it = parentset.begin(); it != parentset.end(); ++it){
+    if ( childset.find(*it) == childset.end() ){ insidenode = *it; break;}
+  }
+  
+  // build normal at first side node
+  vector<double> sidenormal = Normal(child.back(), child.front(), child.at(1));
+  // build vector from first side node to inside element node
+  vector<double> insidevec = NodeVec(child.front(), insidenode);
+  
+  // scalar-product
+  double scp = sidenormal[0]*insidevec[0] + sidenormal[1]*insidevec[1] + sidenormal[2]*insidevec[2];
+  
+  vector<int> out_side;
+  if(scp>0){
+    vector<int> reversechild;
+    vector<int>::reverse_iterator rit;
+    for (rit=child.rbegin(); rit<child.rend(); ++rit) out_side.push_back(*rit); 
+  } else out_side = child;
+  
+  return out_side;
+}
+
+vector<double> EXODUS::Mesh::Normal(const int head1,const int origin,const int head2) const
+{
+  vector<double> normal(3);
+  vector<double> h1 = GetNodeExo(head1);
+  vector<double> h2 = GetNodeExo(head2);
+  vector<double> o  = GetNodeExo(origin);
+  
+  normal[0] =   ((h1[1]-o[1])*(h2[2]-o[2]) - (h1[2]-o[2])*(h2[1]-o[1]));
+  normal[1] = - ((h1[0]-o[0])*(h2[2]-o[2]) - (h1[2]-o[2])*(h2[0]-o[0]));
+  normal[2] =   ((h1[0]-o[0])*(h2[1]-o[1]) - (h1[1]-o[1])*(h2[0]-o[0]));
+  
+  double length = sqrt(normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2]);
+  normal[0] = normal[0]/length;
+  normal[1] = normal[1]/length;
+  normal[2] = normal[2]/length;
+  
+  return normal;
+}
+
+vector<double> EXODUS::Mesh::NodeVec(const int tail, const int head) const
+{
+  vector<double> nv(3);
+  vector<double> t = GetNodeExo(tail);
+  vector<double> h = GetNodeExo(head);
+  nv[0] = h[0] - t[0]; nv[1] = h[1] - t[1]; nv[2] = h[2] - t[2];
+  double length = sqrt(nv[0]*nv[0] + nv[1]*nv[1] + nv[2]*nv[2]);
+  nv[0] = nv[0]/length; nv[1] = nv[1]/length; nv[2] = nv[2]/length;
+  return nv;
+}
+
+
 vector<EXODUS::ElementBlock> EXODUS::Mesh::SideSetToEBlocks(const EXODUS::SideSet& sideset, const map<int,vector<int> >& sideconn) const
 {
   vector<ElementBlock> eblocks;

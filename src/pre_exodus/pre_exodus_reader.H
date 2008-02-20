@@ -113,7 +113,19 @@ public:
   
   //! Get Side Set Connectivity with Global Nodes
   map<int,vector<int> > GetSideSetConn(const SideSet sideset) const;
+
+  //! Get Side Set Connectivity with Global Nodes
+  map<int,vector<int> > GetSideSetConn(const SideSet sideset, bool checkoutside) const;
   
+  //! Make sure child ele (SideSet) is outward oriented w.r.t. parent ele
+  vector<int> OutsideOrientedSide(const vector<int> parentele, const vector<int> sidemap) const;
+  
+  //! Get egde Normal at node
+  vector<double> Normal(const int head1, const int origin, const int head2) const;
+  
+  //! Get normalized Vector between 2 nodes
+  vector<double> NodeVec(const int tail, const int head) const;
+
   //! Transform SideSet into ElementBlock
   vector<ElementBlock> SideSetToEBlocks(const SideSet& sideset, const map<int,vector<int> >& sidesetconn) const;
   

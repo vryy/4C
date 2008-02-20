@@ -61,7 +61,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
   for (i_sss = sss.begin(); i_sss != sss.end(); ++i_sss ){
     bool toextrude = CheckExtrusion(i_sss->second);
     if (toextrude){
-      map<int,vector<int> > sidesetconn = basemesh.GetSideSetConn(i_sss->second);
+      map<int,vector<int> > sidesetconn = basemesh.GetSideSetConn(i_sss->second,true);
       extrusion_conns.insert(pair<int,map<int,vector<int> > >(extrusioncounter,sidesetconn));
       //extrusion_conns.insert(pair<int,map<int,vector<int> > >(extrusioncounter,basemesh.GetSideSetConn(i_sss->second)));
       extrusion_types.insert(pair<int,ExtrusionType>(extrusioncounter,sideset));
@@ -100,9 +100,11 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
     set<int> doneles;
     set<int>::iterator i_doneles;
     
-    // here we store a potential set of eles still to extrude
-    //set<int> todo_eles;
-    //set<int>::iterator i_todo_eles;
+    // here we store a potential set AND vector of eles still to extrude
+    set<int> todo_eleset;
+    map<int,vector<int> >::const_iterator i_ele;
+    for(i_ele=ele_conn.begin(); i_ele != ele_conn.end(); ++i_ele) todo_eleset.insert(i_ele->first);
+    set<int>::iterator i_todo_eleset;
     vector<int> todo_eles;
     int todo_counter = 0;
     
@@ -116,8 +118,9 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
     else if (unsigned(seedid) > ele_conn.size()) dserror("SeedID out of range!");
     else startele = seedid;
     
-    //todo_eles.insert(startele); // lets insert the very first one for a start
+    //todo_eleset.insert(startele); // lets insert the very first one for a start
     todo_eles.push_back(startele);
+    todo_eleset.erase(startele);
     
     // for the first element we set up everything *****************************
     vector<int> actelenodes = ele_conn.find(startele)->second;
@@ -194,11 +197,15 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
     while (doneles.size() < ele_conn.size()){
     
       // find an actele still to do
-      //i_todo_eles=todo_eles.begin();
-      //int actele = *i_todo_eles;
-      // delete actele from todo_eles list
-      //todo_eles.erase(i_todo_eles);
       int actele = todo_eles[todo_counter];
+      // fall back if vector is dubious
+      if (unsigned(actele)>ele_conn.size()){
+        i_todo_eleset=todo_eleset.begin();
+        actele = *i_todo_eleset;
+        todo_eleset.erase(actele);
+      }
+      // delete actele from todo_eles list
+      else todo_eleset.erase(actele);
       
       // get nodes of actual element
       vector<int> actelenodes = ele_conn.find(actele)->second;
@@ -368,7 +375,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
           doneles.insert(actneighbor);
           
           // neighbor eles are possible next "center" eles
-          //todo_eles.insert(actneighbor);
+          //todo_eleset.insert(actneighbor);
           todo_eles.push_back(actneighbor);
           
         }// end of if undone->extrude this neighbor, next neighbor *************
