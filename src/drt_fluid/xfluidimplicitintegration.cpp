@@ -1044,7 +1044,7 @@ void XFluidImplicitTimeInt::NonlinearSolve()
 
     // warn if itemax is reached without convergence, but proceed to
     // next timestep...
-    if ((itnum == itemax) and (vresnorm > ittol or presnorm > ittol or
+    if ((itnum >= itemax) and (vresnorm > ittol or presnorm > ittol or
                              fullresnorm > ittol or
                              incvelnorm_L2/velnorm_L2 > ittol or
                              incprenorm_L2/prenorm_L2 > ittol or
