@@ -47,8 +47,13 @@ LINALG::SparseMatrix::SparseMatrix(const SparseMatrix& mat)
     savegraph_(mat.savegraph_)
 {
   if (mat.sysmat_!=Teuchos::null)
-    sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(*mat.sysmat_));
-
+  {
+    if (mat.Filled())
+      sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(*mat.sysmat_));
+    else
+      sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,mat.RowMap(),81,false));
+  }
+  
   if (mat.graph_!=Teuchos::null)
     graph_ = Teuchos::rcp(new Epetra_CrsGraph(*mat.graph_));
 }
