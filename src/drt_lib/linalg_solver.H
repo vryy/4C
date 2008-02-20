@@ -73,18 +73,18 @@ struct _SOLVAR;
 #ifdef PARALLEL
 #ifdef SPOOLES_PACKAGE
 struct _FrontMtx;
-struct _InpMtx;                     
-struct _DenseMtx;               
-struct _Graph;                  
-struct _IVL;                    
-struct _ETree;                  
-struct _SubMtxManager;          
-struct _ChvManager;             
-struct _Chv;                    
-struct _IV;                     
-struct _DV;                     
-struct _DenseMtx;               
-struct _SolveMap;               
+struct _InpMtx;
+struct _DenseMtx;
+struct _Graph;
+struct _IVL;
+struct _ETree;
+struct _SubMtxManager;
+struct _ChvManager;
+struct _Chv;
+struct _IV;
+struct _DV;
+struct _DenseMtx;
+struct _SolveMap;
 #endif
 #endif
 
@@ -107,13 +107,13 @@ class Solver
 {
 public:
 
-  
+
   /*!
   \brief Standard Constructor
-  
+
   \param params (in) : parameter list holding solver configuration
   \param comm (in)   : a reference to a epetra communicator object
-  \param outfile (in): ptr to an error file on proc 0 only. If NULL on input, 
+  \param outfile (in): ptr to an error file on proc 0 only. If NULL on input,
                        no output will be generated.
   */
   Solver(RCP<ParameterList> params, const Epetra_Comm& comm, FILE* outfile);
@@ -125,7 +125,7 @@ public:
   */
   virtual ~Solver();
 
-  
+
   //! @name Solve and ApplyInverse methods
 
   /*!
@@ -138,46 +138,7 @@ public:
   \param reset  (in)    : flag indicating whether all data from previous solves should
                            be recalculated including preconditioners
   */
-  void Solve(RCP<Epetra_CrsMatrix> matrix,
-             RCP<Epetra_Vector>    x,
-             RCP<Epetra_Vector>    b,
-             bool refactor,
-             bool reset = false);
-
-  /*!
-  \brief Solve system of equations with an Operator
-  
-  Solve system of equations, where the matrix is not necessarily a true matrix
-  but some kind of directional derivative operator.
-  Note that this can only be used in combination with Aztec and without scaling.
-  All other solvers will throw an error.
-
-  \param matrix (in/out): system of equations
-  \param x      (in/out): initial guess on input, solution on output
-  \param b      (in)    : right hand side vector
-  \param refactor (in)  : flag indicating whether system should be refactorized
-  \param reset  (in)    : flag indicating whether all data from previous solves should
-                           be recalculated including preconditioners
-  */
-  void Solve(RCP<Epetra_Operator> Operator,
-             RCP<Epetra_Vector>    x,
-             RCP<Epetra_Vector>    b,
-             bool refactor,
-             bool reset = false);
-
-  /*!
-  \brief Solve system of equations using VM3 solver (overloaded)
-
-  \param matrix (in/out): system of equations
-  \param x      (in/out): initial guess on input, solution on output
-  \param b      (in)    : right hand side vector
-  \param refactor (in)  : flag indicating whether system should be refactorized
-  \param reset  (in)    : flag indicating whether all data from previous solves should
-                           be recalculated including preconditioners
-  \param matrix2 (in/out): mod. system of equations on finest grid level
-  */
-  void Solve(RCP<Epetra_CrsMatrix> matrix,
-             RCP<Epetra_CrsMatrix> matrix2,
+  void Solve(RCP<Epetra_Operator>  matrix,
              RCP<Epetra_Vector>    x,
              RCP<Epetra_Vector>    b,
              bool refactor,
@@ -196,9 +157,9 @@ public:
   /*!
   \brief Translate solver input parameters from old ccarat style to
          new solver parameters list style
-  
+
   This method should go away once the input of all solver parameters is reworked
-         
+
   \param params (out): parameter list holding new style solver parameters
                        on output
   \param actsolv (in): ccarat style struct holding solver parameters
@@ -279,29 +240,29 @@ private:
 
   */
   virtual void Solve_aztec(const bool reset);
-  
+
   //! a communicator
-  const Epetra_Comm&        comm_;    
+  const Epetra_Comm&        comm_;
   //! parameter list
-  RCP<ParameterList>        params_;  
+  RCP<ParameterList>        params_;
   //! file to write output to (proc 0 only, can be NULL on input)
-  FILE*                     outfile_; 
+  FILE*                     outfile_;
   //! system of equations
-  RCP<Epetra_Operator>      A_;       
+  RCP<Epetra_Operator>      A_;
   //! modified system of equations
-  RCP<Epetra_CrsMatrix>     Aplus_;       
+  RCP<Epetra_CrsMatrix>     Aplus_;
   //! Preconditioner (currently an ML or Ifpack operator)
-  RCP<Epetra_Operator>      P_;       
+  RCP<Epetra_Operator>      P_;
   //! system of equations used for preconditioning used by P_ only
-  RCP<Epetra_CrsMatrix>     Pmatrix_; 
+  RCP<Epetra_CrsMatrix>     Pmatrix_;
   //! initial guess and solution
-  RCP<Epetra_Vector>        x_;       
+  RCP<Epetra_Vector>        x_;
   //! right hand side vector
-  RCP<Epetra_Vector>        b_;       
+  RCP<Epetra_Vector>        b_;
   //int x_LDA_;
   //int b_LDA_;
   //! a linear problem wrapper class used by Trilinos and for scaling of the system
-  RCP<Epetra_LinearProblem> lp_;      
+  RCP<Epetra_LinearProblem> lp_;
   //! Epetra multivector: initial guess and solution
   Epetra_MultiVector *              X_;
   //! Epetra multivector: right hand side
@@ -309,13 +270,13 @@ private:
   //! flag indicating whether matrix was factored before
   bool                              factored_;
   //! counting how many times matrix was solved between resets
-  int                               ncall_;   
+  int                               ncall_;
   //! an abstract amesos solver that can be any of the amesos concrete immplementations
-  RCP<Amesos_BaseSolver>    amesos_;  
+  RCP<Amesos_BaseSolver>    amesos_;
   //! an aztec solver
-  RCP<AztecOO>              aztec_;  
+  RCP<AztecOO>              aztec_;
   //! a vm3 solver
-  RCP<VM3_Solver>           vm3_solver_; 
+  RCP<VM3_Solver>           vm3_solver_;
 
 #ifdef PARALLEL
 #ifdef SPOOLES_PACKAGE
@@ -348,7 +309,7 @@ private:
   Solver operator = (const Solver& old);
   // don't want cctor
   Solver(const LINALG::Solver& old);
- 
+
 }; // class Solver
 
 

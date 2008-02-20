@@ -113,7 +113,7 @@ void FSI::AleLinear::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp) const
  *----------------------------------------------------------------------*/
 void FSI::AleLinear::Solve()
 {
-  solver_->Solve(sysmat_->EpetraMatrix(),dispnp_,residual_,true);
+  solver_->Solve(sysmat_->EpetraOperator(),dispnp_,residual_,true);
 }
 
 

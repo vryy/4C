@@ -211,7 +211,7 @@ private:
   double maxtime_;
   double dt_;
 
-  Teuchos::RCP<LINALG::SparseMatrix> sysmat_;
+  Teuchos::RCP<LINALG::SparseOperator> sysmat_;
 
   Teuchos::RCP<Epetra_Vector>    dirichtoggle_;
   //Teuchos::RCP<Epetra_Vector>    zeros_;

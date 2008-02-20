@@ -158,7 +158,7 @@ void LINALG::Solver::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  solve (public)                                           mwgee 02/07|
  *----------------------------------------------------------------------*/
-void LINALG::Solver::Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
+void LINALG::Solver::Solve(RefCountPtr<Epetra_Operator>  matrix,
                            RefCountPtr<Epetra_Vector>    x,
                            RefCountPtr<Epetra_Vector>    b,
                            bool refactor,
@@ -214,51 +214,6 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
 }
 
 /*----------------------------------------------------------------------*
- |  solve (public)                                           mwgee 10/07|
- *----------------------------------------------------------------------*/
-void LINALG::Solver::Solve(RefCountPtr<Epetra_Operator>  Operator,
-                           RefCountPtr<Epetra_Vector>    x,
-                           RefCountPtr<Epetra_Vector>    b,
-                           bool refactor,
-                           bool reset)
-{
-  // reset data flags
-  if (reset)
-  {
-    Reset();
-    refactor = true;
-  }
-
-  // set the data passed to the method
-  if (refactor) A_ = Operator;
-  x_ = x;
-  b_ = b;
-
-  // set flag indicating that problem should be refactorized
-  if (refactor) factored_ = false;
-
-  // fill the linear problem
-  lp_->SetRHS(b_.get());
-  lp_->SetLHS(x_.get());
-  lp_->SetOperator(Operator.get());
-
-  // decide what solver to use
-  string solvertype = Params().get("solver","none");
-  if      ("aztec" ==solvertype)
-    Solve_aztec(reset);
-  else if ("none"   ==solvertype)
-    dserror("Unknown type of solver");
-  else
-    dserror("Unsupported type of solver");
-
-
-  factored_ = true;
-  ncall_++;
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  |  solve (protected)                                        mwgee 02/07|
  *----------------------------------------------------------------------*/
 void LINALG::Solver::Solve_aztec(const bool reset)
@@ -266,7 +221,7 @@ void LINALG::Solver::Solve_aztec(const bool reset)
   if (!Params().isSublist("Aztec Parameters"))
     dserror("Do not have aztec parameter list");
   ParameterList& azlist = Params().sublist("Aztec Parameters");
-  
+
   // see whether Operator is a Epetra_CrsMatrix
   Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>(A_.get());
 
