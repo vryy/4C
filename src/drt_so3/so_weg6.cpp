@@ -205,8 +205,8 @@ DRT::Element** DRT::ELEMENTS::So_weg6::Surfaces()
       int nodeids[nnode_surf];
       DRT::Node* nodes[nnode_surf];
       for (int tinode = 0; tinode < nnode_surf; ++tinode) {
-        nodeids[tinode] = NodeIds()[eleNodeNumbering_wedge15_trisurfaces[surfid][tinode]];
-        nodes[tinode] = Nodes()[eleNodeNumbering_wedge15_trisurfaces[surfid][tinode]];
+        nodeids[tinode] = NodeIds()[eleNodeNumbering_wedge15_trisurfaces[tisurf][tinode]];
+        nodes[tinode] = Nodes()[eleNodeNumbering_wedge15_trisurfaces[tisurf][tinode]];
       }
       surfaces_[surfid] = rcp(new DRT::ELEMENTS::Sow6Surface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
       surfaceptrs_[surfid] = surfaces_[surfid].get();
