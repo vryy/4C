@@ -125,8 +125,8 @@ void XFluidEnsightWriter::WriteFiles()
   vector<int> filesteps;
   filesteps.push_back(1);
   filesetmap_["geo"] = filesteps;
-  vector<int> timesteps;
-  timesteps.push_back(1);
+  vector<double> timesteps;
+  timesteps.push_back(soltime[0]);
   timesetmap_["geo"] = timesteps;
   const int geotimeset = 1;
   // at the moment, we can only print out the first step -> to be changed
@@ -141,7 +141,7 @@ void XFluidEnsightWriter::WriteFiles()
   WriteAllResults(field_);
 
   int counttime = 0;
-  for (map<string,vector<int> >::const_iterator entry = timesetmap_.begin(); entry != timesetmap_.end(); ++entry) {
+  for (map<string,vector<double> >::const_iterator entry = timesetmap_.begin(); entry != timesetmap_.end(); ++entry) {
     counttime++;
     string key = entry->first;
     timesetnumbermap_[key] = counttime;

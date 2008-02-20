@@ -77,75 +77,85 @@ void EnsightWriter::WriteFiles()
 
   // timesteps when the solution is written
   const vector<double> soltime = result.get_result_times(field_->name());
+  unsigned int numsoltimes = soltime.size();
+
+  ///////////////////////////////////
+  //  write geometry file          //
+  ///////////////////////////////////
+  const string geofilename = filename_ + "_"+ field_->name() + ".geo";
+  const size_t found_path = geofilename.find_last_of("/\\");
+  const string geofilename_nopath = geofilename.substr(found_path+1);
+  WriteGeoFile(geofilename);
+  vector<int> filesteps;
+  filesteps.push_back(1);
+  filesetmap_["geo"] = filesteps;
+  vector<double> timesteps;
+  timesteps.push_back(soltime[0]);
+  timesetmap_["geo"] = timesteps;
+  // at the moment, we can only print out the first step -> to be changed
 
 
   ///////////////////////////////////
-                                 //  write geometry file          //
-                                 ///////////////////////////////////
-      const string geofilename = filename_ + "_"+ field_->name() + ".geo";
-      const size_t found_path = geofilename.find_last_of("/\\");
-      const string geofilename_nopath = geofilename.substr(found_path+1);
-      WriteGeoFile(geofilename);
-      vector<int> filesteps;
-      filesteps.push_back(1);
-      filesetmap_["geo"] = filesteps;
-      vector<int> timesteps;
-      timesteps.push_back(1);
-      timesetmap_["geo"] = timesteps;
-      const int geotimeset = 1;
-      // at the moment, we can only print out the first step -> to be changed
-      vector<double> geotime; // timesteps when the geometry is written
-      geotime.push_back(soltime[0]);
+  //  write solution fields files  //
+  ///////////////////////////////////
+  WriteAllResults(field_);
 
-
-      ///////////////////////////////////
-        //  write solution fields files  //
-        ///////////////////////////////////
-        const int soltimeset = 2;
-        WriteAllResults(field_);
-
-        int counttime = 0;
-        for (map<string,vector<int> >::const_iterator entry = timesetmap_.begin(); entry != timesetmap_.end(); ++entry) {
-          counttime++;
-          string key = entry->first;
-          timesetnumbermap_[key] = counttime;
+  // prepare the time sets and file sets for case file creation
+  int setcounter = 0;
+  int allresulttimeset = 0;
+  for (map<string,vector<double> >::const_iterator entry = timesetmap_.begin(); entry != timesetmap_.end(); ++entry) 
+  {
+      string key = entry->first;
+      if ((entry->second).size()== numsoltimes)
+      {
+        if (allresulttimeset == 0)
+        {
+            setcounter++;
+            allresulttimeset = setcounter;
         }
-        int countfile = 0;
-        for (map<string,vector<int> >::const_iterator entry = filesetmap_.begin(); entry != filesetmap_.end(); ++entry) {
-          countfile++;
-          string key = entry->first;
-          filesetnumbermap_[key] = countfile;
-        }
+        timesetnumbermap_[key] = allresulttimeset; // reuse the default result time set, when possible
+      }
+      else
+      {
+        setcounter++;
+        timesetnumbermap_[key] = setcounter; // a new time set number is needed
+      }
+  }
+
+  setcounter = 0;
+  for (map<string,vector<int> >::const_iterator entry = filesetmap_.begin(); entry != filesetmap_.end(); ++entry) {
+      setcounter++;
+      string key = entry->first;
+      filesetnumbermap_[key] = setcounter;
+  }
 
 
+  ///////////////////////////////////
+  //  now write the case file      //
+  ///////////////////////////////////
+  if (myrank_ == 0)
+  {
+    const string casefilename = filename_ + "_"+ field_->name() + ".case";
+    ofstream casefile;
+    casefile.open(casefilename.c_str());
+    casefile << "# created using post_drt_ensight\n"<< "FORMAT\n\n"<< "type:\tensight gold\n";
 
-        ///////////////////////////////////
-          //  now write the case file      //
-          ///////////////////////////////////
-          if (myrank_ == 0)
-          {
-            const string casefilename = filename_ + "_"+ field_->name() + ".case";
-            ofstream casefile;
-            casefile.open(casefilename.c_str());
-            casefile << "# created using post_drt_ensight\n"<< "FORMAT\n\n"<< "type:\tensight gold\n";
+    casefile << "\nGEOMETRY\n\n";
+    casefile << "model:\t"<<timesetnumbermap_["geo"]<<"\t"<<filesetnumbermap_["geo"]<<"\t"<< geofilename_nopath<< "\n";
 
-            casefile << "\nGEOMETRY\n\n";
-            casefile << "model:\t"<<timesetnumbermap_["geo"]<<"\t"<<filesetnumbermap_["geo"]<<"\t"<< geofilename_nopath<< "\n";
+    casefile << "\nVARIABLE\n\n";
+    casefile << GetVariableSection(filesetmap_, variablenumdfmap_, variablefilenamemap_);
 
-            casefile << "\nVARIABLE\n\n";
-            casefile << GetVariableSection(filesetmap_, variablenumdfmap_, variablefilenamemap_);
+    casefile << "\nTIME\n\n";
+    casefile << GetTimeSectionStringFromTimesets(timesetmap_);
 
-            casefile << "\nTIME\n\n";
-            casefile << GetTimeSectionString(geotimeset, geotime);
-            casefile << GetTimeSectionString(soltimeset, soltime);
+    casefile << "\nFILE\n\n";
+    casefile << GetFileSectionStringFromFilesets(filesetmap_);
 
-            casefile << "\nFILE\n\n";
-            casefile << GetFileSectionStringFromFilesets(filesetmap_);
+    casefile.close();
+  }
 
-            casefile.close();
-          }
-
-          return;
+        return;
 }
 
 
@@ -809,7 +819,7 @@ void EnsightWriter::WriteResult(const string groupname,
     else
       stepsize = 1; //use dummy value on other procs
 
-    while (result.next_result())
+    while (result.next_result(groupname))
     {
       const int indexsize = 80+2*sizeof(int)+(file.tellp()/stepsize+2)*sizeof(long);
       if (static_cast<long unsigned int>(file.tellp())+stepsize+indexsize>= FILE_SIZE_LIMIT_)
@@ -838,7 +848,7 @@ void EnsightWriter::WriteResult(const string groupname,
     else
       stepsize = 1; //use dummy value on other procs
 
-    while (result.next_result())
+    while (result.next_result(groupname))
     {
       const int indexsize = 80+2*sizeof(int)+(file.tellp()/stepsize+2)*sizeof(long);
       if (static_cast<long unsigned int>(file.tellp())+stepsize+indexsize>= FILE_SIZE_LIMIT_)
@@ -867,7 +877,7 @@ void EnsightWriter::WriteResult(const string groupname,
     else
       stepsize = 1; //use dummy value on other procs
 
-    while (result.next_result())
+    while (result.next_result(groupname))
     {
       const int indexsize = 80+2*sizeof(int)+(file.tellp()/stepsize+2)*sizeof(long);
       if (static_cast<long unsigned int>(file.tellp())+stepsize+indexsize>= FILE_SIZE_LIMIT_)
@@ -896,7 +906,7 @@ void EnsightWriter::WriteResult(const string groupname,
     else
       stepsize = 1; //use dummy value on other procs
 
-    while (result.next_result())
+    while (result.next_result(groupname))
     {
       const int indexsize = 80+2*sizeof(int)+(file.tellp()/stepsize+2)*sizeof(long);
       if (static_cast<long unsigned int>(file.tellp())+stepsize+indexsize>= FILE_SIZE_LIMIT_)
@@ -915,10 +925,16 @@ void EnsightWriter::WriteResult(const string groupname,
     dserror("Invalid output type in WriteResult");
   } // end of switch(restype)
 
-    // store information for later case file creation
+  // store information for later case file creation
   filesetmap_[name].push_back(file.tellp()/stepsize);// has to be done BEFORE writing the index table
   variablenumdfmap_[name] = numdf;
   variablefilenamemap_[name] = filename;
+  // store solution times vector for later case file creation
+  {
+    PostResult res = PostResult(field_); // this is needed!
+    vector<double> restimes = res.get_result_times(field_->name(),groupname);
+    timesetmap_[name] = restimes;
+  }
 
   // append index table
   WriteIndexTable(file, resultfilepos[name]);
@@ -1532,6 +1548,11 @@ string EnsightWriter::GetVariableSection(
     // Get rid of path
     const size_t found_path = filename.find_last_of("/\\");
     const string filename_nopath = filename.substr(found_path+1);
+    
+    map<string,int>::const_iterator timeentry = timesetnumbermap_.find(key);
+    if (timeentry == timesetnumbermap_.end())
+      dserror("key not found!");
+    const int timesetnumber = timeentry->second;
 
     map<string,int>::const_iterator entry1 = filesetnumbermap_.find(key);
     if (entry1 == filesetnumbermap_.end())
@@ -1552,7 +1573,7 @@ string EnsightWriter::GetVariableSection(
     {
       filename_for_casefile = filename_nopath;
     }
-    str << GetVariableEntryForCaseFile(numdf, setnumber, key, filename_for_casefile);
+    str << GetVariableEntryForCaseFile(numdf, setnumber, key, filename_for_casefile,timesetnumber);
   }
 
   return str.str();
@@ -1565,12 +1586,11 @@ string EnsightWriter::GetVariableEntryForCaseFile(
   const int numdf,
   const unsigned int fileset,
   const string name,
-  const string filename
+  const string filename,
+  const int timeset
   ) const
 {
   stringstream str;
-
-  const int timeset = 2;
 
   // determine the type of this result variable (node-/element-based)
   map<string,string>::const_iterator entry = variableresulttypemap_.find(name);
@@ -1603,7 +1623,7 @@ string EnsightWriter::GetVariableEntryForCaseFile(
 
 /*----------------------------------------------------------------------*/
 /*!
-  \brief create string for one TIME section in the case file
+  \brief create string for one TIME set in the case file
 */
 /*----------------------------------------------------------------------*/
 string EnsightWriter::GetTimeSectionString(
@@ -1622,6 +1642,38 @@ string EnsightWriter::GetTimeSectionString(
     }
   }
   s << "\n";
+  return s.str();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief create string for the TIME section in the case file
+*/
+/*----------------------------------------------------------------------*/
+string EnsightWriter::GetTimeSectionStringFromTimesets(
+  const map<string,vector<double> >& timesetmap
+  ) const
+{
+  stringstream s;
+  map<string,vector<double> >::const_iterator timeset;
+  int counter=0;
+
+  for (timeset = timesetmap.begin(); timeset != timesetmap.end(); ++timeset)
+  {
+    string key = timeset->first;
+    map<string,int>::const_iterator entry = timesetnumbermap_.find(key);
+    if (entry == timesetnumbermap_.end())
+      dserror("key not found!");
+    const int timesetnumber = entry->second;
+    const vector<double> soltimes = timeset->second;
+    counter++;
+    if (counter==timesetnumber) // do not write redundant time sets
+    {
+      string outstring = GetTimeSectionString(timesetnumber, soltimes);
+      s<< outstring<<endl;
+    }
+  }
   return s.str();
 }
 

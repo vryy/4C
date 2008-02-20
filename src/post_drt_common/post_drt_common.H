@@ -310,12 +310,24 @@ public:
   // \returns vector with timesteps when the solution was written
   vector<double> get_result_times(const string& fieldname);
 
+  //! get result times for a given fieldname and specific result
+  //
+  // \returns vector with timesteps when the specific solution was written
+  vector<double> get_result_times(const string& fieldname, const string& groupname);
+  
   //! goes to the next result block in the slice
   //
   // Automatically opens new result files.
   //
   // \returns 1 if a new result block has been found, otherwise returns 0
   int next_result();
+  
+  //! goes to the next result block in the slice containing the specific result vector >name<
+  //
+  // Automatically opens new result files.
+  //
+  // \returns 1 if a new result block has been found, otherwise returns 0
+  int next_result(const string& name);
 
   //! reads the data of the result vector 'name' from the current result block
   //

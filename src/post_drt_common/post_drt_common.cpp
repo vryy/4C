@@ -840,6 +840,26 @@ vector<double> PostResult::get_result_times(const string& fieldname)
 }
 
 /*----------------------------------------------------------------------*
+ * get timesteps when the specific solution vector >name< is written 
+ *                                                               gjb02/08
+ *----------------------------------------------------------------------*/
+vector<double> PostResult::get_result_times(
+        const string& fieldname, 
+        const string& groupname)
+{
+    vector<double> times; // timesteps when the solution is written
+
+    if (this->next_result(groupname))
+        times.push_back(this->time());
+    else
+        dserror("no solution found in field '%s'", fieldname.c_str());
+
+    while (this->next_result(groupname))
+        times.push_back(this->time());
+    return times;
+}
+
+/*----------------------------------------------------------------------*
  * loads the next result block and opens new result files if there are
  * any. Returns 1 when a new result block has been found, otherwise
  * returns 0
@@ -891,6 +911,22 @@ int PostResult::next_result()
   return ret;
 }
 
+
+/*----------------------------------------------------------------------*
+ * loads the next result block that contains written result values  
+ * specified by a given groupname. Returns 1 when a new result block has 
+ * been found, otherwise returns 0                              gjb 02/08
+ *----------------------------------------------------------------------*/
+int PostResult::next_result(const string& groupname)
+{
+    int ret = next_result();
+    // go on, until the specified result is contained or end of time slice reached
+    while((!map_has_map(group_, groupname.c_str())) && (ret == 1))
+    {
+        ret = next_result();
+    }
+    return ret;
+}
 
 
 /*----------------------------------------------------------------------*/

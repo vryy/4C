@@ -214,8 +214,9 @@ protected:
     string GetVariableEntryForCaseFile(
             int numdf,               ///< degrees of freedom per node for this field
             unsigned int fileset,
-            string name,
-            string filename
+            const string name,
+            const string filename,
+            const int timeset
             ) const;
     /*!
      * \brief create string for the VARIABLE section
@@ -269,6 +270,11 @@ protected:
             const int timeset,            ///< number of timeset to be written
             const vector<double>& times   ///< vector with time value for each time step
             ) const;
+    
+    //! create string for TIME section in the case file
+    string GetTimeSectionStringFromTimesets(
+      const map<string,vector<double> >& timesetmap
+      ) const;
 
     //! create string for FILE section in the case file
     string GetFileSectionStringFromFilesets(
@@ -286,7 +292,7 @@ protected:
     RCP<Epetra_Map> proc0map_; ///< allreduced node row map for proc 0, empty on other procs
 
     map<string,vector<int> > filesetmap_;
-    map<string,vector<int> > timesetmap_;
+    map<string,vector<double> > timesetmap_;
 
     map<string,int>          variablenumdfmap_;
     map<string,string>       variablefilenamemap_;
