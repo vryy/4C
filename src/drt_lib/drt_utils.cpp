@@ -55,6 +55,7 @@ extern "C"
 #include "../drt_so3/so_tet10.H"
 #include "../drt_so3/so_ctet10.H"
 #include "../drt_so3/so_weg6.H"
+#include "../drt_so3/so_shw6.H"
 #include "../drt_so3/so_disp.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/stvenantkirchhoff.H"
@@ -300,6 +301,20 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       object->Unpack(data);
       return object;
     }
+    case ParObject_So_shw6:
+    {
+      DRT::ELEMENTS::So_shw6* object =
+                new DRT::ELEMENTS::So_shw6(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    case ParObject_Soshw6Register:
+    {
+      DRT::ELEMENTS::Soshw6Register* object =
+                new DRT::ELEMENTS::Soshw6Register(DRT::Element::element_so_shw6);
+      object->Unpack(data);
+      return object;
+    }
     case ParObject_SoDisp:
     {
       DRT::ELEMENTS::SoDisp* object =
@@ -465,6 +480,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     so_tet10,
     so_ctet10,
     so_weg6,
+    so_shw6,
     sodisp,
     beam2
   };
@@ -485,6 +501,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
   else if (eletype=="SOLIDTET10") type = so_tet10;
   else if (eletype=="SOLIDCTET10") type = so_ctet10;
   else if (eletype=="SOLIDW6") type = so_weg6;
+  else if (eletype=="SOLIDSHW6") type = so_shw6;
   else if (eletype=="SOLID3") type = sodisp;
   else if (eletype=="BEAM2") type = beam2;
   // continue to add elements here....
@@ -577,6 +594,12 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     case so_weg6:
     {
       RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_weg6(id,owner));
+      return ele;
+    }
+    break;
+    case so_shw6:
+    {
+      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_shw6(id,owner));
       return ele;
     }
     break;

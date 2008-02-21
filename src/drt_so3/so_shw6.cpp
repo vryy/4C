@@ -65,6 +65,7 @@ void DRT::ELEMENTS::So_shw6::Pack(vector<char>& data) const
   // add base class So_weg6 Element
   vector<char> basedata(0);
   DRT::ELEMENTS::So_weg6::Pack(basedata);
+  AddtoPack(data,basedata);
 
   return;
 }

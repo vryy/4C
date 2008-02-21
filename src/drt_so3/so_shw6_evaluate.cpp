@@ -35,6 +35,114 @@ using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
 
 /*----------------------------------------------------------------------*
+ |  evaluate the element (public)                              maf 04/07|
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
+                                    DRT::Discretization&      discretization,
+                                    vector<int>&              lm,
+                                    Epetra_SerialDenseMatrix& elemat1,
+                                    Epetra_SerialDenseMatrix& elemat2,
+                                    Epetra_SerialDenseVector& elevec1,
+                                    Epetra_SerialDenseVector& elevec2,
+                                    Epetra_SerialDenseVector& elevec3)
+{
+  // start with "none"
+  DRT::ELEMENTS::So_weg6::ActionType act = So_weg6::none;
+
+  // get the required action
+  string action = params.get<string>("action","none");
+  if (action == "none") dserror("No action supplied");
+  else if (action=="calc_struct_linstiff")      act = So_weg6::calc_struct_linstiff;
+  else if (action=="calc_struct_nlnstiff")      act = So_weg6::calc_struct_nlnstiff;
+  else if (action=="calc_struct_internalforce") act = So_weg6::calc_struct_internalforce;
+  else if (action=="calc_struct_linstiffmass")  act = So_weg6::calc_struct_linstiffmass;
+  else if (action=="calc_struct_nlnstiffmass")  act = So_weg6::calc_struct_nlnstiffmass;
+  else if (action=="calc_struct_stress")        act = So_weg6::calc_struct_stress;
+  else if (action=="calc_struct_eleload")       act = So_weg6::calc_struct_eleload;
+  else if (action=="calc_struct_fsiload")       act = So_weg6::calc_struct_fsiload;
+  else if (action=="calc_struct_update_istep")  act = So_weg6::calc_struct_update_istep;
+  else if (action=="calc_init_vol")             act = So_weg6::calc_init_vol;
+  else dserror("Unknown type of action for So_weg6");
+
+  const double time = params.get("total time",-1.0);
+
+  // what should the element do
+  switch(act) {
+    // linear stiffness
+    case calc_struct_linstiff: {
+      // need current displacement and residual forces
+      vector<double> mydisp(lm.size());
+      for (int i=0; i<(int)mydisp.size(); ++i) mydisp[i] = 0.0;
+      vector<double> myres(lm.size());
+      for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;
+      soshw6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1, time);
+    }
+    break;
+
+    // nonlinear stiffness and internal force vector
+    case calc_struct_nlnstiff: {
+      // need current displacement and residual forces
+      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      vector<double> myres(lm.size());
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      soshw6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1, time);
+    }
+    break;
+
+    // internal force vector only
+    case calc_struct_internalforce:
+      dserror("Case 'calc_struct_internalforce' not yet implemented");
+    break;
+
+    // linear stiffness and consistent mass matrix
+    case calc_struct_linstiffmass:
+      dserror("Case 'calc_struct_linstiffmass' not yet implemented");
+    break;
+
+    // nonlinear stiffness, internal force vector, and consistent mass matrix
+    case calc_struct_nlnstiffmass: {
+      // need current displacement and residual forces
+      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      vector<double> myres(lm.size());
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      soshw6_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1, time);
+    }
+    break;
+
+    // evaluate stresses
+    case calc_struct_stress: {
+      dserror("Case calc_struct_stress not yet implemented");
+    }
+    break;
+
+    case calc_struct_eleload:
+      dserror("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
+    break;
+
+    case calc_struct_fsiload:
+      dserror("Case not yet implemented");
+    break;
+
+    case calc_struct_update_istep: {
+      ;// there is nothing to do here at the moment
+    }
+    break;
+
+    default:
+      dserror("Unknown type of action for Solid3");
+  }
+  return 0;
+}
+
+/*----------------------------------------------------------------------*
  |  evaluate the element (private)                             maf 04/07|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
@@ -386,9 +494,9 @@ void DRT::ELEMENTS::So_shw6::soshw6_anssetup(
   // loop over each sampling point
   for (int sp = 0; sp < numsp; ++sp) {
     // get submatrix of deriv_sp at actual sp
-    Epetra_SerialDenseMatrix deriv_asp(NUMDIM_WEG6,numsp);
+    Epetra_SerialDenseMatrix deriv_asp(NUMDIM_WEG6,NUMNOD_WEG6);
     for (int m=0; m<NUMDIM_WEG6; ++m) {
-      for (int n=0; n<numsp; ++n) {
+      for (int n=0; n<NUMNOD_WEG6; ++n) {
         deriv_asp(m,n)=df_sp(NUMDIM_WEG6*sp+m,n);
       }
     }
