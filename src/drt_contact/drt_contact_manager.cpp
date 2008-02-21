@@ -854,10 +854,12 @@ void CONTACT::Manager::UpdateActiveSet()
   // store Lagrange multipliers zold_ if active set converged
   if (activesetconv_) zold_=rcp(new Epetra_Vector(*z_));
   
+#ifdef DEBUG
   // visualization with gmsh
   if (activesetconv_)
     for (int i=0;i<(int)interface_.size();++i)
       interface_[i]->VisualizeGmsh(interface_[i]->CSegs());
+#endif // #ifdef DEBUG
   
   return;
 }

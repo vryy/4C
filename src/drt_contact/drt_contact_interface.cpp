@@ -19,6 +19,18 @@ Maintainer: Michael Gee
 #include "drt_contact_projector.H"
 #include "drt_contact_integrator.H"
 #include "contactdefines.H"
+#include "../drt_lib/drt_globalproblem.H"
+
+/*!----------------------------------------------------------------------
+\brief file pointers
+
+<pre>                                                         m.gee 8/00
+This structure struct _FILES allfiles is defined in input_control_global.c
+and the type is in standardtypes.h
+It holds all file pointers and some variables needed for the FRSYSTEM
+</pre>
+*----------------------------------------------------------------------*/
+extern struct _FILES  allfiles;
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
@@ -1377,7 +1389,7 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs)
   
   // construct unique filename for gmsh output
   std::ostringstream filename;
-  filename << "o/gmsh_output/contact_";
+  filename << allfiles.outputfile_kenner << "_";
   if (counter_<10)
     filename << 0 << 0 << 0 << 0;
   else if (counter_<100)
