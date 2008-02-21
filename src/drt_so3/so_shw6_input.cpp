@@ -83,6 +83,10 @@ bool DRT::ELEMENTS::So_shw6::ReadElement()
    }
    else dserror("Reading of SOLIDSHW6 element failed");
   }
+  // Initialize winding flags
+  // rewinding inherited from so_weg6
+  rewind_ = false;
+  donerewinding_ = false;
 
   
   // read stress evaluation/output type

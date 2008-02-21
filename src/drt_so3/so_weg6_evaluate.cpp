@@ -465,7 +465,9 @@ int DRT::ELEMENTS::Sow6Register::Initialize(DRT::Discretization& dis)
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
     // get the actual element
-    if (dis.lColElement(i)->Type() != DRT::Element::element_so_weg6) continue;
+    // here also so_shw6 which is inherited from so_weg6 and uses same rewinding scheme
+    if ((dis.lColElement(i)->Type() != DRT::Element::element_so_weg6)
+      && (dis.lColElement(i)->Type() != DRT::Element::element_so_shw6))continue;
     DRT::ELEMENTS::So_weg6* actele = dynamic_cast<DRT::ELEMENTS::So_weg6*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_weg6* failed");
     
