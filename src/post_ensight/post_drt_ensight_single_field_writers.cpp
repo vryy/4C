@@ -115,12 +115,14 @@ void XFluidEnsightWriter::WriteFiles()
 
   // timesteps when the solution is written
   const vector<double> soltime = result.get_result_times(field_->name());
-
+  unsigned int numsoltimes = soltime.size();
 
   ///////////////////////////////////
   //  write geometry file          //
   ///////////////////////////////////
   const string geofilename = filename_ + "_"+ field_->name() + ".geo";
+  const size_t found_path = geofilename.find_last_of("/\\");
+  const string geofilename_nopath = geofilename.substr(found_path+1);
   WriteGeoFile(geofilename);
   vector<int> filesteps;
   filesteps.push_back(1);
@@ -128,60 +130,70 @@ void XFluidEnsightWriter::WriteFiles()
   vector<double> timesteps;
   timesteps.push_back(soltime[0]);
   timesetmap_["geo"] = timesteps;
-  const int geotimeset = 1;
   // at the moment, we can only print out the first step -> to be changed
-  vector<double> geotime; // timesteps when the geometry is written
-  geotime.push_back(soltime[0]);
 
 
   ///////////////////////////////////
   //  write solution fields files  //
   ///////////////////////////////////
-  const int soltimeset = 2;
   WriteAllResults(field_);
 
-  int counttime = 0;
-  for (map<string,vector<double> >::const_iterator entry = timesetmap_.begin(); entry != timesetmap_.end(); ++entry) {
-    counttime++;
-    string key = entry->first;
-    timesetnumbermap_[key] = counttime;
-  }
-  int countfile = 0;
-  for (map<string,vector<int> >::const_iterator entry = filesetmap_.begin(); entry != filesetmap_.end(); ++entry) {
-    countfile++;
-    string key = entry->first;
-    filesetnumbermap_[key] = countfile;
+  // prepare the time sets and file sets for case file creation
+  int setcounter = 0;
+  int allresulttimeset = 0;
+  for (map<string,vector<double> >::const_iterator entry = timesetmap_.begin(); entry != timesetmap_.end(); ++entry) 
+  {
+      string key = entry->first;
+      if ((entry->second).size()== numsoltimes)
+      {
+        if (allresulttimeset == 0)
+        {
+            setcounter++;
+            allresulttimeset = setcounter;
+        }
+        timesetnumbermap_[key] = allresulttimeset; // reuse the default result time set, when possible
+      }
+      else
+      {
+        setcounter++;
+        timesetnumbermap_[key] = setcounter; // a new time set number is needed
+      }
   }
 
+  setcounter = 0;
+  for (map<string,vector<int> >::const_iterator entry = filesetmap_.begin(); entry != filesetmap_.end(); ++entry) {
+      setcounter++;
+      string key = entry->first;
+      filesetnumbermap_[key] = setcounter;
+  }
 
 
   ///////////////////////////////////
   //  now write the case file      //
   ///////////////////////////////////
-    if (myrank_ == 0)
-    {
-      const string casefilename = filename_ + "_"+ field_->name() + ".case";
-      ofstream casefile;
-      casefile.open(casefilename.c_str());
-      casefile << "# created using post_drt_ensight\n"<< "FORMAT\n\n"<< "type:\tensight gold\n";
+  if (myrank_ == 0)
+  {
+    const string casefilename = filename_ + "_"+ field_->name() + ".case";
+    ofstream casefile;
+    casefile.open(casefilename.c_str());
+    casefile << "# created using post_drt_ensight\n"<< "FORMAT\n\n"<< "type:\tensight gold\n";
 
-      casefile << "\nGEOMETRY\n\n";
-      casefile << "model:\t"<<timesetnumbermap_["geo"]<<"\t"<<filesetnumbermap_["geo"]<<"\t"<< geofilename<< "\n";
+    casefile << "\nGEOMETRY\n\n";
+    casefile << "model:\t"<<timesetnumbermap_["geo"]<<"\t"<<filesetnumbermap_["geo"]<<"\t"<< geofilename_nopath<< "\n";
 
-      casefile << "\nVARIABLE\n\n";
-      casefile << GetVariableSection(filesetmap_, variablenumdfmap_, variablefilenamemap_);
+    casefile << "\nVARIABLE\n\n";
+    casefile << GetVariableSection(filesetmap_, variablenumdfmap_, variablefilenamemap_);
 
-      casefile << "\nTIME\n\n";
-      casefile << GetTimeSectionString(geotimeset, geotime);
-      casefile << GetTimeSectionString(soltimeset, soltime);
+    casefile << "\nTIME\n\n";
+    casefile << GetTimeSectionStringFromTimesets(timesetmap_);
 
-      casefile << "\nFILE\n\n";
-      casefile << GetFileSectionStringFromFilesets(filesetmap_);
+    casefile << "\nFILE\n\n";
+    casefile << GetFileSectionStringFromFilesets(filesetmap_);
 
-      casefile.close();
-    }
+    casefile.close();
+  }
 
-    return;
+        return;
 }
 
 
@@ -244,13 +256,19 @@ void XFluidEnsightWriter::WriteGeoFileOneTimeStep(
 
   Write(file, field_->name() + " geometry");
   Write(file, "Comment");
-  //Write(file,"node id given");
-  Write(file, "node id assign");
+
+  //nodeidgiven_ is set to true inside the class constructor
+  if (false)
+    Write(file,"node id given");
+  else
+    Write(file, "node id assign");
+
   Write(file, "element id off");
 
   WriteGeoFilePart(file, resultfilepos, name, ih);
 
   Write(file, "END TIME STEP");
+  return;
 }
 
 
@@ -279,54 +297,6 @@ void XFluidEnsightWriter::WriteGeoFilePart(
   // write the grid information
   WriteCoordinates(file, field_->discretization(), ih);
   WriteCells(file, field_->discretization(), ih);
-}
-
-int XFluidEnsightWriter::NumNodesPerField(
-  const RefCountPtr<XFEM::InterfaceHandle> ih ///< interfacehandle
-  ) const
-{
-  RCP<DRT::Discretization> dis = field_->discretization();
-
-  const Epetra_Map* elementmap = dis->ElementRowMap();
-  dsassert(elementmap->NumMyElements() == elementmap->NumGlobalElements(),
-           "xfem filter cannot be run in parallel");
-
-  // loop all available elements
-  int counter = 0;
-  for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
-  {
-    const int elegid = elementmap->GID(iele);
-    const XFEM::DomainIntCells domainintcells = ih->GetDomainIntCells(elegid, dis->gElement(elegid)->Shape());
-    for (XFEM::DomainIntCells::const_iterator cell = domainintcells.begin(); cell != domainintcells.end(); ++cell)
-    {
-      switch (cell->Shape())
-      {
-      case DRT::Element::hex20:
-      case DRT::Element::hex8:
-      case DRT::Element::quad4:
-      case DRT::Element::quad8:
-      case DRT::Element::tet4:
-      case DRT::Element::tet10:
-      case DRT::Element::tri3:
-      case DRT::Element::wedge6:
-      case DRT::Element::wedge15:
-      case DRT::Element::pyramid5:
-      {
-        // standard case with direct support
-        counter += cell->NumNode();
-        break;
-      }
-      case DRT::Element::hex27:
-      {
-        counter += 20;
-        break;
-      }
-      default:
-        dserror("don't know, how to write this element type as a Cell");
-      };
-    };
-  };
-  return counter;
 }
 
 
@@ -380,27 +350,7 @@ for (int isd = 0; isd < nsd; ++isd)
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-string XFluidEnsightWriter::GetEnsightString(
-  const DRT::Element::DiscretizationType distype) const
-{
-  map<DRT::Element::DiscretizationType, string>::const_iterator entry;
-  switch (distype)
-  {
-  case DRT::Element::hex27:
-    entry = distype2ensightstring_.find(DRT::Element::hex20);
-    break;
-  case DRT::Element::quad9:
-    entry = distype2ensightstring_.find(DRT::Element::quad8);
-    break;
-  default:
-    entry = distype2ensightstring_.find(distype);
-  }
-  if (entry == distype2ensightstring_.end())
-    dserror("no entry in distype2ensightstring_ found");
-  return entry->second;
-}
+
 
 /*----------------------------------------------------------------------*
   | write node connectivity for every element                  gjb 12/07 |
@@ -412,15 +362,14 @@ void XFluidEnsightWriter::WriteCells(
   ) const
 {
   const Epetra_Map* elementmap = dis->ElementRowMap();
-  dsassert(elementmap->NumMyElements() == elementmap->NumGlobalElements(),
-           "filter cannot be run in parallel");
 
   // get the number of elements for each distype
-  const NumElePerDisType numElePerDisType = GetNumElePerDisType(dis, ih);
+  const NumElePerDisType numElePerDisType_ = GetNumElePerDisType(dis, ih);
 
   // for each found distype write block of the same typed elements
   int counter = 0;
-  for (NumElePerDisType::const_iterator iter=numElePerDisType.begin(); iter != numElePerDisType.end(); ++iter)
+  NumElePerDisType::const_iterator iter;
+  for (iter=numElePerDisType_.begin(); iter != numElePerDisType_.end(); ++iter)
   {
     const DRT::Element::DiscretizationType distypeiter = iter->first;
     const int ne = iter->second;
@@ -489,6 +438,8 @@ void XFluidEnsightWriter::WriteCells(
 
 /*!
  * \brief parse all elements and get the global(!) number of elements for each distype
+ * \author gjb
+ * \date 01/08
  */
 NumElePerDisType XFluidEnsightWriter::GetNumElePerDisType(
   const RefCountPtr<DRT::Discretization> dis,
@@ -554,13 +505,16 @@ void XFluidEnsightWriter::WriteResult(
   // open file
   const string filename = filename_ + "_"+ field_->name() + "."+ name;
   ofstream file;
+  int startfilepos = 0;
   if (myrank_==0)
   {
     file.open(filename.c_str());
+    startfilepos = file.tellp(); // file position should be zero, but we stay flexible
   }
 
   map<string, vector<ofstream::pos_type> > resultfilepos;
-  const int startfilepos = file.tellp(); // file position should be zero, but we stay flexible
+  //int stepsize = 0;
+
 
   cout<<"writing node-based field "<<name<<endl;
   // store information for later case file creation
@@ -586,6 +540,12 @@ void XFluidEnsightWriter::WriteResult(
   filesetmap_[name].push_back(file.tellp()/stepsize);// has to be done BEFORE writing the index table
   variablenumdfmap_[name] = numdf;
   variablefilenamemap_[name] = filename;
+  // store solution times vector for later case file creation
+  {
+    PostResult res = PostResult(field_); // this is needed!
+    vector<double> restimes = res.get_result_times(field_->name(),groupname);
+    timesetmap_[name] = restimes;
+  }
 
   // append index table
   WriteIndexTable(file, resultfilepos[name]);
@@ -768,7 +728,75 @@ void XFluidEnsightWriter::WriteNodalResultStep(
   return;
 }
 
+int XFluidEnsightWriter::NumNodesPerField(
+  const RefCountPtr<XFEM::InterfaceHandle> ih ///< interfacehandle
+  ) const
+{
+  RCP<DRT::Discretization> dis = field_->discretization();
 
+  const Epetra_Map* elementmap = dis->ElementRowMap();
+  dsassert(elementmap->NumMyElements() == elementmap->NumGlobalElements(),
+           "xfem filter cannot be run in parallel");
+
+  // loop all available elements
+  int counter = 0;
+  for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
+  {
+    const int elegid = elementmap->GID(iele);
+    const XFEM::DomainIntCells domainintcells = ih->GetDomainIntCells(elegid, dis->gElement(elegid)->Shape());
+    for (XFEM::DomainIntCells::const_iterator cell = domainintcells.begin(); cell != domainintcells.end(); ++cell)
+    {
+      switch (cell->Shape())
+      {
+      case DRT::Element::hex20:
+      case DRT::Element::hex8:
+      case DRT::Element::quad4:
+      case DRT::Element::quad8:
+      case DRT::Element::tet4:
+      case DRT::Element::tet10:
+      case DRT::Element::tri3:
+      case DRT::Element::wedge6:
+      case DRT::Element::wedge15:
+      case DRT::Element::pyramid5:
+      {
+        // standard case with direct support
+        counter += cell->NumNode();
+        break;
+      }
+      case DRT::Element::hex27:
+      {
+        counter += 20;
+        break;
+      }
+      default:
+        dserror("don't know, how to write this element type as a Cell");
+      };
+    };
+  };
+  return counter;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+string XFluidEnsightWriter::GetEnsightString(
+  const DRT::Element::DiscretizationType distype) const
+{
+  map<DRT::Element::DiscretizationType, string>::const_iterator entry;
+  switch (distype)
+  {
+  case DRT::Element::hex27:
+    entry = distype2ensightstring_.find(DRT::Element::hex20);
+    break;
+  case DRT::Element::quad9:
+    entry = distype2ensightstring_.find(DRT::Element::quad8);
+    break;
+  default:
+    entry = distype2ensightstring_.find(distype);
+  }
+  if (entry == distype2ensightstring_.end())
+    dserror("no entry in distype2ensightstring_ found");
+  return entry->second;
+}
 
 
 #endif
