@@ -63,6 +63,10 @@ bool DRT::ELEMENTS::So_tet4::ReadElement()
   for (int i=0; i<nnode; ++i) nodes[i]--;
 
   SetNodeIds(nnode,nodes);
+ 
+  // Initialize winding flags
+  rewind_ = false;
+  donerewinding_ = false;
 
   // read number of material model
   int material = 0;

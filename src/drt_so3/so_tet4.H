@@ -347,6 +347,12 @@ protected:
   //! vector of history variables for each Gauss point
   vector<RefCountPtr<MAT::Material> >                mat_;
 
+  //! some distypes need rewinding of NodeIds due to bad input from mesher
+  //! flag to rewind this element, must be availabale for friend class fluid3register
+  bool                                            rewind_;
+  //! flag whether process of rewinding is done
+  bool                                            donerewinding_;
+
 
   // internal calculation methods
 
@@ -372,7 +378,10 @@ protected:
                     double* density,
                     const Epetra_SerialDenseVector* glstrain,
                     const Epetra_SerialDenseMatrix* defgrd,
-                    int gp);       
+                    int gp); 
+  
+  // check for rewinding due to bad mesher input by detJ
+  bool so_tet4_checkRewinding();
 
 }; // class So_tet4
 
