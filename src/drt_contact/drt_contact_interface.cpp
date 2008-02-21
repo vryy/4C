@@ -292,13 +292,6 @@ void CONTACT::Interface::Initialize()
 	
 	// reset matrix containing interface contact segments (gmsh)
 	CSegs().Shape(0,0);
-	
-	// FIXME - test for splitting of global matrices
-	// (as the active set strategy is not yet implemented, these are dummies)
-	//activenodes_=snoderowmap_;
-	//activedofs_=sdofrowmap_;
-	//SplitActiveDofs();
-	
 	  
 	return;
 }
@@ -385,10 +378,6 @@ void CONTACT::Interface::Evaluate()
 	  cnode->BuildAveragedNormal();
 	}
 	
-#ifdef DEBUG
-	comm_.Barrier();
-#endif // #ifdef DEBUG
-	
 	// contact search algorithm
 	EvaluateContactSearch();
 	
@@ -402,7 +391,7 @@ void CONTACT::Interface::Evaluate()
 		CElement* selement = static_cast<CElement*>(ele1);
 		
 		// integrate Mortar matrix D (lives on slave side only!)
-		IntegrateSlave_2D(*selement);
+		IntegrateSlave2D(*selement);
 		
 		// loop over the contact candidate master elements
 		// use slave element's candidate list SearchElements !!!
@@ -414,13 +403,13 @@ void CONTACT::Interface::Evaluate()
 			CElement* melement = static_cast<CElement*>(ele2);
 			
 			// check for element overlap and integrate the pair
-			IntegrateOverlap_2D(*selement,*melement);
+			IntegrateOverlap2D(*selement,*melement);
 		}
 	}
 	
 #ifdef DEBUG
-	// Visualize node projections with gmsh
-	//VisualizeGmsh(CSegs());
+	// Visualize every iteration with gmsh
+	// VisualizeGmsh(CSegs());
 #endif // #ifdef DEBUG
 	
   return;
@@ -456,23 +445,23 @@ bool CONTACT::Interface::EvaluateContactSearch()
 		snode->ClosestNode() = closestnode->Id();
 		
 		// proceed only if nodes are not far from each other!!!
-		if (mindist<=CONTACT_CRITDIST)
+		if (mindist<=CONTACTCRITDIST)
 		{
 			// get adjacent elements to current slave node and to closest node
 			int neles = snode->NumElement();
-			DRT::Element** adj_slave = snode->Elements();
+			DRT::Element** adjslave = snode->Elements();
 			int nelec = closestnode->NumElement();
-			DRT::Element** adj_closest = closestnode->Elements();	
+			DRT::Element** adjclosest = closestnode->Elements();	
 			
 			// get global element ids for closest node's adjacent elements
 			std::vector<int> cids(nelec);
 			for (int j=0;j<nelec;++j)
-				cids[j]=adj_closest[j]->Id();
+				cids[j]=adjclosest[j]->Id();
 			
 			// try to add these to slave node's adjacent elements' search list
 			for (int j=0;j<neles;++j)
 			{
-				CElement* selement = static_cast<CElement*> (adj_slave[j]);
+				CElement* selement = static_cast<CElement*> (adjslave[j]);
 				selement->AddSearchElements(cids);
 			}
 		}
@@ -493,23 +482,23 @@ bool CONTACT::Interface::EvaluateContactSearch()
 		mnode->ClosestNode() = closestnode->Id();
 		
 		// proceed only if nodes are not far from each other!!!
-		if (mindist<=CONTACT_CRITDIST)
+		if (mindist<=CONTACTCRITDIST)
 		{
 			// get adjacent elements to current master node and to closest node
 			int nelem = mnode->NumElement();
-			DRT::Element** adj_master = mnode->Elements();
+			DRT::Element** adjmaster = mnode->Elements();
 			int nelec = closestnode->NumElement();
-			DRT::Element** adj_closest = closestnode->Elements();	
+			DRT::Element** adjclosest = closestnode->Elements();	
 			
 			// get global element ids for master node's adjacent elements
 			std::vector<int> mids(nelem);
 			for (int j=0;j<nelem;++j)
-				mids[j]=adj_master[j]->Id();
+				mids[j]=adjmaster[j]->Id();
 			
 			// try to add these to closest node's adjacent elements' search list
 			for (int j=0;j<nelec;++j)
 			{
-				CElement* selement = static_cast<CElement*> (adj_closest[j]);
+				CElement* selement = static_cast<CElement*> (adjclosest[j]);
 				selement->AddSearchElements(mids);
 			}				
 		}
@@ -521,18 +510,18 @@ bool CONTACT::Interface::EvaluateContactSearch()
 /*----------------------------------------------------------------------*
  |  Integrate Mortar matrix D on slave element (public)       popp 01/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::Interface::IntegrateSlave_2D(CONTACT::CElement& sele)
+bool CONTACT::Interface::IntegrateSlave2D(CONTACT::CElement& sele)
 {
 	// create a 2D integrator instance of GP order 5
-	CONTACT::Integrator integrator(CONTACT_NGP,true);
+	CONTACT::Integrator integrator(CONTACTNGP,true);
 	double sxia = -1.0;
 	double sxib =  1.0;
 		
 	// do the integration
-	RCP<Epetra_SerialDenseMatrix> D_seg = integrator.Integrate_D(sele,sxia,sxib);
+	RCP<Epetra_SerialDenseMatrix> dseg = integrator.IntegrateD(sele,sxia,sxib);
 	
 	// do the assembly into the slave nodes
-	integrator.Assemble_D(*this,sele,*D_seg);
+	integrator.AssembleD(*this,sele,*dseg);
 		
 	return true;
 }
@@ -540,7 +529,7 @@ bool CONTACT::Interface::IntegrateSlave_2D(CONTACT::CElement& sele)
 /*----------------------------------------------------------------------*
  |  Determine overlap and integrate sl/ma pair (public)       popp 01/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::Interface::IntegrateOverlap_2D(CONTACT::CElement& sele,
+bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
 																			       CONTACT::CElement& mele)
 {
 	//cout << "Proc " << comm_.MyPID() << " checking pair... Slave ID: "
@@ -553,18 +542,18 @@ bool CONTACT::Interface::IntegrateOverlap_2D(CONTACT::CElement& sele,
 	/************************************************************/
 	
 	// create local booleans for projections of end nodes
-	bool s0_hasproj = false;
-	bool s1_hasproj = false;
-	bool m0_hasproj = false;
-	bool m1_hasproj = false;
+	bool s0hasproj = false;
+	bool s1hasproj = false;
+	bool m0hasproj = false;
+	bool m1hasproj = false;
 	
 	// get slave and master element nodes
 	DRT::Node** mysnodes = sele.Nodes();
 	if (!mysnodes)
-		dserror("ERROR: EvaluateOverlap_2D: Null pointer for mysnodes!");
+		dserror("ERROR: IntegrateOverlap2D: Null pointer for mysnodes!");
 	DRT::Node** mymnodes = mele.Nodes();
 	if (!mymnodes)
-			dserror("ERROR: EvaluateOverlap_2D: Null pointer for mymnodes!");
+			dserror("ERROR: IntegrateOverlap2D: Null pointer for mymnodes!");
 	
 	// create a 2-dimensional projector instance
 	CONTACT::Projector projector(true);
@@ -575,17 +564,17 @@ bool CONTACT::Interface::IntegrateOverlap_2D(CONTACT::CElement& sele,
 	{
 		CONTACT::CNode* snode = static_cast<CONTACT::CNode*>(mysnodes[i]);
 		double xi[2] = {0.0, 0.0};
-		projector.Project_NodalNormal(*snode,mele,xi);
+		projector.ProjectNodalNormal(*snode,mele,xi);
 		sprojxi[i]=xi[0];
 		
 		// save projection if it is feasible
 		// we need an expanded feasible domain in order to check pathological
 		// cases due to round-off error and iteration tolerances later!
-		if ((-1.0-CONTACT_PROJTOL<=sprojxi[i]) && (sprojxi[i]<=1.0+CONTACT_PROJTOL))
+		if ((-1.0-CONTACTPROJTOL<=sprojxi[i]) && (sprojxi[i]<=1.0+CONTACTPROJTOL))
 		{
 			// for element overlap only the outer nodes are of interest
-			if (i==0) s0_hasproj=true;
-			if (i==1) s1_hasproj=true;
+			if (i==0) s0hasproj=true;
+			if (i==1) s1hasproj=true;
 			// nevertheless we need the inner node projection status later (weighted gap)
 			snode->HasProj()=true;
 		}		
@@ -597,16 +586,16 @@ bool CONTACT::Interface::IntegrateOverlap_2D(CONTACT::CElement& sele,
 	{
 		CONTACT::CNode* mnode = static_cast<CONTACT::CNode*>(mymnodes[i]);
 		double xi[2] = {0.0, 0.0};
-		projector.Project_ElementNormal(*mnode,sele,xi);
+		projector.ProjectElementNormal(*mnode,sele,xi);
 		mprojxi[i]=xi[0];
 		
 		// save projection if it is feasible
 		// we need an expanded feasible domain in order to check pathological
 		// cases due to round-off error and iteration tolerances later!!!
-		if ((-1.0-CONTACT_PROJTOL<=mprojxi[i]) && (mprojxi[i]<=1.0+CONTACT_PROJTOL))
+		if ((-1.0-CONTACTPROJTOL<=mprojxi[i]) && (mprojxi[i]<=1.0+CONTACTPROJTOL))
 		{
-			if (i==0) m0_hasproj=true;
-		  if (i==1) m1_hasproj=true;
+			if (i==0) m0hasproj=true;
+		  if (i==1) m1hasproj=true;
 		}		
 	}
 	
@@ -619,7 +608,7 @@ bool CONTACT::Interface::IntegrateOverlap_2D(CONTACT::CElement& sele,
 	// For the non-overlapping cases, the possibility of an identical local
 	// node numbering direction for both sides is taken into account!!
 	// (this can happen, when elements far from each other are projected,
-	// which actually should be impossible due to the CONTACT_CRITDIST
+	// which actually should be impossible due to the CONTACTCRITDIST
 	// condition in the potential contact pair search above!
 	// But you never know...)
 	
@@ -627,7 +616,7 @@ bool CONTACT::Interface::IntegrateOverlap_2D(CONTACT::CElement& sele,
 	// node numbering directions are opposite!!
 	// (this is the case, when the elements are sufficiently near each other,
 	// which is ensured by only processing nodes that fulfill the 
-	// CONTACT_CRITDIST condition above!)
+	// CONTACTCRITDIST condition above!)
 	
 	bool overlap = false;
 	double sxia = 0.0;
@@ -638,7 +627,7 @@ bool CONTACT::Interface::IntegrateOverlap_2D(CONTACT::CElement& sele,
 	/* CASE 1 (NO OVERLAP):
 	   no feasible projection found for any of the 4 outer element nodes  */
 	
-	if (!s0_hasproj && !s1_hasproj && !m0_hasproj && !m1_hasproj)
+	if (!s0hasproj && !s1hasproj && !m0hasproj && !m1hasproj)
 	{
 		//do nothing
 	}
@@ -647,51 +636,51 @@ bool CONTACT::Interface::IntegrateOverlap_2D(CONTACT::CElement& sele,
 	   feasible projection found only for 1 of the 4 outer element nodes
 	   (this can happen due to the necessary projection tolerance!!!)     */
 		
-	else if  (s0_hasproj && !s1_hasproj && !m0_hasproj && !m1_hasproj)
+	else if  (s0hasproj && !s1hasproj && !m0hasproj && !m1hasproj)
 	{
-		if ((-1.0+CONTACT_PROJTOL<=sprojxi[0]) && (sprojxi[0]<=1.0-CONTACT_PROJTOL))
+		if ((-1.0+CONTACTPROJTOL<=sprojxi[0]) && (sprojxi[0]<=1.0-CONTACTPROJTOL))
 		{
 			cout << "SElement Node IDs: " << mysnodes[0]->Id() << " " << mysnodes[1]->Id() << endl;
 			cout << "MElement Node IDs: " << mymnodes[0]->Id() << " " << mymnodes[1]->Id() << endl;
 			cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << endl;
 			cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << endl;
-			dserror("ERROR: EvaluateOverlap_2D: Significant overlap ignored S%i M%i!", sele.Id(), mele.Id());
+			dserror("ERROR: IntegrateOverlap2D: Significant overlap ignored S%i M%i!", sele.Id(), mele.Id());
 		}
 	}
 	
-	else if  (!s0_hasproj && s1_hasproj && !m0_hasproj && !m1_hasproj)
+	else if  (!s0hasproj && s1hasproj && !m0hasproj && !m1hasproj)
 	{
-		if ((-1.0+CONTACT_PROJTOL<=sprojxi[1]) && (sprojxi[1]<=1.0-CONTACT_PROJTOL))
+		if ((-1.0+CONTACTPROJTOL<=sprojxi[1]) && (sprojxi[1]<=1.0-CONTACTPROJTOL))
 		{
 			cout << "SElement Node IDs: " << mysnodes[0]->Id() << " " << mysnodes[1]->Id() << endl;
 			cout << "MElement Node IDs: " << mymnodes[0]->Id() << " " << mymnodes[1]->Id() << endl;
 			cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << endl;
 			cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << endl;
-			dserror("ERROR: EvaluateOverlap_2D: Significant overlap ignored S%i M%i!", sele.Id(), mele.Id());
+			dserror("ERROR: IntegrateOverlap2D: Significant overlap ignored S%i M%i!", sele.Id(), mele.Id());
 		}
 	}
 	
-  else if  (!s0_hasproj && !s1_hasproj && m0_hasproj && !m1_hasproj)
+  else if  (!s0hasproj && !s1hasproj && m0hasproj && !m1hasproj)
 	{
-  	if ((-1.0+CONTACT_PROJTOL<=mprojxi[0]) && (mprojxi[0]<=1.0-CONTACT_PROJTOL))
+  	if ((-1.0+CONTACTPROJTOL<=mprojxi[0]) && (mprojxi[0]<=1.0-CONTACTPROJTOL))
   	{
   		cout << "SElement Node IDs: " << mysnodes[0]->Id() << " " << mysnodes[1]->Id() << endl;
   	  cout << "MElement Node IDs: " << mymnodes[0]->Id() << " " << mymnodes[1]->Id() << endl;
   		cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << endl;
   		cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << endl;
-  		dserror("ERROR: EvaluateOverlap_2D: Significant overlap ignored S%i M%i!", sele.Id(), mele.Id());
+  		dserror("ERROR: IntegrateOverlap2D: Significant overlap ignored S%i M%i!", sele.Id(), mele.Id());
   	}
 	}
 	
-	else if  (!s0_hasproj && !s1_hasproj && !m0_hasproj && m1_hasproj)
+	else if  (!s0hasproj && !s1hasproj && !m0hasproj && m1hasproj)
 	{
-		if ((-1.0+CONTACT_PROJTOL<=mprojxi[1]) && (mprojxi[1]<=1.0-CONTACT_PROJTOL))
+		if ((-1.0+CONTACTPROJTOL<=mprojxi[1]) && (mprojxi[1]<=1.0-CONTACTPROJTOL))
 		{
 			cout << "SElement Node IDs: " << mysnodes[0]->Id() << " " << mysnodes[1]->Id() << endl;
 			cout << "MElement Node IDs: " << mymnodes[0]->Id() << " " << mymnodes[1]->Id() << endl;
 			cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << endl;
 			cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << endl;
-			dserror("ERROR: EvaluateOverlap_2D: Significant overlap ignored S%i M%i!", sele.Id(), mele.Id());
+			dserror("ERROR: IntegrateOverlap2D: Significant overlap ignored S%i M%i!", sele.Id(), mele.Id());
 		}
 	}
 	
@@ -699,10 +688,10 @@ bool CONTACT::Interface::IntegrateOverlap_2D(CONTACT::CElement& sele,
 		 feasible projection found for all 4 outer element nodes
 		 (this can happen due to the necessary projection tolerance!!!)     */
 	
-	else if (s0_hasproj && s1_hasproj && m0_hasproj && m1_hasproj)
+	else if (s0hasproj && s1hasproj && m0hasproj && m1hasproj)
 	{
 		overlap = true;
-		cout << "***WARNING***" << endl << "CONTACT::Interface::EvaluateOverlap_2D "<< endl
+		cout << "***WARNING***" << endl << "CONTACT::Interface::IntegrateOverlap2D "<< endl
 				 << "has detected '4 feasible projections'-case for Slave/Master pair "
 				 << sele.Id() << "/" << mele.Id() << endl;
 		
@@ -748,14 +737,14 @@ bool CONTACT::Interface::IntegrateOverlap_2D(CONTACT::CElement& sele,
 		
 		// unknown internal case for global CASE 6
 		else
-			dserror("ERROR: EvaluateOverlap_2D: Unknown overlap case found in global case 6!");	
+			dserror("ERROR: IntegrateOverlap2D: Unknown overlap case found in global case 6!");	
 	}
 	
 	/* CASES 7-8 (OVERLAP):
 		 feasible projections found for both nodes of one element, this 
 	 	 means one of the two elements is projecting fully onto the other!  */
 	
-	else if (s0_hasproj && s1_hasproj && !m0_hasproj && !m1_hasproj)
+	else if (s0hasproj && s1hasproj && !m0hasproj && !m1hasproj)
 	{
 		overlap = true;
 		sxia = -1.0;
@@ -764,7 +753,7 @@ bool CONTACT::Interface::IntegrateOverlap_2D(CONTACT::CElement& sele,
 		mxib = sprojxi[0];
 	}
 	
-	else if (!s0_hasproj && !s1_hasproj && m0_hasproj && m1_hasproj)
+	else if (!s0hasproj && !s1hasproj && m0hasproj && m1hasproj)
 	{
 		overlap = true;
 		mxia = -1.0;
@@ -777,7 +766,7 @@ bool CONTACT::Interface::IntegrateOverlap_2D(CONTACT::CElement& sele,
 		 feasible projections found for one node of each element, due to
 		 node numbering only identical local node ID pairs possible!        */
 	
-	else if (s0_hasproj && !s1_hasproj && m0_hasproj && !m1_hasproj)
+	else if (s0hasproj && !s1hasproj && m0hasproj && !m1hasproj)
 	{
 		// do the two elements really have an overlap?
 		if ((sprojxi[0]>-1.0) && (mprojxi[0]>-1.0))
@@ -790,7 +779,7 @@ bool CONTACT::Interface::IntegrateOverlap_2D(CONTACT::CElement& sele,
 		}
 	}
 	
-	else if (!s0_hasproj && s1_hasproj && !m0_hasproj && m1_hasproj)
+	else if (!s0hasproj && s1hasproj && !m0hasproj && m1hasproj)
 	{
 		// do the two elements really have an overlap?
 		if ((sprojxi[1]<1.0) && (mprojxi[1]<1.0))
@@ -806,7 +795,7 @@ bool CONTACT::Interface::IntegrateOverlap_2D(CONTACT::CElement& sele,
 	/* CASES 11-14 (OVERLAP):
 		 feasible projections found for 3 out of the total 4 nodes,
 		 this can either lead to cases 7/8 or 9/10!                         */
-	else if (s0_hasproj && s1_hasproj && m0_hasproj && !m1_hasproj)
+	else if (s0hasproj && s1hasproj && m0hasproj && !m1hasproj)
 	{
 		overlap = true;
 		// equivalent to global case 7
@@ -827,7 +816,7 @@ bool CONTACT::Interface::IntegrateOverlap_2D(CONTACT::CElement& sele,
 		}
 	}
 	
-	else if (s0_hasproj && s1_hasproj && !m0_hasproj && m1_hasproj)
+	else if (s0hasproj && s1hasproj && !m0hasproj && m1hasproj)
 	{
 		overlap = true;
 		// equivalent to global case 7
@@ -848,7 +837,7 @@ bool CONTACT::Interface::IntegrateOverlap_2D(CONTACT::CElement& sele,
 		}
 	}
 	
-	else if (s0_hasproj && !s1_hasproj && m0_hasproj && m1_hasproj)
+	else if (s0hasproj && !s1hasproj && m0hasproj && m1hasproj)
 	{
 		overlap = true;
 		// equivalent to global case 8
@@ -869,7 +858,7 @@ bool CONTACT::Interface::IntegrateOverlap_2D(CONTACT::CElement& sele,
 		}
 	}
 	
-	else if (!s0_hasproj && s1_hasproj && m0_hasproj && m1_hasproj)
+	else if (!s0hasproj && s1hasproj && m0hasproj && m1hasproj)
 	{
 		overlap = true;
 		// equivalent to global case 8
@@ -893,11 +882,11 @@ bool CONTACT::Interface::IntegrateOverlap_2D(CONTACT::CElement& sele,
 	/* CASE DEFAULT: unknown overlap case													        */
 	else
 	{
-		dserror("ERROR: EvaluateOverlap_2D: Unknown overlap case found!");
+		dserror("ERROR: IntegrateOverlap2D: Unknown overlap case found!");
 	}
 	
 	if ((sxia<-1.0) || (sxib>1.0) || (mxia<-1.0) || (mxib>1.0))
-		dserror("ERROR: EvaluateOverlap_2D: Determined infeasible limits!");
+		dserror("ERROR: IntegrateOverlap2D: Determined infeasible limits!");
 
 #ifdef DEBUG
 	if (overlap)
@@ -907,35 +896,35 @@ bool CONTACT::Interface::IntegrateOverlap_2D(CONTACT::CElement& sele,
 		//cout << "mxia: " << mxia << " mxib: " << mxib << endl;
 		
 		// prepare gmsh visualization
-		double sxia_loc[2] = {sxia, 0.0};
-		double sxib_loc[2] = {sxib, 0.0};
-		double mxia_loc[2] = {mxia, 0.0};
-		double mxib_loc[2] = {mxib, 0.0};
+		double sxialoc[2] = {sxia, 0.0};
+		double sxibloc[2] = {sxib, 0.0};
+		double mxialoc[2] = {mxia, 0.0};
+		double mxibloc[2] = {mxib, 0.0};
 	
-		double sxia_glob[3] = {0.0, 0.0, 0.0};
-		double sxib_glob[3] = {0.0, 0.0, 0.0};
-		double mxia_glob[3] = {0.0, 0.0, 0.0};
-		double mxib_glob[3] = {0.0, 0.0, 0.0};
+		double sxiaglob[3] = {0.0, 0.0, 0.0};
+		double sxibglob[3] = {0.0, 0.0, 0.0};
+		double mxiaglob[3] = {0.0, 0.0, 0.0};
+		double mxibglob[3] = {0.0, 0.0, 0.0};
 	
-		sele.LocalToGlobal(sxia_loc,sxia_glob,true);
-		sele.LocalToGlobal(sxib_loc,sxib_glob,true);
-		mele.LocalToGlobal(mxia_loc,mxia_glob,true);
-		mele.LocalToGlobal(mxib_loc,mxib_glob,true);
+		sele.LocalToGlobal(sxialoc,sxiaglob,true);
+		sele.LocalToGlobal(sxibloc,sxibglob,true);
+		mele.LocalToGlobal(mxialoc,mxiaglob,true);
+		mele.LocalToGlobal(mxibloc,mxibglob,true);
 	
 		Epetra_SerialDenseMatrix& segs = CSegs();
 		segs.Reshape(segs.M()+1,12);
-		segs(segs.M()-1,0)  = sxia_glob[0];
-		segs(segs.M()-1,1)  = sxia_glob[1];
-		segs(segs.M()-1,2)  = sxia_glob[2];
-		segs(segs.M()-1,3)  = mxib_glob[0];
-		segs(segs.M()-1,4)  = mxib_glob[1];
-		segs(segs.M()-1,5)  = mxib_glob[2];
-		segs(segs.M()-1,6)  = mxia_glob[0];
-		segs(segs.M()-1,7)  = mxia_glob[1];
-		segs(segs.M()-1,8)  = mxia_glob[2];
-		segs(segs.M()-1,9)  = sxib_glob[0];
-		segs(segs.M()-1,10) = sxib_glob[1];
-		segs(segs.M()-1,11) = sxib_glob[2];
+		segs(segs.M()-1,0)  = sxiaglob[0];
+		segs(segs.M()-1,1)  = sxiaglob[1];
+		segs(segs.M()-1,2)  = sxiaglob[2];
+		segs(segs.M()-1,3)  = mxibglob[0];
+		segs(segs.M()-1,4)  = mxibglob[1];
+		segs(segs.M()-1,5)  = mxibglob[2];
+		segs(segs.M()-1,6)  = mxiaglob[0];
+		segs(segs.M()-1,7)  = mxiaglob[1];
+		segs(segs.M()-1,8)  = mxiaglob[2];
+		segs(segs.M()-1,9)  = sxibglob[0];
+		segs(segs.M()-1,10) = sxibglob[1];
+		segs(segs.M()-1,11) = sxibglob[2];
 	}
 	else
 	{
@@ -955,17 +944,17 @@ bool CONTACT::Interface::IntegrateOverlap_2D(CONTACT::CElement& sele,
 		return true;
 	
 	// create a 2D integrator instance of GP order 5
-	CONTACT::Integrator integrator(CONTACT_NGP,true);
+	CONTACT::Integrator integrator(CONTACTNGP,true);
 	
 	// do the two integrations
-	//RCP<Epetra_SerialDenseMatrix> D_seg = integrator.Integrate_D(sele,sxia,sxib);
-	RCP<Epetra_SerialDenseMatrix> M_seg = integrator.Integrate_M(sele,sxia,sxib,mele,mxia,mxib);
-	RCP<Epetra_SerialDenseVector> g_seg = integrator.Integrate_g(sele,sxia,sxib,mele,mxia,mxib);
+	//RCP<Epetra_SerialDenseMatrix> dseg = integrator.IntegrateD(sele,sxia,sxib);
+	RCP<Epetra_SerialDenseMatrix> mseg = integrator.IntegrateM(sele,sxia,sxib,mele,mxia,mxib);
+	RCP<Epetra_SerialDenseVector> gseg = integrator.IntegrateG(sele,sxia,sxib,mele,mxia,mxib);
 	
 	// do the two assemblies into the slave nodes
-	//integrator.Assemble_D(*this,sele,*D_seg);
-	integrator.Assemble_M(*this,sele,mele,*M_seg);
-	integrator.Assemble_g(*this,sele,*g_seg);
+	//integrator.AssembleD(*this,sele,*dseg);
+	integrator.AssembleM(*this,sele,mele,*mseg);
+	integrator.AssembleG(*this,sele,*gseg);
 		
 	// check for the modification of the M matrix for curved interfaces
 	// (based on the paper by M. Puso / B. Wohlmuth, IJNME, 2005)
@@ -995,8 +984,8 @@ bool CONTACT::Interface::IntegrateOverlap_2D(CONTACT::CElement& sele,
 	// integrate and assemble the modification, if necessary
 	if (modification)
 	{
-		RCP<Epetra_SerialDenseMatrix> Mmod_seg = integrator.Integrate_Mmod(sele,sxia,sxib,mele,mxia,mxib);
-		integrator.Assemble_Mmod(*this,sele,mele,*Mmod_seg);
+		RCP<Epetra_SerialDenseMatrix> mmodseg = integrator.IntegrateMmod(sele,sxia,sxib,mele,mxia,mxib);
+		integrator.AssembleMmod(*this,sele,mele,*mmodseg);
 	}
 	
 	return true;
@@ -1005,8 +994,8 @@ bool CONTACT::Interface::IntegrateOverlap_2D(CONTACT::CElement& sele,
 /*----------------------------------------------------------------------*
  |  Assemble Mortar matrices and weighted gap                 popp 01/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& Dglobal,
-																			LINALG::SparseMatrix& Mglobal,
+void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& dglobal,
+																			LINALG::SparseMatrix& mglobal,
 																	    Epetra_Vector& gglobal)
 {
 	// loop over proc's slave nodes of the interface for assembly
@@ -1028,12 +1017,12 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& Dglobal,
 		/**************************************************** D-matrix ******/
 		if ((cnode->GetD()).size()>0)
 		{
-			vector<map<int,double> > Dmap = cnode->GetD();
+			vector<map<int,double> > dmap = cnode->GetD();
 			int rowsize = cnode->NumDof();
-			int colsize = (int)Dmap[0].size();
+			int colsize = (int)dmap[0].size();
 			
 			for (int j=0;j<rowsize-1;++j)
-				if ((int)Dmap[j].size() != (int)Dmap[j+1].size())
+				if ((int)dmap[j].size() != (int)dmap[j+1].size())
 					dserror("ERROR: AssembleDMG: Column dim. of nodal D-map is inconsistent!");
 			
 			Epetra_SerialDenseMatrix Dnode(rowsize,colsize);
@@ -1049,7 +1038,7 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& Dglobal,
 				lmrow[j] = row;
 				lmrowowner[j] = cnode->Owner();
 				
-				for (colcurr=Dmap[j].begin();colcurr!=Dmap[j].end();++colcurr)
+				for (colcurr=dmap[j].begin();colcurr!=dmap[j].end();++colcurr)
 				{
 					int col = colcurr->first;
 					double val = colcurr->second;
@@ -1066,18 +1055,18 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& Dglobal,
 					dserror("ERROR: AssembleDMG: k = %i but colsize = %i",k,colsize);
 			}
 		
-			Dglobal.Assemble(Dnode,lmrow,lmrowowner,lmcol);
+			dglobal.Assemble(Dnode,lmrow,lmrowowner,lmcol);
 		}
 		
 		/**************************************************** M-matrix ******/
 		if ((cnode->GetM()).size()>0)
 		{
-			vector<map<int,double> > Mmap = cnode->GetM();
+			vector<map<int,double> > mmap = cnode->GetM();
 			int rowsize = cnode->NumDof();
-			int colsize = (int)Mmap[0].size();
+			int colsize = (int)mmap[0].size();
 			
 			for (int j=0;j<rowsize-1;++j)
-				if ((int)Mmap[j].size() != (int)Mmap[j+1].size())
+				if ((int)mmap[j].size() != (int)mmap[j+1].size())
 					dserror("ERROR: AssembleDMG: Column dim. of nodal M-map is inconsistent!");
 				
 			Epetra_SerialDenseMatrix Mnode(rowsize,colsize);
@@ -1093,7 +1082,7 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& Dglobal,
 				lmrow[j] = row;
 				lmrowowner[j] = cnode->Owner();
 				
-				for (colcurr=Mmap[j].begin();colcurr!=Mmap[j].end();++colcurr)
+				for (colcurr=mmap[j].begin();colcurr!=mmap[j].end();++colcurr)
 				{
 					int col = colcurr->first;
 					double val = colcurr->second;
@@ -1107,18 +1096,18 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& Dglobal,
 					dserror("ERROR: AssembleDMG: k = %i but colsize = %i",k,colsize);
 			}
 			
-			Mglobal.Assemble(Mnode,lmrow,lmrowowner,lmcol);
+			mglobal.Assemble(Mnode,lmrow,lmrowowner,lmcol);
 		}
 		
 		/************************************************* Mmod-matrix ******/
 		if ((cnode->GetMmod()).size()>0)
 		{
-			vector<map<int,double> > Mmap = cnode->GetMmod();
+			vector<map<int,double> > mmap = cnode->GetMmod();
 			int rowsize = cnode->NumDof();
-			int colsize = (int)Mmap[0].size();
+			int colsize = (int)mmap[0].size();
 			
 			for (int j=0;j<rowsize-1;++j)
-				if ((int)Mmap[j].size() != (int)Mmap[j+1].size())
+				if ((int)mmap[j].size() != (int)mmap[j+1].size())
 					dserror("ERROR: AssembleDMG: Column dim. of nodal Mmod-map is inconsistent!");
 				
 			Epetra_SerialDenseMatrix Mnode(rowsize,colsize);
@@ -1134,7 +1123,7 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& Dglobal,
 				lmrow[j] = row;
 				lmrowowner[j] = cnode->Owner();
 				
-				for (colcurr=Mmap[j].begin();colcurr!=Mmap[j].end();++colcurr)
+				for (colcurr=mmap[j].begin();colcurr!=mmap[j].end();++colcurr)
 				{
 					int col = colcurr->first;
 					double val = colcurr->second;
@@ -1148,7 +1137,7 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& Dglobal,
 					dserror("ERROR: AssembleDMG: k = %i but colsize = %i",k,colsize);
 			}
 			
-			Mglobal.Assemble(Mnode,lmrow,lmrowowner,lmcol);
+			mglobal.Assemble(Mnode,lmrow,lmrowowner,lmcol);
 		}
 		
 		/**************************************************** g-vector ******/
@@ -1180,8 +1169,8 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& Dglobal,
 /*----------------------------------------------------------------------*
  |  Assemble matrices with nodal normals / tangents           popp 01/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::AssembleNT(LINALG::SparseMatrix& Nglobal,
-																		 LINALG::SparseMatrix& Tglobal)
+void CONTACT::Interface::AssembleNT(LINALG::SparseMatrix& nglobal,
+																		 LINALG::SparseMatrix& tglobal)
 {
 	// nothing to do if no active nodes
 	if (activenodes_==null)
@@ -1227,7 +1216,7 @@ void CONTACT::Interface::AssembleNT(LINALG::SparseMatrix& Nglobal,
 		}
 		
 		// assemble into matrix of normal vectors N
-		Nglobal.Assemble(Nnode,lmrowN,lmrowownerN,lmcol);
+		nglobal.Assemble(Nnode,lmrowN,lmrowownerN,lmcol);
 		
 		/**************************************************** T-matrix ******/
 		Epetra_SerialDenseMatrix Tnode(1,colsize);
@@ -1245,7 +1234,7 @@ void CONTACT::Interface::AssembleNT(LINALG::SparseMatrix& Nglobal,
 		}
 		
 		// assemble into matrix of normal vectors T
-		Tglobal.Assemble(Tnode,lmrowT,lmrowownerT,lmcol);
+		tglobal.Assemble(Tnode,lmrowT,lmrowownerT,lmcol);
 	}
 
 	return;

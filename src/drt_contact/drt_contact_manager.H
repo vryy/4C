@@ -108,7 +108,7 @@ public:
   \brief Evaluate contact
     
   */
-  void Evaluate(RCP<LINALG::SparseMatrix>& Kteff, RCP<Epetra_Vector>& feff);
+  void Evaluate(RCP<LINALG::SparseMatrix>& kteff, RCP<Epetra_Vector>& feff);
   
   /*!
   \brief Transform displacement increment vector

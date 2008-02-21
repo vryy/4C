@@ -172,7 +172,7 @@ public:
   brief Add a value to the 'D' map of this node
   
   The 'D' map is later assembled to the D matrix.
-  Note that Drows_ here is a vector.
+  Note that drows_ here is a vector.
     
   \param row : local dof row id to add to (rowwise)
   \param val : value to be added
@@ -184,7 +184,7 @@ public:
   brief Add a value to the 'M' map of this node
     
   The 'M' map is later assembled to the M matrix.
-  Note that Mrows_ here is a vector.
+  Note that mrows_ here is a vector.
       
   \param row : local dof row id to add to (rowwise)
   \param val : value to be added
@@ -196,7 +196,7 @@ public:
   brief Add a value to the 'Mmod' map of this node
      
   The 'Mmod' map is later assembled to the M matrix.
-  Note that Mmodrows_ here is a vector.
+  Note that mmodrows_ here is a vector.
        
   \param row : local dof row id to add to (rowwise)
   \param val : value to be added
@@ -217,17 +217,17 @@ public:
   /*!
   \brief Return the 'D' map (vector) of this node
   */
-  virtual inline vector<map<int,double> >& GetD() { return Drows_; }
+  virtual inline vector<map<int,double> >& GetD() { return drows_; }
   
   /*!
   \brief Return the 'M' map (vector) of this node
   */
-  virtual inline vector<map<int,double> >& GetM() { return Mrows_; }
+  virtual inline vector<map<int,double> >& GetM() { return mrows_; }
     
   /*!
   \brief Return the 'Mmod' map (vector) of this node
   */
-  virtual inline vector<map<int,double> >& GetMmod() { return Mmodrows_; }
+  virtual inline vector<map<int,double> >& GetMmod() { return mmodrows_; }
   
   /*!
   \brief Return the weighted gap (scalar) of this node
@@ -271,9 +271,9 @@ protected:
   bool						hasproj_;				 // true if feasible projection within search set (slave nodes only)
   bool					  active_;				 // true if cnode is in contact (active set strategy)
   
-  vector<map<int,double> >     Drows_;   		  // nodal rows of D matrix
-  vector<map<int,double> > 		 Mrows_;   			// nodal rows of M matrix
-  vector<map<int,double> >		 Mmodrows_;   	// nodal rows of Mmod matrix
+  vector<map<int,double> >     drows_;   		  // nodal rows of D matrix
+  vector<map<int,double> > 		 mrows_;   			// nodal rows of M matrix
+  vector<map<int,double> >		 mmodrows_;   	// nodal rows of Mmod matrix
   double											 grow_;				  // nodal entry of g vector
   
 

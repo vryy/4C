@@ -94,7 +94,7 @@ public:
   \param ele (in) : Master Celement to project on
   \param xi (out) : Local coordinates of projection on CElement 
   */
-  bool Project_NodalNormal(CONTACT::CNode& node,
+  bool ProjectNodalNormal(CONTACT::CNode& node,
   												 CONTACT::CElement& ele,
   												 double xi[]);
   
@@ -115,7 +115,7 @@ public:
   \param ele (in) : Slave Celement to project on
   \param xi (out) : Local coordinates of projection on Celement
   */
-  bool Project_ElementNormal(CONTACT::CNode& node,
+  bool ProjectElementNormal(CONTACT::CNode& node,
   													 CONTACT::CElement& ele,
   													 double xi[]);
  
@@ -132,7 +132,7 @@ public:
    \param ele (in)  : Master Celement to project on
    \param xi (out)  : Local coordinates of projection on CElement 
    */
-   bool Project_GaussPoint(CONTACT::CElement& gpele,
+   bool ProjectGaussPoint(CONTACT::CElement& gpele,
   		 										 const double* gpeta,
     											 CONTACT::CElement& ele,
     											 double xi[]);
@@ -141,17 +141,17 @@ public:
   \brief Evaluate F for nodal normal projection
 
   */
-  double Evaluate_F_NodalNormal(CONTACT::CNode& node,
+  double EvaluateFNodalNormal(CONTACT::CNode& node,
   															CONTACT::CElement& ele,
   															const double* eta,
   															bool& outward,
   															double& gap);  
   
   /*!
-  \brief Evaluate gradF for nodal normal projection
+  \brief Evaluate GradF for nodal normal projection
 
   */
-  double Evaluate_gradF_NodalNormal(CONTACT::CNode& node,
+  double EvaluateGradFNodalNormal(CONTACT::CNode& node,
   																	CONTACT::CElement& ele,
   																	const double* eta);
 
@@ -159,17 +159,17 @@ public:
   \brief Evaluate F for element normal projection
 
   */
-  double Evaluate_F_ElementNormal(CONTACT::CNode& node,
+  double EvaluateFElementNormal(CONTACT::CNode& node,
   																CONTACT::CElement& ele,
   																const double* eta,
   																bool& outward,
   																double& gap);  
   
   /*!
-  \brief Evaluate gradF for element normal projection
+  \brief Evaluate GradF for element normal projection
 
   */
-  double Evaluate_gradF_ElementNormal(CONTACT::CNode& node,
+  double EvaluateGradFElementNormal(CONTACT::CNode& node,
   																		CONTACT::CElement& ele,
   																		const double* eta);
   
@@ -177,7 +177,7 @@ public:
   \brief Evaluate F for Gauss point projection
 
   */
-  double Evaluate_F_GaussPoint(const double* gpx,
+  double EvaluateFGaussPoint(const double* gpx,
   														 const double* gpn,
    														 CONTACT::CElement& ele,
    														 const double* eta,
@@ -185,10 +185,10 @@ public:
    														 double& gap);  
     
   /*!
-  \brief Evaluate gradF for Gauss point projection
+  \brief Evaluate GradF for Gauss point projection
 
   */
-  double Evaluate_gradF_GaussPoint(const double* gpn,
+  double EvaluateGradFGaussPoint(const double* gpn,
 			 														 CONTACT::CElement& ele,
 			 														 const double* eta);  
   

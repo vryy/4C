@@ -62,7 +62,7 @@ public:
   
   \param twoD (in): true if problem is 2D, false if 3D
 	*/
-	explicit Integrator(int ngp, bool oneD);
+	explicit Integrator(int ngp, bool oned);
 
 	/*!
 	\brief Destructor
@@ -78,7 +78,7 @@ public:
 	\brief Return whether this instance was created for 1D or 2D integrations
 	
 	*/
-	inline bool IsOneDimensional() {return oneD_;}
+	inline bool IsOneDimensional() {return oned_;}
 	
 	/*!
 	\brief Return number of Gauss points for this instance
@@ -106,14 +106,14 @@ public:
 	\brief Integrate Mortar matrix D on a 1D slave element overlap
 		
 	*/
-	RCP<Epetra_SerialDenseMatrix> Integrate_D(CONTACT::CElement& sele,
+	RCP<Epetra_SerialDenseMatrix> IntegrateD(CONTACT::CElement& sele,
 																					 double sxia, double sxib);
 	
 	/*!
 	\brief Integrate Mortar matrix M on a 1D slave / master overlap
 			
 	*/
-	RCP<Epetra_SerialDenseMatrix> Integrate_M(CONTACT::CElement& sele,
+	RCP<Epetra_SerialDenseMatrix> IntegrateM(CONTACT::CElement& sele,
 																					 double sxia, double sxib,
 																					 CONTACT::CElement& mele,
 																					 double mxia, double mxib);
@@ -127,7 +127,7 @@ public:
 	 the interface is curved!
 
 	*/
-	RCP<Epetra_SerialDenseMatrix> Integrate_Mmod(CONTACT::CElement& sele,
+	RCP<Epetra_SerialDenseMatrix> IntegrateMmod(CONTACT::CElement& sele,
 																					     double sxia, double sxib,
 																					     CONTACT::CElement& mele,
 																					     double mxia, double mxib);
@@ -136,7 +136,7 @@ public:
   \brief Integrate weighted gap g~ on a 1D slave / master overlap
 					
 	*/
-	RCP<Epetra_SerialDenseVector> Integrate_g(CONTACT::CElement& sele,
+	RCP<Epetra_SerialDenseVector> IntegrateG(CONTACT::CElement& sele,
 																						double sxia, double sxib,
 																						CONTACT::CElement& mele,
 																						double mxia, double mxib);
@@ -146,14 +146,14 @@ public:
 	\brief Assemble D contribution of current overlap into slave nodes
 	
 	*/
-	bool Assemble_D(CONTACT::Interface& inter, CONTACT::CElement& sele,
+	bool AssembleD(CONTACT::Interface& inter, CONTACT::CElement& sele,
 			            Epetra_SerialDenseMatrix& D_seg);
 	
 	/*!
 	\brief Assemble M contribution of current overlap into slave nodes
 		
 	*/
-	bool Assemble_M(CONTACT::Interface& inter, CONTACT::CElement& sele,
+	bool AssembleM(CONTACT::Interface& inter, CONTACT::CElement& sele,
 			            CONTACT::CElement& mele,
 			            Epetra_SerialDenseMatrix& M_seg);
 	
@@ -161,7 +161,7 @@ public:
 	\brief Assemble Mmod contribution of current overlap into slave nodes
 			
 	*/
-	bool Assemble_Mmod(CONTACT::Interface& inter, CONTACT::CElement& sele,
+	bool AssembleMmod(CONTACT::Interface& inter, CONTACT::CElement& sele,
 			               CONTACT::CElement& mele,
 			               Epetra_SerialDenseMatrix& Mmod_seg);
 	
@@ -169,7 +169,7 @@ public:
 	\brief Assemble g~ contribution of current overlap into slave nodes
 			
 	*/
-	bool Assemble_g(CONTACT::Interface& inter, CONTACT::CElement& sele,
+	bool AssembleG(CONTACT::Interface& inter, CONTACT::CElement& sele,
 			            Epetra_SerialDenseVector& g_seg);
 		
 		
@@ -181,7 +181,7 @@ protected:
 		Integrator operator = (const Integrator& old);
 		Integrator(const Integrator& old);
 	
-		bool						oneD_;					// intgeration dimension, true if 1D
+		bool						oned_;					// intgeration dimension, true if 1D
 		int						  ngp_;						// number of Gauss points
 		vector<double>	coords_;				// Gauss point coordinates
 		vector<double>	weights_;				// Gauss point weights

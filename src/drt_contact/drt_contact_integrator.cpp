@@ -21,11 +21,11 @@ Maintainer: Alexander Popp
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 01/08|
  *----------------------------------------------------------------------*/
-CONTACT::Integrator::Integrator(int ngp, bool oneD) :
-oneD_(oneD),
+CONTACT::Integrator::Integrator(int ngp, bool oned) :
+oned_(oned),
 ngp_(ngp)
 {
-	if (oneD)
+	if (oned)
 	{
 		coords_.resize(ngp_);
 		weights_.resize(ngp_);
@@ -87,7 +87,7 @@ ngp_(ngp)
 		} // switch (ngp_)
 		
 		
-	} // if (oneD)
+	} // if (oned)
 	
 	else
 		dserror("ERROR: Integrator: 2D case not yet implemented!");
@@ -99,22 +99,22 @@ ngp_(ngp)
  |	from given local coordinates sxia to sxib														|
  |	Output is an Epetra_SerialDenseMatrix holding the int. values 			|
  *----------------------------------------------------------------------*/
-RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::Integrate_D(CONTACT::CElement& sele,
+RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateD(CONTACT::CElement& sele,
 																					 										double sxia, double sxib)
 {
 	//check input data
 	if (!sele.IsSlave())
-		dserror("ERROR: Integrate_D called on a non-slave CElement!");
+		dserror("ERROR: IntegrateD called on a non-slave CElement!");
 	if ((sxia<-1.0) || (sxib>1.0))
-		dserror("ERROR: Integrate_D called with infeasible slave limits!");
+		dserror("ERROR: IntegrateD called with infeasible slave limits!");
 	
-	// create empty D_seg object and wrap it with RCP
+	// create empty dseg object and wrap it with RCP
 	int nrow = sele.NumNode();
 	int ndof = 2;              // up to now we only consider 2D problems!!!
 	int ncol = nrow;
 	
-	RCP<Epetra_SerialDenseMatrix> D_temp = rcp(new Epetra_SerialDenseMatrix(nrow,ncol));
-	RCP<Epetra_SerialDenseMatrix> D_seg = rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
+	RCP<Epetra_SerialDenseMatrix> dtemp = rcp(new Epetra_SerialDenseMatrix(nrow,ncol));
+	RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
 	
 	// create empty vectors for shape fct. evaluation
 	vector<double> val(nrow);
@@ -138,17 +138,17 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::Integrate_D(CONTACT::CElement
 		sxi[0] = 0.5*(1-eta[0])*sxia + 0.5*(1+eta[0])*sxib;
 		
 		// evaluate trace space and dual space shape functions
-		sele.EvaluateShape_1D(sxi,val,deriv,nrow);
-		sele.EvaluateShape_Dual1D(sxi,dualval,dualderiv,nrow);
+		sele.EvaluateShape1D(sxi,val,deriv,nrow);
+		sele.EvaluateShapeDual1D(sxi,dualval,dualderiv,nrow);
 		
 		// evaluate the two Jacobians
-		double dxdsxi = sele.Jacobian_1D(val,deriv,coord);
+		double dxdsxi = sele.Jacobian1D(val,deriv,coord);
 		double dsxideta = -0.5*sxia + 0.5*sxib;
 		
-		/* loop over all D_temp matrix entries
+		/* loop over all dtemp matrix entries
 		   nrow represents the dofs !!!
 		   ncol represents the Lagrange multipliers !!!
-		   (although this does not really matter here for D_seg,
+		   (although this does not really matter here for dseg,
 		   as it will turn out to be diagonal anyway)             */
 		for (int j=0;j<nrow;++j)
 		{
@@ -156,27 +156,27 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::Integrate_D(CONTACT::CElement
 			{
 				// multiply the two shape functions
 				double prod = val[j]*dualval[k];
-				// add current Gauss point's contribution to D_temp  
-				(*D_temp)(j,k) += prod*dxdsxi*dsxideta*wgt; 
+				// add current Gauss point's contribution to dtemp  
+				(*dtemp)(j,k) += prod*dxdsxi*dsxideta*wgt; 
 			}
 		}	
 	} // for (int gp=0;gp<nGP();++gp)
 
-	// fill D_seg matrix with D_temp matrix entries
-	// (each D_temp value is multiplied with a (dof)-unit-matrix)
+	// fill dseg matrix with dtemp matrix entries
+	// (each dtemp value is multiplied with a (dof)-unit-matrix)
 	for (int j=0;j<nrow*ndof;++j)
 	{
 		for (int k=0;k<ncol*ndof;++k)
 		{
 			int jindex = (int)(j/ndof);
 			int kindex = (int)(k/ndof);
-			// isolate the D_seg entries to be filled
+			// isolate the dseg entries to be filled
 			if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
-				(*D_seg)(j,k) = (*D_temp)(jindex,kindex);
+				(*dseg)(j,k) = (*dtemp)(jindex,kindex);
 		}
 	}
 
-	return D_seg;
+	return dseg;
 }
 
 /*----------------------------------------------------------------------*
@@ -187,26 +187,26 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::Integrate_D(CONTACT::CElement
  |  element coordinates given by mxia and mxib												  |
  |	Output is an Epetra_SerialDenseMatrix holding the int. values 			|
  *----------------------------------------------------------------------*/
-RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::Integrate_M(CONTACT::CElement& sele,
+RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateM(CONTACT::CElement& sele,
 																					 										double sxia, double sxib,
 																					 										CONTACT::CElement& mele,
 																					 										double mxia, double mxib)
 {
 	// check input data
 	if ((!sele.IsSlave()) || (mele.IsSlave()))
-		dserror("ERROR: Integrate_M called on a wrong type of CElement pair!");
+		dserror("ERROR: IntegrateM called on a wrong type of CElement pair!");
 	if ((sxia<-1.0) || (sxib>1.0))
-		dserror("ERROR: Integrate_M called with infeasible slave limits!");
+		dserror("ERROR: IntegrateM called with infeasible slave limits!");
 	if ((mxia<-1.0) || (mxib>1.0))
-			dserror("ERROR: Integrate_M called with infeasible master limits!");
+			dserror("ERROR: IntegrateM called with infeasible master limits!");
 	
-	// create empty M_seg object and wrap it with RCP
+	// create empty mseg object and wrap it with RCP
 	int nrow = sele.NumNode();
 	int ncol = mele.NumNode();
 	int ndof = 2;              // up to now we only consider 2D problems!!!
 	
-	RCP<Epetra_SerialDenseMatrix> M_temp = rcp(new Epetra_SerialDenseMatrix(nrow,ncol));
-	RCP<Epetra_SerialDenseMatrix> M_seg = rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
+	RCP<Epetra_SerialDenseMatrix> mtemp = rcp(new Epetra_SerialDenseMatrix(nrow,ncol));
+	RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
 	
 	// create empty vectors for shape fct. evaluation
 	vector<double> sval(nrow);
@@ -236,27 +236,33 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::Integrate_M(CONTACT::CElement
 		
 		// project Gauss point onto master element
 		CONTACT::Projector projector(true);
-		projector.Project_GaussPoint(sele,sxi,mele,mxi);
+		projector.ProjectGaussPoint(sele,sxi,mele,mxi);
 		
 		// check GP projection
 		if ((mxi[0]<mxia) || (mxi[0]>mxib))
-			dserror("ERROR: Integrate_M: Gauss point projection failed!");
-		
+		{
+			cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+			cout << "Slave nodes: " << sele.NodeIds()[0] << " " << sele.NodeIds()[1] << endl;
+			cout << "Master nodes: " << mele.NodeIds()[0] << " " << mele.NodeIds()[1] << endl;
+			cout << "sxia: " << sxia << " sxib: " << sxib << endl;
+			cout << "mxia: " << mxia << " mxib: " << mxib << endl;
+			dserror("ERROR: IntegrateM: Gauss point projection failed! mxi=%d",mxi[0]);
+		}
 		// evaluate dual space shape functions (on slave element)
-		sele.EvaluateShape_Dual1D(sxi,dualval,dualderiv,nrow);
+		sele.EvaluateShapeDual1D(sxi,dualval,dualderiv,nrow);
 		
 		// evaluate trace space shape functions (on both elements)
-		sele.EvaluateShape_1D(sxi,sval,sderiv,nrow);
-		mele.EvaluateShape_1D(mxi,mval,mderiv,ncol);
+		sele.EvaluateShape1D(sxi,sval,sderiv,nrow);
+		mele.EvaluateShape1D(mxi,mval,mderiv,ncol);
 		
 		// evaluate the two slave side Jacobians
-		double dxdsxi = sele.Jacobian_1D(sval,sderiv,scoord);
+		double dxdsxi = sele.Jacobian1D(sval,sderiv,scoord);
 		double dsxideta = -0.5*sxia + 0.5*sxib;
 		
-		/* loop over all M_seg matrix entries
+		/* loop over all mseg matrix entries
 		   nrow represents the slave Lagrange multipliers !!!
 		   ncol represents the master dofs !!!
-		   (this DOES matter here for M_seg, as it might
+		   (this DOES matter here for mseg, as it might
 		   sometimes be rectangular, not quadratic!)              */
 		for (int j=0;j<nrow;++j)
 		{
@@ -264,27 +270,27 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::Integrate_M(CONTACT::CElement
 			{
 				// multiply the two shape functions
 				double prod = dualval[j]*mval[k];
-				// add current Gauss point's contribution to M_seg  
-				(*M_temp)(j,k) += prod*dxdsxi*dsxideta*wgt; 
+				// add current Gauss point's contribution to mseg  
+				(*mtemp)(j,k) += prod*dxdsxi*dsxideta*wgt; 
 			}
 		}	
 	} // for (int gp=0;gp<nGP();++gp)
 	
-	// fill M_seg matrix with M_temp matrix entries
-	// (each M_temp value is multiplied with a (dof)-unit-matrix)
+	// fill mseg matrix with mtemp matrix entries
+	// (each mtemp value is multiplied with a (dof)-unit-matrix)
 	for (int j=0;j<nrow*ndof;++j)
 	{
 		for (int k=0;k<ncol*ndof;++k)
 		{
 			int jindex = (int)(j/ndof);
 			int kindex = (int)(k/ndof);
-			// isolate the M_seg entries to be filled
+			// isolate the mseg entries to be filled
 			if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
-				(*M_seg)(j,k) = (*M_temp)(jindex,kindex);
+				(*mseg)(j,k) = (*mtemp)(jindex,kindex);
 		}
 	}
 
-	return M_seg;
+	return mseg;
 }
 
 /*----------------------------------------------------------------------*
@@ -295,26 +301,26 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::Integrate_M(CONTACT::CElement
  |  element coordinates given by mxia and mxib												  |
  |	Output is an Epetra_SerialDenseMatrix holding the int. values 			|
  *----------------------------------------------------------------------*/
-RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::Integrate_Mmod(CONTACT::CElement& sele,
+RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateMmod(CONTACT::CElement& sele,
 																					 										    double sxia, double sxib,
 																					 										    CONTACT::CElement& mele,
 																					 										    double mxia, double mxib)
 {
 	// check input data
 	if ((!sele.IsSlave()) || (mele.IsSlave()))
-		dserror("ERROR: Integrate_Mmod called on a wrong type of CElement pair!");
+		dserror("ERROR: IntegrateMmod called on a wrong type of CElement pair!");
 	if ((sxia<-1.0) || (sxib>1.0))
-		dserror("ERROR: Integrate_Mmod called with infeasible slave limits!");
+		dserror("ERROR: IntegrateMmod called with infeasible slave limits!");
 	if ((mxia<-1.0) || (mxib>1.0))
-			dserror("ERROR: Integrate_Mmod called with infeasible master limits!");
+			dserror("ERROR: IntegrateMmod called with infeasible master limits!");
 	
-	// create empty Mmod_seg object and wrap it with RCP
+	// create empty mmodseg object and wrap it with RCP
 	int nrow  = sele.NumNode();
 	int nrowdof = 2;							// up to now we only consider 2D problems!!!
 	int ncol  = mele.NumNode();
 	int ncoldof = 2;							// up to now we only consider 2D problems!!!
 	
-	RCP<Epetra_SerialDenseMatrix> Mmod_seg = rcp(new Epetra_SerialDenseMatrix(nrow*nrowdof,ncol*ncoldof));
+	RCP<Epetra_SerialDenseMatrix> mmodseg = rcp(new Epetra_SerialDenseMatrix(nrow*nrowdof,ncol*ncoldof));
 	
 	// create empty vectors for shape fct. evaluation
 	vector<double> sval(nrow);
@@ -343,27 +349,27 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::Integrate_Mmod(CONTACT::CElem
 		
 		// project Gauss point onto master element
 		CONTACT::Projector projector(true);
-		projector.Project_GaussPoint(sele,sxi,mele,mxi);
+		projector.ProjectGaussPoint(sele,sxi,mele,mxi);
 		
 		// check GP projection
 		if ((mxi[0]<mxia) || (mxi[0]>mxib))
-			dserror("ERROR: Integrate_Mmod: Gauss point projection failed!");
+			dserror("ERROR: IntegrateMmod: Gauss point projection failed!");
 		
 		// evaluate trace space shape functions (on both elements)
-		sele.EvaluateShape_1D(sxi,sval,sderiv,nrow);
-		mele.EvaluateShape_1D(mxi,mval,mderiv,ncol);
+		sele.EvaluateShape1D(sxi,sval,sderiv,nrow);
+		mele.EvaluateShape1D(mxi,mval,mderiv,ncol);
 		
 		// build the delta function of slave side shape functions
-		double delta_sval = sval[0]-sval[1];
+		double deltasval = sval[0]-sval[1];
 		
 		// evaluate the two slave side Jacobians
-		double dxdsxi = sele.Jacobian_1D(sval,sderiv,scoord);
+		double dxdsxi = sele.Jacobian1D(sval,sderiv,scoord);
 		double dsxideta = -0.5*sxia + 0.5*sxib;
 		
-		/* loop over all Mmod_seg matrix entries
+		/* loop over all mmodseg matrix entries
 		   nrow represents the slave Lagrange multipliers !!!
 		   ncol represents the master dofs !!!
-		   (this DOES matter here for Mmod_seg, as it might
+		   (this DOES matter here for mmodseg, as it might
 		   sometimes be rectangular, not quadratic!)              */
 		for (int j=0;j<nrow*nrowdof;++j)
 		{
@@ -371,9 +377,9 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::Integrate_Mmod(CONTACT::CElem
 			{
 				// multiply the two shape functions
 				int mindex = (int)(k/ncoldof);
-				double prod = 0.5*delta_sval*mval[mindex];
-				// add current Gauss point's contribution to Mmod_seg  
-				(*Mmod_seg)(j,k) += prod*dxdsxi*dsxideta*wgt; 
+				double prod = 0.5*deltasval*mval[mindex];
+				// add current Gauss point's contribution to mmodseg  
+				(*mmodseg)(j,k) += prod*dxdsxi*dsxideta*wgt; 
 			}
 		}	
 	} // for (int gp=0;gp<nGP();++gp)
@@ -407,7 +413,7 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::Integrate_Mmod(CONTACT::CElem
 	dt[0] = t[0][0]-t[1][0];
 	dt[1] = t[0][1]-t[1][1];
 	
-	// loop over all Mmod_seg matrix entries
+	// loop over all mmodseg matrix entries
 	for (int j=0;j<nrow*nrowdof;++j)
 	{
 		// prepare indices
@@ -421,7 +427,7 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::Integrate_Mmod(CONTACT::CElem
 			
 			// multiply geometric part onto Mmod  
 			double val = n[snode][sdof] * dn[mdof] + t[snode][sdof] * dt[mdof];
-			(*Mmod_seg)(j,k) *= val; 
+			(*mmodseg)(j,k) *= val; 
 		}
 	}	
 	*/ //OLD VERSION
@@ -456,18 +462,18 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::Integrate_Mmod(CONTACT::CElem
 	// // multiply geometric part onto Mmod  
 	for (int i=0;i<ncol;++i)
 	{
-		(*Mmod_seg)(0,0+i*ncoldof) *=  (1.0-n1n2);
-		(*Mmod_seg)(1,0+i*ncoldof) *=  n1xn2;
-		(*Mmod_seg)(0,1+i*ncoldof) *= -n1xn2;
-		(*Mmod_seg)(1,1+i*ncoldof) *=  (1.0-n1n2);
+		(*mmodseg)(0,0+i*ncoldof) *=  (1.0-n1n2);
+		(*mmodseg)(1,0+i*ncoldof) *=  n1xn2;
+		(*mmodseg)(0,1+i*ncoldof) *= -n1xn2;
+		(*mmodseg)(1,1+i*ncoldof) *=  (1.0-n1n2);
 	
-		(*Mmod_seg)(2,0+i*ncoldof) *=  (n1n2-1.0);
-		(*Mmod_seg)(3,0+i*ncoldof) *=  n1xn2;
-		(*Mmod_seg)(2,1+i*ncoldof) *= -n1xn2;
-		(*Mmod_seg)(3,1+i*ncoldof) *=  (n1n2-1.0);
+		(*mmodseg)(2,0+i*ncoldof) *=  (n1n2-1.0);
+		(*mmodseg)(3,0+i*ncoldof) *=  n1xn2;
+		(*mmodseg)(2,1+i*ncoldof) *= -n1xn2;
+		(*mmodseg)(3,1+i*ncoldof) *=  (n1n2-1.0);
 	}
 	
-	return Mmod_seg;
+	return mmodseg;
 }
 
 /*----------------------------------------------------------------------*
@@ -478,23 +484,23 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::Integrate_Mmod(CONTACT::CElem
  |  element coordinates given by mxia and mxib												  |
  |	Output is an Epetra_SerialDenseVector holding the int. values 			|
  *----------------------------------------------------------------------*/
-RCP<Epetra_SerialDenseVector> CONTACT::Integrator::Integrate_g(CONTACT::CElement& sele,
+RCP<Epetra_SerialDenseVector> CONTACT::Integrator::IntegrateG(CONTACT::CElement& sele,
 																					 										double sxia, double sxib,
 																					 										CONTACT::CElement& mele,
 																					 										double mxia, double mxib)
 {
 	// check input data
 	if ((!sele.IsSlave()) || (mele.IsSlave()))
-		dserror("ERROR: Integrate_g called on a wrong type of CElement pair!");
+		dserror("ERROR: IntegrateG called on a wrong type of CElement pair!");
 	if ((sxia<-1.0) || (sxib>1.0))
-		dserror("ERROR: Integrate_g called with infeasible slave limits!");
+		dserror("ERROR: IntegrateG called with infeasible slave limits!");
 	if ((mxia<-1.0) || (mxib>1.0))
-			dserror("ERROR: Integrate_g called with infeasible master limits!");
+			dserror("ERROR: IntegrateG called with infeasible master limits!");
 	
-	// create empty g_seg object and wrap it with RCP
+	// create empty gseg object and wrap it with RCP
 	int nrow = sele.NumNode();
 	int ncol = mele.NumNode();
-	RCP<Epetra_SerialDenseVector> g_seg = rcp(new Epetra_SerialDenseVector(nrow));
+	RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
 	
 	// create empty vectors for shape fct. evaluation
 	vector<double> sval(nrow);
@@ -512,7 +518,7 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::Integrate_g(CONTACT::CElement
 	
 	// get slave element nodes themselves for normal evaluation
 	DRT::Node** mynodes = sele.Nodes();
-	if(!mynodes) dserror("ERROR: Integrate_g: Null pointer!");
+	if(!mynodes) dserror("ERROR: IntegrateG: Null pointer!");
 	
 	// loop over all Gauss points for integration
 	for (int gp=0;gp<nGP();++gp)
@@ -529,18 +535,18 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::Integrate_g(CONTACT::CElement
 		
 		// project Gauss point onto master element
 		CONTACT::Projector projector(true);
-		projector.Project_GaussPoint(sele,sxi,mele,mxi);
+		projector.ProjectGaussPoint(sele,sxi,mele,mxi);
 		
 		// check GP projection
 		if ((mxi[0]<mxia) || (mxi[0]>mxib))
-			dserror("ERROR: Integrate_g: Gauss point projection failed!");
+			dserror("ERROR: IntegrateG: Gauss point projection failed!");
 		
 		// evaluate dual space shape functions (on slave element)
-		sele.EvaluateShape_Dual1D(sxi,dualval,dualderiv,nrow);
+		sele.EvaluateShapeDual1D(sxi,dualval,dualderiv,nrow);
 		
 		// evaluate trace space shape functions (on both elements)
-		sele.EvaluateShape_1D(sxi,sval,sderiv,nrow);
-		mele.EvaluateShape_1D(mxi,mval,mderiv,ncol);
+		sele.EvaluateShape1D(sxi,sval,sderiv,nrow);
+		mele.EvaluateShape1D(mxi,mval,mderiv,ncol);
 		
 		// build interpolation of slave GP normal and coordinates
 		double gpn[3] = {0.0,0.0,0.0};
@@ -559,7 +565,7 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::Integrate_g(CONTACT::CElement
 		
 		// normalize interpolated GP normal back to length 1.0 !!!
 		double length = sqrt(gpn[0]*gpn[0]+gpn[1]*gpn[1]+gpn[2]*gpn[2]);
-		if (length<1.0e-12) dserror("ERROR: Integrate_g: Divide by zero!");
+		if (length<1.0e-12) dserror("ERROR: IntegrateG: Divide by zero!");
 		
 		for (int i=0;i<3;++i)
 			gpn[i]/=length;
@@ -588,21 +594,21 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::Integrate_g(CONTACT::CElement
 #endif // #ifdef DEBUG
 		
 		// evaluate the two slave side Jacobians
-		double dxdsxi = sele.Jacobian_1D(sval,sderiv,scoord);
+		double dxdsxi = sele.Jacobian1D(sval,sderiv,scoord);
 		double dsxideta = -0.5*sxia + 0.5*sxib;
 		
-		/* loop over all g_seg vector entries
+		/* loop over all gseg vector entries
 			 nrow represents the slave side dofs !!!                */
 		for (int j=0;j<nrow;++j)
 		{
 			double prod = dualval[j]*gap;
-			// add current Gauss point's contribution to g_seg  
-			(*g_seg)(j) += prod*dxdsxi*dsxideta*wgt; 
+			// add current Gauss point's contribution to gseg  
+			(*gseg)(j) += prod*dxdsxi*dsxideta*wgt; 
 		}
 		
 	} // for (int gp=0;gp<nGP();++gp)
 
-	return g_seg;
+	return gseg;
 }
 
 /*----------------------------------------------------------------------*
@@ -610,20 +616,20 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::Integrate_g(CONTACT::CElement
  |	This method assembles the contrubution of a 1D slave element        |
  |  to the D map of the adjacent slave nodes.         			            |
  *----------------------------------------------------------------------*/
-bool CONTACT::Integrator::Assemble_D(CONTACT::Interface& inter,
+bool CONTACT::Integrator::AssembleD(CONTACT::Interface& inter,
 																		 CONTACT::CElement& sele,
-																		 Epetra_SerialDenseMatrix& D_seg)
+																		 Epetra_SerialDenseMatrix& dseg)
 {
 	/*
 #ifdef DEBUG
 	cout << "Calling proc: " << inter.Comm().MyPID() << endl;
-	cout << D_seg << endl;
+	cout << dseg << endl;
 #endif // #ifdef DEBUG
 	*/
 	// get adjacent nodes to assemble to
 	DRT::Node** snodes = sele.Nodes();
 	if (!snodes)
-		dserror("ERROR: Assemble_D: Null pointer for snodes!");
+		dserror("ERROR: AssembleD: Null pointer for snodes!");
 	
 	// loop over all slave nodes
 	for (int slave=0;slave<sele.NumNode();++slave)
@@ -650,7 +656,7 @@ bool CONTACT::Integrator::Assemble_D(CONTACT::Interface& inter,
 				for (int mdof=0;mdof<mndof;++mdof)
 				{
 					int col = mdofs[mdof];
-					double val = D_seg(slave*sndof+sdof,master*mndof+mdof);
+					double val = dseg(slave*sndof+sdof,master*mndof+mdof);
 					snode->AddDValue(sdof,col,val);
 				}
 			}
@@ -681,24 +687,24 @@ bool CONTACT::Integrator::Assemble_D(CONTACT::Interface& inter,
  |	This method assembles the contrubution of a 1D slave / master			  |
  |  overlap pair to the M map of the adjacent slave nodes.         			|
  *----------------------------------------------------------------------*/
-bool CONTACT::Integrator::Assemble_M(CONTACT::Interface& inter,
+bool CONTACT::Integrator::AssembleM(CONTACT::Interface& inter,
 																		 CONTACT::CElement& sele,
 																		 CONTACT::CElement& mele,
-																		 Epetra_SerialDenseMatrix& M_seg)
+																		 Epetra_SerialDenseMatrix& mseg)
 {
 	/*
 #ifdef DEBUG
 	cout << "Calling proc: " << inter.Comm().MyPID() << endl;
-	cout << M_seg << endl;
+	cout << mseg << endl;
 #endif // #ifdef DEBUG
 	*/
 	// get adjacent slave nodes and master nodes
 	DRT::Node** snodes = sele.Nodes();
 	if (!snodes)
-		dserror("ERROR: Assemble_M: Null pointer for snodes!");
+		dserror("ERROR: AssembleM: Null pointer for snodes!");
 	DRT::Node** mnodes = mele.Nodes();
 	if (!mnodes)
-		dserror("ERROR: Assemble_M: Null pointer for mnodes!");
+		dserror("ERROR: AssembleM: Null pointer for mnodes!");
 	
 	// loop over all slave nodes
 	for (int slave=0;slave<sele.NumNode();++slave)
@@ -725,7 +731,7 @@ bool CONTACT::Integrator::Assemble_M(CONTACT::Interface& inter,
 				for (int mdof=0;mdof<mndof;++mdof)
 				{
 					int col = mdofs[mdof];
-					double val = M_seg(slave*sndof+sdof,master*mndof+mdof);
+					double val = mseg(slave*sndof+sdof,master*mndof+mdof);
 					snode->AddMValue(sdof,col,val);
 				}
 			}
@@ -756,25 +762,25 @@ bool CONTACT::Integrator::Assemble_M(CONTACT::Interface& inter,
  |	This method assembles the contribution of a 1D slave / master			  |
  |  overlap pair to the Mmod map of the adjacent slave nodes.      			|
  *----------------------------------------------------------------------*/
-bool CONTACT::Integrator::Assemble_Mmod(CONTACT::Interface& inter,
+bool CONTACT::Integrator::AssembleMmod(CONTACT::Interface& inter,
 																		    CONTACT::CElement& sele,
 																		    CONTACT::CElement& mele,
-																		    Epetra_SerialDenseMatrix& Mmod_seg)
+																		    Epetra_SerialDenseMatrix& mmodseg)
 {
 	/*
 #ifdef DEBUG
 	cout << "Calling proc: " << inter.Comm().MyPID() << endl;
-	cout << Mmod_seg << endl;
+	cout << mmodseg << endl;
 #endif // #ifdef DEBUG
 	*/
 	
 	// get adjacent slave nodes and master nodes
 	DRT::Node** snodes = sele.Nodes();
 	if (!snodes)
-		dserror("ERROR: Assemble_Mmod: Null pointer for snodes!");
+		dserror("ERROR: AssembleMmod: Null pointer for snodes!");
 	DRT::Node** mnodes = mele.Nodes();
 	if (!mnodes)
-		dserror("ERROR: Assemble_Mmod: Null pointer for mnodes!");
+		dserror("ERROR: AssembleMmod: Null pointer for mnodes!");
 	
 	// loop over all slave nodes
 	for (int slave=0;slave<sele.NumNode();++slave)
@@ -801,7 +807,7 @@ bool CONTACT::Integrator::Assemble_Mmod(CONTACT::Interface& inter,
 				for (int mdof=0;mdof<mndof;++mdof)
 				{
 					int col = mdofs[mdof];
-					double val = Mmod_seg(slave*sndof+sdof,master*mndof+mdof);
+					double val = mmodseg(slave*sndof+sdof,master*mndof+mdof);
 					snode->AddMmodValue(sdof,col,val);
 				}
 			}
@@ -832,21 +838,21 @@ bool CONTACT::Integrator::Assemble_Mmod(CONTACT::Interface& inter,
  |	This method assembles the contribution of a 1D slave / master			  |
  |  overlap pair to the weighted gap of the adjacent slave nodes.     	|
  *----------------------------------------------------------------------*/
-bool CONTACT::Integrator::Assemble_g(CONTACT::Interface& inter,
+bool CONTACT::Integrator::AssembleG(CONTACT::Interface& inter,
 																		 CONTACT::CElement& sele,
-																		 Epetra_SerialDenseVector& g_seg)
+																		 Epetra_SerialDenseVector& gseg)
 {
 	/*
 #ifdef DEBUG
 	cout << "Calling proc: " << inter.Comm().MyPID() << endl;
-	cout << g_seg << endl;
+	cout << gseg << endl;
 #endif // #ifdef DEBUG
 	*/
 	
 	// get adjacent slave to assemble to
 	DRT::Node** snodes = sele.Nodes();
 	if (!snodes)
-		dserror("ERROR: Assemble_g: Null pointer for snodes!");
+		dserror("ERROR: AssembleG: Null pointer for snodes!");
 	
 	// loop over all slave nodes
 	for (int slave=0;slave<sele.NumNode();++slave)
@@ -857,7 +863,7 @@ bool CONTACT::Integrator::Assemble_g(CONTACT::Interface& inter,
 		if (snode->Owner() != inter.Comm().MyPID())
 			continue;
 		
-		double val = g_seg(slave);
+		double val = gseg(slave);
 		snode->AddgValue(val);
 		/*
 #ifdef DEBUG

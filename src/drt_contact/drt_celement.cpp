@@ -244,16 +244,9 @@ void CONTACT::CElement::ComputeNormalAtXi(double* xi, vector<double>& n)
 	vector<double> val(nnodes);
 	vector<double> deriv(nnodes);
 	vector<double> g(3);
-	/*
-	// test dual shape function values and derivatives at xi
-	EvaluateShape_Dual1D(xi, val, deriv, nnodes);
-	if (Shape()==line2)
-		cout << "DualShapeFct:" << endl << val[0] << "\t" << val[1] << endl;
-	if (Shape()==line3)
-		cout << "DualShapeFct:" << endl << val[0] << "\t" << val[1] << "\t" << val[2] << endl;
-	*/
+	
 	// get shape function values and derivatives at xi
-	EvaluateShape_1D(xi, val, deriv, nnodes);
+	EvaluateShape1D(xi, val, deriv, nnodes);
 
 	// get coordinates of element nodes
 	LINALG::SerialDenseMatrix coord(3,nnodes);
@@ -309,7 +302,7 @@ LINALG::SerialDenseMatrix CONTACT::CElement::GetNodalCoords()
 /*----------------------------------------------------------------------*
  |  Evaluate Jacobian determinant - LINEAR / QUAD 1D          popp 12/07|
  *----------------------------------------------------------------------*/
-double CONTACT::CElement::Jacobian_1D(const vector<double>& val,
+double CONTACT::CElement::Jacobian1D(const vector<double>& val,
 																	 		const vector<double>& deriv,
   																		const LINALG::SerialDenseMatrix& coord)
 {
@@ -334,7 +327,7 @@ double CONTACT::CElement::Jacobian_1D(const vector<double>& val,
 	
 	// unknown case
 	else
-		dserror("ERROR: Jacobian_1D called for unknown element type!");
+		dserror("ERROR: Jacobian1D called for unknown element type!");
 		
 	return jac;
 }
@@ -367,7 +360,7 @@ double CONTACT::CElement::ComputeArea()
 	else if (Shape()==line3)
 	{
 		// Gauss quadrature
-		CONTACT::Integrator integrator(CONTACT_NGP,true);
+		CONTACT::Integrator integrator(CONTACTNGP,true);
 		int nnodes = NumNode();
 		double detg = 0.0;
 		vector<double> val(nnodes);
@@ -380,8 +373,8 @@ double CONTACT::CElement::ComputeArea()
 		for (int j=0;j<integrator.nGP();++j)
 		{
 			double gpc[2] = {integrator.Coordinate(j), 0.0};
-			EvaluateShape_1D(gpc, val, deriv, nnodes);
-			detg = Jacobian_1D(val,deriv,coord);			
+			EvaluateShape1D(gpc, val, deriv, nnodes);
+			detg = Jacobian1D(val,deriv,coord);			
 			area+= integrator.Weight(j)*detg;
 		}	
 	}
@@ -396,11 +389,11 @@ double CONTACT::CElement::ComputeArea()
 /*----------------------------------------------------------------------*
  |  Evaluate shape functions - LINEAR / QUAD 1D               popp 01/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::CElement::EvaluateShape_1D(const double* xi, vector<double>& val,
+bool CONTACT::CElement::EvaluateShape1D(const double* xi, vector<double>& val,
 																				 vector<double>& deriv, const int valdim)
 {
 	if (!xi)
-		dserror("ERROR: EvaluateShape_1D called with xi=NULL");
+		dserror("ERROR: EvaluateShape1D called with xi=NULL");
 	
 	// 2D linear case (2noded line element)
 	if ((valdim==2)&& (Shape()==line2))
@@ -426,7 +419,7 @@ bool CONTACT::CElement::EvaluateShape_1D(const double* xi, vector<double>& val,
 	
 	// unknown case
 	else
-		dserror("ERROR: EvaluateShape_1D called for unknown CElement type");
+		dserror("ERROR: EvaluateShape1D called for unknown CElement type");
 
 	return true;
 }
@@ -434,11 +427,11 @@ bool CONTACT::CElement::EvaluateShape_1D(const double* xi, vector<double>& val,
 /*----------------------------------------------------------------------*
  |  Evaluate dual shape functions - QUAD 1D                   popp 12/07|
  *----------------------------------------------------------------------*/
-bool CONTACT::CElement::EvaluateShape_Dual1D(const double* xi, vector<double>& val,
+bool CONTACT::CElement::EvaluateShapeDual1D(const double* xi, vector<double>& val,
 																						 vector<double>& deriv, const int valdim)
 {
 	if (!xi)
-		dserror("ERROR: EvaluateShape_Dual1D called with xi=NULL");
+		dserror("ERROR: EvaluateShapeDual1D called with xi=NULL");
 	
 	// 2D linear case (2noded line element)
 	if ((valdim==2) && (Shape()==line2))
@@ -460,36 +453,36 @@ bool CONTACT::CElement::EvaluateShape_Dual1D(const double* xi, vector<double>& v
 		LINALG::SerialDenseMatrix coord(3,nnodes);
 		coord = GetNodalCoords();
 		
-		// compute entries to bi-ortho matrices Me/De with Gauss quadrature
-		CONTACT::Integrator integrator(CONTACT_NGP,true);
+		// compute entries to bi-ortho matrices me/de with Gauss quadrature
+		CONTACT::Integrator integrator(CONTACTNGP,true);
 		
-		Epetra_SerialDenseMatrix Me(nnodes,nnodes);
-		Epetra_SerialDenseMatrix De(nnodes,nnodes);
+		Epetra_SerialDenseMatrix me(nnodes,nnodes);
+		Epetra_SerialDenseMatrix de(nnodes,nnodes);
 		
 		for (int i=0;i<integrator.nGP();++i)
 		{
 			double gpc[2] = {integrator.Coordinate(i), 0.0};
-			EvaluateShape_1D(gpc, val, deriv, nnodes);
-			detg = Jacobian_1D(val,deriv,coord);
+			EvaluateShape1D(gpc, val, deriv, nnodes);
+			detg = Jacobian1D(val,deriv,coord);
 			
 			for (int j=0;j<nnodes;++j)
 				for (int k=0;k<nnodes;++k)
 				{
-					Me(j,k)+=integrator.Weight(i)*val[j]*val[k]*detg;
-					De(j,k)+=(j==k)*integrator.Weight(i)*val[j]*detg;
+					me(j,k)+=integrator.Weight(i)*val[j]*val[k]*detg;
+					de(j,k)+=(j==k)*integrator.Weight(i)*val[j]*detg;
 				}	
 		}
 		
-		// invert bi-ortho matrix Me
-		LINALG::SymmetricInverse(Me,nnodes);
+		// invert bi-ortho matrix me
+		LINALG::SymmetricInverse(me,nnodes);
 		
 		// get solution matrix with dual parameters
-		Epetra_SerialDenseMatrix Ae(nnodes,nnodes);
-		Ae.Multiply('N','N',1.0,De,Me,0.0);
+		Epetra_SerialDenseMatrix ae(nnodes,nnodes);
+		ae.Multiply('N','N',1.0,de,me,0.0);
 		
 		// evaluate dual shape functions at loc. coord. xi
 		// need standard shape functions at xi first
-		EvaluateShape_1D(xi, val, deriv, nnodes);
+		EvaluateShape1D(xi, val, deriv, nnodes);
 		
 		vector<double> valtemp(nnodes);
 		vector<double> derivtemp(nnodes);
@@ -499,8 +492,8 @@ bool CONTACT::CElement::EvaluateShape_Dual1D(const double* xi, vector<double>& v
 			derivtemp[i]=0.0;
 			for (int j=0;j<nnodes;++j)
 			{
-				valtemp[i]+=Ae(i,j)*val[j];
-				derivtemp[i]+=Ae(i,j)*deriv[j];
+				valtemp[i]+=ae(i,j)*val[j];
+				derivtemp[i]+=ae(i,j)*deriv[j];
 			}
 		}
 		val=valtemp;
@@ -509,7 +502,7 @@ bool CONTACT::CElement::EvaluateShape_Dual1D(const double* xi, vector<double>& v
 	
 	// unknown case
 	else
-		dserror("ERROR: EvaluateShape_Dual1D called for unknown element type");
+		dserror("ERROR: EvaluateShapeDual1D called for unknown element type");
 	
 	return true;
 }
@@ -537,7 +530,7 @@ bool CONTACT::CElement::LocalToGlobal(const double* xi, double* globcoord,
 	vector<double> deriv(nnodes);
 	
 	// Evaluate shape, get nodal coords  and interpolate global coords
-	EvaluateShape_1D(xi, val, deriv, nnodes);
+	EvaluateShape1D(xi, val, deriv, nnodes);
 	for (int i=0;i<3;++i)
 		globcoord[i]=0.0;
 	for (int i=0;i<nnodes;++i)

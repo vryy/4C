@@ -15,12 +15,15 @@ Maintainer: Alexander Popp
 #ifndef CONTACTDEFINES_H
 #define CONTACTDEFINES_H
 
+//#define CONTACTDIMOUTPUT			  /* flag for output of global matrix dim. */
 
-#define CONTACT_PROJTOL 0.05  		/* projection tol. for overlap decision */
-#define CONTACT_MAXITER 10				/* max. no. iterations for local Newton   */
-#define CONTACT_CONVTOL 1.0e-10		/* convergence tolerance for local Newton */
-#define CONTACT_NGP 5							/* no. Gauss points for integration */
-#define CONTACT_CRITDIST 0.5			/* critical distance for potential contact */
+#define CONTACTPROJTOL 0.05  		/* projection tol. for overlap decision */
+#define CONTACTMAXITER 10				/* max. no. iterations for local Newton   */
+#define CONTACTCONVTOL 1.0e-10		/* convergence tolerance for local Newton */
+#define CONTACTNGP 5							/* no. Gauss points for integration */
+#define CONTACTCRITDIST 0.5			/* critical distance for potential contact */
+
+// FIXME: Might be better to have critdist = f(element length)
 
 
 #endif  // #ifndef CONTACTDEFINES_H

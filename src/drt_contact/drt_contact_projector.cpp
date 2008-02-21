@@ -29,7 +29,7 @@ twoD_(twoD)
 /*----------------------------------------------------------------------*
  |  Project a node along its nodal normal (public)            popp 01/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::Projector::Project_NodalNormal(CONTACT::CNode& node,
+bool CONTACT::Projector::ProjectNodalNormal(CONTACT::CNode& node,
 		 																		     CONTACT::CElement& ele,
 		 																		     double xi[])
 {
@@ -46,16 +46,16 @@ bool CONTACT::Projector::Project_NodalNormal(CONTACT::CNode& node,
 		// local Newton iteration for xi, start in the element middle
 		double eta[2] = {0.0, 0.0};
 		double deta = 0.0;
-		double F = 0.0;
-		double dF = 0.0;
+		double f = 0.0;
+		double df = 0.0;
 		int k=0;
 		
-		for (k=0;k<CONTACT_MAXITER;++k)
+		for (k=0;k<CONTACTMAXITER;++k)
 		{
-			F=Evaluate_F_NodalNormal(node,ele,eta,outward,gap);
-			if (abs(F) < CONTACT_CONVTOL) break;
-			dF=Evaluate_gradF_NodalNormal(node,ele,eta);
-			deta=(-F)/dF;
+			f=EvaluateFNodalNormal(node,ele,eta,outward,gap);
+			if (abs(f) < CONTACTCONVTOL) break;
+			df=EvaluateGradFNodalNormal(node,ele,eta);
+			deta=(-f)/df;
 			eta[0]+=deta;
 		}
 		
@@ -63,7 +63,7 @@ bool CONTACT::Projector::Project_NodalNormal(CONTACT::CNode& node,
 		xi[0]=eta[0];
 		
 		// Newton iteration unconverged
-		if (abs(F) > CONTACT_CONVTOL)
+		if (abs(f) > CONTACTCONVTOL)
 		{
 			ok = false;
 			xi[0] = 9999.99;
@@ -72,7 +72,7 @@ bool CONTACT::Projector::Project_NodalNormal(CONTACT::CNode& node,
 			// This iteration sometimes diverges, when the projection is far off.
 			// These cases are harmless, as these nodes then do not participate in
 			// the overlap detection anyway!
-			//cout << "***WARNING*** Project_NodalNormal:" << " Newton unconverged for NodeID "
+			//cout << "***WARNING*** ProjectNodalNormal:" << " Newton unconverged for NodeID "
 			//		 << node.Id() << " and CElementID " << ele.Id() << endl;	
 		}
 		
@@ -81,13 +81,13 @@ bool CONTACT::Projector::Project_NodalNormal(CONTACT::CNode& node,
 		{
 			// we have to exclude the penetration case!
 			// (there we also have an inward proj, but it is feasible of course!)
-			if (gap>CONTACT_CRITDIST)
+			if (gap>CONTACTCRITDIST)
 			{
 				ok = false;
 				xi[0] = 9999.99;
 			
 				// At the moment we give a warning here, just to check!!!
-				//cout << "***WARNING*** Project_NodalNormal:" << " Inward projection for NodeID "
+				//cout << "***WARNING*** ProjectNodalNormal:" << " Inward projection for NodeID "
 				//	 	<< node.Id() << " and CElementID " << ele.Id() << endl;	
 			}
 		}
@@ -107,7 +107,7 @@ bool CONTACT::Projector::Project_NodalNormal(CONTACT::CNode& node,
 	{
 		// three-dimensional version of the problem
 		ok = false;
-		dserror("ERROR: Project_NodalNormal: 3D version not yet implemented!");
+		dserror("ERROR: ProjectNodalNormal: 3D version not yet implemented!");
 	}
 	
 	return true;
@@ -116,7 +116,7 @@ bool CONTACT::Projector::Project_NodalNormal(CONTACT::CNode& node,
 /*----------------------------------------------------------------------*
  |  Project a node along element's normal field (public)      popp 01/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::Projector::Project_ElementNormal(CONTACT::CNode& node,
+bool CONTACT::Projector::ProjectElementNormal(CONTACT::CNode& node,
 		 																			     CONTACT::CElement& ele,
 		 																			     double xi[])
 {
@@ -126,7 +126,7 @@ bool CONTACT::Projector::Project_ElementNormal(CONTACT::CNode& node,
 	{
 #ifdef DEBUG
 		// two-dimensional version of the problem
-		//cout << "CONTACT::Projector::Project_ElementNormal" << endl
+		//cout << "CONTACT::Projector::ProjectElementNormal" << endl
 		//		 << "Ready for projection of master CNode " << node.Id()
 		//		 << " onto slave CElement " << ele.Id() << endl;
 #endif // #ifdef DEBUG
@@ -141,16 +141,16 @@ bool CONTACT::Projector::Project_ElementNormal(CONTACT::CNode& node,
 		// local Newton iteration for xi, start in the element middle
 		double eta[2] = {0.0, 0.0};
 		double deta = 0.0;
-		double F = 0.0;
-		double dF = 0.0;
+		double f = 0.0;
+		double df = 0.0;
 		int k=0;
 		
-		for (k=0;k<CONTACT_MAXITER;++k)
+		for (k=0;k<CONTACTMAXITER;++k)
 		{
-			F=Evaluate_F_ElementNormal(node,ele,eta,outward,gap);
-			if (abs(F) < CONTACT_CONVTOL) break;
-			dF=Evaluate_gradF_ElementNormal(node,ele,eta);
-			deta=(-F)/dF;
+			f=EvaluateFElementNormal(node,ele,eta,outward,gap);
+			if (abs(f) < CONTACTCONVTOL) break;
+			df=EvaluateGradFElementNormal(node,ele,eta);
+			deta=(-f)/df;
 			eta[0]+=deta;
 		}
 		
@@ -158,7 +158,7 @@ bool CONTACT::Projector::Project_ElementNormal(CONTACT::CNode& node,
 		xi[0]=eta[0];
 		
 		// Newton iteration unconverged
-		if (abs(F) > CONTACT_CONVTOL)
+		if (abs(f) > CONTACTCONVTOL)
 		{
 			ok = false;
 			xi[0] = 9999.99;
@@ -167,7 +167,7 @@ bool CONTACT::Projector::Project_ElementNormal(CONTACT::CNode& node,
 			// This iteration sometimes diverges, when the projection is far off.
 			// These cases are harmless, as these nodes then do not participate in
 			// the overlap detection anyway!
-			//cout << "***WARNING*** Project_ElementNormal:" << " Newton unconverged for NodeID "
+			//cout << "***WARNING*** ProjectElementNormal:" << " Newton unconverged for NodeID "
 			//		 << node.Id() << " and CElementID " << ele.Id() << endl;
 		}
 		
@@ -176,13 +176,13 @@ bool CONTACT::Projector::Project_ElementNormal(CONTACT::CNode& node,
 		{
 			// we have to exclude the penetration case!
 			// (there we also have an inward proj, but it is feasible of course!)
-			if (gap>CONTACT_CRITDIST)
+			if (gap>CONTACTCRITDIST)
 			{
 				ok = false;
 				xi[0] = 9999.99;
 			
 				// At the moment we give a warning here, just to check!!!
-				//cout << "***WARNING*** Project_ElementNormal:" << " Inward projection for NodeID "
+				//cout << "***WARNING*** ProjectElementNormal:" << " Inward projection for NodeID "
 				//	 	 << node.Id() << " and CElementID " << ele.Id() << endl;	
 			}
 		}
@@ -202,7 +202,7 @@ bool CONTACT::Projector::Project_ElementNormal(CONTACT::CNode& node,
 	{
 		// three-dimensional version of the problem
 		ok = false;
-		dserror("ERROR: Project_ElementNormal: 3D version not yet implemented!");
+		dserror("ERROR: ProjectElementNormal: 3D version not yet implemented!");
 	}
 		
 	return ok;
@@ -211,7 +211,7 @@ bool CONTACT::Projector::Project_ElementNormal(CONTACT::CNode& node,
 /*----------------------------------------------------------------------*
  |  Project a Gauss point along its normal (public)           popp 01/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::Projector::Project_GaussPoint(CONTACT::CElement& gpele,
+bool CONTACT::Projector::ProjectGaussPoint(CONTACT::CElement& gpele,
 																						const double* gpeta,
 		 																		    CONTACT::CElement& ele,
 		 																		    double xi[])
@@ -221,7 +221,7 @@ bool CONTACT::Projector::Project_GaussPoint(CONTACT::CElement& gpele,
 	{
 		// two-dimensional version of the problem
 #ifdef DEBUG
-		//cout << "CONTACT::Projector::Project_GaussPoint" << endl
+		//cout << "CONTACT::Projector::ProjectGaussPoint" << endl
 		//		 << "Ready for projection of GP at xi=" << gpeta[0]
 		//		 << " from slave Celement " << gpele.Id()
 		//		 << " onto master CElement " << ele.Id() << endl;
@@ -233,10 +233,10 @@ bool CONTACT::Projector::Project_GaussPoint(CONTACT::CElement& gpele,
 		vector<double> deriv(nnodes);
 		LINALG::SerialDenseMatrix coord(3,nnodes);
 		DRT::Node** mynodes = gpele.Nodes();
-		if(!mynodes) dserror("ERROR: Project_GaussPoint: Null pointer!");
+		if(!mynodes) dserror("ERROR: ProjectGaussPoint: Null pointer!");
 				
 		// get shape function values and derivatives at gpeta
-		ele.EvaluateShape_1D(gpeta, val, deriv, nnodes);
+		ele.EvaluateShape1D(gpeta, val, deriv, nnodes);
 
 		// get interpolated GP normal and GP coordinates
 		double gpn[3] = {0.0, 0.0, 0.0};
@@ -268,24 +268,24 @@ bool CONTACT::Projector::Project_GaussPoint(CONTACT::CElement& gpele,
 		// local Newton iteration for xi, start in the element middle
 		double eta[2] = {0.0, 0.0};
 		double deta = 0.0;
-		double F = 0.0;
-		double dF = 0.0;
+		double f = 0.0;
+		double df = 0.0;
 		int k=0;
 		
-		for (k=0;k<CONTACT_MAXITER;++k)
+		for (k=0;k<CONTACTMAXITER;++k)
 		{
-			F=Evaluate_F_GaussPoint(gpx,gpn,ele,eta,outward,gap);
-			if (abs(F) < CONTACT_CONVTOL) break;
-			dF=Evaluate_gradF_GaussPoint(gpn,ele,eta);
-			deta=(-F)/dF;
+			f=EvaluateFGaussPoint(gpx,gpn,ele,eta,outward,gap);
+			if (abs(f) < CONTACTCONVTOL) break;
+			df=EvaluateGradFGaussPoint(gpn,ele,eta);
+			deta=(-f)/df;
 			eta[0]+=deta;
 		}
 				
 		// Newton iteration unconverged
-		if (abs(F) > CONTACT_CONVTOL)
+		if (abs(f) > CONTACTCONVTOL)
 		{
 			ok = false;
-			dserror("ERROR: Project_GaussPoint: Newton unconverged for GP at xi=%d"
+			dserror("ERROR: ProjectGaussPoint: Newton unconverged for GP at xi=%d"
 							" from CElementID %i", gpeta[0], gpele.Id());
 		}
 		
@@ -294,10 +294,10 @@ bool CONTACT::Projector::Project_GaussPoint(CONTACT::CElement& gpele,
 		{
 			// we have to exclude the penetration case!
 			// (there we also have an inward proj, but it is feasible of course!)
-			if (gap>CONTACT_CRITDIST)
+			if (gap>CONTACTCRITDIST)
 			{
 			ok = false;
-			dserror("ERROR: Project_GaussPoint: Inward projection for GP at xi=%d"
+			dserror("ERROR: ProjectGaussPoint: Inward projection for GP at xi=%d"
 							" from CElementID %i", gpeta[0], gpele.Id());
 			}
 		}
@@ -316,7 +316,7 @@ bool CONTACT::Projector::Project_GaussPoint(CONTACT::CElement& gpele,
 	{
 		// three-dimensional version of the problem
 		ok = false;
-		dserror("ERROR: Project_GaussPoint: 3D version not yet implemented!");
+		dserror("ERROR: ProjectGaussPoint: 3D version not yet implemented!");
 	}
 	
 	return true;
@@ -325,7 +325,7 @@ bool CONTACT::Projector::Project_GaussPoint(CONTACT::CElement& gpele,
 /*----------------------------------------------------------------------*
  |  Evaluate F for nodal normal case (public)                 popp 01/08|
  *----------------------------------------------------------------------*/
-double CONTACT::Projector::Evaluate_F_NodalNormal(CONTACT::CNode& node,
+double CONTACT::Projector::EvaluateFNodalNormal(CONTACT::CNode& node,
      																							CONTACT::CElement& ele,
      																							const double* eta,
      																							bool& outward,
@@ -345,19 +345,19 @@ double CONTACT::Projector::Evaluate_F_NodalNormal(CONTACT::CNode& node,
 	vector<double> deriv(nnodes);
 	
 	// get shape function values and derivatives at eta
-	ele.EvaluateShape_1D(eta, val, deriv, nnodes);
+	ele.EvaluateShape1D(eta, val, deriv, nnodes);
 
 	// build interpolation of master node coordinates for current eta
-	double Nx[3] = {0.0, 0.0, 0.0};
-	ele.LocalToGlobal(eta,Nx,true);
+	double nx[3] = {0.0, 0.0, 0.0};
+	ele.LocalToGlobal(eta,nx,true);
 	
 	// subtract slave node coordinates
-	Nx[0]-=node.xspatial()[0];
-	Nx[1]-=node.xspatial()[1];
-	Nx[2]-=node.xspatial()[2];
+	nx[0]-=node.xspatial()[0];
+	nx[1]-=node.xspatial()[1];
+	nx[2]-=node.xspatial()[2];
 
 	// update boolean variable outward and gap
-	gap = Nx[0]*node.n()[0]+Nx[1]*node.n()[1]+Nx[2]*node.n()[2];
+	gap = nx[0]*node.n()[0]+nx[1]*node.n()[1]+nx[2]*node.n()[2];
 	if (gap<0.0)
 		outward = false;
 	else
@@ -365,17 +365,17 @@ double CONTACT::Projector::Evaluate_F_NodalNormal(CONTACT::CNode& node,
 	gap=abs(gap);
 	
 	// calculate F
-	return (Nx[0]*node.n()[1]-Nx[1]*node.n()[0]);
+	return (nx[0]*node.n()[1]-nx[1]*node.n()[0]);
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate gradF for nodal normal case (public)             popp 01/08|
+ |  Evaluate GradF for nodal normal case (public)             popp 01/08|
  *----------------------------------------------------------------------*/
-double CONTACT::Projector::Evaluate_gradF_NodalNormal(CONTACT::CNode& node,
+double CONTACT::Projector::EvaluateGradFNodalNormal(CONTACT::CNode& node,
      																							    CONTACT::CElement& ele,
      																							    const double* eta)
 {
-	/* Evaluate the function gradF(eta)
+	/* Evaluate the function GradF(eta)
 	   = Ni,eta * xim * nys - Ni,eta * yim * nxs,
 		
 		   Ni,eta    shape function derivatives of element
@@ -388,21 +388,21 @@ double CONTACT::Projector::Evaluate_gradF_NodalNormal(CONTACT::CNode& node,
 	vector<double> deriv(nnodes);
 			
 	// get shape function values and derivatives at eta
-	ele.EvaluateShape_1D(eta, val, deriv, nnodes);
+	ele.EvaluateShape1D(eta, val, deriv, nnodes);
 
 	// build interpolation of master node coordinates for current eta
 	// use shape function derivatives for interpolation
-	double Nxeta[3] = {0.0, 0.0, 0.0};
-	ele.LocalToGlobal(eta,Nxeta,false);
+	double nxeta[3] = {0.0, 0.0, 0.0};
+	ele.LocalToGlobal(eta,nxeta,false);
 	
-	// calculate gradF
-	return (Nxeta[0]*node.n()[1]-Nxeta[1]*node.n()[0]);
+	// calculate GradF
+	return (nxeta[0]*node.n()[1]-nxeta[1]*node.n()[0]);
 }
 
 /*----------------------------------------------------------------------*
  |  Evaluate F for element normal case (public)               popp 01/08|
  *----------------------------------------------------------------------*/
-double CONTACT::Projector::Evaluate_F_ElementNormal(CONTACT::CNode& node,
+double CONTACT::Projector::EvaluateFElementNormal(CONTACT::CNode& node,
      																							  CONTACT::CElement& ele,
      																							  const double* eta,
      																							  bool& outward,
@@ -422,37 +422,37 @@ double CONTACT::Projector::Evaluate_F_ElementNormal(CONTACT::CNode& node,
 	vector<double> deriv(nnodes);
 	LINALG::SerialDenseMatrix coord(3,nnodes);
 	DRT::Node** mynodes = ele.Nodes();
-	if(!mynodes) dserror("ERROR: Evaluate_F_ElementNormal: Null pointer!");
+	if(!mynodes) dserror("ERROR: EvaluateFElementNormal: Null pointer!");
 			
 	// get shape function values and derivatives at eta
-	ele.EvaluateShape_1D(eta, val, deriv, nnodes);
+	ele.EvaluateShape1D(eta, val, deriv, nnodes);
 
 	// get interpolated normal and proj. coordinates for current eta
-	double Nn[3] = {0.0, 0.0, 0.0};
-	double Nx[3] = {0.0, 0.0, 0.0};
+	double nn[3] = {0.0, 0.0, 0.0};
+	double nx[3] = {0.0, 0.0, 0.0};
 	for (int i=0;i<nnodes;++i)
 	{
 		CNode* mycnode = static_cast<CNode*> (mynodes[i]);
-		Nn[0]+=val[i]*mycnode->n()[0];
-		Nn[1]+=val[i]*mycnode->n()[1];
-		Nn[2]+=val[i]*mycnode->n()[2];
+		nn[0]+=val[i]*mycnode->n()[0];
+		nn[1]+=val[i]*mycnode->n()[1];
+		nn[2]+=val[i]*mycnode->n()[2];
 		
 		coord(0,i) = mycnode->xspatial()[0];
 		coord(1,i) = mycnode->xspatial()[1];
 		coord(2,i) = mycnode->xspatial()[2];
 		
-		Nx[0]+=val[i]*coord(0,i);
-		Nx[1]+=val[i]*coord(1,i);
-		Nx[2]+=val[i]*coord(2,i);
+		nx[0]+=val[i]*coord(0,i);
+		nx[1]+=val[i]*coord(1,i);
+		nx[2]+=val[i]*coord(2,i);
 	}
 		
 	// subtract master node coordinates
-	Nx[0]-=node.xspatial()[0];
-	Nx[1]-=node.xspatial()[1];
-	Nx[2]-=node.xspatial()[2];
+	nx[0]-=node.xspatial()[0];
+	nx[1]-=node.xspatial()[1];
+	nx[2]-=node.xspatial()[2];
 	
 	// update boolean variable outward
-	gap = -Nx[0]*Nn[0]-Nx[1]*Nn[1]-Nx[2]*Nn[2];
+	gap = -nx[0]*nn[0]-nx[1]*nn[1]-nx[2]*nn[2];
 	if (gap<0.0)
 		outward = false;
 	else
@@ -460,17 +460,17 @@ double CONTACT::Projector::Evaluate_F_ElementNormal(CONTACT::CNode& node,
 	gap=abs(gap);
 	
 	// calculate F
-	return (Nx[0]*Nn[1]-Nx[1]*Nn[0]);
+	return (nx[0]*nn[1]-nx[1]*nn[0]);
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate gradF for element normal case (public)           popp 01/08|
+ |  Evaluate GradF for element normal case (public)           popp 01/08|
  *----------------------------------------------------------------------*/
-double CONTACT::Projector::Evaluate_gradF_ElementNormal(CONTACT::CNode& node,
+double CONTACT::Projector::EvaluateGradFElementNormal(CONTACT::CNode& node,
      																							      CONTACT::CElement& ele,
      																							      const double* eta)
 {
-	/* Evaluate the function gradF(eta)
+	/* Evaluate the function GradF(eta)
 	 	 = ( Ni,eta * xis ) * ( Nj * nyjs )
 	 	 + ( Ni * xis - xm ) * ( Nj,eta * nyjs )
 	 	 - ( Ni,eta * yis ) * ( Nj * nxjs )
@@ -487,56 +487,56 @@ double CONTACT::Projector::Evaluate_gradF_ElementNormal(CONTACT::CNode& node,
 	vector<double> deriv(nnodes);
 	LINALG::SerialDenseMatrix coord(3,nnodes);
 	DRT::Node** mynodes = ele.Nodes();
-	if(!mynodes) dserror("ERROR: Evaluate_gradF_ElementNormal: Null pointer!");
+	if(!mynodes) dserror("ERROR: EvaluateGradFElementNormal: Null pointer!");
 				
 	// get shape function values and derivatives at eta
-	ele.EvaluateShape_1D(eta, val, deriv, nnodes);
+	ele.EvaluateShape1D(eta, val, deriv, nnodes);
 
 	// get interpolated normal and proj. coordinates for current eta
-	double Nn[3] = {0.0, 0.0, 0.0};
-	double Nneta[3] = {0.0, 0.0, 0.0};
-	double Nx[3] = {0.0, 0.0, 0.0};
-	double Nxeta[3] = {0.0, 0.0, 0.0};
+	double nn[3] = {0.0, 0.0, 0.0};
+	double nneta[3] = {0.0, 0.0, 0.0};
+	double nx[3] = {0.0, 0.0, 0.0};
+	double nxeta[3] = {0.0, 0.0, 0.0};
 	for (int i=0;i<nnodes;++i)
 	{
 		CNode* mycnode = static_cast<CNode*> (mynodes[i]);
 		
-		Nn[0]+=val[i]*mycnode->n()[0];
-		Nn[1]+=val[i]*mycnode->n()[1];
-		Nn[2]+=val[i]*mycnode->n()[2];
+		nn[0]+=val[i]*mycnode->n()[0];
+		nn[1]+=val[i]*mycnode->n()[1];
+		nn[2]+=val[i]*mycnode->n()[2];
 		
-		Nneta[0]+=deriv[i]*mycnode->n()[0];
-		Nneta[1]+=deriv[i]*mycnode->n()[1];
-		Nneta[2]+=deriv[i]*mycnode->n()[2];
+		nneta[0]+=deriv[i]*mycnode->n()[0];
+		nneta[1]+=deriv[i]*mycnode->n()[1];
+		nneta[2]+=deriv[i]*mycnode->n()[2];
 			
 		coord(0,i) = mycnode->xspatial()[0];
 		coord(1,i) = mycnode->xspatial()[1];
 		coord(2,i) = mycnode->xspatial()[2];
 		
-		Nx[0]+=val[i]*coord(0,i);
-		Nx[1]+=val[i]*coord(1,i);
-		Nx[2]+=val[i]*coord(2,i);
+		nx[0]+=val[i]*coord(0,i);
+		nx[1]+=val[i]*coord(1,i);
+		nx[2]+=val[i]*coord(2,i);
 				
-		Nxeta[0]+=deriv[i]*coord(0,i);
-		Nxeta[1]+=deriv[i]*coord(1,i);
-		Nxeta[2]+=deriv[i]*coord(2,i);
+		nxeta[0]+=deriv[i]*coord(0,i);
+		nxeta[1]+=deriv[i]*coord(1,i);
+		nxeta[2]+=deriv[i]*coord(2,i);
 	}
 			
 	// subtract master node coordinates
-	Nx[0]-=node.xspatial()[0];
-	Nx[1]-=node.xspatial()[1];
-	Nx[2]-=node.xspatial()[2];
+	nx[0]-=node.xspatial()[0];
+	nx[1]-=node.xspatial()[1];
+	nx[2]-=node.xspatial()[2];
 		
-	// calculate gradF
-	double gradF =   Nxeta[0]*Nn[1] + Nx[0]*Nneta[1]
-	               - Nxeta[1]*Nn[0] - Nx[1]*Nneta[0];
-	return gradF;
+	// calculate GradF
+	double gradf =   nxeta[0]*nn[1] + nx[0]*nneta[1]
+	               - nxeta[1]*nn[0] - nx[1]*nneta[0];
+	return gradf;
 }
 
 /*----------------------------------------------------------------------*
  |  Evaluate F for Gauss point case (public)                  popp 01/08|
  *----------------------------------------------------------------------*/
-double CONTACT::Projector::Evaluate_F_GaussPoint(const double* gpx,
+double CONTACT::Projector::EvaluateFGaussPoint(const double* gpx,
 																								 const double* gpn,
      																						 CONTACT::CElement& ele,
      																						 const double* eta,
@@ -557,19 +557,19 @@ double CONTACT::Projector::Evaluate_F_GaussPoint(const double* gpx,
 	vector<double> deriv(nnodes);
 		
 	// get shape function values and derivatives at eta
-	ele.EvaluateShape_1D(eta, val, deriv, nnodes);
+	ele.EvaluateShape1D(eta, val, deriv, nnodes);
 
 	// build interpolation of master node coordinates for current eta
-	double Nx[3] = {0.0, 0.0, 0.0};
-	ele.LocalToGlobal(eta,Nx,true);
+	double nx[3] = {0.0, 0.0, 0.0};
+	ele.LocalToGlobal(eta,nx,true);
 	
 	// subtract GP coordinates
-	Nx[0]-=gpx[0];
-	Nx[1]-=gpx[1];
-	Nx[2]-=gpx[2];
+	nx[0]-=gpx[0];
+	nx[1]-=gpx[1];
+	nx[2]-=gpx[2];
 
 	// update boolean variable outward
-	gap = Nx[0]*gpn[0]+Nx[1]*gpn[1]+Nx[2]*gpn[2];
+	gap = nx[0]*gpn[0]+nx[1]*gpn[1]+nx[2]*gpn[2];
 	if (gap<0.0)
 		outward = false;
 	else
@@ -577,17 +577,17 @@ double CONTACT::Projector::Evaluate_F_GaussPoint(const double* gpx,
 	gap=abs(gap);
 	
 	// calculate F
-	return (Nx[0]*gpn[1]-Nx[1]*gpn[0]);
+	return (nx[0]*gpn[1]-nx[1]*gpn[0]);
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate gradF for Gauss point case (public)              popp 01/08|
+ |  Evaluate GradF for Gauss point case (public)              popp 01/08|
  *----------------------------------------------------------------------*/
-double CONTACT::Projector::Evaluate_gradF_GaussPoint(const double* gpn,
+double CONTACT::Projector::EvaluateGradFGaussPoint(const double* gpn,
 																								 	   CONTACT::CElement& ele,
 																								 	   const double* eta)
 {
-	/* Evaluate the function gradF(eta)
+	/* Evaluate the function GradF(eta)
 	 	 = Ni,eta * xim * gpny - Ni,eta * yim * gpnx,
 		
 		   Ni,eta     shape function derivatives of element (master side)
@@ -600,15 +600,15 @@ double CONTACT::Projector::Evaluate_gradF_GaussPoint(const double* gpn,
 	vector<double> deriv(nnodes);
 			
 	// get shape function values and derivatives at eta
-	ele.EvaluateShape_1D(eta, val, deriv, nnodes);
+	ele.EvaluateShape1D(eta, val, deriv, nnodes);
 
 	// build interpolation of master node coordinates for current eta
 	// use shape fuvntion derivatives for interpolation
-	double Nxeta[3] = {0.0, 0.0, 0.0};
-	ele.LocalToGlobal(eta,Nxeta,false);
+	double nxeta[3] = {0.0, 0.0, 0.0};
+	ele.LocalToGlobal(eta,nxeta,false);
 
-	// calculate gradF
-	return (Nxeta[0]*gpn[1]-Nxeta[1]*gpn[0]);
+	// calculate GradF
+	return (nxeta[0]*gpn[1]-nxeta[1]*gpn[0]);
 }
 
 #endif //#ifdef CCADISCRET

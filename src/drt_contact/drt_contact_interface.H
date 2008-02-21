@@ -351,29 +351,29 @@ public:
   \brief Integrate Mortar matrix D on slave element (2D)
           
   */
-  virtual bool IntegrateSlave_2D(CONTACT::CElement& sele);
+  virtual bool IntegrateSlave2D(CONTACT::CElement& sele);
   
   /*!
   \brief Determine overlap and integrate slave / master pair (2D)
         
   */
-  virtual bool IntegrateOverlap_2D(CONTACT::CElement& sele,
+  virtual bool IntegrateOverlap2D(CONTACT::CElement& sele,
   													       CONTACT::CElement& mele);
   
   /*!
   \brief Assemble Mortar matrices and weighted gap
         
   */
-  virtual void AssembleDMG(LINALG::SparseMatrix& Dglobal,
-  													LINALG::SparseMatrix& Mglobal,
+  virtual void AssembleDMG(LINALG::SparseMatrix& dglobal,
+  													LINALG::SparseMatrix& mglobal,
   											    Epetra_Vector& gglobal);
   
   /*!
   \brief Assemble matrices N / T containing nodal normals / tangents
   
   */
-  virtual void AssembleNT(LINALG::SparseMatrix& Nglobal,
-  												 LINALG::SparseMatrix& Tglobal);
+  virtual void AssembleNT(LINALG::SparseMatrix& nglobal,
+  												 LINALG::SparseMatrix& tglobal);
   
   /*!
   \brief Build active set (nodes / dofs) of this interface
