@@ -17,6 +17,10 @@ Maintainer: Michael Gee
 #ifdef CCADISCRET
 #include "simpler_operator.H"
 
+#define SIMPLEC_DIAGONAL      0    // 1: row sums     0: just diagonal
+#define CHEAPSIMPLE_ALGORITHM 1    // 1: AMG          0: true solve
+#define SIMPLER_ALGORITHM     0    // 1: triple solve 0: double solve
+#define SIMPLER_ALPHA         1.0  // simple pressure damping parameter
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 02/08|
  *----------------------------------------------------------------------*/
@@ -27,7 +31,7 @@ LINALG::SIMPLER_Operator::SIMPLER_Operator(RCP<Epetra_CrsMatrix> A,
   : outfile_(outfile),
     vlist_(velocitylist),
     plist_(pressurelist),
-    alpha_(1.0)
+    alpha_(SIMPLER_ALPHA)
 {
   // remove the SIMPLER sublist from the vlist_, 
   // otherwise it will try to recursively create a SIMPLE
@@ -113,27 +117,8 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_CrsMatrix> A)
     plist_.sublist("Aztec Parameters").set("reuse",maxiter+1);
   }
   
-  // Allocate solver for pressure and velocity
-  {
-    RCP<ParameterList> vrcplist = rcp(&vlist_,false);
-    vsolver_ = rcp(new LINALG::Solver(vrcplist,A_->Comm(),outfile_));
-    RCP<ParameterList> prcplist = rcp(&plist_,false);
-    psolver_ = rcp(new LINALG::Solver(prcplist,A_->Comm(),outfile_));
-  }
-  
-  // Allocate and compute diag(A(0,0)^{-1}
-#if 1 // SIMPLE
-  {
-    Epetra_Vector diag(*mmex_.Map(0),false);
-    (*A_)(0,0).ExtractDiagonalCopy(diag);
-    int err = diag.Reciprocal(diag);
-    if (err) dserror("Epetra_MultiVector::Reciprocal returned %d",err);
-    diagAinv_ = rcp(new SparseMatrix(diag));
-    diagAinv_->Complete(*mmex_.Map(0),*mmex_.Map(0));
-  }
-#endif
-
-#if 0 // SIMPLEC
+#if SIMPLEC_DIAGONAL
+  // Allocate and compute abs(rowsum(A(0,0))^{-1}
   {
     Epetra_Vector diag(*mmex_.Map(0),true);
     RCP<Epetra_CrsMatrix> A00 = (*A_)(0,0).EpetraMatrix();
@@ -152,7 +137,18 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_CrsMatrix> A)
     diagAinv_ = rcp(new SparseMatrix(diag));
     diagAinv_->Complete(*mmex_.Map(0),*mmex_.Map(0));
   }
+#else
+  // Allocate and compute diag(A(0,0)^{-1}
+  {
+    Epetra_Vector diag(*mmex_.Map(0),false);
+    (*A_)(0,0).ExtractDiagonalCopy(diag);
+    int err = diag.Reciprocal(diag);
+    if (err) dserror("Epetra_MultiVector::Reciprocal returned %d",err);
+    diagAinv_ = rcp(new SparseMatrix(diag));
+    diagAinv_->Complete(*mmex_.Map(0),*mmex_.Map(0));
+  }
 #endif
+
 
   // Allocate and compute approximate Schur complement operator S
   // S = A(1,1) - A(1,0) * diagAinv * A(0,1) 
@@ -162,6 +158,27 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_CrsMatrix> A)
     S_->Add((*A_)(1,1),false,1.0,-1.0);
     S_->Complete((*A_)(1,1).DomainMap(),(*A_)(1,1).RangeMap());
   }
+  
+#if CHEAPSIMPLE_ALGORITHM
+  // Allocate preconditioner for pressure and velocity
+  {
+    if (!visml || !pisml) dserror("Have to use ML for this variant of SIMPLE");
+    Pv_ = rcp(new ML_Epetra::MultiLevelPreconditioner(*((*A_)(0,0).EpetraMatrix()),
+                                                      vlist_.sublist("ML Parameters"),
+                                                      true));
+    Pp_ = rcp(new ML_Epetra::MultiLevelPreconditioner(*(S_->EpetraMatrix()),
+                                                      plist_.sublist("ML Parameters"),
+                                                      true));
+  }
+#else  
+  // Allocate solver for pressure and velocity
+  {
+    RCP<ParameterList> vrcplist = rcp(&vlist_,false);
+    vsolver_ = rcp(new LINALG::Solver(vrcplist,A_->Comm(),outfile_));
+    RCP<ParameterList> prcplist = rcp(&plist_,false);
+    psolver_ = rcp(new LINALG::Solver(prcplist,A_->Comm(),outfile_));
+  }
+#endif  
   
   // Allocate velocity and pressure solution and rhs vectors
   vx_ = LINALG::CreateVector(*mmex_.Map(0),false);
@@ -187,21 +204,21 @@ int LINALG::SIMPLER_Operator::ApplyInverse(const Epetra_MultiVector& X,
 {
   // note: Aztec might pass X and Y as physically identical objects, 
   // so we better deep copy here
-  
-  // do not do anything for testing
-  //Y.Update(1.0,X,0.0);
-  //return 0;
 
   // extract initial guess and rhs for velocity and pressure
   mmex_.ExtractVector(X,0,*vb_);
   mmex_.ExtractVector(X,1,*pb_);
   
-#if 1 // SIMPLE and SIMPLEC
+#if CHEAPSIMPLE_ALGORITHM // SIMPLE and SIMPLEC but without solve, just AMG
+  CheapSimple(vx_,px_,vb_,pb_);  
+#else
+
+#if SIMPLER_ALGORITHM
+  Simpler(vx_,px_,vb_,pb_);  
+#else
   Simple(vx_,px_,vb_,pb_);  
 #endif
-  
-#if 0 // SIMPLER
-  Simpler(vx_,px_,vb_,pb_);  
+
 #endif
 
   // insert solution for velocity and pressure
@@ -295,6 +312,34 @@ void LINALG::SIMPLER_Operator::Simpler(RCP<Epetra_Vector> vx, RCP<Epetra_Vector>
 }                                      
 
 
+/*----------------------------------------------------------------------*
+ |  (private)                                                mwgee 02/08|
+ *----------------------------------------------------------------------*/
+void LINALG::SIMPLER_Operator::CheapSimple(RCP<Epetra_Vector> vx, RCP<Epetra_Vector> px, 
+                                           RCP<Epetra_Vector> vb, RCP<Epetra_Vector> pb) const
+{
+  //------------------------------------------------------------ L-solve
+  // Solve A(0,0) \hat{v} = vb , result is on vwork1_
+  Pv_->ApplyInverse(*vb,*vwork1_);
+  
+  // Build rhs for second solve pwork1_ = pb - A(1,0)*\hat{v} , result is on pwork1_
+  (*A_)(1,0).Multiply(false,*vwork1_,*pwork1_);
+  pwork1_->Update(1.0,*pb,-1.0);
+  
+  // Solve S \hat{p} = pb - A(1,0)*\hat{v} , result is on px
+  Pp_->ApplyInverse(*pwork1_,*px);
+  
+  //------------------------------------------------------------ U-solve
+  // p = 1/alpha * \hat{p} , result is on px
+  if (alpha_ != 1.0) px->Scale(1./alpha_);
+  
+  // v = \hat{v} - diag(A(0,0))^{-1} A(0,1) p , result is on vx
+  (*A_)(0,1).Multiply(false,*px,*vwork2_);
+  diagAinv_->Multiply(false,*vwork2_,*vx);
+  vx->Update(1.0,*vwork1_,-1.0);
+  
+  return;
+}                                      
 
 
 

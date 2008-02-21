@@ -180,6 +180,13 @@ private:
   void Simpler(RCP<Epetra_Vector> vx, RCP<Epetra_Vector> px, 
               RCP<Epetra_Vector> vb, RCP<Epetra_Vector> pb) const;
 
+
+  /*!
+  \brief do one sweep of simple or simplec preconditioning
+  */
+  void CheapSimple(RCP<Epetra_Vector> vx, RCP<Epetra_Vector> px, 
+                   RCP<Epetra_Vector> vb, RCP<Epetra_Vector> pb) const;
+
   FILE*                                               outfile_; // error file to write output to or NULL
   ParameterList                                       vlist_;   // list for velocity solver
   ParameterList                                       plist_;   // list for pressure solver
@@ -189,6 +196,9 @@ private:
   RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy> > A_;       // 2x2 block matrix
   RCP<SparseMatrix>                                   diagAinv_;// inverse of main diagonal of A(0,0)
   RCP<SparseMatrix>                                   S_;       // Approximate Schur complement on the pressure space
+
+  RCP<Epetra_Operator>                                Pv_;      // preconditioner for velocity subproblem
+  RCP<Epetra_Operator>                                Pp_;      // preconditioner for pressure subproblem
 
   RCP<Epetra_Vector>                                  vx_;      // velocity solution
   RCP<Epetra_Vector>                                  px_;      // pressure solution
