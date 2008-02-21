@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------**##
-\file so_tet10.cpp
+\file so_ctet10.cpp
 \brief 
 
 <pre>
@@ -28,7 +28,7 @@ writen by : Alexander Volf
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_ctet10::So_ctet10(int id, int owner) :
-DRT::Element(id,element_so_tet10,owner),
+DRT::Element(id,element_so_ctet10,owner),
 material_(0),
 data_()
 {
@@ -73,7 +73,7 @@ DRT::Element* DRT::ELEMENTS::So_ctet10::Clone() const
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::So_ctet10::Shape() const
 {
-  return tet10;
+  return ctet10;
 }
 
 /*----------------------------------------------------------------------***
@@ -425,7 +425,6 @@ void DRT::ELEMENTS::Soctet10Register::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-//void DRT::ELEMENTS::Soh8Register::Unpack(const vector<char>& data)
 void DRT::ELEMENTS::Soctet10Register::Unpack(const vector<char>& data)
 {
   int position = 0;

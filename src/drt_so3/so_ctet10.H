@@ -158,7 +158,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_So_tet10;}
+  virtual int UniqueParObjectId() const { return ParObject_So_ctet10;}
 
   /*!
   \brief Pack this class so it can be communicated
