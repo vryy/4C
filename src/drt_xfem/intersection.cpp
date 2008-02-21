@@ -130,30 +130,12 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
               
                 if(intersected) 
                 {
-                	if(cutterElementMap.find(xfemElement->LID()) != cutterElementMap.end())
-                	{
-                    	cutterElementMap.find(xfemElement->LID())->second.push_back(cutterElement); 
-                	}
-                   	else
-                   	{
-                   		vector<DRT::Element *> cutterVector;
-                   		cutterVector.push_back(cutterElement);
-                   		cutterElementMap.insert(make_pair(xfemElement->LID(), cutterVector));
-                   	}
+                    cutterElementMap[xfemElement->LID()].push_back(cutterElement);
 #ifdef PARALLEL         
 					int addToCutterId = 0;
 					if(condCounter > 0) addToCutterId = conditionEleCount[condCounter];
 
-                   	if(xfemCutterIdMap.find(xfemElement->LID()) != xfemCutterIdMap.end())
-                   	{
-                   		xfemCutterIdMap.find(xfemElement->LID())->second.insert(cutterElement->Id() + addToCutterId);  
-                   	}
-                   	else
-                   	{
-                   		set<int> cutterIds;
-                   		cutterIds.insert(cutterElement->Id() + addToCutterId);
-                   		xfemCutterIdMap.insert(make_pair(xfemElement->LID(), cutterIds));
-                   	}
+					xfemCutterIdMap[xfemElement->LID()].insert(cutterElement->Id() + addToCutterId);
 #endif                   	
                 } 
             }// for-loop over all geometryMap
@@ -386,9 +368,8 @@ void Intersection::packData(
         {   
             for(int inode = 0; inode < iterGeo->second.get()->NumNode(); inode++)
             {
-                int nodeId = iterGeo->second.get()->Nodes()[inode]->Id();
-                if(nodeSet.find(nodeId) == nodeSet.end())
-                    nodeSet.insert(nodeId);     
+                const int nodeId = iterGeo->second.get()->Nodes()[inode]->Id();
+                nodeSet.insert(nodeId);
             }
             vector<char> data;
             iterGeo->second.get()->Pack(data);
@@ -610,11 +591,11 @@ void Intersection::getCutterElementsInParallel(
         			{
         				if(cutterElementMap.find(xfemElement->LID()) != cutterElementMap.end())
         				{
-                            set<int> currentSet =  xfemCutterIdMap.find(xfemElement->LID())->second; 
+                            const set<int> currentSet =  xfemCutterIdMap.find(xfemElement->LID())->second; 
         					if(currentSet.find(actCutterId) == currentSet.end()) 
         					{
-            					cutterElementMap.find(xfemElement->LID())->second.push_back(actCutter); 
-            					xfemCutterIdMap.find(xfemElement->LID())->second.insert(actCutterId);   
+            					cutterElementMap[xfemElement->LID()].push_back(actCutter); 
+            					xfemCutterIdMap[xfemElement->LID()].insert(actCutterId);   
         					}
         				}
            				else
@@ -632,14 +613,11 @@ void Intersection::getCutterElementsInParallel(
            				{
            					cutterIdSet.insert(actCutterId);
            				
-           					for(int inode = 0; inode < actCutter->NumNode(); inode++ )
+           					for(int inode = 0; inode < actCutter->NumNode(); ++inode )
            					{
            						const int nodeId =  actCutter->Nodes()[inode]->Id();
-           						if(cutterNodeIdSet.find(nodeId) == cutterNodeIdSet.end())
-           						{
-           							cutterNodeIdSet.insert(nodeId);
-           							cutterNodeMap.insert(make_pair(nodeId , nodeMap.find(nodeId)->second));	
-           						}	
+           						cutterNodeIdSet.insert(nodeId);
+           						cutterNodeMap[nodeId] = nodeMap.find(nodeId)->second;
            					} // for loop over nodes
                             actCutter->BuildNodalPointers(cutterNodeMap);
            				} 
