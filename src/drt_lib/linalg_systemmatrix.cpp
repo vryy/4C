@@ -856,6 +856,40 @@ void LINALG::BlockSparseMatrixBase::Complete()
       Matrix(r,c).Complete(DomainMap(c),RangeMap(r));
     }
   }
+
+  // build full row map
+  int rowmaplength = 0;
+  for (int r=0; r<Rows(); ++r)
+  {
+    rowmaplength += Matrix(r,0).RowMap().NumMyElements();
+  }
+  std::vector<int> rowmapentries;
+  rowmapentries.reserve(rowmaplength);
+  for (int r=0; r<Rows(); ++r)
+  {
+    const Epetra_Map& rowmap = Matrix(r,0).RowMap();
+    copy(rowmap.MyGlobalElements(),
+         rowmap.MyGlobalElements()+rowmap.NumMyElements(),
+         back_inserter(rowmapentries));
+  }
+  fullrowmap_ = Teuchos::rcp(new Epetra_Map(-1,rowmapentries.size(),&rowmapentries[0],0,Comm()));
+
+  // build full col map
+  int colmaplength = 0;
+  for (int c=0; c<Cols(); ++c)
+  {
+    colmaplength += Matrix(0,c).ColMap().NumMyElements();
+  }
+  std::vector<int> colmapentries;
+  colmapentries.reserve(colmaplength);
+  for (int c=0; c<Cols(); ++c)
+  {
+    const Epetra_Map& colmap = Matrix(0,c).ColMap();
+    copy(colmap.MyGlobalElements(),
+         colmap.MyGlobalElements()+colmap.NumMyElements(),
+         back_inserter(colmapentries));
+  }
+  fullcolmap_ = Teuchos::rcp(new Epetra_Map(-1,colmapentries.size(),&colmapentries[0],0,Comm()));
 }
 
 
@@ -1064,7 +1098,7 @@ int LINALG::DefaultBlockMatrixStrategy::ColBlock(int rblock, int lcol, int cgid)
     }
 
     // otherwise we can get just the non-ghost entries right now
-    else if (matrix.DomainMap().MyGID(cgid))
+    else if (mat_.DomainMap(cblock).MyGID(cgid))
     {
       return cblock;
     }
@@ -1079,8 +1113,8 @@ int LINALG::DefaultBlockMatrixStrategy::ColBlock(int rblock, int lcol, int cgid)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void LINALG::DefaultBlockMatrixStrategy::Assemble(double val,
-                                                   int lrow, int rgid, int rblock,
-                                                   int lcol, int cgid, int cblock)
+                                                  int lrow, int rgid, int rblock,
+                                                  int lcol, int cgid, int cblock)
 {
 #ifdef DEBUG
   if (rblock==-1)

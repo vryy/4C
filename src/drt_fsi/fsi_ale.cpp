@@ -74,11 +74,55 @@ FSI::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
     idisp->PutScalar(1.0);
     interface_.InsertCondVector(idisp,dirichtoggle_);
   }
+}
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FSI::AleLinear::BuildSystemMatrix(bool full)
+{
   // build linear matrix once and for all
-  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,false,true));
+  if (full)
+  {
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+    sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,false,true));
+  }
+  else
+  {
+    sysmat_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(interface_,interface_,81,false,true));
+  }
+
   EvaluateElements();
-  LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,dirichtoggle_);
+  if (full)
+    LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,dirichtoggle_);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const LINALG::SparseMatrix* FSI::AleLinear::InteriorMatrixBlock() const
+{
+  LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>* bm =
+    dynamic_cast<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>*>(&*sysmat_);
+  if (bm!=NULL)
+  {
+    return &bm->Matrix(0,0);
+  }
+  return NULL;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const LINALG::SparseMatrix* FSI::AleLinear::InterfaceMatrixBlock() const
+{
+  LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>* bm =
+    dynamic_cast<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>*>(&*sysmat_);
+  if (bm!=NULL)
+  {
+    return &bm->Matrix(0,1);
+  }
+  return NULL;
 }
 
 

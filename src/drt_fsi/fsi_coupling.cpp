@@ -3,6 +3,7 @@
 
 #include "fsi_coupling.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
+#include "../drt_lib/linalg_utils.H"
 
 
 /*----------------------------------------------------------------------*
@@ -389,6 +390,13 @@ Teuchos::RCP<Epetra_CrsMatrix> FSI::Coupling::MasterToPermMaster(Teuchos::RCP<Ep
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_CrsMatrix> FSI::Coupling::SlaveToPermSlave(Teuchos::RCP<Epetra_CrsMatrix> sm) const
 {
+#ifdef DEBUG
+  if (not sm->RowMap().SameAs(*slavedofmap_))
+    dserror("slave dof map vector expected");
+  if (not sm->Filled())
+    dserror("matrix must be filled");
+#endif
+
   Teuchos::RCP<Epetra_CrsMatrix> permsm = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*permslavedofmap_,sm->MaxNumEntries()));
   int err = permsm->Import(*sm,*slaveexport_,Insert);
   if (err)

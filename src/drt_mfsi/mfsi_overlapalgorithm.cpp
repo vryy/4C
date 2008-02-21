@@ -102,7 +102,8 @@ extern Teuchos::RCP<Teuchos::ParameterList> globalparameterlist;
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MFSI::OverlapAlgorithm::OverlapAlgorithm(Epetra_Comm& comm)
-  : Algorithm(comm)
+  : Algorithm(comm),
+    havefluidstructcolmap_(false)
 {
   // right now we use matching meshes at the interface
 
@@ -204,24 +205,25 @@ MFSI::OverlapAlgorithm::OverlapAlgorithm(Epetra_Comm& comm)
 
   Teuchos::RCP<Epetra_CrsMatrix> aii;
   Teuchos::RCP<Epetra_CrsMatrix> aig;
-  Teuchos::RCP<Epetra_CrsMatrix> agi;
-  Teuchos::RCP<Epetra_CrsMatrix> agg;
 
-  Teuchos::RCP<Epetra_Map> agmap = AleField().Interface().CondMap();
-  Teuchos::RCP<Epetra_Map> aimap = AleField().Interface().OtherMap();
+  // build ale system matrix in splitted system
+  AleField().BuildSystemMatrix(false);
 
-  Teuchos::RCP<Epetra_CrsMatrix> a = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(AleField().SysMat());
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
+  const LINALG::SparseMatrix* mat_aii = AleField().InteriorMatrixBlock();
+  const LINALG::SparseMatrix* mat_aig = AleField().InterfaceMatrixBlock();
+
+  if (a==Teuchos::null or mat_aii==NULL or mat_aig==NULL)
+    dserror("expect ale block matrix");
+
+  aii = mat_aii->EpetraMatrix();
+  aig = mat_aig->EpetraMatrix();
 
   // map between ale interface and structure column map
 
-  DRT::Exporter ex(a->RowMap(),a->ColMap(),a->Comm());
+  DRT::Exporter ex(a->FullRowMap(),a->FullColMap(),a->Comm());
   coupsa.FillSlaveToMasterMap(alestructcolmap_);
   ex.Export(alestructcolmap_);
-
-  if (not LINALG::SplitMatrix2x2(a,aimap,agmap,aii,aig,agi,agg))
-  {
-    dserror("failed to split ale matrix");
-  }
 
   aig_ = this->ConvertFigColmap(aig,alestructcolmap_,StructureField().DomainMap(),1.);
   aii_ = aii;
@@ -401,11 +403,12 @@ void MFSI::OverlapAlgorithm::SetupSysMat(Thyra::DefaultBlockedLinearOp<double>& 
 
   // map between fluid interface and structure column map
 
-  if (fluidstructcolmap_.size()==0)
+  if (not havefluidstructcolmap_)
   {
     DRT::Exporter ex(f->RowMap(),f->ColMap(),f->Comm());
     coupsf.FillSlaveToMasterMap(fluidstructcolmap_);
     ex.Export(fluidstructcolmap_);
+    havefluidstructcolmap_ = true;
   }
 
   if (not LINALG::SplitMatrix2x2(f,fimap,fgmap,fii,fig,fgi,fgg))
@@ -413,12 +416,12 @@ void MFSI::OverlapAlgorithm::SetupSysMat(Thyra::DefaultBlockedLinearOp<double>& 
     dserror("failed to split fluid matrix");
   }
 
+  fii->FillComplete(*fimap,*fimap);
+  fig->FillComplete(*fgmap,*fimap);
+  fgi->FillComplete(*fimap,*fgmap);
+  fgg->FillComplete(*fgmap,*fgmap);
+
   double scale = FluidField().ResidualScaling();
-
-  // transform fluid interface matrix to structure interface and add it to
-  // structure matrix
-
-  AddFluidInterface(scale/Dt(),fgg,s);
 
   // build block matrix
 
@@ -447,6 +450,11 @@ void MFSI::OverlapAlgorithm::SetupSysMat(Thyra::DefaultBlockedLinearOp<double>& 
 
   mat.setBlock(2,0,Thyra::nonconstEpetraLinearOp(aig_));
   mat.setBlock(2,2,Thyra::nonconstEpetraLinearOp(aii_));
+
+  // transform fluid interface matrix to structure interface and add it to
+  // structure matrix
+
+  AddFluidInterface(scale/Dt(),fgg,s);
 
   mat.endBlockFill();
 }

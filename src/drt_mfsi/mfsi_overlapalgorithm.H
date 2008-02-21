@@ -76,6 +76,9 @@ namespace MFSI
 
     //@}
 
+    /// Return a simple one-line description of this object.
+    std::string description() const { return "Overlapping MFSI"; }
+
   protected:
 
     /// setup of NOX convergance tests
@@ -178,7 +181,9 @@ namespace MFSI
 
     mutable std::map<int,int> fluidstructcolmap_;
 
-    mutable std::map<int,int> alestructcolmap_;
+    std::map<int,int> alestructcolmap_;
+
+    mutable bool havefluidstructcolmap_;
   };
 }
 

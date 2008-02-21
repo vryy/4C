@@ -156,7 +156,7 @@ namespace MFSI
     Teuchos::RefCountPtr<NOX::Utils> Utils() const { return utils_; }
 
     Teuchos::RCP<Thyra::DefaultProductVectorSpace<double> > DofRowMap() const { return dofrowmap_; }
-    void SetDofRowMap(Teuchos::RCP<Thyra::DefaultProductVectorSpace<double> > drm) { dofrowmap_ = drm; }
+    void SetDofRowMap(Teuchos::RCP<Thyra::DefaultProductVectorSpace<double> > drm);
 
     Teuchos::RCP<Thyra::PreconditionerFactoryBase<double> > PreconditionerFactory() const { return preconditionerfactory_; }
     void SetPreconditionerFactory(Teuchos::RCP<Thyra::PreconditionerFactoryBase<double> > pf) { preconditionerfactory_ = pf; }
@@ -172,6 +172,12 @@ namespace MFSI
 
     /// the dof row map of the coupled system
     Teuchos::RCP<Thyra::DefaultProductVectorSpace<double> > dofrowmap_;
+
+    /// merged domain space (map) used by the solver
+    mutable Teuchos::RCP<const Thyra::VectorSpaceBase<double> > xspace_;
+
+    /// merged range space (map) used by the solver
+    mutable Teuchos::RCP<const Thyra::VectorSpaceBase<double> > fspace_;
 
     /// composed global system matrix
     Teuchos::RCP<Thyra::DefaultBlockedLinearOp<double> > mat_;

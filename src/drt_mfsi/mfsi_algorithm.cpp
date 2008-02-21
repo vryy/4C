@@ -97,6 +97,14 @@ MFSI::Algorithm::Algorithm(Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void MFSI::Algorithm::SetDofRowMap(Teuchos::RCP<Thyra::DefaultProductVectorSpace<double> > drm)
+{
+  dofrowmap_ = drm;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void MFSI::Algorithm::Timeloop()
 {
   // Get the top level parameter list
@@ -254,10 +262,24 @@ Teuchos::RCP<Thyra::LinearOpWithSolveBase<double> > MFSI::Algorithm::create_W() 
 {
   Teuchos::RCP<Thyra::LinearOpWithSolveBase<double> > solver = solverfactory_->createOp();
 
+  Teuchos::RCP<Thyra::LinearOpBase<double> > w = create_W_op();
+  //cout << *w->range();
+
+  Teuchos::RCP<const Thyra::DefaultLinearOpSource<double,double> > src = Thyra::defaultLinearOpSource<double,double>(w);
+  //cout << *src->getOp()->range();
+
   // initialize the solver with the composite matrix
-  solverfactory_->initializeOp(Thyra::defaultLinearOpSource<double,double>(create_W_op()),
+  solverfactory_->initializeOp(src,
                                &*solver,
                                Thyra::SUPPORT_SOLVE_FORWARD_ONLY);
+
+  //cout << *solver->range();
+
+  // We get a simple (non-product) space here since the aztec solver factory
+  // needs to wrap the block matrix in an epetra operator internally.
+  fspace_ = solver->range();
+  xspace_ = solver->domain();
+
   return solver;
 }
 
@@ -329,7 +351,7 @@ void MFSI::Algorithm::Evaluate(Teuchos::RCP<const Thyra::DefaultProductVector<do
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Thyra::VectorSpaceBase<double> > MFSI::Algorithm::get_x_space() const
 {
-  return dofrowmap_;
+  return xspace_;
 }
 
 
@@ -337,7 +359,7 @@ Teuchos::RCP<const Thyra::VectorSpaceBase<double> > MFSI::Algorithm::get_x_space
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Thyra::VectorSpaceBase<double> > MFSI::Algorithm::get_f_space() const
 {
-  return dofrowmap_;
+  return fspace_;
 }
 
 

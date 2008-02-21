@@ -121,7 +121,13 @@ public:
   virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const = 0;
 
   /// direct access to system matrix
-  virtual Teuchos::RCP<Epetra_Operator> SysMat() const = 0;
+  virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const = 0;
+
+  /// Aii matrix block
+  virtual const LINALG::SparseMatrix* InteriorMatrixBlock() const = 0;
+
+  /// Aig matrix block
+  virtual const LINALG::SparseMatrix* InterfaceMatrixBlock() const = 0;
 
   /// direct access to discretization
   virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
@@ -130,6 +136,9 @@ public:
 
   /// communication object at the interface
   virtual const LINALG::MapExtractor& Interface() const = 0;
+
+  /// build system matrix
+  virtual void BuildSystemMatrix(bool full=true) = 0;
 
   //@}
 };
@@ -150,6 +159,9 @@ public:
             Teuchos::RCP<ParameterList> params,
             Teuchos::RCP<IO::DiscretizationWriter> output,
             bool dirichletcond=true);
+
+  /// build system matrix
+  virtual void BuildSystemMatrix(bool full=true);
 
   /// a very simple time loop to be used for standalone ALE problems
   void Integrate();
@@ -178,8 +190,15 @@ public:
     { return dispnp_; }
   virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const
     { return Teuchos::rcp(discret_->DofRowMap(),false); }
-  virtual Teuchos::RCP<Epetra_Operator> SysMat() const
-    { return sysmat_->EpetraOperator(); }
+  virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const
+  { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
+
+  /// Aii matrix block
+  virtual const LINALG::SparseMatrix* InteriorMatrixBlock() const;
+
+  /// Aig matrix block
+  virtual const LINALG::SparseMatrix* InterfaceMatrixBlock() const;
+
   virtual Teuchos::RCP<DRT::Discretization> Discretization()
     { return discret_; }
   //virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const;

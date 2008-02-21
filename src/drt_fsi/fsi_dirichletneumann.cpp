@@ -146,6 +146,9 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
 
   FluidField().SetMeshMap(coupfa.MasterDofMap());
 
+  // the ale matrix is build just once
+  AleField().BuildSystemMatrix();
+
 #if 0
   // create connection graph of interface elements
   Teuchos::RCP<Epetra_Map> imap = StructureField().InterfaceMap();

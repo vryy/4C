@@ -890,6 +890,9 @@ void ElementReader::Partition()
                                    0,
                                    *comm_));
 
+    // At this point we have a good guess about the system matrix bandwidth.
+    //graph->MaxNumIndices();
+
     graph = null;
   }
   else

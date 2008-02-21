@@ -212,7 +212,10 @@ namespace LINALG
     virtual Teuchos::RCP<Epetra_Operator> EpetraOperator() { return sysmat_; }
 
     /// return the internal Epetra_CrsMatrix (you should not need this!)
-    Teuchos::RCP<Epetra_CrsMatrix>& EpetraMatrix() { return sysmat_; }
+    Teuchos::RCP<Epetra_CrsMatrix> EpetraMatrix() { return sysmat_; }
+
+    /// return the internal Epetra_CrsMatrix (you should not need this!)
+    Teuchos::RCP<Epetra_CrsMatrix> EpetraMatrix() const { return sysmat_; }
 
     /** \name FE methods */
     //@{
@@ -540,6 +543,18 @@ namespace LINALG
     /// total matrix domain map with all blocks
     Epetra_Map& FullDomainMap() const { return *domainmaps_.FullMap(); }
 
+    /// total matrix row map with all blocks
+    /*!
+      \pre Filled()==true
+    */
+    Epetra_Map& FullRowMap() const { return *fullrowmap_; }
+
+    /// total matrix column map with all blocks
+    /*!
+      \pre Filled()==true
+    */
+    Epetra_Map& FullColMap() const { return *fullcolmap_; }
+
     //@}
 
     /** \name Attribute set methods */
@@ -597,6 +612,12 @@ namespace LINALG
 
     /// row major matrix block storage
     std::vector<SparseMatrix> blocks_;
+
+    /// full matrix row map
+    Teuchos::RCP<Epetra_Map> fullrowmap_;
+
+    /// full matrix column map
+    Teuchos::RCP<Epetra_Map> fullcolmap_;
   };
 
 
@@ -630,7 +651,9 @@ namespace LINALG
   public:
     BlockSparseMatrix(const MultiMapExtractor& domainmaps,
                       const MultiMapExtractor& rangemaps,
-                      int npr=81);
+                      int npr=81,
+                      bool explicitdirichlet=true,
+                      bool savegraph=false);
 
     void Assemble(const Epetra_SerialDenseMatrix& Aele,
                   const std::vector<int>& lmrow,
@@ -719,8 +742,10 @@ LINALG::SparseMatrix::Split(const MultiMapExtractor& domainmaps,
 template <class Strategy>
 LINALG::BlockSparseMatrix<Strategy>::BlockSparseMatrix(const MultiMapExtractor& domainmaps,
                                                        const MultiMapExtractor& rangemaps,
-                                                       int npr)
-  : BlockSparseMatrixBase(domainmaps,rangemaps,npr),
+                                                       int npr,
+                                                       bool explicitdirichlet,
+                                                       bool savegraph)
+  : BlockSparseMatrixBase(domainmaps,rangemaps,npr,explicitdirichlet,savegraph),
     // this was necessary, otherwise ambigous with copy constructor of Strategy
     Strategy((LINALG::BlockSparseMatrixBase&)(*this))
 {
