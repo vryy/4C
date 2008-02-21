@@ -92,7 +92,7 @@ class Intersection
             const RCP<DRT::Discretization>         cutterdis, 
             map< int, DomainIntCells >&			   domainintcells,
             map< int, BoundaryIntCells >& 		   boundaryintcells,
-            map< int, vector< DRT::Element* > >&   cutterElementMap,  ///< int is the xfem element global id
+            map< int, set< DRT::Element* > >&      cutterElementMap,  ///< int is the xfem element global id
             map< int, RCP<DRT::Node> >&            cutterNodeMap      ///< int is the xfem element global id
             );
 		
@@ -255,8 +255,8 @@ class Intersection
     	void getCutterElementsInParallel(	
 			const vector< DRT::Condition * >&   	xfemConditions,
 			vector<int>&							conditionEleCount, 
-			map< int, vector< DRT::Element* > >&   	cutterElementMap,
-			map< int, RCP<DRT::Node> >&  	cutterNodeMap,
+			map< int, set< DRT::Element* > >&       cutterElementMap,
+			map< int, RCP<DRT::Node> >&             cutterNodeMap,
 			map< int, set<int> >& 					xfemCutterIdMap,
 			const RCP<DRT::Discretization>& xfemdis,
 		   	const RCP<DRT::Discretization>& cutterdis  
@@ -500,7 +500,7 @@ class Intersection
         */       
         void computeCDT(    
             const DRT::Element*                     element,
-            const DRT::Element*                     cutterElement,
+//            const DRT::Element*                     cutterElement,
             map< int, DomainIntCells >&             domainintcells,
             map< int, BoundaryIntCells >&           boundaryintcells
             );

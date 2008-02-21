@@ -25,7 +25,7 @@ XFEM::InterfaceHandle::InterfaceHandle(
 {
 	elementalDomainIntCells_.clear();
 	elementalBoundaryIntCells_.clear();
-	map< int, vector< DRT::Element* > >            cutterElementMap;
+	map< int, set< DRT::Element* > >       cutterElementMap;
 	map< int, RCP<DRT::Node> >             cutterNodeMap;
 	XFEM::Intersection is;
 	is.computeIntersection(
@@ -38,11 +38,11 @@ XFEM::InterfaceHandle::InterfaceHandle(
 	std::cout << "numcuttedelements = " << elementalDomainIntCells_.size() << endl;
   
 	boundaryElements_.clear();
-	map< int, vector< DRT::Element* > >::iterator paar;
+	map< int, set< DRT::Element* > >::iterator paar;
 	for (paar = cutterElementMap.begin(); paar != cutterElementMap.end(); ++paar)
     {
-	    std::vector< DRT::Element* > elements = paar->second;
-	    for (std::vector< DRT::Element* >::iterator eleptr = elements.begin(); eleptr != elements.end(); ++eleptr)
+	    std::set< DRT::Element* > elements = paar->second;
+	    for (std::set< DRT::Element* >::iterator eleptr = elements.begin(); eleptr != elements.end(); ++eleptr)
         {
 	        DRT::Element* ele = (*eleptr);
             const int boundary_ele_gid = ele->Id();

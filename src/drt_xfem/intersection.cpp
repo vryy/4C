@@ -56,15 +56,15 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
                                         const RCP<DRT::Discretization>  cutterdis,  
                                         map< int, DomainIntCells >&   			domainintcells,
                                         map< int, BoundaryIntCells >&   		boundaryintcells,
-                                        map< int, vector< DRT::Element* > >&    cutterElementMap,  ///< int is the xfem element global id
+                                        map< int, set< DRT::Element* > >&    cutterElementMap,  ///< int is the xfem element global id
                                         map< int, RCP<DRT::Node> >&     cutterNodeMap      ///< int is the xfem element global id
                                         )
 {
     
 	
     bool xfemIntersection; 
-    vector< DRT::Condition * >      		xfemConditions;
-    vector< DRT::Element* > 				cutterElements;
+    vector< DRT::Condition * >      xfemConditions;
+    set< DRT::Element* > 		    cutterElements;
     
     cutterElementMap.clear();
     cutterNodeMap.clear();
@@ -130,7 +130,7 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
               
                 if(intersected) 
                 {
-                    cutterElementMap[xfemElement->LID()].push_back(cutterElement);
+                    cutterElementMap[xfemElement->LID()].insert(cutterElement);
 #ifdef PARALLEL         
 					int addToCutterId = 0;
 					if(condCounter > 0) addToCutterId = conditionEleCount[condCounter];
@@ -165,9 +165,9 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
             //debugIntersection(xfemElement, cutterElements);
         }
         else
-            cutterElements.resize(0);
+            cutterElements.clear();
           
-        for(vector< DRT::Element* >::iterator i = cutterElements.begin(); i != cutterElements.end(); ++i )
+        for(set< DRT::Element* >::iterator i = cutterElements.begin(); i != cutterElements.end(); ++i )
         {
             DRT::Element* cutterElement = (*i);
             if(cutterElement == NULL) dserror("cutter element is null\n");
@@ -215,7 +215,8 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
         if(xfemIntersection)
         {         
             //debugTetgenDataStructure(xfemElement);
-            computeCDT(xfemElement, cutterElements[0], domainintcells, boundaryintcells);
+            //computeCDT(xfemElement, cutterElements[0], domainintcells, boundaryintcells);
+            computeCDT(xfemElement, domainintcells, boundaryintcells);
         }
         
     }// for-loop over all  actdis->NumMyColElements()
@@ -238,7 +239,7 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
 }
 
 void getCutterElementPlusNodes(
-        map< int, vector< DRT::Element* > >& cutterElementMap,
+        map< int, set< DRT::Element* > >& cutterElementMap,
         map< int, RCP<DRT::Node> >&  cutterNodeMap
         )
 {
@@ -436,7 +437,7 @@ void Intersection::unpackNodes(
 void Intersection::getCutterElementsInParallel(	
 	const vector< DRT::Condition * >&       xfemConditions,
 	vector<int>&							conditionEleCount, 
-	map< int, vector< DRT::Element* > >&   	cutterElementMap,
+	map< int, set< DRT::Element* > >&       cutterElementMap,
 	map< int, RCP<DRT::Node> >&  	cutterNodeMap,
 	map<int, set<int> >& 					xfemCutterIdMap,
 	const RCP<DRT::Discretization>& xfemdis,
@@ -589,25 +590,29 @@ void Intersection::getCutterElementsInParallel(
                      
             		if(intersected)
         			{
-        				if(cutterElementMap.find(xfemElement->LID()) != cutterElementMap.end())
-        				{
-                            const set<int> currentSet =  xfemCutterIdMap.find(xfemElement->LID())->second; 
-        					if(currentSet.find(actCutterId) == currentSet.end()) 
-        					{
-            					cutterElementMap[xfemElement->LID()].push_back(actCutter); 
-            					xfemCutterIdMap[xfemElement->LID()].insert(actCutterId);   
-        					}
-        				}
-           				else
-           				{
-           					vector<DRT::Element*> cutterVector;
-           					cutterVector.push_back(actCutter);
-           					cutterElementMap.insert(make_pair(xfemElement->LID(), cutterVector));
-           					
-           					set<int> cutterIds;
-                   			cutterIds.insert(actCutterId);
-                   			xfemCutterIdMap.insert(make_pair(xfemElement->LID(), cutterIds));
-           				}
+            		    cutterElementMap[xfemElement->LID()].insert(actCutter);
+            		    xfemCutterIdMap[xfemElement->LID()].insert(actCutterId);
+//        				if(cutterElementMap.find(xfemElement->LID()) != cutterElementMap.end())
+//        				{
+//                            const set<int> currentSet =  xfemCutterIdMap.find(xfemElement->LID())->second; 
+//        					if(currentSet.find(actCutterId) == currentSet.end()) 
+//        					{
+//            					cutterElementMap[xfemElement->LID()].insert(actCutter); 
+//            					xfemCutterIdMap[xfemElement->LID()].insert(actCutterId);   
+//        					}
+//        				}
+//           				else
+//           				{
+//           				    cutterElementMap[xfemElement->LID()].insert(actCutter);
+////           					set<DRT::Element*> cutterVector;
+////           					cutterVector.insert(actCutter);
+////           					cutterElementMap.insert(make_pair(xfemElement->LID(), cutterVector));
+//           					
+//           				    xfemCutterIdMap[xfemElement->LID()].insert(actCutterId);
+////           					set<int> cutterIds;
+////                   			cutterIds.insert(actCutterId);
+////                   			xfemCutterIdMap.insert(make_pair(xfemElement->LID(), cutterIds));
+//           				}
            				
            				if(cutterIdSet.find(actCutterId) == cutterIdSet.end())
            				{
@@ -1391,7 +1396,7 @@ void Intersection::findNextSegment(
  *----------------------------------------------------------------------*/  
 void Intersection::computeCDT(  
         const DRT::Element*           			element,
-        const DRT::Element*            			cutterElement,
+//        const DRT::Element*            			cutterElement,
         map< int, DomainIntCells >&	            domainintcells,
         map< int, BoundaryIntCells >&           boundaryintcells)
 {
