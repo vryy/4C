@@ -1414,7 +1414,7 @@ void XFluidImplicitTimeInt::Output()
     //only perform stress calculation when output is needed
     if (writestresses_)
     {
-     RCP<Epetra_Vector> traction = CalcStresses();
+     RefCountPtr<Epetra_Vector> traction = CalcStresses();
      output_.WriteVector("traction",traction);
     }
 
@@ -1463,7 +1463,7 @@ void XFluidImplicitTimeInt::Output()
     //only perform stress calculation when output is needed
     if (writestresses_)
     {
-     RCP<Epetra_Vector> traction = CalcStresses();
+     RefCountPtr<Epetra_Vector> traction = CalcStresses();
      output_.WriteVector("traction",traction);
     }
 
@@ -1969,7 +1969,7 @@ RCP<Epetra_Vector> XFluidImplicitTimeInt::CalcStresses()
      const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
      // create vector (+ initialization with zeros)
-     RCP<Epetra_Vector> integratedshapefunc = LINALG::CreateVector(*dofrowmap,true);
+     RefCountPtr<Epetra_Vector> integratedshapefunc = LINALG::CreateVector(*dofrowmap,true);
 
      // call loop over elements to evaluate the condition
      discret_->ClearState();
