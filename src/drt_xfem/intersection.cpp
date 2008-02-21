@@ -109,8 +109,10 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
         startPointList();
         
         //printf("size of xfem condition = %d\n", c);
+        int condCounter = -1;  // was i
         for(vector<DRT::Condition*>::const_iterator conditer = xfemConditions.begin(); conditer!=xfemConditions.end(); ++conditer)
         {
+            condCounter++;
             DRT::Condition* xfemCondition = *conditer;
             const map<int, RCP<DRT::Element > > geometryMap = xfemCondition->Geometry();
             map<int, RCP<DRT::Element > >::const_iterator iterGeo;   
@@ -140,7 +142,7 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
                    	}
 #ifdef PARALLEL         
 					int addToCutterId = 0;
-					if(i > 0) addToCutterId = conditionEleCount[i];
+					if(condCounter > 0) addToCutterId = conditionEleCount[condCounter];
 
                    	if(xfemCutterIdMap.find(xfemElement->LID()) != xfemCutterIdMap.end())
                    	{
@@ -154,8 +156,8 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
                    	}
 #endif                   	
                 } 
-            }// for-loop over all geometryMap.size()
-		}// for-loop over all xfemConditions.size()           
+            }// for-loop over all geometryMap
+		}// for-loop over all xfemConditions        
 
 #ifdef PARALLEL
 	} // for loop over all xfem elements} 
