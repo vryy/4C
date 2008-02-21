@@ -265,22 +265,23 @@ bool XFEM::solveLinearSystemWithSVD(
     Epetra_SerialDenseVector&   x,
     const int dim)
 {
-    bool nonsingular = true;
-    double svdtemp = 0.0;;
     Epetra_SerialDenseMatrix V(dim, dim);
     Epetra_SerialDenseMatrix A(dim, dim);
     Epetra_SerialDenseVector W(dim);
     
     // initialize vectors and matrices
-    for(int  i = 0; i < dim; i++ )
-    {
-        x[i] = 0.0;
-        W[i] = 0.0;
-        for(int j = 0; j < dim; j++)
-        {
-            V[i][j] = 0.0;
-        }
-    }
+    x.Scale(0.0);
+    W.Scale(0.0);
+    V.Scale(0.0);
+//    for(int  i = 0; i < dim; i++ )
+//    {
+//        x[i] = 0.0;
+//        W[i] = 0.0;
+//        for(int j = 0; j < dim; j++)
+//        {
+//            V[i][j] = 0.0;
+//        }
+//    }
     
     A = U;
     
@@ -294,7 +295,7 @@ bool XFEM::solveLinearSystemWithSVD(
     {
         for(int  k = 0; k < dim; k++ )
         {
-            svdtemp = 0.0;
+            double svdtemp = 0.0;
             for(int  j = 0; j < dim; j++ )
             {
                 if( fabs(W[j]) > 1e-7 )
@@ -305,6 +306,7 @@ bool XFEM::solveLinearSystemWithSVD(
         }
     }
     
+    bool nonsingular = true;
     for(int  j = 0; j < dim; j++ )
         if( fabs(W[j]) <= 1e-7 )
         {
@@ -312,8 +314,9 @@ bool XFEM::solveLinearSystemWithSVD(
              break;
         }
     
+   /*  
    Epetra_SerialDenseVector b1(3);
- /*  for(int i = 0; i < dim; i++ )
+   for(int i = 0; i < dim; i++ )
     {
         b1[i] = 0.0;
         for(int  k = 0; k < dim; k++ )

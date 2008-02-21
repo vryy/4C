@@ -70,12 +70,12 @@ public:
 
     std::string enrTypeToString(const EnrType type) const;
     
-    int XFEMConditionLabel() const
+    inline int XFEMConditionLabel() const
     {
         return xfemconditionlabel_;
     };
     
-    EnrType Type() const
+    inline EnrType Type() const
     {
         return type_;
     };

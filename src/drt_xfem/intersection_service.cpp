@@ -257,11 +257,12 @@ void XFEM::elementToCurrentCoordinates(
         
     xsi.Scale(0.0);
     
+    const DRT::Node** const nodes = element->Nodes();
     for(int i=0; i<numNodes; i++)
     {
-        const DRT::Node* node = element->Nodes()[i];
+        const double* pos = nodes[i]->X();
         for(int j=0; j<3; j++)
-            xsi[j] += node->X()[j] * funct(i);
+            xsi[j] += pos[j] * funct(i);
     }
 }
 
@@ -709,7 +710,7 @@ bool XFEM::comparePoints(
 {   
     bool equal = true;
         
-    for(unsigned int i = 0; i < point1.size() ; i++)
+    for(unsigned int i = 0; i < point1.size() ; ++i)
         if(fabs(point1[i] - point2[i]) > TOL7)
         {
             equal = false;
@@ -731,7 +732,7 @@ bool XFEM::comparePoints(
 {   
     bool equal = true;
     
-    for(unsigned int i = 0; i < point1.size() ; i++)
+    for(unsigned int i = 0; i < point1.size() ; ++i)
         if(fabs(point1[i] - point2[i]) > TOL7)
         {
             equal = false;
@@ -753,7 +754,7 @@ bool XFEM::comparePoints(
 {
     bool equal = true;
              
-    for(unsigned int i = 0; i < 3 ; i++)
+    for(unsigned int i = 0; i < 3 ; ++i)
         if(fabs(point1->X()[i] - point2->X()[i]) > TOL7)
         {
             equal = false;
@@ -1203,37 +1204,37 @@ void XFEM::updateAForMap3To2(
 Epetra_SerialDenseMatrix XFEM::computeFastXAABB( 
     const DRT::Element* element)
 {
-    double  maxDistance;
     const int nsd = 3;
     Epetra_SerialDenseMatrix XAABB(nsd, 2);
     
-    const DRT::Node* node = element->Nodes()[0];
-    for(int dim=0; dim<nsd; dim++)
+    const double* pos = element->Nodes()[0]->X();
+    for(int dim=0; dim<nsd; ++dim)
     {
-        XAABB(dim, 0) = node->X()[dim] - TOL7;
-        XAABB(dim, 1) = node->X()[dim] + TOL7;
+        XAABB(dim, 0) = pos[dim] - TOL7;
+        XAABB(dim, 1) = pos[dim] + TOL7;
     }
     
-    for(int i=1; i<element->NumNode(); i++)
+    for(int i=1; i<element->NumNode(); ++i)
     {
-        const DRT::Node* nodeEle = element->Nodes()[i];
+        const double* posEle = element->Nodes()[i]->X();
         for(int dim=0; dim<nsd; dim++)
         {
-            XAABB(dim, 0) = std::min( XAABB(dim, 0), nodeEle->X()[dim] - TOL7);
-            XAABB(dim, 1) = std::max( XAABB(dim, 1), nodeEle->X()[dim] + TOL7);
+            XAABB(dim, 0) = std::min( XAABB(dim, 0), posEle[dim] - TOL7);
+            XAABB(dim, 1) = std::max( XAABB(dim, 1), posEle[dim] + TOL7);
         }
     }
     
-    maxDistance = fabs(XAABB(0,1) - XAABB(0,0));
-    for(int dim=1; dim<nsd; dim++)
+    double maxDistance = fabs(XAABB(0,1) - XAABB(0,0));
+    for(int dim=1; dim<nsd; ++dim)
        maxDistance = std::max(maxDistance, fabs(XAABB(dim,1)-XAABB(dim,0)) );
     
     // subtracts half of the maximal distance to minX, minY, minZ
     // adds half of the maximal distance to maxX, maxY, maxZ 
-    for(int dim=0; dim<nsd; dim++)
+    const double halfMaxDistance = 0.5*maxDistance;
+    for(int dim=0; dim<nsd; ++dim)
     {
-        XAABB(dim, 0) = XAABB(dim, 0) - 0.5*maxDistance;
-        XAABB(dim, 1) = XAABB(dim, 1) + 0.5*maxDistance;
+        XAABB(dim, 0) = XAABB(dim, 0) - halfMaxDistance;
+        XAABB(dim, 1) = XAABB(dim, 1) + halfMaxDistance;
     }   
     
     /*

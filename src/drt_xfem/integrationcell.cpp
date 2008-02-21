@@ -25,10 +25,6 @@ Maintainer: Axel Gerstenberger
 using namespace std;
 using namespace XFEM;
 
-#define MFOREACH(TYPE,VAL,VALS) for( TYPE::iterator VAL = VALS.begin(); VAL != VALS.end(); ++VAL )
-#define MCONST_FOREACH(TYPE,VAL,VALS) for( TYPE::const_iterator VAL = VALS.begin(); VAL != VALS.end(); ++VAL )
-#define MPFOREACH(TYPE,VAL,VALS) for( TYPE::const_iterator VAL = VALS->begin(); VAL != VALS->end(); ++VAL )
-
 //
 //  ctor
 //
@@ -80,7 +76,7 @@ IntCell::~IntCell()
 //
 // Print method
 //
-std::string IntCell::Print() const
+const std::string IntCell::toString() const
 {
   return "";
 }
@@ -93,8 +89,20 @@ DomainIntCell::DomainIntCell(
         const DRT::Element::DiscretizationType distype,
         const vector< vector<double> >& domainCoordinates) :
             IntCell(distype),
-            nodalpos_xi_domain_(domainCoordinates),
             nodalpos_xi_domain_blitz_(ConvertPosArrayToBlitz(domainCoordinates, distype, 3))
+{
+    return;
+}
+
+
+//
+//  ctor
+//
+DomainIntCell::DomainIntCell(
+        const DRT::Element::DiscretizationType distype,
+        const BlitzMat&                        domainCoordinates) :
+            IntCell(distype),
+            nodalpos_xi_domain_blitz_(domainCoordinates)
 {
     return;
 }
@@ -106,7 +114,6 @@ DomainIntCell::DomainIntCell(
 DomainIntCell::DomainIntCell(
         const DRT::Element::DiscretizationType distype) :
             IntCell(distype),
-            nodalpos_xi_domain_(GetDefaultCoordinates(distype)),
             nodalpos_xi_domain_blitz_(ConvertPosArrayToBlitz(GetDefaultCoordinates(distype), distype, 3))
 {
     return;
@@ -118,106 +125,26 @@ DomainIntCell::DomainIntCell(
 DomainIntCell::DomainIntCell(
         const DomainIntCell& old) :
             IntCell(old),
-            nodalpos_xi_domain_(old.nodalpos_xi_domain_),
             nodalpos_xi_domain_blitz_(old.nodalpos_xi_domain_blitz_)
 {
     return;   
 }
      
-string DomainIntCell::Print() const
+const string DomainIntCell::toString() const
 {
     stringstream s;
     s << "DomainIntCell" << endl;
-    MCONST_FOREACH(vector< vector<double> >, coordinate, nodalpos_xi_domain_)
-    {
-        s << "[";
-        MPFOREACH(vector<double>, val, coordinate)
-        {
-            s << *val << " ";
-        };
-        s << "]" << endl;
-    };
+    s << nodalpos_xi_domain_blitz_ << endl;
+//    MCONST_FOREACH(vector< vector<double> >, coordinate, nodalpos_xi_domain_)
+//    {
+//        s << "[";
+//        MPFOREACH(vector<double>, val, coordinate)
+//        {
+//            s << *val << " ";
+//        };
+//        s << "]" << endl;
+//    };
     return s.str();
-}
-
-// get volume in parameter space using Gauss integration
-vector<double> DomainIntCell::modifyGaussRule3D(
-        const bool standard_integration,
-        const double& cell_e0,
-        const double& cell_e1,
-        const double& cell_e2) const
-{   
-    // return value
-    vector<double> element_e(4);
-    if (standard_integration) {
-        // gauss coordinates of cell in element coordinates
-        element_e[0] = cell_e0;
-        element_e[1] = cell_e1;
-        element_e[2] = cell_e2;
-        element_e[3] = 1.0;
-    } else {
-    
-        const DRT::Element::DiscretizationType celldistype = this->Shape();
-        const int numnode = DRT::UTILS::getNumberOfElementNodes(celldistype);
-        const int nsd = 3;
-    
-        // get node coordinates
-        blitz::Array<double,2> xyze_cell(nsd,numnode,blitz::ColumnMajorArray<2>());
-        for (int inode=0; inode<numnode; ++inode)
-        {
-            xyze_cell(0,inode) = nodalpos_xi_domain_[inode][0];
-            xyze_cell(1,inode) = nodalpos_xi_domain_[inode][1];
-            xyze_cell(2,inode) = nodalpos_xi_domain_[inode][2];
-        }    
-
-        // init blitz indices
-        blitz::firstIndex i;    // Placeholder for the first index
-        blitz::secondIndex j;   // Placeholder for the second index
-        blitz::thirdIndex k;    // Placeholder for the third index
-    
-        // create shape function vectors 
-        blitz::Array<double,1> funct(numnode);
-        blitz::Array<double,2> deriv(nsd,numnode,blitz::ColumnMajorArray<2>());
-        DRT::UTILS::shape_function_3D(funct,cell_e0,cell_e1,cell_e2,celldistype);
-        DRT::UTILS::shape_function_3D_deriv1(deriv,cell_e0,cell_e1,cell_e2,celldistype);
-
-        // translate position into from cell coordinates to element coordinates
-        const blitz::Array<double,1> e(blitz::sum(funct(j)*xyze_cell(i,j),j));
-
-
-        // get Jacobian matrix and determinant
-        // actually compute its transpose....
-    /*
-      +-            -+ T      +-            -+
-      | dx   dx   dx |        | dx   dy   dz |
-      | --   --   -- |        | --   --   -- |
-      | dr   ds   dt |        | dr   dr   dr |
-      |              |        |              |
-      | dy   dy   dy |        | dx   dy   dz |
-      | --   --   -- |   =    | --   --   -- |
-      | dr   ds   dt |        | ds   ds   ds |
-      |              |        |              |
-      | dz   dz   dz |        | dx   dy   dz |
-      | --   --   -- |        | --   --   -- |
-      | dr   ds   dt |        | dt   dt   dt |
-      +-            -+        +-            -+
-    */
-        const blitz::Array<double,2> xjm(blitz::sum(deriv(i,k)*xyze_cell(j,k),k));
-        const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
-                           xjm(0,1)*xjm(1,2)*xjm(2,0)+
-                           xjm(0,2)*xjm(1,0)*xjm(2,1)-
-                           xjm(0,2)*xjm(1,1)*xjm(2,0)-
-                           xjm(0,0)*xjm(1,2)*xjm(2,1)-
-                           xjm(0,1)*xjm(1,0)*xjm(2,2);
-    
-  
-        // gauss coordinates of cell in element coordinates + gauss weight
-        element_e[0] = e(0);
-        element_e[1] = e(1);
-        element_e[2] = e(2);
-        element_e[3] = det;
-    }  
-    return element_e;
 }
 
 // set element nodal coordinates according to given distype
@@ -256,7 +183,7 @@ vector<vector<double> > DomainIntCell::GetDefaultCoordinates(
 //
 // return the center of the cell in physical coordinates
 //
-BlitzVec DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) const
+const BlitzVec DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) const
 {
     // number of space dimensions
     const int nsd = 3;
@@ -299,14 +226,29 @@ BoundaryIntCell::BoundaryIntCell(
         const vector< vector<double> >&           boundaryCoordinates) :
             IntCell(distype),
             surface_ele_gid_(surface_ele_gid),
-            nodalpos_xi_domain_(domainCoordinates),
-            nodalpos_xi_boundary_(boundaryCoordinates),
             nodalpos_xi_domain_blitz_(ConvertPosArrayToBlitz(domainCoordinates, distype, 3)),
             nodalpos_xi_boundary_blitz_(ConvertPosArrayToBlitz(boundaryCoordinates, distype, 2))
 {
     return;
 }
 
+//
+//  ctor
+//
+BoundaryIntCell::BoundaryIntCell(
+        const DRT::Element::DiscretizationType    distype,
+        const int                                 surface_ele_gid,
+        const BlitzMat&                           domainCoordinates,
+        const BlitzMat&                           boundaryCoordinates) :
+            IntCell(distype),
+            surface_ele_gid_(surface_ele_gid),
+            nodalpos_xi_domain_blitz_(domainCoordinates),
+            nodalpos_xi_boundary_blitz_(boundaryCoordinates)
+{
+    return;
+}
+        
+        
 /*----------------------------------------------------------------------*
  |  copy-ctor                                                mwgee 11/06|
  *----------------------------------------------------------------------*/
@@ -314,27 +256,26 @@ BoundaryIntCell::BoundaryIntCell(
         const BoundaryIntCell& old) :
             IntCell(old),
             surface_ele_gid_(old.surface_ele_gid_),
-            nodalpos_xi_domain_(old.nodalpos_xi_domain_),
-            nodalpos_xi_boundary_(old.nodalpos_xi_boundary_),
             nodalpos_xi_domain_blitz_(old.nodalpos_xi_domain_blitz_),
             nodalpos_xi_boundary_blitz_(old.nodalpos_xi_boundary_blitz_)
 {
     return;   
 }
      
-string BoundaryIntCell::Print() const
+const string BoundaryIntCell::toString() const
 {
     stringstream s;
     s << "BoundaryIntCell" << endl;
-    MCONST_FOREACH(vector< vector<double> >, coordinate, nodalpos_xi_domain_)
-    {
-        s << "[";
-        MPFOREACH(vector<double>, val, coordinate)
-        {
-            s << *val << " ";
-        };
-        s << "]" << endl;
-    };
+    s << nodalpos_xi_domain_blitz_ << endl;
+//    MCONST_FOREACH(vector< vector<double> >, coordinate, nodalpos_xi_domain_)
+//    {
+//        s << "[";
+//        MPFOREACH(vector<double>, val, coordinate)
+//        {
+//            s << *val << " ";
+//        };
+//        s << "]" << endl;
+//    };
     return s.str();
 }
 

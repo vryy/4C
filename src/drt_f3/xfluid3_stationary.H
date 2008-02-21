@@ -651,11 +651,7 @@ void Sysmat(
     // put one here to create arrays of size 1, since they are not needed anyway
     // in the xfem assembly, the numparam is determined by the dofmanager
     const int numparamsigmaxx = getNumParam<ASSTYPE>(dofman, Sigmaxx, 1);
-    const int numparamsigmayy = getNumParam<ASSTYPE>(dofman, Sigmayy, 1);
-    const int numparamsigmazz = getNumParam<ASSTYPE>(dofman, Sigmazz, 1);
-    const int numparamsigmaxy = getNumParam<ASSTYPE>(dofman, Sigmaxy, 1);
-    const int numparamsigmaxz = getNumParam<ASSTYPE>(dofman, Sigmaxz, 1);
-    const int numparamsigmayz = getNumParam<ASSTYPE>(dofman, Sigmayz, 1);
+
     
     // split velocity and pressure (and stress)
     BlitzVec eprenp(numparampres);
@@ -673,6 +669,11 @@ void Sysmat(
     for (int iparam=0; iparam<numparampres; ++iparam)   eprenp(iparam) = locval[presdof[iparam]];
     if (stress_unknowns_present)
     {
+        const int numparamsigmayy = getNumParam<ASSTYPE>(dofman, Sigmayy, 1);
+        const int numparamsigmazz = getNumParam<ASSTYPE>(dofman, Sigmazz, 1);
+        const int numparamsigmaxy = getNumParam<ASSTYPE>(dofman, Sigmaxy, 1);
+        const int numparamsigmaxz = getNumParam<ASSTYPE>(dofman, Sigmaxz, 1);
+        const int numparamsigmayz = getNumParam<ASSTYPE>(dofman, Sigmayz, 1);
         const vector<int> sigmaxxdof(dofman.LocalDofPosPerField(Sigmaxx));
         const vector<int> sigmayydof(dofman.LocalDofPosPerField(Sigmayy));
         const vector<int> sigmazzdof(dofman.LocalDofPosPerField(Sigmazz));

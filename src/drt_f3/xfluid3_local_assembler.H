@@ -76,7 +76,7 @@ public:
     //! assemble one expression for the element stiffness matrix for a given test and trial field
     template <XFEM::PHYSICS::Field testfield,
               XFEM::PHYSICS::Field trialfield>
-    void Matrix(
+    inline void Matrix(
             const BlitzVec&     testshape,
             const double        fac,
             const BlitzVec&     trialshape
@@ -85,8 +85,8 @@ public:
         const std::vector<int> testdof  = dofman_.LocalDofPosPerField(mangle<testfield>());
         const std::vector<int> trialdof = dofman_.LocalDofPosPerField(mangle<trialfield>());
         
-        const int numparamtest  = testdof.size();
-        const int numparamtrial = trialdof.size();
+//        const int numparamtest  = testdof.size();
+//        const int numparamtrial = trialdof.size();
         
         //std::cout << "numparamtrial " << numparamtrial << endl;
 //        for (std::vector<int>::const_iterator pos = trialdof.begin(); pos != trialdof.end(); ++pos)
@@ -94,36 +94,42 @@ public:
 //            std::cout << "pos = " << (*pos) << endl;
 //        }
 
-        //std::cout << "size testshape " << testshape.length() << endl;
-        //std::cout << "size trialshape " << trialshape.length() << endl;
-        
-        for (int ui=0; ui<numparamtrial; ++ui)
+//        for (int ui=0; ui<numparamtrial; ++ui)
+//        {
+//            const int trialpos = trialdof[ui];
+//
+//            for (int vi=0; vi<numparamtest; ++vi)
+//            {
+//                const int testpos = testdof[vi];
+//                estif_(testpos, trialpos) += fac*testshape(vi)*trialshape(ui) ;
+//            }
+//        }
+        int ui = 0;
+        for (std::vector<int>::const_iterator trialpos = trialdof.begin(); trialpos != trialdof.end(); ++trialpos)
         {
-            const int trialpos = trialdof[ui];
-
-            for (int vi=0; vi<numparamtest; ++vi)
+            int vi = 0;
+            for (std::vector<int>::const_iterator testpos = testdof.begin(); testpos != testdof.end(); ++testpos)
             {
-                const int testpos = testdof[vi];
-                //std::cout << testshape(vi) << endl;
-                //std::cout << trialshape(ui) << endl;
-                estif_(testpos, trialpos) += fac*testshape(vi)*trialshape(ui) ;
+                estif_(*testpos, *trialpos) += fac*testshape(vi)*trialshape(ui) ;
+                vi++;
             }
+            ui++;
         }
     };
     
     //! assemble one expression for the element rhs for a given test field
     template <XFEM::PHYSICS::Field testfield>
-    void Vector(
+    inline void Vector(
             const BlitzVec&     testshape,
             const double        fac
             ) const
     {
         const std::vector<int> testdof = dofman_.LocalDofPosPerField(mangle<testfield>());
-        const int numparamtest = testdof.size();
-        for (int vi=0; vi<numparamtest; ++vi)
+        int vi = 0;
+        for (std::vector<int>::const_iterator testpos = testdof.begin(); testpos != testdof.end(); ++testpos)
         {
-            const int testpos = testdof[vi];
-            eforce_(testpos) += fac*testshape(vi);
+            eforce_(*testpos) += fac*testshape(vi);
+            vi++;
         }
     };
     
@@ -162,7 +168,7 @@ public:
     //! assemble one expression for the element stiffness matrix for a given test and trial field
     template <XFEM::PHYSICS::Field testfield,
               XFEM::PHYSICS::Field trialfield>
-    void Matrix(
+    inline void Matrix(
             const BlitzVec&     testshape,
             const double        fac,
             const BlitzVec&     trialshape
@@ -183,7 +189,7 @@ public:
     
     //! assemble one expression for the element rhs for a given test field
     template <XFEM::PHYSICS::Field testfield>
-    void Vector(
+    inline void Vector(
             const BlitzVec&     testshape,
             const double        fac
             ) const

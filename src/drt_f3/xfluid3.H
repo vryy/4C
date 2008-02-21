@@ -35,7 +35,6 @@ Maintainer: Axel Gerstenberger
 using namespace std;
 using namespace Teuchos;
 
-#include "fluid3.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
@@ -126,14 +125,13 @@ public:
   \brief Return number of surfaces of this element
   */
   virtual int NumSurface() const
-  { if (NumNode()==8 || NumNode()==20 || NumNode()==27) return 6;
-      else if (NumNode()==4 || NumNode()==10) return 4;
-      else if (NumNode()==6 || NumNode()==15 || NumNode()==5) return 5;
-      else
-      {
-          dserror("Could not determine number of surfaces");
-          return -1;
-      }
+  {if (NumNode()==8 || NumNode()==20 || NumNode()==27) return 6;
+    else if (NumNode()==4 || NumNode()==10) return 4;
+   else if (NumNode()==6 || NumNode()==15 || NumNode()==5) return 5;
+   else {
+   	dserror("Could not determine number of surfaces");
+   	return -1;
+	}
   }
 
   /*!
@@ -462,7 +460,7 @@ private:
     vector<double>&       myvelnp,
     vector<double>&       myprenp,
     struct _MATERIAL*     material,
-    ParameterList&        params
+    ParameterList&    	  params
     );
 
   /*!

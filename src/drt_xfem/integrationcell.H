@@ -94,11 +94,10 @@ public:
 
     /*!
      \brief Standard Constructor
-
-     \param distype      : distype of the integrationcell
      */
     explicit IntCell(
-        const DRT::Element::DiscretizationType distype);
+        const DRT::Element::DiscretizationType  distype  ///< distype of the integration cell
+        );
 
     /*!
      \brief Copy Constructor
@@ -113,19 +112,29 @@ public:
     */
     ~IntCell();
 
+    /*!  = operator
+     * create true copy -> allows to have constant instance members
+     */
+    IntCell& operator = (const IntCell& old)
+    {
+        IntCell intcell(old.distype_);
+        IntCell& ref = intcell;
+        return ref;
+    };
+    
     /*!
      \brief returns the shape of the integration cell
 
      \return distype_
      */
-    DRT::Element::DiscretizationType Shape() const {return distype_;};
+    inline const DRT::Element::DiscretizationType Shape() const {return distype_;};
     
-    std::string Print() const;
+    inline const std::string toString() const;
 
 protected:
 
     //! shape
-    DRT::Element::DiscretizationType distype_;
+    const DRT::Element::DiscretizationType distype_;
     
 private:
     
@@ -143,26 +152,40 @@ public:
 
     /*!
      \brief Standard Constructor
-
-     \param distype          : distype of the integration cell
-     \param coordinates      : coordinates of the integrationcell in parent element coordinates
      */
     explicit DomainIntCell(
-            const DRT::Element::DiscretizationType distype,
-            const vector<vector<double> >& domainCoordinates);
+            const DRT::Element::DiscretizationType  distype,            ///< distype of the integration cell
+            const vector<vector<double> >&          domainCoordinates   ///< coordinates in parent element coordinates
+            );
 
+    /*!
+     \brief Standard Constructor
+     */
+    explicit DomainIntCell(
+            const DRT::Element::DiscretizationType  distype,            ///< distype of the integration cell
+            const BlitzMat&                         domainCoordinates   ///< coordinates in parent element coordinates
+            );
+    
     /*!
      \brief Standard Constructor for dummy integration cell
 
      This is the default integration cell, if no intersections are within the XFEM element
      
      the user just gives the distype of the XFEM element and gets an integration cell with the same distype as the parent
-
-     \param distype          : distype of the parent elementintegration cell
      */
     explicit DomainIntCell(
-            const DRT::Element::DiscretizationType distype);
+            const DRT::Element::DiscretizationType distype  ///< distype of the parent elementintegration cell
+            );
     
+    /*!  = operator
+     * create true copy -> allows to have constant instance members
+     */
+    DomainIntCell& operator = (const DomainIntCell& old)
+    {
+        DomainIntCell cell(old.distype_, old.nodalpos_xi_domain_blitz_);
+        DomainIntCell& ref = cell;
+        return ref;
+    };
     
     /*!
      \brief Copy Constructor
@@ -177,58 +200,40 @@ public:
 
      \return distype_
      */
-    DRT::Element::DiscretizationType Shape() const {return distype_;};
+    inline const DRT::Element::DiscretizationType Shape() const {return distype_;};
     
     /*!
      \brief returns number of nodes
 
      \return number of nodes
      */
-    int NumNode() const {return DRT::UTILS::getNumberOfElementNodes(distype_);};
+    inline const int NumNode() const {return DRT::UTILS::getNumberOfElementNodes(distype_);};
     
-    /*!
-     \brief returns the coordinates of the integration cell in parent element coordinates
-
-     \return cells nodal coordinates  
-     */
-    vector<vector<double> > NodalPosXiDomain() const {return nodalpos_xi_domain_;};
-
     /*!
      \brief returns the coordinates of the integration cell in domain element coordinates
 
      \return cells nodal coordinates  
      */
-    BlitzMat NodalPosXiDomainBlitz() const {return nodalpos_xi_domain_blitz_;};
+    inline const BlitzMat NodalPosXiDomainBlitz() const {return nodalpos_xi_domain_blitz_;};
     
     /*!
      \brief returns the coordinates of the integration cell in physical coordinates
 
      \return cells nodal coordinates  
      */
-    BlitzMat NodalPosXYZ(const DRT::Element& ele) const
+    inline const BlitzMat NodalPosXYZ(const DRT::Element& ele) const
     {
         return ComputePhysicalCoordinates<DomainIntCell>(ele, (*this));
     };
     
-    vector<double> modifyGaussRule3D(
-            const bool standard_integration,
-            const double& cell_e0,
-            const double& cell_e1,
-            const double& cell_e2) const;
+    const std::string toString() const;
     
-    std::string Print() const;
-    
-    BlitzVec GetPhysicalCenterPosition(const DRT::Element& ele) const;
+    const BlitzVec GetPhysicalCenterPosition(const DRT::Element& ele) const;
 
-protected:
-    
-    //! coordinates of the nodes in the parent domain element coordinates xi_domain
-    vector<vector<double> > nodalpos_xi_domain_;
-    
-    //! coordinates of the nodes in the parent domain element coordinates xi_domain
-    BlitzMat nodalpos_xi_domain_blitz_;
-    
 private:
+    
+    //! coordinates of the nodes in the parent domain element coordinates xi_domain
+    const BlitzMat nodalpos_xi_domain_blitz_;
     
     explicit DomainIntCell();
     
@@ -258,8 +263,22 @@ public:
             const DRT::Element::DiscretizationType    distype,
             const int                                 surface_ele_gid,
             const vector<vector<double> >&            domainCoordinates,
-            const vector<vector<double> >&            boundaryCoordinates);
+            const vector<vector<double> >&            boundaryCoordinates
+            );
 
+    /*!
+     \brief Standard Constructor
+
+     \param coordinates      : coordinates of the integrationcell
+     \param distype      : coordinates of the integrationcell
+     */
+    explicit BoundaryIntCell(
+            const DRT::Element::DiscretizationType    distype,
+            const int                                 surface_ele_gid,
+            const BlitzMat&                           domainCoordinates,
+            const BlitzMat&                           boundaryCoordinates
+            );
+    
     /*!
      \brief Copy Constructor
 
@@ -268,26 +287,40 @@ public:
     BoundaryIntCell(
             const BoundaryIntCell& old);
 
+    /*!  = operator
+     * create true copy -> allows to have constant instance members
+     */
+    BoundaryIntCell& operator = (const BoundaryIntCell& old)
+    {
+        BoundaryIntCell cell(
+                old.distype_,
+                old.surface_ele_gid_,
+                old.nodalpos_xi_domain_blitz_,
+                old.nodalpos_xi_boundary_blitz_);
+        BoundaryIntCell& ref = cell;
+        return ref;
+    };
+    
     /*!
      \brief returns the shape of the integration cell
 
      \return distype_
      */
-    DRT::Element::DiscretizationType Shape() const {return distype_;};
+    const DRT::Element::DiscretizationType Shape() const {return distype_;};
     
     /*!
      \brief returns number of nodes
 
      \return number of nodes
      */
-    int NumNode() const {return DRT::UTILS::getNumberOfElementNodes(distype_);};
+    inline const int NumNode() const {return DRT::UTILS::getNumberOfElementNodes(distype_);};
     
     /*!
      \brief returns the coordinates of the integration cell in physical coordinates
 
      \return cells nodal coordinates  
      */
-    BlitzMat NodalPosXYZ(const DRT::Element& ele) const
+    inline const BlitzMat NodalPosXYZ(const DRT::Element& ele) const
     {
         return ComputePhysicalCoordinates<BoundaryIntCell>(ele, (*this));
     };
@@ -297,51 +330,31 @@ public:
 
      \return cells nodal coordinates  
      */
-    vector<vector<double> > NodalPosXiDomain() const {return nodalpos_xi_domain_;};
+    inline const BlitzMat NodalPosXiDomainBlitz() const {return nodalpos_xi_domain_blitz_;};
     
     /*!
      \brief returns the coordinates of the integration cell in domain element coordinates
 
      \return cells nodal coordinates  
      */
-    BlitzMat NodalPosXiDomainBlitz() const {return nodalpos_xi_domain_blitz_;};
+    inline const BlitzMat NodalPosXiBoundaryBlitz() const {return nodalpos_xi_boundary_blitz_;};
     
-    /*!
-     \brief returns the coordinates of the integration cell in surface element coordinates
-
-     \return cells nodal coordinates  
-     */
-    vector<vector<double> > NodalPosXiBoundary() const {return nodalpos_xi_boundary_;};
+    inline const int GetSurfaceEleGid() const {return surface_ele_gid_;}
     
-    /*!
-     \brief returns the coordinates of the integration cell in domain element coordinates
-
-     \return cells nodal coordinates  
-     */
-    BlitzMat NodalPosXiBoundaryBlitz() const {return nodalpos_xi_boundary_blitz_;};
-    
-    int GetSurfaceEleGid() const {return surface_ele_gid_;}
-    
-    std::string Print() const;
+    const std::string toString() const;
 
 private:
     
     explicit BoundaryIntCell();
     
     //! the boundaryIntCell should know, to which cutterElement it belongs!?
-    int surface_ele_gid_;
+    const int surface_ele_gid_;
     
     //! coordinates of the nodes
-    vector<vector<double> > nodalpos_xi_domain_;
+    const BlitzMat nodalpos_xi_domain_blitz_;
     
     //! boundary coordinates of the nodes
-    vector<vector<double> > nodalpos_xi_boundary_;
-    
-    //! coordinates of the nodes
-    BlitzMat nodalpos_xi_domain_blitz_;
-    
-    //! boundary coordinates of the nodes
-    BlitzMat nodalpos_xi_boundary_blitz_;
+    const BlitzMat nodalpos_xi_boundary_blitz_;
     
 };
 

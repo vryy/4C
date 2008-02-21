@@ -151,13 +151,13 @@ public:
         return tmp->second;
     };
     
-    std::set<FieldEnr> FieldEnrSetPerElement() const
+    inline std::set<FieldEnr> FieldEnrSetPerElement() const
     {
         return elementDofs_;
     };
     
     //! function that returns node specific number of dofs or the given default number
-    int NumDofPerNode(
+    inline int NumDofPerNode(
             const int gid,            /// global node id
             const int defaultnumdof   /// default number of degrees of freedom to be returned
             ) const
@@ -171,13 +171,13 @@ public:
     };
     
     /// function that returns element specific number of dofs or the given default number
-    int NumDofPerElement() const
+    inline int NumDofPerElement() const
     {
         return elementDofs_.size()*numVirtualNodes_;
     };
     
     /// function that returns element specific number of dofs or the given default number
-    int NumVirtualNodes() const
+    inline int NumVirtualNodes() const
     {
         return numVirtualNodes_;
     };
@@ -185,7 +185,7 @@ public:
     /// return number of dofs on this element for a given field. E.g., if we have 4 nodes with 
     /// standard x displacements at each node and 2 enriched x displacements, this function will return 6
     /// we do not distuingish between nodal and element dofs
-    int NumDofPerField(const XFEM::PHYSICS::Field field) const
+    inline int NumDofPerField(const XFEM::PHYSICS::Field field) const
     {
         map<XFEM::PHYSICS::Field, int>::const_iterator tmp = numParamsPerField_.find(field);
         if (tmp == numParamsPerField_.end()){
@@ -196,7 +196,7 @@ public:
     };
     
     /// return a list of local positions in a array of dofs
-    std::vector<int> LocalDofPosPerField(const XFEM::PHYSICS::Field field) const
+    inline std::vector<int> LocalDofPosPerField(const XFEM::PHYSICS::Field field) const
     {
         std::map<XFEM::PHYSICS::Field, vector<int> >::const_iterator tmp = paramsLocalEntries_.find(field);
         if (tmp == paramsLocalEntries_.end()){
@@ -207,7 +207,7 @@ public:
     };
     
     //! return unique enrichments for this proc
-    std::set<XFEM::Enrichment> getUniqueEnrichments() const
+    inline std::set<XFEM::Enrichment> getUniqueEnrichments() const
     {
         return unique_enrichments_;
     }
@@ -275,11 +275,10 @@ public:
     {
         std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator entry = nodalDofSet_.find(gid);
         if (entry == nodalDofSet_.end())
-            if (entry == nodalDofSet_.end())
-            {
-                return std::set<XFEM::FieldEnr>();
-            }
-            return entry->second;
+        {
+            return std::set<XFEM::FieldEnr>();
+        }
+        return entry->second;
     };
     
     const std::set<XFEM::FieldEnr> getElementDofs(const int gid) const
@@ -302,7 +301,7 @@ public:
             ) const;
     
     //! return unique enrichments for this proc
-    std::set<XFEM::Enrichment> getUniqueEnrichments() const
+    inline std::set<XFEM::Enrichment> getUniqueEnrichments() const
     {
         return unique_enrichments_;
     }

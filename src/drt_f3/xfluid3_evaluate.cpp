@@ -35,7 +35,6 @@ Maintainer: Axel Gerstenberger
 #include <blitz/array.h>
 #include <Epetra_SerialDenseSolver.h>
 
-using namespace std;
 using namespace DRT::UTILS;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -146,6 +145,8 @@ DRT::ELEMENTS::XFluid3::ActionType DRT::ELEMENTS::XFluid3::convertStringToAction
   DRT::ELEMENTS::XFluid3::ActionType act = XFluid3::none;
   if (action == "calc_fluid_systemmat_and_residual")
     act = XFluid3::calc_fluid_systemmat_and_residual;
+  else if (action == "calc_linear_fluid")
+    act = XFluid3::calc_linear_fluid;
   else if (action == "calc_fluid_genalpha_sysmat_and_residual")
     act = XFluid3::calc_fluid_genalpha_sysmat_and_residual;
   else if (action == "time update for subscales")
@@ -487,12 +488,11 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           
           // get access to interface information
           const RCP<XFEM::InterfaceHandle> ih = params.get< RCP< XFEM::InterfaceHandle > >("interfacehandle",null);
-          dsassert(ih!=null, "hey, you did not give the InterfaceHandle");
+          if (ih==null)  dserror("hey, you did not give the InterfaceHandle");
           
           // need current velocity/pressure 
           RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
-          if (velnp==null)
-            dserror("Cannot get state vector 'velnp'");
+          if (velnp==null)  dserror("Cannot get state vector 'velnp'");
 
           // extract local values from the global vector
           vector<double> locval(lm.size());
@@ -510,8 +510,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           
           // get control parameter
           const double pseudotime = params.get<double>("total time",-1.0);
-          if (pseudotime < 0.0)
-              dserror("no value for total (pseudo-)time in the parameter list");
+          if (pseudotime < 0.0)  dserror("no value for total (pseudo-)time in the parameter list");
 
           const bool newton = params.get<bool>("include reactive terms for linearisation",false);
           const bool pstab  = true;

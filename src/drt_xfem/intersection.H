@@ -414,7 +414,8 @@ class Intersection
             Epetra_SerialDenseVector&         b,
             const Epetra_SerialDenseVector&   xsi,
             const DRT::Element*               surfaceElement,
-            const DRT::Element*               lineElement) const;
+            const DRT::Element*               lineElement
+            ) const;
         
             
   		/*!
@@ -664,9 +665,9 @@ class Intersection
         \param out                      (in)     :   output data structure of TetGen
         */     
         void liftSteinerPointOnSurface(
-            int                         steinerIndex,
-            vector< vector <int> >&     adjacentFacesList,
-            vector< vector <int> >&     adjacentFacemarkerList,
+            const int                   steinerIndex,
+            const vector< vector <int> >&     adjacentFacesList,
+            const vector< vector <int> >&     adjacentFacemarkerList,
             const DRT::Element*         xfemElement, 
             tetgenio&                   out
             ); 
@@ -1253,17 +1254,6 @@ class Intersection
 		    const DRT::Element* element,
             vector<int>& elementIds
             ) const;
-														
-						
-		/*!
-        \brief Debugging integration cells (DEBUG ONLY)
-    
-        \param domainintcells                (out)       : list of integration cells
-        */                                  
-       	void debugDomainIntCells(
-            map< int, DomainIntCells >&	domainintcells,
-            int id
-            ) const;  
             
 
         /*!
