@@ -251,7 +251,7 @@ private:
   RCP<Epetra_Operator>      A_;
   //! modified system of equations
   RCP<Epetra_CrsMatrix>     Aplus_;
-  //! Preconditioner (currently an ML or Ifpack operator)
+  //! Preconditioner (currently an ML, Ifpack, MLAPI or SIMPLER operator)
   RCP<Epetra_Operator>      P_;
   //! system of equations used for preconditioning used by P_ only
   RCP<Epetra_CrsMatrix>     Pmatrix_;

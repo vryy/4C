@@ -186,8 +186,8 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_Operator>  matrix,
 
   // decide what solver to use
   string solvertype = Params().get("solver","none");
-  if      ("lapack" ==solvertype)
-    Solve_lapack(reset);
+  if ("aztec"  ==solvertype)
+    Solve_aztec(reset);
   else if ("klu"    ==solvertype)
     Solve_klu(reset);
   else if ("umfpack"==solvertype)
@@ -202,8 +202,8 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_Operator>  matrix,
     Solve_spooles(reset);
 #endif
 #endif
-  else if ("aztec"  ==solvertype)
-    Solve_aztec(reset);
+  else if ("lapack" ==solvertype)
+    Solve_lapack(reset);
   else if ("none"   ==solvertype)
     dserror("Unknown type of solver");
 
