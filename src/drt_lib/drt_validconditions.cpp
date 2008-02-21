@@ -509,6 +509,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          DRT::Condition::Surface));
 
   areamonitor->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+  areamonitor->AddComponent(Teuchos::rcp(new StringConditionComponent("projection","none",
+    Teuchos::tuple<std::string>("none","xy","yz","xz"),
+    Teuchos::tuple<std::string>("none","xy","yz","xz"),
+    true)));
 
   condlist.push_back(areamonitor);
 

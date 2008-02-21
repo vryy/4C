@@ -48,7 +48,7 @@ actdisc_(discr)
     //Deal with area constraints
     if (constrcond.size())
     {
-        p.set("action","calc_struct_constrarea");
+        p.set("action","calc_struct_monitarea");
         actdisc_.SetState("displacement",disp);
         actdisc_.EvaluateCondition(p,"AreaConstraint_3D");
         haveareaconstr_=true;
@@ -96,7 +96,7 @@ actdisc_(discr)
     //Deal with area Monitors
     if (constrcond.size())
     {
-        p1.set("action","calc_struct_constrarea");
+        p1.set("action","calc_struct_monitarea");
         actdisc_.SetState("displacement",disp);
         actdisc_.EvaluateCondition(p1,"AreaMonitor_3D");
         haveareamonitor_=true;
@@ -211,7 +211,7 @@ void ConstrManager::ComputeError(double time,RCP<Epetra_Vector> disp)
     }
     if(haveareaconstr_)
     {
-        p.set("action","calc_struct_constrarea");
+        p.set("action","calc_struct_monitarea");
         actdisc_.EvaluateCondition(p,"AreaConstraint_3D");
         SynchronizeSumConstraint(p, actvalues_,"computed area",numConstrID_,minConstrID_);
     }
@@ -309,7 +309,7 @@ void ConstrManager::ComputeMonitorValues(RCP<Epetra_Vector> disp)
     }
     if(haveareamonitor_)
     {
-        p.set("action","calc_struct_constrarea");
+        p.set("action","calc_struct_monitarea");
         actdisc_.EvaluateCondition(p,"AreaMonitor_3D");
         SynchronizeSumConstraint(p, monitorvalues_,"computed area",numMonitorID_,minMonitorID_);
     }

@@ -226,12 +226,12 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
   // get the required action
   string action = params.get<string>("action","none");
   if (action == "none") dserror("No action supplied");
-  else if (action=="calc_struct_constrvol")    act = Soh8Surface::calc_struct_constrvol;
-  else if (action=="calc_struct_volconstrstiff") act= Soh8Surface::calc_struct_volconstrstiff;
-  else if (action=="calc_struct_constrarea")		act=Soh8Surface::calc_struct_constrarea;
+  else if (action=="calc_struct_constrvol")       act = Soh8Surface::calc_struct_constrvol;
+  else if (action=="calc_struct_volconstrstiff")  act= Soh8Surface::calc_struct_volconstrstiff;
+  else if (action=="calc_struct_monitarea")      act=Soh8Surface::calc_struct_monitarea;
   else if (action=="calc_struct_areaconstrstiff") act=Soh8Surface::calc_struct_areaconstrstiff;
-  else if (action=="calc_init_vol") act= Soh8Surface::calc_init_vol;
-  else if (action=="calc_surfstress_stiff") act= Soh8Surface::calc_surfstress_stiff;
+  else if (action=="calc_init_vol")               act= Soh8Surface::calc_init_vol;
+  else if (action=="calc_surfstress_stiff")       act= Soh8Surface::calc_surfstress_stiff;
   else dserror("Unknown type of action for Soh8Surface");
   //create communicator
   const Epetra_Comm& Comm = discretization.Comm();
@@ -265,7 +265,7 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
             xscurr(i,2) = xsrefe(i,2) + mydisp[i*NODDOF_SOH8+2];
           }
           //call submethod
-          double volumeele =	ComputeConstrVols(xscurr);
+          double volumeele =  ComputeConstrVols(xscurr);
 
           // get RIGHT volume out of parameterlist and maximum ConditionID
           char volname[30];
@@ -335,7 +335,7 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
         //call submethod for volume evaluation
         if(Comm.MyPID()==this->Owner())
         {
-          double volumeele =	ComputeConstrVols(xscurr);
+          double volumeele = ComputeConstrVols(xscurr);
           // get RIGHT volume out of parameterlist and maximum ConditionID
           char volname[30];
           sprintf(volname,"computed volume %d",ID);
@@ -413,7 +413,7 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
                 break;
 
                 case calc_surfstress_stiff:
-	  	{
+                {
                   // element geometry update
 
                   RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -478,7 +478,7 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
         }
         break;
         //compute the area (e.g. for initialization)
-        case calc_struct_constrarea:
+        case calc_struct_monitarea:
         {
           if (distype!=quad4)
             dserror("Area Constraint online works for quad4 surfaces!");
@@ -493,14 +493,58 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
             const int numnod = 4;
             Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOH8);  // material coord. of element
             Epetra_SerialDenseMatrix xscurr(numnod,NUMDIM_SOH8);  // material coord. of element
-            for (int i=0; i<numnod; ++i){
+            
+            //get required projection method
+            enum ProjType
+            {
+              none,
+              xy,
+              yz,
+              xz
+            };
+            ProjType protype;
+            
+            RCP<DRT::Condition> condition = params.get<RefCountPtr<DRT::Condition> >("condition");
+            const string* type = condition->Get<string>("projection");
+            
+            if (!type) protype =none;
+            else if (*type == "xy") protype = xy;
+            else if (*type == "yz") protype = yz;
+            else if (*type == "xz") protype = xz;
+            else protype = none;
+            
+            for (int i=0; i<numnod; ++i)
+            {
               xsrefe(i,0) = Nodes()[i]->X()[0];
               xsrefe(i,1) = Nodes()[i]->X()[1];
               xsrefe(i,2) = Nodes()[i]->X()[2];
 
-              xscurr(i,0) = xsrefe(i,0) + mydisp[i*NODDOF_SOH8+0];
-              xscurr(i,1) = xsrefe(i,1) + mydisp[i*NODDOF_SOH8+1];
-              xscurr(i,2) = xsrefe(i,2) + mydisp[i*NODDOF_SOH8+2];
+              // To compute monitored area consider required projection method
+              // and set according coordinates to zero
+              if (protype == yz)
+              {
+                xscurr(i,0)=0;
+              }
+              else 
+              {
+                xscurr(i,0) = xsrefe(i,0) + mydisp[i*NODDOF_SOH8+0];
+              }
+              if (protype == xz)
+              {
+                xscurr(i,1)=0;
+              }
+              else 
+              {
+                xscurr(i,1) = xsrefe(i,1) + mydisp[i*NODDOF_SOH8+1];
+              }
+              if (protype == xy)
+              {
+                xscurr(i,2)=0;
+              }
+              else 
+              {
+                xscurr(i,2) = xsrefe(i,2) + mydisp[i*NODDOF_SOH8+2];
+              }
             }
             
             double areaele=0.0;

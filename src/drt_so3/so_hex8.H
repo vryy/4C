@@ -781,18 +781,18 @@ public:
 
 
 protected:
-	  //! action parameters recognized by so_hex8_surface
-	  enum ActionType
-	  {
-	    none,
-	    calc_struct_constrvol,
-	    calc_struct_volconstrstiff,
-	    calc_struct_constrarea,
-            calc_init_vol,
-            calc_surfstress_stiff,
-            calc_struct_areaconstrstiff,
-            calc_struct_monitarea
-	  };
+  //! action parameters recognized by so_hex8_surface
+  enum ActionType
+  {
+    none,
+    calc_struct_constrvol,
+    calc_struct_volconstrstiff,
+    calc_struct_constrarea,
+    calc_init_vol,
+    calc_surfstress_stiff,
+    calc_struct_areaconstrstiff,
+    calc_struct_monitarea
+  };
 
 
 private:
