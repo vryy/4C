@@ -329,8 +329,6 @@ bool tetgenio::load_node_call(FILE* infile, int markers, char* infilename)
     pointlist[index++] = x;
     pointlist[index++] = y;
     pointlist[index++] = z;
-
-
     // Read the point attributes.
     for (j = 0; j < numberofpointattributes; j++) {
       stringptr = findnextnumber(stringptr);
@@ -16492,7 +16490,7 @@ void tetgenmesh::incrflipdelaunay(triface* oldtet, point* insertarray,
   REAL det, n[3];
   REAL attrib, volume;
   int i, j;
-  //clock_t loc_start, loc_end;
+  clock_t loc_start, loc_end;
 
   if (b->verbose > 0) {
     printf("  Creating initial tetrahedralization.\n");
@@ -34556,7 +34554,6 @@ void tetrahedralize(tetgenbehavior *b, tetgenio *in, tetgenio *out,
  
   m.b = b;
   m.in = in;
-
   m.macheps = exactinit();
   m.steinerleft = b->steiner;
   if (b->metric) {
