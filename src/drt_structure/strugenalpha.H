@@ -285,7 +285,6 @@ public:
   norms of internal, external and inertial forces
 
   */
-
   virtual void CalcRefNorms();
 
   /*!
