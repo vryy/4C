@@ -204,11 +204,11 @@ DRT::UTILS::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
             case 3:  /* quadratic - type 1 and 2*/
             {
                 //  GAUSS INTEGRATION 3 SAMPLING POINTS, DEG.OF PRECISION 2 
-                if (ngp[1]-1 == 0)  // integration 1
+                if (ngp[1] == 1)  // integration 1
                     {
                     rule = DRT::UTILS::intrule_tri_3point; 
                     }
-                else if (ngp[1]-1 == 1)  // integration 2
+                else if (ngp[1] == 2)  // integration 2
                     {
                     rule = DRT::UTILS::intrule_tri_3point_on_corners; 
                     }
