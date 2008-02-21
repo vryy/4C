@@ -408,23 +408,23 @@ void ContactStruGenAlpha::FullNewton()
 
   while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) && numiter<=maxiter)
   {
-  	//------------------------------------------- effective rhs is fresm
+    //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
-  	stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
-  	if (damping)
-  	{
-  		stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
-  	}
-  	stiff_->Complete();
-  	
+    stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
+    if (damping)
+    {
+      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+    }
+    stiff_->Complete();
+    
     //-------------------------make contact modifications to lhs and rhs
-  	{
-    	contactmanager_->Initialize();
-    	contactmanager_->SetState("displacement",dism_);
-    	
-    	// (almost) all contact stuff is done here!
-    	contactmanager_->Evaluate(stiff_,fresm_);
+    {
+      contactmanager_->Initialize();
+      contactmanager_->SetState("displacement",dism_);
+      
+      // (almost) all contact stuff is done here!
+      contactmanager_->Evaluate(stiff_,fresm_);
     }
 
     //----------------------- apply dirichlet BCs to system of equations
@@ -440,7 +440,7 @@ void ContactStruGenAlpha::FullNewton()
 
     //------------------------------------ transform disi due to contact
     {
-    	contactmanager_->RecoverDisp(disi_);
+      contactmanager_->RecoverDisp(disi_);
     }
    
     //---------------------------------- update mid configuration values
@@ -506,7 +506,7 @@ void ContactStruGenAlpha::FullNewton()
     // Res = M . A_{n+1-alpha_m}
     //     + C . V_{n+1-alpha_f}
     //     + F_int(D_{n+1-alpha_f})
-    // 		 + F_c(D_{n+1-alpha_f})
+    //      + F_c(D_{n+1-alpha_f})
     //     - F_{ext;n+1-alpha_f}
     // add inertia mid-forces
     mass_->Multiply(false,*accm_,*finert_);
@@ -639,13 +639,13 @@ void ContactStruGenAlpha::PTC()
     
     //-------------------------make contact modifications to lhs and rhs
     {
-     	contactmanager_->Initialize();
-     	contactmanager_->SetState("displacement",dism_);
-     	
-     	// (almost) all contact stuff is done here!
-     	contactmanager_->Evaluate(stiff_,fresm_);
+      contactmanager_->Initialize();
+      contactmanager_->SetState("displacement",dism_);
+      
+      // (almost) all contact stuff is done here!
+      contactmanager_->Evaluate(stiff_,fresm_);
     }
-      	
+        
     //------------------------------- do ptc modification to effective LHS
     {
       RCP<Epetra_Vector> tmp = LINALG::CreateVector(stiff_->RowMap(),false);
@@ -669,7 +669,7 @@ void ContactStruGenAlpha::PTC()
 
     //------------------------------------ transform disi due to contact
     {
-    	contactmanager_->RecoverDisp(disi_);
+      contactmanager_->RecoverDisp(disi_);
     }
         
     //---------------------------------- update mid configuration values
@@ -735,7 +735,7 @@ void ContactStruGenAlpha::PTC()
     // Res = M . A_{n+1-alpha_m}
     //     + C . V_{n+1-alpha_f}
     //     + F_int(D_{n+1-alpha_f})
-    // 		 + F_c(D_{n+1-alpha_f})
+    //      + F_c(D_{n+1-alpha_f})
     //     - F_{ext;n+1-alpha_f}
     // add inertia mid-forces
     mass_->Multiply(false,*accm_,*finert_);
@@ -1009,50 +1009,50 @@ void ContactStruGenAlpha::Integrate()
   // Newton as nonlinear iteration scheme
   if (equil=="full newton")
   {
-  	// LOOP1: time steps
+    // LOOP1: time steps
     for (int i=step; i<nstep; ++i)
     {
-    	contactmanager_->ActiveSetConverged() = false;
-    	
-    	// LOOP2: active set strategy
-    	while (contactmanager_->ActiveSetConverged()==false)
+      contactmanager_->ActiveSetConverged() = false;
+      
+      // LOOP2: active set strategy
+      while (contactmanager_->ActiveSetConverged()==false)
       {
-    		// predictor step
-    		if      (predictor==1) ConstantPredictor();
-    		else if (predictor==2) ConsistentPredictor();
-    		
-    		// LOOP3: nonlinear iteration (Newton)
-    		FullNewton();
-    		
-    		// update of active set
-    		contactmanager_->UpdateActiveSet();
+        // predictor step
+        if      (predictor==1) ConstantPredictor();
+        else if (predictor==2) ConsistentPredictor();
+        
+        // LOOP3: nonlinear iteration (Newton)
+        FullNewton();
+        
+        // update of active set
+        contactmanager_->UpdateActiveSet();
       }
-    	UpdateandOutput();
+      UpdateandOutput();
     }
   }
   
   // PTC as nonlinear iteration scheme
   else if (equil=="ptc")
   {
-  	// LOOP1: tim steps
+    // LOOP1: tim steps
     for (int i=step; i<nstep; ++i)
     {
-    	contactmanager_->ActiveSetConverged() = false;
-    	
-    	// LOOP2: active set strategy
-    	while (contactmanager_->ActiveSetConverged()==false)
-    	{
-    		// predictor step
-    		if      (predictor==1) ConstantPredictor();
-    		else if (predictor==2) ConsistentPredictor();
-    		
-    		// LOOP3: nonlinear iteration (PTC)
-    		PTC();
-    		
-    		// update of active set
-    		contactmanager_->UpdateActiveSet();
-    	}
-    	UpdateandOutput();
+      contactmanager_->ActiveSetConverged() = false;
+      
+      // LOOP2: active set strategy
+      while (contactmanager_->ActiveSetConverged()==false)
+      {
+        // predictor step
+        if      (predictor==1) ConstantPredictor();
+        else if (predictor==2) ConsistentPredictor();
+        
+        // LOOP3: nonlinear iteration (PTC)
+        PTC();
+        
+        // update of active set
+        contactmanager_->UpdateActiveSet();
+      }
+      UpdateandOutput();
     }
   }
   

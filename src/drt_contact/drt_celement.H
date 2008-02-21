@@ -290,13 +290,13 @@ public:
   \brief Compute element normal at local coordinate xi
   */
   virtual LINALG::SerialDenseMatrix GetNodalCoords();
-  	
+    
   /*!
   \brief Evaluate Jacobian det for parameter space integration - LINEAR / QUAD 1D
   */
   virtual double Jacobian1D(const vector<double>& val,
-  													 const vector<double>& deriv,
-  													 const LINALG::SerialDenseMatrix& coord);
+                            const vector<double>& deriv,
+                            const LINALG::SerialDenseMatrix& coord);
   
   /*!
   \brief Compute length (in 3D area) of the element
@@ -307,13 +307,13 @@ public:
   \brief Evaluate shape functions and derivatives - LINEAR / QUAD 1D 
   */
   virtual bool EvaluateShape1D(const double* xi, vector<double>& val,
-  															vector<double>& deriv, const int valdim);
+                               vector<double>& deriv, const int valdim);
   
   /*!
   \brief Evaluate dual shape functions and derivatives - LINEAR / QUAD 1D 
   */
   virtual bool EvaluateShapeDual1D(const double* xi, vector<double>& val,
-  																 	vector<double>& deriv, const int valdim);
+                                   vector<double>& deriv, const int valdim);
   
   /*!
   \brief Interpolate global coordinates for given local element coordinates
@@ -322,9 +322,9 @@ public:
   coordinate variable using the element node coordinates. For interpolation
   one can choose between shape functions or shape function derivatives!
   
-  \param xi (in)				: local element coordinates
-  \param inttype (in) 	: set to true for shape function usage,
-  												set to false for derivative usage
+  \param xi (in)        : local element coordinates
+  \param inttype (in)   : set to true for shape function usage,
+                          set to false for derivative usage
   \param globccord (out): interpolated global coordinates
   */
   virtual bool LocalToGlobal(const double* xi, double* globcoord, bool inttype);
@@ -339,13 +339,13 @@ public:
 
 private:
 
-  DRT::Element::DiscretizationType shape_;   // shape of this element
+  DRT::Element::DiscretizationType   shape_;   // shape of this element
   
-  bool               isslave_; 							 // indicating slave or master side
-  double						 refarea_; 							 // element length or area in reference configuration
-  double						 area_;	   							 // element length or area in current configuration
+  bool          isslave_;           // indicating slave or master side
+  double        refarea_;           // element length or area in reference configuration
+  double        area_;              // element length or area in current configuration
   
-  vector<int>		  	 searchelements_; 			 // global ids of potentially contacting elements 
+  vector<int>   searchelements_;    // global ids of potentially contacting elements 
 
 }; // class CElement
 } // namespace CONTACT

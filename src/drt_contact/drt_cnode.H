@@ -254,8 +254,8 @@ public:
   \param xi (out) : Local coordinates of projection on Celement
   */
   virtual CONTACT::CNode* FindClosestNode(const RCP<DRT::Discretization> intdis,
-  														            const RCP<Epetra_Map> nodesearchmap,
-  														            double& mindist);
+                                          const RCP<Epetra_Map> nodesearchmap,
+                                          double& mindist);
     
   //@}
 
@@ -264,17 +264,17 @@ protected:
   bool            isslave_;        // true if cnode is on slave side of contact problem
   int             numdof_;         // number of degrees of freedom (length of dofs_)
   vector<int>     dofs_;           // degrees of freedom of this node
-  double          n_[3];				   // nodal normal for contact methods
-  double					xspatial_[3];	   // current configuration
-  double					u_[3];				   // current displacement
-  int							closestnode_;	   // closest node id on the other side of interface
-  bool						hasproj_;				 // true if feasible projection within search set (slave nodes only)
-  bool					  active_;				 // true if cnode is in contact (active set strategy)
+  double          n_[3];           // nodal normal for contact methods
+  double          xspatial_[3];    // current configuration
+  double          u_[3];           // current displacement
+  int             closestnode_;    // closest node id on the other side of interface
+  bool            hasproj_;        // true if feasible projection within search set (slave nodes only)
+  bool            active_;         // true if cnode is in contact (active set strategy)
   
-  vector<map<int,double> >     drows_;   		  // nodal rows of D matrix
-  vector<map<int,double> > 		 mrows_;   			// nodal rows of M matrix
-  vector<map<int,double> >		 mmodrows_;   	// nodal rows of Mmod matrix
-  double											 grow_;				  // nodal entry of g vector
+  vector<map<int,double> >      drows_;         // nodal rows of D matrix
+  vector<map<int,double> >      mrows_;         // nodal rows of M matrix
+  vector<map<int,double> >      mmodrows_;      // nodal rows of Mmod matrix
+  double                        grow_;          // nodal entry of g vector
   
 
 }; // class CNode

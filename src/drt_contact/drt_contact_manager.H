@@ -156,31 +156,31 @@ protected:
   Manager(const Manager& old);
 
 
-  DRT::Discretization&              discret_;        // the underlying problem discretization
-  vector<RCP<CONTACT::Interface> >  interface_; 	   // contact interfaces
+  DRT::Discretization&               discret_;        // the underlying problem discretization
+  vector<RCP<CONTACT::Interface> >   interface_;      // contact interfaces
   
-  RCP<Epetra_Map>										gsnoderowmap_;   // global slave node row map (of all interfaces)
-  RCP<Epetra_Map>										gsdofrowmap_;    // global slave dof row map (of all interfaces)
-  RCP<Epetra_Map>										gmdofrowmap_;    // global master dof row map (of all interfaces)
-  RCP<Epetra_Map>										gndofrowmap_;    // global internal dof row map
+  RCP<Epetra_Map>                    gsnoderowmap_;   // global slave node row map (of all interfaces)
+  RCP<Epetra_Map>                    gsdofrowmap_;    // global slave dof row map (of all interfaces)
+  RCP<Epetra_Map>                    gmdofrowmap_;    // global master dof row map (of all interfaces)
+  RCP<Epetra_Map>                    gndofrowmap_;    // global internal dof row map
   
-  RCP<Epetra_Map>										gactivenodes_;   // global active slave node row map (of all interfaces)
-  RCP<Epetra_Map>										gactivedofs_;    // global active slave dof row map (of all interfaces)
-  RCP<Epetra_Map>										gactiven_;       // global row map of matrix N (of all interfaces)
-  RCP<Epetra_Map>										gactivet_;       // global row map of matrix T (of all interfaces)
-  bool															activesetconv_;  // convergence flag for active set
+  RCP<Epetra_Map>                    gactivenodes_;   // global active slave node row map (of all interfaces)
+  RCP<Epetra_Map>                    gactivedofs_;    // global active slave dof row map (of all interfaces)
+  RCP<Epetra_Map>                    gactiven_;       // global row map of matrix N (of all interfaces)
+  RCP<Epetra_Map>                    gactivet_;       // global row map of matrix T (of all interfaces)
+  bool                               activesetconv_;  // convergence flag for active set
   
-  RCP<LINALG::SparseMatrix>					dmatrix_;				 // global Mortar matrix D
-  RCP<LINALG::SparseMatrix>					mmatrix_;				 // global Mortar matrix M
-  RCP<LINALG::SparseMatrix>					mhatmatrix_;		 // product of global Mortar matrices inv(D)*M
-  RCP<Epetra_Vector>      					g_;					     // global weighted gap vector g
+  RCP<LINALG::SparseMatrix>          dmatrix_;        // global Mortar matrix D
+  RCP<LINALG::SparseMatrix>          mmatrix_;        // global Mortar matrix M
+  RCP<LINALG::SparseMatrix>          mhatmatrix_;     // product of global Mortar matrices inv(D)*M
+  RCP<Epetra_Vector>                 g_;              // global weighted gap vector g
   
-  RCP<LINALG::SparseMatrix>					nmatrix_;				 // global Matrix N of active node normals
-  RCP<LINALG::SparseMatrix>					tmatrix_;				 // global Matrix T of active node tangents
+  RCP<LINALG::SparseMatrix>          nmatrix_;        // global Matrix N of active node normals
+  RCP<LINALG::SparseMatrix>          tmatrix_;        // global Matrix T of active node tangents
   
-  RCP<Epetra_Vector>								z_;							 // vector of current Lagrange multipliers
-  RCP<Epetra_Vector>								zold_;					 // vector of last time step Lagrange multipliers
-  RCP<Epetra_Vector>								incrjump_;		   // incremental displacement jump (slave dofs)
+  RCP<Epetra_Vector>                 z_;              // vector of current Lagrange multipliers
+  RCP<Epetra_Vector>                 zold_;           // vector of last time step Lagrange multipliers
+  RCP<Epetra_Vector>                 incrjump_;       // incremental displacement jump (slave dofs)
 
 
 }; // class Manager

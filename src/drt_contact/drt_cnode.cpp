@@ -33,7 +33,7 @@ grow_(1.0e12)
 {
   for (int i=0;i<3;++i)
   {
-  	n()[i]=0.0;
+    n()[i]=0.0;
     u()[i]=0.0;
     xspatial()[i]=X()[i];
   }
@@ -57,14 +57,14 @@ mrows_(old.mrows_),
 mmodrows_(old.mmodrows_),
 grow_(old.grow_)
 {
-	for (int i=0;i<3;++i)
-	{
-		n()[i]=old.n_[i];
-	  u()[i]=old.u_[i];
-	  xspatial()[i]=old.xspatial_[i];
-	}
-	
-	return;
+  for (int i=0;i<3;++i)
+  {
+    n()[i]=old.n_[i];
+    u()[i]=old.u_[i];
+    xspatial()[i]=old.xspatial_[i];
+  }
+  
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -190,19 +190,19 @@ void CONTACT::CNode::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 void CONTACT::CNode::AddDValue(int row, int col, double val)
 {
-	// check if this has been called before
-	if ((int)drows_.size()==0)
-		drows_.resize(NumDof());
-	
-	// check row index input
-	if ((int)drows_.size()<=row)
-		dserror("ERROR: AddDValue: tried to access invalid row index!");
-	
-	// add the pair (col,val) to the given row
-	map<int,double>& dmap = drows_[row];
-	dmap[col] += val;
-		
-	return;
+  // check if this has been called before
+  if ((int)drows_.size()==0)
+    drows_.resize(NumDof());
+  
+  // check row index input
+  if ((int)drows_.size()<=row)
+    dserror("ERROR: AddDValue: tried to access invalid row index!");
+  
+  // add the pair (col,val) to the given row
+  map<int,double>& dmap = drows_[row];
+  dmap[col] += val;
+    
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -210,19 +210,19 @@ void CONTACT::CNode::AddDValue(int row, int col, double val)
  *----------------------------------------------------------------------*/
 void CONTACT::CNode::AddMValue(int row, int col, double val)
 {
-	// check if this has been called before
-	if ((int)mrows_.size()==0)
-	  mrows_.resize(NumDof());
-		
-	// check row index input
-	if ((int)mrows_.size()<=row)
-		dserror("ERROR: AddMValue: tried to access invalid row index!");
-		
-	// add the pair (col,val) to the given row
-	map<int,double>& mmap = mrows_[row];
-	mmap[col] += val;
-			
-	return;
+  // check if this has been called before
+  if ((int)mrows_.size()==0)
+    mrows_.resize(NumDof());
+    
+  // check row index input
+  if ((int)mrows_.size()<=row)
+    dserror("ERROR: AddMValue: tried to access invalid row index!");
+    
+  // add the pair (col,val) to the given row
+  map<int,double>& mmap = mrows_[row];
+  mmap[col] += val;
+      
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -230,19 +230,19 @@ void CONTACT::CNode::AddMValue(int row, int col, double val)
  *----------------------------------------------------------------------*/
 void CONTACT::CNode::AddMmodValue(int row, int col, double val)
 {
-	// check if this has been called before
-	if ((int)mmodrows_.size()==0)
-		mmodrows_.resize(NumDof());
-		
-	// check row index input
-	if ((int)mmodrows_.size()<=row)
-		dserror("ERROR: AddMmodValue: tried to access invalid row index!");
-		
-	// add the pair (col,val) to the given row
-	map<int,double>& mmodmap = mmodrows_[row];
-	mmodmap[col] += val;
-			
-	return;
+  // check if this has been called before
+  if ((int)mmodrows_.size()==0)
+    mmodrows_.resize(NumDof());
+    
+  // check row index input
+  if ((int)mmodrows_.size()<=row)
+    dserror("ERROR: AddMmodValue: tried to access invalid row index!");
+    
+  // add the pair (col,val) to the given row
+  map<int,double>& mmodmap = mmodrows_[row];
+  mmodmap[col] += val;
+      
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -250,12 +250,12 @@ void CONTACT::CNode::AddMmodValue(int row, int col, double val)
  *----------------------------------------------------------------------*/
 void CONTACT::CNode::AddgValue(double val)
 {
-	// initialize if called for the first time
-	if (grow_==1.0e12) grow_=0;
-	
-	// add given value to grow_
-	grow_+=val;
-	return;
+  // initialize if called for the first time
+  if (grow_==1.0e12) grow_=0;
+  
+  // add given value to grow_
+  grow_+=val;
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -263,55 +263,55 @@ void CONTACT::CNode::AddgValue(double val)
  *----------------------------------------------------------------------*/
 void CONTACT::CNode::BuildAveragedNormal()
 {
-	int nseg = NumElement();
-	DRT::Element** adjeles = Elements();
-	
-	for (int i=0;i<nseg;++i)
-	{
-		CElement* adjcele = static_cast<CElement*> (adjeles[i]);
-/*		
+  int nseg = NumElement();
+  DRT::Element** adjeles = Elements();
+  
+  for (int i=0;i<nseg;++i)
+  {
+    CElement* adjcele = static_cast<CElement*> (adjeles[i]);
+/*    
 #ifdef DEBUG
-		adjcele->Print(cout);
-		cout << endl;
-#endif // #ifdef DEBUG	 
-*/	
-		// build element normal at current node
-		vector<double> elen(3);
-		adjcele->BuildNormalAtNode(Id(),elen);
-		double wgt = adjcele->Area();
+    adjcele->Print(cout);
+    cout << endl;
+#endif // #ifdef DEBUG   
+*/  
+    // build element normal at current node
+    vector<double> elen(3);
+    adjcele->BuildNormalAtNode(Id(),elen);
+    double wgt = adjcele->Area();
 
 /*
 #ifdef DEBUG
-		cout << "Area for CElement " << adjcele->Id() << " is " << wgt << endl;
+    cout << "Area for CElement " << adjcele->Id() << " is " << wgt << endl;
 #endif // #ifdef DEBUG
-*/		
-		// add weighted element normal to nodal normal n_
-		for (int j=0;j<3;++j)
-		  n()[j]+=wgt*elen[j];
-		
-		/* average normal without weighting (see Diss. HARTMANN, 2007)
-		for (int j=0;j<3;++j)
-		 n()[j]+=elen[j];*/
-	}
-	
-	// create unit normal vector
-	double length = sqrt(n()[0]*n()[0]+n()[1]*n()[1]+n()[2]*n()[2]);
-	
-	if (length==0.0)
-	  dserror("ERROR: Nodal normal of length zero, node ID %i",Id());
-	else
-		for (int j=0;j<3;++j)
-			n()[j]/=length;
+*/    
+    // add weighted element normal to nodal normal n_
+    for (int j=0;j<3;++j)
+      n()[j]+=wgt*elen[j];
+    
+    /* average normal without weighting (see Diss. HARTMANN, 2007)
+    for (int j=0;j<3;++j)
+     n()[j]+=elen[j];*/
+  }
+  
+  // create unit normal vector
+  double length = sqrt(n()[0]*n()[0]+n()[1]*n()[1]+n()[2]*n()[2]);
+  
+  if (length==0.0)
+    dserror("ERROR: Nodal normal of length zero, node ID %i",Id());
+  else
+    for (int j=0;j<3;++j)
+      n()[j]/=length;
 
 /*
 #ifdef DEBUG
-	cout << endl;
-	cout << "Unit normal for node " << Id() << " is " << n()[0] << " "
-																										<< n()[1] << " "
-																										<< n()[2] << endl;
-	cout << endl;
+  cout << endl;
+  cout << "Unit normal for node " << Id() << " is " << n()[0] << " "
+                                                    << n()[1] << " "
+                                                    << n()[2] << endl;
+  cout << endl;
 #endif // #ifdef DEBUG
-*/	
+*/  
   return;
 }
 
@@ -319,41 +319,41 @@ void CONTACT::CNode::BuildAveragedNormal()
  |  Find closest node from given node set                     popp 01/08|
  *----------------------------------------------------------------------*/
 CONTACT::CNode* CONTACT::CNode::FindClosestNode(const RCP<DRT::Discretization> intdis,
-  																	            const RCP<Epetra_Map> nodesearchmap,
-  																	            double& mindist)
+                                                const RCP<Epetra_Map> nodesearchmap,
+                                                double& mindist)
 {
-	CNode* closestnode = NULL;
-	
-	// loop over all nodes of the DRT::Discretization that are
-	// included in the given Epetra_Map
-	for(int i=0; i<nodesearchmap->NumMyElements();++i)
-	{
-		int gid = nodesearchmap->GID(i);
-		DRT::Node* node = intdis->gNode(gid);
-		if (!node) dserror("ERROR: FindClosestNode: Cannot find node with gid %",gid);
-		CNode* cnode = static_cast<CNode*>(node);
-		
-		// build distance between the two nodes
-		double dist = 0.0;
-		const double* p1 = xspatial();
-		const double* p2 = cnode->xspatial();
-		
-		for (int j=0;j<3;++j)
-			dist+=(p1[j]-p2[j])*(p1[j]-p2[j]);
-		dist=sqrt(dist);
-		
-		// new closest node found, update
-		if (dist <= mindist)
-		{
-			mindist=dist;
-			closestnode=cnode;
-		}
-	}
-	
-	if (!closestnode)
-		dserror("ERROR: FindClosestNode: No closest node found at all!");
-	
-	return closestnode;
+  CNode* closestnode = NULL;
+  
+  // loop over all nodes of the DRT::Discretization that are
+  // included in the given Epetra_Map
+  for(int i=0; i<nodesearchmap->NumMyElements();++i)
+  {
+    int gid = nodesearchmap->GID(i);
+    DRT::Node* node = intdis->gNode(gid);
+    if (!node) dserror("ERROR: FindClosestNode: Cannot find node with gid %",gid);
+    CNode* cnode = static_cast<CNode*>(node);
+    
+    // build distance between the two nodes
+    double dist = 0.0;
+    const double* p1 = xspatial();
+    const double* p2 = cnode->xspatial();
+    
+    for (int j=0;j<3;++j)
+      dist+=(p1[j]-p2[j])*(p1[j]-p2[j]);
+    dist=sqrt(dist);
+    
+    // new closest node found, update
+    if (dist <= mindist)
+    {
+      mindist=dist;
+      closestnode=cnode;
+    }
+  }
+  
+  if (!closestnode)
+    dserror("ERROR: FindClosestNode: No closest node found at all!");
+  
+  return closestnode;
 }
 
 #endif  // #ifdef CCADISCRET

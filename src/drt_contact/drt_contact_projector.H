@@ -44,44 +44,44 @@ namespace CONTACT
 class Projector
 {
 public:
-	
-	//! @name Constructors and destructors
-	
-	/*!
-	\brief Standard constructor
-	
-	Constructs an instance of this class.<br>
+  
+  //! @name Constructors and destructors
+  
+  /*!
+  \brief Standard constructor
+  
+  Constructs an instance of this class.<br>
   Note that this is \b not a collective call as projections are
   performed in parallel by individual processes.
   
   \param twoD (in): true if problem is 2D, false if 3D
-	*/
-	explicit Projector(bool twoD);
+  */
+  explicit Projector(bool twoD);
 
-	/*!
-	\brief Destructor
+  /*!
+  \brief Destructor
 
-	*/
-	virtual ~Projector() {}
-	
-	//@}
-	
-	//! @name Access methods
-	
-	/*!
-	\brief Return whether this instance was created for 2D or 3D projections
-	
-	*/
-	inline bool IsTwoDimensional() {return twoD_;}
-	
-	//@}
-	
-	//! @name 2D and 3D projection methods
-	
-	/*!
-	\brief Project a node onto a CElement along the node's normal
-	
-	Used to project a slave side node onto a CElement of the master side
+  */
+  virtual ~Projector() {}
+  
+  //@}
+  
+  //! @name Access methods
+  
+  /*!
+  \brief Return whether this instance was created for 2D or 3D projections
+  
+  */
+  inline bool IsTwoDimensional() {return twoD_;}
+  
+  //@}
+  
+  //! @name 2D and 3D projection methods
+  
+  /*!
+  \brief Project a node onto a CElement along the node's normal
+  
+  Used to project a slave side node onto a CElement of the master side
   
   This method will compute the coordinates of a projection of a Node in
   the local coordinate system of a CElement. The projection point will
@@ -95,8 +95,8 @@ public:
   \param xi (out) : Local coordinates of projection on CElement 
   */
   bool ProjectNodalNormal(CONTACT::CNode& node,
-  												 CONTACT::CElement& ele,
-  												 double xi[]);
+                          CONTACT::CElement& ele,
+                          double xi[]);
   
   /*!
   \brief Project a node onto a Celement along the interpolated
@@ -116,12 +116,12 @@ public:
   \param xi (out) : Local coordinates of projection on Celement
   */
   bool ProjectElementNormal(CONTACT::CNode& node,
-  													 CONTACT::CElement& ele,
-  													 double xi[]);
+                            CONTACT::CElement& ele,
+                            double xi[]);
  
   /*!
   \brief Project a Gauss point onto a CElement along GP normal
-  	
+    
   Used to project a slave side GP onto a CElement of the master side
     
    This method will compute the coordinates of a projection of a Gauss
@@ -133,77 +133,77 @@ public:
    \param xi (out)  : Local coordinates of projection on CElement 
    */
    bool ProjectGaussPoint(CONTACT::CElement& gpele,
-  		 										 const double* gpeta,
-    											 CONTACT::CElement& ele,
-    											 double xi[]);
+                          const double* gpeta,
+                          CONTACT::CElement& ele,
+                          double xi[]);
     
   /*!
   \brief Evaluate F for nodal normal projection
 
   */
   double EvaluateFNodalNormal(CONTACT::CNode& node,
-  															CONTACT::CElement& ele,
-  															const double* eta,
-  															bool& outward,
-  															double& gap);  
+                              CONTACT::CElement& ele,
+                              const double* eta,
+                              bool& outward,
+                              double& gap);  
   
   /*!
   \brief Evaluate GradF for nodal normal projection
 
   */
   double EvaluateGradFNodalNormal(CONTACT::CNode& node,
-  																	CONTACT::CElement& ele,
-  																	const double* eta);
+                                  CONTACT::CElement& ele,
+                                  const double* eta);
 
   /*!
   \brief Evaluate F for element normal projection
 
   */
   double EvaluateFElementNormal(CONTACT::CNode& node,
-  																CONTACT::CElement& ele,
-  																const double* eta,
-  																bool& outward,
-  																double& gap);  
+                                CONTACT::CElement& ele,
+                                const double* eta,
+                                bool& outward,
+                                double& gap);  
   
   /*!
   \brief Evaluate GradF for element normal projection
 
   */
   double EvaluateGradFElementNormal(CONTACT::CNode& node,
-  																		CONTACT::CElement& ele,
-  																		const double* eta);
+                                    CONTACT::CElement& ele,
+                                    const double* eta);
   
   /*!
   \brief Evaluate F for Gauss point projection
 
   */
   double EvaluateFGaussPoint(const double* gpx,
-  														 const double* gpn,
-   														 CONTACT::CElement& ele,
-   														 const double* eta,
-   														 bool& outward,
-   														 double& gap);  
+                             const double* gpn,
+                             CONTACT::CElement& ele,
+                             const double* eta,
+                             bool& outward,
+                             double& gap);  
     
   /*!
   \brief Evaluate GradF for Gauss point projection
 
   */
   double EvaluateGradFGaussPoint(const double* gpn,
-			 														 CONTACT::CElement& ele,
-			 														 const double* eta);  
+                                 CONTACT::CElement& ele,
+                                 const double* eta);  
   
   //@}
-  		
+      
 protected:
-		
-		// don't want = operator and cctor
-		Projector operator = (const Projector& old);
-		Projector(const Projector& old);
-	
-		bool				twoD_;					// problem dimension, true if 2D
+    
+  // don't want = operator and cctor
+  Projector operator = (const Projector& old);
+  Projector(const Projector& old);
+  
+  bool        twoD_;          // problem dimension, true if 2D
 
 }; // class Projector
-}	// namespace CONTACT
+}  // namespace CONTACT
 
 
 #endif  // #ifndef DRT_CONTACT_PROJECTOR_H

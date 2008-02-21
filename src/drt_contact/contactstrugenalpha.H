@@ -77,7 +77,7 @@ public:
   can do larger time steps
 
   */
-  virtual void PTC();
+  void PTC();
     
   /*!
   \brief update configuration and output to file/screen

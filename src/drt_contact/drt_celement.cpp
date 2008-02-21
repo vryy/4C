@@ -23,10 +23,10 @@ Maintainer: Michael Gee
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
 CONTACT::CElement::CElement(int id, ElementType etype, int owner, 
-                    const DRT::Element::DiscretizationType& shape, 
-                    const int numnode,
-                    const int* nodeids,
-                    const bool isslave) :
+                            const DRT::Element::DiscretizationType& shape, 
+                            const int numnode,
+                            const int* nodeids,
+                            const bool isslave) :
 DRT::Element(id,etype,owner),
 shape_(shape),
 isslave_(isslave)
@@ -34,7 +34,7 @@ isslave_(isslave)
   SetNodeIds(numnode,nodeids);
   RefArea()=0.0;
   Area()=RefArea();
-  searchelements_.resize(0); 		//FIXME: Is this necessary???
+  searchelements_.resize(0);     //FIXME: Is this necessary???
   return;
 }
 
@@ -151,7 +151,7 @@ void CONTACT::CElement::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  evaluate element (public)                                mwgee 10/07|
  *----------------------------------------------------------------------*/
-int CONTACT::CElement::Evaluate(ParameterList& params,
+int CONTACT::CElement::Evaluate(ParameterList&            params,
                                 DRT::Discretization&      discretization,
                                 vector<int>&              lm,
                                 Epetra_SerialDenseMatrix& elemat1,
@@ -169,27 +169,27 @@ int CONTACT::CElement::Evaluate(ParameterList& params,
  *----------------------------------------------------------------------*/
 bool CONTACT::CElement::LocalCoordinatesOfNode(int lid, double* xi)
 {
-	// 2D linear and quadratic case
-	if (Shape()==line2 || Shape()==line3)
-	{
-		if (lid==0)
-			xi[0]=-1.0;
-		else if (lid==1)
-			xi[0]= 1.0;
-		else if (lid==2)
-			xi[0]= 0.0;
-		else
-			dserror("ERROR: LocalCoordinatesOfNode: Node number % in segment % out of range",lid,Id());
-		
-		// we are in the 2D case here!
-		xi[1]=0.0;
-	}
-	
-	// unknown case (3D not implemented yet)
-	else
-		dserror("ERROR: LocalCoordinatesOfNode called for unknown element type");
-		
-	return true;
+  // 2D linear and quadratic case
+  if (Shape()==line2 || Shape()==line3)
+  {
+    if (lid==0)
+      xi[0]=-1.0;
+    else if (lid==1)
+      xi[0]= 1.0;
+    else if (lid==2)
+      xi[0]= 0.0;
+    else
+      dserror("ERROR: LocalCoordinatesOfNode: Node number % in segment % out of range",lid,Id());
+    
+    // we are in the 2D case here!
+    xi[1]=0.0;
+  }
+  
+  // unknown case (3D not implemented yet)
+  else
+    dserror("ERROR: LocalCoordinatesOfNode called for unknown element type");
+    
+  return true;
 }
 
 /*----------------------------------------------------------------------*
@@ -197,22 +197,22 @@ bool CONTACT::CElement::LocalCoordinatesOfNode(int lid, double* xi)
  *----------------------------------------------------------------------*/
 int CONTACT::CElement::GetLocalNodeId(int nid)
 {
-	int lid = -1;	
-	
-	// look for global ID nid in element's modes
-	for (int i=0;i<NumNode();++i)
-	{
-		if ( *(NodeIds()+i) == nid )
-		{
-			lid=i;
-			break;
-		}
-	}
-	
-	if (lid<0)
-		dserror("ERROR: Cannot find node % in segment %", nid, Id());
-	
-	return lid;
+  int lid = -1;  
+  
+  // look for global ID nid in element's modes
+  for (int i=0;i<NumNode();++i)
+  {
+    if ( *(NodeIds()+i) == nid )
+    {
+      lid=i;
+      break;
+    }
+  }
+  
+  if (lid<0)
+    dserror("ERROR: Cannot find node % in segment %", nid, Id());
+  
+  return lid;
 }
 
 /*----------------------------------------------------------------------*
@@ -220,19 +220,19 @@ int CONTACT::CElement::GetLocalNodeId(int nid)
  *----------------------------------------------------------------------*/
 void CONTACT::CElement::BuildNormalAtNode(int nid, vector<double>& n)
 {
-	if (n.size()!=3) n.resize(3);
-	
-	// find this node in my list of nodes and get local numbering
-	int lid = GetLocalNodeId(nid);
-	
-	// get local coordinates for this node
-	double xi[2];
-	LocalCoordinatesOfNode(lid,xi);
-	
-	// build an outward unit normal at xi and return it
-	ComputeNormalAtXi(xi,n);
+  if (n.size()!=3) n.resize(3);
+  
+  // find this node in my list of nodes and get local numbering
+  int lid = GetLocalNodeId(nid);
+  
+  // get local coordinates for this node
+  double xi[2];
+  LocalCoordinatesOfNode(lid,xi);
+  
+  // build an outward unit normal at xi and return it
+  ComputeNormalAtXi(xi,n);
 
-	return;
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -240,96 +240,96 @@ void CONTACT::CElement::BuildNormalAtNode(int nid, vector<double>& n)
  *----------------------------------------------------------------------*/
 void CONTACT::CElement::ComputeNormalAtXi(double* xi, vector<double>& n)
 {
-	int nnodes = NumNode();
-	vector<double> val(nnodes);
-	vector<double> deriv(nnodes);
-	vector<double> g(3);
-	
-	// get shape function values and derivatives at xi
-	EvaluateShape1D(xi, val, deriv, nnodes);
+  int nnodes = NumNode();
+  vector<double> val(nnodes);
+  vector<double> deriv(nnodes);
+  vector<double> g(3);
+  
+  // get shape function values and derivatives at xi
+  EvaluateShape1D(xi, val, deriv, nnodes);
 
-	// get coordinates of element nodes
-	LINALG::SerialDenseMatrix coord(3,nnodes);
-	coord = GetNodalCoords();
-	
-	// build basis vector g
-	for (int i=0;i<nnodes;++i)
-	{
-		g[0]+=deriv[i]*coord(0,i);
-		g[1]+=deriv[i]*coord(1,i);
-		g[2]+=deriv[i]*coord(2,i);
-	}
-	
-	// only 2D case implemented, normal easy to compute from g
-	n[0] = g[1];
-	n[1] =-g[0];
-	n[2] = 0.0;
-	
-	double length = sqrt(n[0]*n[0]+n[1]*n[1]);
-	if (length==0.0)
-		dserror("ERROR: ComputeNormalAtXi computes normal of length zero!");
-	
-	// create unit normal (division by length)
-	for (int i=0;i<3;++i)
-		n[i]/=length;
-	
-	return;
+  // get coordinates of element nodes
+  LINALG::SerialDenseMatrix coord(3,nnodes);
+  coord = GetNodalCoords();
+  
+  // build basis vector g
+  for (int i=0;i<nnodes;++i)
+  {
+    g[0]+=deriv[i]*coord(0,i);
+    g[1]+=deriv[i]*coord(1,i);
+    g[2]+=deriv[i]*coord(2,i);
+  }
+  
+  // only 2D case implemented, normal easy to compute from g
+  n[0] = g[1];
+  n[1] =-g[0];
+  n[2] = 0.0;
+  
+  double length = sqrt(n[0]*n[0]+n[1]*n[1]);
+  if (length==0.0)
+    dserror("ERROR: ComputeNormalAtXi computes normal of length zero!");
+  
+  // create unit normal (division by length)
+  for (int i=0;i<3;++i)
+    n[i]/=length;
+  
+  return;
 }
 /*----------------------------------------------------------------------*
  |  Get nodal coordinates of the element                      popp 01/08|
  *----------------------------------------------------------------------*/
 LINALG::SerialDenseMatrix CONTACT::CElement::GetNodalCoords()
 {
-	int nnodes = NumNode();
-	DRT::Node** mynodes = Nodes();
-	LINALG::SerialDenseMatrix coord(3,nnodes);
-	if (!mynodes)
-		dserror("ERROR: GetNodalCoords: Null pointer!");
-	
-	for (int i=0;i<nnodes;++i)
-	{
-		CNode* mycnode = static_cast<CNode*> (mynodes[i]);
-		if (!mycnode)
-			dserror("ERROR: GetNodalCoords: Null pointer!");
-		coord(0,i) = mycnode->xspatial()[0];
-		coord(1,i) = mycnode->xspatial()[1];
-		coord(2,i) = mycnode->xspatial()[2];
-	}
-	
-	return coord;
+  int nnodes = NumNode();
+  DRT::Node** mynodes = Nodes();
+  LINALG::SerialDenseMatrix coord(3,nnodes);
+  if (!mynodes)
+    dserror("ERROR: GetNodalCoords: Null pointer!");
+  
+  for (int i=0;i<nnodes;++i)
+  {
+    CNode* mycnode = static_cast<CNode*> (mynodes[i]);
+    if (!mycnode)
+      dserror("ERROR: GetNodalCoords: Null pointer!");
+    coord(0,i) = mycnode->xspatial()[0];
+    coord(1,i) = mycnode->xspatial()[1];
+    coord(2,i) = mycnode->xspatial()[2];
+  }
+  
+  return coord;
 }
 
 /*----------------------------------------------------------------------*
  |  Evaluate Jacobian determinant - LINEAR / QUAD 1D          popp 12/07|
  *----------------------------------------------------------------------*/
 double CONTACT::CElement::Jacobian1D(const vector<double>& val,
-																	 		const vector<double>& deriv,
-  																		const LINALG::SerialDenseMatrix& coord)
+                                     const vector<double>& deriv,
+                                     const LINALG::SerialDenseMatrix& coord)
 {
-	double jac = 0.0;
-	
-	// 2D linear case (2noded line element)
-	if (Shape()==line2)
-		jac = Area()/2;
-	
-	// 2D quadratic case (3noded line element)
-	else if (Shape()==line3)
-	{
-		double g[3] = {0.0, 0.0, 0.0};
-		for (int i=0;i<static_cast<int>(val.size());++i)
-		{
-			g[0] += deriv[i]*coord(0,i);
-			g[1] += deriv[i]*coord(1,i);
-			g[2] += deriv[i]*coord(2,i);
-		}
-		jac = sqrt(g[0]*g[0]+g[1]*g[1]+g[2]*g[2]);
-	}
-	
-	// unknown case
-	else
-		dserror("ERROR: Jacobian1D called for unknown element type!");
-		
-	return jac;
+  double jac = 0.0;
+  
+  // 2D linear case (2noded line element)
+  if (Shape()==line2)
+    jac = Area()/2;
+  
+  // 2D quadratic case (3noded line element)
+  else if (Shape()==line3)
+  {
+    double g[3] = {0.0, 0.0, 0.0};
+    for (int i=0;i<static_cast<int>(val.size());++i)
+    {
+      g[0] += deriv[i]*coord(0,i);
+      g[1] += deriv[i]*coord(1,i);
+      g[2] += deriv[i]*coord(2,i);
+    }
+    jac = sqrt(g[0]*g[0]+g[1]*g[1]+g[2]*g[2]);
+  }
+  
+  // unknown case
+  else
+    dserror("ERROR: Jacobian1D called for unknown element type!");
+    
+  return jac;
 }
 
 /*----------------------------------------------------------------------*
@@ -337,227 +337,227 @@ double CONTACT::CElement::Jacobian1D(const vector<double>& val,
  *----------------------------------------------------------------------*/
 double CONTACT::CElement::ComputeArea()
 {
-	double area = 0.0;
-	
-	// 2D linear case (2noded line element)
-	if (Shape()==line2)
-	{
-		// no integration necessary (constant Jacobian)
-		int nnodes = NumNode();
-		LINALG::SerialDenseMatrix coord(3,nnodes);
-		coord = GetNodalCoords();
-		
-		// build vector between the two nodes
-		double tang[3] = {0.0, 0.0, 0.0};
-		for (int k=0;k<3;++k)
-		{
-			tang[k]=coord(k,1)-coord(k,0);
-		}
-		area=sqrt(tang[0]*tang[0]+tang[1]*tang[1]+tang[2]*tang[2]);
-	}
-	
-	// 2D quadratic case (3noded line element)
-	else if (Shape()==line3)
-	{
-		// Gauss quadrature
-		CONTACT::Integrator integrator(CONTACTNGP,true);
-		int nnodes = NumNode();
-		double detg = 0.0;
-		vector<double> val(nnodes);
-		vector<double> deriv(nnodes);
-			
-		LINALG::SerialDenseMatrix coord(3,nnodes);
-		coord = GetNodalCoords();
-		
-			// loop over all Gauss points, build Jacobian and compute area
-		for (int j=0;j<integrator.nGP();++j)
-		{
-			double gpc[2] = {integrator.Coordinate(j), 0.0};
-			EvaluateShape1D(gpc, val, deriv, nnodes);
-			detg = Jacobian1D(val,deriv,coord);			
-			area+= integrator.Weight(j)*detg;
-		}	
-	}
-	
-	// other cases (3D) not implemented yet
-	else
-		dserror("ERROR: Area computation not implemented for this type of CElement");
-	
-	return area;
+  double area = 0.0;
+  
+  // 2D linear case (2noded line element)
+  if (Shape()==line2)
+  {
+    // no integration necessary (constant Jacobian)
+    int nnodes = NumNode();
+    LINALG::SerialDenseMatrix coord(3,nnodes);
+    coord = GetNodalCoords();
+    
+    // build vector between the two nodes
+    double tang[3] = {0.0, 0.0, 0.0};
+    for (int k=0;k<3;++k)
+    {
+      tang[k]=coord(k,1)-coord(k,0);
+    }
+    area=sqrt(tang[0]*tang[0]+tang[1]*tang[1]+tang[2]*tang[2]);
+  }
+  
+  // 2D quadratic case (3noded line element)
+  else if (Shape()==line3)
+  {
+    // Gauss quadrature
+    CONTACT::Integrator integrator(CONTACTNGP,true);
+    int nnodes = NumNode();
+    double detg = 0.0;
+    vector<double> val(nnodes);
+    vector<double> deriv(nnodes);
+      
+    LINALG::SerialDenseMatrix coord(3,nnodes);
+    coord = GetNodalCoords();
+    
+      // loop over all Gauss points, build Jacobian and compute area
+    for (int j=0;j<integrator.nGP();++j)
+    {
+      double gpc[2] = {integrator.Coordinate(j), 0.0};
+      EvaluateShape1D(gpc, val, deriv, nnodes);
+      detg = Jacobian1D(val,deriv,coord);      
+      area+= integrator.Weight(j)*detg;
+    }  
+  }
+  
+  // other cases (3D) not implemented yet
+  else
+    dserror("ERROR: Area computation not implemented for this type of CElement");
+  
+  return area;
 }
 
 /*----------------------------------------------------------------------*
  |  Evaluate shape functions - LINEAR / QUAD 1D               popp 01/08|
  *----------------------------------------------------------------------*/
 bool CONTACT::CElement::EvaluateShape1D(const double* xi, vector<double>& val,
-																				 vector<double>& deriv, const int valdim)
+                                        vector<double>& deriv, const int valdim)
 {
-	if (!xi)
-		dserror("ERROR: EvaluateShape1D called with xi=NULL");
-	
-	// 2D linear case (2noded line element)
-	if ((valdim==2)&& (Shape()==line2))
-	{
-		val[0] = 0.5*(1-xi[0]);
-		val[1] = 0.5*(1+xi[0]);
-		
-		deriv[0] = -0.5;
-		deriv[1] =  0.5;
-	}
+  if (!xi)
+    dserror("ERROR: EvaluateShape1D called with xi=NULL");
+  
+  // 2D linear case (2noded line element)
+  if ((valdim==2)&& (Shape()==line2))
+  {
+    val[0] = 0.5*(1-xi[0]);
+    val[1] = 0.5*(1+xi[0]);
+    
+    deriv[0] = -0.5;
+    deriv[1] =  0.5;
+  }
 
-	// 2D quadratic case (3noded line element)
-	else if ((valdim==3) && (Shape()==line3))
-	{
-		val[0] = 0.5*xi[0]*(xi[0]-1);
-		val[1] = 0.5*xi[0]*(xi[0]+1);
-		val[2] = (1-xi[0])*(1+xi[0]);
-			
-		deriv[0] = xi[0]-0.5;
-		deriv[1] = xi[0]+0.5;
-		deriv[2] = -2*xi[0];
-	}
-	
-	// unknown case
-	else
-		dserror("ERROR: EvaluateShape1D called for unknown CElement type");
+  // 2D quadratic case (3noded line element)
+  else if ((valdim==3) && (Shape()==line3))
+  {
+    val[0] = 0.5*xi[0]*(xi[0]-1);
+    val[1] = 0.5*xi[0]*(xi[0]+1);
+    val[2] = (1-xi[0])*(1+xi[0]);
+      
+    deriv[0] = xi[0]-0.5;
+    deriv[1] = xi[0]+0.5;
+    deriv[2] = -2*xi[0];
+  }
+  
+  // unknown case
+  else
+    dserror("ERROR: EvaluateShape1D called for unknown CElement type");
 
-	return true;
+  return true;
 }
 
 /*----------------------------------------------------------------------*
  |  Evaluate dual shape functions - QUAD 1D                   popp 12/07|
  *----------------------------------------------------------------------*/
 bool CONTACT::CElement::EvaluateShapeDual1D(const double* xi, vector<double>& val,
-																						 vector<double>& deriv, const int valdim)
+                                            vector<double>& deriv, const int valdim)
 {
-	if (!xi)
-		dserror("ERROR: EvaluateShapeDual1D called with xi=NULL");
-	
-	// 2D linear case (2noded line element)
-	if ((valdim==2) && (Shape()==line2))
-	{
-			val[0] = 0.5*(1-3*xi[0]);
-			val[1] = 0.5*(1+3*xi[0]);
-			
-			deriv[0] = -1.5;
-			deriv[1] =  1.5;
-	}
-	
-	// 2D quadratic case (3noded line element)
-	else if ((valdim==3) && (Shape()==line3))
-	{
-		// establish fundamental data	
-		int nnodes = NumNode();
-		double detg = 0.0;
-	
-		LINALG::SerialDenseMatrix coord(3,nnodes);
-		coord = GetNodalCoords();
-		
-		// compute entries to bi-ortho matrices me/de with Gauss quadrature
-		CONTACT::Integrator integrator(CONTACTNGP,true);
-		
-		Epetra_SerialDenseMatrix me(nnodes,nnodes);
-		Epetra_SerialDenseMatrix de(nnodes,nnodes);
-		
-		for (int i=0;i<integrator.nGP();++i)
-		{
-			double gpc[2] = {integrator.Coordinate(i), 0.0};
-			EvaluateShape1D(gpc, val, deriv, nnodes);
-			detg = Jacobian1D(val,deriv,coord);
-			
-			for (int j=0;j<nnodes;++j)
-				for (int k=0;k<nnodes;++k)
-				{
-					me(j,k)+=integrator.Weight(i)*val[j]*val[k]*detg;
-					de(j,k)+=(j==k)*integrator.Weight(i)*val[j]*detg;
-				}	
-		}
-		
-		// invert bi-ortho matrix me
-		LINALG::SymmetricInverse(me,nnodes);
-		
-		// get solution matrix with dual parameters
-		Epetra_SerialDenseMatrix ae(nnodes,nnodes);
-		ae.Multiply('N','N',1.0,de,me,0.0);
-		
-		// evaluate dual shape functions at loc. coord. xi
-		// need standard shape functions at xi first
-		EvaluateShape1D(xi, val, deriv, nnodes);
-		
-		vector<double> valtemp(nnodes);
-		vector<double> derivtemp(nnodes);
-		for (int i=0;i<nnodes;++i)
-		{
-			valtemp[i]=0.0;
-			derivtemp[i]=0.0;
-			for (int j=0;j<nnodes;++j)
-			{
-				valtemp[i]+=ae(i,j)*val[j];
-				derivtemp[i]+=ae(i,j)*deriv[j];
-			}
-		}
-		val=valtemp;
-		deriv=derivtemp;
-	}
-	
-	// unknown case
-	else
-		dserror("ERROR: EvaluateShapeDual1D called for unknown element type");
-	
-	return true;
+  if (!xi)
+    dserror("ERROR: EvaluateShapeDual1D called with xi=NULL");
+  
+  // 2D linear case (2noded line element)
+  if ((valdim==2) && (Shape()==line2))
+  {
+      val[0] = 0.5*(1-3*xi[0]);
+      val[1] = 0.5*(1+3*xi[0]);
+      
+      deriv[0] = -1.5;
+      deriv[1] =  1.5;
+  }
+  
+  // 2D quadratic case (3noded line element)
+  else if ((valdim==3) && (Shape()==line3))
+  {
+    // establish fundamental data  
+    int nnodes = NumNode();
+    double detg = 0.0;
+  
+    LINALG::SerialDenseMatrix coord(3,nnodes);
+    coord = GetNodalCoords();
+    
+    // compute entries to bi-ortho matrices me/de with Gauss quadrature
+    CONTACT::Integrator integrator(CONTACTNGP,true);
+    
+    Epetra_SerialDenseMatrix me(nnodes,nnodes);
+    Epetra_SerialDenseMatrix de(nnodes,nnodes);
+    
+    for (int i=0;i<integrator.nGP();++i)
+    {
+      double gpc[2] = {integrator.Coordinate(i), 0.0};
+      EvaluateShape1D(gpc, val, deriv, nnodes);
+      detg = Jacobian1D(val,deriv,coord);
+      
+      for (int j=0;j<nnodes;++j)
+        for (int k=0;k<nnodes;++k)
+        {
+          me(j,k)+=integrator.Weight(i)*val[j]*val[k]*detg;
+          de(j,k)+=(j==k)*integrator.Weight(i)*val[j]*detg;
+        }  
+    }
+    
+    // invert bi-ortho matrix me
+    LINALG::SymmetricInverse(me,nnodes);
+    
+    // get solution matrix with dual parameters
+    Epetra_SerialDenseMatrix ae(nnodes,nnodes);
+    ae.Multiply('N','N',1.0,de,me,0.0);
+    
+    // evaluate dual shape functions at loc. coord. xi
+    // need standard shape functions at xi first
+    EvaluateShape1D(xi, val, deriv, nnodes);
+    
+    vector<double> valtemp(nnodes);
+    vector<double> derivtemp(nnodes);
+    for (int i=0;i<nnodes;++i)
+    {
+      valtemp[i]=0.0;
+      derivtemp[i]=0.0;
+      for (int j=0;j<nnodes;++j)
+      {
+        valtemp[i]+=ae(i,j)*val[j];
+        derivtemp[i]+=ae(i,j)*deriv[j];
+      }
+    }
+    val=valtemp;
+    deriv=derivtemp;
+  }
+  
+  // unknown case
+  else
+    dserror("ERROR: EvaluateShapeDual1D called for unknown element type");
+  
+  return true;
 }
 
 /*----------------------------------------------------------------------*
  |  Get global coords for given local coords                  popp 01/08|
  *----------------------------------------------------------------------*/
 bool CONTACT::CElement::LocalToGlobal(const double* xi, double* globcoord,
-																			bool inttype)
+                                      bool inttype)
 {
-	// check input
-	if (!xi)
-		dserror("ERROR: LocalToGlobal called with xi=NULL");
-	if (!globcoord)
-		dserror("ERROR: LocalToGlobal called with globcoord=NULL");
-	if (Shape()!=line3 && Shape()!=line2)
-		dserror("ERROR: LocalToGlobal called for CEl type != line3");
-	
-	// collect fundamental data
-	int nnodes = NumNode();
-	DRT::Node** mynodes = Nodes();
-	if (!mynodes) dserror("ERROR: LocalToGlobal: Null pointer!");
-	LINALG::SerialDenseMatrix coord(3,nnodes);
-	vector<double> val(nnodes);
-	vector<double> deriv(nnodes);
-	
-	// Evaluate shape, get nodal coords  and interpolate global coords
-	EvaluateShape1D(xi, val, deriv, nnodes);
-	for (int i=0;i<3;++i)
-		globcoord[i]=0.0;
-	for (int i=0;i<nnodes;++i)
-	{
-		CNode* mycnode = static_cast<CNode*> (mynodes[i]);
-		if (!mycnode) dserror("ERROR: LocalToGlobal: Null pointer!");
-		coord(0,i) = mycnode->xspatial()[0];
-		coord(1,i) = mycnode->xspatial()[1];
-		coord(2,i) = mycnode->xspatial()[2];
-		
-		if (inttype)
-		{
-			// use shape function values for interpolation
-			globcoord[0]+=val[i]*coord(0,i);
-			globcoord[1]+=val[i]*coord(1,i);
-			globcoord[2]+=val[i]*coord(2,i);
-		}
-		else
-		{
-			// use shape function derivatives for interpolation
-			globcoord[0]+=deriv[i]*coord(0,i);
-			globcoord[1]+=deriv[i]*coord(1,i);
-			globcoord[2]+=deriv[i]*coord(2,i);
-		}
-	}
-	
-	return true;
+  // check input
+  if (!xi)
+    dserror("ERROR: LocalToGlobal called with xi=NULL");
+  if (!globcoord)
+    dserror("ERROR: LocalToGlobal called with globcoord=NULL");
+  if (Shape()!=line3 && Shape()!=line2)
+    dserror("ERROR: LocalToGlobal called for CEl type != line3");
+  
+  // collect fundamental data
+  int nnodes = NumNode();
+  DRT::Node** mynodes = Nodes();
+  if (!mynodes) dserror("ERROR: LocalToGlobal: Null pointer!");
+  LINALG::SerialDenseMatrix coord(3,nnodes);
+  vector<double> val(nnodes);
+  vector<double> deriv(nnodes);
+  
+  // Evaluate shape, get nodal coords  and interpolate global coords
+  EvaluateShape1D(xi, val, deriv, nnodes);
+  for (int i=0;i<3;++i)
+    globcoord[i]=0.0;
+  for (int i=0;i<nnodes;++i)
+  {
+    CNode* mycnode = static_cast<CNode*> (mynodes[i]);
+    if (!mycnode) dserror("ERROR: LocalToGlobal: Null pointer!");
+    coord(0,i) = mycnode->xspatial()[0];
+    coord(1,i) = mycnode->xspatial()[1];
+    coord(2,i) = mycnode->xspatial()[2];
+    
+    if (inttype)
+    {
+      // use shape function values for interpolation
+      globcoord[0]+=val[i]*coord(0,i);
+      globcoord[1]+=val[i]*coord(1,i);
+      globcoord[2]+=val[i]*coord(2,i);
+    }
+    else
+    {
+      // use shape function derivatives for interpolation
+      globcoord[0]+=deriv[i]*coord(0,i);
+      globcoord[1]+=deriv[i]*coord(1,i);
+      globcoord[2]+=deriv[i]*coord(2,i);
+    }
+  }
+  
+  return true;
 }
 
 /*----------------------------------------------------------------------*
@@ -565,27 +565,27 @@ bool CONTACT::CElement::LocalToGlobal(const double* xi, double* globcoord,
  *----------------------------------------------------------------------*/
 bool CONTACT::CElement::AddSearchElements(const vector<int>& gids)
 {
-	// check input data and calling element type
-	if ((int)gids.size()==0)
-		dserror("ERROR: AddSearchElements called with vec of length zero!");
-	if (!IsSlave())
-		dserror("ERROR: AddSearchElements called for non-slave CElement!");
-	
-	// loop over all input gids
-	for (int i=0;i<(int)gids.size();++i)
-	{
-		// loop over all search candidates already known
-		bool found = false;
-		for (int j=0;j<NumSearchElements();++j)
-			if (gids[i]==searchelements_[j])
-				found = true;
-		
-		// add new gid to vector of search candidates
-		if (!found)
-			searchelements_.push_back(gids[i]);
-	}
-	
-	return true;
+  // check input data and calling element type
+  if ((int)gids.size()==0)
+    dserror("ERROR: AddSearchElements called with vec of length zero!");
+  if (!IsSlave())
+    dserror("ERROR: AddSearchElements called for non-slave CElement!");
+  
+  // loop over all input gids
+  for (int i=0;i<(int)gids.size();++i)
+  {
+    // loop over all search candidates already known
+    bool found = false;
+    for (int j=0;j<NumSearchElements();++j)
+      if (gids[i]==searchelements_[j])
+        found = true;
+    
+    // add new gid to vector of search candidates
+    if (!found)
+      searchelements_.push_back(gids[i]);
+  }
+  
+  return true;
 }
 
 #endif  // #ifdef CCADISCRET
