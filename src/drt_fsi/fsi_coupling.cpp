@@ -197,7 +197,7 @@ void FSI::Coupling::FinishCoupling(const DRT::Discretization& masterdis,
   if (err)
     dserror("failed to export master nodes");
 
-  Teuchos::RCP<Epetra_Map> permmasternodemap =
+  Teuchos::RCP<const Epetra_Map> permmasternodemap =
     rcp(new Epetra_Map(-1, permmasternodevec->MyLength(), permmasternodevec->Values(), 0, masterdis.Comm()));
 
   if (not slavenodemap->PointSameAs(*permmasternodemap))
@@ -214,10 +214,10 @@ void FSI::Coupling::FinishCoupling(const DRT::Discretization& masterdis,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::Coupling::BuildDofMaps(const DRT::Discretization& dis,
-                                 RCP<Epetra_Map> nodemap,
-                                 RCP<Epetra_Map> permnodemap,
-                                 RCP<Epetra_Map>& dofmap,
-                                 RCP<Epetra_Map>& permdofmap,
+                                 RCP<const Epetra_Map> nodemap,
+                                 RCP<const Epetra_Map> permnodemap,
+                                 RCP<const Epetra_Map>& dofmap,
+                                 RCP<const Epetra_Map>& permdofmap,
                                  RCP<Epetra_Export>& exporter)
 {
   // communicate dofs

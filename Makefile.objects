@@ -180,6 +180,8 @@ OBJS_DRT_FSI  = src/drt_fsi/ale_dyn.o \
                 src/drt_fsi/fsi_structure.o \
                 src/drt_fsi/fsi_algorithm.o \
                 src/drt_fsi/fsi_dirichletneumann.o \
+                src/drt_fsi/fsi_monolithic.o \
+                src/drt_fsi/fsi_monolithicoverlap.o \
 		src/drt_fsi/fsi_nox_fixpoint.o \
 		src/drt_fsi/fsi_nox_aitken.o \
 		src/drt_fsi/fsi_nox_jacobian.o \
@@ -193,14 +195,6 @@ OBJS_DRT_FSI  = src/drt_fsi/ale_dyn.o \
 		src/drt_fsi/fsi_coupling_mortar.o \
                 src/drt_fsi/fsi_utils.o \
                 src/drt_fsi/fsi_ale_resulttest.o
-# ------------------ drt version of monolithic fluid structure interaction
-OBJS_DRT_MFSI = src/drt_mfsi/mfsi_algorithm.o \
-		src/drt_mfsi/mfsi_overlapalgorithm.o \
-		src/drt_mfsi/mfsi_nox_thyra_group.o \
-		src/drt_mfsi/mfsi_overlappreccondfactory.o \
-		src/drt_mfsi/mfsi_overlappreccondoperator.o \
-		src/drt_mfsi/mfsi_statustest.o \
-		src/drt_mfsi/mfsi_debug.o
 #                pss_full
 OBJS_PSS      = src/pss_full/pss_am.o \
                 src/pss_full/pss_ds.o \

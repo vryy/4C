@@ -76,6 +76,59 @@ namespace LINALG
   };
 
 
+  /// mem_fun_t version from gcc adapted to Teuchos::RCP
+  /*!
+    \note This is an internal class you never use directly. Use the rcp_fun
+    method instead.
+   */
+  template <class _Ret, class _Tp>
+  class rcp_fun_t : public unary_function<const _Tp*, _Ret>
+  {
+  public:
+    explicit rcp_fun_t(_Ret (_Tp::*__pf)()) : _M_f(__pf) {}
+
+    _Ret operator()(const Teuchos::RCP<_Tp> p) const { return ((&*p)->*_M_f)(); }
+  private:
+    _Ret (_Tp::*_M_f)();
+  };
+
+
+  /// mem_fun_t version from gcc adapted to Teuchos::RCP
+  /*!
+    \note This is an internal class you never use directly. Use the rcp_fun
+    method instead.
+   */
+  template <class _Ret, class _Tp>
+  class const_rcp_fun_t : public unary_function<const _Tp*, _Ret>
+  {
+  public:
+    explicit const_rcp_fun_t(_Ret (_Tp::*__pf)() const) : _M_f(__pf) {}
+
+    _Ret operator()(const Teuchos::RCP<_Tp> p) const { return ((&*p)->*_M_f)(); }
+  private:
+    _Ret (_Tp::*_M_f)() const;
+  };
+
+
+  /// mem_fun version from gcc adapted to Teuchos::RCP
+  /*!
+    This is needed if you want to use std containers (vector, set, list, ...)
+    that contain RCPed objects with std algorithms. Use it in place of the
+    usual std::mem_fun method.
+   */
+  template <class _Ret, class _Tp>
+  inline rcp_fun_t<_Ret, _Tp> rcp_fun(_Ret (_Tp::*__f)()) { return rcp_fun_t<_Ret, _Tp>(__f); }
+
+  /// mem_fun version from gcc adapted to Teuchos::RCP
+  /*!
+    This is needed if you want to use std containers (vector, set, list, ...)
+    that contain RCPed objects with std algorithms. Use it in place of the
+    usual std::mem_fun method.
+   */
+  template <class _Ret, class _Tp>
+  inline const_rcp_fun_t<_Ret, _Tp> rcp_fun(_Ret (_Tp::*__f)() const) { return const_rcp_fun_t<_Ret, _Tp>(__f); }
+
+
   /*!
   \brief Create a new Epetra_CrsMatrix and return RefcountPtr to it
 
@@ -265,10 +318,10 @@ namespace LINALG
   \param B          (in/out) : Matrix to be added to (must have Filled()==false)
   \param scalarB    (in)     : scaling factor for B
   */
-  inline void Add(const RCP<Epetra_CrsMatrix> A, 
-                  const bool transposeA, 
+  inline void Add(const RCP<Epetra_CrsMatrix> A,
+                  const bool transposeA,
                   const double scalarA,
-                  RCP<Epetra_CrsMatrix> B, 
+                  RCP<Epetra_CrsMatrix> B,
                   const double scalarB)
   { LINALG::Add(*A,transposeA,scalarA,*B,scalarB); return; }
 
@@ -555,10 +608,10 @@ namespace LINALG
 
   /*!
   \brief Print sparsity pattern of a matrix to postscript file
-  
+
   creates a file Epetra::Matrix.ps in current directory where the exact
   name of file depends on the exact type of class.
-  
+
   \note works in parallel and serial!
   */
   void PrintSparsityToPostscript(const Epetra_RowMatrix& A);

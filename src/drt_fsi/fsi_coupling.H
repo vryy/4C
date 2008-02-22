@@ -169,10 +169,10 @@ namespace FSI
     //@{
 
     /// the interface dof map of the master side
-    Teuchos::RCP<Epetra_Map> MasterDofMap() const { return masterdofmap_; }
+    Teuchos::RCP<const Epetra_Map> MasterDofMap() const { return masterdofmap_; }
 
     /// the interface dof map of the slave side
-    Teuchos::RCP<Epetra_Map> SlaveDofMap()  const { return slavedofmap_; }
+    Teuchos::RCP<const Epetra_Map> SlaveDofMap()  const { return slavedofmap_; }
 
     /// the permuted interface dof map of the master side
     //Teuchos::RCP<Epetra_Map> PermMasterDofMap() const { return permmasterdofmap_; }
@@ -236,10 +236,10 @@ namespace FSI
       node are of interest.
      */
     void BuildDofMaps(const DRT::Discretization& dis,
-                      RCP<Epetra_Map> nodemap,
-                      RCP<Epetra_Map> permnodemap,
-                      RCP<Epetra_Map>& dofmap,
-                      RCP<Epetra_Map>& permdofmap,
+                      RCP<const Epetra_Map> nodemap,
+                      RCP<const Epetra_Map> permnodemap,
+                      RCP<const Epetra_Map>& dofmap,
+                      RCP<const Epetra_Map>& permdofmap,
                       RCP<Epetra_Export>& exporter);
 
     /** \name Fundamental dof maps */
@@ -247,10 +247,10 @@ namespace FSI
     /// We keep the master and slave dof map as well as permutated versions
     /// that match the respective other side.
 
-    Teuchos::RCP<Epetra_Map> masterdofmap_;
-    Teuchos::RCP<Epetra_Map> permmasterdofmap_;
-    Teuchos::RCP<Epetra_Map> slavedofmap_;
-    Teuchos::RCP<Epetra_Map> permslavedofmap_;
+    Teuchos::RCP<const Epetra_Map> masterdofmap_;
+    Teuchos::RCP<const Epetra_Map> permmasterdofmap_;
+    Teuchos::RCP<const Epetra_Map> slavedofmap_;
+    Teuchos::RCP<const Epetra_Map> permslavedofmap_;
 
     //@}
 

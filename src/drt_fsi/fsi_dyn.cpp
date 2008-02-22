@@ -13,9 +13,6 @@
 #include "fsi_dirichletneumann.H"
 #include "fsi_utils.H"
 
-#include "../drt_mfsi/mfsi_lagrangealgorithm.H"
-#include "../drt_mfsi/mfsi_overlapalgorithm.H"
-
 #include "../drt_lib/drt_resulttest.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -336,8 +333,8 @@ void fsi_ale_drt()
   else
   {
     //Teuchos::RCP<MFSI::Algorithm> mfsi = rcp(new MFSI::LagrangeAlgorithm(comm));
-    Teuchos::RCP<MFSI::Algorithm> mfsi = rcp(new MFSI::OverlapAlgorithm(comm));
-    mfsi->Timeloop();
+    //Teuchos::RCP<MFSI::Algorithm> mfsi = rcp(new MFSI::OverlapAlgorithm(comm));
+    //mfsi->Timeloop();
   }
 
   Teuchos::TimeMonitor::summarize();

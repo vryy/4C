@@ -532,16 +532,16 @@ namespace LINALG
     int Cols() const { return domainmaps_.NumMaps(); }
 
     /// range map for given row block
-    Epetra_Map& RangeMap(int r) const { return *rangemaps_.Map(r); }
+    const Epetra_Map& RangeMap(int r) const { return *rangemaps_.Map(r); }
 
     /// domain map for given column block
-    Epetra_Map& DomainMap(int r) const { return *domainmaps_.Map(r); }
+    const Epetra_Map& DomainMap(int r) const { return *domainmaps_.Map(r); }
 
     /// total matrix range map with all blocks
-    Epetra_Map& FullRangeMap() const { return *rangemaps_.FullMap(); }
+    const Epetra_Map& FullRangeMap() const { return *rangemaps_.FullMap(); }
 
     /// total matrix domain map with all blocks
-    Epetra_Map& FullDomainMap() const { return *domainmaps_.FullMap(); }
+    const Epetra_Map& FullDomainMap() const { return *domainmaps_.FullMap(); }
 
     /// total matrix row map with all blocks
     /*!

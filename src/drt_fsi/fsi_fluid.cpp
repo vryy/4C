@@ -36,7 +36,7 @@ FSI::FluidAdapter::FluidAdapter(Teuchos::RCP<DRT::Discretization> dis,
   // dofs at the interface are excluded
   // we use only velocity dofs and only those without Dirichlet constraint
 
-  Teuchos::RCP<Epetra_Map> velmap = fluid_.VelocityRowMap();
+  Teuchos::RCP<const Epetra_Map> velmap = fluid_.VelocityRowMap();
   Teuchos::RCP<Epetra_Vector> dirichtoggle = fluid_.Dirichlet();
   Teuchos::RCP<const Epetra_Map> fullmap = DofRowMap();
 
@@ -180,7 +180,7 @@ void FSI::FluidAdapter::NonlinearSolve()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> FSI::FluidAdapter::InnerVelocityRowMap()
+Teuchos::RCP<const Epetra_Map> FSI::FluidAdapter::InnerVelocityRowMap()
 {
   return innervelmap_;
 }
@@ -188,7 +188,7 @@ Teuchos::RCP<Epetra_Map> FSI::FluidAdapter::InnerVelocityRowMap()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> FSI::FluidAdapter::PressureRowMap()
+Teuchos::RCP<const Epetra_Map> FSI::FluidAdapter::PressureRowMap()
 {
   return fluid_.PressureRowMap();
 }
@@ -196,7 +196,7 @@ Teuchos::RCP<Epetra_Map> FSI::FluidAdapter::PressureRowMap()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::FluidAdapter::SetMeshMap(Teuchos::RCP<Epetra_Map> mm)
+void FSI::FluidAdapter::SetMeshMap(Teuchos::RCP<const Epetra_Map> mm)
 {
   meshmap_.Setup(*dis_->DofRowMap(),mm,LINALG::SplitMap(*dis_->DofRowMap(),*mm));
 }

@@ -202,8 +202,8 @@ public:
   Teuchos::RCP<Epetra_Operator> SysMat() { return sysmat_->EpetraOperator(); }
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
 
-  Teuchos::RCP<Epetra_Map> VelocityRowMap() { return velpressplitter_.CondMap(); }
-  Teuchos::RCP<Epetra_Map> PressureRowMap() { return velpressplitter_.OtherMap(); }
+  Teuchos::RCP<const Epetra_Map> VelocityRowMap() { return velpressplitter_.CondMap(); }
+  Teuchos::RCP<const Epetra_Map> PressureRowMap() { return velpressplitter_.OtherMap(); }
 
   double ResidualScaling() const { return density_/dta_/theta_; }
 

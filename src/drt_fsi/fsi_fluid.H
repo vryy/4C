@@ -145,13 +145,13 @@ namespace FSI {
     //@}
 
     ///
-    virtual Teuchos::RCP<Epetra_Map> InnerVelocityRowMap() = 0;
+    virtual Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap() = 0;
 
     ///
-    virtual Teuchos::RCP<Epetra_Map> PressureRowMap() = 0;
+    virtual Teuchos::RCP<const Epetra_Map> PressureRowMap() = 0;
 
     /// the mesh map contains all velocity dofs that are covered by an ALE node
-    virtual void SetMeshMap(Teuchos::RCP<Epetra_Map> mm) = 0;
+    virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm) = 0;
 
     virtual double ResidualScaling() const = 0;
 
@@ -226,11 +226,11 @@ namespace FSI {
     virtual void NonlinearSolve();
 
     /// the interface map contains all velocity dofs at the interface
-    virtual Teuchos::RCP<Epetra_Map> InnerVelocityRowMap();
-    virtual Teuchos::RCP<Epetra_Map> PressureRowMap();
+    virtual Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap();
+    virtual Teuchos::RCP<const Epetra_Map> PressureRowMap();
 
     /// the mesh map contains all velocity dofs that are covered by an ALE node
-    virtual void SetMeshMap(Teuchos::RCP<Epetra_Map> mm);
+    virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm);
 
     /// scaling factor needed to convert the residual to real forces
     virtual double ResidualScaling() const;

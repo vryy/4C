@@ -1,6 +1,6 @@
 #ifdef CCADISCRET
-#ifndef DRT_UTILS_MAPEXTRACTOR_H
-#define DRT_UTILS_MAPEXTRACTOR_H
+#ifndef LINALG_MAPEXTRACTOR_H
+#define LINALG_MAPEXTRACTOR_H
 
 #include <map>
 #include <set>
@@ -41,14 +41,20 @@ namespace LINALG
     MultiMapExtractor();
 
     /// create an extractor from fullmap to the given set of maps
-    MultiMapExtractor(const Epetra_Map& fullmap, const std::vector<Teuchos::RCP<Epetra_Map> >& maps);
+    MultiMapExtractor(const Epetra_Map& fullmap, const std::vector<Teuchos::RCP<const Epetra_Map> >& maps);
 
     /// setup of an empty extractor
     /*!
       \warning The fullmap has to be nonoverlapping. The list of maps has to
       be nonoverlapping as well and its summ has to equal the fullmap.
      */
-    void Setup(const Epetra_Map& fullmap, const std::vector<Teuchos::RCP<Epetra_Map> >& maps);
+    void Setup(const Epetra_Map& fullmap, const std::vector<Teuchos::RCP<const Epetra_Map> >& maps);
+
+    /// merge set of unique maps
+    /*!
+      \warning There must be no overlap in these maps.
+     */
+    static Teuchos::RCP<Epetra_Map> MergeMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps);
 
     /** \name Maps */
     //@{
@@ -57,10 +63,10 @@ namespace LINALG
     int NumMaps() const { return maps_.size(); }
 
     /// get the map
-    const Teuchos::RCP<Epetra_Map>& Map(int i) const { return maps_[i]; }
+    const Teuchos::RCP<const Epetra_Map>& Map(int i) const { return maps_[i]; }
 
     /// the full map
-    const Teuchos::RCP<Epetra_Map>& FullMap() const { return fullmap_; }
+    const Teuchos::RCP<const Epetra_Map>& FullMap() const { return fullmap_; }
 
     //@}
 
@@ -240,10 +246,10 @@ namespace LINALG
   private:
 
     /// the full row map
-    Teuchos::RCP<Epetra_Map> fullmap_;
+    Teuchos::RCP<const Epetra_Map> fullmap_;
 
     /// the list of nonoverlapping partial row maps that sums up to the full map
-    std::vector<Teuchos::RCP<Epetra_Map> > maps_;
+    std::vector<Teuchos::RCP<const Epetra_Map> > maps_;
 
     /// communication between condition dof map and full row dof map
     std::vector<Teuchos::RCP<Epetra_Import> > importer_;
@@ -282,13 +288,13 @@ namespace LINALG
 
     MapExtractor();
 
-    MapExtractor(const Epetra_Map& fullmap, Teuchos::RCP<Epetra_Map> condmap, Teuchos::RCP<Epetra_Map> othermap);
+    MapExtractor(const Epetra_Map& fullmap, Teuchos::RCP<const Epetra_Map> condmap, Teuchos::RCP<const Epetra_Map> othermap);
 
     /** \name Setup */
     //@{
 
     /// setup from known maps
-    void Setup(const Epetra_Map& fullmap, Teuchos::RCP<Epetra_Map> condmap, Teuchos::RCP<Epetra_Map> othermap);
+    void Setup(const Epetra_Map& fullmap, Teuchos::RCP<const Epetra_Map> condmap, Teuchos::RCP<const Epetra_Map> othermap);
 
     //@}
 
@@ -296,10 +302,10 @@ namespace LINALG
     //@{
 
     /// get the condition dof map
-    const Teuchos::RCP<Epetra_Map>& CondMap() const { return Map(1); }
+    const Teuchos::RCP<const Epetra_Map>& CondMap() const { return Map(1); }
 
     /// get the other dof map
-    const Teuchos::RCP<Epetra_Map>& OtherMap() const { return Map(0); }
+    const Teuchos::RCP<const Epetra_Map>& OtherMap() const { return Map(0); }
 
     //@}
 
