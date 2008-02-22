@@ -636,15 +636,6 @@ void ContactStruGenAlpha::PTC()
     if (damping)
       stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
     stiff_->Complete();
-    
-    //-------------------------make contact modifications to lhs and rhs
-    {
-      contactmanager_->Initialize();
-      contactmanager_->SetState("displacement",dism_);
-      
-      // (almost) all contact stuff is done here!
-      contactmanager_->Evaluate(stiff_,fresm_);
-    }
         
     //------------------------------- do ptc modification to effective LHS
     {
@@ -656,6 +647,15 @@ void ContactStruGenAlpha::PTC()
       stiff_->ReplaceDiagonalValues(*diag);
     }
 
+    //-------------------------make contact modifications to lhs and rhs
+    {
+      contactmanager_->Initialize();
+      contactmanager_->SetState("displacement",dism_);
+          
+      // (almost) all contact stuff is done here!
+      contactmanager_->Evaluate(stiff_,fresm_);
+    }
+        
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
