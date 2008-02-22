@@ -499,10 +499,6 @@ void DRT::ELEMENTS::So_hex8::VisNames(map<string,int>& names)
   // Put the owner of this element into the file (use base class method for this)
   DRT::Element::VisNames(names);
 
-  // stress vector (Voigt) at element center
-  string stressname = "StressCxyz";
-  names[stressname] = 6;
-
   // element fiber direction vector
   string fibervecname = "FiberVec";
   names[fibervecname] = 3;
@@ -519,27 +515,12 @@ void DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
   DRT::Element::VisData(name,data);
 
   // these are the names so_hex8 recognizes, do nothing for everything else
-  if (name != "StressCxyz" &&
-      name != "FiberVec") return;
+  if (name != "FiberVec") return;
 
   // check sizes
-  if ((name == "StressCxyz") && ((int)data.size()!=6)) dserror("StressCxyz size mismatch");
   if ((name == "FiberVec") && ((int)data.size()!=3)) dserror("FiberVec size mismatch ");
 
-  // see whether we have data
-//  if (!stresses_) return; // no stresses present, do nothing
-//  if (!fiberdirection_) return; // no fiber vector present, do nothing
-
-  if (name == "StressCxyz"){
-    data.assign(data.size(), 0.);
-    for (int i = 0; i < NUMSTR_SOH8; ++i) {
-      for (int j = 0; j < NUMGPT_SOH8; ++j) {
-        data[i] += 0.125 * stresses_(j,i);
-      }
-    }
-//     data = stresses_;
-  }
-  else if (name == "FiberVec"){
+  if (name == "FiberVec"){
     data = fiberdirection_;
   }
   else dserror("weirdo impossible case????");

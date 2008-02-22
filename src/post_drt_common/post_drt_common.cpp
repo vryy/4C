@@ -64,7 +64,7 @@ char* fieldnames[] = FIELDNAMES;
 
 /*----------------------------------------------------------------------*
  * The main part of this file. All the functions of the three classes
- * PostProbem, PostField and PostResult are defined here.
+ * PostProblem, PostField and PostResult are defined here.
  *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
@@ -91,6 +91,7 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
   CLP.setOption("step",&step_,"number of time steps to jump");
   CLP.setOption("file",&file,"control file to open");
   CLP.setOption("output",&output,"output file name [defaults to control file name]");
+  CLP.setOption("stresstype",&stresstype_,"stress output type [cxyz or ndxyz]");
 
   CommandLineProcessor::EParseCommandLineReturn
     parseReturn = CLP.parse(argc,argv);
@@ -118,6 +119,11 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
   if (output=="")
   {
     output = file.substr(0,file.length()-8);
+  }
+
+  if (stresstype_=="")
+  {
+    stresstype_ = "none";
   }
 
   result_group_ = vector<MAP*>();
@@ -983,6 +989,44 @@ RefCountPtr<Epetra_Vector> PostResult::read_result(const string name)
       dserror("got multivector with name '%s', vector expected", name.c_str());
   }
   return Teuchos::rcp_dynamic_cast<Epetra_Vector>(read_multi_result(name));
+}
+
+/*----------------------------------------------------------------------*
+ * reads the data of the result vector 'name' from the current result
+ * block and returns it as an std::vector<char>. the corresponding
+ * elemap is returned, too.
+ *----------------------------------------------------------------------*/
+RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > >
+PostResult::read_result_serialdensematrix(const string name)
+{
+  RefCountPtr<Epetra_Comm> comm = field_->problem()->comm();
+  MAP* result = map_read_map(group_, name.c_str());
+  string id_path = map_read_string(result, "ids");
+  string value_path = map_read_string(result, "values");
+  int columns = map_find_int(result,"columns",&columns);
+  if (not map_find_int(result,"columns",&columns))
+  {
+    columns = 1;
+  }
+  if (columns != 1)
+    dserror("got multivector with name '%s', vector<char> expected", name.c_str());
+
+  RefCountPtr<Epetra_Map> elemap;
+  RefCountPtr<std::vector<char> > data = file_.ReadResultDataVecChar(id_path, value_path, columns,
+                                                                     *comm, elemap);
+
+  RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > mapdata = rcp(new std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> >);
+  int position=0;
+//   cout << "elemap:\n" << *elemap << endl;
+//   cout << "myelenum: " << elemap->NumMyElements() << endl;
+  for (int i=0;i<elemap->NumMyElements();++i)
+  {
+    RefCountPtr<Epetra_SerialDenseMatrix> gpstress = rcp(new Epetra_SerialDenseMatrix);
+    DRT::ParObject::ExtractfromPack(position, *data, *gpstress);
+    (*mapdata)[elemap->GID(i)]=gpstress;
+  }
+
+  return mapdata;
 }
 
 /*----------------------------------------------------------------------*

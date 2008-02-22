@@ -156,11 +156,6 @@ void stru_static_drt()
   // also known at out-of-balance-force
   RefCountPtr<Epetra_Vector> fresm = LINALG::CreateVector(*dofrowmap,false);
 
-  // nodal normal stresses
-  RefCountPtr<Epetra_Vector> normal_stresses = LINALG::CreateVector(*dofrowmap,true);
-  // nodal shear stresses
-  RefCountPtr<Epetra_Vector> shear_stresses = LINALG::CreateVector(*dofrowmap,true);
-
   if (statvar->nr_controltyp != control_load) dserror("Only load control implemented");
 
   /*
@@ -197,29 +192,8 @@ void stru_static_drt()
     istep = rstep;
   }
 
-  //---------------------------------------------- do "stress" calculation
-  int mod_stress = istep % statvar->resevry_stress;
-  if (!mod_stress && ioflags.struct_stress==1)
-  {
-    // create the parameters for the discretization
-    ParameterList p;
-    // action for elements
-    p.set("action","calc_struct_stress");
-    // other parameters that might be needed by the elements
-    p.set("total time",timen);
-    p.set("delta time",dt);
-    // set vector values needed by elements
-    actdis->ClearState();
-    actdis->SetState("residual displacement",zeros);
-    actdis->SetState("displacement",dis);
-    actdis->Evaluate(p,null,null,null,null,null);
-    actdis->ClearState();
-  }
-
-
   // write mesh always at beginning of calc or restart
   output.WriteMesh(istep,time);
-
 
   //-------------------------------------- parameters for volume constraint
   // required volumes (can change over time with a given loadcurve
@@ -299,23 +273,30 @@ void stru_static_drt()
   //------------------------------------------------- output initial state
   output.NewStep(istep, time);
   output.WriteVector("displacement", dis);
-  //---------------------------------------------- output stresses
+  output.WriteElementData();
+
+  //---------------------------------------------- do "stress" calculation
+  int mod_stress = istep % statvar->resevry_stress;
   if (!mod_stress && ioflags.struct_stress==1)
   {
-    output.WriteElementData();
-
-    if (0)
-    {
-      // create the parameters for the discretization
-      ParameterList p;
-      p.set("action","calc_struct_stress_nodal");
-      RefCountPtr<Epetra_Vector> normal_stresses = LINALG::CreateVector(*(actdis->DofRowMap()),true);
-      RefCountPtr<Epetra_Vector> shear_stresses = LINALG::CreateVector(*(actdis->DofRowMap()),true);
-      actdis->Evaluate(p,null,null,normal_stresses,shear_stresses,null);
-      actdis->ClearState();
-      output.WriteStressVector("nodal_stresses_xyz", normal_stresses, shear_stresses);
-    }
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_stress");
+    // other parameters that might be needed by the elements
+    p.set("total time",timen);
+    p.set("delta time",dt);
+    Teuchos::RCP<std::vector<char> > stress = Teuchos::rcp(new std::vector<char>());
+    p.set("stress", stress);
+    // set vector values needed by elements
+    actdis->ClearState();
+    actdis->SetState("residual displacement",zeros);
+    actdis->SetState("displacement",dis);
+    actdis->Evaluate(p,null,null,null,null,null);
+    actdis->ClearState();
+    output.WriteVector("gauss_stresses_xyz",*stress,*(actdis->ElementColMap()));
   }
+
   //---------------------------------------------end of output initial state
 
   //========================================== start of time/loadstep loop
@@ -338,12 +319,6 @@ void stru_static_drt()
       ParameterList params;
       // action for elements
       params.set("action","calc_struct_nlnstiff");
-      // choose what to assemble
-      params.set("assemble matrix 1",true);
-      params.set("assemble matrix 2",false);
-      params.set("assemble vector 1",true);
-      params.set("assemble vector 2",false);
-      params.set("assemble vector 3",false);
       // other parameters needed by the elements
       params.set("total time",timen);  // load factor (pseudo time)
       params.set("delta time",dt);  // load factor increment (pseudo time increment)
@@ -680,26 +655,6 @@ void stru_static_drt()
       actdis->Evaluate(params,null,null,null,null,null);
     }
 
-    //---------------------------------------------- do stress calculation
-    int mod_stress = istep % statvar->resevry_stress;
-    if (!mod_stress && ioflags.struct_stress==1)
-    {
-      // create the parameters for the discretization
-      ParameterList p;
-      // action for elements
-      p.set("action","calc_struct_stress");
-      // other parameters that might be needed by the elements
-      p.set("total time",timen);
-      p.set("delta time",dt);
-      // set vector values needed by elements
-      actdis->ClearState();
-      actdis->SetState("residual displacement",zeros);
-      actdis->SetState("displacement",dis);
-      actdis->Evaluate(p,null,null,null,null,null);
-      actdis->ClearState();
-    }
-
-
     //------------------------------------------ increment time/load step
     ++istep;      // load step n := n + 1
     time += dt;   // load factor / pseudo time  t_n := t_{n+1} = t_n + Delta t
@@ -729,30 +684,32 @@ void stru_static_drt()
     {
       output.NewStep(istep, time);
       output.WriteVector("displacement", dis);
+      output.WriteElementData();
       isdatawritten = true;
     }
 
-    //---------------------------------------------------- output stresses
+    //---------------------------------------------- do stress calculation
+    int mod_stress = istep % statvar->resevry_stress;
     if (!mod_stress && ioflags.struct_stress==1)
     {
+      // create the parameters for the discretization
+      ParameterList p;
+      // action for elements
+      p.set("action","calc_struct_stress");
+      // other parameters that might be needed by the elements
+      p.set("total time",timen);
+      p.set("delta time",dt);
+      Teuchos::RCP<std::vector<char> > stress = Teuchos::rcp(new std::vector<char>());
+      p.set("stress", stress);
+      // set vector values needed by elements
+      actdis->ClearState();
+      actdis->SetState("residual displacement",zeros);
+      actdis->SetState("displacement",dis);
+      actdis->Evaluate(p,null,null,null,null,null);
+      actdis->ClearState();
       if (!isdatawritten) output.NewStep(istep, timen);
       isdatawritten = true;
-      output.WriteElementData();
-
-      if (0)
-      {
-        // create the parameters for the discretization
-        ParameterList p;
-        // action for elements
-        p.set("action","calc_struct_stress_nodal");
-        RefCountPtr<Epetra_Vector> normal_stresses = LINALG::CreateVector(*(actdis->DofRowMap()),true);
-        RefCountPtr<Epetra_Vector> shear_stresses = LINALG::CreateVector(*(actdis->DofRowMap()),true);
-        actdis->Evaluate(p,null,null,normal_stresses,shear_stresses,null);
-        actdis->ClearState();
-        if (!isdatawritten) output.NewStep(istep, timen);
-        output.WriteStressVector("nodal_stresses_xyz", normal_stresses, shear_stresses);
-        isdatawritten = true;
-      }
+      output.WriteVector("gauss_stresses_xyz",*stress,*(actdis->ElementColMap()));
     }
 
 //

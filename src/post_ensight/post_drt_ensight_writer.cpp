@@ -94,7 +94,6 @@ void EnsightWriter::WriteFiles()
   timesetmap_["geo"] = timesteps;
   // at the moment, we can only print out the first step -> to be changed
 
-
   ///////////////////////////////////
   //  write solution fields files  //
   ///////////////////////////////////
@@ -103,32 +102,32 @@ void EnsightWriter::WriteFiles()
   // prepare the time sets and file sets for case file creation
   int setcounter = 0;
   int allresulttimeset = 0;
-  for (map<string,vector<double> >::const_iterator entry = timesetmap_.begin(); entry != timesetmap_.end(); ++entry) 
+  for (map<string,vector<double> >::const_iterator entry = timesetmap_.begin(); entry != timesetmap_.end(); ++entry)
   {
-      string key = entry->first;
-      if ((entry->second).size()== numsoltimes)
-      {
-        if (allresulttimeset == 0)
-        {
-            setcounter++;
-            allresulttimeset = setcounter;
-        }
-        timesetnumbermap_[key] = allresulttimeset; // reuse the default result time set, when possible
-      }
-      else
+    string key = entry->first;
+    if ((entry->second).size()== numsoltimes)
+    {
+      if (allresulttimeset == 0)
       {
         setcounter++;
-        timesetnumbermap_[key] = setcounter; // a new time set number is needed
+        allresulttimeset = setcounter;
       }
+      timesetnumbermap_[key] = allresulttimeset; // reuse the default result time set, when possible
+    }
+    else
+    {
+      setcounter++;
+      timesetnumbermap_[key] = setcounter; // a new time set number is needed
+    }
   }
 
   setcounter = 0;
-  for (map<string,vector<int> >::const_iterator entry = filesetmap_.begin(); entry != filesetmap_.end(); ++entry) {
-      setcounter++;
-      string key = entry->first;
-      filesetnumbermap_[key] = setcounter;
+  for (map<string,vector<int> >::const_iterator entry = filesetmap_.begin(); entry != filesetmap_.end(); ++entry)
+  {
+    setcounter++;
+    string key = entry->first;
+    filesetnumbermap_[key] = setcounter;
   }
-
 
   ///////////////////////////////////
   //  now write the case file      //
@@ -154,15 +153,13 @@ void EnsightWriter::WriteFiles()
 
     casefile.close();
   }
-
-        return;
+  return;
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EnsightWriter::WriteGeoFile(
-  const string& geofilename)
+void EnsightWriter::WriteGeoFile(const string& geofilename)
 {
   // open file
   ofstream geofile;
@@ -767,7 +764,7 @@ void EnsightWriter::WriteElementResults(PostField* field)
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteResult(const string groupname,
                                 const string name,
-                                const int restype,
+                                const ResultType restype,
                                 const int numdf,
                                 const int from)
 {
@@ -946,7 +943,6 @@ void EnsightWriter::WriteResult(const string groupname,
 
   return;
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1141,11 +1137,11 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
   Each node has to have the same number of dofs.
 */
 void EnsightWriter::WriteNodalResultStep(ofstream& file,
-                                        PostResult& result,
-                                        map<string, vector<ofstream::pos_type> >& resultfilepos,
-                                        const string groupname,
-                                        const string name,
-                                        const int numdf) const
+                                         PostResult& result,
+                                         map<string, vector<ofstream::pos_type> >& resultfilepos,
+                                         const string groupname,
+                                         const string name,
+                                         const int numdf) const
 {
   //-------------------------------------------
   // write some key words and read result data
@@ -1198,12 +1194,6 @@ void EnsightWriter::WriteNodalResultStep(ofstream& file,
   Write(file, "END TIME STEP");
   return;
 }
-
-
-
-
-
-
 
 
 /*!
@@ -1341,7 +1331,7 @@ void EnsightWriter::WriteElementDOFResultStep(
             Write(file, static_cast<float>((*proc0data)[lid]));
           }
           else
-            dserror("recieved illegal dof local id: %d", lid);
+            dserror("received illegal dof local id: %d", lid);
         }
       }
     }// for idf
@@ -1463,7 +1453,7 @@ void EnsightWriter::WriteElementResultStep(
             Write(file, static_cast<float>((*datacolumn)[lid]));
           }
           else
-            dserror("recieved illegal dof local id: %d", lid);
+            dserror("received illegal dof local id: %d", lid);
         }
       }
     } // if (myrank_==0)
@@ -1548,7 +1538,7 @@ string EnsightWriter::GetVariableSection(
     // Get rid of path
     const size_t found_path = filename.find_last_of("/\\");
     const string filename_nopath = filename.substr(found_path+1);
-    
+
     map<string,int>::const_iterator timeentry = timesetnumbermap_.find(key);
     if (timeentry == timesetnumbermap_.end())
       dserror("key not found!");
@@ -1657,7 +1647,7 @@ string EnsightWriter::GetTimeSectionStringFromTimesets(
 {
   stringstream s;
   map<string,vector<double> >::const_iterator timeset;
-  int counter=0;
+  set<int> donetimesets;
 
   for (timeset = timesetmap.begin(); timeset != timesetmap.end(); ++timeset)
   {
@@ -1667,9 +1657,9 @@ string EnsightWriter::GetTimeSectionStringFromTimesets(
       dserror("key not found!");
     const int timesetnumber = entry->second;
     const vector<double> soltimes = timeset->second;
-    counter++;
-    if (counter==timesetnumber) // do not write redundant time sets
+    if (donetimesets.find(timesetnumber)==donetimesets.end()) // do not write redundant time sets
     {
+      donetimesets.insert(timesetnumber);
       string outstring = GetTimeSectionString(timesetnumber, soltimes);
       s<< outstring<<endl;
     }

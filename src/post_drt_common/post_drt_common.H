@@ -144,6 +144,9 @@ public:
   //! returns type of the simulation
   PROBLEM_TYP Problemtype() { return problemtype_; }
 
+  //! returns stress type
+  string stresstype() { return stresstype_; }
+
   //@}
 
 private:
@@ -194,6 +197,9 @@ private:
   int start_;
   int end_;
   int step_;
+
+  /* stress output type optionally set by command line argument */
+  string stresstype_;
 
   //! MAP pointers into the control file map.
   // We don't own these pointers, so no reference counting.
@@ -335,6 +341,14 @@ public:
   //
   // \returns vector with results read
   RefCountPtr<Epetra_Vector> read_result(const string name);
+
+  //! reads the data of the result vector 'name' from the current result block
+  //
+  // \param name (in): result vector name inside the control file
+  // \param elemap (out): element map
+  //
+  // \returns vector with results read
+  RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > read_result_serialdensematrix(const string name);
 
   //! reads the data of the result vector 'name' from the current result block
   //

@@ -61,6 +61,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
   else if (action=="calc_struct_fsiload")       act = So_hex8::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")  act = So_hex8::calc_struct_update_istep;
   else if (action=="calc_homog_stressdens")     act = So_hex8::calc_homog_stressdens;
+  else if (action=="postprocess_stress")        act = So_hex8::postprocess_stress;
   else dserror("Unknown type of action for So_hex8");
 
   const double time = params.get("total time",-1.0);
@@ -120,41 +121,33 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
     case calc_struct_stress:{
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<vector<char> > data = params.get<RCP<vector<char> > >("stress", null);
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-//       Epetra_SerialDenseMatrix stresses(NUMGPT_SOH8,NUMSTR_SOH8);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stresses_,time);
-
-      // average gp stresses to store element (center) stress
-      // -> moved this to VisData!
-//       for (int i = 0; i < NUMSTR_SOH8; ++i) {
-//         for (int j = 0; j < NUMGPT_SOH8; ++j) {
-//           stresses_[i] += 0.125 * stresses(j,i);
-//         }
-//       }
-
+      Epetra_SerialDenseMatrix stress(NUMGPT_SOH8,NUMSTR_SOH8);
+      soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,time);
+      AddtoPack(*data, stress);
     }
     break;
 
-    // evaluate stresses at nodes
-    case calc_struct_stress_nodal: {
-      if (stresstype_==soh8_stress_ndxyz) {
-//         RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-//         RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-//         if (disp==null) dserror("Cannot get state vectors 'displacement'");
-//         vector<double> mydisp(lm.size());
-//         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-//         Epetra_SerialDenseMatrix stresses(NUMGPT_SOH8,NUMSTR_SOH8);
-//         vector<double> myres(lm.size());
-//         DRT::UTILS::ExtractMyValues(*res,myres,lm);
-//         soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stresses,time);
+    // postprocess stresses at gauss points
+    case postprocess_stress:{
 
+      const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
+        params.get<RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
+      if (gpstressmap==null)
+        dserror("no gp stress map available for postprocessing");
+      string stresstype = params.get<string>("stresstype","ndxyz");
+      int gid = Id();
+      RCP<Epetra_SerialDenseMatrix> gpstress = (*gpstressmap)[gid];
+
+      if (stresstype=="ndxyz") {
         // extrapolate stresses at Gauss points to nodes
         Epetra_SerialDenseMatrix nodalstresses(NUMNOD_SOH8,NUMSTR_SOH8);
-        soh8_expol(stresses_,nodalstresses);
+        soh8_expol(*gpstress,nodalstresses);
 
         // average nodal stresses between elements
         // -> divide by number of adjacent elements
@@ -175,6 +168,62 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
           elevec2(3*i+1)=nodalstresses(i,4)/numadjele[i];
           elevec2(3*i+2)=nodalstresses(i,5)/numadjele[i];
         }
+      }
+      else if (stresstype=="cxyz") {
+        RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
+        if (elestress==null)
+          dserror("No element stress vector available");
+        const Epetra_BlockMap elemap = elestress->Map();
+        int lid = elemap.LID(Id());
+        if (lid!=-1) {
+          for (int i = 0; i < NUMSTR_SOH8; ++i) {
+            (*((*elestress)(i)))[lid] = 0.;
+            for (int j = 0; j < NUMGPT_SOH8; ++j) {
+              (*((*elestress)(i)))[lid] += 0.125 * (*gpstress)(j,i);
+            }
+          }
+        }
+      }
+      else if (stresstype=="cxyz_ndxyz") {
+        // extrapolate stresses at Gauss points to nodes
+        Epetra_SerialDenseMatrix nodalstresses(NUMNOD_SOH8,NUMSTR_SOH8);
+        soh8_expol(*gpstress,nodalstresses);
+
+        // average nodal stresses between elements
+        // -> divide by number of adjacent elements
+        vector<int> numadjele(NUMNOD_SOH8);
+
+        for (int i=0;i<NUMNOD_SOH8;++i){
+          DRT::Node* node=Nodes()[i];
+          numadjele[i]=node->NumElement();
+        }
+
+        for (int i=0;i<NUMNOD_SOH8;++i){
+          elevec1(3*i)=nodalstresses(i,0)/numadjele[i];
+          elevec1(3*i+1)=nodalstresses(i,1)/numadjele[i];
+          elevec1(3*i+2)=nodalstresses(i,2)/numadjele[i];
+        }
+        for (int i=0;i<NUMNOD_SOH8;++i){
+          elevec2(3*i)=nodalstresses(i,3)/numadjele[i];
+          elevec2(3*i+1)=nodalstresses(i,4)/numadjele[i];
+          elevec2(3*i+2)=nodalstresses(i,5)/numadjele[i];
+        }
+        RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
+        if (elestress==null)
+          dserror("No element stress vector available");
+        const Epetra_BlockMap elemap = elestress->Map();
+        int lid = elemap.LID(Id());
+        if (lid!=-1) {
+          for (int i = 0; i < NUMSTR_SOH8; ++i) {
+            (*((*elestress)(i)))[lid] = 0.;
+            for (int j = 0; j < NUMGPT_SOH8; ++j) {
+              (*((*elestress)(i)))[lid] += 0.125 * (*gpstress)(j,i);
+            }
+          }
+        }
+      }
+      else{
+        dserror("unknown type of stress output on element level");
       }
     }
     break;

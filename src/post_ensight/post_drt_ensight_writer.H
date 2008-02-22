@@ -90,8 +90,7 @@ public:
 protected:
 
     //! look for problem dependent result entries and write them
-    virtual void WriteAllResults(
-            PostField* field) = 0;
+    virtual void WriteAllResults(PostField* field) = 0;
 
     /// write all element based results
     /*!
@@ -116,7 +115,7 @@ protected:
     void WriteResult(
             const string groupname, ///< name of the result group in the control file
             const string name, ///< name of the result to be written
-            const int restype, ///< type of the result to be written (nodal-/element-based)
+            const ResultType restype, ///< type of the result to be written (nodal-/element-based)
             const int numdf, ///< number of dofs per node to this result
             const int from=0 ///< start position of values in nodes
             );
@@ -186,6 +185,18 @@ protected:
             PostResult& result,
             map<string, vector<ofstream::pos_type> >& resultfilepos,
             const string groupname,
+            const string name,
+            const int numdf) const;
+    void WriteNodalStressStep(
+            ofstream& file,
+            const RefCountPtr<Epetra_MultiVector> nodalstresses,
+            map<string, vector<ofstream::pos_type> >& resultfilepos,
+            const string name,
+            const int numdf) const;
+    void WriteElementCenterStressStep(
+            ofstream& file,
+            const RefCountPtr<Epetra_MultiVector> data,
+            map<string, vector<ofstream::pos_type> >& resultfilepos,
             const string name,
             const int numdf) const;
     void WriteElementDOFResultStep(
@@ -270,7 +281,7 @@ protected:
             const int timeset,            ///< number of timeset to be written
             const vector<double>& times   ///< vector with time value for each time step
             ) const;
-    
+
     //! create string for TIME section in the case file
     string GetTimeSectionStringFromTimesets(
       const map<string,vector<double> >& timesetmap

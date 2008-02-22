@@ -25,17 +25,41 @@
 class StructureEnsightWriter : public EnsightWriter
 {
 public:
-    StructureEnsightWriter(
-            PostField* field,
-            string filename) :
-        EnsightWriter(field, filename)
-    {
-    }
+  StructureEnsightWriter(PostField* field,
+                         string filename,
+                         string stresstype="none") :
+  EnsightWriter(field, filename), stresstype_(stresstype)
+  {
+  }
 
 protected:
 
-    virtual void WriteAllResults(
-            PostField* field);
+  virtual void WriteAllResults(PostField* field);
+
+  /*!
+  \brief postprocess gauss point stresses and write results
+  \author lw
+  \date 02/08
+  */
+  void PostStress(const string groupname, const string stresstype);
+  void WriteNodalStress(const string groupname,
+                        PostResult& result);
+  void WriteNodalStressStep(ofstream& file,
+                            PostResult& result,
+                            map<string, vector<ofstream::pos_type> >& resultfilepos,
+                            const string groupname,
+                            const string name,
+                            const int numdf) const;
+  void WriteElementCenterStress(const string groupname,
+                                PostResult& result);
+  void WriteElementCenterStressStep(ofstream& file,
+                                    PostResult& result,
+                                    map<string, vector<ofstream::pos_type> >& resultfilepos,
+                                    const string groupname,
+                                    const string name,
+                                    const int numdf) const;
+
+  string stresstype_;
 };
 
 /*----------------------------------------------------------------------*/
@@ -103,9 +127,9 @@ protected:
 
 
 /*----------------------------------------------------------------------*/
-/* 
+/*
  \brief Writer for convection-diffusion problems
- 
+
  \author gjb
  \date 12/07
 */
@@ -130,17 +154,17 @@ protected:
 /*----------------------------------------------------------------------*/
 /*
  \brief Writer for fluid problems including xfem interfaces
- 
+
  this might be handled more general in the near future, when integration cells
  are saved along the data for each timestep
- 
- At the moment, we just intersect in the post filter again and conlude on the DOF 
- distribution which then should fit to the unknown vector. 
+
+ At the moment, we just intersect in the post filter again and conlude on the DOF
+ distribution which then should fit to the unknown vector.
  hence, the xfem post filter is doing quite some work at this moment...
- 
+
  \author a.ger
  \date 11/07
- 
+
  */
 /*----------------------------------------------------------------------*/
 class XFluidEnsightWriter : public EnsightWriter
@@ -154,10 +178,10 @@ public:
         cutterfield_(cutterfield)
     {
     }
-            
+
     //! write the whole thing
     void WriteFiles();
-            
+
 protected:
 
     virtual void WriteAllResults(
@@ -172,7 +196,7 @@ protected:
             ofstream& file,
             map<string, vector<ofstream::pos_type> >& resultfilepos,
             const string name,
-            const RefCountPtr<XFEM::InterfaceHandle> ih ///< interfacehandle        
+            const RefCountPtr<XFEM::InterfaceHandle> ih ///< interfacehandle
             ) const;
     int NumNodesPerField(
             const RefCountPtr<XFEM::InterfaceHandle> ih ///< interfacehandle
@@ -228,7 +252,7 @@ protected:
             const RCP<XFEM::InterfaceHandle> ih,
             const RCP<XFEM::DofManager> dofman
             ) const;
-    
+
     PostField* cutterfield_;
 };
 

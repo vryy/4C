@@ -352,7 +352,8 @@ protected:
     calc_struct_eleload,
     calc_struct_fsiload,
     calc_struct_update_istep,
-    calc_homog_stressdens
+    calc_homog_stressdens,
+    postprocess_stress
   };
 
   //! kinematic types of so_hex8

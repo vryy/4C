@@ -151,6 +151,18 @@ public:
   */
   virtual void WriteVector(const string name, Teuchos::RCP<Epetra_MultiVector> vec, VectorType vt=dofvector);
 
+  //! write a result vector
+  /*!
+    There will be an entry in the current result step in the control
+    file that points to this vector
+
+    \param name : control file entry name
+    \param vec  : the result data vector
+    \param elemap: element map of discretization
+    \param nodevector : whether this vector has a row dof map (nodevector==true) or a row element map.
+  */
+  virtual void WriteVector(const string name, const std::vector<char>& vec, const Epetra_Map& elemap, VectorType vt=dofvector);
+
   //! write stress multivector
   virtual void WriteStressVector(const string name,
                                  Teuchos::RCP<Epetra_Vector> normalstresses,

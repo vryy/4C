@@ -740,6 +740,107 @@ void IO::DiscretizationWriter::WriteVector(const string name,
 #endif
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IO::DiscretizationWriter::WriteVector(const string name,
+                                           const std::vector<char>& vec,
+                                           const Epetra_Map& elemap,
+                                           IO::DiscretizationWriter::VectorType vt)
+{
+#ifdef BINIO
+
+  string valuename = name + ".values";
+  const hsize_t size = vec.size();
+  const char* data = &vec[0];
+  const herr_t make_status = H5LTmake_dataset_char(resultgroup_,valuename.c_str(),1,&size,data);
+  if (make_status < 0)
+    dserror("Failed to create dataset in HDF-resultfile");
+
+  string idname;
+
+  // We maintain a map cache to avoid rewriting the same map all the
+  // time. The idea is that a map is never modified once it is
+  // constructed. Thus the internal data class can be used to find
+  // identical maps easily. This will not find all identical maps, but
+  // all maps with the same data pointer are guaranteed to be
+  // identical.
+
+  ostringstream groupname;
+  groupname << "/step"
+            << step_
+            << "/"
+    ;
+
+  valuename = groupname.str()+valuename;
+
+  const Epetra_BlockMapData* mapdata = elemap.DataPtr();
+  std::map<const Epetra_BlockMapData*, std::string>::const_iterator m = mapcache_.find(mapdata);
+  if (m!=mapcache_.end())
+  {
+    // the map has been written already, just link to it again
+    idname = m->second;
+  }
+  else
+  {
+    const hsize_t mapsize = elemap.NumMyElements();
+    idname = name + ".ids";
+    int* ids = elemap.MyGlobalElements();
+    const herr_t make_status = H5LTmake_dataset_int(resultgroup_,idname.c_str(),1,&mapsize,ids);
+    if (make_status < 0)
+      dserror("Failed to create dataset in HDF-resultfile");
+
+    idname = groupname.str()+idname;
+
+    // remember where we put the map
+    mapcache_[mapdata] = idname;
+
+    // Make a copy of the map. This is a RCP copy internally. We just make
+    // sure here the map stays alive as long as we keep our cache. Otherwise
+    // subtle errors could occur.
+    mapstack_.push_back(elemap);
+  }
+
+  if (dis_->Comm().MyPID() == 0)
+  {
+    std::string vectortype;
+    switch (vt)
+    {
+    case dofvector:
+      vectortype = "dof";
+      break;
+    case nodevector:
+      vectortype = "node";
+      break;
+    case elementvector:
+      vectortype = "element";
+      break;
+    default:
+      dserror("unknown vector type %d", vt);
+    }
+    fprintf(cf_,
+            "    %s:\n"
+            "        type = \"%s\"\n"
+            "        columns = %d\n"
+            "        values = \"%s\"\n"
+            "        ids = \"%s\"\n\n",  // different names + other informations?
+            name.c_str(),
+            vectortype.c_str(),
+            1,
+            valuename.c_str(),
+            idname.c_str()
+      );
+    fflush(cf_);
+  }
+  const herr_t flush_status = H5Fflush(resultgroup_,H5F_SCOPE_LOCAL);
+  if (flush_status < 0)
+  {
+    dserror("Failed to flush HDF file %s", resultfilename_.c_str());
+  }
+#endif
+}
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationWriter::WriteStressVector(const string name,

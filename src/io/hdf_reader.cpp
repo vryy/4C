@@ -326,6 +326,33 @@ IO::HDFReader::ReadResultData(string id_path, string value_path, int columns, co
   return res;
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+RefCountPtr<std::vector<char> >
+IO::HDFReader::ReadResultDataVecChar(string id_path, string value_path, int columns, const Epetra_Comm& Comm, RefCountPtr<Epetra_Map>& elemap) const
+{
+  if (columns!=1)
+    dserror("got multivector, vector<char> expected");
+
+  int new_proc_num = Comm.NumProc();
+  int my_id = Comm.MyPID();
+
+  if (files_.size()==0 || files_[0] == -1)
+    dserror("Tried to read data without opening any file");
+  int start, end;
+  CalculateRange(new_proc_num,my_id,start,end);
+
+  RefCountPtr<vector<int> > ids = ReadIntData(id_path,start,end);
+  //cout << "size of ids:" << (*ids).size() << endl;
+  Epetra_Map map(-1,static_cast<int>(ids->size()), &((*ids)[0]),0,Comm);
+  elemap = rcp(new Epetra_Map(map));
+
+  RefCountPtr<std::vector<char> > res = ReadCharData(value_path,start,end);
+  return res;
+}
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void IO::HDFReader::Close()

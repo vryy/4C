@@ -2882,26 +2882,9 @@ void StruGenAlpha::UpdateandOutput()
     discret_.Evaluate(p,null,null,null,null,null);
   }
 
-  //------------------------------------- do stress calculation
-  if (updevrystress and !(istep%updevrystress) and iostress)
-  {
-    // create the parameters for the discretization
-    ParameterList p;
-    // action for elements
-    p.set("action","calc_struct_stress");
-    // other parameters that might be needed by the elements
-    p.set("total time",timen);
-    p.set("delta time",dt);
-    // set vector values needed by elements
-    discret_.ClearState();
-    discret_.SetState("residual displacement",zeros_);
-    discret_.SetState("displacement",dis_);
-    discret_.Evaluate(p,null,null,null,null,null);
-    discret_.ClearState();
-  }
+  bool isdatawritten = false;
 
   //------------------------------------------------- write restart step
-  bool isdatawritten = false;
   if (writeresevry and istep%writeresevry==0)
   {
     output_.WriteMesh(istep,timen);
@@ -2931,30 +2914,31 @@ void StruGenAlpha::UpdateandOutput()
     output_.WriteVector("displacement",dis_);
     output_.WriteVector("velocity",vel_);
     output_.WriteVector("acceleration",acc_);
+    output_.WriteElementData();
     isdatawritten = true;
   }
 
-  //---------------------------------------------------- output stresses
+  //------------------------------------- do stress calculation and output
   if (updevrystress and !(istep%updevrystress) and iostress)
   {
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_stress");
+    // other parameters that might be needed by the elements
+    p.set("total time",timen);
+    p.set("delta time",dt);
+    Teuchos::RCP<std::vector<char> > stress = Teuchos::rcp(new std::vector<char>());
+    p.set("stress", stress);
+    // set vector values needed by elements
+    discret_.ClearState();
+    discret_.SetState("residual displacement",zeros_);
+    discret_.SetState("displacement",dis_);
+    discret_.Evaluate(p,null,null,null,null,null);
+    discret_.ClearState();
     if (!isdatawritten) output_.NewStep(istep, timen);
     isdatawritten = true;
-    output_.WriteElementData();
-
-    if (0)
-    {
-      // create the parameters for the discretization
-      ParameterList p;
-      // action for elements
-      p.set("action","calc_struct_stress_nodal");
-      RefCountPtr<Epetra_Vector> normal_stresses = LINALG::CreateVector(*(discret_.DofRowMap()),true);
-      RefCountPtr<Epetra_Vector> shear_stresses = LINALG::CreateVector(*(discret_.DofRowMap()),true);
-      discret_.Evaluate(p,null,null,normal_stresses,shear_stresses,null);
-      discret_.ClearState();
-      if (!isdatawritten) output_.NewStep(istep, timen);
-      output_.WriteStressVector("nodal_stresses_xyz", normal_stresses, shear_stresses);
-      isdatawritten = true;
-    }
+    output_.WriteVector("gauss_stresses_xyz",*stress,*discret_.ElementColMap());
   }
 
   //---------------------------------------------------------- print out

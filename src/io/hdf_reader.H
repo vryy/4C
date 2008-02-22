@@ -121,6 +121,20 @@ public:
    */
   RefCountPtr<Epetra_MultiVector> ReadResultData(string id_path, string value_path, int columns, const Epetra_Comm& Comm) const;
 
+  //! read a std::vector<char> from the result files
+  /*!
+    Right now a std::vector<char> has to be read along with its map. Thus
+    we read an integer and a double array here.
+
+    \param id_path      (in): hdf5 path to map array (from control file)
+    \param value_path   (in): hdf5 path to value array (from control file)
+    \param columns      (in): number of vector columns
+    \param Comm         (in): the communicator
+    \param elemap      (out): element map
+   */
+  RefCountPtr<std::vector<char> >
+  ReadResultDataVecChar(string id_path, string value_path, int columns, const Epetra_Comm& Comm, RefCountPtr<Epetra_Map>& elemap) const;
+
 private:
 
   //! reads the dataset 'path' in all the files in the range [start,end)

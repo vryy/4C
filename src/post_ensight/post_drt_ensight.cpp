@@ -68,7 +68,7 @@ int main(
     case prb_structure:
     {
         PostField* field = problem.get_discretization(0);
-        StructureEnsightWriter writer(field, problem.outname());
+        StructureEnsightWriter writer(field, problem.outname(), problem.stresstype());
         writer.WriteFiles();
         break;
     }
@@ -103,12 +103,12 @@ int main(
     case prb_fluid_xfem:
     {
         cout << "Output XFEM Problem" << endl;
-        
+
         cout << "  Structural Field" << endl;
         PostField* structfield = problem.get_discretization(0);
         StructureEnsightWriter structwriter(structfield, problem.outname());
         structwriter.WriteFiles();
-        
+
         cout << "  Fluid Field" << endl;
         PostField* fluidfield = problem.get_discretization(1);
         XFluidEnsightWriter fluidwriter(fluidfield, structfield, problem.outname());
