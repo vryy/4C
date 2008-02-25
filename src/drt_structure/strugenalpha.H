@@ -344,7 +344,7 @@ public:
   Teuchos::RCP<Epetra_Vector> Disp() { return dis_; }
   Teuchos::RCP<Epetra_Vector> Vel() { return vel_; }
   Teuchos::RCP<Epetra_Vector> Acc() { return acc_; }
-  Teuchos::RCP<Epetra_Operator> SysMat() { return stiff_->EpetraOperator(); }
+  Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return stiff_; }
   Teuchos::RCP<Epetra_Vector> Dirichlet() { return dirichtoggle_; }
   Teuchos::RCP<DRT::Discretization> Discretization() { return Teuchos::rcp(&discret_,false); }
   double DispIncrFactor() { return 1./(1.-params_.get<double>("alpha f",0.459)); }

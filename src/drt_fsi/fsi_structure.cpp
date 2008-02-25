@@ -84,9 +84,9 @@ Teuchos::RCP<const Epetra_Map> FSI::StructureAdapter::DofRowMap() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Operator> FSI::StructureAdapter::SysMat() const
+Teuchos::RCP<LINALG::SparseMatrix> FSI::StructureAdapter::SystemMatrix() const
 {
-  return structure_.SysMat();
+  return structure_.SystemMatrix();
 }
 
 

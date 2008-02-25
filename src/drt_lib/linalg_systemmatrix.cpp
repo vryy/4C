@@ -29,6 +29,10 @@ LINALG::SparseMatrix::SparseMatrix(const Epetra_CrsMatrix& matrix, bool explicit
     maxnumentries_(matrix.MaxNumEntries())
 {
   sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(matrix));
+  if (sysmat_->Filled() and savegraph_)
+  {
+    graph_ = Teuchos::rcp(new Epetra_CrsGraph(sysmat_->Graph()));
+  }
 }
 
 
@@ -40,6 +44,10 @@ LINALG::SparseMatrix::SparseMatrix(Teuchos::RCP<Epetra_CrsMatrix> matrix, bool e
     savegraph_(savegraph),
     maxnumentries_(0)
 {
+  if (sysmat_->Filled() and savegraph_)
+  {
+    graph_ = Teuchos::rcp(new Epetra_CrsGraph(sysmat_->Graph()));
+  }
 }
 
 
@@ -819,6 +827,18 @@ LINALG::BlockSparseMatrixBase::BlockSparseMatrixBase(const MultiMapExtractor& do
       blocks_.push_back(SparseMatrix(RangeMap(r),npr,explicitdirichlet,savegraph));
     }
   }
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void LINALG::BlockSparseMatrixBase::Assign(int r, int c, Epetra_DataAccess access, SparseMatrix& mat)
+{
+#ifdef DEBUG
+  if (not Matrix(r,c).RowMap().SameAs(mat.RowMap()))
+    dserror("cannot assign nonmatching matrices");
+#endif
+  Matrix(r,c).Assign(access,mat);
 }
 
 

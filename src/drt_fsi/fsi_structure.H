@@ -110,7 +110,7 @@ namespace FSI {
     virtual const Epetra_Map& DomainMap() = 0;
 
     /// direct access to system matrix
-    virtual Teuchos::RCP<Epetra_Operator> SysMat() const = 0;
+    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() const = 0;
 
     /// direct access to discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
@@ -220,7 +220,7 @@ namespace FSI {
     Teuchos::RCP<const Epetra_Vector> Dispn() const;
     Teuchos::RCP<const Epetra_Vector> Dispnm() const;
     Teuchos::RCP<const Epetra_Map> DofRowMap() const;
-    Teuchos::RCP<Epetra_Operator> SysMat() const;
+    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() const;
     Teuchos::RCP<DRT::Discretization> Discretization();
     double DispIncrFactor();
 

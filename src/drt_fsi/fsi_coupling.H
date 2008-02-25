@@ -15,6 +15,7 @@
 #include <Epetra_CrsMatrix.h>
 
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/linalg_systemmatrix.H"
 #include "fsi_utils.H"
 
 
@@ -189,10 +190,10 @@ namespace FSI
     void FillSlaveToMasterMap(std::map<int,int>& rowmap) const;
 
     /// redistribute crsmatrix from master row map to permuted master row map
-    Teuchos::RCP<Epetra_CrsMatrix> MasterToPermMaster(Teuchos::RCP<Epetra_CrsMatrix> sm) const;
+    Teuchos::RCP<LINALG::SparseMatrix> MasterToPermMaster(const LINALG::SparseMatrix& sm) const;
 
     /// redistribute crsmatrix from slave row map to permuted slave row map
-    Teuchos::RCP<Epetra_CrsMatrix> SlaveToPermSlave(Teuchos::RCP<Epetra_CrsMatrix> sm) const;
+    Teuchos::RCP<LINALG::SparseMatrix> SlaveToPermSlave(const LINALG::SparseMatrix& sm) const;
 
     //@}
 

@@ -63,7 +63,7 @@ namespace FSI
     virtual void SetupRHS(Teuchos::RCP<Epetra_Vector> f) const;
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix(Teuchos::RCP<LINALG::BlockSparseMatrixBase> mat) const;
+    virtual void SetupSystemMatrix(Teuchos::RCP<LINALG::BlockSparseMatrixBase> mat);
 
     //@}
 
@@ -111,28 +111,31 @@ namespace FSI
 
     ///
     void AddFluidInterface(double scale,
-                           Teuchos::RCP<Epetra_CrsMatrix> fgg,
-                           Teuchos::RCP<Epetra_CrsMatrix> s) const;
+                           const LINALG::SparseMatrix& fgg,
+                           LINALG::SparseMatrix& s) const;
 
     ///
-    Teuchos::RCP<Epetra_CrsMatrix>
-    ConvertFigColmap(Teuchos::RCP<Epetra_CrsMatrix> fig,
+    Teuchos::RCP<LINALG::SparseMatrix>
+    ConvertFigColmap(const LINALG::SparseMatrix& fig,
                      const std::map<int,int>& convcolmap,
                      const Epetra_Map& domainmap,
                      double scale) const;
 
     ///
-    Teuchos::RCP<Epetra_CrsMatrix>
-    ConvertFgiRowmap(Teuchos::RCP<Epetra_CrsMatrix> fgi,
+    Teuchos::RCP<LINALG::SparseMatrix>
+    ConvertFgiRowmap(const LINALG::SparseMatrix& fgi,
                      double scale,
                      const Epetra_Map& structrowmap) const;
 
     //! @name linear ALE matrix
 
-    Teuchos::RCP<Epetra_CrsMatrix> aii_;
-    Teuchos::RCP<Epetra_CrsMatrix> aig_;
+    Teuchos::RCP<LINALG::SparseMatrix> aii_;
+    Teuchos::RCP<LINALG::SparseMatrix> aig_;
 
     //@}
+
+    /// block system matrix
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
 
     //! @name time measurement
 

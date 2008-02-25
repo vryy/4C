@@ -79,25 +79,15 @@ FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
   /*----------------------------------------------------------------------*/
   // Assume linear ALE. Prepare ALE system matrix once and for all.
 
-  AleField().Evaluate(Teuchos::null);
-
-  // split ale matrix
-
-  Teuchos::RCP<Epetra_CrsMatrix> aii;
-  Teuchos::RCP<Epetra_CrsMatrix> aig;
-
   // build ale system matrix in splitted system
   AleField().BuildSystemMatrix(false);
 
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
-  const LINALG::SparseMatrix* mat_aii = AleField().InteriorMatrixBlock();
-  const LINALG::SparseMatrix* mat_aig = AleField().InterfaceMatrixBlock();
+  const LINALG::SparseMatrix* aii = AleField().InteriorMatrixBlock();
+  const LINALG::SparseMatrix* aig = AleField().InterfaceMatrixBlock();
 
-  if (a==Teuchos::null or mat_aii==NULL or mat_aig==NULL)
+  if (a==Teuchos::null or aii==NULL or aig==NULL)
     dserror("expect ale block matrix");
-
-  aii = mat_aii->EpetraMatrix();
-  aig = mat_aig->EpetraMatrix();
 
   // map between ale interface and structure column map
 
@@ -106,8 +96,8 @@ FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
   coupsa.FillSlaveToMasterMap(alestructcolmap);
   ex.Export(alestructcolmap);
 
-  aig_ = ConvertFigColmap(aig,alestructcolmap,StructureField().DomainMap(),1.);
-  aii_ = aii;
+  aig_ = ConvertFigColmap(*aig,alestructcolmap,StructureField().DomainMap(),1.);
+  aii_ = Teuchos::rcp(new LINALG::SparseMatrix(*aii,View));
 }
 
 
@@ -115,6 +105,8 @@ FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
 /*----------------------------------------------------------------------*/
 bool FSI::MonolithicOverlap::computeF(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag)
 {
+  Evaluate(Teuchos::rcp(&x,false));
+  SetupRHS(Teuchos::rcp(&F,false));
   return true;
 }
 
@@ -123,6 +115,9 @@ bool FSI::MonolithicOverlap::computeF(const Epetra_Vector &x, Epetra_Vector &F, 
 /*----------------------------------------------------------------------*/
 bool FSI::MonolithicOverlap::computeJacobian(const Epetra_Vector &x, Epetra_Operator &Jac)
 {
+  Evaluate(Teuchos::rcp(&x,false));
+  LINALG::BlockSparseMatrixBase& mat = Teuchos::dyn_cast<LINALG::BlockSparseMatrixBase>(Jac);
+  SetupSystemMatrix(Teuchos::rcp(&mat,false));
   return true;
 }
 
@@ -146,8 +141,60 @@ void FSI::MonolithicOverlap::SetupRHS(Teuchos::RCP<Epetra_Vector> f) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicOverlap::SetupSystemMatrix(Teuchos::RCP<LINALG::BlockSparseMatrixBase> mat) const
+void FSI::MonolithicOverlap::SetupSystemMatrix(Teuchos::RCP<LINALG::BlockSparseMatrixBase> mat)
 {
+  Teuchos::TimeMonitor monitor(*sysmattimer_);
+
+  // extract Jacobian matrices and put them into composite system
+  // matrix W
+
+  const FSI::Coupling& coupsf = StructureFluidCoupling();
+  //const FSI::Coupling& coupsa = StructureAleCoupling();
+
+  Teuchos::RCP<LINALG::SparseMatrix> s = StructureField().SystemMatrix();
+
+  //LINALG::PrintSparsityToPostscript(*s);
+
+  // split fluid matrix
+
+  Teuchos::RCP<LINALG::SparseMatrix> f = FluidField().SystemMatrix();
+
+  // map between fluid interface and structure column map
+
+  if (not havefluidstructcolmap_)
+  {
+    DRT::Exporter ex(f->RowMap(),f->ColMap(),f->Comm());
+    coupsf.FillSlaveToMasterMap(fluidstructcolmap_);
+    ex.Export(fluidstructcolmap_);
+    havefluidstructcolmap_ = true;
+  }
+
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockf =
+    f->Split<LINALG::DefaultBlockMatrixStrategy>(FluidField().Interface(),
+                                                 FluidField().Interface());
+  blockf->Complete();
+
+  LINALG::SparseMatrix& fii = blockf->Matrix(0,0);
+  LINALG::SparseMatrix& fig = blockf->Matrix(0,1);
+  LINALG::SparseMatrix& fgi = blockf->Matrix(1,0);
+  LINALG::SparseMatrix& fgg = blockf->Matrix(1,1);
+
+  double scale = FluidField().ResidualScaling();
+
+  // build block matrix
+  // The maps of the block matrix have to match the maps of the blocks we
+  // insert here.
+
+  AddFluidInterface(scale/Dt(),fgg,*s);
+
+  mat->Assign(0,0,View,*s);
+  mat->Assign(0,1,View,*ConvertFgiRowmap(fgi,scale,s->RowMap()));
+
+  mat->Assign(1,0,View,*ConvertFigColmap(fig,fluidstructcolmap_,s->DomainMap(),1./Dt()));
+  mat->Assign(1,1,View,fii);
+
+  mat->Assign(2,0,View,*aig_);
+  mat->Assign(2,2,View,*aii_);
 }
 
 
@@ -268,14 +315,15 @@ void FSI::MonolithicOverlap::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vecto
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicOverlap::AddFluidInterface(double scale,
-                                               Teuchos::RCP<Epetra_CrsMatrix> fgg,
-                                               Teuchos::RCP<Epetra_CrsMatrix> s) const
+                                               const LINALG::SparseMatrix& fgg,
+                                               LINALG::SparseMatrix& s) const
 {
   Teuchos::TimeMonitor monitor(*fluidinterfacetimer_);
 
   const FSI::Coupling& coupsf = StructureFluidCoupling();
 
-  Teuchos::RCP<Epetra_CrsMatrix> perm_fgg = coupsf.SlaveToPermSlave(fgg);
+  Teuchos::RCP<LINALG::SparseMatrix> pfgg = coupsf.SlaveToPermSlave(fgg);
+  Teuchos::RCP<Epetra_CrsMatrix> perm_fgg = pfgg->EpetraMatrix();
 
   const Epetra_Map& perm_rowmap = perm_fgg->RowMap();
   const Epetra_Map& perm_colmap = perm_fgg->ColMap();
@@ -318,9 +366,7 @@ void FSI::MonolithicOverlap::AddFluidInterface(double scale,
       if (Values[j]!=0)
       {
         double value = Values[j]*scale;
-        err = s->SumIntoGlobalValues(structgid, 1, &value, &index);
-        if (err)
-          dserror("SumIntoGlobalValues error: %d", err);
+        s.Assemble(value, structgid, index);
       }
     }
   }
@@ -329,27 +375,29 @@ void FSI::MonolithicOverlap::AddFluidInterface(double scale,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsMatrix>
-FSI::MonolithicOverlap::ConvertFigColmap(Teuchos::RCP<Epetra_CrsMatrix> fig,
+Teuchos::RCP<LINALG::SparseMatrix>
+FSI::MonolithicOverlap::ConvertFigColmap(const LINALG::SparseMatrix& fig,
                                          const std::map<int,int>& convcolmap,
                                          const Epetra_Map& domainmap,
                                          double scale) const
 {
   Teuchos::TimeMonitor monitor(*figcolmaptimer_);
 
-  const Epetra_Map& rowmap = fig->RowMap();
-  const Epetra_Map& colmap = fig->ColMap();
+  const Epetra_Map& rowmap = fig.RowMap();
+  const Epetra_Map& colmap = fig.ColMap();
 
   Teuchos::RCP<Epetra_CrsMatrix> convfig = Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,
-                                                                             fig->MaxNumEntries()));
+                                                                             fig.MaxNumEntries()));
 
-  int rows = fig->NumMyRows();
+  Teuchos::RCP<Epetra_CrsMatrix> efig = fig.EpetraMatrix();
+
+  int rows = efig->NumMyRows();
   for (int i=0; i<rows; ++i)
   {
     int NumEntries;
     double *Values;
     int *Indices;
-    int err = fig->ExtractMyRowView(i, NumEntries, Values, Indices);
+    int err = efig->ExtractMyRowView(i, NumEntries, Values, Indices);
     if (err!=0)
       dserror("ExtractMyRowView error: %d", err);
 
@@ -370,14 +418,14 @@ FSI::MonolithicOverlap::ConvertFigColmap(Teuchos::RCP<Epetra_CrsMatrix> fig,
   convfig->FillComplete(domainmap,rowmap);
   convfig->Scale(scale);
 
-  return convfig;
+  return Teuchos::rcp(new LINALG::SparseMatrix(convfig,fig.ExplicitDirichlet(),fig.SaveGraph()));
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsMatrix>
-FSI::MonolithicOverlap::ConvertFgiRowmap(Teuchos::RCP<Epetra_CrsMatrix> fgi,
+Teuchos::RCP<LINALG::SparseMatrix>
+FSI::MonolithicOverlap::ConvertFgiRowmap(const LINALG::SparseMatrix& fgi,
                                          double scale,
                                          const Epetra_Map& structrowmap) const
 {
@@ -387,22 +435,22 @@ FSI::MonolithicOverlap::ConvertFgiRowmap(Teuchos::RCP<Epetra_CrsMatrix> fgi,
 
   // redistribute fluid matrix to match distribution of structure matrix
 
-  fgi = coupsf.SlaveToPermSlave(fgi);
+  Teuchos::RCP<LINALG::SparseMatrix> pfgi = coupsf.SlaveToPermSlave(fgi);
+  Teuchos::RCP<Epetra_CrsMatrix> efgi = pfgi->EpetraMatrix();
 
   // create new matrix with structure row map and fill it
 
-  Teuchos::RCP<Epetra_CrsMatrix> sfgi = Teuchos::rcp(new Epetra_CrsMatrix(Copy,structrowmap,fgi->MaxNumEntries()));
+  Teuchos::RCP<Epetra_CrsMatrix> sfgi = Teuchos::rcp(new Epetra_CrsMatrix(Copy,structrowmap,pfgi->MaxNumEntries()));
 
-  //const Epetra_Map& rowmap = fgi->RowMap();
-  const Epetra_Map& colmap = fgi->ColMap();
+  const Epetra_Map& colmap = efgi->ColMap();
 
-  int rows = fgi->NumMyRows();
+  int rows = efgi->NumMyRows();
   for (int i=0; i<rows; ++i)
   {
     int NumEntries;
     double *Values;
     int *Indices;
-    int err = fgi->ExtractMyRowView(i, NumEntries, Values, Indices);
+    int err = efgi->ExtractMyRowView(i, NumEntries, Values, Indices);
     if (err!=0)
       dserror("ExtractMyRowView error: %d", err);
 
@@ -418,9 +466,10 @@ FSI::MonolithicOverlap::ConvertFgiRowmap(Teuchos::RCP<Epetra_CrsMatrix> fgi,
       dserror("InsertGlobalValues error: %d", err);
   }
 
-  sfgi->FillComplete(fgi->DomainMap(),structrowmap);
+  sfgi->FillComplete(efgi->DomainMap(),structrowmap);
   sfgi->Scale(scale);
-  return sfgi;
+
+  return Teuchos::rcp(new LINALG::SparseMatrix(sfgi,fgi.ExplicitDirichlet(),fgi.SaveGraph()));
 }
 
 

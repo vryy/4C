@@ -373,38 +373,40 @@ void FSI::Coupling::FillSlaveToMasterMap(std::map<int,int>& rowmap) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsMatrix> FSI::Coupling::MasterToPermMaster(Teuchos::RCP<Epetra_CrsMatrix> sm) const
+Teuchos::RCP<LINALG::SparseMatrix> FSI::Coupling::MasterToPermMaster(const LINALG::SparseMatrix& sm) const
 {
-  Teuchos::RCP<Epetra_CrsMatrix> permsm = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*permmasterdofmap_,sm->MaxNumEntries()));
-  int err = permsm->Import(*sm,*masterexport_,Insert);
+  Teuchos::RCP<Epetra_CrsMatrix> permsm = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*permmasterdofmap_,sm.MaxNumEntries()));
+  int err = permsm->Import(*sm.EpetraMatrix(),*masterexport_,Insert);
   if (err)
     dserror("Import failed with err=%d",err);
 
-  permsm->FillComplete(sm->DomainMap(),*permmasterdofmap_);
+  permsm->FillComplete(sm.DomainMap(),*permmasterdofmap_);
 
-  return permsm;
+  // create a SparseMatrix that wraps the new CrsMatrix.
+  return Teuchos::rcp(new LINALG::SparseMatrix(permsm,sm.ExplicitDirichlet(),sm.SaveGraph()));
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsMatrix> FSI::Coupling::SlaveToPermSlave(Teuchos::RCP<Epetra_CrsMatrix> sm) const
+Teuchos::RCP<LINALG::SparseMatrix> FSI::Coupling::SlaveToPermSlave(const LINALG::SparseMatrix& sm) const
 {
 #ifdef DEBUG
-  if (not sm->RowMap().SameAs(*slavedofmap_))
+  if (not sm.RowMap().SameAs(*slavedofmap_))
     dserror("slave dof map vector expected");
-  if (not sm->Filled())
+  if (not sm.Filled())
     dserror("matrix must be filled");
 #endif
 
-  Teuchos::RCP<Epetra_CrsMatrix> permsm = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*permslavedofmap_,sm->MaxNumEntries()));
-  int err = permsm->Import(*sm,*slaveexport_,Insert);
+  Teuchos::RCP<Epetra_CrsMatrix> permsm = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*permslavedofmap_,sm.MaxNumEntries()));
+  int err = permsm->Import(*sm.EpetraMatrix(),*slaveexport_,Insert);
   if (err)
     dserror("Import failed with err=%d",err);
 
-  permsm->FillComplete(sm->DomainMap(),*permslavedofmap_);
+  permsm->FillComplete(sm.DomainMap(),*permslavedofmap_);
 
-  return permsm;
+  // create a SparseMatrix that wraps the new CrsMatrix.
+  return Teuchos::rcp(new LINALG::SparseMatrix(permsm,sm.ExplicitDirichlet(),sm.SaveGraph()));
 }
 
 

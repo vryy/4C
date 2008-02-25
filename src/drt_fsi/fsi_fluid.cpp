@@ -99,9 +99,9 @@ Teuchos::RCP<const Epetra_Map> FSI::FluidAdapter::DofRowMap() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Operator> FSI::FluidAdapter::SysMat() const
+Teuchos::RCP<LINALG::SparseMatrix> FSI::FluidAdapter::SystemMatrix() const
 {
-  return fluid_.SysMat();
+  return fluid_.SystemMatrix();
 }
 
 

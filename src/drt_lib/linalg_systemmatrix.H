@@ -172,6 +172,8 @@ namespace LINALG
       Implicit construction from a Epetra_CrsMatrix
 
       Makes a copy of the Epetra_CrsMatrix.
+
+      \pre matrix.Filled()==true
      */
     explicit SparseMatrix(const Epetra_CrsMatrix& matrix, bool explicitdirichlet=true, bool savegraph=false);
 
@@ -179,7 +181,9 @@ namespace LINALG
     /*!
       Implicit construction from a Epetra_CrsMatrix
 
-      Does not make a copy of the Epetra_CrsMatrix.
+      \warning Does not make a copy of the Epetra_CrsMatrix. The RCP is copied
+      internally. So this constructor creates a new view on the
+      Epetra_CrsMatrix.
      */
     explicit SparseMatrix(Teuchos::RCP<Epetra_CrsMatrix> matrix, bool explicitdirichlet=true, bool savegraph=false);
 
@@ -285,6 +289,21 @@ namespace LINALG
 
     /// If Complete() has been called, this query returns true, otherwise it returns false.
     bool Filled() const { return sysmat_->Filled(); }
+
+    /// Whether Dirichlet conditions should result in a trimmed graph row
+    /*!
+      ML requires rows of length 1 to recognize Dirichlet lines. However it is
+      an expensive operation to apply Dirichlet conditions in this case.
+     */
+    bool ExplicitDirichlet() const { return explicitdirichlet_; }
+
+    /// Whether the matrix graph should be saved when the matrix is zeroed
+    /*!
+      Saving the graph will result in constructing new matrices in Filled()
+      state. This speeds up assembling but limits assembling to the current
+      graph.
+     */
+    bool SaveGraph() const { return savegraph_; }
 
     //@}
 
@@ -525,13 +544,23 @@ namespace LINALG
     /** \name Block matrix access */
     //@{
 
+    /// return block (r,c)
     const SparseMatrix& Matrix(int r, int c) const { return blocks_[r*Cols()+c]; }
 
+    /// return block (r,c)
     SparseMatrix& Matrix(int r, int c) { return blocks_[r*Cols()+c]; }
 
+    /// return block (r,c)
     inline const SparseMatrix& operator()(int r, int c) const { return Matrix(r,c); }
 
+    /// return block (r,c)
     inline SparseMatrix& operator()(int r, int c) { return Matrix(r,c); }
+
+    /// assign SparseMatrix to block (r,c)
+    /*!
+      \note The maps of the block have to match the maps of the given matrix.
+     */
+    void Assign(int r, int c, Epetra_DataAccess access, SparseMatrix& mat);
 
     //@}
 

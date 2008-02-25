@@ -199,7 +199,7 @@ public:
   Teuchos::RCP<Epetra_Vector> InvDirichlet() { return invtoggle_; }
   Teuchos::RCP<Epetra_Vector> Dispnp() { return dispnp_; }
   Teuchos::RCP<Epetra_Vector> Dispn() { return dispn_; }
-  Teuchos::RCP<Epetra_Operator> SysMat() { return sysmat_->EpetraOperator(); }
+  Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return sysmat_; }
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
 
   Teuchos::RCP<const Epetra_Map> VelocityRowMap() { return velpressplitter_.CondMap(); }
