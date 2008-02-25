@@ -699,7 +699,6 @@ void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase)
     if (count != refmap->NumGlobalElements())
       dserror("SparseMatrix::Split2x2: mismatch in dimensions");
 #endif
-
     // create the map
     for (int i=0; i<count; ++i) gset.insert(global[i]);
   }
@@ -709,7 +708,8 @@ void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase)
   vector<int>    gcindices2(A->MaxNumEntries());
   vector<double> gvalues2(A->MaxNumEntries());
   //-------------------------------------------------- create block matrices
-  for (int i=0; i<A->NumMyRows(); ++i)
+  const int length = A->NumMyRows();
+  for (int i=0; i<length; ++i)
   {
     int err1=0;
     int err2=0;
@@ -757,7 +757,7 @@ void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase)
       if (count2) err2 = A22->InsertGlobalValues(grid,count2,&gvalues2[0],&gcindices2[0]);
     }
 #ifdef DEBUG
-    if (err1<0 || err2<0) dserror("SparseMatrix::Split2x2: A->InsertGlobalValues returned %d",err1-err2);
+    if (err1<0 || err2<0) dserror("SparseMatrix::Split2x2: Epetra_CrsMatrix::InsertGlobalValues returned err1=%d / err2=%d",err1,err2);
 #endif
   } // for (int i=0; i<A->NumMyRows(); ++i)
   // Do not complete BlockMatrix
