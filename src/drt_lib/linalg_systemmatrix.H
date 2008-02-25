@@ -205,7 +205,7 @@ namespace LINALG
 
       \param mat matrix to assign from
       \param access how to treat this assignment: Copy or View
-     *!
+     */
     SparseMatrix(const SparseMatrix& mat, Epetra_DataAccess access=Copy);
 
     /// Destructor
