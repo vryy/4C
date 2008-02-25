@@ -333,9 +333,11 @@ void LINALG::SparseMatrix::ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbct
       else
       {
         double one = 1.0;
-        int err = Anew->InsertGlobalValues(row,1,&one,&row);
 #ifdef DEBUG
+        int err = Anew->InsertGlobalValues(row,1,&one,&row);
         if (err<0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d",err);
+#else
+        Anew->InsertGlobalValues(row,1,&one,&row);
 #endif
       }
     }
@@ -613,6 +615,9 @@ void LINALG::SparseMatrix::Add(const LINALG::SparseMatrix& A,
  *----------------------------------------------------------------------*/
 void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase)
 {
+  // for timing of this method
+  //Epetra_Time time(Abase.Comm());
+  
   if (Abase.Rows() != 2 || Abase.Cols() != 2) dserror("Can only split in 2x2 system");
   if (!Filled()) dserror("SparsMatrix must be filled");
   Teuchos::RCP<Epetra_CrsMatrix> A   = EpetraMatrix();
@@ -628,156 +633,108 @@ void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase)
   const Epetra_Map&  A22rmap = A22->RangeMap();
   const Epetra_Map&  A22dmap = A22->DomainMap();
 
-  //----------------------------- create a parallel redundant map of A11domainmap
-  map<int,int> a11gmap;
+  // build the redundant domain map info for the smaller of the 2 submaps
+  bool doa11;
+  const Epetra_Map* refmap;
+  if (A11dmap.NumGlobalElements()>A22dmap.NumGlobalElements())
   {
-    vector<int> a11global(A11dmap.NumGlobalElements());
+    doa11 = false;
+    refmap = &A22dmap;
+  }
+  else
+  {
+    doa11 = true;
+    refmap = &A11dmap;
+  }
+  //-------------------------------------------- create a redundant set
+  set<int> gset;
+  {
+    vector<int> global(refmap->NumGlobalElements());
     int count=0;
     for (int proc=0; proc<Comm.NumProc(); ++proc)
     {
       int length = 0;
       if (proc==Comm.MyPID())
       {
-        for (int i=0; i<A11dmap.NumMyElements(); ++i)
+        for (int i=0; i<refmap->NumMyElements(); ++i)
         {
-          a11global[count+length] = A11dmap.GID(i);
+          global[count+length] = refmap->GID(i);
           ++length;
         }
       }
       Comm.Broadcast(&length,1,proc);
-      Comm.Broadcast(&a11global[count],length,proc);
+      Comm.Broadcast(&global[count],length,proc);
       count += length;
     }
-    if (count != A11dmap.NumGlobalElements())
+#ifdef DEBUG
+    if (count != refmap->NumGlobalElements())
       dserror("SparseMatrix::Split2x2: mismatch in dimensions");
+#endif
 
     // create the map
-    for (int i=0; i<count; ++i)
-      a11gmap[a11global[i]] = 1;
-    a11global.clear();
+    for (int i=0; i<count; ++i) gset.insert(global[i]);
   }
 
-  vector<int>    gcindices(A->MaxNumEntries());
-  vector<double> gvalues(A->MaxNumEntries());
-
-  //----------------------------------------------------- create matrix A11
-  if (A11rmap.NumGlobalElements()>0 && A11dmap.NumGlobalElements()>0)
+  vector<int>    gcindices1(A->MaxNumEntries());
+  vector<double> gvalues1(A->MaxNumEntries());
+  vector<int>    gcindices2(A->MaxNumEntries());
+  vector<double> gvalues2(A->MaxNumEntries());
+  //-------------------------------------------------- create block matrices
+  for (int i=0; i<A->NumMyRows(); ++i)
   {
+    int err1=0;
+    int err2=0;
+    int count1 = 0;
+    int count2 = 0;
+    const int grid = A->GRID(i);
+    if (!A11rmap.MyGID(grid) && !A22rmap.MyGID(grid)) continue;
+    int     numentries;
+    double* values;
+    int*    cindices;
+#ifdef DEBUG
+    int err = A->ExtractMyRowView(i,numentries,values,cindices);
+    if (err) dserror("SparseMatrix::Split2x2: A->ExtractMyRowView returned %d",err);
+#else
+    A->ExtractMyRowView(i,numentries,values,cindices);
+#endif
+    for (int j=0; j<numentries; ++j)
     {
-      for (int i=0; i<A->NumMyRows(); ++i)
+      const int gcid = A->ColMap().GID(cindices[j]);
+      // see whether we have gcid as part of gset
+      set<int>::iterator curr = gset.find(gcid);
+      // column is in A*1
+      if ( (doa11 && curr!=gset.end()) || (!doa11 && curr==gset.end()) )
       {
-        const int grid = A->GRID(i);
-        if (A11rmap.MyGID(grid)==false) continue;
-        int     numentries;
-        double* values;
-        int*    cindices;
-        int err = A->ExtractMyRowView(i,numentries,values,cindices);
-        if (err) dserror("SparseMatrix::Split2x2: A->ExtractMyRowView returned %i",err);
-        int count=0;
-        for (int j=0; j<numentries; ++j)
-        {
-          const int gcid = A->ColMap().GID(cindices[j]);
-          // see whether we have gcid as part of a11gmap
-          map<int,int>::iterator curr = a11gmap.find(gcid);
-          if (curr==a11gmap.end()) continue;
-          gcindices[count] = gcid;
-          gvalues[count] = values[j];
-          ++count;
-        }
-        err = A11->InsertGlobalValues(grid,count,&gvalues[0],&gcindices[0]);
-        if (err<0) dserror("SparseMatrix::Split2x2: A->InsertGlobalValues returned %i",err);
+        gcindices1[count1] = gcid;
+        gvalues1[count1++] = values[j];
+      }
+      // column us in A*2
+      else
+      {
+        gcindices2[count2] = gcid;
+        gvalues2[count2++] = values[j];
       }
     }
-  }
-
-  //--------------------------------------------------- create matrix A22
-  if (A22rmap.NumGlobalElements()>0 && A22dmap.NumGlobalElements()>0)
-  {
-    for (int i=0; i<A->NumMyRows(); ++i)
+    //======================== row belongs to A11 and A12
+    if (A11rmap.MyGID(grid))
     {
-      const int grid = A->GRID(i);
-      if (A22rmap.MyGID(grid)==false) continue;
-      int     numentries;
-      double* values;
-      int*    cindices;
-      int err = A->ExtractMyRowView(i,numentries,values,cindices);
-      if (err) dserror("SparseMatrix::Split2x2: A->ExtractMyRowView returned %i",err);
-      int count=0;
-      for (int j=0; j<numentries; ++j)
-      {
-        const int gcid = A->ColMap().GID(cindices[j]);
-        // see whether we have gcid as part of a11gmap
-        map<int,int>::iterator curr = a11gmap.find(gcid);
-        if (curr!=a11gmap.end()) continue;
-        gcindices[count] = gcid;
-        gvalues[count]    = values[j];
-        ++count;
-      }
-      err = A22->InsertGlobalValues(grid,count,&gvalues[0],&gcindices[0]);
-      if (err<0) dserror("SparseMatrix::Split2x2: A->InsertGlobalValues returned %i",err);
+      if (count1) err1 = A11->InsertGlobalValues(grid,count1,&gvalues1[0],&gcindices1[0]);
+      if (count2) err2 = A12->InsertGlobalValues(grid,count2,&gvalues2[0],&gcindices2[0]);
     }
-  }
-
-
-  //---------------------------------------------------- create matrix A12
-  if (A11rmap.NumGlobalElements()>0 && A22dmap.NumGlobalElements()>0)
-  {
-    for (int i=0; i<A->NumMyRows(); ++i)
+    //======================= row belongs to A21 and A22
+    else
     {
-      const int grid = A->GRID(i);
-      if (A11rmap.MyGID(grid)==false) continue;
-      int     numentries;
-      double* values;
-      int*    cindices;
-      int err = A->ExtractMyRowView(i,numentries,values,cindices);
-      if (err) dserror("SparseMatrix::Split2x2: A->ExtractMyRowView returned %i",err);
-      int count=0;
-      for (int j=0; j<numentries; ++j)
-      {
-        const int gcid = A->ColMap().GID(cindices[j]);
-        // see whether we have gcid as part of a11gmap
-        map<int,int>::iterator curr = a11gmap.find(gcid);
-        if (curr!=a11gmap.end()) continue;
-        gcindices[count] = gcid;
-        gvalues[count] = values[j];
-        ++count;
-      }
-      err = A12->InsertGlobalValues(grid,count,&gvalues[0],&gcindices[0]);
-      if (err<0) dserror("SparseMatrix::Split2x2: A->InsertGlobalValues returned %i",err);
+      if (count1) err1 = A21->InsertGlobalValues(grid,count1,&gvalues1[0],&gcindices1[0]);
+      if (count2) err2 = A22->InsertGlobalValues(grid,count2,&gvalues2[0],&gcindices2[0]);
     }
-  }
-
-  //----------------------------------------------------------- create A21
-  if (A22rmap.NumGlobalElements()>0 && A11dmap.NumGlobalElements()>0)
-  {
-    for (int i=0; i<A->NumMyRows(); ++i)
-    {
-      const int grid = A->GRID(i);
-      if (A22rmap.MyGID(grid)==false) continue;
-      int     numentries;
-      double* values;
-      int*    cindices;
-      int err = A->ExtractMyRowView(i,numentries,values,cindices);
-      if (err) dserror("SparseMatrix::Split2x2: A->ExtractMyRowView returned %i",err);
-      int count=0;
-      for (int j=0; j<numentries; ++j)
-      {
-        const int gcid = A->ColMap().GID(cindices[j]);
-        // see whether we have gcid as part of a11gmap
-        map<int,int>::iterator curr = a11gmap.find(gcid);
-        if (curr==a11gmap.end()) continue;
-        gcindices[count] = gcid;
-        gvalues[count] = values[j];
-        ++count;
-      }
-      err = A21->InsertGlobalValues(grid,count,&gvalues[0],&gcindices[0]);
-      if (err<0) dserror("SparseMatrix::Split2x2: A->InsertGlobalValues returned %i",err);
-    }
-  }
-
+#ifdef DEBUG
+    if (err1<0 || err2<0) dserror("SparseMatrix::Split2x2: A->InsertGlobalValues returned %d",err1-err2);
+#endif
+  } // for (int i=0; i<A->NumMyRows(); ++i)
   // Do not complete BlockMatrix
   return;
 }
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
