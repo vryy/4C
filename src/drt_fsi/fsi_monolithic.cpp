@@ -99,7 +99,7 @@ void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requir
 
     // Create the linear system
     Teuchos::RCP<NOX::Epetra::LinearSystem> linSys =
-      CreateLinearSystem(nlParams, interface, noxSoln, utils_);
+      CreateLinearSystem(nlParams, noxSoln, utils_);
 
     // Create the Group
     Teuchos::RCP<NOX::Epetra::Group> grp =

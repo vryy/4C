@@ -93,6 +93,9 @@ public:
   /// solve this time step with currently applied interface displacements
   virtual void Solve() = 0;
 
+  /// get the linear solver object used for this field
+  virtual Teuchos::RCP<LINALG::Solver> LinearSolver() = 0;
+
   //@}
 
   //! @name Extract displacement
@@ -173,6 +176,9 @@ public:
   virtual void Update();
   virtual void Output();
   //@}
+
+  /// get the linear solver object used for this field
+  Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
 
   void SetInterfaceMap(Teuchos::RCP<Epetra_Map> im);
 

@@ -174,6 +174,9 @@ namespace FSI {
     */
     virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> iforce) = 0;
 
+    /// get the linear solver object used for this field
+    virtual Teuchos::RCP<LINALG::Solver> LinearSolver() = 0;
+
     //@}
 
     //! @name Extract interface values
@@ -242,6 +245,9 @@ namespace FSI {
     virtual void ReadRestart(int step);
 
     virtual void Solve();
+
+    /// get the linear solver object used for this field
+    virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
 
     /// linear structure solve with just a interface load
     /*!

@@ -663,6 +663,14 @@ namespace LINALG
 
     //@}
 
+  protected:
+
+    /// access to domain map extractor in derived classes
+    const MultiMapExtractor& DomainExtractor() const { return domainmaps_; }
+
+    /// access to range map extractor in derived classes
+    const MultiMapExtractor& RangeExtractor() const { return rangemaps_; }
+
   private:
 
     /// the full domain map together with all partial domain maps

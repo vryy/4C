@@ -9,6 +9,7 @@
 #include "../drt_lib/linalg_mapextractor.H"
 
 #include <NOX_Epetra_Interface_Jacobian.H>
+#include <NOX_Epetra_Interface_Preconditioner.H>
 
 namespace FSI
 {
@@ -23,7 +24,8 @@ namespace FSI
    */
   class Monolithic : public Algorithm,
                      public NOX::Epetra::Interface::Required,
-                     public NOX::Epetra::Interface::Jacobian
+                     public NOX::Epetra::Interface::Jacobian,
+                     public NOX::Epetra::Interface::Preconditioner
   {
   public:
     Monolithic(Epetra_Comm& comm);
@@ -55,7 +57,6 @@ namespace FSI
     /// setup solver for global block system
     virtual Teuchos::RCP<NOX::Epetra::LinearSystem>
     CreateLinearSystem(ParameterList& nlParams,
-                       const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface,
                        NOX::Epetra::Vector& noxSoln,
                        Teuchos::RCP<NOX::Utils> utils) = 0;
 

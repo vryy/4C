@@ -142,6 +142,9 @@ namespace FSI {
     /// linear fluid solve with just a interface load
     virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel) = 0;
 
+    /// get the linear solver object used for this field
+    virtual Teuchos::RCP<LINALG::Solver> LinearSolver() = 0;
+
     //@}
 
     ///
@@ -224,6 +227,9 @@ namespace FSI {
     virtual void Output();
 
     virtual void NonlinearSolve();
+
+    /// get the linear solver object used for this field
+    virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
 
     /// the interface map contains all velocity dofs at the interface
     virtual Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap();

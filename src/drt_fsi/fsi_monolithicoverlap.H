@@ -55,6 +55,9 @@ namespace FSI
     /// compute FSI block matrix
     bool computeJacobian(const Epetra_Vector &x, Epetra_Operator &Jac);
 
+    /// preconditioner
+    bool computePreconditioner(const Epetra_Vector &x, Epetra_Operator &M, Teuchos::ParameterList *precParams=0);
+
     //@}
 
     //! @name Apply current field state to system
@@ -75,7 +78,6 @@ namespace FSI
     /// setup solver for global block system
     Teuchos::RCP<NOX::Epetra::LinearSystem>
     CreateLinearSystem(ParameterList& nlParams,
-                       const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface,
                        NOX::Epetra::Vector& noxSoln,
                        Teuchos::RCP<NOX::Utils> utils);
 

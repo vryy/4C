@@ -2,6 +2,7 @@
 
 #include "fsi_monolithicoverlap.H"
 #include "fsi_statustest.H"
+#include "fsi_overlapprec.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -68,6 +69,13 @@ FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
 
   SetDofRowMaps(vecSpaces);
 
+  // create block system matrix
+
+  systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrix(Extractor(),
+                                                          StructureField().LinearSolver(),
+                                                          FluidField().LinearSolver(),
+                                                          AleField().LinearSolver()));
+
   /*----------------------------------------------------------------------*/
   sysmattimer_         = Teuchos::TimeMonitor::getNewTimer("FSI::MonolithicOverlap::SetupSysMat");
   igtimer_             = Teuchos::TimeMonitor::getNewTimer("FSI::MonolithicOverlap::InitialGuess");
@@ -119,6 +127,18 @@ bool FSI::MonolithicOverlap::computeJacobian(const Epetra_Vector &x, Epetra_Oper
   Evaluate(Teuchos::rcp(&x,false));
   LINALG::BlockSparseMatrixBase& mat = Teuchos::dyn_cast<LINALG::BlockSparseMatrixBase>(Jac);
   SetupSystemMatrix(Teuchos::rcp(&mat,false));
+  return true;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool FSI::MonolithicOverlap::computePreconditioner(const Epetra_Vector &x,
+                                                   Epetra_Operator &M,
+                                                   Teuchos::ParameterList *precParams)
+{
+  // Create preconditioner operator.
+  // We don't need to do anything special here. The blocks are already there.
   return true;
 }
 
@@ -243,11 +263,30 @@ void FSI::MonolithicOverlap::SetupVector(Teuchos::RCP<Epetra_Vector> &f,
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<NOX::Epetra::LinearSystem>
 FSI::MonolithicOverlap::CreateLinearSystem(ParameterList& nlParams,
-                                           const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface,
                                            NOX::Epetra::Vector& noxSoln,
                                            Teuchos::RCP<NOX::Utils> utils)
 {
-  return Teuchos::null;
+  Teuchos::RCP<NOX::Epetra::LinearSystem> linSys;
+
+  Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
+  Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
+  Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
+  Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
+
+  NOX::Epetra::Interface::Jacobian* iJac = this;
+  NOX::Epetra::Interface::Preconditioner* iPrec = this;
+  const Teuchos::RCP< Epetra_Operator > J = systemmatrix_;
+  const Teuchos::RCP< Epetra_Operator > M = systemmatrix_;
+
+  linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams,
+                                                             lsParams,
+                                                             Teuchos::rcp(iJac,false),
+                                                             J,
+                                                             Teuchos::rcp(iPrec,false),
+                                                             M,
+                                                             noxSoln));
+
+  return linSys;
 }
 
 

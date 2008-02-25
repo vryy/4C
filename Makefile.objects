@@ -195,6 +195,7 @@ OBJS_DRT_FSI  = src/drt_fsi/ale_dyn.o \
 		src/drt_fsi/fsi_coupling_mortar.o \
                 src/drt_fsi/fsi_utils.o \
                 src/drt_fsi/fsi_statustest.o \
+                src/drt_fsi/fsi_overlapprec.o \
                 src/drt_fsi/fsi_ale_resulttest.o
 #                pss_full
 OBJS_PSS      = src/pss_full/pss_am.o \
