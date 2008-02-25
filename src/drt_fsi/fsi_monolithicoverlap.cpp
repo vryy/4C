@@ -1,6 +1,7 @@
 #ifdef CCADISCRET
 
 #include "fsi_monolithicoverlap.H"
+#include "fsi_statustest.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -256,7 +257,45 @@ Teuchos::RCP<NOX::StatusTest::Combo>
 FSI::MonolithicOverlap::CreateStatusTest(Teuchos::ParameterList& nlParams,
                                          Teuchos::RCP<NOX::Epetra::Group> grp)
 {
-  return Teuchos::null;
+  // Create the convergence tests
+  Teuchos::RCP<NOX::StatusTest::Combo> combo       = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
+  Teuchos::RCP<NOX::StatusTest::Combo> converged   = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
+
+  Teuchos::RCP<NOX::StatusTest::MaxIters> maxiters = Teuchos::rcp(new NOX::StatusTest::MaxIters(nlParams.get("Max Iterations", 100)));
+  Teuchos::RCP<NOX::StatusTest::FiniteValue> fv    = Teuchos::rcp(new NOX::StatusTest::FiniteValue);
+
+  combo->addStatusTest(fv);
+  combo->addStatusTest(converged);
+  combo->addStatusTest(maxiters);
+
+  Teuchos::RCP<PartialNormF> structureDisp =
+    Teuchos::rcp(new PartialNormF("displacement",
+                                  0,
+                                  *StructureField().DofRowMap(),
+                                  *StructureField().DofRowMap(),
+                                  nlParams.get("Norm abs disp", 1.0e-6),
+                                  PartialNormF::Scaled));
+  converged->addStatusTest(structureDisp);
+
+  Teuchos::RCP<PartialNormF> innerFluidVel =
+    Teuchos::rcp(new PartialNormF("velocity",
+                                  1,
+                                  *FluidField().Interface().OtherMap(),
+                                  *FluidField().InnerVelocityRowMap(),
+                                  nlParams.get("Norm abs vel", 1.0e-6),
+                                  PartialNormF::Scaled));
+  converged->addStatusTest(innerFluidVel);
+
+  Teuchos::RCP<PartialNormF> fluidPress =
+    Teuchos::rcp(new PartialNormF("pressure",
+                                  1,
+                                  *FluidField().Interface().OtherMap(),
+                                  *FluidField().PressureRowMap(),
+                                  nlParams.get("Norm abs pres", 1.0e-6),
+                                  PartialNormF::Scaled));
+  converged->addStatusTest(fluidPress);
+
+  return combo;
 }
 
 

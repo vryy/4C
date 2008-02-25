@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file mfsi_statustest.H
+\file fsi_statustest.H
 
 \brief NOX Thyra group enhancement
 
@@ -15,8 +15,8 @@ Maintainer: Ulrich Kuettler
 
 #ifdef CCADISCRET
 
-#ifndef MFSI_STATUSTEST_H
-#define MFSI_STATUSTEST_H
+#ifndef FSI_STATUSTEST_H
+#define FSI_STATUSTEST_H
 
 #include <NOX_StatusTest_Generic.H>
 #include <NOX_Abstract_Vector.H>
@@ -26,10 +26,10 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_Import.h>
 #include <Epetra_Vector.h>
 
-#include "../drt_fsi/fsi_coupling.H"
+#include "fsi_coupling.H"
 
 
-namespace MFSI
+namespace FSI
 {
 
   /// a copy of NOX::StatusTest::NormF works on a vector part only

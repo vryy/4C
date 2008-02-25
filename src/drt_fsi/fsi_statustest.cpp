@@ -1,7 +1,7 @@
 
 #ifdef CCADISCRET
 
-#include "mfsi_statustest.H"
+#include "fsi_statustest.H"
 #include "../drt_lib/drt_dserror.H"
 
 #include <NOX_Common.H>
@@ -19,7 +19,7 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MFSI::GenericNormF::GenericNormF(std::string name,
+FSI::GenericNormF::GenericNormF(std::string name,
                                  double tolerance,
                                  ScaleType stype)
   : status_(NOX::StatusTest::Unevaluated),
@@ -37,7 +37,7 @@ MFSI::GenericNormF::GenericNormF(std::string name,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MFSI::GenericNormF::computeNorm(const Epetra_Vector& v)
+double FSI::GenericNormF::computeNorm(const Epetra_Vector& v)
 {
   int n = v.GlobalLength();
   double norm;
@@ -81,7 +81,7 @@ double MFSI::GenericNormF::computeNorm(const Epetra_Vector& v)
 #if 0
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MFSI::GenericNormF::relativeSetup(NOX::Abstract::Group& initialGuess)
+void FSI::GenericNormF::relativeSetup(NOX::Abstract::Group& initialGuess)
 {
   NOX::Abstract::Group::ReturnType rtype;
   rtype = initialGuess.computeF();
@@ -101,7 +101,7 @@ void MFSI::GenericNormF::relativeSetup(NOX::Abstract::Group& initialGuess)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 NOX::StatusTest::StatusType
-MFSI::GenericNormF::checkStatus(const NOX::Solver::Generic& problem,
+FSI::GenericNormF::checkStatus(const NOX::Solver::Generic& problem,
                                 NOX::StatusTest::CheckType checkType)
 {
   if (checkType == NOX::StatusTest::None)
@@ -128,7 +128,7 @@ MFSI::GenericNormF::checkStatus(const NOX::Solver::Generic& problem,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-NOX::StatusTest::StatusType MFSI::GenericNormF::getStatus() const
+NOX::StatusTest::StatusType FSI::GenericNormF::getStatus() const
 {
   return status_;
 }
@@ -136,7 +136,7 @@ NOX::StatusTest::StatusType MFSI::GenericNormF::getStatus() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::ostream& MFSI::GenericNormF::print(std::ostream& stream, int indent) const
+std::ostream& FSI::GenericNormF::print(std::ostream& stream, int indent) const
 {
   for (int j = 0; j < indent; j ++)
     stream << ' ';
@@ -180,7 +180,7 @@ std::ostream& MFSI::GenericNormF::print(std::ostream& stream, int indent) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MFSI::GenericNormF::getNormF() const
+double FSI::GenericNormF::getNormF() const
 {
   return normF_;
 }
@@ -188,7 +188,7 @@ double MFSI::GenericNormF::getNormF() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MFSI::GenericNormF::getTrueTolerance() const
+double FSI::GenericNormF::getTrueTolerance() const
 {
   return trueTolerance_;
 }
@@ -196,7 +196,7 @@ double MFSI::GenericNormF::getTrueTolerance() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MFSI::GenericNormF::getSpecifiedTolerance() const
+double FSI::GenericNormF::getSpecifiedTolerance() const
 {
   return specifiedTolerance_;
 }
@@ -204,7 +204,7 @@ double MFSI::GenericNormF::getSpecifiedTolerance() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MFSI::GenericNormF::getInitialTolerance() const
+double FSI::GenericNormF::getInitialTolerance() const
 {
   return initialTolerance_;
 }
@@ -212,7 +212,7 @@ double MFSI::GenericNormF::getInitialTolerance() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MFSI::PartialNormF::PartialNormF(std::string name,
+FSI::PartialNormF::PartialNormF(std::string name,
                                  int blocknum,
                                  const Epetra_Map &blockmap,
                                  const Epetra_Map &innermap,
@@ -229,7 +229,7 @@ MFSI::PartialNormF::PartialNormF(std::string name,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MFSI::PartialNormF::computeNorm(const NOX::Abstract::Group& grp)
+double FSI::PartialNormF::computeNorm(const NOX::Abstract::Group& grp)
 {
   if (!grp.isF())
     return -1.0;
@@ -260,13 +260,13 @@ double MFSI::PartialNormF::computeNorm(const NOX::Abstract::Group& grp)
   if (err!=0)
     dserror("import failed with err=%d", err);
 
-  return MFSI::GenericNormF::computeNorm(*v);
+  return FSI::GenericNormF::computeNorm(*v);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MFSI::InterfaceNormF::InterfaceNormF(double structfac,
+FSI::InterfaceNormF::InterfaceNormF(double structfac,
                                      const Epetra_Map &structblockmap,
                                      const Epetra_Map &structinterfacemap,
                                      double fluidfac,
@@ -291,7 +291,7 @@ MFSI::InterfaceNormF::InterfaceNormF(double structfac,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MFSI::InterfaceNormF::computeNorm(const NOX::Abstract::Group& grp)
+double FSI::InterfaceNormF::computeNorm(const NOX::Abstract::Group& grp)
 {
   if (!grp.isF())
     return -1.0;
@@ -342,7 +342,7 @@ double MFSI::InterfaceNormF::computeNorm(const NOX::Abstract::Group& grp)
   // add both residual with appropriate scaling
   sv->Update(fluidfac_, *fv, structfac_);
 
-  return MFSI::GenericNormF::computeNorm(*sv);
+  return FSI::GenericNormF::computeNorm(*sv);
 }
 
 
