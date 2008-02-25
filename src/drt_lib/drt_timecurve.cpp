@@ -21,6 +21,7 @@ Maintainer: Ulrich Kuettler
 #include <algorithm>
 #include <cstdlib>
 #include <iostream>
+#include <Sacado.hpp>
 
 #include "drt_parser.H"
 #include "drt_timecurve.H"
@@ -234,15 +235,14 @@ void DRT::UTILS::TimeCurveManager::ReadInput()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 DRT::UTILS::PolygonalTimeSlice::PolygonalTimeSlice(double begin,
-                                            double end,
-                                            double vbegin,
-                                            double vend)
+                                                   double end,
+                                                   double vbegin,
+                                                   double vend)
   : TimeSlice(begin,end),
     value_begin_(vbegin),
     value_end_(vend)
 {
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -252,10 +252,40 @@ double DRT::UTILS::PolygonalTimeSlice::f(double t)
   return value_begin_ + (value_end_-value_begin_)/(end()-begin()) * (t-begin());
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::vector<double> DRT::UTILS::PolygonalTimeSlice::FctDer(const double t,
+                                                           const unsigned deg)
+{
+  dsassert(contains(t), "wrong time slice called");
+
+  // resulting vector holding
+  std::vector<double> res(deg+1);
+
+  if (deg >= 0)
+  {
+    // value of time curve f at time t (0th derivative)
+    res[0] = f(t);
+  } 
+  if (deg >= 1)
+  {
+    // 1st derivative of time curve f at time t
+    res[1] = (value_end_-value_begin_)/(end()-begin());
+  }
+  if (deg >= 2)
+  {
+    // 2nd derivative of time curve f at time t
+    res[2] = 0;
+  }
+  
+  return res;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::UTILS::ExplicitTimeSlice::ExplicitTimeSlice(int numex, double c1, double c2)
+DRT::UTILS::ExplicitTimeSlice::ExplicitTimeSlice(int numex, 
+                                                 double c1, 
+                                                 double c2)
   : TimeSlice(0.,1e100),
     numex_(numex),
     c1_(c1),
@@ -263,19 +293,19 @@ DRT::UTILS::ExplicitTimeSlice::ExplicitTimeSlice(int numex, double c1, double c2
 {
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::UTILS::ExplicitTimeSlice::f(double T)
+template <typename ScalarT>
+ScalarT DRT::UTILS::ExplicitTimeSlice::Fct(const ScalarT& T)
 {
-  double fac = 1.0;
+  ScalarT fac = 1;
 
   switch (numex_)
   {
   case -1: /* f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1 */
     if (T <= c1_)
     {
-      double val1 = T/c1_*M_PI/2;
+      ScalarT val1 = T/c1_*M_PI/2;
       fac = sin(val1);
     }
     else
@@ -288,7 +318,7 @@ double DRT::UTILS::ExplicitTimeSlice::f(double T)
     }
     else if (T<=c1_ || c1_<EPS6)
     {
-      double val1 = 1. - 1./T;
+      ScalarT val1 = 1. - 1./T;
       fac = exp(val1);
     }
     else
@@ -296,20 +326,20 @@ double DRT::UTILS::ExplicitTimeSlice::f(double T)
     break;
   case -3: /* f(t)=1-cos(2*PI*C1*t) */
   {
-    double val1 = 2.*M_PI*c1_*T;
+    ScalarT val1 = 2.*M_PI*c1_*T;
     fac  = 1. - cos(val1);
     break;
   }
   case -4: /* f(t)=C2*sin(2PI*C1*t) */
   {
-    double val1 = 2.*c1_*M_PI*T;
+    ScalarT val1 = 2.*c1_*M_PI*T;
     fac  = c2_*sin(val1);
     break;
   }
   case -5: /* f(t)=(sin(PI(t:C1-0.5))+1)*0.5 */
     if (T<=c1_)
     {
-      double val1 = M_PI*(T/c1_-1./2.);
+      ScalarT val1 = M_PI*(T/c1_-1./2.);
       fac = (sin(val1)+1.)/2.;
     }
     else
@@ -317,31 +347,31 @@ double DRT::UTILS::ExplicitTimeSlice::f(double T)
     break;
   case -6: /* Beltrami-Flow */
   {
-    double visc = mat[0].m.fluid->viscosity;
-    double d = M_PI/2.;
-    double val1 = -c1_*visc*d*d*T;
+    ScalarT visc = mat[0].m.fluid->viscosity;
+    ScalarT d = M_PI/2.;
+    ScalarT val1 = -c1_*visc*d*d*T;
     fac = exp(val1);
     break;
   }
   case -7: /* Kim-Moin-Flow */
   {
-    double visc = mat[0].m.fluid->viscosity;
-    double a = 2.0;
-    double val1 = -c1_*a*a*M_PI*M_PI*visc*T;
+    ScalarT visc = mat[0].m.fluid->viscosity;
+    ScalarT a = 2.0;
+    ScalarT val1 = -c1_*a*a*M_PI*M_PI*visc*T;
     fac = exp(val1);
     break;
   }
   case -8: /* f(t)=(C2/2PI*C1)*cos(2PI*C1*t) +s0*/
   {
-    double val1 = 2.*c1_*M_PI;
-    double s0   = -c2_/val1;
+    ScalarT val1 = 2.*c1_*M_PI;
+    ScalarT s0   = -c2_/val1;
     fac = c2_/val1*cos(val1*T)+s0;
     break;
   }
   case -9: /* f(t)=t:2-C1:(2PI)*cos(PI*t:C1-PI:2) */
     if (T<=c1_)
     {
-      double val1 = M_PI / c1_;
+      ScalarT val1 = M_PI / c1_;
       fac = T*0.5 - 0.5/val1 * cos(val1*T-M_PI*0.5);
     }
     else
@@ -362,10 +392,64 @@ double DRT::UTILS::ExplicitTimeSlice::f(double T)
   return fac;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double DRT::UTILS::ExplicitTimeSlice::f(double T)
+{
+  double fac = Fct<double>(T);
+  return fac;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::UTILS::LungTimeSlice::LungTimeSlice(double frequ, double ppeep, double phase)
+std::vector<double> DRT::UTILS::ExplicitTimeSlice::FctDer(const double t,
+                                                          const unsigned deg)
+{
+  // resulting vector holding
+  std::vector<double> res(deg+1);
+
+  // function
+  if (deg >= 0)
+  {
+    res[0] = f(t);
+  }
+
+  // derivatives
+  if (deg >= 1)
+  {
+    // number of independent variables
+    const int nvar = 1;
+    // index of independent variable
+    const int ivar = 0;
+
+    // Fad object for evaluation time
+    Sacado::Fad::DFad< Sacado::Fad::DFad<double> > tfad(nvar, ivar, t);
+    // for 1st order derivative
+    tfad.val() = Sacado::Fad::DFad<double>(nvar, ivar, t);
+
+    // 1st & 2nd derivative of time curve function
+    Sacado::Fad::DFad<Sacado::Fad::DFad<double> > fdfad 
+      = Fct< Sacado::Fad::DFad< Sacado::Fad::DFad<double> > >(tfad);
+
+    // return 1st derivative value at time t
+    res[1] = fdfad.dx(ivar).val();
+
+    // return 2nd derivative value at time t
+    if (deg >= 2)
+    {
+      res[2] = fdfad.dx(ivar).dx(ivar);
+    }
+  }
+
+  // deliver function (and its derivatives)
+  return res;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+DRT::UTILS::LungTimeSlice::LungTimeSlice(double frequ, 
+                                         double ppeep, 
+                                         double phase)
   : TimeSlice(0.,1e100),
     frequ_(frequ),
     ppeep_(ppeep),
@@ -375,10 +459,10 @@ DRT::UTILS::LungTimeSlice::LungTimeSlice(double frequ, double ppeep, double phas
     phase_ = 1/frequ_;
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::UTILS::LungTimeSlice::f(double t)
+template <typename ScalarT>
+ScalarT DRT::UTILS::LungTimeSlice::Fct(const ScalarT& t)
 {
   if (t <= phase_)
   {
@@ -392,7 +476,65 @@ double DRT::UTILS::LungTimeSlice::f(double t)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::UTILS::BloodTimeSlice::BloodTimeSlice(double period, double flowrate, int points,  std::vector<double>& ArrayLength )
+double DRT::UTILS::LungTimeSlice::f(double t)
+{
+  double fac = Fct<double>(t);
+  return fac;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::vector<double> DRT::UTILS::LungTimeSlice::FctDer(const double t,
+                                                      const unsigned deg)
+{
+  //dserror("2nd time differentation is not implemented");
+
+  // resulting vector holding
+  std::vector<double> res(deg+1);
+
+  // function
+  if (deg >= 0)
+  {
+    res[0] = f(t);
+  }
+
+  // derivatives
+  if (deg >= 1)
+  {
+    // number of independent variables
+    const int nvar = 1;
+    // index of independent variable
+    const int ivar = 0;
+
+    // Fad object for evaluation time
+    Sacado::Fad::DFad< Sacado::Fad::DFad<double> > tfad(nvar, ivar, t);
+    // for 1st order derivative
+    tfad.val() = Sacado::Fad::DFad<double>(nvar, ivar, t);
+
+    // 1st & 2nd derivative of time curve function
+    Sacado::Fad::DFad<Sacado::Fad::DFad<double> > fdfad 
+      = Fct< Sacado::Fad::DFad< Sacado::Fad::DFad<double> > >(tfad);
+
+    // return 1st derivative value at time t
+    res[1] = fdfad.dx(ivar).val();
+
+    // return 2nd derivative value at time t
+    if (deg >= 2)
+    {
+      res[2] = fdfad.dx(ivar).dx(ivar);
+    }
+  }
+
+  // deliver function (and its derivatives)
+  return res;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+DRT::UTILS::BloodTimeSlice::BloodTimeSlice(double period,
+                                           double flowrate,
+                                           int points,
+                                           std::vector<double>& ArrayLength)
   : TimeSlice(0.,1e100),
     period_(period),
     flowrate_(flowrate),
@@ -404,17 +546,18 @@ DRT::UTILS::BloodTimeSlice::BloodTimeSlice(double period, double flowrate, int p
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::UTILS::BloodTimeSlice::f(double t)
+template <typename ScalarT>
+ScalarT DRT::UTILS::BloodTimeSlice::Fct(const ScalarT& t)
 {
   const int DataLength=points_;
  //  double EvenCoefficient[DataLength/2]={0};
  //  double OddCoefficient[DataLength/2]={0};
  //  double SampleNumber[DataLength]={0};
-  double EvenCoefficient[31]={0};
-  double OddCoefficient[31]={0};
-  double SampleNumber[60]={0};
-  double fac;
-  double C = (double)points_;
+  ScalarT EvenCoefficient[31]={0};
+  ScalarT OddCoefficient[31]={0};
+  ScalarT SampleNumber[60]={0};
+  ScalarT fac;
+  ScalarT C = (ScalarT)points_;
 
   // printf("%d\n",DataLength);
 
@@ -452,36 +595,126 @@ double DRT::UTILS::BloodTimeSlice::f(double t)
   return fac;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double DRT::UTILS::BloodTimeSlice::f(double t)
+{
+  double fac = Fct<double>(t);
+  return fac;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::vector<double> DRT::UTILS::BloodTimeSlice::FctDer(const double t,
+                                                       const unsigned deg)
+{
+  // resulting vector holding
+  std::vector<double> res(deg+1);
+
+  // function
+  if (deg >= 0)
+  {
+    res[0] = f(t);
+  }
+
+  // derivatives
+  if (deg >= 1)
+  {
+    // number of independent variables
+    const int nvar = 1;
+    // index of independent variable
+    const int ivar = 0;
+
+    // Fad object for evaluation time
+    Sacado::Fad::DFad< Sacado::Fad::DFad<double> > tfad(nvar, ivar, t);
+    // for 1st order derivative
+    tfad.val() = Sacado::Fad::DFad<double>(nvar, ivar, t);
+
+    // 1st & 2nd derivative of time curve function
+    Sacado::Fad::DFad<Sacado::Fad::DFad<double> > fdfad 
+      = Fct< Sacado::Fad::DFad< Sacado::Fad::DFad<double> > >(tfad);
+
+    // return 1st derivative value at time t
+    res[1] = fdfad.dx(ivar).val();
+
+    // return 2nd derivative value at time t
+    if (deg >= 2)
+    {
+      res[2] = fdfad.dx(ivar).dx(ivar);
+    }
+  }
+
+  // deliver function (and its derivatives)
+  return res;
+}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 DRT::UTILS::ExprTimeSlice::ExprTimeSlice(double begin, double end, char* buf)
   : TimeSlice(begin,end),
-    expr_(pss_parse(buf)),
-    parexpr_(DRT::Parser<double>(string(buf)))
+    parsexpr_(DRT::Parser<double>(string(buf))),
+    parsexprdd_(DRT::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > >(string(buf)))
 {
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 DRT::UTILS::ExprTimeSlice::~ExprTimeSlice()
 {
-  pss_parse_cleanup(expr_);
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double DRT::UTILS::ExprTimeSlice::f(double t)
 {
   dsassert(contains(t), "wrong time slice called");
-  //cout << "old style " << pss_evaluate_curve(expr_,t)
-  //     << ", new style " << parexpr_.EvaluateCurve(t) << endl;
-  return pss_evaluate_curve(expr_,t);
+  return parsexpr_.EvaluateCurve(t);
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::vector<double> DRT::UTILS::ExprTimeSlice::FctDer(const double t,
+                                                      const unsigned deg)
+{
+  // resulting vector holding
+  std::vector<double> res(deg+1);
+
+  // function
+  if (deg >= 0)
+  {
+    res[0] = f(t);
+  }
+
+  // derivatives
+  if (deg >= 1)
+  {
+    // number of independent variables
+    const int nvar = 1;
+    // index of independent variable
+    const int ivar = 0;
+
+    // Fad object for evaluation time
+    Sacado::Fad::DFad< Sacado::Fad::DFad<double> > tfad(nvar, ivar, t);
+    // for 1st order derivative
+    tfad.val() = Sacado::Fad::DFad<double>(nvar, ivar, t);
+
+    // 1st & 2nd derivative of time curve function
+    Sacado::Fad::DFad<Sacado::Fad::DFad<double> > fdfad 
+      = parsexprdd_.EvaluateCurve(tfad);
+
+    // return 1st derivative value at time t
+    res[1] = fdfad.dx(ivar).val();
+
+    if (deg >= 2)
+    {
+      res[2] = fdfad.dx(ivar).dx(ivar);
+    }
+  }
+
+  // return function (and its derivatives)
+  return res;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -511,6 +744,41 @@ double DRT::UTILS::TimeCurve::f(double t)
   return slice->f(slice->end());
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::vector<double> DRT::UTILS::TimeCurve::FctDer(const double t, 
+                                                  const unsigned deg)
+{
+  // verify
+  dsassert(deg>=0 && deg<=2, "Highest degree of differentation must be in [0,2]");
+
+  if (slices_.size()==0)
+    dserror("No time slices defined. Fix input.");
+
+  // if the requested time is before the start we use the first
+  // available time we have
+  RefCountPtr<TimeSlice> slice = slices_[0];
+  if (t < slice->begin())
+  {
+    return slice->FctDer(slice->begin(), deg);
+  }
+
+  // look for the right slice and ask it
+  for (unsigned i=0; i<slices_.size(); ++i)
+  {
+    slice = slices_[i];
+    if (slice->contains(t))
+    {
+      return slice->FctDer(t, deg);
+    }
+    if (slice->begin() > t)
+      dserror("a gap between time slices occured");
+  }
+
+  // if we exceed our slices use the last available time
+  slice = slices_.back();
+  return slice->FctDer(slice->end(), deg);
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

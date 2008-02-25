@@ -336,7 +336,7 @@ void CondifGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
   // predicted dirichlet values
   // phinp then also holds prescribed new dirichlet values
   // dirichtoggle is 1 for dirichlet dofs, 0 elsewhere
-  discret_->EvaluateDirichlet(eleparams,*phinp_,*dirichtoggle_);
+  discret_->EvaluateDirichlet(eleparams,phinp_,null,null,dirichtoggle_);
   discret_->ClearState();
 
 

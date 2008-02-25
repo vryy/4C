@@ -878,12 +878,16 @@ public:
   \endcode
 
   \param params (in): List of parameters
-  \param systemvector (out): Vector holding prescribed dirichlet values
-  \param toggle (out): Vector containing 1.0 for each dirichlet dof and 0 for everything else
+  \param systemvector (out): Vector holding prescribed Dirichlet values
+  \param systemvectord (out): Vector holding 1st time derivative of prescribed Dirichlet values
+  \param systemvectordd (out): Vector holding 2nd time derivative prescribed Dirichlet values
+  \param toggle (out): Vector containing 1.0 for each Dirichlet dof and 0 for everything else
   */
   virtual void EvaluateDirichlet(ParameterList& params,
-                                 Epetra_Vector& systemvector,
-                                 Epetra_Vector& toggle);
+                                 Teuchos::RCP<Epetra_Vector> systemvector,
+                                 Teuchos::RCP<Epetra_Vector> systemvectord,
+                                 Teuchos::RCP<Epetra_Vector> systemvectordd,
+                                 Teuchos::RCP<Epetra_Vector> toggle);
 
   /*!
   \brief Evaluate a specified condition

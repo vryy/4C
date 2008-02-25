@@ -64,7 +64,7 @@ FSI::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
   ParameterList eleparams;
   eleparams.set("total time", time_);
   eleparams.set("delta time", dt_);
-  discret_->EvaluateDirichlet(eleparams,*dispnp_,*dirichtoggle_);
+  discret_->EvaluateDirichlet(eleparams,dispnp_,null,null,dirichtoggle_);
 
   if (dirichletcond)
   {

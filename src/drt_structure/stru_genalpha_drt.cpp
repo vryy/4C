@@ -202,7 +202,7 @@ void stru_genalpha_drt()
     actdis->SetState("displacement",dis);
     // predicted dirichlet values
     // dis then also holds prescribed new dirichlet displacements
-    actdis->EvaluateDirichlet(params,*dis,*dirichtoggle);
+    actdis->EvaluateDirichlet(params,dis,null,null,dirichtoggle);
     actdis->ClearState();
     actdis->SetState("displacement",dis);
     // predicted rhs
@@ -307,7 +307,7 @@ void stru_genalpha_drt()
       actdis->SetState("displacement",disn);
       // predicted dirichlet values
       // disn then also holds prescribed new dirichlet displacements
-      actdis->EvaluateDirichlet(params,*disn,*dirichtoggle);
+      actdis->EvaluateDirichlet(params,disn,null,null,dirichtoggle);
       actdis->ClearState();
       actdis->SetState("displacement",disn);
       fextn->PutScalar(0.0);  // initialize external force vector (load vect)

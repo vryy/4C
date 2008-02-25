@@ -134,7 +134,7 @@ maxentriesperrow_(81)
     discret_.SetState("displacement",dis_);
     // predicted dirichlet values
     // dis then also holds prescribed new dirichlet displacements
-    discret_.EvaluateDirichlet(p,*dis_,*dirichtoggle_);
+    discret_.EvaluateDirichlet(p,dis_,null,null,dirichtoggle_);
     discret_.ClearState();
     discret_.SetState("displacement",dis_);
     // predicted rhs
@@ -297,7 +297,7 @@ void StruGenAlpha::ConstantPredictor()
     discret_.SetState("displacement",disn_);
     // predicted dirichlet values
     // disn then also holds prescribed new dirichlet displacements
-    discret_.EvaluateDirichlet(p,*disn_,*dirichtoggle_);
+    discret_.EvaluateDirichlet(p,disn_,null,null,dirichtoggle_);
     discret_.ClearState();
     discret_.SetState("displacement",disn_);
     fextn_->PutScalar(0.0);  // initialize external force vector (load vect)
@@ -468,7 +468,7 @@ void StruGenAlpha::MatrixFreeConstantPredictor()
     discret_.SetState("displacement",disn_);
     // predicted dirichlet values
     // disn then also holds prescribed new dirichlet displacements
-    discret_.EvaluateDirichlet(p,*disn_,*dirichtoggle_);
+    discret_.EvaluateDirichlet(p,disn_,null,null,dirichtoggle_);
     discret_.ClearState();
     discret_.SetState("displacement",disn_);
     fextn_->PutScalar(0.0);  // initialize external force vector (load vect)
@@ -626,13 +626,15 @@ void StruGenAlpha::ConsistentPredictor()
     discret_.SetState("displacement",disn_);
     // predicted dirichlet values
     // disn then also holds prescribed new dirichlet displacements
-    discret_.EvaluateDirichlet(p,*disn_,*dirichtoggle_);
+    discret_.EvaluateDirichlet(p,disn_,null,null,dirichtoggle_);
     discret_.ClearState();
     discret_.SetState("displacement",disn_);
     fextn_->PutScalar(0.0);  // initialize external force vector (load vect)
     discret_.EvaluateNeumann(p,*fextn_);
     discret_.ClearState();
   }
+
+  //cout << *disn_ << endl;
 
   // consistent predictor
   // predicting velocity V_{n+1} (veln)
@@ -643,6 +645,35 @@ void StruGenAlpha::ConsistentPredictor()
   veln_->Update((beta-gamma)/beta,*vel_,
                 (2.*beta-gamma)*dt/(2.*beta),*acc_,gamma/(beta*dt));
 
+
+#ifdef STRUGENALPHA_STRONGDBC
+  // apply new velocities at DBCs
+  {
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_eleload");
+    // choose what to assemble
+    p.set("assemble matrix 1",false);
+    p.set("assemble matrix 2",false);
+    p.set("assemble vector 1",true);
+    p.set("assemble vector 2",false);
+    p.set("assemble vector 3",false);
+    // other parameters needed by the elements
+    p.set("total time",timen);
+    p.set("delta time",dt);
+    //p.set("time derivative degree",1);  // we want velocities
+    // set vector values needed by elements
+    discret_.ClearState();
+    discret_.SetState("velocity",veln_);
+    // predicted dirichlet values
+    // veln_ then also holds prescribed new Dirichlet velocities
+    discret_.EvaluateDirichlet(p,null,veln_,null,dirichtoggle_);
+    discret_.ClearState();
+  }
+#endif
+
+  //cout << *veln_ << endl;
+
   // predicting accelerations A_{n+1} (accn)
   // A_{n+1} := 1./(beta*dt*dt) * (D_{n+1} - D_n)
   //          - 1./(beta*dt) * V_n
@@ -650,6 +681,35 @@ void StruGenAlpha::ConsistentPredictor()
   accn_->Update(1.0,*disn_,-1.0,*dis_,0.0);
   accn_->Update(-1./(beta*dt),*vel_,
                 (2.*beta-1.)/(2.*beta),*acc_,1./(beta*dt*dt));
+
+#ifdef STRUGENALPHA_STRONGDBC
+  // apply new accelerations at DBCs
+  {
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_eleload");
+    // choose what to assemble
+    p.set("assemble matrix 1",false);
+    p.set("assemble matrix 2",false);
+    p.set("assemble vector 1",true);
+    p.set("assemble vector 2",false);
+    p.set("assemble vector 3",false);
+    // other parameters needed by the elements
+    p.set("total time",timen);
+    p.set("delta time",dt);
+    //p.set("time derivative degree",2);  // we want accelerations
+    // set vector values needed by elements
+    discret_.ClearState();
+    discret_.SetState("acceleration",accn_);
+    // predicted dirichlet values
+    // accn_ then also holds prescribed new Dirichlet accelerations
+    discret_.EvaluateDirichlet(p,null,null,accn_,dirichtoggle_);
+    discret_.ClearState();
+  }
+#endif
+
+  //cout << *accn_ << endl;
+
 
   //------------------------------ compute interpolated dis, vel and acc
   // consistent predictor

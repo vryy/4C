@@ -698,7 +698,7 @@ void FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
   // predicted dirichlet values
   // velnp then also holds prescribed new dirichlet values
   // dirichtoggle is 1 for dirichlet dofs, 0 elsewhere
-  discret_->EvaluateDirichlet(eleparams,*velnp_,*dirichtoggle_);
+  discret_->EvaluateDirichlet(eleparams,velnp_,null,null,dirichtoggle_);
   discret_->ClearState();
 
 

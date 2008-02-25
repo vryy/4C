@@ -94,7 +94,7 @@ void ContactStruGenAlpha::ConsistentPredictor()
     discret_.SetState("displacement",disn_);
     // predicted dirichlet values
     // disn then also holds prescribed new dirichlet displacements
-    discret_.EvaluateDirichlet(p,*disn_,*dirichtoggle_);
+    discret_.EvaluateDirichlet(p,disn_,null,null,dirichtoggle_);
     discret_.ClearState();
     discret_.SetState("displacement",disn_);
     fextn_->PutScalar(0.0);  // initialize external force vector (load vect)
@@ -264,7 +264,7 @@ void ContactStruGenAlpha::ConstantPredictor()
     discret_.SetState("displacement",disn_);
     // predicted dirichlet values
     // disn then also holds prescribed new dirichlet displacements
-    discret_.EvaluateDirichlet(p,*disn_,*dirichtoggle_);
+    discret_.EvaluateDirichlet(p,disn_,null,null,dirichtoggle_);
     discret_.ClearState();
     discret_.SetState("displacement",disn_);
     fextn_->PutScalar(0.0);  // initialize external force vector (load vect)

@@ -42,6 +42,13 @@ Maintainer: Michael Gee
 
 // definitions in algorithm
 #define STRUGENALPHA_INCRUPDT  /* incremental update of vel and acc */
+//#define STRUGENALPHA_STRONGDBC  /* strong Dirichlet BCs, i.e. DBC reigns  */
+                                 /* its displacements, velocities and acceleration */
+#ifdef STRUGENALPHA_STRONGDBC
+#ifdef STRUGENALPHA_INCRUPDT
+#undef STRUGENALPHA_INCRUPDT
+#endif
+#endif
 
 using namespace std;
 using namespace Teuchos;

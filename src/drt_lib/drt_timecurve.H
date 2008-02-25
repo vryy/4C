@@ -21,6 +21,7 @@ Maintainer: Ulrich Kuettler
 #include <iostream>
 #include <vector>
 #include <Teuchos_RefCountPtr.hpp>
+#include <Sacado.hpp>
 
 #include "drt_dserror.H"
 #include "drt_parser.H"
@@ -33,7 +34,7 @@ extern "C"
 namespace DRT {
 namespace UTILS {
 
-
+  /*====================================================================*/
   /// base of all slices of a time curve with start and end time
   class TimeSlice
   {
@@ -45,11 +46,24 @@ namespace UTILS {
     /// virtual destructor because this class will be derived
     virtual ~TimeSlice() {}
 
-    /// interval check [begin:end[
+    /// interval check [\c begin_ , \c end_ [
     bool contains(double t) const { return t>=begin_-1e-13 and t<end_+1e-13; }
 
-    /// evaluate time curve at given time
+    /// evaluate time curve \c f at given time \c t
     virtual double f(double time) = 0;
+
+    /// \brief Evaluate time curve and its derivatives
+    ///
+    /// Delivers vector containing at position i of resulting vector
+    /// the i-th derivative of the time curve function at time \c t. 
+    /// The highest degree of resulting 
+    /// time derivatives is set by the argument \c deg.
+    /// \author bborn
+    /// \date 02/08
+    virtual std::vector<double> FctDer(
+      const double t,  //!< evaluation time
+      const unsigned deg  //!< highest degree of differentiation
+    ) = 0;
 
     /// begin time of slice
     double begin() const { return begin_; }
@@ -61,22 +75,28 @@ namespace UTILS {
     virtual void Print(std::ostream& out) const = 0;
 
   private:
+    /// begin time point of time slice
     double begin_;
+    /// end time point of time slice
     double end_;
 
     /// output operator
     friend std::ostream& operator<<(std::ostream& out, const TimeSlice& slice);
   };
 
-
+  /*--------------------------------------------------------------------*/
   /// time slice defined by polygonal (with jumps!)
   class PolygonalTimeSlice : public TimeSlice
   {
   public:
+    /// constructor
     PolygonalTimeSlice(double begin, double end, double vbegin, double vend);
 
-    /// evaluate time curve at given time
+    /// evaluate time curve \c f at given time \c t
     double f(double t);
+
+    /// evaluate time curve and its derivatives
+    std::vector<double> FctDer(const double t, const unsigned deg);
 
     /// debug output of this slice
     virtual void Print(std::ostream& out) const;
@@ -90,7 +110,7 @@ namespace UTILS {
   };
 
 
-
+  /*--------------------------------------------------------------------*/
   /// explicit strings with fixed implementation
   /*!
     Depreciated. Do not extend this class. Create a new one if you
@@ -101,8 +121,24 @@ namespace UTILS {
   public:
     ExplicitTimeSlice(int numex, double c1, double c2);
 
+    /// function template
+    template <typename ScalarT> ScalarT Fct(const ScalarT& t);
+
+    /// function template explicit for type double
+    double Fct(const double& t);
+
+    /// function template explicit for type Sacado::Fad::DFad< Sacado::Fad::DFad<double> >
+    /// needed for automatic differentiation to get 1st & 2nd derivative
+    Sacado::Fad::DFad< Sacado::Fad::DFad<double> > Fct
+    (
+      const Sacado::Fad::DFad< Sacado::Fad::DFad<double> >& t
+    );
+
     /// evaluate time curve at given time
     double f(double t);
+
+    /// evaluate time curve and its derivatives
+    std::vector<double> FctDer(const double t, const unsigned deg);
 
     /// debug output of this slice
     virtual void Print(std::ostream& out) const;
@@ -113,32 +149,71 @@ namespace UTILS {
   };
 
 
-
+  /*--------------------------------------------------------------------*/
   /// special respiration time slice
   class LungTimeSlice : public TimeSlice
   {
   public:
     LungTimeSlice(double frequ, double ppeep, double phase);
 
+    /// function template
+    template <typename ScalarT> ScalarT Fct(const ScalarT& t);
+
+    /// function template explicit for type double
+    double Fct(const double& t);
+
+    /// function template explicit for type Sacado::Fad::DFad< Sacado::Fad::DFad<double> >
+    /// needed for automatic differentiation to get 1st & 2nd derivative
+    Sacado::Fad::DFad< Sacado::Fad::DFad<double> > Fct
+    (
+      const Sacado::Fad::DFad< Sacado::Fad::DFad<double> >& t
+    );
+
     /// evaluate time curve at given time
     double f(double t);
+
+    /// evaluate time curve and its derivatives
+    std::vector<double> FctDer(const double t, const unsigned deg);
 
     /// debug output of this slice
     virtual void Print(std::ostream& out) const;
   private:
+    /// frequency
     double frequ_;
+    /// positive and expiratory pressure
     double ppeep_;
+    /// phase
     double phase_;
   };
 
-   /// special respiration time slice
+  /*--------------------------------------------------------------------*/
+  /// special respiration time slice
   class BloodTimeSlice : public TimeSlice
   {
   public:
-    BloodTimeSlice(double period, double flowrate, int points,  std::vector<double>& ArrayLength );
+    BloodTimeSlice(double period, 
+                   double flowrate, 
+                   int points,  
+                   std::vector<double>& ArrayLength );
+
+    /// function template
+    template <typename ScalarT> ScalarT Fct(const ScalarT& t);
+
+    /// function template explicit for type double
+    double Fct(const double& t);
+
+    /// function template explicit for type Sacado::Fad::DFad< Sacado::Fad::DFad<double> >
+    /// needed for automatic differentiation to get 1st & 2nd derivative
+    Sacado::Fad::DFad< Sacado::Fad::DFad<double> > Fct
+    (
+      const Sacado::Fad::DFad< Sacado::Fad::DFad<double> >& t
+    );
 
     /// evaluate time curve at given time
     double f(double t);
+
+    /// evaluate time curve and its derivatives
+    std::vector<double> FctDer(const double t, const unsigned deg);
 
     /// debug output of this slice
     virtual void Print(std::ostream& out) const;
@@ -150,9 +225,7 @@ namespace UTILS {
   };
 
 
-
-
-
+  /*--------------------------------------------------------------------*/
   /// time slice based on parsed expression with variable t
   /*!
     A time slice that evaluates an expression at every point in
@@ -190,20 +263,23 @@ namespace UTILS {
     /// evaluate time curve at given time
     double f(double t);
 
+    /// evaluate time curve and its derivatives
+    std::vector<double> FctDer(const double t, const unsigned deg);
+
     /// debug output of this slice
     virtual void Print(std::ostream& out) const;
 
   private:
 
-    /// expression syntax tree
-    _ST_NODE* expr_;
-
     /// parsed expression as syntax tree
-    DRT::Parser<double> parexpr_;
+    DRT::Parser<double> parsexpr_;
+
+    /// parsed expression twice automatically differentiated
+    DRT::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > > parsexprdd_;
   };
 
 
-
+  /*====================================================================*/
   /// time curve consisting of a bunch of time slices
   /*!
     A time curve consisting of one or more (adjacent) time
@@ -227,7 +303,10 @@ namespace UTILS {
      */
     double f(double t);
 
-    // return the end time of the last time slice of this curve
+    /// evaluate time curve and its derivatives
+    std::vector<double> FctDer(const double t, const unsigned deg);
+
+    /// return the end time of the last time slice of this curve
     double end() {return slices_[slices_.size()-1]->end();}
 
   private:
@@ -243,7 +322,7 @@ namespace UTILS {
   };
 
 
-
+  /*====================================================================*/
   /// Singleton class that manages all defined time curves
   /*!
     There is one instance of this class and it contains all the time

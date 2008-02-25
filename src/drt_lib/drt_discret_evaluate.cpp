@@ -178,14 +178,37 @@ void DRT::Discretization::EvaluateNeumann(ParameterList& params, Epetra_Vector& 
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*!
+\brief Determine Dirichlet condition at given time and apply its
+       values to a system vector
 
-static void DoDirichletCondition(DRT::Condition&      cond,
-                                 DRT::Discretization& dis,
-                                 const bool           usetime,
-                                 const double         time,
-                                 Epetra_Vector&       systemvector,
-                                 Epetra_Vector&       toggle);
+\param cond            The condition object
+\param dis             The discretisation
+\param usetime         X
+\param time            Evaluation time
+\param systemvector    Vector to apply DBCs to (eg displ. in structure, vel. in fluids)
+\param systemvectord   First time derivative of DBCs
+\param systemvectordd  Second time derivative of DBCs
+\param toggle          Its i-th compononent is 1, if it has a DBC, otherwise component remains untouched
+\date 02/08
+*/
+static void DoDirichletCondition(DRT::Condition&             cond,
+                                 DRT::Discretization&        dis,
+                                 const bool                  usetime,
+                                 const double                time,
+                                 Teuchos::RCP<Epetra_Vector> systemvector,
+                                 Teuchos::RCP<Epetra_Vector> systemvectord,
+                                 Teuchos::RCP<Epetra_Vector> systemvectordd,
+                                 Teuchos::RCP<Epetra_Vector> toggle);
 
+
+/*----------------------------------------------------------------------*/
+/*!
+\brief evaluate spatial function (public)
+\author g.bau 
+\date 03/07
+*/
 static double EvaluateFunction(DRT::Node*        node,
 		               int               index,
 			       int		 funct_num);
@@ -195,8 +218,10 @@ static double EvaluateFunction(DRT::Node*        node,
  |  evaluate Dirichlet conditions (public)                   mwgee 01/07|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::EvaluateDirichlet(ParameterList& params,
-                                            Epetra_Vector& systemvector,
-                                            Epetra_Vector& toggle)
+                                            Teuchos::RCP<Epetra_Vector> systemvector,
+                                            Teuchos::RCP<Epetra_Vector> systemvectord,
+                                            Teuchos::RCP<Epetra_Vector> systemvectordd,
+                                            Teuchos::RCP<Epetra_Vector> toggle)
 {
   if (!Filled()) dserror("FillComplete() was not called");
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
@@ -206,8 +231,27 @@ void DRT::Discretization::EvaluateDirichlet(ParameterList& params,
   const double time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
 
-  // make temp. copy of system vector
-  Epetra_Vector backup(systemvector);
+  /* the following is not necessary */
+  // make temporary copy of system vectors
+//   Teuchos::RCP<Epetra_Vector> systemvectoraux = Teuchos::null;  // auxiliar system vector
+//   if (systemvector != null)
+//     systemvectoraux = systemvector;
+//   else if (systemvectord != null)
+//     systemvectoraux = systemvectord;
+//   else if (systemvectordd != null)
+//     systemvectoraux = systemvectordd;
+//   else
+//     dserror("At least one system vector has to be unequal Null");
+
+//   Epetra_Vector backup((*systemvectoraux));
+//   if (systemvector != null)
+//     backup = Epetra_Vector((*systemvector));  // system vector (vel. in fluids, displ. in solids)
+//   Epetra_Vector backupd((*systemvectoraux));
+//   if (systemvectord != null)
+//     backupd = Epetra_Vector((*systemvectord));  // 1st derivative
+//   Epetra_Vector backupdd((*systemvectoraux));
+//   if (systemvectordd != null)
+//     backupdd = Epetra_Vector((*systemvectordd));  // 2nd derivative
 
   multimap<string,RefCountPtr<Condition> >::iterator fool;
   //--------------------------------------------------------
@@ -229,36 +273,58 @@ void DRT::Discretization::EvaluateDirichlet(ParameterList& params,
   {
     if (fool->first != "Dirichlet") continue;
     if (fool->second->Type() != DRT::Condition::VolumeDirichlet) continue;
-    DoDirichletCondition(*(fool->second),*this,usetime,time,systemvector,toggle);
+    DoDirichletCondition(*(fool->second),*this,usetime,time,
+                         systemvector,systemvectord,systemvectordd,toggle);
   }
   // Do SurfaceDirichlet
   for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
   {
     if (fool->first != "Dirichlet") continue;
     if (fool->second->Type() != DRT::Condition::SurfaceDirichlet) continue;
-    DoDirichletCondition(*(fool->second),*this,usetime,time,systemvector,toggle);
+    DoDirichletCondition(*(fool->second),*this,usetime,time,
+                         systemvector,systemvectord,systemvectordd,toggle);
   }
   // Do LineDirichlet
   for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
   {
     if (fool->first != "Dirichlet") continue;
     if (fool->second->Type() != DRT::Condition::LineDirichlet) continue;
-    DoDirichletCondition(*(fool->second),*this,usetime,time,systemvector,toggle);
+    DoDirichletCondition(*(fool->second),*this,usetime,time,
+                         systemvector,systemvectord,systemvectordd,toggle);
   }
   // Do PointDirichlet
   for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
   {
     if (fool->first != "Dirichlet") continue;
     if (fool->second->Type() != DRT::Condition::PointDirichlet) continue;
-    DoDirichletCondition(*(fool->second),*this,usetime,time,systemvector,toggle);
+    DoDirichletCondition(*(fool->second),*this,usetime,time,
+                         systemvector,systemvectord,systemvectordd,toggle);
   }
 
+  /* the following is not necessary */
   // copy all values not marked as Dirichlet in toggle from
   // temporary copy back to systemvector
-  const int mylength = systemvector.MyLength();
-  for (int i=0; i<mylength; ++i)
-    if (toggle[i]==0.0)
-      systemvector[i] = backup[i];
+//   if (systemvector != null)
+//   {
+//     const int mylength = (*systemvector).MyLength();
+//     for (int i=0; i<mylength; ++i)
+//       if ((*toggle)[i]==0.0)
+//         (*systemvector)[i] = backup[i];
+//   }
+//   if (systemvectord != null)
+//   {
+//     const int mylength = (*systemvectord).MyLength();
+//     for (int i=0; i<mylength; ++i)
+//       if ((*toggle)[i]==0.0)
+//         (*systemvectord)[i] = backupd[i];
+//   }
+//   if (systemvectordd != null)
+//   {
+//     const int mylength = (*systemvectordd).MyLength();
+//     for (int i=0; i<mylength; ++i)
+//       if ((*toggle)[i]==0.0)
+//         (*systemvectordd)[i] = backupdd[i];
+//   }
 
   return;
 }
@@ -267,12 +333,14 @@ void DRT::Discretization::EvaluateDirichlet(ParameterList& params,
 /*----------------------------------------------------------------------*
  |  evaluate Dirichlet conditions (public)                   mwgee 01/07|
  *----------------------------------------------------------------------*/
-void DoDirichletCondition(DRT::Condition&      cond,
-                          DRT::Discretization& dis,
-                          const bool           usetime,
-                          const double         time,
-                          Epetra_Vector&       systemvector,
-                          Epetra_Vector&       toggle)
+void DoDirichletCondition(DRT::Condition&             cond,
+                          DRT::Discretization&        dis,
+                          const bool                  usetime,
+                          const double                time,
+                          Teuchos::RCP<Epetra_Vector> systemvector,
+                          Teuchos::RCP<Epetra_Vector> systemvectord,
+                          Teuchos::RCP<Epetra_Vector> systemvectordd,
+                          Teuchos::RCP<Epetra_Vector> toggle)
 {
   const vector<int>* nodeids = cond.Nodes();
   if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
@@ -282,6 +350,31 @@ void DoDirichletCondition(DRT::Condition&      cond,
   const vector<int>*    onoff  = cond.Get<vector<int> >("onoff");
   const vector<double>* val    = cond.Get<vector<double> >("val");
 
+  // determine highest degree of time derivative
+  // and first existent system vector to apply DBC to
+  unsigned deg = 0;  // highest degree of requested time derivative
+  Teuchos::RCP<Epetra_Vector> systemvectoraux = Teuchos::null;  // auxiliar system vector
+  if (systemvector != Teuchos::null)
+  {
+    deg = 0;
+    systemvectoraux = systemvector;
+  }
+  if (systemvectord != Teuchos::null)
+  {
+    deg = 1;
+    if (systemvectoraux == Teuchos::null)
+      systemvectoraux = systemvectord;
+  }
+  if (systemvectordd != Teuchos::null)
+  {
+    deg = 2;
+    if (systemvectoraux == Teuchos::null)
+      systemvectoraux = systemvectordd;
+  }
+  dsassert(systemvectoraux!=Teuchos::null, "At least one vector must be unequal to null");
+
+  // loop nodes to identify and evaluate load curves and spatial distributions
+  // of Dirichlet boundary conditions
   for (int i=0; i<nnode; ++i)
   {
     // do only nodes in my row map
@@ -294,39 +387,51 @@ void DoDirichletCondition(DRT::Condition&      cond,
     {
       if ((*onoff)[j]==0)
       {
-        const int lid = systemvector.Map().LID(dofs[j]);
+        const int lid = (*systemvectoraux).Map().LID(dofs[j]);
         if (lid<0) dserror("Global id %d not on this proc in system vector",dofs[j]);
-        toggle[lid] = 0.0;
+        (*toggle)[lid] = 0.0;
         continue;
       }
       const int gid = dofs[j];
-      double value  = (*val)[j];
+      vector<double> value(deg+1, (*val)[j]);
 
       // factor given by time curve
-      double curvefac = 1.0;
+      std::vector<double> curvefac(deg+1, 1.0);
       int    curvenum = -1;
       if (curve) curvenum = (*curve)[j];
       if (curvenum>=0 && usetime)
-        curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
-      //cout << "Dirichlet value " << value << " curvefac " <<  curvefac << endl;
+        curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).FctDer(time,deg);
+      //cout << "Dirichlet curve factor: ";
+      //for (unsigned i=0; i<deg; ++i) cout << curvefac[i] << ", ";
+      //cout << curvefac[deg] << endl;
 
       // factor given by spatial function
       double functfac = 1.0;
       int funct_num = -1;
       if (funct) funct_num = (*funct)[j];
-       {
+      {
          if (funct_num>0)
-         functfac = EvaluateFunction(actnode,j,funct_num);
-       }
+           functfac = EvaluateFunction(actnode,j,funct_num);
+      }
       //cout << "Dirichlet value " << value << " functfac " <<  functfac << endl;
 
-      //apply factors to dirichlet value
-      value *= (curvefac*functfac);
+      // apply factors to Dirichlet value
+      for (unsigned i=0; i<deg+1; ++i)
+      {
+        value[i] = functfac * curvefac[i];
+      }
 
-      const int lid = systemvector.Map().LID(gid);
+      // assign value
+      const int lid = (*systemvectoraux).Map().LID(gid);
       if (lid<0) dserror("Global id %d not on this proc in system vector",gid);
-      systemvector[lid] = value;
-      toggle[lid] = 1.0;
+      if (systemvector != Teuchos::null)
+        (*systemvector)[lid] = value[0];
+      if (systemvectord != Teuchos::null)
+        (*systemvectord)[lid] = value[1];
+      if (systemvectordd != Teuchos::null)
+        (*systemvectordd)[lid] = value[2];
+      // set toggle vector
+      (*toggle)[lid] = 1.0;
     }
   }
   return;
@@ -338,8 +443,8 @@ void DoDirichletCondition(DRT::Condition&      cond,
  |  calls more general method                                           |
  *----------------------------------------------------------------------*/
 void DRT::Discretization::EvaluateCondition(ParameterList& params,
-	    				RefCountPtr<Epetra_Vector> systemvector,
-					    const string& condstring)
+                                            RefCountPtr<Epetra_Vector> systemvector,
+                                            const string& condstring)
 {
 
 	params.set("assemble matrix 1",false);

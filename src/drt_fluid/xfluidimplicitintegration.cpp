@@ -704,7 +704,7 @@ void XFluidImplicitTimeInt::PrepareTimeStep()
     // predicted dirichlet values
     // velnp then also holds prescribed new dirichlet values
     // dirichtoggle is 1 for dirichlet dofs, 0 elsewhere
-    discret_->EvaluateDirichlet(eleparams,*velnp_,*dirichtoggle_);
+    discret_->EvaluateDirichlet(eleparams,velnp_,null,null,dirichtoggle_);
     discret_->ClearState();
 
     // evaluate Neumann conditions
@@ -1914,7 +1914,7 @@ void XFluidImplicitTimeInt::SolveStationaryProblem()
 	     // predicted dirichlet values
 	     // velnp then also holds prescribed new dirichlet values
 	     // dirichtoggle is 1 for dirichlet dofs, 0 elsewhere
-	     discret_->EvaluateDirichlet(eleparams,*velnp_,*dirichtoggle_);
+	     discret_->EvaluateDirichlet(eleparams,velnp_,null,null,dirichtoggle_);
 	     discret_->ClearState();
 
 	     // evaluate Neumann b.c.

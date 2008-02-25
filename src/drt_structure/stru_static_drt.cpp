@@ -242,7 +242,7 @@ void stru_static_drt()
     actdis->SetState("displacement",dis);
     // predicted dirichlet values
     // dis then also holds prescribed new dirichlet displacements
-    actdis->EvaluateDirichlet(params,*dis,*dirichtoggle);
+    actdis->EvaluateDirichlet(params,dis,null,null,dirichtoggle);
     actdis->ClearState();
     actdis->SetState("displacement",dis);
     // predicted rhs
@@ -327,7 +327,7 @@ void stru_static_drt()
       actdis->SetState("residual displacement",disi);
       // predicted dirichlet values
       // disn then also holds prescribed new dirichlet displacements
-      actdis->EvaluateDirichlet(params,*disn,*dirichtoggle);
+      actdis->EvaluateDirichlet(params,disn,null,null,dirichtoggle);
       actdis->SetState("displacement",disn);
       fint->PutScalar(0.0);  // initialise internal force vector
       actdis->Evaluate(params,stiff_mat,null,fint,null,null);
