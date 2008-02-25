@@ -477,9 +477,10 @@ void LINALG::ApplyDirichlettoSystem(RCP<LINALG::SparseOperator> A,
   ApplyDirichlettoSystem(x,b,dbcval,dbctoggle);
 }
 
-
+#if 0 // old version
 /*----------------------------------------------------------------------*
  | split matrix into 2x2 block system                              06/06|
+ | this version is to go away soon! mgee                                |
  *----------------------------------------------------------------------*/
 bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
                             RCP<Epetra_Map>& A11rowmap,
@@ -714,7 +715,61 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
   a22gmap.clear();
   return true;
 }
+#else
+/*----------------------------------------------------------------------*
+ | split matrix into 2x2 block system                              06/06|
+ | this version is to go away soon! mgee                                |
+ *----------------------------------------------------------------------*/
+bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
+                            RCP<Epetra_Map>& A11rowmap,
+                            RCP<Epetra_Map>& A22rowmap,
+                            RCP<Epetra_CrsMatrix>& A11,
+                            RCP<Epetra_CrsMatrix>& A12,
+                            RCP<Epetra_CrsMatrix>& A21,
+                            RCP<Epetra_CrsMatrix>& A22)
+{
+  if (A==null)
+    dserror("LINALG::SplitMatrix2x2: A==null on entry");
 
+  if (A11rowmap==null && A22rowmap != null)
+    A11rowmap = LINALG::SplitMap(A->RowMap(),*A22rowmap);
+  else if (A11rowmap != null && A22rowmap != null);
+  else if (A11rowmap != null && A22rowmap == null)
+    A22rowmap = LINALG::SplitMap(A->RowMap(),*A11rowmap);
+  else
+    dserror("LINALG::SplitMatrix2x2: Both A11rowmap and A22rowmap == null on entry");
+
+  vector<RCP<const Epetra_Map> > maps(2);
+  maps[0] = rcp(new Epetra_Map(*A11rowmap));
+  maps[1] = rcp(new Epetra_Map(*A22rowmap));
+  LINALG::MultiMapExtractor extractor(A->RowMap(),maps);
+  
+  // create SparseMatrix view to input matrix A  
+  SparseMatrix a(A,View);
+  
+  // split matrix into pieces, where main diagonal blocks are square
+  RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy> > Ablock = 
+                       a.Split<DefaultBlockMatrixStrategy>(extractor,extractor);
+  Ablock->Complete();
+  
+  // prevent content of Ablock from dying when Ablock dies
+  RCP<SparseMatrix> a11 = rcp(new SparseMatrix((*Ablock)(0,0),View));
+  RCP<SparseMatrix> a12 = rcp(new SparseMatrix((*Ablock)(0,1),View));
+  RCP<SparseMatrix> a21 = rcp(new SparseMatrix((*Ablock)(1,0),View));
+  RCP<SparseMatrix> a22 = rcp(new SparseMatrix((*Ablock)(1,1),View));
+  
+  // get Epetra objects out of these sparse matrices
+  A11 = a11->EpetraMatrix();
+  A12 = a12->EpetraMatrix();
+  A21 = a21->EpetraMatrix();
+  A22 = a22->EpetraMatrix();
+
+  return true;
+}
+#endif
+
+
+#if 0 // old version
 /*----------------------------------------------------------------------*
  | split matrix into 2x2 block system                         popp 02/08|
  *----------------------------------------------------------------------*/
@@ -788,187 +843,246 @@ bool LINALG::SplitMatrix2x2(RCP<LINALG::SparseMatrix> A,
   //----------------------------------------------------- create matrix A11
   if (A11rmap.NumGlobalElements()>0 && A11dmap.NumGlobalElements()>0)
   {
-  	A11 = rcp(new LINALG::SparseMatrix(A11rmap,100));
-  	{
-  		vector<int>    a11gcindices(100);
-  		vector<double> a11values(100);
-  		for (int i=0; i<A->EpetraMatrix()->NumMyRows(); ++i)
-  		{
-  			const int grid = A->EpetraMatrix()->GRID(i);
-  			if (A11rmap.MyGID(grid)==false) continue;
-  			int     numentries;
-  			double* values;
-  			int*    cindices;
-  			int err = A->EpetraMatrix()->ExtractMyRowView(i,numentries,values,cindices);
-  			if (err)
-  				dserror("LINALG::Split2x2: A->ExtractMyRowView returned %i",err);
+    A11 = rcp(new LINALG::SparseMatrix(A11rmap,100));
+    {
+      vector<int>    a11gcindices(100);
+      vector<double> a11values(100);
+      for (int i=0; i<A->EpetraMatrix()->NumMyRows(); ++i)
+      {
+        const int grid = A->EpetraMatrix()->GRID(i);
+        if (A11rmap.MyGID(grid)==false) continue;
+        int     numentries;
+        double* values;
+        int*    cindices;
+        int err = A->EpetraMatrix()->ExtractMyRowView(i,numentries,values,cindices);
+        if (err)
+          dserror("LINALG::Split2x2: A->ExtractMyRowView returned %i",err);
 
-  			if (numentries>(int)a11gcindices.size())
-  			{
-  				a11gcindices.resize(numentries);
-  				a11values.resize(numentries);
-  			}
-  			int count=0;
-  			for (int j=0; j<numentries; ++j)
-  			{
-  				const int gcid = A->ColMap().GID(cindices[j]);
-  				// see whether we have gcid as part of a11gmap
-  				map<int,int>::iterator curr = a11gmap.find(gcid);
-  				if (curr==a11gmap.end()) continue;
-  				a11gcindices[count] = gcid;
-  				a11values[count] = values[j];
-  				++count;
-  			}
-  			err = A11->EpetraMatrix()->InsertGlobalValues(grid,count,&a11values[0],&a11gcindices[0]);
-  			if (err<0)
-  				dserror("LINALG::Split2x2: A->InsertGlobalValues returned %i",err);
+        if (numentries>(int)a11gcindices.size())
+        {
+          a11gcindices.resize(numentries);
+          a11values.resize(numentries);
+        }
+        int count=0;
+        for (int j=0; j<numentries; ++j)
+        {
+          const int gcid = A->ColMap().GID(cindices[j]);
+          // see whether we have gcid as part of a11gmap
+          map<int,int>::iterator curr = a11gmap.find(gcid);
+          if (curr==a11gmap.end()) continue;
+          a11gcindices[count] = gcid;
+          a11values[count] = values[j];
+          ++count;
+        }
+        err = A11->EpetraMatrix()->InsertGlobalValues(grid,count,&a11values[0],&a11gcindices[0]);
+        if (err<0)
+          dserror("LINALG::Split2x2: A->InsertGlobalValues returned %i",err);
 
-  		} // for (int i=0; i<A->NumMyRows(); ++i)
-  		a11gcindices.clear();
-  		a11values.clear();
-  	}
-  	A11->Complete(A11dmap,A11rmap);
+      } // for (int i=0; i<A->NumMyRows(); ++i)
+      a11gcindices.clear();
+      a11values.clear();
+    }
+    A11->Complete(A11dmap,A11rmap);
   }
 
   //--------------------------------------------------- create matrix A22
   if (A22rmap.NumGlobalElements()>0 && A22dmap.NumGlobalElements()>0)
   {
-	  A22 = rcp(new LINALG::SparseMatrix(A22rmap,100));
-	  {
-	    vector<int>    a22gcindices(100);
-	    vector<double> a22values(100);
-	    for (int i=0; i<A->EpetraMatrix()->NumMyRows(); ++i)
-	    {
-	      const int grid = A->EpetraMatrix()->GRID(i);
-	      if (A22rmap.MyGID(grid)==false) continue;
-	      int     numentries;
-	      double* values;
-	      int*    cindices;
-	      int err = A->EpetraMatrix()->ExtractMyRowView(i,numentries,values,cindices);
-	      if (err)
-	      	dserror("LINALG::Split2x2: A->ExtractMyRowView returned %i",err);
+    A22 = rcp(new LINALG::SparseMatrix(A22rmap,100));
+    {
+      vector<int>    a22gcindices(100);
+      vector<double> a22values(100);
+      for (int i=0; i<A->EpetraMatrix()->NumMyRows(); ++i)
+      {
+        const int grid = A->EpetraMatrix()->GRID(i);
+        if (A22rmap.MyGID(grid)==false) continue;
+        int     numentries;
+        double* values;
+        int*    cindices;
+        int err = A->EpetraMatrix()->ExtractMyRowView(i,numentries,values,cindices);
+        if (err)
+          dserror("LINALG::Split2x2: A->ExtractMyRowView returned %i",err);
 
-	      if (numentries>(int)a22gcindices.size())
-	      {
-	        a22gcindices.resize(numentries);
-	        a22values.resize(numentries);
-	      }
-	      int count=0;
-	      for (int j=0; j<numentries; ++j)
-	      {
-	        const int gcid = A->ColMap().GID(cindices[j]);
-	        // see whether we have gcid as part of a11gmap
-	        map<int,int>::iterator curr = a11gmap.find(gcid);
-	        if (curr!=a11gmap.end()) continue;
-	        a22gcindices[count] = gcid;
-	        a22values[count]    = values[j];
-	        ++count;
-	      }
-	      err = A22->EpetraMatrix()->InsertGlobalValues(grid,count,&a22values[0],&a22gcindices[0]);
-	      if (err<0)
-	      	dserror("LINALG::Split2x2: A->InsertGlobalValues returned %i",err);
+        if (numentries>(int)a22gcindices.size())
+        {
+          a22gcindices.resize(numentries);
+          a22values.resize(numentries);
+        }
+        int count=0;
+        for (int j=0; j<numentries; ++j)
+        {
+          const int gcid = A->ColMap().GID(cindices[j]);
+          // see whether we have gcid as part of a11gmap
+          map<int,int>::iterator curr = a11gmap.find(gcid);
+          if (curr!=a11gmap.end()) continue;
+          a22gcindices[count] = gcid;
+          a22values[count]    = values[j];
+          ++count;
+        }
+        err = A22->EpetraMatrix()->InsertGlobalValues(grid,count,&a22values[0],&a22gcindices[0]);
+        if (err<0)
+          dserror("LINALG::Split2x2: A->InsertGlobalValues returned %i",err);
 
-	    } //for (int i=0; i<A->NumMyRows(); ++i)
-	    a22gcindices.clear();
-	    a22values.clear();
-	  }
-	  A22->Complete(A22dmap,A22rmap);
+      } //for (int i=0; i<A->NumMyRows(); ++i)
+      a22gcindices.clear();
+      a22values.clear();
+    }
+    A22->Complete(A22dmap,A22rmap);
   }
 
   //---------------------------------------------------- create matrix A12
   if (A11rmap.NumGlobalElements()>0 && A22dmap.NumGlobalElements()>0)
   {
-	  A12 = rcp(new LINALG::SparseMatrix(A11rmap,100));
-	  {
-	    vector<int>    a12gcindices(100);
-	    vector<double> a12values(100);
-	    for (int i=0; i<A->EpetraMatrix()->NumMyRows(); ++i)
-	    {
-	      const int grid = A->EpetraMatrix()->GRID(i);
-	      if (A11rmap.MyGID(grid)==false) continue;
-	      int     numentries;
-	      double* values;
-	      int*    cindices;
-	      int err = A->EpetraMatrix()->ExtractMyRowView(i,numentries,values,cindices);
-	      if (err)
-	      	dserror("LINALG::Split2x2: A->ExtractMyRowView returned %i",err);
+    A12 = rcp(new LINALG::SparseMatrix(A11rmap,100));
+    {
+      vector<int>    a12gcindices(100);
+      vector<double> a12values(100);
+      for (int i=0; i<A->EpetraMatrix()->NumMyRows(); ++i)
+      {
+        const int grid = A->EpetraMatrix()->GRID(i);
+        if (A11rmap.MyGID(grid)==false) continue;
+        int     numentries;
+        double* values;
+        int*    cindices;
+        int err = A->EpetraMatrix()->ExtractMyRowView(i,numentries,values,cindices);
+        if (err)
+          dserror("LINALG::Split2x2: A->ExtractMyRowView returned %i",err);
 
-	      if (numentries>(int)a12gcindices.size())
-	      {
-	        a12gcindices.resize(numentries);
-	        a12values.resize(numentries);
-	      }
-	      int count=0;
-	      for (int j=0; j<numentries; ++j)
-	      {
-	        const int gcid = A->ColMap().GID(cindices[j]);
-	        // see whether we have gcid as part of a11gmap
-	        map<int,int>::iterator curr = a11gmap.find(gcid);
-	        if (curr!=a11gmap.end()) continue;
-	        a12gcindices[count] = gcid;
-	        a12values[count] = values[j];
-	        ++count;
-	      }
-	      err = A12->EpetraMatrix()->InsertGlobalValues(grid,count,&a12values[0],&a12gcindices[0]);
-	      if (err<0)
-	      	dserror("LINALG::Split2x2: A->InsertGlobalValues returned %i",err);
+        if (numentries>(int)a12gcindices.size())
+        {
+          a12gcindices.resize(numentries);
+          a12values.resize(numentries);
+        }
+        int count=0;
+        for (int j=0; j<numentries; ++j)
+        {
+          const int gcid = A->ColMap().GID(cindices[j]);
+          // see whether we have gcid as part of a11gmap
+          map<int,int>::iterator curr = a11gmap.find(gcid);
+          if (curr!=a11gmap.end()) continue;
+          a12gcindices[count] = gcid;
+          a12values[count] = values[j];
+          ++count;
+        }
+        err = A12->EpetraMatrix()->InsertGlobalValues(grid,count,&a12values[0],&a12gcindices[0]);
+        if (err<0)
+          dserror("LINALG::Split2x2: A->InsertGlobalValues returned %i",err);
 
-	    } // for (int i=0; i<A->NumMyRows(); ++i)
-	    a12values.clear();
-	    a12gcindices.clear();
-	  }
-	  A12->Complete(A22dmap,A11rmap);
+      } // for (int i=0; i<A->NumMyRows(); ++i)
+      a12values.clear();
+      a12gcindices.clear();
+    }
+    A12->Complete(A22dmap,A11rmap);
   }
 
   //---------------------------------------------------- create matrix A21
   if (A22rmap.NumGlobalElements()>0 && A11dmap.NumGlobalElements()>0)
   {
-	  A21 = rcp(new LINALG::SparseMatrix(A22rmap,100));
-	  {
-	    vector<int>    a21gcindices(100);
-	    vector<double> a21values(100);
-	    for (int i=0; i<A->EpetraMatrix()->NumMyRows(); ++i)
-	    {
-	      const int grid = A->EpetraMatrix()->GRID(i);
-	      if (A22rmap.MyGID(grid)==false) continue;
-	      int     numentries;
-	      double* values;
-	      int*    cindices;
-	      int err = A->EpetraMatrix()->ExtractMyRowView(i,numentries,values,cindices);
-	      if (err)
-	      	dserror("LINALG::Split2x2: A->ExtractMyRowView returned %i",err);
+    A21 = rcp(new LINALG::SparseMatrix(A22rmap,100));
+    {
+      vector<int>    a21gcindices(100);
+      vector<double> a21values(100);
+      for (int i=0; i<A->EpetraMatrix()->NumMyRows(); ++i)
+      {
+        const int grid = A->EpetraMatrix()->GRID(i);
+        if (A22rmap.MyGID(grid)==false) continue;
+        int     numentries;
+        double* values;
+        int*    cindices;
+        int err = A->EpetraMatrix()->ExtractMyRowView(i,numentries,values,cindices);
+        if (err)
+          dserror("LINALG::Split2x2: A->ExtractMyRowView returned %i",err);
 
-	      if (numentries>(int)a21gcindices.size())
-	      {
-	        a21gcindices.resize(numentries);
-	        a21values.resize(numentries);
-	      }
-	      int count=0;
-	      for (int j=0; j<numentries; ++j)
-	      {
-	        const int gcid = A->ColMap().GID(cindices[j]);
-	        // see whether we have gcid as part of a11gmap
-	        map<int,int>::iterator curr = a11gmap.find(gcid);
-	        if (curr==a11gmap.end()) continue;
-	        a21gcindices[count] = gcid;
-	        a21values[count] = values[j];
-	        ++count;
-	      }
-	      err = A21->EpetraMatrix()->InsertGlobalValues(grid,count,&a21values[0],&a21gcindices[0]);
-	      if (err<0)
-	      	dserror("LINALG::Split2x2: A->InsertGlobalValues returned %i",err);
+        if (numentries>(int)a21gcindices.size())
+        {
+          a21gcindices.resize(numentries);
+          a21values.resize(numentries);
+        }
+        int count=0;
+        for (int j=0; j<numentries; ++j)
+        {
+          const int gcid = A->ColMap().GID(cindices[j]);
+          // see whether we have gcid as part of a11gmap
+          map<int,int>::iterator curr = a11gmap.find(gcid);
+          if (curr==a11gmap.end()) continue;
+          a21gcindices[count] = gcid;
+          a21values[count] = values[j];
+          ++count;
+        }
+        err = A21->EpetraMatrix()->InsertGlobalValues(grid,count,&a21values[0],&a21gcindices[0]);
+        if (err<0)
+          dserror("LINALG::Split2x2: A->InsertGlobalValues returned %i",err);
 
-	    } // for (int i=0; i<A->NumMyRows(); ++i)
-	    a21values.clear();
-	    a21gcindices.clear();
-	  }
-	  A21->Complete(A11dmap,A22rmap);
+      } // for (int i=0; i<A->NumMyRows(); ++i)
+      a21values.clear();
+      a21gcindices.clear();
+    }
+    A21->Complete(A11dmap,A22rmap);
   }
 
   //-------------------------------------------------------------- tidy up
   a11gmap.clear();
   return true;
 }
+#else
+/*----------------------------------------------------------------------*
+ | split matrix into 2x2 block system                          gee 02/08|
+ | new valid version                                                    |
+ *----------------------------------------------------------------------*/
+bool LINALG::SplitMatrix2x2(RCP<LINALG::SparseMatrix> A,
+                            RCP<Epetra_Map>& A11rowmap,
+                            RCP<Epetra_Map>& A22rowmap,
+                            RCP<Epetra_Map>& A11domainmap,
+                            RCP<Epetra_Map>& A22domainmap,
+                            RCP<LINALG::SparseMatrix>& A11,
+                            RCP<LINALG::SparseMatrix>& A12,
+                            RCP<LINALG::SparseMatrix>& A21,
+                            RCP<LINALG::SparseMatrix>& A22)
+{
+  if (A==null)
+    dserror("LINALG::SplitMatrix2x2: A==null on entry");
+
+  // check and complete input row maps
+  if (A11rowmap==null && A22rowmap != null)
+    A11rowmap = LINALG::SplitMap(A->RowMap(),*A22rowmap);
+  else if (A11rowmap != null && A22rowmap != null);
+  else if (A11rowmap != null && A22rowmap == null)
+    A22rowmap = LINALG::SplitMap(A->RowMap(),*A11rowmap);
+  else
+    dserror("LINALG::SplitMatrix2x2: Both A11rowmap and A22rowmap == null on entry");
+
+  // check and complete input domain maps
+  if (A11domainmap==null && A22domainmap != null)
+  	A11domainmap = LINALG::SplitMap(A->DomainMap(),*A22domainmap);
+  else if (A11domainmap != null && A22domainmap != null);
+  else if (A11domainmap != null && A22domainmap == null)
+    A22domainmap = LINALG::SplitMap(A->DomainMap(),*A11domainmap);
+  else
+    dserror("LINALG::SplitMatrix2x2: Both A11domainmap and A22domainmap == null on entry");
+
+  // local variables
+  vector<RCP<const Epetra_Map> > rangemaps(2);
+  vector<RCP<const Epetra_Map> > domainmaps(2);
+  rangemaps[0] = rcp(new Epetra_Map(*A11rowmap));
+  rangemaps[1] = rcp(new Epetra_Map(*A22rowmap));
+  domainmaps[0] = rcp(new Epetra_Map(*A11domainmap));
+  domainmaps[1] = rcp(new Epetra_Map(*A22domainmap));
+  LINALG::MultiMapExtractor range(A->RangeMap(),rangemaps);
+  LINALG::MultiMapExtractor domain(A->DomainMap(),domainmaps);
+  
+  RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy> > Ablock = 
+                       A->Split<DefaultBlockMatrixStrategy>(domain,range);
+  Ablock->Complete();
+  // extract internal data from Ablock in RCP form and let Ablock die
+  // (this way, internal data from Ablock will live)
+  A11 = rcp(new SparseMatrix((*Ablock)(0,0),View));
+  A12 = rcp(new SparseMatrix((*Ablock)(0,1),View));
+  A21 = rcp(new SparseMatrix((*Ablock)(1,0),View));
+  A22 = rcp(new SparseMatrix((*Ablock)(1,1),View));
+  
+  return true;
+}
+#endif
 
 /*----------------------------------------------------------------------*
  | split a map into 2 pieces with given Agiven                     06/06|
