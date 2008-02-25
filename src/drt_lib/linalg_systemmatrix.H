@@ -192,14 +192,46 @@ namespace LINALG
      */
     explicit SparseMatrix(const Epetra_Vector& diag, bool explicitdirichlet=true, bool savegraph=false);
 
-    /// copy constructor
-    SparseMatrix(const SparseMatrix& mat);
+    /// Copy constructor. Deep copy or view on matrix.
+    /*!
+      \warning A view assignment will have your matrix use the same internal
+      data as the original matrix. Changes on one side will affect the
+      other. However, some methods like Zero() or Reset() can, depending on
+      the SparseMatrix flags, cut the connection. Do not rely on the view if
+      you change one of these matrices! The view assignment is meant to
+      provide a slim copy operation that transferes ownership from one matrix
+      to the other before the original matrix is destroyed. Do a deep copy if
+      both matrices are meant to live on.
+
+      \param mat matrix to assign from
+      \param access how to treat this assignment: Copy or View
+     *!
+    SparseMatrix(const SparseMatrix& mat, Epetra_DataAccess access=Copy);
 
     /// Destructor
     virtual ~SparseMatrix();
 
-    /// assignment operator
+    /// Assignment operator. Makes a deep copy.
     SparseMatrix& operator=(const SparseMatrix& mat);
+
+    /// Assignment method. Deep copy or view on matrix.
+    /*!
+      Explicit method for the assignment operator. You can make an explicit
+      copy of the internal Epetra_CrsMatrix or have a second view on it.
+
+      \warning A view assignment will have your matrix use the same internal
+      data as the original matrix. Changes on one side will affect the
+      other. However, some methods like Zero() or Reset() can, depending on
+      the SparseMatrix flags, cut the connection. Do not rely on the view if
+      you change one of these matrices! The view assignment is meant to
+      provide a slim copy operation that transferes ownership from one matrix
+      to the other before the original matrix is destroyed. Do a deep copy if
+      both matrices are meant to live on.
+
+      \param access how to treat this assignment: Copy or View
+      \param mat matrix to assign from
+     */
+    void Assign(Epetra_DataAccess access, const SparseMatrix& mat);
 
     /// return the internal Epetra_Operator
     /*!
@@ -675,6 +707,8 @@ namespace LINALG
     This is the most general, most expensive implementation. You are
     encouraged to provide your own Strategy implementation if you know your
     specific block structure.
+
+    \sa BlockSparseMatrix
 
     \author u.kue
     \date 02/08

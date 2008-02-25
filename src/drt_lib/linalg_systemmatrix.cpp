@@ -45,13 +45,22 @@ LINALG::SparseMatrix::SparseMatrix(Teuchos::RCP<Epetra_CrsMatrix> matrix, bool e
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-LINALG::SparseMatrix::SparseMatrix(const SparseMatrix& mat)
+LINALG::SparseMatrix::SparseMatrix(const SparseMatrix& mat, Epetra_DataAccess access)
   : explicitdirichlet_(mat.explicitdirichlet_),
     savegraph_(mat.savegraph_),
     maxnumentries_(0)
 {
-  // We do not care for exception proved code, so this is ok.
-  *this = mat;
+  if (access==Copy)
+  {
+    // We do not care for exception proved code, so this is ok.
+    *this = mat;
+  }
+  else
+  {
+    sysmat_ = mat.sysmat_;
+    graph_ = mat.graph_;
+    maxnumentries_ = mat.maxnumentries_;
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -114,6 +123,26 @@ LINALG::SparseMatrix& LINALG::SparseMatrix::operator=(const SparseMatrix& mat)
     graph_ = Teuchos::null;
 
   return *this;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void LINALG::SparseMatrix::Assign(Epetra_DataAccess access, const SparseMatrix& mat)
+{
+  if (access==Copy)
+  {
+    // We do not care for exception proved code, so this is ok.
+    *this = mat;
+  }
+  else
+  {
+    sysmat_ = mat.sysmat_;
+    graph_ = mat.graph_;
+    maxnumentries_ = mat.maxnumentries_;
+    explicitdirichlet_ = mat.explicitdirichlet_;
+    savegraph_ = mat.savegraph_;
+  }
 }
 
 
@@ -617,7 +646,7 @@ void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase)
 {
   // for timing of this method
   //Epetra_Time time(Abase.Comm());
-  
+
   if (Abase.Rows() != 2 || Abase.Cols() != 2) dserror("Can only split in 2x2 system");
   if (!Filled()) dserror("SparsMatrix must be filled");
   Teuchos::RCP<Epetra_CrsMatrix> A   = EpetraMatrix();
