@@ -28,7 +28,7 @@ NUMSTRUCDIS  1
 NUMALEDIS    0
 ----------------------------------------------------------------IO
 STRUCT_DISP        Yes
-STRUCT_STRESS      Yes
+STRUCT_STRESS      No
 ------------------------------------------------------------STATIC
 NONLINEAR
 KINTYP Tot_Lagr
