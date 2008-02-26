@@ -115,7 +115,7 @@ FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
 bool FSI::MonolithicOverlap::computeF(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag)
 {
   Evaluate(Teuchos::rcp(&x,false));
-  SetupRHS(Teuchos::rcp(&F,false));
+  SetupRHS(F);
   return true;
 }
 
@@ -126,7 +126,7 @@ bool FSI::MonolithicOverlap::computeJacobian(const Epetra_Vector &x, Epetra_Oper
 {
   Evaluate(Teuchos::rcp(&x,false));
   LINALG::BlockSparseMatrixBase& mat = Teuchos::dyn_cast<LINALG::BlockSparseMatrixBase>(Jac);
-  SetupSystemMatrix(Teuchos::rcp(&mat,false));
+  SetupSystemMatrix(mat);
   return true;
 }
 
@@ -145,7 +145,7 @@ bool FSI::MonolithicOverlap::computePreconditioner(const Epetra_Vector &x,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicOverlap::SetupRHS(Teuchos::RCP<Epetra_Vector> f) const
+void FSI::MonolithicOverlap::SetupRHS(Epetra_Vector& f) const
 {
   Teuchos::TimeMonitor monitor(*rhstimer_);
 
@@ -156,13 +156,13 @@ void FSI::MonolithicOverlap::SetupRHS(Teuchos::RCP<Epetra_Vector> f) const
               FluidField().ResidualScaling());
 
   // NOX expects a different sign here.
-  f->Scale(-1.);
+  f.Scale(-1.);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicOverlap::SetupSystemMatrix(Teuchos::RCP<LINALG::BlockSparseMatrixBase> mat)
+void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
 {
   Teuchos::TimeMonitor monitor(*sysmattimer_);
 
@@ -208,14 +208,14 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(Teuchos::RCP<LINALG::BlockSparseM
 
   AddFluidInterface(scale/Dt(),fgg,*s);
 
-  mat->Assign(0,0,View,*s);
-  mat->Assign(0,1,View,*ConvertFgiRowmap(fgi,scale,s->RowMap()));
+  mat.Assign(0,0,View,*s);
+  mat.Assign(0,1,View,*ConvertFgiRowmap(fgi,scale,s->RowMap()));
 
-  mat->Assign(1,0,View,*ConvertFigColmap(fig,fluidstructcolmap_,s->DomainMap(),1./Dt()));
-  mat->Assign(1,1,View,fii);
+  mat.Assign(1,0,View,*ConvertFigColmap(fig,fluidstructcolmap_,s->DomainMap(),1./Dt()));
+  mat.Assign(1,1,View,fii);
 
-  mat->Assign(2,0,View,*aig_);
-  mat->Assign(2,2,View,*aii_);
+  mat.Assign(2,0,View,*aig_);
+  mat.Assign(2,2,View,*aii_);
 }
 
 
@@ -225,7 +225,7 @@ void FSI::MonolithicOverlap::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
 {
   Teuchos::TimeMonitor monitor(*igtimer_);
 
-  SetupVector(ig,
+  SetupVector(*ig,
               StructureField().InitialGuess(),
               FluidField().InitialGuess(),
               AleField().InitialGuess(),
@@ -235,7 +235,7 @@ void FSI::MonolithicOverlap::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicOverlap::SetupVector(Teuchos::RCP<Epetra_Vector> &f,
+void FSI::MonolithicOverlap::SetupVector(Epetra_Vector &f,
                                          Teuchos::RCP<const Epetra_Vector> sv,
                                          Teuchos::RCP<const Epetra_Vector> fv,
                                          Teuchos::RCP<const Epetra_Vector> av,
@@ -253,9 +253,9 @@ void FSI::MonolithicOverlap::SetupVector(Teuchos::RCP<Epetra_Vector> &f,
   Teuchos::RCP<Epetra_Vector> modsv = StructureField().Interface().InsertCondVector(FluidToStruct(fcv));
   modsv->Update(1.0, *sv, fluidscale);
 
-  Extractor().InsertVector(sv,0,f);
-  Extractor().InsertVector(fov,1,f);
-  Extractor().InsertVector(aov,2,f);
+  Extractor().InsertVector(*sv,0,f);
+  Extractor().InsertVector(*fov,1,f);
+  Extractor().InsertVector(*aov,2,f);
 }
 
 

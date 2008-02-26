@@ -36,15 +36,15 @@ namespace FSI
     //! @name Apply current field state to system
 
     /// setup composed right hand side from field solvers
-    virtual void SetupRHS(Teuchos::RCP<Epetra_Vector> f) const = 0;
+    virtual void SetupRHS(Epetra_Vector& f) const = 0;
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix(Teuchos::RCP<LINALG::BlockSparseMatrixBase> mat) const = 0;
+    virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat) const = 0;
 
     //@}
 
     /// the composed system matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const { return mat_; }
+    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const = 0;
 
     /// Evaluate all fields at position x
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> x) const;
@@ -95,9 +95,6 @@ namespace FSI
 
     /// dof row map splitted in (field) blocks
     LINALG::MultiMapExtractor blockrowdofmap_;
-
-    /// block matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> mat_;
 
     /// output utilities
     Teuchos::RCP<NOX::Utils> utils_;

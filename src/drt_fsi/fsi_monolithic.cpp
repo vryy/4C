@@ -2,6 +2,7 @@
 #ifdef CCADISCRET
 
 #include "fsi_monolithic.H"
+#include "fsi_nox_group.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_colors.H"
@@ -87,6 +88,9 @@ void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requir
 
     // calculate initial linear system at current position
     // (no increment)
+    // This initializes the field algorithms and creates the first linear
+    // systems. And this is the reason we know the initial linear system is
+    // there when we create the NOX::Group.
     Evaluate(Teuchos::null);
 
     // Get initial guess.
@@ -103,7 +107,7 @@ void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requir
 
     // Create the Group
     Teuchos::RCP<NOX::Epetra::Group> grp =
-      Teuchos::rcp(new NOX::Epetra::Group(printParams, interface, noxSoln, linSys));
+      Teuchos::rcp(new NOXGroup(*this, printParams, interface, noxSoln, linSys));
 
     // Convergence Tests
     Teuchos::RCP<NOX::StatusTest::Combo> combo = CreateStatusTest(nlParams, grp);

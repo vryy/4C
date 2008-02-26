@@ -63,15 +63,18 @@ namespace FSI
     //! @name Apply current field state to system
 
     /// setup composed right hand side from field solvers
-    virtual void SetupRHS(Teuchos::RCP<Epetra_Vector> f) const;
+    virtual void SetupRHS(Epetra_Vector& f) const;
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix(Teuchos::RCP<LINALG::BlockSparseMatrixBase> mat);
+    virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat);
 
     //@}
 
     /// Extract initial guess from fields
     virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig);
+
+    /// the composed system matrix
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
 
   protected:
 
@@ -105,7 +108,7 @@ namespace FSI
   private:
 
     /// build block vector from field vectors
-    void SetupVector(Teuchos::RCP<Epetra_Vector> &f,
+    void SetupVector(Epetra_Vector &f,
                      Teuchos::RCP<const Epetra_Vector> sv,
                      Teuchos::RCP<const Epetra_Vector> fv,
                      Teuchos::RCP<const Epetra_Vector> av,
