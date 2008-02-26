@@ -119,12 +119,6 @@ maxentriesperrow_(81)
     ParameterList p;
     // action for elements
     p.set("action","calc_struct_eleload");
-    // choose what to assemble
-    p.set("assemble matrix 1",false);
-    p.set("assemble matrix 2",false);
-    p.set("assemble vector 1",true);
-    p.set("assemble vector 2",false);
-    p.set("assemble vector 3",false);
     // other parameters needed by the elements
     p.set("total time",time);
     p.set("delta time",dt);
@@ -154,12 +148,6 @@ maxentriesperrow_(81)
     ParameterList p;
     // action for elements
     p.set("action","calc_struct_nlnstiffmass");
-    // choose what to assemble
-    p.set("assemble matrix 1",true);
-    p.set("assemble matrix 2",true);
-    p.set("assemble vector 1",true);
-    p.set("assemble vector 2",false);
-    p.set("assemble vector 3",false);
     // other parameters that might be needed by the elements
     p.set("total time",time);
     p.set("delta time",dt);
@@ -279,12 +267,6 @@ void StruGenAlpha::ConstantPredictor()
     ParameterList p;
     // action for elements
     p.set("action","calc_struct_eleload");
-    // choose what to assemble
-    p.set("assemble matrix 1",false);
-    p.set("assemble matrix 2",false);
-    p.set("assemble vector 1",true);
-    p.set("assemble vector 2",false);
-    p.set("assemble vector 3",false);
     // other parameters needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
@@ -327,12 +309,6 @@ void StruGenAlpha::ConstantPredictor()
     ParameterList p;
     // action for elements
     p.set("action","calc_struct_nlnstiff");
-    // choose what to assemble
-    p.set("assemble matrix 1",true);
-    p.set("assemble matrix 2",false);
-    p.set("assemble vector 1",true);
-    p.set("assemble vector 2",false);
-    p.set("assemble vector 3",false);
     // other parameters that might be needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
@@ -450,12 +426,6 @@ void StruGenAlpha::MatrixFreeConstantPredictor()
     ParameterList p;
     // action for elements
     p.set("action","calc_struct_eleload");
-    // choose what to assemble
-    p.set("assemble matrix 1",false);
-    p.set("assemble matrix 2",false);
-    p.set("assemble vector 1",true);
-    p.set("assemble vector 2",false);
-    p.set("assemble vector 3",false);
     // other parameters needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
@@ -498,13 +468,6 @@ void StruGenAlpha::MatrixFreeConstantPredictor()
     ParameterList p;
     // action for elements
     p.set("action","calc_struct_nlnstiff");
-    // choose what to assemble
-//     p.set("assemble matrix 1",false);
-    p.set("assemble matrix 1",true);                           // test only!
-    p.set("assemble matrix 2",false);
-    p.set("assemble vector 1",true);
-    p.set("assemble vector 2",false);
-    p.set("assemble vector 3",false);
     // other parameters that might be needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
@@ -608,12 +571,6 @@ void StruGenAlpha::ConsistentPredictor()
     ParameterList p;
     // action for elements
     p.set("action","calc_struct_eleload");
-    // choose what to assemble
-    p.set("assemble matrix 1",false);
-    p.set("assemble matrix 2",false);
-    p.set("assemble vector 1",true);
-    p.set("assemble vector 2",false);
-    p.set("assemble vector 3",false);
     // other parameters needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
@@ -648,12 +605,6 @@ void StruGenAlpha::ConsistentPredictor()
     ParameterList p;
     // action for elements
     p.set("action","calc_struct_eleload");
-    // choose what to assemble
-    p.set("assemble matrix 1",false);
-    p.set("assemble matrix 2",false);
-    p.set("assemble vector 1",true);
-    p.set("assemble vector 2",false);
-    p.set("assemble vector 3",false);
     // other parameters needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
@@ -684,12 +635,6 @@ void StruGenAlpha::ConsistentPredictor()
     ParameterList p;
     // action for elements
     p.set("action","calc_struct_eleload");
-    // choose what to assemble
-    p.set("assemble matrix 1",false);
-    p.set("assemble matrix 2",false);
-    p.set("assemble vector 1",true);
-    p.set("assemble vector 2",false);
-    p.set("assemble vector 3",false);
     // other parameters needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
@@ -733,12 +678,6 @@ void StruGenAlpha::ConsistentPredictor()
     ParameterList p;
     // action for elements
     p.set("action","calc_struct_nlnstiff");
-    // choose what to assemble
-    p.set("assemble matrix 1",true);
-    p.set("assemble matrix 2",false);
-    p.set("assemble vector 1",true);
-    p.set("assemble vector 2",false);
-    p.set("assemble vector 3",false);
     // other parameters that might be needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
@@ -864,12 +803,6 @@ void StruGenAlpha::ApplyExternalForce(const LINALG::MapExtractor& extractor,
     ParameterList p;
     // action for elements
     p.set("action","calc_struct_nlnstiff");
-    // choose what to assemble
-    p.set("assemble matrix 1",true);
-    p.set("assemble matrix 2",false);
-    p.set("assemble vector 1",true);
-    p.set("assemble vector 2",false);
-    p.set("assemble vector 3",false);
     // other parameters that might be needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
@@ -1162,12 +1095,6 @@ void StruGenAlpha::FullNewton()
       ParameterList p;
       // action for elements
       p.set("action","calc_struct_nlnstiff");
-      // choose what to assemble
-      p.set("assemble matrix 1",true);
-      p.set("assemble matrix 2",false);
-      p.set("assemble vector 1",true);
-      p.set("assemble vector 2",false);
-      p.set("assemble vector 3",false);
       // other parameters that might be needed by the elements
       p.set("total time",timen);
       p.set("delta time",dt);
@@ -1524,12 +1451,6 @@ void StruGenAlpha::FullNewtonLinearUzawa()
       ParameterList p;
       // action for elements
       p.set("action","calc_struct_nlnstiff");
-      // choose what to assemble
-      p.set("assemble matrix 1",true);
-      p.set("assemble matrix 2",false);
-      p.set("assemble vector 1",true);
-      p.set("assemble vector 2",false);
-      p.set("assemble vector 3",false);
       // other parameters that might be needed by the elements
       p.set("total time",timen);
       p.set("delta time",dt);
@@ -1716,12 +1637,6 @@ void StruGenAlpha::ModifiedNewton()
       ParameterList p;
       // action for elements
       p.set("action","calc_struct_nlnstiff");
-      // choose what to assemble
-      p.set("assemble matrix 1",false);
-      p.set("assemble matrix 2",false);
-      p.set("assemble vector 1",true);
-      p.set("assemble vector 2",false);
-      p.set("assemble vector 3",false);
       // other parameters that might be needed by the elements
       p.set("total time",timen);
       p.set("delta time",dt);
@@ -1916,12 +1831,6 @@ void StruGenAlpha::MatrixFreeNewton()
       ParameterList p;
       // action for elements
       p.set("action","calc_struct_nlnstiff");
-      // choose what to assemble
-      p.set("assemble matrix 1",false);
-      p.set("assemble matrix 2",false);
-      p.set("assemble vector 1",true);
-      p.set("assemble vector 2",false);
-      p.set("assemble vector 3",false);
       // other parameters that might be needed by the elements
       p.set("total time",timen);
       p.set("delta time",dt);
@@ -2444,12 +2353,6 @@ void StruGenAlpha::PTC()
       ParameterList p;
       // action for elements
       p.set("action","calc_struct_nlnstiff");
-      // choose what to assemble
-      p.set("assemble matrix 1",true);
-      p.set("assemble matrix 2",false);
-      p.set("assemble vector 1",true);
-      p.set("assemble vector 2",false);
-      p.set("assemble vector 3",false);
       // other parameters that might be needed by the elements
       p.set("total time",timen);
       p.set("delta time",dt);
@@ -2626,12 +2529,6 @@ void StruGenAlpha::computeF(const Epetra_Vector& x, Epetra_Vector& F)
       ParameterList p;
       // action for elements
       p.set("action","calc_struct_nlnstiff");
-      // choose what to assemble
-      p.set("assemble matrix 1",false);
-      p.set("assemble matrix 2",false);
-      p.set("assemble vector 1",true);
-      p.set("assemble vector 2",false);
-      p.set("assemble vector 3",false);
       // other parameters that might be needed by the elements
       p.set("total time",timen);
       p.set("delta time",dt);
@@ -2750,12 +2647,6 @@ void StruGenAlpha::computeFmatrixfree(const Epetra_Vector& x, Epetra_Vector& F)
       ParameterList p;
       // action for elements
       p.set("action","calc_struct_nlnstiff");
-      // choose what to assemble
-      p.set("assemble matrix 1",false);
-      p.set("assemble matrix 2",false);
-      p.set("assemble vector 1",true);
-      p.set("assemble vector 2",false);
-      p.set("assemble vector 3",false);
       // other parameters that might be needed by the elements
       p.set("total time",time);
       p.set("delta time",dt);
@@ -2842,12 +2733,6 @@ void StruGenAlpha::computeJacobian(const Epetra_Vector& x)
       ParameterList p;
       // action for elements
       p.set("action","calc_struct_nlnstiff");
-      // choose what to assemble
-      p.set("assemble matrix 1",true);
-      p.set("assemble matrix 2",false);
-      p.set("assemble vector 1",false);
-      p.set("assemble vector 2",false);
-      p.set("assemble vector 3",false);
       // other parameters that might be needed by the elements
       p.set("total time",timen);
       p.set("delta time",dt);
