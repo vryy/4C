@@ -752,17 +752,11 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
                        a.Split<DefaultBlockMatrixStrategy>(extractor,extractor);
   Ablock->Complete();
   
-  // prevent content of Ablock from dying when Ablock dies
-  RCP<SparseMatrix> a11 = rcp(new SparseMatrix((*Ablock)(0,0),View));
-  RCP<SparseMatrix> a12 = rcp(new SparseMatrix((*Ablock)(0,1),View));
-  RCP<SparseMatrix> a21 = rcp(new SparseMatrix((*Ablock)(1,0),View));
-  RCP<SparseMatrix> a22 = rcp(new SparseMatrix((*Ablock)(1,1),View));
-  
-  // get Epetra objects out of these sparse matrices
-  A11 = a11->EpetraMatrix();
-  A12 = a12->EpetraMatrix();
-  A21 = a21->EpetraMatrix();
-  A22 = a22->EpetraMatrix();
+  // get Epetra objects out of the block matrix (prevents them from dying)
+  A11 = (*Ablock)(0,0).EpetraMatrix();
+  A12 = (*Ablock)(0,0).EpetraMatrix();
+  A21 = (*Ablock)(0,0).EpetraMatrix();
+  A22 = (*Ablock)(0,0).EpetraMatrix();
 
   return true;
 }
@@ -1072,6 +1066,18 @@ bool LINALG::SplitMatrix2x2(RCP<LINALG::SparseMatrix> A,
   
   RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy> > Ablock = 
                        A->Split<DefaultBlockMatrixStrategy>(domain,range);
+
+#if 0 // debugging
+  cout << "A00\n" << (*Ablock)(0,0);
+  cout << "A10\n" << (*Ablock)(1,0);
+  cout << "A01\n" << (*Ablock)(0,1);
+  cout << "A11\n" << (*Ablock)(1,1);
+  cout << "A->Range\n" << A->RangeMap();
+  cout << "A->Domain\n" << A->DomainMap();
+  cout << "A11domainmap\n" << *A11domainmap;
+  cout << "A22domainmap\n" << *A22domainmap;
+#endif
+
   Ablock->Complete();
   // extract internal data from Ablock in RCP form and let Ablock die
   // (this way, internal data from Ablock will live)
