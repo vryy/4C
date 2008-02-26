@@ -34,23 +34,23 @@ using namespace DRT::UTILS;
 
 
 //#define                 SIGN(a,b) ((b) >= 0.0 ? fabs(a) : -fabs(a))
-double SIGN(double a, double b)
+double SIGN(const double a, const double b)
 {
-    return ((b) >= 0.0 ? fabs(a) : -fabs(a));
+    return (b >= 0.0 ? fabs(a) : -fabs(a));
 }
 
 //static double           maxarg1,maxarg2;
 //#define                 FMAX(a,b) (maxarg1=(a),maxarg2=(b),(maxarg1) > (maxarg2) ? (maxarg1) : (maxarg2))
-double FMAX(double maxarg1, double maxarg2)
+double FMAX(const double maxarg1, const double maxarg2)
 {
-    return ((maxarg1) > (maxarg2) ? (maxarg1) : (maxarg2));
+    return (maxarg1 > maxarg2 ? (maxarg1) : (maxarg2));
 }
 
 //static int              iminarg1,iminarg2;
 //#define                 IMIN(a,b) (iminarg1=(a),iminarg2=(b),(iminarg1) < (iminarg2) ? (iminarg1) : (iminarg2))
-int IMIN(int iminarg1, int iminarg2)
+int IMIN(const int iminarg1, const int iminarg2)
 {
-    return ((iminarg1) < (iminarg2) ? (iminarg1) : (iminarg2));
+    return (iminarg1 < iminarg2 ? (iminarg1) : (iminarg2));
 }
 
 /*----------------------------------------------------------------------*
@@ -64,186 +64,251 @@ void XFEM::svdcmp(
     const int n,
     const int m)
 {
-    int flag,i,its,j,jj,k,l,nm;
-    double anorm,c,f,g,h,s,scale,x,y,z;
     Epetra_SerialDenseVector rv1(n);
 
-
     //Householder reduction to bidiagonal form.
-    g=scale=anorm=0.0;
-
-    for (i=0;i<n;i++) {
-        l=i+1;
+    double g = 0.0;
+    double scale = 0.0;
+    double anorm = 0.0;
+    for (int i=0;i<n;++i)
+    {
+        const int l=i+1;
         rv1[i]=scale*g;
-        g=s=scale=0.0;
-        if (i < m) {
-            for (k=i;k<m;k++) scale += fabs(A[k][i]);
-                if (scale) {
-                    for (k=i;k<m;k++) {
-                        A[k][i] /= scale;
-                        s += A[k][i]*A[k][i];
-                    }
-                    f=A[i][i];
-                    g = -SIGN(sqrt(s),f);
-                    h=f*g-s;
-                    A[i][i]=f-g;
-                    for (j=l;j<n;j++) {
-                        for (s=0.0,k=i;k<m;k++) s += A[k][i]*A[k][j];
-                        f=s/h; 
-                        for (k=i;k<m;k++) A[k][j] += f*A[k][i];
-                    }
-                    for (k=i;k<m;k++) A[k][i] *= scale;
+        g=scale=0.0;
+        if (i < m) 
+        {
+            for (int k=i;k<m;k++)
+            {
+                scale += fabs(A[k][i]);
+            }
+            if (scale)
+            {
+                double s = 0.0;
+                for (int k=i;k<m;++k)
+                {
+                    A[k][i] /= scale;
+                    s += pow(A[k][i], 2);
+                }
+                const double f=A[i][i];
+                g = -SIGN(sqrt(s),f);
+                const double h=f*g-s;
+                A[i][i]=f-g;
+                for (int j=l;j<n;++j)
+                {
+                    double s = 0.0;
+                    for (int k=i;k<m;++k)
+                        s += A[k][i]*A[k][j];
+                    const double f=s/h; 
+                    for (int k=i;k<m;++k)
+                        A[k][j] += f*A[k][i];
+                }
+                for (int k=i;k<m;++k)
+                    A[k][i] *= scale;
+            }
+        }
+        W[i]=scale*g;
+        g=scale=0.0;
+        if (i < m && i != (n-1))
+        {
+            for (int k=l;k<n;k++)
+            {
+                scale += fabs(A[i][k]);
+            }
+            if (scale)
+            {
+                double s = 0.0;
+                for (int k=l;k<n;k++)
+                {
+                    A[i][k] /= scale;
+                    s += pow(A[i][k],2);
+                }
+                const double f=A[i][l];
+                g = -SIGN(sqrt(s),f);
+                const double h=f*g-s;
+                const double h_inv=1.0/h;
+                A[i][l]=f-g;
+                for (int k=l;k<n;k++)
+                    rv1[k]=A[i][k]*h_inv;
+                for (int j=l;j<m;++j)
+                {
+                    double s = 0.0;
+                    for (int k=l;k<n;++k)
+                        s += A[j][k]*A[i][k];
+                    for (int k=l;k<n;++k)
+                        A[j][k] += s*rv1[k];
+                }
+                for (int k=l;k<n;k++)
+                    A[i][k] *= scale;
+            }
+        }
+        anorm=FMAX(anorm,(fabs(W[i])+fabs(rv1[i])));
+    }
+    //Accumulation of right-hand transformations.
+    for (int i=(n-1);i>=0;i--)
+    {
+        const int l=i+1;
+        if (i < n)
+        {
+            if (g)
+            {
+                //Double division to avoid possible underflow.
+                const double g_inv = 1.0/g;
+                for (int j=l;j<n;j++)
+                    V[j][i]=(A[i][j]/A[i][l])*g_inv;
+                for (int j=l;j<n;j++)
+                {
+                    double s = 0.0;
+                    for (int k=l;k<n;k++) 
+                        s += A[i][k]*V[k][j];
+                    for (int k=l;k<n;k++) 
+                        V[k][j] += s*V[k][i];
                 }
             }
-            W[i]=scale*g;
-            g=s=scale=0.0;
-            if (i < m && i != (n-1)) {
-                for (k=l;k<n;k++) scale += fabs(A[i][k]);
-                if (scale) {
-                    for (k=l;k<n;k++) {
-                        A[i][k] /= scale;
-                        s += A[i][k]*A[i][k];
-                    }
-                    f=A[i][l];
-                    g = -SIGN(sqrt(s),f);
-                    h=f*g-s;
-                    A[i][l]=f-g;
-                    for (k=l;k<n;k++) rv1[k]=A[i][k]/h;
-                    for (j=l;j<m;j++) {
-                        for (s=0.0,k=l;k<n;k++) s += A[j][k]*A[i][k];
-                        for (k=l;k<n;k++) A[j][k] += s*rv1[k];
-                    }
-                    for (k=l;k<n;k++) A[i][k] *= scale;
-                }
+            for (int j=l;j<n;j++) 
+                V[i][j]=V[j][i]=0.0;
+        }
+        V[i][i]=1.0;
+        g=rv1[i];
+    }
+    //Accumulation of left-hand transformations.
+    for (int i=IMIN((m-1),(n-1));i>=0;i--)
+    {
+        const int l=i+1;
+        const double g=W[i];
+        for (int j=l;j<n;++j)
+            A[i][j]=0.0;
+        if (g)
+        {
+            const double g_inv=1.0/g;
+            for (int j=l;j<n;++j)
+            {
+                double s = 0.0;
+                for (int k=l;k<m;++k)
+                    s += A[k][i]*A[k][j];
+                const double f=(s/A[i][i])*g_inv;
+                for (int k=i;k<m;++k)
+                    A[k][j] += f*A[k][i];
             }
-            anorm=FMAX(anorm,(fabs(W[i])+fabs(rv1[i])));
-        }
-        //Accumulation of right-hand transformations.
-        for (i=(n-1);i>=0;i--) {
-            if (i < n) {
-                if (g) {
-                    //Double division to avoid possible underflow.
-                    for (j=l;j<n;j++)
-                        V[j][i]=(A[i][j]/A[i][l])/g;
-                    for (j=l;j<n;j++) {
-                        for (s=0.0,k=l;k<n;k++) s += A[i][k]*V[k][j];
-                        for (k=l;k<n;k++) V[k][j] += s*V[k][i];
-                    }
-                }
-                for (j=l;j<n;j++) V[i][j]=V[j][i]=0.0;
-            }
-            V[i][i]=1.0;
-            g=rv1[i];
-            l=i;
-        }
-        //Accumulation of left-hand transformations.
-        for (i=IMIN((m-1),(n-1));i>=0;i--) {
-            l=i+1;
-            g=W[i];
-            for (j=l;j<n;j++) A[i][j]=0.0;
-            if (g) {
-                g=1.0/g;
-                for (j=l;j<n;j++) {
-                    for (s=0.0,k=l;k<m;k++) s += A[k][i]*A[k][j];
-                    f=(s/A[i][i])*g;
-                    for (k=i;k<m;k++) A[k][j] += f*A[k][i];
-                }
-                for (j=i;j<m;j++) A[j][i] *= g;
-            } else for (j=i;j<m;j++) A[j][i]=0.0;
-            ++A[i][i];
-        }
-        //Diagonalization of the bidiagonal form: Loop over
-        for (k=(n-1);k>=0;k--) {
-            //singular values, and over allowed iterations.
-            for (its=1;its<=30;its++) {
-                flag=1;
-                //Test for splitting.
-                for (l=k;l>=0;l--) {
-                    //Note that rv1[1] is always zero.
-                    nm=l-1;
-                    if ((double)(fabs(rv1[l])+anorm) == anorm) {
-                        flag=0;
-                        break;
-                    }
-                    if ((double)(fabs(W[nm])+anorm) == anorm) break;
-                }
-                if (flag) {
-                    //Cancellation of rv1[l], if l > 1.
-                    c=0.0;
-                    s=1.0;
-                    for (i=l;i<=k;i++) {
-                        f=s*rv1[i];
-                        rv1[i]=c*rv1[i];
-                        if ((double)(fabs(f)+anorm) == anorm) break;
-                        g=W[i];
-                        h=XFEM::pythagoras(f,g);
-                        W[i]=h;
-                        h=1.0/h;
-                        c=g*h;
-                        s = -f*h;
-                        for (j=0;j<m;j++) {
-                            y=A[j][nm];
-                            z=A[j][i];
-                            A[j][nm]=y*c+z*s;
-                            A[j][i]=z*c-y*s;
-                        }
-                    }
-                }
-                z=W[k];
-                //Convergence.
-                if (l == k) {
-                    //Singular value is made nonnegative.
-                    if (z < 0.0) {
-                        W[k] = -z;
-                        for (j=0;j<n;j++) V[j][k] = -V[j][k];
-                    }
+            for (int j=i;j<m;++j) 
+                A[j][i] *= g_inv;
+        } 
+        else 
+            for (int j=i;j<m;++j) 
+                A[j][i]=0.0;
+        ++A[i][i];
+    }
+    //Diagonalization of the bidiagonal form: Loop over
+    for (int k=(n-1);k>=0;k--)
+    {
+        //singular values, and over allowed iterations.
+        for (int its=1;its<=30;its++)
+        {
+            //Test for splitting.
+            bool flag=true;
+            int nm;
+            int l = k;
+            for (l=k;l>=0;l--)
+            {
+                //Note that rv1[1] is always zero.
+                nm=l-1;
+                if ((double)(fabs(rv1[l])+anorm) == anorm)
+                {
+                    flag=false;
                     break;
                 }
-                if (its == 30) dserror("no convergence in 30 svdcmp iterations");
-                //Shift from bottom 2-by-2 minor.
-                x=W[l];
-                nm=k-1;
-                y=W[nm];
-                g=rv1[nm];
-                h=rv1[k];
-                f=((y-z)*(y+z)+(g-h)*(g+h))/(2.0*h*y);
-                g=XFEM::pythagoras(f,1.0);
-                f=((x-z)*(x+z)+h*((y/(f+SIGN(g,f)))-h))/x;
-                //Next QR transformation:
-                c=s=1.0;
-                for (j=l;j<=nm;j++) {
-                    i=j+1;
-                    g=rv1[i];
-                    y=W[i];
-                    h=s*g;
-                    g=c*g;
-                    z=XFEM::pythagoras(f,h);
-                    rv1[j]=z;
-                    c=f/z;
-                    s=h/z;
-                    f=x*c+g*s;
-                    g = g*c-x*s;
-                    h=y*s;
-                    y *= c;
-                    for (jj=0;jj<n;jj++) {
-                        x=V[jj][j];
-                        z=V[jj][i];
-                        V[jj][j]=x*c+z*s;
-                        V[jj][i]=z*c-x*s;
+                if ((double)(fabs(W[nm])+anorm) == anorm)
+                    break;
+            }
+            if (flag)
+            {
+                //Cancellation of rv1[l], if l > 1.
+                double c=0.0;
+                double s=1.0;
+                for (int i=l;i<=k;i++)
+                {
+                    const double f=s*rv1[i];
+                    rv1[i] *= c;
+                    if ((double)(fabs(f)+anorm) == anorm)
+                        break;
+                    const double g=W[i];
+                    double h=XFEM::pythagoras(f,g);
+                    W[i]=h;
+                    const double h_inv=1.0/h;
+                    c=g*h_inv;
+                    s=-f*h_inv;
+                    for (int j=0;j<m;j++)
+                    {
+                        const double y=A[j][nm];
+                        const double z=A[j][i];
+                        A[j][nm]=y*c+z*s;
+                        A[j][i]=z*c-y*s;
                     }
+                }
+            }
+            const double z=W[k];
+            //Convergence.
+            if (l == k)
+            {
+                //Singular value is made nonnegative.
+                if (z < 0.0)
+                {
+                    W[k] = -z;
+                    for (int j=0;j<n;j++)
+                        V[j][k] = -V[j][k];
+                }
+                break;
+            }
+            if (its == 30)
+                dserror("no convergence in 30 svdcmp iterations");
+            //Shift from bottom 2-by-2 minor.
+            double x=W[l];
+            const int km=k-1;
+            const double y=W[km];
+            double g=rv1[km];
+            double h=rv1[k];
+            double f=((y-z)*(y+z)+(g-h)*(g+h))/(2.0*h*y);
+            g=XFEM::pythagoras(f,1.0);
+            f=((x-z)*(x+z)+h*((y/(f+SIGN(g,f)))-h))/x;
+            //Next QR transformation:
+            double c = 1.0;
+            double s = 1.0;
+            for (int j=l;j<=km;j++)
+            {
+                const int i=j+1;
+                double g=rv1[i];
+                double y=W[i];
+                double h=s*g;
+                g=c*g;
+                double z=XFEM::pythagoras(f,h);
+                rv1[j]=z;
+                c=f/z;
+                s=h/z;
+                f=x*c+g*s;
+                g = g*c-x*s;
+                h=y*s;
+                y *= c;
+                for (int jj=0;jj<n;jj++)
+                {
+                    const double x=V[jj][j];
+                    const double z=V[jj][i];
+                    V[jj][j]=x*c+z*s;
+                    V[jj][i]=z*c-x*s;
+                }
                 z=XFEM::pythagoras(f,h);
                 //Rotation can be arbitrary if z = 0.
                 W[j]=z;
-                if (z) {
-                    z=1.0/z;
-                    c=f*z;
-                    s=h*z;
+                if (z)
+                {
+                    const double z_inv=1.0/z;
+                    c=f*z_inv;
+                    s=h*z_inv;
                 }
                 f=c*g+s*y;
                 x=c*y-s*g;
-                for (jj=0;jj<m;jj++) {
-                    y=A[jj][j];
-                    z=A[jj][i];
+                for (int jj=0;jj<m;jj++)
+                {
+                    const double y=A[jj][j];
+                    const double z=A[jj][i];
                     A[jj][j]=y*c+z*s;
                     A[jj][i]=z*c-y*s;
                 }
@@ -447,7 +512,8 @@ bool XFEM::gaussElimination(
 if(dim > 1)
 {
 
-    if (!do_piv) {
+    if (!do_piv)
+    {
         for (int k=0;k<dim;k++)
         {
             A[k][k]=1./A[k][k];
@@ -469,7 +535,8 @@ if(dim > 1)
             }
         }
     }
-    else {
+    else
+    {
         for (int k=0;k<dim;k++)
         {
             int pivot = k;
@@ -526,7 +593,7 @@ if(dim > 1)
     {
         for (int j=dim-1;j>i;j--)
         {
-            b[i]=b[i]-A[i][j]*x[j];
+            b[i]-=A[i][j]*x[j];
         }
         x[i]=b[i]*A[i][i];
     }
@@ -537,7 +604,7 @@ if(dim > 1)
     
     double det = 1.0;
     for(int i = 0 ; i < dim; i++)
-        det = det * (1.0/A(i,i));
+        det *= 1.0/A(i,i);
     //printf("matrix is singular A1 = %f, A2 = %f, A3 = %f, det = %f\n ", 1/A(0,0), 1/A(1,1), 1/A(2,2), fabs(det) );
     if(fabs(det) < TOL7 && order == 1)
     {
