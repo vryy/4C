@@ -69,41 +69,6 @@ void write_vector_result(string result_name, PostField* field, PostResult* resul
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-// void write_multivector_result(string result_name, PostField* field, PostResult* result)
-// {
-//   CHAR* componentnames[] = { "S_xx", "S_yy", "S_zz", "S_xy", "S_yz", "S_xz"};
-
-//   //double time = map_read_real(result->group(), "time");
-//   int step = map_read_int(result->group(), "step");
-
-//   ostringstream buf;
-//   buf << fieldnames[field->type()] << "_" << result_name;
-
-//   RefCountPtr<Epetra_MultiVector> data = result->read_multi_result(result_name);
-//   const Epetra_BlockMap& datamap = data->Map();
-//   GiD_BeginResult(const_cast<char*>(buf.str().c_str()), "ccarat", step, GiD_Matrix,
-//                   GiD_OnNodes, NULL, NULL, 6,
-//                   componentnames);
-
-//   double v[6];
-
-//   for (int k = 0; k < field->num_nodes(); ++k)
-//   {
-//     DRT::Node* n = field->discretization()->lRowNode(k);
-//     for (int i = 0; i < 6; ++i)
-//     {
-//       // The order of the result vector is defined by the map. It is
-//       // NOT ordered by global dof numbers.
-//       // If this turns out to be too slow, we have to change it.
-//       v[i] = (*((*data)(i)))[datamap.LID(k)];
-//     }
-//     GiD_Write3DMatrix(n->Id()+1,v[0],v[1],v[2],v[3],v[4],v[5]);
-//   }
-//   GiD_EndResult();
-// }
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void write_serialdensematrix_result(string result_name, PostField* field,
                                     PostResult* result)
 {
@@ -112,6 +77,7 @@ void write_serialdensematrix_result(string result_name, PostField* field,
 
   // This implementation depends (like the rest of this GiD-filter) on
   // the assumption that there are only elements of one type in the mesh
+
   RefCountPtr<DRT::Discretization> dis = field->discretization();
   const Epetra_Map* elementmap = dis->ElementRowMap();
   DRT::Element* actele = dis->gElement(elementmap->GID(0));
@@ -119,6 +85,13 @@ void write_serialdensematrix_result(string result_name, PostField* field,
   {
   case DRT::Element::hex8:
     gaussname = "so_hex8";
+
+    // Note:
+    // Here no mapping between baci's and GiD definition of Gauss
+    // points is necessary since they are equal (thanks to Moritz).
+    // The GiD convention can be found at
+    // http://gid.cimne.upc.es/support_team/gid_toc/gid_toc.html
+
     break;
   default:
     dserror("output of gauss point stresses in GiD needs to be implemented for this element type");
