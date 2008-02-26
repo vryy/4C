@@ -706,6 +706,10 @@ bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
     cout << "***WARNING***" << endl << "CONTACT::Interface::IntegrateOverlap2D "<< endl
          << "has detected '4 feasible projections'-case for Slave/Master pair "
          << sele.Id() << "/" << mele.Id() << endl;
+    cout << "SElement Node IDs: " << mysnodes[0]->Id() << " " << mysnodes[1]->Id() << endl;
+    cout << "MElement Node IDs: " << mymnodes[0]->Id() << " " << mymnodes[1]->Id() << endl;
+    cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << endl;
+    cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << endl;
     
     // internal case 1 for global CASE 6
     // (equivalent to global CASE 7, slave fully projects onto master)
@@ -715,6 +719,7 @@ bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
       sxib = 1.0;
       mxia = sprojxi[1];      // local node numbering always anti-clockwise!!!
       mxib = sprojxi[0];
+      cout << "Problem solved with internal case 1!" << endl;
     }
     
     // internal case 2 for global CASE 6
@@ -725,26 +730,29 @@ bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
       mxib = 1.0;
       sxia = mprojxi[1];      // local node numbering always anti-clockwise!!!
       sxib = mprojxi[0];
+      cout << "Problem solved with internal case 2!" << endl;
     }
     
     // internal case 3 for global CASE 6
     // (equivalent to global CASE 9, both nodes no. 0 project successfully)
-    else if ((sprojxi[0]<1.0) && (mprojxi[0]<1.0))
+    else if ((sprojxi[0]<1.0+CONTACTPROJLIM) && (mprojxi[0]<1.0+CONTACTPROJLIM))
     {
       sxia = -1.0;
       sxib = mprojxi[0];      // local node numbering always anti-clockwise!!!
       mxia = -1.0;
       mxib = sprojxi[0];
+      cout << "Problem solved with internal case 3!" << endl;
     }
     
     // internal case 4 for global CASE 6
     // (equivalent to global CASE 10, both nodes no. 1 project successfully)
-    else if ((sprojxi[1]>-1.0) && (mprojxi[1]>-1.0))
+    else if ((sprojxi[1]>-1.0-CONTACTPROJLIM) && (mprojxi[1]>-1.0-CONTACTPROJLIM))
     {
       sxia = mprojxi[1];
       sxib = 1.0;            // local node numbering always anti-clockwise!!!
       mxia = sprojxi[1];
       mxib = 1.0;
+      cout << "Problem solved with internal case 4!" << endl;
     }
     
     // unknown internal case for global CASE 6
@@ -781,7 +789,7 @@ bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
   else if (s0hasproj && !s1hasproj && m0hasproj && !m1hasproj)
   {
     // do the two elements really have an overlap?
-    if ((sprojxi[0]>-1.0) && (mprojxi[0]>-1.0))
+    if ((sprojxi[0]>-1.0+CONTACTPROJLIM) && (mprojxi[0]>-1.0+CONTACTPROJLIM))
     {
       overlap = true;
       sxia = -1.0;
@@ -794,7 +802,7 @@ bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
   else if (!s0hasproj && s1hasproj && !m0hasproj && m1hasproj)
   {
     // do the two elements really have an overlap?
-    if ((sprojxi[1]<1.0) && (mprojxi[1]<1.0))
+    if ((sprojxi[1]<1.0-CONTACTPROJLIM) && (mprojxi[1]<1.0-CONTACTPROJLIM))
     {
       overlap = true;
       sxia = mprojxi[1];
@@ -898,7 +906,11 @@ bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
   }
   
   if ((sxia<-1.0) || (sxib>1.0) || (mxia<-1.0) || (mxib>1.0))
+  {
+    cout << "Slave: " << sxia << " " << sxib << endl;
+    cout << "Master: " << mxia << " " << mxib << endl;
     dserror("ERROR: IntegrateOverlap2D: Determined infeasible limits!");
+  }
 
 #ifdef DEBUG
   if (overlap)
