@@ -181,6 +181,9 @@ void dyn_fluid_drt()
   fluidtimeparams.set<double>          ("tolerance for nonlin iter" ,fdyn.get<double>("CONVTOL"));
   // set convergence check
   fluidtimeparams.set<string>          ("CONVCHECK"  ,fdyn.get<string>("CONVCHECK"));
+  // set adaptoive linear solver tolerance
+  fluidtimeparams.set<bool>            ("ADAPTCONV",getIntegralValue<int>(fdyn,"ADAPTCONV")==1);
+  fluidtimeparams.set<double>          ("ADAPTCONV_BETTER",fdyn.get<double>("ADAPTCONV_BETTER"));
 
   // ----------------------------------------------- restart and output
   // restart

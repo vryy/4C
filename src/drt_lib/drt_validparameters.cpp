@@ -560,7 +560,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1,2,3,4),
                                &fdyn);
 
-  setStringToIntegralParameter("SIMPLER","no","Switch on SIMPLE family of solvers, needs additional FLUID PRESSURE SOLVER block!",yesnotuple,yesnovalue,&fdyn);
+  setStringToIntegralParameter("SIMPLER","no",
+                               "Switch on SIMPLE family of solvers, needs additional FLUID PRESSURE SOLVER block!",
+                               yesnotuple,yesnovalue,&fdyn);
+
+  setStringToIntegralParameter("ADAPTCONV","yes",
+                               "Switch on adaptive control of linear solver tolerance for nonlinear solution",
+                               yesnotuple,yesnovalue,&fdyn);
+  DoubleParameter("ADAPTCONV_BETTER",0.1,"The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit",&fdyn);
 
   IntParameter("UPPSS",1,"Increment for visualisation (unused)",&fdyn);
   IntParameter("UPOUT",1,"Increment for writing solution to output file",&fdyn);

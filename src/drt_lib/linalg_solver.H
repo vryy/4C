@@ -151,6 +151,53 @@ public:
   */
   void Reset();
 
+  /*!
+  \brief Adapt tolerance of iterative solver
+
+  This method allows to adapt the tolerance of the underlying iterative solver,
+  if an iterative solver is used. It is meant to be used together with
+  a relative convergence criteria AZ_r0 (decided from input file)
+  and allows to adapt this relative convergence criteria depending on
+  the current residual of the outer nonlinear solver
+  
+  It computes a new relative tolerance to be<br>
+  <br>
+  \code
+  if (currentnlnres*tol < desirednlnres) 
+    tol = desirednlnres * better / currentnlnres
+  \endcode
+  
+  \note This is a rule of thumb method - not a true adaptivity in the
+        field of inexact Newton methods.
+        
+  \note This method works with Aztec only - it does nothing for all other
+        solvers configured.
+  
+  \sa ResetTolerance
+  
+  \param desirednlnres (in): Desired residual in outer nonlinear solve
+  \param currentnlnres (in): Current residual in outer nonlinear solve
+  \param better        (in): The amount the linear solver shall be better than
+                             currentnlnres
+  
+  */
+  void AdaptTolerance(const double desirednlnres, 
+                      const double currentnlnres,
+                      const double better); 
+
+  /*!
+  \brief Adapt tolerance of iterative solver
+
+  Reset the tolerance read from input file. Can only be used after a call to
+  AdaptTolerance.
+  
+  \note This method works with Aztec only - it does nothing for all other
+        solvers configured.
+  
+  \sa AdaptTolerance
+  */
+  void ResetTolerance(); 
+
   //@}
   //! @name Input of parameters
 

@@ -156,6 +156,57 @@ void LINALG::Solver::Print(ostream& os) const
 }
 
 /*----------------------------------------------------------------------*
+ |  adapt tolerance (public)                                 mwgee 02/08|
+ *----------------------------------------------------------------------*/
+void LINALG::Solver::AdaptTolerance(const double desirednlnres, 
+                                    const double currentnlnres,
+                                    const double better)
+{
+  if (!Params().isSublist("Aztec Parameters")) return;
+  const int myrank = Comm().MyPID();
+  ParameterList& azlist = Params().sublist("Aztec Parameters");
+  int output   = azlist.get<int>("AZ_output",1);
+  int convtest = azlist.get<int>("AZ_conv",AZ_noscaled);
+  if (convtest != AZ_r0) dserror("Using convergence adaptivity: Use AZ_r0 in input file");
+  bool havesavedvalue = azlist.isParameter("AZ_tol save");
+  if (!havesavedvalue)
+  {
+    if (!azlist.isParameter("AZ_tol")) 
+    {
+      cout << azlist;
+      dserror("No Aztec tolerance in ParameterList");
+    }
+    azlist.set<double>("AZ_tol save",azlist.get<double>("AZ_tol",1.e-8));
+  }
+  double tol = azlist.get<double>("AZ_tol save",1.e-8);
+  if (!myrank && output) 
+    printf("                --- Aztec input   relative tolerance %10.3E\n",tol); 
+  if (currentnlnres*tol < desirednlnres)
+  {
+    double tolnew = desirednlnres*better/currentnlnres;
+    if (tolnew<tol) tolnew = tol;
+    if (!myrank && output && tolnew > tol) 
+      printf("                *** Aztec adapted relative tolerance %10.3E\n",tolnew); 
+    azlist.set<double>("AZ_tol",tolnew);
+  }
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  adapt tolerance (public)                                 mwgee 02/08|
+ *----------------------------------------------------------------------*/
+void LINALG::Solver::ResetTolerance()
+{
+  if (!Params().isSublist("Aztec Parameters")) return;
+  ParameterList& azlist = Params().sublist("Aztec Parameters");
+  bool havesavedvalue = azlist.isParameter("AZ_tol save");
+  if (!havesavedvalue) return;
+  azlist.set<double>("AZ_tol",azlist.get<double>("AZ_tol save",1.e-8));
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  solve (public)                                           mwgee 02/07|
  *----------------------------------------------------------------------*/
 void LINALG::Solver::Solve(RefCountPtr<Epetra_Operator>  matrix,

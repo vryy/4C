@@ -646,6 +646,10 @@ void FluidImplicitTimeInt::NonlinearSolve()
   //                                 increment-norms are below this bound
   const double  ittol     =params_.get<double>("tolerance for nonlin iter");
 
+  //------------------------------ turn adaptive solver tolerance on/off
+  bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
+  double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
+
   int               itnum = 0;
   bool              stopnonliniter = false;
   double            tcpu;
@@ -715,8 +719,6 @@ void FluidImplicitTimeInt::NonlinearSolve()
         // time measurement: avm3 --- start TimeMonitor tm5
         tm5_ref_ = rcp(new TimeMonitor(*timeavm3_));
 
-        // extract the ML parameters
-        ParameterList&  mllist = solver_.Params().sublist("ML Parameters");
 
         // call the VM3 constructor (only in the first time step)
         if (step_ == 1) 
@@ -737,6 +739,8 @@ void FluidImplicitTimeInt::NonlinearSolve()
           LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,dirichtoggle_);
 
           // call VM3 constructor with system matrix
+          // extract the ML parameters
+          ParameterList&  mllist = solver_.Params().sublist("ML Parameters");
           vm3_solver_ = rcp(new VM3_Solver(sysmat_,dirichtoggle_,mllist,true,true) );
 
           // zero system matrix again
@@ -909,7 +913,6 @@ void FluidImplicitTimeInt::NonlinearSolve()
     {
       // time measurement: application of dbc --- start TimeMonitor tm6
       tm6_ref_ = rcp(new TimeMonitor(*timeapplydbc_));
-
       LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,dirichtoggle_);
 
       // end time measurement for application of dbc
@@ -923,8 +926,18 @@ void FluidImplicitTimeInt::NonlinearSolve()
       // get cpu time
       tcpu=ds_cputime();
 
+      // do adaptive linear solver tolerance (not in first solve)
+      if (isadapttol && itnum>1)
+      {
+        double currresidual = max(vresnorm,presnorm);
+        currresidual = max(currresidual,incvelnorm_L2/velnorm_L2);
+        currresidual = max(currresidual,incprenorm_L2/prenorm_L2);
+        // the 'better' value should be an input parameter?
+        solver_.AdaptTolerance(ittol,currresidual,adaptolbetter);
+      }
       solver_.Solve(sysmat_->EpetraMatrix(),incvel_,residual_,true,itnum==1);
-
+      solver_.ResetTolerance();
+      
       // end time measurement for solver
       tm7_ref_=null;
       dtsolve_=ds_cputime()-tcpu;
@@ -972,7 +985,7 @@ void FluidImplicitTimeInt::LinearSolve()
     cout << "solution of linearised fluid   ";
 
   // what is this meant for???
-  double density = 1;
+  double density = 1.;
 
   // -------------------------------------------------------------------
   // call elements to calculate system matrix
@@ -2066,7 +2079,7 @@ void FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> rel
   //interface_.InsertCondVector(ivel,relax_);
 
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  Teuchos::RCP<Epetra_Vector> griddisp = LINALG::CreateVector(*dofrowmap,true);
+  Teuchos::RCP<Epetra_Vector> griddisp = LINALG::CreateVector(*dofrowmap,false);
 
   // set the grid displacement independent of the trial value at the
   // interface
