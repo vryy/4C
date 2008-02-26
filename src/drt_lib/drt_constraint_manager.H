@@ -84,7 +84,9 @@ public:
     */
     double GetErrorNorm()
     {
-        return constrainterr_->Norm2();
+      double foo;
+      constrainterr_->Norm2(&foo);
+      return foo;
     };
 
     /*!
@@ -116,7 +118,7 @@ public:
     /*!
          \brief Update increment of lagrange multiplier Delta lambda_{n+1}=Delta lambda_{n}+factor*(vect+volerr)
     */
-    void UpdateLagrIncr(double factor, Epetra_SerialDenseVector vect);
+    void UpdateLagrIncr(double factor, Epetra_Vector vect);
 
     /*!
          \brief Update lagrange multiplier lambda_{n+1}=lambda_{n}+factor*(volerr)
@@ -143,6 +145,10 @@ public:
         return (*constrainterr_)[i];
     }
 
+    RCP<Epetra_Vector> GetError()
+    {
+      return constrainterr_;
+    }
     /*!
          \brief Add Increment to lagrange multiplier
     */
@@ -152,9 +158,14 @@ public:
     /*!
      \brief Return matrix containing first derivatives of constraints wrt displacements
      */
-    RCP<Epetra_MultiVector> GetConstraintMatrix()
+    RCP<LINALG::SparseMatrix> GetConstraintMatrix()
     {
-        return constrVec_;
+      return constrMatrix_;
+    };
+    
+    RCP<Epetra_Map> GetConstraintMap()
+    {
+      return constrmap_;
     };
 
     /*!
@@ -202,7 +213,7 @@ public:
       \param disi (in)      :      displacement increment Delta u
       \param dotprod (out)     :      resulting value of B * Delta u
       */
-    void ComputeConstrTimesDisi(Epetra_Vector disi,RCP<Epetra_SerialDenseVector> dotprod);
+    void ComputeConstrTimesDisi(Epetra_Vector disi,RCP<Epetra_Vector> dotprod);
 
     /*
          \brief Print out the values of current monitor values
@@ -224,7 +235,7 @@ private:
     */
 
     void SynchronizeSumConstraint(ParameterList& params,
-            RCP<Epetra_SerialDenseVector>& vect,const char* resultstr, const int numID, const int minID);
+            RCP<Epetra_Vector>& vect,const char* resultstr, const int numID, const int minID);
 
     /*!
       \brief synchronize processors after evaluating constraints by minimizing values returned woith a parameterlist
@@ -232,11 +243,12 @@ private:
     */
 
     void SynchronizeMinConstraint(ParameterList& params,
-            RCP<Epetra_SerialDenseVector>& vect,const char* resultstr);
+            RCP<Epetra_Vector>& vect,const char* resultstr);
     
     /*!
         \brief Setup number of constraint ID's by evaluating the parameterlist returned by elements 
     */
+    
     void ManageIDs(ParameterList& params,int& minID, int& maxID, int& numID);
     //@}
 
@@ -250,22 +262,25 @@ private:
 
     //! name@ Private Attributes
     DRT::Discretization& actdisc_;
-    RCP<Epetra_SerialDenseVector> referencevalues_;
-    RCP<Epetra_SerialDenseVector> initialvalues_;
-    RCP<Epetra_SerialDenseVector> actvalues_;
-    RCP<Epetra_SerialDenseVector> constrainterr_;
-    RCP<Epetra_SerialDenseVector> monitorvalues_;
-    RCP<Epetra_SerialDenseVector> initialmonvalues_;
+    RCP<Epetra_Map> constrmap_;
+    RCP<Epetra_Map> monitormap_;
+    RCP<Epetra_Vector> referencevalues_;
+    RCP<Epetra_Vector> initialvalues_;
+    RCP<Epetra_Vector> actvalues_;
+    RCP<Epetra_Vector> constrainterr_;
+    RCP<Epetra_Vector> monitorvalues_;
+    RCP<Epetra_Vector> initialmonvalues_;
     int minConstrID_;
     int maxConstrID_;
     int numConstrID_;
     int numMonitorID_;
     int maxMonitorID_;
     int minMonitorID_;
-    RCP<Epetra_SerialDenseVector> fact_;
-    RCP<Epetra_SerialDenseVector> lagrMultVec_;
-    RCP<Epetra_SerialDenseVector> lagrMultInc_;
-    RCP<Epetra_MultiVector> constrVec_;
+    RCP<Epetra_Vector> fact_;
+    RCP<Epetra_Vector> lagrMultVec_;
+    RCP<Epetra_Vector> lagrMultInc_;
+    //RCP<Epetra_MultiVector> constrVec_;
+    RCP<LINALG::SparseMatrix> constrMatrix_;
     bool haveconstraint_;
     bool havevolconstr_;
     bool haveareaconstr_;

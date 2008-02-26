@@ -320,7 +320,8 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
         //apply the right lagrange multiplier and right signs to matrix and vectors
         const int ID =params.get("ConditionID",-1);
         int numID=params.get("NumberofID",0);
-        RefCountPtr<Epetra_SerialDenseVector> lambdav=rcp(new Epetra_SerialDenseVector(numID));
+        RCP<Epetra_Map> reducedmap = rcp(new Epetra_Map(*(params.get<RCP<Epetra_Map> >("ReducedMap",reducedmap))));
+        RCP<Epetra_Vector> lambdav=rcp(new Epetra_Vector(*reducedmap));
         lambdav= params.get("LagrMultVector",lambdav);
         if (ID<0)
         {
@@ -329,7 +330,6 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
         const int minID =params.get("MinID",0);
         //update corresponding column in "constraint" matrix
         elevector2=elevector1;
-        elevector2.Scale(1);
         elevector1.Scale(1*(*lambdav)[ID-minID]);
         elematrix1.Scale(1*(*lambdav)[ID-minID]);
         //call submethod for volume evaluation

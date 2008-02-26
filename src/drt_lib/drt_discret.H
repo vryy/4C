@@ -975,13 +975,18 @@ public:
      \param condstring (in):	Name of condition to be evaluated
      */
 
+  /*virtual void EvaluateCondition(ParameterList& params,
+                                 RefCountPtr<LINALG::SparseOperator> systemmatrix1,
+                                 RefCountPtr<Epetra_Vector> systemvector1,
+                                 const string& condstring,
+                                 RefCountPtr<Epetra_MultiVector> systemmultvect);*/
+
   virtual void EvaluateCondition(ParameterList& params,
                                  RefCountPtr<LINALG::SparseOperator> systemmatrix1,
- 			RefCountPtr<Epetra_Vector> systemvector1,
- 		    const string& condstring,
- 		    RefCountPtr<Epetra_MultiVector> systemmultvect);
-
-
+                                 RefCountPtr<Epetra_Vector> systemvector1,
+                                 const string& condstring,
+                                 RefCountPtr<LINALG::SparseOperator> systemmatrix2
+                                 );
   /*!
   \brief Compute the nullspace of the discretization
 

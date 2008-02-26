@@ -14,6 +14,7 @@ Maintainer: Thomas Kloeppel
 #ifdef CCADISCRET
 
 #include "drt_constraint_manager.H"
+#include "linalg_systemmatrix.H"
 #include "iostream"
 
 
@@ -59,26 +60,30 @@ actdisc_(discr)
     haveconstraint_= haveareaconstr_||havevolconstr_;
     if (haveconstraint_)
     {
+        const Epetra_Map* dofrowmap = actdisc_.DofRowMap();
         ManageIDs(p,minConstrID_,maxConstrID_,numConstrID_);
+        //initialize constraint Matrix
+        constrMatrix_=rcp(new LINALG::SparseMatrix(*dofrowmap,numConstrID_,true,true));
+        //build domainmap of constrMatrix
+        constrmap_=rcp(new Epetra_Map(numConstrID_,0,actdisc_.Comm()));
         // sum up initial values
-        initialvalues_=rcp(new Epetra_SerialDenseVector(numConstrID_));
+        initialvalues_=rcp(new Epetra_Vector(*constrmap_));
         initialvalues_->Scale(0.0);
         SynchronizeSumConstraint(p,initialvalues_,"computed volume",numConstrID_,minConstrID_);
         SynchronizeSumConstraint(p,initialvalues_,"computed area",numConstrID_,minConstrID_);
         //Initialize Lagrange Multiplicators, reference values and errors
-        lagrMultVec_=rcp(new Epetra_SerialDenseVector(numConstrID_));
-        lagrMultInc_=rcp(new Epetra_SerialDenseVector(numConstrID_));
+        actdisc_.ClearState();
+        referencevalues_=rcp(new Epetra_Vector(*constrmap_));
+        actvalues_=rcp(new Epetra_Vector(*constrmap_));
+        actvalues_->Scale(0.0);
+        constrainterr_=rcp(new Epetra_Vector(*constrmap_));
+        
+        lagrMultVec_=rcp(new Epetra_Vector(*constrmap_));
+        lagrMultInc_=rcp(new Epetra_Vector(*constrmap_));
         lagrMultVec_->Scale(0.0);
         lagrMultInc_->Scale(0.0);
-        actdisc_.ClearState();
-        referencevalues_=rcp(new Epetra_SerialDenseVector(numConstrID_));
-        actvalues_=rcp(new Epetra_SerialDenseVector(numConstrID_));
-        actvalues_->Scale(0.0);
-        constrainterr_=rcp(new Epetra_SerialDenseVector(numConstrID_));
-        const Epetra_Map* dofrowmap = actdisc_.DofRowMap();
-        constrVec_=rcp(new Epetra_MultiVector(*dofrowmap,numConstrID_));
-        fact_=rcp(new Epetra_SerialDenseVector(numConstrID_));
-    }
+        fact_=rcp(new Epetra_Vector(*constrmap_));
+    } 
     havevolmonitor_=false;
     haveareamonitor_=false;
     //Check for Volume Monitors
@@ -106,8 +111,9 @@ actdisc_(discr)
     {
         ManageIDs(p1,minMonitorID_,maxMonitorID_,numMonitorID_);
         // sum up initial values
-        monitorvalues_=rcp(new Epetra_SerialDenseVector(numMonitorID_));
-        initialmonvalues_=rcp(new Epetra_SerialDenseVector(numMonitorID_));
+        monitormap_=rcp(new Epetra_Map(numMonitorID_,0,actdisc_.Comm()));
+        monitorvalues_=rcp(new Epetra_Vector(*monitormap_));
+        initialmonvalues_=rcp(new Epetra_Vector(*monitormap_));
         initialmonvalues_->Scale(0.0);
         SynchronizeSumConstraint(p1,initialmonvalues_,"computed volume",numMonitorID_,minMonitorID_);
         SynchronizeSumConstraint(p1,initialmonvalues_,"computed area",numMonitorID_,minMonitorID_);
@@ -130,9 +136,8 @@ void ConstrManager::StiffnessAndInternalForces(
     // create the parameters for the discretization
     ParameterList p;
     actvalues_->Scale(0.0);
+    constrMatrix_->PutScalar(0.0);
     const Epetra_Map* dofrowmap = actdisc_.DofRowMap();
-    constrVec_=rcp(new Epetra_MultiVector(*dofrowmap,numConstrID_));
-    constrVec_->PutScalar(0.0);
     //Deal with volume constraints
     if (havevolconstr_)
     {
@@ -150,11 +155,17 @@ void ConstrManager::StiffnessAndInternalForces(
         p.set("MinID",minConstrID_);
         p.set("MaxID",maxConstrID_);
         p.set("NumberofID",numConstrID_);
-        p.set("LagrMultVector",lagrMultVec_);
-        // set vector values needed by elements
+        // Convert Epetra_Vector constaining langrange multipliers to a Epetra_SerialDense Vector
+        // since every element with the constraint condition needs them
+        RCP<Epetra_Map> reducedmap = LINALG::AllreduceEMap(*constrmap_,actdisc_.Comm().MyPID());
+        RCP<Epetra_Vector> lagrMultVecDense = rcp(new Epetra_Vector(*reducedmap));
+        LINALG::Export(*lagrMultVec_,*lagrMultVecDense);
+        //SynchronizeDenseVector(lagrMultVecDense);
+        p.set("ReducedMap",reducedmap);
+        p.set("LagrMultVector",lagrMultVecDense);
         actdisc_.ClearState();
         actdisc_.SetState("displacement",disp);
-        actdisc_.EvaluateCondition(p,stiff,fint,"VolumeConstraint_3D",constrVec_);
+        actdisc_.EvaluateCondition(p,stiff,fint,"VolumeConstraint_3D",constrMatrix_);
         SynchronizeSumConstraint(p,actvalues_,"computed volume",numConstrID_,minConstrID_);
     }
     //Deal with volume constraints
@@ -173,23 +184,25 @@ void ConstrManager::StiffnessAndInternalForces(
         p.set("total time",time);
         p.set("MinID",minConstrID_);
         p.set("MaxID",maxConstrID_);
-        p.set("NumberofID",numConstrID_);
-        p.set("LagrMultVector",lagrMultVec_);
-        // set vector values needed by elements
+        p.set("NumberofID",numConstrID_);        
+        // Convert Epetra_Vector constaining langrange multipliers to a Epetra_SerialDense Vector
+        // since every element with the constraint condition needs them
+        vector<double> lagrMultVecSTL(numConstrID_);
+        lagrMultVec_->ExtractCopy(&(lagrMultVecSTL[0]));
+        RCP<Epetra_SerialDenseVector> lagrMultVecDense = rcp(new Epetra_SerialDenseVector(Copy,&(lagrMultVecSTL[0]),numConstrID_));
+        p.set("LagrMultVector",lagrMultVecDense);
         actdisc_.ClearState();
         actdisc_.SetState("displacement",disp);
-        actdisc_.EvaluateCondition(p,stiff,fint,"AreaConstraint_3D",constrVec_);
+        actdisc_.EvaluateCondition(p,stiff,fint,"AreaConstraint_3D",constrMatrix_);
         SynchronizeSumConstraint(p,actvalues_,"computed area",numConstrID_,minConstrID_);
     }
     SynchronizeMinConstraint(p,fact_,"LoadCurveFactor");
-    *referencevalues_=*initialvalues_;
-    for (int iter = 0; iter < numConstrID_; ++iter)
-    {
-        (*referencevalues_)[iter]*=(*fact_)[iter];
-        (*constrainterr_)[iter]=(*referencevalues_)[iter]-(*actvalues_)[iter];
-    }
+    //Compute current referencevolumes as elemetwise product of timecurvefactor and initialvalues    
+    referencevalues_->Multiply(1.0,*fact_,*initialvalues_,0.0);
+    constrainterr_->Update(1.0,*referencevalues_,-1.0,*actvalues_,0.0);
     actdisc_.ClearState();
-    // do NOT finalize the stiffness matrix, add mass and damping to it later
+    // finalize the constraint matrix
+    constrMatrix_->Complete(*constrmap_,*dofrowmap);
     return;
 }
 
@@ -215,10 +228,7 @@ void ConstrManager::ComputeError(double time,RCP<Epetra_Vector> disp)
         actdisc_.EvaluateCondition(p,"AreaConstraint_3D");
         SynchronizeSumConstraint(p, actvalues_,"computed area",numConstrID_,minConstrID_);
     }
-    for (int iter = 0; iter < numConstrID_; ++iter)
-    {
-      (*constrainterr_)[iter]=(*referencevalues_)[iter]-(*actvalues_)[iter];
-    }
+    constrainterr_->Update(1.0,*referencevalues_,-1.0,*actvalues_,0.0);
     return;
 }
 
@@ -226,12 +236,9 @@ void ConstrManager::ComputeError(double time,RCP<Epetra_Vector> disp)
 |(public)                                                        tk 01/08|
 |Update Lagrange increment according to linear uzawa algorithm.          |
 *-----------------------------------------------------------------------*/
-void ConstrManager::UpdateLagrIncr(double factor, Epetra_SerialDenseVector vect)
+void ConstrManager::UpdateLagrIncr(double factor, Epetra_Vector vect)
 {
-    for (int i=0;i < numConstrID_; i++)
-    {
-        (*lagrMultInc_)[i]+= factor*(vect[i]+(*constrainterr_)[i]);
-    }
+  lagrMultInc_->Update(factor,vect,factor,*constrainterr_,1.0);
     return;
 }
 /*----------------------------------------------------------------------*
@@ -240,10 +247,7 @@ void ConstrManager::UpdateLagrIncr(double factor, Epetra_SerialDenseVector vect)
 *-----------------------------------------------------------------------*/
 void ConstrManager::UpdateLagrMult(double factor)
 {
-    for (int i=0;i < numConstrID_; i++)
-    {
-        (*lagrMultVec_)[i]+=factor*(*constrainterr_)[i] ;
-    }
+  lagrMultVec_->Update(factor,*constrainterr_,1.0);
     return;
 }
 
@@ -253,10 +257,7 @@ void ConstrManager::UpdateLagrMult(double factor)
 *-----------------------------------------------------------------------*/
 void ConstrManager::UpdateLagrMult()
 {
-    for (int i=0;i < numConstrID_; i++)
-    {
-        (*lagrMultVec_)[i]+=(*lagrMultInc_)[i] ;
-    }
+    lagrMultVec_->Update(1.0,*lagrMultInc_,1.0);
     return;
 }
 
@@ -268,10 +269,8 @@ void ConstrManager::UpdateLagrMult()
 void ConstrManager::ComputeConstrTimesLagrIncr(RCP<Epetra_Vector> dotprod)
 {
     dotprod->PutScalar(0.0);
-    for (int i=0;i < numConstrID_; i++)
-    {
-        dotprod->Update(-(*lagrMultInc_)(i),*((*constrVec_)(i)),1.0);
-    }
+    constrMatrix_->Multiply(false,*lagrMultInc_,*dotprod) ;
+    dotprod->Scale(-1.0);
     return;
 }
 
@@ -280,16 +279,12 @@ void ConstrManager::ComputeConstrTimesLagrIncr(RCP<Epetra_Vector> dotprod)
 |Compute matrix-vector-product of matrix of constraint conditions with   |
 |displacement increment as needed to compute residual of uzawa algorithm |
 *-----------------------------------------------------------------------*/
-void ConstrManager::ComputeConstrTimesDisi(Epetra_Vector disi, RCP<Epetra_SerialDenseVector> dotprod)
+void ConstrManager::ComputeConstrTimesDisi(Epetra_Vector disi, RCP<Epetra_Vector> dotprod)
 {
 
-    for (int i=0; i < numConstrID_; i++)
-    {
-        double temp;
-        disi.Dot(*((*constrVec_)(i)),&temp);
-        (*dotprod)(i)=temp;
-    }
-    return;
+  dotprod->PutScalar(0.0);
+  constrMatrix_->Multiply(true,disi,*dotprod) ;
+  return;
 }
 
 /*-----------------------------------------------------------------------*
@@ -348,18 +343,19 @@ void ConstrManager::ManageIDs(ParameterList& params, int& minID, int& maxID, int
  |constraints by summing them up                                        |
  *----------------------------------------------------------------------*/
 void ConstrManager::SynchronizeSumConstraint(ParameterList& params,
-                                RCP<Epetra_SerialDenseVector>& vect,
+                                RCP<Epetra_Vector>& vect,
                                 const char* resultstring, const int numID, const int minID)
 {
-    for (int i = 0; i < numID; ++i)
-    {
-        char valname[30];
-        sprintf(valname,"%s %d",resultstring,i+minID);
-        double currval=0.0;
-        actdisc_.Comm().SumAll(&(params.get(valname,0.0)),&(currval),1);
-        (*vect)[i]+=currval;
-    }
-    return;
+  
+  for (int i = 0; i < numID; ++i)
+  {
+    char valname[30];
+    sprintf(valname,"%s %d",resultstring,i+minID);
+    double currval=0.0;
+    actdisc_.Comm().SumAll(&(params.get(valname,0.0)),&(currval),1);
+    vect->SumIntoGlobalValues(1,&currval,&i);
+  }
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -368,18 +364,19 @@ void ConstrManager::SynchronizeSumConstraint(ParameterList& params,
  |constraint by finding minimum value                                   |
  *----------------------------------------------------------------------*/
 void ConstrManager::SynchronizeMinConstraint(ParameterList& params,
-                                RCP<Epetra_SerialDenseVector>& vect,
+                                RCP<Epetra_Vector>& vect,
                                 const char* resultstring)
 {
-    for (int i = 0; i < numConstrID_; ++i)
-    {
-        char valname[30];
-        sprintf(valname,"%s %d",resultstring,i+minConstrID_);
-        double currval=1;
-        actdisc_.Comm().MinAll(&(params.get(valname,1.0)),&(currval),1);
-        (*vect)[i]=currval;
-    }
-    return;
+
+  for (int i = 0; i < numConstrID_; ++i)
+  {
+    char valname[30];
+    sprintf(valname,"%s %d",resultstring,i+minConstrID_);
+    double currval=1;
+    actdisc_.Comm().MinAll(&(params.get(valname,1.0)),&(currval),1);
+    vect->ReplaceGlobalValues(1,&currval,&i);
+  }
+  return;
 }
 
 #endif

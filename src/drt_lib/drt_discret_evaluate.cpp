@@ -477,13 +477,13 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
 
 
 /*----------------------------------------------------------------------*
- |  evaluate a condition (public)                               tk 07/07|
+ |  evaluate a condition (public)                               tk 02/08|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::EvaluateCondition(ParameterList& params,
-                                             RefCountPtr<LINALG::SparseOperator> systemmatrix1,
+                                            RefCountPtr<LINALG::SparseOperator> systemmatrix1,
                                             RefCountPtr<Epetra_Vector> systemvector1,
                                             const string& condstring,
-                                            RefCountPtr<Epetra_MultiVector> systemmultvect)
+                                            RefCountPtr<LINALG::SparseOperator> systemmatrix2)
 {
   if (!Filled()) dserror("FillComplete() was not called");
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
@@ -497,7 +497,7 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
 
   const bool assemblemat1 = systemmatrix1!=Teuchos::null;
   const bool assemblevec1 = systemvector1!=Teuchos::null;
-  const bool assemblevec2 = systemmultvect!=Teuchos::null;
+  const bool assemblevec2 = systemmatrix2!=Teuchos::null;
 
   //-----------------------------------------------------------------------
   // loop through conditions and evaluate them iff they match the criterion
@@ -530,7 +530,7 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
       }
       else
       {
-        dserror("Cannot use multivector version condition evaluation for conditions without ConditionID");
+        dserror("Cannot use SparseMatrix version of condition evaluation for conditions without ConditionID");
       }
       char factorname[30];
       sprintf(factorname,"LoadCurveFactor %d",(*CondIDVec)[0]);
@@ -572,14 +572,16 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
         if (assemblevec2)
         {
           int minID=params.get("MinID",0);
-          LINALG::Assemble(*systemmultvect,(*CondIDVec)[0]-minID,elevector2,lm,lmowner);
+          vector<int> colvec(1);
+          colvec[0]=(*CondIDVec)[0]-minID;
+          systemmatrix2->Assemble(elevector2,lm,lmowner,colvec);
         }
       }
     }
   } //for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
-
   return;
 } // end of DRT::Discretization::EvaluateCondition
+
 
 
 /*----------------------------------------------------------------------*
@@ -682,8 +684,8 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
  |  evaluate spatial function (public)                       g.bau 03/07|
  *----------------------------------------------------------------------*/
 double EvaluateFunction(DRT::Node*      node,
-		        int             index,
-			int             funct_num)
+                        int index,
+                        int funct_num)
 {
   return DRT::UTILS::FunctionManager::Instance().Funct(funct_num-1).Evaluate(index,node->X());
 }

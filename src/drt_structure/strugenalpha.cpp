@@ -237,12 +237,8 @@ maxentriesperrow_(81)
   //------------------------------------------------------ time step index
   step = 0;
   params_.set<int>("step",step);
-
   return;
 } // StruGenAlpha::StruGenAlpha
-
-
-
 
 /*----------------------------------------------------------------------*
  |  do constant predictor step (public)                      mwgee 03/07|
@@ -1246,11 +1242,15 @@ void StruGenAlpha::FullNewton()
   }
   else
   {
-     if (!myrank_ and printscreen)
-     {
-       PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
-                   fresmnorm,disinorm,convcheck);
-     }
+    if (ConstrMan_->HaveMonitor())
+    {
+      ConstrMan_->ComputeMonitorValues(dism_);
+    }
+    if (!myrank_ and printscreen)
+    {
+      PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
+                  fresmnorm,disinorm,convcheck);
+    }
   }
 
   params_.set<int>("num iterations",numiter);
@@ -1344,15 +1344,10 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   fresm_->Norm2(&fresmnorm);
 
   double constrnorm=ConstrMan_->GetErrorNorm();
-  int numConstr=ConstrMan_->GetNumberOfConstraints() ;
   Epetra_Time timer(discret_.Comm());
   timer.ResetStartTime();
-  bool print_unconv = true;
-
-
-  while (!Converged(convcheck, disinorm, fresmnorm, constrnorm, toldisp, tolres, tolconstr)
-         and numiter<=maxiter)
-  {
+  bool print_unconv = true;  
+  while (!Converged(convcheck, disinorm, fresmnorm, constrnorm, toldisp, tolres, tolconstr) and numiter<=maxiter){
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
@@ -1378,9 +1373,10 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     int count_paramadapt=1;
 
     ConstrMan_->ScaleLagrIncr(0.0);
-
     RCP<Epetra_Vector> constrVecWeight=LINALG::CreateVector(*dofrowmap,true);
-    RCP<Epetra_SerialDenseVector> dotprod= rcp(new Epetra_SerialDenseVector(numConstr));
+    
+    RCP<Epetra_Map> domainmap= ConstrMan_->GetConstraintMap();
+    RCP<Epetra_Vector> dotprod= rcp(new Epetra_Vector(*domainmap));
 
     // Compute residual of the uzawa algorithm
 
@@ -1396,20 +1392,16 @@ void StruGenAlpha::FullNewtonLinearUzawa()
         uzawa_res.Multiply(1.0,*invtoggle_,rescopy,0.0);
     }
     uzawa_res.Norm2(&norm_uzawa);
-    Epetra_SerialDenseVector constr_res(numConstr);
+    Epetra_Vector constr_res(*domainmap);
     ConstrMan_->ComputeConstrTimesDisi(*disi_,dotprod);
-    for (int foo = 0; foo < numConstr; ++foo)
-    {
-        constr_res[foo]=(*dotprod)[foo]+ConstrMan_->GetError(foo);
-    }
-    norm_constr_uzawa=constr_res.Norm2();
+    constr_res.Update(1.0,*dotprod,1.0,*(ConstrMan_->GetError()),0.0);
+    constr_res.Norm2(&norm_constr_uzawa);
     quotient =1;
     //Solve one iteration step with augmented lagrange
     //Since we calculate displacement norm as well, at least one step has to be taken
     while (((norm_uzawa > tolres/10 or norm_constr_uzawa>tolconstr/10)
             and numiter_uzawa < maxiterUzawa) or numiter_uzawa<1)
     {
-
         LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresmcopy,zeros_,dirichtoggle_);
         // solve for disi
         // Solve K . IncD = -R  ===>  IncD_{n+1}
@@ -1439,13 +1431,10 @@ void StruGenAlpha::FullNewtonLinearUzawa()
         }
         norm_uzawa_alt=norm_uzawa;
         uzawa_res.Norm2(&norm_uzawa);
-        Epetra_SerialDenseVector constr_res(numConstr);
+        Epetra_Vector constr_res(*domainmap);
 
-        for (int foo = 0; foo < numConstr; ++foo)
-        {
-            constr_res[foo]=(*dotprod)[foo]+ConstrMan_->GetError(foo);
-        }
-        norm_constr_uzawa=constr_res.Norm2();
+        constr_res.Update(1.0,*dotprod,1.0,*(ConstrMan_->GetError()),0.0);
+        constr_res.Norm2(& norm_constr_uzawa);
 
         //-------------Adapt Uzawa parameter--------------
         // For a constant parameter the quotient of two successive residual norms
@@ -1590,7 +1579,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     if (!myrank_ and (printscreen or printerr))
     {
       PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
-                  fresmnorm,disinorm,convcheck,constrnorm, Uzawa_param);
+                  fresmnorm,disinorm,convcheck,constrnorm,Uzawa_param);
     }
 
     //--------------------------------- increment equilibrium loop index
@@ -1608,11 +1597,15 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   }
   else
   {
-     if (!myrank_ and printscreen)
-     {
-       PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
-                   fresmnorm,disinorm,convcheck,constrnorm, Uzawa_param);
-     }
+    if (ConstrMan_->HaveMonitor())
+    {
+      ConstrMan_->ComputeMonitorValues(dism_);
+    }
+    if (!myrank_ and printscreen)
+    {
+      PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
+                  fresmnorm,disinorm,convcheck,constrnorm, Uzawa_param);
+    }
   }
 
   params_.set<int>("num iterations",numiter);
@@ -1789,11 +1782,15 @@ void StruGenAlpha::ModifiedNewton()
   }
   else
   {
-     if (!myrank_ and printscreen)
-     {
-       PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
-                   fresmnorm,disinorm,convcheck);
-     }
+    if (ConstrMan_->HaveMonitor())
+    {
+      ConstrMan_->ComputeMonitorValues(dism_);
+    }
+    if (!myrank_ and printscreen)
+    {
+      PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
+                  fresmnorm,disinorm,convcheck);
+    }
   }
 
   params_.set<int>("num iterations",numiter);
@@ -3468,11 +3465,10 @@ void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_uncon
   }
   else
   {
-	if (ConstrMan_->HaveMonitor())
-	{
-	  ConstrMan_->ComputeMonitorValues(dism_);
-	  ConstrMan_->PrintMonitorValues();
-	}
+    if (ConstrMan_->HaveMonitor())
+    {
+      ConstrMan_->PrintMonitorValues();
+    }
     double timepernlnsolve = timer.ElapsedTime();
 
     if (relres)
@@ -3566,12 +3562,11 @@ void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_uncon
   }
   else
   {
-      if (ConstrMan_->HaveMonitor())
-      {
-          ConstrMan_->ComputeMonitorValues(disn_);
-          ConstrMan_->PrintMonitorValues();
-      }
-      double timepernlnsolve = timer.ElapsedTime();
+    if (ConstrMan_->HaveMonitor())
+    {
+      ConstrMan_->PrintMonitorValues();
+    }
+    double timepernlnsolve = timer.ElapsedTime();
 
     if (relres)
     {
