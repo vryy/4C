@@ -426,10 +426,6 @@ protected:
                                  Epetra_SerialDenseMatrix* stresses,
                                  const double              time);
 
-  void soh8_stress(vector<double>& mydisp,
-                   Epetra_SerialDenseMatrix* stresses,
-                   const double time);
-
   void soh8_expol(Epetra_SerialDenseMatrix& stresses,
                   Epetra_SerialDenseMatrix& nodalstresses);
 

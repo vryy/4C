@@ -586,11 +586,9 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
       }
     }
 
-    if (force != NULL || stiffmatrix != NULL) {
-      if (force != NULL) {
-        // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
-        (*force).Multiply('T', 'N', detJ * (*weights)(gp), bop, stress, 1.0);
-      }
+    if (force != NULL && stiffmatrix != NULL) {
+      // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
+      (*force).Multiply('T', 'N', detJ * (*weights)(gp), bop, stress, 1.0);
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
       Epetra_SerialDenseMatrix cb(NUMSTR_SOH8, NUMDOF_SOH8);
@@ -619,15 +617,15 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
               * (*deriv_sp)(2+7*NUMDIM_SOH8, jnod);
           // ANS modification in st-dir
           G_ij(4) = 0.5*((1+r[gp]) * ((*deriv_sp)(1+1*NUMDIM_SOH8, inod)
-              * (*deriv_sp)(2+1*NUMDIM_SOH8, jnod) +(*deriv_sp)(
-              2+1*NUMDIM_SOH8, inod) * (*deriv_sp)(1+1*NUMDIM_SOH8, jnod)) +(1
+              * (*deriv_sp)(2+1*NUMDIM_SOH8, jnod) +(*deriv_sp)( 2+1
+              *NUMDIM_SOH8, inod) * (*deriv_sp)(1+1*NUMDIM_SOH8, jnod)) +(1
               -r[gp]) * ((*deriv_sp)(1+3*NUMDIM_SOH8, inod) * (*deriv_sp)(2+3
               *NUMDIM_SOH8, jnod) +(*deriv_sp)(2+3*NUMDIM_SOH8, inod)
               * (*deriv_sp)(1+3*NUMDIM_SOH8, jnod)));
           // ANS modification in rt-dir
           G_ij(5) = 0.5*((1-s[gp]) * ((*deriv_sp)(0+0*NUMDIM_SOH8, inod)
-              * (*deriv_sp)(2+0*NUMDIM_SOH8, jnod) +(*deriv_sp)(
-              2+0*NUMDIM_SOH8, inod) * (*deriv_sp)(0+0*NUMDIM_SOH8, jnod)) +(1
+              * (*deriv_sp)(2+0*NUMDIM_SOH8, jnod) +(*deriv_sp)( 2+0
+              *NUMDIM_SOH8, inod) * (*deriv_sp)(0+0*NUMDIM_SOH8, jnod)) +(1
               +s[gp]) * ((*deriv_sp)(0+2*NUMDIM_SOH8, inod) * (*deriv_sp)(2+2
               *NUMDIM_SOH8, jnod) +(*deriv_sp)(2+2*NUMDIM_SOH8, inod)
               * (*deriv_sp)(0+2*NUMDIM_SOH8, jnod)));
@@ -678,7 +676,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
   }/* ==================================================== end of Loop over GP */
    /* =========================================================================*/
 
-  if (force != NULL || stiffmatrix != NULL) {
+  if (force != NULL && stiffmatrix != NULL) {
     // EAS technology: ------------------------------------------------------ EAS
     // subtract EAS matrices from disp-based Kdd to "soften" element
     if (eastype_ != soh8_easnone) {
@@ -714,9 +712,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
       }
     } // -------------------------------------------------------------------- EAS
     /*------------------------------------- make estif absolute symmetric */
-    if (stiffmatrix != NULL) {
-      SymmetriseMatrix(*stiffmatrix);
-    }
+    //improvement?:  SymmetriseMatrix(*stiffmatrix);
   }
 //  Epetra_SerialDenseVector L5(NUMDOF_SOH8);
 //  SymmetricEigen(*stiffmatrix,L5,NUMDOF_SOH8,'N');

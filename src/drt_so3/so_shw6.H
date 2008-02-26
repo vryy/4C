@@ -164,6 +164,7 @@ private:
                                  Epetra_SerialDenseMatrix* stiffmatrix,
                                  Epetra_SerialDenseMatrix* massmatrix,
                                  Epetra_SerialDenseVector* force,
+                                 Epetra_SerialDenseMatrix* elestress,
                                  const double              time);
 
   void soshw6_anssetup(

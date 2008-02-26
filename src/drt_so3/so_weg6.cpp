@@ -30,10 +30,14 @@ DRT::ELEMENTS::So_weg6::So_weg6(int id, int owner) :
 DRT::Element(id,element_so_weg6,owner),
 data_()
 {
+  volume_.resize(0);
   surfaces_.resize(0);
   surfaceptrs_.resize(0);
   lines_.resize(0);
   lineptrs_.resize(0);
+  kintype_ = sow6_totlag;
+  rewind_ = false;
+  donerewinding_ = false;
   return;
 }
 
@@ -43,11 +47,15 @@ data_()
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_weg6::So_weg6(const DRT::ELEMENTS::So_weg6& old) :
 DRT::Element(old),
+kintype_(old.kintype_),
 data_(old.data_),
+volume_(old.volume_),
 surfaces_(old.surfaces_),
 surfaceptrs_(old.surfaceptrs_),
 lines_(old.lines_),
-lineptrs_(old.lineptrs_)
+lineptrs_(old.lineptrs_),
+rewind_(old.rewind_),
+donerewinding_(old.donerewinding_)
 {
   return;
 }
@@ -86,8 +94,6 @@ void DRT::ELEMENTS::So_weg6::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
-  // stresstype_
-  AddtoPack(data,stresstype_);
   // kintype_
   AddtoPack(data,kintype_);
   // rewind flags
@@ -117,8 +123,6 @@ void DRT::ELEMENTS::So_weg6::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  // stresstype_
-  ExtractfromPack(position,data,stresstype_);
   // kintype_
   ExtractfromPack(position,data,kintype_);
   // rewinding flags
@@ -154,6 +158,54 @@ void DRT::ELEMENTS::So_weg6::Print(ostream& os) const
   cout << endl;
   cout << data_;
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  extrapolation of quantities at the GPs to the nodes     maf 02/08   |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_weg6::soweg6_expol(Epetra_SerialDenseMatrix& stresses,
+                                          Epetra_SerialDenseMatrix& nodalstresses)
+{
+  static Epetra_SerialDenseMatrix expol(NUMNOD_WEG6,NUMGPT_WEG6);
+  static bool isfilled;
+
+  if (isfilled==true)
+  {
+    nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
+  }
+  else
+  {
+   expol(0,0)=  -0.61004233964073;
+   expol(0,1)=   0.12200846792815;
+   expol(0,2)=   0.12200846792815;
+   expol(0,3)=   2.27670900630740;
+   expol(0,4)=  -0.45534180126148;
+   expol(0,5)=  -0.45534180126148;
+   expol(1,1)=  -0.61004233964073;
+   expol(1,2)=   0.12200846792815;
+   expol(1,3)=  -0.45534180126148;
+   expol(1,4)=   2.27670900630740;
+   expol(1,5)=  -0.45534180126148;
+   expol(2,2)=  -0.61004233964073;
+   expol(2,3)=  -0.45534180126148;
+   expol(2,4)=  -0.45534180126148;
+   expol(2,5)=   2.27670900630740;
+   expol(3,3)=  -0.61004233964073;
+   expol(3,4)=   0.12200846792815;
+   expol(3,5)=   0.12200846792815;
+   expol(4,4)=  -0.61004233964073;
+   expol(4,5)=   0.12200846792815;
+   expol(5,5)=  -0.61004233964073;
+   for (int i=0;i<NUMNOD_WEG6;++i)
+    {
+      for (int j=0;j<i;++j)
+      {
+        expol(i,j)=expol(j,i);
+      }
+    }
+
+    nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
+  }
 }
 
 /*----------------------------------------------------------------------*

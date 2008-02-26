@@ -88,20 +88,6 @@ bool DRT::ELEMENTS::So_shw6::ReadElement()
   rewind_ = false;
   donerewinding_ = false;
 
-  
-  // read stress evaluation/output type
-  frchar("STRESS",buffer,&ierr);
-  if (ierr!=1) dserror("reading of SOLIDSHW6 stress failed");
-  if (strncmp(buffer,"none",4)==0)  stresstype_= sow6_stress_none;
-  if (strncmp(buffer,"Gpxyz",5)==0) stresstype_= sow6_stress_gpxyz;
-  if (strncmp(buffer,"Gprst",5)==0) stresstype_= sow6_stress_gprst;
-  if (strncmp(buffer,"Gp123",5)==0) stresstype_= sow6_stress_gp123;
-  if (strncmp(buffer,"Ndxyz",5)==0) stresstype_= sow6_stress_ndxyz;
-  if (strncmp(buffer,"Ndrst",5)==0) stresstype_= sow6_stress_ndrst;
-  if (strncmp(buffer,"Nd123",5)==0) stresstype_= sow6_stress_nd123;
-  // set default: no stresses
-  else stresstype_= sow6_stress_none;
-
   return true;
 } // So_weg6::ReadElement()
 

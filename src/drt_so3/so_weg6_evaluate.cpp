@@ -61,7 +61,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
   else if (action=="calc_struct_eleload")       act = So_weg6::calc_struct_eleload;
   else if (action=="calc_struct_fsiload")       act = So_weg6::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")  act = So_weg6::calc_struct_update_istep;
-  else if (action=="calc_init_vol")             act = So_weg6::calc_init_vol;
+  else if (action=="postprocess_stress")        act = So_weg6::postprocess_stress;
   else dserror("Unknown type of action for So_weg6");
 
   const double time = params.get("total time",-1.0);
@@ -75,7 +75,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       for (int i=0; i<(int)mydisp.size(); ++i) mydisp[i] = 0.0;
       vector<double> myres(lm.size());
       for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;
-      sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1, time);
+      sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,time);
     }
     break;
 
@@ -89,7 +89,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1, time);
+      sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,time);
     }
     break;
 
@@ -113,13 +113,118 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1, time);
+      sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,time);
+    }
+    break;
+    // evaluate stresses at gauss points
+    case calc_struct_stress:{
+      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<vector<char> > data = params.get<RCP<vector<char> > >("stress", null);
+      if (disp==null) dserror("Cannot get state vectors 'displacement'");
+      if (data==null) dserror("Cannot get stress 'data'");
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      vector<double> myres(lm.size());
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      Epetra_SerialDenseMatrix stress(NUMGPT_WEG6,NUMSTR_WEG6);
+      sow6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,time);
+      AddtoPack(*data, stress);
     }
     break;
 
-    // evaluate stresses
-    case calc_struct_stress: {
-      dserror("Case calc_struct_stress not yet implemented");
+    // postprocess stresses at gauss points
+    case postprocess_stress:{
+
+      const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
+        params.get<RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
+      if (gpstressmap==null)
+        dserror("no gp stress map available for postprocessing");
+      string stresstype = params.get<string>("stresstype","ndxyz");
+      int gid = Id();
+      RCP<Epetra_SerialDenseMatrix> gpstress = (*gpstressmap)[gid];
+
+      if (stresstype=="ndxyz") {
+        // extrapolate stresses at Gauss points to nodes
+        Epetra_SerialDenseMatrix nodalstresses(NUMNOD_WEG6,NUMSTR_WEG6);
+        soweg6_expol(*gpstress,nodalstresses);
+
+        // average nodal stresses between elements
+        // -> divide by number of adjacent elements
+        vector<int> numadjele(NUMNOD_WEG6);
+
+        for (int i=0;i<NUMNOD_WEG6;++i){
+          DRT::Node* node=Nodes()[i];
+          numadjele[i]=node->NumElement();
+        }
+
+        for (int i=0;i<NUMNOD_WEG6;++i){
+          elevec1(3*i)=nodalstresses(i,0)/numadjele[i];
+          elevec1(3*i+1)=nodalstresses(i,1)/numadjele[i];
+          elevec1(3*i+2)=nodalstresses(i,2)/numadjele[i];
+        }
+        for (int i=0;i<NUMNOD_WEG6;++i){
+          elevec2(3*i)=nodalstresses(i,3)/numadjele[i];
+          elevec2(3*i+1)=nodalstresses(i,4)/numadjele[i];
+          elevec2(3*i+2)=nodalstresses(i,5)/numadjele[i];
+        }
+      }
+      else if (stresstype=="cxyz") {
+        RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
+        if (elestress==null)
+          dserror("No element stress vector available");
+        const Epetra_BlockMap elemap = elestress->Map();
+        int lid = elemap.LID(Id());
+        if (lid!=-1) {
+          for (int i = 0; i < NUMSTR_WEG6; ++i) {
+            (*((*elestress)(i)))[lid] = 0.;
+            for (int j = 0; j < NUMGPT_WEG6; ++j) {
+              (*((*elestress)(i)))[lid] += 0.125 * (*gpstress)(j,i);
+            }
+          }
+        }
+      }
+      else if (stresstype=="cxyz_ndxyz") {
+        // extrapolate stresses at Gauss points to nodes
+        Epetra_SerialDenseMatrix nodalstresses(NUMNOD_WEG6,NUMSTR_WEG6);
+        soweg6_expol(*gpstress,nodalstresses);
+
+        // average nodal stresses between elements
+        // -> divide by number of adjacent elements
+        vector<int> numadjele(NUMNOD_WEG6);
+
+        for (int i=0;i<NUMNOD_WEG6;++i){
+          DRT::Node* node=Nodes()[i];
+          numadjele[i]=node->NumElement();
+        }
+
+        for (int i=0;i<NUMNOD_WEG6;++i){
+          elevec1(3*i)=nodalstresses(i,0)/numadjele[i];
+          elevec1(3*i+1)=nodalstresses(i,1)/numadjele[i];
+          elevec1(3*i+2)=nodalstresses(i,2)/numadjele[i];
+        }
+        for (int i=0;i<NUMNOD_WEG6;++i){
+          elevec2(3*i)=nodalstresses(i,3)/numadjele[i];
+          elevec2(3*i+1)=nodalstresses(i,4)/numadjele[i];
+          elevec2(3*i+2)=nodalstresses(i,5)/numadjele[i];
+        }
+        RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
+        if (elestress==null)
+          dserror("No element stress vector available");
+        const Epetra_BlockMap elemap = elestress->Map();
+        int lid = elemap.LID(Id());
+        if (lid!=-1) {
+          for (int i = 0; i < NUMSTR_WEG6; ++i) {
+            (*((*elestress)(i)))[lid] = 0.;
+            for (int j = 0; j < NUMGPT_WEG6; ++j) {
+              (*((*elestress)(i)))[lid] += 0.125 * (*gpstress)(j,i);
+            }
+          }
+        }
+      }
+      else{
+        dserror("unknown type of stress output on element level");
+      }
     }
     break;
 
@@ -166,6 +271,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
       Epetra_SerialDenseMatrix* stiffmatrix,    // element stiffness matrix
       Epetra_SerialDenseMatrix* massmatrix,     // element mass matrix
       Epetra_SerialDenseVector* force,          // element internal force vector
+      Epetra_SerialDenseMatrix* elestress,      // element stresses
       const double              time)           // current absolute time
 {
 
@@ -313,33 +419,41 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
     sow6_mat_sel(&stress,&cmat,&density,&glstrain, time);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
-    // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
-    (*force).Multiply('T','N',detJ * (*weights)(gp),bop,stress,1.0);
-
-    // integrate `elastic' and `initial-displacement' stiffness matrix
-    // keu = keu + (B^T . C . B) * detJ * w(gp)
-    Epetra_SerialDenseMatrix cb(NUMSTR_WEG6,NUMDOF_WEG6);
-    cb.Multiply('N','N',1.0,cmat,bop,1.0);          // temporary C . B
-    (*stiffmatrix).Multiply('T','N',detJ * (*weights)(gp),bop,cb,1.0);
-
-    // integrate `geometric' stiffness matrix and add to keu *****************
-    Epetra_SerialDenseVector sfac(stress); // auxiliary integrated stress
-    sfac.Scale(detJ * (*weights)(gp));     // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
-    vector<double> SmB_L(NUMDIM_WEG6);     // intermediate Sm.B_L
-    // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
-    for (int inod=0; inod<NUMNOD_WEG6; ++inod){
-      SmB_L[0] = sfac(0) * N_XYZ(0,inod) + sfac(3) * N_XYZ(1,inod) + sfac(5) * N_XYZ(2,inod);
-      SmB_L[1] = sfac(3) * N_XYZ(0,inod) + sfac(1) * N_XYZ(1,inod) + sfac(4) * N_XYZ(2,inod);
-      SmB_L[2] = sfac(5) * N_XYZ(0,inod) + sfac(4) * N_XYZ(1,inod) + sfac(2) * N_XYZ(2,inod);
-      for (int jnod=0; jnod<NUMNOD_WEG6; ++jnod){
-        double bopstrbop = 0.0;            // intermediate value
-        for (int idim=0; idim<NUMDIM_WEG6; ++idim) bopstrbop += N_XYZ(idim,jnod) * SmB_L[idim];
-        (*stiffmatrix)(NUMDIM_WEG6*inod+0,NUMDIM_WEG6*jnod+0) += bopstrbop;
-        (*stiffmatrix)(NUMDIM_WEG6*inod+1,NUMDIM_WEG6*jnod+1) += bopstrbop;
-        (*stiffmatrix)(NUMDIM_WEG6*inod+2,NUMDIM_WEG6*jnod+2) += bopstrbop;
+    // return gp stresses
+    if (elestress != NULL){
+      for (int i = 0; i < NUMSTR_WEG6; ++i) {
+        (*elestress)(gp,i) = stress(i);
       }
-    } // end of integrate `geometric' stiffness ******************************
+    }
 
+    if (force != NULL && stiffmatrix != NULL) {
+      // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
+      (*force).Multiply('T','N',detJ * (*weights)(gp),bop,stress,1.0);
+  
+      // integrate `elastic' and `initial-displacement' stiffness matrix
+      // keu = keu + (B^T . C . B) * detJ * w(gp)
+      Epetra_SerialDenseMatrix cb(NUMSTR_WEG6,NUMDOF_WEG6);
+      cb.Multiply('N','N',1.0,cmat,bop,1.0);          // temporary C . B
+      (*stiffmatrix).Multiply('T','N',detJ * (*weights)(gp),bop,cb,1.0);
+  
+      // integrate `geometric' stiffness matrix and add to keu *****************
+      Epetra_SerialDenseVector sfac(stress); // auxiliary integrated stress
+      sfac.Scale(detJ * (*weights)(gp));     // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
+      vector<double> SmB_L(NUMDIM_WEG6);     // intermediate Sm.B_L
+      // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
+      for (int inod=0; inod<NUMNOD_WEG6; ++inod){
+        SmB_L[0] = sfac(0) * N_XYZ(0,inod) + sfac(3) * N_XYZ(1,inod) + sfac(5) * N_XYZ(2,inod);
+        SmB_L[1] = sfac(3) * N_XYZ(0,inod) + sfac(1) * N_XYZ(1,inod) + sfac(4) * N_XYZ(2,inod);
+        SmB_L[2] = sfac(5) * N_XYZ(0,inod) + sfac(4) * N_XYZ(1,inod) + sfac(2) * N_XYZ(2,inod);
+        for (int jnod=0; jnod<NUMNOD_WEG6; ++jnod){
+          double bopstrbop = 0.0;            // intermediate value
+          for (int idim=0; idim<NUMDIM_WEG6; ++idim) bopstrbop += N_XYZ(idim,jnod) * SmB_L[idim];
+          (*stiffmatrix)(NUMDIM_WEG6*inod+0,NUMDIM_WEG6*jnod+0) += bopstrbop;
+          (*stiffmatrix)(NUMDIM_WEG6*inod+1,NUMDIM_WEG6*jnod+1) += bopstrbop;
+          (*stiffmatrix)(NUMDIM_WEG6*inod+2,NUMDIM_WEG6*jnod+2) += bopstrbop;
+        }
+      } // end of integrate `geometric' stiffness ******************************
+    }
 
     if (massmatrix != NULL){ // evaluate mass matrix +++++++++++++++++++++++++
       // integrate concistent mass matrix

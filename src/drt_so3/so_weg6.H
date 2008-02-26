@@ -283,7 +283,7 @@ protected:
     calc_struct_eleload,
     calc_struct_fsiload,
     calc_struct_update_istep,
-    calc_init_vol
+    postprocess_stress
   };
 
   //! kinematic types of so_weg6
@@ -293,21 +293,8 @@ protected:
     sow6_totlag,
     sow6_updlag
   };
-  //! stress evaluation types of so_weg6
-  enum StressType
-  {
-    sow6_stress_none,
-    sow6_stress_gpxyz,
-    sow6_stress_gprst,
-    sow6_stress_gp123,
-    sow6_stress_ndxyz,
-    sow6_stress_ndrst,
-    sow6_stress_nd123
-  };
   //! kinematic type
   KinematicType                                   kintype_;
-  //! type of stress evaluation
-  StressType                                      stresstype_;
   //! container containing all kind of solid3 thisandthat
   DRT::Container                                  data_;
   //! vector of volume (length 1) of this element
@@ -339,6 +326,7 @@ protected:
                                  Epetra_SerialDenseMatrix* stiffmatrix,
                                  Epetra_SerialDenseMatrix* massmatrix,
                                  Epetra_SerialDenseVector* force,
+                                 Epetra_SerialDenseMatrix* elestress,
                                  const double              time);
 
   void sow6_mat_sel(Epetra_SerialDenseVector* stress,
@@ -352,6 +340,9 @@ protected:
                        Epetra_SerialDenseVector** weights);
 
   bool soweg6_checkRewinding();
+
+  void soweg6_expol(Epetra_SerialDenseMatrix& stresses,
+                    Epetra_SerialDenseMatrix& nodalstresses);
 
 
 }; // class So_weg6
