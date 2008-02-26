@@ -348,7 +348,6 @@ protected:
     calc_struct_linstiffmass,
     calc_struct_nlnstiffmass,
     calc_struct_stress,
-    calc_struct_stress_nodal,
     calc_struct_eleload,
     calc_struct_fsiload,
     calc_struct_update_istep,

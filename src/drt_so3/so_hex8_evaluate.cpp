@@ -56,7 +56,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
   else if (action=="calc_struct_linstiffmass")  act = So_hex8::calc_struct_linstiffmass;
   else if (action=="calc_struct_nlnstiffmass")  act = So_hex8::calc_struct_nlnstiffmass;
   else if (action=="calc_struct_stress")        act = So_hex8::calc_struct_stress;
-  else if (action=="calc_struct_stress_nodal")  act = So_hex8::calc_struct_stress_nodal;
   else if (action=="calc_struct_eleload")       act = So_hex8::calc_struct_eleload;
   else if (action=="calc_struct_fsiload")       act = So_hex8::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")  act = So_hex8::calc_struct_update_istep;
