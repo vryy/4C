@@ -1263,12 +1263,12 @@ void StruGenAlpha::FullNewton()
  *----------------------------------------------------------------------*/
 void StruGenAlpha::NonLinearUzawaFullNewton(int predictor)
 {
-    int  maxiterUzawa       = params_.get<int>   ("uzawa maxiter"         ,50);
-    double Uzawa_param    = params_.get<double>("uzawa parameter",1);
-    double tolconstr        = params_.get<double>("tolerance constraint"   ,1.0e-07);
-    double alphaf        = params_.get<double>("alpha f"                ,0.459);
-    double time           = params_.get<double>("total time"             ,0.0);
-    double dt                = params_.get<double>("delta time"             ,0.01);
+    int  maxiterUzawa  = params_.get<int>   ("uzawa maxiter"          ,50);
+    double Uzawa_param = params_.get<double>("uzawa parameter"        ,1);
+    double tolconstr   = params_.get<double>("tolerance constraint"   ,1.0e-07);
+    double alphaf      = params_.get<double>("alpha f"                ,0.459);
+    double time        = params_.get<double>("total time"             ,0.0);
+    double dt          = params_.get<double>("delta time"             ,0.01);
 
 
     FullNewton();
