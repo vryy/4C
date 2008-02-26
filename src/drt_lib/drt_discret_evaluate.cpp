@@ -129,8 +129,9 @@ void DRT::Discretization::EvaluateNeumann(ParameterList& params, Epetra_Vector& 
     int curvenum = -1;
     if (curve) curvenum = (*curve)[0];
     double curvefac = 1.0;
-      if (curvenum>=0 && usetime)
-        curvefac = UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+    if (curvenum>=0 && usetime)
+      curvefac = UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+    //cout << "Neumann load curve factor on point " << curvefac << endl;
     for (int i=0; i<nnode; ++i)
     {
       // do only nodes in my row map
@@ -172,6 +173,7 @@ void DRT::Discretization::EvaluateNeumann(ParameterList& params, Epetra_Vector& 
         curr->second->LocationVector(*this,lm,lmowner);
         elevector.Size((int)lm.size());
         curr->second->EvaluateNeumann(params,*this,cond,lm,elevector);
+        //cout << "Neumann load curve factor on element " << elevector << endl;
         LINALG::Assemble(systemvector,elevector,lm,lmowner);
       }
     }
@@ -233,25 +235,25 @@ void DRT::Discretization::EvaluateDirichlet(ParameterList& params,
 
   /* the following is not necessary */
   // make temporary copy of system vectors
-//   Teuchos::RCP<Epetra_Vector> systemvectoraux = Teuchos::null;  // auxiliar system vector
-//   if (systemvector != null)
-//     systemvectoraux = systemvector;
-//   else if (systemvectord != null)
-//     systemvectoraux = systemvectord;
-//   else if (systemvectordd != null)
-//     systemvectoraux = systemvectordd;
-//   else
-//     dserror("At least one system vector has to be unequal Null");
+  Teuchos::RCP<Epetra_Vector> systemvectoraux = Teuchos::null;  // auxiliar system vector
+  if (systemvector != null)
+    systemvectoraux = systemvector;
+  else if (systemvectord != null)
+    systemvectoraux = systemvectord;
+  else if (systemvectordd != null)
+    systemvectoraux = systemvectordd;
+  else
+    dserror("At least one system vector has to be unequal Null");
 
-//   Epetra_Vector backup((*systemvectoraux));
-//   if (systemvector != null)
-//     backup = Epetra_Vector((*systemvector));  // system vector (vel. in fluids, displ. in solids)
-//   Epetra_Vector backupd((*systemvectoraux));
-//   if (systemvectord != null)
-//     backupd = Epetra_Vector((*systemvectord));  // 1st derivative
-//   Epetra_Vector backupdd((*systemvectoraux));
-//   if (systemvectordd != null)
-//     backupdd = Epetra_Vector((*systemvectordd));  // 2nd derivative
+  Epetra_Vector backup((*systemvectoraux));
+  if (systemvector != null)
+    backup = Epetra_Vector((*systemvector));  // system vector (vel. in fluids, displ. in solids)
+  Epetra_Vector backupd((*systemvectoraux));
+  if (systemvectord != null)
+    backupd = Epetra_Vector((*systemvectord));  // 1st derivative
+  Epetra_Vector backupdd((*systemvectoraux));
+  if (systemvectordd != null)
+    backupdd = Epetra_Vector((*systemvectordd));  // 2nd derivative
 
   multimap<string,RefCountPtr<Condition> >::iterator fool;
   //--------------------------------------------------------
@@ -304,27 +306,27 @@ void DRT::Discretization::EvaluateDirichlet(ParameterList& params,
   /* the following is not necessary */
   // copy all values not marked as Dirichlet in toggle from
   // temporary copy back to systemvector
-//   if (systemvector != null)
-//   {
-//     const int mylength = (*systemvector).MyLength();
-//     for (int i=0; i<mylength; ++i)
-//       if ((*toggle)[i]==0.0)
-//         (*systemvector)[i] = backup[i];
-//   }
-//   if (systemvectord != null)
-//   {
-//     const int mylength = (*systemvectord).MyLength();
-//     for (int i=0; i<mylength; ++i)
-//       if ((*toggle)[i]==0.0)
-//         (*systemvectord)[i] = backupd[i];
-//   }
-//   if (systemvectordd != null)
-//   {
-//     const int mylength = (*systemvectordd).MyLength();
-//     for (int i=0; i<mylength; ++i)
-//       if ((*toggle)[i]==0.0)
-//         (*systemvectordd)[i] = backupdd[i];
-//   }
+  if (systemvector != null)
+  {
+    const int mylength = (*systemvector).MyLength();
+    for (int i=0; i<mylength; ++i)
+      if ((*toggle)[i]==0.0)
+        (*systemvector)[i] = backup[i];
+  }
+  if (systemvectord != null)
+  {
+    const int mylength = (*systemvectord).MyLength();
+    for (int i=0; i<mylength; ++i)
+      if ((*toggle)[i]==0.0)
+        (*systemvectord)[i] = backupd[i];
+  }
+  if (systemvectordd != null)
+  {
+    const int mylength = (*systemvectordd).MyLength();
+    for (int i=0; i<mylength; ++i)
+      if ((*toggle)[i]==0.0)
+        (*systemvectordd)[i] = backupdd[i];
+  }
 
   return;
 }
@@ -418,7 +420,7 @@ void DoDirichletCondition(DRT::Condition&             cond,
       // apply factors to Dirichlet value
       for (unsigned i=0; i<deg+1; ++i)
       {
-        value[i] = functfac * curvefac[i];
+        value[i] *= functfac * curvefac[i];
       }
 
       // assign value

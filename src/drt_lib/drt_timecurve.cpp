@@ -669,6 +669,7 @@ DRT::UTILS::ExprTimeSlice::~ExprTimeSlice()
 double DRT::UTILS::ExprTimeSlice::f(double t)
 {
   dsassert(contains(t), "wrong time slice called");
+  //cout << "Curve factor " << parsexpr_.EvaluateCurve(t) << endl;
   return parsexpr_.EvaluateCurve(t);
 }
 
