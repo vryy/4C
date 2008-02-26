@@ -26,12 +26,18 @@ DRT::ELEMENTS::So_hex8::So_hex8(int id, int owner) :
 DRT::Element(id,element_so_hex8,owner),
 data_()
 {
-  ngp_[0] = ngp_[1] = ngp_[2] = 0;
+  volume_.resize(0);
   surfaces_.resize(0);
   surfaceptrs_.resize(0);
   lines_.resize(0);
   lineptrs_.resize(0);
-  stresses_.Shape(NUMGPT_SOH8,NUMSTR_SOH8);
+  kintype_ = soh8_totlag;
+  eastype_ = soh8_easnone;
+  neas_ = 0;
+  rewind_ = false;
+  donerewinding_ = false;
+  thickvec_.resize(0);
+  fiberdirection_.resize(0);
   return;
 }
 
@@ -41,13 +47,20 @@ data_()
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_hex8::So_hex8(const DRT::ELEMENTS::So_hex8& old) :
 DRT::Element(old),
+kintype_(old.kintype_),
+eastype_(old.eastype_),
+neas_(old.neas_),
 data_(old.data_),
+volume_(old.volume_),
 surfaces_(old.surfaces_),
 surfaceptrs_(old.surfaceptrs_),
 lines_(old.lines_),
-lineptrs_(old.lineptrs_)
+lineptrs_(old.lineptrs_),
+rewind_(old.rewind_),
+donerewinding_(old.donerewinding_),
+thickvec_(old.thickvec_),
+fiberdirection_(old.fiberdirection_)
 {
-  for (int i=0; i<3; ++i) ngp_[i] = old.ngp_[i];
   return;
 }
 
@@ -85,12 +98,6 @@ void DRT::ELEMENTS::So_hex8::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
-  // ngp_
-  //AddtoPack(data,ngp_,3*sizeof(int));
-  // stresstype_
-  AddtoPack(data,stresstype_);
-  // stress vector
-  AddtoPack(data,stresses_);
   // kintype_
   AddtoPack(data,kintype_);
   // eastype_
@@ -127,12 +134,6 @@ void DRT::ELEMENTS::So_hex8::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  // ngp_
-  //ExtractfromPack(position,data,ngp_,3*sizeof(int));
-  // stresstype_
-  ExtractfromPack(position,data,stresstype_);
-  // stress vector
-  ExtractfromPack(position,data,stresses_);
   // kintype_
   ExtractfromPack(position,data,kintype_);
   // eastype_

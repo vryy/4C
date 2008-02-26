@@ -122,6 +122,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       RCP<vector<char> > data = params.get<RCP<vector<char> > >("stress", null);
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
+      if (data==null) dserror("Cannot get stress 'data'");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());

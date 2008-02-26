@@ -64,10 +64,10 @@ bool DRT::ELEMENTS::So_hex8::ReadElement()
   if (ierr!=1) dserror("Reading of SO_HEX8 element material failed");
   SetMaterial(material);
 
-  // read gaussian points
-  frint_n("GP",ngp_,3,&ierr);
-  if (ierr!=1) dserror("Reading of So_HEX8 element gp failed");
-  for (int i=0; i<3; ++i) if (ngp_[i]!=2) dserror("Only 2 GP for HEX8");
+  // read possible gaussian points, obsolete for computation
+  int ngp[3];
+  frint_n("GP",ngp,3,&ierr);
+  if (ierr==1) for (int i=0; i<3; ++i) if (ngp[i]!=2) dserror("Only 2 GP for So_SH8");
 
   // read kinematic type
   char buffer[50];
@@ -107,9 +107,6 @@ bool DRT::ELEMENTS::So_hex8::ReadElement()
     else if (strncmp(buffer,"none",4)==0) eastype_ = soh8_easnone;
     else dserror("Reading of SO_HEX8 EAS technology failed");
   }
-
-  // Initialize elestress
-  //stresses_.resize(6);
 
   //Initialize fiber vector
   fiberdirection_.resize(3);

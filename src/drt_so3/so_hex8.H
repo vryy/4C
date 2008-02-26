@@ -384,20 +384,12 @@ protected:
   };
   //! kinematic type
   KinematicType                                   kintype_;
-  //! type of stress evaluation
-  StressType                                      stresstype_;
   //! type of EAS technology
   EASType                                         eastype_;
   //! number of EAS parameters (alphas)
   int                                             neas_;
-  //! no. gaussian points in each spatial dimension
-  int                                             ngp_[3];
-  //! container containing so_hex3 eas stuff
-  DRT::Container                                  easdata_;
   //! container containing all kind of solid3 thisandthat
   DRT::Container                                  data_;
-//  //! vector of volume (length 1) of this element
-//  vector<RefCountPtr<DRT::ELEMENTS::Soh8Volume> > volume_;
   //! vector of volumes of this element (length 1)
   vector<DRT::Element*>                           volume_;
   //! vector of surfaces of this element
@@ -409,9 +401,6 @@ protected:
   //! vector of lines adjacent to this element
   vector<DRT::ELEMENTS::Soh8Line*>              lineptrs_;
   //! vector of element stress tensor in Voigt notation
-  //vector<double>                                stresses_;
-  //! matrix containing gauss point stresses
-  Epetra_SerialDenseMatrix                        stresses_;
 
   //! some distypes need rewinding of NodeIds due to bad input from mesher
   //! flag to rewind this element, must be availabale for friend class fluid3register
