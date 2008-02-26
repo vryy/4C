@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file beam2.H
 
-\class DRT::Elements:Beam2
+\class Beam2
 
 \brief two dimensional nonlinear corotational Euler-Bernoulli beam element
 
