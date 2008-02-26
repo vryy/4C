@@ -564,7 +564,7 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
   // now to the iteration
   // -------------------------------------------------------------------
   bool stopnonliniter = false;
-
+  double badestnlnnorm = 1000.0;
   while (stopnonliniter==false)
   {
     itenum_++;
@@ -578,7 +578,7 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
     // get cpu time
     tcpu=ds_cputime();
 
-    this->GenAlphaCalcIncrement();
+    this->GenAlphaCalcIncrement(badestnlnnorm);
 
     // end time measurement for application of dirichlet conditions
     tm5_ref_=null;
@@ -616,7 +616,7 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
     // -------------------------------------------------------------------
     // do convergence check
     // -------------------------------------------------------------------
-    stopnonliniter=this->GenAlphaNonlinearConvergenceCheck();
+    stopnonliniter=this->GenAlphaNonlinearConvergenceCheck(badestnlnnorm);
   }
 
   // end time measurement for nonlinear iteration
@@ -1275,18 +1275,19 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidGenAlphaIntegration::GenAlphaCalcIncrement()
+void FluidGenAlphaIntegration::GenAlphaCalcIncrement(const double nlnres)
 {
-
+  bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
+  double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
+  double nlntolsol     = params_.get<double>("tolerance for nonlin iter",1.e-10);
+  
+  //--------------------------- adapt tolerance  in the convergence limit
+  if (isadapttol && itenum_>1) solver_.AdaptTolerance(nlntolsol,nlnres,adaptolbetter);
+  
   //-------solve for residual displacements to correct incremental displacements
-  bool initsolver = false;
-
-  if (itenum_==-1) // init solver in first iteration only
-  {
-    initsolver = true;
-  }
   increment_->PutScalar(0.0);
-  solver_.Solve(sysmat_->EpetraMatrix(),increment_,residual_,true,initsolver);
+  solver_.Solve(sysmat_->EpetraMatrix(),increment_,residual_,true,itenum_==-1);
+  solver_.ResetTolerance();
 
   return;
 } // FluidGenAlphaIntegration::GenAlphaCalcIncrement
@@ -1408,7 +1409,7 @@ void FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck()
+bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(double& badestnlnnorm)
 {
   bool stopnonliniter = false;
 
@@ -1454,6 +1455,10 @@ bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck()
   onlypre->Norm2(&L2preresnorm_);
 
   onlyvel->Norm2(&L2velresnorm_);
+
+  badestnlnnorm = max(L2preresnorm_,L2velresnorm_);
+  badestnlnnorm = max(badestnlnnorm,L2incvelnorm_);
+  badestnlnnorm = max(badestnlnnorm,L2incprenorm_);
 
   // out to screen
   this->GenAlphaEchoToScreen("print residual and increment values");

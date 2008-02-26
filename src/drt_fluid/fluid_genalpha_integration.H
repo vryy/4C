@@ -248,7 +248,7 @@ public:
   do the solver initialisation only in the first step.
 
   */
-  void GenAlphaCalcIncrement();
+  void GenAlphaCalcIncrement(const double nlnres);
 
   /*!
   \brief update the current acceleration, velocity and pressure (*np)
@@ -267,7 +267,7 @@ public:
   \brief check for convergence of nonlinear iteration
 
   */
-  bool GenAlphaNonlinearConvergenceCheck();
+  bool GenAlphaNonlinearConvergenceCheck(double& badestnlnnorm);
 
   //@}
 
