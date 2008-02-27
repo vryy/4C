@@ -24,11 +24,15 @@ Maintainer: Ulrrich Kuettler
 
 #include "../headers/define_sizes.h"
 
+// list of all dof sets
+std::list<DRT::DofSet*> DRT::DofSet::dofsets_;
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ukue 04/07|
  *----------------------------------------------------------------------*/
 DRT::DofSet::DofSet()
 {
+  dofsets_.push_back(this);
   return;
 }
 
@@ -38,6 +42,7 @@ DRT::DofSet::DofSet()
  *----------------------------------------------------------------------*/
 DRT::DofSet::~DofSet()
 {
+  dofsets_.remove(this);
   return;
 }
 
@@ -121,6 +126,26 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int sta
   if (!dis.NodeRowMap()->UniqueGIDs()) dserror("Nodal row map is not unique");
   if (!dis.ElementRowMap()->UniqueGIDs()) dserror("Element row map is not unique");
 
+  // A definite offset is currently not supported.
+  if (start!=0)
+    dserror("right now user specified dof offsets are not supported");
+
+  int count=0;
+
+  // We assume that all dof sets before this one have been set up. Otherwise
+  // we'd have to reorder the list.
+  for (std::list<DofSet*>::iterator i=dofsets_.begin();
+       i!=dofsets_.end();
+       ++i)
+  {
+    if (*i==this)
+      break;
+    if (count > (*i)->dofrowmap_->MinAllGID())
+      dserror("dof sets numbers not assigned continuously: %d %d",
+              count,(*i)->dofrowmap_->MinAllGID());
+    count = (*i)->dofrowmap_->MaxAllGID() + 1;
+  }
+
   // Now this is tricky. We have to care for nodes and elements, both
   // row and column maps. In general both nodes and elements can have
   // dofs. In both cases these dofs might be shared with other nodes
@@ -178,7 +203,6 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int sta
   vector<int> rredundantnodes(dis.NumGlobalNodes());
   dis.Comm().SumAll(&sredundantnodes[0],&rredundantnodes[0],dis.NumGlobalNodes());
 
-  int count=start;
   int localcolpos=0;
 
   // Vectors to keep the dof gid of both nodes and elements. We need

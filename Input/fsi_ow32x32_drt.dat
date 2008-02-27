@@ -110,9 +110,11 @@ ISDMAX       0
 ICHMAX       0
 ITECHAPP     20
 ------------------------------------------------------FLUID SOLVER
+//SOLVER         Amesos_KLU_nonsym
 SOLVER         UMFPACK
 //SOLVER         Aztec_MSR
 //SOLVER         SPOOLES_nonsym
+//SOLVER         Superlu
 AZSOLVE        BiCGSTAB
 AZPREC         ILU
 AZREUSE        0

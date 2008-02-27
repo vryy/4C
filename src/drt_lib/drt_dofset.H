@@ -15,6 +15,7 @@ Maintainer: Ulrich Kuettler
 #define DOFSET_H
 
 #include <vector>
+#include <list>
 
 #include <Epetra_IntVector.h>
 #include <Teuchos_RefCountPtr.hpp>
@@ -88,6 +89,12 @@ to be able to redistribute a mesh without losing the old vectors.
 There are two possible states in this class: Reset and setup. To
 change back and forth use AssignDegreesOfFreedom() and Reset().
 
+<h3>Dof number uniqueness</h3>
+
+Each DofSet assigns unique dof numbers that do not occur in any other
+DofSet. This is true as long as the number of dofs per DofSet does not
+change. To achieve this we keep a list of dof sets internally.
+
 <h3>Copying behaviour</h3>
 
 Please note that even though Michael does not like it this class
@@ -103,8 +110,6 @@ reason to deep copy any of the local map and vector variables.
 class DofSet
 {
 public:
-
-
 
   /*!
   \brief Standard Constructor
@@ -225,6 +230,14 @@ protected:
 
   /// column map lid of first dof for each element
   RefCountPtr<Epetra_IntVector>                 idxcolelements_;
+
+  /// store all dofset ever created
+  /*!
+    This is hack to get unique dof numbers on all dof sets. With this in place
+    we can combine the maps from any dof sets to form block systems and the
+    like.
+   */
+  static std::list<DofSet*>                     dofsets_;
 
 }; // class DofSet
 } // namespace DRT

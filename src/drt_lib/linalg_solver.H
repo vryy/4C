@@ -34,6 +34,8 @@ Maintainer: Michael Gee
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 
+#include <EpetraExt_Reindex_LinearProblem.h>
+
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
 
@@ -159,44 +161,44 @@ public:
   a relative convergence criteria AZ_r0 (decided from input file)
   and allows to adapt this relative convergence criteria depending on
   the current residual of the outer nonlinear solver
-  
+
   It computes a new relative tolerance to be<br>
   <br>
   \code
-  if (currentnlnres*tol < desirednlnres) 
+  if (currentnlnres*tol < desirednlnres)
     tol = desirednlnres * better / currentnlnres
   \endcode
-  
+
   \note This is a rule of thumb method - not a true adaptivity in the
         field of inexact Newton methods.
-        
+
   \note This method works with Aztec only - it does nothing for all other
         solvers configured.
-  
+
   \sa ResetTolerance
-  
+
   \param desirednlnres (in): Desired residual in outer nonlinear solve
   \param currentnlnres (in): Current residual in outer nonlinear solve
   \param better        (in): The amount the linear solver shall be better than
                              currentnlnres
-  
+
   */
-  void AdaptTolerance(const double desirednlnres, 
+  void AdaptTolerance(const double desirednlnres,
                       const double currentnlnres,
-                      const double better); 
+                      const double better);
 
   /*!
   \brief Adapt tolerance of iterative solver
 
   Reset the tolerance read from input file. Can only be used after a call to
   AdaptTolerance.
-  
+
   \note This method works with Aztec only - it does nothing for all other
         solvers configured.
-  
+
   \sa AdaptTolerance
   */
-  void ResetTolerance(); 
+  void ResetTolerance();
 
   //@}
   //! @name Input of parameters
@@ -324,6 +326,9 @@ private:
   RCP<AztecOO>              aztec_;
   //! a vm3 solver
   RCP<VM3_Solver>           vm3_solver_;
+
+  //! reindex linear problem for amesos
+  RCP<EpetraExt::LinearProblem_Reindex> reindexer_;
 
 #ifdef PARALLEL
 #ifdef SPOOLES_PACKAGE

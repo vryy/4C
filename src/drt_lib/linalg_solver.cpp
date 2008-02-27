@@ -158,7 +158,7 @@ void LINALG::Solver::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  adapt tolerance (public)                                 mwgee 02/08|
  *----------------------------------------------------------------------*/
-void LINALG::Solver::AdaptTolerance(const double desirednlnres, 
+void LINALG::Solver::AdaptTolerance(const double desirednlnres,
                                     const double currentnlnres,
                                     const double better)
 {
@@ -171,7 +171,7 @@ void LINALG::Solver::AdaptTolerance(const double desirednlnres,
   bool havesavedvalue = azlist.isParameter("AZ_tol save");
   if (!havesavedvalue)
   {
-    if (!azlist.isParameter("AZ_tol")) 
+    if (!azlist.isParameter("AZ_tol"))
     {
       cout << azlist;
       dserror("No Aztec tolerance in ParameterList");
@@ -179,17 +179,17 @@ void LINALG::Solver::AdaptTolerance(const double desirednlnres,
     azlist.set<double>("AZ_tol save",azlist.get<double>("AZ_tol",1.e-8));
   }
   double tol = azlist.get<double>("AZ_tol save",1.e-8);
-  if (!myrank && output) 
-    printf("                --- Aztec input   relative tolerance %10.3E\n",tol); 
+  if (!myrank && output)
+    printf("                --- Aztec input   relative tolerance %10.3E\n",tol);
   if (currentnlnres*tol < desirednlnres)
   {
     double tolnew = desirednlnres*better/currentnlnres;
     if (tolnew<tol) tolnew = tol;
-    if (!myrank && output && tolnew > tol) 
-      printf("                *** Aztec adapted relative tolerance %10.3E\n",tolnew); 
+    if (!myrank && output && tolnew > tol)
+      printf("                *** Aztec adapted relative tolerance %10.3E\n",tolnew);
     azlist.set<double>("AZ_tol",tolnew);
   }
-  
+
   return;
 }
 
@@ -519,7 +519,10 @@ void LINALG::Solver::Solve_superlu(const bool reset)
 {
 #ifdef PARALLEL
   if (reset || !IsFactored())
-    amesos_ = rcp(new Amesos_Superludist(*lp_));
+  {
+    reindexer_ = rcp(new EpetraExt::LinearProblem_Reindex(NULL));
+    amesos_ = rcp(new Amesos_Superludist((*reindexer_)(*lp_)));
+  }
 
   if (amesos_==null) dserror("No solver allocated");
 
@@ -548,7 +551,10 @@ void LINALG::Solver::Solve_superlu(const bool reset)
 void LINALG::Solver::Solve_umfpack(const bool reset)
 {
   if (reset || !IsFactored())
-    amesos_ = rcp(new Amesos_Umfpack(*lp_));
+  {
+    reindexer_ = rcp(new EpetraExt::LinearProblem_Reindex(NULL));
+    amesos_ = rcp(new Amesos_Umfpack((*reindexer_)(*lp_)));
+  }
 
   if (amesos_==null) dserror("No solver allocated");
 
@@ -575,7 +581,10 @@ void LINALG::Solver::Solve_umfpack(const bool reset)
 void LINALG::Solver::Solve_klu(const bool reset)
 {
   if (reset || !IsFactored())
-    amesos_ = rcp(new Amesos_Klu(*lp_));
+  {
+    reindexer_ = rcp(new EpetraExt::LinearProblem_Reindex(NULL));
+    amesos_ = rcp(new Amesos_Klu((*reindexer_)(*lp_)));
+  }
 
   if (amesos_==null) dserror("No solver allocated");
 
@@ -602,7 +611,10 @@ void LINALG::Solver::Solve_klu(const bool reset)
 void LINALG::Solver::Solve_lapack(const bool reset)
 {
   if (reset || !IsFactored())
-    amesos_ = rcp(new Amesos_Lapack(*lp_));
+  {
+    reindexer_ = rcp(new EpetraExt::LinearProblem_Reindex(NULL));
+    amesos_ = rcp(new Amesos_Lapack((*reindexer_)(*lp_)));
+  }
 
   if (amesos_==null) dserror("No solver allocated");
 
