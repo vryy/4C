@@ -46,6 +46,9 @@ CONVTOL      1.0E-6
 STARTINGALGO One_Step_Theta
 NUMSTASTEPS  0
 INITIALFIELD zero_field
+ADAPTCONV        no
+ADAPTCONV_BETTER 1.0 
+SIMPLER          no
 ------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE              residual_based
 TDS                   quasistatic
