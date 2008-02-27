@@ -1956,6 +1956,17 @@ void FluidImplicitTimeInt::SolveStationaryProblem()
     // -------------------------------------------------------------------
     Output();
 
+    // -------------------------------------------------------------------
+    //                    calculate lift'n'drag forces
+    // -------------------------------------------------------------------
+    int liftdrag = params_.get<int>("liftdrag");
+  
+    if(liftdrag == 0); // do nothing, we don't want lift & drag
+    if(liftdrag == 1)
+      dserror("how did you manage to get here???");
+    if(liftdrag == 2)
+      LiftDrag();
+
   } // end of time loop
 
   // end time measurement for time loop (stationary)
