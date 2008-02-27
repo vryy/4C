@@ -32,7 +32,6 @@ std::list<DRT::DofSet*> DRT::DofSet::dofsets_;
  *----------------------------------------------------------------------*/
 DRT::DofSet::DofSet()
 {
-  dofsets_.push_back(this);
   return;
 }
 
@@ -129,6 +128,11 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int sta
   // A definite offset is currently not supported.
   if (start!=0)
     dserror("right now user specified dof offsets are not supported");
+
+  // Add DofSets in order of assignment to list. Once it is there it has its
+  // place and will get its starting id from the previous DofSet.
+  if (std::find(dofsets_.begin(),dofsets_.end(),this)==dofsets_.end())
+    dofsets_.push_back(this);
 
   int count=0;
 
