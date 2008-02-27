@@ -582,9 +582,10 @@ OBJS_DRT_F2_LIB = src/drt_f2/fluid2_evaluate.o \
 		src/drt_f2/condif2_input.o \
 		src/drt_f2/condif2_line_evaluate.o \
                 src/drt_f2/fluid2.o \
-                  src/drt_f2/fluid2_line.o \
-		  src/drt_f2/condif2.o \
-		  src/drt_f2/condif2_line.o
+                src/drt_f2/fluid2_line.o \
+                src/drt_f2/condif2.o \
+                src/drt_f2/condif2_line.o\
+                src/drt_f2/fluid2_genalpha_resVMM.o
 OBJS_DRT_F2 = 
 #------------------------------------------------- fluid2
 OBJS_FLUID2   = src/fluid2/f2_calcurvature.o \

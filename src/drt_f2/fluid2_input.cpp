@@ -34,12 +34,18 @@ extern "C"
 extern struct _FILES  allfiles;
 }
 #include "fluid2.H"
+#include "../drt_lib/drt_utils.H"
+
+using namespace DRT::UTILS;
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                              gammi 04/07|
  *----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::Fluid2::ReadElement()
 {
+  // what kind of element is this
+  DiscretizationType distype = dis_none;
+  
   // read element's nodes
   int   ierr = 0;
   int   nnode = 0;
@@ -50,6 +56,7 @@ bool DRT::ELEMENTS::Fluid2::ReadElement()
   frchk("QUAD4",&ierr);
   if (ierr==1)
   {
+    distype = quad4;
     nnode=4;
     frint_n("QUAD4",nodes,nnode,&ierr);
     if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
@@ -58,6 +65,7 @@ bool DRT::ELEMENTS::Fluid2::ReadElement()
   frchk("QUAD8",&ierr);
   if (ierr==1)
   {
+    distype = quad8;
     nnode=8;
     frint_n("QUAD8",nodes,nnode,&ierr);
     if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
@@ -66,6 +74,7 @@ bool DRT::ELEMENTS::Fluid2::ReadElement()
   frchk("QUAD9",&ierr);
   if (ierr==1)
   {
+    distype = quad9;
     nnode=9;
     frint_n("QUAD9",nodes,nnode,&ierr);
     if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
@@ -74,6 +83,7 @@ bool DRT::ELEMENTS::Fluid2::ReadElement()
   frchk("TRI3",&ierr);
   if (ierr==1)
   {
+    distype = tri3;
     nnode=3;
     frint_n("TRI3",nodes,nnode,&ierr);
     if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
@@ -82,6 +92,7 @@ bool DRT::ELEMENTS::Fluid2::ReadElement()
   frchk("TRI6",&ierr); /* rearrangement??????? */
   if (ierr==1)
   {
+    distype = tri6;
     nnode=6;
     frint_n("TRI6",nodes,nnode,&ierr);
     if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
@@ -185,6 +196,35 @@ bool DRT::ELEMENTS::Fluid2::ReadElement()
     }
   } // end reading gaussian points for tetrahedral elements
 
+    // read gaussian points and set gaussrule
+    int myngp[2];
+    switch (distype)
+    {
+    case quad4: case quad8: case quad9:
+    {
+        frint_n("GP",myngp,2,&ierr);
+        dsassert(ierr==1, "Reading of FLUID2 element failed: GP\n");
+        switch (myngp[0])
+        {
+        case 1:
+            gaussrule_ = intrule_quad_1point;
+            break;
+        case 2:
+            gaussrule_ = intrule_quad_4point;
+            break;
+        case 3:
+            gaussrule_ = intrule_quad_9point;
+            break;
+        default:
+            dserror("Reading of FLUID2 element failed: Gaussrule for quad not supported!\n");
+        }
+        break;
+    }
+    default:
+        dserror("Reading of FLUID2 element failed: integration points\n");
+    } // end switch distype
+
+  
 
   // read net algo
   frchar("NA",buffer,&ierr);

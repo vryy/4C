@@ -24,6 +24,7 @@ Maintainer: Peter Gamnitzer
 #ifndef FLUIDIMPLICITINTEGRATION_H
 #define FLUIDIMPLICITINTEGRATION_H
 
+#include "turbulence_statistics.H"
 #include "turbulence_statistics_ldc.H"
 
 #ifdef PARALLEL
@@ -225,6 +226,18 @@ public:
   */
   void LiftDrag() const;
 
+  /*!
+  //
+  //! @name methods for turbulence models (dynamic Smagorinsky)
+
+  \brief filter quantities for dynamic Smagorinsky model.
+         Compute averaged values for LijMij and MijMij.
+
+  */
+  void ApplyFilterForDynamicComputationOfCs();
+    
+  //@}
+
   /// integrate shape functions at nodes marked by condition
   /*!
     Needed for Mortar coupling at the FSI interface
@@ -336,16 +349,35 @@ protected:
   /// only necessary for vm3 solver: fine-scale solution vector
   RCP<Epetra_Vector>    fsvelnp_;
 
-  /// turbulence statistics
+  /// turbulence statistics, lid driven cavity
   RCP<TurbulenceStatisticsLdc> turbulencestatistics_ldc_;
 
+  /// turbulence statistics, channel flow
+  RCP<TurbulenceStatistics>    turbulencestatistics_;
+
+  
+  // Vectors used for filtering (for dynamic Smagorinsky model)
+  // --------------------------
+  
+  RCP<Epetra_MultiVector>  filtered_vel_;
+  RCP<Epetra_MultiVector>  filtered_reynoldsstress_;
+  RCP<Epetra_MultiVector>  filtered_modeled_subgrid_stress_;
+  RCP<Epetra_MultiVector>  col_filtered_vel_;
+  RCP<Epetra_MultiVector>  col_filtered_reynoldsstress_;
+  RCP<Epetra_MultiVector>  col_filtered_modeled_subgrid_stress_;
+
+  RCP<vector<double> >     averaged_LijMij_;
+  RCP<vector<double> >     averaged_MijMij_;
+  RCP<vector<double> >     planecoords_;
 
   // Extractor used for convergence check
   // ------------------------------------
 
   LINALG::MapExtractor      velpressplitter_;
 
-
+  RCP<PeriodicBoundaryConditions> pbc_;
+  
+  
   // time measurement
   // ----------------
   RCP<Teuchos::Time> timetotal_   ;
@@ -367,9 +399,11 @@ protected:
   RCP<TimeMonitor> tm6_ref_ ;
   RCP<TimeMonitor> tm7_ref_ ;
   RCP<TimeMonitor> tm8_ref_ ;
+  
+  double           dtele_;
+  double           dtsolve_;
+  double           dtfilter_;
 
-  double dtele_;
-  double dtsolve_;
 
 }; // class FluidImplicitTimeInt
 

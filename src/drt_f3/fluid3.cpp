@@ -26,7 +26,7 @@ using namespace DRT::UTILS;
 map<string,DRT::ELEMENTS::Fluid3::StabilisationAction> DRT::ELEMENTS::Fluid3::stabstrtoact_;
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                            mwgee 11/06|
+ |  ctor (public)                                            gammi 02/08|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Fluid3::Fluid3(int id, int owner) :
@@ -50,7 +50,7 @@ data_()
 }
 
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       mwgee 11/06|
+ |  copy-ctor (public)                                       gammi 02/08|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Fluid3::Fluid3(const DRT::ELEMENTS::Fluid3& old) :
@@ -69,7 +69,7 @@ lineptrs_(old.lineptrs_)
 
 /*----------------------------------------------------------------------*
  |  Deep copy this instance of Fluid3 and return pointer to it (public) |
- |                                                            gee 11/06 |
+ |                                                          gammi 02/08 |
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::Fluid3::Clone() const
 {
@@ -101,7 +101,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Fluid3::Shape() const
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
- |                                                            gee 02/07 |
+ |                                                          gammi 02/08 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Fluid3::Pack(vector<char>& data) const
 {
@@ -148,7 +148,7 @@ void DRT::ELEMENTS::Fluid3::Pack(vector<char>& data) const
 
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
- |                                                            gee 02/07 |
+ |                                                          gammi 02/08 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Fluid3::Unpack(const vector<char>& data)
 {
@@ -210,7 +210,7 @@ void DRT::ELEMENTS::Fluid3::Unpack(const vector<char>& data)
 
 
 /*----------------------------------------------------------------------*
- |  dtor (public)                                            mwgee 11/06|
+ |  dtor (public)                                            gammi 02/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Fluid3::~Fluid3()
 {
@@ -219,7 +219,7 @@ DRT::ELEMENTS::Fluid3::~Fluid3()
 
 
 /*----------------------------------------------------------------------*
- |  print this element (public)                              mwgee 11/06|
+ |  print this element (public)                              gammi 02/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Fluid3::Print(ostream& os) const
 {
@@ -231,7 +231,7 @@ void DRT::ELEMENTS::Fluid3::Print(ostream& os) const
 }
 
 /*----------------------------------------------------------------------*
- |  allocate and return Fluid3Register (public)              mwgee 12/06|
+ |  allocate and return Fluid3Register (public)              mwgee 02/08|
  *----------------------------------------------------------------------*/
 RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Fluid3::ElementRegister() const
 {

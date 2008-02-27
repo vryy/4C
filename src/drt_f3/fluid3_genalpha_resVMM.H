@@ -189,6 +189,8 @@ namespace DRT
       void Sysmat(Fluid3*                                               ele,
                   Epetra_SerialDenseMatrix&                             elemat,
                   Epetra_SerialDenseVector&                             elevec,
+                  const blitz::Array<double,2>&                         edispnp,
+                  const blitz::Array<double,2>&                         egridvaf,
                   const blitz::Array<double,2>&                         evelnp,
                   const blitz::Array<double,1>&                         eprenp,
                   const blitz::Array<double,2>&                         eaccam,
@@ -314,6 +316,8 @@ namespace DRT
       blitz::Array<double,1> velintaf_;
       //! fine-scale velocity in gausspoint, time n+af
       blitz::Array<double,1> fsvelintaf_;
+      //! grid velocity at intermediate time level n+af
+      blitz::Array<double,1> ugrid_af_;
       //! pressure gradient in gausspoint, time n+1
       blitz::Array<double,1> pderxynp_;
       //! velocity derivatives in gausspoint, time n+1
@@ -330,6 +334,8 @@ namespace DRT
       blitz::Array<double,1> conv_c_af_; 
       //! linearisation of convection, reactive part, time n+af
       blitz::Array<double,3> conv_r_af_;
+      //! convective part introduced by grid velocity, time n+af
+      blitz::Array<double,1> conv_g_af_; 
 
       // element data
       // ------------

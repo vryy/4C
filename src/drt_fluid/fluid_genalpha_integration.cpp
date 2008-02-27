@@ -31,15 +31,19 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   RefCountPtr<DRT::Discretization> actdis,
   LINALG::Solver&                  solver,
   ParameterList&                   params,
-  IO::DiscretizationWriter&        output)
+  IO::DiscretizationWriter&        output,
+  bool                             alefluid
+  )
   :
   // call constructor for "nontrivial" objects
   discret_(actdis),
   solver_ (solver),
   params_ (params),
   output_ (output),
+  density_(1.0),
   time_(0.0),
   step_(0),
+  alefluid_(alefluid),
   restartstep_(0),
   uprestart_(params.get("write restart every", -1)),
   writestep_(0),
@@ -55,11 +59,11 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   timenlnloop_          = TimeMonitor::getNewTimer("   + nonlinear iteration"       );
   timesparsitypattern_  = TimeMonitor::getNewTimer("      + set up and complete sparsity pattern");
   timeeleloop_          = TimeMonitor::getNewTimer("      + element calls"          );
-  timenonlinup_    = TimeMonitor::getNewTimer("      + update and calc. of intermediate sols");
-  timeapplydirich_ = TimeMonitor::getNewTimer("      + apply dirich cond."   );
-  timeevaldirich_  = TimeMonitor::getNewTimer("      + evaluate dirich cond.");
-  timesolver_      = TimeMonitor::getNewTimer("      + solver calls"         );
-  timeout_         = TimeMonitor::getNewTimer("      + output and statistics");
+  timenonlinup_         = TimeMonitor::getNewTimer("      + update and calc. of intermediate sols");
+  timeapplydirich_      = TimeMonitor::getNewTimer("      + apply dirich cond."   );
+  timeevaldirich_       = TimeMonitor::getNewTimer("      + evaluate dirich cond.");
+  timesolver_           = TimeMonitor::getNewTimer("      + solver calls"         );
+  timeout_              = TimeMonitor::getNewTimer("      + output and statistics");
 #ifdef PERF
   timeeleassemble_      = TimeMonitor::getNewTimer("       + time for assembly"     );
   timeelegetdoflocation_= TimeMonitor::getNewTimer("       + time to get lm"        );
@@ -152,11 +156,22 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   veln_         = LINALG::CreateVector(*dofrowmap,true);
   velaf_        = LINALG::CreateVector(*dofrowmap,true);
 
+  // grid displacements and velocities for the ale case
+  if (alefluid_)
+  {
+    dispnp_     = LINALG::CreateVector(*dofrowmap,true);;
+    dispn_      = LINALG::CreateVector(*dofrowmap,true);;
+    gridveln_   = LINALG::CreateVector(*dofrowmap,true);;
+    gridvelaf_  = LINALG::CreateVector(*dofrowmap,true);;
+  }
+
+  
   // Vectors associated to boundary conditions
   // -----------------------------------------
 
   // toggle vector indicating which dofs have Dirichlet BCs
   dirichtoggle_ = LINALG::CreateVector(*dofrowmap,true);
+  invdirtoggle_ = LINALG::CreateVector(*dofrowmap,true);
 
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
   zeros_        = LINALG::CreateVector(*dofrowmap,true);
@@ -222,7 +237,33 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
       averaged_MijMij_                = rcp(new vector<double>);
     }
   }
+
+  this->GenAlphaEchoToScreen("print start-up info");
+  
   // end time measurement for timeloop
+
+
+  //--------------------------------------------------------------------
+  // init some class variables
+
+  dt_     = params_.get<double>("time step size");
+
+  alphaM_ = params_.get<double>("alpha_M");
+  alphaF_ = params_.get<double>("alpha_F");
+
+  // choice of third parameter necessary but not sufficiant for second
+  // order accuracy
+  gamma_  = 0.5 + alphaM_ - alphaF_;
+
+  // parameter for linearisation scheme (fixed point like or newton like)
+  newton_ = params_.get<bool>("Use reaction terms for linearisation",false);
+
+  // maximum number of timesteps
+  endstep_  = params_.get<int>   ("max number timesteps");
+  // maximum simulation time
+  endtime_  = params_.get<double>("total time");
+
+
   tm7_ref_ = null;
 
   return;
@@ -257,21 +298,7 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
   )
 {
   //--------------------------------------------------------------------
-  // init some class variables
-
-  dt_     = params_.get<double>("time step size");
-
-  alphaM_ = params_.get<double>("alpha_M");
-  alphaF_ = params_.get<double>("alpha_F");
-
-  // choice of third parameter necessary but not sufficiant for second
-  // order accuracy
-  gamma_  = 0.5 + alphaM_ - alphaF_;
-
-  // parameter for linearisation scheme (fixed point like or newton like)
-  newton_ = params_.get<bool>("Use reaction terms for linearisation",false);
-
-  // remember endstep and endtime
+  // set endstep and endtime
   endstep_ = endstep;
   endtime_ = endtime;
 
@@ -289,8 +316,7 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
     // -------------------------------------------------------------------
     //              set time dependent parameters
     // -------------------------------------------------------------------
-    step_++;
-    time_+=dt_;
+    this->GenAlphaIncreaseTimeAndStep();
 
     // -------------------------------------------------------------------
     //                         out to screen
@@ -339,111 +365,16 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
     tm8_ref_        = rcp(new TimeMonitor(*timeout_ ));
 
     // -------------------------------------------------------------------
-    // add calculated velocity to mean value calculation
+    // add calculated velocity to mean value calculation (statistics)
     // -------------------------------------------------------------------
     if(params_.sublist("TURBULENCE MODEL").get<string>("CANONICAL_FLOW","no")
        ==
        "channel_flow_of_height_2")
-    {
-      turbulencestatistics_->DoTimeSample(velnp_,*force_);
-
-
-      // create the parameters for the discretization
-      ParameterList eleparams;
-
-      // action for elements
-      eleparams.set("action","time average for subscales and residual");
-
-      eleparams.set("assemble matrix 1",false);
-      eleparams.set("assemble matrix 2",false);
-      eleparams.set("assemble vector 1",false);
-      eleparams.set("assemble vector 2",false);
-      eleparams.set("assemble vector 3",false);
-
-      // other parameters that might be needed by the elements
-      {
-        ParameterList& timelist = eleparams.sublist("time integration parameters");
-
-        timelist.set("alpha_M",alphaM_);
-        timelist.set("alpha_F",alphaF_);
-        timelist.set("gamma"  ,gamma_ );
-        timelist.set("time"   ,time_  );
-        timelist.set("dt"     ,dt_    );
-      }
-
-      // parameters for stabilisation
-      {
-        eleparams.sublist("STABILIZATION")    = params_.sublist("STABILIZATION");
-      }
-
-      // set vector values needed by elements
-      discret_->ClearState();
-      discret_->SetState("u and p (n+1      ,trial)",velnp_);
-      discret_->SetState("u and p (n+alpha_F,trial)",velaf_);
-      discret_->SetState("acc     (n+alpha_M,trial)",accam_);
-
-      // get ordered layers of elements in which LijMij and MijMij are averaged
-      if (planecoords_ == null)
-      {
-        planecoords_ = rcp( new vector<double>((turbulencestatistics_->ReturnNodePlaneCoords()).size()));
-      }
-
-      (*planecoords_) = turbulencestatistics_->ReturnNodePlaneCoords();
-
-      RefCountPtr<vector<double> > local_incrres;
-      local_incrres=  rcp(new vector<double> );
-      local_incrres->resize(3*(planecoords_->size()-1),0.0);
-
-      RefCountPtr<vector<double> > global_incrres;
-      global_incrres=  rcp(new vector<double> );
-      global_incrres->resize(3*(planecoords_->size()-1),0.0);
-
-      RefCountPtr<vector<double> > local_incrres_sq;
-      local_incrres_sq=  rcp(new vector<double> );
-      local_incrres_sq->resize(3*(planecoords_->size()-1),0.0);
-
-      RefCountPtr<vector<double> > global_incrres_sq;
-      global_incrres_sq=  rcp(new vector<double> );
-      global_incrres_sq->resize(3*(planecoords_->size()-1),0.0);
-
-      RefCountPtr<vector<double> > local_incrsacc;
-      local_incrsacc=  rcp(new vector<double> );
-      local_incrsacc->resize(3*(planecoords_->size()-1),0.0);
-
-      RefCountPtr<vector<double> > global_incrsacc;
-      global_incrsacc=  rcp(new vector<double> );
-      global_incrsacc->resize(3*(planecoords_->size()-1),0.0);
-
-      RefCountPtr<vector<double> > local_incrsacc_sq;
-      local_incrsacc_sq=  rcp(new vector<double> );
-      local_incrsacc_sq->resize(3*(planecoords_->size()-1),0.0);
-
-      RefCountPtr<vector<double> > global_incrsacc_sq;
-      global_incrsacc_sq=  rcp(new vector<double> );
-      global_incrsacc_sq->resize(3*(planecoords_->size()-1),0.0);
-
-      eleparams.set<RefCountPtr<vector<double> > >("planecoords_",planecoords_);
-      eleparams.set<RefCountPtr<vector<double> > >("incrres"    ,local_incrres);
-      eleparams.set<RefCountPtr<vector<double> > >("incrres_sq" ,local_incrres_sq);
-      eleparams.set<RefCountPtr<vector<double> > >("incrsacc"   ,local_incrsacc);
-      eleparams.set<RefCountPtr<vector<double> > >("incrsacc_sq",local_incrsacc_sq);
-
-      // call loop over elements
-      {
-        discret_->Evaluate(eleparams,null,null,null,null,null);
-        discret_->ClearState();
-      }
-
-      discret_->Comm().SumAll(&((*local_incrres)[0])    ,&((*global_incrres)[0])    ,3*(planecoords_->size()-1));
-      discret_->Comm().SumAll(&((*local_incrres_sq)[0]) ,&((*global_incrres_sq)[0]) ,3*(planecoords_->size()-1));
-      discret_->Comm().SumAll(&((*local_incrsacc)[0])   ,&((*global_incrsacc)[0])   ,3*(planecoords_->size()-1));
-      discret_->Comm().SumAll(&((*local_incrsacc_sq)[0]),&((*global_incrsacc_sq)[0]),3*(planecoords_->size()-1));
-
-      turbulencestatistics_->AddToResAverage(global_incrres,
-                                             global_incrres_sq,
-                                             global_incrsacc,
-                                             global_incrsacc_sq);
+    {    
+      this->GenAlphaTakeSample();
     }
+
+
 
     // -------------------------------------------------------------------
     //                         output of solution
@@ -792,7 +723,6 @@ void FluidGenAlphaIntegration::GenAlphaTimeUpdate()
   // for the accelerations
   accn_->Update(1.0,*accnp_ ,0.0);
 
-
   {
     // create the parameters for the discretization
     ParameterList eleparams;
@@ -813,6 +743,27 @@ void FluidGenAlphaIntegration::GenAlphaTimeUpdate()
     // call loop over elements
     discret_->Evaluate(eleparams,null,null,null,null,null);
   }
+
+  if (alefluid_)
+  {
+    //            n+1   n
+    //   .n+1    d   - d     gamma - 1   .n        .n
+    //   d    = ---------- + --------- * d    ---> d
+    //          gamma * dt     gamma
+    //
+
+    double gdtinv = 1.0/(gamma_*dt_);
+    gridveln_->Update(gdtinv,*dispnp_,-gdtinv,*dispn_,(gamma_-1.0)/gamma_);
+    
+
+    //    n+1         n
+    //   d      ---> d
+    //  
+    
+    dispn_   ->Update(1.0,*dispnp_,0.0);
+
+  }
+
 
   return;
 } // FluidGenAlphaIntegration::GenAlphaTimeUpdate
@@ -840,6 +791,11 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
 
     output_.WriteVector("velnp"   , velnp_);
 
+    if (alefluid_)
+    {
+      output_.WriteVector("dispnp", dispnp_);
+    }
+    
     // do restart if we have to
     if (restartstep_ == uprestart_)
     {
@@ -849,6 +805,12 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
       output_.WriteVector("accnp", accnp_);
       output_.WriteVector("accn ", accn_ );
 
+      if (alefluid_)
+      {
+        output_.WriteVector("dispn"   ,dispn_   );
+        output_.WriteVector("gridveln",gridveln_);
+      }
+      
       // write mesh in each restart step --- the elements are required since
       // they contain history variables (the time dependent subscales)
       output_.WriteMesh(step_,time_);
@@ -874,10 +836,17 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
     output_.WriteVector("accnp", accnp_);
     output_.WriteVector("accn ", accn_ );
 
+    if (alefluid_)
+    {
+      output_.WriteVector("dispnp", dispnp_);
+      output_.WriteVector("dispn"   ,dispn_   );
+      output_.WriteVector("gridveln",gridveln_);
+    }
+    
+
     // write mesh in each restart step --- the elements are required since
     // they contain history variables (the time dependent subscales)
     output_.WriteMesh(step_,time_);
-
   }
 
   return;
@@ -1005,26 +974,26 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
 #ifdef PERF
   // pass time monitor to element for detailed time measurement
 
-  eleparams.set<RefCountPtr<Time> >("time for assembly",timeeleassemble_      );
-  eleparams.set<RefCountPtr<Time> >("time to get lm"   ,timeelegetdoflocation_);
+  eleparams.set<RefCountPtr<Teuchos::Time> >("time for assembly",timeeleassemble_      );
+  eleparams.set<RefCountPtr<Teuchos::Time> >("time to get lm"   ,timeelegetdoflocation_);
 
-  eleparams.set<RefCountPtr<Time> >("get global vectors an set node values"    ,timeelegetvelnp_  );
-  eleparams.set<RefCountPtr<Time> >("initialise Smagorinsky model"             ,timeeleinitsmag_  );
-  eleparams.set<RefCountPtr<Time> >("initialise stabilization flags"           ,timeeleinitstab_  );
-  eleparams.set<RefCountPtr<Time> >("complete call to sysmat"                  ,timeelesysmat_    );
+  eleparams.set<RefCountPtr<Teuchos::Time> >("get global vectors an set node values"    ,timeelegetvelnp_  );
+  eleparams.set<RefCountPtr<Teuchos::Time> >("initialise Smagorinsky model"             ,timeeleinitsmag_  );
+  eleparams.set<RefCountPtr<Teuchos::Time> >("initialise stabilization flags"           ,timeeleinitstab_  );
+  eleparams.set<RefCountPtr<Teuchos::Time> >("complete call to sysmat"                  ,timeelesysmat_    );
 
-  eleparams.set<RefCountPtr<Time> >("time used for second derivatives"         ,timeelederxy2_    );
-  eleparams.set<RefCountPtr<Time> >("time used for secondfirst"                ,timeelederxy_     );
-  eleparams.set<RefCountPtr<Time> >("time used for computation of tau"         ,timeeletau_       );
-  eleparams.set<RefCountPtr<Time> >("time used for galerkin loops"             ,timeelegalerkin_  );
-  eleparams.set<RefCountPtr<Time> >("time used for pspg loop"                  ,timeelepspg_      );
-  eleparams.set<RefCountPtr<Time> >("time used for supg loop"                  ,timeelesupg_      );
-  eleparams.set<RefCountPtr<Time> >("time used for cstab loop"                 ,timeelecstab_     );
-  eleparams.set<RefCountPtr<Time> >("time used for vstab loop"                 ,timeelevstab_     );
-  eleparams.set<RefCountPtr<Time> >("time used for cross and reynolds loop"    ,timeelecrossrey_  );
-  eleparams.set<RefCountPtr<Time> >("time used to interpolate to gauss points" ,timeeleintertogp_ );
-  eleparams.set<RefCountPtr<Time> >("set basic element data"                   ,timeeleseteledata_);
-  eleparams.set<RefCountPtr<Time> >("time dependent fine scale specials"       ,timeeletdextras_  );
+  eleparams.set<RefCountPtr<Teuchos::Time> >("time used for second derivatives"         ,timeelederxy2_    );
+  eleparams.set<RefCountPtr<Teuchos::Time> >("time used for secondfirst"                ,timeelederxy_     );
+  eleparams.set<RefCountPtr<Teuchos::Time> >("time used for computation of tau"         ,timeeletau_       );
+  eleparams.set<RefCountPtr<Teuchos::Time> >("time used for galerkin loops"             ,timeelegalerkin_  );
+  eleparams.set<RefCountPtr<Teuchos::Time> >("time used for pspg loop"                  ,timeelepspg_      );
+  eleparams.set<RefCountPtr<Teuchos::Time> >("time used for supg loop"                  ,timeelesupg_      );
+  eleparams.set<RefCountPtr<Teuchos::Time> >("time used for cstab loop"                 ,timeelecstab_     );
+  eleparams.set<RefCountPtr<Teuchos::Time> >("time used for vstab loop"                 ,timeelevstab_     );
+  eleparams.set<RefCountPtr<Teuchos::Time> >("time used for cross and reynolds loop"    ,timeelecrossrey_  );
+  eleparams.set<RefCountPtr<Teuchos::Time> >("time used to interpolate to gauss points" ,timeeleintertogp_ );
+  eleparams.set<RefCountPtr<Teuchos::Time> >("set basic element data"                   ,timeeleseteledata_);
+  eleparams.set<RefCountPtr<Teuchos::Time> >("time dependent fine scale specials"       ,timeeletdextras_  );
 #endif
 
 
@@ -1033,7 +1002,14 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   discret_->SetState("u and p (n+1      ,trial)",velnp_);
   discret_->SetState("u and p (n+alpha_F,trial)",velaf_);
   discret_->SetState("acc     (n+alpha_M,trial)",accam_);
+  
+  if (alefluid_)
+  {
+    discret_->SetState("dispnp"    , dispnp_   );
+    discret_->SetState("gridvelaf" , gridvelaf_);
+  }
 
+  
   // extended statistics (plane average of Cs, (Cs_delta)^2, visceff)
   // for dynamic Smagorinsky model
 
@@ -1137,7 +1113,9 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
 
   }
 
-  // call standard loop over elements
+  //----------------------------------------------------------------------
+  // call loop over elements
+  //----------------------------------------------------------------------
   discret_->Evaluate(eleparams,sysmat_,residual_);
   discret_->ClearState();
 
@@ -1159,80 +1137,24 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
       )
     {
       // now add all the stuff from the different processors
-      discret_->Comm().SumAll(&((*local_Cs_sum         )[0]),&((*global_incr_Cs_sum         )[0]),local_Cs_sum->size());
-      discret_->Comm().SumAll(&((*local_Cs_delta_sq_sum)[0]),&((*global_incr_Cs_delta_sq_sum)[0]),local_Cs_delta_sq_sum->size());
-      discret_->Comm().SumAll(&((*local_visceff_sum    )[0]),&((*global_incr_visceff_sum    )[0]),local_visceff_sum->size());
+      discret_->Comm().SumAll(&((*local_Cs_sum               )[0]),
+                              &((*global_incr_Cs_sum         )[0]),
+                              local_Cs_sum->size());
+      discret_->Comm().SumAll(&((*local_Cs_delta_sq_sum      )[0]),
+                              &((*global_incr_Cs_delta_sq_sum)[0]),
+                              local_Cs_delta_sq_sum->size());
+      discret_->Comm().SumAll(&((*local_visceff_sum          )[0]),
+                              &((*global_incr_visceff_sum    )[0]),
+                              local_visceff_sum->size());
     }
-    turbulencestatistics_->ReplaceCsIncrement(global_incr_Cs_sum,global_incr_Cs_delta_sq_sum,global_incr_visceff_sum);
+    turbulencestatistics_->ReplaceCsIncrement(global_incr_Cs_sum,
+                                              global_incr_Cs_delta_sq_sum,
+                                              global_incr_visceff_sum);
   }
-
-
-#if 0  // DEBUG IO --- the whole systemmatrix
-      {
-	  int rr;
-	  int mm;
-	  for(rr=0;rr<residual_->MyLength();rr++)
-	  {
-	      int NumEntries;
-
-	      vector<double> Values(maxentriesperrow_);
-	      vector<int> Indices(maxentriesperrow_);
-
-	      sysmat_->ExtractGlobalRowCopy(rr,
-					    maxentriesperrow_,
-					    NumEntries,
-					    &Values[0],&Indices[0]);
-	      printf("Row %4d\n",rr);
-
-	      for(mm=0;mm<NumEntries;mm++)
-	      {
-		  printf("mat [%4d] [%4d] %26.19e\n",rr,Indices[mm],Values[mm]);
-	      }
-	  }
-      }
-#endif
-
-#if 0  // DEBUG IO  --- rhs of linear system
-  {
-    const Epetra_Map* dofrowmap       = discret_->DofRowMap();
-
-    int rr;
-
-
-    double* data = velnp_->Values();
-    for(rr=0;rr<residual_->MyLength();rr++)
-    {
-      int  gid = dofrowmap->GID(rr);
-
-      if(gid%4==0)
-      printf("%4d vel %22.15e\n",gid,data[rr]);
-    }
-  }
-
-#endif
-
-
-#if 0  // DEBUG IO  --- rhs of linear system
-  {
-    const Epetra_Map* dofrowmap       = discret_->DofRowMap();
-
-    int rr;
-
-
-    double* data = residual_->Values();
-    for(rr=0;rr<residual_->MyLength();rr++)
-    {
-      int  gid = dofrowmap->GID(rr);
-
-      if(gid%4==0)
-      printf("%4d rhs %22.15e\n",gid,data[rr]);
-    }
-  }
-
-#endif
 
   // remember force vector for stress computation
   *force_=Epetra_Vector(*residual_);
+  force_->Scale(density_);
 
   // start time measurement for generation of sparsity pattern
   {
@@ -1504,11 +1426,18 @@ void FluidGenAlphaIntegration::ReadRestart(int step)
   reader.ReadVector(veln_ ,"veln" );
   reader.ReadVector(accnp_,"accnp");
   reader.ReadVector(accn_ ,"accn" );
+  
+  if (alefluid_)
+  {
+       reader.ReadVector(dispnp_  ,"dispnp"  );
+       reader.ReadVector(dispn_   ,"dispn"   );
+       reader.ReadVector(gridveln_,"gridveln");
+  }
 
   // read the previously written elements including the history data
   reader.ReadMesh(step_);
 
-
+  return;
 }
 
 
@@ -1813,6 +1742,126 @@ void FluidGenAlphaIntegration::EvaluateErrorComparedToAnalyticalSol()
   return;
 } // end EvaluateErrorComparedToAnalyticalSol
 
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | evaluate error for test cases with analytical solutions   gammi 04/07|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FluidGenAlphaIntegration::GenAlphaTakeSample()
+{
+  // --------------------------------------------------------------------
+  // add up X, X^2 for velocities and pressure
+  turbulencestatistics_->DoTimeSample(velnp_,*force_);
+  
+  // create the parameters for the discretization
+  ParameterList eleparams;
+
+  // --------------------------------------------------------------------
+  // do time averaging for subscales and residual --- this is of interest
+  // only for time dependent subscales
+  
+  // action for elements
+  eleparams.set("action","time average for subscales and residual");
+  
+      eleparams.set("assemble matrix 1",false);
+      eleparams.set("assemble matrix 2",false);
+      eleparams.set("assemble vector 1",false);
+      eleparams.set("assemble vector 2",false);
+      eleparams.set("assemble vector 3",false);
+
+      // other parameters that might be needed by the elements
+      {
+        ParameterList& timelist = eleparams.sublist("time integration parameters");
+
+        timelist.set("alpha_M",alphaM_);
+        timelist.set("alpha_F",alphaF_);
+        timelist.set("gamma"  ,gamma_ );
+        timelist.set("time"   ,time_  );
+        timelist.set("dt"     ,dt_    );
+      }
+
+      // parameters for stabilisation
+      {
+        eleparams.sublist("STABILIZATION")    = params_.sublist("STABILIZATION");
+      }
+
+      // set vector values needed by elements
+      discret_->ClearState();
+      discret_->SetState("u and p (n+1      ,trial)",velnp_);
+      discret_->SetState("u and p (n+alpha_F,trial)",velaf_);
+      discret_->SetState("acc     (n+alpha_M,trial)",accam_);
+
+      // get ordered layers of elements in which LijMij and MijMij are averaged
+      if (planecoords_ == null)
+      {
+        planecoords_ = rcp( new vector<double>((turbulencestatistics_->ReturnNodePlaneCoords()).size()));
+      }
+
+      (*planecoords_) = turbulencestatistics_->ReturnNodePlaneCoords();
+
+      RefCountPtr<vector<double> > local_incrres;
+      local_incrres=  rcp(new vector<double> );
+      local_incrres->resize(3*(planecoords_->size()-1),0.0);
+
+      RefCountPtr<vector<double> > global_incrres;
+      global_incrres=  rcp(new vector<double> );
+      global_incrres->resize(3*(planecoords_->size()-1),0.0);
+
+      RefCountPtr<vector<double> > local_incrres_sq;
+      local_incrres_sq=  rcp(new vector<double> );
+      local_incrres_sq->resize(3*(planecoords_->size()-1),0.0);
+
+      RefCountPtr<vector<double> > global_incrres_sq;
+      global_incrres_sq=  rcp(new vector<double> );
+      global_incrres_sq->resize(3*(planecoords_->size()-1),0.0);
+
+      RefCountPtr<vector<double> > local_incrsacc;
+      local_incrsacc=  rcp(new vector<double> );
+      local_incrsacc->resize(3*(planecoords_->size()-1),0.0);
+
+      RefCountPtr<vector<double> > global_incrsacc;
+      global_incrsacc=  rcp(new vector<double> );
+      global_incrsacc->resize(3*(planecoords_->size()-1),0.0);
+
+      RefCountPtr<vector<double> > local_incrsacc_sq;
+      local_incrsacc_sq=  rcp(new vector<double> );
+      local_incrsacc_sq->resize(3*(planecoords_->size()-1),0.0);
+
+      RefCountPtr<vector<double> > global_incrsacc_sq;
+      global_incrsacc_sq=  rcp(new vector<double> );
+      global_incrsacc_sq->resize(3*(planecoords_->size()-1),0.0);
+
+      eleparams.set<RefCountPtr<vector<double> > >("planecoords_",planecoords_);
+      eleparams.set<RefCountPtr<vector<double> > >("incrres"    ,local_incrres);
+      eleparams.set<RefCountPtr<vector<double> > >("incrres_sq" ,local_incrres_sq);
+      eleparams.set<RefCountPtr<vector<double> > >("incrsacc"   ,local_incrsacc);
+      eleparams.set<RefCountPtr<vector<double> > >("incrsacc_sq",local_incrsacc_sq);
+
+      // call loop over elements
+      {
+        discret_->Evaluate(eleparams,null,null,null,null,null);
+        discret_->ClearState();
+      }
+
+      discret_->Comm().SumAll(&((*local_incrres)[0])    ,&((*global_incrres)[0])    ,3*(planecoords_->size()-1));
+      discret_->Comm().SumAll(&((*local_incrres_sq)[0]) ,&((*global_incrres_sq)[0]) ,3*(planecoords_->size()-1));
+      discret_->Comm().SumAll(&((*local_incrsacc)[0])   ,&((*global_incrsacc)[0])   ,3*(planecoords_->size()-1));
+      discret_->Comm().SumAll(&((*local_incrsacc_sq)[0]),&((*global_incrsacc_sq)[0]),3*(planecoords_->size()-1));
+
+      turbulencestatistics_->AddToResAverage(global_incrres,
+                                             global_incrres_sq,
+                                             global_incrsacc,
+                                             global_incrsacc_sq);
+      return;
+}
+
+
+
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1839,7 +1888,7 @@ void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
 
   // set state vector to pass distributed vector to the element
   discret_->ClearState();
-  discret_->SetState("u and p (n+alpha_F,trial)",velaf_);
+  discret_->SetState("u and p (trial)",velaf_);
 
   // loop all nodes on the processor
   for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
@@ -2249,7 +2298,7 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
           }
         }
         cout << "                             ";
-        cout << "TRANSIENT         = ";
+        cout << "TRANSIENT       = ";
         cout << stabparams->get<string>("TRANSIENT");
         cout << &endl;
 
@@ -2527,4 +2576,256 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
 
   return;
 }
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |                                                           gammi 02/08|
+ -----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FluidGenAlphaIntegration::UpdateGridv()
+{
+  /*
+                             /       \     /            \ 
+        n+af     alphaM     |  n+1  n |   |       alphaM |   .n
+     u_G     = ---------- * | d   -d  | + | 1.0 - ------ | * d
+               gamma * dt   |         |   |        gamma | 
+                             \       /     \            /
+
+  */
+  
+  gridvelaf_->Update(1.0-alphaM_/gamma_,*gridveln_,0.0);
+
+  gridvelaf_->Update( alphaM_/(gamma_*dt_),*dispnp_,
+                     -alphaM_/(gamma_*dt_),*dispn_,1.0);
+
+  return;
+}
+
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | LiftDrag                                                  chfoe 11/07|
+ |                                    copied and modified by gammi 02/08|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*!
+\brief calculate lift&drag forces and angular momenta
+
+Lift and drag forces are based upon the right hand side (force) entities
+of the corresponding nodes. The contribution of the end node of a line
+is entirely added to a present L&D force.
+
+Idea of this routine:
+
+create
+
+map< label, set<DRT::Node*> >
+
+which is a set of nodes to each L&D Id
+nodal forces of all the nodes within one set are added to one L&D force
+
+Notice: Angular moments obtained from lift&drag forces currently refere
+        to the initial configuration, i.e. are built with the coordinates
+        X of a particular node irrespective of its current position.
+*/
+void FluidGenAlphaIntegration::LiftDrag() const
+{
+  std::map< const int, std::set<DRT::Node* > > ldnodemap;
+  std::map< const int, const std::vector<double>* > ldcoordmap;
+
+  // allocate and initialise LiftDrag conditions
+  std::vector<DRT::Condition*> ldconds;
+  discret_->GetCondition("LIFTDRAG",ldconds);
+
+  // space dimension of the problem
+  const int ndim = params_.get<int>("number of velocity degrees of freedom");
+
+  // there is an L&D condition if it has a size
+  if( ldconds.size() )
+  {
+
+    // prepare output
+    if (myrank_==0)
+    {
+      cout << "Lift and drag calculation:" << "\n";
+      if (ndim == 2)
+      {
+        cout << "lift'n'drag Id  ";
+        cout << "    F_x         ";
+        cout << "    F_y         ";
+        cout << "    M_z :\n"     ;
+      }
+      if (ndim == 3)
+      {
+        cout << "lift'n'drag Id  ";
+        cout << "    F_x         ";
+        cout << "    F_y         ";
+        cout << "    F_z         ";
+        cout << "    M_x         ";
+        cout << "    M_y         ";
+        cout << "    M_z : \n"    ;
+      }
+    }
+
+    // ---------------------------------------------------------------
+    // sort data
+
+    // loop L&D conditions (i.e. lines in .dat file)
+    for( unsigned i=0; i<ldconds.size(); ++i) 
+    {
+      /* get label of present LiftDrag condition  */
+      const unsigned int label = ldconds[i]->Getint("label");
+      /* get new nodeset for new label OR:
+         return pointer to nodeset for known label ... */
+      std::set<DRT::Node*>& nodes = ldnodemap[label];
+
+      // centre coordinates to present label
+      ldcoordmap[label] = ldconds[i]->Get<vector<double> >("centerCoord");
+
+      /* get pointer to its nodal Ids*/
+      const vector<int>* ids = ldconds[i]->Get<vector<int> >("Node Ids");
+
+      /* put all nodes belonging to the L&D line or surface into
+         'nodes' which are associated with the present label */
+      for (unsigned j=0; j<ids->size(); ++j)
+      {
+        // give me present node Id
+        const int node_id = (*ids)[j];
+        // put it into nodeset of actual label if node is new and mine
+        if( discret_->HaveGlobalNode(node_id) && discret_->gNode(node_id)->Owner()==myrank_ )
+	  nodes.insert(discret_->gNode(node_id));
+      }
+    } // end loop over conditions
+
+
+    // now step the label map
+    for( std::map< const int, std::set<DRT::Node*> >::const_iterator labelit = ldnodemap.begin();
+         labelit != ldnodemap.end(); ++labelit )
+    {
+      // pointer to nodeset of present label
+      const std::set<DRT::Node*>& nodes = labelit->second;
+      // the present label
+      const int label = labelit->first;
+      // vector with lift&drag forces
+      std::vector<double> values(6,0.0);
+      // vector with lift&drag forces after communication
+      std::vector<double> resultvec(6,0.0);
+
+      // get also pointer to centre coordinates
+      const std::vector<double>* centerCoord = ldcoordmap[label];
+
+      // loop all nodes within my set
+      for( std::set<DRT::Node*>::const_iterator actnode = nodes.begin();
+           actnode != nodes.end();
+           ++actnode)
+      {
+        // pointer to nodal coordinates
+        const double* x = (*actnode)->X();
+        const Epetra_BlockMap& rowdofmap = force_->Map();
+        const std::vector<int> dof = discret_->Dof(*actnode);
+
+        std::vector<double> distances (3);
+        for (unsigned j=0; j<3; ++j)
+        {
+          distances[j]= x[j]-(*centerCoord)[j];
+        }
+        // get nodal forces
+        const double fx = (*force_)[rowdofmap.LID(dof[0])];
+        const double fy = (*force_)[rowdofmap.LID(dof[1])];
+        const double fz = (*force_)[rowdofmap.LID(dof[2])];
+        values[0] += fx;
+        values[1] += fy;
+        values[2] += fz;
+
+        // calculate nodal angular momenta
+        values[3] += distances[1]*fz-distances[2]*fy;
+        values[4] += distances[2]*fx-distances[0]*fz;
+        values[5] += distances[0]*fy-distances[1]*fx;
+      } // end: loop over nodes
+
+      // care for the fact that we are (most likely) parallel
+      force_->Comm().SumAll (&(values[0]), &(resultvec[0]), 6);
+
+      // do the output
+      if (myrank_==0)
+      {
+        if (ndim == 2)
+	{
+	  cout << "     " << label << "         ";
+      cout << std::scientific << resultvec[0] << "    ";
+	  cout << std::scientific << resultvec[1] << "    ";
+	  cout << std::scientific << resultvec[5];
+	  cout << "\n";
+        }
+        if (ndim == 3)
+	{
+	  cout << "     " << label << "         ";
+      cout << std::scientific << resultvec[0] << "    ";
+	  cout << std::scientific << resultvec[1] << "    ";
+	  cout << std::scientific << resultvec[2] << "    ";
+	  cout << std::scientific << resultvec[3] << "    ";
+	  cout << std::scientific << resultvec[4] << "    ";
+	  cout << std::scientific << resultvec[5];
+	  cout << "\n";
+	}
+      }
+    } // end: loop over L&D labels
+    if (myrank_== 0)
+    {
+      cout << "\n";
+    }
+  }
+}//FluidGenAlphaIntegration::LiftDrag
+
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FluidGenAlphaIntegration::IntegrateInterfaceShape(
+  std::string condname)
+{
+  ParameterList eleparams;
+  // set action for elements
+  eleparams.set("action","integrate_Shapefunction");
+                                                 
+  // get a vector layout from the discretization to construct matching
+  // vectors and matrices
+  //                 local <-> global dof numbering
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+  // create vector (+ initialization with zeros)
+  Teuchos::RCP<Epetra_Vector> integratedshapefunc
+    =
+    LINALG::CreateVector(*dofrowmap,true);
+
+  // call loop over elements
+  discret_->ClearState();
+  discret_->SetState("dispnp", dispnp_);
+  discret_->EvaluateCondition(eleparams,integratedshapefunc,condname);
+  discret_->ClearState();
+
+  return integratedshapefunc;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FluidGenAlphaIntegration::LinearRelaxationSolve(
+  Teuchos::RCP<Epetra_Vector> relax
+  )
+{
+  dserror("No steepest descent for genalpha fluid\n");
+  
+  return;
+}
+
+
 #endif

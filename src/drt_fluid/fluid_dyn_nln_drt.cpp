@@ -293,7 +293,8 @@ void dyn_fluid_drt()
     FluidGenAlphaIntegration genalphaint(actdis,
                                          solver,
                                          fluidtimeparams,
-                                         output);
+                                         output,
+                                         false);
 
 
     // initial field from restart or calculated by given function

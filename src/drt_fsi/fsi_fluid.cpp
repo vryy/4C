@@ -330,6 +330,317 @@ Teuchos::RCP<DRT::ResultTest> FSI::FluidAdapter::CreateFieldTest()
 {
   return Teuchos::rcp(new FluidResultTest(fluid_));
 }
+//----------------------------------------------------------------------
+//----------------------------------------------------------------------
+//----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+FSI::FluidGenAlphaAdapter::FluidGenAlphaAdapter(
+  Teuchos::RCP<DRT::Discretization>      dis,
+  Teuchos::RCP<LINALG::Solver>           solver,
+  Teuchos::RCP<ParameterList>            params,
+  Teuchos::RCP<IO::DiscretizationWriter> output)
+  : fluid_ (dis, *solver, *params, *output, true),
+    dis_   (dis),
+    solver_(solver),
+    params_(params),
+    output_(output)
+{
+  FSI::UTILS::SetupInterfaceExtractor(*dis,"FSICoupling",interface_);
 
+  // build inner velocity map
+  // dofs at the interface are excluded
+  // we use only velocity dofs and only those without Dirichlet constraint
+
+  Teuchos::RCP<const Epetra_Map>    velmap       = fluid_.VelocityRowMap();
+  Teuchos::RCP<const Epetra_Vector> dirichtoggle = fluid_.Dirichlet();
+  Teuchos::RCP<const Epetra_Map>    fullmap      = DofRowMap();
+
+  int numvelids = velmap->NumMyElements();
+  std::vector<int> velids;
+  velids.reserve(numvelids);
+  for (int i=0; i<numvelids; ++i)
+  {
+    int gid = velmap->GID(i);
+    if (not interface_.CondMap()->MyGID(gid) and (*dirichtoggle)[fullmap->LID(gid)]==0.)
+    {
+      velids.push_back(gid);
+    }
+  }
+
+  innervelmap_ = Teuchos::rcp(new Epetra_Map(-1,velids.size(), &velids[0], 0, velmap->Comm()));
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> FSI::FluidGenAlphaAdapter::InitialGuess() const
+{
+  return fluid_.InitialGuess();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> FSI::FluidGenAlphaAdapter::RHS() const
+{
+  return fluid_.Residual();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> FSI::FluidGenAlphaAdapter::Velnp() const
+{
+  return fluid_.Velnp();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> FSI::FluidGenAlphaAdapter::Veln() const
+{
+  return fluid_.Veln();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> FSI::FluidGenAlphaAdapter::DofRowMap() const
+{
+  const Epetra_Map* dofrowmap = dis_->DofRowMap();
+  return Teuchos::rcp(dofrowmap, false);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix> FSI::FluidGenAlphaAdapter::SystemMatrix() const
+{
+  return fluid_.SysMat();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Discretization> FSI::FluidGenAlphaAdapter::Discretization()
+{
+  return fluid_.Discretization();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidGenAlphaAdapter::PrepareTimeStep()
+{
+  fluid_.GenAlphaIncreaseTimeAndStep();
+  
+  fluid_.GenAlphaEchoToScreen("print time algorithm info");
+  fluid_.GenAlphaPredictNewSolutionValues();
+  fluid_.GenAlphaApplyDirichletAndNeumann();
+  fluid_.GenAlphaCalcInitialAccelerations();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidGenAlphaAdapter::Evaluate(Teuchos::RCP<const Epetra_Vector> vel) const
+{
+  // Yes, this is complicated. But we have to be very careful
+  // here. The field solver always expects an increment only. And
+  // there are Dirichlet conditions that need to be preserved. So take
+  // the sum of increments we get from NOX and apply the latest
+  // increment only.
+  if (vel!=Teuchos::null)
+  {
+    Teuchos::RCP<Epetra_Vector> incvel = Teuchos::rcp(new Epetra_Vector(*vel));
+    incvel->Update(-1.0,*fluid_.Velnp(),1.0);
+    fluid_.ExternIncrementOfVelnp(incvel);
+  }
+  
+  fluid_.GenAlphaComputeIntermediateSol();
+  
+  fluid_.GenAlphaAssembleResidualAndMatrix();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidGenAlphaAdapter::Update()
+{
+  fluid_.GenAlphaTimeUpdate();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidGenAlphaAdapter::Output()
+{
+  fluid_.GenAlphaOutput();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidGenAlphaAdapter::NonlinearSolve()
+{
+  fluid_.DoGenAlphaPredictorCorrectorIteration();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> FSI::FluidGenAlphaAdapter::InnerVelocityRowMap()
+{
+  return innervelmap_;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> FSI::FluidGenAlphaAdapter::PressureRowMap()
+{
+  return fluid_.PressureRowMap();
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FSI::FluidGenAlphaAdapter::SetMeshMap(Teuchos::RCP<const Epetra_Map> mm)
+{
+  meshmap_.Setup(*dis_->DofRowMap(),mm,LINALG::SplitMap(*dis_->DofRowMap(),*mm));
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double FSI::FluidGenAlphaAdapter::ResidualScaling() const
+{
+  return fluid_.ResidualScaling();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidGenAlphaAdapter::ReadRestart(int step)
+{
+  fluid_.ReadRestart(step);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double FSI::FluidGenAlphaAdapter::Time()
+{
+  return fluid_.Time();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+int FSI::FluidGenAlphaAdapter::Step()
+{
+  return fluid_.Step();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidGenAlphaAdapter::LiftDrag()
+{
+  fluid_.LiftDrag();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::FluidGenAlphaAdapter::ExtractInterfaceForces()
+{
+  return interface_.ExtractCondVector(fluid_.TrueResidual());
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidGenAlphaAdapter::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
+{
+  interface_.InsertCondVector(ivel,fluid_.Velnp());
+
+  // mark all interface velocities as dirichlet values
+  // this is very easy, but there are two dangers:
+  // - We change ivel here. It must not be used afterwards.
+  // - The algorithm must support the sudden change of dirichtoggle_
+  ivel->PutScalar(1.0);
+  interface_.InsertCondVector(ivel,fluid_.Dirichlet());
+
+  //----------------------- compute an inverse of the dirichtoggle vector
+  fluid_.InvDirichlet()->PutScalar(1.0);
+  fluid_.InvDirichlet()->Update(-1.0,*fluid_.Dirichlet(),1.0);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidGenAlphaAdapter::ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp) const
+{
+  meshmap_.InsertCondVector(fluiddisp,fluid_.Dispnp());
+
+  // new grid velocity
+  fluid_.UpdateGridv();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidGenAlphaAdapter::ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel) const
+{
+  meshmap_.InsertCondVector(gridvel,fluid_.GridVel());
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+int FSI::FluidGenAlphaAdapter::Itemax() const
+{
+  return fluid_.Itemax();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidGenAlphaAdapter::SetItemax(int itemax)
+{
+  fluid_.SetItemax(itemax);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::FluidGenAlphaAdapter::IntegrateInterfaceShape()
+{
+  return interface_.ExtractCondVector(fluid_.IntegrateInterfaceShape("FSICoupling"));
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::FluidGenAlphaAdapter::RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel)
+{
+  const Epetra_Map* dofrowmap = Discretization()->DofRowMap();
+  Teuchos::RCP<Epetra_Vector> relax = LINALG::CreateVector(*dofrowmap,true);
+  interface_.InsertCondVector(ivel,relax);
+  fluid_.LinearRelaxationSolve(relax);
+  return ExtractInterfaceForces();
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::ResultTest> FSI::FluidGenAlphaAdapter::CreateFieldTest()
+{
+  return Teuchos::rcp(new FluidResultTest(fluid_));
+}
 
 #endif

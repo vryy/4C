@@ -727,38 +727,39 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         // extract velocities from the global distributed vectors
 
         // velocity and pressure values (most recent
-        // intermediatesolution, n+alphaF)
-        RefCountPtr<const Epetra_Vector> velaf =
-          discretization.GetState("u and p (n+alpha_F,trial)");
+        // intermediate solution, i.e. n+alphaF for genalpha
+        // and n+1 for one-step-theta)
+        RefCountPtr<const Epetra_Vector> vel =
+          discretization.GetState("u and p (trial)");
 
-        if (velaf==null)
+        if (vel==null)
         {
-          dserror("Cannot get state vectors 'velaf'");
+          dserror("Cannot get state vectors 'vel'");
         }
 
         // extract local values from the global vectors
-        vector<double> myvelaf(lm.size());
-        DRT::UTILS::ExtractMyValues(*velaf,myvelaf,lm);
+        vector<double> myvel(lm.size());
+        DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
 
         // create blitz objects for element arrays
         const int numnode = NumNode();
-        blitz::Array<double, 2> evelaf(3,numnode,blitz::ColumnMajorArray<2>());
+        blitz::Array<double, 2> evel(3,numnode,blitz::ColumnMajorArray<2>());
 
         // split velocity and throw away  pressure, insert into element array
         for (int i=0;i<numnode;++i)
         {
-          evelaf(0,i) = myvelaf[0+(i*4)];
-          evelaf(1,i) = myvelaf[1+(i*4)];
-          evelaf(2,i) = myvelaf[2+(i*4)];
+          evel(0,i) = myvel[0+(i*4)];
+          evel(1,i) = myvel[1+(i*4)];
+          evel(2,i) = myvel[2+(i*4)];
         }
 
         // initialise the contribution of this element to the patch volume to zero
         double volume_contribution = 0;
 
         // wrap Epetra Objects in Blitz array
-        blitz::Array<double, 1> velaf_hat(elevec1.Values(),
-                                          blitz::shape(elevec1.Length()),
-                                          blitz::neverDeleteData);
+        blitz::Array<double, 1> vel_hat(elevec1.Values(),
+                                        blitz::shape(elevec1.Length()),
+                                        blitz::neverDeleteData);
 
         blitz::Array<double, 2> reystress_hat(elemat1.A(),
                                               blitz::shape(elemat1.M(),elemat1.N()),
@@ -772,15 +773,15 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
 
         // integrate the convolution with the box filter function for this element
         // the results are assembled onto the *_hat arrays
-        this->f3_apply_box_filter(evelaf,
-                                  velaf_hat,
+        this->f3_apply_box_filter(evel,
+                                  vel_hat,
                                   reystress_hat,
                                   modeled_stress_grid_scale_hat,
                                   volume_contribution);
 
         // hand down the volume contribution to the time integration algorithm
         params.set<double>("volume_contribution",volume_contribution);
-        
+
       }
       break;
       case calc_smagorinsky_const:
@@ -817,7 +818,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         double LijMij   = 0;
         double MijMij   = 0;
         double center   = 0;
-        
+
         this->f3_calc_smag_const_LijMij_and_MijMij(evelaf_hat,
                                                    ereynoldsstress_hat,
                                                    efiltered_modeled_subgrid_stress_hat,
@@ -825,11 +826,16 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
                                                    MijMij,
                                                    center);
 
+        // set cs_delta_sq without averaging (only clipping)
+        cs_delta_sq_ = 0.5 * LijMij / MijMij;
+        if (cs_delta_sq_<0)
+        {
+          cs_delta_sq_= 0;
+        }
         
         params.set<double>("LijMij",LijMij);
         params.set<double>("MijMij",MijMij);
         params.set<double>("center",center);
-
       }
       break;
       case calc_fluid_genalpha_sysmat_and_residual:
@@ -878,10 +884,12 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
 
         // create blitz matrix objects
         const int numnode = NumNode();
-        blitz::Array<double, 1> eprenp (  numnode);
-        blitz::Array<double, 2> evelnp (3,numnode,blitz::ColumnMajorArray<2>());
-        blitz::Array<double, 2> evelaf (3,numnode,blitz::ColumnMajorArray<2>());
-        blitz::Array<double, 2> eaccam (3,numnode,blitz::ColumnMajorArray<2>());
+        blitz::Array<double, 1> eprenp    (  numnode);
+        blitz::Array<double, 2> evelnp    (3,numnode,blitz::ColumnMajorArray<2>());
+        blitz::Array<double, 2> evelaf    (3,numnode,blitz::ColumnMajorArray<2>());
+        blitz::Array<double, 2> eaccam    (3,numnode,blitz::ColumnMajorArray<2>());
+        blitz::Array<double, 2> edispnp   (3,numnode,blitz::ColumnMajorArray<2>());
+        blitz::Array<double, 2> egridvelaf(3,numnode,blitz::ColumnMajorArray<2>());
 
 
         // split "my_velnp" into velocity part "myvelnp" and pressure part "myprenp"
@@ -905,6 +913,44 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         }
 
 
+        
+        if(is_ale_)
+        {
+          // get most recent displacements
+          RefCountPtr<const Epetra_Vector> dispnp
+            =
+            discretization.GetState("dispnp");
+
+          // get intermediate grid velocities
+          RefCountPtr<const Epetra_Vector> gridvelaf
+            =
+            discretization.GetState("gridvelaf");
+
+          if (dispnp==null || gridvelaf==null)
+          {
+            dserror("Cannot get state vectors 'dispnp' and/or 'gridvelaf'");
+          }
+
+          vector<double> mydispnp(lm.size());
+          DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
+
+          vector<double> mygridvelaf(lm.size());
+          DRT::UTILS::ExtractMyValues(*gridvelaf,mygridvelaf,lm);
+
+          // extract velocity part from "mygridvelaf" and get
+          // set element displacements
+          for (int i=0;i<numnode;++i)
+          {
+            egridvelaf(0,i) = mygridvelaf[0+(i*4)];
+            egridvelaf(1,i) = mygridvelaf[1+(i*4)];
+            egridvelaf(2,i) = mygridvelaf[2+(i*4)];
+            
+            edispnp(0,i)    = mydispnp   [0+(i*4)];
+            edispnp(1,i)    = mydispnp   [1+(i*4)];
+            edispnp(2,i)    = mydispnp   [2+(i*4)];
+          }
+        }
+        
 #ifdef PERF
         timeelegetvelnp_ref = null;
 #endif     
@@ -1073,42 +1119,57 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           {
             turb_mod_action = dynamic_smagorinsky;
             
-            RefCountPtr<vector<double> > averaged_LijMij  = turbmodelparams.get<RefCountPtr<vector<double> > >("averaged_LijMij_");
-            RefCountPtr<vector<double> > averaged_MijMij  = turbmodelparams.get<RefCountPtr<vector<double> > >("averaged_MijMij_");
-            
-            RefCountPtr<vector<double> > planecoords      = turbmodelparams.get<RefCountPtr<vector<double> > >("planecoords_");
-                        
-            const int iel = NumNode();
-            
-            //this will be the y-coordinate of a point in the element interior
-            double center = 0;
-            for(int inode=0;inode<iel;inode++)
+            if (turbmodelparams.get<string>("CANONICAL_FLOW","no")
+                ==
+                "channel_flow_of_height_2")
             {
-              center+=Nodes()[inode]->X()[1];
-            }
-            center/=iel;
+              RCP<vector<double> > averaged_LijMij
+                =
+                turbmodelparams.get<RCP<vector<double> > >("averaged_LijMij_");
+              RCP<vector<double> > averaged_MijMij
+                =
+                turbmodelparams.get<RCP<vector<double> > >("averaged_MijMij_");
+              
+              RCP<vector<double> > planecoords
+                =
+                turbmodelparams.get<RCP<vector<double> > >("planecoords_");
+              
+              const int iel = NumNode();
             
-            bool found = false;
-            for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
-            {
+              //this will be the y-coordinate of a point in the element interior
+              double center = 0;
+              for(int inode=0;inode<iel;inode++)
+              {
+                center+=Nodes()[inode]->X()[1];
+              }
+              center/=iel;
+              
+              bool found = false;
+              for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
+              {
                 if(center<(*planecoords)[nlayer+1])
                 {
                   found = true;
                   break;
                 }
                 nlayer++;
+              }
+              if (found ==false)
+              {
+                dserror("could not determine element layer");
+              }
+              
+              Cs_delta_sq = 0.5 * (*averaged_LijMij)[nlayer]/(*averaged_MijMij)[nlayer] ;
+              
+              // clipping to get algorithm stable
+              if (Cs_delta_sq<0)
+              {
+                Cs_delta_sq=0;
+              }
             }
-            if (found ==false)
+            else
             {
-              dserror("could not determine element layer");
-            }
-            
-            Cs_delta_sq = 0.5 * (*averaged_LijMij)[nlayer]/(*averaged_MijMij)[nlayer] ;
-            
-            // clipping to get algorithm stable
-            if (Cs_delta_sq<0)
-            {
-              Cs_delta_sq=0;
+              Cs_delta_sq = cs_delta_sq_;
             }
           }
           else
@@ -1154,6 +1215,8 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         GenalphaResVMM()->Sysmat(this,
                                  elemat1,
                                  elevec1,
+                                 edispnp,
+                                 egridvelaf,
                                  evelnp,
                                  eprenp,
                                  eaccam,
@@ -1221,9 +1284,9 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
 
             if(this->Owner() == discretization.Comm().MyPID())
             {
-              (*(turbmodelparams.get<RefCountPtr<vector<double> > >("local_Cs_sum")))         [nlayer]+=Cs;
-              (*(turbmodelparams.get<RefCountPtr<vector<double> > >("local_Cs_delta_sq_sum")))[nlayer]+=Cs_delta_sq;
-              (*(turbmodelparams.get<RefCountPtr<vector<double> > >("local_visceff_sum")))    [nlayer]+=visceff;
+              (*(turbmodelparams.get<RCP<vector<double> > >("local_Cs_sum")))         [nlayer]+=Cs;
+              (*(turbmodelparams.get<RCP<vector<double> > >("local_Cs_delta_sq_sum")))[nlayer]+=Cs_delta_sq;
+              (*(turbmodelparams.get<RCP<vector<double> > >("local_visceff_sum")))    [nlayer]+=visceff;
             }
           }
         }
@@ -2434,9 +2497,15 @@ void DRT::ELEMENTS::Fluid3::f3_apply_box_filter(
   return;
 } // DRT::ELEMENTS::Fluid3::f3_apply_box_filter
 
+//----------------------------------------------------------------------
+// Calculate the quantities LijMij and MijMij, to compare the influence
+// of the modeled and resolved stress tensor --- from this relation, Cs
+// will be computed
+//----------------------------------------------------------------------
+
 
 void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
-  blitz::Array<double, 2> evelaf_hat,
+  blitz::Array<double, 2> evel_hat,
   blitz::Array<double, 3> ereynoldsstress_hat,
   blitz::Array<double, 3> efiltered_modeled_subgrid_stress_hat,
   double&                 LijMij,
@@ -2499,7 +2568,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
         dserror("invalid discretization type for fluid3");
   }
 
-  // gaussian points
+  // gaussian points --- i.e. the midpoint
   const DRT::UTILS::IntegrationPoints3D intpoints_onepoint(integrationrule_filter);
   const double e1    = intpoints_onepoint.qxg[0][0];
   const double e2    = intpoints_onepoint.qxg[0][1];
@@ -2589,67 +2658,73 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
     }
   }
   
-  // get velocities (n+alpha_F,i) at integration point
+  // get velocities (n+alpha_F/1,i) at integration point
   //
-  //                 +-----
-  //     ^ n+af       \                ^ n+af
-  //    vel    (x) =   +      N (x) * vel
-  //                  /        j         j
-  //                 +-----
-  //                 node j
+  //                   +-----
+  //     ^ n+af/1       \                ^ n+af/1
+  //    vel      (x) =   +      N (x) * vel
+  //                     /        j         j
+  //                    +-----
+  //                    node j
   //
-  blitz::Array<double,1> velintaf_hat (3);
-  velintaf_hat = blitz::sum(funct(j)*evelaf_hat(i,j),j);
+  blitz::Array<double,1> velint_hat (3);
+  velint_hat = blitz::sum(funct(j)*evel_hat(i,j),j);
 
 
   // get velocity (n+alpha_F,i) derivatives at integration point
   //
-  //     ^ n+af      +-----  dN (x)
-  //   dvel    (x)    \        k       ^ n+af
-  //   ----------- =   +     ------ * vel
-  //       dx         /        dx        k
-  //         j       +-----      j
-  //                 node k
+  //     ^ n+af/1      +-----  dN (x)
+  //   dvel      (x)    \        k       ^ n+af/1
+  //   ------------- =   +     ------ * vel
+  //       dx           /        dx        k
+  //         j         +-----      j
+  //                   node k
   //
   // j : direction of derivative x/y/z
   //
-  blitz::Array<double,2>  vderxyaf_hat(3,3);
-  vderxyaf_hat = blitz::sum(derxy(j,k)*evelaf_hat(i,k),k);
+  blitz::Array<double,2>  vderxy_hat(3,3);
+  vderxy_hat = blitz::sum(derxy(j,k)*evel_hat(i,k),k);
 
-  // get filtered reynolds stress (n+alpha_F,i) at integration point
+  // get filtered reynolds stress (n+alpha_F/1,i) at integration point
   //
-  //                      +-----
-  //        ^   n+af       \                   ^   n+af
-  //    restress    (x) =   +      N (x) * restress
-  //            ij         /        k              k, ij
-  //                      +-----
-  //                      node k
+  //                        +-----
+  //        ^   n+af/1       \                   ^   n+af/1
+  //    restress      (x) =   +      N (x) * restress
+  //            ij           /        k              k, ij
+  //                        +-----
+  //                        node k
   //
   blitz::Array<double,2>  restress_hat(3,3);
   restress_hat = blitz::sum(funct(k)*ereynoldsstress_hat(i,j,k),k);
 
-  // get filtered modeled subgrid stress (n+alpha_F,i) at integration point
+  // get filtered modeled subgrid stress (n+alpha_F/1,i) at integration point
   //
-  //                                                 +-----
-  //                   ^                   n+af       \                              ^                   n+af
-  //    filtered_modeled_subgrid_stress_hat    (x) =   +      N (x) * filtered_modeled_subgrid_stress_hat
-  //                                       ij         /        k                                         k, ij
-  //                                                 +-----
-  //                                                 node k
+  //                                                   
+  //                   ^                   n+af/1      
+  //    filtered_modeled_subgrid_stress_hat      (x) = 
+  //                                       ij          
+  //
+  //            +-----                                                      
+  //             \                              ^                   n+af/1  
+  //          =   +      N (x) * filtered_modeled_subgrid_stress_hat        
+  //             /        k                                         k, ij   
+  //            +-----                                                      
+  //            node k                                                                                             
+  //                                                   
   //
   blitz::Array<double,2>  filtered_modeled_subgrid_stress_hat(3,3);
   filtered_modeled_subgrid_stress_hat = blitz::sum(funct(k)*efiltered_modeled_subgrid_stress_hat(i,j,k),k);
 
   
   /*                            
-                            +-   ^ n+af        ^ n+af    -+
-      ^   / h \       1.0   |  dvel_i  (x)   dvel_j  (x)  |
-     eps | u   |    = --- * |  ----------- + -----------  |
-          \   / ij    2.0   |      dx            dx       |
-                            +-       j             i     -+
+                            +-   ^ n+af/1        ^   n+af/1    -+
+      ^   / h \       1.0   |  dvel_i    (x)   dvel_j      (x)  |
+     eps | u   |    = --- * |  ------------- + ---------------  |
+          \   / ij    2.0   |       dx              dx          |
+                            +-        j               i        -+
   */
   blitz::Array<double,2> epsilon_hat(3,3,blitz::ColumnMajorArray<2>());
-  epsilon_hat = 0.5 * ( vderxyaf_hat(i,j) + vderxyaf_hat(j,i) );
+  epsilon_hat = 0.5 * ( vderxy_hat(i,j) + vderxy_hat(j,i) );
   
   //
   // modeled part of subtestfilter scale stresses
@@ -2680,7 +2755,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
   blitz::Array<double, 2> L_ij (3,3,blitz::ColumnMajorArray<2>());
   blitz::Array<double, 2> M_ij (3,3,blitz::ColumnMajorArray<2>());
 
-  L_ij = restress_hat(i,j) - velintaf_hat(i)*velintaf_hat(j);
+  L_ij = restress_hat(i,j) - velint_hat(i)*velint_hat(j);
 
   // this is sqrt(3)
   double filterwidthratio = 1.73;

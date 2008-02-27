@@ -37,7 +37,7 @@ namespace FSI {
   /*!
 
   This is the FSI algorithm's view on a fluid algorithm. This pure virtual
-  interface contains all the methods anny FSI algorithm might want to
+  interface contains all the methods any FSI algorithm might want to
   call. The idea is to implement this interface with a concrete adapter class
   for each fluid algorithm we want to use for FSI.
 
@@ -292,6 +292,97 @@ namespace FSI {
     Teuchos::RefCountPtr<Epetra_Map> innervelmap_;
   };
 
+
+  /// adapter to generalized alpha fluid algorithm
+  class FluidGenAlphaAdapter : public Fluid
+  {
+  public:
+    FluidGenAlphaAdapter(
+      Teuchos::RCP<DRT::Discretization>      dis,
+      Teuchos::RCP<LINALG::Solver>           solver,
+      Teuchos::RCP<ParameterList>            params,
+      Teuchos::RCP<IO::DiscretizationWriter> output
+      );
+
+    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() const;
+    virtual Teuchos::RCP<const Epetra_Vector> RHS() const;
+    virtual Teuchos::RCP<const Epetra_Vector> Velnp() const;
+    virtual Teuchos::RCP<const Epetra_Vector> Veln() const;
+    virtual Teuchos::RCP<const Epetra_Map>    DofRowMap() const;
+    virtual Teuchos::RCP<LINALG::SparseMatrix>SystemMatrix() const;
+    virtual Teuchos::RCP<DRT::Discretization> Discretization();
+
+    virtual void PrepareTimeStep();
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel) const;
+    virtual void Update();
+    virtual void Output();
+
+    virtual void NonlinearSolve();
+
+    /// get the linear solver object used for this field
+    virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
+    
+    /// the interface map contains all velocity dofs at the interface
+    virtual Teuchos::RCP<const Epetra_Map>    InnerVelocityRowMap();
+    virtual Teuchos::RCP<const Epetra_Map>    PressureRowMap();
+
+    /// the mesh map contains all velocity dofs that are covered by an ALE node
+    virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm);
+
+    /// scaling factor needed to convert the residual to real forces
+    virtual double ResidualScaling() const;
+
+    /// communication object at the interface
+    virtual const LINALG::MapExtractor&  Interface() const { return interface_; }
+
+    virtual void ReadRestart(int step);
+    virtual double Time();
+    virtual int Step();
+    virtual void LiftDrag();
+
+    virtual Teuchos::RCP<Epetra_Vector>  ExtractInterfaceForces();
+    virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel);
+    virtual void ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp) const;
+    virtual void ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel) const;
+
+    virtual int  Itemax() const;
+    virtual void SetItemax(int itemax);
+
+    virtual Teuchos::RCP<Epetra_Vector>   IntegrateInterfaceShape();
+
+    /// linear fluid solve with just a interface load
+    /*!
+      The very special solve done in steepest descent relaxation
+      calculation (and matrix free Newton Krylov).
+
+      \note Can only be called after a valid fluid solve.
+    */
+    virtual Teuchos::RCP<Epetra_Vector>    RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel);
+
+    virtual Teuchos::RCP<DRT::ResultTest>  CreateFieldTest();
+
+  private:
+
+    /// the actual fluid algorithm
+    mutable FluidGenAlphaIntegration       fluid_;
+
+    /// the interface map setup for interface <-> full translation
+    LINALG::MapExtractor                   interface_;
+
+    /// ALE dof map
+    LINALG::MapExtractor                   meshmap_;
+
+    //! @name local copies of input parameters
+    Teuchos::RCP<DRT::Discretization>      dis_;
+    Teuchos::RCP<LINALG::Solver>           solver_;
+    Teuchos::RCP<Teuchos::ParameterList>   params_;
+    Teuchos::RCP<IO::DiscretizationWriter> output_;
+    //@}
+
+    /// all velocity dofs not at the interface
+    Teuchos::RefCountPtr<Epetra_Map>       innervelmap_;
+  };
+  
 }
 
 #endif

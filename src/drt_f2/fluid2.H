@@ -47,6 +47,7 @@ namespace ELEMENTS
 {
 // forward declarations
 class Fluid2Line;
+class Fluid2GenalphaResVMM;
 
 /*!
 \class Fluid2
@@ -62,6 +63,7 @@ public:
   //! @name Friends
   friend class Fluid2Register;
   friend class Fluid2Line;
+  friend class Fluid2GenalphaResVMM;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -279,11 +281,74 @@ private:
   {
     none,
     calc_fluid_systemmat_and_residual,
-    calc_fluid_stationary_systemmat_and_residual
+    calc_fluid_stationary_systemmat_and_residual,
+    calc_fluid_genalpha_sysmat_and_residual,
+    calc_fluid_genalpha_update_for_subscales,
+    calc_fluid_genalpha_average_for_subscales_and_residual
   };
 
+  //! stabilisation actions recognized by fluid2 (genalpha implementation)
+  enum StabilisationAction
+  {
+    stabaction_unspecified,
+    subscales_quasistatic,
+    subscales_time_dependent,
+    inertia_stab_drop,
+    inertia_stab_keep,
+    pstab_assume_inf_sup_stable,
+    pstab_use_pspg,
+    convective_stab_none,
+    convective_stab_supg,
+    viscous_stab_none,
+    viscous_stab_gls,
+    viscous_stab_gls_only_rhs,
+    viscous_stab_usfem,
+    viscous_stab_usfem_only_rhs,
+    continuity_stab_none,
+    continuity_stab_yes,
+    continuity_stab_td,
+    cross_stress_stab_none,
+    cross_stress_stab,
+    cross_stress_stab_only_rhs,
+    reynolds_stress_stab_none,
+    reynolds_stress_stab_only_rhs
+  };
+  
+  //! map that converts strings to actions (stabilisation)
+  static map<string,StabilisationAction>          stabstrtoact_;
+
+  //! convert string to stabilisation action
+  StabilisationAction ConvertStringToStabAction (const string& action) const;
+
+  
+  /*!
+   * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
+   * \return boolean indicating higher order status
+   */
+  bool isHigherOrderElement(
+    const DRT::Element::DiscretizationType  distype
+    ) const
+    {
+      bool hoel = true;
+      switch (distype)
+      {
+          case quad4: case quad8: case quad9: case tri6:
+            hoel = true;
+            break;
+          case tri3: 
+            hoel = false;
+            break;
+          default:
+            dserror("distype unknown!");
+      }
+      return hoel;
+    };
+  
   bool is_higher_order_element(const DRT::Element::DiscretizationType  distype) const;
 
+  //! Gaussrule
+  DRT::UTILS::GaussRule2D                         gaussrule_;
+  
   //! flag for euler/ale net algorithm
   bool                                            is_ale_;
 
@@ -298,6 +363,18 @@ private:
   //! vector of lines adjacent to this element (fluid2: 3 or 4 lines)
   vector<DRT::ELEMENTS::Fluid2Line*>              lineptrs_;
 
+  //! matrices of subscale acceleration values in gausspoints of this element
+  blitz::Array<double,2>                        sub_acc_old_;
+
+  //! matrices of subscale velocity values, current iteration value, in gausspoints of this element
+  blitz::Array<double,2>                        sub_vel_;
+  //! matrices of subscale velocity values, last timestep, in gausspoints of this element
+  blitz::Array<double,2>                        sub_vel_old_;
+
+  //! vector of subscale pressure values, current iteration value, in gausspoints
+  blitz::Array<double,1>                        sub_pre_;
+  //! vector of subscale pressure values (history values) in gausspoints
+  blitz::Array<double,1>                        sub_pre_old_;
 
   // internal calculation methods
 
@@ -402,6 +479,11 @@ private:
                 const int&              fssgv
       );
 
+
+  /// Residual based genalpha implementation class for fluid element
+  Fluid2GenalphaResVMM* GenalphaResVMM();
+  
+  
   // set number of gauss points to element shape default
   DRT::UTILS::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype);
 
