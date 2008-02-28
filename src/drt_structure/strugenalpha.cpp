@@ -99,8 +99,15 @@ maxentriesperrow_(81)
   // also known as residual displacements
   disi_ = LINALG::CreateVector(*dofrowmap,true);
 
+#ifdef STRUGENALPHA_FINTLIKETR
+  // internal force vector F_{int;n} at last time
+  fint_ = LINALG::CreateVector(*dofrowmap,true);
+  // internal force vector F_{int;n+1} at new time
+  fintn_ = LINALG::CreateVector(*dofrowmap,true);
+#else
   // internal force vector F_int at different times
   fint_ = LINALG::CreateVector(*dofrowmap,true);
+#endif
   // inertial force vector F_inert at different times
   finert_ = LINALG::CreateVector(*dofrowmap,true);
   // viscous force vector F_visc at different times
@@ -317,10 +324,19 @@ void StruGenAlpha::ConstantPredictor()
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("residual displacement",disi_);
+#ifdef STRUGENALPHA_FINTLIKETR
+    discret_.SetState("displacement",disn_);
+#else
     discret_.SetState("displacement",dism_);
+#endif
     //discret_.SetState("velocity",velm_); // not used at the moment
+#ifdef STRUGENALPHA_FINTLIKETR
+    fintn_->PutScalar(0.0);  // initialise internal force vector
+    discret_.Evaluate(p,stiff_,null,fintn_,null,null);
+#else
     fint_->PutScalar(0.0);  // initialise internal force vector
     discret_.Evaluate(p,stiff_,null,fint_,null,null);
+#endif
     discret_.ClearState();
 
     if (surf_stress_man_!=null)
@@ -349,7 +365,12 @@ void StruGenAlpha::ConstantPredictor()
   }
 
   // add static mid-balance
+#ifdef STRUGENALPHA_FINTLIKETR
+  fresm_->Update(1.0,*fextm_,-1.0);
+  fresm_->Update(-(1.0-alphaf),*fintn_,-alphaf,*fint_,1.0);
+#else
   fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+#endif
 
   // blank residual at DOFs on Dirichlet BC
   {
@@ -476,11 +497,20 @@ void StruGenAlpha::MatrixFreeConstantPredictor()
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("residual displacement",disi_);
+#ifdef STRUGENALPHA_FINTLIKETR
+    discret_.SetState("displacement",disn_);
+#else
     discret_.SetState("displacement",dism_);
+#endif
     //discret_.SetState("velocity",velm_); // not used at the moment
+#ifdef STRUGENALPHA_FINTLIKETR
+    fintn_->PutScalar(0.0);  // initialise internal force vector
+    discret_.Evaluate(p,stiff_,null,fintn_,null,null);
+#else
     fint_->PutScalar(0.0);  // initialise internal force vector
 //     discret_.Evaluate(p,null,null,fint_,null,null);
     discret_.Evaluate(p,stiff_,null,fint_,null,null);          // test only!
+#endif
     discret_.ClearState();
     stiff_->Complete();                                 // test only!
   }
@@ -502,7 +532,12 @@ void StruGenAlpha::MatrixFreeConstantPredictor()
   }
 
   // add static mid-balance
+#ifdef STRUGENALPHA_FINTLIKETR
+  fresm_->Update(1.0,*fextm_,-1.0);
+  fresm_->Update(-(1.0-alphaf),*fintn_,-alphaf,*fint_,1.0);
+#else
   fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+#endif
 
   // blank residual at DOFs on Dirichlet BC
   {
@@ -699,10 +734,19 @@ void StruGenAlpha::ConsistentPredictor()
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("residual displacement",disi_);
+#ifdef STRUGENALPHA_FINTLIKETR
+    discret_.SetState("displacement",disn_);
+#else
     discret_.SetState("displacement",dism_);
+#endif
     //discret_.SetState("velocity",velm_); // not used at the moment
+#ifdef STRUGENALPHA_FINTLIKETR
+    fintn_->PutScalar(0.0);  // initialise internal force vector
+    discret_.Evaluate(p,stiff_,null,fintn_,null,null);
+#else
     fint_->PutScalar(0.0);  // initialise internal force vector
     discret_.Evaluate(p,stiff_,null,fint_,null,null);
+#endif
     discret_.ClearState();
 
     if (surf_stress_man_!=null)
@@ -731,7 +775,12 @@ void StruGenAlpha::ConsistentPredictor()
   }
 
   // add static mid-balance
+#ifdef STRUGENALPHA_FINTLIKETR
+  fresm_->Update(1.0,*fextm_,-1.0);
+  fresm_->Update(-(1.0-alphaf),*fintn_,-alphaf,*fint_,1.0);
+#else
   fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+#endif
 
   // blank residual at DOFs on Dirichlet BC
   {
@@ -824,10 +873,19 @@ void StruGenAlpha::ApplyExternalForce(const LINALG::MapExtractor& extractor,
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("residual displacement",disi_);
+#ifdef STRUGENALPHA_FINTLIKETR
+    discret_.SetState("displacement",disn_);
+#else
     discret_.SetState("displacement",dism_);
+#endif
     //discret_.SetState("velocity",velm_); // not used at the moment
+#ifdef STRUGENALPHA_FINTLIKETR
+    fintn_->PutScalar(0.0);  // initialise internal force vector
+    discret_.Evaluate(p,stiff_,null,fintn_,null,null);
+#else
     fint_->PutScalar(0.0);  // initialise internal force vector
     discret_.Evaluate(p,stiff_,null,fint_,null,null);
+#endif
     discret_.ClearState();
 
     if (surf_stress_man_!=null)
@@ -856,7 +914,12 @@ void StruGenAlpha::ApplyExternalForce(const LINALG::MapExtractor& extractor,
   }
 
   // add static mid-balance
+#ifdef STRUGENALPHA_FINTLIKETR
+  fresm_->Update(1.0,*fextm_,-1.0);
+  fresm_->Update(-(1.0-alphaf),*fintn_,-alphaf,*fint_,1.0);
+#else
   fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+#endif
 
   // blank residual at DOFs on Dirichlet BC
   {
@@ -973,11 +1036,20 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
       // set vector values needed by elements
       discret_.ClearState();
       discret_.SetState("residual displacement",disi_);
+#ifdef STRUGENALPHA_FINTLIKETR
+      discret_.SetState("displacement",disn_);
+#else
       discret_.SetState("displacement",dism_);
+#endif
 
       //discret_.SetState("velocity",velm_); // not used at the moment
+#ifdef STRUGENALPHA_FINTLIKETR
+      fintn_->PutScalar(0.0);  // initialise internal force vector
+      discret_.Evaluate(p,stiff_,null,fintn_,null,null);
+#else
       fint_->PutScalar(0.0);  // initialise internal force vector
       discret_.Evaluate(p,stiff_,fint_);
+#endif
       discret_.ClearState();
       // do NOT finalize the stiffness matrix to add masses to it later
     }
@@ -998,7 +1070,12 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
       fresm_->Update(1.0,*fvisc_,1.0);
     }
     // add static mid-balance
+#ifdef STRUGENALPHA_FINTLIKETR
+    fresm_->Update(1.0,*fextm_,-1.0);
+    fresm_->Update(-(1.0-alphaf),*fintn_,-alphaf,*fint_,1.0);
+#else
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+#endif
     // blank residual DOFs that are on Dirichlet BC
     {
       Epetra_Vector fresmcopy(*fresm_);
@@ -1108,7 +1185,12 @@ void StruGenAlpha::FullNewton()
     //---------------------------------- update mid configuration values
     // displacements
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
+#ifdef STRUGENALPHA_FINTLIKETR
+    disn_->Update(1.0,*disi_,1.0);
+    dism_->Update(1.-alphaf,*disn_,alphaf,*dis_,0.0);
+#else
     dism_->Update(1.-alphaf,*disi_,1.0);
+#endif
     // velocities
 #ifndef STRUGENALPHA_INCRUPDT
     // iterative
@@ -1162,10 +1244,19 @@ void StruGenAlpha::FullNewton()
       // set vector values needed by elements
       discret_.ClearState();
       discret_.SetState("residual displacement",disi_);
+#ifdef STRUGENALPHA_FINTLIKETR
+      discret_.SetState("displacement",disn_);
+#else
       discret_.SetState("displacement",dism_);
+#endif
       //discret_.SetState("velocity",velm_); // not used at the moment
+#ifdef STRUGENALPHA_FINTLIKETR
+      fintn_->PutScalar(0.0);  // initialise internal force vector
+      discret_.Evaluate(p,stiff_,null,fintn_,null,null);
+#else
       fint_->PutScalar(0.0);  // initialise internal force vector
       discret_.Evaluate(p,stiff_,null,fint_,null,null);
+#endif
       discret_.ClearState();
 
       if (surf_stress_man_!=null)
@@ -1197,7 +1288,12 @@ void StruGenAlpha::FullNewton()
       fresm_->Update(1.0,*fvisc_,1.0);
     }
     // add static mid-balance
+#ifdef STRUGENALPHA_FINTLIKETR
+    fresm_->Update(1.0,*fextm_,-1.0);
+    fresm_->Update(-(1.0-alphaf),*fintn_,-alphaf,*fint_,1.0);
+#else
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+#endif
     // blank residual DOFs that are on Dirichlet BC
     {
       Epetra_Vector fresmcopy(*fresm_);
@@ -1698,7 +1794,12 @@ void StruGenAlpha::ModifiedNewton()
     //---------------------------------- update mid configuration values
     // displacements
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
+#ifdef STRUGENALPHA_FINTLIKETR
+    disn_->Update(1.0,*disi_,1.0);
+    dism_->Update(1.-alphaf,*disn_,alphaf,*dis_,0.0);
+#else
     dism_->Update(1.-alphaf,*disi_,1.0);
+#endif
     // velocities
 #ifndef STRUGENALPHA_INCRUPDT
     // iterative
@@ -1750,10 +1851,19 @@ void StruGenAlpha::ModifiedNewton()
       // set vector values needed by elements
       discret_.ClearState();
       discret_.SetState("residual displacement",disi_);
+#ifdef STRUGENALPHA_FINTLIKETR
+      discret_.SetState("displacement",disn_);
+#else
       discret_.SetState("displacement",dism_);
+#endif
       //discret_.SetState("velocity",velm_); // not used at the moment
+#ifdef STRUGENALPHA_FINTLIKETR
+      fintn_->PutScalar(0.0);  // initialise internal force vector
+      discret_.Evaluate(p,null,null,fintn_,null,null);
+#else
       fint_->PutScalar(0.0);  // initialise internal force vector
       discret_.Evaluate(p,null,null,fint_,null,null);
+#endif
       discret_.ClearState();
     }
 
@@ -1773,7 +1883,12 @@ void StruGenAlpha::ModifiedNewton()
       fresm_->Update(1.0,*fvisc_,1.0);
     }
     // add static mid-balance
+#ifdef STRUGENALPHA_FINTLIKETR
+    fresm_->Update(1.0,*fextm_,-1.0);
+    fresm_->Update(-(1.0-alphaf),*fintn_,-alphaf,*fint_,1.0);
+#else
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+#endif
     // blank residual DOFs with are on Dirichlet BC
     {
       Epetra_Vector fresmcopy(*fresm_);
@@ -2941,6 +3056,11 @@ void StruGenAlpha::UpdateandOutput()
   // update new external force
   //    F_{ext;n} := F_{ext;n+1}
   fext_->Update(1.0,*fextn_,0.0);
+#ifdef STRUGENALPHA_FINTLIKETR
+  // update new internal force
+  //    F_{int;n} := F_{int;n+1}
+  fint_->Update(1.0,*fintn_,0.0);
+#endif
 
   //------ update anything that needs to be updated at the element level
   {

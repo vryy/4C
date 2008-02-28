@@ -49,7 +49,14 @@ Maintainer: Michael Gee
 #undef STRUGENALPHA_INCRUPDT
 #endif
 #endif
-//#define STRUGENALPHA_BE  /* enable backward Euler with alpham=0,alphaf=0,beta=1/2,delta=1 */
+//#define STRUGENALPHA_BE  /* enable backward Euler with alpham=0,alphaf=0,beta=1/2,delta=1,gamma=1 */
+//#define STRUGENALPHA_FINTLIKETR  /* enable TR-like internal force vector F_{int}*/
+                                 /* TR-like mid-point internal force: 
+                                  *    F_{int,m} = (1-alpha_f)*F_{int,n+1} + alpha_f*F_{int,n}
+                                  *              = (1-alpha_f)*F_{int}(D_{n+1}) + alpha_f*F_{int}(D_n)
+                                  * in contrast to the IMR-like mid-point internal force (default)
+                                  *    F_{int,m} = F_{int}(D_m)
+                                  *              = F_{int}( (1-alpha_f)*D_{n+1} + alpha_f*D_n ) */
 
 using namespace std;
 using namespace Teuchos;
@@ -402,6 +409,9 @@ protected:
   RefCountPtr<Epetra_Vector>    accm_;
   RefCountPtr<Epetra_Vector>    disi_;
   RefCountPtr<Epetra_Vector>    fint_;
+#ifdef STRUGENALPHA_FINTLIKETR
+  RefCountPtr<Epetra_Vector>    fintn_;
+#endif
   RefCountPtr<Epetra_Vector>    finert_;
   RefCountPtr<Epetra_Vector>    fvisc_;
   RefCountPtr<Epetra_Vector>    fext_;
