@@ -616,7 +616,7 @@ void CondifImplicitTimeInt::Solve(
       sysmat_sd_->Complete();
 
       // apply DBC to fine-scale matrix
-      LINALG::ApplyDirichlettoSystem(*sysmat_sd_,phinp_,residual_,phinp_,dirichtoggle_);
+      LINALG::ApplyDirichlettoSystem(sysmat_sd_,phinp_,residual_,phinp_,dirichtoggle_);
 
       // extract the ML parameters
       ParameterList&  mllist = solver_.Params().sublist("ML Parameters");

@@ -56,13 +56,13 @@ bool AVMS_Solver::Compute(RCP<LINALG::SparseMatrix> Aforfine,
   int nsdim = mlparams_.get("null space: dimension",1);
 
   // modify nullspace to ensure that DBC are fully taken into account
-  if (nullspace)
+  /*if (nullspace)
   {
     const int length = Aforfine->RowMap().NumMyElements();
     for (int i=0; i<nsdim; ++i)
       for (int j=0; j<length; ++j)
         if (dbct[j]!=0.0) nullspace[i*length+j] = 0.0;
-  }
+  }*/
 
   // get plain aggregation Ptent and Rtent
   RCP<Epetra_CrsMatrix>   crsPtent;
@@ -70,6 +70,7 @@ bool AVMS_Solver::Compute(RCP<LINALG::SparseMatrix> Aforfine,
   int offset = Aforcoarse->RangeMap().MaxAllGID() + 1;
   GetPtent(*Aforcoarse->EpetraMatrix(),mlparams_,nullspace,crsPtent,nextNS,offset);
   RCP<LINALG::SparseMatrix> Ptent = Teuchos::rcp(new LINALG::SparseMatrix(crsPtent));
+  //Ptent->Scale(-1.0);
 
   // make K12 = P^T A
   RCP<LINALG::SparseMatrix> K12 = LINALG::Multiply(*Ptent,true,*Aforcoarse,false);
