@@ -69,8 +69,8 @@ eleDofManager_(old.eleDofManager_)
 }
 
 /*----------------------------------------------------------------------*
- |  Deep copy this instance of XFluid3 and return pointer to it (public) |
- |                                                            gee 11/06 |
+ |  Deep copy this instance of XFluid3 and return pointer to it (public)|
+ |                                                          gammi 02/08 |
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::XFluid3::Clone() const
 {
@@ -102,7 +102,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::XFluid3::Shape() const
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
- |                                                            gee 02/07 |
+ |                                                          gammi 02/08 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::XFluid3::Pack(vector<char>& data) const
 {
@@ -149,7 +149,7 @@ void DRT::ELEMENTS::XFluid3::Pack(vector<char>& data) const
 
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
- |                                                            gee 02/07 |
+ |                                                          gammi 02/08 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::XFluid3::Unpack(const vector<char>& data)
 {
@@ -211,7 +211,7 @@ void DRT::ELEMENTS::XFluid3::Unpack(const vector<char>& data)
 
 
 /*----------------------------------------------------------------------*
- |  dtor (public)                                            mwgee 11/06|
+ |  dtor (public)                                            gammi 02/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::XFluid3::~XFluid3()
 {
@@ -220,7 +220,7 @@ DRT::ELEMENTS::XFluid3::~XFluid3()
 
 
 /*----------------------------------------------------------------------*
- |  print this element (public)                              mwgee 11/06|
+ |  print this element (public)                              gammi 02/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::XFluid3::Print(ostream& os) const
 {
@@ -232,7 +232,7 @@ void DRT::ELEMENTS::XFluid3::Print(ostream& os) const
 }
 
 /*----------------------------------------------------------------------*
- |  allocate and return Fluid3Register (public)              mwgee 12/06|
+ |  allocate and return Fluid3Register (public)              mwgee 02/08|
  *----------------------------------------------------------------------*/
 RCP<DRT::ElementRegister> DRT::ELEMENTS::XFluid3::ElementRegister() const
 {
@@ -392,7 +392,9 @@ void DRT::ELEMENTS::XFluid3::CreateSurfacesHex(const int& nsurf,
     }
 }
 
-void DRT::ELEMENTS::XFluid3::CreateSurfaceWedge(const int& nsurf, const int& wedgetype)
+void DRT::ELEMENTS::XFluid3::CreateSurfaceWedge(
+        const int& nsurf,
+        const int& wedgetype)
 {
     switch (wedgetype)
     {

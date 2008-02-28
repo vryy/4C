@@ -63,7 +63,6 @@ surfaceptrs_(old.surfaceptrs_),
 lines_(old.lines_),
 lineptrs_(old.lineptrs_)
 {
-    gaussrule_ = old.gaussrule_;
     return;
 }
 
