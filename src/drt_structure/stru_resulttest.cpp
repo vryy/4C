@@ -154,8 +154,8 @@ void StruResultTest::TestNode(_RESULTDESCR* res, int& nerr, int& test_count)
 
     // verbose output
     cout.precision(18);
-    cout << "RESULT "  << test_count+1 
-         << " IS " << std::scientific << result 
+    cout << "RESULT "  << test_count
+         << " IS " << std::scientific << result
          << " AND " << ((err==0) ? "OKAY" : "INCORRECT")
          << endl;
   }
