@@ -43,14 +43,14 @@ Maintainer: Michael Gee
 // definitions in algorithm
 #define STRUGENALPHA_INCRUPDT  /* incremental update of vel and acc */
 //#define STRUGENALPHA_STRONGDBC  /* strong Dirichlet BCs, i.e. DBC reigns  */
-                                 /* its displacements, velocities and acceleration */
+                                /* its displacements, velocities and acceleration */
 #ifdef STRUGENALPHA_STRONGDBC
 #ifdef STRUGENALPHA_INCRUPDT
 #undef STRUGENALPHA_INCRUPDT
 #endif
 #endif
 //#define STRUGENALPHA_BE  /* enable backward Euler with alpham=0,alphaf=0,beta=1/2,delta=1,gamma=1 */
-//#define STRUGENALPHA_FINTLIKETR  /* enable TR-like internal force vector F_{int}*/
+//#define STRUGENALPHA_FINTLIKETR  /* enable TR-like mid-internal force vector F_{int}*/
                                  /* TR-like mid-point internal force: 
                                   *    F_{int,m} = (1-alpha_f)*F_{int,n+1} + alpha_f*F_{int,n}
                                   *              = (1-alpha_f)*F_{int}(D_{n+1}) + alpha_f*F_{int}(D_n)
