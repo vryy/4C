@@ -181,6 +181,11 @@ protected:
   RCP<Epetra_Vector>                 z_;              // vector of current Lagrange multipliers
   RCP<Epetra_Vector>                 zold_;           // vector of last time step Lagrange multipliers
   RCP<Epetra_Vector>                 incrjump_;       // incremental displacement jump (slave dofs)
+  
+  RCP<LINALG::SparseMatrix>          invd_;           // inverse of Mortar matrix D (needed for LM)
+  RCP<LINALG::SparseMatrix>          ksn_;            // stiffness block K_sn (needed for LM)
+  RCP<LINALG::SparseMatrix>          ksm_;            // stiffness block K_sm (needed for LM)
+  RCP<LINALG::SparseMatrix>          kss_;            // stiffness block K_ss (needed for LM)
 
 
 }; // class Manager

@@ -1049,37 +1049,30 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& dglobal,
         if ((int)dmap[j].size() != (int)dmap[j+1].size())
           dserror("ERROR: AssembleDMG: Column dim. of nodal D-map is inconsistent!");
       
-      Epetra_SerialDenseMatrix Dnode(rowsize,colsize);
-      vector<int> lmrow(rowsize);
-      vector<int> lmcol(colsize);
-      vector<int> lmrowowner(rowsize);
       map<int,double>::iterator colcurr;
         
       for (int j=0;j<rowsize;++j)
       {
         int row = cnode->Dofs()[j];
         int k = 0;
-        lmrow[j] = row;
-        lmrowowner[j] = cnode->Owner();
         
         for (colcurr=dmap[j].begin();colcurr!=dmap[j].end();++colcurr)
         {
           int col = colcurr->first;
           double val = colcurr->second;
-          lmcol[k] = col;
           
+          // check for diagonality
           if (row!=col && abs(val)>1.0e-12)
             dserror("ERROR: AssembleDMG: D-Matrix is not diagonal!");
-        
-          Dnode(j,k)=val;
+          
+          // create an explicitly diagonal d matrix
+          if (row==col) dglobal.Assemble(val,row,col);
           ++k;
         }
         
         if (k!=colsize)
           dserror("ERROR: AssembleDMG: k = %i but colsize = %i",k,colsize);
-      }
-    
-      dglobal.Assemble(Dnode,lmrow,lmrowowner,lmcol);
+      } 
     }
     
     /**************************************************** M-matrix ******/
@@ -1093,34 +1086,26 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& dglobal,
         if ((int)mmap[j].size() != (int)mmap[j+1].size())
           dserror("ERROR: AssembleDMG: Column dim. of nodal M-map is inconsistent!");
         
-      Epetra_SerialDenseMatrix Mnode(rowsize,colsize);
-      vector<int> lmrow(rowsize);
-      vector<int> lmcol(colsize);
-      vector<int> lmrowowner(rowsize);
       map<int,double>::iterator colcurr;
       
       for (int j=0;j<rowsize;++j)
       {
         int row = cnode->Dofs()[j];
         int k = 0;
-        lmrow[j] = row;
-        lmrowowner[j] = cnode->Owner();
         
         for (colcurr=mmap[j].begin();colcurr!=mmap[j].end();++colcurr)
         {
           int col = colcurr->first;
           double val = colcurr->second;
-          lmcol[k] = col;
           
-          Mnode(j,k)=val;
+          // do not assemble zeros into m matrix
+          if (abs(val)>1.0e-12) mglobal.Assemble(val,row,col);
           ++k;
         }
         
         if (k!=colsize)
           dserror("ERROR: AssembleDMG: k = %i but colsize = %i",k,colsize);
       }
-      
-      mglobal.Assemble(Mnode,lmrow,lmrowowner,lmcol);
     }
     
     /************************************************* Mmod-matrix ******/

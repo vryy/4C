@@ -541,6 +541,12 @@ void CONTACT::Manager::Evaluate(RCP<LINALG::SparseMatrix>& kteff,
   LINALG::SplitMatrix2x2(ksmn,gsdofrowmap_,gmdofrowmap_,gndofrowmap_,tempmap,ksn,tempmtx1,kmn,tempmtx2);
   LINALG::SplitMatrix2x2(knsm,gndofrowmap_,tempmap,gsdofrowmap_,gmdofrowmap_,kns,knm,tempmtx1,tempmtx2);
   
+  // store some stuff for static condensation of LM
+  ksn_  = ksn;
+  ksm_  = ksm;
+  kss_  = kss;
+  invd_ = invd;
+  
   // output for checking everything
 #ifdef CONTACTDIMOUTPUT
   if(Comm().MyPID()==0)
@@ -878,7 +884,8 @@ void CONTACT::Manager::Evaluate(RCP<LINALG::SparseMatrix>& kteff,
   /**********************************************************************/
   /* Update Lagrange multipliers                                        */
   /**********************************************************************/
-  invd->Multiply(false,*fsmod,*z_);
+  //invd->Multiply(false,*fsmod,*z_);
+  z_->Update(1.0,*fsmod,0.0);
 
   return;
 }
@@ -903,6 +910,45 @@ void CONTACT::Manager::RecoverDisp(RCP<Epetra_Vector>& disi)
   RCP<Epetra_Vector> modexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
   LINALG::Export(*mod,*modexp);
   disi->Update(1.0,*modexp,1.0);
+  
+  // update Lagrange multipliers
+  RCP<Epetra_Vector> mod2 = rcp(new Epetra_Vector(*gsdofrowmap_));
+  RCP<Epetra_Vector> slavedisp = rcp(new Epetra_Vector(*gsdofrowmap_));
+  LINALG::Export(*disi,*slavedisp);
+  kss_->Multiply(false,*slavedisp,*mod2);
+  z_->Update(-1.0,*mod2,1.0);
+  RCP<Epetra_Vector> masterdisp = rcp(new Epetra_Vector(*gmdofrowmap_));
+  LINALG::Export(*disi,*masterdisp);
+  ksm_->Multiply(false,*masterdisp,*mod2);
+  z_->Update(-1.0,*mod2,1.0);
+  RCP<Epetra_Vector> innerdisp = rcp(new Epetra_Vector(*gndofrowmap_));
+  LINALG::Export(*disi,*innerdisp);
+  ksn_->Multiply(false,*innerdisp,*mod2);
+  z_->Update(-1.0,*mod2,1.0);
+  RCP<Epetra_Vector> zcopy = rcp(new Epetra_Vector(*z_));
+  invd_->Multiply(false,*zcopy,*z_);
+  
+  /*//debugging (check for z_i = 0)
+  RCP<Epetra_Map> gidofs = LINALG::SplitMap(*gsdofrowmap_,*gactivedofs_);
+  RCP<Epetra_Vector> zinactive = rcp(new Epetra_Vector(*gidofs));
+  LINALG::Export(*z_,*zinactive);
+  cout << *zinactive << endl;
+  
+  // debugging (check for N*[d_a] = g_a and T*z_a = 0)
+  if (gactivedofs_->NumGlobalElements())
+  { 
+    RCP<Epetra_Vector> activejump = rcp(new Epetra_Vector(*gactivedofs_));
+    RCP<Epetra_Vector> gtest = rcp(new Epetra_Vector(*gactiven_));
+    LINALG::Export(*incrjump_,*activejump);
+    nmatrix_->Multiply(false,*activejump,*gtest);
+    cout << *gtest << endl << *g_ << endl;
+    
+    RCP<Epetra_Vector> zactive = rcp(new Epetra_Vector(*gactivedofs_));
+    RCP<Epetra_Vector> zerotest = rcp(new Epetra_Vector(*gactivet_));
+    LINALG::Export(*z_,*zactive);
+    tmatrix_->Multiply(false,*zactive,*zerotest);
+    cout << *zerotest << endl;
+  }*/
   
   return;
 }
@@ -967,7 +1013,8 @@ void CONTACT::Manager::UpdateActiveSet()
         }
         
         // check for tensile contact forces
-        if ((0.5*nz+0.5*nzold)<0)
+        //if (nz<0) // no averaging of Lagrange multipliers
+        if ((0.5*nz+0.5*nzold)<0) // averaging of Lagrange multipliers
         {
           cnode->Active() = false;
           activesetconv_ = false;

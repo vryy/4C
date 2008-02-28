@@ -15,6 +15,7 @@ Maintainer: Michael Gee
 #include "drt_cnode.H"
 #include "../drt_lib/drt_dserror.H"
 #include "drt_celement.H"
+#include "contactdefines.H"
 
 
 /*----------------------------------------------------------------------*
@@ -279,19 +280,17 @@ void CONTACT::CNode::BuildAveragedNormal()
     vector<double> elen(3);
     adjcele->BuildNormalAtNode(Id(),elen);
     double wgt = adjcele->Area();
-
-/*
-#ifdef DEBUG
-    cout << "Area for CElement " << adjcele->Id() << " is " << wgt << endl;
-#endif // #ifdef DEBUG
-*/    
-    // add weighted element normal to nodal normal n_
+        
+    // add (weighted) element normal to nodal normal n_
     for (int j=0;j<3;++j)
+    {
+#ifdef CONTACTWNORMAL
       n()[j]+=wgt*elen[j];
-    
-    /* average normal without weighting (see Diss. HARTMANN, 2007)
-    for (int j=0;j<3;++j)
-     n()[j]+=elen[j];*/
+#endif // #ifdef CONTACTWNORMAL
+#ifndef CONTACTWNORMAL
+      n()[j]+=elen[j];
+#endif // #ifndef CONTACTWNORMAL
+    }
   }
   
   // create unit normal vector
@@ -305,11 +304,8 @@ void CONTACT::CNode::BuildAveragedNormal()
 
 /*
 #ifdef DEBUG
-  cout << endl;
-  cout << "Unit normal for node " << Id() << " is " << n()[0] << " "
-                                                    << n()[1] << " "
-                                                    << n()[2] << endl;
-  cout << endl;
+  cout << "\nUnit normal for node " << Id() << " is "
+       << n()[0] << " " << n()[1] << " " << n()[2] << endl << endl;
 #endif // #ifdef DEBUG
 */  
   return;

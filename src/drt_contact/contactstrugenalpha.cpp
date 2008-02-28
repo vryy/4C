@@ -169,6 +169,10 @@ void ContactStruGenAlpha::ConsistentPredictor()
   //     + C . V_{n+1-alpha_f}
   //     + F_int(D_{n+1-alpha_f})
   //     - F_{ext;n+1-alpha_f}
+  
+  // FIXME: Strictly speaking we would have to include the contact forces
+  // here as well, but it does not matter for the following calculations!
+  
   // add mid-inertial force
   mass_->Multiply(false,*accm_,*finert_);
   fresm_->Update(1.0,*finert_,0.0);
@@ -323,6 +327,10 @@ void ContactStruGenAlpha::ConstantPredictor()
   //     + C . V_{n+1-alpha_f}
   //     + F_int(D_{n+1-alpha_f})
   //     - F_{ext;n+1-alpha_f}
+  
+  // FIXME: Strictly speaking we would have to include the contact forces
+  // here as well, but it does not matter for the following calculations!
+  
   // add mid-inertial force
   mass_->Multiply(false,*accm_,*finert_);
   fresm_->Update(1.0,*finert_,0.0);
