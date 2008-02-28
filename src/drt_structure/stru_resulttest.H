@@ -2,7 +2,7 @@
 /*!
 \file stru_resulttest.H
 
-\brief tesing of structure calculation results
+\brief testing of structure calculation results
 
 <pre>
 Maintainer: Moritz Frenzel
@@ -34,18 +34,22 @@ Maintainer: Moritz Frenzel
 class StruResultTest : public DRT::ResultTest
 {
 public:
-  /*!
-  \brief constructor
-  */
-  StruResultTest(RefCountPtr<DRT::Discretization> strudis_in, RefCountPtr<Epetra_Vector> dis_);
+  //! constructor
+  StruResultTest(
+    RefCountPtr<DRT::Discretization> strudis_in,  //!< structure discretisation
+    RefCountPtr<Epetra_Vector> dis,  //!< displacements to test
+    RefCountPtr<Epetra_Vector> vel,  //!< velocities to test
+    RefCountPtr<Epetra_Vector> acc  //!< accelerations to test
+  );
 
-  // structure version of nodal value tests
-  /*!
-   Possible position flags are "dispx", "dispy", "dispz"
-  */
+  //! \brief structure version of nodal value tests
+  //!
+  //! Possible position flags are "dispx", "dispy", "dispz", 
+  //!                             "velx", "vely", "velz",
+  //!                             "accx", "accy", "accz"
   virtual void TestNode(_RESULTDESCR* res, int& nerr, int& test_count);
 
-  // return true if this is a structure test
+  //! return true if this is a structure test
   virtual bool Match(_RESULTDESCR*);
 
   /* _RESULTDESCR has been found working, but its exact function is unknown due to
@@ -56,10 +60,15 @@ public:
 
 private:
 
-  // our discretisation
-  RefCountPtr<DRT::Discretization> stru_dis_;
+  //! our discretisation
+  RefCountPtr<DRT::Discretization> strudisc_;
   // our solution
-  RefCountPtr<Epetra_Vector> mysol_;
+  //! global displacement DOFs
+  RefCountPtr<Epetra_Vector> dis_;
+  //! global velocity DOFs
+  RefCountPtr<Epetra_Vector> vel_;
+  //! global acceleration DOFs
+  RefCountPtr<Epetra_Vector> acc_;
   /* NOTE: these have to be present explicitly
    * as they are not part of the problem instance like in fluid3
    */

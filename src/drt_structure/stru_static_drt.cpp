@@ -505,7 +505,7 @@ void stru_static_drt()
 
   // Structure Resulttests
   DRT::ResultTestManager testmanager(actdis->Comm());
-  testmanager.AddFieldTest(rcp(new StruResultTest(actdis,dis)));
+  testmanager.AddFieldTest(rcp(new StruResultTest(actdis,dis,null,null)));
   testmanager.TestAll();
 
   //----------------------------- this is the end my lonely friend the end

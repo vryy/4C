@@ -38,12 +38,15 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-StruResultTest::StruResultTest(
-	RefCountPtr<DRT::Discretization> strudis_in,
-	RefCountPtr<Epetra_Vector> dis_)
+StruResultTest::StruResultTest(RefCountPtr<DRT::Discretization> strudis_in,
+                               RefCountPtr<Epetra_Vector> dis,
+                               RefCountPtr<Epetra_Vector> vel,
+                               RefCountPtr<Epetra_Vector> acc)
 {
-  stru_dis_ =strudis_in;
-  mysol_   =dis_;
+  strudisc_ = strudis_in;
+  dis_ = dis;  // global displacement DOFs
+  vel_ = vel;  // global velocity DOFs
+  acc_ = acc;  // global acceleration DOFs
 }
 
 
@@ -57,45 +60,96 @@ void StruResultTest::TestNode(_RESULTDESCR* res, int& nerr, int& test_count)
 
   /* this implementation does not allow testing of stresses
    */
-  if (stru_dis_->HaveGlobalNode(res->node))
+  if (strudisc_->HaveGlobalNode(res->node))
   {
-    DRT::Node* actnode = stru_dis_->gNode(res->node);
+    DRT::Node* actnode = strudisc_->gNode(res->node);
 
     // Strange! It seems we might actually have a global node around
     // even if it does not belong to us. But here we are just
     // interested in our nodes!
-    if (actnode->Owner() != stru_dis_->Comm().MyPID())
+    if (actnode->Owner() != strudisc_->Comm().MyPID())
       return;
 
-    double result = 0.;
-
-    const Epetra_BlockMap& velnpmap = mysol_->Map();
-
-    string position = res->position;
-
-    //verbose output
+    // verbose output
     cout << "TESTING STRUCTURE RESULTS with StruResultTest::TestNode(..)" << endl;
 
-    if (position=="dispx")
+    double result = 0;  // will hold the actual result of run
+    string position = res->position;  // type of result value
+    bool unknownpos = true;  // make sure the result value string can be handled
+
+    // test displacements
+    if (dis_ != null)
     {
-      result = (*mysol_)[velnpmap.LID(stru_dis_->Dof(actnode,0))];
-    }
-  	else if (position=="dispy")
-    {
-      result = (*mysol_)[velnpmap.LID(stru_dis_->Dof(actnode,1))];
-    }
-    else if (position=="dispz")
-    {
-      result = (*mysol_)[velnpmap.LID(stru_dis_->Dof(actnode,2))];
-    }
-    else
-    {
-      dserror("position '%s' not supported in structure testing", position.c_str());
+      const Epetra_BlockMap& disnpmap = dis_->Map();
+
+      if (position=="dispx")
+      {
+        unknownpos = false;
+        result = (*dis_)[disnpmap.LID(strudisc_->Dof(actnode,0))];
+      }
+      else if (position=="dispy")
+      {
+        unknownpos = false;
+        result = (*dis_)[disnpmap.LID(strudisc_->Dof(actnode,1))];
+      }
+      else if (position=="dispz")
+      {
+        unknownpos = false;
+        result = (*dis_)[disnpmap.LID(strudisc_->Dof(actnode,2))];
+      }
     }
 
-	//verbose output
+    // test velocities
+    if (vel_ != null)
+    {
+      const Epetra_BlockMap& velnpmap = vel_->Map();
+
+      if (position=="velx")
+      {
+        unknownpos = false;
+        result = (*vel_)[velnpmap.LID(strudisc_->Dof(actnode,0))];
+      }
+      else if (position=="vely")
+      {
+        unknownpos = false;
+        result = (*vel_)[velnpmap.LID(strudisc_->Dof(actnode,1))];
+      }
+      else if (position=="velz")
+      {
+        unknownpos = false;
+        result = (*vel_)[velnpmap.LID(strudisc_->Dof(actnode,2))];
+      }
+    }
+
+    // test accelerations
+    if (acc_ != null)
+    {
+      const Epetra_BlockMap& accnpmap = acc_->Map();
+
+      if (position=="accx")
+      {
+        unknownpos = false;
+        result = (*acc_)[accnpmap.LID(strudisc_->Dof(actnode,0))];
+      }
+      else if (position=="accy")
+      {
+        unknownpos = false;
+        result = (*acc_)[accnpmap.LID(strudisc_->Dof(actnode,1))];
+      }
+      else if (position=="accz")
+      {
+        unknownpos = false;
+        result = (*acc_)[accnpmap.LID(strudisc_->Dof(actnode,2))];
+      }
+    }
+
+    // catch position strings, which are not handled by structure result test
+    if (unknownpos)
+      dserror("position '%s' not supported in structure testing", position.c_str());
+
+    // verbose output
     cout.precision(18);
-	  cout << "RESULT IS " << result << endl;
+    cout << "RESULT IS " << std::scientific << result << endl;
 
     nerr += CompareValues(result, res);
     test_count++;

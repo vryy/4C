@@ -29,8 +29,10 @@ Maintainer: Michael Gee
 #include "../io/io_drt.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
+#include "stru_resulttest.H"
 
 #include "../drt_inv_analysis/inv_analysis.H"
+
 
 /*----------------------------------------------------------------------*
   |                                                       m.gee 06/01    |
@@ -241,10 +243,13 @@ void dyn_nlnstructural_drt()
       bool contact = genalphaparams.get("contact",false);
       bool inv_analysis = genalphaparams.get("inv_analysis",false);   
       RCP<StruGenAlpha> tintegrator = null;
-      if (!contact && !inv_analysis) tintegrator = rcp(new StruGenAlpha(genalphaparams,*actdis,solver,output));
-      else      {
-        if (!inv_analysis) tintegrator = rcp(new ContactStruGenAlpha(genalphaparams,*actdis,solver,output));
-        else tintegrator = rcp(new Inv_analysis(genalphaparams,*actdis,solver,output));
+      if (!contact && !inv_analysis) 
+        tintegrator = rcp(new StruGenAlpha(genalphaparams,*actdis,solver,output));
+      else {
+        if (!inv_analysis)
+          tintegrator = rcp(new ContactStruGenAlpha(genalphaparams,*actdis,solver,output));
+        else 
+          tintegrator = rcp(new Inv_analysis(genalphaparams,*actdis,solver,output));
       }      
 
       // do restart if demanded from input file
@@ -261,6 +266,17 @@ void dyn_nlnstructural_drt()
 
       // integrate in time and space
       tintegrator->Integrate();
+      
+      // test results
+      {
+        DRT::ResultTestManager testmanager(actdis->Comm());
+        Teuchos::RCP<Epetra_Vector> dis = tintegrator->Disp();
+        Teuchos::RCP<Epetra_Vector> vel = tintegrator->Vel();
+        Teuchos::RCP<Epetra_Vector> acc = tintegrator->Acc();
+        testmanager.AddFieldTest(rcp(new StruResultTest(actdis,dis,vel,acc)));
+        testmanager.TestAll();
+      }
+
     }
     break;
     //==================================================================

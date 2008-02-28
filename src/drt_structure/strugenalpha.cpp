@@ -15,7 +15,7 @@ Maintainer: Michael Gee
 #include <iostream>
 
 #include "strugenalpha.H"
-#include "stru_resulttest.H"
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 03/07|
