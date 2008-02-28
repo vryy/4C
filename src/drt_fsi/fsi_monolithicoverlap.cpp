@@ -287,11 +287,19 @@ void FSI::MonolithicOverlap::SetupVector(Epetra_Vector &f,
 
   Teuchos::RCP<Epetra_Vector> fcv = FluidField()    .Interface().ExtractCondVector(fv);
 
-  // add fluid interface values to structure vector
-  Teuchos::RCP<Epetra_Vector> modsv = StructureField().Interface().InsertCondVector(FluidToStruct(fcv));
-  modsv->Update(1.0, *sv, fluidscale);
+  if (fluidscale!=0)
+  {
+    // add fluid interface values to structure vector
+    Teuchos::RCP<Epetra_Vector> modsv = StructureField().Interface().InsertCondVector(FluidToStruct(fcv));
+    modsv->Update(1.0, *sv, fluidscale);
 
-  Extractor().InsertVector(*sv,0,f);
+    Extractor().InsertVector(*modsv,0,f);
+  }
+  else
+  {
+    Extractor().InsertVector(*sv,0,f);
+  }
+
   Extractor().InsertVector(*fov,1,f);
   Extractor().InsertVector(*aov,2,f);
 }

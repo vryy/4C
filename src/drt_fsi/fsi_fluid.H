@@ -203,6 +203,39 @@ namespace FSI {
 
 
   /// adapter to normal fluid algorithm
+  /*!
+    <h3>Scaling factors in monolithic FSI</h3>
+
+    For monolithic FSI we need to build one block system with overlapping
+    equations at the interface. In order to do so we have to scale all blocks
+    such that we the terms we add are of the same units. We go for real forces
+    and displacement increments at the interface.
+
+    It is the duty of the adapter to provide the necessary scaling
+    factors.
+
+    We assume a very simple velocity -- displacement relation at the interface
+    \f$ \mathbf{u}^{n+1}_{i+1} = \frac{1}{\Delta t} \Delta
+    \mathbf{d}^{n+1}_{i+1} \f$
+
+    The fluid interface equations have to be scaled with \f$
+    \frac{\rho}{\theta\Delta t} \f$ to be physical forces. The matrix columns
+    that go with \f$ \mathbf{u}^{n+1}_{\Gamma,i+1} \f$ have to be scaled with
+    \f$ \frac{1}{\Delta t} \f$. This results in the scaled blocks:
+
+    - \f$ \frac{\rho}{\theta\Delta t^2} \mathbf{F}_{\Gamma\Gamma} \f$
+
+    - \f$ \frac{1}{\Delta t} \mathbf{F}_{I\Gamma} \f$
+
+    - \f$ \frac{\rho}{\theta\Delta t} \mathbf{F}_{\Gamma I} \f$
+
+    \note As we couple a generalized-\f$\alpha\f$ structure to a
+    one-step-\f$\theta\f$ fluid here all we can to is backward Euler time
+    discretization on both fields.
+
+    \author u.kue
+    \date 02/08
+   */
   class FluidAdapter : public Fluid
   {
   public:
@@ -294,6 +327,35 @@ namespace FSI {
 
 
   /// adapter to generalized alpha fluid algorithm
+  /*!
+    <h3>Scaling factors in monolithic FSI</h3>
+
+    For monolithic FSI we need to build one block system with overlapping
+    equations at the interface. In order to do so we have to scale all blocks
+    such that we the terms we add are of the same units. We go for real forces
+    and displacement increments at the interface.
+
+    It is the duty of the adapter to provide the necessary scaling
+    factors.
+
+    We assume a very simple velocity -- displacement relation at the interface
+    \f$ \mathbf{u}^{n+1}_{i+1} = \frac{1}{\Delta t} \Delta
+    \mathbf{d}^{n+1}_{i+1} \f$
+
+    The fluid interface equations have to be scaled with \f$
+    \rho \f$ to be physical forces. The matrix columns
+    that go with \f$ \mathbf{u}^{n+1}_{\Gamma,i+1} \f$ have to be scaled with
+    \f$ \frac{1}{\Delta t} \f$. This results in the scaled blocks:
+
+    - \f$ \frac{\rho}{\Delta t} \mathbf{F}_{\Gamma\Gamma} \f$
+
+    - \f$ \frac{1}{\Delta t} \mathbf{F}_{I\Gamma} \f$
+
+    - \f$ \rho \mathbf{F}_{\Gamma I} \f$
+
+    \author pg
+    \date 02/08
+   */
   class FluidGenAlphaAdapter : public Fluid
   {
   public:
@@ -321,7 +383,7 @@ namespace FSI {
 
     /// get the linear solver object used for this field
     virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
-    
+
     /// the interface map contains all velocity dofs at the interface
     virtual Teuchos::RCP<const Epetra_Map>    InnerVelocityRowMap();
     virtual Teuchos::RCP<const Epetra_Map>    PressureRowMap();
@@ -382,7 +444,7 @@ namespace FSI {
     /// all velocity dofs not at the interface
     Teuchos::RefCountPtr<Epetra_Map>       innervelmap_;
   };
-  
+
 }
 
 #endif
