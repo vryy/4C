@@ -82,8 +82,7 @@ Epetra_SerialDenseVector XFEM::subtractsTwoVectors(
     
     Epetra_SerialDenseVector vResult(v1.Length());
     
-    if(v1.Length() != v2.Length())
-        dserror("both vectors need to have the same size\n"); 
+    dsassert(v1.Length() == v2.Length(), "both vectors need to have the same size\n"); 
 
     for(int i = 0; i < v1.Length(); i++)
         vResult[i] = v1[i] - v2[i];
@@ -232,7 +231,7 @@ void XFEM::elementToCurrentCoordinates(
     Epetra_SerialDenseVector& xsi) 
 {
     const int numNodes = element->NumNode();
-    Epetra_SerialDenseVector funct(numNodes);
+    BlitzVec funct(numNodes);
     
     switch(getDimension(element->Shape()))
     {
@@ -371,9 +370,9 @@ void XFEM::elementToCurrentCoordinates(
 {
     const int numNodes = surfaceElement->NumNode();
     //vector<int> actParams(1,0);
-    Epetra_SerialDenseVector funct(numNodes);
+    //Epetra_SerialDenseVector funct(numNodes);
   
-    shape_function_2D(funct, xsi[0], xsi[1], surfaceElement->Shape());
+    const BlitzVec funct(shape_function_2D(xsi[0], xsi[1], surfaceElement->Shape()));
        
     xsi.Scale(0.0); 
     for(int i=0; i<numNodes; i++)     
@@ -414,11 +413,8 @@ void XFEM::currentToElementCoordinates(
     const DRT::Element*               element, 
     Epetra_SerialDenseVector&   xsi) 
 {
-    
-    Epetra_SerialDenseVector x(3);
-    
-    x = xsi;
-    xsi.Scale(0.0);
+    // copy xsi into x, cause xsi input is the current coordinate
+    Epetra_SerialDenseVector x(xsi);
     
     currentToElementCoordinates(element, x, xsi);
    
@@ -428,37 +424,6 @@ void XFEM::currentToElementCoordinates(
         if( fabs((fabs(xsi[j])-1.0)) < TOL7 &&  xsi[j] < 0)    xsi[j] = -1.0;
         if( fabs((fabs(xsi[j])-1.0)) < TOL7 &&  xsi[j] > 0)    xsi[j] =  1.0;      
     }  
-}     
-
-
-
-/*----------------------------------------------------------------------*
- | GM:  transforms a node in current coordinates            u.may 12/07 |
- |      into element coordinates  (vector<double>)                      |
- *----------------------------------------------------------------------*/  
-void XFEM::currentToElementCoordinates(   
-    const DRT::Element*               element, 
-    vector<double>&   			xsiVector) 
-{
-    
-	const int dim = getDimension(element->Shape());
-    Epetra_SerialDenseVector x(dim);
-    Epetra_SerialDenseVector xsi(dim);
-    
-    for(int i = 0; i < dim; i++)
-    	x[i] = xsiVector[i];
-  
-    currentToElementCoordinates(element, x, xsi);
-   
-    // rounding 1 and -1 to be exact for the CDT
-    for(int j = 0; j < dim; j++)
-    {
-        if( fabs((fabs(xsi[j])-1.0)) < TOL7 &&  xsi[j] < 0)    xsi[j] = -1.0;
-        if( fabs((fabs(xsi[j])-1.0)) < TOL7 &&  xsi[j] > 0)    xsi[j] =  1.0;      
-    } 
-    
-    for(int i = 0; i < dim; i++)
-    	xsiVector[i] = xsi[i];
 }     
 
 
@@ -480,40 +445,8 @@ void updateAForNWE(
 {   
     const int numNodes = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
     const int dim = DRT::UTILS::getDimension<DISTYPE>();
-    blitz::Array<double,2> deriv1(dim, numNodes, blitz::ColumnMajorArray<2>());
     
-    switch(dim)
-    {
-        case 1:
-        {
-            shape_function_1D_deriv1(deriv1, xsi[0], DISTYPE);
-            break;
-        }
-        case 2:
-        {
-            shape_function_2D_deriv1(deriv1, xsi[0], xsi[1], DISTYPE);
-            break;
-        }
-        case 3:
-        {
-            shape_function_3D_deriv1(deriv1, xsi[0], xsi[1], xsi[2], DISTYPE);
-            break;
-        }
-        default:
-            dserror("dimension of the element is not correct");
-    }
-
-//    blitz::Array<double,2> ABlitz(A.A(),
-//                              blitz::shape(A.M(),A.N()),
-//                              blitz::neverDeleteData,
-//                              blitz::ColumnMajorArray<2>());
-//    
-//    ABlitz = 0.0;
-//    
-//    blitz::firstIndex i;    // Placeholder for the first index
-//    blitz::secondIndex j;   // Placeholder for the second index
-//    blitz::thirdIndex inode;   // Placeholder for the second index
-//    ABlitz = blitz::sum(xyze(i,inode) * deriv1(j,inode),inode);
+    const blitz::Array<double,2> deriv1(shape_function_deriv1<DISTYPE,Epetra_SerialDenseVector>(xsi));
     
     A.Scale(0.0);
     for(int inode=0; inode<numNodes; inode++) 
@@ -547,28 +480,8 @@ void updateRHSForNWE(
 {
     const int numNodes = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
     const int dim = DRT::UTILS::getDimension<DISTYPE>();
-    blitz::Array<double,1> funct(numNodes);
     
-    switch(dim)
-    {
-        case 1:
-        {
-            shape_function_1D(funct, xsi[0], DISTYPE);
-            break;
-        }
-        case 2:
-        {
-            shape_function_2D(funct, xsi[0], xsi[1], DISTYPE);
-            break;
-        }
-        case 3:
-        {
-            shape_function_3D(funct, xsi[0], xsi[1], xsi[2], DISTYPE);
-            break;
-        }
-        default:
-            dserror("dimension of the element is not correct");
-    }
+    const BlitzVec funct(shape_function<DISTYPE,Epetra_SerialDenseVector>(xsi));
     
     b.Scale(0.0);
     for(int inode=0; inode<numNodes; inode++)
@@ -867,7 +780,6 @@ bool XFEM::checkPositionWithinElement(
     const Epetra_SerialDenseVector&     x)
 {
     Epetra_SerialDenseVector xsi(getDimension(element->Shape()));
-    xsi.Scale(0.0);
             
     bool nodeWithinElement = currentToElementCoordinates(element, x, xsi);
     //printf("iter = %d\n", iter);

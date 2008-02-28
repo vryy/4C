@@ -230,27 +230,13 @@ namespace XFEM
     
     
     /*!
-   	\brief transforms a point in current coordinates to a point
-           in element coordinates with respect to a given element
-        
-    \param element          (in)        : element
-    \param xsi              (in/out)    : vector of current coordinates/
-                                          vector of element coordinates
-    */
-    void currentToElementCoordinates(
-            const DRT::Element*         element, 
-            vector<double>&             xsiVector
-          );
-    
-    
-    /*!
     \brief transforms a point in current coordinates to a point
            in element coordinates with respect to a given element       
            The nonlinear system of equation is solved with help of the Newton-method.
 
     \param element              (in)        : element 
     \param x                    (in)        : node in current coordinates (x, y, z)
-    \param xsi                  (inout)     : node in element coordinates
+    \param xsi                  (out)       : node in element coordinates
     \return bool, indicates, whether positions was found within element coordinates
     */  
     bool currentToElementCoordinates(

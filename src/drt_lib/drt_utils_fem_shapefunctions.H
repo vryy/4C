@@ -328,43 +328,104 @@ namespace UTILS
   //
   // shape functions
   //
-  template<DRT::Element::DiscretizationType distype>
-  inline blitz::Array<double, 1> shape_function_3D(
-          const double r,
-          const double s,
-          const double t)
+  template<DRT::Element::DiscretizationType distype, class T>
+  blitz::Array<double, 1> shape_function(
+          const T& xsi)
   {
-    blitz::Array<double, 1> f(DRT::UTILS::getNumberOfElementNodes<distype>());
-    shape_function_3D(f,r,s,t,distype);
+    static blitz::Array<double, 1> f(DRT::UTILS::getNumberOfElementNodes<distype>());
+    switch(DRT::UTILS::getDimension<distype>())
+    {
+        case 1:
+        {
+            shape_function_1D(f, xsi(0), distype);
+            break;
+        }
+        case 2:
+        {
+            shape_function_2D(f, xsi(0), xsi(1), distype);
+            break;
+        }
+        case 3:
+        {
+            shape_function_3D(f, xsi(0), xsi(1), xsi(2), distype);
+            break;
+        }
+        default:
+            dserror("dimension of the element is not correct");
+    }
     return f;
   }
 
   //
   // first natural derivative of shape functions
   //
-  template<DRT::Element::DiscretizationType distype>
-  inline blitz::Array<double, 2> shape_function_3D_deriv1(
-          const double r,
-          const double s,
-          const double t)
+  template<DRT::Element::DiscretizationType distype, class T>
+  blitz::Array<double, 2> shape_function_deriv1(
+          const T& xsi)
   {
-    blitz::Array<double, 2> d(3, DRT::UTILS::getNumberOfElementNodes<distype>(), blitz::ColumnMajorArray<2>());
-    shape_function_3D_deriv1(d,r,s,t,distype);
-    return d;
+    switch(DRT::UTILS::getDimension<distype>())
+    {
+        case 1:
+        {
+            static blitz::Array<double, 2> d(1, DRT::UTILS::getNumberOfElementNodes<distype>(), blitz::ColumnMajorArray<2>());
+            shape_function_1D_deriv1(d, xsi(0), distype);
+            return d;
+            break;
+        }
+        case 2:
+        {
+            static blitz::Array<double, 2> d(2, DRT::UTILS::getNumberOfElementNodes<distype>(), blitz::ColumnMajorArray<2>());
+            shape_function_2D_deriv1(d, xsi(0), xsi(1), distype);
+            return d;
+            break;
+        }
+        case 3:
+        {
+            static blitz::Array<double, 2> d(3, DRT::UTILS::getNumberOfElementNodes<distype>(), blitz::ColumnMajorArray<2>());
+            shape_function_3D_deriv1(d, xsi(0), xsi(1), xsi(2), distype);
+            return d;
+            break;
+        }
+        default:
+            dserror("dimension of the element is not correct");
+            exit(1);
+    }
   }
 
   //
   // Second natural derivative of shape functions
   //
-  template<DRT::Element::DiscretizationType distype>
-  inline blitz::Array<double, 2> shape_function_3D_deriv2(
-          const double r,
-          const double s,
-          const double t)
+  template<DRT::Element::DiscretizationType distype, class T>
+  blitz::Array<double, 2> shape_function_deriv2(
+          const T& xsi)
   {
-    blitz::Array<double, 2> d2(6, DRT::UTILS::getNumberOfElementNodes<distype>(), blitz::ColumnMajorArray<2>());
-    shape_function_3D_deriv2(d2,r,s,t,distype);
-    return d2;
+    switch(DRT::UTILS::getDimension<distype>())
+    {
+        case 1:
+        {
+            static blitz::Array<double, 2> d2(1, DRT::UTILS::getNumberOfElementNodes<distype>(), blitz::ColumnMajorArray<2>());
+            shape_function_1D_deriv2(d2, xsi(0), distype);
+            return d2;
+            break;
+        }
+        case 2:
+        {
+            static blitz::Array<double, 2> d2(3, DRT::UTILS::getNumberOfElementNodes<distype>(), blitz::ColumnMajorArray<2>());
+            shape_function_2D_deriv2(d2, xsi(0), xsi(1), distype);
+            return d2;
+            break;
+        }
+        case 3:
+        {
+            static blitz::Array<double, 2> d2(6, DRT::UTILS::getNumberOfElementNodes<distype>(), blitz::ColumnMajorArray<2>());
+            shape_function_3D_deriv2(d2, xsi(0), xsi(1), xsi(2), distype);
+            return d2;
+            break;
+        }
+        default:
+            dserror("dimension of the element is not correct");
+            exit(1);
+    }
   }
 
 } // namespace UTILS

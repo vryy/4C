@@ -208,8 +208,6 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
                 dserror("Set QHULL flag to use XFEM intersections!!!");
 #endif
             }    
-           
-            //interfacePoints.clear();  
         }// for-loop over all cutter elements
         
         if(xfemIntersection)
@@ -657,13 +655,13 @@ bool Intersection::collectInternalPoints(
     const int                       elemId,
     const int                       nodeId)
 {
-    Epetra_SerialDenseVector xsi(3);
+    // current nodal position
     Epetra_SerialDenseVector x(3);
-       
     x[0] = node->X()[0];
     x[1] = node->X()[1];
     x[2] = node->X()[2];
     
+    Epetra_SerialDenseVector xsi(3);
     currentToElementCoordinates(xfemElement, x, xsi);
     const bool nodeWithinElement = checkPositionWithinElementParameterSpace(xsi, xfemElement->Shape());
     // debugNodeWithinElement(xfemElement,node, xsi, elemId ,nodeId, nodeWithinElement);  
@@ -676,7 +674,8 @@ bool Intersection::collectInternalPoints(
         numInternalPoints_++;
         
         // check if node lies on the boundary of the xfem element
-        if(checkIfOnBoundary(xfemElement->Shape(), xsi, ip))  numBoundaryPoints_++;
+        if(checkIfOnBoundary(xfemElement->Shape(), xsi, ip))
+            numBoundaryPoints_++;
                                    
         // intersection coordinates in the surface 
         // element element coordinate system
@@ -1001,9 +1000,9 @@ int Intersection::computeNewStartingPoint(
 		xsi[i] = (double) (( upLimit[i] + loLimit[i] )/2.0);
          
 	bool intersected = computeCurveSurfaceIntersection(surfaceElement, lineElement, xsi, upLimit, loLimit);
-   
     
-    if( comparePoints(xsi, xsiOld))     intersected = false;
+    if( comparePoints(xsi, xsiOld))
+        intersected = false;
        							 	
 	if(intersected && interval)		
    		numInterfacePoints = addIntersectionPoint(	surfaceElement, lineElement,xsi, upLimit, loLimit, 
@@ -1180,10 +1179,12 @@ void Intersection::computeConvexHull(
         midpoint = computeMidpoint(interfacePoints);
         // transform it into current coordinates
         Epetra_SerialDenseVector    curCoord(3);
-        for(int j = 0; j < 2; j++)      curCoord[j]  = midpoint.coord[j];            
+        for(int j = 0; j < 2; j++)
+            curCoord[j]  = midpoint.coord[j];            
         elementToCurrentCoordinates(surfaceElement, curCoord);    
         currentToElementCoordinates(xfemElement, curCoord);    
-        for(int j = 0; j < 3; j++)      midpoint.coord[j] = curCoord[j]; 
+        for(int j = 0; j < 3; j++)
+            midpoint.coord[j] = curCoord[j]; 
      
         // store coordinates in 
         // points has numInterfacePoints*dim-dimensional components
@@ -1204,10 +1205,8 @@ void Intersection::computeConvexHull(
             Epetra_SerialDenseVector    curCoord(3);
             for(int j = 0; j < 2; j++)      
                 curCoord[j]  = ipoint->coord[j];   
-                          
             elementToCurrentCoordinates(surfaceElement, curCoord);  
             currentToElementCoordinates(xfemElement, curCoord);
-                     
             for(int j = 0; j < 3; j++)         
                 ipoint->coord[j] = curCoord[j];
                 
@@ -1231,12 +1230,12 @@ void Intersection::computeConvexHull(
                     vertex[k] = point[k];
                                 
                 Epetra_SerialDenseVector    curCoord(3);
-                for(int m = 0; m < 2; m++)      curCoord[m]  = vertex[m];           
-                // surface element coordinates to current coordinates       
+                for(int m = 0; m < 2; m++)
+                    curCoord[m]  = vertex[m];           
                 elementToCurrentCoordinates(surfaceElement, curCoord); 
-                // current coordinates to xfem element element coordinates
                 currentToElementCoordinates(xfemElement, curCoord);    
-                for(int m = 0; m < 3; m++)      vertex[m] = curCoord[m];
+                for(int m = 0; m < 3; m++)
+                    vertex[m] = curCoord[m];
                                                 
                 vertices.push_back(vertex);
             }                
@@ -1253,7 +1252,7 @@ void Intersection::computeConvexHull(
         free(coordinates);
                    
     }
-    else if(interfacePoints.size() <= 2 && interfacePoints.size() > 0)
+    else if(interfacePoints.size() <= 2 && interfacePoints.size() > 0) // ??? == 1 ???
     {       
         for(vector<InterfacePoint>::iterator ipoint = interfacePoints.begin(); ipoint != interfacePoints.end(); ++ipoint)
         {
@@ -1261,12 +1260,8 @@ void Intersection::computeConvexHull(
             Epetra_SerialDenseVector    curCoord(3);
             for(int j = 0; j < 2; j++)         
                 curCoord[j]  = ipoint->coord[j];   
-            
-            // surface element coordinates to current coordinates       
             elementToCurrentCoordinates(surfaceElement, curCoord); 
-            // current coordinates to xfem element element coordinates
             currentToElementCoordinates(xfemElement, curCoord);   
-              
             for(int j = 0; j < 3; j++)      
             {   
                 ipoint->coord[j] = curCoord[j];
@@ -1296,7 +1291,6 @@ void Intersection::computeConvexHull(
         findNextSegment(vertices, searchPoint);
         storePoint(searchPoint, interfacePoints, positions);      
     } 
-    vertices.clear();
    
    
     storeSurfacePoints(interfacePoints);
@@ -2067,23 +2061,22 @@ int Intersection::decideSteinerCase(
         const DRT::Element*             xfemElement, 
         const tetgenio&                 out) const
 {
+    const int pointIndex = adjacentFacesList[steinerIndex][0];
 
-    bool                        normalSteiner = true;
-    int                         pointIndex = adjacentFacesList[steinerIndex][0];
     Epetra_SerialDenseVector    x(3);
-    Epetra_SerialDenseVector    xsi(3);
-        
     for(int k=0; k<3; k++)
         x[k]   = out.pointlist[pointIndex*3 + k];
    
-    InterfacePoint emptyIp;
+    Epetra_SerialDenseVector    xsi(3);
     currentToElementCoordinates(xfemElement, x, xsi);
+    
+    InterfacePoint emptyIp;
     if(checkIfOnBoundary(xfemElement-> Shape(), xsi, emptyIp))
         out.pointmarkerlist[pointIndex] = 3;    // on xfem boundary  
     else
         out.pointmarkerlist[pointIndex] = 2;    // not on xfem boundary
     
-   
+    bool normalSteiner = true;
     for(unsigned int j = 0; j < adjacentFacemarkerList[steinerIndex].size(); j++ )
     {
         for(unsigned int k = 0; k < adjacentFacemarkerList[steinerIndex].size(); k++ )
@@ -2106,12 +2099,12 @@ int Intersection::decideSteinerCase(
     }
     
     int caseSteiner = 0;
-    
-    if(normalSteiner)                                   caseSteiner = 1;
-    else                                                caseSteiner = 2;
-    if(out.pointmarkerlist[pointIndex] == 3)            caseSteiner = 3;
-                                                                 
-   
+    if(normalSteiner)
+        caseSteiner = 1;
+    else
+        caseSteiner = 2;
+    if(out.pointmarkerlist[pointIndex] == 3)
+        caseSteiner = 3;
     
     return caseSteiner;
 }
@@ -2140,33 +2133,32 @@ void Intersection::liftSteinerPointOnSurface(
     
     Epetra_SerialDenseVector    averageNormal(3);
     averageNormal.Scale(0.0);
-    vector<Epetra_SerialDenseVector> normals; 
     
     const int length = (int) ( ( (double) (adjacentFacesList[steinerIndex].size()-1))*0.5 );
+    vector<Epetra_SerialDenseVector> normals;
+    normals.reserve(length);
     
     for(int j = 0; j < length; ++j)
     {
         const int pointIndex1 = adjacentFacesList[steinerIndex][1 + 2*j];
         const int pointIndex2 = adjacentFacesList[steinerIndex][1 + 2*j + 1];
+
         Epetra_SerialDenseVector    p1(3);
         Epetra_SerialDenseVector    p2(3);
-     
         for(int k = 0; k < 3; ++k)
         {
             p1[k] =  out.pointlist[pointIndex1*3 + k];
             p2[k] =  out.pointlist[pointIndex2*3 + k];
         }
-    
         elementToCurrentCoordinates(xfemElement, p1);   
         elementToCurrentCoordinates(xfemElement, p2);   
+
         const Epetra_SerialDenseVector n1 = subtractsTwoVectors(p1, Steinerpoint);
         const Epetra_SerialDenseVector n2 = subtractsTwoVectors(p2, Steinerpoint);
     
         Epetra_SerialDenseVector normal = computeCrossProduct( n1, n2);
         normalizeVector(normal);
-    
-//        for(int k=0; k<3; k++)
-//            averageNormal[k] += normal[k];
+        
         averageNormal += normal;
             
         normals.push_back(normal);
@@ -2232,10 +2224,8 @@ void Intersection::liftSteinerPointOnEdge(
     const DRT::Element*         xfemElement, 
     tetgenio&                   out)
 {
-
+    // get Steiner point coordinates
     Epetra_SerialDenseVector    Steinerpoint(3);
-    
-     // get Steiner point coordinates 
     for(int j=0; j<3; j++)
         Steinerpoint[j] = out.pointlist[adjacentFacesList[steinerIndex][0]*3 + j];
     
@@ -3432,7 +3422,7 @@ void Intersection::storeHigherOrderNode(
         for(int i=0; i<3; i++)
             xsi[i] = xsiLine[i];
     }       
-    currentToElementCoordinates(xfemElement, xsi);
+    currentToElementCoordinates(xfemElement, xsi); // ??????????????????
     
     //printf("xsiold0 = %20.16f\t, xsiold1 = %20.16f\t, xsiold2 = %20.16f\n", out.pointlist[index*3], out.pointlist[index*3+1], out.pointlist[index*3+2]);
     

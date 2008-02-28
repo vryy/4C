@@ -432,6 +432,9 @@ protected:
   bool                                            donerewinding_;
 
 private:
+  //! factor including Smagorinsky's constant
+  double                                        cs_delta_sq_;
+  
   //! matrices of subscale acceleration values in gausspoints of this element
   blitz::Array<double,2>                        sub_acc_old_;
 
@@ -566,8 +569,8 @@ private:
    */
 
   void f3_calc_means(
-    vector<double>&         vel,
-    ParameterList&          params
+    vector<double>&           vel  ,
+    ParameterList& 	      params
     );
 
   /*!
@@ -981,7 +984,7 @@ public:
   an DRT::ElementRegister. This method allocates and returns
   an instance of a matching DRT::ElementRegister.
   */
-  virtual RCP<DRT::ElementRegister> ElementRegister() const { return null; }
+  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const { return null; }
 
   //@}
 
@@ -1226,7 +1229,7 @@ public:
   an DRT::ElementRegister. This method allocates and returns
   an instance of a matching DRT::ElementRegister.
   */
-  virtual RCP<DRT::ElementRegister> ElementRegister() const { return null; }
+  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const { return null; }
 
   //! @name Evaluation
 

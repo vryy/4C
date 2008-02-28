@@ -107,15 +107,16 @@ double HK(
   const DRT::UTILS::IntegrationPoints3D intpoints(integrationrule_stabili);
 
   // shape functions and derivs at element center
-  const double e1    = intpoints.qxg[0][0];
-  const double e2    = intpoints.qxg[0][1];
-  const double e3    = intpoints.qxg[0][2];
+  BlitzVec e(3);
+  e(0) = intpoints.qxg[0][0];
+  e(1) = intpoints.qxg[0][1];
+  e(2) = intpoints.qxg[0][2];
   const double wquad = intpoints.qwgt[0];
 
-  const BlitzMat deriv_(DRT::UTILS::shape_function_3D_deriv1<DISTYPE>(e1,e2,e3));
+  const BlitzMat deriv_(DRT::UTILS::shape_function_deriv1<DISTYPE,BlitzVec>(e));
 
   // get Jacobian matrix and determinant
-  const blitz::Array<double,2> xjm_(blitz::sum(deriv_(i,k)*xyze(j,k),k));
+  const BlitzMat xjm_(blitz::sum(deriv_(i,k)*xyze(j,k),k));
   const double det = xjm_(0,0)*xjm_(1,1)*xjm_(2,2)+
                      xjm_(0,1)*xjm_(1,2)*xjm_(2,0)+
                      xjm_(0,2)*xjm_(1,0)*xjm_(2,1)-
@@ -157,14 +158,15 @@ BlitzVec CalTauStationary(
   const DRT::UTILS::IntegrationPoints3D intpoints(integrationrule_stabili);
 
   // shape functions and derivs at element center
-  const double e1    = intpoints.qxg[0][0];
-  const double e2    = intpoints.qxg[0][1];
-  const double e3    = intpoints.qxg[0][2];
+  BlitzVec e(3);
+  e(0) = intpoints.qxg[0][0];
+  e(1) = intpoints.qxg[0][1];
+  e(2) = intpoints.qxg[0][2];
   const double wquad = intpoints.qwgt[0];
 
   const int numnode = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
-  const BlitzVec funct_(DRT::UTILS::shape_function_3D<DISTYPE>(e1,e2,e3));
-  const BlitzMat deriv_(DRT::UTILS::shape_function_3D_deriv1<DISTYPE>(e1,e2,e3));
+  const BlitzVec funct_(DRT::UTILS::shape_function<DISTYPE,BlitzVec>(e));
+  const BlitzMat deriv_(DRT::UTILS::shape_function_deriv1<DISTYPE,BlitzVec>(e));
 
   // get element type constant for tau
   const double mk = MK<DISTYPE>();

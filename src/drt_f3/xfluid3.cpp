@@ -26,7 +26,7 @@ using namespace DRT::UTILS;
 map<string,DRT::ELEMENTS::XFluid3::StabilisationAction> DRT::ELEMENTS::XFluid3::stabstrtoact_;
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                            mwgee 11/06|
+ |  ctor (public)                                            gammi 02/08|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::XFluid3::XFluid3(int id, int owner) :
@@ -51,7 +51,7 @@ eleDofManager_()
 }
 
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       mwgee 11/06|
+ |  copy-ctor (public)                                       gammi 02/08|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::XFluid3::XFluid3(const DRT::ELEMENTS::XFluid3& old) :

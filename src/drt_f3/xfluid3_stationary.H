@@ -715,8 +715,8 @@ void Sysmat(
             const double detcell = XFEM::detEtaToXi3D<ASSTYPE>(*cell, pos_eta);
             
             // shape functions and their first derivatives
-            const BlitzVec funct(DRT::UTILS::shape_function_3D<DISTYPE>(posXiDomain(0),posXiDomain(1),posXiDomain(2)));
-            const BlitzMat deriv(DRT::UTILS::shape_function_3D_deriv1<DISTYPE>(posXiDomain(0),posXiDomain(1),posXiDomain(2)));
+            const BlitzVec funct(DRT::UTILS::shape_function<DISTYPE,BlitzVec>(posXiDomain));
+            const BlitzMat deriv(DRT::UTILS::shape_function_deriv1<DISTYPE,BlitzVec>(posXiDomain));
       
             static BlitzVec funct_stress(DRT::UTILS::getNumberOfElementNodes(stressdistype));
             static BlitzMat deriv_stress(3, DRT::UTILS::getNumberOfElementNodes(stressdistype),blitz::ColumnMajorArray<2>());
@@ -757,7 +757,7 @@ void Sysmat(
             static BlitzMat derxy2(6,numnode,blitz::ColumnMajorArray<2>());
             if (higher_order_ele)
             {
-                const BlitzMat deriv2(DRT::UTILS::shape_function_3D_deriv2<DISTYPE>(posXiDomain(0),posXiDomain(1),posXiDomain(2)));
+                const BlitzMat deriv2(DRT::UTILS::shape_function_deriv2<DISTYPE,BlitzVec>(posXiDomain));
                 derxy2 = gder2<DISTYPE>(xjm, derxy, deriv2, xyze);
             }
             else
@@ -1568,8 +1568,8 @@ void Sysmat(
             const BlitzMat deriv_boundary(DRT::UTILS::shape_function_2D_deriv1(posXiBoundary(0),posXiBoundary(1),boundaryele->Shape()));
             
             // shape functions and their first derivatives
-            const BlitzVec funct_(DRT::UTILS::shape_function_3D(posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE));
-            const BlitzMat deriv_(DRT::UTILS::shape_function_3D_deriv1(posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE));
+            const BlitzVec funct_(DRT::UTILS::shape_function<DISTYPE,BlitzVec>(posXiDomain));
+            const BlitzMat deriv_(DRT::UTILS::shape_function_deriv1<DISTYPE,BlitzVec>(posXiDomain));
       
             const BlitzVec funct_stress(DRT::UTILS::shape_function_3D(posXiDomain(0),posXiDomain(1),posXiDomain(2),stressdistype));
 
