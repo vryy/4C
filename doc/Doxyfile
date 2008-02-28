@@ -471,7 +471,6 @@ INPUT                  = index.doc \
                          ../src/drt_beam2 \
                          ../src/io \
                          ../src/drt_fsi \
-                         ../src/drt_mfsi \
                          ../src/drt_ale2 \
                          ../src/drt_ale3 \
                          ../src/drt_mat \
