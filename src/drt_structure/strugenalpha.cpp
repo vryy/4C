@@ -12,8 +12,10 @@ Maintainer: Michael Gee
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include <iostream>
+
 #include "strugenalpha.H"
-#include "iostream"
+#include "stru_resulttest.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 03/07|
@@ -2795,7 +2797,7 @@ void StruGenAlpha::UpdateandOutput()
   params_.set<double>("total time", timen);
   params_.set<int>("step", istep);
 
-  //---------------------------- determine new end-quantities and update
+  //---------------------- determine new end-point quantities and update
   // new displacements at t_{n+1} -> t_n
   //    D_{n} := D_{n+1} = 1./(1.-alphaf) * D_{n+1-alpha_f}
   //                     - alphaf/(1.-alphaf) * D_n
@@ -2812,7 +2814,7 @@ void StruGenAlpha::UpdateandOutput()
   //    F_{ext;n} := F_{ext;n+1}
   fext_->Update(1.0,*fextn_,0.0);
 
-  //----- update anything that needs to be updated at the element level
+  //------ update anything that needs to be updated at the element level
   {
     // create the parameters for the discretization
     ParameterList p;
