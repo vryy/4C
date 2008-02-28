@@ -202,12 +202,6 @@ void stru_static_drt()
     ParameterList params;
     // action for elements
     params.set("action","calc_struct_eleload");
-    // choose what to assemble
-    params.set("assemble matrix 1",false);
-    params.set("assemble matrix 2",false);
-    params.set("assemble vector 1",true);
-    params.set("assemble vector 2",false);
-    params.set("assemble vector 3",false);
 
     //other parameters needed by the elements
     params.set("total time",time);
@@ -349,12 +343,6 @@ void stru_static_drt()
         ParameterList params;
         // action for elements
         params.set("action","calc_struct_nlnstiff");
-        // choose what to assemble
-        params.set("assemble matrix 1",true);
-        params.set("assemble matrix 2",false);
-        params.set("assemble vector 1",true);
-        params.set("assemble vector 2",false);
-        params.set("assemble vector 3",false);
         // other parameters needed by the elements
         params.set("total time",timen);  // load factor (pseudo time)
         params.set("delta time",dt);  // load factor increment (pseudo time increment)
@@ -418,12 +406,6 @@ void stru_static_drt()
       ParameterList params;
       // action for elements
       params.set("action","calc_struct_update_istep");
-      // choose what to assemble
-      params.set("assemble matrix 1",false);
-      params.set("assemble matrix 2",false);
-      params.set("assemble vector 1",false);
-      params.set("assemble vector 2",false);
-      params.set("assemble vector 3",false);
       // other parameters that might be needed by the elements
       params.set("total time",timen);
       params.set("delta time",dt);
