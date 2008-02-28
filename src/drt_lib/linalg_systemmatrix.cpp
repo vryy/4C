@@ -969,7 +969,7 @@ int LINALG::BlockSparseMatrixBase::Apply(const Epetra_MultiVector &X, Epetra_Mul
           dserror("failed to apply vector to matrix: err=%d",err);
         rowresult->Update(1.0,*rowy,1.0);
       }
-      rangemaps_.InsertVector(*rowy,rblock,Y);
+      rangemaps_.InsertVector(*rowresult,rblock,Y);
     }
   }
   else

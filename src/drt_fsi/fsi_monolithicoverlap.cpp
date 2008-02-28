@@ -4,6 +4,8 @@
 #include "fsi_statustest.H"
 #include "fsi_overlapprec.H"
 
+#include "../drt_lib/drt_globalproblem.H"
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -12,6 +14,10 @@ FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
     havefluidstructcolmap_(false),
     havepermfluidstructcolmap_(false)
 {
+  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+
+  SetDefaultParameters(fsidyn,NOXParameterList());
+
   // right now we use matching meshes at the interface
 
   FSI::Coupling& coupsf = StructureFluidCoupling();
@@ -76,6 +82,10 @@ FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
                                                           FluidField().LinearSolver(),
                                                           AleField().LinearSolver()));
 
+  // Complete the empty matrix. The non-empty blocks will be inserted (in
+  // Filled() state) later.
+  systemmatrix_->Complete();
+
   /*----------------------------------------------------------------------*/
   sysmattimer_         = Teuchos::TimeMonitor::getNewTimer("FSI::MonolithicOverlap::SetupSysMat");
   igtimer_             = Teuchos::TimeMonitor::getNewTimer("FSI::MonolithicOverlap::InitialGuess");
@@ -107,6 +117,34 @@ FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
 
   aig_ = ConvertFigColmap(*aig,alestructcolmap,StructureField().DomainMap(),1.);
   aii_ = Teuchos::rcp(new LINALG::SparseMatrix(*aii,View));
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MonolithicOverlap::SetDefaultParameters(const Teuchos::ParameterList& fsidyn,
+                                                  Teuchos::ParameterList& list)
+{
+  // Get the top level parameter list
+  Teuchos::ParameterList& nlParams = list;
+
+  nlParams.set<std::string>("Nonlinear Solver", "Line Search Based");
+  //nlParams.set("Preconditioner", "None");
+  nlParams.set("Norm abs F", fsidyn.get<double>("CONVTOL"));
+  nlParams.set("Max Iterations", fsidyn.get<int>("ITEMAX"));
+
+  // sublists
+
+  Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
+
+  dirParams.set<std::string>("Method","Newton");
+
+  Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
+  Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
+
+  lsParams.set<std::string>("Convergence Test","r0");
+  lsParams.set<double>("Tolerance",1e-6);
+  lsParams.set<std::string>("Preconditioner","User Defined");
 }
 
 
@@ -309,8 +347,7 @@ FSI::MonolithicOverlap::CreateStatusTest(Teuchos::ParameterList& nlParams,
 
   Teuchos::RCP<PartialNormF> structureDisp =
     Teuchos::rcp(new PartialNormF("displacement",
-                                  0,
-                                  *StructureField().DofRowMap(),
+                                  *DofRowMap(),
                                   *StructureField().DofRowMap(),
                                   nlParams.get("Norm abs disp", 1.0e-6),
                                   PartialNormF::Scaled));
@@ -318,8 +355,7 @@ FSI::MonolithicOverlap::CreateStatusTest(Teuchos::ParameterList& nlParams,
 
   Teuchos::RCP<PartialNormF> innerFluidVel =
     Teuchos::rcp(new PartialNormF("velocity",
-                                  1,
-                                  *FluidField().Interface().OtherMap(),
+                                  *DofRowMap(),
                                   *FluidField().InnerVelocityRowMap(),
                                   nlParams.get("Norm abs vel", 1.0e-6),
                                   PartialNormF::Scaled));
@@ -327,8 +363,7 @@ FSI::MonolithicOverlap::CreateStatusTest(Teuchos::ParameterList& nlParams,
 
   Teuchos::RCP<PartialNormF> fluidPress =
     Teuchos::rcp(new PartialNormF("pressure",
-                                  1,
-                                  *FluidField().Interface().OtherMap(),
+                                  *DofRowMap(),
                                   *FluidField().PressureRowMap(),
                                   nlParams.get("Norm abs pres", 1.0e-6),
                                   PartialNormF::Scaled));

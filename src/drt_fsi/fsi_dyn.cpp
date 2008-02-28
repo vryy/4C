@@ -11,6 +11,7 @@
 
 #include "fsi_dyn.H"
 #include "fsi_dirichletneumann.H"
+#include "fsi_monolithicoverlap.H"
 #include "fsi_utils.H"
 
 #include "../drt_lib/drt_resulttest.H"
@@ -316,7 +317,7 @@ void fsi_ale_drt()
 
   if (Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO") != fsi_iter_monolithic)
   {
-    Teuchos::RefCountPtr<FSI::DirichletNeumannCoupling> fsi = rcp(new FSI::DirichletNeumannCoupling(comm));
+    Teuchos::RCP<FSI::DirichletNeumannCoupling> fsi = Teuchos::rcp(new FSI::DirichletNeumannCoupling(comm));
 
     if (genprob.restart)
     {
@@ -332,9 +333,19 @@ void fsi_ale_drt()
   }
   else
   {
-    //Teuchos::RCP<MFSI::Algorithm> mfsi = rcp(new MFSI::LagrangeAlgorithm(comm));
-    //Teuchos::RCP<MFSI::Algorithm> mfsi = rcp(new MFSI::OverlapAlgorithm(comm));
-    //mfsi->Timeloop();
+    Teuchos::RCP<FSI::MonolithicOverlap> fsi = Teuchos::rcp(new FSI::MonolithicOverlap(comm));
+
+    if (genprob.restart)
+    {
+      // read the restart information, set vectors and variables
+      fsi->ReadRestart(genprob.restart);
+    }
+
+    fsi->Timeloop(fsi);
+
+    DRT::ResultTestManager testmanager(comm);
+    testmanager.AddFieldTest(fsi->FluidField().CreateFieldTest());
+    testmanager.TestAll();
   }
 
   Teuchos::TimeMonitor::summarize();

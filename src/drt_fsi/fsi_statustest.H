@@ -157,8 +157,7 @@ namespace FSI
   public:
 
     PartialNormF(std::string name,
-                 int blocknum,
-                 const Epetra_Map &blockmap,
+                 const Epetra_Map &fullmap,
                  const Epetra_Map &innermap,
                  double tolerance,
                  ScaleType stype = Scaled);
@@ -168,13 +167,13 @@ namespace FSI
     double computeNorm(const NOX::Abstract::Group& grp);
 
   private:
-    const Epetra_Map &blockmap_;
     const Epetra_Map &innermap_;
-    int blocknum_;
 
     Teuchos::RCP<Epetra_Import> extractor_;
   };
 
+
+#if 0
 
   /// Norm of combined fluid-structure interface dofs
   /*!
@@ -218,6 +217,9 @@ namespace FSI
     Teuchos::RCP<Epetra_Import> structextractor_;
     Teuchos::RCP<Epetra_Import> fluidextractor_;
   };
+
+#endif
+
 }
 
 #endif

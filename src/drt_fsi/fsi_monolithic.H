@@ -39,7 +39,7 @@ namespace FSI
     virtual void SetupRHS(Epetra_Vector& f) const = 0;
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat) const = 0;
+    virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat) = 0;
 
     //@}
 
@@ -91,6 +91,9 @@ namespace FSI
 
     //@}
 
+    /// flags passed to NOX
+    Teuchos::ParameterList& NOXParameterList() { return noxparameterlist_; }
+
   private:
 
     /// dof row map splitted in (field) blocks
@@ -98,6 +101,9 @@ namespace FSI
 
     /// output utilities
     Teuchos::RCP<NOX::Utils> utils_;
+
+    /// flags passed to NOX
+    Teuchos::ParameterList noxparameterlist_;
   };
 }
 

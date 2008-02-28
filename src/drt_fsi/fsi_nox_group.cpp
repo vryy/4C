@@ -13,11 +13,19 @@ FSI::NOXGroup::NOXGroup(Monolithic& mfsi,
   : NOX::Epetra::Group(printParams,i,x,linSys),
     mfsi_(mfsi)
 {
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FSI::NOXGroup::CaptureSystemState()
+{
   // we know we already have the first linear system calculated
 
   mfsi_.SetupRHS(RHSVector.getEpetraVector());
   mfsi_.SetupSystemMatrix(*mfsi_.SystemMatrix());
 
+  sharedLinearSystem.getObject(this);
   isValidJacobian = true;
   isValidRHS = true;
 }
@@ -31,6 +39,7 @@ NOX::Abstract::Group::ReturnType FSI::NOXGroup::computeF()
   if (ret==NOX::Abstract::Group::Ok)
   {
     mfsi_.SetupSystemMatrix(*mfsi_.SystemMatrix());
+    sharedLinearSystem.getObject(this);
     isValidJacobian = true;
   }
   return ret;

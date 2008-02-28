@@ -31,7 +31,7 @@ extern struct _FILES  allfiles;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-extern Teuchos::RCP<Teuchos::ParameterList> globalparameterlist;
+//extern Teuchos::RCP<Teuchos::ParameterList> globalparameterlist;
 
 
 /*----------------------------------------------------------------------*/
@@ -47,7 +47,7 @@ FSI::Monolithic::Monolithic(Epetra_Comm& comm)
 void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface)
 {
   // Get the top level parameter list
-  Teuchos::ParameterList& nlParams = *globalparameterlist;
+  Teuchos::ParameterList& nlParams = NOXParameterList();
 
   // sublists
 
@@ -106,7 +106,7 @@ void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requir
       CreateLinearSystem(nlParams, noxSoln, utils_);
 
     // Create the Group
-    Teuchos::RCP<NOX::Epetra::Group> grp =
+    Teuchos::RCP<NOXGroup> grp =
       Teuchos::rcp(new NOXGroup(*this, printParams, interface, noxSoln, linSys));
 
     // Convergence Tests
@@ -114,6 +114,9 @@ void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requir
 
     // Create the solver
     Teuchos::RCP<NOX::Solver::Generic> solver = NOX::Solver::buildSolver(grp,combo,RCP<ParameterList>(&nlParams,false));
+
+    // we know we already have the first linear system calculated
+    grp->CaptureSystemState();
 
     // solve the whole thing
     NOX::StatusTest::StatusType status = solver->solve();

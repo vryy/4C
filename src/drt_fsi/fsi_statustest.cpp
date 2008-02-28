@@ -10,10 +10,9 @@
 #include <NOX_Solver_Generic.H>
 #include <NOX_Utils.H>
 
-#include <NOX_Thyra_Vector.H>
+#include <NOX_Epetra_Vector.H>
 
 #include <Thyra_DefaultProductVector.hpp>
-#include <Thyra_EpetraThyraWrappers.hpp>
 
 
 
@@ -213,17 +212,14 @@ double FSI::GenericNormF::getInitialTolerance() const
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::PartialNormF::PartialNormF(std::string name,
-                                 int blocknum,
-                                 const Epetra_Map &blockmap,
-                                 const Epetra_Map &innermap,
-                                 double tolerance,
-                                 ScaleType stype)
+                                const Epetra_Map &fullmap,
+                                const Epetra_Map &innermap,
+                                double tolerance,
+                                ScaleType stype)
   : GenericNormF(name,tolerance,stype),
-    blockmap_(blockmap),
-    innermap_(innermap),
-    blocknum_(blocknum)
+    innermap_(innermap)
 {
-  extractor_ = Teuchos::rcp(new Epetra_Import(innermap_, blockmap_));
+  extractor_ = Teuchos::rcp(new Epetra_Import(innermap_, fullmap));
 }
 
 
@@ -237,32 +233,20 @@ double FSI::PartialNormF::computeNorm(const NOX::Abstract::Group& grp)
   // extract the block epetra vector
 
   const NOX::Abstract::Vector& abstract_f = grp.getF();
-  const NOX::Thyra::Vector& thyra_f = Teuchos::dyn_cast<const NOX::Thyra::Vector>(abstract_f);
-
-  const Thyra::DefaultProductVector<double>& f =
-    Teuchos::dyn_cast<const Thyra::DefaultProductVector<double> >(*thyra_f.getThyraRCPVector());
-
-  Teuchos::RCP<const Thyra::VectorBase<double> > thyra_v = f.getVectorBlock(blocknum_);
-
-  // This is ugly. We have to strip the RCP on const VectorBase and
-  // create a new (not owning) one, because the original RCP contains
-  // the original (non-const) Epetra_Vector and we cannot extract it
-  // from a const RCP. :(
-  Teuchos::RCP<const Epetra_Vector> epetra_v = Thyra::get_Epetra_Vector(blockmap_,
-                                                                        Teuchos::rcp(&*thyra_v,false));
-
-  //epetra_v->Print(cout);
+  const NOX::Epetra::Vector& f = Teuchos::dyn_cast<const NOX::Epetra::Vector>(abstract_f);
 
   // extract the inner vector elements we are interessted in
 
   Teuchos::RCP<Epetra_Vector> v = Teuchos::rcp(new Epetra_Vector(innermap_));
-  int err = v->Import(*epetra_v, *extractor_, Insert);
+  int err = v->Import(f.getEpetraVector(), *extractor_, Insert);
   if (err!=0)
     dserror("import failed with err=%d", err);
 
   return FSI::GenericNormF::computeNorm(*v);
 }
 
+
+#if 0
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -345,5 +329,6 @@ double FSI::InterfaceNormF::computeNorm(const NOX::Abstract::Group& grp)
   return FSI::GenericNormF::computeNorm(*sv);
 }
 
+#endif
 
 #endif

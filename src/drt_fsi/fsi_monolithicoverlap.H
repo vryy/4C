@@ -42,7 +42,7 @@ namespace FSI
     \author u.kue
     \date 02/08
    */
-  class MonolithicOverlap : Monolithic
+  class MonolithicOverlap : public Monolithic
   {
   public:
     explicit MonolithicOverlap(Epetra_Comm& comm);
@@ -106,6 +106,9 @@ namespace FSI
 
 
   private:
+
+    /// setup list with default parameters
+    void SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
 
     /// build block vector from field vectors
     void SetupVector(Epetra_Vector &f,

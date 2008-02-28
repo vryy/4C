@@ -20,6 +20,9 @@ namespace FSI
 	     const NOX::Epetra::Vector& x,
 	     const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys);
 
+    /// fetch the known Jacobian and RHS from the field solvers
+    void CaptureSystemState();
+
     virtual NOX::Abstract::Group::ReturnType computeF();
 
     virtual NOX::Abstract::Group::ReturnType computeJacobian();
