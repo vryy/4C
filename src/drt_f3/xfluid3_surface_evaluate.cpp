@@ -44,7 +44,6 @@ int DRT::ELEMENTS::XFluid3Surface::Evaluate(    ParameterList&            params
         act = XFluid3Surface::integrate_Shapefunction;
     else dserror("Unknown type of action for Fluid3_Surface");
 
-    const DiscretizationType distype = this->Shape();
     switch(act)
     {
     case integrate_Shapefunction:
