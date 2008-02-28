@@ -44,9 +44,9 @@ StruResultTest::StruResultTest(RefCountPtr<DRT::Discretization> strudis_in,
                                RefCountPtr<Epetra_Vector> acc)
 {
   strudisc_ = strudis_in;
-  dis_ = dis;  // global displacement DOFs
-  vel_ = vel;  // global velocity DOFs
-  acc_ = acc;  // global acceleration DOFs
+  dis_ = dis;
+  vel_ = vel;
+  acc_ = acc;
 }
 
 
@@ -71,7 +71,7 @@ void StruResultTest::TestNode(_RESULTDESCR* res, int& nerr, int& test_count)
       return;
 
     // verbose output
-    cout << "TESTING STRUCTURE RESULTS with StruResultTest::TestNode(..)" << endl;
+    //cout << "TESTING STRUCTURE RESULTS with StruResultTest::TestNode(..)" << endl;
 
     double result = 0;  // will hold the actual result of run
     string position = res->position;  // type of result value
