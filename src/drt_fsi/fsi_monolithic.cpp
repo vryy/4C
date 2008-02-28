@@ -140,6 +140,7 @@ void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requir
              << " " << lsParams.sublist("Output").get("Total Number of Linear Iterations",0)
         ;
       (*log) << std::endl;
+      lsParams.sublist("Output").set("Total Number of Linear Iterations",0);
     }
 
     Update();
