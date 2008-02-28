@@ -147,12 +147,17 @@ void StruResultTest::TestNode(_RESULTDESCR* res, int& nerr, int& test_count)
     if (unknownpos)
       dserror("position '%s' not supported in structure testing", position.c_str());
 
+    // compare values
+    int err = CompareValues(result, res);
+    nerr += err;
+    test_count++;
+
     // verbose output
     cout.precision(18);
-    cout << "RESULT IS " << std::scientific << result << endl;
-
-    nerr += CompareValues(result, res);
-    test_count++;
+    cout << "RESULT "  << test_count+1 
+         << " IS " << std::scientific << result 
+         << " AND " << ((err==0) ? "OKAY" : "INCORRECT")
+         << endl;
   }
 }
 
@@ -167,4 +172,4 @@ bool StruResultTest::Match(_RESULTDESCR* res)
 }
 
 
-#endif /* CCADISCRET       */
+#endif /* CCADISCRET */
