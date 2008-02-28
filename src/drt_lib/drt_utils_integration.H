@@ -71,6 +71,61 @@ enum GaussRule1D
 };
 
 /*!
+ \class IntegrationPoint
+
+ \brief a point with a position an an associated weight
+
+ */
+template <int dim, class Vec>
+class IntegrationPoint
+{
+public:
+    //! Default constructor
+    explicit IntegrationPoint(
+            const Vec&       pos,
+            const double     weight) : 
+                position_(pos),
+                weight_(weight)
+    {
+        return;
+    }
+    
+    IntegrationPoint(
+            const IntegrationPoint&     other) :
+                position_(other.position_),
+                weight_(other.weight_)
+    {
+        return;
+    }
+    
+    ~IntegrationPoint();
+    
+    std::string toString() const
+    {
+        std::stringstream s;
+        s << "IntPoint, Position: " << position_ << ", weight: " << weight_;
+        return s.str();
+    }
+    
+    inline const Vec Position() const { return position_; }
+    
+    inline const double Weight() const { return weight_; }
+    
+private:
+    const Vec position_;
+    const double weight_;
+    
+    //! Empty constructor
+    explicit IntegrationPoint() :
+                position_(),
+                weight_(0.0)
+    {
+        return;
+    }
+}; // class IntegrationPoint
+
+
+/*!
 \brief integration parameters
 \author Axel Gerstenberger
 
