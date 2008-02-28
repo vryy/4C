@@ -296,6 +296,7 @@ void xdyn_fluid_drt()
     DRT::ResultTestManager testmanager(fluiddis->Comm());
     testmanager.AddFieldTest(rcp(new XFluidResultTest(fluidimplicit)));
     testmanager.TestAll();
+
   }
   else
   {

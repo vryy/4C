@@ -246,6 +246,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
     samstop_   = turbmodelparams->get<int>("SAMPLING_STOP",1);
     dumperiod_ = turbmodelparams->get<int>("DUMPING_PERIOD",1);
   }
+    
 
   // -------------------------------------------------------------------
   // necessary only for the VM3 approach: fine-scale solution vector
@@ -752,7 +753,10 @@ void XFluidImplicitTimeInt::NonlinearSolve()
 
   int               itnum = 0;
   bool              stopnonliniter = false;
-  double            tcpu;
+
+  dtsolve_ = 0;
+  dtele_   = 0;
+  double   tcpu   ;
 
 
 
@@ -827,10 +831,11 @@ void XFluidImplicitTimeInt::NonlinearSolve()
       {
         eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
       }
-
+      
       // set vector values needed by elements
       discret_->ClearState();
       discret_->SetState("velnp",velnp_);
+            
       discret_->SetState("hist"  ,hist_ );
       if (alefluid_)
       {
@@ -947,7 +952,6 @@ void XFluidImplicitTimeInt::NonlinearSolve()
 
     velpressplitter_.ExtractOtherVector(velnp_,onlypre);
     onlypre->Norm2(&prenorm_L2);
-    
 
     double incfullnorm_L2;
     double fullnorm_L2;
@@ -1102,9 +1106,6 @@ void XFluidImplicitTimeInt::NonlinearSolve()
 
     //------------------------------------------------ update (u,p) trial
     velnp_->Update(1.0,*incvel_,1.0);
-
-    //------------------------------------------------- check convergence
-    //NonlinearConvCheck(stopnonliniter,itnum,dtele_,dtsolve_);
   }
 
   // end time measurement for nonlinear iteration
@@ -1136,7 +1137,9 @@ void XFluidImplicitTimeInt::LinearSolve()
   // time measurement: linearised fluid --- start TimeMonitor tm3
   tm3_ref_ = rcp(new TimeMonitor(*timenlnitlin_));
 
-  double tcpu;
+  dtsolve_ = 0;
+  dtele_   = 0;
+  double  tcpu;
 
   if (myrank_ == 0)
     cout << "solution of linearised fluid   ";
@@ -1497,6 +1500,16 @@ void XFluidImplicitTimeInt::Output()
     solidoutput_.WriteVector("soliddispnp", soliddispnp_);
   }
 
+  // dumping of turbulence statistics
+  if((params_.sublist("TURBULENCE MODEL")).get<string>("CANONICAL_FLOW","no") == "lid_driven_cavity" && step_>=samstart_ && step_<=samstop_)
+  {
+    int samstep = step_-samstart_+1;
+    double dsamstep=samstep;
+    double ddumperiod=dumperiod_;
+
+    if (fmod(dsamstep,ddumperiod)==0)
+      turbulencestatistics_ldc_->DumpStatistics(step_);
+  }
 
 #if 0  // DEBUG IO --- the whole systemmatrix
       {
@@ -1643,7 +1656,7 @@ void XFluidImplicitTimeInt::UpdateGridv()
 
                   x^n+1 - x^n
              uG = -----------
-                    Deta t                        */
+                    Delta t                        */
       gridv_->Update(1/dta_, *dispnp_, -1/dta_, *dispn_, 0.0);
     break;
     case 2:
@@ -1754,7 +1767,7 @@ void XFluidImplicitTimeInt::SetInitialFlowField(
       dserror("dof not on proc");
     }
   }
-  else if(whichinitialfield==2 ||whichinitialfield==3)
+  else if(whichinitialfield==2 || whichinitialfield==3)
   {
     const int numdim = params_.get<int>("number of velocity degrees of freedom");
 
@@ -1959,6 +1972,17 @@ void XFluidImplicitTimeInt::SolveStationaryProblem()
     //                         output of solution
     // -------------------------------------------------------------------
     Output();
+
+    // -------------------------------------------------------------------
+    //                    calculate lift'n'drag forces
+    // -------------------------------------------------------------------
+    int liftdrag = params_.get<int>("liftdrag");
+  
+    if(liftdrag == 0); // do nothing, we don't want lift & drag
+    if(liftdrag == 1)
+      dserror("how did you manage to get here???");
+    if(liftdrag == 2)
+      LiftDrag();
 
   } // end of time loop
 
@@ -2197,7 +2221,7 @@ Teuchos::RCP<Epetra_Vector> XFluidImplicitTimeInt::IntegrateInterfaceShape(std::
   ParameterList eleparams;
   // set action for elements
   eleparams.set("action","integrate_Shapefunction");
-
+                                                 
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
   //                 local <-> global dof numbering
@@ -2319,7 +2343,6 @@ void XFluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> re
     dserror("sysmat_->Apply() failed");
   trueresidual_->Scale(-density/dta_/theta_);
 }
-
 
 
 #endif /* CCADISCRET       */

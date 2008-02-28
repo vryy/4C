@@ -24,6 +24,7 @@ Maintainer: Axel Gerstenberger
 #ifndef XFLUIDIMPLICITINTEGRATION_H
 #define XFLUIDIMPLICITINTEGRATION_H
 
+#include "turbulence_statistics.H"
 #include "turbulence_statistics_ldc.H"
 
 #ifdef PARALLEL
@@ -348,16 +349,35 @@ protected:
   /// only necessary for vm3 solver: fine-scale solution vector
   RCP<Epetra_Vector>    fsvelnp_;
 
-  /// turbulence statistics
+  /// turbulence statistics, lid driven cavity
   RCP<TurbulenceStatisticsLdc> turbulencestatistics_ldc_;
 
+  /// turbulence statistics, channel flow
+  RCP<TurbulenceStatistics>    turbulencestatistics_;
+
+  
+  // Vectors used for filtering (for dynamic Smagorinsky model)
+  // --------------------------
+  
+  RCP<Epetra_MultiVector>  filtered_vel_;
+  RCP<Epetra_MultiVector>  filtered_reynoldsstress_;
+  RCP<Epetra_MultiVector>  filtered_modeled_subgrid_stress_;
+  RCP<Epetra_MultiVector>  col_filtered_vel_;
+  RCP<Epetra_MultiVector>  col_filtered_reynoldsstress_;
+  RCP<Epetra_MultiVector>  col_filtered_modeled_subgrid_stress_;
+
+  RCP<vector<double> >     averaged_LijMij_;
+  RCP<vector<double> >     averaged_MijMij_;
+  RCP<vector<double> >     planecoords_;
 
   // Extractor used for convergence check
   // ------------------------------------
 
   LINALG::MapExtractor      velpressplitter_;
 
-
+  RCP<PeriodicBoundaryConditions> pbc_;
+  
+  
   // time measurement
   // ----------------
   RCP<Teuchos::Time> timetotal_   ;
@@ -379,9 +399,11 @@ protected:
   RCP<TimeMonitor> tm6_ref_ ;
   RCP<TimeMonitor> tm7_ref_ ;
   RCP<TimeMonitor> tm8_ref_ ;
+  
+  double           dtele_;
+  double           dtsolve_;
+  double           dtfilter_;
 
-  double dtele_;
-  double dtsolve_;
 
 }; // class FluidImplicitTimeInt
 
