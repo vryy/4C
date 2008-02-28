@@ -547,6 +547,9 @@ void StruGenAlpha::ConsistentPredictor()
   double alphaf      = params_.get<double>("alpha f"        ,0.459);
   double alpham      = params_.get<double>("alpha m"        ,0.378);
   double beta        = params_.get<double>("beta"           ,0.292);
+#ifdef STRUGENALPHA_BE
+  double delta       = params_.get<double>("delta"          ,beta);
+#endif
   double gamma       = params_.get<double>("gamma"          ,0.581);
   bool   printscreen = params_.get<bool>  ("print to screen",false);
   string convcheck   = params_.get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
@@ -597,8 +600,13 @@ void StruGenAlpha::ConsistentPredictor()
   //          + (beta-gamma)/beta * V_n
   //          + (2.*beta-gamma)/(2.*beta) * A_n
   veln_->Update(1.0,*disn_,-1.0,*dis_,0.0);
+#ifdef STRUGENALPHA_BE
+  veln_->Update((delta-gamma)/delta,*vel_,
+                (-gamma-2.*delta*gamma+2.*beta*gamma+2.*delta)*dt/(2.*delta),*acc_,gamma/(delta*dt));
+#else
   veln_->Update((beta-gamma)/beta,*vel_,
                 (2.*beta-gamma)*dt/(2.*beta),*acc_,gamma/(beta*dt));
+#endif
 
 
 #ifdef STRUGENALPHA_STRONGDBC
@@ -628,8 +636,13 @@ void StruGenAlpha::ConsistentPredictor()
   //          - 1./(beta*dt) * V_n
   //          + (2.*beta-1.)/(2.*beta) * A_n
   accn_->Update(1.0,*disn_,-1.0,*dis_,0.0);
+#ifdef STRUGENALPHA_BE
+  accn_->Update(-1./(delta*dt),*vel_,
+                (2.*beta-1.)/(2.*delta),*acc_,1./(delta*dt*dt));
+#else
   accn_->Update(-1./(beta*dt),*vel_,
                 (2.*beta-1.)/(2.*beta),*acc_,1./(beta*dt*dt));
+#endif
 
 #ifdef STRUGENALPHA_STRONGDBC
   // apply new accelerations at DBCs
@@ -884,6 +897,9 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
   double timen     = time + dt;
   bool   damping   = params_.get<bool>  ("damping"                ,false);
   double beta      = params_.get<double>("beta"                   ,0.292);
+#ifdef STRUGENALPHA_BE
+  double delta     = params_.get<double>("delta"                  ,beta);
+#endif
   double gamma     = params_.get<double>("gamma"                  ,0.581);
   double alpham    = params_.get<double>("alpha m"                ,0.378);
   double alphaf    = params_.get<double>("alpha f"                ,0.459);
@@ -911,9 +927,15 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
 #else
     // incremental (required for constant predictor)
     velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+#ifdef STRUGENALPHA_BE
+    velm_->Update((delta-(1.0-alphaf)*gamma)/delta,*vel_,
+                  (1.0-alphaf)*(-gamma-2.*delta*gamma+2.*beta*gamma+2.*delta)*dt/(2.*delta),*acc_,
+                  gamma/(delta*dt));
+#else
     velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
                   (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
                   gamma/(beta*dt));
+#endif
 #endif
     // accelerations
 #ifndef STRUGENALPHA_INCRUPDT
@@ -924,9 +946,15 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
 #else
     // incremental (required for constant predictor)
     accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+#ifdef STRUGENALPHA_BE
+    accm_->Update(-(1.-alpham)/(delta*dt),*vel_,
+                  (2.*beta-1.+alpham-2.*alpham*beta+2.*alpham*delta)/(2.*delta),*acc_,
+                  (1.-alpham)/((1.-alphaf)*delta*dt*dt));
+#else
     accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
                   (2.*beta-1.+alpham)/(2.*beta),*acc_,
                   (1.-alpham)/((1.-alphaf)*beta*dt*dt));
+#endif
 #endif
 
     //---------------------------- compute internal forces and stiffness
@@ -981,10 +1009,18 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
   //------------------------------------------- effective rhs is fresm
   //---------------------------------------------- build effective lhs
   // (using matrix stiff_ as effective matrix)
+#ifdef STRUGENALPHA_BE
+  stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
+#else
   stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
+#endif
   if (damping)
   {
+#ifdef STRUGENALPHA_BE
+    stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(delta*dt),1.0);
+#else
     stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+#endif
   }
   stiff_->Complete();
 
@@ -1008,6 +1044,9 @@ void StruGenAlpha::FullNewton()
   int    maxiter   = params_.get<int>   ("max iterations"         ,10);
   bool   damping   = params_.get<bool>  ("damping"                ,false);
   double beta      = params_.get<double>("beta"                   ,0.292);
+#ifdef STRUGENALPHA_BE
+  double delta     = params_.get<double>("delta"                  ,beta);
+#endif
   double gamma     = params_.get<double>("gamma"                  ,0.581);
   double alpham    = params_.get<double>("alpha m"                ,0.378);
   double alphaf    = params_.get<double>("alpha f"                ,0.459);
@@ -1040,10 +1079,18 @@ void StruGenAlpha::FullNewton()
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
+#ifdef STRUGENALPHA_BE
+    stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
+#else
     stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
+#endif
     if (damping)
     {
+#ifdef STRUGENALPHA_BE
+      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(delta*dt),1.0);
+#else
       stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+#endif
     }
     stiff_->Complete();
 
@@ -1071,9 +1118,15 @@ void StruGenAlpha::FullNewton()
 #else
     // incremental (required for constant predictor)
     velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+#ifdef STRUGENALPHA_BE
+    velm_->Update((delta-(1.0-alphaf)*gamma)/delta,*vel_,
+                  (1.0-alphaf)*(-gamma-2.*delta*gamma+2.*beta*gamma+2.*delta)*dt/(2.*delta),*acc_,
+                  gamma/(delta*dt));
+#else
     velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
                   (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
                   gamma/(beta*dt));
+#endif
 #endif
     // accelerations
 #ifndef STRUGENALPHA_INCRUPDT
@@ -1084,9 +1137,15 @@ void StruGenAlpha::FullNewton()
 #else
     // incremental (required for constant predictor)
     accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+#ifdef STRUGENALPHA_BE
+    accm_->Update(-(1.-alpham)/(delta*dt),*vel_,
+                  (2.*beta-1.+alpham-2.*alpham*beta+2.*alpham*delta)/(2.*delta),*acc_,
+                  (1.-alpham)/((1.-alphaf)*delta*dt*dt));
+#else
     accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
                   (2.*beta-1.+alpham)/(2.*beta),*acc_,
                   (1.-alpham)/((1.-alphaf)*beta*dt*dt));
+#endif
 #endif
 
     //---------------------------- compute internal forces and stiffness
@@ -1244,6 +1303,9 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   int    maxiter   = params_.get<int>   ("max iterations"         ,10);
   bool   damping   = params_.get<bool>  ("damping"                ,false);
   double beta      = params_.get<double>("beta"                   ,0.292);
+#ifdef STRUGENALPHA_BE
+  double delta     = params_.get<double>("delta"                  ,beta);
+#endif
   double gamma     = params_.get<double>("gamma"                  ,0.581);
   double alpham    = params_.get<double>("alpha m"                ,0.378);
   double alphaf    = params_.get<double>("alpha f"                ,0.459);
@@ -1280,10 +1342,18 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
+#ifdef STRUGENALPHA_BE
+    stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
+#else
     stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
+#endif
     if (damping)
     {
+#ifdef STRUGENALPHA_BE
+      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(delta*dt),1.0);
+#else
       stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+#endif
     }
     stiff_->Complete();
     //----------------------- apply dirichlet BCs to system of equations
@@ -1427,9 +1497,15 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 #else
     // incremental (required for constant predictor)
     velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+#ifdef STRUGENALPHA_BE
+    velm_->Update((delta-(1.0-alphaf)*gamma)/delta,*vel_,
+                  (1.0-alphaf)*(-gamma-2.*delta*gamma+2.*beta*gamma+2.*delta)*dt/(2.*delta),*acc_,
+                  gamma/(delta*dt));
+#else
     velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
                   (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
                   gamma/(beta*dt));
+#endif
 #endif
     // accelerations
 #ifndef STRUGENALPHA_INCRUPDT
@@ -1440,9 +1516,15 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 #else
     // incremental (required for constant predictor)
     accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+#ifdef STRUGENALPHA_BE
+    accm_->Update(-(1.-alpham)/(delta*dt),*vel_,
+                  (2.*beta-1.+alpham-2.*alpham*beta+2.*alpham*delta)/(2.*delta),*acc_,
+                  (1.-alpham)/((1.-alphaf)*delta*dt*dt));
+#else
     accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
                   (2.*beta-1.+alpham)/(2.*beta),*acc_,
                   (1.-alpham)/((1.-alphaf)*beta*dt*dt));
+#endif
 #endif
 
     //---------------------------- compute internal forces and stiffness
@@ -1553,6 +1635,9 @@ void StruGenAlpha::ModifiedNewton()
   int    maxiter   = params_.get<int>   ("max iterations"         ,10);
   bool   damping   = params_.get<bool>  ("damping"                ,false);
   double beta      = params_.get<double>("beta"                   ,0.292);
+#ifdef STRUGENALPHA_BE
+  double delta     = params_.get<double>("delta"                  ,beta);
+#endif
   double gamma     = params_.get<double>("gamma"                  ,0.581);
   double alpham    = params_.get<double>("alpha m"                ,0.378);
   double alphaf    = params_.get<double>("alpha f"                ,0.459);
@@ -1575,9 +1660,17 @@ void StruGenAlpha::ModifiedNewton()
   int numiter=0;
   //---------------------------------------------- build effective lhs
   // (using matrix stiff_ as effective matrix)
+#ifdef STRUGENALPHA_BE
+  stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
+#else
   stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
+#endif
   if (damping)
+#ifdef STRUGENALPHA_BE
+    stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(delta*dt),1.0);
+#else
     stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+#endif
   stiff_->Complete();
   LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
 
@@ -1615,9 +1708,15 @@ void StruGenAlpha::ModifiedNewton()
 #else
     // incremental (required for constant predictor)
     velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+#ifdef STRUGENALPHA_BE
+    velm_->Update((delta-(1.0-alphaf)*gamma)/delta,*vel_,
+                  (1.0-alphaf)*(-gamma-2.*delta*gamma+2.*beta*gamma+2.*delta)*dt/(2.*delta),*acc_,
+                  gamma/(delta*dt));
+#else
     velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
                   (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
                   gamma/(beta*dt));
+#endif
 #endif
     // accelerations
 #ifndef STRUGENALPHA_INCRUPDT
@@ -1628,9 +1727,15 @@ void StruGenAlpha::ModifiedNewton()
 #else
     // incremental (required for constant predictor)
     accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+#ifdef STRUGENALPHA_BE
+    accm_->Update(-(1.-alpham)/(delta*dt),*vel_,
+                  (2.*beta-1.+alpham-2.*alpham*beta+2.*alpham*delta)/(2.*delta),*acc_,
+                  (1.-alpham)/((1.-alphaf)*delta*dt*dt));
+#else
     accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
                   (2.*beta-1.+alpham)/(2.*beta),*acc_,
                   (1.-alpham)/((1.-alphaf)*beta*dt*dt));
+#endif
 #endif
 
     //----------------------------------------- compute internal forces
@@ -1730,6 +1835,9 @@ void StruGenAlpha::MatrixFreeNewton()
   int    maxiter   = params_.get<int>   ("max iterations"         ,10);
   bool   damping   = params_.get<bool>  ("damping"                ,false);
   double beta      = params_.get<double>("beta"                   ,0.292);
+#ifdef STRUGENALPHA_BE
+  double delta     = params_.get<double>("delta"                  ,beta);
+#endif
   double gamma     = params_.get<double>("gamma"                  ,0.581);
   double alpham    = params_.get<double>("alpha m"                ,0.378);
   double alphaf    = params_.get<double>("alpha f"                ,0.459);
@@ -1774,10 +1882,18 @@ void StruGenAlpha::MatrixFreeNewton()
   {
 
     // (using matrix stiff_ as effective matrix) ----------> test only!!!!!!!
-    stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
+#ifdef STRUGENALPHA_BE
+     stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
+#else
+     stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
+#endif
     if (damping)
     {
+#ifdef STRUGENALPHA_BE
+      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(delta*dt),1.0);
+#else
       stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+#endif
     }
     stiff_->Complete();
 
@@ -1809,9 +1925,15 @@ void StruGenAlpha::MatrixFreeNewton()
 //#else
     // incremental (required for constant predictor)
     velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+#ifdef STRUGENALPHA_BE
+    velm_->Update((delta-(1.0-alphaf)*gamma)/delta,*vel_,
+                  (1.0-alphaf)*(-gamma-2.*delta*gamma+2.*beta*gamma+2.*delta)*dt/(2.*delta),*acc_,
+                  gamma/(delta*dt));
+#else
     velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
                   (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
                   gamma/(beta*dt));
+#endif
 //#endif
     // accelerations
 //#ifndef STRUGENALPHA_INCRUPDT
@@ -1822,9 +1944,15 @@ void StruGenAlpha::MatrixFreeNewton()
 //#else
     // incremental (required for constant predictor)
     accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+#ifdef STRUGENALPHA_BE
+    accm_->Update(-(1.-alpham)/(delta*dt),*vel_,
+                  (2.*beta-1.+alpham-2.*alpham*beta+2.*alpham*delta)/(2.*delta),*acc_,
+                  (1.-alpham)/((1.-alphaf)*delta*dt*dt));
+#else
     accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
                   (2.*beta-1.+alpham)/(2.*beta),*acc_,
                   (1.-alpham)/((1.-alphaf)*beta*dt*dt));
+#endif
 //#endif
 
     //----------------------------------------- compute internal forces
@@ -3111,6 +3239,9 @@ void StruGenAlpha::SetDefaults(ParameterList& params)
   params.set<double>("damping factor K"       ,0.00001);
   params.set<double>("damping factor M"       ,0.00001);
   params.set<double>("beta"                   ,0.292);
+#ifdef STRUGENALPHA_BE
+  params.set<double>("delta"                  ,0.292);
+#endif
   params.set<double>("gamma"                  ,0.581);
   params.set<double>("alpha m"                ,0.378);
   params.set<double>("alpha f"                ,0.459);

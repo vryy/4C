@@ -165,6 +165,9 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<double>("damping factor M",sdyn.get<double>("M_DAMP"));
 
       genalphaparams.set<double>("beta",sdyn.get<double>("BETA"));
+#ifdef STRUGENALPHA_BE
+      genalphaparams.set<double>("delta",sdyn.get<double>("DELTA"));
+#endif
       genalphaparams.set<double>("gamma",sdyn.get<double>("GAMMA"));
       genalphaparams.set<double>("alpha m",sdyn.get<double>("ALPHA_M"));
       genalphaparams.set<double>("alpha f",sdyn.get<double>("ALPHA_F"));

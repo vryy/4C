@@ -49,6 +49,7 @@ Maintainer: Michael Gee
 #undef STRUGENALPHA_INCRUPDT
 #endif
 #endif
+//#define STRUGENALPHA_BE  /* enable backward Euler with alpham=0,alphaf=0,beta=1/2,delta=1 */
 
 using namespace std;
 using namespace Teuchos;
