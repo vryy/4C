@@ -2839,25 +2839,30 @@ void Intersection::updateAForRCIPlane(
 {   
     const int numNodesLine = lineElement->NumNode();
     const int numNodesSurface = 4;
-    Epetra_SerialDenseMatrix surfaceDeriv(2, numNodesSurface);
-    Epetra_SerialDenseMatrix lineDeriv(1,numNodesLine);
-   
-    A.Scale(0.0);
-    shape_function_2D_deriv1(surfaceDeriv,  xsi[0],  xsi[1], DRT::Element::quad4);
-    shape_function_1D_deriv1(lineDeriv, xsi[2], lineElement->Shape());
+//    Epetra_SerialDenseMatrix surfaceDeriv(2, numNodesSurface);
+//    Epetra_SerialDenseMatrix lineDeriv(1,numNodesLine);
+//    shape_function_2D_deriv1(surfaceDeriv,  xsi[0],  xsi[1], DRT::Element::quad4);
+//    shape_function_1D_deriv1(lineDeriv, xsi[2], lineElement->Shape());
     
+    const BlitzMat surfaceDeriv(shape_function_2D_deriv1(xsi[0],  xsi[1], DRT::Element::quad4));
+    const BlitzMat lineDeriv(shape_function_1D_deriv1(xsi[2], lineElement->Shape()));
+    
+    A.Scale(0.0);
     for(int dim=0; dim<3; dim++)
         for(int i=0; i<numNodesSurface; i++)
         {
-            A[dim][0] += plane[i][dim] * surfaceDeriv[i][0];
-            A[dim][1] += plane[i][dim] * surfaceDeriv[i][1];
+//            A[dim][0] += plane[i][dim] * surfaceDeriv[i][0];
+//            A[dim][1] += plane[i][dim] * surfaceDeriv[i][1]; // ???????????????bug??????????? new version gives slighlty different results
+            A[dim][0] += plane[i][dim] * surfaceDeriv(0,i);
+            A[dim][1] += plane[i][dim] * surfaceDeriv(1,i);
         }
         
     for(int i=0; i<numNodesLine; i++)
     {
         const DRT::Node* node = lineElement->Nodes()[i];
         for(int dim=0; dim<3; dim++)
-            A[dim][2] += (-1.0) * node->X()[dim] * lineDeriv[i][0];   
+//            A[dim][2] += (-1.0) * node->X()[dim] * lineDeriv[i][0];
+            A[dim][2] += (-1.0) * node->X()[dim] * lineDeriv(0,i);   
     }        
 }
 
