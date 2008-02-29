@@ -441,7 +441,7 @@ namespace LINALG
              const double scalarA,
              const double scalarB);
 
-    /// Multiply a (transposed) matrix with me (transposed): C = A(^T)*B(^T)
+    /// Multiply a (transposed) matrix with another (transposed): C = A(^T)*B(^T)
     /*!
       Multiply one matrix with another. Both matrices must be completed. Sparsity
       Respective Range, Row and Domain maps of A(^T) and B(^T) have to match.

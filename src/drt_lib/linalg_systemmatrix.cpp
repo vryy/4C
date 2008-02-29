@@ -794,14 +794,15 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::Multiply(const LINALG::SparseMatrix& 
   if (!B.Filled()) dserror("B has to be FillComplete");
 
   // create resultmatrix with correct rowmap
+  const int npr = A.EpetraMatrix()->MaxNumEntries()*B.EpetraMatrix()->MaxNumEntries();
   Teuchos::RCP<LINALG::SparseMatrix> C;
   if (!transA)
-    C = Teuchos::rcp(new SparseMatrix(A.RangeMap(),20,A.explicitdirichlet_,A.savegraph_));
+    C = Teuchos::rcp(new SparseMatrix(A.RangeMap(),npr,A.explicitdirichlet_,A.savegraph_));
   else
-    C = Teuchos::rcp(new SparseMatrix(A.DomainMap(),20,A.explicitdirichlet_,A.savegraph_));
+    C = Teuchos::rcp(new SparseMatrix(A.DomainMap(),npr,A.explicitdirichlet_,A.savegraph_));
 
   int err = EpetraExt::MatrixMatrix::Multiply(*A.sysmat_,transA,*B.sysmat_,transB,*C->sysmat_,completeoutput);
-  if (err) dserror("EpetraExt::MatrixMatrix::Multiply returned err = &d",err);
+  if (err) dserror("EpetraExt::MatrixMatrix::Multiply returned err = %d",err);
 
   return C;
 }
