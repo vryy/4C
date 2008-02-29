@@ -21,6 +21,7 @@ Maintainer: Michael Gee
 #include "linalg_solver.H"
 #include "linalg_mlapi_operator.H"
 #include "simpler_operator.H"
+#include "linalg_systemmatrix.H"
 
 extern "C"
 {
@@ -1087,6 +1088,165 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
 }
 
 
+
+/*----------------------------------------------------------------------*
+ | Multiply matrices A*B                                     mwgee 02/08|
+ *----------------------------------------------------------------------*/
+RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const LINALG::SparseMatrix& A,
+                                             const LINALG::SparseMatrix& B,
+                                             bool complete)
+{ 
+  return MLMultiply(*A.EpetraMatrix(),*B.EpetraMatrix(),complete); 
+}
+
+/*----------------------------------------------------------------------*
+ | Multiply matrices A*B                                     mwgee 02/08|
+ *----------------------------------------------------------------------*/
+//static void CopySortDeleteZeros(const Epetra_CrsMatrix& A, Epetra_CrsMatrix& As);
+RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& A,
+                                             const Epetra_CrsMatrix& B,
+                                             bool complete)
+{
+  // make sure FillComplete was called on the matrices
+  if (!A.Filled()) dserror("A has to be FillComplete");
+  if (!B.Filled()) dserror("B has to be FillComplete");
+
+  // For debugging, it might be helpful when all columns are
+  // sorted and all zero values are wiped from the input:
+  //RCP<Epetra_CrsMatrix> As = CreateMatrix(A.RowMap(),A.MaxNumEntries());
+  //RCP<Epetra_CrsMatrix> Bs = CreateMatrix(B.RowMap(),B.MaxNumEntries());
+  //CopySortDeleteZeros(A,*As);
+  //CopySortDeleteZeros(B,*Bs);
+  ML_Operator* ml_As = ML_Operator_Create(GetML_Comm());
+  ML_Operator* ml_Bs = ML_Operator_Create(GetML_Comm());
+  //ML_Operator_WrapEpetraMatrix(As.get(),ml_As);
+  //ML_Operator_WrapEpetraMatrix(Bs.get(),ml_Bs);
+  ML_Operator_WrapEpetraMatrix(const_cast<Epetra_CrsMatrix*>(&A),ml_As);
+  ML_Operator_WrapEpetraMatrix(const_cast<Epetra_CrsMatrix*>(&B),ml_Bs);
+  ML_Operator* ml_AtimesB = ML_Operator_Create(GetML_Comm());
+  ML_2matmult(ml_As,ml_Bs,ml_AtimesB,ML_CSR_MATRIX);
+  ML_Operator_Destroy(&ml_As);
+  ML_Operator_Destroy(&ml_Bs);
+  // For ml_AtimesB we have to reconstruct the column map in global indexing,
+  // The following is going down to the salt-mines of ML ...
+  int N_local = ml_AtimesB->invec_leng;
+  ML_CommInfoOP* getrow_comm = ml_AtimesB->getrow->pre_comm;
+  if (!getrow_comm) dserror("ML_Operator does not have CommInfo");
+  ML_Comm* comm = ml_AtimesB->comm;
+  if (N_local != B.DomainMap().NumMyElements()) 
+    dserror("Mismatch in local row dimension between ML and Epetra");
+  int N_rcvd  = 0;
+  int N_send  = 0;
+  int flag    = 0;
+  for (int i=0; i<getrow_comm->N_neighbors; i++)
+  {
+    N_rcvd += (getrow_comm->neighbors)[i].N_rcv;
+    N_send += (getrow_comm->neighbors)[i].N_send;
+    if (  ((getrow_comm->neighbors)[i].N_rcv != 0) &&
+       ((getrow_comm->neighbors)[i].rcv_list != NULL) )  flag = 1;
+  }
+  // For some unknown reason, ML likes to have stuff one larger than
+  // neccessary...
+  vector<double> dtemp(N_local+N_rcvd+1);
+  vector<int> cmap(N_local+N_rcvd+1);
+  for (int i=0; i<N_local; ++i)
+  {
+    cmap[i] = B.DomainMap().GID(i);
+    dtemp[i] = (double)cmap[i];
+  }
+  ML_cheap_exchange_bdry(&dtemp[0],getrow_comm,N_local,N_send,comm);
+  if (flag)
+  {
+    int count = N_local;
+    const int neighbors = getrow_comm->N_neighbors;
+    for (int i=0; i<neighbors; i++)
+    {
+      const int nrcv = getrow_comm->neighbors[i].N_rcv;
+      for (int j=0; j<nrcv; j++)
+        cmap[getrow_comm->neighbors[i].rcv_list[j]] = (int)dtemp[count++];
+    }
+  }
+  else 
+    for (int i=0; i<N_local+N_rcvd; ++i) cmap[i] = (int)dtemp[i];
+  dtemp.clear();
+  
+  // we can now determine a matching column map for the result
+  Epetra_Map gcmap(-1,N_local+N_rcvd,&cmap[0],0,A.Comm());
+
+  // Allocate our result matrix and fill it
+  // this is a very generous guess:
+  int guessnpr = A.MaxNumEntries()*B.MaxNumEntries();
+  RCP<Epetra_CrsMatrix> result 
+    = rcp(new Epetra_CrsMatrix(Copy,A.RangeMap(),gcmap,guessnpr,false));
+
+  int allocated=0;
+  int rowlength;
+  double* val=NULL;
+  int* bindx=NULL;
+  const int myrowlength = A.RowMap().NumMyElements();
+  const Epetra_Map& rowmap = A.RowMap();
+  vector<int> gcid(guessnpr);
+  for (int i=0; i<myrowlength; ++i)
+  {
+    const int grid = rowmap.GID(i);
+    // get local row
+    ML_get_matrix_row(ml_AtimesB,1,&i,&allocated,&bindx,&val,&rowlength,0);
+    if (!rowlength) continue;
+    if ((int)gcid.size() < rowlength) gcid.resize(rowlength);
+    for (int j=0; j<rowlength; ++j)
+    {
+      gcid[j] = gcmap.GID(bindx[j]);
+#ifdef DEBUG
+      if (gcid[j]<0) dserror("This is really bad... cannot find gcid");
+#endif
+    }
+#ifdef DEBUG
+    int err = result->InsertGlobalValues(grid,rowlength,val,&gcid[0]);
+    if (err!=0 && err!=1) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d",err);
+#else
+    result->InsertGlobalValues(grid,rowlength,val,&gcid[0]);
+#endif
+  }
+  if (bindx) ML_free(bindx);
+  if (val) ML_free(val);
+  ML_Operator_Destroy(&ml_AtimesB);
+  if (complete) 
+  {
+    int err = result->FillComplete(B.DomainMap(),A.RangeMap());
+    if (err) dserror("Epetra_CrsMatrix::FillComplete returned err=%d",err);
+  }
+  return rcp(new SparseMatrix(result));
+}
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+/*
+static void CopySortDeleteZeros(const Epetra_CrsMatrix& A, Epetra_CrsMatrix& As)
+{
+  vector<int>    scindices(A.MaxNumEntries());
+  vector<double> scvalues(A.MaxNumEntries());
+  for (int i=0; i<A.NumMyRows(); ++i)
+  {
+    int grid = A.RowMap().GID(i);
+    int numentries;
+    double* values;
+    int* indices;
+    A.ExtractMyRowView(i,numentries,values,indices);
+    int snumentries=0;
+    for (int j=0; j<numentries; ++j)
+    {
+      if (values[j]==0.0) continue;
+      scindices[snumentries] = A.ColMap().GID(indices[j]);
+      scvalues[snumentries] = values[j];
+      snumentries++;
+    }
+    ML_az_sort(&scindices[0],snumentries,NULL,&scvalues[0]);
+    int err = As.InsertGlobalValues(grid,snumentries,&scvalues[0],&scindices[0]);
+    if (err) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d",err);
+  }
+  if (A.Filled()) As.FillComplete(A.DomainMap(),A.RangeMap(),true);
+  return;
+}
+*/
 
 
 #endif  // #ifdef CCADISCRET

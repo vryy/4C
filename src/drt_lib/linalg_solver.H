@@ -365,6 +365,65 @@ private:
 }; // class Solver
 
 
+/*!
+\brief Matrix-Matrix Multiply C = A*B using ML
+
+Depending on the structure of your matrix, this method is potentially
+(significantly) faster than the LINALG::Multiply implementations.
+A factor of 5 - 10 in speed has been observed when comparing.
+It uses ML instead of EpetraExt for the multiplication kernel.
+
+<pre>
+                       ***Warning***
+         This method is not well tested (yet) and there is some risk of
+         failure AND wrong results without notice. This depends
+         on structural properties of the input matrices A and B.
+         First: 
+         A,B should NOT contain columns in the
+         column and/or domain map on a processor, 
+         where there is no nonzero entry in that column on a specific processor.
+         This will definitely lead to failure but is a very rare case.
+         Second: 
+         There should not be a row in row/rangemap with no
+         nonzero entry in that row on any processor.
+         Third:
+         Very weirdo column orderings might lead to trouble, but
+         scattered row/column ordering as usually the case in PDE 
+         problems should work fine.
+         Fourth:
+         If you have a choice how to formulate your problem: 
+/pre>
+
+\note The Mat-Mat-Mult kernel used herein
+      was optimized for algebraic multigrid. This means, the method
+      will be significantly faster when B is sparser and/or smaller than A.
+
+\note There is no natural transpose multiply in ML. So if you need a
+      transpose-Multiply you have to transpose outside (or write a wrapper
+      for this method)
+      
+\note ML wipes all exact zero entries in the product. So its perfectly
+      ok if your product has less nonzeros than with the other
+      LINALG::Multiply methods.      
+
+\param A (in)       : Matrix A for C=A*B
+\param B (in)       : Matrix B for C=A*B
+\param complete (in): flag indicating whether C shall be called FillComplete.
+                      There intentionally is NO default value for this here.
+*/
+RCP<SparseMatrix> MLMultiply(const Epetra_CrsMatrix& A,
+                             const Epetra_CrsMatrix& B,
+                             bool complete);
+
+/*!
+\brief Matrix-Matrix Multiply C = A*B using ML
+
+\sa MLMultiply(const Epetra_CrsMatrix& A,const Epetra_CrsMatrix& B,bool complete);
+
+*/
+RCP<SparseMatrix> MLMultiply(const SparseMatrix& A,
+                             const SparseMatrix& B,
+                             bool complete);
 
 
 
