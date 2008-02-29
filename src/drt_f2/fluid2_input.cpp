@@ -113,116 +113,116 @@ bool DRT::ELEMENTS::Fluid2::ReadElement()
 
   // read gaussian points
 
-  if (nnode==4 || nnode==8 || nnode==9)
-  {
-    frint_n("GP",ngp_,2,&ierr);
-    if (ierr!=1) dserror("Reading of FLUID2 element failed: GP\n");
-  }
-
-  // read number of gaussian points for triangle elements */
-  if (nnode==3 || nnode==6)
-  {
-    frint("GP_TRI",&ngp_[0],&ierr);
-    if (ierr!=1) dserror("Reading of FLUID2 element failed: GP_TRI\n");
-
-    frchar("GP_ALT",buffer,&ierr);
-    if (ierr!=1) dserror("Reading of FLUID2 element failed: GP_ALT\n");
-    /*
-     * integration for TRI-elements is distinguished into different cases.
-     * This is necessary to get the right integration parameters from
-     * FLUID_DATA.
-     * The flag for the integration case is saved in nGP[1].
-     * For detailed informations see /fluid3/f3_intg.c.
-     */
-
-    switch(ngp_[0])
-    {
-      case 1:
-        if (strncmp(buffer,"standard",8)==0)
-          ngp_[1]=0;
-        else
-          dserror("Reading of FLUID2 element failed: GP_ALT: gauss-radau not possible!\n");
-        break;
-      case 3:
-        if (strncmp(buffer,"standard",8)==0)
-          ngp_[1]=1;
-        else if (strncmp(buffer,"gaussrad",8)==0)
-          ngp_[1]=2;
-        else
-          dserror("Reading of FLUID2 element failed: GP_ALT\n");
-        break;
-      case 4:
-        if (strncmp(buffer,"standard",8)==0)
-          ngp_[1]=3;
-        else
-          dserror("Reading of FLUID2 element failed: gauss-radau not possible!\n");
-        break;
-      case 6:
-        if (strncmp(buffer,"standard",8)==0)
-          ngp_[1]=4;
-        else if (strncmp(buffer,"gaussrad",8)==0)
-          ngp_[1]=5;
-        else
-          dserror("Reading of FLUID2 element failed: GP_ALT\n");
-        break;
-      case 7:
-        if (strncmp(buffer,"standard",8)==0)
-          ngp_[1]=6;
-        else if (strncmp(buffer,"gaussrad",8)==0)
-          ngp_[1]=7;
-        else
-        dserror("Reading of FLUID2 element failed: GP_ALT\n");
-      case 9:
-        if (strncmp(buffer,"standard",8)==0)
-          ngp_[1]=8;
-        else
-          dserror("Reading of FLUID2 element failed: gauss-radau not possible!\n");
-        break;
-      case 12:
-        if (strncmp(buffer,"standard",8)==0)
-          ngp_[1]=9;
-        else
-          dserror("Reading of FLUID2 element failed: gauss-radau not possible!\n");
-        break;
-      case 13:
-        if (strncmp(buffer,"standard",8)==0)
-          ngp_[1]=10;
-        else
-          dserror("Reading of FLUID2 element failed: gauss-radau not possible!\n");
-        break;
-
-      default:
-        dserror("Reading of FLUID2 element failed: integration points\n");
-    }
-  } // end reading gaussian points for tetrahedral elements
+//  if (nnode==4 || nnode==8 || nnode==9)
+//  {
+//    frint_n("GP",ngp_,2,&ierr);
+//    if (ierr!=1) dserror("Reading of FLUID2 element failed: GP\n");
+//  }
+//
+//  // read number of gaussian points for triangle elements */
+//  if (nnode==3 || nnode==6)
+//  {
+//    frint("GP_TRI",&ngp_[0],&ierr);
+//    if (ierr!=1) dserror("Reading of FLUID2 element failed: GP_TRI\n");
+//
+//    frchar("GP_ALT",buffer,&ierr);
+//    if (ierr!=1) dserror("Reading of FLUID2 element failed: GP_ALT\n");
+//    /*
+//     * integration for TRI-elements is distinguished into different cases.
+//     * This is necessary to get the right integration parameters from
+//     * FLUID_DATA.
+//     * The flag for the integration case is saved in nGP[1].
+//     * For detailed informations see /fluid3/f3_intg.c.
+//     */
+//
+//    switch(ngp_[0])
+//    {
+//      case 1:
+//        if (strncmp(buffer,"standard",8)==0)
+//          ngp_[1]=0;
+//        else
+//          dserror("Reading of FLUID2 element failed: GP_ALT: gauss-radau not possible!\n");
+//        break;
+//      case 3:
+//        if (strncmp(buffer,"standard",8)==0)
+//          ngp_[1]=1;
+//        else if (strncmp(buffer,"gaussrad",8)==0)
+//          ngp_[1]=2;
+//        else
+//          dserror("Reading of FLUID2 element failed: GP_ALT\n");
+//        break;
+//      case 4:
+//        if (strncmp(buffer,"standard",8)==0)
+//          ngp_[1]=3;
+//        else
+//          dserror("Reading of FLUID2 element failed: gauss-radau not possible!\n");
+//        break;
+//      case 6:
+//        if (strncmp(buffer,"standard",8)==0)
+//          ngp_[1]=4;
+//        else if (strncmp(buffer,"gaussrad",8)==0)
+//          ngp_[1]=5;
+//        else
+//          dserror("Reading of FLUID2 element failed: GP_ALT\n");
+//        break;
+//      case 7:
+//        if (strncmp(buffer,"standard",8)==0)
+//          ngp_[1]=6;
+//        else if (strncmp(buffer,"gaussrad",8)==0)
+//          ngp_[1]=7;
+//        else
+//        dserror("Reading of FLUID2 element failed: GP_ALT\n");
+//      case 9:
+//        if (strncmp(buffer,"standard",8)==0)
+//          ngp_[1]=8;
+//        else
+//          dserror("Reading of FLUID2 element failed: gauss-radau not possible!\n");
+//        break;
+//      case 12:
+//        if (strncmp(buffer,"standard",8)==0)
+//          ngp_[1]=9;
+//        else
+//          dserror("Reading of FLUID2 element failed: gauss-radau not possible!\n");
+//        break;
+//      case 13:
+//        if (strncmp(buffer,"standard",8)==0)
+//          ngp_[1]=10;
+//        else
+//          dserror("Reading of FLUID2 element failed: gauss-radau not possible!\n");
+//        break;
+//
+//      default:
+//        dserror("Reading of FLUID2 element failed: integration points\n");
+//    }
+//  } // end reading gaussian points for tetrahedral elements
 
     // read gaussian points and set gaussrule
-    int myngp[2];
-    switch (distype)
-    {
-    case quad4: case quad8: case quad9:
-    {
-        frint_n("GP",myngp,2,&ierr);
-        dsassert(ierr==1, "Reading of FLUID2 element failed: GP\n");
-        switch (myngp[0])
-        {
-        case 1:
-            gaussrule_ = intrule_quad_1point;
-            break;
-        case 2:
-            gaussrule_ = intrule_quad_4point;
-            break;
-        case 3:
-            gaussrule_ = intrule_quad_9point;
-            break;
-        default:
-            dserror("Reading of FLUID2 element failed: Gaussrule for quad not supported!\n");
-        }
-        break;
-    }
-    default:
-        dserror("Reading of FLUID2 element failed: integration points\n");
-    } // end switch distype
+//    int myngp[2];
+//    switch (distype)
+//    {
+//    case quad4: case quad8: case quad9:
+//    {
+//        frint_n("GP",myngp,2,&ierr);
+//        dsassert(ierr==1, "Reading of FLUID2 element failed: GP\n");
+//        switch (myngp[0])
+//        {
+//        case 1:
+//            gaussrule_ = intrule_quad_1point;
+//            break;
+//        case 2:
+//            gaussrule_ = intrule_quad_4point;
+//            break;
+//        case 3:
+//            gaussrule_ = intrule_quad_9point;
+//            break;
+//        default:
+//            dserror("Reading of FLUID2 element failed: Gaussrule for quad not supported!\n");
+//        }
+//        break;
+//    }
+//    default:
+//        dserror("Reading of FLUID2 element failed: GP and set gaussrule\n");
+//    } // end switch distype
 
   
 
