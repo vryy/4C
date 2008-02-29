@@ -1542,12 +1542,12 @@ void Sysmat(
         // gaussian points
         const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_tri_6point);
         
-        // get node coordinates
         //TODO: get the right element
-        //const RCP<DRT::Element> boundaryele = ih->GetBoundaryEle(cell->GetSurfaceEleGid());
-        const DRT::Element* boundaryele = ih->GetBoundaryEle(0);
+        const DRT::Element* boundaryele = ih->GetBoundaryEle(cell->GetSurfaceEleGid());
+        //const DRT::Element* boundaryele = ih->GetBoundaryEle(0);
         //cout << (*boundaryele) << endl;
         
+        // get node coordinates
         const BlitzMat xyze_boundary(DRT::UTILS::PositionArrayBlitz(boundaryele));
 
         // integration loop
@@ -1568,16 +1568,24 @@ void Sysmat(
             const BlitzMat deriv_boundary(DRT::UTILS::shape_function_2D_deriv1(posXiBoundary(0),posXiBoundary(1),boundaryele->Shape()));
             
             // shape functions and their first derivatives
-            const BlitzVec funct_(DRT::UTILS::shape_function<DISTYPE,BlitzVec>(posXiDomain));
-            const BlitzMat deriv_(DRT::UTILS::shape_function_deriv1<DISTYPE,BlitzVec>(posXiDomain));
+            const BlitzVec funct(DRT::UTILS::shape_function<DISTYPE,BlitzVec>(posXiDomain));
+            const BlitzMat deriv(DRT::UTILS::shape_function_deriv1<DISTYPE,BlitzVec>(posXiDomain));
       
             const BlitzVec funct_stress(DRT::UTILS::shape_function_3D(posXiDomain(0),posXiDomain(1),posXiDomain(2),stressdistype));
 
             // position of the gausspoint in physical coordinates
             const BlitzVec gauss_pos_xyz(blitz::sum(funct_boundary(j)*xyze_boundary(i,j),j));
       
-            // get jacobian matrix d x / d \xi
+//            // get jacobian matrix d x / d \xi
+//            static BlitzMat dxyzdrs(3,2);
+//            dxyzdrs = blitz::sum(deriv_boundary(j,k)*xyze_boundary(i,k),k);
+//            
+//            const BlitzMat metric (blitz::sum(dxyzdrs(k,i)*dxyzdrs(k,j),k));
             const BlitzMat metric = computeMetricTensor(xyze_boundary,deriv_boundary);
+            
+            // compute global derivates
+            //const BlitzMat derxy(blitz::sum(dxyzdrs(i,k)*deriv_boundary(k,j),k));
+            //const BlitzMat derxy_stress(blitz::sum(xji(i,k)*deriv_stress(k,j),k));
             
             const double detmetric = sqrt(metric(0,0)*metric(1,1) - metric(0,1)*metric(1,0));
             const double fac = intpoints.qwgt[iquad]*detmetric*detcell;
@@ -1587,8 +1595,14 @@ void Sysmat(
                 dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %lf", ele->Id(), detmetric);
             }
 
+            // compute second global derivative
+            static BlitzMat derxy2(6,numnode,blitz::ColumnMajorArray<2>());
+            derxy2 = 0.;
+
             // after this call, one should only use the enriched shape functions and derivatives!
-            BlitzVec enr_funct_(numparamvelx);
+            BlitzVec enr_funct(numparamvelx);
+            BlitzMat enr_derxy(3,numparamvelx,blitz::ColumnMajorArray<2>());
+            BlitzMat enr_derxy2(6,numparamvelx,blitz::ColumnMajorArray<2>());
             BlitzVec enr_funct_stress(numparamsigmaxx);
             
             // shape function for nodal dofs
@@ -1599,8 +1613,23 @@ void Sysmat(
                     Velx,
                     gauss_pos_xyz,
                     XFEM::Enrichment::approachFromPlus,
-                    funct_,
-                    enr_funct_);
+                    funct,
+                    enr_funct);
+            
+//            // shape function for nodal dofs
+//            XFEM::ComputeEnrichedShapefunction(
+//                    *ele,
+//                    ih,
+//                    dofman,
+//                    Velx,
+//                    gauss_pos_xyz,
+//                    XFEM::Enrichment::approachFromPlus,
+//                    funct,
+//                    derxy,
+//                    derxy2,
+//                    enr_funct,
+//                    enr_derxy,
+//                    enr_derxy2);
 
             // shape functions for element dofs
             XFEM::ComputeEnrichedStressShapefunction(
@@ -1615,14 +1644,20 @@ void Sysmat(
                 
             // perform integration for entire matrix and rhs
             // create vievs on the shape function arrays for easy handling in the assembly process
-            const BlitzVec shp(enr_funct_);
+            const BlitzVec shp(enr_funct);
+//            const BlitzVec shp_dx(enr_derxy(0,_));
+//            const BlitzVec shp_dy(enr_derxy(1,_));
+//            const BlitzVec shp_dz(enr_derxy(2,_));
             const BlitzVec shp_sigma(enr_funct_stress);
             
             // get normal vector (in x coordinates) to surface element at integration point
             const BlitzVec normalvec(computeNormalToBoundaryElement(deriv_boundary, xyze_boundary, posXiBoundary(0), posXiBoundary(1)));
       
             // get velocities (n+g,i) at integration point
-            const BlitzVec velint_(blitz::sum(shp(j)*evelnp(i,j),j));
+            const BlitzVec velint(blitz::sum(shp(j)*evelnp(i,j),j));
+            
+            // get pressure
+            const double press(blitz::sum(shp*eprenp));
 
             // get viscous stress unknowns
             BlitzMat sigma(3,3);
@@ -1631,6 +1666,46 @@ void Sysmat(
             sigma(2,0) = sigma(0,2);                           sigma(2,1) = sigma(1,2);                           sigma(2,2) = blitz::sum(shp_sigma(_)*esigma(2,_));
 
 
+//            // get velocity norm
+//            const double vel_norm = sqrt(blitz::sum(velint*velint));
+//
+//            // normed velocity at element centre
+//            static BlitzVec velino(3);
+//            if (vel_norm>=1e-6)
+//            {
+//                velino = velint/vel_norm;
+//            }
+//            else
+//            {
+//                velino = 0.;
+//                velino(0) = 1;
+//            }
+//
+//            // get streamlength
+//            const double val = blitz::sum(blitz::abs(blitz::sum(velino(j)*derxy(j,i),j)));
+//            const double strle = 2.0/val;
+//
+//            // calculate tau: stabilization parameters for stationary case
+//
+//            // compute tau_Mu
+//            const double re_tau_mu = mk * vel_norm * strle / (2.0 * visc);   /* convective : viscous forces */
+//            const double xi_tau_mu = DMAX(re_tau_mu, 1.0);
+//            const double tau_stab_0 = (DSQR(strle)*mk)/(4.0*visc*xi_tau_mu);
+//
+//            // compute tau_Mp
+//            const double re_tau_mp = mk * vel_norm * hk / (2.0 * visc);      /* convective : viscous forces */
+//            const double xi_tau_mp = DMAX(re_tau_mp,1.0);
+//            const double tau_stab_1 = (DSQR(hk)*mk)/(4.0*visc*xi_tau_mp);
+//
+//            // compute tau_C
+//            const double xi_tau_c = DMIN(re_tau_mp, 1.0);
+//            const double tau_stab_2 = 0.5*vel_norm*hk*xi_tau_c;
+//      
+//            // stabilisation parameter
+//            const double tau_M  = tau_stab_0*fac;
+//            const double tau_Mp = tau_stab_1*fac;
+//            const double tau_C  = tau_stab_2*fac;
+            
 
             /*--------------------------------- now build single stiffness terms ---*/
 
@@ -1655,23 +1730,23 @@ void Sysmat(
             assembler.template Matrix<Sigmazz,Velz>(shp_sigma, fac*normalvec(2), shp);
             
             // i = x
-            assembler.template Vector<Sigmaxx>(shp_sigma, -fac*normalvec(0)*velint_(0));
-            assembler.template Vector<Sigmaxy>(shp_sigma, -fac*normalvec(1)*velint_(0));
-            assembler.template Vector<Sigmaxz>(shp_sigma, -fac*normalvec(2)*velint_(0));
+            assembler.template Vector<Sigmaxx>(shp_sigma, -fac*normalvec(0)*velint(0));
+            assembler.template Vector<Sigmaxy>(shp_sigma, -fac*normalvec(1)*velint(0));
+            assembler.template Vector<Sigmaxz>(shp_sigma, -fac*normalvec(2)*velint(0));
             // i = y
-            assembler.template Vector<Sigmayx>(shp_sigma, -fac*normalvec(0)*velint_(1));
-            assembler.template Vector<Sigmayy>(shp_sigma, -fac*normalvec(1)*velint_(1));
-            assembler.template Vector<Sigmayz>(shp_sigma, -fac*normalvec(2)*velint_(1));
+            assembler.template Vector<Sigmayx>(shp_sigma, -fac*normalvec(0)*velint(1));
+            assembler.template Vector<Sigmayy>(shp_sigma, -fac*normalvec(1)*velint(1));
+            assembler.template Vector<Sigmayz>(shp_sigma, -fac*normalvec(2)*velint(1));
             // i = z            
-            assembler.template Vector<Sigmazx>(shp_sigma, -fac*normalvec(0)*velint_(2));
-            assembler.template Vector<Sigmazy>(shp_sigma, -fac*normalvec(1)*velint_(2));
-            assembler.template Vector<Sigmazz>(shp_sigma, -fac*normalvec(2)*velint_(2));
+            assembler.template Vector<Sigmazx>(shp_sigma, -fac*normalvec(0)*velint(2));
+            assembler.template Vector<Sigmazy>(shp_sigma, -fac*normalvec(1)*velint(2));
+            assembler.template Vector<Sigmazz>(shp_sigma, -fac*normalvec(2)*velint(2));
             
             // symmetric part from partial integration of stress term
             /*
                            /           \
                           |             |
-                        - | v , tau * n |
+                          | v , tau * n |
                           |             |
                            \           /
             */
@@ -1692,13 +1767,41 @@ void Sysmat(
             assembler.template Vector<Vely>(shp, -fac*tau_times_n(1));
             assembler.template Vector<Velz>(shp, -fac*tau_times_n(2));
             
-//            /*
-//                           /         \
-//                          |           |
-//                          | v , Dp n  |
-//                          |           |
-//                           \         /
-//            */
+//            if (pstab)
+//            {
+//                // symmetric part from partial integration of stress term
+//                /*
+//                               /                 \
+//                              |                   |
+//                              | nabla q , tau * n |
+//                              |                   |
+//                               \                 /
+//                */
+//                assembler.template Matrix<Pres,Sigmaxx>(shp_dx, -tau_Mp*normalvec(0), shp_sigma);
+//                assembler.template Matrix<Pres,Sigmaxy>(shp_dx, -tau_Mp*normalvec(1), shp_sigma);
+//                assembler.template Matrix<Pres,Sigmaxz>(shp_dx, -tau_Mp*normalvec(2), shp_sigma);
+//                
+//                assembler.template Matrix<Pres,Sigmayx>(shp_dy, -tau_Mp*normalvec(0), shp_sigma);
+//                assembler.template Matrix<Pres,Sigmayy>(shp_dy, -tau_Mp*normalvec(1), shp_sigma);
+//                assembler.template Matrix<Pres,Sigmayz>(shp_dy, -tau_Mp*normalvec(2), shp_sigma);
+//                
+//                assembler.template Matrix<Pres,Sigmazx>(shp_dz, -tau_Mp*normalvec(0), shp_sigma);
+//                assembler.template Matrix<Pres,Sigmazy>(shp_dz, -tau_Mp*normalvec(1), shp_sigma);
+//                assembler.template Matrix<Pres,Sigmazz>(shp_dz, -tau_Mp*normalvec(2), shp_sigma);
+//                
+//                const BlitzVec tau_times_n(blitz::sum(sigma(i,j)*normalvec(j),j));
+//                assembler.template Vector<Pres>(shp_dx, tau_Mp*tau_times_n(0));
+//                assembler.template Vector<Pres>(shp_dy, tau_Mp*tau_times_n(1));
+//                assembler.template Vector<Pres>(shp_dz, tau_Mp*tau_times_n(2));
+//            }
+            
+            /*
+                           /         \
+                          |           |
+                          | v , Dp n  |
+                          |           |
+                           \         /
+            */
 //            assembler.template Matrix<Velx,Pres>(shp, -fac*normalvec(0), shp);
 //            assembler.template Matrix<Vely,Pres>(shp, -fac*normalvec(1), shp);
 //            assembler.template Matrix<Velz,Pres>(shp, -fac*normalvec(2), shp);

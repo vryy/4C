@@ -333,7 +333,7 @@ public:
 
   */
   virtual Element** Lines() { return NULL; }
-  const Element*const* Lines() const { dserror("unexpected base method called."); return NULL; }
+  //virtual const Element*const* Lines() const { dserror("unexpected base method called."); return NULL; }
 
   /*!
   \brief Get vector of ptrs to the surfaces of this element
@@ -351,7 +351,7 @@ public:
 
   */
   virtual Element** Surfaces() { return NULL; }
-  const Element*const* Surfaces() const { dserror("unexpected base method called."); return NULL; }
+  //virtual const Element*const* Surfaces() const { dserror("unexpected base method called."); return NULL; }
 
   /*!
   \brief Get vector of ptrs to the volumes of this element

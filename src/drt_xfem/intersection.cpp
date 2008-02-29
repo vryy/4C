@@ -1923,7 +1923,8 @@ void Intersection::recoverCurvedInterface(
             	for(int jj=0; jj < 3; jj++)
             		printf("boundary = %f\n",boundaryCoord[ii][jj]);
             	*/
-            const int ele_gid = 1; //TODO: put in the correct number
+            //const int ele_gid = 1; //TODO: put in the correct number
+            const int ele_gid = intersectingCutterElements_[faceMarker]->Id();
             listBoundaryICPerElement.push_back(BoundaryIntCell(DRT::Element::tri6, ele_gid, domainCoord, boundaryCoord));        
          
         }
@@ -2738,7 +2739,7 @@ bool Intersection::computeRecoveryPlane(
         int&                                        lineIndex,
         Epetra_SerialDenseVector&                   xsi,
         const vector<Epetra_SerialDenseVector>&     plane,
-        const DRT::Element*                         surfaceElement
+        DRT::Element*                               surfaceElement
         ) const
 {
     bool    intersection = true;
@@ -2762,7 +2763,7 @@ bool Intersection::computeRecoveryPlane(
         int                         iter = 0;
         const int                   maxiter = 50;
         double                      residual = 1.0;
-        const DRT::Element*         lineElement = surfaceElement->Lines()[i];
+        DRT::Element*               lineElement = surfaceElement->Lines()[i];
         Epetra_SerialDenseMatrix    A(3,3);
         Epetra_SerialDenseVector    b(3);
         Epetra_SerialDenseVector    dx(3);
@@ -3344,7 +3345,7 @@ bool Intersection::findCommonCutterLine(
  *----------------------------------------------------------------------*/   
 int Intersection::findIntersectingSurfaceEdge(
         const DRT::Element*                       xfemElement,
-        const DRT::Element*                       cutterElement,
+        DRT::Element*                             cutterElement,
         const Epetra_SerialDenseVector&           edgeNode1,
         const Epetra_SerialDenseVector&           edgeNode2) const
 {
@@ -3362,7 +3363,7 @@ int Intersection::findIntersectingSurfaceEdge(
     x1[0] = node1[0];
     x2[0] = node2[0];
     
-    const DRT::Element*const* lines = cutterElement->Lines();
+    DRT::Element** lines = cutterElement->Lines();
     for(int i = 0; i < cutterElement->NumLine(); i++)
     {
         const DRT::Element*  lineElement = lines[i];
@@ -3402,7 +3403,7 @@ void Intersection::storeHigherOrderNode(
     const int                                   globalHigherOrderIndex,
     const int                                   lineIndex, 
     Epetra_SerialDenseVector&                   xsi, 
-    const DRT::Element*                         surfaceElement, 
+    DRT::Element*                               surfaceElement, 
     const DRT::Element*                         xfemElement, 
     tetgenio&                                   out
     ) const
@@ -3416,7 +3417,7 @@ void Intersection::storeHigherOrderNode(
     else           
     {   
         xsiLine[0] = xsi[2];
-        const DRT::Element* lineele = surfaceElement->Lines()[lineIndex];
+        DRT::Element* lineele = surfaceElement->Lines()[lineIndex];
         elementToCurrentCoordinates(lineele, xsiLine);
         for(int i=0; i<3; i++)
             xsi[i] = xsiLine[i];
