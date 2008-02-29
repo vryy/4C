@@ -236,7 +236,7 @@ void PostProblem::setup_filter(string control_file_name, string output_name)
   strcpy(allfiles.outputfile_name+length-8, ".post.log");
   allfiles.out_err = fopen(allfiles.outputfile_name, "w");
 
-  parse_control_file(&control_table_, (char*)control_file_name.c_str());
+  parse_control_file(&control_table_, control_file_name.c_str());
 
   /*
    * Now that we've read the control file given by the user we have to
@@ -318,7 +318,7 @@ void PostProblem::setup_filter(string control_file_name, string output_name)
     table = &temp_table;
 
     /* read the previous control file */
-    parse_control_file(table, (char*)control_file_name.c_str());
+    parse_control_file(table, control_file_name.c_str());
     printf("read restarted control file: %s\n", control_file_name.c_str());
 
     /* find the previous results */

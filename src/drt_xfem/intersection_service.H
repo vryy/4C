@@ -261,6 +261,21 @@ namespace XFEM
     
     
     /*!
+    \brief compares two points (overloaded method)
+
+    \param point1       (in)    : first point   (double*)
+    \param point2       (in)    : second point  (double*)
+    \param lenght       (in)    : length of arrays
+    \return true if both points equal each other, false otherwise
+    */
+    bool comparePointsN( 
+        const double*     point1,
+        const double*     point2,
+        const int         length
+        );
+    
+    
+    /*!
      \brief compares two points (overloaded method)
  
      \param point1       (in)    : first point   (vector<double>)
@@ -270,21 +285,6 @@ namespace XFEM
      bool comparePoints( 
          const vector<double>&     point1,
          const double*             point2
-         );
-     
-     
-     /*!
-     \brief compares two points (overloaded method)
- 
-     \param point1       (in)    : first point   (double*)
-     \param point2       (in)    : second point  (double*)
-     \param lenght       (in)    : length of arrays
-     \return true if both points equal each other, false otherwise
-     */
-     bool comparePoints( 
-         const double*     point1,
-         const double*     point2,
-         const int         length
          );
      
      

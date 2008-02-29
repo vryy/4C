@@ -1714,7 +1714,7 @@ bool DRT::ELEMENTS::XFluid3::checkRewinding() const
   Epetra_SerialDenseMatrix    xyze(NSD,iel);
   DRT::UTILS::shape_function_3D_deriv1(deriv,intpoints.qxg[0][0],intpoints.qxg[0][1],intpoints.qxg[0][2],distype);
   // get node coordinates
-  const DRT::Node** nodes = this->Nodes();
+  const DRT::Node*const* nodes = this->Nodes();
   for (int inode=0; inode<iel; inode++)
   {
     const double* x = nodes[inode]->X();

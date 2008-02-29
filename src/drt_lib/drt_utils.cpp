@@ -927,7 +927,7 @@ blitz::Array<double,2> DRT::UTILS::PositionArrayBlitz(
 {
     const int numnode = ele->NumNode();
     blitz::Array<double,2> xyze(3,numnode,blitz::ColumnMajorArray<2>());
-    const Node** nodes = ele->Nodes();
+    const Node*const* nodes = ele->Nodes();
     if (nodes == NULL)
     {
         dserror("element has no nodal pointers, so getting a position array doesn't make sense!");
@@ -949,7 +949,7 @@ Epetra_SerialDenseMatrix DRT::UTILS::PositionArray(
 {
     const int numnode = ele->NumNode();
     Epetra_SerialDenseMatrix xyze(3,numnode);
-    const Node** nodes = ele->Nodes();
+    const Node*const* nodes = ele->Nodes();
     if (nodes == NULL)
     {
         dserror("element has no nodal pointers, so getting a position array doesn't make sense!");

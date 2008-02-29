@@ -313,8 +313,8 @@ public:
   \return Ptr to pointers to nodes of the element in local nodal ordering.
           Returns NULL if pointers to not exist.
   */
-  virtual inline const Node** Nodes() const
-  { if (node_.size()) return (const DRT::Node**)(&node_[0]); else return NULL; }
+  virtual inline const Node*const* Nodes() const
+  { if (node_.size()) return (const DRT::Node*const*)(&node_[0]); else return NULL; }
 
 
   /*!
@@ -333,7 +333,7 @@ public:
 
   */
   virtual Element** Lines() { return NULL; }
-  virtual const Element** Lines() const { dserror("unexpected base method called."); return NULL; }
+  const Element*const* Lines() const { dserror("unexpected base method called."); return NULL; }
 
   /*!
   \brief Get vector of ptrs to the surfaces of this element
@@ -351,7 +351,7 @@ public:
 
   */
   virtual Element** Surfaces() { return NULL; }
-  virtual const Element** Surfaces() const { dserror("unexpected base method called."); return NULL; }
+  const Element*const* Surfaces() const { dserror("unexpected base method called."); return NULL; }
 
   /*!
   \brief Get vector of ptrs to the volumes of this element

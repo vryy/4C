@@ -156,8 +156,8 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
 
 #endif         
         
-        DRT::Element** xfemElementSurfaces = xfemElement->Surfaces();
-        DRT::Element** xfemElementLines = xfemElement->Lines();
+        const DRT::Element*const* xfemElementSurfaces = xfemElement->Surfaces();
+        const DRT::Element*const* xfemElementLines = xfemElement->Lines();
         
         if(cutterElementMap.find(xfemElement->LID()) != cutterElementMap.end())
         {
@@ -171,8 +171,8 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
         {
             DRT::Element* cutterElement = (*i);
             if(cutterElement == NULL) dserror("cutter element is null\n");
-            DRT::Element*const* cutterElementLines = cutterElement->Lines();
-            DRT::Node*const* cutterElementNodes = cutterElement->Nodes();
+            const DRT::Element*const* cutterElementLines = cutterElement->Lines();
+            const DRT::Node*const* cutterElementNodes = cutterElement->Nodes();
             
             numInternalPoints_= 0; 
             numBoundaryPoints_ = 0;
@@ -1056,7 +1056,7 @@ int Intersection::addIntersectionPoint(
     vector<InterfacePoint>::iterator it;
     bool alreadyInList = false;
     for(it = interfacePoints.begin(); it != interfacePoints.end(); it++ )  
-        if(comparePoints(ip.coord, it->coord,3))   
+        if(comparePointsN(ip.coord, it->coord,3))   
         {   
             //printf("alreadyinlist = true\n");
             alreadyInList = true;
@@ -1727,7 +1727,7 @@ void Intersection::storeSurfacePoints(
         {
             for(unsigned int jj = numXFEMCornerNodes_; jj < pointList_.size(); jj++ )
             {
-                if(comparePoints(interfacePoints[i].coord, pointList_[jj].coord, 3)) 
+                if(comparePointsN(interfacePoints[i].coord, pointList_[jj].coord, 3)) 
                 {
                     bool alreadyInList = false;
                     for(int kk = 0; kk < numXFEMSurfaces_; kk++)
@@ -2738,7 +2738,7 @@ bool Intersection::computeRecoveryPlane(
         int&                                        lineIndex,
         Epetra_SerialDenseVector&                   xsi,
         const vector<Epetra_SerialDenseVector>&     plane,
-        DRT::Element*                               surfaceElement
+        const DRT::Element*                         surfaceElement
         ) const
 {
     bool    intersection = true;
@@ -2886,7 +2886,7 @@ void Intersection::updateRHSForRCIPlane(
             b[dim] -= plane[i][dim] * surfaceFunct(i);
         }
     
-    const DRT::Node** lineNodes = lineElement->Nodes();
+    const DRT::Node*const* lineNodes = lineElement->Nodes();
     for(int i=0; i<numNodesLine; i++)
     { 
         const double* pos = lineNodes[i]->X();
@@ -3274,8 +3274,8 @@ bool Intersection::findCommonCutterLine(
 {
     bool comparison = false;
     // get line arrays, which are computed onthe fly within the cutter elements
-    DRT::Element** lines1 = intersectingCutterElements_[faceIndex1]->Lines();
-    DRT::Element** lines2 = intersectingCutterElements_[faceIndex2]->Lines();
+    const DRT::Element*const* lines1 = intersectingCutterElements_[faceIndex1]->Lines();
+    const DRT::Element*const* lines2 = intersectingCutterElements_[faceIndex2]->Lines();
 
     const int numLines1 = intersectingCutterElements_[faceIndex1]->NumLine(); 
     const int numLines2 = intersectingCutterElements_[faceIndex2]->NumLine(); 
@@ -3302,21 +3302,20 @@ bool Intersection::findCommonCutterLine(
                 comparison = true;
                 for(int k  = 0; k < numNodes; k++)
                 {
-                    DRT::Node* node1;
-                    DRT::Node* node2;
                     if(k==2)
                     {
-                        node1 = lines1[i]->Nodes()[k];
-                        node2 = lines2[j]->Nodes()[k];
+                        const DRT::Node* node1 = lines1[i]->Nodes()[k];
+                        const DRT::Node* node2 = lines2[j]->Nodes()[k];
+                        if(!comparePoints(node1, node2))
+                            comparison = false;
                     }
                     else
                     {
-                        node1 = lines1[i]->Nodes()[k];
-                        node2 = lines2[j]->Nodes()[1-k];
+                        const DRT::Node* node1 = lines1[i]->Nodes()[k];
+                        const DRT::Node* node2 = lines2[j]->Nodes()[1-k];
+                        if(!comparePoints(node1, node2))
+                            comparison = false;
                     }
-                    
-                    if(!comparePoints(node1, node2))
-                        comparison = false;
                 }   
             }
             
@@ -3345,7 +3344,7 @@ bool Intersection::findCommonCutterLine(
  *----------------------------------------------------------------------*/   
 int Intersection::findIntersectingSurfaceEdge(
         const DRT::Element*                       xfemElement,
-        DRT::Element*                             cutterElement,
+        const DRT::Element*                       cutterElement,
         const Epetra_SerialDenseVector&           edgeNode1,
         const Epetra_SerialDenseVector&           edgeNode2) const
 {
@@ -3363,7 +3362,7 @@ int Intersection::findIntersectingSurfaceEdge(
     x1[0] = node1[0];
     x2[0] = node2[0];
     
-    DRT::Element*const* lines = cutterElement->Lines();
+    const DRT::Element*const* lines = cutterElement->Lines();
     for(int i = 0; i < cutterElement->NumLine(); i++)
     {
         const DRT::Element*  lineElement = lines[i];
@@ -3403,7 +3402,7 @@ void Intersection::storeHigherOrderNode(
     const int                                   globalHigherOrderIndex,
     const int                                   lineIndex, 
     Epetra_SerialDenseVector&                   xsi, 
-    DRT::Element*                               surfaceElement, 
+    const DRT::Element*                         surfaceElement, 
     const DRT::Element*                         xfemElement, 
     tetgenio&                                   out
     ) const

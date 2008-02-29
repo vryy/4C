@@ -7489,7 +7489,7 @@ void tetgenmesh::tetalldihedral(point pa, point pb, point pc, point pd,
     }
   }
 
-  for (i = 0; i < 6; i++) {
+  for (i = 0; i < 6; ++i) {
     switch (i) {
     case 0: f1 = 2; f2 = 3; break; // edge ab.
     case 1: f1 = 0; f2 = 3; break; // edge bc.

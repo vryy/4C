@@ -194,7 +194,7 @@ void destroy_map(MAP* map)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-static INT map_cmp_nodes(MAP_NODE* lhs, CHAR* rhs_key)
+static INT map_cmp_nodes(const MAP_NODE* lhs, const CHAR* rhs_key)
 {
   return strcmp(lhs->key, rhs_key);
 }
@@ -210,7 +210,7 @@ static INT map_cmp_nodes(MAP_NODE* lhs, CHAR* rhs_key)
   \date 09/04
 */
 /*----------------------------------------------------------------------*/
-static MAP_NODE* map_find_node(MAP* map, CHAR* key)
+static MAP_NODE* map_find_node(MAP* map, const CHAR* key)
 {
   MAP_NODE* node;
 
@@ -267,7 +267,7 @@ end:
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-SYMBOL* map_find_symbol(const MAP* map, const CHAR* key)
+SYMBOL* map_find_symbol(MAP* map, const CHAR* key)
 {
   MAP_NODE* node;
   SYMBOL* symbol = NULL;
@@ -296,7 +296,7 @@ SYMBOL* map_find_symbol(const MAP* map, const CHAR* key)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-INT map_find_string(const MAP* map, const CHAR* key, CHAR** string)
+INT map_find_string(MAP* map, const CHAR* key, CHAR** string)
 {
   SYMBOL* symbol;
   INT ret;
@@ -323,7 +323,7 @@ INT map_find_string(const MAP* map, const CHAR* key, CHAR** string)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-INT map_find_int(const MAP* map, const CHAR* key, INT* integer)
+INT map_find_int(MAP* map, const CHAR* key, INT* integer)
 {
   SYMBOL* symbol;
   INT ret;
@@ -350,7 +350,7 @@ INT map_find_int(const MAP* map, const CHAR* key, INT* integer)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-INT map_find_real(const MAP* map, const CHAR* key, DOUBLE* real)
+INT map_find_real(MAP* map, const CHAR* key, DOUBLE* real)
 {
   SYMBOL* symbol;
   INT ret;
@@ -377,7 +377,7 @@ INT map_find_real(const MAP* map, const CHAR* key, DOUBLE* real)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-INT map_find_map(const MAP* map, const CHAR* key, MAP** dir)
+INT map_find_map(MAP* map, const CHAR* key, MAP** dir)
 {
   SYMBOL* symbol;
   INT ret;
@@ -406,7 +406,7 @@ INT map_find_map(const MAP* map, const CHAR* key, MAP** dir)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-CHAR* map_read_string(const MAP* map, const CHAR* key)
+CHAR* map_read_string(MAP* map, const CHAR* key)
 {
   CHAR* string;
 #ifdef DEBUG
@@ -434,7 +434,7 @@ CHAR* map_read_string(const MAP* map, const CHAR* key)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-INT map_read_int(const MAP* map, const CHAR* key)
+INT map_read_int(MAP* map, const CHAR* key)
 {
   INT integer;
 #ifdef DEBUG
@@ -462,7 +462,7 @@ INT map_read_int(const MAP* map, const CHAR* key)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-DOUBLE map_read_real(const MAP* map, const CHAR* key)
+DOUBLE map_read_real(MAP* map, const CHAR* key)
 {
   DOUBLE real;
 #ifdef DEBUG
@@ -490,7 +490,7 @@ DOUBLE map_read_real(const MAP* map, const CHAR* key)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-MAP* map_read_map(const MAP* map, const CHAR* key)
+MAP* map_read_map(MAP* map, const CHAR* key)
 {
   MAP* dir;
 #ifdef DEBUG
@@ -516,7 +516,7 @@ MAP* map_read_map(const MAP* map, const CHAR* key)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-INT map_has_string(const MAP* map, const CHAR* key, const CHAR* value)
+INT map_has_string(MAP* map, const CHAR* key, const CHAR* value)
 {
   SYMBOL* symbol;
   CHAR* string;
@@ -552,7 +552,7 @@ INT map_has_string(const MAP* map, const CHAR* key, const CHAR* value)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-INT map_has_int(const MAP* map, const CHAR* key, const INT value)
+INT map_has_int(MAP* map, const CHAR* key, const INT value)
 {
   SYMBOL* symbol;
   INT integer;
@@ -588,7 +588,7 @@ INT map_has_int(const MAP* map, const CHAR* key, const INT value)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-INT map_has_real(const MAP* map, const CHAR* key, const DOUBLE value)
+INT map_has_real(MAP* map, const CHAR* key, const DOUBLE value)
 {
   SYMBOL* symbol;
   DOUBLE real;
@@ -626,7 +626,7 @@ INT map_has_real(const MAP* map, const CHAR* key, const DOUBLE value)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-INT map_has_map(const MAP* map, const CHAR* key)
+INT map_has_map(MAP* map, const CHAR* key)
 {
   SYMBOL* symbol;
   INT ret;
@@ -957,16 +957,15 @@ void map_insert_map_cpy(MAP* map, MAP* dir, CHAR* key)
   \date 09/04
 */
 /*----------------------------------------------------------------------*/
-INT map_symbol_count(MAP* map, CHAR* key)
+INT map_symbol_count(MAP* map, const CHAR* key)
 {
   INT count = 0;
-  MAP_NODE* node;
 
 #ifdef DEBUG
   dstrc_enter("map_symbol_count");
 #endif
 
-  node = map_find_node(map, key);
+  const MAP_NODE* node = map_find_node(map, key);
   if (node != NULL) {
     count = node->count;
   }
@@ -991,15 +990,14 @@ INT map_symbol_count(MAP* map, CHAR* key)
   \date 12/04
 */
 /*----------------------------------------------------------------------*/
-void map_disconnect_symbols(MAP* map, CHAR* key)
+void map_disconnect_symbols(MAP* map, const CHAR* key)
 {
-  MAP_NODE* node;
 
 #ifdef DEBUG
   dstrc_enter("map_disconnect_symbols");
 #endif
 
-  node = map_find_node(map, key);
+  MAP_NODE* node = map_find_node(map, key);
   if (node != NULL) {
     node->symbol = NULL;
     node->count = 0;
@@ -1024,7 +1022,7 @@ void map_disconnect_symbols(MAP* map, CHAR* key)
   \date 12/04
 */
 /*----------------------------------------------------------------------*/
-void map_prepend_symbols(MAP* map, CHAR* key, SYMBOL* symbol, INT count)
+void map_prepend_symbols(MAP* map, const CHAR* key, SYMBOL* symbol, INT count)
 {
   MAP_NODE* node;
 
@@ -1144,6 +1142,7 @@ INT symbol_get_string(const SYMBOL* symbol, CHAR** string)
     ret = 1;
   }
   else {
+    *string = "";
     ret = 0;
   }
 
@@ -1175,6 +1174,7 @@ INT symbol_get_int(const SYMBOL* symbol, INT* integer)
     ret = 1;
   }
   else {
+    *integer = 0;
     ret = 0;
   }
 
@@ -1206,6 +1206,7 @@ INT symbol_get_real(const SYMBOL* symbol, DOUBLE* real)
     ret = 1;
   }
   else {
+    *real = 0.0;
     ret = 0;
   }
 
@@ -1236,6 +1237,7 @@ INT symbol_get_real_as_float(const SYMBOL* symbol, float* real)
     ret = 1;
   }
   else {
+    *real = 0.0;
     ret = 0;
   }
 
@@ -1267,6 +1269,7 @@ INT symbol_get_map(const SYMBOL* symbol, MAP** map)
     ret = 1;
   }
   else {
+    *map = NULL;
     ret = 0;
   }
 
@@ -1544,7 +1547,7 @@ typedef struct _PARSER_DATA {
 
   CHAR* file_buffer;
   INT file_size;
-  CHAR* filename;
+  /*CHAR* filename;*/
 
   INT pos;
   INT lineno;
@@ -1563,7 +1566,7 @@ typedef struct _PARSER_DATA {
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-static void init_parser_data(struct _PARSER_DATA* data, CHAR* filename)
+static void init_parser_data(struct _PARSER_DATA* data, const CHAR* filename)
 {
 #ifdef DEBUG
   dstrc_enter("init_parser_data");
@@ -1577,7 +1580,7 @@ static void init_parser_data(struct _PARSER_DATA* data, CHAR* filename)
 
   /* No copy here. Valid only as long as the calling functions
    * filename is valid. */
-  data->filename = filename;
+  /*data->filename = filename;*/
 
   /* We need to have the information on all processes. That's why we
    * read the file on process 0 and broadcast it. The other way would
@@ -2054,7 +2057,7 @@ end:
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-void parse_control_file(MAP* map, CHAR* filename)
+void parse_control_file(MAP* map, const CHAR* filename)
 {
   PARSER_DATA data;
 

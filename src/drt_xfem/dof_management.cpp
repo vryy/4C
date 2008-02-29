@@ -132,7 +132,7 @@ XFEM::ElementDofManager::ElementDofManager(
     // count number of parameters per field
     // define local position of unknown by looping first over nodes and then over its unknowns!
     int counter = 0;
-    const DRT::Node** const nodes = ele.Nodes();
+    const DRT::Node*const* nodes = ele.Nodes();
     for (int inode=0; inode<ele.NumNode(); ++inode)
     {
         const int gid = nodes[inode]->Id();

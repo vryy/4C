@@ -148,7 +148,7 @@ string IO::GMSH::elementToString(
         const double scalar,
         const DRT::Element* ele)
 {
-    const DRT::Node** nodes = ele->Nodes();
+    const DRT::Node*const* nodes = ele->Nodes();
     
     const DRT::Element::DiscretizationType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);
@@ -178,7 +178,7 @@ string IO::GMSH::elementToString(
         const vector<double>& scalarfield,
         const DRT::Element* ele)
 {
-    const DRT::Node** nodes = ele->Nodes();
+    const DRT::Node*const* nodes = ele->Nodes();
     
     const DRT::Element::DiscretizationType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);
@@ -208,7 +208,7 @@ string IO::GMSH::elementToString(
         const vector<vector<double> >& vectorfield,
         const DRT::Element*            ele)
 {
-    const DRT::Node** nodes = ele->Nodes();
+    const DRT::Node*const* nodes = ele->Nodes();
     
     const DRT::Element::DiscretizationType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);

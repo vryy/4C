@@ -873,7 +873,7 @@ class Intersection
             int&                                        lineIndex,
             Epetra_SerialDenseVector&                   xsi,
             const vector<Epetra_SerialDenseVector>&     plane,
-            DRT::Element*                               surfaceElement
+            const DRT::Element*                         surfaceElement
             ) const;
             
          
@@ -1097,7 +1097,7 @@ class Intersection
         */             
         int findIntersectingSurfaceEdge(
             const DRT::Element*                       xfemElement,
-            DRT::Element*                             cutterElement,
+            const DRT::Element*                             cutterElement,
             const Epetra_SerialDenseVector&           edgeNode1,
             const Epetra_SerialDenseVector&           edgeNode2
             ) const;
@@ -1121,7 +1121,7 @@ class Intersection
             const int                                   globalHigherOrderIndex,
             const int                                   lineIndex, 
             Epetra_SerialDenseVector&                   xsi,
-            DRT::Element*                               surfaceElement, 
+            const DRT::Element*                         surfaceElement,
             const DRT::Element*                         xfemElement, 
             tetgenio&                                   out
             ) const;

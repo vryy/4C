@@ -170,31 +170,31 @@ void destroy_map(MAP* map);
 
 /* Find the first symbol with the given key. Use this if you have to
  * travel all symbols with that key. */
-SYMBOL* map_find_symbol(const MAP* map, const CHAR* key);
+SYMBOL* map_find_symbol(MAP* map, const CHAR* key);
 
 
 /* Find the last symbols value. The value has to be of the given
- * type. Returns false on failture. */
-INT map_find_string(const MAP* map, const CHAR* key, CHAR** string);
-INT map_find_int(const MAP* map, const CHAR* key, INT* integer);
-INT map_find_real(const MAP* map, const CHAR* key, DOUBLE* real);
-INT map_find_map(const MAP* map, const CHAR* key, MAP** dir);
+ * type. Returns false on failure. */
+INT map_find_string(MAP* map, const CHAR* key, CHAR** string);
+INT map_find_int(MAP* map, const CHAR* key, INT* integer);
+INT map_find_real(MAP* map, const CHAR* key, DOUBLE* real);
+INT map_find_map(MAP* map, const CHAR* key, MAP** dir);
 
 
 /* Find the last symbols value. The value has to be of the given
  * type. Calls dserror on failture. */
-CHAR* map_read_string(const MAP* map, const CHAR* key);
-INT map_read_int(const MAP* map, const CHAR* key);
-DOUBLE map_read_real(const MAP* map, const CHAR* key);
-MAP* map_read_map(const MAP* map, const CHAR* key);
+CHAR* map_read_string(MAP* map, const CHAR* key);
+INT map_read_int(MAP* map, const CHAR* key);
+DOUBLE map_read_real(MAP* map, const CHAR* key);
+MAP* map_read_map(MAP* map, const CHAR* key);
 
 
 /* Tell whether there is a symbol with given key and value. Only the
  * last symbol with that key is checked. */
-INT map_has_string(const MAP* map, const CHAR* key, const CHAR* value);
-INT map_has_int(const MAP* map, const CHAR* key, const INT value);
-INT map_has_real(const MAP* map, const CHAR* key, const DOUBLE value);
-INT map_has_map(const MAP* map, const CHAR* key);
+INT map_has_string(MAP* map, const CHAR* key, const CHAR* value);
+INT map_has_int(MAP* map, const CHAR* key, const INT value);
+INT map_has_real(MAP* map, const CHAR* key, const DOUBLE value);
+INT map_has_map(MAP* map, const CHAR* key);
 
 
 /* Insert a new symbol. */
@@ -212,15 +212,15 @@ void map_insert_map_cpy(MAP* map, MAP* dir, CHAR* key);
 
 
 /* Tell the number of symbols under this key. */
-INT map_symbol_count(MAP* map, CHAR* key);
+INT map_symbol_count(MAP* map, const CHAR* key);
 
 
 /* Take a symbol chain out of the map. Leave the symbol alive. */
-void map_disconnect_symbols(MAP* map, CHAR* key);
+void map_disconnect_symbols(MAP* map, const CHAR* key);
 
 
 /* Prepend the symbol chain to one under the given key. */
-void map_prepend_symbols(MAP* map, CHAR* key, SYMBOL* symbol, INT count);
+void map_prepend_symbols(MAP* map, const CHAR* key, SYMBOL* symbol, INT count);
 
 
 /* Tell whether this symbol has the given type. */
@@ -252,7 +252,7 @@ void symbol_print(FILE* f, CHAR* key, SYMBOL* symbol, INT indent);
 
 
 /* Read the control file given by name. Put its contents into the map. */
-void parse_control_file(MAP* map, CHAR* filename);
+void parse_control_file(MAP* map, const CHAR* filename);
 
 
 #endif

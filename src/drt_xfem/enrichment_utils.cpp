@@ -71,7 +71,7 @@ void XFEM::ComputeEnrichedShapefunction(
             actpos,
             approachdirection);
     
-    const DRT::Node** const nodes = ele.Nodes();
+    const DRT::Node*const* nodes = ele.Nodes();
     
     int dofcounter = 0;
     for (int inode=0; inode<ele.NumNode(); ++inode)
@@ -124,7 +124,7 @@ void XFEM::ComputeEnrichedShapefunction(
     
     const blitz::Range _  = blitz::Range::all();
     
-    const DRT::Node** const nodes = ele.Nodes();
+    const DRT::Node*const* nodes = ele.Nodes();
     
     int dofcounter = 0;
     for (int inode=0; inode<ele.NumNode(); ++inode)
@@ -179,7 +179,7 @@ void XFEM::ComputeEnrichedShapefunction(
     
     const blitz::Range _  = blitz::Range::all();
     
-    const DRT::Node** const nodes = ele.Nodes();
+    const DRT::Node*const* nodes = ele.Nodes();
     
     int dofcounter = 0;
     for (int inode=0; inode<ele.NumNode(); ++inode)

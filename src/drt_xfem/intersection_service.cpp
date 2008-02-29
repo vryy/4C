@@ -256,7 +256,7 @@ void XFEM::elementToCurrentCoordinates(
         
     xsi.Scale(0.0);
     
-    const DRT::Node** const nodes = element->Nodes();
+    const DRT::Node*const* nodes = element->Nodes();
     for(int i=0; i<numNodes; i++)
     {
         const double* pos = nodes[i]->X();
@@ -594,7 +594,7 @@ bool XFEM::currentToElementCoordinates(
  |          overloaded method:                                          |
  |          double*  and  double*                                       |
  *----------------------------------------------------------------------*/  
-bool XFEM::comparePoints(    
+bool XFEM::comparePointsN(    
     const double*     point1,
     const double*     point2,
     const int         length) 
