@@ -131,7 +131,7 @@ int DRT::ELEMENTS::Soh8Surface::EvaluateNeumann(ParameterList&           params,
         if (!ortho_value) dserror("no orthopressure value given!");
         vector<double> unrm(NUMDIM_SOH8);
         soh8_surface_integ(&funct,&drs,&unrm,&xscurr,gpcoord(gpid,0),gpcoord(gpid,1));
-        double fac = (-1.0) * gpweight * curvefac;   // integration factor
+        double fac = (-1.0) * gpweight * drs * curvefac;   // integration factor
         // distribute over element load vector
         for (int nodid=0; nodid < 4; ++nodid) {
           for(int dim=0; dim < NUMDIM_SOH8; ++dim) {
