@@ -22,6 +22,7 @@ Maintainer: Michael Gee
 #include <Epetra_CrsMatrix.h>
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
+#include "Epetra_Time.h"
 
 #include "ml_MultiLevelPreconditioner.h"
 
@@ -30,6 +31,19 @@ Maintainer: Michael Gee
 #include "linalg_systemmatrix.H"
 #include "linalg_solver.H"
 #include "linalg_utils.H"
+
+#include "MLAPI_Error.h"
+#include "MLAPI_CompObject.h"
+#include "MLAPI_TimeObject.h"
+#include "MLAPI_Operator.h"
+#include "MLAPI_Operator_Utils.h"
+#include "MLAPI_MultiVector.h"
+#include "MLAPI_InverseOperator.h"
+#include "MLAPI_Expressions.h"
+#include "MLAPI_BaseOperator.h"
+#include "MLAPI_Workspace.h"
+#include "MLAPI_Aggregation.h"
+#include "MLAPI_Eig.h"
 
 using namespace std;
 using namespace Teuchos;
@@ -166,7 +180,9 @@ private:
   /*!
   \brief setup phase of preconditioner
   */
-  void Setup(RCP<Epetra_CrsMatrix> A);
+  void Setup(RCP<Epetra_CrsMatrix> A,
+             const ParameterList& origvlist,
+             const ParameterList& origplist);
 
   /*!
   \brief do one sweep of simple or simplec preconditioning

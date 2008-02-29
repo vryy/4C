@@ -21,6 +21,7 @@ Maintainer: Michael Gee
 #define CHEAPSIMPLE_ALGORITHM 1    // 1: AMG          0: true solve
 #define SIMPLER_ALGORITHM     0    // 1: triple solve 0: double solve
 #define SIMPLER_ALPHA         1.0  // simple pressure damping parameter
+#define SIMPLER_TIMING        1    // printout timing of setup
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 02/08|
  *----------------------------------------------------------------------*/
@@ -38,7 +39,7 @@ LINALG::SIMPLER_Operator::SIMPLER_Operator(RCP<Epetra_CrsMatrix> A,
   // preconditioner when we do the subblock solvers
   if (vlist_.isSublist("SIMPLER")) vlist_.remove("SIMPLER");
 
-  Setup(A);
+  Setup(A,velocitylist,pressurelist);
 
   return;
 }
@@ -47,14 +48,21 @@ LINALG::SIMPLER_Operator::SIMPLER_Operator(RCP<Epetra_CrsMatrix> A,
 /*----------------------------------------------------------------------*
  |  (private)                                                mwgee 02/08|
  *----------------------------------------------------------------------*/
-void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_CrsMatrix> A)
+void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_CrsMatrix> A,
+                                     const ParameterList& origvlist,
+                                     const ParameterList& origplist)
 {
+  const int myrank = A->Comm().MyPID();
+  Epetra_Time time(A->Comm());
+  Epetra_Time totaltime(A->Comm());
+  
   // see whether velocity and pressure solver where configured as ML
   bool visml = vlist_.isSublist("ML Parameters");
   bool pisml = plist_.isSublist("ML Parameters");
   if (!visml) dserror("SIMPLER only works with ML-AMG for velocity");
 
   // get # dofs per node from vlist_ and split row map
+  time.ResetStartTime();
   const int ndofpernode = vlist_.sublist("ML Parameters").get<int>("PDE equations",0);
   if (ndofpernode != 4 && ndofpernode !=3) dserror("You should have either 3 or 4 dofs per node at this point");
   const Epetra_Map& fullmap = A->RowMap();
@@ -75,11 +83,19 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_CrsMatrix> A)
   maps[1] = rcp(new Epetra_Map(-1,nlnode,&pgid[0],0,fullmap.Comm()));
   vgid.clear(); pgid.clear();
   mmex_.Setup(fullmap,maps);
+  if (!myrank && SIMPLER_TIMING) printf("--- Time to split map       %10.3E\n",time.ElapsedTime());
+  time.ResetStartTime();
 
   // wrap matrix in SparseMatrix and split it into 2x2 BlockMatrix
-  SparseMatrix fullmatrix(A);
-  A_ = fullmatrix.Split<LINALG::DefaultBlockMatrixStrategy>(mmex_,mmex_);
-  A_->Complete();
+  {
+    SparseMatrix fullmatrix(A);
+    A_ = fullmatrix.Split<LINALG::DefaultBlockMatrixStrategy>(mmex_,mmex_);
+    if (!myrank && SIMPLER_TIMING) printf("--- Time to split matrix    %10.3E\n",time.ElapsedTime());
+    time.ResetStartTime();
+    A_->Complete();
+    if (!myrank && SIMPLER_TIMING) printf("--- Time to complete matrix %10.3E\n",time.ElapsedTime());
+    time.ResetStartTime();
+  }
 
   // split nullspace into velocity and pressure subproblem
   if (visml)
@@ -98,6 +114,8 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_CrsMatrix> A)
     vlist_.sublist("ML Parameters").remove("nullspace",false);
     vlist_.sublist("Michael's secret vault").set<RCP<vector<double> > >("velocity nullspace",vnewns);
   }
+  if (!myrank && SIMPLER_TIMING) printf("--- Time to do v nullspace  %10.3E\n",time.ElapsedTime());
+  time.ResetStartTime();
 
   if (pisml)
   {
@@ -109,6 +127,8 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_CrsMatrix> A)
     plist_.sublist("ML Parameters").remove("nullspace",false);
     plist_.sublist("Michael's secret vault").set<RCP<vector<double> > >("pressure nullspace",pnewns);
   }
+  if (!myrank && SIMPLER_TIMING) printf("--- Time to do p nullspace  %10.3E\n",time.ElapsedTime());
+  time.ResetStartTime();
 
   // Modify lists to reuse subblock preconditioner at least maxiter times
   {
@@ -148,16 +168,29 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_CrsMatrix> A)
     diagAinv_->Complete(*mmex_.Map(0),*mmex_.Map(0));
   }
 #endif
-
+  if (!myrank && SIMPLER_TIMING) printf("--- Time to do diagF^{-1}   %10.3E\n",time.ElapsedTime());
+  time.ResetStartTime();
 
   // Allocate and compute approximate Schur complement operator S
   // S = A(1,1) - A(1,0) * diagAinv * A(0,1)
   {
+    Epetra_Time ltime(A_->Comm());
     S_ = LINALG::Multiply(*diagAinv_,false,(*A_)(0,1),false,true);
-    S_ = LINALG::Multiply((*A_)(1,0),false,*S_,false,false);
+    //cout << *S_; exit(0);
+    if (!myrank && SIMPLER_TIMING) printf("*** S = diagAinv * A(0,1) %10.3E\n",ltime.ElapsedTime());
+    ltime.ResetStartTime();
+    S_ = LINALG::MLMultiply((*A_)(1,0),*S_,false);
+    if (!myrank && SIMPLER_TIMING) printf("*** S = A(1,0) * S (ML)   %10.3E\n",ltime.ElapsedTime());
+    ltime.ResetStartTime();
     S_->Add((*A_)(1,1),false,1.0,-1.0);
+    if (!myrank && SIMPLER_TIMING) printf("*** S = A(1,1) - S        %10.3E\n",ltime.ElapsedTime());
+    ltime.ResetStartTime();
     S_->Complete((*A_)(1,1).DomainMap(),(*A_)(1,1).RangeMap());
+    if (!myrank && SIMPLER_TIMING) printf("*** S complete            %10.3E\n",ltime.ElapsedTime());
+    ltime.ResetStartTime();
   }
+  if (!myrank && SIMPLER_TIMING) printf("--- Time to do S            %10.3E\n",time.ElapsedTime());
+  time.ResetStartTime();
 
 #if CHEAPSIMPLE_ALGORITHM
   // Allocate preconditioner for pressure and velocity
@@ -166,9 +199,13 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_CrsMatrix> A)
     Pv_ = rcp(new ML_Epetra::MultiLevelPreconditioner(*((*A_)(0,0).EpetraMatrix()),
                                                       vlist_.sublist("ML Parameters"),
                                                       true));
+    if (!myrank && SIMPLER_TIMING) printf("--- Time to do AMG(v)       %10.3E\n",time.ElapsedTime());
+    time.ResetStartTime();
     Pp_ = rcp(new ML_Epetra::MultiLevelPreconditioner(*(S_->EpetraMatrix()),
                                                       plist_.sublist("ML Parameters"),
                                                       true));
+    if (!myrank && SIMPLER_TIMING) printf("--- Time to do AMG(p)       %10.3E\n",time.ElapsedTime());
+    time.ResetStartTime();
   }
 #else
   // Allocate solver for pressure and velocity
@@ -191,6 +228,9 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_CrsMatrix> A)
   vwork2_  = LINALG::CreateVector(*mmex_.Map(0),false);
   pwork1_ = LINALG::CreateVector(*mmex_.Map(1),false);
   pwork2_ = LINALG::CreateVector(*mmex_.Map(1),false);
+
+  if (!myrank && SIMPLER_TIMING) printf("--- Time to do allocate mem %10.3E\n",time.ElapsedTime());
+  if (!myrank && SIMPLER_TIMING) printf("=== Total simpler setup === %10.3E\n",totaltime.ElapsedTime());
 
   return;
 }
