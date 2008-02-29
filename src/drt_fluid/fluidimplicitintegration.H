@@ -264,7 +264,8 @@ protected:
   IO::DiscretizationWriter&         output_;
   int                           myrank_;
   bool                          alefluid_;
-
+  bool                          dynamic_smagorinsky_;
+  
   double time_;
   int step_;
   int stepmax_;

@@ -40,14 +40,14 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   solver_ (solver),
   params_ (params),
   output_ (output),
+  alefluid_(alefluid),
   density_(1.0),
   time_(0.0),
   step_(0),
-  alefluid_(alefluid),
-  restartstep_(0),
   uprestart_(params.get("write restart every", -1)),
-  writestep_(0),
-  upres_(params.get("write solution every", -1))
+  restartstep_(0),
+  upres_(params.get("write solution every", -1)),
+  writestep_(0)
 {
 
   // -------------------------------------------------------------------

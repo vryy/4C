@@ -1002,7 +1002,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           params.get<RefCountPtr<Epetra_MultiVector> >("col_filtered_modeled_subgrid_stress");
 
         const int numnode = this->NumNode();
-        blitz::Array<double, 2> evelaf_hat                           (3,numnode,blitz::ColumnMajorArray<2>());
+        blitz::Array<double, 2> evelaf_hat                           (3  ,numnode,blitz::ColumnMajorArray<2>());
         blitz::Array<double, 3> ereynoldsstress_hat                  (3,3,numnode,blitz::ColumnMajorArray<3>());
         blitz::Array<double, 3> efiltered_modeled_subgrid_stress_hat (3,3,numnode,blitz::ColumnMajorArray<3>());
 
@@ -1017,8 +1017,12 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
             
             for (int dimj=0;dimj<3;++dimj)
             {
-              ereynoldsstress_hat                  (dimi,dimj,nn) = (*((*col_filtered_reynoldsstress        )(3*dimi+dimj)))[actnode->LID()];
-              efiltered_modeled_subgrid_stress_hat (dimi,dimj,nn) = (*((*col_filtered_modeled_subgrid_stress)(3*dimi+dimj)))[actnode->LID()];
+              ereynoldsstress_hat                  (dimi,dimj,nn)
+                =
+                (*((*col_filtered_reynoldsstress        )(3*dimi+dimj)))[actnode->LID()];
+              efiltered_modeled_subgrid_stress_hat (dimi,dimj,nn)
+                =
+                (*((*col_filtered_modeled_subgrid_stress)(3*dimi+dimj)))[actnode->LID()];
             }
           }
         }

@@ -1684,6 +1684,9 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
   // compute global derivates
   derxy_ = blitz::sum(xji_(i,k)*deriv_(k,j),k);
 
+    // get velocity (np,i) derivatives at integration point
+  vderxy_ = blitz::sum(derxy_(j,k)*evelnp(i,k),k);
+  
   // get velocity norm
   const double vel_norm = sqrt(blitz::sum(velint_*velint_));
 
@@ -1869,7 +1872,8 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
       rateofstrain *= 2.0;
       rateofstrain = sqrt(rateofstrain);
     }
-
+//    cout << "Cs_delta_sq " << Cs_delta_sq <<&endl;
+    
     visceff = visc + Cs_delta_sq * rateofstrain;
     
     // for evaluation of statistics: remember the 'real' Cs

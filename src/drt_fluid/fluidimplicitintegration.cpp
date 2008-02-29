@@ -202,21 +202,114 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   // Nonlinear iteration increment vector
   incvel_       = LINALG::CreateVector(*dofrowmap,true);
 
-  // initialise vectors for dynamic Smagorinsky model
-  // ------------------------------------------------
+  // initialise vectors and flags for (dynamic) Smagorinsky model
+  // ------------------------------------------------------------
   //
   // (the smoothed quantities)
   //
+  dynamic_smagorinsky_ = false;
 
-  if (params_.sublist("TURBULENCE MODEL").get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
+  ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+
+  
+  if (modelparams->get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
       ==
       "CLASSICAL_LES")
   {
-    if(params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+    // a canonical flow with homogeneous directions would allow a
+    // spatial averaging of data
+    string special_flow
+      =
+      modelparams->get<string>("CANONICAL_FLOW","no");
+    
+    string hom_plane
+      =
+      modelparams->get<string>("CHANNEL_HOMPLANE","not specified");
+    
+
+    if (myrank_ == 0)
+    {
+    
+      // Underresolved DNS, traditional LES (Smagorinsky type), RANS?
+      // including consistecy checks
+      cout << "Turbulence approach        : ";
+      cout << modelparams->get<string>("TURBULENCE_APPROACH");
+      cout << &endl << &endl;
+      
+      if(modelparams->get<string>("TURBULENCE_APPROACH")
+         ==
+         "RANS")
+      {
+        dserror("RANS approaches not implemented yet\n");
+      }
+      else if(modelparams->get<string>("TURBULENCE_APPROACH")
+              ==
+              "CLASSICAL_LES")
+      {
+        string physmodel = modelparams->get<string>("PHYSICAL_MODEL");
+        
+        cout << "                             ";
+        cout << physmodel;
+        cout << &endl;
+      
+        if (physmodel == "Smagorinsky")
+        {
+          cout << "                             " ;
+          cout << "with Smagorinsky constant Cs= ";
+          cout << modelparams->get<double>("C_SMAGORINSKY") ;
+        }
+        else if(physmodel == "Smagorinsky_with_van_Driest_damping")
+        {
+          if (special_flow != "channel_flow_of_height_2"
+              ||
+              hom_plane != "xz")
+          {
+            dserror("The van Driest damping is only implemented for a channel flow with wall \nnormal direction y");
+          }
+          
+          cout << "                             "          ;
+          cout << "- Smagorinsky constant:   Cs   = "      ;
+          cout << modelparams->get<double>("C_SMAGORINSKY");
+          cout << &endl;
+          
+          cout << "                             "          ;
+          cout << "- viscous length      :   l_tau= "      ;
+          cout << modelparams->get<double>("CHANNEL_L_TAU");
+          cout << &endl;
+        }
+        else if(physmodel == "Dynamic_Smagorinsky")
+        {
+          if (special_flow != "channel_flow_of_height_2"
+              ||
+              hom_plane != "xz")
+          {
+            cout << "      no homogeneous directions specified --- so we use just clipping for Cs\n";
+          }
+        }
+        cout << &endl;
+      }
+      
+      if (special_flow == "channel_flow_of_height_2")
+      {
+        cout << "                             " ;
+        cout << "Turbulence statistics are evaluated ";
+        cout << "for a turbulent channel flow.\n";
+        cout << "                             " ;
+        cout << "The solution is averaged over the homogeneous ";
+        cout << hom_plane;
+        cout << " plane and over time.\n";
+      }
+      cout << &endl;
+      cout << &endl;
+    }
+    
+    if(modelparams->get<string>("PHYSICAL_MODEL","no_model")
        ==
        "Dynamic_Smagorinsky"
       )
     {
+      dynamic_smagorinsky_ = true;
+        
       // get a vector layout from the discretization to construct
 
       const Epetra_Map* noderowmap    = discret_->NodeRowMap();
@@ -730,22 +823,9 @@ void FluidImplicitTimeInt::NonlinearSolve()
            !=
            "L_2_norm_without_residual_at_itemax"))
       {
-        ParameterList turbparams = params_.sublist("TURBULENCE MODEL");
-
-        string turbulence_approach
-          =
-          turbparams.get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES");
-        
-        if (turbulence_approach == "CLASSICAL_LES")
+        if (dynamic_smagorinsky_)
         {
-          string turbulence_phys_mod
-            =
-            turbparams.get<string>("PHYSICAL_MODEL","no_model");
-          
-          if(turbulence_phys_mod == "Dynamic_Smagorinsky")
-          {
-            this->ApplyFilterForDynamicComputationOfCs();
-          }
+          this->ApplyFilterForDynamicComputationOfCs();
         }
       }
       
@@ -925,7 +1005,12 @@ void FluidImplicitTimeInt::NonlinearSolve()
       {
         printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |      --      |      --      |",
                itnum,itemax,ittol,vresnorm,presnorm);
-        printf(" (      --     ,te=%10.3E,tf=%10.3E)\n",dtele_,dtfilter_);
+        printf(" (      --     ,te=%10.3E",dtele_);
+        if (dynamic_smagorinsky_)
+        {
+          printf(",tf=%10.3E",dtfilter_);
+        }
+        printf(")\n");
       }
     }
     /* ordinary case later iteration steps:
@@ -945,7 +1030,12 @@ void FluidImplicitTimeInt::NonlinearSolve()
           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
                  itnum,itemax,ittol,vresnorm,presnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-          printf(" (ts=%10.3E,te=%10.3E,tf=%10.3E)\n",dtsolve_,dtele_,dtfilter_);
+          printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
+          if (dynamic_smagorinsky_)
+          {
+            printf(",tf=%10.3E",dtfilter_);
+          }
+          printf(")\n");
           printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
 
           FILE* errfile = params_.get<FILE*>("err file",NULL);
@@ -964,7 +1054,12 @@ void FluidImplicitTimeInt::NonlinearSolve()
           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
                  itnum,itemax,ittol,vresnorm,presnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-          printf(" (ts=%10.3E,te=%10.3E,tf=%10.3E)\n",dtsolve_,dtele_,dtfilter_);
+          printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
+          if (dynamic_smagorinsky_)
+          {
+            printf(",tf=%10.3E",dtfilter_);
+          }
+          printf(")\n");
         }
     }
 
