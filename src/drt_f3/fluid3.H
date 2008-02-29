@@ -416,7 +416,7 @@ protected:
 
 private:
   //! factor including Smagorinsky's constant
-  double                                        cs_delta_sq_;
+  double                                        Cs_delta_sq_;
   
   //! matrices of subscale acceleration values in gausspoints of this element
   blitz::Array<double,2>                        sub_acc_old_;

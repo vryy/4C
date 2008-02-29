@@ -207,6 +207,7 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   //
   // (the smoothed quantities)
   //
+
   if (params_.sublist("TURBULENCE MODEL").get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
       ==
       "CLASSICAL_LES")
@@ -769,6 +770,12 @@ void FluidImplicitTimeInt::NonlinearSolve()
       {
         eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
       }
+
+      // parameters for stabilization
+      {
+        eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+      }
+
       
       // set vector values needed by elements
       discret_->ClearState();
@@ -918,7 +925,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
       {
         printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |      --      |      --      |",
                itnum,itemax,ittol,vresnorm,presnorm);
-        printf(" (      --     ,te=%10.3E)\n",dtele_);
+        printf(" (      --     ,te=%10.3E,tf=%10.3E)\n",dtele_,dtfilter_);
       }
     }
     /* ordinary case later iteration steps:
@@ -938,7 +945,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
                  itnum,itemax,ittol,vresnorm,presnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-          printf(" (ts=%10.3E,te=%10.3E)\n",dtsolve_,dtele_);
+          printf(" (ts=%10.3E,te=%10.3E,tf=%10.3E)\n",dtsolve_,dtele_,dtfilter_);
           printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
 
           FILE* errfile = params_.get<FILE*>("err file",NULL);
@@ -957,7 +964,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
                  itnum,itemax,ittol,vresnorm,presnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-          printf(" (ts=%10.3E,te=%10.3E)\n",dtsolve_,dtele_);
+          printf(" (ts=%10.3E,te=%10.3E,tf=%10.3E)\n",dtsolve_,dtele_,dtfilter_);
         }
     }
 

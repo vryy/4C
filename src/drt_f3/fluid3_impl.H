@@ -118,6 +118,11 @@ namespace ELEMENTS
                 const enum Fluid3::StabilisationAction   cstab,
                 const enum Fluid3::StabilisationAction   cross,
                 const enum Fluid3::StabilisationAction   reynolds,
+                const enum Fluid3::TurbModelAction       turb_mod_action,
+                double&                                  Cs,
+                double&                                  Cs_delta_sq,
+                double&                                  visceff,
+                double&                                  l_tau,
                 double                                   Cs_fs);
 
   private:
@@ -132,6 +137,11 @@ namespace ELEMENTS
       const DRT::Element::DiscretizationType  distype,
       const double                            visc,
       const double                            timefac,
+      const enum Fluid3::TurbModelAction      turb_mod_action,
+      double&                                 Cs,
+      double&                                 Cs_delta_sq,
+      double&                                 visceff,
+      double&                                 l_tau,
       const int                               fssgv,
       const double                            Cs_fs);
 

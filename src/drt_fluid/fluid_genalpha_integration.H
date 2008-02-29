@@ -32,9 +32,12 @@ In addition to what is described there, we do not evaluate the continuity
 equation time n+alpha_F but at time n+1.
 If the continuity equation is fulfilled exactly at time n, both variants
 are equivalent --- but in the case of a randomly disturbed flow profile,
-which might be used for turbulence calculations, the only fully implicit
+which might be used for turbulence calculations, only the fully implicit
 method would provide consistency with the implicit treatment of the
 pressure.
+
+The method includes additional features required by the FSI adapter
+class.
 
 
 <pre>
@@ -92,13 +95,18 @@ public:
 
   \brief Standard Constructor (public)
 
-  o trigger numbering of dofs
+  o trigger numbering of dofs (including periodic boundaries)
 
   o create empty system matrix and right hand side
 
   o allocate distributed solution vectors
 
   o generate maps to split velocity and pressure dofs
+
+  o set alpha_F and alpha_M
+  
+  o calculate and set gamma parameter for generalised alpha method
+    according to the second order necessary condition
 
   */
   FluidGenAlphaIntegration(
@@ -119,16 +127,12 @@ public:
   /*!
   \brief Do time integration from this step/time to endstep/endtime
 
-  o calculate and set gamma parameter for generalised alpha method
-    according to the second order necessary condition
-
   o Do the timeloop
 
+  o call summary for time monitor
+  
   */
-  void GenAlphaIntegrateTo(
-    int                endstep,
-    double             endtime
-    );
+  void GenAlphaTimeloop();
 
   /*!
   \brief do nonlinear iteration, e.g. Newton like iteration
@@ -142,6 +146,8 @@ public:
   this increment.
 
   Convergence is checked by controlling residual- and increment- norms.
+  In special cases, the residual check in the last iteration could be
+  suppressed
 
   */
   void DoGenAlphaPredictorCorrectorIteration();
@@ -190,11 +196,15 @@ public:
   void GenAlphaCalcInitialAccelerations();
 
 
-
   /*!
   \brief Update the solution after convergence of the nonlinear
          iteration. Current solution becomes old solution of next
          timestep.
+
+         Update ALE displacements in case of ale
+         
+         In case of time dependent subscales, the time update
+         includes an element call.
   */
   void GenAlphaTimeUpdate();
 
@@ -216,7 +226,7 @@ public:
 
 
   /*!
-  \brief Do console output
+  \brief Do console output, what is specified by input string
 
   */
 
@@ -244,6 +254,11 @@ public:
   /*!
   \brief Assemble systemmatrix and right hand side (residual).
 
+  o For a dynamic Smagorinsky model, the velocity field is
+    filtered using a box filter on element poatches adjacent
+    to the fluid nodes. The filtered fields are used to
+    compute the eddy viscosity --- hex8 only!
+  
   o Zeros out systemmatrix
 
   o Calls elements for assembly
@@ -259,7 +274,8 @@ public:
   o Dirichlet conditions applied in here to be able to use the
     residual for the convergence check
 
-  o the true residual is store in vector force_
+  o the true residual is stored in vector force_ --- used for
+    Dirichlet load computations
 
   */
   void GenAlphaAssembleResidualAndMatrix();
@@ -267,8 +283,10 @@ public:
   /*!
   \brief Solve linear problem.
 
-  The counter itnum of the nonlinear iteration on input allows to
-  do the solver initialisation only in the first step.
+  Enforces to set up new a preconditioner in special cases.
+  
+  Includes dynamic update of tolerances for linear solver according
+  to Michaels ad-hoc scheme.
 
   */
   void GenAlphaCalcIncrement(const double nlnres);
@@ -288,6 +306,8 @@ public:
 
   /*!
   \brief check for convergence of nonlinear iteration
+
+  badestnlnnorm is used for the dynamic setting of the linear solve TOL
 
   */
   bool GenAlphaNonlinearConvergenceCheck(double& badestnlnnorm);
@@ -327,7 +347,19 @@ public:
 
 
   //! @name methods for turbulence models (dynamic Smagorinsky)
+  /*!
+    o Apply the box filter to compute averaged velocities and
+      reynoldsstresses (this is an element call!)
 
+    o Use filtered quantities to compute LijMij, MijMij and
+      thus Cs
+
+    o For turbulent channel flows, averaging of LijMij and
+      MijMij is performed in all homogeneous planes.
+
+    o negative values of Cs are clipped
+  
+  */
   void ApplyFilterForDynamicComputationOfCs();
 
    //@}
@@ -490,192 +522,282 @@ public:
 protected:
 
 private:
-  // input arguments
+  //! @name input arguments of the constructor
+  //
+  //! the discretization
   RCP<DRT::Discretization>  discret_;
+  //! solver object
   LINALG::Solver&           solver_ ;
+  //! parameterlist including time params, stabilization params and turbulence sublist
   ParameterList&            params_ ;
+  //! io writer/reader
   IO::DiscretizationWriter& output_ ;
+  //! decides whether we use an Eulerian or an ALE formulation
+  bool                      alefluid_;
+  //@}
 
-  // the dimension of the problem --- determines which dofs are pressure dofs
+  //! the dimension of the problem --- determines which dofs
+  //are pressure dofs
   int                       numdim_ ;
 
-  // parallelism
+  //! parallelism --- my processor id
   int                       myrank_ ;
 
-  // fluid density
+  //! fluid density
   double                    density_;
   
-  // max. simulation time and max. number of steps
+  //! @name time integration parameters
+  //
+  //! max. number of time steps
   int                       endstep_;
+  //! max. simulation time
   double                    endtime_;
-
-  // current time and step
+  //! current time 
   double                    time_;
+  //! current time step
   int                       step_;
-
-  // current time step size
+  //! current time step size
   double                    dt_;
 
-  // parameters for generalised alpha
-  double                    gamma_;
+  //! parameter for generalised alpha --- alpha "momentum"
   double                    alphaM_;
+  //! parameter for generalised alpha --- alpha "force"
   double                    alphaF_;
+  //! parameter for generalised alpha --- computed from the latter
+  //in order to achieve 2nd order accuracy
+  double                    gamma_;
+  //@}
 
-  // parameter for linearisation
+  //! @name parameters for nonlinear iteration
+  //
+  //! parameter for linearisation
   bool                      newton_;
 
-  // parameters governing the nonlinear iteration
+  //! parameters governing the nonlinear iteration --- iteration counter
   int                       itenum_      ;
+  //! parameters governing the nonlinear iteration --- upper bound for
+  //! number of nonlinear iterations
   int                       itemax_      ;
+  //! parameters governing the nonlinear iteration --- convergence criterion
   double                    ittol_       ;
 
-  // this variables are storing error norms
+  // these variables are storing error norms
+  //! L2 error norm --- residual associated with pressure dofs, scaled by density
   double                    L2preresnorm_;
+  //! L2 error norm --- residual associated with acceleration dofs, scaled by density
   double                    L2velresnorm_;
+  //! L2 error norm --- normalized increment in iteration step (velocity dofs)
   double                    L2incvelnorm_;
+  //! L2 error norm --- normalized increment in iteration step (pressure dofs)
   double                    L2incprenorm_;
 
-  // skip the last element call (computation of residual) if
-  // itemax_ is reached in order to get some speedup for turbulence
-  // calculations
+  //! skip the last element call (computation of residual) if
+  //!  itemax_ is reached in order to get some speedup for turbulence
+  //!  calculations
   bool                      skiplastelecall_;
+  //@}
 
-  // decide whether we use an Eulerian or an ALE formulation
-  bool                      alefluid_;
-
+  //! @name IO features
+  
   // write restart every uprestart_ steps --- restartstep_ is
   // the counter used for this purpose
-  int                       restartstep_;
+
+  //! write restart every uprestart_ steps
   int                       uprestart_;
-  int                       writestep_;
+  //! count steps till uprestart_
+  int                       restartstep_;
+  //! write result every upres_ steps
   int                       upres_;
+  //! count steps till upres_
+  int                       writestep_;
 
-  // fine-scale subgrid-viscosity flag
-  int                       fssgv_;
-
-  // turbulence statistics
+  //! turbulence statistics for turbulent channel flow example
   RCP<TurbulenceStatistics> turbulencestatistics_;
+  //@}
 
   
-  // Vectors stating the linear system
-  // ---------------------------------
+  //! @name vectors stating the linear system
+  //        ---------------------------------
   //
-  // (standard) system matrix
+  //! (standard) system matrix
   RCP<LINALG::SparseMatrix> sysmat_;
 
-  // (standard) residual vector (rhs for the incremental form),
+  //! (standard) residual vector (rhs for the incremental form),
   RCP<Epetra_Vector>        residual_;
 
-  // toggle vector indicating which dofs have Dirichlet BCs
+  //! toggle vector indicating which dofs have Dirichlet BCs
   RCP<Epetra_Vector>        dirichtoggle_;
   
-  // and its inverse
+  //! and its inverse
   RCP<Epetra_Vector>        invdirtoggle_;
   
-  // a vector of zeros to be used to enforce zero dirichlet boundary conditions
+  //! a vector of zeros to be used to enforce zero dirichlet boundary conditions
   RCP<Epetra_Vector>        zeros_;
 
-  // the vector containing body and surface forces
+  //! the vector containing body and surface forces
   RCP<Epetra_Vector>        neumann_loads_;
 
-  // Nonlinear iteration increment vector contains accleeration
-  // and pressure increment
+  //! Nonlinear iteration increment vector contains accleeration
+  //! and pressure increment
   RCP<Epetra_Vector>        increment_;
-  
-  
-  // Force computation on Dirichlet boundaries
-  // -----------------------------------------
-  //
-  // the force vector is a copy of the residual without dirichlet
-  // conditions applied --- probably, for all inner nodes,
-  // "equilibrium" would be a better name - but for the Dirichlet
-  // nodes, this vector contains the consistent (normed) force on
-  // boundary nodes
-  RCP<Epetra_Vector>        force_;
+  //@}
 
   
-  // Vectors for the time integration process
-  // ----------------------------------------
+  //! @name Force computation on Dirichlet boundaries
+  // -----------------------------------------
+  //
+  //! the force vector is a copy of the residual without dirichlet
+  //! conditions applied --- probably, for all inner nodes,
+  //! "equilibrium" would be a better name - but for the Dirichlet
+  //! nodes, this vector contains the consistent (normed) force on
+  //! boundary nodes
+  RCP<Epetra_Vector>        force_;
+  //@}
+  
+  
+  //! @name vectors for the time integration process
+  //        ----------------------------------------
   //
   // acceleration and pressure at time n+1, n and intermediate time step n+alpha_M
   // in all acc vectors, every component associated to a pressure dof is
   // completely meaningless --- the Navier Stokes equations are a differential
   // algebraic equation, there's no evolution equation for the pressure!
+
+  //! acceleration at time n+1
+  //! in accnp_, every component associated to a pressure dof is
+  //! completely meaningless --- the Navier Stokes equations are a differential
+  //! algebraic equation, there's no evolution equation for the pressure!
   RCP<Epetra_Vector>        accnp_;
+  //! acceleration at time n
+  //! in  accn_, every component associated to a pressure dof is
+  //! completely meaningless --- the Navier Stokes equations are a differential
+  //! algebraic equation, there's no evolution equation for the pressure!
   RCP<Epetra_Vector>        accn_;
+  //! acceleration at intermediate time step n+alpha_M
+  //! in accam_, every component associated to a pressure dof is
+  //! completely meaningless --- the Navier Stokes equations are a differential
+  //! algebraic equation, there's no evolution equation for the pressure!
   RCP<Epetra_Vector>        accam_;
 
-  // velocities and pressures at time n+1, n and intermediate time step n+alpha_F
-  // in velaf_, every component associated to a pressure dof is completely
-  // meaningless since the pressure is treated implicitly.
+  //! velocities and pressures at time n+1
   RCP<Epetra_Vector>        velnp_;
+  //! velocities and pressures at time n 
   RCP<Epetra_Vector>        veln_;
+  //! velocities at intermediate time step n+alpha_F
+  //! in velaf_, every component associated to a pressure dof is completely
+  //! meaningless since the pressure is treated implicitly.
   RCP<Epetra_Vector>        velaf_;
 
-  // ALE related stuff: Grid displacements,velocities
+  //! ALE related stuff: grid displacements, time n+1
   RCP<Epetra_Vector>        dispnp_   ;
+  //! ALE related stuff: most recent grid displacements, time n
   RCP<Epetra_Vector>        dispn_    ;
+  //! ALE related stuff: grid velocities, most recent time step n
   RCP<Epetra_Vector>        gridveln_ ;
+  //! ALE related stuff: intermediate grid velocities at time n+af
   RCP<Epetra_Vector>        gridvelaf_;
+  //@}
 
-  // Vectors for the vm3 solver
-  // --------------------------
+  //! @name vm3 solver
+  //        ----------
   //
-  //  // vm3 solver
+  //! vm3 solver
   RCP<VM3_Solver>           vm3_solver_;
 
-  // only necessary for vm3 solver: fine-scale solution vector
+  //! fine-scale solution vector
   RCP<Epetra_Vector>        fsvelaf_;
 
-  // Vectors used for convergence check
-  // ----------------------------------
-  //
+  //! fine-scale subgrid-viscosity flag
+  int                       fssgv_;
+
+  //@}
+
+  //! @name Vectors used for convergence check
+  //         ----------------------------------
+
+  //! extracts velocities and pressure dofs from dofmap
   LINALG::MapExtractor      velpressplitter_;
+  //@}
 
 
-  // connectivity generated from periodic boundary conditions
-  // --------------------------------------------------------
+  //! @name connectivity generated from periodic boundary conditions
+  //         --------------------------------------------------------
   //
-  // (the connection between master and slave nodes on this proc)
+  //! the connection between master and slave nodes on this proc
   map<int,vector<int> >     mapmastertoslave_;
+  //@}
 
-  // Vectors used for filtering (for dynamic Smagorinsky model)
-  // --------------------------
+  //! @name vectors used for filtering (for dynamic Smagorinsky model)
+  //        --------------------------
+
+  //! the box filtered velocities in nodes (3 vectors)
   RCP<Epetra_MultiVector>   filtered_vel_;
+  //! the box filtered reynoldsstresses in nodes (9 vectors)
   RCP<Epetra_MultiVector>   filtered_reynoldsstress_;
+  //! the modeled subgrid stress in nodes (9 vectors)
   RCP<Epetra_MultiVector>   filtered_modeled_subgrid_stress_;
+  //! the filtered vel exported to column map
   RCP<Epetra_MultiVector>   col_filtered_vel_;
+  //! the filtered reystress exported to column map
   RCP<Epetra_MultiVector>   col_filtered_reynoldsstress_;
+  //! the modeled subgrid stresses exported to column map
   RCP<Epetra_MultiVector>   col_filtered_modeled_subgrid_stress_;
 
+  //! for turbulent channel flow, LijMij in averaged in each hom. plane
   RCP<vector<double> >      averaged_LijMij_;
+  //! for turbulent channel flow, MijMij in averaged in each hom. plane
   RCP<vector<double> >      averaged_MijMij_;
+  //! the plane coordinates for the above mentioned averaging procedure
   RCP<vector<double> >      planecoords_;
+  //@}
   
-  // time measurement
-  // ----------------
+  //! @name time measurement
+  //        ----------------
+
+  //! time measurement --- total time
   RCP<Teuchos::Time>                 timedyntot_         ;
+  //! time measurement --- time in constructor
   RCP<Teuchos::Time>                 timedyninit_        ;
+  //! time measurement --- time spent in timeloop
   RCP<Teuchos::Time>                 timedynloop_        ;
+  //! time measurement --- time spent in nonlinear iteration
   RCP<Teuchos::Time>                 timenlnloop_        ;
+  //! time measurement --- time spent on the element loop
   RCP<Teuchos::Time>                 timeeleloop_        ;
+  //! time measurement --- time spent to evaluate dirichlet conditions
   RCP<Teuchos::Time>                 timeevaldirich_     ;
+  //! time measurement --- time spent to apply the dirichlet conditions
+  //! to the system, i.e. to zero out rows and write ones one the
+  //! diagonal elements
   RCP<Teuchos::Time>                 timeapplydirich_    ;
+  //! time to solve the linear problem
   RCP<Teuchos::Time>                 timesolver_         ;
+  //! time required for output
   RCP<Teuchos::Time>                 timeout_            ;
+  //! time for the nonlinear vector update
   RCP<Teuchos::Time>                 timenonlinup_       ;
+  //! time for the call to sysmat_->complete
   RCP<Teuchos::Time>                 timesparsitypattern_;
 
-
+  //! used to add time to timedyntot
   RCP<Teuchos::TimeMonitor>          tm0_ref_ ;
+  //! used to add time to timeevaldirich
   RCP<Teuchos::TimeMonitor>          tm1_ref_ ;
+  //! used to add time to timedynloop
   RCP<Teuchos::TimeMonitor>          tm2_ref_ ;
+  //! used to add time to timeeleloop
   RCP<Teuchos::TimeMonitor>          tm3_ref_ ;
+  //! used to add time to timeapplydirich
   RCP<Teuchos::TimeMonitor>          tm4_ref_ ;
+  //! used to add time to timesolver
   RCP<Teuchos::TimeMonitor>          tm5_ref_ ;
+  //! used to add time to timenlnloop
   RCP<Teuchos::TimeMonitor>          tm6_ref_ ;
+  //! used to add time to timedyninit
   RCP<Teuchos::TimeMonitor>          tm7_ref_ ;
+  //! used to add time to timeout
   RCP<Teuchos::TimeMonitor>          tm8_ref_ ;
+  //! used to add time to timenonlinup 
   RCP<Teuchos::TimeMonitor>          tm9_ref_ ;
 
 #ifdef PERF
@@ -702,10 +824,14 @@ private:
   RefCountPtr<Teuchos::Time>         timeelesysmat_    ;
 #endif
 
+  //! count cpu time for element call on proc
   double                    dtele_;
+  //! count cpu time for solver call on proc
   double                    dtsolve_;
+  //! count cpu time for filtering (in case of a dynamic Smagorinsky model) on proc
   double                    dtfilter_;
 
+  //@}
 
 };
 

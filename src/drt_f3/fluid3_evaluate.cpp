@@ -403,8 +403,20 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
 
   switch(act)
   {
+    //--------------------------------------------------
+    //--------------------------------------------------
+    // the standard one-step-theta implementation
+    //--------------------------------------------------
+    //--------------------------------------------------
       case calc_fluid_systemmat_and_residual:
       {
+        // the number of nodes
+        const int numnode = NumNode();
+
+        //--------------------------------------------------
+        // get all state vectors
+        //--------------------------------------------------
+        // 
         // need current velocity and history vector
         RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velnp");
         RefCountPtr<const Epetra_Vector> hist  = discretization.GetState("hist");
@@ -436,7 +448,6 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         }
 
         // create blitz objects for element arrays
-        const int numnode = NumNode();
         blitz::Array<double, 1> eprenp(numnode);
         blitz::Array<double, 2> evelnp(3,numnode,blitz::ColumnMajorArray<2>());
         blitz::Array<double, 2> evhist(3,numnode,blitz::ColumnMajorArray<2>());
@@ -473,6 +484,43 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           }
         }
 
+        // get fine-scale velocity
+        RCP<const Epetra_Vector> fsvelnp;
+        blitz::Array<double, 2> fsevelnp(3,numnode,blitz::ColumnMajorArray<2>());
+
+        // get flag for (fine-scale) subgrid viscosity (1=yes, 0=no)
+        const int fssgv = params.get<int>("fs subgrid viscosity",0);
+        
+        if (fssgv > 0)
+        {
+          fsvelnp = discretization.GetState("fsvelnp");
+          if (fsvelnp==null) dserror("Cannot get state vector 'fsvelnp'");
+          vector<double> myfsvelnp(lm.size());
+          DRT::UTILS::ExtractMyValues(*fsvelnp,myfsvelnp,lm);
+
+          // get fine-scale velocity and insert into element arrays
+          for (int i=0;i<numnode;++i)
+          {
+            fsevelnp(0,i) = myfsvelnp[0+(i*4)];
+            fsevelnp(1,i) = myfsvelnp[1+(i*4)];
+            fsevelnp(2,i) = myfsvelnp[2+(i*4)];
+          }
+        }
+        else
+        {
+          for (int i=0;i<numnode;++i)
+          {
+            fsevelnp(0,i) = 0.0;
+            fsevelnp(1,i) = 0.0;
+            fsevelnp(2,i) = 0.0;
+          }
+        }
+        
+        //--------------------------------------------------
+        // get all control parameters for time integration
+        // and stabilization
+        //--------------------------------------------------
+        //
         // get control parameter
         const double time = params.get<double>("total time",-1.0);
 
@@ -514,41 +562,164 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         const double timefac = params.get<double>("thsl",-1.0);
         if (timefac < 0.0) dserror("No thsl supplied");
 
-        // get flag for (fine-scale) subgrid viscosity (1=yes, 0=no)
-        const int fssgv = params.get<int>("fs subgrid viscosity",0);
-
-        // get fine-scale velocity
-        RCP<const Epetra_Vector> fsvelnp;
-        blitz::Array<double, 2> fsevelnp(3,numnode,blitz::ColumnMajorArray<2>());
-        if (fssgv > 0)
-        {
-          fsvelnp = discretization.GetState("fsvelnp");
-          if (fsvelnp==null) dserror("Cannot get state vector 'fsvelnp'");
-          vector<double> myfsvelnp(lm.size());
-          DRT::UTILS::ExtractMyValues(*fsvelnp,myfsvelnp,lm);
-
-          // get fine-scale velocity and insert into element arrays
-          for (int i=0;i<numnode;++i)
-          {
-            fsevelnp(0,i) = myfsvelnp[0+(i*4)];
-            fsevelnp(1,i) = myfsvelnp[1+(i*4)];
-            fsevelnp(2,i) = myfsvelnp[2+(i*4)];
-          }
-        }
-        else
-        {
-          for (int i=0;i<numnode;++i)
-          {
-            fsevelnp(0,i) = 0.0;
-            fsevelnp(1,i) = 0.0;
-            fsevelnp(2,i) = 0.0;
-          }
-        }
-
+        // --------------------------------------------------
+        // init fine scale Smagorinsky 
+        // --------------------------------------------------
+        
         // get Smagorinsky model parameter for fine-scale subgrid viscosity
         const double Cs_fs = params.get<double>("fs Smagorinsky parameter",0.0);
 
+        // --------------------------------------------------
+        // set parameters for classical turbulence models
+        // --------------------------------------------------
+        ParameterList& turbmodelparams    = params.sublist("TURBULENCE MODEL");
+
+        // initialise the Smagorinsky constant Cs and the viscous length scale l_tau to zero
+        double Cs            = 0.0;
+        double Cs_delta_sq   = 0.0;
+        double l_tau         = 0.0;
+        double visceff       = 0.0;
+
+        // the default action is no model        
+        TurbModelAction turb_mod_action = no_model;
+      
+        // remember the layer of averaging for the dynamic Smagorinsky model
+        int  nlayer=0;
+        
+        if (turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
+        {
+          string& physical_turbulence_model = turbmodelparams.get<string>("PHYSICAL_MODEL");
+          
+          // --------------------------------------------------
+          // standard constant coefficient Smagorinsky model
+          if (physical_turbulence_model == "Smagorinsky")
+          {
+            // the classic Smagorinsky model only requires one constant parameter
+            turb_mod_action = smagorinsky;
+            Cs              = turbmodelparams.get<double>("C_SMAGORINSKY");
+          }
+          // --------------------------------------------------
+          // Smagorinsky model with van Driest damping
+          else if (physical_turbulence_model == "Smagorinsky_with_van_Driest_damping")
+          {
+            // that's only implemented for turbulent channel flow
+            if (turbmodelparams.get<string>("CANONICAL_FLOW","no")
+                !=
+                "channel_flow_of_height_2")
+            {
+              dserror("van_Driest_damping only for channel_flow_of_height_2\n");
+            }
+
+            // for the Smagorinsky model with van Driest damping, we need
+            // a viscous length to determine the y+ (heigth in wall units)
+            turb_mod_action = smagorinsky_with_wall_damping;
+
+            // get parameters of model
+            Cs              = turbmodelparams.get<double>("C_SMAGORINSKY");
+            l_tau           = turbmodelparams.get<double>("CHANNEL_L_TAU");
+
+            // this will be the y-coordinate of a point in the element interior
+            // we will determine the element layer in which he is contained to
+            // be able to do the output of visceff etc.
+            double center = 0;
+            
+            for(int inode=0;inode<numnode;inode++)
+            {
+              center+=Nodes()[inode]->X()[1];
+            }
+            center/=numnode;
+        
+            // node coordinates of plane to the element layer
+            RefCountPtr<vector<double> > planecoords
+              =
+              turbmodelparams.get<RefCountPtr<vector<double> > >("planecoords_");
+    
+            bool found = false;
+            for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
+            {
+                if(center<(*planecoords)[nlayer+1])
+                {
+                  found = true;
+                  break;
+                }
+                nlayer++;
+            }
+            if (found ==false)
+            {
+              dserror("could not determine element layer");
+            }
+          }
+          // --------------------------------------------------
+          // Smagorinsky model with dynamic Computation of Cs
+          else if (physical_turbulence_model == "Dynamic_Smagorinsky")
+          {
+            turb_mod_action = dynamic_smagorinsky;
+
+            // for turbulent channel flow, use averaged quantities
+            if (turbmodelparams.get<string>("CANONICAL_FLOW","no")
+                ==
+                "channel_flow_of_height_2")
+            {
+              RCP<vector<double> > averaged_LijMij
+                =
+                turbmodelparams.get<RCP<vector<double> > >("averaged_LijMij_");
+              RCP<vector<double> > averaged_MijMij
+                =
+                turbmodelparams.get<RCP<vector<double> > >("averaged_MijMij_");
+              
+              //this will be the y-coordinate of a point in the element interior
+              // here, the layer is determined in order to get the correct
+              // averaged value from the vector of averaged (M/L)ijMij
+              double center = 0;
+              for(int inode=0;inode<numnode;inode++)
+              {
+                center+=Nodes()[inode]->X()[1];
+              }
+              center/=numnode;
+
+              RCP<vector<double> > planecoords
+                =
+                turbmodelparams.get<RCP<vector<double> > >("planecoords_");
+                
+              bool found = false;
+              for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
+              {
+                if(center<(*planecoords)[nlayer+1])
+                {
+                  found = true;
+                  break;
+                }
+                nlayer++;
+              }
+              if (found ==false)
+              {
+                dserror("could not determine element layer");
+              }
+
+              // Cs_delta_sq is set by the averaged quantities              
+              Cs_delta_sq = 0.5 * (*averaged_LijMij)[nlayer]/(*averaged_MijMij)[nlayer] ;
+              
+              // clipping to get algorithm stable
+              if (Cs_delta_sq<0)
+              {
+                Cs_delta_sq=0;
+              }
+            }
+            else
+            {
+              // when no averaging was done, we just keep the calculated (clipped) value
+              Cs_delta_sq = Cs_delta_sq_;
+            }
+          }
+          else
+          {
+            dserror("Up to now, only Smagorinsky (constant coefficient with and without wall function as well as dynamic) is available");
+          }
+        }
+          
+        //--------------------------------------------------
         // wrap epetra serial dense objects in blitz objects
+        //--------------------------------------------------
         blitz::Array<double, 2> estif(elemat1.A(),
                                       blitz::shape(elemat1.M(),elemat1.N()),
                                       blitz::neverDeleteData,
@@ -564,7 +735,9 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
                                          blitz::shape(elevec2.Length()),
                                          blitz::neverDeleteData);
 
+        //--------------------------------------------------
         // calculate element coefficient matrix and rhs     
+        //--------------------------------------------------
         Impl()->Sysmat(this,
                        evelnp,
                        fsevelnp,
@@ -585,8 +758,43 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
                        cstab,
                        cross,
                        reynolds,
+                       turb_mod_action,
+                       Cs,
+                       Cs_delta_sq,
+                       visceff,
+                       l_tau,
                        Cs_fs);
 
+        //--------------------------------------------------
+        // output values of Cs, visceff and Cs_delta_sq
+        //--------------------------------------------------
+        if (turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
+        {
+          string& physical_turbulence_model = turbmodelparams.get<string>("PHYSICAL_MODEL");
+          
+          if (physical_turbulence_model == "Dynamic_Smagorinsky"
+              ||
+              physical_turbulence_model ==  "Smagorinsky_with_van_Driest_damping"
+            )
+          {
+            if (turbmodelparams.get<string>("CANONICAL_FLOW","no")
+                ==
+                "channel_flow_of_height_2")
+            {
+              // Cs was changed in Sysmat (Cs->sqrt(Cs/hk)) to compare it with the standard
+              // Smagorinsky Cs
+              
+              if(this->Owner() == discretization.Comm().MyPID())
+              {
+                (*(turbmodelparams.get<RCP<vector<double> > >("local_Cs_sum")))         [nlayer]+=Cs;
+                (*(turbmodelparams.get<RCP<vector<double> > >("local_Cs_delta_sq_sum")))[nlayer]+=Cs_delta_sq;
+                (*(turbmodelparams.get<RCP<vector<double> > >("local_visceff_sum")))    [nlayer]+=visceff;
+              }
+            }
+          }
+        }
+
+        
         // This is a very poor way to transport the density to the
         // outside world. Is there a better one?
         params.set("density", actmat->m.fluid->density);
@@ -826,11 +1034,11 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
                                                    MijMij,
                                                    center);
 
-        // set cs_delta_sq without averaging (only clipping)
-        cs_delta_sq_ = 0.5 * LijMij / MijMij;
-        if (cs_delta_sq_<0)
+        // set Cs_delta_sq without averaging (only clipping)
+        Cs_delta_sq_ = 0.5 * LijMij / MijMij;
+        if (Cs_delta_sq_<0)
         {
-          cs_delta_sq_= 0;
+          Cs_delta_sq_= 0;
         }
         
         params.set<double>("LijMij",LijMij);
@@ -1169,7 +1377,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
             }
             else
             {
-              Cs_delta_sq = cs_delta_sq_;
+              Cs_delta_sq = Cs_delta_sq_;
             }
           }
           else

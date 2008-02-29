@@ -318,7 +318,7 @@ void dyn_fluid_drt()
     }
 
     // call generalized-alpha time-integration scheme
-    genalphaint.GenAlphaIntegrateTo(fdyn.get<int>("NUMSTEP"),fdyn.get<double>("MAXTIME"));
+    genalphaint.GenAlphaTimeloop();
 
     // do result test if required
     DRT::ResultTestManager testmanager(actdis->Comm());

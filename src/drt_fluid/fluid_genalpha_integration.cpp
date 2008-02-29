@@ -3,7 +3,7 @@
 
 \brief Time integration according to dis. C. Whiting
 
-
+Documentation see header.
 
 
 <pre>
@@ -292,16 +292,8 @@ FluidGenAlphaIntegration::~FluidGenAlphaIntegration()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
-  int                endstep,
-  double             endtime
-  )
+void FluidGenAlphaIntegration::GenAlphaTimeloop()
 {
-  //--------------------------------------------------------------------
-  // set endstep and endtime
-  endstep_ = endstep;
-  endtime_ = endtime;
-
   //--------------------------------------------------------------------
   // do output to screen
   this->GenAlphaEchoToScreen("print start-up info");
@@ -388,7 +380,7 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
     //                    stop criterium for timeloop
     // -------------------------------------------------------------------
 
-    if(step_>=endstep||time_>=endtime)
+    if(step_>=endstep_||time_>=endtime_)
     {
 	stop_timeloop=true;
     }
@@ -538,6 +530,7 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
     // -------------------------------------------------------------------
     // call elements to calculate residual for convergence check and
     // matrix for the next step
+    // skip if the residual check in the last iteration is suppressed
     // -------------------------------------------------------------------
     if(!(itenum_ == itemax_) || !(skiplastelecall_))
     {
@@ -723,6 +716,8 @@ void FluidGenAlphaIntegration::GenAlphaTimeUpdate()
   // for the accelerations
   accn_->Update(1.0,*accnp_ ,0.0);
 
+
+  if(params_.sublist("STABILIZATION").get<string>("TDS")=="time_dependent")
   {
     // create the parameters for the discretization
     ParameterList eleparams;
@@ -1119,6 +1114,9 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   discret_->Evaluate(eleparams,sysmat_,residual_);
   discret_->ClearState();
 
+  // get density
+  density_ = eleparams.get("density", 0.0);
+  
   // end time measurement for element call
   tm3_ref_=null;
 
