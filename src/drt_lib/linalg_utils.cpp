@@ -284,18 +284,23 @@ RCP<Epetra_CrsMatrix> LINALG::Multiply(const Epetra_CrsMatrix& A, bool transA,
   if (!A.Filled()) dserror("A has to be FillComplete");
   if (!B.Filled()) dserror("B has to be FillComplete");
 
+  // do a very coarse guess of nonzeros per row
+  int guessnpr = A.MaxNumEntries()*B.MaxNumEntries();
+
   // create resultmatrix with correct rowmap
   Epetra_CrsMatrix* C = NULL;
   if (!transA)
-    C = new Epetra_CrsMatrix(Copy,A.OperatorRangeMap(),20,false);
+    C = new Epetra_CrsMatrix(Copy,A.OperatorRangeMap(),guessnpr,false);
   else
-    C = new Epetra_CrsMatrix(Copy,A.OperatorDomainMap(),20,false);
+    C = new Epetra_CrsMatrix(Copy,A.OperatorDomainMap(),guessnpr,false);
 
   int err = EpetraExt::MatrixMatrix::Multiply(A,transA,B,transB,*C,complete);
   if (err) dserror("EpetraExt::MatrixMatrix::Multiply returned err = &d",err);
 
   return rcp(C);
 }
+
+
 
 /*----------------------------------------------------------------------*
  | Multiply matrices A*B                                     mwgee 02/08|
