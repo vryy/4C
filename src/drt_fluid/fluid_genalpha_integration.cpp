@@ -605,8 +605,7 @@ void FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
   // apply Dirichlet conditions to velnp
 
   ParameterList eleparams;
-  // action for elements
-  eleparams.set("action","calc_fluid_eleload");
+
   // choose what to assemble
   eleparams.set("assemble matrix 1",false);
   eleparams.set("assemble matrix 2",false);

@@ -624,8 +624,7 @@ void FluidImplicitTimeInt::PrepareTimeStep()
   // -------------------------------------------------------------------
   {
     ParameterList eleparams;
-    // action for elements
-    eleparams.set("action","calc_fluid_eleload");
+
     // choose what to assemble
     eleparams.set("assemble matrix 1",false);
     eleparams.set("assemble matrix 2",false);
@@ -692,7 +691,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
 
   dtsolve_ = 0;
   dtele_   = 0;
-  double   tcpu   ;
+  double   tcpu;
 
   if (myrank_ == 0)
   {
@@ -853,6 +852,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
         discret_->ClearState();
 
         density = eleparams.get("density", 0.0);
+        if (density <= 0.0) dserror("recieved illegal density value");
         
         // finalize the complete matrix
         sysmat_->Complete();
@@ -1874,7 +1874,7 @@ void FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | solve stationary fluid problem   			               gjb 10/07|
+ | solve stationary fluid problem                              gjb 10/07|
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1884,7 +1884,10 @@ void FluidImplicitTimeInt::SolveStationaryProblem()
   // time measurement: time loop (stationary) --- start TimeMonitor tm2
   tm2_ref_ = rcp(new TimeMonitor(*timetimeloop_));
 
-  // set theta to one in order to avoid misuse
+  // override time integration parameters in order to avoid misuse in
+  // NonLinearSolve method below
+  double origdta = dta_;
+  dta_= 1.0;
   theta_ = 1.0;
 
 
@@ -1899,57 +1902,55 @@ void FluidImplicitTimeInt::SolveStationaryProblem()
 
   while (step_< stepmax_)
   {
+   // -------------------------------------------------------------------
+   //              set (pseudo-)time dependent parameters
+   // -------------------------------------------------------------------
+   step_ += 1;
+   time_ += origdta;
+   // -------------------------------------------------------------------
+   //                         out to screen
+   // -------------------------------------------------------------------
+   if (myrank_==0)
+    {
+      printf("Stationary Fluid Solver - STEP = %4d/%4d \n",step_,stepmax_);
+    }
+
     // -------------------------------------------------------------------
-    //              set (pseudo-)time dependent parameters
+    //         evaluate dirichlet and neumann boundary conditions
     // -------------------------------------------------------------------
-       step_ += 1;
-       time_ += dta_;
+   {
+     ParameterList eleparams;
+     
+     // choose what to assemble
+     eleparams.set("assemble matrix 1",false);
+     eleparams.set("assemble matrix 2",false);
+     eleparams.set("assemble vector 1",true);
+     eleparams.set("assemble vector 2",false);
+     eleparams.set("assemble vector 3",false);
+     // other parameters needed by the elements
+     eleparams.set("total time",time_);
+     eleparams.set("delta time",origdta);
+     eleparams.set("thsl",1.0); // no timefac in stationary case
+     eleparams.set("fs subgrid viscosity",fssgv_);
 
-	// -------------------------------------------------------------------
-	//                         out to screen
-	// -------------------------------------------------------------------
-	   if (myrank_==0)
-	   {
-	       printf("Stationary Fluid Solver - STEP = %4d/%4d \n",step_,stepmax_);
-	   }
+     // set vector values needed by elements
+     discret_->ClearState();
+     discret_->SetState("velnp",velnp_);
+     // predicted dirichlet values
+     // velnp then also holds prescribed new dirichlet values
+     // dirichtoggle is 1 for dirichlet dofs, 0 elsewhere
+     discret_->EvaluateDirichlet(eleparams,velnp_,null,null,dirichtoggle_);
+     discret_->ClearState();
 
-	// -------------------------------------------------------------------
-	//         evaluate dirichlet and neumann boundary conditions
-	// -------------------------------------------------------------------
-	   {
-	     ParameterList eleparams;
-	     // action for elements
-	     eleparams.set("action","calc_fluid_eleload");
-	     // choose what to assemble
-	     eleparams.set("assemble matrix 1",false);
-	     eleparams.set("assemble matrix 2",false);
-	     eleparams.set("assemble vector 1",true);
-	     eleparams.set("assemble vector 2",false);
-	     eleparams.set("assemble vector 3",false);
-	     // other parameters needed by the elements
-	     eleparams.set("total time",time_);
-	     eleparams.set("delta time",dta_);
-	     eleparams.set("thsl",1.0); // no timefac in stationary case
-	     eleparams.set("fs subgrid viscosity",fssgv_);
+     // evaluate Neumann b.c.
+     neumann_loads_->PutScalar(0.0);
+     discret_->EvaluateNeumann(eleparams,*neumann_loads_);
+     discret_->ClearState();
+   }
 
-	     // set vector values needed by elements
-	     discret_->ClearState();
-	     discret_->SetState("velnp",velnp_);
-	     // predicted dirichlet values
-	     // velnp then also holds prescribed new dirichlet values
-	     // dirichtoggle is 1 for dirichlet dofs, 0 elsewhere
-	     discret_->EvaluateDirichlet(eleparams,velnp_,null,null,dirichtoggle_);
-	     discret_->ClearState();
-
-	     // evaluate Neumann b.c.
-	     neumann_loads_->PutScalar(0.0);
-	     discret_->EvaluateNeumann(eleparams,*neumann_loads_);
-	     discret_->ClearState();
-	   }
-
-	   // compute an inverse of the dirichtoggle vector
-	   invtoggle_->PutScalar(1.0);
-	   invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
+   // compute an inverse of the dirichtoggle vector
+   invtoggle_->PutScalar(1.0);
+   invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
 
 
     // -------------------------------------------------------------------
@@ -1976,7 +1977,7 @@ void FluidImplicitTimeInt::SolveStationaryProblem()
 
   } // end of time loop
 
-  // end time measurement for time loop (stationary)
+  // end time measurement for pseudo time loop (stationary)
   tm2_ref_ = null;
 
   return;
@@ -2014,13 +2015,13 @@ RefCountPtr<Epetra_Vector> FluidImplicitTimeInt::CalcStresses()
 
      // compute traction values at specified nodes; otherwise do not touch the zero values
      for (int i=0;i<integratedshapefunc->MyLength();i++)
-	  {
-	      if ((*integratedshapefunc)[i] != 0.0)
-	      {
-	         // overwerite integratedshapefunc values with the calculated traction coefficients
-	        (*integratedshapefunc)[i] = (*trueresidual_)[i]/(*integratedshapefunc)[i];
-	      }
-	  }
+     {
+       if ((*integratedshapefunc)[i] != 0.0)
+       {
+         // overwerite integratedshapefunc values with the calculated traction coefficients
+        (*integratedshapefunc)[i] = (*trueresidual_)[i]/(*integratedshapefunc)[i];
+       }
+     }
 
      // compute traction values at nodes   ---not used any more-----
      // component-wise calculation:  traction := 0.0*traction + 1.0*(trueresidual_ / integratedshapefunc_)
