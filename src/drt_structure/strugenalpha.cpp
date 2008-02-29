@@ -131,6 +131,7 @@ maxentriesperrow_(81)
     // other parameters needed by the elements
     p.set("total time",time);
     p.set("delta time",dt);
+    p.set("damping factor M",mdamp);
 
     // set vector values needed by elements
     discret_.ClearState();
@@ -248,6 +249,7 @@ void StruGenAlpha::ConstantPredictor()
   // -------------------------------------------------------------------
   double time        = params_.get<double>("total time"     ,0.0);
   double dt          = params_.get<double>("delta time"     ,0.01);
+  double mdamp       = params_.get<double>("damping factor M",0.0);
   int    step        = params_.get<int>   ("step"           ,0);
   bool   damping     = params_.get<bool>  ("damping"        ,false);
   double alphaf      = params_.get<double>("alpha f"        ,0.459);
@@ -279,6 +281,7 @@ void StruGenAlpha::ConstantPredictor()
     // other parameters needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
+    p.set("damping factor M",mdamp);
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("displacement",disn_);
@@ -421,6 +424,7 @@ void StruGenAlpha::MatrixFreeConstantPredictor()
   // -------------------------------------------------------------------
   double time        = params_.get<double>("total time"     ,0.0);
   double dt          = params_.get<double>("delta time"     ,0.01);
+  double mdamp       = params_.get<double>("damping factor M",0.0);
   int    step        = params_.get<int>   ("step"           ,0);
   bool   damping     = params_.get<bool>  ("damping"        ,false);
   double alphaf      = params_.get<double>("alpha f"        ,0.459);
@@ -452,6 +456,7 @@ void StruGenAlpha::MatrixFreeConstantPredictor()
     // other parameters needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
+    p.set("damping factor M",mdamp);
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("displacement",disn_);
@@ -577,6 +582,7 @@ void StruGenAlpha::ConsistentPredictor()
   // -------------------------------------------------------------------
   double time        = params_.get<double>("total time"     ,0.0);
   double dt          = params_.get<double>("delta time"     ,0.01);
+  double mdamp       = params_.get<double>("damping factor M",0.0);
   int    step        = params_.get<int>   ("step"           ,0);
   bool   damping     = params_.get<bool>  ("damping"        ,false);
   double alphaf      = params_.get<double>("alpha f"        ,0.459);
@@ -614,6 +620,7 @@ void StruGenAlpha::ConsistentPredictor()
     // other parameters needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
+    p.set("damping factor M",mdamp);
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("displacement",disn_);
@@ -821,6 +828,7 @@ void StruGenAlpha::ApplyExternalForce(const LINALG::MapExtractor& extractor,
   // -------------------------------------------------------------------
   double time        = params_.get<double>("total time"     ,0.0);
   double dt          = params_.get<double>("delta time"     ,0.01);
+  double mdamp       = params_.get<double>("damping factor M",0.0);
   int    step        = params_.get<int>   ("step"           ,0);
   bool   damping     = params_.get<bool>  ("damping"        ,false);
   double alphaf      = params_.get<double>("alpha f"        ,0.459);
@@ -841,6 +849,7 @@ void StruGenAlpha::ApplyExternalForce(const LINALG::MapExtractor& extractor,
     // other parameters needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
+    p.set("damping factor M",mdamp);
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("displacement",disn_);
