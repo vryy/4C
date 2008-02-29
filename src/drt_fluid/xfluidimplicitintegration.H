@@ -233,6 +233,18 @@ public:
   */
   void LiftDrag() const;
 
+  /*!
+  //
+  //! @name methods for turbulence models (dynamic Smagorinsky)
+
+  \brief filter quantities for dynamic Smagorinsky model.
+         Compute averaged values for LijMij and MijMij.
+
+  */
+  void ApplyFilterForDynamicComputationOfCs();
+    
+  //@}
+
   /// integrate shape functions at nodes marked by condition
   /*!
     Needed for Mortar coupling at the FSI interface

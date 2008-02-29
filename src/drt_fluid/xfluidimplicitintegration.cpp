@@ -115,8 +115,8 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
-  PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(discret_);
-  pbc.UpdateDofsForPeriodicBoundaryConditions();
+  pbc_ = rcp(new PeriodicBoundaryConditions (discret_));
+  pbc_->UpdateDofsForPeriodicBoundaryConditions();
 
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled()) discret_->FillComplete();
@@ -755,9 +755,7 @@ void XFluidImplicitTimeInt::NonlinearSolve()
 
   dtsolve_ = 0;
   dtele_   = 0;
-  double   tcpu   ;
-
-
+  double   tcpu;
 
   // compute Intersection
   RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(discret_,cutterdiscret_));
@@ -810,6 +808,36 @@ void XFluidImplicitTimeInt::NonlinearSolve()
       // add Neumann loads
       residual_->Update(1.0,*neumann_loads_,0.0);
 
+      // Filter velocity for dynamic Smagorinsky model --- this provides
+      // the necessary dynamic constant
+      // //
+      // convergence check at itemax is skipped for speedup if
+      // CONVCHECK is set to L_2_norm_without_residual_at_itemax
+      if ((itnum != itemax)
+          ||
+          (params_.get<string>("CONVCHECK","L_2_norm")
+           !=
+           "L_2_norm_without_residual_at_itemax"))
+      {
+        ParameterList turbparams = params_.sublist("TURBULENCE MODEL");
+
+        string turbulence_approach
+          =
+          turbparams.get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES");
+        
+        if (turbulence_approach == "CLASSICAL_LES")
+        {
+          string turbulence_phys_mod
+            =
+            turbparams.get<string>("PHYSICAL_MODEL","no_model");
+          
+          if(turbulence_phys_mod == "Dynamic_Smagorinsky")
+          {
+            this->ApplyFilterForDynamicComputationOfCs();
+          }
+        }
+      }
+      
       // create the parameters for the discretization
       ParameterList eleparams;
 
@@ -830,6 +858,12 @@ void XFluidImplicitTimeInt::NonlinearSolve()
       {
         eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
       }
+
+      // parameters for stabilization
+      {
+        eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+      }
+
       
       // set vector values needed by elements
       discret_->ClearState();
@@ -898,14 +932,24 @@ void XFluidImplicitTimeInt::NonlinearSolve()
         tm5_ref_=null;
       }
 
-      // call standard loop over elements
-      discret_->Evaluate(eleparams,sysmat_,residual_);
-      discret_->ClearState();
+      // convergence check at itemax is skipped for speedup if
+      // CONVCHECK is set to L_2_norm_without_residual_at_itemax
+      if ((itnum != itemax)
+          ||
+          (params_.get<string>("CONVCHECK","L_2_norm")
+           !=
+           "L_2_norm_without_residual_at_itemax"))
+      {
+        // call standard loop over elements
+        discret_->Evaluate(eleparams,sysmat_,residual_);
+        discret_->ClearState();
 
-      density = eleparams.get("density", 0.0);
-
-      // finalize the complete matrix
-      sysmat_->Complete();
+        density = eleparams.get("density", 0.0);
+        if (density <= 0.0) dserror("recieved illegal density value");
+        
+        // finalize the complete matrix
+        sysmat_->Complete();
+      }
 
       // end time measurement for element
       tm4_ref_=null;
@@ -1042,7 +1086,7 @@ void XFluidImplicitTimeInt::NonlinearSolve()
 
     // warn if itemax is reached without convergence, but proceed to
     // next timestep...
-    if ((itnum >= itemax) and (vresnorm > ittol or presnorm > ittol or
+    if ((itnum == itemax) and (vresnorm > ittol or presnorm > ittol or
                              fullresnorm > ittol or
                              incvelnorm_L2/velnorm_L2 > ittol or
                              incprenorm_L2/prenorm_L2 > ittol or
@@ -1789,6 +1833,84 @@ void XFluidImplicitTimeInt::SetInitialFlowField(
         veln_ ->ReplaceGlobalValues(1,&initialval,&gid);
       }
     }
+
+    // add random perturbation
+    if(whichinitialfield==3)
+    {
+      const int numdim = params_.get<int>("number of velocity degrees of freedom");
+      
+      const Epetra_Map* dofrowmap = discret_->DofRowMap();
+      
+      int err =0;
+      
+      // random noise is perc percent of the initial profile
+      
+      double perc = params_.sublist("TURBULENCE MODEL").get<double>("CHAN_AMPL_INIT_DIST",0.1);
+      
+      // out to screen
+      if (myrank_==0)
+      {
+        cout << "Disturbed initial profile:   max. " << perc << "\% random perturbation\n";
+        cout << "\n\n";
+      }
+      
+      // loop all nodes on the processor
+      for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();++lnodeid)
+      {
+        // get the processor local node
+        DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
+        // the set of degrees of freedom associated with the node
+        vector<int> nodedofset = discret_->Dof(lnode);
+        
+        // the noise is proportional to the maximum component of the
+        // undisturbed initial field in this point
+        double initialval=0;
+      
+        // direction with max. profile
+        int flowdirection = 0;
+        
+        for(int index=0;index<numdim;++index)
+        {
+          int gid = nodedofset[index];
+          int lid = dofrowmap->LID(gid);
+          
+          double thisval=(*velnp_)[lid];
+          if (initialval*initialval < thisval*thisval)
+          {
+            initialval=thisval;
+            
+            // remember the direction of maximum flow
+            flowdirection = index;
+          }
+        }
+        
+        // add random noise on initial function field
+        for(int index=0;index<numdim;++index)
+        {
+          int gid = nodedofset[index];
+          
+          double randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+          
+          double noise = initialval * randomnumber * perc;
+          
+          // full noise only in main flow direction
+          // one third noise orthogonal to flow direction
+          if (index != flowdirection)
+          {
+            noise *= 1./3.;
+          }
+          
+          err += velnp_->SumIntoGlobalValues(1,&noise,&gid);
+          err += veln_ ->SumIntoGlobalValues(1,&noise,&gid);
+          
+        }
+        
+        if(err!=0)
+        {
+          dserror("dof not on proc");
+        }
+      }
+    }
   }
   else
   {
@@ -1883,7 +2005,7 @@ void XFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | solve stationary fluid problem   			               gjb 10/07|
+ | solve stationary fluid problem                              gjb 10/07|
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1893,7 +2015,10 @@ void XFluidImplicitTimeInt::SolveStationaryProblem()
   // time measurement: time loop (stationary) --- start TimeMonitor tm2
   tm2_ref_ = rcp(new TimeMonitor(*timetimeloop_));
 
-  // set theta to one in order to avoid misuse
+  // override time integration parameters in order to avoid misuse in
+  // NonLinearSolve method below
+  double origdta = dta_;
+  dta_= 1.0;
   theta_ = 1.0;
 
 
@@ -1908,56 +2033,55 @@ void XFluidImplicitTimeInt::SolveStationaryProblem()
 
   while (step_< stepmax_)
   {
+   // -------------------------------------------------------------------
+   //              set (pseudo-)time dependent parameters
+   // -------------------------------------------------------------------
+   step_ += 1;
+   time_ += origdta;
+   // -------------------------------------------------------------------
+   //                         out to screen
+   // -------------------------------------------------------------------
+   if (myrank_==0)
+    {
+      printf("Stationary Fluid Solver - STEP = %4d/%4d \n",step_,stepmax_);
+    }
+
     // -------------------------------------------------------------------
-    //              set (pseudo-)time dependent parameters
+    //         evaluate dirichlet and neumann boundary conditions
     // -------------------------------------------------------------------
-       step_ += 1;
-       time_ += dta_;
+   {
+     ParameterList eleparams;
+     
+     // choose what to assemble
+     eleparams.set("assemble matrix 1",false);
+     eleparams.set("assemble matrix 2",false);
+     eleparams.set("assemble vector 1",true);
+     eleparams.set("assemble vector 2",false);
+     eleparams.set("assemble vector 3",false);
+     // other parameters needed by the elements
+     eleparams.set("total time",time_);
+     eleparams.set("delta time",origdta);
+     eleparams.set("thsl",1.0); // no timefac in stationary case
+     eleparams.set("fs subgrid viscosity",fssgv_);
 
-	// -------------------------------------------------------------------
-	//                         out to screen
-	// -------------------------------------------------------------------
-	   if (myrank_==0)
-	   {
-	       printf("Stationary Fluid Solver - STEP = %4d/%4d \n",step_,stepmax_);
-	   }
+     // set vector values needed by elements
+     discret_->ClearState();
+     discret_->SetState("velnp",velnp_);
+     // predicted dirichlet values
+     // velnp then also holds prescribed new dirichlet values
+     // dirichtoggle is 1 for dirichlet dofs, 0 elsewhere
+     discret_->EvaluateDirichlet(eleparams,velnp_,null,null,dirichtoggle_);
+     discret_->ClearState();
 
-	// -------------------------------------------------------------------
-	//         evaluate dirichlet and neumann boundary conditions
-	// -------------------------------------------------------------------
-	   {
-	     ParameterList eleparams;
+     // evaluate Neumann b.c.
+     neumann_loads_->PutScalar(0.0);
+     discret_->EvaluateNeumann(eleparams,*neumann_loads_);
+     discret_->ClearState();
+   }
 
-	     // choose what to assemble
-	     eleparams.set("assemble matrix 1",false);
-	     eleparams.set("assemble matrix 2",false);
-	     eleparams.set("assemble vector 1",true);
-	     eleparams.set("assemble vector 2",false);
-	     eleparams.set("assemble vector 3",false);
-	     // other parameters needed by the elements
-	     eleparams.set("total time",time_);
-	     eleparams.set("delta time",dta_);
-	     eleparams.set("thsl",1.0); // no timefac in stationary case
-	     eleparams.set("fs subgrid viscosity",fssgv_);
-
-	     // set vector values needed by elements
-	     discret_->ClearState();
-	     discret_->SetState("velnp",velnp_);
-	     // predicted dirichlet values
-	     // velnp then also holds prescribed new dirichlet values
-	     // dirichtoggle is 1 for dirichlet dofs, 0 elsewhere
-	     discret_->EvaluateDirichlet(eleparams,velnp_,null,null,dirichtoggle_);
-	     discret_->ClearState();
-
-	     // evaluate Neumann b.c.
-	     neumann_loads_->PutScalar(0.0);
-	     discret_->EvaluateNeumann(eleparams,*neumann_loads_);
-	     discret_->ClearState();
-	   }
-
-	   // compute an inverse of the dirichtoggle vector
-	   invtoggle_->PutScalar(1.0);
-	   invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
+   // compute an inverse of the dirichtoggle vector
+   invtoggle_->PutScalar(1.0);
+   invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
 
 
     // -------------------------------------------------------------------
@@ -1984,7 +2108,7 @@ void XFluidImplicitTimeInt::SolveStationaryProblem()
 
   } // end of time loop
 
-  // end time measurement for time loop (stationary)
+  // end time measurement for pseudo time loop (stationary)
   tm2_ref_ = null;
 
   return;
@@ -2022,13 +2146,13 @@ RCP<Epetra_Vector> XFluidImplicitTimeInt::CalcStresses()
 
      // compute traction values at specified nodes; otherwise do not touch the zero values
      for (int i=0;i<integratedshapefunc->MyLength();i++)
-	  {
-	      if ((*integratedshapefunc)[i] != 0.0)
-	      {
-	         // overwerite integratedshapefunc values with the calculated traction coefficients
-	        (*integratedshapefunc)[i] = (*trueresidual_)[i]/(*integratedshapefunc)[i];
-	      }
-	  }
+     {
+       if ((*integratedshapefunc)[i] != 0.0)
+       {
+         // overwerite integratedshapefunc values with the calculated traction coefficients
+        (*integratedshapefunc)[i] = (*trueresidual_)[i]/(*integratedshapefunc)[i];
+       }
+     }
 
      // compute traction values at nodes   ---not used any more-----
      // component-wise calculation:  traction := 0.0*traction + 1.0*(trueresidual_ / integratedshapefunc_)
@@ -2211,6 +2335,447 @@ void XFluidImplicitTimeInt::LiftDrag() const
   }
 }//FluidImplicitTimeInt::LiftDrag
 
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | filter quantities for dynamic Smagorinsky model. Compute averaged    |
+ | values for LijMij and MijMij.                             gammi 02/08|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void XFluidImplicitTimeInt::ApplyFilterForDynamicComputationOfCs()
+{
+  // check plausiblity of dimension of problem --- only 3d is
+  // valid for turbulence calculations
+  const int numdim  = params_.get<int>("number of velocity degrees of freedom");
+  if(numdim!=3)
+  {
+    dserror("Only 3d problems are allowed for dynamic Smagorinsky");
+  }
+  
+  // time measurement
+  double tcpu=ds_cputime();
+
+  // get the dofrowmap for access of velocity dofs
+  const Epetra_Map* dofrowmap       = discret_->DofRowMap();
+
+  // generate a parameterlist for communication and control
+  ParameterList filterparams;
+
+  // set filter action for elements
+  filterparams.set("action","calc_fluid_box_filter");
+
+  // set state vector to pass distributed vector to the element
+  discret_->ClearState();
+  discret_->SetState("u and p (trial)",velnp_);
+
+  // ----------------------------------------------------------
+  // ----------------------------------------------------------
+  // compute smoothed (averaged) velocities and stresses for
+  // all nodes 
+  // ----------------------------------------------------------
+  // ----------------------------------------------------------
+
+  // get additional connectivity for periodic boundary conditions
+  map<int,vector<int> > mapmastertoslave
+    =
+    pbc_->ReturnAllCoupledNodesOnThisProc();
+
+  
+  // loop all nodes on the processor
+  for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+  {
+    // ----------------------------------------
+    // get the processor local node
+    DRT::Node*  lnode       = discret_->lRowNode(lnodeid);
+
+    // the set of degrees of freedom associated with the node
+    vector<int> nodedofset = discret_->Dof(lnode);
+
+    // ----------------------------------------
+    // determine a patch of all elements adjacent to this nodex
+    
+    // check whether the node is on a wall, i.e. all velocity
+    // dofs are Dirichlet constrained
+    int is_no_slip_node =0;
+    for(int index=0;index<numdim;++index)
+    {
+      int gid = nodedofset[index];
+      int lid = dofrowmap->LID(gid);
+
+      if ((*dirichtoggle_)[lid]==1)
+      {
+        is_no_slip_node++;
+      }
+    }
+
+    // skip this node if it is on a wall
+    if (is_no_slip_node == numdim)
+    {
+      continue;
+    }
+
+    // now check whether we have a pbc condition on this node
+    vector<DRT::Condition*> mypbc;
+
+    lnode->GetCondition("SurfacePeriodic",mypbc);
+
+    // check whether a periodic boundary condition is active
+    // on this node
+    bool ispbcmaster = false;
+
+    if (mypbc.size()>0)
+    {
+      // get the list of all his slavenodes
+      map<int, vector<int> >::iterator master
+        =
+        mapmastertoslave.find(lnode->Id());
+
+      // slavenodes are ignored
+      if(master == mapmastertoslave.end())
+      {
+        // the node is a slave --- so don't do anything
+        continue;
+      }
+      // we have a master. Remember this cause we have to extend the patch
+      // to the other side...
+      ispbcmaster = true;
+    }
+
+    // generate a vector of all adjacent elements
+    vector <DRT::Element*> patcheles;
+    for(int rr=0;rr<lnode->NumElement();++rr)
+    {
+      patcheles.push_back(lnode->Elements()[rr]);
+    }
+
+    // add the elements connected to the slavenodes --- master and
+    // slavenodes are treated like they were identical!
+    if(ispbcmaster == true)
+    {
+      for (unsigned slavecount = 0;
+           slavecount<mapmastertoslave[lnode->Id()].size();
+           ++slavecount)
+      {
+        // get the corresponding slavenodes
+        DRT::Node*  slavenode = discret_->gNode(mapmastertoslave[lnode->Id()][slavecount]);
+
+        // add the elements
+        for(int rr=0;rr<slavenode->NumElement();++rr)
+        {
+          patcheles.push_back(slavenode->Elements()[rr]);
+        }
+      }
+    }
+
+    // ----------------------------------------
+    // the patch is determined right now --- what follows
+    // now is the averaging over this patch
+    
+
+    // define element matrices and vectors --- they are used to
+    // transfer information into the element routine and back
+    Epetra_SerialDenseMatrix ep_reystress_hat(3,3);
+    Epetra_SerialDenseMatrix ep_modeled_stress_grid_scale_hat(3,3);
+    Epetra_SerialDenseVector ep_velnp_hat (3);
+    Epetra_SerialDenseVector dummy1;
+    Epetra_SerialDenseVector dummy2;
+
+    // the patch volume has to be initialised to zero
+    double patchvolume = 0;
+
+    // loop all adjacent elements to this node
+    for (unsigned nele=0;nele<patcheles.size();++nele)
+    {
+      // get the adjacent element
+      DRT::Element* nbele = (patcheles[nele]);
+
+      // get element location vector, dirichlet flags and ownerships
+      vector<int> lm;
+      vector<int> lmowner;
+      nbele->LocationVector(*discret_,lm,lmowner);
+
+      // call the element evaluate method to integrate functions
+      // against heaviside function element
+      int err = nbele->Evaluate(filterparams,
+                                *discret_,
+                                lm,
+                                ep_reystress_hat,
+                                ep_modeled_stress_grid_scale_hat,
+                                ep_velnp_hat,dummy1,dummy2);
+      if (err) dserror("Proc %d: Element %d returned err=%d",
+                       discret_->Comm().MyPID(),nbele->Id(),err);
+
+      // get contribution to patch volume of this element. Add it up.
+      double volume_contribution =filterparams.get<double>("volume_contribution");
+
+      patchvolume+=volume_contribution;
+    }
+    
+    // wrap Epetra Object in Blitz array
+    blitz::Array<double, 1> velnp_hat(
+      ep_velnp_hat.Values(),
+      blitz::shape(ep_velnp_hat.Length()),
+      blitz::neverDeleteData);
+
+    blitz::Array<double, 2> reystress_hat(
+      ep_reystress_hat.A(),
+      blitz::shape(ep_reystress_hat.M(),
+                   ep_reystress_hat.N()),
+      blitz::neverDeleteData,
+      blitz::ColumnMajorArray<2>());
+
+    blitz::Array<double, 2> modeled_stress_grid_scale_hat(
+      ep_modeled_stress_grid_scale_hat.A(),
+      blitz::shape(ep_modeled_stress_grid_scale_hat.M(),
+                   ep_modeled_stress_grid_scale_hat.N()),
+      blitz::neverDeleteData,
+      blitz::ColumnMajorArray<2>());
+
+
+    // normalize the computed convolution products by the complete patchvolume
+    reystress_hat                /=patchvolume;
+    modeled_stress_grid_scale_hat/=patchvolume;
+    velnp_hat                    /=patchvolume;
+
+    // now assemble the computed values into the global vector
+    double val = 0;
+    int    id  = (lnode->Id());
+
+    for (int idim =0;idim<3;++idim)
+    {
+      val = velnp_hat(idim);
+      ((*filtered_vel_)(idim))->ReplaceGlobalValues(1,&val,&id);
+
+      for (int jdim =0;jdim<3;++jdim)
+      {
+        val = reystress_hat (idim,jdim);
+        ((*filtered_reynoldsstress_ )       (3*idim+jdim))->ReplaceGlobalValues(1,&val,&id);
+
+        val = modeled_stress_grid_scale_hat(idim,jdim);
+        ((*filtered_modeled_subgrid_stress_)(3*idim+jdim))->ReplaceGlobalValues(1,&val,&id);
+      }
+    }
+
+    // for masternodes, all slavenodes get the same values
+    if (ispbcmaster == true)
+    {
+      for (unsigned slavecount = 0;slavecount<mapmastertoslave[lnode->Id()].size();++slavecount)
+      {
+        // get the corresponding slavenodes
+        DRT::Node*  slavenode = discret_->gNode(mapmastertoslave[lnode->Id()][slavecount]);
+
+        int    slaveid  = (slavenode->Id());
+
+        for (int idim =0;idim<3;++idim)
+        {
+          val = (velnp_hat(idim));
+          ((*filtered_vel_)(idim))->ReplaceGlobalValues(1,&val,&slaveid);
+
+          for (int jdim =0;jdim<3;++jdim)
+          {
+            val = reystress_hat (idim,jdim);
+            ((*filtered_reynoldsstress_ )       (3*idim+jdim))->ReplaceGlobalValues(1,&val,&slaveid);
+
+            val = modeled_stress_grid_scale_hat(idim,jdim);
+            ((*filtered_modeled_subgrid_stress_)(3*idim+jdim))->ReplaceGlobalValues(1,&val,&slaveid);
+          }
+        }
+      }
+    }
+  }
+
+  // clean up
+  discret_->ClearState();
+
+  // get the column map in order to communicate the result to all ghosted nodes
+  const Epetra_Map* nodecolmap = discret_->NodeColMap();
+
+  // allocate distributed vectors in col map format to have the filtered
+  // quantities available on ghosted nodes
+  col_filtered_vel_                    = rcp(new Epetra_MultiVector(*nodecolmap,3,true));
+  col_filtered_reynoldsstress_         = rcp(new Epetra_MultiVector(*nodecolmap,9,true));
+  col_filtered_modeled_subgrid_stress_ = rcp(new Epetra_MultiVector(*nodecolmap,9,true));
+
+  // export filtered vectors in rowmap to columnmap format
+  LINALG::Export(*filtered_vel_                   ,*col_filtered_vel_);
+  LINALG::Export(*filtered_reynoldsstress_        ,*col_filtered_reynoldsstress_);
+  LINALG::Export(*filtered_modeled_subgrid_stress_,*col_filtered_modeled_subgrid_stress_);
+
+
+  // -----------------------------------------------------------
+  // -----------------------------------------------------------
+  // computation of LijMij, MijMij and Cs_delta_sq
+
+  // up to now, only averaging in homogeneous planes is
+  // implemented. Otherwise, no aberaging will be applied.
+  //
+  // 
+  // -----------------------------------------------------------
+  // -----------------------------------------------------------
+
+  // -----------------------------------------------------------
+  // initialise plane averaging of Cs for turbulent channel flow
+  vector<int>  count_for_average      ;
+  vector<int>  local_count_for_average;
+  
+  vector <double> local_ele_sum_LijMij;
+  vector <double> local_ele_sum_MijMij;
+
+  if (params_.sublist("TURBULENCE MODEL").get<string>("CANONICAL_FLOW","no")
+      ==
+      "channel_flow_of_height_2")
+  {
+    // get ordered layers of elements in which LijMij and MijMij are averaged
+    if (planecoords_ == null)
+    {
+      planecoords_ = rcp( new vector<double>((turbulencestatistics_->ReturnNodePlaneCoords()).size()));
+    }
+    
+    (*planecoords_) = turbulencestatistics_->ReturnNodePlaneCoords();
+    
+    averaged_LijMij_->resize((*planecoords_).size()-1);
+    averaged_MijMij_->resize((*planecoords_).size()-1);
+    
+    count_for_average      .resize((*planecoords_).size()-1);
+    local_count_for_average.resize((*planecoords_).size()-1);
+    
+    local_ele_sum_LijMij.resize((*planecoords_).size()-1);
+    local_ele_sum_MijMij.resize((*planecoords_).size()-1);
+    
+    for (unsigned rr=0;rr<(*planecoords_).size()-1;++rr)
+    {
+      (*averaged_LijMij_)    [rr]=0;
+      (*averaged_MijMij_)    [rr]=0;
+      local_ele_sum_LijMij   [rr]=0;
+      local_ele_sum_MijMij   [rr]=0;
+      local_count_for_average[rr]=0;
+    }
+  }
+
+  // -----------------------------------------------------------
+  // Compute Cs_delta_sq on elements, return LijMij and MijMij
+  // for plane averaging in case of turbulent channel flows
+
+  // generate a parameterlist for communication and control
+  ParameterList calc_smag_const_params;
+  // action for elements
+  calc_smag_const_params.set("action","calc_smagorinsky_const");
+
+  // hand filtered global vectors down to the element
+  calc_smag_const_params.set("col_filtered_vel"                   ,col_filtered_vel_);
+  calc_smag_const_params.set("col_filtered_reynoldsstress"        ,col_filtered_reynoldsstress_);
+  calc_smag_const_params.set("col_filtered_modeled_subgrid_stress",col_filtered_modeled_subgrid_stress_);
+
+  // dummy matrices and vectors for element call
+  Epetra_SerialDenseMatrix dummym1;
+  Epetra_SerialDenseMatrix dummym2;
+  Epetra_SerialDenseVector dummyv1;
+  Epetra_SerialDenseVector dummyv2;
+  Epetra_SerialDenseVector dummyv3;
+
+  // loop all elements on this proc (excluding ghosted ones)
+  for (int nele=0;nele<discret_->NumMyRowElements();++nele)
+  {
+    // -----------------------------------------------------------
+    // Compute LijMij, MijMij and Cs_delta_sq_    
+    
+    // get the element
+    DRT::Element* ele = discret_->lRowElement(nele);
+
+    // get element location vector, dirichlet flags and ownerships
+    vector<int> lm;
+    vector<int> lmowner;
+
+    ele->LocationVector(*discret_,lm,lmowner);
+
+    // call the element evaluate method to integrate functions
+    // against heaviside function element
+    int err = ele->Evaluate(calc_smag_const_params,
+                            *discret_,
+                            lm,
+                            dummym1,dummym2,
+                            dummyv1,dummyv2,dummyv3);
+    if (err) dserror("Proc %d: Element %d returned err=%d",
+                     discret_->Comm().MyPID(),ele->Id(),err);
+
+
+
+    // -----------------------------------------------------------
+    // do averaging of Cs for turbulent channel flow
+  
+    // initialise plane averaging of Cs for turbulent channel flow
+    if (params_.sublist("TURBULENCE MODEL").get<string>("CANONICAL_FLOW","no")
+        ==
+        "channel_flow_of_height_2")
+    {
+      // get the result from the element call
+      double LijMij = calc_smag_const_params.get<double>("LijMij");
+      double MijMij = calc_smag_const_params.get<double>("MijMij");
+      double center = calc_smag_const_params.get<double>("center");
+      
+      // add result into result vetor
+
+      // for this purpose, determine the layer (the plane for average)
+      int  nlayer;
+      bool found = false;
+      for (nlayer=0;nlayer<(int)(*planecoords_).size()-1;)
+      {
+        if(center<(*planecoords_)[nlayer+1])
+        {
+          found = true;
+          break;
+        }
+        nlayer++;
+      }
+      if (found ==false)
+      {
+        dserror("could not determine element layer");
+      }
+      
+      // add it up
+      local_ele_sum_LijMij[nlayer] += LijMij;
+      local_ele_sum_MijMij[nlayer] += MijMij;
+      
+      local_count_for_average[nlayer]++;
+    }
+  }
+
+  if (params_.sublist("TURBULENCE MODEL").get<string>("CANONICAL_FLOW","no")
+      ==
+      "channel_flow_of_height_2")
+  {
+    // now add all the stuff from the different processors
+    for (unsigned rr=0;rr<(*planecoords_).size()-1;++rr)
+    {
+      discret_->Comm().SumAll(&(local_count_for_average[rr]),&(count_for_average[rr]),1);
+      discret_->Comm().SumAll(&(local_ele_sum_LijMij[rr]),&((*averaged_LijMij_)[rr]),1);
+      discret_->Comm().SumAll(&(local_ele_sum_MijMij[rr]),&((*averaged_MijMij_)[rr]),1);
+    }
+    
+    // do averaging
+    for (unsigned rr=0;rr<(*planecoords_).size()-1;++rr)
+    {
+      (*averaged_LijMij_)[rr]/=count_for_average[rr];
+      (*averaged_MijMij_)[rr]/=count_for_average[rr];
+    }
+    
+    // provide necessary information for the elements
+    {
+      ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+      
+      modelparams->set<RefCountPtr<vector<double> > >("averaged_LijMij_",averaged_LijMij_);
+      modelparams->set<RefCountPtr<vector<double> > >("averaged_MijMij_",averaged_MijMij_);
+      modelparams->set<RefCountPtr<vector<double> > >("planecoords_",planecoords_);
+    }
+  }
+
+  dtfilter_=ds_cputime()-tcpu;
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
