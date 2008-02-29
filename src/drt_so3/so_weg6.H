@@ -619,6 +619,7 @@ private:
 
   void sow6_surface_integ(
         double* sqrtdetg,                      // (o) pointer to sqrt of det(g)
+        vector<double>* unrm,                  // (o) unit normal
         const Epetra_SerialDenseMatrix* xs,    // (i) element coords
         const Epetra_SerialDenseMatrix deriv); // (i) shape funct derivs
 }; // class Sow6Surface

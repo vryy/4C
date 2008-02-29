@@ -46,6 +46,7 @@ int DRT::ELEMENTS::Sow6Surface::EvaluateNeumann(ParameterList&           params,
   const string* type = condition.Get<string>("type");
   if      (*type == "neum_live")          ltype = neum_live;
   //else if (*type == "neum_live_FSI")      ltype = neum_live_FSI;
+  else if (*type == "neum_orthopressure") ltype = neum_orthopressure;
   else dserror("Unknown type of SurfaceNeumann condition");
 
   // get values and switches from the condition
@@ -124,21 +125,55 @@ int DRT::ELEMENTS::Sow6Surface::EvaluateNeumann(ParameterList&           params,
     shape_function_2D(funct, e0, e1, distype);
     shape_function_2D_deriv1(deriv, e0, e1, distype);
 
-    // compute measure tensor for surface element and the infinitesimal
-    // area element drs for the integration
-    sow6_surface_integ(&drs,&xsrefe,deriv);
-
-    // values are multiplied by the product from inf. area element,
-    // the gauss weight, the timecurve factor
-    const double fac = intpoints.qwgt[gpid] * drs * curvefac;
-
-    for (int node=0; node < numnode; ++node)
-    {
-      for(int dim=0 ; dim<NUMDIM_WEG6; dim++)
-      {
-        elevec1[node*numdf+dim]+=
-          funct[node] * (*onoff)[dim] * (*val)[dim] * fac;
+    switch(ltype){
+      case neum_live:{
+        // compute measure tensor for surface element and the infinitesimal
+        // area element drs for the integration
+        sow6_surface_integ(&drs,NULL,&xsrefe,deriv);
+    
+        // values are multiplied by the product from inf. area element,
+        // the gauss weight, the timecurve factor
+        const double fac = intpoints.qwgt[gpid] * drs * curvefac;
+    
+        for (int node=0; node < numnode; ++node)
+        {
+          for(int dim=0 ; dim<NUMDIM_WEG6; dim++)
+          {
+            elevec1[node*numdf+dim]+=
+              funct[node] * (*onoff)[dim] * (*val)[dim] * fac;
+          }
+        }
       }
+      break;
+      case neum_orthopressure:{
+       if ((*onoff)[0] != 1) dserror("orthopressure on 1st dof only!");
+        for (int checkdof = 1; checkdof < 3; ++checkdof) {
+          if ((*onoff)[checkdof] != 0) dserror("orthopressure on 1st dof only!");
+        }
+        double ortho_value = (*val)[0];
+        if (!ortho_value) dserror("no orthopressure value given!");
+        vector<double> unrm(NUMDIM_WEG6);
+        // compute measure tensor for surface element and the infinitesimal
+        // area element drs for the integration and unit normal
+         sow6_surface_integ(&drs,&unrm,&xscurr,deriv);
+    
+        // values are multiplied by the product from inf. area element,
+        // the gauss weight, the timecurve factor
+        const double fac = intpoints.qwgt[gpid] * drs * curvefac * ortho_value * (-1.0);
+    
+        for (int node=0; node < numnode; ++node)
+        {
+          for(int dim=0 ; dim<NUMDIM_WEG6; dim++)
+          {
+            elevec1[node*numdf+dim]+=
+              funct[node] * (*onoff)[dim] * unrm[dim] * fac;
+          }
+        }
+      }
+      break;
+      default:
+        dserror("Unknown type of SurfaceNeumann load");
+      break;
     }
 
   } /* end of loop over integration points gpid */
@@ -151,6 +186,7 @@ int DRT::ELEMENTS::Sow6Surface::EvaluateNeumann(ParameterList&           params,
  * ---------------------------------------------------------------------*/
 void DRT::ELEMENTS::Sow6Surface::sow6_surface_integ(
       double* sqrtdetg,                      // (o) pointer to sqrt of det(g)
+      vector<double>* unrm,                  // (o) unit normal
       const Epetra_SerialDenseMatrix* xs,    // (i) element coords
       const Epetra_SerialDenseMatrix deriv)  // (i) shape funct derivs
 {
@@ -173,6 +209,11 @@ void DRT::ELEMENTS::Sow6Surface::sow6_surface_integ(
   metrictensor.Multiply('N','T',1.0,dxyzdrs,dxyzdrs,1.0);
   (*sqrtdetg) = sqrt( metrictensor(0,0)*metrictensor(1,1)
                      -metrictensor(0,1)*metrictensor(1,0));
+  if (unrm != NULL){
+    (*unrm)[0] = dxyzdrs(0,1) * dxyzdrs(1,2) - dxyzdrs(0,2) * dxyzdrs(1,1);
+    (*unrm)[1] = dxyzdrs(0,2) * dxyzdrs(1,0) - dxyzdrs(0,0) * dxyzdrs(1,2);
+    (*unrm)[2] = dxyzdrs(0,0) * dxyzdrs(1,1) - dxyzdrs(0,1) * dxyzdrs(1,0);
+  }
                        
   return;
 }
