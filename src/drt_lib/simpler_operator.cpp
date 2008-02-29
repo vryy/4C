@@ -21,7 +21,7 @@ Maintainer: Michael Gee
 #define CHEAPSIMPLE_ALGORITHM 1    // 1: AMG          0: true solve
 #define SIMPLER_ALGORITHM     0    // 1: triple solve 0: double solve
 #define SIMPLER_ALPHA         1.0  // simple pressure damping parameter
-#define SIMPLER_TIMING        1    // printout timing of setup
+#define SIMPLER_TIMING        0    // printout timing of setup
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 02/08|
  *----------------------------------------------------------------------*/
