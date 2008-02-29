@@ -4,7 +4,7 @@
 //             http://www.lnm.mw.tum.de/Members/wiechert
 //             089/289-15303
 //
-// necessary defines: D_SOH8 BINIO CCADISCRET RESULTTEST UMFPACK
+// necessary defines: D_SOH8 BINIO CCADISCRET UMFPACK
 //
 ==================================================================
                         General Data File CCARAT
@@ -674,8 +674,12 @@ MAT       1 MAT_Struct_Multiscale MICROFILE sohex8_multiscale_micro.dat
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC t/1.5 t1 0. t2 1.5
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 8 POSITION sol(1,1) NAME x VALUE 2.28360E-02 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 8 POSITION sol(1,2) NAME y VALUE 2.28360E-02 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 8 POSITION sol(1,3) NAME z VALUE -9.38820E-02 TOLERANCE 1e-8
+//STRUCTURE DIS 1 NODE 8 POSITION sol(1,1) NAME x VALUE 2.28360E-02 TOLERANCE 1e-8
+//STRUCTURE DIS 1 NODE 8 POSITION sol(1,2) NAME y VALUE 2.28360E-02 TOLERANCE 1e-8
+//STRUCTURE DIS 1 NODE 8 POSITION sol(1,3) NAME z VALUE -9.38820E-02 TOLERANCE 1e-8
+// for Baci
+//STRUCTURE DIS 1 NODE 8 POSITION dispx NAME dispx VALUE -1.962810387849496177e-17 TOLERANCE 1e-8
+//STRUCTURE DIS 1 NODE 8 POSITION dispy NAME dispy VALUE 8.547362680411131895e-18 TOLERANCE 1e-8
+//STRUCTURE DIS 1 NODE 8 POSITION dispz NAME dispz VALUE 5.518297508554596057e-17 TOLERANCE 1e-8
 ---------------------------------------------------------------END
 // END
