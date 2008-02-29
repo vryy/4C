@@ -66,6 +66,9 @@ bool DRT::ELEMENTS::So_weg6::ReadElement()
   if (ierr!=1) dserror("Reading of SO_WEG6 element material failed");
   SetMaterial(material);
 
+  // we expect kintype to be total lagrangian
+  kintype_ = sow6_totlag;
+   
   // read kinematic type
   char buffer[50];
   frchar("KINEM",buffer,&ierr);

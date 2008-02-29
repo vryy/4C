@@ -769,31 +769,31 @@ NODE           71     COORD 1.000000000000000e+01     1.000000000000000e+01     
 NODE           72     COORD 1.000000000000000e+01     1.000000000000000e+01     1.000000000000000e+00   
 ----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
-      1 SOLIDH8 HEX8       8      7      3      5      6      4      1      2 MAT       1 GP 2 2 2 KINEM Totlag STRESS None EAS none 
-      2 SOLIDH8 HEX8      15     13      7      8     12     10      4      6 MAT       1 GP 2 2 2 KINEM Totlag STRESS None EAS none 
-      3 SOLIDH8 HEX8      26     23     13     15     22     20     10     12 MAT       1 GP 2 2 2 KINEM Totlag STRESS None EAS none 
-      4 SOLIDH8 HEX8      37     35     23     26     34     32     20     22 MAT       1 GP 2 2 2 KINEM Totlag STRESS None EAS none 
-      5 SOLIDH8 HEX8      56     54     35     37     52     47     32     34 MAT       1 GP 2 2 2 KINEM Totlag STRESS None EAS none 
-      6 SOLIDH8 HEX8      16     14      9     11      8      7      3      5 MAT       1 GP 2 2 2 KINEM Totlag STRESS None EAS none 
-      7 SOLIDH8 HEX8      18     17     14     16     15     13      7      8 MAT       1 GP 2 2 2 KINEM Totlag STRESS None EAS none 
-      8 SOLIDH8 HEX8      30     27     17     18     26     23     13     15 MAT       1 GP 2 2 2 KINEM Totlag STRESS None EAS none 
-      9 SOLIDH8 HEX8      43     41     27     30     37     35     23     26 MAT       1 GP 2 2 2 KINEM Totlag STRESS None EAS none 
-     10 SOLIDH8 HEX8      60     58     41     43     56     54     35     37 MAT       1 GP 2 2 2 KINEM Totlag STRESS None EAS none 
-     11 SOLIDH8 HEX8      25     24     19     21     16     14      9     11 MAT       1 GP 2 2 2 KINEM Totlag STRESS None EAS none 
-     12 SOLIDH8 HEX8      29     28     24     25     18     17     14     16 MAT       1 GP 2 2 2 KINEM Totlag STRESS None EAS none 
-     13 SOLIDH8 HEX8      40     39     28     29     30     27     17     18 MAT       1 GP 2 2 2 KINEM Totlag STRESS None EAS none 
-     14 SOLIDH8 HEX8      49     45     39     40     43     41     27     30 MAT       1 GP 2 2 2 KINEM Totlag STRESS None EAS none 
-     15 SOLIDH8 HEX8      66     64     45     49     60     58     41     43 MAT       1 GP 2 2 2 KINEM Totlag STRESS None EAS none 
-     16 SOLIDH8 HEX8      38     36     31     33     25     24     19     21 MAT       1 GP 2 2 2 KINEM Totlag STRESS None EAS none 
-     17 SOLIDH8 HEX8      44     42     36     38     29     28     24     25 MAT       1 GP 2 2 2 KINEM Totlag STRESS None EAS none 
-     18 SOLIDH8 HEX8      50     48     42     44     40     39     28     29 MAT       1 GP 2 2 2 KINEM Totlag STRESS None EAS none 
-     19 SOLIDH8 HEX8      62     61     48     50     49     45     39     40 MAT       1 GP 2 2 2 KINEM Totlag STRESS None EAS none 
-     20 SOLIDH8 HEX8      70     68     61     62     66     64     45     49 MAT       1 GP 2 2 2 KINEM Totlag STRESS None EAS none 
-     21 SOLIDH8 HEX8      55     53     46     51     38     36     31     33 MAT       1 GP 2 2 2 KINEM Totlag STRESS None EAS none 
-     22 SOLIDH8 HEX8      59     57     53     55     44     42     36     38 MAT       1 GP 2 2 2 KINEM Totlag STRESS None EAS none 
-     23 SOLIDH8 HEX8      65     63     57     59     50     48     42     44 MAT       1 GP 2 2 2 KINEM Totlag STRESS None EAS none 
-     24 SOLIDH8 HEX8      69     67     63     65     62     61     48     50 MAT       1 GP 2 2 2 KINEM Totlag STRESS None EAS none 
-     25 SOLIDH8 HEX8      72     71     67     69     70     68     61     62 MAT       1 GP 2 2 2 KINEM Totlag STRESS None EAS none 
+      1 SOLIDH8 HEX8       8      7      3      5      6      4      1      2 MAT       1 EAS none 
+      2 SOLIDH8 HEX8      15     13      7      8     12     10      4      6 MAT       1 EAS none 
+      3 SOLIDH8 HEX8      26     23     13     15     22     20     10     12 MAT       1 EAS none 
+      4 SOLIDH8 HEX8      37     35     23     26     34     32     20     22 MAT       1 EAS none 
+      5 SOLIDH8 HEX8      56     54     35     37     52     47     32     34 MAT       1 EAS none 
+      6 SOLIDH8 HEX8      16     14      9     11      8      7      3      5 MAT       1 EAS none 
+      7 SOLIDH8 HEX8      18     17     14     16     15     13      7      8 MAT       1 EAS none 
+      8 SOLIDH8 HEX8      30     27     17     18     26     23     13     15 MAT       1 EAS none 
+      9 SOLIDH8 HEX8      43     41     27     30     37     35     23     26 MAT       1 EAS none 
+     10 SOLIDH8 HEX8      60     58     41     43     56     54     35     37 MAT       1 EAS none 
+     11 SOLIDH8 HEX8      25     24     19     21     16     14      9     11 MAT       1 EAS none 
+     12 SOLIDH8 HEX8      29     28     24     25     18     17     14     16 MAT       1 EAS none 
+     13 SOLIDH8 HEX8      40     39     28     29     30     27     17     18 MAT       1 EAS none 
+     14 SOLIDH8 HEX8      49     45     39     40     43     41     27     30 MAT       1 EAS none 
+     15 SOLIDH8 HEX8      66     64     45     49     60     58     41     43 MAT       1 EAS none 
+     16 SOLIDH8 HEX8      38     36     31     33     25     24     19     21 MAT       1 EAS none 
+     17 SOLIDH8 HEX8      44     42     36     38     29     28     24     25 MAT       1 EAS none 
+     18 SOLIDH8 HEX8      50     48     42     44     40     39     28     29 MAT       1 EAS none 
+     19 SOLIDH8 HEX8      62     61     48     50     49     45     39     40 MAT       1 EAS none 
+     20 SOLIDH8 HEX8      70     68     61     62     66     64     45     49 MAT       1 EAS none 
+     21 SOLIDH8 HEX8      55     53     46     51     38     36     31     33 MAT       1 EAS none 
+     22 SOLIDH8 HEX8      59     57     53     55     44     42     36     38 MAT       1 EAS none 
+     23 SOLIDH8 HEX8      65     63     57     59     50     48     42     44 MAT       1 EAS none 
+     24 SOLIDH8 HEX8      69     67     63     65     62     61     48     50 MAT       1 EAS none 
+     25 SOLIDH8 HEX8      72     71     67     69     70     68     61     62 MAT       1 EAS none 
 ---------------------------------------------------------MATERIALS
 MAT       1 MAT_Struct_StVenantKirchhoff  YOUNG 0.07 NUE 0. DENS 0.00001
 ----------------------------------------------MULTILAYER MATERIALS

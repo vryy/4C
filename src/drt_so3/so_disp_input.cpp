@@ -182,7 +182,10 @@ bool DRT::ELEMENTS::SoDisp::ReadElement()
         dserror("Reading of SOLID3 element failed: integration points\n");
     } // end switch distype
 
-    // read kinematic type
+    // we expect kintype to be total lagrangian
+    kintype_ = sodisp_totlag;
+    
+    // eventually read kinematic type
     frchar("KINEM",buffer,&ierr);
     if (ierr)
     {
@@ -198,20 +201,6 @@ bool DRT::ELEMENTS::SoDisp::ReadElement()
      }
      else dserror("Reading of SOLID3 element failed");
     }
-    
-
-    // read stress evaluation/output type
-    frchar("STRESS",buffer,&ierr);
-    if (ierr!=1) dserror("reading of SODISP stress failed");
-    if (strncmp(buffer,"none",4)==0)  stresstype_= sodisp_stress_none;
-    if (strncmp(buffer,"Gpxyz",5)==0) stresstype_= sodisp_stress_gpxyz;
-    if (strncmp(buffer,"Gprst",5)==0) stresstype_= sodisp_stress_gprst;
-    if (strncmp(buffer,"Gp123",5)==0) stresstype_= sodisp_stress_gp123;
-    if (strncmp(buffer,"Ndxyz",5)==0) stresstype_= sodisp_stress_ndxyz;
-    if (strncmp(buffer,"Ndrst",5)==0) stresstype_= sodisp_stress_ndrst;
-    if (strncmp(buffer,"Nd123",5)==0) stresstype_= sodisp_stress_nd123;
-    // set default: no stresses
-    else stresstype_= sodisp_stress_none;
 
     numnod_disp_ = NumNode();      // number of nodes
     numdof_disp_ = NumNode() * NODDOF_DISP;     // total dofs per element

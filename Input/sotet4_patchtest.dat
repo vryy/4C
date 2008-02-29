@@ -226,44 +226,44 @@ NODE           21     COORD 5.0000000000000e-01     -5.0000000000000e-01     5.0
 NODE           22     COORD 5.0000000000000e-01     5.0000000000000e-01     -5.0000000000000e-01   
 ----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
-      1   SOLIDTET4       1      2      3      4 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-      2   SOLIDTET4       1      5      6      7 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-      3   SOLIDTET4       5      7      8      9 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-      4   SOLIDTET4       5      6      7      9 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-      5   SOLIDTET4       1     10      5      7 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-      6   SOLIDTET4       1     11      5     12 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-      7   SOLIDTET4       1      6      5     11 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-      8   SOLIDTET4       5     13     14      8 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-      9   SOLIDTET4       5     13     12     14 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-     10   SOLIDTET4       1     12     15     11 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-     11   SOLIDTET4       1      7      4     10 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-     12   SOLIDTET4       5      7     10     13 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-     13   SOLIDTET4       1      5     13     12 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-     14   SOLIDTET4       1     16     15      3 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-     15   SOLIDTET4       1     15     16      2 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-     16   SOLIDTET4       5      8      7     13 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-     17   SOLIDTET4      17     12     11     15 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-     18   SOLIDTET4       1     18     19      4 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-     19   SOLIDTET4       5      9      8      6 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-     20   SOLIDTET4       1      4     19      2 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-     21   SOLIDTET4       1     13      3     15 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-     22   SOLIDTET4       1     12     13     15 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-     23   SOLIDTET4      13     20     10      3 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-     24   SOLIDTET4       1      5     10     13 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-     25   SOLIDTET4       1     11     18      6 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-     26   SOLIDTET4       1     18     15      2 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-     27   SOLIDTET4       1      3      2     16 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-     28   SOLIDTET4       1     18      2     19 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-     29   SOLIDTET4       1      7      6     18 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-     30   SOLIDTET4       7      4     10     21 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-     31   SOLIDTET4       5     12      6      8 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-     32   SOLIDTET4       1     13     10      3 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-     33   SOLIDTET4       5      8     14     12 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-     34   SOLIDTET4       1      3     10      4 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-     35   SOLIDTET4       1      7     18      4 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-     36   SOLIDTET4       5     11      6     12 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-     37   SOLIDTET4      18      6     11     22 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
-     38   SOLIDTET4       1     15     18     11 MAT       1 GP_TET 4 HYB 0 FORM 0 STRESSES NoBStr
+      1   SOLIDT4 TET4       1      2      3      4 MAT       1 
+      2   SOLIDT4 TET4       1      5      6      7 MAT       1 
+      3   SOLIDT4 TET4       5      7      8      9 MAT       1 
+      4   SOLIDT4 TET4       5      6      7      9 MAT       1 
+      5   SOLIDT4 TET4       1     10      5      7 MAT       1 
+      6   SOLIDT4 TET4       1     11      5     12 MAT       1 
+      7   SOLIDT4 TET4       1      6      5     11 MAT       1 
+      8   SOLIDT4 TET4       5     13     14      8 MAT       1 
+      9   SOLIDT4 TET4       5     13     12     14 MAT       1 
+     10   SOLIDT4 TET4       1     12     15     11 MAT       1 
+     11   SOLIDT4 TET4       1      7      4     10 MAT       1 
+     12   SOLIDT4 TET4       5      7     10     13 MAT       1 
+     13   SOLIDT4 TET4       1      5     13     12 MAT       1 
+     14   SOLIDT4 TET4       1     16     15      3 MAT       1 
+     15   SOLIDT4 TET4       1     15     16      2 MAT       1 
+     16   SOLIDT4 TET4       5      8      7     13 MAT       1 
+     17   SOLIDT4 TET4      17     12     11     15 MAT       1 
+     18   SOLIDT4 TET4       1     18     19      4 MAT       1 
+     19   SOLIDT4 TET4       5      9      8      6 MAT       1 
+     20   SOLIDT4 TET4       1      4     19      2 MAT       1 
+     21   SOLIDT4 TET4       1     13      3     15 MAT       1 
+     22   SOLIDT4 TET4       1     12     13     15 MAT       1 
+     23   SOLIDT4 TET4      13     20     10      3 MAT       1 
+     24   SOLIDT4 TET4       1      5     10     13 MAT       1 
+     25   SOLIDT4 TET4       1     11     18      6 MAT       1 
+     26   SOLIDT4 TET4       1     18     15      2 MAT       1 
+     27   SOLIDT4 TET4       1      3      2     16 MAT       1 
+     28   SOLIDT4 TET4       1     18      2     19 MAT       1 
+     29   SOLIDT4 TET4       1      7      6     18 MAT       1 
+     30   SOLIDT4 TET4       7      4     10     21 MAT       1 
+     31   SOLIDT4 TET4       5     12      6      8 MAT       1 
+     32   SOLIDT4 TET4       1     13     10      3 MAT       1 
+     33   SOLIDT4 TET4       5      8     14     12 MAT       1 
+     34   SOLIDT4 TET4       1      3     10      4 MAT       1 
+     35   SOLIDT4 TET4       1      7     18      4 MAT       1 
+     36   SOLIDT4 TET4       5     11      6     12 MAT       1 
+     37   SOLIDT4 TET4      18      6     11     22 MAT       1 
+     38   SOLIDT4 TET4       1     15     18     11 MAT       1 
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------LEVELSET ELEMENTS

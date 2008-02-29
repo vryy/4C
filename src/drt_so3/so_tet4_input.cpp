@@ -43,13 +43,10 @@ extern struct _FILES  allfiles;
  *----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::So_tet4::ReadElement()
 {
-  DSTraceHelper dst("So_tet4::ReadElement");
-
-
   int ierr=0;
   const int nnode=4;
   int nodes[4];
-  frchk("SOLIDTET4",&ierr);
+  frchk("SOLIDT4",&ierr);
   if (ierr==1)
   {
     frint_n("TET4",nodes,nnode,&ierr);
@@ -74,11 +71,9 @@ bool DRT::ELEMENTS::So_tet4::ReadElement()
   if (ierr!=1) dserror("Reading of SO_TET4 element material failed");
   SetMaterial(material);
 
-  // read gaussian points
-  frint_n("GP",ngp_,3,&ierr);
-  /*if (ierr!=1) dserror("Reading of So_TET4 element gp failed");
-  for (int i=0; i<3; ++i) if (ngp_[i]!=4) dserror("Only 2 GP for TET4");
-*/
+  // we expect kintype to be total lagrangian
+  kintype_ = so_tet4_totlag;
+   
   // read kinematic type
   char buffer[50];
   frchar("KINEM",buffer,&ierr);
@@ -96,19 +91,6 @@ bool DRT::ELEMENTS::So_tet4::ReadElement()
    }
    else dserror("Reading of SO_TET4 element failed");
   }
-
-  // read stress evaluation/output type
-  frchar("STRESS",buffer,&ierr);
-  if (ierr!=1) dserror("reading of SO_TET4 stress failed");
-  if (strncmp(buffer,"none",4)==0)  stresstype_= so_tet4_stress_none;
-  if (strncmp(buffer,"Gpxyz",5)==0) stresstype_= so_tet4_stress_gpxyz;
-  if (strncmp(buffer,"Gprst",5)==0) stresstype_= so_tet4_stress_gprst;
-  if (strncmp(buffer,"Gp123",5)==0) stresstype_= so_tet4_stress_gp123;
-  if (strncmp(buffer,"Ndxyz",5)==0) stresstype_= so_tet4_stress_ndxyz;
-  if (strncmp(buffer,"Ndrst",5)==0) stresstype_= so_tet4_stress_ndrst;
-  if (strncmp(buffer,"Nd123",5)==0) stresstype_= so_tet4_stress_nd123;
-  // set default: no stresses
-  else stresstype_= so_tet4_stress_none;
 
   return true;
 } // So_tet4::ReadElement()

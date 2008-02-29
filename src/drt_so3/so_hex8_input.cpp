@@ -69,6 +69,9 @@ bool DRT::ELEMENTS::So_hex8::ReadElement()
   frint_n("GP",ngp,3,&ierr);
   if (ierr==1) for (int i=0; i<3; ++i) if (ngp[i]!=2) dserror("Only 2 GP for So_SH8");
 
+  // we expect kintype to be total lagrangian
+  kintype_ = soh8_totlag;
+   
   // read kinematic type
   char buffer[50];
   frchar("KINEM",buffer,&ierr);
