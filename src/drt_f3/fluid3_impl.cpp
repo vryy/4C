@@ -1872,8 +1872,7 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
       rateofstrain *= 2.0;
       rateofstrain = sqrt(rateofstrain);
     }
-//    cout << "Cs_delta_sq " << Cs_delta_sq <<&endl;
-    
+
     visceff = visc + Cs_delta_sq * rateofstrain;
     
     // for evaluation of statistics: remember the 'real' Cs

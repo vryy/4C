@@ -1044,7 +1044,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         {
           Cs_delta_sq_= 0;
         }
-        
+
         params.set<double>("LijMij",LijMij);
         params.set<double>("MijMij",MijMij);
         params.set<double>("center",center);

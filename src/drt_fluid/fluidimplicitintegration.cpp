@@ -283,7 +283,7 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
               ||
               hom_plane != "xz")
           {
-            cout << "      no homogeneous directions specified --- so we use just clipping for Cs\n";
+            cout << "      no homogeneous directions specified --- so we just use pointwise clipping for Cs\n";
           }
         }
         cout << &endl;
@@ -2640,14 +2640,15 @@ void FluidImplicitTimeInt::ApplyFilterForDynamicComputationOfCs()
   Epetra_SerialDenseVector dummyv2;
   Epetra_SerialDenseVector dummyv3;
 
-  // loop all elements on this proc (excluding ghosted ones)
-  for (int nele=0;nele<discret_->NumMyRowElements();++nele)
+  // loop all elements on this proc (including ghosted ones)
+  for (int nele=0;nele<discret_->NumMyColElements();++nele)
   {
     // -----------------------------------------------------------
     // Compute LijMij, MijMij and Cs_delta_sq_    
     
     // get the element
-    DRT::Element* ele = discret_->lRowElement(nele);
+    //DRT::Element* ele = discret_->lRowElement(nele);
+    DRT::Element* ele = discret_->lColElement(nele);
 
     // get element location vector, dirichlet flags and ownerships
     vector<int> lm;
@@ -2675,35 +2676,39 @@ void FluidImplicitTimeInt::ApplyFilterForDynamicComputationOfCs()
         ==
         "channel_flow_of_height_2")
     {
-      // get the result from the element call
-      double LijMij = calc_smag_const_params.get<double>("LijMij");
-      double MijMij = calc_smag_const_params.get<double>("MijMij");
-      double center = calc_smag_const_params.get<double>("center");
-      
-      // add result into result vetor
-
-      // for this purpose, determine the layer (the plane for average)
-      int  nlayer;
-      bool found = false;
-      for (nlayer=0;nlayer<(int)(*planecoords_).size()-1;)
+      // only row elements are included in the global averaging
+      if(ele->Owner() == myrank_)
       {
-        if(center<(*planecoords_)[nlayer+1])
+        // get the result from the element call
+        double LijMij = calc_smag_const_params.get<double>("LijMij");
+        double MijMij = calc_smag_const_params.get<double>("MijMij");
+        double center = calc_smag_const_params.get<double>("center");
+      
+        // add result into result vetor
+        
+        // for this purpose, determine the layer (the plane for average)
+        int  nlayer;
+        bool found = false;
+        for (nlayer=0;nlayer<(int)(*planecoords_).size()-1;)
         {
-          found = true;
-          break;
+          if(center<(*planecoords_)[nlayer+1])
+          {
+            found = true;
+            break;
+          }
+          nlayer++;
         }
-        nlayer++;
+        if (found ==false)
+        {
+          dserror("could not determine element layer");
+        }
+        
+        // add it up
+        local_ele_sum_LijMij[nlayer] += LijMij;
+        local_ele_sum_MijMij[nlayer] += MijMij;
+        
+        local_count_for_average[nlayer]++;
       }
-      if (found ==false)
-      {
-        dserror("could not determine element layer");
-      }
-      
-      // add it up
-      local_ele_sum_LijMij[nlayer] += LijMij;
-      local_ele_sum_MijMij[nlayer] += MijMij;
-      
-      local_count_for_average[nlayer]++;
     }
   }
 

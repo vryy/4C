@@ -40,6 +40,8 @@ data_()
     lines_.resize(0);
     lineptrs_.resize(0);
 
+    Cs_delta_sq_=0;
+    
     sub_acc_old_.resize(0,0);
     sub_vel_.resize(0,0);
     sub_vel_old_.resize(0,0);
@@ -57,6 +59,7 @@ DRT::ELEMENTS::Fluid3::Fluid3(const DRT::ELEMENTS::Fluid3& old) :
 DRT::Element(old),
 gaussrule_(old.gaussrule_),
 is_ale_(old.is_ale_),
+Cs_delta_sq_(old.Cs_delta_sq_),
 data_(old.data_),
 surfaces_(old.surfaces_),
 surfaceptrs_(old.surfaceptrs_),
@@ -120,7 +123,9 @@ void DRT::ELEMENTS::Fluid3::Pack(vector<char>& data) const
   // rewinding bools
   AddtoPack(data,rewind_);
   AddtoPack(data,donerewinding_);
-
+  // Cs_delta_sq_, the Smagorinsky constant for the dynamic Smagorinsky model
+  AddtoPack(data,Cs_delta_sq_);
+  
   // history variables
   AddtoPack(data,sub_acc_old_.extent(blitz::firstDim));
   AddtoPack(data,sub_acc_old_.extent(blitz::secondDim));
@@ -166,6 +171,9 @@ void DRT::ELEMENTS::Fluid3::Unpack(const vector<char>& data)
   gaussrule_ = GaussRule3D(gausrule_integer); //explicit conversion from integer to enum
   // is_ale_
   ExtractfromPack(position,data,is_ale_);
+  // extract Cs_delta_sq_, the Smagorinsky constant for the dynamic
+  // Smagorinsky model
+  ExtractfromPack(position,data,Cs_delta_sq_);
   // rewinding bools
   ExtractfromPack(position,data,rewind_);
   ExtractfromPack(position,data,donerewinding_);
