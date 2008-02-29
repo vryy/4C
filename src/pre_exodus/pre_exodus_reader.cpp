@@ -611,7 +611,7 @@ vector<int> EXODUS::Mesh::OutsideOrientedSide(const vector<int> parentele, const
   double scp = sidenormal[0]*insidevec[0] + sidenormal[1]*insidevec[1] + sidenormal[2]*insidevec[2];
   
   vector<int> out_side;
-  if(scp>0){
+  if(scp<0){
     vector<int> reversechild;
     vector<int>::reverse_iterator rit;
     for (rit=child.rbegin(); rit<child.rend(); ++rit) out_side.push_back(*rit); 
@@ -686,6 +686,33 @@ vector<EXODUS::ElementBlock> EXODUS::Mesh::SideSetToEBlocks(const EXODUS::SideSe
   }
   
   return eblocks;
+}
+
+EXODUS::NodeSet EXODUS::Mesh::SideSetToNodeSet(const EXODUS::SideSet& sideset, const map<int,vector<int> >& sideconn) const
+{
+  map<int,vector<int> >::const_iterator i_side;
+  vector<int>::const_iterator i_node;
+  set<int> nodes;
+  for(i_side = sideconn.begin(); i_side != sideconn.end(); ++i_side)
+    for(i_node = i_side->second.begin(); i_node != i_side->second.end(); ++i_node)
+      nodes.insert(*i_node); //nodes.insert(i_side->second.at(i_node));
+  std::ostringstream nodesetname;
+  nodesetname << "nodes";//sideset.GetName() << "nodes";
+  string propname = "";
+  EXODUS::NodeSet nodeset(nodes,nodesetname.str(),propname);
+ 
+  return nodeset;
+}
+
+set<int> EXODUS::Mesh::GetSideSetNodes(const EXODUS::SideSet& sideset, const map<int,vector<int> >& sideconn) const
+{
+  map<int,vector<int> >::const_iterator i_side;
+  vector<int>::const_iterator i_node;
+  set<int> nodes;
+  for(i_side = sideconn.begin(); i_side != sideconn.end(); ++i_side)
+    for(i_node = i_side->second.begin(); i_node != i_side->second.end(); ++i_node)
+      nodes.insert(*i_node); //nodes.insert(i_side->second.at(i_node));
+  return nodes;
 }
 
 /*----------------------------------------------------------------------*
@@ -977,10 +1004,12 @@ void EXODUS::SideSet::FillSideLists(int* elemlist, int* sidelist) const
 void EXODUS::SideSet::Print(ostream& os, bool verbose) const{
   os << "SideSet, named: " << name_.c_str() << endl
   << "has " << GetNumSides() << " Sides" << endl;
-  map<int,vector<int> >::const_iterator it;
-  for (it=sides_.begin(); it != sides_.end(); it++){
-    os << "Side " << it->first << ": ";
-    os << "Ele: " << it->second.at(0) << ", Side: " << it->second.at(1) << endl;
+  if (verbose){
+    map<int,vector<int> >::const_iterator it;
+    for (it=sides_.begin(); it != sides_.end(); it++){
+      os << "Side " << it->first << ": ";
+      os << "Ele: " << it->second.at(0) << ", Side: " << it->second.at(1) << endl;
+    }
   }
 }
 

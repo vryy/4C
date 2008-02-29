@@ -47,6 +47,8 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
   map<int,ExtrusionType> extrusion_types;
   map<int,ExtrusionType>::const_iterator i_exty;
   
+  map<int,vector<int> > node_pair; // stores new node id with base node id
+
   // loop through all EBlocks to check for extrusion blocks
   for (i_ebs = ebs.begin(); i_ebs != ebs.end(); ++i_ebs ){
     bool toextrude = CheckExtrusion(i_ebs->second);
@@ -57,6 +59,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
     }
   }
   
+  set<int> nodes_from_sideset;
   // loop through all SideSets to check for extrusion
   for (i_sss = sss.begin(); i_sss != sss.end(); ++i_sss ){
     bool toextrude = CheckExtrusion(i_sss->second);
@@ -66,12 +69,14 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
       //extrusion_conns.insert(pair<int,map<int,vector<int> > >(extrusioncounter,basemesh.GetSideSetConn(i_sss->second)));
       extrusion_types.insert(pair<int,ExtrusionType>(extrusioncounter,sideset));
       extrusioncounter ++;
-      // testing
-      vector<EXODUS::ElementBlock> sideblocks = basemesh.SideSetToEBlocks(i_sss->second,sidesetconn);
-      neweblocks.insert(pair<int,EXODUS::ElementBlock>(highestblock,sideblocks[0]));
-      highestblock ++;
-      neweblocks.insert(pair<int,EXODUS::ElementBlock>(highestblock,sideblocks[1]));
-      highestblock ++;
+      // create NodeSet from SideSet to apply bc e.g. pressure on extruded surface
+      nodes_from_sideset = basemesh.GetSideSetNodes(i_sss->second,sidesetconn);
+      // testing: also write out EBlocks of extruding sideset surface
+      //vector<EXODUS::ElementBlock> sideblocks = basemesh.SideSetToEBlocks(i_sss->second,sidesetconn);
+      //neweblocks.insert(pair<int,EXODUS::ElementBlock>(highestblock,sideblocks[0]));
+      //highestblock ++;
+      //neweblocks.insert(pair<int,EXODUS::ElementBlock>(highestblock,sideblocks[1]));
+      //highestblock ++;
     }
   }
   
@@ -94,7 +99,6 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
     // loop through all its elements to create new connectivity  ***************
     map<int,vector<int> > newconn;
     int newele = 0;
-    map<int,vector<int> > node_pair; // stores new node id with base node id
     
     // set of elements already done
     set<int> doneles;
@@ -450,6 +454,19 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
     highestns ++;
 
   } // end of extruding 
+  
+  // transfer nodeIds from initial SideSet Ids to new EleBlock Ids
+  set<int> nodes_extrusion_base;
+  set<int>::iterator it;
+  for(it=nodes_from_sideset.begin(); it!=nodes_from_sideset.end(); ++it)
+    nodes_extrusion_base.insert(node_pair.find(*it)->second.front());
+  std::ostringstream nodesetname;
+  nodesetname << "nodes";//sideset.GetName() << "nodes";
+  string propname = "";
+  EXODUS::NodeSet nodeset_extrusion_base(nodes_extrusion_base,nodesetname.str(),propname);
+  newnodesets.insert(pair<int,EXODUS::NodeSet>(highestns,nodeset_extrusion_base));
+  highestns ++;
+
   
   string newtitle = "extrusion";
   map<int,EXODUS::SideSet> emptysideset;

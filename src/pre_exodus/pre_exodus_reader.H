@@ -129,6 +129,12 @@ public:
   //! Transform SideSet into ElementBlock
   vector<ElementBlock> SideSetToEBlocks(const SideSet& sideset, const map<int,vector<int> >& sidesetconn) const;
   
+  //! Transform SideSet into NodeSet
+  NodeSet SideSetToNodeSet(const SideSet& sideset, const map<int,vector<int> >& sideconn) const;
+
+  //! Get Set of Nodes in SideSet
+  set<int> GetSideSetNodes(const EXODUS::SideSet& sideset, const map<int,vector<int> >& sideconn) const;
+
   //! Get Node map
   map<int,vector<double> > GetNodes() const {return nodes_;}
   
