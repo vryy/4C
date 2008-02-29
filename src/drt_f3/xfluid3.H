@@ -1049,10 +1049,6 @@ public:
 
   //@}
 
-  // to be removed soon or moved to the DRT::Element class
-  // please ask me before using it! a.gerstenberger
-  const DRT::ELEMENTS::XFluid3* GetParent(){return parent_;}
-
 private:
 
   //! action parameters recognized by Fluid3Surface
