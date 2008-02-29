@@ -165,7 +165,7 @@ void ConstrManager::StiffnessAndInternalForces(
         p.set("LagrMultVector",lagrMultVecDense);
         actdisc_.ClearState();
         actdisc_.SetState("displacement",disp);
-        actdisc_.EvaluateCondition(p,stiff,fint,"VolumeConstraint_3D",constrMatrix_);
+        actdisc_.EvaluateCondition(p,stiff,constrMatrix_,fint,null,null,"VolumeConstraint_3D");
         SynchronizeSumConstraint(p,actvalues_,"computed volume",numConstrID_,minConstrID_);
     }
     //Deal with volume constraints
@@ -193,7 +193,7 @@ void ConstrManager::StiffnessAndInternalForces(
         p.set("LagrMultVector",lagrMultVecDense);
         actdisc_.ClearState();
         actdisc_.SetState("displacement",disp);
-        actdisc_.EvaluateCondition(p,stiff,fint,"AreaConstraint_3D",constrMatrix_);
+        actdisc_.EvaluateCondition(p,stiff,constrMatrix_,fint,null,null,"AreaConstraint_3D");
         SynchronizeSumConstraint(p,actvalues_,"computed area",numConstrID_,minConstrID_);
     }
     SynchronizeMinConstraint(p,fact_,"LoadCurveFactor");

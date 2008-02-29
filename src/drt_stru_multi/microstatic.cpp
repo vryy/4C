@@ -159,7 +159,7 @@ solver_(solver)
   p.set("action","calc_init_vol");
   p.set("V0", 0.0);
 //   discret_->Evaluate(p,null,null,null,null,null);
-  discret_->EvaluateCondition(p, null, null, null, "MicroBoundary");
+  discret_->EvaluateCondition(p, null, null, null, null, null, "MicroBoundary");
   V0_ = p.get<double>("V0", -1.0);
   if (V0_ == -1.0)
     dserror("Calculation of initial volume failed");

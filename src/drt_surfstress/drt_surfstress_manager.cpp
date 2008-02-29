@@ -56,7 +56,7 @@ void DRT::SurfStressManager::EvaluateSurfStress(ParameterList& p,
 
     discret_.ClearState();
     discret_.SetState("displacement",disp);
-    discret_.EvaluateCondition(p,stiff,fint,null,"SurfaceStress");
+    discret_.EvaluateCondition(p,stiff,null,fint,null,null,"SurfaceStress");
 
     return;
 }

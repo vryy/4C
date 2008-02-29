@@ -448,13 +448,7 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
                                             RefCountPtr<Epetra_Vector> systemvector,
                                             const string& condstring)
 {
-
-	params.set("assemble matrix 1",false);
-	params.set("assemble matrix 2",false);
-	params.set("assemble vector 1",true);
-	params.set("assemble vector 2",false);
-	params.set("assemble vector 3",false);
-	EvaluateCondition(params,null,systemvector,null,condstring);
+	EvaluateCondition(params,Teuchos::null,Teuchos::null,systemvector,Teuchos::null,Teuchos::null,condstring);
 	return;
 }
 
@@ -465,13 +459,7 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
 void DRT::Discretization::EvaluateCondition(ParameterList& params,
 					    const string& condstring)
 {
-
-	params.set("assemble matrix 1",false);
-	params.set("assemble matrix 2",false);
-	params.set("assemble vector 1",false);
-	params.set("assemble vector 2",false);
-	params.set("assemble vector 3",false);
-	EvaluateCondition(params,null,null,null,condstring);
+	EvaluateCondition(params,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,condstring);
 	return;
 }
 
@@ -481,9 +469,11 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
  *----------------------------------------------------------------------*/
 void DRT::Discretization::EvaluateCondition(ParameterList& params,
                                             RefCountPtr<LINALG::SparseOperator> systemmatrix1,
+                                            RefCountPtr<LINALG::SparseOperator> systemmatrix2,
                                             RefCountPtr<Epetra_Vector> systemvector1,
-                                            const string& condstring,
-                                            RefCountPtr<LINALG::SparseOperator> systemmatrix2)
+                                            Teuchos::RCP<Epetra_Vector> systemvector2,
+                                            Teuchos::RCP<Epetra_Vector> systemvector3,
+                                            const string& condstring)
 {
   if (!Filled()) dserror("FillComplete() was not called");
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
@@ -496,8 +486,10 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
   multimap<string,RefCountPtr<Condition> >::iterator fool;
 
   const bool assemblemat1 = systemmatrix1!=Teuchos::null;
+  const bool assemblemat2 = systemmatrix2!=Teuchos::null;
   const bool assemblevec1 = systemvector1!=Teuchos::null;
-  const bool assemblevec2 = systemmatrix2!=Teuchos::null;
+  const bool assemblevec2 = systemvector1!=Teuchos::null;
+  const bool assemblevec3 = systemvector1!=Teuchos::null;
 
   //-----------------------------------------------------------------------
   // loop through conditions and evaluate them iff they match the criterion
@@ -568,117 +560,21 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
 
         // assembly
         if (assemblemat1) systemmatrix1->Assemble(elematrix1,lm,lmowner);
-        if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
-        if (assemblevec2)
+        if (assemblemat2)
         {
           int minID=params.get("MinID",0);
           vector<int> colvec(1);
           colvec[0]=(*CondIDVec)[0]-minID;
           systemmatrix2->Assemble(elevector2,lm,lmowner,colvec);
         }
-      }
-    }
-  } //for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
-  return;
-} // end of DRT::Discretization::EvaluateCondition
-
-
-
-/*----------------------------------------------------------------------*
- |  evaluate a condition (public)                               tk 07/07|
- *----------------------------------------------------------------------*/
-void DRT::Discretization::EvaluateCondition(ParameterList& params,
-                                            RefCountPtr<LINALG::SparseOperator> systemmatrix1,
-                                            RefCountPtr<Epetra_Vector> systemvector1,
-                                            RefCountPtr<Epetra_Vector> systemvector2,
-                                            const string& condstring)
-{
-  if (!Filled()) dserror("FillComplete() was not called");
-  if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
-
-  // get the current time
-  bool usetime = true;
-  const double time = params.get("total time",-1.0);
-  if (time<0.0) usetime = false;
-
-  multimap<string,RefCountPtr<Condition> >::iterator fool;
-
-  const bool assemblemat1 = systemmatrix1!=Teuchos::null;
-  const bool assemblevec1 = systemvector1!=Teuchos::null;
-  const bool assemblevec2 = systemvector2!=Teuchos::null;
-
-  //-----------------------------------------------------------------------
-  // loop through conditions and evaluate them iff they match the criterion
-  //-----------------------------------------------------------------------
-  for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
-  {
-    if (fool->first == condstring)
-    {
-      DRT::Condition& cond = *(fool->second);
-      map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
-      // if (geom.empty()) dserror("evaluation of condition with empty geometry");
-      // no check for empty geometry here since in parallel computations
-      // can exist processors which do not own a portion of the elements belonging
-      // to the condition geometry
-      map<int,RefCountPtr<DRT::Element> >::iterator curr;
-
-      // Evaluate Loadcurve if defined. Put current load factor in parameterlist
-      const vector<int>*    curve  = cond.Get<vector<int> >("curve");
-      int curvenum = -1;
-      if (curve) curvenum = (*curve)[0];
-      double curvefac = 1.0;
-      if (curvenum>=0 && usetime)
-        curvefac = UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
-      params.set("LoadCurveFactor",curvefac);
-
-      // Get ConditionID of current condition if defined and write value in parameterlist
-      const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
-      if (CondIDVec)
-      {
-        params.set("ConditionID",(*CondIDVec)[0]);
-      }
-
-      params.set<RefCountPtr<DRT::Condition> >("condition", fool->second);
-
-      // define element matrices and vectors
-      Epetra_SerialDenseMatrix elematrix1;
-      Epetra_SerialDenseMatrix elematrix2;
-      Epetra_SerialDenseVector elevector1;
-      Epetra_SerialDenseVector elevector2;
-      Epetra_SerialDenseVector elevector3;
-
-      for (curr=geom.begin(); curr!=geom.end(); ++curr)
-      {
-        // get element location vector and ownerships
-        vector<int> lm;
-        vector<int> lmowner;
-        curr->second->LocationVector(*this,lm,lmowner);
-
-        // get dimension of element matrices and vectors
-        // Reshape element matrices and vectors and init to zero
-        const int eledim = (int)lm.size();
-        elematrix1.Shape(eledim,eledim);
-        elematrix2.Shape(eledim,eledim);
-        elevector1.Size(eledim);
-        elevector2.Size(eledim);
-        elevector3.Size(eledim);
-
-        // call the element specific evaluate method
-        int err = curr->second->Evaluate(params,*this,lm,elematrix1,elematrix2,
-                                         elevector1,elevector2,elevector3);
-        if (err) dserror("error while evaluating elements");
-
-        // assembly
-        if (assemblemat1) systemmatrix1->Assemble(elematrix1,lm,lmowner);
         if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
-        if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner);
+        if (assemblevec2) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
+        if (assemblevec3) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
       }
     }
   } //for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
-
   return;
 } // end of DRT::Discretization::EvaluateCondition
-
 
 /*----------------------------------------------------------------------*
  |  evaluate spatial function (public)                       g.bau 03/07|
