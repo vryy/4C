@@ -37,7 +37,6 @@ int DRT::ELEMENTS::SoDispSurface::Evaluate(     ParameterList&            params
     if (action == "none") dserror("No action supplied");
     else dserror("Unknown type of action for SoDispSurface");
     
-    const DiscretizationType distype = this->Shape();
     switch(act)
     {
     default:
