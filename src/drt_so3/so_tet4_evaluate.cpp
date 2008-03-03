@@ -139,6 +139,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
 
     // evaluate stresses
     case calc_struct_stress: {
+      dserror("Case calc_struct_stress not yet implemented");
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
       vector<double> mydisp(lm.size());
