@@ -187,7 +187,7 @@ void DRT::Discretization::EvaluateNeumann(ParameterList& params, Epetra_Vector& 
 
 \param cond            The condition object
 \param dis             The discretisation
-\param usetime         
+\param usetime
 \param time            Evaluation time
 \param systemvector    Vector to apply DBCs to (eg displ. in structure, vel. in fluids)
 \param systemvectord   First time derivative of DBCs
@@ -208,7 +208,7 @@ static void DoDirichletCondition(DRT::Condition&             cond,
 /*----------------------------------------------------------------------*/
 /*!
 \brief evaluate spatial function (public)
-\author g.bau 
+\author g.bau
 \date 03/07
 */
 static double EvaluateFunction(DRT::Node*        node,
@@ -519,14 +519,14 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
       if (CondIDVec)
       {
         params.set("ConditionID",(*CondIDVec)[0]);
+        char factorname[30];
+        sprintf(factorname,"LoadCurveFactor %d",(*CondIDVec)[0]);
+        params.set(factorname,curvefac);
       }
       else if (assemblemat2)
-      {        
+      {
         dserror("Cannot use SparseMatrix version of condition evaluation for conditions without ConditionID");
       }
-      char factorname[30];
-      sprintf(factorname,"LoadCurveFactor %d",(*CondIDVec)[0]);
-      params.set(factorname,curvefac);
 
       params.set<RefCountPtr<DRT::Condition> >("condition", fool->second);
 
