@@ -884,11 +884,11 @@ void DRT::UTILS::SetupFluidSplit(const DRT::Discretization& dis,
       // test for dof position
       if (j<static_cast<unsigned>(ndim))
       {
-        conddofset.insert(dof[j]);
+        otherdofset.insert(dof[j]);
       }
       else
       {
-        otherdofset.insert(dof[j]);
+        conddofset.insert(dof[j]);
       }
     }
   }

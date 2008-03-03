@@ -200,11 +200,11 @@ public:
   Teuchos::RCP<Epetra_Vector> InvDirichlet() { return invtoggle_; }
   Teuchos::RCP<Epetra_Vector> Dispnp() { return dispnp_; }
   Teuchos::RCP<Epetra_Vector> Dispn() { return dispn_; }
-  Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return sysmat_; }
+  Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
 
-  Teuchos::RCP<const Epetra_Map> VelocityRowMap() { return velpressplitter_.CondMap(); }
-  Teuchos::RCP<const Epetra_Map> PressureRowMap() { return velpressplitter_.OtherMap(); }
+  Teuchos::RCP<const Epetra_Map> VelocityRowMap() { return velpressplitter_.OtherMap(); }
+  Teuchos::RCP<const Epetra_Map> PressureRowMap() { return velpressplitter_.CondMap(); }
 
   double ResidualScaling() const { return density_/dta_/theta_; }
 
@@ -235,7 +235,7 @@ public:
 
   */
   void ApplyFilterForDynamicComputationOfCs();
-    
+
   //@}
 
   /// integrate shape functions at nodes marked by condition
@@ -265,7 +265,7 @@ protected:
   int                           myrank_;
   bool                          alefluid_;
   bool                          dynamic_smagorinsky_;
-  
+
   double time_;
   int step_;
   int stepmax_;
@@ -299,7 +299,7 @@ protected:
   double Cs_fs_;
 
   /// (standard) system matrix
-  RCP<LINALG::SparseMatrix> sysmat_;
+  RCP<LINALG::SparseOperator> sysmat_;
 
   /// toggle vector indicating which dofs have Dirichlet BCs
   RCP<Epetra_Vector>    dirichtoggle_;
@@ -356,10 +356,10 @@ protected:
   /// turbulence statistics, channel flow
   RCP<TurbulenceStatistics>    turbulencestatistics_;
 
-  
+
   // Vectors used for filtering (for dynamic Smagorinsky model)
   // --------------------------
-  
+
   RCP<Epetra_MultiVector>  filtered_vel_;
   RCP<Epetra_MultiVector>  filtered_reynoldsstress_;
   RCP<Epetra_MultiVector>  filtered_modeled_subgrid_stress_;
@@ -377,8 +377,8 @@ protected:
   LINALG::MapExtractor      velpressplitter_;
 
   RCP<PeriodicBoundaryConditions> pbc_;
-  
-  
+
+
   // time measurement
   // ----------------
   RCP<Teuchos::Time> timetotal_   ;
@@ -400,11 +400,59 @@ protected:
   RCP<TimeMonitor> tm6_ref_ ;
   RCP<TimeMonitor> tm7_ref_ ;
   RCP<TimeMonitor> tm8_ref_ ;
-  
+
   double           dtele_;
   double           dtsolve_;
   double           dtfilter_;
 
+  /// velocity-pressure block matrix split strategy
+  class VelPressSplitStrategy
+  {
+  public:
+
+    /// construct with a block matrix base
+    explicit VelPressSplitStrategy(LINALG::BlockSparseMatrixBase& mat)
+      : mat_(mat), numdim_(-1) {}
+
+    /// find row block to a given row gid
+    int RowBlock(int lrow, int rgid)
+    {
+      if ((lrow%(numdim_+1))<numdim_)
+        return 0;
+      return 1;
+    }
+
+    /// find column block to a given column gid
+    int ColBlock(int rblock, int lcol, int cgid)
+    {
+      if ((lcol%(numdim_+1))<numdim_)
+        return 0;
+      return 1;
+    }
+
+    /// assemble into the given block
+    void Assemble(double val,
+                  int lrow, int rgid, int rblock,
+                  int lcol, int cgid, int cblock)
+    {
+      LINALG::SparseMatrix& matrix = mat_.Matrix(rblock,cblock);
+      matrix.Assemble(val,rgid,cgid);
+    }
+
+    /// assemble the remaining ghost entries
+    void Complete() {}
+
+    /// set number of velocity dofs
+    void SetNumdim(int numdim) { numdim_ = numdim; }
+
+  private:
+
+    /// my block matrix base
+    LINALG::BlockSparseMatrixBase& mat_;
+
+    /// number of velocity dofs
+    int numdim_;
+  };
 
 }; // class FluidImplicitTimeInt
 

@@ -210,8 +210,8 @@ public:
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return sysmat_; }
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
 
-  Teuchos::RCP<const Epetra_Map> VelocityRowMap() { return velpressplitter_.CondMap(); }
-  Teuchos::RCP<const Epetra_Map> PressureRowMap() { return velpressplitter_.OtherMap(); }
+  Teuchos::RCP<const Epetra_Map> VelocityRowMap() { return velpressplitter_.OtherMap(); }
+  Teuchos::RCP<const Epetra_Map> PressureRowMap() { return velpressplitter_.CondMap(); }
 
   double ResidualScaling() const { return density_/dta_/theta_; }
 
@@ -242,7 +242,7 @@ public:
 
   */
   void ApplyFilterForDynamicComputationOfCs();
-    
+
   //@}
 
   /// integrate shape functions at nodes marked by condition
@@ -367,10 +367,10 @@ protected:
   /// turbulence statistics, channel flow
   RCP<TurbulenceStatistics>    turbulencestatistics_;
 
-  
+
   // Vectors used for filtering (for dynamic Smagorinsky model)
   // --------------------------
-  
+
   RCP<Epetra_MultiVector>  filtered_vel_;
   RCP<Epetra_MultiVector>  filtered_reynoldsstress_;
   RCP<Epetra_MultiVector>  filtered_modeled_subgrid_stress_;
@@ -388,8 +388,8 @@ protected:
   LINALG::MapExtractor      velpressplitter_;
 
   RCP<PeriodicBoundaryConditions> pbc_;
-  
-  
+
+
   // time measurement
   // ----------------
   RCP<Teuchos::Time> timetotal_   ;
@@ -411,7 +411,7 @@ protected:
   RCP<TimeMonitor> tm6_ref_ ;
   RCP<TimeMonitor> tm7_ref_ ;
   RCP<TimeMonitor> tm8_ref_ ;
-  
+
   double           dtele_;
   double           dtsolve_;
   double           dtfilter_;

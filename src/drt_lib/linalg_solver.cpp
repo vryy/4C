@@ -366,7 +366,8 @@ void LINALG::Solver::Solve_aztec(const bool reset)
   if (!A)
   {
     doifpack = false;
-    doml     = false;
+    // simple on a block matrix needs ml as well
+    //doml     = false;
   }
 
   // do ifpack if desired
@@ -405,8 +406,7 @@ void LINALG::Solver::Solve_aztec(const bool reset)
     else if (dosimpler)
     {
       // SIMPLER does not need copy of preconditioning matrix to live
-      RCP<Epetra_CrsMatrix> rcpA = rcp(A,false);
-      P_ = rcp(new LINALG::SIMPLER_Operator(rcpA,
+      P_ = rcp(new LINALG::SIMPLER_Operator(A_,
                                             Params(),
                                             Params().sublist("SIMPLER"),
                                             outfile_));
@@ -1095,8 +1095,8 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
 RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const LINALG::SparseMatrix& A,
                                              const LINALG::SparseMatrix& B,
                                              bool complete)
-{ 
-  return MLMultiply(*A.EpetraMatrix(),*B.EpetraMatrix(),complete); 
+{
+  return MLMultiply(*A.EpetraMatrix(),*B.EpetraMatrix(),complete);
 }
 
 /*----------------------------------------------------------------------*
@@ -1133,7 +1133,7 @@ RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& A,
   ML_CommInfoOP* getrow_comm = ml_AtimesB->getrow->pre_comm;
   if (!getrow_comm) dserror("ML_Operator does not have CommInfo");
   ML_Comm* comm = ml_AtimesB->comm;
-  if (N_local != B.DomainMap().NumMyElements()) 
+  if (N_local != B.DomainMap().NumMyElements())
     dserror("Mismatch in local row dimension between ML and Epetra");
   int N_rcvd  = 0;
   int N_send  = 0;
@@ -1166,17 +1166,17 @@ RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& A,
         cmap[getrow_comm->neighbors[i].rcv_list[j]] = (int)dtemp[count++];
     }
   }
-  else 
+  else
     for (int i=0; i<N_local+N_rcvd; ++i) cmap[i] = (int)dtemp[i];
   dtemp.clear();
-  
+
   // we can now determine a matching column map for the result
   Epetra_Map gcmap(-1,N_local+N_rcvd,&cmap[0],0,A.Comm());
 
   // Allocate our result matrix and fill it
   // this is a very generous guess:
   int guessnpr = A.MaxNumEntries()*B.MaxNumEntries();
-  RCP<Epetra_CrsMatrix> result 
+  RCP<Epetra_CrsMatrix> result
     = rcp(new Epetra_CrsMatrix(Copy,A.RangeMap(),gcmap,guessnpr,false));
 
   int allocated=0;
@@ -1210,7 +1210,7 @@ RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& A,
   if (bindx) ML_free(bindx);
   if (val) ML_free(val);
   ML_Operator_Destroy(&ml_AtimesB);
-  if (complete) 
+  if (complete)
   {
     int err = result->FillComplete(B.DomainMap(),A.RangeMap());
     if (err) dserror("Epetra_CrsMatrix::FillComplete returned err=%d",err);

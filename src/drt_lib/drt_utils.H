@@ -132,8 +132,11 @@ namespace UTILS
   /// Split dof row map of discretization into velocity and pressure maps
   /*!
 
-    We assume that each nodes possesses ndim velocity dofs and (optionally)
+    We assume that each node possesses ndim velocity dofs and (optionally)
     one pressure dof. The dof row map is thus split in two.
+
+    The velocity dofs are assigned to map 0 (the other map) and the pressure
+    dofs are assigned to map 1 (the condition map).
 
     \param dis : (in) Discretization
     \param ndim : (in) dimensions of problem (2 or 3)
@@ -145,16 +148,16 @@ namespace UTILS
   void SetupFluidSplit(const DRT::Discretization& dis,
                        int ndim,
                        LINALG::MapExtractor& extractor);
-  
+
   /*!
    * a common task is to get an array of the positions of all nodes of this element
-   * 
+   *
    * this function does just that, so we don't have the associated loop repeated too often
-   * 
+   *
    * Note: return value optimization avoids copying the array
-   * 
+   *
    * \return Array with 3 dimensional position of all element nodes in the coordinate system of the nodes
-   * 
+   *
    * \author a.ger
    * \date 02/08
    */
@@ -164,21 +167,21 @@ namespace UTILS
 
   /*!
    * a common task is to get an array of the positions of all nodes of this element
-   * 
+   *
    * this function does just that, so we don't have the associated loop repeated too often
-   * 
+   *
    * Note: return value optimization avoids copying the array
-   * 
+   *
    * \return Array with 3 dimensional position of all element nodes in the coordinate system of the nodes
-   * 
+   *
    * \author a.ger
    * \date 02/08
    */
   Epetra_SerialDenseMatrix PositionArray(
           const DRT::Element* ele           ///< pointer to element, whose nodes we evaluate for their position
           );
-  
-  
+
+
 } // namespace UTILS
 } // namespace DRT
 

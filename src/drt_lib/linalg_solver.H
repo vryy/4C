@@ -378,20 +378,20 @@ It uses ML instead of EpetraExt for the multiplication kernel.
          This method is not well tested (yet) and there is some risk of
          failure AND wrong results without notice. This depends
          on structural properties of the input matrices A and B.
-         First: 
+         First:
          A,B should NOT contain columns in the
-         column and/or domain map on a processor, 
+         column and/or domain map on a processor,
          where there is no nonzero entry in that column on a specific processor.
          This will definitely lead to failure but is a very rare case.
-         Second: 
+         Second:
          There should not be a row in row/rangemap with no
          nonzero entry in that row on any processor.
          Third:
          Very weirdo column orderings might lead to trouble, but
-         scattered row/column ordering as usually the case in PDE 
+         scattered row/column ordering as usually the case in PDE
          problems should work fine.
          Fourth:
-         If you have a choice how to formulate your problem: 
+         If you have a choice how to formulate your problem:
 /pre>
 
 \note The Mat-Mat-Mult kernel used herein
@@ -401,10 +401,10 @@ It uses ML instead of EpetraExt for the multiplication kernel.
 \note There is no natural transpose multiply in ML. So if you need a
       transpose-Multiply you have to transpose outside (or write a wrapper
       for this method)
-      
+
 \note ML wipes all exact zero entries in the product. So its perfectly
       ok if your product has less nonzeros than with the other
-      LINALG::Multiply methods.      
+      LINALG::Multiply methods.
 
 \param A (in)       : Matrix A for C=A*B
 \param B (in)       : Matrix B for C=A*B

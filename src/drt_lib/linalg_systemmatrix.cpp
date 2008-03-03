@@ -325,7 +325,7 @@ void  LINALG::SparseMatrix::Complete(const Epetra_Map& domainmap, const Epetra_M
 /*----------------------------------------------------------------------*
  |  Apply dirichlet conditions  (public)                     mwgee 02/07|
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle)
+void LINALG::SparseMatrix::ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle, bool diagonalblock)
 {
   if (not Filled())
     dserror("expect filled matrix to apply dirichlet conditions");
@@ -369,12 +369,16 @@ void LINALG::SparseMatrix::ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbct
       }
       else
       {
-        double one = 1.0;
+        double v;
+        if (diagonalblock)
+          v = 1.0;
+        else
+          v = 0.0;
 #ifdef DEBUG
-        int err = Anew->InsertGlobalValues(row,1,&one,&row);
+        int err = Anew->InsertGlobalValues(row,1,&v,&row);
         if (err<0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d",err);
 #else
-        Anew->InsertGlobalValues(row,1,&one,&row);
+        Anew->InsertGlobalValues(row,1,&v,&row);
 #endif
       }
     }
@@ -399,11 +403,14 @@ void LINALG::SparseMatrix::ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbct
         memset(&values[indexOffset[i]], 0,
                (indexOffset[i+1]-indexOffset[i])*sizeof(double));
 
-        double one = 1.0;
-        err = sysmat_->SumIntoMyValues(i,1,&one,&i);
+        if (diagonalblock)
+        {
+          double one = 1.0;
+          err = sysmat_->SumIntoMyValues(i,1,&one,&i);
 #ifdef DEBUG
-        if (err<0) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d",err);
+          if (err<0) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d",err);
 #endif
+        }
       }
     }
   }
@@ -921,7 +928,7 @@ bool LINALG::BlockSparseMatrixBase::Filled() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::BlockSparseMatrixBase::ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle)
+void LINALG::BlockSparseMatrixBase::ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle, bool diagonalblock)
 {
   int rows = Rows();
   int cols = Cols();
@@ -931,7 +938,7 @@ void LINALG::BlockSparseMatrixBase::ApplyDirichlet(const Teuchos::RCP<Epetra_Vec
     for (int cblock=0; cblock<cols; ++cblock)
     {
       LINALG::SparseMatrix& bmat = Matrix(rblock,cblock);
-      bmat.ApplyDirichlet(rowtoggle);
+      bmat.ApplyDirichlet(rowtoggle,diagonalblock and rblock==cblock);
     }
   }
 }
@@ -1049,7 +1056,7 @@ const Epetra_Map& LINALG::BlockSparseMatrixBase::OperatorRangeMap() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const LINALG::BlockSparseMatrixBase& mat)
+ostream& LINALG::operator << (ostream& os, const LINALG::BlockSparseMatrixBase& mat)
 {
   for (int i=0; i<mat.Rows(); ++i)
     for (int j=0; j<mat.Cols(); ++j)

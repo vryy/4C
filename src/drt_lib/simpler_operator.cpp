@@ -25,7 +25,7 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 02/08|
  *----------------------------------------------------------------------*/
-LINALG::SIMPLER_Operator::SIMPLER_Operator(RCP<Epetra_CrsMatrix> A,
+LINALG::SIMPLER_Operator::SIMPLER_Operator(RCP<Epetra_Operator> A,
                                            const ParameterList& velocitylist,
                                            const ParameterList& pressurelist,
                                            FILE* outfile)
@@ -48,53 +48,66 @@ LINALG::SIMPLER_Operator::SIMPLER_Operator(RCP<Epetra_CrsMatrix> A,
 /*----------------------------------------------------------------------*
  |  (private)                                                mwgee 02/08|
  *----------------------------------------------------------------------*/
-void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_CrsMatrix> A,
+void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_Operator> A,
                                      const ParameterList& origvlist,
                                      const ParameterList& origplist)
 {
   const int myrank = A->Comm().MyPID();
   Epetra_Time time(A->Comm());
   Epetra_Time totaltime(A->Comm());
-  
+
   // see whether velocity and pressure solver where configured as ML
   bool visml = vlist_.isSublist("ML Parameters");
   bool pisml = plist_.isSublist("ML Parameters");
   if (!visml) dserror("SIMPLER only works with ML-AMG for velocity");
 
-  // get # dofs per node from vlist_ and split row map
-  time.ResetStartTime();
   const int ndofpernode = vlist_.sublist("ML Parameters").get<int>("PDE equations",0);
   if (ndofpernode != 4 && ndofpernode !=3) dserror("You should have either 3 or 4 dofs per node at this point");
-  const Epetra_Map& fullmap = A->RowMap();
+  const Epetra_Map& fullmap = A->OperatorRangeMap();
   const int length = fullmap.NumMyElements();
   const int nv     = ndofpernode-1;
   const int nlnode = length / ndofpernode;
-  vector<int> vgid(nlnode*nv);
-  vector<int> pgid(nlnode);
-  int vcount=0;
-  for (int i=0; i<nlnode; ++i)
+  A_ = rcp_dynamic_cast<BlockSparseMatrixBase>(A);
+  if (A_!=null)
   {
-    for (int j=0; j<ndofpernode-1; ++j)
-      vgid[vcount++] = fullmap.GID(i*ndofpernode+j);
-    pgid[i] = fullmap.GID(i*ndofpernode+ndofpernode-1);
+    // Make a shallow copy of the block matrix as the preconditioners on the
+    // blocks will be reused and the next assembly will replace the block
+    // matrices.
+    A_ = A_->Clone(View);
+    //A_ = A_->Clone(Copy);
+    mmex_ = A_->RangeExtractor();
   }
-  vector<RCP<const Epetra_Map> > maps(2);
-  maps[0] = rcp(new Epetra_Map(-1,nlnode*nv,&vgid[0],0,fullmap.Comm()));
-  maps[1] = rcp(new Epetra_Map(-1,nlnode,&pgid[0],0,fullmap.Comm()));
-  vgid.clear(); pgid.clear();
-  mmex_.Setup(fullmap,maps);
-  if (!myrank && SIMPLER_TIMING) printf("--- Time to split map       %10.3E\n",time.ElapsedTime());
-  time.ResetStartTime();
-
-  // wrap matrix in SparseMatrix and split it into 2x2 BlockMatrix
+  else
   {
-    SparseMatrix fullmatrix(A);
-    A_ = fullmatrix.Split<LINALG::DefaultBlockMatrixStrategy>(mmex_,mmex_);
-    if (!myrank && SIMPLER_TIMING) printf("--- Time to split matrix    %10.3E\n",time.ElapsedTime());
+    // get # dofs per node from vlist_ and split row map
     time.ResetStartTime();
-    A_->Complete();
-    if (!myrank && SIMPLER_TIMING) printf("--- Time to complete matrix %10.3E\n",time.ElapsedTime());
+    vector<int> vgid(nlnode*nv);
+    vector<int> pgid(nlnode);
+    int vcount=0;
+    for (int i=0; i<nlnode; ++i)
+    {
+      for (int j=0; j<ndofpernode-1; ++j)
+        vgid[vcount++] = fullmap.GID(i*ndofpernode+j);
+      pgid[i] = fullmap.GID(i*ndofpernode+ndofpernode-1);
+    }
+    vector<RCP<const Epetra_Map> > maps(2);
+    maps[0] = rcp(new Epetra_Map(-1,nlnode*nv,&vgid[0],0,fullmap.Comm()));
+    maps[1] = rcp(new Epetra_Map(-1,nlnode,&pgid[0],0,fullmap.Comm()));
+    vgid.clear(); pgid.clear();
+    mmex_.Setup(fullmap,maps);
+    if (!myrank && SIMPLER_TIMING) printf("--- Time to split map       %10.3E\n",time.ElapsedTime());
     time.ResetStartTime();
+
+    // wrap matrix in SparseMatrix and split it into 2x2 BlockMatrix
+    {
+      SparseMatrix fullmatrix(rcp_dynamic_cast<Epetra_CrsMatrix>(A));
+      A_ = fullmatrix.Split<LINALG::DefaultBlockMatrixStrategy>(mmex_,mmex_);
+      if (!myrank && SIMPLER_TIMING) printf("--- Time to split matrix    %10.3E\n",time.ElapsedTime());
+      time.ResetStartTime();
+      A_->Complete();
+      if (!myrank && SIMPLER_TIMING) printf("--- Time to complete matrix %10.3E\n",time.ElapsedTime());
+      time.ResetStartTime();
+    }
   }
 
   // split nullspace into velocity and pressure subproblem
@@ -108,7 +121,7 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_CrsMatrix> A,
     {
       (*vnewns)[i*nv] = 1.0;
       (*vnewns)[vlength+i*nv+1] = 1.0;
-      (*vnewns)[2*vlength+i*nv+2] = 1.0;
+      if (nv>2) (*vnewns)[2*vlength+i*nv+2] = 1.0;
     }
     vlist_.sublist("ML Parameters").set("null space: vectors",&((*vnewns)[0]));
     vlist_.sublist("ML Parameters").remove("nullspace",false);

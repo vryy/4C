@@ -3,7 +3,7 @@
 
 \class LINALG::SIMPLER_Operator
 
-\brief An approximate block factorization preconditioner based on the 
+\brief An approximate block factorization preconditioner based on the
        SIMPLE family of methods
 
 <pre>
@@ -56,7 +56,7 @@ namespace LINALG
 {
 
 /*!
-\class AMG_Operator
+\class SIMPLER_Operator
 
 \brief A multipurpose experimental multigrid operator
 
@@ -73,7 +73,7 @@ public:
   /*!
   \brief Standard Constructor
   */
-  explicit SIMPLER_Operator(RCP<Epetra_CrsMatrix> A,
+  explicit SIMPLER_Operator(RCP<Epetra_Operator> A,
                             const ParameterList& velocitylist,
                             const ParameterList& pressurelist,
                             FILE* outfile = NULL);
@@ -90,35 +90,35 @@ public:
 
   /*!
   \brief get Comm of this class
-  
-  Derived from Epetra_Operator, returns ref to the Epetra_Comm of this class 
-  
+
+  Derived from Epetra_Operator, returns ref to the Epetra_Comm of this class
+
   */
   const Epetra_Comm& Comm() const {return(A_->Comm());}
 
 
   /*!
   \brief Get fine level OperatorDomainMap
-  
+
   Derived from Epetra_Operator, get fine level OperatorDomainMap
-  
+
   */
   const Epetra_Map& OperatorDomainMap() const {return A_->FullDomainMap();}
 
   /*!
   \brief Get fine level OperatorRangeMap
-  
+
   Derived from Epetra_Operator, get fine level OperatorRangeMap
-  
+
   */
   const Epetra_Map& OperatorRangeMap() const {return A_->FullRangeMap();}
-  
+
   /*!
   \brief ApplyInverse the preconditioner
-  
-   ApplyInverse the preconditioner. Method is derived from Epetra_Operator. 
-   
-   
+
+   ApplyInverse the preconditioner. Method is derived from Epetra_Operator.
+
+
    \param X   (In) : Epetra_MultiVector matching the fine level map of this
                      preconditioner
    \param Y (Out)  : Epetra_MultiVector containing the result on output
@@ -128,17 +128,17 @@ public:
   /*!
   \brief not implemented
   */
-  int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const 
-  { 
+  int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
+  {
     dserror("Apply does not make sense for LINALG::SIMPLER_Operator");
     return(-1);
   }
-    
+
   /*!
   \brief not implemented
   */
-  int SetUseTranspose(bool UseTranspose) 
-  { 
+  int SetUseTranspose(bool UseTranspose)
+  {
     dserror("SetUseTranspose not impl.");
     return -1;
   }
@@ -146,7 +146,7 @@ public:
   /*!
   \brief not implemented
   */
-  double NormInf() const 
+  double NormInf() const
   {
     dserror("NormInf not impl.");
     return(-1.0);
@@ -156,7 +156,7 @@ public:
   /*!
   \brief not implemented
   */
-  bool UseTranspose() const 
+  bool UseTranspose() const
   {
     dserror("UseTranspose not impl.");
     return false;
@@ -165,7 +165,7 @@ public:
   /*!
   \brief not implemented
   */
-  bool HasNormInf() const 
+  bool HasNormInf() const
   {
     dserror("HasNormInf not impl.");
     return false;
@@ -180,36 +180,36 @@ private:
   /*!
   \brief setup phase of preconditioner
   */
-  void Setup(RCP<Epetra_CrsMatrix> A,
+  void Setup(RCP<Epetra_Operator> A,
              const ParameterList& origvlist,
              const ParameterList& origplist);
 
   /*!
   \brief do one sweep of simple or simplec preconditioning
   */
-  void Simple(RCP<Epetra_Vector> vx, RCP<Epetra_Vector> px, 
+  void Simple(RCP<Epetra_Vector> vx, RCP<Epetra_Vector> px,
               RCP<Epetra_Vector> vb, RCP<Epetra_Vector> pb) const;
 
   /*!
   \brief do one sweep of simpler preconditioning
   */
-  void Simpler(RCP<Epetra_Vector> vx, RCP<Epetra_Vector> px, 
-              RCP<Epetra_Vector> vb, RCP<Epetra_Vector> pb) const;
+  void Simpler(RCP<Epetra_Vector> vx, RCP<Epetra_Vector> px,
+               RCP<Epetra_Vector> vb, RCP<Epetra_Vector> pb) const;
 
 
   /*!
   \brief do one sweep of simple or simplec preconditioning
   */
-  void CheapSimple(RCP<Epetra_Vector> vx, RCP<Epetra_Vector> px, 
+  void CheapSimple(RCP<Epetra_Vector> vx, RCP<Epetra_Vector> px,
                    RCP<Epetra_Vector> vb, RCP<Epetra_Vector> pb) const;
 
   FILE*                                               outfile_; // error file to write output to or NULL
   ParameterList                                       vlist_;   // list for velocity solver
   ParameterList                                       plist_;   // list for pressure solver
   double                                              alpha_;   // pressure damping \in (0,1]
-  
+
   MultiMapExtractor                                   mmex_;    // a  multimapetxractor to handle extracts
-  RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy> > A_;       // 2x2 block matrix
+  RCP<BlockSparseMatrixBase>                          A_;       // 2x2 block matrix
   RCP<SparseMatrix>                                   diagAinv_;// inverse of main diagonal of A(0,0)
   RCP<SparseMatrix>                                   S_;       // Approximate Schur complement on the pressure space
 

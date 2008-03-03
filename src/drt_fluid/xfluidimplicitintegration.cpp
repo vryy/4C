@@ -246,7 +246,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
     samstop_   = turbmodelparams->get<int>("SAMPLING_STOP",1);
     dumperiod_ = turbmodelparams->get<int>("DUMPING_PERIOD",1);
   }
-    
+
 
   // -------------------------------------------------------------------
   // necessary only for the VM3 approach: fine-scale solution vector
@@ -320,7 +320,7 @@ void XFluidImplicitTimeInt::SetupXFluidSplit(
 	RCP<Epetra_Map> prerowmap = rcp(new Epetra_Map(-1,
 			premapdata.size(),&premapdata[0],0,
 			discret_->Comm()));
-	
+
 	const Epetra_Map* map = discret_->DofRowMap();
 	extractor.Setup(*map, velrowmap, prerowmap);
 }
@@ -392,7 +392,7 @@ void XFluidImplicitTimeInt::Integrate()
   }
 
   // end total time measurement
-  tm0_ref_ = null; 
+  tm0_ref_ = null;
 
   // print the results of time measurements
   //cout<<endl<<endl;
@@ -518,7 +518,7 @@ void XFluidImplicitTimeInt::TimeLoop()
     //                    calculate lift'n'drag forces
     // -------------------------------------------------------------------
     int liftdrag = params_.get<int>("liftdrag");
-  
+
     if(liftdrag == 0); // do nothing, we don't want lift & drag
     if(liftdrag == 1)
       dserror("how did you manage to get here???");
@@ -824,20 +824,20 @@ void XFluidImplicitTimeInt::NonlinearSolve()
         string turbulence_approach
           =
           turbparams.get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES");
-        
+
         if (turbulence_approach == "CLASSICAL_LES")
         {
           string turbulence_phys_mod
             =
             turbparams.get<string>("PHYSICAL_MODEL","no_model");
-          
+
           if(turbulence_phys_mod == "Dynamic_Smagorinsky")
           {
             this->ApplyFilterForDynamicComputationOfCs();
           }
         }
       }
-      
+
       // create the parameters for the discretization
       ParameterList eleparams;
 
@@ -864,11 +864,11 @@ void XFluidImplicitTimeInt::NonlinearSolve()
         eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
       }
 
-      
+
       // set vector values needed by elements
       discret_->ClearState();
       discret_->SetState("velnp",velnp_);
-            
+
       discret_->SetState("hist"  ,hist_ );
       if (alefluid_)
       {
@@ -890,7 +890,7 @@ void XFluidImplicitTimeInt::NonlinearSolve()
 
 
         // call the VM3 constructor (only in the first time step)
-        if (step_ == 1) 
+        if (step_ == 1)
         {
           // zero fine-scale vector
           fsvelnp_->PutScalar(0.0);
@@ -946,7 +946,7 @@ void XFluidImplicitTimeInt::NonlinearSolve()
 
         density = eleparams.get("density", 0.0);
         if (density <= 0.0) dserror("recieved illegal density value");
-        
+
         // finalize the complete matrix
         sysmat_->Complete();
       }
@@ -973,33 +973,33 @@ void XFluidImplicitTimeInt::NonlinearSolve()
     double incvelnorm_L2;
     double velnorm_L2;
     double vresnorm;
-    
-    Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractCondVector(residual_);
+
+    Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractOtherVector(residual_);
     onlyvel->Norm2(&vresnorm);
 
-    velpressplitter_.ExtractCondVector(incvel_,onlyvel);
+    velpressplitter_.ExtractOtherVector(incvel_,onlyvel);
     onlyvel->Norm2(&incvelnorm_L2);
 
-    velpressplitter_.ExtractCondVector(velnp_,onlyvel);
+    velpressplitter_.ExtractOtherVector(velnp_,onlyvel);
     onlyvel->Norm2(&velnorm_L2);
 
     double incprenorm_L2;
     double prenorm_L2;
     double presnorm;
-    
-    Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractOtherVector(residual_);
+
+    Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractCondVector(residual_);
     onlypre->Norm2(&presnorm);
 
-    velpressplitter_.ExtractOtherVector(incvel_,onlypre);
+    velpressplitter_.ExtractCondVector(incvel_,onlypre);
     onlypre->Norm2(&incprenorm_L2);
 
-    velpressplitter_.ExtractOtherVector(velnp_,onlypre);
+    velpressplitter_.ExtractCondVector(velnp_,onlypre);
     onlypre->Norm2(&prenorm_L2);
 
     double incfullnorm_L2;
     double fullnorm_L2;
     double fullresnorm;
-    
+
       Epetra_Vector full(*dofrowmap);
       Epetra_Import importer(*dofrowmap,residual_->Map());
 
@@ -1014,7 +1014,7 @@ void XFluidImplicitTimeInt::NonlinearSolve()
       err = full.Import(*velnp_,importer,Insert);
       if (err) dserror("Import using importer returned err=%d",err);
       full.Norm2(&fullnorm_L2);
-    
+
 
     // care for the case that nothing really happens in the velocity
     // or pressure field
@@ -1141,7 +1141,7 @@ void XFluidImplicitTimeInt::NonlinearSolve()
       }
       solver_.Solve(sysmat_->EpetraMatrix(),incvel_,residual_,true,itnum==1);
       solver_.ResetTolerance();
-      
+
       // end time measurement for solver
       tm7_ref_=null;
       dtsolve_=ds_cputime()-tcpu;
@@ -1838,22 +1838,22 @@ void XFluidImplicitTimeInt::SetInitialFlowField(
     if(whichinitialfield==3)
     {
       const int numdim = params_.get<int>("number of velocity degrees of freedom");
-      
+
       const Epetra_Map* dofrowmap = discret_->DofRowMap();
-      
+
       int err =0;
-      
+
       // random noise is perc percent of the initial profile
-      
+
       double perc = params_.sublist("TURBULENCE MODEL").get<double>("CHAN_AMPL_INIT_DIST",0.1);
-      
+
       // out to screen
       if (myrank_==0)
       {
         cout << "Disturbed initial profile:   max. " << perc << "\% random perturbation\n";
         cout << "\n\n";
       }
-      
+
       // loop all nodes on the processor
       for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();++lnodeid)
       {
@@ -1861,50 +1861,50 @@ void XFluidImplicitTimeInt::SetInitialFlowField(
         DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
         // the set of degrees of freedom associated with the node
         vector<int> nodedofset = discret_->Dof(lnode);
-        
+
         // the noise is proportional to the maximum component of the
         // undisturbed initial field in this point
         double initialval=0;
-      
+
         // direction with max. profile
         int flowdirection = 0;
-        
+
         for(int index=0;index<numdim;++index)
         {
           int gid = nodedofset[index];
           int lid = dofrowmap->LID(gid);
-          
+
           double thisval=(*velnp_)[lid];
           if (initialval*initialval < thisval*thisval)
           {
             initialval=thisval;
-            
+
             // remember the direction of maximum flow
             flowdirection = index;
           }
         }
-        
+
         // add random noise on initial function field
         for(int index=0;index<numdim;++index)
         {
           int gid = nodedofset[index];
-          
+
           double randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
-          
+
           double noise = initialval * randomnumber * perc;
-          
+
           // full noise only in main flow direction
           // one third noise orthogonal to flow direction
           if (index != flowdirection)
           {
             noise *= 1./3.;
           }
-          
+
           err += velnp_->SumIntoGlobalValues(1,&noise,&gid);
           err += veln_ ->SumIntoGlobalValues(1,&noise,&gid);
-          
+
         }
-        
+
         if(err!=0)
         {
           dserror("dof not on proc");
@@ -2051,7 +2051,7 @@ void XFluidImplicitTimeInt::SolveStationaryProblem()
     // -------------------------------------------------------------------
    {
      ParameterList eleparams;
-     
+
      // choose what to assemble
      eleparams.set("assemble matrix 1",false);
      eleparams.set("assemble matrix 2",false);
@@ -2099,7 +2099,7 @@ void XFluidImplicitTimeInt::SolveStationaryProblem()
     //                    calculate lift'n'drag forces
     // -------------------------------------------------------------------
     int liftdrag = params_.get<int>("liftdrag");
-  
+
     if(liftdrag == 0); // do nothing, we don't want lift & drag
     if(liftdrag == 1)
       dserror("how did you manage to get here???");
@@ -2354,7 +2354,7 @@ void XFluidImplicitTimeInt::ApplyFilterForDynamicComputationOfCs()
   {
     dserror("Only 3d problems are allowed for dynamic Smagorinsky");
   }
-  
+
   // time measurement
   double tcpu=ds_cputime();
 
@@ -2374,7 +2374,7 @@ void XFluidImplicitTimeInt::ApplyFilterForDynamicComputationOfCs()
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   // compute smoothed (averaged) velocities and stresses for
-  // all nodes 
+  // all nodes
   // ----------------------------------------------------------
   // ----------------------------------------------------------
 
@@ -2383,7 +2383,7 @@ void XFluidImplicitTimeInt::ApplyFilterForDynamicComputationOfCs()
     =
     pbc_->ReturnAllCoupledNodesOnThisProc();
 
-  
+
   // loop all nodes on the processor
   for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
   {
@@ -2396,7 +2396,7 @@ void XFluidImplicitTimeInt::ApplyFilterForDynamicComputationOfCs()
 
     // ----------------------------------------
     // determine a patch of all elements adjacent to this nodex
-    
+
     // check whether the node is on a wall, i.e. all velocity
     // dofs are Dirichlet constrained
     int is_no_slip_node =0;
@@ -2473,7 +2473,7 @@ void XFluidImplicitTimeInt::ApplyFilterForDynamicComputationOfCs()
     // ----------------------------------------
     // the patch is determined right now --- what follows
     // now is the averaging over this patch
-    
+
 
     // define element matrices and vectors --- they are used to
     // transfer information into the element routine and back
@@ -2513,7 +2513,7 @@ void XFluidImplicitTimeInt::ApplyFilterForDynamicComputationOfCs()
 
       patchvolume+=volume_contribution;
     }
-    
+
     // wrap Epetra Object in Blitz array
     blitz::Array<double, 1> velnp_hat(
       ep_velnp_hat.Values(),
@@ -2612,7 +2612,7 @@ void XFluidImplicitTimeInt::ApplyFilterForDynamicComputationOfCs()
   // up to now, only averaging in homogeneous planes is
   // implemented. Otherwise, no aberaging will be applied.
   //
-  // 
+  //
   // -----------------------------------------------------------
   // -----------------------------------------------------------
 
@@ -2620,7 +2620,7 @@ void XFluidImplicitTimeInt::ApplyFilterForDynamicComputationOfCs()
   // initialise plane averaging of Cs for turbulent channel flow
   vector<int>  count_for_average      ;
   vector<int>  local_count_for_average;
-  
+
   vector <double> local_ele_sum_LijMij;
   vector <double> local_ele_sum_MijMij;
 
@@ -2633,18 +2633,18 @@ void XFluidImplicitTimeInt::ApplyFilterForDynamicComputationOfCs()
     {
       planecoords_ = rcp( new vector<double>((turbulencestatistics_->ReturnNodePlaneCoords()).size()));
     }
-    
+
     (*planecoords_) = turbulencestatistics_->ReturnNodePlaneCoords();
-    
+
     averaged_LijMij_->resize((*planecoords_).size()-1);
     averaged_MijMij_->resize((*planecoords_).size()-1);
-    
+
     count_for_average      .resize((*planecoords_).size()-1);
     local_count_for_average.resize((*planecoords_).size()-1);
-    
+
     local_ele_sum_LijMij.resize((*planecoords_).size()-1);
     local_ele_sum_MijMij.resize((*planecoords_).size()-1);
-    
+
     for (unsigned rr=0;rr<(*planecoords_).size()-1;++rr)
     {
       (*averaged_LijMij_)    [rr]=0;
@@ -2680,8 +2680,8 @@ void XFluidImplicitTimeInt::ApplyFilterForDynamicComputationOfCs()
   for (int nele=0;nele<discret_->NumMyRowElements();++nele)
   {
     // -----------------------------------------------------------
-    // Compute LijMij, MijMij and Cs_delta_sq_    
-    
+    // Compute LijMij, MijMij and Cs_delta_sq_
+
     // get the element
     DRT::Element* ele = discret_->lRowElement(nele);
 
@@ -2705,7 +2705,7 @@ void XFluidImplicitTimeInt::ApplyFilterForDynamicComputationOfCs()
 
     // -----------------------------------------------------------
     // do averaging of Cs for turbulent channel flow
-  
+
     // initialise plane averaging of Cs for turbulent channel flow
     if (params_.sublist("TURBULENCE MODEL").get<string>("CANONICAL_FLOW","no")
         ==
@@ -2715,7 +2715,7 @@ void XFluidImplicitTimeInt::ApplyFilterForDynamicComputationOfCs()
       double LijMij = calc_smag_const_params.get<double>("LijMij");
       double MijMij = calc_smag_const_params.get<double>("MijMij");
       double center = calc_smag_const_params.get<double>("center");
-      
+
       // add result into result vetor
 
       // for this purpose, determine the layer (the plane for average)
@@ -2734,11 +2734,11 @@ void XFluidImplicitTimeInt::ApplyFilterForDynamicComputationOfCs()
       {
         dserror("could not determine element layer");
       }
-      
+
       // add it up
       local_ele_sum_LijMij[nlayer] += LijMij;
       local_ele_sum_MijMij[nlayer] += MijMij;
-      
+
       local_count_for_average[nlayer]++;
     }
   }
@@ -2754,18 +2754,18 @@ void XFluidImplicitTimeInt::ApplyFilterForDynamicComputationOfCs()
       discret_->Comm().SumAll(&(local_ele_sum_LijMij[rr]),&((*averaged_LijMij_)[rr]),1);
       discret_->Comm().SumAll(&(local_ele_sum_MijMij[rr]),&((*averaged_MijMij_)[rr]),1);
     }
-    
+
     // do averaging
     for (unsigned rr=0;rr<(*planecoords_).size()-1;++rr)
     {
       (*averaged_LijMij_)[rr]/=count_for_average[rr];
       (*averaged_MijMij_)[rr]/=count_for_average[rr];
     }
-    
+
     // provide necessary information for the elements
     {
       ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
-      
+
       modelparams->set<RefCountPtr<vector<double> > >("averaged_LijMij_",averaged_LijMij_);
       modelparams->set<RefCountPtr<vector<double> > >("averaged_MijMij_",averaged_MijMij_);
       modelparams->set<RefCountPtr<vector<double> > >("planecoords_",planecoords_);
@@ -2784,7 +2784,7 @@ Teuchos::RCP<Epetra_Vector> XFluidImplicitTimeInt::IntegrateInterfaceShape(std::
   ParameterList eleparams;
   // set action for elements
   eleparams.set("action","integrate_Shapefunction");
-                                                 
+
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
   //                 local <-> global dof numbering

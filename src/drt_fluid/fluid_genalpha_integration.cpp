@@ -165,7 +165,7 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
     gridvelaf_  = LINALG::CreateVector(*dofrowmap,true);;
   }
 
-  
+
   // Vectors associated to boundary conditions
   // -----------------------------------------
 
@@ -239,7 +239,7 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   }
 
   this->GenAlphaEchoToScreen("print start-up info");
-  
+
   // end time measurement for timeloop
 
 
@@ -362,7 +362,7 @@ void FluidGenAlphaIntegration::GenAlphaTimeloop()
     if(params_.sublist("TURBULENCE MODEL").get<string>("CANONICAL_FLOW","no")
        ==
        "channel_flow_of_height_2")
-    {    
+    {
       this->GenAlphaTakeSample();
     }
 
@@ -467,8 +467,8 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
   this->GenAlphaAssembleResidualAndMatrix();
 
   {
-    Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractCondVector (residual_);
-    Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractOtherVector(residual_);
+    Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractOtherVector(residual_);
+    Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractCondVector (residual_);
 
     // extract velocity and pressure residuals from rhs vector
     LINALG::Export(*residual_,*onlyvel);
@@ -748,12 +748,12 @@ void FluidGenAlphaIntegration::GenAlphaTimeUpdate()
 
     double gdtinv = 1.0/(gamma_*dt_);
     gridveln_->Update(gdtinv,*dispnp_,-gdtinv,*dispn_,(gamma_-1.0)/gamma_);
-    
+
 
     //    n+1         n
     //   d      ---> d
-    //  
-    
+    //
+
     dispn_   ->Update(1.0,*dispnp_,0.0);
 
   }
@@ -789,7 +789,7 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
     {
       output_.WriteVector("dispnp", dispnp_);
     }
-    
+
     // do restart if we have to
     if (restartstep_ == uprestart_)
     {
@@ -804,7 +804,7 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
         output_.WriteVector("dispn"   ,dispn_   );
         output_.WriteVector("gridveln",gridveln_);
       }
-      
+
       // write mesh in each restart step --- the elements are required since
       // they contain history variables (the time dependent subscales)
       output_.WriteMesh(step_,time_);
@@ -836,7 +836,7 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
       output_.WriteVector("dispn"   ,dispn_   );
       output_.WriteVector("gridveln",gridveln_);
     }
-    
+
 
     // write mesh in each restart step --- the elements are required since
     // they contain history variables (the time dependent subscales)
@@ -996,14 +996,14 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   discret_->SetState("u and p (n+1      ,trial)",velnp_);
   discret_->SetState("u and p (n+alpha_F,trial)",velaf_);
   discret_->SetState("acc     (n+alpha_M,trial)",accam_);
-  
+
   if (alefluid_)
   {
     discret_->SetState("dispnp"    , dispnp_   );
     discret_->SetState("gridvelaf" , gridvelaf_);
   }
 
-  
+
   // extended statistics (plane average of Cs, (Cs_delta)^2, visceff)
   // for dynamic Smagorinsky model
 
@@ -1115,7 +1115,7 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
 
   // get density
   density_ = eleparams.get("density", 0.0);
-  
+
   // end time measurement for element call
   tm3_ref_=null;
 
@@ -1199,10 +1199,10 @@ void FluidGenAlphaIntegration::GenAlphaCalcIncrement(const double nlnres)
   bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
   double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
   double nlntolsol     = params_.get<double>("tolerance for nonlin iter",1.e-10);
-  
+
   //--------------------------- adapt tolerance  in the convergence limit
   if (isadapttol && itenum_>1) solver_.AdaptTolerance(nlntolsol,nlnres,adaptolbetter);
-  
+
   //-------solve for residual displacements to correct incremental displacements
   increment_->PutScalar(0.0);
   solver_.Solve(sysmat_->EpetraMatrix(),increment_,residual_,true,itenum_==-1);
@@ -1333,8 +1333,8 @@ bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(double& badestn
   bool stopnonliniter = false;
 
   // extract velocity and pressure increments from increment vector
-  Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractCondVector (increment_);
-  Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractOtherVector(increment_);
+  Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractOtherVector(increment_);
+  Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractCondVector (increment_);
 
   // calculate L2_Norm of increments
   double L2incaccnorm;
@@ -1344,8 +1344,8 @@ bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(double& badestn
   L2incvelnorm_= L2incaccnorm*gamma_*dt_;
 
   // extract velocity and pressure solutions from solution vector
-  onlyvel = velpressplitter_.ExtractCondVector (velnp_);
-  onlypre = velpressplitter_.ExtractOtherVector(velnp_);
+  onlyvel = velpressplitter_.ExtractOtherVector(velnp_);
+  onlypre = velpressplitter_.ExtractCondVector (velnp_);
 
   // calculate L2_Norm of solution
   double L2velnorm;
@@ -1368,8 +1368,8 @@ bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(double& badestn
   L2incprenorm_ /= L2prenorm;
 
   // extract velocity and pressure residuals from rhs vector
-  onlyvel = velpressplitter_.ExtractCondVector (residual_);
-  onlypre = velpressplitter_.ExtractOtherVector(residual_);
+  onlyvel = velpressplitter_.ExtractOtherVector(residual_);
+  onlypre = velpressplitter_.ExtractCondVector (residual_);
 
   onlypre->Norm2(&L2preresnorm_);
 
@@ -1423,7 +1423,7 @@ void FluidGenAlphaIntegration::ReadRestart(int step)
   reader.ReadVector(veln_ ,"veln" );
   reader.ReadVector(accnp_,"accnp");
   reader.ReadVector(accn_ ,"accn" );
-  
+
   if (alefluid_)
   {
        reader.ReadVector(dispnp_  ,"dispnp"  );
@@ -1754,17 +1754,17 @@ void FluidGenAlphaIntegration::GenAlphaTakeSample()
   // --------------------------------------------------------------------
   // add up X, X^2 for velocities and pressure
   turbulencestatistics_->DoTimeSample(velnp_,*force_);
-  
+
   // create the parameters for the discretization
   ParameterList eleparams;
 
   // --------------------------------------------------------------------
   // do time averaging for subscales and residual --- this is of interest
   // only for time dependent subscales
-  
+
   // action for elements
   eleparams.set("action","time average for subscales and residual");
-  
+
       eleparams.set("assemble matrix 1",false);
       eleparams.set("assemble matrix 2",false);
       eleparams.set("assemble vector 1",false);
@@ -2586,14 +2586,14 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
 void FluidGenAlphaIntegration::UpdateGridv()
 {
   /*
-                             /       \     /            \ 
+                             /       \     /            \
         n+af     alphaM     |  n+1  n |   |       alphaM |   .n
      u_G     = ---------- * | d   -d  | + | 1.0 - ------ | * d
-               gamma * dt   |         |   |        gamma | 
+               gamma * dt   |         |   |        gamma |
                              \       /     \            /
 
   */
-  
+
   gridvelaf_->Update(1.0-alphaM_/gamma_,*gridveln_,0.0);
 
   gridvelaf_->Update( alphaM_/(gamma_*dt_),*dispnp_,
@@ -2677,7 +2677,7 @@ void FluidGenAlphaIntegration::LiftDrag() const
     // sort data
 
     // loop L&D conditions (i.e. lines in .dat file)
-    for( unsigned i=0; i<ldconds.size(); ++i) 
+    for( unsigned i=0; i<ldconds.size(); ++i)
     {
       /* get label of present LiftDrag condition  */
       const unsigned int label = ldconds[i]->Getint("label");
@@ -2793,7 +2793,7 @@ Teuchos::RCP<Epetra_Vector> FluidGenAlphaIntegration::IntegrateInterfaceShape(
   ParameterList eleparams;
   // set action for elements
   eleparams.set("action","integrate_Shapefunction");
-                                                 
+
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
   //                 local <-> global dof numbering
@@ -2820,7 +2820,7 @@ void FluidGenAlphaIntegration::LinearRelaxationSolve(
   )
 {
   dserror("No steepest descent for genalpha fluid\n");
-  
+
   return;
 }
 

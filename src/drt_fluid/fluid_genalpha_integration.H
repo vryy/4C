@@ -104,7 +104,7 @@ public:
   o generate maps to split velocity and pressure dofs
 
   o set alpha_F and alpha_M
-  
+
   o calculate and set gamma parameter for generalised alpha method
     according to the second order necessary condition
 
@@ -130,7 +130,7 @@ public:
   o Do the timeloop
 
   o call summary for time monitor
-  
+
   */
   void GenAlphaTimeloop();
 
@@ -158,7 +158,7 @@ public:
 
   //! @name service functions for time loop
 
-  
+
   /*!
   \brief Increase time step counter and time
   */
@@ -166,10 +166,10 @@ public:
     {
       step_++;
       time_+=dt_;
-      
+
       return;
     }
-  
+
   /*!
   \brief Predict velocity and pressure of the new timestep. Up to now, we
   use a constant predictor for the velocity and the pressure.
@@ -202,7 +202,7 @@ public:
          timestep.
 
          Update ALE displacements in case of ale
-         
+
          In case of time dependent subscales, the time update
          includes an element call.
   */
@@ -213,10 +213,10 @@ public:
   \brief Include this result into the averaging procedure for
   turbulence statistics
 
-  */  
+  */
   void GenAlphaTakeSample();
 
-    
+
   /*!
   \brief Write solution to file for IO and restart if we have a
   restart step.
@@ -258,7 +258,7 @@ public:
     filtered using a box filter on element poatches adjacent
     to the fluid nodes. The filtered fields are used to
     compute the eddy viscosity --- hex8 only!
-  
+
   o Zeros out systemmatrix
 
   o Calls elements for assembly
@@ -284,7 +284,7 @@ public:
   \brief Solve linear problem.
 
   Enforces to set up new a preconditioner in special cases.
-  
+
   Includes dynamic update of tolerances for linear solver according
   to Michaels ad-hoc scheme.
 
@@ -358,7 +358,7 @@ public:
       MijMij is performed in all homogeneous planes.
 
     o negative values of Cs are clipped
-  
+
   */
   void ApplyFilterForDynamicComputationOfCs();
 
@@ -369,93 +369,93 @@ public:
 
   /*!
   \brief return the current increment for an initial guess
-  
+
   */
   Teuchos::RCP<Epetra_Vector> InitialGuess() { return increment_; }
 
   /*!
   \brief return the residual vector, i.e. the rhs of the
   incremental fluid problem
-  
+
   */
   Teuchos::RCP<Epetra_Vector> Residual()     { return residual_; }
 
   /*!
   \brief return the forces on Dirichlet nodes --- correct
   density scaling has tobe provided by the fluid implementation
-  
+
   */
   Teuchos::RCP<Epetra_Vector> TrueResidual() { return force_; }
 
   /*!
   \brief return current velocity and pressure solutions
-  
+
   */
   Teuchos::RCP<Epetra_Vector> Velnp() { return velnp_; }
 
   /*!
   \brief return previous velocity and pressure solutions
-  
+
   */
   Teuchos::RCP<Epetra_Vector> Veln() { return veln_; }
 
   /*!
   \brief return pointer to gridvelocities at intermediate stage.
   They are set from outside (strange, isn't it?)
-  
+
   */
   Teuchos::RCP<Epetra_Vector> GridVel() { return gridvelaf_; }
 
   /*!
   \brief Allow access to the vector marking the Dirichlet dofs
-  
+
   */
   Teuchos::RCP<Epetra_Vector> Dirichlet() { return dirichtoggle_; }
 
   /*!
   \brief the inverse Dirich toggle vector for the FSI method
-  
+
   */
   Teuchos::RCP<Epetra_Vector> InvDirichlet() { return invdirtoggle_; }
 
   /*!
   \brief Allow access to current grid displacements
-  
+
   */
   Teuchos::RCP<Epetra_Vector> Dispnp() { return dispnp_; }
 
   /*!
   \brief Allow access to previous grid displacements
-  
+
   */
   Teuchos::RCP<Epetra_Vector> Dispn() { return dispn_; }
 
   /*!
   \brief return the system matrix
-  
+
   */
   Teuchos::RCP<LINALG::SparseMatrix> SysMat() { return sysmat_; }
 
   /*!
   \brief return the fluid discretisation
-  
+
   */
   Teuchos::RCP<DRT::Discretization> Discretization()
     { return discret_; }
 
   /*!
   \brief provide the dofrowmap of the velocity dofs
-  
+
   */
   Teuchos::RCP<const Epetra_Map> VelocityRowMap()
-    { return velpressplitter_.CondMap(); }
+    { return velpressplitter_.OtherMap(); }
 
   /*!
   \brief provide the dofrowmap of the pressure dofs
-  
+
   */
   Teuchos::RCP<const Epetra_Map> PressureRowMap()
-    { return velpressplitter_.OtherMap(); }
+    { return velpressplitter_.CondMap(); }
 
   /*
   \brief use increment from external call to update velnp
@@ -518,7 +518,7 @@ public:
    */
   void LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax);
 
-  
+
 protected:
 
 private:
@@ -545,14 +545,14 @@ private:
 
   //! fluid density
   double                    density_;
-  
+
   //! @name time integration parameters
   //
   //! max. number of time steps
   int                       endstep_;
   //! max. simulation time
   double                    endtime_;
-  //! current time 
+  //! current time
   double                    time_;
   //! current time step
   int                       step_;
@@ -598,7 +598,7 @@ private:
   //@}
 
   //! @name IO features
-  
+
   // write restart every uprestart_ steps --- restartstep_ is
   // the counter used for this purpose
 
@@ -615,7 +615,7 @@ private:
   RCP<TurbulenceStatistics> turbulencestatistics_;
   //@}
 
-  
+
   //! @name vectors stating the linear system
   //        ---------------------------------
   //
@@ -627,10 +627,10 @@ private:
 
   //! toggle vector indicating which dofs have Dirichlet BCs
   RCP<Epetra_Vector>        dirichtoggle_;
-  
+
   //! and its inverse
   RCP<Epetra_Vector>        invdirtoggle_;
-  
+
   //! a vector of zeros to be used to enforce zero dirichlet boundary conditions
   RCP<Epetra_Vector>        zeros_;
 
@@ -642,7 +642,7 @@ private:
   RCP<Epetra_Vector>        increment_;
   //@}
 
-  
+
   //! @name Force computation on Dirichlet boundaries
   // -----------------------------------------
   //
@@ -653,8 +653,8 @@ private:
   //! boundary nodes
   RCP<Epetra_Vector>        force_;
   //@}
-  
-  
+
+
   //! @name vectors for the time integration process
   //        ----------------------------------------
   //
@@ -681,7 +681,7 @@ private:
 
   //! velocities and pressures at time n+1
   RCP<Epetra_Vector>        velnp_;
-  //! velocities and pressures at time n 
+  //! velocities and pressures at time n
   RCP<Epetra_Vector>        veln_;
   //! velocities at intermediate time step n+alpha_F
   //! in velaf_, every component associated to a pressure dof is completely
@@ -750,7 +750,7 @@ private:
   //! the plane coordinates for the above mentioned averaging procedure
   RCP<vector<double> >      planecoords_;
   //@}
-  
+
   //! @name time measurement
   //        ----------------
 
@@ -797,11 +797,11 @@ private:
   RCP<Teuchos::TimeMonitor>          tm7_ref_ ;
   //! used to add time to timeout
   RCP<Teuchos::TimeMonitor>          tm8_ref_ ;
-  //! used to add time to timenonlinup 
+  //! used to add time to timenonlinup
   RCP<Teuchos::TimeMonitor>          tm9_ref_ ;
 
 #ifdef PERF
-  // very detailed time measurement 
+  // very detailed time measurement
   RefCountPtr<Teuchos::Time>         timeeleassemble_      ;
   RefCountPtr<Teuchos::Time>         timeelegetdoflocation_;
 

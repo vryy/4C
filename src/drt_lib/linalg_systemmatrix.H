@@ -122,7 +122,7 @@ namespace LINALG
     virtual void Complete(const Epetra_Map& domainmap, const Epetra_Map& rangemap) = 0;
 
     /// Apply dirichlet boundary condition to a matrix
-    virtual void ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle) = 0;
+    virtual void ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle, bool diagonalblock=true) = 0;
 
   };
 
@@ -280,7 +280,7 @@ namespace LINALG
     void Complete();
     void Complete(const Epetra_Map& domainmap, const Epetra_Map& rangemap);
 
-    void ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle);
+    void ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle, bool diagonalblock=true);
 
     //@}
 
@@ -541,6 +541,9 @@ namespace LINALG
 
     virtual ~BlockSparseMatrixBase() {}
 
+    /// make a copy of me
+    virtual Teuchos::RCP<BlockSparseMatrixBase> Clone(Epetra_DataAccess access) = 0;
+
     /** \name Block matrix access */
     //@{
 
@@ -571,7 +574,7 @@ namespace LINALG
     void Complete();
     void Complete(const Epetra_Map& domainmap, const Epetra_Map& rangemap);
 
-    void ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle);
+    void ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle, bool diagonalblock=true);
 
     //@}
 
@@ -663,8 +666,6 @@ namespace LINALG
 
     //@}
 
-  protected:
-
     /// access to domain map extractor in derived classes
     const MultiMapExtractor& DomainExtractor() const { return domainmaps_; }
 
@@ -723,6 +724,8 @@ namespace LINALG
                       int npr=81,
                       bool explicitdirichlet=true,
                       bool savegraph=false);
+
+    Teuchos::RCP<BlockSparseMatrixBase> Clone(Epetra_DataAccess access);
 
     void Assemble(const Epetra_SerialDenseMatrix& Aele,
                   const std::vector<int>& lmrow,
@@ -823,6 +826,29 @@ LINALG::BlockSparseMatrix<Strategy>::BlockSparseMatrix(const MultiMapExtractor& 
 {
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <class Strategy>
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> LINALG::BlockSparseMatrix<Strategy>::Clone(Epetra_DataAccess access)
+{
+  int npr                = Matrix(0,0).MaxNumEntries();
+  bool explicitdirichlet = Matrix(0,0).ExplicitDirichlet();
+  bool savegraph         = Matrix(0,0).SaveGraph();
+  Teuchos::RCP<BlockSparseMatrixBase> bsm = Teuchos::rcp(new BlockSparseMatrix<Strategy>(DomainExtractor(),
+                                                                                         RangeExtractor(),
+                                                                                         npr,
+                                                                                         explicitdirichlet,
+                                                                                         savegraph));
+  for (int r=0; r<Rows(); ++r)
+  {
+    for (int c=0; c<Cols(); ++c)
+    {
+      bsm->Matrix(r,c).Assign(access,Matrix(r,c));
+    }
+  }
+  return bsm;
+}
 
 
 /*----------------------------------------------------------------------*

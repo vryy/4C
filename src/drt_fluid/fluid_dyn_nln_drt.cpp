@@ -154,6 +154,8 @@ void dyn_fluid_drt()
   // -------------------------------------------------------------------
   ParameterList fluidtimeparams;
 
+  fluidtimeparams.set<int>("Simple Preconditioner",Teuchos::getIntegralValue<int>(fdyn,"SIMPLER"));
+
   // -------------------------------------- number of degrees of freedom
   // number of degrees of freedom
   fluidtimeparams.set<int>              ("number of velocity degrees of freedom" ,probsize.get<int>("DIM"));
