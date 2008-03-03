@@ -520,8 +520,8 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
       {
         params.set("ConditionID",(*CondIDVec)[0]);
       }
-      else
-      {
+      else if (assemblemat2)
+      {        
         dserror("Cannot use SparseMatrix version of condition evaluation for conditions without ConditionID");
       }
       char factorname[30];
