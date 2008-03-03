@@ -497,9 +497,9 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
   else if (eletype=="ALE3") type = ale3;
   else if (eletype=="SOLIDH8") type = so_hex8;
   else if (eletype=="SOLIDSH8") type = so_sh8;
-  else if (eletype=="SOLIDTET4") type = so_tet4;
-  else if (eletype=="SOLIDTET10") type = so_tet10;
-  else if (eletype=="SOLIDCTET10") type = so_ctet10;
+  else if (eletype=="SOLIDT4") type = so_tet4;
+  else if (eletype=="SOLIDT10") type = so_tet10;
+  else if (eletype=="SOLIDCT10") type = so_ctet10;
   else if (eletype=="SOLIDW6") type = so_weg6;
   else if (eletype=="SOLIDSHW6") type = so_shw6;
   else if (eletype=="SOLID3") type = sodisp;
