@@ -488,8 +488,8 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
   const bool assemblemat1 = systemmatrix1!=Teuchos::null;
   const bool assemblemat2 = systemmatrix2!=Teuchos::null;
   const bool assemblevec1 = systemvector1!=Teuchos::null;
-  const bool assemblevec2 = systemvector1!=Teuchos::null;
-  const bool assemblevec3 = systemvector1!=Teuchos::null;
+  const bool assemblevec2 = systemvector2!=Teuchos::null;
+  const bool assemblevec3 = systemvector3!=Teuchos::null;
 
   //-----------------------------------------------------------------------
   // loop through conditions and evaluate them iff they match the criterion
@@ -527,7 +527,10 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
       {
         dserror("Cannot use SparseMatrix version of condition evaluation for conditions without ConditionID");
       }
-
+      else
+      {
+        params.set("LoadCurveFactor",curvefac);
+      }
       params.set<RefCountPtr<DRT::Condition> >("condition", fool->second);
 
       // define element matrices and vectors
