@@ -724,16 +724,9 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
                                       blitz::shape(elemat1.M(),elemat1.N()),
                                       blitz::neverDeleteData,
                                       blitz::ColumnMajorArray<2>());
-        blitz::Array<double, 2> esv(elemat2.A(),
-                                    blitz::shape(elemat2.M(),elemat2.N()),
-                                    blitz::neverDeleteData,
-                                    blitz::ColumnMajorArray<2>());
         blitz::Array<double, 1> eforce(elevec1.Values(),
                                        blitz::shape(elevec1.Length()),
                                        blitz::neverDeleteData);
-        blitz::Array<double, 1> sugrvisc(elevec2.Values(),
-                                         blitz::shape(elevec2.Length()),
-                                         blitz::neverDeleteData);
 
         //--------------------------------------------------
         // calculate element coefficient matrix and rhs     
@@ -1836,16 +1829,9 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
                                         blitz::shape(elemat1.M(),elemat1.N()),
                                         blitz::neverDeleteData,
                                         blitz::ColumnMajorArray<2>());
-          blitz::Array<double, 2> esv(elemat2.A(),
-                                      blitz::shape(elemat2.M(),elemat2.N()),
-                                      blitz::neverDeleteData,
-                                      blitz::ColumnMajorArray<2>());
           blitz::Array<double, 1> eforce(elevec1.Values(),
                                          blitz::shape(elevec1.Length()),
                                          blitz::neverDeleteData);
-          blitz::Array<double, 1> sugrvisc(elevec2.Values(),
-                                           blitz::shape(elevec2.Length()),
-                                           blitz::neverDeleteData);
 
           // calculate element coefficient matrix and rhs         
           StationaryImpl()->Sysmat(this,
