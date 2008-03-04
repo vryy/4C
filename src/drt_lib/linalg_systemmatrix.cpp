@@ -203,6 +203,17 @@ void LINALG::SparseMatrix::Assemble(const Epetra_SerialDenseMatrix& Aele,
 
   if (sysmat_->Filled())
   {
+    std::vector<double> values(lmcol.size());
+    std::vector<int> localcol(lmcol.size());
+    for (int lcol=0; lcol<lcoldim; ++lcol)
+    {
+      int cgid = lmcol[lcol];
+      localcol[lcol] = colmap.LID(cgid);
+#ifdef DEBUG
+      if (localcol[lcol]<0) dserror("Sparse matrix A does not have global column %d",cgid);
+#endif
+    }
+
     // loop rows of local matrix
     for (int lrow=0; lrow<lrowdim; ++lrow)
     {
@@ -218,16 +229,11 @@ void LINALG::SparseMatrix::Assemble(const Epetra_SerialDenseMatrix& Aele,
 
       for (int lcol=0; lcol<lcoldim; ++lcol)
       {
-        double val = Aele(lrow,lcol);
-        int cgid = lmcol[lcol];
-        int clid = colmap.LID(cgid);
-#ifdef DEBUG
-        if (clid<0) dserror("Sparse matrix A does not have global column %d",cgid);
-#endif
-        int errone = sysmat_->SumIntoMyValues(rlid,1,&val,&clid);
-        if (errone)
-          dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d",errone);
-      } // for (int lcol=0; lcol<ldim; ++lcol)
+        values[lcol] = Aele(lrow,lcol);
+      }
+      int errone = sysmat_->SumIntoMyValues(rlid,lcoldim,&values[0],&localcol[0]);
+      if (errone)
+        dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d",errone);
     } // for (int lrow=0; lrow<ldim; ++lrow)
   }
   else
