@@ -1,14 +1,27 @@
+/*!----------------------------------------------------------------------
+\file
+\brief
+
+<pre>
+Maintainer: Lena Wiechert
+            wiechert@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15303
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-//#include "micromaterialgp.H"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 #include "micromaterialgp_static.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/drt_validparameters.H"
 
-//#include "../drt_stru_multi/microstrugenalpha.H"
 #include "../drt_stru_multi/microstatic.H"
 
 #include "../io/io_drt_micro.H"
@@ -97,7 +110,16 @@ void MAT::MicroMaterialGP::SetUpMicroStatic()
   // -------------------------------------------------------------------
   // set some pointers and variables
   // -------------------------------------------------------------------
+  // currently taking the parameters of the macroscale problem here!!!
+  // -> it is generally no problem to take the ones of the microscale,
+  // but then one should check that the two inputfiles are in sync at
+  // least for the dynamic parameters so that e.g. dt is the same for
+  // both problems. output options could/should be different, but the
+  // output interval (= output every nstep) is part of StructuralDynamicsParams
+
   const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
+  const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
 
   // -------------------------------------------------------------------
   // create a solver
@@ -132,11 +154,13 @@ void MAT::MicroMaterialGP::SetUpMicroStatic()
   params->set<double>("tolerance displacements",sdyn.get<double>("TOLDISP"));
   params->set<bool>  ("print to screen",true);
 
-  // takes values "full newton" , "modified newton" , "nonlinear cg"
-  params->set<string>("equilibrium iteration","full newton");
+  params->set<bool>  ("io structural disp",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_DISP"));
+  params->set<int>   ("io disp every nstep",sdyn.get<int>("RESEVRYDISP"));
+  params->set<bool>  ("io structural stress",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_STRESS"));
+  params->set<int>   ("io stress every nstep",sdyn.get<int>("RESEVRYSTRS"));
 
-  // takes values "constant" "consistent"
-  params->set<string>("predictor","constant");
+  params->set<int>   ("restart",probtype.get<int>("RESTART"));
+  params->set<int>   ("write restart every",sdyn.get<int>("RESTARTEVRY"));
 
   microstatic_ = rcp(new MicroStatic(params,actdis,solver));
 }
@@ -151,6 +175,22 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
                                                   const double time,
                                                   string action)
 {
+  // if class handling microscale simulations is not yet initialized
+  // -> set up
+
+  if (microstatic_ == null)
+  {
+    MAT::MicroMaterialGP::SetUpMicroStatic();
+  }
+
+  // do restart if demanded from input file
+  int step = 0;
+  if (genprob.restart)
+  {
+    step = genprob.restart;
+    microstatic_->ReadRestart(step);
+  }
+
   // if MicroDiscretizationWriter is not yet initialized -> set up
   // and write mesh
 
@@ -160,22 +200,19 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
 
     micro_output_ = rcp(new MicroDiscretizationWriter(actdis, 1, ele_ID_, gp_));
 
-    micro_output_->WriteMesh(0, 0.);
+    micro_output_->WriteMesh(step, time);
 
     // initialize total time, time step number and set time step size
 
+    // we are using the same structural dynamic parameters as on the
+    // macroscale, so to avoid checking the equivalence of the read
+    // GiD sections we simply ask the macroproblem for its parameters.
+    // note that the microscale solver is currently always UMFPACK
+    // (hard coded)!
     const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
-    timen_ = 0.;
-    istep_ = 0;
+    timen_ = time;
+    istep_ = step;
     dt_    = sdyn.get<double>("TIMESTEP");
-  }
-
-  // if derived generalized alpha class for microscale simulations is
-  // not yet initialized -> set up
-
-  if (microstatic_ == null)
-  {
-    MAT::MicroMaterialGP::SetUpMicroStatic();
   }
 
   if (time != timen_)
@@ -183,7 +220,7 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
     microstatic_->UpdateNewTimeStep(dis_, dism_);
   }
 
-  // set displacements, velocities and accelerations of last step
+  // set displacements of last step
   microstatic_->SetOldState(dis_, dism_);
 
   // check if we have to update absolute time and step number
@@ -201,7 +238,7 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
     // (in the calculation phase, total time is instantly set to the first
     // time step)
     if (timen_ != 0.)
-      microstatic_->Output(micro_output_, timen_, istep_);
+      microstatic_->Output(micro_output_, timen_, istep_, dt_);
     timen_ = time;
     istep_++;
   }
@@ -211,10 +248,9 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
 
   microstatic_->Predictor(defgrd);
   microstatic_->FullNewton();
-  //microstatic_->Homogenization(stress, cmat, density, defgrd, action);
   microstatic_->StaticHomogenization(stress, cmat, density, defgrd);
 
-  // save calculated displacements, velocities and accelerations
+  // save calculated displacements
   dism_ = microstatic_->ReturnNewDism();
 
   // clear displacements in MicroStruGenAlpha for next usage

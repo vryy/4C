@@ -61,9 +61,9 @@ public:
   \brief Standard Constructor -> currently no output for microscale possible
 
   */
-  MicroStatic(RefCountPtr<ParameterList> params,
-              RefCountPtr<DRT::Discretization> dis,
-              RefCountPtr<LINALG::Solver> solver);
+  MicroStatic(RCP<ParameterList> params,
+              RCP<DRT::Discretization> dis,
+              RCP<LINALG::Solver> solver);
 
   /*!
   \brief Destructor
@@ -76,6 +76,12 @@ public:
 
   */
   static void SetDefaults(ParameterList& params);
+
+  /*!
+  \brief read restart
+
+  */
+  void ReadRestart(int step);
 
   /*!
   \brief do constant predictor step
@@ -102,7 +108,8 @@ public:
   */
   void Output(RefCountPtr<MicroDiscretizationWriter> output,
               const double time,
-              const int istep);
+              const int istep,
+              const double dt);
 
 
   /// new stuff for multiscale analyses
@@ -166,9 +173,9 @@ protected:
 
   RefCountPtr<DRT::SurfStressManager>   surf_stress_man_;
 
-  RefCountPtr<ParameterList>                 params_;
-  RefCountPtr<DRT::Discretization>           discret_;
-  RefCountPtr<LINALG::Solver>                solver_;
+  RCP<ParameterList>            params_;
+  RCP<DRT::Discretization>      discret_;
+  RCP<LINALG::Solver>           solver_;
   int                           myrank_;
   int                           maxentriesperrow_;
 

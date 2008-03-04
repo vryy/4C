@@ -39,13 +39,17 @@ extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 03/07|
  *----------------------------------------------------------------------*/
-MicroStatic::MicroStatic(RefCountPtr<ParameterList> params,
-                         RefCountPtr<DRT::Discretization> dis,
-                         RefCountPtr<LINALG::Solver> solver) :
+MicroStatic::MicroStatic(RCP<ParameterList> params,
+                         RCP<DRT::Discretization> dis,
+                         RCP<LINALG::Solver> solver):
 params_(params),
 discret_(dis),
 solver_(solver)
 {
+  discret_.release();
+  params_.release();
+  solver_.release();
+
   // -------------------------------------------------------------------
   // get some parameters from parameter list
   // -------------------------------------------------------------------
@@ -241,7 +245,7 @@ MFSI::Debug dbg;
 
 
 /*----------------------------------------------------------------------*
- |  do constant predictor step (public)                      mwgee 03/07|
+ |  do predictor step (public)                               mwgee 03/07|
  *----------------------------------------------------------------------*/
 void MicroStatic::Predictor(const Epetra_SerialDenseMatrix* defgrd)
 {
@@ -251,7 +255,7 @@ void MicroStatic::Predictor(const Epetra_SerialDenseMatrix* defgrd)
   double time        = params_->get<double>("total time"     ,0.0);
   double dt          = params_->get<double>("delta time"     ,0.01);
   string convcheck   = params_->get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
-  bool   printscreen = params_->get<bool>  ("print to screen",false);
+  //bool   printscreen = params_->get<bool>  ("print to screen",false);
 
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces if a relative convergence
@@ -329,7 +333,7 @@ void MicroStatic::Predictor(const Epetra_SerialDenseMatrix* defgrd)
 
 
   //------------------------------------------------ build residual norm
-  double fresmnorm = 1.0;
+//   double fresmnorm = 1.0;
 
   // store norms of displacements and maximum of norms of internal,
   // external and inertial forces if a relative convergence check
@@ -364,7 +368,7 @@ void MicroStatic::FullNewton()
   string convcheck = params_->get<string>("convcheck"              ,"AbsRes_Or_AbsDis");
   double toldisp   = params_->get<double>("tolerance displacements",1.0e-07);
   double tolres    = params_->get<double>("tolerance residual"     ,1.0e-07);
-  bool printscreen = params_->get<bool>  ("print to screen",true);
+  //bool printscreen = params_->get<bool>  ("print to screen",true);
   //double toldisp = 1.0e-08;
 
   //=================================================== equilibrium loop
@@ -484,11 +488,12 @@ void MicroStatic::FullNewton()
 
 
 /*----------------------------------------------------------------------*
- |  write output (public)                                    mwgee 03/07|
+ |  write output (public)                                       lw 02/08|
  *----------------------------------------------------------------------*/
 void MicroStatic::Output(RefCountPtr<MicroDiscretizationWriter> output,
                          const double time,
-                         const int istep)
+                         const int istep,
+                         const double dt)
 {
   // -------------------------------------------------------------------
   // get some parameters from parameter list
@@ -496,12 +501,50 @@ void MicroStatic::Output(RefCountPtr<MicroDiscretizationWriter> output,
 
   bool   iodisp        = params_->get<bool>  ("io structural disp"     ,true);
   int    updevrydisp   = params_->get<int>   ("io disp every nstep"    ,1);
+  bool   iostress      = params_->get<bool>  ("io structural stress"   ,false);
+  int    updevrystress = params_->get<int>   ("io stress every nstep"  ,10);
+  int    writeresevry  = params_->get<int>   ("write restart every"    ,0);
+
+  bool isdatawritten = false;
+
+  //------------------------------------------------- write restart step
+  if (writeresevry and istep%writeresevry==0)
+  {
+    output->WriteMesh(istep,time);
+    output->NewStep(istep, time);
+    output->WriteVector("displacement",dis_);
+    isdatawritten = true;
+  }
 
   //----------------------------------------------------- output results
-  if (iodisp && updevrydisp && istep%updevrydisp==0)
+  if (iodisp && updevrydisp && istep%updevrydisp==0 && !isdatawritten)
   {
     output->NewStep(istep, time);
     output->WriteVector("displacement",dis_);
+    isdatawritten = true;
+  }
+
+  //------------------------------------- do stress calculation and output
+  if (updevrystress and !(istep%updevrystress) and iostress)
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_stress");
+    // other parameters that might be needed by the elements
+    p.set("total time",time);
+    p.set("delta time",dt);
+    Teuchos::RCP<std::vector<char> > stress = Teuchos::rcp(new std::vector<char>());
+    p.set("stress", stress);
+    // set vector values needed by elements
+    discret_->ClearState();
+    discret_->SetState("residual displacement",zeros_);
+    discret_->SetState("displacement",dis_);
+    discret_->Evaluate(p,null,null,null,null,null);
+    discret_->ClearState();
+    if (!isdatawritten) output->NewStep(istep, time);
+    isdatawritten = true;
+    output->WriteVector("gauss_stresses_xyz",*stress,*discret_->ElementColMap());
   }
 
   return;
@@ -539,6 +582,28 @@ void MicroStatic::SetDefaults(ParameterList& params)
   params.set<string>("predictor"              ,"constant");
   // takes values "full newton" , "modified newton" , "nonlinear cg"
   params.set<string>("equilibrium iteration"  ,"full newton");
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  read restart (public)                                       lw 03/08|
+ *----------------------------------------------------------------------*/
+void MicroStatic::ReadRestart(int step)
+{
+  RefCountPtr<DRT::Discretization> rcpdiscret = discret_;
+  rcpdiscret.release();
+  IO::DiscretizationReader reader(rcpdiscret,step);
+  double time  = reader.ReadDouble("time");
+  int    rstep = reader.ReadInt("step");
+  if (rstep != step) dserror("Time step on file not equal to given step");
+
+  reader.ReadVector(dis_, "displacement");
+  reader.ReadMesh(step);
+
+  // override current time and step with values from file
+  params_->set<double>("total time",time);
+  params_->set<int>   ("step",rstep);
+
   return;
 }
 

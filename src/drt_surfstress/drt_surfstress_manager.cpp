@@ -90,7 +90,7 @@ void DRT::SurfStressManager::StiffnessAndInternalForces(const int curvenum,
   Epetra_SerialDenseVector Adiff(12);
   Epetra_SerialDenseMatrix Adiff2(12,12);
   double gamma, dgamma;
-  FILE *gammafile;
+//   FILE *gammafile;
 
   int LID = time_->Map().LID(ID);
 

@@ -347,138 +347,139 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
 
       break;
       case calc_init_vol:
-                {
-                  // the reference volume of the RVE (including inner
-                  // holes) is calculated by evaluating the following
-                  // surface integral:
-                  // V = 1/3*int(div(X))dV = 1/3*int(N*X)dA
-                  // with X being the reference coordinates and N the
-                  // normal vector of the surface element (exploiting the
-                  // fact that div(X)=1.0)
+      {
+        // the reference volume of the RVE (including inner
+        // holes) is calculated by evaluating the following
+        // surface integral:
+        // V = 1/3*int(div(X))dV = 1/3*int(N*X)dA
+        // with X being the reference coordinates and N the
+        // normal vector of the surface element (exploiting the
+        // fact that div(X)=1.0)
 
-                  // this is intended to be used in the serial case (microstructure)
+        // this is intended to be used in the serial case (microstructure)
 
-                  double V = params.get<double>("V0", 0.0);
-                  double dV = 0.0;
-                  const int numnod = 4;
-                  Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOH8);  // material coord. of element
-                  Epetra_SerialDenseMatrix xscurr(numnod,NUMDIM_SOH8);  // material coord. of element
-                  for (int i=0; i<numnod; ++i){
-                    xsrefe(i,0) = Nodes()[i]->X()[0];
-                    xsrefe(i,1) = Nodes()[i]->X()[1];
-                    xsrefe(i,2) = Nodes()[i]->X()[2];
-                  }
-                  const int ngp = 4;
-
-                  // gauss parameters
-                  const double gpweight = 1.0;
-                  const double gploc    = 1.0/sqrt(3.0);
-                  Epetra_SerialDenseMatrix gpcoord (ngp,2);
-                  gpcoord(0,0) = - gploc;
-                  gpcoord(0,1) = - gploc;
-                  gpcoord(1,0) =   gploc;
-                  gpcoord(1,1) = - gploc;
-                  gpcoord(2,0) = - gploc;
-                  gpcoord(2,1) =   gploc;
-                  gpcoord(3,0) =   gploc;
-                  gpcoord(3,1) =   gploc;
-
-                  for (int gpid = 0; gpid < 4; ++gpid) {    // loop over integration points
-                    vector<double> funct(ngp);              // 4 shape function values
-                    double drs;                             // surface area factor
-                    vector<double> normal(NUMDIM_SOH8);
-                    double temp = 0.0;
-                    vector<double> X(NUMDIM_SOH8);
-
-                    soh8_surface_integ(&funct,&drs,&normal,&xsrefe,gpcoord(gpid,0),gpcoord(gpid,1));
-
-                    X[0] = funct[0]*xsrefe(0,0) + funct[1]*xsrefe(1,0) + funct[2]*xsrefe(2,0) + funct[3]*xsrefe(3,0);
-                    X[1] = funct[0]*xsrefe(0,1) + funct[1]*xsrefe(1,1) + funct[2]*xsrefe(2,1) + funct[3]*xsrefe(3,1);
-                    X[2] = funct[0]*xsrefe(0,2) + funct[1]*xsrefe(1,2) + funct[2]*xsrefe(2,2) + funct[3]*xsrefe(3,2);
-
-                    for (int i=0;i<3;++i){
-                      temp += normal[i]*normal[i];
-                    }
-                    double absnorm = sqrt(temp);
-                    for (int i=0;i<3;++i){
-                      normal[i] /= absnorm;
-                    }
-                    double fac = gpweight * drs;
-                    for (int i=0;i<3;++i){
-                      dV += 1/3.0*fac*normal[i]*X[i];
-                    }
-                  }
-                  params.set("V0", V+dV);
-                }
-                break;
-
-                case calc_surfstress_stiff:
-                {
-                  // element geometry update
-
-                  RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-                  if (disp==null) dserror("Cannot get state vector 'displacement'");
-                  vector<double> mydisp(lm.size());
-                  DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-                  const int numnod = 4;
-                  Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOH8);  // material coord. of element
-                  Epetra_SerialDenseMatrix xscurr(numnod,NUMDIM_SOH8);  // material coord. of element
-
-                  for (int i=0; i<numnod; ++i){
-                    xsrefe(i,0) = Nodes()[i]->X()[0];
-                    xsrefe(i,1) = Nodes()[i]->X()[1];
-                    xsrefe(i,2) = Nodes()[i]->X()[2];
-
-                    xscurr(i,0) = xsrefe(i,0) + mydisp[i*NODDOF_SOH8+0];
-                    xscurr(i,1) = xsrefe(i,1) + mydisp[i*NODDOF_SOH8+1];
-                    xscurr(i,2) = xsrefe(i,2) + mydisp[i*NODDOF_SOH8+2];
-                  }
-
-                  RefCountPtr<SurfStressManager> surfstressman =
-                    params.get<RefCountPtr<SurfStressManager> >("surfstr_man", null);
-
-                  if (surfstressman==null)
-                    dserror("No SurfStressManager in SoHex8Surface available");
-
-                  double time = params.get<double>("total time",-1.0);
-                  double dt = params.get<double>("delta time",0.0);
-                  RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
-                  if (cond==null)
-                    dserror("Condition not available in SoHex8Surface");
-
-                  if (cond->Type()==DRT::Condition::Surfactant)     // dynamic surfactant model
-                  {
-                    int curvenum = cond->Getint("curve");
-                    double k1xC = cond->GetDouble("k1xCbulk");
-                    double k2 = cond->GetDouble("k2");
-                    double m1 = cond->GetDouble("m1");
-                    double m2 = cond->GetDouble("m2");
-                    double gamma_0 = cond->GetDouble("gamma_0");
-                    double gamma_min = cond->GetDouble("gamma_min");
-                    double gamma_min_eq = cond->GetDouble("gamma_min_eq");
-                    double con_quot_max = (gamma_min_eq-gamma_min)/m2+1.;
-                    double con_quot_eq = (k1xC)/(k1xC+k2);
-
-                    surfstressman->StiffnessAndInternalForces(curvenum, xscurr, elevector1, elematrix1, this->Id(),
-                                                              time, dt, 0, 0.0, k1xC, k2, m1, m2, gamma_0,
-                                                              gamma_min, gamma_min_eq, con_quot_max,
-                                                              con_quot_eq);
-                  }
-                  else if (cond->Type()==DRT::Condition::SurfaceTension) // ideal liquid
-                  {
-                    int curvenum = cond->Getint("curve");
-                    double const_gamma = cond->GetDouble("gamma");
-
-                    surfstressman->StiffnessAndInternalForces(curvenum, xscurr, elevector1, elematrix1, this->Id(),
-                                                              time, dt, 1, const_gamma, 0.0, 0.0, 0.0,
-                                                              0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-                  }
-                  else
-                    dserror("Unknown condition type %d",cond->Type());
+        double V = params.get<double>("V0", 0.0);
+        double dV = 0.0;
+        const int numnod = 4;
+        Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOH8);  // material coord. of element
+        Epetra_SerialDenseMatrix xscurr(numnod,NUMDIM_SOH8);  // material coord. of element
+        for (int i=0; i<numnod; ++i){
+          xsrefe(i,0) = Nodes()[i]->X()[0];
+          xsrefe(i,1) = Nodes()[i]->X()[1];
+          xsrefe(i,2) = Nodes()[i]->X()[2];
         }
-        break;
-        //compute the area (e.g. for initialization)
-        case calc_struct_monitarea:
+        const int ngp = 4;
+
+        // gauss parameters
+        const double gpweight = 1.0;
+        const double gploc    = 1.0/sqrt(3.0);
+        Epetra_SerialDenseMatrix gpcoord (ngp,2);
+        gpcoord(0,0) = - gploc;
+        gpcoord(0,1) = - gploc;
+        gpcoord(1,0) =   gploc;
+        gpcoord(1,1) = - gploc;
+        gpcoord(2,0) = - gploc;
+        gpcoord(2,1) =   gploc;
+        gpcoord(3,0) =   gploc;
+        gpcoord(3,1) =   gploc;
+
+        for (int gpid = 0; gpid < 4; ++gpid) {    // loop over integration points
+          vector<double> funct(ngp);              // 4 shape function values
+          double drs;                             // surface area factor
+          vector<double> normal(NUMDIM_SOH8);
+          double temp = 0.0;
+          vector<double> X(NUMDIM_SOH8);
+
+          soh8_surface_integ(&funct,&drs,&normal,&xsrefe,gpcoord(gpid,0),gpcoord(gpid,1));
+
+          X[0] = funct[0]*xsrefe(0,0) + funct[1]*xsrefe(1,0) + funct[2]*xsrefe(2,0) + funct[3]*xsrefe(3,0);
+          X[1] = funct[0]*xsrefe(0,1) + funct[1]*xsrefe(1,1) + funct[2]*xsrefe(2,1) + funct[3]*xsrefe(3,1);
+          X[2] = funct[0]*xsrefe(0,2) + funct[1]*xsrefe(1,2) + funct[2]*xsrefe(2,2) + funct[3]*xsrefe(3,2);
+
+          for (int i=0;i<3;++i){
+            temp += normal[i]*normal[i];
+          }
+          double absnorm = sqrt(temp);
+          for (int i=0;i<3;++i){
+            normal[i] /= absnorm;
+          }
+          double fac = gpweight * drs;
+          for (int i=0;i<3;++i){
+            dV += 1/3.0*fac*normal[i]*X[i];
+          }
+        }
+        params.set("V0", V+dV);
+      }
+      break;
+
+      case calc_surfstress_stiff:
+      {
+        // element geometry update
+
+        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+        if (disp==null) dserror("Cannot get state vector 'displacement'");
+        vector<double> mydisp(lm.size());
+        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+        const int numnod = 4;
+        Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOH8);  // material coord. of element
+        Epetra_SerialDenseMatrix xscurr(numnod,NUMDIM_SOH8);  // material coord. of element
+
+        for (int i=0; i<numnod; ++i){
+          xsrefe(i,0) = Nodes()[i]->X()[0];
+          xsrefe(i,1) = Nodes()[i]->X()[1];
+          xsrefe(i,2) = Nodes()[i]->X()[2];
+
+          xscurr(i,0) = xsrefe(i,0) + mydisp[i*NODDOF_SOH8+0];
+          xscurr(i,1) = xsrefe(i,1) + mydisp[i*NODDOF_SOH8+1];
+          xscurr(i,2) = xsrefe(i,2) + mydisp[i*NODDOF_SOH8+2];
+        }
+
+        RefCountPtr<SurfStressManager> surfstressman =
+          params.get<RefCountPtr<SurfStressManager> >("surfstr_man", null);
+
+        if (surfstressman==null)
+          dserror("No SurfStressManager in SoHex8Surface available");
+
+        double time = params.get<double>("total time",-1.0);
+        double dt = params.get<double>("delta time",0.0);
+        RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
+        if (cond==null)
+          dserror("Condition not available in SoHex8Surface");
+
+        if (cond->Type()==DRT::Condition::Surfactant)     // dynamic surfactant model
+        {
+          int curvenum = cond->Getint("curve");
+          double k1xC = cond->GetDouble("k1xCbulk");
+          double k2 = cond->GetDouble("k2");
+          double m1 = cond->GetDouble("m1");
+          double m2 = cond->GetDouble("m2");
+          double gamma_0 = cond->GetDouble("gamma_0");
+          double gamma_min = cond->GetDouble("gamma_min");
+          double gamma_min_eq = cond->GetDouble("gamma_min_eq");
+          double con_quot_max = (gamma_min_eq-gamma_min)/m2+1.;
+          double con_quot_eq = (k1xC)/(k1xC+k2);
+
+          surfstressman->StiffnessAndInternalForces(curvenum, xscurr, elevector1, elematrix1, this->Id(),
+                                                    time, dt, 0, 0.0, k1xC, k2, m1, m2, gamma_0,
+                                                    gamma_min, gamma_min_eq, con_quot_max,
+                                                    con_quot_eq);
+        }
+        else if (cond->Type()==DRT::Condition::SurfaceTension) // ideal liquid
+        {
+          int curvenum = cond->Getint("curve");
+          double const_gamma = cond->GetDouble("gamma");
+
+          surfstressman->StiffnessAndInternalForces(curvenum, xscurr, elevector1, elematrix1, this->Id(),
+                                                    time, dt, 1, const_gamma, 0.0, 0.0, 0.0,
+                                                    0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        }
+        else
+          dserror("Unknown condition type %d",cond->Type());
+      }
+      break;
+
+      //compute the area (e.g. for initialization)
+      case calc_struct_monitarea:
         {
           if (distype!=quad4)
             dserror("Area Constraint online works for quad4 surfaces!");
@@ -493,7 +494,7 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
             const int numnod = 4;
             Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOH8);  // material coord. of element
             Epetra_SerialDenseMatrix xscurr(numnod,NUMDIM_SOH8);  // material coord. of element
-            
+
             //get required projection method
             enum ProjType
             {
@@ -503,16 +504,16 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
               xz
             };
             ProjType protype;
-            
+
             RCP<DRT::Condition> condition = params.get<RefCountPtr<DRT::Condition> >("condition");
             const string* type = condition->Get<string>("projection");
-            
+
             if (!type) protype =none;
             else if (*type == "xy") protype = xy;
             else if (*type == "yz") protype = yz;
             else if (*type == "xz") protype = xz;
             else protype = none;
-            
+
             for (int i=0; i<numnod; ++i)
             {
               xsrefe(i,0) = Nodes()[i]->X()[0];
@@ -525,7 +526,7 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
               {
                 xscurr(i,0)=0;
               }
-              else 
+              else
               {
                 xscurr(i,0) = xsrefe(i,0) + mydisp[i*NODDOF_SOH8+0];
               }
@@ -533,7 +534,7 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
               {
                 xscurr(i,1)=0;
               }
-              else 
+              else
               {
                 xscurr(i,1) = xsrefe(i,1) + mydisp[i*NODDOF_SOH8+1];
               }
@@ -541,12 +542,12 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
               {
                 xscurr(i,2)=0;
               }
-              else 
+              else
               {
                 xscurr(i,2) = xsrefe(i,2) + mydisp[i*NODDOF_SOH8+2];
               }
             }
-            
+
             double areaele=0.0;
             const int ngp = 4;
 

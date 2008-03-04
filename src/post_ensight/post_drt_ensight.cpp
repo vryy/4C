@@ -66,6 +66,7 @@ int main(
         break;
     }
     case prb_structure:
+    case prb_struct_multi:
     {
         PostField* field = problem.get_discretization(0);
         StructureEnsightWriter writer(field, problem.outname(), problem.stresstype());
