@@ -119,7 +119,7 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
   // check here, if we really have a fluid !!
   dsassert(material->mattyp == m_fluid, "Material law is not of type m_fluid.");
   const double visc = material->m.fluid->viscosity;
-  
+
   // We define the variables i,j,k to be indices to blitz arrays.
   // These are used for array expressions, that is matrix-vector
   // products in the following.
@@ -1588,7 +1588,7 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
   double&                                 Cs,
   double&                                 Cs_delta_sq,
   double&                                 visceff,
-  double&                                 l_tau,  
+  double&                                 l_tau,
   const int                               fssgv,
   const double                            Cs_fs
   )
@@ -1686,7 +1686,7 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
 
     // get velocity (np,i) derivatives at integration point
   vderxy_ = blitz::sum(derxy_(j,k)*evelnp(i,k),k);
-  
+
   // get velocity norm
   const double vel_norm = sqrt(blitz::sum(velint_*velint_));
 
@@ -1732,7 +1732,7 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
   /* stabilisation parameter in the gausspoints but just once in the  */
   /* middle of the element.                                           */
   /*------------------------------------------------------------------*/
-  
+
   if (turb_mod_action == Fluid3::smagorinsky_with_wall_damping
       ||
       turb_mod_action == Fluid3::smagorinsky)
@@ -1751,12 +1751,12 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
     //                     |           'resolved' rate of strain
     //                    mixing length
     //
-    
+
     double rateofstrain = 0;
     {
       blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());
       epsilon = 0.5 * ( vderxy_(i,j) + vderxy_(j,i) );
-      
+
       for(int rr=0;rr<3;rr++)
       {
         for(int mm=0;mm<3;mm++)
@@ -1767,7 +1767,7 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
       rateofstrain *= 2.0;
       rateofstrain = sqrt(rateofstrain);
     }
-    // 
+    //
     // Choices of the Smagorinsky constant Cs:
     //
     //             Cs = 0.17   (Lilly --- Determined from filter
@@ -1775,7 +1775,7 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
     //                          isotropic turbulence)
     //
     //             0.1 < Cs < 0.24 (depending on the flow)
-    //                          
+    //
     //             Cs dynamic  (Germano model. Use several filter
     //                          resolutions to determine Cs)
 
@@ -1797,7 +1797,7 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
       // the integration point coordinate is defined by the isometric approach
       /*
                   +-----
-                   \                
+                   \
               x =   +      N (x) * x
                    /        j       j
                   +-----
@@ -1805,7 +1805,7 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
       */
       blitz::Array<double,1> centernodecoord(3);
       centernodecoord = blitz::sum(funct_(j)*xyze_(i,j),j);
-      
+
       if(centernodecoord(1)>0)
       {
         y_plus=(1.0-centernodecoord(1))/l_tau;
@@ -1814,15 +1814,15 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
       {
         y_plus=(1.0+centernodecoord(1))/l_tau;
       }
-      
+
 //      lmix *= (1.0-exp(-y_plus/A_plus));
       // multiply with van Driest damping function
       Cs *= (1.0-exp(-y_plus/A_plus));
     }
-    
+
     const double hk = pow((vol),(1.0/3.0));
-    
-    // 
+
+    //
     // mixing length set proportional to grid witdh
     //
     //                     lmix = Cs * hk
@@ -1830,9 +1830,9 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
     double lmix = Cs * hk;
 
     Cs_delta_sq = lmix * lmix;
-    
-    //                                                                  
-    //          visc    = visc + visc                                   
+
+    //
+    //          visc    = visc + visc
     //              eff              turbulent
 
     visceff = visc + Cs_delta_sq * rateofstrain;
@@ -1856,12 +1856,12 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
     //               provided by the dynamic model
     //            procedure and stored in Cs_delta_sq
     //
-    
+
     double rateofstrain = 0;
     {
       blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());
       epsilon = 0.5 * ( vderxy_(i,j) + vderxy_(j,i) );
-      
+
       for(int rr=0;rr<3;rr++)
       {
         for(int mm=0;mm<3;mm++)
@@ -1874,7 +1874,7 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
     }
 
     visceff = visc + Cs_delta_sq * rateofstrain;
-    
+
     // for evaluation of statistics: remember the 'real' Cs
     Cs=sqrt(Cs_delta_sq)/pow((vol),(1.0/3.0));
   }
@@ -1887,7 +1887,7 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
 
   /*----------------------------------------------------- compute tau_Mu ---*/
   /* stability parameter definition according to
-     
+
   Barrenechea, G.R. and Valentin, F.: An unusual stabilized finite
   element method for a generalized Stokes problem. Numerische
   Mathematik, Vol. 92, pp. 652-677, 2002.
@@ -1948,7 +1948,7 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
    *
    * */
   //tau[2] = sqrt(DSQR(visc)+DSQR(0.5*vel_norm*hk));
-  
+
   // Wall Diss. 99
   /*
                       xi2 ^
@@ -1962,7 +1962,7 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
   */
   const double xi_tau_c = DMIN(re2,1.0);
   tau_(2) = vel_norm * hk * 0.5 * xi_tau_c /timefac;
-  
+
   /*------------------------------------------- compute subgrid viscosity ---*/
   if (fssgv == 1 || fssgv == 2)
   {

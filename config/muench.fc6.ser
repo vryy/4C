@@ -79,7 +79,7 @@ HDF5_LIB="-lhdf5_hl -lhdf5 -lpthread -lz"
 EXODUS_LIB="-lexoIIv2c -L/usr/lib/netcdf-3 -lnetcdf"
 
 #LIBS="-lc -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis"
-LIBS="-lc -lg2c -lmetis -lblitz -llapack -lblas"
+LIBS="-lc -lg2c -lmetis -lblitz -llapack -lgoto"
 
 CFLAGS_OPT="-O3"
 CPFLAGS_OPT="-O3"
@@ -93,7 +93,7 @@ LDFLAGS_OPT="-O2"
 
 # Alle Bibliotheken neu uebersetzen?!
 # -malign-double
-CFLAGS="-Wall -march=pentium4 -msse2 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
-CPFLAGS="-Wall -march=pentium4 -msse2 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
-FFLAGS="-Wall -march=pentium4 -msse2 -mfpmath=sse -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+CFLAGS="-Wall -msse3 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+CPFLAGS="-Wall -msse3 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+FFLAGS="-Wall -msse3 -mfpmath=sse -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
 LDFLAGS="-Xlinker -defsym -Xlinker MAIN__=main"
