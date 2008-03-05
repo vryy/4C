@@ -245,16 +245,17 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
         if (timefac < 0.0) dserror("No thsl supplied");
       }
 
-      // get flag for fine-scale subgrid viscosity (1=yes, 0=no)
-      const int fssgv = params.get<int>("fs subgrid viscosity",0);
+      // get flag for fine-scale subgrid viscosity
+      string fssgv = params.get<string>("fs subgrid viscosity","No");
 
-      // get Smagorinsky model parameter
-      const double Cs = params.get<double>("fs Smagorinsky parameter",0.0);
+      // get Smagorinsky model parameter for fine-scale subgrid viscosity
+      ParameterList& turbmodelparams = params.sublist("TURBULENCE MODEL");
+      const double Cs = turbmodelparams.get<double>("C_SMAGORINSKY",0.0);
 
       // get fine-scale velocity
       RCP<const Epetra_Vector> fsvelprenp;
       vector<double> myfsvelnp(2*numnode);
-      if (fssgv > 0)
+      if (fssgv != "No")
       {
         fsvelprenp = discretization.GetState("fsvelnp");
         if (fsvelprenp==null) dserror("Cannot get state vector 'fsvelnp'");
@@ -545,8 +546,8 @@ void DRT::ELEMENTS::Fluid2::f2_sys_mat(vector<int>&              lm,
                                        struct _MATERIAL*         material,
                                        double                    time,
                                        double                    timefac,
-                                       int                       fssgv,
-                                       double                    Cs,
+                                       string                    fssgv,
+                                       const double              Cs,
                                        bool                      is_stationary
   )
 {
@@ -744,118 +745,115 @@ void DRT::ELEMENTS::Fluid2::f2_sys_mat(vector<int>&              lm,
   }
 
   /*------------------------------------ compute subgrid viscosity nu_art ---*/
-  if (fssgv > 0)
+  if (fssgv == "artificial_all" || fssgv == "artificial_small")
   {
-    if (fssgv == 1 || fssgv == 2)
+    if (fssgv == "artificial_small")
     {
-      if (fssgv == 2)
+      /*--------------------- get fine-scale velocities at element center ---*/
+      for (int i=0;i<2;i++)
       {
-        /*--------------------- get fine-scale velocities at element center ---*/
+        fsvelint[i]=0.0;
+        for (int j=0;j<iel;j++)
+        {
+          fsvelint[i] += funct[j]*fsevelnp[i+(2*j)];
+        }
+      } //end loop over i
+
+      /*----------------------------------------  get fine-scale vel_norm ---*/
+      fsvel_norm = sqrt(DSQR(fsvelint[0]) + DSQR(fsvelint[1]));
+    }
+    /*-----------------------------------------  get all-scale vel_norm ---*/
+    else fsvel_norm = vel_norm;
+
+    /*----------------------- compute artificial subgrid viscosity nu_art ---*/
+    re = mk * fsvel_norm * hk / visc;     /* convective : viscous forces */
+    xi = DMAX(re,1.0);
+
+    vart = (DSQR(hk)*mk*DSQR(fsvel_norm))/(2.0*visc*xi);
+  }
+  else if (fssgv == "Smagorinsky_all" || fssgv == "Smagorinsky_small" ||
+           fssgv == "mixed_Smagorinsky_all" || fssgv == "mixed_Smagorinsky_small")
+  {
+    //
+    // SMAGORINSKY MODEL
+    // -----------------
+    //                               +-                                 -+ 1
+    //                           2   |          / h \           / h \    | -
+    //    visc          = (C_S*h)  * | 2 * eps | u   |   * eps | u   |   | 2
+    //        turbulent              |          \   / ij        \   / ij |
+    //                               +-                                 -+
+    //                               |                                   |
+    //                               +-----------------------------------+
+    //                                    'resolved' rate of strain
+    //
+
+    double rateofstrain = 0.0;
+    {
+      /*---------------------------------------- compute global derivates */
+      f2_gder(derxy,deriv,xjm,det,iel);
+
+      if (fssgv == "Smagorinsky_small" || fssgv == "mixed_Smagorinsky_small")
+      {
+        /*---- get fine-scale velocity (np,i) derivatives at element center */
         for (int i=0;i<2;i++)
         {
-          fsvelint[i]=0.0;
+          fsvderxy(0,i)=0.0;
+          fsvderxy(1,i)=0.0;
           for (int j=0;j<iel;j++)
           {
-            fsvelint[i] += funct[j]*fsevelnp[i+(2*j)];
-          }
-        } //end loop over i
-
-        /*----------------------------------------  get fine-scale vel_norm ---*/
-        fsvel_norm = sqrt(DSQR(fsvelint[0]) + DSQR(fsvelint[1]));
-      }
-      /*-----------------------------------------  get all-scale vel_norm ---*/
-      else fsvel_norm = vel_norm;
-
-      /*----------------------- compute artificial subgrid viscosity nu_art ---*/
-      re = mk * fsvel_norm * hk / visc;     /* convective : viscous forces */
-      xi = DMAX(re,1.0);
-
-      vart = (DSQR(hk)*mk*DSQR(fsvel_norm))/(2.0*visc*xi);
-    }
-    else if (fssgv == 3 || fssgv == 4)
-    {
-      //
-      // SMAGORINSKY MODEL
-      // -----------------
-      //                               +-                                 -+ 1
-      //                           2   |          / h \           / h \    | -
-      //    visc          = (C_S*h)  * | 2 * eps | u   |   * eps | u   |   | 2
-      //        turbulent              |          \   / ij        \   / ij |
-      //                               +-                                 -+
-      //                               |                                   |
-      //                               +-----------------------------------+
-      //                                    'resolved' rate of strain
-      //
-
-      double rateofstrain = 0.0;
-      {
-        /*---------------------------------------- compute global derivates */
-        f2_gder(derxy,deriv,xjm,det,iel);
-
-        if (fssgv == 4)
-        {
-          /*---- get fine-scale velocity (np,i) derivatives at element center */
-          for (int i=0;i<2;i++)
-          {
-            fsvderxy(0,i)=0.0;
-            fsvderxy(1,i)=0.0;
-            for (int j=0;j<iel;j++)
-            {
-              fsvderxy(0,i) += derxy(i,j)*fsevelnp[0+(2*j)];
-              fsvderxy(1,i) += derxy(i,j)*fsevelnp[1+(2*j)];
-            } /* end of loop over j */
-          } /* end of loop over i */
-        }
-        else
-        {
-          /*---- get all-scale velocity (np,i) derivatives at element center */
-          for (int i=0;i<2;i++)
-          {
-            fsvderxy(0,i)=0.0;
-            fsvderxy(1,i)=0.0;
-            for (int j=0;j<iel;j++)
-            {
-              fsvderxy(0,i) += derxy(i,j)*evelnp[0+(2*j)];
-              fsvderxy(1,i) += derxy(i,j)*evelnp[1+(2*j)];
-            } /* end of loop over j */
-          } /* end of loop over i */
-        }
-
-        Epetra_SerialDenseMatrix  epsilon(2,2);
-
-        /*-------------------------- get rate-of-strain tensor epsilon(u) */
-        for (int i=0;i<2;i++)
-        {
-          for (int j=0;j<2;j++)
-          {
-            epsilon(i,j) = 0.5 * ( fsvderxy(i,j) + fsvderxy(j,i) );
+            fsvderxy(0,i) += derxy(i,j)*fsevelnp[0+(2*j)];
+            fsvderxy(1,i) += derxy(i,j)*fsevelnp[1+(2*j)];
           } /* end of loop over j */
         } /* end of loop over i */
-
-        for(int rr=0;rr<2;rr++)
-        {
-          for(int mm=0;mm<2;mm++)
-          {
-            rateofstrain += epsilon(rr,mm)*epsilon(rr,mm);
-          }
-        }
-        rateofstrain *= 2.0;
-        rateofstrain = sqrt(rateofstrain);
       }
-      //
-      // Choices of the Smagorinsky constant Cs:
-      //
-      //             Cs = 0.17   (Lilly --- Determined from filter
-      //                          analysis of Kolmogorov spectrum of
-      //                          isotropic turbulence)
-      //
-      //             0.1 < Cs < 0.24 (depending on the flow)
+      else
+      {
+        /*---- get all-scale velocity (np,i) derivatives at element center */
+        for (int i=0;i<2;i++)
+        {
+          fsvderxy(0,i)=0.0;
+          fsvderxy(1,i)=0.0;
+          for (int j=0;j<iel;j++)
+          {
+            fsvderxy(0,i) += derxy(i,j)*evelnp[0+(2*j)];
+            fsvderxy(1,i) += derxy(i,j)*evelnp[1+(2*j)];
+          } /* end of loop over j */
+        } /* end of loop over i */
+      }
 
-      vart = Cs * Cs * hk * hk * rateofstrain;
+      Epetra_SerialDenseMatrix  epsilon(2,2);
 
+      /*-------------------------- get rate-of-strain tensor epsilon(u) */
+      for (int i=0;i<2;i++)
+      {
+        for (int j=0;j<2;j++)
+        {
+          epsilon(i,j) = 0.5 * ( fsvderxy(i,j) + fsvderxy(j,i) );
+        } /* end of loop over j */
+      } /* end of loop over i */
+
+      for(int rr=0;rr<2;rr++)
+      {
+        for(int mm=0;mm<2;mm++)
+        {
+          rateofstrain += epsilon(rr,mm)*epsilon(rr,mm);
+        }
+      }
+      rateofstrain *= 2.0;
+      rateofstrain = sqrt(rateofstrain);
     }
-  }
+    //
+    // Choices of the fine-scale Smagorinsky constant Cs:
+    //
+    //             Cs = 0.17   (Lilly --- Determined from filter
+    //                          analysis of Kolmogorov spectrum of
+    //                          isotropic turbulence)
+    //
+    //             0.1 < Cs < 0.24 (depending on the flow)
 
+    vart = Cs * Cs * hk * hk * rateofstrain;
+
+  }
 
 /*----------------------------------------------------------------------*/
 // end of f2_caltau function
@@ -955,7 +953,7 @@ void DRT::ELEMENTS::Fluid2::f2_sys_mat(vector<int>&              lm,
       {
         fsvderxy(0,i)=0.0;
         fsvderxy(1,i)=0.0;
-        if (fssgv > 0)
+        if (fssgv != "No")
         {
           for (int j=0;j<iel;j++)
           {
@@ -1566,7 +1564,7 @@ void DRT::ELEMENTS::Fluid2::f2_calmat(
     const double&             fac,
     const double&             visc,
     const int&                iel,
-    const int&                fssgv,
+    string                    fssgv,
     double                    timefac
     )
 {
@@ -1681,9 +1679,9 @@ void DRT::ELEMENTS::Fluid2::f2_calmat(
 
   } // end of loop over nodes of element
 
-// parameter for artificial subgrid viscosity
-double vartfac=0.0; 
-if (fssgv > 0) vartfac = vart*timefacfac;
+  // parameter for artificial subgrid viscosity
+  double vartfac=0.0;
+  if (fssgv != "No") vartfac = vart*timefacfac;
 
 /*--------------------------------- now build single stiffness terms ---*/
 
@@ -1773,7 +1771,7 @@ void DRT::ELEMENTS::Fluid2::f2_calmat_stationary(
     const double&             fac,
     const double&             visc,
     const int&                iel,
-    const int&                fssgv
+    string                    fssgv
     )
 {
 /*========================= further variables =========================*/
@@ -1883,8 +1881,8 @@ for (int i=0; i<iel; i++) /* loop over nodes of element */
 } // end of loop over nodes of element
 
 // parameter for artificial subgrid viscosity
-double vartfac=0.0; 
-if (fssgv > 0) vartfac = vart*fac;
+double vartfac=0.0;
+if (fssgv != "No") vartfac = vart*fac;
 
 /*--------------------------------- now build single stiffness terms ---*/
 

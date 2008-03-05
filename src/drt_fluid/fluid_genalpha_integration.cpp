@@ -204,12 +204,17 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   }
 
   // (fine-scale) subgrid viscosity?
-  fssgv_ = params_.get<int>("fs subgrid viscosity",0);
+  fssgv_ = params_.get<string>("fs subgrid viscosity","No");
 
   // -------------------------------------------------------------------
-  // necessary only for the VM3 approach: fine-scale solution vector
+  // necessary only for the VM3 approach:
+  // coarse- and fine-scale solution vectors + respective ouptput
   // -------------------------------------------------------------------
-  if (fssgv_ > 0) fsvelaf_ = LINALG::CreateVector(*dofrowmap,true);
+  if (fssgv_ != "No")
+  {
+    csvelaf_ = LINALG::CreateVector(*dofrowmap,true);
+    fsvelaf_ = LINALG::CreateVector(*dofrowmap,true);
+  }
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct
@@ -1064,7 +1069,7 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   //----------------------------------------------------------------------
   // decide whether VM3-based solution approach or standard approach
   //----------------------------------------------------------------------
-  if (fssgv_ > 0)
+  if (fssgv_ != "No")
   {
     // extract the ML parameters
     ParameterList&  mllist = solver_.Params().sublist("ML Parameters");
@@ -2427,6 +2432,23 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
           }
           cout << &endl;
           cout << &endl;
+        }
+
+        //--------------------------------------------------------------------
+        /* output of fine-scale subgrid-vicosity approach if any */
+        if (fssgv_ != "No")
+        {
+          cout << "Fine-scale subgrid-viscosity approach based on AVM3: ";
+          cout << &endl << &endl;
+          cout << params_.get<string>("fs subgrid viscosity");
+
+          if (fssgv_ == "Smagorinsky_all" || fssgv_ == "Smagorinsky_small" ||
+              fssgv_ == "mixed_Smagorinsky_all" || fssgv_ == "mixed_Smagorinsky_small")
+          {
+            cout << " with Smagorinsky constant Cs= ";
+            cout << modelparams->get<double>("C_SMAGORINSKY") ;
+          }
+          cout << &endl << &endl;
         }
 
       }

@@ -169,7 +169,7 @@ protected:
   int cdvel_;
 
   /// fine-scale subgrid-viscosity flag
-  int fssgd_;
+  string fssgd_;
 
   /// (standard) system matrix
   RCP<LINALG::SparseMatrix> sysmat_;

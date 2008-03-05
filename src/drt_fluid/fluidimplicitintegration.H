@@ -294,9 +294,8 @@ protected:
   int samstop_;
   int dumperiod_;
 
-  /// fine-scale subgrid-viscosity flag and Smagorinsky model parameter
-  int fssgv_;
-  double Cs_fs_;
+  /// fine-scale subgrid-viscosity flag
+  string fssgv_;
 
   /// (standard) system matrix
   RCP<LINALG::SparseOperator> sysmat_;
@@ -347,7 +346,8 @@ protected:
   /// vm3 solver
   RCP<VM3_Solver>       vm3_solver_;
 
-  /// only necessary for vm3 solver: fine-scale solution vector
+  /// only necessary for vm3 solver: coarse- and fine-scale solution vectors
+  RCP<Epetra_Vector>    csvelnp_;
   RCP<Epetra_Vector>    fsvelnp_;
 
   /// turbulence statistics, lid driven cavity

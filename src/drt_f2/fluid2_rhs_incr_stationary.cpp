@@ -42,7 +42,7 @@ for (int vi=0; vi<iel; ++vi)
   eforce_(vi*3)     += -(tau_C*derxy_(0, vi)*(vderxy_(0, 0) + vderxy_(1, 1))) ;
   eforce_(vi*3 + 1) += -(tau_C*derxy_(1, vi)*(vderxy_(0, 0) + vderxy_(1, 1))) ;
 
-  if (fssgv > 0)
+  if (fssgv != "No" && fssgv != "scale_similarity")
   {
     /* viscous term */
     eforce_(vi*3)     -= vartfac*(2.0*derxy_(0, vi)*fsvderxy_(0, 0) + derxy_(1, vi)*fsvderxy_(0, 1) + derxy_(1, vi)*fsvderxy_(1, 0)) ;

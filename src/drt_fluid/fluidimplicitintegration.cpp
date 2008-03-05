@@ -96,11 +96,7 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   newton_ = params_.get<bool>("Use reaction terms for linearisation",false);
 
   // (fine-scale) subgrid viscosity?
-  fssgv_ = params_.get<int>("fs subgrid viscosity",0);
-
-  // Smagorinsky model parameter from turbulence model sublist
-  ParameterList *  turbmodelparams =&(params_.sublist("TURBULENCE MODEL"));
-  Cs_fs_ = turbmodelparams->get<double>("C_SMAGORINSKY",0.0);
+  fssgv_ = params_.get<string>("fs subgrid viscosity","No");
 
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
@@ -231,7 +227,6 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
 
   ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
 
-
   if (modelparams->get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
       ==
       "CLASSICAL_LES")
@@ -353,9 +348,9 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
     if (turbulencemodel == "lid_driven_cavity")
     {
       turbulencestatistics_ldc_=rcp(new TurbulenceStatisticsLdc(discret_,params_));
-      samstart_  = turbmodelparams->get<int>("SAMPLING_START",1);
-      samstop_   = turbmodelparams->get<int>("SAMPLING_STOP",1);
-      dumperiod_ = turbmodelparams->get<int>("DUMPING_PERIOD",1);
+      samstart_  = modelparams->get<int>("SAMPLING_START",1);
+      samstop_   = modelparams->get<int>("SAMPLING_STOP",1);
+      dumperiod_ = modelparams->get<int>("DUMPING_PERIOD",1);
     }
     else if (turbulencemodel == "channel_flow_of_height_2")
     {
@@ -365,9 +360,30 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
 
 
   // -------------------------------------------------------------------
-  // necessary only for the VM3 approach: fine-scale solution vector
+  // necessary only for the VM3 approach:
+  // coarse- and fine-scale solution vectors + respective ouptput
   // -------------------------------------------------------------------
-  if (fssgv_ > 0) fsvelnp_ = LINALG::CreateVector(*dofrowmap,true);
+  if (fssgv_ != "No")
+  {
+    csvelnp_ = LINALG::CreateVector(*dofrowmap,true);
+    fsvelnp_ = LINALG::CreateVector(*dofrowmap,true);
+
+    if (myrank_ == 0)
+    {
+      // Output
+      cout << "Fine-scale subgrid-viscosity approach based on AVM3: ";
+      cout << &endl << &endl;
+      cout << params_.get<string>("fs subgrid viscosity");
+
+      if (fssgv_ == "Smagorinsky_all" || fssgv_ == "Smagorinsky_small" ||
+          fssgv_ == "mixed_Smagorinsky_all" || fssgv_ == "mixed_Smagorinsky_small")
+      {
+        cout << " with Smagorinsky constant Cs= ";
+        cout << modelparams->get<double>("C_SMAGORINSKY") ;
+      }
+      cout << &endl << &endl << &endl;
+    }
+  }
 
   // end time measurement for initialization
   tm1_ref_ = null;
@@ -475,7 +491,7 @@ void FluidImplicitTimeInt::TimeLoop()
   {
     if (alefluid_)
       dserror("no ALE possible with linearised fluid");
-    if (fssgv_)
+    if (fssgv_ != "No")
       dserror("no fine scale solution implemented with linearised fluid");
     /* additionally it remains to mention that for the linearised
        fluid the stbilisation is hard coded to be SUPG/PSPG */
@@ -862,7 +878,6 @@ void FluidImplicitTimeInt::NonlinearSolve()
       eleparams.set("total time",time_);
       eleparams.set("thsl",theta_*dta_);
       eleparams.set("fs subgrid viscosity",fssgv_);
-      eleparams.set("fs Smagorinsky parameter",Cs_fs_);
       eleparams.set("include reactive terms for linearisation",newton_);
 
       // parameters for stabilization
@@ -890,7 +905,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
       //----------------------------------------------------------------------
       // decide whether VM3-based solution approach or standard approach
       //----------------------------------------------------------------------
-      if (fssgv_ > 0)
+      if (fssgv_ != "No")
       {
         // time measurement: avm3 --- start TimeMonitor tm5
         tm5_ref_ = rcp(new TimeMonitor(*timeavm3_));

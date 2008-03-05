@@ -78,7 +78,7 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
   double                                  time,
   double                                  timefac,
   bool                                    newton,
-  int                                     fssgv,
+  string                                  fssgv,
   const enum Fluid3::StabilisationAction  pspg,
   const enum Fluid3::StabilisationAction  supg,
   const enum Fluid3::StabilisationAction  vstab,
@@ -89,8 +89,7 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
   double&                                 Cs,
   double&                                 Cs_delta_sq,
   double&                                 visceff,
-  double&                                 l_tau,
-  double                                  Cs_fs
+  double&                                 l_tau
   )
 {
   // set element data
@@ -149,8 +148,7 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
          Cs_delta_sq,
          visceff,
          l_tau,
-         fssgv,
-         Cs_fs);
+         fssgv);
 
   // in case of viscous stabilization decide whether to use GLS or USFEM
   double vstabfac= 0.0;
@@ -251,8 +249,8 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
     vderxy_ = blitz::sum(derxy_(j,k)*evelnp(i,k),k);
 
     // get fine-scale velocity (np,i) derivatives at integration point
-    if (fssgv > 0) fsvderxy_ = blitz::sum(derxy_(j,k)*fsevelnp(i,k),k);
-    else           fsvderxy_ = 0.;
+    if (fssgv != "No") fsvderxy_ = blitz::sum(derxy_(j,k)*fsevelnp(i,k),k);
+    else               fsvderxy_ = 0.;
 
     // get grid velocity at integration point
     if (ele->is_ale_)
@@ -1536,7 +1534,7 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
         }
       } // end Reynolds-stress part on right hand side
 
-      if(fssgv > 0)
+      if(fssgv != "No" && fssgv != "scale_similarity")
       {
         //----------------------------------------------------------------------
         //     FINE-SCALE SUBGRID-VISCOSITY TERM (ON RIGHT HAND SIDE)
@@ -1589,8 +1587,7 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
   double&                                 Cs_delta_sq,
   double&                                 visceff,
   double&                                 l_tau,
-  const int                               fssgv,
-  const double                            Cs_fs
+  string                                  fssgv
   )
 {
   blitz::firstIndex i;    // Placeholder for the first index
@@ -1964,10 +1961,10 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
   tau_(2) = vel_norm * hk * 0.5 * xi_tau_c /timefac;
 
   /*------------------------------------------- compute subgrid viscosity ---*/
-  if (fssgv == 1 || fssgv == 2)
+  if (fssgv == "artificial_all" || fssgv == "artificial_small")
   {
     double fsvel_norm = 0.0;
-    if (fssgv == 2)
+    if (fssgv == "artificial_small")
     {
       // get fine-scale velocities at element center
       fsvelint_ = blitz::sum(funct_(j)*fsevelnp(i,j),j);
@@ -1985,7 +1982,8 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
     vart_ = (DSQR(hk)*mk*DSQR(fsvel_norm))/(2.0*visc*xi);
 
   }
-  else if (fssgv == 3 || fssgv == 4)
+  else if (fssgv == "Smagorinsky_all" || fssgv == "Smagorinsky_small" ||
+           fssgv == "mixed_Smagorinsky_all" || fssgv == "mixed_Smagorinsky_small")
   {
     //
     // SMAGORINSKY MODEL
@@ -2003,8 +2001,9 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
     double rateofstrain = 0.0;
     {
       // get fine-scale or all-scale velocity (np,i) derivatives at element center
-      if (fssgv == 4) fsvderxy_ = blitz::sum(derxy_(j,k)*fsevelnp(i,k),k);
-      else            fsvderxy_ = blitz::sum(derxy_(j,k)*evelnp(i,k),k);
+      if (fssgv == "Smagorinsky_small" || fssgv == "mixed_Smagorinsky_small")
+           fsvderxy_ = blitz::sum(derxy_(j,k)*fsevelnp(i,k),k);
+      else fsvderxy_ = blitz::sum(derxy_(j,k)*evelnp(i,k),k);
 
       blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());
       epsilon = 0.5 * ( fsvderxy_(i,j) + fsvderxy_(j,i) );
@@ -2020,7 +2019,7 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
       rateofstrain = sqrt(rateofstrain);
     }
     //
-    // Choices of the fine-scale Smagorinsky constant Cs_fs:
+    // Choices of the fine-scale Smagorinsky constant Cs:
     //
     //             Cs = 0.17   (Lilly --- Determined from filter
     //                          analysis of Kolmogorov spectrum of
@@ -2028,7 +2027,7 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
     //
     //             0.1 < Cs < 0.24 (depending on the flow)
 
-    vart_ = Cs_fs * Cs_fs * hk * hk * rateofstrain;
+    vart_ = Cs * Cs * hk * hk * rateofstrain;
   }
 }
 

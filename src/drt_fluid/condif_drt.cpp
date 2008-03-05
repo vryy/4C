@@ -158,7 +158,7 @@ void dyn_condif_drt()
   condiftimeparams.set                  ("write solution every"      ,fdyn.get<int>("UPRES"));
 
   // ---------------------------------(fine-scale) subgrid diffusivity?
-  condiftimeparams.set<int>              ("fs subgrid viscosity"   ,Teuchos::getIntegralValue<int>(fdyn,"SUBGRIDVISC"));
+  condiftimeparams.set<string>           ("fs subgrid diffusivity"   ,fdyn.get<string>("FSSUGRVISC"));
 
 
   // -------------------------------------------------------------------

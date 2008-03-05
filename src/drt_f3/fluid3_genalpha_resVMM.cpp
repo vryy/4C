@@ -111,8 +111,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   const double                                          dt,
   const double                                          time,
   const bool                                            newton,
-  const int                                             fssgv,
-  const double                                          Cs_fs,
+  string                                                fssgv,
   const enum Fluid3::StabilisationAction                tds,
   const enum Fluid3::StabilisationAction                inertia,
   const enum Fluid3::StabilisationAction                pspg,
@@ -770,10 +769,10 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   }
 
   /*------------------------------------------- compute subgrid viscosity ---*/
-  if (fssgv == 1 || fssgv == 2)
+  if (fssgv == "artificial_all" || fssgv == "artificial_small")
   {
     double fsvel_normaf = 0.0;
-    if (fssgv == 2)
+    if (fssgv == "artificial_small")
     {
       // get fine-scale velocities at element center
       fsvelintaf_ = blitz::sum(funct_(j)*fsevelaf(i,j),j);
@@ -791,7 +790,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     vart_ = (DSQR(hk)*mk*DSQR(fsvel_normaf))/(2.0*visc*xi);
 
   }
-  else if (fssgv == 3 || fssgv == 4)
+  else if (fssgv == "Smagorinsky_all" || fssgv == "Smagorinsky_small" ||
+           fssgv == "mixed_Smagorinsky_all" || fssgv == "mixed_Smagorinsky_small")
   {
     //
     // SMAGORINSKY MODEL
@@ -809,8 +809,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     double rateofstrain = 0.0;
     {
       // get fine-scale or all-scale velocity (np,i) derivatives at element center
-      if (fssgv == 4) fsvderxyaf_ = blitz::sum(derxy_(j,k)*fsevelaf(i,k),k);
-      else            fsvderxyaf_ = vderxyaf_;
+      if (fssgv == "Smagorinsky_small" || fssgv == "mixed_Smagorinsky_small")
+           fsvderxyaf_ = blitz::sum(derxy_(j,k)*fsevelaf(i,k),k);
+      else fsvderxyaf_ = vderxyaf_;
 
       blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());
       epsilon = 0.5 * ( fsvderxyaf_(i,j) + fsvderxyaf_(j,i) );
@@ -834,7 +835,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     //
     //             0.1 < Cs < 0.24 (depending on the flow)
 
-    vart_ = Cs_fs * Cs_fs * hk * hk * rateofstrain;
+    vart_ = Cs * Cs * hk * hk * rateofstrain;
   }
 
 #ifdef PERF
@@ -1502,8 +1503,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     //
     // j : direction of derivative x/y/z
     //
-    if (fssgv > 0) fsvderxyaf_ = blitz::sum(derxy_(j,k)*fsevelaf(i,k),k);
-    else           fsvderxyaf_ = 0.;
+    if (fssgv != "No") fsvderxyaf_ = blitz::sum(derxy_(j,k)*fsevelaf(i,k),k);
+    else               fsvderxyaf_ = 0.;
 
 
     // get velocity (n+1,i) derivatives at integration point
@@ -5115,7 +5116,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 #endif          
       }
 
-      if(fssgv > 0)
+      if(fssgv != "No" && fssgv != "scale_similarity")
       {
         //----------------------------------------------------------------------
         //     FINE-SCALE SUBGRID-VISCOSITY TERM (ON RIGHT HAND SIDE)

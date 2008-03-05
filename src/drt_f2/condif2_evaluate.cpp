@@ -85,8 +85,8 @@ int DRT::ELEMENTS::Condif2::Evaluate(ParameterList& params,
       // get type of velocity field
       const int vel_field = params.get<int>("condif velocity field",0);
 
-      // get flag for (fine-scale) subgrid diffusivity (1=artificial, 0=no)
-      const int fssgd = params.get<int>("fs subgrid viscosity",0);
+      // get flag for fine-scale subgrid diffusivity
+      string fssgd = params.get<string>("fs subgrid diffusivity","No");
 
       // calculate element coefficient matrix and rhs
       condif2_sys_mat(lm,myhist,&elemat1,&elemat2,&elevec1,elevec2,actmat,time,timefac,vel_field,fssgd,is_stationary);
@@ -132,7 +132,7 @@ void DRT::ELEMENTS::Condif2::condif2_sys_mat(vector<int>&              lm,
                                          double                    time,
                                          double                    timefac,
                                          int                       vel_field,
-                                         int                       fssgd,
+                                         string                    fssgd,
                                          bool                      is_stationary)
 {
 
@@ -176,7 +176,7 @@ void DRT::ELEMENTS::Condif2::condif2_sys_mat(vector<int>&              lm,
   /*----------------------------------------------------------------------*/
   /*------------------------------------------------------- initialize ---*/
     // use one point gauss rule to calculate tau at element center
-  GaussRule2D integrationrule_stabili;
+  GaussRule2D integrationrule_stabili = intrule2D_undefined;
   switch(distype)
   {
   case quad4: case quad8: case quad9:
@@ -314,7 +314,8 @@ void DRT::ELEMENTS::Condif2::condif2_sys_mat(vector<int>&              lm,
     tau = (DSQR(hk)*mk)/(2.0*diffus*xi1);
 
   }
-  if (fssgd == 1)
+
+  if (fssgd == "artificial_all")
   {
     /*-------------------------- compute artificial diffusivity kappa_art ---*/
     epe1 = mk * vel_norm * hk / diffus;     /* convective : diffusive forces */
@@ -327,6 +328,10 @@ void DRT::ELEMENTS::Condif2::condif2_sys_mat(vector<int>&              lm,
       sugrvisc(vi) = kart/Nodes()[vi]->NumElement();
     }
   }
+  else if (fssgd == "artificial_small" || fssgd == "Smagorinsky_all" ||
+           fssgd == "Smagorinsky_small" || fssgd == "scale_similarity" ||
+           fssgd == "mixed_Smagorinsky_all" || fssgd == "mixed_Smagorinsky_small")
+    dserror("only all-scale artficial diffusivity for convection-diffusion problems possible so far!\n");
 
   /*----------------------------------------------------------------------*/
   // integration loop for one condif2 element
@@ -828,7 +833,7 @@ void DRT::ELEMENTS::Condif2::condif2_calmat(
     const double&             fac,
     const double&             diffus,
     const int&                iel,
-    const int&                fssgd,
+    string                    fssgd,
     double                    timefac
     )
 {
@@ -885,7 +890,7 @@ for (int i=0; i<iel; i++) /* loop over nodes of element */
 #undef rhsint_
 #undef diffus_
 
-if (fssgd == 1)
+if (fssgd != "No")
 {
   // parameter for artificial diffusivity
   const double kartfac = timefacfac;
@@ -971,7 +976,7 @@ void DRT::ELEMENTS::Condif2::condif2_calmat_stat(
     const double&             fac,
     const double&             diffus,
     const int&                iel,
-    const int&                fssgd
+    string                    fssgd
     )
 {
 /*========================= further variables =========================*/
@@ -1023,7 +1028,7 @@ for (int i=0; i<iel; i++) /* loop over nodes of element */
 #undef rhsint_
 #undef diffus_
 
-if (fssgd == 1)
+if (fssgd != "No")
 {
   // parameter for artificial diffusivity
   const double kartfac = fac;

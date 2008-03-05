@@ -85,7 +85,7 @@ CondifImplicitTimeInt::CondifImplicitTimeInt(RefCountPtr<DRT::Discretization> ac
   dtp_ = dta_  =params_.get<double>("time step size");
 
   // (fine-scale) subgrid diffusivity?
-  fssgd_  =params_.get<int>("fs subgrid viscosity",0);
+  fssgd_  =params_.get<string>("fs subgrid diffusivity","No");
 
   // type of convective velocity field
   cdvel_  =params_.get<int>("condif velocity field");
@@ -161,9 +161,23 @@ CondifImplicitTimeInt::CondifImplicitTimeInt(RefCountPtr<DRT::Discretization> ac
   // The residual vector --- more or less the rhs
   residual_     = LINALG::CreateVector(*dofrowmap,true);
 
-  // necessary only for the VM3 approach: initialize subgrid-diffusivity matrix
-  if (fssgd_ > 0)
+  // -------------------------------------------------------------------
+  // necessary only for the VM3 approach:
+  // initialize subgrid-diffusivity matrix + respective ouptput
+  // -------------------------------------------------------------------
+  if (fssgd_ != "No")
+  {
     sysmat_sd_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27));
+
+    if (myrank_ == 0)
+    {
+      // Output
+      cout << "Fine-scale subgrid-diffusivity approach based on AVM3: ";
+      cout << &endl << &endl;
+      cout << params_.get<string>("fs subgrid diffusivity");
+      cout << &endl << &endl;
+    }
+  }
 
   // end time measurement for initialization
   tm1_ref_ = null;
@@ -487,7 +501,7 @@ void CondifImplicitTimeInt::Solve(
     eleparams.set("total time",time_);
     eleparams.set("thsl",theta_*dta_);
     eleparams.set("condif velocity field",cdvel_);
-    eleparams.set("fs subgrid viscosity",fssgd_);
+    eleparams.set("fs subgrid diffusivity",fssgd_);
     eleparams.set("using stationary formulation",is_stat);
 
     // set vector values needed by elements
@@ -499,7 +513,7 @@ void CondifImplicitTimeInt::Solve(
     // AVMS solver: VM3 solution approach with extended matrix system
     // (may replace direct algebraic VM3 solution approach)
     // begin first encapsulation of AVMS solution approach
-    if (fssgd_ > 0)
+    if (fssgd_ != "No")
     {
       // create all-scale subgrid-diffusivity matrix
       sysmat_sd_->Zero();
@@ -512,7 +526,7 @@ void CondifImplicitTimeInt::Solve(
 #endif
     // direct algebraic VM3 solution approach
     // begin encapsulation of direct algebraic VM3 solution approach
-    if (fssgd_ > 0)
+    if (fssgd_ != "No")
     {
       // time measurement: avm3 --- start TimeMonitor tm4
       tm4_ref_ = rcp(new TimeMonitor(*timeavm3_));
@@ -607,7 +621,7 @@ void CondifImplicitTimeInt::Solve(
     // AVMS solver: VM3 solution approach with extended matrix system
     // (may replace direct algebraic VM3 solution approach)
     // begin second encapsulation of AVMS solution approach
-    if (fssgd_ > 0)
+    if (fssgd_ != "No")
     {
       // add standard matrix to subgrid-diffusivity matrix: fine-scale matrix
       sysmat_sd_->Add(*sysmat_,false,1.0,1.0);
@@ -904,7 +918,7 @@ void CondifImplicitTimeInt::SolveStationaryProblem()
      eleparams.set("assemble vector 3",false);
      // other parameter needed by the elements
      eleparams.set("condif velocity field",cdvel_);
-     eleparams.set("fs subgrid viscosity",fssgd_);
+     eleparams.set("fs subgrid diffusivity",fssgd_);
      eleparams.set("using stationary formulation",true);
 
      // set vector values needed by elements

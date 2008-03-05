@@ -310,7 +310,7 @@ private:
                    double                    time,
                    double                    timefac,
                    int                       vel_field,
-                   int                       fssgd,
+                   string                    fssgd,
                    bool                      is_stationary
 		   );
 
@@ -360,7 +360,7 @@ private:
                     const double&             fac,
                     const double&             diffus,
                     const int&                iel,
-                    const int&                fssgd,
+                    string                    fssgd,
                     double                    timefac);
 		
   // evaluate convection-diffusion coefficient matrix for stationary problems
@@ -378,7 +378,7 @@ private:
                          const double&             fac,
                          const double&             diffus,
                          const int&                iel,
-                         const int&                fssgd);
+                         string                    fssgd);
 
   // set number of gauss points to element shape default
   DRT::UTILS::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype);

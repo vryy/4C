@@ -488,10 +488,10 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         RCP<const Epetra_Vector> fsvelnp;
         blitz::Array<double, 2> fsevelnp(3,numnode,blitz::ColumnMajorArray<2>());
 
-        // get flag for (fine-scale) subgrid viscosity (1=yes, 0=no)
-        const int fssgv = params.get<int>("fs subgrid viscosity",0);
-        
-        if (fssgv > 0)
+        // get flag for fine-scale subgrid viscosity
+        string fssgv = params.get<string>("fs subgrid viscosity","No");
+
+        if (fssgv != "No")
         {
           fsvelnp = discretization.GetState("fsvelnp");
           if (fsvelnp==null) dserror("Cannot get state vector 'fsvelnp'");
@@ -563,13 +563,6 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         if (timefac < 0.0) dserror("No thsl supplied");
 
         // --------------------------------------------------
-        // init fine scale Smagorinsky 
-        // --------------------------------------------------
-        
-        // get Smagorinsky model parameter for fine-scale subgrid viscosity
-        const double Cs_fs = params.get<double>("fs Smagorinsky parameter",0.0);
-
-        // --------------------------------------------------
         // set parameters for classical turbulence models
         // --------------------------------------------------
         ParameterList& turbmodelparams    = params.sublist("TURBULENCE MODEL");
@@ -579,6 +572,14 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         double Cs_delta_sq   = 0.0;
         double l_tau         = 0.0;
         double visceff       = 0.0;
+
+        // get Smagorinsky model parameter for fine-scale subgrid viscosity
+        // (Since either all-scale Smagorinsky model (i.e., classical LES model
+        // as will be inititalized below) or fine-scale Smagorinsky model is
+        // used (and never both), the same input parameter can be exploited.)
+        if (fssgv != "No" && turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
+        dserror("No combination of a classical (all-scale) turbulence model and a fine-scale subgrid-viscosity approach currently possible!");
+        if (fssgv != "No") Cs = turbmodelparams.get<double>("C_SMAGORINSKY",0.0);
 
         // the default action is no model        
         TurbModelAction turb_mod_action = no_model;
@@ -755,8 +756,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
                        Cs,
                        Cs_delta_sq,
                        visceff,
-                       l_tau,
-                       Cs_fs);
+                       l_tau);
 
         //--------------------------------------------------
         // output values of Cs, visceff and Cs_delta_sq
@@ -1175,13 +1175,13 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
 
         const bool newton = params.get<bool>("include reactive terms for linearisation");
 
-        // get flag for (fine-scale) subgrid viscosity (1=yes, 0=no)
-        const int fssgv = params.get<int>("fs subgrid viscosity",0);
+        // get flag for fine-scale subgrid viscosity
+        string fssgv = params.get<string>("fs subgrid viscosity","No");
 
         // get fine-scale velocity
         RCP<const Epetra_Vector> fsvelaf;
         blitz::Array<double, 2> fsevelaf(3,numnode,blitz::ColumnMajorArray<2>());
-        if (fssgv > 0)
+        if (fssgv != "No")
         {
           fsvelaf = discretization.GetState("fsvelaf");
           if (fsvelaf==null) dserror("Cannot get state vector 'fsvelaf'");
@@ -1261,15 +1261,20 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         // set parameters for turbulence model
         ParameterList& turbmodelparams    = params.sublist("TURBULENCE MODEL");
 
-        // get Smagorinsky model parameter for fine-scale subgrid viscosity
-        const double Cs_fs = turbmodelparams.get<double>("C_SMAGORINSKY",0.0);
-
         // initialise the Smagorinsky constant Cs and the viscous length scale l_tau to zero
         double Cs            = 0.0;
         double Cs_delta_sq   = 0.0;
         double l_tau         = 0.0;
         double visceff       = 0.0;
-        
+
+        // get Smagorinsky model parameter for fine-scale subgrid viscosity
+        // (Since either all-scale Smagorinsky model (i.e., classical LES model
+        // as will be inititalized below) or fine-scale Smagorinsky model is
+        // used (and never both), the same input parameter can be exploited.)
+        if (fssgv != "No" && turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
+        dserror("No combination of a classical (all-scale) turbulence model and a fine-scale subgrid-viscosity approach currently possible!");
+        if (fssgv != "No") Cs = turbmodelparams.get<double>("C_SMAGORINSKY",0.0);
+
         // the default action is no model        
         TurbModelAction turb_mod_action = no_model;
 
@@ -1435,7 +1440,6 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
                                  time,
                                  newton,
                                  fssgv,
-                                 Cs_fs,
                                  tds,
                                  inertia,
                                  pspg,
@@ -1790,13 +1794,13 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           StabilisationAction cross    = ConvertStringToStabAction(stablist.get<string>("CROSS-STRESS"));
           StabilisationAction reynolds = ConvertStringToStabAction(stablist.get<string>("REYNOLDS-STRESS"));
 
-          // get flag for (fine-scale) subgrid viscosity (1=yes, 0=no)
-          const int fssgv = params.get<int>("fs subgrid viscosity",0);
+          // get flag for fine-scale subgrid viscosity
+          string fssgv = params.get<string>("fs subgrid viscosity","No");
 
           // get fine-scale velocity
           RCP<const Epetra_Vector> fsvelnp;
           blitz::Array<double, 2> fsevelnp(3,numnode,blitz::ColumnMajorArray<2>());
-          if (fssgv > 0)
+          if (fssgv != "No")
           {
             fsvelnp = discretization.GetState("fsvelnp");
             if (fsvelnp==null) dserror("Cannot get state vector 'fsvelnp'");
@@ -1822,7 +1826,8 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           }
 
           // get Smagorinsky model parameter for fine-scale subgrid viscosity
-          const double Cs_fs = params.get<double>("fs Smagorinsky parameter",0.0);
+          ParameterList& turbmodelparams = params.sublist("TURBULENCE MODEL");
+          const double Cs = turbmodelparams.get<double>("C_SMAGORINSKY",0.0);
 
           // wrap epetra serial dense objects in blitz objects
           blitz::Array<double, 2> estif(elemat1.A(),
@@ -1850,7 +1855,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
                                    cstab,
                                    cross,
                                    reynolds,
-                                   Cs_fs);
+                                   Cs);
 
           // This is a very poor way to transport the density to the
           // outside world. Is there a better one?

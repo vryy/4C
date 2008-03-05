@@ -71,14 +71,14 @@ void DRT::ELEMENTS::Fluid3Stationary::Sysmat(
   struct _MATERIAL*                       material,
   double                                  pseudotime,
   bool                                    newton,
-  int                                     fssgv,
+  string                                  fssgv,
   const enum Fluid3::StabilisationAction  pspg,
   const enum Fluid3::StabilisationAction  supg,
   const enum Fluid3::StabilisationAction  vstab,
   const enum Fluid3::StabilisationAction  cstab,
   const enum Fluid3::StabilisationAction  cross,
   const enum Fluid3::StabilisationAction  reynolds,
-  double                                  Cs_fs
+  const double                            Cs
   )
 {
 
@@ -121,7 +121,7 @@ void DRT::ELEMENTS::Fluid3Stationary::Sysmat(
   // stabilization parameter
   // This has to be done before anything else is calculated because
   // we use the same arrays internally.
-  CalTauStationary(ele,evelnp,fsevelnp,distype,visc,fssgv,Cs_fs);
+  CalTauStationary(ele,evelnp,fsevelnp,distype,visc,fssgv,Cs);
 
   // in case of viscous stabilisation decide whether to use GLS or usfemM
   double vstabfac= 0.0;
@@ -218,9 +218,9 @@ void DRT::ELEMENTS::Fluid3Stationary::Sysmat(
     // get velocity (np,i) derivatives at integration point
     vderxy_ = blitz::sum(derxy_(j,k)*evelnp(i,k),k);
 
-    // get fine-scale velocity (np,i) derivatives at integration point
-    if (fssgv > 0) fsvderxy_ = blitz::sum(derxy_(j,k)*fsevelnp(i,k),k);
-    else           fsvderxy_ = 0.;
+    // get fine-scale velocity derivatives at integration point
+    if (fssgv != "No") fsvderxy_ = blitz::sum(derxy_(j,k)*fsevelnp(i,k),k);
+    else               fsvderxy_ = 0.;
 
     // get pressure gradients
     gradp_ = blitz::sum(derxy_(i,j)*eprenp(j),j);
@@ -1161,7 +1161,7 @@ void DRT::ELEMENTS::Fluid3Stationary::Sysmat(
         }
       } // end Reynolds-stress part on right hand side
 
-      if(fssgv > 0)
+      if(fssgv != "No" && fssgv != "scale_similarity")
       {
         //----------------------------------------------------------------------
         //     FINE-SCALE SUBGRID-VISCOSITY TERM (ON RIGHT HAND SIDE)
@@ -1209,8 +1209,8 @@ void DRT::ELEMENTS::Fluid3Stationary::CalTauStationary(
   const blitz::Array<double,2>&           fsevelnp,
   const DRT::Element::DiscretizationType  distype,
   const double                            visc,
-  const int                               fssgv,
-  const double                            Cs_fs
+  string                                  fssgv,
+  const double                            Cs
   )
 {
   blitz::firstIndex i;    // Placeholder for the first index
@@ -1340,10 +1340,10 @@ void DRT::ELEMENTS::Fluid3Stationary::CalTauStationary(
   tau_(2) = 0.5*vel_norm*hk*xi_tau_c;
 
   /*------------------------------------------- compute subgrid viscosity ---*/
-  if (fssgv == 1 || fssgv == 2)
+  if (fssgv == "artificial_all" || fssgv == "artificial_small")
   {
     double fsvel_norm = 0.0;
-    if (fssgv == 2)
+    if (fssgv == "artificial_small")
     {
       // get fine-scale velocities at element center
       fsvelint_ = blitz::sum(funct_(j)*fsevelnp(i,j),j);
@@ -1361,7 +1361,8 @@ void DRT::ELEMENTS::Fluid3Stationary::CalTauStationary(
     vart_ = (DSQR(hk)*mk*DSQR(fsvel_norm))/(2.0*visc*xi);
 
   }
-  else if (fssgv == 3 || fssgv == 4)
+  else if (fssgv == "Smagorinsky_all" || fssgv == "Smagorinsky_small" ||
+           fssgv == "mixed_Smagorinsky_all" || fssgv == "mixed_Smagorinsky_small")
   {
     //
     // SMAGORINSKY MODEL
@@ -1378,9 +1379,10 @@ void DRT::ELEMENTS::Fluid3Stationary::CalTauStationary(
 
     double rateofstrain = 0.0;
     {
-      // get fine-scale or all-scale velocity (np,i) derivatives at element center
-      if (fssgv == 4) fsvderxy_ = blitz::sum(derxy_(j,k)*fsevelnp(i,k),k);
-      else            fsvderxy_ = blitz::sum(derxy_(j,k)*evelnp(i,k),k);
+      // get fine-scale or all-scale velocity derivatives at element center
+      if (fssgv == "Smagorinsky_small" || fssgv == "mixed_Smagorinsky_small")
+            fsvderxy_ = blitz::sum(derxy_(j,k)*fsevelnp(i,k),k);
+      else  fsvderxy_ = blitz::sum(derxy_(j,k)*evelnp(i,k),k);
 
       blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());
       epsilon = 0.5 * ( fsvderxy_(i,j) + fsvderxy_(j,i) );
@@ -1396,7 +1398,7 @@ void DRT::ELEMENTS::Fluid3Stationary::CalTauStationary(
       rateofstrain = sqrt(rateofstrain);
     }
     //
-    // Choices of the fine-scale Smagorinsky constant Cs_fs:
+    // Choices of the fine-scale Smagorinsky constant Cs:
     //
     //             Cs = 0.17   (Lilly --- Determined from filter
     //                          analysis of Kolmogorov spectrum of
@@ -1404,7 +1406,7 @@ void DRT::ELEMENTS::Fluid3Stationary::CalTauStationary(
     //
     //             0.1 < Cs < 0.24 (depending on the flow)
 
-    vart_ = Cs_fs * Cs_fs * hk * hk * rateofstrain;
+    vart_ = Cs * Cs * hk * hk * rateofstrain;
   }
 }
 

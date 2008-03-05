@@ -704,11 +704,12 @@ private:
   //! vm3 solver
   RCP<VM3_Solver>           vm3_solver_;
 
-  //! fine-scale solution vector
+  //! coarse- and fine-scale solution vector
+  RCP<Epetra_Vector>        csvelaf_;
   RCP<Epetra_Vector>        fsvelaf_;
 
   //! fine-scale subgrid-viscosity flag
-  int                       fssgv_;
+  string                    fssgv_;
 
   //@}
 

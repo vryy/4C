@@ -201,8 +201,8 @@ void dyn_fluid_drt()
   int init = Teuchos::getIntegralValue<int>(fdyn,"INITIALFIELD");
   fluidtimeparams.set                  ("eval err for analyt sol"   ,init);
 
-  // -----------------------------------(fine-scale) subgrid viscosity?
-  fluidtimeparams.set<int>              ("fs subgrid viscosity"   ,Teuchos::getIntegralValue<int>(fdyn,"SUBGRIDVISC"));
+  // ---------------------------- fine-scale subgrid viscosity approach
+  fluidtimeparams.set<string>           ("fs subgrid viscosity"   ,fdyn.get<string>("FSSUGRVISC"));
 
   // -----------------------sublist containing stabilization parameters
   fluidtimeparams.sublist("STABILIZATION")=fdyn.sublist("STABILIZATION");

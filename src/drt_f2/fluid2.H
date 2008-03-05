@@ -394,8 +394,8 @@ private:
                   struct _MATERIAL*         material,
                   double                    time,
                   double                    timefac,
-                  int                       fssgv,
-                  double                    Cs,
+                  string                    fssgv,
+                  const double              Cs,
                   bool                      is_stationary
 		  );
 
@@ -452,7 +452,7 @@ private:
                 const double&   	fac,
                 const double&   	visc,
                 const int&      	iel,
-                const int&              fssgv,
+                string                  fssgv,
 		double                  timefac
       		);
 
@@ -476,7 +476,7 @@ private:
                 const double&   	fac,
                 const double&   	visc,
                 const int&      	iel,
-                const int&              fssgv
+                string                  fssgv
       );
 
 

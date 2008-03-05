@@ -88,7 +88,7 @@ for (int vi=0; vi<iel; ++vi)
   /* pressure stabilization: */
   eforce_(vi*3 + 2) += timetauMp*(rhsint_(0)*derxy_(0, vi) + rhsint_(1)*derxy_(1, vi)) ;
 
-  if (fssgv > 0)
+  if (fssgv != "No" && fssgv != "scale_similarity")
   {
     /* viscous term */
     eforce_(vi*3)     -= vartfac*(2.0*derxy_(0, vi)*fsvderxy_(0, 0) + derxy_(1, vi)*fsvderxy_(0, 1) + derxy_(1, vi)*fsvderxy_(1, 0)) ;

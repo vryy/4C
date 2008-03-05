@@ -98,14 +98,14 @@ namespace ELEMENTS
                 struct _MATERIAL*                        material,
                 double                                   pseudotime,
                 bool                                     newton,
-                int                                      fssgv,
+                string                                   fssgv,
                 const enum Fluid3::StabilisationAction   pspg,
                 const enum Fluid3::StabilisationAction   supg,
                 const enum Fluid3::StabilisationAction   vstab,
                 const enum Fluid3::StabilisationAction   cstab,
                 const enum Fluid3::StabilisationAction   cross,
                 const enum Fluid3::StabilisationAction   reynolds,
-                double                                   Cs_fs);
+                const double                             Cs);
 
   private:
 
@@ -118,8 +118,8 @@ namespace ELEMENTS
       const blitz::Array<double,2>&           fsevelnp,
       const DRT::Element::DiscretizationType  distype,
       const double                            visc,
-      const int                               fssgv,
-      const double                            Cs_fs);
+      string                                  fssgv,
+      const double                            Cs);
 
     /*!
      * \brief calculate the body force from the nodes condition
