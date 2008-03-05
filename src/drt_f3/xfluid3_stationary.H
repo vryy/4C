@@ -453,42 +453,10 @@ BlitzMat gder2(
 }
   
 
-//! calculate element metric tensor in gausspoint (r,s)
-BlitzMat computeMetricTensor(
-        const BlitzMat& xs,                    ///< element nodal coordinates in x space
-        const BlitzMat& deriv                  ///< shape functions derivative with respect to r and s
-        )
-{
-    // init blitz indices
-    blitz::firstIndex i;    // Placeholder for the first index
-    blitz::secondIndex j;   // Placeholder for the second index
-    blitz::thirdIndex k;    // Placeholder for the third index
-      
-    // compute dXYZ / drs
-    static BlitzMat dxyzdrs(2,3);
-    dxyzdrs = blitz::sum(deriv(i,k)*xs(j,k),k);
-
-    /* compute covariant metric tensor G for surface element
-    **                        | g11   g12 |
-    **                    G = |           |
-    **                        | g12   g22 |
-    ** where (o denotes the inner product, xyz a vector)
-    **
-    **       dXYZ   dXYZ          dXYZ   dXYZ          dXYZ   dXYZ
-    ** g11 = ---- o ----    g12 = ---- o ----    g22 = ---- o ----
-    **        dr     dr            dr     ds            ds     ds
-    */
-    return BlitzMat(blitz::sum(dxyzdrs(i,k)*dxyzdrs(j,k),k));
-}
-
-
-
 //! calculate element normal in gausspoint (r,s)
 BlitzVec computeNormalToBoundaryElement(
         const BlitzMat& deriv,                  ///< shape functions derivative
-        const BlitzMat& xs,                     ///< element nodal coordinates in x space
-        const double r,                        ///< coord in r-direction
-        const double s                         ///< coord in s-direction
+        const BlitzMat& xs                      ///< element nodal coordinates in x space
         )
 {
     // init blitz indices
@@ -497,8 +465,8 @@ BlitzVec computeNormalToBoundaryElement(
     blitz::thirdIndex k;    // Placeholder for the third index
       
     // compute dXYZ / drs (Transposed)
-    static BlitzMat dxyzdrs(2,3);
-    dxyzdrs = blitz::sum(deriv(i,k)*xs(j,k),k);
+    static BlitzMat dxyzdrs(3,2);
+    dxyzdrs = blitz::sum(deriv(j,k)*xs(i,k),k);
 
     /* compute covariant metric tensor G for surface element
     **                        | g11   g12 |
@@ -511,12 +479,12 @@ BlitzVec computeNormalToBoundaryElement(
     **        dr     dr            dr     ds            ds     ds
     */
     static BlitzMat metrictensor(2,2);
-    metrictensor = blitz::sum(dxyzdrs(i,k)*dxyzdrs(j,k),k);
+    metrictensor = blitz::sum(dxyzdrs(k,i)*dxyzdrs(k,j),k);
     
     static BlitzVec unrm(3);
-    unrm(0) = dxyzdrs(0,1) * dxyzdrs(1,2) - dxyzdrs(0,2) * dxyzdrs(1,1);
-    unrm(1) = dxyzdrs(0,2) * dxyzdrs(1,0) - dxyzdrs(0,0) * dxyzdrs(1,2);
-    unrm(2) = dxyzdrs(0,0) * dxyzdrs(1,1) - dxyzdrs(0,1) * dxyzdrs(1,0);
+    unrm(0) = dxyzdrs(1,0) * dxyzdrs(2,1) - dxyzdrs(2,0) * dxyzdrs(1,1);
+    unrm(1) = dxyzdrs(2,0) * dxyzdrs(0,1) - dxyzdrs(0,0) * dxyzdrs(2,1);
+    unrm(2) = dxyzdrs(0,0) * dxyzdrs(1,1) - dxyzdrs(1,0) * dxyzdrs(0,1);
     
     // scale
     const double inv_length = 1.0 / sqrt(unrm(0)*unrm(0) + unrm(1)*unrm(1) + unrm(2)*unrm(2));
@@ -627,9 +595,11 @@ void Sysmat(
     blitz::thirdIndex k;    // Placeholder for the third index
 
     const DRT::Element::DiscretizationType stressdistype = XFLUID::getStressInterpolationType3D<DISTYPE>();
+    const DRT::Element::DiscretizationType discpresdistype = XFLUID::getDiscPressureInterpolationType3D<DISTYPE>();
     
     // figure out whether we have stress unknowns at all
     const bool stress_unknowns_present = (getNumParam<ASSTYPE>(dofman, Sigmaxx, 0) > 0);
+    const bool discpres_unknowns_present = (getNumParam<ASSTYPE>(dofman, PresEle, 0) > 0);
 //    const bool velocity_unknowns_present = (getNumParam<ASSTYPE>(dofman, Velx, 1) > 0);
 //    const bool pressure_unknowns_present = (getNumParam<ASSTYPE>(dofman, Pres, 1) > 0);
 //    cout << endl;
@@ -651,10 +621,12 @@ void Sysmat(
     // put one here to create arrays of size 1, since they are not needed anyway
     // in the xfem assembly, the numparam is determined by the dofmanager
     const int numparamsigmaxx = getNumParam<ASSTYPE>(dofman, Sigmaxx, 1);
+    const int numparamdiscpres = getNumParam<ASSTYPE>(dofman, PresEle, 1);
 
     
     // split velocity and pressure (and stress)
     BlitzVec eprenp(numparampres);
+    BlitzVec ediscpreele(numparamdiscpres);
     BlitzMat evelnp(3,numparamvelx,blitz::ColumnMajorArray<2>());
     BlitzMat esigma(6,numparamsigmaxx,blitz::ColumnMajorArray<2>());
     
@@ -687,6 +659,11 @@ void Sysmat(
         for (int iparam=0; iparam<numparamsigmaxz; ++iparam)   esigma(4,iparam) = locval[sigmaxzdof[iparam]];
         for (int iparam=0; iparam<numparamsigmayz; ++iparam)   esigma(5,iparam) = locval[sigmayzdof[iparam]];
     }
+    if (discpres_unknowns_present)
+    {
+        const vector<int> discpresdof(dofman.LocalDofPosPerField(PresEle));
+        for (int iparam=0; iparam<numparamdiscpres; ++iparam)   ediscpreele(iparam) = locval[discpresdof[iparam]];
+    }
     
     // stabilization parameter
     const double hk = XFLUID::HK<DISTYPE>(evelnp,visc,xyze);
@@ -718,14 +695,21 @@ void Sysmat(
             const BlitzVec funct(DRT::UTILS::shape_function<DISTYPE,BlitzVec>(posXiDomain));
             const BlitzMat deriv(DRT::UTILS::shape_function_deriv1<DISTYPE,BlitzVec>(posXiDomain));
       
+            // discontinouos stress shape functions
             static BlitzVec funct_stress(DRT::UTILS::getNumberOfElementNodes(stressdistype));
             static BlitzMat deriv_stress(3, DRT::UTILS::getNumberOfElementNodes(stressdistype),blitz::ColumnMajorArray<2>());
             if (stress_unknowns_present)
             {
                 DRT::UTILS::shape_function_3D(funct_stress,posXiDomain(0),posXiDomain(1),posXiDomain(2),stressdistype);
                 DRT::UTILS::shape_function_3D_deriv1(deriv_stress,posXiDomain(0),posXiDomain(1),posXiDomain(2),stressdistype);
-                //cout << "funct_stress" << funct_stress << endl;
-                //cout << "deriv_stress" << deriv_stress << endl;
+            }
+            // discontinouos pressure shape functions
+            static BlitzVec funct_discpres(DRT::UTILS::getNumberOfElementNodes(discpresdistype));
+            static BlitzMat deriv_discpres(3, DRT::UTILS::getNumberOfElementNodes(discpresdistype),blitz::ColumnMajorArray<2>());
+            if (discpres_unknowns_present)
+            {
+                DRT::UTILS::shape_function_3D(funct_discpres,posXiDomain(0),posXiDomain(1),posXiDomain(2),discpresdistype);
+                DRT::UTILS::shape_function_3D_deriv1(deriv_discpres,posXiDomain(0),posXiDomain(1),posXiDomain(2),discpresdistype);
             }
 
             // position of the gausspoint in physical coordinates
@@ -752,6 +736,7 @@ void Sysmat(
             // compute global derivates
             const BlitzMat derxy(blitz::sum(xji(i,k)*deriv(k,j),k));
             const BlitzMat derxy_stress(blitz::sum(xji(i,k)*deriv_stress(k,j),k));
+            const BlitzMat derxy_discpres(blitz::sum(xji(i,k)*deriv_discpres(k,j),k));
 
             // compute second global derivative
             static BlitzMat derxy2(6,numnode,blitz::ColumnMajorArray<2>());
@@ -772,6 +757,9 @@ void Sysmat(
       
             BlitzVec enr_funct_stress(numparamsigmaxx);
             BlitzMat enr_derxy_stress(3,numparamsigmaxx,blitz::ColumnMajorArray<2>());
+            
+            BlitzVec enr_funct_discpres(numparamdiscpres);
+            BlitzMat enr_derxy_discpres(3,numparamdiscpres,blitz::ColumnMajorArray<2>());
             if (ASSTYPE == XFEM::xfem_assembly)
             {
                 // shape function for nodal dofs
@@ -804,6 +792,22 @@ void Sysmat(
                             enr_funct_stress,
                             enr_derxy_stress);
                 }
+                
+                if (discpres_unknowns_present)
+                {
+                    // shape functions for element dofs
+                    XFEM::ComputeEnrichedStressShapefunction(
+                            *ele,
+                            ih,
+                            dofman,
+                            Sigmaxx,
+                            gauss_pos_xyz,
+                            XFEM::Enrichment::approachUnknown,
+                            funct_discpres,
+                            derxy_discpres,
+                            enr_funct_discpres,
+                            enr_derxy_discpres);
+                }
             }
             else
             {
@@ -813,6 +817,9 @@ void Sysmat(
           
                 enr_funct_stress.reference(funct_stress);
                 enr_derxy_stress.reference(derxy_stress);
+                
+                enr_funct_discpres.reference(funct_discpres);
+                enr_derxy_discpres.reference(derxy_discpres);
             }
       
             // create views on the shape function arrays for easy handling in the assembly process
@@ -828,6 +835,11 @@ void Sysmat(
             const BlitzVec shp_sigma_dx(enr_derxy_stress(0,_));
             const BlitzVec shp_sigma_dy(enr_derxy_stress(1,_));
             const BlitzVec shp_sigma_dz(enr_derxy_stress(2,_));
+            
+            const BlitzVec shp_discpres(enr_funct_discpres);
+            const BlitzVec shp_discpres_dx(enr_derxy_discpres(0,_));
+            const BlitzVec shp_discpres_dy(enr_derxy_discpres(1,_));
+            const BlitzVec shp_discpres_dz(enr_derxy_discpres(2,_));
       
             // get velocities (n+g,i) at integration point
             const BlitzVec velint(blitz::sum(enr_funct(j)*evelnp(i,j),j));
@@ -1576,12 +1588,12 @@ void Sysmat(
             // position of the gausspoint in physical coordinates
             const BlitzVec gauss_pos_xyz(blitz::sum(funct_boundary(j)*xyze_boundary(i,j),j));
       
-//            // get jacobian matrix d x / d \xi
-//            static BlitzMat dxyzdrs(3,2);
-//            dxyzdrs = blitz::sum(deriv_boundary(j,k)*xyze_boundary(i,k),k);
-//            
-//            const BlitzMat metric (blitz::sum(dxyzdrs(k,i)*dxyzdrs(k,j),k));
-            const BlitzMat metric = computeMetricTensor(xyze_boundary,deriv_boundary);
+            // get jacobian matrix d x / d \xi  (3x2)
+            const BlitzMat dxyzdrs(blitz::sum(deriv_boundary(j,k)*xyze_boundary(i,k),k));
+            
+            // compute covariant metric tensor G for surface element (2x2)
+            const BlitzMat metric(blitz::sum(dxyzdrs(k,i)*dxyzdrs(k,j),k));
+            //const BlitzMat metric = computeMetricTensor(xyze_boundary,deriv_boundary);
             
             // compute global derivates
             //const BlitzMat derxy(blitz::sum(dxyzdrs(i,k)*deriv_boundary(k,j),k));
@@ -1651,7 +1663,7 @@ void Sysmat(
             const BlitzVec shp_sigma(enr_funct_stress);
             
             // get normal vector (in x coordinates) to surface element at integration point
-            const BlitzVec normalvec(computeNormalToBoundaryElement(deriv_boundary, xyze_boundary, posXiBoundary(0), posXiBoundary(1)));
+            const BlitzVec normalvec(computeNormalToBoundaryElement(deriv_boundary, xyze_boundary));
       
             // get velocities (n+g,i) at integration point
             const BlitzVec velint(blitz::sum(shp(j)*evelnp(i,j),j));

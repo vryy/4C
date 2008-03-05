@@ -102,6 +102,35 @@ inline DRT::Element::DiscretizationType getStressInterpolationType3D()
     return distype;
 }
 
+/*!
+\brief Returns the distype for stress interpolation
+       for each parent element discretization type in 3d
+     
+\return distype for stress interpolation
+*/
+template <DRT::Element::DiscretizationType veldistype>
+inline DRT::Element::DiscretizationType getDiscPressureInterpolationType3D()
+{
+    DRT::Element::DiscretizationType distype = DRT::Element::dis_none;
+    switch (veldistype)
+    {
+        case DRT::Element::tet4:
+            distype = DRT::Element::point1;
+            break;
+        case DRT::Element::hex8:
+            distype = DRT::Element::hex8;
+            break;
+        case DRT::Element::hex20:
+            distype = DRT::Element::hex20;
+            break;
+        case DRT::Element::hex27:
+            distype = DRT::Element::hex27;
+            break;
+        default:
+            dserror("no discpressuredistype defined for velocity distype");
+    }
+    return distype;
+}
 
 /*!
 \brief Returns the distype for stress interpolation
