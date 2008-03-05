@@ -609,10 +609,90 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
 } // DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass
 
 
+/*----------------------------------------------------------------------*
+ |  check for rewinding by negative detJ                       maf 02/08|
+ *----------------------------------------------------------------------*/
+bool DRT::ELEMENTS::So_tet10::so_tet10_checkRewinding()
+{
+  const DRT::UTILS::IntegrationPoints3D intpoints = getIntegrationPoints3D(DRT::UTILS::intrule_tet_1point);
+  const double r = intpoints.qxg[0][0];
+  const double s = intpoints.qxg[0][1];
+  const double t = intpoints.qxg[0][2];
+
+  Epetra_SerialDenseMatrix deriv(NUMDIM_SOTET10, NUMNOD_SOTET10);
+  DRT::UTILS::shape_function_3D_deriv1(deriv, r, s, t, tet10);
+
+  // update element geometry
+  Epetra_SerialDenseMatrix xrefe(NUMNOD_SOTET10,NUMDIM_SOTET10);  // material coord. of element
+  for (int i=0; i<NUMNOD_SOTET10; ++i){
+    xrefe(i,0) = Nodes()[i]->X()[0];
+    xrefe(i,1) = Nodes()[i]->X()[1];
+    xrefe(i,2) = Nodes()[i]->X()[2];
+  }
+
+    /* compute the Jacobian matrix which looks like:
+    **         [ x_,r  y_,r  z_,r ]
+    **     J = [ x_,s  y_,s  z_,s ]
+    **         [ x_,t  y_,t  z_,t ]
+    */
+    Epetra_SerialDenseMatrix jac(NUMDIM_SOTET10,NUMDIM_SOTET10);
+    jac.Multiply('N','N',1.0,deriv,xrefe,1.0);
+
+    // compute determinant of Jacobian by Sarrus' rule
+    double detJ= jac(0,0) * jac(1,1) * jac(2,2)
+               + jac(0,1) * jac(1,2) * jac(2,0)
+               + jac(0,2) * jac(1,0) * jac(2,1)
+               - jac(0,0) * jac(1,2) * jac(2,1)
+               - jac(0,1) * jac(1,0) * jac(2,2)
+               - jac(0,2) * jac(1,1) * jac(2,0);
+    if (abs(detJ) < 1E-16) dserror("ZERO JACOBIAN DETERMINANT");
+    else if (detJ < 0.0) return true;
+    else if (detJ > 0.0) return false;
+    dserror("checkRewinding failed!");
+    return false;
+}
+
 int DRT::ELEMENTS::Sotet10Register::Initialize(DRT::Discretization& dis)
 {
+  //-------------------- loop all my column elements and check rewinding
+  for (int i=0; i<dis.NumMyColElements(); ++i)
+  {
+    // get the actual element
+    if (dis.lColElement(i)->Type() != DRT::Element::element_so_tet10) continue;
+    DRT::ELEMENTS::So_tet10* actele = dynamic_cast<DRT::ELEMENTS::So_tet10*>(dis.lColElement(i));
+    if (!actele) dserror("cast to So_tet10* failed");
+
+    if (!actele->donerewinding_) {
+      actele->rewind_ = actele->so_tet10_checkRewinding();
+
+      if (actele->rewind_) {
+        int new_nodeids[NUMNOD_SOTET10];
+        const int* old_nodeids;
+        old_nodeids = actele->NodeIds();
+        // rewinding of nodes to arrive at mathematically positive element
+        new_nodeids[0] = old_nodeids[0];
+        new_nodeids[1] = old_nodeids[2];
+        new_nodeids[2] = old_nodeids[1];
+        new_nodeids[3] = old_nodeids[3];
+        new_nodeids[4] = old_nodeids[6];
+        new_nodeids[5] = old_nodeids[5];
+        new_nodeids[6] = old_nodeids[4];
+        new_nodeids[7] = old_nodeids[7];
+        new_nodeids[8] = old_nodeids[8];
+        new_nodeids[9] = old_nodeids[9];        
+        actele->SetNodeIds(NUMNOD_SOTET10, new_nodeids);
+      }
+      // process of rewinding done
+      actele->donerewinding_ = true;
+    }
+  }
+  // fill complete again to reconstruct element-node pointers,
+  // but without element init, etc.
+  dis.FillComplete(false,false,false);
+
   return 0;
 }
+
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOTET
