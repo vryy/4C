@@ -1450,20 +1450,6 @@ void FluidImplicitTimeInt::Output()
     restartstep_ += 1;
     writestep_ += 1;
 
-    #if 0
-    // write domain decomposition for visualization
-    const Epetra_Map* elerowmap = discret_->ElementRowMap();
-    RCP<Epetra_Vector> domain_decomp = LINALG::CreateVector(*elerowmap,true);
-    for (int lid=0;lid<elerowmap->NumMyElements();++lid)
-    {
-    	double eleowner=(double) (discret_->lRowElement(lid)->Owner());
-    	domain_decomp->ReplaceMyValues(1, &eleowner, &lid);
-    	// global element ids
-    	//double gid=(double) (discret_->lRowElement(i)->Id());
-    	//myelevalues->ReplaceMyValues(1, &gid, &lid);
-    }
-    #endif
-
   if (writestep_ == upres_)  //write solution
   {
     writestep_= 0;
@@ -1471,7 +1457,6 @@ void FluidImplicitTimeInt::Output()
     output_.NewStep    (step_,time_);
     output_.WriteVector("velnp", velnp_);
     //output_.WriteVector("residual", trueresidual_);
-    //output_.WriteVector("domain_decomp",domain_decomp);
     if (alefluid_)
       output_.WriteVector("dispnp", dispnp_);
 
@@ -1481,6 +1466,10 @@ void FluidImplicitTimeInt::Output()
      RefCountPtr<Epetra_Vector> traction = CalcStresses();
      output_.WriteVector("traction",traction);
     }
+
+    // write domain decomposition for visualization (only once!)
+    if (step_==upres_) 
+     output_.WriteElementData();
 
     if (restartstep_ == uprestart_) //add restart data
     {
@@ -1507,7 +1496,6 @@ void FluidImplicitTimeInt::Output()
     output_.NewStep    (step_,time_);
     output_.WriteVector("velnp", velnp_);
     //output_.WriteVector("residual", trueresidual_);
-    //output_.WriteVector("domain_decomp",domain_decomp);
     if (alefluid_)
     {
       output_.WriteVector("dispnp", dispnp_);
