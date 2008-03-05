@@ -410,7 +410,6 @@ private:
   //! some distypes need rewinding of NodeIds due to bad input from mesher
   //! flag to rewind this element, must be availabale for friend class fluid3register
 protected:
-  bool                                            rewind_;
   //! flag whether process of rewinding is done
   bool                                            donerewinding_;
 
@@ -702,14 +701,6 @@ void f3_calc_smag_const_LijMij_and_MijMij(
   
   /// Internal implementation class for fluid element -- stationary formulation
   Fluid3Stationary* StationaryImpl();  
-
-protected:
-  /*!
-   * \brief check, whether NodeIds need rewinding due to wrong input from mesher,
-   * based on negative Jacobian determinant.
-   * \return boolean rewind or not rewind
-   */
-  bool checkRewinding();
 
 }; // class Fluid3
 

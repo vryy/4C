@@ -27,6 +27,8 @@
 #include "drt_element.H"
 #include "drt_discret.H"
 #include "drt_utils_local_connectivity_matrices.H"
+#include "drt_utils_integration.H"
+#include "drt_utils_fem_shapefunctions.H"
 #include "drt_dserror.H"
 
 /*----------------------------------------------------------------------*
@@ -918,6 +920,87 @@ int DRT::UTILS::getDimension(const DRT::Element::DiscretizationType distype)
     return dim;
 }
 
+
+//
+// check for element rewinding based on Jacobian determinant
+//
+bool DRT::UTILS::checkRewinding3D(const DRT::Element* ele)
+{
+  const DRT::Element::DiscretizationType distype = ele->Shape();
+  const int iel = ele->NumNode();
+  // use one point gauss rule to calculate tau at element center
+  DRT::UTILS::GaussRule3D integrationrule_1point = DRT::UTILS::intrule3D_undefined;
+  switch(distype)
+  {
+  case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27:
+      integrationrule_1point = intrule_hex_1point;
+      break;
+  case DRT::Element::tet4: case DRT::Element::tet10:
+      integrationrule_1point = intrule_tet_1point;
+      break;
+  case DRT::Element::wedge6: case DRT::Element::wedge15:
+      integrationrule_1point = intrule_wedge_1point;
+      break;
+  case DRT::Element::pyramid5:
+      integrationrule_1point = intrule_pyramid_1point;
+      break;
+  default:
+      dserror("invalid discretization type for fluid3");
+  }
+  const IntegrationPoints3D  intpoints = getIntegrationPoints3D(integrationrule_1point);
+
+  // shape functions derivatives
+  const int NSD = 3;
+  Epetra_SerialDenseMatrix    deriv(NSD, iel);
+  Epetra_SerialDenseMatrix    xyze(NSD,iel);
+  DRT::UTILS::shape_function_3D_deriv1(deriv,intpoints.qxg[0][0],intpoints.qxg[0][1],intpoints.qxg[0][2],distype);
+  // get node coordinates
+  const DRT::Node*const* nodes = ele->Nodes();
+  for (int inode=0; inode<iel; inode++)
+  {
+    const double* x = nodes[inode]->X();
+    xyze(0,inode) = x[0];
+    xyze(1,inode) = x[1];
+    xyze(2,inode) = x[2];
+  }
+
+  // get Jacobian matrix and determinant
+  // actually compute its transpose....
+  /*
+    +-            -+ T      +-            -+
+    | dx   dx   dx |        | dx   dy   dz |
+    | --   --   -- |        | --   --   -- |
+    | dr   ds   dt |        | dr   dr   dr |
+    |              |        |              |
+    | dy   dy   dy |        | dx   dy   dz |
+    | --   --   -- |   =    | --   --   -- |
+    | dr   ds   dt |        | ds   ds   ds |
+    |              |        |              |
+    | dz   dz   dz |        | dx   dy   dz |
+    | --   --   -- |        | --   --   -- |
+    | dr   ds   dt |        | dt   dt   dt |
+    +-            -+        +-            -+
+  */
+  Epetra_SerialDenseMatrix xjm(NSD,NSD);
+
+  xjm.Multiply('N','T',1.0,deriv,xyze,0.0);
+
+
+  
+  const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
+                     xjm(0,1)*xjm(1,2)*xjm(2,0)+
+                     xjm(0,2)*xjm(1,0)*xjm(2,1)-
+                     xjm(0,2)*xjm(1,1)*xjm(2,0)-
+                     xjm(0,0)*xjm(1,2)*xjm(2,1)-
+                     xjm(0,1)*xjm(1,0)*xjm(2,2);
+  if (abs(det) < 1E-16) dserror("ZERO JACOBIAN DETERMINANT");
+  
+  bool rewind = false;
+  if (det < 0.0) rewind = true;
+  else rewind = false;
+
+  return rewind;
+}
 
 /*----------------------------------------------------------------------*
  |  Returns the geometric center of the element in local coordinates    |     

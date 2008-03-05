@@ -36,7 +36,6 @@ data_()
   lines_.resize(0);
   lineptrs_.resize(0);
   kintype_ = sow6_totlag;
-  rewind_ = false;
   donerewinding_ = false;
   return;
 }
@@ -54,7 +53,6 @@ surfaces_(old.surfaces_),
 surfaceptrs_(old.surfaceptrs_),
 lines_(old.lines_),
 lineptrs_(old.lineptrs_),
-rewind_(old.rewind_),
 donerewinding_(old.donerewinding_)
 {
   return;
@@ -98,7 +96,6 @@ void DRT::ELEMENTS::So_weg6::Pack(vector<char>& data) const
   AddtoPack(data,kintype_);
   // rewind flags
   AddtoPack(data,donerewinding_);
-  AddtoPack(data,rewind_);
   // data_
   vector<char> tmp(0);
   data_.Pack(tmp);
@@ -127,7 +124,6 @@ void DRT::ELEMENTS::So_weg6::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,kintype_);
   // rewinding flags
   ExtractfromPack(position,data,donerewinding_);
-  ExtractfromPack(position,data,rewind_);
   // data_
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);

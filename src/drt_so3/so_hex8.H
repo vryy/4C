@@ -403,8 +403,6 @@ protected:
   //! vector of element stress tensor in Voigt notation
 
   //! some distypes need rewinding of NodeIds due to bad input from mesher
-  //! flag to rewind this element, must be availabale for friend class fluid3register
-  bool                                            rewind_;
   //! flag whether process of rewinding is done
   bool                                            donerewinding_;
 
@@ -473,8 +471,6 @@ protected:
                   vector<double>& disp,
                   const double    time,
                   vector<double>& residual);
-
-  bool soh8_checkRewinding();
 
   vector<double> getthicknessvector() const {dserror("not implemented"); return vector<double>(3);};
 

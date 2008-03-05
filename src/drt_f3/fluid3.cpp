@@ -121,7 +121,6 @@ void DRT::ELEMENTS::Fluid3::Pack(vector<char>& data) const
   // is_ale_
   AddtoPack(data,is_ale_);
   // rewinding bools
-  AddtoPack(data,rewind_);
   AddtoPack(data,donerewinding_);
   // Cs_delta_sq_, the Smagorinsky constant for the dynamic Smagorinsky model
   AddtoPack(data,Cs_delta_sq_);
@@ -175,7 +174,6 @@ void DRT::ELEMENTS::Fluid3::Unpack(const vector<char>& data)
   // Smagorinsky model
   ExtractfromPack(position,data,Cs_delta_sq_);
   // rewinding bools
-  ExtractfromPack(position,data,rewind_);
   ExtractfromPack(position,data,donerewinding_);
 
 

@@ -309,8 +309,6 @@ protected:
   vector<DRT::ELEMENTS::Sow6Line*>              lineptrs_;
   
   //! some distypes need rewinding of NodeIds due to bad input from mesher
-  //! flag to rewind this element, must be availabale for friend class fluid3register
-  bool                                            rewind_;
   //! flag whether process of rewinding is done
   bool                                            donerewinding_;
 
@@ -338,8 +336,6 @@ protected:
   void sow6_shapederiv(Epetra_SerialDenseMatrix** shapefct,
                        Epetra_SerialDenseMatrix** deriv,
                        Epetra_SerialDenseVector** weights);
-
-  bool soweg6_checkRewinding();
 
   void soweg6_expol(Epetra_SerialDenseMatrix& stresses,
                     Epetra_SerialDenseMatrix& nodalstresses);

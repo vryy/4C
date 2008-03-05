@@ -102,7 +102,6 @@ void DRT::ELEMENTS::So_tet10::Pack(vector<char>& data) const
   
   // rewind flags
   AddtoPack(data,donerewinding_);
-  AddtoPack(data,rewind_);
 
 
   vector<char> tmp(0);
@@ -138,7 +137,6 @@ void DRT::ELEMENTS::So_tet10::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,kintype_);
   // rewinding flags
   ExtractfromPack(position,data,donerewinding_);
-  ExtractfromPack(position,data,rewind_);
   // data_
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);

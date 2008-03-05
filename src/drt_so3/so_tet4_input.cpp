@@ -62,7 +62,6 @@ bool DRT::ELEMENTS::So_tet4::ReadElement()
   SetNodeIds(nnode,nodes);
  
   // Initialize winding flags
-  rewind_ = false;
   donerewinding_ = false;
 
   // read number of material model

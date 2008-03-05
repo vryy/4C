@@ -34,7 +34,6 @@ data_()
   kintype_ = soh8_totlag;
   eastype_ = soh8_easnone;
   neas_ = 0;
-  rewind_ = false;
   donerewinding_ = false;
   thickvec_.resize(0);
   fiberdirection_.resize(0);
@@ -56,7 +55,6 @@ surfaces_(old.surfaces_),
 surfaceptrs_(old.surfaceptrs_),
 lines_(old.lines_),
 lineptrs_(old.lineptrs_),
-rewind_(old.rewind_),
 donerewinding_(old.donerewinding_),
 thickvec_(old.thickvec_),
 fiberdirection_(old.fiberdirection_)
@@ -106,7 +104,6 @@ void DRT::ELEMENTS::So_hex8::Pack(vector<char>& data) const
   AddtoPack(data,neas_);
   // rewind flags
   AddtoPack(data,donerewinding_);
-  AddtoPack(data,rewind_);
   // fiber related
   AddtoPack(data,thickvec_);
   AddtoPack(data,fiberdirection_);
@@ -142,7 +139,6 @@ void DRT::ELEMENTS::So_hex8::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,neas_);
   // rewinding flags
   ExtractfromPack(position,data,donerewinding_);
-  ExtractfromPack(position,data,rewind_);
   // fiber related
   ExtractfromPack(position,data,thickvec_);
   ExtractfromPack(position,data,fiberdirection_);

@@ -120,7 +120,6 @@ void DRT::ELEMENTS::XFluid3::Pack(vector<char>& data) const
   // is_ale_
   AddtoPack(data,is_ale_);
   // rewinding bools
-  AddtoPack(data,rewind_);
   AddtoPack(data,donerewinding_);
 
   // history variables
@@ -169,7 +168,6 @@ void DRT::ELEMENTS::XFluid3::Unpack(const vector<char>& data)
   // is_ale_
   ExtractfromPack(position,data,is_ale_);
   // rewinding bools
-  ExtractfromPack(position,data,rewind_);
   ExtractfromPack(position,data,donerewinding_);
 
 

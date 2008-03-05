@@ -85,7 +85,6 @@ bool DRT::ELEMENTS::So_shw6::ReadElement()
   }
   // Initialize winding flags
   // rewinding inherited from so_weg6
-  rewind_ = false;
   donerewinding_ = false;
 
   return true;

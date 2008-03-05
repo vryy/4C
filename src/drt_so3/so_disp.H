@@ -389,6 +389,12 @@ protected:
   
   void CreateSurfacesWegde15(const int& nsurf);
   
+  //! some distypes need rewinding of NodeIds due to bad input from mesher
+  //! flag to rewind this element, must be availabale for friend class fluid3register
+protected:
+  //! flag whether process of rewinding is done
+  bool                                            donerewinding_;
+  
 }; // class SoDisp
 
 //=======================================================================
@@ -476,6 +482,14 @@ public:
 
   //! @name Construction
 
+  /*!
+  \brief Call Element init routines
+
+  The method performs all steps needed to init the element. it e.g. calculates the
+  field of averaged directors at nodes.
+  */
+  int Initialize(DRT::Discretization& dis);
+  
 
 private:
 

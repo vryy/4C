@@ -87,7 +87,6 @@ bool DRT::ELEMENTS::So_weg6::ReadElement()
    else dserror("Reading of SO_WEG6 element failed");
   }
   // Initialize winding flags
-  rewind_ = false;
   donerewinding_ = false;
 
   return true;

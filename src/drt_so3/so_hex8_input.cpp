@@ -115,7 +115,6 @@ bool DRT::ELEMENTS::So_hex8::ReadElement()
   fiberdirection_.resize(3);
 
   // Initialize winding flags
-  rewind_ = false;
   donerewinding_ = false;
 
   return true;

@@ -431,5 +431,113 @@ void DRT::ELEMENTS::SoDispRegister::Print(ostream& os) const
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  init the element (public)                                mwgee 12/06|
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::SoDispRegister::Initialize(DRT::Discretization& dis)
+{
+  bool dofillcompleteagain = false;
+  //-------------------- loop all my column elements and check rewinding
+  for (int i=0; i<dis.NumMyColElements(); ++i)
+  {
+    // get the actual element
+    if (dis.lColElement(i)->Type() != DRT::Element::element_sodisp) continue;
+    DRT::ELEMENTS::SoDisp* actele = dynamic_cast<DRT::ELEMENTS::SoDisp*>(dis.lColElement(i));
+    if (!actele) dserror("cast to SoDisp* failed");
+    
+    const DRT::Element::DiscretizationType distype = actele->Shape();
+    bool possiblytorewind = false;
+    switch(distype)
+    {
+    case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27:
+        possiblytorewind = true;
+        break;
+    case DRT::Element::tet4: case DRT::Element::tet10:
+        possiblytorewind = true;
+        break;
+    case DRT::Element::wedge6: case DRT::Element::wedge15:
+        possiblytorewind = true;
+        break;
+    case DRT::Element::pyramid5:
+        possiblytorewind = true;
+        break;
+    default:
+        dserror("invalid discretization type for fluid3");
+    }
+    
+    if ( (possiblytorewind) && (!actele->donerewinding_) ) {
+      const bool rewind = checkRewinding3D(actele);
+
+      if (rewind) {
+        if (distype==DRT::Element::tet4){
+          const int iel = actele->NumNode();
+          int new_nodeids[iel];
+          const int* old_nodeids;
+          old_nodeids = actele->NodeIds();
+          // rewinding of nodes to arrive at mathematically positive element
+          new_nodeids[0] = old_nodeids[0];
+          new_nodeids[1] = old_nodeids[2];
+          new_nodeids[2] = old_nodeids[1];
+          new_nodeids[3] = old_nodeids[3];
+          actele->SetNodeIds(iel, new_nodeids);
+        }
+        else if (distype==DRT::Element::hex8){
+          const int iel = actele->NumNode();
+          int new_nodeids[iel];
+          const int* old_nodeids;
+          old_nodeids = actele->NodeIds();
+          // rewinding of nodes to arrive at mathematically positive element
+          new_nodeids[0] = old_nodeids[4];
+          new_nodeids[1] = old_nodeids[5];
+          new_nodeids[2] = old_nodeids[6];
+          new_nodeids[3] = old_nodeids[7];
+          new_nodeids[4] = old_nodeids[0];
+          new_nodeids[5] = old_nodeids[1];
+          new_nodeids[6] = old_nodeids[2];
+          new_nodeids[7] = old_nodeids[3];
+          actele->SetNodeIds(iel, new_nodeids);
+        }
+        else if (distype==DRT::Element::wedge6){
+          const int iel = actele->NumNode();
+          int new_nodeids[iel];
+          const int* old_nodeids;
+          old_nodeids = actele->NodeIds();
+          // rewinding of nodes to arrive at mathematically positive element
+          new_nodeids[0] = old_nodeids[3];
+          new_nodeids[1] = old_nodeids[4];
+          new_nodeids[2] = old_nodeids[5];
+          new_nodeids[3] = old_nodeids[0];
+          new_nodeids[4] = old_nodeids[1];
+          new_nodeids[5] = old_nodeids[2];
+          actele->SetNodeIds(iel, new_nodeids);
+        }
+        else if (distype == DRT::Element::pyramid5){
+          const int iel = actele->NumNode();
+          int new_nodeids[iel];
+          const int* old_nodeids;
+          old_nodeids = actele->NodeIds();
+          // rewinding of nodes to arrive at mathematically positive element
+          new_nodeids[1] = old_nodeids[3];
+          new_nodeids[3] = old_nodeids[1];
+          // the other nodes can stay the same
+          new_nodeids[0] = old_nodeids[0];
+          new_nodeids[2] = old_nodeids[2];
+          new_nodeids[4] = old_nodeids[4];
+          actele->SetNodeIds(iel, new_nodeids);
+        }
+        else dserror("no rewinding scheme for this type of fluid3");
+      }
+      // process of rewinding done
+      actele->donerewinding_ = true;
+      dofillcompleteagain = true;
+    }
+  }
+  // fill complete again to reconstruct element-node pointers,
+  // but without element init, etc.
+  if(dofillcompleteagain) dis.FillComplete(false,false,false);
+  
+  return 0;
+}
+
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOH8

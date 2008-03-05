@@ -202,7 +202,6 @@ bool DRT::ELEMENTS::Fluid3::ReadElement()
     } // end switch distype
 
     // Initialize winding flags
-    rewind_ = false;
     donerewinding_ = false;
 
 

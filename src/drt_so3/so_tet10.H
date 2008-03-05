@@ -348,8 +348,6 @@ protected:
   
   
   //! some distypes need rewinding of NodeIds due to bad input from mesher
-  //! flag to rewind this element, must be availabale for friend class fluid3register
-  bool                                            rewind_;
   //! flag whether process of rewinding is done
   bool                                            donerewinding_;
 
@@ -369,9 +367,6 @@ protected:
                    vector<double>& mydisp,
                    Epetra_SerialDenseMatrix* stresses);
   
-  // check for rewinding due to bad mesher input by detJ
-  bool so_tet10_checkRewinding();
-
 /*!
 \class DRT::ELEMENTS::So_tet10::Discrete_integrator
 

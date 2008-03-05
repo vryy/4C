@@ -429,6 +429,12 @@ namespace UTILS
       return dim;
   }
 
+  /*!
+   * \brief check, whether NodeIds need rewinding due to wrong input from mesher,
+   * based on negative Jacobian determinant.
+   * \return boolean rewind or not rewind
+   */
+  bool checkRewinding3D(const DRT::Element* ele);
     
   /*!
   \brief    Returns the geometric center of the element in local coordinates
