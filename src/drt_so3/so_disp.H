@@ -10,7 +10,7 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOH8
+#ifdef D_SOLID3
 #ifdef CCADISCRET
 #ifndef SO_DISP_H
 #define SO_DISP_H

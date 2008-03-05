@@ -10,7 +10,7 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOH8
+#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "so_sh8.H"
@@ -226,4 +226,4 @@ DRT::ELEMENTS::Sosh8Register::~Sosh8Register()
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOH8
+#endif  // #ifdef D_SOLID3

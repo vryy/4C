@@ -10,7 +10,7 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOH8
+#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "so_weg6.H"
@@ -220,4 +220,4 @@ void DRT::ELEMENTS::Sow6Surface::sow6_surface_integ(
 
 
 #endif  // #ifdef CCADISCRET
-#endif // #ifdef D_SOH8
+#endif // #ifdef D_SOLID3

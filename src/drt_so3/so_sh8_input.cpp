@@ -10,7 +10,7 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOH8
+#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 // This is just here to get the c++ mpi header, otherwise it would
@@ -119,15 +119,15 @@ bool DRT::ELEMENTS::So_sh8::ReadElement()
   if (ierr)
   {
    // global X
-   if      (strncmp(buffer,"XDIR",4)==0)    thickdir_ = globx;
+   if      (strncmp(buffer,"xdir",4)==0)    thickdir_ = globx;
    // global Y
-   else if (strncmp(buffer,"YDIR",4)==0)    thickdir_ = globy;
+   else if (strncmp(buffer,"ydir",4)==0)    thickdir_ = globy;
    // global Z
-   else if (strncmp(buffer,"ZDIR",4)==0)    thickdir_ = globz;
+   else if (strncmp(buffer,"zdir",4)==0)    thickdir_ = globz;
    // find automatically through Jacobian of Xrefe
-   else if (strncmp(buffer,"AUTO",4)==0)    thickdir_ = autoj;
+   else if (strncmp(buffer,"auto",4)==0)    thickdir_ = autoj;
    // no noderearrangement
-   else if (strncmp(buffer,"NONE",4)==0){
+   else if (strncmp(buffer,"none",4)==0){
      thickdir_ = none;
      nodes_rearranged_ = true;
    }
@@ -139,4 +139,4 @@ bool DRT::ELEMENTS::So_sh8::ReadElement()
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOH8
+#endif  // #ifdef D_SOLID3

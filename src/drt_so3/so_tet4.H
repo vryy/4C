@@ -16,7 +16,7 @@ written by: Alexander Volf
 
 *----------------------------------------------------------------------*/
 
-#ifdef D_SOTET
+#ifdef D_SOLID3
 #ifdef CCADISCRET
 #ifndef SO_TET4_H_
 #define SO_TET4_H_
@@ -832,6 +832,6 @@ private:
 
 #endif  // #ifndef SO_TET4_H_
 #endif  // #ifdef  CCADISCRET
-#endif  // #ifdef  D_SOTET
+#endif  // #ifdef  D_SOLID3
 
 

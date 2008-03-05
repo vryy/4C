@@ -10,7 +10,7 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOTET
+#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "so_tet10.H"
@@ -148,4 +148,4 @@ int DRT::ELEMENTS::Sotet10Line::EvaluateNeumann(ParameterList&         params,
 
 
 #endif  // #ifdef CCADISCRET
-#endif // #ifdef D_SOTET
+#endif // #ifdef D_SOLID3

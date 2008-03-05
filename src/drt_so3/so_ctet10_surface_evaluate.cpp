@@ -12,7 +12,7 @@ written by : Alexander Volf
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOTET
+#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #include "so_ctet10.H"
@@ -225,4 +225,4 @@ void DRT::ELEMENTS::Soctet10Surface::sotet4_surface_shapefunc(
 
 
 #endif  // #ifdef CCADISCRET
-#endif // #ifdef D_SOTET
+#endif // #ifdef D_SOLID3

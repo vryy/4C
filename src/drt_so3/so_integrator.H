@@ -15,7 +15,7 @@ written by: Alexander Volf
 </pre>
 
 *----------------------------------------------------------------------*/
-#if defined D_SOH8 || D_SOTET
+#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 #ifndef SO_INTEGRATOR_H
@@ -194,4 +194,4 @@ long double det_volf(Epetra_SerialDenseMatrix& in_matrix);
 
 #endif  // #ifndef SO_INTEGRATOR
 #endif  // #ifdef  CCADISCRET
-#endif  // #if D_SOTET
+#endif  // #if D_SOLID3

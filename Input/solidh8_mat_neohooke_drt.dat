@@ -4,7 +4,7 @@
 //             http://www.lnm.mw.tum.de/Members/metzke
 //             089-289-15244
 //
-// necessary defines: D_SOH8 BINIO CCADISCRET RESULTTEST CHECK_MAX
+// necessary defines: D_SOLID3 BINIO CCADISCRET RESULTTEST CHECK_MAX
 //
 ==================================================================
                         General Data File CCARAT

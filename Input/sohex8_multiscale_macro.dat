@@ -4,7 +4,7 @@
 //             http://www.lnm.mw.tum.de/Members/wiechert
 //             089/289-15303
 //
-// necessary defines: D_SOH8 BINIO CCADISCRET UMFPACK
+// necessary defines: D_SOLID3 BINIO CCADISCRET UMFPACK
 //
 ==================================================================
                         General Data File CCARAT

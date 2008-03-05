@@ -12,7 +12,7 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOTET
+#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 // This is just here to get the c++ mpi header, otherwise it would
@@ -256,4 +256,4 @@ void DRT::ELEMENTS::So_ctet10::so_ctet10_stress(struct _MATERIAL* material,
 
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOTET
+#endif  // #ifdef D_SOLID3

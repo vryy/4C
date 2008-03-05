@@ -22,8 +22,7 @@ CCADISCRET           # use new baci discretization subsystem DRT
 # D_WALL1            # wall1
 # D_THERM2           # planar thermal elment
 # D_THERM3           # spatial thermal element
-# D_SOLID3           # spatial solid element
-# D_SOH8             # spatial 8-node hex element for new discretization
+# D_SOLID3           # spatial solid elements
 # D_BEAM2            # two dimensional beam element (Timoshenko)
 
 

@@ -1,4 +1,4 @@
-#ifdef D_SOH8
+#ifdef D_SOLID3
 #ifdef CCADISCRET
 #ifndef SO_WEG6_H_
 #define SO_WEG6_H_

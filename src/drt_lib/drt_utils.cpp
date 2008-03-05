@@ -256,7 +256,7 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
     }
     break;
 #endif
-#ifdef D_SOH8
+#ifdef D_SOLID3
     case ParObject_So_hex8:
     {
       DRT::ELEMENTS::So_hex8* object = new DRT::ELEMENTS::So_hex8(-1,-1);
@@ -336,8 +336,6 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       object->Unpack(data);
       return object;
     }
-#endif
-#ifdef D_SOTET
     case ParObject_So_tet10:
     {
       DRT::ELEMENTS::So_tet10* object = new DRT::ELEMENTS::So_tet10(-1,-1);
@@ -578,7 +576,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     }
     break;
 #endif
-#ifdef D_SOH8
+#ifdef D_SOLID3
     case so_hex8:
     {
       RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_hex8(id,owner));
@@ -609,8 +607,6 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
       return ele;
     }
     break;
-#endif
-#ifdef D_SOTET
 	case so_tet4:
     {
       RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::So_tet4(id,owner));

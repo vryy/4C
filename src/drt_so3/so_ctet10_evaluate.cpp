@@ -12,7 +12,7 @@ written by: Alexander Volf
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOTET
+#ifdef D_SOLID3
 #ifdef CCADISCRET
 
 // This is just here to get the c++ mpi header, otherwise it would
@@ -869,4 +869,4 @@ int DRT::ELEMENTS::Soctet10Register::Initialize(DRT::Discretization& dis)
 }
 
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOTET
+#endif  // #ifdef D_SOLID3

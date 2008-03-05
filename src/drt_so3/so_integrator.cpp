@@ -15,7 +15,7 @@ written by: Alexander Volf
 </pre>
 
 *----------------------------------------------------------------------*/
-#if defined D_SOH8 || D_SOTET
+#ifdef D_SOLID3
 
 #include "so_integrator.H"
 #include "so_tet4.H"
@@ -44,9 +44,6 @@ DRT::ELEMENTS::So_integrator::~So_integrator()
 {
 	return;
 }
-
-#endif
-#ifdef D_SOH8
 
 /*----------------------------------------------------------------------*
  |  shape functions and derivatives for So_hex8                vlf 04/07|
@@ -278,8 +275,6 @@ DRT::ELEMENTS::SoDisp::Integrator_SoDisp::Integrator_SoDisp(DRT::ELEMENTS::SoDis
     return;
 }
 
-#endif
-#ifdef D_SOTET
 
 DRT::ELEMENTS::Integrator_tet4_1point::Integrator_tet4_1point(void)
 {
