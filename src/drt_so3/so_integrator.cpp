@@ -33,7 +33,6 @@ written by: Alexander Volf
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "../drt_lib/drt_utils_integration.H"
 #include "../drt_lib/drt_utils_fem_shapefunctions.H"
-#include "Epetra_SerialDenseSolver.h"
 
 /*----------------------------------------------------------------------*
  | destructor for the Discrete_integrator class               volf 09/07|
