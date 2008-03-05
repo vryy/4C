@@ -207,7 +207,7 @@ public:
   Teuchos::RCP<Epetra_Vector> InvDirichlet() { return invtoggle_; }
   Teuchos::RCP<Epetra_Vector> Dispnp() { return dispnp_; }
   Teuchos::RCP<Epetra_Vector> Dispn() { return dispn_; }
-  Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return sysmat_; }
+  Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
 
   Teuchos::RCP<const Epetra_Map> VelocityRowMap() { return velpressplitter_.OtherMap(); }
@@ -273,6 +273,7 @@ protected:
   IO::DiscretizationWriter&         solidoutput_;
   int                           myrank_;
   bool                          alefluid_;
+  bool                          dynamic_smagorinsky_;
 
   double time_;
   int step_;
@@ -307,7 +308,7 @@ protected:
   double Cs_fs_;
 
   /// (standard) system matrix
-  RCP<LINALG::SparseMatrix> sysmat_;
+  RCP<LINALG::SparseOperator> sysmat_;
 
   /// toggle vector indicating which dofs have Dirichlet BCs
   RCP<Epetra_Vector>    dirichtoggle_;
@@ -416,6 +417,54 @@ protected:
   double           dtsolve_;
   double           dtfilter_;
 
+  /// velocity-pressure block matrix split strategy
+  class VelPressSplitStrategy
+  {
+  public:
+
+    /// construct with a block matrix base
+    explicit VelPressSplitStrategy(LINALG::BlockSparseMatrixBase& mat)
+      : mat_(mat), numdim_(-1) {}
+
+    /// find row block to a given row gid
+    int RowBlock(int lrow, int rgid)
+    {
+      if ((lrow%(numdim_+1))<numdim_)
+        return 0;
+      return 1;
+    }
+
+    /// find column block to a given column gid
+    int ColBlock(int rblock, int lcol, int cgid)
+    {
+      if ((lcol%(numdim_+1))<numdim_)
+        return 0;
+      return 1;
+    }
+
+    /// assemble into the given block
+    void Assemble(double val,
+                  int lrow, int rgid, int rblock,
+                  int lcol, int cgid, int cblock)
+    {
+      LINALG::SparseMatrix& matrix = mat_.Matrix(rblock,cblock);
+      matrix.Assemble(val,rgid,cgid);
+    }
+
+    /// assemble the remaining ghost entries
+    void Complete() {}
+
+    /// set number of velocity dofs
+    void SetNumdim(int numdim) { numdim_ = numdim; }
+
+  private:
+
+    /// my block matrix base
+    LINALG::BlockSparseMatrixBase& mat_;
+
+    /// number of velocity dofs
+    int numdim_;
+  };
 
 }; // class FluidImplicitTimeInt
 
