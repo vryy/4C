@@ -16,6 +16,7 @@ written by: Alexander Volf
 
 *----------------------------------------------------------------------*/
 #ifdef D_SOLID3
+#ifdef CCADISCRET
 
 #include "so_integrator.H"
 #include "so_tet4.H"
@@ -310,8 +311,8 @@ DRT::ELEMENTS::Integrator_tet4_1point::Integrator_tet4_1point(void)
   	(deriv_gp[gp]).Shape(num_nodes,num_coords);
   	
   	// deriv_gp wrt to xsi1 "(0,..)" for each node(0..9) at each gp [i]
-	(deriv_gp[gp])(0,0) = 1;
-	(deriv_gp[gp])(1,0) = 0;
+  	(deriv_gp[gp])(0,0) = 1;
+  	(deriv_gp[gp])(1,0) = 0;
     (deriv_gp[gp])(2,0) = 0;
     (deriv_gp[gp])(3,0) = 0;
     
@@ -372,8 +373,8 @@ DRT::ELEMENTS::Integrator_tet4_4point::Integrator_tet4_4point(void)
   	(deriv_gp[gp]).Shape(num_nodes,num_coords);
   	
   	// deriv_gp wrt to xsi1 "(0,..)" for each node(0..9) at each gp [i]
-	(deriv_gp[gp])(0,0) = 1;
-	(deriv_gp[gp])(1,0) = 0;
+  	(deriv_gp[gp])(0,0) = 1;
+  	(deriv_gp[gp])(1,0) = 0;
     (deriv_gp[gp])(2,0) = 0;
     (deriv_gp[gp])(3,0) = 0;
     
@@ -446,8 +447,8 @@ DRT::ELEMENTS::Integrator_tet10_4point::Integrator_tet10_4point(void)
   for (int gp=0; gp<num_gp; gp++) {
   	(deriv_gp[gp]).Shape(num_nodes,num_coords);
   	// deriv_gp wrt to xsi1 "(0,..)" for each node(0..9) at each gp [i]
-	(deriv_gp[gp])(0,0) = 4 * xsi1[gp]-1;
-	(deriv_gp[gp])(1,0) = 0;
+  	(deriv_gp[gp])(0,0) = 4 * xsi1[gp]-1;
+  	(deriv_gp[gp])(1,0) = 0;
     (deriv_gp[gp])(2,0) = 0;
     (deriv_gp[gp])(3,0) = 0;
     
@@ -582,8 +583,8 @@ DRT::ELEMENTS::Integrator_tet10_14point::Integrator_tet10_14point(void)
   for (int gp=0; gp<num_gp; gp++) {
   	(deriv_gp[gp]).Shape(num_nodes,num_coords);
   	// deriv_gp wrt to xsi1 "(0,..)" for each node(0..9) at each gp [i]
-	(deriv_gp[gp])(0,0) = 4 * xsi1[gp]-1;
-	(deriv_gp[gp])(1,0) = 0;
+  	(deriv_gp[gp])(0,0) = 4 * xsi1[gp]-1;
+  	(deriv_gp[gp])(1,0) = 0;
     (deriv_gp[gp])(2,0) = 0;
     (deriv_gp[gp])(3,0) = 0;
     
@@ -807,3 +808,5 @@ long double LINALG::SerialDenseMatrix::Det_long()
 }
 
 #endif
+
+#endif // of CCA_DISCERT
