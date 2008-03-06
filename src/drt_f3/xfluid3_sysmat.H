@@ -1,8 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfluid3_stationary.H
+\file xfluid3_sysmat.H
 
-\brief Internal implementation of Fluid3 element -- stationary formulation
+\brief element formulations for 3d XFEM fluid element
 
 <pre>
 Maintainer: Axel Gerstenberger
@@ -16,8 +16,8 @@ Maintainer: Axel Gerstenberger
 #ifdef D_FLUID3
 #ifdef CCADISCRET
 
-#ifndef XFLUID3_STATIONARY_H
-#define XFLUID3_STATIONARY_H
+#ifndef XFLUID3_SYSMAT_H
+#define XFLUID3_SYSMAT_H
 
 #include <math.h>
 #include "xfluid3.H"

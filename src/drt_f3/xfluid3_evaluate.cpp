@@ -19,7 +19,7 @@ Maintainer: Axel Gerstenberger
 #endif
 
 #include "xfluid3.H"
-#include "xfluid3_stationary.H"
+#include "xfluid3_sysmat.H"
 #include "xfluid3_interpolation.H"
 
 #include "../drt_lib/drt_discret.H"
@@ -119,7 +119,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
   const DRT::ELEMENTS::XFluid3::ActionType act = convertStringToActionType(action);
 
   // get the material
-  RCP<MAT::Material> mat = Material();
+  const RCP<MAT::Material> mat = Material();
   if (mat->MaterialType()!=m_fluid)
     dserror("newtonian fluid material expected but got type %d", mat->MaterialType());
 
