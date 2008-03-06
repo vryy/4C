@@ -354,8 +354,8 @@ activesetconv_(false)
   } // for (int i=0; i<(int)contactconditions.size(); ++i)
   
 #ifdef DEBUG
-  for (int i=0;i<(int)interface_.size();++i)
-    cout << *interface_[i];
+  //for (int i=0;i<(int)interface_.size();++i)
+  //  cout << *interface_[i];
 #endif // #ifdef DEBUG
   
   // setup global slave / master Epetra_Maps
@@ -622,7 +622,6 @@ void CONTACT::Manager::Evaluate(RCP<LINALG::SparseMatrix>& kteff,
   RCP<LINALG::SparseMatrix> kmsmod = LINALG::Multiply(*mhatmatrix_,true,*kss,false,false);
   kmsmod->Add(*kms,false,1.0,1.0);
   kmsmod->Complete(kms->DomainMap(),kms->RowMap());
-  
   
   // kmm: add kms*T(mbar) + T(mbar)*ksm + T(mbar)*kss*mbar
   RCP<LINALG::SparseMatrix> kmmmod = LINALG::Multiply(*kms,false,*mhatmatrix_,false,false);
@@ -928,7 +927,10 @@ void CONTACT::Manager::RecoverDisp(RCP<Epetra_Vector>& disi)
   RCP<Epetra_Vector> zcopy = rcp(new Epetra_Vector(*z_));
   invd_->Multiply(false,*zcopy,*z_);
   
-  /*//debugging (check for z_i = 0)
+  /*
+  // CHECK OF CONTACT COUNDARY CONDITIONS---------------------------------
+#ifdef DEBUG
+  //debugging (check for z_i = 0)
   RCP<Epetra_Map> gidofs = LINALG::SplitMap(*gsdofrowmap_,*gactivedofs_);
   RCP<Epetra_Vector> zinactive = rcp(new Epetra_Vector(*gidofs));
   LINALG::Export(*z_,*zinactive);
@@ -948,7 +950,10 @@ void CONTACT::Manager::RecoverDisp(RCP<Epetra_Vector>& disi)
     LINALG::Export(*z_,*zactive);
     tmatrix_->Multiply(false,*zactive,*zerotest);
     cout << *zerotest << endl;
-  }*/
+  }
+#endif // #ifdef DEBUG
+  // CHECK OF CONTACT BOUNDARY CONDITIONS---------------------------------
+  */
   
   return;
 }
@@ -1020,9 +1025,9 @@ void CONTACT::Manager::UpdateActiveSet()
           activesetconv_ = false;
         }
         
-        //cout << "ACTIVE: " << i << " " << j << " " << gid << " "
-        //     << nz << " " << nzold << " " << 0.5*nz+0.5*nzold
-        //     << " " << cnode->Getg() << endl;  
+        cout << "ACTIVE: " << i << " " << j << " " << gid << " "
+             << nz << " " << nzold << " " << 0.5*nz+0.5*nzold
+             << " " << cnode->Getg() << endl;  
       }
       
     }
@@ -1084,8 +1089,10 @@ void CONTACT::Manager::UpdateActiveSet()
 /*----------------------------------------------------------------------*
  |  Compute contact forces (public)                           popp 02/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::ContactForces(RCP<Epetra_Vector>& fc)
+void CONTACT::Manager::ContactForces(RCP<Epetra_Vector>& fc,
+                                     RCP<Epetra_Vector>& fresm)
 {
+  // FIXME: fresm is only here for debugging purposes!
   // compute two subvectors of fc via Lagrange multipliers z
   RCP<Epetra_Vector> fcslavetemp  = rcp(new Epetra_Vector(dmatrix_->RowMap()));
   RCP<Epetra_Vector> fcmastertemp = rcp(new Epetra_Vector(mmatrix_->DomainMap()));
@@ -1101,7 +1108,71 @@ void CONTACT::Manager::ContactForces(RCP<Epetra_Vector>& fc)
   // build total contact force vector
   fc->Update(1.0,*fcslave,0.0);
   fc->Update(-1.0,*fcmaster,1.0);
-    
+  
+  // store into member variable
+  fc_=fc;
+  
+  /*
+  // CHECK OF CONTACT FORCE EQUILIBRIUM ----------------------------------
+#ifdef DEBUG
+  RCP<Epetra_Vector> fresmslave  = rcp(new Epetra_Vector(dmatrix_->RowMap()));
+  RCP<Epetra_Vector> fresmmaster = rcp(new Epetra_Vector(mmatrix_->DomainMap()));
+  LINALG::Export(*fresm,*fresmslave);
+  LINALG::Export(*fresm,*fresmmaster);
+  
+  vector<double> gfcs(3);
+  vector<double> ggfcs(3);
+  vector<double> gfcm(3);
+  vector<double> ggfcm(3);
+  int dimcheck = (gsdofrowmap_->NumGlobalElements())/(gsnoderowmap_->NumGlobalElements());
+  if (dimcheck!=2 && dimcheck!=3) dserror("ERROR: ContactForces: Debugging for 3D not implemented yet");
+  
+  for (int i=0;i<fcslavetemp->MyLength();++i)
+  {
+    if ((i+dimcheck)%dimcheck == 0) gfcs[0]+=(*fcslavetemp)[i];
+    else if ((i+dimcheck)%dimcheck == 1) gfcs[1]+=(*fcslavetemp)[i];
+    else if ((i+dimcheck)%dimcheck == 2) gfcs[2]+=(*fcslavetemp)[i];
+    else dserror("ERROR: Contact Forces: Dim. error in debugging part!");
+  }
+  
+  for (int i=0;i<fcmastertemp->MyLength();++i)
+  {
+    if ((i+dimcheck)%dimcheck == 0) gfcm[0]-=(*fcmastertemp)[i];
+    else if ((i+dimcheck)%dimcheck == 1) gfcm[1]-=(*fcmastertemp)[i];
+    else if ((i+dimcheck)%dimcheck == 2) gfcm[2]-=(*fcmastertemp)[i];
+    else dserror("ERROR: Contact Forces: Dim. error in debugging part!");
+  }
+  
+  for (int i=0;i<3;++i)
+  {
+    Comm().SumAll(&gfcs[i],&ggfcs[i],1);
+    Comm().SumAll(&gfcm[i],&ggfcm[i],1);
+  }
+  
+  double slavenorm = 0.0;
+  fcslavetemp->Norm2(&slavenorm);
+  double fresmslavenorm = 0.0;
+  fresmslave->Norm2(&fresmslavenorm);
+  if (Comm().MyPID()==0)
+  {
+    cout << "Slave Contact Force Norm:  " << slavenorm << endl;
+    cout << "Slave Residual Force Norm: " << fresmslavenorm << endl;
+    cout << "Slave Contact Force Vector: " << ggfcs[0] << " " << ggfcs[1] << " " << ggfcs[2] << endl;
+  }
+  double masternorm = 0.0;
+  fcmastertemp->Norm2(&masternorm);
+  double fresmmasternorm = 0.0;
+  fresmmaster->Norm2(&fresmmasternorm);
+  if (Comm().MyPID()==0)
+  {
+    cout << "Master Contact Force Norm: " << masternorm << endl;
+    cout << "Master Residual Force Norm " << fresmmasternorm << endl;
+    cout << "Master Contact Force Vector: " << ggfcm[0] << " " << ggfcm[1] << " " << ggfcm[2] << endl;
+  }
+#endif // #ifdef DEBUG
+  // CHECK OF CONTACT FORCE EQUILIBRIUM ----------------------------------
+  */
+  
   return;
 }
 

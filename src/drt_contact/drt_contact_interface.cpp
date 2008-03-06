@@ -902,6 +902,10 @@ bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
   /* CASE DEFAULT: unknown overlap case                                  */
   else
   {
+    cout << "SElement: " << sele.NodeIds()[0] << " " << sele.NodeIds()[1] << endl;
+    cout << "MElement: " << mele.NodeIds()[0] << " " << mele.NodeIds()[1] << endl;
+    cout << "s0: " << s0hasproj << " s1: " << s1hasproj << endl;
+    cout << "m0: " << m0hasproj << " m1: " << m1hasproj << endl;
     dserror("ERROR: IntegrateOverlap2D: Unknown overlap case found!");
   }
   

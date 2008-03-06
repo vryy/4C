@@ -146,7 +146,13 @@ public:
   \brief Compute contact force vector
     
   */
-  void ContactForces(RCP<Epetra_Vector>& fc);
+  void ContactForces(RCP<Epetra_Vector>& fc, RCP<Epetra_Vector>& fresm);
+  
+  /*!
+  \brief Return contact force vector
+  
+  */
+  inline RCP<Epetra_Vector>& GetContactForces() { return fc_; }
   
 
 protected:
@@ -181,6 +187,7 @@ protected:
   RCP<Epetra_Vector>                 z_;              // vector of current Lagrange multipliers
   RCP<Epetra_Vector>                 zold_;           // vector of last time step Lagrange multipliers
   RCP<Epetra_Vector>                 incrjump_;       // incremental displacement jump (slave dofs)
+  RCP<Epetra_Vector>                 fc_;             // vector of current contact forces
   
   RCP<LINALG::SparseMatrix>          invd_;           // inverse of Mortar matrix D (needed for LM)
   RCP<LINALG::SparseMatrix>          ksn_;            // stiffness block K_sn (needed for LM)
