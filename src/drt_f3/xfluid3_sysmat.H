@@ -986,7 +986,7 @@ void Sysmat(
             visc_old(2) = vderxy2(2,2) + 0.5 * (vderxy2(2,0) + vderxy2(0,4) + vderxy2(2,1) + vderxy2(1,5));
             
             // evaluate residual once for all stabilisation right hand sides
-            BlitzVec res_old(-rhsint+(conv_old+gradp-2.0*visc*visc_old));
+            BlitzVec res_old(-rhsint+timefac*(conv_old+gradp-2.0*visc*visc_old));
             if (instationary)
                 res_old += velint;
       
@@ -1033,7 +1033,6 @@ void Sysmat(
 
             if (instationary)
             {
-                dserror("not tested");
                 /* inertia (contribution to mass matrix) */
                 /*
                                      /        \
