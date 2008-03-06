@@ -172,6 +172,8 @@ void xdyn_fluid_drt()
   // -------------------------------------------------------------------
   ParameterList fluidtimeparams;
 
+  fluidtimeparams.set<int>("Simple Preconditioner",Teuchos::getIntegralValue<int>(fdyn,"SIMPLER"));
+
   // -------------------------------------- number of degrees of freedom
   // number of degrees of freedom
   fluidtimeparams.set<int>              ("number of velocity degrees of freedom" ,probsize.get<int>("DIM"));
@@ -217,8 +219,8 @@ void xdyn_fluid_drt()
   int init = Teuchos::getIntegralValue<int>(fdyn,"INITIALFIELD");
   fluidtimeparams.set                  ("eval err for analyt sol"   ,init);
 
-  // -----------------------------------(fine-scale) subgrid viscosity?
-  fluidtimeparams.set<int>              ("fs subgrid viscosity"   ,Teuchos::getIntegralValue<int>(fdyn,"SUBGRIDVISC"));
+  // ---------------------------- fine-scale subgrid viscosity approach
+  fluidtimeparams.set<string>           ("fs subgrid viscosity"   ,fdyn.get<string>("FSSUGRVISC"));
 
   // -----------------------sublist containing stabilization parameters
   fluidtimeparams.sublist("STABILIZATION")=fdyn.sublist("STABILIZATION");
