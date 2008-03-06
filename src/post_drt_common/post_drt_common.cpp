@@ -17,6 +17,7 @@ Maintainer: Ulrich Kuettler
 #ifdef CCADISCRET
 
 #include <algorithm>
+#include <stack>
 #include "post_drt_common.H"
 
 #include "../io/hdf_reader.H"
@@ -376,98 +377,114 @@ void PostProblem::read_meshes()
   if (mesh == NULL)
     dserror("No field found.");
 
+  // We have to reverse the traversal of meshes we get from the control file
+  // in order to get the same dof numbers in all discretizations as we had
+  // during our calculation.
+  // The order inside the control file is important!
+  // Discretizations have to be FillComplete()ed in the same order as during
+  // the calculation!
+  std::stack<MAP*> meshstack;
+
   while (mesh != NULL)
   {
     // only those fields with a mesh file entry are readable here
     // (each control file is bound to include at least one of those)
     if (map_find_symbol(symbol_map(mesh), "mesh_file")!=NULL)
     {
-      int field_pos = map_read_int(symbol_map(mesh), "field_pos");
-      int disnum = map_read_int(symbol_map(mesh), "discretization");
-
-      bool havefield = false;
-      for (unsigned i=0; i<fields_.size(); ++i)
-      {
-        if (fields_[i].field_pos()==field_pos and
-            fields_[i].disnum()==disnum)
-        {
-          havefield = true;
-          break;
-        }
-      }
-
-      // only read a field that has not yet been read
-      // for now we do not care at which step this field was defined
-      // if we want to support changing meshes one day, we'll need to
-      // change this code...
-      if (not havefield)
-      {
-        int step;
-        if (!map_find_int(symbol_map(mesh),"step",&step))
-          dserror("No step information in field.");
-
-        PostField currfield = getfield(symbol_map(mesh));
-
-        int num_output_procs;
-        if (!map_find_int(symbol_map(mesh),"num_output_proc",&num_output_procs))
-        {
-          num_output_procs = 1;
-        }
-        currfield.set_num_output_procs(num_output_procs);
-        char* fn;
-        if (!map_find_string(symbol_map(mesh),"mesh_file",&fn))
-          dserror("No meshfile name for discretization %s.", currfield.discretization()->Name().c_str());
-        string filename = fn;
-        IO::HDFReader reader = IO::HDFReader(input_dir_);
-        reader.Open(filename,num_output_procs);
-
-        RefCountPtr<vector<char> > node_data =
-          reader.ReadNodeData(step, comm_->NumProc(), comm_->MyPID());
-        currfield.discretization()->UnPackMyNodes(node_data);
-
-        RefCountPtr<vector<char> > element_data =
-          reader.ReadElementData(step, comm_->NumProc(), comm_->MyPID());
-        currfield.discretization()->UnPackMyElements(element_data);
-
-        // read periodic boundary conditions if available
-        RefCountPtr<vector<char> > cond_pbcsline =
-        reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "LinePeriodic");
-        currfield.discretization()->UnPackCondition(cond_pbcsline, "LinePeriodic");
-        RefCountPtr<vector<char> > cond_pbcssurf =
-        reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "SurfacePeriodic");
-        currfield.discretization()->UnPackCondition(cond_pbcssurf, "SurfacePeriodic");
-
-        // read XFEMCoupling boundary conditions if available
-        RefCountPtr<vector<char> > cond_xfem =
-        reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "XFEMCoupling");
-        currfield.discretization()->UnPackCondition(cond_xfem, "XFEMCoupling");
-
-        // before we can call discretization functions (in parallel) we
-        // need field based communicators.
-        create_communicators();
-
-
-        // setup of parallel layout: create ghosting of already distributed nodes+elems
-#ifdef PARALLEL
-        setup_ghosting(currfield.discretization());
-#endif
-
-        //distribute_drt_grids();
-        currfield.discretization()->FillComplete();
-
-        // -------------------------------------------------------------------
-        // connect degrees of freedom for periodic boundary conditions
-        // -------------------------------------------------------------------
-        if(!cond_pbcssurf->empty())
-        {
-          PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(currfield.discretization());
-          pbc.UpdateDofsForPeriodicBoundaryConditions();
-        }
-
-        fields_.push_back(currfield);
-      }
+      meshstack.push(symbol_map(mesh));
     }
     mesh = mesh->next;
+  }
+  mesh = NULL;
+
+  while (not meshstack.empty())
+  {
+    MAP* meshmap = meshstack.top();
+    meshstack.pop();
+
+    int field_pos = map_read_int(meshmap, "field_pos");
+    int disnum = map_read_int(meshmap, "discretization");
+
+    bool havefield = false;
+    for (unsigned i=0; i<fields_.size(); ++i)
+    {
+      if (fields_[i].field_pos()==field_pos and
+          fields_[i].disnum()==disnum)
+      {
+        havefield = true;
+        break;
+      }
+    }
+
+    // only read a field that has not yet been read
+    // for now we do not care at which step this field was defined
+    // if we want to support changing meshes one day, we'll need to
+    // change this code...
+    if (not havefield)
+    {
+      int step;
+      if (!map_find_int(meshmap,"step",&step))
+        dserror("No step information in field.");
+
+      PostField currfield = getfield(meshmap);
+
+      int num_output_procs;
+      if (!map_find_int(meshmap,"num_output_proc",&num_output_procs))
+      {
+        num_output_procs = 1;
+      }
+      currfield.set_num_output_procs(num_output_procs);
+      char* fn;
+      if (!map_find_string(meshmap,"mesh_file",&fn))
+        dserror("No meshfile name for discretization %s.", currfield.discretization()->Name().c_str());
+      string filename = fn;
+      IO::HDFReader reader = IO::HDFReader(input_dir_);
+      reader.Open(filename,num_output_procs);
+
+      RefCountPtr<vector<char> > node_data =
+        reader.ReadNodeData(step, comm_->NumProc(), comm_->MyPID());
+      currfield.discretization()->UnPackMyNodes(node_data);
+
+      RefCountPtr<vector<char> > element_data =
+        reader.ReadElementData(step, comm_->NumProc(), comm_->MyPID());
+      currfield.discretization()->UnPackMyElements(element_data);
+
+      // read periodic boundary conditions if available
+      RefCountPtr<vector<char> > cond_pbcsline =
+        reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "LinePeriodic");
+      currfield.discretization()->UnPackCondition(cond_pbcsline, "LinePeriodic");
+      RefCountPtr<vector<char> > cond_pbcssurf =
+        reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "SurfacePeriodic");
+      currfield.discretization()->UnPackCondition(cond_pbcssurf, "SurfacePeriodic");
+
+      // read XFEMCoupling boundary conditions if available
+      RefCountPtr<vector<char> > cond_xfem =
+        reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "XFEMCoupling");
+      currfield.discretization()->UnPackCondition(cond_xfem, "XFEMCoupling");
+
+      // before we can call discretization functions (in parallel) we
+      // need field based communicators.
+      create_communicators();
+
+      // setup of parallel layout: create ghosting of already distributed nodes+elems
+#ifdef PARALLEL
+      setup_ghosting(currfield.discretization());
+#endif
+
+      //distribute_drt_grids();
+      currfield.discretization()->FillComplete();
+
+      // -------------------------------------------------------------------
+      // connect degrees of freedom for periodic boundary conditions
+      // -------------------------------------------------------------------
+      if(!cond_pbcssurf->empty())
+      {
+        PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(currfield.discretization());
+        pbc.UpdateDofsForPeriodicBoundaryConditions();
+      }
+
+      fields_.push_back(currfield);
+    }
   }
 }
 
@@ -846,11 +863,11 @@ vector<double> PostResult::get_result_times(const string& fieldname)
 }
 
 /*----------------------------------------------------------------------*
- * get timesteps when the specific solution vector >name< is written 
+ * get timesteps when the specific solution vector >name< is written
  *                                                               gjb02/08
  *----------------------------------------------------------------------*/
 vector<double> PostResult::get_result_times(
-        const string& fieldname, 
+        const string& fieldname,
         const string& groupname)
 {
     vector<double> times; // timesteps when the solution is written
@@ -919,8 +936,8 @@ int PostResult::next_result()
 
 
 /*----------------------------------------------------------------------*
- * loads the next result block that contains written result values  
- * specified by a given groupname. Returns 1 when a new result block has 
+ * loads the next result block that contains written result values
+ * specified by a given groupname. Returns 1 when a new result block has
  * been found, otherwise returns 0                              gjb 02/08
  *----------------------------------------------------------------------*/
 int PostResult::next_result(const string& groupname)
