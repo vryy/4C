@@ -542,15 +542,18 @@ void Sysmat(
         const RCP<XFEM::InterfaceHandle>  ih,            ///< connection to the interface handler
         const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
         const std::vector<double>&        locval,        ///< nodal unknowns at n+1, i
+        const std::vector<double>&        locval_hist,   ///< nodal unknowns at n
         BlitzMat&                         estif,         ///< element matrix to calculate
         BlitzVec&                         eforce,        ///< element rhs to calculate
         struct _MATERIAL*                 material,      ///< fluid material
-        const double                      pseudotime,    ///< current simulation pseudotime
+        const double                      time,          ///< current time (pseudotime for stationary formulation)
+        const double                      timefac,       ///< One-step-Theta: theta*dt, BDF2: 2/3 * dt, stationary: 1.0
         const bool                        newton,        ///< full Newton or fixed-point-like
         const bool                        pstab,         ///< flag for stabilisation
         const bool                        supg,          ///< flag for stabilisation
         const bool                        vstab,         ///< flag for stabilisation
-        const bool                        cstab          ///< flag for stabilisation
+        const bool                        cstab,         ///< flag for stabilisation
+        const bool                        instationary   ///< switch between stationary and instationary formulation
         )
 {
     // number of nodes for element
@@ -560,7 +563,7 @@ void Sysmat(
     const BlitzMat xyze(DRT::UTILS::PositionArrayBlitz(ele));
 
     // dead load in element nodes
-    //////////////////////////////////////////////////// , BlitzMat edeadng_(BodyForce(ele->Nodes(),pseudotime));
+    //////////////////////////////////////////////////// , BlitzMat edeadng_(BodyForce(ele->Nodes(),time));
 
     // get viscosity
     // check here, if we really have a fluid !!
@@ -628,6 +631,7 @@ void Sysmat(
     BlitzVec eprenp(numparampres);
     BlitzVec ediscpreele(numparamdiscpres);
     BlitzMat evelnp(3,numparamvelx,blitz::ColumnMajorArray<2>());
+    BlitzMat evelnp_hist(3,numparamvelx,blitz::ColumnMajorArray<2>());
     BlitzMat esigma(6,numparamsigmaxx,blitz::ColumnMajorArray<2>());
     
     const vector<int> velxdof(dofman.LocalDofPosPerField(Velx));
@@ -635,10 +639,23 @@ void Sysmat(
     const vector<int> velzdof(dofman.LocalDofPosPerField(Velz));
     const vector<int> presdof(dofman.LocalDofPosPerField(Pres));
     
-    for (int iparam=0; iparam<numparamvelx; ++iparam)   evelnp(0,iparam) = locval[velxdof[iparam]];
-    for (int iparam=0; iparam<numparamvely; ++iparam)   evelnp(1,iparam) = locval[velydof[iparam]];
-    for (int iparam=0; iparam<numparamvelz; ++iparam)   evelnp(2,iparam) = locval[velzdof[iparam]];
-    for (int iparam=0; iparam<numparampres; ++iparam)   eprenp(iparam) = locval[presdof[iparam]];
+    for (int iparam=0; iparam<numparamvelx; ++iparam)
+    {
+        evelnp(     0,iparam) = locval[     velxdof[iparam]];
+        evelnp_hist(0,iparam) = locval_hist[velxdof[iparam]];
+    }
+    for (int iparam=0; iparam<numparamvely; ++iparam)
+    {
+        evelnp(     1,iparam) = locval[     velydof[iparam]];
+        evelnp_hist(1,iparam) = locval_hist[velydof[iparam]];
+    }
+    for (int iparam=0; iparam<numparamvelz; ++iparam)
+    {
+        evelnp(     2,iparam) = locval[     velzdof[iparam]];
+        evelnp_hist(2,iparam) = locval_hist[velzdof[iparam]];
+    }
+    for (int iparam=0; iparam<numparampres; ++iparam)
+        eprenp(iparam) = locval[presdof[iparam]];
     if (stress_unknowns_present)
     {
         const int numparamsigmayy = getNumParam<ASSTYPE>(dofman, Sigmayy, 1);
@@ -844,6 +861,9 @@ void Sysmat(
             // get velocities (n+g,i) at integration point
             const BlitzVec velint(blitz::sum(enr_funct(j)*evelnp(i,j),j));
 
+            // get history data (n) at integration point
+            const BlitzVec histvec(blitz::sum(enr_funct(j)*evelnp_hist(i,j),j));
+            
             // get velocity (np,i) derivatives at integration point
             const BlitzMat vderxy(blitz::sum(enr_derxy(j,k)*evelnp(i,k),k));
       
@@ -942,11 +962,17 @@ void Sysmat(
             const double tau_M  = tau_stab_0*fac;
             const double tau_Mp = tau_stab_1*fac;
             const double tau_C  = tau_stab_2*fac;
+            
+            // integration factors and coefficients of single terms
+            const double timetauM   = timefac * tau_M;
+            const double timetauMp  = timefac * tau_Mp;
+
+            const double ttimetauM  = timefac * timetauM;
+            const double ttimetauMp = timefac * timetauMp;
+            const double timefacfac = timefac * fac;
 
             /*------------------------- evaluate rhs vector at integration point ---*/
-            //   rhsint_ = histvec_(i) + bodyforce_(i);
-            // histvec is always zero in stationary case (!):
-            const BlitzVec rhsint(bodyforce(i));
+            const BlitzVec rhsint(histvec(i) + bodyforce(i)*timefac);
 
             /*----------------- get numerical representation of single operators ---*/
 
@@ -960,7 +986,9 @@ void Sysmat(
             visc_old(2) = vderxy2(2,2) + 0.5 * (vderxy2(2,0) + vderxy2(0,4) + vderxy2(2,1) + vderxy2(1,5));
             
             // evaluate residual once for all stabilisation right hand sides
-            const BlitzVec res_old(-rhsint+(conv_old+gradp-2.0*visc*visc_old));
+            BlitzVec res_old(-rhsint+(conv_old+gradp-2.0*visc*visc_old));
+            if (instationary)
+                res_old += velint;
       
             /* Reactive term  u:  funct */
             /* linearise convective term */
@@ -1003,6 +1031,26 @@ void Sysmat(
             //----------------------------------------------------------------------
             //                            GALERKIN PART
 
+            if (instationary)
+            {
+                dserror("not tested");
+                /* inertia (contribution to mass matrix) */
+                /*
+                                     /        \
+                                    |          |
+                                    |  Du , v  |
+                                    |          |
+                                     \        /
+                */
+                assembler.template Matrix<Velx,Velx>(shp, fac, shp);
+                assembler.template Matrix<Vely,Vely>(shp, fac, shp);
+                assembler.template Matrix<Velz,Velz>(shp, fac, shp);
+                
+                assembler.template Vector<Velx>(shp, -fac*velint(0));
+                assembler.template Vector<Vely>(shp, -fac*velint(1));
+                assembler.template Vector<Velz>(shp, -fac*velint(2));
+            }
+            
             /* convection, convective part */
             /*
                          /                       \
@@ -1011,19 +1059,19 @@ void Sysmat(
                         |      \ (i)       /      |
                          \                       /
             */
-            assembler.template Matrix<Velx,Velx>(shp, fac, enr_conv_c_);
-            assembler.template Matrix<Vely,Vely>(shp, fac, enr_conv_c_);
-            assembler.template Matrix<Velz,Velz>(shp, fac, enr_conv_c_);
+            assembler.template Matrix<Velx,Velx>(shp, timefacfac, enr_conv_c_);
+            assembler.template Matrix<Vely,Vely>(shp, timefacfac, enr_conv_c_);
+            assembler.template Matrix<Velz,Velz>(shp, timefacfac, enr_conv_c_);
             
-            assembler.template Vector<Velx>(shp, -fac*(velint(0)*vderxy(0,0)
-                                                      +velint(1)*vderxy(0,1)
-                                                      +velint(2)*vderxy(0,2)));
-            assembler.template Vector<Vely>(shp, -fac*(velint(0)*vderxy(1,0)
-                                                      +velint(1)*vderxy(1,1)
-                                                      +velint(2)*vderxy(1,2)));
-            assembler.template Vector<Velz>(shp, -fac*(velint(0)*vderxy(2,0)
-                                                      +velint(1)*vderxy(2,1)
-                                                      +velint(2)*vderxy(2,2)));
+            assembler.template Vector<Velx>(shp, -timefacfac*(velint(0)*vderxy(0,0)
+                                                             +velint(1)*vderxy(0,1)
+                                                             +velint(2)*vderxy(0,2)));
+            assembler.template Vector<Vely>(shp, -timefacfac*(velint(0)*vderxy(1,0)
+                                                             +velint(1)*vderxy(1,1)
+                                                             +velint(2)*vderxy(1,2)));
+            assembler.template Vector<Velz>(shp, -timefacfac*(velint(0)*vderxy(2,0)
+                                                             +velint(1)*vderxy(2,1)
+                                                             +velint(2)*vderxy(2,2)));
             
             if (newton)
             {
@@ -1035,15 +1083,15 @@ void Sysmat(
                       |      \          /   (i)   |
                        \                         /
                 */
-                assembler.template Matrix<Velx,Velx>(shp, fac*vderxy(0,0), shp);
-                assembler.template Matrix<Velx,Vely>(shp, fac*vderxy(0,1), shp);
-                assembler.template Matrix<Velx,Velz>(shp, fac*vderxy(0,2), shp);
-                assembler.template Matrix<Vely,Velx>(shp, fac*vderxy(1,0), shp);
-                assembler.template Matrix<Vely,Vely>(shp, fac*vderxy(1,1), shp);
-                assembler.template Matrix<Vely,Velz>(shp, fac*vderxy(1,2), shp);
-                assembler.template Matrix<Velz,Velx>(shp, fac*vderxy(2,0), shp);
-                assembler.template Matrix<Velz,Vely>(shp, fac*vderxy(2,1), shp);
-                assembler.template Matrix<Velz,Velz>(shp, fac*vderxy(2,2), shp);
+                assembler.template Matrix<Velx,Velx>(shp, timefacfac*vderxy(0,0), shp);
+                assembler.template Matrix<Velx,Vely>(shp, timefacfac*vderxy(0,1), shp);
+                assembler.template Matrix<Velx,Velz>(shp, timefacfac*vderxy(0,2), shp);
+                assembler.template Matrix<Vely,Velx>(shp, timefacfac*vderxy(1,0), shp);
+                assembler.template Matrix<Vely,Vely>(shp, timefacfac*vderxy(1,1), shp);
+                assembler.template Matrix<Vely,Velz>(shp, timefacfac*vderxy(1,2), shp);
+                assembler.template Matrix<Velz,Velx>(shp, timefacfac*vderxy(2,0), shp);
+                assembler.template Matrix<Velz,Vely>(shp, timefacfac*vderxy(2,1), shp);
+                assembler.template Matrix<Velz,Velz>(shp, timefacfac*vderxy(2,2), shp);
             }
             
             /* Viskositaetsterm */
@@ -1054,35 +1102,35 @@ void Sysmat(
                          |       \ /         \  /   |
                           \                        /
             */
-            assembler.template Matrix<Velx,Velx>(shp_dx, 2.0*visc*fac, shp_dx);
-            assembler.template Matrix<Velx,Velx>(shp_dy,     visc*fac, shp_dy);
-            assembler.template Matrix<Velx,Velx>(shp_dz,     visc*fac, shp_dz);
-            assembler.template Matrix<Velx,Vely>(shp_dy,     visc*fac, shp_dx);
-            assembler.template Matrix<Velx,Velz>(shp_dz,     visc*fac, shp_dx);
+            assembler.template Matrix<Velx,Velx>(shp_dx, 2.0*visc*timefacfac, shp_dx);
+            assembler.template Matrix<Velx,Velx>(shp_dy,     visc*timefacfac, shp_dy);
+            assembler.template Matrix<Velx,Velx>(shp_dz,     visc*timefacfac, shp_dz);
+            assembler.template Matrix<Velx,Vely>(shp_dy,     visc*timefacfac, shp_dx);
+            assembler.template Matrix<Velx,Velz>(shp_dz,     visc*timefacfac, shp_dx);
             
-            assembler.template Matrix<Vely,Velx>(shp_dx,     visc*fac, shp_dy);
-            assembler.template Matrix<Vely,Vely>(shp_dx,     visc*fac, shp_dx);
-            assembler.template Matrix<Vely,Vely>(shp_dy, 2.0*visc*fac, shp_dy);
-            assembler.template Matrix<Vely,Vely>(shp_dz,     visc*fac, shp_dz);
-            assembler.template Matrix<Vely,Velz>(shp_dz,     visc*fac, shp_dy);
+            assembler.template Matrix<Vely,Velx>(shp_dx,     visc*timefacfac, shp_dy);
+            assembler.template Matrix<Vely,Vely>(shp_dx,     visc*timefacfac, shp_dx);
+            assembler.template Matrix<Vely,Vely>(shp_dy, 2.0*visc*timefacfac, shp_dy);
+            assembler.template Matrix<Vely,Vely>(shp_dz,     visc*timefacfac, shp_dz);
+            assembler.template Matrix<Vely,Velz>(shp_dz,     visc*timefacfac, shp_dy);
             
-            assembler.template Matrix<Velz,Velx>(shp_dx,     visc*fac, shp_dz);
-            assembler.template Matrix<Velz,Vely>(shp_dy,     visc*fac, shp_dz);
-            assembler.template Matrix<Velz,Velz>(shp_dx,     visc*fac, shp_dx);
-            assembler.template Matrix<Velz,Velz>(shp_dy,     visc*fac, shp_dy);
-            assembler.template Matrix<Velz,Velz>(shp_dz, 2.0*visc*fac, shp_dz);
+            assembler.template Matrix<Velz,Velx>(shp_dx,     visc*timefacfac, shp_dz);
+            assembler.template Matrix<Velz,Vely>(shp_dy,     visc*timefacfac, shp_dz);
+            assembler.template Matrix<Velz,Velz>(shp_dx,     visc*timefacfac, shp_dx);
+            assembler.template Matrix<Velz,Velz>(shp_dy,     visc*timefacfac, shp_dy);
+            assembler.template Matrix<Velz,Velz>(shp_dz, 2.0*visc*timefacfac, shp_dz);
             
-            assembler.template Vector<Velx>(shp_dx,     -visc*fac*(vderxy(0, 0) + vderxy(0, 0)));
-            assembler.template Vector<Velx>(shp_dy,     -visc*fac*(vderxy(0, 1) + vderxy(1, 0)));
-            assembler.template Vector<Velx>(shp_dz,     -visc*fac*(vderxy(0, 2) + vderxy(2, 0)));
+            assembler.template Vector<Velx>(shp_dx,     -visc*timefacfac*(vderxy(0, 0) + vderxy(0, 0)));
+            assembler.template Vector<Velx>(shp_dy,     -visc*timefacfac*(vderxy(0, 1) + vderxy(1, 0)));
+            assembler.template Vector<Velx>(shp_dz,     -visc*timefacfac*(vderxy(0, 2) + vderxy(2, 0)));
             
-            assembler.template Vector<Vely>(shp_dx,     -visc*fac*(vderxy(1, 0) + vderxy(0, 1)));
-            assembler.template Vector<Vely>(shp_dy,     -visc*fac*(vderxy(1, 1) + vderxy(1, 1)));
-            assembler.template Vector<Vely>(shp_dz,     -visc*fac*(vderxy(1, 2) + vderxy(2, 1)));
+            assembler.template Vector<Vely>(shp_dx,     -visc*timefacfac*(vderxy(1, 0) + vderxy(0, 1)));
+            assembler.template Vector<Vely>(shp_dy,     -visc*timefacfac*(vderxy(1, 1) + vderxy(1, 1)));
+            assembler.template Vector<Vely>(shp_dz,     -visc*timefacfac*(vderxy(1, 2) + vderxy(2, 1)));
             
-            assembler.template Vector<Velz>(shp_dx,     -visc*fac*(vderxy(2, 0) + vderxy(0, 2)));
-            assembler.template Vector<Velz>(shp_dy,     -visc*fac*(vderxy(2, 1) + vderxy(1, 2)));
-            assembler.template Vector<Velz>(shp_dz,     -visc*fac*(vderxy(2, 2) + vderxy(2, 2)));
+            assembler.template Vector<Velz>(shp_dx,     -visc*timefacfac*(vderxy(2, 0) + vderxy(0, 2)));
+            assembler.template Vector<Velz>(shp_dy,     -visc*timefacfac*(vderxy(2, 1) + vderxy(1, 2)));
+            assembler.template Vector<Velz>(shp_dz,     -visc*timefacfac*(vderxy(2, 2) + vderxy(2, 2)));
             
             /* Druckterm */
             /*
@@ -1092,13 +1140,13 @@ void Sysmat(
                            |                  |
                             \                /
             */
-            assembler.template Matrix<Velx,Pres>(shp_dx, -fac, shp);
-            assembler.template Matrix<Vely,Pres>(shp_dy, -fac, shp);
-            assembler.template Matrix<Velz,Pres>(shp_dz, -fac, shp);
+            assembler.template Matrix<Velx,Pres>(shp_dx, -timefacfac, shp);
+            assembler.template Matrix<Vely,Pres>(shp_dy, -timefacfac, shp);
+            assembler.template Matrix<Velz,Pres>(shp_dz, -timefacfac, shp);
             
-            assembler.template Vector<Velx>(shp_dx, press*fac);
-            assembler.template Vector<Vely>(shp_dy, press*fac);
-            assembler.template Vector<Velz>(shp_dz, press*fac);
+            assembler.template Vector<Velx>(shp_dx, press*timefacfac);
+            assembler.template Vector<Vely>(shp_dy, press*timefacfac);
+            assembler.template Vector<Velz>(shp_dz, press*timefacfac);
             
             /* Divergenzfreiheit - continuity equation*/
             /*
@@ -1108,13 +1156,13 @@ void Sysmat(
                           |                |
                            \              /
             */
-            assembler.template Matrix<Pres,Velx>(shp, fac, shp_dx);
-            assembler.template Matrix<Pres,Vely>(shp, fac, shp_dy);
-            assembler.template Matrix<Pres,Velz>(shp, fac, shp_dz);
+            assembler.template Matrix<Pres,Velx>(shp, timefacfac, shp_dx);
+            assembler.template Matrix<Pres,Vely>(shp, timefacfac, shp_dy);
+            assembler.template Matrix<Pres,Velz>(shp, timefacfac, shp_dz);
             
-            assembler.template Vector<Pres>(shp, -fac*vderxy(0,0));
-            assembler.template Vector<Pres>(shp, -fac*vderxy(1,1));
-            assembler.template Vector<Pres>(shp, -fac*vderxy(2,2));
+            assembler.template Vector<Pres>(shp, -timefacfac*vderxy(0,0));
+            assembler.template Vector<Pres>(shp, -timefacfac*vderxy(1,1));
+            assembler.template Vector<Pres>(shp, -timefacfac*vderxy(2,2));
             
             // source term of the right hand side
             assembler.template Vector<Velx>(shp, fac*rhsint(0));
@@ -1134,25 +1182,25 @@ void Sysmat(
                               |                      |
                                \                    /
                 */
-                assembler.template Matrix<Sigmaxx,Sigmaxx>(shp_sigma, -0.5*reciproke_visc*fac, shp_sigma);
-                assembler.template Matrix<Sigmaxy,Sigmaxy>(shp_sigma, -0.5*reciproke_visc*fac, shp_sigma);
-                assembler.template Matrix<Sigmaxz,Sigmaxz>(shp_sigma, -0.5*reciproke_visc*fac, shp_sigma);
-                assembler.template Matrix<Sigmayx,Sigmayx>(shp_sigma, -0.5*reciproke_visc*fac, shp_sigma);
-                assembler.template Matrix<Sigmayy,Sigmayy>(shp_sigma, -0.5*reciproke_visc*fac, shp_sigma);
-                assembler.template Matrix<Sigmayz,Sigmayz>(shp_sigma, -0.5*reciproke_visc*fac, shp_sigma);
-                assembler.template Matrix<Sigmazx,Sigmazx>(shp_sigma, -0.5*reciproke_visc*fac, shp_sigma);
-                assembler.template Matrix<Sigmazy,Sigmazy>(shp_sigma, -0.5*reciproke_visc*fac, shp_sigma);
-                assembler.template Matrix<Sigmazz,Sigmazz>(shp_sigma, -0.5*reciproke_visc*fac, shp_sigma);
+                assembler.template Matrix<Sigmaxx,Sigmaxx>(shp_sigma, -0.5*reciproke_visc*timefacfac, shp_sigma);
+                assembler.template Matrix<Sigmaxy,Sigmaxy>(shp_sigma, -0.5*reciproke_visc*timefacfac, shp_sigma);
+                assembler.template Matrix<Sigmaxz,Sigmaxz>(shp_sigma, -0.5*reciproke_visc*timefacfac, shp_sigma);
+                assembler.template Matrix<Sigmayx,Sigmayx>(shp_sigma, -0.5*reciproke_visc*timefacfac, shp_sigma);
+                assembler.template Matrix<Sigmayy,Sigmayy>(shp_sigma, -0.5*reciproke_visc*timefacfac, shp_sigma);
+                assembler.template Matrix<Sigmayz,Sigmayz>(shp_sigma, -0.5*reciproke_visc*timefacfac, shp_sigma);
+                assembler.template Matrix<Sigmazx,Sigmazx>(shp_sigma, -0.5*reciproke_visc*timefacfac, shp_sigma);
+                assembler.template Matrix<Sigmazy,Sigmazy>(shp_sigma, -0.5*reciproke_visc*timefacfac, shp_sigma);
+                assembler.template Matrix<Sigmazz,Sigmazz>(shp_sigma, -0.5*reciproke_visc*timefacfac, shp_sigma);
                 
-                assembler.template Vector<Sigmaxx>(shp_sigma, 0.5*reciproke_visc*fac*sigma(0,0));
-                assembler.template Vector<Sigmaxy>(shp_sigma, 0.5*reciproke_visc*fac*sigma(0,1));
-                assembler.template Vector<Sigmaxz>(shp_sigma, 0.5*reciproke_visc*fac*sigma(0,2));
-                assembler.template Vector<Sigmayx>(shp_sigma, 0.5*reciproke_visc*fac*sigma(1,0));
-                assembler.template Vector<Sigmayy>(shp_sigma, 0.5*reciproke_visc*fac*sigma(1,1));
-                assembler.template Vector<Sigmayz>(shp_sigma, 0.5*reciproke_visc*fac*sigma(1,2));
-                assembler.template Vector<Sigmazx>(shp_sigma, 0.5*reciproke_visc*fac*sigma(2,0));
-                assembler.template Vector<Sigmazy>(shp_sigma, 0.5*reciproke_visc*fac*sigma(2,1));
-                assembler.template Vector<Sigmazz>(shp_sigma, 0.5*reciproke_visc*fac*sigma(2,2));
+                assembler.template Vector<Sigmaxx>(shp_sigma, 0.5*reciproke_visc*timefacfac*sigma(0,0));
+                assembler.template Vector<Sigmaxy>(shp_sigma, 0.5*reciproke_visc*timefacfac*sigma(0,1));
+                assembler.template Vector<Sigmaxz>(shp_sigma, 0.5*reciproke_visc*timefacfac*sigma(0,2));
+                assembler.template Vector<Sigmayx>(shp_sigma, 0.5*reciproke_visc*timefacfac*sigma(1,0));
+                assembler.template Vector<Sigmayy>(shp_sigma, 0.5*reciproke_visc*timefacfac*sigma(1,1));
+                assembler.template Vector<Sigmayz>(shp_sigma, 0.5*reciproke_visc*timefacfac*sigma(1,2));
+                assembler.template Vector<Sigmazx>(shp_sigma, 0.5*reciproke_visc*timefacfac*sigma(2,0));
+                assembler.template Vector<Sigmazy>(shp_sigma, 0.5*reciproke_visc*timefacfac*sigma(2,1));
+                assembler.template Vector<Sigmazz>(shp_sigma, 0.5*reciproke_visc*timefacfac*sigma(2,2));
                 
                 /* rectangular part */
                 /*
@@ -1162,41 +1210,41 @@ void Sysmat(
                               |                    |
                                \                  /
                 */
-                assembler.template Matrix<Sigmaxx,Velx>(shp_sigma, 2.0*fac*0.5, shp_dx);
-                assembler.template Matrix<Sigmaxy,Velx>(shp_sigma,     fac*0.5, shp_dy);
-                assembler.template Matrix<Sigmaxy,Vely>(shp_sigma,     fac*0.5, shp_dx);
-                assembler.template Matrix<Sigmaxz,Velx>(shp_sigma,     fac*0.5, shp_dz);
-                assembler.template Matrix<Sigmaxz,Velz>(shp_sigma,     fac*0.5, shp_dx);
+                assembler.template Matrix<Sigmaxx,Velx>(shp_sigma, 2.0*timefacfac*0.5, shp_dx);
+                assembler.template Matrix<Sigmaxy,Velx>(shp_sigma,     timefacfac*0.5, shp_dy);
+                assembler.template Matrix<Sigmaxy,Vely>(shp_sigma,     timefacfac*0.5, shp_dx);
+                assembler.template Matrix<Sigmaxz,Velx>(shp_sigma,     timefacfac*0.5, shp_dz);
+                assembler.template Matrix<Sigmaxz,Velz>(shp_sigma,     timefacfac*0.5, shp_dx);
                 
-                assembler.template Matrix<Sigmayx,Velx>(shp_sigma,     fac*0.5, shp_dy);
-                assembler.template Matrix<Sigmayx,Vely>(shp_sigma,     fac*0.5, shp_dx);
-                assembler.template Matrix<Sigmayy,Vely>(shp_sigma, 2.0*fac*0.5, shp_dy);
-                assembler.template Matrix<Sigmayz,Velz>(shp_sigma,     fac*0.5, shp_dz);
-                assembler.template Matrix<Sigmayz,Vely>(shp_sigma,     fac*0.5, shp_dx);
+                assembler.template Matrix<Sigmayx,Velx>(shp_sigma,     timefacfac*0.5, shp_dy);
+                assembler.template Matrix<Sigmayx,Vely>(shp_sigma,     timefacfac*0.5, shp_dx);
+                assembler.template Matrix<Sigmayy,Vely>(shp_sigma, 2.0*timefacfac*0.5, shp_dy);
+                assembler.template Matrix<Sigmayz,Velz>(shp_sigma,     timefacfac*0.5, shp_dz);
+                assembler.template Matrix<Sigmayz,Vely>(shp_sigma,     timefacfac*0.5, shp_dx);
                 
-                assembler.template Matrix<Sigmazx,Velx>(shp_sigma,     fac*0.5, shp_dz);
-                assembler.template Matrix<Sigmazx,Velz>(shp_sigma,     fac*0.5, shp_dx);
-                assembler.template Matrix<Sigmazy,Vely>(shp_sigma,     fac*0.5, shp_dz);
-                assembler.template Matrix<Sigmazy,Velz>(shp_sigma,     fac*0.5, shp_dy);
-                assembler.template Matrix<Sigmazz,Velz>(shp_sigma, 2.0*fac*0.5, shp_dz);
+                assembler.template Matrix<Sigmazx,Velx>(shp_sigma,     timefacfac*0.5, shp_dz);
+                assembler.template Matrix<Sigmazx,Velz>(shp_sigma,     timefacfac*0.5, shp_dx);
+                assembler.template Matrix<Sigmazy,Vely>(shp_sigma,     timefacfac*0.5, shp_dz);
+                assembler.template Matrix<Sigmazy,Velz>(shp_sigma,     timefacfac*0.5, shp_dy);
+                assembler.template Matrix<Sigmazz,Velz>(shp_sigma, 2.0*timefacfac*0.5, shp_dz);
                 
-                assembler.template Vector<Sigmaxx>(shp_sigma, -2.0*fac*0.5*vderxy(0, 0));
-                assembler.template Vector<Sigmaxy>(shp_sigma, -    fac*0.5*vderxy(0, 1));
-                assembler.template Vector<Sigmaxy>(shp_sigma, -    fac*0.5*vderxy(1, 0));
-                assembler.template Vector<Sigmaxz>(shp_sigma, -    fac*0.5*vderxy(0, 2));
-                assembler.template Vector<Sigmaxz>(shp_sigma, -    fac*0.5*vderxy(2, 0));
+                assembler.template Vector<Sigmaxx>(shp_sigma, -2.0*timefacfac*0.5*vderxy(0, 0));
+                assembler.template Vector<Sigmaxy>(shp_sigma, -    timefacfac*0.5*vderxy(0, 1));
+                assembler.template Vector<Sigmaxy>(shp_sigma, -    timefacfac*0.5*vderxy(1, 0));
+                assembler.template Vector<Sigmaxz>(shp_sigma, -    timefacfac*0.5*vderxy(0, 2));
+                assembler.template Vector<Sigmaxz>(shp_sigma, -    timefacfac*0.5*vderxy(2, 0));
                 
-                assembler.template Vector<Sigmayx>(shp_sigma, -    fac*0.5*vderxy(1, 0));
-                assembler.template Vector<Sigmayx>(shp_sigma, -    fac*0.5*vderxy(0, 1));
-                assembler.template Vector<Sigmayy>(shp_sigma, -2.0*fac*0.5*vderxy(1, 1));
-                assembler.template Vector<Sigmayz>(shp_sigma, -    fac*0.5*vderxy(1, 2));
-                assembler.template Vector<Sigmayz>(shp_sigma, -    fac*0.5*vderxy(2, 1));
+                assembler.template Vector<Sigmayx>(shp_sigma, -    timefacfac*0.5*vderxy(1, 0));
+                assembler.template Vector<Sigmayx>(shp_sigma, -    timefacfac*0.5*vderxy(0, 1));
+                assembler.template Vector<Sigmayy>(shp_sigma, -2.0*timefacfac*0.5*vderxy(1, 1));
+                assembler.template Vector<Sigmayz>(shp_sigma, -    timefacfac*0.5*vderxy(1, 2));
+                assembler.template Vector<Sigmayz>(shp_sigma, -    timefacfac*0.5*vderxy(2, 1));
                 
-                assembler.template Vector<Sigmazx>(shp_sigma, -    fac*0.5*vderxy(2, 0));
-                assembler.template Vector<Sigmazx>(shp_sigma, -    fac*0.5*vderxy(0, 2));
-                assembler.template Vector<Sigmazy>(shp_sigma, -    fac*0.5*vderxy(2, 1));
-                assembler.template Vector<Sigmazy>(shp_sigma, -    fac*0.5*vderxy(1, 2));
-                assembler.template Vector<Sigmazz>(shp_sigma, -2.0*fac*0.5*vderxy(2, 2));
+                assembler.template Vector<Sigmazx>(shp_sigma, -    timefacfac*0.5*vderxy(2, 0));
+                assembler.template Vector<Sigmazx>(shp_sigma, -    timefacfac*0.5*vderxy(0, 2));
+                assembler.template Vector<Sigmazy>(shp_sigma, -    timefacfac*0.5*vderxy(2, 1));
+                assembler.template Vector<Sigmazy>(shp_sigma, -    timefacfac*0.5*vderxy(1, 2));
+                assembler.template Vector<Sigmazz>(shp_sigma, -2.0*timefacfac*0.5*vderxy(2, 2));
                 
                 /*
                                /              \
@@ -1205,19 +1253,33 @@ void Sysmat(
                               |                |
                                \              /
                 */
-                assembler.template Matrix<Sigmaxx,Pres>(shp_sigma, -0.5*reciproke_visc*fac, shp);
-                assembler.template Matrix<Sigmayy,Pres>(shp_sigma, -0.5*reciproke_visc*fac, shp);
-                assembler.template Matrix<Sigmazz,Pres>(shp_sigma, -0.5*reciproke_visc*fac, shp);
+                assembler.template Matrix<Sigmaxx,Pres>(shp_sigma, -0.5*reciproke_visc*timefacfac, shp);
+                assembler.template Matrix<Sigmayy,Pres>(shp_sigma, -0.5*reciproke_visc*timefacfac, shp);
+                assembler.template Matrix<Sigmazz,Pres>(shp_sigma, -0.5*reciproke_visc*timefacfac, shp);
                 
-                assembler.template Vector<Sigmaxx>(shp_sigma, 0.5*reciproke_visc*fac*press);
-                assembler.template Vector<Sigmayy>(shp_sigma, 0.5*reciproke_visc*fac*press);
-                assembler.template Vector<Sigmazz>(shp_sigma, 0.5*reciproke_visc*fac*press);
+                assembler.template Vector<Sigmaxx>(shp_sigma, 0.5*reciproke_visc*timefacfac*press);
+                assembler.template Vector<Sigmayy>(shp_sigma, 0.5*reciproke_visc*timefacfac*press);
+                assembler.template Vector<Sigmazz>(shp_sigma, 0.5*reciproke_visc*timefacfac*press);
             }
             
             //----------------------------------------------------------------------
             //                 PRESSURE STABILISATION PART
             if(pstab)
             {
+                if (instationary)
+                {
+                    /* pressure stabilisation: inertia */
+                    /*
+                                /              \
+                               |                |
+                               |  Du , nabla q  |
+                               |                |
+                                \              /
+                    */
+                    assembler.template Matrix<Pres,Velx>(shp_dx, timetauMp, shp);
+                    assembler.template Matrix<Pres,Vely>(shp_dy, timetauMp, shp);
+                    assembler.template Matrix<Pres,Velz>(shp_dz, timetauMp, shp);
+                }
                 /* pressure stabilisation: convection, convective part */
                 /*
                           /                             \
@@ -1226,9 +1288,9 @@ void Sysmat(
                          |             \ i         /     |
                           \                             /
                 */
-                assembler.template Matrix<Pres,Velx>(shp_dx, tau_Mp, enr_conv_c_);
-                assembler.template Matrix<Pres,Vely>(shp_dy, tau_Mp, enr_conv_c_);
-                assembler.template Matrix<Pres,Velz>(shp_dz, tau_Mp, enr_conv_c_);
+                assembler.template Matrix<Pres,Velx>(shp_dx, ttimetauMp, enr_conv_c_);
+                assembler.template Matrix<Pres,Vely>(shp_dy, ttimetauMp, enr_conv_c_);
+                assembler.template Matrix<Pres,Velz>(shp_dz, ttimetauMp, enr_conv_c_);
                 
                 if (newton)
                 {
@@ -1239,17 +1301,17 @@ void Sysmat(
                          |           \          /   (i)  |
                           \                             /
                     */
-                    assembler.template Matrix<Pres,Velx>(shp_dx, tau_Mp*vderxy(0,0), shp);
-                    assembler.template Matrix<Pres,Velx>(shp_dy, tau_Mp*vderxy(1,0), shp);
-                    assembler.template Matrix<Pres,Velx>(shp_dz, tau_Mp*vderxy(2,0), shp);
+                    assembler.template Matrix<Pres,Velx>(shp_dx, ttimetauMp*vderxy(0,0), shp);
+                    assembler.template Matrix<Pres,Velx>(shp_dy, ttimetauMp*vderxy(1,0), shp);
+                    assembler.template Matrix<Pres,Velx>(shp_dz, ttimetauMp*vderxy(2,0), shp);
                     
-                    assembler.template Matrix<Pres,Vely>(shp_dx, tau_Mp*vderxy(0,1), shp);
-                    assembler.template Matrix<Pres,Vely>(shp_dy, tau_Mp*vderxy(1,1), shp);
-                    assembler.template Matrix<Pres,Vely>(shp_dz, tau_Mp*vderxy(2,1), shp);
+                    assembler.template Matrix<Pres,Vely>(shp_dx, ttimetauMp*vderxy(0,1), shp);
+                    assembler.template Matrix<Pres,Vely>(shp_dy, ttimetauMp*vderxy(1,1), shp);
+                    assembler.template Matrix<Pres,Vely>(shp_dz, ttimetauMp*vderxy(2,1), shp);
                     
-                    assembler.template Matrix<Pres,Velz>(shp_dx, tau_Mp*vderxy(0,2), shp);
-                    assembler.template Matrix<Pres,Velz>(shp_dy, tau_Mp*vderxy(1,2), shp);
-                    assembler.template Matrix<Pres,Velz>(shp_dz, tau_Mp*vderxy(2,2), shp);
+                    assembler.template Matrix<Pres,Velz>(shp_dx, ttimetauMp*vderxy(0,2), shp);
+                    assembler.template Matrix<Pres,Velz>(shp_dy, ttimetauMp*vderxy(1,2), shp);
+                    assembler.template Matrix<Pres,Velz>(shp_dz, ttimetauMp*vderxy(2,2), shp);
                 }
                 
                 /* pressure stabilisation: viscosity (-L_visc_u) */
@@ -1260,17 +1322,17 @@ void Sysmat(
                           |                         \  /  |
                            \                             /
                 */
-                assembler.template Matrix<Pres,Velx>(shp_dx, -2.0*visc*tau_Mp, enr_viscs2_(0, 0, _));
-                assembler.template Matrix<Pres,Vely>(shp_dx, -2.0*visc*tau_Mp, enr_viscs2_(0, 1, _));
-                assembler.template Matrix<Pres,Velz>(shp_dx, -2.0*visc*tau_Mp, enr_viscs2_(0, 2, _));
+                assembler.template Matrix<Pres,Velx>(shp_dx, -2.0*visc*ttimetauMp, enr_viscs2_(0, 0, _));
+                assembler.template Matrix<Pres,Vely>(shp_dx, -2.0*visc*ttimetauMp, enr_viscs2_(0, 1, _));
+                assembler.template Matrix<Pres,Velz>(shp_dx, -2.0*visc*ttimetauMp, enr_viscs2_(0, 2, _));
                 
-                assembler.template Matrix<Pres,Velx>(shp_dy, -2.0*visc*tau_Mp, enr_viscs2_(0, 1, _));
-                assembler.template Matrix<Pres,Vely>(shp_dy, -2.0*visc*tau_Mp, enr_viscs2_(1, 1, _));
-                assembler.template Matrix<Pres,Velz>(shp_dy, -2.0*visc*tau_Mp, enr_viscs2_(1, 2, _));
+                assembler.template Matrix<Pres,Velx>(shp_dy, -2.0*visc*ttimetauMp, enr_viscs2_(0, 1, _));
+                assembler.template Matrix<Pres,Vely>(shp_dy, -2.0*visc*ttimetauMp, enr_viscs2_(1, 1, _));
+                assembler.template Matrix<Pres,Velz>(shp_dy, -2.0*visc*ttimetauMp, enr_viscs2_(1, 2, _));
                 
-                assembler.template Matrix<Pres,Velx>(shp_dz, -2.0*visc*tau_Mp, enr_viscs2_(0, 2, _));
-                assembler.template Matrix<Pres,Vely>(shp_dz, -2.0*visc*tau_Mp, enr_viscs2_(1, 2, _));
-                assembler.template Matrix<Pres,Velz>(shp_dz, -2.0*visc*tau_Mp, enr_viscs2_(2, 2, _));
+                assembler.template Matrix<Pres,Velx>(shp_dz, -2.0*visc*ttimetauMp, enr_viscs2_(0, 2, _));
+                assembler.template Matrix<Pres,Vely>(shp_dz, -2.0*visc*ttimetauMp, enr_viscs2_(1, 2, _));
+                assembler.template Matrix<Pres,Velz>(shp_dz, -2.0*visc*ttimetauMp, enr_viscs2_(2, 2, _));
                       
                 /* pressure stabilisation: pressure( L_pres_p) */
                 /*
@@ -1280,19 +1342,56 @@ void Sysmat(
                          |                      |
                           \                    /
                 */
-                assembler.template Matrix<Pres,Pres>(shp_dx, tau_Mp, shp_dx);
-                assembler.template Matrix<Pres,Pres>(shp_dy, tau_Mp, shp_dy);
-                assembler.template Matrix<Pres,Pres>(shp_dz, tau_Mp, shp_dz);
+                assembler.template Matrix<Pres,Pres>(shp_dx, ttimetauMp, shp_dx);
+                assembler.template Matrix<Pres,Pres>(shp_dy, ttimetauMp, shp_dy);
+                assembler.template Matrix<Pres,Pres>(shp_dz, ttimetauMp, shp_dz);
                 
-                assembler.template Vector<Pres>(shp_dx, -tau_Mp*res_old(0));
-                assembler.template Vector<Pres>(shp_dy, -tau_Mp*res_old(1));
-                assembler.template Vector<Pres>(shp_dz, -tau_Mp*res_old(2));
+                // pressure stabilization
+                assembler.template Vector<Pres>(shp_dx, -timetauMp*res_old(0));
+                assembler.template Vector<Pres>(shp_dy, -timetauMp*res_old(1));
+                assembler.template Vector<Pres>(shp_dz, -timetauMp*res_old(2));
             }
             
             //----------------------------------------------------------------------
             //                     SUPG STABILISATION PART
             if(supg)
             {
+                if (instationary)
+                {
+                    /* supg stabilisation: inertia  */
+                    /*
+                              /                        \
+                             |        / n+1       \     |
+                             |  Du , | u   o nabla | v  |
+                             |        \ (i)       /     |
+                              \                        /
+                    */
+                    assembler.template Matrix<Velx,Velx>(shp, timetauM, enr_conv_c_);
+                    assembler.template Matrix<Vely,Vely>(shp, timetauM, enr_conv_c_);
+                    assembler.template Matrix<Velz,Velz>(shp, timetauM, enr_conv_c_);
+                    
+                    if (newton)
+                    {
+                        /* supg stabilisation: inertia, linearisation of testfunction  */
+                        /*
+                                   /                           \
+                                  |   n+1      /          \     |
+                                  |  u      , | Du o nabla | v  |
+                                  |   (i)      \          /     |
+                                   \                           /
+    
+                        */
+                        assembler.template Matrix<Velx,Velx>(shp, timetauM*velint(0), shp_dx);
+                        assembler.template Matrix<Velx,Vely>(shp, timetauM*velint(0), shp_dy);
+                        assembler.template Matrix<Velx,Velz>(shp, timetauM*velint(0), shp_dz);
+                        assembler.template Matrix<Vely,Velx>(shp, timetauM*velint(1), shp_dx);
+                        assembler.template Matrix<Vely,Vely>(shp, timetauM*velint(1), shp_dy);
+                        assembler.template Matrix<Vely,Velz>(shp, timetauM*velint(1), shp_dz);
+                        assembler.template Matrix<Velz,Velx>(shp, timetauM*velint(2), shp_dx);
+                        assembler.template Matrix<Velz,Vely>(shp, timetauM*velint(2), shp_dy);
+                        assembler.template Matrix<Velz,Velz>(shp, timetauM*velint(2), shp_dz);
+                    }
+                }
                 /* supg stabilisation: convective part ( L_conv_u) */
                 /*
                      /                                          \
@@ -1301,9 +1400,9 @@ void Sysmat(
                     |  \ (i)        /        \ (i)        /      |
                      \                                          /
                 */
-                assembler.template Matrix<Velx,Velx>(enr_conv_c_, tau_M, enr_conv_c_);
-                assembler.template Matrix<Vely,Vely>(enr_conv_c_, tau_M, enr_conv_c_);
-                assembler.template Matrix<Velz,Velz>(enr_conv_c_, tau_M, enr_conv_c_);
+                assembler.template Matrix<Velx,Velx>(enr_conv_c_, ttimetauM, enr_conv_c_);
+                assembler.template Matrix<Vely,Vely>(enr_conv_c_, ttimetauM, enr_conv_c_);
+                assembler.template Matrix<Velz,Velz>(enr_conv_c_, ttimetauM, enr_conv_c_);
                 /* supg stabilisation: pressure part  ( L_pres_p) */
                 /*
                           /                             \
@@ -1312,9 +1411,9 @@ void Sysmat(
                          |   \ (i)       /               |
                           \                             /
                 */
-                assembler.template Matrix<Velx,Pres>(enr_conv_c_, tau_M, shp_dx);
-                assembler.template Matrix<Vely,Pres>(enr_conv_c_, tau_M, shp_dy);
-                assembler.template Matrix<Velz,Pres>(enr_conv_c_, tau_M, shp_dz);
+                assembler.template Matrix<Velx,Pres>(enr_conv_c_, ttimetauM, shp_dx);
+                assembler.template Matrix<Vely,Pres>(enr_conv_c_, ttimetauM, shp_dy);
+                assembler.template Matrix<Velz,Pres>(enr_conv_c_, ttimetauM, shp_dz);
 
                 /* supg stabilisation: viscous part  (-L_visc_u) */
                 /*
@@ -1324,17 +1423,17 @@ void Sysmat(
                      |               \  /    \ (i)        /     |
                       \                                        /
                 */
-                assembler.template Matrix<Velx,Velx>(enr_conv_c_, -2.0*visc*tau_M, enr_viscs2_(0, 0, _));
-                assembler.template Matrix<Velx,Vely>(enr_conv_c_, -2.0*visc*tau_M, enr_viscs2_(0, 1, _));
-                assembler.template Matrix<Velx,Velz>(enr_conv_c_, -2.0*visc*tau_M, enr_viscs2_(0, 2, _));
+                assembler.template Matrix<Velx,Velx>(enr_conv_c_, -2.0*visc*ttimetauM, enr_viscs2_(0, 0, _));
+                assembler.template Matrix<Velx,Vely>(enr_conv_c_, -2.0*visc*ttimetauM, enr_viscs2_(0, 1, _));
+                assembler.template Matrix<Velx,Velz>(enr_conv_c_, -2.0*visc*ttimetauM, enr_viscs2_(0, 2, _));
     
-                assembler.template Matrix<Vely,Velx>(enr_conv_c_, -2.0*visc*tau_M, enr_viscs2_(0, 1, _));
-                assembler.template Matrix<Vely,Vely>(enr_conv_c_, -2.0*visc*tau_M, enr_viscs2_(1, 1, _));
-                assembler.template Matrix<Vely,Velz>(enr_conv_c_, -2.0*visc*tau_M, enr_viscs2_(1, 2, _));
+                assembler.template Matrix<Vely,Velx>(enr_conv_c_, -2.0*visc*ttimetauM, enr_viscs2_(0, 1, _));
+                assembler.template Matrix<Vely,Vely>(enr_conv_c_, -2.0*visc*ttimetauM, enr_viscs2_(1, 1, _));
+                assembler.template Matrix<Vely,Velz>(enr_conv_c_, -2.0*visc*ttimetauM, enr_viscs2_(1, 2, _));
     
-                assembler.template Matrix<Velz,Velx>(enr_conv_c_, -2.0*visc*tau_M, enr_viscs2_(0, 2, _));
-                assembler.template Matrix<Velz,Vely>(enr_conv_c_, -2.0*visc*tau_M, enr_viscs2_(1, 2, _));
-                assembler.template Matrix<Velz,Velz>(enr_conv_c_, -2.0*visc*tau_M, enr_viscs2_(2, 2, _));
+                assembler.template Matrix<Velz,Velx>(enr_conv_c_, -2.0*visc*ttimetauM, enr_viscs2_(0, 2, _));
+                assembler.template Matrix<Velz,Vely>(enr_conv_c_, -2.0*visc*ttimetauM, enr_viscs2_(1, 2, _));
+                assembler.template Matrix<Velz,Velz>(enr_conv_c_, -2.0*visc*ttimetauM, enr_viscs2_(2, 2, _));
                 
                 if (newton)
                 {
@@ -1346,17 +1445,17 @@ void Sysmat(
                               |    \          /   (i)    \ (i)        /     |
                                \                                           /
                     */
-                    assembler.template Matrix<Velx,Velx>(enr_conv_c_, tau_M*vderxy(0,0), shp);
-                    assembler.template Matrix<Velx,Vely>(enr_conv_c_, tau_M*vderxy(0,1), shp);
-                    assembler.template Matrix<Velx,Velz>(enr_conv_c_, tau_M*vderxy(0,2), shp);
+                    assembler.template Matrix<Velx,Velx>(enr_conv_c_, ttimetauM*vderxy(0,0), shp);
+                    assembler.template Matrix<Velx,Vely>(enr_conv_c_, ttimetauM*vderxy(0,1), shp);
+                    assembler.template Matrix<Velx,Velz>(enr_conv_c_, ttimetauM*vderxy(0,2), shp);
                     
-                    assembler.template Matrix<Vely,Velx>(enr_conv_c_, tau_M*vderxy(1,0), shp);
-                    assembler.template Matrix<Vely,Vely>(enr_conv_c_, tau_M*vderxy(1,1), shp);                    
-                    assembler.template Matrix<Vely,Velz>(enr_conv_c_, tau_M*vderxy(1,2), shp);                    
+                    assembler.template Matrix<Vely,Velx>(enr_conv_c_, ttimetauM*vderxy(1,0), shp);
+                    assembler.template Matrix<Vely,Vely>(enr_conv_c_, ttimetauM*vderxy(1,1), shp);                    
+                    assembler.template Matrix<Vely,Velz>(enr_conv_c_, ttimetauM*vderxy(1,2), shp);                    
                     
-                    assembler.template Matrix<Velz,Velx>(enr_conv_c_, tau_M*vderxy(2,0), shp);
-                    assembler.template Matrix<Velz,Vely>(enr_conv_c_, tau_M*vderxy(2,1), shp);
-                    assembler.template Matrix<Velz,Velz>(enr_conv_c_, tau_M*vderxy(2,2), shp);
+                    assembler.template Matrix<Velz,Velx>(enr_conv_c_, ttimetauM*vderxy(2,0), shp);
+                    assembler.template Matrix<Velz,Vely>(enr_conv_c_, ttimetauM*vderxy(2,1), shp);
+                    assembler.template Matrix<Velz,Velz>(enr_conv_c_, ttimetauM*vderxy(2,2), shp);
                     
                     /*
                              /                                           \
@@ -1365,17 +1464,17 @@ void Sysmat(
                             |    \ (i)        /   (i)    \          /     |
                              \                                           /
                     */
-                    const double con0 = tau_M*(velint(0)*vderxy(0,0) + velint(1)*vderxy(0,1) + velint(2)*vderxy(0,2));
+                    const double con0 = ttimetauM*(velint(0)*vderxy(0,0) + velint(1)*vderxy(0,1) + velint(2)*vderxy(0,2));
                     assembler.template Matrix<Velx,Velx>(shp_dx, con0, shp);
                     assembler.template Matrix<Velx,Vely>(shp_dy, con0, shp);                        
                     assembler.template Matrix<Velx,Velz>(shp_dz, con0, shp); 
                     
-                    const double con1 = tau_M*(velint(0)*vderxy(1,0) + velint(1)*vderxy(1,1) + velint(2)*vderxy(1,2));
+                    const double con1 = ttimetauM*(velint(0)*vderxy(1,0) + velint(1)*vderxy(1,1) + velint(2)*vderxy(1,2));
                     assembler.template Matrix<Vely,Velx>(shp_dx, con1, shp);
                     assembler.template Matrix<Vely,Vely>(shp_dy, con1, shp);
                     assembler.template Matrix<Vely,Velz>(shp_dz, con1, shp);
                     
-                    const double con2 = tau_M*(velint(0)*vderxy(2,0) + velint(1)*vderxy(2,1) + velint(2)*vderxy(2,2));
+                    const double con2 = ttimetauM*(velint(0)*vderxy(2,0) + velint(1)*vderxy(2,1) + velint(2)*vderxy(2,2));
                     assembler.template Matrix<Velz,Velx>(shp_dx, con2, shp);
                     assembler.template Matrix<Velz,Vely>(shp_dy, con2, shp);
                     assembler.template Matrix<Velz,Velz>(shp_dz, con2, shp);
@@ -1388,17 +1487,17 @@ void Sysmat(
                                    |         (i)    \          /     |
                                     \                               /
                     */
-                    assembler.template Matrix<Velx,Velx>(shp_dx, tau_M*gradp(0), shp);
-                    assembler.template Matrix<Velx,Vely>(shp_dy, tau_M*gradp(0), shp);
-                    assembler.template Matrix<Velx,Velz>(shp_dz, tau_M*gradp(0), shp);
+                    assembler.template Matrix<Velx,Velx>(shp_dx, ttimetauM*gradp(0), shp);
+                    assembler.template Matrix<Velx,Vely>(shp_dy, ttimetauM*gradp(0), shp);
+                    assembler.template Matrix<Velx,Velz>(shp_dz, ttimetauM*gradp(0), shp);
 
-                    assembler.template Matrix<Vely,Velx>(shp_dx, tau_M*gradp(1), shp);
-                    assembler.template Matrix<Vely,Vely>(shp_dy, tau_M*gradp(1), shp);
-                    assembler.template Matrix<Vely,Velz>(shp_dz, tau_M*gradp(1), shp);
+                    assembler.template Matrix<Vely,Velx>(shp_dx, ttimetauM*gradp(1), shp);
+                    assembler.template Matrix<Vely,Vely>(shp_dy, ttimetauM*gradp(1), shp);
+                    assembler.template Matrix<Vely,Velz>(shp_dz, ttimetauM*gradp(1), shp);
                         
-                    assembler.template Matrix<Velz,Velx>(shp_dx, tau_M*gradp(2), shp);
-                    assembler.template Matrix<Velz,Vely>(shp_dy, tau_M*gradp(2), shp);
-                    assembler.template Matrix<Velz,Velz>(shp_dz, tau_M*gradp(2), shp);
+                    assembler.template Matrix<Velz,Velx>(shp_dx, ttimetauM*gradp(2), shp);
+                    assembler.template Matrix<Velz,Vely>(shp_dy, ttimetauM*gradp(2), shp);
+                    assembler.template Matrix<Velz,Velz>(shp_dz, ttimetauM*gradp(2), shp);
 
                       /* supg stabilisation: viscous part, linearisation of test function  (-L_visc_u) */
                       /*
@@ -1408,17 +1507,17 @@ void Sysmat(
                              |               \ (i) /    \          /     |
                               \                                         /
                       */
-                    assembler.template Matrix<Velx,Velx>(shp_dx, -2.0*visc*tau_M*visc_old(0), shp);
-                    assembler.template Matrix<Velx,Vely>(shp_dy, -2.0*visc*tau_M*visc_old(0), shp);
-                    assembler.template Matrix<Velx,Velz>(shp_dz, -2.0*visc*tau_M*visc_old(0), shp);
+                    assembler.template Matrix<Velx,Velx>(shp_dx, -2.0*visc*ttimetauM*visc_old(0), shp);
+                    assembler.template Matrix<Velx,Vely>(shp_dy, -2.0*visc*ttimetauM*visc_old(0), shp);
+                    assembler.template Matrix<Velx,Velz>(shp_dz, -2.0*visc*ttimetauM*visc_old(0), shp);
 
-                    assembler.template Matrix<Vely,Velx>(shp_dx, -2.0*visc*tau_M*visc_old(1), shp);
-                    assembler.template Matrix<Vely,Vely>(shp_dy, -2.0*visc*tau_M*visc_old(1), shp);
-                    assembler.template Matrix<Vely,Velz>(shp_dz, -2.0*visc*tau_M*visc_old(1), shp);
+                    assembler.template Matrix<Vely,Velx>(shp_dx, -2.0*visc*ttimetauM*visc_old(1), shp);
+                    assembler.template Matrix<Vely,Vely>(shp_dy, -2.0*visc*ttimetauM*visc_old(1), shp);
+                    assembler.template Matrix<Vely,Velz>(shp_dz, -2.0*visc*ttimetauM*visc_old(1), shp);
                         
-                    assembler.template Matrix<Velz,Velx>(shp_dx, -2.0*visc*tau_M*visc_old(2), shp);
-                    assembler.template Matrix<Velz,Vely>(shp_dy, -2.0*visc*tau_M*visc_old(2), shp);
-                    assembler.template Matrix<Velz,Velz>(shp_dz, -2.0*visc*tau_M*visc_old(2), shp);
+                    assembler.template Matrix<Velz,Velx>(shp_dx, -2.0*visc*ttimetauM*visc_old(2), shp);
+                    assembler.template Matrix<Velz,Vely>(shp_dy, -2.0*visc*ttimetauM*visc_old(2), shp);
+                    assembler.template Matrix<Velz,Velz>(shp_dz, -2.0*visc*ttimetauM*visc_old(2), shp);
 
                     /* supg stabilisation: bodyforce part, linearisation of test function */
 
@@ -1430,23 +1529,23 @@ void Sysmat(
                                   \                             /
 
                     */
-                    assembler.template Matrix<Velx,Velx>(shp_dx, -tau_M*rhsint(0), shp);
-                    assembler.template Matrix<Velx,Vely>(shp_dy, -tau_M*rhsint(0), shp);
-                    assembler.template Matrix<Velx,Velz>(shp_dz, -tau_M*rhsint(0), shp);
+                    assembler.template Matrix<Velx,Velx>(shp_dx, -timetauM*rhsint(0), shp);
+                    assembler.template Matrix<Velx,Vely>(shp_dy, -timetauM*rhsint(0), shp);
+                    assembler.template Matrix<Velx,Velz>(shp_dz, -timetauM*rhsint(0), shp);
                     
-                    assembler.template Matrix<Vely,Velx>(shp_dx, -tau_M*rhsint(1), shp);
-                    assembler.template Matrix<Vely,Vely>(shp_dy, -tau_M*rhsint(1), shp);
-                    assembler.template Matrix<Vely,Velz>(shp_dz, -tau_M*rhsint(1), shp);
+                    assembler.template Matrix<Vely,Velx>(shp_dx, -timetauM*rhsint(1), shp);
+                    assembler.template Matrix<Vely,Vely>(shp_dy, -timetauM*rhsint(1), shp);
+                    assembler.template Matrix<Vely,Velz>(shp_dz, -timetauM*rhsint(1), shp);
                     
-                    assembler.template Matrix<Velz,Velx>(shp_dx, -tau_M*rhsint(2), shp);
-                    assembler.template Matrix<Velz,Vely>(shp_dy, -tau_M*rhsint(2), shp);
-                    assembler.template Matrix<Velz,Velz>(shp_dz, -tau_M*rhsint(2), shp);
+                    assembler.template Matrix<Velz,Velx>(shp_dx, -timetauM*rhsint(2), shp);
+                    assembler.template Matrix<Velz,Vely>(shp_dy, -timetauM*rhsint(2), shp);
+                    assembler.template Matrix<Velz,Velz>(shp_dz, -timetauM*rhsint(2), shp);
                 } // if newton
                 
                 // supg stabilisation
-                assembler.template Vector<Velx>(enr_conv_c_, -tau_M*res_old(0));
-                assembler.template Vector<Vely>(enr_conv_c_, -tau_M*res_old(1));
-                assembler.template Vector<Velz>(enr_conv_c_, -tau_M*res_old(2));
+                assembler.template Vector<Velx>(enr_conv_c_, -timetauM*res_old(0));
+                assembler.template Vector<Vely>(enr_conv_c_, -timetauM*res_old(1));
+                assembler.template Vector<Velz>(enr_conv_c_, -timetauM*res_old(2));
             }
             
             
@@ -1458,14 +1557,16 @@ void Sysmat(
                 //  viscous part of stabilisation is switched off!
                 //  vstab is set to false within fluid3_evaluate.cpp
                 //
-                dserror("not translated to XFEM assembler yet!");
+                dserror("not translated to XFEM assembler!");
             };
             
             //----------------------------------------------------------------------
             //                     STABILISATION, CONTINUITY PART
             if(cstab)
             {
-                /* continuity stabilisation */
+                const double timefac_timefac_tau_C=timefac*timefac*tau_C;
+                const double timefac_timefac_tau_C_divunp=timefac_timefac_tau_C*(vderxy(0, 0)+vderxy(1, 1)+vderxy(2, 2));
+                /* continuity stabilisation on left hand side */
                 /*
                          /                        \
                         |                          |
@@ -1473,22 +1574,21 @@ void Sysmat(
                         |                          |
                          \                        /
                 */
-                assembler.template Matrix<Velx,Velx>(shp_dx, tau_C, shp_dx);
-                assembler.template Matrix<Velx,Vely>(shp_dx, tau_C, shp_dy);
-                assembler.template Matrix<Velx,Velz>(shp_dx, tau_C, shp_dz);
+                assembler.template Matrix<Velx,Velx>(shp_dx, timefac_timefac_tau_C, shp_dx);
+                assembler.template Matrix<Velx,Vely>(shp_dx, timefac_timefac_tau_C, shp_dy);
+                assembler.template Matrix<Velx,Velz>(shp_dx, timefac_timefac_tau_C, shp_dz);
                 
-                assembler.template Matrix<Vely,Velx>(shp_dy, tau_C, shp_dx);
-                assembler.template Matrix<Vely,Vely>(shp_dy, tau_C, shp_dy);
-                assembler.template Matrix<Vely,Velz>(shp_dy, tau_C, shp_dz);
+                assembler.template Matrix<Vely,Velx>(shp_dy, timefac_timefac_tau_C, shp_dx);
+                assembler.template Matrix<Vely,Vely>(shp_dy, timefac_timefac_tau_C, shp_dy);
+                assembler.template Matrix<Vely,Velz>(shp_dy, timefac_timefac_tau_C, shp_dz);
                 
-                assembler.template Matrix<Velz,Velx>(shp_dz, tau_C, shp_dx);
-                assembler.template Matrix<Velz,Vely>(shp_dz, tau_C, shp_dy);
-                assembler.template Matrix<Velz,Velz>(shp_dz, tau_C, shp_dz);
+                assembler.template Matrix<Velz,Velx>(shp_dz, timefac_timefac_tau_C, shp_dx);
+                assembler.template Matrix<Velz,Vely>(shp_dz, timefac_timefac_tau_C, shp_dy);
+                assembler.template Matrix<Velz,Velz>(shp_dz, timefac_timefac_tau_C, shp_dz);
                 
-                const double tau_C_divunp = tau_C*(vderxy(0, 0)+vderxy(1, 1)+vderxy(2, 2));
-                assembler.template Vector<Velx>(shp_dx, -tau_C_divunp);
-                assembler.template Vector<Vely>(shp_dy, -tau_C_divunp);
-                assembler.template Vector<Velz>(shp_dz, -tau_C_divunp);
+                assembler.template Vector<Velx>(shp_dx, -timefac_timefac_tau_C_divunp);
+                assembler.template Vector<Vely>(shp_dy, -timefac_timefac_tau_C_divunp);
+                assembler.template Vector<Velz>(shp_dz, -timefac_timefac_tau_C_divunp);
             } // endif cstab
         } // end loop over gauss points
     } // end loop over integration cells
@@ -1830,20 +1930,23 @@ void Sysmat(
 }
   
 void callSysmat(
-        const XFEM::AssemblyType assembly_type,
-        const DRT::ELEMENTS::XFluid3* ele,
+        const XFEM::AssemblyType          assembly_type,
+        const DRT::ELEMENTS::XFluid3*     ele,
         const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager&    eleDofManager,
         const std::vector<double>&        locval,
+        const std::vector<double>&        locval_hist,
         blitz::Array<double,2>&           estif,
         blitz::Array<double,1>&           eforce,
-        struct _MATERIAL*       material,
-        const double                  pseudotime,
+        struct _MATERIAL*                 material,
+        const double                      time,          ///< current time (pseudotime for stationary formulation)
+        const double                      timefac,       ///< One-step-Theta: theta*dt, BDF2: 2/3 * dt
         const bool                    newton ,
         const bool                    pstab  ,
         const bool                    supg   ,
         const bool                    vstab  ,
-        const bool                    cstab
+        const bool                    cstab  ,
+        const bool                    instationary
         )
 {
     using DRT::Element;
@@ -1854,18 +1957,18 @@ void callSysmat(
         {
             case DRT::Element::hex8:
                 Sysmat<DRT::Element::hex8,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, locval, estif, eforce,
-                        material, pseudotime, newton, pstab, supg, vstab, cstab);
+                        ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
+                        material, time, timefac, newton, pstab, supg, vstab, cstab, instationary);
                 break;
             case DRT::Element::hex20:
                 Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, locval, estif, eforce,
-                        material, pseudotime, newton, pstab, supg, vstab, cstab);
+                        ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
+                        material, time, timefac, newton, pstab, supg, vstab, cstab, instationary);
                 break;
             case DRT::Element::hex27:
                 Sysmat<DRT::Element::hex27,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, locval, estif, eforce,
-                        material, pseudotime, newton, pstab, supg, vstab, cstab);
+                        ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
+                        material, time, timefac, newton, pstab, supg, vstab, cstab, instationary);
                 break;
             default:
                 dserror("not templated yet");
@@ -1877,18 +1980,18 @@ void callSysmat(
         {
             case DRT::Element::hex8:
                 Sysmat<DRT::Element::hex8,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, locval, estif, eforce,
-                        material, pseudotime, newton, pstab, supg, vstab, cstab);
+                        ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
+                        material, time, timefac, newton, pstab, supg, vstab, cstab, instationary);
                 break;
             case DRT::Element::hex20:
                 Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, locval, estif, eforce,
-                        material, pseudotime, newton, pstab, supg, vstab, cstab);
+                        ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
+                        material, time, timefac, newton, pstab, supg, vstab, cstab, instationary);
                 break;
             case DRT::Element::hex27:
                 Sysmat<DRT::Element::hex27,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, locval, estif, eforce,
-                        material, pseudotime, newton, pstab, supg, vstab, cstab);
+                        ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
+                        material, time, timefac, newton, pstab, supg, vstab, cstab, instationary);
                 break;
             default:
                 dserror("not templated yet");

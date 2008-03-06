@@ -19,7 +19,6 @@ Maintainer: Axel Gerstenberger
 #endif
 
 #include "xfluid3.H"
-#include "xfluid3_impl.H"
 #include "xfluid3_stationary.H"
 #include "xfluid3_interpolation.H"
 
@@ -42,98 +41,6 @@ using namespace DRT::UTILS;
  | defined in global_control.c
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
-
-
-/*
-  Depending on the type of the algorithm (the implementation) and the
-  element type (tet, hex etc.), the elements allocate common static
-  arrays.
-
-  That means that for example all hex8 fluid elements of the stationary
-  implementation have a pointer f8 to the same 'implementation class'
-  containing all the element arrays for eight noded elements, and all
-  wedge15 fluid elements of the same problem have a pointer f15 to
-  the 'implementation class' containing all the element arrays for the
-  15 noded element.
-  
-  */
-
-DRT::ELEMENTS::XFluid3Impl* DRT::ELEMENTS::XFluid3::Impl(
-        const int numnode,
-        const int numparamvelx,
-        const int numparamvely,
-        const int numparamvelz,
-        const int numparampres)
-{
-  switch (numnode)
-  {
-  case 8:
-  {
-    static XFluid3Impl* f8;
-    if (f8==NULL)
-      f8 = new XFluid3Impl(numnode,numnode,numnode,numnode,numnode);
-    return f8;
-  }
-  case 20:
-  {
-    static XFluid3Impl* f20;
-    if (f20==NULL)
-      f20 = new XFluid3Impl(numnode,numnode,numnode,numnode,numnode);
-    return f20;
-  }
-  case 27:
-  {
-    static XFluid3Impl* f27;
-    if (f27==NULL)
-      f27 = new XFluid3Impl(numnode,numnode,numnode,numnode,numnode);
-    return f27;
-  }
-  case 4:
-  {
-    static XFluid3Impl* f4;
-    if (f4==NULL)
-      f4 = new XFluid3Impl(numnode,numnode,numnode,numnode,numnode);
-    return f4;
-  }
-  case 10:
-  {
-    static XFluid3Impl* f10;
-    if (f10==NULL)
-      f10 = new XFluid3Impl(numnode,numnode,numnode,numnode,numnode);
-    return f10;
-  }
-  case 6:
-  {
-    static XFluid3Impl* f6;
-    if (f6==NULL)
-      f6 = new XFluid3Impl(numnode,numnode,numnode,numnode,numnode);
-    return f6;
-  }
-  case 15:
-  {
-    static XFluid3Impl* f15;
-    if (f15==NULL)
-      f15 = new XFluid3Impl(numnode,numnode,numnode,numnode,numnode);
-    return f15;
-  }
-  case 5:
-  {
-    static XFluid3Impl* f5;
-    if (f5==NULL)
-      f5 = new XFluid3Impl(numnode,numnode,numnode,numnode,numnode);
-    return f5;
-  }
-  default:
-  {
-    static XFluid3Impl* fx;
-    if (fx!=NULL)
-        delete fx;
-    fx = new XFluid3Impl(numnode,numparamvelx,numparamvely,numparamvelz,numparampres);
-    return fx;
-  }
-  }
-  return NULL;
-}
 
 
 // converts a string into an Action for this element
@@ -222,19 +129,25 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
   {
       case calc_fluid_systemmat_and_residual:
       {
-        // first task is to compare that the dofs fit to the current state of the dofmanager
-        // get access to global dofman
-        const RCP<XFEM::DofManager> globaldofman = params.get< RCP< XFEM::DofManager > >("dofmanager",null);
-        if (globaldofman == null) dserror("hey, you did not give me a globaldofmanager (says xfluid3 evaluate)!!!");
-        
-        // check for outdated dof information
-        globaldofman->checkForConsistency((*this), eleDofManager_);
+          //cout << endl << "Processing element with GiD id = " << (this->Id()+1) <<":" << endl;
           
-        // need current velocity and history vector
-        RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
-        RCP<const Epetra_Vector> hist  = discretization.GetState("hist");
-        if (velnp==null || hist==null)
-          dserror("Cannot get state vectors 'velnp' and/or 'hist'");
+          // first task is to compare that the dofs fit to the current state of the dofmanager
+          // get access to global dofman
+          const RCP<XFEM::DofManager> globaldofman = params.get< RCP< XFEM::DofManager > >("dofmanager",null);
+          if (globaldofman == null) dserror("hey, you did not give me a globaldofmanager (says xfluid3 evaluate)!!!");
+          
+          // check for outdated dof information
+          globaldofman->checkForConsistency((*this), eleDofManager_);
+          
+          // get access to interface information
+          const RCP<XFEM::InterfaceHandle> ih = params.get< RCP< XFEM::InterfaceHandle > >("interfacehandle",null);
+          if (ih==null)  dserror("hey, you did not give the InterfaceHandle");
+          
+          // need current velocity/pressure and history vector
+          RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
+          if (velnp==null)  dserror("Cannot get state vector 'velnp'");
+          RCP<const Epetra_Vector> hist  = discretization.GetState("hist");
+          if (hist==null)   dserror("Cannot get state vectors 'hist'");
 
         // extract local values from the global vectors
         vector<double> myvelnp(lm.size());
@@ -242,74 +155,15 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         vector<double> myhist(lm.size());
         DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
 
-        RCP<const Epetra_Vector> dispnp;
-        vector<double> mydispnp;
-        RCP<const Epetra_Vector> gridv;
-        vector<double> mygridv;
+        // do no calculation, if not needed
+        if (lm.size() == 0)
+            break;
 
         if (is_ale_)
         {
-          dispnp = discretization.GetState("dispnp");
-          if (dispnp==null) dserror("Cannot get state vectors 'dispnp'");
-          mydispnp.resize(lm.size());
-          DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
-
-          gridv = discretization.GetState("gridv");
-          if (gridv==null) dserror("Cannot get state vectors 'gridv'");
-          mygridv.resize(lm.size());
-          DRT::UTILS::ExtractMyValues(*gridv,mygridv,lm);
+            dserror("No ALE support within stationary fluid solver.");
         }
 
-        const int numparampres = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Pres);
-        const int numparamvelx = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Velx);
-        const int numparamvely = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Vely);
-        const int numparamvelz = eleDofManager_.NumDofPerField(XFEM::PHYSICS::Velz);
-        dsassert((numparamvelx == numparamvely and numparamvelx == numparamvelz and numparamvelx == numparampres),
-                "for now, we enrich velocity and pressure together");
-        
-        // create blitz objects for element arrays
-        blitz::Array<double, 1> eprenp(numparampres);
-        blitz::Array<double, 2> evelnp(3,numparamvelx,blitz::ColumnMajorArray<2>());
-        blitz::Array<double, 2> evhist(3,numparamvelx,blitz::ColumnMajorArray<2>());
-        blitz::Array<double, 2> edispnp(3,numparamvelx,blitz::ColumnMajorArray<2>());
-        blitz::Array<double, 2> egridv(3,numparamvelx,blitz::ColumnMajorArray<2>());
-
-        const vector<int> velxdof = eleDofManager_.LocalDofPosPerField(XFEM::PHYSICS::Velx);
-        const vector<int> velydof = eleDofManager_.LocalDofPosPerField(XFEM::PHYSICS::Vely);
-        const vector<int> velzdof = eleDofManager_.LocalDofPosPerField(XFEM::PHYSICS::Velz);
-        const vector<int> presdof = eleDofManager_.LocalDofPosPerField(XFEM::PHYSICS::Pres);
-        
-        // split velocity and pressure, insert into element arrays
-        for (int iparam=0; iparam<numparamvelx; ++iparam)   evelnp(0,iparam) = myvelnp[velxdof[iparam]];
-        for (int iparam=0; iparam<numparamvely; ++iparam)   evelnp(1,iparam) = myvelnp[velydof[iparam]];
-        for (int iparam=0; iparam<numparamvelz; ++iparam)   evelnp(2,iparam) = myvelnp[velzdof[iparam]];
-        for (int iparam=0; iparam<numparampres; ++iparam)   eprenp(iparam) = myvelnp[presdof[iparam]];
-        
-        // the history vector contains the information of time step t_n (mass rhs!)
-        for (int iparam=0; iparam<numparamvelx; ++iparam)   evhist(0,iparam) = myhist[velxdof[iparam]];
-        for (int iparam=0; iparam<numparamvely; ++iparam)   evhist(1,iparam) = myhist[velydof[iparam]];
-        for (int iparam=0; iparam<numparamvelz; ++iparam)   evhist(2,iparam) = myhist[velzdof[iparam]];
-
-        if (is_ale_)
-        {
-          // assign grid velocity and grid displacement to element arrays
-          for (int iparam=0; iparam<numparamvelx; ++iparam)   edispnp(0,iparam) = mydispnp[velxdof[iparam]];
-          for (int iparam=0; iparam<numparamvely; ++iparam)   edispnp(1,iparam) = mydispnp[velydof[iparam]];
-          for (int iparam=0; iparam<numparamvelz; ++iparam)   edispnp(2,iparam) = mydispnp[velzdof[iparam]];
-          
-          for (int iparam=0; iparam<numparamvelx; ++iparam)   egridv(0,iparam) = mygridv[velxdof[iparam]];
-          for (int iparam=0; iparam<numparamvely; ++iparam)   egridv(1,iparam) = mygridv[velydof[iparam]];
-          for (int iparam=0; iparam<numparamvelz; ++iparam)   egridv(2,iparam) = mygridv[velzdof[iparam]];
-        }
-
-        const RCP<XFEM::InterfaceHandle> ih = params.get< RCP< XFEM::InterfaceHandle > >("interfacehandle",null);
-        dsassert(ih!=null, "you did not give the InterfaceHandle");
-        
-        //! information about domain integration cells
-        const XFEM::DomainIntCells   domainIntCells   = ih->GetDomainIntCells(this->Id(),this->Shape());
-        //! information about boundary integration cells
-        const XFEM::BoundaryIntCells boundaryIntCells = ih->GetBoundaryIntCells(this->Id());
-        
         // get control parameter
         const double time = params.get<double>("total time",-1.0);
 
@@ -318,10 +172,9 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         // the stabilisation scheme is hardcoded up to now --- maybe it's worth taking
         // this into the input or to choose a standard implementation and drop all ifs
         // on the element level -- if so, I would recommend to drop vstab...
-        
         const bool pstab  = true;
         const bool supg   = true;
-        const bool vstab  = true;
+        const bool vstab  = false;
         const bool cstab  = true;
 
         // One-step-Theta: timefac = theta*dt
@@ -329,48 +182,49 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         const double timefac = params.get<double>("thsl",-1.0);
         if (timefac < 0.0) dserror("No thsl supplied");
 
-        // get flag for (fine-scale) subgrid viscosity (1=yes, 0=no)
-        const int fssgv = params.get<int>("fs subgrid viscosity",0);
-
         // wrap epetra serial dense objects in blitz objects
         blitz::Array<double, 2> estif(elemat1.A(),
                                       blitz::shape(elemat1.M(),elemat1.N()),
                                       blitz::neverDeleteData,
                                       blitz::ColumnMajorArray<2>());
-        blitz::Array<double, 2> esv(elemat2.A(),
-                                    blitz::shape(elemat2.M(),elemat2.N()),
-                                    blitz::neverDeleteData,
-                                    blitz::ColumnMajorArray<2>());
         blitz::Array<double, 1> eforce(elevec1.Values(),
                                        blitz::shape(elevec1.Length()),
                                        blitz::neverDeleteData);
 
         // calculate element coefficient matrix and rhs     
-        Impl(
-                NumNode(),
-                numparamvelx, 
-                numparamvely, 
-                numparamvelz, 
-                numparampres)->Sysmat(this,
-                       domainIntCells,
-                       boundaryIntCells,
-                       evelnp,
-                       eprenp,
-                       evhist,
-                       edispnp,
-                       egridv,
-                       estif,
-                       esv,
-                       eforce,
-                       actmat,
-                       time,
-                       timefac,
-                       newton ,
-                       fssgv  ,
-                       pstab  ,
-                       supg   ,
-                       vstab  ,
-                       cstab  );
+//        Impl(
+//                NumNode(),
+//                numparamvelx, 
+//                numparamvely, 
+//                numparamvelz, 
+//                numparampres)->Sysmat(this,
+//                       domainIntCells,
+//                       boundaryIntCells,
+//                       evelnp,
+//                       eprenp,
+//                       evhist,
+//                       edispnp,
+//                       egridv,
+//                       estif,
+//                       esv,
+//                       eforce,
+//                       actmat,
+//                       time,
+//                       timefac,
+//                       newton ,
+//                       fssgv  ,
+//                       pstab  ,
+//                       supg   ,
+//                       vstab  ,
+//                       cstab  );
+
+        const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
+                eleDofManager_, NumNode(), NodeIds());
+        
+        // calculate element coefficient matrix and rhs
+        XFLUID::callSysmat(assembly_type,
+                this, ih, eleDofManager_, myvelnp, myhist, estif, eforce,
+                actmat, time, timefac, newton, pstab, supg, vstab, cstab, true);
 
         // This is a very poor way to transport the density to the
         // outside world. Is there a better one?
@@ -497,7 +351,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           // extract local values from the global vector
           vector<double> locval(lm.size());
           DRT::UTILS::ExtractMyValues(*velnp,locval,lm);
-          //cout << "number of unknowns (node + element): " << lm.size() << endl;
+          vector<double> locval_hist(lm.size(),0.0); // zero history vector
           
           // do no calculation, if not needed
           if (lm.size() == 0)
@@ -532,8 +386,8 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           
           // calculate element coefficient matrix and rhs
           XFLUID::callSysmat(assembly_type,
-                  this, ih, eleDofManager_, locval, estif, eforce,
-                  actmat, pseudotime, newton, pstab, supg, vstab, cstab);
+                  this, ih, eleDofManager_, locval, locval_hist, estif, eforce,
+                  actmat, pseudotime, 1.0, newton, pstab, supg, vstab, cstab, false);
 
           // This is a very poor way to transport the density to the
           // outside world. Is there a better one?

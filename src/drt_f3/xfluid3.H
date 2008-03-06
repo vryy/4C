@@ -56,7 +56,6 @@ namespace ELEMENTS
 // forward declarations
 class XFluid3Surface;
 class XFluid3Line;
-class XFluid3Impl;
 class XFluid3Register;
 
 /*!
@@ -74,7 +73,6 @@ public:
   friend class XFluid3Register;
   friend class XFluid3Surface;
   friend class XFluid3Line;
-  friend class XFluid3Impl;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -710,15 +708,7 @@ void f3_calc_smag_const_LijMij_and_MijMij(
   //! convert string to stabilisation action
   StabilisationAction ConvertStringToStabAction (const string& action) const;
 
-  /// Internal implementation class for specific fluid element
-  XFluid3Impl* Impl(
-          const int numnode,
-          const int numparamvelx,
-          const int numparamvely,
-          const int numparamvelz,
-          const int numparampres);
-
-}; // class Fluid3
+}; // class XFluid3
 
 
 //=======================================================================
