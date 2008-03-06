@@ -409,7 +409,7 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
 void FluidImplicitTimeInt::Integrate()
 {
   // bound for the number of startsteps
-  int    numstasteps         =params_.get<int>   ("number of start steps");
+  const int    numstasteps         =params_.get<int>   ("number of start steps");
 
   // output of stabilization details
   if (myrank_==0)
@@ -485,7 +485,7 @@ void FluidImplicitTimeInt::TimeLoop()
   tm2_ref_ = rcp(new TimeMonitor(*timetimeloop_));
 
   // how do we want to solve or fluid equations?
-  int dyntype    =params_.get<int>   ("type of nonlinear solve");
+  const int dyntype    =params_.get<int>   ("type of nonlinear solve");
 
   if (dyntype==1)
   {
@@ -812,8 +812,8 @@ void FluidImplicitTimeInt::NonlinearSolve()
   const double  ittol     =params_.get<double>("tolerance for nonlin iter");
 
   //------------------------------ turn adaptive solver tolerance on/off
-  bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
-  double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
+  const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
+  const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
 
   int               itnum = 0;
   bool              stopnonliniter = false;
