@@ -489,7 +489,7 @@ void XFluidImplicitTimeInt::SetupXFluidSplit(
 			discret_->Comm()));
 
 	const Epetra_Map* map = discret_->DofRowMap();
-	extractor.Setup(*map, velrowmap, prerowmap);
+	extractor.Setup(*map, prerowmap, velrowmap);
 }
 
 
