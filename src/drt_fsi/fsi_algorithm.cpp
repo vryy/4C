@@ -52,6 +52,10 @@ FSI::Algorithm::Algorithm(Epetra_Comm& comm)
   nstep_ = fsidyn.get<int>("NUMSTEP");
   maxtime_ = fsidyn.get<double>("MAXTIME");
 
+  // Note: The order is important here! In here control file entries are
+  // written. And these entries define the order in which the filters handle
+  // the Discretizations, which in turn defines the dof number ordering of the
+  // Discretizations.
   SetupStructure();
   SetupFluid();
   SetupAle();
@@ -257,7 +261,7 @@ void FSI::Algorithm::SetupFluid()
 
   FLUID_TIMEINTTYPE iop = Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(fdyn,"TIMEINTEGR");
 
-  if (iop == timeint_one_step_theta || iop == timeint_bdf2) 
+  if (iop == timeint_one_step_theta || iop == timeint_bdf2)
   {
     // number of degrees of freedom
     fluidtimeparams->set<int>              ("number of velocity degrees of freedom" ,probsize.get<int>("DIM"));
@@ -277,8 +281,8 @@ void FSI::Algorithm::SetupFluid()
     fluidtimeparams->set<double>           ("start theta"              ,fdyn.get<double>("START_THETA"));
     // parameter for grid velocity interpolation
     fluidtimeparams->set<int>              ("order gridvel"            ,fdyn.get<int>("GRIDVEL"));
-    
-    
+
+
     // ---------------------------------------------- nonlinear iteration
     // set linearisation scheme
     fluidtimeparams->set<bool>("Use reaction terms for linearisation",
@@ -287,7 +291,7 @@ void FSI::Algorithm::SetupFluid()
     fluidtimeparams->set<int>             ("max nonlin iter steps"     ,fdyn.get<int>("ITEMAX"));
     // stop nonlinear iteration when both incr-norms are below this bound
     fluidtimeparams->set<double>          ("tolerance for nonlin iter" ,fdyn.get<double>("CONVTOL"));
-    
+
     // ----------------------------------------------- restart and output
     // restart
     fluidtimeparams->set                 ("write restart every"       ,fsidyn.get<int>("RESTARTEVRY"));
@@ -295,14 +299,14 @@ void FSI::Algorithm::SetupFluid()
     fluidtimeparams->set                 ("write solution every"      ,fsidyn.get<int>("UPRES"));
     // flag for writing stresses
     fluidtimeparams->set                 ("write stresses"            ,Teuchos::getIntegralValue<int>(ioflags,"FLUID_STRESS"));
-    
+
     //--------------------------------------------------
     // evaluate error for test flows with analytical solutions
     int init = Teuchos::getIntegralValue<int>(fdyn,"INITIALFIELD");
     fluidtimeparams->set                  ("eval err for analyt sol"   ,init);
-    
+
     fluidtimeparams->set<FILE*>("err file",allfiles.out_err);
-    
+
     //--------------------------------------------------
     // create all vectors and variables associated with the time
     // integration (call the constructor)
@@ -315,12 +319,12 @@ void FSI::Algorithm::SetupFluid()
     // -------------------------------------- number of degrees of freedom
     // number of degrees of freedom
     fluidtimeparams->set<int>              ("number of velocity degrees of freedom" ,probsize.get<int>("DIM"));
-  
+
     // ------------------------------------------------ basic scheme, i.e.
     // --------------------- solving nonlinear or linearised flow equation
     fluidtimeparams->set<int>("type of nonlinear solve" ,
                              Teuchos::getIntegralValue<int>(fdyn,"DYNAMICTYP"));
-    
+
     // -------------------------------------------------- time integration
     // the default time step size
     fluidtimeparams->set<double>           ("time step size"           ,fsidyn.get<double>("TIMESTEP"));
@@ -328,7 +332,7 @@ void FSI::Algorithm::SetupFluid()
     fluidtimeparams->set<double>           ("total time"               ,fsidyn.get<double>("MAXTIME"));
     // maximum number of timesteps
     fluidtimeparams->set<int>              ("max number timesteps"     ,fsidyn.get<int>("NUMSTEP"));
-    
+
     // ---------------------------------------------- nonlinear iteration
     // set linearisation scheme
     fluidtimeparams->set<bool>("Use reaction terms for linearisation",
@@ -339,7 +343,7 @@ void FSI::Algorithm::SetupFluid()
     fluidtimeparams->set<double>          ("tolerance for nonlin iter" ,fdyn.get<double>("CONVTOL"));
     // set convergence check
     fluidtimeparams->set<string>          ("CONVCHECK"  ,fdyn.get<string>("CONVCHECK"));
-    
+
     // ----------------------------------------------- restart and output
     // restart
     fluidtimeparams->set                  ("write restart every"       ,fsidyn.get<int>("RESTARTEVRY"));
@@ -349,18 +353,18 @@ void FSI::Algorithm::SetupFluid()
     fluidtimeparams->set                  ("write stresses"            ,Teuchos::getIntegralValue<int>(ioflags,"FLUID_STRESS"));
     // ---------------------------------------------------- lift and drag
     fluidtimeparams->set<int>("liftdrag",Teuchos::getIntegralValue<int>(fdyn,"LIFTDRAG"));
-    
+
     // -----------evaluate error for test flows with analytical solutions
     int init = Teuchos::getIntegralValue<int>(fdyn,"INITIALFIELD");
     fluidtimeparams->set                  ("eval err for analyt sol"   ,init);
 
     // -----------------------sublist containing stabilization parameters
     fluidtimeparams->sublist("STABILIZATION")=fdyn.sublist("STABILIZATION");
-    
+
     // --------------------------sublist containing turbulence parameters
     {
       fluidtimeparams->sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
-      
+
       fluidtimeparams->sublist("TURBULENCE MODEL").set<string>("statistics outfile",allfiles.outputfile_kenner);
     }
 
@@ -476,6 +480,10 @@ void FSI::Algorithm::Update()
 /*----------------------------------------------------------------------*/
 void FSI::Algorithm::Output()
 {
+  // Note: The order is important here! In here control file entries are
+  // written. And these entries define the order in which the filters handle
+  // the Discretizations, which in turn defines the dof number ordering of the
+  // Discretizations.
   StructureField().Output();
   FluidField().    Output();
   AleField().      Output();
