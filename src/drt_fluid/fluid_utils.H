@@ -15,40 +15,18 @@ Maintainer: Axel Gerstenberger
 #ifndef FLUID_UTILS_H
 #define FLUID_UTILS_H
 
-#include "turbulence_statistics.H"
-#include "turbulence_statistics_ldc.H"
-
 #ifdef PARALLEL
 #include "Epetra_MpiComm.h"
 #else
 #include "Epetra_SerialComm.h"
 #endif /* PARALLEL */
 
-#include "Teuchos_RefCountPtr.hpp"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/linalg_solver.H"
-#include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_mapextractor.H"
-#include "../drt_lib/linalg_systemmatrix.H"
-#include "../io/io_drt.H"
-#include "drt_periodicbc.H"
-#include "../drt_lib/drt_nodematchingoctree.H"
-#include "../drt_lib/drt_function.H"
-#include "../drt_xfem/dof_management.H"
 
-#include "Epetra_Vector.h"
-#include "Epetra_Operator.h"
-#include "Epetra_RowMatrix.h"
-
-#include <ctime>
-#include <cstdlib>
-#include <iostream>
-
-
-using namespace std;
-using namespace Teuchos;
-
-
+/*!
+ * \brief namespace for fluid related stuff
+ */
 namespace FLUID_UTILS
 {
 
