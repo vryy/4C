@@ -615,6 +615,16 @@ void CONTACT::Manager::Evaluate(RCP<LINALG::SparseMatrix>& kteff,
   ksmmod->Add(*ksm,false,1.0,1.0);
   ksmmod->Complete(ksm->DomainMap(),ksm->RowMap());
   
+  /*
+  RCP<LINALG::SparseMatrix> ksmmodtest  = LINALG::Multiply(*kss,false,*mhatmatrix_,false,false);
+  ksmmodtest->Complete(ksm->DomainMap(),ksm->RowMap());
+  RCP<LINALG::SparseMatrix> ksmmodtest2 = LINALG::MLMultiply(*kss,*mhatmatrix_,false);
+  ksmmodtest2->Complete(ksm->DomainMap(),ksm->RowMap());
+  cout << "LINALG::Multiply: " << ksmmodtest->NormOne() << endl;
+  cout << *ksmmodtest << endl;
+  cout << "LINALG::MLMultiply: " << ksmmodtest2->NormOne() << endl;
+  cout << *ksmmodtest2 << endl;
+  */
   // ksn: nothing to do
   RCP<LINALG::SparseMatrix> ksnmod = ksn;
   
@@ -1089,8 +1099,7 @@ void CONTACT::Manager::UpdateActiveSet()
 /*----------------------------------------------------------------------*
  |  Compute contact forces (public)                           popp 02/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::ContactForces(RCP<Epetra_Vector>& fc,
-                                     RCP<Epetra_Vector>& fresm)
+void CONTACT::Manager::ContactForces(RCP<Epetra_Vector>& fresm)
 {
   // FIXME: fresm is only here for debugging purposes!
   // compute two subvectors of fc via Lagrange multipliers z
@@ -1106,11 +1115,8 @@ void CONTACT::Manager::ContactForces(RCP<Epetra_Vector>& fc,
   LINALG::Export(*fcmastertemp,*fcmaster);
   
   // build total contact force vector
-  fc->Update(1.0,*fcslave,0.0);
-  fc->Update(-1.0,*fcmaster,1.0);
-  
-  // store into member variable
-  fc_=fc;
+  fc_=fcslave;
+  fc_->Update(-1.0,*fcmaster,1.0);
   
   /*
   // CHECK OF CONTACT FORCE EQUILIBRIUM ----------------------------------

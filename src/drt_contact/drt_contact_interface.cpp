@@ -1297,12 +1297,10 @@ bool CONTACT::Interface::BuildActiveSet()
   Comm().SumAll(&countdofs,&gcountdofs,1);
   
   // create active node map and active dof map
-  RCP<Epetra_Map> test1 = rcp(new Epetra_Map(gcountnodes,countnodes,&mynodegids[0],0,Comm()));
-  RCP<Epetra_Map> test2 = rcp(new Epetra_Map(gcountdofs,countdofs,&mydofgids[0],0,Comm()));
+  activenodes_ = rcp(new Epetra_Map(gcountnodes,countnodes,&mynodegids[0],0,Comm()));
+  activedofs_  = rcp(new Epetra_Map(gcountdofs,countdofs,&mydofgids[0],0,Comm()));
   
-  activenodes_=test1;
-  activedofs_=test2;
-  
+  // split active dofs into Ndofs and Tdofs
   SplitActiveDofs();
   
   return true;

@@ -146,7 +146,7 @@ public:
   \brief Compute contact force vector
     
   */
-  void ContactForces(RCP<Epetra_Vector>& fc, RCP<Epetra_Vector>& fresm);
+  void ContactForces(RCP<Epetra_Vector>& fresm);
   
   /*!
   \brief Return contact force vector

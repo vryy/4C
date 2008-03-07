@@ -560,9 +560,9 @@ void ContactStruGenAlpha::FullNewton()
     }
 
     // add contact forces
-    RCP<Epetra_Vector> fc = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
-    contactmanager_->ContactForces(fc,fresm_);
-    fresm_->Update(-1.0,*fc,1.0);
+    contactmanager_->ContactForces(fresm_);
+    RCP<Epetra_Vector> fc = contactmanager_->GetContactForces();
+    if (fc!=null) fresm_->Update(-1.0,*fc,1.0);
    
     //---------------------------------------------- build residual norm
     disi_->Norm2(&disinorm);
@@ -570,7 +570,7 @@ void ContactStruGenAlpha::FullNewton()
     fresm_->Norm2(&fresmnorm);
     
     //remove contact forces from equilibrium again
-    fresm_->Update(1.0,*fc,1.0);
+    if (fc!=null) fresm_->Update(1.0,*fc,1.0);
     
 #ifdef CHECKTANGENT
     //DEBUG
@@ -950,10 +950,10 @@ void ContactStruGenAlpha::PTC()
     }
 
     // add contact forces
-    RCP<Epetra_Vector> fc = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
-    contactmanager_->ContactForces(fc,fresm_);
+    contactmanager_->ContactForces(fresm_);
+    RCP<Epetra_Vector> fc = contactmanager_->GetContactForces();
     fresm_->Update(-1.0,*fc,1.0);
-        
+    
     // compute inf norm of residual
     double np;
     fresm_->NormInf(&np);
