@@ -237,6 +237,8 @@ void DRT::ELEMENTS::So_hex8::soh8_expol(Epetra_SerialDenseMatrix& stresses,
     }
 
     nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
+
+    isfilled = true;
   }
 }
 
