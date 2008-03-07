@@ -17,6 +17,7 @@ Maintainer: Peter Gamnitzer
 #ifdef CCADISCRET
 
 #include "fluid_genalpha_integration.H"
+#include "fluid_utils.H"
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -119,7 +120,7 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // pressure degrees of freedom.
   // -------------------------------------------------------------------
 
-  DRT::UTILS::SetupFluidSplit(*discret_,numdim_,velpressplitter_);
+  FLUID_UTILS::SetupFluidSplit(*discret_,numdim_,velpressplitter_);
 
   // -------------------------------------------------------------------
   // get the processor ID from the communicator

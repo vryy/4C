@@ -129,26 +129,6 @@ namespace UTILS
                             std::string condname,
                             std::vector<int>& nodes);
 
-  /// Split dof row map of discretization into velocity and pressure maps
-  /*!
-
-    We assume that each node possesses ndim velocity dofs and (optionally)
-    one pressure dof. The dof row map is thus split in two.
-
-    The velocity dofs are assigned to map 0 (the other map) and the pressure
-    dofs are assigned to map 1 (the condition map).
-
-    \param dis : (in) Discretization
-    \param ndim : (in) dimensions of problem (2 or 3)
-    \param extractor : (out) ready made map splitter
-
-    \author u.kue
-    \date 02/08
-   */
-  void SetupFluidSplit(const DRT::Discretization& dis,
-                       int ndim,
-                       LINALG::MapExtractor& extractor);
-
   /*!
    * a common task is to get an array of the positions of all nodes of this element
    *

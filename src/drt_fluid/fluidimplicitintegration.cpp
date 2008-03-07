@@ -27,6 +27,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "drt_periodicbc.H"
 #include "../drt_lib/drt_function.H"
+#include "fluid_utils.H"
 
 
 
@@ -122,7 +123,7 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
 
   const int numdim = params_.get<int>("number of velocity degrees of freedom");
 
-  DRT::UTILS::SetupFluidSplit(*discret_,numdim,velpressplitter_);
+  FLUID_UTILS::SetupFluidSplit(*discret_,numdim,velpressplitter_);
 
   // -------------------------------------------------------------------
   // get the processor ID from the communicator
