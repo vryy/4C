@@ -345,7 +345,7 @@ void DRT::Problem::InputControl()
       solv[genprob.numaf].fieldtyp = ale;
       InputSolverControl("ALE SOLVER",&(solv[genprob.numaf]));
     }
-    
+
     // additional pressure solver for SIMPLE(R)
     const ParameterList& fluiddyn = FluidDynamicParams();
     int simple = getIntegralValue<int>(fluiddyn,"SIMPLER");
@@ -355,7 +355,7 @@ void DRT::Problem::InputControl()
       solv = &solver_[0];
       InputSolverControl("FLUID PRESSURE SOLVER",&(solv[genprob.numfld]));
     }
-    
+
     break;
   }
   case prb_fluid_xfem:
@@ -859,6 +859,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     structdis_micro = rcp(new DRT::Discretization("Micro Structure", micro_reader.Comm()));
     micro_problem->AddDis(genprob.numsf, structdis_micro);
 
+    // we are reading the solver, but currently UMFPACK is used in any
+    // case (hard coded!)
     micro_problem->ReadParameter(micro_reader);
 
     // read materials of microscale
@@ -876,8 +878,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     micronodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis_micro, micro_reader, "--STRUCTURE ELEMENTS")));
     micronodereader.Read();
 
-    // read conditions of microscale -> note that no time curves and
-    // spatial functions can be read!
+    // read conditions of microscale
+    // -> note that no time curves and spatial functions can be read!
 
     micro_problem->ReadConditions(micro_reader);
 
@@ -891,21 +893,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     reader.Activate();
     ActivateMaterial();
 
-    if (0)
-    {
-    for (int i=0; i<structdis_macro->Comm().NumProc(); ++i)
-    {
-      cout << "\n";
-      if (structdis_macro->Comm().MyPID()==i)
-      {
-        cout << "Proc " << i << "meine serielle Diskretisierung:\n";
-        cout << *structdis_micro;
-      }
-      structdis_macro->Comm().Barrier();
-    }
-    cout << "\n";
-    }
-    //exit(0);
     break;
   } // end of else if (genprob.probtyp==prb_struct_multi)
   default:

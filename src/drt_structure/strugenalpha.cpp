@@ -1442,7 +1442,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   double constrnorm=ConstrMan_->GetErrorNorm();
   Epetra_Time timer(discret_.Comm());
   timer.ResetStartTime();
-  bool print_unconv = true;  
+  bool print_unconv = true;
   while (!Converged(convcheck, disinorm, fresmnorm, constrnorm, toldisp, tolres, tolconstr) and numiter<=maxiter){
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
@@ -1478,7 +1478,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 
     ConstrMan_->ScaleLagrIncr(0.0);
     RCP<Epetra_Vector> constrVecWeight=LINALG::CreateVector(*dofrowmap,true);
-    
+
     RCP<Epetra_Map> domainmap= ConstrMan_->GetConstraintMap();
     RCP<Epetra_Vector> dotprod= rcp(new Epetra_Vector(*domainmap));
 
@@ -3115,6 +3115,7 @@ void StruGenAlpha::UpdateandOutput()
     output_.WriteVector("displacement",dis_);
     output_.WriteVector("velocity",vel_);
     output_.WriteVector("acceleration",acc_);
+    output_.WriteVector("fexternal",fext_);
     output_.WriteElementData();
     isdatawritten = true;
   }
@@ -3413,7 +3414,7 @@ void StruGenAlpha::ReadRestart(int step)
   reader.ReadVector(fext_,"fexternal");
   reader.ReadMesh(step);
 
-  // iverride current time and step with values from file
+  // override current time and step with values from file
   params_.set<double>("total time",time);
   params_.set<int>   ("step",rstep);
 

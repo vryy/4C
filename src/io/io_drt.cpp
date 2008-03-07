@@ -107,7 +107,8 @@ static void FindPosition(Teuchos::RCP<DRT::Discretization> dis, int& field_pos, 
 IO::DiscretizationReader::DiscretizationReader(Teuchos::RCP<DRT::Discretization> dis, int step)
   : dis_(dis)
 {
-  restart_step_ = FindResultGroup(step);
+  MAP file = bin_in_main.table;
+  FindResultGroup(step, &file);
 }
 
 
@@ -152,7 +153,8 @@ void IO::DiscretizationReader::ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> 
 void IO::DiscretizationReader::ReadMesh(int step)
 {
 #ifdef BINIO
-  FindMeshGroup(step);
+  MAP file = bin_in_main.table;
+  FindMeshGroup(step, &file);
 
   Teuchos::RCP<vector<char> > nodedata =
     meshreader_->ReadNodeData(step,dis_->Comm().NumProc(),dis_->Comm().MyPID());
@@ -193,7 +195,7 @@ double IO::DiscretizationReader::ReadDouble(string name)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAP *IO::DiscretizationReader::FindResultGroup(int step)
+void IO::DiscretizationReader::FindResultGroup(int step, MAP* file)
 {
 #ifdef BINIO
 
@@ -202,7 +204,10 @@ MAP *IO::DiscretizationReader::FindResultGroup(int step)
   int field_pos;
   int disnum;
 
-  FindPosition(dis_, field_pos, disnum);
+  if (dis_->Name() == "Micro Structure")
+    FindPosition(dis_, field_pos, disnum, 1);
+  else
+    FindPosition(dis_, field_pos, disnum);
 
   FIELD *actfield = &(field[field_pos]);
 
@@ -211,7 +216,7 @@ MAP *IO::DiscretizationReader::FindResultGroup(int step)
    * matches the given step. Note that this iteration starts from the
    * last result group and goes backward. */
 
-  symbol = map_find_symbol(&(bin_in_main.table), "result");
+  symbol = map_find_symbol(file, "result");
   while (symbol != NULL)
   {
     if (symbol_is_map(symbol))
@@ -270,15 +275,15 @@ MAP *IO::DiscretizationReader::FindResultGroup(int step)
     dserror("no restart file definitions found in control file");
   }
 
-  return result_info;
-#else
-  return NULL;
+  restart_step_ = result_info;
+
+  return;
 #endif
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAP *IO::DiscretizationReader::FindMeshGroup(int step)
+void IO::DiscretizationReader::FindMeshGroup(int step, MAP* file)
 {
 #ifdef BINIO
 
@@ -287,7 +292,10 @@ MAP *IO::DiscretizationReader::FindMeshGroup(int step)
   int field_pos;
   int disnum;
 
-  FindPosition(dis_, field_pos, disnum);
+  if (dis_->Name() == "Micro Structure")
+    FindPosition(dis_, field_pos, disnum, 1);
+  else
+    FindPosition(dis_, field_pos, disnum);
 
   FIELD *actfield = &(field[field_pos]);
 
@@ -296,7 +304,7 @@ MAP *IO::DiscretizationReader::FindMeshGroup(int step)
    * matches the given step. Note that this iteration starts from the
    * last result group and goes backward. */
 
-  symbol = map_find_symbol(&(bin_in_main.table), "field");
+  symbol = map_find_symbol(file, "field");
   while (symbol != NULL)
   {
     if (symbol_is_map(symbol))
@@ -355,9 +363,7 @@ MAP *IO::DiscretizationReader::FindMeshGroup(int step)
     dserror("no restart file definitions found in control file");
   }
 
-  return result_info;
-#else
-  return NULL;
+  return;
 #endif
 }
 

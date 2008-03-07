@@ -81,7 +81,17 @@ public:
   \brief read restart
 
   */
-  void ReadRestart(int step);
+  void ReadRestart(int step, RCP<Epetra_Vector> dis, string name);
+
+  /*!
+  \brief return time from parameter list (needed for writing of mesh
+  in case of restart)
+
+  */
+  double GetTime()
+  {
+    return params_->get<double>("total time", 0.);
+  }
 
   /*!
   \brief do constant predictor step
@@ -161,7 +171,7 @@ public:
                    Epetra_Time timer, int numiter, int maxiter,
                    double fresmnorm, double disinorm, string convcheck);
 
-   void PrintPredictor(string convcheck, double fresmnorm);
+  void PrintPredictor(string convcheck, double fresmnorm);
 
 
 

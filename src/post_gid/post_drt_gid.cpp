@@ -49,6 +49,14 @@ void write_vector_result(string result_name, PostField* field, PostResult* resul
                   GiD_OnNodes, NULL, NULL, field->problem()->num_dim(),
                   componentnames);
 
+  // determine offset of dofs in case of multiple discretizations in
+  // separate files (e.g. multi-scale problems). during calculation,
+  // dofs are numbered consecutively for all discretizations. in the
+  // post-processing phase, when only one discretization is called,
+  // numbering always starts with 0, so a potential offset needs to be
+  // taken into account
+  int offset = datamap.MinAllGID() - field->discretization()->DofRowMap()->MinAllGID();
+
   double v[3];
   v[2] = 0;
   for (int k = 0; k < field->num_nodes(); ++k)
@@ -60,7 +68,7 @@ void write_vector_result(string result_name, PostField* field, PostResult* resul
       // The order of the result vector is defined by the map. It is
       // NOT ordered by global dof numbers.
       // If this turns out to be too slow, we have to change it.
-      v[i] = (*data)[datamap.LID(s[i])];
+      v[i] = (*data)[datamap.LID(s[i]+offset)];
     }
     GiD_WriteVector(n->Id()+1,v[0],v[1],v[2]);
   }

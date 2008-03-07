@@ -71,13 +71,16 @@ public:
   /// read into the discretization given in the constructor
   void ReadMesh(int step);
 
+protected:
+
+  /// find control file entry to given time step
+  void FindResultGroup(int step, MAP* file);
+
+
 private:
 
   /// find control file entry to given time step
-  MAP* FindResultGroup(int step);
-
-  /// find control file entry to given time step
-  MAP* FindMeshGroup(int step);
+  void FindMeshGroup(int step, MAP* file);
 
   /// Open data files. You guess it.
   void OpenDataFiles(MAP* result_step);

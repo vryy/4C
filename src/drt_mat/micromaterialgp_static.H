@@ -63,6 +63,8 @@ private:
   /// microstructure generalized alpha class
   static RefCountPtr<MicroStatic> microstatic_;
 
+  static int microstaticcounter_;
+
   /// microstructure discretization writer
   RefCountPtr<MicroDiscretizationWriter> micro_output_;
 

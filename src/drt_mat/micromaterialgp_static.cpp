@@ -73,6 +73,7 @@ extern struct _MATERIAL    *mat;
 
 
 RefCountPtr<MicroStatic> MAT::MicroMaterialGP::microstatic_;
+int MAT::MicroMaterialGP::microstaticcounter_;
 
 
 /// construct an instance of MicroMaterial for a given Gauss point and
@@ -86,12 +87,55 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID)
   RefCountPtr<DRT::Discretization> microdis = microproblem->Dis(0, 0);
   dism_ = LINALG::CreateVector(*microdis->DofRowMap(),true);
   dis_ = LINALG::CreateVector(*microdis->DofRowMap(),true);
+  microstaticcounter_ += 1;
+
+  // if class handling microscale simulations is not yet initialized
+  // -> set up
+
+  if (microstatic_ == null)
+  {
+    MAT::MicroMaterialGP::SetUpMicroStatic();
+  }
+
+  RefCountPtr<DRT::Discretization> actdis = DRT::Problem::Instance(1)->Dis(genprob.numsf,0);
+
+  // set up micro output
+  micro_output_ = rcp(new MicroDiscretizationWriter(actdis, 1, ele_ID_, gp_));
+
+  // do restart if demanded from input file
+  istep_ = 0;
+  if (genprob.restart)
+  {
+    istep_ = genprob.restart;
+    string restartname = micro_output_->GetRestartFileName();
+    microstatic_->ReadRestart(istep_, dis_, restartname);
+    // both dis_ and dism_ are equal to dis_
+    dism_->Update(1.0, *dis_, 0.0);
+    microstatic_->SetOldState(dis_, dism_);
+  }
+  else
+  {
+    micro_output_->WriteMesh(istep_, microstatic_->GetTime());
+  }
+
+  // we are using the same structural dynamic parameters as on the
+  // macroscale, so to avoid checking the equivalence of the reader
+  // GiD sections we simply ask the macroproblem for its parameters.
+  // note that the microscale solver is currently always UMFPACK
+  // (hard coded)!
+  const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
+  timen_ = microstatic_->GetTime();
+  dt_    = sdyn.get<double>("TIMESTEP");
 }
 
 /// destructor
 
 MAT::MicroMaterialGP::~MicroMaterialGP()
-{ }
+{
+  microstaticcounter_ -= 1;
+  if (microstaticcounter_==0)
+    microstatic_ = Teuchos::null;
+}
 
 
 /// Set up microscale generalized alpha
@@ -175,46 +219,6 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
                                                   const double time,
                                                   string action)
 {
-  // if class handling microscale simulations is not yet initialized
-  // -> set up
-
-  if (microstatic_ == null)
-  {
-    MAT::MicroMaterialGP::SetUpMicroStatic();
-  }
-
-  // do restart if demanded from input file
-  int step = 0;
-  if (genprob.restart)
-  {
-    step = genprob.restart;
-    microstatic_->ReadRestart(step);
-  }
-
-  // if MicroDiscretizationWriter is not yet initialized -> set up
-  // and write mesh
-
-  if (micro_output_ == null)
-  {
-    RefCountPtr<DRT::Discretization> actdis = DRT::Problem::Instance(1)->Dis(genprob.numsf,0);
-
-    micro_output_ = rcp(new MicroDiscretizationWriter(actdis, 1, ele_ID_, gp_));
-
-    micro_output_->WriteMesh(step, time);
-
-    // initialize total time, time step number and set time step size
-
-    // we are using the same structural dynamic parameters as on the
-    // macroscale, so to avoid checking the equivalence of the read
-    // GiD sections we simply ask the macroproblem for its parameters.
-    // note that the microscale solver is currently always UMFPACK
-    // (hard coded)!
-    const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
-    timen_ = time;
-    istep_ = step;
-    dt_    = sdyn.get<double>("TIMESTEP");
-  }
-
   if (time != timen_)
   {
     microstatic_->UpdateNewTimeStep(dis_, dism_);
@@ -224,7 +228,12 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
   microstatic_->SetOldState(dis_, dism_);
 
   // check if we have to update absolute time and step number
-  if (time != timen_)
+  // in case of restart, timen_ is set to the current total time in
+  // the constructor, whereas "time" handed on to this function is
+  // still 0 since the macroscopic update of total time is done after
+  // the initializing phase in which this function is called the first
+  // time
+  if (time != timen_ && time != 0.)
   {
     // Microscale data should be output when macroscale is entering a
     // new timestep, not in every macroscopic iteration! Therefore

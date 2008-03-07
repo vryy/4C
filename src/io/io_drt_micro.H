@@ -65,6 +65,28 @@ public:
 
   /// cleanup, close hdf5 files
   ~MicroDiscretizationWriter();
+
+  /// get name of restart file
+  string GetRestartFileName() { return name_restart_; };
+
+
+private:
+
+  /// name of restart file if present
+  string name_restart_;
+};
+
+class MicroDiscretizationReader : public DiscretizationReader
+{
+public:
+
+  MicroDiscretizationReader(Teuchos::RCP<DRT::Discretization> dis, int step, string name);
+
+  ~MicroDiscretizationReader();
+
+private:
+
+  MAP microfile_;
 };
 
 }

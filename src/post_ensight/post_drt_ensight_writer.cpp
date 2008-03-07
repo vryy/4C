@@ -1056,6 +1056,14 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
 
   const Epetra_BlockMap& finaldatamap = proc0data->Map();
 
+  // determine offset of dofs in case of multiple discretizations in
+  // separate files (e.g. multi-scale problems). during calculation,
+  // dofs are numbered consecutively for all discretizations. in the
+  // post-processing phase, when only one discretization is called,
+  // numbering always starts with 0, so a potential offset needs to be
+  // taken into account
+  int offset = finaldatamap.MinAllGID() - dis->DofRowMap()->MinAllGID();
+
   //------------------------------------------------------------------
   // each processor provides its dof global id information for proc 0
   //------------------------------------------------------------------
@@ -1069,7 +1077,7 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
     for (int inode=0; inode<mynumnp; inode++)
     {
       DRT::Node* n = dis->lRowNode(inode);
-      const double dofgid = (double) dis->Dof(n, frompid + idf);
+      const double dofgid = (double) dis->Dof(n, frompid + idf) + offset;
       if (dofgid > -1.0)
       {
         dofgidpernodelid->ReplaceMyValue(inode, idf, dofgid);

@@ -30,14 +30,13 @@ Maintainer: Lena Wiechert
 using namespace IO;
 
 /*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
  | general problem data                                                 |
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                            mwgee 03/07|
+ |  ctor (public)|
  *----------------------------------------------------------------------*/
 MicroStatic::MicroStatic(RCP<ParameterList> params,
                          RCP<DRT::Discretization> dis,
@@ -46,16 +45,12 @@ params_(params),
 discret_(dis),
 solver_(solver)
 {
-  discret_.release();
-  params_.release();
-  solver_.release();
-
   // -------------------------------------------------------------------
   // get some parameters from parameter list
   // -------------------------------------------------------------------
   double time    = params_->get<double>("total time"      ,0.0);
   double dt      = params_->get<double>("delta time"      ,0.01);
-  int istep      = params_->get<int>   ("step"            ,0);
+//   int istep      = params_->get<int>   ("step"            ,0);
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -125,12 +120,6 @@ solver_(solver)
     ParameterList p;
     // action for elements
     p.set("action","calc_struct_nlnstiff");
-    // choose what to assemble
-    p.set("assemble matrix 1",true);
-    p.set("assemble matrix 2",false);
-    p.set("assemble vector 1",true);
-    p.set("assemble vector 2",false);
-    p.set("assemble vector 3",false);
     // other parameters that might be needed by the elements
     p.set("total time",time);
     p.set("delta time",dt);
@@ -143,8 +132,8 @@ solver_(solver)
   }
 
   //------------------------------------------------------ time step index
-  istep = 0;
-  params_->set<int>("step",istep);
+//   istep = 0;
+//   params_->set<int>("step",istep);
 
   // Determine dirichtoggle_ and its inverse since boundary conditions for
   // microscale simulations are due to the MicroBoundary condition
@@ -176,12 +165,6 @@ solver_(solver)
   ParameterList par;
   // action for elements
   par.set("action","calc_homog_stressdens");
-  // choose what to assemble
-  par.set("assemble matrix 1",false);
-  par.set("assemble matrix 2",false);
-  par.set("assemble vector 1",false);
-  par.set("assemble vector 2",false);
-  par.set("assemble vector 3",false);
   // set density to zero
   par.set("homogdens", 0.0);
   // set flag that only density has to be calculated
@@ -255,12 +238,13 @@ void MicroStatic::Predictor(const Epetra_SerialDenseMatrix* defgrd)
   double time        = params_->get<double>("total time"     ,0.0);
   double dt          = params_->get<double>("delta time"     ,0.01);
   string convcheck   = params_->get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
+  int istep          = params_->get<int>   ("step"            ,0);
   //bool   printscreen = params_->get<bool>  ("print to screen",false);
 
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces if a relative convergence
   // check is desired
-  if (time != 0. && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
+  if (istep != 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
   {
     CalcRefNorms();
   }
@@ -338,7 +322,7 @@ void MicroStatic::Predictor(const Epetra_SerialDenseMatrix* defgrd)
   // store norms of displacements and maximum of norms of internal,
   // external and inertial forces if a relative convergence check
   // is desired and we are in the first time step
-  if (time == 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
+  if (istep == 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
   {
     CalcRefNorms();
   }
@@ -588,17 +572,20 @@ void MicroStatic::SetDefaults(ParameterList& params)
 /*----------------------------------------------------------------------*
  |  read restart (public)                                       lw 03/08|
  *----------------------------------------------------------------------*/
-void MicroStatic::ReadRestart(int step)
+void MicroStatic::ReadRestart(int step, RCP<Epetra_Vector> dis, string name)
 {
-  RefCountPtr<DRT::Discretization> rcpdiscret = discret_;
-  rcpdiscret.release();
-  IO::DiscretizationReader reader(rcpdiscret,step);
+  IO::MicroDiscretizationReader reader(discret_, step, name);
   double time  = reader.ReadDouble("time");
   int    rstep = reader.ReadInt("step");
   if (rstep != step) dserror("Time step on file not equal to given step");
 
-  reader.ReadVector(dis_, "displacement");
-  reader.ReadMesh(step);
+  reader.ReadVector(dis, "displacement");
+  // It does not make any sense to read the mesh and corresponding
+  // element based data because we only have one instance of the
+  // microscale discretization and surely have different element based
+  // data at every Gauss point -> when implementing EAS, we have to
+  // think about how to handle element based EAS history data
+  // reader.ReadMesh(step);
 
   // override current time and step with values from file
   params_->set<double>("total time",time);
@@ -665,23 +652,20 @@ void MicroStatic::DetermineToggle()
 
 void MicroStatic::EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd)
 {
-  RefCountPtr<DRT::Discretization> dis =
-    DRT::Problem::Instance(1)->Dis(genprob.numsf,0);
-
   vector<DRT::Condition*> conds;
-  dis->GetCondition("MicroBoundary", conds);
+  discret_->GetCondition("MicroBoundary", conds);
   for (unsigned i=0; i<conds.size(); ++i)
   {
     const vector<int>* nodeids = conds[i]->Get<vector<int> >("Node Ids");
     if (!nodeids) dserror("MicroBoundary condition does not have nodal cloud");
     const int nnode = (*nodeids).size();
 
-    for (int i=0; i<nnode; ++i)
+    for (int j=0; j<nnode; ++j)
     {
       // do only nodes in my row map
-      if (!dis->NodeRowMap()->MyGID((*nodeids)[i])) continue;
-      DRT::Node* actnode = dis->gNode((*nodeids)[i]);
-      if (!actnode) dserror("Cannot find global node %d",(*nodeids)[i]);
+      if (!discret_->NodeRowMap()->MyGID((*nodeids)[j])) continue;
+      DRT::Node* actnode = discret_->gNode((*nodeids)[j]);
+      if (!actnode) dserror("Cannot find global node %d",(*nodeids)[j]);
 
       // nodal coordinates
       const double* x = actnode->X();
@@ -696,31 +680,31 @@ void MicroStatic::EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd)
       I(2,2)=-1.0;
       Du+=I;
 
-      for (int i=0; i<3;i++)
+      for (int k=0; k<3;k++)
       {
         double dis = 0.;
 
-        for (int j=0;j<3;j++)
+        for (int l=0;l<3;l++)
         {
-          dis += Du(i, j) * x[j];
+          dis += Du(k, l) * x[l];
         }
 
-        dism_prescribed[i] = dis;
+        dism_prescribed[k] = dis;
       }
 
-      vector<int> dofs = dis->Dof(actnode);
+      vector<int> dofs = discret_->Dof(actnode);
+      //cout << "dofs:\n" << dofs[0] << "\n" << dofs[1] << "\n" << dofs[2] << endl;
 
-      for (int k=0; k<3; ++k)
+      for (int l=0; l<3; ++l)
       {
-        const int gid = dofs[k];
+        const int gid = dofs[l];
 
         const int lid = dism_->Map().LID(gid);
         if (lid<0) dserror("Global id %d not on this proc in system vector",gid);
-        (*dism_)[lid] = dism_prescribed[k];
+        (*dism_)[lid] = dism_prescribed[l];
       }
     }
   }
-
 }
 
 void MicroStatic::SetOldState(RefCountPtr<Epetra_Vector> dis,

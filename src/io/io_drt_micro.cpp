@@ -1,14 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file io_drt.cpp
+\file io_drt_micro.cpp
 
-\brief output context of one discretization
+\brief output context of micro discretization
 
 <pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/kuettler
-            089 - 289-15238
+Maintainer: Lena Wiechert
+            wiechert@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/wiechert
+            089 - 289-15303
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -60,10 +60,16 @@ IO::MicroDiscretizationWriter::MicroDiscretizationWriter(RefCountPtr<DRT::Discre
                                                          int gp)
   : IO::DiscretizationWriter::DiscretizationWriter(dis, probnum)
 {
+  // this string is needed to create the new output file name
   string outputname;
   int number = -1;
+  int number_rrun = -1;
+  // this string is needed to create the file name of the restarted run
+  string rrun(allfiles.outputfile_kenner);
   if (genprob.restart)
   {
+    // name of output file
+
     unsigned len = cfname_.length()-1;
     // remove trailing number
     for (; (len > 0) && isdigit(cfname_[len]); --len)
@@ -76,6 +82,30 @@ IO::MicroDiscretizationWriter::MicroDiscretizationWriter(RefCountPtr<DRT::Discre
     }
     else
       dserror("removal of trailing number for microscale (restart) failed");
+
+    // name of restarted run
+
+    len = rrun.length()-1;
+    string r;
+    // remove trailing number
+    for (; (len > 0) && isdigit(rrun[len]); --len)
+    {}
+    if ((len < rrun.length()-1) && (len > 0) && (rrun[len] == '-'))
+    {
+      r = rrun.substr(0, len);
+      number_rrun = atoi(&(rrun[len+1]));
+    }
+    else
+    {
+      r = rrun;
+    }
+    ostringstream rr;
+    rr << r << "_el" << ele << "_gp" << gp;
+    if (number_rrun != -1)
+      rr << "-" << number_rrun;
+    rrun = rr.str();
+    rr << ".control";
+    name_restart_ = rr.str();
   }
   else
   {
@@ -89,12 +119,6 @@ IO::MicroDiscretizationWriter::MicroDiscretizationWriter(RefCountPtr<DRT::Discre
 
   if (genprob.restart)
   {
-    if (number > 1)
-    {
-      ostringstream stemp;
-      stemp << s << "-" << number-1;
-      outputname = stemp.str();
-    }
     s << "-" << number;
   }
 
@@ -141,7 +165,7 @@ IO::MicroDiscretizationWriter::MicroDiscretizationWriter(RefCountPtr<DRT::Discre
   {
     fprintf(cf_,
             "restarted_run = \"%s\"\n\n",
-            outputname.c_str());
+            rrun.c_str());
   }
 
   fflush(cf_);
@@ -154,5 +178,26 @@ IO::MicroDiscretizationWriter::~MicroDiscretizationWriter()
 {
   fclose(cf_);
 }
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+IO::MicroDiscretizationReader::MicroDiscretizationReader(Teuchos::RCP<DRT::Discretization> dis,
+                                                         int step,
+                                                         string name):
+ DiscretizationReader(dis, step)
+{
+  parse_control_file(&microfile_, name.c_str());
+  FindResultGroup(step,&microfile_);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+IO::MicroDiscretizationReader::~MicroDiscretizationReader()
+{
+  destroy_map(&microfile_);
+}
+
 
 #endif
