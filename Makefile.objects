@@ -158,7 +158,8 @@ OBJS_DRT_CONTACT_LIB = \
                 src/drt_contact/drt_contact_projector.o \
                 src/drt_contact/drt_contact_integrator.o
 # --------------------------------------------------- drt version of fluid
-OBJS_DRT_FLUID= src/drt_fluid/fluid_dyn_nln_drt.o \
+OBJS_DRT_FLUID= src/drt_fluid/fluid_utils.o \
+                src/drt_fluid/fluid_dyn_nln_drt.o \
                 src/drt_fluid/xfluid_dyn_nln_drt.o \
                 src/drt_fluid/condif_drt.o \
                 src/drt_fluid/fluidimplicitintegration.o \
