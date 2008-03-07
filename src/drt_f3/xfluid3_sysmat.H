@@ -512,6 +512,66 @@ int getNumParam<XFEM::standard_assembly>(
 {
     return numnode;
 }
+
+/*!
+ \brief get optimal gaussrule for given discretization type
+        template version
+ \return enum with optimal gausrule for this element
+ */
+template <DRT::Element::DiscretizationType  distype>
+inline DRT::UTILS::GaussRule3D getOptimalVelocityGaussrule()
+{
+    DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule3D_undefined;
+    switch (distype)
+    {
+    case DRT::Element::hex8:
+        rule = DRT::UTILS::intrule_hex_8point;
+        break;
+    case DRT::Element::hex20: case DRT::Element::hex27:
+        rule = DRT::UTILS::intrule_hex_27point;
+        break;
+    case DRT::Element::tet4:
+        rule = DRT::UTILS::intrule_tet_4point;
+        break;
+    case DRT::Element::tet10:
+        rule = DRT::UTILS::intrule_tet_5point;
+        break;
+    default:
+        dserror("unknown distype for gaussrule initialization");
+  }
+  return rule;
+}
+
+/*!
+ \brief get optimal gaussrule for given discretization type
+        template version
+ \return enum with optimal gausrule for this element
+ */
+template <DRT::Element::DiscretizationType  distype, XFEM::AssemblyType asstype>
+inline DRT::UTILS::GaussRule3D getXFEMGaussrule(const bool intersected)
+{
+    DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule3D_undefined;
+    if (asstype == XFEM::xfem_assembly)
+    {
+        if (intersected)
+        {
+            // attention: don't use gausspoint rules that have gausspoints on the element boundary 
+            // (so called closed rules)
+            // -> enrichment values might be undefined 
+            rule = DRT::UTILS::intrule_tet_11point;
+        }
+        else
+        {
+            rule = getOptimalVelocityGaussrule<distype>();
+        }
+    }
+    else
+    {
+        rule = getOptimalVelocityGaussrule<distype>();
+    }
+    return rule;
+}
+
   
   /*!
     Calculate inverse of a matrix
@@ -560,7 +620,7 @@ void Sysmat(
     const int numnode = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
       
     // get node coordinates of the current element
-    const BlitzMat xyze(DRT::UTILS::PositionArrayBlitz(ele));
+    const BlitzMat xyze(DRT::UTILS::PositionArrayBlitzT<DISTYPE>(ele));
 
     // dead load in element nodes
     //////////////////////////////////////////////////// , BlitzMat edeadng_(BodyForce(ele->Nodes(),time));
@@ -573,18 +633,7 @@ void Sysmat(
     // flag for higher order elements
     const bool higher_order_ele = ele->isHigherOrderElement<DISTYPE>();
 
-    DRT::UTILS::GaussRule3D gaussrule;
-    if (ih->ElementIntersected(ele->Id()))
-    {
-        // attention: don't use gausspoint rules that have gausspoints on the element boundary 
-        // (so called closed rules)
-        // -> enrichment values might be undefined 
-        gaussrule = DRT::UTILS::intrule_tet_11point;
-    }
-    else
-    {
-        gaussrule = ele->GetGaussrule();
-    }
+    const DRT::UTILS::GaussRule3D gaussrule = getXFEMGaussrule<DISTYPE,ASSTYPE>(ih->ElementIntersected(ele->Id()));
     
     const LocalAssembler<DISTYPE, ASSTYPE> assembler(dofman, estif, eforce);
     

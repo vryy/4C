@@ -511,9 +511,8 @@ bool currentToElementCoordinatesT(
     const Epetra_SerialDenseVector&     x,
     Epetra_SerialDenseVector&           xsi)
 {
-    dsassert(element->Shape() == DISTYPE, "this is a bug bycalling the wrong instance of this templated function!");
+    if(element->Shape() != DISTYPE) dserror("this is a bug when calling the wrong instance of this templated function!");
     bool nodeWithinElement = true;
-    int iter = 0;
     const int dim = DRT::UTILS::getDimension<DISTYPE>();
     const int maxiter = 20;
     double residual = 1.0;
@@ -522,12 +521,13 @@ bool currentToElementCoordinatesT(
     Epetra_SerialDenseVector b(dim);
     Epetra_SerialDenseVector dx(dim);
     
-    BlitzMat xyze(PositionArrayBlitz(element));
+    const BlitzMat xyze(PositionArrayBlitzT<DISTYPE>(element));
     
     xsi.Scale(0.0);
             
     updateRHSForNWE<DISTYPE>(b, xsi, x, xyze);
-   
+    
+    int iter = 0;
     while(residual > TOL14)
     {   
         updateAForNWE<DISTYPE>( A, xsi, xyze);

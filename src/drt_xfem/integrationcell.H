@@ -68,7 +68,7 @@ BlitzMat ComputePhysicalCoordinates(
     for (int inen = 0; inen < nen_cell; ++inen)
     {
         // shape functions
-        BlitzVec funct(DRT::UTILS::shape_function_3D(
+        const BlitzVec funct(DRT::UTILS::shape_function_3D(
                 nodalPosXiDomain(0, inen),
                 nodalPosXiDomain(1, inen),
                 nodalPosXiDomain(2, inen),
