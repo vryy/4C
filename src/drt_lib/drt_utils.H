@@ -25,6 +25,7 @@ Maintainer: Michael Gee
 
 #include "drt_parobject.H"
 #include "drt_element.H"
+#include "drt_node.H"
 #include "drt_utils_fem_shapefunctions.H"
 #include "drt_utils_dgfem_basisfunctions.H"
 #include "drt_utils_integration.H"
@@ -145,6 +146,47 @@ namespace UTILS
           const DRT::Element* ele           ///< pointer to element, whose nodes we evaluate for their position
           );
 
+  /*!
+   * a common task is to get an array of the positions of all nodes of this element
+   * 
+   * template version
+   *
+   * this function does just that, so we don't have the associated loop repeated too often
+   *
+   * Note: return value optimization avoids copying the array
+   *
+   * \return Array with 3 dimensional position of all element nodes in the coordinate system of the nodes
+   *
+   * \author a.ger
+   * \date 02/08
+   */
+  template <DRT::Element::DiscretizationType distype>
+  blitz::Array<double,2> PositionArrayBlitzT(
+          const DRT::Element* ele
+          )
+  {
+      if (distype != ele->Shape())
+      {
+          dserror("mismatch in distype in template function PositionArrayBlitz");
+      }
+      const int numnode = getNumberOfElementNodes<distype>();
+      
+      blitz::Array<double,2> xyze(3,numnode,blitz::ColumnMajorArray<2>());
+      const Node*const* nodes = ele->Nodes();
+      if (nodes == NULL)
+      {
+          dserror("element has no nodal pointers, so getting a position array doesn't make sense!");
+      }
+      for (int inode=0; inode<numnode; inode++)
+      {
+          const double* x = nodes[inode]->X();
+          xyze(0,inode) = x[0];
+          xyze(1,inode) = x[1];
+          xyze(2,inode) = x[2];
+      }
+      return xyze;
+  }
+  
   /*!
    * a common task is to get an array of the positions of all nodes of this element
    *
