@@ -1625,6 +1625,12 @@ void XFluidImplicitTimeInt::Output()
   {
     writestep_= 0;
 
+    // solid
+    if (cutterdiscret_->NumGlobalElements() > 0)
+    {
+        solidoutput_.NewStep    (step_,time_);
+    }
+    
     output_.NewStep    (step_,time_);
     output_.WriteVector("velnp", velnp_);
     //output_.WriteVector("residual", trueresidual_);
@@ -1646,6 +1652,13 @@ void XFluidImplicitTimeInt::Output()
     {
       restartstep_ = 0;
 
+      // solid
+      if (cutterdiscret_->NumGlobalElements() > 0)
+      {
+          soliddispnp_->PutScalar(0.0);
+          solidoutput_.WriteVector("soliddispnp", soliddispnp_);
+      }
+      
       output_.WriteVector("accn", accn_);
       output_.WriteVector("veln", veln_);
       output_.WriteVector("velnm", velnm_);
@@ -1656,16 +1669,6 @@ void XFluidImplicitTimeInt::Output()
         output_.WriteVector("dispnm",dispnm_);
       }
     }
-
-
-    // solid
-    if (cutterdiscret_->NumGlobalElements() > 0)
-    {
-        solidoutput_.NewStep    (step_,time_);
-        soliddispnp_->PutScalar(0.0);
-        solidoutput_.WriteVector("soliddispnp", soliddispnp_);
-    }
-
   }
 
   // write restart also when uprestart_ is not a integer multiple of upres_
@@ -1673,6 +1676,10 @@ void XFluidImplicitTimeInt::Output()
   {
     restartstep_ = 0;
 
+    solidoutput_.NewStep    (step_,time_);
+    soliddispnp_->PutScalar(0.0);
+    solidoutput_.WriteVector("soliddispnp", soliddispnp_);
+    
     output_.NewStep    (step_,time_);
     output_.WriteVector("velnp", velnp_);
     //output_.WriteVector("residual", trueresidual_);
@@ -1693,10 +1700,6 @@ void XFluidImplicitTimeInt::Output()
     output_.WriteVector("accn", accn_);
     output_.WriteVector("veln", veln_);
     output_.WriteVector("velnm", velnm_);
-
-    solidoutput_.NewStep    (step_,time_);
-    soliddispnp_->PutScalar(0.0);
-    solidoutput_.WriteVector("soliddispnp", soliddispnp_);
   }
 
   // dumping of turbulence statistics

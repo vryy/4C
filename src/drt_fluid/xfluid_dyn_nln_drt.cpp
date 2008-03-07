@@ -119,20 +119,19 @@ void xdyn_fluid_drt()
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
   // -------------------------------------------------------------------
-  if (!fluiddis->Filled()) fluiddis->FillComplete();
   if (!soliddis->Filled()) soliddis->FillComplete();
-
+  if (!fluiddis->Filled()) fluiddis->FillComplete();
 
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  IO::DiscretizationWriter fluidoutput(fluiddis);
-  fluidoutput.WriteMesh(0,0.0);
   IO::DiscretizationWriter solidoutput(soliddis);
   if (soliddis->NumGlobalElements() > 0)
   {
       solidoutput.WriteMesh(0,0.0);
   }
+  IO::DiscretizationWriter fluidoutput(fluiddis);
+  fluidoutput.WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------
   // set some pointers and variables
