@@ -5,6 +5,8 @@
 
 #include <string>
 
+#include <Teuchos_TimeMonitor.hpp>
+
 #include "../drt_lib/drt_elementgroup.H"
 
 #include "fluid3.H"
@@ -39,8 +41,17 @@ namespace DRT
 
     private:
 
+      /// Evaluate one element
+      void ElementEvaluation(DRT::Element* ele,
+                             Epetra_SerialDenseMatrix& elematrix1,
+                             Epetra_SerialDenseVector& elevector1,
+                             std::vector<int>& lm);
+
       /// Simple element by element evaluation
       void PlainEvaluate(DRT::EGROUP::Group& elements);
+
+      /// Evaluate elements in block to keep element data in cache
+      void BlockEvaluate(DRT::EGROUP::Group& elements, int blocksize=20);
 
       Fluid3::StabilisationAction ConvertStringToStabAction(const string& action) const;
 
@@ -74,6 +85,21 @@ namespace DRT
       static std::map<std::string,Fluid3::StabilisationAction> stabstrtoact_;
 
       MATERIAL* actmat_;
+
+      double time_;
+      double timefac_;
+
+      bool newton_;
+
+      Fluid3::StabilisationAction pspg_;
+      Fluid3::StabilisationAction supg_;
+      Fluid3::StabilisationAction vstab_;
+      Fluid3::StabilisationAction cstab_;
+      Fluid3::StabilisationAction cross_;
+      Fluid3::StabilisationAction reynolds_;
+
+      static Teuchos::RCP<Teuchos::Time> otherelementtime_;
+      static Teuchos::RCP<Teuchos::Time> alignedhex8time_;
     };
   }
 }

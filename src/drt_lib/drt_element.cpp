@@ -293,8 +293,13 @@ void DRT::Element::LocationVector(const Discretization& dis,
   const int numnode = NumNode();
   DRT::Node** nodes = Nodes();
 
+  lm.clear();
+  lmdirich.clear();
+  lmowner.clear();
+
   // fill the vector with nodal dofs
   if (nodes)
+  {
     for (int i=0; i<numnode; ++i)
     {
       DRT::Condition* dirich = nodes[i]->GetCondition("Dirichlet");
@@ -320,6 +325,7 @@ void DRT::Element::LocationVector(const Discretization& dis,
         lm.push_back(dof[j]);
       }
     }
+  }
 
   // fill the vector with element dofs
   const vector<int>* flag = NULL;
@@ -358,8 +364,12 @@ void DRT::Element::LocationVector(const Discretization& dis, vector<int>& lm, ve
   const int numnode = NumNode();
   DRT::Node** nodes = Nodes();
 
+  lm.clear();
+  lmowner.clear();
+
   // fill the vector with nodal dofs
   if (nodes)
+  {
     for (int i=0; i<numnode; ++i)
     {
       const int owner = nodes[i]->Owner();
@@ -370,6 +380,7 @@ void DRT::Element::LocationVector(const Discretization& dis, vector<int>& lm, ve
         lm.push_back(dof[j]);
       }
     }
+  }
 
   // fill the vector with element dofs
   const int owner = Owner();
