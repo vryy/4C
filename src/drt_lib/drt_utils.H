@@ -130,6 +130,15 @@ namespace UTILS
                             std::string condname,
                             std::vector<int>& nodes);
 
+  /// Create element map to given condition
+  /*!
+    \pre Geometry must be available in condition
+
+    \param dis : (in) Discretization
+    \param condname : (in) name of condition in question
+   */
+  Teuchos::RCP<Epetra_Map> GeometryElementMap(const DRT::Discretization& dis, std::string condname);
+
   /*!
    * a common task is to get an array of the positions of all nodes of this element
    *
@@ -148,7 +157,7 @@ namespace UTILS
 
   /*!
    * a common task is to get an array of the positions of all nodes of this element
-   * 
+   *
    * template version
    *
    * this function does just that, so we don't have the associated loop repeated too often
@@ -170,7 +179,7 @@ namespace UTILS
           dserror("mismatch in distype in template function PositionArrayBlitz");
       }
       const int numnode = getNumberOfElementNodes<distype>();
-      
+
       blitz::Array<double,2> xyze(3,numnode,blitz::ColumnMajorArray<2>());
       const Node*const* nodes = ele->Nodes();
       if (nodes == NULL)
@@ -186,7 +195,7 @@ namespace UTILS
       }
       return xyze;
   }
-  
+
   /*!
    * a common task is to get an array of the positions of all nodes of this element
    *

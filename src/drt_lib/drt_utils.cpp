@@ -860,6 +860,31 @@ void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis, std::strin
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Map> DRT::UTILS::GeometryElementMap(const DRT::Discretization& dis, std::string condname)
+{
+  std::vector<DRT::Condition*> conds;
+  dis.GetCondition(condname, conds);
+  std::set<int> elementset;
+
+  for (unsigned i=0; i<conds.size(); ++i)
+  {
+    std::map<int,RefCountPtr<DRT::Element> >& geometry = conds[i]->Geometry();
+    std::transform(geometry.begin(),
+                   geometry.end(),
+                   std::inserter(elementset,elementset.begin()),
+                   LINALG::select1st<std::pair<int,RefCountPtr<DRT::Element> > >());
+  }
+
+  std::vector<int> elements;
+  elements.reserve(elementset.size());
+  elements.assign(elementset.begin(),elementset.end());
+  elementset.clear();
+  return Teuchos::rcp(new Epetra_Map(-1,elements.size(),&elements[0],0,dis.Comm()));
+}
+
+
 /*!
  * \brief create an often used array with 3D nodal positions (Blitz array)
  */
