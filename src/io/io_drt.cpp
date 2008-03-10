@@ -107,8 +107,10 @@ static void FindPosition(Teuchos::RCP<DRT::Discretization> dis, int& field_pos, 
 IO::DiscretizationReader::DiscretizationReader(Teuchos::RCP<DRT::Discretization> dis, int step)
   : dis_(dis)
 {
+#ifdef BINIO
   MAP file = bin_in_main.table;
   FindResultGroup(step, &file);
+#endif
 }
 
 
