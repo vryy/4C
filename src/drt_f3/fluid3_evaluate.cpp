@@ -2993,7 +2993,7 @@ bool DRT::ELEMENTS::Fluid3::isHigherOrderElement(
   case hex8: case hex20: case hex27: case tet10: case wedge15:
     hoel = true;
     break;
-  case tet4: case wedge6: case pyramid5:
+  case tet4: case wedge6: case pyramid5: //!!!TODO:  wedge und pyramid have 2nd derivatives!!!!!!!!!!!!!!!!!!!!!!!!
     hoel = false;
     break;
   default:
