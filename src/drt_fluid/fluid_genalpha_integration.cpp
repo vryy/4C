@@ -195,13 +195,24 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   increment_    = LINALG::CreateVector(*dofrowmap,true);
 
   // -------------------------------------------------------------------
-  // initialise turbulence statistics evaluation
+  // initialize turbulence-statistics evaluation
   // -------------------------------------------------------------------
-  if (params_.sublist("TURBULENCE MODEL").get<string>("CANONICAL_FLOW","no")
-      ==
-      "channel_flow_of_height_2")
+  ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+
+  // flag for special flow: currently channel flow or flow in a lid-driven cavity
+  special_flow_ = modelparams->get<string>("CANONICAL_FLOW","no");
+
+  if (special_flow_ != "no")
   {
-    turbulencestatistics_=rcp(new TurbulenceStatistics(discret_,params_));
+    // parameters for sampling/dumping period
+    samstart_  = modelparams->get<int>("SAMPLING_START",1);
+    samstop_   = modelparams->get<int>("SAMPLING_STOP",1);
+    dumperiod_ = modelparams->get<int>("DUMPING_PERIOD",1);
+
+    if (special_flow_ == "lid_driven_cavity")
+      turbulencestatistics_ldc_=rcp(new TurbulenceStatisticsLdc(discret_,params_));
+    else if (special_flow_ == "channel_flow_of_height_2")
+      turbulencestatistics_=rcp(new TurbulenceStatistics(discret_,params_));
   }
 
   // (fine-scale) subgrid viscosity?
@@ -226,11 +237,11 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // initialise vectors for dynamic Smagorinsky model
   // (the smoothed quantities)
   // -------------------------------------------------------------------
-  if (params_.sublist("TURBULENCE MODEL").get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
+  if (modelparams->get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
       ==
       "CLASSICAL_LES")
   {
-    if(params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+    if(modelparams->get<string>("PHYSICAL_MODEL","no_model")
        ==
        "Dynamic_Smagorinsky"
       )
@@ -365,14 +376,13 @@ void FluidGenAlphaIntegration::GenAlphaTimeloop()
     // -------------------------------------------------------------------
     // add calculated velocity to mean value calculation (statistics)
     // -------------------------------------------------------------------
-    if(params_.sublist("TURBULENCE MODEL").get<string>("CANONICAL_FLOW","no")
-       ==
-       "channel_flow_of_height_2")
+    if(special_flow_ != "no" && step_>=samstart_ && step_<=samstop_)
     {
-      this->GenAlphaTakeSample();
+      if(special_flow_ == "lid_driven_cavity")
+        turbulencestatistics_ldc_->DoTimeSample(velnp_);
+      else if(special_flow_ == "channel_flow_of_height_2")
+        this->GenAlphaTakeSample();
     }
-
-
 
     // -------------------------------------------------------------------
     //                         output of solution
@@ -815,14 +825,6 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
       // they contain history variables (the time dependent subscales)
       output_.WriteMesh(step_,time_);
     }
-
-
-    if((params_.sublist("TURBULENCE MODEL")).get<string>("CANONICAL_FLOW","no") == "channel_flow_of_height_2")
-    {
-      turbulencestatistics_->TimeAverageMeansAndOutputOfStatistics(step_);
-
-      turbulencestatistics_->ClearStatistics();
-    }
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
   if ((restartstep_ == uprestart_) && (writestep_ > 0))
@@ -847,6 +849,25 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
     // write mesh in each restart step --- the elements are required since
     // they contain history variables (the time dependent subscales)
     output_.WriteMesh(step_,time_);
+  }
+
+  // dumping of turbulence statistics if required
+  if (special_flow_ != "no")
+  {
+    int samstep = step_-samstart_+1;
+    double dsamstep=samstep;
+    double ddumperiod=dumperiod_;
+
+    if (fmod(dsamstep,ddumperiod)==0)
+    {
+      if (special_flow_ == "lid_driven_cavity")
+        turbulencestatistics_ldc_->DumpStatistics(step_);
+      else if (special_flow_ == "channel_flow_of_height_2")
+      {
+        turbulencestatistics_->TimeAverageMeansAndOutputOfStatistics(step_);
+        turbulencestatistics_->ClearStatistics();
+      }
+    }
   }
 
   return;
@@ -2354,7 +2375,7 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
         {
           // a canonical flow with homogeneous directions would allow a
           // spatial averaging of data
-          string special_flow
+          string special_flow_
             =
             modelparams->get<string>("CANONICAL_FLOW","no");
 
@@ -2392,7 +2413,7 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
             }
             else if(physmodel == "Smagorinsky_with_van_Driest_damping")
             {
-              if (special_flow != "channel_flow_of_height_2"
+              if (special_flow_ != "channel_flow_of_height_2"
                   ||
                   hom_plane != "xz")
               {
@@ -2411,7 +2432,7 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
             }
             else if(physmodel == "Dynamic_Smagorinsky")
             {
-              if (special_flow != "channel_flow_of_height_2"
+              if (special_flow_ != "channel_flow_of_height_2"
                   ||
                   hom_plane != "xz")
               {
@@ -2421,7 +2442,7 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
             cout << &endl;
           }
 
-          if (special_flow == "channel_flow_of_height_2")
+          if (special_flow_ == "channel_flow_of_height_2")
           {
             cout << "                             " ;
             cout << "Turbulence statistics are evaluated ";

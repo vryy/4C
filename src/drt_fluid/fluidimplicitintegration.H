@@ -294,6 +294,9 @@ protected:
   int samstop_;
   int dumperiod_;
 
+  /// flag for special flow: currently channel flow or flow in a lid-driven cavity
+  string special_flow_;
+
   /// fine-scale subgrid-viscosity flag
   string fssgv_;
 

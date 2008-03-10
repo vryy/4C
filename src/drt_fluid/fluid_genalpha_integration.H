@@ -55,6 +55,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "drt_periodicbc.H"
 #include "turbulence_statistics.H"
+#include "turbulence_statistics_ldc.H"
 
 #ifdef PARALLEL
 #include "Epetra_MpiComm.h"
@@ -611,8 +612,20 @@ private:
   //! count steps till upres_
   int                       writestep_;
 
+  //! parameters for sampling/dumping period
+  int samstart_;
+  int samstop_;
+  int dumperiod_;
+
+  //! flag for special flow: currently channel flow or flow in a lid-driven cavity
+  string special_flow_;
+
   //! turbulence statistics for turbulent channel flow example
   RCP<TurbulenceStatistics> turbulencestatistics_;
+
+  //! turbulence statistics for lid-driven cavity example
+  RCP<TurbulenceStatisticsLdc> turbulencestatistics_ldc_;
+
   //@}
 
 
