@@ -446,6 +446,48 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
         if (cond==null)
           dserror("Condition not available in SoHex8Surface");
 
+        // set up matrices and parameters needed for the evaluation of current
+        // interfacial area and its derivatives w.r.t. the displacements
+
+        int ngp=4;                                // number of Gauss points
+        int nnode=4;                              // number of surface nodes
+        double A;                                 // interfacial area
+        Epetra_SerialDenseVector Adiff(12);       // first partial derivatives
+        Epetra_SerialDenseMatrix Adiff2(12,12);   // second partial derivatives
+        Epetra_SerialDenseVector gpweight(ngp);   // Gauss point weights
+        for (int i=0;i<ngp;++i)
+          gpweight[i]=1.;
+        Epetra_SerialDenseMatrix gpcoord(ngp,2);  // Gauss point coordinates
+        const double gploc    = 1.0/sqrt(3.0);
+        gpcoord(0,0) = - gploc;
+        gpcoord(0,1) = - gploc;
+        gpcoord(1,0) =   gploc;
+        gpcoord(1,1) = - gploc;
+        gpcoord(2,0) = - gploc;
+        gpcoord(2,1) =   gploc;
+        gpcoord(3,0) =   gploc;
+        gpcoord(3,1) =   gploc;
+        vector<Epetra_SerialDenseMatrix> deriv(ngp);      // derivatives of shape functions
+        vector<Epetra_SerialDenseMatrix> dxyzdrs(ngp);    // dXYZ / drs
+        for (int gpid = 0; gpid < 4; ++gpid)
+        {
+          double r = gpcoord(gpid,0);
+          double s = gpcoord(gpid,1);
+          Epetra_SerialDenseMatrix der(4,2);
+          der(0,0) = -0.25 * (1.0-s);
+          der(0,1) = -0.25 * (1.0-r);
+          der(1,0) =  0.25 * (1.0-s);
+          der(1,1) = -0.25 * (1.0+r);
+          der(2,0) =  0.25 * (1.0+s);
+          der(2,1) =  0.25 * (1.0+r);
+          der(3,0) = -0.25 * (1.0+s);
+          der(3,1) =  0.25 * (1.0-r);
+          Epetra_SerialDenseMatrix dx(2,3);
+          dx.Multiply('T','N',1.0,der,xscurr,0.0);
+          deriv[gpid]=der;
+          dxyzdrs[gpid]=dx;
+        }
+
         if (cond->Type()==DRT::Condition::Surfactant)     // dynamic surfactant model
         {
           int curvenum = cond->Getint("curve");
@@ -459,7 +501,9 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
           double con_quot_max = (gamma_min_eq-gamma_min)/m2+1.;
           double con_quot_eq = (k1xC)/(k1xC+k2);
 
-          surfstressman->StiffnessAndInternalForces(curvenum, xscurr, elevector1, elematrix1, this->Id(),
+          surfstressman->Update(time, 0, this->Id());
+          surfstressman->SurfaceCalc(dxyzdrs, deriv, gpcoord, gpweight, ngp, nnode, A, Adiff, Adiff2);
+          surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, elevector1, elematrix1, this->Id(),
                                                     time, dt, 0, 0.0, k1xC, k2, m1, m2, gamma_0,
                                                     gamma_min, gamma_min_eq, con_quot_max,
                                                     con_quot_eq);
@@ -469,7 +513,9 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
           int curvenum = cond->Getint("curve");
           double const_gamma = cond->GetDouble("gamma");
 
-          surfstressman->StiffnessAndInternalForces(curvenum, xscurr, elevector1, elematrix1, this->Id(),
+          surfstressman->Update(time, 1, this->Id());
+          surfstressman->SurfaceCalc(dxyzdrs, deriv, gpcoord, gpweight, ngp, nnode, A, Adiff, Adiff2);
+          surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, elevector1, elematrix1, this->Id(),
                                                     time, dt, 1, const_gamma, 0.0, 0.0, 0.0,
                                                     0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
         }

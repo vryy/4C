@@ -17,6 +17,7 @@ Maintainer: Lena Wiechert
 #include "drt_surfstress_manager.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
+#include <cstdlib>
 
 /*-------------------------------------------------------------------*
  |  ctor (public)                                            lw 12/07|
@@ -62,6 +63,28 @@ void DRT::SurfStressManager::EvaluateSurfStress(ParameterList& p,
 }
 
 /*-------------------------------------------------------------------*
+| (public)						     lw 03/08|
+|                                                                    |
+| update surface area and concentration, if necessary                |
+*--------------------------------------------------------------------*/
+
+void DRT::SurfStressManager::Update(const double time, const int surfaceflag, const int ID)
+{
+  int LID = time_->Map().LID(ID);
+  if (time != (*time_)[LID])
+  {
+    (*time_)[LID] = time;
+
+    if (surfaceflag == 0)
+    {
+      (*A_old_)[LID] = (*A_old_temp_)[LID];
+      (*con_quot_)[LID] = (*con_quot_temp_)[LID];
+    }
+  }
+  return;
+}
+
+/*-------------------------------------------------------------------*
 | (public)						     lw 12/07|
 |                                                                    |
 | Calculate additional internal forces and corresponding stiffness   |
@@ -69,7 +92,9 @@ void DRT::SurfStressManager::EvaluateSurfStress(ParameterList& p,
 *--------------------------------------------------------------------*/
 
 void DRT::SurfStressManager::StiffnessAndInternalForces(const int curvenum,
-                                                        const Epetra_SerialDenseMatrix& xs,
+                                                        const double& A,
+                                                        const Epetra_SerialDenseVector& Adiff,
+                                                        const Epetra_SerialDenseMatrix& Adiff2,
                                                         Epetra_SerialDenseVector& fint,
                                                         Epetra_SerialDenseMatrix& K_surf,
                                                         const int ID,
@@ -87,36 +112,15 @@ void DRT::SurfStressManager::StiffnessAndInternalForces(const int curvenum,
                                                         const double con_quot_max,
                                                         const double con_quot_eq)
 {
-  Epetra_SerialDenseVector Adiff(12);
-  Epetra_SerialDenseMatrix Adiff2(12,12);
   double gamma, dgamma;
-//   FILE *gammafile;
-
   int LID = time_->Map().LID(ID);
-
   double t_end = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).end();
 
   if (surface_flag==0)                                   // SURFACTANT
   {
-    /*--------------------------------------------- update if necessary */
-    if (time != (*time_)[LID])
-    {
-      (*A_old_)[LID] = (*A_old_temp_)[LID];
-      (*con_quot_)[LID] = (*con_quot_temp_)[LID];
-      (*time_)[LID] = time;
-
-//       if (ID==0)
-//       {
-//         gammafile=fopen("gamma_A.gp", "a");
-//         fprintf(gammafile, "%.4lf \t %.4lf \n", (*A_old_)[LID], (*con_quot_)[LID]);
-//         fclose(gammafile);
-//       }
-    }
-
     /*------------------------------------------------- initialization */
-    (*A_old_temp_)[LID] = 0.0;
     (*con_quot_temp_)[LID] = 0.0;
-    soh8_surface_calc(xs, (*A_old_temp_)[LID], Adiff, Adiff2);
+    (*A_old_temp_)[LID] = A;
 
     /*-----------calculation of current surface stress and its partial
      *-----------------derivative with respect to the interfacial area */
@@ -138,11 +142,6 @@ void DRT::SurfStressManager::StiffnessAndInternalForces(const int curvenum,
 
   else if (surface_flag==1)                             // SURFACE TENSION
   {
-    if (time != (*time_)[LID])
-    {
-     (*time_)[LID] = time;
-    }
-
     gamma = const_gamma;
     dgamma = 0.;
   }
@@ -156,16 +155,18 @@ void DRT::SurfStressManager::StiffnessAndInternalForces(const int curvenum,
   if (time <= t_end)
     curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
 
-  for (int i=0;i<12;i++)
+  double ndof = Adiff.Length();
+
+  for (int i=0;i<ndof;i++)
   {
-    for (int j=0;j<12;j++)
+    for (int j=0;j<ndof;j++)
     {
       K_surf(i,j) = (dgamma*Adiff[i]*Adiff[j]+gamma*Adiff2(i,j))*curvefac;
     }
   }
 
   /*------calculation of current internal force due to surface energy*/
-  for (int i=0;i<12;i++)
+  for (int i=0;i<ndof;i++)
   {
     fint[i] = gamma*Adiff[i]*curvefac;
   }
@@ -173,30 +174,38 @@ void DRT::SurfStressManager::StiffnessAndInternalForces(const int curvenum,
   return;
 }
 
+
 /*-------------------------------------------------------------------*
-| (public)                                                   lw 12/07|
+| (public)                                                   lw 03/08|
 |                                                                    |
 | Calculate interfacial area and its derivatives with respect        |
 | to the nodal displacements                                         |
 *--------------------------------------------------------------------*/
 
-void DRT::SurfStressManager::soh8_surface_calc(
-      const Epetra_SerialDenseMatrix& xs,    // (i) element coords
-      double& A,                             // (o) surface area
-      Epetra_SerialDenseVector& Adiff,       // (o) first partial derivatives of area
-      Epetra_SerialDenseMatrix& Adiff2)      // (o) second partial derivatives of area
+void DRT::SurfStressManager::SurfaceCalc(
+  const vector<Epetra_SerialDenseMatrix>& dx,       // (i) current Jacobian
+  const vector<Epetra_SerialDenseMatrix>& der,      // (i) derivatives of shape functions
+  const Epetra_SerialDenseMatrix& gpcoord,          // (i) coordinates of Gauss points
+  const Epetra_SerialDenseVector& gpweight,         // (i) Gaussian weights
+  const int ngp,                                    // (i) number of Gauss points
+  const int nnode,                                  // (i) number of surface nodes
+  double& A,                                        // (o) surface area
+  Epetra_SerialDenseVector& Adiff,                  // (o) first partial derivatives of area
+  Epetra_SerialDenseMatrix& Adiff2)                 // (o) second partial derivatives of area
 
 {
-  double det[3], ddet[3][12], ddet2[3][12][12], jacobi_deriv[12];
+  int ndof = nnode*3;
+
+  double det[3], ddet[3][ndof], ddet2[3][ndof][ndof], jacobi_deriv[ndof];
   double Jac;
 
   /*-----------------------------------------------------initialization*/
   A = 0.;
 
-  for (int i=0;i<12;i++)
+  for (int i=0;i<ndof;i++)
   {
     Adiff[i] = 0.;
-    for (int j=0;j<12;j++)
+    for (int j=0;j<ndof;j++)
     {
       Adiff2(i,j) = 0.;
     }
@@ -204,58 +213,17 @@ void DRT::SurfStressManager::soh8_surface_calc(
 
   for (int n=0;n<3;n++)
     {
-      for (int o=0;o<12;o++)
+      for (int o=0;o<ndof;o++)
       {
-        for (int p=0;p<12;p++)
+        for (int p=0;p<ndof;p++)
           ddet2[n][o][p]=0.;
       }
     }
 
-  /*
-  ** Here we integrate a 4-node surface with 2x2 Gauss Points
-  */
-  const int ngp = 4;
-
-  // gauss parameters
-  const double gpweight = 1.0;
-  const double gploc    = 1.0/sqrt(3.0);
-  Epetra_SerialDenseMatrix gpcoord (ngp,2);
-  gpcoord(0,0) = - gploc;
-  gpcoord(0,1) = - gploc;
-  gpcoord(1,0) =   gploc;
-  gpcoord(1,1) = - gploc;
-  gpcoord(2,0) = - gploc;
-  gpcoord(2,1) =   gploc;
-  gpcoord(3,0) =   gploc;
-  gpcoord(3,1) =   gploc;
-
-  for (int gpid = 0; gpid < 4; ++gpid)      // loop over integration points
+  for (int gpid = 0; gpid < ngp; ++gpid)      // loop over integration points
   {
-    double r = gpcoord(gpid,0);
-    double s = gpcoord(gpid,1);
-
-    // get shape functions and derivatives of element surface
-    vector<double> funct(ngp);                // 4 shape function values
-
-    // shape functions for 4 nodes
-    funct[0] = 0.25 * (1.0-r) * (1.0-s);
-    funct[1] = 0.25 * (1.0+r) * (1.0-s);
-    funct[2] = 0.25 * (1.0+r) * (1.0+s);
-    funct[3] = 0.25 * (1.0-r) * (1.0+s);
-    // derivatives of 4 shape functions wrt 2 directions
-    Epetra_SerialDenseMatrix deriv(4,2);
-    deriv(0,0) = -0.25 * (1.0-s);
-    deriv(0,1) = -0.25 * (1.0-r);
-    deriv(1,0) =  0.25 * (1.0-s);
-    deriv(1,1) = -0.25 * (1.0+r);
-    deriv(2,0) =  0.25 * (1.0+s);
-    deriv(2,1) =  0.25 * (1.0+r);
-    deriv(3,0) = -0.25 * (1.0+s);
-    deriv(3,1) =  0.25 * (1.0-r);
-
-    // compute dXYZ / drs
-    Epetra_SerialDenseMatrix dxyzdrs(2,3);
-    dxyzdrs.Multiply('T','N',1.0,deriv,xs,0.0);
+    Epetra_SerialDenseMatrix deriv = der[gpid];
+    Epetra_SerialDenseMatrix dxyzdrs = dx[gpid];
 
     det[0] = dxyzdrs(0,1) * dxyzdrs(1,2) - dxyzdrs(0,2) * dxyzdrs(1,1);
     det[1] = dxyzdrs(0,2) * dxyzdrs(1,0) - dxyzdrs(0,0) * dxyzdrs(1,2);
@@ -263,7 +231,7 @@ void DRT::SurfStressManager::soh8_surface_calc(
 
     Jac = sqrt( det[0]*det[0] + det[1]*det[1] + det[2]*det[2] );
 
-    A += Jac*gpweight;
+    A += Jac*gpweight[gpid];
 
     /*--------------- derivation of minor determiants of the Jacobian
      *----------------------------- with respect to the displacements */
@@ -290,7 +258,7 @@ void DRT::SurfStressManager::soh8_surface_calc(
      *----------------------------- with respect to the displacements */
     for (int i=0;i<12;i++)
     {
-      Adiff[i] += jacobi_deriv[i]*gpweight;
+      Adiff[i] += jacobi_deriv[i]*gpweight[gpid];
     }
 
 
@@ -337,7 +305,7 @@ void DRT::SurfStressManager::soh8_surface_calc(
       {
         Adiff2(i,j) += (-1/Jac*jacobi_deriv[j]*jacobi_deriv[i]+1/Jac*
                        (ddet[var1][i]*ddet[var1][j]+det[var1]*ddet2[var1][i][j]+
-                        ddet[var2][i]*ddet[var2][j]+det[var2]*ddet2[var2][i][j]))*gpweight;
+                        ddet[var2][i]*ddet[var2][j]+det[var2]*ddet2[var2][i][j]))*gpweight[gpid];
       }
     }
   }

@@ -63,11 +63,41 @@ public:
                           RefCountPtr<LINALG::SparseMatrix> stiff);
 
   /*!
+    \brief update history variables and time if necessary
+  */
+  void Update(const double time, const int surfaceflag, const int ID);
+
+  /*!
+    \brief calculate interfacial area and its derivatives with respect
+    to the displacements
+    \param dxyzdrs (in): dXYZ / drs
+    \param derivatives (in): derivatives of shape functions
+    \params gpccord (in): coordinates of Gauss points
+    \params gpweight (in): Gaussian weights
+    \params ngp (in): number of Gauss points
+    \params nnode (in): number of nodes
+    \param A (out): current interfacial area
+    \param Adiff (out): first partial derivatives of interfacial area
+    \param Adiff2 (out): second partial derivatives of interfacial area
+  */
+  void SurfaceCalc(const vector<Epetra_SerialDenseMatrix>& dxyzdrs,
+                   const vector<Epetra_SerialDenseMatrix>& derivatives,
+                   const Epetra_SerialDenseMatrix& gpccord,
+                   const Epetra_SerialDenseVector& gpweight,
+                   const int ngp,
+                   const int nnode,
+                   double& A,
+                   Epetra_SerialDenseVector& Adiff,
+                   Epetra_SerialDenseMatrix& Adiff2);
+
+  /*!
     \brief Routine to calculate additional internal forces and
     stiffnesses due to interfacial phenomena
 
     \param curvenum (in): number of time curve
-    \param xs (in): current nodal positions
+    \param A (in): current interfacial area
+    \param Adiff (in): first partial derivatives of surface area
+    \param Adiff2 (in): second partial derivatives of surface area
     \param fint (out): element internal force vector
     \param stiff (out): element stiffness matrix
     \param ID (in): ID of surface condition
@@ -86,7 +116,9 @@ public:
     \param con_quot_eq (in) equilibrium surfactant concentration
   */
   void StiffnessAndInternalForces(const int curvenum,
-                                  const Epetra_SerialDenseMatrix& xs,
+                                  const double& A,
+                                  const Epetra_SerialDenseVector& Adiff,
+                                  const Epetra_SerialDenseMatrix& Adiff2,
                                   Epetra_SerialDenseVector& fint,
                                   Epetra_SerialDenseMatrix& stiff,
                                   const int ID,
@@ -103,20 +135,6 @@ public:
                                   const double gamma_min_eq,
                                   const double con_quot_max,
                                   const double con_quot_eq);
-
-  /*!
-    \brief Routine to calculate current interfacial area and its
-    derivatives with respect to the nodal displacements
-
-    \param xs (in): current nodal positions
-    \param A (out): current interfacial area
-    \param Adiff (out): first partial derivative of interfacial area
-    \param Adiff2 (out): second partial derivative of interfacial area
-  */
-  void soh8_surface_calc(const Epetra_SerialDenseMatrix& xs,
-                         double& A,
-                         Epetra_SerialDenseVector& Adiff,
-                         Epetra_SerialDenseMatrix& Adiff2);
 
   /*!
     \brief Routine to calculate current surface stress and its
