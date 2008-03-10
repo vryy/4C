@@ -238,9 +238,7 @@ DRT::ELEMENTS::Fluid3::StabilisationAction DRT::ELEMENTS::Fluid3::ConvertStringT
   }
   else
   {
-    char errorout[200];
-    sprintf(errorout,"looking for stab action (%s) not contained in map",action.c_str());
-    dserror(errorout);
+    dserror("looking for stab action (%s) not contained in map",action.c_str());
   }
   return act;
 }
