@@ -31,8 +31,8 @@ namespace ELEMENTS
   /// Internal Fluid3 implementation -- stationary formulation
   /*!
     This internal class keeps all the working arrays needed to
-    calculate the Fluid3 element in stationary formulation. 
-    Additionally the method Sysmat() provides a clean and fast 
+    calculate the Fluid3 element in stationary formulation.
+    Additionally the method Sysmat() provides a clean and fast
     element implementation.
 
     <h3>Purpose</h3>
@@ -81,7 +81,7 @@ namespace ELEMENTS
       \param material 		(i) fluid material
       \param pseudotime     (i) current simulation pseudotime
       \param newton     	(i) full Newton or fixed-point-like
-      \param pspg     		(i) boolean flag for stabilisation 
+      \param pspg     		(i) boolean flag for stabilisation
       \param supg     		(i) boolean flag for stabilisation
       \param vstab     		(i) boolean flag for stabilisation
       \param cstab     		(i) boolean flag for stabilisation
@@ -98,7 +98,7 @@ namespace ELEMENTS
                 struct _MATERIAL*                        material,
                 double                                   pseudotime,
                 bool                                     newton,
-                string                                   fssgv,
+                const enum Fluid3::StabilisationAction   fssgv,
                 const enum Fluid3::StabilisationAction   pspg,
                 const enum Fluid3::StabilisationAction   supg,
                 const enum Fluid3::StabilisationAction   vstab,
@@ -118,7 +118,7 @@ namespace ELEMENTS
       const blitz::Array<double,2>&           fsevelnp,
       const DRT::Element::DiscretizationType  distype,
       const double                            visc,
-      string                                  fssgv,
+      const enum Fluid3::StabilisationAction  fssgv,
       const double                            Cs);
 
     /*!
@@ -135,7 +135,7 @@ namespace ELEMENTS
     int iel_;                          /// number of nodes
     double vart_;                      /// fine-scale subgrid viscosity
     blitz::Array<double,2> xyze_;      /// nodal position array
-    blitz::Array<double,2> edeadng_;   /// nodal dead load 
+    blitz::Array<double,2> edeadng_;   /// nodal dead load
     blitz::Array<double,1> funct_;     /// nodal shape functions
     blitz::Array<double,2> deriv_;     /// shape derivatives with respect to \xi
     blitz::Array<double,2> deriv2_;    /// second shape derivatives with respect to \xi

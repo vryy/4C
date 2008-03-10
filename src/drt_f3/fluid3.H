@@ -373,7 +373,15 @@ private:
     cross_stress_stab,
     cross_stress_stab_only_rhs,
     reynolds_stress_stab_none,
-    reynolds_stress_stab_only_rhs
+    reynolds_stress_stab_only_rhs,
+    fssgv_no,
+    fssgv_artificial_all,
+    fssgv_artificial_small,
+    fssgv_Smagorinsky_all,
+    fssgv_Smagorinsky_small,
+    fssgv_mixed_Smagorinsky_all,
+    fssgv_mixed_Smagorinsky_small,
+    fssgv_scale_similarity
   };
 
   //! physical turbulence models recognized by fluid3_genalpha implementation

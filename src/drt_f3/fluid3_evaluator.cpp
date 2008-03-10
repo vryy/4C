@@ -10,6 +10,10 @@
 
 #include <Teuchos_ParameterList.hpp>
 
+
+std::map<std::string,DRT::ELEMENTS::Fluid3::StabilisationAction> DRT::ELEMENTS::Fluid3SystemEvaluator::stabstrtoact_;
+
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Fluid3SystemEvaluator::Fluid3SystemEvaluator(Teuchos::RCP<DRT::Discretization> dis,
@@ -18,6 +22,34 @@ DRT::ELEMENTS::Fluid3SystemEvaluator::Fluid3SystemEvaluator(Teuchos::RCP<DRT::Di
                                                             Teuchos::RCP<Epetra_Vector> systemvector)
   : DRT::EGROUP::SystemEvaluatorBase(dis,params,systemmatrix,systemvector)
 {
+  if (stabstrtoact_.size()==0)
+  {
+    stabstrtoact_["no_pspg"        ]=Fluid3::pstab_assume_inf_sup_stable;
+    stabstrtoact_["yes_pspg"       ]=Fluid3::pstab_use_pspg;
+    stabstrtoact_["no_supg"        ]=Fluid3::convective_stab_none;
+    stabstrtoact_["yes_supg"       ]=Fluid3::convective_stab_supg;
+    stabstrtoact_["no_vstab"       ]=Fluid3::viscous_stab_none;
+    stabstrtoact_["vstab_gls"      ]=Fluid3::viscous_stab_gls;
+    stabstrtoact_["vstab_gls_rhs"  ]=Fluid3::viscous_stab_gls_only_rhs;
+    stabstrtoact_["vstab_usfem"    ]=Fluid3::viscous_stab_usfem;
+    stabstrtoact_["vstab_usfem_rhs"]=Fluid3::viscous_stab_usfem_only_rhs;
+    stabstrtoact_["no_cstab"       ]=Fluid3::continuity_stab_none;
+    stabstrtoact_["cstab_qs"       ]=Fluid3::continuity_stab_yes;
+    stabstrtoact_["no_cross"       ]=Fluid3::cross_stress_stab_none;
+    stabstrtoact_["cross_complete" ]=Fluid3::cross_stress_stab;
+    stabstrtoact_["cross_rhs"      ]=Fluid3::cross_stress_stab_only_rhs;
+    stabstrtoact_["no_reynolds"    ]=Fluid3::reynolds_stress_stab_none;
+    stabstrtoact_["reynolds_rhs"   ]=Fluid3::reynolds_stress_stab_only_rhs;
+    stabstrtoact_["No"                     ]=Fluid3::fssgv_no;
+    stabstrtoact_["artificial_all"         ]=Fluid3::fssgv_artificial_all;
+    stabstrtoact_["artificial_small"       ]=Fluid3::fssgv_artificial_small;
+    stabstrtoact_["Smagorinsky_all"        ]=Fluid3::fssgv_Smagorinsky_all;
+    stabstrtoact_["Smagorinsky_small"      ]=Fluid3::fssgv_Smagorinsky_small;
+    stabstrtoact_["mixed_Smagorinsky_all"  ]=Fluid3::fssgv_mixed_Smagorinsky_all;
+    stabstrtoact_["mixed_Smagorinsky_small"]=Fluid3::fssgv_mixed_Smagorinsky_small;
+    stabstrtoact_["scale_similarity"       ]=Fluid3::fssgv_scale_similarity;
+  }
+
   velnp_ = dis->GetState("velnp");
   hist_  = dis->GetState("hist");
 
@@ -32,9 +64,9 @@ DRT::ELEMENTS::Fluid3SystemEvaluator::Fluid3SystemEvaluator(Teuchos::RCP<DRT::Di
   }
 
   // get flag for fine-scale subgrid viscosity
-  fssgv_ = params_.get<string>("fs subgrid viscosity");
+  fssgv_ = ConvertStringToStabAction(params.get<string>("fs subgrid viscosity"));
 
-  if (fssgv_ != "No")
+  if (fssgv_ != Fluid3::fssgv_no)
   {
     fsvelnp_ = dis_->GetState("fsvelnp");
   }
@@ -50,9 +82,9 @@ DRT::ELEMENTS::Fluid3SystemEvaluator::Fluid3SystemEvaluator(Teuchos::RCP<DRT::Di
   // (Since either all-scale Smagorinsky model (i.e., classical LES model
   // as will be inititalized below) or fine-scale Smagorinsky model is
   // used (and never both), the same input parameter can be exploited.)
-  if (fssgv_ != "No" and turbmodelparams.get<string>("TURBULENCE_APPROACH") == "CLASSICAL_LES")
+  if (fssgv_ != Fluid3::fssgv_no and turbmodelparams.get<string>("TURBULENCE_APPROACH") == "CLASSICAL_LES")
     dserror("No combination of a classical (all-scale) turbulence model and a fine-scale subgrid-viscosity approach currently possible!");
-  if (fssgv_ != "No")
+  if (fssgv_ != Fluid3::fssgv_no)
     Cs_ = turbmodelparams.get<double>("C_SMAGORINSKY");
 
   // the default action is no model
@@ -130,24 +162,6 @@ DRT::ELEMENTS::Fluid3SystemEvaluator::Fluid3SystemEvaluator(Teuchos::RCP<DRT::Di
   // This is a very poor way to transport the density to the
   // outside world.
   const_cast<Teuchos::ParameterList&>(params).set("density", actmat_->m.fluid->density);
-
-
-  stabstrtoact_["no_pspg"        ]=Fluid3::pstab_assume_inf_sup_stable;
-  stabstrtoact_["yes_pspg"       ]=Fluid3::pstab_use_pspg;
-  stabstrtoact_["no_supg"        ]=Fluid3::convective_stab_none;
-  stabstrtoact_["yes_supg"       ]=Fluid3::convective_stab_supg;
-  stabstrtoact_["no_vstab"       ]=Fluid3::viscous_stab_none;
-  stabstrtoact_["vstab_gls"      ]=Fluid3::viscous_stab_gls;
-  stabstrtoact_["vstab_gls_rhs"  ]=Fluid3::viscous_stab_gls_only_rhs;
-  stabstrtoact_["vstab_usfem"    ]=Fluid3::viscous_stab_usfem;
-  stabstrtoact_["vstab_usfem_rhs"]=Fluid3::viscous_stab_usfem_only_rhs;
-  stabstrtoact_["no_cstab"       ]=Fluid3::continuity_stab_none;
-  stabstrtoact_["cstab_qs"       ]=Fluid3::continuity_stab_yes;
-  stabstrtoact_["no_cross"       ]=Fluid3::cross_stress_stab_none;
-  stabstrtoact_["cross_complete" ]=Fluid3::cross_stress_stab;
-  stabstrtoact_["cross_rhs"      ]=Fluid3::cross_stress_stab_only_rhs;
-  stabstrtoact_["no_reynolds"    ]=Fluid3::reynolds_stress_stab_none;
-  stabstrtoact_["reynolds_rhs"   ]=Fluid3::reynolds_stress_stab_only_rhs;
 }
 
 
@@ -246,7 +260,7 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::PlainEvaluate(DRT::EGROUP::Group& ele
     RCP<const Epetra_Vector> fsvelnp;
     blitz::Array<double, 2> fsevelnp(3,numnode,blitz::ColumnMajorArray<2>());
 
-    if (fssgv_ != "No")
+    if (fssgv_ != Fluid3::fssgv_no)
     {
       vector<double> myfsvelnp(lm.size());
       DRT::UTILS::ExtractMyValues(*fsvelnp_,myfsvelnp,lm);

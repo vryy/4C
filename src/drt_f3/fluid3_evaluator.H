@@ -56,7 +56,7 @@ namespace DRT
       //@}
 
       /// fine scale something
-      std::string fssgv_;
+      Fluid3::StabilisationAction fssgv_;
 
       /** \name Smagorinsky variables */
       //@{
@@ -71,7 +71,7 @@ namespace DRT
       //@}
 
       /// map that converts strings to actions (stabilisation)
-      std::map<std::string,Fluid3::StabilisationAction> stabstrtoact_;
+      static std::map<std::string,Fluid3::StabilisationAction> stabstrtoact_;
 
       MATERIAL* actmat_;
     };

@@ -71,7 +71,7 @@ void DRT::ELEMENTS::Fluid3Stationary::Sysmat(
   struct _MATERIAL*                       material,
   double                                  pseudotime,
   bool                                    newton,
-  string                                  fssgv,
+  const enum Fluid3::StabilisationAction  fssgv,
   const enum Fluid3::StabilisationAction  pspg,
   const enum Fluid3::StabilisationAction  supg,
   const enum Fluid3::StabilisationAction  vstab,
@@ -219,8 +219,8 @@ void DRT::ELEMENTS::Fluid3Stationary::Sysmat(
     vderxy_ = blitz::sum(derxy_(j,k)*evelnp(i,k),k);
 
     // get fine-scale velocity derivatives at integration point
-    if (fssgv != "No") fsvderxy_ = blitz::sum(derxy_(j,k)*fsevelnp(i,k),k);
-    else               fsvderxy_ = 0.;
+    if (fssgv != Fluid3::fssgv_no) fsvderxy_ = blitz::sum(derxy_(j,k)*fsevelnp(i,k),k);
+    else                           fsvderxy_ = 0.;
 
     // get pressure gradients
     gradp_ = blitz::sum(derxy_(i,j)*eprenp(j),j);
@@ -243,7 +243,7 @@ void DRT::ELEMENTS::Fluid3Stationary::Sysmat(
     /*------------------------- evaluate rhs vector at integration point ---*/
     //   rhsint_ = histvec_(i) + bodyforce_(i);
     // histvec is always zero in stationary case (!):
-    rhsint_ = bodyforce_(i);    
+    rhsint_ = bodyforce_(i);
 
     /*----------------- get numerical representation of single operators ---*/
 
@@ -672,7 +672,7 @@ void DRT::ELEMENTS::Fluid3Stationary::Sysmat(
           } // vi
         } // ui
 
-        
+
         if (newton)
         {
           for (int ui=0; ui<iel_; ++ui)
@@ -1161,7 +1161,7 @@ void DRT::ELEMENTS::Fluid3Stationary::Sysmat(
         }
       } // end Reynolds-stress part on right hand side
 
-      if(fssgv != "No" && fssgv != "scale_similarity")
+      if(fssgv != Fluid3::fssgv_no && fssgv != Fluid3::fssgv_scale_similarity)
       {
         //----------------------------------------------------------------------
         //     FINE-SCALE SUBGRID-VISCOSITY TERM (ON RIGHT HAND SIDE)
@@ -1209,7 +1209,7 @@ void DRT::ELEMENTS::Fluid3Stationary::CalTauStationary(
   const blitz::Array<double,2>&           fsevelnp,
   const DRT::Element::DiscretizationType  distype,
   const double                            visc,
-  string                                  fssgv,
+  const enum Fluid3::StabilisationAction  fssgv,
   const double                            Cs
   )
 {
@@ -1340,10 +1340,10 @@ void DRT::ELEMENTS::Fluid3Stationary::CalTauStationary(
   tau_(2) = 0.5*vel_norm*hk*xi_tau_c;
 
   /*------------------------------------------- compute subgrid viscosity ---*/
-  if (fssgv == "artificial_all" || fssgv == "artificial_small")
+  if (fssgv == Fluid3::fssgv_artificial_all || fssgv == Fluid3::fssgv_artificial_small)
   {
     double fsvel_norm = 0.0;
-    if (fssgv == "artificial_small")
+    if (fssgv == Fluid3::fssgv_artificial_small)
     {
       // get fine-scale velocities at element center
       fsvelint_ = blitz::sum(funct_(j)*fsevelnp(i,j),j);
@@ -1361,8 +1361,10 @@ void DRT::ELEMENTS::Fluid3Stationary::CalTauStationary(
     vart_ = (DSQR(hk)*mk*DSQR(fsvel_norm))/(2.0*visc*xi);
 
   }
-  else if (fssgv == "Smagorinsky_all" || fssgv == "Smagorinsky_small" ||
-           fssgv == "mixed_Smagorinsky_all" || fssgv == "mixed_Smagorinsky_small")
+  else if (fssgv == Fluid3::fssgv_Smagorinsky_all or
+           fssgv == Fluid3::fssgv_Smagorinsky_small or
+           fssgv == Fluid3::fssgv_mixed_Smagorinsky_all or
+           fssgv == Fluid3::fssgv_mixed_Smagorinsky_small)
   {
     //
     // SMAGORINSKY MODEL
@@ -1380,7 +1382,7 @@ void DRT::ELEMENTS::Fluid3Stationary::CalTauStationary(
     double rateofstrain = 0.0;
     {
       // get fine-scale or all-scale velocity derivatives at element center
-      if (fssgv == "Smagorinsky_small" || fssgv == "mixed_Smagorinsky_small")
+      if (fssgv == Fluid3::fssgv_Smagorinsky_small || fssgv == Fluid3::fssgv_mixed_Smagorinsky_small)
             fsvderxy_ = blitz::sum(derxy_(j,k)*fsevelnp(i,k),k);
       else  fsvderxy_ = blitz::sum(derxy_(j,k)*evelnp(i,k),k);
 
@@ -1418,7 +1420,7 @@ void DRT::ELEMENTS::Fluid3Stationary::CalTauStationary(
  |  array edeadng only if all nodes have a VolumeNeumann condition      |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Fluid3Stationary::BodyForce(Fluid3* ele, const double pseudotime)
-{ 
+{
   vector<DRT::Condition*> myneumcond;
   DRT::Node** nodes = ele->Nodes();
 

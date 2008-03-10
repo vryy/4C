@@ -56,7 +56,7 @@ namespace DRT
     (There might be room for improvements.)
 
     <h3>Description</h3>
-    
+
     The implementation here is based on a generalised alpha time
     discretisation with an implicit treatment of the continuity
     equation and pressure, assuring that every solution is divergence
@@ -65,57 +65,57 @@ namespace DRT
     There are multiple stabilisation options included in this
     implementation. For the standard residual based method these are:
     <pre>
-    
+
     o Newton/Quasi-Newton (on/off)
       -------------------
       Reactive terms are/are not linearised
 
-    o SUPG Stabilisation 
+    o SUPG Stabilisation
       ------------------
-    
-    o PSPG Stabilisation 
+
+    o PSPG Stabilisation
       ------------------
-    
-    o Viscous Stabilisation 
+
+    o Viscous Stabilisation
       ---------------------
       Of the (A)GLS type
 
-    o Cross stress (ResVMM) 
+    o Cross stress (ResVMM)
       ---------------------
       Fix point treatment, no linearisation
 
-    o Reynolds stress (ResVMM) 
+    o Reynolds stress (ResVMM)
       ------------------------
       Fix point treatment, no linearisation
-      
+
     </pre>
     For the choice of the stabilisation parameter see the inline
     documentation.
-    
+
     For time dependent subscale stabilisation we have an additional
     option:
     <pre>
-    
-    o Stabilisation using subscale accelerations 
+
+    o Stabilisation using subscale accelerations
       ------------------------------------------
       Equivalent to include a reaction like expression into the
       stablilisation operator --- should be included if any remarkable
       change on the matrix should occur in comparison to quasistatic
       subscales formulation.
-      
+
     </pre>
 
     In addition to the stabilisation options, the method allows the use of
     classical turbulence models
     <pre>
-    
+
     o Standard Smagorinsky
       --------------------
       With constant Smagorinsky coefficient
 
     o Smagorinsky with Van Driest damping
       -----------------------------------
-      Exponential damping of mixing lenght close to the wall      
+      Exponential damping of mixing lenght close to the wall
 
     o Dynamic Smagorinsky
       -------------------
@@ -126,7 +126,7 @@ namespace DRT
       M. Germano, U. Piomelli, P. Moin, W.H. Cabot:
       A dynamic subgrid-scale eddy viscosity model
       (Phys. Fluids 1991)
-      
+
       or
 
       D.K. Lilly:
@@ -134,12 +134,12 @@ namespace DRT
       (Phys. Fluids 1992)
 
     </pre>
-        
+
     The stabilisation flags as well as turbulence model options are have been read
     from the input file and passed through the evaluate interface.
 
     There is no ALE-ability of the element up to now.
-    
+
     \auther gammi
     \date 11/07
   */
@@ -147,7 +147,7 @@ namespace DRT
     {
     public:
       /// Constructor with number of nodes
-      explicit Fluid3GenalphaResVMM(int iel); 
+      explicit Fluid3GenalphaResVMM(int iel);
 
       /// calculating element matrix and rhs
       /*
@@ -172,8 +172,8 @@ namespace DRT
         \param Cs_fs           (i) Smagorinsky model parameter for fine-scale subgrid viscosity
         \param tds             (i) flag for use of time dependent subscale stabilisation
         \param inertia         (i) flag for use of subscale accelerations for stabilisation (only for tds==true)
-        \param pspg            (i) flag for use of nabla q testfunctions 
-        \param supg            (i) flag for use of (u o nabla) v testfunctions 
+        \param pspg            (i) flag for use of nabla q testfunctions
+        \param supg            (i) flag for use of (u o nabla) v testfunctions
         \param vstab            (i) flag for use of 2 * nu * grad o eps(v) testfunctions
         \param cross           (i) flag to add (u,(u_sub o nabla) v) to right hand side
         \param reynolds        (i) flag to add (u_sub,(u_sub o nabla) v) to right hand side
@@ -184,7 +184,7 @@ namespace DRT
                                    (Cs*hk)^2
         \param l_tau           (i) viscous length scale for van Driest damping (zero if unused)
         \param compute_elemat  (i) if false, element matrices are not computed
-        
+
       */
       void Sysmat(Fluid3*                                               ele,
                   Epetra_SerialDenseMatrix&                             elemat,
@@ -203,7 +203,7 @@ namespace DRT
                   const double                                          dt,
                   const double                                          time,
                   const bool                                            newton,
-                  string                                                fssgv,
+                  const enum Fluid3::StabilisationAction                fssgv,
                   const enum Fluid3::StabilisationAction                tds,
                   const enum Fluid3::StabilisationAction                inertia,
                   const enum Fluid3::StabilisationAction                pspg,
@@ -226,11 +226,11 @@ namespace DRT
                   RefCountPtr<Time>                                     timeelesupg      ,
                   RefCountPtr<Time>                                     timeelecstab     ,
                   RefCountPtr<Time>                                     timeelevstab     ,
-                  RefCountPtr<Time>                                     timeelecrossrey  ,  
+                  RefCountPtr<Time>                                     timeelecrossrey  ,
                   RefCountPtr<Time>                                     timeeleintertogp ,
                   RefCountPtr<Time>                                     timeeleseteledata,
                   RefCountPtr<Time>                                     timeeletdextras  ,
-   
+
 #endif
                   const bool                                            compute_elemat
         );
@@ -254,7 +254,7 @@ namespace DRT
                    blitz::Array<double,1>&                               mean_res_sq,
                    blitz::Array<double,1>&                               mean_sacc_sq);
 
-     
+
     private:
       ///  Get the nodal values of the bodyforce. The values are stored in edeadnf
       //
@@ -263,7 +263,7 @@ namespace DRT
       void GetNodalBodyForce(Fluid3*      ele,
                              const double time);
       //! number of nodes --- determines array sizes
-      int iel_;                             
+      int iel_;
 
       //! fine-scale subgrid viscosity
       double vart_;
@@ -273,7 +273,7 @@ namespace DRT
       //! node coordinates
       blitz::Array<double,2> xyze_;
       //! value of body force in the nodes of the element
-      blitz::Array<double,2> edeadaf_;      
+      blitz::Array<double,2> edeadaf_;
 
       // shape functions and derivatives, mapping from reference element to actual geometry
       // ----------------------------------------------------------------------------------
@@ -289,11 +289,11 @@ namespace DRT
       blitz::Array<double,2> derxy2_;
       //! derivatives needed for linearisation of viscous term including 2nd derivatives
       blitz::Array<double,3> viscs2_;
-      /*  
+      /*
                        corresponds to the operator
-                     
-                                 - grad o epsilon 
-                       
+
+                                 - grad o epsilon
+
                        on the discret level
       */
       //! transpose of the jacobian matrix of the mapping (r,s,t)->(x,y,z)
@@ -301,12 +301,12 @@ namespace DRT
       //! its inverse
       blitz::Array<double,2> xji_;
       //! second derivatives of the mapping (r,s,t)->(x,y,z)
-      blitz::Array<double,2> xder2_;       
+      blitz::Array<double,2> xder2_;
 
       // values of non geometrical quantities in gausspoints
       // ---------------------------------------------------
       //! pressure in gausspoint, time n+1
-      double                 prenp_;        
+      double                 prenp_;
       //! acceleration in gausspoint, time n+am
       blitz::Array<double,1> accintam_;
       //! velocity in gausspoint, time n+1
@@ -330,11 +330,11 @@ namespace DRT
       //! value of body force interpolated to the gauss point, time n+af
       blitz::Array<double,1> bodyforceaf_;
       //! linearisation of convection, convective part, time n+af
-      blitz::Array<double,1> conv_c_af_; 
+      blitz::Array<double,1> conv_c_af_;
       //! linearisation of convection, reactive part, time n+af
       blitz::Array<double,3> conv_r_af_;
       //! convective part introduced by grid velocity, time n+af
-      blitz::Array<double,1> conv_g_af_; 
+      blitz::Array<double,1> conv_g_af_;
 
       // element data
       // ------------
@@ -343,23 +343,23 @@ namespace DRT
              //! matrix of subscale velocities in gausspoints of this element, time n+alphaF
       blitz::Array<double,1> svelaf_;
       //! Convective term, most recent iteration value
-      blitz::Array<double,1> convaf_old_;   
-      /*            
+      blitz::Array<double,1> convaf_old_;
+      /*
                          /  n+af        \   n+af
                         |  u     o grad  | u
                          \  (i)         /   (i)
       */
-      //! Subgrid velocity convective term, most recent iteration value 
+      //! Subgrid velocity convective term, most recent iteration value
       blitz::Array<double,1> convsubaf_old_;
       /* Most recent value for subgrid velocity convective term
-        
+
                         /~n+af         \   n+af
                        | u      o nabla | u
                         \   (i)        /   (i)
       */
       //! Viscous term, most recent iteration value
       blitz::Array<double,1> viscaf_old_;
-      /*                          
+      /*
                                         /  n+af \
                        nabla o  epsilon | u     |
                                         \  (i)  /
@@ -368,15 +368,15 @@ namespace DRT
       blitz::Array<double,1> resM_;
       //! This is the convection operator using resM_ as the convecting velocity
       blitz::Array<double,1> conv_resM_;
-      /*  
+      /*
 
                      /               \
                     | resM    o nabla |
                      \    (i)        /
       */
       //! This is the convection operator using the subscale velocity as the convecting velocity
-      blitz::Array<double,1>  conv_subaf_; 
-      /*  
+      blitz::Array<double,1>  conv_subaf_;
+      /*
                     /~n+af         \
                    | u      o nabla |
                     \   (i)        /

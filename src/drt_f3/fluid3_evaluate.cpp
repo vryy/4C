@@ -350,14 +350,44 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           }
         }
 
+        // if not available, define map from string to action
+        if(stabstrtoact_.empty())
+        {
+          stabstrtoact_["no_pspg"        ]=pstab_assume_inf_sup_stable;
+          stabstrtoact_["yes_pspg"       ]=pstab_use_pspg;
+          stabstrtoact_["no_supg"        ]=convective_stab_none;
+          stabstrtoact_["yes_supg"       ]=convective_stab_supg;
+          stabstrtoact_["no_vstab"       ]=viscous_stab_none;
+          stabstrtoact_["vstab_gls"      ]=viscous_stab_gls;
+          stabstrtoact_["vstab_gls_rhs"  ]=viscous_stab_gls_only_rhs;
+          stabstrtoact_["vstab_usfem"    ]=viscous_stab_usfem;
+          stabstrtoact_["vstab_usfem_rhs"]=viscous_stab_usfem_only_rhs;
+          stabstrtoact_["no_cstab"       ]=continuity_stab_none;
+          stabstrtoact_["cstab_qs"       ]=continuity_stab_yes;
+          stabstrtoact_["no_cross"       ]=cross_stress_stab_none;
+          stabstrtoact_["cross_complete" ]=cross_stress_stab;
+          stabstrtoact_["cross_rhs"      ]=cross_stress_stab_only_rhs;
+          stabstrtoact_["no_reynolds"    ]=reynolds_stress_stab_none;
+          stabstrtoact_["reynolds_rhs"   ]=reynolds_stress_stab_only_rhs;
+          stabstrtoact_["No"                     ]=Fluid3::fssgv_no;
+          stabstrtoact_["artificial_all"         ]=Fluid3::fssgv_artificial_all;
+          stabstrtoact_["artificial_small"       ]=Fluid3::fssgv_artificial_small;
+          stabstrtoact_["Smagorinsky_all"        ]=Fluid3::fssgv_Smagorinsky_all;
+          stabstrtoact_["Smagorinsky_small"      ]=Fluid3::fssgv_Smagorinsky_small;
+          stabstrtoact_["mixed_Smagorinsky_all"  ]=Fluid3::fssgv_mixed_Smagorinsky_all;
+          stabstrtoact_["mixed_Smagorinsky_small"]=Fluid3::fssgv_mixed_Smagorinsky_small;
+          stabstrtoact_["scale_similarity"       ]=Fluid3::fssgv_scale_similarity;
+        }
+
+
         // get fine-scale velocity
         RCP<const Epetra_Vector> fsvelnp;
         blitz::Array<double, 2> fsevelnp(3,numnode,blitz::ColumnMajorArray<2>());
 
         // get flag for fine-scale subgrid viscosity
-        string fssgv = params.get<string>("fs subgrid viscosity","No");
-
-        if (fssgv != "No")
+        StabilisationAction fssgv =
+          ConvertStringToStabAction(params.get<string>("fs subgrid viscosity","No"));
+        if (fssgv != fssgv_no)
         {
           fsvelnp = discretization.GetState("fsvelnp");
           if (fsvelnp==null) dserror("Cannot get state vector 'fsvelnp'");
@@ -395,27 +425,6 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         // set parameters for stabilization
         ParameterList& stablist = params.sublist("STABILIZATION");
 
-        // if not available, define map from string to action
-        if(stabstrtoact_.empty())
-        {
-          stabstrtoact_["no_pspg"        ]=pstab_assume_inf_sup_stable;
-          stabstrtoact_["yes_pspg"       ]=pstab_use_pspg;
-          stabstrtoact_["no_supg"        ]=convective_stab_none;
-          stabstrtoact_["yes_supg"       ]=convective_stab_supg;
-          stabstrtoact_["no_vstab"       ]=viscous_stab_none;
-          stabstrtoact_["vstab_gls"      ]=viscous_stab_gls;
-          stabstrtoact_["vstab_gls_rhs"  ]=viscous_stab_gls_only_rhs;
-          stabstrtoact_["vstab_usfem"    ]=viscous_stab_usfem;
-          stabstrtoact_["vstab_usfem_rhs"]=viscous_stab_usfem_only_rhs;
-          stabstrtoact_["no_cstab"       ]=continuity_stab_none;
-          stabstrtoact_["cstab_qs"       ]=continuity_stab_yes;
-          stabstrtoact_["no_cross"       ]=cross_stress_stab_none;
-          stabstrtoact_["cross_complete" ]=cross_stress_stab;
-          stabstrtoact_["cross_rhs"      ]=cross_stress_stab_only_rhs;
-          stabstrtoact_["no_reynolds"    ]=reynolds_stress_stab_none;
-          stabstrtoact_["reynolds_rhs"   ]=reynolds_stress_stab_only_rhs;
-        }
-
         StabilisationAction pspg     = ConvertStringToStabAction(stablist.get<string>("PSPG"));
         StabilisationAction supg     = ConvertStringToStabAction(stablist.get<string>("SUPG"));
         StabilisationAction vstab    = ConvertStringToStabAction(stablist.get<string>("VSTAB"));
@@ -443,9 +452,9 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         // (Since either all-scale Smagorinsky model (i.e., classical LES model
         // as will be inititalized below) or fine-scale Smagorinsky model is
         // used (and never both), the same input parameter can be exploited.)
-        if (fssgv != "No" && turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
+        if (fssgv != fssgv_no && turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
         dserror("No combination of a classical (all-scale) turbulence model and a fine-scale subgrid-viscosity approach currently possible!");
-        if (fssgv != "No") Cs = turbmodelparams.get<double>("C_SMAGORINSKY",0.0);
+        if (fssgv != fssgv_no) Cs = turbmodelparams.get<double>("C_SMAGORINSKY",0.0);
 
         // the default action is no model
         TurbModelAction turb_mod_action = no_model;
@@ -1042,12 +1051,13 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         const bool newton = params.get<bool>("include reactive terms for linearisation");
 
         // get flag for fine-scale subgrid viscosity
-        string fssgv = params.get<string>("fs subgrid viscosity","No");
+        StabilisationAction fssgv =
+          ConvertStringToStabAction(params.get<string>("fs subgrid viscosity","No"));
 
         // get fine-scale velocity
         RCP<const Epetra_Vector> fsvelaf;
         blitz::Array<double, 2> fsevelaf(3,numnode,blitz::ColumnMajorArray<2>());
-        if (fssgv != "No")
+        if (fssgv != fssgv_no)
         {
           fsvelaf = discretization.GetState("fsvelaf");
           if (fsvelaf==null) dserror("Cannot get state vector 'fsvelaf'");
@@ -1137,9 +1147,9 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         // (Since either all-scale Smagorinsky model (i.e., classical LES model
         // as will be inititalized below) or fine-scale Smagorinsky model is
         // used (and never both), the same input parameter can be exploited.)
-        if (fssgv != "No" && turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
+        if (fssgv != fssgv_no && turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
         dserror("No combination of a classical (all-scale) turbulence model and a fine-scale subgrid-viscosity approach currently possible!");
-        if (fssgv != "No") Cs = turbmodelparams.get<double>("C_SMAGORINSKY",0.0);
+        if (fssgv != fssgv_no) Cs = turbmodelparams.get<double>("C_SMAGORINSKY",0.0);
 
         // the default action is no model
         TurbModelAction turb_mod_action = no_model;
@@ -1665,12 +1675,13 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           StabilisationAction reynolds = ConvertStringToStabAction(stablist.get<string>("REYNOLDS-STRESS"));
 
           // get flag for fine-scale subgrid viscosity
-          string fssgv = params.get<string>("fs subgrid viscosity","No");
+          StabilisationAction fssgv =
+            ConvertStringToStabAction(params.get<string>("fs subgrid viscosity","No"));
 
           // get fine-scale velocity
           RCP<const Epetra_Vector> fsvelnp;
           blitz::Array<double, 2> fsevelnp(3,numnode,blitz::ColumnMajorArray<2>());
-          if (fssgv != "No")
+          if (fssgv != fssgv_no)
           {
             fsvelnp = discretization.GetState("fsvelnp");
             if (fsvelnp==null) dserror("Cannot get state vector 'fsvelnp'");

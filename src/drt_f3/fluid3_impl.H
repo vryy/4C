@@ -111,7 +111,7 @@ namespace ELEMENTS
                 double                                   time,
                 double                                   timefac,
                 bool                                     newton,
-                string                                   fssgv,
+                const enum Fluid3::StabilisationAction   fssgv,
                 const enum Fluid3::StabilisationAction   pspg,
                 const enum Fluid3::StabilisationAction   supg,
                 const enum Fluid3::StabilisationAction   vstab,
@@ -145,7 +145,7 @@ namespace ELEMENTS
       double&                                 Cs_delta_sq,
       double&                                 visceff,
       double&                                 l_tau,
-      string                                  fssgv);
+      const enum Fluid3::StabilisationAction  fssgv);
 
     /*!
      * \brief calculate the body force from the nodes condition
