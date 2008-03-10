@@ -32,6 +32,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/dof_management.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_mapextractor.H"
+#include "fluid_utils.H"
 
 
 
@@ -157,7 +158,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 
   const int numdim = params_.get<int>("number of velocity degrees of freedom");
 
-  SetupXFluidSplit(initialdofmanager,velpressplitter_);
+  FLUID_UTILS::SetupXFluidSplit(*discret_,initialdofmanager,velpressplitter_);
 
   // -------------------------------------------------------------------
   // get the processor ID from the communicator
@@ -429,68 +430,6 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   return;
 
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
-
-// -------------------------------------------------------------------
-// get a vector layout from the discretization to construct matching
-// vectors and matrices
-//                 local <-> global dof numbering
-// -------------------------------------------------------------------
-void XFluidImplicitTimeInt::SetupXFluidSplit(
-        RCP<XFEM::DofManager> dofman,
-        LINALG::MapExtractor& extractor)
-{
-	// -------------------------------------------------------------------
-	// get a vector layout from the discretization for a vector which only
-	// contains the velocity dofs and for one vector which only contains
-	// pressure degrees of freedom.
-	//
-	// The maps are designed assuming that every node has pressure and
-	// velocity degrees of freedom --- this won't work for inf-sup stable
-	// elements at the moment!
-	// -------------------------------------------------------------------
-
-	// Allocate integer vectors which will hold the dof number of the
-	// velocity or pressure dofs
-	vector<int> velmapdata;
-	vector<int> premapdata;
-
-	// collect global dofids for velocity and pressure in vectors
-	for (int i=0; i<discret_->NumMyRowNodes(); ++i) {
-		const DRT::Node* node = discret_->lRowNode(i);
-		const std::set<XFEM::FieldEnr> enrvarset = dofman->getNodeDofSet(node->Id());
-		const vector<int> dof = discret_->Dof(node);
-		dsassert(dof.size() == enrvarset.size(), "mismatch in length!");
-		std::set<XFEM::FieldEnr>::const_iterator enrvar;
-		unsigned int countdof = 0;
-		for (enrvar = enrvarset.begin(); enrvar != enrvarset.end(); ++enrvar) {
-			switch (enrvar->getField()) {
-				case XFEM::PHYSICS::Velx:
-				case XFEM::PHYSICS::Vely:
-				case XFEM::PHYSICS::Velz:
-					velmapdata.push_back(dof[countdof]);
-					break;
-				case XFEM::PHYSICS::Pres:
-					premapdata.push_back(dof[countdof]);
-					break;
-				default:
-					break;
-			}
-			countdof++;
-		}
-	}
-
-	// the rowmaps are generated according to the pattern provided by
-	// the data vectors
-	RCP<Epetra_Map> velrowmap = rcp(new Epetra_Map(-1,
-			velmapdata.size(),&velmapdata[0],0,
-			discret_->Comm()));
-	RCP<Epetra_Map> prerowmap = rcp(new Epetra_Map(-1,
-			premapdata.size(),&premapdata[0],0,
-			discret_->Comm()));
-
-	const Epetra_Map* map = discret_->DofRowMap();
-	extractor.Setup(*map, prerowmap, velrowmap);
-}
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1669,6 +1608,7 @@ void XFluidImplicitTimeInt::Output()
         output_.WriteVector("dispnm",dispnm_);
       }
     }
+
   }
 
   // write restart also when uprestart_ is not a integer multiple of upres_

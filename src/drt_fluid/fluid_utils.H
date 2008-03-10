@@ -22,6 +22,7 @@ Maintainer: Axel Gerstenberger
 #endif /* PARALLEL */
 
 #include "../drt_lib/drt_discret.H"
+#include "../drt_xfem/dof_management.H"
 #include "../drt_lib/linalg_mapextractor.H"
 
 /*!
@@ -50,6 +51,23 @@ void SetupFluidSplit(const DRT::Discretization& dis,
                      int ndim,
                      LINALG::MapExtractor& extractor);
 
+/// Split dof row map of discretization into velocity and pressure maps
+/*!
+
+  We assume that each node possesses ndim velocity dofs and (optionally)
+  one pressure dof. The dof row map is thus split in two.
+
+  The velocity dofs are assigned to map 0 (the other map) and the pressure
+  dofs are assigned to map 1 (the condition map).
+
+  \author a.ger
+  \date 03/08
+ */
+void SetupXFluidSplit(
+        const DRT::Discretization& dis,       ///< fluid discretization
+        RCP<XFEM::DofManager>      dofman,    ///< information about the dofs per node
+        LINALG::MapExtractor&      extractor  ///< ready made map splitter
+        );
 
 }
 

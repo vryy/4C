@@ -93,10 +93,6 @@ public:
   */
   ~XFluidImplicitTimeInt();
 
-  void SetupXFluidSplit(
-          RCP<XFEM::DofManager> dofman,
-          LINALG::MapExtractor& extractor);
-
   /*!
   \brief do explicit predictor step to start nonlinear iteration from
          a better initial value
