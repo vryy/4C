@@ -75,27 +75,28 @@ DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_findthick
   double s_stretch = sqrt(jac0stretch(1,1));
   double t_stretch = sqrt(jac0stretch(2,2));
   
-  double max_stretch = max(r_stretch, max(s_stretch, t_stretch));
+  // minimal stretch equivalents with "thinnest" direction
+  double min_stretch = min(r_stretch, min(s_stretch, t_stretch));
   
   ThicknessDirection thickdir; // of actual element
   int thick_index;
   
-  if (max_stretch == r_stretch) {
-    if ((max_stretch / s_stretch <= 0.5) || (max_stretch / t_stretch <=0.5)) {
+  if (min_stretch == r_stretch) {
+    if ((min_stretch / s_stretch <= 0.5) || (min_stretch / t_stretch <=0.5)) {
       dserror("Solid-Shell element geometry has not a shell aspect ratio");
     }
     thickdir = autor;
     thick_index = 0;
   }
-  else if (max_stretch == s_stretch) {
-    if ((max_stretch / r_stretch <= 0.5) || (max_stretch / t_stretch <=0.5)) {
+  else if (min_stretch == s_stretch) {
+    if ((min_stretch / r_stretch <= 0.5) || (min_stretch / t_stretch <=0.5)) {
       dserror("Solid-Shell element geometry has not a shell aspect ratio");
     }
     thickdir = autos;
     thick_index = 1;
   }
-  else if (max_stretch == t_stretch) {
-    if ((max_stretch / r_stretch <= 0.5) || (max_stretch / s_stretch <=0.5)) {
+  else if (min_stretch == t_stretch) {
+    if ((min_stretch / r_stretch <= 0.5) || (min_stretch / s_stretch <=0.5)) {
       dserror("Solid-Shell element geometry has not a shell aspect ratio");
     }
     thickdir = autot;
