@@ -23,6 +23,78 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_SerialDenseSolver.h>
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+DRT::ELEMENTS::Fluid3Impl* DRT::ELEMENTS::Fluid3Impl::Impl(DRT::ELEMENTS::Fluid3* f3)
+{
+  switch (f3->NumNode())
+  {
+  case 8:
+  {
+    static Fluid3Impl* f8;
+    if (f8==NULL)
+      f8 = new Fluid3Impl(8);
+    return f8;
+  }
+  case 20:
+  {
+    static Fluid3Impl* f20;
+    if (f20==NULL)
+      f20 = new Fluid3Impl(20);
+    return f20;
+  }
+  case 27:
+  {
+    static Fluid3Impl* f27;
+    if (f27==NULL)
+      f27 = new Fluid3Impl(27);
+    return f27;
+  }
+  case 4:
+  {
+    static Fluid3Impl* f4;
+    if (f4==NULL)
+      f4 = new Fluid3Impl(4);
+    return f4;
+  }
+  case 10:
+  {
+    static Fluid3Impl* f10;
+    if (f10==NULL)
+      f10 = new Fluid3Impl(10);
+    return f10;
+  }
+  case 6:
+  {
+    static Fluid3Impl* f6;
+    if (f6==NULL)
+      f6 = new Fluid3Impl(6);
+    return f6;
+  }
+  case 15:
+  {
+    static Fluid3Impl* f15;
+    if (f15==NULL)
+      f15 = new Fluid3Impl(15);
+    return f15;
+  }
+  case 5:
+  {
+    static Fluid3Impl* f5;
+    if (f5==NULL)
+      f5 = new Fluid3Impl(5);
+    return f5;
+  }
+
+  default:
+    dserror("node number %d not supported", f3->NumNode());
+  }
+  return NULL;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Fluid3Impl::Fluid3Impl(int iel)
   : iel_(iel),
     vart_(),

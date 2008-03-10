@@ -31,7 +31,7 @@ namespace ELEMENTS
   /// Internal Fluid3 implementation
   /*!
     This internal class keeps all the working arrays needed to
-    calculate the linearised Fluid3 element. Additionally the method 
+    calculate the linearised Fluid3 element. Additionally the method
     Sysmat() provides a clean and fast element implementation.
 
     <h3>Purpose</h3>
@@ -114,6 +114,8 @@ namespace ELEMENTS
                 struct _MATERIAL*       material,
                 double                  time,
                 double                  timefac);
+
+    static Fluid3lin_Impl* Impl(Fluid3* f3);
 
   private:
 

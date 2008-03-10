@@ -23,6 +23,78 @@ Maintainer: Christiane Foerster
 #include <Epetra_SerialDenseSolver.h>
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+DRT::ELEMENTS::Fluid3lin_Impl* DRT::ELEMENTS::Fluid3lin_Impl::Impl(DRT::ELEMENTS::Fluid3* f3)
+{
+  switch (f3->NumNode())
+  {
+  case 8:
+  {
+    static Fluid3lin_Impl* f8;
+    if (f8==NULL)
+      f8 = new Fluid3lin_Impl(8);
+    return f8;
+  }
+  case 20:
+  {
+    static Fluid3lin_Impl* f20;
+    if (f20==NULL)
+      f20 = new Fluid3lin_Impl(20);
+    return f20;
+  }
+  case 27:
+  {
+    static Fluid3lin_Impl* f27;
+    if (f27==NULL)
+      f27 = new Fluid3lin_Impl(27);
+    return f27;
+  }
+  case 4:
+  {
+    static Fluid3lin_Impl* f4;
+    if (f4==NULL)
+      f4 = new Fluid3lin_Impl(4);
+    return f4;
+  }
+  case 10:
+  {
+    static Fluid3lin_Impl* f10;
+    if (f10==NULL)
+      f10 = new Fluid3lin_Impl(10);
+    return f10;
+  }
+  case 6:
+  {
+    static Fluid3lin_Impl* f6;
+    if (f6==NULL)
+      f6 = new Fluid3lin_Impl(6);
+    return f6;
+  }
+  case 15:
+  {
+    static Fluid3lin_Impl* f15;
+    if (f15==NULL)
+      f15 = new Fluid3lin_Impl(15);
+    return f15;
+  }
+  case 5:
+  {
+    static Fluid3lin_Impl* f5;
+    if (f5==NULL)
+      f5 = new Fluid3lin_Impl(5);
+    return f5;
+  }
+
+  default:
+    dserror("node number %d not supported", f3->NumNode());
+  }
+  return NULL;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Fluid3lin_Impl::Fluid3lin_Impl(int iel)
   : iel_(iel),
     xyze_(3,iel_,blitz::ColumnMajorArray<2>()),
@@ -428,7 +500,7 @@ void DRT::ELEMENTS::Fluid3lin_Impl::Sysmat(Fluid3* ele,
 	estif(vi*4 + 2, ui*4)     += aux*viscs2_(0, 2, ui) ;
 	estif(vi*4 + 2, ui*4 + 1) += aux*viscs2_(1, 2, ui) ;
 	estif(vi*4 + 2, ui*4 + 2) += aux*viscs2_(2, 2, ui) ;
-	
+
 	/* supg stabilisation: pressure part  ( L_pres_p) */
 	/*
                       /                            \
@@ -616,7 +688,7 @@ void DRT::ELEMENTS::Fluid3lin_Impl::Caltau(
 
   /*----------------------------------------------------- compute tau_Mu ---*/
   /* stability parameter definition according to
-     
+
                   Barrenechea, G.R. and Valentin, F.: An unusual stabilized finite
                   element method for a generalized Stokes problem. Numerische
                   Mathematik, Vol. 92, pp. 652-677, 2002.

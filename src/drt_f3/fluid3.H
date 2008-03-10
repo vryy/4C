@@ -78,7 +78,7 @@ public:
   friend class Fluid3Impl;
   friend class Fluid3lin_Impl;
   friend class Fluid3GenalphaResVMM;
-  friend class Fluid3Stationary;  
+  friend class Fluid3Stationary;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -269,7 +269,7 @@ public:
     o compute integrals over homogeneous planes for turbulent channel flow simulations
   </pre>
 
-  
+
 
   \param params (in/out): ParameterList for communication between control routine
                           and elements
@@ -341,7 +341,7 @@ private:
     calc_fluid_genalpha_sysmat_and_residual,
     calc_fluid_genalpha_update_for_subscales,
     calc_fluid_genalpha_average_for_subscales_and_residual,
-    calc_fluid_stationary_systemmat_and_residual,    
+    calc_fluid_stationary_systemmat_and_residual,
     calc_fluid_beltrami_error,
     calc_turbulence_statistics,
     calc_fluid_box_filter,
@@ -383,7 +383,7 @@ private:
     smagorinsky_with_wall_damping,
     dynamic_smagorinsky
   };
-  
+
   //! map that converts strings to actions (stabilisation)
   static map<string,StabilisationAction>          stabstrtoact_;
 
@@ -405,8 +405,8 @@ private:
   vector<RefCountPtr<DRT::ELEMENTS::Fluid3Line> > lines_;
   //! vector of lines adjacent to this element
   vector<DRT::ELEMENTS::Fluid3Line*>              lineptrs_;
-  
- 
+
+
   //! some distypes need rewinding of NodeIds due to bad input from mesher
   //! flag to rewind this element, must be availabale for friend class fluid3register
 protected:
@@ -416,7 +416,7 @@ protected:
 private:
   //! factor including Smagorinsky's constant
   double                                        Cs_delta_sq_;
-  
+
   //! matrices of subscale acceleration values in gausspoints of this element
   blitz::Array<double,2>                        sub_acc_old_;
 
@@ -536,9 +536,9 @@ private:
                          ^2            ^2            ^2            ^2
     and        numele * u  , numele * v  , numele * w  , numele * p
 
-                        _ _           _ _           _ _  
+                        _ _           _ _           _ _
    as well as  numele * u*v, numele * u*w, numele * v*w
-  
+
 
     as well as numele.
     All results are communicated via the parameter list!
@@ -573,13 +573,13 @@ private:
     \param vel_hat                       (out)  : integrated convolution
                                                   with velocity
     \param reystr_hat                    (out)  : integrated convolution
-                                                  with reynolds stresses 
+                                                  with reynolds stresses
     \param modeled_stress_grid_scale_hat (out)  : integrated convolution
                                                   with subgrid scale
                                                   stress tensor model
     \param volume                        (out)  : element volume
     \return void
-    
+
    */
   void f3_apply_box_filter(
     blitz::Array<double, 2>&  evelaf,
@@ -595,11 +595,11 @@ private:
 
     References are
 
-    
+
     M. Germano, U. Piomelli, P. Moin, W.H. Cabot:
     A dynamic subgrid-scale eddy viscosity model
     (Phys. Fluids 1991)
-      
+
     or
 
     D.K. Lilly:
@@ -613,22 +613,22 @@ private:
     (Phd thesis, Rensselaer Polytechnic Institute, Troy, New York)
 
     <pre>
-    
+
     L_ij : the tensor of resolved components of the stress tensor associated
            with the scales of motion between the resolved and the test scale
 
     M_ij : the tensor of modeled components of the stress tensor associated
            with the scales of motion between the resolved and the test scale
            (modulo 2Cs, a constant)
-    
+
     </pre>
 
-    
+
     \param evelaf                        (in )  : nodal velocities
     \param vel_hat                       (in)   : integrated convolution
                                                   with velocity
     \param reystr_hat                    (in)   : integrated convolution
-                                                  with reynolds stresses 
+                                                  with reynolds stresses
     \param modeled_stress_grid_scale_hat (in)   : integrated convolution
                                                   with subgrid scale
                                                   stress tensor model
@@ -640,7 +640,7 @@ private:
                                                   itself
     \param center                        (out)  : element center
     \return void
-    
+
    */
 
 void f3_calc_smag_const_LijMij_and_MijMij(
@@ -651,7 +651,7 @@ void f3_calc_smag_const_LijMij_and_MijMij(
   double&                 MijMij,
   double&                 center);
 
-  
+
   void CreateLinesTet(const int& nline,
                       const int& nnode);
 
@@ -690,17 +690,11 @@ void f3_calc_smag_const_LijMij_and_MijMij(
   //! convert string to stabilisation action
   StabilisationAction ConvertStringToStabAction (const string& action) const;
 
-  /// Internal implementation class for specific fluid element
-  Fluid3Impl* Impl();
-
-  /// Internal implementation class for linearised fluid element
-  Fluid3lin_Impl* F3linImpl();
-
   /// Residual based genalpha implementation class for fluid element
   Fluid3GenalphaResVMM* GenalphaResVMM();
-  
+
   /// Internal implementation class for fluid element -- stationary formulation
-  Fluid3Stationary* StationaryImpl();  
+  Fluid3Stationary* StationaryImpl();
 
 }; // class Fluid3
 

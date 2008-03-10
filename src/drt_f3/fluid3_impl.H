@@ -90,7 +90,7 @@ namespace ELEMENTS
       \param time     (i) current simulation time
       \param timefac  (i) time discretization factor
       \param fssgv    (i) flag for type of fine-scale subgrid viscosity
-      \param pspg     (i) boolean flag for stabilisation 
+      \param pspg     (i) boolean flag for stabilisation
       \param supg     (i) boolean flag for stabilisation
       \param vstab    (i) boolean flag for stabilisation
       \param cstab    (i) boolean flag for stabilisation
@@ -123,6 +123,10 @@ namespace ELEMENTS
                 double&                                  Cs_delta_sq,
                 double&                                  visceff,
                 double&                                  l_tau);
+
+
+    /// Internal implementation class for specific fluid element
+    static Fluid3Impl* Impl(DRT::ELEMENTS::Fluid3* f3);
 
   private:
 
