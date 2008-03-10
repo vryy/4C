@@ -451,8 +451,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     
     double rateofstrain = 0;
     {
-      blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());
-      epsilon = 0.5 * ( vderxyaf_(i,j) + vderxyaf_(j,i) );
+      const blitz::Array<double,2> epsilon(0.5 * ( vderxyaf_(i,j) + vderxyaf_(j,i) ));
       
       for(int rr=0;rr<3;rr++)
       {

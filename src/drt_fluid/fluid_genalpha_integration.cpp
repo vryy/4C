@@ -1120,7 +1120,7 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   discret_->ClearState();
 
   // get density
-  density_ = eleparams.get("density", 0.0);
+  density_ = eleparams.get<double>("density");
 
   // end time measurement for element call
   tm3_ref_=null;

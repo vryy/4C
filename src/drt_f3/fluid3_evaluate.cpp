@@ -1502,7 +1502,11 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
 
 #ifdef PERF
         timeeleinitsmag_ref = null; 
-#endif        
+#endif
+
+        // This is a very poor way to transport the density to the
+        // outside world. Is there a better one?
+        params.set("density", actmat->m.fluid->density);
       }
       break;
       case calc_fluid_genalpha_update_for_subscales:
@@ -2734,7 +2738,6 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
 
   // allocate arrays for shapefunctions, derivatives and the transposed jacobian
   blitz::Array<double,1>  funct(iel);
-  blitz::Array<double,2>  xjm  (3,3);
   blitz::Array<double,2>  deriv(3,iel,blitz::ColumnMajorArray<2>());
 
 
@@ -2799,7 +2802,7 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
   }
 
   // get Jacobian matrix 
-  xjm = blitz::sum(deriv(i,k)*xyze(j,k),k);
+  blitz::Array<double,2> xjm(blitz::sum(deriv(i,k)*xyze(j,k),k));
 
   //
   //             compute global first derivates
