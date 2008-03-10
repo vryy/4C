@@ -35,7 +35,6 @@ is_ale_(false),
 data_(),
 eleDofManager_()
 {
-    gaussrule_ = intrule3D_undefined;
     surfaces_.resize(0);
     surfaceptrs_.resize(0);
     lines_.resize(0);
@@ -56,7 +55,6 @@ eleDofManager_()
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::XFluid3::XFluid3(const DRT::ELEMENTS::XFluid3& old) :
 DRT::Element(old),
-gaussrule_(old.gaussrule_),
 is_ale_(old.is_ale_),
 data_(old.data_),
 surfaces_(old.surfaces_),
@@ -115,8 +113,6 @@ void DRT::ELEMENTS::XFluid3::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
-  // Gaussrule
-  AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   // is_ale_
   AddtoPack(data,is_ale_);
   // rewinding bools
@@ -161,10 +157,6 @@ void DRT::ELEMENTS::XFluid3::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  // Gaussrule
-  int gausrule_integer;
-  ExtractfromPack(position,data,gausrule_integer);
-  gaussrule_ = GaussRule3D(gausrule_integer); //explicit conversion from integer to enum
   // is_ale_
   ExtractfromPack(position,data,is_ale_);
   // rewinding bools
@@ -183,7 +175,7 @@ void DRT::ELEMENTS::XFluid3::Unpack(const vector<char>& data)
     sub_vel_    .resize(firstdim,secondim);
     sub_vel_old_.resize(firstdim,secondim);
 
-    int size = firstdim*secondim*sizeof(double);
+    const int size = firstdim*secondim*sizeof(double);
 
     ExtractfromPack(position,data,&(sub_acc_old_.data()[0]),size);
     ExtractfromPack(position,data,&(sub_vel_.data()[0])    ,size);

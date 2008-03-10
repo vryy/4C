@@ -97,115 +97,12 @@ bool DRT::ELEMENTS::XFluid3::ReadElement()
     dsassert(ierr==1, "Reading of material for FLUID3 element failed\n");
     dsassert(material!=0, "No material defined for FLUID3 element\n");
     SetMaterial(material);
-
-
-    // read gaussian points and set gaussrule
-    char  buffer[50];
-    int ngp[3];
-    switch (distype)
-    {
-    case hex8: case hex20: case hex27:
-    {
-        frint_n("GP",ngp,3,&ierr);
-        dsassert(ierr==1, "Reading of FLUID3 element failed: GP\n");
-        switch (ngp[0])
-        {
-        case 1:
-            gaussrule_ = intrule_hex_1point;
-            break;
-        case 2:
-            gaussrule_ = intrule_hex_8point;
-            break;
-        case 3:
-            gaussrule_ = intrule_hex_27point;
-            break;
-        default:
-            dserror("Reading of FLUID3 element failed: Gaussrule for hexaeder not supported!\n");
-        }
-        break;
-    }
-    case tet4: case tet10:
-    {
-        frint("GP_TET",&ngp[0],&ierr);
-        dsassert(ierr==1, "Reading of FLUID3 element failed: GP_TET\n");
-
-        frchar("GP_ALT",buffer,&ierr);
-        dsassert(ierr==1, "Reading of FLUID3 element failed: GP_ALT\n");
-
-        switch(ngp[0])
-        {
-        case 1:
-            if (strncmp(buffer,"standard",8)==0)
-                gaussrule_ = intrule_tet_1point;
-            else
-                dserror("Reading of FLUID3 element failed: GP_ALT: gauss-radau not possible!\n");
-            break;
-        case 4:
-            if (strncmp(buffer,"standard",8)==0)
-                gaussrule_ = intrule_tet_4point;
-            else if (strncmp(buffer,"gaussrad",8)==0)
-                gaussrule_ = intrule_tet_4point_alternative;
-            else
-                dserror("Reading of FLUID3 element failed: GP_ALT\n");
-            break;
-        case 10:
-            if (strncmp(buffer,"standard",8)==0)
-                gaussrule_ = intrule_tet_5point;
-            else
-                dserror("Reading of FLUID3 element failed: GP_ALT: gauss-radau not possible!\n");
-            break;
-        default:
-            dserror("Reading of FLUID3 element failed: Gaussrule for tetraeder not supported!\n");
-        }
-        break;
-    } // end reading gaussian points for tetrahedral elements
-    case wedge6: case wedge15:
-    {
-      frint("GP_WEDGE",&ngp[0],&ierr);
-        dsassert(ierr==1, "Reading of FLUID3 element failed: GP_WEDGE\n");
-      switch (ngp[0])
-        {
-        case 1:
-            gaussrule_ = intrule_wedge_1point;
-            break;
-        case 6:
-            gaussrule_ = intrule_wedge_6point;
-            break;
-        case 9:
-            gaussrule_ = intrule_wedge_9point;
-            break;
-        default:
-            dserror("Reading of FLUID3 element failed: Gaussrule for wedge  not supported!\n");
-        }
-        break;
-    }
-
-    case pyramid5:
-    {
-      frint("GP_PYRAMID",&ngp[0],&ierr);
-        dsassert(ierr==1, "Reading of FLUID3 element failed: GP_PYRAMID\n");
-      switch (ngp[0])
-        {
-        case 1:
-            gaussrule_ = intrule_pyramid_1point;
-            break;
-        case 8:
-            gaussrule_ = intrule_pyramid_8point;
-            break;
-        default:
-            dserror("Reading of FLUID3 element failed: Gaussrule for pyramid  not supported!\n");
-        }
-        break;
-    }
-    default:
-        dserror("Reading of FLUID3 element failed: integration points\n");
-    } // end switch distype
-
+    
     // Initialize winding flags
     donerewinding_ = false;
-
-
+    
     // read net algo
+    char  buffer[50];
     frchar("NA",buffer,&ierr);
     if (ierr==1)
     {
@@ -224,12 +121,6 @@ bool DRT::ELEMENTS::XFluid3::ReadElement()
     }
     else
         dserror("Reading of FLUID3 element net algorithm failed: NA\n");
-
-
-  // input of ale and free surface related stuff is not supported
-  // at the moment. TO DO!
-  // see src/fluid3/f3_inpele.c for missing details
-
 
   return true;
 

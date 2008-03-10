@@ -550,7 +550,7 @@ inline DRT::UTILS::GaussRule3D getOptimalVelocityGaussrule()
 template <DRT::Element::DiscretizationType  distype, XFEM::AssemblyType asstype>
 inline DRT::UTILS::GaussRule3D getXFEMGaussrule(const bool intersected)
 {
-    DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule3D_undefined;
+    DRT::UTILS::GaussRule3D rule = getOptimalVelocityGaussrule<distype>();
     if (asstype == XFEM::xfem_assembly)
     {
         if (intersected)
@@ -560,19 +560,37 @@ inline DRT::UTILS::GaussRule3D getXFEMGaussrule(const bool intersected)
             // -> enrichment values might be undefined 
             rule = DRT::UTILS::intrule_tet_11point;
         }
-        else
-        {
-            rule = getOptimalVelocityGaussrule<distype>();
-        }
-    }
-    else
-    {
-        rule = getOptimalVelocityGaussrule<distype>();
     }
     return rule;
 }
 
-  
+/*!
+  tell, whether second derivatives have to be calculated
+ */
+template <DRT::Element::DiscretizationType  DISTYPE>
+bool secondDerivativesAvailable()
+{
+  bool hoel = true;
+  switch (DISTYPE)
+  {
+  case DRT::Element::hex8:
+  case DRT::Element::hex20:
+  case DRT::Element::hex27:
+  case DRT::Element::tet10:
+  case DRT::Element::wedge6:
+  case DRT::Element::wedge15:
+  case DRT::Element::pyramid5:
+    hoel = true;
+    break;
+  case DRT::Element::tet4:
+    hoel = false;
+    break;
+  default:
+    dserror("DISTYPE unknown!");
+  }
+  return hoel;
+}
+
   /*!
     Calculate inverse of a matrix
 
@@ -605,7 +623,7 @@ void Sysmat(
         const std::vector<double>&        locval_hist,   ///< nodal unknowns at n
         BlitzMat&                         estif,         ///< element matrix to calculate
         BlitzVec&                         eforce,        ///< element rhs to calculate
-        struct _MATERIAL*                 material,      ///< fluid material
+        const struct _MATERIAL*           material,      ///< fluid material
         const double                      time,          ///< current time (pseudotime for stationary formulation)
         const double                      timefac,       ///< One-step-Theta: theta*dt, BDF2: 2/3 * dt, stationary: 1.0
         const bool                        newton,        ///< full Newton or fixed-point-like
@@ -632,7 +650,8 @@ void Sysmat(
 
     // flag for higher order elements
     const bool higher_order_ele = ele->isHigherOrderElement<DISTYPE>();
-
+    //const bool higher_order_ele = secondDerivativesAvailable<DISTYPE>();
+    
     const DRT::UTILS::GaussRule3D gaussrule = getXFEMGaussrule<DISTYPE,ASSTYPE>(ih->ElementIntersected(ele->Id()));
     
     const LocalAssembler<DISTYPE, ASSTYPE> assembler(dofman, estif, eforce);
@@ -991,33 +1010,100 @@ void Sysmat(
             const double val = blitz::sum(blitz::abs(blitz::sum(velino(j)*derxy(j,i),j)));
             const double strle = 2.0/val;
 
-            // calculate tau: stabilization parameters for stationary case
+            double tau_stab_M;
+            double tau_stab_Mp;
+            double tau_stab_C;
+            if (instationary)
+            {
+                // calculate tau: stabilization parameters for stationary case
+                
+                const double visceff = visc;
+                /* viscous : reactive forces */
+                const double re1 = 4.0 * timefac * visceff / (mk * DSQR(strle));
 
-            // compute tau_Mu
-            const double re_tau_mu = mk * vel_norm * strle / (2.0 * visc);   /* convective : viscous forces */
-            const double xi_tau_mu = DMAX(re_tau_mu, 1.0);
-            const double tau_stab_0 = (DSQR(strle)*mk)/(4.0*visc*xi_tau_mu);
+                /* convective : viscous forces */
+                const double re2 = mk * vel_norm * strle / (2.0 * visceff);
 
-            // compute tau_Mp
-            const double re_tau_mp = mk * vel_norm * hk / (2.0 * visc);      /* convective : viscous forces */
-            const double xi_tau_mp = DMAX(re_tau_mp,1.0);
-            const double tau_stab_1 = (DSQR(hk)*mk)/(4.0*visc*xi_tau_mp);
+                const double xi1 = DMAX(re1,1.0);
+                const double xi2 = DMAX(re2,1.0);
 
-            // compute tau_C
-            const double xi_tau_c = DMIN(re_tau_mp, 1.0);
-            const double tau_stab_2 = 0.5*vel_norm*hk*xi_tau_c;
-      
+                tau_stab_M = DSQR(strle) / (DSQR(strle)*xi1+( 4.0 * timefac*visceff/mk)*xi2);
+
+                // compute tau_Mp
+                //    stability parameter definition according to Franca and Valentin (2000)
+                //                                       and Barrenechea and Valentin (2002)
+
+                 /* viscous : reactive forces */
+                const double re_viscous = 4.0 * timefac * visceff / (mk * DSQR(hk));
+                /* convective : viscous forces */
+                const double re_convect = mk * vel_norm * hk / (2.0 * visceff);
+
+                const double xi_viscous = DMAX(re_viscous,1.0);
+                const double xi_convect = DMAX(re_convect,1.0);
+
+                /*
+                                xi1,xi2 ^
+                                        |      /
+                                        |     /
+                                        |    /
+                                      1 +---+
+                                        |
+                                        |
+                                        |
+                                        +--------------> re1,re2
+                                            1
+                */
+                tau_stab_Mp = DSQR(hk) / (DSQR(hk) * xi_viscous + ( 4.0 * timefac * visceff/mk) * xi_convect);
+
+                /*------------------------------------------------------ compute tau_C ---*/
+                /*-- stability parameter definition according to Codina (2002), CMAME 191
+                 *
+                 * Analysis of a stabilized finite element approximation of the transient
+                 * convection-diffusion-reaction equation using orthogonal subscales.
+                 * Ramon Codina, Jordi Blasco; Comput. Visual. Sci., 4 (3): 167-174, 2002.
+                 *
+                 * */
+                //tau[2] = sqrt(DSQR(visc)+DSQR(0.5*vel_norm*hk));
+
+                // Wall Diss. 99
+                /*
+                                    xi2 ^
+                                        |
+                                      1 |   +-----------
+                                        |  /
+                                        | /
+                                        |/
+                                        +--------------> Re2
+                                            1
+                */
+                const double xi_tau_c = min(re2,1.0);
+                tau_stab_C = vel_norm * hk * 0.5 * xi_tau_c /timefac;
+            }
+            else
+            {
+                // calculate tau: stabilization parameters for stationary case
+                
+                // compute tau_Mu
+                const double re_tau_mu = mk * vel_norm * strle / (2.0 * visc);   /* convective : viscous forces */
+                const double xi_tau_mu = DMAX(re_tau_mu, 1.0);
+                tau_stab_M = (DSQR(strle)*mk)/(4.0*visc*xi_tau_mu);
+    
+                // compute tau_Mp
+                const double re_tau_mp = mk * vel_norm * hk / (2.0 * visc);      /* convective : viscous forces */
+                const double xi_tau_mp = DMAX(re_tau_mp,1.0);
+                tau_stab_Mp = (DSQR(hk)*mk)/(4.0*visc*xi_tau_mp);
+    
+                // compute tau_C
+                const double xi_tau_c = DMIN(re_tau_mp, 1.0);
+                tau_stab_C = 0.5*vel_norm*hk*xi_tau_c;
+            }
+            
             // stabilisation parameter
-            const double tau_M  = tau_stab_0*fac;
-            const double tau_Mp = tau_stab_1*fac;
-            const double tau_C  = tau_stab_2*fac;
+            const double tau_M  = fac*tau_stab_M;
+            const double tau_Mp = fac*tau_stab_Mp;
+            const double tau_C  = fac*tau_stab_C;
             
             // integration factors and coefficients of single terms
-            const double timetauM   = timefac * tau_M;
-            const double timetauMp  = timefac * tau_Mp;
-
-            const double ttimetauM  = timefac * timetauM;
-            const double ttimetauMp = timefac * timetauMp;
             const double timefacfac = timefac * fac;
 
             /*------------------------- evaluate rhs vector at integration point ---*/
@@ -1111,7 +1197,7 @@ void Sysmat(
             assembler.template Matrix<Vely,Vely>(shp, timefacfac, enr_conv_c_);
             assembler.template Matrix<Velz,Velz>(shp, timefacfac, enr_conv_c_);
             
-            assembler.template Vector<Velx>(shp, -timefacfac*(velint(0)*vderxy(0,0)
+            assembler.template Vector<Velx>(shp, -timefacfac*(velint(0)*vderxy(0,0) // check order
                                                              +velint(1)*vderxy(0,1)
                                                              +velint(2)*vderxy(0,2)));
             assembler.template Vector<Vely>(shp, -timefacfac*(velint(0)*vderxy(1,0)
@@ -1314,6 +1400,7 @@ void Sysmat(
             //                 PRESSURE STABILISATION PART
             if(pstab)
             {
+                const double timetauMp  = timefac * tau_Mp;
                 if (instationary)
                 {
                     /* pressure stabilisation: inertia */
@@ -1328,6 +1415,7 @@ void Sysmat(
                     assembler.template Matrix<Pres,Vely>(shp_dy, timetauMp, shp);
                     assembler.template Matrix<Pres,Velz>(shp_dz, timetauMp, shp);
                 }
+                const double ttimetauMp = timefac * timefac * tau_Mp;
                 /* pressure stabilisation: convection, convective part */
                 /*
                           /                             \
@@ -1404,6 +1492,7 @@ void Sysmat(
             //                     SUPG STABILISATION PART
             if(supg)
             {
+                const double timetauM   = timefac * tau_M;
                 if (instationary)
                 {
                     /* supg stabilisation: inertia  */
@@ -1414,9 +1503,9 @@ void Sysmat(
                              |        \ (i)       /     |
                               \                        /
                     */
-                    assembler.template Matrix<Velx,Velx>(shp, timetauM, enr_conv_c_);
-                    assembler.template Matrix<Vely,Vely>(shp, timetauM, enr_conv_c_);
-                    assembler.template Matrix<Velz,Velz>(shp, timetauM, enr_conv_c_);
+                    assembler.template Matrix<Velx,Velx>(enr_conv_c_, timetauM, shp);
+                    assembler.template Matrix<Vely,Vely>(enr_conv_c_, timetauM, shp);
+                    assembler.template Matrix<Velz,Velz>(enr_conv_c_, timetauM, shp);
                     
                     if (newton)
                     {
@@ -1429,17 +1518,18 @@ void Sysmat(
                                    \                           /
     
                         */
-                        assembler.template Matrix<Velx,Velx>(shp, timetauM*velint(0), shp_dx);
-                        assembler.template Matrix<Velx,Vely>(shp, timetauM*velint(0), shp_dy);
-                        assembler.template Matrix<Velx,Velz>(shp, timetauM*velint(0), shp_dz);
-                        assembler.template Matrix<Vely,Velx>(shp, timetauM*velint(1), shp_dx);
-                        assembler.template Matrix<Vely,Vely>(shp, timetauM*velint(1), shp_dy);
-                        assembler.template Matrix<Vely,Velz>(shp, timetauM*velint(1), shp_dz);
-                        assembler.template Matrix<Velz,Velx>(shp, timetauM*velint(2), shp_dx);
-                        assembler.template Matrix<Velz,Vely>(shp, timetauM*velint(2), shp_dy);
-                        assembler.template Matrix<Velz,Velz>(shp, timetauM*velint(2), shp_dz);
+                        assembler.template Matrix<Velx,Velx>(shp_dx, timetauM*velint(0), shp);
+                        assembler.template Matrix<Velx,Vely>(shp_dy, timetauM*velint(0), shp);
+                        assembler.template Matrix<Velx,Velz>(shp_dz, timetauM*velint(0), shp);
+                        assembler.template Matrix<Vely,Velx>(shp_dx, timetauM*velint(1), shp);
+                        assembler.template Matrix<Vely,Vely>(shp_dy, timetauM*velint(1), shp);
+                        assembler.template Matrix<Vely,Velz>(shp_dz, timetauM*velint(1), shp);
+                        assembler.template Matrix<Velz,Velx>(shp_dx, timetauM*velint(2), shp);
+                        assembler.template Matrix<Velz,Vely>(shp_dy, timetauM*velint(2), shp);
+                        assembler.template Matrix<Velz,Velz>(shp_dz, timetauM*velint(2), shp);
                     }
                 }
+                const double ttimetauM  = timefac * timefac * tau_M;
                 /* supg stabilisation: convective part ( L_conv_u) */
                 /*
                      /                                          \
@@ -1866,6 +1956,9 @@ void Sysmat(
 //            const double tau_Mp = tau_stab_1*fac;
 //            const double tau_C  = tau_stab_2*fac;
             
+            // integration factors and coefficients of single terms
+            const double timefacfac = timefac * fac;
+            
 
             /*--------------------------------- now build single stiffness terms ---*/
 
@@ -1877,30 +1970,30 @@ void Sysmat(
                            \                   /
             */
             // i = x
-            assembler.template Matrix<Sigmaxx,Velx>(shp_sigma, fac*normalvec(0), shp);
-            assembler.template Matrix<Sigmaxy,Velx>(shp_sigma, fac*normalvec(1), shp);
-            assembler.template Matrix<Sigmaxz,Velx>(shp_sigma, fac*normalvec(2), shp);
+            assembler.template Matrix<Sigmaxx,Velx>(shp_sigma, timefacfac*normalvec(0), shp);
+            assembler.template Matrix<Sigmaxy,Velx>(shp_sigma, timefacfac*normalvec(1), shp);
+            assembler.template Matrix<Sigmaxz,Velx>(shp_sigma, timefacfac*normalvec(2), shp);
             // i = y
-            assembler.template Matrix<Sigmayx,Vely>(shp_sigma, fac*normalvec(0), shp);
-            assembler.template Matrix<Sigmayy,Vely>(shp_sigma, fac*normalvec(1), shp);
-            assembler.template Matrix<Sigmayz,Vely>(shp_sigma, fac*normalvec(2), shp);
+            assembler.template Matrix<Sigmayx,Vely>(shp_sigma, timefacfac*normalvec(0), shp);
+            assembler.template Matrix<Sigmayy,Vely>(shp_sigma, timefacfac*normalvec(1), shp);
+            assembler.template Matrix<Sigmayz,Vely>(shp_sigma, timefacfac*normalvec(2), shp);
             // i = z
-            assembler.template Matrix<Sigmazx,Velz>(shp_sigma, fac*normalvec(0), shp);
-            assembler.template Matrix<Sigmazy,Velz>(shp_sigma, fac*normalvec(1), shp);
-            assembler.template Matrix<Sigmazz,Velz>(shp_sigma, fac*normalvec(2), shp);
+            assembler.template Matrix<Sigmazx,Velz>(shp_sigma, timefacfac*normalvec(0), shp);
+            assembler.template Matrix<Sigmazy,Velz>(shp_sigma, timefacfac*normalvec(1), shp);
+            assembler.template Matrix<Sigmazz,Velz>(shp_sigma, timefacfac*normalvec(2), shp);
             
             // i = x
-            assembler.template Vector<Sigmaxx>(shp_sigma, -fac*normalvec(0)*velint(0));
-            assembler.template Vector<Sigmaxy>(shp_sigma, -fac*normalvec(1)*velint(0));
-            assembler.template Vector<Sigmaxz>(shp_sigma, -fac*normalvec(2)*velint(0));
+            assembler.template Vector<Sigmaxx>(shp_sigma, -timefacfac*normalvec(0)*velint(0));
+            assembler.template Vector<Sigmaxy>(shp_sigma, -timefacfac*normalvec(1)*velint(0));
+            assembler.template Vector<Sigmaxz>(shp_sigma, -timefacfac*normalvec(2)*velint(0));
             // i = y
-            assembler.template Vector<Sigmayx>(shp_sigma, -fac*normalvec(0)*velint(1));
-            assembler.template Vector<Sigmayy>(shp_sigma, -fac*normalvec(1)*velint(1));
-            assembler.template Vector<Sigmayz>(shp_sigma, -fac*normalvec(2)*velint(1));
+            assembler.template Vector<Sigmayx>(shp_sigma, -timefacfac*normalvec(0)*velint(1));
+            assembler.template Vector<Sigmayy>(shp_sigma, -timefacfac*normalvec(1)*velint(1));
+            assembler.template Vector<Sigmayz>(shp_sigma, -timefacfac*normalvec(2)*velint(1));
             // i = z            
-            assembler.template Vector<Sigmazx>(shp_sigma, -fac*normalvec(0)*velint(2));
-            assembler.template Vector<Sigmazy>(shp_sigma, -fac*normalvec(1)*velint(2));
-            assembler.template Vector<Sigmazz>(shp_sigma, -fac*normalvec(2)*velint(2));
+            assembler.template Vector<Sigmazx>(shp_sigma, -timefacfac*normalvec(0)*velint(2));
+            assembler.template Vector<Sigmazy>(shp_sigma, -timefacfac*normalvec(1)*velint(2));
+            assembler.template Vector<Sigmazz>(shp_sigma, -timefacfac*normalvec(2)*velint(2));
             
             // symmetric part from partial integration of stress term
             /*
@@ -1910,22 +2003,22 @@ void Sysmat(
                           |             |
                            \           /
             */
-            assembler.template Matrix<Velx,Sigmaxx>(shp, fac*normalvec(0), shp_sigma);
-            assembler.template Matrix<Velx,Sigmaxy>(shp, fac*normalvec(1), shp_sigma);
-            assembler.template Matrix<Velx,Sigmaxz>(shp, fac*normalvec(2), shp_sigma);
+            assembler.template Matrix<Velx,Sigmaxx>(shp, timefacfac*normalvec(0), shp_sigma);
+            assembler.template Matrix<Velx,Sigmaxy>(shp, timefacfac*normalvec(1), shp_sigma);
+            assembler.template Matrix<Velx,Sigmaxz>(shp, timefacfac*normalvec(2), shp_sigma);
             
-            assembler.template Matrix<Vely,Sigmayx>(shp, fac*normalvec(0), shp_sigma);
-            assembler.template Matrix<Vely,Sigmayy>(shp, fac*normalvec(1), shp_sigma);
-            assembler.template Matrix<Vely,Sigmayz>(shp, fac*normalvec(2), shp_sigma);
+            assembler.template Matrix<Vely,Sigmayx>(shp, timefacfac*normalvec(0), shp_sigma);
+            assembler.template Matrix<Vely,Sigmayy>(shp, timefacfac*normalvec(1), shp_sigma);
+            assembler.template Matrix<Vely,Sigmayz>(shp, timefacfac*normalvec(2), shp_sigma);
             
-            assembler.template Matrix<Velz,Sigmazx>(shp, fac*normalvec(0), shp_sigma);
-            assembler.template Matrix<Velz,Sigmazy>(shp, fac*normalvec(1), shp_sigma);
-            assembler.template Matrix<Velz,Sigmazz>(shp, fac*normalvec(2), shp_sigma);
+            assembler.template Matrix<Velz,Sigmazx>(shp, timefacfac*normalvec(0), shp_sigma);
+            assembler.template Matrix<Velz,Sigmazy>(shp, timefacfac*normalvec(1), shp_sigma);
+            assembler.template Matrix<Velz,Sigmazz>(shp, timefacfac*normalvec(2), shp_sigma);
             
             const BlitzVec tau_times_n(blitz::sum(sigma(i,j)*normalvec(j),j));
-            assembler.template Vector<Velx>(shp, -fac*tau_times_n(0));
-            assembler.template Vector<Vely>(shp, -fac*tau_times_n(1));
-            assembler.template Vector<Velz>(shp, -fac*tau_times_n(2));
+            assembler.template Vector<Velx>(shp, -timefacfac*tau_times_n(0));
+            assembler.template Vector<Vely>(shp, -timefacfac*tau_times_n(1));
+            assembler.template Vector<Velz>(shp, -timefacfac*tau_times_n(2));
             
 //            if (pstab)
 //            {
@@ -1962,13 +2055,13 @@ void Sysmat(
                           |           |
                            \         /
             */
-//            assembler.template Matrix<Velx,Pres>(shp, -fac*normalvec(0), shp);
-//            assembler.template Matrix<Vely,Pres>(shp, -fac*normalvec(1), shp);
-//            assembler.template Matrix<Velz,Pres>(shp, -fac*normalvec(2), shp);
-//            
-//            assembler.template Vector<Velx>(shp, fac*normalvec(0)*press);
-//            assembler.template Vector<Vely>(shp, fac*normalvec(1)*press);
-//            assembler.template Vector<Velz>(shp, fac*normalvec(2)*press);  
+            assembler.template Matrix<Velx,Pres>(shp, -fac*normalvec(0), shp);
+            assembler.template Matrix<Vely,Pres>(shp, -fac*normalvec(1), shp);
+            assembler.template Matrix<Velz,Pres>(shp, -fac*normalvec(2), shp);
+            
+            assembler.template Vector<Velx>(shp, fac*normalvec(0)*press);
+            assembler.template Vector<Vely>(shp, fac*normalvec(1)*press);
+            assembler.template Vector<Velz>(shp, fac*normalvec(2)*press);  
 
         } // end loop over gauss points
     } // end loop over boundary integration cells
@@ -1986,7 +2079,7 @@ void callSysmat(
         const std::vector<double>&        locval_hist,
         blitz::Array<double,2>&           estif,
         blitz::Array<double,1>&           eforce,
-        struct _MATERIAL*                 material,
+        const struct _MATERIAL*           material,
         const double                      time,          ///< current time (pseudotime for stationary formulation)
         const double                      timefac,       ///< One-step-Theta: theta*dt, BDF2: 2/3 * dt
         const bool                    newton ,

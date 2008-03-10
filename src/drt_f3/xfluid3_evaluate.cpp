@@ -123,7 +123,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
   if (mat->MaterialType()!=m_fluid)
     dserror("newtonian fluid material expected but got type %d", mat->MaterialType());
 
-  MATERIAL* actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
+  const MATERIAL* actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
 
   switch(act)
   {
@@ -149,19 +149,19 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           RCP<const Epetra_Vector> hist  = discretization.GetState("hist");
           if (hist==null)   dserror("Cannot get state vectors 'hist'");
 
+        // do no calculation, if not needed
+        if (lm.size() == 0)
+            break;
+          
         // extract local values from the global vectors
         vector<double> myvelnp(lm.size());
         DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
         vector<double> myhist(lm.size());
         DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
 
-        // do no calculation, if not needed
-        if (lm.size() == 0)
-            break;
-
         if (is_ale_)
         {
-            dserror("No ALE support within stationary fluid solver.");
+            dserror("No ALE support within instationary fluid solver.");
         }
 
         // get control parameter
@@ -461,7 +461,7 @@ GaussRule3D DRT::ELEMENTS::XFluid3::getOptimalGaussrule(const DiscretizationType
 void DRT::ELEMENTS::XFluid3::f3_int_beltrami_err(
   vector<double>&           evelnp,
   vector<double>&           eprenp,
-  struct _MATERIAL*         material,
+  const struct _MATERIAL*   material,
   ParameterList&            params
   )
 {
@@ -1513,27 +1513,6 @@ void DRT::ELEMENTS::XFluid3::f3_calc_smag_const_LijMij_and_MijMij(
   return;
 } // DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij
 
-//
-// check for higher order derivatives for shape functions
-//
-bool DRT::ELEMENTS::XFluid3::isHigherOrderElement(
-  const DRT::Element::DiscretizationType  distype) const
-{
-  bool hoel = true;
-  switch (distype)
-  {
-  case hex8: case hex20: case hex27: case tet10: case wedge15:
-    hoel = true;
-    break;
-  case tet4: case wedge6: case pyramid5:
-    hoel = false;
-    break;
-  default:
-    dserror("distype unknown!");
-  }
-  return hoel;
-}
-
 //=======================================================================
 //=======================================================================
 //=======================================================================
@@ -1545,6 +1524,7 @@ bool DRT::ELEMENTS::XFluid3::isHigherOrderElement(
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::XFluid3Register::Initialize(DRT::Discretization& dis)
 {
+#if 0
   bool dofillcompleteagain = false;
   //-------------------- loop all my column elements and check rewinding
   for (int i=0; i<dis.NumMyColElements(); ++i)
@@ -1644,7 +1624,7 @@ int DRT::ELEMENTS::XFluid3Register::Initialize(DRT::Discretization& dis)
   // fill complete again to reconstruct element-node pointers,
   // but without element init, etc.
   if(dofillcompleteagain) dis.FillComplete(false,false,false);
-  
+#endif
   return 0;
 }
 

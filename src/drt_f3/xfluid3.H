@@ -320,8 +320,6 @@ public:
   //! @name Other
 
   bool IsAle() const { return is_ale_; }
-  
-  DRT::UTILS::GaussRule3D GetGaussrule() const { return gaussrule_; }
 
   template <DRT::Element::DiscretizationType  DISTYPE>
   bool isHigherOrderElement() const
@@ -402,8 +400,6 @@ private:
   //! map that converts strings to actions (stabilisation)
   static map<string,StabilisationAction>          stabstrtoact_;
 
-  //! Gaussrule
-  DRT::UTILS::GaussRule3D                         gaussrule_;
   //! flag for euler/ale net algorithm
   bool                                            is_ale_;
   //! container containing all kind of fluid3 thisandthat
@@ -459,7 +455,7 @@ private:
   void f3_int_beltrami_err(
     vector<double>&       myvelnp,
     vector<double>&       myprenp,
-    struct _MATERIAL*     material,
+    const struct _MATERIAL*     material,
     ParameterList&    	  params
     );
 
@@ -694,14 +690,6 @@ void f3_calc_smag_const_LijMij_and_MijMij(
   DRT::UTILS::GaussRule3D getOptimalGaussrule(
     const DiscretizationType&  distype  ///< switch gausrule based on this discretization type
     );
-
-  /*!
-   * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
-   * \return boolean indicating higher order status
-   */
-  bool isHigherOrderElement(
-    const DRT::Element::DiscretizationType  distype  ///< discretization type
-    ) const;
 
   ActionType convertStringToActionType(const string& action) const;
 
