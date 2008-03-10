@@ -138,6 +138,17 @@ public:
 
   /*!
   \brief Compute a time average of the mean values over all steps
+  since the last output. Dump the result to file.
+
+  step on input is used to print the timesteps which belong to the
+  statistic to the file
+  
+  */
+
+  void TimeAverageMeansAndOutputOfStatistics(int step);
+
+  /*!
+  \brief Compute a time average of the mean values over all steps
   of the sampling period so far. Dump the result to file.
 
   */

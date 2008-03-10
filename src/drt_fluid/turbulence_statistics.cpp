@@ -63,6 +63,9 @@ TurbulenceStatistics::TurbulenceStatistics(
     dserror("Evaluation of turbulence statistics only for 3d channel flow!");
   }
 
+  // up to now, there are no records written
+  countrecord_ = 0;
+
   //----------------------------------------------------------------------
   // allocate some (toggle) vectors
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
@@ -376,6 +379,52 @@ TurbulenceStatistics::TurbulenceStatistics(
   sumsacc_->resize(3*(nodeplanes_->size()-1),0.0);
   sumsacc_sq_=  rcp(new vector<double> );
   sumsacc_sq_->resize(3*(nodeplanes_->size()-1),0.0);
+
+  // initialise output
+  Teuchos::RefCountPtr<std::ofstream> log;
+  Teuchos::RefCountPtr<std::ofstream> log_Cs;
+  Teuchos::RefCountPtr<std::ofstream> log_res;
+
+  if (discret_->Comm().MyPID()==0)
+  {
+    std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+    s.append(".flow_statistic");
+
+    log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
+    (*log) << "# Flow statistics for turbulent channel flow (first an second order moments)\n\n";
+
+    log->flush();
+
+    // additional output for dynamic Smagorinsky model
+    if (params_.sublist("TURBULENCE MODEL").get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
+        ==
+        "CLASSICAL_LES")
+    {
+      if(params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+         ==
+         "Dynamic_Smagorinsky"
+         ||
+         params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+         ==
+         "Smagorinsky_with_van_Driest_damping"
+        )
+      {
+        std::string s_smag = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+        s_smag.append(".Cs_statistic");
+
+        log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),ios::out));
+        (*log_Cs) << "# Statistics for turbulent channel flow (Smagorinsky constant)\n\n";
+      }
+    }
+
+    // output of residuals and subscale quantities
+    std::string s_res = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+    s_res.append(".res_statistic");
+
+    log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),ios::out));
+    (*log_res) << "# Statistics for turbulent channel flow (residuals and subscale quantities)\n\n";
+
+  }
 
   // clear statistics
   this->ClearStatistics();
@@ -777,6 +826,254 @@ void TurbulenceStatistics::EvaluateMeanValuesInPlanes()
   return;
 
 }// TurbulenceStatistics::EvaluateMeanValuesInPlanes()
+
+/*----------------------------------------------------------------------*
+ *
+ *----------------------------------------------------------------------*/
+void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
+{
+  if (numsamp_ == 0)
+  {
+    dserror("No samples to do time average");
+  }
+
+  //----------------------------------------------------------------------
+  // the sums are divided by the number of samples to get the time average
+  int aux = numele_*numsamp_;
+  for(unsigned i=0; i<planecoordinates_->size(); ++i)
+  {
+
+    (*sumu_)[i]   /=aux;
+    (*sumv_)[i]   /=aux;
+    (*sumw_)[i]   /=aux;
+    (*sump_)[i]   /=aux;
+
+    (*sumuv_)[i]  /=aux;
+    (*sumuw_)[i]  /=aux;
+    (*sumvw_)[i]  /=aux;
+
+    (*sumsqu_)[i] /=aux;
+    (*sumsqv_)[i] /=aux;
+    (*sumsqw_)[i] /=aux;
+    (*sumsqp_)[i] /=aux;
+
+    (*pointsumu_)[i]   /=numsamp_;
+    (*pointsumv_)[i]   /=numsamp_;
+    (*pointsumw_)[i]   /=numsamp_;
+    (*pointsump_)[i]   /=numsamp_;
+
+    (*pointsumsqu_)[i] /=numsamp_;
+    (*pointsumsqv_)[i] /=numsamp_;
+    (*pointsumsqw_)[i] /=numsamp_;
+    (*pointsumsqp_)[i] /=numsamp_;
+  }
+
+  sumforceu_/=numsamp_;
+  sumforcev_/=numsamp_;
+  sumforcew_/=numsamp_;
+
+
+
+  //----------------------------------------------------------------------
+  // evaluate area to calculate u_tau, l_tau (and tau_W)
+  double area = 1.0;
+  for (int i=0;i<3;i++)
+  {
+    if(i!=dim_)
+    {
+      area*=((*boundingbox_)(1,i)-(*boundingbox_)(0,i));
+    }
+  }
+  // there are two Dirichlet boundaries
+  area*=2;
+
+  //----------------------------------------------------------------------
+  // we expect nonzero forces (tractions) only in flow direction
+  int flowdirection =0;
+
+  // ltau is used to compute y+
+  double ltau = 0;
+  if      (sumforceu_>sumforcev_ && sumforceu_>sumforcew_)
+  {
+    flowdirection=0;
+    ltau = visc_/sqrt(sumforceu_/area);
+  }
+  else if (sumforcev_>sumforceu_ && sumforcev_>sumforcew_)
+  {
+    flowdirection=1;
+    ltau = visc_/sqrt(sumforcev_/area);
+  }
+  else if (sumforcew_>sumforceu_ && sumforcew_>sumforcev_)
+  {
+    flowdirection=2;
+    ltau = visc_/sqrt(sumforcew_/area);
+  }
+  else
+  {
+    dserror("Cannot determine flow direction by traction (seems to be not unique)");
+  }
+
+  //----------------------------------------------------------------------
+  // output to log-file
+  Teuchos::RefCountPtr<std::ofstream> log;
+  if (discret_->Comm().MyPID()==0)
+  {
+    std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+    s.append(".flow_statistic");
+
+    log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::app));
+    (*log) << "\n\n\n";
+    (*log) << "# Statistics record " << countrecord_;
+    (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
+
+    (*log) << "# (u_tau)^2 = tau_W/rho : ";
+    (*log) << "   " << setw(11) << setprecision(4) << sumforceu_/area;
+    (*log) << "   " << setw(11) << setprecision(4) << sumforcev_/area;
+    (*log) << "   " << setw(11) << setprecision(4) << sumforcew_/area;
+    (*log) << &endl;
+
+    (*log) << "#     y            y+";
+    (*log) << "           umean         vmean         wmean         pmean";
+    (*log) << "        mean u^2      mean v^2      mean w^2";
+    (*log) << "      mean u*v      mean u*w      mean v*w        Varp   \n";
+
+    (*log) << scientific;
+    for(unsigned i=0; i<planecoordinates_->size(); ++i)
+    {
+      (*log) <<  " "  << setw(11) << setprecision(4) << (*planecoordinates_)[i];
+      (*log) << "   " << setw(11) << setprecision(4) << (*planecoordinates_)[i]/ltau;
+      (*log) << "   " << setw(11) << setprecision(4) << (*sumu_)   [i];
+      (*log) << "   " << setw(11) << setprecision(4) << (*sumv_)   [i];
+      (*log) << "   " << setw(11) << setprecision(4) << (*sumw_)   [i];
+      (*log) << "   " << setw(11) << setprecision(4) << (*sump_)   [i];
+      (*log) << "   " << setw(11) << setprecision(4) << ((*sumsqu_)[i]);
+      (*log) << "   " << setw(11) << setprecision(4) << ((*sumsqv_)[i]);
+      (*log) << "   " << setw(11) << setprecision(4) << ((*sumsqw_)[i]);
+      (*log) << "   " << setw(11) << setprecision(4) << ((*sumuv_) [i]);
+      (*log) << "   " << setw(11) << setprecision(4) << ((*sumuw_) [i]);
+      (*log) << "   " << setw(11) << setprecision(4) << ((*sumvw_) [i]);
+      (*log) << "   " << setw(11) << setprecision(4) << ((*sumsqp_)[i]);
+      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumu_)   [i];
+      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumv_)   [i];
+      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumw_)   [i];
+      (*log) << "   " << setw(11) << setprecision(4) << (*pointsump_)   [i];
+      (*log) << "   " << setw(11) << setprecision(4) << ((*pointsumsqu_)[i]);
+      (*log) << "   " << setw(11) << setprecision(4) << ((*pointsumsqv_)[i]);
+      (*log) << "   " << setw(11) << setprecision(4) << ((*pointsumsqw_)[i]);
+      (*log) << "   " << setw(11) << setprecision(4) << ((*pointsumsqp_)[i]);
+      (*log) << "   \n";
+    }
+    log->flush();
+  }
+
+  if (discret_->Comm().MyPID()==0)
+  {
+
+    // additional output for dynamic Smagorinsky model
+    if (params_.sublist("TURBULENCE MODEL").get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
+        ==
+        "CLASSICAL_LES")
+    {
+      if(params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+         ==
+         "Dynamic_Smagorinsky"
+         ||
+         params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+         ==
+         "Smagorinsky_with_van_Driest_damping"
+        )
+      {
+        // get the outfile
+        Teuchos::RefCountPtr<std::ofstream> log_Cs;
+
+        std::string s_smag = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+        s_smag.append(".Cs_statistic");
+
+        log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),ios::app));
+
+        (*log_Cs) << "\n\n\n";
+        (*log_Cs) << "# Statistics record " << countrecord_;
+        (*log_Cs) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
+
+
+        (*log_Cs) << "#     y      ";
+        (*log_Cs) << "     Cs     ";
+        (*log_Cs) << "   (Cs*hk)^2 ";
+        (*log_Cs) << "    visceff  ";
+        (*log_Cs) << &endl;
+        (*log_Cs) << scientific;
+        for (unsigned rr=0;rr<sumCs_->size();++rr)
+        {
+          (*log_Cs) << setw(11) << setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
+          (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_)[rr])/(numele_*numsamp_) << "  ";
+          (*log_Cs) << setw(11) << setprecision(4) << ((*sumCs_delta_sq_)[rr])/(numele_*numsamp_)<< "  " ;
+          (*log_Cs) << setw(11) << setprecision(4) << ((*sumvisceff_)[rr])/(numele_*numsamp_) << &endl;
+        }
+        log_Cs->flush();
+      }
+    }
+  }
+
+  if (discret_->Comm().MyPID()==0)
+  {
+    Teuchos::RefCountPtr<std::ofstream> log_res;
+
+    // output of residuals and subscale quantities
+    std::string s_res = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+    s_res.append(".res_statistic");
+
+    log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),ios::app));
+
+    (*log_res) << "\n\n\n";
+    (*log_res) << "# Statistics record " << countrecord_;
+    (*log_res) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
+    (*log_res) << "#       y    ";
+    (*log_res) << "    res_x  ";
+    (*log_res) << "      res_y  ";
+    (*log_res) << "      res_z  ";
+    (*log_res) << "     sacc_x  ";
+    (*log_res) << "     sacc_y  ";
+    (*log_res) << "     sacc_z   ";
+    (*log_res) << "   res_sq_x  ";
+    (*log_res) << "   res_sq_y  ";
+    (*log_res) << "   res_sq_z  ";
+    (*log_res) << "   sacc_sq_x ";
+    (*log_res) << "   sacc_sq_y ";
+    (*log_res) << "   sacc_sq_z "<<&endl;
+
+    (*log_res) << scientific;
+    for (unsigned rr=0;rr<nodeplanes_->size()-1;++rr)
+    {
+      (*log_res)  << setw(11) << setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
+      (*log_res)  << setw(11) << setprecision(4) << (*sumres_)[3*rr  ]/(numele_*numsamp_) << "  ";
+      (*log_res)  << setw(11) << setprecision(4) << (*sumres_)[3*rr+1]/(numele_*numsamp_) << "  ";
+      (*log_res)  << setw(11) << setprecision(4) << (*sumres_)[3*rr+2]/(numele_*numsamp_) << "  ";
+
+      (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_)[3*rr  ]/(numele_*numsamp_) << "  ";
+      (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_)[3*rr+1]/(numele_*numsamp_) << "  ";
+      (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_)[3*rr+2]/(numele_*numsamp_) << "  ";
+
+      (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_)[3*rr  ]/(numele_*numsamp_) << "  ";
+      (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_)[3*rr+1]/(numele_*numsamp_) << "  ";
+      (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_)[3*rr+2]/(numele_*numsamp_) << "  ";
+
+      (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_sq_)[3*rr  ]/(numele_*numsamp_) << "  ";
+      (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_sq_)[3*rr+1]/(numele_*numsamp_) << "  ";
+      (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_sq_)[3*rr+2]/(numele_*numsamp_) << "  ";
+
+      (*log_res)  << &endl;
+    }
+    log_res->flush();
+  }
+
+
+  // log was written, so increase counter for records
+  countrecord_++;
+
+  return;
+
+}// TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics
+
 
 /*----------------------------------------------------------------------*
  *

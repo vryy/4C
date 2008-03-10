@@ -849,10 +849,16 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
     // write mesh in each restart step --- the elements are required since
     // they contain history variables (the time dependent subscales)
     output_.WriteMesh(step_,time_);
+
+    if(special_flow_ == "channel_flow_of_height_2"  && dumperiod_ == 0)
+    {
+      turbulencestatistics_->TimeAverageMeansAndOutputOfStatistics(step_);
+      turbulencestatistics_->ClearStatistics();
+    }
   }
 
   // dumping of turbulence statistics if required
-  if (special_flow_ != "no")
+  if (special_flow_ != "no"  && dumperiod_ != 0)
   {
     int samstep = step_-samstart_+1;
     double dsamstep=samstep;
