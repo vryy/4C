@@ -743,6 +743,16 @@ public:
   }
 
   /*!
+    \brief Tell whether a state vector has been set
+    \param name (in): Name of solution state
+   */
+  virtual bool HasState(const string& name) const
+  {
+    map<string,RefCountPtr<const Epetra_Vector> >::const_iterator fool = state_.find(name);
+    return fool!=state_.end();
+  }
+
+  /*!
   \brief Clear solution state references
 
   The method deletes all references to any solution data
@@ -944,12 +954,12 @@ public:
     \param systemvector2 (out):Vector to assemble BCs to.
                                The vector is NOT initialized to zero by this method.
     \param systemvector3 (out):Vector to assemble BCs to.
-                               The vector is NOT initialized to zero by this method.                           
+                               The vector is NOT initialized to zero by this method.
     \param condstring (in):	   Name of condition to be evaluated
     */
 
-  
-  void EvaluateCondition(ParameterList& params, 
+
+  void EvaluateCondition(ParameterList& params,
                          RefCountPtr<LINALG::SparseOperator> systemmatrix1,
                          RefCountPtr<LINALG::SparseOperator> systemmatrix2,
                          RefCountPtr<Epetra_Vector> systemvector1,

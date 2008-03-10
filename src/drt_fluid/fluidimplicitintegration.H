@@ -44,6 +44,7 @@ Maintainer: Peter Gamnitzer
 #include "drt_periodicbc.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/drt_function.H"
+#include "../drt_lib/drt_elementgroup.H"
 
 #include "Epetra_Vector.h"
 #include "Epetra_Operator.h"
@@ -381,6 +382,8 @@ protected:
 
   RCP<PeriodicBoundaryConditions> pbc_;
 
+  /// my elements grouped for faster evaluation
+  RCP<DRT::EGROUP::ElementGroupManager> egm_;
 
   // time measurement
   // ----------------

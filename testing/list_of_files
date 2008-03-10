@@ -53,6 +53,7 @@ Input/f3_drt_genalpha_initialfield_volforce_pbc.dat     x        x        -     
 Input/f3_beltrami_tet4_drt.dat                          x        x        -        -        -        -  
 Input/f3_ew_Q1_27x.dat                                  x        x        x        x        x        x
 Input/f3_ew_Q1_27x_drt.dat                              x        x        -        -        -        -
+Input/f3_cylinder_001_drt.dat                           x        x        -        -        -        -
 Input/f3f_beltrami.dat                                  x        x        x        x        x        x
 Input/f3f_beltrami_sub2.dat                             x        x        x        x        x        x
 Input/f3f_ew_Q1_27x.dat                                 x        x        x        x        x        x

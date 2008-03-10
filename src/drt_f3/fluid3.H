@@ -79,6 +79,7 @@ public:
   friend class Fluid3lin_Impl;
   friend class Fluid3GenalphaResVMM;
   friend class Fluid3Stationary;
+  friend class Fluid3SystemEvaluator;
 
   //@}
   //! @name Constructors and destructors and related methods

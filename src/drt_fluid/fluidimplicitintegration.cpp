@@ -29,6 +29,11 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_function.H"
 #include "fluid_utils.H"
 
+// Include special fluid3 evaluator. This makes the fluid3 element known to
+// the algorithm. However, all details are hidden. All that the algorithm
+// assumes is that there are (in the 3d case) only fluid3 elements and those
+// elements can be evaluated with the given evaluator.
+#include "../drt_f3/fluid3_evaluator.H"
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -98,6 +103,12 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
 
   // (fine-scale) subgrid viscosity?
   fssgv_ = params_.get<string>("fs subgrid viscosity","No");
+
+  // -------------------------------------------------------------------
+  // Build element group. This might change some element orientations.
+  // -------------------------------------------------------------------
+
+  egm_ = rcp(new DRT::EGROUP::ElementGroupManager(*actdis));
 
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
@@ -957,8 +968,18 @@ void FluidImplicitTimeInt::NonlinearSolve()
            !=
            "L_2_norm_without_residual_at_itemax"))
       {
-        // call standard loop over elements
-        discret_->Evaluate(eleparams,sysmat_,residual_);
+        const int numdim = params_.get<int>("number of velocity degrees of freedom");
+        if (numdim!=3)
+        {
+          // call standard loop over elements
+          discret_->Evaluate(eleparams,sysmat_,residual_);
+        }
+        else
+        {
+          // call specialized loop over elements
+          DRT::ELEMENTS::Fluid3SystemEvaluator evaluator(discret_,eleparams,sysmat_,residual_);
+          egm_->Evaluate(evaluator);
+        }
         discret_->ClearState();
 
         density = eleparams.get("density", 0.0);
@@ -1478,7 +1499,7 @@ void FluidImplicitTimeInt::Output()
     }
 
     // write domain decomposition for visualization (only once!)
-    if (step_==upres_) 
+    if (step_==upres_)
      output_.WriteElementData();
 
     if (restartstep_ == uprestart_) //add restart data
