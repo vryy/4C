@@ -863,10 +863,7 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
       if (special_flow_ == "lid_driven_cavity")
         turbulencestatistics_ldc_->DumpStatistics(step_);
       else if (special_flow_ == "channel_flow_of_height_2")
-      {
-        turbulencestatistics_->TimeAverageMeansAndOutputOfStatistics(step_);
-        turbulencestatistics_->ClearStatistics();
-      }
+        turbulencestatistics_->DumpStatistics(step_);
     }
   }
 

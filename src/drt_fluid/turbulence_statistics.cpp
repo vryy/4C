@@ -63,9 +63,6 @@ TurbulenceStatistics::TurbulenceStatistics(
     dserror("Evaluation of turbulence statistics only for 3d channel flow!");
   }
 
-  // up to now, there are no records written
-  countrecord_ = 0;
-
   //----------------------------------------------------------------------
   // allocate some (toggle) vectors
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
@@ -379,52 +376,6 @@ TurbulenceStatistics::TurbulenceStatistics(
   sumsacc_->resize(3*(nodeplanes_->size()-1),0.0);
   sumsacc_sq_=  rcp(new vector<double> );
   sumsacc_sq_->resize(3*(nodeplanes_->size()-1),0.0);
-
-  // initialise output
-  Teuchos::RefCountPtr<std::ofstream> log;
-  Teuchos::RefCountPtr<std::ofstream> log_Cs;
-  Teuchos::RefCountPtr<std::ofstream> log_res;
-
-  if (discret_->Comm().MyPID()==0)
-  {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
-    s.append(".flow_statistic");
-
-    log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
-    (*log) << "# Flow statistics for turbulent channel flow (first an second order moments)\n\n";
-
-    log->flush();
-
-    // additional output for dynamic Smagorinsky model
-    if (params_.sublist("TURBULENCE MODEL").get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
-        ==
-        "CLASSICAL_LES")
-    {
-      if(params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
-         ==
-         "Dynamic_Smagorinsky"
-         ||
-         params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
-         ==
-         "Smagorinsky_with_van_Driest_damping"
-        )
-      {
-        std::string s_smag = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
-        s_smag.append(".Cs_statistic");
-
-        log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),ios::out));
-        (*log_Cs) << "# Statistics for turbulent channel flow (Smagorinsky constant)\n\n";
-      }
-    }
-
-    // output of residuals and subscale quantities
-    std::string s_res = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
-    s_res.append(".res_statistic");
-
-    log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),ios::out));
-    (*log_res) << "# Statistics for turbulent channel flow (residuals and subscale quantities)\n\n";
-
-  }
 
   // clear statistics
   this->ClearStatistics();
@@ -830,7 +781,7 @@ void TurbulenceStatistics::EvaluateMeanValuesInPlanes()
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
-void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
+void TurbulenceStatistics::DumpStatistics(int step)
 {
   if (numsamp_ == 0)
   {
@@ -921,9 +872,10 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
     s.append(".flow_statistic");
 
-    log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::app));
+    log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
+    (*log) << "# Flow statistics for turbulent flow in a channel (first- and second-order moments)";
     (*log) << "\n\n\n";
-    (*log) << "# Statistics record " << countrecord_;
+    (*log) << "# Statistics record ";
     (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
 
     (*log) << "# (u_tau)^2 = tau_W/rho : ";
@@ -989,10 +941,10 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
         std::string s_smag = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
         s_smag.append(".Cs_statistic");
 
-        log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),ios::app));
-
+        log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),ios::out));
+        (*log_Cs) << "# Smagorinsky parameter statistics for turbulent flow in a channel";
         (*log_Cs) << "\n\n\n";
-        (*log_Cs) << "# Statistics record " << countrecord_;
+        (*log_Cs) << "# Statistics record ";
         (*log_Cs) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
 
 
@@ -1022,10 +974,10 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
     std::string s_res = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
     s_res.append(".res_statistic");
 
-    log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),ios::app));
-
+    log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),ios::out));
+    (*log_res) << "# Residual statistics for turbulent flow in a channel";
     (*log_res) << "\n\n\n";
-    (*log_res) << "# Statistics record " << countrecord_;
+    (*log_res) << "# Statistics record ";
     (*log_res) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
     (*log_res) << "#       y    ";
     (*log_res) << "    res_x  ";
@@ -1066,13 +1018,9 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
     log_res->flush();
   }
 
-
-  // log was written, so increase counter for records
-  countrecord_++;
-
   return;
 
-}// TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics
+}// TurbulenceStatistics::DumpStatistics
 
 
 /*----------------------------------------------------------------------*
