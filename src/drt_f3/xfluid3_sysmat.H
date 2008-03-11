@@ -1997,11 +1997,11 @@ void Sysmat(
             
             // symmetric part from partial integration of stress term
             /*
-                           /           \
-                          |             |
-                          | v , tau * n |
-                          |             |
-                           \           /
+                           /             \
+                          |               |
+                          | v , sigma * n |
+                          |               |
+                           \             /
             */
             assembler.template Matrix<Velx,Sigmaxx>(shp, timefacfac*normalvec(0), shp_sigma);
             assembler.template Matrix<Velx,Sigmaxy>(shp, timefacfac*normalvec(1), shp_sigma);
@@ -2055,13 +2055,13 @@ void Sysmat(
                           |           |
                            \         /
             */
-            assembler.template Matrix<Velx,Pres>(shp, -fac*normalvec(0), shp);
-            assembler.template Matrix<Vely,Pres>(shp, -fac*normalvec(1), shp);
-            assembler.template Matrix<Velz,Pres>(shp, -fac*normalvec(2), shp);
-            
-            assembler.template Vector<Velx>(shp, fac*normalvec(0)*press);
-            assembler.template Vector<Vely>(shp, fac*normalvec(1)*press);
-            assembler.template Vector<Velz>(shp, fac*normalvec(2)*press);  
+//            assembler.template Matrix<Velx,Pres>(shp, -timefacfac*normalvec(0), shp);
+//            assembler.template Matrix<Vely,Pres>(shp, -timefacfac*normalvec(1), shp);
+//            assembler.template Matrix<Velz,Pres>(shp, -timefacfac*normalvec(2), shp);
+//            
+//            assembler.template Vector<Velx>(shp, timefacfac*normalvec(0)*press);
+//            assembler.template Vector<Vely>(shp, timefacfac*normalvec(1)*press);
+//            assembler.template Vector<Velz>(shp, timefacfac*normalvec(2)*press);  
 
         } // end loop over gauss points
     } // end loop over boundary integration cells
@@ -2111,8 +2111,13 @@ void callSysmat(
                         ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
                         material, time, timefac, newton, pstab, supg, vstab, cstab, instationary);
                 break;
+            case DRT::Element::tet4:
+                Sysmat<DRT::Element::tet4,XFEM::standard_assembly>(
+                        ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
+                        material, time, timefac, newton, pstab, supg, vstab, cstab, instationary);
+                break;
             default:
-                dserror("not templated yet");
+                dserror("Sysmat not templated yet");
         };
     }
     else
@@ -2135,7 +2140,7 @@ void callSysmat(
                         material, time, timefac, newton, pstab, supg, vstab, cstab, instationary);
                 break;
             default:
-                dserror("not templated yet");
+                dserror("Sysmat not templated yet");
         };
     }
 }
