@@ -1114,6 +1114,14 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           stabstrtoact_["cross_rhs"      ]=cross_stress_stab_only_rhs;
           stabstrtoact_["no_reynolds"    ]=reynolds_stress_stab_none;
           stabstrtoact_["reynolds_rhs"   ]=reynolds_stress_stab_only_rhs;
+          stabstrtoact_["No"                     ]=Fluid3::fssgv_no;
+          stabstrtoact_["artificial_all"         ]=Fluid3::fssgv_artificial_all;
+          stabstrtoact_["artificial_small"       ]=Fluid3::fssgv_artificial_small;
+          stabstrtoact_["Smagorinsky_all"        ]=Fluid3::fssgv_Smagorinsky_all;
+          stabstrtoact_["Smagorinsky_small"      ]=Fluid3::fssgv_Smagorinsky_small;
+          stabstrtoact_["mixed_Smagorinsky_all"  ]=Fluid3::fssgv_mixed_Smagorinsky_all;
+          stabstrtoact_["mixed_Smagorinsky_small"]=Fluid3::fssgv_mixed_Smagorinsky_small;
+          stabstrtoact_["scale_similarity"       ]=Fluid3::fssgv_scale_similarity;
         }
 
         StabilisationAction tds      = ConvertStringToStabAction(stablist.get<string>("TDS"));
@@ -1519,6 +1527,14 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
             stabstrtoact_["cross_rhs"      ]=cross_stress_stab_only_rhs;
             stabstrtoact_["no_reynolds"    ]=reynolds_stress_stab_none;
             stabstrtoact_["reynolds_rhs"   ]=reynolds_stress_stab_only_rhs;
+            stabstrtoact_["No"                     ]=Fluid3::fssgv_no;
+            stabstrtoact_["artificial_all"         ]=Fluid3::fssgv_artificial_all;
+            stabstrtoact_["artificial_small"       ]=Fluid3::fssgv_artificial_small;
+            stabstrtoact_["Smagorinsky_all"        ]=Fluid3::fssgv_Smagorinsky_all;
+            stabstrtoact_["Smagorinsky_small"      ]=Fluid3::fssgv_Smagorinsky_small;
+            stabstrtoact_["mixed_Smagorinsky_all"  ]=Fluid3::fssgv_mixed_Smagorinsky_all;
+            stabstrtoact_["mixed_Smagorinsky_small"]=Fluid3::fssgv_mixed_Smagorinsky_small;
+            stabstrtoact_["scale_similarity"       ]=Fluid3::fssgv_scale_similarity;
           }
 
           StabilisationAction tds      = ConvertStringToStabAction(stablist.get<string>("TDS"));
@@ -1665,6 +1681,14 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
             stabstrtoact_["cross_rhs"      ]=cross_stress_stab_only_rhs;
             stabstrtoact_["no_reynolds"    ]=reynolds_stress_stab_none;
             stabstrtoact_["reynolds_rhs"   ]=reynolds_stress_stab_only_rhs;
+            stabstrtoact_["No"                     ]=Fluid3::fssgv_no;
+            stabstrtoact_["artificial_all"         ]=Fluid3::fssgv_artificial_all;
+            stabstrtoact_["artificial_small"       ]=Fluid3::fssgv_artificial_small;
+            stabstrtoact_["Smagorinsky_all"        ]=Fluid3::fssgv_Smagorinsky_all;
+            stabstrtoact_["Smagorinsky_small"      ]=Fluid3::fssgv_Smagorinsky_small;
+            stabstrtoact_["mixed_Smagorinsky_all"  ]=Fluid3::fssgv_mixed_Smagorinsky_all;
+            stabstrtoact_["mixed_Smagorinsky_small"]=Fluid3::fssgv_mixed_Smagorinsky_small;
+            stabstrtoact_["scale_similarity"       ]=Fluid3::fssgv_scale_similarity;
           }
 
           StabilisationAction pspg     = ConvertStringToStabAction(stablist.get<string>("PSPG"));
