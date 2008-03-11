@@ -188,36 +188,7 @@ solver_(solver)
   discret_->GetCondition("SurfaceStress",surfstresscond);
   if (surfstresscond.size())
   {
-    // Determine local number of associated surface elements
-    int localnumsurf=0;
-    for (unsigned i=0;i<surfstresscond.size();++i)
-    {
-      localnumsurf+=surfstresscond[i]->Geometry().size();
-    }
-
-    // Create a map of the associated surface elements
-    // This is needed because the SurfStressManager creates
-    // several vectors containing history variables of the
-    // corresponding surface elements. These vectors need to be
-    // distributed over the processors in the same way as the
-    // surface elements are.
-
-    int localsurf[localnumsurf];
-    int count=0;
-    for (unsigned i=0;i<surfstresscond.size();++i)
-    {
-      for (map<int,RefCountPtr<DRT::Element> >::iterator iter=surfstresscond[i]->Geometry().begin();
-           iter!=surfstresscond[i]->Geometry().end();++iter)
-      {
-        localsurf[count]=iter->first;
-        count++;
-      }
-    }
-    Epetra_Map surfmap(-1, localnumsurf, localsurf, 0, discret_->Comm());
-
-    int numsurf;
-    discret_->Comm().SumAll(&localnumsurf, &numsurf, 1);
-    surf_stress_man_=rcp(new DRT::SurfStressManager(*discret_, numsurf, surfmap));
+    surf_stress_man_=rcp(new DRT::SurfStressManager(*discret_));
   }
 
   return;
@@ -498,6 +469,16 @@ void MicroStatic::Output(RefCountPtr<MicroDiscretizationWriter> output,
     output->NewStep(istep, time);
     output->WriteVector("displacement",dis_);
     isdatawritten = true;
+
+    if (surf_stress_man_!=null)
+    {
+      RCP<Epetra_Map> surfrowmap=surf_stress_man_->GetSurfRowmap();
+      RCP<Epetra_Vector> A_old=rcp(new Epetra_Vector(*surfrowmap, true));
+      RCP<Epetra_Vector> con_quot=rcp(new Epetra_Vector(*surfrowmap, true));
+      surf_stress_man_->GetHistory(A_old, con_quot);
+      output->WriteVector("Aold", A_old);
+      output->WriteVector("conquot", con_quot);
+    }
   }
 
   //----------------------------------------------------- output results
@@ -590,6 +571,16 @@ void MicroStatic::ReadRestart(int step, RCP<Epetra_Vector> dis, string name)
   // override current time and step with values from file
   params_->set<double>("total time",time);
   params_->set<int>   ("step",rstep);
+
+  if (surf_stress_man_!=null)
+  {
+    RCP<Epetra_Map> surfmap=surf_stress_man_->GetSurfRowmap();
+    RCP<Epetra_Vector> A_old = LINALG::CreateVector(*surfmap,true);
+    RCP<Epetra_Vector> con_quot = LINALG::CreateVector(*surfmap,true);
+    reader.ReadVector(A_old, "Aold");
+    reader.ReadVector(con_quot, "conquot");
+    surf_stress_man_->SetHistory(A_old, con_quot);
+  }
 
   return;
 }
@@ -708,10 +699,12 @@ void MicroStatic::EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd)
 }
 
 void MicroStatic::SetOldState(RefCountPtr<Epetra_Vector> dis,
-                              RefCountPtr<Epetra_Vector> dism)
+                              RefCountPtr<Epetra_Vector> dism,
+                              RefCountPtr<DRT::SurfStressManager> surfman)
 {
   dis_ = dis;
   dism_ = dism;
+  surf_stress_man_ = surfman;
   fext_->PutScalar(0.);     // we do not have any external loads on
                             // the microscale, so assign all components
                             // to zero
@@ -723,6 +716,11 @@ void MicroStatic::UpdateNewTimeStep(RefCountPtr<Epetra_Vector> dis,
   double alphaf = params_->get<double>("alpha f",0.459);
   dis->Update(1.0/(1.0-alphaf), *dism, -alphaf/(1.0-alphaf));
   dism->Update(1.0, *dis, 0.0);
+
+  if (surf_stress_man_!=null)
+  {
+    surf_stress_man_->Update();
+  }
 }
 
 void MicroStatic::SetTime(double timen, int istep)

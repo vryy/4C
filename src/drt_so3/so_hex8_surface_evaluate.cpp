@@ -501,7 +501,6 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
           double con_quot_max = (gamma_min_eq-gamma_min)/m2+1.;
           double con_quot_eq = (k1xC)/(k1xC+k2);
 
-          surfstressman->Update(time, 0, this->Id());
           surfstressman->SurfaceCalc(dxyzdrs, deriv, gpcoord, gpweight, ngp, nnode, A, Adiff, Adiff2);
           surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, elevector1, elematrix1, this->Id(),
                                                     time, dt, 0, 0.0, k1xC, k2, m1, m2, gamma_0,
@@ -513,7 +512,6 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
           int curvenum = cond->Getint("curve");
           double const_gamma = cond->GetDouble("gamma");
 
-          surfstressman->Update(time, 1, this->Id());
           surfstressman->SurfaceCalc(dxyzdrs, deriv, gpcoord, gpweight, ngp, nnode, A, Adiff, Adiff2);
           surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, elevector1, elematrix1, this->Id(),
                                                     time, dt, 1, const_gamma, 0.0, 0.0, 0.0,

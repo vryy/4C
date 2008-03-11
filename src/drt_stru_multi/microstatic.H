@@ -129,7 +129,8 @@ public:
   void EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd);
 
   void SetOldState(RefCountPtr<Epetra_Vector> dis,
-                   RefCountPtr<Epetra_Vector> dism);
+                   RefCountPtr<Epetra_Vector> dism,
+                   RefCountPtr<DRT::SurfStressManager> surfman);
 
   void SetTime(double timen, int istep);
 

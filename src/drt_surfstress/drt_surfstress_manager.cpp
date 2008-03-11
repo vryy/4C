@@ -22,16 +22,21 @@ Maintainer: Lena Wiechert
 /*-------------------------------------------------------------------*
  |  ctor (public)                                            lw 12/07|
  *-------------------------------------------------------------------*/
-DRT::SurfStressManager::SurfStressManager(DRT::Discretization& discret,
-                                          const int numsurf,
-                                          const Epetra_Map& surfmap):
+DRT::SurfStressManager::SurfStressManager(DRT::Discretization& discret):
 discret_(discret)
 {
-  A_old_temp_    = rcp(new Epetra_Vector(surfmap,true));
-  A_old_         = rcp(new Epetra_Vector(surfmap,true));
-  con_quot_temp_ = rcp(new Epetra_Vector(surfmap,true));
-  con_quot_      = rcp(new Epetra_Vector(surfmap,true));
-  time_          = rcp(new Epetra_Vector(surfmap,true));
+  surfrowmap_ = DRT::UTILS::GeometryElementMap(discret, "SurfaceStress", false);
+  RCP<Epetra_Map> surfcolmap = DRT::UTILS::GeometryElementMap(discret, "SurfaceStress", true);
+
+  // we start with interfacial area (A_old_) and concentration
+  // (con_quot_) = 0. this is wrong but does not make a difference
+  // since we apply the equilibrium concentration gradually, thus we
+  // do not need these history variables needed for the dynamic model
+  // in the beginning.
+  A_old_temp_    = rcp(new Epetra_Vector(*surfcolmap,true));
+  A_old_         = rcp(new Epetra_Vector(*surfcolmap,true));
+  con_quot_temp_ = rcp(new Epetra_Vector(*surfcolmap,true));
+  con_quot_      = rcp(new Epetra_Vector(*surfcolmap,true));
 }
 
 /*-------------------------------------------------------------------*
@@ -65,23 +70,31 @@ void DRT::SurfStressManager::EvaluateSurfStress(ParameterList& p,
 /*-------------------------------------------------------------------*
 | (public)						     lw 03/08|
 |                                                                    |
-| update surface area and concentration, if necessary                |
+| update surface area and concentration                              |
 *--------------------------------------------------------------------*/
 
-void DRT::SurfStressManager::Update(const double time, const int surfaceflag, const int ID)
+void DRT::SurfStressManager::Update()
 {
-  int LID = time_->Map().LID(ID);
-  if (time != (*time_)[LID])
-  {
-    (*time_)[LID] = time;
+  A_old_->Update(1.0, *A_old_temp_, 0.0);
+  con_quot_->Update(1.0, *con_quot_temp_, 0.0);
+}
 
-    if (surfaceflag == 0)
-    {
-      (*A_old_)[LID] = (*A_old_temp_)[LID];
-      (*con_quot_)[LID] = (*con_quot_temp_)[LID];
-    }
-  }
-  return;
+/*-------------------------------------------------------------------*
+| (public)						     lw 03/08|
+|                                                                    |
+| write restart                                                      |
+*--------------------------------------------------------------------*/
+
+void DRT::SurfStressManager::GetHistory(RCP<Epetra_Vector> A_old_temp_row,
+                                        RCP<Epetra_Vector> con_quot_temp_row)
+{
+  // Note that the temporal vectors need to be written since in the
+  // final ones we still have the data of the former step. The column
+  // map based vector used for calculations is exported to a row map
+  // based one needed for writing.
+
+  LINALG::Export(*A_old_temp_, *A_old_temp_row);
+  LINALG::Export(*con_quot_temp_, *con_quot_temp_row);
 }
 
 /*-------------------------------------------------------------------*
@@ -113,7 +126,7 @@ void DRT::SurfStressManager::StiffnessAndInternalForces(const int curvenum,
                                                         const double con_quot_eq)
 {
   double gamma, dgamma;
-  int LID = time_->Map().LID(ID);
+  int LID = A_old_->Map().LID(ID);
   double t_end = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).end();
 
   if (surface_flag==0)                                   // SURFACTANT

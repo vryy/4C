@@ -168,26 +168,38 @@ IO::HDFReader::ReadCharData(string path, int start, int end) const
     if (dataspace < 0)
       dserror("Failed to get dataspace from dataset %s in HDF-file %s",
               path.c_str(),filenames_[i].c_str());
-    hsize_t dim,maxdim;
-    hsize_t res = H5Sget_simple_extent_dims(dataspace,&dim,&maxdim);
-    if (res < 0)
-      dserror("Failed to get size from dataspace in HDF-file %s",
-              filenames_[i].c_str());
-    data->resize(offset+dim);
-    herr_t status = H5Dread(dataset,H5T_NATIVE_CHAR,H5S_ALL,H5S_ALL,
-                            H5P_DEFAULT,&((*data)[offset]));
-    offset += dim;
-    if (status < 0)
-      dserror("Failed to read data from dataset %s in HDF-file %s",
-              path.c_str(),filenames_[i].c_str());
-    status = H5Sclose(dataspace);
-    if (status < 0)
-      dserror("Failed to close node dataspace",
-              path.c_str(),filenames_[i].c_str());
-    status = H5Dclose(dataset);
-    if (status < 0)
-      dserror("Failed to close node dataset",
-              path.c_str(),filenames_[i].c_str());
+    int rank = H5Sget_simple_extent_ndims(dataspace);
+    switch (rank)
+    {
+    case 0:
+      break;
+    case 1:
+    {
+      hsize_t dim,maxdim;
+      hsize_t res = H5Sget_simple_extent_dims(dataspace,&dim,&maxdim);
+      if (res < 0)
+        dserror("Failed to get size from dataspace in HDF-file %s",
+                filenames_[i].c_str());
+      data->resize(offset+dim);
+      herr_t status = H5Dread(dataset,H5T_NATIVE_CHAR,H5S_ALL,H5S_ALL,
+                              H5P_DEFAULT,&((*data)[offset]));
+      offset += dim;
+      if (status < 0)
+        dserror("Failed to read data from dataset %s in HDF-file %s",
+                path.c_str(),filenames_[i].c_str());
+      status = H5Sclose(dataspace);
+      if (status < 0)
+        dserror("Failed to close node dataspace",
+                path.c_str(),filenames_[i].c_str());
+      status = H5Dclose(dataset);
+      if (status < 0)
+        dserror("Failed to close node dataset",
+                path.c_str(),filenames_[i].c_str());
+      break;
+    }
+    default:
+      dserror("HDF5 rank=%d unsupported", rank);
+    }
   }
   return data;
 }
@@ -213,26 +225,38 @@ IO::HDFReader::ReadIntData(string path, int start, int end) const
     if (dataspace < 0)
       dserror("Failed to get dataspace from dataset %s in HDF-file %s",
               path.c_str(),filenames_[i].c_str());
-    hsize_t dim,maxdim;
-    hsize_t res = H5Sget_simple_extent_dims(dataspace,&dim,&maxdim);
-    if (res < 0)
-      dserror("Failed to get size from dataspace in HDF-file %s",
-              filenames_[i].c_str());
-    data->resize(offset+dim);
-    herr_t status = H5Dread(dataset,H5T_NATIVE_INT,H5S_ALL,H5S_ALL,
-                            H5P_DEFAULT,&((*data)[offset]));
-    offset += dim;
-    if (status < 0)
-      dserror("Failed to read data from dataset %s in HDF-file %s",
-              path.c_str(),filenames_[i].c_str());
-    status = H5Sclose(dataspace);
-    if (status < 0)
-      dserror("Failed to close node dataspace %s in HDF-file %s",
-              path.c_str(),filenames_[i].c_str());
-    status = H5Dclose(dataset);
-    if (status < 0)
-      dserror("Failed to close node dataset %s in HDF-file %s",
-              path.c_str(),filenames_[i].c_str());
+    int rank = H5Sget_simple_extent_ndims(dataspace);
+    switch (rank)
+    {
+    case 0:
+      break;
+    case 1:
+    {
+      hsize_t dim,maxdim;
+      hsize_t res = H5Sget_simple_extent_dims(dataspace,&dim,&maxdim);
+      if (res < 0)
+        dserror("Failed to get size from dataspace in HDF-file %s",
+                filenames_[i].c_str());
+      data->resize(offset+dim);
+      herr_t status = H5Dread(dataset,H5T_NATIVE_INT,H5S_ALL,H5S_ALL,
+                              H5P_DEFAULT,&((*data)[offset]));
+      offset += dim;
+      if (status < 0)
+        dserror("Failed to read data from dataset %s in HDF-file %s",
+                path.c_str(),filenames_[i].c_str());
+      status = H5Sclose(dataspace);
+      if (status < 0)
+        dserror("Failed to close node dataspace %s in HDF-file %s",
+                path.c_str(),filenames_[i].c_str());
+      status = H5Dclose(dataset);
+      if (status < 0)
+        dserror("Failed to close node dataset %s in HDF-file %s",
+                path.c_str(),filenames_[i].c_str());
+      break;
+    }
+    default:
+      dserror("HDF5 rank=%d unsupported", rank);
+    }
   }
   return data;
 }
@@ -256,27 +280,40 @@ IO::HDFReader::ReadDoubleData(string path, int start, int end, std::vector<int>&
     if (dataspace < 0)
       dserror("Failed to get dataspace from dataset %s in HDF-file %s",
               path.c_str(),filenames_[i].c_str());
-    hsize_t dim,maxdim;
-    hsize_t res = H5Sget_simple_extent_dims(dataspace,&dim,&maxdim);
-    if (res < 0)
-      dserror("Failed to get size from dataspace in HDF-file %s",
-              filenames_[i].c_str());
-    data->resize(offset+dim);
-    herr_t status = H5Dread(dataset,H5T_NATIVE_DOUBLE,H5S_ALL,H5S_ALL,
-                            H5P_DEFAULT,&((*data)[offset]));
-    lengths.push_back(dim);
-    offset += dim;
-    if (status < 0)
-      dserror("Failed to read data from dataset %s in HDF-file %s",
-              path.c_str(),filenames_[i].c_str());
-    status = H5Sclose(dataspace);
-    if (status < 0)
-      dserror("Failed to close node dataspace %s in HDF-file %s",
-              path.c_str(),filenames_[i].c_str());
-    status = H5Dclose(dataset);
-    if (status < 0)
-      dserror("Failed to close node dataset %s in HDF-file %s",
-              path.c_str(),filenames_[i].c_str());
+    int rank = H5Sget_simple_extent_ndims(dataspace);
+    switch (rank)
+    {
+    case 0:
+      lengths.push_back(0);
+      break;
+    case 1:
+    {
+      hsize_t dim,maxdim;
+      hsize_t res = H5Sget_simple_extent_dims(dataspace,&dim,&maxdim);
+      if (res < 0)
+        dserror("Failed to get size from dataspace in HDF-file %s",
+                filenames_[i].c_str());
+      data->resize(offset+dim);
+      herr_t status = H5Dread(dataset,H5T_NATIVE_DOUBLE,H5S_ALL,H5S_ALL,
+                              H5P_DEFAULT,&((*data)[offset]));
+      lengths.push_back(dim);
+      offset += dim;
+      if (status < 0)
+        dserror("Failed to read data from dataset %s in HDF-file %s",
+                path.c_str(),filenames_[i].c_str());
+      status = H5Sclose(dataspace);
+      if (status < 0)
+        dserror("Failed to close node dataspace %s in HDF-file %s",
+                path.c_str(),filenames_[i].c_str());
+      status = H5Dclose(dataset);
+      if (status < 0)
+        dserror("Failed to close node dataset %s in HDF-file %s",
+                path.c_str(),filenames_[i].c_str());
+      break;
+    }
+    default:
+      dserror("HDF5 rank=%d unsupported", rank);
+    }
   }
   return data;
 }

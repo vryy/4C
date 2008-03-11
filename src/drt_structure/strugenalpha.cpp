@@ -15,6 +15,7 @@ Maintainer: Michael Gee
 #include <iostream>
 
 #include "strugenalpha.H"
+#include "../io/io_drt.H"
 
 
 /*----------------------------------------------------------------------*
@@ -177,36 +178,36 @@ maxentriesperrow_(81)
     discret_.GetCondition("SurfaceStress",surfstresscond);
     if (surfstresscond.size())
     {
-      // Determine local number of associated surface elements
-      int localnumsurf=0;
-      for (unsigned i=0;i<surfstresscond.size();++i)
-      {
-        localnumsurf+=surfstresscond[i]->Geometry().size();
-      }
+//       // Determine local number of associated surface elements
+//       int localnumsurf=0;
+//       for (unsigned i=0;i<surfstresscond.size();++i)
+//       {
+//         localnumsurf+=surfstresscond[i]->Geometry().size();
+//       }
 
-      // Create a map of the associated surface elements
-      // This is needed because the SurfStressManager creates
-      // several vectors containing history variables of the
-      // corresponding surface elements. These vectors need to be
-      // distributed over the processors in the same way as the
-      // surface elements are.
+//       // Create a map of the associated surface elements
+//       // This is needed because the SurfStressManager creates
+//       // several vectors containing history variables of the
+//       // corresponding surface elements. These vectors need to be
+//       // distributed over the processors in the same way as the
+//       // surface elements are.
 
-      int localsurf[localnumsurf];
-      int count=0;
-      for (unsigned i=0;i<surfstresscond.size();++i)
-      {
-        for (map<int,RefCountPtr<DRT::Element> >::iterator iter=surfstresscond[i]->Geometry().begin();
-             iter!=surfstresscond[i]->Geometry().end();++iter)
-        {
-          localsurf[count]=iter->first;
-          count++;
-        }
-      }
-      Epetra_Map surfmap(-1, localnumsurf, localsurf, 0, discret_.Comm());
+//       int localsurf[localnumsurf];
+//       int count=0;
+//       for (unsigned i=0;i<surfstresscond.size();++i)
+//       {
+//         for (map<int,RefCountPtr<DRT::Element> >::iterator iter=surfstresscond[i]->Geometry().begin();
+//              iter!=surfstresscond[i]->Geometry().end();++iter)
+//         {
+//           localsurf[count]=iter->first;
+//           count++;
+//         }
+//       }
+//       Epetra_Map surfmap(-1, localnumsurf, localsurf, 0, discret_.Comm());
 
-      int numsurf;
-      discret_.Comm().SumAll(&localnumsurf, &numsurf, 1);
-      surf_stress_man_=rcp(new DRT::SurfStressManager(discret_, numsurf, surfmap));
+//       int numsurf;
+//       discret_.Comm().SumAll(&localnumsurf, &numsurf, 1);
+      surf_stress_man_=rcp(new DRT::SurfStressManager(discret_));
     }
   }
 
@@ -3083,6 +3084,12 @@ void StruGenAlpha::UpdateandOutput()
     discret_.Evaluate(p,null,null,null,null,null);
   }
 
+  //----------------- update surface stress history variables if present
+  if (surf_stress_man_!=null)
+  {
+    surf_stress_man_->Update();
+  }
+
   bool isdatawritten = false;
 
   //------------------------------------------------- write restart step
@@ -3095,6 +3102,16 @@ void StruGenAlpha::UpdateandOutput()
     output_.WriteVector("acceleration",acc_);
     output_.WriteVector("fexternal",fext_);
     isdatawritten = true;
+
+    if (surf_stress_man_!=null)
+    {
+      RCP<Epetra_Map> surfrowmap=surf_stress_man_->GetSurfRowmap();
+      RCP<Epetra_Vector> A=rcp(new Epetra_Vector(*surfrowmap, true));
+      RCP<Epetra_Vector> con=rcp(new Epetra_Vector(*surfrowmap, true));
+      surf_stress_man_->GetHistory(A,con);
+      output_.WriteVector("Aold", A);
+      output_.WriteVector("conquot", con);
+    }
 
     if (discret_.Comm().MyPID()==0 and printscreen)
     {
@@ -3417,6 +3434,16 @@ void StruGenAlpha::ReadRestart(int step)
   // override current time and step with values from file
   params_.set<double>("total time",time);
   params_.set<int>   ("step",rstep);
+
+  if (surf_stress_man_!=null)
+  {
+    RCP<Epetra_Map> surfmap=surf_stress_man_->GetSurfRowmap();
+    RCP<Epetra_Vector> A_old = LINALG::CreateVector(*surfmap,true);
+    RCP<Epetra_Vector> con_quot = LINALG::CreateVector(*surfmap,true);
+    reader.ReadVector(A_old, "Aold");
+    reader.ReadVector(con_quot, "conquot");
+    surf_stress_man_->SetHistory(A_old,con_quot);
+  }
 
   return;
 }

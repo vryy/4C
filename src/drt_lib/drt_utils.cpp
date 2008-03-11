@@ -862,19 +862,41 @@ void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis, std::strin
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> DRT::UTILS::GeometryElementMap(const DRT::Discretization& dis, std::string condname)
+Teuchos::RCP<Epetra_Map> DRT::UTILS::GeometryElementMap(const DRT::Discretization& dis,
+                                                        std::string condname,
+                                                        bool colmap)
 {
   std::vector<DRT::Condition*> conds;
   dis.GetCondition(condname, conds);
   std::set<int> elementset;
 
-  for (unsigned i=0; i<conds.size(); ++i)
+  if (colmap)
   {
-    std::map<int,RefCountPtr<DRT::Element> >& geometry = conds[i]->Geometry();
-    std::transform(geometry.begin(),
-                   geometry.end(),
-                   std::inserter(elementset,elementset.begin()),
-                   LINALG::select1st<std::pair<int,RefCountPtr<DRT::Element> > >());
+    for (unsigned i=0; i<conds.size(); ++i)
+    {
+      std::map<int,RefCountPtr<DRT::Element> >& geometry = conds[i]->Geometry();
+      std::transform(geometry.begin(),
+                     geometry.end(),
+                     std::inserter(elementset,elementset.begin()),
+                     LINALG::select1st<std::pair<int,RefCountPtr<DRT::Element> > >());
+    }
+  }
+  else
+  {
+    int myrank = dis.Comm().MyPID();
+    for (unsigned i=0; i<conds.size(); ++i)
+    {
+      std::map<int,RefCountPtr<DRT::Element> >& geometry = conds[i]->Geometry();
+      for (std::map<int,RefCountPtr<DRT::Element> >::iterator iter=geometry.begin();
+           iter!=geometry.end();
+           ++iter)
+      {
+        if (iter->second->Owner()==myrank)
+        {
+          elementset.insert(iter->first);
+        }
+      }
+    }
   }
 
   std::vector<int> elements;

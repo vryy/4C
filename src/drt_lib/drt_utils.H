@@ -136,8 +136,9 @@ namespace UTILS
 
     \param dis : (in) Discretization
     \param condname : (in) name of condition in question
+    \param colmap : (in) whether we want to create a (ghosted) column map
    */
-  Teuchos::RCP<Epetra_Map> GeometryElementMap(const DRT::Discretization& dis, std::string condname);
+  Teuchos::RCP<Epetra_Map> GeometryElementMap(const DRT::Discretization& dis, std::string condname, bool colmap);
 
   /*!
    * a common task is to get an array of the positions of all nodes of this element

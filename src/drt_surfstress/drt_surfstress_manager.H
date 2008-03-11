@@ -24,6 +24,8 @@ Maintainer: Lena Wiechert
 #include <Teuchos_ParameterList.hpp>
 #include "../drt_lib/linalg_systemmatrix.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/linalg_utils.H"
+#include "../io/io_drt.H"
 
 
 using namespace std;
@@ -41,8 +43,7 @@ public:
 
     \param discret (in): Discretization
   */
-  SurfStressManager(DRT::Discretization& discret, const int numsurf,
-                    const Epetra_Map& surfmap);
+  SurfStressManager(DRT::Discretization& discret);
 
   /*!
     \brief Destructor
@@ -63,9 +64,35 @@ public:
                           RefCountPtr<LINALG::SparseMatrix> stiff);
 
   /*!
-    \brief update history variables and time if necessary
+    \brief update history variables
   */
-  void Update(const double time, const int surfaceflag, const int ID);
+  void Update();
+
+  /*!
+    \brief get history variables needed for writing restart. Note that
+    the temporal vectors needs to be written since in the old ones we
+    still have the data of the former step. The column map based
+    vectors used for calculations are exported to row map based ones
+    needed for writing.
+  */
+  void GetHistory(RCP<Epetra_Vector> A_old_temp_row,
+                  RCP<Epetra_Vector> con_quot_temp_row);
+
+  /*!
+    \brief get row map of surface elements
+  */
+  RCP<Epetra_Map> GetSurfRowmap() { return surfrowmap_; }
+
+  /*!
+    \brief set history variables after reading restart. The row map
+    based vectors written in case of restart are exported to column
+    based ones needed for calculations again.
+  */
+  void SetHistory(RCP<Epetra_Vector> A_old, RCP<Epetra_Vector> con_quot)
+  {
+    LINALG::Export(*A_old, *A_old_);
+    LINALG::Export(*con_quot, *con_quot_);
+  }
 
   /*!
     \brief calculate interfacial area and its derivatives with respect
@@ -182,6 +209,9 @@ private:
   // current discretization
   DRT::Discretization& discret_;
 
+  // row map of surfaces
+  RCP<Epetra_Map> surfrowmap_;
+
   // surface areas of former iteration
   RefCountPtr<Epetra_Vector> A_old_temp_;
 
@@ -193,9 +223,6 @@ private:
 
   // non-dimensionalized surfactant concentrations of former time step
   RefCountPtr<Epetra_Vector> con_quot_;
-
-  // current time
-  RefCountPtr<Epetra_Vector> time_;
 
   //@}
 }; //class

@@ -99,6 +99,15 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID)
 
   RefCountPtr<DRT::Discretization> actdis = DRT::Problem::Instance(1)->Dis(genprob.numsf,0);
 
+  // Check for surface stress conditions due to interfacial phenomena
+  vector<DRT::Condition*> surfstresscond(0);
+  actdis->GetCondition("SurfaceStress",surfstresscond);
+  if (surfstresscond.size())
+  {
+    surf_stress_man_=rcp(new DRT::SurfStressManager(*actdis));
+  }
+
+
   // set up micro output
   micro_output_ = rcp(new MicroDiscretizationWriter(actdis, 1, ele_ID_, gp_));
 
@@ -111,7 +120,7 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID)
     microstatic_->ReadRestart(istep_, dis_, restartname);
     // both dis_ and dism_ are equal to dis_
     dism_->Update(1.0, *dis_, 0.0);
-    microstatic_->SetOldState(dis_, dism_);
+    microstatic_->SetOldState(dis_, dism_, surf_stress_man_);
   }
   else
   {
@@ -225,7 +234,7 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
   }
 
   // set displacements of last step
-  microstatic_->SetOldState(dis_, dism_);
+  microstatic_->SetOldState(dis_, dism_, surf_stress_man_);
 
   // check if we have to update absolute time and step number
   // in case of restart, timen_ is set to the current total time in

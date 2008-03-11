@@ -19,6 +19,7 @@ Maintainer: Lena Wiechert
 #ifdef CCADISCRET
 
 #include "micromaterial.H"
+#include "../drt_surfstress/drt_surfstress_manager.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -73,6 +74,9 @@ private:
 
   /// my vector of displacements at the generalized midpoint
   RefCountPtr<Epetra_Vector> dism_;
+
+  /// my manager of surface stresses
+  RefCountPtr<DRT::SurfStressManager> surf_stress_man_;
 
   /// current absolute time
   double timen_;

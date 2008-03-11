@@ -661,9 +661,12 @@ void IO::DiscretizationWriter::WriteVector(const string name,
   string valuename = name + ".values";
   double* data = vec->Values();
   const hsize_t size = vec->MyLength() * vec->NumVectors();
-  const herr_t make_status = H5LTmake_dataset_double(resultgroup_,valuename.c_str(),1,&size,data);
+  int length = 1;
+  if (size==0)
+    length = 0;
+  const herr_t make_status = H5LTmake_dataset_double(resultgroup_,valuename.c_str(),length,&size,data);
   if (make_status < 0)
-    dserror("Failed to create dataset in HDF-resultfile");
+    dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
 
   string idname;
 
@@ -694,7 +697,10 @@ void IO::DiscretizationWriter::WriteVector(const string name,
     const hsize_t mapsize = vec->MyLength();
     idname = name + ".ids";
     int* ids = vec->Map().MyGlobalElements();
-    const herr_t make_status = H5LTmake_dataset_int(resultgroup_,idname.c_str(),1,&mapsize,ids);
+    int length = 1;
+    if (size==0)
+      length = 0;
+    const herr_t make_status = H5LTmake_dataset_int(resultgroup_,idname.c_str(),length,&mapsize,ids);
     if (make_status < 0)
       dserror("Failed to create dataset in HDF-resultfile");
 
@@ -723,6 +729,9 @@ void IO::DiscretizationWriter::WriteVector(const string name,
     case elementvector:
       vectortype = "element";
       break;
+    case conditionvector:
+      vectortype = "condition";
+      break;
     default:
       dserror("unknown vector type %d", vt);
     }
@@ -745,6 +754,7 @@ void IO::DiscretizationWriter::WriteVector(const string name,
   {
     dserror("Failed to flush HDF file %s", resultfilename_.c_str());
   }
+
 #endif
 }
 
