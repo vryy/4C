@@ -338,15 +338,6 @@ bool XFEM::solveLinearSystemWithSVD(
     x.Scale(0.0);
     W.Scale(0.0);
     V.Scale(0.0);
-//    for(int  i = 0; i < dim; i++ )
-//    {
-//        x[i] = 0.0;
-//        W[i] = 0.0;
-//        for(int j = 0; j < dim; j++)
-//        {
-//            V[i][j] = 0.0;
-//        }
-//    }
     
     A = U;
     
