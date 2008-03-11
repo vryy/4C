@@ -275,38 +275,36 @@ static void AssignGlobalIDs( const Epetra_Comm& comm,
   //
   // pack elements on all processors
 
-  std::vector<char> sendblock;
+  int size = 0;
   std::map<std::vector<int>, Teuchos::RCP<DRT::Element> >::const_iterator elemsiter;
   for (elemsiter=elementmap.begin();
        elemsiter!=elementmap.end();
        ++elemsiter)
   {
-    DRT::ParObject::AddtoPack(sendblock,elemsiter->first);
+    size += elemsiter->first.size()+1;
+  }
+  std::vector<int> sendblock;
+  sendblock.reserve(size);
+  for (elemsiter=elementmap.begin();
+       elemsiter!=elementmap.end();
+       ++elemsiter)
+  {
+    sendblock.push_back(elemsiter->first.size());
+    std::copy(elemsiter->first.begin(), elemsiter->first.end(), std::back_inserter(sendblock));
   }
 
   // communicate elements to processor 0
 
   int mysize = sendblock.size();
-  int size;
   comm.SumAll(&mysize,&size,1);
   int mypos = LINALG::FindMyPos(sendblock.size(),comm);
 
-  std::vector<char> send(size);
+  std::vector<int> send(size);
   std::fill(send.begin(),send.end(),0);
   std::copy(sendblock.begin(),sendblock.end(),&send[mypos]);
   sendblock.clear();
-  std::vector<char> recv(size);
-  //comm.SumAll(&send[0],&recv[0],size);
-#ifdef PARALLEL
-  const Epetra_MpiComm* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm);
-  int err = MPI_Allreduce(&send[0],&recv[0],size,MPI_CHAR,MPI_SUM,mpicomm->Comm());
-  if (err)
-  {
-    dserror("MPI_Allreduce error: %d", err);
-  }
-#else
-  std::copy(send.begin(),send.end(),recv.begin());
-#endif
+  std::vector<int> recv(size);
+  comm.SumAll(&send[0],&recv[0],size);
 
   send.clear();
 
@@ -318,19 +316,25 @@ static void AssignGlobalIDs( const Epetra_Comm& comm,
     int index = 0;
     while (index < static_cast<int>(recv.size()))
     {
+      int esize = recv[index];
+      index += 1;
       std::vector<int> element;
-      DRT::ParObject::ExtractfromPack(index,recv,element);
+      element.reserve(esize);
+      std::copy(&recv[index], &recv[index+esize], std::back_inserter(element));
+      index += esize;
       elements.insert(element);
     }
     recv.clear();
 
     // pack again to distribute pack to all processors
 
+    send.reserve(index);
     for (std::set<std::vector<int> >::iterator i=elements.begin();
          i!=elements.end();
          ++i)
     {
-      DRT::ParObject::AddtoPack(send,*i);
+      send.push_back(i->size());
+      std::copy(i->begin(), i->end(), std::back_inserter(send));
     }
     size = send.size();
   }
@@ -343,14 +347,7 @@ static void AssignGlobalIDs( const Epetra_Comm& comm,
 
   comm.Broadcast(&size,1,0);
   send.resize(size);
-  //comm.Broadcast(&send[0],send.size(),0);
-#ifdef PARALLEL
-  err = MPI_Bcast(&send[0],send.size(),MPI_CHAR,0,mpicomm->Comm());
-  if (err)
-  {
-    dserror("MPI_Bcast error: %d", err);
-  }
-#endif
+  comm.Broadcast(&send[0],send.size(),0);
 
   // Unpack sorted elements. Take element position for gid.
 
@@ -358,11 +355,15 @@ static void AssignGlobalIDs( const Epetra_Comm& comm,
   int gid = 0;
   while (index < static_cast<int>(send.size()))
   {
+    int esize = send[index];
+    index += 1;
     std::vector<int> element;
-    DRT::ParObject::ExtractfromPack(index,send,element);
+    element.reserve(esize);
+    std::copy(&send[index], &send[index+esize], std::back_inserter(element));
+    index += esize;
 
     // set gid to my elements
-    std::map<std::vector<int>, RefCountPtr<DRT::Element> >::const_iterator iter = elementmap.find(element);
+    std::map<std::vector<int>, RCP<DRT::Element> >::const_iterator iter = elementmap.find(element);
     if (iter!=elementmap.end())
     {
       iter->second->SetId(gid);
