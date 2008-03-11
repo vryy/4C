@@ -970,7 +970,8 @@ void FluidImplicitTimeInt::NonlinearSolve()
       {
 #ifdef D_FLUID3
         const int numdim = params_.get<int>("number of velocity degrees of freedom");
-        if (numdim==3)
+        if (numdim==3 and
+            eleparams.get<std::string>("action")!="calc_fluid_stationary_systemmat_and_residual")
         {
           // call specialized loop over elements
           DRT::ELEMENTS::Fluid3SystemEvaluator evaluator(discret_,eleparams,sysmat_,residual_);
