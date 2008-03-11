@@ -121,12 +121,6 @@ class Intersection
         //! number of corner nodes of the xfem element
         int                                 numXFEMCornerNodes_;
         
-        //! number of internal points
-        int                                 numInternalPoints_;
-    
-        //! number of surface points
-        int                                 numBoundaryPoints_;
-        
         //! counts missed points during the recovery
         int                                 countMissedPoints_;
         
@@ -160,16 +154,6 @@ class Intersection
         //! list of face markers numbered in the order of the intersected surface elments
         vector<int>                         faceMarker_; 
         
-        
-//        /*!
-//        \brief initializes the the intersection computation
-//    
-//        \param xfemdis   (in) : xfem discretization
-//        */
-//        void initializeIntersection(
-//            const RCP<DRT::Discretization>  xfemdis
-//            );
-        
         /*!
         \brief initializes the private members of the xfem element
     
@@ -181,15 +165,6 @@ class Intersection
             const DRT::Element*   xfemElement
             );
             
-//        /*!
-//        \brief initializes the private members of the cutter element
-//    
-//        \param cutterElement   (in) : cutter element
-//        */
-//        void initializeCutter(  
-//            const DRT::Element* cutterElement
-//            );
-          
         /*!
         \brief computes a global numbering for cutter elements, which are boundary
                elements with xfem conditions
@@ -199,9 +174,9 @@ class Intersection
         \param conditionEleCount    (out)   : global element counter
         */
     	void adjustCutterElementNumbering( 
-			const RCP<DRT::Discretization>& 	cutterdis,  
-			vector< DRT::Condition * >&   				xfemConditions,
-			vector<int>& 								conditionEleCount
+			const RCP<DRT::Discretization>&      cutterdis,  
+			const vector< DRT::Condition * >&    xfemConditions,
+			vector<int>&                         conditionEleCount
 			) const;
     
     
@@ -234,9 +209,9 @@ class Intersection
         \param nodeMap          (out)       : node map
         */
         void unpackNodes(
-            int                                     index, 
-            vector<char>&                           cutterDataRecv, 
-            vector<int>&                            nodeVectorRecv, 
+            int                             index, 
+            const vector<char>&             cutterDataRecv, 
+            const vector<int>&              nodeVectorRecv, 
             map< int, RCP<DRT::Node> >&     nodeMap 
             ) const;
     
@@ -254,7 +229,7 @@ class Intersection
         */
     	void getCutterElementsInParallel(	
 			const vector< DRT::Condition * >&   	xfemConditions,
-			vector<int>&							conditionEleCount, 
+			const vector<int>&				        conditionEleCount,
 			map< int, set< DRT::Element* > >&       cutterElementMap,
 			map< int, RCP<DRT::Node> >&             cutterNodeMap,
 			map< int, set<int> >& 					xfemCutterIdMap,
@@ -280,6 +255,8 @@ class Intersection
             DRT::Element*                   cutterElement,
             const DRT::Node*                node,
             std::vector<InterfacePoint>&    interfacePoints,
+            int&                            numInternalPoints,
+            int&                            numBoundaryPoints,
             const int                       elemId,
             const int                       nodeId
             );
@@ -314,6 +291,7 @@ class Intersection
             const DRT::Element*             surfaceElement,
             const DRT::Element*             lineElement,
             std::vector<InterfacePoint>&    interfacePoints,
+            const int                       numBoundaryPoints,
             const int                       surfaceId,
             const int                       lineId,
             const bool                      lines,
@@ -472,7 +450,9 @@ class Intersection
         void computeConvexHull( 
             const DRT::Element*         xfemElement,
             const DRT::Element*         surfaceElement,
-            vector<InterfacePoint>&     interfacePoints
+            vector<InterfacePoint>&     interfacePoints,
+            const int                   numInternalPoints,
+            const int                   numBoundaryPoints
             );
             
             
@@ -524,7 +504,7 @@ class Intersection
         */                          
         void storePoint(    
             const vector<double>&       point, 
-            vector<InterfacePoint>&     interfacePoints, 
+            const vector<InterfacePoint>&     interfacePoints, 
             vector<int>&                positions
             );
   
@@ -537,7 +517,7 @@ class Intersection
         
         */      
         void storeSurfacePoints(    
-            vector<InterfacePoint>&     interfacePoints
+            const vector<InterfacePoint>&     interfacePoints
             );
           
             
@@ -623,7 +603,7 @@ class Intersection
         void locateSteinerPoints(
             vector< vector <int> >&     adjacentFacesList,
             vector< vector <int> >&     adjacentFacemarkerList,
-            tetgenio&                   out
+            const tetgenio&             out
             ) const;
          
          
@@ -688,13 +668,13 @@ class Intersection
         */     
         void liftSteinerPointOnEdge(
             const int                         steinerIndex,
-            int                         lineIndex,
+            int                               lineIndex, // TODO: ???????  why not const, if input ????????
             const int                         cutterIndex,   
-            Epetra_SerialDenseVector&   edgePoint,
-            Epetra_SerialDenseVector&   oppositePoint,
+            Epetra_SerialDenseVector&         edgePoint,
+            Epetra_SerialDenseVector&         oppositePoint,
             const vector< vector <int> >&     adjacentFacesList,
-            const DRT::Element*         xfemElement, 
-            tetgenio&                   out
+            const DRT::Element*               xfemElement, 
+            tetgenio&                         out
             );
           
         
@@ -1021,9 +1001,9 @@ class Intersection
             const int       edgeIndex2, 
             const int       faceMarker,
             int&            adjacentFaceMarker,
-            int             faceIndex,
+            const int       faceIndex,
             int&            adjacentFaceIndex,
-            tetgenio&       out
+            const tetgenio& out
             ) const;   
             
             
@@ -1079,7 +1059,7 @@ class Intersection
             const int                                 edgeIndex1,
             const int                                 edgeIndex2, 
             const int                                 adjacentFaceIndex,
-            tetgenio&                           out
+            const tetgenio&                           out
             ) const;
     
              
@@ -1137,7 +1117,7 @@ class Intersection
         void addCellsToDomainIntCellsMap(
             const DRT::Element*             xfemElement,
             map< int, DomainIntCells >&     domainintcells,
-            tetgenio&                       out
+            const tetgenio&                 out
             ) const; 
              
               

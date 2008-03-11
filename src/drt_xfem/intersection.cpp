@@ -72,16 +72,12 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
     countMissedPoints_ = 0;
     
     const double t_start = ds_cputime();
-    //initializeIntersection(xfemdis);
     
 #ifdef PARALLEL
-	const int cmyrank = cutterdis->Comm().MyPID();
-	const int xnumproc = xfemdis->Comm().NumProc();
-	const int cnumproc = cutterdis->Comm().NumProc();
 	map< int, set<int> > xfemCutterIdMap;
 	vector< int > conditionEleCount;
 	
-	if(cnumproc != xnumproc)
+	if(cutterdis->Comm().NumProc() != xfemdis->Comm().NumProc())
 		dserror("the number of processors for xfem and cutter discretizations have to equal each other");		
 #endif
 
@@ -109,7 +105,7 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
         startPointList();
         
         //printf("size of xfem condition = %d\n", c);
-        int condCounter = -1;  // was i
+        int condCounter = -1;
         for(vector<DRT::Condition*>::const_iterator conditer = xfemConditions.begin(); conditer!=xfemConditions.end(); ++conditer)
         {
             condCounter++;
@@ -174,27 +170,27 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
             const DRT::Element*const* cutterElementLines = cutterElement->Lines();
             const DRT::Node*const* cutterElementNodes = cutterElement->Nodes();
             
-            numInternalPoints_= 0; 
-            numBoundaryPoints_ = 0;
+            // number of internal points
+            int numInternalPoints = 0;
+            // number of surface points
+            int numBoundaryPoints = 0;
             vector< InterfacePoint >  interfacePoints; 
-           
-//            initializeCutter(cutterElement); 
 
             // collect internal points
             for(int m=0; m<cutterElement->NumLine() ; m++)                    
                 collectInternalPoints( xfemElement, cutterElement, cutterElementNodes[m],
-                                        interfacePoints, k, m);
+                                        interfacePoints, numInternalPoints, numBoundaryPoints, k, m);
   
             // collect intersection points                                   
             for(int m=0; m<xfemElement->NumLine() ; m++) 
                 if(collectIntersectionPoints(   cutterElement, xfemElementLines[m],
-                                                interfacePoints, 0, m, false, xfemIntersection))                                         
+                                                interfacePoints, numBoundaryPoints, 0, m, false, xfemIntersection))                                         
                     storeIntersectedCutterElement(cutterElement); 
             
             for(int m=0; m<cutterElement->NumLine() ; m++)                                              
                 for(int p=0; p<xfemElement->NumSurface() ; p++) 
                     if(collectIntersectionPoints(   xfemElementSurfaces[p], 
-                                                    cutterElementLines[m], interfacePoints,
+                                                    cutterElementLines[m], interfacePoints, numBoundaryPoints,
                                                     p, m, true, xfemIntersection)) 
                         storeIntersectedCutterElement(cutterElement); 
             
@@ -203,7 +199,7 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
             if( interfacePoints.size() > 0)
             {
 #ifdef QHULL
-                computeConvexHull( xfemElement, cutterElement, interfacePoints);
+                computeConvexHull( xfemElement, cutterElement, interfacePoints, numInternalPoints, numBoundaryPoints);
 #else
                 dserror("Set QHULL flag to use XFEM intersections!!!");
 #endif
@@ -228,12 +224,12 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
     cout << "Intersection computed sucessfully in " << t_end  <<  " secs";
 #ifdef PARALLEL
     flush(cout);
-	cout << " rank = " << cmyrank;
+	cout << " rank = " << cutterdis->Comm().MyPID();
     flush(cout);
 #endif
     cout << endl;
     cout << endl;
-  
+    //dserror("halt, nur bis hier");
 }
 
 void getCutterElementPlusNodes(
@@ -246,18 +242,6 @@ void getCutterElementPlusNodes(
 
 
 /*----------------------------------------------------------------------*
- |  INIT:   initializes the intersection computation         u.may 12/07|
- |                                                                      |
- *----------------------------------------------------------------------*/
-//void Intersection::initializeIntersection(
-//    const RCP<DRT::Discretization>  xfemdis)
-//{
-//    xfemOldDistype_ = xfemdis->lColElement(0)->Shape();
-//}
-
-
-
-/*----------------------------------------------------------------------*
  |  INIT:   initializes the private members of the           u.may 08/07|
  |          current xfem element                                        |
  *----------------------------------------------------------------------*/
@@ -265,48 +249,28 @@ void Intersection::initializeXFEM(
     const int             xfemId,
     const DRT::Element*   xfemElement)
 { 
-    //xfemDistype_ = xfemElement->Shape();
     const DRT::Element::DiscretizationType xfemDistype = xfemElement->Shape();
-    
-    // TODO: check for paralleilzation
-    //if(xfemOldDistype_ != xfemDistype_ || xfemId == 0) 
-    //{   
-        numXFEMSurfaces_ = xfemElement->NumSurface(); 
-//        numXFEMLines_ = xfemElement->NumLine(); 
+   
+    numXFEMSurfaces_ = xfemElement->NumSurface(); 
        
-        numXFEMCornerNodes_  = getNumberOfElementCornerNodes(xfemDistype);
-        
-        eleLinesSurfaces_ = getEleNodeNumbering_lines_surfaces(xfemDistype);
-        eleNodesSurfaces_ = getEleNodeNumbering_nodes_surfaces(xfemDistype);
-        eleNumberingSurfaces_ = getEleNodeNumberingSurfaces(xfemDistype);
-        eleRefCoordinates_ = getEleNodeNumbering_nodes_reference(xfemDistype);
-    //}
+    numXFEMCornerNodes_  = getNumberOfElementCornerNodes(xfemDistype);
     
-    //xfemOldDistype_ = xfemElement->Shape();
-    
+    eleLinesSurfaces_     = getEleNodeNumbering_lines_surfaces(xfemDistype);
+    eleNodesSurfaces_     = getEleNodeNumbering_nodes_surfaces(xfemDistype);
+    eleNumberingSurfaces_ = getEleNodeNumberingSurfaces(xfemDistype);
+    eleRefCoordinates_    = getEleNodeNumbering_nodes_reference(xfemDistype);
+   
     pointList_.clear();
-    segmentList_.clear();                 
-    surfacePointList_.clear();                
     triangleList_.clear();
     
+    segmentList_.clear();
     segmentList_.resize(numXFEMSurfaces_);
+    surfacePointList_.clear();
     surfacePointList_.resize(numXFEMSurfaces_);    
     
     intersectingCutterElements_.clear();
     faceMarker_.clear();
 }
-
-
-
-/*----------------------------------------------------------------------*
- |  INIT:   initializes the private members of the           u.may 08/07|
- |          current cutter element                                      |
- *----------------------------------------------------------------------*/
-//void Intersection::initializeCutter(  
-//    const DRT::Element* cutterElement)
-//{  
-//    cutterDistype_ = cutterElement->Shape();
-//}
 
 
 #ifdef PARALLEL
@@ -316,8 +280,9 @@ void Intersection::initializeXFEM(
  *----------------------------------------------------------------------*/
 void Intersection::adjustCutterElementNumbering( 
 	const RCP<DRT::Discretization>&  	cutterdis,  
-	vector< DRT::Condition * >&   				xfemConditions,
-	vector<int>& 								conditionEleCount) const
+	const vector< DRT::Condition* >&    xfemConditions,
+	vector<int>& 						conditionEleCount
+	) const
 {
 	vector<int> countSend((int) xfemConditions.size());
 	DRT::Exporter exporter(cutterdis->Comm());
@@ -403,8 +368,8 @@ void Intersection::packData(
  *----------------------------------------------------------------------*/
 void Intersection::unpackNodes(
     int                             index, 
-    vector<char>&                   cutterDataRecv, 
-    vector<int>&                    nodeVectorRecv, 
+    const vector<char>&             cutterDataRecv, 
+    const vector<int>&              nodeVectorRecv, 
     map< int, RCP<DRT::Node> >&     nodeMap ) const
 {       
     int count = 0;
@@ -434,12 +399,13 @@ void Intersection::unpackNodes(
  *----------------------------------------------------------------------*/
 void Intersection::getCutterElementsInParallel(	
 	const vector< DRT::Condition * >&       xfemConditions,
-	vector<int>&							conditionEleCount, 
+	const vector<int>&	    				conditionEleCount, 
 	map< int, set< DRT::Element* > >&       cutterElementMap,
-	map< int, RCP<DRT::Node> >&  	cutterNodeMap,
+	map< int, RCP<DRT::Node> >&  	        cutterNodeMap,
 	map<int, set<int> >& 					xfemCutterIdMap,
-	const RCP<DRT::Discretization>& xfemdis,
-   	const RCP<DRT::Discretization>& cutterdis  )
+	const RCP<DRT::Discretization>&         xfemdis,
+   	const RCP<DRT::Discretization>&         cutterdis
+   	)
 {
 	const int cmyrank = cutterdis->Comm().MyPID();
 	const int cnumproc = cutterdis->Comm().NumProc();
@@ -540,14 +506,12 @@ void Intersection::getCutterElementsInParallel(
             
             cutterDataSend = cutterDataRecv;
             
-			int count = 0;
-			int index = lengthRecv[0];
+            const int startindex = lengthRecv[0];
 			map< int, RCP<DRT::Node> > nodeMap;
-			
-            unpackNodes(index, cutterDataRecv, nodeVectorRecv, nodeMap);
+            unpackNodes(startindex, cutterDataRecv, nodeVectorRecv, nodeMap);
             
-			index = 0;
-			count = 0;
+			int index = 0;
+			int count = 0;
 
 			while (index < lengthRecv[0])
 			{				
@@ -652,6 +616,8 @@ bool Intersection::collectInternalPoints(
     DRT::Element*                   cutterElement,
     const DRT::Node*                node,
     std::vector< InterfacePoint >&  interfacePoints,
+    int&                            numInternalPoints,
+    int&                            numBoundaryPoints,
     const int                       elemId,
     const int                       nodeId)
 {
@@ -671,11 +637,11 @@ bool Intersection::collectInternalPoints(
         InterfacePoint ip;
         //debugNodeWithinElement(xfemElement,node,xsi,elemId ,nodeId, nodeWithinElement);  
           
-        numInternalPoints_++;
+        numInternalPoints++;
         
         // check if node lies on the boundary of the xfem element
         if(checkIfOnBoundary(xfemElement->Shape(), xsi, ip))
-            numBoundaryPoints_++;
+            numBoundaryPoints++;
                                    
         // intersection coordinates in the surface 
         // element element coordinate system
@@ -745,6 +711,7 @@ bool Intersection::collectIntersectionPoints(
     const DRT::Element*             surfaceElement,
     const DRT::Element*             lineElement,
     std::vector<InterfacePoint>&    interfacePoints, 
+    const int                       numBoundaryPoints,
     const int                       surfaceId,
     const int                       lineId,
     const bool                      lines,
@@ -771,7 +738,7 @@ bool Intersection::collectIntersectionPoints(
     
     // in this case a node of this line lies on the facet of the xfem element
     // but there is no intersection within the element                                          
-    if(!((int) interfacePoints.size() == numBoundaryPoints_)) 
+    if(!((int) interfacePoints.size() == numBoundaryPoints)) 
         xfemIntersection = true;
       
     return intersected;
@@ -1164,7 +1131,9 @@ void Intersection::createNewLimits(
 void Intersection::computeConvexHull(   
         const DRT::Element*     xfemElement,
         const DRT::Element*     surfaceElement,
-        vector<InterfacePoint>& interfacePoints)
+        vector<InterfacePoint>& interfacePoints,
+        const int               numInternalPoints,
+        const int               numBoundaryPoints)
 {
     
     vector<int>                 positions;
@@ -1296,9 +1265,9 @@ void Intersection::computeConvexHull(
     storeSurfacePoints(interfacePoints);
         
     // cutter element lies on the surface of an xfem element
-    if(numInternalPoints_ == numBoundaryPoints_ && numInternalPoints_ != 0)
+    if(numInternalPoints == numBoundaryPoints && numInternalPoints != 0)
     {
-        if(numBoundaryPoints_ > 1)              
+        if(numBoundaryPoints > 1)              
             storeSegments(positions);   
               
     }
@@ -1613,9 +1582,9 @@ void Intersection::startPointList(
  |          Constrained Delauney Triangulation                          |
  *----------------------------------------------------------------------*/  
 void Intersection::storePoint(  
-    const vector<double>&       point, 
-    vector<InterfacePoint>&     interfacePoints, 
-    vector<int>&                positions)
+    const vector<double>&             point, 
+    const vector<InterfacePoint>&     interfacePoints, 
+    vector<int>&                      positions)
 {
     bool alreadyInList = false; 
 
@@ -1686,7 +1655,7 @@ InterfacePoint Intersection::computeMidpoint(
  |          that surface                                                |
  *----------------------------------------------------------------------*/  
 void Intersection::storeSurfacePoints(  
-    vector<InterfacePoint>&     interfacePoints)
+    const vector<InterfacePoint>&     interfacePoints)
 {   
 
     for(unsigned int i = 0; i < interfacePoints.size(); i++)
@@ -1997,7 +1966,8 @@ void Intersection::liftAllSteinerPoints(
 void Intersection::locateSteinerPoints(
     vector< vector <int> >&     adjacentFacesList,
     vector< vector <int> >&     adjacentFacemarkerList,
-    tetgenio&                   out) const
+    const tetgenio&             out
+    ) const
 {
 
     for(int i = 0; i < out.numberoftrifaces; i++)
@@ -2136,8 +2106,7 @@ void Intersection::liftSteinerPointOnSurface(
     averageNormal.Scale(0.0);
     
     const int length = (int) ( ( (double) (adjacentFacesList[steinerIndex].size()-1))*0.5 );
-    vector<Epetra_SerialDenseVector> normals;
-    normals.reserve(length);
+    vector<Epetra_SerialDenseVector> normals(length);
     
     for(int j = 0; j < length; ++j)
     {
@@ -2162,22 +2131,18 @@ void Intersection::liftSteinerPointOnSurface(
         
         averageNormal += normal;
             
-        normals.push_back(normal);
+        normals[j] = normal;
     }
 
     // compute average normal
-//    for(int j=0; j<3; j++)
-//        averageNormal[j] = averageNormal[j]/( (double)length);
     averageNormal.Scale(1.0 / ((double)length));
-        
-    vector<Epetra_SerialDenseVector> plane(4, Epetra_SerialDenseVector(3));                      
+    
+    const int faceMarker = adjacentFacemarkerList[steinerIndex][0];
+    
+    vector<Epetra_SerialDenseVector> plane(4, Epetra_SerialDenseVector(3));
     plane[0] = addTwoVectors(Steinerpoint, averageNormal);               
     plane[1] = subtractsTwoVectors(Steinerpoint, averageNormal);
- 
- 
-    const int faceMarker = adjacentFacemarkerList[steinerIndex][0];
     Epetra_SerialDenseVector xsi(3);
-    
     const bool intersected = computeRecoveryNormal( xsi, plane, intersectingCutterElements_[faceMarker],false);
     if(intersected)
     {
@@ -2191,8 +2156,10 @@ void Intersection::liftSteinerPointOnSurface(
         vector<Epetra_SerialDenseVector>::const_iterator normalptr;
         for(normalptr = normals.begin(); normalptr != normals.end(); ++normalptr )
         {
+            vector<Epetra_SerialDenseVector> plane(4, Epetra_SerialDenseVector(3)); // TODO: why size 4???
             plane[0] = addTwoVectors(Steinerpoint, *normalptr);               
             plane[1] = subtractsTwoVectors(Steinerpoint, *normalptr);
+            Epetra_SerialDenseVector xsi(3);
             intersected = computeRecoveryNormal( xsi, plane, intersectingCutterElements_[faceMarker], false);
             if(intersected)
             {
@@ -2335,7 +2302,7 @@ void Intersection::liftSteinerPointOnBoundary(
                
     // compute intersection normal on boundary
     Epetra_SerialDenseVector xsi(3);
-    bool intersected = computeRecoveryNormal(xsi, plane, intersectingCutterElements_[faceIndex], true);
+    const bool intersected = computeRecoveryNormal(xsi, plane, intersectingCutterElements_[faceIndex], true);
     
     if(intersected)
     {   
@@ -2444,7 +2411,9 @@ void Intersection::computeHigherOrderPoint(
          
     findAdjacentFace(  tetraCornerIndices[index1], tetraCornerIndices[index2], 
                        faceMarker, adjacentFaceMarker, faceIndex, adjacentFaceIndex, out); 
-                           
+    
+    // TODO: something seems weird about the following if else construct, sometimes it goes through, somethimes not...
+    // suggestion: for every if, there should be an else, otherwise, values could become undefined...
     
     // edge lies within the xfem element
     if(adjacentFaceMarker  > -1)
@@ -2469,12 +2438,20 @@ void Intersection::computeHigherOrderPoint(
                 intersected = computeRecoveryPlane( lineIndex, xsi, plane, intersectingCutterElements_[cutterIndex]);
                 intersectionNormal = false;
             }
+            else
+            {
+                dserror("what do we do here? Implement something?");
+            }
+        }
+        else
+        {
+            dserror("should we ever arive here?");
         }
     }
     // edge lies on the surface of the xfem element
     else if(adjacentFaceMarker  == -1)
     {
-        int oppositeIndex = findEdgeOppositeIndex(  tetraCornerIndices[index1], tetraCornerIndices[index2], 
+        const int oppositeIndex = findEdgeOppositeIndex(  tetraCornerIndices[index1], tetraCornerIndices[index2], 
                                                     adjacentFaceIndex, out);  
                                                                                   
         //printf("oppo = %d\n", oppositeIndex);
@@ -2496,7 +2473,15 @@ void Intersection::computeHigherOrderPoint(
                 intersected = computeRecoveryPlane( lineIndex, xsi, plane, intersectingCutterElements_[faceMarker]);
                 intersectionNormal = false;
             }
+            else
+            {
+                dserror("What do we do here?");
+            }
         }
+    }
+    else // (adjacentFaceMarker < -1) should be impossible
+    {
+        dserror("bug in adjacentFaceMarker numbering?");
     }
 
 
@@ -2508,7 +2493,7 @@ void Intersection::computeHigherOrderPoint(
     else 
     {
         countMissedPoints_++;
-        printf("NO INTERSECTION POINT FOUND!!!!! adjacentFaceMarker = %d\n", adjacentFaceMarker);
+        dserror("NO INTERSECTION POINT FOUND!!!!! adjacentFaceMarker = %d\n", adjacentFaceMarker);
     }
 
 }
@@ -3158,9 +3143,10 @@ void Intersection::findAdjacentFace(
     const int         edgeIndex2, 
     const int         faceMarker,
     int&              adjacentFaceMarker,
-    int               faceIndex,
+    const int         faceIndex,
     int&              adjacentFaceIndex,
-    tetgenio&   out) const
+    const tetgenio&   out
+    ) const
 {
 
     bool    faceMarkerFound     = false;
@@ -3175,7 +3161,7 @@ void Intersection::findAdjacentFace(
             int countPoints = 0;
             for(int j = 0; j < 3 ; j++)
             {
-                int pointIndex = out.trifacelist[ i*3 + j ];
+                const int pointIndex = out.trifacelist[ i*3 + j ];
                 if(pointIndex == edgeIndex1 || pointIndex == edgeIndex2)
                     countPoints++;
             }
@@ -3200,10 +3186,11 @@ void Intersection::findAdjacentFace(
  |          to an edge in the adjacent triangular face                  |
  *----------------------------------------------------------------------*/  
 int Intersection::findEdgeOppositeIndex( 
-    int                                 edgeIndex1,
-    int                                 edgeIndex2, 
-    int                                 adjacentFaceIndex,
-    tetgenio&                           out) const
+        const int                                 edgeIndex1,
+        const int                                 edgeIndex2, 
+        const int                                 adjacentFaceIndex,
+        const tetgenio&                           out
+        ) const
 {
     int oppositePointIndex = -1;
   
@@ -3417,7 +3404,7 @@ void Intersection::storeHigherOrderNode(
     else           
     {   
         xsiLine[0] = xsi[2];
-        DRT::Element* lineele = surfaceElement->Lines()[lineIndex];
+        const DRT::Element* lineele = surfaceElement->Lines()[lineIndex];
         elementToCurrentCoordinates(lineele, xsiLine);
         for(int i=0; i<3; i++)
             xsi[i] = xsiLine[i];
@@ -3441,7 +3428,8 @@ void Intersection::storeHigherOrderNode(
 void Intersection::addCellsToDomainIntCellsMap(
         const DRT::Element*             xfemElement,
         map< int, DomainIntCells >&     domainintcells,
-        tetgenio&                       out) const
+        const tetgenio&                 out
+        ) const
 {   
     
     // store domain integration cells
