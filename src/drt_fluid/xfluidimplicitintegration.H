@@ -44,6 +44,7 @@ Maintainer: Axel Gerstenberger
 #include "drt_periodicbc.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/drt_function.H"
+#include "../drt_lib/drt_elementgroup.H"
 #include "../drt_xfem/dof_management.H"
 
 #include "Epetra_Vector.h"
@@ -299,6 +300,9 @@ protected:
   int samstop_;
   int dumperiod_;
 
+  /// flag for special flow: currently channel flow or flow in a lid-driven cavity
+  string special_flow_;
+
   /// fine-scale subgrid-viscosity flag
   string fssgv_;
 
@@ -386,6 +390,8 @@ protected:
 
   RCP<PeriodicBoundaryConditions> pbc_;
 
+  /// my elements grouped for faster evaluation
+  //RCP<DRT::EGROUP::ElementGroupManager> egm_;
 
   // time measurement
   // ----------------

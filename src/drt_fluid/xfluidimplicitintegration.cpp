@@ -34,6 +34,11 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/linalg_mapextractor.H"
 #include "fluid_utils.H"
 
+// Include special fluid3 evaluator. This makes the fluid3 element known to
+// the algorithm. However, all details are hidden. All that the algorithm
+// assumes is that there are (in the 3d case) only fluid3 elements and those
+// elements can be evaluated with the given evaluator.
+#include "../drt_f3/fluid3_evaluator.H"
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -108,6 +113,12 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 
   // (fine-scale) subgrid viscosity?
   fssgv_ = params_.get<string>("fs subgrid viscosity","No");
+
+  // -------------------------------------------------------------------
+  // Build element group. This might change some element orientations.
+  // -------------------------------------------------------------------
+
+  //egm_ = rcp(new DRT::EGROUP::ElementGroupManager(*fluiddis));
 
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
@@ -263,20 +274,16 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 
   ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
 
+  // flag for special flow: currently channel flow or flow in a lid-driven cavity
+  special_flow_ = modelparams->get<string>("CANONICAL_FLOW","no");
+
   if (modelparams->get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
       ==
       "CLASSICAL_LES")
   {
     // a canonical flow with homogeneous directions would allow a
     // spatial averaging of data
-    string special_flow
-      =
-      modelparams->get<string>("CANONICAL_FLOW","no");
-
-    string hom_plane
-      =
-      modelparams->get<string>("CHANNEL_HOMPLANE","not specified");
-
+    string hom_plane = modelparams->get<string>("CHANNEL_HOMPLANE","not specified");
 
     if (myrank_ == 0)
     {
@@ -311,7 +318,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
         }
         else if(physmodel == "Smagorinsky_with_van_Driest_damping")
         {
-          if (special_flow != "channel_flow_of_height_2"
+          if (special_flow_ != "channel_flow_of_height_2"
               ||
               hom_plane != "xz")
           {
@@ -330,7 +337,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
         }
         else if(physmodel == "Dynamic_Smagorinsky")
         {
-          if (special_flow != "channel_flow_of_height_2"
+          if (special_flow_ != "channel_flow_of_height_2"
               ||
               hom_plane != "xz")
           {
@@ -340,7 +347,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
         cout << &endl;
       }
 
-      if (special_flow == "channel_flow_of_height_2")
+      if (special_flow_ == "channel_flow_of_height_2")
       {
         cout << "                             " ;
         cout << "Turbulence statistics are evaluated ";
@@ -377,23 +384,19 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // -------------------------------------------------------------------
   // initialize turbulence-statistics evaluation
   // -------------------------------------------------------------------
+  if (special_flow_ == "lid_driven_cavity")
+  //if (special_flow_ != "no")
   {
-    string turbulencemodel
-      =
-      params_.sublist("TURBULENCE MODEL").get<string>("CANONICAL_FLOW","no");
-    if (turbulencemodel == "lid_driven_cavity")
-    {
-      turbulencestatistics_ldc_=rcp(new TurbulenceStatisticsLdc(discret_,params_));
-      samstart_  = modelparams->get<int>("SAMPLING_START",1);
-      samstop_   = modelparams->get<int>("SAMPLING_STOP",1);
-      dumperiod_ = modelparams->get<int>("DUMPING_PERIOD",1);
-    }
-    else if (turbulencemodel == "channel_flow_of_height_2")
-    {
-      turbulencestatistics_=rcp(new TurbulenceStatistics(discret_,params_));
-    }
-  }
+    // parameters for sampling/dumping period
+    samstart_  = modelparams->get<int>("SAMPLING_START",1);
+    samstop_   = modelparams->get<int>("SAMPLING_STOP",1);
+    dumperiod_ = modelparams->get<int>("DUMPING_PERIOD",1);
 
+    //if (special_flow_ == "lid_driven_cavity")
+      turbulencestatistics_ldc_=rcp(new TurbulenceStatisticsLdc(discret_,params_));
+    //else if (special_flow_ == "channel_flow_of_height_2")
+      //turbulencestatistics_=rcp(new TurbulenceStatistics(discret_,params_));
+  }
 
   // -------------------------------------------------------------------
   // necessary only for the VM3 approach:
@@ -598,13 +601,15 @@ void XFluidImplicitTimeInt::TimeLoop()
     tm8_ref_ = rcp(new TimeMonitor(*timeout_ ));
 
     // -------------------------------------------------------------------
-    // add calculated velocity to mean value calculation
+    // add calculated velocity to mean value calculation (statistics)
     // -------------------------------------------------------------------
-    if(params_.sublist("TURBULENCE MODEL").get<string>("CANONICAL_FLOW","no")
-       ==
-       "lid_driven_cavity" && step_>=samstart_ && step_<=samstop_)
+    //if(special_flow_ != "no" && step_>=samstart_ && step_<=samstop_)
+    if(special_flow_ == "lid_driven_cavity" && step_>=samstart_ && step_<=samstop_)
     {
-      turbulencestatistics_ldc_->DoTimeSample(velnp_);
+      //if(special_flow_ == "lid_driven_cavity")
+        turbulencestatistics_ldc_->DoTimeSample(velnp_);
+      //else if(special_flow_ == "channel_flow_of_height_2")
+        //turbulencestatistics_->DoTimeSample(velnp_,*force_);
     }
 
     // -------------------------------------------------------------------
@@ -1584,7 +1589,7 @@ void XFluidImplicitTimeInt::Output()
     }
 
     // write domain decomposition for visualization (only once!)
-    if (step_==upres_) 
+    if (step_==upres_)
      output_.WriteElementData();
 
     if (restartstep_ == uprestart_) //add restart data
@@ -1608,7 +1613,6 @@ void XFluidImplicitTimeInt::Output()
         output_.WriteVector("dispnm",dispnm_);
       }
     }
-
   }
 
   // write restart also when uprestart_ is not a integer multiple of upres_
@@ -1642,15 +1646,24 @@ void XFluidImplicitTimeInt::Output()
     output_.WriteVector("velnm", velnm_);
   }
 
-  // dumping of turbulence statistics
-  if((params_.sublist("TURBULENCE MODEL")).get<string>("CANONICAL_FLOW","no") == "lid_driven_cavity" && step_>=samstart_ && step_<=samstop_)
+  // dumping of turbulence statistics if required
+  if (special_flow_ == "lid_driven_cavity")
+  //if (special_flow_ != "no")
   {
     int samstep = step_-samstart_+1;
     double dsamstep=samstep;
     double ddumperiod=dumperiod_;
 
     if (fmod(dsamstep,ddumperiod)==0)
-      turbulencestatistics_ldc_->DumpStatistics(step_);
+    {
+      //if (special_flow_ == "lid_driven_cavity")
+        turbulencestatistics_ldc_->DumpStatistics(step_);
+      //else if (special_flow_ == "channel_flow_of_height_2")
+      //{
+        //turbulencestatistics_->TimeAverageMeansAndOutputOfStatistics(step_);
+        //turbulencestatistics_->ClearStatistics();
+      //}
+    }
   }
 
 #if 0  // DEBUG IO --- the whole systemmatrix
