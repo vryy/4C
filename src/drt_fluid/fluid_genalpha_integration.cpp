@@ -194,6 +194,29 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // Nonlinear iteration increment vector
   increment_    = LINALG::CreateVector(*dofrowmap,true);
 
+
+
+  //--------------------------------------------------------------------
+  // init some class variables
+
+  dt_     = params_.get<double>("time step size");
+
+  alphaM_ = params_.get<double>("alpha_M");
+  alphaF_ = params_.get<double>("alpha_F");
+
+  // choice of third parameter necessary but not sufficiant for second
+  // order accuracy
+  gamma_  = 0.5 + alphaM_ - alphaF_;
+
+  // parameter for linearisation scheme (fixed point like or newton like)
+  newton_ = params_.get<bool>("Use reaction terms for linearisation",false);
+
+  // maximum number of timesteps
+  endstep_  = params_.get<int>   ("max number timesteps");
+  // maximum simulation time
+  endtime_  = params_.get<double>("total time");
+
+  
   // -------------------------------------------------------------------
   // initialize turbulence-statistics evaluation
   // -------------------------------------------------------------------
@@ -205,8 +228,8 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   if (special_flow_ != "no")
   {
     // parameters for sampling/dumping period
-    samstart_  = modelparams->get<int>("SAMPLING_START",1);
-    samstop_   = modelparams->get<int>("SAMPLING_STOP",1);
+    samstart_  = modelparams->get<int>("SAMPLING_START",1       );
+    samstop_   = modelparams->get<int>("SAMPLING_STOP", endstep_);
     dumperiod_ = modelparams->get<int>("DUMPING_PERIOD",1);
 
     if (special_flow_ == "lid_driven_cavity")
@@ -258,27 +281,6 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   this->GenAlphaEchoToScreen("print start-up info");
 
   // end time measurement for timeloop
-
-
-  //--------------------------------------------------------------------
-  // init some class variables
-
-  dt_     = params_.get<double>("time step size");
-
-  alphaM_ = params_.get<double>("alpha_M");
-  alphaF_ = params_.get<double>("alpha_F");
-
-  // choice of third parameter necessary but not sufficiant for second
-  // order accuracy
-  gamma_  = 0.5 + alphaM_ - alphaF_;
-
-  // parameter for linearisation scheme (fixed point like or newton like)
-  newton_ = params_.get<bool>("Use reaction terms for linearisation",false);
-
-  // maximum number of timesteps
-  endstep_  = params_.get<int>   ("max number timesteps");
-  // maximum simulation time
-  endtime_  = params_.get<double>("total time");
 
 
   tm7_ref_ = null;
@@ -824,6 +826,13 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
       // write mesh in each restart step --- the elements are required since
       // they contain history variables (the time dependent subscales)
       output_.WriteMesh(step_,time_);
+
+      
+      if(special_flow_ == "channel_flow_of_height_2"  && dumperiod_ == 0)
+      {
+        turbulencestatistics_->TimeAverageMeansAndOutputOfStatistics(step_);
+        turbulencestatistics_->ClearStatistics();
+      }
     }
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
@@ -844,7 +853,6 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
       output_.WriteVector("dispn"   ,dispn_   );
       output_.WriteVector("gridveln",gridveln_);
     }
-
 
     // write mesh in each restart step --- the elements are required since
     // they contain history variables (the time dependent subscales)
@@ -2454,6 +2462,21 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
             cout << "The solution is averaged over the homogeneous ";
             cout << hom_plane;
             cout << " plane and over time.\n";
+            cout << "\n";
+            cout << "                             " ;
+            cout << "Sampling period: steps " << samstart_ << " to " << samstop_  << ".\n";
+
+            if(dumperiod_ == 0)
+            {
+              cout << "                             " ;
+              cout << "Using standalone records (i.e. start from 0 for a new record)\n";
+            }
+            else
+            {
+              cout << "                             " ;
+              cout << "Volker-style incremental dumping is used (";
+              cout << dumperiod_ << ")" << &endl;
+            }
           }
           cout << &endl;
           cout << &endl;
