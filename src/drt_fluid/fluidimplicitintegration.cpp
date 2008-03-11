@@ -968,17 +968,19 @@ void FluidImplicitTimeInt::NonlinearSolve()
            !=
            "L_2_norm_without_residual_at_itemax"))
       {
+#ifdef D_FLUID3
         const int numdim = params_.get<int>("number of velocity degrees of freedom");
-        if (numdim!=3)
-        {
-          // call standard loop over elements
-          discret_->Evaluate(eleparams,sysmat_,residual_);
-        }
-        else
+        if (numdim==3)
         {
           // call specialized loop over elements
           DRT::ELEMENTS::Fluid3SystemEvaluator evaluator(discret_,eleparams,sysmat_,residual_);
           egm_->Evaluate(evaluator);
+        }
+        else
+#endif
+        {
+          // call standard loop over elements
+          discret_->Evaluate(eleparams,sysmat_,residual_);
         }
         discret_->ClearState();
 

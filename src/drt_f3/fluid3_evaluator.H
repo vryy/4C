@@ -1,3 +1,4 @@
+#ifdef D_FLUID3
 #ifdef CCADISCRET
 
 #ifndef FLUID3_EVALUATOR_H
@@ -105,5 +106,5 @@ namespace DRT
 }
 
 #endif
-
+#endif
 #endif

@@ -1,3 +1,4 @@
+#ifdef D_FLUID3
 #ifdef CCADISCRET
 
 #include "fluid3_evaluator.H"
@@ -550,8 +551,8 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::BlockEvaluate(DRT::EGROUP::Group& ele
 void DRT::ELEMENTS::Fluid3SystemEvaluator::Evaluate(DRT::EGROUP::OtherElements& elements)
 {
   Teuchos::TimeMonitor monitor(*otherelementtime_);
-  PlainEvaluate(elements);
-  //BlockEvaluate(elements,50);
+  //PlainEvaluate(elements);
+  BlockEvaluate(elements,2);
 }
 
 
@@ -560,8 +561,8 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::Evaluate(DRT::EGROUP::OtherElements& 
 void DRT::ELEMENTS::Fluid3SystemEvaluator::Evaluate(DRT::EGROUP::AlignedHex8& elements)
 {
   Teuchos::TimeMonitor monitor(*alignedhex8time_);
-  PlainEvaluate(elements);
-  //BlockEvaluate(elements,50);
+  //PlainEvaluate(elements);
+  BlockEvaluate(elements,2);
 }
 
 
@@ -584,4 +585,5 @@ DRT::ELEMENTS::Fluid3::StabilisationAction DRT::ELEMENTS::Fluid3SystemEvaluator:
   return act;
 }
 
+#endif
 #endif
