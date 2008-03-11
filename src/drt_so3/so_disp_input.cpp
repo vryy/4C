@@ -207,7 +207,9 @@ bool DRT::ELEMENTS::SoDisp::ReadElement()
     const DRT::UTILS::IntegrationPoints3D  intpoints = DRT::UTILS::getIntegrationPoints3D(gaussrule_);
     numgpt_disp_ = intpoints.nquad;      // total gauss points per element
 
-
+    // Initialize winding flags
+    donerewinding_ = false;
+    
   return true;
 
 } // SoDisp::ReadElement()

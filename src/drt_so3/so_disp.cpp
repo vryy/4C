@@ -34,6 +34,7 @@ data_()
   surfaceptrs_.resize(0);
   lines_.resize(0);
   lineptrs_.resize(0);
+  donerewinding_ = false;
   return;
 }
 
@@ -47,7 +48,8 @@ data_(old.data_),
 surfaces_(old.surfaces_),
 surfaceptrs_(old.surfaceptrs_),
 lines_(old.lines_),
-lineptrs_(old.lineptrs_)
+lineptrs_(old.lineptrs_),
+donerewinding_(old.donerewinding_)
 {
   return;
 }
@@ -102,6 +104,8 @@ void DRT::ELEMENTS::SoDisp::Pack(vector<char>& data) const
   AddtoPack(data,stresstype_);
   // kintype_
   AddtoPack(data,kintype_);
+  // rewind flags
+  AddtoPack(data,donerewinding_);
   // data_
   vector<char> tmp(0);
   data_.Pack(tmp);
@@ -130,6 +134,8 @@ void DRT::ELEMENTS::SoDisp::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,stresstype_);
   // kintype_
   ExtractfromPack(position,data,kintype_);
+  // rewinding flags
+  ExtractfromPack(position,data,donerewinding_);
   // data_
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
