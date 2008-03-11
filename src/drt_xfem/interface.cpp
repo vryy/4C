@@ -49,6 +49,7 @@ XFEM::InterfaceHandle::InterfaceHandle(
             boundaryElements_.insert(make_pair(boundary_ele_gid, ele));
         }
     }
+	cutterNodeMap_.clear();
 	cutterNodeMap_ = cutterNodeMap;
 	  
 	  
