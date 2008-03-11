@@ -15,6 +15,7 @@ Maintainer: Michael Gee
 #include "drt_discret.H"
 #include "drt_exporter.H"
 #include "drt_dserror.H"
+#include "drt_parobject.H"
 
 #include "drt_utils.H"
 #include "linalg_utils.H"
@@ -139,6 +140,7 @@ static void AssignGlobalIDs( const Epetra_Comm& comm,
                              const map< vector<int>, RefCountPtr<DRT::Element> >& elementmap,
                              map< int, RefCountPtr<DRT::Element> >& finalelements )
 {
+#if 0
   // First, give own elements a local id and find out
   // which ids we need to get from other processes.
 
@@ -260,6 +262,117 @@ static void AssignGlobalIDs( const Epetra_Comm& comm,
           finalelements[ requests[proc][i] ] = ghostelements[proc][i];
       }
   }
+
+#else
+
+  // The point here is to make sure the element gid are the same on any
+  // parallel distribution of the elements. Thus we allreduce thing to
+  // processor 0 and sort the element descriptions (vectors of nodal ids)
+  // there.
+  //
+  // This routine has not been optimized for efficiency. I don't think that is
+  // needed.
+  //
+  // pack elements on all processors
+
+  std::vector<char> sendblock;
+  std::map<std::vector<int>, Teuchos::RCP<DRT::Element> >::const_iterator elemsiter;
+  for (elemsiter=elementmap.begin();
+       elemsiter!=elementmap.end();
+       ++elemsiter)
+  {
+    DRT::ParObject::AddtoPack(sendblock,elemsiter->first);
+  }
+
+  // communicate elements to processor 0
+
+  int mysize = sendblock.size();
+  int size;
+  comm.SumAll(&mysize,&size,1);
+  int mypos = LINALG::FindMyPos(sendblock.size(),comm);
+
+  std::vector<char> send(size);
+  std::fill(send.begin(),send.end(),0);
+  std::copy(sendblock.begin(),sendblock.end(),&send[mypos]);
+  sendblock.clear();
+  std::vector<char> recv(size);
+  //comm.SumAll(&send[0],&recv[0],size);
+#ifdef PARALLEL
+  const Epetra_MpiComm* mpicomm = dynamic_cast<const Epetra_MpiComm*>(&comm);
+  int err = MPI_Allreduce(&send[0],&recv[0],size,MPI_CHAR,MPI_SUM,mpicomm->Comm());
+  if (err)
+  {
+    dserror("MPI_Allreduce error: %d", err);
+  }
+#else
+  std::copy(send.begin(),send.end(),recv.begin());
+#endif
+
+  send.clear();
+
+  // unpack, unify and sort elements on processor 0
+
+  if (comm.MyPID()==0)
+  {
+    std::set<std::vector<int> > elements;
+    int index = 0;
+    while (index < static_cast<int>(recv.size()))
+    {
+      std::vector<int> element;
+      DRT::ParObject::ExtractfromPack(index,recv,element);
+      elements.insert(element);
+    }
+    recv.clear();
+
+    // pack again to distribute pack to all processors
+
+    for (std::set<std::vector<int> >::iterator i=elements.begin();
+         i!=elements.end();
+         ++i)
+    {
+      DRT::ParObject::AddtoPack(send,*i);
+    }
+    size = send.size();
+  }
+  else
+  {
+    recv.clear();
+  }
+
+  // broadcast sorted elements to all processors
+
+  comm.Broadcast(&size,1,0);
+  send.resize(size);
+  //comm.Broadcast(&send[0],send.size(),0);
+#ifdef PARALLEL
+  err = MPI_Bcast(&send[0],send.size(),MPI_CHAR,0,mpicomm->Comm());
+  if (err)
+  {
+    dserror("MPI_Bcast error: %d", err);
+  }
+#endif
+
+  // Unpack sorted elements. Take element position for gid.
+
+  int index = 0;
+  int gid = 0;
+  while (index < static_cast<int>(send.size()))
+  {
+    std::vector<int> element;
+    DRT::ParObject::ExtractfromPack(index,send,element);
+
+    // set gid to my elements
+    std::map<std::vector<int>, RefCountPtr<DRT::Element> >::const_iterator iter = elementmap.find(element);
+    if (iter!=elementmap.end())
+    {
+      iter->second->SetId(gid);
+      finalelements[gid] = iter->second;
+    }
+
+    gid += 1;
+  }
+
+#endif
 } // AssignGlobalIDs
 
 
