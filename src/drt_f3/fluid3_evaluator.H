@@ -44,17 +44,48 @@ namespace DRT
 
       /// Evaluate one element
       void ElementEvaluation(DRT::Element* ele,
-                             Epetra_SerialDenseMatrix& elematrix1,
-                             Epetra_SerialDenseVector& elevector1,
-                             std::vector<int>& lm);
+                             blitz::Array<double, 2>& estif,
+                             blitz::Array<double, 1>& eforce,
+                             const blitz::Array<double, 1>& eprenp,
+                             const blitz::Array<double, 2>& evelnp,
+                             const blitz::Array<double, 2>& evhist,
+                             const blitz::Array<double, 2>& edispnp,
+                             const blitz::Array<double, 2>& egridv,
+                             const blitz::Array<double, 2>& fsevelnp);
 
       /// Simple element by element evaluation
       void PlainEvaluate(DRT::EGROUP::Group& elements);
 
       /// Evaluate elements in block to keep element data in cache
-      void BlockEvaluate(DRT::EGROUP::Group& elements, int blocksize=20);
+      void BlockHex8Evaluate(DRT::EGROUP::Group& elements);
 
       Fluid3::StabilisationAction ConvertStringToStabAction(const string& action) const;
+
+      ///
+      void ExtractVelocity(int numnode,
+                           const Epetra_Vector& vec,
+                           const vector<int>& colids,
+                           blitz::Array<double, 2>& earray)
+      {
+        for (int j=0; j<numnode; ++j)
+        {
+          earray(0,j) = vec[colids[4*j+0]];
+          earray(1,j) = vec[colids[4*j+1]];
+          earray(2,j) = vec[colids[4*j+2]];
+        }
+      }
+
+      ///
+      void ExtractPressure(int numnode,
+                           const Epetra_Vector& vec,
+                           const vector<int>& colids,
+                           blitz::Array<double, 1>& earray)
+      {
+        for (int j=0; j<numnode; ++j)
+        {
+          earray(j) = vec[colids[4*j+3]];
+        }
+      }
 
       /** \name Smagorinsky variables */
       //@{

@@ -205,100 +205,20 @@ DRT::ELEMENTS::Fluid3SystemEvaluator::Fluid3SystemEvaluator(Teuchos::RCP<DRT::Di
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Fluid3SystemEvaluator::ElementEvaluation(DRT::Element* ele,
-                                                             Epetra_SerialDenseMatrix& elematrix1,
-                                                             Epetra_SerialDenseVector& elevector1,
-                                                             std::vector<int>& lm)
+                                                             blitz::Array<double, 2>& estif,
+                                                             blitz::Array<double, 1>& eforce,
+                                                             const blitz::Array<double, 1>& eprenp,
+                                                             const blitz::Array<double, 2>& evelnp,
+                                                             const blitz::Array<double, 2>& evhist,
+                                                             const blitz::Array<double, 2>& edispnp,
+                                                             const blitz::Array<double, 2>& egridv,
+                                                             const blitz::Array<double, 2>& fsevelnp)
 {
   // We rely on our users here!
   DRT::ELEMENTS::Fluid3* f3ele = static_cast<DRT::ELEMENTS::Fluid3*>(ele);
 
-  // specific element evaluate call
-
   // the number of nodes
   const int numnode = ele->NumNode();
-
-  //--------------------------------------------------
-  // get all state vectors
-  //--------------------------------------------------
-  //
-  // need current velocity and history vector
-
-  // extract local values from the global vectors
-  vector<double> myvelnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*velnp_,myvelnp,lm);
-  vector<double> myhist(lm.size());
-  DRT::UTILS::ExtractMyValues(*hist_,myhist,lm);
-
-  vector<double> mydispnp;
-  vector<double> mygridv;
-
-  if (f3ele->is_ale_)
-  {
-    mydispnp.resize(lm.size());
-    DRT::UTILS::ExtractMyValues(*dispnp_,mydispnp,lm);
-
-    mygridv.resize(lm.size());
-    DRT::UTILS::ExtractMyValues(*gridv_,mygridv,lm);
-  }
-
-  // create blitz objects for element arrays
-  blitz::Array<double, 1> eprenp(numnode);
-  blitz::Array<double, 2> evelnp(3,numnode,blitz::ColumnMajorArray<2>());
-  blitz::Array<double, 2> evhist(3,numnode,blitz::ColumnMajorArray<2>());
-  blitz::Array<double, 2> edispnp(3,numnode,blitz::ColumnMajorArray<2>());
-  blitz::Array<double, 2> egridv(3,numnode,blitz::ColumnMajorArray<2>());
-
-  // split velocity and pressure, insert into element arrays
-  for (int i=0;i<numnode;++i)
-  {
-    evelnp(0,i) = myvelnp[0+(i*4)];
-    evelnp(1,i) = myvelnp[1+(i*4)];
-    evelnp(2,i) = myvelnp[2+(i*4)];
-
-    eprenp(i) = myvelnp[3+(i*4)];
-
-    // the history vector contains the information of time step t_n (mass rhs!)
-    evhist(0,i) = myhist[0+(i*4)];
-    evhist(1,i) = myhist[1+(i*4)];
-    evhist(2,i) = myhist[2+(i*4)];
-  }
-
-  if (f3ele->is_ale_)
-  {
-    // assign grid velocity and grid displacement to element arrays
-    for (int i=0;i<numnode;++i)
-    {
-      edispnp(0,i) = mydispnp[0+(i*4)];
-      edispnp(1,i) = mydispnp[1+(i*4)];
-      edispnp(2,i) = mydispnp[2+(i*4)];
-
-      egridv(0,i) = mygridv[0+(i*4)];
-      egridv(1,i) = mygridv[1+(i*4)];
-      egridv(2,i) = mygridv[2+(i*4)];
-    }
-  }
-
-  // get fine-scale velocity
-  RCP<const Epetra_Vector> fsvelnp;
-  blitz::Array<double, 2> fsevelnp(3,numnode,blitz::ColumnMajorArray<2>());
-
-  if (fssgv_ != Fluid3::fssgv_no)
-  {
-    vector<double> myfsvelnp(lm.size());
-    DRT::UTILS::ExtractMyValues(*fsvelnp_,myfsvelnp,lm);
-
-    // get fine-scale velocity and insert into element arrays
-    for (int i=0;i<numnode;++i)
-    {
-      fsevelnp(0,i) = myfsvelnp[0+(i*4)];
-      fsevelnp(1,i) = myfsvelnp[1+(i*4)];
-      fsevelnp(2,i) = myfsvelnp[2+(i*4)];
-    }
-  }
-  else
-  {
-    fsevelnp = 0;
-  }
 
   // initialise the Smagorinsky constant Cs and the viscous length scale l_tau to zero
   Cs_delta_sq_   = 0.0;
@@ -414,18 +334,6 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::ElementEvaluation(DRT::Element* ele,
   }
   }
 
-
-  //--------------------------------------------------
-  // wrap epetra serial dense objects in blitz objects
-  //--------------------------------------------------
-  blitz::Array<double, 2> estif(elematrix1.A(),
-                                blitz::shape(elematrix1.M(),elematrix1.N()),
-                                blitz::neverDeleteData,
-                                blitz::ColumnMajorArray<2>());
-  blitz::Array<double, 1> eforce(elevector1.Values(),
-                                 blitz::shape(elevector1.Length()),
-                                 blitz::neverDeleteData);
-
   //--------------------------------------------------
   // calculate element coefficient matrix and rhs
   //--------------------------------------------------
@@ -468,16 +376,54 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::PlainEvaluate(DRT::EGROUP::Group& ele
   {
     DRT::Element* ele = elements[i];
 
+    // We rely on our users here!
+    DRT::ELEMENTS::Fluid3* f3ele = static_cast<DRT::ELEMENTS::Fluid3*>(ele);
+
+    // the number of nodes
+    const int numnode = ele->NumNode();
+
     // get element location vector, dirichlet flags and ownerships
     vector<int> lm;
     vector<int> lmowner;
+    vector<int> colids;
 
-    // Guess large to avoid reallocation.
-    // (Not yet perfect!)
-    lm.reserve(27*4);
-    lmowner.reserve(27*4);
+    lm.reserve(numnode*4);
+    lmowner.reserve(numnode*4);
+    colids.reserve(numnode*4);
 
     ele->LocationVector(*dis_,lm,lmowner);
+    const Epetra_BlockMap& colmap = velnp_->Map();
+    for (unsigned j=0; j<lm.size(); ++j)
+    {
+      colids.push_back(colmap.LID(lm[j]));
+    }
+
+    //--------------------------------------------------
+    // get all state vectors
+    //--------------------------------------------------
+
+    // create blitz objects for element arrays
+    blitz::Array<double, 1> eprenp(numnode);
+    blitz::Array<double, 2> evelnp(3,numnode,blitz::ColumnMajorArray<2>());
+    blitz::Array<double, 2> evhist(3,numnode,blitz::ColumnMajorArray<2>());
+    blitz::Array<double, 2> edispnp(3,numnode,blitz::ColumnMajorArray<2>());
+    blitz::Array<double, 2> egridv(3,numnode,blitz::ColumnMajorArray<2>());
+    blitz::Array<double, 2> fsevelnp(3,numnode,blitz::ColumnMajorArray<2>());
+
+    ExtractVelocity(numnode, *velnp_, colids, evelnp);
+    ExtractPressure(numnode, *velnp_, colids, eprenp);
+    ExtractVelocity(numnode, *hist_, colids, evhist);
+
+    if (f3ele->is_ale_)
+    {
+      ExtractVelocity(numnode, *dispnp_, colids, edispnp);
+      ExtractVelocity(numnode, *gridv_, colids, egridv);
+    }
+
+    if (fssgv_ != Fluid3::fssgv_no)
+    {
+      ExtractVelocity(numnode, *fsvelnp_, colids, fsevelnp);
+    }
 
     // get dimension of element matrices and vectors
     // Reshape element matrices and vectors and init to zero
@@ -485,7 +431,26 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::PlainEvaluate(DRT::EGROUP::Group& ele
     elematrix1.Shape(eledim,eledim);
     elevector1.Size(eledim);
 
-    ElementEvaluation(ele,elematrix1,elevector1,lm);
+    //--------------------------------------------------
+    // wrap epetra serial dense objects in blitz objects
+    //--------------------------------------------------
+    blitz::Array<double, 2> estif(elematrix1.A(),
+                                  blitz::shape(elematrix1.M(),elematrix1.N()),
+                                  blitz::neverDeleteData,
+                                  blitz::ColumnMajorArray<2>());
+    blitz::Array<double, 1> eforce(elevector1.Values(),
+                                   blitz::shape(elevector1.Length()),
+                                   blitz::neverDeleteData);
+
+    ElementEvaluation(ele,
+                      estif,
+                      eforce,
+                      eprenp,
+                      evelnp,
+                      evhist,
+                      edispnp,
+                      egridv,
+                      fsevelnp);
 
     systemmatrix_->Assemble(elematrix1,lm,lmowner);
     LINALG::Assemble(*systemvector_,elevector1,lm,lmowner);
@@ -493,22 +458,80 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::PlainEvaluate(DRT::EGROUP::Group& ele
 }
 
 
+template <int numnode>
+struct BlockData
+{
+  BlockData()
+    : estif(numnode*4,numnode*4,blitz::ColumnMajorArray<2>()),
+      eforce(numnode*4),
+      elematrix(View,estif.data(),numnode*4,numnode*4,numnode*4),
+      elevector(View,eforce.data(),numnode*4),
+      eprenp(numnode),
+      evelnp(3,numnode,blitz::ColumnMajorArray<2>()),
+      evhist(3,numnode,blitz::ColumnMajorArray<2>()),
+      edispnp(3,numnode,blitz::ColumnMajorArray<2>()),
+      egridv(3,numnode,blitz::ColumnMajorArray<2>()),
+      fsevelnp(3,numnode,blitz::ColumnMajorArray<2>())
+  {
+    lm.reserve(numnode*4);
+    lmowner.reserve(numnode*4);
+    colids.reserve(numnode*4);
+  }
+
+  void Clear()
+  {
+    estif = 0;
+    eforce = 0;
+    lm.clear();
+    lmowner.clear();
+    colids.clear();
+  }
+
+  void LocationVector(const DRT::Discretization& dis, DRT::Element* ele)
+  {
+    ele->LocationVector(dis,lm,lmowner);
+    const Epetra_Map* colmap = dis.DofColMap();
+
+    colids.clear();
+    for (unsigned j=0; j<lm.size(); ++j)
+    {
+      colids.push_back(colmap->LID(lm[j]));
+    }
+  }
+
+  std::vector<int> lm;
+  std::vector<int> lmowner;
+  std::vector<int> colids;
+
+  blitz::Array<double, 2> estif;
+  blitz::Array<double, 1> eforce;
+
+  Epetra_SerialDenseMatrix elematrix;
+  Epetra_SerialDenseVector elevector;
+
+  blitz::Array<double, 1> eprenp;
+  blitz::Array<double, 2> evelnp;
+  blitz::Array<double, 2> evhist;
+  blitz::Array<double, 2> edispnp;
+  blitz::Array<double, 2> egridv;
+  blitz::Array<double, 2> fsevelnp;
+
+private:
+
+  // no copying
+  BlockData(const BlockData&);
+  BlockData& operator=(const BlockData&);
+};
+
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Fluid3SystemEvaluator::BlockEvaluate(DRT::EGROUP::Group& elements, int blocksize)
+void DRT::ELEMENTS::Fluid3SystemEvaluator::BlockHex8Evaluate(DRT::EGROUP::Group& elements)
 {
-  std::vector<Epetra_SerialDenseMatrix> elematrix(blocksize);
-  std::vector<Epetra_SerialDenseVector> elevector(blocksize);
-  std::vector<std::vector<int> > lm(blocksize);
-  std::vector<std::vector<int> > lmowner(blocksize);
-
-  // Guess large to avoid reallocation.
-  // (Not yet perfect!)
-  for (int i=0; i<blocksize; ++i)
-  {
-    lm[i].reserve(27*4);
-    lmowner[i].reserve(27*4);
-  }
+  int count = 0;
+  const int blocksize = 50;
+  const int numnode = 8;
+  static BlockData<numnode> data[blocksize];
 
   int size = elements.Size();
   int numblocks = (size+blocksize-1) / blocksize;
@@ -517,32 +540,99 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::BlockEvaluate(DRT::EGROUP::Group& ele
   {
     int offset = b*blocksize;
     int blocklength = std::min(blocksize,size-offset);
+
+#if 0
+    cout << ">> size=" << setw(4) << size
+         << "   blocksize=" << setw(4) << blocksize
+         << "   blocklength=" << setw(4) << blocklength
+         << "   offset=" << setw(4) << offset
+         << "   numblocks=" << setw(4) << numblocks
+         << "\n";
+#endif
+
+    // cleanup
+    for (int i=0; i<blocklength; ++i)
+    {
+      data[i].Clear();
+    }
+
+    // setup block
     for (int i=0; i<blocklength; ++i)
     {
       DRT::Element* ele = elements[offset+i];
 
       // get element location vector, dirichlet flags and ownerships
-      ele->LocationVector(*dis_,lm[i],lmowner[i]);
-
-      // get dimension of element matrices and vectors
-      // Reshape element matrices and vectors and init to zero
-      const int eledim = (int)lm[i].size();
-      elematrix[i].Shape(eledim,eledim);
-      elevector[i].Size(eledim);
-
-      ElementEvaluation(ele,elematrix[i],elevector[i],lm[i]);
+      data[i].LocationVector(*dis_, ele);
     }
 
     for (int i=0; i<blocklength; ++i)
     {
-      LINALG::Assemble(*systemvector_,elevector[i],lm[i],lmowner[i]);
+      ExtractVelocity(numnode, *velnp_, data[i].colids, data[i].evelnp);
+      ExtractPressure(numnode, *velnp_, data[i].colids, data[i].eprenp);
     }
 
     for (int i=0; i<blocklength; ++i)
     {
-      systemmatrix_->Assemble(elematrix[i],lm[i],lmowner[i]);
+      ExtractVelocity(numnode, *hist_,  data[i].colids, data[i].evhist);
+    }
+
+    for (int i=0; i<blocklength; ++i)
+    {
+      DRT::Element* ele = elements[offset+i];
+
+      // We rely on our users here!
+      DRT::ELEMENTS::Fluid3* f3ele = static_cast<DRT::ELEMENTS::Fluid3*>(ele);
+
+      if (f3ele->is_ale_)
+      {
+        ExtractVelocity(numnode, *dispnp_, data[i].colids, data[i].edispnp);
+        ExtractVelocity(numnode, *gridv_,  data[i].colids, data[i].egridv);
+      }
+    }
+
+    if (fssgv_ != Fluid3::fssgv_no)
+    {
+      for (int i=0; i<blocklength; ++i)
+      {
+        ExtractVelocity(numnode, *fsvelnp_, data[i].colids, data[i].fsevelnp);
+      }
+    }
+
+    // evaluate elements
+    for (int i=0; i<blocklength; ++i)
+    {
+      DRT::Element* ele = elements[offset+i];
+      ElementEvaluation(ele,
+                        data[i].estif,
+                        data[i].eforce,
+                        data[i].eprenp,
+                        data[i].evelnp,
+                        data[i].evhist,
+                        data[i].edispnp,
+                        data[i].egridv,
+                        data[i].fsevelnp);
+      count += 1;
+    }
+
+    // assemble
+    for (int i=0; i<blocklength; ++i)
+    {
+      LINALG::Assemble(*systemvector_,
+                       data[i].elevector,
+                       data[i].lm,
+                       data[i].lmowner);
+    }
+
+    for (int i=0; i<blocklength; ++i)
+    {
+      systemmatrix_->Assemble(data[i].elematrix,
+                              data[i].lm,
+                              data[i].lmowner);
     }
   }
+
+  if (count!=size)
+    dserror("wrong number of elements evaluated: %d vs %d",count,elements.Size());
 }
 
 
@@ -551,8 +641,8 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::BlockEvaluate(DRT::EGROUP::Group& ele
 void DRT::ELEMENTS::Fluid3SystemEvaluator::Evaluate(DRT::EGROUP::OtherElements& elements)
 {
   Teuchos::TimeMonitor monitor(*otherelementtime_);
-  //PlainEvaluate(elements);
-  BlockEvaluate(elements,2);
+  PlainEvaluate(elements);
+  //BlockEvaluate(elements,2);
 }
 
 
@@ -561,8 +651,11 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::Evaluate(DRT::EGROUP::OtherElements& 
 void DRT::ELEMENTS::Fluid3SystemEvaluator::Evaluate(DRT::EGROUP::AlignedHex8& elements)
 {
   Teuchos::TimeMonitor monitor(*alignedhex8time_);
-  //PlainEvaluate(elements);
-  BlockEvaluate(elements,2);
+#if 0
+  PlainEvaluate(elements);
+#else
+  BlockHex8Evaluate(elements);
+#endif
 }
 
 

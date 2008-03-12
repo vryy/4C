@@ -30,10 +30,18 @@ DRT::EGROUP::ElementGroupManager::ElementGroupManager(const Discretization& dis)
 {
   GroupElements();
 
+  std::vector<int> mysize;
+  mysize.push_back(aligned_.Size());
+  mysize.push_back(others_.Size());
+
+  std::vector<int> globalsize(mysize.size());
+
+  dis_.Comm().SumAll(&mysize[0],&globalsize[0],mysize.size());
+
   if (dis.Comm().MyPID()==0)
   {
-    std::cout << "aligned hex8 elements: " << aligned_.Size() << "\n"
-              << "other elements       : " << others_.Size() << "\n\n";
+    std::cout << "aligned hex8 elements: " << globalsize[0] << "\n"
+              << "other elements       : " << globalsize[1] << "\n\n";
   }
 }
 
