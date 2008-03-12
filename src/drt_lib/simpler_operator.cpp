@@ -15,6 +15,7 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
+#include "linalg_ana.H"
 #include "simpler_operator.H"
 
 #define SIMPLEC_DIAGONAL      0    // 1: row sums     0: just diagonal
@@ -204,6 +205,7 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_Operator> A,
   }
   if (!myrank && SIMPLER_TIMING) printf("--- Time to do S            %10.3E\n",time.ElapsedTime());
   time.ResetStartTime();
+  
 
 #if CHEAPSIMPLE_ALGORITHM
   // Allocate preconditioner for pressure and velocity
