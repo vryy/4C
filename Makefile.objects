@@ -132,6 +132,7 @@ OBJS_DRT      = \
                 src/drt_lib/drt_resulttest.o \
                 src/drt_lib/drt_init_control.o \
                 src/drt_lib/global_inp_control2.o \
+                src/drt_lib/linalg_ana.o \
                 src/drt_lib/linalg_mfoperator.o \
                 src/drt_lib/linalg_solver.o \
                 src/drt_lib/linalg_solver_spooles.o \
