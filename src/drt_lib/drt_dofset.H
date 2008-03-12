@@ -188,6 +188,30 @@ public:
       return dof;
     }
 
+  /// Get the gid of all dofs of a node
+  virtual void Dof(const Node* node, vector<int>& lm) const
+    {
+      int lid = node->LID();
+      if (lid==-1)
+        return;
+      int idx = (*idxcolnodes_)[lid];
+      int size = (*numdfcolnodes_)[lid];
+      for (int i=0; i<size; ++i)
+        lm.push_back(dofcolmap_->GID(idx+i));
+    }
+
+  /// Get the gid of all dofs of a element
+  virtual void Dof(const Element* element, vector<int>& lm) const
+    {
+      int lid = element->LID();
+      if (lid==-1)
+        return;
+      int idx = (*idxcolelements_)[lid];
+      int size = (*numdfcolelements_)[lid];
+      for (int i=0; i<size; ++i)
+        lm.push_back(dofcolmap_->GID(idx+i));
+    }
+
   /// Get degree of freedom row map
   virtual const Epetra_Map* DofRowMap() const { return dofrowmap_.get(); }
 

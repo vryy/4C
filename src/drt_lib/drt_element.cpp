@@ -373,22 +373,22 @@ void DRT::Element::LocationVector(const Discretization& dis, vector<int>& lm, ve
     for (int i=0; i<numnode; ++i)
     {
       const int owner = nodes[i]->Owner();
-      vector<int> dof = dis.Dof(nodes[i]);
-      for (unsigned j=0; j<dof.size(); ++j)
+      dis.Dof(nodes[i],lm);
+      int size = lm.size()-lmowner.size();
+      for (int j=0; j<size; ++j)
       {
         lmowner.push_back(owner);
-        lm.push_back(dof[j]);
       }
     }
   }
 
   // fill the vector with element dofs
   const int owner = Owner();
-  vector<int> dof = dis.Dof(this);
-  for (unsigned j=0; j<dof.size(); ++j)
+  dis.Dof(this,lm);
+  int size = lm.size()-lmowner.size();
+  for (int j=0; j<size; ++j)
   {
     lmowner.push_back(owner);
-    lm.push_back(dof[j]);
   }
 
   return;
