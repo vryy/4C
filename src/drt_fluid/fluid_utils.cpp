@@ -15,14 +15,6 @@ Maintainer: Axel Gerstenberger
 #include <stdio.h>
 
 #include "fluid_utils.H"
-#include "../drt_lib/drt_nodematchingoctree.H"
-#include "drt_periodicbc.H"
-#include "../drt_lib/drt_function.H"
-#include "../drt_xfem/intersection.H"
-#include "../drt_xfem/interface.H"
-#include "../drt_xfem/dof_management.H"
-#include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/linalg_mapextractor.H"
 
 
 /*----------------------------------------------------------------------*
