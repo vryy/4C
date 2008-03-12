@@ -1045,6 +1045,40 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         const double dt     = timelist.get<double>("dt");
         const double time   = timelist.get<double>("time");
 
+        // if not available, define map from string to action
+        if(stabstrtoact_.empty())
+        {
+          stabstrtoact_["quasistatic"    ]=subscales_quasistatic;
+          stabstrtoact_["time_dependent" ]=subscales_time_dependent;
+          stabstrtoact_["no_transient"   ]=inertia_stab_drop;
+          stabstrtoact_["yes_transient"  ]=inertia_stab_keep;
+          stabstrtoact_["no_pspg"        ]=pstab_assume_inf_sup_stable;
+          stabstrtoact_["yes_pspg"       ]=pstab_use_pspg;
+          stabstrtoact_["no_supg"        ]=convective_stab_none;
+          stabstrtoact_["yes_supg"       ]=convective_stab_supg;
+          stabstrtoact_["no_vstab"       ]=viscous_stab_none;
+          stabstrtoact_["vstab_gls"      ]=viscous_stab_gls;
+          stabstrtoact_["vstab_gls_rhs"  ]=viscous_stab_gls_only_rhs;
+          stabstrtoact_["vstab_usfem"    ]=viscous_stab_usfem;
+          stabstrtoact_["vstab_usfem_rhs"]=viscous_stab_usfem_only_rhs;
+          stabstrtoact_["no_ctab"        ]=continuity_stab_none;
+          stabstrtoact_["cstab_qs"       ]=continuity_stab_yes;
+          stabstrtoact_["cstab_td"       ]=continuity_stab_td;
+          stabstrtoact_["no_cross"       ]=cross_stress_stab_none;
+          stabstrtoact_["cross_complete" ]=cross_stress_stab;
+          stabstrtoact_["cross_rhs"      ]=cross_stress_stab_only_rhs;
+          stabstrtoact_["no_reynolds"    ]=reynolds_stress_stab_none;
+          stabstrtoact_["reynolds_rhs"   ]=reynolds_stress_stab_only_rhs;
+          stabstrtoact_["No"                     ]=Fluid3::fssgv_no;
+          stabstrtoact_["artificial_all"         ]=Fluid3::fssgv_artificial_all;
+          stabstrtoact_["artificial_small"       ]=Fluid3::fssgv_artificial_small;
+          stabstrtoact_["Smagorinsky_all"        ]=Fluid3::fssgv_Smagorinsky_all;
+          stabstrtoact_["Smagorinsky_small"      ]=Fluid3::fssgv_Smagorinsky_small;
+          stabstrtoact_["mixed_Smagorinsky_all"  ]=Fluid3::fssgv_mixed_Smagorinsky_all;
+          stabstrtoact_["mixed_Smagorinsky_small"]=Fluid3::fssgv_mixed_Smagorinsky_small;
+          stabstrtoact_["scale_similarity"       ]=Fluid3::fssgv_scale_similarity;
+        }
+
         // --------------------------------------------------
         // set parameters for nonlinear treatment
 
@@ -1089,40 +1123,6 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         // --------------------------------------------------
         // set parameters for stabilisation
         ParameterList& stablist = params.sublist("STABILIZATION");
-
-        // if not available, define map from string to action
-        if(stabstrtoact_.empty())
-        {
-          stabstrtoact_["quasistatic"    ]=subscales_quasistatic;
-          stabstrtoact_["time_dependent" ]=subscales_time_dependent;
-          stabstrtoact_["no_transient"   ]=inertia_stab_drop;
-          stabstrtoact_["yes_transient"  ]=inertia_stab_keep;
-          stabstrtoact_["no_pspg"        ]=pstab_assume_inf_sup_stable;
-          stabstrtoact_["yes_pspg"       ]=pstab_use_pspg;
-          stabstrtoact_["no_supg"        ]=convective_stab_none;
-          stabstrtoact_["yes_supg"       ]=convective_stab_supg;
-          stabstrtoact_["no_vstab"       ]=viscous_stab_none;
-          stabstrtoact_["vstab_gls"      ]=viscous_stab_gls;
-          stabstrtoact_["vstab_gls_rhs"  ]=viscous_stab_gls_only_rhs;
-          stabstrtoact_["vstab_usfem"    ]=viscous_stab_usfem;
-          stabstrtoact_["vstab_usfem_rhs"]=viscous_stab_usfem_only_rhs;
-          stabstrtoact_["no_ctab"        ]=continuity_stab_none;
-          stabstrtoact_["cstab_qs"       ]=continuity_stab_yes;
-          stabstrtoact_["cstab_td"       ]=continuity_stab_td;
-          stabstrtoact_["no_cross"       ]=cross_stress_stab_none;
-          stabstrtoact_["cross_complete" ]=cross_stress_stab;
-          stabstrtoact_["cross_rhs"      ]=cross_stress_stab_only_rhs;
-          stabstrtoact_["no_reynolds"    ]=reynolds_stress_stab_none;
-          stabstrtoact_["reynolds_rhs"   ]=reynolds_stress_stab_only_rhs;
-          stabstrtoact_["No"                     ]=Fluid3::fssgv_no;
-          stabstrtoact_["artificial_all"         ]=Fluid3::fssgv_artificial_all;
-          stabstrtoact_["artificial_small"       ]=Fluid3::fssgv_artificial_small;
-          stabstrtoact_["Smagorinsky_all"        ]=Fluid3::fssgv_Smagorinsky_all;
-          stabstrtoact_["Smagorinsky_small"      ]=Fluid3::fssgv_Smagorinsky_small;
-          stabstrtoact_["mixed_Smagorinsky_all"  ]=Fluid3::fssgv_mixed_Smagorinsky_all;
-          stabstrtoact_["mixed_Smagorinsky_small"]=Fluid3::fssgv_mixed_Smagorinsky_small;
-          stabstrtoact_["scale_similarity"       ]=Fluid3::fssgv_scale_similarity;
-        }
 
         StabilisationAction tds      = ConvertStringToStabAction(stablist.get<string>("TDS"));
         StabilisationAction inertia  = ConvertStringToStabAction(stablist.get<string>("TRANSIENT"));
