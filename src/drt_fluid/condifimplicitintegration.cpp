@@ -23,6 +23,7 @@ Maintainer: Volker Gravemeier
 
 #include "condifimplicitintegration.H"
 #include "drt_periodicbc.H"
+#include "vm3_solver.H"
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

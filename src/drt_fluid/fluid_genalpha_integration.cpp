@@ -17,6 +17,7 @@ Maintainer: Peter Gamnitzer
 #ifdef CCADISCRET
 
 #include "fluid_genalpha_integration.H"
+#include "vm3_solver.H"
 #include "fluid_utils.H"
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

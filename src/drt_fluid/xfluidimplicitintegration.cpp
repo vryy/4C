@@ -24,6 +24,7 @@ Maintainer: Axel Gerstenberger
 #include <stdio.h>
 
 #include "xfluidimplicitintegration.H"
+#include "vm3_solver.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "drt_periodicbc.H"
 #include "../drt_lib/drt_function.H"

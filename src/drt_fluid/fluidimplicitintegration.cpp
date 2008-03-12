@@ -28,6 +28,7 @@ Maintainer: Peter Gamnitzer
 #include "drt_periodicbc.H"
 #include "../drt_lib/drt_function.H"
 #include "fluid_utils.H"
+#include "vm3_solver.H"
 
 // Include special fluid3 evaluator. This makes the fluid3 element known to
 // the algorithm. However, all details are hidden. All that the algorithm
