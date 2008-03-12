@@ -24,30 +24,28 @@ using namespace XFEM;
 using namespace DRT::UTILS;
 
 
-//static double           sqrarg;
-//#define                 SQR(a) ((sqrarg=(a)) == 0.0 ? 0.0 : sqrarg*sqrarg)
-double SQR(double sqrarg)
+inline static double SQR(double a)
 {
-    return ((sqrarg) == 0.0 ? 0.0 : sqrarg*sqrarg);
+    return a * a;
 }
 
 
 /*----------------------------------------------------------------------*
  |  ML:     adds two Epetra_SerialDenseVector                u.may 06/07|
  *----------------------------------------------------------------------*/
-Epetra_SerialDenseVector XFEM::addTwoVectors(   
-    const Epetra_SerialDenseVector&   v1,
-    const Epetra_SerialDenseVector&   v2)
-{   
-    Epetra_SerialDenseVector vResult(v1.Length());
-    
-    dsassert(v1.Length() == v2.Length(), "both vectors need to have the same size\n"); 
-
-    for(int i = 0; i < v1.Length(); ++i)
-        vResult[i] = v1[i] + v2[i];
- 
-    return vResult;
-}
+//Epetra_SerialDenseVector XFEM::addTwoVectors(   
+//    const Epetra_SerialDenseVector&   v1,
+//    const Epetra_SerialDenseVector&   v2)
+//{   
+//    Epetra_SerialDenseVector vResult(v1.Length());
+//    
+//    dsassert(v1.Length() == v2.Length(), "both vectors need to have the same size\n"); 
+//
+//    for(int i = 0; i < v1.Length(); ++i)
+//        vResult[i] = v1[i] + v2[i];
+// 
+//    return vResult;
+//}
     
     
    
@@ -75,20 +73,20 @@ Epetra_SerialDenseVector XFEM::addTwoVectors(
  |          another Epetra_SerialDenseVector.                           |
  |          The result is stored in v1                                  |
  *----------------------------------------------------------------------*/
-Epetra_SerialDenseVector XFEM::subtractsTwoVectors( 
-    const Epetra_SerialDenseVector& v1,
-    const Epetra_SerialDenseVector& v2)
-{   
-    
-    Epetra_SerialDenseVector vResult(v1.Length());
-    
-    dsassert(v1.Length() == v2.Length(), "both vectors need to have the same size\n"); 
-
-    for(int i = 0; i < v1.Length(); i++)
-        vResult[i] = v1[i] - v2[i];
- 
-    return vResult;
-}
+//Epetra_SerialDenseVector XFEM::subtractsTwoVectors( 
+//    const Epetra_SerialDenseVector& v1,
+//    const Epetra_SerialDenseVector& v2)
+//{   
+//    
+//    Epetra_SerialDenseVector vResult(v1.Length());
+//    
+//    dsassert(v1.Length() == v2.Length(), "both vectors need to have the same size\n"); 
+//
+//    for(int i = 0; i < v1.Length(); i++)
+//        vResult[i] = v1[i] - v2[i];
+// 
+//    return vResult;
+//}
 
     
 
@@ -154,10 +152,10 @@ double XFEM::pythagoras(
     const double  a, 
     const double  b)
 {
-    const double absa=fabs(a);
-    const double absb=fabs(b);
-    if (absa > absb) return absa*sqrt(1.0+SQR(absb/absa));
-    else return (absb == 0.0 ? 0.0 : absb*sqrt(1.0+SQR(absa/absb)));
+    if (a == 0.0 and b == 0.0)
+        return 0.0;
+    else
+        return sqrt(SQR(a)+SQR(b));
 }
 
 
@@ -369,9 +367,6 @@ void XFEM::elementToCurrentCoordinates(
     const vector<Epetra_SerialDenseVector>&     surfaceNodes)
 {
     const int numNodes = surfaceElement->NumNode();
-    //vector<int> actParams(1,0);
-    //Epetra_SerialDenseVector funct(numNodes);
-  
     const BlitzVec funct(shape_function_2D(xsi[0], xsi[1], surfaceElement->Shape()));
        
     xsi.Scale(0.0); 
@@ -587,116 +582,6 @@ bool XFEM::currentToElementCoordinates(
     //printf("iter = %d\n", iter);
     //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0],xsi[1],xsi[2], residual, TOL14);
     return nodeWithinElement;
-}
-
-/*----------------------------------------------------------------------*
- |  GM:     compares two nodes                               u.may 06/07|
- |          overloaded method:                                          |
- |          double*  and  double*                                       |
- *----------------------------------------------------------------------*/  
-bool XFEM::comparePointsN(    
-    const double*     point1,
-    const double*     point2,
-    const int         length) 
-{   
-    bool equal = true;
-             
-    for(int i = 0; i < length; i++)
-        if(fabs(point1[i] - point2[i]) > TOL7)
-        {
-            equal = false;
-            break;
-        }
-  
-    return equal;
-}
-
-
-
-/*----------------------------------------------------------------------*
- |  GM:     compares two nodes                               u.may 06/07|
- |          overloaded method:  vector<double>  and double*             |
- *----------------------------------------------------------------------*/  
-bool XFEM::comparePoints(   
-    const vector<double>&     point1,
-    const double*             point2) 
-{   
-    bool equal = true;
-        
-    for(unsigned int i = 0; i < point1.size() ; ++i)
-        if(fabs(point1[i] - point2[i]) > TOL7)
-        {
-            equal = false;
-            break;
-        }
-    
-    return equal;
-}
-
-
-
-/*----------------------------------------------------------------------*
- |  GM:     compares two nodes                               u.may 06/07|
- |          overloaded method:  vector<double>  and  vector<double>     |
- *----------------------------------------------------------------------*/  
-bool XFEM::comparePoints(   
-    const vector<double>& point1,
-    const vector<double>& point2) 
-{   
-    bool equal = true;
-    
-    for(unsigned int i = 0; i < point1.size() ; ++i)
-        if(fabs(point1[i] - point2[i]) > TOL7)
-        {
-            equal = false;
-            break;
-        }
-  
-    return equal;
-}
-
-
-
-/*----------------------------------------------------------------------*
- |  GM:     compares two nodes                               u.may 06/07|
- |          overloaded method:  DRT::Node*  and  DRT::Node*             |
- *----------------------------------------------------------------------*/  
-bool XFEM::comparePoints( 
-    const DRT::Node*     point1,
-    const DRT::Node*     point2)
-{
-    bool equal = true;
-             
-    for(unsigned int i = 0; i < 3 ; ++i)
-        if(fabs(point1->X()[i] - point2->X()[i]) > TOL7)
-        {
-            equal = false;
-            break;
-        }
-  
-    return equal;
-}
-
-
-/*----------------------------------------------------------------------*
- |  GM:     compares two nodes                               u.may 06/07|
- |          overloaded method:                                          |
- |          Epetra_SerialDenseVector  and  Epetra_SerialDenseVector     |
- *----------------------------------------------------------------------*/  
-bool XFEM::comparePoints(    
-    const Epetra_SerialDenseVector&     point1,
-    const Epetra_SerialDenseVector&     point2) 
-{   
-    bool equal = true;
-    
-    for(int i = 0; i < point1.Length() ; i++)
-        if(fabs(point1[i] - point2[i]) > TOL7)
-        {
-            equal = false;
-            break;
-        }
-  
-    return equal;
 }
 
 

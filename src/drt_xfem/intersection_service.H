@@ -42,10 +42,20 @@ namespace XFEM
     \param v2 (in) : arbitrary Epetra_SerialDenseVector
     \return sum of two Epetra_SerialDenseVectors
     */
-    Epetra_SerialDenseVector addTwoVectors(     
+    template<int length>
+    inline Epetra_SerialDenseVector addTwoVectors(   
         const Epetra_SerialDenseVector&   v1,
-        const Epetra_SerialDenseVector&   v2
-        );      
+        const Epetra_SerialDenseVector&   v2)
+    {   
+        Epetra_SerialDenseVector vResult(length);
+        dsassert(v1.Length() == length, "not of proper length!");
+        dsassert(v2.Length() == length, "not of proper length!");
+
+        for(int i = 0; i < length; ++i)
+            vResult[i] = v1[i] + v2[i];
+     
+        return vResult;
+    }    
        
     
     /*!
@@ -67,10 +77,19 @@ namespace XFEM
     \param v2 (in) : Epetra_SerialDenseVector
     \return difference of Epetra_SerialDenseVectors v1 - v2
     */
-    Epetra_SerialDenseVector subtractsTwoVectors(   
-        const Epetra_SerialDenseVector&   v1,
-        const Epetra_SerialDenseVector&   v2
-        );
+    template<int length>
+    inline Epetra_SerialDenseVector subtractsTwoVectors( 
+        const Epetra_SerialDenseVector& v1,
+        const Epetra_SerialDenseVector& v2)
+    {   
+        Epetra_SerialDenseVector vResult(length);
+        dsassert(v1.Length() == length, "not of proper length!");
+        dsassert(v2.Length() == length, "not of proper length!");
+        for(int i = 0; i < length; ++i)
+            vResult[i] = v1[i] - v2[i];
+     
+        return vResult;
+    }
     
     
     /*!
@@ -268,11 +287,22 @@ namespace XFEM
     \param lenght       (in)    : length of arrays
     \return true if both points equal each other, false otherwise
     */
-    bool comparePointsN( 
+    template<int length>
+    bool comparePoints(
         const double*     point1,
-        const double*     point2,
-        const int         length
-        );
+        const double*     point2) 
+    {   
+        bool equal = true;
+                 
+        for(int i = 0; i < length; i++)
+            if(fabs(point1[i] - point2[i]) > TOL7)
+            {
+                equal = false;
+                break;
+            }
+      
+        return equal;
+    }
     
     
     /*!
@@ -282,10 +312,22 @@ namespace XFEM
      \param point2       (in)    : second point  (double*)
      \return true if both points equal each other, false otherwise
      */
-     bool comparePoints( 
-         const vector<double>&     point1,
-         const double*             point2
-         );
+    template <int length>
+    inline bool comparePoints(   
+        const vector<double>&     point1,
+        const double*             point2) 
+    {   
+        bool equal = true;
+        dsassert(point1.size() == length, "not of proper length!");
+        for(unsigned int i = 0; i < point1.size() ; ++i)
+            if(fabs(point1[i] - point2[i]) > TOL7)
+            {
+                equal = false;
+                break;
+            }
+        
+        return equal;
+    }
      
      
      /*!
@@ -294,11 +336,24 @@ namespace XFEM
      \param point1       (in)    : first point   (vector<double>)
      \param point2       (in)    : second point  (vector<double>)
      \return true if both points equal each other, false otherwise
-     */                    
-     bool comparePoints( 
-         const vector<double>&     point1,
-         const vector<double>&     point2
-         );
+     */
+     template <int length>
+     inline bool comparePoints(   
+         const vector<double>& point1,
+         const vector<double>& point2) 
+     {   
+         bool equal = true;
+         dsassert(point1.size() == length, "not of proper length!");
+         dsassert(point2.size() == length, "not of proper length!");
+         for(unsigned int i = 0; i < length ; ++i)
+             if(fabs(point1[i] - point2[i]) > TOL7)
+             {
+                 equal = false;
+                 break;
+             }
+       
+         return equal;
+     }
      
      
      /*!
@@ -308,23 +363,23 @@ namespace XFEM
      \param point2       (in)    : second point  (Epetra_SerialDenseVector)
      \return true if both points equal each other, false otherwise
      */
-     bool comparePoints(
-             const Epetra_SerialDenseVector&     point1,
-             const Epetra_SerialDenseVector&     point2
-             );
-     
-     
-     /*!
-     \brief compares two points (overloaded method)
- 
-     \param point1       (in)    : first point   (DRT::Node*)
-     \param point2       (in)    : second point  (DRT::Node*)
-     \return true if both points equal each other, false otherwise
-     */
-     bool comparePoints( 
-             const DRT::Node*     point1,
-             const DRT::Node*     point2
-             );
+     template <int length>
+     inline bool comparePoints(    
+         const Epetra_SerialDenseVector&     point1,
+         const Epetra_SerialDenseVector&     point2) 
+     {   
+         bool equal = true;
+         dsassert(point1.Length() == length, "not of proper length!");
+         dsassert(point2.Length() == length, "not of proper length!");
+         for(int i = 0; i < point1.Length() ; i++)
+             if(fabs(point1[i] - point2[i]) > TOL7)
+             {
+                 equal = false;
+                 break;
+             }
+       
+         return equal;
+     }
      
      
     /*!

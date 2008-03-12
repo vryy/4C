@@ -30,13 +30,10 @@ Maintainer: Ursula Mayer
 #ifdef CCADISCRET
 
 #include "intersection.H"
-#include "../drt_xfem/intersection_service.H"
-#include "../drt_xfem/intersection_math.H"
-#include "../drt_xfem/integrationcell.H"
-#include "../drt_lib/drt_discret.H"
+
 #include "../drt_lib/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_utils_local_connectivity_matrices.H"
-#include "../drt_lib/drt_element.H"
+#include "../io/gmsh.H"
 
 #ifdef PARALLEL
 #include "../drt_lib/drt_exporter.H"
@@ -960,7 +957,7 @@ int Intersection::computeNewStartingPoint(
     //printf("lolimit = %f   %f   %f\n", fabs(loLimit[0]), fabs(loLimit[1]), fabs(loLimit[2]) ); 
     //printf("uplimit = %f   %f   %f\n", fabs(upLimit[0]), fabs(upLimit[1]), fabs(upLimit[2]) ); 
     
-    if(comparePoints(upLimit, loLimit))
+    if(comparePoints<3>(upLimit, loLimit))
         interval = false;
         
 	for(int i = 0; i < 3; i++)
@@ -968,7 +965,7 @@ int Intersection::computeNewStartingPoint(
          
 	bool intersected = computeCurveSurfaceIntersection(surfaceElement, lineElement, xsi, upLimit, loLimit);
     
-    if( comparePoints(xsi, xsiOld))
+    if( comparePoints<3>(xsi, xsiOld))
         intersected = false;
        							 	
 	if(intersected && interval)		
@@ -1023,7 +1020,7 @@ int Intersection::addIntersectionPoint(
     vector<InterfacePoint>::iterator it;
     bool alreadyInList = false;
     for(it = interfacePoints.begin(); it != interfacePoints.end(); it++ )  
-        if(comparePointsN(ip.coord, it->coord,3))   
+        if(comparePoints<3>(ip.coord, it->coord))   
         {   
             //printf("alreadyinlist = true\n");
             alreadyInList = true;
@@ -1305,7 +1302,7 @@ void Intersection::findNextSegment(
     
     for(it = vertices.begin(); it != vertices.end(); it=it+2 )
     {      
-        if(comparePoints(searchPoint, *it))
+        if(comparePoints<3>(searchPoint, *it))
         {
             pointfound = true;
             searchPoint = *(it+1);              
@@ -1314,7 +1311,7 @@ void Intersection::findNextSegment(
             break; 
         }
                
-        if(comparePoints(searchPoint, *(it+1)))
+        if(comparePoints<3>(searchPoint, *(it+1)))
         {
             pointfound = true;
             searchPoint = *(it);                
@@ -1590,13 +1587,13 @@ void Intersection::storePoint(
 
     for(vector<InterfacePoint>::const_iterator ipoint = interfacePoints.begin(); ipoint != interfacePoints.end(); ++ipoint )
     {   
-        if(comparePoints(point, ipoint->coord))
+        if(comparePoints<3>(point, ipoint->coord))
         {         
             alreadyInList = false;
             int count = 0;
             for(vector<InterfacePoint>::const_iterator it = pointList_.begin(); it != pointList_.end(); ++it )  
             {
-                if(comparePoints(point, it->coord))   
+                if(comparePoints<3>(point, it->coord))   
                 {   
                     alreadyInList = true;
                     break;
@@ -1696,7 +1693,7 @@ void Intersection::storeSurfacePoints(
         {
             for(unsigned int jj = numXFEMCornerNodes_; jj < pointList_.size(); jj++ )
             {
-                if(comparePointsN(interfacePoints[i].coord, pointList_[jj].coord, 3)) 
+                if(comparePoints<3>(interfacePoints[i].coord, pointList_[jj].coord)) 
                 {
                     bool alreadyInList = false;
                     for(int kk = 0; kk < numXFEMSurfaces_; kk++)
@@ -2123,8 +2120,8 @@ void Intersection::liftSteinerPointOnSurface(
         elementToCurrentCoordinates(xfemElement, p1);   
         elementToCurrentCoordinates(xfemElement, p2);   
 
-        const Epetra_SerialDenseVector n1 = subtractsTwoVectors(p1, Steinerpoint);
-        const Epetra_SerialDenseVector n2 = subtractsTwoVectors(p2, Steinerpoint);
+        const Epetra_SerialDenseVector n1 = subtractsTwoVectors<3>(p1, Steinerpoint);
+        const Epetra_SerialDenseVector n2 = subtractsTwoVectors<3>(p2, Steinerpoint);
     
         Epetra_SerialDenseVector normal = computeCrossProduct( n1, n2);
         normalizeVector(normal);
@@ -2140,8 +2137,8 @@ void Intersection::liftSteinerPointOnSurface(
     const int faceMarker = adjacentFacemarkerList[steinerIndex][0];
     
     vector<Epetra_SerialDenseVector> plane(4, Epetra_SerialDenseVector(3));
-    plane[0] = addTwoVectors(Steinerpoint, averageNormal);               
-    plane[1] = subtractsTwoVectors(Steinerpoint, averageNormal);
+    plane[0] = addTwoVectors<3>(Steinerpoint, averageNormal);               
+    plane[1] = subtractsTwoVectors<3>(Steinerpoint, averageNormal);
     Epetra_SerialDenseVector xsi(3);
     const bool intersected = computeRecoveryNormal( xsi, plane, intersectingCutterElements_[faceMarker],false);
     if(intersected)
@@ -2157,8 +2154,8 @@ void Intersection::liftSteinerPointOnSurface(
         for(normalptr = normals.begin(); normalptr != normals.end(); ++normalptr )
         {
             vector<Epetra_SerialDenseVector> plane(4, Epetra_SerialDenseVector(3)); // TODO: why size 4???
-            plane[0] = addTwoVectors(Steinerpoint, *normalptr);               
-            plane[1] = subtractsTwoVectors(Steinerpoint, *normalptr);
+            plane[0] = addTwoVectors<3>(Steinerpoint, *normalptr);               
+            plane[1] = subtractsTwoVectors<3>(Steinerpoint, *normalptr);
             Epetra_SerialDenseVector xsi(3);
             intersected = computeRecoveryNormal( xsi, plane, intersectingCutterElements_[faceMarker], false);
             if(intersected)
@@ -2201,8 +2198,8 @@ void Intersection::liftSteinerPointOnEdge(
     elementToCurrentCoordinates(xfemElement, edgePoint);   
     elementToCurrentCoordinates(xfemElement, oppositePoint);  
      
-    const Epetra_SerialDenseVector r1 = subtractsTwoVectors( edgePoint, Steinerpoint);
-    const Epetra_SerialDenseVector r2 = subtractsTwoVectors( oppositePoint, Steinerpoint);
+    const Epetra_SerialDenseVector r1 = subtractsTwoVectors<3>( edgePoint, Steinerpoint);
+    const Epetra_SerialDenseVector r2 = subtractsTwoVectors<3>( oppositePoint, Steinerpoint);
 
     Epetra_SerialDenseVector n1 = computeCrossProduct( r1, r2);
     Epetra_SerialDenseVector n2 = computeCrossProduct( r1, n1);
@@ -2211,10 +2208,10 @@ void Intersection::liftSteinerPointOnEdge(
     normalizeVector(n2);
 
     vector<Epetra_SerialDenseVector> plane(4, Epetra_SerialDenseVector(3));      
-    plane[0] = addTwoVectors(Steinerpoint, n1);               
-    plane[1] = subtractsTwoVectors(Steinerpoint, n1);
-    plane[2] = addTwoVectors(plane[1], n2);
-    plane[3] = addTwoVectors(plane[0], n2);
+    plane[0] = addTwoVectors<3>(Steinerpoint, n1);               
+    plane[1] = subtractsTwoVectors<3>(Steinerpoint, n1);
+    plane[2] = addTwoVectors<3>(plane[1], n2);
+    plane[3] = addTwoVectors<3>(plane[0], n2);
      
     Epetra_SerialDenseVector xsi(3);
     const bool intersected = computeRecoveryPlane( lineIndex, xsi, plane, intersectingCutterElements_[cutterIndex]);
@@ -2927,8 +2924,8 @@ void Intersection::computeIntersectionNormal(
     }
                  
     // compute direction vectors of the plane 
-    Epetra_SerialDenseVector  r1 = subtractsTwoVectors(p1, p2);
-    Epetra_SerialDenseVector  r2 = subtractsTwoVectors(p3, p2);
+    Epetra_SerialDenseVector  r1 = subtractsTwoVectors<3>(p1, p2);
+    Epetra_SerialDenseVector  r2 = subtractsTwoVectors<3>(p3, p2);
  
     // normal of the plane
     Epetra_SerialDenseVector  n = computeCrossProduct(r1, r2);
@@ -2950,10 +2947,10 @@ void Intersection::computeIntersectionNormal(
     }
     
     // compute nodes of the normal to the interface edge of the tetrahedron
-    plane[0] = addTwoVectors(m, r);               
-    plane[1] = subtractsTwoVectors(m, r);
-    plane[2] = addTwoVectors(plane[1], n);               
-    plane[3] = addTwoVectors(plane[0], n);
+    plane[0] = addTwoVectors<3>(m, r);               
+    plane[1] = subtractsTwoVectors<3>(m, r);
+    plane[2] = addTwoVectors<3>(plane[1], n);               
+    plane[3] = addTwoVectors<3>(plane[0], n);
     
     
     if(onBoundary)
@@ -3022,14 +3019,14 @@ void Intersection::computeIntersectionNormal(
     elementToCurrentCoordinates(xfemElement, p3);  
     elementToCurrentCoordinates(xfemElement, p4);  
     
-    Epetra_SerialDenseVector r1 = subtractsTwoVectors(p1,p2);
-    Epetra_SerialDenseVector r2 = subtractsTwoVectors(p3,p2);
-    Epetra_SerialDenseVector r3 = subtractsTwoVectors(p4,p2);
+    Epetra_SerialDenseVector r1 = subtractsTwoVectors<3>(p1,p2);
+    Epetra_SerialDenseVector r2 = subtractsTwoVectors<3>(p3,p2);
+    Epetra_SerialDenseVector r3 = subtractsTwoVectors<3>(p4,p2);
     
     Epetra_SerialDenseVector n1 = computeCrossProduct(r2, r1);
     Epetra_SerialDenseVector n2 = computeCrossProduct(r1, r3);
     
-    Epetra_SerialDenseVector averageNormal = addTwoVectors(n1, n2);
+    Epetra_SerialDenseVector averageNormal = addTwoVectors<3>(n1, n2);
     Epetra_SerialDenseVector rPlane = computeCrossProduct(n1, r1);
     
     for(int i = 0; i < 3; i++)
@@ -3045,10 +3042,10 @@ void Intersection::computeIntersectionNormal(
     elementToCurrentCoordinates(xfemElement, m);  
     
     // compute nodes of the normal to the interface edge of the tetrahedron
-    plane[0] = addTwoVectors(m, averageNormal);               
-    plane[1] = subtractsTwoVectors(m, averageNormal);
-    plane[2] = addTwoVectors(plane[1], rPlane);               
-    plane[3] = addTwoVectors(plane[0], rPlane);
+    plane[0] = addTwoVectors<3>(m, averageNormal);               
+    plane[1] = subtractsTwoVectors<3>(m, averageNormal);
+    plane[2] = addTwoVectors<3>(plane[1], rPlane);               
+    plane[3] = addTwoVectors<3>(plane[0], rPlane);
     
    /* for(int i = 0; i < 4; i++)
     {
@@ -3088,8 +3085,8 @@ void Intersection::computeIntersectionNormal(
     }
            
     // compute direction vectors of the plane 
-    Epetra_SerialDenseVector  r1 = subtractsTwoVectors(p1, p2);
-    Epetra_SerialDenseVector  r2 = subtractsTwoVectors(p3, p2);
+    Epetra_SerialDenseVector  r1 = subtractsTwoVectors<3>(p1, p2);
+    Epetra_SerialDenseVector  r2 = subtractsTwoVectors<3>(p3, p2);
  
     // normal of the plane
     Epetra_SerialDenseVector  n = computeCrossProduct(r1, r2);
@@ -3100,10 +3097,10 @@ void Intersection::computeIntersectionNormal(
     normalizeVector(r);
  
     // compute nodes of the normal to the interface edge of the tetrahedron
-    plane[0] = addTwoVectors(p2, r);               
-    plane[1] = subtractsTwoVectors(p2, r);
-    plane[2] = addTwoVectors(plane[1], n);               
-    plane[3] = addTwoVectors(plane[0], n);
+    plane[0] = addTwoVectors<3>(p2, r);               
+    plane[1] = subtractsTwoVectors<3>(p2, r);
+    plane[2] = addTwoVectors<3>(plane[1], n);               
+    plane[3] = addTwoVectors<3>(plane[0], n);
     
     
     for(int i = 0; i < 4; i++)
@@ -3278,7 +3275,7 @@ bool Intersection::findCommonCutterLine(
             {
                 const DRT::Node* node1 = lines1[i]->Nodes()[k];
                 const DRT::Node* node2 = lines2[j]->Nodes()[k];
-                if(!comparePoints(node1, node2))
+                if(!comparePoints<3>(node1->X(), node2->X()))
                 {
                     comparison = false;
                     break;   
@@ -3294,14 +3291,14 @@ bool Intersection::findCommonCutterLine(
                     {
                         const DRT::Node* node1 = lines1[i]->Nodes()[k];
                         const DRT::Node* node2 = lines2[j]->Nodes()[k];
-                        if(!comparePoints(node1, node2))
+                        if(!comparePoints<3>(node1->X(), node2->X()))
                             comparison = false;
                     }
                     else
                     {
                         const DRT::Node* node1 = lines1[i]->Nodes()[k];
                         const DRT::Node* node2 = lines2[j]->Nodes()[1-k];
-                        if(!comparePoints(node1, node2))
+                        if(!comparePoints<3>(node1->X(), node2->X()))
                             comparison = false;
                     }
                 }   

@@ -18,11 +18,8 @@ Maintainer: Ursula Mayer
 #include "../drt_xfem/integrationcell.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_utils_fem_shapefunctions.H"
-#include "../drt_lib/drt_utils_local_connectivity_matrices.H"
 #include "../drt_lib/drt_element.H"
 #include "../io/io_drt.H"
-#include "../io/gmsh.H"
 #include "tetgen.h"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
@@ -54,14 +51,14 @@ namespace XFEM
 enum pointType {INTERNAL, SURFACE, LINE, NODE, INTERSECTION };
 
 
-
-typedef struct
+//! a point class used in the xfem intersection process
+struct InterfacePoint
 {
   int           nsurf;
   int           surfaces[3];    /*!< adjacent surfaces */
   double        coord[3];       /*!< point coordinates */
   pointType     pType;          /*!< point type */
-} InterfacePoint;
+};
 
 
 
