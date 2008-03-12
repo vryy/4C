@@ -14,7 +14,6 @@ Maintainer: Axel Gerstenberger
 
 #include <blitz/array.h>
 #include "dof_management.H"
-#include "xfem.H"
 #include "xdofmapcreation.H"
 #include "../io/gmsh.H"
 
