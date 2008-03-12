@@ -231,7 +231,7 @@ void XFEM::svdcmp(
                     if ((double)(fabs(f)+anorm) == anorm)
                         break;
                     const double g=W[i];
-                    double h=XFEM::pythagoras(f,g);
+                    const double h=XFEM::pythagoras(f,g);
                     W[i]=h;
                     const double h_inv=1.0/h;
                     c=g*h_inv;
@@ -356,7 +356,6 @@ bool XFEM::solveLinearSystemWithSVD(
             {
                 if( fabs(W[j]) > 1e-7 )
                     svdtemp += V[i][j]*U[k][j] / W[j];
-                  
             }
             x[i] += svdtemp * b[k];
         }
