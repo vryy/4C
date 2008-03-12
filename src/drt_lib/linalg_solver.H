@@ -55,9 +55,6 @@ Maintainer: Michael Gee
 #include "Amesos_Umfpack.h"
 #include "Amesos_Lapack.h"
 
-// mgee: this is not supposed to be here.....
-#include "../drt_fluid/vm3_solver.H"
-
 // Trilinos is configured with SuperLUDIST only in the parallel version
 #ifdef PARALLEL
 #include "Amesos_Superludist.h"
@@ -90,6 +87,8 @@ struct _SolveMap;
 #endif
 #endif
 
+// forward declarations
+class VM3_Solver;
 
 /*!
 \brief LINALG: namespace of the ccarat linear algebra module
@@ -97,6 +96,9 @@ struct _SolveMap;
 */
 namespace LINALG
 {
+
+// forward declarations
+class SparseMatrix;
 
 /*!
 \class Solver
@@ -120,6 +122,20 @@ public:
   */
   Solver(RCP<ParameterList> params, const Epetra_Comm& comm, FILE* outfile);
 
+
+  /*!
+  \brief Constructor with default solver Amesos_KLU
+
+  Creates a default solver using nonsymmetric KLU without passing a
+  parameter list. This is useful for quick development.
+  default solver intentionally is not Umfpack as Umfpack is not a
+   Trilinos build-in library.
+  
+  \param comm (in)   : a reference to a epetra communicator object
+  \param outfile (in): ptr to an error file on proc 0 only. If NULL on input,
+                       no output will be generated.
+  */
+  Solver(const Epetra_Comm& comm, FILE* outfile = NULL);
 
   /*!
   \brief Destructor

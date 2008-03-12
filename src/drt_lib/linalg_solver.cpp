@@ -68,6 +68,47 @@ ncall_(0)
 }
 
 /*----------------------------------------------------------------------*
+ |  ctor (public)                                            mwgee 03/08|
+ *----------------------------------------------------------------------*/
+LINALG::Solver::Solver(const Epetra_Comm& comm, FILE* outfile) :
+comm_(comm),
+params_(rcp(new ParameterList())),
+outfile_(outfile),
+factored_(false),
+ncall_(0)
+{
+  // set the default solver
+  Params().set("solver","klu");
+  Params().set("symmetric",false);
+  
+  // create an empty linear problem
+  lp_ = rcp(new Epetra_LinearProblem());
+
+#ifdef PARALLEL
+#ifdef SPOOLES_PACKAGE
+  frontmtx_      =NULL;
+  newA_          =NULL;
+  newY_          =NULL;
+  frontETree_    =NULL;
+  mtxmanager_    =NULL;
+  newToOldIV_    =NULL;
+  oldToNewIV_    =NULL;
+  ownersIV_      =NULL;
+  vtxmapIV_      =NULL;
+  ownedColumnsIV_=NULL;
+  solvemap_      =NULL;
+  symbfacIVL_    =NULL;
+  graph_         =NULL;
+  mtxY_          =NULL;
+  mtxX_          =NULL;
+  mtxA_          =NULL;
+#endif
+#endif
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 02/07|
  *----------------------------------------------------------------------*/
 LINALG::Solver::~Solver()
