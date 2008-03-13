@@ -87,11 +87,13 @@ namespace ELEMENTS
       \param cstab     		(i) boolean flag for stabilisation
       \param cross     		(i) boolean flag for stabilisation
       \param reynolds     	(i) boolean flag for stabilisation
-      \param Cs_fs  (i) Smagorinsky model param. for fine-scale subgrid viscosity
+      \param Cs                 (i) Smagorinsky model parameter
      */
     void Sysmat(Fluid3* ele,
                 const blitz::Array<double,2>&            evelnp,
+                const blitz::Array<double,2>&            csevelnp,
                 const blitz::Array<double,2>&            fsevelnp,
+                const blitz::Array<double,2>&            cseconvnp,
                 const blitz::Array<double,1>&            eprenp,
                 blitz::Array<double,2>&                  estif,
                 blitz::Array<double,1>&                  eforce,
@@ -142,6 +144,7 @@ namespace ELEMENTS
     blitz::Array<double,2> xjm_;       /// transposed of the jacobian matrix d x / d \xi
     blitz::Array<double,2> xji_;       /// inverse of the jacobian matrix
     blitz::Array<double,2> vderxy_;    /// velocity vector derivative
+    blitz::Array<double,2> csvderxy_;  /// coarse-scale velocity vector derivative
     blitz::Array<double,2> fsvderxy_;  /// fine-scale velocity vector derivative
     blitz::Array<double,1> pderxy_;    /// pressure derivative with respect to x
     blitz::Array<double,2> vderxy2_;   /// second derivatives of the velocity vector
@@ -150,7 +153,9 @@ namespace ELEMENTS
     blitz::Array<double,1> bodyforce_; /// volumetric load at gausspoint
     blitz::Array<double,1> velino_;
     blitz::Array<double,1> velint_;    /// velocity
+    blitz::Array<double,1> csvelint_;  /// coarse-scale velocity
     blitz::Array<double,1> fsvelint_;  /// fine-scale velocity
+    blitz::Array<double,1> csconvint_; /// coarse-scale convective stresses
     blitz::Array<double,1> gradp_;     /// pressure gradient
     blitz::Array<double,1> tau_;       /// tau_Mu, tau_Mp, tau_C
     blitz::Array<double,3> viscs2_;    /// viscous term including 2nd derivatives
@@ -159,6 +164,7 @@ namespace ELEMENTS
     blitz::Array<double,3> conv_r_;    /// linearisation of convect, reactive part
     blitz::Array<double,1> rhsint_;    /// total right hand side terms at int.-point
     blitz::Array<double,1> conv_old_;
+    blitz::Array<double,1> conv_s_;    /// convective part of scale-similarity term
     blitz::Array<double,1> visc_old_;
     blitz::Array<double,1> res_old_;
     blitz::Array<double,1> conv_resM_;

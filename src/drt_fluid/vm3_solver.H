@@ -105,15 +105,18 @@ public:
   virtual ~VM3_Solver() {}
 
   /*!
-  \brief sscale separation routine
+  \brief scale separation routine
 
-   get fine-scale part from a vector (called in every timestep)
+   get coarse- and fine-scale part from a vector 
+   (called in every timestep for incremental formulation)
 
-   \param fsvec (Out)    : fine-scale part of vector
+   \param csvec (Out)     : coarse-scale part of vector
+   \param fsvec (Out)     : fine-scale part of vector
    \param vec (In)        : vector (current solution vector)
 
   */
-   void Separate(RCP<Epetra_Vector>& fsvec,
+   void Separate(RCP<Epetra_Vector>& csvec,
+                 RCP<Epetra_Vector>& fsvec,
                  RCP<Epetra_Vector>& vec);
 
   /*!

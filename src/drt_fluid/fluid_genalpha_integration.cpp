@@ -248,8 +248,11 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // -------------------------------------------------------------------
   if (fssgv_ != "No")
   {
-    csvelaf_ = LINALG::CreateVector(*dofrowmap,true);
-    fsvelaf_ = LINALG::CreateVector(*dofrowmap,true);
+    csvelaf_  = LINALG::CreateVector(*dofrowmap,true);
+    fsvelaf_  = LINALG::CreateVector(*dofrowmap,true);
+    convaf_   = LINALG::CreateVector(*dofrowmap,true);
+    csconvaf_ = LINALG::CreateVector(*dofrowmap,true);
+    fsconvaf_ = LINALG::CreateVector(*dofrowmap,true);
   }
 
   // -------------------------------------------------------------------
@@ -950,6 +953,28 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   // create the parameters for the discretization
   ParameterList eleparams;
 
+  if (fssgv_ == "scale_similarity" ||
+      fssgv_ == "mixed_Smagorinsky_all" || fssgv_ == "mixed_Smagorinsky_small")
+  {
+    // choose what to assemble
+    eleparams.set("assemble matrix 1",false);
+    eleparams.set("assemble matrix 2",false);
+    eleparams.set("assemble vector 1",true);
+    eleparams.set("assemble vector 2",false);
+    eleparams.set("assemble vector 3",false);
+
+    // action for elements
+    eleparams.set("action","calc_convective_stresses");
+
+    // set vector values needed by elements
+    discret_->ClearState();
+    discret_->SetState("velaf",velaf_);
+
+    // element evaluation for getting convective stresses at nodes
+    discret_->Evaluate(eleparams,sysmat_,convaf_);
+    discret_->ClearState();
+  }
+
   // action for elements
   eleparams.set("action","calc_fluid_genalpha_sysmat_and_residual");
   // choose what to assemble
@@ -1113,8 +1138,10 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
       // zero fine-scale vector
       fsvelaf_->PutScalar(0.0);
 
-      // set fine-scale vector
+      // set coarse- and fine-scale vectors
       discret_->SetState("fsvelaf",fsvelaf_);
+      discret_->SetState("csvelaf",csvelaf_);
+      discret_->SetState("csconvaf",csconvaf_);
 
       // element evaluation for getting system matrix
       discret_->Evaluate(eleparams,sysmat_,residual_);
@@ -1138,8 +1165,17 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
     // check whether VM3 solver exists
     if (vm3_solver_ == null) dserror("vm3_solver not allocated");
 
-    // call the VM3 scale separation to get fine-scale part of solution
-    vm3_solver_->Separate(fsvelaf_,velaf_);
+    // call VM3 scale separation to get coarse- and fine-scale part of solution
+    vm3_solver_->Separate(csvelaf_,fsvelaf_,velaf_);
+
+    // call VM3 scale separation to get coarse-scale part of convective stresses
+    if (fssgv_ == "scale_similarity" ||
+        fssgv_ == "mixed_Smagorinsky_all" || fssgv_ == "mixed_Smagorinsky_small")
+    {
+      vm3_solver_->Separate(csconvaf_,fsconvaf_,convaf_);
+      discret_->SetState("csconvaf",csconvaf_);
+      discret_->SetState("csvelaf",csvelaf_);
+    }
 
     // set fine-scale vector
     discret_->SetState("fsvelaf",fsvelaf_);

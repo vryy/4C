@@ -370,8 +370,11 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   // -------------------------------------------------------------------
   if (fssgv_ != "No")
   {
-    csvelnp_ = LINALG::CreateVector(*dofrowmap,true);
-    fsvelnp_ = LINALG::CreateVector(*dofrowmap,true);
+    csvelnp_  = LINALG::CreateVector(*dofrowmap,true);
+    fsvelnp_  = LINALG::CreateVector(*dofrowmap,true);
+    convnp_   = LINALG::CreateVector(*dofrowmap,true);
+    csconvnp_ = LINALG::CreateVector(*dofrowmap,true);
+    fsconvnp_ = LINALG::CreateVector(*dofrowmap,true);
 
     if (myrank_ == 0)
     {
@@ -875,6 +878,28 @@ void FluidImplicitTimeInt::NonlinearSolve()
       // create the parameters for the discretization
       ParameterList eleparams;
 
+      if (fssgv_ == "scale_similarity" ||
+          fssgv_ == "mixed_Smagorinsky_all" || fssgv_ == "mixed_Smagorinsky_small")
+      {
+        // choose what to assemble
+        eleparams.set("assemble matrix 1",false);
+        eleparams.set("assemble matrix 2",false);
+        eleparams.set("assemble vector 1",true);
+        eleparams.set("assemble vector 2",false);
+        eleparams.set("assemble vector 3",false);
+
+        // action for elements
+        eleparams.set("action","calc_convective_stresses");
+
+        // set vector values needed by elements
+        discret_->ClearState();
+        discret_->SetState("velnp",velnp_);
+
+        // element evaluation for getting convective stresses at nodes
+        discret_->Evaluate(eleparams,sysmat_,convnp_);
+        discret_->ClearState();
+      }
+
       // action for elements
       if (timealgo_==timeint_stationary)
           eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
@@ -924,8 +949,10 @@ void FluidImplicitTimeInt::NonlinearSolve()
           // zero fine-scale vector
           fsvelnp_->PutScalar(0.0);
 
-          // set fine-scale vector
+          // set coarse- and fine-scale vectors
           discret_->SetState("fsvelnp",fsvelnp_);
+          discret_->SetState("csvelnp",csvelnp_);
+          discret_->SetState("csconvnp",csconvnp_);
 
           // element evaluation for getting system matrix
           discret_->Evaluate(eleparams,sysmat_,residual_);
@@ -951,10 +978,19 @@ void FluidImplicitTimeInt::NonlinearSolve()
         // check whether VM3 solver exists
         if (vm3_solver_ == null) dserror("vm3_solver not allocated");
 
-        // call the VM3 scale separation to get fine-scale part of solution
-        vm3_solver_->Separate(fsvelnp_,velnp_);
+        // call VM3 scale separation to get coarse- and fine-scale part of solution
+        vm3_solver_->Separate(csvelnp_,fsvelnp_,velnp_);
 
-        // set fine-scale vector
+        // call VM3 scale separation to get coarse-scale part of convective stresses
+        if (fssgv_ == "scale_similarity" ||
+            fssgv_ == "mixed_Smagorinsky_all" || fssgv_ == "mixed_Smagorinsky_small")
+        {
+          vm3_solver_->Separate(csconvnp_,fsconvnp_,convnp_);
+          discret_->SetState("csvelnp",csvelnp_);
+          discret_->SetState("csconvnp",csconvnp_);
+        }
+
+        // set coarse- and fine-scale vectors
         discret_->SetState("fsvelnp",fsvelnp_);
 
         // end time measurement for avm3

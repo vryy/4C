@@ -63,11 +63,14 @@ DRT::ELEMENTS::Fluid3GenalphaResVMM::Fluid3GenalphaResVMM(int iel)
     accintam_     (  3                                                   ),
     velintnp_     (  3                                                   ),
     velintaf_     (  3                                                   ),
+    csvelintaf_   (  3                                                   ),
     fsvelintaf_   (  3                                                   ),
+    csconvintaf_  (  3                                                   ),
     ugrid_af_     (  3                                                   ),
     pderxynp_     (  3                                                   ),
     vderxynp_     (  3   ,     3            ,blitz::ColumnMajorArray<2>()),
     vderxyaf_     (  3   ,     3            ,blitz::ColumnMajorArray<2>()),
+    csvderxyaf_   (  3   ,     3            ,blitz::ColumnMajorArray<2>()),
     fsvderxyaf_   (  3   ,     3            ,blitz::ColumnMajorArray<2>()),
     vderxy2af_    (  3   ,     6            ,blitz::ColumnMajorArray<2>()),
     bodyforceaf_  (  3                                                   ),
@@ -80,6 +83,7 @@ DRT::ELEMENTS::Fluid3GenalphaResVMM::Fluid3GenalphaResVMM(int iel)
     tau_          (3),
     svelaf_       (3),
     convaf_old_   (3),
+    convaf_s_     (3),
     convsubaf_old_(3),
     viscaf_old_   (3),
     resM_         (3),
@@ -103,7 +107,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   const blitz::Array<double,1>&                         eprenp,
   const blitz::Array<double,2>&                         eaccam,
   const blitz::Array<double,2>&                         evelaf,
+  const blitz::Array<double,2>&                         csevelaf,
   const blitz::Array<double,2>&                         fsevelaf,
+  const blitz::Array<double,2>&                         cseconvaf,
   const struct _MATERIAL*                               material,
   const double                                          alphaM,
   const double                                          alphaF,
@@ -1505,9 +1511,28 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     //
     // j : direction of derivative x/y/z
     //
-    if (fssgv != Fluid3::fssgv_no) fsvderxyaf_ = blitz::sum(derxy_(j,k)*fsevelaf(i,k),k);
-    else                           fsvderxyaf_ = 0.;
+    // get fine-scale velocity (np,i) derivatives at integration point
+    if (fssgv != Fluid3::fssgv_no  && fssgv != Fluid3::fssgv_scale_similarity) 
+         fsvderxyaf_ = blitz::sum(derxy_(j,k)*fsevelaf(i,k),k);
+    else fsvderxyaf_ = 0.;
 
+    // get values at integration point required for scale-similarity model
+    if(fssgv == Fluid3::fssgv_scale_similarity ||
+       fssgv == Fluid3::fssgv_mixed_Smagorinsky_all ||
+       fssgv == Fluid3::fssgv_mixed_Smagorinsky_small)
+    {
+      // get coarse-scale velocities at integration point
+      csvelintaf_ = blitz::sum(funct_(j)*csevelaf(i,j),j);
+
+      // get coarse-scale velocity (np,i) derivatives at integration point
+      csvderxyaf_ = blitz::sum(derxy_(j,k)*csevelaf(i,k),k);
+
+      // PR(u) * grad PR(u): */
+      convaf_s_ = blitz::sum(csvderxyaf_(j,i)*csvelintaf_(j), j);
+
+      // get coarse-scale convective stresses at integration point
+      csconvintaf_ = blitz::sum(funct_(j)*cseconvaf(i,j),j);
+    }
 
     // get velocity (n+1,i) derivatives at integration point
     //
@@ -3503,7 +3528,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
       const double tauC   = tau_(2);
 
       // subgrid-viscosity factor
-      const double vartfac = vart_*fac*afgdt;
+      const double vartfac = vart_*fac;
 
       //--------------------------------------------------------------
       //--------------------------------------------------------------
@@ -5116,6 +5141,21 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 #ifdef PERF
         timeelecrossrey_ref = null;
 #endif
+      }
+
+      if(fssgv == Fluid3::fssgv_scale_similarity ||
+         fssgv == Fluid3::fssgv_mixed_Smagorinsky_all ||
+         fssgv == Fluid3::fssgv_mixed_Smagorinsky_small)
+      {
+        //----------------------------------------------------------------------
+        //     SCALE-SIMILARITY TERM (ON RIGHT HAND SIDE)
+
+        for (int ui=0; ui<iel_; ++ui)
+        {
+          elevec[ui*4    ] -= fac*(csconvintaf_(0) - convaf_s_(0))*funct_(ui);
+          elevec[ui*4 + 1] -= fac*(csconvintaf_(1) - convaf_s_(1))*funct_(ui);
+          elevec[ui*4 + 2] -= fac*(csconvintaf_(2) - convaf_s_(2))*funct_(ui);
+        }
       }
 
       if(fssgv != Fluid3::fssgv_no && fssgv != Fluid3::fssgv_scale_similarity)

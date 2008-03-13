@@ -96,11 +96,13 @@ namespace ELEMENTS
       \param cstab    (i) boolean flag for stabilisation
       \param cross    (i) boolean flag for stabilisation
       \param reynolds (i) boolean flag for stabilisation
-      \param Cs_fs    (i) Smagorinsky model param. for fine-scale subgrid viscosity
+      \param Cs       (i) Smagorinsky model parameter
       */
     void Sysmat(Fluid3* ele,
                 const blitz::Array<double,2>&            evelnp,
+                const blitz::Array<double,2>&            csevelnp,
                 const blitz::Array<double,2>&            fsevelnp,
+                const blitz::Array<double,2>&            cseconvnp,
                 const blitz::Array<double,1>&            eprenp,
                 const blitz::Array<double,2>&            evhist,
                 const blitz::Array<double,2>&            edispnp,
@@ -168,6 +170,7 @@ namespace ELEMENTS
     blitz::Array<double,2> xjm_;
     blitz::Array<double,2> xji_;
     blitz::Array<double,2> vderxy_;
+    blitz::Array<double,2> csvderxy_;
     blitz::Array<double,2> fsvderxy_;
     blitz::Array<double,1> pderxy_;
     blitz::Array<double,2> vderxy2_;
@@ -177,7 +180,9 @@ namespace ELEMENTS
     blitz::Array<double,1> histvec_;
     blitz::Array<double,1> velino_;
     blitz::Array<double,1> velint_;
+    blitz::Array<double,1> csvelint_;
     blitz::Array<double,1> fsvelint_;
+    blitz::Array<double,1> csconvint_;
     blitz::Array<double,1> gridvelint_;
     blitz::Array<double,1> gradp_;
     blitz::Array<double,1> tau_;
@@ -187,6 +192,7 @@ namespace ELEMENTS
     blitz::Array<double,3> conv_r_; /* linearisation of convect, reactive part */
     blitz::Array<double,1> rhsint_; /* total right hand side terms at int.-point */
     blitz::Array<double,1> conv_old_;
+    blitz::Array<double,1> conv_s_; /* convective part of scale-similarity term */
     blitz::Array<double,1> visc_old_;
     blitz::Array<double,1> res_old_;
     blitz::Array<double,1> conv_resM_;

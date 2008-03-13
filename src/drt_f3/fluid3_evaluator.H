@@ -51,7 +51,9 @@ namespace DRT
                              const blitz::Array<double, 2>& evhist,
                              const blitz::Array<double, 2>& edispnp,
                              const blitz::Array<double, 2>& egridv,
-                             const blitz::Array<double, 2>& fsevelnp);
+                             const blitz::Array<double, 2>& csevelnp,
+                             const blitz::Array<double, 2>& fsevelnp,
+                             const blitz::Array<double, 2>& cseconvnp);
 
       /// Simple element by element evaluation
       void PlainEvaluate(DRT::EGROUP::Group& elements);
@@ -94,7 +96,9 @@ namespace DRT
       Teuchos::RCP<const Epetra_Vector> hist_;
       Teuchos::RCP<const Epetra_Vector> dispnp_;
       Teuchos::RCP<const Epetra_Vector> gridv_;
+      Teuchos::RCP<const Epetra_Vector> csvelnp_;
       Teuchos::RCP<const Epetra_Vector> fsvelnp_;
+      Teuchos::RCP<const Epetra_Vector> csconvnp_;
 
       //@}
 

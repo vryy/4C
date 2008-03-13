@@ -82,6 +82,13 @@ DRT::ELEMENTS::Fluid3SystemEvaluator::Fluid3SystemEvaluator(Teuchos::RCP<DRT::Di
   if (fssgv_ != Fluid3::fssgv_no)
   {
     fsvelnp_ = dis_->GetState("fsvelnp");
+    if (fssgv_ == Fluid3::fssgv_mixed_Smagorinsky_all ||
+        fssgv_ == Fluid3::fssgv_mixed_Smagorinsky_small ||
+        fssgv_ == Fluid3::fssgv_scale_similarity)
+    {
+      csvelnp_  = dis_->GetState("csvelnp");
+      csconvnp_ = dis_->GetState("csconvnp");
+    }
   }
 
   //--------------------------------------------------
@@ -212,7 +219,9 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::ElementEvaluation(DRT::Element* ele,
                                                              const blitz::Array<double, 2>& evhist,
                                                              const blitz::Array<double, 2>& edispnp,
                                                              const blitz::Array<double, 2>& egridv,
-                                                             const blitz::Array<double, 2>& fsevelnp)
+                                                             const blitz::Array<double, 2>& csevelnp,
+                                                             const blitz::Array<double, 2>& fsevelnp,
+                                                             const blitz::Array<double, 2>& cseconvnp)
 {
   // We rely on our users here!
   DRT::ELEMENTS::Fluid3* f3ele = static_cast<DRT::ELEMENTS::Fluid3*>(ele);
@@ -339,7 +348,9 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::ElementEvaluation(DRT::Element* ele,
   //--------------------------------------------------
   DRT::ELEMENTS::Fluid3Impl::Impl(f3ele)->Sysmat(f3ele,
                                                  evelnp,
+                                                 csevelnp,
                                                  fsevelnp,
+                                                 cseconvnp,
                                                  eprenp,
                                                  evhist,
                                                  edispnp,
@@ -408,7 +419,9 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::PlainEvaluate(DRT::EGROUP::Group& ele
     blitz::Array<double, 2> evhist(3,numnode,blitz::ColumnMajorArray<2>());
     blitz::Array<double, 2> edispnp(3,numnode,blitz::ColumnMajorArray<2>());
     blitz::Array<double, 2> egridv(3,numnode,blitz::ColumnMajorArray<2>());
+    blitz::Array<double, 2> csevelnp(3,numnode,blitz::ColumnMajorArray<2>());
     blitz::Array<double, 2> fsevelnp(3,numnode,blitz::ColumnMajorArray<2>());
+    blitz::Array<double, 2> cseconvnp(3,numnode,blitz::ColumnMajorArray<2>());
 
     ExtractVelocity(numnode, *velnp_, colids, evelnp);
     ExtractPressure(numnode, *velnp_, colids, eprenp);
@@ -423,6 +436,14 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::PlainEvaluate(DRT::EGROUP::Group& ele
     if (fssgv_ != Fluid3::fssgv_no)
     {
       ExtractVelocity(numnode, *fsvelnp_, colids, fsevelnp);
+
+      if (fssgv_ == Fluid3::fssgv_mixed_Smagorinsky_all ||
+          fssgv_ == Fluid3::fssgv_mixed_Smagorinsky_small ||
+          fssgv_ == Fluid3::fssgv_scale_similarity)
+      {
+        ExtractVelocity(numnode, *csvelnp_, colids, csevelnp);
+        ExtractVelocity(numnode, *csconvnp_, colids, cseconvnp);
+      }
     }
 
     // get dimension of element matrices and vectors
@@ -450,7 +471,9 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::PlainEvaluate(DRT::EGROUP::Group& ele
                       evhist,
                       edispnp,
                       egridv,
-                      fsevelnp);
+                      csevelnp,
+                      fsevelnp,
+                      cseconvnp);
 
     systemmatrix_->Assemble(elematrix1,lm,lmowner);
     LINALG::Assemble(*systemvector_,elevector1,lm,lmowner);
@@ -471,7 +494,9 @@ struct BlockData
       evhist(3,numnode,blitz::ColumnMajorArray<2>()),
       edispnp(3,numnode,blitz::ColumnMajorArray<2>()),
       egridv(3,numnode,blitz::ColumnMajorArray<2>()),
-      fsevelnp(3,numnode,blitz::ColumnMajorArray<2>())
+      csevelnp(3,numnode,blitz::ColumnMajorArray<2>()),
+      fsevelnp(3,numnode,blitz::ColumnMajorArray<2>()),
+      cseconvnp(3,numnode,blitz::ColumnMajorArray<2>())
   {
     lm.reserve(numnode*4);
     lmowner.reserve(numnode*4);
@@ -514,7 +539,9 @@ struct BlockData
   blitz::Array<double, 2> evhist;
   blitz::Array<double, 2> edispnp;
   blitz::Array<double, 2> egridv;
+  blitz::Array<double, 2> csevelnp;
   blitz::Array<double, 2> fsevelnp;
+  blitz::Array<double, 2> cseconvnp;
 
 private:
 
@@ -596,6 +623,17 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::BlockHex8Evaluate(DRT::EGROUP::Group&
       {
         ExtractVelocity(numnode, *fsvelnp_, data[i].colids, data[i].fsevelnp);
       }
+
+      if (fssgv_ == Fluid3::fssgv_mixed_Smagorinsky_all ||
+          fssgv_ == Fluid3::fssgv_mixed_Smagorinsky_small ||
+          fssgv_ == Fluid3::fssgv_scale_similarity)
+      {
+        for (int i=0; i<blocklength; ++i)
+        {
+          ExtractVelocity(numnode, *csvelnp_, data[i].colids, data[i].csevelnp);
+          ExtractVelocity(numnode, *csconvnp_, data[i].colids, data[i].cseconvnp);
+        }
+      }
     }
 
     // evaluate elements
@@ -610,7 +648,9 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::BlockHex8Evaluate(DRT::EGROUP::Group&
                         data[i].evhist,
                         data[i].edispnp,
                         data[i].egridv,
-                        data[i].fsevelnp);
+                        data[i].csevelnp,
+                        data[i].fsevelnp,
+                        data[i].cseconvnp);
       count += 1;
     }
 

@@ -362,6 +362,11 @@ protected:
   RCP<Epetra_Vector>    csvelnp_;
   RCP<Epetra_Vector>    fsvelnp_;
 
+  /// only necessary for vm3 solver: convective stresses + coarse- and fine-scale part
+  RCP<Epetra_Vector>    convnp_;
+  RCP<Epetra_Vector>    csconvnp_;
+  RCP<Epetra_Vector>    fsconvnp_;
+
   /// turbulence statistics, lid driven cavity
   RCP<TurbulenceStatisticsLdc> turbulencestatistics_ldc_;
 

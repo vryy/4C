@@ -79,7 +79,7 @@ bool VM3_Solver::Compute(RCP<LINALG::SparseMatrix> A)
   GetPtent(*A->EpetraMatrix(),mlparams_,nullspace,crsPtent);
   LINALG::SparseMatrix Ptent(crsPtent);
 
-  // compute scale-separation matrix: S = I - (Ptent*Ptent^T)
+  // compute scale-separation matrix: S = I - Ptent*Ptent^T
   Sep_ = LINALG::Multiply(Ptent,false,Ptent,true);
   Sep_->Scale(-1.0);
   RCP<Epetra_Vector> tmp = LINALG::CreateVector(Sep_->RowMap(),false);
@@ -109,12 +109,15 @@ bool VM3_Solver::Compute(RCP<LINALG::SparseMatrix> A)
 
 /*----------------------------------------------------------------------*
  |  scale separation routine                                    vg 02/08|
- |  get fine-scale part from a vector (called in every timestep)        |
+ |  get coarse- and fine-scale part from a vector                       |
+ |  (called in every timestep for incremental formulation)              |
  *----------------------------------------------------------------------*/
-void VM3_Solver::Separate(RCP<Epetra_Vector>& fsvec,
+void VM3_Solver::Separate(RCP<Epetra_Vector>& csvec,
+                          RCP<Epetra_Vector>& fsvec,
                           RCP<Epetra_Vector>& vec)
 {
   Sep_->Multiply(false,*vec,*fsvec);
+  csvec->Update(1.0,*vec,-1.0,*fsvec,0.0);
 
   return;
 }

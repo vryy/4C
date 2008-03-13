@@ -216,6 +216,8 @@ DRT::ELEMENTS::Fluid3::ActionType DRT::ELEMENTS::Fluid3::convertStringToActionTy
     act = Fluid3::calc_fluid_box_filter;
   else if (action == "calc_smagorinsky_const")
     act = Fluid3::calc_smagorinsky_const;
+  else if (action == "calc_convective_stresses")
+    act = Fluid3::calc_convective_stresses;
   else
     dserror("Unknown type of action for Fluid3");
   return act;
@@ -380,9 +382,13 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         }
 
 
-        // get fine-scale velocity
+        // get coarse- and fine-scale velocity as well as coarse-scale convective stress
+        RCP<const Epetra_Vector> csvelnp;
         RCP<const Epetra_Vector> fsvelnp;
-        blitz::Array<double, 2> fsevelnp(3,numnode,blitz::ColumnMajorArray<2>());
+        RCP<const Epetra_Vector> csconvnp;
+        blitz::Array<double, 2> csevelnp (3,numnode,blitz::ColumnMajorArray<2>());
+        blitz::Array<double, 2> fsevelnp (3,numnode,blitz::ColumnMajorArray<2>());
+        blitz::Array<double, 2> cseconvnp(3,numnode,blitz::ColumnMajorArray<2>());
 
         // get flag for fine-scale subgrid viscosity
         StabilisationAction fssgv =
@@ -400,6 +406,36 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
             fsevelnp(0,i) = myfsvelnp[0+(i*4)];
             fsevelnp(1,i) = myfsvelnp[1+(i*4)];
             fsevelnp(2,i) = myfsvelnp[2+(i*4)];
+          }
+          if (fssgv == fssgv_mixed_Smagorinsky_all ||
+              fssgv == fssgv_mixed_Smagorinsky_small ||
+              fssgv == fssgv_scale_similarity)
+          {
+            csvelnp = discretization.GetState("csvelnp");
+            if (csvelnp==null) dserror("Cannot get state vector 'csvelnp'");
+            vector<double> mycsvelnp(lm.size());
+            DRT::UTILS::ExtractMyValues(*csvelnp,mycsvelnp,lm);
+
+            // get coarse-scale velocity and insert into element arrays
+            for (int i=0;i<numnode;++i)
+            {
+              csevelnp(0,i) = mycsvelnp[0+(i*4)];
+              csevelnp(1,i) = mycsvelnp[1+(i*4)];
+              csevelnp(2,i) = mycsvelnp[2+(i*4)];
+            }
+
+            csconvnp = discretization.GetState("csconvnp");
+            if (csconvnp==null) dserror("Cannot get state vector 'csconvnp'");
+            vector<double> mycsconvnp(lm.size());
+            DRT::UTILS::ExtractMyValues(*csconvnp,mycsconvnp,lm);
+
+            // get coarse-scale velocity and insert into element arrays
+            for (int i=0;i<numnode;++i)
+            {
+              cseconvnp(0,i) = mycsconvnp[0+(i*4)];
+              cseconvnp(1,i) = mycsconvnp[1+(i*4)];
+              cseconvnp(2,i) = mycsconvnp[2+(i*4)];
+            }
           }
         }
         else
@@ -609,7 +645,9 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         //--------------------------------------------------
         DRT::ELEMENTS::Fluid3Impl::Impl(this)->Sysmat(this,
                        evelnp,
+                       csevelnp,
                        fsevelnp,
+                       cseconvnp,
                        eprenp,
                        evhist,
                        edispnp,
@@ -1088,9 +1126,14 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         StabilisationAction fssgv =
           ConvertStringToStabAction(params.get<string>("fs subgrid viscosity","No"));
 
-        // get fine-scale velocity
+        // get coarse- and fine-scale velocity as well as coarse-scale convective stress
+        RCP<const Epetra_Vector> csvelaf;
         RCP<const Epetra_Vector> fsvelaf;
-        blitz::Array<double, 2> fsevelaf(3,numnode,blitz::ColumnMajorArray<2>());
+        RCP<const Epetra_Vector> csconvaf;
+        blitz::Array<double, 2> csevelaf (3,numnode,blitz::ColumnMajorArray<2>());
+        blitz::Array<double, 2> fsevelaf (3,numnode,blitz::ColumnMajorArray<2>());
+        blitz::Array<double, 2> cseconvaf(3,numnode,blitz::ColumnMajorArray<2>());
+
         if (fssgv != fssgv_no)
         {
           fsvelaf = discretization.GetState("fsvelaf");
@@ -1104,6 +1147,36 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
             fsevelaf(0,i) = myfsvelaf[0+(i*4)];
             fsevelaf(1,i) = myfsvelaf[1+(i*4)];
             fsevelaf(2,i) = myfsvelaf[2+(i*4)];
+          }
+          if (fssgv == fssgv_mixed_Smagorinsky_all ||
+              fssgv == fssgv_mixed_Smagorinsky_small ||
+              fssgv == fssgv_scale_similarity)
+          {
+            csvelaf = discretization.GetState("csvelaf");
+            if (csvelaf==null) dserror("Cannot get state vector 'csvelaf'");
+            vector<double> mycsvelaf(lm.size());
+            DRT::UTILS::ExtractMyValues(*csvelaf,mycsvelaf,lm);
+
+            // get coarse-scale velocity and insert into element arrays
+            for (int i=0;i<numnode;++i)
+            {
+              csevelaf(0,i) = mycsvelaf[0+(i*4)];
+              csevelaf(1,i) = mycsvelaf[1+(i*4)];
+              csevelaf(2,i) = mycsvelaf[2+(i*4)];
+            }
+
+            csconvaf = discretization.GetState("csconvaf");
+            if (csconvaf==null) dserror("Cannot get state vector 'csconvaf'");
+            vector<double> mycsconvaf(lm.size());
+            DRT::UTILS::ExtractMyValues(*csconvaf,mycsconvaf,lm);
+
+            // get coarse-scale velocity and insert into element arrays
+            for (int i=0;i<numnode;++i)
+            {
+              cseconvaf(0,i) = mycsconvaf[0+(i*4)];
+              cseconvaf(1,i) = mycsconvaf[1+(i*4)];
+              cseconvaf(2,i) = mycsconvaf[2+(i*4)];
+            }
           }
         }
         else
@@ -1315,7 +1388,9 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
                                  eprenp,
                                  eaccam,
                                  evelaf,
+                                 csevelaf,
                                  fsevelaf,
+                                 cseconvaf,
                                  actmat,
                                  alphaM,
                                  alphaF,
@@ -1702,9 +1777,14 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           StabilisationAction fssgv =
             ConvertStringToStabAction(params.get<string>("fs subgrid viscosity","No"));
 
-          // get fine-scale velocity
+          // get coarse- and fine-scale velocity as well as coarse-scale convective stress
+          RCP<const Epetra_Vector> csvelnp;
           RCP<const Epetra_Vector> fsvelnp;
-          blitz::Array<double, 2> fsevelnp(3,numnode,blitz::ColumnMajorArray<2>());
+          RCP<const Epetra_Vector> csconvnp;
+          blitz::Array<double, 2> csevelnp (3,numnode,blitz::ColumnMajorArray<2>());
+          blitz::Array<double, 2> fsevelnp (3,numnode,blitz::ColumnMajorArray<2>());
+          blitz::Array<double, 2> cseconvnp(3,numnode,blitz::ColumnMajorArray<2>());
+
           if (fssgv != fssgv_no)
           {
             fsvelnp = discretization.GetState("fsvelnp");
@@ -1718,6 +1798,36 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
               fsevelnp(0,i) = myfsvelnp[0+(i*4)];
               fsevelnp(1,i) = myfsvelnp[1+(i*4)];
               fsevelnp(2,i) = myfsvelnp[2+(i*4)];
+            }
+            if (fssgv == fssgv_mixed_Smagorinsky_all ||
+                fssgv == fssgv_mixed_Smagorinsky_small ||
+                fssgv == fssgv_scale_similarity)
+            {
+              csvelnp = discretization.GetState("csvelnp");
+              if (csvelnp==null) dserror("Cannot get state vector 'csvelnp'");
+              vector<double> mycsvelnp(lm.size());
+              DRT::UTILS::ExtractMyValues(*csvelnp,mycsvelnp,lm);
+
+              // get coarse-scale velocity and insert into element arrays
+              for (int i=0;i<numnode;++i)
+              {
+                csevelnp(0,i) = mycsvelnp[0+(i*4)];
+                csevelnp(1,i) = mycsvelnp[1+(i*4)];
+                csevelnp(2,i) = mycsvelnp[2+(i*4)];
+              }
+
+              csconvnp = discretization.GetState("csconvnp");
+              if (csconvnp==null) dserror("Cannot get state vector 'csconvnp'");
+              vector<double> mycsconvnp(lm.size());
+              DRT::UTILS::ExtractMyValues(*csconvnp,mycsconvnp,lm);
+
+              // get coarse-scale velocity and insert into element arrays
+              for (int i=0;i<numnode;++i)
+              {
+                cseconvnp(0,i) = mycsconvnp[0+(i*4)];
+                cseconvnp(1,i) = mycsconvnp[1+(i*4)];
+                cseconvnp(2,i) = mycsconvnp[2+(i*4)];
+              }
             }
           }
           else
@@ -1746,7 +1856,9 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           // calculate element coefficient matrix and rhs
           StationaryImpl()->Sysmat(this,
                                    evelnp,
+                                   csevelnp,
                                    fsevelnp,
+                                   cseconvnp,
                                    eprenp,
                                    estif,
                                    eforce,
@@ -1765,6 +1877,47 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           // This is a very poor way to transport the density to the
           // outside world. Is there a better one?
           params.set("density", actmat->m.fluid->density);
+      }
+      break;
+      case calc_convective_stresses:
+      {
+        // the number of nodes
+        const int numnode = NumNode();
+
+        //--------------------------------------------------
+        // get state vector
+        //--------------------------------------------------
+        RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velnp");
+        if (velnp==null) dserror("Cannot get state vector 'velnp'");
+
+        // extract local values from the global vectors
+        vector<double> myvelnp(lm.size());
+        DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
+
+        // create blitz object for element array
+        blitz::Array<double, 2> evelnp(3,numnode,blitz::ColumnMajorArray<2>());
+
+        // insert velocity into element arrays
+        for (int i=0;i<numnode;++i)
+        {
+          evelnp(0,i) = myvelnp[0+(i*4)];
+          evelnp(1,i) = myvelnp[1+(i*4)];
+          evelnp(2,i) = myvelnp[2+(i*4)];
+        }
+
+        //--------------------------------------------------
+        // wrap epetra serial dense object in blitz object
+        //--------------------------------------------------
+        blitz::Array<double, 1> econv(elevec1.Values(),
+                                       blitz::shape(elevec1.Length()),
+                                       blitz::neverDeleteData);
+
+        //--------------------------------------------------
+        // calculate element coefficient matrix and rhs     
+        //--------------------------------------------------
+        ConvStresses(evelnp,
+                     econv);
+
       }
       break;
       default:
@@ -2884,6 +3037,169 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
 
   return;
 } // DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij
+
+/*----------------------------------------------------------------------*
+ |  calculate convective stresses at element nodes by extrapolation     |
+ |  from integration points (only for hex8 so far)             vg 03/08 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Fluid3::ConvStresses(
+  const blitz::Array<double,2>&  evelnp,
+  blitz::Array<double,1>&        econv
+  )
+{
+  //------------------------------------------------------------------
+  //                     BLITZ CONFIGURATION
+  //------------------------------------------------------------------
+  //
+  // We define the variables i,j,k to be indices to blitz arrays.
+  // These are used for array expressions, that is matrix-vector
+  // products in the following.
+
+  blitz::firstIndex  i;   // Placeholder for the first index
+  blitz::secondIndex j;   // Placeholder for the second index
+  blitz::thirdIndex  k;   // Placeholder for the third index
+
+  // set element data
+  const int iel = NumNode();
+  const DiscretizationType distype = this->Shape();
+
+  // allocate required arrays
+  blitz::Array<double,1>  funct  (iel);
+  blitz::Array<double,1>  velint (3);
+  blitz::Array<double,2>  conv_gp(3);
+  blitz::Array<double,2>  xjm    (3,3,blitz::ColumnMajorArray<2>());
+  blitz::Array<double,2>  xji    (3,3,blitz::ColumnMajorArray<2>());
+  blitz::Array<double,2>  deriv  (3,iel,blitz::ColumnMajorArray<2>());
+  blitz::Array<double,2>  derxy  (3,iel,blitz::ColumnMajorArray<2>());
+  blitz::Array<double,2>  vderxy (3,3,blitz::ColumnMajorArray<2>());
+
+  // get node coordinates of element
+  blitz::Array<double,2>  xyze(3,iel,blitz::ColumnMajorArray<2>());
+  for(int inode=0;inode<iel;inode++)
+  {
+    xyze(0,inode)=Nodes()[inode]->X()[0];
+    xyze(1,inode)=Nodes()[inode]->X()[1];
+    xyze(2,inode)=Nodes()[inode]->X()[2];
+  }
+
+  // gaussian points
+  const DRT::UTILS::IntegrationPoints3D intpoints(this->gaussrule_);
+
+  static Epetra_SerialDenseMatrix expol(8,8);
+  {
+    double sq3=sqrt(3);
+    expol(0,0)=1.25+0.75*sq3;
+    expol(0,1)=-0.25-0.25*sq3;
+    expol(0,2)=-0.25+0.25*sq3;
+    expol(0,3)=-0.25-0.25*sq3;
+    expol(0,4)=-0.25-0.25*sq3;
+    expol(0,5)=-0.25+0.25*sq3;
+    expol(0,6)=1.25-0.75*sq3;
+    expol(0,7)=-0.25+0.25*sq3;
+    expol(1,1)=1.25+0.75*sq3;
+    expol(1,2)=-0.25-0.25*sq3;
+    expol(1,3)=-0.25+0.25*sq3;
+    expol(1,4)=-0.25+0.25*sq3;
+    expol(1,5)=-0.25-0.25*sq3;
+    expol(1,6)=-0.25+0.25*sq3;
+    expol(1,7)=1.25-0.75*sq3;
+    expol(2,2)=1.25+0.75*sq3;
+    expol(2,3)=-0.25-0.25*sq3;
+    expol(2,4)=1.25-0.75*sq3;
+    expol(2,5)=-0.25+0.25*sq3;
+    expol(2,6)=-0.25-0.25*sq3;
+    expol(2,7)=-0.25+0.25*sq3;
+    expol(3,3)=1.25+0.75*sq3;
+    expol(3,4)=-0.25+0.25*sq3;
+    expol(3,5)=1.25-0.75*sq3;
+    expol(3,6)=-0.25+0.25*sq3;
+    expol(3,7)=-0.25-0.25*sq3;
+    expol(4,4)=1.25+0.75*sq3;
+    expol(4,5)=-0.25-0.25*sq3;
+    expol(4,6)=-0.25+0.25*sq3;
+    expol(4,7)=-0.25-0.25*sq3;
+    expol(5,5)=1.25+0.75*sq3;
+    expol(5,6)=-0.25-0.25*sq3;
+    expol(5,7)=-0.25+0.25*sq3;
+    expol(6,6)=1.25+0.75*sq3;
+    expol(6,7)=-0.25-0.25*sq3;
+    expol(7,7)=1.25+0.75*sq3;
+  }
+
+  // integration loop
+  for (int iquad=0; iquad<intpoints.nquad; ++iquad)
+  {
+    // coordiantes of the current integration point
+    const double e1 = intpoints.qxg[iquad][0];
+    const double e2 = intpoints.qxg[iquad][1];
+    const double e3 = intpoints.qxg[iquad][2];
+
+    // shape functions and their derivatives
+    DRT::UTILS::shape_function_3D(funct,e1,e2,e3,distype);
+    DRT::UTILS::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
+
+    // get Jacobian matrix and determinant
+    // actually compute its transpose....
+    /*
+      +-            -+ T      +-            -+
+      | dx   dx   dx |        | dx   dy   dz |
+      | --   --   -- |        | --   --   -- |
+      | dr   ds   dt |        | dr   dr   dr |
+      |              |        |              |
+      | dy   dy   dy |        | dx   dy   dz |
+      | --   --   -- |   =    | --   --   -- |
+      | dr   ds   dt |        | ds   ds   ds |
+      |              |        |              |
+      | dz   dz   dz |        | dx   dy   dz |
+      | --   --   -- |        | --   --   -- |
+      | dr   ds   dt |        | dt   dt   dt |
+      +-            -+        +-            -+
+    */
+    xjm = blitz::sum(deriv(i,k)*xyze(j,k),k);
+    const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
+                       xjm(0,1)*xjm(1,2)*xjm(2,0)+
+                       xjm(0,2)*xjm(1,0)*xjm(2,1)-
+                       xjm(0,2)*xjm(1,1)*xjm(2,0)-
+                       xjm(0,0)*xjm(1,2)*xjm(2,1)-
+                       xjm(0,1)*xjm(1,0)*xjm(2,2);
+
+    if (det < 0.0)
+    {
+      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %lf", Id(), det);
+    }
+
+    // inverse of jacobian
+    xji(0,0) = (  xjm(1,1)*xjm(2,2) - xjm(2,1)*xjm(1,2))/det;
+    xji(1,0) = (- xjm(1,0)*xjm(2,2) + xjm(2,0)*xjm(1,2))/det;
+    xji(2,0) = (  xjm(1,0)*xjm(2,1) - xjm(2,0)*xjm(1,1))/det;
+    xji(0,1) = (- xjm(0,1)*xjm(2,2) + xjm(2,1)*xjm(0,2))/det;
+    xji(1,1) = (  xjm(0,0)*xjm(2,2) - xjm(2,0)*xjm(0,2))/det;
+    xji(2,1) = (- xjm(0,0)*xjm(2,1) + xjm(2,0)*xjm(0,1))/det;
+    xji(0,2) = (  xjm(0,1)*xjm(1,2) - xjm(1,1)*xjm(0,2))/det;
+    xji(1,2) = (- xjm(0,0)*xjm(1,2) + xjm(1,0)*xjm(0,2))/det;
+    xji(2,2) = (  xjm(0,0)*xjm(1,1) - xjm(1,0)*xjm(0,1))/det;
+
+    // compute global derivates
+    derxy = blitz::sum(xji(i,k)*deriv(k,j),k);
+
+    // get velocities (n+g,i) at integration point
+    velint = blitz::sum(funct(j)*evelnp(i,j),j);
+
+    // get velocity (np,i) derivatives at integration point
+    vderxy = blitz::sum(derxy(j,k)*evelnp(i,k),k);
+
+    /* convective vector  u * grad u at current integration point */
+    conv_gp = blitz::sum(vderxy(i,j)*velint(j),j);
+
+    /* convective vector  u * grad u at element nodes */
+    for (int vi=0; vi<iel; ++vi)
+    {
+      econv(vi*4)     += conv_gp(0)*expol(vi,iquad) ;
+      econv(vi*4 + 1) += conv_gp(1)*expol(vi,iquad) ;
+      econv(vi*4 + 2) += conv_gp(2)*expol(vi,iquad) ;
+    }
+  }
+} // DRT::ELEMENTS::Fluid3::ConvStresses
 
 //
 // check for higher order derivatives for shape functions

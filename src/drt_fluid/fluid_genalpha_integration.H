@@ -721,6 +721,11 @@ private:
   RCP<Epetra_Vector>        csvelaf_;
   RCP<Epetra_Vector>        fsvelaf_;
 
+  /// convective stresses and their coarse- and fine-scale part
+  RCP<Epetra_Vector>        convaf_;
+  RCP<Epetra_Vector>        csconvaf_;
+  RCP<Epetra_Vector>        fsconvaf_;
+
   //! fine-scale subgrid-viscosity flag
   string                    fssgv_;
 

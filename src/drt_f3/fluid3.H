@@ -346,7 +346,8 @@ private:
     calc_fluid_beltrami_error,
     calc_turbulence_statistics,
     calc_fluid_box_filter,
-    calc_smagorinsky_const
+    calc_smagorinsky_const,
+    calc_convective_stresses
   };
 
   //! stabilisation actions recognized by fluid3 (genalpha implementation)
@@ -659,6 +660,19 @@ void f3_calc_smag_const_LijMij_and_MijMij(
   double&                 LijMij,
   double&                 MijMij,
   double&                 center);
+
+  /*!
+    \brief calculate convective stresses at element nodes by extrapolation
+           from integration points (only for hex8 so far)
+
+    \param evelnp (in )  : nodal velocities
+    \param econv  (out ) : nodal convective stresses
+    \return void
+
+   */
+
+  void ConvStresses(const blitz::Array<double,2>&  evelnp,
+                          blitz::Array<double,1>&  econv);
 
 
   void CreateLinesTet(const int& nline,

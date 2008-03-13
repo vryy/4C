@@ -169,7 +169,6 @@ namespace DRT
         \param time            (i) current simulation time
         \param newton          (i) flag for use of full linearisation of reactive terms
         \param fssgv           (i) flag for type of fine-scale subgrid viscosity
-        \param Cs_fs           (i) Smagorinsky model parameter for fine-scale subgrid viscosity
         \param tds             (i) flag for use of time dependent subscale stabilisation
         \param inertia         (i) flag for use of subscale accelerations for stabilisation (only for tds==true)
         \param pspg            (i) flag for use of nabla q testfunctions
@@ -195,7 +194,9 @@ namespace DRT
                   const blitz::Array<double,1>&                         eprenp,
                   const blitz::Array<double,2>&                         eaccam,
                   const blitz::Array<double,2>&                         evelaf,
+                  const blitz::Array<double,2>&                         csevelaf,
                   const blitz::Array<double,2>&                         fsevelaf,
+                  const blitz::Array<double,2>&                         cseconvaf,
                   const struct _MATERIAL*                               material,
                   const double                                          alphaM,
                   const double                                          alphaF,
@@ -313,8 +314,12 @@ namespace DRT
       blitz::Array<double,1> velintnp_;
       //! velocity in gausspoint, time n+af
       blitz::Array<double,1> velintaf_;
+      //! coarse-scale velocity in gausspoint, time n+af
+      blitz::Array<double,1> csvelintaf_;
       //! fine-scale velocity in gausspoint, time n+af
       blitz::Array<double,1> fsvelintaf_;
+      //! coarse-scale convective stresses in gausspoint, time n+af
+      blitz::Array<double,1> csconvintaf_;
       //! grid velocity at intermediate time level n+af
       blitz::Array<double,1> ugrid_af_;
       //! pressure gradient in gausspoint, time n+1
@@ -323,6 +328,8 @@ namespace DRT
       blitz::Array<double,2> vderxynp_;
       //! velocity derivatives in gausspoint, time n+af
       blitz::Array<double,2> vderxyaf_;
+      //! coarse-scale velocity derivatives in gausspoint, time n+af
+      blitz::Array<double,2> csvderxyaf_;
       //! fine-scale velocity derivatives in gausspoint, time n+af
       blitz::Array<double,2> fsvderxyaf_;
       //! second derivatives of velocity in gausspoint, time n+af
@@ -344,6 +351,8 @@ namespace DRT
       blitz::Array<double,1> svelaf_;
       //! Convective term, most recent iteration value
       blitz::Array<double,1> convaf_old_;
+      //! Convective part of scale-similarity term, most recent iteration value
+      blitz::Array<double,1> convaf_s_;
       /*
                          /  n+af        \   n+af
                         |  u     o grad  | u
