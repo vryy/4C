@@ -461,8 +461,9 @@ namespace LINALG
                                                        const SparseMatrix& B, bool transB,
                                                        bool completeoutput = true);
 
-    /// Split matrix in either 2x2 or 3x3 blocks
     /*!
+      \brief Split matrix in either 2x2 or 3x3 blocks (3x3 not yet impl.)
+    
       Split given matrix 'this' into 2x2 block matrix and
       return result as templated BlockSparseMatrix.
       The MultiMapExtractor's provided have to be 2 and 2 maps,
@@ -793,6 +794,19 @@ ostream& operator << (ostream& os, const LINALG::BlockSparseMatrixBase& mat);
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+/*!
+  \brief Split matrix in either 2x2 or 3x3 blocks (3x3 not yet impl.)
+
+  Split given matrix 'this' into 2x2 block matrix and
+  return result as templated BlockSparseMatrix.
+  The MultiMapExtractor's provided have to be 2 and 2 maps,
+  otherwise this method will throw an error.
+
+  \note This is an expensive operation!
+
+  \note This method will NOT call Complete() on the output
+        BlockSparseMatrix.
+*/
 template <class Strategy> Teuchos::RCP<LINALG::BlockSparseMatrix<Strategy> >
 LINALG::SparseMatrix::Split(const MultiMapExtractor& domainmaps,
                             const MultiMapExtractor& rangemaps)
@@ -807,7 +821,7 @@ LINALG::SparseMatrix::Split(const MultiMapExtractor& domainmaps,
     return blockA;
   }
   else
-    dserror("Currently can only split in 2x2");
+    dserror("Currently can only split matrix in 2x2 blocks");
 
   return Teuchos::null;
 }
