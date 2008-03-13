@@ -511,7 +511,7 @@ void DRT::ELEMENTS::XFluid3::f3_int_beltrami_err(
     {
         printf("\n");
         printf("GLOBAL ELEMENT NO.%i\n",Id());
-        printf("NEGATIVE JACOBIAN DETERMINANT: %lf\n", det);
+        printf("NEGATIVE JACOBIAN DETERMINANT: %f\n", det);
         dserror("Stopped not regulary!\n");
     }
 
