@@ -1962,7 +1962,7 @@ void XFluidImplicitTimeInt::SetInitialFlowField(
       // out to screen
       if (myrank_==0)
       {
-        cout << "Disturbed initial profile:   max. " << perc << "%% random perturbation\n";
+        cout << "Disturbed initial profile:   max. " << perc << "% random perturbation\n";
         cout << "\n\n";
       }
 
