@@ -6,6 +6,21 @@
 \brief An approximate block factorization preconditioner based on the
        SIMPLE family of methods
 
+This Operator implements the family of SIMPLE methods such as
+SIMPLE, SIMPLER, SIMPLEC and CheapSIMPLE (a m.gee's variation of SIMPLE)
+
+Literature:<br>
+
+Elman, H., Howle, V.E., Shadid, J., Shuttleworth, R., Tuminaro, R.:  
+A taxonomy and comparison of parallel block multi-level              
+preconditioners for the incomp. Navier-Stokes equations.             
+Sandia technical report SAND2007-2761, 2007,                        
+Also appeared in JCP                                                 
+
+Pernice, M., Tocci, M.D.:                                            
+A Multigrid Preconditioned Newton-Krylov method for the incomp.      
+Navier-Stokes equations, Siam, J. Sci. Comp. 23, pp. 398-418 (2001)  
+
 <pre>
 Maintainer: Michael Gee
             gee@lnm.mw.tum.de
@@ -15,7 +30,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#include "linalg_ana.H"
 #include "simpler_operator.H"
 
 #define SIMPLEC_DIAGONAL      0    // 1: row sums     0: just diagonal
@@ -75,7 +89,6 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_Operator> A,
     // blocks will be reused and the next assembly will replace the block
     // matrices.
     A_ = A_->Clone(View);
-    //A_ = A_->Clone(Copy);
     mmex_ = A_->RangeExtractor();
   }
   else
@@ -233,16 +246,16 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_Operator> A,
 #endif
 
   // Allocate velocity and pressure solution and rhs vectors
-  vx_ = LINALG::CreateVector(*mmex_.Map(0),false);
-  vb_ = LINALG::CreateVector(*mmex_.Map(0),false);
-  px_ = LINALG::CreateVector(*mmex_.Map(1),false);
-  pb_ = LINALG::CreateVector(*mmex_.Map(1),false);
+  vx_ = rcp(new LINALG::ANA::Vector(*mmex_.Map(0),false));
+  vb_ = rcp(new LINALG::ANA::Vector(*mmex_.Map(0),false));
+  px_ = rcp(new LINALG::ANA::Vector(*mmex_.Map(1),false));
+  pb_ = rcp(new LINALG::ANA::Vector(*mmex_.Map(1),false));
 
   // Allocate working vectors for velocity and pressure
-  vwork1_  = LINALG::CreateVector(*mmex_.Map(0),false);
-  vwork2_  = LINALG::CreateVector(*mmex_.Map(0),false);
-  pwork1_ = LINALG::CreateVector(*mmex_.Map(1),false);
-  pwork2_ = LINALG::CreateVector(*mmex_.Map(1),false);
+  vwork1_  = rcp(new LINALG::ANA::Vector(*mmex_.Map(0),false));
+  vwork2_  = rcp(new LINALG::ANA::Vector(*mmex_.Map(0),false));
+  pwork1_ = rcp(new LINALG::ANA::Vector(*mmex_.Map(1),false));
+  pwork2_ = rcp(new LINALG::ANA::Vector(*mmex_.Map(1),false));
 
   if (!myrank && SIMPLER_TIMING) printf("--- Time to do allocate mem %10.3E\n",time.ElapsedTime());
   if (!myrank && SIMPLER_TIMING) printf("=== Total simpler setup === %10.3E\n",totaltime.ElapsedTime());
@@ -265,13 +278,13 @@ int LINALG::SIMPLER_Operator::ApplyInverse(const Epetra_MultiVector& X,
   mmex_.ExtractVector(X,1,*pb_);
 
 #if CHEAPSIMPLE_ALGORITHM // SIMPLE and SIMPLEC but without solve, just AMG
-  CheapSimple(vx_,px_,vb_,pb_);
+  CheapSimple(*vx_,*px_,*vb_,*pb_);
 #else
 
 #if SIMPLER_ALGORITHM
-  Simpler(vx_,px_,vb_,pb_);
+  Simpler(*vx_,*px_,*vb_,*pb_);
 #else
-  Simple(vx_,px_,vb_,pb_);
+  Simple(*vx_,*px_,*vb_,*pb_);
 #endif
 
 #endif
@@ -287,32 +300,35 @@ int LINALG::SIMPLER_Operator::ApplyInverse(const Epetra_MultiVector& X,
 
 /*----------------------------------------------------------------------*
  |  (private)                                                mwgee 02/08|
+ | taken from:                                                          |
+ | Elman, H., Howle, V.E., Shadid, J., Shuttleworth, R., Tuminaro, R.:  |
+ | A taxonomy and comparison of parallel block multi-level              |
+ | preconditioners for the incomp. Navier-Stokes equations.             |
+ | Sandia technical report SAND2007-2761, 2007                          |
+ | Also appeared in JCP                                                 |
  *----------------------------------------------------------------------*/
-void LINALG::SIMPLER_Operator::Simple(RCP<Epetra_Vector> vx, RCP<Epetra_Vector> px,
-                                      RCP<Epetra_Vector> vb, RCP<Epetra_Vector> pb) const
+void LINALG::SIMPLER_Operator::Simple(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
+                                      LINALG::ANA::Vector& vb, LINALG::ANA::Vector& pb) const
 {
-
+  using namespace LINALG::ANA;
+  SparseMatrix& A00      = (*A_)(0,0);
+  SparseMatrix& A10      = (*A_)(1,0);
+  SparseMatrix& A01      = (*A_)(0,1);
+  SparseMatrix& diagAinv = *diagAinv_;
+  SparseMatrix& S        = *S_;
+  
+  
   //------------------------------------------------------------ L-solve
-  // Solve A(0,0) \hat{v} = vb , result is on vwork1_
-  vwork1_->PutScalar(0.0);
-  vsolver_->Solve((*A_)(0,0).EpetraMatrix(),vwork1_,vb,true,false);
-
-  // Build rhs for second solve pwork1_ = pb - A(1,0)*\hat{v} , result is on pwork1_
-  (*A_)(1,0).Multiply(false,*vwork1_,*pwork1_);
-  pwork1_->Update(1.0,*pb,-1.0);
-
-  // Solve S \hat{p} = pb - A(1,0)*\hat{v} , result is on px
-  px->PutScalar(0.0);
-  psolver_->Solve(S_->EpetraMatrix(),px,pwork1_,true,false);
+  
+  *vwork1_ = inverse(A00,*vsolver_,false) * vb;
+  
+  px = inverse(S,*psolver_,false) * (pb - A10 * vwork1_);
 
   //------------------------------------------------------------ U-solve
-  // p = 1/alpha * \hat{p} , result is on px
-  if (alpha_ != 1.0) px->Scale(1./alpha_);
-
-  // v = \hat{v} - diag(A(0,0))^{-1} A(0,1) p , result is on vx
-  (*A_)(0,1).Multiply(false,*px,*vwork2_);
-  diagAinv_->Multiply(false,*vwork2_,*vx);
-  vx->Update(1.0,*vwork1_,-1.0);
+  
+  if (alpha_ != 1.0) px *= 1./alpha_;
+  
+  vx = vwork1_ - diagAinv * (A01 * px);
 
   return;
 }
@@ -321,47 +337,34 @@ void LINALG::SIMPLER_Operator::Simple(RCP<Epetra_Vector> vx, RCP<Epetra_Vector> 
 
 /*----------------------------------------------------------------------*
  |  (private)                                                mwgee 02/08|
+ | taken from:                                                          |
+ | Pernice, M., Tocci, M.D.:                                            |
+ | A Multigrid Preconditioned Newton-Krylov method for the incomp.      |
+ | Navier-Stokes equations, Siam, J. Sci. Comp. 23, pp. 398-418 (2001)  |
  *----------------------------------------------------------------------*/
-void LINALG::SIMPLER_Operator::Simpler(RCP<Epetra_Vector> vx, RCP<Epetra_Vector> px,
-                                       RCP<Epetra_Vector> vb, RCP<Epetra_Vector> pb) const
+void LINALG::SIMPLER_Operator::Simpler(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
+                                       LINALG::ANA::Vector& vb, LINALG::ANA::Vector& pb) const
 {
+  using namespace LINALG::ANA;
+  SparseMatrix& A00      = (*A_)(0,0);
+  SparseMatrix& A10      = (*A_)(1,0);
+  SparseMatrix& A01      = (*A_)(0,1);
+  SparseMatrix& diagAinv = *diagAinv_;
+  SparseMatrix& S        = *S_;
 
-  //------------------------------------------------------------ L-solve
-  // Solve I \hat{v} = vb, result is on vb
-  // nothing to do
+  //-------------------------------------------------- L-solve / U-solve
 
-  // Build rhs for second solve pwork1_ = pb - A(1,0) diag(A(0,0))^{-1} \hat{v}
-  diagAinv_->Multiply(false,*vb,*vwork1_);
-  (*A_)(1,0).Multiply(false,*vwork1_,*pwork1_);
-  pwork1_->Update(1.0,*pb,-1.0);
-
-  // Solve I \hat{p} = pb - A(1,0) diag(A(0,0))^{-1} \hat{v}, result is on pwork1_
-  // nothing to do
-
-  //------------------------------------------------------------ U-solve
-  // Solve S p = \hat{p}, result is on px
-  px->PutScalar(0.0);
-  psolver_->Solve(S_->EpetraMatrix(),px,pwork1_,true,false);
-
-  // Build rhs for second solve \hat{v} - A(0,1) p, result is on vb
-  (*A_)(0,1).Multiply(false,*px,*vwork1_);
-  vb->Update(-1.0,*vwork1_,1.0);
-
-  // Solve A(0,0) v = \hat{v} - A(0,1) p, result is on vx
-  vx->PutScalar(0.0);
-  vsolver_->Solve((*A_)(0,0).EpetraMatrix(),vx,vb,true,false);
-
+  px = inverse(S,*psolver_,false) * ( pb - A10 * (diagAinv * vb) );
+  
+  vx = inverse(A00,*vsolver_,false) * ( vb - A01 * px );
+  
   //------------------------------------------------ Implicit projection
-  // px = \alpha I px
-  if (alpha_ != 1.0) px->Scale(alpha_);
 
-  // vx = ( I + diag(A(0,0))^{-1} A(0,1) S^-1 A(1,0) ) vx
-  (*A_)(1,0).Multiply(false,*vx,*pwork1_);
-  pwork2_->PutScalar(0.0);
-  psolver_->Solve(S_->EpetraMatrix(),pwork2_,pwork1_,false,false);
-  (*A_)(0,1).Multiply(false,*pwork2_,*vwork1_);
-  diagAinv_->Multiply(false,*vwork1_,*vwork2_);
-  vx->Update(-1.0,*vwork2_,1.0);
+  if (alpha_ != 1.0) px *= alpha_;
+
+  *vwork2_ = diagAinv * A01 * ( inverse(S,*psolver_,false) * ( A10 * vx ) );
+  
+  vx -= vwork2_;
 
   return;
 }
@@ -369,29 +372,35 @@ void LINALG::SIMPLER_Operator::Simpler(RCP<Epetra_Vector> vx, RCP<Epetra_Vector>
 
 /*----------------------------------------------------------------------*
  |  (private)                                                mwgee 02/08|
+ | is a cheaper variation from:                                         |
+ | Elman, H., Howle, V.E., Shadid, J., Shuttleworth, R., Tuminaro, R.:  |
+ | A taxonomy and comparison of parallel block multi-level              |
+ | preconditioners for the incomp. Navier-Stokes equations.             |
+ | Sandia technical report SAND2007-2761, 2007                          |
+ | Also appeared in JCP                                                 |
+ |                                                                      |
+ | all solves replaced by single AMG sweeps                             |
  *----------------------------------------------------------------------*/
-void LINALG::SIMPLER_Operator::CheapSimple(RCP<Epetra_Vector> vx, RCP<Epetra_Vector> px,
-                                           RCP<Epetra_Vector> vb, RCP<Epetra_Vector> pb) const
+void LINALG::SIMPLER_Operator::CheapSimple(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
+                                           LINALG::ANA::Vector& vb, LINALG::ANA::Vector& pb) const
 {
+  SparseMatrix& A10      = (*A_)(1,0);
+  SparseMatrix& A01      = (*A_)(0,1);
+  SparseMatrix& diagAinv = *diagAinv_;
+
   //------------------------------------------------------------ L-solve
-  // Solve A(0,0) \hat{v} = vb , result is on vwork1_
-  Pv_->ApplyInverse(*vb,*vwork1_);
+  
+  Pv_->ApplyInverse(vb,*vwork1_);
 
-  // Build rhs for second solve pwork1_ = pb - A(1,0)*\hat{v} , result is on pwork1_
-  (*A_)(1,0).Multiply(false,*vwork1_,*pwork1_);
-  pwork1_->Update(1.0,*pb,-1.0);
+  *pwork1_ = pb - A10 * vwork1_;
 
-  // Solve S \hat{p} = pb - A(1,0)*\hat{v} , result is on px
-  Pp_->ApplyInverse(*pwork1_,*px);
+  Pp_->ApplyInverse(*pwork1_,px);
 
   //------------------------------------------------------------ U-solve
-  // p = 1/alpha * \hat{p} , result is on px
-  if (alpha_ != 1.0) px->Scale(1./alpha_);
 
-  // v = \hat{v} - diag(A(0,0))^{-1} A(0,1) p , result is on vx
-  (*A_)(0,1).Multiply(false,*px,*vwork2_);
-  diagAinv_->Multiply(false,*vwork2_,*vx);
-  vx->Update(1.0,*vwork1_,-1.0);
+  if (alpha_ != 1.0) px *= (1./alpha_);
+
+  vx = vwork1_ - diagAinv * (A01 * px);
 
   return;
 }

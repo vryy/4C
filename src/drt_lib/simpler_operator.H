@@ -6,6 +6,21 @@
 \brief An approximate block factorization preconditioner based on the
        SIMPLE family of methods
 
+This Operator implements the family of SIMPLE methods such as
+SIMPLE, SIMPLER, SIMPLEC and CheapSIMPLE (a m.gee's variation of SIMPLE)
+
+Literature:<br>
+
+Elman, H., Howle, V.E., Shadid, J., Shuttleworth, R., Tuminaro, R.:  
+A taxonomy and comparison of parallel block multi-level              
+preconditioners for the incomp. Navier-Stokes equations.             
+Sandia technical report SAND2007-2761, 2007,                          
+Also appeared in JCP                                                 
+
+Pernice, M., Tocci, M.D.:                                            
+A Multigrid Preconditioned Newton-Krylov method for the incomp.      
+Navier-Stokes equations, Siam, J. Sci. Comp. 23, pp. 398-418 (2001)  
+
 <pre>
 Maintainer: Michael Gee
             gee@lnm.mw.tum.de
@@ -31,6 +46,7 @@ Maintainer: Michael Gee
 #include "linalg_systemmatrix.H"
 #include "linalg_solver.H"
 #include "linalg_utils.H"
+#include "linalg_ana.H"
 
 #include "MLAPI_Error.h"
 #include "MLAPI_CompObject.h"
@@ -45,6 +61,7 @@ Maintainer: Michael Gee
 #include "MLAPI_Aggregation.h"
 #include "MLAPI_Eig.h"
 
+
 using namespace std;
 using namespace Teuchos;
 
@@ -58,11 +75,23 @@ namespace LINALG
 /*!
 \class SIMPLER_Operator
 
-\brief A multipurpose experimental multigrid operator
+\brief A Semi-implicit Method for Pressure Linked Equations (SIMPLE) 
+       preconditioner
 
-This operator based on the ml advanced programming interface is a
-multipurpose development object for amg ideas that shall be tested in
-the baci framework
+This Operator implements the family of SIMPLE methods such as
+SIMPLE, SIMPLER, SIMPLEC and CheapSIMPLE (a m.gee's variation of SIMPLE)
+
+Literature:<br>
+
+Elman, H., Howle, V.E., Shadid, J., Shuttleworth, R., Tuminaro, R.:  
+A taxonomy and comparison of parallel block multi-level              
+preconditioners for the incomp. Navier-Stokes equations.             
+Sandia technical report SAND2007-2761, 2007,                          
+Also appeared in JCP                                                 
+
+Pernice, M., Tocci, M.D.:                                            
+A Multigrid Preconditioned Newton-Krylov method for the incomp.      
+Navier-Stokes equations, Siam, J. Sci. Comp. 23, pp. 398-418 (2001)  
 
 \author gee (gee@lnm.mw.tum.de)
 */
@@ -187,21 +216,21 @@ private:
   /*!
   \brief do one sweep of simple or simplec preconditioning
   */
-  void Simple(RCP<Epetra_Vector> vx, RCP<Epetra_Vector> px,
-              RCP<Epetra_Vector> vb, RCP<Epetra_Vector> pb) const;
+  void Simple(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
+              LINALG::ANA::Vector& vb, LINALG::ANA::Vector& pb) const;
 
   /*!
   \brief do one sweep of simpler preconditioning
   */
-  void Simpler(RCP<Epetra_Vector> vx, RCP<Epetra_Vector> px,
-               RCP<Epetra_Vector> vb, RCP<Epetra_Vector> pb) const;
+  void Simpler(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
+               LINALG::ANA::Vector& vb, LINALG::ANA::Vector& pb) const;
 
 
   /*!
   \brief do one sweep of simple or simplec preconditioning
   */
-  void CheapSimple(RCP<Epetra_Vector> vx, RCP<Epetra_Vector> px,
-                   RCP<Epetra_Vector> vb, RCP<Epetra_Vector> pb) const;
+  void CheapSimple(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
+                   LINALG::ANA::Vector& vb, LINALG::ANA::Vector& pb) const;
 
   FILE*                                               outfile_; // error file to write output to or NULL
   ParameterList                                       vlist_;   // list for velocity solver
@@ -216,14 +245,14 @@ private:
   RCP<Epetra_Operator>                                Pv_;      // preconditioner for velocity subproblem
   RCP<Epetra_Operator>                                Pp_;      // preconditioner for pressure subproblem
 
-  RCP<Epetra_Vector>                                  vx_;      // velocity solution
-  RCP<Epetra_Vector>                                  px_;      // pressure solution
-  RCP<Epetra_Vector>                                  vb_;      // velocity rhs
-  RCP<Epetra_Vector>                                  pb_;      // pressure rhs
-  RCP<Epetra_Vector>                                  vwork1_;   // working vector velocity dimension
-  RCP<Epetra_Vector>                                  vwork2_;   // working vector velocity dimension
-  RCP<Epetra_Vector>                                  pwork1_;  // working vector pressure dimension
-  RCP<Epetra_Vector>                                  pwork2_;  // working vector pressure dimension
+  RCP<LINALG::ANA::Vector>                            vx_;      // velocity solution
+  RCP<LINALG::ANA::Vector>                            px_;      // pressure solution
+  RCP<LINALG::ANA::Vector>                            vb_;      // velocity rhs
+  RCP<LINALG::ANA::Vector>                            pb_;      // pressure rhs
+  RCP<LINALG::ANA::Vector>                            vwork1_;   // working vector velocity dimension
+  RCP<LINALG::ANA::Vector>                            vwork2_;   // working vector velocity dimension
+  RCP<LINALG::ANA::Vector>                            pwork1_;  // working vector pressure dimension
+  RCP<LINALG::ANA::Vector>                            pwork2_;  // working vector pressure dimension
 
   RCP<LINALG::Solver>                                 vsolver_; // velocity solver
   RCP<LINALG::Solver>                                 psolver_; // pressure solver
