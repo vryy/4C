@@ -241,15 +241,15 @@ void DRT::ELEMENTS::Wall1::CreateLinesTri(const int& nline,
 {
     for(int iline=0;iline<nline;iline++)
     {
-        int nodeids[nnode];
-        DRT::Node* nodes[nnode];
+        vector<int> nodeids(nnode);
+        vector<DRT::Node*> nodes(nnode);
         
         for (int inode=0;inode<nnode;inode++)
         {
              nodeids[inode] = NodeIds()[DRT::UTILS::eleNodeNumbering_tri6_lines[iline][inode]];
              nodes[inode]   = Nodes()[DRT::UTILS::eleNodeNumbering_tri6_lines[iline][inode]];
         }
-        lines_[iline] = rcp(new DRT::ELEMENTS::Wall1Line(iline,Owner(),nnode,nodeids,nodes,this,iline));
+        lines_[iline] = rcp(new DRT::ELEMENTS::Wall1Line(iline,Owner(),nnode,&nodeids[0],&nodes[0],this,iline));
         lineptrs_[iline] = lines_[iline].get();
     }
 }        
@@ -259,15 +259,15 @@ void DRT::ELEMENTS::Wall1::CreateLinesQuad(const int& nline,
 {
     for(int iline=0;iline<nline;iline++)
     {
-        int nodeids[nnode];
-        DRT::Node* nodes[nnode];	
+        vector<int> nodeids(nnode);
+        vector<DRT::Node*> nodes(nnode);
         
         for (int inode=0;inode<nnode;inode++)
         {
              nodeids[inode] = NodeIds()[DRT::UTILS::eleNodeNumbering_quad9_lines[iline][inode]];
              nodes[inode]   = Nodes()[DRT::UTILS::eleNodeNumbering_quad9_lines[iline][inode]];
         }
-        lines_[iline] = rcp(new DRT::ELEMENTS::Wall1Line(iline,Owner(),nnode,nodeids,nodes,this,iline));
+        lines_[iline] = rcp(new DRT::ELEMENTS::Wall1Line(iline,Owner(),nnode,&nodeids[0],&nodes[0],this,iline));
         lineptrs_[iline] = lines_[iline].get();
     }
 }    
