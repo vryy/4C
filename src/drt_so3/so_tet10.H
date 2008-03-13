@@ -310,7 +310,7 @@ protected:
   {
     so_tet10_geolin,
     so_tet10_totlag,
-    so_tet10_updlag,
+    so_tet10_updlag
   };
   enum StressType//###################
   {
@@ -320,7 +320,7 @@ protected:
     so_tet10_stress_gp123,
     so_tet10_stress_ndxyz,
     so_tet10_stress_ndrst,
-    so_tet10_stress_nd123,
+    so_tet10_stress_nd123
   };
 
   //! kinematic type
