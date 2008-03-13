@@ -828,7 +828,7 @@ inline std::string DistypeToString(const DRT::Element::DiscretizationType distyp
         dserror("no string for this distype defined!");
     };
     return s;
-};
+}
 
 
 } // namespace DRT
