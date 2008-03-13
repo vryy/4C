@@ -1174,6 +1174,94 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& dglobal,
       
       LINALG::Assemble(gglobal,gnode,lm,lmowner);
     }
+    /*
+#ifdef DEBUG
+    // alternative computation of weighted gap (via definition)
+    //****************************************** check of g-vector *******
+    if (cnode->Active())
+    {
+      double gact = 0.0;
+      
+      double normal[2];
+      normal[0] = cnode->n()[0];
+      normal[1] = cnode->n()[1];
+      
+      double xslave[2];
+      xslave[0] = cnode->xspatial()[0];
+      xslave[1] = cnode->xspatial()[1];
+      
+      double wii = (cnode->GetD()[0])[cnode->Dofs()[0]];
+      
+      gact -= wii * (normal[0]*xslave[0]+normal[1]*xslave[1]);
+      
+      vector<map<int,double> > mmap = cnode->GetM();
+      vector<map<int,double> > mmodmap = cnode->GetMmod();
+      
+      int rowsize = cnode->NumDof();
+      int colsize = (int)mmap[0].size();
+      
+      for (int j=0;j<rowsize-1;++j)
+        if ((int)mmap[j].size() != (int)mmap[j+1].size())
+          dserror("ERROR: AssembleDMG: Column dim. of nodal M-map is inconsistent!");
+        
+      Epetra_SerialDenseMatrix Mnode(rowsize,colsize);
+      vector<int> lmrow(rowsize);
+      vector<int> lmcol(colsize);
+      vector<int> lmrowowner(rowsize);
+      map<int,double>::iterator colcurr;
+      
+      for (int j=0;j<rowsize;++j)
+      {
+        int row = cnode->Dofs()[j];
+        int k = 0;
+        lmrow[j] = row;
+        lmrowowner[j] = cnode->Owner();
+        
+        for (colcurr=mmap[j].begin();colcurr!=mmap[j].end();++colcurr)
+        {
+          int col = colcurr->first;
+          double val = colcurr->second;
+          lmcol[k] = col;
+          
+          Mnode(j,k)=val;
+          ++k;
+        }
+      }
+      
+      //cout << Mnode << endl;
+      
+      for (int i=0;i<((int)lmcol.size())/2;++i)
+      {
+        Epetra_SerialDenseMatrix Mcurr(2,2);
+        Mcurr(0,0)=Mnode(0,2*i);
+        Mcurr(0,1)=Mnode(0,2*i+1);
+        Mcurr(1,0)=Mnode(1,2*i);
+        Mcurr(1,1)=Mnode(1,2*i+1);
+        
+        double xmaster[2];
+       
+        for (int j=0;j<mnodefullmap_->NumMyElements();++j)
+        {
+          int gid = mnodefullmap_->GID(j);
+          if (gid!=lmcol[2*i]/2) continue;
+          DRT::Node* mnode = idiscret_->gNode(gid);
+          if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
+          CNode* mcnode = static_cast<CNode*>(mnode);
+          xmaster[0]=mcnode->xspatial()[0];
+          xmaster[1]=mcnode->xspatial()[1];
+        }
+        
+        double mxmaster[2];
+        mxmaster[0] = Mcurr(0,0)*xmaster[0]+Mcurr(0,1)*xmaster[1];
+        mxmaster[1] = Mcurr(1,0)*xmaster[0]+Mcurr(1,1)*xmaster[1];
+        
+        gact+= normal[0]*mxmaster[0] + normal[1]*mxmaster[1];
+      }
+      
+      //cout << "GACTIVE: " << cnode->Id() << " " << gact << endl;
+    }
+#endif // #ifdef DEBUG
+    */
   }
     
   return;

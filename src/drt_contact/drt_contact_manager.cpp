@@ -25,7 +25,8 @@ Maintainer: Michael Gee
  *----------------------------------------------------------------------*/
 CONTACT::Manager::Manager(DRT::Discretization& discret) :
 discret_(discret),
-activesetconv_(false)
+activesetconv_(false),
+isincontact_(false)
 {
 #if 0 // OLD VERSION
   if (!Discret().Filled()) dserror("Discretization is not fillcomplete");
@@ -189,7 +190,7 @@ activesetconv_(false)
     interface->FillComplete();
 
   } // for (int i=0; i<(int)contactconditions.size(); ++i)
-#endif // #if 1 (OLD VERSION)
+#endif // #if 0 (OLD VERSION)
   
   if (!Discret().Filled()) dserror("Discretization is not fillcomplete");
 
@@ -323,7 +324,7 @@ activesetconv_(false)
       // due to the way elements in conditions are build.
       // We therefore have to give the second, third,... set of elements
       // different ids. ids do not have to be continous, we just add a large
-      // enough number ggsize to all elements of cond2, cnod3,... so they are
+      // enough number ggsize to all elements of cond2, cond3,... so they are
       // different from those in cond1!!!
       // note that elements in ele1/ele2 already are in column (overlapping) map
       int lsize = (int)currele.size();
@@ -418,10 +419,49 @@ void CONTACT::Manager::Print(ostream& os) const
 }
 
 /*----------------------------------------------------------------------*
+ |  write restart information for contact (public)            popp 03/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Manager::WriteRestart(RCP<Epetra_Vector>& activetoggle)
+{
+  activetoggle = rcp(new Epetra_Vector(*gsnoderowmap_));
+  
+  // loop over all interfaces
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    // loop over all slave nodes on the current interface
+    for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
+    {
+      int gid = interface_[i]->SlaveRowNodes()->GID(j);
+      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* cnode = static_cast<CNode*>(node);
+      
+      // set value active / inactive in toggle vector
+      if (cnode->Active()) (*activetoggle)[j]=1;
+    }
+  }
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  read restart information for contact (public)             popp 03/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Manager::ReadRestart(const RCP<Epetra_Vector> activetoggle)
+{
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  initialize contact for next Newton step (public)          popp 01/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::Initialize()
+void CONTACT::Manager::Initialize(int numiter)
 {
+#ifdef CONTACTCHECKHUEEBER
+  if (numiter==0)
+  {
+#endif // #ifdef CONTACTCHECKHUEEBER
+    
   // initialize / reset interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
@@ -437,7 +477,9 @@ void CONTACT::Manager::Initialize()
   // (re)setup global normal and tangent matrices
   nmatrix_ = rcp(new LINALG::SparseMatrix(*gactiven_,3));
   tmatrix_ = rcp(new LINALG::SparseMatrix(*gactivet_,3));
-  
+#ifdef CONTACTCHECKHUEEBER
+  }
+#endif // #ifdef CONTACTCHECKHUEEBER
   return;
 }
 
@@ -459,12 +501,20 @@ void CONTACT::Manager::SetState(const string& statename,
  |  evaluate contact (public)                                 popp 11/07|
  *----------------------------------------------------------------------*/
 void CONTACT::Manager::Evaluate(RCP<LINALG::SparseMatrix>& kteff,
-                                RCP<Epetra_Vector>& feff)
-{  
+                                RCP<Epetra_Vector>& feff, int numiter)
+{ 
+  // FIXME: Currently only the old LINALG::Multiply method is used,
+  // because there are still problems with the transposed version of
+  // MLMultiply if a row has no entries! One day we should use ML...
+  
   /**********************************************************************/
   /* evaluate interfaces                                                */
   /* (nodal normals, projections, Mortar integration, Mortar assembly)  */
   /**********************************************************************/
+#ifdef CONTACTCHECKHUEEBER
+  if (numiter==0)
+  {
+#endif // #ifdef CONTACTCHECKHUEEBER
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     interface_[i]->Evaluate();
@@ -474,7 +524,9 @@ void CONTACT::Manager::Evaluate(RCP<LINALG::SparseMatrix>& kteff,
   // FillComplete() global Mortar matrices
   dmatrix_->Complete();
   mmatrix_->Complete(*gmdofrowmap_,*gsdofrowmap_);
-  
+#ifdef CONTACTCHECKHUEEBER
+  }
+#endif // #ifdef CONTACTCHECKHUEEBER
   // export weighted gap vector to gactiveN-map
   RCP<Epetra_Vector> gact = LINALG::CreateVector(*gactivenodes_,true);
   if (gact->GlobalLength())
@@ -487,13 +539,19 @@ void CONTACT::Manager::Evaluate(RCP<LINALG::SparseMatrix>& kteff,
   /* build global matrix n with normal vectors of active nodes          */
   /* and global matrix t with tangent vectors of active nodes           */
   /**********************************************************************/
+#ifdef CONTACTCHECKHUEEBER
+  if (numiter==0)
+  {
+#endif // #ifdef CONTACTCHECKHUEEBER
   for (int i=0; i<(int)interface_.size(); ++i)
     interface_[i]->AssembleNT(*nmatrix_,*tmatrix_);
     
   // FillComplete() global matrices N and T
   nmatrix_->Complete(*gactivedofs_,*gactiven_);
   tmatrix_->Complete(*gactivedofs_,*gactivet_);
-  
+#ifdef CONTACTCHECKHUEEBER
+  }
+#endif // #ifdef CONTACTCHECKHUEEBER
   /**********************************************************************/
   /* Multiply Mortar matrices: m^ = inv(d) * m                          */
   /**********************************************************************/
@@ -615,16 +673,6 @@ void CONTACT::Manager::Evaluate(RCP<LINALG::SparseMatrix>& kteff,
   ksmmod->Add(*ksm,false,1.0,1.0);
   ksmmod->Complete(ksm->DomainMap(),ksm->RowMap());
   
-  /*
-  RCP<LINALG::SparseMatrix> ksmmodtest  = LINALG::Multiply(*kss,false,*mhatmatrix_,false,false);
-  ksmmodtest->Complete(ksm->DomainMap(),ksm->RowMap());
-  RCP<LINALG::SparseMatrix> ksmmodtest2 = LINALG::MLMultiply(*kss,*mhatmatrix_,false);
-  ksmmodtest2->Complete(ksm->DomainMap(),ksm->RowMap());
-  cout << "LINALG::Multiply: " << ksmmodtest->NormOne() << endl;
-  cout << *ksmmodtest << endl;
-  cout << "LINALG::MLMultiply: " << ksmmodtest2->NormOne() << endl;
-  cout << *ksmmodtest2 << endl;
-  */
   // ksn: nothing to do
   RCP<LINALG::SparseMatrix> ksnmod = ksn;
   
@@ -903,7 +951,25 @@ void CONTACT::Manager::Evaluate(RCP<LINALG::SparseMatrix>& kteff,
  |  Transform displacement increment vector (public)          popp 02/08|
  *----------------------------------------------------------------------*/
 void CONTACT::Manager::RecoverDisp(RCP<Epetra_Vector>& disi)
-{  
+{ 
+#ifdef CONTACTCHECKHUEEBER
+  // debugging (check S. Hüeber)
+  if (IsInContact())
+  {
+    RCP<Epetra_Vector> gupdate = rcp(new Epetra_Vector(*gactiven_));
+    RCP<Epetra_Vector> activedisi =rcp(new Epetra_Vector(*gactivedofs_));
+    LINALG::Export(*disi,*activedisi);
+    nmatrix_->Multiply(false,*activedisi,*gupdate);
+    gupdate->ReplaceMap(*gactivenodes_);
+    RCP<Epetra_Vector> gupdateexp = rcp(new Epetra_Vector(*gsnoderowmap_));
+    LINALG::Export(*gupdate,*gupdateexp);
+    gupdateexp->Update(1.0,*g_,-1.0);
+    g_=gupdateexp;
+    //cout << *g_;
+    //cout << *gupdateexp;
+  } 
+#endif // #ifdef CONTACTCHECKHUEEBER
+  
   // extract incremental jump from disi (for active set)
   incrjump_ = rcp(new Epetra_Vector(*gsdofrowmap_));
   LINALG::Export(*disi,*incrjump_);
@@ -1073,6 +1139,10 @@ void CONTACT::Manager::UpdateActiveSet()
     gactiven_ = LINALG::MergeMap(gactiven_,interface_[i]->ActiveNDofs());;
     gactivet_ = LINALG::MergeMap(gactivet_,interface_[i]->ActiveTDofs());;
   }
+  
+  // update flag for global contact status
+  if (gactivenodes_->NumGlobalElements())
+    IsInContact()=true;
   
   // create empty maps, if active set = null
   if (gactivenodes_==null)

@@ -449,11 +449,11 @@ void ContactStruGenAlpha::FullNewton()
     
     //-------------------------make contact modifications to lhs and rhs
     {
-      contactmanager_->Initialize();
+      contactmanager_->Initialize(numiter);
       contactmanager_->SetState("displacement",dism_);
       
       // (almost) all contact stuff is done here!
-      contactmanager_->Evaluate(stiff_,fresm_);
+      contactmanager_->Evaluate(stiff_,fresm_,numiter);
     }
 
     //----------------------- apply dirichlet BCs to system of equations
@@ -833,11 +833,11 @@ void ContactStruGenAlpha::PTC()
     
     //-------------------------make contact modifications to lhs and rhs
     {
-      contactmanager_->Initialize();
+      contactmanager_->Initialize(numiter);
       contactmanager_->SetState("displacement",dism_);
               
       // (almost) all contact stuff is done here!
-      contactmanager_->Evaluate(stiff_,fresm_);
+      contactmanager_->Evaluate(stiff_,fresm_,numiter);
     }
           
     //------------------------------- do ptc modification to effective LHS
@@ -1135,6 +1135,12 @@ void ContactStruGenAlpha::UpdateandOutput()
     output_.WriteMesh(istep,timen);
     isdatawritten = true;
 
+    // write restart information for contact
+    if (contactmanager_->IsInContact())
+    {
+    //----------------------not yet implemented-------------------------//
+    }
+    
     if (discret_.Comm().MyPID()==0 && printscreen)
     {
       cout << "====== Restart written in step " << istep << endl;

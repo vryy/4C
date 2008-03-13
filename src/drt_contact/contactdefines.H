@@ -17,6 +17,7 @@ Maintainer: Alexander Popp
 
 #define CONTACTWNORMAL           /* flag for weighted nodal normal calc. */
 //#define CONTACTDIMOUTPUT       /* flag for output of global matrix dim. */
+//#define CONTACTCHECKHUEEBER    /* flag for S.Hüeber's quad. conv. check */ 
 
 #define CONTACTPROJTOL 0.05      /* projection tol. for overlap decision */
 #define CONTACTPROJLIM 1.0e-12   /* no problems with exact node projections */

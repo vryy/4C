@@ -93,10 +93,52 @@ public:
   inline DRT::Discretization& Discret() const { return discret_;};
   
   /*!
+  \brief Return convergence status of active set loop
+      
+  */
+  inline bool& ActiveSetConverged() { return activesetconv_; }
+  
+  /*!
+  \brief Return contact force vector
+  
+  */
+  inline RCP<Epetra_Vector>& GetContactForces() { return fc_; }
+  
+  /*!
+  \brief Return Lagrange multiplier vector
+    
+  */
+  inline RCP<Epetra_Vector>& LagrMult() { return z_; }
+  
+  /*!
+  \brief Return old Lagrange multiplier vector
+      
+  */
+  inline RCP<Epetra_Vector>& LagrMultOld() { return zold_; }
+  
+  /*!
+  \brief Return current global contact status
+        
+  */
+  inline bool& IsInContact() { return isincontact_; }
+  
+  /*!
+  \brief Write restart information for contact
+  
+  */
+  void WriteRestart(RCP<Epetra_Vector>& activetoggle);
+  
+  /*!
+  \brief Read restart information for contact
+  
+  */
+  void ReadRestart(const RCP<Epetra_Vector> activetoggle);
+  
+  /*!
   \brief Initialize contact for next Newton step
   
   */
-  void Initialize();
+  void Initialize(int numiter);
   
   /*!
   \brief Set current deformation state
@@ -108,7 +150,7 @@ public:
   \brief Evaluate contact
     
   */
-  void Evaluate(RCP<LINALG::SparseMatrix>& kteff, RCP<Epetra_Vector>& feff);
+  void Evaluate(RCP<LINALG::SparseMatrix>& kteff, RCP<Epetra_Vector>& feff, int numiter);
   
   /*!
   \brief Transform displacement increment vector
@@ -137,22 +179,11 @@ public:
   void UpdateActiveSet();
   
   /*!
-  \brief Return convergence status of active set loop
-  
-  */
-  inline bool& ActiveSetConverged() { return activesetconv_; }
-  
-  /*!
   \brief Compute contact force vector
     
   */
   void ContactForces(RCP<Epetra_Vector>& fresm);
   
-  /*!
-  \brief Return contact force vector
-  
-  */
-  inline RCP<Epetra_Vector>& GetContactForces() { return fc_; }
   
 
 protected:
@@ -188,6 +219,7 @@ protected:
   RCP<Epetra_Vector>                 zold_;           // vector of last time step Lagrange multipliers
   RCP<Epetra_Vector>                 incrjump_;       // incremental displacement jump (slave dofs)
   RCP<Epetra_Vector>                 fc_;             // vector of current contact forces
+  bool                               isincontact_;    // flag indicatoing global contact status
   
   RCP<LINALG::SparseMatrix>          invd_;           // inverse of Mortar matrix D (needed for LM)
   RCP<LINALG::SparseMatrix>          ksn_;            // stiffness block K_sn (needed for LM)
