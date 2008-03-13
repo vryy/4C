@@ -2,7 +2,6 @@
 \file beam2_evaluate.cpp
 \brief
 
-<pre>
 Maintainer: Christian Cyron
             cyron@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
@@ -25,6 +24,8 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
+
+
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public)                                                                 cyron 01/08|
@@ -59,17 +60,9 @@ int DRT::ELEMENTS::Beam2::Evaluate(ParameterList& params,
      residual values*/ 
      case Beam2::calc_struct_linstiff:
     {   
-    
-    /*lm is a vector mapping each local degree of freedom to a global one; its length is the overall number of 
-    / degrees of freedom of the element */
-      vector<double> mydisp(lm.size());        
-      for (int i=0; i<(int)mydisp.size(); ++i) mydisp[i] = 0.0;  //setting displacement mydisp to zero
-      
-      //current residual forces
-      vector<double> myres(lm.size());
-      for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;    //setting residual myres to zero
-          
-      b2_nlnstiffmass(mydisp,elemat1,elemat2,elevec1);
+      //only nonlinear case implemented!
+      dserror("linear stiffness matrix called, but not implemented");
+
     }
     break;
        
@@ -88,8 +81,48 @@ int DRT::ELEMENTS::Beam2::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-	      
+      
       b2_nlnstiffmass(mydisp,elemat1,elemat2,elevec1);
+      
+
+      //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
+      //correctly or not: the function b2_nlnstiff_approx(mydisp) calculated the stiffness matrix approximated by
+      //finite differences and prints the relative error of every single element in case that it is >1e-5; before
+      //activating this part of code also the function b2_nlnstiff_approx(mydisp) has to be activated both in beam2.H
+      //and beam2_evaluate.cpp
+      /*
+      
+      Epetra_SerialDenseMatrix stiff_approx;
+      Epetra_SerialDenseMatrix stiff_relerr;
+      stiff_approx.Shape(6,6);
+      stiff_relerr.Shape(6,6);      
+      double h_rel = 1e-7;
+      int outputflag = 0;
+      stiff_approx = b2_nlnstiff_approx(mydisp, h_rel);
+      
+      for(int line=0; line<6; line++)
+      {
+	      for(int col=0; col<6; col++)
+		      {
+		      	stiff_relerr(line,col)= abs( (elemat1(line,col) - stiff_approx(line,col))/elemat1(line,col) );
+		      	if (stiff_relerr(line,col)<h_rel*100)
+		      		//suppressing small entries whose effect is only confusing
+		      		stiff_relerr(line,col)=0;
+		      	//there is no error if an entry is nan e.g. due to dirichlet boundary conditions
+		      	if ( isnan( stiff_relerr(line,col) ) )
+		      		stiff_relerr(line,col)=0;
+		      	if (stiff_relerr(line,col)>0)
+		      	   outputflag = 1;		      	
+		      }
+      }
+	if(outputflag ==1)
+	{
+	      std::cout<<"\n\n acutally calculated stiffness matrix"<< elemat1;
+	      std::cout<<"\n\n approximated stiffness matrix"<< stiff_approx;    
+	      std::cout<<"\n\n rel error stiffness matrix"<< stiff_relerr;
+	} 
+	*/
+    
     }
     break;
     case calc_struct_update_istep:
@@ -128,7 +161,9 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
   // find out whether we will use a time curve and get the factor
   const vector<int>* curve  = condition.Get<vector<int> >("curve");
   int curvenum = -1;
+  // number of the load curve related with a specific line Neumann condition called
   if (curve) curvenum = (*curve)[0];
+  // amplitude of load curve at current time called
   double curvefac = 1.0;
   if (curvenum>=0 && usetime)
     curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
@@ -156,7 +191,12 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
   Epetra_SerialDenseVector      funct(iel);
 
   // get values and switches from the condition
+  
+  // onoff is related to the first 6 flags of a line Neumann condition in the input file;
+  // value 1 for flag i says that condition is active for i-th degree of freedom
   const vector<int>*    onoff = condition.Get<vector<int> >("onoff");
+  // val is related to the 6 "val" fields after the onoff flags of the Neumann condition
+  // in the input file; val gives the values of the force as a multiple of the prescribed load curve
   const vector<double>* val   = condition.Get<vector<double> >("val");
 
   //integration loops	
@@ -190,6 +230,10 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
   } // for (int ip=0; ip<intpoints.nquad; ++ip)
   
   
+//by the following code part stochastic external forces can be applied elementwise. It is deac-
+//tivated by default since application of stochastic forces on global degrees of freedom seems
+//to be more efficient
+  /*
   if (thermalenergy_ > 0)
   {	  
 	  extern struct _MATERIAL  *mat;
@@ -209,8 +253,9 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
 		      dserror("unknown or improper type of material law");
 		 }	
 	  
-	  //calculating diagonal entry of damping matrix
-	  double gamma = params.get<double>("damping factor M",0.0) * crosssec_ * density * length_refe;  
+	  //calculating diagonal entry of damping matrix  
+	  double gamma;
+	  gamma = 4*params.get<double>("damping factor M",0.0) * crosssec_ * density * length_refe/3;  
 	  
 	  //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
 	  double stand_dev = pow(2 * thermalenergy_ * gamma / params.get<double>("delta time",0.01),0.5);
@@ -219,13 +264,16 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
 	  using namespace ranlib;
 	  //creating a random generator object which creates random numbers with mean = 0 and variance = 1
 	  Normal<double> normalGen(0,1);
-
+	  
 	  //adding statistical forces accounting for connectivity of nodes
 	  elevec1[0] += stand_dev * normalGen.random() / sqrt( Nodes()[0]->NumElement() );  
 	  elevec1[1] += stand_dev * normalGen.random() / sqrt( Nodes()[0]->NumElement() );
+	  elevec1[2] += stand_dev * normalGen.random() / sqrt( Nodes()[0]->NumElement() );
   	  elevec1[3] += stand_dev * normalGen.random() / sqrt( Nodes()[1]->NumElement() );
-  	  elevec1[4] += stand_dev * normalGen.random() / sqrt( Nodes()[1]->NumElement() ); 	  	  
+  	  elevec1[4] += stand_dev * normalGen.random() / sqrt( Nodes()[1]->NumElement() ); 
+  	  elevec1[5] += stand_dev * normalGen.random() / sqrt( Nodes()[1]->NumElement() );  	  
   } 
+  */
 
 return 0;
 }
@@ -239,7 +287,7 @@ return 0;
 void DRT::ELEMENTS::Beam2::b2_local_aux(LINALG::SerialDenseMatrix& Bcurr,
                     			LINALG::SerialDenseVector& rcurr,
                     			LINALG::SerialDenseVector& zcurr,
-                                double& beta,
+                                        double& beta,
                     			const LINALG::SerialDenseMatrix& xcurr,
                     			const double& length_curr,
                     			const double& length_refe)
@@ -252,34 +300,44 @@ void DRT::ELEMENTS::Beam2::b2_local_aux(LINALG::SerialDenseMatrix& Bcurr,
 	#endif // #ifdef DEBUG
 
 
-  // beta is the rotation angle out of x-axis in a x-y-plane
+  // beta is the rotation angle out of x-axis in a x-y-plane 
   double cos_beta = (xcurr(0,1)-xcurr(0,0))/length_curr;
   double sin_beta = (xcurr(1,1)-xcurr(1,0))/length_curr;
   
+  /*a crucial point in a corotational frame work is how to calculate the correct rotational angle
+   * beta; in case that abs(beta)<PI this can be done easily making use of asin(beta) and acos(beta);
+   * however, since in the course of large deformations abs(beta)>PI can happen one needs some special means
+   * in order to avoid confusion; here we calculate an angel psi in a local coordinate system rotated by an 
+   * angle of halfrotations_*PI; afterwards we know beta = psi * halfrotations_*PI; for this procedure we only
+   * have to make sure that abs(psi)>PI i.e. that the true rotation angle lies always in the range +/- PI of the 
+   * rotated system. This can be achieved by updating the variable halfrotations_ after each time step in such
+   * a way that the current angle leads to abs(psi)<0.5*PI in the coordinate system based on the updated variable
+   * halfrotations_; the also in the next time step abs(psi)>PI will be guaranteed as long as no rotations through
+   * an angle >0.5*PI take place within one time step throughout the whole simulated structure. This seems imply a 
+   * fairly mild restriction to time step size*/
   
-  //first we calculate beta in a range between -pi < beta <= pi
-  if (cos_beta >= 0)
-  	beta = asin(sin_beta);
+  // psi is the rotation angle out of x-axis in a x-y-plane rotatated by halfrotations_*PI
+  double cos_psi = pow(-1.0,halfrotations_)*(xcurr(0,1)-xcurr(0,0))/length_curr;
+  double sin_psi = pow(-1.0,halfrotations_)*(xcurr(1,1)-xcurr(1,0))/length_curr;
+  
+  //first we calculate psi in a range between -pi < beta <= pi in the rotated plane
+  double psi = 0;
+  if (cos_psi >= 0)
+  	psi = asin(sin_psi);
   else
-  {	if (sin_beta >= 0)
-  		beta =  acos(cos_beta);
+  {	if (sin_psi >= 0)
+  		psi =  acos(cos_psi);
         else
-        	beta = -acos(cos_beta);
+        	psi = -acos(cos_psi);
    }
-   /*then we take into consideration that we have to add 2n*pi to beta in order to get a realistic difference/
-   / beta - teta1, where teta1 = xcurr(0,3); note that between diff_n1, diff_n2, diff_n3 there is such a great/
-   / difference that it's no problem to lose the round off in the following cast operation */
-   int teta1 = static_cast<int>( 360*xcurr(2,0)/(2*PI) );
-   double n_aux = ( teta1 - (teta1 % 360) )/360;
-   double diff_n1 = abs( beta + (n_aux-1) * 2 * PI - xcurr(2,0) );
-   double diff_n2 = abs( beta + n_aux * 2 * PI - xcurr(2,0) );
-   double diff_n3 = abs( beta + (n_aux+1) * 2 * PI - xcurr(2,0) );
-   beta = beta + n_aux * 2 * PI;
-   if (diff_n1 < diff_n2 && diff_n1 < diff_n3)
-   	beta = beta + (n_aux-1) * 2 * PI;
-   if (diff_n3 < diff_n2 && diff_n3 < diff_n1)
-   	beta = beta + (n_aux+1) * 2 * PI;
   
+  beta = psi + PI*halfrotations_;
+  
+  if (psi > PI/2)
+	  halfrotations_++;
+  if (psi < -PI/2)
+ 	  halfrotations_--; 
+
   rcurr[0] = -cos_beta;
   rcurr[1] = -sin_beta;
   rcurr[2] = 0;
@@ -358,6 +416,8 @@ for (int k=0; k<iel; ++k)
     xcurr(2,k) = xrefe(2,k) + disp[k*numdf+2];
 
   }
+
+x_verschiebung = disp[numdf];
    
     
   // calculation of local geometrically important matrices and vectors; notation according to Crisfield-------
@@ -402,17 +462,24 @@ for (int k=0; k<iel; ++k)
 	 }	
 
   
-  //local internal axial force
-  force_loc(0) = ym*crosssec_*(length_curr - length_refe)/length_refe;
+  //local internal axial force: note: application of the following expression of axial strain leads
+  //to numerically significantly better stability in comparison with (length_curr - length_refe)/length_refe
+  force_loc(0) = ym*crosssec_*(length_curr*length_curr - length_refe*length_refe)/(length_refe*(length_curr + length_refe));
   
   //local internal bending moment
   force_loc(1) = -ym*mominer_*(xcurr(2,1)-xcurr(2,0))/length_refe;
   
   //local internal shear force
-  force_loc(2) = -sm*crosssecshear_*( (xcurr(2,1)+xcurr(2,0))/2 - beta);
- 
+  force_loc(2) = -sm*crosssecshear_*( (xcurr(2,1)+xcurr(2,0))/2 - beta);  
+  
+  //innere Arbeit:
+  Arbeit_N = 0.5*force_loc(0)*(length_curr*length_curr - length_refe*length_refe)/(length_refe*(length_curr + length_refe));
+  Arbeit_M = -0.5*force_loc(1)* (xcurr(2,1)-xcurr(2,0));
+  Arbeit_Q = -0.5*length_refe*force_loc(2)* ( (xcurr(2,1)+xcurr(2,0))/2 - beta );
+  Arbeit_ = Arbeit_N + Arbeit_M + Arbeit_Q;
+  
 
-  //calculating tangential stiffness matrix in global coordinates---------------------------------------------
+  //calculating tangential stiffness matrix in global coordinates
   
   //linear elastic part including rotation
   
@@ -430,31 +497,24 @@ for (int k=0; k<iel; ++k)
   for(int id_lin=0; id_lin<6; id_lin++)
   	for(int id_col=0; id_col<6; id_col++)
   	{
-  		stiffmatrix(id_lin,id_col) += aux_Q_fac * rcurr(id_lin) * zcurr(id_col);
-  		stiffmatrix(id_lin,id_col) += aux_Q_fac * rcurr(id_col) * zcurr(id_lin);
+  		stiffmatrix(id_lin,id_col) -= aux_Q_fac * rcurr(id_lin) * zcurr(id_col);
+  		stiffmatrix(id_lin,id_col) -= aux_Q_fac * rcurr(id_col) * zcurr(id_lin);
   	}
   
   //adding geometric stiffness by axial force 
-  double aux_N_fac = force_loc(1)/length_curr; 
+  double aux_N_fac = force_loc(0)/length_curr; 
   for(int id_lin=0; id_lin<6; id_lin++)
   	for(int id_col=0; id_col<6; id_col++)
   		stiffmatrix(id_lin,id_col) += aux_N_fac * zcurr(id_lin) * zcurr(id_col);  
   
-  //calculation of global internal forces from force = B_transposed*force_loc---------------------------------- 
+  //calculation of global internal forces from force = B_transposed*force_loc 
+  force.Size(6);
   for(int id_col=0; id_col<6; id_col++)
 	  for(int id_lin=0; id_lin<3; id_lin++)
     	force(id_col) += Bcurr(id_lin,id_col)*force_loc(id_lin);
   
-  //calculating mass matrix (lcoal version = global version)-------------------------------------------------- 
-  //the following code lines are based on the assumption that massmatrix is a 6x6 matrix filled with zeros
-  #ifdef DEBUG
-  dsassert(massmatrix.M()==6,"wrong mass matrix input");
-  dsassert(massmatrix.N()==6,"wrong mass matrix input");
-  for(int i=0; i<6; i++)
-  	for(int j=0; j<6; j++)
-  	dsassert(massmatrix(i,j)==0,"wrong mass matrix input in beam2_evaluate, function b2_nlnstiffmass"); 
-  #endif // #ifdef DEBUG
-  
+  //calculating mass matrix (lcoal version = global version) 
+  massmatrix.Shape(6,6);
   
   //if lumped_flag == 0 a consistent mass Timoshenko beam mass matrix is applied
   if (lumpedflag_ == 0)
@@ -475,16 +535,89 @@ for (int k=0; k<iel; ++k)
   else if (lumpedflag_ == 1)
   {
  	 massmatrix.Shape(6,6);
- 	 massmatrix(0,0) = density*length_refe*crosssec_/2;
- 	 massmatrix(1,1) = density*length_refe*crosssec_/2;
- 	 massmatrix(3,3) = density*length_refe*crosssec_/2;
- 	 massmatrix(4,4) = density*length_refe*crosssec_/2;
+ 	 //note: this is not an exact lumped mass matrix, but it is modified in such a way that it leads
+ 	 //to a diagonal mass matrix with constant diagonal entries
+ 	 massmatrix(0,0) = 4*density*length_refe*crosssec_/( 3*Nodes()[0]->NumElement() );
+ 	 massmatrix(1,1) = 4*density*length_refe*crosssec_/( 3*Nodes()[0]->NumElement() );
+ 	 
+ 	 massmatrix(2,2) = 4*density*length_refe*crosssec_/( 3*Nodes()[0]->NumElement() );
+ 	 
+ 	 massmatrix(3,3) = 4*density*length_refe*crosssec_/( 3*Nodes()[1]->NumElement() );
+ 	 massmatrix(4,4) = 4*density*length_refe*crosssec_/( 3*Nodes()[1]->NumElement() );
+ 	 
+ 	 massmatrix(5,5) = 4*density*length_refe*crosssec_/( 3*Nodes()[1]->NumElement() );
    }
   else
-	  dserror("improper value of variable lumpedflag_");
-
+	  dserror("improper value of variable lumpedflag_");  
+  
+  if (this->Id() ==0)
+  {
+	  if (abs(force_loc(0))>1)
+	  {
+		  std::cout<<"\n\ninnere lokale Kraft\n"<<force_loc;
+		  std::cout<<"\nVerschiebungen\n";
+		  for (int k=0; k<iel; ++k)
+		    {
+			  std::cout<<"\n"<<disp[k*numdf+0];
+			  std::cout<<"\n"<<disp[k*numdf+1];
+			  std::cout<<"\n"<<disp[k*numdf+2];
+	
+		    }
+		  std::cout<<"\n";
+	  }
+	  
+  }
+  
   return;
-} // DRT::ELEMENTS::Beam2::b2_nlnstiffmass(
+} // DRT::ELEMENTS::Beam2::b2_nlnstiffmass
+
+//the following function can be activated in order to find bugs; it calculates a finite difference
+//approximation of the nonlinear stiffness matrix; activate the follwing block for bug fixing only
+
+Epetra_SerialDenseMatrix DRT::ELEMENTS::Beam2::b2_nlnstiff_approx(vector<double>& disp, double h_rel)
+{	
+	Epetra_SerialDenseMatrix stiff_dummy;
+	stiff_dummy.Shape(6,6);
+	Epetra_SerialDenseMatrix mass_dummy;
+	mass_dummy.Shape(6,6);
+	Epetra_SerialDenseVector force_disp;
+	force_disp.Size(6);
+	Epetra_SerialDenseVector force_disp_delta;
+	force_disp_delta.Size(6);
+	Epetra_SerialDenseMatrix stiff_approx;
+	stiff_approx.Shape(6,6);
+	vector<double> disp_delta;
+	
+	DRT::ELEMENTS::Beam2::b2_nlnstiffmass(disp,stiff_dummy,mass_dummy,force_disp);
+	
+	for(int col=0; col<6; col++)
+	{		
+		force_disp_delta.Size(6);
+		disp_delta = disp;
+		disp_delta[col] = disp_delta[col]+h_rel;
+		DRT::ELEMENTS::Beam2::b2_nlnstiffmass(disp_delta,stiff_dummy,mass_dummy,force_disp_delta);
+		for(int line=0; line<6; line++)
+			stiff_approx(line,col) = (force_disp_delta[line] - force_disp[line])/h_rel;		
+	} 
+	return stiff_approx;	
+}
+
+
+void DRT::ELEMENTS::Beam2::Arbeit(double& A,double& AN,double& AM,double& AQ, double& xv)
+  {
+  	A += Arbeit_;
+  	AN += Arbeit_N;
+  	AM += Arbeit_M;
+  	AQ += Arbeit_Q;
+  	xv = x_verschiebung;
+	return;
+  } 
+void DRT::ELEMENTS::Beam2::Thermik(double& kT)
+  {	
+	kT = thermalenergy_;
+	return;
+  } 
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_BEAM2
+

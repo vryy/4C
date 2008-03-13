@@ -31,6 +31,12 @@ crosssecshear_(0),
 mominer_(0),
 lumpedflag_(0),
 thermalenergy_(0),
+halfrotations_(0),
+Arbeit_(0),
+Arbeit_N(0),
+Arbeit_M(0),
+Arbeit_Q(0),
+x_verschiebung(0),
 //since lines_ is a vector it calls its constructor automatically -> 
 //no initialization of lines_ necessary here
 
@@ -52,8 +58,15 @@ crosssecshear_(old.crosssecshear_),
 mominer_(old.mominer_),
 lumpedflag_(old.lumpedflag_),
 thermalenergy_(old.thermalenergy_),
+halfrotations_(old.halfrotations_),
+Arbeit_(old.Arbeit_),
+Arbeit_N(old.Arbeit_N),
+Arbeit_M(old.Arbeit_M),
+Arbeit_Q(old.Arbeit_Q),
+x_verschiebung(old.x_verschiebung),
 lines_(old.lines_),
 gaussrule_(old.gaussrule_)
+
 {
   return;
 }
@@ -134,6 +147,8 @@ void DRT::ELEMENTS::Beam2::Pack(vector<char>& data) const
   AddtoPack(data,lumpedflag_);
   //thermal energy responsible for statistical forces
   AddtoPack(data,thermalenergy_);
+  //number of half rotations in comparision with reference configuration
+  AddtoPack(data,halfrotations_);
   // gaussrule_
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   vector<char> tmp(0);
@@ -171,6 +186,8 @@ void DRT::ELEMENTS::Beam2::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,lumpedflag_);
   //thermal energy responsible for statistical forces
   ExtractfromPack(position,data,thermalenergy_);
+  //number of half rotations in comparision with reference configuration
+  ExtractfromPack(position,data,halfrotations_);
   // gaussrule_
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);

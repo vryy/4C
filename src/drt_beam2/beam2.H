@@ -256,6 +256,9 @@ public:
                               DRT::Condition&           condition,
                               vector<int>&              lm,
                               Epetra_SerialDenseVector& elevec1);
+  
+  void Arbeit(double& A,double& AN,double& AM,double& AQ, double& xv);
+  void Thermik(double& kT);
                               
   //@}
 
@@ -298,6 +301,15 @@ private:
   //! thermal energy responsible for statistical forces
   double thermalenergy_;
   
+  //! rounded number of half rotations the beam has already carried out counter clockwise;
+  int halfrotations_;
+  
+  double Arbeit_;
+  double Arbeit_N;
+  double Arbeit_M;
+  double Arbeit_Q;
+  double x_verschiebung;
+  
    //! vector of lines of this element (length 1)
   vector<DRT::Element*> lines_; 
  
@@ -323,8 +335,13 @@ private:
                        Epetra_SerialDenseMatrix& stiffmatrix,
                        Epetra_SerialDenseMatrix& massmatrix,
                        Epetra_SerialDenseVector& force);
+  
+  //calculation of nonlinear stiffness approximated by finite differences; this function should
+  //be activated only for bug fixing
+  
+  Epetra_SerialDenseMatrix b2_nlnstiff_approx(vector<double>& disp, double h_rel);
+  
 			    
-
   // don't want = operator
   Beam2& operator = (const Beam2& old);
   
