@@ -94,6 +94,6 @@ LDFLAGS_OPT="-O2"
 # Alle Bibliotheken neu uebersetzen?!
 # -malign-double
 CFLAGS="-Wall -msse3 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
-CPFLAGS="-Wall -msse3 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+CPFLAGS="-pedantic -Wall -msse3 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
 FFLAGS="-Wall -msse3 -mfpmath=sse -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
-LDFLAGS="-Xlinker -defsym -Xlinker MAIN__=main"
+LDFLAGS="-pedantic -Xlinker -defsym -Xlinker MAIN__=main"
