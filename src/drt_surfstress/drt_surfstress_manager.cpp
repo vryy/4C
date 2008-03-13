@@ -14,6 +14,7 @@ Maintainer: Lena Wiechert
 *--------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include <blitz/array.h>
 #include "drt_surfstress_manager.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
@@ -170,16 +171,16 @@ void DRT::SurfStressManager::StiffnessAndInternalForces(const int curvenum,
 
   double ndof = Adiff.Length();
 
-  for (int i=0;i<ndof;i++)
+  for (int i=0;i<ndof;++i)
   {
-    for (int j=0;j<ndof;j++)
+    for (int j=0;j<ndof;++j)
     {
       K_surf(i,j) = (dgamma*Adiff[i]*Adiff[j]+gamma*Adiff2(i,j))*curvefac;
     }
   }
 
   /*------calculation of current internal force due to surface energy*/
-  for (int i=0;i<ndof;i++)
+  for (int i=0;i<ndof;++i)
   {
     fint[i] = gamma*Adiff[i]*curvefac;
   }
@@ -209,116 +210,117 @@ void DRT::SurfStressManager::SurfaceCalc(
 {
   int ndof = nnode*3;
 
-  double det[3], ddet[3][ndof], ddet2[3][ndof][ndof], jacobi_deriv[ndof];
+  blitz::Array<double,1> det(3);
+  blitz::Array<double,2> ddet(3,ndof);
+  blitz::Array<double,3> ddet2(3,ndof,ndof);
+  blitz::Array<double,1> jacobi_deriv(ndof);
   double Jac;
 
   /*-----------------------------------------------------initialization*/
   A = 0.;
 
-  for (int i=0;i<ndof;i++)
+  for (int i=0;i<ndof;++i)
   {
     Adiff[i] = 0.;
-    for (int j=0;j<ndof;j++)
+    for (int j=0;j<ndof;++j)
     {
       Adiff2(i,j) = 0.;
     }
   }
 
-  for (int n=0;n<3;n++)
-    {
-      for (int o=0;o<ndof;o++)
-      {
-        for (int p=0;p<ndof;p++)
-          ddet2[n][o][p]=0.;
-      }
-    }
+  ddet2 = 0.0;
 
   for (int gpid = 0; gpid < ngp; ++gpid)      // loop over integration points
   {
     Epetra_SerialDenseMatrix deriv = der[gpid];
     Epetra_SerialDenseMatrix dxyzdrs = dx[gpid];
 
-    det[0] = dxyzdrs(0,1) * dxyzdrs(1,2) - dxyzdrs(0,2) * dxyzdrs(1,1);
-    det[1] = dxyzdrs(0,2) * dxyzdrs(1,0) - dxyzdrs(0,0) * dxyzdrs(1,2);
-    det[2] = dxyzdrs(0,0) * dxyzdrs(1,1) - dxyzdrs(0,1) * dxyzdrs(1,0);
+    det(0) = dxyzdrs(0,1) * dxyzdrs(1,2) - dxyzdrs(0,2) * dxyzdrs(1,1);
+    det(1) = dxyzdrs(0,2) * dxyzdrs(1,0) - dxyzdrs(0,0) * dxyzdrs(1,2);
+    det(2) = dxyzdrs(0,0) * dxyzdrs(1,1) - dxyzdrs(0,1) * dxyzdrs(1,0);
 
-    Jac = sqrt( det[0]*det[0] + det[1]*det[1] + det[2]*det[2] );
+    Jac = sqrt( det(0)*det(0) + det(1)*det(1) + det(2)*det(2) );
 
     A += Jac*gpweight[gpid];
 
     /*--------------- derivation of minor determiants of the Jacobian
      *----------------------------- with respect to the displacements */
-    for (int i=0;i<4;i++)
+    for (int i=0;i<nnode;++i)
     {
-      ddet[0][3*i]   = 0.;
-      ddet[0][3*i+1] = deriv(i,0)*dxyzdrs(1,2)-deriv(i,1)*dxyzdrs(0,2);
-      ddet[0][3*i+2] = deriv(i,1)*dxyzdrs(0,1)-deriv(i,0)*dxyzdrs(1,1);
+      ddet(0,3*i)   = 0.;
+      ddet(0,3*i+1) = deriv(i,0)*dxyzdrs(1,2)-deriv(i,1)*dxyzdrs(0,2);
+      ddet(0,3*i+2) = deriv(i,1)*dxyzdrs(0,1)-deriv(i,0)*dxyzdrs(1,1);
 
-      ddet[1][3*i]   = deriv(i,1)*dxyzdrs(0,2)-deriv(i,0)*dxyzdrs(1,2);
-      ddet[1][3*i+1] = 0.;
-      ddet[1][3*i+2] = deriv(i,0)*dxyzdrs(1,0)-deriv(i,1)*dxyzdrs(0,0);
+      ddet(1,3*i)   = deriv(i,1)*dxyzdrs(0,2)-deriv(i,0)*dxyzdrs(1,2);
+      ddet(1,3*i+1) = 0.;
+      ddet(1,3*i+2) = deriv(i,0)*dxyzdrs(1,0)-deriv(i,1)*dxyzdrs(0,0);
 
-      ddet[2][3*i]   = deriv(i,0)*dxyzdrs(1,1)-deriv(i,1)*dxyzdrs(0,1);
-      ddet[2][3*i+1] = deriv(i,1)*dxyzdrs(0,0)-deriv(i,0)*dxyzdrs(1,0);
-      ddet[2][3*i+2] = 0.;
+      ddet(2,3*i)   = deriv(i,0)*dxyzdrs(1,1)-deriv(i,1)*dxyzdrs(0,1);
+      ddet(2,3*i+1) = deriv(i,1)*dxyzdrs(0,0)-deriv(i,0)*dxyzdrs(1,0);
+      ddet(2,3*i+2) = 0.;
 
-      jacobi_deriv[i*3]   = 1/Jac*(det[2]*ddet[2][3*i]+det[1]*ddet[1][3*i]);
-      jacobi_deriv[i*3+1] = 1/Jac*(det[2]*ddet[2][3*i+1]+det[0]*ddet[0][3*i+1]);
-      jacobi_deriv[i*3+2] = 1/Jac*(det[0]*ddet[0][3*i+2]+det[1]*ddet[1][3*i+2]);
+      jacobi_deriv(i*3)   = 1/Jac*(det(2)*ddet(2,3*i  )+det(1)*ddet(1,3*i  ));
+      jacobi_deriv(i*3+1) = 1/Jac*(det(2)*ddet(2,3*i+1)+det(0)*ddet(0,3*i+1));
+      jacobi_deriv(i*3+2) = 1/Jac*(det(0)*ddet(0,3*i+2)+det(1)*ddet(1,3*i+2));
     }
 
     /*--- calculation of first derivative of current interfacial area
      *----------------------------- with respect to the displacements */
-    for (int i=0;i<12;i++)
+    for (int i=0;i<ndof;++i)
     {
-      Adiff[i] += jacobi_deriv[i]*gpweight[gpid];
+      Adiff[i] += jacobi_deriv(i)*gpweight[gpid];
     }
 
 
     /*-------- second derivation of minor determiants of the Jacobian
      *----------------------------- with respect to the displacements */
-    for (int n=0;n<4;n++)
+    for (int n=0;n<nnode;++n)
     {
-      for (int o=0;o<4;o++)
+      for (int o=0;o<nnode;++o)
       {
-        ddet2[0][n*3+1][o*3+2] = deriv(n,0)*deriv(o,1)-deriv(n,1)*deriv(o,0);
-        ddet2[0][n*3+2][o*3+1] = - ddet2[0][n*3+1][o*3+2];
+        ddet2(0,n*3+1,o*3+2) = deriv(n,0)*deriv(o,1)-deriv(n,1)*deriv(o,0);
+        ddet2(0,n*3+2,o*3+1) = - ddet2(0,n*3+1,o*3+2);
 
-        ddet2[1][n*3][o*3+2]   = deriv(n,1)*deriv(o,0)-deriv(n,0)*deriv(o,1);
-        ddet2[1][n*3+2][o*3]   = - ddet2[1][n*3][o*3+2];
+        ddet2(1,n*3  ,o*3+2) = deriv(n,1)*deriv(o,0)-deriv(n,0)*deriv(o,1);
+        ddet2(1,n*3+2,o*3  ) = - ddet2(1,n*3,o*3+2);
 
-        ddet2[2][n*3][o*3+1]   = deriv(n,0)*deriv(o,1)-deriv(n,1)*deriv(o,0);
-        ddet2[2][n*3+1][o*3]   = - ddet2[2][n*3][o*3+1];
+        ddet2(2,n*3  ,o*3+1) = deriv(n,0)*deriv(o,1)-deriv(n,1)*deriv(o,0);
+        ddet2(2,n*3+1,o*3  ) = - ddet2(2,n*3,o*3+1);
       }
     }
 
     /*- calculation of second derivatives of current interfacial areas
      *----------------------------- with respect to the displacements */
-    for (int i=0;i<12;i++)
+    for (int i=0;i<ndof;++i)
     {
       int var1, var2;
 
-      if (i==0 || i==3 || i==6 || i==9)
+      if (i%3==0)           // displacement in x-direction
       {
         var1 = 1;
         var2 = 2;
       }
-      if (i==1 || i==4 || i==7 || i==10)
+      else if ((i-1)%3==0)  // displacement in y-direction
       {
         var1 = 0;
         var2 = 2;
       }
-      if (i==2 || i==5 || i==8 || i==11)
+      else if ((i-2)%3==0)  // displacement in z-direction
       {
         var1 = 0;
         var2 = 1;
       }
-
-      for (int j=0;j<12;j++)
+      else
       {
-        Adiff2(i,j) += (-1/Jac*jacobi_deriv[j]*jacobi_deriv[i]+1/Jac*
-                       (ddet[var1][i]*ddet[var1][j]+det[var1]*ddet2[var1][i][j]+
-                        ddet[var2][i]*ddet[var2][j]+det[var2]*ddet2[var2][i][j]))*gpweight[gpid];
+          dserror("calculation of second derivatives of interfacial area failed");
+          exit(1);
+      }
+
+      for (int j=0;j<ndof;++j)
+      {
+        Adiff2(i,j) += (-1/Jac*jacobi_deriv(j)*jacobi_deriv(i)+1/Jac*
+                       (ddet(var1,i)*ddet(var1,j)+det(var1)*ddet2(var1,i,j)+
+                        ddet(var2,i)*ddet(var2,j)+det(var2)*ddet2(var2,i,j)))*gpweight[gpid];
       }
     }
   }
