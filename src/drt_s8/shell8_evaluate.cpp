@@ -1553,8 +1553,11 @@ void DRT::ELEMENTS::Shell8::s8BtDB(Epetra_SerialDenseMatrix& estif,
 {
 /*----------------------------------------------------------------------*/
   const int dim = iel*numdf;
+  const int NUMDF = 6;
+  const int MAXNOD_SH8 = 9;
+  const int DIM = MAXNOD_SH8*NUMDF;
 /*------------------------------------ make multiplication work = D * B */
-  double work[12][dim];
+  double work[12][DIM];
   for (int i=0; i<12; ++i)
     for (int j=0; j<dim; ++j)
     {
